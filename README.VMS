@@ -49,7 +49,7 @@ locations (and in the order listed):
     the directory specified by the symbol HOME
     the vile executable directory   [this often does not work]
     if the symbol VILE_STARTUP_PATH exists then
-        any directory specified in this symbol is searched
+        search each comma-delimited directory specified in this symbol
     else search
         sys$login
         sys$device:[vmstools]

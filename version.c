@@ -1,7 +1,7 @@
 /*
  * version & usage-messages for vile
  *
- * $Header: /users/source/archives/vile.vcs/RCS/version.c,v 1.43 1999/03/20 16:35:01 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/version.c,v 1.44 1999/03/26 11:03:17 cmorgan Exp $
  *
  */
 
@@ -160,8 +160,7 @@ personals(int n)
 		"bind-key split-current-window ^T",
 		"bind-key next-window ^N",
 		"bind-key previous-window ^P",
-		"set ai atp nobl ul=0 sw=4 csw=4 timeoutlen=50 check-modtime"
-		    " visual-matches=underline",
+		"set ai atp nobl ul=0 sw=4 csw=4 timeoutlen=50 check-modtime visual-matches=underline",
 		NULL
 	};
 

@@ -1,5 +1,5 @@
 # This is a makefile for mktbls and vile under Turbo-C
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.tbc,v 1.23 1999/03/08 11:22:54 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.tbc,v 1.24 1999/03/26 00:27:02 tom Exp $
 
 .AUTODEPEND
 
@@ -121,6 +121,7 @@ VILE_DEPS =  \
  region.obj \
  search.obj \
  select.obj \
+ statevar.obj \
  spawn.obj \
  tags.obj \
  tbuff.obj \
@@ -175,6 +176,7 @@ random.obj+
 regexp.obj+
 region.obj+
 search.obj+
+statevar.obj+
 select.obj+
 spawn.obj+
 tags.obj+
@@ -270,6 +272,8 @@ region.obj:	$(VILE_CFG) region.c
 search.obj:	$(VILE_CFG) search.c 
 
 select.obj:	$(VILE_CFG) select.c 	nefunc.h
+
+statevar.obj:	$(VILE_CFG) statevar.c	nevars.h
 
 spawn.obj:	$(VILE_CFG) spawn.c 	nefunc.h
 

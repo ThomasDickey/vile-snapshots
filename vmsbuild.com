@@ -1,4 +1,4 @@
-$! $Header: /users/source/archives/vile.vcs/RCS/vmsbuild.com,v 1.24 1999/03/08 11:25:31 tom Exp $
+$! $Header: /users/source/archives/vile.vcs/RCS/vmsbuild.com,v 1.25 1999/03/26 02:05:36 tom Exp $
 $! VMS build-script for vile.  Requires installed C compiler
 $!
 $! Tested with:
@@ -54,6 +54,7 @@ $ write optf "region.obj"
 $ write optf "search.obj"
 $ write optf "select.obj"
 $ write optf "spawn.obj"
+$ write optf "statevar.obj"
 $ write optf "tags.obj"
 $ write optf "tbuff.obj"
 $ write optf "termio.obj"
@@ -220,6 +221,7 @@ $	call make region
 $	call make search
 $	call make select
 $	call make spawn
+$	call make statevar
 $	call make tags
 $	call make tbuff
 $	call make termio

@@ -39,7 +39,11 @@ locations (and in the order listed):
     current working directory
     the directory specify by $HOME
     the vile executable directory
-    any directory specified in the $VILE_STARTUP_PATH env var
+    if $VILE_STARTUP_PATH exists then
+        search each semi-colon delimited directory specified in this env var
+    else search
+		\sys\public;\usr\bin;\bin;\
+    end if
     any directory in $PATH
 
 the remainder of this file describes build requirements for various PC
@@ -71,6 +75,7 @@ and object files.)
 
 oh -- there are three possible screen drivers in the source distribution
 that should work, with varying degrees of success:
+
 	borland.c (need #define BORLAND in estruct.h or makefile): this
 		uses the "conio" routines that come with Turbo C or Borland
 		C++.  Again, the trouble with this under DOS is that the
@@ -203,7 +208,7 @@ before building vile with an embedded perl interpreter:
 
    http://www.perl.com/CPAN-local/ports/win32/Standard/x86/
 
-2) initialize the environment variable VILE_LIBRARY_PATH to point to a
+2) initialize the environment variable VILE_LIBDIR_PATH to point to a
    writable "root" directory where vile's perl scripts will be installed.
 
 note that one of CPAN's popular perl binary releases did not export an
@@ -219,5 +224,5 @@ tom dickey, dickey@clark.net
 paul fox, pgf@foxharp.boston.ma.us (home)
 
 ------------------------
-$Header: /users/source/archives/vile.vcs/RCS/README.PC,v 1.20 1999/03/04 11:44:25 cmorgan Exp $
+$Header: /users/source/archives/vile.vcs/RCS/README.PC,v 1.22 1999/03/26 10:32:10 tom Exp $
 ------------------------

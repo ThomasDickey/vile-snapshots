@@ -1,7 +1,7 @@
 #
 # makefile for vile on WIN32 using Borland C++
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.blc,v 1.10 1999/03/08 11:21:26 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.blc,v 1.11 1999/03/26 00:28:08 tom Exp $
 #
 #
 
@@ -23,7 +23,7 @@ SRC = 	main.c ntconio.c basic.c bind.c btree.c buffer.c \
 	input.c insert.c itbuff.c isearch.c \
 	line.c modes.c msgs.c npopen.c oneliner.c opers.c \
 	path.c random.c regexp.c \
-	region.c search.c select.c spawn.c \
+	region.c search.c select.c spawn.c statevar.c \
 	tags.c tbuff.c termio.c ucrypt.c undo.c \
 	version.c w32cbrd.c w32misc.c w32pipe.c \
 	window.c word.c wordmov.c map.c
@@ -35,7 +35,7 @@ OBJ = 	main.obj ntconio.obj basic.obj bind.obj btree.obj buffer.obj \
 	input.obj insert.obj itbuff.obj isearch.obj \
 	line.obj modes.obj msgs.obj npopen.obj oneliner.obj opers.obj \
 	path.obj random.obj regexp.obj \
-	region.obj search.obj select.obj spawn.obj \
+	region.obj search.obj select.obj spawn.obj statevar.obj \
 	tags.obj tbuff.obj termio.obj ucrypt.obj undo.obj \
 	version.obj w32cbrd.obj w32misc.obj w32pipe.obj \
 	window.obj word.obj wordmov.obj map.obj
@@ -81,6 +81,7 @@ opers.obj:	nefunc.h
 path.obj:	dirstuff.h
 random.obj:	nefunc.h
 select.obj:	nefunc.h
+statevar.obj:	nevars.h
 spawn.obj:	nefunc.h
 termio.obj:	nefunc.h
 version.obj:	patchlev.h

@@ -5,7 +5,7 @@
  * keys. Like everyone else, they set hints
  * for the display system.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.179 1999/03/20 14:54:29 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.181 1999/03/26 00:21:29 tom Exp $
  *
  */
 
@@ -1092,8 +1092,12 @@ strip_brackets(char *dst, const char *src)
 char *
 add_brackets(char *dst, const char *src)
 {
+	size_t len = strlen(src);
+	if (len > NBUFN-3)
+		len = NBUFN-3;
 	dst[0] = SCRTCH_LEFT[0];
-	(void)strcat(strncpy(&dst[1], src, NBUFN-3), SCRTCH_RIGHT);
+	(void)strncpy(&dst[1], src, len);
+	(void)strcpy(&dst[len+1], SCRTCH_RIGHT);
 	return dst;
 }
 
@@ -1181,10 +1185,7 @@ renamebuffer(BUFFER *rbp, char *bufname)
 	char bufn[NBUFN];	/* buffer to hold buffer name */
 	WINDOW *wp;
 
-	strncpy(bufn, bufname, NBUFN-1);
-	bufn[NBUFN-1] = 0;
-
-	if (*mktrimmed(bufn) == EOS)
+	if (*mktrimmed(bufn, bufname) == EOS)
 		return(ABORT);
 
 	bp = find_b_name(bufn);
@@ -1227,8 +1228,6 @@ namebuffer(int f GCC_UNUSED, int n GCC_UNUSED)	/*	Rename the current buffer	*/
 	do {
 		if (mlreply(prompt, bufn, sizeof(bufn)) != TRUE)
 			return(FALSE);
-		if (*mktrimmed(bufn) == EOS)
-			return(FALSE);
 		prompt = "That name's been used.  New name: ";
 		status = renamebuffer(curbp, bufn);
 		if (status == ABORT)
@@ -1252,8 +1251,6 @@ namebuffer(int f GCC_UNUSED, int n GCC_UNUSED)	/*	Rename the current buffer	*/
 	/* prompt for and get the new buffer name */
 	do {
 		if (mlreply(prompt, bufn, sizeof(bufn)) != TRUE)
-			return(FALSE);
-		if (*mktrimmed(bufn) == EOS)
 			return(FALSE);
 		prompt = "That name's been used.  New name: ";
 		bp = find_b_name(bufn);
@@ -1592,7 +1589,7 @@ listbuffers(int f GCC_UNUSED, int n GCC_UNUSED)
 int
 addline(register BUFFER *bp, const char *text, int len)
 {
-    	int status = FALSE;
+	int status = FALSE;
 
 	beginDisplay();
 	if (add_line_at (bp, lback(buf_head(bp)), text, len) == TRUE) {
@@ -1651,6 +1648,64 @@ int	len)
 	set_lforw(newlp, nextp);
 
 	return (TRUE);
+}
+
+/*
+ * return lines of a named buffer in sequence, starting at DOT
+ */
+const char *
+next_buffer_line(const char *bname)
+{
+	WINDOW *wp = NULL;
+	BUFFER *bp;
+	B_COUNT blen;
+	static TBUFF *lbuf;
+
+	if ((bp = find_b_name(bname)) == NULL)
+		return NULL;
+
+	/* if the buffer is in a window, the buffer DOT
+	 * is the wrong one to use.  use the first window's DOT.
+	 */
+	if (bp->b_nwnd != 0) {
+		for_each_visible_window(wp) {
+			if (wp->w_bufp == bp) {
+				bp->b_dot = wp->w_dot;
+				break;
+			}
+		}
+	}
+
+	/* out of text? */
+	if (is_header_line(bp->b_dot,bp))
+		return NULL;
+
+	/* how much left on the current line? */
+	blen = llength(bp->b_dot.l);
+	if (blen > bp->b_dot.o)
+		blen -= bp->b_dot.o;
+	else
+		blen = 0;
+
+	tb_init(&lbuf, EOS);
+	tb_bappend(&lbuf,
+		bp->b_dot.l->l_text + bp->b_dot.o,
+		(SIZE_T)blen);
+	tb_append(&lbuf, EOS);
+
+	/* move forward, for next time */
+	bp->b_dot.l = lforw(bp->b_dot.l);
+	bp->b_dot.o = 0;
+
+	/* again, if it's in a window, put the new DOT back where
+	 * we got it.
+	 */
+	if (bp->b_nwnd != 0 && wp) {
+		wp->w_dot = bp->b_dot;
+		wp->w_flag |= WFMOVE;
+	}
+
+	return(tb_values(lbuf));
 }
 
 /*

@@ -1,7 +1,7 @@
 /*	Spawn:	various DOS access commands
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.140 1999/03/19 11:19:01 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.142 1999/03/25 02:04:20 tom Exp $
  *
  */
 
@@ -66,7 +66,7 @@ static void x_window_SHELL(const char *cmd)
 	 */
 #if HAVE_PUTENV
 	static char *display_env;
-	char *env = gtenv("xdisplay");
+	char *env = get_xdisplay();
 	if (display_env != 0)
 		free(display_env);
 	display_env = typeallocn(char,20+strlen(env));
@@ -74,7 +74,7 @@ static void x_window_SHELL(const char *cmd)
 	putenv(display_env);
 #endif
 
-	tmp = tb_scopy(&tmp, gtenv("xshell"));
+	tmp = tb_scopy(&tmp, get_xshell());
 	if (cmd != 0) {
 		tb_unput(tmp);
 		tmp = tb_sappend(&tmp, " -e ");
@@ -130,7 +130,7 @@ spawncli(int f GCC_UNUSED, int n GCC_UNUSED)
 	kbd_flush();
 	TTkclose();
 	{
-		char *shell = gtenv("shell");
+		char *shell = get_shell();
 #if SYS_OS2
 /*
  *	spawn it if we know it.  Some 3rd party command processors fail
@@ -545,8 +545,8 @@ write_kreg_to_pipe(void *writefp)
     kp = kbs[ukb].kbufh;
     while (kp != NULL)
     {
-        fwrite((char *)kp->d_chunk, 1, (SIZE_T)KbSize(ukb,kp), fw);
-        kp = kp->d_next;
+	fwrite((char *)kp->d_chunk, 1, (SIZE_T)KbSize(ukb,kp), fw);
+	kp = kp->d_next;
     }
 #if SYS_UNIX && ! TEST_DOS_PIPES
     (void)fflush(fw);
@@ -581,7 +581,7 @@ write_region_to_pipe(void *writefp)
     LINEPTR lp = DOT.l;
 
     while (lp != last) {
-        fwrite((char *)lp->l_text, sizeof(char), (SIZE_T)llength(lp), fw);
+	fwrite((char *)lp->l_text, sizeof(char), (SIZE_T)llength(lp), fw);
 	fputc('\n', fw);
 	lp = lforw(lp);
     }
@@ -677,11 +677,11 @@ filterregion(void)
 
     /* get the filter name and its args */
     if ((s=mlreply_no_bs("!", oline, NLINE)) != TRUE)
-        return(s);
+	return(s);
     (void)strcpy(line,oline);
     if ((s = inout_popen(&fr, &fw, line)) != TRUE) {
-        mlforce("[Couldn't open pipe or command]");
-        return s;
+	mlforce("[Couldn't open pipe or command]");
+	return s;
     }
 
     if ((s = begin_kill()) != TRUE)
@@ -690,33 +690,33 @@ filterregion(void)
     if (!softfork())
     {
 #if !(SYS_WINNT && defined(GMDW32PIPES))
-        write_kreg_to_pipe(fw);
+	write_kreg_to_pipe(fw);
 #else
-        /* This is a Win32 environment with compiled Win32 pipe support. */
-        if (global_g_val(GMDW32PIPES))
-        {
-            /*
-             * w32pipes mode enabled -- create child thread to blast
-             * region to write pipe.
-             */
+	/* This is a Win32 environment with compiled Win32 pipe support. */
+	if (global_g_val(GMDW32PIPES))
+	{
+	    /*
+	     * w32pipes mode enabled -- create child thread to blast
+	     * region to write pipe.
+	     */
 
-            if (_beginthread(write_kreg_to_pipe, 0, fw) == -1)
-            {
-                mlforce("[Can't create Win32 write pipe]");
-                (void) fclose(fw);
-                (void) npclose(fr);
-                return (FALSE);
-            }
-        }
-        else
-        {
-            /*
-             * Single-threaded parent process writes region to pseudo
-             * write pipe (temp file).
-             */
+	    if (_beginthread(write_kreg_to_pipe, 0, fw) == -1)
+	    {
+		mlforce("[Can't create Win32 write pipe]");
+		(void) fclose(fw);
+		(void) npclose(fr);
+		return (FALSE);
+	    }
+	}
+	else
+	{
+	    /*
+	     * Single-threaded parent process writes region to pseudo
+	     * write pipe (temp file).
+	     */
 
-            write_kreg_to_pipe(fw);
-        }
+	    write_kreg_to_pipe(fw);
+	}
 #endif
     }
 #if ! ((SYS_OS2 && CC_CSETPP) || SYS_WINNT)
@@ -752,43 +752,43 @@ open_region_filter(void)
 
     /* get the filter name and its args */
     if ((s=mlreply_no_bs("!", oline, NLINE)) != TRUE)
-        return(s);
+	return(s);
     (void)strcpy(line,oline);
     if ((s = inout_popen(&fr, &fw, line)) != TRUE) {
-        mlforce("[Couldn't open pipe or command]");
-        return s;
+	mlforce("[Couldn't open pipe or command]");
+	return s;
     }
 
     if (!softfork())
     {
 #if !(SYS_WINNT && defined(GMDW32PIPES))
-        write_region_to_pipe(fw);
+	write_region_to_pipe(fw);
 #else
-        /* This is a Win32 environment with compiled Win32 pipe support. */
-        if (global_g_val(GMDW32PIPES))
-        {
-            /*
-             * w32pipes mode enabled -- create child thread to blast
-             * region to write pipe.
-             */
+	/* This is a Win32 environment with compiled Win32 pipe support. */
+	if (global_g_val(GMDW32PIPES))
+	{
+	    /*
+	     * w32pipes mode enabled -- create child thread to blast
+	     * region to write pipe.
+	     */
 
-            if (_beginthread(write_region_to_pipe, 0, fw) == -1)
-            {
-                mlforce("[Can't create Win32 write pipe]");
-                (void) fclose(fw);
-                (void) npclose(fr);
-                return (FALSE);
-            }
-        }
-        else
-        {
-            /*
-             * Single-threaded parent process writes region to pseudo
-             * write pipe (temp file).
-             */
+	    if (_beginthread(write_region_to_pipe, 0, fw) == -1)
+	    {
+		mlforce("[Can't create Win32 write pipe]");
+		(void) fclose(fw);
+		(void) npclose(fr);
+		return (FALSE);
+	    }
+	}
+	else
+	{
+	    /*
+	     * Single-threaded parent process writes region to pseudo
+	     * write pipe (temp file).
+	     */
 
-            write_region_to_pipe(fw);
-        }
+	    write_region_to_pipe(fw);
+	}
 #endif
     }
 #if ! ((SYS_OS2 && CC_CSETPP) || SYS_WINNT)

@@ -11,7 +11,7 @@
 # all as "0".  If you use tcap.c, you'll need libtermcap.a too.  If you use
 # x11.c, you'll need libX11.a too.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/descrip.mms,v 1.38 1999/03/08 11:26:05 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/descrip.mms,v 1.39 1999/03/26 02:06:08 tom Exp $
 
 .IFDEF __XVILE__
 
@@ -81,6 +81,7 @@ SRC =	main.c \
 	search.c \
 	select.c \
 	spawn.c \
+	statevar.c \
 	tags.c \
 	tbuff.c \
 	termio.c \
@@ -133,6 +134,7 @@ OBJ =	main.obj,\
 	search.obj,\
 	select.obj,\
 	spawn.obj,\
+	statevar.obj,\
 	tags.obj,\
 	tbuff.obj,\
 	termio.obj,\

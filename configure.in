@@ -1,12 +1,12 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_REVISION($Revision: 1.102 $)
+AC_REVISION($Revision: 1.105 $)
 AC_PREREQ(2.12.971222)
 rm -f config.cache
 
 ### Use "configure -with-screen" to override the default configuration, which is
 ### termcap-based on unix systems.
 
-dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.102 1999/03/08 23:02:34 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.105 1999/03/26 01:51:12 tom Exp $
 
 dnl
 AC_INIT(mktbls.c)
@@ -30,7 +30,7 @@ CF_ARG_DISABLE(extensions,
 	[  --disable-extensions    test: build only core functions],
 	[AC_DEFINE(SMALLER)
 	 AC_DEFINE(FEWNAMES) cf_extensions=no],
-	[EXTRAOBJS="$EXTRAOBJS btree.o ucrypt.o"; cf_extensions=yes])
+	[EXTRAOBJS="$EXTRAOBJS api.o btree.o history.o isearch.o select.o statevar.o ucrypt.o"; cf_extensions=yes])
 CF_ARG_DISABLE(shell,
 	[  --disable-shell         test: disable shell/external commands],
 	[AC_DEFINE(OPT_SHELL,0)],
@@ -254,6 +254,7 @@ changequote(,)dnl
 changequote([,])dnl
 		AC_DEFINE(OL_WIDGETS)
 		CF_X_OPENLOOK
+	 	test "$cf_extensions" = no && EXTRAOBJS="$EXTRAOBJS select.o"
 	;;
 changequote(,)dnl
 	[mM]otif* | [Xx]m )
@@ -261,6 +262,7 @@ changequote([,])dnl
 		AC_DEFINE(MOTIF_WIDGETS)
 		CF_X_MOTIF
 	 	test "$cf_extensions" = yes && EXTRAOBJS="$EXTRAOBJS menu.o"
+	 	test "$cf_extensions" = no && EXTRAOBJS="$EXTRAOBJS select.o"
 	;;
 changequote(,)dnl
 	[Aa]thena* | [Xx]aw* | neXtaw )
@@ -273,11 +275,13 @@ changequote([,])dnl
 		esac
 		CF_X_ATHENA
 	 	test "$cf_extensions" = yes && EXTRAOBJS="$EXTRAOBJS menu.o"
+	 	test "$cf_extensions" = no && EXTRAOBJS="$EXTRAOBJS select.o"
 	;;
 changequote(,)dnl
 	x | X | [Xx][Tt]* | [Xx]11 )
 changequote([,])dnl
 		AC_DEFINE(NO_WIDGETS)
+	 	test "$cf_extensions" = no && EXTRAOBJS="$EXTRAOBJS select.o"
 	;;
 	ansi)
 		SCREEN=ansi
@@ -391,12 +395,23 @@ test "$cf_locale" != no && AC_DEFINE(OPT_LOCALE)
 AC_ARG_WITH(dbmalloc,
 	[  --with-dbmalloc         test: use Conor Cahill's dbmalloc library],
 	[AC_DEFINE(USE_DBMALLOC)
-	 LIBS="$LIBS -ldbmalloc"])
+	 LIBS="$LIBS -ldbmalloc"
+	 with_dbmalloc=yes],
+	[with_dbmalloc=])
 
 AC_ARG_WITH(dmalloc,
 	[  --with-dmalloc          test: use Gray Watson's dmalloc library],
 	[AC_DEFINE(USE_DMALLOC)
-	 LIBS="$LIBS -ldmalloc"])
+	 LIBS="$LIBS -ldmalloc"
+	 with_dmalloc=yes],
+	[with_dmalloc=])
+
+AC_ARG_WITH(purify,
+	[  --with-purify           test: use Purify],
+	[AC_DEFINE(USE_PURIFY)
+	 LINK_PREFIX="$LINK_PREFIX purify"
+	 with_purify=yes],
+	[with_purify=])
 
 AC_ARG_WITH(fakevms,
 	[  --with-fakevms          test: use fake VMS I/O module],
@@ -405,12 +420,18 @@ AC_ARG_WITH(fakevms,
 
 AC_ARG_WITH(no-leaks,
 	[  --with-no-leaks         test: free permanent memory, analyze leaks],
-	[AC_DEFINE(NO_LEAKS)])
+	[AC_DEFINE(NO_LEAKS)
+	 test -z "${with_dmalloc}${with_dbmalloc}${with_purify}" AC_DEFINE(DOALLOC,10000)
+	 with_no_leaks=yes],
+	[with_no_leaks=])
 
 AC_ARG_WITH(trace,
 	[  --with-trace            test: turn on debug-tracing],
 	[AC_DEFINE(OPT_TRACE)
-	 EXTRAOBJS="$EXTRAOBJS trace.o"])
+	 with_trace=yes],
+	[with_trace=])
+
+test -n "${with_trace}${with_no_leaks}" && EXTRAOBJS="$EXTRAOBJS trace.o"
 
 CFLAGS="$saved_CFLAGS"
 AC_ARG_WITH(warnings,

@@ -11,7 +11,7 @@
 #
 # to this directory:
 #
-#     %VILE_LIBRARY_PATH%\perl
+#     %VILE_LIBDIR_PATH%\perl
 #
 # Preconditions:
 # ==============
@@ -19,7 +19,7 @@
 #
 #         http://www.perl.com/CPAN-local/ports/win32/Standard/x86/
 #
-# 2) The environment variable VILE_LIBRARY_PATH points to a writable
+# 2) The environment variable VILE_LIBDIR_PATH points to a writable
 #    "root" directory where vile's perl scripts will be installed.
 #
 # Supported Vile-Based Perl Scripts
@@ -27,7 +27,7 @@
 # Consult the macro $(PERL_SCRIPTS) in the file makefile.wnt to ascertain the
 # current list of vile-based perl scripts known to work in a Win32 environment.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/mkprlenv.wnt,v 1.3 1998/10/01 10:31:20 cmorgan Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/mkprlenv.wnt,v 1.4 1999/03/26 10:28:40 tom Exp $
 #
     perl <<
         foreach $$dir (@INC)
@@ -67,11 +67,11 @@
             exit(1);
         }
         print
- "Checking existence of directory specified by VILE_LIBRARY_PATH env var...\n";
-        $$root_dir=$$ENV{"VILE_LIBRARY_PATH"};
+ "Checking existence of directory specified by VILE_LIBDIR_PATH env var...\n";
+        $$root_dir=$$ENV{"VILE_LIBDIR_PATH"};
         if (! $$root_dir)
         {
-            print "error: Environment var VILE_LIBRARY_PATH does not exist\n";
+            print "error: Environment var VILE_LIBDIR_PATH does not exist\n";
             print "error: Refer to the file 'mkprlenv.wnt' for further info\n";
             exit(1);
         }

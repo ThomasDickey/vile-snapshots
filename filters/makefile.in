@@ -1,4 +1,4 @@
-# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.in,v 1.35 1999/03/09 00:47:59 tom Exp $
+# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.in,v 1.37 1999/03/27 16:00:52 tom Exp $
 #
 
 #### Start of system configuration section. ####
@@ -54,10 +54,10 @@ INSTALL_DIRS    = $(bindir) $(datadir)
 
 .l.o:
 @RULE_CC@
-	@ECHO_CC@$(LEX) $<
-	@ECHO_CC@$(CC) -c $(CPPFLAGS) $(CFLAGS) $(LEX_OUTPUT_ROOT).c
-	@mv $(LEX_OUTPUT_ROOT).o $@
-	- @$(RM) $(LEX_OUTPUT_ROOT).c
+	@ECHO_CC@$(LEX) -t $< > $<.c
+	@ECHO_CC@$(CC) -c $(CPPFLAGS) $(CFLAGS) $<.c
+	@mv $<.o $@
+	- @$(RM) $<.c
 .c.i:
 @RULE_CC@
 	@ECHO_CC@$(CPP) -C $(CPPFLAGS) $(QUOTDEFS) $< >$@
@@ -208,6 +208,7 @@ INSTALL_LEX = \
 	$(datadir)/ada.keywords \
 	$(datadir)/awk.keywords \
 	$(datadir)/bat.keywords \
+	$(datadir)/csh.keywords \
 	$(datadir)/dcl.keywords \
 	$(datadir)/html.keywords \
 	$(datadir)/java.keywords \
@@ -302,6 +303,7 @@ $(datadir)/ada.keywords :	$(srcdir)/ada.key	; $(INSTALL_DATA) $? $@
 $(datadir)/awk.keywords :	$(srcdir)/awk.key	; $(INSTALL_DATA) $? $@
 $(datadir)/bat.keywords :	$(srcdir)/bat.key	; $(INSTALL_DATA) $? $@
 $(datadir)/c.keywords :		$(srcdir)/c.key		; $(INSTALL_DATA) $? $@
+$(datadir)/csh.keywords :	$(srcdir)/csh.key	; $(INSTALL_DATA) $? $@
 $(datadir)/dcl.keywords :	$(srcdir)/dcl.key	; $(INSTALL_DATA) $? $@
 $(datadir)/html.keywords :	$(srcdir)/html.key	; $(INSTALL_DATA) $? $@
 $(datadir)/java.keywords :	$(srcdir)/java.key	; $(INSTALL_DATA) $? $@

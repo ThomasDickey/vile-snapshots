@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.332 1999/03/20 16:58:48 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.335 1999/03/26 10:28:40 tom Exp $
  *
  */
 
@@ -89,6 +89,7 @@ extern int gotoeob (int f, int n);
 #endif
 
 /* bind.c */
+extern int ourstrstr (const char *haystack, const char *needle, int anchor);
 extern char *cfg_locate (char *fname, UINT hflag);
 extern char *kbd_engl (const char *prompt, char *buffer);
 extern char *kcod2pstr (int c, char *seq);
@@ -144,6 +145,7 @@ extern char *hist_lookup ( int c );
 extern char *strip_brackets(char *dst, const char *src);
 extern int add_line_at (BUFFER *bp, LINEPTR prevp, const char *text, int len);
 extern int addline (BUFFER *bp, const char *text, int len);
+extern const char *next_buffer_line(const char *bname);
 extern int any_changed_buf (BUFFER **bpp);
 extern int any_unread_buf (BUFFER **bpp);
 extern int bclear (BUFFER *bp);
@@ -254,11 +256,20 @@ extern void hard_error_teardown (void);
 extern int did_hard_error_occur (void);
 #endif
 
+/* statevar.c */
+extern char * GetEnv(char *s);
+
 /* eval.c */
 extern char *get_shell(void);
-extern char *l_itoa (int i);
+extern char *get_xshell(void);
+extern char *get_xdisplay(void);
+extern char *get_directory(void);
+extern char *render_int (char *rp, int i);
+extern char *render_boolean ( char *rp, int i);
+extern int scan_bool ( const char *s );
+extern int scan_int ( const char *s );
 extern char *mklower (char *str);
-extern char *mktrimmed (char *str);
+extern char *mktrimmed (char *rp, char *str);
 extern const char * get_token (const char *src, char *tok, int eolchar);
 extern const char * tokval (const char *tokn);
 extern const char *skip_cblanks (const char *str);
@@ -285,10 +296,9 @@ extern char *skip_text (char *str);
 
 #if OPT_EVAL
 extern LINEPTR label2lp (BUFFER *bp, const char *label);
-extern char *gtenv (const char *vname);
-extern int   rmenv(const char *name);
-extern int   set_variable (const char *name);
-extern int   stenv(const char *name, const char *value);
+extern char *get_statevar_val (int vnum);
+extern int   rmv_tempvar(const char *name);
+extern int   set_state_variable(const char *name, const char *value);
 #else
 #define gtenv(name) getenv(name)
 #endif
@@ -307,6 +317,10 @@ extern char *mkupper (char *str);
 
 #if OPT_COLOR
 extern void set_ctrans (const char *value);
+#endif
+
+#if (SYS_WINNT||SYS_VMS)
+extern char *render_hex(char *rp, unsigned i);
 #endif
 
 /* exec.c */
@@ -442,6 +456,7 @@ extern int kbd_seq (void);
 extern int kbd_seq_nomap (void);
 extern int kbd_show_response (TBUFF **dst, char *src, unsigned bufn, int eolchar, UINT options);
 extern int kbd_string (const char *prompt, char *extbuf, unsigned bufn, int eolchar, UINT options, int (*func)(DONE_ARGS));
+extern const char *user_reply(const char *prompt);
 extern int kbm_started (int macnum, int force);
 extern int keystroke (void);
 extern int keystroke8 (void);
@@ -550,7 +565,7 @@ extern void lremove (BUFFER *bp, LINEPTR lp);
 extern void ltextfree (LINEPTR lp, BUFFER *bp);
 
 #if OPT_EVAL
-extern char * lgrabtext (CHARTYPE type);
+extern char * lgrabtext (char *rp, CHARTYPE type);
 extern int lrepltext (CHARTYPE type, const char *iline);
 #endif
 
@@ -794,7 +809,7 @@ extern	int	assign_attr_id	(void);
 extern	int	attribute_cntl_a_seqs_in_region(REGION *rp, REGIONSHAPE shape);
 extern	int	attributeregion (void);
 extern	int	attributeregion_in_region(REGION *rp, REGIONSHAPE shape,
-			                    VIDEO_ATTR vattr, char *hc);
+					    VIDEO_ATTR vattr, char *hc);
 extern	int	sel_begin	(void);
 extern	int	sel_extend	(int wiping, int include_dot);
 extern	int	sel_setshape	(REGIONSHAPE shape);
@@ -886,7 +901,7 @@ extern void ttunclean (void);
 extern	int	vl_encrypt_char(int c);
 extern	int	vl_resetkey (BUFFER *bp, const char *fname);
 extern	void	vl_encrypt_blok (char *bptr, UINT len);
-extern	void	vl_make_encrypt_key (char *dst, char *src);
+extern	void	vl_make_encrypt_key (char *dst, const char *src);
 extern	void	vl_setup_encrypt (char *pw);
 #endif	/* OPT_ENCRYPT */
 

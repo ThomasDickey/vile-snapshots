@@ -1,4 +1,4 @@
-; $Id: filters.rc,v 1.45 1999/03/20 17:13:19 tom Exp $
+; $Id: filters.rc,v 1.48 1999/03/27 15:16:04 tom Exp $
 
 define-mode ada
 ~with define-submode ada
@@ -43,6 +43,7 @@ define-mode csh
 ~with define-submode csh
 	suf "\\.csh*"
 	pre "^#!\\s*\\/.*csh\\>\\(\\s*-[a-z]\\+\\)*$"
+	filtername	"vile-sh-filt -k csh"
 	comment-prefix	"^\\s*#"
 	comments	"^\\s*#\\s*$"
 	fence-if	"^\\s*\\<if\\>.*\\<then\\>"
@@ -99,11 +100,13 @@ define-mode html
 define-mode java
 ~with define-submode java
 	suf "\\.java$"
+	filtername "vile-c-filt -k java"
 ~endwith
 
 define-mode js
 ~with define-submode js
 	suf "\\.js$"
+	filtername "vile-c-filt -k js"
 ~endwith
 
 define-mode key
@@ -203,6 +206,7 @@ define-mode perl
 	fence-fi       "^\\s*}"
 ~endwith
 
+; This is matched after "csh", and will pick up /bin/sh, /bin/bash, /bin/ksh
 define-mode sh
 ~with define-submode sh
 	suf "\\.sh$"
@@ -288,15 +292,20 @@ define-mode yacc
 ~endwith
 
 store-procedure HighlightFilter
+    ~if &not &seq $majormode ""
 	~local $curcol $curline
 	~local %filtername
 	~hidden goto-beginning-of-file
-	~if &sin $majormode "sh"
-		~hidden attribute-from-filter end-of-file "vile-sh-filt"
+	~if &seq $filtername ""
+		set-variable %filtername &cat &cat "vile-" $majormode "-filt"
+		~hidden attribute-from-filter end-of-file %filtername
 	~else
-		set-variable %filtername &cat &cat "vile-" $majormode "-filt" 
-		~hidden attribute-from-filter end-of-file %filtername 
+		~hidden attribute-from-filter end-of-file $filtername
 	~endif
+    ~endif
+~endm
+store-procedure HighlightFilterMsg
+	HighlightFilter
 	write-message "[Attaching attributes...]"
 ~endm
-bind-key HighlightFilter ^X-q
+bind-key HighlightFilterMsg ^X-q

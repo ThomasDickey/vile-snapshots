@@ -1,7 +1,7 @@
 #
 # makefile for vile filters on WIN32 using Microsoft Visual C++
 #
-# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.wnt,v 1.4 1999/03/20 19:46:44 tom Exp $
+# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.wnt,v 1.5 1999/03/26 10:29:05 tom Exp $
 #
 #
 !include <ntwin32.mak>
@@ -25,6 +25,8 @@ UTILS = \
 	vile-lex-filt.exe \
 	vile-make-filt.exe \
 	vile-vile-filt.exe
+SCRIPTS = \
+	filters.rc
 KEYS	= \
 	ada.key \
 	awk.key \
@@ -70,13 +72,13 @@ all: $(UTILS)
 install :
 	@ echo Sorry, you have not set VILE_LIBDIR_PATH
 !else
-install :: $(UTILS)
+install :: $(UTILS) $(SCRIPTS)
 	echo installing $(UTILS) in $(VILE_LIBDIR_PATH)
 	!copy $** $(VILE_LIBDIR_PATH)\$**
 install :: $(KEYS)
 	echo installing $(KEYS) in $(VILE_LIBDIR_PATH)
 	!copy $** $(VILE_LIBDIR_PATH)\$**words
-uninstall :: $(UTILS)
+uninstall :: $(UTILS) $(SCRIPTS)
 	echo uninstalling $(UTILS) in $(VILE_LIBDIR_PATH)
 	!erase $(VILE_LIBDIR_PATH)\$**
 uninstall :: $(KEYS)

@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.189 1999/03/19 11:26:42 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.191 1999/03/26 11:01:01 cmorgan Exp $
  *
  */
 
@@ -47,7 +47,6 @@ static	char *	kcod2prc (int c, char *seq);
 static	int	install_bind (int c, const CMDFUNC *kcmd, const CMDFUNC **oldfunc);
 static	int	key_to_bind ( const CMDFUNC *kcmd );
 static	int	rebind_key ( int c, const CMDFUNC *kcmd );
-static	int	ourstrstr (const char *sourc, const char *sub);
 static	int	unbindchar ( int c );
 static	int	update_binding_list ( BUFFER *bp );
 static	void	makebindlist (LIST_ARGS);
@@ -802,7 +801,7 @@ makebind_func(BI_NODE *node, const void *d)
 	return 0;
 
     /* failed lookup by substring? */
-    if (data->apropos && !ourstrstr(BI_KEY(node), data->apropos))
+    if (data->apropos && !ourstrstr(BI_KEY(node), data->apropos, TRUE))
 	return 0;
 
     /* add in the command name */
@@ -1003,7 +1002,7 @@ void *mstring)		/* match string if partial list, NULL to list all */
 		/* if we are executing an apropos command
 		   and current string doesn't include the search string */
 		if (mstring
-		 && !ourstrstr(nametbl[j].n_name, (char *)mstring))
+		 && !ourstrstr(nametbl[j].n_name, (char *)mstring, TRUE))
 			continue;
 
 		ok = makefuncdesc(j, listed);
@@ -1021,24 +1020,27 @@ void *mstring)		/* match string if partial list, NULL to list all */
 #endif /* OPT_NAMEBST */
 
 /* much like the "standard" strstr, but if the substring starts
-	with a '^', we discard it and force an exact match.  */
-static int
+	with a '^', we discard it and force an exact match.
+	returns 1-based offset of match, or 0.  */
+int
 ourstrstr(
 const char *haystack,
-const char *needle)
+const char *needle,
+int anchor)
 {
-	if (*needle == '^') {
-		return strcmp(needle+1, haystack) ? FALSE : TRUE;
+	if (anchor && *needle == '^') {
+		return strcmp(needle+1, haystack) ? 0 : 1;
 	} else {
 		int nl = strlen(needle);
 		int hl = strlen(haystack);
-		while (hl >= nl && *haystack) {
-			if (!strncmp(haystack, needle, nl))
-				return TRUE;
-			haystack++;
+		const char *hp = haystack;
+		while (hl >= nl && *hp) {
+			if (!strncmp(hp, needle, nl))
+				return hp - haystack + 1;
+			hp++;
 			hl--;
 		}
-		return FALSE;
+		return 0;
 	}
 }
 
@@ -1117,16 +1119,19 @@ UINT which)		/* flags specifying where to look */
 		/* On VAX/VMS, the PATH environment variable is only the
 		 * current-dir.  Fake up an acceptable alternative.
 		 */
+
 		static TBUFF *myfiles;
+		char	     *tmp;
+
 		if (!tb_length(myfiles)) {
 			char	mypath[NFILEN];
 
 			(void)strcpy(mypath, prog_arg);
-			if ((cp = vms_pathleaf(mypath)) == mypath)
+			if ((tmp = vms_pathleaf(mypath)) == mypath)
 				(void)strcpy(mypath,
 					current_directory(FALSE));
 			else
-				*cp = EOS;
+				*tmp = EOS;
 
 			if (!tb_init(&myfiles, EOS)
 			 || !tb_sappend(&myfiles, mypath)

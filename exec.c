@@ -4,7 +4,7 @@
  *	written 1986 by Daniel Lawrence
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.179 1999/03/20 16:44:14 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.180 1999/03/24 11:45:58 pgf Exp $
  *
  */
 
@@ -334,7 +334,7 @@ execute_named_command(int f, int n)
 	/* bad arguments? */
 #ifdef EXRC_FILES
 seems like we need one more check here -- is it from a .exrc file?
-	    cmd not ok in .exrc 		empty file
+	    cmd not ok in .exrc			empty file
 	if (!(flags & EXRCOK) && is_empty_buf(curbp)) {
 		mlforce("[Can't use the \"%s\" command in a %s file.]",
 					cmdnames[cmdidx].name, EXRC);
@@ -802,8 +802,9 @@ int f, int n)
 		}
 	} while (!*tkn);
 
-	/* process leading argument */
-	if (toktyp(tkn) != TKCMD) {
+	/* if it doesn't look like a command (and command names can't
+	 * be hidden in variables), then it must be a leading argument */
+	if (toktyp(tkn) != TKLIT || isDigit(tkn[0])) {
 		f = TRUE;
 		n = atoi(strcpy(tkn, tokval(tkn)));
 
@@ -1434,7 +1435,8 @@ push_variable(char *name)
 	p->next = ifstk.locals;
 	p->name = strmalloc(name);
 	p->value = (char *)tokval(name);
-	if (p->value == errorm) {	/* special case: so we can delete vars */
+	if (!strcmp(p->value, errorm)) {
+		/* special case: so we can delete vars */
 		if (toktyp(name) != TKVAR) {
 			free(p->name);
 			free((char *)p);
@@ -1458,10 +1460,10 @@ pop_variable(void)
 	LOCALS *p = ifstk.locals;
 	ifstk.locals = p->next;
 	TRACE(("pop_variable(%s) %s\n", p->name, p->value))
-	if (p->value == errorm) {
-		rmenv(p->name);
+	if (!strcmp(p->value, errorm)) {
+		rmv_tempvar(p->name);
 	} else {
-		stenv(p->name, p->value);
+		set_state_variable(p->name, p->value);
 		free(p->value);
 	}
 	free(p->name);
@@ -1569,7 +1571,7 @@ begin_directive(
 			ifstk.disabled = ifstk.level;
 			if (mac_tokval(tkn) != TRUE)
 				status = DDIR_INCOMPLETE;
-			else if (stol(tkn) == TRUE) {
+			else if (scan_bool(tkn) == TRUE) {
 				ifstk.disabled = 0;
 				ifstk.fired = TRUE;
 			}
@@ -1582,7 +1584,7 @@ begin_directive(
 			if (mac_tokval(tkn) != TRUE) {
 				status = DDIR_INCOMPLETE;
 				break;
-			} else if (stol(tkn) == TRUE) {
+			} else if (scan_bool(tkn) == TRUE) {
 				break;
 			}
 		}
@@ -1619,7 +1621,7 @@ begin_directive(
 				status = DDIR_INCOMPLETE;
 			} else if (!ifstk.fired
 			  && ifstk.disabled == ifstk.level
-			  && (stol(tkn) == TRUE)) {
+			  && (scan_bool(tkn) == TRUE)) {
 				ifstk.disabled = 0;
 				ifstk.fired = TRUE;
 			}
@@ -1660,6 +1662,11 @@ begin_directive(
 
 			/* grab label to jump to */
 			*eline = (char *)get_token(*eline, golabel, EOS);
+#if MAYBE
+			/* i think a simple re-eval would get us variant
+			 * targets, i.e. ~goto %somelabel.  */
+			strcpy(golabel, tokval(golabel));
+#endif
 			glp = label2lp(bp, golabel);
 			if (glp == 0) {
 				mlforce("[No such label \"%s\"]", golabel);

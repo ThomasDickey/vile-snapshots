@@ -11,7 +11,7 @@
 #
 # The modes are table entries in the BUFFER and WINDOW structures.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.114 1999/03/19 10:51:51 pgf Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.117 1999/03/27 15:05:30 tom Exp $
 #
 #
 # Mode-table entries.  Capitalized letters are used for abbreviations.
@@ -20,8 +20,8 @@
 # The fourth column (if present) controls conditional compilation of the mode.
 .globals
 bool							# GMD prefix
-	"AllVersions"	ALL_VERSIONS 	0		SYS_VMS # show all versions when globbing
-	"AutoBuffer"	ABUFF 		chgd_autobuf	# auto-buffer (lru)
+	"AllVersions"	ALL_VERSIONS	0		SYS_VMS # show all versions when globbing
+	"AutoBuffer"	ABUFF		chgd_autobuf	# auto-buffer (lru)
 	"dirc"		DIRC		0		COMPLETE_DIRS # directory-completion (slow!)
 	"Alt-TabPos"	ALTTABPOS	0		# emacs-style cursor positioning
 	"expand-path"	EXPAND_PATH	0		# true iff %/# don't substitute shortened-path
@@ -30,7 +30,7 @@ bool							# GMD prefix
 	"force-console"	FORCE_CONSOLE	0		SYS_WINNT&&defined(DISP_NTWIN)
 	"glob"		GLOB		0		!OPT_GLOB_PIPE # enable/disable filename globbing
 	"HIstory"	HISTORY		0		OPT_HISTORY # command-history
-	"ImplyBuffer"	IMPLYBUFF 	0		# imply-buffer (vi-like)
+	"ImplyBuffer"	IMPLYBUFF	0		# imply-buffer (vi-like)
 	"multibeep"	MULTIBEEP	0		# multiple successive identical failed motions all beep
 	"maplonger"	MAPLONGER	0		# favor longer maps
 	"Popup-Choices"	POPUP_CHOICES	0		OPT_POPUPCHOICE&&!OPT_ENUM_MODES # popup buffer showing file-completion choices
@@ -100,7 +100,7 @@ bool							# MD prefix
 	"terse"		TERSE		0		# be terse -- suppress messages
 	"view"		VIEW		chgd_major	# read-only buffer
 	"UndoAble"	UNDOABLE	chgd_undoable	# changes to buffer are undoable (or not)
-	"WrapScan"	SWRAP 		0		# wrap-around search mode
+	"WrapScan"	SWRAP		0		# wrap-around search mode
 	"WrapWords"	WRAP		0		# word wrap
 enum
 	"record-format" RECORD_FORMAT	0		SYS_VMS	# specify record-format to use
@@ -119,6 +119,7 @@ int							# VAL_ prefix
 	"WrapMargin"	WRAPMARGIN	0		# width of right margin for autowrap
 string							# VAL_ prefix
 	"fence-pairs"	FENCES		chgd_fences	# pairs of fences {,}; (,); etc.
+	"FilterName"	FILTERNAME	0		OPT_MAJORMODE # Name of syntax-filter
 	"locker"	LOCKER		chgd_disabled	OPT_LCKFILES  # Name of locker
 	"tags"		TAGS		0		# list of tags files
 regex							# VAL_ prefix
@@ -171,7 +172,7 @@ string
 "cbufname"	CBUFNAME		# current buffer name
 "buffer-hook"	BUFHOOK		OPT_PROCEDURES	# procedure to run when entering buf
 "cd-hook"	CDHOOK		OPT_PROCEDURES	# procedure to run when cd'ing
-"cfgopts" 	CFGOPTS			# "interesting" compiled options (comma-delimited)
+"cfgopts"	CFGOPTS			# "interesting" compiled options (comma-delimited)
 "cfilname"	CFNAME			# current file name
 "char"		CURCHAR			# current character under the cursor
 "cryptkey"	CRYPTKEY	OPT_ENCRYPT # write-only encryption-key
@@ -229,48 +230,49 @@ string
 "wlines"	WLINES			# # of lines in current window
 "word"		WORD			# current word
 "write-hook"	WRHOOK		OPT_PROCEDURES	# procedure to run when writing
-"xdisplay"	XDISPLAY	DISP_X11	# X Windows display, etc.
-"xshell"	XSHELL		DISP_X11	# xterm emulator, etc.
+"xdisplay"	XDISPLAY	DISP_X11&&OPT_SHELL	# X Windows display, etc.
+"xshell"	XSHELL		DISP_X11&&OPT_SHELL	# xterm emulator, etc.
 
+# function name, id, numargs
 .functions
-"abs"	ABS		MONAMIC		# absolute value of a number
-"add"	ADD		DYNAMIC		# add two numbers together
-"and"	AND		DYNAMIC		# logical and
-"asc"	ASCII		MONAMIC		# char to integer conversion
-"bin"	BIND		MONAMIC		# lookup what function name is bound to a key
-"cat"	CAT		DYNAMIC		# concatenate string
-"chr"	CHR		MONAMIC		# integer to char conversion
-"div"	DIV		DYNAMIC		# division
-"env"	ENV		MONAMIC		# retrieve a system environment var
-"equ"	EQUAL		DYNAMIC		# logical equality check
-"glo"	GLOBMODE	MONAMIC		# retrieve global setting
-"gre"	GREATER		DYNAMIC		# logical greater than
-"gtk"	GTKEY		NILNAMIC	# get 1 character
-"gts"	GTSEQ		NILNAMIC	# get keyboard-sequence (characters)
-"ind"	IND		MONAMIC		# evaluate indirect value
-"lef"	LEFT		DYNAMIC		# left string(string, len)
-"len"	LENGTH		MONAMIC		# string length
-"les"	LESS		DYNAMIC		# logical less than
-"loc"	LOCMODE		MONAMIC		# retrieve local setting
-"low"	LOWER		MONAMIC		# lower case string
-"mid"	MID		TRINAMIC	# mid string(string, pos, len)
-"mod"	MOD		DYNAMIC		# modulo
-"neg"	NEG		MONAMIC		# negate
-"not"	NOT		MONAMIC		# logical not
-"or"	OR		DYNAMIC		# logical or
-"que"	QUERY		MONAMIC		# query the user
-"rd"	READABLE	MONAMIC		# is a file readable?
-"rig"	RIGHT		DYNAMIC		# right string(string, pos)
-"rnd"	RND		MONAMIC		# get a random number
-"seq"	SEQUAL		DYNAMIC		# string logical equality check
-"sgr"	SGREAT		DYNAMIC		# string logical greater than
-"sin"	SINDEX		DYNAMIC		# find the index of one string in another
-"sle"	SLESS		DYNAMIC		# string logical less than
-"sub"	SUB		DYNAMIC		# subtraction
-"tim"	TIMES		DYNAMIC		# multiplication
-"tri"	TRIM		MONAMIC		# trims leading/trailing/repeated whitespace
-"upp"	UPPER		MONAMIC		# uppercase string
-"wr"	WRITABLE	MONAMIC		# is a file writeable?
+"abs"	ABS		1|NUM|NRET	# absolute value of a number
+"add"	ADD		2|NUM|NRET	# add two numbers together
+"and"	AND		2|BOOL|BRET	# logical and
+"asc"	ASCII		1|NRET		# char to integer conversion
+"bin"	BIND		1|STR|SRET	# lookup what function name is bound to a key
+"cat"	CAT		2|STR|SRET	# concatenate string
+"chr"	CHR		1|NUM		# integer to char conversion
+"div"	DIV		2|NUM|NRET	# division
+"env"	ENV		1|STR|SRET	# retrieve a system environment var
+"equ"	EQUAL		2|NUM|BRET	# logical equality check
+"glo"	GLOBMODE	1|STR|SRET	# retrieve global setting
+"gre"	GREATER		2|NUM|BRET	# logical greater than
+"gtk"	GTKEY		0		# get 1 character
+"gts"	GTSEQ		0		# get keyboard-sequence (characters)
+"ind"	IND		1|STR|SRET	# evaluate indirect value
+"lef"	LEFT		2|STR|SRET	# left string(string, len)
+"len"	LENGTH		1|NRET		# string length
+"les"	LESS		2|NUM|BRET	# logical less than
+"loc"	LOCMODE		1|STR|SRET	# retrieve local setting
+"low"	LOWER		1|STR|SRET	# lower case string
+"mid"	MID		3|STR|SRET	# mid string(string, pos, len)
+"mod"	MOD		2|NUM|NRET	# modulo
+"neg"	NEG		1|NUM|NRET	# negate
+"not"	NOT		1|BOOL|BRET	# logical not
+"or"	OR		2|BOOL|BRET	# logical or
+"que"	QUERY		1|STR|SRET	# query the user
+"rd"	READABLE	1|BRET		# is a file readable?
+"rig"	RIGHT		2|STR|SRET	# right string(string, pos)
+"rnd"	RND		1|NUM|NRET	# get a random number
+"seq"	SEQUAL		2|BRET		# string logical equality check
+"sgr"	SGREAT		2|BRET		# string logical greater than
+"sin"	SINDEX		2|NRET		# find the index of one string in another
+"sle"	SLESS		2|STR|SRET	# string logical less than
+"sub"	SUB		2|NUM|NRET	# subtraction
+"tim"	TIMES		2|NUM|NRET	# multiplication
+"tri"	TRIM		1|STR|SRET	# trims leading/trailing/repeated whitespace
+"upp"	UPPER		1|STR|SRET	# uppercase string
+"wr"	WRITABLE	1|BRET		# is a file writeable?
 
 .table color
 "default"	ENUM_UNKNOWN	DISP_TERMCAP||DISP_IBMPC # FIXME: implement this for all drivers
@@ -336,8 +338,8 @@ string
 "white"		VACOL_F		OPT_COLOR&&OPT_16_COLOR
 
 .table recordformat		SYS_VMS
-"udf"      	FAB$C_UDF
-"fix"  		FAB$C_FIX
+"udf"		FAB$C_UDF
+"fix"		FAB$C_FIX
 "var"		FAB$C_VAR
 "vfc"		FAB$C_VFC
 "stm"		FAB$C_STM

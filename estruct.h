@@ -3,14 +3,16 @@
 			was for microemacs.
 
 			vile is by Paul Fox, Tom Dickey, Kevin Buettner,
-			Rick Sladkey, Clark Morgan, and many others.
+			Rick Sladkey and many others (see the CHANGES*
+			files for details).
+
 			MicroEmacs was written by Dave G. Conroy
 			modified by Steve Wilhite, George Jones,
 			greatly modified by Daniel Lawrence.
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.383 1999/03/20 22:19:28 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.386 1999/03/26 10:53:37 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -982,9 +984,9 @@ typedef UINT WATCHTYPE;
 #endif
 
 
-/*	Macro argument token types					*/
-
-#define	TKNUL	0			/* end-of-string		*/
+/* token types								*/
+/* these must be kept in sync with the function table in eval.c		*/
+#define	TKNUL	0			/* null string			*/
 #define	TKARG	1			/* interactive argument		*/
 #define	TKBUF	2			/* buffer argument		*/
 #define	TKVAR	3			/* user variables		*/
@@ -992,9 +994,9 @@ typedef UINT WATCHTYPE;
 #define	TKFUN	5			/* function....			*/
 #define	TKDIR	6			/* directive			*/
 #define	TKLBL	7			/* line label			*/
-#define	TKLIT	8			/* numeric literal		*/
-#define	TKSTR	9			/* quoted string literal	*/
-#define	TKCMD	10			/* command name			*/
+#define	TKSTR	8			/* quoted string literal	*/
+#define	TKLIT	9			/* unquoted string literal	*/
+#define	MAXTOKTYPE	9
 
 
 #define	nexttabcol(a)	(((a / curtabval) + 1) * curtabval)
@@ -1635,7 +1637,7 @@ typedef struct	BUFFER {
 	int	b_active;		/* window activated flag	*/
 	UINT	b_nwnd; 		/* Count of windows on buffer	*/
 	UINT	b_flag; 		/* Flags			*/
-	short	b_acount;		/* auto-save count	        */
+	short	b_acount;		/* auto-save count		*/
 	char	*b_fname;		/* File name			*/
 	int	b_fnlen;		/* length of filename		*/
 	char	b_bname[NBUFN]; 	/* Buffer name			*/
@@ -1661,7 +1663,7 @@ typedef struct	BUFFER {
 #endif
 #if OPT_PERL || OPT_TCL
 	void *	b_api_private;		/* pointer to private perl, tcl, etc.
-	                                   data */
+					   data */
 #endif
 }	BUFFER;
 
@@ -1790,7 +1792,7 @@ typedef struct	BUFFER {
 #if OPT_PERL || OPT_TCL
 extern MARK *api_mark_iterator(BUFFER *bp, int *iter);
 #define api_do_mark_iterate_helper(mp, statement)	\
-        {						\
+	{						\
 	    int dmi_iter = 0;				\
 	    while ((mp = api_mark_iterator(curbp, &dmi_iter)) != NULL) { \
 		statement				\
@@ -1855,10 +1857,10 @@ typedef struct	WINDOW {
 					/*  remember between displays */
 	struct	WINDOW *w_wndp; 	/* Next window			*/
 	BUFFER	*w_bufp;		/* Buffer displayed in window	*/
-	int	w_toprow;	        /* Origin 0 top row of window   */
-	int	w_ntrows;	        /* # of rows of text in window  */
-	int	w_force; 	        /* If non-zero, forcing row.    */
-	USHORT	w_flag;		        /* Flags.		        */
+	int	w_toprow;		/* Origin 0 top row of window	*/
+	int	w_ntrows;		/* # of rows of text in window	*/
+	int	w_force;		/* If non-zero, forcing row.	*/
+	USHORT	w_flag;			/* Flags.			*/
 	ULONG	w_split_hist;		/* how to recombine deleted windows */
 #ifdef WMDRULER
 	int	w_ruler_line;
@@ -1992,7 +1994,7 @@ typedef struct	{
 #define TTcursor	(*term.t_cursor)
 
 typedef struct  VIDEO {
-        UINT	v_flag;                 /* Flags */
+	UINT	v_flag;			/* Flags */
 #if	OPT_COLOR
 	int	v_fcolor;		/* current forground color */
 	int	v_bcolor;		/* current background color */
@@ -2004,8 +2006,8 @@ typedef struct  VIDEO {
 #endif
 	/* allocate 4 bytes here, and malloc 4 bytes less than we need,
 		to keep malloc from rounding up. */
-        char    v_text[4];              /* Screen data. */
-}       VIDEO;
+	char	v_text[4];		/* Screen data. */
+}	VIDEO;
 
 #define VideoText(vp) (vp)->v_text
 #define VideoAttr(vp) (vp)->v_attrs
@@ -2229,7 +2231,7 @@ typedef struct  k_bind {
 #undef TMPDIR
 
 #if OPT_EVAL
-#define TMPDIR gtenv("directory")
+#define TMPDIR get_directory()
 #else
 #define TMPDIR P_tmpdir		/* defined in <stdio.h> */
 #endif	/* OPT_EVAL */
