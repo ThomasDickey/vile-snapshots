@@ -2,7 +2,7 @@
  *	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.246 2000/02/09 11:45:28 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.249 2000/06/28 01:42:01 tom Exp $
  *
  */
 
@@ -242,6 +242,11 @@ typedef struct _scroll_info {
 #endif
 #endif
 
+typedef struct _text_gc {
+    GC		gc;
+    Boolean	reset;
+} ColorGC;
+
 typedef struct _text_win {
     /* X stuff */
     Window	win;		/* window corresponding to screen */
@@ -249,19 +254,21 @@ typedef struct _text_win {
 		app_context;	/* application context */
     Widget	top_widget;	/* top level widget */
     Widget	screen;		/* screen widget */
+    unsigned	screen_depth;
 #if ATHENA_WIDGETS && OPT_MENUS
     Widget	pane_widget;	/* pane widget, actually a form */
     Widget	menu_widget;	/* menu-bar widget, actually a box */
 #endif
     Widget	form_widget;	/* form enclosing text-display + scrollbars */
     Widget	pane;		/* panes in which scrollbars live */
+
     int		maxscrollbars;	/* how many scrollbars, sliders, etc. */
-    Widget	*scrollbars;
-				/* the scrollbars */
+    Widget	*scrollbars;	/* the scrollbars */
     int		nscrollbars;	/* number of currently active scroll bars */
 #if OL_WIDGETS
     Widget	*sliders;
 #endif
+
 #if OPT_MENUS_COLORED
     Pixel	menubar_fg;	/* color of the menubar */
     Pixel	menubar_bg;
@@ -275,7 +282,7 @@ typedef struct _text_win {
     Pixmap	trough_pixmap;
     Pixmap	slider_pixmap;
     ScrollInfo	*scrollinfo;
-    Widget	*grips; 	/* grips for resizing scrollbars */
+    Widget	*grips;		/* grips for resizing scrollbars */
     XtIntervalId scroll_repeat_id;
     ULONG	scroll_repeat_timeout;
 #endif	/* OPT_KEV_SCROLLBARS */
@@ -312,8 +319,9 @@ typedef struct _text_win {
     GC		revcursgc;
     GC		modeline_focus_gc;	/* GC for modeline w/ focus */
     GC		modeline_gc;		/* GC for other modelines  */
-    GC		colors_fgc[NCOLORS];
-    GC		colors_bgc[NCOLORS];
+    ColorGC	fore_color[NCOLORS];
+    ColorGC	back_color[NCOLORS];
+    Boolean	bg_follows_fg;
     Pixel	fg;
     Pixel	bg;
     Pixel	default_fg;
@@ -326,7 +334,7 @@ typedef struct _text_win {
     Pixel	modeline_focus_bg;
     Pixel	selection_fg;
     Pixel	selection_bg;
-    int 	char_width,
+    int		char_width,
 		char_ascent,
 		char_descent,
 		char_height;
@@ -367,7 +375,7 @@ typedef struct _text_win {
     String	multi_click_char_class;	/* ?? */
     Time	lasttime;	/* for multi-click */
     Time	click_timeout;
-    int 	numclicks;
+    int		numclicks;
     Bool	have_selection;
     Bool	wipe_permitted;
     Bool	was_on_msgline;
@@ -2531,6 +2539,69 @@ color_cursor(void)
     return TRUE;
 }
 
+static GC
+get_color_gc(int n, Boolean normal)
+{
+    ColorGC *data = normal
+		? &(cur_win->fore_color[n])
+		: &(cur_win->back_color[n]);
+
+    if (cur_win->screen_depth == 1) {
+	data->gc = normal
+		? cur_win->textgc
+		: cur_win->reversegc;
+    } else if (data->reset) {
+	XGCValues	gcvals;
+	ULONG		gcmask;
+
+	gcmask = GCForeground | GCBackground | GCFont | GCGraphicsExposures;
+	if (cur_win->bg_follows_fg) {
+	    gcvals.foreground = normal ? cur_win->colors_fg[n] : cur_win->colors_bg[n];
+	    gcvals.background = normal ? cur_win->colors_bg[n] : cur_win->colors_fg[n];
+	} else {
+	    if (normal) {
+		gcvals.foreground = cur_win->colors_fg[n];
+		gcvals.background = cur_win->bg;
+	    } else {
+		gcvals.foreground = cur_win->bg;
+		gcvals.background = cur_win->colors_fg[n];
+	    }
+	}
+	if (gcvals.foreground == gcvals.background) {
+	    gcvals.foreground = normal ? cur_win->fg : cur_win->bg;
+	    gcvals.background = normal ? cur_win->bg : cur_win->fg;
+	}
+	gcvals.font = cur_win->pfont->fid;
+	gcvals.graphics_exposures = False;
+
+	TRACE(("get_color_gc(%d,%s) %#lx/%#lx\n",
+		n,
+		normal ? "fg" : "bg",
+		(long) gcvals.foreground,
+		(long) gcvals.background));
+
+	if (data->gc == 0)
+	    data->gc = XCreateGC(dpy, DefaultRootWindow(dpy), gcmask, &gcvals);
+	else
+	    XChangeGC(dpy, data->gc, gcmask, &gcvals);
+
+	TRACE(("... gc %#lx\n", (long)data->gc));
+	data->reset = False;
+    }
+    return data->gc;
+}
+
+static void
+reset_color_gcs(void)
+{
+    int n;
+
+    for (n = 0; n < NCOLORS; n++) {
+	cur_win->fore_color[n].reset = True;
+	cur_win->back_color[n].reset = True;
+    }
+}
+
 /* ARGSUSED */
 int
 x_preparse_args(
@@ -2540,7 +2611,7 @@ x_preparse_args(
     XFontStruct *pfont;
     XGCValues   gcvals;
     ULONG	gcmask;
-    int		geo_mask, startx, starty, screen_depth;
+    int		geo_mask, startx, starty;
     int		i, j;
     int		status = TRUE;
     Cardinal	start_cols, start_rows;
@@ -2660,11 +2731,11 @@ x_preparse_args(
 #endif
 
     XtVaGetValues(cur_win->top_widget,
-		XtNdepth, &screen_depth,
+		XtNdepth, &cur_win->screen_depth,
 		NULL);
 
 #if !OLD_RESOURCES
-    cur_win->slider_is_solid = (screen_depth >= 6);
+    cur_win->slider_is_solid = (cur_win->screen_depth >= 6);
 #endif
 
     XtGetApplicationResources(
@@ -2980,33 +3051,18 @@ x_preparse_args(
 	    DefaultRootWindow(dpy),
 	    gcmask, &gcvals);
 
+    cur_win->bg_follows_fg = (gbcolor == ENUM_FCOLOR);
     if ((j = gbcolor) < 0)
 	j = 0;
     for (i = 0; i < NCOLORS; i++) {
 	ctrans[i] = i;
-	if ( screen_depth == 1
-	  || cur_win->colors_fg[i] == cur_win->colors_bg[j]
-	  || ( cur_win->colors_fg[i] == cur_win->fg
-	    && cur_win->colors_bg[i] == cur_win->bg )) {
-	    /* Reuse the standard GCs if possible */
-	    cur_win->colors_fgc[i] = cur_win->textgc;
-	    cur_win->colors_bgc[i] = cur_win->reversegc;
-	} else {
-	    gcvals.foreground = cur_win->colors_fg[i];
-	    gcvals.background = cur_win->colors_bg[j];
-	    cur_win->colors_fgc[i] = XCreateGC(dpy,
-					       DefaultRootWindow(dpy),
-					       gcmask, &gcvals);
-	    gcvals.foreground = cur_win->colors_bg[j];
-	    gcvals.background = cur_win->colors_fg[i];
-	    cur_win->colors_bgc[i] = XCreateGC(dpy,
-					       DefaultRootWindow(dpy),
-					       gcmask, &gcvals);
-	}
+	TRACE(("fcolor%d pixel %#lx\n", i, cur_win->colors_fg[i]));
+	TRACE(("bcolor%d pixel %#lx\n", i, cur_win->colors_bg[i]));
     }
+    reset_color_gcs();
 
     /* Initialize graphics context for display of selections */
-    if (screen_depth == 1
+    if (cur_win->screen_depth == 1
      || cur_win->selection_bg == cur_win->selection_fg
      ||  (cur_win->fg == cur_win->selection_fg
        && cur_win->bg == cur_win->selection_bg)
@@ -3033,7 +3089,7 @@ x_preparse_args(
      * Portions of the modeline are never displayed in reverse video (wrt
      * the modeline) so there is no corresponding reverse video gc.
      */
-    if (screen_depth == 1
+    if (cur_win->screen_depth == 1
      || cur_win->modeline_bg == cur_win->modeline_fg
      ||  (cur_win->fg == cur_win->modeline_fg
        && cur_win->bg == cur_win->modeline_bg)
@@ -3053,7 +3109,7 @@ x_preparse_args(
      * Initialize graphics context for display of modelines which indicate
      * that the corresponding window has focus.
      */
-    if (screen_depth == 1
+    if (cur_win->screen_depth == 1
      || cur_win->modeline_focus_bg == cur_win->modeline_focus_fg
      ||  (cur_win->fg == cur_win->modeline_focus_fg
        && cur_win->bg == cur_win->modeline_focus_bg)
@@ -3072,7 +3128,7 @@ x_preparse_args(
     /* Initialize cursor graphics context and flag which indicates how to
      * display cursor.
      */
-    if (screen_depth == 1
+    if (cur_win->screen_depth == 1
      || cur_win->cursor_bg == cur_win->cursor_fg
      ||  (cur_win->fg == cur_win->cursor_fg
        && cur_win->bg == cur_win->cursor_bg)
@@ -3088,7 +3144,7 @@ x_preparse_args(
 	cur_win->scrollbar_bg = cur_win->bg;
 	cur_win->scrollbar_fg = cur_win->fg;
     }
-    if (screen_depth == 1 || too_light_or_too_dark(cur_win->scrollbar_fg))
+    if (cur_win->screen_depth == 1 || too_light_or_too_dark(cur_win->scrollbar_fg))
 	cur_win->slider_is_solid = False;
 #endif /* OPT_KEV_SCROLLBARS */
 
@@ -3124,7 +3180,7 @@ x_preparse_args(
 	    DefaultRootWindow(dpy),
 	    gcmask, &gcvals);
 
-    if (screen_depth >= 6 && cur_win->slider_is_solid) {
+    if (cur_win->screen_depth >= 6 && cur_win->slider_is_solid) {
 	Pixel fg_light, fg_dark, bg_light, bg_dark;
 	if ( alloc_shadows(cur_win->scrollbar_fg, &fg_light, &fg_dark)
 	  && alloc_shadows(cur_win->scrollbar_bg, &bg_light, &bg_dark)) {
@@ -3133,7 +3189,7 @@ x_preparse_args(
 	    cur_win->slider_is_3D = True;
 
 	    cur_win->trough_pixmap = XCreatePixmap(dpy, DefaultRootWindow(dpy),
-		    cur_win->pane_width+2, 16, (unsigned int)screen_depth);
+		    cur_win->pane_width+2, 16, cur_win->screen_depth);
 
 #define TROUGH_HT 16
 	    gcvals.foreground = cur_win->scrollbar_bg;
@@ -3147,7 +3203,7 @@ x_preparse_args(
 		    (int) cur_win->pane_width, 0, 2, TROUGH_HT);
 
 	    slider_pixmap = XCreatePixmap(dpy, DefaultRootWindow(dpy),
-		    cur_win->pane_width-2, SP_HT, (unsigned int)screen_depth);
+		    cur_win->pane_width-2, SP_HT, cur_win->screen_depth);
 
 	    XSetForeground(dpy, gc, cur_win->scrollbar_fg);
 	    XFillRectangle(dpy, slider_pixmap, gc, 0,0,
@@ -3163,7 +3219,7 @@ x_preparse_args(
 	    XSetTSOrigin(dpy, cur_win->scrollbargc, 2, 0);
 
 	    cur_win->slider_pixmap = XCreatePixmap(dpy, DefaultRootWindow(dpy),
-		    cur_win->pane_width-2, SP_HT, (unsigned int)screen_depth);
+		    cur_win->pane_width-2, SP_HT, cur_win->screen_depth);
 	    XCopyArea(dpy, slider_pixmap, cur_win->slider_pixmap, gc,
 		      0, 0, cur_win->pane_width-2, SP_HT, 0, 0);
 
@@ -3892,8 +3948,6 @@ x_setfont(
 	oldw = x_width(cur_win);
 	oldh = x_height(cur_win);
 	if ((pfont = query_font(cur_win, fname)) != 0) {
-	    int i;
-
 	    XSetFont(dpy, cur_win->textgc, pfont->fid);
 	    XSetFont(dpy, cur_win->reversegc, pfont->fid);
 	    XSetFont(dpy, cur_win->selgc, pfont->fid);
@@ -3906,13 +3960,7 @@ x_setfont(
 		XSetFont(dpy, cur_win->selgc, pfont->fid);
 		XSetFont(dpy, cur_win->revselgc, pfont->fid);
 	    }
-	    for (i = 0; i < NCOLORS; i++) {
-		int j = ctrans[i];
-		if (cur_win->colors_fgc[j] != cur_win->textgc) {
-		    XSetFont(dpy, cur_win->colors_fgc[j], pfont->fid);
-		    XSetFont(dpy, cur_win->colors_bgc[j], pfont->fid);
-		}
-	    }
+	    reset_color_gcs();
 
 	    /* if size changed, resize it, otherwise refresh */
 	    if (oldw != x_width(cur_win) || oldh != x_height(cur_win)) {
@@ -4015,7 +4063,7 @@ wait_for_scroll(
     TextWindow  tw)
 {
     XEvent      ev;
-    int 	sc,
+    int		sc,
 		sr;
     unsigned    ec,
 		er;
@@ -4132,8 +4180,10 @@ flush_line(
     else if (attr & VAML)
 	fore_gc = back_gc = cur_win->modeline_gc;
     else if (attr & (VACOLOR)) {
-	fore_gc = cur_win->colors_fgc[ctrans[VCOLORNUM(attr)]];
-	back_gc = cur_win->colors_bgc[ctrans[gbcolor]];
+	int fg = ctrans[VCOLORNUM(attr)];
+	int bg = (gbcolor == ENUM_FCOLOR) ? fg : ctrans[gbcolor];
+	fore_gc = get_color_gc(fg, True);
+	back_gc = get_color_gc(bg, False);
     }
     else {
 	fore_gc = cur_win->textgc;
@@ -4470,13 +4520,13 @@ static int
 set_character_class(register char *s)
 {
     register int i;		/* iterator, index into s */
-    int 	len;		/* length of s */
-    int 	acc;		/* accumulator */
-    int 	low,
+    int		len;		/* length of s */
+    int		acc;		/* accumulator */
+    int		low,
 		high;		/* bounds of range [0..127] */
-    int 	base;		/* 8, 10, 16 (octal, decimal, hex) */
-    int 	numbers;	/* count of numbers per range */
-    int 	digits; 	/* count of digits in a number */
+    int		base;		/* 8, 10, 16 (octal, decimal, hex) */
+    int		numbers;	/* count of numbers per range */
+    int		digits;		/* count of digits in a number */
     static char *errfmt = "xvile:  %s in range string \"%s\" (position %d)\n";
 
     if (!s || !s[0])
@@ -4666,7 +4716,7 @@ x_get_selection(
     Atom	  *type,
     XtPointer      value,
     unsigned long *length,
-    int 	  *format)
+    int		  *format)
 {
     int	do_ins;
 
@@ -4797,7 +4847,7 @@ x_convert_selection(
     Atom	  *type,
     XtPointer     *value,
     unsigned long *length,
-    int 	  *format)
+    int		  *format)
 {
     if (!cur_win->have_selection && *selection == XA_PRIMARY)
 	return False;
@@ -5077,7 +5127,7 @@ multi_click(
 			(void) update(TRUE);
 		}
 		return;
-	case 4: 		/* document (doesn't include trailing newline) */
+	case 4:			/* document (doesn't include trailing newline) */
 		if (setcursor(nr,sc)) {
 			MARK saveDOT;
 			saveDOT = DOT;
@@ -5234,12 +5284,12 @@ x_process_event(
     XEvent     *ev,
     Boolean    *continue_to_dispatch GCC_UNUSED)
 {
-    int 	sc,
+    int		sc,
 		sr;
     unsigned    ec,
 		er;
 
-    int 	nr,
+    int		nr,
 		nc;
     static int onr = -1, onc = -1;
 
@@ -6323,7 +6373,6 @@ x_fcol(int color)
 {
     XGCValues   gcvals;
     ULONG	gcmask;
-    int		n;
 
     TRACE(("x_fcol(%d)\n", color));
     cur_win->fg = (color >= 0 && color < NCOLORS)
@@ -6333,14 +6382,10 @@ x_fcol(int color)
     gcmask = GCForeground;
     gcvals.foreground = cur_win->fg;
     XChangeGC(dpy, cur_win->textgc, gcmask, &gcvals);
-    for (n = 0; n < NCOLORS; n++)
-	    XChangeGC(dpy, cur_win->colors_bgc[n], gcmask, &gcvals);
 
     gcmask = GCBackground;
     gcvals.background = cur_win->fg;
     XChangeGC(dpy, cur_win->reversegc, gcmask, &gcvals);
-    for (n = 0; n < NCOLORS; n++)
-	    XChangeGC(dpy, cur_win->colors_fgc[n], gcmask, &gcvals);
 
     XSetForeground(dpy, cur_win->textgc, cur_win->fg);
 
@@ -6353,26 +6398,33 @@ x_bcol(int color)
 {
     XGCValues   gcvals;
     ULONG	gcmask;
-    int		n;
 
     TRACE(("x_bcol(%d)\n", color));
     cur_win->bg = (color >= 0 && color < NCOLORS)
 		    ? ((cur_win->colors_bg[color] == cur_win->default_bg)
-		    	? cur_win->colors_fg[color]
-		    	: cur_win->colors_bg[color])
+			? cur_win->colors_fg[color]
+			: cur_win->colors_bg[color])
 		    : cur_win->default_bg;
 
-    gcmask = GCBackground;
-    gcvals.background = cur_win->bg;
-    XChangeGC(dpy, cur_win->textgc, gcmask, &gcvals);
-    for (n = 0; n < NCOLORS; n++)
-	    XChangeGC(dpy, cur_win->colors_fgc[n], gcmask, &gcvals);
+    if (color == ENUM_FCOLOR) {
+	gcmask = GCBackground;
+	gcvals.background = cur_win->default_bg;
+	XChangeGC(dpy, cur_win->textgc, gcmask, &gcvals);
 
-    gcmask = GCForeground;
-    gcvals.foreground = cur_win->bg;
-    XChangeGC(dpy, cur_win->reversegc, gcmask, &gcvals);
-    for (n = 0; n < NCOLORS; n++)
-	    XChangeGC(dpy, cur_win->colors_bgc[n], gcmask, &gcvals);
+	gcmask = GCForeground;
+	gcvals.foreground = cur_win->default_bg;
+	XChangeGC(dpy, cur_win->reversegc, gcmask, &gcvals);
+    } else {
+	gcmask = GCBackground;
+	gcvals.background = cur_win->bg;
+	XChangeGC(dpy, cur_win->textgc, gcmask, &gcvals);
+
+	gcmask = GCForeground;
+	gcvals.foreground = cur_win->bg;
+	XChangeGC(dpy, cur_win->reversegc, gcmask, &gcvals);
+    }
+    cur_win->bg_follows_fg = (color == ENUM_FCOLOR);
+    reset_color_gcs();
 
     XtVaSetValues(cur_win->screen,
 	    XtNbackground,		cur_win->bg,
@@ -6405,8 +6457,8 @@ x_ccol(int color)
 
     bg = (color >= 0 && color < NCOLORS)
 		    ? ((cur_win->colors_bg[color] == cur_win->default_bg)
-		    	? cur_win->colors_fg[color]
-		    	: cur_win->colors_bg[color])
+			? cur_win->colors_fg[color]
+			: cur_win->colors_bg[color])
 		    : cur_win->cursor_bg;
 
     gcmask = GCForeground|GCBackground;
@@ -6649,10 +6701,10 @@ static void
 init_xlocale(void)
 {
     char	   *p, *s, buf[32], tmp[1024];
-    XIM 	    xim = NULL;
+    XIM		    xim = NULL;
     XIMStyle	    input_style = 0;
     XIMStyles      *xim_styles = NULL;
-    int 	    found;
+    int		    found;
 
     Input_Context = NULL;
 

@@ -4248,10 +4248,17 @@ X Window System specifics
 			then after the ^A-A command was applied, the leading
 			"^A3C3:" would be gone, and the word "foobar" would
 			appear in the foreground and background colors
-			specified by color.fcolor3 and color.bcolor3.  Either
-			of the pair can be left unspecified, and will default
-			to the natural foreground or background color of
-			normal text.
+			specified by color.fcolor3 and color.bcolor3.  The
+			fcolorN resources have default values corresponding
+			to the ANSI convention, while bcolorN default to
+			the window background.  If you wish to set bcolorN
+			for special effect, you should add this to your
+			.vilerc file
+				set bcolor=fcolor
+			to tell xvile to use the bcolorN resources when
+			displaying attributed text.  Otherwise, setting bcolor
+			will change the window background, as in the termcap
+			and similar versions of vile.
 
 	menuHeader
 	menuEntry	The names given to the menu header and entries,
@@ -5031,4 +5038,4 @@ Problems
 
 Copyright 1995-2000 by Paul Fox, Tom Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.490 2000/06/17 11:44:23 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.491 2000/06/27 11:10:07 tom Exp $

@@ -20,7 +20,7 @@
 #
 # gnu autoconf support by kevin buettner, 5/94
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.168 2000/05/02 00:38:19 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.169 2000/06/18 17:58:37 tom Exp $
 #
 
 #### Start of system configuration section. ####
@@ -278,6 +278,9 @@ all \
 install ::
 	cd filters && $(MAKE) @cf_cv_makeflags@ $@
 all ::	$(ALL)
+
+filters/libvlflt.a :
+	cd filters && $(MAKE) @cf_cv_makeflags@ libvlflt.a
 
 $(TARGET): $(BUILTHDRS) $(OBJ) $(BUILTLIBS)
 	- mv $(TARGET) o$(TARGET)

@@ -1,4 +1,4 @@
-; $Header: /users/source/archives/vile.vcs/macros/RCS/vileinit.rc,v 1.12 2000/03/27 22:29:31 tom Exp $
+; $Header: /users/source/archives/vile.vcs/macros/RCS/vileinit.rc,v 1.13 2000/06/28 00:59:01 tom Exp $
 ; This is a sample which may be installed as .vilerc (or vile.rc for non-Unix
 ; systems), or source'd as-is to provide quick initialization of some useful
 ; macros and settings.
@@ -43,6 +43,7 @@ bind-key next-window ^I
 
 ~if &seq $progname xvile
 	setv $xshell="xterm -e xshell.sh"
+	setv $xshell-flags=""
 ~elseif &seq $progname winvile
 ~elseif &or &sin $cfgopts "terminfo" \
 	    &sin $cfgopts "termcap"

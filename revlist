@@ -1,6 +1,6 @@
-revlist for vile, version v9_1l
+revlist for vile, version v9_1m
 --------------------------------------------------------------------------------
-CHANGES	1.597
+CHANGES	1.599
 CHANGES.R3	1.1
 CHANGES.R4	1.1
 CHANGES.R5	1.1
@@ -13,7 +13,7 @@ MANIFEST	none
 README	1.81
 README.PC	1.25
 README.VMS	1.5
-aclocal.m4	1.87
+aclocal.m4	1.88
 ansi.c	1.40
 api.c	1.27
 api.h	1.12
@@ -22,11 +22,11 @@ bind.c	1.230
 borland.c	1.30
 btree.c	1.11
 btree.h	1.3
-buffer.c	1.219
+buffer.c	1.220
 buglist	1.381
 builtflt.c	1.11
 chgdfunc.h	1.10
-cmdtbl	1.202
+cmdtbl	1.203
 config.emx	1.2
 config_h.in	1.2
 configure	none
@@ -35,16 +35,16 @@ csrch.c	1.30
 curses.c	1.12
 descrip.mms	1.42
 dirstuff.h	1.23
-display.c	1.332
+display.c	1.333
 djhandl.c	1.6
 dumbterm.c	1.17
 edef.h	1.273
-estruct.h	1.448
-eval.c	1.271
-exec.c	1.221
+estruct.h	1.449
+eval.c	1.272
+exec.c	1.222
 externs.c	1.7
 fences.c	1.76
-file.c	1.269
+file.c	1.270
 filec.c	1.93
 fileio.c	1.146
 finderr.c	1.92
@@ -65,7 +65,7 @@ makefile.blc	1.12
 makefile.djg	1.30
 makefile.emx	1.5
 makefile.icc	1.13
-makefile.in	1.168
+makefile.in	1.169
 makefile.tbc	1.24
 makefile.wat	1.26
 makefile.wnt	1.58
@@ -75,7 +75,7 @@ mkdirs.sh	1.5
 mkprlenv.wnt	1.7
 mktbls.c	1.107
 modes.c	1.201
-modetbl	1.176
+modetbl	1.177
 msgs.c	1.20
 npopen.c	1.82
 ntconio.c	1.57
@@ -85,7 +85,7 @@ opers.c	1.71
 os2keys.h	1.1
 os2pipe.c	1.5
 os2vio.c	1.27
-patchlev.h	1.233
+patchlev.h	1.234
 path.c	1.101
 perl.xs	1.73
 proto.h	1.427
@@ -94,13 +94,13 @@ ptypemap	1.7
 random.c	1.232
 regexp.c	1.69
 region.c	1.103
-revlist	v9_1l
+revlist	v9_1m
 search.c	1.119
-select.c	1.123
+select.c	1.124
 sinstall.sh	1.1
 spawn.c	1.159
 statevar.c	1.37
-tags.c	1.108
+tags.c	1.109
 tbuff.c	1.37
 tcap.c	1.136
 tcap.h	1.4
@@ -112,7 +112,7 @@ undo.c	1.75
 version.c	1.47
 vile-9.1.spec	1.2
 vile.1	1.25
-vile.hlp	1.490
+vile.hlp	1.491
 vile.wmconfig	1.1
 vms2unix.c	1.34
 vmsbuild.com	1.34
@@ -135,7 +135,7 @@ winvile.rc	1.7
 word.c	1.72
 wordmov.c	1.21
 wvwrap.cpp	1.3
-x11.c	1.246
+x11.c	1.249
 xshell.sh	1.4
 xvile.wmconfig	1.1
 doc/Vileserv.doc	1.1
@@ -143,7 +143,7 @@ doc/config.doc	1.4
 doc/dir.doc	1.2
 doc/filters.doc	1.20
 doc/indent.pro	1.2
-doc/macros.doc	1.53
+doc/macros.doc	1.54
 doc/menus.doc	1.6
 doc/modes.doc	1.7
 doc/oleauto.doc	1.6
@@ -176,7 +176,7 @@ filters/fdl.key	1.3
 filters/filterio.c	1.7
 filters/filters.c	1.73
 filters/filters.h	1.45
-filters/filters.rc	1.120
+filters/filters.rc	1.121
 filters/genmake.mak	1.4
 filters/html.key	1.6
 filters/htmlfilt.l	1.21
@@ -200,8 +200,8 @@ filters/makefile.icc	1.3
 filters/makefile.in	1.70
 filters/makefile.wnt	1.23
 filters/makefilt.l	1.30
-filters/manfilt.c	1.26
-filters/mk-0th.awk	1.2
+filters/manfilt.c	1.27
+filters/mk-0th.awk	1.3
 filters/mk-1st.awk	1.5
 filters/mk-2nd.awk	1.6
 filters/mk-key.awk	1.2
@@ -211,7 +211,7 @@ filters/nr.key	1.1
 filters/pas-filt.c	1.12
 filters/pas.key	1.1
 filters/perl.key	1.5
-filters/perlfilt.l	1.28
+filters/perlfilt.l	1.29
 filters/pot.key	1.1
 filters/py-filt.l	1.7
 filters/py.key	1.1
@@ -259,12 +259,12 @@ icons/vile.xpm	1.1
 macros/XVile.ad	1.1
 macros/color-ls.rc	1.1
 macros/digraphs.rc	1.2
-macros/manpage.rc	1.12
+macros/manpage.rc	1.13
 macros/palettes.rc	1.5
 macros/pictmode.rc	1.3
 macros/shifts.rc	1.4
 macros/vile-pager	1.4
-macros/vileinit.rc	1.12
+macros/vileinit.rc	1.13
 macros/vilemenu.rc	1.2
 macros/vileperl.rc	1.6
 perl/Glob2re.pm	1.1

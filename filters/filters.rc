@@ -1,4 +1,4 @@
-; $Id: filters.rc,v 1.120 2000/06/06 23:39:38 tom Exp $
+; $Id: filters.rc,v 1.121 2000/06/19 23:22:06 tom Exp $
 ; majormodes in this file are ordered alphabetically for convenience - the
 ; precedence used by vile is strictly alphabetic, counting case.
 
@@ -276,7 +276,7 @@ define-mode pas
 ; very expensive to resolve, we combine it with the similar 'while' group.
 define-mode perl
 ~with define-submode perl
-	pre '^#\s*!\s*\.*\/.*perl\>'
+	pre '^#\s*!\s*\.*\/.*perl[0-9]*\>'
 	suf '\.\(pl\|pm\)$'
 	cindent
 	comment-prefix '^\s*#'

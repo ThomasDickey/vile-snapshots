@@ -18,7 +18,7 @@
  * transferring the selection are not dealt with in this file.  Procedures
  * for dealing with the representation are maintained in this file.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.123 2000/06/08 22:53:03 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.124 2000/06/24 12:58:18 tom Exp $
  *
  */
 
@@ -1802,6 +1802,7 @@ find_line_attr_idx(VIDEO_ATTR vattr)
    inserts or deletes.  The idea is to preserve the line attributes
    as much as possible until autocolor gets around to recoloring the
    line */
+/* ARGSUSED */
 void
 lattr_shift(BUFFER *bp GCC_UNUSED, LINEPTR lp, int doto, int shift)
 {
@@ -1811,7 +1812,7 @@ lattr_shift(BUFFER *bp GCC_UNUSED, LINEPTR lp, int doto, int shift)
     lap = lp->l_attrs;
     if (shift > 0) {
 	int f, t, len;
-	len = strlen(lap);
+	len = strlen((char *)lap);
 	t = len - 1;
 	if (t <= 0)
 	    return;
@@ -1899,7 +1900,7 @@ add_line_attrib(BUFFER *bp, REGION *rp, REGIONSHAPE rs, VIDEO_ATTR vattr,
 
     lp = rp->r_orig.l;
     if (lp->l_attrs) {
-	int len = strlen(lp->l_attrs);
+	int len = strlen((char *)(lp->l_attrs));
 	/* Make sure the line attribute is long enough */
 	if (len < rp->r_end.o) {
 	    lp->l_attrs = castrealloc(unsigned char,

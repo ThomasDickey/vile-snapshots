@@ -1,5 +1,32 @@
 Changes for vile 9.2 (released ??? ??? ?? 2000)
 
+ 20000627 (m)
+ 	+ small fix for doc/macros.doc (Clark Morgan).
+ 	+ initialize $xshell-flags to empty string since xshell.sh does not
+	  accept a "-c" parameter.
+	+ modify manpage.rc to unset the filename associated with the buffer so
+	  it does not display.  This ensures that the ruler is always visible.
+ 	+ add command unset-variable, which resets the given variable to a
+	  null or default value.  This is useful only for the $-variables,
+	  since modes require a value.
+	+ modify color support in xvile to allow the pre-8.3s color scheme as a
+	  special case:  setting bcolor to fcolor makes xvile use the bcolorN
+	  resources on syntax-highlighted text rather than the color selected
+	  by bcolor (which is actually taken from the fcolorN resource in this
+	  case).  This uses a new function get_color_gc() to simplify caching
+	  of GC's (report by Dave Turner <turner@ameslab.gov>)
+ 	+ remove some logic from x_fcol() from 8.3s (990914) which mirrored
+	  x_bcol().  That broke the behavior of "set fcolor" (noted while
+	  investigating Dave Turner's report).
+ 	+ adjust filters/mk-0th.awk to work with SGI's nawk.
+	+ fix typo in configure macro CF_CHECK_ERRNO (reported by John Coyne
+	  <John.Coyne@ctbto.org>).
+	+ translate soft hyphens to '-' in manfilt.c
+	+ treat leading (unary) backslash in perlfilt.l as an operator, not
+	  as an escape.
+	+ add makefile dependency so "make vile" works when --with-builtin-filters is
+	  used.
+
  20000617 (l)
 	+ updates to config.guess and config.sub (patch by Kevin Buettner,
 	  and resync with version from PCRE 3.2).

@@ -4,7 +4,7 @@
  *	original by Daniel Lawrence, but
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.221 2000/05/19 01:53:06 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.222 2000/06/24 12:57:46 tom Exp $
  *
  */
 
@@ -933,7 +933,6 @@ int eolchar)
 {
 	int quotef = EOS;	/* nonzero iff the current string quoted */
 	int c, i, d, chr;
-	char *base;
 
 	tb_init(tok, EOS);
 	if (src == 0)
@@ -942,7 +941,6 @@ int eolchar)
 	/* first scan past any whitespace in the source string */
 	while (isSPorTAB(*src))
 		++src;
-	base = src;
 
 	/* scan through the source string, which may be quoted */
 	while ((c = *src) != EOS) {

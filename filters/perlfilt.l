@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/perlfilt.l,v 1.28 2000/05/29 19:47:34 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/perlfilt.l,v 1.29 2000/06/18 19:56:28 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of PERL input
  * text.
@@ -142,7 +142,7 @@ do_filter(FILE *input)
 
 BLANK		[ \t]*
 
-ESCAPED		\\.
+ESCAPED		\\
 SSTRING		\'(\\.|\\\n|[^'\\])*\'
 DSTRING		\"(\\.|\\\n|[^"\\])*\"
 STRINGS		({SSTRING}|{DSTRING})
@@ -183,6 +183,7 @@ NUMBER		{SIGN}?({DECIMAL}|{OCTAL}|{HEXADECIMAL}|{REAL})
 				BEGIN(CODE);
 			    }
 			}
+<HERE>\\.		|
 <HERE>[^\n]		{ add_to_here(yytext, yyleng); }
 <HERE>\n		{
 			    flush_here();
