@@ -9,7 +9,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.335 1998/03/14 18:15:10 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.337 1998/03/20 11:06:08 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -395,7 +395,7 @@
 #define	OPT_SCROLLCODE	1	/* code in display.c for scrolling the screen.
 				   Only useful if your display can scroll
 				   regions, or at least insert/delete lines.
-				   ANSI, TERMCAP, IBMPC, VMSVT and AT386 can 
+				   ANSI, TERMCAP, IBMPC, VMSVT and AT386 can
 				   do this */
 #define OPT_CVMVAS	1	/* arguments to forward/back page and half page
 				   are in pages	instead of rows (in vi,
@@ -482,7 +482,7 @@
 /* the setting "xterm-mouse" is always available, i.e.  the modetbl entry
  * is not conditional.  but all of the code that supports xterm-mouse _is_
  * ifdefed.  this makes it easier for users to be able to put "set
- * xterm-mouse" in their .vilerc which is shared between vile and xvile. 
+ * xterm-mouse" in their .vilerc which is shared between vile and xvile.
  */
 #define	OPT_XTERM	2	/* mouse-clicking support */
 #else
@@ -1158,7 +1158,7 @@ typedef	long		B_COUNT;	/* byte-count */
  * All text is kept in circularly linked lists of "LINE" structures. These
  * begin at the header line. This line is pointed to by the "BUFFER".
  * Each line contains:
- *  number of bytes in the line (the "used" size), 
+ *  number of bytes in the line (the "used" size),
  *  the size of the text array,
  *  the text.
  * The end of line is not stored as a byte; it's implied. Future
@@ -1477,7 +1477,7 @@ struct VALNAMES {
 /* these are window properties affecting window appearance _only_ */
 typedef struct	{
 	MARK 	w_dt;		/* Line containing "."	       */
-		/* i don't think "mark" needs to be here -- I think it 
+		/* i don't think "mark" needs to be here -- I think it
 			could safely live only in the buffer -pgf */
 #if WINMARK
 	MARK 	w_mk;	        /* Line containing "mark"      */
@@ -1486,7 +1486,7 @@ typedef struct	{
 	MARK 	w_tld;	        /* Line which may become "lastdotmark"*/
 	MARK 	w_ln;		/* Top line in the window (offset used in linewrap) */
 #if OPT_MOUSE
-	int	insmode;	
+	int	insmode;
 #endif
 	W_VALUES w_vals;
 } W_TRAITS;
@@ -1734,6 +1734,19 @@ typedef struct	BUFFER {
 
 /* macro for iterating over the marks associated with the current buffer */
 
+#if OPT_PERL || OPT_TCL
+extern MARK *api_mark_iterator(BUFFER *bp, int *iter);
+#define api_do_mark_iterate_helper(mp, statement)	\
+        {						\
+	    int dmi_iter = 0;				\
+	    while ((mp = api_mark_iterator(curbp, &dmi_iter)) != NULL) { \
+		statement				\
+	    }						\
+	}
+#else
+#define api_do_mark_iterate_helper(mp, statement)
+#endif
+
 #if OPT_VIDEO_ATTRS
 #define do_mark_iterate(mp, statement)			\
     do {						\
@@ -1755,10 +1768,11 @@ typedef struct	BUFFER {
 	    }						\
 	    sel_reassert_ownership(curbp);		\
 	}						\
+	api_do_mark_iterate_helper(mp, statement)	\
     } one_time
 #else /* OPT_VIDEO_ATTRS */
 #define do_mark_iterate(mp, statement)			\
-    do							\
+    do {						\
 	if (curbp->b_nmmarks != NULL) {			\
 	    struct MARK *mp;				\
 	    int dmi_idx;				\
@@ -1767,7 +1781,8 @@ typedef struct	BUFFER {
 		statement				\
 	    }						\
 	}						\
-    one_time
+	api_do_mark_iterate_helper(mp, statement)	\
+    } one_time
 #endif /* OPT_VIDEO_ATTRS */
 
 /*
@@ -1880,7 +1895,7 @@ typedef struct	{
 	void	(*t_scroll) (int from, int to, int n); /* scroll region	*/
 	void	(*t_pflush) (void);	/* really flush 		*/
 	void	(*t_icursor) (int c);	/* set cursor shape for insertion */
-	void	(*t_title) (char *t);	/* set window title		*/ 
+	void	(*t_title) (char *t);	/* set window title		*/
 }	TERM;
 
 /*	TEMPORARY macros for terminal I/O  (to be placed in a machine
@@ -2020,7 +2035,7 @@ typedef struct {
 
 /* when a command is referenced by bound key (like h,j,k,l, or "dd"), it
  *	is looked up one of two ways: single character 7-bit ascii commands (by
- *	far the majority) are simply indexed into an array of CMDFUNC pointers. 
+ *	far the majority) are simply indexed into an array of CMDFUNC pointers.
  *	Other commands (those with ^A, ^X, or SPEC prefixes) are searched for
  *	in a binding table, made up of KBIND structures.  This structure
  *	contains the command code, and again, a pointer to the CMDFUNC
@@ -2336,14 +2351,14 @@ extern void _exit (int code);
 
 #if	!CHECK_PROTOTYPES
 #include "neproto.h"
-#include "proto.h" 
+#include "proto.h"
 #endif
 
 /*
  * the list of generic function key bindings
  */
 #if	!CHECK_PROTOTYPES
-#include "nefkeys.h" 
+#include "nefkeys.h"
 #endif
 
 /*	Dynamic RAM tracking and reporting redefinitions	*/

@@ -4,7 +4,7 @@ VI	T_VI
 INPUT
 T_VI	
 	if (sv_isa($arg, \"VI\")) {
-	    IV tmp = SvIV((SV*)SvRV($arg));
+	    IV tmp = SvIV((SV*)GvSV((GV*)SvRV($arg))); 
 	    $var = ($type) tmp;
 	    if (!tmp)
 		croak(\"screen no longer exists\");

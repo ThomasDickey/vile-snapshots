@@ -95,7 +95,7 @@
 #		in '!' listed, then the flag does nothing, and should be
 #		viewed simply as documentation.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.151 1998/03/18 01:55:18 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.152 1998/03/20 10:48:45 kev Exp $
 #
 #
 
@@ -1160,6 +1160,9 @@ onlywind	NONE
 perl		OPER|REDO|UNDO|GLOBOK|RANGE|DFLNONE	OPT_PERL
 	"perl"
 	<run a perl command>
+perldo		OPER|REDO|UNDO|GLOBOK|RANGE|EXTRA	OPT_PERL 
+	"perldo" 
+	<run a perl command on each line in a range> 
 poswind		NONE
 	"position-window"		!FEWNAMES
 	'z'
