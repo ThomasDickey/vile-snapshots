@@ -11,7 +11,7 @@
 #
 # The modes are table entries in the BUFFER and WINDOW structures.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.217 2003/03/08 00:45:48 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.219 2004/03/21 23:30:38 tom Exp $
 #
 #
 # Mode-table entries.  Capitalized letters are used for abbreviations.
@@ -159,6 +159,7 @@ regex							# VAL_ prefix
 	"paragraphs"	PARAGRAPHS	0		# delimits a paragraph
 	"sections"	SECTIONS	0		# delimits a section
 	"sentences"	SENTENCES	0		# delimits a sentence
+	"IgnoreSuffix"	STRIPSUFFIX	0		OPT_MAJORMODE # strip pattern before matching majormode suffix
 
 .windows
 bool							# WMD prefix
@@ -167,6 +168,7 @@ bool							# WMD prefix
 	"HorizScroll"	HORSCROLL	0		# scroll whole screen
 	"LineWrap"	LINEWRAP	chgd_window	OPT_LINEWRAP # wrap lines wider than screen
 	"ruler"		RULER		chgd_status	!SMALLER # display line+col in modeline
+	"ShowChar"	SHOWCHAR	chgd_status	!SMALLER # display line+col in modeline
 	"Unprintable-as-Octal" NONPRINTOCTAL  chgd_window # print non-printing chars in octal
 	"Terse-SELections" TERSELECT	0		OPT_SELECTIONS # don't display extent of selections on message line
 int							# VAL_ prefix

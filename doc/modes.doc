@@ -8,14 +8,14 @@ This document describes the proposed implementation and use of major
 modes in vile.  My goal is to extend the notion of the C mode (cmode)
 to allow runtime definable major modes.
 
-The C mode is a collection of modes that are useful for editing C
-program source:
+Originally, vile supported a C mode that included a collection of modes
+useful for editing C program source:
 
 	c-suffixes
 	c-tabstop
 	c-shiftwidth
 
-as well as builtin functionality:
+as well as this builtin functionality:
 
 	autoindention of C statements taking into account curly braces
 	fence matching for /*...*/ comments and C preprocessor statements
@@ -28,21 +28,20 @@ parameterized and made reusable to support other languages.  For an
 initial implementation, I am focusing on the combining of modes,
 providing a structure for the parameterization.
 
-One thing that is not clear to many users (and possibly should be
-changed) is the manner in which the C mode is attached to a buffer. 
-It is currently set as a boolean - if active before a buffer is
-loaded, then vile checks the file suffix to see if it matches the
-c-suffixes mode, and if so, sets the C mode for the buffer.  C mode
-can be explicitly set by a ":setl cmode", and unset by ":setl
+One thing that was not clear to many users was the manner in which the C
+mode was attached to a buffer.  It was set as a boolean - if active before
+a buffer was loaded, then vile checked the file suffix to see if it matched
+the c-suffixes mode, and if so, set the C mode for the buffer.  C mode
+could also be explicitly set by a ":setl cmode", and unset by ":setl
 nocmode".  In the new scheme,
 
 	+ vile will search the list of all active majormodes, first
 	  testing if any match with the majormode's suffixes, then if
 	  any preamble (first line regular expression) matches.
 
-	  The search is in normally alphabetic order, by majormode name. 
+	  The search is in normally alphabetic order, by majormode name.
 	  The first match each, of suffixes and preamble terminate the
-	  search, but a match of preamble overrides a match of suffixes. 
+	  search, but a match of preamble overrides a match of suffixes.
 	  Use "after" and "before" qualifiers to handle special cases.
 
 	  In rare circumstances, both suffixes and preamble are needed to
@@ -73,6 +72,10 @@ These are the commands which I think are necessary:
 	remove-majormode {majormode}
 
 	remove-submode {majormode} {minormode}
+
+	setl {majormode}
+
+	setl no{majormode}
 
 The {majormode} is a new symbol.
 
@@ -160,9 +163,6 @@ mode:
 	define-majormode c
 	; defines "cmode"
 
-	set cmode
-	; sets the default mode for new buffers
-
 	setl cmode
 	; sets the mode for the current buffer
 
@@ -198,8 +198,20 @@ e.g.,
 
 	define-submode c autoindent
 
-The majormode name is required.  Any number of modes can be modified
-in a single command.
+The majormode name is required.  The names after the majormode name are
+names of buffer modes with a corresponding value.  Any number of modes
+can be specified in a single command, e.g.,
+
+	define-submode c autoindent tabstop=4
+
+For each mode given, vile defines corresponding names by which they can
+be referenced, e.g., "c-autoindent" (from the long mode name
+"autoindent") and "cai" (from the short mode name "ai" for autoindent). 
+The long mode name is always appended with a hyphen, and the short mode
+name is appended without a hyphen.
+
+The term "submode" is used in the command rather than the more natural
+"minor mode" to simplify name-completion.
 
 The following are keywords that aren't minor modes, but are recognized
 solely by the define-submode command:
@@ -233,7 +245,7 @@ solely by the define-submode command:
 		and options include:
 
 			-k mode
-				The keyword filename, omitting ".keywords". 
+				The keyword filename, omitting ".keywords".
 				For instance, the C filter vile-c-filt is used
 				for C, C++, JavaScript and Java by changing the
 				keyword file.
@@ -256,7 +268,7 @@ solely by the define-submode command:
 
 	before
 	after
-		A string that tells vile how to rank the majormode. 
+		A string that tells vile how to rank the majormode.
 		Normally vile checks each mode in order by name, but there
 		are special cases where you may want to check one mode
 		before another.  For example, the C++ majormode cppmode
@@ -267,7 +279,7 @@ solely by the define-submode command:
 	group
 		followed by a name, defines an alternative set of submode
 		values.
-		
+
 		Currently used only for complex fences, this could be applied
 		to simple fences, and (with new flags not yet defined) extend
 		both styles of fences for indentation and formatting.
@@ -276,7 +288,7 @@ solely by the define-submode command:
 		These are "complex" fences, which are matched one expression
 		per line.  The names are "fence-" followed by any of the
 		following keywords with a regular expression:
-		
+
 			if, elif, else, fi
 
 		Vile searches through all groups of complex fences for a
@@ -322,10 +334,11 @@ The "remove-submode" command
 
 Remove the special association of a submode from a majormode.
 
+
 Example
 -------
 
-The builtin C/C++ majormode description is equivalent to
+The original builtin C/C++ majormode description is equivalent to
 
 define-mode c
 ~with define-submode c
@@ -347,5 +360,5 @@ Note that the following are equivalent once you have defined the majormode "c":
 	define-submode c tabstop=8
 
 -------------------------------
-$Header: /users/source/archives/vile.vcs/doc/RCS/modes.doc,v 1.11 2002/10/22 23:52:39 tom Exp $
+$Header: /users/source/archives/vile.vcs/doc/RCS/modes.doc,v 1.13 2004/03/18 20:47:56 tom Exp $
 -------------------------------

@@ -7,7 +7,7 @@
  *
  * original author: D. R. Banks 9-May-86
  *
- * $Header: /users/source/archives/vile.vcs/RCS/isearch.c,v 1.58 2003/05/25 23:34:52 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/isearch.c,v 1.59 2004/03/21 17:18:05 tom Exp $
  *
  */
 
@@ -80,7 +80,9 @@ echochar(int c)			/* character to be echoed */
 static void
 unget_char(void)
 {
-    cmd_buff->itb_used -= 2;	/* remove Rubout and last char */
+    if (cmd_buff != 0
+	&& cmd_buff->itb_used >= 2)
+	cmd_buff->itb_used -= 2;	/* remove Rubout and last char */
 }
 
 /*
@@ -196,6 +198,8 @@ isearch(int f GCC_UNUSED, int n)
 	if (status != TRUE)
 	    DOT = curp;
 	c = kcod2key(get_char());	/* Get another character */
+    } else {
+	tb_init(&searchpat, EOS);
     }
     /* Top of the per character loop */
 
@@ -231,7 +235,6 @@ isearch(int f GCC_UNUSED, int n)
 	    if (status != TRUE)
 		DOT = curp;
 	    c = kcod2key(get_char());	/* Get the next char */
-	    unget_char();
 	    continue;		/* Go continue with the search */
 
 	case '\t':		/* Generically allowed */
@@ -252,8 +255,8 @@ isearch(int f GCC_UNUSED, int n)
 	    /* Presumably a quasi-normal character comes here */
 
 	default:		/* All other chars */
-	    if (c < ' ') {	/* Is it printable? *//* Nop
-				   * e. */
+	    if (!isPrint(c)) {	/* Is it printable? */
+		/* Nope. */
 		unkeystroke(c);	/* Re-eat the char */
 		return (TRUE);	/* And return the last status */
 	    }

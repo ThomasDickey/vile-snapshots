@@ -1,12 +1,12 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_REVISION($Revision: 1.203 $)
+AC_REVISION($Revision: 1.204 $)
 AC_PREREQ(2.13.20020210)
 rm -f config.cache
 
 ### Use "configure -with-screen" to override the default configuration, which is
 ### termcap-based on unix systems.
 
-dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.203 2003/11/12 23:54:19 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.204 2004/03/17 23:50:30 tom Exp $
 
 define(MAKELIST, sh $srcdir/filters/makelist.sh $srcdir/filters/genmake.mak)
 
@@ -169,6 +169,8 @@ then
 	VILE_EXTERNAL_FILTERS=none
 else
 	complete=`MAKELIST lc all`
+	builtins=`MAKELIST lc "$VILE_BUILT_IN_FILTERS"`
+	loadable=`MAKELIST lc "$VILE_LOADABLE_FILTERS"`
 	VILE_EXTERNAL_FILTERS=
 	for cf_a in $complete
 	do

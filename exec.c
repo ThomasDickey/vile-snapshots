@@ -4,7 +4,7 @@
  *	original by Daniel Lawrence, but
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.259 2003/06/21 14:59:47 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.260 2004/03/21 17:25:43 tom Exp $
  *
  */
 
@@ -1159,8 +1159,12 @@ char *
 mac_tokval(TBUFF ** tok)
 {
     if (mac_token(tok) != 0) {
+	char *previous = tb_values(*tok);
+	const char *newvalue = tokval(previous);
 	/* evaluate the token */
-	(void) tb_scopy(tok, tokval(tb_values(*tok)));
+	if ((const char *) previous != newvalue) {
+	    (void) tb_scopy(tok, newvalue);
+	}
 	return (tb_values(*tok));
     }
     tb_free(tok);

@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/htmlfilt.l,v 1.29 2003/05/20 20:38:41 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/htmlfilt.l,v 1.30 2004/03/19 23:20:26 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of HTML input
  * text.
@@ -90,7 +90,7 @@ html_command(char *text)
     if (change) {
 	set_symbol_table(filter_def.filter_name);
     }
-    flt_puts(text, strlen(text), keyword_attr(temp));
+    flt_puts(text, strlen(text), ci_keyword_attr(temp));
 
     if (change) {
      	if (ending) {

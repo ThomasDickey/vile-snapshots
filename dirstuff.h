@@ -4,7 +4,7 @@
  *	Definitions to interface to unix-like DIRECTORY(3) procedures.
  *	Include this after "estruct.h"
  *
- * $Header: /users/source/archives/vile.vcs/RCS/dirstuff.h,v 1.24 2002/10/09 19:43:50 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/dirstuff.h,v 1.25 2004/03/20 11:45:00 tom Exp $
  *
  */
 
@@ -23,7 +23,7 @@
 #define USE_D_NAMLEN 1
 #endif
 
-#if _POSIX_VERSION || defined(HAVE_DIRENT_H) || CC_TURBO || CC_WATCOM || CC_DJGPP || SYS_OS2
+#if (defined(_POSIX_VERSION) && _POSIX_VERSION) || defined(HAVE_DIRENT_H) || CC_TURBO || CC_WATCOM || CC_DJGPP || SYS_OS2
 # if CC_WATCOM || CC_CSETPP
 #   include <direct.h>
 # else
