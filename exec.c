@@ -4,7 +4,7 @@
  *	written 1986 by Daniel Lawrence
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.151 1998/03/31 23:48:08 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.152 1998/04/15 10:06:40 tom Exp $
  *
  */
 
@@ -1922,6 +1922,43 @@ int f GCC_UNUSED, int n)	/* default flag and numeric arg to pass on to file */
 }
 #endif
 
+static L_NUM
+get_b_lineno(BUFFER *bp)
+{
+	L_NUM result;
+	WINDOW *wp;
+
+	/* try to save the original location, so we can restore it */
+	if (curwp->w_bufp == bp)
+		result = line_no(bp, curwp->w_dot.l);
+	else if ((wp = bp2any_wp(bp)) != 0)
+		result = line_no(bp, wp->w_dot.l);
+	else
+		result = line_no(bp, bp->b_dot.l);
+	return result;
+}
+
+static void
+set_b_lineno(BUFFER *bp, L_NUM n)
+{
+	WINDOW *wp;
+	LINE *lp;
+
+	for_each_line(lp,bp) {
+		if (--n <= 0) {
+			bp->b_dot.l = lp;
+			bp->b_dot.o = 0;
+			for_each_window(wp) {
+				if (wp->w_bufp == bp) {
+					wp->w_dot = bp->b_dot;
+					wp->w_flag |= WFMOVE;
+				}
+			}
+			break;
+		}
+	}
+}
+
 /*	dofile:	yank a file into a buffer and execute it
 		if there are no errors, delete the buffer on exit */
 
@@ -1932,13 +1969,22 @@ char *fname)		/* file name to execute */
 	register BUFFER *bp;	/* buffer to place file to execute */
 	register int status;	/* results of various calls */
 	register int odiscmd;
+	int clobber = FALSE;
+	int original;
 
-	/* okay, we've got a unique name -- create it */
-	if ((bp = find_b_file(fname)) == 0
-	 && (bp = make_bp(fname, 0)) == 0) {
-		return FALSE;
+	/*
+	 * Check first for the name, assuming it's a filename.  If we don't
+	 * find an existing buffer with that filename, create a buffer.
+	 */
+	if ((bp = find_b_file(fname)) == 0) {
+		if ((bp = make_bp(fname, 0)) == 0)
+			return FALSE;
+		clobber = TRUE;
 	}
 	bp->b_flag = BFEXEC;
+
+	/* try to save the original location, so we can restore it */
+	original = get_b_lineno(bp);
 
 	/* and try to read in the file to execute */
 	if ((status = readin(fname, FALSE, bp, TRUE)) == TRUE) {
@@ -1951,12 +1997,16 @@ char *fname)		/* file name to execute */
 
 		/*
 		 * If no errors occurred, and if the buffer isn't displayed,
-		 * remove it.
+		 * remove it, unless it was loaded before we entered this
+		 * function.  In that case, (try to) jump back to the original
+		 * location.
 		 */
 		if (status != TRUE)
 			(void)swbuffer(bp);
-		else if (bp->b_nwnd == 0)
+		else if ((bp->b_nwnd == 0) && clobber)
 			(void)zotbuf(bp);
+		else
+			set_b_lineno(bp,original);
 	}
 	return status;
 }

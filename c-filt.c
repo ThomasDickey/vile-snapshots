@@ -5,7 +5,7 @@
  * Modifications:  kevin buettner and paul fox  2/95
  * 		string literal ("Literal") support --  ben stoltz
  * 
- * $Header: /users/source/archives/vile.vcs/RCS/c-filt.c,v 1.8 1998/04/12 11:57:38 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/c-filt.c,v 1.9 1998/04/15 10:43:06 tom Exp $
  *
  * Features:
  * 	- Reads the keyword file ".vile.keywords" from the home directory.
@@ -80,6 +80,51 @@
  * Known Bugs (other features):
  *	- The keyword lists should be ordered for optimal operation.
  *
+ * Win32 Notes: 
+ *    1) Keywords are read from either $HOME\vile.keywords or  
+ *       .\vile.keywords . 
+ * 
+ *    2) The console and GUI versions of vile both support full use of 
+ *       16 colors.  The default color mapping (palette) is as follows: 
+ * 
+ *       C0:black       C1:red            C2:green        C3:brown    
+ *       C4:blue        C5:magenta        C6:cyan         C7:lightgray    
+ *       C8:gray        C9:brightred      CA:brightgreen  CB:yellow      
+ *       CC:brightblue  CD:brightmagenta  CE:brightcyan   CF:white 
+ * 
+ *    3) Note also that the user may specify the editor's foreground and 
+ *       background colors (:se fcolor, :se bcolor) as well as a 
+ *       foreground color for search matches (:se visual-matches). 
+ * 
+ *    Pulling 1-3 together, here is an example vile.rc file that 
+ *    sets the foreground color to white, background color to (dark) blue, 
+ *    and visual matches color to bright red: 
+ * 
+ *    vile.rc 
+ *    ======= 
+      set bcolor=blue 
+      set fcolor=white 
+      set visual-matches=brightred 
+ 
+ *    And here is an example vile.keywords file that colors comments in 
+ *    yellow, C keywords in brightcyan, preprocesor directives in  
+ *    brightmagenta, and string constants in brightgreen. 
+ *     
+ *    vile.keywords 
+ *    ============= 
+      Comments:CB 
+      Cpp:CD 
+      Literal:CA 
+      if:CE 
+      else:CE 
+      for:CE 
+      return:CE 
+      while:CE 
+      switch:CE 
+      case:CE 
+      do:CE 
+      goto:CE 
+      break:CE 
  */
 
 #ifdef HAVE_CONFIG_H
@@ -370,7 +415,7 @@ has_endofliteral(char *s)	/* points to '"' */
     while (*s) {
 	if (*s == '\"')
 	    return (i);
-	if (s[0] == '\\' && s[1] == '\"') {
+	if (s[0] == '\\' && (s[1] == '\"' || s[1] == '\\')) { 
 		++i;
 		++s;
 	}

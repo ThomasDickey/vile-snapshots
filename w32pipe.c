@@ -56,12 +56,7 @@
  *    situation, kill the app by typing ^C (and then please apply for a 
  *    QA position with a certain Redmond company).
  *
- * -- If vile crashes/hangs while processing a read pipe, temp file(s)
- *    will be left in the current drive's root directory.  This reeks.
- *    Using an API other than tmpnam() to allocate temp files would go
- *    a long way toward fixing the problem.
- * 
- * $Header: /users/source/archives/vile.vcs/RCS/w32pipe.c,v 1.5 1998/04/06 03:01:00 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32pipe.c,v 1.6 1998/04/15 10:43:27 tom Exp $
  */
 
 #include <windows.h>
@@ -84,7 +79,7 @@
 static HANDLE proc_handle;
 static char   *shell = NULL,
               *shell_c = "/c",
-              tmpin_nam[L_tmpnam + 1];
+              *tmpin_name; 
 
 /* ------------------------------------------------------------------ */
 
@@ -150,8 +145,12 @@ pop_console_mode(void)
 static void
 global_cleanup(void)
 {
-    if (tmpin_nam[0] != '\0')
-        remove(tmpin_nam);
+    if (tmpin_name) 
+    { 
+        (void) remove(tmpin_name); 
+        (void) free(tmpin_name); 
+        tmpin_name = NULL; 
+    } 
     pop_console_mode();
 }
 
@@ -223,7 +222,7 @@ w32_inout_popen(FILE **fr, FILE **fw, char *cmd)
     rp[0]        = rp[1]      = wp[0]      = wp[1] = BAD_FD;
     handles[0]   = handles[1] = handles[2] = INVALID_HANDLE_VALUE;
     tmpin_fd     = BAD_FD;
-    tmpin_nam[0] = '\0';
+    tmpin_name   = NULL; 
     push_console_mode(cmd);
     do
     {
@@ -263,9 +262,9 @@ w32_inout_popen(FILE **fr, FILE **fw, char *cmd)
                  * been warned.
                  */
 
-                if (tmpnam(tmpin_nam) == NULL)
+                if ((tmpin_name = _tempnam(getenv("TEMP"), "vile")) == NULL) 
                     break;
-                if ((tmpin_fd = open(tmpin_nam,
+                if ((tmpin_fd = open(tmpin_name, 
                                      O_RDONLY|O_CREAT|O_TRUNC,
                                      _S_IWRITE|_S_IREAD)) == BAD_FD)
                 {
