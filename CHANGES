@@ -1,5 +1,12 @@
 Changes for vile 7.2 (released ??? ??? ??, 1997)
 
+(tom)	970902 (j)
+	+ correct logic in find_mode() that did not find majormode qualifiers
+	  for majormodes that began similarly (e.g., "com" masked by "c").
+	+ correct an uninitialized variable in per_submode(), found by Purify.
+	+ correct ifdef'ing in tcap.c, from 7.1i, when neither tparm nor
+	  tparam is found.
+
 (tom)	970901 (i)
 	+ if the command-line '@' option is used, set the $startup-file
 	  variable to correspond to the startup file which is used.

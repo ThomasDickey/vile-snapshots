@@ -1,7 +1,7 @@
 /*	tcap:	Unix V5, V7 and BS4.2 Termcap video driver
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.92 1997/08/30 12:53:48 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.93 1997/09/02 15:00:34 tom Exp $
  *
  */
 
@@ -77,6 +77,9 @@
 #else
 #if HAVE_TPARAM	/* GNU termcap */
 #define MY_TPARM(cap,code) tparam(cap, (char *)0, 0, code)
+#else
+static char *my_tparm(char *cap GCC_UNUSED, int code GCC_UNUSED) { return 0; }
+#define MY_TPARM(cap,code) my_tparm(cap, code)
 #endif
 #endif
 
@@ -807,9 +810,7 @@ colors_are_really_ANSI (void)
 static void
 show_ansi_colors (void)
 {
-#if HAVE_TPARM || HAVE_TPARAM
 	char	*t;
-#endif
 
 	if (shown_fcolor == NO_COLOR
 	 || shown_bcolor == NO_COLOR) {

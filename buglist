@@ -1,7 +1,7 @@
 ------------------------
 vile bug/enhancement/wish list (mostly wishes ;-)
 ------------------------
-$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.331 1997/09/01 23:23:17 tom Exp $
+$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.332 1997/09/02 18:06:26 tom Exp $
 ----------------------
 	(E means enhancement, L,M,H are low, medium, high priority)
 
@@ -1249,3 +1249,8 @@ reopening the console.
 -- 97-06-05 (tom)
 
 The 'map' functions should allow mappings with embedded nulls.
+
+-- 97-09-02 (tom)
+
+The majormode code leaks memory in the qualifiers (e.g., suffixes and
+preamble).
