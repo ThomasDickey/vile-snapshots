@@ -1,7 +1,7 @@
 /*	npopen:  like popen, but grabs stderr, too
  *		written by John Hutchinson, heavily modified by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/npopen.c,v 1.81 1999/12/22 11:04:05 kev Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/npopen.c,v 1.82 2000/05/29 20:53:30 tom Exp $
  *
  */
 
@@ -269,6 +269,8 @@ int
 system_SHELL(char *cmd)
 {
 	int cpid;
+
+	TRACE(("system_SHELL(%s)\n", cmd != 0 ? cmd : ""));
 
 	cpid = softfork();
 	if (cpid < 0) {

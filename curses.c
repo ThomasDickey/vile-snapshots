@@ -1,7 +1,7 @@
 /*
  * A terminal driver using the curses library
  *
- * $Header: /users/source/archives/vile.vcs/RCS/curses.c,v 1.10 2000/05/18 10:13:24 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/curses.c,v 1.12 2000/05/29 20:50:38 tom Exp $
  */
 
 #include	"estruct.h"
@@ -67,7 +67,7 @@ static const struct {
     { CAPNAME("F6", "kf16"), KEY_F16 },
     { CAPNAME("F7", "kf17"), KEY_F17 },
     { CAPNAME("F8", "kf18"), KEY_F18 },
-    { CAPNAME("F9", "kf19"), KEY_F19 },				/* F19 */
+    { CAPNAME("F9", "kf19"), KEY_F19 },
     { CAPNAME("FA", "kf20"), KEY_F20 },
     { CAPNAME("FB", "kf21"), KEY_F21 },
     { CAPNAME("FC", "kf22"), KEY_F22 },
@@ -92,6 +92,7 @@ static const struct {
 #include "os2keys.h"
 #endif
 
+static int in_screen = FALSE;
 static int can_color = FALSE;
 
 static void
@@ -204,12 +205,13 @@ initialize(void)
 static void
 curs_open(void)
 {
+    TRACE(("curs_open\n"));
 }
 
 static void
 curs_close(void)
 {
-    endwin();
+    TRACE(("curs_close\n"));
 }
 
 static int last_key = -1;
@@ -229,24 +231,35 @@ curs_getc(void)
 {
     int result = last_key;
 
-    if (result == -1) {
+    if (!in_screen) {
+	fflush(stdout);
+	result = getchar();
+    } else if (result == -1) {
 	nodelay(stdscr, FALSE);
 	result = getch();
     }
     last_key = -1;
+    TRACE(("curs_getc:%d%s\n", result, in_screen ? "" : "*"));
     return result;
 }
 
 static OUTC_DCL
 curs_putc(OUTC_ARGS)
 {
-    OUTC_RET addch(c);
+    if (in_screen) {
+	OUTC_RET addch(c);
+    } else {
+	OUTC_RET putchar(c);
+    }
 }
 
 static void
 curs_flush(void)
 {
-    refresh();
+    if (in_screen) {
+	refresh();
+	TRACE(("curs_flush\n"));
+    }
 }
 
 static void
@@ -258,12 +271,16 @@ curs_kopen(void)
 	initialize();
     }
     refresh();
+    in_screen = TRUE;
+    TRACE(("curs_kopen\n"));
 }
 
 static void
 curs_kclose(void)
 {
     endwin();
+    in_screen = FALSE;
+    TRACE(("curs_kclose\n"));
 }
 
 static void
@@ -317,19 +334,21 @@ set_bkgd_colors(int fg, int bg)
      */
     if (is_default(fg) && is_default(bg)) {
 	pair = 0;
-	init_pair(pair, -1, -1);
+	fg = -1;
+	bg = -1;
     } else {
 	if (is_default(fg)) {
 	    pair = bg;
-	    init_pair(pair, -1, bg);
+	    fg = -1;
 	} else if (is_default(bg)) {
 	    pair = fg * COLORS;
-	    init_pair(pair, fg, -1);
+	    bg = -1;
 	} else {
 	    pair = fg * COLORS + bg;
-	    init_pair(pair, fg, bg);
 	}
     }
+    if (init_pair(pair, fg, bg) == ERR)
+	return;
 #else
     pair = fg * COLORS + bg;
 #endif

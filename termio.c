@@ -3,7 +3,7 @@
  * characters, and write characters in a barely buffered fashion on the display.
  * All operating systems.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/termio.c,v 1.186 2000/01/15 13:19:24 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/termio.c,v 1.187 2000/05/29 22:10:13 tom Exp $
  *
  */
 
@@ -19,8 +19,6 @@
 #include <starlet.h>
 #include <lib$routines.h>
 #endif
-
-static	int	was_clean = FALSE;	/* suppress the first term.kopen */
 
 #if SYS_UNIX
 
@@ -327,7 +325,6 @@ ttclean(int f)
 	set_kbd_polling(FALSE);
 #endif
 #endif
-	was_clean = TRUE;
 }
 
 void
@@ -336,8 +333,6 @@ ttunclean(void)
 #if ! DISP_X11
 	tcdrain(1);
 	tcsetattr(0, TCSADRAIN, &ntermios);
-	if (was_clean)
-		term.kopen();
 #endif
 }
 
@@ -451,7 +446,6 @@ ttclean(int f)
 	set_kbd_polling(FALSE);
 #endif
 #endif	/* DISP_X11 */
-	was_clean = TRUE;
 }
 
 void
@@ -485,7 +479,7 @@ struct tchars	ntchars; /*  = { -1, -1, -1, -1, -1, -1 }; */
 void
 ttopen(void)
 {
-	ioctl(0,TIOCGETP,(char *)&ostate); /* save old state */
+	ioctl(0,TIOCGETP,(char *)&ostate);	/* save old state */
 	killc = ostate.sg_kill;
 	backspc = ostate.sg_erase;
 
@@ -493,7 +487,7 @@ ttopen(void)
 	nstate = ostate;
 	nstate.sg_flags |= CBREAK;
 	nstate.sg_flags &= ~(ECHO|CRMOD);	/* no echo for now... */
-	ioctl(0,TIOCSETN,(char *)&nstate); /* set new state */
+	ioctl(0,TIOCSETN,(char *)&nstate);	/* set new state */
 #endif
 
 	rnstate = nstate;
@@ -591,7 +585,6 @@ ttclean(int f)
 	term.flush();
 #endif
 #endif
-	was_clean = TRUE;
 }
 
 void
@@ -1059,7 +1052,6 @@ ttclean(int f)
 	term.close();
 	term.kclose();
 #endif
-	was_clean = TRUE;
 }
 
 void

@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.229 2000/05/19 00:52:43 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.230 2000/05/29 18:27:14 tom Exp $
  *
  */
 
@@ -411,6 +411,7 @@ key_to_bind(const CMDFUNC * kcmd)
 
     if (c >= 0) {
 	/* change it to something we can print as well */
+	outseq[0] = EOS;
 	if (!no_msgs)
 	    kbd_puts(kcod2prc(c, outseq));
 	hst_append_s(outseq, FALSE);

@@ -1,5 +1,16 @@
 Changes for vile 9.2 (released ??? ??? ?? 2000)
 
+ 20000529 (j)
+	> Tom Dickey:
+	+ fixes to make shell commands work properly with curses.c driver:
+	  remove unneeded term.kclose from one version of ttunclean
+	+ allow whitespace after '<<' that begins here-document in perl filter.
+	+ modify suffix qualifiers for shmode and vilemode to make most dot
+	  files that end in "rc" in shmode, unless the filename contains the
+	  string "vile".
+	+ add error-checks for init_pair() calls in curses.c (bug report by
+	  Brendan O'Dea).
+
  20000519 (i)
 	> Tom Dickey:
 	+ use $cmd-count in AlignToCol to align more than one line at the

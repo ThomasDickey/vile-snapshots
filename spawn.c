@@ -1,7 +1,7 @@
 /*	Spawn:	various DOS access commands
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.158 2000/05/17 22:28:22 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.159 2000/05/29 22:14:20 tom Exp $
  *
  */
 
@@ -126,6 +126,7 @@ spawncli(int f GCC_UNUSED, int n GCC_UNUSED)
 #endif
 	kbd_openup();
 	ttunclean();
+	term.kopen();
 	sgarbf = TRUE;
 	return AfterShell();
 #endif /* SYS_UNIX */
@@ -360,7 +361,6 @@ spawn1(int rerun, int pressret)
 #else
 	ttclean(TRUE);
 	(void)system_SHELL(line);
-	term.flush();
 	ttunclean();
 	if (pressret)
 		pressreturn();

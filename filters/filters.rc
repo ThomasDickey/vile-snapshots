@@ -1,4 +1,4 @@
-; $Id: filters.rc,v 1.118 2000/04/21 10:18:53 tom Exp $
+; $Id: filters.rc,v 1.119 2000/05/29 18:54:41 tom Exp $
 ; majormodes in this file are ordered alphabetically for convenience - the
 ; precedence used by vile is strictly alphabetic, counting case.
 
@@ -55,7 +55,7 @@ define-mode cpp
 define-mode csh
 ~with define-submode csh
 	suf '\.\(csh[^/]*\|login\|logout\)$'
-	pre '^#!\s*\/.*csh\>\(\s*-[a-z]\+\)*$'
+	pre '^#!\s*\/.*csh\>\(\s*-[a-z]\+\)*\s*$'
 	filtername	'vile-sh-filt -k csh'
 	comment-prefix	'^\s*#'
 	comments	'^\s*#\s*$'
@@ -344,7 +344,7 @@ define-mode SCCS
 ; This is matched after 'csh', and will pick up /bin/sh, /bin/bash, /bin/ksh
 define-mode sh
 ~with define-submode sh
-	suf '\.\(sh\|ksh\)$'
+	suf '\.\(sh\|ksh\|[^/]*rc\)$'
 	pre '^\(\(#!\s*\/.*sh\>\(\s*-[a-z]*\s*\)\?\)\|:\)$'
 	comment-prefix	'^\s*[:#]'
 	comments	'^\s*[:#]\s*$'
@@ -418,7 +418,8 @@ define-mode txt
 
 ; "define-mode vile" is builtin
 ~with define-submode vile
-	suf '\(\.vilerc[^/]*\|\.rc\|\.exrc\)$'
+	before "sh"
+	suf '\(\.vile[^/]*rc\|vile.*/[^/]*rc\|\.exrc\)$'
 	comment-prefix	'^\s*;'
 	comments	'^\s*;\s*$'
 	fence-if	'^\s*~if\>'
