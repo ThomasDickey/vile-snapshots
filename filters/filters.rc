@@ -1,4 +1,4 @@
-; $Id: filters.rc,v 1.148 2002/02/03 21:16:37 tom Exp $
+; $Id: filters.rc,v 1.149 2002/02/12 22:45:15 tom Exp $
 ; majormodes in this file are ordered alphabetically for convenience - the
 ; precedence used by vile is strictly alphabetic, counting case.
 
@@ -198,14 +198,14 @@ define-mode imake
 define-mode java
 ~with define-submode java
 	suf '\.java$'
-	filtername 'vile-c-filt -k java'
+	filtername 'vile-c-filt -p -k java'
 	cindent
 ~endwith
 
 define-mode js
 ~with define-submode js
 	suf '\.js$'
-	filtername 'vile-c-filt -k js'
+	filtername 'vile-c-filt -p -k js'
 	cindent
 ~endwith
 
@@ -438,6 +438,18 @@ define-mode sql
 	comment-prefix	'^\s*rem\(ark\)\?'
 	comments	'^\s*rem\(ark\)\?\s*$'
 	ignorecase
+	; PL/SQL
+	fence-if   '^\s*if\>'
+	fence-elif '^\s*elseif\>'
+	fence-else '^\s*else\>\s*$'
+	fence-fi   '^\s*end\s\+if\s*;'
+~elsewith define-submode sql group 'loop'
+	fence-if   '^\s*while\>.*\<loop\>'
+	fence-fi   '^\s*end\s\+loop\s*;'
+~elsewith define-submode sql group 'block'
+	fence-if   '^\s*begin\>'
+	fence-else '^\s*exception\>'
+	fence-fi   '^\s*end\s*;'
 ~endwith
 
 define-mode tags

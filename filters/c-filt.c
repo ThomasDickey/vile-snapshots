@@ -6,14 +6,14 @@
  *		string literal ("Literal") support --  ben stoltz
  *		factor-out hashing and file I/O - tom dickey
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/c-filt.c,v 1.61 2002/01/06 20:37:32 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/c-filt.c,v 1.62 2002/02/12 22:29:35 tom Exp $
  *
  * Usage: refer to vile.hlp and doc/filters.doc .
  */
 
 #include <filters.h>
 
-DefineFilter("c");
+DefineOptFilter("c", "p");
 
 #define ESCAPE '\\'
 #define DQUOTE '"'
@@ -158,7 +158,7 @@ write_number(char *s)
     char *attr = Number_attr;
     int radix = (*s == '0')
     ? ((s[1] == 'x' || s[1] == 'X') ? 16
-	: (!isdigit(CharOf(s[1]))) ? 10 : 8) : 10;
+       : (!isdigit(CharOf(s[1]))) ? 10 : 8) : 10;
     int state = 0;
     int done = 0;
     int found = isdigit(CharOf(*s)) && (radix != 16);
@@ -392,7 +392,7 @@ do_filter(FILE * input GCC_UNUSED)
     Ident_attr = class_attr(NAME_IDENT);
     Literal_attr = class_attr(NAME_LITERAL);
     Number_attr = class_attr(NAME_NUMBER);
-    Preproc_attr = class_attr(NAME_PREPROC);
+    Preproc_attr = flt_options['p'] ? Error_attr : class_attr(NAME_PREPROC);
 
     comment = 0;
     literal = 0;
@@ -423,7 +423,7 @@ do_filter(FILE * input GCC_UNUSED)
 		write_comment(s, c_length, 1);
 		break;
 	    } else if (!escaped && !comment && *s == '#' && firstnonblank(s, line)
-		&& set_symbol_table("cpre")) {
+		       && set_symbol_table("cpre")) {
 		s = parse_prepro(s, &literal);
 		set_symbol_table(filter_def.filter_name);
 	    } else if (comment && *s) {
@@ -454,14 +454,15 @@ do_filter(FILE * input GCC_UNUSED)
 	    } else if (isIdent(*s)) {
 		s = extract_identifier(s);
 	    } else if (isdigit(CharOf(*s))
-		|| (*s == '.' && (isdigit(CharOf(s[1])) || s[1] == '.'))) {
+		       || (*s == '.'
+			   && (isdigit(CharOf(s[1])) || s[1] == '.'))) {
 		s = write_number(s);
 	    } else if (*s == '#') {
 		char *t = s;
 		while (*s == '#')
 		    s++;
 		flt_puts(t, s - t, ((s - t) > 2) ?
-		    Error_attr : Preproc_attr);
+			 Error_attr : Preproc_attr);
 	    } else {
 		flt_putc(*s++);
 	    }

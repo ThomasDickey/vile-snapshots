@@ -1,9 +1,9 @@
-%s COMMENT COMMENT1
+%s CODE ACTION COMMENT COMMENT1
 
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/sql-filt.l,v 1.11 2001/09/18 19:54:51 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/sql-filt.l,v 1.15 2002/02/14 00:25:34 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of SQL script
  * - T.Dickey
@@ -15,10 +15,13 @@ DefineFilter("sql");
 
 static char *Action_attr;
 static char *Comment_attr;
+static char *Error_attr;;
 static char *Ident_attr;
 static char *Keyword_attr;
 static char *Number_attr;
 static char *String_attr;
+
+static int leading;
 
 static void
 init_filter(int before GCC_UNUSED)
@@ -32,12 +35,14 @@ do_filter(FILE *input)
 
     Action_attr  = class_attr(NAME_ACTION);
     Comment_attr = class_attr(NAME_COMMENT);
+    Error_attr   = class_attr(NAME_ERROR);
     Ident_attr   = class_attr(NAME_IDENT2);
     Keyword_attr = class_attr(NAME_KEYWORD);
     Number_attr  = class_attr(NAME_NUMBER);
     String_attr  = class_attr(NAME_LITERAL);
 
-    BEGIN(INITIAL);
+    BEGIN(CODE);
+    leading = 1;
     while (yylex() > 0) {
     }
 }
@@ -60,37 +65,48 @@ SSTRING		\'([^\']|\'\')*\'
 DSTRING		\"([^"])*\"
 STRING		({SSTRING}|{DSTRING})
 
-IDENT		[a-zA-Z][a-zA-Z0-9_]*
+IDENT		[%]?[a-zA-Z][a-zA-Z0-9_$]*
 LABEL		"<<"{IDENT}">>"
 HOSTVAR		":"{IDENT}
 
 %%
 
-{LABEL}		|
-{ACTION}		{ WriteToken(Action_attr); }
+<CODE>\n		|
+<CODE>^{SPACE}		{ ECHO; leading = 1; }
 
-{IDENT}			{   if (!strcmp(lowercase_of(yytext), "rem")
-			     || !strcmp(yytext, "remark")) {
-				WriteToken(Comment_attr);
+<CODE>{LABEL}		|
+<CODE>{ACTION}		{ WriteToken(Action_attr); BEGIN(ACTION); leading = 0; }
+<ACTION>\n		{ ECHO; BEGIN(CODE); }
+<ACTION>[^\n]*		{ WriteToken(String_attr); BEGIN(CODE); }
+
+<CODE>{IDENT}		{   char *text = lowercase_of(yytext);
+			    char *attr = ci_keyword_attr(text);
+			    if (attr == Comment_attr) {
+				WriteToken(leading ? attr : Error_attr);
 				BEGIN(COMMENT1);
+			    } else if (attr == Action_attr) {
+				WriteToken(attr);
+				BEGIN(ACTION);
 			    } else {
-				WriteToken(ci_keyword_attr(yytext));
+				WriteToken(attr);
+				leading = 0;
 			    }
 			}
 
-{HOSTVAR}		{ flt_puts(yytext, 1, Action_attr);
+<CODE>{HOSTVAR}		{ flt_puts(yytext, 1, Action_attr);
 			  WriteToken2(Ident_attr,1);
+			  leading = 0;
 			}
 
-{NUMBER}		{ WriteToken(Number_attr); }
+<CODE>{NUMBER}		{ WriteToken(Number_attr); leading = 0; }
 
-{STRING}		{ WriteToken(String_attr); }
+<CODE>{STRING}		{ WriteToken(String_attr); leading = 0; }
 
-^{SPACE}--[^\n]*	{ WriteToken(Comment_attr); BEGIN(COMMENT1); }
+<CODE>--[^\n]*		{ WriteToken(Comment_attr); BEGIN(COMMENT1); }
 <COMMENT1>[^\n]*	{ WriteToken(Comment_attr); }
-<COMMENT1>\n		{ ECHO; BEGIN(INITIAL); }
+<COMMENT1>\n		{ ECHO; BEGIN(CODE); }
 
-"/*"			{ WriteToken(Comment_attr); BEGIN(COMMENT); }
+<CODE>"/*"		{ WriteToken(Comment_attr); BEGIN(COMMENT); }
 <COMMENT>[^*]*		{ WriteToken(Comment_attr); }
 <COMMENT>"*"+[^*/]*	{ WriteToken(Comment_attr); }
-<COMMENT>"*"+"/"	{ WriteToken(Comment_attr); BEGIN(INITIAL); }
+<COMMENT>"*"+"/"	{ WriteToken(Comment_attr); BEGIN(CODE); }

@@ -1,5 +1,23 @@
 Changes for vile 9.3 (released ??? ??? ?? 2000)
 
+ 20020213 (x)
+	+ improve describe-key so it displays bindings for named procedures
+	  and perl commands.
+	+ add fence-patterns to sqlmode, for PL/SQL.
+	+ implement extended command-line options for filters, allowing them
+	  to specify which options (other than -k, -q, -v) are recognized for
+	  their own use.  Use this to add -p option to c-filt.c, which tells
+	  vile-c-filt to mark '#' (preprocessor) as an error.
+	+ correct two bugs in sh-filt.l
+	  a) add/use return value from embed_or_append() to decide whether to
+	     switch to SUBST state.
+	  b) emit token that does not match EOF-marker for here-document.
+	+ add cursor-attributes and other keywords from Oracle 7.
+	+ modify sql filter to flag "remark" as an error if it is not the
+	  first token on a line.
+	+ correct highlighting of "remark" keyword in sql filter, which did
+	  not allow for "REMARK".
+
  20020203 (w)
 	+ indent'd line.c, oneliner.c, opers.c
 	+ implemented '< and '> marks, which denote the limits of the
@@ -227,9 +245,9 @@ Changes for vile 9.3 (released ??? ??? ?? 2000)
 	+ doc/macros.doc - mention that numbered macros are allocated from fixed
 	  pool and describe their (as far as I can tell) single
 	  advantage.
-        + vile.hlp:
+	+ vile.hlp:
 	  + fix typo where #-<c> binding was attempted in insertmode.
-          + reorganize discussion of macros to mimic (in a very
+	  + reorganize discussion of macros to mimic (in a very
 	    abbreviated form) the key information from
 	    doc/macros.doc .
 	> J Chris Coppick:
@@ -1717,7 +1735,7 @@ Changes for vile 9.2 (released Tue Oct 17 2000)
 	+ added a winvile `about' box (available from the System Menu).
 	+ winvile's right mouse menu includes these new commands:
 	    cmd name  bound to                        txt slctn  txt slctn must
-						         rqd?    be in curbuf?
+							 rqd?    be in curbuf?
 	    --------  --------                        ---------  -------------
 	    undo      undo-changes-backward
 	    redo      redo-changes-forward

@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/sh-filt.l,v 1.44 2002/01/18 01:07:25 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/sh-filt.l,v 1.45 2002/02/11 20:20:42 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Shell script.
  */
@@ -71,7 +71,7 @@ save_here(char *text, int length)
     *s = 0;
 }
 
-static void
+static int
 embed_or_append(char *text, int length)
 {
     if (here_exp) {
@@ -79,6 +79,7 @@ embed_or_append(char *text, int length)
     } else {
 	flt_bfr_append(text, length);
     }
+    return here_exp;
 }
 
 static int
@@ -218,7 +219,7 @@ INTEGER		[-+]?([0-9]+)
 <HEREDOC>\\\$		{ flt_bfr_append(yytext, yyleng); }
 <HEREDOC>{IDENT1}	|
 <HEREDOC>{IDENT2}	{ embed_or_append(yytext, yyleng); }
-<HEREDOC>{IDENT2L}	{ embed_or_append(yytext, yyleng); push_stk(SUBST); }
+<HEREDOC>{IDENT2L}	{ if (embed_or_append(yytext, yyleng)) push_stk(SUBST); }
 <HEREDOC>^[\t]*{QIDENT}$ {
 			    int used = 0;
 			    if (strip_tabs) {
@@ -230,6 +231,8 @@ INTEGER		[-+]?([0-9]+)
 				flt_bfr_finish();
 				pop_stk();
 				strip_tabs = 0;
+			    } else {
+				flt_bfr_append(yytext, yyleng);
 			    }
 			}
 <HEREDOC>[^\n\$]+	{ flt_bfr_append(yytext, yyleng); }
@@ -239,7 +242,7 @@ INTEGER		[-+]?([0-9]+)
 <QUOTED>\\		{ flt_bfr_embed(yytext, yyleng, Action_attr); push_stk(QUOTED2); }
 <QUOTED>{IDENT1}	|
 <QUOTED>{IDENT2}	{ flt_bfr_embed(yytext, yyleng, Ident_attr); }
-<QUOTED>{IDENT2L}	{ flt_bfr_embed(yytext, yyleng, Ident_attr); push_stk(SUBST); }
+<QUOTED>{IDENT2L}	{ if (embed_or_append(yytext, yyleng)) push_stk(SUBST); flt_bfr_append(yytext, yyleng); }
 <QUOTED>[^\n\\\"$]+	{ flt_bfr_append(yytext, yyleng); }
 <QUOTED>[\n$]		{ flt_bfr_append(yytext, yyleng); }
 <QUOTED>\"		{ FinishQuote(NORMAL); pop_stk(); }
