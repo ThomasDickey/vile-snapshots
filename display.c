@@ -5,13 +5,14 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.293 1999/08/22 12:01:53 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.296 1999/09/04 00:25:24 tom Exp $
  *
  */
 
 #include	"estruct.h"
 #include	"edef.h"
 #include	"pscreen.h"
+#include	"nefsms.h"
 
 #define vMAXINT ((int)((unsigned)(~0)>>1))	/* 0x7fffffff */
 #define vMAXNEG (-vMAXINT)			/* 0x80000001 */
@@ -2646,12 +2647,16 @@ char	**msptr)
 	PutMode(MDCRYPT,	"crypt")
 #endif
 	PutMode(MDDOS,		"dos-style")
+#if OPT_RECORDSEP_CHOICES    
+	if (b_val(bp, MDDOS) ^ (b_val(bp, VAL_RECORD_SEP) == RS_CRLF))
+		PutModename("c%s",
+			choice_to_name(fsm_recordsep_choices,
+					b_val(bp, VAL_RECORD_SEP)));
+#endif
 	PutMode(MDREADONLY,	"read-only")
 	PutMode(MDVIEW,		"view-only")
 #if OPT_LCKFILES
 	PutMode(MDLOCKED,	"locked by")
-#endif
-#if OPT_LCKFILES
 	if (ms != 0 && b_val(bp, MDLOCKED))
 		ms = lsprintf(ms, " %s", b_val_ptr(bp,VAL_LOCKER));
 #endif
@@ -2986,6 +2991,7 @@ special_formatter(TBUFF **result, char *fs, WINDOW *wp)
 		tb_values(*result)[col] = '|';
 	}
     }
+    tb_append(result, EOS);
 }
 #endif
 

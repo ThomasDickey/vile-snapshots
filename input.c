@@ -44,7 +44,7 @@
  *	tgetc_avail()     true if a key is avail from tgetc() or below.
  *	keystroke_avail() true if a key is avail from keystroke() or below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.202 1999/08/18 00:16:26 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.203 1999/09/04 15:16:16 tom Exp $
  *
  */
 
@@ -1189,7 +1189,7 @@ editMinibuffer(TBUFF **buf, unsigned *cpos, int c, int margin, int quoted)
 	/* Use editc (normally ^G) to toggle insert/command mode */
 	if (c == editc && !quoted) {
 		miniedit = !miniedit;
-	} else if (isspecial(c)
+	} else if (isSpecial(c)
 	  ||  (miniedit && cfp != 0 && cfp->c_flags & MOTION)) {
 
 		/* If we're allowed to honor SPEC bindings, then see if it's
@@ -1678,7 +1678,7 @@ int (*complete)(DONE_ARGS))	/* handles completion */
 		} else if (firstch == TRUE
 		  && !quotef
 		  && !isMiniEdit(c)
-		  && !isspecial(c)) {
+		  && !isSpecial(c)) {
 			/* clean the buffer on the first char typed */
 			unkeystroke(c);
 			kbd_kill_response(buf, &cpos, killc);
@@ -1697,7 +1697,7 @@ int (*complete)(DONE_ARGS))	/* handles completion */
 			quotef = FALSE;
 
 #if !SMALLER
-			if (!isspecial(c)) {
+			if (!isSpecial(c)) {
 				if ((options & KBD_LOWERC)
 				 && isUpper(c))
 					c = toLower(c);

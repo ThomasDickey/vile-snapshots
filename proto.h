@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.372 1999/08/22 11:58:19 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.377 1999/09/03 11:04:34 tom Exp $
  *
  */
 
@@ -615,20 +615,22 @@ void purge_msgs (void);
 #endif
 
 /* modes.c */
-extern REGEXVAL *free_regexval(REGEXVAL *rp);
-extern REGEXVAL *new_regexval (const char *pattern, int magic);
-extern char *string_mode_val (VALARGS *args);
+extern REGEXVAL * free_regexval (REGEXVAL *rp);
+extern REGEXVAL * new_regexval (const char *pattern, int magic);
+extern char * get_record_sep (BUFFER *bp);
+extern char * string_mode_val (VALARGS *args);
 extern const char * choice_to_name (const FSM_CHOICES *choices, int code);
-extern int adjvalueset (const char *cp, int setting, int global, VALARGS *args);
+extern int adjvalueset (const char *cp, int defining, int setting, int global, VALARGS *args);
 extern int choice_to_code (const FSM_CHOICES *choices, const char *name, size_t len);
-extern int combine_choices(const FSM_CHOICES *choices, const char *string);
+extern int combine_choices (const FSM_CHOICES *choices, const char *string);
 extern int find_mode (BUFFER *bp, const char *mode, int global, VALARGS *args);
 extern int getfillcol(BUFFER *bp);
 extern int mode_eol (EOL_ARGS);
-extern int set_mode_value(BUFFER *bp, const char *cp, int setting, int global, VALARGS *args, const char *rp);
+extern int set_mode_value (BUFFER *bp, const char *cp, int defining, int setting, int global, VALARGS *args, const char *rp);
 extern int string_to_number (const char *from, int *np);
 extern void copy_mvals (int maximum, struct VAL *dst, struct VAL *src);
 extern void free_local_vals (const struct VALNAMES *names, struct VAL *gbl, struct VAL *val);
+extern void set_record_sep(BUFFER *bp, RECORD_SEP value);
 
 #if OPT_COLOR_SCHEMES
 extern void init_scheme(void);
@@ -708,11 +710,14 @@ extern char * pathcat (char *dst, const char *path, char *leaf);
 extern char * pathleaf (char *path);
 extern char * shorten_path (char *path, int keep_cwd);
 extern const char *parse_pathlist (const char *list, char *result);
+extern int find_in_path_list(const char *path_list, char *path);
 extern int is_directory (char *path);
 extern int is_internalname (const char *fn);
 extern int is_pathname (char *path);
 extern int is_scratchname (const char *fn);
 extern int maybe_pathname (char *fn);
+extern void append_to_path_list(char **path_list, char *path);
+extern void prepend_to_path_list(char **path_list, char *path);
 
 #if OPT_MSDOS_PATH
 extern char * is_msdos_drive (char *path);
@@ -743,6 +748,7 @@ extern char * home_path (char *path);
 extern L_NUM line_count (BUFFER *the_buffer);
 extern L_NUM line_no (BUFFER *the_buffer, LINEPTR the_line);
 extern char * current_directory (int force);
+extern int catnap (int milli, int watchinput);
 extern int fmatchindent (int c);
 extern int getccol (int bflg);
 extern int getcol (MARK mark, int actual);
@@ -753,7 +759,6 @@ extern int line_report (L_NUM before);
 extern int liststuff (const char *name, int appendit, void (*)(LIST_ARGS), int iarg, void *vargp);
 extern int restore_dot(MARK saved_dot);
 extern int set_directory (const char *dir);
-extern void catnap (int milli, int watchinput);
 extern void ch_fname (BUFFER *bp, const char *fname);
 extern void set_rdonly (BUFFER *bp, const char *name, int mode);
 

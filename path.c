@@ -2,7 +2,7 @@
  *		The routines in this file handle the conversion of pathname
  *		strings.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.93 1999/08/29 23:36:32 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.96 1999/09/03 09:18:26 tom Exp $
  *
  *
  */
@@ -776,7 +776,8 @@ resolve_directory(
 				  || (namelen == 2 && de->d_name[1] == '.')))
 					continue;
 
-				if (mount_point || (de->d_ino == thisino)) {
+				if (mount_point
+				 || ((long)de->d_ino == (long)thisino)) {
 					len = tnp - temp_name;
 					if (tb_alloc(&last_temp, len + namelen + 1) == 0)
 						break;
@@ -1971,6 +1972,98 @@ strip_version(char *path)
 	return path;
 }
 #endif
+
+/*
+ * Check if the given path appears in the path-list
+ */
+int
+find_in_path_list(const char *path_list, char *path)
+{
+	char temp[NFILEN];
+	int found = FALSE;
+	char find[NFILEN];
+
+	strcpy(find, SL_TO_BSL(path));
+	TRACE(("find_in_path_list\n\t%s\n\t%s\n",
+		(path_list != 0)
+			? path_list
+			: "(null)",
+		find))
+	while ((path_list = parse_pathlist(path_list, temp)) != 0) {
+		if (!strcmp(temp, find)) {
+			found = TRUE;
+			break;
+		}
+	}
+	TRACE(("\t-> %d\n", found))
+	return found;
+}
+
+/*
+ * Prepend the given path to a path-list
+ */
+void
+prepend_to_path_list(char **path_list, char *path)
+{
+	char *s, *t;
+	size_t need;
+	char find[NFILEN];
+
+	strcpy(find, SL_TO_BSL(path));
+	if (*path_list == 0 || **path_list == 0) {
+		append_to_path_list(path_list, find);
+	} else if (!find_in_path_list(*path_list, find)) {
+		need = strlen(find) + 2;
+		if ((t = *path_list) != 0) {
+			need += strlen(t);
+		} else {
+			t = "";
+		}
+		if ((s = typeallocn(char, need)) != 0) {
+			lsprintf(s, "%s%c%s", find, vl_pathsep, t);
+			if (*path_list != 0)
+				free(*path_list);
+			*path_list = s;
+		}
+	}
+	TRACE(("prepend_to_path_list\n\t%s\n\t%s\n", *path_list, find))
+}
+
+/*
+ * Append the given path to a path-list
+ */
+void
+append_to_path_list(char **path_list, char *path)
+{
+	char *s, *t;
+	size_t need;
+	char find[NFILEN];
+
+	strcpy(find, SL_TO_BSL(path));
+	if (!find_in_path_list(*path_list, find)) {
+		need = strlen(find) + 2;
+		if ((t = *path_list) != 0) {
+			need += strlen(t);
+		} else {
+			t = "";
+		}
+		if ((s = typeallocn(char, need)) != 0) {
+			if (*t != EOS)
+				lsprintf(s, "%s%c%s", t, vl_pathsep, find);
+			else
+				strcpy(s, find);
+			if (*path_list != 0)
+				free(*path_list);
+			*path_list = s;
+		}
+	}
+	TRACE(("append_to_path_list\n\t%s\n\t%s\n", *path_list, find))
+}
+
+/*
+ * Append the given path to a path-list
+ */
+
 
 #if NO_LEAKS
 void

@@ -5,7 +5,7 @@
  *
  * Copyright (c) 1990-1999 by Paul Fox and Tom Dickey
  *
- * $Header: /users/source/archives/vile.vcs/RCS/finderr.c,v 1.77 1999/07/01 10:02:18 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/finderr.c,v 1.78 1999/09/04 00:22:40 tom Exp $
  *
  */
 
@@ -523,7 +523,10 @@ finderr(int f GCC_UNUSED, int n GCC_UNUSED)
 		}
 	    }
 	}
-	if (lforw(dotp) == buf_head(sbp)) {
+	if (interrupted()) {
+	    kbd_alarm();
+	    return ABORT;
+	} else if (lforw(dotp) == buf_head(sbp)) {
 	    mlwarn("[No more errors in %s buffer]", febuff);
 	    /* start over at the top of file */
 	    putdotback(sbp, lforw(buf_head(sbp)));

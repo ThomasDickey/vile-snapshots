@@ -95,7 +95,7 @@
 #		in '!' listed, then the flag does nothing, and should be
 #		viewed simply as documentation.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.184 1999/08/23 01:18:28 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.185 1999/09/01 00:46:22 tom Exp $
 #
 #
 
@@ -1549,6 +1549,12 @@ viewfile	NONE
 waitfile	NONE			SYS_WINNT&&defined(VILE_OLE)
 	"wait-file"
 	<wait for file to grow larger than 0 bytes, timeout specified as arg>
+which_exec	NONE			OPT_SHOW_WHICH
+	"which-exec"
+	<show which file would be exec'd from $PATH + $libdir-path, CNT for popup>
+which_source	NONE			OPT_SHOW_WHICH
+	"which-source"
+	<show which file would be source'd from $startup-path, CNT for popup>
 winopen_nocd	NONE			SYS_WINNT
 	"winopen-nocd"
 	<launch Windows common dialog box to open file(s), CWD is unmodified>

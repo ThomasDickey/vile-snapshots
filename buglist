@@ -1,7 +1,7 @@
 ------------------------
 vile bug/enhancement/wish list (mostly wishes ;-)
 ------------------------
-$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.361 1999/07/03 13:36:23 tom Exp $
+$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.362 1999/09/04 01:08:16 tom Exp $
 ----------------------
 	(E means enhancement, L,M,H are low, medium, high priority)
 
@@ -646,15 +646,6 @@ words in the sentence as you drag.  Just the first word is selected in xvile.
 
 ---------------------------------
 
-link problems:  vile or xvile has link problems on:
-	- Openlook on sunos4.1.3
- 	- SCO OpenServer 5.0 (needed -lsocket, and needed different
-		lib ordering for -lXt and -lXm for the motif version.
-	- BSD/OS 2.0.1 (X11R6) -- needed this order: -lXt -lXM -lICE -lX11
-	- IRIX 5.2 -- drop the '-lnsl' library
-
----------------------------------
-
 vile 5.5 almost passed my macro test with only small cosmetic problem:
 
 ;    !@  --mapto-->  replace "Unixcommand!@" with "Unixcommand" output
@@ -724,15 +715,6 @@ module to use "_qident" instead of "_ident" in the gototag() function.
 This allows a user to goto C++ functions when the tag is a C++
 class::function reference.
 
-------------"
-    How about changing makefile.djg, adding a line like
-      strip vile
-    just before the call to coff2exe.  This will reduce the
-    size of the djgpp executable from 1,328,037 bytes (with
-    djgpp 1.12 patch 4) to 259,072 bytes.  Just a little idea.
-[i'll add a different target instead...]
-
-
 -----------------------------
 
 add a copyright to the binary
@@ -782,7 +764,7 @@ I don't know enough make magic to get the basename stripped off. Perhaps
 the "$@" should just be $(bindir).
 
 
-------------"
+----------------------
 Another point of irritation is the autoindent behaviour when inserting
 blank lines; where vi will continue with a reduced indent after typing a
 CTRL-D, vile insists on keeping the indent on par with the last non-empty
@@ -839,9 +821,6 @@ on time taken to do the search...
 ----------------- (tom)
 
 These are old wishes/bugs:
-
-	set-dos, write file, doesn't reflect (in chars-written message) the
-	added ^M's on each line.
 
 	not every system declares the struct-type for utime/utimes.
 
@@ -919,10 +898,6 @@ getting an error in $buffer-hook can blow away the buffer that's being hooked
 -- 96-10-19 (tom)
 
 implement [Mac-style], like [Dos-style].
-
--- 96-10-21 (tom)
-
-implement gtlbl()
 
 -- 96-10-25 (Anand Mandapati <anand@ibmoto.com>)
 
@@ -1320,7 +1295,7 @@ UWIN:
 
 as far as i can tell, procedures now share a namespace with built-in
 functions, is that right?  i see that if i "source pictmode.rc" i no longer
-have to type ""run pic".  i can just type ":pic" instead.  this is neat.
+have to type "run pic".  i can just type ":pic" instead.  this is neat.
 
 questions:
     - can i bind a key to the new command "pic" at this point?  i don't
@@ -1423,14 +1398,6 @@ Win32).  The EMX configuration can read/write pipes.
 
 OS/2 mouse code probably eats too many CPU cycles; since coding that, I've
 noticed that OS/2 is sometimes reluctant to switch windows vs EMX windows.
-
--- 98-05-12 (Sean Ahern <ahern@llnl.gov>)
-
-I've got some characters in a file that are showing up as \x93.  I'd like to do
-a search and replace to change them to something else.  I can insert these
-characters just fine with the ^VNNN method.  However, I can't seem to type them
-in the mini-buffer as something to search for.  All I end up getting is the
-three-letter string "x93" as the search pattern.
 
 -- 98-05-25 (tom)
 
@@ -1609,7 +1576,7 @@ I've got a case where visual-matches highlighting doesn't work.
 
 wishlist:
 implement ~foreach iterator.  Add CMDFUNC flags to macro definition
-and to describe-bindings view.  Add $#, $*, $0 ... $$n to variables.
+and to describe-bindings view.
 
 -- 98-09-09 (tom)
 

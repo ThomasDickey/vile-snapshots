@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.199 1999/08/22 12:00:08 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.202 1999/09/04 15:16:19 tom Exp $
  *
  */
 
@@ -441,7 +441,7 @@ const CMDFUNC **oldfunc)
 	reset_prefix(-1, *oldfunc);
 	reset_prefix(c, kcmd);
 
-	if (!isspecial(c)) {
+	if (!isSpecial(c)) {
 		asciitbl[c] = TYPECAST(CMDFUNC,kcmd);
 	} else {
 		if ((kbp = kcode2kbind(c)) != 0) { /* change it in place */
@@ -501,7 +501,7 @@ unbindchar(int c)		/* command key to unbind */
     register KBIND *skbp;	/* saved pointer into the command table */
 
     /* if it's a simple character, it will be in the asciitbl[] array */
-    if (!isspecial(c))
+    if (!isSpecial(c))
     {
 	if (asciitbl[c])
 	{
@@ -1085,6 +1085,42 @@ locate_file_in_list(char *list, char *fname, int mode)
 	return 0;
 }
 
+#if OPT_PATHLOOKUP
+#if SYS_VMS
+static char *
+PATH_value(void)
+{
+	/* On VAX/VMS, the PATH environment variable is only the
+	 * current-dir.  Fake up an acceptable alternative.
+	 */
+
+	static TBUFF *myfiles;
+	char	     *tmp;
+
+	if (!tb_length(myfiles)) {
+		char	mypath[NFILEN];
+
+		(void)strcpy(mypath, prog_arg);
+		if ((tmp = vms_pathleaf(mypath)) == mypath)
+			(void)strcpy(mypath,
+				current_directory(FALSE));
+		else
+			*tmp = EOS;
+
+		if (!tb_init(&myfiles, EOS)
+		 || !tb_sappend(&myfiles, mypath)
+		 || !tb_sappend(&myfiles,
+				",SYS$SYSTEM:,SYS$LIBRARY:")
+		 || !tb_append(&myfiles, EOS))
+		return NULL;
+	}
+	return tb_values(myfiles);
+}
+#else	/* UNIX or MSDOS */
+#define PATH_value() getenv("PATH")
+#endif
+#endif	/* OPT_PATHLOOKUP */
+
 /* config files that vile is interested in may live in various places,
  * and which may be constrained to various r/w/x modes.  the files may
  * be
@@ -1129,41 +1165,9 @@ UINT which)		/* flags specifying where to look */
 	 && (sp = locate_file_in_list(startup_path, fname, mode)) != 0)
 		return sp;
 
-	/* look along "PATH" */
-	if (which & FL_PATH) {
-
+	if (which & FL_PATH) { /* look along "PATH" */
 #if OPT_PATHLOOKUP
-		/* then look along $PATH */
-#if SYS_VMS
-		/* On VAX/VMS, the PATH environment variable is only the
-		 * current-dir.  Fake up an acceptable alternative.
-		 */
-
-		static TBUFF *myfiles;
-		char	     *tmp;
-
-		if (!tb_length(myfiles)) {
-			char	mypath[NFILEN];
-
-			(void)strcpy(mypath, prog_arg);
-			if ((tmp = vms_pathleaf(mypath)) == mypath)
-				(void)strcpy(mypath,
-					current_directory(FALSE));
-			else
-				*tmp = EOS;
-
-			if (!tb_init(&myfiles, EOS)
-			 || !tb_sappend(&myfiles, mypath)
-			 || !tb_sappend(&myfiles,
-					",SYS$SYSTEM:,SYS$LIBRARY:")
-			 || !tb_append(&myfiles, EOS))
-			return NULL;
-		}
-		sp = tb_values(myfiles);
-#else	/* UNIX or MSDOS */
-		sp = getenv("PATH");	/* get the PATH variable */
-#endif
-		if ((sp = locate_file_in_list(sp, fname, mode)) != 0)
+		if ((sp = locate_file_in_list(PATH_value(), fname, mode)) != 0)
 			return sp;
 #endif	/* OPT_PATHLOOKUP */
 
@@ -1175,6 +1179,117 @@ UINT which)		/* flags specifying where to look */
 
 	return NULL;
 }
+
+#if OPT_SHOW_WHICH
+static int
+ask_which_file(char *fname)
+{
+	static	TBUFF	*last;
+
+	return mlreply_file("Which file: ", &last,
+			FILEC_READ|FILEC_PROMPT, fname);
+}
+
+static void
+list_one_fname(char *fname, int mode)
+{
+	bprintf("\n%s\t%s", ffaccess(fname, mode) ? "*" : "", fname);
+}
+
+static void
+list_which_fname(char *dirname, char *fname, int mode)
+{
+	char fullpath[NFILEN];  /* expanded path */
+
+	if (dirname
+	 && dirname[0] != EOS)
+		list_one_fname(pathcat(fullpath, dirname, fname), mode);
+}
+
+static void
+list_which_file_in_list(char *list, char *fname, int mode)
+{
+	const char *cp;
+	char dirname[NFILEN];
+
+	cp = list;
+	while ((cp = parse_pathlist(cp, dirname)) != 0) {
+		list_which_fname(dirname, fname, mode);
+	}
+}
+
+static void
+list_which(LIST_ARGS)
+{
+	char *fname = (char *)ptr;
+	UINT	mode = (flag & (FL_EXECABLE|FL_WRITEABLE|FL_READABLE));
+
+	/* take care of special cases */
+	if (!fname || !fname[0] || isSpace(fname[0]))
+		return;
+	else if (isShellOrPipe(fname))
+		return;
+
+	/* look in the current directory */
+	if (flag & FL_CDIR)
+		list_one_fname(fname, mode);
+
+	if (flag & FL_HOME) /* look in the home directory */
+		list_which_fname(getenv("HOME"), fname, mode);
+
+	if (flag & FL_EXECDIR) /* look in vile's bin directory */
+		list_which_fname(exec_pathname, fname, mode);
+
+	if (flag & FL_STARTPATH) /* look along "VILE_STARTUP_PATH" */
+		list_which_file_in_list(startup_path, fname, mode);
+
+	if (flag & FL_PATH) { /* look along "PATH" */
+#if OPT_PATHLOOKUP
+		list_which_file_in_list(PATH_value(), fname, mode);
+#endif	/* OPT_PATHLOOKUP */
+
+	}
+
+	if (flag & FL_LIBDIR) /* look along "VILE_LIBDIR_PATH" */
+		list_which_file_in_list(libdir_path, fname, mode);
+}
+
+static int
+show_which_file(char *fname, UINT mode, int f, int n)
+{
+	char *result;
+	if ((result = cfg_locate(fname, mode)) != 0) {
+		mlwrite("%s", result);
+		if (f && n > 1)
+			liststuff(WHICH_BufName, n>2, list_which, mode, fname);
+	}
+	return (result != 0);
+}
+
+int
+which_source(int f, int n)
+{
+	int s;
+	char fname[NFILEN];
+
+	if ((s = ask_which_file(fname)) == TRUE) {
+		s = show_which_file(fname, LOCATE_SOURCE, f, n);
+	}
+	return s;
+}
+
+int
+which_exec(int f, int n)
+{
+	int s;
+	char fname[NFILEN];
+
+	if ((s = ask_which_file(fname)) == TRUE) {
+		s = show_which_file(fname, LOCATE_EXEC, f, n);
+	}
+	return s;
+}
+#endif
 
 /* translate a keycode to its binding-string */
 char *
@@ -1331,7 +1446,7 @@ const CMDFUNC *
 kcod2fnc(
 int c)	/* key to find what is bound to it */
 {
-	if (isspecial(c)) {
+	if (isSpecial(c)) {
 		register KBIND *kp = kcode2kbind(c);
 		return (kp != 0) ? kp->k_cmd : 0;
 	}

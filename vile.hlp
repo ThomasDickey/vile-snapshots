@@ -1353,6 +1353,9 @@ Editor modes
 		mode should be turned on to truly mimic vi's default
 		behavior.  (U)
 
+	recordseparator (rs) Specify format of files that vile reads.  Formats
+		are lf (for Unix) and crlf (for DOS).  (B)
+
 	remap   Controls whether :map or :map! sequences entered with
 		no explicit remapping control should be subject to remapping
 		(i.e. recursive mapping).  (U)
@@ -4176,4 +4179,4 @@ Problems
 
 Copyright 1995-1999 by Paul Fox, Tom Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.436 1999/08/23 00:08:46 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.438 1999/09/03 23:18:00 tom Exp $
