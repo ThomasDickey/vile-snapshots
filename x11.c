@@ -2,7 +2,7 @@
  * 	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.133 1996/04/14 23:37:50 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.134 1996/10/05 01:12:37 kev Exp $
  *
  */
 
@@ -912,6 +912,8 @@ update_scrollbar_sizes(void)
 	XtManageChildren(cur_win->scrollbars+cur_win->nscrollbars, nchildren);
 	if (cur_win->nscrollbars > 0)
 	    XtManageChildren(cur_win->grips+cur_win->nscrollbars-1, nchildren);
+	else if (cur_win->nscrollbars == 0 && nchildren > 1)
+	    XtManageChildren(cur_win->grips, nchildren-1);
     }
     cur_win->nscrollbars = newsbcnt;
 

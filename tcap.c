@@ -1,7 +1,7 @@
 /*	tcap:	Unix V5, V7 and BS4.2 Termcap video driver
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.81 1996/10/05 00:07:13 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.82 1996/10/06 19:55:55 tom Exp $
  *
  */
 
@@ -603,7 +603,7 @@ erase_non_bce(int row, int col)
 		TTmove(row, col);
 }
 
-#define NEED_BCE_FIX (!have_bce && gbcolor != NO_COLOR)
+#define NEED_BCE_FIX (!have_bce && shown_bcolor != NO_COLOR)
 #define FILL_BCOLOR(row,col) if(NEED_BCE_FIX) erase_non_bce(row, col)
 #else
 #define FILL_BCOLOR(row,col) /*nothing*/
@@ -629,15 +629,15 @@ tcapeeop(void)
 
 	if (NEED_BCE_FIX) {
 		int row = ttrow;
-		if (row < term.t_nrow) {
-			while (row++ < term.t_nrow) {
-				TTmove(row, 0);
+		if (row < term.t_nrow-1) {
+			while (++row < term.t_nrow) {
+				if (ttrow != row || ttcol != 0)
+					TTmove(row, 0);
 				(void) clear_non_bce(row, 0);
 			}
-		}
-		if (!clear_non_bce(ttrow, ttcol)
-		 && ttrow != term.t_nrow)
 			TTmove(ttrow, ttcol);
+		}
+		erase_non_bce(ttrow, ttcol);
 	} else
 #endif
 	putpad(CL);
@@ -743,7 +743,9 @@ tcapscrollregion(int top,int bot)
 static void
 show_ansi_colors (void)
 {
+#if HAVE_TPARM || HAVE_TPARAM
 	char	*t;
+#endif
 
 	if (shown_fcolor == NO_COLOR
 	 || shown_bcolor == NO_COLOR) {
@@ -753,23 +755,19 @@ show_ansi_colors (void)
 
 #if HAVE_TPARM
 	if ((shown_fcolor != NO_COLOR)
-	 && (Sf != 0)
 	 && (t = tparm(Sf, shown_fcolor)) != 0)
 		putpad(t);
 	if ((shown_bcolor != NO_COLOR)
-	 && (Sb != 0)
 	 && (t = tparm(Sb, shown_bcolor)) != 0)
 		putpad(t);
 #else
 #if HAVE_TPARAM
 	if ((shown_fcolor != NO_COLOR)
-	 && (Sf != 0)
 	 && (t = tparam(Sf, (char *)0, 0, shown_fcolor)) != 0) {
 		putpad(t);
 		free(t);
 	}
 	if ((shown_bcolor != NO_COLOR)
-	 && (Sb != 0)
 	 && (t = tparam(Sb, (char *)0, 0, shown_bcolor)) != 0) {
 		putpad(t);
 		free(t);
@@ -797,7 +795,7 @@ tcapfcol(int color)
 {
 	if (color != given_fcolor) {
 		given_fcolor = color;
-		shown_fcolor = Num2Color(color);
+		shown_fcolor = (Sf != 0) ? Num2Color(color) : NO_COLOR;
 		show_ansi_colors();
 	}
 }
@@ -807,7 +805,7 @@ tcapbcol(int color)
 {
 	if (color != given_bcolor) {
 		given_bcolor = color;
-		shown_bcolor = Num2Color(color);
+		shown_bcolor = (Sb != 0) ? Num2Color(color) : NO_COLOR;
 		show_ansi_colors();
 	}
 }
