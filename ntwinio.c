@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 screen API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.8 1998/05/03 20:29:21 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.9 1998/05/14 23:15:26 tom Exp $
  *
  */
 
@@ -61,7 +61,7 @@ static	void	nteeop		(void);
 static	void	ntbeep		(void);
 static	void	ntopen		(void);
 static	void	ntrev		(UINT);
-static	int	ntcres		(char *);
+static	int	ntcres		(const char *);
 static	void	ntclose		(void);
 static	void	ntputc		(int);
 static	int	nttypahead	(void);
@@ -673,7 +673,7 @@ ntrev(UINT reverse)		/* change reverse video state */
 }
 
 static int
-ntcres(char *res)	/* change screen resolution */
+ntcres(const char *res)		/* change screen resolution */
 {
 	scflush();
 	return 0;

@@ -8,7 +8,7 @@
  * Modified by Pete Ruczynski (pjr) for auto-sensing and selection of
  * display type.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ibmpc.c,v 1.87 1998/04/28 10:19:58 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ibmpc.c,v 1.88 1998/05/14 23:14:56 tom Exp $
  *
  */
 
@@ -246,7 +246,7 @@ extern  void	ibmeeop   (void);
 extern  void	ibmbeep   (void);
 extern  void    ibmopen   (void);
 extern	void	ibmrev    (UINT);
-extern	int	ibmcres   (char *);
+extern	int	ibmcres   (const char *);
 extern	void	ibmclose  (void);
 extern	void	ibmputc   (int);
 extern	void	ibmkopen  (void);
@@ -550,7 +550,7 @@ UINT state)	/* TRUE = reverse, FALSE = normal */
 
 int
 ibmcres(	/* change screen resolution */
-char *res)	/* resolution to change to */
+const char *res)	/* resolution to change to */
 {
 	register int i;		/* index */
 	int	status = FALSE;

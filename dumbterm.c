@@ -1,6 +1,6 @@
 /*	Dumb terminal driver, for I/O before we get into screen mode.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/dumbterm.c,v 1.12 1998/04/20 09:54:03 kev Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/dumbterm.c,v 1.13 1998/05/14 23:19:42 tom Exp $
  *
  */
 
@@ -12,7 +12,7 @@
 #define NPAUSE	10			/* # times thru update to pause */
 
 static OUTC_DCL dumb_putc (OUTC_ARGS);
-static int  dumb_cres     (char * res);
+static int  dumb_cres     (const char * res);
 static int  dumb_getc     (void);
 static int  dumb_typahead (void);
 static void dumb_beep     (void);
@@ -150,7 +150,7 @@ dumb_eeop(void)
 /*ARGSUSED*/
 static int
 dumb_cres(	/* change screen resolution */
-char *	res GCC_UNUSED)
+const char * res GCC_UNUSED)
 {
 	return(FALSE);
 }

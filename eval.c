@@ -3,7 +3,7 @@
 
 	written 1986 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.158 1998/04/30 09:19:03 kev Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.159 1998/05/14 23:12:04 tom Exp $
  *
  */
 
@@ -67,7 +67,7 @@ static	char *	getkill (void);
 static	char *	ltos ( int val );
 static	char *	s2offset ( char *s, char *n );
 static	int	PromptAndSet ( const char *var, int f, int n );
-static	int	SetVarValue ( VDESC *var, char *value );
+static	int	SetVarValue ( VDESC *var, const char *value );
 static	int	ernd (void);
 static	int	gtlbl ( const char *tokn );
 static	int	l_strtol ( const char *s );
@@ -96,7 +96,7 @@ register char	*dft)
 static void
 SetEnv(
 char	**namep,
-char	*value)
+const char *value)
 {
 	FreeIfNeeded(*namep);
 	*namep = strmalloc(value);
@@ -759,7 +759,7 @@ stenv(const char *name, const char *value)
 		return(FALSE);
 	}
 	/* and set the appropriate value */
-	status = SetVarValue(&vd, (char *) value);
+	status = SetVarValue(&vd, value);
 	return status;
 }
 
@@ -780,7 +780,7 @@ set_variable(const char *name)
 static int
 SetVarValue(	/* set a variable */
 VDESC *var,	/* variable to set */
-char *value)	/* value to set to */
+const char *value)	/* value to set to */
 {
 	register UVAR *vptr;
 	register int vnum;	/* ordinal number of var referenced */

@@ -11,7 +11,7 @@
 #
 # The modes are table entries in the BUFFER and WINDOW structures.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.95 1998/04/28 10:05:54 cmorgan Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.96 1998/05/15 00:10:09 tom Exp $
 #
 #
 # Mode-table entries.  Capitalized letters are used for abbreviations.
@@ -135,7 +135,7 @@ bool							# WMD prefix
 	"Unprintable-as-Octal" NONPRINTOCTAL  chgd_window # print non-printing chars in octal
 	"Terse-SELections" TERSELECT	0		OPT_SELECTIONS # don't display extent of selections on message line
 int							# VAL_ prefix
-	"SIDEways"	SIDEWAYS	chgd_major_w	# sideways offset for display
+	"SIDEways"	SIDEWAYS	chgd_window	# sideways offset for display
 
 # Put the majormode definitions after buffers to simplify logic in mktbls.
 # The arguments of .majormode are the predefined majormodes and submodes.

@@ -7,7 +7,7 @@
  * Most code probably by Dan Lawrence or Dave Conroy for MicroEMACS
  * Extensions for vile by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/insert.c,v 1.108 1998/05/12 23:35:39 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/insert.c,v 1.109 1998/05/15 01:06:12 tom Exp $
  *
  */
 
@@ -1230,20 +1230,28 @@ quote(int f, int n)
 			base = 10;
 			str = "decimal";
 		}
-		mlwrite("Enter %s digits...", str);
 		do {
-			if (c >= 'a' && c <= 'f')
-				delta = ('a' - 10);
-			else if (c >= 'A' && c <= 'F')
-				delta = ('A' - 10);
-			else
-				delta = '0';
-			num = num * base + c - delta;
-			if (++i == digs)
+			if (isbackspace(c)) {
+				num /= base;
+				if (--i < 0)
+					break;
+			} else {
+				if (c >= 'a' && c <= 'f')
+					delta = ('a' - 10);
+				else if (c >= 'A' && c <= 'F')
+					delta = ('A' - 10);
+				else
+					delta = '0';
+				num = num * base + c - delta;
+				i++;
+			}
+			mlwrite("Enter %s digits... %d", str, num);
+			if (i >= digs)
 				break;
 			(void)update(FALSE);
 			c = keystroke_raw8();
-		} while ((isDigit(c) && base >= 10) ||
+		} while (isbackspace(c) ||
+			(isDigit(c) && base >= 10) ||
 			(base == 8 && c < '8') ||
 			(base == 16 && (c >= 'a' && c <= 'f')) ||
 			(base == 16 && (c >= 'A' && c <= 'F')));
@@ -1251,7 +1259,7 @@ quote(int f, int n)
 
 	mlerase();
 	/* did we get any digits at all? */
-	if (i) {
+	if (i > 0) {
 		if (ABORTED(c)) /* ESC gets us out painlessly */
 			return ABORT;
 		if (i < digs) /* any other character will be pushed back */
