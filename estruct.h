@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.443 2000/04/21 09:44:57 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.447 2000/05/17 22:27:07 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -364,10 +364,10 @@
 #endif
 
 /* various color stuff */
-#define	OPT_COLOR (DISP_ANSI || IBM_VIDEO || DISP_TERMCAP || DISP_X11)
-#define	OPT_16_COLOR (IBM_VIDEO || DISP_TERMCAP || DISP_X11)
+#define	OPT_COLOR (DISP_ANSI || IBM_VIDEO || DISP_TERMCAP || DISP_CURSES || DISP_X11)
+#define	OPT_16_COLOR (IBM_VIDEO || DISP_TERMCAP || DISP_CURSES || DISP_X11)
 
-#define OPT_DUMBTERM (DISP_TERMCAP || DISP_VMSVT)
+#define OPT_DUMBTERM (DISP_TERMCAP || DISP_CURSES || DISP_VMSVT)
 
 /* Feature turnon/turnoff */
 #define OPT_CACHE_VCOL  !SMALLER /* cache mk_to_vcol() starting point          */
@@ -2280,17 +2280,24 @@ typedef struct {
 #endif
 
 typedef struct  k_bind {
-#if !SYS_WINNT
-	short	k_code; 		/* Key code			*/
-#else
 	int	k_code; 		/* Key code			*/
-#endif
 	const CMDFUNC *k_cmd;
 #if OPT_REBIND
 	struct  k_bind *k_link;
 #endif
 }	KBIND;
 
+typedef struct {
+	const CMDFUNC **kb_normal;
+	KBIND *kb_special;
+#if OPT_REBIND
+	KBIND *kb_extra;
+#endif
+} BINDINGS;
+
+#define DefaultKeyBinding(c) kcod2fnc(&dft_bindings, c)
+#define InsertKeyBinding(c)  kcod2fnc(&ins_bindings, c)
+#define CommandKeyBinding(c) kcod2fnc(&cmd_bindings, c)
 
 /* These are the flags which can appear in the CMDFUNC structure, describing a
  * command.

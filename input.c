@@ -44,7 +44,7 @@
  *	tgetc_avail()     true if a key is avail from tgetc() or below.
  *	keystroke_avail() true if a key is avail from keystroke() or below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.214 2000/03/14 01:16:47 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.217 2000/05/18 00:48:06 tom Exp $
  *
  */
 
@@ -1134,7 +1134,7 @@ isMiniEdit(int c)
 	if (c == editc)
 		return TRUE;
 	if (miniedit) {
-		const CMDFUNC *cfp = kcod2fnc(c);
+		const CMDFUNC *cfp = CommandKeyBinding(c);
 		if ((cfp != 0)
 		 && (cfp->c_flags & MOTION) != 0)
 			return TRUE;
@@ -1182,7 +1182,7 @@ static int
 editMinibuffer(TBUFF **buf, unsigned *cpos, int c, int margin, int quoted)
 {
 	int edited = FALSE;
-	const CMDFUNC *cfp = kcod2fnc(c);
+	const CMDFUNC *cfp = CommandKeyBinding(c);
 	int savedexecmode = insertmode;
 	BUFFER *savebp;
 	WINDOW *savewp;

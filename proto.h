@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.422 2000/04/26 09:09:24 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.424 2000/05/17 10:34:52 tom Exp $
  *
  */
 
@@ -97,7 +97,7 @@ extern char *kbd_engl (const char *prompt, char *buffer);
 extern char *kcod2prc (int c, char *seq);
 extern char *kcod2pstr (int c, char *seq);
 extern const CMDFUNC *engl2fnc (const char *fname);
-extern const CMDFUNC *kcod2fnc (int c);
+extern const CMDFUNC *kcod2fnc (BINDINGS *bs, int c);
 extern int fnc2kcod (const CMDFUNC *);
 extern int kbd_complete (int case_insensitive, int c, char *buf, unsigned *pos, const char *table, SIZE_T size_entry);
 extern int kbd_engl_stat (const char *prompt, char *buffer, int stated);
@@ -364,7 +364,7 @@ extern char *render_hex(TBUFF **rp, unsigned i);
 
 /* exec.c */
 extern int do_source (char *fname, int n, int optional);
-extern int dobuf (BUFFER *bp);
+extern int dobuf (BUFFER *bp, int n);
 extern int docmd (char *cline, int execflag, int f, int n);
 extern int dofile (char *fname);
 extern int end_named_cmd (void);

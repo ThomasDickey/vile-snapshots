@@ -3,7 +3,7 @@
  * that take motion operators.
  * written for vile: Copyright (c) 1990, 1995-1999 by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/opers.c,v 1.69 2000/04/28 11:01:09 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/opers.c,v 1.71 2000/05/17 22:32:24 tom Exp $
  *
  */
 
@@ -67,7 +67,7 @@ vile_op(int f, int n, OpsFunc fn, const char *str)
 			if (thiskey == lastkey)
 				cfp = &f_godotplus;
 			else
-				cfp = kcod2fnc(c);
+				cfp = DefaultKeyBinding(c);
 
 		}
 		if (cfp != 0) {

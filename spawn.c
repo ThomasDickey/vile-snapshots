@@ -1,7 +1,7 @@
 /*	Spawn:	various DOS access commands
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.156 2000/04/28 00:38:53 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.158 2000/05/17 22:28:22 tom Exp $
  *
  */
 
@@ -240,7 +240,7 @@ pressreturn(void)
 			c != '\n' &&
 			c != ' ' &&
 			!ABORTED(c)) {
-		if (kcod2fnc(c) == &f_namedcmd) {
+		if (DefaultKeyBinding(c) == &f_namedcmd) {
 			unkeystroke(c);
 			break;
 		}
