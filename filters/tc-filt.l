@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/tc-filt.l,v 1.16 2000/08/16 00:57:40 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/tc-filt.l,v 1.17 2000/11/04 20:24:14 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of termcap
  */
@@ -43,7 +43,7 @@ ok_number(char *string)
 {
     int result = 0;
     while (*string != 0) {
-	if (isdigit(*string)) {
+	if (isdigit(CharOf(*string))) {
 	    result++;
 	} else {
 	    result = 0;

@@ -1,7 +1,7 @@
 /*
  * Common utility functions for vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.77 2000/09/14 10:41:11 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.78 2000/11/04 20:14:49 tom Exp $
  *
  */
 
@@ -305,7 +305,7 @@ TrimBlanks(char *src)
     unsigned len = strlen(src);
 
     while (len != 0
-	&& isspace(src[len - 1]))
+	&& isspace(CharOf(src[len - 1])))
 	src[--len] = 0;
     return (len);
 }
@@ -659,7 +659,7 @@ lowercase_of(char *text)
 
     name = do_alloc(name, strlen(text), &used);
     for (n = 0; text[n] != 0; n++) {
-	if (isalpha(text[n]) && isupper(text[n]))
+	if (isalpha(CharOf(text[n])) && isupper(CharOf(text[n])))
 	    name[n] = tolower(text[n]);
 	else
 	    name[n] = text[n];
@@ -690,7 +690,7 @@ parse_keyword(char *name, int classflag)
 		    if (*s == QUOTE) {
 			quoted = 1;
 			s++;
-		    } else if (!isalnum(*s)) {
+		    } else if (!isalnum(CharOf(*s))) {
 			args = 0;	/* error: ignore */
 			break;
 		    }
@@ -761,7 +761,7 @@ set_symbol_table(const char *classname)
 char *
 skip_ident(char *src)
 {
-    while (*src != '\0' && isprint(*src) && !isspace(*src)) {
+    while (*src != '\0' && isprint(CharOf(*src)) && !isspace(CharOf(*src))) {
 	if (*src == eqls_ch
 	    || *src == meta_ch) {
 	    break;

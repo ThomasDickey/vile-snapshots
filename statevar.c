@@ -3,13 +3,15 @@
  *	for getting and setting the values of the vile state variables,
  *	plus helper utility functions.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.39 2000/10/27 01:56:26 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.41 2000/11/04 18:00:34 tom Exp $
  */
 
 #include	"estruct.h"
 #include	"edef.h"
 #include	"nevars.h"
 #include	"patchlev.h"
+
+#define		WRITE_ONLY	"[write only]"
 
 #if OPT_EVAL && OPT_SHELL
 static char *shell;	/* $SHELL environment is "$shell" state variable */
@@ -421,7 +423,8 @@ int var_CHAR(TBUFF **rp, const char *vp)
 int var_CRYPTKEY(TBUFF **rp, const char *vp)
 {
 	if (rp) {
-		return FALSE;  /* write-only */
+		tb_scopy(rp, WRITE_ONLY);
+		return TRUE;
 	} else if (vp) {
 		if (cryptkey != 0)
 			free(cryptkey);
@@ -606,6 +609,34 @@ int var_FILENAME_EXPR(TBUFF **rp, const char *vp)
 			tb_scopy(&filename_expr, vp);
 			return TRUE;
 		}
+	}
+	return FALSE;
+}
+
+int var_ERROR_EXPR(TBUFF **rp, const char *vp)
+{
+	if (rp) {
+		tb_scopy(rp, tb_values(error_expr));
+		return TRUE;
+	} else if (vp) {
+		regexp *exp = regcomp(vp, TRUE);
+		if (exp != 0) {
+			free(exp);
+			tb_scopy(&error_expr, vp);
+			return TRUE;
+		}
+	}
+	return FALSE;
+}
+
+int var_ERROR_MATCH(TBUFF **rp, const char *vp)
+{
+	if (rp) {
+		tb_scopy(rp, tb_values(error_match));
+		return TRUE;
+	} else if (vp) {
+		tb_scopy(&error_match, vp);
+		return TRUE;
 	}
 	return FALSE;
 }

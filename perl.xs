@@ -13,7 +13,7 @@
  * vile.  The file api.c (sometimes) provides a middle layer between
  * this interface and the rest of vile.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.74 2000/08/26 16:38:41 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.75 2000/11/04 20:08:47 tom Exp $
  */
 
 /*#
@@ -2507,7 +2507,7 @@ register(name, ...)
 	    croak("Too many arguments to %s", GvNAME(CvGV(cv)));
 
 	for (p = name; *p; p++)
-	    if (!isalnum(*p) && *p != '-' && *p != '_')
+	    if (!isAlnum(*p) && *p != '-' && *p != '_')
 		croak("invalid subroutine name");
 
 	if (!(cmd = typecalloc(CMDFUNC)))

@@ -2,7 +2,7 @@
  * This file contains the command processing functions for a number of random
  * commands. There is no functional grouping here, for sure.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.240 2000/10/27 01:56:28 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.243 2000/11/04 17:47:08 tom Exp $
  *
  */
 
@@ -53,7 +53,7 @@
 #if OPT_SHELL
 
 static int display_dirstack(int);
-static int pushd_popd_active;
+static int pushd_popd_active, dirs_add_active;
 
 /* 
  * Implement "dirstack" with an extensible array of pointers to char
@@ -1095,14 +1095,23 @@ static char prevdir[NFILEN];
 static int
 cd_and_pwd(char *path)
 {
+#if SYS_UNIX
+    const char *p;
+#endif
+
 #if CC_CSETPP
     if (_chdir(SL_TO_BSL(path)) == 0)
 #else
     if (chdir(SL_TO_BSL(path)) == 0)
 #endif
     {
+	if (dirs_add_active) {
+	    /* the directory is legit -- that's all we care about */
+
+	    return (TRUE);
+	}
 #if SYS_UNIX
-	const char *p = current_directory(TRUE);
+	p = current_directory(TRUE);
 	if (!is_slashc(*p)) {
 	    if (is_slashc(*prevdir))
 		p = lengthen_path(pathcat(current_dirname, prevdir, path));
@@ -1168,20 +1177,22 @@ set_directory(const char *dir)
 	}
 #endif
 	/*
-	   ** "cd -" switches to the previous directory.
+	 * "cd -" switches to the previous directory.
 	 */
 	if (!strcmp(exdp, "-")) {
 	    if (*prevdir)
 		(void) strcpy(exdp, prevdir);
 	    else {
-		mlforce("[No previous directory");
+		mlforce("[No previous directory]");
 		return FALSE;
 	    }
 	}
 
-	/* Save current directory for subsequent "cd -". */
-	(void) strcpy(prevdir, current_directory(FALSE));
+	if (!dirs_add_active) {
+	    /* Save current directory for subsequent "cd -". */
 
+	    (void) strcpy(prevdir, current_directory(FALSE));
+	}
 #if OPT_VMS_PATH
 	if (!*exdp)
 	    strcpy(exdp, "~");
@@ -1209,7 +1220,6 @@ set_directory(const char *dir)
 	 * filespec with an embedded '[' or ':' is absolute--not what we
 	 * want here.
 	 */
-
 	if (is_directory(exdp)) {
 	    /* For each comma-delimited component in CDPATH */
 	    cdpath = get_cdpath();
@@ -1235,7 +1245,6 @@ set_directory(const char *dir)
 			     *
 			     * Ex:  dvc:[dir] + [.subdir]
 			     */
-
 			    *tmp = '\0';
 			    sprintf(newdir, "%s%s", cdpathdir, &exdp[1]);
 			} else if (*tmp == ':' &&
@@ -1246,7 +1255,6 @@ set_directory(const char *dir)
 			     *
 			     * Ex:  dvc: + [dir]
 			     */
-
 			    sprintf(newdir, "%s%s", cdpathdir, exdp);
 			}
 			if (newdir[0] && cd_and_pwd(newdir))
@@ -1259,10 +1267,10 @@ set_directory(const char *dir)
 	}
 # else
 	/*
-	   ** chdir failed.  If the directory name doesn't begin with any of
-	   ** "/", "./", or "../", get the CDPATH environment variable and check
-	   ** if the specified directory name is a subdirectory of a
-	   ** directory in CDPATH.
+	 * chdir failed.  If the directory name doesn't begin with any of
+	 * "/", "./", or "../", get the CDPATH environment variable and check
+	 * if the specified directory name is a subdirectory of a
+	 * directory in CDPATH.
 	 */
 	if (!is_pathname(exdp)) {
 	    /* For each appropriately delimited component in CDPATH */
@@ -1446,6 +1454,33 @@ pushd_popd_set_dir(const char *dir)
     return (rc);
 }
 
+/*
+ * Add a directory to the top of the dir stack, extending its container
+ * when necessary.
+ */
+static int
+dirstack_extend(const char *dir, const char *fnname)
+{
+    if (dirs_idx >= dirs_len) {
+	if (dirs_len == 0) {
+	    dirs_len = 16;
+	    dirstack = castalloc(char *, dirs_len * sizeof(dirstack[0]));
+	} else {
+	    dirs_len *= 2;
+	    dirstack = castrealloc(char *,
+				   dirstack,
+				   dirs_len * sizeof(dirstack[0]));
+	}
+	if (!dirstack)
+	    return (no_memory(fnname));
+    }
+    dirstack[dirs_idx] = castalloc(char, strlen(dir) + 1);
+    if (!dirstack[dirs_idx])
+	return (no_memory(fnname));
+    strcpy(dirstack[dirs_idx++], dir);
+    return (TRUE);
+}
+
 static int
 do_popd(int uindx,		/* user-specified dirstack index */
 	int sign)
@@ -1550,25 +1585,10 @@ pushd(int f GCC_UNUSED, int n GCC_UNUSED)
 	    tb_scopy(&last, "");
 	}
 	if (dirs_idx == 0)
-	    mlforce("Empty directory stack, nothing to swap");
+	    mlforce("[Empty directory stack, nothing to swap]");
 	else
 	    rc = do_pushd(0, 1);
     } else if (rc == TRUE) {
-	/* extend dirstack if necessary */
-
-	if (dirs_idx >= dirs_len) {
-	    if (dirs_len == 0) {
-		dirs_len = 16;
-		dirstack = castalloc(char *, dirs_len * sizeof(dirstack[0]));
-	    } else {
-		dirs_len *= 2;
-		dirstack = castrealloc(char *,
-				       dirstack,
-				       dirs_len * sizeof(dirstack[0]));
-	    }
-	    if (!dirstack)
-		return (no_memory("pushd"));
-	}
 
 	/* handle simple case first:  pushd without +|-n arg */
 	if (*cp != '+' && *cp != '-') {
@@ -1577,13 +1597,11 @@ pushd(int f GCC_UNUSED, int n GCC_UNUSED)
 		return (rc);
 
 	    /* all is well, update dirstack */
-	    dirstack[dirs_idx] = castalloc(char, strlen(oldcwd) + 1);
-	    if (!dirstack[dirs_idx])
-		return (no_memory("pushd"));
-	    strcpy(dirstack[dirs_idx++], oldcwd);
+	    if (!dirstack_extend(oldcwd, "pushd"))
+		return (FALSE);
 	} else {
 	    if (dirs_idx == 0) {
-		mlforce("Empty directory stack, nothing to swap");
+		mlforce("[Empty directory stack, nothing to swap]");
 		rc = FALSE;
 	    } else {
 		sign = (*cp == '-') ? -1 : 1;
@@ -1596,7 +1614,7 @@ pushd(int f GCC_UNUSED, int n GCC_UNUSED)
 			rc = TRUE;
 		}
 		if (!rc) {
-		    mlforce("Invalid pushd syntax,  usage:  pushd [{+|-}n]");
+		    mlforce("[Invalid pushd syntax,  usage:  pushd [{+|-}n] ]");
 		    return (rc);
 		}
 		dirlocn = atoi(newcwd + 1);	/* FIXME: atoi is a bug */
@@ -1606,7 +1624,7 @@ pushd(int f GCC_UNUSED, int n GCC_UNUSED)
 		     * of the directory stack.
 		     */
 
-		    mlforce("Pushd index out-of-range");
+		    mlforce("[Pushd index out-of-range]");
 		    return (FALSE);
 		}
 		rc = do_pushd(dirlocn, sign);
@@ -1632,7 +1650,7 @@ popd(int f GCC_UNUSED, int n GCC_UNUSED)
     if (rc == ABORT)
 	return (rc);
     if (dirs_idx == 0) {
-	mlforce("Empty directory stack, nothing to pop");
+	mlforce("[Empty directory stack, nothing to pop]");
 	return (FALSE);
     }
     if (last) {
@@ -1668,7 +1686,7 @@ popd(int f GCC_UNUSED, int n GCC_UNUSED)
 	}
     }
     if (!rc) {
-	mlforce("Invalid popd syntax,  usage:  popd [{+|-}n]");
+	mlforce("[Invalid popd syntax,  usage:  popd [{+|-}n] ]");
 	return (rc);
     }
     dirlocn = atoi(newcwd + 1);	/* FIXME: atoi is a bug */
@@ -1678,7 +1696,7 @@ popd(int f GCC_UNUSED, int n GCC_UNUSED)
 	 * directory stack.
 	 */
 
-	mlforce("Popd index out-of-range");
+	mlforce("[Popd index out-of-range]");
 	return (FALSE);
     }
     if ((rc = do_popd(dirlocn, sign)) == TRUE)
@@ -1762,12 +1780,16 @@ display_dirstack(int action)
 
 	    one_liner = kill_dirstack_buffer();
 	}
-	return ((one_liner) ?
-		pwd(TRUE, 1) /* show cwd in message line. */
-		: FALSE);
+	if (one_liner)
+	    return (pwd(TRUE, 1));	/* show cwd in message line. */
+
+	/*
+	 * else could not kill dirstack buffer.  in that case, fall thru and
+	 * update its onscreen contents.
+	 */
     }
 
-    /* else create a DirStack buffer and populate it. */
+    /* else create/update a DirStack buffer and populate it. */
     return (liststuff(DIRSTACK_BufName, FALSE, dirstack_lister, 0, NULL));
 }
 
@@ -1775,6 +1797,61 @@ int
 vl_dirs(int f, int n GCC_UNUSED)
 {
     return (display_dirstack((f) ? DIRS_SUPPRESS : DIRS_FORCE));
+}
+
+int
+vl_dirs_clear(int f GCC_UNUSED, int n GCC_UNUSED)
+{
+    int i;
+
+    if (dirstack) {
+	for (i = 0; i < dirs_idx; i++)
+	    (void) free(dirstack[i]);
+	(void) free(dirstack);
+	dirstack = NULL;
+    }
+    dirs_idx = dirs_len = 0;
+    return (display_dirstack(DIRS_OPT));
+}
+
+/* add a directory to top of dirstack without changing cwd */
+int
+vl_dirs_add(int f GCC_UNUSED, int n GCC_UNUSED)
+{
+    char newdir[NFILEN], savedcwd[NFILEN];
+    static TBUFF *last;
+    int rc;
+
+    if ((rc = mlreply2("Directory: ", &last)) == ABORT)
+	return (rc);
+    if (last) {
+	(void) strncpy(newdir, tb_values(last), sizeof(newdir) - 1);
+	newdir[sizeof(newdir) - 1] = '\0';
+	mktrimmed(newdir);
+    } else
+	newdir[0] = '\0';
+    if (rc == TRUE && newdir[0]) {
+	/* 
+	 * add new dir to dir stack -- assuming it is a directory, which
+	 * might be accessible via CDPATH
+	 */
+
+	strcpy(savedcwd, current_directory(TRUE));
+	dirs_add_active = TRUE;
+	if (set_directory(newdir)) {
+	    rc = dirstack_extend(current_directory(TRUE), "vl_dirs_add");
+	    (void) set_directory(savedcwd);	/* restore user's cwd */
+
+	    /* update [DirStack] if on screen */
+	    (void) display_dirstack(DIRS_OPT);
+	} else {
+	    rc = FALSE;
+	    mlforce("[\"%s\" is not a directory]", newdir);
+	}
+	dirs_add_active = FALSE;
+	(void) current_directory(TRUE);		/* update cached cwd */
+    }
+    return (rc);
 }
 
 #endif /* OPT_SHELL */

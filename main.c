@@ -22,7 +22,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.434 2000/09/25 23:17:50 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.435 2000/11/04 21:06:05 tom Exp $
  */
 
 #define realdef /* Make global definitions not external */
@@ -1291,9 +1291,9 @@ global_val_init(void)
 #endif
 #if OPT_FINDERR
 #if	OPT_MSDOS_PATH
-	set_state_variable(s_filename_expr__, "\\([a-zA-Z]:\\)\\?[^ \t:]");
+	set_state_variable(s_filename_expr__, "\\([a-zA-Z]:\\)\\?[^ \t\":]");
 #else
-	set_state_variable(s_filename_expr__, "[^ \t]");
+	set_state_variable(s_filename_expr__, "[^ \t\"]");
 #endif
 #endif
 	/*

@@ -1,7 +1,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/nr-filt.l,v 1.11 2000/02/28 11:58:59 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/nr-filt.l,v 1.12 2000/11/04 20:22:32 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of NROFF
  */
@@ -22,7 +22,7 @@ write_cmd(char *text, int size)
     int cmd = size;
     char *s;
     for (s = text; *s; s++) {
-	if (isspace(*s)) {
+	if (isspace(CharOf(*s))) {
 	    if (cmd == size)
 		cmd = (s - text) + 1;
 	}

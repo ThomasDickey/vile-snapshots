@@ -1,12 +1,12 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_REVISION($Revision: 1.149 $)
+AC_REVISION($Revision: 1.150 $)
 AC_PREREQ(2.12.971222)
 rm -f config.cache
 
 ### Use "configure -with-screen" to override the default configuration, which is
 ### termcap-based on unix systems.
 
-dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.149 2000/10/27 00:36:00 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.150 2000/11/04 22:05:05 tom Exp $
 
 dnl
 AC_INIT(mktbls.c)
@@ -703,6 +703,12 @@ AC_SUBST(EXTRAOBJS)
 AC_SUBST(BUILTLIBS)
 AC_SUBST(FILTER_LIBS)
 AC_SUBST(LIBBUILTFLT)
+
+AC_CHECK_PROGS(SPELL_PROG, ispell spell, [])
+case .$SPELL_PROG in
+.ispell) AC_DEFINE(ISPELL_PROG);;
+.spell) AC_DEFINE(SPELL_PROG);;
+esac
 
 ###	output makefile and config.h
 AC_OUTPUT(makefile filters/makefile filters/makefile.tmp:filters/makefile.2nd,

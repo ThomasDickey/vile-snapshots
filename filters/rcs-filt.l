@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/rcs-filt.l,v 1.6 2000/08/09 23:44:07 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/rcs-filt.l,v 1.7 2000/11/04 20:22:24 tom Exp $
  *
  * Filter to add vile "attribution" sequences to RCS archives.
  */
@@ -23,7 +23,7 @@ static int
 is_ident(char *src)
 {
     char *base = src;
-    while (isalnum(*src))
+    while (isalnum(CharOf(*src)))
 	src++;
     return (src != base && (*src == ':' || *src == '$')) ;
 }

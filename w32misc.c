@@ -2,7 +2,7 @@
  * w32misc:  collection of unrelated, common win32 functions used by both
  *           the console and GUI flavors of the editor.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32misc.c,v 1.27 2000/10/15 21:16:30 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32misc.c,v 1.28 2000/11/04 11:24:06 cmorgan Exp $
  */
 
 #include <windows.h>
@@ -48,6 +48,35 @@ stdin_data_available(void)
     }
     return (rc);
 }
+
+#define MAX_SIGS 6
+
+typedef void (*SIGFUNC_TYPE)(int);
+
+static SIGFUNC_TYPE saved_sigs[MAX_SIGS];
+
+static void
+ignore_signals(void)
+{
+    saved_sigs[0] = signal(SIGILL, SIG_IGN);
+    saved_sigs[1] = signal(SIGFPE, SIG_IGN);
+    saved_sigs[2] = signal(SIGSEGV, SIG_IGN);
+    saved_sigs[3] = signal(SIGTERM, SIG_IGN);
+    saved_sigs[4] = signal(SIGBREAK, SIG_IGN);
+    saved_sigs[5] = signal(SIGABRT, SIG_IGN);
+}
+
+static void
+restore_signals(void)
+{
+    (void) signal(SIGILL, saved_sigs[0]);
+    (void) signal(SIGFPE, saved_sigs[1]);
+    (void) signal(SIGSEGV, saved_sigs[2]);
+    (void) signal(SIGTERM, saved_sigs[3]);
+    (void) signal(SIGBREAK, saved_sigs[4]);
+    (void) signal(SIGABRT, saved_sigs[5]);
+}
+
 #endif
 
 
@@ -327,7 +356,7 @@ w32_CreateProcess(char *cmd, int no_wait)
     {
         /* Bummer */
 
-        mlforce("unable to create win32 process");
+        mlforce("[unable to create win32 process]");
     }
     return (rc);
 }
@@ -377,7 +406,7 @@ w32_system(const char *cmd)
 
         if ((cmdstr = malloc(strlen(cmd) + 1)) == NULL)
         {
-            (void) no_memory("w32_system()");
+            (void) no_memory("w32_system");
             return (-1);
         }
         strcpy(cmdstr, cmd + W32_START_STR_LEN);
@@ -389,7 +418,7 @@ w32_system(const char *cmd)
         {
             /* heap exhausted! */
 
-            (void) no_memory("w32_system()");
+            (void) no_memory("w32_system");
             return (-1);
         }
     }
@@ -450,7 +479,7 @@ get_console_handles(STARTUPINFO *psi, SECURITY_ATTRIBUTES *psa)
                                      FILE_ATTRIBUTE_NORMAL,
                                      NULL)) == INVALID_HANDLE_VALUE)
     {
-        mlforce("std input handle creation failed");
+        mlforce("[std input handle creation failed]");
         return (FALSE);
     }
     if ((psi->hStdOutput = CreateFile("CONOUT$",
@@ -461,7 +490,7 @@ get_console_handles(STARTUPINFO *psi, SECURITY_ATTRIBUTES *psa)
                                       FILE_ATTRIBUTE_NORMAL,
                                       NULL)) == INVALID_HANDLE_VALUE)
     {
-        mlforce("std output handle creation failed");
+        mlforce("[std output handle creation failed]");
         return (FALSE);
     }
     psi->dwFlags         |= STARTF_USEFILLATTRIBUTE;
@@ -527,7 +556,7 @@ w32_system_winvile(const char *cmd, int *pressret)
 
         if ((cmdstr = malloc(strlen(cmd) + 1)) == NULL)
         {
-            (void) no_memory("w32_system_winvile()");
+            (void) no_memory("w32_system_winvile");
             return (-1);
         }
         strcpy(cmdstr, cmd + W32_START_STR_LEN);
@@ -541,14 +570,14 @@ w32_system_winvile(const char *cmd, int *pressret)
         {
             /* heap exhausted! */
 
-            (void) no_memory("w32_system_winvile()");
+            (void) no_memory("w32_system_winvile");
             return (rc);
         }
         if (! AllocConsole())
         {
             if (freestr)
                 free(cmdstr);
-            mlforce("console creation failed");
+            mlforce("[console creation failed]");
             return (rc);
         }
         if (! get_console_handles(&si, &sa))
@@ -559,6 +588,9 @@ w32_system_winvile(const char *cmd, int *pressret)
             return (rc);
         }
         SetConsoleTitle(cmd);
+
+        /* don't let signal in dynamic console kill winvile */
+        ignore_signals();
     }
     if (CreateProcess(NULL,
                       cmdstr,
@@ -579,6 +611,7 @@ w32_system_winvile(const char *cmd, int *pressret)
         if (! no_shell)
         {
             (void) _cwait(&rc, (int) pi.hProcess, 0);
+            restore_signals();
             if (*pressret)
             {
                 if (! WriteFile(si.hStdOutput,
@@ -587,7 +620,7 @@ w32_system_winvile(const char *cmd, int *pressret)
                                 &dummy,
                                 NULL))
                 {
-                    mlforce("dynamic console write failed");
+                    mlforce("[dynamic console write failed]");
                     rc = -1;
                 }
                 else
@@ -598,7 +631,7 @@ w32_system_winvile(const char *cmd, int *pressret)
 
                         if (! ReadConsoleInput(si.hStdInput, &ir, 1, &dummy))
                         {
-                            mlforce("dynamic console read failed");
+                            mlforce("[dynamic console read failed]");
                             rc = -1;
                             break;
                         }
@@ -622,7 +655,7 @@ w32_system_winvile(const char *cmd, int *pressret)
     {
         /* Bummer */
 
-        mlforce("unable to create Win32 process");
+        mlforce("[unable to create Win32 process]");
     }
     if (freestr)
         free(cmdstr);

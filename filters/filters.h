@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.55 2000/09/25 00:45:37 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.56 2000/11/04 20:11:07 tom Exp $
  */
 
 #ifndef FILTERS_H
@@ -98,6 +98,7 @@ extern int vl_lookup_func(const char *name);
 #endif /* _estruct_h */
 
 #include <ctype.h>
+#define CharOf(c)   ((unsigned char)(c))
 
 /* win32 "enhanced" shell cannot echo '&', which we need for builtflt.h */
 #undef ADDR

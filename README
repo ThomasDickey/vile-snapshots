@@ -445,6 +445,88 @@ Jan, 2000
       are bound to GOAL or MOTION commands rather than inserting them
       without quoting.  This allows ^E and ^Y as commands within an insert.
 
+Oct, 2000
+    vile 9.2 is released.  Highlights since 9.1 (modulo bug fixes):
+
+    + improve performance of syntax highlighting with configure option
+      for compiling-in any of the syntax filters.  Use the configure
+      --with-builtin-filters option.  Both internal (built-in) and
+      external filters are supported.
+
+    + add key binding functions for the different editing modes (insert,
+      command, minibuffer and default), making it simpler to bind a
+      space or tab to a given function without having it confused for a
+      function while in insert mode.
+
+    + Vileserv now uses the registry, so 'perl "use Vileserv"' in your
+      .vilerc automagically adds the commands startserv, stopserv, and
+      vileserv-help.
+
+    + added gdb.pm, which runs gdb in a vile window and tracks changes
+      in editor.  (Must be used with shell.pm.)
+
+    Several Win32-specific improvements:
+
+    + allow pasting of one line of text into mini-buffer.
+
+    + winopen, winopen-nocd, winsave, and winsave-nocd accept an
+      optional directory argument, which specifies the initial directory
+      opened by the Open/Save Win32 common dialogs.
+
+    Other Modes:
+
+    + add insert-exec mode to control logic in ins_any_time() which
+      interprets control characters which are bound to GOAL or MOTION
+      commands rather than inserting them without quoting (see 9.0a and
+      9.0b changes).  This restores the default behavior, since some
+      users had control characters bound to a function which was then
+      executed.
+
+    + add unique-buffers mode, which does dev/inode checking to be sure
+      files aren't edited more than once.
+
+    Syntax Filters:
+
+    + add syntax filters for sed, imake
+
+    + implement abbreviations for syntax keywords, using '*' as the
+      default delimiter.
+
+    + filters now attribute multi-line regions when appropriate, e.g.,
+      multi-line comments in C.
+
+    Macros and Scripting Support:
+
+    + add &dquery function which prompts for input with a given default
+      value.
+
+    + implement function &error, which returns true if its argument was
+      an ERROR token.  Modify built-in functions to return ERROR if an
+      argument was ERROR.
+
+    + add variable $filename-expr, to specify the actual pattern used
+      for %F in [Error Expressions].  On DOS and Win32, this is
+      initialized to a more complex pattern, to accommodate drive
+      letters.
+
+    + make the ~local directive work for modes.
+
+    + add ~trace directive, which sets or reports the value of the
+      $debug variable.  Use this to trace into internal buffer [Trace].
+
+    + add macros/shifts.rc, which implements left/right shifting of
+      words in the current line to align with the cursor.
+
+    Other Changes:
+
+    + modify color support in xvile to allow the pre-8.3s color scheme
+      as a special case:  setting bcolor to fcolor makes xvile use the
+      bcolorN resources on syntax-highlighted text rather than the color
+      selected by bcolor (which is actually taken from the fcolorN
+      resource in this case).
+
+    + added pushd, popd, dirs commands with accompanying [DirStack].
+
 -------------------------------
-$Header: /users/source/archives/vile.vcs/RCS/README,v 1.82 2000/10/16 10:08:01 tom Exp $
+$Header: /users/source/archives/vile.vcs/RCS/README,v 1.84 2000/11/04 12:14:23 tom Exp $
 -------------------------------

@@ -57,7 +57,7 @@
  *    situation, kill the app by typing ^C (and then please apply for a
  *    QA position with a certain Redmond company).
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32pipe.c,v 1.22 2000/08/20 18:23:39 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32pipe.c,v 1.23 2000/11/04 11:24:06 cmorgan Exp $
  */
 
 #include <windows.h>
@@ -123,7 +123,7 @@ exec_shell(char *cmd, HANDLE *handles, int hide_child)
     {
         /* heap exhausted! */
 
-        mlforce("insufficient memory to invoke shell");
+        mlforce("[insufficient memory to invoke shell]");
 
         /* Give user a chance to read message--more will surely follow. */
         Sleep(3000);

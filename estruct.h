@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.454 2000/10/01 22:57:37 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.455 2000/11/04 20:08:09 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -1184,7 +1184,8 @@ typedef USHORT CHARTYPE;
 
 /* these parallel the ctypes.h definitions, except that
 	they force the char to valid range first */
-#define istype(m,c) ((vl_chartypes_[((UINT)(c))&((UINT)(N_chars-1))] & (m)) != 0)
+#define CharOf(c)   ((unsigned char)(c))
+#define istype(m,c) ((vl_chartypes_[CharOf(c)] & (m)) != 0)
 
 #define isAlnum(c)	istype(vl_lower|vl_upper|vl_digit, c)
 #define isAlpha(c)	istype(vl_lower|vl_upper, c)

@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 screen API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.92 2000/10/05 10:55:30 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.93 2000/11/04 11:53:18 cmorgan Exp $
  * Written by T.E.Dickey for vile (october 1997).
  * -- improvements by Clark Morgan (see w32cbrd.c, w32pipe.c).
  */
@@ -2481,7 +2481,6 @@ ntgetch(void)
     int buttondown = FALSE;
     int sel_pending = FALSE;	/* Selection pending */
     MARK lmbdn_mark;		/* left mouse button down here */
-    int have_focus = 0;
     int result = 0;
     KEY_EVENT_RECORD ker;
     MSG msg;
@@ -2501,18 +2500,12 @@ ntgetch(void)
     orig_milli_ac = global_b_val(VAL_AUTOCOLOR);
 #endif
     vile_in_getfkey = 1;
+    if (GetFocus() == cur_win->main_hwnd) {
+	    fshow_cursor();
+    } else {
+	    fhide_cursor();
+    }
     while (!result) {
-	if (GetFocus() == cur_win->main_hwnd) {
-	    if (!have_focus) {
-		have_focus = 1;
-		fshow_cursor();
-	    }
-	} else {
-	    if (have_focus) {
-		have_focus = 0;
-		fhide_cursor();
-	    }
-	}
 #ifdef VAL_AUTOCOLOR
 	milli_ac = orig_milli_ac;
 	while (milli_ac > 0) {
@@ -2761,14 +2754,6 @@ ntgetch(void)
 	    }
 	    break;
 
-	case WM_WVILE_CURSOR_ON:
-	    fshow_cursor();
-	    break;
-
-	case WM_WVILE_CURSOR_OFF:
-	    fhide_cursor();
-	    break;
-
 	default:
 	    TRACE(("GETC:default(%s)\n", message2s(msg.message)));
 	    /* FALLTHRU */
@@ -2988,10 +2973,12 @@ MainWndProc(
 	break;
 
     case WM_SETFOCUS:
+    case WM_WVILE_CURSOR_ON:
 	fshow_cursor();
 	break;
 
     case WM_KILLFOCUS:
+    case WM_WVILE_CURSOR_OFF:
 	fhide_cursor();
 	break;
 

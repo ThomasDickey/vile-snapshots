@@ -113,7 +113,7 @@ Creating, executing, storing macros
 	many years, simply because named macros could not be bound to
 	keystrokes.  Thankfully, this restriction has been removed and so,
 	in general, numbered macros are obsolete.  However, vile's help
-	file and other related documents still heavily use this format. 
+	file and other related documents still heavily use this format.
 	Consequently, familiarity with this outdated syntax is a must.
 
     Named macros
@@ -179,7 +179,7 @@ Creating, executing, storing macros
 
 	The individual parameters are evaluated when the macro is invoked, and
 	may consist of expressions.  They are stored as strings.
-	
+
 	The macro interpreter uses a template in the definition to define the
 	types of parameters which are accepted.  For each parameter, a keyword,
 	optionally followed by the prompt string is required.  Keywords (which
@@ -242,16 +242,29 @@ sections may be read in any order.
 ===========================================================================
 
 
+Comments
+--------
+	A semi-colon (;) or double-quote (") denotes a comment that extends
+	from the delimiter to end of line.  The semi-colon is inherited
+	from MicroEMACS, the double-quote is for vi compatibility.
+
+	Note 1:  The double-quote also delimits string arguments, but the
+	command parser correctly distinguishes the various use cases.
+
+	Note 2:  Inline comments (comment text that follows a command)
+	are permitted except when used in conjunction with commands that take
+	optional arguments.  Here follow two examples of unacceptable usage:
+
+	    winopen    ; invoke win32 common open dialog
+	    write-file ; flush curr buffer to disk
+
+	In the first case, the winopen command attempts to browse ';'
+	as a directory.  In the second case, write-file flushes the
+	current buffer to disk using ';' as the filename.
+
+
 Misc macro syntax features
 --------------------------
-	A semi-colon (;) or double-quote (") denotes a comment that extends
-	from the delimiter to end of line.  Note that the double-quote also
-	delimits string arguments, but the command parser correctly
-	distinguishes the various use cases.
-	
-	The semi-colon is inherited from MicroEMACS, the double-quote is for
-	vi compatibility.
-
 	Lines ending with '\' are joined before interpretation.
 
 
@@ -292,7 +305,7 @@ Strings
 	of the macro language, and if it contains no whitespace, but
 	it's probably better practice to use the quotes all the time,
 	to reinforce the idea that all values are strings.
-	
+
 	You may also use strings surrounded by single quotes.  The single
 	quotes override double quotes and backslashes, making it simpler
 	to enter regular expressions.
@@ -441,6 +454,12 @@ State Variables
 			~local statement in macros that temporarily
 			reassign error-buffer (e.g., the ShowManpage macro
 			in macros/manpage.rc).
+
+	$error-expr	Regular expression expanded from [Error Expressions]
+			which matched the most recent find-next-error command.
+
+	$error-match	Text from the current buffer which which was matched
+			in the most recent find-next-error command.
 
 	$exec-path      [READ ONLY] Where to find vile.
 
@@ -1329,6 +1348,6 @@ Example startup file
 	========================= end vile.rc =======================
 
 -----------------------------------
-  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.63 2000/10/15 21:19:42 cmorgan Exp $
+  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.65 2000/11/04 21:10:10 tom Exp $
 -----------------------------------
 
