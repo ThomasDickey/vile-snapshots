@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.274 1998/04/23 09:18:54 kev Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.275 1998/04/24 00:16:08 tom Exp $
  *
  */
 
@@ -431,6 +431,7 @@ extern int kbd_is_pushed_back (void);
 extern int kbd_replaying (int match);
 extern int kbd_reply (const char *prompt, TBUFF **extbuf, int (*efunc)(EOL_ARGS), int eolchar, UINT options, int (*cfunc)(DONE_ARGS));
 extern int kbd_seq (void);
+extern int kbd_seq_nomap (void);
 extern int kbd_show_response (TBUFF **dst, char *src, unsigned bufn, int eolchar, UINT options);
 extern int kbd_string (const char *prompt, char *extbuf, unsigned bufn, int eolchar, UINT options, int (*func)(DONE_ARGS));
 extern int kbm_started (int macnum, int force);

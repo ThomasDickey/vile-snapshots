@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.171 1998/04/16 23:01:09 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.172 1998/04/23 23:50:38 tom Exp $
  *
  */
 
@@ -176,6 +176,7 @@ static	const struct {
 		{"backspace",		&backspc,	's'},
 		{"interrupt",		&intrc,		's'},
 		{"line-kill",		&killc,		's'},
+		{"mini-edit",		&editc,		's'},
 		{"name-complete",	&name_cmpl,	0},
 		{"quote-next",		&quotec,	0},
 		{"start-output",	&startc,	's'},
@@ -614,7 +615,7 @@ deskey(int f GCC_UNUSED, int n GCC_UNUSED)	/* describe the command for a certain
 			return(FALSE);
 		}
 	} else {
-		c = kbd_seq();
+		c = kbd_seq_nomap();
 		if (c < 0) {
 			mlforce("[Not a bindable key-sequence]");
 			return(FALSE);

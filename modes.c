@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.112 1998/04/23 09:18:54 kev Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.113 1998/04/23 11:07:14 tom Exp $
  *
  */
 
@@ -715,6 +715,7 @@ struct FSM fsm_tbl[] = {
 #if OPT_HILITE_CHOICES
 	{ "visual-matches",  fsm_hilite_choices },
 #endif
+	{ "mini-hilite",     fsm_hilite_choices },
 };
 
 static int fsm_idx;
@@ -1463,6 +1464,7 @@ int set_ncolors(int n)
 	set_fsm_choice("fcolor", the_colors);
 	set_fsm_choice("bcolor", the_colors);
 	set_fsm_choice("visual-matches", the_hilite);
+	set_fsm_choice("mini-hilite", the_hilite);
 #endif /* OPT_ENUM_MODES */
 	return TRUE;
 }

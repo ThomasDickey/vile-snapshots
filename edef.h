@@ -8,7 +8,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.220 1998/02/07 15:40:34 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.221 1998/04/23 11:07:13 tom Exp $
  */
 
 #ifndef VILE_EDEF_H
@@ -167,6 +167,7 @@ decl_uninit( W_VALUES global_w_values );
 
 decl_init( int sgarbf, TRUE );          /* TRUE if screen is garbage	*/
 decl_uninit( int clexec	);		/* command line execution flag	*/
+decl_uninit( int miniedit );		/* editing minibuffer with vi-cmds */
 decl_uninit( int mstore	);		/* storing text to macro flag	*/
 decl_init( int discmd, TRUE );		/* display command flag		*/
 decl_init( int disinp, TRUE );		/* display input characters	*/
@@ -189,6 +190,7 @@ decl_init( int cntl_a, tocntrl('A') );	/* current meta character	*/
 decl_init( int cntl_x, tocntrl('X') );	/* current control X prefix char */
 decl_init( int reptc, 'K' );		/* current universal repeat char */
 decl_init( int abortc, tocntrl('[') );	/* ESC: current abort command char */
+decl_init( int editc, tocntrl('G') );	/* toggle edit-mode in minibuffer */
 decl_init( int poundc, '#' );		/* pseudo function key prefix */
 decl_init( int quotec, tocntrl('V') );	/* quote char during mlreply()	*/
 decl_init( int killc, tocntrl('U') );	/* current line kill char	*/

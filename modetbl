@@ -11,7 +11,7 @@
 #
 # The modes are table entries in the BUFFER and WINDOW structures.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.92 1998/03/21 13:19:24 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.93 1998/04/24 10:36:37 tom Exp $
 #
 #
 # Mode-table entries.  Capitalized letters are used for abbreviations.
@@ -52,6 +52,7 @@ bool							# GMD prefix
 enum
 	"fcolor"	FCOLOR		chgd_color	OPT_COLOR	# foreground color
 	"bcolor"	BCOLOR		chgd_color	OPT_COLOR	# background color
+	"Mini-Hilite"   MINI_HILITE	0		# highlight minibuffer when using vi-commands
 	"Popup-Choices"	POPUP_CHOICES	0		OPT_POPUPCHOICE&&OPT_ENUM_MODES # popup buffer showing file-completion choices
 int							# VAL_ prefix
 	"maplength"	MAPLENGTH	0		# maximum length of :map string
@@ -113,6 +114,12 @@ string							# VAL_ prefix
 regex							# VAL_ prefix
 	"comments"	COMMENTS	0		# matches leading comment for comment reformatting
 	"comment-prefix" CMT_PREFIX	0		# prefix to ignore/preserve when formatting comment
+	"fence-begin"	FENCE_BEGIN	chgd_fences	# begin a simple (character, non-nestable) fence
+	"fence-end"	FENCE_END	chgd_fences	# end a simple fence
+	"fence-if"	FENCE_IF	chgd_fences	# begin a complex (line, nestable) fence
+	"fence-elif"	FENCE_ELIF	chgd_fences	# next complex fence
+	"fence-else"	FENCE_ELSE	chgd_fences	# final complex fence
+	"fence-fi"	FENCE_FI	chgd_fences	# end a complex fence
 	"paragraphs"	PARAGRAPHS	0		# delimits a paragraph
 	"sections"	SECTIONS	0		# delimits a section
 	"sentences"	SENTENCES	0		# delimits a sentence
@@ -220,6 +227,7 @@ regex							# MVAL_ prefix
 "glo"	GLOBMODE	MONAMIC		# retrieve global setting
 "gre"	GREATER		DYNAMIC		# logical greater than
 "gtk"	GTKEY		NILNAMIC	# get 1 character
+"gts"	GTSEQ		NILNAMIC	# get keyboard-sequence (characters)
 "ind"	IND		MONAMIC		# evaluate indirect value
 "lef"	LEFT		DYNAMIC		# left string(string, len)
 "len"	LENGTH		MONAMIC		# string length

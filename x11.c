@@ -2,7 +2,7 @@
  * 	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.174 1998/04/23 09:18:54 kev Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.175 1998/04/23 11:07:15 tom Exp $
  *
  */
 
@@ -290,7 +290,6 @@ typedef struct _text_win {
     GC          reversegc;
     GC		selgc;
     GC		revselgc;
-    int		is_color_cursor;
     GC		cursgc;
     GC		revcursgc;
     GC		modeline_focus_gc;	/* GC for modeline w/ focus */
@@ -2924,14 +2923,12 @@ x_preparse_args(
        && cur_win->bg == cur_win->cursor_bg)
      ||  (cur_win->fg == cur_win->cursor_bg
        && cur_win->bg == cur_win->cursor_fg)) {
-	cur_win->is_color_cursor = FALSE;
 	cur_win->cursor_fg = cur_win->bg;		/* undo our trickery */
 	cur_win->cursor_bg = cur_win->fg;
 	cur_win->cursgc = cur_win->reversegc;
 	cur_win->revcursgc = cur_win->textgc;
     }
     else {
-	cur_win->is_color_cursor = TRUE;
 	gcvals.foreground = cur_win->cursor_fg;
 	gcvals.background = cur_win->cursor_bg;
 	cur_win->cursgc = XCreateGC(dpy,
@@ -3822,7 +3819,7 @@ flush_line(
 	fore_gc = cur_win->textgc;
 	back_gc = cur_win->reversegc;
     }
-    else if ((attr & VACURS) && cur_win->is_color_cursor) {
+    else if (attr & VACURS) {
 	fore_gc = cur_win->cursgc;
 	back_gc = cur_win->revcursgc;
 	attr &= ~VACURS;
