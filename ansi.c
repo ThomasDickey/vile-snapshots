@@ -4,7 +4,7 @@
  * "termio.c". It compiles into nothing if not an ANSI device.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ansi.c,v 1.32 1998/04/20 09:54:03 kev Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ansi.c,v 1.33 1998/05/30 17:37:58 tom Exp $
  */
 
 
@@ -54,7 +54,7 @@ static	void	ansirev    (UINT state);
 static	void	ansiclose  (void);
 static	void	ansikopen  (void);
 static	void	ansikclose (void);
-static	int	ansicres   (char *flag);
+static	int	ansicres   (const char *flag);
 static	void	ansiscroll (int from, int to, int n);
 
 #if	OPT_COLOR
@@ -250,7 +250,7 @@ UINT state)	/* TRUE = reverse, FALSE = normal */
 #endif
 
 static int
-ansicres(char *flag)	/* change screen resolution */
+ansicres(const char *flag)	/* change screen resolution */
 {
 	return(FALSE);
 }

@@ -5,7 +5,7 @@
  *	reading and writing of the disk are in "fileio.c".
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.226 1998/05/19 11:04:47 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.227 1998/05/30 11:44:48 tom Exp $
  *
  */
 
@@ -599,7 +599,7 @@ getfile(
 char *fname,		/* file name to find */
 int lockfl)		/* check the file for locks? */
 {
-        register BUFFER *bp;
+        register BUFFER *bp = 0;
 
 	/* if there are no path delimiters in the name, then the user
 		is likely asking for an existing buffer -- try for that

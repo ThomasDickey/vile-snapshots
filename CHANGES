@@ -1,4 +1,10 @@
-Changes for vile 7.5/8.0 (released ??? ??? ?, 1998)
+Changes for vile 8.0 (released Sat May 30, 1998)
+
+Changes for vile 7.5 (released Sat May 30, 1998)
+
+	+ document problem with static initialization of union in CMDFUNC.
+	+ review g++ warnings, use TYPECAST macro in the newer "harmless" const
+	  warnings.
 
  (tom) 980529 (p)
 	+ move mlsave[] into edef.h, updating logic so that the last error

@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.179 1998/05/27 10:45:23 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.180 1998/05/30 12:02:13 tom Exp $
  *
  */
 
@@ -758,7 +758,7 @@ clearflag_func(BI_NODE *n, const void *d GCC_UNUSED)
 static int
 addsynonym_func(BI_NODE *node, const void *d)
 {
-    const CMDFUNC *func = d;
+    const CMDFUNC *func = (const CMDFUNC *)d;
     static char outseq[NLINE];	/* output buffer for text */
 
     if (node->value.n_cmd == func &&
@@ -776,7 +776,7 @@ addsynonym_func(BI_NODE *node, const void *d)
 static int
 makebind_func(BI_NODE *node, const void *d)
 {
-    const struct bindlist_data *data = d;
+    const struct bindlist_data *data = (const struct bindlist_data *)d;
     static KBIND *kbp;		/* pointer into a key binding table */
     static char outseq[NLINE];	/* output buffer for keystroke sequence */
     const CMDFUNC *cmd = node->value.n_cmd;
@@ -864,7 +864,7 @@ void *mstring)		/* match string if partial list, NULL to list all */
 
     data.mask = whichmask;
     data.min = SHORT_CMD_LEN;
-    data.apropos = mstring;
+    data.apropos = (char *)mstring;
 
     /* let us know this is in progress */
     mlwrite("[Building binding list]");
@@ -2369,8 +2369,8 @@ delete_namebst(const char *name, int release)
 	    perl_free_sub(p->n_cmd->cu.c_perl);
 #endif
 
-	free((void *) p->n_cmd->c_help);
-	free((void *) p->n_cmd);
+	free(TYPECAST(char,p->n_cmd->c_help));
+	free(TYPECAST(char,p->n_cmd));
     }
 
     return btree_delete(&namebst, name);

@@ -1,7 +1,7 @@
 ------------------------
 vile bug/enhancement/wish list (mostly wishes ;-)
 ------------------------
-$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.342 1998/05/27 23:37:08 tom Exp $
+$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.343 1998/05/30 11:02:51 tom Exp $
 ----------------------
 	(E means enhancement, L,M,H are low, medium, high priority)
 
@@ -1292,3 +1292,9 @@ Win32).  The EMX configuration can read/write pipes.
 
 OS/2 mouse code probably eats too many CPU cycles; since coding that, I've
 noticed that OS/2 is sometimes reluctant to switch windows vs EMX windows.
+
+-- 98-05-30 (tom)
+
+The CMDFUNC.cu union will not compile on pre-ANSI compilers since they do
+not handle static initialization of unions.  I'll add a configure test
+between 8.0 and 8.1 to repair this (e.g., so that people can use unproto).
