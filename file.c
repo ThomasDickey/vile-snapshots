@@ -5,7 +5,7 @@
  *	reading and writing of the disk are in "fileio.c".
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.214 1997/09/01 20:53:44 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.215 1997/10/07 00:17:11 tom Exp $
  *
  */
 
@@ -245,7 +245,7 @@ static int
 explicit_version(char *ver)
 {
 	if (*ver++ == ';') {
-		if (isdigit(*ver))
+		if (isDigit(*ver))
 			return TRUE;
 	}
 	return FALSE;
@@ -454,7 +454,7 @@ const char *fname,		/* file name to find */
 int ok_to_ask,
 int cmdline)
 {
-	register BUFFER *bp;
+	register BUFFER *bp = 0;
         register int    s;
 	char bname[NBUFN];	/* buffer name to put file */
 	char nfname[NFILEN];	/* canonical form of 'fname' */
@@ -1197,9 +1197,9 @@ makename(char *bname, const char *fname)
 		*bcp++ = SHPIPE_LEFT[0];
 		do {
 			++fcp;
-		} while (isspace(*fcp));
+		} while (isSpace(*fcp));
 		(void)strncpy0(bcp, fcp, (SIZE_T)(NBUFN - (bcp - bname)));
-		for (j = 4; (j < NBUFN) && isprint(*bcp); j++) {
+		for (j = 4; (j < NBUFN) && isPrint(*bcp); j++) {
 			bcp++;
 		}
 		(void) strcpy(bcp, SCRTCH_RIGHT);
@@ -1217,7 +1217,7 @@ makename(char *bname, const char *fname)
 	for (j = 0; j < NBUFN; j++) {
 		if (*bcp == EOS)
 			break;
-		if (isspace(*bcp))
+		if (isSpace(*bcp))
 			*bcp = '-';
 		bcp++;
 	}

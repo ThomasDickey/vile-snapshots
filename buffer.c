@@ -5,7 +5,7 @@
  * keys. Like everyone else, they set hints
  * for the display system.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.160 1997/09/04 23:12:58 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.161 1997/10/07 00:03:52 tom Exp $
  *
  */
 
@@ -173,7 +173,7 @@ static BUFFER *
 find_b_number(const char *number)
 {
 	register int	c = 0;
-	while (isdigit(*number))
+	while (isDigit(*number))
 		c = (c * 10) + (*number++ - '0');
 	if (!*number)
 		return find_b_hist(c);
@@ -329,7 +329,7 @@ hist_lookup(int c)
 {
 	register BUFFER *bp = find_b_hist(c);
 
-	return (bp != 0) ? bp->b_bname : NULL;
+	return (bp != 0) ? bp->b_bname : 0;
 }
 
 /* returns the buffer corresponding to the given number in the history */
@@ -441,7 +441,7 @@ histbuff(int f, int n)
 		mlerase();
 		if (c == thiskey) {
 			c = lookup_hist(bp = find_alt());
-		} else if (isdigit(c)) {
+		} else if (isDigit(c)) {
 			c = c - '0';
 		} else {
 			if (!isreturn(c))
@@ -1542,7 +1542,7 @@ set_bname(BUFFER *bp, const char *name)
 
 	d = bp->b_bname;
 	for (j = 0, k = -1; d[j]; j++) {
-		if (!isspace(d[j]))
+		if (!isSpace(d[j]))
 			k = -1;
 		else if (k < 0)
 			k = j;

@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.158 1997/08/24 23:01:35 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.159 1997/10/07 13:38:45 tom Exp $
  *
  */
 
@@ -192,7 +192,7 @@ chr_eol(
 	int c GCC_UNUSED,
 	int eolchar GCC_UNUSED)
 {
-	return isspace(c);
+	return isSpace(c);
 }
 
 #if OPT_UPBUFF
@@ -723,7 +723,7 @@ void *mstring)		/* match string if partial list, NULL to list all */
 	int pass;
 	int j;
 	int ok = TRUE;		/* reset if out-of-memory, etc. */
-	char *listed = calloc(sizeof(char), (ALLOC_T)nametblsize);
+	char *listed = typecallocn(char, (ALLOC_T)nametblsize);
 
 	if (listed == 0) {
 		(void)no_memory(BINDINGLIST_BufName);
@@ -854,7 +854,7 @@ int hflag)		/* Look in the HOME environment variable first? */
 	int	mode = (hflag & (FL_EXECABLE|FL_WRITEABLE|FL_READABLE));
 
 	/* take care of special cases */
-	if (!fname || !fname[0] || isspace(fname[0]))
+	if (!fname || !fname[0] || isSpace(fname[0]))
 		return NULL;
 	else if (isShellOrPipe(fname))
 		return fname;
@@ -990,7 +990,7 @@ bytes2prc(char *dst, char *src, int n)
 		}
 		if (c == ' ') {
 			tmp = "<space>";
-		} else if (iscntrl(c)) {
+		} else if (isCntrl(c)) {
 			*dst++ = '^';
 			*dst = tocntrl(c);
 		} else {
@@ -1134,7 +1134,7 @@ static char *
 fnc2engl(const CMDFUNC *cfp)
 {
 	register const NTAB *nptr = fnc2ntab(cfp);
-	return nptr ? nptr->n_name : NULL;
+	return nptr ? nptr->n_name : 0;
 }
 
 #endif
@@ -1209,11 +1209,11 @@ const char *kk)		/* name of key to translate to Command key form */
 
 	if (len > 3 && *(k+2) == '-') {
 		if (*k == '^') {
-			if (iscntrl(cntl_a) && *(k+1) == toalpha(cntl_a))
+			if (isCntrl(cntl_a) && *(k+1) == toalpha(cntl_a))
 				pref = CTLA;
-			if (iscntrl(cntl_x) && *(k+1) == toalpha(cntl_x))
+			if (isCntrl(cntl_x) && *(k+1) == toalpha(cntl_x))
 				pref = CTLX;
-			if (iscntrl(poundc) && *(k+1) == toalpha(poundc))
+			if (isCntrl(poundc) && *(k+1) == toalpha(poundc))
 				pref = SPEC;
 		} else if (!strncmp((const char *)k, "FN", (SIZE_T)2)) {
 			pref = SPEC;
@@ -1240,7 +1240,7 @@ const char *kk)		/* name of key to translate to Command key form */
 	/* a control char? */
 	if (*k == '^' && *(k+1) != EOS) {
 		c = *(k+1);
-		if (islower(c)) c = toupper(c);
+		if (isLower(c)) c = toUpper(c);
 		c = tocntrl(c);
 		k += 2;
 	} else {		/* any single char, control or not */
@@ -1310,7 +1310,7 @@ kbd_putc(int c)
 	if ((kbd_expand <= 0) && isreturn(c)) {
 		TTputc(c);
 		ttcol = 0;
-	} else if (isprint(c)) {
+	} else if (isPrint(c)) {
 		if (ttcol < term.t_ncol-1) /* -1 to avoid auto-wrap problems */
 			TTputc(c);
 		ttcol++;
@@ -1858,11 +1858,11 @@ SIZE_T	size_entry)
 static int
 is_shift_cmd(
 const char *buffer,
-int	cpos)
+unsigned cpos)
 {
 	register int c = *buffer;
 	if (isRepeatable(c)) {
-		while (--cpos > 0)
+		while (--cpos != 0)
 			if (*(++buffer) != c)
 				return FALSE;
 		return TRUE;
@@ -1891,7 +1891,7 @@ int	cpos)
  *	so it can be picked up by the commands argument getter later.
  */
 
-#define ismostpunct(c) (ispunct(c) && (c) != '-')
+#define ismostpunct(c) (isPunct(c) && (c) != '-')
 
 static int
 eol_command(

@@ -4,7 +4,7 @@
  *	need to back up to get to the char. before the transition.
  *	Written for vile: Copyright (c) 1990, 1995 by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/wordmov.c,v 1.17 1996/02/05 02:19:21 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/wordmov.c,v 1.18 1997/10/06 23:27:08 tom Exp $
  *
  */
 
@@ -31,7 +31,7 @@ getchartype(void)
 		return (ISNL);
 	else
 		c = char_at(DOT);
-	return (isspace(c) ? ISSPACE : 
+	return (isSpace(c) ? ISSPACE : 
 			( isident(c) ? ISIDENT : ISOTHER ) );
 }
 

@@ -1,7 +1,7 @@
 /*
  * This is just a place holder -- a place in which to pull in edef.h alone
  *
- * $Header: /users/source/archives/vile.vcs/RCS/externs.c,v 1.5 1996/02/26 04:24:35 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/externs.c,v 1.6 1997/10/07 11:05:10 tom Exp $
  *
  */
 
@@ -12,5 +12,5 @@
 #include	"nebind.h"	/* default key bindings */
 #include	"nename.h"	/* name table */
 
-const int nametblsize = TABLESIZE(nametbl);
+EXTERN_CONST int nametblsize = TABLESIZE(nametbl);
 

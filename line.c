@@ -10,7 +10,7 @@
  * editing must be being displayed, which means that "b_nwnd" is non zero,
  * which means that the dot and mark values in the buffer headers are nonsense.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.106 1997/06/06 19:28:40 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.107 1997/10/06 23:30:37 tom Exp $
  *
  */
 
@@ -923,11 +923,11 @@ reg2index(int c)
 
 	if (c < 0)
 		n = -1;
-	else if (isdigit(c))
+	else if (isDigit(c))
 		n = c - '0';
-	else if (islower(c))
+	else if (isLower(c))
 		n = c - 'a' + 10;  /* named buffs are in 10 through 36 */
-	else if (isupper(c))
+	else if (isUpper(c))
 		n = c - 'A' + 10;
 #if OPT_SELECTIONS
 	else if (c == '.')
@@ -993,7 +993,7 @@ usekreg(int f, int n)
 	else
 		ukb = (short)i;
 
-	if (isupper(c))
+	if (isUpper(c))
 		kregflag |= KAPPEND;
 
 	if (clexec) {
@@ -1526,7 +1526,7 @@ void *dummy GCC_UNUSED)
 						bprintf("%*p", REGS_PREFIX, ' ');
 					}
 					c = *p++;
-					if (isprint(c) || !iflag) {
+					if (isPrint(c) || !iflag) {
 						bputc(c);
 					} else if (c != '\n') {
 						bputc('^');

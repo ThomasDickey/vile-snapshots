@@ -5,7 +5,7 @@
  * Modifications:  kevin buettner and paul fox  2/95
  * 		string literal ("Literal") support --  ben stoltz
  * 
- * $Header: /users/source/archives/vile.vcs/RCS/c-filt.c,v 1.4 1997/04/16 10:20:13 ianj Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/c-filt.c,v 1.5 1997/10/07 10:40:16 tom Exp $
  *
  * Features:
  * 	- Reads the keyword file ".vile.keywords" from the home directory.
@@ -219,7 +219,7 @@ insert_keyword(
     char *attribute)
 {
     KEYWORD *first;
-    KEYWORD *new;
+    KEYWORD *nxt;
     int Index;
     if (!strcmp(ident,"Comments")) {
 	(void)strcpy(comment_attr,attribute);
@@ -233,18 +233,18 @@ insert_keyword(
       strcpy(cpp_attr,attribute);
       return;
     }
-    new = first = NULL;
+    nxt = first = NULL;
     Index = hash_function(ident);
     first = hashtable[Index];
-    if ((new = (KEYWORD *)malloc(sizeof(struct _keyword))) != NULL) {
-	(void)strcpy(new->kw,ident);
-	new->length = strlen(new->kw);
-	(void)strcpy(new->attribute,attribute);
-	new->next = first;
-	hashtable[Index] = new;
+    if ((nxt = (KEYWORD *)malloc(sizeof(struct _keyword))) != NULL) {
+	(void)strcpy(nxt->kw,ident);
+	nxt->length = strlen(nxt->kw);
+	(void)strcpy(nxt->attribute,attribute);
+	nxt->next = first;
+	hashtable[Index] = nxt;
 #ifdef DEBUG 
     fprintf(stderr,"insert_keyword: new %li, new->kw %s, new->length %i, new->attribute %c, new->next %li\n", new,
-    				    new->kw, new->length, new->attribute,new->next);
+    				    nxt->kw, nxt->length, nxt->attribute,nxt->next);
 #endif
     }
 }

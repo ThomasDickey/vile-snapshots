@@ -13,7 +13,7 @@
  *	The same goes for vile.  -pgf, 1990-1995
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.301 1997/09/18 00:31:57 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.302 1997/10/07 00:03:17 tom Exp $
  *
  */
 
@@ -135,7 +135,7 @@ main(int argc, char *argv[])
 #if DISP_IBMPC || DISP_BORLAND
 		    	/* if it's a digit, it's probably a screen
 				resolution */
-			if (isdigit(*param)) {
+			if (isDigit(*param)) {
 				current_res_name = param;
 				continue;
 			} else
@@ -1027,7 +1027,7 @@ global_val_init(void)
 			}
 		}
 		if (!found) {
-			s = malloc(strlen(HELP_LOC) + 2 + strlen(startup_path));
+			s = typeallocn(char, strlen(HELP_LOC) + 2 + strlen(startup_path));
 			lsprintf(s, "%s%c%s", HELP_LOC, PATHCHR, startup_path);
 			startup_path = s;
 		}
@@ -1181,7 +1181,7 @@ do_num_proc(int *cp, int *fp, int *np)
 
 	c = *cp;
 
-	if (iscntrl(c) || isspecial(c))
+	if (isCntrl(c) || isspecial(c))
 		return;
 
 	f = *fp;
@@ -1192,11 +1192,11 @@ do_num_proc(int *cp, int *fp, int *np)
 		oldn = 1;
 	n = 1;
 
-	if ( isdigit(c) && c != '0' ) {
+	if ( isDigit(c) && c != '0' ) {
 		n = 0;		/* start with a zero default */
 		f = TRUE;	/* there is a # arg */
 		mflag = 1;		/* current minus flag */
-		while ((isdigit(c) && !isspecial(c)) || (c == '-')) {
+		while ((isDigit(c) && !isspecial(c)) || (c == '-')) {
 			if (c == '-') {
 				/* already hit a minus or digit? */
 				if ((mflag == -1) || (n != 0))
@@ -1243,7 +1243,7 @@ do_rept_arg_proc(int *cp, int *fp, int *np)
 	f = TRUE;	/* there is a # arg */
 	mflag = 0;			/* that can be discarded. */
 	mlwrite("arg: %d",n);
-	while ( (isdigit( c=kbd_seq() ) && !isspecial(c)) 
+	while ( (isDigit( c=kbd_seq() ) && !isspecial(c)) 
 			|| c==reptc || c=='-'){
 		if (c == reptc) {
 			/* wow.  what does this do?  -pgf */
@@ -1750,7 +1750,7 @@ charinit(void)
 
 	for (c = 0; c < N_chars; c++) {
 #if OPT_WIDE_CTYPES
-		if (isspace(c) || isprint(c))
+		if (isSpace(c) || isPrint(c))
 			_chartypes_[c] |= _shpipe;
 		if (ispath(c))
 			_chartypes_[c] |= _scrtch;

@@ -18,7 +18,7 @@
  * transfering the selection are not dealt with in this file.  Procedures
  * for dealing with the representation are maintained in this file.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.54 1997/03/15 15:51:38 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.55 1997/10/07 00:25:15 tom Exp $
  *
  */
 
@@ -800,7 +800,7 @@ operselect(int f, int n)
 	int s;
 	opcmd = OPOTHER;
 	doingopselect = TRUE;
-	s = operator(f,n,selectregion,"Select");
+	s = vile_op(f,n,selectregion,"Select");
 	doingopselect = FALSE;
 	return s;
 }
@@ -810,7 +810,7 @@ operattrbold(int f, int n)
 {
       opcmd = OPOTHER;
       videoattribute = VABOLD | VOWN_OPERS;
-      return operator(f,n,attributeregion,"Set bold attribute");
+      return vile_op(f,n,attributeregion,"Set bold attribute");
 }
 
 int
@@ -818,7 +818,7 @@ operattrital(int f, int n)
 {
       opcmd = OPOTHER;
       videoattribute = VAITAL | VOWN_OPERS;
-      return operator(f,n,attributeregion,"Set italic attribute");
+      return vile_op(f,n,attributeregion,"Set italic attribute");
 }
 
 int
@@ -826,7 +826,7 @@ operattrno(int f, int n)
 {
       opcmd = OPOTHER;
       videoattribute = 0;	/* clears no matter who "owns" */
-      return operator(f,n,attributeregion,"Set normal attribute");
+      return vile_op(f,n,attributeregion,"Set normal attribute");
 }
 
 int
@@ -834,7 +834,7 @@ operattrul(int f, int n)
 {
       opcmd = OPOTHER;
       videoattribute = VAUL | VOWN_OPERS;
-      return operator(f,n,attributeregion,"Set underline attribute");
+      return vile_op(f,n,attributeregion,"Set underline attribute");
 }
   
 
@@ -843,7 +843,7 @@ operattrcaseq(int f, int n)
 {
       opcmd = OPOTHER;
       videoattribute = VAUL | VOWN_CTLA;
-      return operator(f,n,attribute_cntl_a_sequences,
+      return vile_op(f,n,attribute_cntl_a_sequences,
                       "Attribute ^A sequences");
 }
   
@@ -900,7 +900,7 @@ attribute_cntl_a_sequences(void)
 start_scan:
 		while (offset < llength(DOT.l)) {
 		    c = lgetc(DOT.l, offset);
-		    if (isdigit(c)) {
+		    if (isDigit(c)) {
 			count = count * 10 + c - '0';
 			offset++;
 		    }
@@ -917,7 +917,7 @@ start_scan:
 			    /* We have color. Get color value */
 			    offset++;
 			    c = lgetc(DOT.l, offset);
-			    if (isdigit(c))
+			    if (isDigit(c))
 				videoattribute |= VCOLORATTR(c - '0');
 			    else if ('A' <= c && c <= 'F')
 				videoattribute |= VCOLORATTR(c - 'A' + 10);

@@ -5,7 +5,7 @@
  * Written by T.E.Dickey for vile (march 1993).
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/filec.c,v 1.79 1997/09/04 23:15:04 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/filec.c,v 1.80 1997/10/07 00:14:45 tom Exp $
  *
  */
 
@@ -136,10 +136,10 @@ pathcmp(LINE * lp, char * text)
 	lc = *l++;
 	tc = *t++;
 #if OPT_CASELESS
-	if (isupper(lc))
-	    lc = tolower(lc);
-	if (isupper(tc))
-	    tc = tolower(tc);
+	if (isUpper(lc))
+	    lc = toLower(lc);
+	if (isUpper(tc))
+	    tc = toLower(tc);
 #endif
 	if (lc == tc) {
 	    if (tc == EOS)
@@ -283,7 +283,7 @@ is_environ(const char *s)
 {
 	if (*s++ == '$') {
 		while (*s != EOS) {
-			if (!isalnum(*s) && (*s != '_'))
+			if (!isAlnum(*s) && (*s != '_'))
 				return FALSE;
 			s++;
 		}
@@ -1101,7 +1101,7 @@ TBUFF **buffer,
 int	flag,		/* +1 to read, -1 to write, 0 don't care */
 char *	result)
 {
-	register int	s;
+	register int	s = FALSE;
 	static	TBUFF	*last;
 	char	Reply[NFILEN];
 	int	(*complete) (DONE_ARGS) = no_completion;

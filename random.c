@@ -2,7 +2,7 @@
  * This file contains the command processing functions for a number of random
  * commands. There is no functional grouping here, for sure.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.187 1997/08/22 09:32:58 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.188 1997/10/07 00:22:10 tom Exp $
  *
  */
 
@@ -432,7 +432,7 @@ int
 forceblank(int f, int n)
 {
 	register LINE	*lp1;
-	register LINE	*lp2;
+	register LINE	*lp2 = 0;
 	B_COUNT nld;
 	B_COUNT n_arg;
 	C_NUM	nchar;
@@ -790,9 +790,9 @@ drive2char(unsigned d)
 static unsigned
 char2drive(int d)
 {
-	if (isalpha(d)) {
-		if (islower(d))
-			d = toupper(d);
+	if (isAlpha(d)) {
+		if (isLower(d))
+			d = toUpper(d);
 	} else {
 		mlforce("[Not a drive '%c']", d);
 		d = curdrive();
@@ -821,7 +821,7 @@ curdrive(void)
 int
 setdrive(int d)
 {
-	if (isalpha(d)) {
+	if (isAlpha(d)) {
 #if SYS_OS2
 # if CC_CSETPP
 		_chdrive(char2drive(d) + 1);
@@ -972,7 +972,7 @@ set_directory(const char *dir)
 {
     char       exdir[NFILEN];
 #if SYS_UNIX
-    const char *cdpath;
+    const char *cdpath = 0;
     char       cdpathdir[NFILEN];
 #endif
     char *exdp;

@@ -7,7 +7,7 @@
  * Most code probably by Dan Lawrence or Dave Conroy for MicroEMACS
  * Extensions for vile by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/insert.c,v 1.103 1997/08/11 21:50:30 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/insert.c,v 1.104 1997/10/06 23:30:37 tom Exp $
  *
  */
 
@@ -595,7 +595,7 @@ static int
 isallspace(LINEPTR ln, int lb, int ub)
 {
 	while (lb <= ub) {
-		if (!isspace(lgetc(ln,ub)))
+		if (!isSpace(lgetc(ln,ub)))
 			return FALSE;
 		ub--;
 	}
@@ -616,7 +616,7 @@ blanks_on_line(void)
 	int	list = w_val(curwp,WMDLIST);
 
 	for (DOT.o = 0; DOT.o < llength(DOT.l); DOT.o++) {
-		if (isspace(char_at(DOT))
+		if (isSpace(char_at(DOT))
 		 && getccol(list) >= indentwas) {
 			code = TRUE;
 			break;
@@ -643,8 +643,8 @@ inschar(int c, int *backsp_limit_p)
 		if (wrap_at_col(c)) {
 			int offset = past_wrapmargin(c);
 			int wm_flag = (offset >= 0);
-			int is_print = (!isspecial(c) && isprint(c));
-			int is_space = (!isspecial(c) && isspace(c));
+			int is_print = (!isspecial(c) && isPrint(c));
+			int is_space = (!isspecial(c) && isSpace(c));
 
 			if (is_space
 			 || (is_print && (offset >= 1) && blanks_on_line())) {
@@ -716,7 +716,7 @@ inschar(int c, int *backsp_limit_p)
 
 				while (DOT.o > *backsp_limit_p) {
 					if (c == wkillc) {
-						if (isspace( lgetc(DOT.l,
+						if (isSpace( lgetc(DOT.l,
 								DOT.o-1))) {
 							if (saw_word)
 								break;
@@ -1025,7 +1025,7 @@ indentlen(LINE *lp)
 	ind = 0;
 	for (i=0; i<llength(lp); ++i) {
 		c = lgetc(lp, i);
-		if (!isspace(c))
+		if (!isSpace(c))
 			break;
 		if (c == '\t')
 			ind = nextab(ind);
@@ -1136,7 +1136,7 @@ shiftwidth(int f GCC_UNUSED, int n GCC_UNUSED)
 	    } else {
 		space_count = 0;
 	    }
-	    if (!isspace(c)) {
+	    if (!isSpace(c)) {
 		all_white = FALSE;
 	    }
 
@@ -1215,7 +1215,7 @@ quote(int f, int n)
 		return TRUE;
 
 	/* accumulate up to 3 digits */
-	if (isdigit(c) || c == 'x') {
+	if (isDigit(c) || c == 'x') {
 		if (c == '0') {
 			digs = 4; /* including the leading '0' */
 			base = 8;
@@ -1243,7 +1243,7 @@ quote(int f, int n)
 				break;
 			(void)update(FALSE);
 			c = keystroke_raw8();
-		} while ((isdigit(c) && base >= 10) ||
+		} while ((isDigit(c) && base >= 10) ||
 			(base == 8 && c < '8') || 
 			(base == 16 && (c >= 'a' && c <= 'f')) ||
 			(base == 16 && (c >= 'A' && c <= 'F')));

@@ -13,7 +13,7 @@
  *
  *	modify (ifdef-style) 'expand_leaf()' to allow ellipsis.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/glob.c,v 1.56 1997/08/22 09:32:58 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/glob.c,v 1.57 1997/10/06 23:35:59 tom Exp $
  *
  */
 
@@ -32,7 +32,7 @@
 #endif
 
 #define BAKTIK '`'	/* used in UNIX shell for pipe */
-#define	isname(c)	(isalnum(c) || ((c) == '_'))
+#define	isname(c)	(isAlnum(c) || ((c) == '_'))
 #define	isdelim(c)	((c) == '(' || ((c) == '{'))
 
 #if SYS_MSDOS || SYS_WIN31 || SYS_OS2 || SYS_WINNT
@@ -226,7 +226,7 @@ wild_leaf (char *pattern)
 static int
 cs_char(int ch)
 {
-	return isupper(ch) ? tolower(ch) : ch;
+	return isUpper(ch) ? toLower(ch) : ch;
 }
 #else
 #define cs_char(ch) (ch)
@@ -584,10 +584,10 @@ glob_from_pipe(const char *pattern)
 		d = cmd + 1;
 	} else {
 		char	save = EOS;
-		for (d = cmd+1; *d != EOS && isspace(*d); d++)
+		for (d = cmd+1; *d != EOS && isSpace(*d); d++)
 			;
 		for (s = d; *s != EOS; s++) {
-			if (isspace(*s)) {
+			if (isSpace(*s)) {
 				save = *s;
 				*s = EOS;
 				break;
@@ -613,7 +613,7 @@ glob_from_pipe(const char *pattern)
 			 * whitespace, otherwise only on newlines.
 			 */
 			for (s = tmp; (SIZE_T)(s-tmp) < len; s++) {
-				if ((single && isspace(*s))
+				if ((single && isSpace(*s))
 				 || (!single && (*s == '\n' || *s == EOS))) {
 					*d = EOS;
 					result = record_a_match(d = old);

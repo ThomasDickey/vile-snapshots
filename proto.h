@@ -4,9 +4,16 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.253 1997/09/05 23:38:24 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.254 1997/10/07 00:31:41 tom Exp $
  *
  */
+
+#ifndef VILE_PROTO_H
+#define VILE_PROTO_H 1
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 extern int main (int argc, char **argv);
 #ifndef strmalloc
@@ -512,7 +519,7 @@ extern int substregion (void);
 extern int subst_again_region (void);
 
 /* opers.c */
-extern int operator (int f, int n, OpsFunc fn, const char *str);
+extern int vile_op (int f, int n, OpsFunc fn, const char *str);
 
 /* path.c */
 #if OPT_MSDOS_PATH
@@ -1080,3 +1087,9 @@ extern	char *	vms2unix_path   (char *dst, const char *src);
 extern	char *	vms_path2dir    (const char *src);
 extern	void	vms_dir2path	(char *path);
 #endif
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* VILE_PROTO_H */

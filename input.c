@@ -44,7 +44,7 @@
  *	tgetc_avail()     true if a key is avail from tgetc() or below.
  *	keystroke_avail() true if a key is avail from keystroke() or below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.166 1997/08/15 23:51:33 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.167 1997/10/07 00:15:23 tom Exp $
  *
  */
 
@@ -132,7 +132,7 @@ unsigned *pos)
 
 	for (base = len; base > first; ) {
 		base--;
-		if (isspace(buf[base])) {
+		if (isSpace(buf[base])) {
 			base++;
 			break;
 		} else if (buf[base] == '$') {
@@ -269,10 +269,10 @@ int	*next)		/* returns 0/1=register, 2=count */
 
 	if (status == TRUE) {
 		if (state <= 0
-		 && isalpha(buffer[0])
+		 && isAlpha(buffer[0])
 		 && buffer[1] == EOS
 		 && (*retp = reg2index(*buffer)) >= 0) {
-			*next = isupper(*buffer) ? 1 : 0;
+			*next = isUpper(*buffer) ? 1 : 0;
 		} else if (state >= 0
 		 && string_to_number(buffer, retp)
 		 && *retp) {
@@ -324,7 +324,7 @@ incr_dot_kregnum(void)
 {
 	if (dotcmdmode == PLAY) {
 		register int	c = itb_peek(dotcmd);
-		if (isdigit(c) && c < '9')
+		if (isDigit(c) && c < '9')
 			itb_stuff(dotcmd, ++c);
 	}
 }
@@ -684,7 +684,7 @@ kbd_delimiter(void)
 
 	if (isnamedcmd) {
 		register int	d = end_string();
-		if (ispunct(d))
+		if (isPunct(d))
 			c = d;
 	}
 	return c;
@@ -763,7 +763,7 @@ eraseChar(int c)
 {
 	if (disinp) {
 		kbd_erase();
-		if (!isprint(c)) {
+		if (!isPrint(c)) {
 			kbd_erase();		/* e.g. back up over ^H */
 		    	if (c & HIGHBIT) {
 			    kbd_erase();	/* e.g. back up over \200 */
@@ -912,8 +912,8 @@ kbd_kill_response(TBUFF * buffer, unsigned * position, int c)
 		cpos--;
 		eraseChar(buf[cpos]);
 		if (c == wkillc) {
-			if (!isspace(buf[cpos])) {
-				if (cpos > 0 && isspace(buf[cpos-1]))
+			if (!isSpace(buf[cpos])) {
+				if (cpos > 0 && isSpace(buf[cpos-1]))
 					break;
 			}
 		}
@@ -977,7 +977,7 @@ int
 /*ARGSUSED*/
 eol_history(const char * buffer GCC_UNUSED, unsigned cpos GCC_UNUSED, int c, int eolchar)
 {
-	if (isprint(eolchar)) {
+	if (isPrint(eolchar)) {
 		if (c == eolchar)
 			return TRUE;
 	}
@@ -1180,7 +1180,7 @@ int (*complete)(DONE_ARGS))	/* handles completion */
 				/*EMPTY*/;
 			else if ((done && !(options & KBD_MAYBEC))
 			 || (!EscOrQuo
-			  && !(shell && isprint(c))
+			  && !(shell && isPrint(c))
 			  && (c == TESTC || c == NAMEC))) {
 				if (shell && isreturn(c)) {
 					/*EMPTY*/;
@@ -1297,11 +1297,11 @@ int (*complete)(DONE_ARGS))	/* handles completion */
 				} else {
 #if !SMALLER
 					if ((options & KBD_LOWERC)
-					 && isupper(c))
-						c = tolower(c);
+					 && isUpper(c))
+						c = toLower(c);
 					else if ((options & KBD_UPPERC)
-					 && islower(c))
-						c = toupper(c);
+					 && isLower(c))
+						c = toUpper(c);
 #endif
 					tb_put(&buf, cpos++, c);
 					tb_put(&buf, cpos, EOS);
@@ -1560,7 +1560,7 @@ int	n,			/* # of times to repeat */
 int	macnum,			/* register to execute */
 ITBUFF *ptr)			/* data to interpret */
 {
-	register KSTACK *sp;
+	register KSTACK *sp = 0;
 	ITBUFF  *tp = 0;
 
 	if (interrupted())

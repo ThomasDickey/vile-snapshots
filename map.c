@@ -3,7 +3,7 @@
  *	Original interface by Otto Lind, 6/3/93
  *	Additional map and map! support by Kevin Buettner, 9/17/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/map.c,v 1.77 1997/09/18 00:31:52 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/map.c,v 1.78 1997/10/07 13:39:35 tom Exp $
  *
  */
 
@@ -158,7 +158,7 @@ makemaplist(int dummy GCC_UNUSED, void *mapp)
 	bprintf("[(n) means never remap]\n");
     }
     tb_free(&lhsstr);
-    free(lhsstack);
+    free((char *)lhsstack);
 }
 
 static int
@@ -462,7 +462,7 @@ delfrommap(struct maprec **mpp, const char * ks)
     } else if ((*mstk[depth])->irv != -1) {
 	(*mstk[depth])->irv = -1;
     } else {
-	free(mstk);
+	free((char *)mstk);
 	return FALSE;
     }
 
@@ -477,7 +477,7 @@ delfrommap(struct maprec **mpp, const char * ks)
 	else
 	    break;
     }
-    free(mstk);
+    free((char *)mstk);
     return TRUE;
 }
 
@@ -736,7 +736,7 @@ abbr_c_start(void)
 	first = lgetc(DOT.l,abbr_curr_off);
 	prev = lgetc(DOT.l,abbr_curr_off-1);
 	if ((isident(first) && isident(prev)) ||
-	    (!isident(first) && !(isident(prev) || isspace(prev)))) {
+	    (!isident(first) && !(isident(prev) || isSpace(prev)))) {
 		return FALSE;
 	}
     }
@@ -809,7 +809,7 @@ maplookup(
      * on it.
      */
     use_sys_timing = (insertmode && c == poundc &&
-    				(isprint(poundc) || isspace(poundc)));
+    				(isPrint(poundc) || isSpace(poundc)));
 
     unmatched = itb_init(&unmatched, 0);
     itb_append(&unmatched, c);

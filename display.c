@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.235 1997/10/05 21:46:13 kev Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.236 1997/10/07 00:04:40 tom Exp $
  *
  */
 
@@ -119,7 +119,7 @@ right_num (char *buffer, int len, long value)
 static int
 dfputsn(OutFunc outfunc, const char *s, int n)
 {
-	register int c;
+	register int c = 0;
 	register int l = 0;
 	TRACE(("...str=%.*s\n", n > 0 ? n : (int)strlen(s), s))
 	while ((n-- != 0) && ((c = *s++) != EOS)) {
@@ -229,7 +229,7 @@ dofmt(const char *fmt, va_list *app)
 		if (c == '*') {
 			wid = va_arg(*app,int);
 			c = *fmt++;
-		} else while (isdigit(c)) {
+		} else while (isDigit(c)) {
 			wid = (wid * 10) + c - '0';
 			c = *fmt++;
 		}
@@ -515,7 +515,7 @@ vtputc(int c)
 #endif
 	 vp = vscreen[vtrow];
 
-	if (isprint(c) && vtcol >= 0 && vtcol < term.t_ncol) {
+	if (isPrint(c) && vtcol >= 0 && vtcol < term.t_ncol) {
 		VideoText(vp)[vtcol++] = (c & (N_chars-1));
 #ifdef WMDLINEWRAP
 		if ((allow_wrap != 0)
@@ -539,7 +539,7 @@ vtputc(int c)
 		          && vtcol < term.t_ncol);
 	} else if (c == '\n') {
 		return;
-	} else if (isprint(c)) {
+	} else if (isPrint(c)) {
 		++vtcol;
 	} else {
 		vtlistc(c);
@@ -553,7 +553,7 @@ static int vt_octal;
 static void
 vtlistc(int c)
 {
-	if (isprint(c)) {
+	if (isPrint(c)) {
 	    vtputc(c);
 	    return;
 	}
@@ -584,7 +584,7 @@ vtgetc(int col)
 static void
 vtputsn(const char *s, int n)
 {
-	int c;
+	int c = 0;
 	while (n-- > 0 && (c = *s++) != EOS)
 		vtputc(c);
 }
@@ -633,7 +633,7 @@ vtset(LINEPTR lp, WINDOW *wp)
 		from = lp->l_text;
 		for (j = k = jk = 0; (j < n) && (k < skip); j++) {
 			register int	c = from[j];
-			if ((list || (c != '\t')) && !isprint(c)) {
+			if ((list || (c != '\t')) && !isPrint(c)) {
 			    	if (c & HIGHBIT) {
 				    k += 4;
 				    fill = '\\';  /* FIXXXX */
@@ -644,7 +644,7 @@ vtset(LINEPTR lp, WINDOW *wp)
 			} else {
 				if (c == '\t')
 					k += (curtabval - (k % curtabval));
-				else if (isprint(c))
+				else if (isPrint(c))
 					k++;
 				fill = ' ';
 			}
@@ -747,7 +747,7 @@ l_to_vcol (WINDOW *wp, int base)
 		if (c == '\t' && !w_val(wp,WMDLIST)) {
 			col += curtabval - (col%curtabval);
 		} else {
-			if (!isprint(c)) {
+			if (!isPrint(c)) {
 				col += (c & HIGHBIT) ? 3 : 1;
 			}
 			++col;
@@ -1573,7 +1573,7 @@ C_NUM	offset)
 	} else {
 		for (n = w_left_margin(wp); (n < offset) && (n <= length); n++) {
 			c = (n >= length) ? '\n' : lp->l_text[n];
-			if (isprint(c)) {
+			if (isPrint(c)) {
 				column++;
 			} else if (list || (c != '\t')) {
 				column += (c & HIGHBIT) ? 4 : 2;
@@ -1619,7 +1619,7 @@ C_NUM	col)
 			(offset < len) && (n < goal);
 				offset++) {
 			register int c = text[offset];
-			if (isprint(c)) {
+			if (isPrint(c)) {
 				n++;
 			} else if (list || (c != '\t')) {
 				n += (c & HIGHBIT) ? 4 : 2;
@@ -2641,7 +2641,7 @@ modeline(WINDOW *wp)
 		    break;
 		case 'f' :
 		case 'F' : {
-		    char *p;
+		    char *p = 0;
 		    if (bp->b_fname != 0
 		     && (p = shorten_path(strcpy(temp,bp->b_fname), FALSE)) != 0
 		     && *p

@@ -15,7 +15,7 @@
  * by Tom Dickey, 1993.    -pgf
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/mktbls.c,v 1.83 1997/09/06 14:54:53 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/mktbls.c,v 1.84 1997/10/07 11:00:21 tom Exp $
  *
  */
 
@@ -118,10 +118,10 @@ extern	void	free	( char *ptr );
 #define tocntrl(c)	((c)^DIFCNTRL)
 #define toalpha(c)	((c)^DIFCNTRL)
 #define	DIFCASE		0x20
-#define	isupper(c)	((c) >= 'A' && (c) <= 'Z')
-#define	islower(c)	((c) >= 'a' && (c) <= 'z')
-#define toupper(c)	((c)^DIFCASE)
-#define tolower(c)	((c)^DIFCASE)
+#define	isUpper(c)	((c) >= 'A' && (c) <= 'Z')
+#define	isLower(c)	((c) >= 'a' && (c) <= 'z')
+#define toUpper(c)	((c)^DIFCASE)
+#define toLower(c)	((c)^DIFCASE)
 #define isboolean(c)	((c) == 'b' || (c) == 'M')
 
 #ifndef	TRUE
@@ -213,13 +213,13 @@ static	jmp_buf my_top;
 
 /******************************************************************************/
 static int
-isspace(int c)
+isSpace(int c)
 {
 	return c == ' ' || c == '\t' || c == '\n';
 }
 
 static int
-isprint(int c)
+isPrint(int c)
 {
 	return c >= ' ' && c < 0x7f;
 }
@@ -228,7 +228,7 @@ isprint(int c)
 static char *
 Alloc(unsigned len)
 {
-	char	*pointer = malloc(len);
+	char	*pointer = (char *)malloc(len);
 	if (pointer == 0)
 		badfmt("bug: not enough memory");
         return pointer;
@@ -383,7 +383,7 @@ LastCol(char *buffer)
 	register int	col = 0,
 			c;
 	while ((c = *buffer++) != 0) {
-		if (isprint(c))
+		if (isPrint(c))
 			col++;
 		else if (c == '\t')
 			col = (col | 7) + 1;
@@ -484,14 +484,14 @@ char	**vec)
 
 	for (c = 0; c < MAX_PARSE; c++)
 		vec[c] = "";
-	for (c = strlen(input); c > 0 && isspace(input[c-1]); c--)
+	for (c = strlen(input); c > 0 && isSpace(input[c-1]); c--)
 		input[c-1] = EOS;
 
 	for (n = 0; (c = input[n++]) != EOS; ) {
 		if (quote) {
 			if (c == quote) {
 				quote = 0;
-				if (input[n] && !isspace(input[n]))
+				if (input[n] && !isSpace(input[n]))
 					badfmt2("expected blank", n);
 				input[n-1] = EOS;
 			}
@@ -500,16 +500,16 @@ char	**vec)
 				quote = c;
 			} else if (c == '<') {
 				c = quote = '>';
-			} else if (isspace(c)) {
+			} else if (isSpace(c)) {
 				input[n-1] = EOS;
 				expecting = TRUE;
 			} else if (c == '#') {
-				while (isspace(input[n]))
+				while (isSpace(input[n]))
 					n++;
 				vec[0] = input+n;
 				break;
 			}
-			if (expecting && !isspace(c)) {
+			if (expecting && !isSpace(c)) {
 				if (count+1 >= MAX_PARSE)
 					break;
 				vec[++count] = input + n - ((c != quote)?1:0);
@@ -565,8 +565,8 @@ AbbrevMode(char *src)
 	register char	*s = src,
 			*d = dst;
 	while (*s) {
-		if (isupper(*s))
-			*d++ = (char)tolower(*s);
+		if (isUpper(*s))
+			*d++ = (char)toLower(*s);
 		s++;
 	}
 	*d = EOS;
@@ -580,8 +580,8 @@ NormalMode(char *src)
 	char *dst = StrAlloc(src);
 	register char *s = dst;
 	while (*s) {
-		if (isupper(*s))
-			*s = (char)tolower(*s);
+		if (isUpper(*s))
+			*s = (char)toLower(*s);
 		s++;
 	}
 	return dst;
@@ -796,7 +796,7 @@ const char *ppref)
 
 	(void)PadTo(32, temp);
 	Sprintf(temp+strlen(temp), "/* TABLESIZE(%c_valnames) -- %s */\n",
-		tolower(*ppref), ppref);
+		toLower(*ppref), ppref);
 	Fprintf(nemode, "%s", temp);
 	Fprintf(nemode, "#define MAX_%c_VALUES\t%d\n\n", *ppref, count);
 }
@@ -880,7 +880,7 @@ dump_all_modes(void)
 		"#endif /* realdef */",
 		"",
 		"#ifdef realdef",
-		"const char *const all_modes[] = {",
+		"EXTERN_CONST char *const all_modes[] = {",
 		};
 	static const char *const bottom[] = {
 		"\tNULL\t/* ends table */",
@@ -963,7 +963,7 @@ save_bindings(char *s, char *func, char *cond)
 		set_binding(btype, c, cond, func);
 	} else if (*s == '^' && (c = *(s+1)) != EOS) { /* a control char? */
 		if (c > 'a' &&  c < 'z')
-			c = toupper(c);
+			c = toUpper(c);
 		c = tocntrl(c);
 		c |= highbit;
 		set_binding(btype, c, cond, func);
@@ -1118,7 +1118,7 @@ dump_mmodes(void)
 		"} M_VALUES;",
 		"",
 		"#ifdef realdef",
-		"const struct VALNAMES m_valnames[MAX_M_VALUES+1] = {",
+		"EXTERN_CONST struct VALNAMES m_valnames[MAX_M_VALUES+1] = {",
 		};
 	static const char *const bottom[] = {
 		"",
@@ -1145,7 +1145,7 @@ dump_all_submodes(void)
 		"",
 		"#if OPT_MAJORMODE",
 		"#ifdef realdef",
-		"const char *const all_submodes[] = {",
+		"EXTERN_CONST char *const all_submodes[] = {",
 		};
 	static const char *const bottom[] = {
 		"\tNULL\t/* ends table */",
@@ -1244,7 +1244,7 @@ dump_bmodes(void)
 		"} B_VALUES;",
 		"",
 		"#ifdef realdef",
-		"const struct VALNAMES b_valnames[] = {",
+		"EXTERN_CONST struct VALNAMES b_valnames[] = {",
 		};
 	static const char *const bottom[] = {
 		"",
@@ -1305,7 +1305,7 @@ init_envars(void)
 		"/*\tlist of recognized environment variables\t*/",
 		"",
 		"#ifdef realdef",
-		"const char *const envars[] = {"
+		"EXTERN_CONST char *const envars[] = {"
 		};
 	static	int	done;
 
@@ -1395,7 +1395,7 @@ init_fsms(void)
 
 	(void)strcpy(name, fsm_name);
 	for (n = 0; fsm_name[n] != '\0'; n++)
-		fsm_name[n] = toupper(fsm_name[n]);
+		fsm_name[n] = toUpper(fsm_name[n]);
 	fprintf(nefsms, "\n");
 	fprintf(nefsms, "#if OPT_%s_CHOICES\n", fsm_name);
 	fprintf(nefsms, "static const\n");
@@ -1517,7 +1517,7 @@ char	*help)
 	Sprintf(temp, "extern int %s ( int f, int n );", func);
 	InsertOnEnd(&all_funcs, temp);
 
-	s = append(strcpy(temp, "\tconst CMDFUNC f_"), func);
+	s = append(strcpy(temp, "\tEXTERN_CONST CMDFUNC f_"), func);
 	(void)PadTo(32, temp);
 	s = append(s, "= { ");
 	s = append(s, func);
@@ -1573,7 +1573,7 @@ dump_gmodes(void)
 		"} G_VALUES;",
 		"",
 		"#ifdef realdef",
-		"const struct VALNAMES g_valnames[] = {",
+		"EXTERN_CONST struct VALNAMES g_valnames[] = {",
 		};
 	static const char *const bottom[] = {
 		"",
@@ -1607,7 +1607,7 @@ dump_names(void)
 
 	Fprintf(nename,"\n/* if you maintain this by hand, keep it in */\n");
 	Fprintf(nename,"/* alphabetical order!!!! */\n\n");
-	Fprintf(nename,"const NTAB nametbl[] = {\n");
+	Fprintf(nename,"EXTERN_CONST NTAB nametbl[] = {\n");
 
 	BeginIf();
 	for (m = all_names; m != NULL; m = m->nst) {
@@ -1638,7 +1638,7 @@ init_ufuncs(void)
 		"#define\tTRINAMIC\t3",
 		"",
 		"#ifdef realdef",
-		"const UFUNC funcs[] = {",
+		"EXTERN_CONST UFUNC funcs[] = {",
 		};
 	static	int	done;
 
@@ -1720,7 +1720,7 @@ dump_wmodes(void)
 		"} W_VALUES;",
 		"",
 		"#ifdef realdef",
-		"const struct VALNAMES w_valnames[] = {",
+		"EXTERN_CONST struct VALNAMES w_valnames[] = {",
 		};
 	static const char *bottom[] = {
 		"",

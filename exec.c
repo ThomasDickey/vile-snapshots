@@ -4,7 +4,7 @@
  *	written 1986 by Daniel Lawrence
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.142 1997/09/01 21:33:30 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.143 1997/10/07 13:36:13 tom Exp $
  *
  */
 
@@ -90,7 +90,7 @@ eol_range(const char * buffer, unsigned cpos, int c, int eolchar GCC_UNUSED)
 		return FALSE;
 
 	if (isspecial(c)	/* sorry, cannot scroll with arrow keys */
-	 || iscntrl(c))
+	 || isCntrl(c))
 		return TRUE;
 
 	if (islinespecchar(c)
@@ -98,7 +98,7 @@ eol_range(const char * buffer, unsigned cpos, int c, int eolchar GCC_UNUSED)
 	 || /* special test for 'a style mark references */
 		(cpos != 0
 		&& buffer[cpos-1] == '\''
-		&& (islower(c) || (c == '\'') ) ) )
+		&& (isLower(c) || (c == '\'') ) ) )
 		return FALSE;
 	return TRUE;
 }
@@ -218,7 +218,7 @@ execute_named_command(int f, int n)
 					hst_glue(EOS);
 				} else {
 					c = fnp[strlen(fnp)-1];
-					if (ispunct(c)) {
+					if (isPunct(c)) {
 						c = end_string();
 						if (c != NAMEC
 						 && c != ' '
@@ -228,7 +228,7 @@ execute_named_command(int f, int n)
 						 }
 					} else {	/* e.g., ":e#" */
 						c = end_string();
-						if (ispunct(c)
+						if (isPunct(c)
 						 && strchr(global_g_val_ptr(GVAL_EXPAND_CHARS),c) != 0)
 							unkeystroke(c);
 					}
@@ -396,7 +396,7 @@ seems like we need one more check here -- is it from a .exrc file?
 	 * line-count is expected only if no "to" address specification was
 	 * given.
 	 */
-	if ((*fnp != EOS) && !end_of_cmd() && !ispunct(end_string())) {
+	if ((*fnp != EOS) && !end_of_cmd() && !isPunct(end_string())) {
 		maybe_reg = ((flags & OPTREG) == OPTREG);
 		maybe_num = ((flags & TO) == TO)
 			&& !((lflag & TO) == TO);
@@ -407,18 +407,18 @@ seems like we need one more check here -- is it from a .exrc file?
 
 	if (maybe_reg || maybe_num) {
 		int	num,
-			this = (maybe_num && maybe_reg)
+			that = (maybe_num && maybe_reg)
 				? 0
 				: (maybe_num ? 1 : -1),
 			last = maybe_num ? 2 : 1;
 
-		while (!end_of_cmd() && (this < last)) {
-			status = mlreply_reg_count(this, &num, &this);
+		while (!end_of_cmd() && (that < last)) {
+			status = mlreply_reg_count(that, &num, &that);
 			if (status == ABORT)
 				return status;
 			else if (status != TRUE)
 				break;
-			if (this == 2) {
+			if (that == 2) {
 				if (is_empty_buf(curbp)) {
 				    mlforce(
 			    "[No line count possible in empty buffer]", fnp);
@@ -431,8 +431,8 @@ seems like we need one more check here -- is it from a .exrc file?
 				swapmark();
 			} else {
 				ukb = (short)num;
-				kregflag = (this == 1) ? KAPPEND : 0;
-				this = 1;
+				kregflag = (that == 1) ? KAPPEND : 0;
+				that = 1;
 				/* patch: need to handle recursion */
 			}
 		}
@@ -558,9 +558,9 @@ LINEPTR		*markptr)	/* where to store the mark's value */
 			s++;
 			status = gotoeob(TRUE,1);
 			if (status) lp = DOT.l;
-		} else if (isdigit(*s)) {
+		} else if (isDigit(*s)) {
 			/* digit means an absolute line number */
-			for (num = 0; isdigit(*s); s++) {
+			for (num = 0; isDigit(*s); s++) {
 				num = num * 10 + *s - '0';
 			}
 			status = gotoline(TRUE,num);
@@ -573,7 +573,7 @@ LINEPTR		*markptr)	/* where to store the mark's value */
 			s++;
 		} else if (*s == '+') {
 			s++;
-			for (num = 0; isdigit(*s); s++)
+			for (num = 0; isDigit(*s); s++)
 				num = num * 10 + *s - '0';
 			if (num == 0)
 				num++;
@@ -584,7 +584,7 @@ LINEPTR		*markptr)	/* where to store the mark's value */
 				lp = DOT.l;
 		} else if (*s == '-') {
 			s++;
-			for (num = 0; isdigit(*s); s++)
+			for (num = 0; isDigit(*s); s++)
 					num = num * 10 + *s - '0';
 			if (num == 0)
 				num++;
@@ -626,7 +626,7 @@ LINEPTR		*markptr)	/* where to store the mark's value */
 		t = s;
 		if (*t == '-' || *t == '+') {
 			s++;
-			for (num = 0; isdigit(*s); s++) {
+			for (num = 0; isDigit(*s); s++) {
 				num = num * 10 + *s - '0';
 			}
 			if (num == 0)
@@ -916,10 +916,10 @@ int eolchar)
 				case 'X':
 					i = 2; /* allow \xNN hex */
 					c = 0;
-					while (isalnum(*src) && i--) {
-						if (isdigit(*src)) {
+					while (isAlnum(*src) && i--) {
+						if (isDigit(*src)) {
 							d = *src - '0';
-						} else if (islower(*src)) {
+						} else if (isLower(*src)) {
 							d = *src - 'a' + 10;
 						} else {
 							d = *src - 'A' + 10;
@@ -936,7 +936,7 @@ int eolchar)
 					if (c >= '0' && c <= '7') {
 						i = 2; /* allow \NNN octal */
 						c -= '0';
-						while (isdigit(*src)
+						while (isDigit(*src)
 						  && *src < '8'
 						  && i--) {
 							c = (c * 8) + (*src++ - '0');
@@ -1843,10 +1843,10 @@ dobuf(BUFFER *bp)	/* buffer to execute */
 		whlist = NULL;
 #endif
 		{
-			static const IFSTK new_ifstk; /* all 0's */
+			static const IFSTK new_ifstk = {0,0,0}; /* all 0's */
 			const CMDFUNC *save_havemotion  = havemotion;
 			IFSTK save_ifstk;
-			int save_regionshape = regionshape;
+			REGIONSHAPE save_regionshape = regionshape;
 
 			save_ifstk  = ifstk;
 			ifstk       = new_ifstk;

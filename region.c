@@ -5,7 +5,7 @@
  * commands. Some functions are just for
  * internal use.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/region.c,v 1.81 1997/08/11 21:50:23 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/region.c,v 1.82 1997/10/06 23:32:48 tom Exp $
  *
  */
 
@@ -327,7 +327,7 @@ detabline(void *flagp GCC_UNUSED, int l GCC_UNUSED, int r GCC_UNUSED)
 	/* detab the entire current line */
 	while (DOT.o < llength(lp)) {
 		c = char_at(DOT);
-		if (leadingonly && !isspace(c))
+		if (leadingonly && !isSpace(c))
 			break;
 		/* if we have a tab */
 		if (c == '\t') {
@@ -609,7 +609,7 @@ yankregion(void)
 int
 _blankchar(int c)
 {
-	if (!isspace(c))
+	if (!isSpace(c))
 		return ' ';
 	return -1;
 }
@@ -618,7 +618,7 @@ _blankchar(int c)
 static int
 _to_lower(int c)
 {
-	if (isupper(c))
+	if (isUpper(c))
 		return c ^ DIFCASE;
 	return -1;
 }
@@ -626,7 +626,7 @@ _to_lower(int c)
 static int
 _to_upper(int c)
 {
-	if (islower(c))
+	if (isLower(c))
 		return c ^ DIFCASE;
 	return -1;
 }
@@ -634,7 +634,7 @@ _to_upper(int c)
 static int
 _to_caseflip(int c)
 {
-	if (isalpha(c))
+	if (isAlpha(c))
 		return c ^ DIFCASE;
 	return -1;
 }
