@@ -1,3 +1,5 @@
+-- $Header: /users/source/archives/vile.vcs/RCS/README.MENU,v 1.2 1997/04/12 00:34:10 tom Exp $
+
 Philippe Chassany (20/02/1997)
 
 MXvile Menu Presentation
@@ -10,7 +12,7 @@ Sources		Status		Definition
 
 menu.c		New		The rc file parser and menu generator
 x11.c		Patched		Patch to create the Motif MenuBar
-bind.c		Patched		Little patch to give acclerator of a command
+bind.c		Patched		Little patch to give accelerator of a command
 makefile	Patched		menu.c compilation and -DMENU CFLAGS
 menurc		New		A rc file example
 
@@ -32,7 +34,7 @@ C:Edition
 B:Search Forward...:search-forward
 B:Search Backward...:search-reverse	-> Vile Internal Action
 B:Grep for...:34			-> Vile Macro from .vilerc file
-S					-> Seperator
+S					-> Separator
 B:Manual for...:2
 #
 C:Help:help				-> Help Cascade
@@ -45,11 +47,17 @@ B:Apropos...:apropos
 B:On Function...:describe-function
 B:On Key...:describe-key
 
+If in a menu, there is one 'L:list_buff' (as item) the menu will contain at
+this point the entire buffer list with there accelerators (_0, _1 ...).
+
+The item must be at the end of a menu and only one 'L:list_buff' must be
+present in all the menu file declaration (and it's not tested yet).
+
 Note : The Macro calls from the menurc file can't work for you because the 
        Macro numbers are locals. All the other actions can work.
 
 I know, the patch is a little dirty but I think it's a good start to
-give xvile a powerfull gui (especially for new users).
+give xvile a powerful gui (especially for new users).
 I have not lot of time to do more things in this patch but the main ideas
 are here. The next idea will be a xvile (X11/Xt) version of the menubar.
 

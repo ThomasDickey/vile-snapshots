@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.227 1997/04/08 00:17:08 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.228 1997/04/12 00:22:23 tom Exp $
  *
  */
 
@@ -39,6 +39,7 @@ static	int *lmap;
 #define CAN_SCROLL 0
 #endif
 
+static	int	i_displayed;		/* false until we're in screen-mode */
 static	int	im_displaying;		/* flag set during screen updates */
 static	int	im_timing;
 
@@ -887,6 +888,7 @@ int force)	/* force update past type ahead? */
 
 	TTflush();
 	endofDisplay();
+	i_displayed = TRUE;
 
 	while (chg_width || chg_height)
 		newscreensize(chg_height,chg_width);
@@ -3175,7 +3177,7 @@ void
 newscreensize (int h, int w)
 {
 	/* do the change later */
-	if (im_displaying) {
+	if (im_displaying || !i_displayed) {
 		chg_width = w;
 		chg_height = h;
 		return;
@@ -3260,7 +3262,7 @@ imworking (int ACTUAL_SIG_ARGS GCC_UNUSED)
 	 * again to start things up)
 	 */
 
-	if (im_displaying) {	/* look at the semaphore first! */
+	if (im_displaying || !i_displayed) { /* look at the semaphore first! */
 		/*EMPTY*/;
 	} else if (im_waiting(-1)) {
 		im_timing = FALSE;

@@ -29,6 +29,7 @@ extern char *give_accelerator ( char * );
 /* Locals */
 #define MAX_ITEM_MENU_LIST  50
 int	nb_item_menu_list = 0;
+static Widget pm_buffer [MAX_ITEM_MENU_LIST];
 Widget	cascade;
 
 /* Tokens of the rc file */
@@ -442,12 +443,24 @@ void proc_back ( Widget w, XtPointer arg, XtPointer call )
 void list_proc_back ( Widget w, XtPointer bname, XtPointer call )
 {
     char    *sbname = (char *)bname;
-    int     num_buff = (int)atoi(sbname);
+    int     num_buff;
     register BUFFER *bp;
     char    *ptr;
+    XmString xms;
+    char *accel;
+
+    num_buff = 1;
+
+    XtVaGetValues (w, XmNacceleratorText, &xms, NULL);
+    XmStringGetLtoR (xms,  XmFONTLIST_DEFAULT_TAG, &accel);
+#ifdef DEBUG
+    printf("ACCEL %s\n", accel);
+#endif
+    num_buff = (int)atoi(&accel[1]);
 
 #ifdef DEBUG
     printf("BUFF %d\n", num_buff);
+    fflush (stdout);
 #endif
 
     if ((ptr = hist_lookup(num_buff)) == NULL) {
@@ -477,19 +490,12 @@ void list_proc_back ( Widget w, XtPointer bname, XtPointer call )
 /************************************************************************/
 void post_menu ( Widget w, XtPointer client, XEvent *ev )
 {
-    int     i;
+    int     i, n=nb_item_menu_list;
     BUFFER  *bp;
-    char    *arg, string[256], temp[256], *p;
+    char    string[256], temp[256], *p;
     Widget  pm = (Widget) client;
     XButtonPressedEvent *bev = (XButtonPressedEvent *)ev;
-    static Widget   wlist[MAX_ITEM_MENU_LIST];
-
-    for (i=0; i<nb_item_menu_list; i++)
-    {
-	if (wlist[i] != NULL)
-	    XtDestroyWidget (wlist[i]);
-	wlist[i] = NULL;
-    }
+    XmString xms;
 
     nb_item_menu_list = 0;
 
@@ -504,18 +510,33 @@ void post_menu ( Widget w, XtPointer client, XEvent *ev )
 		lengthen_path(p));
 
 	sprintf(temp, "_%d", nb_item_menu_list);
-	wlist [nb_item_menu_list] =
-	    do_button (pm, string, temp, xmPushButtonGadgetClass);
+        if (pm_buffer [nb_item_menu_list] == NULL)
+        {
+	    pm_buffer [nb_item_menu_list] =
+	        do_button (pm, string, temp, xmPushButtonGadgetClass);
+        }
+        else
+        {
+            xms = XmStringCreateSimple (string);
+            XtVaSetValues (pm_buffer [nb_item_menu_list], 
+                        XmNlabelString, xms, NULL);
+            XmStringFree (xms);
+            XtRemoveCallback (pm_buffer[nb_item_menu_list],
+                              XmNactivateCallback, list_proc_back, NULL);
+        }
 
-	arg = (char *)malloc(10*sizeof(char));
-	sprintf(arg, "%d", nb_item_menu_list);
-	
-	XtAddCallback (wlist[nb_item_menu_list], 
+	XtAddCallback (pm_buffer[nb_item_menu_list], 
 			XmNactivateCallback, 
 			list_proc_back,
-			arg);
+			NULL);
 	nb_item_menu_list++;
     }
+    for (i=nb_item_menu_list; i<n; i++)
+    {
+        XtDestroyWidget (pm_buffer[i]);
+	pm_buffer[i] = NULL;
+    }
+
     XmUpdateDisplay(pm);
 }
 
@@ -605,5 +626,8 @@ void do_menu ( Widget menub )
 	    break;
 	}
     }
+
+    for (i=0; i<MAX_ITEM_MENU_LIST; i++)
+	pm_buffer[i] = NULL;
 }
 /************************************************************************/

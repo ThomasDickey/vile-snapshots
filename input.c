@@ -44,7 +44,7 @@
  *	tgetc_avail()     true if a key is avail from tgetc() or below.
  *	keystroke_avail() true if a key is avail from keystroke() or below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.160 1997/03/31 00:33:36 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.161 1997/04/12 00:57:14 tom Exp $
  *
  */
 
@@ -574,6 +574,19 @@ screen_string (char *buf, int bufn, CHARTYPE inclchartype)
 	MARK mk;
 
 	mk = DOT;
+
+	/* if from gototag(), grab from the beginning of the string */
+	if (b_val(curbp, MDTAGWORD)
+	 && inclchartype == _ident
+	 && istype(inclchartype, char_at(DOT))) {
+		while ( DOT.o > 0 ) {
+			DOT.o--;
+			if ( !istype(inclchartype, char_at(DOT)) ) {
+				DOT.o++;
+				break;
+			}
+		}
+	}
 	while ( i < (bufn-1) && !is_at_end_of_line(DOT)) {
 		buf[i] = char_at(DOT);
 #if OPT_WIDE_CTYPES

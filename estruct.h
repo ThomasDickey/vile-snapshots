@@ -9,7 +9,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.302 1997/04/08 00:39:47 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.303 1997/04/11 11:16:15 jrs Exp $
  */
 
 #ifdef HAVE_CONFIG_H
@@ -1599,7 +1599,11 @@ typedef struct	BUFFER {
 #define b_tentative_lastdot b_wtraits.w_tld
 #define b_wline   b_wtraits.w_ln
 
+#if OPT_CASELESS
+#define eql_bname(bp,name) !stricmp(bp->b_bname, name)
+#else
 #define eql_bname(bp,name) !strcmp(bp->b_bname, name)
+#endif
 
 /* values for b_flag */
 #define BFINVS     0x01			/* Internal invisible buffer	*/

@@ -11,7 +11,7 @@
 #
 # The modes are table entries in the BUFFER and WINDOW structures.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.76 1997/03/09 00:08:20 otto.lind Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.77 1997/04/12 00:47:53 tom Exp $
 #
 #
 # Mode-table entries.  Capitalized letters are used for abbreviations.
@@ -86,6 +86,7 @@ bool							# MD prefix
 	"ShowMoDe"	SHOWMODE	chgd_major	# show insert/replace/command mode
 	"TabInsert"	TABINSERT	0		# okay to insert tab chars
 	"TagRelative"	TAGSRELTIV	0		# tags are relative to tagsfile path
+	"TagWord"	TAGWORD		0		# apply tag to whole word, not only string at cursor
 	"terse"		TERSE		0		# be terse -- suppress messages
 	"view"		VIEW		chgd_major	# read-only buffer
 	"WrapScan"	SWRAP 		0		# wrap-around search mode

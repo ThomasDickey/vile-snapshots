@@ -1,7 +1,7 @@
 /*	npopen:  like popen, but grabs stderr, too
  *		written by John Hutchinson, heavily modified by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/npopen.c,v 1.56 1997/03/30 21:03:38 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/npopen.c,v 1.57 1997/04/11 11:16:15 cmorgan Exp $
  *
  */
 
@@ -385,7 +385,7 @@ inout_popen(FILE **fr, FILE **fw, const char *cmd)
 		} else {
 			*fw = pp = fdopen(fd, type);
 			myPipe = fr;
-			myWrtr = fw;
+			myWrtr = &pp;  /* Can't assign "fw", may be stack-based. */
 			myCmds = strmalloc(cmd);
 		}
 	}
