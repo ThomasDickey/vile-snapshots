@@ -22,7 +22,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.507 2003/06/11 23:37:51 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.508 2003/06/17 17:36:25 tom Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -2748,6 +2748,54 @@ make_startup_file(char *name)
 	fclose(fp);
     }
 }
+
+#ifndef valid_buffer
+int
+valid_buffer(BUFFER *test)
+{
+    beginDisplay();
+    if (test != NULL && test != bminip) {
+	BUFFER *bp;
+	int valid = FALSE;
+
+	for_each_buffer(bp) {
+	    if (bp == test) {
+		valid = TRUE;
+		break;
+	    }
+	}
+	if (!valid)
+	    imdying(SIGKILL);
+    }
+    endofDisplay();
+
+    return (test != NULL);
+}
+#endif
+
+#ifndef valid_window
+int
+valid_window(WINDOW *test)
+{
+    beginDisplay();
+    if (test != NULL && test != wminip) {
+	WINDOW *wp;
+	int valid = FALSE;
+
+	for_each_window(wp) {
+	    if (wp == test) {
+		valid = TRUE;
+		break;
+	    }
+	}
+	if (!valid)
+	    imdying(SIGKILL);
+    }
+    endofDisplay();
+
+    return (test != NULL);
+}
+#endif
 
 #ifdef VILE_ERROR_ABORT
 #undef ExitProgram		/* in case it is oleauto_exit() */

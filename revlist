@@ -1,6 +1,6 @@
-revlist for vile, version v9_3r
+revlist for vile, version v9_3s
 --------------------------------------------------------------------------------
-CHANGES	1.723
+CHANGES	1.724
 CHANGES.R3	1.1
 CHANGES.R4	1.1
 CHANGES.R5	1.1
@@ -22,7 +22,7 @@ bind.c	1.266
 borland.c	1.32
 btree.c	1.17
 btree.h	1.4
-buffer.c	1.261
+buffer.c	1.263
 buglist	1.397
 builtflt.c	1.30
 chgdfunc.h	1.16
@@ -39,13 +39,13 @@ display.c	1.377
 djhandl.c	1.6
 dumbterm.c	1.17
 edef.h	1.312
-estruct.h	1.534
+estruct.h	1.535
 eval.c	1.322
 exec.c	1.258
 externs.c	1.8
 fences.c	1.82
-file.c	1.350
-filec.c	1.112
+file.c	1.351
+filec.c	1.113
 fileio.c	1.172
 finderr.c	1.117
 glob.c	1.78
@@ -54,13 +54,13 @@ gppconio.c	1.2
 history.c	1.74
 ibmpc.c	1.97
 input.c	1.259
-insert.c	1.140
+insert.c	1.141
 install.sh	1.6
 isearch.c	1.58
 itbuff.c	1.17
 lckfiles.c	1.11
 line.c	1.159
-main.c	1.507
+main.c	1.508
 makefile.blc	1.17
 makefile.djg	1.31
 makefile.emx	1.5
@@ -74,9 +74,9 @@ menu.c	1.42
 mkdirs.sh	1.5
 mkprlenv.wnt	1.8
 mktbls.c	1.130
-modes.c	1.258
+modes.c	1.259
 modetbl	1.217
-msgs.c	1.24
+msgs.c	1.25
 npopen.c	1.89
 ntconio.c	1.76
 ntwinio.c	1.133
@@ -85,18 +85,18 @@ opers.c	1.87
 os2keys.h	1.1
 os2pipe.c	1.5
 os2vio.c	1.29
-patchlev.h	1.299
+patchlev.h	1.300
 path.c	1.135
 perl.xs	1.89
-proto.h	1.518
+proto.h	1.519
 pscreen.h	1.1
 ptypemap	1.7
 random.c	1.272
 regexp.c	1.107
-region.c	1.125
-revlist	v9_3r
+region.c	1.126
+revlist	v9_3s
 search.c	1.134
-select.c	1.144
+select.c	1.146
 sinstall.sh	1.1
 spawn.c	1.178
 statevar.c	1.74
@@ -110,7 +110,7 @@ trace.h	1.20
 ucrypt.c	1.15
 undo.c	1.84
 version.c	1.54
-vile-9.3.spec	1.16
+vile-9.3.spec	1.17
 vile.1	1.30
 vile.hlp	1.566
 vile.wmconfig	1.1
@@ -130,14 +130,14 @@ w32reg.c	1.8
 w32reg.h	1.1
 w32vile.h	1.2
 watch.c	1.5
-window.c	1.104
+window.c	1.105
 winvile.h	1.8
 winvile.odl	1.6
 winvile.rc	1.10
 word.c	1.74
 wordmov.c	1.21
 wvwrap.cpp	1.7
-x11.c	1.268
+x11.c	1.269
 x11menu.c	1.6
 xshell.sh	1.4
 xvile.wmconfig	1.1

@@ -18,7 +18,7 @@
  * transferring the selection are not dealt with in this file.  Procedures
  * for dealing with the representation are maintained in this file.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.144 2003/05/06 22:54:21 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.146 2003/06/18 22:21:53 tom Exp $
  *
  */
 
@@ -141,21 +141,23 @@ free_attrib(BUFFER *bp, AREGION * ap)
 static void
 detach_attrib(BUFFER *bp, AREGION * arp)
 {
-    if (bp != NULL) {
-	WINDOW *wp;
-	AREGION **rpp;
-	for_each_visible_window(wp) {
-	    if (wp->w_bufp == bp)
-		wp->w_flag |= WFHARD;
-	}
-	rpp = &bp->b_attribs;
-	while (*rpp != NULL) {
-	    if (*rpp == arp) {
-		*rpp = (*rpp)->ar_next;
-		arp->ar_region.r_attr_id = 0;
-		break;
-	    } else
-		rpp = &(*rpp)->ar_next;
+    if (find_bp(bp) != 0) {
+	if (valid_buffer(bp)) {
+	    WINDOW *wp;
+	    AREGION **rpp;
+	    for_each_visible_window(wp) {
+		if (wp->w_bufp == bp)
+		    wp->w_flag |= WFHARD;
+	    }
+	    rpp = &bp->b_attribs;
+	    while (*rpp != NULL) {
+		if (*rpp == arp) {
+		    *rpp = (*rpp)->ar_next;
+		    arp->ar_region.r_attr_id = 0;
+		    break;
+		} else
+		    rpp = &(*rpp)->ar_next;
+	    }
 	}
     }
 }
@@ -163,7 +165,7 @@ detach_attrib(BUFFER *bp, AREGION * arp)
 void
 find_release_attr(BUFFER *bp, REGION * rp)
 {
-    if (bp != NULL) {
+    if (valid_buffer(bp)) {
 	AREGION **rpp;
 	rpp = &bp->b_attribs;
 	while (*rpp != NULL) {
@@ -186,7 +188,7 @@ assign_attr_id(void)
 static void
 attach_attrib(BUFFER *bp, AREGION * arp)
 {
-    if (bp != 0) {
+    if (valid_buffer(bp)) {
 	WINDOW *wp;
 	arp->ar_next = bp->b_attribs;
 	bp->b_attribs = arp;
@@ -276,7 +278,7 @@ sel_extend(int wiping, int include_dot)
     MARK working_dot;
 
     saved_dot = DOT;
-    if (startbufp != NULL) {
+    if (valid_buffer(startbufp)) {
 	detach_attrib(selbufp, &selregion);
 	selbufp = startbufp;
 	selregion = startregion;
@@ -432,7 +434,7 @@ sel_yank(int reg)
     BUFFER *save_bp = curbp;
     int code = FALSE;
 
-    if ((save_wp = push_fake_win(selbufp)) != NULL) {
+    if (valid_window(save_wp = push_fake_win(selbufp))) {
 	/*
 	 * We're not guaranteed that curbp and selbufp are the same.
 	 */
@@ -484,16 +486,16 @@ sel_all(int f GCC_UNUSED, int n GCC_UNUSED)
 BUFFER *
 sel_buffer(void)
 {
-    return (startbufp != NULL) ? startbufp : selbufp;
+    return valid_buffer(startbufp) ? startbufp : selbufp;
 }
 
 static int
 get_selregion(REGION * result)
 {
-    if (startbufp != NULL) {
+    if (valid_buffer(startbufp)) {
 	*result = startregion.ar_region;
 	return TRUE;
-    } else if (selbufp != NULL) {
+    } else if (valid_buffer(selbufp)) {
 	*result = selregion.ar_region;
 	return TRUE;
     } else {
@@ -526,10 +528,10 @@ sel_get_rightmark(MARK *result)
 int
 sel_setshape(REGIONSHAPE shape)
 {
-    if (startbufp != NULL) {
+    if (valid_buffer(startbufp)) {
 	startregion.ar_shape = shape;
 	return TRUE;
-    } else if (selbufp != NULL) {
+    } else if (valid_buffer(selbufp)) {
 	selregion.ar_shape = shape;
 	return TRUE;
     } else {
@@ -769,7 +771,7 @@ on_mouse_click(int button, int y, int x)
     int status;
 
     if (button > 0) {
-	if ((this_wp = row2window(y)) != 0
+	if (valid_window(this_wp = row2window(y))
 	    && (y != mode_row(this_wp))) {
 	    /*
 	     * If we get a click on the "<" marking the left side
@@ -1790,7 +1792,7 @@ attribute_directly(void)
     int code = FALSE;
 
 #if OPT_MAJORMODE
-    if (curbp != 0) {
+    if (valid_buffer(curbp)) {
 	discard_syntax_highlighting();
 	if (b_val(curbp, MDHILITE)) {
 	    char *filtername = 0;

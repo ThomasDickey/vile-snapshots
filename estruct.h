@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.534 2003/06/04 17:38:32 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.535 2003/06/17 16:33:13 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -2861,6 +2861,12 @@ extern void ExitProgram(int code);
 
 #ifndef init_alloc
 #define init_alloc(s,n) /* nothing */
+#endif
+
+/* extra checking if we're tracing */
+#if !OPT_TRACE
+#define valid_buffer(bp) ((bp) != NULL)
+#define valid_window(wp) ((wp) != NULL)
 #endif
 
 /* Normally defined in "trace.h" */

@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.518 2003/05/24 00:49:25 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.519 2003/06/17 16:42:48 tom Exp $
  *
  */
 
@@ -46,6 +46,14 @@ extern char *strmalloc (const char *s);
 extern char *track_realloc (char *mp, UINT nbytes);
 extern char *track_malloc (UINT nbytes);
 extern void track_free (char *mp);
+#endif
+
+#ifndef valid_buffer
+extern int valid_buffer(BUFFER *bp);
+#endif
+
+#ifndef valid_window
+extern int valid_window(WINDOW *wp);
 #endif
 
 /* screen-drivers */

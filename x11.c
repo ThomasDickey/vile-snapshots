@@ -2,7 +2,7 @@
  *	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.268 2003/05/24 00:49:25 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.269 2003/06/18 21:59:48 tom Exp $
  *
  */
 
@@ -4728,15 +4728,15 @@ static int
 copy_paste(TBUFF ** p, char *value, size_t length)
 {
     WINDOW *wp = row2window(ttrow);
-    BUFFER *bp = (wp != 0) ? wp->w_bufp : 0;
+    BUFFER *bp = valid_window(wp) ? wp->w_bufp : 0;
     int status;
 
-    if (bp != 0 && b_val(bp, MDVIEW))
+    if (valid_buffer(bp) && b_val(bp, MDVIEW))
 	return FALSE;
 
     status = TRUE;
 
-    if (bp != 0 && (b_val(bp, MDCINDENT) || b_val(bp, MDAIND))) {
+    if (valid_buffer(bp) && (b_val(bp, MDCINDENT) || b_val(bp, MDAIND))) {
 
 #if OLD_PASTE
 	/*
