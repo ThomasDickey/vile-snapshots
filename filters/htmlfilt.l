@@ -1,8 +1,8 @@
-%x HTMLNOTE HTMLCODE JAVANOTE JAVACODE
+%x HTMLNOTE HTMLCODE JS_NOTE JS_CODE JSP_MODE
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/htmlfilt.l,v 1.32 2004/12/11 01:35:30 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/htmlfilt.l,v 1.34 2005/02/02 21:31:15 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of HTML input
  * text.
@@ -11,9 +11,11 @@
  */
 
 #include <filters.h>
+#include <fltstack.h>
 
-DefineFilter("html");
+DefineOptFilter("html", "j");
 
+static char *Action_attr;
 static char *Comment_attr;
 static char *Ident_attr;
 static char *Keyword_attr;
@@ -46,8 +48,20 @@ ESCAPED		&({IDENT}|{HEXNUM});
 
 %%
 
-<INITIAL>"<"		{ WriteToken(Keyword_attr); BEGIN(HTMLCODE); }
-<HTMLCODE>">"		{ WriteToken(Keyword_attr); BEGIN(next_state); }
+<INITIAL>"<%"		{ WriteToken(Action_attr);
+			  push_state(JSP_MODE);
+			  flt_bfr_begin(String_attr);
+			}
+<JSP_MODE>"%>"		{
+			  flt_bfr_finish();
+			  WriteToken(Action_attr);
+			  pop_state();
+			}
+<JSP_MODE>[\n]		|
+<JSP_MODE>.		{ flt_bfr_append(yytext, yyleng); }
+
+<INITIAL>"<"		{ WriteToken(Keyword_attr); new_state(HTMLCODE); }
+<HTMLCODE>">"		{ WriteToken(Keyword_attr); new_state(next_state); }
 
 <HTMLCODE>(\/)?{IDENT}	{ html_command(yytext); }
 
@@ -64,18 +78,18 @@ ESCAPED		&({IDENT}|{HEXNUM});
 <HTMLCODE>{INTEGER}	|
 <HTMLCODE>{HEXNUM}	{ WriteToken(Number_attr); }
 
-<JAVACODE>{IDENT}	{ WriteToken(keyword_attr(yytext)); }
-<JAVACODE>{STRINGS}	{ WriteToken(String_attr); }
-<JAVACODE>{INTEGER}	{ WriteToken(Number_attr); }
-<JAVACODE>"//"[^\n]*	{ WriteToken(Comment_attr); }
+<JS_CODE>{IDENT}	{ WriteToken(keyword_attr(yytext)); }
+<JS_CODE>{STRINGS}	{ WriteToken(String_attr); }
+<JS_CODE>{INTEGER}	{ WriteToken(Number_attr); }
+<JS_CODE>"//"[^\n]*	{ WriteToken(Comment_attr); }
 
-<JAVACODE>"<"{SPACE}*(\/)?{IDENT}{SPACE}*">" { may_resume_html(yytext); }
+<JS_CODE>"<"{SPACE}*(\/)?{IDENT}{SPACE}*">" { may_resume_html(yytext); }
 
-<JAVACODE>"/*"		{ BeginQuote(JAVANOTE, Comment_attr); }
-<JAVANOTE>\n		{ flt_bfr_append(yytext, yyleng); }
-<JAVANOTE>[^*\n]+	{ flt_bfr_append(yytext, yyleng); }
-<JAVANOTE>[*]+[^*/]*	{ flt_bfr_append(yytext, yyleng); }
-<JAVANOTE>[*]+"/"	{ FinishQuote(JAVACODE); }
+<JS_CODE>"/*"		{ BeginQuote(JS_NOTE, Comment_attr); }
+<JS_NOTE>\n		{ flt_bfr_append(yytext, yyleng); }
+<JS_NOTE>[^*\n]+	{ flt_bfr_append(yytext, yyleng); }
+<JS_NOTE>[*]+[^*/]*	{ flt_bfr_append(yytext, yyleng); }
+<JS_NOTE>[*]+"/"	{ FinishQuote(JS_CODE); }
 
 %%
 
@@ -97,7 +111,7 @@ html_command(char *text)
 	    next_state = INITIAL;
 	    set_symbol_table(filter_def.filter_name);
 	} else {
-	    next_state = JAVACODE;
+	    next_state = JS_CODE;
 	    set_symbol_table("js");
 	}
     }
@@ -124,7 +138,7 @@ may_resume_html(char *text)
     html_command(left);
     *next = save;
     flt_puts(next, strlen(next), Keyword_attr);
-    BEGIN(next_state);
+    new_state(next_state);
 }
 
 static void
@@ -137,6 +151,7 @@ do_filter(FILE *inputs)
 {
     yyin = inputs;
 
+    Action_attr  = class_attr(NAME_ACTION);
     Comment_attr = class_attr(NAME_COMMENT);
     Ident_attr   = class_attr(NAME_IDENT);
     Keyword_attr = class_attr(NAME_KEYWORD);
@@ -144,8 +159,9 @@ do_filter(FILE *inputs)
     String_attr  = class_attr(NAME_LITERAL);
 
     next_state = INITIAL;
-    BEGIN(INITIAL);
+    begin_state(INITIAL);
     while (yylex() > 0) {
     }
     flt_bfr_error();
+    end_state();
 }

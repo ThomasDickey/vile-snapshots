@@ -60,7 +60,7 @@
  *    situation, kill the app by typing ^C (and then please apply for a
  *    QA position with a certain Redmond company).
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32pipe.c,v 1.31 2002/12/23 01:24:25 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32pipe.c,v 1.32 2005/01/26 23:19:49 tom Exp $
  */
 
 #define HAVE_FCNTL_H 1
@@ -75,7 +75,6 @@
 #endif
 #include <share.h>
 #include <process.h>
-#include <assert.h>
 #include <ctype.h>
 
 #define BAD_FD          (-1)

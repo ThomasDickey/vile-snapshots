@@ -19,6 +19,7 @@ WinvilePopMenu MENU
     {
         MENUITEM "&Open...",              IDM_OPEN
         MENUITEM "&Save As...",           IDM_SAVE_AS
+        MENUITEM "C&D...",                IDM_CHDIR
         MENUITEM "Fa&vorites...",         IDM_FAVORITES
         MENUITEM "&Font...",              IDM_FONT
         MENUITEM "&Menu",                 IDM_MENU
@@ -29,7 +30,7 @@ WinvilePopMenu MENU
         MENUITEM "Cu&t",                  IDM_CUT
         MENUITEM "&Copy",                 IDM_COPY
         MENUITEM "&Paste",                IDM_PASTE
-        MENUITEM "&Delete",               IDM_DELETE
+        MENUITEM "De&lete",               IDM_DELETE
         MENUITEM SEPARATOR
         MENUITEM "Select &All",           IDM_SELECT_ALL
     }

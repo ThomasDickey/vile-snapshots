@@ -18,7 +18,7 @@
  * transferring the selection are not dealt with in this file.  Procedures
  * for dealing with the representation are maintained in this file.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.154 2005/01/19 01:47:07 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.155 2005/01/26 23:06:46 tom Exp $
  *
  */
 
@@ -1962,7 +1962,9 @@ lattr_shift(BUFFER *bp GCC_UNUSED, LINE *lp, int doto, int shift)
 		}
 		/* Try to get rid of the line attributes entirely */
 		if (!saw_attr) {
+		    beginDisplay();
 		    FreeAndNull(lp->l_attrs);
+		    endofDisplay();
 		} else {
 		    /* Normal out the stuff at the end. */
 		    while (t < f)
@@ -2045,6 +2047,7 @@ add_line_attrib(BUFFER *bp, REGION * rp, REGIONSHAPE rs, VIDEO_ATTR vattr,
 	}
     } else {
 	/* Must allocate and initialize memory for the line attributes */
+	beginDisplay();
 	if ((lp->l_attrs = castalloc(UCHAR, llength(lp) + 1)) != 0) {
 	    lp->l_attrs[llength(lp)] = 0;
 	    for (i = llength(lp) - 1; i >= 0; i--)
@@ -2052,6 +2055,7 @@ add_line_attrib(BUFFER *bp, REGION * rp, REGIONSHAPE rs, VIDEO_ATTR vattr,
 	    if (last > llength(lp))
 		last = llength(lp);
 	}
+	endofDisplay();
     }
     endofDisplay();
 

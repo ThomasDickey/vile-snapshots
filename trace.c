@@ -1,14 +1,13 @@
 /*
  * debugging support -- tom dickey.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.50 2005/01/19 01:54:17 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.51 2005/01/27 00:45:35 tom Exp $
  *
  */
 
 #include "estruct.h"
 #include "edef.h"
 #include <ctype.h>
-#include <assert.h>
 
 #if SYS_WINNT
 #include <io.h>
@@ -368,7 +367,7 @@ fail_alloc(char *msg, char *ptr)
 
 #if	DOALLOC
 typedef struct {
-    long size;			/* ...its size */
+    unsigned long size;		/* ...its size */
     char *text;			/* the actual segment */
     int note;			/* ...last value of 'count_alloc' */
 } AREA;
@@ -450,8 +449,9 @@ record_alloc(char *newp, char *oldp, unsigned len)
 	    area[j].text = newp;
 	    area[j].size = len;
 	    area[j].note = count_alloc;
-	} else
+	} else {
 	    fail_alloc("no room in table", newp);
+	}
     }
 
     nowAllocated += len;
@@ -496,23 +496,22 @@ doalloc(char *oldp, unsigned amount)
 	    : typeallocn(char, amount));
 #else
     /* this is a little cleaner for valgrind's purpose, but slower */
-    if (oldp != 0 && (j = FindArea(oldp)) >= 0) {
-	newp = typecalloc(char, amount);
+    if (oldp != 0) {
+	j = FindArea(oldp);
+	assert(j >= 0);
+
+	newp = typecallocn(char, amount);
 	if (newp != 0) {
-	    int k;
-	    TRACE(("memcpy %p .. %p to %p .. %p (%ld -> %ld)\n",
+	    unsigned limit = (amount > area[j].size) ? area[j].size : amount;
+	    TRACE(("memcpy %p .. %p to %p .. %p (%ld -> %d)\n",
 		   oldp, oldp + area[j].size - 1,
 		   newp, newp + area[j].size - 1,
 		   area[j].size, amount));
-	    for (k = 0; k < area[j].size; ++k)
-		newp[k] = oldp[k];
-	    /* valgrind (?) bug doesn't like memcpy(newp, oldp, area[j].size); */
+	    memcpy(newp, oldp, limit);
 	    free(oldp);
 	}
-    } else if (oldp != 0) {
-	newp = typereallocn(char, oldp, amount);
     } else {
-	newp = typecalloc(char, amount);
+	newp = typecallocn(char, amount);
     }
 #endif
     if (!OK_ALLOC(newp, oldp, amount)) {
@@ -556,7 +555,7 @@ dofree(void *oldp)
  * Write over the area if it is valid.
  */
 void
-dopoison(void *oldp, long len)
+dopoison(void *oldp, unsigned long len)
 {
     int j;
 
@@ -742,9 +741,8 @@ beginDisplay(void)
 void
 endofDisplay(void)
 {
-    if (im_displaying) {
-	--im_displaying;
-    }
+    assert(im_displaying > 0);
+    --im_displaying;
     returnVoid();		/* matches beginDisplay */
 }
 #endif

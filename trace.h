@@ -1,7 +1,7 @@
 /*
  * debugging support -- tom dickey.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/trace.h,v 1.21 2004/10/29 22:08:36 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/trace.h,v 1.22 2005/01/26 23:24:01 tom Exp $
  *
  */
 #ifndef	_trace_h
@@ -29,7 +29,7 @@ extern	void	show_alloc (void);
 extern	char *	doalloc (char *oldp, unsigned amount);
 extern	char *	do_calloc (unsigned nmemb, unsigned size);
 extern	void	dofree (void *oldp);
-extern	void	dopoison (void *oldp, long len);
+extern	void	dopoison (void *oldp, unsigned long len);
 #undef	calloc
 #define	calloc(n,m)	do_calloc(n, m)
 #undef	malloc

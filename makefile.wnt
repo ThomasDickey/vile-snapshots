@@ -1,7 +1,7 @@
 #
 # makefile for vile on WIN32 using Microsoft Visual C++
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.wnt,v 1.82 2005/01/15 16:35:53 cmorgan Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.wnt,v 1.83 2005/01/26 19:17:55 cmorgan Exp $
 #
 #
 !include <ntwin32.mak>
@@ -386,6 +386,7 @@ version.obj:	patchlev.h
 w32cmd.obj:	nefunc.h winvile.h
 w32misc.obj:	nefunc.h
 w32ole.obj:	w32ole.h winviletlb.h w32reg.h
+w32oo.obj:	dirstuff.h
 w32reg.obj:	w32reg.h
 word.obj:	nefunc.h
 wvwrap.obj:	w32reg.h w32ole.h winviletlb.h

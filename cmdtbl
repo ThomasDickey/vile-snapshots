@@ -97,7 +97,7 @@
 #		in '!' listed, then the flag does nothing, and should be
 #		viewed simply as documentation.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.234 2005/01/15 16:35:48 cmorgan Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.235 2005/01/26 19:17:55 cmorgan Exp $
 #
 #
 
@@ -1735,6 +1735,9 @@ purge_recent_files	NONE		SYS_WINNT
 purge_recent_folders	NONE	SYS_WINNT
 	"purge-recent-folders"
 	<purge winvile's recent folder list>
+wincd	      	NONE			SYS_WINNT
+	"wincd"
+	<graphical CD>
 winopen_nocd	NONE			SYS_WINNT
 	"winopen-nocd"
 	<launch Windows common dialog box to open file(s), CWD is unmodified>

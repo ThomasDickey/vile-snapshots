@@ -22,7 +22,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.535 2005/01/24 22:21:57 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.536 2005/01/26 23:19:44 tom Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -33,7 +33,6 @@
 #include	"nefunc.h"
 #include	"nefsms.h"
 
-#include	<assert.h>
 #include	<ctype.h>
 
 #if OPT_LOCALE

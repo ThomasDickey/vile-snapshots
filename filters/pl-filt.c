@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/pl-filt.c,v 1.78 2004/12/10 00:31:02 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/pl-filt.c,v 1.79 2005/02/02 01:37:07 tom Exp $
  *
  * Filter to add vile "attribution" sequences to perl scripts.  This is a
  * translation into C of an earlier version written for LEX/FLEX.
@@ -1203,12 +1203,13 @@ do_filter(FILE *input GCC_UNUSED)
 	    }
 	    if_old = if_wrd;
 	    if_wrd = nullKey;
-	    DPRINTF(("(%s(%c) line:%d.%d(%d) if:%d.%d op:%c%c)\n",
+	    DPRINTF(("(%s(%c) line:%d.%d(%d) if:%d.%d op:%c%c)%s\n",
 		     stateName(state), *s, in_line, in_stmt, parens,
 		     if_wrd.may_have_pattern,
 		     if_wrd.has_no_pattern,
 		     old_op ? *old_op : ' ',
-		     had_op ? *had_op : ' '));
+		     had_op ? *had_op : ' ',
+		     opRightArrow()? " arrow" : ""));
 	    switch (state) {
 	    case eBACKTIC:
 		if ((ok = end_BACKTIC(s)) != 0) {
@@ -1358,7 +1359,7 @@ do_filter(FILE *input GCC_UNUSED)
 		    }
 		} else {
 		    if (parens) {
-			if (strchr("|&=~!", *s) != 0) {
+			if (strchr("|&=~!->", *s) != 0) {
 			    saveOp(s);
 			} else if (!isspace(CharOf(*s))) {
 			    clearOp();

@@ -1,5 +1,57 @@
 Changes for vile 9.5 (released ??? ??? ?? ????)
 
+ 20050202 (p)
+	> Clark Morgan:
+	+ make ":w! cygwin_rdonly_ntfs-based_file" work.  Tested as follows:
+	     win98 -- fat32
+	     win2k -- fat32 and ntfs
+	     winxp -- fat32 and ntfs (with administrator privs and no privs)
+	+ when selecting text, show I-beam cursor (winvile only).
+	+ when selecting a movable mode line, show a double-headed, north-south
+	  cursor (winvile only).
+	+ when moving the mouse over a movable mode line, show a double-headed,
+	  north-south cursor (winvile only).
+	+ don't allow mouse capture if LMB is pressed in the area encompassing
+	  the editor's last two lines (message line and nonmovable mode line).
+	  Don't allow mouse capture if LMB is pressed on movable mode line.
+	  Corrects long-standing winvile bugs.
+	+ add graphical CD to [win]vile via new command "wincd".  The graphical
+	  CD is also accessible via winvile's system menu and right mouse popup
+	  menu.
+	+ ensure that files created via winvile's "Save As" and vile's ":f"
+	  commands are remembered in winvile's "Recent Files" list.
+	+ winvile uses status return of edit_recent_file()/cd_recent_folder()
+	  as negated argument to update(), which subsequently moves cursor out
+	  of message line if either function reports an error.
+	General comments:
+	- the editor's bottom mode line is not movable.
+	- I tried making similar cursor shape changes for console vile (when
+	  LMB is clicked) but Windows XP would not allow the vile process to
+	  change the cursor of the parent window, as returned by
+	  GetForegroundWindow().
+	> Tom Dickey:
+	+ correct state-switching in sh-filt.l for backtic's; it was not
+	  flushing the buffer used to build up quoted text (since 9.3e).
+	+ add a null-pointer check in write_states() of lex-filt.l which did
+	  not appear to be needed (since 9.3q).
+	+ ".jsp" files are really (close to) a variety of HTML files.  Add
+	  simple support for JSP in htmlfilt.l
+	+ fix pl.filt.c to check for arrows inside parenthesis, e.g.,
+		if ($a->y != $b->y) {return $a->y <=> $b->y}
+	+ modify vilefilt.l to disallow escaped single-quote in single-quoted
+	  strings, and to flag unterminated strings as an error.
+	+ modify tb_enquote() and tb_dequote(), eliminating feature that
+	  allowed single-quotes to be escaped in a single-quoted string.  That
+	  led to inconsistent results when a string contained a trailing
+	  backslash.  Noticed this when using shifts.rc on an X app-defaults
+	  file, this also appears to fix a related report by Clark Morgan.
+	+ correct mode-filename for RCSmode from 9.4o changes.
+	+ review/update some beginDisplay/endofDisplay checks, making these
+	  use assert's whenever tracing is compiled-in.
+	+ add check in vl_restore_modes() to ensure that it does nothing if
+	  vl_save_modes() was not called.  For some platforms, that would cause
+	  screen or script to die if the output of "vile -V" were redirected.
+
  20050124 (o)
 	> Tom Dickey:
 	+ correct change to tb_error() which freed data buffer without also

@@ -2,7 +2,7 @@
  * w32cmd:  collection of functions that add Win32-specific editor
  *          features (modulo the clipboard interface) to [win]vile.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32cmd.c,v 1.34 2005/01/21 16:52:43 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32cmd.c,v 1.35 2005/01/26 19:17:55 cmorgan Exp $
  */
 
 #include "estruct.h"
@@ -62,8 +62,8 @@ ofn_init(void)
 
 
 /* glob a canonical filename, and if a true directory, put it in win32 fmt */
-static int
-glob_and_validate_dir(const char *inputdir, char *outputdir)
+int
+w32_glob_and_validate_dir(const char *inputdir, char *outputdir)
 {
 #define NOT_A_DIR  "[\"%s\" is not a directory]"
 
@@ -132,7 +132,7 @@ commdlg_open_files(int chdir_allowed, const char *dir)
 
     if (dir)
     {
-        if (! glob_and_validate_dir(dir, validated_dir))
+        if (! w32_glob_and_validate_dir(dir, validated_dir))
             returnCode(FALSE);
         else
             dir = validated_dir;
@@ -350,7 +350,7 @@ commdlg_save_file(int chdir_allowed, const char *dir)
 
     if (dir)
     {
-        if (! glob_and_validate_dir(dir, validated_dir))
+        if (! w32_glob_and_validate_dir(dir, validated_dir))
             return (FALSE);
         else
             dir = validated_dir;
@@ -460,7 +460,11 @@ commdlg_save_file(int chdir_allowed, const char *dir)
         grab_lck_file(curbp, fname);
     } else
 #endif
-     ch_fname(curbp, filebuf);
+        ch_fname(curbp, filebuf);
+
+    /* remember new filename if later written out to disk */
+    b_clr_registered(curbp);
+
     curwp->w_flag |= WFMODE;
     updatelistbuffers();
     /* ------------ begin :w ------------ */
@@ -2475,7 +2479,7 @@ build_recent_file_and_folder_menus(void)
 }
 
 /* chdir() to  a path selected from the winvile "recent folders" menu */
-void
+int
 cd_recent_folder(int mnu_index)
 {
     char     dir[FILENAME_MAX + 1];
@@ -2483,13 +2487,13 @@ cd_recent_folder(int mnu_index)
     HMENU    vile_menu, fldrs_menu;
 
     if (! find_files_folder_menu_posns(&files_mnu_posn, &fldrs_mnu_posn))
-        return;  /* system menu scrogged */
+        return (FALSE);  /* system menu scrogged */
 
     vile_menu = GetSystemMenu(winvile_hwnd(), FALSE);
     if ((fldrs_menu = GetSubMenu(vile_menu, fldrs_mnu_posn)) == NULL)
     {
         mlforce("BUG: folders popup menu damaged");
-        return;
+        return (FALSE);
     }
     if (! GetMenuString(fldrs_menu,
                         mnu_index,
@@ -2498,9 +2502,9 @@ cd_recent_folder(int mnu_index)
                         MF_BYCOMMAND))
     {
         mlforce("BUG: folders popup menu(%d) bogus", mnu_index);
-        return;
+        return (FALSE);
     }
-    (void) set_directory(dir);
+    return (set_directory(dir));
 
     /*
      * note that set_directory() eventually calls
@@ -2509,22 +2513,22 @@ cd_recent_folder(int mnu_index)
 }
 
 /* open a file selected from the winvile "recent files" menu */
-void
+int
 edit_recent_file(int mnu_index)
 {
     BUFFER   *bp;
     char     file[FILENAME_MAX + 1];
-    int      files_mnu_posn, fldrs_mnu_posn;
+    int      files_mnu_posn, fldrs_mnu_posn, rc;
     HMENU    vile_menu, files_menu;
 
     if (! find_files_folder_menu_posns(&files_mnu_posn, &fldrs_mnu_posn))
-        return;  /* system menu scrogged */
+        return (FALSE);  /* system menu scrogged */
 
     vile_menu = GetSystemMenu(winvile_hwnd(), FALSE);
     if ((files_menu = GetSubMenu(vile_menu, files_mnu_posn)) == NULL)
     {
         mlforce("BUG: files popup menu damaged");
-        return;
+        return (FALSE);
     }
     if (! GetMenuString(files_menu,
                         mnu_index,
@@ -2533,8 +2537,10 @@ edit_recent_file(int mnu_index)
                         MF_BYCOMMAND))
     {
         mlforce("BUG: files popup menu(%d) bogus", mnu_index);
-        return;
+        return (FALSE);
     }
+
+    rc = TRUE;  /* an assumption */
 
     /*
      * Perhaps the editor has the target file in a buffer already?
@@ -2551,7 +2557,7 @@ edit_recent_file(int mnu_index)
         if ((bp = getfile2bp(file, FALSE, FALSE)) != NULL)
         {
             bp->b_flag |= BFARGS;         /* treat this as an argument */
-            (void) swbuffer(bp);          /* editor switches buffer    */
+            rc = swbuffer(bp);            /* editor switches buffer    */
 
             /*
              * note that swbuffer() eventually calls
@@ -2576,6 +2582,7 @@ edit_recent_file(int mnu_index)
 
          store_recent_file_or_folder(file, TRUE);
     }
+    return (rc);
 }
 
 /*

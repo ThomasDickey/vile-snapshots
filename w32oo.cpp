@@ -8,7 +8,7 @@
  *   "FAILED" may not be used to test an OLE return code.  Use SUCCEEDED
  *   instead.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32oo.cpp,v 1.5 2005/01/19 20:45:50 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32oo.cpp,v 1.7 2005/02/01 00:04:20 tom Exp $
  */
 
 #include "w32vile.h"
@@ -23,8 +23,13 @@ extern "C" {
 
 #include "estruct.h"
 #include "edef.h"
+#include "dirstuff.h"
 
-/* ------------------------------------------------------------------------ */
+#if CC_TURBO
+#include <dir.h>		/* for 'chdir()' */
+#endif
+
+/* ---------------------------- Favorites --------------------------------- */
 
 /*
  * Return path to favorites folder.  don't know of any other way to do this
@@ -75,6 +80,174 @@ get_favorites(void)
 #endif
     }
     return (path);
+}
+
+/* --------------------------- Graphical CD ------------------------------- */
+
+static const char *initial_browse_dir;
+
+/*
+ * Setting the initial browse folder for SHBrowseForFolder() is, *cough*,
+ * insane.  Oh by the way, if a pidl isn't used to set the initial browse
+ * folder, then initial paths like "\\some_unc_path" don't work.  I kid
+ * you not.
+ *
+ * Much of this callback's code is cribbed from the 'Net.
+ */
+static int CALLBACK
+BrowseCallbackProc(HWND hwnd, UINT uMsg, LPARAM lp, LPARAM pData)
+{
+    HRESULT       hr;
+    ULONG         len;
+    LPITEMIDLIST  pidl;
+    LPSHELLFOLDER pShellFolder;
+    char          szDir[MAX_PATH];
+    LPWSTR        wide_path;
+
+    switch(uMsg)
+    {
+        case BFFM_INITIALIZED:
+            // Set initial the browse folder path.  This code is a hoot.
+            len = MultiByteToWideChar(CP_ACP,
+                                      MB_USEGLYPHCHARS|MB_PRECOMPOSED,
+                                      initial_browse_dir,
+                                      -1,
+                                      0,
+                                      0);
+            wide_path = new WCHAR[len];
+            MultiByteToWideChar(CP_ACP,
+                                MB_USEGLYPHCHARS|MB_PRECOMPOSED,
+                                initial_browse_dir,
+                                -1,
+                                wide_path,
+                                len);
+            pShellFolder = 0;
+            hr = SHGetDesktopFolder(&pShellFolder);
+            if (! SUCCEEDED(hr))
+            {
+                delete [] wide_path;
+                disp_win32_error(hr, hwnd);
+                break;
+            }
+            hr = pShellFolder->ParseDisplayName(0,
+                                                0,
+                                                wide_path,
+                                                &len,
+                                                &pidl,
+                                                0);
+            if (! SUCCEEDED(hr))
+                disp_win32_error(hr, hwnd);
+            else
+            {
+                SendMessage(hwnd, BFFM_SETSELECTION, FALSE, (LPARAM) pidl);
+                CoTaskMemFree(pidl);
+            }
+            delete [] wide_path;
+            pShellFolder->Release();
+            break;
+        case BFFM_SELCHANGED:
+           // Set the status window text to the currently selected path.
+           if (SHGetPathFromIDList((LPITEMIDLIST) lp, szDir))
+              SendMessage(hwnd, BFFM_SETSTATUSTEXT, 0, (LPARAM) szDir);
+           break;
+        default:
+           break;
+    }
+    return (0);
+}
+
+static int
+graphical_cd(const char *dir)
+{
+    BROWSEINFO   bi;
+    HWND         hwnd;
+    LPITEMIDLIST pidl;
+    int          rc = FALSE;
+    char         bslbuf[FILENAME_MAX + 1], selected_folder[FILENAME_MAX + 1];
+
+    // win32 functions don't like '/' as path delimiter.
+    if (! w32_glob_and_validate_dir(dir, bslbuf))
+        return (rc);
+
+    // pShellFolder->ParseDisplayName() will not accept local system folder
+    // names that don't include a drive letter.  Yes, this is fatal brain
+    // damage, but it's not like there are other supported, non-deprecated
+    // alternatives.  Fortunately, lengthen_path() rides to the rescue.
+    // Unfortunately, lengthen_path() reverts to '/' as a path delimiter.
+    // Oh, what tangled webs we weave.
+    initial_browse_dir = sl_to_bsl(lengthen_path(bslbuf));
+
+#if DISP_NTWIN
+    hwnd = (HWND) winvile_hwnd();
+#else
+    hwnd = GetForegroundWindow();
+#endif
+
+#ifndef VILE_OLE
+    HRESULT hr = OleInitialize(NULL);
+    if (! SUCCEEDED(hr))
+    {
+        disp_win32_error(hr, hwnd);
+        return (rc);
+    }
+#endif
+    memset(&bi, 0, sizeof(bi));
+    bi.hwndOwner = hwnd;
+    bi.ulFlags   = BIF_STATUSTEXT;
+    bi.lpfn      = BrowseCallbackProc;
+    if ((pidl = SHBrowseForFolder(&bi)) != NULL)
+    {
+        if (! SHGetPathFromIDList(pidl, selected_folder))
+            disp_win32_error(NOERROR, hwnd);
+        else
+            rc = set_directory(selected_folder);
+        CoTaskMemFree(pidl);
+    }
+    // else -- user cancel'd out of dialog box
+
+#ifndef VILE_OLE
+    OleUninitialize();
+#endif
+    return (rc);
+}
+
+int
+wincd(int f, int n)
+{
+    char         buf[NFILEN];
+    static TBUFF *last;
+    int          rc;
+
+    buf[0] = '\0';
+    rc     = mlreply_dir("Initial Directory: ", &last, buf);
+    if (rc == TRUE)
+    {
+        mktrimmed(buf);
+        rc = graphical_cd(buf);
+    }
+    else if (rc == FALSE)
+    {
+        /* empty response */
+
+        getcwd(buf, sizeof(buf));
+        rc = graphical_cd(buf);
+    }
+    /* else rc == ABORT or SORTOFTRUE */
+    return (rc);
+}
+
+/* explicitly specify initial directory */
+int
+wincd_dir(const char *dir)
+{
+    char buf[NFILEN];
+
+    if (dir == NULL)
+    {
+        getcwd(buf, sizeof(buf));
+        dir = buf;
+    }
+    return (graphical_cd(dir));
 }
 
 #ifdef __cplusplus

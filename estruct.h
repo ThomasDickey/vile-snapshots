@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.568 2005/01/24 00:23:43 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.571 2005/01/27 00:53:16 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -272,6 +272,7 @@
 #endif
 
 #include <stdio.h>
+
 #if SYS_VMS && (! defined(__DECC_VER))
 # include <types.h>
 # include <stat.h>
@@ -924,7 +925,7 @@ extern void beginDisplay(void);
 extern void endofDisplay(void);
 # else
 # define beginDisplay() ++im_displaying
-# define endofDisplay() if (im_displaying) --im_displaying
+# define endofDisplay() if (im_displaying > 0) --im_displaying; else assert(im_displaying > 0)
 # endif
 #else
 # define beginDisplay() /* nothing */
@@ -2259,6 +2260,7 @@ typedef struct	BUFFER {
 #define b_clr_reading(bp)         b_clr_flags(bp, BFISREAD)
 #define b_clr_recentlychanged(bp) b_clr_flags(bp, BFRCHG)
 #define b_clr_scratch(bp)         b_clr_flags(bp, BFSCRTCH)
+#define b_clr_registered(bp)      b_clr_flags(bp, BFREGD)
 
 #if OPT_HILITEMATCH
 #define b_match_attrs_dirty(bp)	(bp)->b_highlight |= HILITE_DIRTY
@@ -2966,11 +2968,15 @@ extern void ExitProgram(int code);
 
 /* extra checking if we're tracing */
 #if !OPT_TRACE
+#define NDEBUG			/* turn off assert's */
 #define valid_buffer(bp)        ((bp) != NULL)
 #define valid_window(wp)        ((wp) != NULL)
 #define valid_line_bp(lp,bp)    ((lp) != NULL)
 #define valid_line_wp(lp,wp)    ((lp) != NULL)
 #endif
+
+/* this must be after NDEBUG is defined */
+#include <assert.h>
 
 /* Normally defined in "trace.h" */
 #ifndef TRACE

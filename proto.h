@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.540 2005/01/23 22:56:37 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.542 2005/01/31 19:47:03 cmorgan Exp $
  *
  */
 
@@ -1233,9 +1233,9 @@ typedef struct oleauto_options_struct
 } OLEAUTO_OPTIONS;
 
 extern void build_recent_file_and_folder_menus(void);
-extern void cd_recent_folder(int mnu_index);
+extern int  cd_recent_folder(int mnu_index);
 extern void disp_win32_error(ULONG errcode, void *hwnd);
-extern void edit_recent_file(int mnu_index);
+extern int  edit_recent_file(int mnu_index);
 extern char *fmt_win32_error(ULONG errcode, char **buf, ULONG buflen);
 extern const char *get_favorites(void);
 extern int  is_win95(void);
@@ -1255,13 +1255,17 @@ extern void restore_console_title(void);
 extern void set_console_title(const char *title);
 extern int  stdin_data_available(void);
 extern void store_recent_file_or_folder(const char *path, int is_file);
+extern int  w32_add_write_acl(const char *filename, ULONG *old_access_mask);
 extern int  w32_CreateProcess(char *cmd, int no_wait);
 extern int  w32_del_selection(int copy_to_clipboard);
+extern int  w32_glob_and_validate_dir(const char *inputdir, char *outputdir);
 extern void w32_keybrd_reopen(int pressret);
 extern int  w32_keybrd_write(char *data);
+extern int  w32_remove_write_acl(const char *filename, ULONG orig_access_mask);
 extern int  w32_system(const char *cmd);
 extern int  w32_system_winvile(const char *cmd, int *pressret);
 extern char *w32_wdw_title(void);
+extern int  wincd_dir(const char *dir);
 extern int  winopen_dir(const char *dir);
 extern int  winsave_dir(const char *dir);
 extern void winvile_cleanup(void);

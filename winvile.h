@@ -16,8 +16,9 @@
 #define IDM_PRINT                114
 #define IDM_PAGE_SETUP           115
 #define IDM_SEP_AFTER_RCNT_FLDRS 116
+#define IDM_CHDIR                117
 
-/* range between 116 and 200 is available for future menu commands */
+/* range between 118 and 200 is available for future menu commands */
 
 /*
  * NB: range between IDM_RECENT_FILES and (IDM_NEXT_MNU_ITEM_ID - 1)
