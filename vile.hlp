@@ -1596,6 +1596,11 @@ Editor modes
 		commands are used, and it chooses the next column stop for
 		the cursor if a '^T' or '^D' is typed during insert mode. (B)
 
+	showformat (sf) Controls when/whether recordseparator information is
+		shown in the status line.  Values are "always", "differs" to
+		show when the local mode differs from the global, "local" to
+		show whenever a local mode is set and "never".  (B)
+
 	showmatch (sm) During insert, if a closing "fence" character
 		(usually '}', ']', or ')', but may be changed by setting
 		"fence-pairs") is typed, the cursor will highlight the
@@ -2674,9 +2679,11 @@ Programmed procedures (aka macros)
 	&sindex		2	find the index of second string in first
 	&sless		2	string logical less than
 	&stime		1	system-time, as a number
+	&stoken		3	true if token found in string, given delims
 	&subtract	2	subtraction
 	&times		2	multiplication
 	&token		3	select n'th token of string, given delims
+	&translate	3	translate "from" to "to" for given string.
 	&trim		1	trim whitespace from string
 	&upper		1	uppercase string
 	&word		2	select n'th word of string, blank-separated
@@ -5677,4 +5684,4 @@ Problems
 
 Copyright 1995-2001 by Paul Fox, Tom Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.533 2001/12/24 13:39:05 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.536 2001/12/30 21:29:34 tom Exp $

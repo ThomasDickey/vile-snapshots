@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.234 2001/12/25 00:44:21 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.236 2001/12/30 19:51:14 tom Exp $
  *
  */
 
@@ -867,6 +867,9 @@ struct FSM fsm_tbl[] =
 #if OPT_RECORDSEP_CHOICES
     {"recordseparator", fsm_recordsep_choices},
 #endif
+#if OPT_SHOWFORMAT_CHOICES
+    {"showformat", fsm_showformat_choices},
+#endif
 #if OPT_MMQUALIFIERS_CHOICES
     {"qualifiers", fsm_mmqualifiers_choices},
 #endif
@@ -1271,7 +1274,7 @@ find_mode(BUFFER *bp, const char *mode, int global, VALARGS * args)
     register int mode_class;
     register int j;
 
-    TRACE(("find_mode(%s) %s\n", mode, global ? "global" : "local"));
+    TRACE2(("find_mode(%s) %s\n", mode, global ? "global" : "local"));
 
     for (mode_class = 0; mode_class < END_MODE; mode_class++) {
 	memset(args, 0, sizeof(*args));
@@ -1405,7 +1408,7 @@ find_mode(BUFFER *bp, const char *mode, int global, VALARGS * args)
 	}
     }
 #endif
-    TRACE(("...not found\n"));
+    TRACE2(("...not found\n"));
     return FALSE;
 }
 
@@ -2682,7 +2685,7 @@ get_sm_vals(MAJORMODE * ptr)
 	else
 	    ptr->sm = p;
     }
-    TRACE(("...get_sm_vals(%s:%s)\n", ptr->name, p->sm_name));
+    TRACE2(("...get_sm_vals(%s:%s)\n", ptr->name, p->sm_name));
     return &(p->sm_vals.bv[0]);
 }
 

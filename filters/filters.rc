@@ -1,4 +1,4 @@
-; $Id: filters.rc,v 1.146 2001/09/18 20:07:47 tom Exp $
+; $Id: filters.rc,v 1.147 2001/12/30 21:35:58 tom Exp $
 ; majormodes in this file are ordered alphabetically for convenience - the
 ; precedence used by vile is strictly alphabetic, counting case.
 
@@ -621,6 +621,6 @@ bind-key HighlightClear ^X-Q
 store-procedure set-highlighting ma 'Set a majormode and invoke highlighting'
 	; show-variables
 	write-message &cat $1 mode
-	setl &cat $1 mode
+	~force setl &cat $1 mode
 	HighlightFilter
 ~endm

@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/imakeflt.l,v 1.5 2000/11/04 20:22:39 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/imakeflt.l,v 1.6 2001/12/26 20:49:13 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Imakefile
  *
@@ -199,7 +199,7 @@ MACRO		([$]?\$\{{ID}\}|[$]?\${ID}|[$]?\$[A-Za-z@!%^&*?<]|\${SPACE}*\([^\)]+\))
 
 %%
 
-<NORMAL>^{SPACE}*([^#])?include{SPACE}*	{ write_keyword(yytext, yyleng); }	
+<NORMAL>^{SPACE}*([^#])?include{SPACE}*	{ write_keyword(yytext, yyleng); }
 
 <NORMAL>^{SPACE}*[\.!]{NAME}{SPACE}*:	{ write_keyword(yytext, yyleng); }
 

@@ -1,5 +1,37 @@
 Changes for vile 9.3 (released ??? ??? ?? 2000)
 
+ 20011230 (t)
+	> Tom Dickey:
+	+ force screen to repaint if stripping ^M's as part of set-dos
+	  command.
+	+ modify set-highlighting macro, using "~force" to prevent vile from
+	  switching to show the macro buffer if the "setl" fails, e.g., if
+	  one attempts to set the majormode of [Output].
+	+ add "showformat" mode, to control when the recordseparator is shown
+	  in the status line.  Choices are local, differs, always or never.
+	+ add &stoken function, which searches for a token in a string, e.g.,
+	  "perl" in $cfgopts by
+		&stoken  "perl"  ","  $cfgopts
+	+ add &translate function, e.g.,
+		&trans   ","     " "  "a,b"
+	  to change commas to spaces
+	+ add backslash as a possible quote character in determining type of
+	  here-documents for perl filter.
+	+ add xvile configuration types to $cfgopts: openlook, motif, athena,
+	  xaw, xaw3d and nextaw.
+	+ ifdef'd $prompt string if extensions are disabled.
+	+ indent'd display.c, version.c
+	+ trim trailing blanks from some source files.  lispfilt.l did not
+	  compile with Solaris lex because it was confused by a trailing blank.
+	+ modify configure script to check $CFLAGS values obtained from perl or
+	  imake with a test-compile to ensure that we do not try to use options
+	  for a different compiler, e.g., gcc versus cc (report by Steven
+	  Lembark <lembark@wrkhors.com>).
+	+ update several configure macros to use AC_CACHE_CHECK to replace
+	  AC_MSG_CHECKING and AC_CACHE_VAL, except those which are not
+	  compatible, e.g., CF_MISSING_CHECK.
+	+ updates for configure macros CF_CHECK_CACHE and CF_CURSES_CPPFLAGS
+
  20011225 (s)
 	> Tom Dickey:
 	+ fix a memory leak in vars_complete(), as well as make it faster by

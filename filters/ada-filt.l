@@ -1,8 +1,8 @@
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/ada-filt.l,v 1.8 2000/02/28 12:00:59 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/ada-filt.l,v 1.9 2001/12/26 20:49:13 tom Exp $
  *
- * Filter to add vile "attribution" sequences to selected bits of Ada 
+ * Filter to add vile "attribution" sequences to selected bits of Ada
  * input text.
  */
 

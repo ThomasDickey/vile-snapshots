@@ -5,7 +5,7 @@
  * reading and writing of the disk are
  * in "fileio.c".
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.304 2001/12/25 14:52:02 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.305 2001/12/30 22:04:01 tom Exp $
  */
 
 #include "estruct.h"
@@ -949,13 +949,22 @@ strip_if_dosmode(BUFFER *bp)
 {
     if (b_val(bp, MDDOS)) {	/* if it _is_ a dos file, strip 'em */
 	LINE *lp;
+	int flag = FALSE;
+
 	TRACE(("stripping CR's for dosmode\n"));
 	for_each_line(lp, bp) {
-	    if (llength(lp) > 0 &&
-		lgetc(lp, llength(lp) - 1) == '\r') {
+	    if (llength(lp) > 0
+		&& lgetc(lp, llength(lp) - 1) == '\r') {
 		llength(lp)--;
+		flag = TRUE;
 	    }
 	}
+	/*
+	 * Force the screen to repaint if we changed anything.  This
+	 * operation is not undoable, otherwise we would call chg_buff().
+	 */
+	if (flag)
+	    set_winflags(TRUE, WFHARD);
     }
 }
 
@@ -1113,7 +1122,7 @@ guess_recordseparator(BUFFER *bp, UCHAR * buffer, B_COUNT length, L_NUM * lines)
 
     TRACE(("guess_recordseparator assume %s CR:%ld, LF:%ld, CRLF:%ld\n",
 	   global_b_val(MDDOS) ? "dos" : "unix",
-	   (long) count_cr, (long) count_unix, (long) count_dos));
+	   (long) (count_cr - count_dos), (long) count_unix, (long) count_dos));
 
     if (count_lf != 0) {
 	result = RS_LF;
@@ -2104,13 +2113,11 @@ ifile(char *fname, int belowthisline, FILE * haveffp)
     LINEPTR prevp;
     LINEPTR newlp;
     LINEPTR nextp;
-    BUFFER *bp;
     int s;
     int nbytes;
     int nline;
 
-    bp = curbp;			/* Cheap.               */
-    b_clr_flags(bp, BFINVS);	/* we are not temporary */
+    b_clr_flags(curbp, BFINVS);	/* we are not temporary */
     if (!haveffp) {
 	if ((s = ffropen(fname)) == FIOERR)	/* Hard file open.          */
 	    goto out;

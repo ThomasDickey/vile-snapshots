@@ -1,8 +1,8 @@
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/def-filt.l,v 1.1 2001/03/21 00:46:08 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/def-filt.l,v 1.2 2001/12/26 20:49:13 tom Exp $
  *
- * Filter to add vile "attribution" sequences to selected bits of M$ linker-definition 
+ * Filter to add vile "attribution" sequences to selected bits of M$ linker-definition
  * input text.
  */
 

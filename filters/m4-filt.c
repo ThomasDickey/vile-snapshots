@@ -1,7 +1,7 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/m4-filt.c,v 1.19 2000/11/04 20:15:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/m4-filt.c,v 1.20 2001/12/26 20:49:13 tom Exp $
  *
- * Filter to add vile "attribution" sequences to selected bits of m4 
+ * Filter to add vile "attribution" sequences to selected bits of m4
  * input text.  This is in C rather than LEX because M4's quoting delimiters
  * change by embedded directives, to simplify inclusion of brackets.
  */

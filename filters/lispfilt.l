@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Id: lispfilt.l,v 1.1 2001/08/22 00:42:36 Shawn.Halpenny Exp $
+ * $Id: lispfilt.l,v 1.2 2001/12/26 20:49:13 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of lisp code.
  */
@@ -53,7 +53,7 @@ NUMBER		(\#[BbOoDdXxEeIi])?([+-])?([[:digit:]/.e])+
 <NORMAL>{NUMBER}	{ WriteToken(Number_attr); }
 
 <NORMAL>\({IDENT}	{ flt_putc('('); WriteToken2(Keyword_attr, 1); }
-	
+
 <NORMAL>{IDENT}		{ WriteToken(Ident_attr); }
 
 <NORMAL>\"		{ BeginQuote(QUOTED, String_attr); }

@@ -2,7 +2,7 @@
  *	eval.c -- function and variable evaluation
  *	original by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.302 2001/12/25 18:25:22 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.305 2001/12/30 20:33:11 tom Exp $
  *
  */
 
@@ -474,7 +474,26 @@ vl_lookup_func(const char *name)
 }
 
 /*
- * Find the n'th token, counting from zero.  This will return an empty
+ * Find the given token, returning true if it is found in the string.
+ */
+static int
+search_token(const char *token, const char *delims, const char *string)
+{
+    size_t length = strlen(token);
+
+    while (*string != EOS) {
+	const char *first = string;
+	string += strcspn(first, delims);
+	if (string - first == (int) length
+	    && !strncmp(first, token, length))
+	    return TRUE;
+	string += strspn(string, delims);
+    }
+    return FALSE;
+}
+
+/*
+ * Find the count'th token, counting from zero.  This will return an empty
  * result only if we run past the end of the number of tokens.
  */
 static void
@@ -491,6 +510,25 @@ extract_token(TBUFF ** result, const char *count, const char *delims, const char
     tb_init(result, 0);
     tb_bappend(result, string, strcspn(string, delims));
     tb_append(result, EOS);
+}
+
+/*
+ * Translate string 'from' 'to'.
+ */
+static void
+translate_string(TBUFF ** result, const char *from, const char *to, const char *string)
+{
+    int len_to = strlen(to);
+    char *s, *t;
+
+    if (tb_scopy(result, string) != 0) {
+	for (s = tb_values(*result); *s != EOS; ++s) {
+	    if ((t = strchr(from, *s)) != 0
+		&& (t - from) < len_to) {
+		*s = to[t - from];
+	    }
+	}
+    }
 }
 
 static void
@@ -931,8 +969,14 @@ run_func(int fnum)
     case UFSTIME:
 	value = time((time_t *) 0);
 	break;
+    case UFSTOKEN:
+	value = search_token(arg[0], arg[1], arg[2]);
+	break;
     case UFTOKEN:
 	extract_token(&result, arg[0], arg[1], arg[2]);
+	break;
+    case UFTRANS:
+	translate_string(&result, arg[0], arg[1], arg[2]);
 	break;
     case UFWORD:
 	extract_token(&result, arg[0], "\t ", arg[1]);
@@ -965,9 +1009,14 @@ run_func(int fnum)
     else if (ret_boolean)
 	render_boolean(&result, value);
 
+    TRACE(("-> %s'%s'\n",
+	   is_error ? "*" : "",
+	   is_error ? error_val : tb_values(result)));
+
     TPRINTF(("-> %s'%s'\n",
 	     is_error ? "*" : "",
 	     is_error ? error_val : tb_values(result)));
+
     for (i = 0; i < nargs; i++) {
 	tb_free(&args[i]);
     }

@@ -1,7 +1,7 @@
 /*
  * version & usage-messages for vile
  *
- * $Header: /users/source/archives/vile.vcs/RCS/version.c,v 1.50 2001/11/27 19:07:36 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/version.c,v 1.51 2001/12/30 20:32:17 tom Exp $
  *
  */
 
@@ -9,12 +9,13 @@
 #include	"edef.h"	/* global definitions */
 #include	"patchlev.h"
 
-static	char	version_string[NSTRING];
+static char version_string[NSTRING];
 
 void
-print_usage (void)
+print_usage(void)
 {
-	static	const char *const options[] = {
+    static const char *const options[] =
+    {
 	"-h             to get help on startup",
 	"-gNNN          or simply +NNN to go to line NNN",
 #if SYS_WINNT && defined(DISP_NTWIN)
@@ -59,7 +60,7 @@ print_usage (void)
 	"-xrm Resource  to change an xvile resource",
 	"-leftbar       Put scrollbar(s) on left",
 	"-rightbar      Put scrollbar(s) on right (default)",
-#else	/* obsolete */
+#else				/* obsolete */
 	"-name name     to change program name for X resources",
 	"-wm name       to set name in title bar",
 	"-fg color      to change foreground color",
@@ -88,118 +89,118 @@ print_usage (void)
 	"-I             use vileinit.rc to initialize",
 	"use @cmdfile to run cmdfile as commands (this will suppress .vilerc)",
 	"single-letter options usually are case-independent"
-	};
+    };
 
-	ttclean(TRUE);
+    ttclean(TRUE);
 #if DISP_NTWIN
-	gui_usage(prog_arg, options, TABLESIZE(options));
+    gui_usage(prog_arg, options, TABLESIZE(options));
 #else
-	(void)fprintf(stderr, "usage: %s [-flags] [@cmdfile] files...\n",
-		prog_arg);
-	{
-		unsigned j;
-		for (j = 0; j < TABLESIZE(options); j++)
-			(void)fprintf(stderr, "\t%s\n", options[j]);
-	}
+    (void) fprintf(stderr, "usage: %s [-flags] [@cmdfile] files...\n",
+		   prog_arg);
+    {
+	unsigned j;
+	for (j = 0; j < TABLESIZE(options); j++)
+	    (void) fprintf(stderr, "\t%s\n", options[j]);
+    }
 #endif
-	ExitProgram(BADEXIT);
+    ExitProgram(BADEXIT);
 }
 
 const char *
 getversion(void)
 {
-	if (*version_string)
-		return version_string;
+    if (*version_string)
+	return version_string;
 #if SYS_UNIX || SYS_VMS
-	/*
-	 * We really would like to have the date at which this program was
-	 * linked, but a.out doesn't have that in general.  COFF files do.
-	 * Getting the executable's modification-time is a reasonable
-	 * compromise.
-	 */
-	(void) lsprintf(version_string, "%s %s%s for %s",
-				prognam, version, PATCHLEVEL, opersys);
-	{
-		char *s;
-		if ((s = cfg_locate(prog_arg,
-				(FL_EXECDIR|FL_PATH)|FL_EXECABLE)) != NULL) {
-			time_t mtime = file_modified(s);
-			if (mtime != 0) {
-				(void)strcat(version_string, ", installed ");
-				(void)strcat(version_string, ctime(&mtime));
-				/* trim the newline */
-				version_string[strlen(version_string)-1] = EOS;
-			}
-		}
+    /*
+     * We really would like to have the date at which this program was
+     * linked, but a.out doesn't have that in general.  COFF files do.
+     * Getting the executable's modification-time is a reasonable
+     * compromise.
+     */
+    (void) lsprintf(version_string, "%s %s%s for %s",
+		    prognam, version, PATCHLEVEL, opersys);
+    {
+	char *s;
+	if ((s = cfg_locate(prog_arg,
+			    (FL_EXECDIR | FL_PATH) | FL_EXECABLE)) != NULL) {
+	    time_t mtime = file_modified(s);
+	    if (mtime != 0) {
+		(void) strcat(version_string, ", installed ");
+		(void) strcat(version_string, ctime(&mtime));
+		/* trim the newline */
+		version_string[strlen(version_string) - 1] = EOS;
+	    }
 	}
+    }
 #else
 # if SYS_MSDOS || SYS_OS2 || SYS_WINNT
 #  if defined(__DATE__) && !SMALLER
-	(void)lsprintf(version_string,"%s %s%s for %s, built %s %s with %s",
-		prognam, version, PATCHLEVEL, opersys, __DATE__, __TIME__,
+    (void) lsprintf(version_string, "%s %s%s for %s, built %s %s with %s",
+		    prognam, version, PATCHLEVEL, opersys, __DATE__, __TIME__,
 #   if CC_WATCOM
-		"Watcom C/386"
+		    "Watcom C/386"
 #   endif
 #   if CC_DJGPP
 #    if __DJGPP__ >= 2
-		"DJGPP v2"
+		    "DJGPP v2"
 #    else
-		"DJGPP"
+		    "DJGPP"
 #    endif
 #   endif
 #   if CC_TURBO
 #    ifdef __BORLANDC__
-		"Borland C++"
+		    "Borland C++"
 #    else
-		"Turbo C"
+		    "Turbo C"
 #    endif
 #   endif
 #   if CC_CSETPP
 #    if __IBMC__ >= 300
-		"VisualAge C++"
+		    "VisualAge C++"
 #    else
-		"IBM C Set ++"
+		    "IBM C Set ++"
 #    endif
 #   endif
 #   if CC_MSVC
-		"Visual C++"
+		    "Visual C++"
 #   endif
 	);
 #  endif
-# endif /* SYS_MSDOS || SYS_OS2 || SYS_WINNT */
+# endif				/* SYS_MSDOS || SYS_OS2 || SYS_WINNT */
 #endif /* not SYS_UNIX or SYS_VMS */
-	return version_string;
+    return version_string;
 }
-
 
 /* i'm not even going to try to justify this.  -pgf */
 static void
 personals(int n)
 {
 #if !SMALLER
-	char **cmdp = NULL;
+    char **cmdp = NULL;
 
-	static char *pgfcmds[] = {
-		"bind-key split-current-window ^T",
-		"bind-key next-window ^N",
-		"bind-key previous-window ^P",
-		"set ai atp nobl ul=0 sw=4 csw=4 timeoutlen=50 check-modtime visual-matches=underline",
-		NULL
-	};
+    static char *pgfcmds[] =
+    {
+	"bind-key split-current-window ^T",
+	"bind-key next-window ^N",
+	"bind-key previous-window ^P",
+	"set ai atp nobl ul=0 sw=4 csw=4 timeoutlen=50 check-modtime visual-matches=underline",
+	NULL
+    };
 
-	if (n == 11)
-		cmdp = pgfcmds;
+    if (n == 11)
+	cmdp = pgfcmds;
 
-	if (n == -11)
-		*(int *)(1) = 42;  /* test core dumps */
+    if (n == -11)
+	*(int *) (1) = 42;	/* test core dumps */
 
-	if (!cmdp)
-		return;
+    if (!cmdp)
+	return;
 
-	while (*cmdp) {
-		(void)docmd(*cmdp, TRUE, FALSE, 1);
-		cmdp++;
-	}
+    while (*cmdp) {
+	(void) docmd(*cmdp, TRUE, FALSE, 1);
+	cmdp++;
+    }
 #endif
 
 }
@@ -208,12 +209,11 @@ personals(int n)
 int
 showversion(int f GCC_UNUSED, int n)
 {
-	personals(n);
-	mlforce(getversion());
+    personals(n);
+    mlforce(getversion());
 
-	return TRUE;
+    return TRUE;
 }
-
 
 /*
  * Returns the special string consisting of program name + version, used to
@@ -223,9 +223,9 @@ showversion(int f GCC_UNUSED, int n)
 const char *
 non_filename(void)
 {
-	static	char	buf[80];
-	if (buf[0] == EOS)
-		(void)lsprintf(buf, "       %s   %s%s",
-				prognam, version, PATCHLEVEL);
-	return buf;
+    static char buf[80];
+    if (buf[0] == EOS)
+	(void) lsprintf(buf, "       %s   %s%s",
+			prognam, version, PATCHLEVEL);
+    return buf;
 }

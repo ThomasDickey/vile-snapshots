@@ -1,7 +1,7 @@
 /*
  * Main program and I/O for external vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filterio.c,v 1.13 2000/11/04 20:14:06 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filterio.c,v 1.14 2001/12/26 20:49:13 tom Exp $
  *
  */
 
@@ -40,7 +40,7 @@ ProcessArgs(int argc, char *argv[], int flag)
 			verbose_flt++;
 		    break;
 		case 'q':
-		    quit = 1;	/* 
+		    quit = 1;	/*
 				 * quit before filter parses data.  useful
 				 * in conjunction with -v or -vv.
 				 */
@@ -207,7 +207,7 @@ main(int argc, char **argv)
     filter_def.InitFilter(0);
 
     if (quit) {
-	/* 
+	/*
 	 * When the filter is called, we want to force it to print out its
 	 * class info and then immediately exit.  Easiest way to do this
 	 * is to connect the filter's input to /dev/null.
