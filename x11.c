@@ -2,7 +2,7 @@
  * 	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.145 1997/03/31 01:17:34 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.146 1997/04/08 00:39:47 tom Exp $
  *
  */
 
@@ -131,6 +131,13 @@ extern VIDEO **pscreen;
 #define KQSIZE 64
 
 static Display *dpy;
+
+#if MOTIF_WIDGETS
+#if OPT_MENUS
+#include <Xm/RowColumn.h>
+    Widget	menub;
+#endif
+#endif
 
 #if NO_WIDGETS
 typedef struct _scroll_info {
@@ -2427,6 +2434,21 @@ x_preparse_args(
 #endif /* OL_WIDGETS */
 #endif /* MOTIF_WIDGETS */
 
+#if MOTIF_WIDGETS
+#if OPT_MENUS
+	menub = XmCreateMenuBar (cur_win->form_widget, "menub", NULL, 0);
+
+	XtVaSetValues (menub,
+			XmNtopAttachment,	XmATTACH_FORM,
+			XmNleftAttachment,	XmATTACH_FORM,
+			XmNbottomAttachment,XmATTACH_NONE,
+			XmNrightAttachment,	XmATTACH_FORM,
+			NULL);
+	XtManageChild (menub);
+	do_menu ( menub );
+#endif
+#endif
+
     cur_win->screen = XtVaCreateManagedWidget(
 	    "screen",
 #if MOTIF_WIDGETS
@@ -2442,7 +2464,13 @@ x_preparse_args(
 #if MOTIF_WIDGETS
 	    XmNresizable,		TRUE,
 	    XmNbottomAttachment,	XmATTACH_FORM,
+#if OPT_MENUS
+	    XmNtopAttachment,		XmATTACH_WIDGET,
+	    XmNtopWidget,		menub,
+	    XmNtopOffset,		2,
+#else
 	    XmNtopAttachment,		XmATTACH_FORM,
+#endif
 	    XmNleftAttachment,		XmATTACH_FORM,
 	    XmNrightAttachment,		XmATTACH_NONE,
 #else
@@ -2698,7 +2726,13 @@ x_preparse_args(
 	    cur_win->form_widget,
 	    XtNwidth,			cur_win->pane_width,
 	    XmNbottomAttachment,	XmATTACH_FORM,
+#if OPT_MENUS
+	    XmNtopAttachment,		XmATTACH_WIDGET,
+	    XmNtopWidget,		menub,
+	    XmNtopOffset,		3,
+#else
 	    XmNtopAttachment,		XmATTACH_FORM,
+#endif
 	    XmNleftAttachment,		XmATTACH_WIDGET,
 	    XmNleftWidget,		cur_win->screen,
 	    XmNrightAttachment,		XmATTACH_FORM,

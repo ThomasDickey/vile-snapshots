@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.149 1997/03/30 21:03:38 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.150 1997/04/08 01:07:46 tom Exp $
  *
  */
 
@@ -1985,6 +1985,55 @@ char	*buffer)
 		cmd_complete);
 }
 
+#if OPT_MENUS
+/* FIXME: reuse logic from makefuncdesc() */
+char *give_accelerator ( char *bname )
+{
+	int 			i, n;
+	register KBIND 	*kbp;
+	const CMDFUNC 	*cmd;
+	static char 	outseq[NLINE];
+
+	for (n=0; nametbl[n].n_name != 0; n++) 
+	{
+		if (!strcmp(nametbl[n].n_name, bname))
+		{
+			cmd = nametbl[n].n_cmd;
+
+			outseq[0] = '\0';
+	
+			for (i = 0; i < N_chars; i++)
+			{
+				if (asciitbl[i] == cmd)
+					convert_kcode(i, outseq);
+			}
+
+			for (kbp = KeyBindings; kbp != kbindtbl; kbp = kbp->k_link) {
+				if (kbp->k_cmd == cmd)
+					convert_kcode(kbp->k_code, outseq);
+			}
+
+#if 0
+			for (kbp = kbindtbl; kbp->k_cmd; kbp++)
+				if (kbp->k_cmd == cmd)
+					convert_kcode(kbp->k_code, outseq);
+#endif
+
+			/* Replace \t by ' ' */
+			for (i=0; i<strlen(outseq); i++)
+			{
+				if (outseq[i] == '\t')
+					outseq[i] = ' ';
+			}
+
+			return outseq;
+		}
+	}
+
+	return NULL;
+}
+#endif /* OPT_MENUS */
+
 #if NO_LEAKS
 void
 bind_leaks(void)
@@ -1998,3 +2047,4 @@ bind_leaks(void)
 #endif
 }
 #endif	/* NO_LEAKS */
+

@@ -1,4 +1,11 @@
 Changes for vile 7.1 (released ??? ??? ??, 1997)
+
+(tom)	970407 (f)
+	+ integrated menu-support for Motif xvile (patch by Philippe CHASSANY
+	  <phil@cln46ks.der.edf.fr>).
+	+ refined changes to 'working' mode to ensure that the "working..."
+	  message is cleared when the timer elapses.
+
 (kev)	970407 (e)
 	+ fileio.c (isready_c): Small tweak to the ifdefs for mklinux w/
 	  shared libraries.  This'll probably be needed for other systems

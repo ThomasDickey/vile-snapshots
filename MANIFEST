@@ -1,4 +1,4 @@
-MANIFEST for vile, version v7_0e
+MANIFEST for vile, version v7_0f
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 CHANGES                         Change-log for VILE
@@ -10,6 +10,7 @@ COPYING                         GPL copyright (for 'configure')
 INSTALL                         installation instructions for VILE
 README                          overview of VILE (read first)
 README.CFG                      configuration-instructions for VILE
+README.MENU                     readme for xmvile menus
 README.PC                       instructions for PC's (MS-DOS, etc.)
 aclocal.m4                      VILE-specific autoconf macros
 ansi.c                          ANSI terminal driver
@@ -67,6 +68,7 @@ manfilt.c                       VILE attribute-filter for man-page (nroff-output
 manfilt.pl                      Perl filter for man-pages
 manpage.rc                      macros for man-page filtering/display
 map.c                           map and map! commands
+menu.c                          menu-support for xvile
 mkdirs.sh                       script to make directory-hierarchy
 mktbls.c                        utility for constructing VILE's command & mode tables
 modes.c                         mode-command support
@@ -85,7 +87,6 @@ proto.h                         function prototypes
 random.c                        miscellaneous functions
 regexp.c                        regular expression functions
 region.c                        region-manipulation
-revlist                         revision-list for VILE
 search.c                        functions for search-commands
 select.c                        selection-handling functions
 spawn.c                         functions for spawning subprocesses
