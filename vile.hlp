@@ -1,5 +1,5 @@
 
-Getting along with vile						(version 6.1)
+Getting along with vile						(version 6.2)
 -----------------------						-------------
 
 	Use Ctrl-D and Ctrl-U to scroll through this help information.
@@ -3384,6 +3384,15 @@ Credits
 	by Paul Fox (pgf@foxharp.boston.ma.us).  (By the way, he is not the
 	Paul D. Fox that wrote the Crisp editor.)
 
+Problems
+--------
+
+	Send bug reports to
+		vile-bugs@foxharp.boston.ma.us
+
+	Requests to be put on the announcement list should go to
+		vile-announce-request@foxharp.boston.ma.us
+
 Copyright 1995,1996 by Paul Fox, Tom Dickey, and Kevin Buettner
------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.300 1996/10/05 00:35:15 tom Exp $
+---------------------------------------------------------------
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.301 1996/10/14 23:21:57 tom Exp $
