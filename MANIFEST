@@ -1,4 +1,4 @@
-MANIFEST for vile, version v7_1f
+MANIFEST for vile, version v7_1g
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 CHANGES                         Change-log for VILE
@@ -72,6 +72,7 @@ menu.c                          menu-support for xvile
 mkdirs.sh                       script to make directory-hierarchy
 mktbls.c                        utility for constructing VILE's command & mode tables
 modes.c                         mode-command support
+modes.doc                       overview of modes/majormodes
 modetbl                         used by 'mktbls' to generate mode tables
 msgs.c                          pop-up message support
 npopen.c                        pipe-command support

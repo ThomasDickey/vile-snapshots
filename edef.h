@@ -8,7 +8,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.210 1997/05/25 23:14:52 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.211 1997/07/30 23:20:26 tom Exp $
  */
 
 /* I know this declaration stuff is really ugly, and I probably won't ever
@@ -324,6 +324,9 @@ decl_init( const char ABBR_BufName[],		"");
 decl_init( const char SYSMAP_BufName[],		"");
 #endif
 decl_init( const char SETTINGS_BufName[],	"[Settings]");
+#if OPT_MAJORMODE
+decl_init( const char MAJORMODES_BufName[],	"[Major Modes]");
+#endif
 #if OPT_POPUP_MSGS
 decl_init( const char MESSAGES_BufName[],	"[Messages]");
 #endif

@@ -15,7 +15,7 @@
  * by Tom Dickey, 1993.    -pgf
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/mktbls.c,v 1.81 1997/06/19 23:45:41 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/mktbls.c,v 1.82 1997/08/14 10:54:18 tom Exp $
  *
  */
 
@@ -122,6 +122,7 @@ extern	void	free	( char *ptr );
 #define	islower(c)	((c) >= 'a' && (c) <= 'z')
 #define toupper(c)	((c)^DIFCASE)
 #define tolower(c)	((c)^DIFCASE)
+#define isboolean(c)	((c) == 'b' || (c) == 'M')
 
 #ifndef	TRUE
 #define	TRUE	(1)
@@ -165,8 +166,11 @@ static	LIST	*all_names,
 		*all_envars,
 		*all_ufuncs,
 		*all_fsms,	/* FSM tables */
+		*all_majors,	/* list of predefined major modes */
 		*all_modes,	/* data for name-completion of modes */
+		*all_submodes,	/* data for name-completion of submodes */
 		*all_gmodes,	/* data for GLOBAL modes */
+		*all_mmodes,	/* data for MAJOR modes */
 		*all_bmodes,	/* data for BUFFER modes */
 		*all_wmodes;	/* data for WINDOW modes */
 
@@ -175,6 +179,7 @@ static	LIST	*all_names,
 static	void	badfmt (const char *s);
 static	void	FlushIf (FILE *fp);
 static	void	save_all_modes (const char *type, char *normal, const char *abbrev, char *cond);
+static	void	save_all_submodes (const char *type, char *normal, const char *abbrev, char *cond);
 static	void	free_LIST (LIST **p);
 
 	/* definitions for sections of cmdtbl */
@@ -182,9 +187,10 @@ static	void	free_LIST (LIST **p);
 #define	SECT_FUNC 1
 #define	SECT_VARS 2
 #define	SECT_GBLS 3
-#define	SECT_BUFF 4
-#define	SECT_WIND 5
-#define	SECT_FSMS 6
+#define	SECT_MAJR 4
+#define	SECT_BUFF 5
+#define	SECT_WIND 6
+#define	SECT_FSMS 7
 
 	/* definitions for indices to 'asciitbl[]' vs 'kbindtbl[]' */
 #define ASCIIBIND 0
@@ -312,7 +318,10 @@ const char *note)
 		if ((r = strcmp(n->Name, p->Name)) < 0)
 			break;
 		else if (r == 0 && !strcmp(n->Cond, p->Cond))
+		{
+			printf("name=%s\n", n->Name);	/* FIXME */
 			badfmt("duplicate name");
+		}
 	}
 	n->nst = p;
 	if (q == 0)
@@ -594,6 +603,17 @@ c2TYPE(int c)
 	return value;
 }
 
+static int
+is_majormode(const char *name)
+{
+	LIST *p;
+	for (p = all_mmodes; p != 0; p = p->nst) {
+		if (!strcmp(name, p->Name))
+			return TRUE;
+	}
+	return FALSE;
+}
+
 /* check that the mode-name won't be illegal */
 static void
 CheckModes(char *name)
@@ -604,7 +624,7 @@ CheckModes(char *name)
 
 /* make a sort-key for mode-name */
 static char *
-Mode2Key(char *type, char *name, char *cond)
+Mode2Key(char *type, char *name, char *cond, int submode)
 {
 	int	c;
 	char	*abbrev = AbbrevMode(name),
@@ -623,6 +643,8 @@ Mode2Key(char *type, char *name, char *cond)
 	}
 
 	save_all_modes(type, normal, abbrev, cond);
+	if (submode)
+		save_all_submodes(type, normal, abbrev, cond);
 
 	Sprintf(tmp, "%s\n%c\n%s", normal, c, abbrev);
 #if NO_LEAKS
@@ -668,11 +690,11 @@ char	*type)
 	char	*temp;
 
 	temp = Name2Symbol(name);
-	if (strlen(temp) + 1 + ((*type == 'b') ? 4 : 0) > len)
+	if (strlen(temp) + 1 + (isboolean(*type) ? 4 : 0) > len)
         	badfmt("bug: buffer overflow in Name2Address");
 
 	(void)strcpy(base, temp);
-	if (*type == 'b')
+	if (isboolean(*type))
 		(void)strcat(strcat(strcpy(base+2, "no"), temp+2), "+2");
 	free(temp);
 	return base;
@@ -773,7 +795,7 @@ const char *ppref)
 #endif /* OPT_IFDEF_MODES */
 
 	(void)PadTo(32, temp);
-	Sprintf(temp+strlen(temp), "/* TABLESIZE(%c_valuenames) -- %s */\n",
+	Sprintf(temp+strlen(temp), "/* TABLESIZE(%c_valnames) -- %s */\n",
 		tolower(*ppref), ppref);
 	Fprintf(nemode, "%s", temp);
 	Fprintf(nemode, "#define MAX_%c_VALUES\t%d\n\n", *ppref, count);
@@ -822,12 +844,12 @@ WriteModeSymbols(LIST *p)
 /******************************************************************************/
 static void
 save_all_modes(
-const char *type,
-char	*normal,
-const char *abbrev,
-char	*cond)
+	const char *type,
+	char *normal,
+	const char *abbrev,
+	char *cond)
 {
-	if (*type == 'b') {
+	if (isboolean(*type)) {
 		char	t_normal[LEN_BUFFER],
 			t_abbrev[LEN_BUFFER];
 		save_all_modes("Bool",
@@ -874,9 +896,9 @@ dump_all_modes(void)
 	write_lines(nemode, top);
 	BeginIf();
 	for (p = all_modes; p; p = p->nst) {
-		if (p->Func[0] != 'b') {
+		if (!isboolean(p->Func[0])) {
 			for (q = p->nst; q != 0; q = q->nst)
-				if (q->Func[0] != 'b')
+				if (!isboolean(q->Func[0]))
 					break;
 #if OPT_IFDEF_MODES
 			WriteIf(nemode, p->Cond);
@@ -893,6 +915,8 @@ dump_all_modes(void)
 
 	write_lines(nemode, middle);
 	for (p = all_modes; p; p = p->nst) {
+		if (is_majormode(p->Name))
+			continue;
 #if OPT_IFDEF_MODES
 		WriteIf(nemode, p->Cond);
 #endif
@@ -1013,12 +1037,191 @@ dump_bindings(void)
 }
 
 /******************************************************************************/
+/*
+ * Construct submode names for the given predefined majormodes
+ */
+static void
+dump_majors(void)
+{
+	register LIST *p, *q;
+	char	norm[LEN_BUFFER],
+		abbr[LEN_BUFFER],
+		type[LEN_BUFFER];
+	char	normal[LEN_BUFFER],
+		abbrev[LEN_BUFFER];
+	char 	*my_cond = "OPT_MAJORMODE";
+
+	for (q = all_majors; q; q = q->nst) {
+		Sprintf(normal, "%smode", q->Name);	/* FIXME */
+		save_all_modes ("Major", normal, "", my_cond);
+	}
+	for (p = all_mmodes; p; p = p->nst) {
+		if (sscanf(p->Name, "%s\n%s\n%s", norm, type, abbr) != 3)
+			continue;
+		for (q = all_majors; q; q = q->nst) {
+			Sprintf(normal, "%s-%s", q->Name, norm);
+			Sprintf(abbrev, "%s%s", q->Name, abbr);
+			save_all_modes (c2TYPE(*type), normal, abbrev, my_cond);
+		}
+	}
+}
+
+/******************************************************************************/
+static void
+save_all_submodes (
+	const char *type,
+	char *normal,
+	const char *abbrev,
+	char *cond)
+{
+	if (isboolean(*type)) {
+		char	t_normal[LEN_BUFFER],
+			t_abbrev[LEN_BUFFER];
+		save_all_submodes("Bool",
+			strcat(strcpy(t_normal, "no"), normal),
+			*abbrev
+				? strcat(strcpy(t_abbrev, "no"), abbrev)
+				: "",
+			cond);
+	}
+	InsertSorted(&all_submodes, normal, type, "", cond, "");
+	if (*abbrev)
+		InsertSorted(&all_submodes, abbrev, type, "", cond, "");
+}
+
+static void
+save_mmodes(
+char	*type,
+char	**vec)
+{
+	char *key = Mode2Key(type, vec[1], vec[4], TRUE);
+	InsertSorted(&all_mmodes, key, vec[2], vec[3], vec[4], vec[0]);
+#if NO_LEAKS
+	free(key);
+#endif
+}
+
+static void
+dump_mmodes(void)
+{
+	static const char *const top[] = {
+		"",
+		"#if OPT_MAJORMODE",
+		"/* major mode flags\t*/",
+		"/* the indices of M_VALUES.v[] */",
+		};
+	static const char *const middle[] = {
+		"",
+		"typedef struct M_VALUES {",
+		"\t/* each entry is a val, and a ptr to a val */",
+		"\tstruct VAL mv[MAX_M_VALUES+1];",
+		"} M_VALUES;",
+		"",
+		"#ifdef realdef",
+		"const struct VALNAMES m_valnames[MAX_M_VALUES+1] = {",
+		};
+	static const char *const bottom[] = {
+		"",
+		"\t{ NULL,\tNULL,\tVALTYPE_INT, 0 }",
+		"};",
+		"#else",
+		"extern const struct VALNAMES m_valnames[MAX_M_VALUES+1];",
+		"#endif",
+		"#endif /* OPT_MAJORMODE */",
+		};
+
+	write_lines(nemode, top);
+	WriteIndexStruct(nemode, all_mmodes, "Major");
+	WriteModeDefines(all_mmodes, "Major");
+	write_lines(nemode, middle);
+	WriteModeSymbols(all_mmodes);
+	write_lines(nemode, bottom);
+}
+
+static void
+dump_all_submodes(void)
+{
+	static const char *const top[] = {
+		"",
+		"#if OPT_MAJORMODE",
+		"#ifdef realdef",
+		"const char *const all_submodes[] = {",
+		};
+	static const char *const bottom[] = {
+		"\tNULL\t/* ends table */",
+		"};",
+		"#else",
+		"extern const char *const all_submodes[];",
+		"#endif /* realdef */",
+		"#endif /* OPT_MAJORMODE */",
+		};
+	char	*s;
+	register LIST *p;
+
+	write_lines(nemode, top);
+	for (p = all_submodes; p; p = p->nst) {
+		if (is_majormode(p->Name))
+			continue;
+#if OPT_IFDEF_MODES
+		WriteIf(nemode, p->Cond);
+#endif
+		Fprintf(nemode, "\t%s,\n", s = Name2Address(p->Name, p->Func));
+		free(s);
+	}
+	FlushIf(nemode);
+
+	write_lines(nemode, bottom);
+}
+
+/******************************************************************************/
+static void
+predefine_submodes(char **vec, int len)
+{
+	register LIST *p;
+	int	found;
+	char	norm[LEN_BUFFER],
+		type[LEN_BUFFER],
+		abbr[LEN_BUFFER],
+		temp[LEN_BUFFER];
+
+	if (len > 1) {
+		for (p = all_majors, found = FALSE; p; p = p->nst) {
+			if (!strcmp(p->Name, vec[2])) {
+				found = TRUE;
+				break;
+			}
+		}
+		if (!found)
+			InsertSorted(&all_majors, vec[2], "", "", "", "");
+		if (len > 2) {
+			for (p = all_bmodes, found = FALSE; p; p = p->nst) {
+				if (sscanf(p->Name, "%s\n%s\n%s",
+					norm, type, abbr) == 3
+				 && (!strcmp(norm, vec[3])
+				  || !strcmp(abbr, vec[3]))) {
+					found = TRUE;
+					break;
+				}
+			}
+			if (found) {
+				sprintf(temp, "%s-%s", vec[2], norm);
+				strcpy(norm, temp);
+				sprintf(temp, "%s%s", vec[2], abbr);
+				strcpy(abbr, temp);
+				save_all_modes(c2TYPE(*type), norm, abbr,
+					formcond(p->Cond, "OPT_MAJORMODE"));
+			}
+		}
+	}
+}
+
+/******************************************************************************/
 static void
 save_bmodes(
 char	*type,
 char	**vec)
 {
-	char *key = Mode2Key(type, vec[1], vec[4]);
+	char *key = Mode2Key(type, vec[1], vec[4], TRUE);
 	InsertSorted(&all_bmodes, key, vec[2], vec[3], vec[4], vec[0]);
 #if NO_LEAKS
 	free(key);
@@ -1041,14 +1244,14 @@ dump_bmodes(void)
 		"} B_VALUES;",
 		"",
 		"#ifdef realdef",
-		"const struct VALNAMES b_valuenames[] = {",
+		"const struct VALNAMES b_valnames[] = {",
 		};
 	static const char *const bottom[] = {
 		"",
 		"\t{ NULL,\tNULL,\tVALTYPE_INT, 0 }",
 		"};",
 		"#else",
-		"extern const struct VALNAMES b_valuenames[];",
+		"extern const struct VALNAMES b_valnames[];",
 		"#endif",
 		};
 
@@ -1347,7 +1550,7 @@ save_gmodes(
 char	*type,
 char	**vec)
 {
-	char *key = Mode2Key(type, vec[1], vec[4]);
+	char *key = Mode2Key(type, vec[1], vec[4], FALSE);
 	InsertSorted(&all_gmodes, key, vec[2], vec[3], vec[4], vec[0]);
 #if NO_LEAKS
 	free(key);
@@ -1370,14 +1573,14 @@ dump_gmodes(void)
 		"} G_VALUES;",
 		"",
 		"#ifdef realdef",
-		"const struct VALNAMES g_valuenames[] = {",
+		"const struct VALNAMES g_valnames[] = {",
 		};
 	static const char *const bottom[] = {
 		"",
 		"\t{ NULL,\tNULL,\tVALTYPE_INT, 0 }",
 		"};",
 		"#else",
-		"extern const struct VALNAMES g_valuenames[];",
+		"extern const struct VALNAMES g_valnames[];",
 		"#endif",
 		};
 
@@ -1492,7 +1695,7 @@ save_wmodes(
 char	*type,
 char	**vec)
 {
-	char *key = Mode2Key(type,vec[1],vec[4]);
+	char *key = Mode2Key(type, vec[1], vec[4], FALSE);
 	InsertSorted(&all_wmodes, key, vec[2], vec[3], vec[4], vec[0]);
 #if NO_LEAKS
 	free(key);
@@ -1517,14 +1720,14 @@ dump_wmodes(void)
 		"} W_VALUES;",
 		"",
 		"#ifdef realdef",
-		"const struct VALNAMES w_valuenames[] = {",
+		"const struct VALNAMES w_valnames[] = {",
 		};
 	static const char *bottom[] = {
 		"",
 		"\t{ NULL,\tNULL,\tVALTYPE_INT, 0 }",
 		"};",
 		"#else",
-		"extern const struct VALNAMES w_valuenames[];",
+		"extern const struct VALNAMES w_valnames[];",
 		"#endif",
 		};
 
@@ -1571,8 +1774,10 @@ free_mktbls (void)
 	free_LIST(&all_envars);
 	free_LIST(&all_ufuncs);
 	free_LIST(&all_modes);
+	free_LIST(&all_submodes);
 	free_LIST(&all_kbind);
 	free_LIST(&all_gmodes);
+	free_LIST(&all_mmodes);
 	free_LIST(&all_bmodes);
 	free_LIST(&all_wmodes);
 
@@ -1649,6 +1854,10 @@ main(int argc, char *argv[])
 			case 'g':
 				section = SECT_GBLS;
 				break;
+			case 'm':
+				section = SECT_MAJR;
+				predefine_submodes(vec, r);
+				break;
 			case 'b':
 				section = SECT_BUFF;
 				break;
@@ -1707,6 +1916,12 @@ main(int argc, char *argv[])
 				save_gmodes(modetype, vec);
 				break;
 
+			case SECT_MAJR:
+				if (r < 2 || r > 4)
+					badfmt("looking for MAJOR modes");
+				save_mmodes(modetype, vec);
+				break;
+
 			case SECT_BUFF:
 				if (r < 2 || r > 4)
 					badfmt("looking for BUFFER modes");
@@ -1760,6 +1975,7 @@ main(int argc, char *argv[])
 				break;
 
 			case SECT_GBLS:
+			case SECT_MAJR:
 			case SECT_BUFF:
 			case SECT_WIND:
 				if (r != 1
@@ -1818,10 +2034,13 @@ main(int argc, char *argv[])
 	if (all_wmodes || all_bmodes) {
 		nemode = OpenHeader("nemode.h", argv);
 		DefineOffset(nemode);
+		dump_majors();
 		dump_all_modes();
+		dump_all_submodes();
 		dump_gmodes();
-		dump_wmodes();
+		dump_mmodes();
 		dump_bmodes();
+		dump_wmodes();
 	}
 
 	free_mktbls();

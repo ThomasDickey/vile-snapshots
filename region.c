@@ -5,7 +5,7 @@
  * commands. Some functions are just for
  * internal use.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/region.c,v 1.80 1997/03/15 16:03:10 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/region.c,v 1.81 1997/08/11 21:50:23 tom Exp $
  *
  */
 
@@ -213,7 +213,7 @@ shift_right_line(void *flagp GCC_UNUSED, int l GCC_UNUSED, int r GCC_UNUSED)
 {
 	int s, t;
 
-	if (is_empty_line(DOT) || (b_val(curbp, MDCMOD) && 
+	if (is_empty_line(DOT) || (is_c_mode(curbp) && 
 					llength(DOT.l) > 0 && 
 					char_at(DOT) == '#')) {
 		return TRUE;

@@ -2,7 +2,7 @@
  * This file contains the command processing functions for a number of random
  * commands. There is no functional grouping here, for sure.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.185 1997/05/26 13:29:58 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.186 1997/08/11 22:04:28 tom Exp $
  *
  */
 
@@ -52,8 +52,7 @@ set_rdonly(BUFFER *bp, const char *name, int mode)
 	make_local_b_val(bp,MDDOS);
 	set_b_val(bp, MDDOS, CRLF_LINES);
 
-	make_local_b_val(bp,MDCMOD);
-	set_b_val(bp,MDCMOD,FALSE);
+	fix_cmode(bp, FALSE);
 }
 
 /* generic "lister", which takes care of popping a window/buffer pair under

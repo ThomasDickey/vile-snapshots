@@ -4,7 +4,7 @@
  *	written 1986 by Daniel Lawrence
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.139 1997/06/19 23:24:20 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.140 1997/08/15 23:50:36 tom Exp $
  *
  */
 
@@ -96,7 +96,7 @@ eol_range(const char * buffer, unsigned cpos, int c, int eolchar GCC_UNUSED)
 	if (islinespecchar(c)
 	 || (c == ':' && (cpos == 0 || buffer[cpos-1] == c))
 	 || /* special test for 'a style mark references */
-		(cpos > 0
+		(cpos != 0
 		&& buffer[cpos-1] == '\''
 		&& (islower(c) || (c == '\'') ) ) )
 		return FALSE;

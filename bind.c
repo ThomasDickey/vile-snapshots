@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.156 1997/06/07 21:23:31 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.157 1997/08/15 23:50:25 tom Exp $
  *
  */
 
@@ -1907,12 +1907,12 @@ int	eolchar)
 	/*
 	 * Shell-commands aren't complete until the line is complete.
 	 */
-	if ((cpos > 0) && isShellOrPipe(buffer))
+	if ((cpos != 0) && isShellOrPipe(buffer))
 		return isreturn(c);
 
 	return	(c == eolchar)
 	  ||	(
-		  cpos > 0 &&  cpos < 3
+		  cpos != 0 &&  cpos < 3
 	      &&(
 		  (!ismostpunct(c)
 		&&  ismostpunct(buffer[cpos-1])

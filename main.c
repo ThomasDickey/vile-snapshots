@@ -13,7 +13,7 @@
  *	The same goes for vile.  -pgf, 1990-1995
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.296 1997/06/07 15:07:40 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.297 1997/08/13 00:20:08 tom Exp $
  *
  */
 
@@ -397,8 +397,7 @@ main(int argc, char *argv[])
 	make_local_b_val(bp, MDDOS);
 	set_b_val(bp, MDDOS, CRLF_LINES);
 #endif
-	make_local_b_val(bp, MDCMOD);
-	set_b_val(bp, MDCMOD, FALSE);
+	fix_cmode(bp, FALSE);
 	swbuffer(bp);
 
 	/* run the specified, or the system startup file here.
@@ -754,6 +753,12 @@ global_val_init(void)
 	for (i = 0; i <= NUM_W_VALUES; i++)
 		make_local_val(global_w_values.wv, i);
 
+#if OPT_MAJORMODE
+	/*
+	 * Built-in majormodes
+	 */
+	alloc_mode("c", TRUE);
+#endif
 
 	/*
 	 * Universal-mode defaults
@@ -857,7 +862,9 @@ global_val_init(void)
 #ifdef	MDCHK_MODTIME
 	set_global_b_val(MDCHK_MODTIME,	FALSE); /* modtime-check */
 #endif
+#if	!OPT_MAJORMODE
 	set_global_b_val(MDCMOD,	FALSE); /* C mode */
+#endif
 #ifdef MDCRYPT
 	set_global_b_val(MDCRYPT,	FALSE);	/* crypt */
 #endif
@@ -892,8 +899,13 @@ global_val_init(void)
 	set_global_g_val(GMDRONLYRONLY,	FALSE);	/* Set readonly-on-readonly */
 
 	set_global_b_val(VAL_ASAVECNT,	256);	/* autosave count */
+#if OPT_MAJORMODE
+	set_submode_val("c", VAL_SWIDTH, 8); 	/* C file shiftwidth */
+	set_submode_val("c", VAL_TAB,	8); 	/* C file tab stop */
+#else
 	set_global_b_val(VAL_C_SWIDTH,	8); 	/* C file shiftwidth */
 	set_global_b_val(VAL_C_TAB,	8); 	/* C file tab stop */
+#endif
 	set_global_b_val(VAL_SWIDTH,	8); 	/* shiftwidth */
 	set_global_b_val(VAL_TAB,	8);	/* tab stop */
 	set_global_b_val(VAL_TAGLEN,	0);	/* significant tag length */
@@ -912,11 +924,15 @@ global_val_init(void)
 #define	DEFAULT_CSUFFIX	"\\.\\(\\([Cchis]\\)\\|CC\\|cc\\|cpp\\|cxx\\|hxx\\|scm\\)$"
 #endif
 
+#if OPT_MAJORMODE
+	set_majormode_rexp("c", MVAL_SUFFIXES, DEFAULT_CSUFFIX);
+#else
 	/* suffixes for C mode */
 	set_global_g_val_rexp(GVAL_CSUFFIXES,
 		new_regexval(
 			DEFAULT_CSUFFIX,
 			TRUE));
+#endif
 
 	/* where do paragraphs start? */
 	set_global_b_val_rexp(VAL_PARAGRAPHS,
@@ -1423,13 +1439,14 @@ quit(int f, int n GCC_UNUSED)
 		bp_leaks();
 		vt_leaks();
 		ev_leaks();
+		mode_leaks();
 #if DISP_X11
 		x11_leaks();
 #endif
 
-		free_local_vals(g_valuenames, global_g_values.gv, global_g_values.gv);
-		free_local_vals(b_valuenames, global_b_values.bv, global_b_values.bv);
-		free_local_vals(w_valuenames, global_w_values.wv, global_w_values.wv);
+		free_local_vals(g_valnames, global_g_values.gv, global_g_values.gv);
+		free_local_vals(b_valnames, global_b_values.bv, global_b_values.bv);
+		free_local_vals(w_valnames, global_w_values.wv, global_w_values.wv);
 
 		FreeAndNull(gregexp);
 		FreeAndNull(patmatch);

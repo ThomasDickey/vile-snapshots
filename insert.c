@@ -7,7 +7,7 @@
  * Most code probably by Dan Lawrence or Dave Conroy for MicroEMACS
  * Extensions for vile by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/insert.c,v 1.102 1997/05/25 23:15:16 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/insert.c,v 1.103 1997/08/11 21:50:30 tom Exp $
  *
  */
 
@@ -125,7 +125,7 @@ openup(int f, int n)
 
 	/* if we are in C mode and this is a default <NL> */
 	if (allow_aindent && n == 1 && 
-		(b_val(curbp,MDCMOD) || b_val(curbp,MDAIND)) &&
+		(is_c_mode(curbp) || b_val(curbp,MDAIND)) &&
 				    !is_header_line(DOT,curbp)) {
 		s = indented_newline_above();
 		if (s != TRUE) return (s);
@@ -757,7 +757,7 @@ inschar(int c, int *backsp_limit_p)
 	}
 
 	/* do the appropriate insertion */
-	if (allow_aindent && b_val(curbp, MDCMOD)) {
+	if (allow_aindent && is_c_mode(curbp)) {
 	    int dir;
 	    if (is_user_fence(c, &dir) && dir == REVERSE) {
 		    return insbrace(1, c);
@@ -861,7 +861,7 @@ newline(int f, int n)
 	/* if we are in C or auto-indent modes and this is a default <NL> */
 	if (allow_aindent
 	 && (n == 1)
-	 && (b_val(curbp,MDCMOD) || b_val(curbp,MDAIND))
+	 && (is_c_mode(curbp) || b_val(curbp,MDAIND))
 	 && !is_header_line(DOT,curbp))
 		return indented_newline();
 
@@ -878,7 +878,7 @@ newline(int f, int n)
 static int
 indented_newline(void)
 {
-	int cmode = allow_aindent && b_val(curbp, MDCMOD);
+	int cmode = allow_aindent && is_c_mode(curbp);
 	register int indentwas; /* indent to reproduce */
 	int bracef; /* was there a brace at the end of line? */
 
@@ -898,7 +898,7 @@ indented_newline(void)
 static int
 indented_newline_above(void)
 {
-	int cmode = allow_aindent && b_val(curbp, MDCMOD);
+	int cmode = allow_aindent && is_c_mode(curbp);
 	register int indentwas;	/* indent to reproduce */
 	int bracef; /* was there a brace at the beginning of line? */
 
@@ -919,7 +919,7 @@ int
 previndent(int *bracefp)
 {
 	int ind;
-	int cmode = allow_aindent && b_val(curbp, MDCMOD);
+	int cmode = allow_aindent && is_c_mode(curbp);
 
 	if (bracefp) *bracefp = FALSE;
 

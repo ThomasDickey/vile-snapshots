@@ -9,7 +9,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.310 1997/06/19 23:51:32 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.312 1997/08/15 23:57:20 tom Exp $
  */
 
 #ifdef HAVE_CONFIG_H
@@ -422,6 +422,7 @@
 #define OPT_ISRCH       !SMALLER		/* Incremental searches */
 #define OPT_ISO_8859    !SMALLER		/* ISO 8859 characters */
 #define OPT_LINEWRAP    !SMALLER		/* line-wrap mode */
+#define OPT_MAJORMODE   !SMALLER		/* majormode support */
 #define OPT_MLFORMAT    !SMALLER		/* modeline-format */
 #define OPT_MS_MOUSE    !SMALLER && DISP_IBMPC  /* MsDos-mouse */
 #define OPT_ONLINEHELP  !SMALLER		/* short per-command help */
@@ -1411,6 +1412,7 @@ struct VALNAMES {
 #define VALTYPE_BOOL   2
 #define VALTYPE_REGEX  3
 #define VALTYPE_ENUM   4
+#define VALTYPE_MAJOR  5
 
 	/*
 	 * Values are either local or global. We distinguish the two cases
@@ -1491,6 +1493,29 @@ typedef struct	{
 #define gbcolor C_BLACK
 #endif
 
+#if OPT_MAJORMODE
+/*
+ * A majormode is a special set of buffer mode values, together with other
+ * values (such as filename suffixes) which are used to determine when a
+ * majormode should be attached to a buffer.  We allocate the structure in two
+ * levels (MAJORMODE vs MAJORMODE_LIST) to avoid having to adjust pointers
+ * within the VAL arrays (M_VALUES and B_VALUES) when we add or remove new
+ * majormodes.
+ */
+typedef struct {
+	char *name;
+	M_VALUES mm;
+	B_VALUES mb;
+} MAJORMODE;
+
+#define is_c_mode(bp) (bp->majr != 0 && !strcmp(bp->majr->name, "c"))
+#define fix_cmode(bp,value)	/* nothing */
+#else
+#define is_c_mode(bp) (b_val(bp,MDCMOD))
+#define fix_cmode(bp,value)	make_local_b_val(bp, MDCMOD), \
+				set_b_val(bp, MDCMOD, value)
+#endif
+
 /*
  * Text is kept in buffers. A buffer header, described below, exists for every
  * buffer in the system. The buffers are kept in a big list, so that commands
@@ -1508,6 +1533,9 @@ typedef struct	BUFFER {
 	MARK 	*b_nmmarks;		/* named marks a-z		*/
 #if OPT_SELECTIONS
 	AREGION	*b_attribs;		/* attributed regions		*/
+#endif
+#if OPT_MAJORMODE
+	MAJORMODE *majr;		/* majormode, if any */
 #endif
 	B_VALUES b_values;		/* buffer traits we inherit from */
 					/*  global values		*/
@@ -2220,6 +2248,9 @@ extern void _exit (int code);
 #include <dbmalloc.h>		/* renamed from dbmalloc's convention */
 #define show_alloc() malloc_dump(fileno(stderr))
 #define strmalloc strdup
+#if	OPT_TRACE
+#include "trace.h"
+#endif
 #else
 #if	NO_LEAKS || DOALLOC || OPT_TRACE
 #include "trace.h"
