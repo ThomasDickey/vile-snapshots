@@ -18,7 +18,7 @@
  * transferring the selection are not dealt with in this file.  Procedures
  * for dealing with the representation are maintained in this file.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.103 1999/10/03 23:53:21 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.104 1999/10/10 18:02:52 tom Exp $
  *
  */
 
@@ -650,8 +650,9 @@ paste_selection(void)
 void
 on_double_click(void)
 {
-	MARK save = DOT;
+	MARK save;
 
+	save = DOT;
 	TRACE(("MOUSE double-click DOT %d.%d\n", line_no(curbp, DOT.l), DOT.o))
 	sel_release();
 	if (!is_at_end_of_line(DOT)
@@ -682,8 +683,9 @@ on_double_click(void)
 void
 on_triple_click(void)
 {
-	MARK save = DOT;
+	MARK save;
 
+	save = DOT;
 	TRACE(("MOUSE triple-click DOT %d.%d\n", line_no(curbp, DOT.l), DOT.o))
 	sel_release();
 	gotobol(FALSE, 1);

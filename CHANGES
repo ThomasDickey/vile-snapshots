@@ -1,5 +1,39 @@
 Changes for vile 8.4 (released ??? ??? ??, ????)
 
+ (tom) 991010 (w)
+ 	+ add syntax filter for Python scripts, and associated pymode.
+ 	+ correct bug in ^X-^, which did not copy special characters such as
+	  arrow keys.
+ 	+ correct bug introduced in rewrite of ^X-( and ^X-) command for 8.3,
+	  which left ^X-) on the end of the recorded text (reported by George
+	  Eccles, analysis by Paul Fox).
+	+ add $kbd-macro variable to show the contents of the keyboard macro.
+ 	+ install perl modules as data, not scripts (patch by Ryan Murray).
+	+ minor fixes with EXTERN_CONST definition to allow building xvile and
+	  vile with g++ on Linux.
+ 	+ remove unused/obsolete code for dot-replays-macro in input.c
+ 	+ modify write_message() in perl.xs to erase the message line if the
+	  message is empty, e.g., in the end of lock.pl
+ 	+ correct handling of leading blanks for '#' comments in xs-filt.c
+ 	+ add VAREV to special case handling of terminfo/termcap no_color_video.
+ 	+ disallow execution of '<' register, i.e., by "@<".
+	> patches by Clark Morgan:
+	+ $cfgopts now shows whether a Unix-hosted editor uses TERMCAP or
+	  TERMINFO screen DB. 
+	+ directory lookup via CDPATH enabled on all hosts (previously only
+	  supported on UNIX), but only tested on VMS, Unix, and Win32 (don't
+	  have access to DOS, OS/2, BEOS). 
+	+ documented win32 double/triple click feature. 
+	+ added $cdpath, which is the editor's copy of the external CDPATH
+	  environment variable.  This state variable is read/write. 
+	+ The components of $CDPATH are glob'd before use, which means that 
+	  specifying things like: 
+	      Unix: 
+		export CDPATH="~/srcdir:~/blddir" # quotes prevent tilde expn 
+	      Win32 (using a unix clone of the Bourne shell): 
+		export CDPATH=c:/pro*/dev*/vc;e:/cm/projects 
+	  will work. 
+
  (tom) 991004 (v)
  	+ remove the VT52-style fallback_arrows[] entry, from 8.3u, since it is
 	  too easy to confuse it with type-ahead (reported by Clark Morgan).

@@ -1,7 +1,7 @@
 /*	tcap:	Unix V5, V7 and BS4.2 Termcap video driver
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.127 1999/10/05 00:14:53 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.128 1999/10/10 18:51:43 tom Exp $
  *
  */
 
@@ -970,14 +970,15 @@ tcapattr(UINT attr)
 	/*
 	 * If we have a choice between color and some other attribute, choose
 	 * color, since the other attributes may not be real anyway.  But
-	 * treat VASEL specially, otherwise we won't be able to see selections.
+	 * treat VASEL specially, otherwise we won't be able to see selections,
+	 * as well as VAREV, in case it is used for visual-matches.
 	 */
 	if (tc_NC != 0
 	 && (attr & VACOLOR) != 0) {
 		for (n = 0; n < TABLESIZE(tbl); n++) {
 			if ((tbl[n].NC_bit & tc_NC) != 0
 			 && (tbl[n].mask & attr) != 0) {
-				if ((attr & VASEL) != 0)
+				if ((tbl[n].mask & (VASEL|VAREV)) != 0)
 					attr &= ~VACOLOR;
 				else
 					attr &= ~tbl[n].mask;

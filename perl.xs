@@ -13,7 +13,7 @@
  * vile.  The file api.c (sometimes) provides a middle layer between
  * this interface and the rest of vile.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.54 1999/10/03 19:56:13 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.55 1999/10/10 19:07:24 tom Exp $
  */
 
 /*#
@@ -175,6 +175,8 @@ write_message(char *prefix, SV *sv)
 
 	if (*text)
 	    mlforce("%s%s", prefix, text);
+        else
+	    mlerase();
 	text = nl;
 	count++;
     }

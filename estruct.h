@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.424 1999/10/02 01:22:49 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.425 1999/10/10 21:59:13 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -1310,6 +1310,14 @@ typedef	struct {
 typedef	ULONG		CMDFLAGS;	/* CMDFUNC flags */
 typedef	long		B_COUNT;	/* byte-count */
 
+/*
+ * Normally we build with ANSI C compilers, but allow for the possibility of
+ * building with C++.  There is an incompatibility between C/C++ in the
+ * treatment of const:  C++ will not export const data unless it is declared
+ * extern -- for statements where the data is given for initialization.  While
+ * ANSI C permits (but does not require) putting the extern there as well, some
+ * compilers that we support via unproto do not allow this syntax.
+ */
 #ifdef __cplusplus
 #define EXTERN_CONST extern const
 #else

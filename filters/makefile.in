@@ -1,4 +1,4 @@
-# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.in,v 1.55 1999/09/11 13:47:27 tom Exp $
+# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.in,v 1.56 1999/10/11 01:06:52 tom Exp $
 #
 
 #### Start of system configuration section. ####
@@ -97,6 +97,7 @@ LEX_ALL = \
 	vile-mms-filt$x \
 	vile-nr-filt$x \
 	vile-perl-filt$x \
+	vile-py-filt$x \
 	vile-rcs-filt$x \
 	vile-sccs-filt$x \
 	vile-sh-filt$x \
@@ -175,6 +176,9 @@ vile-pas-filt$x : pas-filt.o $(CF_DEPS)
 vile-perl-filt$x : perlfilt.o $(LF_DEPS)
 	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ perlfilt.o $(LF_ARGS)
 
+vile-py-filt$x : py-filt.o $(LF_DEPS)
+	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ py-filt.o $(LF_ARGS)
+
 vile-rcs-filt$x : rcs-filt.o $(LF_DEPS)
 	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ rcs-filt.o $(LF_ARGS)
 
@@ -243,6 +247,7 @@ INSTALL_LEX_BIN = \
 	$(BINDIR)/vile-mms-filt$x \
 	$(BINDIR)/vile-nr-filt$x \
 	$(BINDIR)/vile-perl-filt$x \
+	$(BINDIR)/vile-py-filt$x \
 	$(BINDIR)/vile-rcs-filt$x \
 	$(BINDIR)/vile-sccs-filt$x \
 	$(BINDIR)/vile-sh-filt$x \
@@ -276,6 +281,7 @@ INSTALL_LEX_TXT = \
 	$(DATADIR)/make.keywords \
 	$(DATADIR)/nr.keywords \
 	$(DATADIR)/perl.keywords \
+	$(DATADIR)/py.keywords \
 	$(DATADIR)/pot.keywords \
 	$(DATADIR)/rcs.keywords \
 	$(DATADIR)/sccs.keywords \
@@ -357,6 +363,7 @@ $(BINDIR)/vile-mms-filt$x :	vile-mms-filt$x		; $(INSTALL_PROGRAM) $? $@
 $(BINDIR)/vile-nr-filt$x :	vile-nr-filt$x		; $(INSTALL_PROGRAM) $? $@
 $(BINDIR)/vile-pas-filt$x :	vile-pas-filt$x		; $(INSTALL_PROGRAM) $? $@
 $(BINDIR)/vile-perl-filt$x :	vile-perl-filt$x	; $(INSTALL_PROGRAM) $? $@
+$(BINDIR)/vile-py-filt$x :	vile-py-filt$x		; $(INSTALL_PROGRAM) $? $@
 $(BINDIR)/vile-rcs-filt$x :	vile-rcs-filt$x		; $(INSTALL_PROGRAM) $? $@
 $(BINDIR)/vile-sccs-filt$x :	vile-sccs-filt$x	; $(INSTALL_PROGRAM) $? $@
 $(BINDIR)/vile-sh-filt$x :	vile-sh-filt$x		; $(INSTALL_PROGRAM) $? $@
@@ -395,6 +402,7 @@ $(DATADIR)/make.keywords :	$(srcdir)/make.key	; $(INSTALL_DATA) $? $@
 $(DATADIR)/nr.keywords :	$(srcdir)/nr.key	; $(INSTALL_DATA) $? $@
 $(DATADIR)/pas.keywords :	$(srcdir)/pas.key	; $(INSTALL_DATA) $? $@
 $(DATADIR)/perl.keywords :	$(srcdir)/perl.key	; $(INSTALL_DATA) $? $@
+$(DATADIR)/py.keywords :	$(srcdir)/py.key	; $(INSTALL_DATA) $? $@
 $(DATADIR)/pot.keywords :	$(srcdir)/pot.key	; $(INSTALL_DATA) $? $@
 $(DATADIR)/rcs.keywords :	$(srcdir)/rcs.key	; $(INSTALL_DATA) $? $@
 $(DATADIR)/sccs.keywords :	$(srcdir)/sccs.key	; $(INSTALL_DATA) $? $@

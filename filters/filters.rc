@@ -1,4 +1,4 @@
-; $Id: filters.rc,v 1.86 1999/10/03 23:37:10 tom Exp $
+; $Id: filters.rc,v 1.88 1999/10/11 01:28:40 tom Exp $
 
 define-mode ada
 ~with define-submode ada
@@ -265,6 +265,14 @@ define-mode pot
 	filtername "vile-sh-filt -k pot"
 	comment-prefix "^#"
 	comments       "^#\\s*$"
+~endwith
+
+define-mode py
+~with define-submode py
+	pre "^#\\s*!\\s*\\.*\\/.*python\\>"
+	suf "\\.py$"
+	comment-prefix "^\\s*#"
+	comments   "^\\s*#\\s\\+\\s*$"
 ~endwith
 
 ; I capitalized the majormode RCS/SCCS names because matches are made in

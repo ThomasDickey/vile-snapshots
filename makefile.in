@@ -20,7 +20,7 @@
 #
 # gnu autoconf support by kevin buettner, 5/94
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.145 1999/09/12 20:40:40 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.146 1999/10/10 22:38:48 Ryan.Murray Exp $
 #
 
 #### Start of system configuration section. ####
@@ -625,9 +625,9 @@ $(MANDIR)/xvile.$(manext):	$(srcdir)/vile.1
 	$(INSTALL_DATA)		$(srcdir)/vile.1 $@
 
 $(PERLDIR)/Vile.pm:		$(srcdir)/perl/Vile.pm
-	$(INSTALL_SCRIPT)	$(srcdir)/perl/Vile.pm $@
+	$(INSTALL_DATA)		$(srcdir)/perl/Vile.pm $@
 $(PERLDIR)/Vileserv.pm:		$(srcdir)/perl/Vileserv.pm
-	$(INSTALL_SCRIPT)	$(srcdir)/perl/Vileserv.pm $@
+	$(INSTALL_DATA)		$(srcdir)/perl/Vileserv.pm $@
 $(PERLDIR)/dir.pl:		$(srcdir)/perl/dir.pl
 	$(INSTALL_DATA)		$(srcdir)/perl/dir.pl $@
 $(PERLDIR)/glob2re.pl:		$(srcdir)/perl/glob2re.pl

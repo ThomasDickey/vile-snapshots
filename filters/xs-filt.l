@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/xs-filt.l,v 1.3 1999/09/27 10:55:50 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/xs-filt.l,v 1.4 1999/10/10 19:03:32 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Perl/C
  * extension source
@@ -49,6 +49,7 @@ comment_or_preproc(char *text)
 	    return;
 	}
     }
+    write_string(yyout, base, text-base, "");
     write_string(yyout, text, strlen(text), Comment_attr);
 }
 

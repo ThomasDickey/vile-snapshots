@@ -7,7 +7,7 @@
  *	To do:	add 'tb_ins()' and 'tb_del()' to support cursor-level command
  *		editing.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tbuff.c,v 1.35 1999/05/18 00:59:34 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tbuff.c,v 1.36 1999/10/10 23:52:02 tom Exp $
  *
  */
 
@@ -274,7 +274,6 @@ tb_string(const char *s)
 
 /*******(retrieval)************************************************************/
 
-#if DISP_X11
 /*
  * get the nth character from the temp-buff
  */
@@ -288,7 +287,6 @@ tb_get(TBUFF *p, ALLOC_T n)
 
 	return char2int(c);
 }
-#endif
 
 /*
  * undo the last 'tb_put'
