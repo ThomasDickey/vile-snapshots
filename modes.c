@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.97 1997/08/30 00:44:56 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.98 1997/09/02 18:02:20 tom Exp $
  *
  */
 
@@ -1103,7 +1103,8 @@ find_mode(const char *mode, int global, VALARGS *args)
 					size_t len = strlen(p->name);
 
 					if (n >= len
-					 && !strncmp(rp, p->name, len)) {
+					 && !strncmp(rp, p->name, len)
+					 && (lookup_valnames(rp, p->qual)) >= 0) {
 						args->names  = p->qual;
 						args->global = p->data->mm.mv;
 						args->local  = (global != FALSE)
@@ -1624,8 +1625,10 @@ static char *
 per_submode(char *dst, const char *majr, int code, int brief)
 {
 	if (brief) {
-		if (!strcmp(b_valnames[code].shortname, "X"))
+		if (!strcmp(b_valnames[code].shortname, "X")) {
+			*dst = EOS;
 			return 0;
+		}
 		(void) lsprintf(dst, "%s%s", majr, b_valnames[code].shortname);
 	} else {
 		(void) lsprintf(dst, "%s-%s", majr, b_valnames[code].name);
