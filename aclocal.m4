@@ -1,6 +1,6 @@
 dnl Local definitions for autoconf.
 dnl
-dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.120 2003/02/16 15:18:51 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.121 2003/03/18 01:58:18 tom Exp $
 dnl
 dnl ---------------------------------------------------------------------------
 dnl ---------------------------------------------------------------------------
@@ -2115,7 +2115,7 @@ AC_TRY_COMPILE([
 ])
 if test "$cf_cv_have_wctype" = yes ; then
 	AC_DEFINE(HAVE_WCTYPE)
-	AC_SEARCH_LIBS(wctype,[-lw])
+	AC_SEARCH_LIBS(wctype,[w])
 fi
 ])dnl
 dnl ---------------------------------------------------------------------------

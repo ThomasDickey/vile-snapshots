@@ -1,5 +1,20 @@
 Changes for vile 9.4 (released ??? ??? ?? ????)
 
+ 20030318 (n)
+	> Tom Dickey:
+	+ fix typo in CF_WCTYPE macro, needed to add "-lw" to $LIBS.
+	+ workaround for bug in autoconf 2.52 which made it not show help
+	  text for "--with-locale" option, since it was quoted to pass it as
+	  a parameter to CF_LOCALE.
+	+ modify delins() to work with text that contains nulls.
+	+ fixes to make replacepat (the variable that holds the value supplied
+	  as a replacement pattern, e.g., when "~" is typed) work with embedded
+	  nulls.
+	+ move upper/lower case-conversion into tables vl_uppercase[] and
+	  vl_lowercase[], so that locale support can replace the DIFCASE
+	  variable.
+	+ fix an infinite loop in c-filt.c, from 9.3k changes (-j option).
+
  20030310 (m)
 	> Tom Dickey:
 	+ revise lgettext() and screen_string() to use TBUFF's directly, fixing

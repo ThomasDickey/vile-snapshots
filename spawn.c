@@ -1,7 +1,7 @@
 /*	Spawn:	various DOS access commands
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.176 2002/10/09 23:38:16 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.177 2003/03/11 19:53:02 tom Exp $
  *
  */
 
@@ -1203,8 +1203,8 @@ determine_quoted_delimiter(void)
 	    *cp = EOS;		/* trim file suffix */
 	shell_len = strlen(buf);
 	unix_shell = (shell_len >= 2 &&
-		      tolower(buf[shell_len - 2]) == 's' &&
-		      tolower(buf[shell_len - 1]) == 'h');
+		      toLower(buf[shell_len - 2]) == 's' &&
+		      toLower(buf[shell_len - 1]) == 'h');
 	if (unix_shell)
 	    qdelim = "'";
 	else {

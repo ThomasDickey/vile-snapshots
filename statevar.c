@@ -3,7 +3,7 @@
  *	for getting and setting the values of the vile state variables,
  *	plus helper utility functions.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.72 2003/03/09 18:34:04 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.73 2003/03/18 00:24:52 tom Exp $
  */
 
 #include	"estruct.h"
@@ -1238,14 +1238,18 @@ var_RDHOOK(TBUFF ** rp, const char *vp)
 }
 #endif
 
+/*
+ * Note that replacepat is stored without a trailing null.
+ */
 int
 var_REPLACE(TBUFF ** rp, const char *vp)
 {
     if (rp) {
-	tb_scopy(rp, tb_values(replacepat));
+	tb_copy(rp, replacepat);
 	return TRUE;
     } else if (vp) {
-	tb_scopy(&replacepat, vp);
+	(void) tb_init(&replacepat, EOS);
+	(void) tb_sappend(&replacepat, vp);
 	return TRUE;
     } else {
 	return FALSE;

@@ -4,7 +4,7 @@
  *	Copyright (c) 1990, 1995-1999 by Paul Fox, except for delins(), which is
  *	Copyright (c) 1986 by University of Toronto, as noted below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/oneliner.c,v 1.100 2003/02/25 00:44:28 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/oneliner.c,v 1.102 2003/03/18 02:20:27 tom Exp $
  */
 
 #include	"estruct.h"
@@ -13,7 +13,7 @@
 #define PLIST	0x01
 #define PNUMS	0x02
 
-static int delins(regexp * exp, char *sourc);
+static int delins(regexp * exp, char *sourc, int lensrc);
 static int substline(regexp * exp, int nth_occur, int printit, int globally, int *confirmp);
 static int substreg1(int needpats, int use_opts, int is_globalsub);
 
@@ -161,6 +161,7 @@ substreg1(int needpats, int use_opts, int is_globalsub)
     REGION region;
     LINEPTR oline;
     int getopts = FALSE;
+    TBUFF *newpattern;
 
     if ((status = get_fl_region(&region)) != TRUE) {
 	return (status);
@@ -182,12 +183,18 @@ substreg1(int needpats, int use_opts, int is_globalsub)
 			  (size_t) gregexp->size);
 	}
 
-	tb_init(&replacepat, EOS);
+	newpattern = 0;
+	if (tb_length(replacepat) != 0)
+	    tb_copy(&newpattern, replacepat);
 	status = readpattern("replacement string: ",
-			     &replacepat, (regexp **) 0, c, FALSE);
-	if (status == ABORT)
+			     &newpattern, (regexp **) 0, c, FALSE);
+	if (status == ABORT) {
 	    /* if false, the pattern is null, which is okay... */
+	    tb_free(&newpattern);
 	    return status;
+	}
+	tb_free(&replacepat);
+	replacepat = newpattern;
 
 	nth_occur = -1;
 	confirm = printit = globally = FALSE;
@@ -370,7 +377,7 @@ substline(regexp * exp, int nth_occur, int printit, int globally, int *confirmp)
 		yes = TRUE;
 	    }
 	    if (yes) {
-		s = delins(exp, tb_values(replacepat));
+		s = delins(exp, tb_values(replacepat), tb_length(replacepat));
 		if (s != TRUE)
 		    returnCode(s);
 		if (!again++)
@@ -432,12 +439,12 @@ static UINT len_delins;
  - delins - perform substitutions after a regexp match
  */
 static int
-delins(regexp * exp, char *sourc)
+delins(regexp * exp, char *sourc, int lensrc)
 {
-    register char *src;
-    register size_t dlength;
-    register int c;
-    register int no;
+    size_t dlength;
+    int c;
+    int no;
+    int j;
     int s;
 #define NO_CASE	0
 #define UPPER_CASE 1
@@ -472,16 +479,16 @@ delins(regexp * exp, char *sourc)
 	mlforce("[Error while deleting]");
 	return FALSE;
     }
-    src = sourc;
     case_next = case_all = NO_CASE;
-    while ((c = *src++) != EOS) {
+    for (j = 0; j < lensrc; ++j) {
+	c = sourc[j];
 	no = 0;
 	s = TRUE;
 	switch (c) {
 	case BACKSLASH:
-	    c = *src++;
-	    if (c == EOS)
+	    if (j + 1 >= lensrc)
 		return TRUE;
+	    c = sourc[++j];
 	    if (!isDigit(c)) {
 		/* here's where the \U \E \u \l \t etc.
 		   special escapes should be implemented */

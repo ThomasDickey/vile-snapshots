@@ -4,7 +4,7 @@
  *	original by Daniel Lawrence, but
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.255 2003/02/26 14:13:34 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.256 2003/03/17 23:22:00 tom Exp $
  *
  */
 
@@ -1062,7 +1062,8 @@ get_token2(char *src, TBUFF ** tok, int eolchar, int *actual)
 	    chr = *src++;	/* record the character */
 	}
 	if (first && shell && chr == DQUOTE) {
-	    ;			/* eat the leading quote if we're re-gluing a shell command */
+	    /* eat the leading quote if we're re-gluing a shell command */
+	    /* EMPTY */ ;
 	} else {
 	    tb_append(tok, chr);
 	}
@@ -2117,8 +2118,9 @@ perform_dobuf(BUFFER *bp, WHLOOP * whlist)
 	    src = skip_space_tab(cmdp);
 	    dst = cmdp;
 	    /* compress out extra leading whitespace */
-	    while ((*dst++ = *src++) != EOS)
-		/* EMPTY */ ;
+	    while ((*dst++ = *src++) != EOS) {
+		;
+	    }
 	    linlen -= (size_t) (src - dst);
 	}
 	glue = 0;
