@@ -21,7 +21,7 @@
 # gnu autoconf support by kevin buettner, 5/94
 # original makefile for uemacs: Adam Fritz July 30,1987  (do you recognize it?)
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.94 1997/12/03 23:15:09 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.96 1997/12/18 00:47:33 tom Exp $
 #
 
 #### Start of system configuration section. ####
@@ -181,6 +181,9 @@ MKTBLS = ./mktbls
 # and in modetbl
 BUILTHDRS = nebind.h neproto.h neexec.h nefunc.h nemode.h nename.h nevars.h nefkeys.h nefsms.h
 
+# built from perl.xs
+BUILTSRCS = perl.c
+
 # The following are optional (non-core):
 #	btree.o
 #	crypt.o
@@ -262,7 +265,8 @@ config.status: configure
 	$(SHELL) ./config.status --recheck
 
 mostlyclean:
-	-$(RM) *.[oi] o$(TARGET) $(BUILTHDRS) $(MKTBLS) core *~ *.BAK
+	-$(RM) *.[oi] o$(TARGET) $(BUILTHDRS) $(BUILTSRCS) $(MKTBLS) \
+	    core *~ *.BAK
 
 clean: mostlyclean
 	-$(RM) $(TARGET) vile-manfilt vile-c-filt
@@ -449,11 +453,12 @@ populate:
 perl.c: $(srcdir)/perl.xs $(srcdir)/ptypemap
 	$(PERL) $(PERLLIB)/ExtUtils/xsubpp \
 		-typemap $(PERLLIB)/ExtUtils/typemap \
-		-typemap $(srcdir)/ptypemap \
+		-typemap ptypemap \
 		$(srcdir)/perl.xs > $@
 
 $(OBJ): estruct.h nemode.h edef.h neproto.h proto.h config.h
 
+api.o:		api.h
 bind.o:		nefunc.h btree.h
 btree.o:	btree.h
 eval.o:		nevars.h
@@ -466,10 +471,12 @@ main.o:		chgdfunc.h nevars.h
 modes.o:	chgdfunc.h nefsms.h
 opers.o:	nefunc.h
 path.o:		dirstuff.h
+perl.o:		api.h
 random.o:	nefunc.h
 select.o:	nefunc.h
 spawn.o:	nefunc.h
 tags.o:		btree.h
+tcap.o:		tcap.h
 termio.o:	nefunc.h
 version.o:	patchlev.h
 word.o:		nefunc.h

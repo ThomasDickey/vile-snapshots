@@ -1,3 +1,19 @@
+Changes for vile 7.4 (released ??? ??? ?, 1998)
+
+ (tom)	971217 (a)
+ 	+ add CF_CURSES_TERMCAP macro to test for prototypes in curses.h vs
+	  termcap.h
+ 	+ add variable $patchlevel.
+ 	+ updated README.CFG to list the newer options (reported by Ralphe
+	  Neill <ran@alumni.dgs.monash.edu.au>).
+ 	+ use CF_SIZECHANGE macro to eliminate a SCO-related hack in configure.
+ 	+ interpret --with-x option in configure-script (reported by Paul Fox).
+ 	+ add/use TYPECAST macro to quiet the "harmless" const warnings.
+ 	+ modify CF_IMAKE_CFLAGS macro to work with SGI's imake macros which
+	  combine the -I/usr/include and -nostdinc options, confusing gcc
+	  (reported by Billy Little <billy_little@hso.link.com>).
+	+ fixes for Perl-related rules in makefile.in (patch by Brendan O'Dea).
+
 Changes for vile 7.3 (released Mon Dec 8, 1997)
 
  (tom)	971207 (t)

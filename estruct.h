@@ -9,7 +9,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.330 1997/12/06 00:50:31 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.331 1997/12/17 00:02:40 tom Exp $
  */
 
 #ifdef HAVE_CONFIG_H
@@ -2168,6 +2168,12 @@ extern void _exit (int code);
 
 /* array/table size */
 #define	TABLESIZE(v)	(sizeof(v)/sizeof(v[0]))
+
+/* Quiet compiler warnings on places where we're being blamed incorrectly,
+ * e.g., for casting away const, or for alignment problems.  It's always
+ * legal to cast a pointer to long w/o loss of precision.
+ */
+#define TYPECAST(type,ptr) (type*)((long)(ptr))
 
 /* structure-allocate, for linting */
 #ifdef	lint

@@ -3,13 +3,14 @@
 
 	written 1986 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.152 1997/12/02 00:42:44 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.153 1997/12/17 01:37:58 tom Exp $
  *
  */
 
 #include	"estruct.h"
 #include	"edef.h"
 #include	"nevars.h"
+#include	"patchlev.h"
 
 #define	FUNC_NAMELEN	4
 
@@ -450,6 +451,7 @@ gtenv(const char *vname)	/* name of environment variable to retrieve */
 			}
 
 		ElseIf( EVDISCMD )	value = ltos(discmd);
+		ElseIf( EVPATCHLEVEL )	value = PATCHLEVEL;
 		ElseIf( EVVERSION )	value = version;
 		ElseIf( EVPROGNAME )	value = prognam;
 		ElseIf( EVOS )		value = opersys;
@@ -928,6 +930,7 @@ char *value)	/* value to set to */
 		Otherwise
 			/* EVABUFNAME */
 			/* EVPROGNAME */
+			/* EVPATCHLEVEL */
 			/* EVVERSION */
 			/* EVMATCH */
 			/* EVKILL */

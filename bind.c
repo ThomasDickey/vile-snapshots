@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.167 1997/11/30 21:08:13 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.168 1997/12/16 23:56:48 tom Exp $
  *
  */
 
@@ -83,7 +83,7 @@ static void
 old_namebst (BI_NODE *a)
 {
 	if (!a->value.n_readonly)
-		free((char *)BI_KEY(a));
+		free(TYPECAST(char,BI_KEY(a)));
 	free(a);
 }
 
@@ -414,7 +414,7 @@ const CMDFUNC **oldfunc)
 	reset_prefix(c, kcmd);
 
 	if (!isspecial(c)) {
-		asciitbl[c] = (CMDFUNC *)kcmd;
+		asciitbl[c] = TYPECAST(CMDFUNC,kcmd);
 	} else {
 		if ((kbp = kcode2kbind(c)) != 0) { /* change it in place */
 			kbp->k_cmd = kcmd;
@@ -1487,7 +1487,7 @@ SIZE_T n)
 static	/*ARGSUSED*/
 const char *	THIS_NAME(const char *p) { return 0; }
 #else
-#define	THIS_NAME(p)	(*(const char *const *)(p))
+#define	THIS_NAME(p)	(*TYPECAST(const char *const,p))
 #endif
 #define	NEXT_NAME(p)	THIS_NAME(NEXT_DATA(p))
 

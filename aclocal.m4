@@ -1,6 +1,6 @@
 dnl Local definitions for autoconf.
 dnl
-dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.41 1997/12/05 20:39:23 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.46 1997/12/17 23:35:01 tom Exp $
 dnl
 dnl ---------------------------------------------------------------------------
 dnl ---------------------------------------------------------------------------
@@ -239,6 +239,91 @@ AC_MSG_RESULT($cf_cv_have_term_h)
 test $cf_cv_have_term_h = yes && AC_DEFINE(HAVE_TERM_H)
 ])dnl
 dnl ---------------------------------------------------------------------------
+dnl Check if we should include <curses.h> to pick up prototypes for termcap
+dnl functions.  On terminfo systems, these are normally declared in <curses.h>,
+dnl but may be in <term.h>.  We check for termcap.h as an alternate, but it
+dnl isn't standard (usually associated with GNU termcap).
+dnl
+dnl The 'tgoto()' function is declared in both terminfo and termcap.
+AC_DEFUN([CF_CURSES_TERMCAP],
+[
+AC_REQUIRE([CF_CURSES_TERM_H])
+AC_MSG_CHECKING(if we should include curses.h or termcap.h)
+AC_CACHE_VAL(cf_cv_need_curses_h,[
+cf_save_CFLAGS="$CFLAGS"
+
+for cf_t_opts in "" "NEED_TERMCAP_H"
+do
+for cf_c_opts in "" "NEED_CURSES_H"
+do
+
+    CFLAGS="$cf_save_CFLAGS"
+    test -n "$cf_c_opts" && CFLAGS="$CFLAGS -D$cf_c_opts"
+    test -n "$cf_t_opts" && CFLAGS="$CFLAGS -D$cf_t_opts"
+
+cat >conftest.h <<EOF
+/* cut down on config.log by moving this to a separate file */
+#if NEED_CURSES_H
+# if HAVE_NCURSES_H
+#  include <ncurses.h>
+# else
+#  include <curses.h>
+# endif
+#endif
+#if HAVE_TERM_H
+# include <term.h>
+#endif
+#if NEED_TERMCAP_H
+# if HAVE_TERMCAP_H
+#  include <termcap.h>
+# endif
+#endif
+EOF
+
+    AC_TRY_LINK([#include "conftest.h" /* $cf_c_opts $cf_t_opts */],
+	[char *x = tgoto("")],
+	[cf_cv_need_curses_h=no],
+	[cf_cv_need_curses_h=yes])
+
+	CFLAGS="$cf_save_CFLAGS"
+	test "$cf_cv_need_curses_h" = yes && break
+done
+	test "$cf_cv_need_curses_h" = yes && break
+done
+if test "$cf_cv_need_curses_h" = yes ; then
+	echo "Curses/termcap test succeeded (C:$cf_c_opts, T:$cf_t_opts)" >&AC_FD_CC
+	if test -n "$cf_c_opts" ; then
+		if test -n "$cf_t_opts" ; then
+			cf_cv_need_curses_h=both
+		else
+			cf_cv_need_curses_h=curses.h
+		fi
+	elif test -n "$cf_t_opts" ; then
+		cf_cv_need_curses_h=termcap.h
+	elif test "$cf_cv_have_term_h" = yes ; then
+		cf_cv_need_curses_h=term.h
+	else 
+		cf_cv_need_curses_h=unknown
+	fi
+fi
+])
+AC_MSG_RESULT($cf_cv_need_curses_h)
+
+case $cf_cv_need_curses_h in
+both) #(vi
+	AC_DEFINE_UNQUOTED(NEED_CURSES_H)
+	AC_DEFINE_UNQUOTED(NEED_TERMCAP_H)
+	;;
+curses.h) #(vi
+	AC_DEFINE_UNQUOTED(NEED_CURSES_H)
+	;;
+termcap.h) #(vi
+	AC_DEFINE_UNQUOTED(NEED_TERMCAP_H)
+	;;
+esac
+
+])dnl
+dnl ---------------------------------------------------------------------------
 dnl You can always use "make -n" to see the actual options, but it's hard to
 dnl pick out/analyze warning messages when the compile-line is long.
 dnl
@@ -460,7 +545,7 @@ test "$prefix" != /usr/local     && $1="[$]$1 /usr/local/include /usr/local/incl
 test "$prefix" != /usr           && $1="[$]$1 /usr/include /usr/include/$2"
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl Use imake to obtain compiler flags.  We could, in principal, write tests to
+dnl Use imake to obtain compiler flags.  We could, in principle, write tests to
 dnl get these, but if imake is properly configured there is no point in doing
 dnl this.
 AC_DEFUN([CF_IMAKE_CFLAGS],
@@ -522,6 +607,41 @@ CF_EOF
 
 	cd ..
 	rm -rf conftestdir
+
+	# We use $(ALLDEFINES) rather than $(STD_DEFINES) because the former
+	# declares XTFUNCPROTO there.  However, some vendors (e.g., SGI) have
+	# modified it to support site.cf, adding a kludge for the /usr/include
+	# directory.  Try to filter that out, otherwise gcc won't find its
+	# headers.
+	if test -n "$GCC" ; then
+	    if test -n "$IMAKE_CFLAGS" ; then
+		cf_nostdinc=""
+		cf_std_incl=""
+		cf_cpp_opts=""
+		for cf_opt in $IMAKE_CFLAGS
+		do
+		    case "$cf_opt" in
+		    -nostdinc) #(vi
+			cf_nostdinc="$cf_opt"
+			;;
+		    -I/usr/include) #(vi
+			cf_std_incl="$cf_opt"
+			;;
+		    *) #(vi
+			cf_cpp_opts="$cf_cpp_opts $cf_opt"
+			;;
+		    esac
+		done
+		if test -z "$cf_nostdinc" ; then
+		    IMAKE_CFLAGS="$cf_cpp_opts $cf_std_incl"
+		elif test -z "$cf_std_incl" ; then
+		    IMAKE_CFLAGS="$cf_cpp_opts $cf_nostdinc"
+		else
+		    CF_VERBOSE(suppressed \"$cf_nostdinc\" and \"$cf_std_incl\")
+		    IMAKE_CFLAGS="$cf_cpp_opts"
+		fi
+	    fi
+	fi
 fi
 AC_SUBST(IMAKE_CFLAGS)
 ])dnl
@@ -921,6 +1041,68 @@ CF_OUTPUT_IF_CHANGED($cf_config_h,$2)
 rm -f $1 $cf_config_h
 ])dnl
 dnl ---------------------------------------------------------------------------
+dnl Check for definitions & structures needed for window size-changing
+dnl FIXME: check that this works with "snake" (HP-UX 10.x)
+AC_DEFUN([CF_SIZECHANGE],
+[
+AC_MSG_CHECKING([declaration of size-change])
+AC_CACHE_VAL(cf_cv_sizechange,[
+    cf_cv_sizechange=unknown
+    cf_save_CFLAGS="$CFLAGS"
+
+for cf_opts in "" "NEED_PTEM_H"
+do
+
+    CFLAGS="$cf_save_CFLAGS"
+    test -n "$cf_opts" && CFLAGS="$CFLAGS -D$cf_opts"
+    AC_TRY_COMPILE([#include <sys/types.h>
+#if HAVE_TERMIOS_H
+#include <termios.h>
+#else
+#if HAVE_TERMIO_H
+#include <termio.h>
+#endif
+#endif
+#if NEED_PTEM_H
+/* This is a workaround for SCO:  they neglected to define struct winsize in
+ * termios.h -- it's only in termio.h and ptem.h
+ */
+#include        <sys/stream.h>
+#include        <sys/ptem.h>
+#endif
+#if !defined(sun) || !defined(HAVE_TERMIOS_H)
+#include <sys/ioctl.h>
+#endif
+],[
+#ifdef TIOCGSIZE
+	struct ttysize win;	/* FIXME: what system is this? */
+	int y = win.ts_lines;
+	int x = win.ts_cols;
+#else
+#ifdef TIOCGWINSZ
+	struct winsize win;
+	int y = win.ws_row;
+	int x = win.ws_col;
+#else
+	no TIOCGSIZE or TIOCGWINSZ
+#endif /* TIOCGWINSZ */
+#endif /* TIOCGSIZE */
+	],
+	[cf_cv_sizechange=yes],
+	[cf_cv_sizechange=no])
+
+	CFLAGS="$cf_save_CFLAGS"
+	if test "$cf_cv_sizechange" = yes ; then
+		echo "size-change succeeded ($cf_opts)" >&AC_FD_CC
+		test -n "$cf_opts" && AC_DEFINE_UNQUOTED($cf_opts)
+		break
+	fi
+done
+	])
+AC_MSG_RESULT($cf_cv_sizechange)
+test $cf_cv_sizechange != no && AC_DEFINE(HAVE_SIZECHANGE)
+])dnl
+dnl ---------------------------------------------------------------------------
 dnl Check for declaration of sys_nerr and sys_errlist in one of stdio.h and
 dnl errno.h.  Declaration of sys_errlist on BSD4.4 interferes with our
 dnl declaration.  Reported by Keith Bostic.
@@ -934,28 +1116,38 @@ done
 dnl ---------------------------------------------------------------------------
 dnl Check for return and param type of 3rd -- OutChar() -- param of tputs().
 AC_DEFUN([CF_TYPE_OUTCHAR],
-[AC_MSG_CHECKING([declaration of tputs 3rd param])
+[
+AC_REQUIRE([CF_CURSES_TERMCAP])
+
+AC_MSG_CHECKING([declaration of tputs 3rd param])
 AC_CACHE_VAL(cf_cv_type_outchar,[
+
 cf_cv_type_outchar="int OutChar(int)"
 cf_cv_found=no
+
 for P in int void; do
 for Q in int void; do
 for R in int char; do
 for S in "" const; do
-	AC_TRY_COMPILE([
-#ifdef USE_TERMINFO
-#include <curses.h>
+
+cat >conftest.h <<EOF
+/* cut down on config.log by moving this to a separate file */
+#ifdef NEED_CURSES_H
+# if HAVE_NCURSES_H
+#  include <ncurses.h>
+# else
+#  include <curses.h>
+# endif
+#endif
 #if HAVE_TERM_H
-#include <term.h>
+# include <term.h>
 #endif
-#else
-#if HAVE_CURSES_H
-#include <curses.h>	/* FIXME: this should be included only for terminfo */
+#if NEED_TERMCAP_H
+# include <termcap.h>
 #endif
-#if HAVE_TERMCAP_H
-#include <termcap.h>
-#endif
-#endif ],
+EOF
+
+	AC_TRY_COMPILE([#include "conftest.h"],
 	[extern $Q OutChar($R);
 	extern $P tputs ($S char *string, int nlines, $Q (*_f)($R));
 	tputs("", 1, OutChar)],
