@@ -3,7 +3,7 @@
  *	Original interface by Otto Lind, 6/3/93
  *	Additional map and map! support by Kevin Buettner, 9/17/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/map.c,v 1.83 1998/10/24 15:56:04 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/map.c,v 1.84 1998/11/10 23:21:43 tom Exp $
  *
  */
 
@@ -275,7 +275,7 @@ map_common(struct maprec **mpp, const char *bufname, UINT remapflag)
 	    status = kbd_reply("to this new string: ", &val, eol_history,
 			'\n', KBD_NOMAP, no_completion);
     } else {
-	    (void)macliteralarg(&val); /* consume to end of line */
+	    (void)mac_literalarg(&val); /* consume to end of line */
 	    status = tb_length(val) > 1;
     }
     if (status != TRUE)

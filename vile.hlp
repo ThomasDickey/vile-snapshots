@@ -2220,6 +2220,8 @@ Programmed procedures and macros
 	~break
 	~endwhile
 
+	~local vars	save specified variable(s), restore at end of macro
+
 	~endm		End a macro
 
 	Line Labels begin with a "*" as the first nonblank char, like:
@@ -3903,4 +3905,4 @@ Problems
 
 Copyright 1995,1996,1997 by Paul Fox, Tom Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.377 1998/11/06 11:26:43 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.378 1998/11/11 02:16:21 tom Exp $

@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.313 1998/11/06 11:14:16 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.315 1998/11/11 02:42:43 bod Exp $
  *
  */
 
@@ -57,6 +57,7 @@ extern int xterm_mouse_T (int f, int n);
 extern	void	perl_default_region(void);
 extern	void	perl_free_handle(void *);
 extern	void	perl_free_callback(char *);
+extern	void	perl_exit(void);
 #if OPT_NAMEBST
 extern	int	perl_call_sub(void *, int, int, int);
 extern	void	perl_free_sub(void *);
@@ -270,12 +271,19 @@ extern char *get_shell(void);
 extern char *l_itoa (int i);
 extern char *mklower (char *str);
 extern char *mktrimmed (char *str);
+extern const char * get_token (const char *src, char *tok, int eolchar);
+extern const char * tokval (const char *tokn);
 extern const char *skip_cblanks (const char *str);
 extern const char *skip_cstring (const char *str);
 extern const char *skip_ctext (const char *str);
 extern int absol (int x);
 extern int is_falsem (const char *val);
 extern int is_truem (const char *val);
+extern int mac_literalarg (TBUFF **tok);
+extern int mac_token(char *tok);
+extern int mac_tokval (char *tok);
+extern int macroize (TBUFF **p, TBUFF *src, int skip);
+extern int toktyp (const char *tokn);
 
 #ifdef const
 #define skip_blanks(s) skip_cblanks(s)
@@ -290,6 +298,7 @@ extern char *skip_text (char *str);
 #if OPT_EVAL
 extern LINEPTR label2lp (BUFFER *bp, const char *label);
 extern char *gtenv (const char *vname);
+extern int   rmenv(const char *name);
 extern int   set_variable (const char *name);
 extern int   stenv(const char *name, const char *value);
 #endif
@@ -974,8 +983,6 @@ extern BUFFER * pop_fake_win(WINDOW *oldwp);
 #endif
 
 /* word.c */
-extern const char * token (const char *src, char *tok, int eolchar);
-extern const char * tokval (const char *tokn);
 extern int ffgetline (int *lenp);
 extern int formatregion (void);
 extern int isendviwordf (void);
@@ -985,10 +992,6 @@ extern int isnewviwordf (void);
 extern int isnewwordb (void);
 extern int isnewwordf (void);
 extern int joinregion (void);
-extern int macarg (char *tok);
-extern int macliteralarg (TBUFF **tok);
-extern int macroize (TBUFF **p, TBUFF *src, int skip);
-extern int toktyp (const char *tokn);
 extern void fmatch (int rch);
 extern void setchartype (void);
 

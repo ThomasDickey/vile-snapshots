@@ -13,7 +13,7 @@
  * vile.  The file api.c (sometimes) provides a middle layer between
  * this interface and the rest of vile.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.30 1998/09/28 00:50:30 Kuntal.Daftary Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.31 1998/11/11 02:42:06 bod Exp $
  */
 
 /*#
@@ -975,6 +975,17 @@ perl_init(void)
     /* Load user or system wide initialization script */
     require("vileinit.pl", TRUE);
     return TRUE;
+}
+
+/* make sure END blocks and destructors get called */
+void perl_exit()
+{
+    if (!perl_interp)
+	return;
+
+    perl_run(perl_interp);	/* process END blocks */
+    perl_destruct(perl_interp);	/* global destructors */
+    perl_free(perl_interp);
 }
 
 /* Register any extra external extensions */

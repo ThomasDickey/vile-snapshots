@@ -18,7 +18,7 @@
  * transferring the selection are not dealt with in this file.  Procedures
  * for dealing with the representation are maintained in this file.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.83 1998/11/06 11:14:31 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.85 1998/11/11 02:26:01 tom Exp $
  *
  */
 
@@ -1513,6 +1513,7 @@ attribute_from_filter(void)
 
     if (open_region_filter()) {
 
+	free_attribs(curbp);
 	while (DOT.l != pastline) {
 
 	    if ((s=ffgetline(&nbytes)) > FIOSUC)
@@ -1533,6 +1534,7 @@ attribute_from_filter(void)
 				(void) attributeregion();
 			}
 			DOT = MK;
+			DOT.o -= 1;
 		    }
 		}
 		DOT.o += 1;

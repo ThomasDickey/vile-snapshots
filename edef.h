@@ -8,7 +8,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.231 1998/10/25 01:04:16 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.232 1998/11/07 16:41:43 tom Exp $
  */
 
 #ifndef VILE_EDEF_H
@@ -141,7 +141,7 @@ decl_uninit( char exithook[NBUFN] );	/* proc to run when exiting */
 decl_uninit( regexp *gregexp );		/* compiled version of pat */
 
 /* patmatch holds the string that satisfied the search command.  */
-decl_uninit( char *patmatch );
+decl_uninit( TBUFF *patmatch );
 
 decl_uninit( int ignorecase );
 

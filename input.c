@@ -44,7 +44,7 @@
  *	tgetc_avail()     true if a key is avail from tgetc() or below.
  *	keystroke_avail() true if a key is avail from keystroke() or below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.188 1998/09/07 21:10:06 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.189 1998/11/11 01:55:49 tom Exp $
  *
  */
 
@@ -1302,7 +1302,7 @@ int (*complete)(DONE_ARGS))	/* handles completion */
 	tb_unput(*extbuf);	/* FIXME: trim null */
 
 	if (clexec) {
-		execstr = token(execstr, tbreserve(extbuf), eolchar);
+		execstr = get_token(execstr, tbreserve(extbuf), eolchar);
 		StrToBuff(*extbuf); /* FIXME: token should use TBUFF */
 		status = (tb_length(*extbuf) != 0);
 		if (status) { /* i.e. we got some input */
