@@ -3,7 +3,7 @@
  * characters, and write characters in a barely buffered fashion on the display.
  * All operating systems.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/termio.c,v 1.160 1999/01/25 01:23:46 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/termio.c,v 1.161 1999/01/31 23:24:54 cmorgan Exp $
  *
  */
 #include	"estruct.h"
@@ -892,8 +892,7 @@ read_vms_tty(int length)
 	if (iosb.status == SS$_ENDOFFILE)
 		tidy_exit(status);
 
-		/* FIXME: check documentation */
-	nibuf = iosb.count + (iosb.dev_dep_data >> 16);
+	nibuf = iosb.count;
 	ibufi = 0;
 }
 #endif

@@ -3,7 +3,7 @@
  *	Original interface by Otto Lind, 6/3/93
  *	Additional map and map! support by Kevin Buettner, 9/17/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/map.c,v 1.84 1998/11/10 23:21:43 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/map.c,v 1.85 1999/02/01 11:19:49 tom Exp $
  *
  */
 
@@ -492,6 +492,8 @@ delfrommap(struct maprec **mpp, const char * ks)
 #define INPUT_FROM_MAPGETC 2
 
 static ITBUFF *sysmappedchars = NULL;
+static ITBUFF *mapgetc_ungottenchars = NULL;
+static int mapgetc_ungotcnt = 0;
 
 static void
 save_keystroke(int c)
@@ -584,12 +586,9 @@ sysmapped_c(void)
 int
 sysmapped_c_avail(void)
 {
-    return itb_more(sysmappedchars) || TTtypahead();
+    return itb_more(sysmappedchars) || (!mapgetc_ungotcnt && TTtypahead());
 }
 
-
-static ITBUFF *mapgetc_ungottenchars = NULL;
-static int mapgetc_ungotcnt = 0;
 
 /* make the assumption that no input will magically appear
  * (un)available to tgetc in between a mapungetc and the next mapgetc.

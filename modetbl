@@ -11,7 +11,7 @@
 #
 # The modes are table entries in the BUFFER and WINDOW structures.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.106 1998/12/29 23:50:03 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.108 1999/02/01 02:46:07 tom Exp $
 #
 #
 # Mode-table entries.  Capitalized letters are used for abbreviations.
@@ -54,6 +54,7 @@ bool							# GMD prefix
 enum
 	"fcolor"	FCOLOR		chgd_color	OPT_COLOR	# foreground color
 	"bcolor"	BCOLOR		chgd_color	OPT_COLOR	# background color
+	"mcolor"	MCOLOR		chgd_hilite	OPT_HILITEMATCH # modeline color
 	"Mini-Hilite"   MINI_HILITE	0		# highlight minibuffer when using vi-commands
 	"Popup-Choices"	POPUP_CHOICES	0		OPT_POPUPCHOICE&&OPT_ENUM_MODES # popup buffer showing file-completion choices
 int							# VAL_ prefix

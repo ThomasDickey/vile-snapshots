@@ -1,7 +1,7 @@
 ------------------------
 vile bug/enhancement/wish list (mostly wishes ;-)
 ------------------------
-$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.351 1998/11/30 01:24:12 tom Exp $
+$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.352 1999/02/01 02:40:33 tom Exp $
 ----------------------
 	(E means enhancement, L,M,H are low, medium, high priority)
 
@@ -1013,10 +1013,6 @@ fake scrolling in the general direction of the mouse.
 
 should cut-down the special-case for VMS $PATH, possibly merging with
 $search-path.
-
--- 97-01-15 (tom)
-
-allow modelines to be colored (i.e., separately from the window contents)
 
 -- 97-01-17 (tom)
 

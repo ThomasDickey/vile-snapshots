@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.131 1999/01/23 13:43:43 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.133 1999/02/01 02:55:41 tom Exp $
  *
  */
 
@@ -729,9 +729,10 @@ struct FSM fsm_tbl[] = {
 	{ "backup-style",    fsm_backup_choices },
 #endif
 #if OPT_HILITE_CHOICES
+	{ "mcolor",          fsm_hilite_choices },
 	{ "visual-matches",  fsm_hilite_choices },
-#endif
 	{ "mini-hilite",     fsm_hilite_choices },
+#endif
 #if SYS_VMS
 	{ "record-format",   fsm_recordformat_choices },
 #endif
@@ -1656,8 +1657,13 @@ chgd_xterm(VALARGS *args GCC_UNUSED, int glob_vals, int testing GCC_UNUSED)
 int
 chgd_hilite(VALARGS *args GCC_UNUSED, int glob_vals GCC_UNUSED, int testing)
 {
-	if (!testing)
+	if (!testing) {
 		attrib_matches();
+#if OPT_COLOR
+		set_winflags(glob_vals, WFHARD|WFCOLR);
+		vile_refresh(FALSE,0);
+#endif
+	}
 	return TRUE;
 }
 

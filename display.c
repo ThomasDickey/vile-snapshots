@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.267 1998/12/14 11:51:17 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.268 1999/02/01 02:43:00 tom Exp $
  *
  */
 
@@ -2727,7 +2727,10 @@ modeline(WINDOW *wp)
 	else
 	    attr = VAML;
 #if	OPT_REVSTA
-	attr |= VAREV;
+	if (global_g_val(GVAL_MCOLOR) & VASPCOL)
+	    attr |= VCOLORATTR(global_g_val(GVAL_MCOLOR) & 0xf);
+	else
+	    attr |= global_g_val(GVAL_MCOLOR);
 #endif
 	vscreen[n]->v_flag |= VFCHG;
 	set_vattrs(n, 0, attr, term.t_ncol);

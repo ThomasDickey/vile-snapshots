@@ -18,7 +18,7 @@
  * transferring the selection are not dealt with in this file.  Procedures
  * for dealing with the representation are maintained in this file.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.91 1998/12/01 02:43:38 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.92 1999/02/01 00:16:20 tom Exp $
  *
  */
 
@@ -578,6 +578,17 @@ selectregion(void)
 	return status;
 }
 
+void
+do_sweep(int flag)
+{
+	if (doingsweep != flag) {
+		if ((flag && !doingsweep)
+		 || (!flag && doingsweep))
+			TTcursor(!flag);
+		doingsweep = flag;
+	}
+}
+
 static void
 sweepmsg(const char *msg)
 {
@@ -591,7 +602,7 @@ release_selection(int status)
 {
 	TRACE(("MOUSE release selection\n"))
 	if (doingsweep) {
-		doingsweep = FALSE;
+		do_sweep(FALSE);
 		if (status != TRUE)
 			mlforce("[Sweeping: Aborted]");
 		else
@@ -727,8 +738,7 @@ on_mouse_click(int button, int y, int x)
 					y = first_y;
 					x = first_x;
 				}
-				TTcursor(TRUE);
-				doingsweep = SORTOFTRUE;
+				do_sweep(SORTOFTRUE);
 				(void)sel_begin();
 				(void)sel_setshape(EXACT);
 				status = setcursor(y, x);
@@ -797,8 +807,7 @@ multimotion(int f, int n)
 	switch (doingsweep) {
 	case TRUE:	/* the same command terminates as starts the sweep */
 		if (doingsweep) {
-			TTcursor(TRUE);
-			doingsweep = FALSE;
+			do_sweep(FALSE);
 		}
 		mlforce("[Sweeping: Completed]");
 		regionshape = shape;
@@ -812,8 +821,7 @@ multimotion(int f, int n)
 		return TRUE;
 	case SORTOFTRUE:
 		if (doingsweep != TRUE) {
-			TTcursor(FALSE);
-			doingsweep = TRUE;
+			do_sweep(TRUE);
 		}
 		sweepmsg("Begin cursor sweep...");
 		sel_extend(TRUE,(regionshape != RECTANGLE && sweephack));
@@ -824,8 +832,7 @@ multimotion(int f, int n)
 		break;
 	case FALSE:
 		if (doingsweep != TRUE) {
-			TTcursor(FALSE);
-			doingsweep = TRUE;
+			do_sweep(TRUE);
 		}
 		sweepmsg("Begin cursor sweep...");
 		(void)sel_begin();
@@ -880,7 +887,7 @@ multimotion(int f, int n)
 				/* FALLTHRU */
 
 			case SEL_FINISH:
-				doingsweep = FALSE;
+				do_sweep(FALSE);
 				break;
 
 			case SORTOFTRUE:

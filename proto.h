@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.325 1999/01/23 13:42:37 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.326 1999/02/01 00:17:10 tom Exp $
  *
  */
 
@@ -806,6 +806,7 @@ extern	int	attributeregion_in_region(REGION *rp, REGIONSHAPE shape,
 extern	int	sel_begin	(void);
 extern	int	sel_extend	(int wiping, int include_dot);
 extern	int	sel_setshape	(REGIONSHAPE shape);
+extern	void	do_sweep	(int flag);
 extern	void	find_release_attr (BUFFER *bp, REGION *rp);
 extern	void	free_attrib	(BUFFER *bp, AREGION *ap);
 extern	void	free_attribs	(BUFFER *bp);
