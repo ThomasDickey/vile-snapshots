@@ -69,9 +69,9 @@ WIN32 information (Windows NT and 95):
 --------------------------------------
 either Visual C++ or the Borland compiler can be used. see the makefiles
 for details.  the screen driver is ntconio.c -- this is a console-mode
-only port.  as of vile 7.3, a simple gui (ntwinio.c) is provided.  we
-plan to do more work before vile 8.0 to fill out the functionality to
-make it like the other implementations of vile.
+only port.  as of vile 7.3, a simple gui (ntwinio.c) is provided.  we plan
+to do more work to fill out the functionality to make it like the other
+implementations of vile (e.g., scrollbars and menus).
 
 
 --------------------------------------------------------
@@ -81,5 +81,5 @@ tom dickey, dickey@clark.net
 paul fox, pgf@foxharp.boston.ma.us (home)
 
 ------------------------
-$Header: /users/source/archives/vile.vcs/RCS/README.PC,v 1.13 1997/12/12 23:30:16 tom Exp $
+$Header: /users/source/archives/vile.vcs/RCS/README.PC,v 1.14 1998/04/30 23:46:59 tom Exp $
 ------------------------

@@ -1,6 +1,6 @@
-revlist for vile, version v7_3za
+revlist for vile, version v7_4
 --------------------------------------------------------------------------------
-CHANGES	1.150
+CHANGES	1.151
 CHANGES.R3	1.1
 CHANGES.R4	1.1
 CHANGES.R5	1.1
@@ -8,10 +8,10 @@ CHANGES.R6	1.1
 COPYING	1.1
 INSTALL	1.5
 MANIFEST	none
-README	1.62
+README	1.63
 README.CFG	1.13
 README.MENU	1.7
-README.PC	1.13
+README.PC	1.14
 aclocal.m4	1.54
 ansi.c	1.32
 api.c	1.12
@@ -39,12 +39,12 @@ dirstuff.h	1.23
 display.c	1.247
 djhandl.c	1.6
 dumbterm.c	1.12
-edef.h	1.222
-estruct.h	1.347
+edef.h	1.223
+estruct.h	1.348
 eval.c	1.158
 exec.c	1.155
 externs.c	1.6
-fences.c	1.46
+fences.c	1.47
 file.c	1.225
 filec.c	1.81
 fileio.c	1.125
@@ -64,7 +64,7 @@ itbuff.c	1.12
 lckfiles.c	1.8
 line.c	1.111
 macros.doc	1.13
-main.c	1.318
+main.c	1.319
 makefile.blc	1.7
 makefile.djg	1.24
 makefile.emx	1.2
@@ -79,7 +79,7 @@ manpage.rc	1.2
 map.c	1.81
 menu.c	1.19
 mkdirs.sh	1.2
-mktbls.c	1.85
+mktbls.c	1.86
 modes.c	1.115
 modes.doc	1.2
 modetbl	1.95
@@ -93,7 +93,7 @@ os2keys.h	1.1
 os2pipe.c	1.4
 os2vio.c	1.18
 pas-filt.c	1.1
-patchlev.h	1.106
+patchlev.h	1.107
 path.c	1.83
 perl-api.doc	1.1
 perl.xs	1.12
@@ -104,7 +104,7 @@ ptypemap	1.5
 random.c	1.191
 regexp.c	1.65
 region.c	1.87
-revlist	v7_3za
+revlist	v7_4
 search.c	1.110
 select.c	1.67
 shell.pl	1.2
@@ -120,17 +120,17 @@ trace.h	1.6
 undo.c	1.69
 version.c	1.36
 vile.1	1.17
-vile.hlp	1.349
+vile.hlp	1.350
 visit.pl	1.2
 vms2unix.c	1.31
-vmsbuild.com	1.17
+vmsbuild.com	1.18
 vmspipe.c	1.12
 vmsvt.c	1.33
 w32cbrd.c	1.3
 w32pipe.c	1.7
 watch.c	1.2
 window.c	1.81
-word.c	1.61
+word.c	1.62
 wordmov.c	1.19
-x11.c	1.177
+x11.c	1.178
 xshell.sh	1.4

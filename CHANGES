@@ -1,4 +1,15 @@
-Changes for vile 7.4 (released ??? ??? ?, 1998)
+Changes for vile 7.4 (released Fri May 1, 1998)
+
+ (tom) 980501
+	+ change table lookups in match_complex() and global_val_init() to
+	  work with CSet.
+ 	+ change WATCHTYPE from an enum to an unsigned int, since TurboC did
+	  not accept that in prototypes.
+	+ increase LEN_BUFFER in mktbls.c to accommodate renaming of VI_NL
+	  (caused compile problem with Solaris 2.5.1 cc, but is still limited
+	  to allow test-compiles with TurboC).
+	+ make declarations of x_watchfd() x_unwatchfd() consistent, to compile
+	  with unproto on SunOS 4.x
 
  (kev) 980429 (za)
 	+ finderr.c (predefined): Add hgrep pattern to the predefined
