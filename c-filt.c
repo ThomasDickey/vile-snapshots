@@ -5,7 +5,7 @@
  * Modifications:  kevin buettner and paul fox  2/95
  * 		string literal ("Literal") support --  ben stoltz
  * 
- * $Header: /users/source/archives/vile.vcs/RCS/c-filt.c,v 1.2 1997/03/14 10:37:33 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/c-filt.c,v 1.3 1997/03/20 18:03:04 cmorgan Exp $
  *
  * Features:
  * 	- Reads the keyword file ".vile.keywords" from the home directory.
@@ -140,12 +140,15 @@ extern	int	sscanf	( const char *src, const char *fmt, ... );
 
 #include <ctype.h>
 
-
 #define MAX_KEYWORD_LENGTH 80
 #define HASH_LENGTH 256
 #define MAX_LINELENGTH 256
 #define MAX_ATTR_LENGTH 3
+#ifndef _WIN32
 static char *keyword_file=".vile.keywords";
+#else
+static char *keyword_file="vile.keywords";
+#endif
 
 typedef struct _keyword KEYWORD;
 

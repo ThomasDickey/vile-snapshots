@@ -1,7 +1,7 @@
 ------------------------
 vile bug/enhancement/wish list (mostly wishes ;-)
 ------------------------
-$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.322 1997/03/01 02:11:23 tom Exp $
+$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.324 1997/03/22 16:59:55 tom Exp $
 ----------------------
 	(E means enhancement, L,M,H are low, medium, high priority)
 
@@ -287,17 +287,6 @@ tabs in other lines.
 
 
 -------------------------
-
-2) When I use the MKS "fmt" program to format a paragraph in vile, a
-   tmp file (aaxxx.tmp) is always dropped out in my current working
-   directory.  This was not a problem in the previous version of PCVILE
-   (the one I compiled with Turbo C++).
-
-    I.E., when I exit vile43 after using the fmt command, I've got a temp
-    file called "aaac1.tmp" (for example) in my current working directory.
-    It's annoying.
-
------------------------------
 
 I'm using the DOS version and I prefer to use 80x28 or even higher res like
 80x50 by setting set sres=80x50 in vile.rc.  The problem is that when a
@@ -1269,3 +1258,12 @@ in glob.c
 
 [I believe he's suggesting it be installed this way - tom]
 
+-- 97-03-22 (tom)
+
+Mixing color with visual-matches is ok, but there's two problems (so I've
+ifdef'd it with FIXME_VM):
+
+	+ it's not implemented for anything except ntconio.c
+
+	+ it won't work properly with the name-completion logic, since the
+	  extended table isn't sorted.

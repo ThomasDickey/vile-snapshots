@@ -1,12 +1,12 @@
 #
 # makefile for vile on WIN32 using Microsoft Visual C++
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.wnt,v 1.13 1997/01/10 11:07:43 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.wnt,v 1.15 1997/03/22 17:00:43 tom Exp $
 #
 #
 !include <ntwin32.mak>
 
-CFLAGS = $(cvars) $(cdebug) -nologo -DWIN32_LEAN_AND_MEAN -G4 -Dscrn_chosen 
+CFLAGS = $(cvars) $(cdebug) -nologo -DFIXME_VM -DWIN32_LEAN_AND_MEAN -G4 -Dscrn_chosen 
 LDFLAGS = -nologo -pdb:none
 
 # these are normal editable headers
@@ -41,6 +41,8 @@ OBJ = 	main.obj ntconio.obj basic.obj bind.obj buffer.obj crypt.obj \
 .c.obj:	
 	$(cc) $(CFLAGS) -c $< -Fo$@ 
 
+all:  vile.exe vile-c-filt.exe
+
 vile.exe: 	$(BUILTHDRS) $(OBJ)
 	$(link) $(LDFLAGS) $(OBJ) $(ldebug) $(conlflags) $(conlibs) -out:vile.exe user32.lib
 
@@ -58,8 +60,14 @@ nemode.h:	modetbl mktbls.exe
 mktbls.exe:  mktbls.c
 	$(cc) $(CFLAGS) mktbls.c -Fomktbls -link $(LDFLAGS)
 
+vile-c-filt.exe: c-filt.c
+	$(cc) $(CFLAGS) c-filt.c \
+    -Fovile-c-filt -link $(LDFLAGS)
+
 clean:
 	del mktbls.exe
+	del vile.exe
+	del vile-c-filt.exe
 	del *.obj
 	del ne*.h
 

@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 console API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntconio.c,v 1.20 1997/02/08 12:42:05 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntconio.c,v 1.21 1997/03/20 18:03:04 cmorgan Exp $
  *
  */
 
@@ -180,6 +180,7 @@ ntspal(char *thePalette)	/* reset the palette registers */
 
 static void
 scflush(void)
+
 {
 	if (bufpos) {
 		COORD coordCursor;
@@ -318,8 +319,18 @@ ntrev(int reverse)		/* change reverse video state */
 {
 	scflush();
 	if (reverse) {
-		cbcolor = nfcolor;
-		cfcolor = nbcolor;
+		if (reverse == VABOLD)
+			cfcolor |= FOREGROUND_INTENSITY;
+		else if (reverse == VAITAL)
+			cbcolor |= BACKGROUND_INTENSITY;
+		else if (reverse & VACOLOR)
+			cfcolor = ((VCOLORNUM(reverse)) & (NCOLORS - 1));
+		else if (reverse & VASPCOL)
+			cfcolor = (reverse & (NCOLORS - 1));
+		else {  /* all other states == reverse video */
+			cbcolor = nfcolor;
+			cfcolor = nbcolor;
+		}
 	}
 	else {
 		cbcolor = nbcolor;
