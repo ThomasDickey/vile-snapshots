@@ -1,12 +1,12 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_REVISION($Revision: 1.167 $)
+AC_REVISION($Revision: 1.168 $)
 AC_PREREQ(2.12.971222)
 rm -f config.cache
 
 ### Use "configure -with-screen" to override the default configuration, which is
 ### termcap-based on unix systems.
 
-dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.167 2002/01/10 21:19:18 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.168 2002/01/20 15:54:01 tom Exp $
 
 dnl
 AC_INIT(mktbls.c)
@@ -359,7 +359,7 @@ case "$screen" in
 	[[mM]]otif* | [[Xx]]m )
 		AC_DEFINE(MOTIF_WIDGETS)
 		CF_X_MOTIF
-	 	test "$cf_extensions" = yes && EXTRAOBJS="$EXTRAOBJS menu.o"
+	 	test "$cf_extensions" = yes && EXTRAOBJS="$EXTRAOBJS x11menu.o menu.o"
 	 	test "$cf_extensions" = no && EXTRAOBJS="$EXTRAOBJS select.o"
 	;;
 	[[Aa]]thena* | [[Xx]]aw* | neXtaw )
@@ -370,7 +370,7 @@ case "$screen" in
 			;;
 		esac
 		CF_X_ATHENA
-	 	test "$cf_extensions" = yes && EXTRAOBJS="$EXTRAOBJS menu.o"
+	 	test "$cf_extensions" = yes && EXTRAOBJS="$EXTRAOBJS x11menu.o menu.o"
 	 	test "$cf_extensions" = no && EXTRAOBJS="$EXTRAOBJS select.o"
 	;;
 	x | X | [[Xx]][[Tt]]* | [[Xx]]11 )

@@ -15,7 +15,7 @@
  * by Tom Dickey, 1993.    -pgf
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/mktbls.c,v 1.118 2001/12/25 15:41:57 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/mktbls.c,v 1.120 2002/01/19 16:41:48 tom Exp $
  *
  */
 
@@ -1833,7 +1833,7 @@ dump_wmodes(void)
 static void
 mkw32binding(char *key, char *defn, char *conditional, char *func, char *fcond)
 {
-#define KEYTOKEN "W32_KEY"
+#define KEYTOKEN "mod_KEY"
 
     char *cp = key, *match, *tmp, *defp, cum_defn[512];
     int nomore_keys, saw_modifier;
@@ -1847,21 +1847,21 @@ mkw32binding(char *key, char *defn, char *conditional, char *func, char *fcond)
 	    *tmp = '\0';
 	match = NULL;
 	if (stricmp(cp, "shift") == 0) {
-	    match = "W32_SHIFT";
+	    match = "mod_SHIFT";
 	    nomore_keys = 0;	/* Okay to stack modifiers */
 	    saw_modifier = 1;
 	} else if (stricmp(cp, "alt") == 0) {
-	    match = "W32_ALT";
+	    match = "mod_ALT";
 	    nomore_keys = 0;	/* Okay to stack modifiers */
 	    saw_modifier = 1;
 	} else if (stricmp(cp, "ctrl") == 0) {
-	    match = "W32_CTRL";
+	    match = "mod_CTRL";
 	    nomore_keys = 0;	/* Okay to stack modifiers */
 	    saw_modifier = 1;
 	} else if (stricmp(cp, "insert") == 0)
-	    match = "VK_INSERT";
+	    match = "KEY_Insert";
 	else if (stricmp(cp, "delete") == 0)
-	    match = "VK_DELETE";
+	    match = "KEY_Delete";
 	if (match) {
 	    defp += sprintf(defp, "|%s", match);
 	    if (!tmp)

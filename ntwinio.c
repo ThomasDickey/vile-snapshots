@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 screen API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.120 2002/01/09 20:23:34 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.122 2002/01/19 16:38:26 tom Exp $
  * Written by T.E.Dickey for vile (october 1997).
  * -- improvements by Clark Morgan (see w32cbrd.c, w32pipe.c).
  */
@@ -796,8 +796,8 @@ GetMyFont(VIDEO_ATTR attr)
 	return GetMyFont(VAUL);
     } else if (!MyFonts[n].used) {
 	LOGFONT logfont = vile_logfont;
-	logfont.lfItalic = (BYTE) (attr & VAITAL) != 0;
-	logfont.lfUnderline = (BYTE) (attr & VAUL) != 0;
+	logfont.lfItalic = (BYTE) ((attr & VAITAL) != 0);
+	logfont.lfUnderline = (BYTE) ((attr & VAUL) != 0);
 	if (attr & VABOLD)
 	    logfont.lfWeight = FW_SEMIBOLD;
 	if ((MyFonts[n].font = CreateFontIndirect(&logfont)) != 0) {
@@ -1747,8 +1747,8 @@ decode_key_event(KEY_EVENT_RECORD * irp)
 	     * SHIFT+6 - This is actually '^^' -- leave it alone.
 	     * SHIFT+2 - This is actually '^@' -- leave it alone.
 	     */
-	    if ((keyp->windows == VK_F4 &&
-		 (state & (LEFT_ALT_PRESSED | RIGHT_ALT_PRESSED)))
+	    if ((keyp->windows == VK_F4
+		 && (state & (LEFT_ALT_PRESSED | RIGHT_ALT_PRESSED)))
 		|| (keyp->windows == '6' && (state & SHIFT_PRESSED))
 		|| (keyp->windows == '@' && (state & SHIFT_PRESSED))
 		|| (keyp->windows == '2' && (state & SHIFT_PRESSED))) {
@@ -1757,12 +1757,10 @@ decode_key_event(KEY_EVENT_RECORD * irp)
 	    }
 
 	    /*
-	     * If this key is modified in some way, we'll prefer to use the
-	     * Win32 definition.  But only for the modifiers that we
-	     * recognize.  Specifically, we don't care about ENHANCED_KEY,
-	     * since we already have portable pageup/pagedown and arrow key
-	     * bindings that would be lost if we used the Win32-only
-	     * definition.
+	     * Add the modifiers that we recognize.  Specifically, we don't
+	     * care about ENHANCED_KEY, since we already have portable
+	     * pageup/pagedown and arrow key bindings that would be lost if we
+	     * used the Win32-only definition.
 	     */
 	    if (state &
 		(LEFT_CTRL_PRESSED
@@ -1770,16 +1768,18 @@ decode_key_event(KEY_EVENT_RECORD * irp)
 		 | LEFT_ALT_PRESSED
 		 | RIGHT_ALT_PRESSED
 		 | SHIFT_PRESSED)) {
-		key = W32_KEY | keyp->windows;
+		key = mod_KEY | keyp->vile;
 		if (state & (LEFT_CTRL_PRESSED | RIGHT_CTRL_PRESSED))
-		    key |= W32_CTRL;
+		    key |= mod_CTRL;
 		if (state & (LEFT_ALT_PRESSED | RIGHT_ALT_PRESSED))
-		    key |= W32_ALT;
+		    key |= mod_ALT;
 		if (state & SHIFT_PRESSED)
-		    key |= W32_SHIFT;
-	    } else
+		    key |= mod_SHIFT;
+	    } else {
 		key = keyp->vile;
-	    TRACE(("... %#x -> %#x\n", irp->wVirtualKeyCode, key));
+	    }
+	    TRACE(("decode_key_event %#x (%#x) -> %#x\n",
+		   irp->wVirtualKeyCode, state, key));
 	    break;
 	}
     }

@@ -1,7 +1,7 @@
 /*
  * Main program and I/O for external vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/RCS/builtflt.c,v 1.21 2001/12/24 14:57:54 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/builtflt.c,v 1.22 2002/01/20 15:35:45 tom Exp $
  *
  */
 
@@ -40,6 +40,9 @@ static int need_separator;
 static int
 parse_filtername(const char *major_name, const char **params)
 {
+    static const char prefix[] = "vile-";
+    static const char suffix[] = "-filt";
+
     char *temp;
 
     *params = 0;
@@ -48,24 +51,27 @@ parse_filtername(const char *major_name, const char **params)
 	&& curbp->majr != 0
 	&& !strcmp(curbp->majr->name, major_name)
 	&& (temp = b_val_ptr(curbp, VAL_FILTERNAME)) != 0) {
-	if (!strncmp(temp, "vile-", 5)) {
-	    char *base = temp + 5;
+	if (!strncmp(temp, prefix, sizeof(prefix) - 1)) {
+	    char *base = temp + sizeof(prefix) - 1;
 	    char *next = base;
 	    int n;
 
 	    while (*next) {
-		if (!strncmp(next, "-filt", 5)
-		    && (isSpace(next[5]) || (next[5] == EOS))) {
+		if (!strncmp(next, suffix, sizeof(suffix) - 1)
+		    && (isSpace(next[sizeof(suffix) - 1])
+			|| (next[sizeof(suffix)-1] == EOS))) {
+		    size_t len = next - base;
+		    for (n = 0; builtflt[n] != 0; n++) {
+			char *name = builtflt[n]->filter_name;
+			if (strlen(name) == len
+			    && !strncmp(base, name, len)) {
+			    *params = skip_cblanks(next + sizeof(suffix) - 1);
+			    return n;
+			}
+		    }
 		    break;
 		}
 		next++;
-	    }
-	    for (n = 0; builtflt[n] != 0; n++) {
-		if ((int) strlen(builtflt[n]->filter_name) == (next - base)
-		    && !strncmp(base, builtflt[n]->filter_name, next - base)) {
-		    *params = skip_cblanks(next + 5);
-		    return n;
-		}
 	    }
 	}
     }
@@ -159,9 +165,9 @@ flt_gets(char **ptr, unsigned *len)
 	*len = need + len_record_sep(curbp);
 
 	TRACE(("flt_gets %6d:%.*s\n",
-		line_no(curbp, mark_in.l),
-		*ptr ? need : 1,
-		*ptr ? *ptr : ""));
+	       line_no(curbp, mark_in.l),
+	       *ptr ? need : 1,
+	       *ptr ? *ptr : ""));
 
 	mark_in.l = lforw(mark_in.l);
     } else {
@@ -325,7 +331,8 @@ flt_start(char *name)
 
 static TBUFF *filter_list;
 
-int var_FILTER_LIST(TBUFF **rp, const char *vp)
+int
+var_FILTER_LIST(TBUFF ** rp, const char *vp)
 {
     int n;
 
@@ -340,7 +347,7 @@ int var_FILTER_LIST(TBUFF **rp, const char *vp)
 	tb_scopy(rp, tb_values(filter_list));
 	return TRUE;
     } else if (vp) {
-	return ABORT;  /* read-only */
+	return ABORT;		/* read-only */
     } else {
 	return FALSE;
     }

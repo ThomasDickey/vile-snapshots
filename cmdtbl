@@ -97,7 +97,7 @@
 #		in '!' listed, then the flag does nothing, and should be
 #		viewed simply as documentation.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.220 2002/01/12 16:49:15 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.221 2002/01/20 22:32:32 tom Exp $
 #
 #
 
@@ -961,6 +961,18 @@ map_bang	NONE|(EXRCOK|EXTRA)
 	"map!"
 	"show-mapped!-chars"
 	<create a new map, or show list of the current insert-mode maps>
+gui_hide_menus	NONE			OPT_MENUS
+	"hide-menus"
+	<hide the menu-bar>
+gui_remove_menus NONE			OPT_MENUS
+	"remove-menus"
+	<remove the menus>
+gui_show_menus	NONE			OPT_MENUS
+	"show-menus"
+	<display the menus, if hidden>
+vlmenu_load	NONE			OPT_MENUS
+	"load-menus"
+	<load menus from external file>
 nexttag		NONE			OPT_TAGS
 	"next-tag"			!FEWNAMES
 	'^A-^]'

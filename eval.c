@@ -2,7 +2,7 @@
  *	eval.c -- function and variable evaluation
  *	original by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.306 2002/01/09 00:30:55 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.307 2002/01/19 00:21:35 tom Exp $
  *
  */
 
@@ -680,6 +680,7 @@ run_func(int fnum)
     TBUFF *args[MAXARGS];
     char *arg[MAXARGS];		/* function arguments */
     char *cp;
+    const char *sp;
     int args_numeric, args_boolean, ret_numeric, ret_boolean;
     int bools[MAXARGS];
     int i, nargs;
@@ -845,8 +846,12 @@ run_func(int fnum)
 	    tb_scopy(&result, vile_getenv(arg[0]));
 	break;
     case UFBIND:
-	if (!is_error)
-	    tb_scopy(&result, prc2engl(arg[0]));
+	if (!is_error) {
+	    if ((sp = prc2engl(arg[0])) == error_val)
+		is_error = TRUE;
+	    else
+		tb_scopy(&result, sp);
+	}
 	break;
     case UFDEFAULT:
 	if (!is_error)

@@ -11,7 +11,7 @@
 #
 # The modes are table entries in the BUFFER and WINDOW structures.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.204 2001/12/30 21:29:55 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.206 2002/01/20 21:11:18 tom Exp $
 #
 #
 # Mode-table entries.  Capitalized letters are used for abbreviations.
@@ -116,6 +116,7 @@ bool							# MD prefix
 	"terse"		TERSE		0		# be terse -- suppress messages
 	"view"		VIEW		chgd_major	# read-only buffer
 	"UndoAble"	UNDOABLE	chgd_undoable	# changes to buffer are undoable (or not)
+	"Undo-Dos-Trim"	UNDO_DOS_TRIM	0		# changes to buffer made when setting dosmode are undoable (or not)
 	"WrapScan"	SWRAP		0		# wrap-around search mode
 	"WrapWords"	WRAP		0		# word wrap
 enum
@@ -243,6 +244,7 @@ string
 "majormode"	MAJORMODE	OPT_MAJORMODE # current majormode, if any
 "majormode-hook" MAJORMODEHOOK	OPT_HOOKS&&OPT_MAJORMODE	# procedure to run for majormodes
 "match"		MATCH			# last matched magic pattern
+"menu-file"	MENU_FILE	OPT_MENUS # the name of the menu-file (e.g., .vilemenu)
 "mode"		MODE			# are we inserting/overwriting/command
 "modeline-format" MLFORMAT	OPT_MLFORMAT # modeline format string
 "modified"	MODIFIED		# is current buffer modified?
