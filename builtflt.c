@@ -1,7 +1,7 @@
 /*
  * Main program and I/O for external vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/RCS/builtflt.c,v 1.22 2002/01/20 15:35:45 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/builtflt.c,v 1.23 2002/02/12 22:48:58 tom Exp $
  *
  */
 
@@ -59,7 +59,7 @@ parse_filtername(const char *major_name, const char **params)
 	    while (*next) {
 		if (!strncmp(next, suffix, sizeof(suffix) - 1)
 		    && (isSpace(next[sizeof(suffix) - 1])
-			|| (next[sizeof(suffix)-1] == EOS))) {
+			|| (next[sizeof(suffix) - 1] == EOS))) {
 		    size_t len = next - base;
 		    for (n = 0; builtflt[n] != 0; n++) {
 			char *name = builtflt[n]->filter_name;
@@ -85,14 +85,15 @@ parse_filtername(const char *major_name, const char **params)
 static int
 process_params(void)
 {
-    int k_used = 0;
     const char *s = current_params;
     const char *t;
 
+    memset(flt_options, 0, sizeof(flt_options));
     while (*s != EOS) {
 	s = skip_cblanks(s);
 	if (*s == '-') {
 	    while (*++s != EOS && !isSpace(*s)) {
+		flt_options[CharOf(*s)] += 1;
 		if (*s == 'k') {
 		    s = skip_cblanks(s + 1);
 		    t = skip_ctext(s);
@@ -101,7 +102,6 @@ process_params(void)
 			value[t - s] = EOS;
 			flt_read_keywords(value);
 			free(value);
-			k_used = 1;
 			s = t;
 		    }
 		}
@@ -110,8 +110,8 @@ process_params(void)
 	    s = skip_ctext(s);
 	}
     }
-    vile_keywords = !k_used;
-    return k_used;
+    vile_keywords = !flt_options['v'];
+    return !vile_keywords;
 }
 
 static void

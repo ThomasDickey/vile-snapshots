@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.57 2001/12/24 17:24:35 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.58 2002/02/12 20:43:22 tom Exp $
  */
 
 #ifndef FILTERS_H
@@ -181,6 +181,7 @@ typedef struct {
 	char *filter_name;
 	void (*InitFilter)(int before);
 	void (*DoFilter)(FILE *in);
+	char *options;
 } FILTER_DEF;
 
 /*
@@ -189,12 +190,15 @@ typedef struct {
 extern FILTER_DEF filter_def;
 
 /*
- * We'll put a DefineFilter() in each filter program
+ * We'll put a DefineFilter() in each filter program.  To handle special cases
+ * such as c-filt.c, use DefineOptFilter().
  */
-#define DefineFilter(name) \
+#define DefineOptFilter(name,options) \
 static void init_filter(int before); \
 static void do_filter(FILE *Input); \
-FILTER_DEF filter_def = { name, init_filter, do_filter }
+FILTER_DEF filter_def = { name, init_filter, do_filter, options }
+
+#define DefineFilter(name) DefineOptFilter(name,0)
 
 #if defined(FLEX_SCANNER) && defined(filter_def)
 #undef yywrap
@@ -213,8 +217,8 @@ typedef struct _keyword KEYWORD;
 extern char *default_attr;
 extern int eqls_ch;
 extern int meta_ch;
-extern int verbose_flt;
 extern int vile_keywords;
+extern int flt_options[256];
 
 extern KEYWORD *is_class(char *name);
 extern KEYWORD *is_keyword(char *name);

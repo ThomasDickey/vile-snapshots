@@ -1,7 +1,7 @@
 /*
  * Main program and I/O for external vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filterio.c,v 1.14 2001/12/26 20:49:13 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filterio.c,v 1.15 2002/02/12 22:34:49 tom Exp $
  *
  */
 
@@ -10,8 +10,6 @@
 
 static FILE *my_out;
 static FILE *my_in;
-static int quit;
-static int k_used;
 
 /******************************************************************************
  * Private functions                                                          *
@@ -27,27 +25,23 @@ ProcessArgs(int argc, char *argv[], int flag)
 	s = argv[n];
 	if (*s == '-') {
 	    while (*++s) {
+		flt_options[CharOf(*s)] += 1;
 		switch (*s) {
 		case 'k':
 		    value = s[1] ? s + 1 : ((n < argc) ? argv[++n] : "");
 		    if (flag) {
 			flt_read_keywords(value);
-			k_used++;
 		    }
 		    break;
-		case 'v':
-		    if (!flag)
-			verbose_flt++;
-		    break;
-		case 'q':
-		    quit = 1;	/*
-				 * quit before filter parses data.  useful
-				 * in conjunction with -v or -vv.
-				 */
-		    break;
 		default:
-		    fprintf(stderr, "unknown option %c\n", *s);
-		    exit(BADEXIT);
+		    if (((filter_def.options != 0
+			  && strchr(filter_def.options, *s) == 0)
+			 || filter_def.options == 0)
+			&& strchr("vq", *s) == 0) {
+			fprintf(stderr, "unknown option %c\n", *s);
+			exit(BADEXIT);
+		    }
+		    break;
 		}
 	    }
 	} else {
@@ -152,21 +146,24 @@ strmalloc(const char *src)
  * leave other keywords alone.
  */
 /* ARGSUSED */
-DIRECTIVE dname_to_dirnum(const char *s GCC_UNUSED, size_t len GCC_UNUSED)
+DIRECTIVE
+dname_to_dirnum(const char *s GCC_UNUSED, size_t len GCC_UNUSED)
 {
     return 0;
 }
 
 /* ARGSUSED */
-const CMDFUNC * engl2fnc(const char *fname GCC_UNUSED)
+const CMDFUNC *
+engl2fnc(const char *fname GCC_UNUSED)
 {
     return 0;
 }
 
 /* ARGSUSED */
-int vl_lookup_func(const char *name GCC_UNUSED)
+int
+vl_lookup_func(const char *name GCC_UNUSED)
 {
-	return 0;
+    return 0;
 }
 
 /******************************************************************************
@@ -176,6 +173,7 @@ int
 main(int argc, char **argv)
 {
     int n;
+    int verbose;
 
 #if OPT_LOCALE
     setlocale(LC_CTYPE, "");
@@ -184,8 +182,11 @@ main(int argc, char **argv)
     my_in = stdin;
     my_out = stdout;
 
+    memset(flt_options, 0, sizeof(flt_options));
+
     /* get verbose option */
     (void) ProcessArgs(argc, argv, 0);
+    verbose = flt_options[CharOf('v')];
 
     flt_make_symtab(filter_def.filter_name);
 
@@ -195,9 +196,9 @@ main(int argc, char **argv)
 
     flt_read_keywords(MY_NAME);
     n = ProcessArgs(argc, argv, 1);
+    flt_options[CharOf('v')] = verbose;
 
-    vile_keywords = !k_used;
-    if (!k_used) {
+    if ((vile_keywords = !flt_options['k']) != 0) {
 	if (strcmp(MY_NAME, filter_def.filter_name)) {
 	    flt_read_keywords(filter_def.filter_name);
 	}
@@ -206,7 +207,7 @@ main(int argc, char **argv)
 
     filter_def.InitFilter(0);
 
-    if (quit) {
+    if (flt_options['q']) {
 	/*
 	 * When the filter is called, we want to force it to print out its
 	 * class info and then immediately exit.  Easiest way to do this

@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.253 2002/01/19 16:39:24 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.254 2002/02/13 01:34:59 tom Exp $
  *
  */
 
@@ -52,7 +52,7 @@ static int kbd_complete_bst(unsigned flags, int c, char *buf, unsigned *pos);
 #endif /* OPT_NAMEBST */
 
 #if OPT_EVAL || OPT_REBIND
-static const NTAB *fnc2ntab(const CMDFUNC * cfp);
+static int fnc2ntab(NTAB * result, const CMDFUNC * cfp);
 static int prc2kcod(const char *kk);
 #endif
 
@@ -873,7 +873,7 @@ prompt_describe_key(BINDINGS * bs)
 {
     int c;			/* character to describe */
     char outseq[NSTRING];	/* output buffer for command sequence */
-    const NTAB *nptr;		/* name table pointer */
+    NTAB temp;			/* name table pointer */
     int s;
 
     /* prompt the user to type us a key to describe */
@@ -895,7 +895,7 @@ prompt_describe_key(BINDINGS * bs)
     hst_append_s(outseq, FALSE);	/* cannot replay this, but can see it */
 
     /* find the function bound to the key */
-    if ((nptr = fnc2ntab(kcod2fnc(bs, c))) == NULL) {
+    if (!fnc2ntab(&temp, kcod2fnc(bs, c))) {
 	mlwrite("Key sequence '%s' is not bound to anything.",
 		outseq);
 	return TRUE;
@@ -903,13 +903,13 @@ prompt_describe_key(BINDINGS * bs)
 
     /* describe it */
     described_cmd[0] = '^';
-    (void) strcpy(described_cmd + 1, nptr->n_name);
+    (void) strcpy(described_cmd + 1, temp.n_name);
     append_to_binding_list = TRUE;
     s = describe_any_bindings(described_cmd, 0);
     append_to_binding_list = FALSE;
 
     mlwrite("Key sequence '%s' is bound to function \"%s\"",
-	    outseq, nptr->n_name);
+	    outseq, temp.n_name);
 
     return s;
 }
@@ -1746,35 +1746,92 @@ fnc2pstr(const CMDFUNC * f)
 }
 #endif
 
+#if OPT_EVAL || OPT_REBIND
+
+#if OPT_NAMEBST
+/*
+ * Search for a matching CMDFUNC pointer, return the corresponding name.  We
+ * use this rather than extracting from the buffer name, since it may be
+ * ambiguous if the macro's name is longer than NBUFN-2.
+ */
+static int
+match_cmdfunc(BI_NODE * node, const void *d)
+{
+    NTAB *result = (NTAB *) TYPECAST(void *, d);
+
+    if (node->value.n_cmd == result->n_cmd) {
+	result->n_name = (char *) TYPECAST(void *, node->value.bi_key);
+	return 1;
+    }
+    return 0;
+}
+#endif
+
 /* fnc2engl: translate a function pointer to the english name for
 		that function.  prefer long names to short ones.
 */
-#if OPT_EVAL || OPT_REBIND
-static const NTAB *
-fnc2ntab(const CMDFUNC * cfp)
+static int
+fnc2ntab(NTAB * result, const CMDFUNC * cfp)
 {
-    const NTAB *nptr;
-    const NTAB *shortnptr = NULL;
+    int found = FALSE;
 
-    for (nptr = nametbl; nptr->n_cmd; nptr++) {
-	if (nptr->n_cmd == cfp) {
-	    /* if it's a long name, return it */
-	    if ((int) strlen(nptr->n_name) > SHORT_CMD_LEN)
-		return nptr;
-	    /* remember the first short name, in case there's
-	       no long name */
-	    if (!shortnptr)
-		shortnptr = nptr;
+    if (cfp != NULL) {
+#if OPT_NAMEBST
+	result->n_name = 0;
+	result->n_cmd = cfp;
+	btree_walk(&namebst.head, match_cmdfunc, result);
+	found = (result->n_name != 0);
+#else
+	switch (cfp->c_flags & CMD_TYPE) {
+	    const NTAB *nptr;
+
+	case CMD_FUNC:		/* normal CmdFunc */
+	    for (nptr = nametbl; nptr->n_cmd; nptr++) {
+		if (nptr->n_cmd == cfp) {
+		    /* if it's a long name, return it */
+		    if ((int) strlen(nptr->n_name) > SHORT_CMD_LEN) {
+			found = TRUE;
+			*result = *nptr;
+			break;
+		    }
+		    /* remember the first short name, in case there's
+		       no long name */
+		    if (!result) {
+			*result = *nptr;
+			found = SORTOFTRUE;
+		    }
+		}
+	    }
+	    break;
+
+#if OPT_PROCEDURES
+	case CMD_PROC:		/* named procedure */
+	    result->n_name = CMD_U_BUFF(cfp)->b_bname;	/* not very good */
+	    result->n_cmd = cfp;
+	    found = TRUE;
+	    break;
+#endif
+
+#if OPT_PERL
+	case CMD_PERL:		/* perl subroutine */
+	    result->n_name = "Perl subroutine";		/* FIXME - what name? */
+	    result->n_cmd = cfp;
+	    found = TRUE;
+	    break;
+#endif
 	}
+#endif /* OPT_NAMEBST */
+
+	TRACE(("fnc2ntab(%s)\n", found ? result->n_name : ""));
     }
-    return shortnptr;
+    return found;
 }
 
 static char *
 fnc2engl(const CMDFUNC * cfp)
 {
-    const NTAB *nptr = fnc2ntab(cfp);
-    return nptr ? nptr->n_name : 0;
+    NTAB temp;
+    return fnc2ntab(&temp, cfp) ? temp.n_name : 0;
 }
 
 #endif
@@ -1784,22 +1841,17 @@ fnc2engl(const CMDFUNC * cfp)
 		 return any match or NULL if none
  */
 #define BINARY_SEARCH_IS_BROKEN 0
-#if OPT_NAMEBST
+
 const CMDFUNC *
 engl2fnc(const char *fname)
 {
+#if OPT_NAMEBST
     BI_NODE *n = btree_pmatch(BI_RIGHT(&namebst.head), TRUE, fname);
 
-    if (n == NULL)
-	return NULL;
-    else
+    if (n != NULL)
 	return n->value.n_cmd;
-}
 #else
 #if BINARY_SEARCH_IS_BROKEN	/* then use the old linear look-up */
-const CMDFUNC *
-engl2fnc(const char *fname)
-{
     NTAB *nptr;			/* pointer to entry in name binding table */
     size_t len = strlen(fname);
 
@@ -1811,43 +1863,38 @@ engl2fnc(const char *fname)
 	    ++nptr;
 	}
     }
-    return NULL;
-}
 #else
-/* this runs 10 times faster for 'nametbl[]' */
-const CMDFUNC *
-engl2fnc(const char *fname)
-{
+    /* this runs 10 times faster for 'nametbl[]' */
     int lo, hi, cur;
     int r;
     size_t len = strlen(fname);
 
-    if (len == 0)
-	return NULL;
+    if (len != 0) {
 
-    /* scan through the table, returning any match */
-    lo = 0;
-    hi = nametblsize - 2;	/* don't want last entry -- it's NULL */
+	/* scan through the table, returning any match */
+	lo = 0;
+	hi = nametblsize - 2;	/* don't want last entry -- it's NULL */
 
-    while (lo <= hi) {
-	cur = (lo + hi) >> 1;
-	if ((r = strncmp(fname, nametbl[cur].n_name, len)) == 0) {
-	    /* Now find earliest matching entry */
-	    while (cur > lo
-		   && strncmp(fname, nametbl[cur - 1].n_name, len) == 0)
-		cur--;
-	    return nametbl[cur].n_cmd;
+	while (lo <= hi) {
+	    cur = (lo + hi) >> 1;
+	    if ((r = strncmp(fname, nametbl[cur].n_name, len)) == 0) {
+		/* Now find earliest matching entry */
+		while (cur > lo
+		       && strncmp(fname, nametbl[cur - 1].n_name, len) == 0)
+		    cur--;
+		return nametbl[cur].n_cmd;
 
-	} else if (r > 0) {
-	    lo = cur + 1;
-	} else {
-	    hi = cur - 1;
+	    } else if (r > 0) {
+		lo = cur + 1;
+	    } else {
+		hi = cur - 1;
+	    }
 	}
     }
-    return NULL;
-}
 #endif /* binary vs linear */
 #endif /* OPT_NAMEBST */
+    return NULL;
+}
 
 static const char *
 decode_prefix(const char *kk, UINT * prefix)

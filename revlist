@@ -1,6 +1,6 @@
-revlist for vile, version v9_2w
+revlist for vile, version v9_2x
 --------------------------------------------------------------------------------
-CHANGES	1.676
+CHANGES	1.677
 CHANGES.R3	1.1
 CHANGES.R4	1.1
 CHANGES.R5	1.1
@@ -18,13 +18,13 @@ ansi.c	1.40
 api.c	1.31
 api.h	1.12
 basic.c	1.117
-bind.c	1.253
+bind.c	1.254
 borland.c	1.30
 btree.c	1.13
 btree.h	1.4
 buffer.c	1.248
 buglist	1.392
-builtflt.c	1.22
+builtflt.c	1.23
 chgdfunc.h	1.16
 cmdtbl	1.222
 config.emx	1.2
@@ -85,7 +85,7 @@ opers.c	1.76
 os2keys.h	1.1
 os2pipe.c	1.5
 os2vio.c	1.29
-patchlev.h	1.272
+patchlev.h	1.273
 path.c	1.118
 perl.xs	1.84
 proto.h	1.491
@@ -94,7 +94,7 @@ ptypemap	1.7
 random.c	1.260
 regexp.c	1.80
 region.c	1.107
-revlist	v9_2w
+revlist	v9_2x
 search.c	1.126
 select.c	1.137
 sinstall.sh	1.1
@@ -160,7 +160,7 @@ filters/bas-filt.l	1.5
 filters/basic.key	1.3
 filters/bat-filt.l	1.16
 filters/bat.key	1.4
-filters/c-filt.c	1.61
+filters/c-filt.c	1.62
 filters/c-filt.flx	1.1
 filters/c.key	1.11
 filters/cfg-filt.l	1.6
@@ -181,10 +181,10 @@ filters/esql.key	1.3
 filters/esqlfilt.l	1.9
 filters/fdl-filt.l	1.8
 filters/fdl.key	1.4
-filters/filterio.c	1.14
-filters/filters.c	1.79
-filters/filters.h	1.57
-filters/filters.rc	1.148
+filters/filterio.c	1.15
+filters/filters.c	1.80
+filters/filters.h	1.58
+filters/filters.rc	1.149
 filters/genmake.c	1.3
 filters/genmake.mak	1.15
 filters/html.key	1.6
@@ -240,14 +240,14 @@ filters/rexxfilt.l	1.6
 filters/sccs.key	1.1
 filters/sccsfilt.l	1.8
 filters/sed-filt.c	1.15
-filters/sh-filt.l	1.44
+filters/sh-filt.l	1.45
 filters/sh.key	1.4
 filters/sml-filt.l	1.2
 filters/sml.key	1.1
 filters/spell.rc	1.2
 filters/spellflt.l	1.7
-filters/sql-filt.l	1.11
-filters/sql.key	1.4
+filters/sql-filt.l	1.15
+filters/sql.key	1.7
 filters/tags.key	1.1
 filters/tagsfilt.c	1.6
 filters/tbl-filt.l	1.7

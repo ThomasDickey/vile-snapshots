@@ -1,7 +1,7 @@
 /*
  * Common utility functions for vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.79 2001/01/03 23:08:01 Joachim.Schimpf Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.80 2002/02/12 20:29:15 tom Exp $
  *
  */
 
@@ -21,7 +21,7 @@
 #define DOT_TO_HIDE_IT ""
 #endif
 
-#define VERBOSE(level,params)		if (verbose_flt >= level) mlforce params
+#define VERBOSE(level,params)		if (flt_options['v'] >= level) mlforce params
 #define NONNULL(s)			((s) != 0) ? (s) : "<null>"
 
 #define	typecallocn(cast,ntypes)	(cast *)calloc(sizeof(cast),ntypes)
@@ -49,8 +49,8 @@ char *default_attr;
 int abbr_ch = '*';
 int meta_ch = '.';
 int eqls_ch = ':';
-int verbose_flt;
 int vile_keywords;
+int flt_options[256];
 
 static KEYWORD **hashtable;
 static CLASS *classes;
@@ -457,7 +457,7 @@ flt_initialize(void)
     abbr_ch = '*';
     meta_ch = '.';
     eqls_ch = ':';
-    verbose_flt = 0;
+    flt_options['v'] = 0;
 
     flt_free_symtab();
 }
