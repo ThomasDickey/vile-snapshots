@@ -6,7 +6,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.264 1999/12/19 11:46:27 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.265 2000/01/02 22:58:38 tom Exp $
  */
 
 #ifndef VILE_EDEF_H
@@ -185,6 +185,10 @@ decl_init( int rgb_gray, 140 );
 decl_init( int rgb_normal, 180 );
 decl_init( int rgb_bright, 255 );
 #endif
+#endif
+
+#if OPT_TITLE
+decl_init( int auto_set_title, TRUE );	/* automatically set title	*/
 #endif
 
 /* Special characters, used in keyboard control (some values are set on

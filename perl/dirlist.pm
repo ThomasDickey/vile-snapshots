@@ -10,7 +10,6 @@ require Vile::Exporter;
              'dirlist-help' => [ sub {&manual}, 'manual page for dirlist' ]);
 
 my $dirlist_oldroot = '.';
-my $os = scalar(Vile->get("\$os"));
 
 sub dirlist {
 
@@ -65,7 +64,7 @@ sub dirlist {
 		$date =~ s/\S+\s+(\S+\s+\S+\s+\S+):\d\d \S+/$1/;
 	    }
 	    my $symlinkinfo = '';
-	    if ($os != "win32" &&  -l _) {
+	    if ($^O ne 'MSWin32' &&  -l _) {
 		$symlinkinfo = ' -> ' . readlink $fname;
 	    }
 	    print $resbuf sprintf("%9d %12s %s%s\n",

@@ -6,8 +6,6 @@ use Carp;
 @ISA = qw(Exporter);
 @EXPORT = qw(visit);
 
-#!/bin/echo not_a_script:
-
 sub visit {
     my ($fname, @dot) = @_;
 

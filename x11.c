@@ -2,7 +2,7 @@
  *	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.240 1999/12/24 01:08:42 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.242 2000/01/02 23:05:19 tom Exp $
  *
  */
 
@@ -2627,6 +2627,18 @@ x_preparse_args(
     (void) OlToolkitInitialize( NULL );
 #endif /* OL_WIDGETS */
 
+    /*
+     * If user sets the title explicitly, he probably will not like allowing
+     * xvile to set it automatically when visiting a new buffer.
+     */
+    for (i = 1; i < (*pargc) - 1; i++) {
+	char *param = (*pargv)[i];
+	unsigned len = strlen(param);
+	if (len > 1 && !strncmp(param, "-title", len)) {
+	    auto_set_title = FALSE;
+	    break;
+	}
+    }
     XtSetErrorHandler(my_error_handler);
     cur_win->top_widget = XtVaAppInitialize(
 	    &cur_win->app_context,
@@ -6402,6 +6414,7 @@ x_get_icon_name(void)
 void
 x_set_window_name(const char *name)
 {
+    if (strcmp(name, x_get_window_name())) {
 #ifdef USE_SET_WM_NAME
 	XTextProperty Prop;
 
@@ -6416,6 +6429,7 @@ x_set_window_name(const char *name)
 #else
 	XtVaSetValues(cur_win->top_widget, XtNtitle, name, NULL);
 #endif
+    }
 }
 
 char *
