@@ -1,7 +1,7 @@
 /*
  * Main program and I/O for external vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filterio.c,v 1.8 2000/07/11 01:02:47 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filterio.c,v 1.10 2000/08/28 10:28:15 tom Exp $
  *
  */
 
@@ -142,6 +142,30 @@ strmalloc(const char *src)
     return ns;
 }
 
+/******************************************************************************
+ * Stubs for vile-vile-filt                                                   *
+ ******************************************************************************/
+/*
+ * The builtin-filter version of vilemode can check for unknown keywords.
+ */
+DIRECTIVE dname_to_dirnum(const char *s, size_t len)
+{
+    return 0;
+}
+
+const CMDFUNC * engl2fnc(const char *fname);
+{
+    static CMDFUNC dummy;
+    return &dummy;
+}
+
+int vl_lookup_func(const char *name);
+{
+}
+
+/******************************************************************************
+ * Standalone main-program                                                    *
+ ******************************************************************************/
 int
 main(int argc, char **argv)
 {
@@ -166,6 +190,7 @@ main(int argc, char **argv)
     flt_read_keywords(MY_NAME);
     n = ProcessArgs(argc, argv, 1);
 
+    vile_keywords = !k_used;
     if (!k_used) {
 	if (strcmp(MY_NAME, filter_def.filter_name)) {
 	    flt_read_keywords(filter_def.filter_name);

@@ -95,7 +95,7 @@
 #		in '!' listed, then the flag does nothing, and should be
 #		viewed simply as documentation.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.204 2000/07/10 23:42:13 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.205 2000/08/26 16:36:01 tom Exp $
 #
 #
 
@@ -214,7 +214,7 @@ bktoshell	NONE|(BANG)		OPT_SHELL
 	"stop!"
 	'^Z'
 	<suspend the editor>
-cd		NONE			OPT_SHELL
+vl_chdir	NONE			OPT_SHELL
 	"cd"
 	"change-directory"
 	<move to a new directory, \"-\" is previous, \"~\" is $HOME>
@@ -584,7 +584,7 @@ fileread	NONE
 	"e!"
 	"replace-with-file"		!FEWNAMES
 	<replace the contents of the current buffer with the given file>
-filename	NONE|(NAMEDF)
+vl_filename	NONE|(NAMEDF)
 	"change-file-name"		!FEWNAMES
 	"f"
 	"file"
@@ -833,7 +833,7 @@ gorectnmmark	MOTION|RECT
 	"goto-named-mark-rectangular"	!FEWNAMES
 	'\0134'
 	<move to the mark, implying a rectangle if used with an operator>
-help		NONE
+vl_help		NONE
 	"h"
 	"help"
 	"list-help"
@@ -1490,7 +1490,7 @@ shrinkwind	GOAL
 	"shrink-window"			!FEWNAMES
 	'v'
 	<decrease the size of the current window by CNT lines>
-source		NONE|(EXRCOK|NAMEDF)
+vl_source	NONE|(EXRCOK|NAMEDF)
 	"exsource"
 	<source a file of ex commands>
 spawn		NONE			OPT_SHELL

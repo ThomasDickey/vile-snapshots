@@ -11,7 +11,7 @@
 #
 # The modes are table entries in the BUFFER and WINDOW structures.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.179 2000/08/16 10:47:07 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.180 2000/08/25 10:30:12 tom Exp $
 #
 #
 # Mode-table entries.  Capitalized letters are used for abbreviations.
@@ -278,6 +278,7 @@ string
 "chr"		CHR		1|NUM		# integer to char conversion
 "divide"	DIV		2|NUM|NRET	# division
 "env"		ENV		1|STR|SRET	# retrieve a system environment var
+"error"		ERROR		1|STR|BRET	# check if parameter was the ERROR token
 "execable"	EXECABLE	1|BRET		# is a file executable?
 "equal"		EQUAL		2|NUM|BRET	# logical equality check
 "filter"	FILTER		1|STR|BRET	# check if internal filter exists

@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.48 2000/08/16 11:05:11 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.49 2000/08/28 10:28:23 tom Exp $
  */
 
 #ifndef FILTERS_H
@@ -86,6 +86,14 @@ extern	int	sscanf	( const char *src, const char *fmt, ... );
 #endif
 
 extern	char *home_dir(void);
+
+typedef enum { D_UNKNOWN = -1, D_KNOWN = 0 } DIRECTIVE;
+extern DIRECTIVE dname_to_dirnum(const char *cmdp, size_t length);
+
+typedef struct { int dummy; } CMDFUNC;
+extern const CMDFUNC * engl2fnc(const char *fname);
+
+extern int vl_lookup_func(const char *name);
 
 #endif /* _estruct_h */
 
@@ -205,12 +213,14 @@ extern char *default_attr;
 extern int eqls_ch;
 extern int meta_ch;
 extern int verbose_flt;
+extern int vile_keywords;
 
 extern KEYWORD * is_class(char *name);
 extern KEYWORD * is_keyword(char *name);
 extern char *ci_keyword_attr(char *name);
 extern char *class_attr(char *name);
 extern char *do_alloc(char *ptr, unsigned need, unsigned *have);
+extern char * get_symbol_table(void);
 extern char *keyword_attr(char *name);
 extern char *lowercase_of(char *name);
 extern char *readline(FILE *fp, char **ptr, unsigned *len);

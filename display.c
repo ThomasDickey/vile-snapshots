@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.333 2000/06/24 12:57:16 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.334 2000/08/26 16:37:35 tom Exp $
  *
  */
 
@@ -2911,7 +2911,7 @@ percentage(WINDOW *wp)
 {
     BUFFER *bp = wp->w_bufp;
     L_NUM val;
-    L_NUM denom = line_count(bp);
+    L_NUM denom = vl_line_count(bp);
 
 #ifdef WMDRULER
     if (w_val(wp,WMDRULER) && !is_empty_buf(bp))
@@ -3027,7 +3027,7 @@ special_formatter(TBUFF **result, char *fs, WINDOW *wp)
 			int val = 0;
 			switch (fc) {
 			    case 'l' : val = wp->w_ruler_line; break;
-			    case 'L' : val = line_count(wp->w_bufp); break;
+			    case 'L' : val = vl_line_count(wp->w_bufp); break;
 			    case 'c' : val = wp->w_ruler_col; break;
 			    case 'p' : val = percentage(wp); break;
 			}

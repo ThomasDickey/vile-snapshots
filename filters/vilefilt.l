@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/vilefilt.l,v 1.17 2000/02/28 11:58:59 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/vilefilt.l,v 1.18 2000/08/28 10:31:13 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of vile macros
  * - T.Dickey
@@ -15,10 +15,31 @@ DefineFilter("vile");
 
 static char *Action_attr;
 static char *Comment_attr;
+static char *Error_attr;
 static char *Ident2_attr;
 static char *Keyword_attr;
 static char *Number_attr;
 static char *String_attr;
+
+static int
+is_prepro(char *text, int len)
+{
+    if (vile_keywords) {
+	char *next = skip_blanks(text);
+	int code = dname_to_dirnum(next, (size_t)(len - (next - text)));
+	return code >= 0;
+    }
+    return 1;
+}
+
+static char *
+command_attr(char *text)
+{
+    if (vile_keywords) {
+	return engl2fnc(text) != 0 ? Keyword_attr : "";
+    }
+    return keyword_attr(text);
+}
 
 static int
 is_funckey(char *text)
@@ -38,6 +59,7 @@ do_filter(FILE *input)
 
     Action_attr  = class_attr(NAME_ACTION);
     Comment_attr = class_attr(NAME_COMMENT);
+    Error_attr   = class_attr(NAME_ERROR);
     Ident2_attr  = class_attr(NAME_IDENT2);
     Keyword_attr = class_attr(NAME_KEYWORD);
     Number_attr  = class_attr(NAME_NUMBER);
@@ -80,12 +102,12 @@ VARIABLE	[$%]{NAME}
 ^[CBSL]:	{ WriteToken(Keyword_attr); BEGIN(ACTION); }
 <ACTION>[^\n:]*	{ WriteToken(Action_attr); BEGIN(NORMAL); }
 
-{PREPROC}	{ WriteToken(Keyword_attr); }
+{PREPROC}	{ WriteToken(is_prepro(yytext, yyleng) ? Keyword_attr : Error_attr); }
 
-{NAME}		{ WriteToken(is_funckey(yytext) ? String_attr : keyword_attr(yytext)); }
+{NAME}		{ WriteToken(is_funckey(yytext) ? String_attr : command_attr(yytext)); }
 
-{VARIABLE}	|
-{FUNCTION}	{ WriteToken(Ident2_attr); }
+{FUNCTION}	{ WriteToken(vl_lookup_func(yytext) >= 0 ? Ident2_attr : ""); }
+{VARIABLE}	{ WriteToken(Ident2_attr); }
 
 {NUMBER}	{ WriteToken(Number_attr); }
 

@@ -10,7 +10,7 @@
  * editing must be being displayed, which means that "b_nwnd" is non zero,
  * which means that the dot and mark values in the buffer headers are nonsense.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.137 2000/05/17 22:30:30 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.138 2000/08/26 16:37:46 tom Exp $
  *
  */
 
@@ -1358,7 +1358,7 @@ PutChar(int n, REGIONSHAPE shape)
 		return TRUE;		/* not an error, just nothing */
 
 	status = TRUE;
-	before = line_count(curbp);
+	before = vl_line_count(curbp);
 	suppressnl = FALSE;
 	wasnl = FALSE;
 

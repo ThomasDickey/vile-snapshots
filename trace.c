@@ -1,7 +1,7 @@
 /*
  * debugging support -- tom dickey.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.17 2000/01/15 01:07:03 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.18 2000/08/25 02:19:08 tom Exp $
  *
  */
 
@@ -9,7 +9,8 @@
 #include <windows.h>
 #endif
 
-#include "estruct.h"
+#include <estruct.h>
+#include <edef.h>
 #include <ctype.h>
 
 #undef fopen	/* avoid conflict with 'fakevms.c' */
@@ -114,6 +115,8 @@ tb_visible(TBUFF *p)
 char *
 lp_visible(LINE *p)
 {
+	if (p == 0)
+		return "";
 	return visible_buff(p->l_text, llength(p), FALSE);
 }
 
@@ -418,3 +421,58 @@ show_alloc(void)
 #endif
 }
 #endif	/* show_alloc */
+
+void
+trace_line(LINE *lp, BUFFER *bp)
+{
+    	if (lp == 0) {
+	    	Trace("? null LINE pointer\n");
+	} else if (bp == 0) {
+	    	Trace("? null BUFFER pointer\n");
+	} else {
+		Trace("%4d:{%p,%p,%p}:%s\n",
+			line_no(bp,lp), lp, lforw(lp), lback(lp),
+			lp_visible(lp));
+	}
+}
+
+void
+trace_buffer(BUFFER *bp)
+{
+	LINEPTR lp;
+	Trace("trace_buffer(%s) dot=%p%s\n",
+		bp->b_bname,
+		bp->b_dot.l,
+		bp == curbp ? " (curbp)" : "");
+	for_each_line(lp, bp)
+		trace_line(lp, bp);
+}
+
+void
+trace_window(WINDOW *wp)
+{
+	LINEPTR lp;
+	int got_dot = FALSE;
+
+	if (wp->w_bufp == 0
+	 || wp->w_bufp->b_bname == 0)
+		return;
+
+	Trace("trace_window(%s) top=%d, rows=%d, head=%p, dot=%p%s\n",
+		wp->w_bufp->b_bname,
+		wp->w_toprow,
+		wp->w_ntrows,
+		win_head(wp),
+		wp->w_dot.l,
+		wp == curwp ? " (curwp)" : "");
+
+	for (lp = wp->w_line.l; lp != win_head(wp); lp = lforw(lp)) {
+		trace_line(lp, wp->w_bufp);
+		if (lp == 0)
+			break;
+		if (lp == wp->w_dot.l)
+			got_dot = TRUE;
+	}
+	if (!got_dot)
+		Trace("DOT not found!\n");
+}

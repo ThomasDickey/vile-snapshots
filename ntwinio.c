@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 screen API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.89 2000/07/10 02:54:15 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.90 2000/08/26 16:38:02 tom Exp $
  * Written by T.E.Dickey for vile (october 1997).
  * -- improvements by Clark Morgan (see w32cbrd.c, w32pipe.c).
  */
@@ -2159,7 +2159,7 @@ set_scrollbar_range(int n, WINDOW *wp)
     lnum = line_no(wp->w_bufp, wp->w_dot.l);
     lnum = max(lnum, 1);
 
-    lcnt = line_count(wp->w_bufp);
+    lcnt = vl_line_count(wp->w_bufp);
     lcnt = max(lcnt, 1) + wp->w_ntrows - 1;
 
     TRACE(("set_scrollbar_range(%d, %s) %d:%d\n",

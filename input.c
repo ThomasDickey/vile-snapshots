@@ -44,7 +44,7 @@
  *	tgetc_avail()     true if a key is avail from tgetc() or below.
  *	keystroke_avail() true if a key is avail from keystroke() or below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.218 2000/07/10 23:09:53 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.220 2000/08/26 00:46:21 tom Exp $
  *
  */
 
@@ -322,6 +322,12 @@ int
 mlreply(const char *prompt, char *buf, UINT bufn)
 {
 	return kbd_string(prompt, buf, bufn, '\n', KBD_NORMAL, no_completion);
+}
+
+int
+mlreply2(const char *prompt, TBUFF **buf)
+{
+	return kbd_string2(prompt, buf, '\n', KBD_NORMAL, no_completion);
 }
 
 /* as above, but don't do anything to backslashes */
@@ -1096,11 +1102,22 @@ int (*complete)(DONE_ARGS)) /* handles completion */
 	return code;
 }
 
+int
+kbd_string2(
+const char *prompt,	/* put this out first */
+TBUFF **result,		/* the caller's (possibly full) buffer */
+int eolchar,		/* char we can terminate on, in addition to '\n' */
+UINT options,		/* KBD_EXPAND/KBD_QUOTES, etc. */
+int (*complete)(DONE_ARGS)) /* handles completion */
+{
+	return kbd_reply(prompt, result, eol_history, eolchar, options, complete);
+}
+
 /*
  * this one is called for @"interactive" variables, and the &query function
  */
 char *
-user_reply(char *prompt)
+user_reply(const char *prompt)
 {
 	static TBUFF *replbuf;
 	int save_no_msgs;

@@ -5,7 +5,7 @@
  * Written by T.E.Dickey for vile (march 1993).
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/filec.c,v 1.93 2000/01/15 12:40:58 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/filec.c,v 1.94 2000/08/26 16:38:04 tom Exp $
  *
  */
 
@@ -493,7 +493,7 @@ sortMyBuff(void)
     register LINE **slp;
 
     b_clr_counted(MyBuff);
-    n = line_count(MyBuff);
+    n = vl_line_count(MyBuff);
     if (n <= 0)
 	return;			/* Nothing to sort */
 

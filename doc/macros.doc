@@ -737,6 +737,10 @@ Functions
 	    &filter "M"             Does the given majormode have a built-in
 				    highlighting filter?
 
+	    &error "S"              Was the string set with the ERROR token?
+					For example, a &query that is aborted
+					will return an ERROR result.
+
 	Miscellaneous functions --
 
 	  These all return string values:
@@ -1322,6 +1326,6 @@ Example startup file
 	========================= end vile.rc =======================
 
 -----------------------------------
-  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.56 2000/08/16 11:03:39 tom Exp $
+  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.58 2000/08/25 23:34:52 tom Exp $
 -----------------------------------
 

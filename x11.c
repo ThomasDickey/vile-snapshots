@@ -2,7 +2,7 @@
  *	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.249 2000/06/28 01:42:01 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.250 2000/08/26 16:38:31 tom Exp $
  *
  */
 
@@ -1008,7 +1008,7 @@ JumpProc(
     if (value < cur_win->nscrollbars) {
 	set_scroll_window(value);
 	lcur = line_no(curwp->w_bufp, curwp->w_line.l);
-	lmax = line_count(curwp->w_bufp);
+	lmax = vl_line_count(curwp->w_bufp);
 	mvupwind(TRUE, (int)(lcur - lmax * (*percent)));
 	(void)update(TRUE);
     }
@@ -1085,7 +1085,7 @@ update_scrollbar_sizes(void)
     cur_win->nscrollbars = newsbcnt;
     i=0;
     for_each_visible_window(wp) {
-	L_NUM total = line_count(curwp->w_bufp);
+	L_NUM total = vl_line_count(curwp->w_bufp);
 	L_NUM thumb = line_no(curwp->w_bufp, curwp->w_line.l);
 
 	new_height = wp->w_ntrows * cur_win->char_height;
@@ -1498,7 +1498,7 @@ do_scroll_common:
 	case 'D' :	/* Drag */
 	    if (scrollmode == drag) {
 		int lcur = line_no(curwp->w_bufp, curwp->w_line.l);
-		int ltarg = (line_count(curwp->w_bufp) * pos
+		int ltarg = (vl_line_count(curwp->w_bufp) * pos
 				/ cur_win->scrollinfo[i].totlen) + 1;
 		mvupwind(TRUE, lcur-ltarg);
 		(void)update(TRUE);
@@ -1648,7 +1648,7 @@ gui_update_scrollbar(
 
     lnum = line_no(wp->w_bufp, wp->w_line.l);
     lnum = (lnum > 0) ? lnum : 1;
-    lcnt = line_count(wp->w_bufp);
+    lcnt = vl_line_count(wp->w_bufp);
 #if MOTIF_WIDGETS
     lcnt += 1;
     XtVaSetValues(cur_win->scrollbars[i],

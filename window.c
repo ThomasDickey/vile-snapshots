@@ -2,7 +2,7 @@
  * Window management. Some of the functions are internal, and some are
  * attached to keys that the user actually types.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/window.c,v 1.95 2000/01/07 01:42:46 kev Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/window.c,v 1.96 2000/08/26 16:38:22 tom Exp $
  *
  */
 
@@ -799,7 +799,7 @@ shrinkwrap(void)
     if (wheadp->w_wndp == NULL)
 	return;			/* only one window */
 
-    nlines = line_count(curwp->w_bufp);
+    nlines = vl_line_count(curwp->w_bufp);
     if (nlines <= 0)
 	nlines = 1;
 

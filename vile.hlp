@@ -2443,6 +2443,7 @@ Programmed procedures and macros
 	&cclass		1	character class (see "show-printable")
 	&divide		2	division
 	&env		1	retrieve a system environment variable
+	&error		1	true if the parameter was ERROR
 	&equal		2	logical equality
 	&execable	1	is a file exec'able
 	&filter		1	true if the given majormode's filter is builtin
@@ -5087,4 +5088,4 @@ Problems
 
 Copyright 1995-2000 by Paul Fox, Tom Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.498 2000/08/16 10:47:39 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.499 2000/08/25 10:50:27 tom Exp $

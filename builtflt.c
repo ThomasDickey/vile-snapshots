@@ -1,7 +1,7 @@
 /*
  * Main program and I/O for external vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/RCS/builtflt.c,v 1.15 2000/08/16 11:13:15 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/builtflt.c,v 1.16 2000/08/28 10:28:35 tom Exp $
  *
  */
 
@@ -105,6 +105,7 @@ process_params(void)
 	    s = skip_ctext(s);
 	}
     }
+    vile_keywords = !k_used;
     return k_used;
 }
 

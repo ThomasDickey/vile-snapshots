@@ -1,5 +1,34 @@
 Changes for vile 9.2 (released ??? ??? ?? 2000)
 
+ 20000828 (t)
+	> Tom Dickey
+	+ add stubs for dname_to_dirnum(), vl_lookup_func() and engl2fnc() to
+	  filters/filterio.c, use those to provide hooks for vilemode when
+	  configured for builtin filters to highlight unknown keywords.
+	+ modify dname_to_dirnum() to treat any negative return from
+	  choice_to_code() as D_UNKNOWN, restoring logic that warns about
+	  unknown directives (reported by Clark Morgan).
+	+ add sedmode, and corresponding syntax filter.
+	+ rename some functions (line_count, filename, cd, help, source) to
+	  use "vl_" prefix to avoid shadow-warnings from gcc.
+	+ indent'd eval.c
+	+ implement function &error, which returns true if its argument was
+	  an ERROR token (i.e., internally error_val).
+	+ add new TBUFF-oriented functions mlreply2(), kbd_string2() to wrap
+	  kbd_reply().  These are needed to support &error, but would be useful
+	  in making vile able to handle input data with nulls.
+	+ modify TBUFF functions to check if error_val is copied to a TBUFF.
+	  In that case, set a flag which makes tb_values() return error_val.
+	+ fixes to recover if a 'source' command results in runaway recursion,
+	  e.g., if foo.rc contains the line "source foo.rc".  In
+	  perform_dobuf(), ensure that the line pointer we are using to restore
+	  the buffer/window current line is actually in them, and add a
+	  reference count in dofile() to avoid removing a buffer which is in
+	  use for sourcing.
+	+ corrected some places in makefilt.l and mms-filt.l which were writing
+	  via yyout, which caused spurious characters to be printed with
+	  builtin-filters.
+
  20000820 (s)
 	> Clark Morgan:
 	+ make Ian Jamison's change to w32pipe.c the default on all hosts,
