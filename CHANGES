@@ -1,5 +1,21 @@
 Changes for vile 8.3 (released ??? ??? ??, 1998)
 
+ (tom) 990126 (l)
+ 	+ add "~elsewith" directive to simplify use of fences in vile macros.
+	+ minor change to kbd_reply to allow abortc to be <control><space>,
+	  though otherwise nulls are still ignored in that function (request by
+	  Christian Lindig <lindig@ips.cs.tu-bs.de>)
+	+ implement crude iteration-limit for complex fences to guard against
+	  blowup in error-handling.
+ 	+ correct/restore handling of keyboard interruption in complex fences
+ 	+ add rules to filters/makefile.wnt so that if $(LEX) is set, the
+	  build will use that for the lex/flex program and make the lex-based
+	  filters.
+	+ add yywrap() dummy function to filters.c to reduce dependency on libs.
+	+ change casts in Member_Offset macro to long from int to avoid
+	  compiler warnings on IRIX 6.x with 64-bit architecture (reported by
+	  Steen Savstrup Kristensen <steen@saturn.emi.dtu.dk>).
+
  (tom) 990124 (k)
 	+ modify VMS logic in ttopen to use "SYS$COMMAND" rather than "TT:"
 	  since the latter does not work with the PIPE command added in VMS 7.x

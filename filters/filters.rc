@@ -1,4 +1,4 @@
-; $Id: filters.rc,v 1.37 1999/01/24 13:10:05 tom Exp $
+; $Id: filters.rc,v 1.41 1999/01/26 23:11:00 tom Exp $
 
 define-mode ada
 ~with define-submode ada
@@ -10,7 +10,7 @@ define-mode ada
 	fence-else "^\\s*\\<else\\>"
 	fence-fi   "^\\s*\\<end\\>"
 	ignorecase
-~with define-submode ada group "begin"
+~elsewith define-submode ada group "begin"
 	fence-if   "^\\s*\\<begin\\>"
 	fence-else "^\\s*\\<exception\\>"
 	fence-fi   "^\\s*\\<end\\>"
@@ -48,7 +48,7 @@ define-mode csh
 	fence-elif	"^\\s*\\<else\\s*if\\>"
 	fence-else	"^\\s*\\<else\\>"
 	fence-fi	"^\\s*\\<endif\\>"
-~with define-submode csh group "case"
+~elsewith define-submode csh group "case"
 	fence-if	"^\\s*\\<switch\\>\\s*([^)]*)"
 	fence-elif	"^\\s*\\<case\\>.*:"
 	fence-else	"^\\s*\\<default\\>\\s*:"
@@ -65,9 +65,9 @@ define-mode dcl
 	comment-prefix	"^\\s*/\\?\\$!"
 	comments	"^\\s*/\\?\\$!\\s*/\\?\\s*$"
 	ignorecase
-~with define-submode dcl group "if-once"
+~elsewith define-submode dcl group "if-once"
 	fence-if	"^\\s*\\(\\$\\s*\\)\\?\\<if\\>.*\\<then\\>"
-~with define-submode dcl group "if-block"
+~elsewith define-submode dcl group "if-block"
 	fence-if	"^\\s*\\(\\$\\s*\\)\\?\\<if\\>"
 	fence-else	"^\\s*\\(\\$\\s*\\)\\?\\<else\\>"
 	fence-fi	"^\\s*\\(\\$\\s*\\)\\?\\<endif\\>"
@@ -82,13 +82,13 @@ define-mode html
 	ignorecase
 	comment-prefix	"^\\s*--"
 	comments	"^\\s*$"
-~with define-submode html group "script"
+~elsewith define-submode html group "script"
 	fence-if	"^\\s*<script>$"
 	fence-fi	"^\\s*</script>$"
-~with define-submode html group "server"
+~elsewith define-submode html group "server"
 	fence-if	"^\\s*<server>$"
 	fence-fi	"^\\s*</server>$"
-~with define-submode html group "html"
+~elsewith define-submode html group "html"
 	fence-begin	"<--"
 	fence-end	"-->"
 ~endwith
@@ -145,6 +145,14 @@ define-mode make
 ~with define-submode make
 	suf "\\([Mm]akefile\\|\\.mak$\\|\\.mk$\\)"
 	comment-prefix "^\\s*/\\?[!#]"
+~if &sin $os "win32"
+	ignorecase
+~elsewith define-submode make group "nmake"
+	fence-if   "^\\s*!if"
+	fence-elif "^\\s*!elseif"
+	fence-else "^\\s*!else\\>"
+	fence-fi   "^\\s*!endif\\>"
+~endif
 ~endwith
 
 define-mode mms
@@ -181,10 +189,10 @@ define-mode perl
 	fence-elif     "^\\s*}\\s*elsif\\s*(.*{"
 	fence-else     "^\\s*}\\s*else\\s*{"
 	fence-fi       "^\\s*}\\s*$"
-~with define-submode perl group "while"
+~elsewith define-submode perl group "while"
 	fence-if       "^\\s*\\(while\\|unless\\)\\>.*{"
 	fence-fi       "^\\s*}\\s*$"
-~with define-submode perl group "do"
+~elsewith define-submode perl group "do"
 	fence-if       "^\\s*do\\>.*{"
 	fence-fi       "^\\s*}"
 ~endwith
@@ -199,12 +207,12 @@ define-mode sh
 	fence-elif "^\\s*\\<elif\\>"
 	fence-else "^\\s*\\<else\\>"
 	fence-fi   "^\\s*\\<fi\\>"
-~with define-submode sh group "case"
+~elsewith define-submode sh group "case"
 	fence-if   "^\\s*\\<case\\>.*\\<in\\>"
 	fence-elif "^\\s*[^)]\\+)"
 	fence-else "^\\s*\\*)"
 	fence-fi   "^\\s*\\<esac\\>"
-~with define-submode sh group "do"
+~elsewith define-submode sh group "do"
 	fence-if   "\\(^\\s*\\<do\\>\\|;\\s*\\<do\\>\\)\\s*$"
 	fence-fi   "^\\s*\\<done\\>"
 ~endwith
@@ -245,21 +253,24 @@ define-mode txt
 	comments	"^\\s*/\\?--\\s+/\\?\\s*$"
 ~endwith
 
-; FIXME: it would be nice to have "~with" acting like either if/elif
 define-mode vile
 ~with define-submode vile
 	suf "\\(\\.vilerc\\|\\.rc$\\)"
 	comment-prefix "^\\s*;"
-	fence-if	"\\s*~if"
-	fence-elif	"\\s*~elseif"
-	fence-else	"\\s*~else"
-	fence-fi	"\\s*~endif"
-~with define-submode vile group "while"
-	fence-if	"\\s*~while"
-	fence-fi	"\\s*~endwhile"
-~with define-submode vile group "with"
-	fence-if	"\\s*~with"
-	fence-fi	"\\s*~endwith"
+	fence-if	"\\s*~if\\>"
+	fence-elif	"\\s*~elseif\\>"
+	fence-else	"\\s*~else\\>"
+	fence-fi	"\\s*~endif\\>"
+~elsewith define-submode vile group "while"
+	fence-if	"\\s*~while\\>"
+	fence-fi	"\\s*~endwhile\\>"
+~elsewith define-submode vile group "with"
+	fence-if	"\\s*~with\\>"
+	fence-elif	"\\s*~elsewith\\>"
+	fence-fi	"\\s*~endwith\\>"
+~elsewith define-submode vile group "macro"
+	fence-if	"\\s*\\(\\d\\s*\\)\\?store-\\(macro\\|procedure\\)"
+	fence-fi	"\\s*~endm\\>"
 ~endwith
 
 define-mode yacc

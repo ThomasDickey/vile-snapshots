@@ -4,7 +4,7 @@
  *	written 1986 by Daniel Lawrence
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.172 1998/12/15 02:50:50 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.173 1999/01/26 22:38:11 tom Exp $
  *
  */
 
@@ -30,6 +30,7 @@ typedef	enum {
 	D_HIDDEN,
 	D_LOCAL,
 	D_WITH,
+	D_ELSEWITH,
 	D_ENDWITH,
 #endif
 	D_ENDM
@@ -73,6 +74,7 @@ static	const struct {
 	{ D_HIDDEN,   "hidden" },
 	{ D_LOCAL,    "local" },
 	{ D_WITH,     "with" },
+	{ D_ELSEWITH, "elsewith" },
 	{ D_ENDWITH,  "endwith" },
 	{ D_ENDM,     "endm" }
 	};
@@ -1507,6 +1509,7 @@ dname_to_dirnum(const char *eline, size_t length)
 		for (n = 0; n < TABLESIZE(dname); n++) {
 			m = strlen(dname[n].name);
 			if (length >= m
+			 && !isAlnum(eline[m])
 			 && memcmp(eline, dname[n].name, m) == 0) {
 				dirnum = dname[n].type;
 				break;
@@ -1698,6 +1701,12 @@ begin_directive(
 		status = DDIR_HIDDEN;
 		break;
 
+	case D_ELSEWITH:/* ELSEWITH directive (synonym, for fences) */
+		if (!tb_length(line_prefix)) {
+			status = unbalanced_directive(dirnum);
+			break;
+		}
+		/* FALLTHRU */
 	case D_WITH:	/* WITH directive */
 		while (isBlank(*execstr))
 			execstr++;

@@ -44,7 +44,7 @@
  *	tgetc_avail()     true if a key is avail from tgetc() or below.
  *	keystroke_avail() true if a key is avail from keystroke() or below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.189 1998/11/11 01:55:49 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.190 1999/01/26 10:47:52 tom Exp $
  *
  */
 
@@ -1396,7 +1396,7 @@ int (*complete)(DONE_ARGS))	/* handles completion */
 		 * must not use them in filenames, for example.  (We don't
 		 * support name-completion with embedded nulls, either).
 		 */
-		if (c == 0 && !(options & KBD_0CHAR))
+		if ((c == 0 && c != abortc) && !(options & KBD_0CHAR))
 			continue;
 
 		/* if we echoed ^V, erase it now */

@@ -1,7 +1,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/makefilt.l,v 1.15 1999/01/01 19:35:53 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/makefilt.l,v 1.16 1999/01/25 19:31:50 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Makefile
  *
@@ -84,7 +84,7 @@ NAME		[a-zA-Z_][a-zA-Z_0-9.-]+
 
 ^{SPACE}*(.)?include{SPACE}*	{ write_keyword(yytext, yyleng); }	
 
-^{SPACE}*\.{NAME}{SPACE}*:	{ write_keyword(yytext, yyleng); }
+^{SPACE}*[\.!]{NAME}{SPACE}*:	{ write_keyword(yytext, yyleng); }
 
 ^{SPACE}*{NAME}{SPACE}*:	{ WriteToken(Keyword_attr); }
 

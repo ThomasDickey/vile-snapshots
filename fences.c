@@ -4,11 +4,11 @@
  *
  * Match up various fenceposts, like (), [], {}, */ /*, #if, #el, #en
  *
- * Most code probably by Dan Lawrence or Dave Conroy for MicroEMACS
+ * Original version probably by Dan Lawrence or Dave Conroy for MicroEMACS
  * Extensions for vile by Paul Fox
- * Revised to use regular expressions - T.Dickey
+ * Rewrote to use regular expressions - T.Dickey
  *
- * $Header: /users/source/archives/vile.vcs/RCS/fences.c,v 1.59 1999/01/24 22:14:01 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/fences.c,v 1.62 1999/01/26 21:53:21 tom Exp $
  *
  */
 
@@ -53,6 +53,10 @@
 
 #define direction_of(sdir) (((sdir) == FORWARD) ? "forward" : "backward")
 
+#if !OPT_MAJORMODE
+#define limit_iterations() /* nothing */
+#endif
+
 	/*
 	 * ops are inclusive of the endpoint; account for this when saving
 	 * pre_op_dot
@@ -69,7 +73,6 @@
 #define test_fence_op(status, oldpos, oldpre) \
 	TRACE(("...test_fence_op, status=%d\n", status)) \
 	if (status != TRUE) { \
-		status = FALSE; \
 		DOT = oldpos; \
 		pre_op_dot = oldpre; \
 	}
@@ -78,6 +81,11 @@ static int find_complex(int sdir, int *newkey);
 static int complex_fence(int sdir, int key, int group, int level, int *newkey);
 #if OPT_MAJORMODE
 static int find_one_complex(int sdir, int level, int group, int *newkey);
+static void limit_iterations(void);
+#endif
+
+#if OPT_MAJORMODE
+static long hard_limit;
 #endif
 
 static int
@@ -88,8 +96,12 @@ next_line(int sdir)
 	else
 		DOT.l = lforw(DOT.l);
 
-	if (is_header_line(DOT,curbp) || interrupted())
+	if (is_header_line(DOT,curbp)) {
 		return FALSE;
+	} else if (interrupted()) {
+	    	kbd_alarm();
+		return ABORT;
+	}
 	return TRUE;
 }
 
@@ -189,13 +201,27 @@ complex_fence(int sdir, int key, int group, int level, int *newkey)
 		line_no(curbp, DOT.l),
 		direction_of(sdir),
 		typeof_complex(key)))
+#if OPT_MAJORMODE
+	if (--hard_limit <= 0) {
+	    if (hard_limit == 0) {
+		mlforce("[Too many iterations]");
+		kbd_alarm();
+	    }
+	    return ABORT;
+	}
+#endif
 
-	while (next_line(sdir) && (count > 0)) {
+	while (count > 0) {
 
 	    MARK savedot;
-	    int savecount = count;
+	    int savecount;
+	    int status = next_line(sdir);
+
+	    if (status != TRUE)
+	    	return status;
 
 	    savedot = DOT;
+	    savecount = count;
 
 	    TRACE(("complex_fence(%d:%d:%d) %4d:%s\n", level, group, count, line_no(curbp, DOT.l), lp_visible(DOT.l)))
 
@@ -215,10 +241,12 @@ complex_fence(int sdir, int key, int group, int level, int *newkey)
 			    do {
 				TRACE_COMPLEX
 				TRACE(("calling find_one_complex(%s)\n", get_submode_name(curbp, result)))
-				if (!find_one_complex(sdir, level+1, result, &that)) {
+				if ((status = find_one_complex(sdir, level+1, result, &that)) != TRUE) {
 				    TRACE_COMPLEX
-				    TRACE(("done calling find_one_complex (fail)\n"))
+				    TRACE(("done calling find_one_complex (%s)\n", status == ABORT ? "abort" : "fail"))
 				    that = CPP_UNKNOWN;
+				    if (status == ABORT)
+				    	return status;
 				    break;
 				}
 				TRACE_COMPLEX
@@ -229,10 +257,10 @@ complex_fence(int sdir, int key, int group, int level, int *newkey)
 			    if (that != CPP_UNKNOWN) {
 				TRACE_COMPLEX
 				TRACE(("recurring to finish group '%s'\n", get_submode_name(curbp, result)))
-				if (complex_fence(sdir, key, group, level+1, newkey)) {
+				if ((status = complex_fence(sdir, key, group, level+1, newkey)) != FALSE) {
 				    TRACE_COMPLEX
-				    TRACE(("done recurring (ok)\n"))
-				    return TRUE;
+				    TRACE(("done recurring (%s)\n", status == TRUE ? "ok" : "abort"))
+				    return status;
 				}
 				DOT = save;
 			    }
@@ -313,6 +341,7 @@ find_complex(int sdir, int *newkey)
 	 * Iterate over the complex fence groups
 	 */
 	TRACE(("find_complex %4d:%s\n", line_no(curbp, DOT.l), lp_visible(DOT.l)))
+	limit_iterations();
 	for_each_modegroup(curbp,group,0,vals) {
 	    if ((key = match_complex(TRACEARG(group) DOT.l, vals)) != CPP_UNKNOWN) {
 		start_fence_op(sdir, oldpos, oldpre);
@@ -357,6 +386,19 @@ find_one_complex(int sdir, int level, int group, int *newkey)
 	    test_fence_op(s, oldpos, oldpre);
 	}
 	return s;
+}
+
+/*
+ * Provide an absolute limit on the number of iterations in a recursive search
+ * for fences.  This is needed when the fences are not properly nested;
+ * otherwise the complex fence logic will iterate up to linecount raised to the
+ * modegroup power (worse case ;-).
+ */
+static void
+limit_iterations(void)
+{
+	bsizes(curbp);
+	hard_limit = curbp->b_linecount;
 }
 #endif
 

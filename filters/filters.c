@@ -1,7 +1,7 @@
 /*
  * Common utility functions for vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.34 1998/12/29 02:05:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.35 1999/01/25 19:13:18 tom Exp $
  *
  */
 
@@ -517,4 +517,9 @@ main(int argc, char **argv)
 	do_filter(stdin, stdout);
     }
     exit(0);
+}
+
+int yywrap(void)
+{
+	return 1;
 }
