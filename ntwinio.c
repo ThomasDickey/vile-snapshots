@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 screen API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.19 1998/08/27 10:27:28 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.21 1998/09/01 00:57:59 tom Exp $
  * Written by T.E.Dickey for vile (october 1997).
  * -- improvements by Clark Morgan (see w32cbrd.c, w32pipe.c).
  */
@@ -121,6 +121,10 @@ static	int	vile_resizing = FALSE;	/* rely on repaint_window if true */
 static	int	dont_update_sb = FALSE;
 static	DWORD	default_fcolor;
 static	DWORD	default_bcolor;
+
+#ifdef VILE_OLE
+static	OLEAUTO_OPTIONS oa_opts;
+#endif
 
 static int	nfcolor = -1;		/* normal foreground color */
 static int	nbcolor = -1;		/* normal background color */
@@ -421,6 +425,11 @@ color_of (int code)
 		if (red)   red   = BRIGHT_COLOR;
 		if (green) green = BRIGHT_COLOR;
 		if (blue)  blue  = BRIGHT_COLOR;
+		if (code == 8) {
+			red   = NORMAL_COLOR;
+			green = NORMAL_COLOR;
+			blue  = NORMAL_COLOR;
+		}
 	}
 	return PALETTERGB(red, green, blue);
 }
@@ -679,7 +688,7 @@ static void set_font(void)
 static void
 nttitle(char *title)		/* set the current window title */
 {
-	SetWindowText(cur_win->text_hwnd, title);
+	SetWindowText(winvile_hwnd(), title);
 }
 #endif
 
@@ -1001,6 +1010,15 @@ decode_key_event(KEY_EVENT_RECORD *irp)
 	    DWORD state = irp->dwControlKeyState;
 
 	    /*
+	     * This is a combination from the window menu which is caught when
+	     * we've grabbed focus.  Just ignore it here, and it will be
+	     * processed properly.
+	     */
+	    if (keyxlate[i].windows == VK_F4
+	    && (state & LEFT_ALT_PRESSED | RIGHT_ALT_PRESSED))
+		break;
+
+	    /*
 	     * If this key is modified in some way, we'll prefer to use the
 	     * Win32 definition.  But only for the modifiers that we
 	     * recognize.  Specifically, we don't care about ENHANCED_KEY,
@@ -1038,12 +1056,12 @@ get_keyboard_state(void)
 {
 	int result = 0;
 
-    if (GetKeyState(VK_CONTROL) < 0)
-        result |= (LEFT_CTRL_PRESSED|RIGHT_CTRL_PRESSED);
-    if (GetKeyState(VK_MENU) < 0)
-        result |= (LEFT_ALT_PRESSED|RIGHT_ALT_PRESSED);
-    if (GetKeyState(VK_SHIFT) < 0)
-        result |= SHIFT_PRESSED;
+	if (GetKeyState(VK_CONTROL) < 0)
+		result |= (LEFT_CTRL_PRESSED|RIGHT_CTRL_PRESSED);
+	if (GetKeyState(VK_MENU) < 0)
+		result |= (LEFT_ALT_PRESSED|RIGHT_ALT_PRESSED);
+	if (GetKeyState(VK_SHIFT) < 0)
+		result |= SHIFT_PRESSED;
 	return result;
 }
 
@@ -1112,7 +1130,9 @@ ntgetch(void)
 			ker.wVirtualKeyCode = (SHORT) msg.wParam;
 			ker.dwControlKeyState = get_keyboard_state();
 			result = decode_key_event(&ker);
-			TRACE(("GETC:KEYDOWN:%#x ->%#x\n", msg.wParam, result))
+			TRACE(("GETC:%sKEYDOWN:%#x ->%#x\n",
+				(msg.message == WM_SYSKEYDOWN) ? "SYS" : "",
+				msg.wParam, result))
 			if (result == NOKYMAP) {
 				DispatchMessage(&msg);
 				result = 0;
@@ -1607,7 +1627,7 @@ static void handle_scrollbar (HWND hWnd, int msg, int nPos)
 		break;
 	case SB_THUMBTRACK:
 		TRACE(("-> SB_THUMBTRACK: %d\n", nPos))
-		gotoline(TRUE, nPos + 1);
+		mvupwind(TRUE, line_no(curwp->w_bufp, curwp->w_line.l) - nPos);
 		break;
 	case SB_TOP:
 		TRACE(("-> SB_TOP\n"))
@@ -1675,7 +1695,7 @@ static void repaint_window(HWND hWnd)
 	EndPaint(hWnd, &ps);
 }
 
-static khit=0;
+static int khit = 0;
 
 int kbhit(void)
 {
@@ -1849,6 +1869,7 @@ LONG FAR PASCAL MainWndProc(
 		return (DefWindowProc(hWnd, message, wParam, lParam));
 
 	case WM_SYSCOMMAND:
+		TRACE(("MAIN:SYSCOMMAND %#x\n", LOWORD(wParam)))
 		switch(LOWORD(wParam))
 		{
 		case MM_FONT:
@@ -1980,6 +2001,7 @@ BOOL InitInstance(
 	 * Register the GRIP_CLASS now also, otherwise it won't succeed when
 	 * we create the first scrollbars, until we resize the window.
 	 */
+#if OPT_SCROLLBARS
 	ZeroMemory(&wc, sizeof(&wc));
 	wc.style         = CS_VREDRAW | CS_HREDRAW;
 	wc.lpfnWndProc   = (WNDPROC) GripWndProc;
@@ -1996,6 +2018,7 @@ BOOL InitInstance(
 		return (FALSE);
 	}
 	TRACE(("Registered(%s)\n", GRIP_CLASS))
+#endif
 
 	cur_win->nscrollbars = -1;
 	cur_win->x_border = GetSystemMetrics(SM_CXSIZEFRAME);
@@ -2040,7 +2063,6 @@ WinMain(
 	char *argv[MAXARGS];
 	char *ptr;
 #ifdef VILE_OLE
-	OLEAUTO_OPTIONS oa_opts;
 	int oa_invoke, oa_reg;
 
 	memset(&oa_opts, 0, sizeof(oa_opts));
@@ -2114,8 +2136,16 @@ WinMain(
 
 			if (which == 'r')
 			{
+				/*
+				 * Flag OLE registration request, but don't
+				 * eat argument.  Instead, registration
+				 * will be carried out in main.c, so that
+				 * the regular cmdline parser has an
+				 * opportunity to flag misspelled OLE
+				 * options.  Ex:  winvile -Or -mutiple
+				 */
+
 				oa_reg = TRUE;
-				eat    = 1;
 			}
 			else if (which == 'u')
 				ExitProgram(oleauto_unregister());
@@ -2147,12 +2177,25 @@ WinMain(
 	}
 
 #ifdef VILE_OLE
-	if (oa_reg) {
-		/* Pound a bunch of OLE registration data into the registry and
-		 * exit
+	if (oa_reg && oa_invoke)
+	{
+		/* tsk tsk */
+
+		MessageBox(cur_win->main_hwnd,
+			   "-Oa and -Or are mutually exclusive",
+			   prognam,
+			   MB_OK|MB_ICONSTOP);
+		ExitProgram(1);
+	}
+	if (oa_reg)
+	{
+		/*
+		 * The main program's cmd line parser will eventually cause
+		 * OLE autoamation registration to occur, at which point
+		 * winvile exits.  So don't show a window.
 		 */
-		ExitProgram(oleauto_register(&oa_opts));
-		/* NOT REACHED */
+
+		nCmdShow = SW_HIDE;
 	}
 	if (oa_opts.invisible)
 		nCmdShow = SW_HIDE;
@@ -2179,6 +2222,16 @@ winvile_hwnd(void)
 {
 	return (cur_win->main_hwnd);
 }
+
+#ifdef VILE_OLE
+void
+ntwinio_oleauto_reg(void)
+{
+	/* Pound a bunch of OLE registration data into the registry & exit. */
+
+	ExitProgram(oleauto_register(&oa_opts));
+}
+#endif
 
 /*
  * Split the version-message to allow us to format with tabs, so the

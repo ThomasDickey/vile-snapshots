@@ -21,7 +21,7 @@
 # gnu autoconf support by kevin buettner, 5/94
 # original makefile for uemacs: Adam Fritz July 30,1987  (do you recognize it?)
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.112 1998/07/01 23:29:00 bod Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.113 1998/08/30 21:33:19 tom Exp $
 #
 
 #### Start of system configuration section. ####
@@ -50,7 +50,7 @@ X_LIBS		= @X_LIBS@
 SCREEN		= @SCREEN@
 TARGET		= @TARGET@$x
 
-PERL		= @perl_bin_path@
+PERL		= @PERL@
 PERLLIB		= @perl_lib_path@
 
 prefix		= @prefix@

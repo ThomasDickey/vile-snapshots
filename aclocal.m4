@@ -1,6 +1,6 @@
 dnl Local definitions for autoconf.
 dnl
-dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.57 1998/07/22 22:19:23 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.60 1998/08/30 22:46:51 tom Exp $
 dnl
 dnl ---------------------------------------------------------------------------
 dnl ---------------------------------------------------------------------------
@@ -169,8 +169,8 @@ cf_cv_init_unions,[
 test $cf_cv_init_unions = no && AC_DEFINE(CC_CANNOT_INIT_UNIONS)
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl Check if the C compiler supports offsetof expressions in switch cases. 
-dnl Some losing compiler's can be found on pyramid's, aix, and Apple's AUX2. 
+dnl Check if the C compiler supports offsetof expressions in switch cases.
+dnl Some losing compiler's can be found on pyramid's, aix, and Apple's AUX2.
 dnl (Lint on several platforms will complain, even when the compiler won't).
 AC_DEFUN([CF_CC_OFFSETOF_CASES],[
 AC_CACHE_CHECK(if switch cases work with structure offsets,
@@ -257,25 +257,6 @@ CF_UPPER(cf_result,$cf_result)
 eval 'test $cf_cv_have_'$1' = yes && AC_DEFINE_UNQUOTED($cf_result)'
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl SVr4 curses should have term.h as well (where it puts the definitions of
-dnl the low-level interface).  This may not be true in old/broken implementations,
-dnl as well as in misconfigured systems (e.g., gcc configured for Solaris 2.4
-dnl running with Solaris 2.5.1).
-AC_DEFUN([CF_CURSES_TERM_H],
-[
-AC_MSG_CHECKING([for term.h])
-AC_CACHE_VAL(cf_cv_have_term_h,[
-	AC_TRY_COMPILE([
-#include <curses.h>
-#include <term.h>],
-	[WINDOW *x],
-	[cf_cv_have_term_h=yes],
-	[cf_cv_have_term_h=no])
-	])
-AC_MSG_RESULT($cf_cv_have_term_h)
-test $cf_cv_have_term_h = yes && AC_DEFINE(HAVE_TERM_H)
-])dnl
-dnl ---------------------------------------------------------------------------
 dnl Check if we should include <curses.h> to pick up prototypes for termcap
 dnl functions.  On terminfo systems, these are normally declared in <curses.h>,
 dnl but may be in <term.h>.  We check for termcap.h as an alternate, but it
@@ -355,6 +336,25 @@ termcap.h) #(vi
 	;;
 esac
 
+])dnl
+dnl ---------------------------------------------------------------------------
+dnl SVr4 curses should have term.h as well (where it puts the definitions of
+dnl the low-level interface).  This may not be true in old/broken implementations,
+dnl as well as in misconfigured systems (e.g., gcc configured for Solaris 2.4
+dnl running with Solaris 2.5.1).
+AC_DEFUN([CF_CURSES_TERM_H],
+[
+AC_MSG_CHECKING([for term.h])
+AC_CACHE_VAL(cf_cv_have_term_h,[
+	AC_TRY_COMPILE([
+#include <curses.h>
+#include <term.h>],
+	[WINDOW *x],
+	[cf_cv_have_term_h=yes],
+	[cf_cv_have_term_h=no])
+	])
+AC_MSG_RESULT($cf_cv_have_term_h)
+test $cf_cv_have_term_h = yes && AC_DEFINE(HAVE_TERM_H)
 ])dnl
 dnl ---------------------------------------------------------------------------
 dnl You can always use "make -n" to see the actual options, but it's hard to
@@ -1030,6 +1030,42 @@ esac
 AC_SUBST(PROG_EXT)
 ])dnl
 dnl ---------------------------------------------------------------------------
+dnl Check for Perl, given the minimum version, to ensure that required features
+dnl are present.
+dnl $1 = the minimum version
+changequote() 
+define(U_TURN_BACK, ]) 
+changequote([, ]) 
+
+AC_DEFUN(CF_PROG_PERL,
+[# find perl binary
+AC_MSG_CHECKING([for ifelse([$1],,perl,[perl-$1])])
+AC_CACHE_VAL(cf_cv_prog_PERL,
+[ifelse([$1],,,[echo "configure:__oline__: ...version $1 required" >&AC_FD_CC
+  ])# allow user to override
+  if test -n "$PERL"; then
+    cf_try="$PERL"
+  else
+    cf_try="perl perl5"
+  fi
+
+  for cf_prog in $cf_try; do
+    echo "configure:__oline__: trying $cf_prog" >&AC_FD_CC
+    if ($cf_prog -e 'printf "found version %g\n",$]U_TURN_BACK[dnl
+ifelse([$1],,,[;exit($]U_TURN_BACK[<$1)])') 1>&AC_FD_CC 2>&1; then
+      cf_cv_prog_PERL=$cf_prog
+      break
+    fi
+  done])dnl
+PERL="$cf_cv_prog_PERL"
+if test -n "$PERL"; then
+  AC_MSG_RESULT($PERL)
+else
+  AC_MSG_RESULT(no)
+fi
+AC_SUBST(PERL)dnl
+])dnl
+dnl ---------------------------------------------------------------------------
 dnl CF_RESTARTABLE_PIPEREAD is a modified version of AC_RESTARTABLE_SYSCALLS
 dnl from acspecific.m4, which uses a read on a pipe (surprise!) rather than a
 dnl wait() as the test code.  apparently there is a POSIX change, which OSF/1
@@ -1163,6 +1199,48 @@ do
     CF_CHECK_ERRNO($cf_name)
 done
 ])dnl
+dnl ---------------------------------------------------------------------------
+dnl Look for termcap libraries, or the equivalent in terminfo.
+AC_DEFUN([CF_TERMCAP_LIBS],
+[
+AC_CACHE_VAL(cf_cv_lib_termcap,[
+cf_cv_lib_termcap=none
+AC_TRY_LINK([],[char *x=(char*)tgoto("",0,0)],
+[AC_TRY_LINK([],[int x=tigetstr("")],
+	[cf_cv_termlib=terminfo],
+	[cf_cv_termlib=termcap])
+	CF_VERBOSE(using functions in predefined $cf_cv_termlib LIBS)
+],[
+ifelse([$1],,,[
+if test "$1" = ncurses; then
+	CF_NCURSES_CPPFLAGS
+	CF_NCURSES_LIBS
+	cf_cv_termlib=terminfo
+fi
+])
+# HP-UX 9.x terminfo has setupterm, but no tigetstr.
+if test "$termlib" = none; then
+	AC_CHECK_LIB(termlib, tigetstr, [LIBS="$LIBS -ltermlib" cf_cv_lib_termcap=terminfo])
+fi
+if test "$cf_cv_lib_termcap" = none; then
+	AC_CHECK_LIB(termlib, tgoto, [LIBS="$LIBS -ltermlib" cf_cv_lib_termcap=termcap])
+fi
+if test "$cf_cv_lib_termcap" = none; then
+	# allow curses library for broken AIX system.
+	AC_CHECK_LIB(curses, initscr, [LIBS="$LIBS -lcurses" cf_cv_lib_termcap=termcap])
+	AC_CHECK_LIB(termcap, tgoto, [LIBS="$LIBS -ltermcap" cf_cv_lib_termcap=termcap])
+fi
+if test "$cf_cv_lib_termcap" = none; then
+	AC_CHECK_LIB(termcap, tgoto, [LIBS="$LIBS -ltermcap" cf_cv_lib_termcap=termcap])
+fi
+if test "$cf_cv_lib_termcap" = none; then
+	AC_CHECK_LIB(ncurses, tgoto, [LIBS="$LIBS -lncurses" cf_cv_lib_termcap=ncurses])
+fi
+])
+if test "$cf_cv_lib_termcap" = none; then
+	AC_ERROR([Can't find -ltermlib, -lcurses, or -ltermcap])
+fi
+])])dnl
 dnl ---------------------------------------------------------------------------
 dnl Check for return and param type of 3rd -- OutChar() -- param of tputs().
 dnl
