@@ -7,7 +7,7 @@
  *	To do:	add 'tb_ins()' and 'tb_del()' to support cursor-level command
  *		editing.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tbuff.c,v 1.60 2005/01/24 22:09:32 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tbuff.c,v 1.62 2005/02/01 10:48:48 tom Exp $
  *
  */
 
@@ -467,18 +467,12 @@ tb_dequote(TBUFF **p)
 	UINT delim = CharOf(value[0]);
 	UINT j, k, ch;
 	UINT have = tb_length(*p);
-	UINT used = have - 1;
+	UINT used = have;
 
 	if (delim == SQUOTE) {
-	    for (j = 0, k = 1; k < have; ++k) {
-		ch = CharOf(value[j] = value[k]);
-		if (escaped) {
-		    escaped = FALSE;
-		    ++j;
-		} else if (ch == BACKSLASH && CharOf(value[k + 1]) == delim) {
-		    escaped = TRUE;
-		    --used;
-		} else if (ch == delim) {
+	    for (j = k = 0; k < have; ++k) {
+		value[j] = value[k];
+		if (CharOf(value[j]) == delim) {
 		    --used;
 		} else {
 		    ++j;
@@ -511,7 +505,7 @@ tb_dequote(TBUFF **p)
 }
 
 /*
- * Quote the content.  We prefer single-quotes since they're simpler.
+ * Quote the content.  We prefer single-quotes since they're simpler to read.
  */
 TBUFF *
 tb_enquote(TBUFF **p)
@@ -525,27 +519,40 @@ tb_enquote(TBUFF **p)
 	UINT j;
 	UINT have = tb_length(*p) - 1;
 	UINT need = 2 + have;
+	int delim;
 
+	/* decide which delimiter we can use */
+	delim = SQUOTE;
 	for (j = 0; j < have; ++j) {
 	    if (value[j] == SQUOTE) {
-		++need;
+		delim = DQUOTE;
+		break;
 	    }
 	}
+
+	/* if we can use single-quotes, there is no need for backslashes */
+	if (delim == DQUOTE) {
+	    for (j = 0; j < have; ++j) {
+		if (value[j] == BACKSLASH || value[j] == DQUOTE)
+		    ++need;
+	    }
+	}
+
 	tb_alloc(p, need + 1);
 	(*p)->tb_used = need + 1;
 
 	value[need] = EOS;
-	value[need - 1] = SQUOTE;
+	value[need - 1] = (char) delim;
 	for (j = 0; j < have; ++j) {
 	    UINT i = have - j - 1;
 	    UINT k = need - j - 2;
 	    UINT ch = CharOf(value[k] = value[i]);
-	    if (ch == SQUOTE) {
+	    if (delim == DQUOTE && (ch == DQUOTE || ch == BACKSLASH)) {
 		--need;
 		value[k - 1] = BACKSLASH;
 	    }
 	}
-	value[0] = SQUOTE;
+	value[0] = (char) delim;
 	TRACE2(("...tb_enquote %s\n", tb_visible(*p)));
     }
     return *p;

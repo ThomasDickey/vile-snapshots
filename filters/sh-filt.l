@@ -5,7 +5,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/sh-filt.l,v 1.60 2004/12/10 01:34:56 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/sh-filt.l,v 1.61 2005/02/02 23:57:34 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Shell script.
  */
@@ -42,7 +42,7 @@ static int here_exp;
 static int embed_or_append(char *text, int length);
 static int got_here(char *text, int length);
 static void color_delimiter(char *text, int size, char *attr);
-static void handle_backtic(void);
+static void handle_backtic(char *text, int length);
 static void pop_stk(void);
 static void push_stk(int state);
 static void save_here(char *text, int length);
@@ -98,7 +98,7 @@ IDENTX		\$[\*@#\?\$!-]
 <NORMAL>{SSTRING}	{ WriteToken(String_attr); }
 <NORMAL>\"		{ push_stk(QUOTED); BeginQuote(QUOTED, String_attr); }
 
-<NORMAL>{BACKTIC}	{ handle_backtic(); WriteToken(Action_attr); }
+<NORMAL>{BACKTIC}	{ handle_backtic(yytext, yyleng); }
 <NORMAL>{ACTION}	{ WriteToken(Action_attr); }
 
 <NORMAL>\<\<[-]?{SPACE}*{QIDENT} {
@@ -121,10 +121,11 @@ IDENTX		\$[\*@#\?\$!-]
 			    }
 			    flt_bfr_begin(String_attr);
 			}
+<NORMAL>[\n]		{ ECHO; }
+
 <HEREDOC>{BACKTIC}	{
 			    if (here_exp) {
-				handle_backtic();
-				WriteToken(Action_attr);
+				handle_backtic(yytext, yyleng);
 			    } else {
 				flt_bfr_append(yytext, yyleng);
 			    }
@@ -152,7 +153,7 @@ IDENTX		\$[\*@#\?\$!-]
 <HEREDOC>\n		{ flt_bfr_append(yytext, yyleng); }
 <HEREDOC>.		{ flt_bfr_append(yytext, yyleng); }
 
-<QUOTED>{BACKTIC}	{ handle_backtic(); WriteToken(Action_attr); }
+<QUOTED>{BACKTIC}	{ handle_backtic(yytext, yyleng); }
 <QUOTED>\\[\n]		|
 <QUOTED>\\.		{ flt_bfr_embed(yytext, 1, Action_attr); flt_bfr_append(yytext + 1, yyleng - 1); }
 <QUOTED>{IDENT1}	|
@@ -162,7 +163,7 @@ IDENTX		\$[\*@#\?\$!-]
 <QUOTED>[\n$]		{ flt_bfr_append(yytext, yyleng); }
 <QUOTED>\"		{ FinishQuote(NORMAL); pop_stk(); }
 
-<SUBST>{BACKTIC}	{ WriteToken(Action_attr); handle_backtic(); }
+<SUBST>{BACKTIC}	{ handle_backtic(yytext, yyleng); }
 <SUBST>{IDENT2R}	{ flt_bfr_embed(yytext, yyleng, Ident_attr); pop_stk(); }
 <SUBST>\"		{ push_stk(QUOTED); BeginQuote(QUOTED, String_attr); }
 <SUBST>[^"}]+		{ flt_bfr_embed(yytext, yyleng, ""); }
@@ -192,10 +193,18 @@ push_stk(int state)
 }
 
 static void
-handle_backtic(void)
+handle_backtic(char *text, int len)
 {
+    flt_bfr_finish();
+    flt_puts(text, len, Action_attr);
     if (stk_state[stk_level].backtic) {
 	pop_stk();
+	switch (stk_state[stk_level].state) {
+	case QUOTED:
+	case SUBST:
+	    flt_bfr_begin(String_attr);
+	    break;
+	}
     } else {
 	flt_bfr_finish();
 	push_stk(NORMAL);

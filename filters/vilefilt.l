@@ -6,7 +6,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/vilefilt.l,v 1.28 2004/12/10 00:44:41 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/vilefilt.l,v 1.29 2005/02/02 01:58:22 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of vile macros
  * - T.Dickey
@@ -63,7 +63,10 @@ CONTROL		({CTRLA}|{CTRLX}|{ESCAPE})({CTRLV}.|\\.|[^ \t\n])*
 VISIBLE		.|^.
 BINDING		(M-)?((^[AX]-(^)?{VISIBLE})|((#|FN)-?{VISIBLE})|^.)
 
-SSTRING		(\'(\\.|[^'\n])*\')
+SSTRING_E	(\'[^'\n]*\n)
+DSTRING_E	\"(\\.|[^\\"\n])*\n
+
+SSTRING		(\'[^'\n]*\')
 DSTRING		\"(\\.|[^\\"\n])*\"
 
 FUNCTION	&[a-zA-Z]+
@@ -93,6 +96,9 @@ SPACE		;
 {VARIABLE}	{ WriteToken(Ident2_attr); }
 
 {NUMBER}	{ WriteToken(Number_attr); }
+
+{SSTRING_E}	|
+{DSTRING_E}	{ WriteToken(Error_attr); }
 
 \r		|
 \\.		|

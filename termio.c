@@ -3,7 +3,7 @@
  * characters, and write characters in a barely buffered fashion on the display.
  * All operating systems.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/termio.c,v 1.198 2004/12/02 19:42:40 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/termio.c,v 1.199 2005/01/25 14:34:18 tom Exp $
  *
  */
 
@@ -218,6 +218,7 @@ set_kbd_polling(int yes)
 # endif
 #endif
 
+static int saved_tty = FALSE;
 static struct termios otermios;
 
 #if !DISP_X11
@@ -247,13 +248,16 @@ vl_save_tty(void)
 #else
     wkillc = tocntrl('W');
 #endif
+    saved_tty = TRUE;
 }
 
 void
 vl_restore_tty(void)
 {
-    tcdrain(1);
-    tcsetattr(0, TCSADRAIN, &otermios);
+    if (saved_tty) {
+	tcdrain(1);
+	tcsetattr(0, TCSADRAIN, &otermios);
+    }
 }
 
 void
@@ -386,6 +390,7 @@ ttunclean(void)
 
 /* original terminal characteristics and characteristics to use inside */
 struct termio otermio, ntermio;
+static int saved_tty = FALSE;
 
 #ifdef HAVE_SETBUFFER		/* setbuffer() isn't on most termio systems */
 char tobuf[TBUFSIZ];		/* terminal output buffer */
@@ -412,12 +417,14 @@ vl_save_tty(void)
 #else /* no SIGTSTP */
     suspc = tocntrl('Z');
 #endif
+    saved_tty = TRUE;
 }
 
 void
 vl_restore_tty(void)
 {
-    ioctl(0, TCSETAF, (char *) &otermio);
+    if (saved_tty)
+	ioctl(0, TCSETAF, (char *) &otermio);
 }
 
 void
@@ -521,11 +528,16 @@ char tobuf[TBUFSIZ];		/* terminal output buffer */
 
 #undef	CTRL
 #include	<sgtty.h>	/* for stty/gtty functions */
+
+static int saved_tty = FALSE;
+
 struct sgttyb ostate;		/* saved tty state */
 struct sgttyb nstate;		/* values for editor mode */
 struct sgttyb rnstate;		/* values for raw editor mode */
+
 int olstate;			/* Saved local mode values */
 int nlstate;			/* new local mode values */
+
 struct ltchars oltchars;	/* Saved terminal special character set */
 struct ltchars nltchars =
 {-1, -1, -1, -1, -1, -1};	/* a lot of nothing */
@@ -551,17 +563,20 @@ vl_save_tty(void)
 #ifdef	TIOCLGET
     ioctl(0, TIOCLGET, (char *) &olstate);
 #endif
+    saved_tty = TRUE;
 }
 
 void
 vl_restore_tty(void)
 {
-    ioctl(0, TIOCSETN, (char *) &ostate);
-    ioctl(0, TIOCSETC, (char *) &otchars);
-    ioctl(0, TIOCSLTC, (char *) &oltchars);
+    if (saved_tty) {
+	ioctl(0, TIOCSETN, (char *) &ostate);
+	ioctl(0, TIOCSETC, (char *) &otchars);
+	ioctl(0, TIOCSLTC, (char *) &oltchars);
 #ifdef	TIOCLSET
-    ioctl(0, TIOCLSET, (char *) &olstate);
+	ioctl(0, TIOCLSET, (char *) &olstate);
 #endif
+    }
 }
 
 void

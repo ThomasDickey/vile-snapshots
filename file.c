@@ -5,7 +5,7 @@
  * reading and writing of the disk are
  * in "fileio.c".
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.367 2005/01/24 00:23:42 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.370 2005/01/31 21:27:13 tom Exp $
  */
 
 #include "estruct.h"
@@ -872,7 +872,7 @@ ff_load_directory(char *fname)
 #endif
 
 /*
- * Insert file "fname" into the kill register.  Called by insert file command. 
+ * Insert file "fname" into the kill register.  Called by insert file command.
  * Return the final status of the read as true/false/abort.
  */
 static int
@@ -2201,14 +2201,37 @@ writereg(REGION * rp,
 		else
 #endif
 		{
-		    if (forced
-			&& !ffaccess(fn, FL_WRITEABLE)
-			&& (protection = file_protection(fn)) >= 0) {
-			chmod(SL_TO_BSL(fn), protection | 0600);
+#if SYS_WINNT
+		    ULONG prev_access_mask = 0;
+		    int write_acl_added = FALSE;
+#endif
+		    if (forced) {
+#if SYS_WINNT
+			/*
+			 * If running cygwin on an NTFS partition, cygwin's
+			 * chmod utility adds ACLs to files to simulate
+			 * unix file permissions.  In the case of readonly
+			 * files (e.g., $ chmod a=r fn), the win32 posix
+			 * interfaces don't work well, if at all.  So make
+			 * the current file object a bit more Unix API
+			 * friendly, if necessary.
+			 */
+
+			write_acl_added = w32_add_write_acl(fn,
+							    &prev_access_mask);
+#endif
+			if (!ffaccess(fn, FL_WRITEABLE)
+			    && (protection = file_protection(fn)) >= 0) {
+			    chmod(SL_TO_BSL(fn), protection | 0600);
+			}
 		    }
 		    status = actually_write(rp, fn, msgf, bp, forced, encoded);
 		    if (protection > 0)
 			chmod(SL_TO_BSL(fn), protection);
+#if SYS_WINNT
+		    if (write_acl_added)
+			(void) w32_remove_write_acl(fn, prev_access_mask);
+#endif
 		}
 	    }
 	}
@@ -2384,6 +2407,12 @@ vl_filename(int f GCC_UNUSED, int n GCC_UNUSED)
     } else
 #endif
 	ch_fname(curbp, fname);
+
+#if SYS_WINNT && DISP_NTWIN
+    /* remember new filename if later written out to disk */
+    b_clr_registered(curbp);
+#endif
+
     curwp->w_flag |= WFMODE;
     updatelistbuffers();
     return TRUE;

@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 screen API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.141 2005/01/19 23:26:38 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.142 2005/01/26 19:19:01 cmorgan Exp $
  * Written by T.E.Dickey for vile (october 1997).
  * -- improvements by Clark Morgan (see w32cbrd.c, w32pipe.c).
  */
@@ -86,6 +86,8 @@ static HANDLE hAccTable;	/* handle to accelerator table */
 static HANDLE vile_hinstance;
 static HCURSOR arrow_cursor;
 static HCURSOR hglass_cursor;
+static HCURSOR selection_cursor;
+static HCURSOR wdwsize_cursor;
 static HMENU vile_menu, popup_menu;
 static LOGFONT vile_logfont;
 static UINT nIDTimer = 0;
@@ -1881,12 +1883,13 @@ static POPUP_MENU_INFO popup_menu_tbl[] =
     /* *INDENT-OFF* */
     {IDM_OPEN,		"&Open...",	"winopen"},
     {IDM_SAVE_AS,	"&Save As...",	"winsave"},
+    {IDM_CHDIR,		"C&D...",	"wincd"},
     {IDM_UNDO,		"&Undo",	"undo-changes-backward"},
     {IDM_REDO,		"&Redo",	"redo-changes-forward"},
     {IDM_CUT,		"Cu&t",		"cut-to-clipboard"},
     {IDM_COPY,		"&Copy",	"copy-unnamed-reg-to-clipboard"},
     {IDM_PASTE,		"&Paste",	"paste-from-clipboard"},
-    {IDM_DELETE,	"&Delete",	"delete-text-selection"},
+    {IDM_DELETE,	"De&lete",	"delete-text-selection"},
     {IDM_SELECT_ALL,	"Select &All",	"select-all"},
     /* *INDENT-ON* */
 
@@ -2032,6 +2035,10 @@ handle_builtin_menu(WPARAM code)
 	winopen_dir(NULL);
 	update(FALSE);
 	break;
+    case IDM_CHDIR:
+	wincd_dir(NULL);
+	update(FALSE);
+	break;
     case IDM_PRINT:
 	winprint(0, 0);
 	update(FALSE);
@@ -2104,12 +2111,10 @@ handle_builtin_menu(WPARAM code)
 	break;
     default:
 	if (cmd >= IDM_RECENT_FILES && cmd < IDM_RECENT_FLDRS) {
-	    edit_recent_file(cmd);
-	    update(FALSE);
+	    update(!edit_recent_file(cmd));
 	} else if (cmd >= IDM_RECENT_FLDRS &&
 		   cmd < (IDM_RECENT_FLDRS + MAX_RECENT_FLDRS)) {
-	    cd_recent_folder(cmd);
-	    update(FALSE);
+	    update(!cd_recent_folder(cmd));
 	} else
 	    result = FALSE;
 	break;
@@ -2898,11 +2903,32 @@ ntgetch(void)
 		/* Allow click to change window focus. */
 		if (MouseClickSetPos(&first, &onmode)) {
 		    fhide_cursor();
-		    sel_pending = buttondown = TRUE;
 		    lmbdn_mark = DOT;
 		    latest = first;
 		    that_wp = row2window(first.y);
 		    (void) update(TRUE);	/* for wdw change */
+
+		    /*
+		     * If clicking around on bottom mode line or in the
+		     * message line (aka mini-buffer), we're done.  In the
+		     * next computation, "term.rows - 1" is last usable
+		     * editor row, and additional "- 1" accounts for
+		     * bottom mode line.
+		     */
+		    if (first.y >= term.rows - 1 - 1) {
+			fshow_cursor();
+			sel_pending = buttondown = FALSE;
+			break;
+		    }
+
+		    sel_pending = buttondown = TRUE;
+		    SetCursor((onmode) ? wdwsize_cursor : selection_cursor);
+
+		    if (onmode) {
+			/* no mouse capture necessary if on a mode line */
+
+			break;
+		    }
 
 		    /* we _will_ own the mouse, if win32 API cooperates */
 		    SetCapture(cur_win->text_hwnd);
@@ -3079,16 +3105,35 @@ ntgetch(void)
 	    break;
 
 	case WM_MOUSEMOVE:
-	    if (buttondown) {
-		mousemove(&sel_pending,
-			  onmode,
-			  &first,
-			  &latest,
-			  &lmbdn_mark,
-			  that_wp);
-		selecting = !sel_pending;
-	    } else {
-		DispatchMessage(&msg);
+	    {
+		POINT pt;
+		WINDOW *wp;
+
+		GetMousePos(&pt);
+		if ((wp = row2window(pt.y)) != 0) {
+		    /*
+		     * In the next computation, "term.rows - 1" is last
+		     * usable editor row, and additional "- 1" accounts for
+		     * bottom mode line.
+		     */
+
+		    if (pt.y == mode_row(wp) && (pt.y < term.rows - 1 - 1)) {
+			/* on movable mode line, show appropriate cursor */
+
+			SetCursor(wdwsize_cursor);
+		    }
+		}
+		if (buttondown) {
+		    mousemove(&sel_pending,
+			      onmode,
+			      &first,
+			      &latest,
+			      &lmbdn_mark,
+			      that_wp);
+		    selecting = !sel_pending;
+		} else {
+		    DispatchMessage(&msg);
+		}
 	    }
 	    break;
 
@@ -3471,6 +3516,8 @@ InitInstance(HINSTANCE hInstance)
 
     hglass_cursor = LoadCursor((HINSTANCE) 0, IDC_WAIT);
     arrow_cursor = LoadCursor((HINSTANCE) 0, IDC_ARROW);
+    selection_cursor = LoadCursor((HINSTANCE) 0, IDC_IBEAM);
+    wdwsize_cursor = LoadCursor((HINSTANCE) 0, IDC_SIZENS);
 
     default_bcolor = GetSysColor(COLOR_WINDOWTEXT + 1);
     default_fcolor = GetSysColor(COLOR_WINDOW + 1);
@@ -3576,6 +3623,7 @@ InitInstance(HINSTANCE hInstance)
     AppendMenu(vile_menu, MF_SEPARATOR, 0, NULL);
     AppendMenu(vile_menu, MF_STRING, IDM_OPEN, "&Open...");
     AppendMenu(vile_menu, MF_STRING, IDM_SAVE_AS, "&Save As...");
+    AppendMenu(vile_menu, MF_STRING, IDM_CHDIR, "C&D...");
     AppendMenu(vile_menu, MF_STRING, IDM_FAVORITES, "Fa&vorites...");
     AppendMenu(vile_menu, MF_STRING, IDM_FONT, "&Font...");
     AppendMenu(vile_menu, MF_STRING, IDM_ABOUT, "&About...");

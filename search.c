@@ -3,7 +3,7 @@
  * and backward directions.
  *  heavily modified by Paul Fox, 1990
  *
- * $Header: /users/source/archives/vile.vcs/RCS/search.c,v 1.136 2004/12/06 01:08:42 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/search.c,v 1.137 2005/01/26 23:04:42 tom Exp $
  *
  * original written Aug. 1986 by John M. Gamble, but I (pgf) have since
  * replaced his regex stuff with Henry Spencer's regexp package.
@@ -762,7 +762,9 @@ readpattern(const char *prompt,
     }
     if (status == TRUE) {
 	if (srchexpp) {		/* compile it */
+	    beginDisplay();
 	    FreeIfNeeded(*srchexpp);
+	    endofDisplay();
 	    *srchexpp = regcomp(tb_values(*apat),
 				tb_length(*apat),
 				b_val(curbp, MDMAGIC));

@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/lex-filt.l,v 1.23 2004/11/23 22:40:50 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/lex-filt.l,v 1.24 2005/02/02 21:14:18 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of LEX program.
  */
@@ -115,10 +115,13 @@ write_states(char *text, int len)
 {
     int n;
     if (text[0] == '<') {	/* only happens if we have {STATES} */
-	n = 1 + strchr(text, '>') - text;
-	flt_puts(text, n, Keyword_attr);
-	text += n;
-	len -= n;
+	char *next = strchr(text, '>');
+	if (next != 0) {	/* ...or is confused with a {PATTERN} */
+	    n = 1 + next - text;
+	    flt_puts(text, n, Keyword_attr);
+	    text += n;
+	    len -= n;
+	}
     }
     flt_puts(text, len, String_attr);
 }

@@ -5623,6 +5623,7 @@ Win32 specifics
 
 	"Open"		executes the "winopen" command (described below).
 	"Save As"	executes the "winsave" command (described below).
+	"CD"		executes the "wincd" command (described below).
 	"Favorites"	executes "winopen $favorites", which starts a common
 			open dialog box that browses the Windows Favorites
 			folder.  This feature is especially useful when
@@ -5651,7 +5652,7 @@ Win32 specifics
 	"Delete"	deletes current text selection into unnamed register.
 	"Select All"    selects all text in the current buffer.
 
-	The first five popup menu entries are added to the system menu (in
+	The first six popup menu entries are added to the system menu (in
 	the upper left corner of the window).  The system menu also includes:
 
 	+ Two selections that support the traditional Windows printing
@@ -5788,6 +5789,12 @@ Win32 specifics
 				set-rgb-palette red 200 0 0
 
 	swap-clipboard-keys  See discussion of clipboard above.
+
+	wincd [dir]	Launches a standard Windows "Browse Folder" control
+			for the purpose of graphically specifying a new
+			working directory.  The optional "dir" argument
+			specifies the initial browse directory (default is
+			current working directory).
 
 	winopen [dir]	Launches the Windows common open dialog box to open
 			one or more files within the editor.  The optional
@@ -6175,4 +6182,4 @@ Problems
 
 Copyright 1995-2005 by Paul Fox, Thomas Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.597 2005/01/24 22:20:26 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.598 2005/01/26 19:17:55 cmorgan Exp $

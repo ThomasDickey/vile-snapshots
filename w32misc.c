@@ -2,7 +2,7 @@
  * w32misc:  collection of unrelated, common win32 functions used by both
  *           the console and GUI flavors of the editor.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32misc.c,v 1.43 2005/01/17 00:40:30 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32misc.c,v 1.45 2005/02/01 00:12:40 tom Exp $
  */
 
 #include "estruct.h"
@@ -1220,3 +1220,209 @@ w32_center_window(HWND child_hwnd, HWND parent_hwnd)
                TRUE);
 }
 #endif
+
+/*
+ * If necessary, add/remove World/Everyone write permission to/from a file acl.
+ *
+ * Much of this function's logic is cribbed from here:
+ *
+ *     http://www.devx.com/cplus/Article/16711/1954?pf=true
+ *
+ * This function is not 100% robust.  It will not handle the case of:
+ *
+ *     + a file that does not include World/Everyone ACE
+ *     + a file that includes one or more DENIED World/Everyone ACEs
+ *
+ * However, this function provides enough logic to make an NTFS-based,
+ * cygwin-generated, readonly file, writable.  Which is good enough for
+ * the purpose at hand.
+ */
+static int
+add_remove_write_acl(const char *filename, int add_acl, DWORD *prev_access_mask)
+{
+#define WRITABLE_MASK (FILE_WRITE_DATA | FILE_APPEND_DATA)
+
+    BOOL               bDaclPresent, bDaclDefaulted;
+    char               *bslfn, *msg = NULL;
+    DWORD              dwSizeNeeded;
+    int                i, rc = FALSE;
+    PSID               pAceSID, pWorldSID;
+    PACL               pacl;
+    ACCESS_ALLOWED_ACE *pAllowed;
+    BYTE               *pSecDescriptorBuf;
+
+    SID_IDENTIFIER_AUTHORITY SIDAuthWorld = SECURITY_WORLD_SID_AUTHORITY;
+
+    /* does the file exist? */
+    bslfn = sl_to_bsl(filename);
+    if (access(bslfn, 0) != 0)
+        return (rc);
+
+    dwSizeNeeded = 0;
+    (void) GetFileSecurity(bslfn,
+                           DACL_SECURITY_INFORMATION,
+                           NULL,
+                           0,
+                           &dwSizeNeeded);
+    if (dwSizeNeeded == 0)
+    {
+        fmt_win32_error(W32_SYS_ERROR, &msg, 0);
+        mlforce("[GetFileSecurity: %s]", mktrimmed(msg));
+        LocalFree(msg);
+        return (rc);
+    }
+    if ((pSecDescriptorBuf = malloc(sizeof(BYTE) * dwSizeNeeded)) == NULL)
+        return (no_memory("add_remove_write_acl"));
+    if (! GetFileSecurity(bslfn,
+                          DACL_SECURITY_INFORMATION,
+                          pSecDescriptorBuf,
+                          dwSizeNeeded,
+                          &dwSizeNeeded))
+    {
+        fmt_win32_error(W32_SYS_ERROR, &msg, 0);
+        mlforce("[GetFileSecurity: %s]", mktrimmed(msg));
+        LocalFree(msg);
+        free(pSecDescriptorBuf);
+        return (rc);
+    }
+
+    /* Get DACL from Security Descriptor */
+    pacl = NULL;
+    if (! GetSecurityDescriptorDacl((SECURITY_DESCRIPTOR*) pSecDescriptorBuf,
+                                    &bDaclPresent,
+                                    &pacl,
+                                    &bDaclDefaulted))
+    {
+        fmt_win32_error(W32_SYS_ERROR, &msg, 0);
+        mlforce("[GetSecurityDescriptorDacl: %s]", mktrimmed(msg));
+        LocalFree(msg);
+        free(pSecDescriptorBuf);
+        return (rc);
+    }
+
+    /* Check if DACL present in security descriptor */
+    if (! bDaclPresent || pacl == NULL)
+    {
+        /*
+         * Nothing to manipulate, perhaps a non-NTFS file.  Regardless, a
+         * NULL discretionary ACL implicitly allows all access to an object
+         * (sez docu for GetSecurityDescriptorDacl).
+         */
+
+        free(pSecDescriptorBuf);
+        return (rc);
+    }
+
+    /* Create a well-known SID for "Everyone/World" (code courtesy of MSDN).*/
+    if(! AllocateAndInitializeSid(&SIDAuthWorld,
+                                  1,
+                                  SECURITY_WORLD_RID,
+                                  0, 0, 0, 0, 0, 0, 0,
+                                  &pWorldSID))
+    {
+        fmt_win32_error(W32_SYS_ERROR, &msg, 0);
+        mlforce("[AllocateAndInitializeSid: %s]", mktrimmed(msg));
+        LocalFree(msg);
+        free(pSecDescriptorBuf);
+        return (rc);
+    }
+    for (i = 0, pAllowed = NULL; i < pacl->AceCount; i++)
+    {
+        ACE_HEADER *phdr;
+
+        if (GetAce(pacl, i, (LPVOID *) &phdr))
+        {
+            if (phdr->AceType == ACCESS_ALLOWED_ACE_TYPE)
+            {
+                pAllowed = (ACCESS_ALLOWED_ACE *) phdr;
+                pAceSID  = (SID *) &(pAllowed->SidStart);
+                if (EqualSid(pWorldSID, pAceSID))
+                    break;
+            }
+        }
+    }
+    if (i < pacl->AceCount)
+    {
+        /* success */
+
+        int mkchange = FALSE;
+
+        if (add_acl)
+        {
+            if ((pAllowed->Mask & WRITABLE_MASK) != WRITABLE_MASK)
+            {
+                /* world ACE does not have "write" permissions...add them */
+
+                *prev_access_mask  = pAllowed->Mask;
+                mkchange           = TRUE;
+                pAllowed->Mask    |= FILE_GENERIC_WRITE;
+            }
+        }
+        else
+        {
+            /* restore previous world ACE mask for this file */
+
+            pAllowed->Mask = *prev_access_mask;
+            mkchange       = TRUE;
+        }
+        if (mkchange)
+        {
+            rc = SetFileSecurity(bslfn,
+                                 DACL_SECURITY_INFORMATION,
+                                 pSecDescriptorBuf);
+
+            if (! rc)
+            {
+                DWORD err = GetLastError();
+                if (! (add_acl && err == ERROR_ACCESS_DENIED))
+                {
+                    fmt_win32_error(err, &msg, 0);
+                    mlforce("[SetFileSecurity: %s]", mktrimmed(msg));
+                    LocalFree(msg);
+                }
+                /*
+                 * Else tried adding write permissions and privs are
+                 * insufficient.  Report no error...whatever action the
+                 * client is attempting will soon fail and an error
+                 * will be reported at that time.
+                 */
+            }
+        }
+    }
+    /* Else no World ACE, so add it...someday...maybe...when really bored? */
+
+    FreeSid(pWorldSID);
+    free(pSecDescriptorBuf);
+    return (rc);
+
+#undef WRITABLE_MASK
+}
+
+/*
+ * If necessary, modify a file's World/Everyone ACE to include file "write"
+ * permissions.  This function returns TRUE if an ACE change was made.  In
+ * addition, if the ACE is changed, "old_mask_access" is initialized with the
+ * prior value of the file's World/Everyone ACCESS_MASK.  This value is used
+ * by w32_remove_write_acl() to restore the file's original ACCESS_MASK.
+ */
+int
+w32_add_write_acl(const char *filename, ULONG *old_access_mask)
+{
+    if (is_win95())
+        return (FALSE); /* no such win9x feature */
+    else
+        return (add_remove_write_acl(filename, TRUE, old_access_mask));
+}
+
+/*
+ * Bookend of w32_add_write_acl().  "orig_access_mask" is the value used to
+ * restore the file's World/Everyone ACE ACCESS_MASK to its original value.
+ */
+int
+w32_remove_write_acl(const char *filename, ULONG orig_access_mask)
+{
+    if (is_win95())
+        return (FALSE); /* no such win9x feature */
+    else
+        return (add_remove_write_acl(filename, FALSE, &orig_access_mask));
+}

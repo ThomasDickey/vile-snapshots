@@ -1,4 +1,4 @@
-; $Id: modes.rc,v 1.13 2005/01/23 00:32:46 tom Exp $
+; $Id: modes.rc,v 1.16 2005/02/02 18:39:23 tom Exp $
 ; majormodes in this file are ordered alphabetically for convenience - the
 ; precedence used by vile is strictly alphabetic, counting case.  Use the
 ; before and after qualifiers to override the precedence.
@@ -293,7 +293,14 @@ define-mode java
 
 define-mode js
 ~with define-submode js
-	suffixes	'\.\(js\|jsp\)$'
+	suffixes	'\.\(js\)$'
+	cindent
+	cindent-chars &cat ':' $fences
+~endwith
+
+define-mode jsp
+~with define-submode jsp
+	suffixes	'\.\(jsp\)$'
 	cindent
 	cindent-chars &cat ':' $fences
 ~endwith
@@ -513,10 +520,11 @@ define-mode rexx
 
 ; I capitalized the majormode RCS/SCCS names because matches are made in
 ; alphabetic order (usually not a problem, but conflicting with other modes,
-; such as 'makemode').
+; such as 'makemode').  Comma is normally not part of a filename, except for
+; RCS archives.
 define-mode RCS
 ~with define-submode RCS
-	mode-filename	'^[\w-],v$'
+	mode-filename	'^[\w_.-]\+,v$'
 ~endwith
 
 define-mode rpm
@@ -665,8 +673,8 @@ define-mode vb
 	suffixes	'\.\(bas\|frm\)$'
 	pre '\(^VERSION\|VB_Name\)'
 	qualifiers=all
-	comment-prefix	'^\s*\''
-	comments	'^\s*\'\s\+\s*$'
+	comment-prefix	"^\\s*'"
+	comments	"^\\s*'\\s\\+\\s*$"
 	dos
 	ignorecase
 	notabinsert
