@@ -1,5 +1,56 @@
 Changes for vile 9.3 (released ??? ??? ?? 2000)
 
+ 20010429 (l)
+	> Clark Morgan:
+	+ expanded description of "Favorites" in win32 section of vile.hlp
+	+ if a multi-char map sequence includes a long timeoutlen-user value,
+	  turn on the winvile cursor while waiting for keyboard input (bug
+	  reported by Jason.D.Karney@clev.frb.org).
+	+ modify ntwinio.c so that custom cursor manipulation code does not
+	  show the cursor if the editor does not have focus.  This change is
+	  required to support the aforementioned bug fix.  I've also seen
+	  infrequent occasions where winvile still emits stray cursor glyphs. 
+	  This often occurs when I'm changing focus from some other app to the
+	  editor via a mouse click.  I hope this latter change eliminates a
+	  race condition within the editor.
+	+ modify check in HighlightFilter macro to ensure that vile.exe also
+	  must have w32pipes set to enable syntax highlighting.  This is a
+	  necessary condition on W95/W98/WinME.
+	> Tom Dickey
+	+ indent'd buffer.c, file.c
+	+ reimplement ":args" command to accept a filename expression.  If no
+	  filename is given, as before it will show the buffer list, but if a
+	  filename is given, it will replace the list of visible buffers with
+	  those matching the expression.  Use ":args!" to discard changes
+	  pending to one or more buffers (request by
+	  Vicki.Brown@barclaysglobal.com>).
+	+ add hst_reset() function, called from main loop to reinitialize data
+	  used for gluing portions of a command together for the [History]
+	  buffer.  This addresses a problem reported by Clark Morgan where the
+	  first time a ^WG!ls command was given, vile reported "No match for"
+	  ls in the current directory.  This change by itself makes vile report
+	  no matches all the time, because it was attempting to do
+	  filename-completion on the "ls" string.
+	+ add a special case in kbd_reply(), setting KBD_REGLUE to ensure that
+	  when given the command ^WG!ls does not attempt to do
+	  filename-completion on the "ls" string.  Though KBD_REGLUE was added
+	  in 9.2c, it was not used, since the ^R fix relies on a different
+	  part of the change.  This change uses KBD_REGLUE.
+	+ fix highlighting of include's in c-filt.c, which did not allow a
+	  blank in the filename.  Modify highlighting of filename to Literal.
+	+ add a configure check for strtoul(), which was not available on
+	  SunOS 4.x.
+	+ updates to configure script macros:  CF_CURSES_LIBS (split-out
+	  CF_CURSES_CPPFLAGS, add check for SunOS curses), CF_IMAKE_CFLAGS
+	  (disable CDPATH during test), CF_NCURSES_CPPFLAGS (improve check for
+	  ncurses headers), CF_NCURSES_VERSION, CF_TERMCAP_LIBS, as well as
+	  newer config.guess, config.sub scripts.
+	+ correct handling of backslash in htmlfilt.l, and highlight numbers
+	  in that filter.
+	+ fix a trailing comma in an enum in sed-filt.c
+	+ quote filename in manpage.rc when it is used in shell commands, in
+	  case it contains blanks or other special characters.
+
  20010407 (k)
 	> Clark Morgan:
 	+ update note in README.PC about problems with ActivePerl.

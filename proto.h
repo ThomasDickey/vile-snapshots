@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.462 2001/04/08 00:38:21 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.465 2001/04/29 22:42:20 tom Exp $
  *
  */
 
@@ -165,6 +165,7 @@ extern int buffer_in_use (BUFFER *bp);
 extern int buffer_is_solo (BUFFER *bp);
 extern int buffer_is_visible (BUFFER *bp);
 extern int delink_bp (BUFFER *bp);
+extern int kill_that_buffer (BUFFER *bp);
 extern int popupbuff (BUFFER *bp);
 extern int renamebuffer(BUFFER *rbp, char *bufname);
 extern int shiftwid_val (BUFFER *bp);
@@ -406,6 +407,7 @@ extern int no_file_name (const char *fname);
 extern int no_such_file (const char *fname);
 extern int readin (char *fname, int lockfl, BUFFER *bp, int mflg);
 extern int same_fname (const char *fname, BUFFER *bp, int lengthen);
+extern int set_files_to_edit(const char *prompt, int appflag);
 extern int slowreadf (BUFFER *bp, int *nlinep);
 extern int writeout (const char *fn, BUFFER *bp, int forced, int msgf);
 extern int writeregion (void);
@@ -494,6 +496,7 @@ extern	void	hst_flush (void);
 extern	void	hst_glue (int c);
 extern	void	hst_init (int c);
 extern	void	hst_remove (const char *cmd);
+extern	void	hst_reset (void);
 #else
 #define	hst_append(p,c)
 #define	hst_append_s(p,c)
@@ -501,6 +504,7 @@ extern	void	hst_remove (const char *cmd);
 #define	hst_glue(c)
 #define	hst_init(c)
 #define	hst_remove(p)
+#define	hst_reset()
 #endif
 
 /* ibmpc.c */
@@ -834,7 +838,12 @@ extern void set_directory_from_file(BUFFER *bp);
 extern void set_rdonly (BUFFER *bp, const char *name, int mode);
 extern L_NUM vl_line_count (BUFFER *the_buffer);
 extern long vl_atol(char *str, int base, int *failed);
+
+#if HAVE_STRTOUL
 extern ULONG vl_atoul(char *str, int base, int *failed);
+#else
+#define vl_atoul(str, base, failed) (ULONG)vl_atol(str, base, failed)
+#endif
 
 #ifndef vl_stricmp
 extern int vl_stricmp(const char *a, const char *b);
@@ -1499,6 +1508,9 @@ extern	char *	strerror (int code);
 #endif
 #if MISSING_EXTERN_STRTOL
 extern	long	strtol	(const char *nptr, char **endptr, int base);
+#endif
+#if MISSING_EXTERN_STRTOUL && HAVE_STRTOUL
+extern	ULONG	strtoul	(const char *nptr, char **endptr, int base);
 #endif
 #if MISSING_EXTERN_SYSTEM
 extern	int	system	(const char *cmd);

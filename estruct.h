@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.474 2001/04/07 12:17:54 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.475 2001/04/24 22:05:09 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -142,6 +142,8 @@
 #define SYS_OS2_EMX 1
 #endif
 
+#ifndef HAVE_CONFIG_H		/* we did not run the configure script */
+
 /*
  * Porting constraints: supply the normally assumed values that we get from
  * the "configure" script, for systems on which we cannot run "configure"
@@ -156,11 +158,7 @@
 #endif
 
 #ifndef HAVE_QSORT
-# define HAVE_QSORT	1	/* if your system has the qsort() system call */
-#endif
-
-#ifndef HAVE_UTIME
-# define HAVE_UTIME	0	/* if your system has the utime() system call */
+# define HAVE_QSORT	1	/* if your system has the qsort() function */
 #endif
 
 #ifndef HAVE_SETJMP_H
@@ -176,6 +174,10 @@
 # define HAVE_STRRCHR   1
 #endif
 
+#ifndef HAVE_STRTOUL
+# define HAVE_STRTOUL	1	/* if your system has the strtoul() function */
+#endif
+
 #ifndef HAVE_STDLIB_H
 # define HAVE_STDLIB_H  1	/* if your system has <stdlib.h> */
 #endif
@@ -183,6 +185,12 @@
 #ifndef HAVE_STRING_H
 # define HAVE_STRING_H  1	/* if your system has <string.h> */
 #endif
+
+#ifndef HAVE_UTIME
+# define HAVE_UTIME	0	/* if your system has the utime() system call */
+#endif
+
+#endif /* HAVE_CONFIG_H */
 
 /* Some code uses these as values in expressions, so we always want them
  * defined, just in case we run into a substandard preprocessor.

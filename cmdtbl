@@ -97,7 +97,7 @@
 #		in '!' listed, then the flag does nothing, and should be
 #		viewed simply as documentation.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.213 2001/02/24 21:58:48 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.214 2001/04/29 22:24:35 tom Exp $
 #
 #
 
@@ -899,9 +899,16 @@ lastnonwhite	MOTION			!SMALLER
 listbuffers	NONE
 	"list-buffers"			!FEWNAMES
 	"show-buffers"			!FEWNAMES
-	"args"
 	'^A-*'
 	<show the current list of buffers.  give CNT to force showing all>
+vl_set_args	NONE
+	"set-buffers"			!FEWNAMES
+	"args"
+	<reset the current list of visible buffers.>
+vl_set_args2	NONE
+	"force-set-buffers"		!FEWNAMES
+	"args!"
+	<reset the current list of visible buffers, even if some are modified.>
 showhistory	NONE			OPT_HISTORY
 	"show-history"
 	<show the command history>

@@ -1,12 +1,12 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_REVISION($Revision: 1.153 $)
+AC_REVISION($Revision: 1.154 $)
 AC_PREREQ(2.12.971222)
 rm -f config.cache
 
 ### Use "configure -with-screen" to override the default configuration, which is
 ### termcap-based on unix systems.
 
-dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.153 2001/01/09 23:14:59 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.154 2001/04/24 21:54:59 tom Exp $
 
 dnl
 AC_INIT(mktbls.c)
@@ -369,6 +369,8 @@ changequote([,])dnl
 		SCREEN=curses
 		TARGET=vile
 		AC_DEFINE(DISP_CURSES)
+		CF_CURSES_CPPFLAGS
+		CF_NCURSES_VERSION
 		CF_CURSES_LIBS
 	;;
 	ncurses)
@@ -440,6 +442,7 @@ sigaction \
 sigprocmask \
 strchr \
 strrchr \
+strtoul \
 symlink \
 tcgetattr \
 ttyname \

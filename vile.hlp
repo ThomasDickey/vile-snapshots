@@ -5001,7 +5001,15 @@ Win32 specifics
 
 	"Open"		executes the "winopen" command (described below).
 	"Save As"	executes the "winsave" command (described below).
-	"Favorites"	executes "winopen $favorites".
+	"Favorites"	executes "winopen $favorites", which starts a common
+			open dialog box that browses the Windows Favorites
+			folder.  This feature is especially useful when
+			folder shortcuts are added to the Favorites folder
+			via the Windows Explorer's "Add To Favorites"
+			feature.  Once folder shortcut(s) have been created
+			in this manner, winvile's "Favorites" menu provides
+			two-click access to the contents of any local or
+			network-based folder.
 	"Font"		described below.
 	"Menu"		disables the popup menu and instead transforms the
 			right mouse button into a hot key that copies the
@@ -5532,4 +5540,4 @@ Problems
 
 Copyright 1995-2001 by Paul Fox, Tom Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.519 2001/04/08 00:59:11 cmorgan Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.520 2001/04/24 22:43:43 cmorgan Exp $

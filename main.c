@@ -22,7 +22,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.450 2001/03/23 00:54:58 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.451 2001/04/26 00:16:27 tom Exp $
  */
 
 #define realdef /* Make global definitions not external */
@@ -747,6 +747,8 @@ loop(void)
 
 
 	for_ever {
+
+		hst_reset();
 
 		/* vi doesn't let the cursor rest on the newline itself.  This
 			takes care of that. */

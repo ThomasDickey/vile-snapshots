@@ -63,7 +63,7 @@
  *
  *	Allow left/right scrolling of input lines (when they get too long).
  *
- * $Header: /users/source/archives/vile.vcs/RCS/history.c,v 1.57 2001/02/15 22:57:32 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/history.c,v 1.58 2001/04/29 18:40:14 tom Exp $
  *
  */
 
@@ -199,6 +199,14 @@ parseArg(HST * parm, LINE * lp)
 }
 
 /******************************************************************************/
+
+void
+hst_reset(void)
+{
+	MyLevel = 0;
+	(void)tb_init(&MyText, esc_c);
+}
+
 void
 hst_init(int c)
 {
@@ -227,6 +235,11 @@ hst_append(TBUFF * cmd, int glue)
 	if (clexec || !vl_echo)			/* non-interactive? */
 		return;
 
+	TRACE(("hst_append(cmd=%d:%d:%s)\n",
+		willExtend(tb_values(cmd), tb_length(cmd)),
+		(int)tb_length(cmd),
+		tb_visible(cmd)));
+	TRACE(("...MyText        :%d:%s\n", tb_length(MyText), tb_visible(MyText)));
 	if (willExtend(tb_values(cmd), tb_length(cmd))
 	 && tb_length(cmd) > (SIZE_T)skip) {
 		kbd_pushback(cmd, skip);
@@ -235,6 +248,7 @@ hst_append(TBUFF * cmd, int glue)
 	if (willGlue())
 		(void)tb_append(&MyText, MyGlue);
 	(void)tb_bappend(&MyText, tb_values(cmd), tb_length(cmd));
+	TRACE(("...MyText        :%d:%s\n", tb_length(MyText), tb_visible(MyText)));
 	MyGlue = glue;
 }
 

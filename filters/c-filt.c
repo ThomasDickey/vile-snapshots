@@ -6,7 +6,7 @@
  *		string literal ("Literal") support --  ben stoltz
  *		factor-out hashing and file I/O - tom dickey
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/c-filt.c,v 1.59 2000/11/04 20:13:57 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/c-filt.c,v 1.60 2001/04/25 09:22:37 tom Exp $
  *
  * Usage: refer to vile.hlp and doc/filters.doc .
  */
@@ -313,7 +313,6 @@ parse_prepro(char *s)
     char *attr;
     char *ss = s + 1;
     char *tt;
-    int c_length;
     int isinclude = 0;
     int save;
 
@@ -334,13 +333,18 @@ parse_prepro(char *s)
 	}
 	s = tt;
     }
+    attr = Preproc_attr;
     *tt = save;
 
     if (isinclude) {		/* eat filename as well */
+	flt_puts(s, tt - s, attr);
+	ss = tt;
 	while (isBlank(*tt))
 	    tt++;
-	ss = tt;
-	while (!isspace(CharOf(*tt)) && *tt != 0) {
+	flt_puts(ss, tt - ss, "");
+	s = ss = tt;
+	attr = Literal_attr;
+	while (*tt != 0) {
 	    int ch = *tt++;
 	    if (*ss == '<') {
 		if (ch == '>')
@@ -348,6 +352,8 @@ parse_prepro(char *s)
 	    } else if (*ss == '"') {
 		if (ch == '"' && (tt != ss + 1))
 		    break;
+	    } else if (isspace(ch)) {
+		break;
 	    } else {
 		if (!isNamex(ch)) {	/* FIXME: should allow any macro */
 		    tt--;
@@ -356,8 +362,7 @@ parse_prepro(char *s)
 	    }
 	}
     }
-    c_length = tt - s;
-    flt_puts(s, c_length, Preproc_attr);
+    flt_puts(s, tt - s, attr);
     return tt;
 }
 

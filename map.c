@@ -3,12 +3,16 @@
  *	Original interface by Otto Lind, 6/3/93
  *	Additional map and map! support by Kevin Buettner, 9/17/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/map.c,v 1.90 2001/02/15 23:15:06 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/map.c,v 1.91 2001/04/24 22:40:55 cmorgan Exp $
  *
  */
 
 #include "estruct.h"
 #include "edef.h"
+
+#ifdef DISP_NTWIN
+# define NTWIN_CURSOR_MINWAIT 550   /* msec */
+#endif
 
 /*
  * Picture for struct maprec
@@ -864,6 +868,9 @@ maplookup(
 
 		/* give it a little extra time... */
 		int timer = 0;
+#ifdef DISP_NTWIN
+		int cursor_state;
+#endif
 
 		/* we want to use the longer of the two timers */
 
@@ -878,7 +885,25 @@ maplookup(
 				timer = global_g_val(GVAL_TIMEOUTVAL);
 		}
 
+#ifdef DISP_NTWIN
+		if (timer > NTWIN_CURSOR_MINWAIT) {
+			/*
+			 * editor waits for a potentially long time
+			 * for the next character, during which the
+			 * cursor will be invisible; so turn it back on.
+			 * unfortunately, the cursor won't blink
+			 * because there's no thread driving the
+			 * message pump.
+			 */
+
+			cursor_state = winvile_cursor_state(TRUE, FALSE);
+		}
+#endif
 		catnap(timer,TRUE);
+#ifdef DISP_NTWIN
+		if (timer > NTWIN_CURSOR_MINWAIT) /* restore cursor state */
+			(void) winvile_cursor_state(cursor_state, FALSE);
+#endif
 
 		if (!(*avail)())
 		    break;

@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/htmlfilt.l,v 1.26 2001/03/26 13:36:08 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/htmlfilt.l,v 1.27 2001/04/24 21:46:39 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of HTML input
  * text.
@@ -104,9 +104,12 @@ SPACE		[ \t]
 
 INTEGER		[-+]?([0-9]+)
 REAL		[-+]?([0-9]*\.[0-9]+)([eE][+-]?[0-9]+)?
+HEXNUM		"#"[0-9A-Fa-f]+
 IDENT		[a-zA-Z_][a-zA-Z_0-9-]*
-NOSTRBRK	"\\\""
-STRING		\"([^"]|{NOSTRBRK})*\"
+
+HSTRING		\"([^"])*\"
+QSTRING		\\["]([^"]|\\["])*\\["]
+STRING		{HSTRING}|{QSTRING}
 
 SSTRING		\'(\\.|[^'\\])*\'
 DSTRING		\"(\\.|[^"\\])*\"
@@ -129,6 +132,10 @@ ESCAPED		&{IDENT};
 
 <INITIAL>{ESCAPED}	|
 <HTMLCODE>{STRING}	{ WriteToken(String_attr); }
+
+<HTMLCODE>{REAL}	|
+<HTMLCODE>{INTEGER}	|
+<HTMLCODE>{HEXNUM}	{ WriteToken(Number_attr); }
 
 <JAVACODE>{IDENT}	{ WriteToken(keyword_attr(yytext)); }
 <JAVACODE>{STRINGS}	{ WriteToken(String_attr); }
