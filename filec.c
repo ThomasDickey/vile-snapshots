@@ -5,7 +5,7 @@
  * Written by T.E.Dickey for vile (march 1993).
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/filec.c,v 1.111 2002/11/02 00:10:41 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/filec.c,v 1.112 2003/02/16 17:22:21 tom Exp $
  *
  */
 
@@ -168,6 +168,13 @@ makeString(BUFFER *bp, LINE *lp, char *text, size_t len)
     if ((np = lalloc((int) len + extra, bp)) == NULL) {
 	lp = 0;
     } else {
+#if !OPT_MSDOS_PATH
+	/*
+	 * If we are NOT processing MSDOS pathnames, we may have literal
+	 * backslashes in the pathnames.  Escape those by doubling them.
+	 */
+	text = add_backslashes(text);
+#endif
 	(void) strcpy(np->l_text, text);
 	np->l_text[len + extra - 1] = 0;	/* clear scan indicator */
 	llength(np) -= extra;	/* hide the null and scan indicator */

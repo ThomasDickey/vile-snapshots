@@ -44,7 +44,7 @@
  *	tgetc_avail()     true if a key is avail from tgetc() or below.
  *	keystroke_avail() true if a key is avail from keystroke() or below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.248 2002/12/15 19:31:58 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.253 2003/02/17 12:08:58 tom Exp $
  *
  */
 
@@ -162,7 +162,6 @@ shell_complete(DONE_ARGS)
  * ABORT. The ABORT status is returned if the user bumps out of the question
  * with an esc_c. Used any time a confirmation is required.
  */
-
 int
 mlyesno(const char *prompt)
 {
@@ -199,7 +198,6 @@ mlyesno(const char *prompt)
  * Ask a simple question in the message line.  Return the single char response
  * if it was one of the valid responses.
  */
-
 int
 mlquickask(const char *prompt, const char *respchars, int *cp)
 {
@@ -310,13 +308,12 @@ mlreply_reg_count(int state,	/* negative=register, positive=count, zero=either *
 }
 
 /*
- * Write a prompt into the message line, then read back a response. Keep
- * track of the physical position of the cursor. If we are in a keyboard
- * macro throw the prompt away, and return the remembered response. This
- * lets macros run at full speed. The reply is always terminated by a carriage
- * return. Handle erase, kill, and abort keys.
+ * Write a prompt into the message line, then read back a response.  Keep track
+ * of the physical position of the cursor.  If we are in a keyboard macro throw
+ * the prompt away, and return the remembered response.  This lets macros run
+ * at full speed.  The reply is always terminated by a carriage return.  Handle
+ * erase, kill, and abort keys.
  */
-
 int
 mlreply(const char *prompt, char *buf, UINT bufn)
 {
@@ -588,11 +585,10 @@ tgetc(int quoted)
     return c;
 }
 
-/*	KBD_SEQ:	Get a command sequence (multiple keystrokes) from
-		the keyboard.
-		Process all applicable prefix keys.
-		Set lastcmd for commands which want stuttering.
-*/
+/*
+ * Get a command sequence (multiple keystrokes) from the keyboard.  Process all
+ * applicable prefix keys.  Set lastcmd for commands which want stuttering.
+ */
 int
 kbd_seq(void)
 {
@@ -753,6 +749,29 @@ kbd_delimiter(void)
 	    c = d;
     }
     return c;
+}
+
+/*
+ * If we are NOT processing MSDOS pathnames, we may have literal backslashes in
+ * pathnames and buffer names.  Escape those by doubling them.
+ */
+char *
+add_backslashes(char *text)
+{
+    static TBUFF *temp = 0;
+    int n;
+
+    if (strchr(text, BACKSLASH) != 0) {
+	temp = tb_init(&temp, EOS);
+	for (n = 0; text[n] != EOS; ++n) {
+	    if (text[n] == BACKSLASH)
+		temp = tb_append(&temp, BACKSLASH);
+	    temp = tb_append(&temp, text[n]);
+	}
+	temp = tb_append(&temp, EOS);
+	text = tb_values(temp);
+    }
+    return text;
 }
 
 /*
@@ -1076,12 +1095,11 @@ kbd_is_pushed_back(void)
     return clexec && pushed_back;
 }
 
-/* A generalized prompt/reply function which allows the caller to
- * specify an additional terminator as well as '\n'.  Both are
- * accepted.  Assumes the buffer already contains a valid (possibly
- * null) string to use as the default response.
+/* A generalized prompt/reply function which allows the caller to specify an
+ * additional terminator as well as '\n'.  Both are accepted.  Assumes the
+ * buffer already contains a valid (possibly null) string to use as the default
+ * response.
  */
-
 int
 kbd_string(const char *prompt,	/* put this out first */
 	   char *extbuf,	/* the caller's (possibly full) buffer */
@@ -1092,6 +1110,8 @@ kbd_string(const char *prompt,	/* put this out first */
 {
     int code;
     static TBUFF *temp;
+
+    options &= ~KBD_0CHAR;	/* this func is for null-terminated strings! */
     tb_scopy(&temp, extbuf);
     code = kbd_reply(prompt, &temp, eol_history, eolchar, options, complete);
     if (bufn > tb_length(temp))
@@ -1134,11 +1154,10 @@ user_reply(const char *prompt, const char *dft_val)
 	ptb = &replbuf;
     else {
 	/* 
-	 * Querying user for a password.  Store result in an alternate
-	 * buffer, the value of which is _not_ reused (so that it can't
-	 * be recalled via &query or &dquery or an @ var).
+	 * Querying user for a password.  Store result in an alternate buffer,
+	 * the value of which is _not_ reused (so that it can't be recalled via
+	 * &query or &dquery or an @ var).
 	 */
-
 	if (passwdbuf)
 	    tb_free(&passwdbuf);
 	ptb = &passwdbuf;
@@ -1165,7 +1184,7 @@ user_reply(const char *prompt, const char *dft_val)
 	return tb_values(*ptb);
 }
 
-#define isMiniMotion(f) (((f) & MOTION) && !((f) & (ABSM|FL|NOMINI)))
+#define isMiniMotion(f) (((f) & MOTION) && ((f) & (MINIBUF)))
 
 /*
  * We use the editc character to toggle between insert/command mode in the
@@ -1226,7 +1245,7 @@ editMinibuffer(TBUFF ** buf, unsigned *cpos, int c, int margin, int quoted)
 {
     int edited = FALSE;
     const CMDFUNC *cfp = CommandKeyBinding(c);
-    int savedexecmode = insertmode;
+    int save_insertmode = insertmode;
     BUFFER *savebp;
     WINDOW *savewp;
     MARK savemk;
@@ -1245,59 +1264,52 @@ editMinibuffer(TBUFF ** buf, unsigned *cpos, int c, int margin, int quoted)
     /* Use editc (normally ^G) to toggle insert/command mode */
     if (c == editc && !quoted) {
 	miniedit = !miniedit;
-    } else if (isSpecial(c)
-	       || (miniedit && cfp != 0 && isMiniMotion(cfp->c_flags))) {
+    } else if (miniedit && (cfp != 0) && (cfp->c_flags & MINIBUF) != 0) {
+	int first = *cpos + margin;
+	int old_clexec = clexec;
+	int old_named = isnamedcmd;
 
-	/* If we're allowed to honor SPEC bindings, then see if it's
-	 * bound to something, and execute it.
+	/*
+	 * Reset flags that might cause a recursion into the prompt/reply
+	 * code.
 	 */
-	if (cfp) {
-	    int first = *cpos + margin;
-	    int old_clexec = clexec;
-	    int old_named = isnamedcmd;
+	clexec = 0;
+	isnamedcmd = 0;
 
-	    /*
-	     * Reset flags that might cause a recursion into the
-	     * prompt/reply code.
-	     */
-	    clexec = 0;
-	    isnamedcmd = 0;
+	/*
+	 * Set limits so we don't edit the prompt, and allow us to move the
+	 * cursor with the arrow keys just past the end of line.
+	 */
+	b_set_left_margin(bminip, margin);
+	DOT.o = llength(DOT.l);
+	linsert(1, ' ');	/* pad the line so we can move */
 
-	    /*
-	     * Set limits so we don't edit the prompt, and allow us
-	     * to move the cursor with the arrow keys just past the
-	     * end of line.
-	     */
-	    b_set_left_margin(bminip, margin);
+	DOT.o = first;
+	MK = DOT;
+	curwp->w_line = DOT;
+	(void) execute(cfp, FALSE, 1);
+	insertmode = save_insertmode;
+	edited = TRUE;
+	*cpos = DOT.o - margin;
+
+	llength(DOT.l) -= 1;	/* strip the padding */
+	b_set_left_margin(bminip, 0);
+
+	clexec = old_clexec;
+	isnamedcmd = old_named;
+
+	/*
+	 * Cheat a little, since we may have used an alias for
+	 * '$', which can set the offset just past the end of
+	 * line.
+	 */
+	if (DOT.o > llength(DOT.l))
 	    DOT.o = llength(DOT.l);
-	    linsert(1, ' ');	/* pad the line so we can move */
 
-	    DOT.o = first;
-	    MK = DOT;
-	    curwp->w_line = DOT;
-	    (void) execute(cfp, FALSE, 1);
-	    insertmode = savedexecmode;
-	    edited = TRUE;
-	    *cpos = DOT.o - margin;
-
-	    llength(DOT.l) -= 1;	/* strip the padding */
-	    b_set_left_margin(bminip, 0);
-
-	    clexec = old_clexec;
-	    isnamedcmd = old_named;
-
-	    /*
-	     * Cheat a little, since we may have used an alias for
-	     * '$', which can set the offset just past the end of
-	     * line.
-	     */
-	    if (DOT.o > llength(DOT.l))
-		DOT.o = llength(DOT.l);
-
-	} else
-	    kbd_alarm();
-	/* FIXME: Below are some hacks for making it appear that we're
-	 * doing the right thing for certain non-motion commands...
+	/*
+	 * Below are some workarounds for making it appear that we're doing the
+	 * right thing for certain non-motion commands.  They allow us to revert to
+	 * insert-mode (the default), moving the cursor first as expected.
 	 */
     } else if (miniedit && cfp == &f_insert) {
 	miniedit = FALSE;
@@ -1313,11 +1325,12 @@ editMinibuffer(TBUFF ** buf, unsigned *cpos, int c, int margin, int quoted)
 	edited = editMinibuffer(buf, cpos, fnc2kcod(&f_forwchar_to_eol),
 				margin, quoted);
 	miniedit = FALSE;
-	/* FIXME:  reject non-motion commands for now, since we haven't
-	 * resolved what to do with the minibuffer if someone inserts a
-	 * newline.
+	/*
+	 * Reject other non-motion commands for now.  We haven't a good way to
+	 * update the minibuffer if someone inserts a newline, so we couldn't
+	 * implement insert except as a special case (see above).
 	 */
-    } else if (miniedit && cfp != 0) {
+    } else if (isSpecial(c) || (miniedit && (cfp != 0))) {
 	kbd_alarm();
     } else {
 	LINE *lp = DOT.l;
@@ -1512,10 +1525,10 @@ kbd_reply(const char *prompt,	/* put this out first */
 	int actual;
 
 	/*
-	 * A "^W!cat" (control/W followed by a shell command) will
-	 * arrive at this point with "!" in extbuf, and the command in
-	 * execstr.  Glue the two back together so they're seen as a
-	 * shell command which should not be name-completed.
+	 * A "^W!cat" (control/W followed by a shell command) will arrive at
+	 * this point with "!" in extbuf, and the command in execstr.  Glue the
+	 * two back together so they're seen as a shell command which should
+	 * not be name-completed.
 	 */
 	if (tb_length(*extbuf) == 1
 	    && isShellOrPipe(tb_values(*extbuf)))
@@ -1601,7 +1614,12 @@ kbd_reply(const char *prompt,	/* put this out first */
 	    }
 #endif
 	}
-	tb_append(extbuf, EOS);	/* FIXME */
+	if (tb_length(*extbuf) == 0
+	    || tb_values(*extbuf)[tb_length(*extbuf) - 1] != EOS)
+	    tb_append(extbuf, EOS);	/* FIXME */
+	TRACE(("reply1:(status=%d, length=%d):%s\n", status,
+	       (int) tb_length(*extbuf),
+	       tb_visible(*extbuf)));
 	returnCode(status);
     }
 
@@ -1648,10 +1666,10 @@ kbd_reply(const char *prompt,	/* put this out first */
 	else
 	    c = keystroke();
 
-	/* Ignore nulls if the calling function is not prepared to
-	 * process them.  We want to be able to search for nulls, but
-	 * must not use them in filenames, for example.  (We don't
-	 * support name-completion with embedded nulls, either).
+	/* Ignore nulls if the calling function is not prepared to process
+	 * them.  We want to be able to search for nulls, but must not use them
+	 * in filenames, for example.  (We don't support name-completion with
+	 * embedded nulls, either).
 	 */
 	if ((c == 0 && c != esc_c) && !(options & KBD_0CHAR))
 	    continue;
@@ -1671,9 +1689,8 @@ kbd_reply(const char *prompt,	/* put this out first */
 	 * If they hit the line terminator (i.e., newline or unescaped
 	 * eolchar), finish up.
 	 *
-	 * Don't allow newlines in the string -- they cause real
-	 * problems, especially when searching for patterns
-	 * containing them -pgf
+	 * Don't allow newlines in the string -- they cause real problems,
+	 * especially when searching for patterns containing them -pgf
 	 */
 	done = FALSE;
 	if (c == '\n') {
@@ -1697,11 +1714,10 @@ kbd_reply(const char *prompt,	/* put this out first */
 			 && !(shell && isPrint(c))
 			 && (c == TESTC || c == NAMEC))) {
 		/*
-		 * If we're going to force name completion, put
-		 * the cursor at the end of the line so the
-		 * name completion code works properly.  Do
-		 * this by erasing the remainder of the line
-		 * and reentering it.
+		 * If we're going to force name completion, put the cursor at
+		 * the end of the line so the name completion code works
+		 * properly.  Do this by erasing the remainder of the line and
+		 * reentering it.
 		 */
 		if (cpos < tb_length(buf)) {
 		    kbd_erase_to_end(wminip->w_dot.o);
@@ -1739,11 +1755,10 @@ kbd_reply(const char *prompt,	/* put this out first */
 	    (void) tb_copy(extbuf, buf);
 	    status = (tb_length(*extbuf) != 0);
 
-	    /* If this is a shell command, push-back the actual
-	     * text to separate the "!" from the command.  Note
-	     * that the history command tries to do this already,
-	     * but cannot for some special cases, e.g., the user
-	     * types
+	    /* If this is a shell command, push-back the actual text to
+	     * separate the "!" from the command.  Note that the history
+	     * command tries to do this already, but cannot for some special
+	     * cases, e.g., the user types
 	     *      :execute-named-command !ls -l
 	     * which is equivalent to
 	     *      :!ls -l
@@ -1799,10 +1814,9 @@ kbd_reply(const char *prompt,	/* put this out first */
 	    kbd_kill_response(buf, &cpos, c);
 
 	    /*
-	     * If we backspaced to erase the buffer, it's ok to
-	     * return to the caller, who would be the :-line
-	     * parser, so we can do something reasonable with the
-	     * address specification.
+	     * If we backspaced to erase the buffer, it's ok to return to the
+	     * caller, who would be the :-line parser, so we can do something
+	     * reasonable with the address specification.
 	     */
 	    if (cpos == 0
 		&& isbackspace(c)

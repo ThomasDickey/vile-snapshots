@@ -10,7 +10,7 @@
  * editing must be being displayed, which means that "b_nwnd" is non zero,
  * which means that the dot and mark values in the buffer headers are nonsense.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.152 2002/11/02 16:51:45 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.155 2003/02/17 10:59:09 tom Exp $
  *
  */
 
@@ -56,9 +56,9 @@ alloc_LINE(BUFFER *bp)
 
     if ((lp = bp->b_freeLINEs) != NULL) {
 	bp->b_freeLINEs = lp->l_nxtundo;
-    } else if ((lp = typealloc(LINE)) == NULL) {
-	(void) no_memory("LINE");
-    }
+	} else if ((lp = typealloc(LINE)) == NULL) {
+	    (void) no_memory("LINE");
+	}
     return lp;
 }
 
@@ -323,6 +323,28 @@ lreplc(LINEPTR lp, C_NUM off, int c)
 }
 
 /*
+ * Adjust DOT and MK in the given window, which may be the minibuffer.
+ */
+static void
+after_linsert(WINDOW *wp, LINE *lp, int n, int doto)
+{
+    if (wp->w_dot.l == lp) {
+	if (wp == curwp || wp->w_dot.o > doto)
+	    wp->w_dot.o += n;
+    }
+#if WINMARK
+    if (wp->w_mark.l == lp) {
+	if (wp->w_mark.o > doto)
+	    wp->w_mark.o += n;
+    }
+#endif
+    if (wp->w_lastdot.l == lp) {
+	if (wp->w_lastdot.o > doto)
+	    wp->w_lastdot.o += n;
+    }
+}
+
+/*
  * Insert "n" copies of the character "c" at the current location of dot. In
  * the easy case all that happens is the text is stored in the line. In the
  * hard case, the line has to be reallocated. When the window list is updated,
@@ -426,21 +448,9 @@ linsert(int n, int c)
 	    }
 #endif
 	    for_each_window(wp) {	/* Update windows       */
-		if (wp->w_dot.l == lp1) {
-		    if (wp == curwp || wp->w_dot.o > doto)
-			wp->w_dot.o += n;
-		}
-#if WINMARK
-		if (wp->w_mark.l == lp1) {
-		    if (wp->w_mark.o > doto)
-			wp->w_mark.o += n;
-		}
-#endif
-		if (wp->w_lastdot.l == lp1) {
-		    if (wp->w_lastdot.o > doto)
-			wp->w_lastdot.o += n;
-		}
+		after_linsert(wp, lp1, n, doto);
 	    }
+	    after_linsert(wminip, lp1, n, doto);
 	    do_mark_iterate(mp, {
 		if (mp->l == lp1) {
 		    if (mp->o > doto)
@@ -728,16 +738,17 @@ lgrabtext(TBUFF ** rp, CHARTYPE type)
  * np -	new text for the current line
  */
 int
-lrepltext(CHARTYPE type, const char *np)
+lrepltext(CHARTYPE type, const char *np, int length)
 {
     int status = TRUE;
     int c;
+    int n;
 
-    TRACE(("lrepltext:%s%lx:%s\n", type ? "word" : "line",
-	   (ULONG) type, np));
+    TRACE((T_CALLED "lrepltext:%s%lx:%.*s\n", type ? "word" : "line",
+	   (ULONG) type, length, np));
 
     if (b_val(curbp, MDVIEW))
-	return rdonly();
+	returnCode(rdonly());
 
     mayneedundo();
 
@@ -746,26 +757,27 @@ lrepltext(CHARTYPE type, const char *np)
 	while (DOT.o < llength(DOT.l)
 	       && istype(type, char_at(DOT))) {
 	    if ((status = forwdelchar(FALSE, 1)) != TRUE)
-		return (status);
+		returnCode(status);
 	}
     } else {			/* it's the full line */
 	regionshape = FULLLINE;
 	DOT.o = w_left_margin(curwp);
 	if ((status = deltoeol(TRUE, 1)) != TRUE)
-	    return (status);
+	    returnCode(status);
 	DOT.o = w_left_margin(curwp);
     }
 
     /* insert passed in chars */
-    while ((c = *np++) != 0) {
+    for (n = 0; n < length; ++n) {
+	c = np[n];
 	if (((c == '\n') ? lnewline() : linsert(1, c)) != TRUE)
-	    return (FALSE);
+	    returnCode(FALSE);
     }
     if (type == 0) {
 	status = lnewline();
 	(void) backline(TRUE, 1);
     }
-    return (status);
+    returnCode(status);
 }
 #endif
 

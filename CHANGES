@@ -1,5 +1,64 @@
 Changes for vile 9.4 (released ??? ??? ?? ????)
 
+ 20030217 (k)
+	> Clark Morgan:
+	+ make ^X-s reflect the documentation in vile.hlp by implementing a
+	  new command substitute-all-til.
+	> Paul van Tilburg
+	+ add Ruby syntax filter (rb-filt.l, rb.key).
+	> Tom Dickey:
+	+ add -j option to c-filt.c, to implement some java-specific features
+	  such as "$" as part of an identifier, and \u escapes.
+	+ fix: java has no 'operator' keyword.
+	+ suppress KBD_0CHAR flag in kbd_string() function, since it is only
+	  designed to handle null-terminated strings.  This plugs a hole which
+	  would allow
+		:%s/^@/!/g
+	  to have unexpected results (report by Clark Morgan).
+	+ correct return from kbd_reply() used in scripts; sometimes it would
+	  add an extra null to the result.
+	+ correct an overlap between bits used to denote NOMINI (now MINIBUF)
+	  and FROM (part of RANGE) which caused some commands to be incorrectly
+	  treated as minibuffer editing commands when logic was changed to
+	  allow MINIBUF to be treated this way.
+	+ implement a few new editing commands in the minibuffer:  r, ~, x, X. 
+	  Other editing commands such as R would require special handling;
+	  these are implemented by setting the appropriate flag in cmdtbl.
+	+ change cmdtbl to use MINIBUF rather than NOMINI, to implement
+	  encoding of editing commands which are limited to the minibuffer.
+	+ modify buffer- and filename-completion on Unix to escape backslashes
+	  which are stored in the [Completions] buffer.  Doing this allows one
+	  to complete a buffer or filename containing a backslash (Debian
+	  #164593).
+	+ add configure check for -lw library, needed for Solaris <wctype.h>
+	  functions.
+	+ correct logic of CF_X_ATHENA_LIBS, which did not really add extra X
+	  libraries.
+	+ use CF_LOCALE, CF_WITH_DBMALLOC and CF_DMALLOC macros to simplify
+	  configure.in
+	+ use fltstack.h in sccs filter.
+	+ highlight expanded and unexpanded sccs keywords in sccs files.
+	+ add texmode, as a variation of latexmode.
+	+ add .ltx, .sty suffixes for latexmode.
+	+ review/revise latex filter (reports by Daniel L Ashbrook
+	  <njiro@cc.gatech.edu>).  It still does not implement \[ \] and \( \)
+	  toggles for math mode, but is improved.
+	+ cleanup display of whitespace in key-filt.c using new functions
+	  chop_newline() and flt_put_blanks() (report by Clark Morgan).
+	+ add case for "abbrev" to key-filt.c
+	+ improve state stacking in yacc highlighting filter, correcting some
+	  problems introduced by fltstack.h changes.
+	+ modify lex syntax filter to accept C-style comments in the RULES
+	  state; apparently flex allows this.
+	+ add a C version of Ruby syntax filter.
+	+ add new commands encode-attributes-til and write-encoded-til to
+	  convert the syntax highlighting in a region back to control/A
+	  sequences, or to write the corresponding data to a file.  Added a
+	  corresponding alias decode-attributes-til for
+	  attribute-cntl_a-sequences-til.
+	+ change lrepltext() to use a given length rather than assume its
+	  parameter is null-terminated.
+
  20030102 (j)
 	> Clark Morgan:
 	+ fix a couple of compile-problems.

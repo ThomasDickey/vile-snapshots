@@ -3,7 +3,7 @@
  *	for getting and setting the values of the vile state variables,
  *	plus helper utility functions.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.66 2002/12/07 00:50:03 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.68 2003/01/09 01:41:14 tom Exp $
  */
 
 #include	"estruct.h"
@@ -157,6 +157,19 @@ any_rw_TXT(TBUFF ** rp, const char *vp, char **value)
     } else if (vp) {
 	SetEnv(value, vp);
 	return TRUE;
+    } else {
+	return FALSE;
+    }
+}
+
+static int
+any_REPL(TBUFF ** rp, const char *vp, CHARTYPE type)
+{
+    if (rp) {
+	lgrabtext(rp, type);
+	return TRUE;
+    } else if (vp && curbp) {
+	return lrepltext(type, vp, strlen(vp));
     } else {
 	return FALSE;
     }
@@ -853,14 +866,7 @@ var_ICONNAM(TBUFF ** rp, const char *vp)
 int
 var_IDENTIF(TBUFF ** rp, const char *vp)
 {
-    if (rp) {
-	lgrabtext(rp, vl_ident);
-	return TRUE;
-    } else if (vp && curbp) {
-	return lrepltext(vl_ident, vp);
-    } else {
-	return FALSE;
-    }
+    return any_REPL(rp, vp, vl_ident);
 }
 
 int
@@ -937,14 +943,7 @@ var_LIBDIR_PATH(TBUFF ** rp, const char *vp)
 int
 var_LINE(TBUFF ** rp, const char *vp)
 {
-    if (rp) {
-	lgrabtext(rp, (CHARTYPE) 0);
-	return TRUE;
-    } else if (vp && curbp) {
-	return lrepltext((CHARTYPE) 0, vp);
-    } else {
-	return FALSE;
-    }
+    return any_REPL(rp, vp, (CHARTYPE) 0);
 }
 
 int
@@ -1181,14 +1180,7 @@ var_PATCHLEVEL(TBUFF ** rp, const char *vp)
 int
 var_PATHNAME(TBUFF ** rp, const char *vp)
 {
-    if (rp) {
-	lgrabtext(rp, vl_pathn);
-	return TRUE;
-    } else if (vp && curbp) {
-	return lrepltext(vl_pathn, vp);
-    } else {
-	return FALSE;
-    }
+    return any_REPL(rp, vp, vl_pathn);
 }
 
 int
@@ -1235,14 +1227,7 @@ var_PROMPT(TBUFF ** rp, const char *vp)
 int
 var_QIDENTIF(TBUFF ** rp, const char *vp)
 {
-    if (rp) {
-	lgrabtext(rp, vl_qident);
-	return TRUE;
-    } else if (vp && curbp) {
-	return lrepltext(vl_qident, vp);
-    } else {
-	return FALSE;
-    }
+    return any_REPL(rp, vp, vl_qident);
 }
 
 #if OPT_HOOKS
@@ -1424,14 +1409,7 @@ var_WLINES(TBUFF ** rp, const char *vp)
 int
 var_WORD(TBUFF ** rp, const char *vp)
 {
-    if (rp) {
-	lgrabtext(rp, vl_nonspace);
-	return TRUE;
-    } else if (vp && curbp) {
-	return lrepltext(vl_nonspace, vp);
-    } else {
-	return FALSE;
-    }
+    return any_REPL(rp, vp, vl_nonspace);
 }
 
 #if OPT_HOOKS

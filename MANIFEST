@@ -1,4 +1,4 @@
-MANIFEST for vile, version v9_3j
+MANIFEST for vile, version v9_3k
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 CHANGES                         Change-log for VILE
@@ -244,6 +244,8 @@ filters/ps-filt.l               syntax filter for PostScript files
 filters/ps.key                  keywords for PostScript syntax filter
 filters/py-filt.l               syntax filter for Python
 filters/py.key                  keywords for Python syntax filter
+filters/rb-filt.l               syntax filter for Ruby
+filters/rb.key                  keywords for Ruby syntax filter
 filters/rc-filt.l               syntax filter for Windows ".rc" files
 filters/rc.key                  keywords for Windows ".rc" files
 filters/rcs-filt.l              syntax filter for RCS archives
@@ -252,6 +254,7 @@ filters/rexx.key                keywords for REXX syntax filter
 filters/rexxfilt.l              syntax filter for REXX
 filters/rpm-filt.l              syntax highlighter for rpm spec-files
 filters/rpm.key                 keywords for rpm spec files
+filters/rubyfilt.c              syntax filter for Ruby
 filters/sccs.key                keywords for SCCS syntax filter
 filters/sccsfilt.l              syntax filter for SCCS files.
 filters/sed-filt.c              highlighting filter for sed-scripts
@@ -263,6 +266,7 @@ filters/spell.rc                defines a filter for spell-checking
 filters/spellflt.l              ispell filter to highlight misspelled words
 filters/sql-filt.l              sql syntax highlighting filter for vile
 filters/sql.key                 sql keywords
+filters/syntax.key              demo of the keyword file syntax
 filters/tags.key                keywords for tags files
 filters/tagsfilt.c              syntax highlighter for tags files
 filters/tbl-filt.l              syntax filter for vile's mktbls program
@@ -271,6 +275,7 @@ filters/tc-filt.l               termcap syntax highlighting filter for vile
 filters/tc.key                  termcap keywords for syntax highlighting
 filters/tcl-filt.l              tcl/tk syntax highlighting filter for vile
 filters/tcl.key                 tcl/tk keywords
+filters/tex.key                 keywords for TeX
 filters/texi.key                keywords for texinfo syntax filter
 filters/texifilt.l              syntax filter for texinfo
 filters/ti-filt.l               terminfo syntax highlighting filter for vile

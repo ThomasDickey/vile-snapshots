@@ -18,7 +18,7 @@
  * transferring the selection are not dealt with in this file.  Procedures
  * for dealing with the representation are maintained in this file.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.141 2002/12/15 20:40:18 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.142 2003/01/07 01:51:33 tom Exp $
  *
  */
 
@@ -622,7 +622,7 @@ sel_motion(int f GCC_UNUSED, int n GCC_UNUSED)
 static int
 selectregion(void)
 {
-    register int status;
+    int status;
     REGION region;
     MARK savedot;
     MARK savemark;
@@ -1142,7 +1142,7 @@ apply_attribute(void)
 int
 attributeregion(void)
 {
-    register int status;
+    int status;
     REGION region;
     AREGION *arp;
 
@@ -1476,7 +1476,7 @@ attribute_cntl_a_seqs_in_region(REGION * rp, REGIONSHAPE shape)
 LINEPTR
 setup_region(void)
 {
-    register LINEPTR pastline;	/* pointer to line just past EOP */
+    LINEPTR pastline;		/* pointer to line just past EOP */
 
     if (!sameline(MK, DOT)) {
 	REGION region;
@@ -1499,9 +1499,9 @@ setup_region(void)
  * Set videoattribute and hypercmd as side-effects.
  */
 int
-parse_attribute(char *text, int length, int offset, int *countp)
+decode_attribute(char *text, int length, int offset, int *countp)
 {
-    register int c;		/* current char during scan */
+    int c;			/* current char during scan */
     int count = 0;
     int found;
 #if OPT_HYPERTEXT
@@ -1662,8 +1662,8 @@ attribute_cntl_a_sequences(void)
 	    return FALSE;
 	while (DOT.o < llength(DOT.l)) {
 	    if (char_at(DOT) == CONTROL_A) {
-		offset = parse_attribute(DOT.l->l_text, llength(DOT.l),
-					 DOT.o, &count);
+		offset = decode_attribute(DOT.l->l_text, llength(DOT.l),
+					  DOT.o, &count);
 #if EFFICIENCY_HACK
 		new_attribs = curbp->b_attribs;
 		curbp->b_attribs = orig_attribs;
@@ -1736,7 +1736,7 @@ attribute_from_filter(void)
 	    DOT.o = 0;
 	    for (n = 0; n < nbytes; n++) {
 		if (fflinebuf[n] == CONTROL_A) {
-		    done = parse_attribute(fflinebuf, nbytes, n, &skip);
+		    done = decode_attribute(fflinebuf, nbytes, n, &skip);
 		    if (done) {
 			n = (done - 1);
 			set_mark_after(skip, 1);
@@ -1841,7 +1841,7 @@ init_line_attr_tbl(void)
     line_attr_tbl[1].vattr = 0;
 }
 
-/* Find a an index in line_attr_tbl[] containing the specified attribute.
+/* Find an index in line_attr_tbl[] containing the specified attribute.
    Add the attribute to the table if not found.  Return -1 if table is
    full. (Kevin's note: I don't think the table full condition will
    be a real problem.  But if it is, it should be possible to garbage

@@ -185,6 +185,7 @@ The following are implemented:
 	vile-rcs-filt	(RCS archives)
 	vile-rexx-filt	(REXX)
 	vile-rpm-filt	(RPM ".spec" files)
+	vile-ruby-filt	(Ruby)
 	vile-sccs-filt	(SCCS archives)
 	vile-sed-filt	(sed scripts)
 	vile-sh-filt	(sh/ksh/csh)
@@ -221,4 +222,4 @@ NOTE
 The lex filters have been well tested only with flex, which treats newlines
 differently.  Older versions of lex may not support the %x states.
 
--- $Header: /users/source/archives/vile.vcs/doc/RCS/filters.doc,v 1.29 2002/12/11 02:04:47 tom Exp $
+-- $Header: /users/source/archives/vile.vcs/doc/RCS/filters.doc,v 1.30 2003/02/15 16:00:52 tom Exp $

@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/pl-filt.c,v 1.42 2002/12/17 02:02:54 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/pl-filt.c,v 1.43 2003/02/09 15:26:51 tom Exp $
  *
  * Filter to add vile "attribution" sequences to perl scripts.  This is a
  * translation into C of an earlier version written for LEX/FLEX.
@@ -455,7 +455,7 @@ begin_POD(char *s)
     while (skip < 2 && s != the_last) {
 	if (*s == '\n')
 	    ++skip;
-	else if (*s != '\r')
+	else
 	    return 0;
 	++s;
     }

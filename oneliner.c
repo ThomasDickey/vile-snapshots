@@ -4,7 +4,7 @@
  *	Copyright (c) 1990, 1995-1999 by Paul Fox, except for delins(), which is
  *	Copyright (c) 1986 by University of Toronto, as noted below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/oneliner.c,v 1.98 2002/10/20 11:39:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/oneliner.c,v 1.99 2003/02/17 11:44:28 cmorgan Exp $
  */
 
 #include	"estruct.h"
@@ -15,7 +15,7 @@
 
 static int delins(regexp * exp, char *sourc);
 static int substline(regexp * exp, int nth_occur, int printit, int globally, int *confirmp);
-static int substreg1(int needpats, int use_opts);
+static int substreg1(int needpats, int use_opts, int is_globalsub);
 
 static int lines_changed, total_changes;
 
@@ -114,13 +114,19 @@ static regexp *substexp;
 int
 substregion(void)
 {
-    return substreg1(TRUE, TRUE);
+    return substreg1(TRUE, TRUE, FALSE);
 }
 
 int
 subst_again_region(void)
 {
-    return substreg1(FALSE, TRUE);
+    return substreg1(FALSE, TRUE, FALSE);
+}
+
+int
+subst_all_region(void)
+{
+    return substreg1(TRUE, TRUE, TRUE);
 }
 
 /* traditional vi & command */
@@ -137,7 +143,7 @@ subst_again(int f GCC_UNUSED, int n GCC_UNUSED)
     MK.l = DOT.l;
     DOT.o = 0;
     MK.o = llength(MK.l);
-    s = substreg1(FALSE, FALSE);
+    s = substreg1(FALSE, FALSE, FALSE);
     if (s != TRUE) {
 	mlforce("[No match.]");
 	DOT = curpos;
@@ -148,7 +154,7 @@ subst_again(int f GCC_UNUSED, int n GCC_UNUSED)
 }
 
 static int
-substreg1(int needpats, int use_opts)
+substreg1(int needpats, int use_opts, int is_globalsub)
 {
     int c, status;
     static int printit, globally, nth_occur, confirm;
@@ -238,6 +244,9 @@ substreg1(int needpats, int use_opts)
 	if (!nth_occur)
 	    nth_occur = -1;
     }
+
+    if (is_globalsub)
+	globally = TRUE;
 
     lines_changed =
 	total_changes = 0;

@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.507 2002/12/22 23:40:10 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.511 2003/02/18 00:15:23 tom Exp $
  *
  */
 
@@ -416,6 +416,7 @@ extern int readin (char *fname, int lockfl, BUFFER *bp, int mflg);
 extern int same_fname (const char *fname, BUFFER *bp, int lengthen);
 extern int set_files_to_edit(const char *prompt, int appflag);
 extern int slowreadf (BUFFER *bp, int *nlinep);
+extern int write_enc_region (void);
 extern int writeout (const char *fn, BUFFER *bp, int forced, int msgf);
 extern int writeregion (void);
 extern time_t file_modified (char *path);
@@ -533,6 +534,7 @@ extern	void	scwrite (int row, int col, int nchar, const char *outstr, VIDEO_ATTR
 #endif
 
 /* input.c */
+extern char *add_backslashes(char *text);
 extern char *user_reply(const char *prompt, const char *dftval);
 extern int dotcmdbegin (void);
 extern int dotcmdfinish (void);
@@ -664,7 +666,7 @@ extern void ltextfree (LINEPTR lp, BUFFER *bp);
 
 #if OPT_EVAL
 extern char * lgrabtext (TBUFF **rp, CHARTYPE type);
-extern int lrepltext (CHARTYPE type, const char *iline);
+extern int lrepltext (CHARTYPE type, const char *iline, int ilen);
 #endif
 
 #if SMALLER	/* cancel neproto.h */
@@ -796,6 +798,7 @@ extern int llineregion (void);
 extern int plineregion (void);
 extern int pplineregion (void);
 extern int subst_again_region (void);
+extern int subst_all_region (void);
 extern int substregion (void);
 
 /* opers.c */
@@ -955,6 +958,10 @@ extern int        trimline (void *flagp, int l, int r);
 extern int        upperregion (void);
 extern int        yankregion (void);
 
+#if OPT_SELECTIONS
+extern TBUFF * encode_attributes(LINE *lp, BUFFER *bp, REGION * top_region);
+#endif
+
 /* search.c */
 extern int findpat (int f, int n, regexp *exp, int direc);
 extern int fsearch (int f, int n, int marking, int fromscreen);
@@ -978,7 +985,7 @@ extern	int	attribute_cntl_a_seqs_in_region(REGION *rp, REGIONSHAPE shape);
 extern	int	attributeregion (void);
 extern	int	attributeregion_in_region(REGION *rp, REGIONSHAPE shape,
 					    VIDEO_ATTR vattr, char *hc);
-extern	int	parse_attribute	(char *text, int length, int offset, int *countp);
+extern	int	decode_attribute (char *text, int length, int offset, int *countp);
 extern	int	sel_begin	(void);
 extern	int	sel_extend	(int wiping, int include_dot);
 extern	int	sel_get_leftmark(MARK *result);

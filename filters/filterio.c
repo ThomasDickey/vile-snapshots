@@ -1,7 +1,7 @@
 /*
  * Main program and I/O for external vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filterio.c,v 1.18 2002/12/30 16:50:48 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filterio.c,v 1.20 2003/02/10 11:32:26 tom Exp $
  *
  */
 
@@ -79,6 +79,21 @@ ProcessArgs(int argc, char *argv[], int flag)
  * Public functions                                                           *
  ******************************************************************************/
 
+/*
+ * Trim newline from the string, returning true if it was found.
+ */
+int
+chop_newline(char *s)
+{
+    size_t len = strlen(s);
+
+    if (len != 0 && s[len - 1] == '\n') {
+	s[--len] = '\0';
+	return 1;
+    }
+    return 0;
+}
+
 char *
 flt_gets(char **ptr, unsigned *len)
 {
@@ -89,6 +104,15 @@ char *
 flt_name(void)
 {
     return filter_def.filter_name;
+}
+
+char *
+flt_put_blanks(char *string)
+{
+    char *result = skip_blanks(string);
+    if (result != string)
+	flt_puts(string, result - string, "");
+    return result;
 }
 
 void

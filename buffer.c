@@ -5,7 +5,7 @@
  * keys. Like everyone else, they set hints
  * for the display system.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.258 2002/12/13 00:10:48 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.259 2003/02/16 17:23:33 tom Exp $
  *
  */
 
@@ -689,7 +689,7 @@ init_bname_cmpl(void)
 	beginDisplay();
 	if ((list = typeallocn(char *, count + 1)) != 0) {
 	    for_each_buffer(bp) {
-		list[used++] = bp->b_bname;
+		list[used++] = strmalloc(add_backslashes(bp->b_bname));
 	    }
 	    list[used] = 0;
 	    qsort(list, used, sizeof(char *), qs_bname_cmp);
@@ -697,6 +697,16 @@ init_bname_cmpl(void)
 	endofDisplay();
     }
     return list;
+}
+
+static void
+free_bname_cmpl(char **list)
+{
+    int n;
+    for (n = 0; list[n] != 0; ++n) {
+	free(list[n]);
+    }
+    free((char *) list);
 }
 
 static int
@@ -712,7 +722,7 @@ bname_complete(DONE_ARGS)
     if ((nptr = init_bname_cmpl()) != 0) {
 	status = kbd_complete(PASS_DONE_ARGS, (const char *) nptr, sizeof(*nptr));
 	beginDisplay();
-	free((char *) nptr);
+	free_bname_cmpl(nptr);
 	endofDisplay();
     }
     return status;
