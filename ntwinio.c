@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 screen API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.142 2005/01/26 19:19:01 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.143 2005/03/10 23:58:17 tom Exp $
  * Written by T.E.Dickey for vile (october 1997).
  * -- improvements by Clark Morgan (see w32cbrd.c, w32pipe.c).
  */
@@ -1996,7 +1996,7 @@ AboutBoxProc(HWND hDlg, UINT iMsg, WPARAM wParam, LPARAM lParam)
 
 	/* announce program version */
 	hwnd = GetDlgItem(hDlg, IDM_ABOUT_PROGNAME);
-	sprintf(buf, "%s\n%s%s", prognam, version, PATCHLEVEL);
+	sprintf(buf, "%s\n%s%s", prognam, version, VILE_PATCHLEVEL);
 	SetWindowText(hwnd, buf);
 
 	/* talk about copyright */

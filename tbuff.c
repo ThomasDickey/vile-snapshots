@@ -7,7 +7,7 @@
  *	To do:	add 'tb_ins()' and 'tb_del()' to support cursor-level command
  *		editing.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tbuff.c,v 1.62 2005/02/01 10:48:48 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tbuff.c,v 1.63 2005/02/15 21:15:12 tom Exp $
  *
  */
 
@@ -78,7 +78,7 @@ tb_leaks(void)
 
 #if OPT_TRACE
 static void
-valid_tbuff(TBUFF *p)
+ValidateTBUFF(TBUFF *p, int lineno)
 {
     int ok = TRUE;
 
@@ -93,7 +93,8 @@ valid_tbuff(TBUFF *p)
 		ok = FALSE;
 	}
 	if (!ok) {
-	    TRACE(("inconsistent TBUFF %p(errs %d, size %d, used %d, data %p)\n",
+	    TRACE(("%s @%d: inconsistent TBUFF %p(errs %d, size %d, used %d, data %p)\n",
+		   __FILE__, lineno,
 		   p,
 		   p->tb_errs,
 		   p->tb_size,
@@ -102,6 +103,7 @@ valid_tbuff(TBUFF *p)
 	}
     }
 }
+#define valid_tbuff(p)		ValidateTBUFF(p, __LINE__)
 #else
 #define valid_tbuff(p)		/* nothing */
 #endif /* OPT_TRACE */
@@ -118,6 +120,12 @@ tb_alloc(TBUFF **p, size_t n)
 
     beginDisplay();
     valid_tbuff(q);
+
+    /* any nonzero-size will do, but nonzero it must be */
+    if (n < sizeof(TBUFF)) {
+	n = sizeof(TBUFF);
+    }
+
     if (q == 0) {
 	if ((q = typealloc(TBUFF)) != 0) {
 	    if ((q->tb_data = typeallocn(char, q->tb_size = n)) != 0) {
@@ -168,7 +176,7 @@ tb_error(TBUFF **p)
     if (result != 0) {
 	result->tb_size = 0;
 	result->tb_used = 0;
-	FreeIfNeeded(result->tb_data);
+	FreeAndNull(result->tb_data);
 	result->tb_errs = TRUE;
     }
     return result;
@@ -209,6 +217,7 @@ tb_put(TBUFF **p, size_t n, int c)
 	    q->tb_used = n + 1;
 	}
     }
+    valid_tbuff(q);
     return (*p = q);
 }
 
@@ -292,17 +301,21 @@ TBUFF *
 tb_bappend(TBUFF **p, const char *s, size_t len)
 {
     TBUFF *q = *p;
-    size_t n = (q != 0) ? q->tb_used : 0;
 
-    if (s == error_val) {
-	tb_error(&q);
-    } else if ((q = tb_alloc(p, n + len)) != 0) {
-	if (len != 0) {
-	    if (q->tb_data + n != s)
-		memcpy(q->tb_data + n, s, len);
-	    q->tb_used = n + len;
+    if (!isTB_ERRS(*p)) {
+	size_t n = (q != 0) ? q->tb_used : 0;
+
+	if (s == error_val) {
+	    tb_error(&q);
+	} else if ((q = tb_alloc(p, n + len)) != 0) {
+	    if (len != 0) {
+		if (q->tb_data + n != s)
+		    memcpy(q->tb_data + n, s, len);
+		q->tb_used = n + len;
+	    }
 	}
     }
+    valid_tbuff(q);
     return q;
 }
 
@@ -387,6 +400,7 @@ tb_unput(TBUFF *p)
 	&& !isTB_ERRS(p)
 	&& p->tb_used != 0)
 	p->tb_used -= 1;
+    valid_tbuff(p);
 }
 
 /*******(iterators)************************************************************/
@@ -436,6 +450,7 @@ tb_unnext(TBUFF *p)
 	return;
     if (p->tb_last > 0)
 	p->tb_last--;
+    valid_tbuff(p);
 }
 
 /*
@@ -501,6 +516,7 @@ tb_dequote(TBUFF **p)
 	    TRACE2(("...tb_dequote OOPS: %s\n", tb_visible(*p)));
 	}
     }
+    valid_tbuff(*p);
     return *p;
 }
 
@@ -555,6 +571,7 @@ tb_enquote(TBUFF **p)
 	value[0] = (char) delim;
 	TRACE2(("...tb_enquote %s\n", tb_visible(*p)));
     }
+    valid_tbuff(*p);
     return *p;
 }
 
@@ -575,6 +592,7 @@ tb_values(TBUFF *p)
 	    result = p->tb_data;
 	}
     }
+    valid_tbuff(p);
     return result;
 }
 
@@ -593,6 +611,7 @@ tb_length(TBUFF *p)
 	    result = p->tb_used;
 	}
     }
+    valid_tbuff(p);
     return result;
 }
 
@@ -619,5 +638,6 @@ tb_setlen(TBUFF **p, int n)
 	    }
 	    (*p)->tb_used = len;
 	}
+	valid_tbuff(*p);
     }
 }

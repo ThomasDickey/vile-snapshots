@@ -3,7 +3,7 @@
 ;;
 ;; Author: Kevin Buettner
 ;;
-;; $Header: /users/source/archives/vile.vcs/macros/RCS/manpage.rc,v 1.19 2004/06/11 11:49:41 cmorgan Exp $
+;; $Header: /users/source/archives/vile.vcs/macros/RCS/manpage.rc,v 1.20 2005/02/15 23:59:02 tom Exp $
 ;;
 
 store-procedure ShowManpage "Prompt for, and display a manual-page"
@@ -22,7 +22,9 @@ store-procedure ShowManpage "Prompt for, and display a manual-page"
 	~force select-buffer %manpagebuf
 	~if &not $status
 		edit-file &cat "!man " &cat %manpage &cat " | " %filter
-		setl txtmode
+		~if &isa Majormode txt
+			setl txtmode
+		~endif
 		setl autocolor=0
 		~force rename-buffer %manpagebuf
 		~force error-buffer %manpagebuf
@@ -83,7 +85,9 @@ store-procedure ShowFormatted "Render the current buffer with nroff -man or -ms"
 			edit-file &cat "!cawf -man " &cat &pquote $cfilname &cat " | " %filter
 		~endif
 	~endif
-	setl txtmode
+	~if &isa Majormode txt
+		setl txtmode
+	~endif
 	setl autocolor=0
 	~force rename-buffer %manpagebuf
 	~force error-buffer %manpagebuf

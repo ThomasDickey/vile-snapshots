@@ -1,7 +1,7 @@
 /*
  * Common utility functions for vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.97 2005/01/20 19:51:19 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.98 2005/03/13 18:00:39 tom Exp $
  *
  */
 
@@ -248,7 +248,7 @@ OpenKeywords(char *classname)
 
     FIND_IT((str_keyword_name, "%s%c%s%s", path, PATHSEP, leaf, str_keyword_file));
 
-    path = getenv("VILE_STARTUP_PATH");
+    path = vile_getenv("VILE_STARTUP_PATH");
 #ifdef VILE_STARTUP_PATH
     if (path == 0)
 	path = VILE_STARTUP_PATH;

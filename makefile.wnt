@@ -1,7 +1,7 @@
 #
 # makefile for vile on WIN32 using Microsoft Visual C++
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.wnt,v 1.83 2005/01/26 19:17:55 cmorgan Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.wnt,v 1.85 2005/03/11 00:53:06 tom Exp $
 #
 #
 !include <ntwin32.mak>
@@ -253,15 +253,17 @@ $(PERLCFG): $(PERL_SCRIPTS) mkprlenv.wnt
 $(OBJ): estruct.h edef.h proto.h $(MYHDRS)
 builtflt.obj : builtflt.h
 
+MAKE_FLT = FLT=$(FLT) LEX="$(LEX)" DBG="$(DBG)" SCREEN="$(SCREEN)" -$(MAKEFLAGS)
+
 builtflt.h :
 	cd filters
-	$(MAKE) -f makefile.wnt genmake.exe -$(MAKEFLAGS)
+	$(MAKE) -f makefile.wnt genmake.exe $(MAKE_FLT)
 	mk-0th.bat genmake.mak ..\$@
 	cd ..
 
 $(FLTLIB) : $(MYHDRS)
 	cd filters
-	$(MAKE) -f makefile.wnt all FLT=$(FLT) LEX=$(LEX) -$(MAKEFLAGS)
+	$(MAKE) -f makefile.wnt all $(MAKE_FLT)
 	cd ..
 
 nebind.h \
@@ -322,13 +324,13 @@ dist : $(EXEFILE)
 	cd macros
 	zip ..\$(ZIPFILE) *.rc
 	cd ..\filters
-	$(MAKE) -f makefile.wnt $@
+	$(MAKE) -f makefile.wnt $@ $(MAKE_FLT)
 	cd ..
 
 all \
 clean ::
 	cd filters
-	$(MAKE) -f makefile.wnt $@
+	$(MAKE) -f makefile.wnt $@ $(MAKE_FLT)
 	cd ..
 
 SCRIPTS	= \

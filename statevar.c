@@ -3,7 +3,7 @@
  *	for getting and setting the values of the vile state variables,
  *	plus helper utility functions.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.92 2005/01/23 01:01:28 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.94 2005/03/13 18:20:19 tom Exp $
  */
 
 #include	"estruct.h"
@@ -40,7 +40,7 @@ static const char *
 DftEnv(const char *name, const char *dft)
 {
 #if OPT_EVAL && OPT_SHELL
-    name = vile_getenv(name);
+    name = safe_getenv(name);
     return isEmpty(name) ? dft : name;
 #else
     return dft;
@@ -210,10 +210,14 @@ any_HOOK(TBUFF **rp, const char *vp, HOOK * hook)
 #endif
 
 const char *
-vile_getenv(const char *s)
+safe_getenv(const char *s)
 {
 #if OPT_EVAL && OPT_SHELL
-    register char *v = getenv(s);
+    char *v = getenv(s);
+#if defined(_WIN32)
+    if (v == 0)
+	v = vile_getenv(s);
+#endif
     return NONNULL(v);
 #else
     return "";
@@ -1225,7 +1229,7 @@ var_PALETTE(TBUFF **rp, const char *vp)
 int
 var_PATCHLEVEL(TBUFF **rp, const char *vp)
 {
-    return any_ro_STR(rp, vp, PATCHLEVEL);
+    return any_ro_STR(rp, vp, VILE_PATCHLEVEL);
 }
 
 int
@@ -1526,7 +1530,7 @@ void
 ev_leaks(void)
 {
 #if OPT_EVAL
-    register UVAR *p;
+    UVAR *p;
     while ((p = temp_vars) != 0)
 	rmv_tempvar(p->u_name);
 

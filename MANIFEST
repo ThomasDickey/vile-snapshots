@@ -1,4 +1,4 @@
-MANIFEST for vile, version v9_4q
+MANIFEST for vile, version v9_4r
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 CHANGES                         Change-log for VILE
@@ -335,6 +335,8 @@ macros/vileinit.rc              sample initialization file
 macros/vilemenu.rc              sample menu for xvile
 macros/vileperl.rc              sample initialization for perl scripts
 macros/which.rc                 script to show which keyword file is found by filters
+package                         subdirectory
+package/winvile.iss             Inno Setup script for winvile
 perl                            subdirectory
 perl/Breadcrumbs.pm             manages bookmarks for a set of files
 perl/CaptHook.pm                manage various types of hooks from perl

@@ -4,7 +4,7 @@
  *	original by Daniel Lawrence, but
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.275 2005/01/24 00:23:43 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.276 2005/02/15 23:18:12 tom Exp $
  *
  */
 
@@ -1702,12 +1702,14 @@ begin_directive(char **const cmdpp,
 
     switch (dirnum) {
     case D_LOCAL:
-	while (mac_token(&argtkn) == TRUE) {
-	    value = tb_values(argtkn);
-	    if (push_variable(value) != TRUE) {
-		mlforce("[cannot save '%s']", value);
-		status = DDIR_FAILED;
-		break;
+	if (!ifstk.disabled) {
+	    while (mac_token(&argtkn) == TRUE) {
+		value = tb_values(argtkn);
+		if (push_variable(value) != TRUE) {
+		    mlforce("[cannot save '%s']", value);
+		    status = DDIR_FAILED;
+		    break;
+		}
 	    }
 	}
 	break;
@@ -1840,20 +1842,26 @@ begin_directive(char **const cmdpp,
 	break;
 
     case D_ELSEWITH:
-	if (!tb_length(with_prefix)) {
-	    status = unbalanced_directive(dirnum);
-	    break;
+	if (!ifstk.disabled) {
+	    if (!tb_length(with_prefix)) {
+		status = unbalanced_directive(dirnum);
+		break;
+	    }
 	}
 	/* FALLTHRU */
     case D_WITH:
-	execstr = skip_space_tab(execstr);
-	tb_scopy(&with_prefix, execstr);
-	status = DDIR_COMPLETE;
+	if (!ifstk.disabled) {
+	    execstr = skip_space_tab(execstr);
+	    tb_scopy(&with_prefix, execstr);
+	    status = DDIR_COMPLETE;
+	}
 	break;
 
     case D_ENDWITH:
-	tb_free(&with_prefix);
-	status = DDIR_COMPLETE;
+	if (!ifstk.disabled) {
+	    tb_free(&with_prefix);
+	    status = DDIR_COMPLETE;
+	}
 	break;
 
     case D_UNKNOWN:

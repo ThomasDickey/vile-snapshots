@@ -20,7 +20,7 @@
 #
 # gnu autoconf support by kevin buettner, 5/94
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.194 2004/12/15 01:22:08 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.195 2005/03/10 20:01:53 tom Exp $
 
 SHELL		= /bin/sh
 
@@ -544,16 +544,14 @@ release_warnings:
 		sed -n '/date\|------------/!p' | sed -e 's/^/	/' -e 1q
 	@echo 'or maybe date the CHANGES file?  it says:'
 	@sed -n -e '/Changes/s/^/	/p' -e '2q' CHANGES
-	@echo 'or maybe update the version info in edef.h?  it contains:'
-	@sed -n -e '/.*decl_init.*version.*,/s//	/p' edef.h
+	@echo 'or maybe update the version info in patchlev.h?  it contains:'
+	@fgrep '#define' patchlev.h | sed -e 's/^/	/'
 	@echo 'how about the README?  it contains:'
 	@sed -n -e '/version/s/^/	/p' -e '3q' README
 	@echo 'or in vile.hlp?  it has:'
 	@sed -n -e '/.*Getting along with vile	*/s//	/p' -e '5q' vile.hlp
 	@echo 'or in vmsbuild.com?  it has:'
 	@sed -n -e '/Identification=/s/^.*Vile \([^"]*\)["]*/	\1/p' vmsbuild.com
-	@echo 'did you reset patchlev.h?'
-	@sed -n -e 's/^/	/' -e '/PATCH/p' patchlev.h
 	@echo 'did you update/rename the RPM spec?'
 	@ls -1 vile*.spec | sed -e 's/^/	/'
 	@echo -n "Hit return to continue..."
