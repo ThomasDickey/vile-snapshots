@@ -22,7 +22,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.501 2003/03/17 23:12:21 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.502 2003/05/05 00:12:34 tom Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -2247,13 +2247,13 @@ charinit(void)
      * If you want to do this properly, compile-in locale support.
      */
     for (c = 0; c < N_chars; c++) {
-	vl_uppercase[c] = c;
-	vl_lowercase[c] = c;
+	vl_uppercase[c] = (char )c;
+	vl_lowercase[c] = (char )c;
 	if (isAlpha(c)) {
 	    if (isUpper(c)) {
-		vl_lowercase[c] = (c ^ DIFCASE);
+		vl_lowercase[c] = (char )(c ^ DIFCASE);
 	    } else {
-		vl_uppercase[c] = (c ^ DIFCASE);
+		vl_uppercase[c] = (char )(c ^ DIFCASE);
 	    }
 	}
     }

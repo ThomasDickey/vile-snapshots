@@ -6,7 +6,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.311 2003/03/11 19:45:15 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.312 2003/05/04 16:53:05 tom Exp $
  */
 
 #ifndef VILE_EDEF_H
@@ -179,10 +179,11 @@ decl_init( int sgarbf, TRUE );		/* TRUE if screen is garbage	*/
 decl_init( int need_update, TRUE );	/* TRUE if screen is not updated*/
 decl_uninit( int clexec	);		/* command line execution flag	*/
 decl_uninit( int clhide );		/* hide results of this command	*/
-decl_uninit( int quiet );		/* hide output of this command	*/
-decl_uninit( int miniedit );		/* editing minibuffer with vi-cmds */
+decl_init( int quiet, FALSE );		/* hide output of this command	*/
+decl_init( int miniedit, FALSE );	/* editing minibuffer with vi-cmds */
+decl_init( int no_minimsgs, FALSE );	/* suppress messages in minibuffer */
 decl_init( int vl_msgs, TRUE);		/* suppress command output?	*/
-decl_uninit( int no_errs);		/* suppress bells/alarms?	*/
+decl_init( int no_errs, FALSE );	/* suppress bells/alarms?	*/
 decl_init( int vl_echo, TRUE);		/* echo user input 		*/
 decl_init( int qpasswd, FALSE);		/* querying for password	*/
 decl_init( int in_autocolor, FALSE );	/* Autocoloring			*/

@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.265 2003/02/26 23:20:13 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.266 2003/05/04 13:52:55 Mark.Robinson Exp $
  *
  */
 
@@ -1755,6 +1755,13 @@ int
 fnc2kcod(const CMDFUNC * f)
 {
     return cmdfunc2keycode(&dft_bindings, f);
+}
+
+/* fnc2kins: translate a function pointer to an insert binding keycode */
+int
+fnc2kins(const CMDFUNC * f)
+{
+    return cmdfunc2keycode(&ins_bindings, f);
 }
 
 /* fnc2pstr: translate a function pointer to a pascal-string that a user

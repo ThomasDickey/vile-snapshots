@@ -2,7 +2,7 @@
  *		The routines in this file handle the conversion of pathname
  *		strings.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.131 2002/12/22 18:27:37 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.134 2003/05/04 22:47:01 tom Exp $
  *
  *
  */
@@ -556,6 +556,7 @@ home_path(char *path)
 }
 #endif
 
+#ifndef HAVE_REALPATH
 #ifdef GMDRESOLVE_LINKS
 /*
  * Some of this code was "borrowed" from the GNU C library (getcwd.c).  It has
@@ -893,6 +894,7 @@ resolve_directory(char *path_name, char **file_namep)
     return tb_values(cachep->ce_dirname);
 }
 #endif /* defined(GMDRESOLVE_LINKS) */
+#endif /* defined(HAVE_REALPATH) */
 
 #if OPT_CASELESS
 
@@ -1158,8 +1160,26 @@ canonpath(char *ss)
 	 */
 #ifdef GMDRESOLVE_LINKS
 	if (global_g_val(GMDRESOLVE_LINKS)) {
-	    char temp[NFILEN];
 	    char *leaf;
+	    char temp[NFILEN];
+#ifdef HAVE_REALPATH
+	    char temp2[NFILEN];
+	    char temp3[NFILEN];
+	    char *real = realpath(s, temp);
+
+	    if (real != 0) {
+		(void) strcpy(s, real);
+	    } else if ((leaf = pathleaf(strcpy(temp, s))) != 0) {
+		strcpy(temp2, leaf);
+		if (leaf == temp + 1)
+		    leaf[0] = EOS;
+		else
+		    leaf[-1] = EOS;
+		if (realpath(temp, temp3) != 0) {
+		    pathcat(s, temp3, temp2);
+		}
+	    }
+#else
 	    char *head = resolve_directory(s, &leaf);
 	    if (head != 0) {
 		if (leaf != 0)
@@ -1167,6 +1187,7 @@ canonpath(char *ss)
 		else
 		    (void) strcpy(s, head);
 	    }
+#endif
 	} else
 #endif
 	{

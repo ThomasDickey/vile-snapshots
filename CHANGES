@@ -1,5 +1,41 @@
 Changes for vile 9.4 (released ??? ??? ?? ????)
 
+ 20030504 (o)
+	> Danny Zerkel:
+	+ modify perl filters to disallow a blank between "<<" and the
+	  identifier for a here-document.
+	> Tom Dickey:
+	+ fix for pl-filt.c, make it treat "!" as an operator rather than a
+	  pattern delimiter.
+	+ modify support for ^X-e to make it use the whole line if the current
+	  buffer is a directory.
+	+ use realpath() rather than resolve_directory() if it is available,
+	  and "$VILE_PWD" environment variable rather than "." as parameter to
+	  getcwd() if it is valid, to speed up operation on quasi-filesystems
+	  such as ClearCase (adapted from patch by Danny Zerkel).
+	+ add ".PL" to suffixes for perl mode, e.g., for Makefile.PL
+	+ add no_minimsgs variable, check in mlmsg() to allow editMiniBuffer()
+	  to keep editing commands from overwriting the minibuffer with a
+	  message.
+	+ improved editMiniBuffer(), correcting treatment of commands which
+	  would modify the result.  Overlooked in 9.3k, this copies the result
+	  from calls on execute() back to the TBUFF passed to editMiniBuffer().
+	+ use insert-mode bindings in editMiniBuffer() when mini-edit mode is
+	  active.  Use insert-key to toggle, rather than set mini-edit mode
+	  (adapted from patch by Mark Robinson).
+	+ modify latexflt.l to suppress treatment of "|" as a quoting character
+	  when within curly braces (report by Paul van Tilburg).
+	+ correct highlighting of "+=" in makefilt.l
+	+ move a comment out of the pattern section of latexflt.l to work
+	  around bug in HPUX lex (report by Adam Denton).
+	+ increase output- and state transitions-limits for latexflt.l,
+	  rpm-filt.l, sh-filt.l and vilefilt.l to compile with Solaris and HPUX
+	  lex programs (report by Adam Denton).
+	+ make configure check for flex's version contingent on ensuring that
+	  it is really flex (report by Adam Denton indicates that HPUX lex
+	  is confused by "--version", and requires further input).
+	+ modify vile-manfilt to decode UTF-8 emitted by groff 1.18
+
  20030318 (n)
 	> Tom Dickey:
 	+ fix typo in CF_WCTYPE macro, needed to add "-lw" to $LIBS.

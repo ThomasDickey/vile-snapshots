@@ -1,4 +1,4 @@
-; $Id: filters.rc,v 1.172 2003/02/17 16:33:22 tom Exp $
+; $Id: filters.rc,v 1.173 2003/05/04 19:06:37 tom Exp $
 ; majormodes in this file are ordered alphabetically for convenience - the
 ; precedence used by vile is strictly alphabetic, counting case.
 
@@ -364,7 +364,7 @@ define-mode pc
 define-mode perl
 ~with define-submode perl
 	pre '^#\s*!\s*\.*\/.*perl[0-9]*\>'
-	suf '\.\(pl\|pm\)$'
+	suf '\.\(pl\|pm\|PL\)$'
 	before "mail"
 	cindent
 	cindent-chars  &cat ':' $fences

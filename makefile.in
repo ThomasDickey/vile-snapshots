@@ -20,8 +20,9 @@
 #
 # gnu autoconf support by kevin buettner, 5/94
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.183 2002/09/02 16:31:54 tom Exp $
-#
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.184 2003/05/03 11:09:14 tom Exp $
+
+SHELL		= /bin/sh
 
 #### Start of system configuration section. ####
 
@@ -51,8 +52,8 @@ TARGET		= @TARGET@$x
 AWK		= @AWK@
 PERL		= @PERL@
 PERLLIB		= @perl_lib_path@
-INSTALL_SCRIPT	= $(srcdir)/sinstall.sh $(PERL) $(INSTALL_PROGRAM)
-INSTALL_MODULE	= $(srcdir)/sinstall.sh $(PERL) $(INSTALL_DATA)
+INSTALL_SCRIPT	= $(SHELL) $(srcdir)/sinstall.sh $(PERL) $(INSTALL_PROGRAM)
+INSTALL_MODULE	= $(SHELL) $(srcdir)/sinstall.sh $(PERL) $(INSTALL_DATA)
 
 prefix		= @prefix@
 exec_prefix	= @exec_prefix@
@@ -66,7 +67,6 @@ mandir		= @mandir@/man$(manext)
 
 #### End of system configuration section. ####
 
-SHELL		= /bin/sh
 RM		= rm -f
 MAKE_RECUR	= @cf_cv_makeflags@ prefix=$(prefix)
 

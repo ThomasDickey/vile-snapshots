@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/pl-filt.c,v 1.43 2003/02/09 15:26:51 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/pl-filt.c,v 1.45 2003/05/04 23:26:14 tom Exp $
  *
  * Filter to add vile "attribution" sequences to perl scripts.  This is a
  * translation into C of an earlier version written for LEX/FLEX.
@@ -485,8 +485,6 @@ begin_HERE(char *s, int *quoted)
 	&& s[0] == '<'
 	&& s[1] == '<') {
 	s += 2;
-	if ((ok = is_BLANK(s)) != 0)
-	    s += ok;
 	base = s;
 	if ((ok = is_QIDENT(s)) != 0) {
 	    unsigned temp = 0;
@@ -635,7 +633,8 @@ add_to_PATTERN(char *s)
 	int bracketed = 0;
 
 	s += skip;
-	while ((s != the_last) && isspace(CharOf(*s))) {
+	while ((s != the_last)
+	       && (isspace(CharOf(*s)) || (*s == '!'))) {
 	    s++;
 	}
 	if (s != the_last) {
@@ -695,6 +694,7 @@ add_to_PATTERN(char *s)
 static char *
 write_PATTERN(char *s, int len)
 {
+    char *t;
     int delimiter = 0;
     int delims;
     int skip = is_QUOTE(s, &delims);
@@ -712,11 +712,20 @@ write_PATTERN(char *s, int len)
 	len -= skip;
     }
 
-    skip = skip_BLANKS(s) - s;
-    if (skip) {
-	s += skip;
-	len -= skip;
-    }
+    do {
+	if (*s == '!') {
+	    skip = 1;
+	    --len;
+	    flt_putc(*s++);
+	} else if ((t = skip_BLANKS(s)) != s) {
+	    skip = (t - s);
+	    len -= skip;
+	    s = t;
+	} else {
+	    skip = 0;
+	}
+    } while (skip != 0);
+
     delimiter = *s;
 
     for (n = first = 0; n < len; n++) {
@@ -901,7 +910,7 @@ init_filter(int before GCC_UNUSED)
 }
 
 static void
-do_filter(FILE * input GCC_UNUSED)
+do_filter(FILE *input GCC_UNUSED)
 {
     static unsigned used;
     static char *line;

@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/perlfilt.l,v 1.37 2002/11/01 01:14:13 Danny.Zerkel Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/perlfilt.l,v 1.38 2003/05/03 15:28:07 Danny.Zerkel Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of PERL input
  * text.
@@ -129,7 +129,7 @@ DSTRING		\"(\\.|\\\n|[^"\\])*\"
 STRINGS		({SSTRING}|{DSTRING})
 
 KEYWORD		[a-zA-Z_][a-zA-Z_0-9]*
-QIDENT		["']?[a-zA-Z_][a-zA-Z_0-9]+["']?
+QIDENT		["'`]?[a-zA-Z_][a-zA-Z_0-9]+["'`]?
 
 NORMALVARS	[\$%@][a-zA-Z_0-9]+('[a-zA-Z0-9]+)?
 OTHERVARS	(\$[-_.\/,"\\#%=~|\$?&`'+*\[\];!@<>():])|(\$\^[@-\177]?)
@@ -146,7 +146,7 @@ NUMBER		{SIGN}?({DECIMAL}|{OCTAL}|{HEXADECIMAL}|{REAL}|{BINARY}|{VERSION})
 
 %%
 
-<CODE><<{BLANK}{QIDENT}	{
+<CODE><<{QIDENT}	{
 			    BEGIN(HERE);
 			    save_here(yytext, yyleng);
 			    flt_bfr_append(yytext, yyleng);

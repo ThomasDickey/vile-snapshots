@@ -44,7 +44,7 @@
  *	tgetc_avail()     true if a key is avail from tgetc() or below.
  *	keystroke_avail() true if a key is avail from keystroke() or below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.255 2003/03/11 00:16:57 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.258 2003/05/05 00:29:04 tom Exp $
  *
  */
 
@@ -653,13 +653,22 @@ screen2tbuff(TBUFF ** result, CHARTYPE inclchartype)
     MARK save_dot;
     int first = -1;
     int last = -1;
+    int whole_line = 0;
 
     save_dot = DOT;
 
     tb_init(result, EOS);
     /* if from gototag(), grab from the beginning of the string */
     if (b_val(curbp, MDTAGWORD)
-	&& inclchartype == vl_ident
+	&& inclchartype == vl_ident) {
+	whole_line = 1;
+    } else if (b_is_directory(curbp)
+	       && inclchartype == SCREEN_STRING) {
+	whole_line = 1;
+	inclchartype = (CHARTYPE) ~0;
+    }
+
+    if (whole_line
 	&& DOT.o > 0
 	&& istype(inclchartype, char_at(DOT))) {
 	while (DOT.o > 0) {
@@ -1216,15 +1225,10 @@ user_reply(const char *prompt, const char *dft_val)
 static int
 isMiniEdit(int c)
 {
-    if (c == editc)
-	return TRUE;
-    if (miniedit) {
-	const CMDFUNC *cfp = CommandKeyBinding(c);
-	if ((cfp != 0)
-	    && isMiniMotion(cfp->c_flags))
-	    return TRUE;
-    }
-    return FALSE;
+    const CMDFUNC *cfp = ((miniedit)
+			  ? CommandKeyBinding(c)
+			  : InsertKeyBinding(c));
+    return ((c == editc) || ((cfp != 0) && isMiniMotion(cfp->c_flags)));
 }
 
 /*
@@ -1264,10 +1268,18 @@ shiftMiniBuffer(int offs)
 }
 
 static int
+fakeKeyCode(const CMDFUNC * f)
+{
+    return (miniedit
+	    ? fnc2kcod(f)
+	    : fnc2kins(f));
+}
+
+static int
 editMinibuffer(TBUFF ** buf, unsigned *cpos, int c, int margin, int quoted)
 {
     int edited = FALSE;
-    const CMDFUNC *cfp = CommandKeyBinding(c);
+    const CMDFUNC *cfp;
     int save_insertmode = insertmode;
     BUFFER *savebp;
     WINDOW *savewp;
@@ -1279,10 +1291,16 @@ editMinibuffer(TBUFF ** buf, unsigned *cpos, int c, int margin, int quoted)
     curbp = bminip;
     curwp = wminip;
     savemk = MK;
+    ++no_minimsgs;
 
-    TRACE(("editMiniBuffer(%d:%s) called with c=%#x, miniedit=%d, dot=%d\n",
+    TRACE((T_CALLED
+	   "editMiniBuffer(%d:%s) called with c=%#x, miniedit=%d, dot=%d\n",
 	   *cpos, tb_visible(*buf),
 	   c, miniedit, DOT.o));
+
+    cfp = ((miniedit)
+	   ? CommandKeyBinding(c)
+	   : InsertKeyBinding(c));
 
     /* Use editc (normally ^G) to toggle insert/command mode */
     if (c == editc && !quoted) {
@@ -1292,6 +1310,7 @@ editMinibuffer(TBUFF ** buf, unsigned *cpos, int c, int margin, int quoted)
 	int first = *cpos + margin;
 	int old_clexec = clexec;
 	int old_named = isnamedcmd;
+	int old_margin = b_left_margin(bminip);
 
 	/*
 	 * Reset flags that might cause a recursion into the prompt/reply
@@ -1314,10 +1333,9 @@ editMinibuffer(TBUFF ** buf, unsigned *cpos, int c, int margin, int quoted)
 	(void) execute(cfp, FALSE, 1);
 	insertmode = save_insertmode;
 	edited = TRUE;
-	*cpos = DOT.o - margin;
 
 	llength(DOT.l) -= 1;	/* strip the padding */
-	b_set_left_margin(bminip, 0);
+	b_set_left_margin(bminip, old_margin);
 
 	clexec = old_clexec;
 	isnamedcmd = old_named;
@@ -1327,26 +1345,34 @@ editMinibuffer(TBUFF ** buf, unsigned *cpos, int c, int margin, int quoted)
 	 * '$', which can set the offset just past the end of
 	 * line.
 	 */
-	if (DOT.o > llength(DOT.l))
+	if (DOT.o > llength(DOT.l)) {
 	    DOT.o = llength(DOT.l);
+	}
+	*cpos = DOT.o - margin;
+
+	/*
+	 * Copy the data back from the minibuffer into our working TBUFF.
+	 */
+	tb_init(buf, EOS);
+	tb_bappend(buf, lvalue(DOT.l) + margin, llength(DOT.l) - margin);
 
 	/*
 	 * Below are some workarounds for making it appear that we're doing the
 	 * right thing for certain non-motion commands.  They allow us to revert to
 	 * insert-mode (the default), moving the cursor first as expected.
 	 */
-    } else if (miniedit && cfp == &f_insert) {
-	miniedit = FALSE;
+    } else if (cfp == &f_insert) {
+	miniedit = !miniedit;
     } else if (miniedit && cfp == &f_insertbol) {
-	edited = editMinibuffer(buf, cpos, fnc2kcod(&f_firstnonwhite),
+	edited = editMinibuffer(buf, cpos, fakeKeyCode(&f_firstnonwhite),
 				margin, quoted);
 	miniedit = FALSE;
     } else if (miniedit && cfp == &f_appendeol) {
-	edited = editMinibuffer(buf, cpos, fnc2kcod(&f_gotoeol),
+	edited = editMinibuffer(buf, cpos, fakeKeyCode(&f_gotoeol),
 				margin, quoted);
 	miniedit = FALSE;
     } else if (miniedit && cfp == &f_append) {
-	edited = editMinibuffer(buf, cpos, fnc2kcod(&f_forwchar_to_eol),
+	edited = editMinibuffer(buf, cpos, fakeKeyCode(&f_forwchar_to_eol),
 				margin, quoted);
 	miniedit = FALSE;
 	/*
@@ -1367,8 +1393,7 @@ editMinibuffer(TBUFF ** buf, unsigned *cpos, int c, int margin, int quoted)
 	} else if (llength(lp) >= margin) {
 	    show1Char(c);
 	    tb_init(buf, EOS);
-	    tb_bappend(buf, lp->l_text + margin,
-		       llength(lp) - margin);
+	    tb_bappend(buf, lvalue(lp) + margin, llength(lp) - margin);
 	}
 	*cpos += 1;
 	edited = TRUE;
@@ -1383,13 +1408,14 @@ editMinibuffer(TBUFF ** buf, unsigned *cpos, int c, int margin, int quoted)
 	   *cpos, tb_visible(*buf),
 	   edited, miniedit, DOT.o));
 
+    --no_minimsgs;
     curbp = savebp;
     curwp = savewp;
     MK = savemk;
     kbd_flush();
     endofDisplay();
 
-    return edited;
+    returnCode(edited);
 }
 
 /*
