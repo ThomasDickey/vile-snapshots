@@ -2,7 +2,7 @@
  * 	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.142 1997/01/30 03:14:16 kev Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.143 1997/02/20 20:01:37 kev Exp $
  *
  */
 
@@ -5233,7 +5233,7 @@ x_getc(void)
 	     * Set the default position for new pasting to just past the newly
 	     * inserted text.
 	     */
-	    if (DOT.o < llength(DOT.l))
+	    if (DOT.o < llength(DOT.l) && !insertmode)
 		DOT.o++;		/* Advance DOT so that consecutive
 					   pastes come out right */
 	    cur_win->pasting = False;

@@ -3,7 +3,7 @@
  *
  *	Miscellaneous routines for UNIX/VMS compatibility.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/vms2unix.c,v 1.22 1997/02/07 01:30:39 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/vms2unix.c,v 1.23 1997/02/21 11:50:37 tom Exp $
  *
  */
 #include	"estruct.h"
@@ -645,6 +645,16 @@ vms2unix_path(char *dst, const char *src)
 
 #define	QIO(func) sys$qiow (0, chnl, func, &iosb, 0, 0, &fibDSC, 0,0,0, atr,0)
 
+/*
+ * I'd rather check if fib$w_fid is defined, but that isn't portable, since an
+ * ANSI compiler would complain about the '$'.
+ */
+#ifdef __DECC
+#define COPY_FID(Fib, Nam) memcpy (Fib.fib$w_fid, Nam.nam$w_fid, 6)
+#else	/* VAX C */
+#define COPY_FID(Fib, Nam) memcpy (Fib.fib$r_fid_overlay.fib$w_fid, Nam.nam$w_fid, 6)
+#endif
+
 int	vms_fix_umask (char *filespec)
 {
 	struct	FAB	fab;
@@ -726,11 +736,11 @@ int	vms_fix_umask (char *filespec)
 			fibDSC.dsc$w_length = sizeof(fib);
 			fibDSC.dsc$a_pointer = (char *)&fib;
 			memset (&fib, 0, sizeof(fib));
-			memcpy (fib.fib$r_fid_overlay.fib$w_fid, nam.nam$w_fid, 6);
+			COPY_FID (fib, nam);
 
 			atr[0].atr$w_type = ATR$C_FPRO;
 			atr[0].atr$w_size = ATR$S_FPRO;
-			atr[0].atr$l_addr = (char *)&short_fpro;
+			atr[0].atr$l_addr = &short_fpro;
 			atr[1].atr$w_size = atr[1].atr$w_type = 0;
 
 			status = QIO(IO$_ACCESS);
@@ -774,11 +784,11 @@ int	vms_fix_umask (char *filespec)
 			fibDSC.dsc$a_pointer = (char *)&fib;
 			memset (&fib, 0, sizeof(fib));
 			fib.fib$r_acctl_overlay.fib$l_acctl = FIB$M_WRITECK;
-			memcpy (fib.fib$r_fid_overlay.fib$w_fid, nam.nam$w_fid, 6);
+			COPY_FID (fib, nam);
 
 			atr[0].atr$w_type = ATR$C_FPRO;
 			atr[0].atr$w_size = ATR$S_FPRO;
-			atr[0].atr$l_addr = (char *)&short_fpro;
+			atr[0].atr$l_addr = &short_fpro;
 			atr[1].atr$w_size = atr[1].atr$w_type = 0;
 
 			if ($VMS_STATUS_SUCCESS(sys$assign(&DSC_name, &chnl, 0, 0))) {
