@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.159 1997/10/07 13:38:45 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.160 1997/10/16 00:07:35 tom Exp $
  *
  */
 
@@ -465,7 +465,7 @@ unbindchar(int c)		/* command key to unbind */
 /* remember whether we last did "apropos" or "describe-bindings" */
 static char *last_apropos_string;
 static CMDFLAGS last_whichcmds;
-static append_to_binding_list;
+static int append_to_binding_list;
 
 /* ARGSUSED */
 static int

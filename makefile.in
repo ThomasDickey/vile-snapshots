@@ -21,7 +21,7 @@
 # gnu autoconf support by kevin buettner, 5/94
 # original makefile for uemacs: Adam Fritz July 30,1987  (do you recognize it?)
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.88 1997/10/13 13:06:48 kev Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.89 1997/10/16 00:12:32 tom Exp $
 #
 
 #### Start of system configuration section. ####
@@ -189,6 +189,9 @@ nemode.h:	modetbl $(MKTBLS)
 
 $(MKTBLS):  $(srcdir)/mktbls.c
 	@ECHO_LD@$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $(MKTBLS)  $(srcdir)/mktbls.c
+
+check: $(TARGET)
+	@echo Sorry, no batch tests available.
 
 install: $(INSTALL_DIRS) \
 	$(bindir)/$(TARGET) \

@@ -1,7 +1,7 @@
 /*	Spawn:	various DOS access commands
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.119 1997/10/08 10:39:09 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.120 1997/10/10 00:17:20 tom Exp $
  *
  */
 
@@ -48,7 +48,6 @@ extern  short	iochan;				/* In "termio.c"	*/
 #if DISP_X11
 static void x_window_SHELL(const char *cmd)
 {
-	int flag = im_waiting(TRUE);
 	TBUFF *tmp = 0;
 
 	/*
@@ -74,7 +73,6 @@ static void x_window_SHELL(const char *cmd)
 	}
 	TRACE(("executing '%s'\n", tb_values(tmp)));
 	(void)system(tb_values(tmp));
-	(void)im_waiting(flag);
 	tb_free(&tmp);
 }
 #endif
@@ -334,7 +332,8 @@ spawn1(int rerun, int pressret)
 
 #if SYS_UNIX
 #if DISP_X11
-	(void)x_window_SHELL(line);
+	/*FIXME (void)x_window_SHELL(line); */
+	(void)system_SHELL(line);
 #else
 	ttclean(TRUE);
 	(void)system_SHELL(line);

@@ -8,7 +8,7 @@
 /************************************************************************/
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/menu.c,v 1.15 1997/10/06 23:24:55 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/menu.c,v 1.16 1997/10/16 00:37:40 tom Exp $
  */
 
 #define NEED_X_INCLUDES 1
@@ -99,18 +99,28 @@ startup_filename(void)
 /************************************************************************/
 static void common_action ( char *action )
 {
-    FILE    *pp;
-    char    str [256];
-
     TRACE(("Action=%s\n", action));
 
     if (!strcmp(action, "new_xvile"))
     {
-        pp = popen ("which xvile", "r");
-        fscanf(pp, "%s", str);
-        pclose (pp);
-        if (fork() == 0)
-            execl (str, "xvile", NULL, 0);
+        int pid;
+        int status;
+        char path[NFILEN];
+
+        lsprintf(path, "%s/%s", exec_pathname, prog_arg);
+
+        if ((pid = fork()) > 0) {
+            while (wait(&status) >= 0)
+                ;
+        } else if (pid == 0) {
+            if ((pid = fork()) > 0) {
+                _exit(0);       /* abandon exec'ing process */
+            } else if (pid == 0) {
+                newprocessgroup(FALSE, 1);
+                execl (path, "xvile", NULL, 0);
+                _exit(errno);   /* just in case exec-failed */
+            }
+        }
     }
     else
     if (!strcmp(action, "edit_rc"))

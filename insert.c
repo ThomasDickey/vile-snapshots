@@ -7,7 +7,7 @@
  * Most code probably by Dan Lawrence or Dave Conroy for MicroEMACS
  * Extensions for vile by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/insert.c,v 1.104 1997/10/06 23:30:37 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/insert.c,v 1.105 1997/10/16 00:08:36 tom Exp $
  *
  */
 
@@ -400,7 +400,7 @@ replacechar(int f, int n)
  *
  *	ABCABCABC<nl>foo
  */
-static last_insert_char;
+static int last_insert_char;
 
 static int
 ins_anytime(int playback, int cur_count, int max_count, int *splice)
