@@ -8,7 +8,7 @@
 /************************************************************************/
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/menu.c,v 1.22 1998/07/17 09:49:18 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/menu.c,v 1.23 1998/08/27 10:39:03 Larry.Gensch Exp $
  */
 
 #define NEED_X_INCLUDES 1
@@ -704,8 +704,6 @@ void do_menu ( Widget menub )
                 accel = give_accelerator (macro);
                 pm_w[n] = do_button (pm, Token[i].libelle, accel, Token[i].type);
 
-                arg = castalloc(char,10);
-                sprintf(arg, "%d", Token[i].macro);
                 add_callback (pm_w[n], proc_back, macro);
             }
             else

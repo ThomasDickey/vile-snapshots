@@ -3,7 +3,7 @@
  *	Original interface by Otto Lind, 6/3/93
  *	Additional map and map! support by Kevin Buettner, 9/17/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/map.c,v 1.81 1998/04/28 10:17:31 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/map.c,v 1.82 1998/08/22 02:17:49 tom Exp $
  *
  */
 
@@ -53,7 +53,7 @@ struct maprec {
 					/*   next character in a multi-	*/
 					/*   character sequence.	*/
 	struct maprec *	flink;		/* Where to try next if match	*/
-					/*   against current character 	*/
+					/*   against current character	*/
 					/*   is unsuccessful		*/
 	int		irv;		/* system defined mapping: The	*/
 					/*   (wide) character code to	*/
@@ -95,6 +95,12 @@ static	int	maplookup(int c, ITBUFF **outp, struct maprec *mp, GetFunc get, Avail
 #define relist_mappings(name)
 #endif
 
+#define NUMKEYSTR (KBLOCK / 2)
+
+#if DOKEYLOG
+int do_keylog = 1;
+#endif
+
 #if OPT_SHOW_MAPS
 #define MAPS_PREFIX 12
 
@@ -130,7 +136,7 @@ makemaplist(int dummy GCC_UNUSED, void *mapp)
 		mapstr = esc_seq;
 	    }
 	    if (mapstr) {
-    		    if (mapp && (struct maprec *)mapp == abbr_map) {
+		    if (mapp && (struct maprec *)mapp == abbr_map) {
 			    /* the abbr map is stored inverted */
 			    for (i = depth; i != 0; )
 				bputc(tb_values(lhsstr)[--i]);
@@ -332,7 +338,7 @@ unmap_common(struct maprec **mpp, const char *bufname)
 
     /* otherwise it'll be mapped, and not found when looked up */
     if (mpp && mpp == &map_syskey)
-    	suppress_sysmap = TRUE;
+	suppress_sysmap = TRUE;
 
     tb_scopy(&kbuf, "");
     status = kbd_reply("unmap string: ", &kbuf, eol_history,
@@ -345,7 +351,7 @@ unmap_common(struct maprec **mpp, const char *bufname)
 	/* reverse the lhs */
 	int i;
 	char t;
-    	int len = tb_length(kbuf) - 1;
+	int len = tb_length(kbuf) - 1;
 	char *s = tb_values(kbuf);
 	for (i = 0; i < len/2; i++) {
 	    t = s[len-i-1];
@@ -368,7 +374,7 @@ void
 addtosysmap(const char * seq, int seqlen, int code)
 {
     addtomap(&map_syskey, seq, seqlen, MAPF_SYSTIMER,
-    			code, (char *)0);
+			code, (char *)0);
 }
 
 static void
@@ -487,37 +493,26 @@ delfrommap(struct maprec **mpp, const char * ks)
 
 static ITBUFF *sysmappedchars = NULL;
 
-/* these two wrappers are provided because at least one pcc-based
-	compiler balks at passing TTgetc or TTtypahead as a function pointer */
-
-static int
-normal_getc(void)
-{
-	int c = TTgetc();
-	TRACE(("normal/getc:%c (%#x)\n", c, c))
-	return c;
-}
-
-static int
-normal_typeahead(void)
-{
-	return(TTtypahead());
-}
-
-static int
-normal_start(void)
-{
-	return TRUE;
-}
-
-#define NUMKEYSTR (KBLOCK / 2)
-
 static void
 save_keystroke(int c)
 {
 	KILL *kp;
 	KILLREG *kr = &kbs[KEYST_KREG];
 
+#if DOKEYLOG
+	if (do_keylog) {
+		static int keyfd = -1;
+		static char *tfilenam;
+		if (!tfilenam)
+			tfilenam = tempnam("/tmp/vilekeylogs", "vilek");
+		if (tfilenam) {
+			if (keyfd < 0)
+				keyfd = open(tfilenam, O_CREAT|O_WRONLY, 0600);
+			if (keyfd >= 0)
+				write(keyfd, &c, 1);
+		}
+	}
+#endif
 	if (kr->kbufh == NULL) {
 		kr->kbufh = typealloc(KILL);
 		kr->kused = 0;
@@ -536,13 +531,31 @@ save_keystroke(int c)
 			NUMKEYSTR / 2);
 		kr->kused = NUMKEYSTR / 2;
 	}
-
-
 }
 
-#if DOKEYLOG
-int do_keylog = 1;
-#endif
+/* these two wrappers are provided because at least one pcc-based
+	compiler balks at passing TTgetc or TTtypahead as a function pointer */
+
+static int
+normal_getc(void)
+{
+	int c = TTgetc();
+	TRACE(("normal/getc:%c (%#x)\n", c, c))
+	save_keystroke(c);
+	return c;
+}
+
+static int
+normal_typeahead(void)
+{
+	return(TTtypahead());
+}
+
+static int
+normal_start(void)
+{
+	return TRUE;
+}
 
 int
 sysmapped_c(void)
@@ -556,28 +569,14 @@ sysmapped_c(void)
     c = TTgetc();
     TRACE(("mapped/getc:%c (%#x)\n", c, c))
 
-#if DOKEYLOG
-    if (do_keylog) {
-	static int keyfd = -1;
-	static char *tfilenam;
-	if (!tfilenam)
-		tfilenam = tempnam("/tmp/vilekeylogs", "vilek");
-	if (tfilenam) {
-		if (keyfd < 0)
-			keyfd = open(tfilenam, O_CREAT|O_WRONLY, 0600);
-		if (keyfd >= 0)
-			write(keyfd, &c, 1);
-	}
-    }
-#endif
     save_keystroke(c);
 
     if (suppress_sysmap)
-    	return c;
+	return c;
 
     /* will push back on sysmappedchars successful, or not */
     (void)maplookup(c, &sysmappedchars, map_syskey,
-    		normal_getc, normal_typeahead, normal_start, TRUE);
+		normal_getc, normal_typeahead, normal_start, TRUE);
 
     return itb_last(sysmappedchars);
 }
@@ -619,9 +618,9 @@ mapgetc(void)
 {
     UINT remapflag;
     if (global_g_val(GMDREMAP))
-    	remapflag = 0;
+	remapflag = 0;
     else
-    	remapflag = NOREMAP;
+	remapflag = NOREMAP;
 
     if (!tgetc_avail() && mapgetc_ungotcnt > 0) {
 	    if (infloopcount++ > global_g_val(GVAL_MAPLENGTH)) {
@@ -676,14 +675,14 @@ mapped_c(int remap, int raw)
     c &= ~REMAPFLAGS;
 
     if (reading_msg_line)
-    	mp = 0;
+	mp = 0;
     else if (insertmode)
-    	mp = map_insert;
+	mp = map_insert;
     else
-    	mp = map_command;
+	mp = map_command;
 
     /* if we got a function key from the lower layers, turn it into '#c'
-    	and see if the user remapped that */
+	and see if the user remapped that */
     if (c & SPEC) {
 	mapungetc(kcod2key(c));
 	c = poundc;
@@ -717,7 +716,7 @@ mapped_c(int remap, int raw)
 	speckey = FALSE;
 
     } while (matched &&
-    	((remap && !(c & NOREMAP)) || (c & YESREMAP)) );
+	((remap && !(c & NOREMAP)) || (c & YESREMAP)) );
 
     return c & ~REMAPFLAGS;
 
@@ -730,7 +729,7 @@ static int
 abbr_getc(void)
 {
     if (abbr_curr_off <= abbr_search_lim)
-    	return -1; /* won't match anything in the tree */
+	return -1; /* won't match anything in the tree */
     return lgetc(DOT.l, --abbr_curr_off) & 0xff;
 }
 
@@ -769,12 +768,12 @@ abbr_check(int *backsp_limit_p)
     int status = TRUE;
 
     if (llength(DOT.l) < 1)
-    	return;
+	return;
     abbr_curr_off = DOT.o;
     abbr_search_lim = *backsp_limit_p;
     (void)itb_init(&abbr_chars, abortc);
     matched = maplookup(abbr_getc(), &abbr_chars, abbr_map,
-    	abbr_getc, abbr_c_avail, abbr_c_start, FALSE);
+	abbr_getc, abbr_c_avail, abbr_c_start, FALSE);
 
 
     if (matched) {
@@ -782,7 +781,7 @@ abbr_check(int *backsp_limit_p)
 	       the preceding chars, if any */
 	    if (!abbr_c_start()) {
 		itb_free(&abbr_chars);
-	    	return;
+		return;
 	    }
 	    DOT.o -= matched;
 	    ldelete((B_COUNT)matched, FALSE);
@@ -827,7 +826,7 @@ maplookup(
      * on it.
      */
     use_sys_timing = (insertmode && c == poundc &&
-    				(isPrint(poundc) || isSpace(poundc)));
+				(isPrint(poundc) || isSpace(poundc)));
 
     unmatched = itb_init(&unmatched, 0);
     itb_append(&unmatched, c);
@@ -905,7 +904,7 @@ maplookup(
 	    char *cp;
 	    /* cp = rmp->srv + cnt; */
 	    for (cp = rmp->srv; *cp; cp++)
-	    	;
+		;
 	    if (rmp->flags & MAPF_NOREMAP)
 		remapflag = NOREMAP;
 	    else

@@ -3544,8 +3544,11 @@ Win32 specifics
 	OLE Automation
 	--------------
 	Winvile may be invoked as an OLE automation server and thereafter
-	controlled by an OLE client.  Refer to the file doc/oleauto.doc
-	for further details.
+	controlled by an OLE client.  Refer to the file doc/oleauto.doc for
+	further details.  Additionally, the OLE client "visvile.dll"
+	provides a mechanism for substituting winvile as the default
+	Developer Studio editor.  Refer to the file doc/visvile.doc for
+	detailed information.
 
 	Utilities
 	---------
@@ -3588,9 +3591,10 @@ Win32 specifics
 			pipe or filter region operation.  Must be set when
 			the host shell doesn't properly communicate with
 			consoles created as a side effect of the
-			CreateProcess() API.  Reset by default unless
-			command.com is the current shell.  Note:  this mode
-			is applicable only when w32pipes is set.  (U)
+			CreateProcess() API.  Reset by default on a Win95/98
+			host, since command.com exhibits this problem.
+			Note:  this mode is applicable only when w32pipes
+			is set.  (U)
 
 	scroll-pause	An integer indicating the time in milliseconds to
 			wait after scrolling the display.  A value of zero,
@@ -3846,4 +3850,4 @@ Problems
 
 Copyright 1995,1996,1997 by Paul Fox, Tom Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.363 1998/08/16 22:20:39 cmorgan Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.365 1998/08/27 11:23:32 cmorgan Exp $

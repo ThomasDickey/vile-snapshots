@@ -29,6 +29,12 @@ library Winvile
         [propget, id(0), helpstring("Returns the name of the application.")]
         HRESULT Name([out, retval] BSTR* retval);
 
+        [propget, helpstring("True if editor in insert mode.")]
+        HRESULT InsertMode([out, retval] VARIANT_BOOL* retval);
+
+        [propget, helpstring("True if editor minimized.")]
+        HRESULT IsMinimized([out, retval] VARIANT_BOOL* retval);
+
         [propget, helpstring("Returns the parent of the object.")]
         HRESULT Parent([out, retval] IVileAuto** retval);
 

@@ -1,5 +1,30 @@
 Changes for vile 8.1 (released ??? ??? ??, 1998)
 
+ (tom) 980827 (k)
+	+ add gui_version() function for winvile, to handle -V option (reported
+	  by Clark Morgan).
+	+ set flags for bminip and wminip so that all control characters except
+	  for newline are echoed as in list-mode (display.c, window.c).
+	+ correct rendering of termcap color while highlight-selection is
+	  active (tcap.c)
+	+ corrected logic of '<' register so it captures both calls on TTgetc
+	  in map.c, otherwise it missed the 'M' in xterm mouse clicks.
+	+ revise xterm mouse code to support movement of modelines by
+	  "dragging" button 1, and selection/extension with buttons 1 and 3.
+	  Integrated with multimotion() function (select.c, tcap.c).
+	+ fix a couple of memory leaks
+	> patches by Clark Morgan:
+	+ adds _some_ winvile integration to DevStudio Version 5.  In
+	  particular, this patch creates a component called visvile.dll, which
+	  is a DevStudio-compatible add-in that invokes an OLE-compatible
+	  version of winvile when editing/browsing text/source documents. 
+	  Visvile.dll, a work in progress, is heavily based on visvim.dll. 
+	  Full documentation is included in the new file doc/visvile.doc. 
+	+ add InsertMode and IsMinimized functions for OLE interface.
+	+ remove unneeded assert's (winreg.c).
+	+ always set force-console mode for Win95 (main.c).
+	+ add command-line options to winvile to support OLE (ntwinio.c).
+
  (tom) 980816 (j)
 
  	+ implement a simple usage/popup for winvile.

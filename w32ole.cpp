@@ -7,7 +7,7 @@
  *
  *    samples\com\oleaut\hello\hello .
  *
- * However, this implementation handles the Release() methods quite 
+ * However, this implementation handles the Release() methods quite
  * differently and so, I wouldn't use this code as a guide for writing
  * any other automation servers :-) .
  *
@@ -19,7 +19,7 @@
  *
  * - This code tested only on Win95 (to date).
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32ole.cpp,v 1.1 1998/08/15 22:58:00 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32ole.cpp,v 1.2 1998/08/27 10:57:07 cmorgan Exp $
  */
 
 #include <windows.h>
@@ -43,7 +43,7 @@ static DWORD    dwRegisterCF, dwRegisterActiveObj;
 static vile_oa  *g_pvile_oa;
 static int      oleauto_server;
 static OLECHAR  *olebuf;
- 
+
 /* ------------------------ C Linkage Helpers ---------------------- */
 
 extern "C"
@@ -53,7 +53,7 @@ int
 oleauto_init(OLEAUTO_OPTIONS *opts)
 {
     char           *dummy = NULL;
-    HRESULT        hr; 
+    HRESULT        hr;
     LPCLASSFACTORY pcf = NULL;
 
     olebuf_len = ansibuf_len = 512;
@@ -66,13 +66,13 @@ oleauto_init(OLEAUTO_OPTIONS *opts)
     if (! SUCCEEDED(hr))
     {
         disp_win32_error(hr, NULL);
-        return (FALSE); 
+        return (FALSE);
     }
-    
+
     oleauto_server = TRUE;
 
     // Create an instance of the Vile Application object. Object is
-    // created with refcount 0. 
+    // created with refcount 0.
     if (! SUCCEEDED(vile_oa::Create(&g_pvile_oa, ! opts->invisible)))
         return (FALSE);
 
@@ -80,21 +80,21 @@ oleauto_init(OLEAUTO_OPTIONS *opts)
     pcf = new vile_oa_cf;
     if (! pcf)
         return (FALSE);
-    pcf->AddRef();           
-    hr = CoRegisterClassObject(CLSID_VileAuto, 
+    pcf->AddRef();
+    hr = CoRegisterClassObject(CLSID_VileAuto,
                                pcf,
-                               CLSCTX_LOCAL_SERVER, 
+                               CLSCTX_LOCAL_SERVER,
                     (opts->multiple) ? REGCLS_SINGLEUSE : REGCLS_MULTIPLEUSE,
                                &dwRegisterCF);
     pcf->Release();
     if (! SUCCEEDED(hr))
     {
         disp_win32_error(hr, NULL);
-        return (FALSE); 
+        return (FALSE);
     }
 
     /*
-     * Register Vile application object in the Running Object Table (ROT). 
+     * Register Vile application object in the Running Object Table (ROT).
      * This allows controllers to connect to a running application object
      * instead of creating a new instance.  Use weak registration so that
      * the ROT releases it's reference when all external references are
@@ -103,14 +103,14 @@ oleauto_init(OLEAUTO_OPTIONS *opts)
      * the object alive even after all external references have been
      * released.
      */
-    hr = RegisterActiveObject(g_pvile_oa, 
-                              CLSID_VileAuto, 
-                              ACTIVEOBJECT_WEAK, 
+    hr = RegisterActiveObject(g_pvile_oa,
+                              CLSID_VileAuto,
+                              ACTIVEOBJECT_WEAK,
                               &dwRegisterActiveObj);
     if (! SUCCEEDED(hr))
     {
         disp_win32_error(hr, NULL);
-        return (FALSE); 
+        return (FALSE);
     }
     if (! opts->invisible)
     {
@@ -118,7 +118,7 @@ oleauto_init(OLEAUTO_OPTIONS *opts)
         if (! SUCCEEDED(hr))
         {
             disp_win32_error(hr, NULL);
-            return (FALSE); 
+            return (FALSE);
         }
     }
     return (TRUE);
@@ -139,16 +139,16 @@ oleauto_exit(int code)
              * For a local server, CoDisconnectObject will disconnect the
              * object from external connections.  So the controller will
              * get an RPC error if it accesses the object after calling
-             * Quit and the controller will not GP fault. 
+             * Quit and the controller will not GP fault.
              */
 
-            CoDisconnectObject(g_pvile_oa, 0);  
+            CoDisconnectObject(g_pvile_oa, 0);
             delete g_pvile_oa;
         }
         if (dwRegisterCF != 0)
             CoRevokeClassObject(dwRegisterCF);
         if (dwRegisterActiveObj != 0)
-            RevokeActiveObject(dwRegisterActiveObj, NULL);   
+            RevokeActiveObject(dwRegisterActiveObj, NULL);
         OleUninitialize();
     }
     exit(code);
@@ -183,14 +183,14 @@ ConvertToAnsi(OLECHAR *szW)
     }
     wcstombs(ansibuf, szW, len);
     return (ansibuf);
-} 
+}
 
 OLECHAR *
 ConvertToUnicode(char *szA)
 {
     size_t len;
 
-    len = strlen(szA) + 1; 
+    len = strlen(szA) + 1;
     if (len > olebuf_len)
     {
         if (olebuf)
@@ -204,59 +204,59 @@ ConvertToUnicode(char *szA)
 }
 #endif
 
-HRESULT 
+HRESULT
 LoadTypeInfo(ITypeInfo **pptinfo, REFCLSID clsid)
-{                          
+{
     HRESULT hr;
     LPTYPELIB ptlib = NULL;
     LPTYPEINFO ptinfo = NULL;
 
-    *pptinfo = NULL;     
-    
+    *pptinfo = NULL;
+
     hr = LoadRegTypeLib(LIBID_VileAuto, VTL_MAJOR, VTL_MINOR, 0x09, &ptlib);
-    if (! SUCCEEDED(hr)) 
-        return hr;   
-    
-    // Get type information for interface of the object.      
+    if (! SUCCEEDED(hr))
+        return hr;
+
+    // Get type information for interface of the object.
     hr = ptlib->GetTypeInfoOfGuid(clsid, &ptinfo);
     ptlib->Release();
-    if (! SUCCEEDED(hr))  
+    if (! SUCCEEDED(hr))
         return hr;
 
     *pptinfo = ptinfo;
     return NOERROR;
-} 
+}
 
 /* ------------------------ Class Factory -------------------------- */
 
 vile_oa_cf::vile_oa_cf(void)
-{    
-    m_cRef = 0; 
+{
+    m_cRef = 0;
 }
 
 STDMETHODIMP
-vile_oa_cf::QueryInterface(REFIID iid, void **ppv) 
-{   
+vile_oa_cf::QueryInterface(REFIID iid, void **ppv)
+{
     *ppv = NULL;
-    
+
     if (iid == IID_IUnknown || iid == IID_IClassFactory)
         *ppv = this;
-    else 
-        return E_NOINTERFACE; 
+    else
+        return E_NOINTERFACE;
 
     AddRef();
-    return NOERROR;    
+    return NOERROR;
 }
 
 STDMETHODIMP_(ULONG)
 vile_oa_cf::AddRef(void)
-{ 
+{
     return ++m_cRef;
 }
 
 STDMETHODIMP_(ULONG)
 vile_oa_cf::Release(void)
-{ 
+{
     if(--m_cRef == 0)
     {
         delete this;
@@ -269,24 +269,24 @@ STDMETHODIMP
 vile_oa_cf::CreateInstance(IUnknown *punkOuter, REFIID riid, void **ppv)
 {
     HRESULT hr;
-    
+
     *ppv = NULL;
-    
+
     // This implementation doesn't allow aggregation
     if (punkOuter)
         return CLASS_E_NOAGGREGATION;
-    
-    /* 
+
+    /*
      * If this is a REGCLS_SINGLEUSE class factory, CreateInstance will be
      * called at most once.  The global application object has already been
      * created when CreateInstance is called.  A REGCLS_MULTIPLEUSE class
      * factory's CreateInstance would be called multiple times and would
      * create a new object each time.
      */
-    hr = g_pvile_oa->QueryInterface(riid, ppv); 
+    hr = g_pvile_oa->QueryInterface(riid, ppv);
     if (!  SUCCEEDED(hr))
     {
-        g_pvile_oa->Quit(); 
+        g_pvile_oa->Quit();
         return hr;
     }
     return (NOERROR);
@@ -294,10 +294,10 @@ vile_oa_cf::CreateInstance(IUnknown *punkOuter, REFIID riid, void **ppv)
 
 STDMETHODIMP
 vile_oa_cf::LockServer(BOOL fLock)
-{    
+{
     HRESULT hr;
 
-    hr = CoLockObjectExternal(g_pvile_oa, fLock, TRUE); 
+    hr = CoLockObjectExternal(g_pvile_oa, fLock, TRUE);
     if (! SUCCEEDED(hr))
         disp_win32_error(hr, NULL);
     return (hr);
@@ -305,23 +305,23 @@ vile_oa_cf::LockServer(BOOL fLock)
 
 /* ------------------------------- vile_oa ------------------------------ */
 
-HRESULT 
-vile_oa::Create(vile_oa **ppvile, BOOL visible) 
-{   
+HRESULT
+vile_oa::Create(vile_oa **ppvile, BOOL visible)
+{
     HRESULT hr;
-    vile_oa *pvile = NULL;   
+    vile_oa *pvile = NULL;
     OLECHAR *tmp;
-     
+
     *ppvile = NULL;
-    
+
     // Create Application object
     pvile = new vile_oa();
     if (pvile == NULL)
-        return E_OUTOFMEMORY;    
-     
+        return E_OUTOFMEMORY;
+
     pvile->m_hwnd     = (HWND) winvile_hwnd();
-    pvile->m_bVisible = visible;
-    
+    pvile->m_bVisible = (visible) ? VARIANT_TRUE : VARIANT_FALSE;
+
     // Name
     tmp = TO_OLE_STRING(prognam);
     if (! (tmp && (pvile->m_bstrName = SysAllocString(tmp))))
@@ -329,46 +329,46 @@ vile_oa::Create(vile_oa **ppvile, BOOL visible)
 
     // Load type information from type library.
     hr = LoadTypeInfo(&pvile->m_ptinfo, IID_IVileAuto);
-    if (! SUCCEEDED(hr)) 
+    if (! SUCCEEDED(hr))
     {
-        MessageBox(pvile->m_hwnd, 
+        MessageBox(pvile->m_hwnd,
 "Cannot load type library.\r\r Register type info using winvile's '-Or' command line switch",
                    prognam,
                    MB_OK | MB_ICONSTOP);
         return (hr);
     }
-         
+
     *ppvile = pvile;
     return NOERROR;
 }
 
 vile_oa::vile_oa()
-{   
+{
     m_bstrFullName = NULL;
     m_bstrName     = NULL;
-    m_ptinfo       = NULL; 
+    m_ptinfo       = NULL;
     m_cRef         = 0;
 }
 
 vile_oa::~vile_oa()
-{ 
+{
     if (m_bstrFullName) SysFreeString(m_bstrFullName);
     if (m_bstrName)     SysFreeString(m_bstrName);
     if (m_ptinfo)       m_ptinfo->Release();
 }
 
 STDMETHODIMP
-vile_oa::QueryInterface(REFIID iid, void **ppv) 
-{   
+vile_oa::QueryInterface(REFIID iid, void **ppv)
+{
     *ppv = NULL;
-    
-    if (iid == IID_IUnknown || iid == IID_IDispatch || iid == IID_IVileAuto) 
-        *ppv = this;   
-    else 
-        return E_NOINTERFACE; 
+
+    if (iid == IID_IUnknown || iid == IID_IDispatch || iid == IID_IVileAuto)
+        *ppv = this;
+    else
+        return E_NOINTERFACE;
 
     AddRef();
-    return NOERROR;    
+    return NOERROR;
 }
 
 
@@ -398,19 +398,19 @@ vile_oa::GetTypeInfo(
       UINT itinfo,
       LCID lcid,
       ITypeInfo **pptinfo)
-{    
+{
     *pptinfo = NULL;
-     
+
     if(itinfo != 0)
         return DISP_E_BADINDEX;
-    
-    m_ptinfo->AddRef(); 
+
+    m_ptinfo->AddRef();
     *pptinfo = m_ptinfo;
-    
+
     return NOERROR;
 }
 
-STDMETHODIMP 
+STDMETHODIMP
 vile_oa::GetIDsOfNames(
       REFIID riid,
       OLECHAR **rgszNames,
@@ -431,21 +431,21 @@ vile_oa::Invoke(
       VARIANT *pvarResult,
       EXCEPINFO *pexcepinfo,
       UINT *puArgErr)
-{        
+{
     return DispInvoke(
         this, m_ptinfo,
         dispidMember, wFlags, pdispparams,
-        pvarResult, pexcepinfo, puArgErr); 
+        pvarResult, pexcepinfo, puArgErr);
 }
 
-STDMETHODIMP 
+STDMETHODIMP
 vile_oa::get_Application(IVileAuto **ppvile)
 {
     HRESULT hr;
-    
+
     *ppvile = NULL;
-    
-    hr = QueryInterface(IID_IDispatch, (void **)ppvile);  
+
+    hr = QueryInterface(IID_IDispatch, (void **)ppvile);
     return ((SUCCEEDED(hr)) ? NOERROR : E_UNEXPECTED);
 }
 
@@ -487,16 +487,16 @@ vile_oa::get_FullName(BSTR *pbstr)
             *cp = '\0';
         tmp = TO_OLE_STRING((char *) value);
         if (! (tmp && (m_bstrFullName = SysAllocString(tmp))))
-            return (E_OUTOFMEMORY);    
+            return (E_OUTOFMEMORY);
     }
-    *pbstr = SysAllocString(m_bstrFullName);   
+    *pbstr = SysAllocString(m_bstrFullName);
     return ((*pbstr) ? NOERROR : E_OUTOFMEMORY);
 }
 
 STDMETHODIMP
 vile_oa::get_Name(BSTR *pbstr)
 {
-    *pbstr = SysAllocString(m_bstrName);   
+    *pbstr = SysAllocString(m_bstrName);
     return ((*pbstr) ? NOERROR : E_OUTOFMEMORY);
 }
 
@@ -504,19 +504,19 @@ STDMETHODIMP
 vile_oa::get_Parent(IVileAuto **ppvile)
 {
     HRESULT hr;
-    
+
     *ppvile = NULL;
-    
-    hr = QueryInterface(IID_IDispatch, (void **)ppvile);   
+
+    hr = QueryInterface(IID_IDispatch, (void **)ppvile);
     return ((SUCCEEDED(hr)) ? NOERROR : E_UNEXPECTED);
 }
 
 STDMETHODIMP
-vile_oa::Quit() 
+vile_oa::Quit()
 {
     PostQuitMessage(0);
-    return NOERROR;           
-} 
+    return NOERROR;
+}
 
 STDMETHODIMP
 vile_oa::VileKeys(BSTR keys)
@@ -551,7 +551,7 @@ vile_oa::put_Visible(VARIANT_BOOL bVisible)
         if (! SUCCEEDED(hr))
         {
             disp_win32_error(hr, m_hwnd);
-            return (hr); 
+            return (hr);
         }
         ::ShowWindow(m_hwnd, bVisible ? SW_SHOW : SW_HIDE);
     }
@@ -559,23 +559,44 @@ vile_oa::put_Visible(VARIANT_BOOL bVisible)
 }
 
 STDMETHODIMP
-vile_oa::get_Visible(VARIANT_BOOL FAR* pbool)
+vile_oa::get_Visible(VARIANT_BOOL *pbool)
 {
-    *pbool = m_bVisible;  
+    *pbool = m_bVisible;
     return NOERROR;
 }
 
 STDMETHODIMP
-vile_oa::ForegroundWindow() 
+vile_oa::get_IsMinimized(VARIANT_BOOL *pbool)
+{
+    WINDOWPLACEMENT wp;
+
+    wp.length = sizeof(wp);
+    if (! GetWindowPlacement(m_hwnd, &wp))
+        return (GetLastError());
+    *pbool = (wp.showCmd == SW_MINIMIZE ||
+              wp.showCmd == SW_SHOWMINIMIZED ||
+              wp.showCmd == SW_SHOWMINNOACTIVE) ? VARIANT_TRUE : VARIANT_FALSE;
+    return NOERROR;
+}
+
+STDMETHODIMP
+vile_oa::get_InsertMode(VARIANT_BOOL *pbool)
+{
+    *pbool = (insertmode) ? VARIANT_TRUE : VARIANT_FALSE;
+    return NOERROR;
+}
+
+STDMETHODIMP
+vile_oa::ForegroundWindow()
 {
     if (! m_bVisible)
         put_Visible(TRUE);   /* Force window to be visible, first. */
     ::SetForegroundWindow(m_hwnd);
-    return NOERROR;           
-} 
+    return NOERROR;
+}
 
 STDMETHODIMP
-vile_oa::Minimize() 
+vile_oa::Minimize()
 {
     ::ShowWindow(m_hwnd, SW_MINIMIZE);
     if (! m_bVisible)
@@ -587,11 +608,11 @@ vile_oa::Minimize()
 
         put_Visible(TRUE);
     }
-    return NOERROR;           
-} 
+    return NOERROR;
+}
 
 STDMETHODIMP
-vile_oa::Restore() 
+vile_oa::Restore()
 {
     ::ShowWindow(m_hwnd, SW_RESTORE);
     if (! m_bVisible)
@@ -603,5 +624,5 @@ vile_oa::Restore()
 
         put_Visible(TRUE);
     }
-    return NOERROR;           
-} 
+    return NOERROR;
+}

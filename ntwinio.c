@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 screen API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.17 1998/08/17 01:32:34 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.19 1998/08/27 10:27:28 tom Exp $
  * Written by T.E.Dickey for vile (october 1997).
  * -- improvements by Clark Morgan (see w32cbrd.c, w32pipe.c).
  */
@@ -2040,11 +2040,11 @@ WinMain(
 	char *argv[MAXARGS];
 	char *ptr;
 #ifdef VILE_OLE
-    OLEAUTO_OPTIONS oa_opts;
+	OLEAUTO_OPTIONS oa_opts;
 	int oa_invoke, oa_reg;
 
-    memset(&oa_opts, 0, sizeof(oa_opts));
-    oa_invoke = oa_reg = FALSE;
+	memset(&oa_opts, 0, sizeof(oa_opts));
+	oa_invoke = oa_reg = FALSE;
 #endif
 
 	TRACE(("Starting ntvile\n"))
@@ -2096,11 +2096,46 @@ WinMain(
 					src = dst;
 					value = strtol(src, &dst, 0);
 					if (value > 2)
+					{
 						SetRows(value);
+#ifdef VILE_OLE
+						oa_opts.cols = term.t_ncol;
+						oa_opts.rows = term.t_nrow;
+#endif
+					}
 				}
 				eat = 2;
 			}
 		}
+#ifdef VILE_OLE
+		else if (argv[n][0] == '-' && argv[n][1] == 'O')
+		{
+			int which = argv[n][2];
+
+			if (which == 'r')
+			{
+				oa_reg = TRUE;
+				eat    = 1;
+			}
+			else if (which == 'u')
+				ExitProgram(oleauto_unregister());
+			else if (which == 'a')
+			{
+				oa_invoke = TRUE;
+				eat       = 1;
+			}
+		}
+		else if (strcmp(argv[n], "-invisible") == 0)
+		{
+			oa_opts.invisible = TRUE;
+			eat               = 1;
+		}
+		else if (strcmp(argv[n], "-multiple") == 0)
+		{
+			oa_opts.multiple = TRUE;
+			eat            = 1;
+		}
+#endif
 		if (eat) {
 			while (m+eat <= argc) {
 				argv[m] = argv[m+eat];
@@ -2120,7 +2155,7 @@ WinMain(
 		/* NOT REACHED */
 	}
 	if (oa_opts.invisible)
-	nCmdShow = SW_HIDE;
+		nCmdShow = SW_HIDE;
 #endif
 
 	if (!InitInstance(hInstance, nCmdShow))
@@ -2163,6 +2198,13 @@ option_size(const char *option)
 		return 14;	/* use embedded blanks to fix the tabs ... */
 	}
 	return 0;
+}
+
+void
+gui_version(char *program)
+{
+	ShowWindow(cur_win->main_hwnd, SW_HIDE);
+	MessageBox(cur_win->main_hwnd, getversion(), prognam, MB_OK|MB_ICONSTOP);
 }
 
 void

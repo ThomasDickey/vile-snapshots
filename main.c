@@ -13,7 +13,7 @@
  *	The same goes for vile.  -pgf, 1990-1995
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.329 1998/07/17 10:16:12 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.332 1998/08/27 10:37:55 Larry.Gensch Exp $
  *
  */
 
@@ -246,7 +246,11 @@ MainProgram(int argc, char *argv[])
 				break;
 
 			case 'V':
+#if DISP_NTWIN
+				gui_version(prog_arg);
+#else
 				(void)printf("%s\n", getversion());
+#endif
 				tidy_exit(GOODEXIT);
 
 				/* FALLTHROUGH */
@@ -800,22 +804,7 @@ global_val_init(void)
 #endif
 #if SYS_WINNT && defined(DISP_NTWIN)
 	/* Allocate console before spawning piped process? */
-    if (is_win95())
-    {
-#define WHACKED_SHELL  "command.com"
-#define WHACKED_LEN    (sizeof(WHACKED_SHELL) - 1)
-
-        char *shell = get_shell();
-        int  sh_len = strlen(shell);
-
-        if (sh_len >= WHACKED_LEN &&
-                    stricmp(shell + sh_len - WHACKED_LEN, WHACKED_SHELL) == 0)
-        {
-            set_global_g_val(GMDFORCE_CONSOLE, 1);
-        }
-#undef  WHACKED_LEN
-#undef  WHACKED_SHELL
-    }
+    set_global_g_val(GMDFORCE_CONSOLE, is_win95());
 #endif
 #ifdef GMDHISTORY
 	set_global_g_val(GMDHISTORY,	TRUE);
@@ -1076,6 +1065,8 @@ global_val_init(void)
 		if (!found) {
 			s = typeallocn(char, strlen(HELP_LOC) + 2 + strlen(startup_path));
 			lsprintf(s, "%s%c%s", HELP_LOC, PATHCHR, startup_path);
+			if (startup_path != NULL)	/* memory leak! */
+			    free(startup_path);
 			startup_path = s;
 		}
 	}

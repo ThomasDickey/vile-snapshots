@@ -2,7 +2,7 @@
  * Window management. Some of the functions are internal, and some are
  * attached to keys that the user actually types.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/window.c,v 1.83 1998/07/29 02:07:24 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/window.c,v 1.84 1998/08/27 01:53:04 tom Exp $
  *
  */
 
@@ -1028,6 +1028,7 @@ winit(int screen)
 		TRACE(("winit creating bminip & wminip\n"));
 		wminip = wp;
 		bminip = wp->w_bufp = bfind("", BFINVS);
+		b_set_scratch(bminip);
 		addline(bminip, "", 0);
 		wminip->w_dot = bminip->b_dot;
 
@@ -1035,7 +1036,7 @@ winit(int screen)
 		set_w_val(wminip, WMDNUMBER, FALSE);
 
 		make_local_w_val(wminip,WMDLIST);
-		set_w_val(wminip, WMDLIST, FALSE);
+		set_w_val(wminip, WMDLIST, TRUE);
 #ifdef WMDLINEWRAP
 		make_local_w_val(wminip,WMDLINEWRAP);
 		set_w_val(wminip, WMDLINEWRAP, FALSE);

@@ -101,6 +101,11 @@ ForegroundWindow()  -- Makes the editor the foreground window.  Note that NT5
 
 FullName            -- [out] Returns the path of the application.
 
+InsertMode          -- [out] True if editor window with keyboard focus is
+                       in insert mode.
+
+IsMinimized         -- [out] True if editor minimized.
+
 Minimize()          -- Minimizes the editor.
 
 Name()              -- [out] Returns the name of the application.
