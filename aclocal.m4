@@ -1,6 +1,6 @@
 dnl Local definitions for autoconf.
 dnl
-dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.30 1997/09/06 16:57:15 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.33 1997/09/07 21:22:42 tom Exp $
 dnl
 dnl ---------------------------------------------------------------------------
 dnl ---------------------------------------------------------------------------
@@ -103,18 +103,50 @@ else
 fi
 ])dnl
 dnl ---------------------------------------------------------------------------
+dnl Allow user to disable a normally-on option.
+AC_DEFUN([CF_ARG_DISABLE],
+[CF_ARG_OPTION($1,[$2 (default: on)],[$3],[$4],yes)])dnl
+dnl ---------------------------------------------------------------------------
+dnl Restricted form of AC_ARG_ENABLE that ensures user doesn't give bogus
+dnl values.
+dnl
+dnl Parameters:
+dnl $1 = option name
+dnl $2 = help-string 
+dnl $3 = action to perform if option is not default
+dnl $4 = action if perform if option is default
+dnl $5 = default option value (either 'yes' or 'no')
+AC_DEFUN([CF_ARG_OPTION],
+[AC_ARG_ENABLE($1,[$2],[test "$enableval" != ifelse($5,no,yes,no) && enableval=ifelse($5,no,no,yes)
+  if test "$enableval" != "$5" ; then
+ifelse($3,,[    :]dnl
+,[    $3]) ifelse($4,,,[
+  else
+    $4])
+  fi],[enableval=$5 ifelse($4,,,[
+  $4
+])dnl
+  ])])dnl
+dnl ---------------------------------------------------------------------------
 dnl Check if we're accidentally using a cache from a different machine.
 dnl Derive the system name, as a check for reusing the autoconf cache.
 dnl
+dnl If we've packaged config.guess and config.sub, run that (since it does a
+dnl better job than uname). 
 AC_DEFUN([CF_CHECK_CACHE],
 [
-system_name="`(uname -s -r) 2>/dev/null`"
-if test -n "$system_name" ; then
-	AC_DEFINE_UNQUOTED(SYSTEM_NAME,"$system_name")
+if test -f $srcdir/config.guess ; then
+	AC_CANONICAL_HOST
+	system_name="$host_os"
 else
-	system_name="`(hostname) 2>/dev/null`"
+	system_name="`(uname -s -r) 2>/dev/null`"
+	if test -z "$system_name" ; then
+		system_name="`(hostname) 2>/dev/null`"
+	fi
 fi
+test -n "$system_name" && AC_DEFINE_UNQUOTED(SYSTEM_NAME,"$system_name")
 AC_CACHE_VAL(cf_cv_system_name,[cf_cv_system_name="$system_name"])
+
 test -z "$system_name" && system_name="$cf_cv_system_name"
 test -n "$cf_cv_system_name" && AC_MSG_RESULT("Configuring for $cf_cv_system_name")
 
@@ -149,11 +181,17 @@ AC_DEFUN([CF_DISABLE_ECHO],[
 AC_MSG_CHECKING(if you want to see long compiling messages)
 CF_ARG_DISABLE(echo,
 	[  --disable-echo          test: display \"compiling\" commands],
-	[SHOW_CC='	@echo compiling [$]@'
-    ECHO_CC='@'],
-	[SHOW_CC='# compiling'
-    ECHO_CC=''])
+	[
+    ECHO_LD='@echo linking [$]@;'
+    SHOW_CC='	@echo compiling [$]@'
+    ECHO_CC='@'
+],[
+    ECHO_LD=''
+    SHOW_CC='# compiling'
+    ECHO_CC=''
+])
 AC_MSG_RESULT($enableval)
+AC_SUBST(ECHO_LD)
 AC_SUBST(SHOW_CC)
 AC_SUBST(ECHO_CC)
 ])dnl
@@ -608,7 +646,18 @@ AC_CACHE_VAL(cf_cv_dcl_sys_errlist,[
     [cf_cv_dcl_sys_errlist=yes],
     [cf_cv_dcl_sys_errlist=no])])
 AC_MSG_RESULT($cf_cv_dcl_sys_errlist)
-test $cf_cv_dcl_sys_errlist = no && AC_DEFINE(DECL_SYS_ERRLIST)
+
+# It's possible (for near-UNIX clones) that sys_errlist doesn't exist
+if test $cf_cv_dcl_sys_errlist = no ; then
+    AC_DEFINE(DECL_SYS_ERRLIST)
+    AC_MSG_CHECKING([existence of sys_errlist])
+    AC_CACHE_VAL(cf_cv_have_sys_errlist,[
+        AC_TRY_LINK([#include <errno.h>],
+            [char *c = (char *) *sys_errlist],
+            [cf_cv_have_sys_errlist=yes],
+            [cf_cv_have_sys_errlist=no])])
+    AC_MSG_RESULT($cf_cv_have_sys_errlist)
+fi
 ])dnl
 dnl ---------------------------------------------------------------------------
 dnl Check for return and param type of 3rd -- OutChar() -- param of tputs().

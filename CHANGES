@@ -1,5 +1,12 @@
 Changes for vile 7.3 (released ??? ??? ??, 1997)
 
+(tom)	970907 (c)
+	+ modify CF_CACHE_CHECK macro to use AC_CANONICAL_HOST to obtain a
+	  "better" value for SYSTEM_NAME.  This is displayed as part of the
+	  :version command.  Add config.guess and config.sub to support this.
+	+ changes for 7.2b omitted some macros dealing with echoing during the
+	  make process (reported by Jens Schleusener <Jens.Schleusener@dlr.de>)
+
 (tom)	970905 (b)
 	+ merge configure macros from tin-unoff and lynx (configure.in,
 	  aclocal.m4).
