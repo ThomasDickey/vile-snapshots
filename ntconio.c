@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 console API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntconio.c,v 1.57 2000/01/30 20:44:02 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntconio.c,v 1.58 2000/07/24 22:56:33 cmorgan Exp $
  *
  */
 
@@ -420,6 +420,9 @@ nthandler(DWORD ctrl_type)
 static void
 ntopen(void)
 {
+    CONSOLE_CURSOR_INFO oldcci, newcci;
+    BOOL oldcci_ok, newcci_ok;
+
     TRACE(("ntopen\n"));
 
     set_colors(NCOLORS);
@@ -433,10 +436,21 @@ ntopen(void)
 	|| csbi.dwMaximumWindowSize.X !=
 	csbi.srWindow.Right - csbi.srWindow.Left + 1) {
 	hOldConsoleOutput = hConsoleOutput;
+	oldcci_ok = GetConsoleCursorInfo(hConsoleOutput, &oldcci);
 	hConsoleOutput = CreateConsoleScreenBuffer(GENERIC_READ | GENERIC_WRITE,
 	    0, NULL, CONSOLE_TEXTMODE_BUFFER, NULL);
 	SetConsoleActiveScreenBuffer(hConsoleOutput);
 	GetConsoleScreenBufferInfo(hConsoleOutput, &csbi);
+	newcci_ok = GetConsoleCursorInfo(hConsoleOutput, &newcci);
+	if (newcci_ok && oldcci_ok && newcci.dwSize != oldcci.dwSize) {
+	    /*
+	     * Ensure that user's cursor size prefs are carried forward
+	     * in the newly created console.
+	     */
+
+	    newcci.dwSize = oldcci.dwSize;
+	    (void) SetConsoleCursorInfo(hConsoleOutput, &newcci);
+	}
     }
     originalAttribute = csbi.wAttributes;
 

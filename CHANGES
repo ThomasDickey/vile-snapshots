@@ -1,5 +1,35 @@
 Changes for vile 9.2 (released ??? ??? ?? 2000)
 
+ 20000725 (o)
+	> Clark Morgan:
+	+ add example macro to vile.hlp from this-file-dir by Richard Hussong
+	  <rhussong@ma.ultranet.com> but renamed to cdcur like Alex Wetmore's
+	  variation as suggested by Paul Fox.
+	+ if an NT console's display and buffer geometry are not the same, then
+	  vile.exe's cursor defaults to the minimum size.  Modify so that the
+	  editor's cursor size is inherited from the parent console window.
+	+ correct glob test for "~" which can be expanded as user's home
+	  directory for VMS and win32.  The test allowed expansion of tilde at
+	  points other than the beginning of a path component, which can happen
+	  on win32.
+	> Tom Dickey:
+	+ modify decode_exp() to skip over null pointers in the list
+	  of subexpressions in regexp struct which are set when a
+	  nested group was parsed, e.g., in the $filename-expr for
+	  hgrep on win32.  The regular expresion code finds the proper
+	  number of \( \) atoms, but the array indices do not match,
+	  causing ^X^X to fail (reported by Clark Morgan). 
+	+ correct missing check for backslash within a character range in
+	  regatom(), which caused patterns such as "[^\[\]]" to match any
+	  character other than left bracket which was followed by a right
+	  bracket. 
+	+ implement 'highlight' mode, which when disabled prevents the
+	  corresponding buffers from being syntax-highlighted (request by
+	  Moo Kim <kim@mailbox.elsegundoca.ncr.com>).
+	+ add newsrcmode to prevent ".newsrc" file from being treated as a
+	  shell script; otherwise every number in the file will be highlighted,
+	  which is very slow for long lines (reported by Clark Morgan).
+
  20000710 (n)
 	> Clark Morgan:
 	+ enable tilde-expansion for win32 in glob.c

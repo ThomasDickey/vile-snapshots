@@ -11,7 +11,7 @@
  *
  *		pgf, 11/91
  *
- * $Header: /users/source/archives/vile.vcs/RCS/regexp.c,v 1.69 2000/03/14 02:50:33 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/regexp.c,v 1.70 2000/07/24 23:43:40 tom Exp $
  *
  */
 
@@ -644,6 +644,8 @@ regatom(int *flagp, int at_bop)
 						regparse++;
 					}
 				} else {
+					if (*regparse == '\\')
+						regc(*regparse++);
 					regc(*regparse++);
 				}
 			}

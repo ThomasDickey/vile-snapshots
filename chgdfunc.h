@@ -2,7 +2,7 @@
  * Prototypes for functions in the mode-tables (must be declared before the
  * point at which proto.h is included).
  *
- * $Header: /users/source/archives/vile.vcs/RCS/chgdfunc.h,v 1.10 2000/02/09 11:34:27 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/chgdfunc.h,v 1.11 2000/07/24 21:59:44 tom Exp $
  */
 extern int chgd_autobuf  (CHGD_ARGS);
 extern int chgd_buffer   (CHGD_ARGS);
@@ -30,6 +30,7 @@ extern int chgd_scheme   (CHGD_ARGS);
 
 #if OPT_MAJORMODE
 extern int chgd_mm_order (CHGD_ARGS);
+extern int chgd_filter   (CHGD_ARGS);
 #endif
 
 #if SYS_WINNT && defined(VILE_OLE)
