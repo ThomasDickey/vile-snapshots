@@ -3,7 +3,7 @@
 
 	written 1986 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.154 1998/02/07 14:22:06 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.155 1998/02/21 01:44:39 tom Exp $
  *
  */
 
@@ -22,12 +22,17 @@
 #  define SHELL_NAME "COMSPEC"
 #  define SHELL_PATH "cmd.exe"
 #else
-#  if SYS_MSDOS || SYS_WINNT
+#  if SYS_WINNT
 #    define SHELL_NAME "COMSPEC"
-#    define SHELL_PATH "command.com"
+#    define SHELL_PATH (is_winnt() ? "cmd.exe" : "command.com")
 #  else
-#    define SHELL_NAME "SHELL"
-#    define SHELL_PATH "/bin/sh"
+#    if SYS_MSDOS
+#      define SHELL_NAME "COMSPEC"
+#      define SHELL_PATH "command.com"
+#    else
+#      define SHELL_NAME "SHELL"
+#      define SHELL_PATH "/bin/sh"
+#    endif
 #  endif
 #endif
 
@@ -109,6 +114,16 @@ static char *directory;	/* $TMP environment is "$directory" variable */
 static char *x_display;	/* $DISPLAY environment is "$xdisplay" variable */
 static char *x_shell;	/* $XSHELL environment is "$xshell" variable */
 #endif
+#endif
+
+#if OPT_EVAL && OPT_SHELL
+char *
+get_shell(void)
+{
+	if (shell == 0)
+		SetEnv(&shell, DftEnv(SHELL_NAME, SHELL_PATH));
+	return shell;
+}
 #endif
 
 #if OPT_SHOW_EVAL
@@ -517,9 +532,7 @@ gtenv(const char *vname)	/* name of environment variable to retrieve */
 #endif
 #if OPT_SHELL
 		ElseIf( EVSHELL )
-			if (shell == 0)
-				SetEnv(&shell, DftEnv(SHELL_NAME, SHELL_PATH));
-			value = shell;
+			value = get_shell();
 
 		ElseIf( EVDIRECTORY )
 			if (directory == 0)

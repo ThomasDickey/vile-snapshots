@@ -1,7 +1,7 @@
 /*
  * debugging support -- tom dickey.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/trace.h,v 1.4 1997/08/14 10:10:23 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/trace.h,v 1.5 1998/02/23 11:27:56 tom Exp $
  *
  */
 #ifndef	_trace_h
@@ -42,9 +42,8 @@ extern	void	Trace ( const char *fmt, ... ) __attribute__ ((format(printf,1,2)));
 extern	void	Elapsed ( char * msg);
 extern	void	WalkBack (void);
 
-#ifdef fast_ptr
-extern	void	lp_dump (char *msg, LINE *lp);
-extern	void	bp_dump ( BUFFER *bp );
+#ifdef _estruct_h
+extern	char *	tb_visible (TBUFF *p);
 #endif
 
 #undef TRACE

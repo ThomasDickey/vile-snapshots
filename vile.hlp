@@ -3303,6 +3303,27 @@ DOS specifics
 	with 7 before being used as background colors, to prevent blinking 
 	characters.
 
+    
+    
+    
+Win32 specifics
+---------------
+
+	Internally, vile uses two radically different mechanisms for piping
+	data to and from the shell.  One mechanism uses temporary files and the
+	other simply calls native Win32 services (no temp files).  This
+	dichotomy exists because the original Win95 console shell (command.com)
+	accesses the floppy drive each and every time a process communicates
+	with it via a pipe and the OS R2 shell abruptly hangs under similar
+	conditions.  By default, then, on a WinNT host, vile's pipes are
+	implemented with Win32 services and via temp files on a Win95 host.  If
+	the user's replacement Win95 shell does not exhibit communication
+	problems similar to those described above (e.g., Thompson Toolkit
+	Shell), vile may be forced to use native Win32 pipes by setting the
+	global mode "w32pipes" (e.g., "se w32pipes").
+
+
+
 
 Differences from vi
 -------------------
@@ -3540,4 +3561,4 @@ Problems
 
 Copyright 1995,1996,1997 by Paul Fox, Tom Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.338 1998/02/21 22:23:32 pgf Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.339 1998/02/23 11:27:58 cmorgan Exp $

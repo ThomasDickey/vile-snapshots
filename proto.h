@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.265 1998/02/21 22:23:32 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.266 1998/03/12 23:06:34 tom Exp $
  *
  */
 
@@ -259,6 +259,7 @@ extern int did_hard_error_occur (void);
 #endif
 
 /* eval.c */
+extern char *get_shell(void);
 extern char *l_itoa (int i);
 extern char *mklower (char *str);
 extern char *mktrimmed (char *str);
@@ -394,24 +395,26 @@ extern	void	expand_wild_args (int *argcp, char ***argvp);
 
 /* history.c */
 #if OPT_HISTORY
-extern void hst_init (int c);
-extern void hst_glue (int c);
-extern void hst_append (char *cmd, int glue);
-extern void hst_remove (const char *cmd);
-extern void hst_flush (void);
-extern int edithistory (TBUFF **buffer, unsigned *position, int *given, UINT options, int (*func)(EOL_ARGS), int eolchar);
+extern	int	edithistory (TBUFF **buffer, unsigned *position, int *given, UINT options, int (*func)(EOL_ARGS), int eolchar);
+extern	void	hst_append (TBUFF *cmd, int glue);
+extern	void	hst_append_s (char *cmd, int glue);
+extern	void	hst_flush (void);
+extern	void	hst_glue (int c);
+extern	void	hst_init (int c);
+extern	void	hst_remove (const char *cmd);
 #else
-#define hst_init(c)
-#define hst_glue(c)
-#define hst_append(p,c)
-#define hst_remove(p)
-#define hst_flush()
+#define	hst_append(p,c)
+#define	hst_append_s(p,c)
+#define	hst_flush()
+#define	hst_glue(c)
+#define	hst_init(c)
+#define	hst_remove(p)
 #endif
 
 /* ibmpc.c */
 #if SYS_MSDOS || SYS_OS2 || SYS_WINNT
-extern	void scwrite (int row, int col, int nchar, const char *outstr, VIDEO_ATTR *attrstr, int forg, int bacg);
-extern VIDEO *scread (VIDEO *vp, int row);
+extern	VIDEO *	scread (VIDEO *vp, int row);
+extern	void	scwrite (int row, int col, int nchar, const char *outstr, VIDEO_ATTR *attrstr, int forg, int bacg);
 #endif
 
 /* input.c */
@@ -449,7 +452,7 @@ extern int tgetc_avail (void);
 extern void dotcmdstop (void);
 extern void incr_dot_kregnum (void);
 extern void kbd_kill_response (TBUFF *buf, unsigned *position, int c);
-extern void kbd_pushback (char *buffer, int skip);
+extern void kbd_pushback (TBUFF *buf, int skip);
 extern void set_end_string (int c);
 extern void tungetc(int c);
 extern void unkeystroke (int c);
@@ -613,6 +616,11 @@ extern int system_SHELL (char *cmd);
 
 #if SYS_MSDOS || SYS_WIN31 || (SYS_OS2 && CC_CSETPP) || TEST_DOS_PIPES
 extern void npflush (void);
+#endif
+
+/* ntconio.c */
+#if DISP_NTCONS
+extern void ntcons_reopen(void);
 #endif
 
 /* oneliner.c */
@@ -791,6 +799,7 @@ TBUFF *	tb_copy (TBUFF **d, TBUFF *s);
 TBUFF *	tb_init (TBUFF **p, int c);
 TBUFF *	tb_sappend (TBUFF **p, const char *s);
 TBUFF *	tb_scopy (TBUFF **p, const char *s);
+TBUFF *	tb_string (const char *s);
 TBUFF * tb_put(TBUFF **p, ALLOC_T n, int c);
 char *	tb_values (TBUFF *p);
 int	tb_get (TBUFF *p, ALLOC_T n);
@@ -850,6 +859,14 @@ extern	void	vms_dir2path	(char *path);
 extern FILE *vms_rpipe (const char *cmd, int fd, const char *input_file);
 #endif
 
+/* w32pipe.c */
+#if SYS_WINNT
+extern int is_win95(void);
+extern int is_winnt(void);
+extern int w32_inout_popen(FILE **fr, FILE **fw, char *cmd);
+extern void w32_npclose(FILE *fp);
+#endif
+
 /* window.c */
 extern WINDOW * wpopup (void);
 extern int delwp (WINDOW *thewp);
@@ -886,7 +903,7 @@ extern int isnewwordf (void);
 extern int joinregion (void);
 extern int macarg (char *tok);
 extern int macliteralarg (TBUFF **tok);
-extern int macroize (TBUFF **p, const char *src, const char *ref);
+extern int macroize (TBUFF **p, TBUFF *src, int skip);
 extern int toktyp (const char *tokn);
 extern void fmatch (int rch);
 extern void setchartype (void);

@@ -5,7 +5,7 @@
  *	reading and writing of the disk are in "fileio.c".
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.218 1998/02/07 17:38:45 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.220 1998/03/14 00:06:43 tom Exp $
  *
  */
 
@@ -191,10 +191,48 @@ CleanAfterPipe (int Wrote)
 	        sgarbf = TRUE;
 	}
 }
-#else
+
+#else /* !SYS_UNIX */
+#ifdef GMDW32PIPES
+
+static void
+CleanToPipe(void)
+{
+    if (fileispipe)
+    {
+        if (global_g_val(GMDW32PIPES))
+        {
+            bottomleft();
+            TTputc('\n');
+            TTputc(' ');  /* Forces ntconio routines to flush \r \n */
+            TTputc('\r'); /* Erase ' ' :-)      */
+            TTflush();    /* Actually necessary */
+        }
+        else
+            TTkclose();
+    }
+}
+
+static void
+CleanAfterPipe(int Wrote)
+{
+    if (fileispipe)
+    {
+        if (global_g_val(GMDW32PIPES))
+        {
+            if (Wrote) pressreturn();
+            sgarbf = TRUE;
+        }
+        else
+            TTkopen();
+    }
+}
+
+#else /* !GMDW32PIPES */
 #define	CleanToPipe()		TTkclose()
 #define	CleanAfterPipe(f)	TTkopen()
 #endif
+#endif /* SYS_UNIX */
 
 /*
  * On faster machines, a pipe-writer will tend to keep the pipe full. This

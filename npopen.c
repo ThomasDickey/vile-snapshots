@@ -1,7 +1,7 @@
 /*	npopen:  like popen, but grabs stderr, too
  *		written by John Hutchinson, heavily modified by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/npopen.c,v 1.60 1998/02/07 14:22:00 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/npopen.c,v 1.62 1998/03/14 00:07:14 tom Exp $
  *
  */
 
@@ -381,6 +381,11 @@ inout_popen(FILE **fr, FILE **fw, char *cmd)
 	static FILE	*pp = 0;
 	int		fd;
 
+#ifdef GMDW32PIPES
+	if (global_g_val(GMDW32PIPES))
+	    return (w32_inout_popen(fr, fw, cmd));
+#endif
+
 	/* Create the file that will hold the pipe's content */
 	if ((fd = createTemp(type)) >= 0) {
 		if (fw == 0) {
@@ -406,6 +411,10 @@ inout_popen(FILE **fr, FILE **fw, char *cmd)
 void
 npflush (void)
 {
+#ifdef GMDW32PIPES
+	if (global_g_val(GMDW32PIPES))
+	    return;
+#endif
 	if (myCmds != 0) {
 		if (myWrtr != 0) {
 			(void)fflush(*myWrtr);
@@ -423,6 +432,13 @@ npflush (void)
 void
 npclose (FILE *fp)
 {
+#ifdef GMDW32PIPES
+	if (global_g_val(GMDW32PIPES))
+	{
+	    w32_npclose(fp);
+	    return;
+	}
+#endif
 	closePipe(&myWrtr);
 	closePipe(&myPipe);
 	deleteTemp();

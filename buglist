@@ -1,7 +1,7 @@
 ------------------------
 vile bug/enhancement/wish list (mostly wishes ;-)
 ------------------------
-$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.336 1998/02/08 23:22:10 tom Exp $
+$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.337 1998/03/14 04:39:11 tom Exp $
 ----------------------
 	(E means enhancement, L,M,H are low, medium, high priority)
 
@@ -39,9 +39,6 @@ E	g should become a region command.  Then it could take ranges, as
 E	collapse command execution code to as few places as possible.
 	Its currently spread through execute(), operator(),
 	docmd(), and usekreg().
-
-E	mlreply line should ideally be a one line buffer, so inline editing
-	can be done on it.
 
 E	I haven't even come close to testing vile for
 	memory-full conditions.  Some malloc() packages give 95%
@@ -1351,3 +1348,10 @@ it might be a conflict with glibc2 vs libc5 (no), that the OPT_WORKING code
 might be a problem (no), and that forking xvile might be a problem with Motif
 (no).  Compiler optimization level may be related (both reports were for -O2
 and up).
+
+-- 98-03-13 (tom)
+
+I see an intermittent problem in winvile.exe for pipes:  sometimes pipes do not
+open properly, giving a message about a bad file descriptor.  However, if I
+turn on traces (or run from the debugger), the problem goes away, and the
+program works - for a while.

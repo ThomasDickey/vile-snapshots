@@ -1,10 +1,11 @@
 /*
  * debugging support -- tom dickey.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.6 1997/11/27 13:56:08 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.7 1998/03/08 22:40:31 tom Exp $
  *
  */
 #include "estruct.h"
+#include <ctype.h>
 
 #undef fopen	/* avoid conflict with 'fakevms.c' */
 
@@ -55,6 +56,34 @@ Trace(const char *fmt, ...)
 		(void)fflush(stdout);
 		(void)fflush(stderr);
 	}
+}
+
+char *
+tb_visible(TBUFF *p)
+{
+	static char *result;
+	size_t j, k = 0;
+
+	if (result != 0)
+		free(result);
+	result = malloc(tb_length(p)*4 + 1);
+
+	for (j = 0; j < tb_length(p); j++) {
+		int c = tb_values(p)[j] & 0xff;
+		if (isprint(c)) {
+			result[k++] = c;
+		} else {
+			if (c >= 128)
+				sprintf(result+k, "\\%03o", c);
+			else if (c == 127)
+				strcpy(result+k, "^?");
+			else
+				sprintf(result+k, "^%c", c | '@');
+			k = strlen(result);
+		}
+	}
+	result[k] = 0;
+	return result;
 }
 
 #define	SECS(tv)	(tv.tv_sec + (tv.tv_usec / 1.0e6))

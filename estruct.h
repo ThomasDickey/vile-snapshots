@@ -9,8 +9,11 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.332 1998/02/08 23:12:48 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.335 1998/03/14 18:15:10 tom Exp $
  */
+
+#ifndef _estruct_h
+#define _estruct_h 1
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -91,10 +94,6 @@
 #define SYS_MSDOS  0
 #endif
 
-#ifdef __EMX__
-#define SYS_OS2_EMX 1
-#endif
-
 #ifdef __GO32__  	/* DJ's GCC version 1.09 */
 #undef SYS_MSDOS
 #define SYS_MSDOS  1
@@ -139,6 +138,13 @@
 #endif
 
 #endif /* os_chosen */
+
+/*
+ * This may apply to makefile.emx, or to builds with the configure-script
+ */
+#ifdef __EMX__
+#define SYS_OS2_EMX 1
+#endif
 
 /*
  * Porting constraints: supply the normally assumed values that we get from
@@ -385,7 +391,6 @@
 #define	OPT_TAGS	1	/* tags support  			      */
 #define	OPT_WORDCOUNT	!SMALLER/* "count-words" command"		      */
 #define	OPT_PROCEDURES	1	/* named procedures			      */
-#define	OPT_KSH_HISTORY	0	/* ksh-style history commands		      */
 #define	OPT_PATHLOOKUP	1	/* search $PATH for startup and help files    */
 #define	OPT_SCROLLCODE	1	/* code in display.c for scrolling the screen.
 				   Only useful if your display can scroll
@@ -848,6 +853,7 @@ typedef enum {
 #define KBD_SHPIPE	iBIT(8)	/* expand, assuming shell-command */
 #define KBD_NOMAP	iBIT(9) /* don't permit mapping via kbd_key() */
 #define KBD_EXPPAT	iBIT(10) /* expand ~ to last replacement */
+#define KBD_0CHAR	iBIT(11) /* string can have embedded nulls */
 
 /* default option for 'mlreply' (used in modes.c also) */
 #if !(SYS_MSDOS || SYS_WIN31 || SYS_OS2 || SYS_WINNT)
@@ -1774,6 +1780,8 @@ typedef struct	BUFFER {
  * character.
  */
 
+#define WINDOW	vile_WINDOW		/* avoid conflict with curses.h */
+
 typedef struct	WINDOW {
 	W_TRAITS w_traits;		/* features of the window we should */
 					/*  remember between displays */
@@ -2354,3 +2362,5 @@ extern void _exit (int code);
 #if SYS_UNIX && OPT_VMS_PATH
 #include "fakevms.h"
 #endif
+
+#endif /* _estruct_h */

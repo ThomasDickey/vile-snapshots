@@ -13,7 +13,7 @@
  *	The same goes for vile.  -pgf, 1990-1995
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.306 1998/02/07 20:24:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.308 1998/03/14 00:06:55 tom Exp $
  *
  */
 
@@ -788,6 +788,9 @@ global_val_init(void)
 	set_global_g_val(GMDERRORBELLS, TRUE);	/* alarms are noticeable */
 #if OPT_FLASH
 	set_global_g_val(GMDFLASH,  	FALSE);	/* beeps beep by default */
+#endif
+#ifdef GMDW32PIPES
+	set_global_g_val(GMDW32PIPES,  	is_winnt()); /* use native pipes? */
 #endif
 #ifdef GMDHISTORY
 	set_global_g_val(GMDHISTORY,	TRUE);
