@@ -1,4 +1,4 @@
-MANIFEST for vile, version v7_4
+MANIFEST for vile, version v7_4a
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 CHANGES                         Change-log for VILE
@@ -103,7 +103,6 @@ ptypemap                        perl-interface type map
 random.c                        miscellaneous functions
 regexp.c                        regular expression functions
 region.c                        region-manipulation
-revlist                         revision-list for VILE
 search.c                        functions for search-commands
 select.c                        selection-handling functions
 shell.pl                        spawn a shell via a pty

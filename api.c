@@ -215,9 +215,15 @@ api_setup_fake_win(VileBuf *vbp, int do_delete)
     curbp = curwp->w_bufp;
 
     if (vbp->ndel > 0 && do_delete) {
+	int status;
 	/* Do lazy delete; FALSE means don't put text in kill buffer */
-	ldelete(vbp->ndel, FALSE);
+	status = ldelete(vbp->ndel, FALSE);
 	vbp->ndel = 0;
+	if ( status == FALSE 
+	  || (lforw(DOT.l) == buf_head(curbp) && DOT.o >= llength(DOT.l))) {
+	    make_local_b_val(curbp, MDNEWLINE);
+	    set_b_val(curbp, MDNEWLINE, FALSE);
+	}
     }
 }
 
@@ -358,8 +364,14 @@ api_dotinsert(VileBuf *vbp, char *text, int len) {
 
     linsert_chars(text, len);
     if (vbp->ndel) {
-	ldelete(vbp->ndel, FALSE);
+	int status;
+	status = ldelete(vbp->ndel, FALSE);
 	vbp->ndel = 0;
+	if (status == FALSE 
+	 || (lforw(DOT.l) == buf_head(curbp) && DOT.o >= llength(DOT.l))) {
+	    make_local_b_val(curbp, MDNEWLINE);
+	    set_b_val(curbp, MDNEWLINE, FALSE);
+	}
     }
     return TRUE;
 }
@@ -374,7 +386,7 @@ api_dline(VileBuf *vbp, int lno)
     if (lno > 0 && lno <= line_count(vbp->bp)) {
 	api_gotoline(vbp, lno);
 	gotobol(TRUE,TRUE);
-	ldelete(llength(DOT.l) + 1, FALSE);
+	status = ldelete(llength(DOT.l) + 1, FALSE);
     }
     else
 	status = FALSE;
@@ -408,6 +420,7 @@ api_gline(VileBuf *vbp, int lno, char **linep, int *lenp)
     return status;
 }
 
+#if 0		/* Not used. */
 int
 api_dotgline(VileBuf *vbp, char **linep, int *lenp, int *neednewline)
 {
@@ -471,6 +484,7 @@ api_dotgline(VileBuf *vbp, char **linep, int *lenp, int *neednewline)
     }
     return TRUE;
 }
+#endif	/* Not used */
 
 int
 api_sline(VileBuf *vbp, int lno, char *line, int len)
