@@ -13,7 +13,7 @@
  *	The same goes for vile.  -pgf, 1990-1995
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.278 1996/08/09 10:10:49 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.279 1996/08/13 02:10:07 pgf Exp $
  *
  */
 
@@ -30,6 +30,10 @@
 #include <dpmi.h>
 #include <go32.h>
 #endif
+#endif
+
+#ifdef VMS
+#include <processes.h>
 #endif
 
 extern char *exec_pathname;
@@ -1893,21 +1897,26 @@ newprocessgroup(int f, int n)
     int pid;
 
     if (f) {
+#ifndef VMS
 	    pid = fork();
+#else
+            pid = vfork();
+#endif
 
 	    if (pid > 0)
 		tidy_exit(GOODEXIT);
     }
-
-# ifdef HAVE_SETSID
-    (void)setsid();
-# else 
-#  ifdef HAVE_BSD_SETPGRP
-    (void) setpgrp(0, 0);
-#  else
-    (void)setpgrp();
-#  endif /* HAVE_BSD_SETPGRP */
-# endif /* HAVE_SETSID */
+# ifndef VMS
+#  ifdef HAVE_SETSID
+     (void)setsid();
+#  else 
+#   ifdef HAVE_BSD_SETPGRP
+     (void) setpgrp(0, 0);
+#   else
+     (void)setpgrp();
+#   endif /* HAVE_BSD_SETPGRP */
+#  endif /* HAVE_SETSID */
+# endif /* VMS */
 #endif /* DISP_X11 */
     return TRUE;
 }

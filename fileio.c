@@ -2,7 +2,7 @@
  * The routines in this file read and write ASCII files from the disk. All of
  * the knowledge about files are here.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/fileio.c,v 1.1 1996/03/29 16:15:14 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/fileio.c,v 1.112 1996/08/05 12:51:57 pgf Exp $
  *
  */
 
@@ -353,7 +353,7 @@ ffaccess(const char *fn, int mode)
 {
 #if HAVE_ACCESS
 	return (!isInternalName(fn)
-	   &&   access(SL_TO_BSL(fn), mode) == 0);
+	   &&   access((char *)SL_TO_BSL(fn), mode) == 0);
 #else
 	int	fd;
 	switch (mode) {
@@ -452,7 +452,7 @@ ffexists(const char *p)
 {
 	struct stat statbuf;
 	if (!isInternalName(p)
-	 && stat(SL_TO_BSL(p), &statbuf) == 0) {
+	 && stat((char *)SL_TO_BSL(p), &statbuf) == 0) {
 		return TRUE;
 	}
         return FALSE;

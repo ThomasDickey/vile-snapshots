@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.225 1996/05/28 01:45:22 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.226 1996/08/13 03:06:48 pgf Exp $
  *
  */
 
@@ -542,6 +542,9 @@ extern int getregion (REGION *rp);
 extern int get_fl_region (REGION *rp);
 
 /* search.c */
+#if OPT_HILITEMATCH
+void clobber_save_curbp(BUFFER *bp);
+#endif
 extern int fsearch (int f, int n, int marking, int fromscreen);
 extern int scanner (regexp *exp, int direct, int wrapok, int *wrappedp);
 extern void attrib_matches (void);

@@ -2,7 +2,7 @@
  *		The routines in this file handle the conversion of pathname
  *		strings.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.2 1996/08/09 10:10:49 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.75 1996/08/13 02:10:07 pgf Exp $
  *
  *
  */
@@ -1649,7 +1649,7 @@ is_directory(const char * path)
 			return 1;
 	}
 #endif
-	return ( (stat(SL_TO_BSL(path), &sb) >= 0)
+	return ( (stat((char *)SL_TO_BSL(path), &sb) >= 0)
 #if SYS_OS2 && CC_CSETPP
 		&& ((sb.st_mode & S_IFDIR) != 0)
 #else

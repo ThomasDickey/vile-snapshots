@@ -11,14 +11,15 @@
 # all as "0".  If you use tcap.c, you'll need libtermcap.a too.  If you use
 # x11.c, you'll need libX11.a too.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/descrip.mms,v 1.1 1996/03/29 16:15:14 pgf Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/descrip.mms,v 1.30 1996/08/05 12:51:57 pgf Exp $
 
 # for regular vile, use these:
+.IFDEF __VILE__
 SCREEN = vmsvt
 LIBS =
 TARGET = vile.exe
 SCRDEF = "DISP_VMSVT","scrn_chosen"
-
+.ENDIF
 # for building the X version, xvile, use these:
 #SCREEN = x11simp
 #LIBS = #-lX11
@@ -32,11 +33,12 @@ SCRDEF = "DISP_VMSVT","scrn_chosen"
 #SCRDEF = "NO_WIDGETS","XTOOLKIT","DISP_X11","scrn_chosen"
 
 # for building the Motif version (untested):
-#SCREEN = x11
-#LIBS = #-lX11
-#TARGET = xvile.exe
-#SCRDEF = "MOTIF_WIDGETS","XTOOLKIT","DISP_X11","scrn_chosen"
-
+.IFDEF __XVILE__
+SCREEN = x11
+LIBS = #-lX11
+TARGET = xvile.exe
+SCRDEF = "MOTIF_WIDGETS","XTOOLKIT","DISP_X11","scrn_chosen"
+.ENDIF
 # if you want the help file (vile.hlp) to go somewhere other than your $PATH
 #  or one of the hard-code paths in epath.h  (it goes to the same place vile
 #  does by default)
@@ -148,14 +150,8 @@ OBJ =	main.obj,\
 	wordmov.obj
 
 all :
-        @ decc = f$search("SYS$SYSTEM:DECC$COMPILER.EXE").nes.""
-        @ axp = f$getsyi("HW_MODEL").ge.1024
-        @ macro = ""
-        @ if axp.or.decc then macro = "/MACRO=("
-        @ if decc then macro = macro + "__DECC__=1,"
-        @ if axp then macro = macro + "__ALPHA__=1,"
-        @ if macro.nes."" then macro = f$extract(0,f$length(macro)-1,macro)+ ")"
-        $(MMS)$(MMSQUALIFIERS)'macro' $(TARGET)
+
+        $(MMS)$(MMSQUALIFIERS) $(TARGET)
 
 #
 # I've built on an Alpha with CC_OPTIONS set to
@@ -166,18 +162,14 @@ all :
 .IFDEF __ALPHA__
 CC_OPTIONS = /PREFIX_LIBRARY_ENTRIES=ALL_ENTRIES
 CC_DEFS = ,HAVE_ALARM
-OPTFILE =
-OPTIONS =
 .ELSE
 .IFDEF __DECC__
-CC_OPTIONS = /STANDARD=VAXC
-CC_DEFS = ,HAVE_ALARM,
+CC_OPTIONS = /DECC /PREFIX_LIBRARY_ENTRIES=ALL_ENTRIES
+CC_DEFS = ,HAVE_ALARM
 .ELSE
 CC_OPTIONS =
 CC_DEFS = ,HAVE_SYS_ERRLIST
 .ENDIF
-OPTFILE = ,vmsshare.opt
-OPTIONS = $(OPTFILE)/OPTIONS
 .ENDIF
 
 nebind.h \
@@ -200,6 +192,7 @@ clean :
 	@- if f$search("*.lis") .nes. "" then delete *.lis;*
 	@- if f$search("*.log") .nes. "" then delete *.log;*
 	@- if f$search("*.map") .nes. "" then delete *.map;*
+	@- if f$search("*.opt") .nes. "" then delete *.opt;*
 	@- if f$search("ne*.h") .nes. "" then delete ne*.h;*
 	@- if f$search("$(MKTBLS)") .nes. "" then delete $(MKTBLS);
 
@@ -230,7 +223,6 @@ vms2unix.obj :	dirstuff.h
 word.obj :	nefunc.h
 
 .first :
-	@ define/nolog SYS SYS$LIBRARY		! fix includes to <sys/...>
 	@ MKTBLS :== $SYS$DISK:'F$DIRECTORY()$(MKTBLS)	! make a foreign command
 
 .last :
@@ -240,12 +232,13 @@ word.obj :	nefunc.h
 	@- if f$search("*.map") .nes. "" then purge *.map
 	@- if f$search("*.exe") .nes. "" then purge *.exe
 	@- if f$search("*.log") .nes. "" then purge *.log
+	@- if f$search("*.opt") .nes. "" then purge *.opt
 
 # used /G_FLOAT with vaxcrtlg/share in vms_link.opt
 # can also use /Debug /Listing, /Show=All
 CFLAGS =-
-	/Diagnostics /Define=("os_chosen",$(SCRDEF)$(CC_DEFS)) -
-	/Object=$@ /Include=($(INCS)) $(CC_OPTIONS)
+	$(CC_OPTIONS)/Diagnostics /Define=("os_chosen",$(SCRDEF)$(CC_DEFS)) -
+	/Object=$@ /Include=($(INCS)) 
 
 .C.OBJ :
 	$(CC) $(CFLAGS) $(MMS$SOURCE)
@@ -255,7 +248,7 @@ $(MKTBLS) : mktbls.obj $(OPTFILE)
 	$(LINK) $(LINKFLAGS) mktbls.obj $(OPTIONS)
 
 $(TARGET) : $(OBJ), vms_link.opt, descrip.mms $(OPTFILE)
-	$(LINK) $(LINKFLAGS) main.obj, $(SCREEN).obj, vms_link/opt $(OPTIONS)
+	$(LINK) $(LINKFLAGS) main.obj, $(SCREEN).obj, vms_link/opt 
 
 # Runs VILE from the current directory (used for testing)
 vile.com :

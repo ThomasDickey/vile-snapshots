@@ -1,7 +1,7 @@
 ------------------------
 vile bug/enhancement/wish list
 ------------------------
-$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.311 1996/07/17 15:01:40 pgf Exp $
+$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.312 1996/07/29 16:35:55 pgf Exp $
 ----------------------
 	(E means enhancement, L,M,H are low, medium, high priority)
 
@@ -937,6 +937,8 @@ _won't_ look in "tags" for "donut" then go edit the file referenced; while,
   xvile -tdonut
 will, or for that matter
   vile -t donut
+
+[ we should at least add an alias for -t ]
 
 ------------------------
 
