@@ -12,7 +12,7 @@
 -nbad
 /* format braces inline */
 -br
-/* line up parentheses */
+/* do not line up parentheses */
 -lp
 /* put the type of a procedure on the line before its name */
 -psl
@@ -28,7 +28,12 @@
 -ss
 
 /* for vile */
+-T chtype
 -T size_t
+-T FILE
+-T MARK
 -T LINE
 -T BUFFER
 -T WINDOW
+-T GCC_NORETURN
+-T RETSIGTYPE 

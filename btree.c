@@ -1,5 +1,5 @@
 /*
- * $Id: btree.c,v 1.13 2001/12/21 12:32:28 tom Exp $
+ * $Id: btree.c,v 1.17 2003/05/15 23:20:45 tom Exp $
  * Copyright 1997-1999 by Thomas E. Dickey
  *
  * Maintains a balanced binary tree (aka AVL tree) of unspecified nodes.  The
@@ -35,9 +35,13 @@
 #endif
 
 #define castalloc(cast,nbytes) (cast *)malloc(nbytes)
+#define	for_ever for(;;)
+#define beginDisplay() /* nothing */
+#define endofDisplay() /* nothing */
 
 #else
 #include "estruct.h"
+#include "edef.h"
 #endif
 
 #include <assert.h>
@@ -62,6 +66,7 @@
 # endif
 #else
 # undef TRACE
+# define DEBUG_BTREE -1
 #endif
 
 #if DEBUG_BTREE > 1
@@ -84,7 +89,7 @@
 #define TRACE_SUBTREE(s,h,p)	/*nothing*/
 #endif
 
-#ifdef DEBUG_BTREE
+#if DEBUG_BTREE >= 0
 static int btree_verify(BI_TREE *funcs, BI_NODE *p);
 static void dump_nodes(BI_TREE *funcs, BI_NODE * p, int level);
 #endif
@@ -670,7 +675,9 @@ btree_parray(BI_TREE *tree, char *name, unsigned len)
 	if (top != 0) {
 		int i = 0;
 		size_t cnt = btree_pcount(top, name, len);
+		beginDisplay();
 		nptr = castalloc(const char *, sizeof(const char *) * (cnt + 1));
+		endofDisplay();
 		if (nptr != 0) {
 			build_parray(top, name, len, nptr, &i);
 			nptr[i] = 0;
@@ -689,7 +696,7 @@ int btree_freeup(BI_TREE *funcs)
 			TRACE(("Try-delete failed\n"));
 			return 0;
 		}
-#ifdef DEBUG_BTREE
+#if DEBUG_BTREE >= 0
 		TRACE_TREE("AFTER-DELETE, ", funcs);
 		if (!btree_verify(funcs, RLINK(&(funcs->head)))) {
 			TRACE(("Try-verify failed\n"));
@@ -702,7 +709,7 @@ int btree_freeup(BI_TREE *funcs)
 
 /******************************************************************************/
 
-#ifdef DEBUG_BTREE
+#if DEBUG_BTREE >= 0
 
 static int
 btree_verify(BI_TREE *funcs, BI_NODE *p)
@@ -785,7 +792,9 @@ new_node (BI_DATA * data)
 static void
 old_node (BI_NODE *node)
 {
+	beginDisplay();
 	free(node);
+	endofDisplay();
 }
 
 static void
@@ -800,7 +809,10 @@ dpy_node (BI_NODE *a, int level)
 static	BI_TREE	text_tree = {
 	new_node,
 	old_node,
-	dpy_node
+	dpy_node,
+	0,
+	0,
+	{{0,0},0,{0,0}}
 	};
 
 /******************************************************************************/

@@ -2,7 +2,7 @@
  * This file contains the command processing functions for a number of random
  * commands. There is no functional grouping here, for sure.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.262 2002/05/22 00:01:47 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.272 2003/05/04 22:49:20 tom Exp $
  *
  */
 
@@ -14,12 +14,12 @@
 #include	"edef.h"
 #include	"nefunc.h"
 
-#if DISP_X11 && HAVE_X11_XPOLL_H
+#if DISP_X11 && defined(HAVE_X11_XPOLL_H)
 #include <X11/Xpoll.h>
 #endif
 
 #if SYS_UNIX
-#if HAVE_POLL && HAVE_POLL_H
+#if defined(HAVE_POLL) && defined(HAVE_POLL_H)
 # include <poll.h>
 #endif
 #endif
@@ -46,7 +46,11 @@
 				 */
 #define DIRS_SUPPRESS 2		/* if DirStack buffer on screen, kill it. */
 
+static int did_chdir = FALSE;	/* set when $PWD is no longer valid */
+
 #if OPT_SHELL
+
+static char prevdir[NFILEN];
 
 static int display_dirstack(int);
 static int pushd_popd_active, dirs_add_active;
@@ -57,8 +61,8 @@ static int pushd_popd_active, dirs_add_active;
  * The top element of the stack is always understood to be <cwd>, but is
  * _not_ stored in the array.
  */
-static int dirs_idx,		/* next array cell that can store a dir path */
-  dirs_len;			/* #cells allocated in dirstack              */
+static int dirs_idx;		/* next array cell that can store a dir path */
+static int dirs_len;		/* #cells allocated in dirstack */
 static char **dirstack;
 
 #endif
@@ -95,12 +99,11 @@ set_rdonly(BUFFER *bp, const char *name, int mode)
 	the given name, and calling "func" with a couple of args to fill in
 	the buffer */
 int
-liststuff(
-	     const char *name,
-	     int appendit,
-	     void (*func) (LIST_ARGS),	/* ptr to function to execute */
-	     int iarg,
-	     void *vargp)
+liststuff(const char *name,
+	  int appendit,
+	  void (*func) (LIST_ARGS),	/* ptr to function to execute */
+	  int iarg,
+	  void *vargp)
 {
     register BUFFER *bp;
     register int s;
@@ -108,18 +111,22 @@ liststuff(
     int alreadypopped;
     BUFFER *ocurbp = curbp;
 
+    TRACE((T_CALLED
+	   "liststuff(name=%s, appendit=%d, func=%p, iarg=%d, vargp=%p)\n",
+	   TRACE_NULL(name), appendit, func, iarg, vargp));
+
     /* create the buffer list buffer   */
     bp = bfind(name, BFSCRTCH);
     if (bp == NULL)
-	return FALSE;
+	returnCode(FALSE);
 
     if (!appendit && (s = bclear(bp)) != TRUE)	/* clear old text (?) */
-	return (s);
+	returnCode(s);
     b_set_scratch(bp);
     alreadypopped = (bp->b_nwnd != 0);
     if (popupbuff(bp) == FALSE) {
 	(void) zotbuf(bp);
-	return (FALSE);
+	returnCode(FALSE);
     }
 
     if ((wp = bp2any_wp(bp)) != NULL) {
@@ -147,7 +154,7 @@ liststuff(
     else
 	shrinkwrap();		/* only resize if it's fresh */
 
-    return TRUE;
+    returnCode(TRUE);
 }
 
 /*
@@ -232,10 +239,9 @@ showcpos(int f GCC_UNUSED, int n GCC_UNUSED)
     if (numlines == 0 && numchars == 0)
 	mlforce("File is empty");
     else
-	mlforce(
-		   "Line %d of %d, Col %d of %d, Char %ld of %ld (%ld%%) char is 0x%x or 0%o",
-		   predlines + 1, numlines, col + 1, ecol,
-		   predchars + 1, numchars, ratio, curchar, curchar);
+	mlforce("Line %d of %d, Col %d of %d, Char %ld of %ld (%ld%%) char is 0x%x or 0%o",
+		predlines + 1, numlines, col + 1, ecol,
+		predchars + 1, numchars, ratio, curchar, curchar);
 #endif
     return TRUE;
 }
@@ -762,11 +768,11 @@ catnap(int milli, int watchinput)
 #endif
     {
 #if SYS_UNIX
-# if HAVE_SELECT && HAVE_TYPE_FD_SET
+# if defined(HAVE_SELECT) && defined(HAVE_TYPE_FD_SET)
 
 	struct timeval tval;
 	fd_set read_bits;
-#  if HAVE_SIGPROCMASK
+#  ifdef HAVE_SIGPROCMASK
 	sigset_t newset, oldset;
 	sigemptyset(&newset);
 	sigaddset(&newset, SIGALRM);
@@ -781,14 +787,14 @@ catnap(int milli, int watchinput)
 	tval.tv_usec = (milli % 1000) * 1000;	/* microseconds */
 	(void) select(1, &read_bits, (fd_set *) 0, (fd_set *) 0, &tval);
 
-#  if HAVE_SIGPROCMASK
+#  ifdef HAVE_SIGPROCMASK
 	sigprocmask(SIG_SETMASK, &oldset, (sigset_t *) 0);
 #  endif
 	if (watchinput)
 	    return FD_ISSET(0, &read_bits);
 
 # else
-#  if HAVE_POLL && HAVE_POLL_H
+#  if defined(HAVE_POLL) && defined(HAVE_POLL_H)
 
 	struct pollfd pfd;
 	int fdcnt;
@@ -893,10 +899,28 @@ current_directory(int force)
 
     if (!force && cwd)
 	return cwd;
-#if HAVE_GETCWD
-    cwd = getcwd(current_dirname, NFILEN);
+#ifdef HAVE_GETCWD
+#ifdef HAVE_REALPATH
+    /*
+     * For slow (read:  simulated) filesystems, a getcwd() can be very slow. 
+     * We always make a call to this function during startup, but wish to avoid
+     * the overhead of getcwd() in that case.  However, it is not unusual to
+     * invoke vile from other applications, which do not set $PWD.  In that
+     * case, the result from this function would be incorrect, and lots of
+     * things break.
+     *
+     * Given the choice between broken and slow behavior, we can resolve it
+     * with another environment variable, set in the user's shell.
+     */
+    s = ((did_chdir != 0 || getenv("VILE_PWD") == 0)
+	 ? 0
+	 : getenv("PWD"));
+    cwd = realpath(s ? s : ".", current_dirname);
+    if (cwd == 0)
+#endif
+	cwd = getcwd(current_dirname, NFILEN);
 #else
-# if HAVE_GETWD
+# ifdef HAVE_GETWD
     cwd = getwd(current_dirname);
 # else
     {
@@ -1083,8 +1107,6 @@ pwd(int f GCC_UNUSED, int n GCC_UNUSED)
     return TRUE;
 }
 
-static char prevdir[NFILEN];
-
 static int
 cd_and_pwd(char *path)
 {
@@ -1093,11 +1115,12 @@ cd_and_pwd(char *path)
 #endif
 
 #if CC_CSETPP
-    if (_chdir(SL_TO_BSL(path)) == 0)
-#else
-    if (chdir(SL_TO_BSL(path)) == 0)
+#undef  chdir
+#define chdir(p) _chdir(p)
 #endif
-    {
+
+    if (chdir(SL_TO_BSL(path)) == 0) {
+	did_chdir = TRUE;
 	if (dirs_add_active) {
 	    /* the directory is legit -- that's all we care about */
 
@@ -1229,8 +1252,8 @@ set_directory(const char *dir)
 			strcpy(cdpathdir, globvec[0]);
 			glob_free(globvec);
 			tmp = &cdpathdir[len - 1];
-			if (*tmp == RBRACK &&
-			    *exdp == LBRACK &&
+			if (*tmp == R_BLOCK &&
+			    *exdp == L_BLOCK &&
 			    exdp[1] == '.') {
 			    /*
 			     * Concatenating dir that ends
@@ -1241,7 +1264,7 @@ set_directory(const char *dir)
 			    *tmp = '\0';
 			    sprintf(newdir, "%s%s", cdpathdir, &exdp[1]);
 			} else if (*tmp == ':' &&
-				   *exdp == LBRACK) {
+				   *exdp == L_BLOCK) {
 			    /*
 			     * Concatenating rooted logical
 			     * with dir.
@@ -1324,55 +1347,58 @@ ch_fname(BUFFER *bp, const char *fname)
     /*
      * ch_fname() can receive a very long filename string from capturecmd().
      */
+    beginDisplay();
     if ((np = castalloc(char, strlen(fname) + NFILEN)) == NULL) {
 	bp->b_fname = out_of_mem;
 	bp->b_fnlen = strlen(bp->b_fname);
 	no_memory("ch_fname");
-	return;
-    }
-    strcpy(np, fname);
+    } else {
+	strcpy(np, fname);
 
-    /* produce a full pathname, unless already absolute or "internal" */
-    if (!isInternalName(np))
-	(void) lengthen_path(np);
+	/* produce a full pathname, unless already absolute or "internal" */
+	if (!isInternalName(np))
+	    (void) lengthen_path(np);
 
-    len = strlen(np) + 1;
+	len = strlen(np) + 1;
 
-    if (bp->b_fname == 0 || strcmp(bp->b_fname, np)) {
+	if (bp->b_fname == 0 || strcmp(bp->b_fname, np)) {
 
-	if (bp->b_fname && bp->b_fnlen < len) {
-	    /* don't free it yet -- it _may_ have been passed in as
-	     * the current file-name
-	     */
-	    holdp = bp->b_fname;
-	    bp->b_fname = NULL;
-	}
-
-	if (!bp->b_fname) {
-	    bp->b_fname = strmalloc(np);
-	    if (!bp->b_fname) {
-		bp->b_fname = out_of_mem;
-		bp->b_fnlen = strlen(bp->b_fname);
-		no_memory("ch_fname");
-		(void) free(np);
-		return;
+	    if (bp->b_fname && bp->b_fnlen < len) {
+		/* don't free it yet -- it _may_ have been passed in as
+		 * the current file-name
+		 */
+		holdp = bp->b_fname;
+		bp->b_fname = NULL;
 	    }
-	    bp->b_fnlen = len;
+
+	    if (!bp->b_fname) {
+		bp->b_fname = strmalloc(np);
+		if (!bp->b_fname) {
+		    bp->b_fname = out_of_mem;
+		    bp->b_fnlen = strlen(bp->b_fname);
+		    no_memory("ch_fname");
+		    (void) free(np);
+		    endofDisplay();
+		    return;
+		}
+		bp->b_fnlen = len;
+	    }
+
+	    /* it'll fit, leave len untouched */
+	    (void) strcpy(bp->b_fname, np);
+
+	    if (holdp != out_of_mem)
+		FreeIfNeeded(holdp);
+	    updatelistbuffers();
 	}
-
-	/* it'll fit, leave len untouched */
-	(void) strcpy(bp->b_fname, np);
-
-	if (holdp != out_of_mem)
-	    FreeIfNeeded(holdp);
-	updatelistbuffers();
-    }
 #ifdef	MDCHK_MODTIME
-    (void) get_modtime(bp, &(bp->b_modtime));
-    bp->b_modtime_at_warn = 0;
+	(void) get_modtime(bp, &(bp->b_modtime));
+	bp->b_modtime_at_warn = 0;
 #endif
-    fileuid_set_if_valid(bp, fname);
-    (void) free(np);
+	fileuid_set_if_valid(bp, fname);
+	(void) free(np);
+    }
+    endofDisplay();
 }
 
 #if OPT_HOOKS
@@ -1429,15 +1455,15 @@ autocolor(void)
 	    && b_val(bp, MDHILITE)
 #endif
 	    && b_val(bp, VAL_AUTOCOLOR) > 0) {
-	    WINDOW *oldwp;
-	    oldwp = push_fake_win(bp);
+	    BUFFER *oldbp = curbp;
+	    WINDOW *oldwp = push_fake_win(bp);
 	    in_autocolor = TRUE;
 	    if (run_a_hook(&autocolorhook)) {
 		b_clr_recentlychanged(bp);
 		do_update = TRUE;
 	    }
 	    in_autocolor = FALSE;
-	    pop_fake_win(oldwp);
+	    pop_fake_win(oldwp, oldbp);
 	}
     }
     if (do_update)
@@ -1470,6 +1496,7 @@ pushd_popd_set_dir(const char *dir)
 static int
 dirstack_extend(const char *dir, const char *fnname)
 {
+    beginDisplay();
     if (dirs_idx >= dirs_len) {
 	if (dirs_len == 0) {
 	    dirs_len = 16;
@@ -1487,6 +1514,7 @@ dirstack_extend(const char *dir, const char *fnname)
     if (!dirstack[dirs_idx])
 	return (no_memory(fnname));
     strcpy(dirstack[dirs_idx++], dir);
+    endofDisplay();
     return (TRUE);
 }
 
@@ -1494,8 +1522,10 @@ static int
 do_popd(int uindx,		/* user-specified dirstack index */
 	int sign)
 {
-    int i, j, rc;
+    int i, j;
+    int rc = TRUE;
 
+    beginDisplay();
     if ((uindx == 0 && sign > 0) || (uindx == dirs_idx && sign < 0)) {
 	char *path;
 
@@ -1503,30 +1533,30 @@ do_popd(int uindx,		/* user-specified dirstack index */
 	 * handle special case:  pop top stack entry (the virtual cwd) and
 	 * then cd to the next entry on the directory stack.
 	 */
-
 	path = dirstack[dirs_idx - 1];
 	if ((rc = pushd_popd_set_dir(path)) == TRUE) {
 	    (void) free(path);
 	    dirstack[--dirs_idx] = NULL;	/* reuse == death */
 	}
-	return (rc);
-    }
-    if (sign > 0) {
-	/* rationalize +idx notation with actual dirstack index */
+    } else {
+	if (sign > 0) {
+	    /* rationalize +idx notation with actual dirstack index */
 
-	uindx--;		/* user-based index includes virtual cwd at top-of-stack */
-	uindx = (dirs_idx - 1) - uindx;
-    }
-    (void) free(dirstack[uindx]);
-    dirstack[uindx] = NULL;	/* mark empty */
+	    uindx--;		/* user-based index includes virtual cwd at top-of-stack */
+	    uindx = (dirs_idx - 1) - uindx;
+	}
+	(void) free(dirstack[uindx]);
+	dirstack[uindx] = NULL;	/* mark empty */
 
-    /* shrink the stack by one element */
-    for (i = j = 0; i < dirs_idx; i++) {
-	if (dirstack[i])
-	    dirstack[j++] = dirstack[i];
+	/* shrink the stack by one element */
+	for (i = j = 0; i < dirs_idx; i++) {
+	    if (dirstack[i])
+		dirstack[j++] = dirstack[i];
+	}
+	dirstack[--dirs_idx] = NULL;	/* stack has shrunk, reuse == death */
     }
-    dirstack[--dirs_idx] = NULL;	/* stack has shrunk, reuse == death */
-    return (TRUE);
+    endofDisplay();
+    return (rc);
 }
 
 static int
@@ -1537,6 +1567,8 @@ do_pushd(int uindx,		/* user-specified dirstack index */
     char oldcwd[NFILEN], *path;
 
     strcpy(oldcwd, current_directory(TRUE));
+
+    beginDisplay();
     if ((uindx == 0 && sign > 0) || (uindx == dirs_idx && sign < 0)) {
 	/*
 	 * handle special case:  swap the top stack entry (the virtual cwd)
@@ -1549,26 +1581,29 @@ do_pushd(int uindx,		/* user-specified dirstack index */
 	    (void) free(path);
 	    dirstack[dirs_idx - 1] = castalloc(char, strlen(oldcwd) + 1);
 	    if (!dirstack[dirs_idx - 1])
-		return (no_memory("do_pushd"));
-	    strcpy(dirstack[dirs_idx - 1], oldcwd);
+		rc = no_memory("do_pushd");
+	    else
+		strcpy(dirstack[dirs_idx - 1], oldcwd);
 	}
-	return (rc);
-    }
-    if (sign > 0) {
-	/* rationalize +idx notation with actual dirstack index */
+    } else {
+	if (sign > 0) {
+	    /* rationalize +idx notation with actual dirstack index */
 
-	uindx--;		/* user-based index includes virtual cwd at top-of-stack */
-	uindx = (dirs_idx - 1) - uindx;
-    }
-    if ((rc = pushd_popd_set_dir(dirstack[uindx])) == TRUE) {
-	/* all is well, update dirstack */
+	    uindx--;		/* user-based index includes virtual cwd at top-of-stack */
+	    uindx = (dirs_idx - 1) - uindx;
+	}
+	if ((rc = pushd_popd_set_dir(dirstack[uindx])) == TRUE) {
+	    /* all is well, update dirstack */
 
-	(void) free(dirstack[uindx]);
-	dirstack[uindx] = castalloc(char, strlen(oldcwd) + 1);
-	if (!dirstack[uindx])
-	    return (no_memory("do_pushd"));
-	strcpy(dirstack[uindx], oldcwd);
+	    (void) free(dirstack[uindx]);
+	    dirstack[uindx] = castalloc(char, strlen(oldcwd) + 1);
+	    if (!dirstack[uindx])
+		rc = no_memory("do_pushd");
+	    else
+		strcpy(dirstack[uindx], oldcwd);
+	}
     }
+    endofDisplay();
     return (rc);
 }
 
@@ -1824,10 +1859,12 @@ vl_dirs_clear(int f GCC_UNUSED, int n GCC_UNUSED)
     int i;
 
     if (dirstack) {
+	beginDisplay();
 	for (i = 0; i < dirs_idx; i++)
 	    (void) free(dirstack[i]);
 	(void) free(dirstack);
 	dirstack = NULL;
+	endofDisplay();
     }
     dirs_idx = dirs_len = 0;
     return (display_dirstack(DIRS_OPT));
@@ -1921,7 +1958,7 @@ vl_atol(char *str, int base, int *failed)
  * if ANSI C compiler available, convert a string to an unsigned long,
  * trapping all possible conversion errors.
  */
-#if HAVE_STRTOUL
+#ifdef HAVE_STRTOUL
 ULONG
 vl_atoul(char *str, int base, int *failed)
 {
@@ -1979,3 +2016,45 @@ vl_stricmp(const char *a, const char *b)
     }
 }
 #endif
+
+/*
+ * Format a visible representation of the given character, returns the buffer
+ * address to simplify using this in formatting a whole buffer.
+ */
+char *
+vl_vischr(char *buffer, int ch)
+{
+    ch = CharOf(ch);
+    if (isPrint(ch)) {
+	buffer[0] = (char) ch;
+	buffer[1] = '\0';
+    } else {
+	if (ch >= 128)
+	    sprintf(buffer, "\\%03o", ch);
+	else if (ch == 127)
+	    strcpy(buffer, "^?");
+	else
+	    sprintf(buffer, "^%c", ch | '@');
+    }
+    return buffer;
+}
+
+/*
+ * Construct a TBUFF that holds a null-terminated, visible representation of
+ * the given buffer.
+ */
+TBUFF *
+tb_visbuf(const char *buffer, size_t len)
+{
+    char temp[20];
+    size_t n;
+    TBUFF *result = 0;
+
+    if (buffer != 0 && len != 0
+	&& tb_init(&result, EOS) != 0) {
+	for (n = 0; n < len; ++n) {
+	    tb_sappend0(&result, vl_vischr(temp, buffer[n]));
+	}
+    }
+    return result;
+}

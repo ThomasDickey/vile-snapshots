@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 screen API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.129 2002/07/03 22:49:39 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.133 2002/11/05 20:28:02 tom Exp $
  * Written by T.E.Dickey for vile (october 1997).
  * -- improvements by Clark Morgan (see w32cbrd.c, w32pipe.c).
  */
@@ -1731,9 +1731,8 @@ static struct keyxlate_struct {
     { VK_F20,		KEY_F20 },
     /* Allow ^-6 to invoke the alternate-buffer command, a la Unix.  */
     { '6',		'6' },
-    /* A couple of possibilities for ^@ */
+    /* Support recognition of ^@ */
     { '2',		'2' },
-    { '@',		'@' },
     /* *INDENT-ON* */
 
 };
@@ -1757,6 +1756,7 @@ decode_key_event(KEY_EVENT_RECORD * irp)
     }
 #endif
 
+    key = NOKYMAP;
     for (i = 0, keyp = keyxlate; i < TABLESIZE(keyxlate); i++, keyp++) {
 	if (keyp->windows == irp->wVirtualKeyCode) {
 	    DWORD state = irp->dwControlKeyState;
@@ -1767,15 +1767,12 @@ decode_key_event(KEY_EVENT_RECORD * irp)
 	     *
 	     * ALT+F4 - This should _never_ be remapped by any user (nor
 	     * messed with by vile).
-	     *
-	     * SHIFT+6 - This is actually '^^' -- leave it alone.
-	     * SHIFT+2 - This is actually '^@' -- leave it alone.
+	     * 
+	     * SHIFT+6 - This is actually '^^' -- leave it alone. 
 	     */
 	    if ((keyp->windows == VK_F4
 		 && (state & (LEFT_ALT_PRESSED | RIGHT_ALT_PRESSED)))
-		|| (keyp->windows == '6' && (state & SHIFT_PRESSED))
-		|| (keyp->windows == '@' && (state & SHIFT_PRESSED))
-		|| (keyp->windows == '2' && (state & SHIFT_PRESSED))) {
+		|| (keyp->windows == '6' && (state & SHIFT_PRESSED))) {
 		TRACE(("decode_key_event - special\n"));
 		break;
 	    }
@@ -1799,6 +1796,21 @@ decode_key_event(KEY_EVENT_RECORD * irp)
 		    key |= mod_ALT;
 		if (state & SHIFT_PRESSED)
 		    key |= mod_SHIFT;
+		if (keyxlate[i].vile == '2') {
+		    if ((key & mod_CTRL) && ((key & mod_ALT) == 0)) {
+			/* either ^2 or ^@, => nul char */
+
+			key = 0;
+		    } else if ((key & mod_SHIFT) &&
+			       ((key & (mod_ALT | mod_CTRL)) == 0)) {
+			/*
+			 * this will be mapped to '@' if we let Windows do
+			 * the translation
+			 */
+
+			key = NOKYMAP;
+		    }
+		}
 	    } else {
 		key = keyp->vile;
 	    }
@@ -1807,8 +1819,6 @@ decode_key_event(KEY_EVENT_RECORD * irp)
 	    break;
 	}
     }
-    if (key == 0)
-	return (NOKYMAP);
 
     return key;
 }
@@ -2597,6 +2607,8 @@ find_scrollbar(HWND hWnd)
     WINDOW *wp;
     int i = 0;
 
+    TRACE((T_CALLED "find_scrollbar(hWnd=%p)\n", hWnd));
+
     for_each_visible_window(wp) {
 	if (cur_win->scrollbars[i].w == hWnd
 	    || cur_win->main_hwnd == hWnd) {
@@ -2604,11 +2616,11 @@ find_scrollbar(HWND hWnd)
 	    if (wp->w_bufp != curbp) {
 		swbuffer(wp->w_bufp);
 	    }
-	    return i;
+	    returnCode(i);
 	}
 	i++;
     }
-    return -1;
+    returnCode(-1);
 }
 
 /*
@@ -3189,7 +3201,9 @@ receive_dropped_files(HDROP hDrop)
     UINT limit = DragQueryFile(hDrop, inx, name, sizeof(name));
     BUFFER *bp = 0;
 
-    TRACE(("receiving %d dropped files\n", limit));
+    TRACE((T_CALLED "receive_dropped_files(hDrop=%p) %d dropped files\n",
+	   hDrop, limit));
+
     while (++inx < limit) {
 	DragQueryFile(hDrop, inx, name, sizeof(name));
 	TRACE(("...'%s'\n", name));
@@ -3203,6 +3217,7 @@ receive_dropped_files(HDROP hDrop)
 	update(TRUE);
     }
     DragFinish(hDrop);
+    returnVoid();
 }
 
 static void
@@ -3532,7 +3547,7 @@ WinMain(
     int argc;
     int n;
     int maxargs = (strlen(lpCmdLine) + 1) / 2;
-    char **argv = typeallocn(char *, maxargs);
+    char **argv = typeallocn(char *, maxargs + 10);
     char *ptr, *fontstr;
 #ifdef VILE_OLE
     int oa_invoke, oa_reg;

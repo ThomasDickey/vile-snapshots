@@ -667,6 +667,7 @@ api_swscreen(VileBuf * oldsp, VileBuf * newsp)
      * buried in the macro "for_each_visible_window".
      *          - kev 4/20/1998
      */
+    TRACE((T_CALLED "api_swscreen(oldsp=%p, newsp=%p)\n", oldsp, newsp));
 
     curwp = curwp_visible ? curwp_visible : curwp;
     curbp = curwp->w_bufp;
@@ -677,7 +678,7 @@ api_swscreen(VileBuf * oldsp, VileBuf * newsp)
 
     curwp_visible = curwp;
 
-    return TRUE;
+    returnCode(TRUE);
 }
 
 /* Causes the screen(s) to be updated */
@@ -756,7 +757,7 @@ api_command_cleanup(void)
 
     /* Pop the fake windows */
 
-    while ((bp = pop_fake_win(curwp_visible)) != NULL) {
+    while ((bp = pop_fake_win(curwp_visible, (BUFFER *) 0)) != NULL) {
 	if (bp2vbp(bp) != NULL) {
 	    bp2vbp(bp)->fwp = 0;
 	    bp2vbp(bp)->dot_inited = 0;		/* for next time */

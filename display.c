@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.364 2002/05/07 11:03:20 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.380 2003/07/27 16:53:03 tom Exp $
  *
  */
 
@@ -180,7 +180,7 @@ dfputf(OutFunc outfunc, double s)
 
     /* break it up */
     i = (UINT) s;
-    f = (UINT) (s - (double) i) * 100;
+    f = (UINT) ((s - (double) i) * 100);
 
     /* send out the integer portion */
     n += dfputi(outfunc, i, 10);
@@ -202,8 +202,8 @@ dofmt(const char *fmt, va_list * app)
     register int n;
     register int nchars = 0;
     int islong;
-    int ivalue;
-    long lvalue;
+    int int_value;
+    long long_value;
     UINT radix;
     OutFunc outfunc = dfoutfn;	/* local copy, for recursion */
 
@@ -241,26 +241,26 @@ dofmt(const char *fmt, va_list * app)
 
 	case 'd':
 	    if (!islong) {
-		ivalue = va_arg(*app, int);
-		if (ivalue < 0) {
-		    if (ivalue < vMAXNEG) {
+		int_value = va_arg(*app, int);
+		if (int_value < 0) {
+		    if (int_value < vMAXNEG) {
 			n = dfputs(outfunc, "OVFL");
 			break;
 		    }
-		    ivalue = -ivalue;
+		    int_value = -int_value;
 		    (*outfunc) ('-');
 		    nchars++;
 		}
-		n = dfputi(outfunc, (UINT) ivalue, 10);
+		n = dfputi(outfunc, (UINT) int_value, 10);
 		break;
 	    }
-	    lvalue = va_arg(*app, long);
-	    if (lvalue < 0) {
-		lvalue = -lvalue;
+	    long_value = va_arg(*app, long);
+	    if (long_value < 0) {
+		long_value = -long_value;
 		(*outfunc) ('-');
 		nchars++;
 	    }
-	    n = dfputli(outfunc, (ULONG) lvalue, 10);
+	    n = dfputli(outfunc, (ULONG) long_value, 10);
 	    break;
 
 	case 'o':
@@ -469,26 +469,30 @@ vtfree(void)
 int
 vtinit(void)
 {
-    register int i;
-    register VIDEO *vp;
+    int rc = TRUE;
+    int i;
+    VIDEO *vp;
 
+    beginDisplay();
     /* allocate new display memory */
-    if (vtalloc() == FALSE)	/* if we fail, only serious if not a realloc */
-	return (vscreen != NULL);
-
-    for (i = 0; i < term.maxrows; ++i) {
-	vp = vscreen[i];
-	vp->v_flag = 0;
+    if (vtalloc() == FALSE) {	/* if we fail, only serious if not a realloc */
+	rc = (vscreen != NULL);
+    } else {
+	for (i = 0; i < term.maxrows; ++i) {
+	    vp = vscreen[i];
+	    vp->v_flag = 0;
 #if OPT_COLOR
-	ReqFcolor(vp) = gfcolor;
-	ReqBcolor(vp) = gbcolor;
+	    ReqFcolor(vp) = gfcolor;
+	    ReqBcolor(vp) = gbcolor;
+#endif
+	}
+#if OPT_WORKING
+	if (!i_displayed && !im_displaying)
+	    imworking(0);
 #endif
     }
-#if OPT_WORKING
-    if (!i_displayed && !im_displaying)
-	imworking(0);
-#endif
-    return TRUE;
+    endofDisplay();
+    return rc;
 }
 
 /*
@@ -1755,10 +1759,12 @@ update_line_attrs(WINDOW *wp)
 {
     int row;
     LINEPTR lp;
-    int linewrap = 0;
+    int linewrap;
 
 #ifdef WMDLINEWRAP
     linewrap = w_val(wp, WMDLINEWRAP);
+#else
+    linewrap = 0;
 #endif
 
     row = TopRow(wp);
@@ -2401,9 +2407,9 @@ update_physical_screen(int force GCC_UNUSED)
  */
 #if OPT_MLFORMAT || OPT_POSFORMAT || OPT_TITLE
 static void
-mlfs_prefix(char **fsp, char **msp, int lchar)
+mlfs_prefix(const char **fsp, char **msp, int lchar)
 {
-    register char *fs = *fsp;
+    register const char *fs = *fsp;
     register char *ms = *msp;
     if (*fs == ':') {
 	fs++;
@@ -2438,7 +2444,7 @@ mlfs_prefix(char **fsp, char **msp, int lchar)
 }
 
 static void
-mlfs_suffix(char **fsp, char **msp, int lchar)
+mlfs_suffix(const char **fsp, char **msp, int lchar)
 {
     mlfs_prefix(fsp, msp, lchar);
     if (**fsp == ':')
@@ -2446,9 +2452,9 @@ mlfs_suffix(char **fsp, char **msp, int lchar)
 }
 
 static void
-mlfs_skipfix(char **fsp)
+mlfs_skipfix(const char **fsp)
 {
-    register char *fs = *fsp;
+    register const char *fs = *fsp;
     if (*fs == ':') {
 	for (fs++; *fs && *fs != ':'; fs++) ;
 	if (*fs == ':')
@@ -2558,19 +2564,19 @@ modeline_show(WINDOW *wp, int lchar)
 
     if (b_val(bp, MDSHOWMODE)) {
 #ifdef insertmode		/* insert mode is a trait for each window */
-	if (wp->w_traits.insmode == INSERT)
+	if (wp->w_traits.insmode == INSMODE_INS)
 	    ic = 'I';
-	else if (wp->w_traits.insmode == REPLACECHAR)
+	else if (wp->w_traits.insmode == INSMODE_RPL)
 	    ic = 'R';
-	else if (wp->w_traits.insmode == OVERWRITE)
+	else if (wp->w_traits.insmode == INSMODE_OVR)
 	    ic = 'O';
 #else /* insertmode is a variable global to all windows */
 	if (wp == curwp) {
-	    if (insertmode == INSERT)
+	    if (insertmode == INSMODE_INS)
 		ic = 'I';
-	    else if (insertmode == REPLACECHAR)
+	    else if (insertmode == INSMODE_RPL)
 		ic = 'R';
-	    else if (insertmode == OVERWRITE)
+	    else if (insertmode == INSMODE_OVR)
 		ic = 'O';
 	}
 #endif /* !defined(insertmode) */
@@ -2634,11 +2640,11 @@ percentage(WINDOW *wp)
  * a number of special variables that we would like to output quickly.
  */
 void
-special_formatter(TBUFF ** result, char *fs, WINDOW *wp)
+special_formatter(TBUFF ** result, const char *fs, WINDOW *wp)
 {
     BUFFER *bp;
     char *ms;
-    char *save_fs;
+    const char *save_fs;
     char left_ms[NFILEN * 2];
     char right_ms[NFILEN * 2];
     char temp[NFILEN];
@@ -2711,7 +2717,7 @@ special_formatter(TBUFF ** result, char *fs, WINDOW *wp)
 
 		    if (bp->b_fname != 0) {
 			/*
-			 * when b_fname is a pipe cmd, it can be 
+			 * when b_fname is a pipe cmd, it can be
 			 * arbitrarily long
 			 */
 
@@ -2846,7 +2852,7 @@ special_formatter(TBUFF ** result, char *fs, WINDOW *wp)
 
     if (((int) tb_length(*result) < term.cols)
 	&& (right_len = strlen(right_ms)) != 0) {
-	for (n = term.cols - tb_length(*result) - right_len; n > 0; n--)
+	for (n = term.cols - (int) tb_length(*result) - right_len; n > 0; n--)
 	    tb_append(result, lchar);
 	if ((n = term.cols - right_len) < 0) {
 	    col = right_len + n;
@@ -2965,11 +2971,11 @@ update_modeline(WINDOW *wp)
     }
 #ifdef WMDRULER
     if (w_val(wp, WMDRULER))
-	(void) lsprintf(right_ms, " (%d,%d) %3p",
+	(void) lsprintf(right_ms, " (%d,%d) %3P",
 			wp->w_ruler_line, wp->w_ruler_col, lchar);
     else
 #endif
-	(void) lsprintf(right_ms, " %s %3p", rough_position(wp), lchar);
+	(void) lsprintf(right_ms, " %s %3P", rough_position(wp), lchar);
 
     *ms++ = EOS;
     right_len = strlen(right_ms);
@@ -3279,7 +3285,21 @@ update(int force /* force update past type ahead? */ )
 
     beginDisplay();
 
-    /* first, propagate mode line changes to all instances of
+#if OPT_TITLE
+    /*
+     * Only update the title when we have nothing better to do.  The
+     * auto_set_title logic is otherwise likely to set the title frequently if
+     * [Buffer List] is visible.
+     */
+    if (tb_values(request_title) != 0
+	&& (tb_values(current_title) == 0
+	    || strcmp(tb_values(current_title), tb_values(request_title)))) {
+	tb_copy(&current_title, request_title);
+	term.set_title(tb_values(request_title));
+    }
+#endif
+
+    /* propagate mode line changes to all instances of
        a buffer displayed in more than one window */
     for_each_visible_window(wp) {
 	if (wp->w_flag & WFMODE) {
@@ -3402,7 +3422,7 @@ update(int force /* force update past type ahead? */ )
     endofDisplay();
     i_displayed = TRUE;
 
-    while (chg_width || chg_height)
+    while (allow_working_msg() && (chg_width && chg_height))
 	newscreensize(chg_height, chg_width);
     return (TRUE);
 }
@@ -3517,7 +3537,7 @@ mlsavec(int c)
 }
 
 /*
- * Do the real message-line work.  Keep track of the physical cursor position. 
+ * Do the real message-line work.  Keep track of the physical cursor position.
  * A small class of printf like format items is handled.  Set the "message
  * line" flag TRUE.
  */
@@ -3526,13 +3546,20 @@ mlmsg(const char *fmt, va_list * app)
 {
     static int recur;
     int end_at;
-#ifdef DISP_NTWIN
+#if DISP_NTWIN
     int cursor_state = 0;
 #endif
     int do_crlf = (strchr(fmt, '\n') != 0
 		   || strchr(fmt, '\r') != 0);
 
-#ifdef DISP_NTWIN
+    if (no_minimsgs) {
+	kbd_alarm();
+	return;
+    }
+    if (quiet)
+	return;
+
+#if DISP_NTWIN
     if (recur == 0) {
 	/*
 	 * Winvile internally manages its own cursor and this usually works
@@ -3598,7 +3625,7 @@ mlmsg(const char *fmt, va_list * app)
 	endofDisplay();
     }
     recur--;
-#ifdef DISP_NTWIN
+#if DISP_NTWIN
     if (recur == 0) {
 
 	/* restore previous cursor state if it was ON. */
@@ -3610,7 +3637,7 @@ mlmsg(const char *fmt, va_list * app)
 }
 
 /*
- * Format a string onto the message line, but only if it's appropriate. 
+ * Format a string onto the message line, but only if it's appropriate.
  * Keyboard macro replay, "dot" command replay, command buffer execution,
  * "terse" mode, and the user-accessible "discmd" state variable can all
  * suppress this.
@@ -3672,8 +3699,9 @@ dbgwrite(const char *fmt,...)
     mlmsg(temp, &ap);
     va_end(ap);
     beginDisplay();
-    while (term.getch() != '\007')
-	/* EMPTY */ ;
+    while (term.getch() != '\007') {
+	;
+    }
     endofDisplay();
 }
 
@@ -3684,16 +3712,16 @@ void
 mlerror(const char *s)
 {
     const char *t = 0;
-#if HAVE_STRERROR
-#ifdef VMS
+#ifdef HAVE_STRERROR
+#if SYS_VMS
     if (errno == EVMSERR)
 	t = strerror(errno, vaxc$errno);
     else
-#endif /* VMS */
+#endif /* SYS_VMS */
     if (errno > 0)
 	t = strerror(errno);
 #else
-#if HAVE_SYS_ERRLIST
+#ifdef HAVE_SYS_ERRLIST
     if (errno > 0 && errno < sys_nerr)
 	t = sys_errlist[errno];
 #endif /* HAVE_SYS_ERRLIST */
@@ -3787,6 +3815,7 @@ tprintf(const char *fmt,...)
 
     WINDOW *save_wp;
     BUFFER *bp;
+    BUFFER *save_bp = curbp;
     W_TRAITS save_w_traits;
     OutFunc save_outfn;
 
@@ -3813,7 +3842,7 @@ tprintf(const char *fmt,...)
 	b_clr_changed(bp);
 	curwp->w_traits = save_w_traits;
 
-	pop_fake_win(save_wp);
+	pop_fake_win(save_wp, save_bp);
 	dfoutfn = save_outfn;
 	nested = FALSE;
     }
@@ -3851,25 +3880,27 @@ newscreensize(int h, int w)
 	) {
 	chg_width = w;
 	chg_height = h;
-	return;
-    }
-    chg_width = chg_height = 0;
-    if ((h > term.maxrows) || (w > term.maxcols)) {
-	int or, oc;
-	or = term.maxrows;
-	oc = term.maxcols;
-	term.maxrows = h;
-	term.maxcols = w;
-	if (!vtinit()) {	/* allocation failure */
-	    term.maxrows = or;
-	    term.maxcols = oc;
-	    return;
+    } else {
+	beginDisplay();
+	chg_width = chg_height = 0;
+	if ((h > term.maxrows) || (w > term.maxcols)) {
+	    int old_r, old_c;
+	    old_r = term.maxrows;
+	    old_c = term.maxcols;
+	    term.maxrows = h;
+	    term.maxcols = w;
+	    if (!vtinit()) {	/* allocation failure */
+		term.maxrows = old_r;
+		term.maxcols = old_c;
+		endofDisplay();
+		return;
+	    }
 	}
-    }
-    if (!newlength(TRUE, h) || !newwidth(TRUE, w))
-	return;
+	endofDisplay();
 
-    (void) update(TRUE);
+	if (newlength(TRUE, h) && newwidth(TRUE, w))
+	    (void) update(TRUE);
+    }
 }
 
 #if OPT_WORKING
@@ -3879,6 +3910,7 @@ newscreensize(int h, int w)
 static void
 start_working(void)
 {
+    TRACE2(("start_working\n"));
     setup_handler(SIGALRM, imworking);
     (void) alarm(1);
     im_timing = TRUE;
@@ -3890,6 +3922,7 @@ start_working(void)
 static void
 stop_working(void)
 {
+    TRACE2(("stop_working\n"));
     if (mpresf) {		/* erase leftover working-message */
 	int save_row = ttrow;
 	int save_col = ttcol;
@@ -3917,67 +3950,84 @@ imworking(int ACTUAL_SIG_ARGS GCC_UNUSED)
     static int flip;
     static int skip;
 
-    signal_was = SIGALRM;	/* remember this was an alarm */
-
-    if (vile_is_busy)		/* brute force, for debugging */
-	return;
-
-    /* (if GMDWORKING is _not_ set, or MDTERSE is set, we're allowed
-     * to erase, but not to write.  and if we do erase, we don't
-     * reschedule the alarm, since setting the mode will call us
-     * again to start things up)
+    TRACE2(("imworking(%d)\n", signo));
+    /* (if GMDWORKING is _not_ set, or MDTERSE is set, we're allowed to erase,
+     * but not to write.  If we do erase, we don't reschedule the alarm, since
+     * setting the mode will call us again to start things up)
      */
-
-    if (im_displaying || !i_displayed) {	/* look at the semaphore first! */
-	/*EMPTY */ ;
-    } else if (im_waiting(-1)) {
-	im_timing = FALSE;
-	stop_working();
-	return;
-    } else if (ShowWorking()) {
-	if (skip) {
-	    skip = FALSE;
-	} else {
-#if DISP_X11
-	    x_working();
-#else
-	    static const char *const msg[] =
-	    {"working", "..."};
-	    char result[20];
-	    result[0] = EOS;
-	    if (cur_working != 0
-		&& cur_working != old_working) {
-		char temp[20];
-		int len = cur_working > 999999L ? 10 : 6;
-
-		old_working = cur_working;
-		strcat(result, right_num(temp, len, cur_working));
-		if (len == 10)
-		    /*EMPTY */ ;
-		else if (max_working != 0) {
-		    strcat(result, " ");
-		    strcat(result, right_num(temp, 2,
-					     (100 * cur_working) / max_working));
-		    strcat(result, "%");
-		} else
-		    strcat(result, " ...");
+    if (allow_working_msg()) {
+	TRACE2(("...allow_working_msg\n"));
+	if (im_waiting(-1)) {
+	    TRACE2(("...im_waiting(-1)\n"));
+	    im_timing = FALSE;
+	    stop_working();
+	} else if (ShowWorking()) {
+	    TRACE2(("...ShowWorking()\n"));
+	    if (skip) {
+		TRACE2(("...skipped()\n"));
+		skip = FALSE;
 	    } else {
-		strcat(result, msg[flip]);
-		strcat(result, msg[!flip]);
-	    }
-	    kbd_overlay(result);
-	    kbd_flush();
+#if DISP_X11
+		x_working();
+#else
+		static const char *const msg[] =
+		{"working", "..."};
+		char result[20];
+
+		TRACE2(("...FINALLY!()\n"));
+		result[0] = EOS;
+		if (cur_working != 0
+		    && cur_working != old_working) {
+		    char temp[20];
+		    int len = cur_working > 999999L ? 10 : 6;
+
+		    old_working = cur_working;
+		    strcat(result, right_num(temp, len, cur_working));
+		    if (len == 10)
+			/*EMPTY */ ;
+		    else if (max_working != 0) {
+			strcat(result, " ");
+			strcat(result, right_num(temp, 2,
+						 (100 * cur_working) / max_working));
+			strcat(result, "%");
+		    } else
+			strcat(result, " ...");
+		} else {
+		    strcat(result, msg[flip]);
+		    strcat(result, msg[!flip]);
+		}
+		kbd_overlay(result);
+		kbd_flush();
 #endif
+	    }
+	    start_working();
+	    flip = !flip;
+	} else {
+	    TRACE2(("...NOT ShowWorking()\n"));
+	    stop_working();
+	    skip = TRUE;
 	}
     } else {
-	stop_working();
-	skip = TRUE;
-	return;
+	TRACE2(("... NOT allow_working_msg(%d/%d/%d)%s ShowWorking\n",
+		vile_is_busy, im_displaying, !i_displayed,
+		ShowWorking()? "" : " NOT"));
+	if (ShowWorking()) {	/* keep the timer running */
+	    start_working();
+	    flip = !flip;
+	}
     }
-    start_working();
-    flip = !flip;
 }
 #endif /* OPT_WORKING */
+
+/*
+ * Returns true if we should/could show a "working..." message or other busy
+ * indicator, assuming that 'working' mode is set.
+ */
+int
+allow_working_msg(void)
+{
+    return !(vile_is_busy || im_displaying || !i_displayed);
+}
 
 /*
  * Maintain a flag that records whether we're waiting for keyboard input.  As a

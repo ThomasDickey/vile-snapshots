@@ -1,4 +1,4 @@
-; $Id: filters.rc,v 1.157 2002/07/04 16:45:58 tom Exp $
+; $Id: filters.rc,v 1.178 2003/11/02 21:11:48 tom Exp $
 ; majormodes in this file are ordered alphabetically for convenience - the
 ; precedence used by vile is strictly alphabetic, counting case.
 
@@ -16,6 +16,22 @@ define-mode ada
 	fence-if   '^\s*\<begin\>'
 	fence-else '^\s*\<exception\>'
 	fence-fi   '^\s*\<end\>'
+~endwith
+
+; GNU assembler (a Byzantine elaboration of AT&T)
+define-mode as
+~with define-submode as
+	suf '\.[sS]$'
+~endwith
+
+; M$ assembler (a Byzantine elaboration of Intel)
+define-mode asm
+~with define-submode asm
+	suf '\.asm$'
+	fence-if   '^\s*\<\(if\|ifdef\|ifndef\)\>'
+	fence-elif '^\s*\<elseif\>'
+	fence-else '^\s*\<else\>'
+	fence-fi   '^\s*\<endif\>'
 ~endwith
 
 define-mode awk
@@ -57,7 +73,7 @@ define-mode cfg
 define-mode cpp
 ~with define-submode cpp
 	before "c"
-	suf '\(\.\(CC\|cpp\|cxx\|hxx\|hh\)$\)'
+	suf '\(\.\(C\|CC\|cc\|cpp\|cxx\|hxx\|hh\)$\)'
 	cindent
 	cindent-chars   &cat ':#' $fences
 	filtername	'vile-c-filt -k cpp'
@@ -126,6 +142,14 @@ define-mode ecl
 	suf '\.\(ecl\|pro\)$'
 ~endwith
 
+; Syntax descriptions for enscript
+; NOTE: Smalltalk files also may have ".st" suffix.
+define-mode est
+~with define-submode est
+	suf '\.st$'
+	cindent
+~endwith
+
 ; Embedded SQL in C/C++
 define-mode esql
 ~with define-submode esql
@@ -191,6 +215,12 @@ define-mode html
 	fence-end	'-->'
 ~endwith
 
+define-mode info
+~with define-submode info
+	after ti
+	suf '\(\.\|\([a-z]*\)\)\(info\(-\d\+\)\?\)$'
+~endwith
+
 define-mode imake
 ~with define-submode imake
 	before "def"
@@ -201,7 +231,7 @@ define-mode imake
 define-mode java
 ~with define-submode java
 	suf '\.java$'
-	filtername 'vile-c-filt -p -k java'
+	filtername 'vile-c-filt -j -p -k java'
 	cindent
 	cindent-chars &cat ':' $fences
 ~endwith
@@ -223,7 +253,9 @@ define-mode key
 
 define-mode latex
 ~with define-submode latex
-	suf '\.\(latex\|ltex\|tex\)$'
+	filtername 'vile-latex-filt -a'
+	suf '\.\(latex\|ltex\|ltx\|sty\)$'
+	fence-pairs='<>{}()[]'
 	comment-prefix	'^\s*%'
 	comments	'^\s*%.*$'
 ~endwith
@@ -233,6 +265,15 @@ define-mode lex
 	suf '\.\(l\|lex\|flex\|flx\)$'
 	cindent
 	cindent-chars &cat ':#' $fences
+~endwith
+
+define-mode lisp
+~with define-submode lisp
+	suf '\.\(lisp\|lsp\)$'
+	fence-pairs='()'
+	fence-begin='#|'
+	fence-end='|#'
+	comment-prefix ';'
 ~endwith
 
 define-mode log
@@ -307,10 +348,11 @@ define-mode newsrc
 
 define-mode nr
 ~with define-submode nr
+	after "sh"
 	suf '\.\(\([1-9ln][a-z]\?\)\|me\|ms\|man\)$'
-	pre '^\.\\\''
-	comment-prefix	'^\.\\\''
-	comments	'^\.\\\'\s*$'
+	pre '^\.\\"'
+	comment-prefix	'^\.\\"'
+	comments	'^\.\\"\s*$'
 ~endwith
 
 define-mode pas
@@ -331,7 +373,7 @@ define-mode pc
 define-mode perl
 ~with define-submode perl
 	pre '^#\s*!\s*\.*\/.*perl[0-9]*\>'
-	suf '\.\(pl\|pm\)$'
+	suf '\.\(pl\|pm\|PL\)$'
 	before "mail"
 	cindent
 	cindent-chars  &cat ':' $fences
@@ -351,20 +393,35 @@ define-mode perl
 ;	fence-fi       '^\s*}'
 ~endwith
 
+; gettext message files
 define-mode pot
 ~with define-submode pot
 	suf '\.\(pot\|po\)$'
-	filtername 'vile-sh-filt -k pot'
 	comment-prefix '^#'
 	comments       '^#\s*$'
 ~endwith
 
+; PostScript
+define-mode ps
+~with define-submode ps
+	suf '\.ps$'
+~endwith
+
+; Python
 define-mode py
 ~with define-submode py
 	pre '^#\s*!\s*\.*\/.*python\>'
 	suf '\.py$'
 	comment-prefix '^\s*#'
 	comments   '^\s*#\s\+\s*$'
+~endwith
+
+; Ruby
+define-mode rb
+~with define-submode rb
+	filtername 'vile-ruby-filt -k rb'
+	pre '^#\s*!\s*\.*\/.*ruby*\>'
+	suf '\.rb$'
 ~endwith
 
 define-mode rc
@@ -397,6 +454,12 @@ define-mode RCS
 	filtername 'vile-rcs-filt'
 ~endwith
 
+define-mode rpm
+~with define-submode rpm
+	suf '.spec$'
+~endwith
+
+; (see RCS)
 define-mode SCCS
 ~with define-submode SCCS
 	suf '\<s\.'
@@ -421,7 +484,7 @@ define-mode sed
 ; This is matched after 'csh', and will pick up /bin/sh, /bin/bash, /bin/ksh
 define-mode sh
 ~with define-submode sh
-	suf '\.\(sh\|ksh\|[^/]*rc\)$'
+	suf '\(\.\(sh\|ksh\|[^/]*rc\)$\|profile$\|\.bash_[a-z]\+$\)'
 	pre '^\(\(#!\s*\/.*sh\>\(\s*[-]\+[a-z]*\s*\)\?\)\|:\)\s*$'
 	comment-prefix	'^\s*[:#]'
 	comments	'^\s*[:#]\s*$'
@@ -500,10 +563,24 @@ define-mode tcl
 	comments	'^\s*[:#]\s*$'
 ~endwith
 
+define-mode tex
+~with define-submode tex
+	suf '\.\(tex\)$'
+	filtername 'vile-latex-filt -k tex'
+	fence-pairs='<>{}()[]'
+	comment-prefix	'^\s*%'
+	comments	'^\s*%.*$'
+~endwith
+
+define-mode texi
+~with define-submode texi
+	suf '\.\(texi\|txi\|texinfo\)$'
+~endwith
+
 define-mode ti
 ~with define-submode ti
 	before "sh"
-	suf '\(\.ti\|\.tinfo\|\<terminfo[^/]*\)$'
+	suf '\(\.ti\|\.tinfo\|\<terminfo\(\.src\)\?\)$'
 	comment-prefix	'^\s*[:#]'
 	comments	'^\s*[:#]\s*$'
 ~endwith
@@ -572,15 +649,16 @@ define-mode vim
 ~elsewith define-submode vim group 'while'
 	fence-if	'^\s*while\>'
 	fence-fi	'^\s*endwhile\>'
+~elsewith define-submode vim group 'function'
+	fence-if	'^\s*function\>'
+	fence-fi	'^\s*endfunction\>'
 ~endwith
 
 define-mode xml
 ~with define-submode xml
-	filtername 'vile-html-filt -k html'
 	suf '\.xml$'
 	pre '^\s*<?xml\s'
 	fence-pairs	'<>()[]{}'
-	ignorecase
 	comment-prefix	'^\s*--'
 	comments	'^\s*$'
 ~endwith
@@ -588,9 +666,9 @@ define-mode xml
 define-mode xres
 ~with define-submode xres
 	~if $filename-ic
-		suf '\(\.Xdefaults\|\.ad\)$'
+		suf '\(\.Xdefaults\(-[^/]\+$\)\?\|\.ad\)$'
 	~else
-		suf '\(app-defaults/[A-Z]\?[A-Z][a-z0-9-]\+\|\.Xdefaults\(-[^/]\+$\)\|\.ad\)$'
+		suf '\(app-defaults/[A-Z]\?[A-Z][a-z0-9-]\+\|\.Xdefaults\(-[^/]\+$\)\?\|\.ad\)$'
 	~endif
 	comment-prefix	'^\s*!'
 	comments	'^\s*!\s*$'

@@ -1,7 +1,7 @@
 /*
  * Main program and I/O for external vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/RCS/builtflt.c,v 1.24 2002/07/04 20:29:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/builtflt.c,v 1.33 2003/11/02 19:29:08 tom Exp $
  *
  */
 
@@ -13,6 +13,10 @@
 #include "edef.h"
 #include "nevars.h"
 #include <stdarg.h>
+
+#ifdef HAVE_LIBDL
+#include <dlfcn.h>
+#endif
 
 static FILTER_DEF *current_filter;
 static MARK mark_in;
@@ -106,11 +110,11 @@ process_params(void)
     char *value;
 
     memset(flt_options, 0, sizeof(flt_options));
-    flt_options['t'] = tabstop_val(curbp);
+    FltOptions('t') = tabstop_val(curbp);
     while (*s != EOS) {
 	s = skip_cblanks(s);
 	if (*s == '-') {
-	    while (*++s != EOS && !isSpace(*s)) {
+	    while (*s != EOS && *++s != EOS && !isSpace(*s)) {
 		flt_options[CharOf(*s)] += 1;
 		switch (*s) {
 		case 'k':
@@ -121,8 +125,8 @@ process_params(void)
 		    break;
 		case 't':
 		    if ((value = param_value(&s)) != 0) {
-			if ((flt_options['t'] = atoi(value)) <= 0)
-			    flt_options['t'] = 8;
+			if ((FltOptions('t') = atoi(value)) <= 0)
+			    FltOptions('t') = 8;
 			free(value);
 		    }
 		    break;
@@ -132,7 +136,7 @@ process_params(void)
 	    s = skip_ctext(s);
 	}
     }
-    vile_keywords = !flt_options['v'];
+    vile_keywords = !FltOptions('k');
     return !vile_keywords;
 }
 
@@ -147,12 +151,76 @@ save_mark(int first)
 	MK = mark_out;
 }
 
+#ifdef HAVE_LIBDL
+static int
+load_filter(const char *name)
+{
+    char defining[NSTRING];
+    char filename[NFILEN];
+    char leafname[NSTRING];
+    void *obj;
+    FILTER_DEF *def;
+    int found = 0;
+    int tried = 0;
+    const char *cp = libdir_path;
+
+    if (strlen(name) < NSTRING - 30) {
+	sprintf(defining, "define_%s", name);
+	sprintf(leafname, "vile-%s-filt.so", name);
+	while ((cp = parse_pathlist(cp, filename)) != 0) {
+	    if (strlen(filename) + strlen(leafname) + 3 >= sizeof(filename))
+		continue;
+	    pathcat(filename, filename, leafname);
+	    TRACE(("load_filter(%s) %s\n", filename, defining));
+	    ++tried;
+	    if ((obj = dlopen(filename, RTLD_NOW)) != 0) {
+		found = 1;
+		if ((def = dlsym(obj, defining)) == 0) {
+		    dlclose(obj);
+		    mlwarn("[Error: can't reference variable %s from %s (%s)]",
+			   defining, filename, dlerror());
+		    break;
+		} else {
+		    TRACE(("...load_filter\n"));
+		    current_filter->InitFilter = def->InitFilter;
+		    current_filter->DoFilter = def->DoFilter;
+		    current_filter->options = def->options;
+		    current_filter->loaded = 1;
+		    break;
+		}
+	    }
+	}
+
+	if (!found && tried) {
+	    mlwarn("[Error: can't load shared object %s (%s)]",
+		   leafname, dlerror());
+	}
+    }
+    return current_filter->loaded;
+}
+#endif /* HAVE_LIBDL */
+
 /******************************************************************************
  * Public functions                                                           *
  ******************************************************************************/
 
+/*
+ * Trim newline from the string, returning true if it was found.
+ */
+int
+chop_newline(char *s)
+{
+    size_t len = strlen(s);
+
+    if (len != 0 && s[len - 1] == '\n') {
+	s[--len] = '\0';
+	return 1;
+    }
+    return 0;
+}
+
 void
-flt_echo(char *string, int length)
+flt_echo(const char *string, int length)
 {
     while (length-- > 0)
 	flt_putc(*string++);
@@ -235,10 +303,19 @@ flt_input(char *buffer, int max_size)
     return used;
 }
 
-char *
+const char *
 flt_name(void)
 {
     return current_filter ? current_filter->filter_name : "";
+}
+
+char *
+flt_put_blanks(char *string)
+{
+    char *result = skip_blanks(string);
+    if (result != string)
+	flt_puts(string, result - string, "");
+    return result;
 }
 
 void
@@ -254,7 +331,7 @@ flt_putc(int ch)
 }
 
 void
-flt_puts(char *string, int length, char *marker)
+flt_puts(const char *string, int length, const char *marker)
 {
     char bfr1[NSTRING];
     char bfr2[NSTRING];
@@ -266,12 +343,12 @@ flt_puts(char *string, int length, char *marker)
 	if (marker != 0 && *marker != 0 && *marker != 'N') {
 	    vl_strncpy(bfr2, marker, sizeof(bfr1) - 10);
 	    last = lsprintf(bfr1, "%c%d%s:", CTL_A, length, bfr2);
-	    parse_attribute(bfr1, last - bfr1, 0, &count);
+	    decode_attribute(bfr1, last - bfr1, 0, &count);
 	}
 	flt_echo(string, length);
 	save_mark(FALSE);
 	if (apply_attribute()) {
-	    int save_shape = regionshape;
+	    REGIONSHAPE save_shape = regionshape;
 	    regionshape = EXACT;
 	    (void) attributeregion();
 	    videoattribute = 0;
@@ -315,7 +392,11 @@ int
 flt_start(char *name)
 {
     TRACE(("flt_start(%s)\n", name));
-    if (flt_lookup(name)) {
+    if (flt_lookup(name)
+#ifdef HAVE_LIBDL
+	&& (current_filter->loaded || load_filter(name))
+#endif
+	) {
 	MARK save_dot;
 	MARK save_mk;
 

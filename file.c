@@ -5,7 +5,7 @@
  * reading and writing of the disk are
  * in "fileio.c".
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.332 2002/07/03 00:35:27 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.351 2003/06/18 22:25:36 tom Exp $
  */
 
 #include "estruct.h"
@@ -20,7 +20,7 @@
 #define	vl_mkdir(path,mode) mkdir(path,mode)
 #endif
 
-#if HAVE_UMASK
+#ifdef HAVE_UMASK
 #define vl_umask(n) umask(n)
 #else
 #define vl_umask(n) n
@@ -619,7 +619,7 @@ set_files_to_edit(const char *prompt, int appflag)
 		}
 	    }
 	}
-	if (firstbp != 0)
+	if (find_bp(firstbp) != 0)
 	    status = bp2swbuffer(firstbp, FALSE, TRUE);
     }
     return status;
@@ -1106,7 +1106,7 @@ explicit_dosmode(BUFFER *bp, RECORD_SEP record_sep)
  * Recompute the buffer size, redisplay the [Settings] buffer.
  */
 static int
-modified_record_sep(int record_sep)
+modified_record_sep(RECORD_SEP record_sep)
 {
     explicit_dosmode(curbp, record_sep);
     guess_dosmode(curbp);
@@ -1198,7 +1198,7 @@ guess_recordseparator(BUFFER *bp, UCHAR * buffer, B_COUNT length, L_NUM * lines)
     B_COUNT count_dos = 0;	/* CRLF's */
     B_COUNT count_unix = 0;	/* LF's w/o preceding CR */
     B_COUNT n;
-    RECORD_SEP result = RS_DEFAULT;
+    RECORD_SEP result;
 
     *lines = 0;
     for (n = 0; n < length; ++n) {
@@ -1297,109 +1297,108 @@ quickreadf(BUFFER *bp, int *nlinep)
     L_NUM nlines;
     RECORD_SEP rscode;
     UCHAR *buffer;
-#if OPT_ENCRYPT
     int rc;
-#endif
 
-    TRACE(("quickreadf(buffer=%s, file=%s)\n", bp->b_bname, bp->b_fname));
+    TRACE((T_CALLED "quickreadf(buffer=%s, file=%s)\n", bp->b_bname, bp->b_fname));
 
+    beginDisplay();
     if ((length = ffsize()) < 0) {
 	mlwarn("[Can't size file]");
-	return FIOERR;
+	rc = FIOERR;
     }
-
     /* avoid malloc(0) problems down below; let slowreadf() do the work */
-    if (length == 0
-	|| (buffer = castalloc(UCHAR, (size_t) length)) == NULL)
-	return FIOMEM;
-
+    else if (length == 0
+	     || (buffer = castalloc(UCHAR, (size_t) length)) == NULL) {
+	rc = FIOMEM;
+    }
 #if OPT_ENCRYPT
-    if ((rc = vl_resetkey(curbp, (const char *) buffer)) != TRUE) {
+    else if ((rc = vl_resetkey(curbp, (const char *) buffer)) != TRUE) {
 	free(buffer);
-	return rc;
     }
 #endif
-
-    if ((length = ffread((char *) buffer, length)) < 0) {
+    else if ((length = ffread((char *) buffer, length)) < 0) {
 	free(buffer);
 	mlerror("reading");
-	return FIOERR;
-    }
+	rc = FIOERR;
+    } else {
 #if OPT_ENCRYPT
-    if (b_val(bp, MDCRYPT)
-	&& bp->b_cryptkey[0]) {	/* decrypt the file */
-	vl_setup_encrypt(bp->b_cryptkey);
-	vl_encrypt_blok((char *) buffer, (UINT) length);
-    }
+	if (b_val(bp, MDCRYPT)
+	    && bp->b_cryptkey[0]) {	/* decrypt the file */
+	    vl_setup_encrypt(bp->b_cryptkey);
+	    vl_encrypt_blok((char *) buffer, (UINT) length);
+	}
 #endif
+	/*
+	 * Analyze the file to determine its format:
+	 */
+	rscode = guess_recordseparator(bp, buffer, length, &nlines);
 
-    /*
-     * Analyze the file to determine its format:
-     */
-    rscode = guess_recordseparator(bp, buffer, length, &nlines);
+	/*
+	 * Modify readin()'s setting for newline mode if needed:
+	 */
+	if (buffer[length - 1] != (rscode == RS_CR ? '\r' : '\n')) {
+	    set_b_val(bp, MDNEWLINE, FALSE);
+	}
 
-    /*
-     * Modify readin()'s setting for newline mode if needed:
-     */
-    if (buffer[length - 1] != (rscode == RS_CR ? '\r' : '\n')) {
-	set_b_val(bp, MDNEWLINE, FALSE);
-    }
+	/* allocate all of the line structs we'll need */
+	if ((bp->b_LINEs = typeallocn(LINE, nlines)) == NULL) {
+	    free(buffer);
+	    ffrewind();
+	    rc = FIOMEM;
+	} else {
+	    bp->b_ltext = buffer;
+	    bp->b_ltext_end = bp->b_ltext + length;
+	    bp->b_bytecount = length;
+	    bp->b_linecount = nlines;
+	    bp->b_LINEs_end = bp->b_LINEs + nlines;
 
-    /* allocate all of the line structs we'll need */
-    if ((bp->b_LINEs = typeallocn(LINE, nlines)) == NULL) {
-	FreeAndNull(buffer);
-	ffrewind();
-	return FIOMEM;
-    }
-    bp->b_ltext = buffer;
-    bp->b_ltext_end = bp->b_ltext + length;
-    bp->b_bytecount = length;
-    bp->b_linecount = nlines;
-    bp->b_LINEs_end = bp->b_LINEs + nlines;
-
-    /* loop through the buffer again, creating
-       line data structure for each line */
-    for (lp = bp->b_LINEs, offset = 0; lp != bp->b_LINEs_end; ++lp) {
-	B_COUNT next = next_recordseparator(buffer, length, rscode, offset);
-	if (next == offset)
-	    break;
+	    /* loop through the buffer again, creating
+	       line data structure for each line */
+	    for (lp = bp->b_LINEs, offset = 0; lp != bp->b_LINEs_end; ++lp) {
+		B_COUNT next = next_recordseparator(buffer, length, rscode, offset);
+		if (next == offset)
+		    break;
 #if !SMALLER
-	lp->l_number = ++lineno;
+		lp->l_number = ++lineno;
 #endif
-	lp->l_used = next - offset - 1;
-	if (!b_val(bp, MDNEWLINE) && next == length)
-	    lp->l_used += 1;
-	lp->l_size = lp->l_used + 1;
-	lp->l_text = (char *) (buffer + offset);
-	set_lforw(lp, lp + 1);
-	if (lp != bp->b_LINEs)
-	    set_lback(lp, lp - 1);
-	lsetclear(lp);
-	lp->l_nxtundo = null_ptr;
+		lp->l_used = next - offset - 1;
+		if (!b_val(bp, MDNEWLINE) && next == length)
+		    lp->l_used += 1;
+		lp->l_size = lp->l_used + 1;
+		lp->l_text = (char *) (buffer + offset);
+		set_lforw(lp, lp + 1);
+		if (lp != bp->b_LINEs)
+		    set_lback(lp, lp - 1);
+		lsetclear(lp);
+		lp->l_nxtundo = null_ptr;
 #if OPT_LINE_ATTRS
-	lp->l_attrs = NULL;
+		lp->l_attrs = NULL;
 #endif
-	offset = next;
+		offset = next;
+	    }
+	    lp--;		/* point at last line again */
+
+	    /* connect the end of the list */
+	    set_lforw(lp, buf_head(bp));
+	    set_lback(buf_head(bp), lp);
+
+	    /* connect the front of the list */
+	    set_lback(bp->b_LINEs, buf_head(bp));
+	    set_lforw(buf_head(bp), bp->b_LINEs);
+
+	    init_b_traits(bp);
+
+	    *nlinep = nlines;
+
+	    set_record_sep(bp, rscode);
+	    strip_if_dosmode(bp);
+
+	    b_clr_counted(bp);
+	    rc = FIOSUC;
+	}
     }
-    lp--;			/* point at last line again */
-
-    /* connect the end of the list */
-    set_lforw(lp, buf_head(bp));
-    set_lback(buf_head(bp), lp);
-
-    /* connect the front of the list */
-    set_lback(bp->b_LINEs, buf_head(bp));
-    set_lforw(buf_head(bp), bp->b_LINEs);
-
-    init_b_traits(bp);
-
-    *nlinep = nlines;
-
-    set_record_sep(bp, rscode);
-    strip_if_dosmode(bp);
-
-    b_clr_counted(bp);
-    return FIOSUC;
+    endofDisplay();
+    returnCode(rc);
 }
 #endif /* ! SYS_MSDOS */
 
@@ -1420,7 +1419,7 @@ readin(char *fname, int lockfl, BUFFER *bp, int mflg)
     int s;
     int nline;
 #if OPT_ENCRYPT
-    int local_crypt = (bp != 0)
+    int local_crypt = valid_buffer(bp)
     && is_local_val(bp->b_values.bv, MDCRYPT);
 #endif
 
@@ -1428,8 +1427,8 @@ readin(char *fname, int lockfl, BUFFER *bp, int mflg)
 	return FALSE;
 
     if (*fname == EOS) {
-	mlforce("BUG: readin called with NULL fname");
-	return FALSE;
+	TRACE(("readin called with NULL fname\n"));
+	return TRUE;
     }
 
     if ((s = bclear(bp)) != TRUE)	/* Might be old.    */
@@ -1583,11 +1582,11 @@ slowreadf(BUFFER *bp, int *nlinep)
     time_t last_updated = time((time_t *) 0);
 #endif
 
-    TRACE(("slowreadf(buffer=%s, file=%s)\n", bp->b_bname, bp->b_fname));
+    TRACE((T_CALLED "slowreadf(buffer=%s, file=%s)\n", bp->b_bname, bp->b_fname));
 
 #if OPT_ENCRYPT
     if ((s = vl_resetkey(curbp, curbp->b_fname)) != TRUE)
-	return s;
+	returnCode(s);
 #endif
     b_set_counted(bp);		/* make 'addline()' do the counting */
     b_set_reading(bp);
@@ -1670,7 +1669,7 @@ slowreadf(BUFFER *bp, int *nlinep)
 #endif
     init_b_traits(bp);
     b_clr_reading(bp);
-    return s;
+    returnCode(s);
 }
 
 /*
@@ -1712,10 +1711,7 @@ makename(char *bname, const char *fname)
 	       )) {
 	    *(--fcp) = EOS;
 	}
-	fcp = temp;
-	/* trim leading whitespace */
-	while (isBlank(*fcp))
-	    fcp++;
+	fcp = skip_space_tab(temp);
 
 #if SYS_UNIX || SYS_MSDOS || SYS_VMS || SYS_OS2 || SYS_WINNT
 	bcp = bname;
@@ -1870,7 +1866,7 @@ setup_file_region(BUFFER *bp, REGION * rp)
 }
 
 static int
-actually_write(REGION * rp, char *fn, int msgf, BUFFER *bp, int forced)
+actually_write(REGION * rp, char *fn, int msgf, BUFFER *bp, int forced, int encoded)
 {
     int s;
     LINE *lp;
@@ -1943,6 +1939,20 @@ actually_write(REGION * rp, char *fn, int msgf, BUFFER *bp, int forced)
 	if ((rp->r_size -= line_length(lp)) <= 0
 	    && !b_val(bp, MDNEWLINE))
 	    ending = "";
+#if OPT_SELECTIONS
+	if (encoded) {
+	    TBUFF *temp;
+	    if ((temp = encode_attributes(lp, bp, rp)) != 0) {
+		text = tb_values(temp);
+		len = tb_length(temp);
+	    }
+	    if ((s = ffputline(text, len, ending)) != FIOSUC) {
+		tb_free(&temp);
+		goto out;
+	    }
+	    tb_free(&temp);
+	} else
+#endif
 	if ((s = ffputline(text, len, ending)) != FIOSUC)
 	    goto out;
 
@@ -1998,6 +2008,7 @@ actually_write(REGION * rp, char *fn, int msgf, BUFFER *bp, int forced)
     if (!i_am_dead
 	&& whole_file
 	&& eql_bname(bp, UNNAMED_BufName)
+	&& !isShellOrPipe(fn)
 	&& find_b_file(fn) == 0) {
 	ch_fname(bp, fn);
 	set_buffer_name(bp);
@@ -2023,7 +2034,12 @@ file_protection(char *fn)
 }
 
 static int
-writereg(REGION * rp, const char *given_fn, int msgf, BUFFER *bp, int forced)
+writereg(REGION * rp,
+	 const char *given_fn,
+	 int msgf,
+	 BUFFER *bp,
+	 int forced,
+	 int encoded)
 {
     int status;
     char fname[NFILEN], *fn;
@@ -2058,7 +2074,7 @@ writereg(REGION * rp, const char *given_fn, int msgf, BUFFER *bp, int forced)
 			&& (protection = file_protection(fn)) >= 0) {
 			chmod(SL_TO_BSL(fn), protection | 0600);
 		    }
-		    status = actually_write(rp, fn, msgf, bp, forced);
+		    status = actually_write(rp, fn, msgf, bp, forced, encoded);
 		    if (protection > 0)
 			chmod(SL_TO_BSL(fn), protection);
 		}
@@ -2079,15 +2095,15 @@ writeout(const char *fn, BUFFER *bp, int forced, int msgf)
 
     setup_file_region(bp, &region);
 
-    return writereg(&region, fn, msgf, bp, forced);
+    return writereg(&region, fn, msgf, bp, forced, FALSE);
 }
 
 /*
  * Write the currently-selected region (i.e., the range of lines from DOT to
  * MK, inclusive).
  */
-int
-writeregion(void)
+static int
+prompt_and_write_region(int encoded)
 {
     REGION region;
     int status;
@@ -2106,9 +2122,24 @@ writeregion(void)
 	    return status;
     }
     if ((status = getregion(&region)) == TRUE)
-	status = writereg(&region, fname, TRUE, curbp, FALSE);
+	status = writereg(&region, fname, TRUE, curbp, FALSE, encoded);
     return status;
 }
+
+int
+writeregion(void)
+{
+    return prompt_and_write_region(FALSE);
+}
+
+#if OPT_SELECTIONS
+int
+write_enc_region(void)
+{
+    return prompt_and_write_region(TRUE);
+}
+
+#endif
 
 /*
  * This function writes the kill register to a file
@@ -2219,7 +2250,7 @@ vl_filename(int f GCC_UNUSED, int n GCC_UNUSED)
  * Return the final status of the read.
  */
 int
-ifile(char *fname, int belowthisline, FILE * haveffp)
+ifile(char *fname, int belowthisline, FILE *haveffp)
 {
     LINEPTR prevp;
     LINEPTR newlp;
@@ -2292,7 +2323,8 @@ ifile(char *fname, int belowthisline, FILE * haveffp)
 
     /* mark the window for changes.  could this be moved up to
      * where we actually insert a line? */
-    chg_buff(curbp, WFHARD);
+    if (nline)
+	chg_buff(curbp, WFHARD);
 
   out:
     /* copy window parameters back to the buffer structure */
@@ -2320,7 +2352,7 @@ static int
 create_save_dir(char *dirnam)
 {
     int result = FALSE;
-#if HAVE_MKDIR && !SYS_MSDOS && !SYS_OS2
+#if defined(HAVE_MKDIR) && !SYS_MSDOS && !SYS_OS2
     static char *tbl[] =
     {
 	0,			/* reserved for $TMPDIR */
@@ -2351,9 +2383,9 @@ create_save_dir(char *dirnam)
 
 	    /* on failure, keep going */
 #if defined(HAVE_MKSTEMP) && defined(HAVE_MKDTEMP)
-	    result = (vl_mkdtemp(dirnam) == 0);
+	    result = (vl_mkdtemp(dirnam) != 0);
 #else
-	    result = (vl_mkdir(dirnam, 0700) == 0);
+	    result = (vl_mkdir(mktemp(dirnam), 0700) == 0);
 #endif
 	    (void) vl_umask(omask);
 	    if (result)
@@ -2390,15 +2422,11 @@ imdying(int ACTUAL_SIG_ARGS)
     BUFFER *bp;
     int bad_karma = FALSE;
 #if SYS_UNIX
-    char cmd[NFILEN + 250];
+    char cmd[(NFILEN * 2) + 250];
 #endif
     static int created = FALSE;
     char temp[NFILEN];
     char my_buffer[NSTRING];
-
-#if SYS_APOLLO
-    extern char *getlogin(void);
-#endif /* SYS_APOLLO */
 
 #if OPT_WORKING && defined(SIGALRM)
     setup_handler(SIGALRM, SIG_IGN);
@@ -2416,13 +2444,6 @@ imdying(int ACTUAL_SIG_ARGS)
     fflinelen = 0;
     ffp = 0;
     ffd = -1;
-
-#if SYS_APOLLO
-    (void) lsprintf(cmd,
-		    "(echo signal %d killed vile;/com/tb %d)| /bin/mail %s",
-		    signo, getpid(), getlogin());
-    (void) system(cmd);
-#endif /* SYS_APOLLO */
 
     /* write all modified buffers to the temp directory */
     set_global_g_val(GMDIMPLYBUFF, FALSE);	/* avoid side-effects! */
@@ -2450,9 +2471,18 @@ imdying(int ACTUAL_SIG_ARGS)
 	    wrote++;
 	}
     }
-#if SYS_UNIX			/* try and send mail */
+#if SYS_UNIX			/* try to send mail */
+    /*
+     * If VILE_ERROR_ABORT is defined, send mail even if there are no pieces
+     * to pick up.  It makes it simpler to find the core file, if any was
+     * forced, and ensures that we can distinguish an abnormal exit from
+     * accidentally typing 'Q'.
+     */
+#ifndef VILE_ERROR_ABORT
     /* if we wrote, or tried to */
-    if (wrote || bad_karma) {
+    if (wrote || bad_karma)
+#endif
+    {
 	const char **mailcmdp;
 	struct stat sb;
 	char *np;
@@ -2470,11 +2500,13 @@ imdying(int ACTUAL_SIG_ARGS)
 	    char *cp;
 	    cp = lsprintf(cmd, "( %s %s; %s; %s; %s %d;",
 			  "echo To:", np,
-			  "echo Subject: vile died, files saved",
+			  ((wrote || bad_karma)
+			   ? "echo Subject: vile died, files saved"
+			   : "echo Subject: vile died, no files saved"),
 			  "echo",
 			  "echo vile died due to signal", signo);
 
-#if HAVE_GETHOSTNAME
+#ifdef HAVE_GETHOSTNAME
 	    {
 		char hostname[128];
 		if (gethostname(hostname, sizeof(hostname)) < 0)
@@ -2484,19 +2516,22 @@ imdying(int ACTUAL_SIG_ARGS)
 			      "echo on host", hostname);
 	    }
 #endif
-	    cp = lsprintf(cp,
-			  "echo the following files were saved in directory %s;",
-			  dirnam);
+	    cp = lsprintf(cp, "echo current directory:;pwd;");
+	    if (wrote) {
+		cp = lsprintf(cp,
+			      "echo the following files were saved in directory %s;",
+			      dirnam);
 
-	    cp = lsprintf(cp, "%s%s%s;",
-#if HAVE_MKDIR
-	    /* reverse sort so '.' comes last, in case it
-	     * terminates the mail message early */
-			  "ls -a ", dirnam, " | sort -r"
+		cp = lsprintf(cp, "%s%s%s;",
+#ifdef HAVE_MKDIR
+		/* reverse sort so '.' comes last, in case it
+		 * terminates the mail message early */
+			      "ls -a ", dirnam, " | sort -r"
 #else
-			  "ls ", dirnam, "/V*"
+			      "ls ", dirnam, "/V*"
 #endif
-		);
+		    );
+	    }
 
 	    if (bad_karma)
 		cp = lsprintf(cp, "%s %s",
@@ -2509,9 +2544,13 @@ imdying(int ACTUAL_SIG_ARGS)
 	}
     }
     term.cursorvis(TRUE);	/* ( this might work ;-) */
-    if (signo > 2) {
+    if (signo != SIGHUP && signo != SIGINT) {
 	ttclean(FALSE);
+#ifdef VILE_ERROR_ABORT
+	ExitProgram(signo);
+#else
 	abort();
+#endif
     }
 #else
     if (wrote) {
@@ -2523,7 +2562,7 @@ imdying(int ACTUAL_SIG_ARGS)
     }
 #endif
 
-    tidy_exit(wrote ? BADEXIT : GOODEXIT);
+    tidy_exit(BADEXIT);
     /* NOTREACHED */
     SIGRET;
 }

@@ -7,7 +7,7 @@
  * Most code probably by Dan Lawrence or Dave Conroy for MicroEMACS
  * Extensions for vile by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/insert.c,v 1.137 2002/05/05 20:26:02 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/insert.c,v 1.141 2003/06/18 21:38:27 tom Exp $
  *
  */
 
@@ -326,7 +326,7 @@ ins_mode(WINDOW *wp)
 int
 overwritechars(int f, int n)
 {
-    set_insertmode(OVERWRITE);
+    set_insertmode(INSMODE_OVR);
     return ins_n_times(f, n, TRUE);
 }
 
@@ -358,7 +358,7 @@ replacechar(int f, int n)
 	    return status;
 	c = cbuf[0];
     } else {
-	set_insertmode(REPLACECHAR);	/* need to fool SPEC prefix code */
+	set_insertmode(INSMODE_RPL);	/* need to fool SPEC prefix code */
 	if (dotcmdactive != PLAY)
 	    (void) update(FALSE);
 	c = keystroke();
@@ -483,7 +483,7 @@ ins_anytime(int playback, int cur_count, int max_count, int *splice)
     }
 
     if (insertmode == FALSE)
-	set_insertmode(INSERT);
+	set_insertmode(INSMODE_INS);
     osavedmode = savedmode;
     savedmode = insertmode;
 
@@ -535,7 +535,7 @@ ins_anytime(int playback, int cur_count, int max_count, int *splice)
 		if (b_val(wp0->w_bufp, MDSHOWMODE))
 		    wp0->w_flag |= WFMODE;
 		unkeystroke(c);
-		goto leave;
+		goto leave_ins;
 	    }
 #endif
 	    if (!itb_append(&insbuff, c)) {
@@ -576,7 +576,7 @@ ins_anytime(int playback, int cur_count, int max_count, int *splice)
 	 */
 	if (ABORTED(c)) {
 #if OPT_MOUSE
-	  leave:
+	  leave_ins:
 #endif
 	    /* an unfortunate Vi-ism that ensures one
 	       can always type "ESC a" if you're not sure
@@ -690,7 +690,7 @@ blanks_on_line(void)
 int
 is_cindent_char(BUFFER *bp, int ch)
 {
-    return (bp != 0)
+    return valid_buffer(bp)
 	&& b_val(bp, MDCINDENT)
 	&& (b_val_ptr(bp, VAL_CINDENT_CHARS) != 0)
 	&& (strchr(b_val_ptr(bp, VAL_CINDENT_CHARS), ch) != 0);
@@ -823,7 +823,7 @@ inschar(int c, int *backsp_limit_p)
     /* if we are in overwrite mode, not at eol,
        and next char is not a tab or we are at a tab stop,
        delete a char forword                        */
-    if ((insertmode == OVERWRITE)
+    if ((insertmode == INSMODE_OVR)
 	&& (!DOT_ARGUMENT || (dotcmdrep <= 1))
 	&& (DOT.o < llength(DOT.l))
 	&& (char_at(DOT) != '\t'
@@ -850,20 +850,23 @@ inschar(int c, int *backsp_limit_p)
 int
 appstring(int f, int n)
 {
+    TRACE((T_CALLED "appstring(f=%d, n=%d)\n", f, n));
     advance_one_char();
-    return istring(f, n, INSERT);
+    returnCode(istring(f, n, INSMODE_INS));
 }
 
 int
 insstring(int f, int n)
 {
-    return istring(f, n, INSERT);
+    TRACE((T_CALLED "insstring(f=%d, n=%d)\n", f, n));
+    returnCode(istring(f, n, INSMODE_INS));
 }
 
 int
 overwstring(int f, int n)
 {
-    return istring(f, n, OVERWRITE);
+    TRACE((T_CALLED "overwstring(f=%d, n=%d)\n", f, n));
+    returnCode(istring(f, n, INSMODE_OVR));
 }
 
 /* ask for and insert or overwrite a string into the current */
@@ -913,7 +916,7 @@ backspace(void)
 {
     int s;
 
-    if ((s = backchar(TRUE, 1)) == TRUE && insertmode != OVERWRITE)
+    if ((s = backchar(TRUE, 1)) == TRUE && insertmode != INSMODE_OVR)
 	s = ldelete(1L, FALSE);
     return (s);
 }
@@ -1053,9 +1056,9 @@ nextindent(int *bracefp)
     }
     ind = indentlen(DOT.l);
     if (bracefp) {
-	*bracefp = ((lgetc(DOT.l, fc) == RBRACE) ||
-		    (lgetc(DOT.l, fc) == RPAREN) ||
-		    (lgetc(DOT.l, fc) == RBRACK));
+	*bracefp = ((lgetc(DOT.l, fc) == R_CURLY) ||
+		    (lgetc(DOT.l, fc) == R_PAREN) ||
+		    (lgetc(DOT.l, fc) == R_BLOCK));
     }
 
     DOT = MK;
@@ -1316,11 +1319,11 @@ current_modename(void)
     switch (savedmode) {
     default:
 	return "command";
-    case INSERT:
+    case INSMODE_INS:
 	return "insert";
-    case OVERWRITE:
+    case INSMODE_OVR:
 	return "overwrite";
-    case REPLACECHAR:
+    case INSMODE_RPL:
 	return "replace";
     }
 }

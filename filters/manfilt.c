@@ -46,28 +46,26 @@
  * vile will choose some appropriate fallback (such as underlining) if
  * italics are not available.
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/manfilt.c,v 1.28 2001/08/21 22:25:55 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/manfilt.c,v 1.35 2003/05/03 10:57:57 tom Exp $
  *
  */
 
+#define	_trace_h 1		/* don't include trace.h */
+
 #include <filters.h>
 
-#if !HAVE_STDLIB_H
-# if !defined(HAVE_CONFIG_H) || MISSING_EXTERN_CALLOC
-extern char *calloc(size_t nmemb, size_t size);
-# endif
-# if !defined(HAVE_CONFIG_H) || MISSING_EXTERN_REALLOC
-extern char *realloc(char *ptr, size_t size);
-# endif
+#if OPT_LOCALE
+#include	<locale.h>
+#include	<ctype.h>
 #endif
 
-#ifdef lint
-#define	typecallocn(cast,ntypes)	(((cast *)0)+(ntypes))
-#define	typereallocn(cast,ptr,ntypes)	((ptr)+(ntypes))
-#else
-#define	typecallocn(cast,ntypes)	(cast *)calloc(sizeof(cast),ntypes)
-#define	typereallocn(cast,ptr,ntypes)	(cast *)realloc((char *)(ptr),\
-							(ntypes)*sizeof(cast))
+#if !defined(HAVE_STDLIB_H)
+# if !defined(HAVE_CONFIG_H) || defined(MISSING_EXTERN_CALLOC)
+extern char *calloc(size_t nmemb, size_t size);
+# endif
+# if !defined(HAVE_CONFIG_H) || defined(MISSING_EXTERN_REALLOC)
+extern char *realloc(char *ptr, size_t size);
+# endif
 #endif
 
 #define backspace() \
@@ -125,6 +123,11 @@ static void flush_line(void);
 static LINEDATA *all_lines;
 static LINEDATA *cur_line;
 static long total_lines;
+static int (*my_getc) (FILE *);
+
+#if OPT_LOCALE
+static int utf8_locale = 0;
+#endif
 
 static void
 failed(const char *s)
@@ -132,6 +135,102 @@ failed(const char *s)
     perror(s);
     exit(BADEXIT);
 }
+
+static int
+ansi_getc(FILE *fp)
+{
+    return fgetc(fp);
+}
+
+#if OPT_LOCALE
+/*
+ * groff 1.18 versions generates UTF-8 - we want Latin1.  Decode it.
+ */
+static int
+utf8_getc(FILE *fp)
+{
+#define UCS_REPL '?'
+    int utf_count = 0;
+    int utf_char = 0;
+
+    do {
+	int c = fgetc(fp);
+	/* Combine UTF-8 into Unicode */
+	if (c < 0x80) {
+	    /* We received an ASCII character */
+	    /* if (utf_count > 0), prev. sequence incomplete */
+	    utf_char = c;
+	    utf_count = 0;
+	} else if (c < 0xc0) {
+	    /* We received a continuation byte */
+	    if (utf_count < 1) {
+		utf_char = UCS_REPL;	/* ... unexpectedly */
+	    } else {
+		if (!utf_char && !((c & 0x7f) >> (7 - utf_count))) {
+		    utf_char = UCS_REPL;
+		}
+		/* characters outside UCS-2 become UCS_REPL */
+		if (utf_char > 0x03ff) {
+		    /* value would be >0xffff */
+		    utf_char = UCS_REPL;
+		} else {
+		    utf_char <<= 6;
+		    utf_char |= (c & 0x3f);
+		}
+		if ((utf_char >= 0xd800 &&
+		     utf_char <= 0xdfff) ||
+		    (utf_char == 0xfffe) ||
+		    (utf_char == 0xffff)) {
+		    utf_char = UCS_REPL;
+		}
+		utf_count--;
+	    }
+	} else {
+	    /* We received a sequence start byte */
+	    /* if (utf_count > 0), prev. sequence incomplete */
+	    if (c < 0xe0) {
+		utf_count = 1;
+		utf_char = (c & 0x1f);
+		if (!(c & 0x1e))
+		    utf_char = UCS_REPL;	/* overlong sequence */
+	    } else if (c < 0xf0) {
+		utf_count = 2;
+		utf_char = (c & 0x0f);
+	    } else if (c < 0xf8) {
+		utf_count = 3;
+		utf_char = (c & 0x07);
+	    } else if (c < 0xfc) {
+		utf_count = 4;
+		utf_char = (c & 0x03);
+	    } else if (c < 0xfe) {
+		utf_count = 5;
+		utf_char = (c & 0x01);
+	    } else {
+		utf_char = UCS_REPL;
+		utf_count = 0;
+	    }
+	}
+    } while (utf_count > 0);
+    if (utf_char > 255) {
+	switch (utf_char) {
+	case 0x2018:
+	    utf_char = '`';
+	    break;
+	case 0x2019:
+	    utf_char = '\'';
+	    break;
+	case 0x2010:
+	case 0x2212:
+	    utf_char = '-';
+	    break;
+	default:
+	    utf_char = '?';
+	    break;
+	}
+    }
+    return utf_char;
+}
+#endif
 
 /*
  * Allocate a CHARCELL struct
@@ -248,7 +347,7 @@ put_cell(int c, int level, int ident, int attrs)
  * Interpret equivalent overstrike/underline for an ANSI escape sequence.
  */
 static int
-ansi_escape(FILE * ifp, int last_code)
+ansi_escape(FILE *ifp, int last_code)
 {
     int ansi = 1;
     int code = ATR_NORMAL;
@@ -256,7 +355,7 @@ ansi_escape(FILE * ifp, int last_code)
     int digits = 0;
     int c;
 
-    while ((c = fgetc(ifp)) != EOF) {
+    while ((c = my_getc(ifp)) != EOF) {
 	c = CharOf(c);
 	if (isdigit(c)) {
 	    value = (value * 10) + (c - '0');
@@ -467,14 +566,14 @@ flush_line(void)
  * Filter an entire file, writing the result to the standard output.
  */
 static void
-ManFilter(FILE * ifp)
+ManFilter(FILE *ifp)
 {
     int c;
     int level = 0;
     int ident = CS_NORMAL;
     int esc_mode = ATR_NORMAL;
 
-    while ((c = fgetc(ifp)) != EOF) {
+    while ((c = my_getc(ifp)) != EOF) {
 	c = CharOf(c);
 	switch (c) {
 	case '\b':
@@ -510,7 +609,7 @@ ManFilter(FILE * ifp)
 	    break;
 
 	case ESCAPE:
-	    switch (fgetc(ifp)) {
+	    switch (my_getc(ifp)) {
 	    case '[':
 		esc_mode = ansi_escape(ifp, esc_mode);
 		break;
@@ -564,8 +663,22 @@ main(int argc, char **argv)
 {
     int n;
 
+    my_getc = ansi_getc;
 #if OPT_LOCALE
-    setlocale(LC_CTYPE, "");
+    {
+	char *env;
+
+	if (((env = getenv("LC_ALL")) != 0 && *env != 0) ||
+	    ((env = getenv("LC_CTYPE")) != 0 && *env != 0) ||
+	    ((env = getenv("LANG")) != 0 && *env != 0)) {
+
+	    if (strstr(env, ".UTF-8") != 0) {
+		utf8_locale = 1;
+		my_getc = utf8_getc;
+	    }
+	}
+	setlocale(LC_CTYPE, "");
+    }
 #endif
 
     if (argc > 1) {

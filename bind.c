@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.254 2002/02/13 01:34:59 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.266 2003/05/04 13:52:55 Mark.Robinson Exp $
  *
  */
 
@@ -46,8 +46,8 @@ static void makebindlist(LIST_ARGS);
 #if OPT_NAMEBST
 static int kbd_complete_bst(unsigned flags, int c, char *buf, unsigned *pos);
 #else
-#define kbd_complete_bst(flags, c, buf, pos) \
-	kbd_complete(flags, c, buf, pos, \
+#define kbd_complete_bst(params) \
+	kbd_complete(params, \
 			(const char *)&nametbl[0], sizeof(nametbl[0]))
 #endif /* OPT_NAMEBST */
 
@@ -111,16 +111,22 @@ static void kbd_puts(const char *s);
 static BI_NODE *
 new_namebst(BI_DATA * a)
 {
-    BI_NODE *p = typecalloc(BI_NODE);
+    BI_NODE *p;
+
+    beginDisplay();
+    p = typecalloc(BI_NODE);
     p->value = *a;
     if (!(a->n_flags & NBST_READONLY))
 	BI_KEY(p) = strmalloc(a->bi_key);
+    endofDisplay();
+
     return p;
 }
 
 static void
 old_namebst(BI_NODE * a)
 {
+    beginDisplay();
     if (!(a->value.n_flags & NBST_READONLY)) {
 	CMDFUNC *cmd = TYPECAST(CMDFUNC, a->value.n_cmd);
 	if (cmd != 0) {
@@ -137,15 +143,15 @@ old_namebst(BI_NODE * a)
 	free(TYPECAST(char, BI_KEY(a)));
     }
     free(TYPECAST(char, a));
+    endofDisplay();
 }
 
 static void
 dpy_namebst(BI_NODE * a GCC_UNUSED, int level GCC_UNUSED)
 {
 #if OPT_TRACE
-    while (level-- > 0)
-	TRACE((". "));
-    TRACE(("%p -> %s (%d)\n", a, BI_KEY(a), a->balance));
+    TRACE(("%s%p -> %s (%d)\n",
+	   trace_indent(level, '.'), a, BI_KEY(a), a->balance));
 #endif
 }
 
@@ -175,24 +181,26 @@ vl_help(int f GCC_UNUSED, int n GCC_UNUSED)
     char *hname;
     int alreadypopped;
 
+    TRACE((T_CALLED "vl_help()\n"));
+
     /* first check if we are already here */
     bp = bfind(HELP_BufName, BFSCRTCH);
     if (bp == NULL)
-	return FALSE;
+	returnCode(FALSE);
 
     if (bp->b_active == FALSE) {	/* never been used */
 	hname = cfg_locate(helpfile, FL_ANYWHERE | FL_READABLE);
 	if (!hname) {
 	    mlforce("[Sorry, can't find the help information]");
 	    (void) zotbuf(bp);
-	    return (FALSE);
+	    returnCode(FALSE);
 	}
 	alreadypopped = (bp->b_nwnd != 0);
 	/* and read the stuff in */
 	if (readin(hname, 0, bp, TRUE) == FALSE ||
 	    popupbuff(bp) == FALSE) {
 	    (void) zotbuf(bp);
-	    return (FALSE);
+	    returnCode(FALSE);
 	}
 	set_bname(bp, HELP_BufName);
 	set_rdonly(bp, hname, MDVIEW);
@@ -206,16 +214,16 @@ vl_help(int f GCC_UNUSED, int n GCC_UNUSED)
     }
 
     if (!swbuffer(bp))
-	return FALSE;
+	returnCode(FALSE);
 
     if (help_at >= 0) {
 	if (!gotoline(TRUE, help_at))
-	    return FALSE;
+	    returnCode(FALSE);
 	mlwrite("[Type '1G' to return to start of help information]");
 	help_at = -1;		/* until zotbuf is called, we let normal
 				   DOT tracking keep our position */
     }
-    return TRUE;
+    returnCode(TRUE);
 }
 
 /*
@@ -310,9 +318,9 @@ chr_lookup(const char *name)
  * 'kbd_reply()' to setup the mode-name completion and query displays.
  */
 static int
-chr_complete(int c, char *buf, unsigned *pos)
+chr_complete(DONE_ARGS)
 {
-    return kbd_complete(0, c, buf, pos, (const char *) &TermChrs[0],
+    return kbd_complete(PASS_DONE_ARGS, (const char *) &TermChrs[0],
 			sizeof(TermChrs[0]));
 }
 
@@ -428,6 +436,18 @@ key_to_bind(const CMDFUNC * kcmd)
 }
 
 static int
+free_KBIND(KBIND ** oldp, KBIND * newp)
+{
+    *oldp = newp->k_link;
+
+    beginDisplay();
+    free(TYPECAST(char, newp));
+    endofDisplay();
+
+    return TRUE;
+}
+
+static int
 unbindchar(BINDINGS * bs, int c)
 {
     KBIND *kbp;			/* pointer into the command table */
@@ -445,18 +465,14 @@ unbindchar(BINDINGS * bs, int c)
     /* check first entry in kb_extra table */
     kbp = skbp = bs->kb_extra;
     if (kbp->k_code == c) {
-	bs->kb_extra = kbp->k_link;
-	free(TYPECAST(char, kbp));
-	return TRUE;
+	return free_KBIND(&(bs->kb_extra), kbp);
     }
 
     /* check kb_extra codes */
     while (kbp != bs->kb_special) {
 	if (kbp->k_code == c) {
 	    /* relink previous */
-	    skbp->k_link = kbp->k_link;
-	    free(TYPECAST(char, kbp));
-	    return TRUE;
+	    return free_KBIND(&(skbp->k_link), kbp);
 	}
 
 	skbp = kbp;
@@ -601,7 +617,12 @@ install_bind(int c, const CMDFUNC * kcmd, BINDINGS * bs)
     } else if ((kbp = kcode2kbind(bs, c)) != 0) {	/* change it in place */
 	kbp->k_cmd = kcmd;
     } else {
-	if ((kbp = typealloc(KBIND)) == 0) {
+
+	beginDisplay();
+	kbp = typealloc(KBIND);
+	endofDisplay();
+
+	if (kbp == 0) {
 	    return no_memory("Key-Binding");
 	}
 	kbp->k_link = bs->kb_extra;
@@ -958,16 +979,6 @@ converted_len(char *buffer)
     return len;
 }
 
-/* force the buffer to a tab-stop if needed */
-static char *
-to_tabstop(char *buffer)
-{
-    unsigned cpos = converted_len(buffer);
-    if (cpos & 7)
-	(void) strcat(buffer, "\t");
-    return skip_string(buffer);
-}
-
 static void
 quote_and_pad(char *dst, const char *src)
 {
@@ -977,6 +988,17 @@ quote_and_pad(char *dst, const char *src)
     else
 	while (converted_len(dst) < 32)
 	    strcat(dst, "\t");
+}
+
+#if OPT_MENUS || OPT_NAMEBST
+/* force the buffer to a tab-stop if needed */
+static char *
+to_tabstop(char *buffer)
+{
+    unsigned cpos = converted_len(buffer);
+    if (cpos & 7)
+	(void) strcat(buffer, "\t");
+    return skip_string(buffer);
 }
 
 /* convert a key binding, padding to the next multiple of 8 columns */
@@ -1008,6 +1030,7 @@ convert_cmdfunc(BINDINGS * bs, const CMDFUNC * cmd, char *outseq)
 	if (kbp->k_cmd == cmd)
 	    convert_kcode(kbp->k_code, outseq);
 }
+#endif /* OPT_MENUS || OPT_NAMEBST */
 
 #if OPT_ONLINEHELP
 static int
@@ -1188,7 +1211,6 @@ makefuncdesc(int j, char *listed)
 
     /* add in the command name */
     quote_and_pad(outseq, nametbl[j].n_name);
-    convert_cmdfunc(bs, cmd, outseq);
 
     /* dump the line */
     if (!addline(curbp, outseq, -1))
@@ -1230,7 +1252,11 @@ makebindlist(int whichmask, void *mstring)
     int pass;
     int j;
     int ok = TRUE;		/* reset if out-of-memory, etc. */
-    char *listed = typecallocn(char, (size_t) nametblsize);
+    char *listed;
+
+    beginDisplay();
+    listed = typecallocn(char, (size_t) nametblsize);
+    endofDisplay();
 
     if (listed == 0) {
 	(void) no_memory(bindings_to_describe->bufname);
@@ -1272,7 +1298,10 @@ makebindlist(int whichmask, void *mstring)
 
     if (ok)
 	mlerase();		/* clear the message line */
+
+    beginDisplay();
     free(listed);
+    endofDisplay();
 }
 #endif /* OPT_NAMEBST */
 
@@ -1728,6 +1757,13 @@ fnc2kcod(const CMDFUNC * f)
     return cmdfunc2keycode(&dft_bindings, f);
 }
 
+/* fnc2kins: translate a function pointer to an insert binding keycode */
+int
+fnc2kins(const CMDFUNC * f)
+{
+    return cmdfunc2keycode(&ins_bindings, f);
+}
+
 /* fnc2pstr: translate a function pointer to a pascal-string that a user
 	could enter.  returns a pointer to a static array */
 #if DISP_X11
@@ -1896,40 +1932,61 @@ engl2fnc(const char *fname)
     return NULL;
 }
 
+/*
+ * This parser allows too many combinations; we will check for illegal
+ * combinations after getting all of the information.  Still, it will not check
+ * for odd things such as
+ *	#-^X-a
+ * since it is treated the same as
+ *	^X-#-a
+ */
 static const char *
 decode_prefix(const char *kk, UINT * prefix)
 {
     UCHAR ch;
-    size_t len = strlen(kk);
+    int found;
 
-    if (len > 3 && *(kk + 2) == '-') {
-	if (*kk == '^') {
-	    ch = (UCHAR) (kk[1]);
-	    if (isCntrl(cntl_a) && ch == toalpha(cntl_a))
-		*prefix |= CTLA;
-	    if (isCntrl(cntl_x) && ch == toalpha(cntl_x))
-		*prefix |= CTLX;
-	    if (isCntrl(poundc) && ch == toalpha(poundc))
-		*prefix |= SPEC;
-	} else if (!strncmp(kk, "FN", 2)) {
-	    *prefix |= SPEC;
-	}
-	if (*prefix != 0)
-	    kk += 3;
-    } else if (len > 1) {
-	ch = (UCHAR) (kk[0]);
-	if (ch == cntl_a)
-	    *prefix |= CTLA;
-	else if (ch == cntl_x)
-	    *prefix |= CTLX;
-	else if (ch == poundc)
-	    *prefix |= SPEC;
-	if (*prefix != 0) {
-	    kk++;
-	    if (len > 2 && *kk == '-')
+    do {
+	UINT bits = 0;
+	size_t len = strlen(kk);
+
+	if (len > 1) {
+	    ch = (UCHAR) (kk[0]);
+	    if (ch == cntl_a)
+		bits = CTLA;
+	    else if (ch == cntl_x)
+		bits = CTLX;
+	    else if (ch == poundc)
+		bits = SPEC;
+	    if (bits != 0) {
 		kk++;
+		if (len > 2 && *kk == '-')
+		    kk++;
+	    }
 	}
-    }
+
+	if (bits == 0 && len > 3 && *(kk + 2) == '-') {
+	    if (*kk == '^') {
+		ch = (UCHAR) (kk[1]);
+		if (isCntrl(cntl_a) && ch == toalpha(cntl_a))
+		    bits = CTLA;
+		if (isCntrl(cntl_x) && ch == toalpha(cntl_x))
+		    bits = CTLX;
+		if (isCntrl(poundc) && ch == toalpha(poundc))
+		    bits = SPEC;
+	    } else if (!strncmp(kk, "FN", 2)) {
+		bits = SPEC;
+	    }
+	    if (bits != 0)
+		kk += 3;
+	}
+
+	found = FALSE;
+	if (bits != 0) {
+	    found = TRUE;
+	    *prefix |= bits;
+	}
+    } while (found);
     return kk;
 }
 
@@ -1942,6 +1999,8 @@ prc2kcod(const char *kk)
     UINT pref = 0;		/* key prefixes */
 
     kk = decode_prefix(kk, &pref);
+    if ((pref & CTLA) && (pref & CTLX))
+	return -1;
 
 #if OPT_KEY_MODIFY
     {
@@ -1952,6 +2011,8 @@ prc2kcod(const char *kk)
 
 	while ((s = strchr(kk, '+')) != 0) {
 	    if ((len = (s - kk) + 1) >= (int) sizeof(temp))
+		break;
+	    if (s == kk || s[1] == '\n' || s[1] == '\0')
 		break;
 	    mklower(vl_strncpy(temp, kk, len + 1));
 	    if (isLower(temp[0]))
@@ -2049,9 +2110,11 @@ kbd_alarm(void)
 #endif
 {
     TRACE(("BEEP (%s @%d)\n", file, line));
+    TPRINTF(("BEEP\n"));
 
     if (!no_errs
 	&& !clhide
+	&& !quiet
 	&& global_g_val(GMDERRORBELLS)) {
 	term.beep();
 	term.flush();
@@ -2082,9 +2145,7 @@ kbd_putc(int c)
 	} else {
 	    (void) linsert(1, c);
 	}
-	if (!is_header_line(DOT, curbp) && !is_at_end_of_line(DOT))
-	    forwchar(TRUE, 1);	/* END OF LINE HACK */
-#ifdef DEBUG
+#ifdef VILE_DEBUG
 	TRACE(("mini:%2d:%s\n", llength(DOT.l), lp_visible(DOT.l)));
 #endif
     }
@@ -2124,7 +2185,7 @@ kbd_erase(void)
 	DOT.o -= 1;
 	ldelete(1, FALSE);
     }
-#ifdef DEBUG
+#ifdef VILE_DEBUG
     TRACE(("MINI:%2d:%s\n", llength(DOT.l), lp_visible(DOT.l)));
 #endif
     curbp = savebp;
@@ -2402,8 +2463,9 @@ scroll_completions(
 		      const char *table,
 		      size_t size_entry)
 {
-    BUFFER *bp = find_b_name(COMPLETIONS_BufName);
-    if (bp == NULL)
+    BUFFER *bp;
+
+    if ((bp = find_b_name(COMPLETIONS_BufName)) == NULL)
 	show_completions(case_insensitive, buf, len, table, size_entry);
     else {
 	LINEPTR lp;
@@ -2563,13 +2625,7 @@ kbd_unquery(void)
  * contents.
  */
 int
-kbd_complete(
-		unsigned flags,	/* KBD_xxx */
-		int c,		/* TESTC, NAMEC or isreturn() */
-		char *buf,
-		unsigned *pos,
-		const char *table,
-		size_t size_entry)
+kbd_complete(DONE_ARGS, const char *table, size_t size_entry)
 {
     int case_insensitive = (flags & KBD_CASELESS) != 0;
     size_t cpos = *pos;
@@ -2757,7 +2813,7 @@ eol_command(const char *buffer, unsigned cpos, int c, int eolchar)
  * completion and query displays.
  */
 static int
-cmd_complete(int c, char *buf, unsigned *pos)
+cmd_complete(DONE_ARGS)
 {
     int status;
 #if OPT_HISTORY
@@ -2771,19 +2827,19 @@ cmd_complete(int c, char *buf, unsigned *pos)
 	char tmp[NLINE];
 	tmp[0] = *buf;
 	tmp[1] = EOS;
-	status = cmd_complete(c, tmp, &len);
+	status = cmd_complete(0, c, tmp, &len);
     } else
 #endif
     if ((*pos != 0) && isShellOrPipe(buf)) {
 #if COMPLETE_FILES
-	status = shell_complete(c, buf, pos);
+	status = shell_complete(PASS_DONE_ARGS);
 #else
 	status = isreturn(c);
 	if (c != NAMEC)
 	    unkeystroke(c);
 #endif
     } else {
-	status = kbd_complete_bst(0, c, buf, pos);
+	status = kbd_complete_bst(PASS_DONE_ARGS);
     }
     return status;
 }
@@ -2791,7 +2847,7 @@ cmd_complete(int c, char *buf, unsigned *pos)
 int
 kbd_engl_stat(const char *prompt, char *buffer, int stated)
 {
-    UINT kbd_flags = KBD_EXPCMD | KBD_NULLOK | ((NAMEC != ' ') ? 0 : KBD_MAYBEC);
+    KBD_OPTIONS kbd_flags = KBD_EXPCMD | KBD_NULLOK | ((NAMEC != ' ') ? 0 : KBD_MAYBEC);
     int code;
     static TBUFF *temp;
     size_t len = NLINE;
@@ -2901,8 +2957,10 @@ delete_namebst(const char *name, int release)
 #endif
 
 	if (!(p->n_flags & NBST_READONLY)) {
+	    beginDisplay();
 	    free(TYPECAST(char, p->n_cmd->c_help));
 	    free(TYPECAST(char, p->n_cmd));
+	    endofDisplay();
 	}
 	p->n_cmd = 0;		/* ...so old_namebst won't free this too */
     }
@@ -2985,9 +3043,12 @@ kbd_complete_bst(
     if ((nptr = btree_parray(&namebst, buf, cpos)) != 0) {
 	status = kbd_complete(0, c, buf, pos, (const char *) nptr,
 			      sizeof(*nptr));
+	beginDisplay();
 	free(TYPECAST(char, nptr));
+	endofDisplay();
     } else
 	kbd_alarm();
+
     return status;
 }
 #endif /* OPT_NAMEBST */

@@ -1,7 +1,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/spellflt.l,v 1.8 2002/06/30 17:44:35 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/spellflt.l,v 1.11 2003/05/20 20:38:41 tom Exp $
  *
  * Filter to add vile "attribution" sequences to misspelled words.
  */
@@ -27,13 +27,15 @@ static FILE *
 open_tempfile(char *fname)
 {
     FILE *fp = 0;
-#if HAVE_MKSTEMP
+#ifdef HAVE_MKSTEMP
     int fd = mkstemp(strcpy(fname, "vileXXXXXX"));
     if (fd >= 0)
     	fp = fdopen(fd, "w");
 #else
+    int oldmask = umask(0077);
     strcpy(fname, tmpnam((char *)0));
     fp = fopen(fname, "w");
+    umask(oldmask);
 #endif
     return fp;
 }
@@ -44,7 +46,7 @@ init_filter(int before GCC_UNUSED)
 }
 
 static void
-do_filter(FILE *input GCC_UNUSED)
+do_filter(FILE *inputs GCC_UNUSED)
 {
 #ifdef SPELL_PIPE
 #ifdef filter_def
@@ -61,14 +63,22 @@ do_filter(FILE *input GCC_UNUSED)
 	return;
 #ifdef filter_def		/* built-in filter? */
     ffp = fp;
+#if OPT_ENCRYPT
+    ffstatus = file_is_pipe;
+#endif
     for_each_line(lp, curbp) {
 	ffputline(lp->l_text, llength(lp), "\n");
     }
 #else
-    while ((ch = fgetc(input)) != EOF && !feof(input))
+    while ((ch = fgetc(inputs)) != EOF && !feof(inputs))
 	fputc(ch, fp);
 #endif
     fclose(fp);
+
+#ifdef filter_def		/* built-in filter? */
+    ffstatus = file_is_closed;
+    ffp = 0;
+#endif
 
     sprintf(buffer, "%s <%s", SPELL_PIPE, name);
     if ((fp = popen(buffer, "r")) != 0) {

@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.244 2002/05/01 00:35:53 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.264 2003/11/03 01:33:20 tom Exp $
  *
  */
 
@@ -98,7 +98,7 @@ choice_to_code(const FSM_CHOICES * choices, const char *name, size_t len)
     int code = ENUM_ILLEGAL;
     int i;
 
-    if (choices != 0) {
+    if (choices != 0 && len != 0) {
 	if (len > NSTRING - 1)
 	    len = NSTRING - 1;
 
@@ -261,7 +261,7 @@ size_val(const struct VALNAMES *names, struct VAL *values)
 /*
  * Returns a mode-value formatted as a string
  */
-char *
+const char *
 string_mode_val(VALARGS * args)
 {
     register const struct VALNAMES *names = args->names;
@@ -589,9 +589,11 @@ REGEXVAL *
 free_regexval(register REGEXVAL * rp)
 {
     if (rp != 0) {
+	beginDisplay();
 	FreeAndNull(rp->pat);
 	FreeAndNull(rp->reg);
 	free((char *) rp);
+	endofDisplay();
     }
     return 0;
 }
@@ -604,11 +606,14 @@ new_regexval(const char *pattern, int magic)
 {
     register REGEXVAL *rp;
 
+    beginDisplay();
     if ((rp = typealloc(REGEXVAL)) != 0) {
 	rp->pat = strmalloc(pattern);
-	if ((rp->reg = regcomp(rp->pat, magic)) == 0)
+	if ((rp->reg = regcomp(rp->pat, strlen(rp->pat), magic)) == 0)
 	    rp = free_regexval(rp);
     }
+    endofDisplay();
+
     return rp;
 }
 
@@ -620,7 +625,9 @@ free_val(const struct VALNAMES *names, struct VAL *values)
 {
     switch (names->type) {
     case VALTYPE_STRING:
+	beginDisplay();
 	FreeAndNull(values->v.p);
+	endofDisplay();
 	break;
     case VALTYPE_REGEX:
 	values->v.r = free_regexval(values->v.r);
@@ -787,7 +794,7 @@ legal_glob_mode(const char *base)
  */
 #if OPT_ENUM_MODES
 
-#if NEVER
+#if VILE_NEVER
 FSM_CHOICES fsm_error[] =
 {
     {"beep", 1},
@@ -830,7 +837,7 @@ static struct FSM fsm_tbl[] =
 #if OPT_POPUP_CHOICES
     {"popup-choices", fsm_popup_choices},
 #endif
-#if NEVER
+#if VILE_NEVER
     {"error", fsm_error},
 #endif
 #if OPT_BACKUP_CHOICES
@@ -949,14 +956,14 @@ legal_fsm(const char *val)
 }
 
 int
-fsm_complete(int c, char *buf, unsigned *pos)
+fsm_complete(DONE_ARGS)
 {
     if (isDigit(*buf)) {	/* allow numbers for colors */
 	if (c != NAMEC)		/* put it back (cf: kbd_complete) */
 	    unkeystroke(c);
 	return isSpace(c);
     }
-    return kbd_complete(0, c, buf, pos,
+    return kbd_complete(PASS_DONE_ARGS,
 			(const char *) (fsm_tbl[fsm_idx].choices),
 			sizeof(FSM_CHOICES));
 }
@@ -991,7 +998,7 @@ adjvalueset(
      */
     if (!defining
 	&& (names->side_effect != 0)
-	&& !(*(names->side_effect)) (args, (values == globls), TRUE)) {
+	&& !(*(names->side_effect)) (curbp, args, (values == globls), TRUE)) {
 	return FALSE;
     }
 
@@ -999,7 +1006,7 @@ adjvalueset(
     if ((end_string() == '=')
 	|| (!is_bool_type(names->type) && setting)) {
 	int regex = (names->type == VALTYPE_REGEX);
-	int opts = regex ? 0 : KBD_NORMAL;
+	KBD_OPTIONS opts = regex ? 0 : KBD_NORMAL;
 	int eolchar = is_str_type(names->type) ? '\n' : ' ';
 	int (*complete) (DONE_ARGS) = no_completion;
 
@@ -1065,7 +1072,7 @@ set_mode_value(BUFFER *bp, const char *cp, int defining, int setting, int
      */
     if (!defining
 	&& (names->side_effect != 0)
-	&& !(*(names->side_effect)) (args, (values == globls), TRUE)) {
+	&& !(*(names->side_effect)) (bp, args, (values == globls), TRUE)) {
 	return FALSE;
     }
 
@@ -1189,7 +1196,7 @@ set_mode_value(BUFFER *bp, const char *cp, int defining, int setting, int
     if (!defining
 	&& changed
 	&& (names->side_effect != 0)
-	&& !(*(names->side_effect)) (args, (values == globls), FALSE)) {
+	&& !(*(names->side_effect)) (bp, args, (values == globls), FALSE)) {
 	if (!same_val(names, values, &oldvalue)) {
 	    free_val(names, values);
 	}
@@ -1198,8 +1205,8 @@ set_mode_value(BUFFER *bp, const char *cp, int defining, int setting, int
 	status = FALSE;
     }
 
-    if (isLocalVal(&oldvalue)
-	&& (values != globls))
+    else if (isLocalVal(&oldvalue)
+	     || (values == globls))
 	free_val(names, &oldvalue);
 
     return status;
@@ -1212,11 +1219,13 @@ listmodes(int f, int n GCC_UNUSED)
     register WINDOW *wp = curwp;
     register int s;
 
+    TRACE((T_CALLED "listmodes(f=%d)\n", f));
+
     s = liststuff(SETTINGS_BufName, FALSE, makemodelist, f, (void *) wp);
     /* back to the buffer whose modes we just listed */
     if (swbuffer(wp->w_bufp))
 	curwp = wp;
-    return s;
+    returnCode(s);
 }
 
 /*
@@ -1228,7 +1237,7 @@ mode_complete(DONE_ARGS)
 {
     init_my_mode_list();
 
-    return kbd_complete(0, c, buf, pos,
+    return kbd_complete(PASS_DONE_ARGS,
 			(const char *) &my_mode_list[0], sizeof(my_mode_list[0]));
 }
 
@@ -1278,7 +1287,7 @@ find_mode(BUFFER *bp, const char *mode, int global, VALARGS * args)
 	    args->global = global_b_values.bv;
 	    args->local = ((global == TRUE)
 			   ? args->global
-			   : ((bp != 0)
+			   : (valid_buffer(bp)
 			      ? bp->b_values.bv
 			      : (struct VAL *)0));
 	    break;
@@ -1297,7 +1306,7 @@ find_mode(BUFFER *bp, const char *mode, int global, VALARGS * args)
 	    args->global = major_g_vals;
 	    args->local = ((global == TRUE)
 			   ? args->global
-			   : ((bp != 0)
+			   : (valid_buffer(bp)
 			      ? major_l_vals
 			      : (struct VAL *)0));
 	    break;
@@ -1333,9 +1342,9 @@ find_mode(BUFFER *bp, const char *mode, int global, VALARGS * args)
 		TRACE(("...found class %d %s\n", mode_class, rp));
 #if OPT_MAJORMODE
 		if (mode_class == 3) {
-		    char *it = ((bp->majr != 0)
-				? bp->majr->name
-				: "?");
+		    const char *it = ((bp->majr != 0)
+				      ? bp->majr->name
+				      : "?");
 		    make_global_val(args->local, args->global, 0);
 		    if (global) {
 			MAJORMODE_LIST *ptr =
@@ -1373,7 +1382,7 @@ find_mode(BUFFER *bp, const char *mode, int global, VALARGS * args)
 		&& is_local_val(my_vals, k)) {
 		TRACE(("...found submode %s\n", b_valnames[k].name));
 		if (global == FALSE) {
-		    if (bp != 0
+		    if (valid_buffer(bp)
 			&& (bp->majr == 0
 			    || strcmp(bp->majr->name, p->name))) {
 			TRACE(("...not applicable\n"));
@@ -1381,7 +1390,7 @@ find_mode(BUFFER *bp, const char *mode, int global, VALARGS * args)
 		    }
 		    args->names = b_valnames + k;
 		    args->global = my_vals + k;
-		    args->local = ((bp != 0)
+		    args->local = (valid_buffer(bp)
 				   ? bp->b_values.bv + k
 				   : (struct VAL *) 0);
 		} else {
@@ -1522,7 +1531,10 @@ delglobmode(int f GCC_UNUSED, int n GCC_UNUSED)
  */
 /*ARGSUSED*/
 int
-chgd_autobuf(VALARGS * args GCC_UNUSED, int glob_vals, int testing GCC_UNUSED)
+chgd_autobuf(BUFFER *bp GCC_UNUSED,
+	     VALARGS * args GCC_UNUSED,
+	     int glob_vals,
+	     int testing GCC_UNUSED)
 {
     if (glob_vals)
 	sortlistbuffers();
@@ -1531,29 +1543,32 @@ chgd_autobuf(VALARGS * args GCC_UNUSED, int glob_vals, int testing GCC_UNUSED)
 
 /*ARGSUSED*/
 int
-chgd_buffer(VALARGS * args GCC_UNUSED, int glob_vals, int testing GCC_UNUSED)
+chgd_buffer(BUFFER *bp GCC_UNUSED,
+	    VALARGS * args GCC_UNUSED,
+	    int glob_vals,
+	    int testing GCC_UNUSED)
 {
     if (!glob_vals) {		/* i.e., ":setl" */
-	if (curbp == 0)
+	if (bp == 0)
 	    return FALSE;
-	b_clr_counted(curbp);
-	(void) bsizes(curbp);
+	b_clr_counted(bp);
+	(void) bsizes(bp);
     }
     return TRUE;
 }
 
 int
-chgd_charset(VALARGS * args, int glob_vals, int testing)
+chgd_charset(BUFFER *bp, VALARGS * args, int glob_vals, int testing)
 {
     if (!testing) {
 	charinit();
     }
-    return chgd_window(args, glob_vals, testing);
+    return chgd_window(bp, args, glob_vals, testing);
 }
 
 #if OPT_COLOR
 int
-chgd_color(VALARGS * args, int glob_vals, int testing)
+chgd_color(BUFFER *bp GCC_UNUSED, VALARGS * args, int glob_vals, int testing)
 {
     if (!testing) {
 	if (&args->local->vp->i == &gfcolor)
@@ -1573,8 +1588,9 @@ static void
 set_fsm_choice(const char *name, const FSM_CHOICES * choices)
 {
     size_t n;
+
+    TRACE((T_CALLED "set_fsm_choices(%s)\n", name));
 #if OPT_TRACE
-    TRACE(("set_fsm_choices %s\n", name));
     for (n = 0; choices[n].choice_name != 0; n++)
 	TRACE(("   [%d] %s = %d (%#x)\n", n,
 	       choices[n].choice_name,
@@ -1587,6 +1603,7 @@ set_fsm_choice(const char *name, const FSM_CHOICES * choices)
 	    break;
 	}
     }
+    returnVoid();
 }
 #endif /* OPT_EVAL */
 
@@ -1601,13 +1618,13 @@ is_white(int n)
 static int
 reset_color(int n)
 {
-    if (global_g_val(n) > ncolors) {
-	if (is_white(global_g_val(n)))
-	    return FALSE;
-	TRACE(("reset_color(%scolor) from %d",
-	       (n == GVAL_FCOLOR) ? "f" : "b", global_g_val(n)));
-	set_global_g_val(n, global_g_val(n) % ncolors);
-	TRACE((" to %d\n", global_g_val(n)));
+    int oldvalue = global_g_val(n);
+    if (oldvalue > ncolors && !is_white(oldvalue)) {
+	set_global_g_val(n, oldvalue % ncolors);
+	TRACE(("reset_color(%scolor) from %d to %d\n",
+	       (n == GVAL_FCOLOR) ? "f" : "b",
+	       oldvalue,
+	       global_g_val(n)));
 	return TRUE;
     }
     return FALSE;
@@ -1648,14 +1665,14 @@ set_colors(int n)
     int code;
 #endif
 
-    TRACE(("set_colors(%d)\n", n));
+    TRACE((T_CALLED "set_colors(%d)\n", n));
 
     if (n > NCOLORS || n < 2)
-	return FALSE;
+	returnCode(FALSE);
     if (!initialized)
 	initialized = n;
     if (n > initialized)
-	return FALSE;
+	returnCode(FALSE);
     ncolors = n;
     if (reset_color(GVAL_FCOLOR)
 	|| reset_color(GVAL_BCOLOR)) {
@@ -1668,8 +1685,12 @@ set_colors(int n)
 	the_colors = fsm_color_choices;
 	the_hilite = fsm_hilite_choices;
     } else {
+
+	beginDisplay();
 	my_colors = typecallocn(FSM_CHOICES, fsm_size(fsm_color_choices));
 	my_hilite = typecallocn(FSM_CHOICES, fsm_size(fsm_hilite_choices));
+	endofDisplay();
+
 	the_colors = my_colors;
 	the_hilite = my_hilite;
 	for (s = d = 0; fsm_color_choices[s].choice_name != 0; s++) {
@@ -1704,7 +1725,7 @@ set_colors(int n)
     set_fsm_choice("mini-hilite", the_hilite);
     relist_descolor();
 #endif /* OPT_ENUM_MODES */
-    return TRUE;
+    returnCode(TRUE);
 }
 #endif /* OPT_COLOR */
 
@@ -1747,7 +1768,10 @@ get_color_name(int n)
 	/* Report mode that cannot be changed */
 /*ARGSUSED*/
 int
-chgd_disabled(VALARGS * args, int glob_vals GCC_UNUSED, int testing GCC_UNUSED)
+chgd_disabled(BUFFER *bp GCC_UNUSED,
+	      VALARGS * args,
+	      int glob_vals GCC_UNUSED,
+	      int testing GCC_UNUSED)
 {
     mlforce("[Cannot change \"%s\" ]", args->names->name);
     return FALSE;
@@ -1756,7 +1780,7 @@ chgd_disabled(VALARGS * args, int glob_vals GCC_UNUSED, int testing GCC_UNUSED)
 	/* Change "fences" mode */
 /*ARGSUSED*/
 int
-chgd_fences(VALARGS * args, int glob_vals GCC_UNUSED, int testing)
+chgd_fences(BUFFER *bp GCC_UNUSED, VALARGS * args, int glob_vals GCC_UNUSED, int testing)
 {
     if (!testing) {
 	/* was even number of fence pairs specified? */
@@ -1776,13 +1800,13 @@ chgd_fences(VALARGS * args, int glob_vals GCC_UNUSED, int testing)
 
 	/* Change a "major" mode */
 int
-chgd_major(VALARGS * args, int glob_vals, int testing)
+chgd_major(BUFFER *bp, VALARGS * args, int glob_vals, int testing)
 {
     /* prevent major-mode changes for scratch-buffers */
     if (testing) {
 	if (!glob_vals) {
-	    if (b_is_scratch(curbp))
-		return chgd_disabled(args, glob_vals, testing);
+	    if (b_is_scratch(bp))
+		return chgd_disabled(bp, args, glob_vals, testing);
 	}
     } else {
 	set_winflags(glob_vals, WFMODE);
@@ -1792,12 +1816,12 @@ chgd_major(VALARGS * args, int glob_vals, int testing)
 
 	/* Change the "undoable" mode */
 int
-chgd_undoable(VALARGS * args, int glob_vals, int testing)
+chgd_undoable(BUFFER *bp, VALARGS * args, int glob_vals, int testing)
 {
-    if (chgd_major(args, glob_vals, testing)) {
+    if (chgd_major(bp, args, glob_vals, testing)) {
 	if (!testing
 	    && !(args->local->v.i))
-	    freeundostacks(curbp, TRUE);
+	    freeundostacks(bp, TRUE);
 	return TRUE;
     }
     return FALSE;
@@ -1805,12 +1829,12 @@ chgd_undoable(VALARGS * args, int glob_vals, int testing)
 
 	/* Change a major mode that affects the windows on the buffer */
 int
-chgd_major_w(VALARGS * args, int glob_vals, int testing)
+chgd_major_w(BUFFER *bp, VALARGS * args, int glob_vals, int testing)
 {
     if (testing) {
-	if (!chgd_major(args, glob_vals, testing))
+	if (!chgd_major(bp, args, glob_vals, testing))
 	    return FALSE;
-	return chgd_window(args, glob_vals, testing);
+	return chgd_window(bp, args, glob_vals, testing);
     }
 
     set_winflags(glob_vals, WFHARD | WFMODE);
@@ -1827,7 +1851,7 @@ char *
 get_record_sep(BUFFER *bp)
 {
     char *s = "";
-    RECORD_SEP code = b_val(bp, VAL_RECORD_SEP);
+    RECORD_SEP code = (RECORD_SEP) b_val(bp, VAL_RECORD_SEP);
 
     if (code == RS_AUTO)
 	code = RS_DEFAULT;
@@ -1865,7 +1889,7 @@ set_record_sep(BUFFER *bp, RECORD_SEP value)
 
 	/* Change the record separator */
 int
-chgd_rs(VALARGS * args, int glob_vals, int testing)
+chgd_rs(BUFFER *bp, VALARGS * args, int glob_vals, int testing)
 {
     /* we can set 'auto' only as a global */
     if (!glob_vals) {
@@ -1873,19 +1897,19 @@ chgd_rs(VALARGS * args, int glob_vals, int testing)
 	    return FALSE;
     }
     if (!testing) {
-	if (curbp == 0)
+	if (bp == 0)
 	    return FALSE;
-	set_record_sep(curbp, (RECORD_SEP) args->local->vp->i);
+	set_record_sep(bp, (RECORD_SEP) args->local->vp->i);
     }
 
     set_winflags(TRUE, WFMODE);
-    return chgd_major_w(args, glob_vals, testing);
+    return chgd_major_w(bp, args, glob_vals, testing);
 }
 
 	/* Change something on the mode/status line */
 /*ARGSUSED*/
 int
-chgd_status(VALARGS * args GCC_UNUSED, int glob_vals, int testing)
+chgd_status(BUFFER *bp GCC_UNUSED, VALARGS * args GCC_UNUSED, int glob_vals, int testing)
 {
     if (!testing) {
 	set_winflags(glob_vals, WFSTAT);
@@ -1896,7 +1920,10 @@ chgd_status(VALARGS * args GCC_UNUSED, int glob_vals, int testing)
 #if OPT_TITLE
 	/* Changed swap-title */
 int
-chgd_swaptitle(VALARGS * args GCC_UNUSED, int glob_vals GCC_UNUSED, int testing)
+chgd_swaptitle(BUFFER *bp GCC_UNUSED,
+	       VALARGS * args GCC_UNUSED,
+	       int glob_vals GCC_UNUSED,
+	       int testing)
 {
     if (!testing)
 	set_editor_title();
@@ -1913,7 +1940,10 @@ chgd_swaptitle(VALARGS * args GCC_UNUSED, int glob_vals GCC_UNUSED, int testing)
  * editor to flag incorrect syntax before a shell command is initiated.
  */
 int
-chgd_find_cfg(VALARGS * args, int glob_vals GCC_UNUSED, int testing)
+chgd_find_cfg(BUFFER *bp GCC_UNUSED,
+	      VALARGS * args,
+	      int glob_vals GCC_UNUSED,
+	      int testing)
 {
     int rc = TRUE;
     FINDCFG unused;
@@ -1927,7 +1957,7 @@ chgd_find_cfg(VALARGS * args, int glob_vals GCC_UNUSED, int testing)
 	/* Change a mode that affects the windows on the buffer */
 /*ARGSUSED*/
 int
-chgd_window(VALARGS * args GCC_UNUSED, int glob_vals, int testing)
+chgd_window(BUFFER *bp GCC_UNUSED, VALARGS * args GCC_UNUSED, int glob_vals, int testing)
 {
     if (!testing) {
 	set_winflags(glob_vals, WFHARD);
@@ -1939,17 +1969,21 @@ chgd_window(VALARGS * args GCC_UNUSED, int glob_vals, int testing)
 	   can have a valid fuid */
 /*ARGSUSED*/
 int
-chgd_uniqbuf(VALARGS * args GCC_UNUSED, int glob_vals GCC_UNUSED, int testing)
+chgd_uniqbuf(BUFFER *bp GCC_UNUSED,
+	     VALARGS * args GCC_UNUSED,
+	     int glob_vals GCC_UNUSED,
+	     int testing)
 {
     if (!testing) {
-	BUFFER *bp;
 	if (global_g_val(GMDUNIQ_BUFS)) {
 	    FUID fuid;
-	    for_each_buffer(bp) {
-		if (bp->b_fname != 0
-		    && !isInternalName(bp->b_fname)
-		    && fileuid_get(bp->b_fname, &fuid)) {
-		    fileuid_set(bp, &fuid);
+	    BUFFER *bp2;
+
+	    for_each_buffer(bp2) {
+		if (bp2->b_fname != 0
+		    && !isInternalName(bp2->b_fname)
+		    && fileuid_get(bp2->b_fname, &fuid)) {
+		    fileuid_set(bp2, &fuid);
 		}
 	    }
 	}
@@ -1961,7 +1995,10 @@ chgd_uniqbuf(VALARGS * args GCC_UNUSED, int glob_vals GCC_UNUSED, int testing)
 #if OPT_WORKING
 /*ARGSUSED*/
 int
-chgd_working(VALARGS * args GCC_UNUSED, int glob_vals, int testing GCC_UNUSED)
+chgd_working(BUFFER *bp GCC_UNUSED,
+	     VALARGS * args GCC_UNUSED,
+	     int glob_vals,
+	     int testing GCC_UNUSED)
 {
     if (glob_vals)
 	imworking(0);
@@ -1972,7 +2009,10 @@ chgd_working(VALARGS * args GCC_UNUSED, int glob_vals, int testing GCC_UNUSED)
 	/* Change the xterm-mouse mode */
 /*ARGSUSED*/
 int
-chgd_xterm(VALARGS * args GCC_UNUSED, int glob_vals, int testing GCC_UNUSED)
+chgd_xterm(BUFFER *bp GCC_UNUSED,
+	   VALARGS * args GCC_UNUSED,
+	   int glob_vals,
+	   int testing GCC_UNUSED)
 {
 #if	OPT_XTERM
     if (glob_vals) {
@@ -1992,7 +2032,7 @@ chgd_xterm(VALARGS * args GCC_UNUSED, int glob_vals, int testing GCC_UNUSED)
 #ifdef GMDMOUSE
 /*ARGSUSED*/
 int
-chgd_mouse(VALARGS * args GCC_UNUSED, int glob_vals, int testing GCC_UNUSED)
+chgd_mouse(BUFFER *bp, VALARGS * args GCC_UNUSED, int glob_vals, int testing GCC_UNUSED)
 {
     if (glob_vals) {
 	int new_state = global_g_val(GMDMOUSE);
@@ -2010,10 +2050,15 @@ chgd_mouse(VALARGS * args GCC_UNUSED, int glob_vals, int testing GCC_UNUSED)
 	/* Change a mode that affects the search-string highlighting */
 /*ARGSUSED*/
 int
-chgd_hilite(VALARGS * args GCC_UNUSED, int glob_vals GCC_UNUSED, int testing)
+chgd_hilite(BUFFER *bp, VALARGS * args GCC_UNUSED, int glob_vals GCC_UNUSED, int testing)
 {
     if (!testing) {
-	attrib_matches();
+#if OPT_HILITEMATCH
+	if (bp->b_highlight & HILITE_ON)
+	    bp->b_highlight |= HILITE_DIRTY;
+	if (bp == curbp)	/* FIXME: attrib_matches only does curbp */
+	    attrib_matches();
+#endif
 #if OPT_COLOR
 	set_winflags(glob_vals, WFHARD | WFCOLR);
 	need_update = TRUE;
@@ -2076,7 +2121,11 @@ list_of_modes(void)
 	const char *const *s;
 	const char **d;
 	size_t n = count_modes();
+
+	beginDisplay();
 	my_varmodes = typeallocn(const char *, n + 1);
+	endofDisplay();
+
 	for (s = my_mode_list, d = my_varmodes; (*d = *s) != 0; s++) {
 	    if (is_varmode(*d)) {
 		d++;
@@ -2149,9 +2198,13 @@ ModeName(const char *name)
 {
     if (TheMajor != 0) {
 	static char *dst;
+
+	beginDisplay();
 	if (dst != 0)
 	    free(dst);
 	dst = typeallocn(char, strlen(TheMajor) + strlen(name) + 3);
+	endofDisplay();
+
 	(void) lsprintf(dst, "%s-%s", TheMajor, name);
 	return dst;
     }
@@ -2249,12 +2302,16 @@ find_majormode_order(int mm)
 static void
 show_majormode_order(char *tag)
 {
+    static TBUFF *order;
+
     int n;
-    TRACE(("order %s", tag));
+    tb_scopy(&order, "order ");
+    tb_sappend0(&order, tag);
     for (n = 0; majormodes_order[n] >= 0; n++) {
-	TRACE((" %s", my_majormodes[majormodes_order[n]].name));
+	tb_sappend0(&order, " ");
+	tb_sappend0(&order, my_majormodes[majormodes_order[n]].name);
     }
-    TRACE(("\n"));
+    TRACE(("%s\n", tb_values(order)));
 }
 #else
 #define show_majormode_order(tag)	/* nothing */
@@ -2264,7 +2321,7 @@ static int
 put_majormode_before(unsigned j, char *s)
 {
     char *t;
-    char *told = "";
+    char *told = "~";		/* FIXME: majormode names are 7-bit ASCII */
     int k;
     int kk;
     int found = -1;
@@ -2292,6 +2349,11 @@ put_majormode_before(unsigned j, char *s)
 	}
 	majormodes_order[j] = kk;
 	show_majormode_order("after:");
+    } else if (found < 0) {
+	TPRINTF(("cannot put %s before %s (not found)\n",
+		 my_majormodes[majormodes_order[j]].name,
+		 s));
+	TRACE(("...did not find %s\n", s));
     }
     TRACE(("->%d\n", j));
     return j;
@@ -2331,6 +2393,11 @@ put_majormode_after(unsigned j, char *s)
 	}
 	majormodes_order[found] = kk;
 	show_majormode_order("after:");
+    } else if (found < 0) {
+	TPRINTF(("cannot put %s after %s (not found)\n",
+		 my_majormodes[majormodes_order[j]].name,
+		 s));
+	TRACE(("...did not find %s\n", s));
     }
     TRACE(("->%d\n", j));
     return j;
@@ -2350,8 +2417,11 @@ compute_majormodes_order(void)
     int jj;
     static size_t have;
 
+    TRACE((T_CALLED "compute_majormodes_order(%d)\n", need));
     if (need) {
 	want = (need + 1) * 2;
+
+	beginDisplay();
 	if (have >= want) {
 	    /* EMPTY */ ;
 	} else if (have) {
@@ -2361,6 +2431,7 @@ compute_majormodes_order(void)
 	    have = want;
 	    majormodes_order = typecallocn(int, have);
 	}
+	endofDisplay();
 
 	/* set the default order */
 	for (j = 0; j < need; j++) {
@@ -2369,24 +2440,29 @@ compute_majormodes_order(void)
 	majormodes_order[need] = -1;
 
 	/* handle special cases */
-	TRACE(("computing_majormode_order:%d\n", need));
 	for (j = 0; j < need; j++) {
 	    jj = majormodes_order[j];
 	    if ((s = get_mm_string(jj, MVAL_BEFORE)) != 0
 		&& *s != EOS) {
-		j = put_majormode_before(j, s);
+		jj = put_majormode_before(j, s);
+		TRACE(("JUMP %d to %d\n", j, jj));
+		if (jj < (int) j)
+		    j = jj;
 	    }
 	}
 	for (j = 0; j < need; j++) {
 	    jj = majormodes_order[j];
 	    if ((s = get_mm_string(jj, MVAL_AFTER)) != 0
 		&& *s != EOS) {
-		j = put_majormode_after(j, s);
+		jj = put_majormode_after(j, s);
+		TRACE(("JUMP %d to %d\n", j, jj));
+		if (jj < (int) j)
+		    j = jj;
 	    }
 	}
 	show_majormode_order("final:");
-	TRACE(("...computing_majormode_order:%d\n", need));
     }
+    returnVoid();
 }
 
 /*
@@ -2482,7 +2558,9 @@ remove_per_major(size_t count, const char *name)
 	    j = found;
 	    if (my_mode_list != all_modes
 		&& !in_all_modes(my_mode_list[j])) {
+		beginDisplay();
 		free(TYPECAST(char, my_mode_list[j]));
+		endofDisplay();
 	    }
 	    count--;
 	    for (k = j; k <= count; k++)
@@ -2565,7 +2643,7 @@ check_majormode_name(const char *name, int defining)
 int
 major_complete(DONE_ARGS)
 {
-    return kbd_complete(0, c, buf, pos, (const char *) &my_majormodes[0],
+    return kbd_complete(PASS_DONE_ARGS, (const char *) &my_majormodes[0],
 			sizeof(my_majormodes[0]));
 }
 
@@ -2603,9 +2681,9 @@ prompt_majormode(char **result, int defining)
 }
 
 static int
-submode_complete(int c, char *buf, unsigned *pos)
+submode_complete(DONE_ARGS)
 {
-    return kbd_complete(0, c, buf, pos, (const char *) &all_submodes[0],
+    return kbd_complete(PASS_DONE_ARGS, (const char *) &all_submodes[0],
 			sizeof(all_submodes[0]));
 }
 
@@ -2633,8 +2711,11 @@ free_sm_vals(MAJORMODE * ptr)
 	p = ptr->sm;
 	ptr->sm = p->sm_next;
 	free_local_vals(b_valnames, global_b_values.bv, p->sm_vals.bv);
+
+	beginDisplay();
 	free(p->sm_name);
 	free(p);
+	endofDisplay();
     }
 }
 
@@ -2658,9 +2739,14 @@ get_sm_vals(MAJORMODE * ptr)
 	    break;
 	}
     }
+
     if (p == 0) {
+
+	beginDisplay();
 	p = typecalloc(MINORMODE);
 	p->sm_name = strmalloc(name);
+	endofDisplay();
+
 	init_sm_vals(&(p->sm_vals.bv[0]));
 	if (q != 0)
 	    q->sm_next = p;
@@ -2804,7 +2890,7 @@ attach_mmode(BUFFER *bp, const char *name)
     int n;
     VALARGS args;
 
-    if (bp != 0) {
+    if (valid_buffer(bp)) {
 	if (bp->majr != 0
 	    && strcmp(bp->majr->name, name) != 0)
 	    (void) detach_mmode(bp, bp->majr->name);
@@ -2822,7 +2908,8 @@ attach_mmode(BUFFER *bp, const char *name)
 			args.names = &(b_valnames[n]);
 			args.local = &(bp->b_values.bv[n]);
 			args.global = &mm[n];
-			b_valnames[n].side_effect(&args,
+			b_valnames[n].side_effect(bp,
+						  &args,
 						  TRUE,
 						  FALSE);
 		    }
@@ -2857,7 +2944,7 @@ detach_mmode(BUFFER *bp, const char *name)
     size_t n;
     MAJORMODE *mp;
 
-    if (bp != 0
+    if (valid_buffer(bp)
 	&& (mp = bp->majr) != 0
 	&& !strcmp(mp->name, name)) {
 	TRACE(("detach_mmode '%s', given '%s'\n", name, mp->name));
@@ -2909,6 +2996,8 @@ free_majormode(const char *name)
 		}
 		free_local_vals(m_valnames, major_g_vals, ptr->mm.mv);
 		free_local_vals(b_valnames, global_b_values.bv, get_sm_vals(ptr));
+
+		beginDisplay();
 		for (k = 0; k < MAX_M_VALUES; k++) {
 		    free_val(m_valnames + k, my_majormodes[j].data->mm.mv + k);
 		    free(TYPECAST(char, my_majormodes[j].qual[k].name));
@@ -2922,6 +3011,8 @@ free_majormode(const char *name)
 		free_sm_vals(ptr);
 		free(ptr->name);
 		free(TYPECAST(char, ptr));
+		endofDisplay();
+
 		do {
 		    my_majormodes[j] = my_majormodes[j + 1];
 		} while (my_majormodes[j++].name != 0);
@@ -2942,8 +3033,10 @@ free_majormode(const char *name)
 	if (major_valnames != 0) {
 	    for (n = 0; major_valnames[n].name != 0; n++) {
 		if (!strcmp(name, major_valnames[n].shortname)) {
+		    beginDisplay();
 		    free(TYPECAST(char, major_valnames[n].name));
 		    free(TYPECAST(char, major_valnames[n].shortname));
+		    endofDisplay();
 		    while (major_valnames[n].name != 0) {
 			major_valnames[n] =
 			    major_valnames[n + 1];
@@ -2974,6 +3067,7 @@ extend_mode_list(int increment)
 
     TRACE(("extend_mode_list from %d by %d\n", j, increment));
 
+    beginDisplay();
     if (my_mode_list == all_modes) {
 	my_mode_list = typeallocn(const char *, k);
 	memcpy(TYPECAST(char *, my_mode_list), all_modes, (j + 1) * sizeof(*my_mode_list));
@@ -2981,6 +3075,8 @@ extend_mode_list(int increment)
 	my_mode_list = typereallocn(const char *, TYPECAST(char *,
 							   my_mode_list), k);
     }
+    endofDisplay();
+
     return j;
 }
 
@@ -2992,9 +3088,13 @@ extend_VAL_array(struct VAL *ptr, size_t item, size_t len)
     TRACE(("extend_VAL_array %p item %ld of %ld\n", ptr, (long) item, (long) len));
 
     if (ptr == 0) {
+	beginDisplay();
 	ptr = typeallocn(struct VAL, len + 1);
+	endofDisplay();
     } else {
+	beginDisplay();
 	ptr = typereallocn(struct VAL, ptr, len + 1);
+	endofDisplay();
 	for (j = k = 0; j < len; j++) {
 	    k = (j >= item) ? j + 1 : j;
 	    ptr[k] = ptr[j];
@@ -3106,7 +3206,12 @@ makemajorlist(int local, void *ptr GCC_UNUSED)
 				 data->mm.mv);
 	    for (vals = data->sm; vals != 0; vals = vals->sm_next) {
 		char *group = vals->sm_name;
-		char *name = (char *) malloc(80 + strlen(group));
+		char *name;
+
+		beginDisplay();
+		name = (char *) malloc(80 + strlen(group));
+		endofDisplay();
+
 		if (*group)
 		    lsprintf(name, "Buffer (\"%s\" group)", group);
 		else
@@ -3115,7 +3220,9 @@ makemajorlist(int local, void *ptr GCC_UNUSED)
 				     b_valnames,
 				     vals->sm_vals.bv,
 				     global_b_values.bv);
+		beginDisplay();
 		free(name);
+		endofDisplay();
 	    }
 	    if (my_majormodes[j + 1].data)
 		bputc('\n');
@@ -3131,12 +3238,14 @@ list_majormodes(int f, int n GCC_UNUSED)
     register WINDOW *wp = curwp;
     register int s;
 
+    TRACE((T_CALLED "list_majormodes(f=%d)\n", f));
+
     s = liststuff(MAJORMODES_BufName, FALSE, makemajorlist, f, (void *) wp);
     /* back to the buffer whose modes we just listed */
     if (swbuffer(wp->w_bufp))
 	curwp = wp;
 
-    return s;
+    returnCode(s);
 }
 
 int
@@ -3147,12 +3256,16 @@ alloc_mode(const char *name, int predef)
     char temp[NSTRING];
 
     if (major_valnames == 0) {
+	beginDisplay();
 	major_valnames = typecallocn(struct VALNAMES, 2);
+	endofDisplay();
 	j = 0;
 	k = 1;
     } else {
 	k = count_majormodes();
+	beginDisplay();
 	major_valnames = typereallocn(struct VALNAMES, major_valnames, k + 2);
+	endofDisplay();
 	for (j = k++; j != 0; j--) {
 	    major_valnames[j] = major_valnames[j - 1];
 	    if (strcmp(major_valnames[j - 1].shortname, name) < 0) {
@@ -3174,12 +3287,16 @@ alloc_mode(const char *name, int predef)
     major_l_vals = extend_VAL_array(major_l_vals, j, k);
 
     if (my_majormodes == 0) {
+	beginDisplay();
 	my_majormodes = typecallocn(MAJORMODE_LIST, 2);
+	endofDisplay();
 	j = 0;
 	k = 1;
     } else {
 	k = count_majormodes();
+	beginDisplay();
 	my_majormodes = typereallocn(MAJORMODE_LIST, my_majormodes, k + 2);
+	endofDisplay();
 	for (j = k++; j != 0; j--) {
 	    my_majormodes[j] = my_majormodes[j - 1];
 	    if (strcmp(my_majormodes[j - 1].name, name) < 0) {
@@ -3188,11 +3305,13 @@ alloc_mode(const char *name, int predef)
 	}
     }
 
+    beginDisplay();
     my_majormodes[j].data = typecalloc(MAJORMODE);
     my_majormodes[j].name = my_majormodes[j].data->name = strmalloc(name);
     my_majormodes[j].init = predef;
     my_majormodes[j].flag = TRUE;
     memset(my_majormodes + k, 0, sizeof(*my_majormodes));
+    endofDisplay();
 
     /* copy array to get types, then overwrite the name-pointers */
     memcpy(my_majormodes[j].subq, q_valnames, sizeof(q_valnames));
@@ -3477,6 +3596,8 @@ infer_majormode(BUFFER *bp)
 {
     static int level;
 
+    TRACE((T_CALLED "infer_majormode(%s)\n", bp->b_bname));
+
     if (level++) {
 	;
     } else if (my_majormodes != 0
@@ -3519,45 +3640,55 @@ infer_majormode(BUFFER *bp)
 	}
     }
     --level;
+
+    returnVoid();
 }
 
 void
 set_submode_val(const char *name, int n, int value)
 {
     MAJORMODE *p;
-    TRACE(("set_submode_val(%s, %d, %d)\n", name, n, value));
+
+    TRACE((T_CALLED "set_submode_val(%s, %d, %d)\n", name, n, value));
     if ((p = lookup_mm_data(name)) != 0) {
 	struct VAL *q = get_sm_vals(p);
 	q[n].v.i = value;
 	make_local_val(q, n);
     }
+    returnVoid();
 }
 
 void
 set_submode_txt(const char *name, int n, char *value)
 {
     MAJORMODE *p;
-    TRACE(("set_submode_txt(%s, %d, %s)\n", name, n, value));
+
+    TRACE((T_CALLED "set_submode_txt(%s, %d, %s)\n", name, n, value));
     if ((p = lookup_mm_data(name)) != 0) {
 	struct VAL *q = get_sm_vals(p);
 	q[n].v.p = strmalloc(value);
 	make_local_val(q, n);
     }
+    returnVoid();
 }
 
 void
 set_majormode_rexp(const char *name, int n, const char *r)
 {
     MAJORMODE *p;
-    TRACE(("set_majormode_rexp(%s, %d, %s)\n", name, n, r));
+
+    TRACE((T_CALLED "set_majormode_rexp(%s, %d, %s)\n", name, n, r));
     if ((p = lookup_mm_data(name)) != 0)
 	set_qualifier(m_valnames + n, p->mm.mv + n, r, 0);
+    returnVoid();
 }
 
 /*ARGSUSED*/
 int
-chgd_mm_order(VALARGS * args GCC_UNUSED, int glob_vals GCC_UNUSED, int
-	      testing GCC_UNUSED)
+chgd_mm_order(BUFFER *bp GCC_UNUSED,
+	      VALARGS * args GCC_UNUSED,
+	      int glob_vals GCC_UNUSED,
+	      int testing GCC_UNUSED)
 {
     if (!testing) {
 	compute_majormodes_order();
@@ -3568,19 +3699,19 @@ chgd_mm_order(VALARGS * args GCC_UNUSED, int glob_vals GCC_UNUSED, int
 
 /*ARGSUSED*/
 int
-chgd_filter(VALARGS * args GCC_UNUSED, int glob_vals GCC_UNUSED, int testing)
+chgd_filter(BUFFER *bp, VALARGS * args GCC_UNUSED, int glob_vals GCC_UNUSED, int testing)
 {
     if (!testing) {
 	struct VAL *values = args->local;
-	BUFFER *bp;
+	BUFFER *bp2;
 
 	if (values->vp->i == FALSE) {
 	    if (glob_vals) {
-		for_each_buffer(bp) {
-		    free_attribs(bp);
+		for_each_buffer(bp2) {
+		    free_attribs(bp2);
 		}
 	    } else {
-		free_attribs(curbp);
+		free_attribs(bp);
 	    }
 	}
 	set_winflags(glob_vals, WFHARD);
@@ -3597,6 +3728,19 @@ reset_majormode(int f GCC_UNUSED, int n GCC_UNUSED)
     infer_majormode(curbp);
     set_winflags(TRUE, WFMODE);
     return TRUE;
+}
+
+void
+set_vilemode(BUFFER *bp)
+{
+    static const char *my_mode = "vilemode";
+    VALARGS args;
+
+    if (find_mode(bp, my_mode, FALSE, &args) == TRUE
+	&& !b_is_scratch(bp)) {
+	(void) set_mode_value(bp, my_mode, FALSE, TRUE, FALSE, &args,
+			      (char *) 0);
+    }
 }
 #endif /* OPT_MAJORMODE */
 
@@ -3642,9 +3786,11 @@ set_scheme_color(const FSM_CHOICES * fp, int *d, char *s)
 static void
 set_scheme_string(char **d, char *s)
 {
+    beginDisplay();
     if (*d)
 	free(*d);
     *d = s ? strmalloc(s) : 0;
+    endofDisplay();
 }
 
 /*
@@ -3691,11 +3837,13 @@ static void
 update_scheme_choices(void)
 {
     int n;
+    beginDisplay();
     if (my_scheme_choices != 0) {
 	my_scheme_choices = typereallocn(FSM_CHOICES, my_scheme_choices, num_schemes);
     } else {
 	my_scheme_choices = typeallocn(FSM_CHOICES, num_schemes);
     }
+    endofDisplay();
     for (n = 0; n < (int) num_schemes; n++) {
 	my_scheme_choices[n].choice_name = my_schemes[n].name;
 	my_scheme_choices[n].choice_code = my_schemes[n].code;
@@ -3721,7 +3869,7 @@ set_current_scheme(PALETTES * p)
 {
     PALETTES *q = find_scheme_by_code(current_scheme);
 
-    TRACE(("set_current_scheme\n"));
+    TRACE((T_CALLED "set_current_scheme()\n"));
     current_scheme = p->code;
 
     if (p != 0
@@ -3746,11 +3894,9 @@ set_current_scheme(PALETTES * p)
 
 	set_global_g_val(GVAL_VIDEO, p->attr);
 
-	TRACE(("...set_current_scheme (changed)\n"));
-	return TRUE;
+	returnCode(TRUE);
     }
-    TRACE(("...set_current_scheme (no change)\n"));
-    return FALSE;
+    returnCode(FALSE);
 }
 
 /*
@@ -3766,9 +3912,13 @@ free_scheme(char *name)
 	UINT code = p->code;
 
 	TRACE(("free_scheme(%s)\n", name));
+
+	beginDisplay();
 	free(p->name);
 	if (p->list != 0)
 	    free(p->list);
+	endofDisplay();
+
 	while (p->name != 0) {
 	    p[0] = p[1];
 	    p++;
@@ -3796,14 +3946,18 @@ alloc_scheme(const char *name)
 
     if ((result = find_scheme(name)) == 0) {
 	int len = ++num_schemes;
+
+	beginDisplay();
 	if (len == 1) {
 	    len = ++num_schemes;
 	    my_schemes = typecallocn(PALETTES, len);
 	} else {
 	    my_schemes = typereallocn(PALETTES, my_schemes, len);
 	}
+	endofDisplay();
+
 	len--;			/* point to list-terminator */
-	my_schemes[len].name = 0;
+	memset(&my_schemes[len], 0, sizeof(PALETTES));
 	while (--len > 0) {
 	    my_schemes[len] = my_schemes[len - 1];
 	    if (my_schemes[len - 1].name != 0
@@ -3824,9 +3978,9 @@ alloc_scheme(const char *name)
 }
 
 static int
-scheme_complete(int c, char *buf, unsigned *pos)
+scheme_complete(DONE_ARGS)
 {
-    return kbd_complete(0, c, buf, pos, (const char *) &my_schemes[0],
+    return kbd_complete(PASS_DONE_ARGS, (const char *) &my_schemes[0],
 			sizeof(my_schemes[0]));
 }
 
@@ -3872,9 +4026,9 @@ static const struct VALNAMES scheme_values[] =
 /* *INDENT-ON* */
 
 static int
-scheme_value_complete(int c, char *buf, unsigned *pos)
+scheme_value_complete(DONE_ARGS)
 {
-    return kbd_complete(0, c, buf, pos,
+    return kbd_complete(PASS_DONE_ARGS,
 			(const char *) &scheme_values[0],
 			sizeof(scheme_values[0]));
 }
@@ -4048,7 +4202,7 @@ desschemes(int f GCC_UNUSED, int n GCC_UNUSED)
 }
 
 int
-chgd_scheme(VALARGS * args, int glob_vals, int testing)
+chgd_scheme(BUFFER *bp GCC_UNUSED, VALARGS * args, int glob_vals, int testing)
 {
     if (!testing) {
 	PALETTES *p = find_scheme_by_code(args->local->vp->i);
@@ -4078,6 +4232,7 @@ vms_record_format(int code)
 void
 mode_leaks(void)
 {
+    beginDisplay();
 #if OPT_COLOR_SCHEMES
     if (my_schemes != 0) {
 	int last;
@@ -4130,5 +4285,6 @@ mode_leaks(void)
     FreeAndNull(major_valnames);
     FreeAndNull(majormodes_order);
 #endif
+    endofDisplay();
 }
 #endif /* NO_LEAKS */

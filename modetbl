@@ -11,7 +11,7 @@
 #
 # The modes are table entries in the BUFFER and WINDOW structures.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.209 2002/07/03 00:18:17 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.217 2003/03/08 00:45:48 tom Exp $
 #
 #
 # Mode-table entries.  Capitalized letters are used for abbreviations.
@@ -28,7 +28,7 @@ bool							# GMD prefix
 	"expand-path"	EXPAND_PATH	0		# true iff %/# don't substitute shortened-path
 	"ErrorBells"	ERRORBELLS	0		# audible/visible-bells
 	"flash"		FLASH		0		OPT_FLASH # visible-bell (flash)
-	"force-console"	FORCE_CONSOLE	0		SYS_WINNT&&defined(DISP_NTWIN)
+	"force-console"	FORCE_CONSOLE	0		SYS_WINNT&&DISP_NTWIN
 	"glob"		GLOB		0		!OPT_GLOB_PIPE # enable/disable filename globbing
 	"HIstory"	HISTORY		0		OPT_HISTORY # command-history
 	"ImplyBuffer"	IMPLYBUFF	0		# imply-buffer (vi-like)
@@ -39,11 +39,11 @@ bool							# GMD prefix
 	"pin-tagstack"	PIN_TAGSTACK	0		# tagstack push/pop ops are pinned to curwin
 	"Popup-Choices"	POPUP_CHOICES	0		OPT_POPUPCHOICE&&!OPT_ENUM_MODES # popup buffer showing file-completion choices
 	"Popup-Msgs"	POPUP_MSGS	0		OPT_POPUP_MSGS	# popup buffer when multiple messages emitted
-	"popup-menu"	POPUPMENU	chgd_popupmenu	SYS_WINNT&&defined(DISP_NTWIN) # enable popup menu (win32)
+	"popup-menu"	POPUPMENU	chgd_popupmenu	SYS_WINNT&&DISP_NTWIN # enable popup menu (win32)
 	"ReadOnly-on-ReadOnly" RONLYRONLY	0	# set readonly mode for readonly files
 	"remap"		REMAP		0		# should mappings be reapplied
 	"remapfirst"	REMAPFIRST	0		# should 1st char of a map be remapped?
-	"resolve-links"	RESOLVE_LINKS	0		HAVE_SYMLINK	# cache/resolve directory names (can be slow if NFS times-out)
+	"resolve-links"	RESOLVE_LINKS	0		defined(HAVE_SYMLINK)	# cache/resolve directory names (can be slow if NFS times-out)
 	"ShowRam"	HEAPSIZE	0		OPT_HEAPSIZE	# show heap usage
 	"SameBangs"	SAMEBANGS	0		# use same "!!" data for ^X-!
 	"swap-title"	SWAPTITLE	chgd_swaptitle	OPT_TITLE	# title -> 'buffer - prognam'
@@ -57,6 +57,7 @@ bool							# GMD prefix
 	"warn-reread"	WARNREREAD	0		# warn before rereading a buffer
 	"warn-rename"	WARNRENAME	0		# warn before renaming a buffer
 	"xterm-mouse"	XTERM_MOUSE	chgd_xterm	# mode to control whether we allow mouse-clicking
+	"xterm-title"	XTERM_TITLE	chgd_swaptitle	OPT_TITLE	# mode to control whether we allow xterm title updates
 	"SmoothScroll"	SMOOTH_SCROLL	0		# should we update even if there is typeahead?
 	"Spaces-After-Sentence" SPACESENT	0	# add two spaces after a
 enum
@@ -115,10 +116,12 @@ bool							# MD prefix
 	"TagWord"	TAGWORD		0		# apply tag to whole word, not only string at cursor
 	"terse"		TERSE		0		# be terse -- suppress messages
 	"view"		VIEW		chgd_major	# read-only buffer
+	"overlap-matches"  HILITEOVERLAP	chgd_hilite	OPT_HILITEMATCH # highlight all search matches
 	"UndoAble"	UNDOABLE	chgd_undoable	# changes to buffer are undoable (or not)
 	"Undo-Dos-Trim"	UNDO_DOS_TRIM	0		# changes to buffer made when setting dosmode are undoable (or not)
 	"WrapScan"	SWRAP		0		# wrap-around search mode
 	"WrapWords"	WRAP		0		# word wrap
+	"YankMotion"	YANKMOTION	0		# honor vi-style motion after yanking text
 enum
 	"record-format" RECORD_FORMAT	0		SYS_VMS	# specify record-format to use
 	"RecordSeparator" RECORD_SEP	chgd_rs		# record-separator affects dos/unix modes
@@ -258,7 +261,8 @@ string
 "pagewid"	CURWIDTH		# current screen width
 "palette"	PALETTE			# current palette string
 "patchlevel"	PATCHLEVEL		# current patch-level of vile (empty for release)
-"pathlist-separator" PATHSEP		# separator for lists of pathnames
+"pathlist-separator" PATHCHR		# separator for lists of pathnames
+"pathname-separator" PATHSEP		# separator for levels of pathnames
 "pathname"	PATHNAME		# current path-like word
 "pending"	PENDING			# type ahead pending flag
 "pid"		PROCESSID		# vile's process-id
@@ -307,20 +311,25 @@ string
 "execable"	EXECABLE	1|BRET		# is a file executable?
 "filter"	FILTER		1|STR|BRET	# check if internal filter exists
 "ftime"		FTIME		1|STR|NRET	# file-timestamp (last-modified)
+"geq"		GEQ		2|NUM|BRET	# logical greater than or equal
 "global"	GLOBMODE	1|STR|SRET	# retrieve global setting
 "greater"	GREATER		2|NUM|BRET	# logical greater than
+"gt"		GT		2|NUM|BRET	# logical greater than (greater)
 "gtkey"		GTKEY		0		# get 1 character
 "gtsequence"	GTSEQ		0		# get keyboard-sequence (characters)
 "indirect"	INDIRECT	1|STR|SRET	# evaluate indirect value
 "left"		LEFT		2|STR|SRET	# left string(string, len)
 "length"	LENGTH		1|NRET		# string length
+"leq"		LEQ		2|NUM|BRET	# logical less than or equal
 "lessthan"	LESS		2|NUM|BRET	# logical less than
 "local"		LOCMODE		1|STR|SRET	# retrieve local setting
 "lookup"	LOOKUP		2|STR|SRET	# lookup an external file
 "lower"		LOWER		1|STR|SRET	# lower case string
+"lt"		LT		2|NUM|BRET	# logical less than (lessthan)
 "middle"	MID		3|STR|SRET	# mid string(string, pos, len)
 "modulo"	MOD		2|NUM|NRET	# modulo
 "negate"	NEG		1|NUM|NRET	# negate
+"neq"		NEQ		2|NUM|BRET	# logical not equal
 "not"		NOT		1|BOOL|BRET	# logical not
 "or"		OR		2|BOOL|BRET	# logical or
 "path"		PATH		2|STR|SRET	# transform pathnames
@@ -335,9 +344,14 @@ string
 "right"		RIGHT		2|STR|SRET	# right string(string, pos)
 "rnd"		RND		1|NUM|NRET	# get a random number
 "sequal"	SEQUAL		2|BRET		# string logical equality check
+"sgeq"		SGEQ		2|NUM|BRET	# string greater than or equal
 "sgreater"	SGREAT		2|BRET		# string logical greater than
+"sgt"		SGT		2|BRET		# string logical greater than (sgreater)
 "sindex"	SINDEX		2|NRET		# find the index of one string in another
+"sleq"		SLEQ		2|NUM|BRET	# string less than or equal
 "sless"		SLESS		2|BRET		# string logical less than
+"slt"		SLT		2|BRET		# string logical less than (sless)
+"sneq"		SNEQ		2|NUM|BRET	# string not equal
 "stime"		STIME		0|NRET		# system-timestamp
 "stoken"	STOKEN		3|BRET		# find a token in a string, given delims
 "subtract"	SUB		2|NUM|NRET	# subtraction
@@ -419,6 +433,7 @@ string
 "break"		D_BREAK
 "force"		D_FORCE
 "hidden"	D_HIDDEN
+"quiet"		D_QUIET
 "local"		D_LOCAL
 "with"		D_WITH
 "elsewith"	D_ELSEWITH

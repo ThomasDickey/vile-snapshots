@@ -1,4 +1,4 @@
-# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.2nd,v 1.6 2000/04/26 09:41:12 tom Exp $
+# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.2nd,v 1.8 2003/10/30 00:39:23 tom Exp $
 #
 
 .SUFFIXES: .l .c .i $o
@@ -22,10 +22,15 @@ CF_DEPS = filterio$o filters$o
 CF_ARGS = $(CF_DEPS)
 
 PROGS	= \
+	atr2ansi$x \
+	atr2html$x \
+	atr2text$x \
 	vile-crypt$x \
 	vile-manfilt$x
 
-ALL = 	$(PROGS) $(C_ALL) @MAKE_LEX@ $(LEX_ALL)
+ALL = 	$(PROGS) $(C_ALL) $(C_DYN) @MAKE_LEX@ $(LEX_ALL) $(LEX_DYN)
+
+# library objects:
 LOBJS = filters$o $(C_OBJ) @MAKE_LEX@ $(LEX_OBJ)
 
 all:	$(ALL) @LIBBUILTFLT@
@@ -34,10 +39,13 @@ check: $(TARGET)
 	@echo Sorry, no batch tests available.
 
 INSTALL_FILES = \
+	$(BINDIR)/atr2ansi$x \
+	$(BINDIR)/atr2html$x \
+	$(BINDIR)/atr2text$x \
 	$(BINDIR)/vile-crypt$x \
 	$(BINDIR)/vile-manfilt$x \
 	$(DATADIR)/filters.rc \
-	$(DATADIR)/spell.rc $(INSTALL_C) @MAKE_LEX@ $(INSTALL_LEX)
+	$(DATADIR)/spell.rc $(INSTALL_C) $(INSTALL_DYN_C) @MAKE_LEX@ $(INSTALL_LEX) $(INSTALL_DYN_LEX) 
 
 install :: $(INSTALL_DIRS) $(INSTALL_FILES)
 
@@ -55,7 +63,7 @@ config.status: configure
 	$(SHELL) ./config.status --recheck
 
 mostlyclean:
-	-$(RM) *.[oi] o$(TARGET) $(BUILTSRCS) core *~ *.BAK $(LEX_OUTPUT_ROOT).* *.bb* *.da *.gcov @LIBBUILTFLT@
+	-$(RM) *.[oi] *$(so) o$(TARGET) $(BUILTSRCS) core *~ *.BAK $(LEX_OUTPUT_ROOT).* *.bb* *.da *.gcov @LIBBUILTFLT@
 
 clean: mostlyclean
 	-$(RM) $(ALL)
@@ -85,9 +93,15 @@ dotags:
 	$(AR) $(AR_OPTS) $@ $(LOBJS)
 	$(RANLIB) $@
 
+atr2ansi$x : atr2ansi$o	unfilter$o ; $(CC) -o $@ atr2ansi$o unfilter$o $(LDFLAGS)
+atr2html$x : atr2html$o	unfilter$o ; $(CC) -o $@ atr2html$o unfilter$o $(LDFLAGS)
+atr2text$x : atr2text$o	unfilter$o ; $(CC) -o $@ atr2text$o unfilter$o $(LDFLAGS)
 vile-crypt$x :	ecrypt$o	; $(CC) -o $@ ecrypt$o $(LDFLAGS)
 vile-manfilt$x : manfilt$o	; $(CC) -o $@ manfilt$o $(LDFLAGS)
 
+$(BINDIR)/atr2ansi$x :		atr2ansi$x		; $(INSTALL) $? $@
+$(BINDIR)/atr2html$x :		atr2html$x		; $(INSTALL) $? $@
+$(BINDIR)/atr2text$x :		atr2text$x		; $(INSTALL) $? $@
 $(BINDIR)/vile-crypt$x :	vile-crypt$x		; $(INSTALL) $? $@
 $(BINDIR)/vile-manfilt$x :	vile-manfilt$x		; $(INSTALL) $? $@
 

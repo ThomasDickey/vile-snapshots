@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/key-filt.c,v 1.14 2002/05/01 19:43:39 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/key-filt.c,v 1.17 2003/02/10 11:49:14 tom Exp $
  *
  * Filter to add vile "attribution" sequences to a vile keyword file.  It's
  * done best in C because the delimiters may change as a result of processing
@@ -57,18 +57,28 @@ color_of(char *s)
 }
 
 static void
+ExecAbbrev(char *param)
+{
+    abbr_ch = *param;
+    flt_puts(param, strlen(param), Literal_attr);
+}
+
+static void
 ExecClass(char *param)
 {
     char *t = strmalloc(param);
+    char *s;
+
     parse_keyword(t, 1);
     free(t);
-    t = skip_blanks(skip_ident(skip_blanks(param)));
-    if (*t == eqls_ch) {
-	flt_puts(param, t - param, Ident2_attr);
-	flt_putc(*t++);
-	flt_puts(t, strlen(t), color_of(t));
-    } else {
-	flt_puts(param, strlen(param), Ident2_attr);
+    t = flt_put_blanks(param);
+    s = skip_ident(t);
+    flt_puts(param, s - param, Ident2_attr);
+    s = flt_put_blanks(s);
+    if (*s == eqls_ch) {
+	flt_putc(*s++);
+	s = flt_put_blanks(s);
+	flt_puts(s, strlen(s), color_of(s));
     }
 }
 
@@ -102,6 +112,7 @@ parse_directive(char *line)
 	const char *name;
 	void (*func) (char *);
     } table[] = {
+	{ "abbrev",  ExecAbbrev   },
 	{ "class",   ExecClass    },
 	{ "default", ExecTable    },
 	{ "equals",  ExecEquals   },
@@ -121,8 +132,8 @@ parse_directive(char *line)
 	if ((len = (skip_ident(s) - s)) != 0) {
 	    for (n = 0; n < sizeof(table) / sizeof(table[0]); n++) {
 		if (!strncmp(s, table[n].name, len)) {
-		    s = skip_blanks(s + len);
-		    flt_puts(line, s - line, Ident_attr);
+		    flt_puts(line, s + len - line, Ident_attr);
+		    s = flt_put_blanks(s + len);
 		    (*table[n].func) (s);
 		    return 1;
 		}
@@ -139,7 +150,7 @@ init_filter(int before GCC_UNUSED)
 }
 
 static void
-do_filter(FILE * input GCC_UNUSED)
+do_filter(FILE *input GCC_UNUSED)
 {
     static unsigned used;
     static char *line;
@@ -157,13 +168,17 @@ do_filter(FILE * input GCC_UNUSED)
     Ident2_attr = strmalloc(class_attr(NAME_IDENT2));
     Literal_attr = strmalloc(class_attr(NAME_LITERAL));
 
+    abbr_ch = '*';
     meta_ch = '.';
     eqls_ch = ':';
 
     while (flt_gets(&line, &used) != NULL) {
-	s = skip_blanks(line);
-	flt_puts(line, s - line, "");
-	if (*s == eqls_ch) {
+	int ending = chop_newline(line);
+
+	s = flt_put_blanks(line);
+	if (*s == '\0') {
+	    ;
+	} else if (*s == eqls_ch) {
 	    flt_puts(s, strlen(s), Comment_attr);
 	} else if (!parse_directive(s)) {
 	    t = skip_ident(s);
@@ -183,5 +198,7 @@ do_filter(FILE * input GCC_UNUSED)
 	    }
 	    flt_puts(t, strlen(t), color_of(t));
 	}
+	if (ending)
+	    flt_putc('\n');
     }
 }

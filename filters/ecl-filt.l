@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/ecl-filt.l,v 1.1 2001/01/19 21:43:04 Joachim.Schimpf Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/ecl-filt.l,v 1.2 2003/05/20 20:38:41 tom Exp $
  *
  * Filter to add vile "attribution" sequences to Prolog/ECLiPSe code
  *
@@ -16,24 +16,6 @@ DefineFilter("ecl");
 
 static char *Comment_attr;
 static char *Preproc_attr;
-
-static void
-init_filter(int before GCC_UNUSED)
-{
-}
-
-static void
-do_filter(FILE *input)
-{
-    yyin = input;
-
-    Comment_attr = class_attr(NAME_COMMENT);
-    Preproc_attr  = class_attr(NAME_PREPROC);
-
-    BEGIN(NORMAL);
-    while (yylex() > 0) {
-    }
-}
 
 %}
 
@@ -67,3 +49,23 @@ STRINGS		({SSTRING}|{DSTRING})
 <NORMAL>0\'		{ ECHO; }
 <NORMAL>{STRINGS}	{ ECHO; }
 <NORMAL>.		{ ECHO; }
+
+%%
+
+static void
+init_filter(int before GCC_UNUSED)
+{
+}
+
+static void
+do_filter(FILE *inputs)
+{
+    yyin = inputs;
+
+    Comment_attr = class_attr(NAME_COMMENT);
+    Preproc_attr  = class_attr(NAME_PREPROC);
+
+    BEGIN(NORMAL);
+    while (yylex() > 0) {
+    }
+}

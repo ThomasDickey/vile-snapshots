@@ -17,12 +17,12 @@
  * distributable status.  This version of vile is distributed under the
  * terms of the GNU Public License (see COPYING).
  *
- * Copyright (c) 1992-2002 by Paul Fox and Thomas Dickey
+ * Copyright (c) 1992-2003 by Paul Fox and Thomas Dickey
  *
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.480 2002/07/03 00:21:24 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.511 2003/10/08 01:06:24 tom Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -33,10 +33,34 @@
 #include	"nefunc.h"
 #include	"nefsms.h"
 
+#include	<assert.h>
+#include	<ctype.h>
+
 #if OPT_LOCALE
 #include	<locale.h>
-#include	<ctype.h>
+
+#ifdef HAVE_WCTYPE
+#include	<wctype.h>
+#define sys_iscntrl(n)  iswcntrl(n)
+#define sys_isdigit(n)  iswdigit(n)
+#define sys_islower(n)  iswlower(n)
+#define sys_isprint(n)  iswprint(n)
+#define sys_ispunct(n)  iswpunct(n)
+#define sys_isspace(n)  iswspace(n)
+#define sys_isupper(n)  iswupper(n)
+#define sys_isxdigit(n) iswxdigit(n)
+#else
+#define sys_iscntrl(n)  iscntrl(n)
+#define sys_isdigit(n)  isdigit(n)
+#define sys_islower(n)  islower(n)
+#define sys_isprint(n)  isprint(n)
+#define sys_ispunct(n)  ispunct(n)
+#define sys_isspace(n)  isspace(n)
+#define sys_isupper(n)  isupper(n)
+#define sys_isxdigit(n) isxdigit(n)
 #endif
+
+#endif /* OPT_LOCALE */
 
 #if CC_NEWDOSCC
 #include <io.h>
@@ -61,9 +85,9 @@ unsigned _stklen = 24000U;
 static int cmd_mouse_motion(const CMDFUNC * cfp);
 static void get_executable_dir(void);
 static void global_val_init(void);
-static void loop(void);
+static void main_loop(void);
 static void make_startup_file(char *name);
-static void siginit(void);
+static void siginit(int enabled);
 static void start_debug_log(int ac, char **av);
 
 extern const int nametblsize;
@@ -82,7 +106,7 @@ get_argvalue(char *param, char *argv[], int *argcp)
 	param = argv[*argcp];
     }
     if (param == 0)
-	print_usage();
+	print_usage(BADEXIT);
     return param;
 }
 
@@ -115,7 +139,7 @@ MainProgram(int argc, char *argv[])
     int didtag = FALSE;		/* look up a tag to start? */
     char *tname = NULL;
 #endif
-#ifdef DISP_NTCONS
+#if DISP_NTCONS
     int new_console = FALSE;
 #endif
 #if OPT_ENCRYPT
@@ -124,14 +148,39 @@ MainProgram(int argc, char *argv[])
 #endif
 
 #if OPT_LOCALE
-    setlocale(LC_CTYPE, "");
+    {
+	char *env = "";
+
+	/*
+	 * Force 8-bit locale for display drivers where we only support 8-bits
+	 */
+#if DISP_TERMCAP
+	if (((env = getenv("LC_ALL")) != 0 && *env != 0) ||
+	    ((env = getenv("LC_CTYPE")) != 0 && *env != 0) ||
+	    ((env = getenv("LANG")) != 0 && *env != 0)) {
+	    char *utf = strstr(env, ".UTF-8");
+
+	    if (utf != 0) {
+		char *tmp = strmalloc(env);
+		tmp[utf - env] = EOS;
+		env = tmp;
+		utf8_locale = TRUE;
+	    } else {
+		env = "";
+	    }
+	} else {
+	    env = "";
+	}
 #endif
+	setlocale(LC_ALL, env);	/* set locale according to environment vars */
+    }
+#endif /* OPT_LOCALE */
 
 #if OPT_NAMEBST
     build_namebst(nametbl, 0, nametblsize - 1);
 #endif
-    global_val_init();		/* global buffer values */
     charinit();			/* character types -- we need these early  */
+    global_val_init();		/* global buffer values */
     winit(FALSE);		/* command-line */
 #if !SYS_UNIX
     expand_wild_args(&argc, &argv);
@@ -143,6 +192,15 @@ MainProgram(int argc, char *argv[])
 	lsprintf(t, "%s.exe", prog_arg);
 	prog_arg = t;
     }
+#endif
+
+    /*
+     * Attempt to appease perl if we're running in a process which was setuid'd
+     * or setgid'd.
+     */
+#if defined(HAVE_SETUID) && defined(HAVE_SETGID) && defined(HAVE_GETEGID) && defined(HAVE_GETEUID)
+    setgid(getegid());
+    setuid(geteuid());
 #endif
 
     start_debug_log(argc, argv);
@@ -166,7 +224,7 @@ MainProgram(int argc, char *argv[])
      * FIXME: we only know how to do this for displays that open the
      * terminal in the same way for command-line and screen.
      */
-    siginit();
+    siginit(TRUE);
 #if OPT_DUMBTERM
     if (isatty(fileno(stdin))
 	&& isatty(fileno(stdout))) {
@@ -194,7 +252,7 @@ MainProgram(int argc, char *argv[])
 		else if (strcmp(param, "80") == 0)
 		    init_descrip = "NORMAL";
 		else
-		    print_usage();
+		    print_usage(BADEXIT);
 #endif
 		continue;
 	    } else
@@ -212,7 +270,7 @@ MainProgram(int argc, char *argv[])
 			 */
 			new_console = TRUE;
 		    } else
-			print_usage();
+			print_usage(BADEXIT);
 		    break;
 #endif /* DISP_NTCONS */
 #if OPT_EVAL || OPT_DEBUGMACROS
@@ -259,7 +317,7 @@ MainProgram(int argc, char *argv[])
 		    if (param[1] == 'r')
 			ole_register = TRUE;
 		    else
-			print_usage();
+			print_usage(BADEXIT);
 		    break;
 #endif
 		case 's':	/* -s <pattern> */
@@ -296,7 +354,7 @@ MainProgram(int argc, char *argv[])
 		case '?':
 		    /* FALLTHRU */
 		default:	/* unknown switch */
-		    print_usage();
+		    print_usage(GOODEXIT);
 		}
 
 	} else if (*param == '+') {	/* alternate form of -g */
@@ -305,7 +363,7 @@ MainProgram(int argc, char *argv[])
 		if (len > 0 && param[len - 1] == '/')
 		    param[--len] = EOS;
 		if (len == 0)
-		    print_usage();
+		    print_usage(BADEXIT);
 		goto dosearch;
 	    }
 	    gotoflag = TRUE;
@@ -451,7 +509,7 @@ MainProgram(int argc, char *argv[])
 #endif
 
     if (!tt_opened)
-	siginit();
+	siginit(TRUE);
     (void) open_terminal((TERM *) 0);
     term.kopen();		/* open the keyboard */
     term.rev(FALSE);
@@ -623,7 +681,7 @@ MainProgram(int argc, char *argv[])
 	}
     } else if (search_exp) {
 	FreeIfNeeded(gregexp);
-	(void) strncpy0(searchpat, search_exp->pat, NPAT);
+	searchpat = tb_string(search_exp->pat);
 	gregexp = search_exp->reg;
 	(void) forwhunt(FALSE, 0);
 #if OPT_TAGS
@@ -686,7 +744,7 @@ MainProgram(int argc, char *argv[])
 	mlforce("%*S", tb_length(mlsave), tb_values(mlsave));
 
     /* process commands */
-    loop();
+    main_loop();
 
     /* NOTREACHED */
     return BADEXIT;
@@ -694,7 +752,7 @@ MainProgram(int argc, char *argv[])
 
 /* this is nothing but the main command loop */
 static void
-loop(void)
+main_loop(void)
 {
     const CMDFUNC *cfp = NULL;
     const CMDFUNC *last_cfp = NULL;
@@ -703,6 +761,9 @@ loop(void)
 
     for_ever {
 
+#if OPT_WORKING && DOALLOC
+	assert(allow_working_msg());
+#endif
 	hst_reset();
 
 	/* vi doesn't let the cursor rest on the newline itself.  This
@@ -740,7 +801,7 @@ loop(void)
 	f = FALSE;
 	n = 1;
 
-#if LATERMAYBE
+#if VILE_SOMEDAY
 /* insertion is too complicated to pop in
 	and out of so glibly...   -pgf */
 #ifdef insertmode
@@ -754,7 +815,7 @@ loop(void)
 	    continue;
 	}
 #endif /* insertmode */
-#endif /* LATERMAYBE */
+#endif /* SOMEDAY */
 
 	do_repeats(&c, &f, &n);
 
@@ -858,19 +919,6 @@ get_executable_dir(void)
 #endif
 }
 
-#ifdef VILE_ERROR_ABORT
-void
-ExitProgram(int code)
-{
-    char *env;
-    if (code != GOODEXIT
-	&& (env = getenv("VILE_ERROR_ABORT")) != 0
-	&& *env != '\0')
-	abort();
-    exit(code);
-}
-#endif
-
 void
 tidy_exit(int code)
 {
@@ -894,9 +942,12 @@ tidy_exit(int code)
 char *
 strmalloc(const char *s)
 {
-    register char *ns = castalloc(char, strlen(s) + 1);
+    char *ns;
+    beginDisplay();
+    ns = castalloc(char, strlen(s) + 1);
     if (ns != 0)
 	(void) strcpy(ns, s);
+    endofDisplay();
     return ns;
 }
 #endif
@@ -913,7 +964,7 @@ no_memory(const char *s)
 #define setTxtValue(vp, value) vp->v.p = strmalloc(value)
 
 #define setINT(name,value)  case name: setIntValue(d,value); break
-#define setPAT(name,value)  case name: setPatValue(d,value); break;
+#define setPAT(name,value)  case name: setPatValue(d,value); break
 #define setTXT(name,value)  case name: setTxtValue(d,value); break
 
 #define DFT_FENCE_BEGIN "/\\*"
@@ -1057,6 +1108,9 @@ init_mode_value(struct VAL *d, MODECLASS v_class, int v_which)
 #ifdef GMDXTERM_MOUSE
 	    setINT(GMDXTERM_MOUSE, FALSE);	/* mouse-clicking */
 #endif
+#ifdef GMDXTERM_TITLE
+	    setINT(GMDXTERM_TITLE, FALSE);	/* xterm window-title */
+#endif
 #ifdef GVAL_BACKUPSTYLE
 	    setTXT(GVAL_BACKUPSTYLE, DFT_BACKUPSTYLE);
 #endif
@@ -1124,6 +1178,7 @@ init_mode_value(struct VAL *d, MODECLASS v_class, int v_which)
 	    setINT(MDUNDO_DOS_TRIM, FALSE);	/* undo dos trimming */
 	    setINT(MDVIEW, FALSE);	/* view-only */
 	    setINT(MDWRAP, FALSE);	/* wrap */
+	    setINT(MDYANKMOTION, TRUE);		/* yank-motion */
 	    setINT(VAL_ASAVECNT, 256);	/* autosave count */
 	    setINT(VAL_PERCENT_CRLF, 50);	/* threshold for crlf conversion */
 	    setINT(VAL_RECORD_SEP, RS_DEFAULT);
@@ -1157,6 +1212,9 @@ init_mode_value(struct VAL *d, MODECLASS v_class, int v_which)
 #endif
 #ifdef MDHILITE
 	    setINT(MDHILITE, TRUE);	/* syntax-highlighting */
+#endif
+#ifdef MDHILITEOVERLAP
+	    setINT(MDHILITEOVERLAP, TRUE);	/* overlap visual-matches */
 #endif
 #ifdef MDLOCKED
 	    setINT(MDLOCKED, FALSE);	/* LOCKED */
@@ -1239,7 +1297,7 @@ init_mode_value(struct VAL *d, MODECLASS v_class, int v_which)
 
 #define DFT_HELP_FILE "vile.hlp"
 
-#define DFT_MENU_FILE "vilemenu.rc"
+#define DFT_MENU_FILE ".vilemenu"
 
 #ifdef VILE_LIBDIR_PATH
 #define DFT_LIBDIR_PATH VILE_LIBDIR_PATH
@@ -1450,6 +1508,7 @@ global_val_init(void)
 {
     int i;
 
+    TRACE((T_CALLED "global_val_init()\n"));
 #if OPT_FILTER && defined(WIN32)
     flt_array();
 #endif
@@ -1502,7 +1561,7 @@ global_val_init(void)
     }
 #else
     helpfile = default_help_file();
-    startup_file = default_startup_file();
+    startup_file = strmalloc(default_startup_file());
     startup_path = default_startup_path();
     libdir_path = default_libdir_path();
 #if OPT_MENUS
@@ -1541,6 +1600,7 @@ global_val_init(void)
 		cmd_bindings.kb_normal[i] = cfp;
 	}
     }
+    returnVoid();
 }
 
 #if SYS_UNIX || SYS_MSDOS || SYS_OS2 || SYS_WINNT || SYS_VMS
@@ -1617,52 +1677,81 @@ dos_crit_handler(void)
 #  endif
 #endif
 
+/*
+ * Setup signal handlers, if 'enabled'.  Otherwise reset to default all of the
+ * ones that pointed to imdying().  The latter is used only in ExitProgram() to
+ * ensure that abort() can really generate a core dump.
+ */
 static void
-siginit(void)
+siginit(int enabled)
 {
+    /* *INDENT-OFF* */
+    static const struct {
+	int signo;
+	void (*handler) (int ACTUAL_SIG_ARGS);
+    } table[] = {
+	{ 0, 0 },		/* just for VMS */
+#if SYS_UNIX || SYS_MSDOS || SYS_OS2 || SYS_WINNT
+#if defined(SIGINT)
+	{ SIGINT, catchintr },
+#endif
+#endif
 #if SYS_UNIX
-    setup_handler(SIGINT, catchintr);
-    setup_handler(SIGHUP, imdying);
-#ifdef SIGBUS
-    setup_handler(SIGBUS, imdying);
+#if defined(SIGHUP)
+	{ SIGHUP, imdying },
 #endif
-#ifdef SIGSYS
-    setup_handler(SIGSYS, imdying);
+#if defined(SIGBUS)
+	{ SIGBUS, imdying },
 #endif
-    setup_handler(SIGSEGV, imdying);
-    setup_handler(SIGTERM, imdying);
-/* #define DEBUG 1 */
-#if DEBUG
-    setup_handler(SIGQUIT, imdying);
+#if defined(SIGILL)
+	{ SIGILL, imdying },
+#endif
+#if defined(SIGFPE)
+	{ SIGFPE, imdying },
+#endif
+#if defined(SIGSYS)
+	{ SIGSYS, imdying },
+#endif
+	{ SIGSEGV, imdying },
+	{ SIGTERM, imdying },
+#ifdef VILE_DEBUG
+	{ SIGQUIT, imdying },
 #else
-    setup_handler(SIGQUIT, SIG_IGN);
+	{ SIGQUIT, SIG_IGN },
 #endif
-    setup_handler(SIGPIPE, SIG_IGN);
+	{ SIGPIPE, SIG_IGN },
 #if defined(SIGWINCH) && ! DISP_X11
-    setup_handler(SIGWINCH, sizesignal);
+	{ SIGWINCH, sizesignal },
 #endif
-#else
-# if SYS_MSDOS
-    setup_handler(SIGINT, catchintr);
-#  if CC_DJGPP
+#endif /* SYS_UNIX */
+    };
+    /* *INDENT-ON* */
+
+    unsigned n;
+
+    for (n = 1; n < TABLESIZE(table); ++n) {
+	if (enabled)
+	    setup_handler(table[n].signo, table[n].handler);
+	else if (table[n].handler == imdying)
+	    setup_handler(table[n].signo, SIG_DFL);
+    }
+
+#if SYS_MSDOS
+# if CC_DJGPP
     _go32_want_ctrl_break(TRUE);
     setcbrk(FALSE);
     want_ctrl_c(TRUE);
     hard_error_catch_setup();
-#  else
-#   if CC_WATCOM
+# else
+#  if CC_WATCOM
     {
 	/* clean up Warning from Watcom C */
 	void *ptrfunc = wat_crit_handler;
 	_harderr(ptrfunc);
     }
-#   else			/* CC_TURBO */
+#  else				/* CC_TURBO */
     _harderr(dos_crit_handler);
-#   endif
 #  endif
-# endif
-# if SYS_OS2 || SYS_WINNT
-    setup_handler(SIGINT, catchintr);
 # endif
 #endif
 }
@@ -1965,6 +2054,7 @@ quit(int f, int n GCC_UNUSED)
 #endif
 #if OPT_FILTER
 	flt_leaks();
+	filters_leaks();
 #endif
 	/* do these last, e.g., for tb_matched_pat */
 	itb_leaks();
@@ -1973,6 +2063,7 @@ quit(int f, int n GCC_UNUSED)
 	term.close();
 	/* whatever is left over must be a leak */
 	show_alloc();
+	trace_leaks();
     }
 #endif
     tidy_exit(GOODEXIT);
@@ -2122,7 +2213,7 @@ charinit(void)
 {
     register int c;
 
-    TRACE(("charinit lo=%d, hi=%d\n",
+    TRACE((T_CALLED "charinit() lo=%d, hi=%d\n",
 	   global_g_val(GVAL_PRINT_LOW),
 	   global_g_val(GVAL_PRINT_HIGH)));
 
@@ -2132,109 +2223,126 @@ charinit(void)
      */
 #if OPT_LOCALE
     for (c = 0; c < N_chars; c++) {
-	vl_chartypes_[c] = 0;
-	if (iscntrl(c))
-	    vl_chartypes_[c] |= vl_cntrl;
-	if (isdigit(c))
-	    vl_chartypes_[c] |= vl_digit;
-	if (islower(c))
-	    vl_chartypes_[c] |= vl_lower;
-	if (isprint(c))
-	    vl_chartypes_[c] |= vl_print;
-	if (ispunct(c))
-	    vl_chartypes_[c] |= vl_punct;
-	if (isspace(c))
-	    vl_chartypes_[c] |= vl_space;
-	if (isupper(c))
-	    vl_chartypes_[c] |= vl_upper;
+	vlCTYPE(c) = 0;
+	if (sys_iscntrl(c))
+	    vlCTYPE(c) |= vl_cntrl;
+	if (sys_isdigit(c))
+	    vlCTYPE(c) |= vl_digit;
+	if (sys_islower(c))
+	    vlCTYPE(c) |= vl_lower;
+	if (sys_isprint(c))
+	    vlCTYPE(c) |= vl_print;
+	if (sys_ispunct(c))
+	    vlCTYPE(c) |= vl_punct;
+	if (sys_isspace(c))
+	    vlCTYPE(c) |= vl_space;
+	if (sys_isupper(c))
+	    vlCTYPE(c) |= vl_upper;
 #ifdef vl_xdigit
-	if (isxdigit(c))
-	    vl_chartypes_[c] |= vl_xdigit;
+	if (sys_isxdigit(c))
+	    vlCTYPE(c) |= vl_xdigit;
 #endif
+	vl_uppercase[c] = toupper(c);
+	vl_lowercase[c] = tolower(c);
     }
 #else /* ! OPT_LOCALE */
     (void) memset((char *) vl_chartypes_, 0, sizeof(vl_chartypes_));
 
     /* control characters */
     for (c = 0; c < ' '; c++)
-	vl_chartypes_[c] |= vl_cntrl;
-    vl_chartypes_[127] |= vl_cntrl;
+	vlCTYPE(c) |= vl_cntrl;
+    vlCTYPE(127) |= vl_cntrl;
 
     /* lowercase */
     for (c = 'a'; c <= 'z'; c++)
-	vl_chartypes_[c] |= vl_lower;
+	vlCTYPE(c) |= vl_lower;
 #if OPT_ISO_8859
     for (c = 0xc0; c <= 0xd6; c++)
-	vl_chartypes_[c] |= vl_lower;
+	vlCTYPE(c) |= vl_lower;
     for (c = 0xd8; c <= 0xde; c++)
-	vl_chartypes_[c] |= vl_lower;
+	vlCTYPE(c) |= vl_lower;
 #endif
     /* uppercase */
     for (c = 'A'; c <= 'Z'; c++)
-	vl_chartypes_[c] |= vl_upper;
+	vlCTYPE(c) |= vl_upper;
 #if OPT_ISO_8859
     for (c = 0xdf; c <= 0xf6; c++)
-	vl_chartypes_[c] |= vl_upper;
+	vlCTYPE(c) |= vl_upper;
     for (c = 0xf8; c <= 0xff; c++)
-	vl_chartypes_[c] |= vl_upper;
+	vlCTYPE(c) |= vl_upper;
 #endif
+
+    /*
+     * If you want to do this properly, compile-in locale support.
+     */
+    for (c = 0; c < N_chars; c++) {
+	vl_uppercase[c] = (char) c;
+	vl_lowercase[c] = (char) c;
+	if (isAlpha(c)) {
+	    if (isUpper(c)) {
+		vl_lowercase[c] = (char) (c ^ DIFCASE);
+	    } else {
+		vl_uppercase[c] = (char) (c ^ DIFCASE);
+	    }
+	}
+    }
 
     /* digits */
     for (c = '0'; c <= '9'; c++)
-	vl_chartypes_[c] |= vl_digit;
+	vlCTYPE(c) |= vl_digit;
 #ifdef vl_xdigit
     /* hex digits */
     for (c = '0'; c <= '9'; c++)
-	vl_chartypes_[c] |= vl_xdigit;
+	vlCTYPE(c) |= vl_xdigit;
     for (c = 'a'; c <= 'f'; c++)
-	vl_chartypes_[c] |= vl_xdigit;
+	vlCTYPE(c) |= vl_xdigit;
     for (c = 'A'; c <= 'F'; c++)
-	vl_chartypes_[c] |= vl_xdigit;
+	vlCTYPE(c) |= vl_xdigit;
 #endif
 
     /* punctuation */
     for (c = '!'; c <= '/'; c++)
-	vl_chartypes_[c] |= vl_punct;
+	vlCTYPE(c) |= vl_punct;
     for (c = ':'; c <= '@'; c++)
-	vl_chartypes_[c] |= vl_punct;
+	vlCTYPE(c) |= vl_punct;
     for (c = '['; c <= '`'; c++)
-	vl_chartypes_[c] |= vl_punct;
-    for (c = LBRACE; c <= '~'; c++)
-	vl_chartypes_[c] |= vl_punct;
+	vlCTYPE(c) |= vl_punct;
+    for (c = L_CURLY; c <= '~'; c++)
+	vlCTYPE(c) |= vl_punct;
 #if OPT_ISO_8859
     for (c = 0xa1; c <= 0xbf; c++)
-	vl_chartypes_[c] |= vl_punct;
+	vlCTYPE(c) |= vl_punct;
 #endif
 
     /* printable */
     for (c = ' '; c <= '~'; c++)
-	vl_chartypes_[c] |= vl_print;
+	vlCTYPE(c) |= vl_print;
 
     /* whitespace */
-    vl_chartypes_[' '] |= vl_space;
+    vlCTYPE(' ') |= vl_space;
 #if OPT_ISO_8859
-    vl_chartypes_[0xa0] |= vl_space;
+    vlCTYPE(0xa0) |= vl_space;
 #endif
-    vl_chartypes_['\t'] |= vl_space;
-    vl_chartypes_['\r'] |= vl_space;
-    vl_chartypes_['\n'] |= vl_space;
-    vl_chartypes_['\f'] |= vl_space;
+    vlCTYPE('\t') |= vl_space;
+    vlCTYPE('\r') |= vl_space;
+    vlCTYPE('\n') |= vl_space;
+    vlCTYPE('\f') |= vl_space;
 
 #endif /* OPT_LOCALE */
 
     /* legal in pathnames */
-    vl_chartypes_['.'] |= vl_pathn;
-    vl_chartypes_['_'] |= vl_pathn;
-    vl_chartypes_['~'] |= vl_pathn;
-    vl_chartypes_['-'] |= vl_pathn;
-    vl_chartypes_['*'] |= vl_pathn;
-    vl_chartypes_['/'] |= vl_pathn;
+    vlCTYPE('.') |= vl_pathn;
+    vlCTYPE('_') |= vl_pathn;
+    vlCTYPE('~') |= vl_pathn;
+    vlCTYPE('-') |= vl_pathn;
+    vlCTYPE('*') |= vl_pathn;
+    vlCTYPE('/') |= vl_pathn;
 
     /* legal in "identifiers" */
-    vl_chartypes_['_'] |= vl_ident | vl_qident;
-    vl_chartypes_[':'] |= vl_qident;
+    vlCTYPE('_') |= vl_ident | vl_qident;
+    vlCTYPE(':') |= vl_qident;
 #if SYS_VMS
-    vl_chartypes_['$'] |= vl_ident | vl_qident;
+    vlCTYPE('$') |= vl_ident | vl_qident;
 #endif
 
     c = global_g_val(GVAL_PRINT_LOW);
@@ -2250,87 +2358,87 @@ charinit(void)
     if (c < HIGHBIT)
 	c = HIGHBIT;
     while (c <= global_g_val(GVAL_PRINT_HIGH) && c < N_chars)
-	vl_chartypes_[c++] |= vl_print;
+	vlCTYPE(c++) |= vl_print;
 
 #if DISP_X11
     for (c = 0; c < N_chars; c++) {
 	if (isPrint(c) && !gui_isprint(c)) {
-	    vl_chartypes_[c] &= ~vl_print;
+	    vlCTYPE(c) &= ~vl_print;
 	}
     }
 #endif
     /* backspacers: ^H, rubout */
-    vl_chartypes_['\b'] |= vl_bspace;
-    vl_chartypes_[127] |= vl_bspace;
+    vlCTYPE('\b') |= vl_bspace;
+    vlCTYPE(127) |= vl_bspace;
 
     /* wildcard chars for most shells */
-    vl_chartypes_['*'] |= vl_wild;
-    vl_chartypes_['?'] |= vl_wild;
+    vlCTYPE('*') |= vl_wild;
+    vlCTYPE('?') |= vl_wild;
 #if !OPT_VMS_PATH
 #if SYS_UNIX
-    vl_chartypes_['~'] |= vl_wild;
+    vlCTYPE('~') |= vl_wild;
 #endif
-    vl_chartypes_[LBRACK] |= vl_wild;
-    vl_chartypes_[RBRACK] |= vl_wild;
-    vl_chartypes_[LBRACE] |= vl_wild;
-    vl_chartypes_[RBRACE] |= vl_wild;
-    vl_chartypes_['$'] |= vl_wild;
-    vl_chartypes_['`'] |= vl_wild;
+    vlCTYPE(L_BLOCK) |= vl_wild;
+    vlCTYPE(R_BLOCK) |= vl_wild;
+    vlCTYPE(L_CURLY) |= vl_wild;
+    vlCTYPE(R_CURLY) |= vl_wild;
+    vlCTYPE('$') |= vl_wild;
+    vlCTYPE('`') |= vl_wild;
 #endif
 
     /* ex mode line specifiers */
-    vl_chartypes_[','] |= vl_linespec;
-    vl_chartypes_['%'] |= vl_linespec;
-    vl_chartypes_['-'] |= vl_linespec;
-    vl_chartypes_['+'] |= vl_linespec;
-    vl_chartypes_[';'] |= vl_linespec;
-    vl_chartypes_['.'] |= vl_linespec;
-    vl_chartypes_['$'] |= vl_linespec;
-    vl_chartypes_['\''] |= vl_linespec;
+    vlCTYPE(',') |= vl_linespec;
+    vlCTYPE('%') |= vl_linespec;
+    vlCTYPE('-') |= vl_linespec;
+    vlCTYPE('+') |= vl_linespec;
+    vlCTYPE(';') |= vl_linespec;
+    vlCTYPE('.') |= vl_linespec;
+    vlCTYPE('$') |= vl_linespec;
+    vlCTYPE('\'') |= vl_linespec;
 
     /* fences */
-    vl_chartypes_[LBRACE] |= vl_fence;
-    vl_chartypes_[RBRACE] |= vl_fence;
-    vl_chartypes_[LPAREN] |= vl_fence;
-    vl_chartypes_[RPAREN] |= vl_fence;
-    vl_chartypes_[LBRACK] |= vl_fence;
-    vl_chartypes_[RBRACK] |= vl_fence;
+    vlCTYPE(L_CURLY) |= vl_fence;
+    vlCTYPE(R_CURLY) |= vl_fence;
+    vlCTYPE(L_PAREN) |= vl_fence;
+    vlCTYPE(R_PAREN) |= vl_fence;
+    vlCTYPE(L_BLOCK) |= vl_fence;
+    vlCTYPE(R_BLOCK) |= vl_fence;
 
 #if OPT_VMS_PATH
-    vl_chartypes_[LBRACK] |= vl_pathn;	/* actually, "<", ">" too */
-    vl_chartypes_[RBRACK] |= vl_pathn;
-    vl_chartypes_['$'] |= vl_pathn;
-    vl_chartypes_[':'] |= vl_pathn;
-    vl_chartypes_[';'] |= vl_pathn;
+    vlCTYPE(L_BLOCK) |= vl_pathn;	/* actually, "<", ">" too */
+    vlCTYPE(R_BLOCK) |= vl_pathn;
+    vlCTYPE('$') |= vl_pathn;
+    vlCTYPE(':') |= vl_pathn;
+    vlCTYPE(';') |= vl_pathn;
 #endif
 
 #if OPT_MSDOS_PATH
-    vl_chartypes_[BACKSLASH] |= vl_pathn;
-    vl_chartypes_[':'] |= vl_pathn;
+    vlCTYPE(BACKSLASH) |= vl_pathn;
+    vlCTYPE(':') |= vl_pathn;
 #endif
 
 #if OPT_WIDE_CTYPES
     /* scratch-buffer-names (usually superset of vl_pathn) */
-    vl_chartypes_[(unsigned) SCRTCH_LEFT[0]] |= vl_scrtch;
-    vl_chartypes_[(unsigned) SCRTCH_RIGHT[0]] |= vl_scrtch;
-    vl_chartypes_[' '] |= vl_scrtch;	/* ...to handle "[Buffer List]" */
+    vlCTYPE(SCRTCH_LEFT[0]) |= vl_scrtch;
+    vlCTYPE(SCRTCH_RIGHT[0]) |= vl_scrtch;
+    vlCTYPE(' ') |= vl_scrtch;	/* ...to handle "[Buffer List]" */
 #endif
 
     for (c = 0; c < N_chars; c++) {
 	if (!(isSpace(c)))
-	    vl_chartypes_[c] |= vl_nonspace;
+	    vlCTYPE(c) |= vl_nonspace;
 	if (isDigit(c))
-	    vl_chartypes_[c] |= vl_linespec;
+	    vlCTYPE(c) |= vl_linespec;
 	if (isAlpha(c) || isDigit(c))
-	    vl_chartypes_[c] |= vl_ident | vl_pathn | vl_qident;
+	    vlCTYPE(c) |= vl_ident | vl_pathn | vl_qident;
 #if OPT_WIDE_CTYPES
 	if (isSpace(c) || isPrint(c))
-	    vl_chartypes_[c] |= vl_shpipe;
+	    vlCTYPE(c) |= vl_shpipe;
 	if (ispath(c))
-	    vl_chartypes_[c] |= vl_scrtch;
+	    vlCTYPE(c) |= vl_scrtch;
 #endif
     }
-
+    returnVoid();
 }
 
 #if OPT_HEAPSIZE
@@ -2437,7 +2545,7 @@ track_free(char *p)
 }
 #endif /* OPT_HEAPSIZE */
 
-#if MALLOCDEBUG
+#ifdef MALLOCDEBUG
 mallocdbg(int f, int n)
 {
     int lvl;
@@ -2640,3 +2748,72 @@ make_startup_file(char *name)
 	fclose(fp);
     }
 }
+
+#ifndef SIGTERM
+#define SIGTERM 9
+#endif
+
+#ifndef valid_buffer
+int
+valid_buffer(BUFFER *test)
+{
+    beginDisplay();
+    if (test != NULL && test != bminip) {
+	BUFFER *bp;
+	int valid = FALSE;
+
+	for_each_buffer(bp) {
+	    if (bp == test) {
+		valid = TRUE;
+		break;
+	    }
+	}
+	if (!valid)
+	    imdying(SIGTERM);
+    }
+    endofDisplay();
+
+    return (test != NULL);
+}
+#endif
+
+#ifndef valid_window
+int
+valid_window(WINDOW *test)
+{
+    beginDisplay();
+    if (test != NULL && test != wminip) {
+	WINDOW *wp;
+	int valid = FALSE;
+
+	for_each_window(wp) {
+	    if (wp == test) {
+		valid = TRUE;
+		break;
+	    }
+	}
+	if (!valid)
+	    imdying(SIGTERM);
+    }
+    endofDisplay();
+
+    return (test != NULL);
+}
+#endif
+
+#ifdef VILE_ERROR_ABORT
+#undef ExitProgram		/* in case it is oleauto_exit() */
+
+void
+ExitProgram(int code)
+{
+    char *env;
+    if (code != GOODEXIT
+	&& (env = getenv("VILE_ERROR_ABORT")) != 0
+	&& *env != '\0') {
+	siginit(FALSE);
+	abort();
+    }
+    exit(code);
+}
+#endif

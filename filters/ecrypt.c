@@ -1,7 +1,7 @@
 /*	Crypt:	Encryption routines for MicroEMACS
  *		written by Dana Hoggatt and Paul Fox.
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/ecrypt.c,v 1.5 2002/05/01 19:45:11 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/ecrypt.c,v 1.7 2003/07/27 17:35:40 tom Exp $
  *
  */
 
@@ -15,14 +15,14 @@
 
 static int mod95(int val);
 
-#if STDC_HEADERS || HAVE_STRING_H
+#if defined(STDC_HEADERS) || defined(HAVE_STRING_H)
 # include <string.h>
   /* An ANSI string.h and pre-ANSI memory.h might conflict.  */
-# if !STDC_HEADERS && HAVE_MEMORY_H
+# if !defined(STDC_HEADERS) && defined(HAVE_MEMORY_H)
 #  include <memory.h>
 # endif				/* not STDC_HEADERS and HAVE_MEMORY_H */
 #else /* not STDC_HEADERS and not HAVE_STRING_H */
-# if HAVE_STRINGS_H
+# if defined(HAVE_STRINGS_H)
 #  include <strings.h>
   /* memory.h and strings.h conflict on some systems */
   /* FIXME: should probably define memcpy and company in terms of bcopy,
@@ -208,7 +208,7 @@ ue_crypt(register char *bptr,	/* buffer of characters to be encrypted */
 }
 
 static void
-filecrypt(FILE * ifp, char *key, int mailmode)
+filecrypt(FILE *ifp, char *key, int mailmode)
 {
     char buf[BUFSIZ];
     char *p;
@@ -277,9 +277,9 @@ main(int argc, char **argv)
 	exit(BADEXIT);
     }
     if (!key[0]) {
-#if HAVE_GETPASS
-	char *userkey;
-	userkey = (char *) getpass("Enter key: ");
+#ifdef HAVE_GETPASS
+	char *userkey = (char *) getpass("Enter key: ");
+	size_t len = strlen(userkey);
 
 	/* HACK -- the linux version of getpass is not
 	 * interruptible.  this means there's no way to abort
@@ -289,7 +289,7 @@ main(int argc, char **argv)
 	 * char of the entered key is ^C, and consider it an abort
 	 * if so.  yes, this should really be the INTR char.
 	 */
-	if (userkey[strlen(userkey) - 1] == 3) {
+	if (len == 0 || userkey[len - 1] == 3) {
 	    fprintf(stderr, "Aborted\n");
 	    exit(BADEXIT);
 	}

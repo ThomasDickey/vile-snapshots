@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/htmlfilt.l,v 1.27 2001/04/24 21:46:39 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/htmlfilt.l,v 1.29 2003/05/20 20:38:41 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of HTML input
  * text.
@@ -20,7 +20,64 @@ static char *Keyword_attr;
 static char *Number_attr;
 static char *String_attr;
 
-static int next_state = INITIAL;
+static int next_state;
+
+static void html_command(char *text);
+static void may_resume_html(char *text);
+
+%}
+
+SPACE		[ \t]
+
+INTEGER		[-+]?([0-9]+)
+REAL		[-+]?([0-9]*\.[0-9]+)([eE][+-]?[0-9]+)?
+HEXNUM		"#"[xX]?[0-9A-Fa-f]+
+IDENT		[a-zA-Z_][a-zA-Z_0-9-]*
+
+HSTRING		\"([^"])*\"
+QSTRING		\\["]([^"]|\\["])*\\["]
+STRING		{HSTRING}|{QSTRING}
+
+SSTRING		\'(\\.|[^'\\])*\'
+DSTRING		\"(\\.|[^"\\])*\"
+STRINGS		({SSTRING}|{DSTRING})
+
+ESCAPED		&({IDENT}|{HEXNUM});
+
+%%
+
+<INITIAL>"<"		{ WriteToken(Keyword_attr); BEGIN(HTMLCODE); }
+<HTMLCODE>">"		{ WriteToken(Keyword_attr); BEGIN(next_state); }
+
+<HTMLCODE>(\/)?{IDENT}	{ html_command(yytext); }
+
+<INITIAL>"<!--"		{ BeginQuote(HTMLNOTE, Comment_attr); }
+<HTMLNOTE>[\n]		{ flt_bfr_append(yytext, yyleng); }
+<HTMLNOTE>[^\n-]+	{ flt_bfr_append(yytext, yyleng); }
+<HTMLNOTE>[-]+[^-\>\n]*	{ flt_bfr_append(yytext, yyleng); }
+<HTMLNOTE>[-]+"->"	{ FinishQuote(INITIAL); }
+
+<INITIAL>{ESCAPED}	|
+<HTMLCODE>{STRING}	{ WriteToken(String_attr); }
+
+<HTMLCODE>{REAL}	|
+<HTMLCODE>{INTEGER}	|
+<HTMLCODE>{HEXNUM}	{ WriteToken(Number_attr); }
+
+<JAVACODE>{IDENT}	{ WriteToken(keyword_attr(yytext)); }
+<JAVACODE>{STRINGS}	{ WriteToken(String_attr); }
+<JAVACODE>{INTEGER}	{ WriteToken(Number_attr); }
+<JAVACODE>"//"[^\n]*	{ WriteToken(Comment_attr); }
+
+<JAVACODE>^{SPACE}*"<"{SPACE}*(\/)?{IDENT}{SPACE}*">" { may_resume_html(yytext); }
+
+<JAVACODE>"/*"		{ BeginQuote(JAVANOTE, Comment_attr); }
+<JAVANOTE>\n		{ flt_bfr_append(yytext, yyleng); }
+<JAVANOTE>[^*\n]+	{ flt_bfr_append(yytext, yyleng); }
+<JAVANOTE>[*]+[^*/]*	{ flt_bfr_append(yytext, yyleng); }
+<JAVANOTE>[*]+"/"	{ FinishQuote(JAVACODE); }
+
+%%
 
 static void
 html_command(char *text)
@@ -81,9 +138,9 @@ init_filter(int before GCC_UNUSED)
 }
 
 static void
-do_filter(FILE *input)
+do_filter(FILE *inputs)
 {
-    yyin = input;
+    yyin = inputs;
 
     Comment_attr = class_attr(NAME_COMMENT);
     Ident_attr   = class_attr(NAME_IDENT);
@@ -97,55 +154,3 @@ do_filter(FILE *input)
     }
     flt_bfr_error();
 }
-
-%}
-
-SPACE		[ \t]
-
-INTEGER		[-+]?([0-9]+)
-REAL		[-+]?([0-9]*\.[0-9]+)([eE][+-]?[0-9]+)?
-HEXNUM		"#"[0-9A-Fa-f]+
-IDENT		[a-zA-Z_][a-zA-Z_0-9-]*
-
-HSTRING		\"([^"])*\"
-QSTRING		\\["]([^"]|\\["])*\\["]
-STRING		{HSTRING}|{QSTRING}
-
-SSTRING		\'(\\.|[^'\\])*\'
-DSTRING		\"(\\.|[^"\\])*\"
-STRINGS		({SSTRING}|{DSTRING})
-
-ESCAPED		&{IDENT};
-
-%%
-
-<INITIAL>"<"		{ WriteToken(Keyword_attr); BEGIN(HTMLCODE); }
-<HTMLCODE>">"		{ WriteToken(Keyword_attr); BEGIN(next_state); }
-
-<HTMLCODE>(\/)?{IDENT}	{ html_command(yytext); }
-
-<INITIAL>"<!--"		{ BeginQuote(HTMLNOTE, Comment_attr); }
-<HTMLNOTE>[\n]		{ flt_bfr_append(yytext, yyleng); }
-<HTMLNOTE>[^\n-]+	{ flt_bfr_append(yytext, yyleng); }
-<HTMLNOTE>[-]+[^-\>\n]*	{ flt_bfr_append(yytext, yyleng); }
-<HTMLNOTE>[-]+"->"	{ FinishQuote(INITIAL); }
-
-<INITIAL>{ESCAPED}	|
-<HTMLCODE>{STRING}	{ WriteToken(String_attr); }
-
-<HTMLCODE>{REAL}	|
-<HTMLCODE>{INTEGER}	|
-<HTMLCODE>{HEXNUM}	{ WriteToken(Number_attr); }
-
-<JAVACODE>{IDENT}	{ WriteToken(keyword_attr(yytext)); }
-<JAVACODE>{STRINGS}	{ WriteToken(String_attr); }
-<JAVACODE>{INTEGER}	{ WriteToken(Number_attr); }
-<JAVACODE>"//"[^\n]*	{ WriteToken(Comment_attr); }
-
-<JAVACODE>^{SPACE}*"<"{SPACE}*(\/)?{IDENT}{SPACE}*">" { may_resume_html(yytext); }
-
-<JAVACODE>"/*"		{ BeginQuote(JAVANOTE, Comment_attr); }
-<JAVANOTE>\n		{ flt_bfr_append(yytext, yyleng); }
-<JAVANOTE>[^*\n]+	{ flt_bfr_append(yytext, yyleng); }
-<JAVANOTE>[*]+[^*/]*	{ flt_bfr_append(yytext, yyleng); }
-<JAVANOTE>[*]+"/"	{ FinishQuote(JAVACODE); }

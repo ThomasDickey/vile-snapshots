@@ -1,9 +1,9 @@
 /*
  * This file contains the command processing functions for the commands
  * that take motion operators.
- * written for vile: Copyright (c) 1990, 1995-2002 by Paul Fox
+ * written for vile: Copyright (c) 1990, 1995-2003 by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/opers.c,v 1.81 2002/07/02 21:45:19 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/opers.c,v 1.87 2003/05/26 18:10:04 tom Exp $
  *
  */
 
@@ -101,6 +101,7 @@ vile_op(int f, int n, OpsFunc fn, const char *str)
 
     /* and execute the motion */
     status = execute(cfp, f, n);
+    post_op_dot = DOT;
 
     if (status != TRUE) {
 	doingopcmd = FALSE;
@@ -166,7 +167,7 @@ chgreg(void)
 	return stringrect();
     } else {
 	killregion();
-	if (regionshape == FULLLINE) {
+	if (regionshape == FULLLINE && !is_empty_buf(curbp)) {
 	    if (backline(FALSE, 1) == TRUE)
 		/* backline returns FALSE at top of buf */
 		return opendown(TRUE, 1);
@@ -226,15 +227,16 @@ operyank(int f, int n)
      * the beginning of the region, to match vi's behavior.  Otherwise leave
      * DOT where it is.
      */
-    if (s == TRUE) {
-	if (line_no(curbp, region.r_orig.l) != 0
-	    && line_no(curbp, region.r_orig.l) < line_no(curbp, savedot.l)) {
-	    savedot = region.r_orig;
-	} else if (getregion(&region) == TRUE
-		   && !samepoint(region.r_orig, region.r_end)) {
+    if (s == TRUE && b_val(curbp, MDYANKMOTION)) {
+	if (line_no(curbp, post_op_dot.l) != 0
+	    && line_no(curbp, post_op_dot.l) < line_no(curbp, savedot.l)) {
+	    savedot = post_op_dot;
+	} else if (!samepoint(region.r_orig, region.r_end)) {
 	    if (sameline(region.r_orig, savedot)
-		&& region.r_orig.o < savedot.o)
+		&& sameline(region.r_end, savedot)
+		&& region.r_orig.o < savedot.o) {
 		savedot = region.r_orig;
+	    }
 	}
     }
     DOT = savedot;
@@ -378,6 +380,14 @@ opersubst(int f, int n)
     regionshape = FULLLINE;
     opcmd = OPOTHER;
     return vile_op(f, n, substregion, "Substitute");
+}
+
+int
+opersubstall(int f, int n)
+{
+    regionshape = FULLLINE;
+    opcmd = OPOTHER;
+    return vile_op(f, n, subst_all_region, "Substitute-all");
 }
 
 int

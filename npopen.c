@@ -1,7 +1,7 @@
 /*	npopen:  like popen, but grabs stderr, too
  *		written by John Hutchinson, heavily modified by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/npopen.c,v 1.87 2002/04/30 11:46:52 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/npopen.c,v 1.89 2002/11/02 16:41:25 tom Exp $
  *
  */
 
@@ -112,6 +112,7 @@ inout_popen(FILE ** fr, FILE ** fw, char *cmd)
 
     } else {			/* child */
 
+	beginDisplay();
 	append_libdir_to_path();
 	if (fw) {
 	    (void) close(0);
@@ -137,6 +138,7 @@ inout_popen(FILE ** fr, FILE ** fw, char *cmd)
 	}
 	(void) close(rp[0]);
 	exec_sh_c(cmd);
+	endofDisplay();
 
     }
     return TRUE;
@@ -218,7 +220,7 @@ exec_sh_c(char *cmd)
     exit(-1);
 }
 
-#if LATER
+#if VILE_SOMEDAY
 
 int shellstatus;
 
@@ -233,7 +235,7 @@ process_exit_status(int status)
 	return (EXECUTION_SUCCESS);
 }
 
-#endif /* LATER */
+#endif /* VILE_SOMEDAY */
 
 int
 system_SHELL(char *cmd)
@@ -251,6 +253,7 @@ system_SHELL(char *cmd)
     if (cpid) {			/* parent */
 	int child;
 	int status;
+
 	beginDisplay();
 	while ((child = wait(&status)) != cpid) {
 	    if (child < 0 && errno == EINTR) {
@@ -258,13 +261,15 @@ system_SHELL(char *cmd)
 	    }
 	}
 	endofDisplay();
-#if LATER
+#if VILE_SOMEDAY
 	shellstatus = process_exit_status(status);
 #endif
 	return 0;
     } else {
+	beginDisplay();
 	exec_sh_c(cmd);
 	(void) write(2, "cannot exec\n", 13);
+	endofDisplay();
 	return -1;
     }
 

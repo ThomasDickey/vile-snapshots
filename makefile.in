@@ -20,14 +20,16 @@
 #
 # gnu autoconf support by kevin buettner, 5/94
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.182 2002/07/04 11:47:54 tom Exp $
-#
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.188 2003/11/02 23:13:28 tom Exp $
+
+SHELL		= /bin/sh
 
 #### Start of system configuration section. ####
 
 srcdir = @srcdir@
 srcdir_sl = @srcdir@/
 VPATH  = @srcdir@
+@SET_MAKE@
 
 CC		= @CC@
 CPP		= @CPP@
@@ -51,8 +53,8 @@ TARGET		= @TARGET@$x
 AWK		= @AWK@
 PERL		= @PERL@
 PERLLIB		= @perl_lib_path@
-INSTALL_SCRIPT	= $(srcdir)/sinstall.sh $(PERL) $(INSTALL_PROGRAM)
-INSTALL_MODULE	= $(srcdir)/sinstall.sh $(PERL) $(INSTALL_DATA)
+INSTALL_SCRIPT	= $(SHELL) $(srcdir)/sinstall.sh $(PERL) $(INSTALL_PROGRAM)
+INSTALL_MODULE	= $(SHELL) $(srcdir)/sinstall.sh $(PERL) $(INSTALL_DATA)
 
 prefix		= @prefix@
 exec_prefix	= @exec_prefix@
@@ -66,7 +68,6 @@ mandir		= @mandir@/man$(manext)
 
 #### End of system configuration section. ####
 
-SHELL		= /bin/sh
 RM		= rm -f
 MAKE_RECUR	= @cf_cv_makeflags@ prefix=$(prefix)
 
@@ -194,7 +195,8 @@ MACRO_SRC = \
 	$(srcdir)/macros/search.rc \
 	$(srcdir)/macros/shifts.rc \
 	$(srcdir)/macros/vileinit.rc \
-	$(srcdir)/macros/vileperl.rc
+	$(srcdir)/macros/vileperl.rc \
+	$(srcdir)/macros/which.rc
 
 OTHERSRC = \
 	djhandl.c \
@@ -329,7 +331,7 @@ nemode.h:	modetbl $(MKTBLS)
 builtflt.o :	builtflt.h
 
 builtflt.h :
-	$(AWK) -f $(srcdir)/filters/mk-0th.awk <$(srcdir)/filters/genmake.mak list="@VILE_BUILTIN_FILTERS@" >$@
+	$(AWK) -f $(srcdir)/filters/mk-0th.awk <$(srcdir)/filters/genmake.mak static="@VILE_BUILT_IN_FILTERS@" dynamic="@VILE_LOADABLE_FILTERS@" >$@
 
 $(MKTBLS):  $(srcdir)/mktbls.c
 	@ECHO_LD@$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) \
@@ -350,7 +352,8 @@ INSTALL_MACRO_FILES = \
 	$(DATADIR)/search.rc \
 	$(DATADIR)/shifts.rc \
 	$(DATADIR)/vileinit.rc \
-	$(DATADIR)/vileperl.rc
+	$(DATADIR)/vileperl.rc \
+	$(DATADIR)/which.rc
 
 INSTALL_PERL_DIRS = $(PERLDIR) $(PERLDIR)/Vile
 INSTALL_PERL_FILES = \
@@ -426,7 +429,7 @@ distclean ::
 
 mostlyclean ::
 	- $(RM) *.[oi] o$(TARGET) $(BUILTHDRS) $(BUILTSRCS) $(MKTBLS) \
-	    builtflt.h core *~ *.BAK *.bb* *.da *.gcov
+	    builtflt.h core core.* *~ *.BAK *.bb* *.da *.gcov
 
 clean :: mostlyclean
 	- $(RM) $(ALL)
@@ -436,6 +439,7 @@ distclean :: clean
 	- test -d filters && rmdir filters
 
 realclean: distclean
+	- $(RM) test_*$x
 	- $(RM) tags TAGS vile-perl-api.* pod2html-*
 
 lint: $(BUILTHDRS)
@@ -621,6 +625,12 @@ version.o:	patchlev.h
 word.o:		nefunc.h
 x11.o:		nefunc.h
 
+test_btree$x:	btree.c
+	$(CC) -o $@ -DDEBUG_BTREE $(CPPFLAGS) $(CFLAGS) btree.c $(LDFLAGS)
+
+test_regexp$x:	regexp.c
+	$(CC) -o $@ -DDEBUG_REGEXP $(CPPFLAGS) $(CFLAGS) regexp.c $(LDFLAGS)
+
 # dependency-rules for install/installdirs
 $(BINDIR)/$(TARGET):		$(TARGET)
 	$(INSTALL_PROGRAM)	$(TARGET) $@
@@ -658,6 +668,8 @@ $(DATADIR)/vileinit.rc:		$(srcdir)/macros/vileinit.rc
 	$(INSTALL_DATA)		$(srcdir)/macros/vileinit.rc $@
 $(DATADIR)/vileperl.rc:		$(srcdir)/macros/vileperl.rc
 	$(INSTALL_DATA)		$(srcdir)/macros/vileperl.rc $@
+$(DATADIR)/which.rc:		$(srcdir)/macros/which.rc
+	$(INSTALL_DATA)		$(srcdir)/macros/which.rc $@
 
 $(DATADIR)/vilemenu.rc:		$(srcdir)/macros/vilemenu.rc
 	$(INSTALL_DATA)		$(srcdir)/macros/vilemenu.rc $@
