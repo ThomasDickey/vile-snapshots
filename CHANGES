@@ -1,5 +1,20 @@
 Changes for vile 9.5 (released ??? ??? ?? ????)
 
+ 20040620 (h)
+ 	> Tom Dickey:
+	+ correct which-keywords to work with 9.4e change that appends "mode"
+	  to majormode parameters of procedures.
+	+ rename utility macro which-filename to WhichFilename, to avoid
+	  conflict with which-filter.
+	+ add/use tb_setlen() in run_func() to update the lengths of TBUFF's
+	  which are built by unusual methods, e.g., allocating a large TBUFF
+	  and using lengthen_path() to rewrite its contents.  This was not
+	  a noticeable problem until run_func() called tb_enquote(), which
+	  assumed the TBUFF length was correct.
+	+ modify FindMode() in perl.xs to dequote results from evaluating
+	  a function, since 9.4f changes cause string results of functions to
+	  always be quoted.
+
  20040617 (g)
 	> Clark Morgan:
 	+ modify manpage.rc and color-ls.rc to avoid showing their guts if

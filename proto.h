@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.525 2004/06/17 00:56:50 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.526 2004/06/19 15:00:08 tom Exp $
  *
  */
 
@@ -1107,6 +1107,7 @@ int	tb_peek (TBUFF *p);
 size_t	tb_length (TBUFF *p);
 void	tb_first (TBUFF *p);
 void	tb_free (TBUFF **p);
+void	tb_setlen (TBUFF **p, int n);
 void	tb_stuff (TBUFF *p, int c);
 void	tb_unnext (TBUFF *p);
 void	tb_unput (TBUFF *p);

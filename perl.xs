@@ -13,7 +13,7 @@
  * vile.  The file api.c (sometimes) provides a middle layer between
  * this interface and the rest of vile.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.91 2004/03/22 22:37:16 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.92 2004/06/19 16:44:54 tom Exp $
  */
 
 /*#
@@ -1701,6 +1701,7 @@ FindMode(char *mode, int isglobal, VALARGS *args)
     int literal = (toktyp(mode) == TOK_LITSTR);
     const char *value;
     char *result = 0;
+    TBUFF *temp = 0;
 
     if (literal)
 	status = find_mode(curbp, mode, isglobal, args);
@@ -1718,7 +1719,6 @@ FindMode(char *mode, int isglobal, VALARGS *args)
 	     * A function should be legal anywhere a variable value is.
 	     */
 	    if (toktyp(mode) == TOK_FUNCTION) {
-		TBUFF *temp = 0;
 		char *save_str = execstr;
 		int save_flag = clexec;
 
@@ -1728,8 +1728,9 @@ FindMode(char *mode, int isglobal, VALARGS *args)
 		if (isSpace(*execstr)) {
 		    *execstr++ = 0;
 		}
-		value = tokval(tb_values(temp));
-		tb_free(&temp);
+		tb_scopy(&temp, tokval(tb_values(temp)));
+		tb_dequote(&temp);
+		value = tb_values(temp);
 
 		execstr = save_str;
 		clexec = save_flag;
@@ -1746,6 +1747,7 @@ FindMode(char *mode, int isglobal, VALARGS *args)
     } else {
 	value = "";
     }
+    tb_free(&temp);
     TRACE(("value of %s(%s) = %s\n", status ? "mode" : "", mode, value));
     return result;
 }

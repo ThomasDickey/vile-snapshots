@@ -4,7 +4,7 @@
  *	original by Daniel Lawrence, but
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.264 2004/06/09 20:59:35 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.265 2004/06/19 17:15:20 tom Exp $
  *
  */
 
@@ -13,8 +13,10 @@
 #include "nefunc.h"
 #include "nefsms.h"
 
-static int rangespec(const char *specp, LINEPTR * fromlinep, LINEPTR *
-		     tolinep, CMDFLAGS * flagp);
+static int rangespec(const char *specp,
+		     LINEPTR * fromlinep,
+		     LINEPTR * tolinep,
+		     CMDFLAGS * flagp);
 
 /* while loops are described by a list of small structs.  these point
  * at the line on which they were found, and at the line to which one
@@ -849,8 +851,17 @@ execute(const CMDFUNC * execfunc, int f, int n)
 	returnCode(FALSE);
     }
 
-    TRACE((T_CALLED "execute(execfunc=%p(%s), f=%d, n=%d)\n",
-	   execfunc, execfunc->c_name ? execfunc->c_name : "?", f, n));
+    TRACE((T_CALLED "execute(execfunc=%p(%s:%s), f=%d, n=%d)\n",
+	   execfunc,
+	   (execfunc->c_flags & CMD_PERL
+	    ? "perl"
+	    : (execfunc->c_flags & CMD_PROC
+	       ? "proc"
+	       : "func")),
+	   (execfunc->c_name
+	    ? execfunc->c_name
+	    : "?"),
+	   f, n));
 
     flags = execfunc->c_flags;
 
