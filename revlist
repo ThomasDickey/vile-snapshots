@@ -1,6 +1,6 @@
-revlist for vile, version v9_1z
+revlist for vile, version v9_1za
 --------------------------------------------------------------------------------
-CHANGES	1.625
+CHANGES	1.627
 CHANGES.R3	1.1
 CHANGES.R4	1.1
 CHANGES.R5	1.1
@@ -23,10 +23,10 @@ borland.c	1.30
 btree.c	1.11
 btree.h	1.3
 buffer.c	1.224
-buglist	1.382
+buglist	1.385
 builtflt.c	1.18
 chgdfunc.h	1.11
-cmdtbl	1.206
+cmdtbl	1.208
 config.emx	1.2
 config_h.in	1.2
 configure	none
@@ -38,7 +38,7 @@ dirstuff.h	1.23
 display.c	1.335
 djhandl.c	1.6
 dumbterm.c	1.17
-edef.h	1.273
+edef.h	1.274
 estruct.h	1.454
 eval.c	1.282
 exec.c	1.228
@@ -85,16 +85,16 @@ opers.c	1.71
 os2keys.h	1.1
 os2pipe.c	1.5
 os2vio.c	1.27
-patchlev.h	1.247
+patchlev.h	1.248
 path.c	1.103
 perl.xs	1.74
 proto.h	1.440
 pscreen.h	1.1
 ptypemap	1.7
-random.c	1.236
+random.c	1.239
 regexp.c	1.70
 region.c	1.103
-revlist	v9_1z
+revlist	v9_1za
 search.c	1.119
 select.c	1.129
 sinstall.sh	1.1
@@ -112,7 +112,7 @@ undo.c	1.77
 version.c	1.48
 vile-9.1.spec	1.2
 vile.1	1.25
-vile.hlp	1.503
+vile.hlp	1.504
 vile.wmconfig	1.1
 vms2unix.c	1.34
 vmsbuild.com	1.34
@@ -120,7 +120,7 @@ vmspipe.c	1.13
 vmsvt.c	1.53
 w32cbrd.c	1.17
 w32cmd.c	1.7
-w32misc.c	1.26
+w32misc.c	1.27
 w32ole.cpp	1.12
 w32ole.h	1.5
 w32ole.rc	1.2
@@ -144,7 +144,7 @@ doc/config.doc	1.4
 doc/dir.doc	1.2
 doc/filters.doc	1.21
 doc/indent.pro	1.3
-doc/macros.doc	1.62
+doc/macros.doc	1.63
 doc/menus.doc	1.6
 doc/modes.doc	1.7
 doc/oleauto.doc	1.6
@@ -281,8 +281,8 @@ macros/vileperl.rc	1.6
 perl/Glob2re.pm	1.1
 perl/Vile.pm	1.1
 perl/Vile/Exporter.pm	1.1
-perl/Vile/Manual.pm	1.3
-perl/Vileserv.pm	1.7
+perl/Vile/Manual.pm	1.4
+perl/Vileserv.pm	1.8
 perl/Visit.pm	1.2
 perl/capture.pm	1.2
 perl/directory.pm	1.6

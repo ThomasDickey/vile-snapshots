@@ -1,5 +1,24 @@
 Changes for vile 9.2 (released ??? ??? ?? 2000)
 
+ 20001015 (za)
+	> Clark Morgan:
+	+ added pushd, popd, dirs.
+	+ added ~trace/$debug documentation (taken from doc/macros.doc) to
+	  Debug section of help file.
+	+ made paragraph spacing in macros.doc consistent.  Fixed an instance
+	  where the formatted text exceeded 80 cols with tabstops set at 8.
+	+ when winvile is started from a shell, there are times when stdout and
+	  stdin (and maybe stderr) have been redirected to handles that can't
+	  be accessed by the running (GUI) process.  This is known to occur
+	  with the CYGWIN shell(s) on a WinNT host.  Add code to get the proper
+	  stdin/stdout handles, as well as ensure that the dynamically
+	  allocated console doesn't use black text on black background.
+	+ documentation updates: buglist item for winvile with :!ls
+ 	> Brendan O'Dea:
+	+ fix a couple more places with untying handles for Perl.
+	> Tom Dickey:
+	+ document known problems with curses.c driver
+
  20001010 (z)
 	> Clark Morgan:
 	+ fix a display glitch in w32_keybrd_reopen().
