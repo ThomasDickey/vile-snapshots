@@ -4,7 +4,7 @@
  *	the cursor.
  *	written for vile: Copyright (c) 1990, 1995 by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tags.c,v 1.91 1998/07/09 10:01:04 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tags.c,v 1.92 1998/09/01 09:54:50 tom Exp $
  *
  */
 #include	"estruct.h"
@@ -42,12 +42,13 @@ typedef struct {
 	LINE	*hit;	/* points to corresponding line in source-file */
 };
 
-static	LINE *	cheap_tag_scan(LINEPTR oldlp, char *name, SIZE_T taglen);
-static	LINE *	cheap_buffer_scan(BUFFER *bp, char *patrn, int dir);
 static	BUFFER *gettagsfile(int n, int *endofpathflagp, int *did_read);
+static	LINE *	cheap_buffer_scan(BUFFER *bp, char *patrn, int dir);
+static	LINE *	cheap_tag_scan(LINEPTR oldlp, char *name, SIZE_T taglen);
 static	int	popuntag(char *fname, L_NUM *linenop);
-static	void	pushuntag(char *fname, L_NUM lineno, char *tag);
 static	int	tag_search(char *tag, int taglen, int initial);
+static	void	free_untag(UNTAG *utp);
+static	void	pushuntag(char *fname, L_NUM lineno, char *tag);
 static	void	tossuntag (void);
 
 static	TAGHITS*tag_hits;
@@ -528,9 +529,25 @@ tag_search(char *tag, int taglen, int initial)
 	if (status == TRUE) {
 		int s;
 		if ((s = mark_tag_hit(tagbp->b_dot.l, DOT.l)) != FALSE) {
-			if (popuntag(tfname, &lineno))
+			if (popuntag(tfname, &lineno)) {
 				(void) finish_pop(tfname, lineno);
+			}
 			return s;
+		}
+
+		/*
+		 * If we've succeeded on a next-tags, adjust the stack so that it's
+		 * al on the same level.
+		 */
+		if (!initial
+		 && untaghead != 0
+		 && untaghead->u_stklink != 0) {
+			register UNTAG *p, *q;
+			p = untaghead;
+			q = untaghead = p->u_stklink;
+			(void)strcpy(q->u_fname, p->u_fname);
+			q->u_lineno = p->u_lineno;
+			free_untag(p);
 		}
 
 		if (!changedfile)

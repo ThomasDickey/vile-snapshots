@@ -1,5 +1,16 @@
 Changes for vile 8.1 (released ??? ??? ??, 1998)
 
+ (tom) 980901 (m)
+	+ add a check to keep initial TTkopen from trashing the command-line
+	  help or version (termio.c).
+ 	+ implement token-type for macro label linenumber, e.g., tokens beginning with
+	  an '*'.
+	+ modify behavior of next-tags so that continued matches do not push
+	  the tags stack, but remain at the same level as the initial match
+	  (requed by Ed Henderson).
+	+ correct typo in change to imdying for the non-Unix case (patch by
+	  Clark Morgan).
+
  (tom) 980831 (l)
 	+ modify dbgwrite() message to show how to get out of the loop, since
 	  more than one person has thought vile is hung when it is awaiting

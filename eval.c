@@ -3,7 +3,7 @@
 
 	written 1986 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.163 1998/07/08 01:21:08 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.164 1998/09/01 10:15:29 tom Exp $
  *
  */
 
@@ -1352,13 +1352,38 @@ s2offset(char *s, char *n)
 	return s + (off - 1);
 }
 
+LINE *
+label2lp (BUFFER *bp, const char *label)
+{
+	LINE *glp;
+	LINE *result = 0;
+	size_t len = strlen(label);
+
+	if (len > 1) {
+		for_each_line(glp, bp) {
+			int need = len + 1;
+			if (glp->l_used >= need
+			 && glp->l_text[0] == '*'
+			 && !memcmp(&glp->l_text[1], label, len)) {
+				result = glp;
+				break;
+			}
+		}
+	}
+	return(result);
+}
+
 /* ARGSUSED */
 static int
 gtlbl(				/* find the line number of the given label */
-const char *tokn GCC_UNUSED)	/* label name to find */
+const char *tokn)		/* label name to find */
 {
-	/* FIXME XXX */
-	return(1);
+	LINE *lp = label2lp(curbp, tokn);
+	int result = 0;
+
+	if (lp != 0)
+		result = line_no(curbp, lp);
+	return(result);
 }
 
 static char *

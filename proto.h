@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.297 1998/08/31 01:00:45 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.298 1998/09/01 10:11:35 tom Exp $
  *
  */
 
@@ -68,13 +68,13 @@ extern void api_free_private(void *);
 #endif
 
 /* basic.c */
-extern int firstchar (LINE *lp);
-extern int getgoal (LINE *dlp);
+extern int firstchar (LINEPTR lp);
+extern int getgoal (LINEPTR dlp);
 extern int gonmmark (int c);
-extern int lastchar (LINE *lp);
+extern int lastchar (LINEPTR lp);
 extern int next_column (int c, int col);
 extern int next_sw(int col);
-extern int nextchar (LINE *lp, int off);
+extern int nextchar (LINEPTR lp, int off);
 extern int setmark (void);
 extern void swapmark (void);
 
@@ -288,9 +288,10 @@ extern char *skip_text (char *str);
 #endif
 
 #if OPT_EVAL
+extern LINEPTR label2lp (BUFFER *bp, const char *label);
 extern char *gtenv (const char *vname);
+extern int   set_variable (const char *name);
 extern int   stenv(const char *name, const char *value);
-extern int set_variable (const char *name);
 #endif
 
 #if OPT_EVAL || DISP_X11
@@ -474,7 +475,7 @@ extern int shell_complete (DONE_ARGS);
 #endif
 
 /* insert.c */
-extern int indentlen (LINE *lp);
+extern int indentlen (LINEPTR lp);
 extern int ins (void);
 extern int ins_mode (WINDOW *wp);
 extern int inschar (int c, int *backsp_limit_p);
@@ -543,7 +544,7 @@ extern void kregcirculate (int killing);
 extern void ksetup (void);
 extern void lfree (LINEPTR lp, BUFFER *bp);
 extern void lremove (BUFFER *bp, LINEPTR lp);
-extern void ltextfree (LINE *lp, BUFFER *bp);
+extern void ltextfree (LINEPTR lp, BUFFER *bp);
 
 #if OPT_EVAL
 extern char * getctext (CHARTYPE type);
@@ -727,7 +728,7 @@ extern void update_dos_drv_dir (char * cwd);
 /* regexp.c */
 extern regexp * regcomp (char *origexp, int magic);
 extern int regexec (regexp *prog, char *string, char *stringend, int startoff, int endoff);
-extern int lregexec (regexp *prog, LINE *lp, int startoff, int endoff);
+extern int lregexec (regexp *prog, LINEPTR lp, int startoff, int endoff);
 
 /* region.c */
 typedef int (*DORGNLINES)(int (*)(REGN_ARGS), void *, int);

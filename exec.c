@@ -4,7 +4,7 @@
  *	written 1986 by Daniel Lawrence
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.163 1998/07/10 10:44:09 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.164 1998/09/01 10:12:45 tom Exp $
  *
  */
 
@@ -1495,28 +1495,16 @@ begin_directive(
 	case D_GOTO:	/* GOTO directive */
 		/* .....only if we are currently executing */
 		if (!ifstk.disabled) {
-			int found = FALSE;
-			size_t len;	/* length of line to execute */
 			register LINEPTR glp;	/* line to goto */
 
 			/* grab label to jump to */
 			*eline = (char *)token(*eline, golabel, EOS);
-			len = strlen(golabel);
-			if (len > 1) {
-				for_each_line(glp, bp) {
-					int need = len + 1;
-					if (glp->l_used >= need
-					 && glp->l_text[0] == '*'
-					 && !memcmp(&glp->l_text[1], golabel, len)) {
-						*lp = glp;
-						found = TRUE;
-						break;
-					}
-				}
-			}
-			if (!found) {
+			glp = label2lp(bp, golabel);
+			if (glp == 0) {
 				mlforce("[No such label \"%s\"]", golabel);
 				status = DDIR_FAILED;
+			} else {
+				*lp = glp;
 			}
 		}
 		break;
