@@ -1,3 +1,14 @@
+Changes for vile 7.0 (released ??? Feb ??, 1997)
+
+(tom)	970221 (b)
+	+ modify ffwopen() fix from 6.4a to work with DEC C (reported by Graeme
+	  Miller <G.R.M.Miller@open.ac.uk>).
+
+(kev)	970220 (a)
+	+ x11.c (x_getc): Don't advance DOT after paste when in insert mode.
+	  If we do, it goes too far.  Thanks to Philippe Chassany for finding
+	  this one.
+
 Changes for vile 6.5 (released Mon Feb 17, 1997)
 
 (tom)	970210 (j)
