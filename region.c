@@ -5,7 +5,7 @@
  * commands. Some functions are just for
  * internal use.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/region.c,v 1.84 1998/04/09 21:16:45 kev Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/region.c,v 1.85 1998/04/15 17:51:28 tom Exp $
  *
  */
 
@@ -384,15 +384,16 @@ entabline(void *flagp GCC_UNUSED, int l GCC_UNUSED, int r GCC_UNUSED)
 	DOT.o = 0;
 	for_ever {
 		/* see if it is time to compress */
-		if ((fspace >= 0) && (nextab(fspace) <= ccol))
-			if (ccol - fspace < 2)
+		if ((fspace >= 0) && (nextab(fspace) <= ccol)) {
+			if (ccol - fspace < 2) {
 				fspace = -1;
-			else {
+			} else {
 				backchar(TRUE, ccol - fspace);
 				(void)ldelete((B_COUNT)(ccol - fspace), FALSE);
 				linsert(1, '\t');
 				fspace = -1;
 			}
+		}
 
 		if (DOT.o >= llength(lp))
 			break;

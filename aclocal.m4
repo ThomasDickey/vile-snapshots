@@ -1,6 +1,6 @@
 dnl Local definitions for autoconf.
 dnl
-dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.53 1998/04/15 00:18:06 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.54 1998/04/16 22:58:45 tom Exp $
 dnl
 dnl ---------------------------------------------------------------------------
 dnl ---------------------------------------------------------------------------
@@ -417,24 +417,33 @@ cf_cv_fp_isready=none
 while true
 do
 	read definition
+	test -z "$definition" && break
 	echo "test-compile $definition" 1>&AC_FD_CC
+
 	AC_TRY_COMPILE([
 #include <stdio.h>
 #define isready_c(p) $definition
 ],[int x = isready_c(stdin)],
-	[cf_cv_fp_isready="$definition"
+	[echo "$definition" >conftest.env
 	 break])
+
 done <<'CF_EOF'
-( (p)->_r > 0)
-( (p)->__rptr < (p)->__rend)
 ( (p)->_IO_read_ptr < (p)->_IO_read_end)
-( (p)->_gptr < (p)->_egptr)
-( (p)->_rcount > 0)
-( (p)->_cnt > 0)
 ( (p)->__cnt > 0)
+( (p)->__rptr < (p)->__rend)
+( (p)->_cnt > 0)
+( (p)->_gptr < (p)->_egptr)
+( (p)->_r > 0)
+( (p)->_rcount > 0)
+( (p)->endr < (p)->endb)
 CF_EOF
+
+test -f conftest.env && cf_cv_fp_isready=`cat conftest.env`
+
 ])
+
 test "$cf_cv_fp_isready" != none && AC_DEFINE_UNQUOTED(isready_c(p),$cf_cv_fp_isready)
+
 ])dnl
 dnl ---------------------------------------------------------------------------
 dnl Test for availability of useful gcc __attribute__ directives to quiet

@@ -1,5 +1,16 @@
 Changes for vile 7.4 (released ??? ??? ?, 1998)
 
+ (tom) 980417 (t)
+	+ modify interface of 'docmd()' to allow caller to set clexec, allowing
+	  menu.c to invoke this and cause commands to prompt interactively.
+	+ modify 'get_executable_dir()' to use 'flook()' to deduce xvile's
+	  location, so that new_vile menu-entry works when the full path is not
+	  given (reported by Lance Heller <lheller@dart.wcom.com>).
+	+ restore search-behavior on DOS, NT and OS/2 for startup file.  These
+	  systems have no $HOME, so we look along the $PATH.
+	+ correct/extend configure test for isready_c macro:  add a case for
+	  UWIN, check for end of list, add a definition for SYS_WINNT.
+
  (tom) 980414 (s)
  	+ correct change to dofile in 7.3o, which caused vile to discard
 	  the startup file after processing it if it were specified on the

@@ -4,7 +4,7 @@
  *	written 1986 by Daniel Lawrence
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.152 1998/04/15 10:06:40 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.153 1998/04/17 00:16:53 tom Exp $
  *
  */
 
@@ -744,6 +744,7 @@ CMDFLAGS	*flagp)
 int
 docmd(
 char *cline,	/* command line to execute */
+int execflag,
 int f, int n)
 {
 	int status;		/* return status of function */
@@ -788,7 +789,7 @@ int f, int n)
 
 	/* save the arguments and go execute the command */
 	oldcle = clexec;		/* save old clexec flag */
-	clexec = TRUE;			/* in cline execution */
+	clexec = execflag;		/* in cline execution */
 	/* flag the first time through for some commands -- e.g. subst
 		must know to not prompt for strings again, and pregion
 		must only restart the p-lines buffer once for each
@@ -991,7 +992,7 @@ int eolchar)
 }
 
 /*
- * Convert the string 'src' into a string that we can read back with 'token()'. 
+ * Convert the string 'src' into a string that we can read back with 'token()'.
  * If it is a shell-command, this will be a single-token.  Repeated shift
  * commands are multiple tokens.
  */
@@ -1156,7 +1157,7 @@ execproc(int f, int n)
 	int status;
 
 	/* find out what buffer the user wants to execute */
-	if ((status = mlreply("Execute procedure: ", 
+	if ((status = mlreply("Execute procedure: ",
 					name, sizeof(name))) != TRUE) {
 		return status;
 	}
@@ -1814,7 +1815,7 @@ perform_dobuf(BUFFER *bp, WHBLOCK *whlist)
 		if (ifstk.disabled)
 			status = TRUE;
 		else
-			status = docmd(eline,FALSE,1);
+			status = docmd(eline,TRUE,FALSE,1);
 		if (force)		/* force the status */
 			status = TRUE;
 

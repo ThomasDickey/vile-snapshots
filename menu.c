@@ -8,7 +8,7 @@
 /************************************************************************/
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/menu.c,v 1.16 1997/10/16 00:37:40 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/menu.c,v 1.17 1998/04/17 00:16:25 tom Exp $
  */
 
 #define NEED_X_INCLUDES 1
@@ -56,7 +56,7 @@ int Nb_Token;
 /* Actions of the rc file */
 typedef void (*ActionFunc) ( char * );
 
-typedef struct 
+typedef struct
 {
     char                name [30];
     const   ActionFunc  fact;
@@ -330,29 +330,29 @@ print_token (void)
         {
         case 'C':
         case 'H':
-            Trace("%c %s\n", 
+            Trace("%c %s\n",
                         Token[i].type,
                         Token[i].libelle);
             break;
         case 'S':
-            Trace("\t%c (%s)\n", 
+            Trace("\t%c (%s)\n",
                         Token[i].type,
                         Token[Token[i].idx_cascade].libelle);
             break;
         case 'L':
-            Trace("\t%c %s\n", 
+            Trace("\t%c %s\n",
                         Token[i].type,
                         Token[i].action);
             break;
         case 'B':
             if (Token[i].macro > 0)
-                Trace("\t%c %s(%s) -> Macro-%d\n", 
+                Trace("\t%c %s(%s) -> Macro-%d\n",
                         Token[i].type,
                         Token[i].libelle,
                         Token[Token[i].idx_cascade].libelle,
                         Token[i].macro);
             else
-                Trace("\t%c %s(%s) -> Action-%s\n", 
+                Trace("\t%c %s(%s) -> Action-%s\n",
                         Token[i].type,
                         Token[i].libelle,
                         Token[Token[i].idx_cascade].libelle,
@@ -386,7 +386,7 @@ static Widget do_cascade ( Widget menub, char *nom, int the_class )
 
     if (the_class == 'H')
     {
-        XtVaSetValues (menub, 
+        XtVaSetValues (menub,
             XmNmenuHelpWidget,  cascade,
             NULL);
     }
@@ -445,7 +445,7 @@ static Widget do_button ( Widget pm, char *nom, char *accel, int the_class )
 
     xms_name = XmStringCreateSimple (nom);
     w = XtVaCreateManagedWidget ("menuEntry",
-                wc, 
+                wc,
                 pm,
                 XmNacceleratorText,     xms_accl,
                 XmNlabelString,         xms_name,
@@ -483,8 +483,8 @@ static void proc_back ( Widget w GCC_UNUSED, XtPointer arg, XtPointer call  GCC_
     TRACE(("Macro/Action=%s\n", macro_action));
 
     if (is_bind (macro_action))
-    {   
-        docmd (macro_action, FALSE, 1);
+    {
+        docmd (macro_action, FALSE, FALSE, 1);
     }
     else
     {
@@ -552,13 +552,13 @@ static void post_buffer_list ( Widget w GCC_UNUSED, XtPointer client GCC_UNUSED,
     TRACE(("post_buffer_list\n"));
     nb_item_menu_list = 0;
 
-    for_each_buffer(bp) 
+    for_each_buffer(bp)
     {
         if (b_is_temporary(bp)) /* cf: hist_show() */
             continue;
 
         p = shorten_path(strcpy(temp, bp->b_fname), FALSE);
-        sprintf(string, "%-*.*s %s", NBUFN-1, NBUFN-1, 
+        sprintf(string, "%-*.*s %s", NBUFN-1, NBUFN-1,
                 bp->b_bname, p);
 
         sprintf(temp, "_%d", nb_item_menu_list);
@@ -572,14 +572,14 @@ static void post_buffer_list ( Widget w GCC_UNUSED, XtPointer client GCC_UNUSED,
         {
 #if MOTIF_WIDGETS
             XmString xms = XmStringCreateSimple (string);
-            XtVaSetValues (pm_buffer [nb_item_menu_list], 
+            XtVaSetValues (pm_buffer [nb_item_menu_list],
                         XmNlabelString, xms, NULL);
             XmStringFree (xms);
             XtRemoveCallback (pm_buffer[nb_item_menu_list],
                               XmNactivateCallback, list_proc_back, NULL);
 #endif
 #if ATHENA_WIDGETS
-            XtVaSetValues (pm_buffer [nb_item_menu_list], 
+            XtVaSetValues (pm_buffer [nb_item_menu_list],
                         XtNlabel, string, NULL);
             XtRemoveAllCallbacks (pm_buffer[nb_item_menu_list],
                         XtNcallback);
@@ -587,14 +587,14 @@ static void post_buffer_list ( Widget w GCC_UNUSED, XtPointer client GCC_UNUSED,
         }
 
 #if MOTIF_WIDGETS
-        XtAddCallback (pm_buffer[nb_item_menu_list], 
-                        XmNactivateCallback, 
+        XtAddCallback (pm_buffer[nb_item_menu_list],
+                        XmNactivateCallback,
                         list_proc_back,
                         NULL);
 #endif
 #if ATHENA_WIDGETS
-        XtAddCallback (pm_buffer[nb_item_menu_list], 
-                        XtNcallback, 
+        XtAddCallback (pm_buffer[nb_item_menu_list],
+                        XtNcallback,
                         list_proc_back,
                         (XtPointer)nb_item_menu_list);
 #endif
@@ -655,7 +655,7 @@ void do_menu ( Widget menub )
             if (!strcmp(Token[i].action, "list_buff")
              && cascade != 0)
             {
-                XtAddEventHandler (cascade, 
+                XtAddEventHandler (cascade,
                         ButtonPressMask, False, post_buffer_list, pm);
             }
             break;
