@@ -13,7 +13,7 @@
  *	The same goes for vile.  -pgf, 1990-1995
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.277 1996/05/01 20:52:08 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.278 1996/08/09 10:10:49 tom Exp $
  *
  */
 
@@ -79,7 +79,7 @@ main(int argc, char *argv[])
 
 	global_val_init();	/* global buffer values */
 	charinit();	/* character types -- we need these pretty early  */
-	winit(FALSE);		/* command-lien */
+	winit(FALSE);		/* command-line */
 #if !SYS_UNIX
 	expand_wild_args(&argc, &argv);
 #endif

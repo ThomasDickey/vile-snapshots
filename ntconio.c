@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 console API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntconio.c,v 1.16 1996/07/17 15:01:28 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntconio.c,v 1.17 1996/08/13 02:10:07 pgf Exp $
  *
  */
 
@@ -350,6 +350,7 @@ nthandler(DWORD ctrl_type)
 		imdying(1);
 		break;
 	}
+	return TRUE;
 }
 
 static void
@@ -377,7 +378,6 @@ ntopen(void)
 	newscreensize(csbi.dwMaximumWindowSize.Y, csbi.dwMaximumWindowSize.X);
 	hConsoleInput = GetStdHandle(STD_INPUT_HANDLE);
 	SetConsoleCtrlHandler(nthandler, TRUE);
-	SetConsoleMode(hConsoleInput, ENABLE_MOUSE_INPUT|ENABLE_WINDOW_INPUT);
 }
 
 static int old_title_set = 0;
@@ -393,9 +393,12 @@ ntclose(void)
 	nteeol();
 	ntflush();
 	SetConsoleTextAttribute(hConsoleOutput, originalAttribute);
-	SetConsoleCtrlHandler(nthandler, FALSE);
-	if (hOldConsoleOutput)
+	if (hOldConsoleOutput) {
 		SetConsoleActiveScreenBuffer(hOldConsoleOutput);
+		CloseHandle(hConsoleOutput);
+	}
+	SetConsoleCtrlHandler(nthandler, FALSE);
+	SetConsoleMode(hConsoleInput, ENABLE_LINE_INPUT|ENABLE_ECHO_INPUT|ENABLE_PROCESSED_INPUT);
 }
 
 static void
@@ -412,6 +415,8 @@ ntkopen(void)	/* open the keyboard */
 	if (hConsoleOutput)
 		SetConsoleActiveScreenBuffer(hConsoleOutput);
 	keyboard_open = TRUE;
+	SetConsoleCtrlHandler(NULL, TRUE);
+	SetConsoleMode(hConsoleInput, ENABLE_MOUSE_INPUT|ENABLE_WINDOW_INPUT);
 }
 
 static void
@@ -426,6 +431,7 @@ ntkclose(void)	/* close the keyboard */
 		SetConsoleTitle(orig_title);
 	if (hOldConsoleOutput)
 		SetConsoleActiveScreenBuffer(hOldConsoleOutput);
+	SetConsoleCtrlHandler(NULL, FALSE);
 }
 
 static struct {

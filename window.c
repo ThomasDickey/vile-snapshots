@@ -2,7 +2,7 @@
  * Window management. Some of the functions are internal, and some are
  * attached to keys that the user actually types.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/window.c,v 1.68 1996/03/24 13:38:16 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/window.c,v 1.69 1996/08/13 02:10:07 pgf Exp $
  *
  */
 
@@ -1024,5 +1024,6 @@ void	wp_leaks(void)
 		free((char *)wheadp);
 		wheadp = wp;
 	}
+	free((char *)wminip);
 }
 #endif

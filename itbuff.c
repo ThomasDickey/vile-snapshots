@@ -7,7 +7,7 @@
  *	To do:	add 'itb_ins()' and 'itb_del()' to support cursor-level command
  *		editing.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/itbuff.c,v 1.9 1996/02/26 04:24:35 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/itbuff.c,v 1.10 1996/08/13 02:10:07 pgf Exp $
  *
  */
 
@@ -58,8 +58,8 @@ itb_leaks(void)
 {
 	while (all_tbuffs != 0) {
 		ITBUFF	*q = all_tbuffs->buff;
-		itb_free(&q);
 		FreedBuffer(q);
+		itb_free(&q);
 	}
 }
 
@@ -115,9 +115,9 @@ itb_free(ITBUFF **p)
 	register ITBUFF *q = *p;
 
 	if (q != 0) {
+		FreedBuffer(q)
 		free((char *)(q->itb_data));
 		free((char *)q);
-		FreedBuffer(q)
 	}
 	*p = 0;
 }

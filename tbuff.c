@@ -7,7 +7,7 @@
  *	To do:	add 'tb_ins()' and 'tb_del()' to support cursor-level command
  *		editing.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tbuff.c,v 1.26 1996/02/26 04:24:35 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tbuff.c,v 1.27 1996/08/13 02:10:07 pgf Exp $
  *
  */
 
@@ -60,8 +60,8 @@ tb_leaks(void)
 {
 	while (all_tbuffs != 0) {
 		TBUFF	*q = all_tbuffs->buff;
-		tb_free(&q);
 		FreedBuffer(q);
+		tb_free(&q);
 	}
 }
 
@@ -116,9 +116,9 @@ tb_free(TBUFF **p)
 	register TBUFF *q = *p;
 
 	if (q != 0) {
+		FreedBuffer(q)
 		free(q->tb_data);
 		free((char *)q);
-		FreedBuffer(q)
 	}
 	*p = 0;
 }
