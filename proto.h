@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.337 1999/04/04 23:06:07 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.339 1999/04/14 01:24:35 tom Exp $
  *
  */
 
@@ -258,6 +258,11 @@ extern int did_hard_error_occur (void);
 
 /* statevar.c */
 extern char * vile_getenv(char *s);
+#if OPT_EVAL
+extern void setcmdstatus(int s);
+#else
+#define setcmdstatus(s) /*nothing*/
+#endif
 
 /* eval.c */
 extern char *get_shell(void);
@@ -611,7 +616,7 @@ extern void copy_mvals (int maximum, struct VAL *dst, struct VAL *src);
 extern void free_local_vals (const struct VALNAMES *names, struct VAL *gbl, struct VAL *val);
 
 #if OPT_EVAL || OPT_COLOR
-extern int set_ncolors(int ncolors);
+extern int set_colors(int ncolors);
 #endif
 
 #if OPT_EVAL || OPT_MAJORMODE
@@ -884,22 +889,22 @@ void	tb_unput (TBUFF *p);
 
 /* termio.c */
 extern OUTC_DCL ttputc (OUTC_ARGS);
-extern int  null_t_watchfd (int fd, WATCHTYPE type, long *idp);
+extern int  nullterm_watchfd (int fd, WATCHTYPE type, long *idp);
 extern int  open_terminal (TERM *termp);
 extern int  ttgetc (void);
 extern int  tttypahead (void);
-extern void null_t_cursor (int flag);
-extern void null_t_icursor (int c);
-extern void null_t_pflush (void);
-extern void null_t_scroll (int f, int t, int n);
-extern void null_t_setback (int b);
-extern void null_t_setfor (int f);
-extern void null_t_setpal (const char *p);
-extern void null_t_title (char *t);
-extern void null_t_unwatchfd (int fd, long id);
-extern void null_kopen(void);
-extern void null_kclose(void);
-extern int  null_cres(const char *res);
+extern void nullterm_cursorvis (int flag);
+extern void nullterm_icursor (int c);
+extern void nullterm_pflush (void);
+extern void nullterm_scroll (int f, int t, int n);
+extern void nullterm_setback (int b);
+extern void nullterm_setfore (int f);
+extern void nullterm_setpal (const char *p);
+extern void nullterm_settitile (char *t);
+extern void nullterm_unwatchfd (int fd, long id);
+extern void nullterm_kopen(void);
+extern void nullterm_kclose(void);
+extern int  nullterm_setdescrip(const char *res);
 extern void ttclean (int f);
 extern void ttclose (void);
 extern void ttflush (void);

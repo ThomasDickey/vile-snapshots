@@ -5,7 +5,7 @@
  * reading and writing of the disk are
  * in "fileio.c".
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.245 1999/04/04 23:48:15 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.246 1999/04/13 23:29:34 pgf Exp $
  */
 
 #include	"estruct.h"
@@ -188,7 +188,7 @@ CleanAfterPipe (int Wrote)
 {
 	if (fileispipe == TRUE) {
 		ttunclean();	/* may clear the screen as a side-effect */
-		TTflush();
+		term.flush();
 		if (Wrote) pressreturn();
 		sgarbf = TRUE;
 	}
@@ -204,7 +204,7 @@ CleanToPipe(void)
     {
 	kbd_erase_to_end(0);
 	kbd_flush();
-	TTkclose();
+	term.kclose();
     }
 }
 
@@ -213,7 +213,7 @@ CleanAfterPipe(int Wrote)
 {
     if (fileispipe)
     {
-	TTkopen();
+	term.kopen();
 	if (global_g_val(GMDW32PIPES))
 	{
 	    if (Wrote) pressreturn();
@@ -223,8 +223,8 @@ CleanAfterPipe(int Wrote)
 }
 
 #else /* !GMDW32PIPES */
-#define	CleanToPipe()		TTkclose()
-#define	CleanAfterPipe(f)	TTkopen()
+#define	CleanToPipe()		term.kclose()
+#define	CleanAfterPipe(f)	term.kopen()
 #endif
 #endif /* SYS_UNIX */
 

@@ -5,7 +5,7 @@
  * keys. Like everyone else, they set hints
  * for the display system.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.182 1999/04/04 21:35:10 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.184 1999/04/14 11:00:42 tom Exp $
  *
  */
 
@@ -741,7 +741,7 @@ make_current(BUFFER *nbp)
 	{
 		char title[256];
 		sprintf(title, "vile - %s", curbp->b_bname);
-		TTtitle(title);
+		term.title(title);
 	}
 #endif
 }

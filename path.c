@@ -2,7 +2,7 @@
  *		The routines in this file handle the conversion of pathname
  *		strings.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.89 1999/03/20 16:48:28 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.90 1999/04/13 23:29:34 pgf Exp $
  *
  *
  */
@@ -510,9 +510,9 @@ home_path(char *path)
  * The way that this code works is similar to the classic implementation of
  * getcwd (or getwd).  The difference is that once it finds a directory, it
  * will cache it.  If that directory is referenced again, finding it will be
- * very fast.  The callee of this function should not free up the pointer which
+ * very fast.  The caller of this function should not free up the pointer which
  * is returned.  This will be done automatically by the caching code.  The
- * value returned will exist at least up until the next call It should not be
+ * value returned will exist at least up until the next call.  It should not be
  * relied on any longer than this.  Care should be taken not to corrupt the
  * value returned.
  *

@@ -1,29 +1,35 @@
 /*
- *	this used to be MicroEMACS, a public domain program
- *	written by dave g. conroy, with substantial modifications
- *	by daniel m. lawrence.  dan has placed restrictions on
- *	his work, as follows:
+ * vile -- "vi like emacs"
  *
- *	(C)opyright 1987 by Daniel M. Lawrence
- *	MicroEMACS 3.9 can be copied and distributed freely for any
- *	non-commercial purposes. MicroEMACS 3.9 can only be incorporated
- *	into commercial software with the permission of the current author.
+ * this used to be MicroEMACS, a public domain program written by
+ * dave g. conroy, further improved and modifiied by daniel m. lawrence.
  *
- *	microemacs was initially turned into "VI Like Emacs", a.k.a.
- *	vile, by paul fox.  tom dickey and kevin buettner made huge
- *	contributions along the way, as did rick sladkey and other
- *	people (see CHANGES* for details).  vile is now principally
- *	maintained by tom dickey.
+ * the original author of vile is paul fox.  tom dickey and kevin
+ * buettner made huge contributions along the way, as did rick
+ * sladkey and other people (see CHANGES* for details).  vile
+ * is now principally maintained by tom dickey.
  *
+ * previous versions of vile were limited to non-commercial use due to
+ * their inclusion of code from versions of MicroEMACS which were
+ * restricted in that way.  in the current version of vile, every
+ * attempt has been made to ensure that this later code has been
+ * removed or rewritten, returning vile's original basis to public
+ * domain status.  the current version of vile, however, is _not_ in
+ * the public domain, and should not be incorporated into commercial
+ * software without permission.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.369 1999/04/04 22:30:43 tom Exp $
+ * Copyright (c) 1992-1999 by Paul Fox and Tom Dickey
  *
  */
 
-/* Make global definitions not external */
-#define realdef
+/*
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.373 1999/04/15 01:41:35 tom Exp $
+ */
+
+#define realdef /* Make global definitions not external */
+
 #include	"estruct.h"	/* global structures and defines */
-#include	"edef.h"	/* global definitions */
+#include	"edef.h"	/* global declarations */
 #include	"nevars.h"
 #include	"nefunc.h"
 
@@ -84,7 +90,7 @@ MainProgram(int argc, char *argv[])
 	REGEXVAL *search_exp = 0;	/* initial search-pattern */
 	const char *msg;
 #if SYS_VMS
-	char *cmdline_res = NULL;
+	char *init_descrip = NULL;
 #endif
 #ifdef VILE_OLE
 	int ole_register = FALSE;
@@ -115,6 +121,13 @@ MainProgram(int argc, char *argv[])
 	expand_wild_args(&argc, &argv);
 #endif
 	prog_arg = argv[0];	/* this contains our only clue to exec-path */
+#if SYS_MSDOS || SYS_OS2 || SYS_OS2_EMX || SYS_WINNT
+	if (strchr(pathleaf(prog_arg), '.') == 0) {
+		char *t = malloc(strlen(prog_arg) + 5);
+		lsprintf(t, "%s.exe", prog_arg);
+		prog_arg = t;
+	}
+#endif
 
 	start_debug_log(argc,argv);
 
@@ -164,9 +177,9 @@ MainProgram(int argc, char *argv[])
 				current_res_name = param;
 #else
 				if (strcmp(param, "132") == 0)
-					cmdline_res = "WIDE";
+					init_descrip = "WIDE";
 				else if (strcmp(param, "80") == 0)
-					cmdline_res = "NORMAL";
+					init_descrip = "NORMAL";
 				else
 					print_usage();
 #endif
@@ -433,8 +446,8 @@ MainProgram(int argc, char *argv[])
 	if (!tt_opened)
 		siginit();
 	(void)open_terminal((TERM *)0);
-	TTkopen();		/* open the keyboard */
-	TTrev(FALSE);
+	term.kopen();		/* open the keyboard */
+	term.rev(FALSE);
 
 	if (vtinit() != TRUE)	/* allocate display memory */
 		tidy_exit(BADEXIT);
@@ -443,7 +456,7 @@ MainProgram(int argc, char *argv[])
 
 	/* this comes out to 70 on an 80 (or greater) column display */
 	{	register int fill;
-		fill = (7 * term.t_ncol) / 8;  /* must be done after vtinit() */
+		fill = (7 * term.cols) / 8;  /* must be done after vtinit() */
 		if (fill > 70) fill = 70;
 		set_global_b_val(VAL_FILL, fill);
 	}
@@ -482,7 +495,6 @@ MainProgram(int argc, char *argv[])
 		/* else vileinit is the contents of their VILEINIT variable */
 		vileinit = getenv("VILEINIT");
 		if (vileinit != NULL) { /* set... */
-			int odiscmd;
 			BUFFER *vbp, *obp;
 			UINT oflags = 0;
 			if (*vileinit) { /* ...and not null */
@@ -508,10 +520,7 @@ MainProgram(int argc, char *argv[])
 				set_rdonly(vbp, vbp->b_fname, MDVIEW);
 
 				/* go execute it! */
-				odiscmd = discmd;
-				discmd = FALSE;
 				startstat = dobuf(vbp);
-				discmd = odiscmd;
 				if (startstat != TRUE)
 					goto begin;
 				if (obp) {
@@ -576,7 +585,7 @@ MainProgram(int argc, char *argv[])
 		}
 	} else if (search_exp) {
 		FreeIfNeeded(gregexp);
-		(void)strncpy0(pat, search_exp->pat, NPAT);
+		(void)strncpy0(searchpat, search_exp->pat, NPAT);
 		gregexp = search_exp->reg;
 		(void)forwhunt(FALSE, 0);
 #if OPT_TAGS
@@ -593,13 +602,13 @@ MainProgram(int argc, char *argv[])
 
 begin:
 #if SYS_VMS
-	if (cmdline_res)
+	if (init_descrip)
 	{
 		/*
 		 * All terminal inits are complete.  Switch to new screen
 		 * resolution specified from command line.
 		 */
-		(void) TTrez(cmdline_res);
+		(void) term.setdescrip(init_descrip);
 	}
 #endif
 	(void)update(FALSE);
@@ -970,15 +979,14 @@ global_val_init(void)
 #endif
 #if	!OPT_MAJORMODE
 	set_global_b_val(MDCMOD,	FALSE); /* C mode */
-	set_global_b_val_ptr(VAL_FILTERNAME, strmalloc(""));
 #endif
 #ifdef MDCRYPT
 	set_global_b_val(MDCRYPT,	FALSE);	/* crypt */
 #endif
 	set_global_b_val(MDIGNCASE,	FALSE); /* exact matches */
-	set_global_b_val(MDDOS, CRLF_LINES); /* on by default on DOS, off others */
+	set_global_b_val(MDDOS,	CRLF_LINES);	/* on by default on DOS, off others */
 	set_global_b_val(MDMAGIC,	TRUE);	/* magic searches */
-	set_global_b_val( MDMETAINSBIND, TRUE); /* honor meta-bindings when
+	set_global_b_val(MDMETAINSBIND, TRUE);	/* honor meta-bindings when
 							in insert mode */
 	set_global_b_val(MDNEWLINE,	TRUE);	/* trailing-newline */
 	set_global_b_val(MDREADONLY,	FALSE); /* readonly */
@@ -1576,7 +1584,7 @@ quit(int f, int n GCC_UNUSED)
 		itb_leaks();
 		tb_leaks();
 
-		TTclose();
+		term.close();
 		/* whatever is left over must be a leak */
 		show_alloc();
 	}
@@ -1739,7 +1747,7 @@ makectypelist(int dum1 GCC_UNUSED, void *ptr GCC_UNUSED)
 	};
 	register UINT i, j;
 
-	bprintf("--- Printable Characters %*P\n", term.t_ncol-1, '-');
+	bprintf("--- Printable Characters %*P\n", term.cols-1, '-');
 	for (i = 0; i < N_chars; i++) {
 		bprintf("\n%d\t", i);
 		if ((i == '\n') || (i == '\t')) /* vtlistc() may not do these */
@@ -1993,8 +2001,8 @@ display_heap_usage (void)
 		int	saverow = ttrow;
 		int	savecol = ttcol;
 
-		if (saverow >= 0 && saverow < term.t_nrow
-		 && savecol >= 0 && savecol < term.t_ncol) {
+		if (saverow >= 0 && saverow < term.rows
+		 && savecol >= 0 && savecol < term.cols) {
 			(void)lsprintf(membuf, "[%ld]", currentheap);
 			kbd_overlay(membuf);
 			kbd_flush();

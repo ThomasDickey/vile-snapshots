@@ -10,7 +10,7 @@
  * editing must be being displayed, which means that "b_nwnd" is non zero,
  * which means that the dot and mark values in the buffer headers are nonsense.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.119 1999/03/24 11:45:28 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.120 1999/04/14 22:30:33 tom Exp $
  *
  */
 
@@ -24,7 +24,7 @@
 #include	"estruct.h"
 #include	"edef.h"
 
-#define roundlenup(n) ((n+NBLOCK-1) & ~(NBLOCK-1))
+#define roundlenup(n) ((n+NBLOCK-1) & (unsigned)~(NBLOCK-1))
 
 static	int	doput(int f, int n, int after, REGIONSHAPE shape);
 static	int	ldelnewline (void);
@@ -1127,7 +1127,7 @@ static	struct	{
 	int	next_kb;
 	int	last_kb;
 	int	save_ukb;
-	int	kregflg;
+	USHORT	kregflg;
 	KILLREG	killreg;
 } undo_kill;
 

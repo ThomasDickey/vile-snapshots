@@ -3,7 +3,7 @@
  * Modified from a really old version of "borland.c" (before the VIO
  * stuff went in there.)
  *
- * $Header: /users/source/archives/vile.vcs/RCS/os2vio.c,v 1.21 1998/11/11 21:56:30 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/os2vio.c,v 1.22 1999/04/13 23:29:34 pgf Exp $
  */
 
 #include "estruct.h"
@@ -32,8 +32,6 @@
 
 #define NROW	60			/* Max Screen size.		*/
 #define NCOL    80			/* Edit if you want to.         */
-#define	MARGIN	8			/* size of minimum margin and	*/
-#define	SCRSIZ	64			/* scroll size for extended lines */
 #define	NPAUSE	200			/* # times thru update to pause */
 #define	SPACE	32			/* space character		*/
 
@@ -62,15 +60,15 @@ static	void	vio_fcol   (int);
 static	void	vio_bcol   (int);
 #define vio_spal   set_ctrans
 #else
-#define	vio_fcol   null_t_setfor
-#define	vio_bcol   null_t_setback
-#define vio_spal   null_t_setpal
+#define	vio_fcol   nullterm_setfore
+#define	vio_bcol   nullterm_setback
+#define vio_spal   nullterm_setpal
 #endif
 
 #if	SCROLLCODE
 static	void	vio_scroll (int,int,int);
 #else
-#define	vio_scroll null_t_scroll
+#define	vio_scroll nullterm_scroll
 #endif
 
 #if	OPT_TITLE
@@ -93,8 +91,6 @@ TERM term = {
 	NROW - 1,
 	NCOL,
 	NCOL,
-	MARGIN,
-	SCRSIZ,
 	NPAUSE,
 	vio_open,
 	vio_close,
@@ -118,16 +114,16 @@ TERM term = {
 	vio_bcol,
 	set_ctrans,
 	vio_scroll,
-	null_t_pflush,
-	null_t_icursor,
+	nullterm_pflush,
+	nullterm_icursor,
 #if OPT_TITLE
 	vio_title,
 #else
-	null_t_title,
+	nullterm_settitile,
 #endif
-	null_t_watchfd,
-	null_t_unwatchfd,
-	null_t_cursor,
+	nullterm_watchfd,
+	nullterm_unwatchfd,
+	nullterm_cursorvis,
 };
 
 #include "os2keys.h"
@@ -505,7 +501,7 @@ vio_close(void)
 	set_cursor(2);
 #endif
 	vio_move(MaxRows-1, 0);
-	TTeeop();
+	term.eeop();
 }
 
 static void

@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.191 1999/03/26 11:01:01 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.192 1999/04/13 23:29:34 pgf Exp $
  *
  */
 
@@ -211,7 +211,7 @@ makechrslist(int dum1 GCC_UNUSED, void *ptr GCC_UNUSED)
 	register int i;
 	char	temp[NLINE];
 
-	bprintf("--- Terminal Character Settings %*P\n", term.t_ncol-1, '-');
+	bprintf("--- Terminal Character Settings %*P\n", term.cols-1, '-');
 	for (i = 0; TermChrs[i].name != 0; i++) {
 		bprintf("\n%s = %s",
 			TermChrs[i].name,
@@ -1565,8 +1565,8 @@ kbd_alarm(void)
 	TRACE(("BEEP\n"))
 
 	if (global_g_val(GMDERRORBELLS)) {
-		TTbeep();
-		TTflush();
+		term.beep();
+		term.flush();
 	}
 	warnings++;
 }
@@ -1617,7 +1617,7 @@ kbd_puts(const char *s)
 static void
 kbd_puts_maybe(char *s)
 {
-	if (discmd) while (*s)
+	if (!no_msgs) while (*s)
 		kbd_putc(*s++);
 }
 
@@ -1630,7 +1630,7 @@ kbd_erase(void)
 	WINDOW *savewp;
 	MARK savemk;
 
-	if (!disinp)
+	if (no_echo)
 	    return;
 
 	beginDisplay();
@@ -1660,7 +1660,7 @@ kbd_erase_to_end(int column)
 	WINDOW *savewp;
 	MARK savemk;
 
-	if (!disinp)
+	if (no_echo)
 	    return;
 
 	beginDisplay();
@@ -1843,14 +1843,14 @@ makecmpllist(
 	bprintf("Completions prefixed by %s:\n", b);
     }
 
-    cmplcols = term.t_ncol / (maxlen - slashcol + 1);
+    cmplcols = term.cols / (maxlen - slashcol + 1);
 
     if (cmplcols == 0)
 	cmplcols = 1;
 
     nentries = (int)(last - first) / size_entry;
     cmplrows = nentries / cmplcols;
-    cmpllen  = term.t_ncol / cmplcols;
+    cmpllen  = term.cols / cmplcols;
     if (cmplrows * cmplcols < nentries)
 	cmplrows++;
 

@@ -20,7 +20,7 @@
 #
 # gnu autoconf support by kevin buettner, 5/94
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.130 1999/03/26 12:04:55 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.132 1999/04/14 21:21:25 tom Exp $
 #
 
 #### Start of system configuration section. ####
@@ -322,7 +322,7 @@ install-perl : $(INSTALL_PERL_DIRS) $(INSTALL_PERL_FILES)
 
 installdirs: $(INSTALL_DIRS)
 
-uninstall:
+uninstall ::
 	-$(RM) $(INSTALL_FILES)
 
 # The makefile is technically dependent upon the config.status file, but
@@ -531,10 +531,14 @@ perl.c: $(srcdir)/perl.xs $(srcdir)/ptypemap
 
 all \
 install \
+uninstall \
 mostlyclean \
 clean \
 distclean ::
 	cd filters && $(MAKE) -k$(MAKEFLAGS) $@
+
+distclean ::
+	- rmdir filters
 
 $(OBJ): estruct.h nemode.h edef.h neproto.h proto.h config.h
 

@@ -8,7 +8,7 @@
  * Extensions for vile by Paul Fox
  * Rewrote to use regular expressions - T.Dickey
  *
- * $Header: /users/source/archives/vile.vcs/RCS/fences.c,v 1.68 1999/03/20 16:34:20 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/fences.c,v 1.69 1999/04/14 22:29:53 tom Exp $
  *
  */
 
@@ -75,9 +75,9 @@
 		backchar(TRUE,1); \
 	}
 
-#define test_fence_op(status, oldpos, oldpre) \
-	TRACE(("...test_fence_op, status=%d\n", status)) \
-	if (status != TRUE) { \
+#define test_fence_op(st, oldpos, oldpre) \
+	TRACE(("...test_fence_op, status=%d\n", st)) \
+	if (st != TRUE) { \
 		DOT = oldpos; \
 		pre_op_dot = oldpre; \
 	}

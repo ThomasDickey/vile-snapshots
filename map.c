@@ -3,7 +3,7 @@
  *	Original interface by Otto Lind, 6/3/93
  *	Additional map and map! support by Kevin Buettner, 9/17/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/map.c,v 1.86 1999/03/19 11:32:42 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/map.c,v 1.87 1999/04/13 23:29:34 pgf Exp $
  *
  */
 
@@ -536,12 +536,12 @@ save_keystroke(int c)
 }
 
 /* these two wrappers are provided because at least one pcc-based
-	compiler balks at passing TTgetc or TTtypahead as a function pointer */
+	compiler balks at passing term.getch or term.typahead as a function pointer */
 
 static int
 normal_getc(void)
 {
-	int c = TTgetc();
+	int c = term.getch();
 	TRACE(("normal/getc:%c (%#x)\n", c, c))
 	save_keystroke(c);
 	return c;
@@ -550,7 +550,7 @@ normal_getc(void)
 static int
 normal_typeahead(void)
 {
-	return(TTtypahead());
+	return(term.typahead());
 }
 
 static int
@@ -568,7 +568,7 @@ sysmapped_c(void)
     if (itb_more(sysmappedchars))
 	return itb_last(sysmappedchars);
 
-    c = TTgetc();
+    c = term.getch();
     TRACE(("mapped/getc:%c (%#x)\n", c, c))
 
     save_keystroke(c);
@@ -586,7 +586,7 @@ sysmapped_c(void)
 int
 sysmapped_c_avail(void)
 {
-    return itb_more(sysmappedchars) || (!mapgetc_ungotcnt && TTtypahead());
+    return itb_more(sysmappedchars) || (!mapgetc_ungotcnt && term.typahead());
 }
 
 

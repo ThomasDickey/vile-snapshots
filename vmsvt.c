@@ -7,7 +7,7 @@
  *  Author:  Curtis Smith
  *  Last Updated: 07/14/87
  *
- * $Header: /users/source/archives/vile.vcs/RCS/vmsvt.c,v 1.44 1999/03/20 16:40:11 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/vmsvt.c,v 1.45 1999/04/13 23:29:34 pgf Exp $
  *
  */
 
@@ -46,9 +46,6 @@ static	void	vmsrev  ( UINT state );
 #endif
 static	int	vmscres	(const char *);
 
-extern	int	eolexist, revexist;
-extern	char	sres[];
-
 /** SMG stuff (just like termcap) */
 static	int	initialized;
 static	int	termtype;
@@ -81,13 +78,11 @@ TERM	term	= {
 	/* Filled in */ 0,		/* Current number of rows used	*/
 	132,				/* Max number of columns	*/
 	/* Filled in */ 0,		/* Current number of columns	*/
-	64,				/* Min margin for extended lines*/
-	8,				/* Size of scroll region	*/
 	100,				/* # times thru update to pause */
 	vmsopen,			/* Open terminal at the start	*/
 	vmsclose,			/* Close terminal at end	*/
-	null_kopen,			/* Open keyboard		*/
-	null_kclose,			/* Close keyboard		*/
+	nullterm_kopen,			/* Open keyboard		*/
+	nullterm_kclose,			/* Close keyboard		*/
 	ttgetc,				/* Get character from keyboard	*/
 	ttputc,				/* Put character to display	*/
 	tttypahead,			/* char ready for reading	*/
@@ -102,16 +97,16 @@ TERM	term	= {
 	vmsrev,				/* Set reverse video state	*/
 #endif
 	vmscres,			/* Change screen resolution	*/
-	null_t_setfor,			/* N/A: Set foreground color	*/
-	null_t_setback,			/* N/A: Set background color	*/
-	null_t_setpal,			/* N/A: Set palette colors	*/
-	null_t_scroll,			/* set at init-time		*/
-	null_t_pflush,
-	null_t_icursor,
-	null_t_title,
-	null_t_watchfd,
-	null_t_unwatchfd,
-	null_t_cursor,
+	nullterm_setfore,			/* N/A: Set foreground color	*/
+	nullterm_setback,			/* N/A: Set background color	*/
+	nullterm_setpal,			/* N/A: Set palette colors	*/
+	nullterm_scroll,			/* set at init-time		*/
+	nullterm_pflush,
+	nullterm_icursor,
+	nullterm_settitile,
+	nullterm_watchfd,
+	nullterm_unwatchfd,
+	nullterm_cursorvis,
 };
 
 struct vmskeyseqs
@@ -567,14 +562,14 @@ vmsopen(void)
 	}
 
 	/* Set sizes */
-	term.t_nrow = ((UINT) tc.t_mandl >> 24);
-	term.t_ncol = tc.t_width;
+	term.rows = ((UINT) tc.t_mandl >> 24);
+	term.cols = tc.t_width;
 
-	if (term.t_mrow < term.t_nrow)
-		term.t_mrow = term.t_nrow;
+	if (term.maxrows < term.rows)
+		term.maxrows = term.rows;
 
-	if (term.t_mcol < term.t_ncol)
-		term.t_mcol = term.t_ncol;
+	if (term.maxcols < term.cols)
+		term.maxcols = term.cols;
 
 	/* Get some capabilities */
 	for (i = 0; i < sizeof(tcaps)/sizeof(tcaps[0]); i++) {
@@ -595,15 +590,15 @@ vmsopen(void)
 	if (scroll_regn && scroll_back) {
 		if (scroll_forw == NULL) /* assume '\n' scrolls forward */
 			scroll_forw = "\n";
-		term.t_scroll = vmsscroll_reg;
+		term.scroll = vmsscroll_reg;
 	} else if (delete_line && insert_line) {
-		term.t_scroll = vmsscroll_delins;
+		term.scroll = vmsscroll_delins;
 	} else {
-		term.t_scroll = null_t_scroll;
+		term.scroll = nullterm_scroll;
 	}
 
 	/* Set resolution */
-	(void)strcpy(sres, (term.t_ncol != 132) ? "NORMAL" : "WIDE");
+	(void)strcpy(screen_desc, (term.cols != 132) ? "NORMAL" : "WIDE");
 
 	/* Open terminal I/O drivers */
 	ttopen();
@@ -635,7 +630,7 @@ vmsscroll_reg(int from, int to, int n)
 		for (i = to - from; i > 0; i--)
 			ttputs(scroll_back);
 	}
-	vmsscrollregion(0, term.t_nrow-1);
+	vmsscrollregion(0, term.rows-1);
 }
 
 /*
@@ -707,19 +702,19 @@ vmscres(const char *res)
     if (strcmp(buf, "WIDE") == 0)
     {
 	ttputs(COLS_132);
-	term.t_ncol = 132;
+	term.cols = 132;
 	rc	    = TRUE;
     }
     else if (strcmp(buf, "NORMAL") == 0)
     {
 	ttputs(COLS_80);
-	term.t_ncol = 80;
+	term.cols = 80;
 	rc	    = TRUE;
     }
     else
 	mlforce("[invalid sres value (use NORMAL or WIDE)]");
     if (rc)
-	newwidth(1, term.t_ncol);
+	newwidth(1, term.cols);
     return (rc);
 }
 
@@ -735,7 +730,7 @@ vmsclose(void)
 	 * cleanup as usual.
 	 */
 
-	if (tc.t_width != term.t_ncol)
+	if (tc.t_width != term.cols)
 	    ttputs((tc.t_width == 80) ? COLS_80 : COLS_132);
     }
     ttclose();
@@ -777,7 +772,7 @@ vmsbeep(void)
 		{
 			str2 = seq[val][1];
 			ttputs(str1);
-			TTflush();
+			term.flush();
 			catnap(150, FALSE);
 			ttputs(str2);
 			hit = 1;

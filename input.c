@@ -3,10 +3,10 @@
  *		variously munged/massaged/relayered/slashed/burned
  *			since then. -pgf
  *
- *	TTgetc()	raw 8-bit key from terminal driver.
+ *	term.getch()	raw 8-bit key from terminal driver.
  *
  *	sysmapped_c()	single "keystroke" -- may have SPEC bit, if it was
- *			a sytem-mapped function key.  calls TTgetc().  these
+ *			a sytem-mapped function key.  calls term.getch().  these
  *			system-mapped keys will never map to a multi-char
  *			sequence.  the routine does have storage, to hold
  *			keystrokes gathered "in error".
@@ -39,12 +39,12 @@
  *			SPEC|c.
  *
  *
- *	TTtypahead()	  true if a key is avail from TTgetc().
+ *	term.typahead()	  true if a key is avail from term.getch().
  *	sysmapped_c_avail() "  if a key is avail from sysmapped_c() or below.
  *	tgetc_avail()     true if a key is avail from tgetc() or below.
  *	keystroke_avail() true if a key is avail from keystroke() or below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.192 1999/03/24 11:45:43 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.193 1999/04/13 23:29:34 pgf Exp $
  *
  */
 
@@ -789,21 +789,25 @@ countBackSlashes(TBUFF * buf, UINT len)
 static void
 showChar(int c)
 {
-	if (disinp) {
-		int	save_expand = kbd_expand;
-		kbd_expand = 1;	/* show all controls */
-		kbd_putc(c);
-		kbd_expand = save_expand;
-	}
+	int	save_expand;
+
+	if (no_echo)
+		return;
+
+	save_expand = kbd_expand;
+	kbd_expand = 1;	/* show all controls */
+	kbd_putc(c);
+	kbd_expand = save_expand;
 }
 
 static void
 show1Char(int c)
 {
-	if (disinp) {
-		showChar(c);
-		kbd_flush();
-	}
+	if (no_echo)
+		return;
+
+	showChar(c);
+	kbd_flush();
 }
 
 /*
@@ -882,8 +886,8 @@ UINT	options)
 		if (!exppat)
 			return FALSE;
 
-		if (rpat[0])
-			cp = rpat;
+		if (replacepat[0])
+			cp = replacepat;
 		else
 			cp = NULL;
 
@@ -956,7 +960,7 @@ kbd_kill_response(TBUFF * buffer, unsigned * position, int c)
 		if (c != killc && c != wkillc)
 			break;
 	}
-	if (disinp)
+	if (!no_echo)
 		kbd_flush();
 
 	*position = cpos;
@@ -1007,7 +1011,7 @@ UINT	options)
 	for (k = 0; k < tb_length(*dst); k++) {
 		showChar(tb_values(*dst)[k]);
 	}
-	if (disinp)
+	if (!no_echo)
 		kbd_flush();
 	return tb_length(*dst);
 }
@@ -1090,20 +1094,20 @@ const char *
 user_reply(const char *prompt)
 {
 	static TBUFF *replbuf;
-	int odiscmd;
-	int oclexec;
+	int save_no_msgs;
+	int save_clexec;
 	int status;
 
-	odiscmd = discmd; discmd = TRUE;
-	oclexec = clexec; clexec = FALSE;
+	save_no_msgs = no_msgs; no_msgs = FALSE;
+	save_clexec = clexec; clexec = FALSE;
 
 	status = kbd_reply(prompt, &replbuf,
 			eol_history, '\n',
 			KBD_EXPAND|KBD_QUOTES,
 			no_completion);
 
-	discmd = odiscmd;
-	clexec = oclexec;
+	no_msgs = save_no_msgs;
+	clexec = save_clexec;
 
 	if (status == ABORT)
 		return NULL;
@@ -1267,15 +1271,14 @@ editMinibuffer(TBUFF **buf, unsigned *cpos, int c, int margin, int quoted)
 		kbd_alarm();
 	} else {
 		miniedit = FALSE;
-		if (disinp) {
+		if (no_echo) {
+			char tmp = c;
+			tb_bappend(buf, &tmp, 1);
+		} else {
 			show1Char(c);
 			tb_init(buf, EOS);
 			tb_bappend(buf, DOT.l->l_text + margin,
 				   llength(DOT.l) - margin);
-		}
-		else {
-			char tmp = c;
-			tb_bappend(buf, &tmp, 1);
 		}
 		*cpos += 1;
 		edited = TRUE;

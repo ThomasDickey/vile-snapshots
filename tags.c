@@ -1,10 +1,11 @@
-/* Look up vi-style tags in the file "tags".
+/*
+ * Look up vi-style tags in the file "tags".
  *	Invoked either by ":ta routine-name" or by "^]" while sitting
  *	on a string.  In the latter case, the tag is the word under
  *	the cursor.
  *	written for vile: Copyright (c) 1990, 1995 by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tags.c,v 1.95 1999/03/19 11:01:21 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tags.c,v 1.96 1999/04/13 23:29:34 pgf Exp $
  *
  */
 #include	"estruct.h"

@@ -9,7 +9,7 @@
  * Note: Visual flashes are not yet supported.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/borland.c,v 1.26 1998/11/11 21:55:17 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/borland.c,v 1.27 1999/04/13 23:29:34 pgf Exp $
  *
  */
 
@@ -34,8 +34,6 @@
 
 #define NROW	50			/* Max Screen size.		*/
 #define NCOL    80			/* Edit if you want to.         */
-#define	MARGIN	8			/* size of minimum margin and	*/
-#define	SCRSIZ	64			/* scroll size for extended lines */
 #define	NPAUSE	200			/* # times thru update to pause */
 #define	SPACE	32			/* space character		*/
 
@@ -125,8 +123,6 @@ TERM    term    = {
 	NROW,
 	NCOL,
 	NCOL,
-	MARGIN,
-	SCRSIZ,
 	NPAUSE,
 	boropen,
 	borclose,
@@ -147,21 +143,21 @@ TERM    term    = {
 	borbcol,
 	borspal,
 #else
-	null_t_setfor,
-	null_t_setback,
-	null_t_setpal,
+	nullterm_setfore,
+	nullterm_setback,
+	nullterm_setpal,
 #endif
 	borscroll,
-	null_t_pflush,
+	nullterm_pflush,
 #if OPT_ICURSOR
 	boricursor,
 #else
-	null_t_icursor,
+	nullterm_icursor,
 #endif
-	null_t_title,
-	null_t_watchfd,
-	null_t_unwatchfd,
-	null_t_cursor,
+	nullterm_settitile,
+	nullterm_watchfd,
+	nullterm_unwatchfd,
+	nullterm_cursorvis,
 };
 
 #if OPT_ICURSOR
@@ -356,7 +352,7 @@ borclose(void)
 #ifdef OPT_ICURSOR
 	_setcursortype(_NORMALCURSOR);
 #endif
-	ibmtype = current_type;	/* ...so subsequent TTopen restores us */
+	ibmtype = current_type;	/* ...so subsequent term.open restores us */
 
 	reset_colors();
 	kbd_erase_to_end(0);
@@ -367,8 +363,8 @@ static void
 borkopen(void)	/* open the keyboard */
 {
 	setup_colors();
-	TTmove(term.t_nrow-1, 0);	/* cf: dumbterm.c */
-	TTeeol();
+	term.curmove(term.rows-1, 0);	/* cf: dumbterm.c */
+	term.eeol();
 
 	/* ms_install(); */
 }
@@ -379,8 +375,8 @@ borkclose(void)	/* close the keyboard */
 	/* ms_deinstall(); */
 
 	reset_colors();
-	TTmove(term.t_nrow-1, 0);	/* cf: dumbterm.c */
-	TTeeol();
+	term.curmove(term.rows-1, 0);	/* cf: dumbterm.c */
+	term.eeol();
 }
 
 static
@@ -422,39 +418,39 @@ scinit(int rows)	/* initialize the screen head pointers */
 /* these are enum's, and thus cannot easily be checked, ie. #ifdef C80X21 */
 		case 21:	/* color C80X21 */
 				textmode(C80X21);
-				newscreensize(21, term.t_ncol);
-				(void)strcpy(sres, "C80X21");
+				newscreensize(21, term.cols);
+				(void)strcpy(screen_desc, "C80X21");
 				break;
 
 		default:
 		case 25:	/* Color graphics adapter */
 				textmode(C80);
-				newscreensize(25, term.t_ncol);
-				(void)strcpy(sres, "C80");
+				newscreensize(25, term.cols);
+				(void)strcpy(screen_desc, "C80");
 				break;
 
 		case 28:	/* Enhanced graphics adapter */
 				textmode(C80X28);
-				newscreensize(28, term.t_ncol);
-				(void)strcpy(sres, "C80X28");
+				newscreensize(28, term.cols);
+				(void)strcpy(screen_desc, "C80X28");
 				break;
 
 		case 43:	/* Enhanced graphics adapter */
 				textmode(C80X43);
-				newscreensize(43, term.t_ncol);
-				(void)strcpy(sres, "C80X43");
+				newscreensize(43, term.cols);
+				(void)strcpy(screen_desc, "C80X43");
 				break;
 
 		case 50:	/* VGA adapter */
 				textmode(C80X50);
-				newscreensize(50, term.t_ncol);
-				(void)strcpy(sres, "C80X50");
+				newscreensize(50, term.cols);
+				(void)strcpy(screen_desc, "C80X50");
 				break;
 
 		case 60:	/* Enhanced graphics adapter */
 				textmode(C80X60);
-				newscreensize(60, term.t_ncol);
-				(void)strcpy(sres, "C80X60");
+				newscreensize(60, term.cols);
+				(void)strcpy(screen_desc, "C80X60");
 				break;
 
 
@@ -489,8 +485,8 @@ scinit(int rows)	/* initialize the screen head pointers */
 		case 25:	/* Color graphics adapter */
 				if (oldrows != 25)
 					textmode(C80);
-				newscreensize(25, term.t_ncol);
-				(void)strcpy(sres, "C80");
+				newscreensize(25, term.cols);
+				(void)strcpy(screen_desc, "C80");
 				break;
 
 		case 43:
@@ -500,8 +496,8 @@ scinit(int rows)	/* initialize the screen head pointers */
 					textmode(C4350);
 				gettextinfo(&ti);
 				rows = ti.screenheight;
-				newscreensize(rows, term.t_ncol);
-				sprintf(sres, "C80X%d", rows);
+				newscreensize(rows, term.cols);
+				sprintf(screen_desc, "C80X%d", rows);
 				break;
 
 	}

@@ -1,7 +1,7 @@
 /*	Spawn:	various DOS access commands
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.142 1999/03/25 02:04:20 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.143 1999/04/13 23:29:34 pgf Exp $
  *
  */
 
@@ -128,7 +128,7 @@ spawncli(int f GCC_UNUSED, int n GCC_UNUSED)
 #define	OK_SPAWN
 	bottomleft();
 	kbd_flush();
-	TTkclose();
+	term.kclose();
 	{
 		char *shell = get_shell();
 #if SYS_OS2
@@ -145,7 +145,7 @@ spawncli(int f GCC_UNUSED, int n GCC_UNUSED)
 #endif
 #endif
 	}
-	TTkopen();
+	term.kopen();
 	sgarbf = TRUE;
 	return AfterShell();
 #endif
@@ -158,11 +158,10 @@ spawncli(int f GCC_UNUSED, int n GCC_UNUSED)
 }
 
 
-/* ARGSUSED */
+#if USE_UNIX_JOB_CTL
 int
 bktoshell(int f, int n)		/* suspend and wait to wake up */
 {
-#if USE_UNIX_JOB_CTL
 	int forced = (f && n == SPECIAL_BANG_ARG); /* then it was :stop! */
 
 	/* take care of autowrite */
@@ -189,11 +188,16 @@ bktoshell(int f, int n)		/* suspend and wait to wake up */
 	sgarbf = TRUE;
 	return AfterShell();
 # endif
+}
 #else
+/* ARGSUSED */
+int
+bktoshell(int f GCC_UNUSED, int n GCC_UNUSED)
+{
 	mlforce("[Job control unavailable]");
 	return FALSE;
-#endif /* SIGTSTP */
 }
+#endif /* SIGTSTP */
 
 /*ARGSUSED*/
 SIGT
@@ -204,10 +208,10 @@ rtfrmshell(int ACTUAL_SIG_ARGS GCC_UNUSED)
 	ttunclean();
 	sgarbf = TRUE;
 #  if SYS_APOLLO
-	(void)TTgetc();		/* have to skip a character */
+	(void)term.getch();		/* have to skip a character */
 	ttunclean();		/* ...so that I can finally suppress echo */
 #  endif
-	TTkopen();
+	term.kopen();
 	setup_handler(SIGCONT,rtfrmshell); /* suspend & restart */
 	(void)update(TRUE);
 #endif
@@ -221,12 +225,8 @@ void
 pressreturn(void)
 {
 	int c;
-	int odiscmd;
 
-	odiscmd = discmd;
-	discmd = TRUE;
-	mlprompt("[Press return to continue]");
-	discmd = odiscmd;
+	mlforce("[Press return to continue]");
 	/* loop for a CR, a space, or a : to do another named command */
 	while ((c = keystroke()) != '\r' &&
 			c != '\n' &&
@@ -348,13 +348,13 @@ spawn1(int rerun, int pressret)
 #else
 	ttclean(TRUE);
 	(void)system_SHELL(line);
-	TTflush();
+	term.flush();
 	ttunclean();
 	if (pressret)
 		pressreturn();
-	TTopen();
-	TTkopen();
-	TTflush();
+	term.open();
+	term.kopen();
+	term.flush();
 	sgarbf = TRUE;
 #endif /* DISP_X11 */
 	return AfterShell();
@@ -364,9 +364,9 @@ spawn1(int rerun, int pressret)
 	kbd_flush();
 	s = vms_system(line);		/* Run the command.	*/
 	if (pressret) {
-		TTputc('\r');
-		TTputc('\n');
-		TTflush();
+		term.putch('\r');
+		term.putch('\n');
+		term.flush();
 		pressreturn();
 	}
 	sgarbf = TRUE;
@@ -379,14 +379,14 @@ spawn1(int rerun, int pressret)
 #if	SYS_MSDOS || SYS_OS2 || SYS_WINNT
 	kbd_erase_to_end(0);
 	kbd_flush();
-	TTkclose();
+	term.kclose();
 #if	DISP_IBMPC
 	/* If we don't reset to 80x25, parts of the shell-output will go
 	 * astray.
 	 */
-	closed = term.t_ncol != 80 || term.t_nrow != 25;
+	closed = term.cols != 80 || term.rows != 25;
 	if (closed)
-		TTclose();
+		term.close();
 #endif
 #if SYS_WINNT
 # if DISP_NTWIN
@@ -397,7 +397,7 @@ spawn1(int rerun, int pressret)
 	w32_keybrd_reopen(pressret);
 #else
 	system(line);
-	TTkopen();
+	term.kopen();
 	/* if we are interactive, pause here */
 	if (pressret) {
 		pressreturn();
@@ -408,7 +408,7 @@ spawn1(int rerun, int pressret)
 	 * in the same type of screen as the prompt.
 	 */
 	if (closed)
-		TTopen();
+		term.open();
 #endif
 #if DISP_NTCONS
 	ntcons_reopen();
@@ -849,9 +849,9 @@ vile_filter(int f GCC_UNUSED, int n GCC_UNUSED)
 #if	SYS_MSDOS || SYS_OS2 || SYS_WINNT
 	(void)strcat(line," <fltinp >fltout");
 	bottomleft();
-	TTkclose();
+	term.kclose();
 	system(line);
-	TTkopen();
+	term.kopen();
 	sgarbf = TRUE;
 	s = TRUE;
 #endif
@@ -868,7 +868,7 @@ vile_filter(int f GCC_UNUSED, int n GCC_UNUSED)
 	(void)strcat(line," >fltout");
 	system(line);
 	ttunclean();
-	TTflush();
+	term.flush();
 	sgarbf = TRUE;
 	s = TRUE;
 #endif

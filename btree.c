@@ -1,5 +1,5 @@
 /*
- * $Id: btree.c,v 1.4 1998/04/28 10:15:52 tom Exp $
+ * $Id: btree.c,v 1.5 1999/04/14 22:02:13 tom Exp $
  * Copyright 1997 by Thomas E. Dickey
  *
  * Maintains a balanced binary tree (aka AVL tree) of unspecified nodes.  The
@@ -108,7 +108,7 @@ register
 		*q,
 		*r;
 register
-	int	a;
+	short	a;
 	BI_DATA	*value = 0;
 
 	TRACE(("inserting '%s'\n", data->bi_key))
@@ -243,7 +243,7 @@ register
 		*p = RLINK(t),
 		*q, *r, *s;
 register
-	int	a, b;
+	short	a, b;
 	char	*value;
 
 	if ((p = t) == 0
@@ -278,7 +278,7 @@ register
 
 			LINK(a,p) = LLINK(q);
 			s = p;
-#if LATER
+#if 0 /* LATER? */
 		} else if (LLINK(q) == 0) { /* D1.5 */
 			TRACE(("D1.5\n"))
 			LINK(a,p) = RLINK(q);

@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/sh-filt.l,v 1.21 1999/03/07 19:20:50 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/sh-filt.l,v 1.22 1999/04/14 01:28:55 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Shell script.
  */
@@ -101,6 +101,7 @@ FILENAME	(([./]{WILDNAME}+)|({WILDNAME}+[./]{WILDNAME}*)|({NAME}*{WILDCARD})|\.+
 ACTION		[\.`{}]
 IDENT		[a-zA-Z_]{NAME}*
 QIDENT		[a-zA-Z_0-9"'\\]+
+IDENT0		[-]+[a-zA-Z_-]+
 IDENT1		\${NAME}+
 IDENT2		\$\{[^\}]*\}
 IDENTEQLS	[a-zA-Z_]{NAME}*=
@@ -110,6 +111,7 @@ INTEGER		[-+]?([0-9]+)
 
 %%
 
+<NORMAL>{IDENT0}	|
 <NORMAL>{FILENAME}	{ ECHO; /* exclude from other classes */ }
 
 <NORMAL>{IDENT}		{ WriteToken(keyword_attr(yytext)); }

@@ -2,7 +2,7 @@
  * Window management. Some of the functions are internal, and some are
  * attached to keys that the user actually types.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/window.c,v 1.88 1999/04/04 22:52:43 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/window.c,v 1.89 1999/04/13 23:29:34 pgf Exp $
  *
  */
 
@@ -338,7 +338,7 @@ scroll_sideways(int f, int n)
 	int	original = w_val(curwp,WVAL_SIDEWAYS);
 
 	if (!f) {
-		int	nominal = term.t_ncol / 2;
+		int	nominal = term.cols / 2;
 		n = (n > 0) ? nominal : -nominal;
 	}
 
@@ -399,7 +399,7 @@ onlywind(int f GCC_UNUSED, int n GCC_UNUSED)
 
 	curwp->w_line.l = adjust_back(curwp, curwp->w_line.l, curwp->w_toprow);
 	curwp->w_line.o = 0;
-	curwp->w_ntrows = term.t_nrow-2;
+	curwp->w_ntrows = term.rows-2;
 	curwp->w_toprow = 0;
 	curwp->w_flag  |= WFMODE|WFHARD|WFSBAR;
 	curwp->w_split_hist = 0;
@@ -878,11 +878,11 @@ newlength(int f, int n)
 		return FALSE;
 	}
 
-	if (term.t_nrow == n)
+	if (term.rows == n)
 		return(TRUE);
 
 	/* validate */
-	if (n < MINWLNS || n > term.t_mrow) {
+	if (n < MINWLNS || n > term.maxrows) {
 		mlforce("[Bad screen length]");
 		return(FALSE);
 	}
@@ -891,13 +891,13 @@ newlength(int f, int n)
 		return TRUE;
 
 	/* screen getting bigger, grow the last window */
-	if (n > term.t_nrow) {
+	if (n > term.rows) {
 
 		/* find end of list */
 		for (wp = wheadp; wp->w_wndp; wp = wp->w_wndp)
 			;
 
-		wp->w_ntrows += n - term.t_nrow;
+		wp->w_ntrows += n - term.rows;
 		wp->w_flag |= WFHARD|WFMODE;
 
 	} else {
@@ -947,7 +947,7 @@ newlength(int f, int n)
 	/* trash screen */
 	sgarbf = TRUE;
 
-	term.t_nrow = n;
+	term.rows = n;
 	return(TRUE);
 }
 
@@ -962,15 +962,13 @@ newwidth(int f, int n)	/* change width of displayed area */
 	}
 
 	/* validate */
-	if (n < 3 || n > term.t_mcol) {
+	if (n < 3 || n > term.maxcols) {
 		mlforce("[Bad screen width]");
 		return(FALSE);
 	}
 
 	/* set the new width */
-	term.t_ncol = n;
-	term.t_scrsiz = n - ((n/10) * 2);
-	term.t_margin = n/10;
+	term.cols = n;
 
 	/* redraw all */
 	for_each_visible_window(wp)
@@ -1021,7 +1019,7 @@ winit(int screen)
 	wp->w_toprow = 0;
 	wp->w_values = global_w_values;
 	wp->w_ntrows = screen
-			? term.t_nrow-2		/* "-1" for mode line.  */
+			? term.rows-2		/* "-1" for mode line.  */
 			: 1;			/* command-line		*/
 	wp->w_force = 0;
 	wp->w_flag  = WFMODE|WFHARD;		/* Full.		*/

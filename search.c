@@ -3,7 +3,7 @@
  * and backward directions.
  *  heavily modified by Paul Fox, 1990
  *
- * $Header: /users/source/archives/vile.vcs/RCS/search.c,v 1.115 1999/03/19 12:16:42 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/search.c,v 1.116 1999/04/13 23:29:34 pgf Exp $
  *
  * original written Aug. 1986 by John M. Gamble, but I (pgf) have since
  * replaced his regex stuff with Henry Spencer's regexp package.
@@ -83,7 +83,7 @@ fsearch(int f, int n, int marking, int fromscreen)
 	 *  global command.
 	 */
 	if (!marking) {
-		status = readpattern("Search: ", pat, &gregexp,
+		status = readpattern("Search: ", searchpat, &gregexp,
 				    lastkey, fromscreen);
 		if (status != TRUE)
 			return status;
@@ -165,7 +165,7 @@ forwhunt(int f, int n)
 	if (n == 0) n = 1;
 
 	/* Make sure a pattern exists */
-	if (pat[0] == EOS)
+	if (searchpat[0] == EOS)
 	{
 		mlforce("[No pattern set]");
 		return FALSE;
@@ -242,7 +242,7 @@ rsearch(int f, int n, int dummy GCC_UNUSED, int fromscreen)
 	/* ask the user for the text of a pattern, and find
 	 * n'th occurence.
 	 */
-	status = readpattern("Reverse search: ", pat, &gregexp,
+	status = readpattern("Reverse search: ", searchpat, &gregexp,
 					EOS, fromscreen);
 	if (status != TRUE)
 		return status;
@@ -300,7 +300,7 @@ backhunt(int f, int n)
 	if (n == 0) n = 1;
 
 	/* Make sure a pattern exists */
-	if (pat[0] == EOS) {
+	if (searchpat[0] == EOS) {
 		mlforce("[No pattern set]");
 		return FALSE;
 	}
@@ -554,12 +554,12 @@ need_to_rehilite(void)
 
 	if ((curbp->b_highlight & (HILITE_ON|HILITE_DIRTY)) ==
 				  (HILITE_ON|HILITE_DIRTY) ||
-			strcmp(pat, savepat) != 0 ||
+			strcmp(searchpat, savepat) != 0 ||
 			save_igncase != ignorecase ||
 			save_vattr != b_val(curbp,VAL_HILITEMATCH) ||
 			save_magic != b_val(curbp, MDMAGIC) ||
 			(!hilite_suppressed && save_curbp != curbp)) {
-		(void)strcpy(savepat, pat);
+		(void)strcpy(savepat, searchpat);
 		save_igncase = ignorecase;
 		save_vattr = b_val(curbp,VAL_HILITEMATCH);
 		save_magic = b_val(curbp, MDMAGIC);
@@ -615,7 +615,7 @@ attrib_matches(void)
 	if (!need_to_rehilite())
 		return;
 
-	if (pat[0] == EOS || gregexp == NULL)
+	if (searchpat[0] == EOS || gregexp == NULL)
 		return;
 
 /* #define track_hilite 1 */
@@ -694,8 +694,8 @@ int
 scrsearchpat(int f GCC_UNUSED, int n GCC_UNUSED)
 {
 	int s;
-	s =  readpattern("", pat, &gregexp, EOS, TRUE);
-	mlwrite("Search pattern is now %s", pat);
+	s =  readpattern("", searchpat, &gregexp, EOS, TRUE);
+	mlwrite("Search pattern is now %s", searchpat);
 	last_srch_direc = FORWARD;
 	return s;
 }
@@ -731,7 +731,7 @@ int	fromscreen)
 	if (status == TRUE) {
 		if (srchexpp) {	/* compile it */
 			FreeIfNeeded(*srchexpp);
-			*srchexpp = regcomp(pat, b_val(curbp, MDMAGIC));
+			*srchexpp = regcomp(searchpat, b_val(curbp, MDMAGIC));
 			if (!*srchexpp)
 				return FALSE;
 		}

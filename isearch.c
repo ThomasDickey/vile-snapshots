@@ -7,7 +7,7 @@
  *
  * original author: D. R. Banks 9-May-86
  *
- * $Header: /users/source/archives/vile.vcs/RCS/isearch.c,v 1.50 1999/03/19 10:56:02 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/isearch.c,v 1.51 1999/04/13 23:29:34 pgf Exp $
  *
  */
 
@@ -142,7 +142,8 @@ isearch(int f GCC_UNUSED, int n)
 	cmd_reexecute = -1;	/* We're not re-executing (yet?) */
 	cmd_offset = 0;		/* Start at the beginning of the buff */
 	cmd_buff[0] = EOS;	/* Init the command buffer */
-	(void)strncpy0(pat_save, pat, NPAT); /* Save the old pattern string */
+				/* Save the old pattern string */
+	(void)strncpy0(pat_save, searchpat, NPAT);
 	curpos = DOT;		/* Save the current pointer */
 	init_direction = n;	/* Save the initial search direction */
 
@@ -169,8 +170,8 @@ start_over:
 	c = kcod2key(get_char());	/* Get the first character */
 	if ((c == IS_FORWARD) ||
 	    (c == IS_REVERSE)) {/* Reuse old search string? */
-		for (cpos = 0; pat[cpos] != 0; cpos++)	/* Yup, find the length */
-			echochar(pat[cpos]); /* and re-echo the string */
+		for (cpos = 0; searchpat[cpos] != 0; cpos++)/* find length */
+			echochar(searchpat[cpos]); /* and re-echo the string */
 		curp = DOT;
 		if (c == IS_REVERSE) {	/* forward search? */
 			n = -1;	/* No, search in reverse */
@@ -183,7 +184,7 @@ start_over:
 		}
 		--cmd_offset;	/* Back up over the Rubout */
 		cmd_buff[--cmd_offset] = EOS;	/* Yes, delete last char */
-		status = scanmore(pat, n);	/* Do the search */
+		status = scanmore(searchpat, n);	/* Do the search */
 		if (status != TRUE)
 			DOT = curp;
 		c = kcod2key(get_char());	/* Get another character */
@@ -217,7 +218,7 @@ start_over:
 				last_srch_direc = FORWARD;
 				forwchar(TRUE, 1);
 			}
-			status = scanmore(pat, n);	/* Do the search */
+			status = scanmore(searchpat, n);	/* Do the search */
 			if (status != TRUE)
 				DOT = curp;
 			c = kcod2key(get_char());	/* Get the next char */
@@ -236,7 +237,7 @@ start_over:
 			cmd_buff[--cmd_offset] = EOS;	/* Yes, del last char */
 			DOT = curpos;	/* Reset the pointer */
 			n = init_direction;	/* Reset the search direction */
-			(void)strncpy0(pat, pat_save, NPAT);
+			(void)strncpy0(searchpat, pat_save, NPAT);
 						/* Restore the old search str */
 			cmd_reexecute = 0;	/* Start the whole mess over */
 			goto start_over;	/* Let it take care of itself */
@@ -253,25 +254,25 @@ start_over:
 
 		/* I guess we got something to search for, so search for it */
 
-		pat[cpos++] = (char)c;	/* put the char in the buffer */
+		searchpat[cpos++] = (char)c;	/* put the char in the buffer */
 		if (cpos >= NPAT) {	/* too many chars in string? *//* Yup
 					 * .  Complain about it */
 			mlforce("[Search string too long]");
 			return (TRUE);	/* Return an error */
 		}
-		pat[cpos] = 0;	/* null terminate the buffer */
+		searchpat[cpos] = 0;	/* null terminate the buffer */
 		echochar(c);	/* Echo the character */
 		if (!status) {	/* If we lost last time */
 			kbd_alarm();	/* Feep again */
 		} else /* Otherwise, we must have won */
-			status = scanmore(pat, n);   /* or find the next
+			status = scanmore(searchpat, n);   /* or find the next
 							      * match */
 		c = kcod2key(get_char());	/* Get the next char */
 	}	/* for_ever */
 }
 
 /*
- * This hack will search for the next occurrence of <pat> in the buffer,
+ * This hack will search for the next occurrence of <searchpat> in the buffer,
  * either forward or backward.  It is called with the status of the prior
  * search attempt, so that it knows not to bother if it didn't work last
  * time.  If we can't find any more matches, "point" is left where it was
@@ -312,7 +313,7 @@ promptpattern(const char *prompt)
 			temp[NPAT];
 
 	(void)lsprintf(tpat, fmt, prompt,
-		expandp(temp, pat, (int)(NPAT-sizeof(fmt)-strlen(prompt))));
+		expandp(temp, searchpat, (int)(NPAT-sizeof(fmt)-strlen(prompt))));
 
 	/* check to see if we are executing a command line */
 	if (!clexec) {

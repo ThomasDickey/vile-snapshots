@@ -3,7 +3,7 @@
  * characters, and write characters in a barely buffered fashion on the display.
  * All operating systems.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/termio.c,v 1.162 1999/03/19 11:31:54 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/termio.c,v 1.163 1999/04/13 23:29:34 pgf Exp $
  *
  */
 #include	"estruct.h"
@@ -19,7 +19,7 @@
 #include <lib$routines.h>
 #endif
 
-static	int	was_clean = FALSE;	/* suppress the first TTkopen */
+static	int	was_clean = FALSE;	/* suppress the first term.kopen */
 
 #if SYS_UNIX
 
@@ -292,9 +292,9 @@ ttclean(int f)
 	(void)fflush(stdout);
 	tcdrain(1);
 	tcsetattr(0, TCSADRAIN, &otermios);
-	TTflush();
-	TTclose();
-	TTkclose();
+	term.flush();
+	term.close();
+	term.kclose();
 #if USE_FCNTL
 	set_kbd_polling(FALSE);
 #endif
@@ -309,7 +309,7 @@ ttunclean(void)
 	tcdrain(1);
 	tcsetattr(0, TCSADRAIN, &ntermios);
 	if (was_clean)
-		TTkopen();
+		term.kopen();
 #endif
 }
 
@@ -415,9 +415,9 @@ ttclean(int f)
 		kbd_openup();
 
 	(void)fflush(stdout);
-	TTflush();
-	TTclose();
-	TTkclose();	/* xterm */
+	term.flush();
+	term.close();
+	term.kclose();	/* xterm */
 	ioctl(0, TCSETAF, (char *)&otermio);
 #if USE_FCNTL
 	set_kbd_polling(FALSE);
@@ -550,9 +550,9 @@ ttclean(int f)
 	if (f)
 		kbd_openup();
 
-	TTflush();
-	TTclose();
-	TTkclose();	/* xterm */
+	term.flush();
+	term.close();
+	term.kclose();	/* xterm */
 	ioctl(0, TIOCSETN, (char *)&ostate);
 	ioctl(0, TIOCSETC, (char *)&otchars);
 	ioctl(0, TIOCSLTC, (char *)&oltchars);
@@ -560,7 +560,7 @@ ttclean(int f)
 	ioctl(0, TIOCLSET, (char *)&olstate);
 #endif
 #if SYS_APOLLO
-	TTflush();
+	term.flush();
 #endif
 #endif
 	was_clean = TRUE;
@@ -576,7 +576,7 @@ ttunclean(void)
 	(void)fflush(stdout);
 	ioctl(0, TIOCLSET, (caddr_t)&olstate);
 	ioctl(0, TIOCSETP, (caddr_t)&nstate);	/* setting nlstate changes sb_flags */
-	TTflush();
+	term.flush();
 	ioctl(0, TIOCLBIS, (caddr_t)&literal);	/* set this before nltchars! */
 	ioctl(0, TIOCSETC, (caddr_t)&ntchars);
 	ioctl(0, TIOCSLTC, (caddr_t)&nltchars);
@@ -751,11 +751,6 @@ short	iochan; 			/* TTY I/O channel		*/
 #endif
 
 
-#if	SYS_MSDOS && CC_NEWDOSCC && !CC_MSC
-union REGS rg;		/* cpu register for use of DOS calls (ibmpc.c) */
-int nxtchar = -1;	/* character held from type ahead    */
-#endif
-
 void
 ttopen(void)
 {
@@ -781,8 +776,8 @@ ttopen(void)
 	if (status != SS$_NORMAL
 	 || iosb.status != SS$_NORMAL)
 		tidy_exit(status);
-	term.t_nrow = (newmode[1]>>24);
-	term.t_ncol = newmode[0]>>16;
+	term.rows = (newmode[1]>>24);
+	term.cols = newmode[0]>>16;
 
 #endif
 
@@ -823,9 +818,9 @@ ttclean(int f)
 	if (f)
 		kbd_openup();
 
-	TTflush();
-	TTclose();
-	TTkclose();
+	term.flush();
+	term.close();
+	term.kclose();
 	was_clean = TRUE;
 }
 
@@ -947,6 +942,8 @@ ttgetc(void)
 #if	CC_NEWDOSCC && !(CC_MSC||CC_TURBO||SYS_OS2||SYS_WINNT)
 	{
 	int c;
+	union REGS rg;		/* cpu registers for DOS calls */
+	static int nxtchar = -1;
 
 	/* if a char already is ready, return it */
 	if (nxtchar >= 0) {
@@ -1052,84 +1049,82 @@ getscreensize (int *widthp, int *heightp)
  * so that command-line prompting will have something to talk to.
  */
 
-static int  null_getc     (void);
-static OUTC_DCL null_putc (OUTC_ARGS);
-static int  null_typahead (void);
-static void null_beep     (void);
-static void null_close    (void);
-static void null_eeol     (void);
-static void null_eeop     (void);
-static void null_flush    (void);
-static void null_move     (int row, int col);
-static void null_open     (void);
-static void null_rev      (UINT state);
+static int  nullterm_getch     (void);
+static OUTC_DCL nullterm_putch (OUTC_ARGS);
+static int  nullterm_typahead (void);
+static void nullterm_beep     (void);
+static void nullterm_close    (void);
+static void nullterm_eeol     (void);
+static void nullterm_eeop     (void);
+static void nullterm_flush    (void);
+static void nullterm_curmove     (int row, int col);
+static void nullterm_open     (void);
+static void nullterm_rev      (UINT state);
 
 TERM null_term = {
 	1,
 	1,
 	80,
 	80,
-	0/*MARGIN*/,
-	0/*SCRSIZ*/,
 	0/*NPAUSE*/,
-	null_open,
-	null_close,
-	null_kopen,
-	null_kclose,
-	null_getc,
-	null_putc,
-	null_typahead,
-	null_flush,
-	null_move,
-	null_eeol,
-	null_eeop,
-	null_beep,
-	null_rev,
-	null_cres,
-	null_t_setfor,
-	null_t_setback,
-	null_t_setpal,
-	null_t_scroll,
-	null_t_pflush,
-	null_t_icursor,
-	null_t_title,
-	null_t_watchfd,
-	null_t_unwatchfd,
-	null_t_cursor,
+	nullterm_open,
+	nullterm_close,
+	nullterm_kopen,
+	nullterm_kclose,
+	nullterm_getch,
+	nullterm_putch,
+	nullterm_typahead,
+	nullterm_flush,
+	nullterm_curmove,
+	nullterm_eeol,
+	nullterm_eeop,
+	nullterm_beep,
+	nullterm_rev,
+	nullterm_setdescrip,
+	nullterm_setfore,
+	nullterm_setback,
+	nullterm_setpal,
+	nullterm_scroll,
+	nullterm_pflush,
+	nullterm_icursor,
+	nullterm_settitile,
+	nullterm_watchfd,
+	nullterm_unwatchfd,
+	nullterm_cursorvis,
 };
 
-static void null_open(void)	{ }
-static void null_close(void)	{ }
-static int  null_getc(void)	{ return esc_c; }
+static void nullterm_open(void)	{ }
+static void nullterm_close(void)	{ }
+static int  nullterm_getch(void)	{ return esc_c; }
 /*ARGSUSED*/
-static OUTC_DCL null_putc(OUTC_ARGS) { OUTC_RET c; }
-static int  null_typahead(void)	{ return FALSE; }
-static void null_flush(void)	{ }
+static OUTC_DCL nullterm_putch(OUTC_ARGS) { OUTC_RET c; }
+static int  nullterm_typahead(void)	{ return FALSE; }
+static void nullterm_flush(void)	{ }
 /*ARGSUSED*/
-static void null_move(int row GCC_UNUSED, int col GCC_UNUSED) { }
-static void null_eeol(void)	{ }
-static void null_eeop(void)	{ }
-static void null_beep(void)	{ }
+static void nullterm_curmove(int row GCC_UNUSED, int col GCC_UNUSED) { }
+static void nullterm_eeol(void)	{ }
+static void nullterm_eeop(void)	{ }
+static void nullterm_beep(void)	{ }
 /*ARGSUSED*/
-static void null_rev(UINT state GCC_UNUSED) { }
+static void nullterm_rev(UINT state GCC_UNUSED) { }
 
 /*
  * These are public, since we'll use them as placeholders for unimplemented
  * device methods.
  */
-/*ARGSUSED*/ void null_kopen(void)	{ }
-/*ARGSUSED*/ void null_kclose(void)	{ }
-/*ARGSUSED*/ void null_t_setfor (int f GCC_UNUSED) { }
-/*ARGSUSED*/ void null_t_setback (int b GCC_UNUSED) { }
-/*ARGSUSED*/ void null_t_setpal (const char *p GCC_UNUSED) { }
-/*ARGSUSED*/ void null_t_scroll (int f GCC_UNUSED, int t GCC_UNUSED, int n GCC_UNUSED) { }
-/*ARGSUSED*/ void null_t_pflush (void) { }
-/*ARGSUSED*/ void null_t_icursor (int c GCC_UNUSED) { }
-/*ARGSUSED*/ void null_t_title (char *t GCC_UNUSED) { }
-/*ARGSUSED*/ int  null_t_watchfd (int fd GCC_UNUSED, WATCHTYPE type GCC_UNUSED, long *idp GCC_UNUSED) { return 0; }
-/*ARGSUSED*/ void null_t_unwatchfd (int fd GCC_UNUSED, long id GCC_UNUSED) { }
-/*ARGSUSED*/ void null_t_cursor (int flag GCC_UNUSED) { }
-/*ARGSUSED*/ int  null_cres(const char *res GCC_UNUSED) { return(FALSE); }
+/*ARGSUSED*/ void nullterm_kopen(void)	{ }
+/*ARGSUSED*/ void nullterm_kclose(void)	{ }
+/*ARGSUSED*/ void nullterm_setfore (int f GCC_UNUSED) { }
+/*ARGSUSED*/ void nullterm_setback (int b GCC_UNUSED) { }
+/*ARGSUSED*/ void nullterm_setpal (const char *p GCC_UNUSED) { }
+/*ARGSUSED*/ void nullterm_scroll (int f GCC_UNUSED, int t GCC_UNUSED, int n GCC_UNUSED) { }
+/*ARGSUSED*/ void nullterm_pflush (void) { }
+/*ARGSUSED*/ void nullterm_icursor (int c GCC_UNUSED) { }
+/*ARGSUSED*/ void nullterm_settitile (char *t GCC_UNUSED) { }
+/*ARGSUSED*/ int  nullterm_watchfd (int fd GCC_UNUSED, WATCHTYPE type GCC_UNUSED, long *idp GCC_UNUSED) { return 0; }
+/*ARGSUSED*/ void nullterm_unwatchfd (int fd GCC_UNUSED, long id GCC_UNUSED) { }
+/*ARGSUSED*/ void nullterm_cursorvis (int flag GCC_UNUSED) { }
+/*ARGSUSED*/ int  nullterm_setdescrip(const char *res GCC_UNUSED) { return(FALSE); }
 
 /******************************************************************************/
 
@@ -1150,11 +1145,11 @@ open_terminal(TERM *termp)
 		 * If the open and/or close slots are empty, fill them in with
 		 * the screen driver's functions.
 		 */
-		if (termp->t_open == 0)
-			termp->t_open = term.t_open;
+		if (termp->open == 0)
+			termp->open = term.open;
 
-		if (termp->t_close == 0)
-			termp->t_close = term.t_close;
+		if (termp->close == 0)
+			termp->close = term.close;
 
 		/*
 		 * If the command-line driver is the same as the screen driver,
@@ -1164,24 +1159,24 @@ open_terminal(TERM *termp)
 		 * screen driver typically sets entries (such as the screen
 		 * size) in the 'term' struct.
 		 */
-		if (term.t_open == termp->t_open) {
-			TTopen();
+		if (term.open == termp->open) {
+			term.open();
 			save_term = term;
 			term = *termp;
 		} else {
 			save_term = term;
 			term = *termp;
-			TTopen();
+			term.open();
 		}
 	} else {
 		/*
 		 * If the command-line driver isn't the same as the screen
 		 * driver, reopen the terminal with the screen driver.
 		 */
-		if (save_term.t_open != term.t_open) {
-			TTclose();
+		if (save_term.open != term.open) {
+			term.close();
 			term = save_term;
-			TTopen();
+			term.open();
 		} else {
 			term = save_term;
 		}

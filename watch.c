@@ -38,7 +38,7 @@ watchfd(int fd, WATCHTYPE type, char *callback)
 	return FALSE;
     }
 
-    status = TTwatchfd(fd, type, &otherid);
+    status = term.watchfd(fd, type, &otherid);
 
     watchfds[fd]->callback = callback;
     watchfds[fd]->type     = type;
@@ -57,7 +57,7 @@ unwatchfd(int fd)
     if (watchfds[fd] == NULL)
 	return;
 
-    TTunwatchfd(fd, watchfds[fd]->otherid);
+    term.unwatchfd(fd, watchfds[fd]->otherid);
     unwatch_dealloc(fd);
 }
 

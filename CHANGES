@@ -1,5 +1,67 @@
 Changes for vile 8.3 (released ??? ??? ??, 1998)
 
+(tom) 990414 (s)
+	+ add "DBG=" option to makefile.wnt to simplify building with OPT_TRACE.
+	+ add VILE_LIBDIR_PATH to $PATH on WinNT, as on Unix to find syntax
+	  filters more simply.
+	+ minor fixes to filters: makefilt.l to handle $$name, sh-filt.l to
+	  refrain from highlighting keywords in contexts that look like
+	  options, e.g., -enable.
+	+ modify makefile.wnt to accommodate Win95: its shell doesn't grok "&&"
+	  as a command separator (patch by Clark Morgan).
+	+ add 'dist' rules to makefile.wnt
+	+ fix core dump for uninitialized $palette in statevar.c (reported by
+	  Brian Moore).
+	> patches from Paul Fox
+	general:
+	+ trimmed some old README text
+	+ removed margin and scrollsize values from term structs.  they
+	  were deterministic constants everywhere anyway.
+	+ eliminated TTxxxx() macros, in favor of simple term.xxxx()
+	  usage.  ANSI C says the (*term.xxxx)() format isn't necessary.
+	  we'll see.
+	+ renamed elements of term struct, since the element names are
+	  now exposed.  eliminated redundant t_ prefix.
+	+ renamed null_xxxx() routines to match.
+	+ renamed some globals to better describe their function (e.g.
+	  pat, rpat, sres)
+	+ in a couple of places globals were lurking in macros (e.g.
+	  nexttabcol) and i made them visible.
+	+ cleaned up and corrected comments which no longer described the
+	  code correctly.
+	+ renamed tokenizing #defines, for better mnemonics.
+	+ suppressed a couple of arg-unused warnings when building X11 by
+	  tweaking ifdefs.
+
+	ibmpc.c:
+	+ cleaned up a bunch of code -- moved private defines from estruct.h.
+	+ collapsed screen address defines to simplify.
+	+ did some renaming for mnemonic clarification.
+	+ eliminated unused global flags.
+	+ eliminated global "regs" struct/union.
+	+ eliminated all support for flicker suppression.  it was cga-only,
+	  and wasn't needed on reasonable cards anyway.  we can resurrect
+	  it if needed, but i doubt we will.  (also eliminated $flickcode
+	  variable which enabled it.)
+	+ updated some copyright statements.
+
+	exec.c:
+	+ simplified logic surrounding while-loop processing -- a single
+	  list is now maintained, rather than the double list shuffling
+	  that went on before, and endwhiles now get their own struct on
+	  the loop descriptor list.
+	+ eliminated recursion when freeing while-loop descriptors.
+	+ move save/restore of no_msgs (formerly discmd) inside dobuf().
+	+ simplified flags that indicate that macro creation is in progress.
+
+	+ use mlforce() rather than mlprompt() in pressreturn(), and eliminate
+	  flag setting no longer required. (spawn.c)
+	+ use rand() rather than global "seed" for encryption purposes.
+	  (ucrypt.c)
+	+ add second %% line to lex "states" check -- it hangs on solaris
+	  otherwise.  (aclocal.m4)
+
+
 (tom) 990404 (r)
 	+ add filters/mms-filt.l
 	+ change filters/makefile.in to work when configuring with --srcdir
@@ -979,7 +1041,7 @@ Changes for vile 8.1 (released Fri Oct 02, 1998)
 	  its output in a switched screen context that the user can't examine.
 	  This applies to console vile only (winvile has much worse problems in
 	  the same scenario :-).
-	+ changes to make -!  use the same code path as filter-region and
+	+ changes to make ^X-!  use the same code path as filter-region and
 	  read-pipe when the host is win32-based.
 	+ implement paste-from-clipboard for win32, bound to Shift+Insert
 	+ add a new documentation file (doc/w32modes.doc) that describes the

@@ -5,7 +5,7 @@
  * functions that adjust the top line in the window and invalidate the
  * framing, are hard.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/basic.c,v 1.101 1999/03/19 10:49:44 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/basic.c,v 1.102 1999/04/13 23:29:34 pgf Exp $
  *
  */
 
@@ -813,7 +813,7 @@ int
 next_column(int c, int col)
 {
 	if (c == '\t')
-		return nexttabcol(col);
+		return nexttabcol(col,curtabval);
 	else if (!isPrint(c))
 		return col+2;
 	else
@@ -1228,7 +1228,7 @@ setwmark(int row, int col)
 		/* now move the dot over until near the requested column */
 #ifdef WMDLINEWRAP
 		if (w_val(curwp,WMDLINEWRAP))
-			col += term.t_ncol * (row+line_height(curwp,dlp));
+			col += term.cols * (row+line_height(curwp,dlp));
 #endif
 		DOT.o = col2offs(curwp, dlp, col);
 

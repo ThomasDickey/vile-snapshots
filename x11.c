@@ -2,7 +2,7 @@
  *	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.204 1999/04/04 23:28:18 bod Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.205 1999/04/13 23:29:34 pgf Exp $
  *
  */
 
@@ -23,6 +23,8 @@
  *    OPT_KEV_DRAGGING
  *    OPT_KEV_SCROLLBARS
  */
+
+#define	termdef	1			/* don't define "term" external */
 
 #define NEED_X_INCLUDES 1
 #include	"estruct.h"
@@ -144,8 +146,6 @@
 
 #define	XCalloc(type)	typecalloc(type)
 
-#define	MARGIN	8
-#define	SCRSIZ	64
 #define	absol(x)	((x) > 0 ? (x) : -(x))
 #define	CEIL(a,b)	((a + b - 1) / (b))
 
@@ -430,8 +430,6 @@ static	int	x_getc   (void);
 static	void	x_open   (void),
 		x_close  (void),
 		x_flush  (void),
-		x_kopen  (void),
-		x_kclose (void),
 		x_beep   (void),
 		x_rev    ( UINT state );
 
@@ -518,13 +516,11 @@ TERM	    term = {
     0,
     0,
     0,
-    MARGIN,
-    SCRSIZ,
     0,
     x_open,
     x_close,
-    null_kopen,
-    null_kclose,
+    nullterm_kopen,
+    nullterm_kclose,
     x_getc,
     psc_putchar,
     tttypahead,
@@ -534,17 +530,17 @@ TERM	    term = {
     psc_eeop,
     x_beep,
     x_rev,
-    null_cres,
-    null_t_setfor,
-    null_t_setback,
-    null_t_setpal,		/* no palette */
+    nullterm_setdescrip,
+    nullterm_setfore,
+    nullterm_setback,
+    nullterm_setpal,		/* no palette */
     x_scroll,
     x_flush,
-    null_t_icursor,
-    null_t_title,
+    nullterm_icursor,
+    nullterm_settitile,
     x_watchfd,
     x_unwatchfd,
-    null_t_cursor,
+    nullterm_cursorvis,
 };
 
 
@@ -3769,8 +3765,8 @@ x_open(void)
 #endif
 
     /* main code assumes that it can access a cell at nrow x ncol */
-    term.t_mcol = term.t_ncol = cur_win->cols;
-    term.t_mrow = term.t_nrow = cur_win->rows;
+    term.maxcols = term.cols = cur_win->cols;
+    term.maxrows = term.rows = cur_win->rows;
 
     if (check_scrollbar_allocs() != TRUE)
 	ExitProgram(BADEXIT);
@@ -3783,16 +3779,6 @@ x_close(void)
 
     if(cur_win->top_widget)
 	XtDestroyWidget(cur_win->top_widget);
-}
-
-static void
-x_kopen(void)
-{
-}
-
-static void
-x_kclose(void)
-{
 }
 
 static void
@@ -4082,15 +4068,15 @@ x_flush(void)
      * one) will be cleared after the new cursor is displayed.
      */
 
-    if (ttrow >=0 && ttrow < term.t_nrow && ttcol >= 0 && ttcol < term.t_ncol
+    if (ttrow >=0 && ttrow < term.rows && ttcol >= 0 && ttcol < term.cols
      && !cur_win->wipe_permitted) {
 	CLEAR_CELL_DIRTY(ttrow, ttcol);
 	display_cursor((XtPointer) 0, (XtIntervalId *) 0);
     }
 
     /* sometimes we're the last to know about resizing...*/
-    if (cur_win->rows > term.t_mrow)
-	cur_win->rows = term.t_mrow;
+    if (cur_win->rows > term.maxrows)
+	cur_win->rows = term.maxrows;
 
     for (r = 0; r < cur_win->rows; r++) {
 	if (!IS_DIRTY_LINE(r))
@@ -4103,27 +4089,27 @@ x_flush(void)
 	 * the bounding box to be cleaned up.
 	 */
 	if (cur_win->left_ink || cur_win->right_ink)
-	    for (c=0; c < term.t_ncol; ) {
-		while (c < term.t_ncol && !IS_DIRTY(r,c))
+	    for (c=0; c < term.cols; ) {
+		while (c < term.cols && !IS_DIRTY(r,c))
 		    c++;
-		if (c >= term.t_ncol)
+		if (c >= term.cols)
 		    break;
 		if (cur_win->left_ink && c > 0)
 		    MARK_CELL_DIRTY(r,c-1);
-		while (c < term.t_ncol && IS_DIRTY(r,c))
+		while (c < term.cols && IS_DIRTY(r,c))
 		    c++;
-		if (cur_win->right_ink && c < term.t_ncol) {
+		if (cur_win->right_ink && c < term.cols) {
 		    MARK_CELL_DIRTY(r,c);
 		    c++;
 		}
 	    }
 
 	c = 0;
-	while (c < term.t_ncol) {
+	while (c < term.cols) {
 	    /* Find the beginning of the next dirty sequence */
-	    while (c < term.t_ncol && !IS_DIRTY(r,c))
+	    while (c < term.cols && !IS_DIRTY(r,c))
 		c++;
-	    if (c >= term.t_ncol)
+	    if (c >= term.cols)
 		break;
 	    if (r == ttrow && c == ttcol && !cur_win->wipe_permitted) {
 		c++;
@@ -4139,7 +4125,7 @@ x_flush(void)
 	     * attribute, a sequence of NONDIRTY_THRESH non-dirty chars, or
 	     * the cursor position.
 	     */
-	    while (c < term.t_ncol) {
+	    while (c < term.cols) {
 		if (attr != VATTRIB(CELL_ATTR(r,c)))
 		    break;
 		else if (r == ttrow && c == ttcol && !cur_win->wipe_permitted) {
@@ -5744,7 +5730,7 @@ display_cursor(
     XtIntervalId *idp)
 {
     static Bool am_blinking = FALSE;
-    int the_col = (ttcol >= term.t_ncol) ? term.t_ncol - 1 : ttcol;
+    int the_col = (ttcol >= term.cols) ? term.cols - 1 : ttcol;
 
     /*
      * Return immediately if we are either in the process of making a

@@ -1,8 +1,8 @@
 /* ed/vi/ex style global commands, where first the file is scanned for
  *	matching lines, then for each such line, an action is performed.
- *	written for vile: Copyright (c) 1990, 1995 by Paul Fox
+ *	written for vile: Copyright (c) 1990-1999 by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/globals.c,v 1.43 1998/05/21 00:37:16 bod Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/globals.c,v 1.44 1999/04/13 23:29:34 pgf Exp $
  *
  */
 
@@ -39,7 +39,8 @@ globber(int f GCC_UNUSED, int n GCC_UNUSED, int g_or_v)
 	int	save_report;
 
 	c = kbd_delimiter();
-	if (readpattern("global pattern: ", &pat[0], &gregexp, c, FALSE) != TRUE) {
+	if (readpattern("global pattern: ", searchpat,
+				&gregexp, c, FALSE) != TRUE) {
 		mlforce("[No pattern.]");
 		return FALSE;
 	}

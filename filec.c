@@ -5,7 +5,7 @@
  * Written by T.E.Dickey for vile (march 1993).
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/filec.c,v 1.84 1999/03/19 11:21:18 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/filec.c,v 1.85 1999/04/13 23:29:34 pgf Exp $
  *
  */
 
@@ -840,7 +840,7 @@ static void
 force_output(int c, char *buf, unsigned *pos)
 {
 	kbd_putc(c);
-	TTflush();
+	term.flush();
 	buf[*pos] = (char)c;
 	*pos += 1;
 	buf[*pos] = EOS;

@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 console API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntconio.c,v 1.41 1999/02/12 11:38:00 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntconio.c,v 1.42 1999/04/13 23:29:34 pgf Exp $
  *
  */
 
@@ -19,8 +19,6 @@
 
 #define NROW	128			/* Max Screen size.		*/
 #define NCOL    256			/* Edit if you want to.         */
-#define	MARGIN	8			/* size of minimum margin and	*/
-#define	SCRSIZ	64			/* scroll size for extended lines */
 #define	NPAUSE	200			/* # times thru update to pause */
 #define NOKYMAP (-1)
 
@@ -86,8 +84,6 @@ TERM    term    = {
 	NROW,
 	NCOL,
 	NCOL,
-	MARGIN,
-	SCRSIZ,
 	NPAUSE,
 	ntopen,
 	ntclose,
@@ -108,25 +104,25 @@ TERM    term    = {
 	ntbcol,
 	set_ctrans,
 #else
-	null_t_setfor,
-	null_t_setback,
-	null_t_setpal,
+	nullterm_setfore,
+	nullterm_setback,
+	nullterm_setpal,
 #endif
 	ntscroll,
-	null_t_pflush,
+	nullterm_pflush,
 #if OPT_ICURSOR
 	nticursor,
 #else
-	null_t_icursor,
+	nullterm_icursor,
 #endif
 #if OPT_TITLE
 	nttitle,
 #else
-	null_t_title,
+	nullterm_settitile,
 #endif
-	null_t_watchfd,
-	null_t_unwatchfd,
-	null_t_cursor,
+	nullterm_watchfd,
+	nullterm_unwatchfd,
+	nullterm_cursorvis,
 };
 
 
@@ -349,7 +345,7 @@ ntcres(const char *res)	/* change screen resolution */
 static void
 flash_display()
 {
-	DWORD length = term.t_ncol * term.t_nrow;
+	DWORD length = term.cols * term.rows;
 	DWORD got;
 	WORD *buf1 = malloc(sizeof(*buf1)*length);
 	WORD *buf2 = malloc(sizeof(*buf2)*length);
@@ -425,7 +421,7 @@ ntclose(void)
 {
 	TRACE(("ntclose\n"))
 	scflush();
-	ntmove(term.t_nrow - 1, 0);
+	ntmove(term.rows - 1, 0);
 	nteeol();
 	ntflush();
 	SetConsoleTextAttribute(hConsoleOutput, originalAttribute);

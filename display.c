@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.271 1999/03/24 11:47:39 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.272 1999/04/13 23:29:34 pgf Exp $
  *
  */
 
@@ -356,7 +356,7 @@ col_limit(WINDOW *wp)
 	if (w_val(wp,WMDLINEWRAP))
 		return curcol + 1;	/* effectively unlimited */
 #endif
-	return term.t_ncol - 1 - nu_width(wp);
+	return term.cols - 1 - nu_width(wp);
 }
 
 /*
@@ -380,7 +380,7 @@ vtinit(void)
     if (vtalloc() == FALSE) /* if we fail, only serious if not a realloc */
 	return (vscreen != NULL);
 
-    for (i = 0; i < term.t_mrow; ++i) {
+    for (i = 0; i < term.maxrows; ++i) {
 	vp = vscreen[i];
 	vp->v_flag = 0;
 #if OPT_COLOR
@@ -422,13 +422,13 @@ video_alloc(VIDEO **vpp)
 {
 	register VIDEO *vp;
 	/* struct VIDEO already has 4 of the bytes */
-	vp = typeallocplus(VIDEO, term.t_mcol - 4);
+	vp = typeallocplus(VIDEO, term.maxcols - 4);
 	if (vp == 0)
 		return FALSE;
-	(void)memset((char *)vp, 0, sizeof(VIDEO) + term.t_mcol - 4);
+	(void)memset((char *)vp, 0, sizeof(VIDEO) + term.maxcols - 4);
 
 #if OPT_VIDEO_ATTRS
-	vp->v_attrs = typecallocn(VIDEO_ATTR, (ALLOC_T)term.t_mcol);
+	vp->v_attrs = typecallocn(VIDEO_ATTR, (ALLOC_T)term.maxcols);
 	if (vp->v_attrs == 0) {
 		free((char *)vp);
 		return FALSE;
@@ -445,14 +445,14 @@ vtalloc(void)
 	register int i, first;
 	static int vcols, vrows;
 
-	if (term.t_mrow > vrows) {
-		GROW(vscreen, VIDEO *, vrows, term.t_mrow);
+	if (term.maxrows > vrows) {
+		GROW(vscreen, VIDEO *, vrows, term.maxrows);
 #if	! FRAMEBUF
-		GROW(pscreen, VIDEO *, vrows, term.t_mrow);
+		GROW(pscreen, VIDEO *, vrows, term.maxrows);
 #endif
-		GROW(lmap, int, vrows, term.t_mrow);
+		GROW(lmap, int, vrows, term.maxrows);
 	} else {
-		for (i = term.t_mrow; i < vrows; i++) {
+		for (i = term.maxrows; i < vrows; i++) {
 			freeVIDEO(vscreen[i]);
 #if	! FRAMEBUF
 			freeVIDEO(pscreen[i]);
@@ -460,9 +460,9 @@ vtalloc(void)
 		}
 	}
 
-	first = (term.t_mcol > vcols) ? 0 : vrows;
+	first = (term.maxcols > vcols) ? 0 : vrows;
 
-	for (i = first; i < term.t_mrow; ++i) {
+	for (i = first; i < term.maxrows; ++i) {
 		if (!video_alloc(&vscreen[i]))
 			return FALSE;
 #if	! FRAMEBUF
@@ -470,8 +470,8 @@ vtalloc(void)
 			return FALSE;
 #endif	/* !FRAMEBUF */
 	}
-	vcols = term.t_mcol;
-	vrows = term.t_mrow;
+	vcols = term.maxcols;
+	vrows = term.maxrows;
 
 	return TRUE;
 }
@@ -484,7 +484,7 @@ vtfree(void)
 	register int i;
 
 	if (vscreen) {
-		for (i = 0; i < term.t_mrow; ++i) {
+		for (i = 0; i < term.maxrows; ++i) {
 			freeVIDEO(vscreen[i]);
 		}
 		free ((char *)vscreen);
@@ -493,7 +493,7 @@ vtfree(void)
 
 #if	! FRAMEBUF
 	if (pscreen) {
-		for (i = 0; i < term.t_mrow; ++i) {
+		for (i = 0; i < term.maxrows; ++i) {
 			freeVIDEO(pscreen[i]);
 		}
 		free ((char *)pscreen);
@@ -528,17 +528,17 @@ vtputc(int c)
 {
 	/* since we don't allow wrapping on the message line, we only need
 	 * to evaluate this once.  */
-	int lastcol = vtrow == term.t_nrow-1 ?  term.t_ncol-1 : term.t_ncol;
+	int lastcol = vtrow == term.rows-1 ?  term.cols-1 : term.cols;
 	register VIDEO *vp;
 
 #ifdef WMDLINEWRAP
 	if (vtrow < 0) {
 		static VIDEO *fake_line;
 		static int   length;
-		if (length != term.t_mcol || fake_line == 0) {
+		if (length != term.maxcols || fake_line == 0) {
 			if (!video_alloc(&fake_line))
 				return;
-			length = term.t_mcol;
+			length = term.maxcols;
 		}
 		vp = fake_line;
 	}
@@ -643,7 +643,7 @@ vtset(LINEPTR lp, WINDOW *wp)
 	 */
 	if (wp->w_line.o < 0) {
 		vtrow -= wp->w_line.o;
-		skip = col2offs(wp, lp, -(wp->w_line.o * term.t_ncol));
+		skip = col2offs(wp, lp, -(wp->w_line.o * term.cols));
 		n -= skip;
 	}
 	else
@@ -707,13 +707,13 @@ vtset(LINEPTR lp, WINDOW *wp)
 #ifdef WMDLINEWRAP
 	if (w_val(wp,WMDLINEWRAP))
 	{
-		while ((vtcol < term.t_ncol)
-		  &&   ((vtrow == term.t_nrow-1) || (vtrow < mode_row(wp)))
+		while ((vtcol < term.cols)
+		  &&   ((vtrow == term.rows-1) || (vtrow < mode_row(wp)))
 		  &&   (n > 0)) {
 			VTSET_PUT(*from++,n--);
 		}
-		if ((vtcol <= term.t_ncol)
-		  &&   ((vtrow == term.t_nrow-1) || (vtrow < mode_row(wp)))
+		if ((vtcol <= term.cols)
+		  &&   ((vtrow == term.rows-1) || (vtrow < mode_row(wp)))
 		  &&   (n > 0)) {
 			VTSET_PUT(*from++,n--);
 		}
@@ -721,11 +721,11 @@ vtset(LINEPTR lp, WINDOW *wp)
 	else
 #endif
 	{
-		while ((vtcol < term.t_ncol)
+		while ((vtcol < term.cols)
 		  &&   (n > 0)) {
 			VTSET_PUT(*from++,n--);
 		}
-		if ((vtcol <= term.t_ncol)
+		if ((vtcol <= term.cols)
 		  &&   (n > 0)) {
 			VTSET_PUT(*from++,n--);
 		}
@@ -754,16 +754,16 @@ vtset(LINEPTR lp, WINDOW *wp)
 static void
 vteeol(void)
 {
-	if (vtcol < term.t_ncol) {
+	if (vtcol < term.cols) {
 	    int n = (vtcol >= 0) ? vtcol : 0;
 #ifdef WMDLINEWRAP
 	    if (vtrow >= 0)
 #endif
 		if (n >= 0) {
 			(void)memset(&vscreen[vtrow]->v_text[n],
-				' ', (SIZE_T)(term.t_ncol-n));
+				' ', (SIZE_T)(term.cols-n));
 		}
-		vtcol = term.t_ncol;
+		vtcol = term.cols;
 	}
 }
 
@@ -820,20 +820,20 @@ kbd_openup(void)
 {
 #if !FRAMEBUF && !OPT_PSCREEN
 	int i;
-	size_t alen = sizeof(VIDEO_ATTR) * term.t_ncol;
+	size_t alen = sizeof(VIDEO_ATTR) * term.cols;
 #endif
 	kbd_flush();
 	bottomleft();
-	TTputc('\n');
-	TTputc('\r');
-	TTflush();
+	term.putch('\n');
+	term.putch('\r');
+	term.flush();
 #if !FRAMEBUF && !OPT_PSCREEN
 	if (pscreen != 0) {
-		for (i = 0; i < term.t_nrow-1; ++i) {
+		for (i = 0; i < term.rows-1; ++i) {
 			(void)memcpy(
 				pscreen[i]->v_text,
 				pscreen[i+1]->v_text,
-				(SIZE_T)(term.t_ncol));
+				(SIZE_T)(term.cols));
 #if OPT_VIDEO_ATTRS
 			(void)memcpy(
 				pscreen[i]->v_attrs,
@@ -841,7 +841,7 @@ kbd_openup(void)
 				alen);
 #endif
 		}
-		(void)memset(pscreen[i]->v_text, ' ', (SIZE_T)(term.t_ncol));
+		(void)memset(pscreen[i]->v_text, ' ', (SIZE_T)(term.cols));
 #if OPT_VIDEO_ATTRS
 		(void)memset(pscreen[i]->v_attrs, VADIRTY, alen);
 #endif
@@ -869,7 +869,7 @@ kbd_flush(void)
 
 	beginDisplay();
 	if (vscreen != 0) {
-		int row = term.t_nrow - 1;
+		int row = term.rows - 1;
 
 		vtmove(row, -w_val(wminip,WVAL_SIDEWAYS));
 
@@ -889,9 +889,9 @@ kbd_flush(void)
 			(VIDEO_ATTR) (miniedit
 					? global_g_val(GVAL_MINI_HILITE)
 					: 0),
-			term.t_ncol);
+			term.cols);
 		if (my_overlay[0] != EOS) {
-			int n = term.t_ncol - strlen(my_overlay) - 1;
+			int n = term.cols - strlen(my_overlay) - 1;
 			if (n > 0) {
 				(void)memcpy(&vscreen[row]->v_text[n],
 					my_overlay,
@@ -899,12 +899,12 @@ kbd_flush(void)
 			}
 		}
 		vscreen[row]->v_flag |= VFCHG;
-		updateline(row, 0, term.t_ncol);
+		updateline(row, 0, term.cols);
 		if (ok)
 			movecursor(row,
 				offs2col(wminip, wminip->w_dot.l, wminip->w_dot.o));
 	}
-	TTflush();
+	term.flush();
 	endofDisplay();
 }
 
@@ -954,10 +954,10 @@ int force)	/* force update past type ahead? */
 		return FALSE;
 	if (TypeAhead(force))
 		return SORTOFTRUE;
-#if	OPT_VISIBLE_MACROS == 0
+
+	/* don't display during keystroke replay */
 	if (!force && kbd_replaying(TRUE) && (get_recorded_char(FALSE) != -1))
 		return SORTOFTRUE;
-#endif
 
 	beginDisplay();
 
@@ -1007,7 +1007,7 @@ int force)	/* force update past type ahead? */
 		for_each_visible_window(wp) {
 			if (wp->w_flag) {
 				if ((wp->w_flag & ~(WFMOVE)) && !updated++)
-					TTcursor(FALSE);
+					term.cursorvis(FALSE);
 				curtabval = tabstop_val(wp->w_bufp);
 				/* if the window has changed, service it */
 				reframe(wp);	/* check the framing */
@@ -1058,8 +1058,8 @@ int force)	/* force update past type ahead? */
 	    movecursor(screenrow, screencol);
 
 	if (updated)
-		TTcursor(TRUE);
-	TTflush();
+		term.cursorvis(TRUE);
+	term.flush();
 	endofDisplay();
 	i_displayed = TRUE;
 
@@ -1109,7 +1109,7 @@ reframe(WINDOW *wp)
 				if ( i < 0 || i >= wp->w_ntrows) {
 					/* if the terminal can't help, then
 						we're simply outside */
-					if (term.t_scroll == null_t_scroll)
+					if (term.scroll == nullterm_scroll)
 						i = wp->w_force;
 					break;
 				}
@@ -1239,7 +1239,7 @@ kill_tildes:
 	 */
 	if (w_val(wp,WMDLINEWRAP)
 	 && sameline(wp->w_line, wp->w_dot)) {
-		int want = mark2col(wp, wp->w_dot) / term.t_ncol;
+		int want = mark2col(wp, wp->w_dot) / term.cols;
 		if (want + wp->w_line.o >= wp->w_ntrows) {
 			wp->w_line.o = wp->w_ntrows - want - 1;
 			wp->w_flag |= WFHARD;
@@ -1391,14 +1391,14 @@ int *screencolp)
 #ifdef WMDLINEWRAP
 	if (w_val(curwp,WMDLINEWRAP)) {
 		curcol = col;
-		collimit = term.t_ncol - nuadj;
+		collimit = term.cols - nuadj;
 		*screenrowp = currow;
 		if (col >= collimit) {
 			col -= collimit;
 			*screenrowp += 1;
-			if (col >= term.t_ncol)
-				*screenrowp += (col / term.t_ncol);
-			*screencolp = col % term.t_ncol;
+			if (col >= term.cols)
+				*screenrowp += (col / term.cols);
+			*screencolp = col % term.cols;
 		} else {
 			*screencolp = col + nuadj;
 		}
@@ -1406,7 +1406,7 @@ int *screencolp)
 		i = mode_row(curwp) - 1;
 		if (*screenrowp > i) {
 			*screenrowp = i;
-			*screencolp = term.t_ncol - 1;
+			*screencolp = term.cols - 1;
 		}
 		return FALSE;
 	} else
@@ -1494,7 +1494,7 @@ updgar(void)
 #endif
 	register int i;
 
-	for (i = 0; i < term.t_nrow; ++i) {
+	for (i = 0; i < term.rows; ++i) {
 		vscreen[i]->v_flag |= VFCHG;
 #if	OPT_REVSTA
 		vscreen[i]->v_flag &= ~VFREV;
@@ -1504,7 +1504,7 @@ updgar(void)
 		CurBcolor(vscreen[i]) = -1;
 #endif
 #if	! FRAMEBUF && ! OPT_PSCREEN
-		for (j = 0; j < term.t_ncol; ++j) {
+		for (j = 0; j < term.cols; ++j) {
 			CELL_TEXT(i,j) = ' ';
 #if OPT_VIDEO_ATTRS
 			CELL_ATTR(i,j) = 0;
@@ -1514,11 +1514,11 @@ updgar(void)
 	}
 #if !OPT_PSCREEN
 #if	OPT_COLOR
-	TTforg(gfcolor);		 /* Need to set before erasing. */
-	TTbacg(gbcolor);
+	term.setfore(gfcolor);		 /* Need to set before erasing. */
+	term.setback(gbcolor);
 #endif
 	movecursor(0, 0);		 /* Erase the screen. */
-	TTeeop();
+	term.eeop();
 #else
 	kbd_erase_to_end(0);
 #endif
@@ -1542,14 +1542,14 @@ int force GCC_UNUSED)	/* forced update flag */
 	scrflags = 0;
 #endif
 
-	for (i = 0; i < term.t_nrow; ++i) {
+	for (i = 0; i < term.rows; ++i) {
 		/* for each line that needs to be updated*/
 		if ((vscreen[i]->v_flag & (VFCHG|VFCOL)) != 0) {
 #if !DISP_X11
 			if (TypeAhead(force))
 				return;
 #endif
-			updateline(i, 0, term.t_ncol);
+			updateline(i, 0, term.cols);
 		}
 	}
 }
@@ -1571,7 +1571,7 @@ updattrs(WINDOW *wp)
      */
     /* FIXME: color; need to set to value indicating fg and bg for window */
     for (i = wp->w_toprow + wp->w_ntrows - 1; i >= wp->w_toprow; i--)
-	set_vattrs(i, 0, 0, term.t_ncol);
+	set_vattrs(i, 0, 0, term.cols);
 
     /*
      * No need to do any more work on this window if there are no
@@ -1670,7 +1670,7 @@ updattrs(WINDOW *wp)
 		end_col = offs2col(wp, lp, llength(lp));
 #ifdef WMDLINEWRAP
 		if (w_val(wp,WMDLINEWRAP)
-		 && (end_col % term.t_ncol) == 0)
+		 && (end_col % term.cols) == 0)
 		    end_col--;	/* cannot highlight the newline */
 #endif
 	    }
@@ -1679,11 +1679,11 @@ updattrs(WINDOW *wp)
 	    if (w_val(wp,WMDLINEWRAP))
 	    {
 		for (col = start_col; col <= end_col; col++) {
-		    int x = row + col / term.t_ncol;
+		    int x = row + col / term.cols;
 		    if  (x < 0)
 			continue;
 		    if (x < mode_row(wp)) {
-			int y = col % term.t_ncol;
+			int y = col % term.cols;
 			vscreen[x]->v_attrs[y] =
 			    (vscreen[x]->v_attrs[y] | (attr & ~VAREV))
 			    ^ (attr & VAREV);
@@ -1695,8 +1695,8 @@ updattrs(WINDOW *wp)
 	    else
 #endif
 	    {
-		if (end_col >= term.t_ncol)
-		    end_col = term.t_ncol-1;
+		if (end_col >= term.cols)
+		    end_col = term.cols-1;
 		for (col = start_col; col <= end_col; col++)
 		    vscreen[row]->v_attrs[col] =
 			(vscreen[row]->v_attrs[col] | (attr & ~VAREV))
@@ -1823,7 +1823,7 @@ LINEPTR	lp)
 			} else if (w_val(wp,WMDLIST)) {
 				col += 2;
 			}
-			hi = (col / term.t_ncol) + 1;
+			hi = (col / term.cols) + 1;
 		}
 	}
 	return hi;
@@ -1869,22 +1869,22 @@ int	on)		/* start highlighting */
 	if (w_val(wp,WMDLINEWRAP)) {
 		if (colfrom < 0)
 			colfrom = 0;
-		if (colfrom > term.t_ncol) {
+		if (colfrom > term.cols) {
 			do {
 				row++;
-				colfrom -= term.t_ncol;
-				colto   -= term.t_ncol;
+				colfrom -= term.cols;
+				colto   -= term.cols;
 				hilite(row, colfrom, colto, on);
-			} while (colto > term.t_ncol);
+			} while (colto > term.cols);
 			return;
 		}
 	}
 #endif
-	if (row < term.t_nrow-1 && (colfrom >= 0 || colto <= term.t_ncol)) {
+	if (row < term.rows-1 && (colfrom >= 0 || colto <= term.cols)) {
 		if (colfrom < 0)
 			colfrom = 0;
-		if (colto > term.t_ncol)
-			colto = term.t_ncol;
+		if (colto > term.cols)
+			colto = term.cols;
 #if OPT_VIDEO_ATTRS
 		if (on) {
 		    int col;
@@ -1897,7 +1897,7 @@ int	on)		/* start highlighting */
 			vscreen[row]->v_attrs[col] &= ~VAREV;
 		}
 		vscreen[row]->v_flag |= VFCHG;
-		updateline(row, 0, term.t_ncol);
+		updateline(row, 0, term.cols);
 #else /* OPT_VIDEO_ATTRS */
 		if (on) {
 			vp1->v_flag |= VFREQ;
@@ -1929,11 +1929,11 @@ scrolls(int inserts)	/* returns true if it does something */
 					   in the right place */
 	int	from, to;
 
-	if (term.t_scroll == null_t_scroll) /* can't scroll */
+	if (term.scroll == nullterm_scroll) /* can't scroll */
 		return FALSE;
 
-	rows = term.t_nrow -1;
-	cols = term.t_ncol ;
+	rows = term.rows -1;
+	cols = term.cols ;
 
 	/* find first line that doesn't match */
 	first = -1 ;
@@ -2027,7 +2027,7 @@ scrolls(int inserts)	/* returns true if it does something */
 			      pscreen[b] = temp; } one_time
 #define CLEAR_PLINE(a)  do {						\
 			    MARK_LINE_DIRTY(a);				\
-			    for (j = 0; j < term.t_ncol; j++) {		\
+			    for (j = 0; j < term.cols; j++) {		\
 				CELL_TEXT(a,j) = ' ';			\
 				CELL_ATTR(a,j) = 0;			\
 			    }						\
@@ -2061,7 +2061,7 @@ scrolls(int inserts)	/* returns true if it does something */
 		if (from < to) {
 		    /* FIXME: color */
 		    for (i = from; i < to; i++)
-			for (j = 0; j < term.t_ncol; j++)
+			for (j = 0; j < term.cols; j++)
 			    CELL_ATTR(i+count,j) = 0;
 		    for (i = count-1; i >= 0; i--)
 			SWAP_ATTR_PTR(from+i, to+i);
@@ -2070,7 +2070,7 @@ scrolls(int inserts)	/* returns true if it does something */
 		else {
 		    /* FIXME: color */
 		    for (i = to; i < from; i++)
-			for (j = 0; j < term.t_ncol; j++)
+			for (j = 0; j < term.cols; j++)
 			    CELL_ATTR(i,j) = 0;
 		    for (i = 0; i < count; i++)
 			SWAP_ATTR_PTR(from+i, to+i);
@@ -2087,7 +2087,7 @@ scrolls(int inserts)	/* returns true if it does something */
 		for (i = from; i < to; i++) {
 			char *txt;
 			txt = PScreen(i)->v_text;
-			for (j = 0; j < term.t_ncol; ++j)
+			for (j = 0; j < term.cols; ++j)
 				txt[j] = ' ';
 			vscreen[i]->v_flag |= VFCHG;
 		}
@@ -2103,7 +2103,7 @@ scrscroll(int from, int to, int count)
 {
 	beginDisplay();
 	ttrow = ttcol = -1;
-	TTscroll(from,to,count);
+	term.scroll(from,to,count);
 	endofDisplay();
 }
 
@@ -2115,7 +2115,7 @@ int	prow)		/* physical row */
 	struct	VIDEO *vpv = vscreen[vrow] ;	/* virtual screen image */
 	struct	VIDEO *vpp = PScreen(prow)  ;	/* physical screen image */
 
-	return (!memcmp(vpv->v_text, vpp->v_text, (SIZE_T)term.t_ncol)) ;
+	return (!memcmp(vpv->v_text, vpp->v_text, (SIZE_T)term.cols)) ;
 }
 
 /* return the index of the first blank of trailing whitespace */
@@ -2140,13 +2140,15 @@ updext(int col, int excess, int use_excess)
 {
 	register int rcursor;
 	register int zero = nu_width(curwp);
+	int scrollsiz;
 
 	/* calculate what column the real cursor will end up in */
 	if (!use_excess) {
 		curcol = col;
-		rcursor = (col % (term.t_ncol - term.t_margin));
+		rcursor = (col % (term.cols - term.cols/10));
 	} else {
-		rcursor = ((excess - 1) % term.t_scrsiz) + term.t_margin;
+		scrollsiz = term.rows - ((term.rows/10) * 2);
+		rcursor = ((excess - 1) % scrollsiz) + term.cols/10;
 	}
 	horscroll = col - rcursor;
 
@@ -2254,7 +2256,7 @@ updateline(
 
 /*	UPDATELINE code for all other versions		*/
 
-#define TTattr(a) TTrev(a) /* FIXME */
+#define TTattr(a) term.rev(a) /* FIXME */
 
 static void
 updateline(
@@ -2285,8 +2287,8 @@ int	colto)		/* first column on screen */
 
 #if !OPT_VIDEO_ATTRS
 #if	OPT_COLOR
-	TTforg(ReqFcolor(vp1));
-	TTbacg(ReqBcolor(vp1));
+	term.setfore(ReqFcolor(vp1));
+	term.setback(ReqBcolor(vp1));
 #endif
 
 #if	OPT_REVSTA || OPT_COLOR
@@ -2303,18 +2305,18 @@ int	colto)		/* first column on screen */
 		movecursor(row, colfrom);	/* Go to start of line. */
 		/* set rev video if needed */
 		if (req)
-			TTrev(req);
+			term.rev(req);
 
 		/* scan through the line and dump it to the screen and
 		   the virtual screen array				*/
 		for (; xl < colto; xl++) {
-			TTputc(cp1[xl]);
+			term.putch(cp1[xl]);
 			++ttcol;
 			cp2[xl] = cp1[xl];
 		}
 		/* turn rev video off */
 		if (req)
-			TTrev(FALSE);
+			term.rev(FALSE);
 
 		/* update the needed flags */
 		vp1->v_flag &= ~(VFCHG|VFCOL);
@@ -2409,7 +2411,7 @@ int	colto)		/* first column on screen */
 			j++;
 		TTattr(attr);
 		for (; xl < j; xl++) {
-			TTputc(cp1[xl]);
+			term.putch(cp1[xl]);
 			++ttcol;
 			cp2[xl] = cp1[xl];
 			ap2[xl] = ap1[xl];
@@ -2418,7 +2420,7 @@ int	colto)		/* first column on screen */
 	TTattr(0);
 
 	if (xx != xr) {				/* Erase. */
-		TTeeol();
+		term.eeol();
 		for (; xl < xr; xl++) {
 			if (cp2[xl] != cp1[xl]
 			 || VATTRIB(ap2[xl]) != VATTRIB(ap1[xl]))
@@ -2428,23 +2430,23 @@ int	colto)		/* first column on screen */
 	}
 #else /* OPT_VIDEO_ATTRS */
 #if	OPT_REVSTA
-	TTrev(rev);
+	term.rev(rev);
 #endif
 
 	for (; xl < xr; xl++) {		/* Ordinary. */
-		TTputc(cp1[xl]);
+		term.putch(cp1[xl]);
 		++ttcol;
 		cp2[xl] = cp1[xl];
 	}
 
 	if (xx != xr) {		/* Erase. */
-		TTeeol();
+		term.eeol();
 		for (; xl < xr; xl++) {
 			cp2[xl] = cp1[xl];
 		}
 	}
 #if	OPT_REVSTA
-	TTrev(FALSE);
+	term.rev(FALSE);
 #endif
 #endif /* OPT_VIDEO_ATTRS */
 	vp1->v_flag &= ~(VFCHG|VFCOL);
@@ -2640,7 +2642,7 @@ int lchar)
 		}
 #endif /* !defined(insertmode) */
 #if OPT_ICURSOR
-		TTicursor(ic != lchar);
+		term.icursor(ic != lchar);
 #endif
 	}
 	return ic;
@@ -2693,7 +2695,7 @@ modeline(WINDOW *wp)
     int need_eighty_column_indicator = FALSE;
     register BUFFER *bp;
 
-    TTcursor(FALSE);
+    term.cursorvis(FALSE);
     left_ms[0] = right_ms[0] = EOS;
     ms = left_ms;
 
@@ -2716,7 +2718,7 @@ modeline(WINDOW *wp)
 #endif
 #endif
 	vscreen[n]->v_flag |= VFCHG;
-	set_vattrs(n, 0, attr, term.t_ncol);
+	set_vattrs(n, 0, attr, term.cols);
     }
 #else
     vscreen[n]->v_flag |= VFCHG | VFREQ | VFCOL;/* Redraw next time. */
@@ -2848,7 +2850,7 @@ modeline(WINDOW *wp)
     && (shorten_path(strcpy(temp,bp->b_fname), FALSE))
     && !eql_bname(bp,temp)) {
 	if (is_internalname(temp)) {
-	    for (n = term.t_ncol - (13 + strlen(temp) + (int)(ms - left_ms));
+	    for (n = term.cols - (13 + strlen(temp) + (int)(ms - left_ms));
 			n > 0; n--)
 		*ms++ = lchar;
 	} else {
@@ -2867,24 +2869,24 @@ modeline(WINDOW *wp)
 
     *ms++ = EOS;
     right_len = strlen(right_ms);
-    vtputsn(left_ms, term.t_ncol);
-    for (n = term.t_ncol - strlen(left_ms) - right_len; n > 0; n--)
+    vtputsn(left_ms, term.cols);
+    for (n = term.cols - strlen(left_ms) - right_len; n > 0; n--)
 	vtputc(lchar);
-    vtcol = term.t_ncol - right_len;
+    vtcol = term.cols - right_len;
     if (vtcol < 0) {
 	n = -vtcol;
 	vtcol = 0;
     }
     else
 	n = 0;
-    vtputsn(right_ms+n, term.t_ncol - vtcol);
+    vtputsn(right_ms+n, term.cols - vtcol);
     if (need_eighty_column_indicator) {		/* mark column 80 */
 	int left = -nu_width(wp);
 #ifdef WMDLINEWRAP
 	if (!w_val(wp,WMDLINEWRAP))
 #endif
 	 left += w_val(wp,WVAL_SIDEWAYS);
-	n = term.t_ncol + left;
+	n = term.cols + left;
 	col = 80 - left;
 
 	if ((n > 80) && (col >= 0) && (vtgetc(col) == lchar)) {
@@ -2892,7 +2894,7 @@ modeline(WINDOW *wp)
 	    vtputc('|');
 	}
     }
-    TTcursor(TRUE);
+    term.cursorvis(TRUE);
 }
 
 void
@@ -3013,12 +3015,12 @@ movecursor(int row, int col)
 {
 	beginDisplay();
 	if ((row!=ttrow || col!=ttcol)
-	 && (row >= 0 && row < term.t_nrow)
-	 && (col >= 0 && col < term.t_ncol))
+	 && (row >= 0 && row < term.rows)
+	 && (col >= 0 && col < term.cols))
 	{
 		ttrow = row;
 		ttcol = col;
-		TTmove(row, col);
+		term.curmove(row, col);
 	}
 	endofDisplay();
 }
@@ -3026,7 +3028,7 @@ movecursor(int row, int col)
 void
 bottomleft(void)
 {
-	movecursor(term.t_nrow-1, 0);
+	movecursor(term.rows-1, 0);
 }
 
 /*
@@ -3055,15 +3057,17 @@ mlsavec(int c)
 }
 
 /*
- * Write a message into the message line only if appropriate.
+ * Format a string onto the message line, but only if it's
+ * appropriate.  Keyboard macro replay, "dot" command replay, command
+ * buffer execution, "terse" mode, and the user-accessible "discmd"
+ * state variable can all suppress this.
  */
 /* VARARGS1 */
 void
 mlwrite(const char *fmt, ...)
 {
 	va_list ap;
-	/* if we are not currently echoing on the command line, abort this */
-	if (global_b_val(MDTERSE) || kbd_replaying(FALSE) || discmd == FALSE) {
+	if (global_b_val(MDTERSE) || kbd_replaying(FALSE) || no_msgs) {
 		bottomleft();
 		return;
 	}
@@ -3072,11 +3076,9 @@ mlwrite(const char *fmt, ...)
 	va_end(ap);
 }
 
-/*	Put a string out to the message line regardless of the
-	current $discmd setting. This is needed when $debug is TRUE
-	and for the write-message and clear-message-line commands
-	Also used for most errors, to be sure they're seen.
-*/
+/*
+ * Unconditionally format a string out onto the message line.
+ */
 /* VARARGS1 */
 void
 mlforce(const char *fmt, ...)
@@ -3093,7 +3095,7 @@ mlprompt(const char *fmt, ...)
 {
 	va_list ap;
 	int osgarbf = sgarbf;
-	if (discmd == FALSE) {
+	if (no_msgs) {
 		bottomleft();
 		return;
 	}
@@ -3116,7 +3118,7 @@ dbgwrite(const char *fmt, ...)
 	mlmsg(temp,&ap);
 	va_end(ap);
 	beginDisplay();
-	while (TTgetc() != '\007')
+	while (term.getch() != '\007')
 		;
 	endofDisplay();
 }
@@ -3296,7 +3298,7 @@ sizesignal (int ACTUAL_SIG_ARGS GCC_UNUSED)
 
 	getscreensize (&w, &h);
 
-	if ((h > 1 && h != term.t_nrow) || (w > 1 && w != term.t_ncol))
+	if ((h > 1 && h != term.rows) || (w > 1 && w != term.cols))
 		newscreensize(h, w);
 
 	setup_handler(SIGWINCH, sizesignal);
@@ -3319,15 +3321,15 @@ newscreensize (int h, int w)
 		return;
 	}
 	chg_width = chg_height = 0;
-	if ((h > term.t_mrow) || (w > term.t_mcol)) {
+	if ((h > term.maxrows) || (w > term.maxcols)) {
 		int or, oc;
-		or = term.t_mrow;
-		oc = term.t_mcol;
-		term.t_mrow = h;
-		term.t_mcol = w;
+		or = term.maxrows;
+		oc = term.maxcols;
+		term.maxrows = h;
+		term.maxcols = w;
 		if (!vtinit()) { /* allocation failure */
-			term.t_mrow = or;
-			term.t_mcol = oc;
+			term.maxrows = or;
+			term.maxcols = oc;
 			return;
 		}
 	}
@@ -3361,7 +3363,7 @@ stop_working(void)
 		kbd_overlay(0);
 		kbd_flush();
 		movecursor(save_row, save_col);
-		TTflush();
+		term.flush();
 	}
 }
 
@@ -3379,7 +3381,6 @@ stop_working(void)
 SIGT
 imworking (int ACTUAL_SIG_ARGS GCC_UNUSED)
 {
-	static	const	char *const msg[] = {"working", "..."};
 	static	int	flip;
 	static	int	skip;
 
@@ -3407,6 +3408,7 @@ imworking (int ACTUAL_SIG_ARGS GCC_UNUSED)
 #if DISP_X11
 			x_working();
 #else
+			static const char *const msg[] = {"working", "..."};
 			char	result[20];
 			result[0] = EOS;
 			if (cur_working != 0
@@ -3515,8 +3517,8 @@ psc_putchar(OUTC_ARGS)
 void
 psc_flush(void)
 {
-    updateline(term.t_nrow-1, 0, term.t_ncol);
-    TTpflush();
+    updateline(term.rows-1, 0, term.cols);
+    term.pflush();
 }
 
 void
@@ -3529,10 +3531,10 @@ psc_move(int row, int col)
 void
 psc_eeol(void)
 {
-    if (ttrow >= 0 && ttrow < term.t_nrow && ttcol >= 0) {
+    if (ttrow >= 0 && ttrow < term.rows && ttcol >= 0) {
 	VIDEO_ATTR *vp = &vscreen[ttrow]->v_attrs[ttcol];
 	char *cp = &vscreen[ttrow]->v_text[ttcol];
-	char *cplim = &vscreen[ttrow]->v_text[term.t_ncol];
+	char *cplim = &vscreen[ttrow]->v_text[term.cols];
 	vscreen[ttrow]->v_flag |= VFCHG;
 	while (cp < cplim) {
 	    *vp++ = 0;
@@ -3546,7 +3548,7 @@ psc_eeop(void)
 {
     int saverow = ttrow;
     int savecol = ttcol;
-    while (ttrow < term.t_nrow) {
+    while (ttrow < term.rows) {
 	psc_eeol();
 	ttrow++;
 	ttcol = 0;

@@ -1,7 +1,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/makefilt.l,v 1.17 1999/03/07 19:19:55 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/makefilt.l,v 1.18 1999/04/14 00:43:55 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Makefile
  *
@@ -90,6 +90,7 @@ NAME		[a-zA-Z_][a-zA-Z_0-9.-]+
 
 ^{SPACE}*{NAME}{SPACE}*=	{ WriteToken(Ident2_attr); }
 
+\$\${NAME}			|
 \$[A-Za-z@!%^&*?<]		|
 \${SPACE}*\([^\)]+\)		{ WriteToken(Ident2_attr); }
 

@@ -1,7 +1,7 @@
 #
 # makefile for vile on WIN32 using Microsoft Visual C++
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.wnt,v 1.39 1999/03/26 00:29:00 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.wnt,v 1.42 1999/04/14 23:15:16 tom Exp $
 #
 #
 !include <ntwin32.mak>
@@ -60,11 +60,16 @@ THE_PERLCFG  = perl_env.inc
 !INCLUDE "$(THE_PERLCFG)"
 !ENDIF
 
+!IF  "$(DBG)" != ""
+DBGOBJS  = trace.obj
+DBGOPTS  = -DOPT_TRACE
+!endif
+
 !IF  "$(CFG)" == "vile" || "$(CFG)" == "vile-with-perl"
 DISP_DEF = -DDISP_NTCONS
 TARGET   = vile.exe
 CFLAGS   = $(cvarsmt) $(CC_DEBUG) -nologo -DWIN32_LEAN_AND_MEAN -G4 \
-           -Dscrn_chosen $(DISP_DEF) $(PERLOPTS)
+           -Dscrn_chosen $(DISP_DEF) $(PERLOPTS) $(DBGOPTS)
 LDFLAGS  = -nologo -pdb:none
 SCREEN   = ntconio
 LIBS     = $(LD_DEBUG) $(conlflags) $(conlibsmt) user32.lib $(VILE_PERL_LIB)
@@ -74,7 +79,7 @@ LIBS     = $(LD_DEBUG) $(conlflags) $(conlibsmt) user32.lib $(VILE_PERL_LIB)
 DISP_DEF = -DDISP_NTWIN
 TARGET   = winvile.exe
 CFLAGS   = $(cvarsmt) $(CC_DEBUG) -nologo -DWIN32_LEAN_AND_MEAN -G4 \
-           -Dscrn_chosen $(DISP_DEF) $(PERLOPTS)
+           -Dscrn_chosen $(DISP_DEF) $(PERLOPTS) $(DBGOPTS)
 LDFLAGS  = -nologo /nologo /subsystem:windows /incremental:no -pdb:none
 SCREEN   = ntwinio
 LIBS     = $(LD_DEBUG) $(guilflags) $(guilibsmt) $(VILE_PERL_LIB) $(OLELIBS)
@@ -145,7 +150,7 @@ OBJ = 	main.obj $(SCREEN).obj \
 	tags.obj tbuff.obj termio.obj ucrypt.obj undo.obj \
 	version.obj window.obj word.obj wordmov.obj map.obj \
 	w32cbrd.obj w32misc.obj w32pipe.obj $(PERLOBJS) \
-	$(OLEOBJS) $(EXTRA)
+	$(OLEOBJS) $(DBGOBJS) $(EXTRA)
 
 .c.obj:
 	$(cc) $(CFLAGS) -c $< -Fo$@
@@ -209,9 +214,19 @@ clean ::
     -del *.tlb
     -del *.res
 
+dist : $(TARGET)
+	- del $(CFG).zip
+	echo "$(CFG)", vi-like-emacs for win32 >zipnote.txt
+	zip $(CFG).zip readme.pc readme $(TARGET) vile.hlp
+	zip -z $(CFG).zip <zipnote.txt
+	- del zipnote.txt
+	cd macros
+	zip ..\$(CFG).zip pictmode.rc digraphs.rc
+
 all \
 clean ::
-	cd filters && $(MAKE) -f makefile.wnt $@
+	cd filters
+	$(MAKE) -f makefile.wnt $@
 
 api.obj:	api.h
 bind.obj:	nefunc.h btree.h

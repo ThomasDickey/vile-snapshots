@@ -5,7 +5,7 @@
  * commands. Some functions are just for
  * internal use.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/region.c,v 1.95 1999/03/20 16:42:18 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/region.c,v 1.96 1999/04/13 23:29:34 pgf Exp $
  *
  */
 
@@ -388,14 +388,14 @@ entabline(void *flagp GCC_UNUSED, int l GCC_UNUSED, int r GCC_UNUSED)
 		    ocol++;
 		    break;
 		case '\t':
-		    ocol = nexttabcol(ocol);
+		    ocol = nexttabcol(ocol,curtabval);
 		    break;
 		default:
-			while (nexttabcol(ncol) <= ocol) {
+			while (nexttabcol(ncol,curtabval) <= ocol) {
 				if (ncol + 1 == ocol)
 					break;
 				(void)lreplc(lp, noff++, '\t');
-				ncol = nexttabcol(ncol);
+				ncol = nexttabcol(ncol,curtabval);
 			}
 			while (ncol < ocol) {
 				(void)lreplc(lp, noff++, ' ');
