@@ -5,7 +5,7 @@
  * keys. Like everyone else, they set hints
  * for the display system.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.267 2004/10/31 16:03:59 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.268 2004/11/06 01:12:34 tom Exp $
  *
  */
 
@@ -1284,20 +1284,35 @@ killbuffer(int f, int n)
 
 #if !SMALLER			/* allow user to kill a glob'd expression. */
 	s = 0;
-	for (bp = bheadp; bp; bp = bp_next) {
-	    /* Fetch next buffer prior to possible destruction */
-	    bp_next = bp->b_bufp;
-	    /* Attempt match and kill if match okay */
-	    if (glob_match_leaf(bp->b_bname, bufn)) {
-		if (kill_that_buffer(bp))
-		    s++;
+#if OPT_GLOB_RANGE
+	/*
+	 * If it looks like a scratch buffer, try to find exactly that before
+	 * possibly getting confused with range expressions, etc.
+	 */
+	if (is_scratchname(bufn)
+	    && (bp = find_b_name(bufn)) != 0
+	    && kill_that_buffer(bp)) {
+	    s = 1;
+	}
+	if (s == 0)
+#endif
+	{
+	    for (bp = bheadp; bp; bp = bp_next) {
+		/* Fetch next buffer prior to possible destruction */
+		bp_next = bp->b_bufp;
+		/* Attempt match and kill if match okay */
+		if (glob_match_leaf(bp->b_bname, bufn)) {
+		    if (kill_that_buffer(bp))
+			s++;
+		}
 	    }
 	}
+
 	if (s != 0) {
 	    mlforce("[Removed %d buffer%s]", s, PLURAL(s));
 	    s = TRUE;
 	} else			/* perhaps filename or buffer number */
-#endif
+#endif /* !SMALLER */
 	{
 	    if ((bp = find_any_buffer(bufn)) == 0) {	/* Try buffer */
 		s = FALSE;

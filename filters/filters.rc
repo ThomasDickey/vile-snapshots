@@ -1,12 +1,12 @@
-; $Id: filters.rc,v 1.195 2004/10/31 21:57:28 tom Exp $
+; $Id: filters.rc,v 1.196 2004/11/03 21:02:24 tom Exp $
 ; majormodes in this file are ordered alphabetically for convenience - the
 ; precedence used by vile is strictly alphabetic, counting case.
 
 ; This file depends upon modes.rc, which may have been source'd by vileinit.rc
 ; so we will check if it was not source'd.
-~if &or \
-	&error %filters-modes \
-	&seq %filters-modes ''
+~if &error %filters-modes
+	source modes.rc
+~elseif &seq %filters-modes ''
 	source modes.rc
 ~endif
 unsetv %filters-modes

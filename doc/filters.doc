@@ -151,6 +151,7 @@ The following are implemented:
 	vile-ada-filt	(Ada95)
 	vile-as-filt	(GNU assembler (x86))
 	vile-asm-filt	(Microsoft ASM (x86))
+	vile-au3-filt	(AutoIt 3)
 	vile-awk-filt	(awk)
 	vile-basic-filt	(BASIC)
 	vile-bat-filt	(DOS batchfiles)
@@ -214,6 +215,10 @@ use the same syntax as other majormodes:
 	imakemode	Imake uses C filter
 	javamode	Java uses C filter
 	jsmode		JavaScript uses C filter
+	nmakemode	nmake uses C filter
+	pcmode		printcap uses termcap filter
+	texmode		TeX uses latex filter
+	vbmode		Visual Basic uses basic filter
 
 
 NOTE
@@ -222,4 +227,4 @@ NOTE
 The lex filters have been well tested only with flex, which treats newlines
 differently.  Older versions of lex may not support the %x states.
 
--- $Header: /users/source/archives/vile.vcs/doc/RCS/filters.doc,v 1.30 2003/02/15 16:00:52 tom Exp $
+-- $Header: /users/source/archives/vile.vcs/doc/RCS/filters.doc,v 1.31 2004/11/05 15:45:33 tom Exp $

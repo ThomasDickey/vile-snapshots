@@ -3,7 +3,7 @@
  *	for getting and setting the values of the vile state variables,
  *	plus helper utility functions.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.82 2004/10/31 16:04:54 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.84 2004/11/03 00:06:08 tom Exp $
  */
 
 #include	"estruct.h"
@@ -707,6 +707,14 @@ var_DISINP(TBUFF **rp, const char *vp)
 {
     return any_rw_BOOL(rp, vp, &vl_echo);
 }
+
+#if OPT_TRACE
+int
+var_GOAL_COLUMN(TBUFF **rp, const char *vp)
+{
+    return any_rw_INT(rp, vp, &curgoal);
+}
+#endif
 
 #if OPT_LOCALE
 int

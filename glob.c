@@ -13,7 +13,7 @@
  *
  *	modify (ifdef-style) 'expand_leaf()' to allow ellipsis.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/glob.c,v 1.78 2002/11/05 20:39:42 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/glob.c,v 1.79 2004/11/06 00:03:53 tom Exp $
  *
  */
 
@@ -170,7 +170,7 @@ cs_char(int ch)
     return isUpper(ch) ? toLower(ch) : ch;
 }
 #else
-#define cs_char(ch) (ch)
+#define cs_char(ch) CharOf(ch)
 #endif
 
 static int
@@ -227,15 +227,14 @@ glob_match_leaf(char *leaf, char *pattern)
 		    break;
 		}
 		if (*pattern == '-' && pattern != first) {
-		    int lo = pattern[-1];
-		    int hi = pattern[1];
+		    int lo = CharOf(pattern[-1]);
+		    int hi = CharOf(pattern[1]);
 		    if (hi == GLOB_RANGE[1])
 			hi = '~';
 		    if (((cs_char(lo) <= cs_char(*leaf))
 			 && (cs_char(*leaf) <= cs_char(hi))) != negate)
 			found = TRUE;
-		    if (pattern[1] != GLOB_RANGE[1])
-			pattern++;
+		    pattern++;
 		} else if ((cs_char(*pattern++) == cs_char(*leaf)) != negate)
 		    found = TRUE;
 	    }

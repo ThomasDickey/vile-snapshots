@@ -209,8 +209,9 @@ Buffer manipulation commands
 	:ki	Kill a buffer.  Remove the buffer and its contents from the
 		editor.  Will ask if changes to the buffer should be
 		discarded.  Multiple buffer names may be specified via
-		wildcards (.e.g., :ki *.log) and individual buffer names
-		may be selected via name completion (described below).
+		wildcards (e.g., :ki *.log) and individual buffer names
+		may be selected via name completion (using the same
+		conventions as in filename completion, described below).
 
 	^X-e	Edit the file whose pathname appears under the cursor.  For
 		example, if you are editing a makefile, you could edit one
@@ -6123,4 +6124,4 @@ Problems
 
 Copyright 1995-2003 by Paul Fox, Thomas Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.590 2004/10/31 22:13:23 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.591 2004/11/06 00:28:09 tom Exp $

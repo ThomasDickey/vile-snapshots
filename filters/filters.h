@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.82 2004/10/26 18:24:34 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.83 2004/11/05 22:33:25 tom Exp $
  */
 
 #ifndef FILTERS_H
@@ -42,6 +42,10 @@ extern "C" {
 
 #ifndef OPT_TRACE
 #define OPT_TRACE 0
+#endif
+
+#ifndef CAN_TRACE
+#define CAN_TRACE		1  /* (link with trace.o) */
 #endif
 
 #include <sys/types.h>		/* sometimes needed to get size_t */

@@ -22,7 +22,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.523 2004/10/26 19:13:39 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.524 2004/11/01 22:01:17 tom Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -2294,8 +2294,8 @@ charinit(void)
 	if (sys_isxdigit(c))
 	    vlCTYPE(c) |= vl_xdigit;
 #endif
-	vl_uppercase[c] = toupper(c);
-	vl_lowercase[c] = tolower(c);
+	vl_uppercase[c] = (char) toupper(c);
+	vl_lowercase[c] = (char) tolower(c);
     }
 #else /* ! OPT_LOCALE */
     (void) memset((char *) vl_chartypes_, 0, sizeof(vl_chartypes_));
