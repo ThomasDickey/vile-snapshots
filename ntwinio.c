@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 screen API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.83 2000/02/11 02:07:59 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.84 2000/02/27 21:57:31 cmorgan Exp $
  * Written by T.E.Dickey for vile (october 1997).
  * -- improvements by Clark Morgan (see w32cbrd.c, w32pipe.c).
  */
@@ -16,6 +16,7 @@
 #include        "estruct.h"
 #include        "edef.h"
 #include        "pscreen.h"
+#include        "patchlev.h"
 #include        "winvile.h"
 
 #undef RECT			/* FIXME: symbol conflict */
@@ -1557,6 +1558,11 @@ static void
 invoke_popup_menu(MSG msg)
 {
     static HMENU hmenu;
+    char accel[NSTRING], buf[NSTRING * 2];
+    AREGION ar;
+    BUFFER *bp;
+    const CMDFUNC *cmd;
+    int flag, seltxt, samebuf;
     POINT point;
 
     TRACE(("invoke_popup_menu\n"));
@@ -1566,6 +1572,55 @@ invoke_popup_menu(MSG msg)
 	hmenu = GetSubMenu(hmenu, 0);
     }
     CheckMenuItem(hmenu, IDM_MENU, MF_BYCOMMAND | MF_CHECKED);
+
+    /*
+     * The "copy" menu command (copy unnamed reg to clipbd) does not use
+     * a static key binding.  Find out what binding is assigned and 
+     * dynamically update the accelerator shown on the popup menu.
+     */
+    if ((cmd = engl2fnc("copy-unnamed-reg-to-clipboard")) != NULL) {
+	(void) kcod2prc(fnc2kcod(cmd), accel);
+	strcpy(buf, "&Copy\t");
+	strcat(buf, accel);
+	ModifyMenu(hmenu, IDM_COPY, MF_BYCOMMAND | MF_STRING, IDM_COPY, buf);
+    }
+    /* Ditto Undo/Redo menu commands. */
+    if ((cmd = engl2fnc("redo-changes-forward")) != NULL) {
+	(void) kcod2prc(fnc2kcod(cmd), accel);
+	strcpy(buf, "&Redo\t");
+	strcat(buf, accel);
+	ModifyMenu(hmenu, IDM_REDO, MF_BYCOMMAND | MF_STRING, IDM_REDO, buf);
+    }
+    if ((cmd = engl2fnc("undo-changes-backward")) != NULL) {
+	(void) kcod2prc(fnc2kcod(cmd), accel);
+	strcpy(buf, "&Undo\t");
+	strcat(buf, accel);
+	ModifyMenu(hmenu, IDM_UNDO, MF_BYCOMMAND | MF_STRING, IDM_UNDO, buf);
+    }
+    /* FIXME -- should gray out undo/redo if not applicable. */
+
+    /* Can't paste data from clipboard if not TEXT. */
+    flag = (IsClipboardFormatAvailable(CF_TEXT)) ? MF_ENABLED : MF_GRAYED;
+    EnableMenuItem(hmenu, IDM_PASTE, MF_BYCOMMAND | flag);
+
+    /* Do we have a text selection? */
+    if ((bp = get_selection_buffer_and_region(&ar)) != NULL)
+	seltxt = MF_ENABLED;
+    else
+	seltxt = MF_GRAYED;
+
+    /* Is the text selection in the current buffer? */
+    if ((seltxt == MF_ENABLED) && (bp == curbp))
+	samebuf = MF_ENABLED;
+    else
+	samebuf = MF_GRAYED;
+
+    /* Modify menu items that depend on seltxt and samebuf flags. */
+    EnableMenuItem(hmenu, IDM_COPY, MF_BYCOMMAND | seltxt);
+    EnableMenuItem(hmenu, IDM_CUT, MF_BYCOMMAND | samebuf);
+    EnableMenuItem(hmenu, IDM_DELETE, MF_BYCOMMAND | samebuf);
+
+    /* Show popup menu. */
     point.x = LOWORD(msg.lParam);
     point.y = HIWORD(msg.lParam);
     ClientToScreen(msg.hwnd, &point);
@@ -1579,6 +1634,62 @@ invoke_popup_menu(MSG msg)
     TRACE(("...invoke_popup_menu\n"));
 }
 
+static BOOL CALLBACK
+AboutBoxProc(HWND hDlg, UINT iMsg, WPARAM wParam, LPARAM lParam)
+{
+    RECT arect,			/* About box */
+      vrect;			/* vile main window */
+    char buf[512];
+    HWND hwnd;
+    int w, h;
+
+    switch (iMsg) {
+    case WM_INITDIALOG:
+	/* set about box dialog title */
+	sprintf(buf, "About %s", prognam);
+	SetWindowText(hDlg, buf);
+
+	/* announce program version */
+	hwnd = GetDlgItem(hDlg, IDM_ABOUT_PROGNAME);
+	sprintf(buf, "%s\n%s%s", prognam, version, PATCHLEVEL);
+	SetWindowText(hwnd, buf);
+
+	/* talk about copyright */
+	hwnd = GetDlgItem(hDlg, IDM_ABOUT_COPYRIGHT);
+	sprintf(buf,
+	    "\nCopyright \xA9 Tom Dickey 1997-2000\n\n"
+	    "%s is free software, distributed under the terms of the GNU "
+	    "Public License (see COPYING).",
+	    prognam);
+	SetWindowText(hwnd, buf);
+
+	/*
+	 * Center dialog box in editor's main window.  This is gross.
+	 * There ought to be some way to tell Windows to do this.
+	 */
+	GetWindowRect(cur_win->main_hwnd, &vrect);
+	GetWindowRect(hDlg, &arect);
+	w = arect.right - arect.left;
+	h = arect.bottom - arect.top;
+	MoveWindow(hDlg,
+	    vrect.left + ((vrect.right - vrect.left) / 2 - w / 2),
+	    vrect.top + ((vrect.bottom - vrect.top) / 2 - h / 2),
+	    w,
+	    h,
+	    TRUE);
+	return (TRUE);
+    case WM_COMMAND:
+	switch (LOWORD(wParam)) {
+	case IDOK:
+	case IDCANCEL:
+	    EndDialog(hDlg, 0);
+	    return (TRUE);
+	}
+	break;
+    }
+    return (FALSE);
+}
+
 static int
 handle_builtin_menu(WPARAM code)
 {
@@ -1586,6 +1697,9 @@ handle_builtin_menu(WPARAM code)
 
     TRACE(("handle_builtin_menu code=%#x\n", code));
     switch (LOWORD(code)) {
+    case IDM_ABOUT:
+	DialogBox(vile_hinstance, "AboutBox", cur_win->main_hwnd, AboutBoxProc);
+	break;
     case IDM_OPEN:
 	winopen(0, 0);
 	update(FALSE);
@@ -1599,6 +1713,45 @@ handle_builtin_menu(WPARAM code)
 	break;
     case IDM_MENU:
 	enable_popup_menu();
+	update(FALSE);
+	break;
+    case IDM_PASTE:
+	if (b_val(curbp, MDVIEW))
+	    return rdonly();
+	mayneedundo();
+	cbrdpaste(FALSE, FALSE);
+	update(FALSE);
+	break;
+    case IDM_REDO:
+	forwredo(FALSE, FALSE);
+	update(FALSE);
+	break;
+    case IDM_UNDO:
+	backundo(FALSE, FALSE);
+	update(FALSE);
+	break;
+    case IDM_COPY:
+	/*
+	 * Copy selected text to clipboard.  Start by first yanking selected
+	 * text to unnamed register.  In most cases this won't be necessary,
+	 * especially if mouse is used to navigate and make selections.
+	 * However, there are cases where the user might select some text
+	 * (causes automatic yank to unnamed register), do something to 
+	 * clobber the unnamed register, and then use the menu system to
+	 * attempt to copy selected text.
+	 */
+
+	sel_yank(0);
+	sel_release();
+	cbrdcpy_unnamed(FALSE, FALSE);
+	update(FALSE);
+	break;
+    case IDM_CUT:
+    case IDM_DELETE:
+	if (b_val(curbp, MDVIEW))
+	    return rdonly();
+	mayneedundo();
+	w32_del_selection(LOWORD(code) == IDM_CUT);
 	update(FALSE);
 	break;
     default:
@@ -2695,9 +2848,7 @@ MainWndProc(
     WPARAM wParam,
     LONG lParam)
 {
-#if FIXME
-    FARPROC lpProcAbout;
-#endif
+    static int resize_pending;	/* a resize, not a move */
 
     TRACE(("MAIN:%s, %s\n", message2s(message), which_window(hWnd)));
 
@@ -2710,14 +2861,6 @@ MainWndProc(
 	    wParam = IDC_button_x;
 	    PostMessage(hWnd, message, wParam, lParam);
 	    break;
-	case IDM_ABOUT:
-	    lpProcAbout = MakeProcInstance(About, vile_hinstance);
-	    DialogBox(vile_hinstance, "AboutBox", hWnd, lpProcAbout);
-	    FreeProcInstance(lpProcAbout);
-	    break;
-
-	    /* file menu commands */
-
 	case IDM_PRINT:
 	    MessageBox(
 		GetFocus(),
@@ -2733,11 +2876,6 @@ MainWndProc(
 #endif
 	break;
 
-/*
-	case WM_SIZE:
-		MoveWindow(cur_win->main_hwnd, 0, 0, LOWORD(lParam), HIWORD(lParam), TRUE);
-		break;
-*/
     case WM_SETFOCUS:
 	fshow_cursor();
 	break;
@@ -2767,9 +2905,12 @@ MainWndProc(
 
     case WM_EXITSIZEMOVE:
 	ResizeClient();
-	if (initialized) {
-	    mlwrite("columns: %d, rows: %d", term.cols, term.rows);
-	    update(TRUE);	/* Force cursor out of message line */
+	if (resize_pending) {
+	    if (initialized) {
+		mlwrite("columns: %d, rows: %d", term.cols, term.rows);
+		update(TRUE);	/* Force cursor out of message line */
+	    }
+	    resize_pending = FALSE;
 	}
 	return (DefWindowProc(hWnd, message, wParam, lParam));
 
@@ -2791,6 +2932,10 @@ MainWndProc(
 	return (0);
 #endif
 
+    case WM_SIZE:
+	if (initialized)
+	    resize_pending = TRUE;
+	/* FALL THROUGH */
     default:
 	return (TextWndProc(hWnd, message, wParam, lParam));
 
@@ -2906,14 +3051,13 @@ InitInstance(HINSTANCE hInstance)
 
     cur_win->nscrollbars = -1;
 
-    /*
-     * Insert "Open" and "Font" before "Close" in the system menu.
-     */
+    /* Insert Winvile's menu items in the system menu. */
     vile_menu = GetSystemMenu(cur_win->main_hwnd, FALSE);
     AppendMenu(vile_menu, MF_SEPARATOR, 0, NULL);
     AppendMenu(vile_menu, MF_STRING, IDM_OPEN, "&Open...");
     AppendMenu(vile_menu, MF_STRING, IDM_SAVE_AS, "&Save As...");
     AppendMenu(vile_menu, MF_STRING, IDM_FONT, "&Font...");
+    AppendMenu(vile_menu, MF_STRING, IDM_ABOUT, "&About...");
     AppendMenu(vile_menu, MF_SEPARATOR, 0, NULL);
     AppendMenu(vile_menu, MF_STRING | MF_CHECKED, IDM_MENU, "&Menu");
 

@@ -11,7 +11,7 @@
 #
 # The modes are table entries in the BUFFER and WINDOW structures.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.168 2000/02/10 02:40:40 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.170 2000/02/28 01:34:12 tom Exp $
 #
 #
 # Mode-table entries.  Capitalized letters are used for abbreviations.
@@ -32,6 +32,7 @@ bool							# GMD prefix
 	"glob"		GLOB		0		!OPT_GLOB_PIPE # enable/disable filename globbing
 	"HIstory"	HISTORY		0		OPT_HISTORY # command-history
 	"ImplyBuffer"	IMPLYBUFF	0		# imply-buffer (vi-like)
+	"Insert-Exec"	INSEXEC		0		# allow ^F/^B, etc., to be interpreted during insert mode
 	"multibeep"	MULTIBEEP	0		# multiple successive identical failed motions all beep
 	"maplonger"	MAPLONGER	0		# favor longer maps
 	"pin-tagstack"	PIN_TAGSTACK	0		# tagstack push/pop ops are pinned to curwin
@@ -302,7 +303,7 @@ string
 "sequal"	SEQUAL		2|BRET		# string logical equality check
 "sgreater"	SGREAT		2|BRET		# string logical greater than
 "sindex"	SINDEX		2|NRET		# find the index of one string in another
-"sless"		SLESS		2|STR|SRET	# string logical less than
+"sless"		SLESS		2|BRET		# string logical less than
 "subtract"	SUB		2|NUM|NRET	# subtraction
 "times"		TIMES		2|NUM|NRET	# multiplication
 "token"		TOKEN		3|STR|SRET	# select n'th token of string, given delims

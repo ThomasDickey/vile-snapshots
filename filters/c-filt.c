@@ -6,7 +6,7 @@
  *		string literal ("Literal") support --  ben stoltz
  *		factor-out hashing and file I/O - tom dickey
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/c-filt.c,v 1.54 2000/02/10 11:33:37 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/c-filt.c,v 1.56 2000/02/28 11:58:59 tom Exp $
  *
  * Usage: refer to vile.hlp and doc/filters.doc .
  */
@@ -35,7 +35,7 @@ static char *Number_attr;
 static char *Preproc_attr;
 
 static char *
-extract_identifier(FILE * fp, char *s)
+extract_identifier(char *s)
 {
     static char *name;
     static unsigned have;
@@ -52,9 +52,9 @@ extract_identifier(FILE * fp, char *s)
 	strncpy(name, base, need);
 	name[need] = 0;
 	if ((attr = keyword_attr(name)) != 0) {
-	    write_token(fp, base, need, attr);
+	    flt_puts(base, need, attr);
 	} else {
-	    write_token(fp, base, need, Ident_attr);
+	    flt_puts(base, need, Ident_attr);
 	}
     }
     return s;
@@ -92,10 +92,10 @@ has_endofliteral(char *s, int delim)
 }
 
 static char *
-skip_white(FILE * fp, char *s)
+skip_white(char *s)
 {
     while (*s && isBlank(*s))
-	fputc(*s++, fp);
+	flt_putc(*s++);
     return s;
 }
 
@@ -108,23 +108,23 @@ firstnonblank(char *tst, char *cmp)
 }
 
 static void
-write_comment(FILE * fp, char *s, int len, int begin)
+write_comment(char *s, int len, int begin)
 {
     char *t = s;
     char *nested;
     if (begin)
 	t += 2;
     while ((nested = strstr(t, "/*")) != 0 && (nested - s) < len) {
-	write_token(fp, s, nested - s, Comment_attr);
-	write_token(fp, nested, 2, Error_attr);
+	flt_puts(s, nested - s, Comment_attr);
+	flt_puts(nested, 2, Error_attr);
 	len -= (nested + 2 - s);
 	s = t = nested + 2;
     }
-    write_token(fp, s, len, Comment_attr);
+    flt_puts(s, len, Comment_attr);
 }
 
 static char *
-write_escape(FILE * fp, char *s, char *attr)
+write_escape(char *s, char *attr)
 {
     char *base = s++;
     int want = (*s == '0' || *s == 'x') ? 3 : 1;
@@ -132,7 +132,7 @@ write_escape(FILE * fp, char *s, char *attr)
 	s++;
 	want--;
     }
-    write_token(fp, base, s - base, attr);
+    flt_puts(base, s - base, attr);
     return s;
 }
 
@@ -147,7 +147,7 @@ write_escape(FILE * fp, char *s, char *attr)
 #define IsDigitX(c) (isNamex(c) || (c) == '.')
 
 static char *
-write_number(FILE * fp, char *s)
+write_number(char *s)
 {
     char *base = s;
     char *attr = Number_attr;
@@ -283,27 +283,27 @@ write_number(FILE * fp, char *s)
 	}
     } else {
     }
-    write_token(fp, base, s - base, attr);
+    flt_puts(base, s - base, attr);
     return s;
 }
 
 static char *
-write_literal(FILE * fp, char *s, int *literal, int escaped)
+write_literal(char *s, int *literal, int escaped)
 {
     int c_length = has_endofliteral(s, *literal);
     if (c_length < 0)
 	c_length = strlen(s);
     else
 	*literal = 0;
-    write_token(fp, s, c_length, escaped ? Literal_attr : Error_attr);
+    flt_puts(s, c_length, escaped ? Literal_attr : Error_attr);
     s += c_length;
     if (!*literal)
-	fputc(*s++, fp);
+	flt_putc(*s++);
     return s;
 }
 
 static char *
-parse_prepro(FILE * fp, char *s)
+parse_prepro(char *s)
 {
     char *attr;
     char *ss = s + 1;
@@ -322,10 +322,10 @@ parse_prepro(FILE * fp, char *s)
     if ((attr = keyword_attr(ss)) == 0) {
 	char *dst = 0;
 	if (strtol(ss, &dst, 10) != 0 && dst != 0 && *dst == 0) {
-	    write_token(fp, s, ss - s, Preproc_attr);
-	    write_token(fp, ss, tt - ss, Number_attr);
+	    flt_puts(s, ss - s, Preproc_attr);
+	    flt_puts(ss, tt - ss, Number_attr);
 	} else {
-	    write_token(fp, s, tt - s, Error_attr);
+	    flt_puts(s, tt - s, Error_attr);
 	}
 	s = tt;
     }
@@ -352,7 +352,7 @@ parse_prepro(FILE * fp, char *s)
 	}
     }
     c_length = tt - s;
-    write_token(fp, s, c_length, Preproc_attr);
+    flt_puts(s, c_length, Preproc_attr);
     return tt;
 }
 
@@ -362,7 +362,7 @@ init_filter(int before GCC_UNUSED)
 }
 
 static void
-do_filter(FILE * input, FILE * output)
+do_filter(FILE * input)
 {
     static unsigned used;
     static char *line;
@@ -387,8 +387,8 @@ do_filter(FILE * input, FILE * output)
 	was_esc = 0;
 	s = line;
 	if (literal)
-	    s = write_literal(output, s, &literal, escaped);
-	s = skip_white(output, s);
+	    s = write_literal(s, &literal, escaped);
+	s = skip_white(s);
 	while (*s) {
 	    if (!comment && *s == '/' && *(s + 1) == '*') {
 		c_length = has_endofcomment(s + 2);
@@ -398,56 +398,56 @@ do_filter(FILE * input, FILE * output)
 		} else {
 		    c_length += 2;
 		}
-		write_comment(output, s, c_length, 1);
+		write_comment(s, c_length, 1);
 		s = s + c_length;
 		continue;
 	    } else if (!comment && *s == '/' && *(s + 1) == '/') {
 		/* C++ comments */
 		c_length = strlen(s);
-		write_comment(output, s, c_length, 1);
+		write_comment(s, c_length, 1);
 		break;
 	    } else if (!escaped && !comment && *s == '#' && firstnonblank(s, line)
 		&& set_symbol_table("cpre")) {
-		s = parse_prepro(output, s);
+		s = parse_prepro(s);
 		set_symbol_table(filter_def.filter_name);
 	    } else if (comment && *s) {
 		if ((c_length = has_endofcomment(s)) > 0) {
-		    write_comment(output, s, c_length, 0);
+		    write_comment(s, c_length, 0);
 		    s = s + c_length;
 		    comment -= 1;
 		    if (comment < 0)
 			comment = 0;
 		} else {	/* Whole line belongs to comment */
 		    c_length = strlen(s);
-		    write_comment(output, s, c_length, 0);
+		    write_comment(s, c_length, 0);
 		    s = s + c_length;
 		}
 	    } else if (*s == ESCAPE) {
 		if (s[1] != '\n') {
-		    s = write_escape(output, s, Error_attr);
+		    s = write_escape(s, Error_attr);
 		} else {
 		    /* escaped newline - ok */
-		    fputc(*s++, output);
+		    flt_putc(*s++);
 		}
 	    } else if (isQuote(*s)) {
 		literal = (literal == 0) ? *s : 0;
-		fputc(*s++, output);
+		flt_putc(*s++);
 		if (literal) {
-		    s = write_literal(output, s, &literal, 1);
+		    s = write_literal(s, &literal, 1);
 		}
 	    } else if (isIdent(*s)) {
-		s = extract_identifier(output, s);
+		s = extract_identifier(s);
 	    } else if (isdigit(*s)
 		|| (*s == '.' && (isdigit(s[1]) || s[1] == '.'))) {
-		s = write_number(output, s);
+		s = write_number(s);
 	    } else if (*s == '#') {
 		char *t = s;
 		while (*s == '#')
 		    s++;
-		write_token(output, t, s - t, ((s - t) > 2) ?
+		flt_puts(t, s - t, ((s - t) > 2) ?
 		    Error_attr : Preproc_attr);
 	    } else {
-		fputc(*s++, output);
+		flt_putc(*s++);
 	    }
 	}
 	len = s - line;

@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/esqlfilt.l,v 1.6 2000/02/10 11:35:48 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/esqlfilt.l,v 1.7 2000/02/28 11:58:59 tom Exp $
  *
  * Filter to add vile "attribution" sequences to embedded SQL with C/C++.
  * - T.Dickey
@@ -107,7 +107,7 @@ process_keyword(char *text, int len)
     } else {
 	attr = keyword_attr(text);
     }
-    write_token(yyout, text, len, attr);
+    flt_puts(text, len, attr);
 }
 
 static void
@@ -116,10 +116,9 @@ init_filter(int before GCC_UNUSED)
 }
 
 static void
-do_filter(FILE *input, FILE *output)
+do_filter(FILE *input)
 {
     yyin = input;
-    yyout = output;
 
     Action_attr  = class_attr(NAME_ACTION);
     Comment_attr = class_attr(NAME_COMMENT);

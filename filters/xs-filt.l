@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/xs-filt.l,v 1.7 2000/02/10 11:30:12 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/xs-filt.l,v 1.8 2000/02/28 11:58:59 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Perl/C
  * extension source
@@ -43,14 +43,14 @@ comment_or_preproc(char *text)
 	if (!strncmp(tbl[j], text, k)
 	 && !isalnum(text[k])) {
 	    text += k;
-	    write_token(yyout, base, text-base, Preproc_attr);
+	    flt_puts(base, text-base, Preproc_attr);
 	    /* FIXME: this can't handle inline comment or a continuation line */
-	    write_token(yyout, text, strlen(text), "");
+	    flt_puts(text, strlen(text), "");
 	    return;
 	}
     }
-    write_token(yyout, base, text-base, "");
-    write_token(yyout, text, strlen(text), Comment_attr);
+    flt_puts(base, text-base, "");
+    flt_puts(text, strlen(text), Comment_attr);
 }
 
 static void
@@ -59,10 +59,9 @@ init_filter(int before GCC_UNUSED)
 }
 
 static void
-do_filter(FILE *input, FILE *output)
+do_filter(FILE *input)
 {
     yyin = input;
-    yyout = output;
 
     Comment_attr = class_attr(NAME_COMMENT);
     Number_attr  = class_attr(NAME_NUMBER);

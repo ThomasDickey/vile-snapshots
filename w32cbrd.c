@@ -11,7 +11,7 @@
  *    Subsequent copies do not show this cursor.  On an NT host, this
  *    phenomenon does not occur.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32cbrd.c,v 1.14 2000/01/11 18:55:00 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32cbrd.c,v 1.15 2000/02/27 21:48:21 cmorgan Exp $
  */
 
 #include <windows.h>
@@ -589,4 +589,16 @@ map_and_insert(unsigned c,       /* ANSI char to insert   */
         }
     }
     return (rc);
+}
+
+/* --------------------- Cut Functionality ----------------------- */
+
+/*
+ * Cut current [win]vile selection to windows clipboard.
+ * Bound to Shift+Delete.
+ */
+int
+cbrdcut(int f, int n)
+{
+    return (w32_del_selection(TRUE));
 }

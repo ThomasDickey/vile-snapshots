@@ -2,7 +2,7 @@
  *	eval.c -- function and variable evaluation
  *	original by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.265 2000/01/15 00:57:00 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.266 2000/02/27 23:53:51 tom Exp $
  *
  */
 
@@ -620,7 +620,7 @@ run_func(int fnum)
 		show_charclass(&result, arg[0]);
 		break;
 	case UFLEFT:
-		tb_bappend(&result, arg[0], s2size(arg[1])+1);
+		tb_bappend(&result, arg[0], s2size(arg[1]));
 		tb_append(&result, EOS);
 		break;
 	case UFRIGHT:
@@ -628,7 +628,7 @@ run_func(int fnum)
 		break;
 	case UFMID:
 		tb_bappend(&result, s2offset(arg[0], arg[1]),
-				    s2size(arg[2])+1);
+				    s2size(arg[2]));
 		tb_append(&result, EOS);
 		break;
 	case UFNOT:

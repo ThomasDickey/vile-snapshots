@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/makefilt.l,v 1.29 2000/02/10 11:30:12 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/makefilt.l,v 1.30 2000/02/28 11:58:59 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Makefile
  *
@@ -45,20 +45,20 @@ write_keyword(char *text, int size)
 	space++;
     }
 
-    write_token(yyout, text, size, keyword_attr(text));
+    flt_puts(text, size, keyword_attr(text));
 
     if (space)
 	fprintf(yyout, "%.*s", space, text + size);
 
     if (colon)
-	fputc(':', yyout);
+	flt_putc(':');
 }
 
 static void
 write_delimited(char *text, int size, char *attr)
 {
-    write_token(yyout, text, size-1, attr);
-    write_token(yyout, text+size-2, 1, "");
+    flt_puts(text, size-1, attr);
+    flt_puts(text+size-2, 1, "");
 }
 
 /*
@@ -81,7 +81,7 @@ static void
 flush_quoted(void)
 {
     if (save_len) {
-	write_token(yyout, save_bfr, save_len, String_attr);
+	flt_puts(save_bfr, save_len, String_attr);
 	save_len = 0;
     }
 }
@@ -103,10 +103,9 @@ init_filter(int before GCC_UNUSED)
 }
 
 static void
-do_filter(FILE *input, FILE *output)
+do_filter(FILE *input)
 {
     yyin = input;
-    yyout = output;
 
     Comment_attr = class_attr(NAME_COMMENT);
     Error_attr   = class_attr(NAME_ERROR);
@@ -141,8 +140,8 @@ MACRO		([$]?\$\{{ID}\}|[$]?\${ID}|[$]?\$[A-Za-z@!%^&*?<]|\${SPACE}*\([^\)]+\))
 <NORMAL>{MACRO}		{ WriteToken(Ident2_attr); }
 
 <NORMAL>^{SPACE}\@	{ if (yyleng)
-			    fprintf(yyout, "%.*s", yyleng-1, yytext);
-			  write_token(yyout, "@", 1, String_attr); }
+			    flt_puts(yytext, yyleng-1, "");
+			  flt_puts("@", 1, String_attr); }
 <NORMAL>\\{SPACE}+\n	{ WriteToken(Error_attr); }
 <NORMAL>\\["'\n]	{ WriteToken(String_attr); }
 <NORMAL>\'		{ add_to_quoted(yytext, yyleng); BEGIN(QUOTE1); }

@@ -2,7 +2,7 @@
  * The routines in this file read and write ASCII files from the disk. All of
  * the knowledge about files are here.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/fileio.c,v 1.144 2000/01/15 12:19:53 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/fileio.c,v 1.145 2000/02/27 20:07:05 cmorgan Exp $
  *
  */
 
@@ -25,6 +25,8 @@
 #ifndef EISDIR
 #define EISDIR EACCES
 #endif
+
+static char *freadbuf;  /* allocated once per invocation of editor */
 
 /*--------------------------------------------------------------------------*/
 
@@ -669,22 +671,43 @@ int *lenp)	/* to return the final length */
 {
 	register int c;
 	register ALLOC_T i;	/* current index into fflinebuf */
+	int nbytes;
+	static char *end, *cp;
 
 	if (fileeof)
 		return(FIOEOF);
 
-	/* be sure there's a buffer */
-	if (!fflinebuf)
-		fflinebuf = castalloc(char,fflinelen = NSTRING);
-	if (!fflinebuf)
-		return(FIOMEM);
+	/* be sure buffers exist */
+	if (!fflinebuf) {
+		if (!freadbuf) {
+		    freadbuf = castalloc(char, BUFSIZ);
+		    if (!freadbuf)
+			    return(FIOMEM);
+		}
+		fflinebuf = castalloc(char, fflinelen = NSTRING);
+		if (!fflinebuf)
+			return(FIOMEM);
+	}
 
 	/* accumulate to a newline */
 	i = 0;
 	for_ever {
-		c = fgetc(ffp);
-		if (feof(ffp) || ferror(ffp))
-			break;
+		if (cp != end)
+			c = *cp++;
+		else {
+			nbytes = fread(freadbuf, sizeof(char), BUFSIZ, ffp);
+			if (nbytes > 0) {
+				cp  = freadbuf;
+				end = freadbuf + nbytes;
+				c   = *cp++;
+			} else {
+				c   = EOF;
+				end = cp = NULL; /* prime pump for next
+						  * ffgetline() invocation.
+						  */
+				break;
+			}
+		}
 #if	OPT_ENCRYPT
 		if (ffcrypting && !fileispipe)
 			c = vl_encrypt_char(c);
@@ -784,5 +807,6 @@ ffhasdata(void)
 void fileio_leaks(void)
 {
 	free_fline();
+	FreeAndNull(freadbuf);
 }
 #endif

@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/key-filt.c,v 1.8 2000/02/10 11:30:12 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/key-filt.c,v 1.9 2000/02/28 11:59:48 tom Exp $
  *
  * Filter to add vile "attribution" sequences to a vile keyword file.  It's
  * done best in C because the delimiters may change as a result of processing
@@ -57,49 +57,49 @@ color_of(char *s)
 }
 
 static void
-ExecClass(FILE *fp, char *param)
+ExecClass(char *param)
 {
     char *t = strmalloc(param);
     parse_keyword(t, 1);
     free(t);
     t = skip_blanks(skip_ident(skip_blanks(param)));
     if (*t == eqls_ch) {
-	write_token(fp, param, t - param, Ident2_attr);
-	fputc(*t++, fp);
-	write_token(fp, t, strlen(t), color_of(t));
+	flt_puts(param, t - param, Ident2_attr);
+	flt_putc(*t++);
+	flt_puts(t, strlen(t), color_of(t));
     } else {
-	write_token(fp, param, strlen(param), Ident2_attr);
+	flt_puts(param, strlen(param), Ident2_attr);
     }
 }
 
 static void
-ExecEquals(FILE *fp, char *param)
+ExecEquals(char *param)
 {
     eqls_ch = *param;
-    write_token(fp, param, strlen(param), Literal_attr);
+    flt_puts(param, strlen(param), Literal_attr);
 }
 
 static void
-ExecMeta(FILE *fp, char *param)
+ExecMeta(char *param)
 {
     meta_ch = *param;
-    write_token(fp, param, strlen(param), Literal_attr);
+    flt_puts(param, strlen(param), Literal_attr);
 }
 
 static void
-ExecTable(FILE *fp, char *param)
+ExecTable(char *param)
 {
     char *t = skip_ident(param);
-    write_token(fp, param, t - param, Literal_attr);
-    write_token(fp, t, strlen(t), Error_attr);
+    flt_puts(param, t - param, Literal_attr);
+    flt_puts(t, strlen(t), Error_attr);
 }
 
-static int parse_directive(FILE *fp, char *line)
+static int parse_directive(char *line)
 {
     /* *INDENT-OFF* */
     static struct {
 	const char *name;
-	void (*func) (FILE *, char *);
+	void (*func) (char *);
     } table[] = {
 	{ "class",   ExecClass    },
 	{ "default", ExecTable    },
@@ -120,13 +120,13 @@ static int parse_directive(FILE *fp, char *line)
 	    for (n = 0; n < sizeof(table) / sizeof(table[0]); n++) {
 		if (!strncmp(s, table[n].name, len)) {
 		    s = skip_blanks(s + len);
-		    write_token(fp, line, s-line, Ident_attr);
-		    (*table[n].func) (fp, s);
+		    flt_puts(line, s-line, Ident_attr);
+		    (*table[n].func) (s);
 		    return 1;
 		}
 	    }
 	}
-	write_token(fp, line, strlen(line), Error_attr);
+	flt_puts(line, strlen(line), Error_attr);
     }
     return 0;
 }
@@ -137,7 +137,7 @@ init_filter(int before GCC_UNUSED)
 }
 
 static void
-do_filter(FILE * input, FILE * output)
+do_filter(FILE * input)
 {
     static unsigned used;
     static char *line;
@@ -160,26 +160,26 @@ do_filter(FILE * input, FILE * output)
 
     while (readline(input, &line, &used) != NULL) {
 	s = skip_blanks(line);
-	write_token(output, line, s - line, "");
+	flt_puts(line, s - line, "");
 	if (*s == eqls_ch) {
-	    write_token(output, s, strlen(s), Comment_attr);
-	} else if (!parse_directive(output, s)) {
+	    flt_puts(s, strlen(s), Comment_attr);
+	} else if (!parse_directive(s)) {
 	    t = skip_ident(s);
-	    write_token(output, s, t - s, Ident_attr);
+	    flt_puts(s, t - s, Ident_attr);
 	    if (*t == eqls_ch) {
-		fputc(*t++, output);
+		flt_putc(*t++);
 	    }
 	    s = skip_ident(t);
 	    if (s != t) {
 		int save = *s;
 		*s = 0;
 		if (is_class(t)) {
-		    write_token(output, t, strlen(t), Ident2_attr);
+		    flt_puts(t, strlen(t), Ident2_attr);
 		    t = s;
 		}
 		*s = save;
 	    }
-	    write_token(output, t, strlen(t), color_of(t));
+	    flt_puts(t, strlen(t), color_of(t));
 	}
     }
 }

@@ -31,12 +31,20 @@ the compiled-in filter name.  For example, on a Unix host, the C filter
 	$HOME/.vile/vile.keywords
 	$VILE_STARTUP_PATH/vile.keywords
 
+	[ If $VILE_STARTUP_PATH is not defined, the filter checks the
+	"prefix" directory specified when all filters were compiled
+	(default path is /usr/local/share/vile/vile.keyords). ]
+
 and then here:
 
 	./.c.keywords
 	$HOME/.c.keywords
 	$HOME/.vile/c.keywords
 	$VILE_STARTUP_PATH/c.keywords
+
+	[ Again, if $VILE_STARTUP_PATH is not defined, the filter checks
+	the "prefix" directory specified when all filters were compiled
+	(default path is /usr/local/share/vile/c.keyords). ]
 
 In each case, vile-c-filt stops as soon as it finds the desired file.  On a
 non-Unix host, the search looks like this:
@@ -182,4 +190,4 @@ NOTE
 The lex filters have been well tested only with flex, which treats newlines
 differently.  Older versions of lex may not support the %x states.
 
--- $Header: /users/source/archives/vile.vcs/doc/RCS/filters.doc,v 1.18 2000/01/11 02:43:37 cmorgan Exp $
+-- $Header: /users/source/archives/vile.vcs/doc/RCS/filters.doc,v 1.19 2000/02/27 20:16:53 cmorgan Exp $

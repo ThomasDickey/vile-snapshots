@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/perlfilt.l,v 1.26 2000/02/10 11:30:12 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/perlfilt.l,v 1.27 2000/02/28 11:58:59 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of PERL input
  * text.
@@ -64,7 +64,7 @@ static void
 flush_here(void)
 {
     if (save_len) {
-	write_token(yyout, save_bfr, save_len, String_attr);
+	flt_puts(save_bfr, save_len, String_attr);
 	save_len = 0;
     }
 }
@@ -124,10 +124,9 @@ init_filter(int before GCC_UNUSED)
 }
 
 static void
-do_filter(FILE *input, FILE *output)
+do_filter(FILE *input)
 {
     yyin = input;
-    yyout = output;
     BEGIN(CODE);
     Comment_attr = class_attr(NAME_COMMENT);
     Preproc_attr = class_attr(NAME_PREPROC);
@@ -187,7 +186,7 @@ NUMBER		{SIGN}?({DECIMAL}|{OCTAL}|{HEXADECIMAL}|{REAL})
 <HERE>[^\n]		{ add_to_here(yytext, yyleng); }
 <HERE>\n		{
 			    flush_here();
-			    fputc(yytext[0], yyout);
+			    flt_putc(yytext[0]);
 			}
 
 <CODE>[!=]"~"{BLANK}	{ WriteToken(""); BEGIN(PATTERN); }
@@ -211,7 +210,7 @@ NUMBER		{SIGN}?({DECIMAL}|{OCTAL}|{HEXADECIMAL}|{REAL})
 <IGNORED>[^\n]*		{ WriteToken(Comment_attr); }
 
 <CODE>\n\n=[a-z].*	{
-			    fputs("\n\n", yyout);
+			    flt_puts("\n\n", 2, "");
 			    WriteToken2(Comment_attr,2);
 			    BEGIN(POD);
 			}

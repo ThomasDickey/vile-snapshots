@@ -2,7 +2,7 @@
  * w32misc:  collection of unrelated, common win32 functions used by both
  *           the console and GUI flavors of the editor.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32misc.c,v 1.20 2000/01/11 18:56:34 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32misc.c,v 1.21 2000/02/27 21:48:21 cmorgan Exp $
  */
 
 #include <windows.h>
@@ -24,6 +24,8 @@
 #define SHEXE            "sh.exe"
 #define SHEXE_LEN        (sizeof(SHEXE) - 1)
 #define SHELL_C_LEN      (sizeof(" -c ") - 1)
+
+extern REGION *haveregion;
 
 static int   host_type = HOST_UNDEF; /* nt or 95? */
 #ifndef DISP_NTWIN
@@ -859,4 +861,101 @@ w32_wdw_title(void)
             break;
     }
     return ((nchars) ? buf : error_val);
+}
+
+
+
+/*
+ * Delete current text selection and optionally copy same to Windows
+ * clipboard.
+ */
+int
+w32_del_selection(int copy_to_cbrd)
+{
+    AREGION     delrp;
+    MARK        savedot;
+    REGIONSHAPE shape;
+    int         status;
+
+    /* first, go to beginning of selection, if it exists. */
+    if (! sel_motion(FALSE, FALSE))
+        return (FALSE);
+
+    if (! sel_yank(0))      /* copy selection to unnamed register */
+        return (FALSE);
+
+    if (! get_selection_buffer_and_region(&delrp))
+    {
+        /* no selected region.  hmmm -- should not happen */
+
+        return (FALSE);
+    }
+    shape   = delrp.ar_shape;
+    savedot = DOT;
+
+    /* 
+     * Region to delete is now accessible via delrp.  Mimic the code
+     * executed by operdel().  The actual code executed depends upon
+     * whether or not the region is rectangular.
+     */
+    if (shape == RECTANGLE)
+    {
+        DORGNLINES dorgn;
+        int        save;
+
+        save        = FALSE;
+        dorgn       = get_do_lines_rgn();
+        DOT         = delrp.ar_region.r_orig;
+
+        /* setup dorgn() aka do_lines_in_region() */
+        haveregion  = &delrp.ar_region;
+        regionshape = shape;
+        status      = dorgn(kill_line, &save, FALSE);
+        haveregion  = NULL;
+    }
+    else
+    {
+        lines_deleted = 0;
+        DOT           = delrp.ar_region.r_orig;
+        status        = ldelete(delrp.ar_region.r_size, FALSE);
+#if OPT_SELECTIONS
+        find_release_attr(curbp, &delrp.ar_region);
+#endif
+    }
+    restore_dot(savedot);
+    if (status)
+    {
+        if (copy_to_cbrd)
+        {
+            /*
+             * cbrdcpy_unnamed() reports number of lines copied, which is
+             * same as number of lines deleted.
+             */
+
+            status = cbrdcpy_unnamed(FALSE, FALSE);
+        }
+        else
+        {
+            /* No data copied to clipboard, report number of lines deleted. */
+
+            status = TRUE;
+            if (shape == RECTANGLE)
+            {
+                if (do_report(klines + (kchars != 0)))
+                {
+                    mlwrite("[%d line%s, %d character%s killed]",
+                            klines,
+                            PLURAL(klines),
+                            kchars,
+                            PLURAL(kchars));
+                }
+            }
+            else
+            {
+                if (do_report(lines_deleted))
+                    mlwrite("[%d lines deleted]", lines_deleted);
+            }
+        }
+    }
+    return (status);
 }

@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.415 2000/02/09 11:37:46 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.416 2000/02/27 21:48:21 cmorgan Exp $
  *
  */
 
@@ -94,6 +94,7 @@ extern int gotoeob (int f, int n);
 extern int ourstrstr (const char *haystack, const char *needle, int anchor);
 extern char *cfg_locate (char *fname, UINT hflag);
 extern char *kbd_engl (const char *prompt, char *buffer);
+extern char *kcod2prc (int c, char *seq);
 extern char *kcod2pstr (int c, char *seq);
 extern const CMDFUNC *engl2fnc (const char *fname);
 extern const CMDFUNC *kcod2fnc (int c);
@@ -847,6 +848,7 @@ extern int        flipregion (void);
 extern DORGNLINES get_do_lines_rgn(void);
 extern int        get_fl_region (REGION *rp);
 extern int        getregion (REGION *rp);
+extern int        kill_line(void *flagp, int l, int r);
 extern int        killregion (void);
 extern int        killregionmaybesave (int save);
 extern int        lowerregion (void);
@@ -897,7 +899,7 @@ extern	void	on_double_click	(void);
 extern	void	on_triple_click	(void);
 #endif
 
-#if OPT_PERL || OPT_TCL
+#if OPT_PERL || OPT_TCL || SYS_WINNT
 extern	BUFFER *get_selection_buffer_and_region(AREGION *arp);
 #endif /* OPT_PERL || OPT_TCL */
 
@@ -1076,6 +1078,8 @@ extern int  parse_font_str(const char *fontstr, FONTSTR_OPTIONS *results);
 extern void restore_console_title(void);
 extern void set_console_title(const char *title);
 extern int  stdin_data_available(void);
+extern int  w32_cbrd_has_text_data(void);
+extern int  w32_del_selection(int copy_to_clipboard);
 extern int  w32_inout_popen(FILE **fr, FILE **fw, char *cmd);
 extern void w32_keybrd_reopen(int pressret);
 extern void w32_npclose(FILE *fp);

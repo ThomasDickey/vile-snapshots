@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/py-filt.l,v 1.6 2000/02/10 11:30:12 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/py-filt.l,v 1.7 2000/02/28 11:58:59 tom Exp $
  *
  * Filter to add vile "attribution" sequences to a Python script
  */
@@ -37,7 +37,7 @@ static void
 flush_quoted(void)
 {
     if (save_len) {
-	write_token(yyout, save_bfr, save_len, String_attr);
+	flt_puts(save_bfr, save_len, String_attr);
 	save_len = 0;
     }
 }
@@ -48,10 +48,9 @@ init_filter(int before GCC_UNUSED)
 }
 
 static void
-do_filter(FILE *input, FILE *output)
+do_filter(FILE *input)
 {
     yyin = input;
-    yyout = output;
 
     Comment_attr = class_attr(NAME_COMMENT);
     Ident2_attr  = class_attr(NAME_IDENT2);

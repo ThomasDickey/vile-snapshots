@@ -5,7 +5,7 @@
  * commands. Some functions are just for
  * internal use.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/region.c,v 1.102 2000/01/15 01:08:33 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/region.c,v 1.103 2000/02/27 21:48:21 cmorgan Exp $
  *
  */
 
@@ -61,7 +61,7 @@ killregionmaybesave(int save)
 	return status;
 }
 
-static int
+int
 kill_line(void *flagp, int l, int r)
 {
 	int s;

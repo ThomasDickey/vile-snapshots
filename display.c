@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.328 2000/01/31 00:55:57 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.329 2000/02/27 22:09:58 tom Exp $
  *
  */
 
@@ -804,6 +804,10 @@ mk_to_vcol (MARK mark, int expanded, int base, int col)
 	LINEPTR lp;
 	int	extra = ((!global_g_val(GMDALTTABPOS) && !insertmode) ? 1 : 0);
 
+	if (i < 0) {
+		i = 0;
+		col = 0;
+	}
 	lp = mark.l;
 	lim = mark.o + extra;
 	if (lim > llength(lp))

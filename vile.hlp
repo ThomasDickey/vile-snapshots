@@ -1317,6 +1317,11 @@ Editor modes
 	implybuffer (ib) Causes vile to create a buffer when you write to a new
 		file, or read from one (e.g., with ":r").  (U)
 
+	insert-exec (ie) Tells vile to interpret control characters for
+		movement and undo/redo if they are bound to appropriate
+		functions during insert mode.  For example, ^F and ^B would
+		scroll forward and backward.  (U)
+
 	linewrap (lw) Displays lines that are too long to fit on one line as a
 		series of "wrapped" lines.  Overrides left/right scrolling
 		controlled by "sideways" and "horizscroll" modes.  (W)
@@ -2835,9 +2840,19 @@ Invocation
 		    this environment variable is not set, the following
 		    host-specific defaults are internally assumed:
 
-		    Unix:  /usr/local/lib:/usr/local:/usr/lib
-		    VMS:   sys$login,sys$sysdevice:[vmstools],sys$library
+		    VMS:  sys$login,sys$sysdevice:[vmstools],sys$library
+
 		    DOS/OS/2/Win32:  /sys/public;/usr/bin;/bin;/
+
+		    Unix:  depends on whether or not $VILE_STARTUP_PATH was
+			   set when vile was configured prior to
+			   compilation.  If set, then the value of that
+			   environment var is compiled into the editor,
+			   else the default configure "datadir" is
+			   selected, which is either:
+
+			   /usr/local/share/vile   (typical root build)
+			   ${prefix}/share/vile    (nonroot build)
 
 		5 - if host is not Unix, each directory specified in:
 			$PATH
@@ -3335,21 +3350,84 @@ Syntax coloring
 		    nocindent
 		~endwith
 
-	Configuration recipe
-	--------------------
+	Configuration
+	-------------
+	There are three configuration recipes, each dependent on the target
+	host, available disk space, and the user's privilege level.
 
-	This section outlines a procedure for customizing the installation
-	of vile.  If you have enough diskspace to install all of the filters,
-	you would normally use vile as it is installed from the build process.
-	However, some users want to reduce the configuration to fit within
-	a disk quota on an ISP's shell account.
+	Unix install recipe -- root privileges available
+	------------------------------------------------
+	The simplest install copies the editor to a directory in the system
+	PATH (we'll assume /usr/local/bin), copies all syntax coloring data
+	and macro files to /usr/local/share/vile, and copies all filters to
+	/usr/local/lib/vile .  The following commands accomplish that task:
+
+	    unset VILE_STARTUP_PATH VILE_LIBDIR_PATH
+	    make clean; ./configure; make
+	    make install
+
+	Users should take these additional steps:
+
+	1) add "source filters.rc" to their $HOME/.vilerc startup files.
+
+	2) execute these shell commands (as necessary):
+
+	    mkdir $HOME/.vile
+	    cp /usr/local/share/vile/vile.keywords $HOME/.vile
+
+	That's it.  Now skim through the "Manual recipe" topic below and
+	then pay attention again when you hit the topic entitled "Testing
+	the configuration".  With regard to the remainder of this
+	discussion, the term "COLORDIR" refers collectively to the
+	directories $HOME/.vile, /usr/local/share/vile, or
+	/usr/local/lib/vile, as appropriate.
+
+	Unix install recipe -- no privileges
+	------------------------------------
+	The simplest install copies the editor, all filters, data and
+	macros file to a directory tree in your PATH (we'll assume
+	$HOME/local).  This syntax does the job:
+
+	    unset VILE_STARTUP_PATH VILE_LIBDIR_PATH
+	    make clean; ./configure --prefix=$HOME/local; make
+	    make install
+
+	These additional steps are required:
+
+	1) add "source filters.rc" to the $HOME/.vilerc startup file.
+
+	2) execute these shell commands (as necessary):
+
+	    mkdir $HOME/.vile
+	    cp $HOME/local/share/vile/vile.keywords $HOME/.vile
+
+	That's it.  Now skim through the "Manual recipe" topic below and
+	then pay attention again when you hit the topic entitled "Testing
+	the configuration".  With regard to the remainder of this
+	discussion, the term "COLORDIR" refers collectively to the
+	directories $HOME/.vile, $HOME/local/share/vile, or
+	$HOME/local/lib/vile, as appropriate.
+
+	Manual Recipe -- Win32 host or Unix user with limited disk space
+	----------------------------------------------------------------
+	In general, vile's Unix install script configures 90% of the
+	editor's syntax coloring mechanism.  However, this script copies
+	many filters (small executables) and keyword files to disk.  In a
+	situation where disk space is tight (e.g., an ISP shell account),
+	the end user will probably copy only those filters that apply to
+	the required programming/editing tasks.
+
+	On the other hand, there is no Win32 install/setup program.
+	Consequently, all Win32 users must resort to manual configuration.
+
+	Here then, is the manual configuration recipe.
 
 	1) create a directory (hereafter referred to as COLORDIR) to store
 	   the editor's external color filters and keyword files.  If you
 	   use csh (or clone) as your Unix shell, add COLORDIR to your
 	   PATH.  In this procedure, COLORDIR is a full pathname, e.g.,
 
-	   	/home/stevie
+		/home/stevie
 
 	2) list all available filters in the vile source directory using
 	   one of these commands:
@@ -3766,7 +3844,7 @@ Debugging features
 			required (e.g., ":which-exec copy.exe", not
 			"which-exec copy").
 
-			Note 3:  Specify a numeric argument > 1 to force vile
+			Note 3:  Specify a numeric argument to force vile
 			to popup a buffer that displays all possible paths
 			(e.g., "2:which-exec fmt").
 
@@ -3777,7 +3855,7 @@ Debugging features
 			the same directory hierarchy described in the
 			"Invocation" help topic.
 
-			Note 2:  Specify a numeric argument > 1 to force vile
+			Note 2:  Specify a numeric argument to force vile
 			to popup a buffer that displays all possible paths
 			(e.g., "2:which-source mymacros.rc").
 
@@ -4430,10 +4508,10 @@ Win32 specifics
 	Pressing the right mouse button pops up a menu of editor commands.
 	These are predefined:
 
-		"Open",    executes the "winopen" command (described below).
-		"Save As", executes the "winsave" command (described below).
-		"Font",    described below.
-		"Menu",    disables the popup menu and instead transforms
+		"Open"     executes the "winopen" command (described below).
+		"Save As"  executes the "winsave" command (described below).
+		"Font"     described below.
+		"Menu"     disables the popup menu and instead transforms
 			   the right mouse button into a hot key that copies
 			   the contents of the unnamed register to the
 			   clipboard.  When the popup menu is disabled,
@@ -4441,10 +4519,19 @@ Win32 specifics
 			   right mouse click, provides a quick means of
 			   copying highlighted blocks of text to the
 			   clipboard.
+		"Undo"     Bound to undo-changes-backward.
+		"Redo"     Bound to redo-changes-forward.
+		"Cut"      deletes current text selection into unnamed register
+			   and copies same to clipboard.
+		"Copy"     copies the current text selection to both the
+			   unnamed register and the clipboard.
+		"Paste"    pastes clipboard contents (if text) into current
+			   buffer.
+		"Delete"   deletes current text selection into unnamed register.
 
-	The popup menu contains the same entries as those added to the
-	system menu (in the upper left corner of the window).  Use the
-	"Menu" entry in that menu to re-enable the popup menu.
+	The first four popup menu entries are added to the system menu (in
+	the upper left corner of the window).  Use the "Menu" entry in that
+	menu to re-enable the popup menu.
 
 	Clipboard
 	---------
@@ -4453,15 +4540,18 @@ Win32 specifics
 	Copy data from a named register or region to the clipboard (a la
 	vile's ^W operator) via the copy-to-clipboard-til command (bound to
 	Ctrl+Insert).  The paste-from-clipboard command copies data from
-	the clipboard to the current buffer (bound to Shift+Insert).  Some
-	examples, assuming <CI> => Ctrl+Insert and <AI> => Alt+Insert:
+	the clipboard to the current buffer (bound to Shift+Insert).
+	Finally, the cut-to-clipboard command deletes the current text
+	selection and copies same to both the clipboard and the unnamed
+	register (bound to Shift+Delete).  Some examples, assuming 
+	<CI> => Ctrl+Insert and <AI> => Alt+Insert:
 
 		4yy<AI>  ;copy 4 lines from unnamed reg to clipboard
 		"a<CI>   ;copy register 'a' to clipboard
 		"b<CI>   ;copy register 'b' to clipboard
 		<CI>3w   ;copy 3 words to clipboard
 
-	The swap-clipboard-bindings command swaps the commands bound to
+	The swap-clipboard-keys command swaps the commands bound to
 	Ctrl+Insert and Alt+Insert.
 
 	OLE Automation
@@ -4538,6 +4628,9 @@ Win32 specifics
 
 	Commands
 	--------
+	delete-text-selection  Delete the current text selection to the 
+			unnamed register.  Bound to Alt+Delete.
+
 	swap-clipboard-keys  See discussion of clipboard above.
 
 	winopen		Launches the Windows common open dialog box to open
@@ -4872,4 +4965,4 @@ Problems
 
 Copyright 1995-2000 by Paul Fox, Tom Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.476 2000/02/10 03:30:35 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.479 2000/02/28 01:40:59 tom Exp $

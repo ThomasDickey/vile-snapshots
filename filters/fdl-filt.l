@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/fdl-filt.l,v 1.5 2000/02/10 11:37:55 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/fdl-filt.l,v 1.6 2000/02/28 11:58:59 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of fdl
  * input text.  This treats all of the text area as quoted, except for
@@ -23,7 +23,7 @@ static int next_state;
 static void
 handle_keyword(char *name)
 {
-    write_token(yyout, name, strlen(name), keyword_attr(name));
+    flt_puts(name, strlen(name), keyword_attr(name));
     next_state = INITIAL;
     if (!strcmp(name, "$rem")) {
 	BEGIN(NOTE);
@@ -41,10 +41,9 @@ init_filter(int before GCC_UNUSED)
 }
 
 static void
-do_filter(FILE *input, FILE *output)
+do_filter(FILE *input)
 {
     yyin = input;
-    yyout = output;
 
     Comment_attr = class_attr(NAME_COMMENT);
     Ident2_attr  = class_attr(NAME_IDENT2);

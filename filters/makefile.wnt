@@ -1,7 +1,7 @@
 #
 # makefile for vile filters on WIN32 using Microsoft Visual C++
 #
-# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.wnt,v 1.21 2000/01/12 22:03:34 tom Exp $
+# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.wnt,v 1.22 2000/02/28 10:46:37 tom Exp $
 #
 #
 !include <ntwin32.mak>
@@ -187,11 +187,11 @@ uninstall :: $(KEYS)
 	!erase "$(VILE_STARTUP_PATH)"\$**words
 !endif
 
-LF_DEPS = filters$o
-LF_ARGS = filters$o $(LEXLIB)
+LF_DEPS = filterio$o filters$o
+LF_ARGS = $(LF_DEPS) $(LEXLIB)
 
-CF_DEPS	= filters$o
-CF_ARGS	= filters$o
+CF_DEPS	= filterio$o filters$o
+CF_ARGS	= $(CF_DEPS)
 
 vile-crypt$x : ecrypt$o
 	$(link) -out:$@ $(CON_LDFLAGS) ecrypt$o

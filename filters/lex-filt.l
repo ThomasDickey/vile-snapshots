@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/lex-filt.l,v 1.16 2000/02/10 11:30:12 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/lex-filt.l,v 1.17 2000/02/28 11:58:59 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of LEX program.
  */
@@ -49,11 +49,11 @@ write_states(char *text, int len)
     int n;
     if (text[0] == '<') {	/* only happens if we have {STATES} */
 	n = 1 + strchr(text, '>') - text;
-	write_token(yyout, text, n, Keyword_attr);
+	flt_puts(text, n, Keyword_attr);
 	text += n;
 	len -= n;
     }
-    write_token(yyout, text, len, String_attr);
+    flt_puts(text, len, String_attr);
 }
 
 static void
@@ -62,10 +62,9 @@ init_filter(int before GCC_UNUSED)
 }
 
 static void
-do_filter(FILE *input, FILE *output)
+do_filter(FILE *input)
 {
     yyin = input;
-    yyout = output;
     Comment_attr = class_attr(NAME_COMMENT);
     Ident_attr   = class_attr(NAME_IDENT);
     Keyword_attr = class_attr(NAME_KEYWORD);

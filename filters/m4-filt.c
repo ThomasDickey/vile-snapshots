@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/m4-filt.c,v 1.14 2000/02/10 11:30:12 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/m4-filt.c,v 1.15 2000/02/28 11:58:59 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of m4 
  * input text.  This is in C rather than LEX because M4's quoting delimiters
@@ -40,7 +40,7 @@ typedef struct {
 
 #define isQuote(s,n) (n.used && !strncmp(s, n.text, n.used))
 
-#define write_quote(output,n) write_token(output, n.text, n.used, "")
+#define write_quote(output,n) flt_puts(n.text, n.used, "")
 
 static Quote leftquote, rightquote;
 static Quote leftcmt, rightcmt;
@@ -93,7 +93,7 @@ ChangeComment(char **args)
 }
 
 static char *
-parse_arglist(FILE * fp, char *s, char ***args)
+parse_arglist(char *s, char ***args)
 {
     char *t = SkipBlanks(s);
     char *r;
@@ -125,7 +125,7 @@ parse_arglist(FILE * fp, char *s, char ***args)
 	    }
 	    t++;
 	}
-	write_token(fp, s, t - s, "");
+	flt_puts(s, t - s, "");
 	return t;
     }
     return s;
@@ -143,7 +143,7 @@ free_arglist(char **args)
 }
 
 static char *
-handle_directive(FILE * fp, char *name, char *s)
+handle_directive(char *name, char *s)
 {
     static struct {
 	char *name;
@@ -161,7 +161,7 @@ handle_directive(FILE * fp, char *name, char *s)
     for (n = 0; n < sizeof(table) / sizeof(table[0]); n++) {
 	if (!strcmp(name, table[n].name)) {
 	    char **args = 0;
-	    s = parse_arglist(fp, s, &args);
+	    s = parse_arglist(s, &args);
 	    table[n].func(args);
 	    free_arglist(args);
 	    break;
@@ -171,7 +171,7 @@ handle_directive(FILE * fp, char *name, char *s)
 }
 
 static char *
-extract_identifier(FILE * fp, char *s)
+extract_identifier(char *s)
 {
     static char *name;
     static unsigned have;
@@ -201,13 +201,13 @@ extract_identifier(FILE * fp, char *s)
 	if (!strcmp(name, "dnl")) {
 	    /* FIXME: GNU m4 may accept an argument list here */
 	    s += strlen(s);
-	    write_token(fp, show, s - show, Comment_attr);
+	    flt_puts(show, s - show, Comment_attr);
 	} else if ((attr = keyword_attr(name)) != 0) {
-	    write_token(fp, show, s - show, attr);
+	    flt_puts(show, s - show, attr);
 	} else {
-	    write_token(fp, show, s - show, Ident_attr);
+	    flt_puts(show, s - show, Ident_attr);
 	}
-	s = handle_directive(fp, name, s);
+	s = handle_directive(name, s);
     }
     return s;
 }
@@ -249,7 +249,7 @@ has_endofliteral(char *s, int *level)
 }
 
 static char *
-write_number(FILE * fp, char *s)
+write_number(char *s)
 {
     char *base = s;
     int radix = (*s == '0') ? ((s[1] == 'x' || s[1] == 'X') ? 16 : 8) : 10;
@@ -271,12 +271,12 @@ write_number(FILE * fp, char *s)
 	    break;
 	}
     }
-    write_token(fp, base, s - base, Number_attr);
+    flt_puts(base, s - base, Number_attr);
     return s;
 }
 
 static char *
-write_literal(FILE * fp, char *s, int *literal)
+write_literal(char *s, int *literal)
 {
     static char *buffer;
     static unsigned have;
@@ -293,7 +293,7 @@ write_literal(FILE * fp, char *s, int *literal)
 	    used += need;
 	}
 	if (used) {
-	    write_token(fp, buffer, used, Literal_attr);
+	    flt_puts(buffer, used, Literal_attr);
 	    used = 0;
 	}
 	write_quote(fp, rightquote);
@@ -306,10 +306,10 @@ write_literal(FILE * fp, char *s, int *literal)
 }
 
 static char *
-write_comment(FILE * fp, char *s, int *level)
+write_comment(char *s, int *level)
 {
     int c_length = has_endofcomment(s, level);
-    write_token(fp, s, c_length, Comment_attr);
+    flt_puts(s, c_length, Comment_attr);
     return s + c_length;
 }
 
@@ -326,7 +326,7 @@ init_filter(int before)
 }
 
 static void
-do_filter(FILE * input, FILE * output)
+do_filter(FILE * input)
 {
     static unsigned used;
     static char *line;
@@ -354,39 +354,39 @@ do_filter(FILE * input, FILE * output)
 	     * Quoted literals can nest, and override comments
 	     */
 	    if (literal) {
-		s = write_literal(output, s, &literal);
+		s = write_literal(s, &literal);
 	    } else if (isQuote(s, leftquote)) {
 		write_quote(output, leftquote);
 		s += leftquote.used;
 		literal++;
-		s = write_literal(output, s, &literal);
+		s = write_literal(s, &literal);
 	    } else if (isQuote(s, rightquote)) {
 		write_quote(output, rightquote);
 		s += rightquote.used;
 		if (--literal > 0)
-		    s = write_literal(output, s, &literal);
+		    s = write_literal(s, &literal);
 		else
 		    literal = 0;
 		/*
 		 * Comments don't nest
 		 */
 	    } else if (comment) {
-		s = write_comment(output, s, &comment);
+		s = write_comment(s, &comment);
 		comment = 0;
 	    } else if (isQuote(s, leftcmt)) {
-		write_token(output, s, leftcmt.used, Comment_attr);
+		flt_puts(s, leftcmt.used, Comment_attr);
 		s += leftcmt.used;
 		comment = 1;
 	    } else if (isQuote(s, rightcmt)) {
-		write_token(output, s, rightcmt.used, Comment_attr);
+		flt_puts(s, rightcmt.used, Comment_attr);
 		s += rightcmt.used;
 		comment = 0;
 	    } else if (isIdent(*s)) {
-		s = extract_identifier(output, s);
+		s = extract_identifier(s);
 	    } else if (isdigit(*s)) {
-		s = write_number(output, s);
+		s = write_number(s);
 	    } else {
-		fputc(*s++, output);
+		flt_putc(*s++);
 	    }
 	}
     }

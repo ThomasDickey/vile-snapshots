@@ -1,5 +1,67 @@
 Changes for vile 9.2 (released ??? ??? ?? 2000)
 
+ 20000228 (c)
+	> Clark Morgan:
+	+ added cut-to-clipboard (windows Cut) and delete-text-selection
+	  (windows Delete) to [win]vile.  The former is bound to Shift+Delete,
+	  the latter to Alt+Delete.  Both commands require a current text
+	  selection.
+	+ bug fix:  winvile geometry only shown when window is resized :-).
+	  Prior to bug fix, geometry also shown during a window move.
+	+ added a winvile `about' box (available from the System Menu).
+	+ winvile's right mouse menu includes these new commands:
+	    cmd name  bound to                        txt slctn  txt slctn must
+						         rqd?    be in curbuf?
+	    --------  --------                        ---------  -------------
+	    undo      undo-changes-backward
+	    redo      redo-changes-forward
+	    cut       cut-to-clipboard                    X           X
+	    copy      copy-unnamed-reg-to-clipboard       X
+	    paste     paste-from-clipboard
+	    delete    delete-text-selection               X           X
+	  All but undo and redo are context sensitive.
+	+ documented that ~local doesn't save/restore mode vars (this is an
+	  assumption on my part).
+	+ beefed up example vile.rc with more macros and removed outdated
+	  color syntax macro.
+	+ optimize ffgetline(), buffering data read from fread() rather than
+	  via fgetc().
+	+ add to vile.hlp more information about installing vile, particularly
+	  the effect of $VILE_STARTUP_PATH and $VILE_LIBDIR_PATH
+	+ fix a redundant screen repaint for this scenario with the termcap
+	  configuration:
+		$ vile /etc/termcap
+		:stop
+		$ fg %1
+	> Tom Dickey:
+	+ converted most occurrences of yyout in the filters to calls into
+	  filterio.c that do not specify a FILE*.
+	+ split-out main program and I/O from filters.c as filterio.c
+	+ modify filters.c to avoid concatenating $HOMEDRIVE when $HOME already
+	  specifies the device in home_dir() (reported by Richard Hussong
+	  <rhussong@ma.ultranet.com>).
+	+ further narrow the scope of insert-exec by excluding all whitespace,
+	  to avoid interpreting tab and formfeed.
+	+ add mode insert-exec to control logic in ins_any_time() which
+	  interprets control characters which are bound to GOAL or MOTION
+	  commands rather than inserting them without quoting (see 9.0a and
+	  9.0b changes).  This restores the default behavior, since some users
+	  had control characters bound to a function which was then executed
+	  (reported by George Eccles and Christian Lindig).
+	+ modify which-source and which-exec to always show the places where
+	  vile searches, even if not found (suggested by Clark Morgan).
+	+ modify shmode prefix pattern to allow "-" alone as an option, rather
+	  than requiring it to be followed by a letter.  This is done in
+	  Linux's MAKEDEV script.  Also, corrected parenthesis in the pattern
+	  to make a ":" line recognized as a shell comment.
+	+ correct logic for &left and &middle functions, which returned one too
+	  many characters after 8.3d changes to use TBUFF's (reported by
+	  (William Yuan <yuan@bucket.its.unimelb.edu.au>)
+	+ correct modetbl entry for &sless function, which was returning a
+	  string rather than a boolean (this was broken between 8.2 and 8.3).
+	+ add a check for the base parameter of mk_to_vcol(), in case it is
+	  negative (reported by Clark Morgan).
+
  20000210 (b)
 	> Kevin Buettner:
 	+ x11.c (x_preparse_args): Set window manager resize hints.

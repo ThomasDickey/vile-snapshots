@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.217 2000/02/10 03:20:35 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.219 2000/02/28 00:41:25 tom Exp $
  *
  */
 
@@ -44,7 +44,6 @@ static	KBIND *	kcode2kbind ( int code );
 		||(k == &f_esc_func)\
 		)
 
-static	char *	kcod2prc (int c, char *seq);
 static	int	install_bind (int c, const CMDFUNC *kcmd, const CMDFUNC **oldfunc);
 static	int	key_to_bind ( const CMDFUNC *kcmd );
 static	int	rebind_key ( int c, const CMDFUNC *kcmd );
@@ -1319,9 +1318,9 @@ show_which_file(char *fname, UINT mode, int f, int n)
 	char *result;
 	if ((result = cfg_locate(fname, mode)) != 0) {
 		mlwrite("%s", result);
-		if (f)
-			liststuff(WHICH_BufName, n>2, list_which, mode, fname);
 	}
+	if (f)
+		liststuff(WHICH_BufName, n>2, list_which, mode, fname);
 	return (result != 0);
 }
 
@@ -1458,7 +1457,7 @@ bytes2prc(char *dst, char *src, int n)
 }
 
 /* translate a 10-bit keycode to its printable name (like "M-j")  */
-static char *
+char *
 kcod2prc(
 int c,		/* sequence to translate */
 char *seq)	/* destination string for sequence */

@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/sql-filt.l,v 1.8 2000/02/10 11:30:12 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/sql-filt.l,v 1.9 2000/02/28 11:58:59 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of SQL script
  * - T.Dickey
@@ -26,10 +26,9 @@ init_filter(int before GCC_UNUSED)
 }
 
 static void
-do_filter(FILE *input, FILE *output)
+do_filter(FILE *input)
 {
     yyin = input;
-    yyout = output;
 
     Action_attr  = class_attr(NAME_ACTION);
     Comment_attr = class_attr(NAME_COMMENT);
@@ -71,7 +70,7 @@ HOSTVAR		":"{IDENT}
 
 {IDENT}			{ WriteToken(ci_keyword_attr(yytext)); }
 
-{HOSTVAR}		{ write_token(yyout, yytext, 1, Action_attr);
+{HOSTVAR}		{ flt_puts(yytext, 1, Action_attr);
 			  WriteToken2(Ident_attr,1);
 			}
 

@@ -323,7 +323,7 @@ Variables
 	to delimit the left/right sides of the assignment, as shown.
 
 Temporary variables
---------------
+-------------------
 	Temporary variables are used in macros to hold intermediate
 	values.  They are only temporary in that they aren't a
 	"fixed" part of vile -- but they _are_ persistent across
@@ -334,7 +334,7 @@ Temporary variables
 
 
 State Variables
------------------------
+---------------
 	State variables allow a macro to refer to and change some
 	aspects of vile's behavior.  State variables are prefixed
 	with a $ character, and are always referred to in lowercase.
@@ -691,7 +691,7 @@ Functions
 	    &upper  "S"		    Return uppercase version of "S".
 	    &trim   "S"		    Remove whitespace at either end of "S",
 					reduce multiple spaces within "S"
-					to a just one space each.
+					to just one space each.
 
 	Boolean/logical functions --
 
@@ -947,6 +947,13 @@ Directives
 
         will restore the cursor position.
 
+	~local can save/restore the state of mode variables, user variables
+	and the system variables shown with show-variables.  Note that
+	setting certain variables, such as the cursor position, will have
+	side effects, i.e., modifying the display.  If these are
+	distracting, use ~hidden to suppress display updates until the
+	macro completes.
+
 
     ~with, ~elsewith and ~endwith
     -----------------------------
@@ -1165,11 +1172,7 @@ Example startup file
 	any host OS supported by vile.
 
 	============================ vile.rc ========================
-	set ai
-	set aw
-	set ts=4
-	set sw=4
-	set flash
+	set ai aw ts=4 sw=4 flash
 	bind-key next-window ^N
 	bind-key previous-window ^P
 
@@ -1192,21 +1195,84 @@ Example startup file
 	    set redirect-keys=&cat &global redirect-keys ",MULTIPLY:A:S"
 	~endif
 
-	30 store-macro
-	    write-message "[Attaching C/C++ attributes...]"
-	    ~local $curcol $curline
-	    goto-beginning-of-file
-	    attribute-from-filter end-of-file "vile-c-filt"
-	    write-message "[Attaching C/C++ attributes...done ]"
+	; modify ^A-i and ^A-o so that they don't wrap inserted text.
+	store-procedure save-wrap-state
+	    setv %wm=$wrapmargin
+	    setv %ww=$wrapwords
+	    setl nowrapwords wm=0
 	~endm
-	bind-key execute-macro-30 ^X-q
+	store-procedure restore-wrap-state
+	    setl wrapmargin=%wm
+	    ~if %ww
+		setl wrapwords
+	    ~else
+		setl nowrapwords
+	    ~endif
+	~endm
+	store-procedure insert-chars-noai-nowrap
+	    save-wrap-state
+	    insert-chars-no-autoindent
+	    restore-wrap-state
+	~endm
+	bind-key insert-chars-noai-nowrap ^A-i
+	store-procedure open-line-below-noai-nowrap
+	    save-wrap-state
+	    open-line-below-no-autoindent
+	    restore-wrap-state
+	~endm
+	bind-key open-line-below-noai-nowrap ^A-o
 
-	;maybe someday :-)
-	;set proj-root "e:/cm/projects/vile.8.0a"
-	;set proj-enable
+	;Rather than composing documents in a word processor, it's much
+	;more efficient to use vile.  But pasting vile-formatted text into,
+	;say, MS Word is a pain in the neck because each paragraph needs
+	;to be reformatted.  Example:
+	;
+	;      vile txt
+	;      ========
+	;      para 1 line1,
+	;      line 2,
+	;      line 3,
+	;      line 4
+	;
+	;      para 2 line 1,
+	;      line 2,
+	;      line 3,
+	;      line 4
+	;
+	;If "vile txt" is copied and pasted into Word, it looks awful because
+	;the lines of the paragraphs do not flow together (i.e., the new lines
+	;terminating each vile paragraph serve as a "hard" paragraph break).
+	;
+	;'Twould be nice if vile could join each paragraph so that "vile txt"
+	;above looked like this:
+	;
+	;      vile txt
+	;      ========
+	;      para 1 line1, line 2, line 3, line 4
+	;
+	;      para 2 line 1, line 2, line 3, line 4
+	;
+	;Then, when this version is pasted into Word, all paragraphs are
+	;automatically reformatted.  Here's a macro that adds this feature:
+	store-procedure join-all-para
+	    goto-beginning-of-file
+	    write-message "[joining all paragraphs...]"
+	    ~while true
+		~force join-lines-til down-paragraph
+		~if &not $status
+		    ~break
+		~endif
+		goto-bol
+		~force 2 down-line ;skip to next para
+		~if &not $status
+		    ~break
+		~endif
+	    ~endwhile
+	~endm
+
 	========================= end vile.rc =======================
 
 -----------------------------------
-  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.44 2000/02/10 03:31:35 tom Exp $
+  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.46 2000/02/28 00:28:25 tom Exp $
 -----------------------------------
 

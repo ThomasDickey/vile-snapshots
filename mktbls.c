@@ -15,7 +15,7 @@
  * by Tom Dickey, 1993.    -pgf
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/mktbls.c,v 1.106 1999/10/31 23:26:02 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/mktbls.c,v 1.107 2000/02/27 21:48:21 cmorgan Exp $
  *
  */
 
@@ -1871,6 +1871,8 @@ mkw32binding(char *key, char *defn, char *conditional, char *func, char *fcond)
 	}
 	else if (stricmp(cp, "insert") == 0)
 	    match	= "VK_INSERT";
+	else if (stricmp(cp, "delete") == 0)
+	    match	= "VK_DELETE";
 	if (match)
 	{
 	    defp += sprintf(defp, "|%s", match);

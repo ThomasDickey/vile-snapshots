@@ -5,7 +5,7 @@
  * reading and writing of the disk are
  * in "fileio.c".
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.268 2000/02/09 11:33:49 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.269 2000/02/27 22:03:33 cmorgan Exp $
  */
 
 #include	"estruct.h"
@@ -349,8 +349,8 @@ fileuid_get(const char *fname, FUID *fuid)
 		fuid->valid = TRUE;
 		return TRUE;
 	}
-	return FALSE;
 #endif
+	return FALSE;
 }
 
 void
@@ -378,6 +378,8 @@ fileuid_same(BUFFER *bp, FUID *fuid)
 	return (bp->b_fileuid.valid && fuid->valid &&
 		bp->b_fileuid.ino == fuid->ino &&
 		bp->b_fileuid.dev == fuid->dev);
+#else
+	return (FALSE);  /* Doesn't really matter */
 #endif
 }
 
