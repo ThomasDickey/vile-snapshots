@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/vl-filt.l,v 1.2 2001/01/10 01:36:36 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/vl-filt.l,v 1.3 2002/05/14 00:06:22 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of VeriLog
  * program.
@@ -28,7 +28,7 @@ do_define(char *string)
     int lendef = 7;
 
     flt_puts(string, lendef, keyword_attr(keydef));
-    for (string += lendef; isspace(*string); string++)
+    for (string += lendef; isspace(CharOf(*string)); string++)
 	flt_putc(*string);
     string--;
     *string = *keydef;

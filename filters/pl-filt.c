@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/pl-filt.c,v 1.31 2002/05/10 00:55:23 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/pl-filt.c,v 1.32 2002/05/14 00:06:48 tom Exp $
  *
  * Filter to add vile "attribution" sequences to perl scripts.  This is a
  * translation into C of an earlier version written for LEX/FLEX.
@@ -546,7 +546,7 @@ is_QUOTE(char *s, int *delims)
     if (s != base) {
 	int test = after_blanks(s);
 	DPRINTF(("is_Quote(%.*s:%c)", s - base, base, test));
-	if (test == '#' && isspace(*s))
+	if (test == '#' && isspace(CharOf(*s)))
 	    test = 0;
 	if ((test == 0) || (strchr(QUOTE_DELIMS, test) == 0))
 	    s = base;

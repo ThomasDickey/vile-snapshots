@@ -2,7 +2,7 @@
  * The routines in this file read and write ASCII files from the disk. All of
  * the knowledge about files are here.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/fileio.c,v 1.165 2002/05/02 19:59:48 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/fileio.c,v 1.166 2002/05/14 00:22:08 tom Exp $
  *
  */
 
@@ -13,7 +13,7 @@
 #include <file.h>
 #endif
 
-#if SYS_WINNT
+#if SYS_WINNT || (SYS_OS2 && CC_CSETPP)
 #include <io.h>
 #include <fcntl.h>
 #endif

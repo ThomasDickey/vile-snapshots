@@ -4,7 +4,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/sh-filt.l,v 1.46 2002/05/07 23:28:08 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/sh-filt.l,v 1.47 2002/05/14 00:07:14 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Shell script.
  */
@@ -205,7 +205,7 @@ INTEGER		[-+]?([0-9]+)
 			    strip_tabs = 0;
 			    for (n = 0; n < yyleng; n++) {
 				if (yytext[n] != '<'
-				 && !isspace(yytext[n])) {
+				 && !isspace(CharOf(yytext[n]))) {
 				    strip_tabs = (yytext[n] == '-');
 				    break;
 				}

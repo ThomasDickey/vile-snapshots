@@ -1,5 +1,19 @@
 Changes for vile 9.3 (released ??? ??? ?? 2000)
 
+ 20020514 (zc)
+	> Tom Dickey:
+	+ modify fallback definitions in path.c to work with CSet compiler,
+	  which did not define S_IFMT in <sys/stat.h>
+	+ modify mktbls.c to provide workaround for OS/2 CSet compiler, which
+	  does not accept struct-offsets as switch-statement case values, e.g.,
+	  as used in implementing the &default builtin function.
+	+ add an ifdef'd version of ExitProgram() to main.c which will call
+	  abort() rather than exit if the environment variable VILE_ERROR_ABORT
+	  is set to a nonempty value.  This is useful for debugging.
+	+ modify insert.c to rename 'leave' to 'leave_loop', avoiding symbol
+	  defined in Visual C++ 4.1
+	+ modify vileinit.rc to disable resolve-links on cygwin
+
  20020511 (zb)
 	> Clark Morgan:
 	+ more documentation tweaks.

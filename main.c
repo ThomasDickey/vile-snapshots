@@ -22,7 +22,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.477 2002/05/07 00:27:50 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.478 2002/05/13 23:41:12 tom Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -857,6 +857,19 @@ get_executable_dir(void)
     free(s);
 #endif
 }
+
+#ifdef VILE_ERROR_ABORT
+void
+ExitProgram(int code)
+{
+    char *env;
+    if (code != GOODEXIT
+	&& (env = getenv("VILE_ERROR_ABORT")) != 0
+	&& *env != '\0')
+	abort();
+    exit(code);
+}
+#endif
 
 void
 tidy_exit(int code)
