@@ -649,11 +649,13 @@ Text manipulation command:
 Miscellaneous commands
 ----------------------
 
-	^A-d	Remove all blank lines ("deblank") containing or immediately
-		following the current line.  With an argument, will force
-		that many blank lines at that point, regardless of how
-		many were there before.  Moves current location forward,
-		to allow repeated use.
+	^A-d	Remove blank lines ("deblank").  If the cursor is on a blank
+		line, then it and any blank lines surrounding it will be
+		removed.  If a non-blank line, then any immediately following
+		blank lines will be removed.  If given an argument, will force
+		exacrly that many blank lines to exist at that point,
+		regardless of how many were there before.  Moves current
+		location forward, to allow repeated use.
 
 	^X-^X	The "error finder".  Goes to the next file/line error pair
 		specified in the last buffer captured from a command's
@@ -2976,7 +2978,7 @@ X Window System specifics
 			scrolled.
 
 	selection.foreground
-	selection.background Foreground/Background color of the selection
+	selection.background  Foreground/Background color of the selection
 			regions.  "foreground" is the color that
 			the text is displayed in.
 
@@ -2986,6 +2988,12 @@ X Window System specifics
 			will behave more like other X applications in which
 			display of the selection is lost as soon as button
 			one is pressed.
+
+	selectionSetsDOT  If false (the default), the cursor will be restored
+			to its previous position prior to making the selection.
+			If true, the cursor will be positioned at the location
+			of the mouse at the end of making a selection (usually
+			at either the start or end of a selection).
 
 	blinkInterval	An integer indicating the time in milliseconds to wait
 			before blinking the cursor.  A positive value will
@@ -3415,4 +3423,4 @@ Problems
 
 Copyright 1995,1996 by Paul Fox, Tom Dickey, and Kevin Buettner
 ---------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.309 1997/01/19 19:42:32 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.311 1997/01/22 01:48:45 tom Exp $

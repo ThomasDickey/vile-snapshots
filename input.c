@@ -44,7 +44,7 @@
  *	tgetc_avail()     true if a key is avail from tgetc() or below.
  *	keystroke_avail() true if a key is avail from keystroke() or below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.156 1996/12/24 13:16:33 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.157 1997/01/23 01:58:29 tom Exp $
  *
  */
 
@@ -587,11 +587,18 @@ screen_string (char *buf, int bufn, CHARTYPE inclchartype)
 					inclchartype &= ~_shpipe;
 			}
 		}
+
+		/* allow "[!command]" */
+		if ((inclchartype & _scrtch)
+		 && (i == 1)
+		 && (buf[1] == SHPIPE_LEFT[0])) {
+			;
 		/* guard against things like "[Buffer List]" on VMS */
-		if (inclchartype & _pathn) {
-			if (!ispath(buf[i]) && (inclchartype == _pathn))
-				break;
-		}
+		} else if ((inclchartype & _pathn)
+		 && !ispath(buf[i])
+		 && (inclchartype == _pathn)) {
+			break;
+		} else
 #endif
 		if (inclchartype && !istype(inclchartype, buf[i]))
 			break;

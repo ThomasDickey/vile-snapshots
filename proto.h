@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.232 1997/01/10 11:07:43 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.233 1997/01/23 00:48:44 tom Exp $
  *
  */
 
@@ -479,6 +479,7 @@ extern int is_pathname (const char *path);
 extern int maybe_pathname (const char *fn);
 extern char * is_appendname (const char *fn);
 extern int is_internalname (const char *fn);
+extern int is_scratchname (const char *fn);
 extern int is_directory (const char *path);
 #if (SYS_UNIX||SYS_VMS||OPT_MSDOS_PATH) && OPT_PATHLOOKUP
 extern const char *parse_pathlist (const char *list, char *result);

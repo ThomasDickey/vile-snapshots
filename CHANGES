@@ -1,7 +1,24 @@
 Changes for vile 7.0 (released ??? ??? ??, 1997)
 
+(tom)	970119 (g)
+	+ modify logic that forms buffer names so that shell commands will
+	  be bracketed, thus avoiding an ambiguity.  This was reported by
+	  pgf; he used ^X-e to open a file in the buffer list that was
+	  a shell command.  Putting the cursor on the first '!' picks up
+	  the remainder of the line as the shell command, which is wrong.
+	+ apply fix from pgf for better description of ^A-d in vile.hlp. 
+
+(kev)	970120 (f)
+	+ x11.c (x_getc): Advance DOT by one after a paste so that default
+	  position for newly pasted text is *after* the text just pasted.
+
+(kev)	970120 (e)
+	+ x11.c: Added resource controlling whether DOT is reset after making
+	  a selection.  Also added/extended code for implementing this.
+	+ vile.hlp (selectionSetsDOT): Documented this X resource.
+
 (tom)	970119 (d)
-	  Restrict xvile's modifier + mouse-2 behavior to check only the shift
+	+ Restrict xvile's modifier + mouse-2 behavior to check only the shift
 	  modifier (my system sets one of the modmap flags on all mouse
 	  clicks).
 	+ modify select/paste behavior in xvile so that the default pastes text

@@ -5,7 +5,7 @@
  *	reading and writing of the disk are in "fileio.c".
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.200 1997/01/19 15:40:57 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.201 1997/01/23 01:06:24 tom Exp $
  *
  */
 
@@ -383,7 +383,6 @@ filefind(int f, int n)
 	char fname[NFILEN];
 	char *actual;
 	BUFFER *firstbp = 0;
-
 
 	if ((s = mlreply_file("Find file: ", &lastfileedited,
 					FILEC_READ|FILEC_EXPAND,
@@ -1191,6 +1190,7 @@ makename(char *bname, const char *fname)
 	bcp = bname;
 	if (isShellOrPipe(fcp)) {
 		/* ...it's a shell command; bname is first word */
+		*bcp++ = SCRTCH_LEFT[0];
 		*bcp++ = SHPIPE_LEFT[0];
 		do {
 			++fcp;
@@ -1198,11 +1198,12 @@ makename(char *bname, const char *fname)
 		(void)strncpy0(bcp, fcp, (SIZE_T)(NBUFN - (bcp - bname)));
 		for (j = 1; j < NBUFN; j++) {
 			if (isspace(*bcp)) {
-				*bcp = EOS;
+				*++bcp = EOS;
 				break;
 			}
 			bcp++;
 		}
+		bcp[-1] = SCRTCH_RIGHT[0];
 		return;
 	}
 
@@ -1244,6 +1245,7 @@ char *name)	/* name to check on */
 	char newname[NBUFN * 2];
 	char suffixbuf[NBUFN];
 	int suffixlen;
+	int adjust;
 	int i = 0;
 	SIZE_T k;
 
@@ -1253,6 +1255,7 @@ char *name)	/* name to check on */
 
 	/* check to see if it is in the buffer list */
 	strcpy(newname, name);
+	adjust = is_scratchname(newname);
 	while (find_b_name(newname) != NULL) {
 		/* from "foo" create "foo-1" or "foo-a1b5" */
 		/* from "thisisamuchlongernam" create 
@@ -1265,7 +1268,11 @@ char *name)	/* name to check on */
 		k = NBUFN - 1 - suffixlen;
 		if (j < k)
 			k = j;
-		strcpy(&newname[k], suffixbuf);
+		if (adjust) {
+			strcpy(&newname[k-1], suffixbuf);
+			strcat(newname, SCRTCH_RIGHT);
+		} else
+			strcpy(&newname[k], suffixbuf);
 	}
 	strncpy0(name, newname, NBUFN);
 }
