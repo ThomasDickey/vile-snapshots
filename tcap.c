@@ -1,7 +1,7 @@
 /*	tcap:	Unix V5, V7 and BS4.2 Termcap video driver
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.93 1997/09/02 15:00:34 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.94 1997/09/06 12:12:13 tom Exp $
  *
  */
 
@@ -73,13 +73,16 @@
 #endif
 
 #if HAVE_TPARM	/* usually terminfo */
-#define MY_TPARM(cap,code) tparm(cap, code)
+#define CALL_TPARM(cap,code) tparm(cap, code)
+#define FREE_TPARM(s) /* nothing */
 #else
 #if HAVE_TPARAM	/* GNU termcap */
-#define MY_TPARM(cap,code) tparam(cap, (char *)0, 0, code)
+#define CALL_TPARM(cap,code) tparam(cap, (char *)0, 0, code)
+#define FREE_TPARM(s) free(s)
 #else
 static char *my_tparm(char *cap GCC_UNUSED, int code GCC_UNUSED) { return 0; }
-#define MY_TPARM(cap,code) my_tparm(cap, code)
+#define CALL_TPARM(cap,code) my_tparm(cap, code)
+#define FREE_TPARM(s) /* nothing */
 #endif
 #endif
 
@@ -793,13 +796,13 @@ colors_are_really_ANSI (void)
 	if (Sf != 0 && Sb != 0 && ncolors == 8) {
 		for (n = 0; n < ncolors; n++) {
 			(void)lsprintf(cmp, "\033[4%dm", n);
-			if ((t = MY_TPARM(Sb, n)) == 0 || strcmp(t, cmp))
+			if ((t = CALL_TPARM(Sb, n)) == 0 || strcmp(t, cmp))
 				break;
-			free(t);
+			FREE_TPARM(t);
 			(void)lsprintf(cmp, "\033[3%dm", n);
-			if ((t = MY_TPARM(Sf, n)) == 0 || strcmp(t, cmp))
+			if ((t = CALL_TPARM(Sf, n)) == 0 || strcmp(t, cmp))
 				break;
-			free(t);
+			FREE_TPARM(t);
 		}
 		if (n >= ncolors)	/* everything matched */
 			ok = TRUE;
@@ -819,14 +822,14 @@ show_ansi_colors (void)
 	}
 
 	if ((shown_fcolor != NO_COLOR)
-	 && (t = MY_TPARM(Sf, shown_fcolor)) != 0) {
+	 && (t = CALL_TPARM(Sf, shown_fcolor)) != 0) {
 		putpad(t);
-		(free)(t);
+		FREE_TPARM(t);
 	}
 	if ((shown_bcolor != NO_COLOR)
-	 && (t = MY_TPARM(Sb, shown_bcolor)) != 0) {
+	 && (t = CALL_TPARM(Sb, shown_bcolor)) != 0) {
 		putpad(t);
-		(free)(t);
+		FREE_TPARM(t);
 	}
 }
 

@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.100 1997/09/05 00:14:11 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.102 1997/09/06 16:45:39 tom Exp $
  *
  */
 
@@ -1176,7 +1176,7 @@ do_a_mode(int kind, int global)
 		global	? "Global value: "
 			: "Local value: ",
 		&cbuf,
-		mode_eol, '=', KBD_NORMAL|KBD_LOWERC, mode_complete)) != TRUE)
+		mode_eol, '=', KBD_NORMAL, mode_complete)) != TRUE)
 		return ((s == FALSE) ? SORTOFTRUE : s);
 
 	if (!strcmp(tb_values(cbuf), "all")) {
@@ -1563,6 +1563,23 @@ is_varmode (const char *name)
 	   &&   strcmp(name, "all"));
 }
 
+static int
+is_identifier (const char *name)
+{
+	int first = TRUE;;
+
+	while (*name != EOS) {
+		if (first) {
+			if (!isalpha(*name))
+				return FALSE;
+			first = FALSE;
+		} else if (!isident(*name))
+			return FALSE;
+		name++;
+	}
+	return TRUE;
+}
+
 /*
  * Returns the current number of items in the list of modes
  */
@@ -1813,7 +1830,11 @@ prompt_majormode(char **result, int defining)
 		(defining || clexec)
 			? no_completion
 			: major_complete)) == TRUE) {
-		/* FIXME: check for legal name (alphanumeric) */
+		/* check for legal name (alphanumeric) */
+		if ((status = is_identifier(tb_values(cbuf))) != TRUE) {
+			mlwarn("[Not an identifier: %s]", tb_values(cbuf));
+			return status;
+		}
 		if ((status = is_varmode(tb_values(cbuf))) == TRUE) {
 			*result = tb_values(cbuf);
 			if (defining && lookup_mm_data(*result) != 0) {

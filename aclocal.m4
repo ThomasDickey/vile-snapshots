@@ -1,12 +1,12 @@
 dnl Local definitions for autoconf.
 dnl
-dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.25 1997/08/29 10:04:30 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.30 1997/09/06 16:57:15 tom Exp $
 dnl
 dnl ---------------------------------------------------------------------------
 dnl ---------------------------------------------------------------------------
-dnl VC_PREREQ_COMPARE(MAJOR1, MINOR1, TERNARY1, MAJOR2, MINOR2, TERNARY2,
+dnl CF_PREREQ_COMPARE(MAJOR1, MINOR1, TERNARY1, MAJOR2, MINOR2, TERNARY2,
 dnl                   PRINTABLE2, not FOUND, FOUND)
-define(VC_PREREQ_COMPARE,
+define(CF_PREREQ_COMPARE,
 [ifelse(builtin([eval], [$3 < $6]), 1,
 ifelse([$8], , ,[$8]),
 ifelse([$9], , ,[$9]))])dnl
@@ -14,18 +14,19 @@ dnl ---------------------------------------------------------------------------
 dnl Conditionally generate script according to whether we're using the release
 dnl version of autoconf, or a patched version (using the ternary component as
 dnl the patch-version).
-define(VC_AC_PREREQ,
-[VC_PREREQ_COMPARE(
+define(CF_AC_PREREQ,
+[CF_PREREQ_COMPARE(
 AC_PREREQ_CANON(AC_PREREQ_SPLIT(AC_ACVERSION)),
 AC_PREREQ_CANON(AC_PREREQ_SPLIT([$1])), [$1], [$2], [$3])])dnl
 dnl ---------------------------------------------------------------------------
 dnl This is adapted from the macros 'fp_PROG_CC_STDC' and 'fp_C_PROTOTYPES'
 dnl in the sharutils 4.2 distribution.
-AC_DEFUN([VC_ANSI_CC],
-[AC_MSG_CHECKING(for ${CC-cc} option to accept ANSI C)
-AC_CACHE_VAL(vc_cv_ansi_cc,
-[vc_cv_ansi_cc=no
-vc_save_CFLAGS="$CFLAGS"
+AC_DEFUN([CF_ANSI_CC_CHECK],
+[
+AC_MSG_CHECKING(for ${CC-cc} option to accept ANSI C)
+AC_CACHE_VAL(cf_cv_ansi_cc,[
+cf_cv_ansi_cc=no
+cf_save_CFLAGS="$CFLAGS"
 # Don't try gcc -ansi; that turns off useful extensions and
 # breaks some systems' header files.
 # AIX			-qlanglvl=ansi
@@ -33,9 +34,9 @@ vc_save_CFLAGS="$CFLAGS"
 # HP-UX			-Aa -D_HPUX_SOURCE
 # SVR4			-Xc
 # UnixWare 1.2		(cannot use -Xc, since ANSI/POSIX clashes)
-for vc_arg in "-DCC_HAS_PROTOS" "" -qlanglvl=ansi -std1 "-Aa -D_HPUX_SOURCE" -Xc
+for cf_arg in "-DCC_HAS_PROTOS" "" -qlanglvl=ansi -std1 "-Aa -D_HPUX_SOURCE" -Xc
 do
-	CFLAGS="$vc_save_CFLAGS $vc_arg"
+	CFLAGS="$cf_save_CFLAGS $cf_arg"
 	AC_TRY_COMPILE(
 [
 #ifndef CC_HAS_PROTOS
@@ -43,32 +44,46 @@ do
 choke me
 #endif
 #endif
-], [int test (int i, double x);
-struct s1 {int (*f) (int a);};
-struct s2 {int (*f) (double a);};],
-[vc_cv_ansi_cc="$vc_arg"; break])
+],[
+	int test (int i, double x);
+	struct s1 {int (*f) (int a);};
+	struct s2 {int (*f) (double a);};],
+	[cf_cv_ansi_cc="$cf_arg"; break])
 done
-CFLAGS="$vc_save_CFLAGS"
+CFLAGS="$cf_save_CFLAGS"
 ])
-AC_MSG_RESULT($vc_cv_ansi_cc)
-if test "$vc_cv_ansi_cc" = "no"; then
-	AC_WARN(
-[Your compiler does not appear to recognize prototypes.  You have the following
-choices:
+AC_MSG_RESULT($cf_cv_ansi_cc)
+
+if test "$cf_cv_ansi_cc" != "no"; then
+if test ".$cf_cv_ansi_cc" != ".-DCC_HAS_PROTOS"; then
+	CFLAGS="$CFLAGS $cf_cv_ansi_cc"
+else
+	AC_DEFINE(CC_HAS_PROTOS)
+fi
+fi
+])dnl
+dnl ---------------------------------------------------------------------------
+dnl For programs that must use an ANSI compiler, obtain compiler options that
+dnl will make it recognize prototypes.  We'll do preprocessor checks in other
+dnl macros, since tools such as unproto can fake prototypes, but only part of
+dnl the preprocessor.
+AC_DEFUN([CF_ANSI_CC_REQD],
+[AC_REQUIRE([CF_ANSI_CC_CHECK])
+if test "$cf_cv_ansi_cc" = "no"; then
+	AC_ERROR(
+[Your compiler does not appear to recognize prototypes.
+You have the following choices:
 	a. adjust your compiler options
 	b. get an up-to-date compiler
 	c. use a wrapper such as unproto])
-	exit 1
-elif test ".$vc_cv_ansi_cc" != ".-DCC_HAS_PROTOS"; then
-	CC="$CC $vc_cv_ansi_cc"
 fi
 ])dnl
 dnl ---------------------------------------------------------------------------
 dnl Test if we should use ANSI-style prototype for qsort's compare-function
-AC_DEFUN([VC_ANSI_QSORT],
+AC_DEFUN([CF_ANSI_QSORT],
 [
 AC_MSG_CHECKING([for standard qsort])
-AC_CACHE_VAL(vc_cv_ansi_qsort,[
+AC_CACHE_VAL(cf_cv_ansi_qsort,[
 	AC_TRY_COMPILE([
 #if HAVE_STDLIB_H
 #include <stdlib.h>
@@ -77,14 +92,35 @@ AC_CACHE_VAL(vc_cv_ansi_qsort,[
 	{ return (*(int *)a - *(int *)b); } ],
 	[ extern long *vector;
 	  qsort(vector, 1, 1, compare); ],
-	[vc_cv_ansi_qsort=yes],
-	[vc_cv_ansi_qsort=no])
+	[cf_cv_ansi_qsort=yes],
+	[cf_cv_ansi_qsort=no])
 ])
-AC_MSG_RESULT($vc_cv_ansi_qsort)
-if test $vc_cv_ansi_qsort = yes; then
+AC_MSG_RESULT($cf_cv_ansi_qsort)
+if test $cf_cv_ansi_qsort = yes; then
 	AC_DEFINE(ANSI_QSORT,1)
 else
 	AC_DEFINE(ANSI_QSORT,0)
+fi
+])dnl
+dnl ---------------------------------------------------------------------------
+dnl Check if we're accidentally using a cache from a different machine.
+dnl Derive the system name, as a check for reusing the autoconf cache.
+dnl
+AC_DEFUN([CF_CHECK_CACHE],
+[
+system_name="`(uname -s -r) 2>/dev/null`"
+if test -n "$system_name" ; then
+	AC_DEFINE_UNQUOTED(SYSTEM_NAME,"$system_name")
+else
+	system_name="`(hostname) 2>/dev/null`"
+fi
+AC_CACHE_VAL(cf_cv_system_name,[cf_cv_system_name="$system_name"])
+test -z "$system_name" && system_name="$cf_cv_system_name"
+test -n "$cf_cv_system_name" && AC_MSG_RESULT("Configuring for $cf_cv_system_name")
+
+if test ".$system_name" != ".$cf_cv_system_name" ; then
+	AC_MSG_RESULT("Cached system name does not agree with actual")
+	AC_ERROR("Please remove config.cache and try again.")
 fi
 ])dnl
 dnl ---------------------------------------------------------------------------
@@ -92,46 +128,63 @@ dnl SVr4 curses should have term.h as well (where it puts the definitions of
 dnl the low-level interface).  This may not be true in old/broken implementations,
 dnl as well as in misconfigured systems (e.g., gcc configured for Solaris 2.4
 dnl running with Solaris 2.5.1).
-AC_DEFUN([VC_CURSES_TERM_H],
+AC_DEFUN([CF_CURSES_TERM_H],
 [
 AC_MSG_CHECKING([for term.h])
-AC_CACHE_VAL(vc_cv_have_term_h,[
+AC_CACHE_VAL(cf_cv_have_term_h,[
 	AC_TRY_COMPILE([
 #include <curses.h>
 #include <term.h>],
 	[WINDOW *x],
-	[vc_cv_have_term_h=yes],
-	[vc_cv_have_term_h=no])
+	[cf_cv_have_term_h=yes],
+	[cf_cv_have_term_h=no])
 	])
-AC_MSG_RESULT($vc_cv_have_term_h)
-test $vc_cv_have_term_h = yes && AC_DEFINE(HAVE_TERM_H)
+AC_MSG_RESULT($cf_cv_have_term_h)
+test $cf_cv_have_term_h = yes && AC_DEFINE(HAVE_TERM_H)
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl
-AC_DEFUN([VC_ERRNO],
+dnl You can always use "make -n" to see the actual options, but it's hard to
+dnl pick out/analyze warning messages when the compile-line is long.
+AC_DEFUN([CF_DISABLE_ECHO],[
+AC_MSG_CHECKING(if you want to see long compiling messages)
+CF_ARG_DISABLE(echo,
+	[  --disable-echo          test: display \"compiling\" commands],
+	[SHOW_CC='	@echo compiling [$]@'
+    ECHO_CC='@'],
+	[SHOW_CC='# compiling'
+    ECHO_CC=''])
+AC_MSG_RESULT($enableval)
+AC_SUBST(SHOW_CC)
+AC_SUBST(ECHO_CC)
+])dnl
+dnl ---------------------------------------------------------------------------
+dnl Check if 'errno' is declared in <errno.h>
+AC_DEFUN([CF_ERRNO],
 [
 AC_MSG_CHECKING([for errno external decl])
-AC_CACHE_VAL(vc_cv_extern_errno,[
-	AC_TRY_COMPILE([
+AC_CACHE_VAL(cf_cv_extern_errno,[
+    AC_TRY_COMPILE([
 #include <errno.h>],
-		[int x = errno],
-		[vc_cv_extern_errno=yes],
-		[vc_cv_extern_errno=no])
-	])
-AC_MSG_RESULT($vc_cv_extern_errno)
-test $vc_cv_extern_errno = yes && AC_DEFINE(HAVE_EXTERN_ERRNO)
+        [int x = errno],
+        [cf_cv_extern_errno=yes],
+        [cf_cv_extern_errno=no])])
+AC_MSG_RESULT($cf_cv_extern_errno)
+test $cf_cv_extern_errno = no && AC_DEFINE(DECL_ERRNO)
 ])dnl
 dnl ---------------------------------------------------------------------------
 dnl Test for availability of useful gcc __attribute__ directives to quiet
 dnl compiler warnings.  Though useful, not all are supported -- and contrary
 dnl to documentation, unrecognized directives cause older compilers to barf.
-AC_DEFUN([VC_GCC_ATTRIBUTES],
-[cat > conftest.i <<EOF
-#ifndef	GCC_PRINTF
-#define	GCC_PRINTF 0
+AC_DEFUN([CF_GCC_ATTRIBUTES],
+[
+if test -n "$GCC"
+then
+cat > conftest.i <<EOF
+#ifndef GCC_PRINTF
+#define GCC_PRINTF 0
 #endif
-#ifndef	GCC_SCANF
-#define	GCC_SCANF 0
+#ifndef GCC_SCANF
+#define GCC_SCANF 0
 #endif
 #ifndef GCC_NORETURN
 #define GCC_NORETURN /* nothing */
@@ -165,35 +218,35 @@ extern void foo(void) GCC_NORETURN;
 int main(int argc GCC_UNUSED, char *argv[] GCC_UNUSED) { return 0; }
 EOF
 	changequote([,])dnl
-#	for vc_attribute in scanf printf unused noreturn
-	for vc_attribute in printf unused noreturn
+	for cf_attribute in scanf printf unused noreturn
 	do
-		VC_UPPERCASE($vc_attribute,VC_ATTRIBUTE)
-		vc_directive="__attribute__(($vc_attribute))"
-		echo "checking for gcc $vc_directive" 1>&AC_FD_CC
-		case $vc_attribute in
+		CF_UPPER(CF_ATTRIBUTE,$cf_attribute)
+		cf_directive="__attribute__(($cf_attribute))"
+		echo "checking for gcc $cf_directive" 1>&AC_FD_CC
+		case $cf_attribute in
 		scanf|printf)
 		cat >conftest.h <<EOF
-#define GCC_$VC_ATTRIBUTE 1
+#define GCC_$CF_ATTRIBUTE 1
 EOF
 			;;
 		*)
 		cat >conftest.h <<EOF
-#define GCC_$VC_ATTRIBUTE $vc_directive
+#define GCC_$CF_ATTRIBUTE $cf_directive
 EOF
 			;;
 		esac
 		if AC_TRY_EVAL(ac_compile); then
-			test -n "$verbose" && AC_MSG_RESULT(... $vc_attribute)
+			test -n "$verbose" && AC_MSG_RESULT(... $cf_attribute)
 			cat conftest.h >>confdefs.h
-		else
-			sed -e 's/__attr.*/\/*nothing*\//' conftest.h >>confdefs.h
+#		else
+#			sed -e 's/__attr.*/\/*nothing*\//' conftest.h >>confdefs.h
 		fi
 	done
 else
 	fgrep define conftest.i >>confdefs.h
 fi
 rm -rf conftest*
+fi
 ])dnl
 dnl ---------------------------------------------------------------------------
 dnl Check if the compiler supports useful warning options.  There's a few that
@@ -203,12 +256,12 @@ dnl	-Wconversion (useful in older versions of gcc, but not in gcc 2.7.x)
 dnl	-Wredundant-decls (system headers make this too noisy)
 dnl	-Wtraditional (combines too many unrelated messages, only a few useful)
 dnl	-Wwrite-strings (too noisy, but should review occasionally)
+dnl	-pedantic
 dnl
-AC_DEFUN([VC_GCC_WARNINGS],
-[vc_warn_CFLAGS=""
+AC_DEFUN([CF_GCC_WARNINGS],
+[EXTRA_CFLAGS=""
 if test -n "$GCC"
 then
-	VC_GCC_ATTRIBUTES
 	changequote(,)dnl
 	cat > conftest.$ac_ext <<EOF
 #line __oline__ "configure"
@@ -216,10 +269,10 @@ int main(int argc, char *argv[]) { return argv[argc-1] == 0; }
 EOF
 	changequote([,])dnl
 	AC_CHECKING([for gcc warning options])
-	vc_save_CFLAGS="$CFLAGS"
-	vc_warn_CFLAGS="-W -Wall"
-	for vc_opt in \
-		Wbad-fuvction-cast \
+	cf_save_CFLAGS="$CFLAGS"
+	EXTRA_CFLAGS="-W -Wall"
+	for cf_opt in \
+		Wbad-function-cast \
 		Wcast-align \
 		Wcast-qual \
 		Winline \
@@ -230,24 +283,25 @@ EOF
 		Wshadow \
 		Wstrict-prototypes
 	do
-		CFLAGS="$vc_save_CFLAGS $vc_warn_CFLAGS -$vc_opt"
+		CFLAGS="$cf_save_CFLAGS $EXTRA_CFLAGS -$cf_opt"
 		if AC_TRY_EVAL(ac_compile); then
-			test -n "$verbose" && AC_MSG_RESULT(... -$vc_opt)
-			vc_warn_CFLAGS="$vc_warn_CFLAGS -$vc_opt"
+			test -n "$verbose" && AC_MSG_RESULT(... -$cf_opt)
+			EXTRA_CFLAGS="$EXTRA_CFLAGS -$cf_opt"
+			test "$cf_opt" = Wcast-qual && EXTRA_CFLAGS="$EXTRA_CFLAGS -DXTSTRINGDEFINES"
 		fi
 	done
 	rm -f conftest*
-	CFLAGS="$vc_save_CFLAGS"
+	CFLAGS="$cf_save_CFLAGS"
 fi
+AC_SUBST(EXTRA_CFLAGS)
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl
 dnl Note: must follow AC_FUNC_SETPGRP, but cannot use AC_REQUIRE, since that
 dnl messes up the messages...
-AC_DEFUN([VC_KILLPG],
+AC_DEFUN([CF_KILLPG],
 [
 AC_MSG_CHECKING([if killpg is needed])
-AC_CACHE_VAL(vc_cv_need_killpg,[
+AC_CACHE_VAL(cf_cv_need_killpg,[
 AC_TRY_RUN([
 #include <sys/types.h>
 #include <signal.h>
@@ -269,19 +323,19 @@ main()
     (void) kill(-getpid(), SIGINT);
     exit(1);
 }],
-	[vc_cv_need_killpg=no],
-	[vc_cv_need_killpg=yes],
-	[vc_cv_need_killpg=unknown]
+	[cf_cv_need_killpg=no],
+	[cf_cv_need_killpg=yes],
+	[cf_cv_need_killpg=unknown]
 )])
-AC_MSG_RESULT($vc_cv_need_killpg)
-test $vc_cv_need_killpg = yes && AC_DEFINE(HAVE_KILLPG)
+AC_MSG_RESULT($cf_cv_need_killpg)
+test $cf_cv_need_killpg = yes && AC_DEFINE(HAVE_KILLPG)
 ])dnl
 dnl ---------------------------------------------------------------------------
 dnl
-AC_DEFUN([VC_MISSING_CHECK],
+AC_DEFUN([CF_MISSING_CHECK],
 [
 AC_MSG_CHECKING([for missing "$1" extern])
-AC_CACHE_VAL([vc_cv_func_$1],[
+AC_CACHE_VAL([cf_cv_func_$1],[
 AC_TRY_LINK([
 #include <stdio.h>
 #include <sys/types.h>
@@ -462,33 +516,32 @@ extern struct zowie *$1();
 XtToolkitInitialize();
 #endif
 ],
-[eval 'vc_cv_func_'$1'=yes'],
-[eval 'vc_cv_func_'$1'=no'])])
-eval 'vc_result=$vc_cv_func_'$1
-AC_MSG_RESULT($vc_result)
-test $vc_result = yes && AC_DEFINE_UNQUOTED(MISSING_EXTERN_$2)
+[eval 'cf_cv_func_'$1'=yes'],
+[eval 'cf_cv_func_'$1'=no'])])
+eval 'cf_result=$cf_cv_func_'$1
+AC_MSG_RESULT($cf_result)
+test $cf_result = yes && AC_DEFINE_UNQUOTED(MISSING_EXTERN_$2)
 ])dnl
 dnl ---------------------------------------------------------------------------
 dnl
-AC_DEFUN([VC_MISSING_EXTERN],
+AC_DEFUN([CF_MISSING_EXTERN],
 [for ac_func in $1
 do
-VC_UPPERCASE($ac_func,ac_tr_func)
-VC_MISSING_CHECK(${ac_func}, ${ac_tr_func})dnl
+CF_UPPER(ac_tr_func,$ac_func)
+CF_MISSING_CHECK(${ac_func}, ${ac_tr_func})dnl
 done
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl
-dnl VC_RESTARTABLE_PIPEREAD is a modified version of AC_RESTARTABLE_SYSCALLS
-dnl from acspecific.m4, which uses a read on a pipe (surprise!) rather than
-dnl a wait() as the test code.  apparently there is a POSIX change, which OSF/1
-dnl at least has adapted to, which says reads (or writes) on pipes for which
-dnl no data has been transferred are interruptable _regardless_ of the 
-dnl SA_RESTART bit.  yuck.
-AC_DEFUN([VC_RESTARTABLE_PIPEREAD],
+dnl CF_RESTARTABLE_PIPEREAD is a modified version of AC_RESTARTABLE_SYSCALLS
+dnl from acspecific.m4, which uses a read on a pipe (surprise!) rather than a
+dnl wait() as the test code.  apparently there is a POSIX change, which OSF/1
+dnl at least has adapted to, which says reads (or writes) on pipes for which no
+dnl data has been transferred are interruptable _regardless_ of the SA_RESTART
+dnl bit.  yuck.
+AC_DEFUN([CF_RESTARTABLE_PIPEREAD],
 [
 AC_MSG_CHECKING(for restartable reads on pipes)
-AC_CACHE_VAL(vc_cv_can_restart_read,[
+AC_CACHE_VAL(cf_cv_can_restart_read,[
 AC_TRY_RUN(
 [/* Exit 0 (true) if wait returns something other than -1,
    i.e. the pid of the child, which means that wait was restarted
@@ -533,81 +586,87 @@ main () {
   exit (status == -1);
 }
 ],
-[vc_cv_can_restart_read=yes],
-[vc_cv_can_restart_read=no],
-[vc_cv_can_restart_read=unknown])])
-AC_MSG_RESULT($vc_cv_can_restart_read)
-test $vc_cv_can_restart_read = yes && AC_DEFINE(HAVE_RESTARTABLE_PIPEREAD)
+[cf_cv_can_restart_read=yes],
+[cf_cv_can_restart_read=no],
+[cf_cv_can_restart_read=unknown])])
+AC_MSG_RESULT($cf_cv_can_restart_read)
+test $cf_cv_can_restart_read = yes && AC_DEFINE(HAVE_RESTARTABLE_PIPEREAD)
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl	Check for declarion of sys_errlist in one of stdio.h and errno.h.  
-dnl	Declaration of sys_errlist on BSD4.4 interferes with our declaration.
-dnl	Reported by Keith Bostic.
-AC_DEFUN([VC_SYS_ERRLIST],
+dnl Check for declaration of sys_errlist in one of stdio.h and errno.h.
+dnl Declaration of sys_errlist on BSD4.4 interferes with our declaration.
+dnl Reported by Keith Bostic.
+AC_DEFUN([CF_SYS_ERRLIST],
 [
 AC_MSG_CHECKING([declaration of sys_errlist])
-AC_CACHE_VAL(vc_cv_dcl_sys_errlist,[
-	AC_TRY_COMPILE([
+AC_CACHE_VAL(cf_cv_dcl_sys_errlist,[
+    AC_TRY_COMPILE([
 #include <stdio.h>
 #include <sys/types.h>
 #include <errno.h> ],
-	[ char *c = (char *) *sys_errlist; ],
-	[vc_cv_dcl_sys_errlist=yes],
-	[vc_cv_dcl_sys_errlist=no])
-	])
-AC_MSG_RESULT($vc_cv_dcl_sys_errlist)
-test $vc_cv_dcl_sys_errlist = yes && AC_DEFINE(HAVE_EXTERN_SYS_ERRLIST)
+    [char *c = (char *) *sys_errlist],
+    [cf_cv_dcl_sys_errlist=yes],
+    [cf_cv_dcl_sys_errlist=no])])
+AC_MSG_RESULT($cf_cv_dcl_sys_errlist)
+test $cf_cv_dcl_sys_errlist = no && AC_DEFINE(DECL_SYS_ERRLIST)
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl	Check for return and param type of 3rd -- OutChar() -- param of tputs().
-AC_DEFUN([VC_TYPE_OUTCHAR],
+dnl Check for return and param type of 3rd -- OutChar() -- param of tputs().
+AC_DEFUN([CF_TYPE_OUTCHAR],
 [AC_MSG_CHECKING([declaration of tputs 3rd param])
-AC_CACHE_VAL(vc_cv_type_outchar,[
-vc_cv_type_outchar="int OutChar(int)"
-vc_cv_found=no
+AC_CACHE_VAL(cf_cv_type_outchar,[
+cf_cv_type_outchar="int OutChar(int)"
+cf_cv_found=no
 for P in int void; do
-for Q in int char; do
-for R in "" const; do
+for Q in int void; do
+for R in int char; do
+for S in "" const; do
 	AC_TRY_COMPILE([
-#if USE_TERMINFO
+#ifdef USE_TERMINFO
 #include <curses.h>
 #if HAVE_TERM_H
 #include <term.h>
 #endif
 #else
+#if HAVE_CURSES_H
+#include <curses.h>	/* FIXME: this should be included only for terminfo */
+#endif
 #if HAVE_TERMCAP_H
 #include <termcap.h>
 #endif
 #endif ],
-	[extern $P OutChar($Q);
-	extern int tputs ($R char *string, int nlines, $P (*_f)($Q));
+	[extern $Q OutChar($R);
+	extern $P tputs ($S char *string, int nlines, $Q (*_f)($R));
 	tputs("", 1, OutChar)],
-	[vc_cv_type_outchar="$P OutChar($Q)"
-	 vc_cv_found=yes
+	[cf_cv_type_outchar="$Q OutChar($R)"
+	 cf_cv_found=yes
 	 break])
 done
-	test $vc_cv_found = yes && break
+	test $cf_cv_found = yes && break
 done
-	test $vc_cv_found = yes && break
+	test $cf_cv_found = yes && break
+done
+	test $cf_cv_found = yes && break
 done
 	])
-AC_MSG_RESULT($vc_cv_type_outchar)
-case $vc_cv_type_outchar in
+AC_MSG_RESULT($cf_cv_type_outchar)
+case $cf_cv_type_outchar in
 int*)
 	AC_DEFINE(OUTC_RETURN)
 	;;
 esac
-case $vc_cv_type_outchar in
+case $cf_cv_type_outchar in
 *char*)
-	AC_DEFINE(OUTC_ARGS,char c)
+	AC_DEFINE(OUTC_ARGS,char)
 	;;
 esac
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl Make an uppercase version of a given name
-AC_DEFUN([VC_UPPERCASE],
+dnl Make an uppercase version of a variable
+dnl $1=uppercase($2)
+AC_DEFUN([CF_UPPER],
 [
 changequote(,)dnl
-$2=`echo $1 |tr '[a-z]' '[A-Z]'`
+$1=`echo $2 | tr '[a-z]' '[A-Z]'`
 changequote([,])dnl
 ])dnl

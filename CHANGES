@@ -1,5 +1,16 @@
 Changes for vile 7.3 (released ??? ??? ??, 1997)
 
+(tom)	970905 (b)
+	+ merge configure macros from tin-unoff and lynx (configure.in,
+	  aclocal.m4).
+	+ rename configure macros to CF_ prefix, for consistency/merge with
+	  other programs (configure.in, aclocal.m4).
+	+ correct handling of tparm return-value; it must not be freed, at
+	  least for SVr4 and ncurses (tcap.c)
+	+ ensure that majormode names are a legal identifier.
+	+ modify so that majormode names can be mixed case (requested by
+	  Sean Ahern).
+
 (tom)	970904 (a)
 	+ add variable $majormode so that it can be tested in a script
 	  (requested by Philippe Chassany).

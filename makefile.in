@@ -21,7 +21,7 @@
 # gnu autoconf support by kevin buettner, 5/94
 # original makefile for uemacs: Adam Fritz July 30,1987  (do you recognize it?)
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.80 1997/06/19 23:24:51 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.81 1997/09/06 14:49:52 tom Exp $
 #
 
 #### Start of system configuration section. ####
@@ -36,7 +36,8 @@ INSTALL		= @INSTALL@
 INSTALL_PROGRAM	= @INSTALL_PROGRAM@
 INSTALL_DATA	= @INSTALL_DATA@
 
-CFLAGS		= @CFLAGS@
+EXTRA_CFLAGS	= @EXTRA_CFLAGS@
+CFLAGS		= @CFLAGS@ $(EXTRA_CFLAGS)
 LIBS		= @LIBS@
 LINT		= @LINT@
 
