@@ -9,7 +9,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.321 1997/10/07 10:59:16 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.322 1997/10/13 13:06:48 kev Exp $
  */
 
 #ifdef HAVE_CONFIG_H
@@ -1573,6 +1573,10 @@ typedef struct	BUFFER {
 	int	b_last_used;
 #if OPT_HILITEMATCH
 	USHORT	b_highlight;
+#endif
+#if OPT_PERL || OPT_TCL
+	void *	b_api_private;		/* pointer to private perl, tcl, etc.
+	                                   data */
 #endif
 }	BUFFER;
 
