@@ -340,7 +340,7 @@ api_aline(VileBuf *vbp, int lno, char *line, int len)
 {
     api_setup_fake_win(vbp, TRUE);
 
-    if (lno >= 0 && lno < line_count(vbp->bp)) {
+    if (lno >= 0 && lno < vl_line_count(vbp->bp)) {
 	api_gotoline(vbp, lno+1);
 	linsert_chars(line, len);
 	lnewline();
@@ -388,7 +388,7 @@ api_dline(VileBuf *vbp, int lno)
 
     api_setup_fake_win(vbp, TRUE);
 
-    if (lno > 0 && lno <= line_count(vbp->bp)) {
+    if (lno > 0 && lno <= vl_line_count(vbp->bp)) {
 	api_gotoline(vbp, lno);
 	gotobol(TRUE,TRUE);
 	status = ldelete(llength(DOT.l) + 1, FALSE);
@@ -406,7 +406,7 @@ api_gline(VileBuf *vbp, int lno, char **linep, int *lenp)
 
     api_setup_fake_win(vbp, TRUE);
 
-    if (lno > 0 && lno <= line_count(vbp->bp)) {
+    if (lno > 0 && lno <= vl_line_count(vbp->bp)) {
 	api_gotoline(vbp, lno);
 	*linep = DOT.l->l_text;
 	*lenp = llength(DOT.l);
@@ -498,7 +498,7 @@ api_sline(VileBuf *vbp, int lno, char *line, int len)
 
     api_setup_fake_win(vbp, TRUE);
 
-    if (lno > 0 && lno <= line_count(vbp->bp)) {
+    if (lno > 0 && lno <= vl_line_count(vbp->bp)) {
 	api_gotoline(vbp, lno);
 	if (   DOT.l->l_text != line
 	    && (   llength(DOT.l) != len
@@ -522,7 +522,7 @@ api_iline(VileBuf *vbp, int lno, char *line, int len)
 int
 api_lline(VileBuf *vbp, int *lnop)
 {
-    *lnop = line_count(vbp->bp);
+    *lnop = vl_line_count(vbp->bp);
     return TRUE;
 }
 

@@ -7,7 +7,7 @@
  *	To do:	add 'tb_ins()' and 'tb_del()' to support cursor-level command
  *		editing.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tbuff.c,v 1.37 2000/01/15 12:40:13 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tbuff.c,v 1.38 2000/08/25 11:05:19 tom Exp $
  *
  */
 
@@ -86,6 +86,7 @@ tb_alloc(TBUFF **p, ALLOC_T n)
 		q->tb_last = 0;
 		q->tb_endc = esc_c;
 		q->tb_data[0] = 0;	/* appease Purify */
+		q->tb_errs = FALSE;
 		AllocatedBuffer(q)
 	} else if (n >= q->tb_size) {
 		q->tb_data = typereallocn(char, q->tb_data, q->tb_size = (n*2));
@@ -105,6 +106,7 @@ tb_init(TBUFF **p, int c)
 	q->tb_used = 0;
 	q->tb_last = 0;
 	q->tb_endc = c;		/* code to return if no-more-data */
+	q->tb_errs = FALSE;
 	return (*p = q);
 }
 
@@ -215,6 +217,7 @@ tb_bappend(TBUFF **p, const char *s, ALLOC_T len)
 	if ((q = tb_alloc(p, n+len)) != 0) {
 		memcpy(q->tb_data + n, s, len);
 		q->tb_used = n+len;
+		q->tb_errs += (s == error_val);
 	}
 	return *p;
 }
@@ -368,7 +371,16 @@ tb_peek(TBUFF *p)
 char *
 tb_values(TBUFF *p)
 {
-	return (p != 0) ? p->tb_data : 0;
+	char *result = 0;
+
+	if (p != 0) {
+		if (p->tb_errs) {
+			result = error_val;
+		} else {
+			result = p->tb_data;
+		}
+	}
+	return result;
 }
 
 /*
@@ -377,5 +389,14 @@ tb_values(TBUFF *p)
 ALLOC_T
 tb_length(TBUFF *p)
 {
-	return (p != 0) ? p->tb_used : 0;
+	ALLOC_T result = 0;
+
+	if (p != 0) {
+		if (p->tb_errs) {
+			result = 6;	/* sizeof(ERROR) */
+		} else {
+			result = p->tb_used;
+		}
+	}
+	return result;
 }

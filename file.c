@@ -5,7 +5,7 @@
  * reading and writing of the disk are
  * in "fileio.c".
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.270 2000/06/27 23:47:25 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.271 2000/08/26 16:35:12 tom Exp $
  */
 
 #include	"estruct.h"
@@ -1846,7 +1846,7 @@ kwrite(char *fn, int msgf)
  */
 /* ARGSUSED */
 int
-filename(int f GCC_UNUSED, int n GCC_UNUSED)
+vl_filename(int f GCC_UNUSED, int n GCC_UNUSED)
 {
 	register int	s;
 	char		fname[NFILEN];

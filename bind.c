@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.230 2000/05/29 18:27:14 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.231 2000/08/26 16:35:36 tom Exp $
  *
  */
 
@@ -169,7 +169,7 @@ no_such_function(const char *fnp)
 /* give me some help!!!! bring up a buffer and read the help file into it */
 /* ARGSUSED */
 int
-help(int f GCC_UNUSED, int n GCC_UNUSED)
+vl_help(int f GCC_UNUSED, int n GCC_UNUSED)
 {
     BUFFER *bp;			/* buffer pointer to help */
     char *hname;

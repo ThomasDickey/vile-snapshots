@@ -3,7 +3,7 @@
  *
  * written for vile: Copyright (c) 1990, 1995-1999 by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/undo.c,v 1.76 2000/07/10 02:54:15 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/undo.c,v 1.77 2000/08/26 16:38:17 tom Exp $
  *
  */
 
@@ -339,7 +339,7 @@ undo(int f GCC_UNUSED, int n GCC_UNUSED)
 	if (b_val(curbp, MDVIEW))
 		return(rdonly());
 
-	before = line_count(curbp);
+	before = vl_line_count(curbp);
 	if ((s = undoworker(curbp->b_udstkindx)) == TRUE) {
 		if (!line_report(before)) {
 			mlwrite("[change %sdone]",

@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.449 2000/06/24 13:13:25 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.451 2000/08/25 10:47:09 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -1285,6 +1285,7 @@ typedef	struct	vl_tbuff	{
 	ALLOC_T	tb_used;	/* total used in */
 	ALLOC_T	tb_last;	/* last put/get index */
 	int	tb_endc;
+	int	tb_errs;	/* true if we copied error_val here */
 	} TBUFF;
 
 /*
@@ -1809,6 +1810,7 @@ typedef struct	BUFFER {
 	UCHAR	*b_ltext_end;		/* end of block-malloced text	*/
 	LINEPTR	b_ulinep;		/* pointer at 'Undo' line	*/
 	int	b_active;		/* window activated flag	*/
+	int	b_refcount;		/* counts levels of source'ing	*/
 	UINT	b_nwnd; 		/* Count of windows on buffer	*/
 	UINT	b_flag; 		/* Flags			*/
 	short	b_acount;		/* auto-save count		*/

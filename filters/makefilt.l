@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/makefilt.l,v 1.31 2000/08/09 23:52:36 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/makefilt.l,v 1.32 2000/08/23 00:33:09 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Makefile
  *
@@ -37,7 +37,7 @@ write_keyword(char *text, int size)
 	space++;
     }
     if (space)
-	fprintf(yyout, "%.*s", space, base);
+	flt_puts(base, space, "");
 
     space = 0;
     while (isspace(text[size-1])) {
@@ -48,7 +48,7 @@ write_keyword(char *text, int size)
     flt_puts(text, size, keyword_attr(text));
 
     if (space)
-	fprintf(yyout, "%.*s", space, text + size);
+	flt_puts(text + size, space, "");
 
     if (colon)
 	flt_putc(':');

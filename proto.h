@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.428 2000/07/10 02:54:15 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.433 2000/08/28 10:09:35 tom Exp $
  *
  */
 
@@ -324,6 +324,7 @@ extern LINEPTR label2lp (BUFFER *bp, const char *label);
 extern char *get_statevar_val (int vnum);
 extern int rmv_tempvar(const char *name);
 extern int set_state_variable(const char *name, const char *value);
+extern int vl_lookup_func(const char *name);
 #else
 #define gtenv(name) getenv(name)
 #endif
@@ -363,6 +364,7 @@ extern char *render_hex(TBUFF **rp, unsigned i);
 #endif
 
 /* exec.c */
+extern DIRECTIVE dname_to_dirnum(const char *cmdp, size_t length);
 extern int do_source (char *fname, int n, int optional);
 extern int dobuf (BUFFER *bp, int n);
 extern int docmd (char *cline, int execflag, int f, int n);
@@ -482,7 +484,7 @@ extern	void	scwrite (int row, int col, int nchar, const char *outstr, VIDEO_ATTR
 #endif
 
 /* input.c */
-extern char *user_reply(char *prompt);
+extern char *user_reply(const char *prompt);
 extern int dotcmdbegin (void);
 extern int dotcmdfinish (void);
 extern int end_string (void);
@@ -498,6 +500,7 @@ extern int kbd_seq (void);
 extern int kbd_seq_nomap (void);
 extern int kbd_show_response (TBUFF **dst, char *src, unsigned bufn, int eolchar, UINT options);
 extern int kbd_string (const char *prompt, char *extbuf, unsigned bufn, int eolchar, UINT options, int (*func)(DONE_ARGS));
+extern int kbd_string2 (const char *prompt, TBUFF **result, int eolchar, UINT options, int (*complete)(DONE_ARGS));
 extern int kbm_started (int macnum, int force);
 extern int keystroke (void);
 extern int keystroke8 (void);
@@ -506,6 +509,7 @@ extern int keystroke_raw8 (void);
 extern int mapped_keystroke (void);
 extern int mlquickask (const char *prompt, const char *respchars, int *cp);
 extern int mlreply (const char *prompt, char *buf, UINT bufn);
+extern int mlreply2 (const char *prompt, TBUFF **buf);
 extern int mlreply_no_bs (const char *prompt, char *buf, UINT bufn);
 extern int mlreply_no_opts (const char *prompt, char *buf, UINT bufn);
 extern int mlreply_reg (const char *prompt, char *cbuf, int *retp, int at_dft);
@@ -783,7 +787,7 @@ extern char * home_path (char *path);
 #endif
 
 /* random.c */
-extern L_NUM line_count (BUFFER *the_buffer);
+extern L_NUM vl_line_count (BUFFER *the_buffer);
 extern L_NUM line_no (BUFFER *the_buffer, LINEPTR the_line);
 extern char * current_directory (int force);
 extern int catnap (int milli, int watchinput);

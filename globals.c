@@ -2,7 +2,7 @@
  *	matching lines, then for each such line, an action is performed.
  *	written for vile: Copyright (c) 1990-1999 by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/globals.c,v 1.45 1999/11/24 17:14:07 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/globals.c,v 1.46 2000/08/26 16:37:48 tom Exp $
  *
  */
 
@@ -81,7 +81,7 @@ globber(int f GCC_UNUSED, int n GCC_UNUSED, int g_or_v)
 	wp = sw_wp = curwp;
 	/* loop until there are no marked lines in the buffer */
 	foundone = FALSE;
-	before = line_count(curbp);
+	before = vl_line_count(curbp);
 	save_report = global_g_val(GVAL_REPORT);
 	for_ever {
 		if (lp == win_head(wp)) {

@@ -4,7 +4,7 @@
  *	original by Daniel Lawrence, but
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.222 2000/06/24 12:57:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.226 2000/08/28 09:36:28 tom Exp $
  *
  */
 
@@ -1167,7 +1167,7 @@ decode_parameter_info(TBUFF *tok, PARAM_INFO *result)
 
 	result->pi_type = choice_to_code(fsm_paramtypes_choices,
 					 name, strlen(name));
-	if (result->pi_type != PT_UNKNOWN) {
+	if (result->pi_type >= 0) {
 	    result->pi_text = *text ? strmalloc(text) : 0;
 #if OPT_ENUM_MODES
 	    if (s != 0)
@@ -1524,10 +1524,11 @@ pop_buffer(IFSTK *save)
 	line_prefix = ifstk.prefix;
 }
 
-static DIRECTIVE
+DIRECTIVE
 dname_to_dirnum(const char *cmdp, size_t length)
 {
 	DIRECTIVE dirnum = D_UNKNOWN;
+
 	if ((--length > 0)
 	 && (*cmdp++ == DIRECTIVE_CHAR)) {
 		size_t n;
@@ -1536,6 +1537,7 @@ dname_to_dirnum(const char *cmdp, size_t length)
 				length = n;
 		}
 		dirnum = choice_to_code(fsm_directive_choices, cmdp, length);
+		if (dirnum < 0) dirnum = D_UNKNOWN;
 	}
 
 	return dirnum;
@@ -1896,6 +1898,17 @@ static const char *TraceIndent(int level, const char *cmdp, size_t length)
 #endif
 
 static int
+line_in_buffer(BUFFER *bp, LINE *test_lp)
+{
+    LINE *lp;
+    for_each_line(lp, bp) {
+	if (lp == test_lp)
+	    return TRUE;
+    }
+    return FALSE;
+}
+
+static int
 perform_dobuf(BUFFER *bp, WHLOOP *whlist)
 {
 	int status = TRUE;
@@ -2103,7 +2116,9 @@ perform_dobuf(BUFFER *bp, WHLOOP *whlist)
 		clhide = save_clhide;
 		no_errs = save_no_errs;
 
-		if (status != TRUE) {
+		if (status == TRUE) {
+			dobuferrbp = NULL;
+		} else if (line_in_buffer(bp, lp)) {
 			/* update window if visible */
 			for_each_visible_window(wp) {
 				if (wp->w_bufp == bp) {
@@ -2121,6 +2136,8 @@ perform_dobuf(BUFFER *bp, WHLOOP *whlist)
 				(void)swbuffer(bp);
 				kbd_alarm();
 			}
+			break;
+		} else {
 			break;
 		}
 	}
@@ -2183,6 +2200,8 @@ dobuf(BUFFER *bp, int limit)	/* buffer to execute */
 		restore_arguments(bp);
 		no_msgs = save_no_msgs;
 		cmd_count = save_cmd_count;
+	} else {
+		mlwarn("[Too many levels of files]");
 	}
 	dobufnesting--;
 	endofDisplay();
@@ -2303,7 +2322,9 @@ char *fname)		/* file name to execute */
 	if ((status = readin(fname, FALSE, bp, TRUE)) == TRUE) {
 
 		/* go execute it! */
+		bp->b_refcount += 1;
 		status = dobuf(bp, 1);
+		bp->b_refcount -= 1;
 
 		/*
 		 * If no errors occurred, and if the buffer isn't displayed,
@@ -2313,7 +2334,7 @@ char *fname)		/* file name to execute */
 		 */
 		if (status != TRUE)
 			(void)swbuffer(bp);
-		else if ((bp->b_nwnd == 0) && clobber)
+		else if ((bp->b_nwnd == 0) && (bp->b_refcount == 0) && clobber)
 			(void)zotbuf(bp);
 		else
 			set_b_lineno(bp,original);

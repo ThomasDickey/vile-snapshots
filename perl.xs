@@ -13,7 +13,7 @@
  * vile.  The file api.c (sometimes) provides a middle layer between
  * this interface and the rest of vile.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.73 2000/04/20 10:45:32 bod Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.74 2000/08/26 16:38:41 tom Exp $
  */
 
 /*#
@@ -1239,18 +1239,18 @@ sv2linenum(SV *sv)
     I32 linenum;
 
     if (!SvIOKp(sv) && strcmp(SvPV(sv,PL_na),"$") == 0) {
-	linenum = line_count(curbp);
+	linenum = vl_line_count(curbp);
     }
     else if (!SvIOKp(sv) && strcmp(SvPV(sv,PL_na),"$$") == 0) {
-	linenum = line_count(curbp) + 1;
+	linenum = vl_line_count(curbp) + 1;
     }
     else {
 	linenum = SvIV(sv);
 	if (linenum < 1) {
 	    linenum = 1;
 	}
-	else if (linenum > line_count(curbp)) {
-	    linenum = line_count(curbp);
+	else if (linenum > vl_line_count(curbp)) {
+	    linenum = vl_line_count(curbp);
 	}
     }
     return linenum;

@@ -18,7 +18,7 @@
  * transferring the selection are not dealt with in this file.  Procedures
  * for dealing with the representation are maintained in this file.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.127 2000/07/25 02:24:19 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.128 2000/08/26 16:30:01 tom Exp $
  *
  */
 
@@ -1655,8 +1655,10 @@ attribute_from_filter(void)
     if ((pastline = setup_region()) == 0) {
 	result = FALSE;
 
+#ifdef MDHILITE
     } else if (!b_val(curbp, MDHILITE)) {
 	discard_syntax_highlighting();
+#endif
 
     } else if (open_region_filter() == TRUE) {
 

@@ -2,7 +2,7 @@
  * This file contains the command processing functions for a number of random
  * commands. There is no functional grouping here, for sure.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.234 2000/08/16 21:56:58 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.235 2000/08/26 16:38:12 tom Exp $
  *
  */
 
@@ -228,7 +228,7 @@ showlength(int f GCC_UNUSED, int n GCC_UNUSED)
 int
 line_report(L_NUM before)
 {
-    L_NUM after = line_count(curbp);
+    L_NUM after = vl_line_count(curbp);
 
     if (do_report(before - after)) {
 	if (before > after)
@@ -263,7 +263,7 @@ restore_dot(MARK saved_dot)
 }
 
 L_NUM
-line_count(BUFFER *the_buffer)
+vl_line_count(BUFFER *the_buffer)
 {
     L_NUM numlines = 0;		/* # of lines in file */
     if (the_buffer != 0) {
@@ -1036,7 +1036,7 @@ update_dos_drv_dir(char *cwd)
 #if OPT_SHELL
 /* ARGSUSED */
 int
-cd(int f GCC_UNUSED, int n GCC_UNUSED)
+vl_chdir(int f GCC_UNUSED, int n GCC_UNUSED)
 {
     register int status;
     static TBUFF *last;

@@ -1,4 +1,4 @@
-MANIFEST for vile, version v9_1s
+MANIFEST for vile, version v9_1t
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 CHANGES                         Change-log for VILE
@@ -227,6 +227,7 @@ filters/rexx.key                keywords for REXX syntax filter
 filters/rexxfilt.l              syntax filter for REXX
 filters/sccs.key                keywords for SCCS syntax filter
 filters/sccsfilt.l              syntax filter for SCCS files.
+filters/sed-filt.c              highlighting filter for sed-scripts
 filters/sh-filt.l               a sh/ksh/csh syntax filter for vile
 filters/sh.key                  keywords for "sh" syntax filter
 filters/sml-filt.l              filter for Standard ML

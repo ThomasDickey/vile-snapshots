@@ -1,7 +1,7 @@
 /*
  * Common utility functions for vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.73 2000/06/09 01:33:41 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.74 2000/08/28 10:28:56 tom Exp $
  *
  */
 
@@ -50,6 +50,7 @@ int abbr_ch = '*';
 int meta_ch = '.';
 int eqls_ch = ':';
 int verbose_flt;
+int vile_keywords;
 
 static KEYWORD **hashtable;
 static CLASS *classes;
@@ -476,6 +477,18 @@ for_each_keyword(EachKeyword func)
 	    (*func) (ptr->kw_name, ptr->kw_size, ptr->kw_attr);
 	}
     }
+}
+
+char *
+get_symbol_table(void)
+{
+    CLASS *p;
+    for (p = classes; p != 0; p = p->next) {
+	if (hashtable == p->data) {
+	    return p->name;
+	}
+    }
+    return "?";
 }
 
 long

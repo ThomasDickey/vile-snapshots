@@ -22,7 +22,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.432 2000/07/26 23:35:58 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.433 2000/08/26 16:41:50 tom Exp $
  */
 
 #define realdef /* Make global definitions not external */
@@ -641,7 +641,7 @@ MainProgram(int argc, char *argv[])
 #endif
 	msg = s_NULL;
 	if (helpflag) {
-		if (help(TRUE,1) != TRUE) {
+		if (vl_help(TRUE,1) != TRUE) {
 			msg =
 	"[Problem with help information. Type \":quit\" to exit if you wish]";
 		}
@@ -1827,7 +1827,7 @@ opervglobals(int f, int n)
 }
 
 int
-source(int f, int n)
+vl_source(int f, int n)
 {
 	return unimpl(f,n);
 }
