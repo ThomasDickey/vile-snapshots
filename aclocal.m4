@@ -1,6 +1,6 @@
 dnl Local definitions for autoconf.
 dnl
-dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.107 2002/01/13 16:06:53 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.108 2002/05/01 15:46:00 tom Exp $
 dnl
 dnl ---------------------------------------------------------------------------
 dnl ---------------------------------------------------------------------------
@@ -911,7 +911,7 @@ test "$prefix" != /opt && \
 test -d /opt && \
 $1="[$]$1 /opt/include /opt/include/$2 /opt/$2/include"
 
-$1="[$]$1 [$]HOME/lib [$]HOME/lib/$2 [$]HOME/$2/lib"
+$1="[$]$1 [$]HOME/include [$]HOME/include/$2 [$]HOME/$2/include"
 ])dnl
 dnl ---------------------------------------------------------------------------
 dnl On SunOS, struct rusage is referred to in <sys/wait.h>.  struct rusage is

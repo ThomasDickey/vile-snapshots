@@ -1,7 +1,7 @@
 /*	Spawn:	various DOS access commands
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.170 2002/01/09 00:27:41 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.171 2002/04/30 23:57:52 tom Exp $
  *
  */
 
@@ -22,45 +22,42 @@
 #if SYS_VMS
 #include <starlet.h>
 #include <lib$routines.h>
-extern	int	vms_system(char *);	/*FIXME: not the same as 'system()'?*/
+extern int vms_system(char *);	/*FIXME: not the same as 'system()'? */
 #endif
 
 #if OPT_FINDPATH
 
-typedef struct struct_findinfo
-{
-    FINDCFG    cfg;          /* findcfg mode info             */
-    const char *dir_list;    /* findpath directory list       */
-    int        nonrecursive; /* this find cmd is nonrecursive */
+typedef struct struct_findinfo {
+    FINDCFG cfg;		/* findcfg mode info             */
+    const char *dir_list;	/* findpath directory list       */
+    int nonrecursive;		/* this find cmd is nonrecursive */
 } FINDINFO;
 
-static	char *ck_find_cmd(char *cmd, int *allocd_storage, int prepend_bang);
-static	char *find_all_files(char *cmd, FINDINFO *pinfo, int prepend_bang);
-static	char *find_dirs_only(char *cmd, FINDINFO *pinfo, int prepend_bang);
+static char *ck_find_cmd(char *cmd, int *allocd_storage, int prepend_bang);
+static char *find_all_files(char *cmd, FINDINFO * pinfo, int prepend_bang);
+static char *find_dirs_only(char *cmd, FINDINFO * pinfo, int prepend_bang);
 
-static  char *prev_findcmd;   /* last shell command created by the builtin
-                               * find feature.  debug aid -- may go away
-                               */
+static char *prev_findcmd;	/* last shell command created by the builtin
+				 * find feature.  debug aid -- may go away
+				 */
 #endif
 
-static	int spawn1(int rerun, int pressret);
-
-
+static int spawn1(int rerun, int pressret);
 
 #if	SYS_VMS
-#define EFN	0				/* Event flag.		*/
+#define EFN	0		/* Event flag.          */
 
-#include	<ssdef.h>			/* Random headers.	*/
+#include	<ssdef.h>	/* Random headers.      */
 #include	<stsdef.h>
 #include	<descrip.h>
 #include	<iodef.h>
 
-extern  int	oldmode[3];			/* In "termio.c"	*/
-extern  int	newmode[3];			/* In "termio.c"	*/
-extern  short	iochan;				/* In "termio.c"	*/
+extern int oldmode[3];		/* In "termio.c"        */
+extern int newmode[3];		/* In "termio.c"        */
+extern short iochan;		/* In "termio.c"        */
 #endif
 
-#if CC_NEWDOSCC && !CC_DJGPP			/* Typo, was NEWSDOSCC	*/
+#if CC_NEWDOSCC && !CC_DJGPP	/* Typo, was NEWSDOSCC  */
 #include	<process.h>
 #endif
 
@@ -74,49 +71,50 @@ extern  short	iochan;				/* In "termio.c"	*/
 #endif
 
 #if DISP_X11 && !SMALLER
-static void x_window_SHELL(const char *cmd)
+static void
+x_window_SHELL(const char *cmd)
 {
-	TBUFF *tmp = 0;
+    TBUFF *tmp = 0;
 
 #if HAVE_WAITPID
-	int pid;
+    int pid;
 
-	if ((pid = fork()) > 0) {
-		waitpid(pid, 0, 0);
-	} else if (pid == 0) {
-		if ((pid = fork()) == 0) {
+    if ((pid = fork()) > 0) {
+	waitpid(pid, 0, 0);
+    } else if (pid == 0) {
+	if ((pid = fork()) == 0) {
 #endif
-			/*
-			 * We would use the -display option of xterm, but that
-			 * would get in the way of the user's ability to
-			 * customize $xshell.
-			 */
+	    /*
+	     * We would use the -display option of xterm, but that
+	     * would get in the way of the user's ability to
+	     * customize $xshell.
+	     */
 #if HAVE_PUTENV
-			static char *display_env;
-			char *env = get_xdisplay();
-			if (display_env != 0)
-				free(display_env);
-			display_env = typeallocn(char,20+strlen(env));
-			lsprintf(display_env, "DISPLAY=%s", env);
-			putenv(display_env);
+	    static char *display_env;
+	    char *env = get_xdisplay();
+	    if (display_env != 0)
+		free(display_env);
+	    display_env = typeallocn(char, 20 + strlen(env));
+	    lsprintf(display_env, "DISPLAY=%s", env);
+	    putenv(display_env);
 #endif
 
-			tmp = tb_scopy(&tmp, get_xshell());
-			if (cmd != 0) {
-				tb_unput(tmp);
-				tmp = tb_sappend(&tmp, " ");
-				tmp = tb_sappend(&tmp, get_xshellflags());
-				tmp = tb_sappend(&tmp, " ");
-				tmp = tb_sappend(&tmp, cmd);
-				tmp = tb_append(&tmp, EOS);
-			}
-			TRACE(("executing '%s'\n", tb_values(tmp)));
-			(void)system(tb_values(tmp));
-			tb_free(&tmp);
+	    tmp = tb_scopy(&tmp, get_xshell());
+	    if (cmd != 0) {
+		tb_unput(tmp);
+		tmp = tb_sappend(&tmp, " ");
+		tmp = tb_sappend(&tmp, get_xshellflags());
+		tmp = tb_sappend(&tmp, " ");
+		tmp = tb_sappend(&tmp, cmd);
+		tmp = tb_append(&tmp, EOS);
+	    }
+	    TRACE(("executing '%s'\n", tb_values(tmp)));
+	    (void) system(tb_values(tmp));
+	    tb_free(&tmp);
 #if HAVE_WAITPID
-		}
-		_exit(0);
 	}
+	_exit(0);
+    }
 #endif
 }
 #endif
@@ -135,102 +133,98 @@ spawncli(int f GCC_UNUSED, int n GCC_UNUSED)
 
 #if	SYS_UNIX
 #define	OK_SPAWN
-	ttclean(TRUE);
-	kbd_openup();
+    ttclean(TRUE);
+    kbd_openup();
 #if	DISP_X11 && !SMALLER
-	(void)x_window_SHELL((char *)0);
+    (void) x_window_SHELL((char *) 0);
 #else
-	(void)system_SHELL((char *)0);
+    (void) system_SHELL((char *) 0);
 #endif
-	kbd_openup();
-	ttunclean();
-	term.kopen();
-	sgarbf = TRUE;
-	return AfterShell();
+    kbd_openup();
+    ttunclean();
+    term.kopen();
+    sgarbf = TRUE;
+    return AfterShell();
 #endif /* SYS_UNIX */
-
 
 #if	SYS_VMS
 #define	OK_SPAWN
-	mlforce("[Starting DCL]\r\n");
-	kbd_flush();				/* Ignore "ttcol".	*/
-	sgarbf = TRUE;
-	return vms_system(NULL);		/* NULL => DCL.		*/
+    mlforce("[Starting DCL]\r\n");
+    kbd_flush();		/* Ignore "ttcol".      */
+    sgarbf = TRUE;
+    return vms_system(NULL);	/* NULL => DCL.         */
 #endif
-
 
 #if	SYS_MSDOS || SYS_OS2 || SYS_WINNT
 #define	OK_SPAWN
-	bottomleft();
-	kbd_flush();
-	term.kclose();
-	{
-		char *shell = get_shell();
+    bottomleft();
+    kbd_flush();
+    term.kclose();
+    {
+	char *shell = get_shell();
 #if SYS_OS2
-/*
- *	spawn it if we know it.  Some 3rd party command processors fail
- *	if they system themselves (eg 4OS2).  CCM 24-MAR-94
- */
-		spawnl( P_WAIT, shell, shell, NULL);
+	/*
+	 * spawn it if we know it.  Some 3rd party command processors fail
+	 * if they system themselves (eg 4OS2).  CCM 24-MAR-94
+	 */
+	spawnl(P_WAIT, shell, shell, NULL);
 #else
 #if SYS_WINNT
 # ifdef DISP_NTCONS
-		w32_CreateProcess(shell, FALSE);
+	w32_CreateProcess(shell, FALSE);
 # else
-		/*
-		 * This is winvile, in which case the editor _might_ have
-		 * been launched from the command line (which implies
-		 * direct access to an existing Win32 console environment)
-		 * or else was launched as a true Win32 app (has no console
-		 * env).  The latter case requires that CreateProcess() is
-		 * called in such a way that a console is guaranteed to be
-		 * allocated in the editor's behalf.
-		 *
-		 * The net result of the following call to w32_CreateProcess()
-		 * is that the spawned shell runs in its own process, while
-		 * winvile regains control immediately (i.e., there is no
-		 * wait for the spawned shell to exit).
-		 */
-		w32_CreateProcess(shell, TRUE);
+	/*
+	 * This is winvile, in which case the editor _might_ have
+	 * been launched from the command line (which implies
+	 * direct access to an existing Win32 console environment)
+	 * or else was launched as a true Win32 app (has no console
+	 * env).  The latter case requires that CreateProcess() is
+	 * called in such a way that a console is guaranteed to be
+	 * allocated in the editor's behalf.
+	 *
+	 * The net result of the following call to w32_CreateProcess()
+	 * is that the spawned shell runs in its own process, while
+	 * winvile regains control immediately (i.e., there is no
+	 * wait for the spawned shell to exit).
+	 */
+	w32_CreateProcess(shell, TRUE);
 # endif
 #else
-		system(shell);
+	system(shell);
 #endif
 #endif
-	}
-	term.kopen();
-	sgarbf = TRUE;
-	return AfterShell();
+    }
+    term.kopen();
+    sgarbf = TRUE;
+    return AfterShell();
 #endif
-
 
 #ifndef	OK_SPAWN
-	mlforce("[This version of vile cannot spawn an interactive shell]");
-	return FALSE;
+    mlforce("[This version of vile cannot spawn an interactive shell]");
+    return FALSE;
 #endif
 }
-
 
 #if USE_UNIX_JOB_CTL
 int
 bktoshell(int f, int n)		/* suspend and wait to wake up */
 {
-	int forced = (f && n == SPECIAL_BANG_ARG); /* then it was :stop! */
+    int forced = (f && n == SPECIAL_BANG_ARG);	/* then it was :stop! */
 
-	/* take care of autowrite */
-	if (!forced && writeall(f,n,FALSE,TRUE,TRUE,FALSE) != TRUE)
-		return FALSE;
+    /* take care of autowrite */
+    if (!forced && writeall(f, n, FALSE, TRUE, TRUE, FALSE) != TRUE)
+	return FALSE;
 
-	beginDisplay();
-	ttclean(TRUE);
+    beginDisplay();
+    ttclean(TRUE);
 
 /* #define simulate_job_control_for_debug */
 # ifdef simulate_job_control_for_debug
-	rtfrmshell(SIGCONT);
-	return TRUE;
+    rtfrmshell(SIGCONT);
+    return TRUE;
 # else
-	(void)signal_pg(SIGTSTP);
-	return TRUE;
+    (void) signal_pg(SIGTSTP);
+    return TRUE;
 # endif
 }
 #else
@@ -238,8 +232,8 @@ bktoshell(int f, int n)		/* suspend and wait to wake up */
 int
 bktoshell(int f GCC_UNUSED, int n GCC_UNUSED)
 {
-	mlforce("[Job control unavailable]");
-	return FALSE;
+    mlforce("[Job control unavailable]");
+    return FALSE;
 }
 #endif /* SIGTSTP */
 
@@ -248,60 +242,60 @@ SIGT
 rtfrmshell(int ACTUAL_SIG_ARGS GCC_UNUSED)
 {
 #if USE_UNIX_JOB_CTL
-	endofDisplay();
-	kbd_openup();
-	ttunclean();
-	sgarbf = TRUE;
+    endofDisplay();
+    kbd_openup();
+    ttunclean();
+    sgarbf = TRUE;
 #  if SYS_APOLLO
-	(void)term.getch();	/* have to skip a character */
-	ttunclean();		/* ...so that I can finally suppress echo */
+    (void) term.getch();	/* have to skip a character */
+    ttunclean();		/* ...so that I can finally suppress echo */
 #  endif
-	setup_handler(SIGCONT,rtfrmshell); /* suspend & restart */
-	(void)update(TRUE);
+    setup_handler(SIGCONT, rtfrmshell);		/* suspend & restart */
+    (void) update(TRUE);
 #endif
 #if defined(MDCHK_MODTIME)
-	(void)check_visible_files_changed();
+    (void) check_visible_files_changed();
 #endif
-	SIGRET;
+    SIGRET;
 }
 
 void
 pressreturn(void)
 {
-	int c;
-	int osgarbf;
+    int c;
+    int osgarbf;
 
-	osgarbf = sgarbf;
-	sgarbf = FALSE;
-	mlforce("[Press return to continue]");
-	sgarbf = osgarbf;
-	/* loop for a CR, a space, or a : to do another named command */
-	reading_msg_line = TRUE;
-	while ((c = keystroke()) != '\r' &&
-			c != '\n' &&
-			c != ' ' &&
-			!ABORTED(c)) {
-		if (DefaultKeyBinding(c) == &f_namedcmd) {
-			unkeystroke(c);
-			break;
-		}
+    osgarbf = sgarbf;
+    sgarbf = FALSE;
+    mlforce("[Press return to continue]");
+    sgarbf = osgarbf;
+    /* loop for a CR, a space, or a : to do another named command */
+    reading_msg_line = TRUE;
+    while ((c = keystroke()) != '\r' &&
+	   c != '\n' &&
+	   c != ' ' &&
+	   !ABORTED(c)) {
+	if (DefaultKeyBinding(c) == &f_namedcmd) {
+	    unkeystroke(c);
+	    break;
 	}
-	kbd_erase_to_end(0);
-	reading_msg_line = FALSE;
+    }
+    kbd_erase_to_end(0);
+    reading_msg_line = FALSE;
 }
 
 /* ARGSUSED */
 int
 respawn(int f, int n GCC_UNUSED)
 {
-	return spawn1(TRUE, !f);
+    return spawn1(TRUE, !f);
 }
 
 /* ARGSUSED */
 int
 spawn(int f, int n GCC_UNUSED)
 {
-	return spawn1(FALSE, !f);
+    return spawn1(FALSE, !f);
 }
 
 #define COMMON_SH_PROMPT (SYS_UNIX || SYS_VMS || SYS_MSDOS || SYS_OS2 || SYS_WINNT)
@@ -315,55 +309,52 @@ spawn(int f, int n GCC_UNUSED)
  */
 static int
 ShellPrompt(
-TBUFF	**holds,
-char	*result,
-int	rerun)		/* TRUE/FALSE: spawn, -TRUE: capturecmd */
+	       TBUFF ** holds,
+	       char *result,
+	       int rerun)	/* TRUE/FALSE: spawn, -TRUE: capturecmd */
 {
-	register int	s;
-	register size_t	len;
-	static	const char bang[] = SHPIPE_LEFT;
-	BUFFER *bp;
-	int	cb	= any_changed_buf(&bp),
-		fix	= (rerun != -TRUE);
-	char	save[NLINE],
-		temp[NLINE],
-		line[NLINE+1];
+    register int s;
+    register size_t len;
+    static const char bang[] = SHPIPE_LEFT;
+    BUFFER *bp;
+    int cb = any_changed_buf(&bp), fix = (rerun != -TRUE);
+    char save[NLINE], temp[NLINE], line[NLINE + 1];
 
-	if ((len = tb_length(*holds)) != 0) {
-		(void)strncpy(save, tb_values(*holds), len);
-	}
-	save[len] = EOS;
+    if ((len = tb_length(*holds)) != 0) {
+	(void) strncpy(save, tb_values(*holds), len);
+    }
+    save[len] = EOS;
 
-	/* if it doesn't start with '!', or if that's all it is */
-	if (!isShellOrPipe(save) || save[1] == EOS)
-		(void)strcpy(save, bang);
+    /* if it doesn't start with '!', or if that's all it is */
+    if (!isShellOrPipe(save) || save[1] == EOS)
+	(void) strcpy(save, bang);
 
-	(void)strcpy(line, save);
-	if (rerun != TRUE) {
-		if (cb != 0) {
-		    if (cb > 1) {
-			(void)lsprintf(temp,
+    (void) strcpy(line, save);
+    if (rerun != TRUE) {
+	if (cb != 0) {
+	    if (cb > 1) {
+		(void) lsprintf(temp,
 				"Warning: %d modified buffers: %s",
 				cb, bang);
-		    } else {
-			(void)lsprintf(temp,
+	    } else {
+		(void) lsprintf(temp,
 				"Warning: buffer \"%s\" is modified: %s",
 				bp->b_bname, bang);
-		    }
-		} else {
-			(void)lsprintf(temp, "%s%s",
-				rerun == -TRUE ? "" : ": ", bang);
-		}
-
-		if ((s = mlreply_no_bs(temp, line+1, NLINE)) != TRUE)
-			return s;
+	    }
+	} else {
+	    (void) lsprintf(temp, "%s%s",
+			    rerun == -TRUE ? "" : ": ", bang);
 	}
-	if (line[1] == EOS)
-		return FALSE;
 
-	*holds = tb_scopy(holds, line);
-	(void)strcpy(result, line+fix);
-	return TRUE;
+	if ((s = mlreply_no_bs(temp, line + 1, NLINE)) != TRUE)
+	    return s;
+    }
+    if (line[1] == EOS)
+	return FALSE;
+
+    *holds = tb_scopy(holds, line);
+    (void) strcpy(result, line + fix);
+    return TRUE;
 }
 #endif
 
@@ -377,94 +368,94 @@ static int
 spawn1(int rerun, int pressret)
 {
 #if DISP_IBMPC
-	int	closed;
+    int closed;
 #endif
 #if COMMON_SH_PROMPT
-	register int	s;
-	char	line[NLINE];	/* command line send to shell */
+    register int s;
+    char line[NLINE];		/* command line send to shell */
 
-	if ((s = ShellPrompt(&tb_save_shell[0], line, rerun)) != TRUE)
-		return s;
-#endif	/* COMMON_SH_PROMPT */
+    if ((s = ShellPrompt(&tb_save_shell[0], line, rerun)) != TRUE)
+	return s;
+#endif /* COMMON_SH_PROMPT */
 
-	/* take care of autowrite */
-	if (writeall(FALSE,1,FALSE,TRUE,TRUE,FALSE) != TRUE)
-		return FALSE;
+    /* take care of autowrite */
+    if (writeall(FALSE, 1, FALSE, TRUE, TRUE, FALSE) != TRUE)
+	return FALSE;
 
 #if SYS_UNIX
 #if DISP_X11
 #if HAVE_WAITPID && !SMALLER
-	(void)x_window_SHELL(line);
+    (void) x_window_SHELL(line);
 #else
-	(void)system_SHELL(line);
+    (void) system_SHELL(line);
 #endif
 #else
-	ttclean(TRUE);
-	(void)system_SHELL(line);
-	ttunclean();
-	if (pressret)
-		pressreturn();
-	term.open();
-	term.kopen();
-	term.flush();
-	sgarbf = TRUE;
+    ttclean(TRUE);
+    (void) system_SHELL(line);
+    ttunclean();
+    if (pressret)
+	pressreturn();
+    term.open();
+    term.kopen();
+    term.flush();
+    sgarbf = TRUE;
 #endif /* DISP_X11 */
-	return AfterShell();
+    return AfterShell();
 #endif /* SYS_UNIX */
 
 #if	SYS_VMS
-	kbd_flush();
-	s = vms_system(line);		/* Run the command.	*/
-	if (pressret) {
-		term.putch('\r');
-		term.putch('\n');
-		term.flush();
-		pressreturn();
-	}
-	sgarbf = TRUE;
-	return (s);
+    kbd_flush();
+    s = vms_system(line);	/* Run the command.     */
+    if (pressret) {
+	term.putch('\r');
+	term.putch('\n');
+	term.flush();
+	pressreturn();
+    }
+    sgarbf = TRUE;
+    return (s);
 #endif
 #if	SYS_MSDOS || SYS_OS2 || SYS_WINNT
-	kbd_erase_to_end(0);
-	kbd_flush();
-	term.kclose();
+    kbd_erase_to_end(0);
+    kbd_flush();
+    term.kclose();
 #if	DISP_IBMPC
-	/* If we don't reset to 80x25, parts of the shell-output will go
-	 * astray.
-	 */
-	closed = term.cols != 80 || term.rows != 25;
-	if (closed)
-		term.close();
+    /* If we don't reset to 80x25, parts of the shell-output will go
+     * astray.
+     */
+    closed = term.cols != 80 || term.rows != 25;
+    if (closed)
+	term.close();
 #endif
 #if SYS_WINNT
 # if DISP_NTWIN
-	w32_system_winvile(line, &pressret);
+    w32_system_winvile(line, &pressret);
 # else
-	if W32_SKIP_SHELL(line)
-		pressret = FALSE;
-	w32_system(line);
+    if (W32_SKIP_SHELL(line))
+	pressret = FALSE;
+    w32_system(line);
 # endif
-	w32_keybrd_reopen(pressret);
+    w32_keybrd_reopen(pressret);
 #else
-	system(line);
-	term.kopen();
-	/* wait for return here if we are interactive */
-	if (pressret) {
-		pressreturn();
-	}
+    system(line);
+    term.kopen();
+    /* wait for return here if we are interactive */
+    if (pressret) {
+	pressreturn();
+    }
 #endif
 #if	DISP_IBMPC
-	/* Reopen the display _after_ the prompt, to keep the shell-output
-	 * in the same type of screen as the prompt.
-	 */
-	if (closed)
-		term.open();
+    /* Reopen the display _after_ the prompt, to keep the shell-output
+     * in the same type of screen as the prompt.
+     */
+    if (closed)
+	term.open();
 #endif
 #if DISP_NTCONS
-	ntcons_reopen();
+    ntcons_reopen();
 #endif
-	sgarbf = TRUE;
-	return AfterShell();
+    sgarbf = TRUE;
+    return AfterShell();
 #endif
 }
 
@@ -476,48 +467,48 @@ spawn1(int rerun, int pressret)
 int
 capturecmd(int f, int n)
 {
-	int allocd_storage, s;
-	register BUFFER *bp;	/* pointer to buffer to zot */
-	char line[NLINE],	/* command line send to shell */
-	     *final_cmd;	/* possibly edited command line */
+    int allocd_storage, s;
+    register BUFFER *bp;	/* pointer to buffer to zot */
+    char line[NLINE],		/* command line send to shell */
+     *final_cmd;		/* possibly edited command line */
 
-	/* get the command to pipe in */
-	hst_init('!');
-	s = ShellPrompt(&tb_save_shell[!global_g_val(GMDSAMEBANGS)],
-		line, -TRUE);
-	hst_flush();
+    /* get the command to pipe in */
+    hst_init('!');
+    s = ShellPrompt(&tb_save_shell[!global_g_val(GMDSAMEBANGS)],
+		    line, -TRUE);
+    hst_flush();
 
-	/* prompt ok? */
-	if (s != TRUE)
-		return s;
+    /* prompt ok? */
+    if (s != TRUE)
+	return s;
 
 #if OPT_FINDPATH
-	if ((final_cmd = ck_find_cmd(line, &allocd_storage, TRUE)) == NULL)
-	    return (FALSE);
+    if ((final_cmd = ck_find_cmd(line, &allocd_storage, TRUE)) == NULL)
+	return (FALSE);
 #else
-	allocd_storage = FALSE;
-	final_cmd      = line;
+    allocd_storage = FALSE;
+    final_cmd = line;
 #endif
 
-	/* take care of autowrite */
-	if (writeall(f,n,FALSE,FALSE,TRUE,FALSE) != TRUE)
-		return FALSE;
+    /* take care of autowrite */
+    if (writeall(f, n, FALSE, FALSE, TRUE, FALSE) != TRUE)
+	return FALSE;
 
-	if ((s = ((bp = bfind(OUTPUT_BufName, 0)) != NULL)) != TRUE)
-		return s;
-	if ((s = popupbuff(bp)) != TRUE)
-		return s;
-	ch_fname(bp,final_cmd);
+    if ((s = ((bp = bfind(OUTPUT_BufName, 0)) != NULL)) != TRUE)
+	return s;
+    if ((s = popupbuff(bp)) != TRUE)
+	return s;
+    ch_fname(bp, final_cmd);
 #if OPT_FINDPATH
-	if (allocd_storage)
-	    (void) free(final_cmd);
+    if (allocd_storage)
+	(void) free(final_cmd);
 #endif
-	bp->b_active = FALSE; /* force a re-read */
-	if ((s = swbuffer_lfl(bp, FALSE, FALSE)) != TRUE)
-		return s;
-	set_rdonly(bp, line, MDVIEW);
+    bp->b_active = FALSE;	/* force a re-read */
+    if ((s = swbuffer_lfl(bp, FALSE, FALSE)) != TRUE)
+	return s;
+    set_rdonly(bp, line, MDVIEW);
 
-	return (s);
+    return (s);
 }
 
 #else /* ! SYS_UNIX */
@@ -528,67 +519,67 @@ capturecmd(int f, int n)
 int
 capturecmd(int f, int n)
 {
-	register int	s;	/* return status from CLI */
-	register WINDOW *wp;	/* pointer to new window */
-	register BUFFER *bp;	/* pointer to buffer to zot */
-	static char oline[NLINE];	/* command line send to shell */
-	char	line[NLINE];	/* command line send to shell */
-	WINDOW *ocurwp;		/* save the current window during delete */
+    register int s;		/* return status from CLI */
+    register WINDOW *wp;	/* pointer to new window */
+    register BUFFER *bp;	/* pointer to buffer to zot */
+    static char oline[NLINE];	/* command line send to shell */
+    char line[NLINE];		/* command line send to shell */
+    WINDOW *ocurwp;		/* save the current window during delete */
 
-	static char filnam[NSTRING] = "command";
+    static char filnam[NSTRING] = "command";
 
-	/* get the command to pipe in */
-	if ((s=mlreply("cmd: <", oline, NLINE)) != TRUE)
-		return(s);
+    /* get the command to pipe in */
+    if ((s = mlreply("cmd: <", oline, NLINE)) != TRUE)
+	return (s);
 
-	(void)strcpy(line,oline);
+    (void) strcpy(line, oline);
 
-	/* get rid of the command output buffer if it exists */
-	if ((bp=find_b_name(OUTPUT_BufName)) != NULL) {
-		/* try to make sure we are off screen */
-		ocurwp = NULL;
-		for_each_window(wp) {
-			if (wp->w_bufp == bp) {
-				if (curwp != wp) {
-					ocurwp = curwp;
-					curwp = wp;
-				}
-				delwind(FALSE, 1);
-				if (ocurwp != NULL)
-					curwp = ocurwp;
-				break;
-			}
+    /* get rid of the command output buffer if it exists */
+    if ((bp = find_b_name(OUTPUT_BufName)) != NULL) {
+	/* try to make sure we are off screen */
+	ocurwp = NULL;
+	for_each_window(wp) {
+	    if (wp->w_bufp == bp) {
+		if (curwp != wp) {
+		    ocurwp = curwp;
+		    curwp = wp;
 		}
-		if (zotbuf(bp) != TRUE)
-			return(FALSE);
+		delwind(FALSE, 1);
+		if (ocurwp != NULL)
+		    curwp = ocurwp;
+		break;
+	    }
 	}
+	if (zotbuf(bp) != TRUE)
+	    return (FALSE);
+    }
 
-	if (s != TRUE)
-		return(s);
+    if (s != TRUE)
+	return (s);
 
-	/* split the current window to make room for the command output */
-	if (splitwind(FALSE, 1) == FALSE)
-		return(FALSE);
+    /* split the current window to make room for the command output */
+    if (splitwind(FALSE, 1) == FALSE)
+	return (FALSE);
 
-	/* and read the stuff in */
-	if (getfile(filnam, FALSE) == FALSE)
-		return(FALSE);
+    /* and read the stuff in */
+    if (getfile(filnam, FALSE) == FALSE)
+	return (FALSE);
 
-	/* overwrite its buffer name for consistency */
-	set_bname(curbp, OUTPUT_BufName);
+    /* overwrite its buffer name for consistency */
+    set_bname(curbp, OUTPUT_BufName);
 
-	/* make this window in VIEW mode, update buffer's mode lines */
-	make_local_b_val(curwp->w_bufp,MDVIEW);
-	set_b_val(curwp->w_bufp,MDVIEW,TRUE);
-	curwp->w_flag |= WFMODE;
+    /* make this window in VIEW mode, update buffer's mode lines */
+    make_local_b_val(curwp->w_bufp, MDVIEW);
+    set_b_val(curwp->w_bufp, MDVIEW, TRUE);
+    curwp->w_flag |= WFMODE;
 
 #if OPT_FINDERR
-	set_febuff(OUTPUT_BufName);
+    set_febuff(OUTPUT_BufName);
 #endif
 
-	/* and get rid of the temporary file */
-	unlink(filnam);
-	return AfterShell();
+    /* and get rid of the temporary file */
+    unlink(filnam);
+    return AfterShell();
 }
 #endif /* SYS_UNIX */
 
@@ -601,20 +592,19 @@ static void
 write_kreg_to_pipe(void *writefp)
 {
     FILE *fw;
-    KILL *kp;       /* pointer into kill register */
+    KILL *kp;			/* pointer into kill register */
 
-    fw = (FILE *)writefp;
+    fw = (FILE *) writefp;
     kregcirculate(FALSE);
     kp = kbs[ukb].kbufh;
-    while (kp != NULL)
-    {
-	fwrite((char *)kp->d_chunk, 1, (size_t)KbSize(ukb,kp), fw);
+    while (kp != NULL) {
+	fwrite((char *) kp->d_chunk, 1, (size_t) KbSize(ukb, kp), fw);
 	kp = kp->d_next;
     }
 #if SYS_UNIX && ! TEST_DOS_PIPES
-    (void)fflush(fw);
-    (void)fclose(fw);
-    ExitProgram (GOODEXIT);
+    (void) fflush(fw);
+    (void) fclose(fw);
+    ExitProgram(GOODEXIT);
     /* NOTREACHED */
 #else
 # if SYS_WINNT
@@ -624,12 +614,12 @@ write_kreg_to_pipe(void *writefp)
      * function so that all Win32 execution environments (threaded or
      * not) use the same code.
      */
-    (void)fflush(fw);
-    (void)fclose(fw);
-    if (! global_g_val(GMDW32PIPES))
-        npflush();
+    (void) fflush(fw);
+    (void) fclose(fw);
+    if (!global_g_val(GMDW32PIPES))
+	npflush();
 # else
-    npflush();  /* fake multi-processing */
+    npflush();			/* fake multi-processing */
 # endif
 #endif
 }
@@ -642,19 +632,19 @@ write_kreg_to_pipe(void *writefp)
 static void
 write_region_to_pipe(void *writefp)
 {
-    FILE *fw = (FILE *)writefp;
+    FILE *fw = (FILE *) writefp;
     LINEPTR last = setup_region();
     LINEPTR lp = DOT.l;
 
     while (lp != last) {
-	fwrite((char *)lp->l_text, sizeof(char), (size_t)llength(lp), fw);
+	fwrite((char *) lp->l_text, sizeof(char), (size_t) llength(lp), fw);
 	putc('\n', fw);
 	lp = lforw(lp);
     }
 #if SYS_UNIX && ! TEST_DOS_PIPES
-    (void)fflush(fw);
-    (void)fclose(fw);
-    ExitProgram (GOODEXIT);
+    (void) fflush(fw);
+    (void) fclose(fw);
+    ExitProgram(GOODEXIT);
     /* NOTREACHED */
 #else
 # if SYS_WINNT
@@ -664,12 +654,12 @@ write_region_to_pipe(void *writefp)
      * function so that all Win32 execution environments (threaded or
      * not) use the same code.
      */
-    (void)fflush(fw);
-    (void)fclose(fw);
-    if (! global_g_val(GMDW32PIPES))
-        npflush();
+    (void) fflush(fw);
+    (void) fclose(fw);
+    if (!global_g_val(GMDW32PIPES))
+	npflush();
 # else
-    npflush();  /* fake multi-processing */
+    npflush();			/* fake multi-processing */
 # endif
 #endif
 }
@@ -739,15 +729,15 @@ filterregion(void)
 {
 /* FIXME work on this for OS2, need inout_popen support, or named pipe? */
 #if SYS_UNIX || SYS_MSDOS || (SYS_OS2 && CC_CSETPP) || SYS_WINNT
-    static char oline[NLINE];   /* command line send to shell */
-    char    line[NLINE];    /* command line send to shell */
+    static char oline[NLINE];	/* command line send to shell */
+    char line[NLINE];		/* command line send to shell */
     FILE *fr, *fw;
     int s;
 
     /* get the filter name and its args */
-    if ((s=mlreply_no_bs("!", oline, NLINE)) != TRUE)
-	return(s);
-    (void)strcpy(line,oline);
+    if ((s = mlreply_no_bs("!", oline, NLINE)) != TRUE)
+	return (s);
+    (void) strcpy(line, oline);
     if ((s = inout_popen(&fr, &fw, line)) != TRUE) {
 	mlforce("[Couldn't open pipe or command]");
 	return s;
@@ -756,46 +746,39 @@ filterregion(void)
     if ((s = begin_kill()) != TRUE)
 	return s;
 
-    if (!softfork())
-    {
+    if (!softfork()) {
 #if !(SYS_WINNT && defined(GMDW32PIPES))
 	write_kreg_to_pipe(fw);
 #else
 	/* This is a Win32 environment with compiled Win32 pipe support. */
-	if (global_g_val(GMDW32PIPES))
-	{
+	if (global_g_val(GMDW32PIPES)) {
 	    /*
 	     * w32pipes mode enabled -- create child thread to blast
 	     * region to write pipe.
 	     */
-
-	    if (_beginthread(write_kreg_to_pipe, 0, fw) == (unsigned long) -1)
-	    {
+	    if (_beginthread(write_kreg_to_pipe, 0, fw) == (unsigned long) -1) {
 		mlforce("[Can't create Win32 write pipe]");
 		(void) fclose(fw);
 		(void) npclose(fr);
 		return (FALSE);
 	    }
-	}
-	else
-	{
+	} else {
 	    /*
 	     * Single-threaded parent process writes region to pseudo
 	     * write pipe (temp file).
 	     */
-
 	    write_kreg_to_pipe(fw);
 	}
 #endif
     }
 #if ! ((SYS_OS2 && CC_CSETPP) || SYS_WINNT)
-    (void)fclose(fw);
+    (void) fclose(fw);
 #endif
     DOT.l = lback(DOT.l);
-    s = ifile((char *)0,TRUE,fr);
+    s = ifile((char *) 0, TRUE, fr);
     npclose(fr);
-    (void)firstnonwhite(FALSE,1);
-    (void)setmark();
+    (void) firstnonwhite(FALSE, 1);
+    (void) setmark();
     end_kill();
     return s;
 #else
@@ -814,54 +797,47 @@ open_region_filter(void)
 {
 /* FIXME work on this for OS2, need inout_popen support, or named pipe? */
 #if SYS_UNIX || SYS_MSDOS || (SYS_OS2 && CC_CSETPP) || SYS_WINNT
-    static char oline[NLINE];   /* command line send to shell */
-    char    line[NLINE];    /* command line send to shell */
+    static char oline[NLINE];	/* command line send to shell */
+    char line[NLINE];		/* command line send to shell */
     FILE *fr, *fw;
     int s;
 
     /* get the filter name and its args */
-    if ((s=mlreply_no_bs("!", oline, NLINE)) != TRUE)
-	return(s);
-    (void)strcpy(line,oline);
+    if ((s = mlreply_no_bs("!", oline, NLINE)) != TRUE)
+	return (s);
+    (void) strcpy(line, oline);
     if ((s = inout_popen(&fr, &fw, line)) != TRUE) {
 	mlforce("[Couldn't open pipe or command]");
 	return s;
     }
 
-    if (!softfork())
-    {
+    if (!softfork()) {
 #if !(SYS_WINNT && defined(GMDW32PIPES))
 	write_region_to_pipe(fw);
 #else
 	/* This is a Win32 environment with compiled Win32 pipe support. */
-	if (global_g_val(GMDW32PIPES))
-	{
+	if (global_g_val(GMDW32PIPES)) {
 	    /*
 	     * w32pipes mode enabled -- create child thread to blast
 	     * region to write pipe.
 	     */
-
-	    if (_beginthread(write_region_to_pipe, 0, fw) == (unsigned long) -1)
-	    {
+	    if (_beginthread(write_region_to_pipe, 0, fw) == (unsigned long) -1) {
 		mlforce("[Can't create Win32 write pipe]");
 		(void) fclose(fw);
 		(void) npclose(fr);
 		return (FALSE);
 	    }
-	}
-	else
-	{
+	} else {
 	    /*
 	     * Single-threaded parent process writes region to pseudo
 	     * write pipe (temp file).
 	     */
-
 	    write_region_to_pipe(fw);
 	}
 #endif
     }
 #if ! ((SYS_OS2 && CC_CSETPP) || SYS_WINNT)
-    (void)fclose(fw);
+    (void) fclose(fw);
 #endif
     ffp = fr;
     count_fline = 0;
@@ -881,89 +857,88 @@ open_region_filter(void)
 int
 vile_filter(int f GCC_UNUSED, int n GCC_UNUSED)
 {
-#if !(SYS_UNIX||SYS_MSDOS || (SYS_OS2 && CC_CSETPP)) /* filterregion up above is better */
-	register int	s;	/* return status from CLI */
-	register BUFFER *bp;	/* pointer to buffer to zot */
-	static char oline[NLINE];	/* command line send to shell */
-	char	line[NLINE];	/* command line send to shell */
-	char tnam[NFILEN];	/* place to store real file name */
-	static char bname1[] = "fltinp";
+#if !(SYS_UNIX||SYS_MSDOS || (SYS_OS2 && CC_CSETPP))	/* filterregion up above is better */
+    register int s;		/* return status from CLI */
+    register BUFFER *bp;	/* pointer to buffer to zot */
+    static char oline[NLINE];	/* command line send to shell */
+    char line[NLINE];		/* command line send to shell */
+    char tnam[NFILEN];		/* place to store real file name */
+    static char bname1[] = "fltinp";
 #if	SYS_UNIX
-	char	*t;
+    char *t;
 #endif
 
-	static char filnam1[] = "fltinp";
-	static char filnam2[] = "fltout";
+    static char filnam1[] = "fltinp";
+    static char filnam2[] = "fltout";
 
 #if	SYS_VMS
-	mlforce("[Not available under VMS]");
-	return(FALSE);
+    mlforce("[Not available under VMS]");
+    return (FALSE);
 #endif
-	/* get the filter name and its args */
-	if ((s=mlreply("cmd: |", oline, NLINE)) != TRUE)
-		return(s);
-	(void)strcpy(line,oline);
+    /* get the filter name and its args */
+    if ((s = mlreply("cmd: |", oline, NLINE)) != TRUE)
+	return (s);
+    (void) strcpy(line, oline);
 
-	/* setup the proper file names */
-	bp = curbp;
-	(void)strcpy(tnam, bp->b_fname);/* save the original name */
-	ch_fname(bp, bname1);		/* set it to our new one */
+    /* setup the proper file names */
+    bp = curbp;
+    (void) strcpy(tnam, bp->b_fname);	/* save the original name */
+    ch_fname(bp, bname1);	/* set it to our new one */
 
-	/* write it out, checking for errors */
-	if (writeout(filnam1,curbp,TRUE,TRUE) != TRUE) {
-		mlforce("[Cannot write filter file]");
-		ch_fname(bp, tnam);
-		return(FALSE);
-	}
-
+    /* write it out, checking for errors */
+    if (writeout(filnam1, curbp, TRUE, TRUE) != TRUE) {
+	mlforce("[Cannot write filter file]");
+	ch_fname(bp, tnam);
+	return (FALSE);
+    }
 #if	SYS_MSDOS || SYS_OS2 || SYS_WINNT
-	(void)strcat(line," <fltinp >fltout");
-	bottomleft();
-	term.kclose();
-	system(line);
-	term.kopen();
-	sgarbf = TRUE;
-	s = TRUE;
+    (void) strcat(line, " <fltinp >fltout");
+    bottomleft();
+    term.kclose();
+    system(line);
+    term.kopen();
+    sgarbf = TRUE;
+    s = TRUE;
 #endif
 #if	SYS_UNIX
-	bottomleft();
-	ttclean(TRUE);
-	if ((t = strchr(line, '|')) != 0) {
-		char	temp[NLINE];
-		(void)strcpy(temp, t);
-		(void)strcat(strcpy(t, " <fltinp"), temp);
-	} else {
-		(void)strcat(line, " <fltinp");
-	}
-	(void)strcat(line," >fltout");
-	system(line);
-	ttunclean();
-	term.flush();
-	sgarbf = TRUE;
-	s = TRUE;
+    bottomleft();
+    ttclean(TRUE);
+    if ((t = strchr(line, '|')) != 0) {
+	char temp[NLINE];
+	(void) strcpy(temp, t);
+	(void) strcat(strcpy(t, " <fltinp"), temp);
+    } else {
+	(void) strcat(line, " <fltinp");
+    }
+    (void) strcat(line, " >fltout");
+    system(line);
+    ttunclean();
+    term.flush();
+    sgarbf = TRUE;
+    s = TRUE;
 #endif
 
-	/* on failure, escape gracefully */
-	if (s != TRUE || (readin(filnam2,FALSE,curbp,TRUE) == FALSE)) {
-		mlforce("[Execution failed]");
-		ch_fname(bp, tnam);
-		unlink(filnam1);
-		unlink(filnam2);
-		return(s);
-	}
-
-	ch_fname(bp, tnam); /* restore name */
-
-	b_set_changed(bp);	/* flag it as changed */
-	nounmodifiable(bp);	/* and it can never be "un-changed" */
-
-	/* and get rid of the temporary file */
+    /* on failure, escape gracefully */
+    if (s != TRUE || (readin(filnam2, FALSE, curbp, TRUE) == FALSE)) {
+	mlforce("[Execution failed]");
+	ch_fname(bp, tnam);
 	unlink(filnam1);
 	unlink(filnam2);
-	return AfterShell();
+	return (s);
+    }
+
+    ch_fname(bp, tnam);		/* restore name */
+
+    b_set_changed(bp);		/* flag it as changed */
+    nounmodifiable(bp);		/* and it can never be "un-changed" */
+
+    /* and get rid of the temporary file */
+    unlink(filnam1);
+    unlink(filnam2);
+    return AfterShell();
 #else
-	mlforce("[Buffer filtering not available -- use filter operator]");
-	return FALSE;
+    mlforce("[Buffer filtering not available -- use filter operator]");
+    return FALSE;
 #endif
 }
 
@@ -977,34 +952,34 @@ vile_filter(int f GCC_UNUSED, int n GCC_UNUSED)
 int
 vms_system(register char *cmd)
 {
-	struct  dsc$descriptor  cdsc;
-	struct  dsc$descriptor  *cdscp;
-	long	status;
-	long	substatus;
-	long	iosb[2];
+    struct dsc$descriptor cdsc;
+    struct dsc$descriptor *cdscp;
+    long status;
+    long substatus;
+    long iosb[2];
 
-	status = sys$qiow(EFN, iochan, IO$_SETMODE, iosb, 0, 0,
-			  oldmode, sizeof(oldmode), 0, 0, 0, 0);
-	if (status!=SS$_NORMAL || (iosb[0]&0xFFFF)!=SS$_NORMAL)
-		return (FALSE);
-	cdscp = NULL;				/* Assume DCL.		*/
-	if (cmd != NULL) {			/* Build descriptor.	*/
-		cdsc.dsc$a_pointer = cmd;
-		cdsc.dsc$w_length  = strlen(cmd);
-		cdsc.dsc$b_dtype   = DSC$K_DTYPE_T;
-		cdsc.dsc$b_class   = DSC$K_CLASS_S;
-		cdscp = &cdsc;
-	}
-	status = lib$spawn(cdscp, 0, 0, 0, 0, 0, &substatus, 0, 0, 0);
-	if (status != SS$_NORMAL)
-		substatus = status;
-	status = sys$qiow(EFN, iochan, IO$_SETMODE, iosb, 0, 0,
-			  newmode, sizeof(newmode), 0, 0, 0, 0);
-	if (status!=SS$_NORMAL || (iosb[0]&0xFFFF)!=SS$_NORMAL)
-		return (FALSE);
-	if ((substatus&STS$M_SUCCESS) == 0)	/* Command failed.	*/
-		return (FALSE);
-	return AfterShell();
+    status = sys$qiow(EFN, iochan, IO$_SETMODE, iosb, 0, 0,
+		      oldmode, sizeof(oldmode), 0, 0, 0, 0);
+    if (status != SS$_NORMAL || (iosb[0] & 0xFFFF) != SS$_NORMAL)
+	return (FALSE);
+    cdscp = NULL;		/* Assume DCL.          */
+    if (cmd != NULL) {		/* Build descriptor.    */
+	cdsc.dsc$a_pointer = cmd;
+	cdsc.dsc$w_length = strlen(cmd);
+	cdsc.dsc$b_dtype = DSC$K_DTYPE_T;
+	cdsc.dsc$b_class = DSC$K_CLASS_S;
+	cdscp = &cdsc;
+    }
+    status = lib$spawn(cdscp, 0, 0, 0, 0, 0, &substatus, 0, 0, 0);
+    if (status != SS$_NORMAL)
+	substatus = status;
+    status = sys$qiow(EFN, iochan, IO$_SETMODE, iosb, 0, 0,
+		      newmode, sizeof(newmode), 0, 0, 0, 0);
+    if (status != SS$_NORMAL || (iosb[0] & 0xFFFF) != SS$_NORMAL)
+	return (FALSE);
+    if ((substatus & STS$M_SUCCESS) == 0)	/* Command failed.      */
+	return (FALSE);
+    return AfterShell();
 }
 #endif
 
@@ -1012,23 +987,23 @@ vms_system(register char *cmd)
 int
 set_envvar(int f GCC_UNUSED, int n GCC_UNUSED)
 {
-	static TBUFF *var, *val;
-	char *both;
-	int rc;
+    static TBUFF *var, *val;
+    char *both;
+    int rc;
 
-	if ((rc = mlreply2("Environment variable: ", &var)) == ABORT)
-	    return (rc);
+    if ((rc = mlreply2("Environment variable: ", &var)) == ABORT)
+	return (rc);
 
-	if ((rc = mlreply2("Value: ", &val)) == ABORT)
-	    return (rc);
+    if ((rc = mlreply2("Value: ", &val)) == ABORT)
+	return (rc);
 
-	both = typeallocn(char, tb_length(var) + tb_length(val));
+    both = typeallocn(char, tb_length(var) + tb_length(val));
 
-	lsprintf(both, "%s=%s", tb_values(var), tb_values(val));
+    lsprintf(both, "%s=%s", tb_values(var), tb_values(val));
 
-	putenv(both);  /* this will leak.  i think it has to. */
+    putenv(both);		/* this will leak.  i think it has to. */
 
-	return TRUE;
+    return TRUE;
 }
 #endif
 
@@ -1072,73 +1047,61 @@ set_envvar(int f GCC_UNUSED, int n GCC_UNUSED)
  *   Boolean, T -> all is well
  */
 int
-parse_findcfg_mode(FINDCFG *pcfg, char *inputstr)
+parse_findcfg_mode(FINDCFG * pcfg, char *inputstr)
 {
     char *cp;
-    int  i, rc = TRUE;
+    int i, rc = TRUE;
 
     memset(pcfg, 0, sizeof(*pcfg));
-    pcfg->disabled = TRUE;             /* an assumption */
-    cp             = mktrimmed(inputstr);
+    pcfg->disabled = TRUE;	/* an assumption */
+    cp = mktrimmed(inputstr);
     if (*cp == EOS)
-        return (rc);
+	return (rc);
 
     /* handle first 2 tokens */
-    for (i = 0; i < 2 && *cp; i++)
-    {
-        if (*cp != ',')
-        {
-            if (isAlpha(*cp))
-            {
-                mlforce("[alphanumeric tokens not allowed]");
-                return (FALSE);
-            }
-            if (*cp == '\\' && cp[1] == ',')
-                cp++;                     /* skip escape char */
-            if (i == 0)
-                pcfg->recur_token = *cp++;
-            else
-                pcfg->nonrecur_token = *cp++;
-            cp = skip_blanks(cp);
-            if (*cp)
-            {
-                if (*cp != ',')
-                {
-                    mlforce("[invalid find-cfg syntax]");
-                    return (FALSE);
-                }
-            }
-            else
-            {
-                pcfg->disabled = (! rc);
-                return (rc);  /* end of string, all done */
-            }
-        }
-        cp++;     /* skip token delimiter */
-        cp = skip_blanks(cp);
-        if (*cp == EOS)
-        {
-            mlforce("[invalid find-cfg syntax]");
-            return (FALSE);
-        }
+    for (i = 0; i < 2 && *cp; i++) {
+	if (*cp != ',') {
+	    if (isAlpha(*cp)) {
+		mlforce("[alphanumeric tokens not allowed]");
+		return (FALSE);
+	    }
+	    if (*cp == '\\' && cp[1] == ',')
+		cp++;		/* skip escape char */
+	    if (i == 0)
+		pcfg->recur_token = *cp++;
+	    else
+		pcfg->nonrecur_token = *cp++;
+	    cp = skip_blanks(cp);
+	    if (*cp) {
+		if (*cp != ',') {
+		    mlforce("[invalid find-cfg syntax]");
+		    return (FALSE);
+		}
+	    } else {
+		pcfg->disabled = (!rc);
+		return (rc);	/* end of string, all done */
+	    }
+	}
+	cp++;			/* skip token delimiter */
+	cp = skip_blanks(cp);
+	if (*cp == EOS) {
+	    mlforce("[invalid find-cfg syntax]");
+	    return (FALSE);
+	}
     }
 
     /* worry about option */
-    if (*cp)
-    {
-        if (*cp == 'd' && cp[1] == EOS)
-            pcfg->dirs_only = TRUE;
-        else
-        {
-            mlforce("[invalid find-cfg syntax]");
-            rc = FALSE;
-        }
+    if (*cp) {
+	if (*cp == 'd' && cp[1] == EOS)
+	    pcfg->dirs_only = TRUE;
+	else {
+	    mlforce("[invalid find-cfg syntax]");
+	    rc = FALSE;
+	}
     }
-    pcfg->disabled = (! rc);
+    pcfg->disabled = (!rc);
     return (rc);
 }
-
-
 
 /*
  * Cruise through the user's shell command, stripping out unquoted tokens
@@ -1148,91 +1111,75 @@ parse_findcfg_mode(FINDCFG *pcfg, char *inputstr)
 static char *
 extract_wildcards(char *cmd, char ***vec, size_t *vecidx, const char *fnname)
 {
-    char   **base, *cp, *anchor, buf[NFILEN * 2];
-    int    delim;
+    char **base, *cp, *anchor, buf[NFILEN * 2];
+    int delim;
     size_t idx, len;
 
-    idx  = 0;
-    len  = 32;
-    cp   = cmd;
-    base = castalloc(char*, len * sizeof(char *));
-    if (base == NULL)
-    {
-        (void) no_memory(fnname);
-        return (NULL);
+    idx = 0;
+    len = 32;
+    cp = cmd;
+    base = castalloc(char *, len * sizeof(char *));
+    if (base == NULL) {
+	(void) no_memory(fnname);
+	return (NULL);
     }
-    while (*cp)
-    {
-        cp = anchor = skip_blanks(cp);
-        if (*cp == '\'' || *cp == '"')
-        {
-            delim = *cp++;
-            while(*cp)
-            {
-                if (*cp == '\\' && cp[1] == delim)
-                    cp += 2;
-                else if (*cp == delim)
-                {
-                    cp++;
-                    break;
-                }
-                else
-                    cp++;
-            }
-        }
-        else
-        {
-            cp++;
-            while (*cp && (! isSpace(*cp)))
-                cp++;
-            len = cp - anchor;
-            strncpy(buf, anchor, len);
-            buf[len] = EOS;
-            if (string_has_wildcards(buf))
-            {
-                memset(anchor, ' ', len);  /* blank out wildcard in cmd */
-                if (idx >= len)
-                {
-                    len *= 2;
-                    base = castrealloc(char*, base, sizeof(*base));
-                    if (base == NULL)
-                    {
-                        (void) no_memory(fnname);
-                        return (NULL);
-                    }
-                }
-                base[idx] = castalloc(char, len + 1);
-                if (base[idx] == NULL)
-                {
-                    (void) no_memory(fnname);
-                    return (NULL);
-                }
-                strcpy(base[idx++], buf);
-            }
-        }
+    while (*cp) {
+	cp = anchor = skip_blanks(cp);
+	if (*cp == '\'' || *cp == '"') {
+	    delim = *cp++;
+	    while (*cp) {
+		if (*cp == '\\' && cp[1] == delim)
+		    cp += 2;
+		else if (*cp == delim) {
+		    cp++;
+		    break;
+		} else
+		    cp++;
+	    }
+	} else {
+	    cp++;
+	    while (*cp && (!isSpace(*cp)))
+		cp++;
+	    len = cp - anchor;
+	    strncpy(buf, anchor, len);
+	    buf[len] = EOS;
+	    if (string_has_wildcards(buf)) {
+		memset(anchor, ' ', len);	/* blank out wildcard in cmd */
+		if (idx >= len) {
+		    len *= 2;
+		    base = castrealloc(char *, base, sizeof(*base));
+		    if (base == NULL) {
+			(void) no_memory(fnname);
+			return (NULL);
+		    }
+		}
+		base[idx] = castalloc(char, len + 1);
+		if (base[idx] == NULL) {
+		    (void) no_memory(fnname);
+		    return (NULL);
+		}
+		strcpy(base[idx++], buf);
+	    }
+	}
     }
 
     /* all done */
-    *vec    = base;
+    *vec = base;
     *vecidx = idx;
     return (cmd);
 }
 
-
-
 static void
 free_vector(char ***vec, size_t vec_elements)
 {
-    char  **base;
+    char **base;
     ULONG i;
 
     base = *vec;
     for (i = 0; i < vec_elements; i++, base++)
-        (void) free(*base);
+	(void) free(*base);
     (void) free(*vec);
 }
-
-
 
 static char *
 determine_quoted_delimiter(void)
@@ -1243,34 +1190,31 @@ determine_quoted_delimiter(void)
     qdelim = "'";
 #else
     {
-        char *cp, buf[NFILEN];
-        int unix_shell, shell_len;
+	char *cp, buf[NFILEN];
+	int unix_shell, shell_len;
 
-        strcpy(buf, get_shell());
-        cp = strrchr(buf, '.');
-        if (cp)
-            *cp = EOS;   /* trim file suffix */
-        shell_len  = strlen(buf);
-        unix_shell = (shell_len >= 2 &&
-                      tolower(buf[shell_len - 2]) == 's' &&
-                      tolower(buf[shell_len - 1]) == 'h');
-        if (unix_shell)
-            qdelim = "'";
-        else
-        {
-            /*
-             * Assume a DOS-based shell, which generally honors double
-             * quotes as argument delimiters (not single quotes).
-             */
+	strcpy(buf, get_shell());
+	cp = strrchr(buf, '.');
+	if (cp)
+	    *cp = EOS;		/* trim file suffix */
+	shell_len = strlen(buf);
+	unix_shell = (shell_len >= 2 &&
+		      tolower(buf[shell_len - 2]) == 's' &&
+		      tolower(buf[shell_len - 1]) == 'h');
+	if (unix_shell)
+	    qdelim = "'";
+	else {
+	    /*
+	     * Assume a DOS-based shell, which generally honors double
+	     * quotes as argument delimiters (not single quotes).
+	     */
 
-            qdelim = "\"";
-        }
+	    qdelim = "\"";
+	}
     }
 #endif
     return (qdelim);
 }
-
-
 
 char *
 last_findcmd(void)
@@ -1278,44 +1222,38 @@ last_findcmd(void)
     return (prev_findcmd);
 }
 
-
-
 /*
  * Add a string to the end of a cmd string, lengthening same if necessary.
  * Does not terminate cmd string.
  */
 static int
-add_token_to_cmd(char       **cmd,
-                 size_t     *cmdidx,
-                 size_t     *cmdlen,
-                 char       *token,
-                 const char *funcname)
+add_token_to_cmd(char **cmd,
+		 size_t *cmdidx,
+		 size_t *cmdlen,
+		 char *token,
+		 const char *funcname)
 {
-    int    rc     = TRUE;
+    int rc = TRUE;
     size_t toklen = strlen(token);
 
-    if (*cmdidx + toklen + 2 > *cmdlen)
-    {
-        char *tmp = *cmd;
+    if (*cmdidx + toklen + 2 > *cmdlen) {
+	char *tmp = *cmd;
 
-        *cmdlen *= 2;
-        tmp      = castrealloc(char, tmp, *cmdlen);
-        if (tmp == NULL)
-        {
-            (void) free(*cmd);
-            rc = no_memory(funcname);
-            return (rc);
-        }
-        *cmd = tmp;
+	*cmdlen *= 2;
+	tmp = castrealloc(char, tmp, *cmdlen);
+	if (tmp == NULL) {
+	    (void) free(*cmd);
+	    rc = no_memory(funcname);
+	    return (rc);
+	}
+	*cmd = tmp;
     }
     strcpy(*cmd + *cmdidx, token);
-    *cmdidx        += toklen;
+    *cmdidx += toklen;
     (*cmd)[*cmdidx] = ' ';
     (*cmdidx)++;
     return (rc);
 }
-
-
 
 /*
  * FUNCTION
@@ -1352,73 +1290,63 @@ add_token_to_cmd(char       **cmd,
 static char *
 ck_find_cmd(char *cmd, int *allocd_storage, int prepend_bang)
 {
-    char     *cp, *cmdcopy;
+    char *cp, *cmdcopy;
     FINDINFO info;
 
     *allocd_storage = FALSE;
-    if (! parse_findcfg_mode(&info.cfg, global_g_val_ptr(GVAL_FINDCFG)))
-    {
-        return (NULL);   /* bogus find-cfg value noted */
+    if (!parse_findcfg_mode(&info.cfg, global_g_val_ptr(GVAL_FINDCFG))) {
+	return (NULL);		/* bogus find-cfg value noted */
     }
     if (info.cfg.disabled)
-        return (cmd);    /* find-cfg mode disabled */
+	return (cmd);		/* find-cfg mode disabled */
 
     /*
      * don't munge vile's copy of the user's command line -- scrogs the
      * [Output] buffer name.
      */
-    if ((cmdcopy = strmalloc(cmd)) == NULL)
-    {
-        (void) no_memory("ck_find_cmd");
-        return (NULL);
+    if ((cmdcopy = strmalloc(cmd)) == NULL) {
+	(void) no_memory("ck_find_cmd");
+	return (NULL);
     }
     cp = skip_blanks(cmdcopy);
     if (*cp == SHPIPE_LEFT[0])
-        cp++;
+	cp++;
     cp = skip_blanks(cp);
-    if (*cp)
-    {
-        info.nonrecursive = (*cp == info.cfg.nonrecur_token);
+    if (*cp) {
+	info.nonrecursive = (*cp == info.cfg.nonrecur_token);
 
-        /* if specifying recursive or nonrecursive find syntax ... */
-        if (info.nonrecursive || *cp == info.cfg.recur_token)
-        {
-            /*
-             * user wants [non]recursive find syntax added to shell
-             * command.
-             */
+	/* if specifying recursive or nonrecursive find syntax ... */
+	if (info.nonrecursive || *cp == info.cfg.recur_token) {
+	    /*
+	     * user wants [non]recursive find syntax added to shell
+	     * command.
+	     */
 
-            info.dir_list = get_findpath();
-            if (info.dir_list[0] == EOS)
-                info.dir_list = ".";
-            if (info.cfg.dirs_only)
-                cmd = find_dirs_only(cp + 1, &info, prepend_bang);
-            else
-                cmd = find_all_files(cp + 1, &info, prepend_bang);
-            if (cmd)
-            {
-                /* keep a record of the cmd that's about to be spawned */
+	    info.dir_list = get_findpath();
+	    if (info.dir_list[0] == EOS)
+		info.dir_list = ".";
+	    if (info.cfg.dirs_only)
+		cmd = find_dirs_only(cp + 1, &info, prepend_bang);
+	    else
+		cmd = find_all_files(cp + 1, &info, prepend_bang);
+	    if (cmd) {
+		/* keep a record of the cmd that's about to be spawned */
 
-                if (prev_findcmd)
-                    (void) free(prev_findcmd);
-                if ((prev_findcmd = strmalloc(cmd)) == NULL)
-                {
-                    (void) free(cmd);
-                    cmd = NULL;
-                    no_memory("ck_find_cmd");
-                }
-                else
-                {
-                    *allocd_storage = TRUE;
-                }
-            }
-        }
+		if (prev_findcmd)
+		    (void) free(prev_findcmd);
+		if ((prev_findcmd = strmalloc(cmd)) == NULL) {
+		    (void) free(cmd);
+		    cmd = NULL;
+		    no_memory("ck_find_cmd");
+		} else {
+		    *allocd_storage = TRUE;
+		}
+	    }
+	}
     }
     (void) free(cmdcopy);
     return (cmd);
 }
-
-
 
 /*
  * FUNCTION
@@ -1453,51 +1381,45 @@ ck_find_cmd(char *cmd, int *allocd_storage, int prepend_bang)
  *   NULL (failure).
  */
 static char *
-find_dirs_only(char *cmd, FINDINFO *pinfo, int prepend_bang)
+find_dirs_only(char *cmd, FINDINFO * pinfo, int prepend_bang)
 {
-    size_t      i, outidx, outlen;
-    const char  *path, *fnname;
-    char        *rslt, *qdelim, buf[512];
+    size_t i, outidx, outlen;
+    const char *path, *fnname;
+    char *rslt, *qdelim, buf[512];
 
     fnname = "find_dirs_only";
     outlen = 512;
     outidx = 0;
-    rslt   = castalloc(char, outlen);
-    if (! rslt)
-    {
-        (void) no_memory(fnname);
-        return (NULL);
+    rslt = castalloc(char, outlen);
+    if (!rslt) {
+	(void) no_memory(fnname);
+	return (NULL);
     }
-    if (prepend_bang)
-    {
-        *rslt   = SHPIPE_LEFT[0];
-        rslt[1] = EOS;
-        outidx  = 1;
-    }
-    else
-        *rslt = '\0';
+    if (prepend_bang) {
+	*rslt = SHPIPE_LEFT[0];
+	rslt[1] = EOS;
+	outidx = 1;
+    } else
+	*rslt = '\0';
     strcat(rslt, "find ");
     outidx += sizeof("find ") - 1;
-    path    = pinfo->dir_list;
+    path = pinfo->dir_list;
 
     /* add directory list to find command */
-    while ((path = parse_pathlist(path, buf)) != NULL)
-    {
-        if (! add_token_to_cmd(&rslt, &outidx, &outlen, buf, fnname))
-            return (NULL);
+    while ((path = parse_pathlist(path, buf)) != NULL) {
+	if (!add_token_to_cmd(&rslt, &outidx, &outlen, buf, fnname))
+	    return (NULL);
     }
 
     /* worry about nonrecursive find */
-    if (pinfo->nonrecursive)
-    {
-        if (! add_token_to_cmd(&rslt, &outidx, &outlen, "-maxdepth 1", fnname))
-            return (NULL);
+    if (pinfo->nonrecursive) {
+	if (!add_token_to_cmd(&rslt, &outidx, &outlen, "-maxdepth 1", fnname))
+	    return (NULL);
     }
 
-
     /* terminate find string with "-type d -print" */
-    if (! add_token_to_cmd(&rslt, &outidx, &outlen, "-type d -print", fnname))
-        return (NULL);
+    if (!add_token_to_cmd(&rslt, &outidx, &outlen, "-type d -print", fnname))
+	return (NULL);
 
     qdelim = determine_quoted_delimiter();
 
@@ -1512,48 +1434,42 @@ find_dirs_only(char *cmd, FINDINFO *pinfo, int prepend_bang)
      * ========================== FIXME ==================================
      */
     sprintf(buf,
-            "| egrep -v%s %s(RCS|CVS)/%s",
+	    "| egrep -v%s %s(RCS|CVS)/%s",
 #if SYS_UNIX
-            "",
+	    "",
 #else
-            "i",
+	    "i",
 #endif
-            qdelim,
-            qdelim);
-    if (! add_token_to_cmd(&rslt, &outidx, &outlen, buf, fnname))
-        return (NULL);
+	    qdelim,
+	    qdelim);
+    if (!add_token_to_cmd(&rslt, &outidx, &outlen, buf, fnname))
+	return (NULL);
 
     /* finish off with xargs */
-    if (! add_token_to_cmd(&rslt, &outidx, &outlen, "| xargs", fnname))
-        return (NULL);
-    if (! add_token_to_cmd(&rslt, &outidx, &outlen, cmd, fnname))
-        rslt = NULL;
-    else
-    {
-        rslt[outidx] = EOS;  /* terminate cmd string */
-        if (outidx != 0)
-        {
-            char *cp;
+    if (!add_token_to_cmd(&rslt, &outidx, &outlen, "| xargs", fnname))
+	return (NULL);
+    if (!add_token_to_cmd(&rslt, &outidx, &outlen, cmd, fnname))
+	rslt = NULL;
+    else {
+	rslt[outidx] = EOS;	/* terminate cmd string */
+	if (outidx != 0) {
+	    char *cp;
 
-            i  = --outidx;
-            cp = rslt + outidx;
-            while (isSpace(*cp) && i != 0)
-            {
-                cp--;
-                i--;
-            }
-            if (cp != rslt + outidx)
-            {
-                /* white space found at end of string, trim it. */
+	    i = --outidx;
+	    cp = rslt + outidx;
+	    while (isSpace(*cp) && i != 0) {
+		cp--;
+		i--;
+	    }
+	    if (cp != rslt + outidx) {
+		/* white space found at end of string, trim it. */
 
-                cp[1] = EOS;
-            }
-        }
+		cp[1] = EOS;
+	    }
+	}
     }
     return (rslt);
 }
-
-
 
 /*
  * FUNCTION
@@ -1597,120 +1513,105 @@ find_dirs_only(char *cmd, FINDINFO *pinfo, int prepend_bang)
  *   NULL (failure).
  */
 static char *
-find_all_files(char *cmd, FINDINFO *pinfo, int prepend_bang)
+find_all_files(char *cmd, FINDINFO * pinfo, int prepend_bang)
 {
-    size_t      i, outidx, outlen, vecidx;
-    const char  *path, *fnname;
-    char        *xargstr, **vec, *rslt, *qdelim, buf[512];
+    size_t i, outidx, outlen, vecidx;
+    const char *path, *fnname;
+    char *xargstr, **vec, *rslt, *qdelim, buf[512];
 
     fnname = "find_all_files";
     if ((xargstr = extract_wildcards(cmd, &vec, &vecidx, fnname)) == NULL)
-        return (NULL);
-    if (vecidx == 0)
-    {
-        /* No wild cards were found on the command line.  No sense 
-         * continuing.  Why?  With no wild cards, the find command 
-         * will search for all files by default, this may or may not
-         * be what the user wants.  It's certainly not what the user
-         * wants if s/he types this by mistake:
-         *
-         *    !<token>egrep -n FIXME 8.c
-         *
-         * which is an obvious slip of the fingers on the keyboard.
-         * If the user really wants to examine all files, s/he can type:
-         *
-         *    !<token>egrep -n FIXME *
-         */
+	return (NULL);
+    if (vecidx == 0) {
+	/* No wild cards were found on the command line.  No sense 
+	 * continuing.  Why?  With no wild cards, the find command 
+	 * will search for all files by default, this may or may not
+	 * be what the user wants.  It's certainly not what the user
+	 * wants if s/he types this by mistake:
+	 *
+	 *    !<token>egrep -n FIXME 8.c
+	 *
+	 * which is an obvious slip of the fingers on the keyboard.
+	 * If the user really wants to examine all files, s/he can type:
+	 *
+	 *    !<token>egrep -n FIXME *
+	 */
 
-        free_vector(&vec, vecidx);
-        mlforce(
-"[unless \"d\" option is set, shell command must include at least one wildcard]"
-               );
-        return (NULL);
+	free_vector(&vec, vecidx);
+	mlforce("[unless \"d\" option is set, shell command must include at least one wildcard]");
+	return (NULL);
     }
     outlen = 512;
     outidx = 0;
-    rslt   = castalloc(char, outlen);
-    if (! rslt)
-    {
-        free_vector(&vec, vecidx);
-        (void) no_memory(fnname);
-        return (NULL);
+    rslt = castalloc(char, outlen);
+    if (!rslt) {
+	free_vector(&vec, vecidx);
+	(void) no_memory(fnname);
+	return (NULL);
     }
-    if (prepend_bang)
-    {
-        *rslt   = SHPIPE_LEFT[0];
-        rslt[1] = EOS;
-        outidx  = 1;
-    }
-    else
-        *rslt = '\0';
+    if (prepend_bang) {
+	*rslt = SHPIPE_LEFT[0];
+	rslt[1] = EOS;
+	outidx = 1;
+    } else
+	*rslt = '\0';
     strcat(rslt, "find ");
     outidx += sizeof("find ") - 1;
-    path    = pinfo->dir_list;
+    path = pinfo->dir_list;
 
     /* add directory list to find command */
-    while ((path = parse_pathlist(path, buf)) != NULL)
-    {
-        if (! add_token_to_cmd(&rslt, &outidx, &outlen, buf, fnname))
-        {
-            free_vector(&vec, vecidx);
-            return (NULL);
-        }
+    while ((path = parse_pathlist(path, buf)) != NULL) {
+	if (!add_token_to_cmd(&rslt, &outidx, &outlen, buf, fnname)) {
+	    free_vector(&vec, vecidx);
+	    return (NULL);
+	}
     }
 
     /* worry about nonrecursive find */
-    if (pinfo->nonrecursive)
-    {
-        if (! add_token_to_cmd(&rslt, &outidx, &outlen, "-maxdepth 1", fnname))
-        {
-            free_vector(&vec, vecidx);
-            return (NULL);
-        }
+    if (pinfo->nonrecursive) {
+	if (!add_token_to_cmd(&rslt, &outidx, &outlen, "-maxdepth 1", fnname)) {
+	    free_vector(&vec, vecidx);
+	    return (NULL);
+	}
     }
 
-    if (vecidx > 1)
-    {
-        if (! add_token_to_cmd(&rslt, &outidx, &outlen, "'('", fnname))
-        {
-            free_vector(&vec, vecidx);
-            return (NULL);
-        }
+    if (vecidx > 1) {
+	if (!add_token_to_cmd(&rslt, &outidx, &outlen, "'('", fnname)) {
+	    free_vector(&vec, vecidx);
+	    return (NULL);
+	}
     }
 
     qdelim = determine_quoted_delimiter();
 
     /* add wildcards (if any) to find command */
-    for (i = 0; i < vecidx; i++)
-    {
-        sprintf(buf,
-                "%s-%sname %s%s%s",
-                (i != 0) ? "-o " : "",
+    for (i = 0; i < vecidx; i++) {
+	sprintf(buf,
+		"%s-%sname %s%s%s",
+		(i != 0) ? "-o " : "",
 #if SYS_UNIX
-                "",
+		"",
 #else
-                "i",     /* find uses case insensitive filename search */
+		"i",		/* find uses case insensitive filename search */
 #endif
-                qdelim,
-                vec[i],
-                qdelim);
-        if (! add_token_to_cmd(&rslt, &outidx, &outlen, buf, fnname))
-        {
-            free_vector(&vec, vecidx);
-            return (NULL);
-        }
+		qdelim,
+		vec[i],
+		qdelim);
+	if (!add_token_to_cmd(&rslt, &outidx, &outlen, buf, fnname)) {
+	    free_vector(&vec, vecidx);
+	    return (NULL);
+	}
     }
-    free_vector(&vec, vecidx);   /* don't need this anymore */
+    free_vector(&vec, vecidx);	/* don't need this anymore */
 
-    if (vecidx > 1)
-    {
-        if (! add_token_to_cmd(&rslt, &outidx, &outlen, "')'", fnname))
-            return (NULL);
+    if (vecidx > 1) {
+	if (!add_token_to_cmd(&rslt, &outidx, &outlen, "')'", fnname))
+	    return (NULL);
     }
 
     /* terminate find string with "-print" (not needed for GNU find) */
-    if (! add_token_to_cmd(&rslt, &outidx, &outlen, "-print", fnname))
-        return (NULL);
+    if (!add_token_to_cmd(&rslt, &outidx, &outlen, "-print", fnname))
+	return (NULL);
 
     /*
      * filter out RCS/CVS directories and tags files.  we make the 
@@ -1723,50 +1624,46 @@ find_all_files(char *cmd, FINDINFO *pinfo, int prepend_bang)
      * ========================== FIXME ==================================
      */
     sprintf(buf,
-            "| egrep -v%s %s((RCS|CVS)/|/%s$)%s",
+	    "| egrep -v%s %s((RCS|CVS)/|/%s$)%s",
 #if SYS_UNIX
-            "",
+	    "",
 #else
-            "i",
+	    "i",
 #endif
-            qdelim,
+	    qdelim,
 #if SYS_UNIX
-            "[Tt][Aa][Gg][Ss]",
+	    "[Tt][Aa][Gg][Ss]",
 #else
-            "tags",
+	    "tags",
 #endif
-            qdelim);
-    if (! add_token_to_cmd(&rslt, &outidx, &outlen, buf, fnname))
-        return (NULL);
+	    qdelim);
+    if (!add_token_to_cmd(&rslt, &outidx, &outlen, buf, fnname))
+	return (NULL);
 
     /* finish off with xargs */
-    if (! add_token_to_cmd(&rslt, &outidx, &outlen, "| xargs", fnname))
-        return (NULL);
-    if (! add_token_to_cmd(&rslt, &outidx, &outlen, xargstr, fnname))
-        rslt = NULL;
-    else
-    {
-        rslt[outidx] = EOS;  /* terminate cmd string */
-        if (outidx != 0)
-        {
-            char *cp;
+    if (!add_token_to_cmd(&rslt, &outidx, &outlen, "| xargs", fnname))
+	return (NULL);
+    if (!add_token_to_cmd(&rslt, &outidx, &outlen, xargstr, fnname))
+	rslt = NULL;
+    else {
+	rslt[outidx] = EOS;	/* terminate cmd string */
+	if (outidx != 0) {
+	    char *cp;
 
-            i  = --outidx;
-            cp = rslt + outidx;
-            while (isSpace(*cp) && i != 0)
-            {
-                cp--;
-                i--;
-            }
-            if (cp != rslt + outidx)
-            {
-                /* white space found at end of string, trim it. */
+	    i = --outidx;
+	    cp = rslt + outidx;
+	    while (isSpace(*cp) && i != 0) {
+		cp--;
+		i--;
+	    }
+	    if (cp != rslt + outidx) {
+		/* white space found at end of string, trim it. */
 
-                cp[1] = EOS;
-            }
-        }
+		cp[1] = EOS;
+	    }
+	}
     }
     return (rslt);
 }
 
-#endif   /* OPT_FINDPATH */
+#endif /* OPT_FINDPATH */

@@ -2,7 +2,7 @@
  * The routines in this file read and write ASCII files from the disk. All of
  * the knowledge about files are here.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/fileio.c,v 1.164 2002/02/18 01:29:52 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/fileio.c,v 1.165 2002/05/02 19:59:48 tom Exp $
  *
  */
 
@@ -333,6 +333,7 @@ ffropen(char *fn)
     } else {
 	ffstatus = file_is_external;
     }
+    TPRINTF(("** opened %s for read\n", fn));
     return (FIOSUC);
 }
 
@@ -419,6 +420,7 @@ ffwopen(char *fn, int forced)
 #endif
     ffstatus = file_is_external;
 #endif
+    TPRINTF(("** opened %s for write\n", fn));
     return (FIOSUC);
 }
 

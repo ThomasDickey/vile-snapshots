@@ -1,4 +1,4 @@
-# $Header: /users/source/archives/vile.vcs/perl/RCS/mime.pl,v 1.3 2000/01/09 22:53:07 bod Exp $
+# $Header: /users/source/archives/vile.vcs/perl/RCS/mime.pl,v 1.4 2002/05/03 10:18:24 tom Exp $
 # (see dir.doc)
 require 'plugins.pl';
 
@@ -151,15 +151,15 @@ The  "readmt"  function  reads the mime.types files provided
 as  a  list  with  the  arguments,  parses the files in that
 order  and  puts  the results in the two global hashes keyed
 on  the  extension. The "type" hash contains which mime type
-does   that   extenstion  belong  to  and  the  "desc"  hash
+does   that   extension   belong  to  and  the  "desc"  hash
 contains   the  description  of  the  file  type  with  that
-extenstion.
+extension.
 
 Both  the  above  functions  also  keep  a timestamp of last
 time   each   file  was  read  and  re-reads  that  file  on
 re-invocation,  only  if  it  has  changed  since last read.
 This  may  not  be required, but I left this in anyway since
-it  might  come in handly in certain situations since "mime"
+it  might come  in  handy in certain situations since "mime"
 function  calls  the above routines with every invocation.
 
 Finally,  the  "mime"  function  takes  path to a file as an
@@ -182,16 +182,19 @@ plugin  with  the complete path to the file as the argument.
 The function should belong to the plugins package.
 
 A   sample   plugin   script   for  .gz  files  is  provided
-alongwith.  Sample   ~/.vile/mailcap  and ~/.vile/mime.types
-files  are  also  provided  alongwith.
+along with this.  Sample
+	~/.vile/mailcap
+and
+	~/.vile/mime.types
+files  are  also  provided  along with this script.
 
-=head1  CAEVATS
+=head1  CAVEATS
 
 The  mime  parsing  is  not  fully  (or even partially?) RFC
 compliant.  I  have  written  this  library  by simply going
 through  all  the mailcap and mime.types files I found on my
 system.  It  works  most satisfactorily for me and it should
-for  anyone  else, but I cannot gurauntee anything.
+for  anyone  else, but I cannot guarantee anything.
 
 The  library  recognizes  wildcards  in  mime  types to some
 extent.   Which   means  if  it  cannot  find  a  plugin  or

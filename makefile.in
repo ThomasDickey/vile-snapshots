@@ -20,7 +20,7 @@
 #
 # gnu autoconf support by kevin buettner, 5/94
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.178 2002/01/20 18:19:14 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.179 2002/05/07 00:41:03 tom Exp $
 #
 
 #### Start of system configuration section. ####
@@ -475,29 +475,6 @@ tarball:	$(DISTFILES) /tmp/vilevers release_warnings
 	gtar -czf `cat .fname`.tar.gz `cat .fname`
 	@echo Created `cat .fname`.tar.gz
 	rm -rf `cat .fname` .fname
-
-#	 this builds vileN.Nshar, for general release
-bigsharball: $(DISTFILES) /tmp/vilevers release_warnings
-	vilevers=`cat /tmp/vilevers`; \
-	shar -spgf@foxharp.boston.ma.us -nvile$${vilevers} \
-	    -o vile$${vilevers}shar README `ls $(DISTFILES) | \
-	    sed '/^README$$/d'` ; \
-	mv vile$${vilevers}shar.01 vile$${vilevers}shar	; \
-	echo Created vile$${vilevers}shar
-
-
-# shar args: add -a for archive headers, add -s pgf@site.net for "submitted-by"
-multisharball: $(DISTFILES) /tmp/vilevers
-	[ -d shardir ] || mkdir shardir
-	vilevers=`cat /tmp/vilevers`; \
-	shar -x -a -spgf@foxharp.boston.ma.us -nvile$${vilevers} -L60 \
-			-o shardir/vileshar `ls $(DISTFILES)`
-
-multicsharball: $(DISTFILES) /tmp/vilevers
-	[ -d cshardir ] || mkdir cshardir
-	vilevers=`cat /tmp/vilevers`; \
-	shar -p -nvile$${vilevers} -L60 -o cshardir/vileshar \
-		-C `ls $(DISTFILES)`
 
 zipfile: $(DISTFILES) /tmp/vilevers
 	vilevers=`cat /tmp/vilevers | sed 's/\.//'`; \

@@ -2,7 +2,7 @@
  * Generate fragments of filters/makefile (for platforms without useful
  * shell scripting tools)
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/genmake.c,v 1.3 2000/08/20 19:13:04 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/genmake.c,v 1.4 2002/05/01 19:43:39 tom Exp $
  *
  */
 #include <stdlib.h>
@@ -171,7 +171,7 @@ main(int argc, char *argv[])
 			if (redir != 0)
 			    fclose(fp);
 			fprintf(stderr, "%% %s\n", output);
-			system(output);	/* won't work on VMS */
+			system(output);		/* won't work on VMS */
 			fflush(stdout);
 			if (redir != 0)
 			    fp = fopen(redir, "a");

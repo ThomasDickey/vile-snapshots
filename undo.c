@@ -3,7 +3,7 @@
  *
  * written for vile: Copyright (c) 1990, 1995-2001 by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/undo.c,v 1.82 2002/01/09 00:28:09 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/undo.c,v 1.83 2002/04/30 11:56:38 tom Exp $
  *
  */
 
@@ -834,10 +834,10 @@ lineundo(int f GCC_UNUSED, int n GCC_UNUSED)
 	if (wp->w_lastdot.l == lp)
 	    wp->w_lastdot.o = b_left_margin(curbp);
     }
-    do_mark_iterate(mp,
-		    if (mp->l == lp)
-		    mp->o = b_left_margin(curbp);
-    );
+    do_mark_iterate(mp, {
+	if (mp->l == lp)
+	    mp->o = b_left_margin(curbp);
+    });
 #if OPT_LINE_ATTRS
     FreeAndNull(lp->l_attrs);
 #endif
@@ -884,12 +884,12 @@ repointstuff(register LINEPTR nlp, register LINEPTR olp)
 	    wp->w_lastdot.o = _min(wp->w_lastdot.o, llength(point));
 	}
     }
-    do_mark_iterate(mp,
-		    if (mp->l == olp) {
-		    mp->l = point;
-		    mp->o = _min(mp->o, llength(point));
-		    }
-    ) ;
+    do_mark_iterate(mp, {
+	if (mp->l == olp) {
+	    mp->l = point;
+	    mp->o = _min(mp->o, llength(point));
+	}
+    });
 #if OPT_LINE_ATTRS
     FreeAndNull(olp->l_attrs);
 #endif

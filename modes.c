@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.243 2002/02/27 10:40:58 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.244 2002/05/01 00:35:53 tom Exp $
  *
  */
 
@@ -455,8 +455,7 @@ ptr2WINDOW(void *p)
 
 /* list the current modes into the current buffer */
 /* ARGSUSED */
-static
-void
+static void
 makemodelist(int local, void *ptr)
 {
     static const char gg[] = "Universal";
@@ -498,17 +497,6 @@ makemodelist(int local, void *ptr)
     bprintf("--- %s settings %*P\n",
 	    local ? "Local" : "Global", term.cols - 1, '-');
 
-#if OPT_MAJORMODE
-    if (!local) {
-	int n;
-	for (n = 0; major_valnames[n].name != 0; n++) {
-	    make_local_val(major_g_vals, n);
-	    major_g_vals[n].vp->i = my_majormodes[n].flag;
-	}
-	nflag = listvalueset("Majormodes", nflag, local, major_valnames,
-			     major_g_vals, (struct VAL *) 0);
-    }
-#endif
     if (local) {
 	nflag = listvalueset(bb, nflag, local, b_valnames, local_b_vals,
 			     (struct VAL *) 0);
@@ -828,8 +816,7 @@ FSM_CHOICES fsm_no_choices[] =
 };
 #endif /* OPT_COLOR_SCHEMES */
 
-static
-struct FSM fsm_tbl[] =
+static struct FSM fsm_tbl[] =
 {
     {"*bool", fsm_bool_choices},
 #if OPT_COLOR_SCHEMES
@@ -3077,6 +3064,18 @@ relist_majormodes(void)
 }
 #endif /* OPT_UPBUFF */
 
+static int
+show_active_majormodes(int nflag)
+{
+    int n;
+    for (n = 0; major_valnames[n].name != 0; n++) {
+	make_local_val(major_g_vals, n);
+	major_g_vals[n].vp->i = my_majormodes[n].flag;
+    }
+    return listvalueset("Majormodes", nflag, FALSE, major_valnames,
+			major_g_vals, (struct VAL *) 0);
+}
+
 /* list the current modes into the current buffer */
 /* ARGSUSED */
 static void
@@ -3089,6 +3088,8 @@ makemajorlist(int local, void *ptr GCC_UNUSED)
 
     if (my_majormodes != 0) {
 	int count = count_majormodes();
+	if (show_active_majormodes(0))
+	    bputc('\n');
 	for (j = 0; my_majormodes[j].name != 0; j++) {
 	    if (local)
 		TheMajor = my_majormodes[j].name;

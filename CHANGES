@@ -1,5 +1,56 @@
 Changes for vile 9.3 (released ??? ??? ?? 2000)
 
+ 20020507 (za)
+	> Clark Morgan:
+	+ remove pointers to foxharp host.
+	+ update copyrights.
+	+ remove duplicate use of $(CFLWIN32) from makefile.wnt
+	> J Chris Coppick:
+	+ tcl files were being edited in shmod since .*sh was matching 'wish',
+	  and we weren't catching files with tclsh, wishx, or tcl preambles,
+	  unless the file suffix was '.tcl'.
+	+ update Breadcrumbs.pm to version 0.4
+	> Paul Fox:
+	+ add 'directory' to modeline for directory buffers.
+	+ change file-mode test in 9.2y to check for FIFO's rather than
+	  character-devices.
+	+ modify ifile() to avoid marking the current buffer as modified when
+	  attempting to insert the contents of a file which fails the "not a
+	  file" test.
+	> Tom Dickey:
+	+ disable "working..." when writing to a pipe, but not reading from it.
+	  In that case, the pipe may be an interactive process, and we do not
+	  want to pollute its display (reported by Clark Morgan).
+	+ restore 'working()' mode at the end of directory.pm's dir() function,
+	  which is required to allow xvile to resume processing mouse
+	  double-clicks for hyperlink selection.  Reviewed/updated a few other
+	  scripts which had the same issue (report by J Chris Coppick).
+	+ disable autosave for readonly files.
+	+ add check in main loop for failure in repeat-last-cmd, which may
+	  have terminated in the middle of a change-command.  If a failure is
+	  detected, discard the remaining characters in the replay (report by
+	  Kevin Buettner).
+	+ modify logic of operyank() to set DOT to the beginning of the region,
+	  so that y0p will move the cursor to the beginning of the line just
+	  like vi.
+	+ improve perl filter's handling of quote-like operators.
+	+ show filenames opened for read or write in [Trace], to make it
+	  simpler to see which scripts are used.
+	+ add check in finderr.c to ensure that line numbers past the end of
+	  the buffer result in going to the end of the buffer rather than
+	  wrapping around to the beginning.
+	+ correct configure script CF_HEADER_PATH macro, which did not look in
+	  the proper directories under $HOME.
+	+ update config.guess, config.sub
+	+ add expectk to programs in tclmode preamble.
+	+ highlight TPU files like DCL (.com) files.  The available keywords
+	  are different, but the syntax looks the same.
+	+ move the list of majormodes from [Settings] to [Major Modes], to
+	  reduce clutter in the former.
+	+ indent'd (with updated patch against 2.0) api.c, fences.c, glob.c,
+	  input.c, isearch.c itbuff.c, lckfiles.c, msgs.c, npopen.c, spawn.c,
+	  statevar.c, tcap.c, window.c, as well as the .c files in filters.
+
  20020228 (z)
 	> Clark Morgan:
 	+ makefiles converted to DevStudio V6.0
@@ -17,7 +68,7 @@ Changes for vile 9.3 (released ??? ??? ?? 2000)
 	+ added a static child window that shows winvile row/col geometry as
 	  winvile is resized (Win2K/NT/XP only).  I could only test this on a
 	  single screen geometry (i.e., laptop's 1024 x 768).  Someone should
-	  try resizing winvile on a 2K/NT/XP host with these screen settings: 
+	  try resizing winvile on a 2K/NT/XP host with these screen settings:
 	  800x600, 1280 x 1024, 1115 x 864 .  Let me know if you see text
 	  clipping in the child window under these conditions.
 	+ following tested on WinME/98 and Win2K:

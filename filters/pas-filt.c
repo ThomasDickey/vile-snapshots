@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/pas-filt.c,v 1.13 2000/11/04 20:16:25 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/pas-filt.c,v 1.14 2002/05/01 19:46:18 tom Exp $
  *
  * Markup a Pascal file, for highlighting with vile.
  */
@@ -36,9 +36,9 @@ extract_identifier(char *s)
 	need = (s - base);
 	name = do_alloc(name, need, &have);
 	for (s = base; isNameExtra(*s); s++) {
-	    name[s-base] = (isalpha(CharOf(*s)) && isupper(CharOf(*s)))
-			    ? tolower(*s)
-			    : *s;
+	    name[s - base] = ((isalpha(CharOf(*s)) && isupper(CharOf(*s)))
+			      ? tolower(*s)
+			      : *s);
 	}
 	name[s - base] = 0;
 	flt_puts(base, s - base, keyword_attr(name));
@@ -49,15 +49,15 @@ extract_identifier(char *s)
 static int
 has_endofcomment(char *s)
 {
-    int i=0;
+    int i = 0;
     while (*s) {
 	if (*s == R_CURL) {
-	    return(i+1);
+	    return (i + 1);
 	}
 	i += 1;
 	s += 1;
     }
-    return(0);
+    return (0);
 }
 
 static int
@@ -67,22 +67,22 @@ has_endofliteral(char *s)	/* points past beginning QUOTE */
 
     while (s[i]) {
 	if (s[i] == QUOTE) {
-	    if (s[i+1] == QUOTE) {
+	    if (s[i + 1] == QUOTE) {
 		i += 2;
 	    } else {
-	        return (i);	/* points before ending QUOTE */
+		return (i);	/* points before ending QUOTE */
 	    }
 	}
 	++i;
     }
-    return(0);
+    return (0);
 }
 
 static char *
 skip_white(char *s)
 {
-    while(*s && isBlank(*s))
-    	flt_putc(*s++);
+    while (*s && isBlank(*s))
+	flt_putc(*s++);
     return s;
 }
 
@@ -95,7 +95,7 @@ write_literal(char *s)
     flt_puts(s, c_length, literal_attr);
     s += c_length;
     if (*s == QUOTE)
-    	flt_putc(*s++);
+	flt_putc(*s++);
     return s;
 }
 
@@ -105,12 +105,12 @@ init_filter(int before GCC_UNUSED)
 }
 
 static void
-do_filter(FILE *input GCC_UNUSED)
+do_filter(FILE * input GCC_UNUSED)
 {
     static unsigned used;
     static char *line;
     char *s;
-    int comment,c_length;
+    int comment, c_length;
 
     comment_attr = class_attr(NAME_COMMENT);
     literal_attr = class_attr(NAME_LITERAL);
@@ -122,28 +122,28 @@ do_filter(FILE *input GCC_UNUSED)
 	while (*s) {
 	    if (!comment && *s == L_CURL) {
 		c_length = has_endofcomment(s);
-		if (c_length == 0) { /* Comment continues to the next line */
+		if (c_length == 0) {	/* Comment continues to the next line */
 		    c_length = strlen(s);
 		    comment = 1;
 		}
 		flt_puts(s, c_length, comment_attr);
-		s = s + c_length ;
+		s = s + c_length;
 	    }
 	    if (comment && *s) {
 		if ((c_length = has_endofcomment(s)) > 0) {
 		    flt_puts(s, c_length, comment_attr);
-		    s = s + c_length ;
+		    s = s + c_length;
 		    comment = 0;
-		} else { /* Whole line belongs to comment */
+		} else {	/* Whole line belongs to comment */
 		    c_length = strlen(s);
 		    flt_puts(s, c_length, comment_attr);
 		    s = s + c_length;
 		}
-	    } else if (*s == QUOTE)  {
+	    } else if (*s == QUOTE) {
 		flt_putc(*s++);
 		s = write_literal(s);
 	    } else if (*s) {
-		if ( isNameBegin(*s) ) {
+		if (isNameBegin(*s)) {
 		    s = extract_identifier(s);
 		} else {
 		    flt_putc(*s++);

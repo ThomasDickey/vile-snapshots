@@ -4,11 +4,11 @@
  * Support functions for "popup-msgs" mode.
  * Written by T.E.Dickey for vile (august 1994).
  *
- * $Header: /users/source/archives/vile.vcs/RCS/msgs.c,v 1.23 2002/02/04 00:37:30 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/msgs.c,v 1.24 2002/04/30 23:51:47 tom Exp $
  */
 #include "estruct.h"
 
-#if	OPT_POPUP_MSGS
+#if OPT_POPUP_MSGS
 
 #include "edef.h"
 
@@ -18,14 +18,14 @@
 static BUFFER *
 create_msgs(void)
 {
-	BUFFER	*bp = bfind(MESSAGES_BufName, BFSCRTCH);
+    BUFFER *bp = bfind(MESSAGES_BufName, BFSCRTCH);
 
-	if (bp != NULL) {
-		b_set_scratch(bp);
- 		b_set_invisible(bp);
- 		bp->b_active = TRUE;
-	}
-	return bp;
+    if (bp != NULL) {
+	b_set_scratch(bp);
+	b_set_invisible(bp);
+	bp->b_active = TRUE;
+    }
+    return bp;
 }
 
 /*
@@ -37,108 +37,108 @@ create_msgs(void)
 void
 msg_putc(int c)
 {
-	BUFFER	*savebp = curbp;
-	WINDOW	*savewp = curwp;
-	MARK	savemk;
-	int	saverow = ttrow;
-	int	savecol = ttcol;
-	register BUFFER *bp;
-	register WINDOW *wp;
+    BUFFER *savebp = curbp;
+    WINDOW *savewp = curwp;
+    MARK savemk;
+    int saverow = ttrow;
+    int savecol = ttcol;
+    register BUFFER *bp;
+    register WINDOW *wp;
 
-	if ((bp = create_msgs()) == 0)
-		return;
+    if ((bp = create_msgs()) == 0)
+	return;
 
-	savemk  = DOT;
-	beginDisplay();
-	/*
-	 * Modify the current-buffer state as unobtrusively as possible (i.e.,
-	 * don't modify the buffer order, and don't make the buffer visible if
-	 * it isn't already!).  To use the 'bputc()' logic, though, we've got
-	 * to have a window, even if it's not real.
-	 */
-	curbp = bp;
-	if ((wp = bp2any_wp(bp)) == NULL) {
-		static WINDOW dummy;
-		wp = &dummy;
-		wp->w_bufp = bp;
-	}
-	curwp = wp;
-	DOT.l = lback(buf_head(bp));
-	DOT.o = llength(DOT.l);
+    savemk = DOT;
+    beginDisplay();
+    /*
+     * Modify the current-buffer state as unobtrusively as possible (i.e.,
+     * don't modify the buffer order, and don't make the buffer visible if
+     * it isn't already!).  To use the 'bputc()' logic, though, we've got
+     * to have a window, even if it's not real.
+     */
+    curbp = bp;
+    if ((wp = bp2any_wp(bp)) == NULL) {
+	static WINDOW dummy;
+	wp = &dummy;
+	wp->w_bufp = bp;
+    }
+    curwp = wp;
+    DOT.l = lback(buf_head(bp));
+    DOT.o = llength(DOT.l);
 
-	/*
-	 * Write into the [Messages]-buffer
-	 */
+    /*
+     * Write into the [Messages]-buffer
+     */
 #if OPT_TRACE
-	if (c == '\n') {
-		static TBUFF *ss;
-		int len = (DOT.o > 0) ? DOT.o : 1;
-		if (tb_init(&ss, EOS) != 0
-		 && tb_bappend(&ss,
-			(DOT.o > 0) ? DOT.l->l_text : "?",
-			(size_t)len) != 0
-		 && tb_append(&ss, EOS) != 0) {
-			TRACE(("msg:%s\n",
-				visible_buff(tb_values(ss),
-				             tb_length(ss)-1, TRUE)));
-		}
+    if (c == '\n') {
+	static TBUFF *ss;
+	int len = (DOT.o > 0) ? DOT.o : 1;
+	if (tb_init(&ss, EOS) != 0
+	    && tb_bappend(&ss,
+			  (DOT.o > 0) ? DOT.l->l_text : "?",
+			  (size_t) len) != 0
+	    && tb_append(&ss, EOS) != 0) {
+	    TRACE(("msg:%s\n",
+		   visible_buff(tb_values(ss),
+				tb_length(ss) - 1, TRUE)));
 	}
+    }
 #endif
-	if ((c != '\n') || (DOT.o > 0)) {
-		bputc(c);
-		b_clr_changed(bp);
-	}
+    if ((c != '\n') || (DOT.o > 0)) {
+	bputc(c);
+	b_clr_changed(bp);
+    }
 
-	/* Finally, restore the original current-buffer and write the character
-	 * to the message line.
-	 */
-	curbp = savebp;
-	curwp = savewp;
-	if (savewp)
-	    DOT   = savemk;
-	movecursor(saverow, savecol);
-	if (c != '\n') {
-		if (sgarbf) {
-			mlsavec(c);
-		} else {
-			kbd_putc(c);
-		}
+    /* Finally, restore the original current-buffer and write the character
+     * to the message line.
+     */
+    curbp = savebp;
+    curwp = savewp;
+    if (savewp)
+	DOT = savemk;
+    movecursor(saverow, savecol);
+    if (c != '\n') {
+	if (sgarbf) {
+	    mlsavec(c);
+	} else {
+	    kbd_putc(c);
 	}
-	endofDisplay();
+    }
+    endofDisplay();
 }
 
 void
 popup_msgs(void)
 {
-	BUFFER	*savebp = curbp;
-	WINDOW	*savewp = curwp;
-	MARK	savemk;
-	register BUFFER *bp;
-	WINDOW  *wp;
+    BUFFER *savebp = curbp;
+    WINDOW *savewp = curwp;
+    MARK savemk;
+    register BUFFER *bp;
+    WINDOW *wp;
 
-	if ((bp = create_msgs()) == 0)
-		return;
+    if ((bp = create_msgs()) == 0)
+	return;
 
-	savemk = DOT;
-	if (!is_empty_buf(bp)) {
-		if ((curwp == 0) || sgarbf || global_g_val(GMDPOPUP_MSGS) == -TRUE) {
-			return;		/* CAN'T popup yet */
-		}
-		if (popupbuff(bp) == FALSE) {
-			(void)zotbuf(bp);
-			return;
-		}
-
-		if ((wp = bp2any_wp(bp)) != NULL) {
-			make_local_w_val(wp,WMDNUMBER);
-			set_w_val(wp,WMDNUMBER,FALSE);
-		}
-		set_rdonly(bp, non_filename(), MDVIEW);
-		curbp = savebp;
-		curwp = savewp;
-		if (savewp)
-		    DOT   = savemk;
+    savemk = DOT;
+    if (!is_empty_buf(bp)) {
+	if ((curwp == 0) || sgarbf || global_g_val(GMDPOPUP_MSGS) == -TRUE) {
+	    return;		/* CAN'T popup yet */
 	}
+	if (popupbuff(bp) == FALSE) {
+	    (void) zotbuf(bp);
+	    return;
+	}
+
+	if ((wp = bp2any_wp(bp)) != NULL) {
+	    make_local_w_val(wp, WMDNUMBER);
+	    set_w_val(wp, WMDNUMBER, FALSE);
+	}
+	set_rdonly(bp, non_filename(), MDVIEW);
+	curbp = savebp;
+	curwp = savewp;
+	if (savewp)
+	    DOT = savemk;
+    }
 }
 
 /*
@@ -149,17 +149,17 @@ popup_msgs(void)
 void
 purge_msgs(void)
 {
-	TRACE(("purge_msgs mode:%d, warnings:%d\n",
-		global_g_val(GMDPOPUP_MSGS), warnings));
+    TRACE(("purge_msgs mode:%d, warnings:%d\n",
+	   global_g_val(GMDPOPUP_MSGS), warnings));
 
-	if ((global_g_val(GMDPOPUP_MSGS) == -TRUE)
-	 && (warnings == 0)) {
-		BUFFER	*bp = find_b_name(MESSAGES_BufName);
-		if (bp != 0
-		 && bp->b_nwnd == 0) {
-			(void)zotbuf(bp);
-		}
-		set_global_g_val(GMDPOPUP_MSGS, FALSE);
+    if ((global_g_val(GMDPOPUP_MSGS) == -TRUE)
+	&& (warnings == 0)) {
+	BUFFER *bp = find_b_name(MESSAGES_BufName);
+	if (bp != 0
+	    && bp->b_nwnd == 0) {
+	    (void) zotbuf(bp);
 	}
+	set_global_g_val(GMDPOPUP_MSGS, FALSE);
+    }
 }
 #endif

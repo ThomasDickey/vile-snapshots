@@ -1,4 +1,4 @@
-# $Header: /users/source/archives/vile.vcs/perl/RCS/directory.pm,v 1.7 2002/01/10 00:36:45 tom Exp $
+# $Header: /users/source/archives/vile.vcs/perl/RCS/directory.pm,v 1.8 2002/05/06 23:08:25 tom Exp $
 # (see dir.doc)
 
 package directory;
@@ -139,6 +139,7 @@ sub dir {
     print "";
     Vile::update;
     $cb->dot(6, 15);
+    Vile::working($work);
     return;
 }
 

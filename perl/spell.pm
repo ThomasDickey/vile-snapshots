@@ -1,3 +1,4 @@
+# $Header: /users/source/archives/vile.vcs/perl/RCS/spell.pm,v 1.3 2002/05/06 23:27:33 tom Exp $
 package spell;
 
 use IPC::Open2;
@@ -100,6 +101,7 @@ sub spell {
                            ->attribute("normal")
                            ->attribute("bold", @{$color{$H[0]}});
                         print W "";
+                        Vile::working($work);
                         return;
                     }
                 }
@@ -147,7 +149,7 @@ using  the perl  interface.  It  uses  the "ispell"  command
 internally  and hence is compatible  with ispell's usage  of
 public and private dictionaries.
 
-On  invokation, it goes through the  current buffer line  by
+On  invocation, it goes through the  current buffer line  by
 line,  finding spelling  errors  and  hilighting  them.  The
 current  error is hilighted according to the following color
 code and in reverse.
@@ -196,7 +198,7 @@ to  follow the progress of the spell checker and at the same
 time  leave a trace of errors for later changes from outside
 the spell checker.
 
-=head1 CAEVATS
+=head1 CAVEATS
 
 Since   the  spell   checker   utilizes   "ispell"   program
 internally,  it is mandatory that  "ispell" be available  in

@@ -3438,7 +3438,7 @@ Color basics
 		white                CF
 
 	Note that both xvile and winvile provide support for the mapping of
-	arbitray RBG values to the above color names, thus permitting the
+	arbitrary RBG values to the above color names, thus permitting the
 	creation of a customized color palette.
 
 	xvile custom colors
@@ -5717,6 +5717,6 @@ Problems
 		announce-request@vile.cx
 		vile-announce-request@foxharp.boston.ma.us
 
-Copyright 1995-2001 by Paul Fox, Tom Dickey, and Kevin Buettner
+Copyright 1995-2002 by Paul Fox, Tom Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.545 2002/02/27 11:02:54 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.547 2002/05/07 00:27:50 cmorgan Exp $

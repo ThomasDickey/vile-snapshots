@@ -5,7 +5,7 @@
  * reading and writing of the disk are
  * in "fileio.c".
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.327 2002/02/17 22:53:38 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.329 2002/05/07 11:08:07 tom Exp $
  */
 
 #include "estruct.h"
@@ -1908,6 +1908,13 @@ actually_write(REGION * rp, char *fn, int msgf, BUFFER *bp, int forced)
     if ((s = ffwopen(fn, forced)) != FIOSUC)
 	return FALSE;
 
+    /* disable "working..." while we are writing - not reading - a pipe, since
+     * it may be a quasi-interactive process that we don't want to modify its
+     * display.
+     */
+    if (isShellOrPipe(fn))
+	beginDisplay();
+
     /* tell us we're writing */
     if (msgf == TRUE)
 	mlwrite("[Writing...]");
@@ -1967,6 +1974,9 @@ actually_write(REGION * rp, char *fn, int msgf, BUFFER *bp, int forced)
     }
 
     CleanAfterPipe(TRUE);
+
+    if (isShellOrPipe(fn))
+	endofDisplay();
 
     if (s != FIOSUC)		/* Some sort of error.      */
 	return FALSE;
@@ -2273,26 +2283,23 @@ ifile(char *fname, int belowthisline, FILE * haveffp)
 	(void) ffclose();	/* Ignore errors.       */
 	readlinesmsg(nline, s, fname, FALSE);
     }
+
+    /* mark the window for changes.  could this be moved up to
+     * where we actually insert a line? */
+    chg_buff(curbp, WFHARD);
+
   out:
     /* copy window parameters back to the buffer structure */
     copy_traits(&(curbp->b_wtraits), &(curwp->w_traits));
 
     imply_alt(fname, FALSE, FALSE);
 
-    /* advance to the next line and mark the window for changes */
-    chg_buff(curbp, WFHARD);
-
 #if COMPLETE_FILES || COMPLETE_DIRS
-    /*
-     * Changes to a directory buffer can't be written back to the directory,
-     * so do not mark it modified.
-     */
     if (b_is_directory(curbp)) {
-	b_clr_changed(curbp);
-	b_clr_recentlychanged(curbp);
 	DOT.l = lback(DOT.l);
     } else
 #endif
+	/* advance to the next line */
 	DOT.l = lforw(DOT.l);
 
     return (s != FIOERR);

@@ -1,7 +1,7 @@
 /*
  * Common utility functions for vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.80 2002/02/12 20:29:15 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.81 2002/05/01 19:43:39 tom Exp $
  *
  */
 
@@ -305,7 +305,7 @@ TrimBlanks(char *src)
     unsigned len = strlen(src);
 
     while (len != 0
-	&& isspace(CharOf(src[len - 1])))
+	   && isspace(CharOf(src[len - 1])))
 	src[--len] = 0;
     return (len);
 }
@@ -328,7 +328,7 @@ class_attr(char *name)
 
     while ((hash_id = is_class(name)) != 0) {
 	VERBOSE(hash_id->kw_used, ("class_attr(%s) = %s",
-		name, AttrsOnce(hash_id)));
+				   name, AttrsOnce(hash_id)));
 	name = result = hash_id->kw_attr;
     }
     return result;
@@ -390,7 +390,10 @@ void
 flt_bfr_finish(void)
 {
     if (flt_bfr_used) {
-	flt_puts(flt_bfr_text, flt_bfr_used, flt_bfr_attr ? flt_bfr_attr : "");
+	flt_puts(flt_bfr_text, flt_bfr_used,
+		 (flt_bfr_attr
+		  ? flt_bfr_attr
+		  : ""));
     }
     flt_bfr_used = 0;
     flt_bfr_attr = "";
@@ -610,8 +613,8 @@ insert_keyword(const char *ident, const char *attribute, int classflag)
 	}
     }
     VERBOSE(3, ("...\tname \"%s\"\tattr \"%s\"",
-	    nxt->kw_name,
-	    NONNULL(nxt->kw_attr)));
+		nxt->kw_name,
+		NONNULL(nxt->kw_attr)));
 }
 
 KEYWORD *
@@ -703,9 +706,9 @@ parse_keyword(char *name, int classflag)
     }
 
     VERBOSE(2, ("parsed\tname \"%s\"\tattr \"%s\"%s",
-	    name,
-	    NONNULL(args),
-	    (classflag || is_class(name)) ? " - class" : ""));
+		name,
+		NONNULL(args),
+		(classflag || is_class(name)) ? " - class" : ""));
 
     if (*name && args) {
 	insert_keyword(name, args, classflag);

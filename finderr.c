@@ -5,7 +5,7 @@
  *
  * Copyright (c) 1990-2000 by Paul Fox and Thomas Dickey
  *
- * $Header: /users/source/archives/vile.vcs/RCS/finderr.c,v 1.107 2002/01/09 00:30:55 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/finderr.c,v 1.108 2002/05/01 16:10:13 tom Exp $
  *
  */
 
@@ -741,7 +741,10 @@ finderr(int f GCC_UNUSED, int n GCC_UNUSED)
     }
     /* it's an absolute move */
     curwp->w_lastdot = DOT;
-    status = gotoline(TRUE, -(curbp->b_lines_on_disk - fe_line + lL_base));
+    if ((fe_line + lL_base) >= curbp->b_lines_on_disk)
+	status = gotoeob(f, n);
+    else
+	status = gotoline(TRUE, -(curbp->b_lines_on_disk - fe_line + lL_base));
     gocol(fe_colm ? fe_colm - cC_base : 0);
 
     oerrline = fe_line;

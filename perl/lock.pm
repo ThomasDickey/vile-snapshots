@@ -62,7 +62,7 @@ back  to the user only when the correct password is entered.
 This  password is the same as what the user used to login to
 the machine.
 
-=head1 CAEVATS
+=head1 CAVEATS
 
 When  the session is locked,  ideally the  modeline and  the
 editing  buffers should blank out  to prevent others  seeing

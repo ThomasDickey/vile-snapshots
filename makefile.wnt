@@ -1,7 +1,7 @@
 #
 # makefile for vile on WIN32 using Microsoft Visual C++
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.wnt,v 1.70 2002/02/26 23:37:11 cmorgan Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.wnt,v 1.71 2002/05/07 00:27:50 cmorgan Exp $
 #
 #
 !include <ntwin32.mak>
@@ -116,7 +116,7 @@ EXTRA    = winvile.res
 !IF "$(PROGNAME)" != "" && "$(PROGNAME)" != "$(TARGET)"
 !MESSAGE Overriding target name to $(PROGNAME)
 TARGET   = $(PROGNAME)
-CFLAGS   = $(CFLAGS) -DPROGRAM_NAME=\"$(PROGNAME)\" $(CFLWIN32)
+CFLAGS   = $(CFLAGS) -DPROGRAM_NAME=\"$(PROGNAME)\"
 !endif
 
 TARGET   = $(TARGET).exe

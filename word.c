@@ -3,7 +3,7 @@
  * paragraph at a time.  There are all sorts of word mode commands.  If I
  * do any sentence mode commands, they are likely to be put in this file.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/word.c,v 1.73 2002/01/09 00:32:02 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/word.c,v 1.74 2002/04/30 23:24:11 tom Exp $
  *
  */
 
@@ -120,7 +120,7 @@ forwviword(int f, int n)
     while (n--) {
 	int any = 0;
 	while (((s = isnewviwordf()) == FALSE) ||
-	    (s == SORTOFTRUE && n != 0)) {
+	       (s == SORTOFTRUE && n != 0)) {
 	    if (forwchar(TRUE, 1) == FALSE)
 		return (any != 0);
 	    any++;
@@ -148,7 +148,7 @@ forwword(int f, int n)
     while (n--) {
 	int any = 0;
 	while (((s = isnewwordf()) == FALSE) ||
-	    (s == SORTOFTRUE && n != 0)) {
+	       (s == SORTOFTRUE && n != 0)) {
 	    if (forwchar(TRUE, 1) == FALSE)
 		return (any != 0);
 	    any++;
@@ -344,7 +344,7 @@ dot_at_section_break(void)
     regexp *expC = b_val_rexp(curbp, VAL_COMMENTS)->reg;
 
     return (lregexec(expP, DOT.l, 0, llength(DOT.l)) ||
-	lregexec(expC, DOT.l, 0, llength(DOT.l)));
+	    lregexec(expC, DOT.l, 0, llength(DOT.l)));
 }
 
 /* returns the length of the comment-prefix, if it matches, otherwise -1 */
@@ -448,8 +448,8 @@ do_formatting(TBUFF ** wp, TBUFF ** cp)
 	if ((plength = comment_prefix()) >= 0) {
 	    is_comment = TRUE;
 	    tb_bappend(cp,
-		DOT.l->l_text + DOT.o,
-		(size_t) (plength - DOT.o));
+		       DOT.l->l_text + DOT.o,
+		       (size_t) (plength - DOT.o));
 	} else if (cplus_comment_start(c)) {
 	    is_comment = TRUE;
 	    tb_bappend(cp, "//", 2);
@@ -486,8 +486,8 @@ do_formatting(TBUFF ** wp, TBUFF ** cp)
 		    if (s != (int) tb_length(*cp)
 			|| (s > 0
 			    && memcmp(tb_values(*cp),
-				DOT.l->l_text + DOT.o,
-				s))) {
+				      DOT.l->l_text + DOT.o,
+				      s))) {
 			finished = SORTOFTRUE;
 		    }
 
@@ -496,8 +496,8 @@ do_formatting(TBUFF ** wp, TBUFF ** cp)
 			tb_init(cp, EOS);
 			if (plength > 0) {
 			    tb_bappend(cp,
-				DOT.l->l_text + DOT.o,
-				(size_t) (plength));
+				       DOT.l->l_text + DOT.o,
+				       (size_t) (plength));
 			}
 			if (DOT.l != pastline
 			    && !dot_at_section_break()) {
@@ -696,7 +696,7 @@ wordcount(int f GCC_UNUSED, int n GCC_UNUSED)
 	avgch = 0.0;
 
     mlforce("lines %d, words %ld, chars %ld, avg chars/word %f",
-	nlines, nwords, nchars + nwhite, avgch);
+	    nlines, nwords, nchars + nwhite, avgch);
 
     return (TRUE);
 }

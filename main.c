@@ -17,12 +17,12 @@
  * distributable status.  This version of vile is distributed under the
  * terms of the GNU Public License (see COPYING).
  *
- * Copyright (c) 1992-2001 by Paul Fox and Thomas Dickey
+ * Copyright (c) 1992-2002 by Paul Fox and Thomas Dickey
  *
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.475 2002/02/27 10:55:23 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.477 2002/05/07 00:27:50 cmorgan Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -782,6 +782,14 @@ loop(void)
 
 	/* stop recording for '.' command */
 	dotcmdfinish();
+
+	/* if we had an error in playback, stop right away, since the remaining
+	 * characters may be from the middle of a change-command which failed
+	 * due to invalid motion.
+	 */
+	if ((s == FALSE) && (dotcmdactive == PLAY)) {
+	    dotcmdactive = 0;
+	}
 
 	/* If this was a motion that failed, sound the alarm (like vi),
 	 * but limit it to once, in case the user is holding down the
@@ -1641,9 +1649,8 @@ siginit(void)
 # endif
 # if SYS_OS2 || SYS_WINNT
     setup_handler(SIGINT, catchintr);
+# endif
 #endif
-#endif
-
 }
 
 static void

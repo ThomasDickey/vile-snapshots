@@ -20,7 +20,7 @@
  *		buffer will be marked readonly.  the .lck file will be
  *		deleted at most of the appropriate times.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/lckfiles.c,v 1.9 2002/01/09 00:27:05 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/lckfiles.c,v 1.10 2002/04/30 23:28:07 tom Exp $
  *
  */
 
@@ -30,76 +30,79 @@
 #if OPT_LCKFILES
 
 #if ! HAVE_LONG_FILE_NAMES
-you probably do not want this code -- there are no checks on filename
-length when adding .lck to the end
+You probably would not want this code:
+  there are no checks on filename length when adding.lck to the end.
 #endif
 
 static void
 get_lock_owner(char *lockfile, char *who, int n)
 {
-	FILE *fp;
-	int l;
-	if ( (fp = fopen(lockfile,FOPEN_READ)) != (FILE *)0 ) {
-		l = read(fileno(fp),who,(size_t)(n-1));
-		if ( l < 0 ) {
-			(void)strcpy(who,"'Can't read .lck'");
-		} else {
-			who[l-1] = EOS; /* Strip \n */
-		}
-		fclose(fp);
+    FILE *fp;
+    int l;
+    if ((fp = fopen(lockfile, FOPEN_READ)) != (FILE *) 0) {
+	l = read(fileno(fp), who, (size_t) (n - 1));
+	if (l < 0) {
+	    (void) strcpy(who, "'Can't read .lck'");
 	} else {
-		(void)strcpy(who,"'Can't open .lck'");
+	    who[l - 1] = EOS;	/* Strip \n */
 	}
+	fclose(fp);
+    } else {
+	(void) strcpy(who, "'Can't open .lck'");
+    }
 }
 
 static char *
 ourname(void)
 {
-	char *np;
-	np = getenv("LOGNAME");
-	if (!np) np = getenv("USER");
-	if (!np) np = "unknown";
-	return np;
+    char *np;
+    np = getenv("LOGNAME");
+    if (!np)
+	np = getenv("USER");
+    if (!np)
+	np = "unknown";
+    return np;
 }
 
 int
 set_lock(const char *fname, char *who, int n)
 {
-	char	lockfile[NFILEN];
-	FILE	*fp;
+    char lockfile[NFILEN];
+    FILE *fp;
 
-	sprintf(lockfile,"%s.lck",fname);
+    sprintf(lockfile, "%s.lck", fname);
 
-	if ( ffexists(lockfile)) {
-		/* Lockfile exists */
-		get_lock_owner(lockfile,who,n);
-		mlwrite("[%s]",who);
-		return FALSE;			/* Can't set lock */
+    if (ffexists(lockfile)) {
+	/* Lockfile exists */
+	get_lock_owner(lockfile, who, n);
+	mlwrite("[%s]", who);
+	return FALSE;		/* Can't set lock */
+    } else {
+	if ((fp = fopen(lockfile, FOPEN_WRITE)) != (FILE *) 0) {
+	    (void) lsprintf(who, "%s\n", ourname());
+	    write(fileno(fp), who, strlen(who));
+	    fclose(fp);
 	} else {
-		if (( fp = fopen(lockfile,FOPEN_WRITE)) != (FILE *)0 ) {
-			(void)lsprintf(who,"%s\n",ourname());
-			write(fileno(fp),who,strlen(who));
-			fclose(fp);
-		} else {
-			(void)strcpy(who,"'Can't write .lck'");
-			mlwrite("[%s]",who);
-			return(FALSE);		/* Can't set lock */
-		}
+	    (void) strcpy(who, "'Can't write .lck'");
+	    mlwrite("[%s]", who);
+	    return (FALSE);	/* Can't set lock */
 	}
-	return TRUE;				/* Lock ok */
+    }
+    return TRUE;		/* Lock ok */
 }
 
-void release_lock(const char *fname)
+void
+release_lock(const char *fname)
 {
-	char	lockfile[NFILEN];
-	char	who[100];
+    char lockfile[NFILEN];
+    char who[100];
 
-	if ( fname && *fname ) {
-		(void)lsprintf(lockfile,"%s.lck",fname);
-		get_lock_owner(lockfile,who,sizeof(who));
-		/* is it ours? */
-		if (strcmp(who, ourname()) == 0)
-			unlink(lockfile);
-	}
+    if (fname && *fname) {
+	(void) lsprintf(lockfile, "%s.lck", fname);
+	get_lock_owner(lockfile, who, sizeof(who));
+	/* is it ours? */
+	if (strcmp(who, ourname()) == 0)
+	    unlink(lockfile);
+    }
 }
 #endif

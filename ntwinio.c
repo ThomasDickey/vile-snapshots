@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 screen API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.125 2002/02/26 23:37:11 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.127 2002/05/01 00:07:38 tom Exp $
  * Written by T.E.Dickey for vile (october 1997).
  * -- improvements by Clark Morgan (see w32cbrd.c, w32pipe.c).
  */
@@ -500,24 +500,24 @@ static HWND
 sizing_window(void)
 {
     RECT crect;
-    int  szw = 140, szh = 22, szx, szy;
+    int szw = 140, szh = 22, szx, szy;
 
     GetClientRect(cur_win->main_hwnd, &crect);
     szx = crect.right / 2 - szw / 2;
     szy = crect.bottom / 2 - szh / 2;
     if (szx < 0 || szy < 0)
-        szx = szy = CW_USEDEFAULT;
+	szx = szy = CW_USEDEFAULT;
     return (CreateWindow("STATIC",
-                         "",
-                         WS_CHILD|WS_VISIBLE|SS_CENTER,
-                         szx,
-                         szy,
-                         szw,
-                         szh,
-                         cur_win->main_hwnd,
-                         (HMENU) 0,
-                         vile_hinstance,
-                         (LPVOID) 0));
+			 "",
+			 WS_CHILD | WS_VISIBLE | SS_CENTER,
+			 szx,
+			 szy,
+			 szw,
+			 szh,
+			 cur_win->main_hwnd,
+			 (HMENU) 0,
+			 vile_hinstance,
+			 (LPVOID) 0));
 }
 
 /*
@@ -2250,7 +2250,7 @@ mousemove(int *sel_pending,
 	  int onmode,
 	  POINT * first,
 	  POINT * latest,
-	  MARK * lmbdn_mark,
+	  MARK *lmbdn_mark,
 	  WINDOW *wp)
 {
     POINT current;
@@ -2947,41 +2947,38 @@ ntgetch(void)
 	    }
 	    break;
 
-	/*
-	 * define _WIN32_WINNT=0x400 (or higher) to include WM_MOUSEWHEEL
-	 * code below.	Note that WM_MOUSEWHEEL is really only required
-	 * to support a mouse driver that doesn't emit WM_VMSCROLL
-	 * messages when the wheel mouse rotates.  Examples:
-	 *
-	 *    MS Intellimouse driver	 -> emits WM_VMSCROLL
-	 *    Logitech mousewheel driver -> emits WM_VMSCROLL
-	 *    MS PS/2 compatible driver	 -> emits WM_MOUSEWHEEL
-	 *   
-	 * The latter driver is often installed when PNP can't
-	 * distinguish the native HW.
-	 */  
+	    /*
+	     * define _WIN32_WINNT=0x400 (or higher) to include WM_MOUSEWHEEL
+	     * code below.  Note that WM_MOUSEWHEEL is really only required
+	     * to support a mouse driver that doesn't emit WM_VMSCROLL
+	     * messages when the wheel mouse rotates.  Examples:
+	     *
+	     *    MS Intellimouse driver     -> emits WM_VMSCROLL
+	     *    Logitech mousewheel driver -> emits WM_VMSCROLL
+	     *    MS PS/2 compatible driver  -> emits WM_MOUSEWHEEL
+	     *   
+	     * The latter driver is often installed when PNP can't
+	     * distinguish the native HW.
+	     */
 #ifdef WM_MOUSEWHEEL
 #if OPT_SCROLLBARS
 	case WM_MOUSEWHEEL:
 	    {
 		int c;
-	     
+
 		fhide_cursor();
-		if ((short) HIWORD(msg.wParam) > 0)
-		{
+		if ((short) HIWORD(msg.wParam) > 0) {
 		    c = (HIWORD(msg.wParam) / WHEEL_DELTA);
 		    mvupwind(TRUE, c * 3);
-		}
-		else
-		{
-		    c = (-((short) HIWORD(msg.wParam)) / WHEEL_DELTA);	 
+		} else {
+		    c = (-((short) HIWORD(msg.wParam)) / WHEEL_DELTA);
 		    mvdnwind(TRUE, c * 3);
 		}
 		update(TRUE);
-		fshow_cursor(); 
+		fshow_cursor();
 	    }
 	    break;
-#endif   
+#endif
 #endif
 
 	case WM_MBUTTONDOWN:
@@ -3246,9 +3243,9 @@ MainWndProc(
 	       WPARAM wParam,
 	       LONG lParam)
 {
-    static int  resize_pending;	/* a resize, not a move */
+    static int resize_pending;	/* a resize, not a move */
     static HWND resize_hwnd;
-    static int  resize_wdw_up;
+    static int resize_wdw_up;
 
     TRACE(("MAIN:%s, %s\n", message2s(message), which_window(hWnd)));
 
@@ -3294,25 +3291,21 @@ MainWndProc(
 	return (DefWindowProc(hWnd, message, wParam, lParam));
 
     case WM_SIZING:
-	if (initialized)
-	{
-	    char       buf[32];
+	if (initialized) {
+	    char buf[32];
 	    static int frame_w, frame_h;
 
-	    if (is_winnt())
-	    {
+	    if (is_winnt()) {
 		/*
 		 * Win9x/ME GDI doesn't support supplementary GDI activity
 		 * while a window resize is in progress.
 		 */
 
-		if (! resize_hwnd)
+		if (!resize_hwnd)
 		    resize_hwnd = sizing_window();
-		if (resize_hwnd)
-		{
-		    if (! resize_wdw_up)
-		    {
-			RECT crect, wrect;		       
+		if (resize_hwnd) {
+		    if (!resize_wdw_up) {
+			RECT crect, wrect;
 
 			resize_wdw_up = TRUE;
 			ShowWindow(resize_hwnd, SW_SHOWNORMAL);
@@ -3323,19 +3316,17 @@ MainWndProc(
 			GetWindowRect(cur_win->main_hwnd, &wrect);
 			frame_w = (wrect.right - wrect.left) - crect.right;
 			frame_h = (wrect.bottom - wrect.top) - crect.bottom;
-		    }
-		    else
-		    {
+		    } else {
 			RECT newrect;
-			int  h, w;
+			int h, w;
 
 			/*
 			 * The rectangle passed in with this message includes
 			 * the outer frame, which is worthless for editing
 			 * text.
 			 */
-			newrect         = *((RECT *) lParam);
-			newrect.right  -= frame_w;
+			newrect = *((RECT *) lParam);
+			newrect.right -= frame_w;
 			newrect.bottom -= frame_h;
 			h = RectToRows(newrect);
 			w = RectToCols(newrect);
@@ -3348,8 +3339,7 @@ MainWndProc(
 	return AdjustResizing(hWnd, wParam, (LPRECT) lParam);
 
     case WM_EXITSIZEMOVE:
-	if (resize_hwnd && resize_wdw_up)
-	{
+	if (resize_hwnd && resize_wdw_up) {
 	    resize_wdw_up = FALSE;
 	    SendMessage(resize_hwnd, WM_CLOSE, 0, 0);
 	    resize_hwnd = NULL;
