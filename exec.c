@@ -4,7 +4,7 @@
  *	written 1986 by Daniel Lawrence
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.127 1996/09/20 10:12:51 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.128 1996/10/03 01:02:51 tom Exp $
  *
  */
 
@@ -1271,7 +1271,7 @@ dname_to_dirnum(const char *eline)
 {
 	DIRECTIVE dirnum = D_UNKNOWN;
 	if (*eline++ == DIRECTIVE_CHAR) {
-		int n;
+		SIZE_T n;
 		for (n = 0; n < TABLESIZE(dname); n++) {
 			if (strncmp(eline, dname[n].name,
 				    strlen(dname[n].name)) == 0) {
@@ -1283,10 +1283,10 @@ dname_to_dirnum(const char *eline)
 	return dirnum;
 }
 
-static const char * const
+static const char *
 dirnum_to_name(DIRECTIVE dirnum)
 {
-	int n;
+	SIZE_T n;
 	for (n = 0; n < TABLESIZE(dname); n++)
 		if (dname[n].type == dirnum)
 			return dname[n].name;
@@ -1409,7 +1409,8 @@ begin_directive(
 			len = strlen(golabel);
 			if (len > 1) {
 				for_each_line(glp, bp) {
-					if (glp->l_used >= len+1
+					int need = len + 1;
+					if (glp->l_used >= need
 					 && glp->l_text[0] == '*'
 					 && !memcmp(&glp->l_text[1], golabel, len)) {
 						*lp = glp;
@@ -1508,14 +1509,14 @@ setup_dobuf(BUFFER *bp, WHBLOCK **result)
 		switch (dname_to_dirnum(eline)) {
 		/* if is a while directive, make a block... */
 		case D_WHILE:
-			if ((whtemp = alloc_WHBLOCK(scanpt, D_WHILE, lp)) == 0) {
+			if ((scanpt = alloc_WHBLOCK(scanpt, D_WHILE, lp)) == 0) {
 				status = FALSE;
 			}
 			break;
 
 		/* if it is a break directive, make a block... */
 		case D_BREAK:
-			if ((whtemp = alloc_WHBLOCK(scanpt, D_BREAK, lp)) == 0) {
+			if ((scanpt = alloc_WHBLOCK(scanpt, D_BREAK, lp)) == 0) {
 				status = FALSE;
 			}
 			break;
@@ -1582,8 +1583,10 @@ perform_dobuf(BUFFER *bp, WHBLOCK *whlist)
 		bp->b_dot.l = lp;
 		/* allocate eline and copy macro line to it */
 
-		if ((linlen = lp->l_used) <= 0)
+		if (lp->l_used <= 0)
 			linlen = 0;
+		else
+			linlen = lp->l_used;
 
 		if (glue) {
 			if ((einit = castrealloc(char, einit, glue+linlen+1)) == 0) {
@@ -1602,7 +1605,7 @@ perform_dobuf(BUFFER *bp, WHBLOCK *whlist)
 			}
 		}
 
-		if (linlen > 0)
+		if (linlen != 0)
 			(void)strncpy(eline, lp->l_text, linlen);
 		eline[linlen] = EOS;	/* make sure it ends */
 
@@ -1622,7 +1625,7 @@ perform_dobuf(BUFFER *bp, WHBLOCK *whlist)
 		 * following line to the one we're processing.
 		 */
 		if (lforw(lp) != buf_head(bp)
-		 && linlen > 0
+		 && linlen != 0
 		 && eline[linlen-1] == '\\') {
 			glue = linlen + (eline - einit) - 1;
 			continue;

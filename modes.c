@@ -7,7 +7,7 @@
  * Original code probably by Dan Lawrence or Dave Conroy for MicroEMACS.
  * Major extensions for vile by Paul Fox, 1991
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.77 1996/02/26 04:24:35 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.78 1996/10/03 01:02:51 tom Exp $
  *
  */
 
@@ -1172,7 +1172,7 @@ chgd_color(CHGD_ARGS)
 		else if (&args->local->vp->i == &gbcolor)
 			TTbacg(gbcolor);
 		set_winflags(glob_vals, WFHARD|WFCOLR);
-		refresh(FALSE,0);
+		vile_refresh(FALSE,0);
 	}
 	return TRUE;
 }

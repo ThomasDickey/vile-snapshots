@@ -95,7 +95,7 @@
 #		in '!' listed, then the flag does nothing, and should be
 #		viewed simply as documentation.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.136 1996/04/16 02:29:34 pgf Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.137 1996/10/03 01:02:51 tom Exp $
 #
 #
 
@@ -520,7 +520,7 @@ filewrite	NONE|BANG
 	"write-file"			!FEWNAMES
 	"write-file!"			!FEWNAMES
 	<write the entire contents of the current buffer to its filename>
-filter		REDO|UNDO
+vile_filter	REDO|UNDO
 	"|"
 	"filter-buffer"			!FEWNAMES
 	<pipe the entire buffer through an external filter command>
@@ -1170,7 +1170,7 @@ quote		REDO|UNDO
 	"quote-next-character"		!FEWNAMES
 	'^V'
 	<insert the next character literally, CNT times>
-refresh		NONE
+vile_refresh	NONE
 	"clear-and-redraw"		!FEWNAMES
 	'^L'
 	<redraw the screen>

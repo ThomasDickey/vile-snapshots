@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.138 1996/09/17 21:51:58 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.139 1996/10/03 01:02:51 tom Exp $
  *
  */
 
@@ -1502,7 +1502,7 @@ makecmpllist(
     for (p = NEXT_DATA(first), maxlen = strlen(THIS_NAME(first));
          p != last;
 	 p = NEXT_DATA(p)) {
-	int l = strlen(THIS_NAME(p));
+	SIZE_T l = strlen(THIS_NAME(p));
 	if (l > maxlen)
 	    maxlen = l;
     }

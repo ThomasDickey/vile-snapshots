@@ -1,11 +1,11 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_REVISION($Revision: 1.44 $)
+AC_REVISION($Revision: 1.45 $)
 AC_PREREQ(2.10)
 
 ### Use "configure -with-screen" to override the default configuration, which is
 ### termcap-based on unix systems.
 
-dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.44 1996/09/05 01:59:48 pgf Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.45 1996/10/04 10:24:53 tom Exp $
 
 dnl
 AC_INIT(mktbls.c)
@@ -65,21 +65,9 @@ elif test -z "$CFLAGS" ; then
 	CFLAGS="-O"
 fi
 
-###	use option --with-warnings to turn on all gcc warnings
-AC_ARG_WITH(warnings,
-	[  --with-warnings         turn on GCC compiler warnings],
-	[with_warnings=$withval])
-if test -n "$GCC"
-then
-	if test -n "$with_warnings"
-	then
-		CFLAGS="$CFLAGS -Wall -Wshadow -Wconversion -Wstrict-prototypes -Wmissing-prototypes"
-	fi
-fi
-
 # X11 checks will sometimes add to CFLAGS.  We want the state of CFLAGS
 # prior to these checks
-saved_CFLAGS=$CFLAGS
+saved_CFLAGS="$CFLAGS"
 
 ###	checks for UNIX variants that set C preprocessor variables
 AC_AIX
@@ -149,6 +137,7 @@ VC_ANSI_CC
 
 # I haven't found a "losing" compiler to check the following on.  I gather
 # that some losing compiler's can be found on pyramid's, aix, and Apple's AUX2.
+# (Lint on several platforms will complain, even when the compiler won't).
 AC_MSG_CHECKING([if switch cases work with structure offsets])
 AC_CACHE_VAL(vc_cv_case_offsetof,[
 	AC_TRY_COMPILE([],
@@ -200,6 +189,7 @@ if test -z "$screen"; then
 		[screen=$withval])
 fi
 
+termlib=none
 if test -z "$screen"; then
 	screen=termcap;
 fi
@@ -298,35 +288,87 @@ changequote([,])dnl
 		TARGET=vile
 		AC_DEFINE(DISP_TERMCAP)
 		if test "$screen" = ncurses; then
-			AC_CHECK_LIB(ncurses, tparm, [LIBS="$LIBS -lncurses" termlib=found])
+			AC_CHECK_LIB(ncurses, setupterm,
+				[LIBS="$LIBS -lncurses"
+				for p in /usr/include/ncurses /usr/local/include/ncurses
+				do
+					if test -d $p ; then
+						saved_CFLAGS="$saved_CFLAGS -I$p"
+						CFLAGS="$CFLAGS -I$p"
+						break
+					fi
+				done
+				termlib=terminfo])
 		fi
-		if test "$termlib" != found; then
-			AC_CHECK_LIB(termlib, tgoto, [LIBS="$LIBS -ltermlib" termlib=found])
+		# HP-UX 9.x terminfo has setupterm, but no tigetstr.
+		if test "$termlib" = none; then
+			AC_CHECK_LIB(termlib, tigetstr, [LIBS="$LIBS -ltermlib" termlib=terminfo])
 		fi
-		if test "$termlib" != found; then
+		if test "$termlib" = none; then
+			AC_CHECK_LIB(termlib, tgoto, [LIBS="$LIBS -ltermlib" termlib=termcap])
+		fi
+		if test "$termlib" = none; then
 			# allow curses library for broken AIX system.
-			AC_CHECK_LIB(curses, initscr, [LIBS="$LIBS -lcurses" termlib=found])
-			AC_CHECK_LIB(termcap, tgoto, [LIBS="$LIBS -ltermcap" termlib=found])
+			AC_CHECK_LIB(curses, initscr, [LIBS="$LIBS -lcurses" termlib=termcap])
+			AC_CHECK_LIB(termcap, tgoto, [LIBS="$LIBS -ltermcap" termlib=termcap])
 		fi
-		if test "$termlib" != found; then
-			AC_CHECK_LIB(termcap, tgoto, [LIBS="$LIBS -ltermcap" termlib=found])
+		if test "$termlib" = none; then
+			AC_CHECK_LIB(termcap, tgoto, [LIBS="$LIBS -ltermcap" termlib=termcap])
 		fi
-		if test "$termlib" != found; then
+		if test "$termlib" = none; then
 			AC_WARN([Can't find -ltermlib, -lcurses, or -ltermcap])
 		fi
-		# BSD 'tputs()' may need 'PC' to be set.
-		AC_TRY_LINK([],[extern char PC; PC = 0],
-			[AC_DEFINE(HAVE_EXTERN_TCAP_PC)])
 	;;
 esac
 
+vc_tc_funcs=""
+vc_tc_externs=""
+if test "$termlib" = terminfo ; then
+	AC_DEFINE(USE_TERMINFO)
+	vc_tc_funcs="tigetint tigetnum tparam tparm"
+	vc_tc_externs="tparm tgoto tigetstr"
+elif test "$termlib" = termcap ; then
+	# BSD 'tputs()' may need 'PC' to be set.
+	AC_TRY_LINK([],[extern char PC; PC = 0],
+		[AC_DEFINE(HAVE_EXTERN_TCAP_PC)])
+	AC_CHECK_HEADERS(termcap.h)
+	vc_tc_funcs="tparam tparm"
+	vc_tc_externs="tparm tgoto tgetstr"
+fi
+
+if test "$termlib" != "none" ; then
+	VC_TYPE_OUTCHAR
+fi
+
 LIBS="$LIBS $X_EXTRA_LIBS"
 
-AC_HAVE_FUNCS(sigprocmask setsid select poll strchr strrchr gethostname \
-	getcwd getwd killpg setvbuf access mkdir tcgetattr ttyname link \
-	setitimer sigaction symlink utime utimes alarm tparm tparam)
+AC_HAVE_FUNCS( \
+access \
+alarm \
+getcwd \
+gethostname \
+getwd \
+killpg \
+link \
+mkdir \
+poll \
+select \
+setitimer \
+setsid \
+setvbuf \
+sigaction \
+sigprocmask \
+strchr \
+strrchr \
+symlink \
+tcgetattr \
+ttyname \
+utime \
+utimes \
+$vc_tc_funcs \
+)
 
-###	mandatory checks for missing headers
+###	mandatory checks for missing prototypes
 VC_MISSING_EXTERN( \
 environ \
 getenv \
@@ -335,6 +377,7 @@ malloc \
 realloc \
 rindex \
 strtol \
+$vc_tc_externs \
 )
 
 ###	optional checks for missing headers (enabled with --with-warnings)
@@ -407,8 +450,20 @@ fi
 
 VC_ANSI_QSORT
 
+###	use option --with-warnings to turn on all gcc warnings
+CFLAGS="$saved_CFLAGS"
+AC_ARG_WITH(warnings,
+	[  --with-warnings         turn on GCC compiler warnings],
+	[with_warnings=$withval])
+if test -n "$GCC"
+then
+	if test -n "$with_warnings"
+	then
+		CFLAGS="$CFLAGS -W -Wall -Wshadow -Wconversion -Wstrict-prototypes -Wmissing-prototypes"
+	fi
+fi
+
 ###	output makefile and config.h
-CFLAGS=$saved_CFLAGS
 changequote({,})dnl
 AC_OUTPUT(makefile config_h,
 {

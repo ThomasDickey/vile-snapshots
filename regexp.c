@@ -11,7 +11,7 @@
  *
  *		pgf, 11/91
  *
- * $Header: /users/source/archives/vile.vcs/RCS/regexp.c,v 1.58 1996/03/19 00:46:26 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/regexp.c,v 1.59 1996/10/03 01:02:51 tom Exp $
  *
  */
 
@@ -269,7 +269,7 @@ regcomp(char *origexp, int magic)
 	register ALLOC_T len;
 	int flags;
 	static char *exp;
-	static int explen;
+	static ALLOC_T explen;
 
 	if (origexp == NULL) {
 		regerror("NULL argument");

@@ -11,7 +11,7 @@
 #
 # The modes are table entries in the BUFFER and WINDOW structures.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.71 1996/04/16 02:29:34 pgf Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.72 1996/10/03 01:02:51 tom Exp $
 #
 #
 # Mode-table entries.  Capitalized letters are used for abbreviations.
@@ -132,6 +132,7 @@ int							# VAL_ prefix
 "cd-hook"	CDHOOK		OPT_PROCEDURES	# procedure to run when cd'ing
 "cfilname"	CFNAME			# current file name
 "char"		CURCHAR			# current character under the cursor
+"cryptkey"	CRYPTKEY	OPT_ENCRYPT # write-only encryption-key
 "curcol"	CURCOL			# current column pos of cursor
 "curline"	CURLINE			# current line in file
 "cwd"		CWD			# current directory

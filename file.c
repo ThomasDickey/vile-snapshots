@@ -5,7 +5,7 @@
  *	reading and writing of the disk are in "fileio.c".
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.196 1996/08/13 03:00:08 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.197 1996/10/03 01:02:51 tom Exp $
  *
  */
 
@@ -695,8 +695,18 @@ int	mflg)		/* print messages? */
 	if ((s = resetkey(bp, fname)) != TRUE)
 		return s;
 #endif
+
         if ((s=bclear(bp)) != TRUE)             /* Might be old.        */
                 return s;
+
+#if	OPT_ENCRYPT
+	/* bclear() gets rid of local flags */
+	if (bp->b_key[0] != EOS) {
+		make_local_b_val(bp, MDCRYPT);
+		set_b_val(bp, MDCRYPT, TRUE);
+	}
+#endif
+
 	b_clr_flags(bp, BFINVS|BFCHG);
 	ch_fname(bp,fname);
 	fname = bp->b_fname;		/* this may have been b_fname! */

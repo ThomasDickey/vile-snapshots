@@ -1,11 +1,13 @@
 /*	tcap:	Unix V5, V7 and BS4.2 Termcap video driver
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.80 1996/05/28 01:45:22 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.81 1996/10/05 00:07:13 tom Exp $
  *
  */
 
 #define termdef 1			/* don't define "term" external */
+
+#define WINDOW vile_WINDOW
 
 #include	"estruct.h"
 #include	"edef.h"
@@ -16,12 +18,56 @@
 #define SCRSIZ	64
 #define NPAUSE	10			/* # times thru update to pause */
 
+#if USE_TERMINFO
+#  define TGETSTR(name, bufp) tigetstr(name)
+#  define TGETNUM(name)       tigetnum(name) /* may be tigetint() */
+#  define TGETFLAG(name)      tigetflag(name)
+#  define CAPNAME(a,b)        b
+#  define NO_CAP(s)           (s == 0 || s == (char *)-1)
+#  undef TRUE
+#  undef FALSE
+#  undef WINDOW
+#  include <curses.h>
+#  undef WINDOW
+#  define WINDOW vile_WINDOW
+#  ifndef TRUE
+#  define TRUE 1
+#  endif
+#  ifndef FALSE
+#  define FALSE 0
+#  endif
+#  include <term.h>
+#  if !HAVE_TIGETNUM && HAVE_TIGETINT
+#    define tigetnum tigetint
+#  endif
+#else /* USE_TERMCAP */
+#  undef USE_TERMCAP
+#  define USE_TERMCAP 1
+#  define TGETSTR(name, bufp) tgetstr(name, bufp)
+#  define TGETNUM(name)       tgetnum(name)
+#  define TGETFLAG(name)      tgetflag(name)
+#  define CAPNAME(a,b)        a
+#  define NO_CAP(s)           (s == 0)
+#  if HAVE_TERMCAP_H
+#    include <termcap.h>
+#  endif
+#endif /* USE_TERMINFO */
 
-#define TCAPSLEN 768 
-static	char tcapbuf[TCAPSLEN];
-
-#if HAVE_EXTERN_TCAP_PC
-extern char PC;		/* used in 'tputs()' */
+#if USE_TERMCAP
+#  define TCAPSLEN 768 
+	static	char tcapbuf[TCAPSLEN];
+#  if HAVE_EXTERN_TCAP_PC
+	extern char PC;		/* used in 'tputs()' */
+#  endif
+#  if !HAVE_TERMCAP_H
+	extern int tgetent (char *buffer, char *termtype);
+	extern int tgetnum (char *name);
+	extern int tgetflag (char *name);
+	extern int tputs (char *string, int nlines, OUTC_DCL (*_f)(OUTC_ARGS) );
+#    if HAVE_TPARAM
+	extern char *tparam (char *cstring, char *buf, int size, ...);
+#    endif
+#  endif
 #endif
 
 static char *CM, *CE, *CL, *SO, *SE;
@@ -55,8 +101,8 @@ static char *vb;	/* visible-bell */
  * initialize_color "initc"   str    "Ic"
  * initialize_pair  "initp"   str    "Ip"
  * set_color_pair   "scp"     str    "sp"
- * set_foreground   "setf"    str    "AF"
- * set_background   "setb"    str    "AB"
+ * set_a_foreground "setaf"   str    "AF"
+ * set_a_background "setab"   str    "AB"
  * color_names      "colornm" str    "Yw"
  *
  * FIXME: In this version, we don't support color pairs, since the only
@@ -79,7 +125,8 @@ static char *vb;	/* visible-bell */
 
 static	char	*Sf;
 static	char	*Sb;
-static	char	*orig_colors;
+static	char	*OrigColors;
+static	int	have_bce;
 
 static	int	ctrans[NCOLORS];
 	/* ansi to ibm color translation table */
@@ -102,45 +149,45 @@ static const struct {
     int    code;
 } keyseqs[] = {
     /* Arrow keys */
-    { "ku",	KEY_Up },		/* up */
-    { "kd",	KEY_Down },		/* down */
-    { "kr",	KEY_Right },		/* right */
-    { "kl",	KEY_Left },		/* left */
+    { CAPNAME("ku","kcuu1"),	KEY_Up },		/* up */
+    { CAPNAME("kd","kcud1"),	KEY_Down },		/* down */
+    { CAPNAME("kr","kcuf1"),	KEY_Right },		/* right */
+    { CAPNAME("kl","kcub1"),	KEY_Left },		/* left */
     /* other cursor-movement */
-    { "kh",	KEY_Home },		/* home */
-    { "kH",	KEY_End },		/* end (variant) */
-    { "@7",	KEY_End },		/* end */
+    { CAPNAME("kh","khome"),	KEY_Home },		/* home */
+    { CAPNAME("kH","kll"),	KEY_End },		/* end (variant) */
+    { CAPNAME("@7","kend"),	KEY_End },		/* end */
     /* page scroll */
-    { "kN",	KEY_Next },		/* next page */
-    { "kP",	KEY_Prior },		/* previous page */
+    { CAPNAME("kN","knp"),	KEY_Next },		/* next page */
+    { CAPNAME("kP","kpp"),	KEY_Prior },		/* previous page */
     /* editing */
-    { "kI",	KEY_Insert },		/* Insert */
-    { "kD",	KEY_Delete },		/* Delete */
-    { "@0",	KEY_Find },		/* Find */
-    { "*6",	KEY_Select },		/* Select */
+    { CAPNAME("kI","kich1"),	KEY_Insert },		/* Insert */
+    { CAPNAME("kD","kdch1"),	KEY_Delete },		/* Delete */
+    { CAPNAME("@0","kfnd"),	KEY_Find },		/* Find */
+    { CAPNAME("*6","kslt"),	KEY_Select },		/* Select */
     /* command */
-    { "%1",	KEY_Help },		/* Help */
+    { CAPNAME("%1","khlp"),	KEY_Help },		/* Help */
     /* function keys */
-    { "k1",	KEY_F1 },		/* F1 */
-    { "k2",	KEY_F2 },
-    { "k3",	KEY_F3 },
-    { "k4",	KEY_F4 },
-    { "k5",	KEY_F5 },
-    { "k6",	KEY_F6 },
-    { "k7",	KEY_F7 },
-    { "k8",	KEY_F8 },
-    { "k9",	KEY_F9 },
-    { "k;",	KEY_F10 },		/* F10 */
-    { "F1",	KEY_F11 },		/* F11 */
-    { "F2",	KEY_F12 },		/* F12 */
-    { "F3",	KEY_F13 },		/* F13 */
-    { "F4",	KEY_F14 },
-    { "F5",	KEY_F15 },
-    { "F6",	KEY_F16 },
-    { "F7",	KEY_F17 },
-    { "F8",	KEY_F18 },
-    { "F9",	KEY_F19 },		/* F19 */
-    { "FA",	KEY_F20 }		/* F20 */
+    { CAPNAME("k1","kf1"),	KEY_F1 },		/* F1 */
+    { CAPNAME("k2","kf2"),	KEY_F2 },
+    { CAPNAME("k3","kf3"),	KEY_F3 },
+    { CAPNAME("k4","kf4"),	KEY_F4 },
+    { CAPNAME("k5","kf5"),	KEY_F5 },
+    { CAPNAME("k6","kf6"),	KEY_F6 },
+    { CAPNAME("k7","kf7"),	KEY_F7 },
+    { CAPNAME("k8","kf8"),	KEY_F8 },
+    { CAPNAME("k9","kf9"),	KEY_F9 },
+    { CAPNAME("k;","kf10"),	KEY_F10 },		/* F10 */
+    { CAPNAME("F1","kf11"),	KEY_F11 },		/* F11 */
+    { CAPNAME("F2","kf12"),	KEY_F12 },		/* F12 */
+    { CAPNAME("F3","kf13"),	KEY_F13 },		/* F13 */
+    { CAPNAME("F4","kf14"),	KEY_F14 },
+    { CAPNAME("F5","kf15"),	KEY_F15 },
+    { CAPNAME("F6","kf16"),	KEY_F16 },
+    { CAPNAME("F7","kf17"),	KEY_F17 },
+    { CAPNAME("F8","kf18"),	KEY_F18 },
+    { CAPNAME("F9","kf19"),	KEY_F19 },		/* F19 */
+    { CAPNAME("FA","kf20"),	KEY_F20 }		/* F20 */
 };
 
 static int  tcapcres ( char *cres );
@@ -157,20 +204,6 @@ static void tcapopen (void);
 static void tcapscroll_delins(int from, int to, int n);
 static void tcapscroll_reg(int from, int to, int n);
 static void tcapscrollregion(int top, int bot);
-
-extern char *tgoto (char *cstring, int hpos, int vpos);
-extern int tgetent (char *buffer, char *termtype);
-extern int tgetnum (char *name );
-extern char *tgetstr (char *name, char **area);
-extern int tputs (char *string, int nlines, void(*_f)(int) );
-
-#if HAVE_TPARM
-extern char *tparm (char *fmt, ...);
-#endif
-
-#if HAVE_TPARAM
-extern char *tparam (char *cstring, char *buf, int size, ...);
-#endif
 
 #if OPT_COLOR
 static void tcapfcol ( int color );
@@ -247,49 +280,52 @@ static	int	x_origin = 1,
 static void
 tcapopen(void)
 {
-	char *t, *p;
+#if USE_TERMCAP
 	char tcbuf[2048];
-	char *tv_stype;
 	char err_str[72];
-	int i, j;
+	char *t, *p;
+#endif
+	char *tv_stype;
+	SIZE_T i;
+	int j;
 	static int already_open = 0;
 
 	static const struct {
 		char *name;
 		char **data;
 	} tc_strings[] = {
-		 { "AL", &AL }		/* add p1 lines above cursor */
-		,{ "DL", &DL }		/* delete p1 lines, begin at cursor */
-		,{ "al", &al }		/* add line below cursor */
-		,{ "ce", &CE }		/* clear to end of line */
-		,{ "cl", &CL }		/* clear screen, cursor to home */
-		,{ "cm", &CM }		/* move cursor to row p1, col p2 */
-		,{ "cs", &CS }		/* set scrolling to rows p1 .. p2 */
-		,{ "dl", &dl }		/* delete line */
-		,{ "ke", &KE }		/* end keypad-mode */
-		,{ "ks", &KS }		/* start keypad-mode */
-		,{ "se", &SE }		/* end standout-mode */
-		,{ "sf", &SF }		/* scroll forward 1 line */
-		,{ "so", &SO }		/* start standout-mode */
-		,{ "sr", &SR }		/* scroll reverse 1 line */
-		,{ "te", &TE }		/* end cursor-motion program */
-		,{ "ti", &TI }		/* initialize cursor-motion program */
+	 { CAPNAME("AL","il"),    &AL }		/* add p1 lines above cursor */
+	,{ CAPNAME("DL","dl"),    &DL }		/* delete p1 lines, begin at cursor */
+	,{ CAPNAME("al","il1"),   &al }		/* add line below cursor */
+	,{ CAPNAME("ce","el"),    &CE }		/* clear to end of line */
+	,{ CAPNAME("cl","clear"), &CL }		/* clear screen, cursor to home */
+	,{ CAPNAME("cm","cup"),   &CM }		/* move cursor to row p1, col p2 */
+	,{ CAPNAME("cs","csr"),   &CS }		/* set scrolling to rows p1 .. p2 */
+	,{ CAPNAME("dl","dl1"),   &dl }		/* delete line */
+	,{ CAPNAME("ke","rmkx"),  &KE }		/* end keypad-mode */
+	,{ CAPNAME("ks","smkx"),  &KS }		/* start keypad-mode */
+	,{ CAPNAME("se","rmso"),  &SE }		/* end standout-mode */
+	,{ CAPNAME("sf","ind"),   &SF }		/* scroll forward 1 line */
+	,{ CAPNAME("so","smso"),  &SO }		/* start standout-mode */
+	,{ CAPNAME("sr","ri"),    &SR }		/* scroll reverse 1 line */
+	,{ CAPNAME("te","rmcup"), &TE }		/* end cursor-motion program */
+	,{ CAPNAME("ti","smcup"), &TI }		/* initialize cursor-motion program */
 #if	OPT_COLOR
-		,{ "AF", &Sf }		/* set ANSI foreground-color */
-		,{ "AB", &Sb }		/* set ANSI background-color */
-		,{ "Sf", &Sf }		/* set foreground-color */
-		,{ "Sb", &Sb }		/* set background-color */
-		,{ "op", &orig_colors }	/* set to original color pair */
-		,{ "oc", &orig_colors }	/* set to original colors */
+	,{ CAPNAME("AF","setaf"), &Sf }		/* set ANSI foreground-color */
+	,{ CAPNAME("AB","setab"), &Sb }		/* set ANSI background-color */
+	,{ CAPNAME("Sf","setf"),  &Sf }		/* set foreground-color */
+	,{ CAPNAME("Sb","setb"),  &Sb }		/* set background-color */
+	,{ CAPNAME("op","op"), &OrigColors }	/* set to original color pair */
+	,{ CAPNAME("oc","oc"), &OrigColors }	/* set to original colors */
 #endif
 #if	OPT_FLASH
-		,{ "vb", &vb }		/* visible bell */
+	,{ CAPNAME("vb","flash"), &vb }		/* visible bell */
 #endif
 #if	OPT_VIDEO_ATTRS
-		,{ "me", &ME }		/* turn off all attributes */
-		,{ "md", &MD }		/* turn on bold attribute */
-		,{ "us", &US }		/* underline-start */
-		,{ "ue", &UE }		/* underline-end */
+	,{ CAPNAME("me","sgr0"),  &ME }		/* turn off all attributes */
+	,{ CAPNAME("md","bold"),  &MD }		/* turn on bold attribute */
+	,{ CAPNAME("us","smul"),  &US }		/* underline-start */
+	,{ CAPNAME("ue","rmul"),  &UE }		/* underline-end */
 #endif
 	};
 
@@ -302,58 +338,75 @@ tcapopen(void)
 		ExitProgram(BADEXIT);
 	}
 
+#if USE_TERMINFO
+	setupterm(tv_stype, fileno(stdout), (int *)0);
+#else
 	if ((tgetent(tcbuf, tv_stype)) != 1)
 	{
 		(void)lsprintf(err_str, "Unknown terminal type %s!", tv_stype);
 		puts(err_str);
 		ExitProgram(BADEXIT);
 	}
+#endif
 
 	/* Get screen size from system, or else from termcap.  */
 	getscreensize(&term.t_ncol, &term.t_nrow);
  
-	if ((term.t_nrow <= 1) && (term.t_nrow=(short)tgetnum("li")) == -1) {
+	if ((term.t_nrow <= 1)
+	 && (term.t_nrow = TGETNUM(CAPNAME("li","lines"))) < 0) {
 		term.t_nrow = 24;
 	}
 
-	if ((term.t_ncol <= 1) &&(term.t_ncol=(short)tgetnum("co")) == -1){
+	if ((term.t_ncol <= 1)
+	 && (term.t_ncol = TGETNUM(CAPNAME("co","cols"))) < 0){
 		term.t_ncol = 80;
 	}
 
 	/* are we probably an xterm?  */
-	p = tcbuf;
 	i_am_xterm = FALSE;
-	if (strncmp(tv_stype, "xterm", sizeof("xterm") - 1) == 0) {
+	if (!strncmp(tv_stype, "xterm", sizeof("xterm") - 1)
+	 || !strcmp(tv_stype, "rxvt")) {
 		i_am_xterm = TRUE;
-		x_origin = 0;
-		y_origin = 0;
 	}
-	else
+#if USE_TERMCAP
+	else {
+		p = tcbuf;
 		while (*p && *p != ':') {
 			if (*p == 'x' 
 			    && strncmp(p, "xterm", sizeof("xterm") - 1) == 0) {
 				i_am_xterm = TRUE;
-				x_origin = 0;
-				y_origin = 0;
 				break;
 			}
 			p++;
 		}
+	}
+#endif
+	if (i_am_xterm) {
+		x_origin = 0;
+		y_origin = 0;
+	}
 
 	term.t_mrow =  term.t_nrow;
 	term.t_mcol =  term.t_ncol;
 
+#if USE_TERMCAP
 	p = tcapbuf;
+#endif
 	for (i = 0; i < TABLESIZE(tc_strings); i++) {
 		/* allow aliases */
-		if (*(tc_strings[i].data) == 0)
-		    *(tc_strings[i].data) = tgetstr(tc_strings[i].name, &p);
+		if (NO_CAP(*(tc_strings[i].data)))
+		    *(tc_strings[i].data) = TGETSTR(tc_strings[i].name, &p);
+		/* simplify subsequence checks */
+		if (NO_CAP(*(tc_strings[i].data)))
+		    *(tc_strings[i].data) = 0;
 	}
 
-#if HAVE_EXTERN_TCAP_PC
-	t = tgetstr("pc", &p);
+#if USE_TERMCAP
+#  if HAVE_EXTERN_TCAP_PC
+	t = TGETSTR("pc", &p);
 	if(t)
 		PC = *t;
+#  endif
 #endif
 
 	if (SO != NULL)
@@ -371,7 +424,7 @@ tcapopen(void)
 	if (!CS || !SR) { /* some xterm's termcap entry is missing entries */
 		if (i_am_xterm) {
 			if (!CS) CS = "\033[%i%d;%dr";
-			if (!SR) SR = "\033[M";
+			if (!SR) SR = "\033M";
 		}
 	}
 
@@ -385,8 +438,20 @@ tcapopen(void)
 		term.t_scroll = null_t_scroll;
 	}
 #if	OPT_COLOR
-	if (orig_colors == 0)
-		orig_colors = tgetstr("me", &p);
+	/*
+	 * If we've got one of the canonical strings for resetting to the
+	 * default colors, we don't have to assume the screen is black/white.
+	 */
+	if (OrigColors != 0) {
+		set_global_g_val(GVAL_FCOLOR, NO_COLOR); /* foreground color */
+		set_global_g_val(GVAL_BCOLOR, NO_COLOR); /* background color */
+	}
+
+	/* clear with current bcolor */
+	have_bce = TGETFLAG(CAPNAME("ut","bce")) > 0;
+
+	if (OrigColors == 0)
+		OrigColors = ME;
 	set_palette(initpalettestr);
 #endif
 #if OPT_VIDEO_ATTRS
@@ -397,8 +462,8 @@ tcapopen(void)
 #endif
 
 	for (i = TABLESIZE(keyseqs); i--; ) {
-	    char *seq = tgetstr(keyseqs[i].capname, &p);
-	    if (seq) {
+	    char *seq = TGETSTR(keyseqs[i].capname, &p);
+	    if (!NO_CAP(seq)) {
 		int len;
 #define DONT_MAP_DEL 1
 #if DONT_MAP_DEL
@@ -440,11 +505,13 @@ tcapopen(void)
 #endif
 #endif
 	        
+#if USE_TERMCAP
 	if (p >= &tcapbuf[TCAPSLEN])
 	{
 		puts("Terminal description too big!\n");
 		ExitProgram(BADEXIT);
 	}
+#endif
 	ttopen();
 	already_open = TRUE;
 }
@@ -457,7 +524,7 @@ tcapclose(void)
 		putpad(ME);
 #endif
 	TTmove(term.t_nrow-1, 0);	/* cf: dumbterm.c */
-	tcapeeol();
+	TTeeol();
 #if OPT_COLOR
 	shown_fcolor = shown_bcolor =
 	given_fcolor = given_bcolor = NO_COLOR;
@@ -511,9 +578,45 @@ tcapmove(register int row, register int col)
 	putpad(tgoto(CM, col, row));
 }
 
+#if	OPT_COLOR
+/*
+ * Accommodate brain-damaged non-bce terminals by writing a blank to each
+ * space that we'll color, return true if we moved the cursor.
+ */
+static int
+clear_non_bce(int row, int col)
+{
+	int n;
+	int last = (row >= term.t_nrow-1) ? (term.t_ncol - 1) : term.t_ncol;
+	if (col < last) {
+		for (n = col; n < last; n++)
+			ttputc(' ');
+		return TRUE;
+	}
+	return FALSE;
+}
+
+static void
+erase_non_bce(int row, int col)
+{
+	if (clear_non_bce(row, col))
+		TTmove(row, col);
+}
+
+#define NEED_BCE_FIX (!have_bce && gbcolor != NO_COLOR)
+#define FILL_BCOLOR(row,col) if(NEED_BCE_FIX) erase_non_bce(row, col)
+#else
+#define FILL_BCOLOR(row,col) /*nothing*/
+#endif
+
 static void
 tcapeeol(void)
 {
+#if	OPT_COLOR
+	if (NEED_BCE_FIX) {
+		erase_non_bce(ttrow, ttcol);
+	} else
+#endif
 	putpad(CE);
 }
 
@@ -523,6 +626,19 @@ tcapeeop(void)
 #if	OPT_COLOR
 	tcapfcol(gfcolor);
 	tcapbcol(gbcolor);
+
+	if (NEED_BCE_FIX) {
+		int row = ttrow;
+		if (row < term.t_nrow) {
+			while (row++ < term.t_nrow) {
+				TTmove(row, 0);
+				(void) clear_non_bce(row, 0);
+			}
+		}
+		if (!clear_non_bce(ttrow, ttcol)
+		 && ttrow != term.t_nrow)
+			TTmove(ttrow, ttcol);
+	} else
 #endif
 	putpad(CL);
 }
@@ -544,13 +660,17 @@ tcapscroll_reg(int from, int to, int n)
 	if (to < from) {
 		tcapscrollregion(to, from + n - 1);
 		tcapmove(from + n - 1,0);
-		for (i = from - to; i > 0; i--)
+		for (i = from - to; i > 0; i--) {
 			putpad(SF);
+			FILL_BCOLOR(from + n - 1, 0);
+		}
 	} else { /* from < to */
 		tcapscrollregion(from, to + n - 1);
 		tcapmove(from,0);
-		for (i = to - from; i > 0; i--)
+		for (i = to - from; i > 0; i--) {
 			putpad(SR);
+			FILL_BCOLOR(from, 0);
+		}
 	}
 	tcapscrollregion(0, term.t_nrow-1);
 }
@@ -572,11 +692,13 @@ tcapscroll_delins(int from, int to, int n)
 			putpad(tgoto(DL,0,from-to));
 			tcapmove(to+n,0);
 			putpad(tgoto(AL,0,from-to));
+			FILL_BCOLOR(to+n, 0);
 		} else {
 			tcapmove(from+n,0);
 			putpad(tgoto(DL,0,to-from));
 			tcapmove(from,0);
 			putpad(tgoto(AL,0,to-from));
+			FILL_BCOLOR(from+n, 0);
 		}
 	} else { /* must be dl and al */
 #if OPT_PRETTIER_SCROLL
@@ -593,15 +715,19 @@ tcapscroll_delins(int from, int to, int n)
 			for (i = from - to; i > 0; i--)
 				putpad(dl);
 			tcapmove(to+n,0);
-			for (i = from - to; i > 0; i--)
+			for (i = from - to; i > 0; i--) {
 				putpad(al);
+				FILL_BCOLOR(to + n, 0);
+			}
 		} else {
 			tcapmove(from+n,0);
 			for (i = to - from; i > 0; i--)
 				putpad(dl);
 			tcapmove(from,0);
-			for (i = to - from; i > 0; i--)
+			for (i = to - from; i > 0; i--) {
 				putpad(al);
+				FILL_BCOLOR(from, 0);
+			}
 		}
 	}
 }
@@ -621,8 +747,8 @@ show_ansi_colors (void)
 
 	if (shown_fcolor == NO_COLOR
 	 || shown_bcolor == NO_COLOR) {
-		if (orig_colors)
-			putpad(orig_colors);
+		if (OrigColors)
+			putpad(OrigColors);
 	}
 
 #if HAVE_TPARM
@@ -727,7 +853,7 @@ tcapattr(int attr)
 	attr &= ~(VAML|VAMLFOC);
 
 	if (attr != last) {
-		register int n;
+		register SIZE_T n;
 		register char *s;
 		int	diff = attr ^ last;
 		int	ends = FALSE;

@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.219 1996/04/16 02:29:34 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.220 1996/10/04 23:55:50 tom Exp $
  *
  */
 
@@ -3308,8 +3308,8 @@ static int psc_col;
 #define SWAP_VT_PSC \
 	do { SWAP_INT(vtcol, psc_col); SWAP_INT(vtrow, psc_row); } one_time
 
-void
-psc_putchar(int c)
+OUTC_DCL
+psc_putchar(OUTC_ARGS)
 {
     if (c == '\b') {
 	if (psc_col > 0)
@@ -3321,6 +3321,7 @@ psc_putchar(int c)
 	vscreen[vtrow]->v_flag |= VFCHG;
 	SWAP_VT_PSC;
     }
+    OUTC_RET c;
 }
 
 void

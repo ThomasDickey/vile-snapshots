@@ -1,5 +1,27 @@
 Changes for vile 6.2 (released ??? ??? ??, 1996)
 
+(tom)	961004 (b)
+	+ rename 'refresh()' to 'vile_refresh()', 'filter()' to 'vile_filter()',
+	  to avoid naming-conflict when including <curses.h> to support terminfo
+	  driver.
+	+ correct missing assignment for scanpt from 6.1a (exec.c).
+	+ correct sign-extension problem in setup_dobuf() from 6.1a (exec.c)
+	+ added (write-only!) $cryptkey variable (eval.c).
+	+ don't attempt to set encryption on temporary buffers unless global
+	  'crypt' mode is set (buffer.c).
+	+ correct logic that reset local 'crypt' mode w/o restoring it, preventing
+	  user from reading encrypted files (file.c)
+	+ modify so that OPT_CRYPT and OPT_WORDCOUNT are normally configured.
+	+ modify termcap driver to conditionally compile for terminfo libraries
+	  so that if vile is built on a system such as Solaris that provides
+	  termcap compatibility via terminfo, the color support will work.
+	+ modify configure script to check for terminfo libraries.
+	+ modify termcap driver so that if "op" (original pair) is defined,
+	  fcolor and bcolor default to "default", for better compatibilty
+	  with color_xterm and dtterm (tcap.c).
+	+ modify termcap driver to use "ut" capability to denote whether
+	  background-color-erase (bce) is supported (tcap.c).
+
 (tom)	960920 (a)
 	+ allow continuation-lines in macros, denoted by a backslash at the
 	  end of the line.
