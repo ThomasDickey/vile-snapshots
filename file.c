@@ -5,7 +5,7 @@
  *	reading and writing of the disk are in "fileio.c".
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.203 1997/02/27 20:47:47 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.204 1997/02/28 02:03:15 tom Exp $
  *
  */
 
@@ -1772,12 +1772,12 @@ out:
 	return (s != FIOERR);
 }
 
-static char *mailcmds[] = {
+static const char *mailcmds[] = {
 	"/usr/lib/sendmail",
 	"/sbin/sendmail",
 	"/usr/sbin/sendmail",
 	"/bin/mail",
-	(char *)0
+	0
 };
 
 /* called on hangups, interrupts, and quits */
@@ -1861,7 +1861,7 @@ imdying(int ACTUAL_SIG_ARGS)
 	}
 #if SYS_UNIX
 	if (wrote) {
-		char **mailcmdp;
+		const char **mailcmdp;
 		struct stat sb;
 		/* choose the first mail sender we can find.
 		   it used to be you could rely on /bin/mail being

@@ -13,7 +13,7 @@
  *	The same goes for vile.  -pgf, 1990-1995
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.287 1997/02/27 11:58:48 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.288 1997/02/28 02:02:55 tom Exp $
  *
  */
 
@@ -966,7 +966,7 @@ global_val_init(void)
 		s = strmalloc(".vilerc");
 #endif
 	}
-	startup_file = strmalloc(".vilerc");
+	startup_file = strmalloc(s);
 
 	if ((s = getenv("VILE_STARTUP_PATH")) == 0) {
 #if	SYS_MSDOS || SYS_WIN31 || SYS_OS2 || SYS_WINNT
@@ -988,9 +988,9 @@ global_val_init(void)
 	{
 		char temp[NFILEN];
 		int found = FALSE;
+		const char *t = startup_path;
 
-		s = startup_path;
-		while ((s = parse_pathlist(s, temp)) != 0) {
+		while ((t = parse_pathlist(t, temp)) != 0) {
 			if (!strcmp(temp, HELP_LOC)) {
 				found = TRUE;
 				break;

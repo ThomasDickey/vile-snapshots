@@ -1,4 +1,11 @@
-Changes for vile 7.0 (released ??? Feb ??, 1997)
+Changes for vile 7.0 (released Fri Feb 28, 1997)
+
+(tom)	970228
+	+ corrected OS/2 pipe problem, by closing dup'd file descriptors
+	  (os2pipe.c).
+	+ correct special IRIX 5.x -lsocket test, from 6.5c
+	+ correct logic for VILE_STARTUP_FILE (main.c).
+	+ correct a couple of uses of const (main.c, file.c).
 
 (pgf)	970227 (e)
 	+ fixed the mail sending in imdying.  i think it's been trying

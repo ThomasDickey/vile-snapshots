@@ -1,5 +1,5 @@
 
-Getting along with vile						(version 6.5)
+Getting along with vile						(version 7.0)
 -----------------------						-------------
 
 	Use Ctrl-D and Ctrl-U to scroll through this help information.
@@ -236,7 +236,7 @@ Window manipulation commands:
 	zt zm zb
 		These are synonyms for vi's 'z+', 'z.', and 'z-', which
 		position the line holding the cursor at the top, middle, or
-		bottom of the screen, respectively.  (Any of the second 
+		bottom of the screen, respectively.  (Any of the second
 		characters can be upper or lower case.)  Mnemonically, these
 		correspond to the H, M, and L screen positioning commands,
 		or to "top", "middle", or "bottom" -- take your choice.
@@ -340,7 +340,8 @@ Shell Access
 	edit a file in one directory, cd to another, and write it.  You
 	must explicitly write to ./filename in the new directory to
 	accomplish this.  ":cd -" will return to the previous directory, as
-	it does in some shells.
+	it does in some shells.  The CDPATH environment variable provides a
+	search path for the :cd command.
 
 	Giving an argument to the ": !" (also called "shell-command" when
 	writing macros) will suppress the "Press return to continue" message
@@ -420,7 +421,7 @@ Text manipulation command:
 	(BTW, the one case i know of where "u." is not identical to "uu" is
 	when putting back the contents of the numbered registers:  the
 	sequence "1pu.u.u.u. would successively insert the contents of "1,
-	"2, "3, "4, and "5, allowing you to choose the "correct" register. 
+	"2, "3, "4, and "5, allowing you to choose the "correct" register.
 	This sequence no longer works.  You can still put them _all_ back
 	with "1p..... and then delete the ones you _don't_ want. ]
 
@@ -681,7 +682,7 @@ Miscellaneous commands
 
 		The command parsing is done with regular expressions.  vile
 		compiles these from the buffer [Error Expressions], which are a
-		set of regular expressions with extra embedded information. 
+		set of regular expressions with extra embedded information.
 		Unescaped '%' followed by 'V', 'F', 'L', 'C' or 'T' substitute
 		verb (Entering/Leaving for gmake), file, line, column and text
 		fields.  The V, F, T substitutions are for nonblank fields,
@@ -871,7 +872,7 @@ Completion
 	An older form of completion is also supported:
 	    You can also type a question mark (or the current "test-
 	    completions" terminal character) to display a list of the
-	    characters that you would have to type to complete the command. 
+	    characters that you would have to type to complete the command.
 	    For example, to complete the "unmark" or "unmap" commands:
 		:unm?			-- you type
 		:unm{a}[pr]		-- you see
@@ -1255,7 +1256,7 @@ Editor modes
 
 	readonly (ro) Prevent writing a buffer to its associated file.  Unlike
 		"view" mode (see below) which prevents any modifications to
-		a buffer, this mode allows changes, but prevents updates. 
+		a buffer, this mode allows changes, but prevents updates.
 		This is set automatically for the output of shell commands
 		and pipes. (B)
 
@@ -1431,7 +1432,7 @@ Editor modes
 		adding a "-1", "-2", etc. to the end of the name.  Turning
 		off "warn-rename" will make vile choose buffer names without
 		user intervention.  (U)
-		
+
 	warn-reread  When using ":e!" to reread a buffer from the file on
 		disk, vile will normally warn you that you are about to
 		clobber a modified buffer.  Turning off "warn-reread" mode
@@ -1523,7 +1524,7 @@ Editor modes
 	    arithmetic division symbol.
 
 	Users who have no need to enter 8-bit text may want access to the
-	meta-bound functions while in insert mode as well as command mode. 
+	meta-bound functions while in insert mode as well as command mode.
 	The mode "meta-insert-bindings" controls whether functions bound to
 	meta- keys (characters with the high bit set) are executed only in
 	command mode, or in both command and insert modes.  In either case,
@@ -1550,17 +1551,17 @@ Special Character Expansion
 
 	As in vi, the % and # characters typed while responding to a prompt
 	will expand to the current or "alternate" filename.
-	
+
 	Also as in vi, the ~ character will expand to be the previous
 	replacement pattern when entering either a replacement or search
 	pattern,
-	
+
 	In addition, the colon character (":") expands at most prompts to
 	be the identifier name under the cursor.
-	
+
 	Expansion of ! to the last command run is implemented, but only
 	when a shell command is being entered.
-	
+
 	Any of these expansions can be suppressed by prefixing with a '\'.
 
 Key Rebinding
@@ -1759,7 +1760,7 @@ Key Rebinding
 	Since key sequences starting the '^X', '^A', or '#' prefixes
 	are normally expected to act as a unit, no remapping is done on
 	characters that follow such prefixes.  For instance, this keeps a
-	map like: 
+	map like:
 		:map h ihello<ESC>
 	from breaking the '^X-h' command.
 
@@ -2411,7 +2412,7 @@ Regular Expressions
   &	substitute for the entire match string.
 
   ~	The tilde (~) character will expand immediately when it is typed
-	to be the contents of the previously entered replacement pattern. 
+	to be the contents of the previously entered replacement pattern.
 	[ Earlier versions of vile made this version of the pattern
 	available immediately, as a default response, but this made it
 	difficult to substitute nothing after previously substituting
@@ -2478,6 +2479,16 @@ Invocation
 				source \"$HOME/.vilerc\"
 			~endif
 		~endif"
+
+	Other environment variables:
+
+	VILE_HELP_FILE
+		override the name of the help file, normally "vile.hlp".
+	VILE_STARTUP_FILE
+		override the name of the startup file, normally ".vilerc"
+		(or "vile.rc" for non-UNIX systems).
+	VILE_STARTUP_PATH
+		override the search path for the startup and help files.
 
 
 	Command line options
@@ -3134,7 +3145,7 @@ DOS specifics
 	"backslash" ('\') will work, but you should be aware that vile uses
 	this character as an escape mechanism for entering special
 	characters (e.g. "\t" for TAB) in strings.  As an example setting
-	"tags" to "tags ..\tags" will not have the intended result. 
+	"tags" to "tags ..\tags" will not have the intended result.
 	Instead, use "tags ..\\tags" or better, "tags ../tags".
 
 	vile should leave your screen in the mode you're in when you
@@ -3369,9 +3380,9 @@ Notes on TERM types and Scrolling
 Credits
 -------
 
-	[ As of version 6.1, I think Tom Dickey may be taking over the
-	"official" source tree, and release responsibilities.  This
-	hasn't completely firmed up yet... ]
+	Since version 6.1, Tom Dickey has been maintaining the "official"
+	source tree, and release responsibilities.  Paul Fox maintains the
+	mailing lists.
 
 	This code has been written by a _lot_ of people, with help from a
 	lot more sending in bug reports, fixes, and suggestions.  The
@@ -3399,14 +3410,14 @@ Credits
 	'notgnu' editor, by Julie Melbin.  Patches to support OS/2 and
 	Windows/NT came from Charles Moschel and Joe Greer, respectively.
 	Clark Morgan and Greg McFarlane seem to run full regression tests
-	on each new release, and always seem to find something to report. 
+	on each new release, and always seem to find something to report.
 	Sean Ahern is also always dependable for finding a bug or two per
 	release.  The reference.doc file supplied with Bram Moolenaar's
 	excellent Vim editor was useful in unraveling some of the less
 	obvious parts of :map functionality.  In addition, his
 	implementation of digraph insertion was used directly in the
 	creation of digraphs.rc.  Thanks to Jukka Keto for contributing the
-	c-filt.c code. 
+	c-filt.c code.
 
 	The initial changes to create vile from micro-Emacs were all done
 	by Paul Fox (pgf@foxharp.boston.ma.us).  (By the way, he is not the
@@ -3423,4 +3434,4 @@ Problems
 
 Copyright 1995,1996 by Paul Fox, Tom Dickey, and Kevin Buettner
 ---------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.313 1997/02/18 01:07:53 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.314 1997/02/28 23:54:48 tom Exp $

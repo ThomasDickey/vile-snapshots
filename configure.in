@@ -1,11 +1,11 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_REVISION($Revision: 1.49 $)
+AC_REVISION($Revision: 1.50 $)
 AC_PREREQ(2.12)
 
 ### Use "configure -with-screen" to override the default configuration, which is
 ### termcap-based on unix systems.
 
-dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.49 1997/02/27 00:03:52 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.50 1997/02/28 23:25:41 tom Exp $
 
 dnl
 AC_INIT(mktbls.c)
@@ -205,9 +205,9 @@ changequote([,])dnl
 		# for these prior to checking for the X11R6 -lSM and -lICE
 		# libraries.  The resultant failures cascade...
 		# 	(tested on Solaris 2.5 w/ X11R6)
+		SYSTEM_NAME=`echo "$system_name"|tr ' ' -`
 		case $SYSTEM_NAME in
-		IRIX-5*)
-			;;
+		IRIX-5*) ;;
 		*)
 			AC_CHECK_LIB(socket,socket)
 			AC_CHECK_LIB(nsl,gethostname)
