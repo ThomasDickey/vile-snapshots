@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.45 2000/06/09 01:33:37 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.47 2000/07/26 23:21:22 tom Exp $
  */
 
 #ifndef FILTERS_H
@@ -90,6 +90,10 @@ extern	char *home_dir(void);
 #endif /* _estruct_h */
 
 #include <ctype.h>
+
+/* win32 "enhanced" shell cannot echo '&', which we need for builtflt.h */
+#undef ADDR
+#define ADDR(value) &value
 
 #define MY_NAME "vile"
 

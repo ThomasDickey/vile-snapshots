@@ -1,10 +1,20 @@
 #
 # makefile for vile on WIN32 using Microsoft Visual C++
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.wnt,v 1.58 2000/02/27 21:48:21 cmorgan Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.wnt,v 1.61 2000/07/27 02:49:18 tom Exp $
 #
 #
 !include <ntwin32.mak>
+
+###############################################################################
+# These are the symbols that you may wish to set on the command line:
+#	CFG - primary configuration (console vs windows)
+#	DBG - nonempty for debugging
+#	FLT - nonempty for built-in filters
+#	LEX - name of flex/lex program, if any (needed to make most filters).
+#	OPT - secondary configuration (extra features)
+#	ICON - winvile's icon
+###############################################################################
 
 # you can override the icon to suit your taste (e.g,. vile, kitchen-sink,
 # or V-eye pumpkin).
@@ -77,18 +87,18 @@ MY_LDOPT = -pdb:none
 DISP_DEF = -DDISP_NTCONS
 TARGET   = vile.exe
 CFLAGS   = $(cvarsmt) $(CC_DEBUG) -nologo -DWIN32_LEAN_AND_MEAN -G4 \
-           -Dscrn_chosen $(DISP_DEF) $(PERLOPTS) $(MY_CCOPT)
+	   -Dscrn_chosen $(DISP_DEF) $(PERLOPTS) $(MY_CCOPT)
 LDFLAGS  = -nologo $(MY_LDOPT)
 SCREEN   = ntconio
 LIBS     = $(LD_DEBUG) $(conlflags) $(conlibsmt) user32.lib comdlg32.lib \
-           $(VILE_PERL_LIB)
+	   $(VILE_PERL_LIB)
 !endif
 
 !IF  "$(CFG)" == "winvile" || "$(CFG)" == "winvile-with-perl"
 DISP_DEF = -DDISP_NTWIN
 TARGET   = winvile.exe
 CFLAGS   = $(cvarsmt) $(CC_DEBUG) -nologo -DWIN32_LEAN_AND_MEAN -G4 \
-           -Dscrn_chosen $(DISP_DEF) $(PERLOPTS) $(MY_CCOPT)
+	   -Dscrn_chosen $(DISP_DEF) $(PERLOPTS) $(MY_CCOPT)
 LDFLAGS  = -nologo /subsystem:windows /incremental:no $(MY_LDOPT)
 SCREEN   = ntwinio
 LIBS     = $(LD_DEBUG) $(guilflags) $(guilibsmt) $(VILE_PERL_LIB) $(OLELIBS) shell32.lib
@@ -134,13 +144,32 @@ PERL_SCRIPTS = \
 	perl/search.pm
 !ENDIF
 
-# these are normal editable headers
-HDRS = estruct.h edef.h proto.h dirstuff.h
+MYLIBS	=
 
 # these headers are built by the mktbls program from the information in cmdtbl
 # and in modetbl
-BUILTHDRS = nebind.h neproto.h neexec.h nefunc.h nemode.h nename.h nevars.h \
-            nefkeys.h nefsms.h
+MYHDRS	= \
+	nebind.h \
+	neexec.h \
+	nefkeys.h \
+	nefsms.h \
+	nefunc.h \
+	nemode.h \
+	nename.h \
+	neproto.h \
+	nevars.h
+
+FLTLIB	= filters\builtflt.lib
+
+!IF  "$(FLT)" != ""
+EXTRA	= $(EXTRA) builtflt.obj
+# MYHDRS	= $(MYHDRS) builtflt.h
+MYLIBS	= $(MYLIBS) $(FLTLIB)
+CFLAGS	= $(CFLAGS) -DOPT_FILTER -Ifilters -I.
+!endif
+
+# these are normal editable headers
+HDRS = estruct.h edef.h proto.h dirstuff.h
 
 SRC = 	main.c $(SCREEN).c \
 	basic.c bind.c btree.c buffer.c \
@@ -178,8 +207,8 @@ OBJ = 	main.obj $(SCREEN).obj \
 
 all :: $(PERLCFG) $(TARGET) $(WRAPUTIL)
 
-$(TARGET): 	$(BUILTHDRS) $(OBJ)
-	$(link) $(LDFLAGS) $(OBJ) $(LIBS) -out:$(TARGET)
+$(TARGET): 	$(MYHDRS) $(OBJ) $(FLTLIB)
+	$(link) $(LDFLAGS) $(OBJ) $(FLTLIB) $(LIBS) -out:$(TARGET)
 
 winvile.res :	winvile.rc winvile.h
 	$(RC) -DVILE_ICON="$(ICON).ico" -Iicons winvile.rc
@@ -188,7 +217,15 @@ winvile.res :	winvile.rc winvile.h
 $(PERLCFG): $(PERL_SCRIPTS) mkprlenv.wnt
 !INCLUDE "mkprlenv.wnt"
 
-$(OBJ): estruct.h nemode.h edef.h neproto.h proto.h nefkeys.h
+$(OBJ): estruct.h edef.h proto.h $(MYHDRS) 
+builtflt.obj : builtflt.h
+
+builtflt.h : \
+	filters\mk-0th.bat filters\genmake.mak
+	filters\mk-0th.bat filters\genmake.mak intern > $@
+
+$(FLTLIB) :
+	cd filters && $(MAKE) -f makefile.wnt all FLT=all -$(MAKEFLAGS) 
 
 nebind.h \
 nefkeys.h \
@@ -204,8 +241,8 @@ nemode.h:	modetbl mktbls.exe
 	mktbls.exe modetbl
 
 perl.c: perl.xs ptypemap
-    perl $(VILE_PERL_UTILS)\xsubpp -typemap $(VILE_PERL_UTILS)\typemap \
-        -typemap ptypemap perl.xs > $@
+	perl $(VILE_PERL_UTILS)\xsubpp -typemap $(VILE_PERL_UTILS)\typemap \
+		-typemap ptypemap perl.xs > $@
 
 vile-perl-api.pod: perl.xs
 	perl -lne "print if s/^\s{1,2}#\s{0,1}//" perl.xs > $@
@@ -220,22 +257,23 @@ mktbls.exe:  mktbls.c
 	$(cc) $(CFLAGS) mktbls.c -Fomktbls -link $(CON_LDFLAGS)
 
 w32ole.res: w32ole.rc winvile.tlb
-    $(RC) $(DISP_DEF) -DVILE_ICON="$(ICON).ico" -Iicons w32ole.rc
+	$(RC) $(DISP_DEF) -DVILE_ICON="$(ICON).ico" -Iicons w32ole.rc
 
 winviletlb.h winvile.tlb: winvile.odl
-    midl -h winviletlb.h -tlb winvile.tlb winvile.odl
+	midl -h winviletlb.h -tlb winvile.tlb winvile.odl
 
 clean ::
-    -del *.bak
-    -del *.exe
-    -del *.obj
-    -del ne*.h
-    -del $(THE_PERLCFG)
-    -del perl.c
-    -del winviletlb.h
-    -del winvile_i.c
-    -del *.tlb
-    -del *.res
+	-del *.bak
+	-del *.exe
+	-del *.obj
+	-del ne*.h
+	-del $(THE_PERLCFG)
+	-del builtflt.h
+	-del perl.c
+	-del winviletlb.h
+	-del winvile_i.c
+	-del *.tlb
+	-del *.res
 
 dist : $(TARGET)
 	- del $(CFG).zip

@@ -5,7 +5,7 @@
  *
  * Copyright (c) 1990-2000 by Paul Fox and Thomas Dickey
  *
- * $Header: /users/source/archives/vile.vcs/RCS/finderr.c,v 1.93 2000/07/25 02:03:38 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/finderr.c,v 1.94 2000/07/25 10:32:43 tom Exp $
  *
  */
 
@@ -104,7 +104,7 @@ char *const predefined[] =
 #if defined(clipper) || defined(__clipper__)
     "^\"%[^\" \t]\", line %L (col. [0-9]\\+):%T",	/* CLIX C compiler */
 #endif
-    "^%[^(](%L)[ \t]\\+:%T",
+    "^%[^(](%L)[ \t]\\?:%T",	/* weblint */
 
 #if SYS_UNIX && SYSTEM_HAS_LINT_PROG
     /* sys5 lint */

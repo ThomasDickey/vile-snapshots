@@ -1,7 +1,7 @@
 #
 # makefile for vile filters on WIN32 using Microsoft Visual C++
 #
-# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.wnt,v 1.23 2000/04/24 23:18:15 tom Exp $
+# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.wnt,v 1.26 2000/07/26 23:31:06 tom Exp $
 #
 #
 !include <ntwin32.mak>
@@ -18,130 +18,74 @@ o	= .obj
 # Other vars
 CON_LDFLAGS  = -nologo -pdb:none
 
-# filters in "C" are easy to port
-C_ALL	= \
-	vile-c-filt$x \
+UTILS	= \
 	vile-crypt$x \
-	vile-key-filt$x \
-	vile-m4-filt$x \
-	vile-manfilt$x \
-	vile-pas-filt$x \
-	vile-tags-filt$x
+	vile-manfilt$x
 
-# filters in lex/flex require state support
-LEX_ALL = \
-	vile-ada-filt$x \
-	vile-awk-filt$x \
-	vile-bat-filt$x \
-	vile-cfg-filt$x \
-	vile-cweb-filt$x \
-	vile-dcl-filt$x \
-	vile-diff-filt$x \
-	vile-esql-filt$x \
-	vile-fdl-filt$x \
-	vile-html-filt$x \
-	vile-latex-filt$x \
-	vile-lex-filt$x \
-	vile-mail-filt$x \
-	vile-make-filt$x \
-	vile-mms-filt$x \
-	vile-nr-filt$x \
-	vile-perl-filt$x \
-	vile-py-filt$x \
-	vile-rcs-filt$x \
-	vile-rexx-filt$x \
-	vile-sccs-filt$x \
-	vile-sh-filt$x \
-	vile-sql-filt$x \
-	vile-tbl-filt$x \
-	vile-tc-filt$x \
-	vile-tcl-filt$x \
-	vile-ti-filt$x \
-	vile-txt-filt$x \
-	vile-vile-filt$x \
-	vile-xres-filt$x \
-	vile-xs-filt$x \
-	vile-yacc-filt$x
-
-!IF  "$(LEX)" == ""
-UTILS =	vile-c-filt$x
 SCRIPTS = \
 	filters.rc
-KEYS =	vile.key c.key cpp.key
-!ELSE
-UTILS = \
-	vile-bat-filt$x \
-	vile-c-filt$x \
-	vile-html-filt$x \
-	vile-lex-filt$x \
-	vile-make-filt$x \
-	vile-perl-filt$x \
-	vile-tbl-filt$x \
-	vile-txt-filt$x \
-	vile-vile-filt$x \
-	vile-xs-filt$x
-SCRIPTS = \
-	filters.rc
-KEYS	= \
-	ada.key \
-	awk.key \
-	bat.key \
-	c.key \
-	cpp.key \
-	csh.key \
-	cweb.key \
-	dcl.key \
-	diff.key \
-	esql.key \
-	fdl.key \
-	html.key \
-	imake.key \
-	java.key \
-	js.key \
-	latex.key \
-	lex.key \
-	m4.key \
-	mail.key \
-	make.key \
-	nr.key \
-	pas.key \
-	perl.key \
-	pot.key \
-	py.key \
-	rcs.key \
-	rexx.key \
-	sccs.key \
-	sh.key \
-	sql.key \
-	tags.key \
-	tbl.key \
-	tc.key \
-	tcl.key \
-	ti.key \
-	vile.key \
-	vim.key \
-	xres.key \
-	xs.key \
-	yacc.key
-!endif
 
 CFLAGS   = $(cvarsmt) $(CC_DEBUG) -nologo -DWIN32_LEAN_AND_MEAN -G4 -I.
 
-.SUFFIXES: .c .l $o
+TMPINCS	= \
+	mk-1st.tmp \
+	mk-2nd.tmp
 
-.l$o:
-	$(LEX) $<
-	$(CC) -c $(CPPFLAGS) $(CFLAGS) $(LEX_OUTPUT_ROOT).c
-	-@ erase $@
-	move $(LEX_OUTPUT_ROOT)$o $@
-	- erase $(LEX_OUTPUT_ROOT).c
+MAKEDEPS = $(TMPINCS) makefile.wnt
 
-.c$o:
-	$(cc) $(CFLAGS) -c $< -Fo$@
+!if "$(RECUR_FILTERS)" == ""
+# list these on separate lines, otherwise nmake does the last only.
+all :: $(TMPINCS)
+dist :: $(TMPINCS)
+install :: $(TMPINCS)
+uninstall :: $(TMPINCS)
 
-all: $(UTILS)
+!if "$(FLT)" == ""
+mk-1st.tmp : makefile.wnt mk-1st.bat genmake.mak
+	mk-1st genmake.mak extern >$@
+mk-2nd.tmp : makefile.wnt mk-2nd.bat genmake.mak
+	mk-2nd genmake.mak extern >$@
+!else
+mk-1st.tmp : makefile.wnt mk-1st.bat genmake.mak
+	mk-1st genmake.mak intern >$@
+mk-2nd.tmp : makefile.wnt mk-2nd.bat genmake.mak
+	mk-2nd genmake.mak intern >$@
+!endif
 
-everything : $(C_ALL) $(LEX_ALL)
+RECUR_OPTS = RECUR_FILTERS=yes FLT="$(FLT)" -f makefile.wnt $@ -$(MAKEFLAGS)
+
+all ::
+	$(MAKE) $(RECUR_OPTS)
+dist ::
+	$(MAKE) $(RECUR_OPTS)
+install ::
+	$(MAKE) $(RECUR_OPTS)
+uninstall ::
+	$(MAKE) $(RECUR_OPTS)
+
+!else
+
+!include mk-1st.tmp
+
+!if "$(FLT)" == ""
+UTILS = $(UTILS) $(ALL_C) $(ALL_LEX)
+!else
+
+FLTLIB = builtflt.lib
+FLTOBJ = $(OBJ_C) filters$o
+!if "$(LEX)" != ""
+FLTOBJ = $(FLTOBJ) $(OBJ_LEX)
+!endif
+
+all :: $(FLTOBJ) $(FLTLIB)
+
+$(FLTLIB) : $(MAKEDEPS) $(FLTOBJ)
+	lib -out:$@ @<<
+	$(FLTOBJ)
+<<
+!endif
+
+all :: $(UTILS)
 
 dist :: $(UTILS) $(SCRIPTS)
 	- del *.zip
@@ -168,7 +112,7 @@ uninstall :: $(UTILS)
 
 !if "$(VILE_STARTUP_PATH)" == ""
 install ::
-	@ echo Sorry, you have not set VILE_STARTUP_PATH
+	@echo Sorry, you have not set VILE_STARTUP_PATH
 !else if !exist("$(VILE_STARTUP_PATH)")
 install :: $(SCRIPTS) $(KEYS)
 	@echo Sorry, these are installed only if VILE_STARTUP_PATH is a single directory
@@ -188,11 +132,24 @@ uninstall :: $(KEYS)
 	!erase "$(VILE_STARTUP_PATH)"\$**words
 !endif
 
+.SUFFIXES: .c .l $o
+
+.l$o:
+	$(LEX) $<
+	$(CC) -c $(CPPFLAGS) $(CFLAGS) $(LEX_OUTPUT_ROOT).c -Fo$@
+	- erase $(LEX_OUTPUT_ROOT).c
+
+.c$o:
+	$(cc) $(CFLAGS) -c $< -Fo$@
+
+
 LF_DEPS = filterio$o filters$o
 LF_ARGS = $(LF_DEPS) $(LEXLIB)
 
 CF_DEPS	= filterio$o filters$o
 CF_ARGS	= $(CF_DEPS)
+
+!include mk-2nd.tmp
 
 vile-crypt$x : ecrypt$o
 	$(link) -out:$@ $(CON_LDFLAGS) ecrypt$o
@@ -200,123 +157,15 @@ vile-crypt$x : ecrypt$o
 vile-manfilt$x : manfilt$o
 	$(link) -out:$@ $(CON_LDFLAGS) manfilt$o
 
-vile-ada-filt$x : ada-filt$o $(LF_DEPS)
-	$(link) -out:$@ $(CON_LDFLAGS) ada-filt$o $(LF_ARGS)
-
-vile-awk-filt$x : awk-filt$o $(LF_DEPS)
-	$(link) -out:$@ $(CON_LDFLAGS) awk-filt$o $(LF_ARGS)
-
-vile-bat-filt$x : bat-filt$o $(LF_DEPS)
-	$(link) -out:$@ $(CON_LDFLAGS) bat-filt$o $(LF_ARGS)
-
-vile-c-filt$x: c-filt$o $(CF_DEPS)
-	$(link) -out:$@ $(CON_LDFLAGS) c-filt$o $(CF_ARGS)
-
-vile-cfg-filt$x : cfg-filt$o $(LF_DEPS)
-	$(link) -out:$@ $(CON_LDFLAGS) cfg-filt$o $(LF_ARGS)
-
-vile-cweb-filt$x : cwebfilt$o $(LF_DEPS)
-	$(link) -out:$@ $(CON_LDFLAGS) cwebfilt$o $(LF_ARGS)
-
-vile-dcl-filt$x : dcl-filt$o $(CF_DEPS)
-	$(link) -out:$@ $(CON_LDFLAGS) dcl-filt$o $(CF_ARGS)
-
-vile-diff-filt$x : difffilt$o $(CF_DEPS)
-	$(link) -out:$@ $(CON_LDFLAGS) difffilt$o $(LF_ARGS)
-
-vile-esql-filt$x : esqlfilt$o $(CF_DEPS)
-	$(link) -out:$@ $(CON_LDFLAGS) esqlfilt$o $(LF_ARGS)
-
-vile-fdl-filt$x : fdl-filt$o $(LF_DEPS)
-	$(link) -out:$@ $(CON_LDFLAGS) fdl-filt$o $(LF_ARGS)
-
-vile-html-filt$x : htmlfilt$o $(LF_DEPS)
-	$(link) -out:$@ $(CON_LDFLAGS) htmlfilt$o $(LF_ARGS)
-
-vile-key-filt$x : key-filt$o $(CF_DEPS)
-	$(link) -out:$@ $(CON_LDFLAGS) key-filt$o $(CF_ARGS)
-
-vile-latex-filt$x : latexflt$o $(LF_DEPS)
-	$(link) -out:$@ $(CON_LDFLAGS) latexflt$o $(LF_ARGS)
-
-vile-lex-filt$x : lex-filt$o $(LF_DEPS)
-	$(link) -out:$@ $(CON_LDFLAGS) lex-filt$o $(LF_ARGS)
-
-vile-m4-filt$x : m4-filt$o $(CF_DEPS)
-	$(link) -out:$@ $(CON_LDFLAGS) m4-filt$o $(CF_ARGS)
-
-vile-mail-filt$x : mailfilt$o $(LF_DEPS)
-	$(link) -out:$@ $(CON_LDFLAGS) mailfilt$o $(LF_ARGS)
-
-vile-make-filt$x : makefilt$o $(LF_DEPS)
-	$(link) -out:$@ $(CON_LDFLAGS) makefilt$o $(LF_ARGS)
-
-vile-mms-filt$x : mms-filt$o $(LF_DEPS)
-	$(link) -out:$@ $(CON_LDFLAGS) mms-filt$o $(LF_ARGS)
-
-vile-nr-filt$x : nr-filt$o $(LF_DEPS)
-	$(link) -out:$@ $(CON_LDFLAGS) nr-filt$o $(LF_ARGS)
-
-vile-pas-filt$x : pas-filt$o $(CF_DEPS)
-	$(link) -out:$@ $(CON_LDFLAGS) pas-filt$o $(CF_ARGS)
-
-vile-perl-filt$x : perlfilt$o $(LF_DEPS)
-	$(link) -out:$@ $(CON_LDFLAGS) perlfilt$o $(LF_ARGS)
-
-vile-py-filt$x : py-filt$o $(LF_DEPS)
-	$(link) -out:$@ $(CON_LDFLAGS) py-filt$o $(LF_ARGS)
-
-vile-rcs-filt$x : rcs-filt$o $(LF_DEPS)
-	$(link) -out:$@ $(CON_LDFLAGS) rcs-filt$o $(LF_ARGS)
-
-vile-rexx-filt$x : rexxfilt$o $(LF_DEPS)
-	$(link) -out:$@ $(CON_LDFLAGS) rexxfilt$o $(LF_ARGS)
-
-vile-sccs-filt$x : sccsfilt$o $(LF_DEPS)
-	$(link) -out:$@ $(CON_LDFLAGS) sccsfilt$o $(LF_ARGS)
-
-vile-sh-filt$x : sh-filt$o $(LF_DEPS)
-	$(link) -out:$@ $(CON_LDFLAGS) sh-filt$o $(LF_ARGS)
-
-# vile-spell-filt$x : spellflt$o $(LF_DEPS)
-# 	$(link) -out:$@ $(CON_LDFLAGS) spellflt$o $(LF_ARGS)
-
-vile-sql-filt$x : sql-filt$o $(LF_DEPS)
-	$(link) -out:$@ $(CON_LDFLAGS) sql-filt$o $(LF_ARGS)
-
-vile-tags-filt$x : tagsfilt$o $(CF_DEPS)
-	$(link) -out:$@ $(CON_LDFLAGS) tagsfilt$o $(CF_ARGS)
-
-vile-tbl-filt$x : tbl-filt$o $(LF_DEPS)
-	$(link) -out:$@ $(CON_LDFLAGS) tbl-filt$o $(LF_ARGS)
-
-vile-tc-filt$x : tc-filt$o $(LF_DEPS)
-	$(link) -out:$@ $(CON_LDFLAGS) tc-filt$o $(LF_ARGS)
-
-vile-ti-filt$x : ti-filt$o $(LF_DEPS)
-	$(link) -out:$@ $(CON_LDFLAGS) ti-filt$o $(LF_ARGS)
-
-vile-tcl-filt$x : tcl-filt$o $(LF_DEPS)
-	$(link) -out:$@ $(CON_LDFLAGS) tcl-filt$o $(LF_ARGS)
-
-vile-txt-filt$x : txt-filt$o $(LF_DEPS)
-	$(link) -out:$@ $(CON_LDFLAGS) txt-filt$o $(LF_ARGS)
-
-vile-vile-filt$x : vilefilt$o $(LF_DEPS)
-	$(link) -out:$@ $(CON_LDFLAGS) vilefilt$o $(LF_ARGS)
-
-vile-xres-filt$x : xresfilt$o $(LF_DEPS)
-	$(link) -out:$@ $(CON_LDFLAGS) xresfilt$o $(LF_ARGS)
-
-vile-xs-filt$x : xs-filt$o $(LF_DEPS)
-	$(link) -out:$@ $(CON_LDFLAGS) xs-filt$o $(LF_ARGS)
-
-vile-yacc-filt$x : yaccfilt$o $(LF_DEPS)
-	$(link) -out:$@ $(CON_LDFLAGS) yaccfilt$o $(LF_ARGS)
+!endif # "$(RECUR_FILTERS)" == ""
 
 clean:
+	del lex.*.c
+	del *.bak
+	del *.tmp
 	del *$x
 	del *$o
+	del *.lib
 
 distclean: clean
 	del *.zip

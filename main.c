@@ -22,7 +22,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.431 2000/07/24 11:08:58 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.432 2000/07/26 23:35:58 tom Exp $
  */
 
 #define realdef /* Make global definitions not external */
@@ -935,6 +935,9 @@ global_val_init(void)
 	register int i;
 	char *s;
 
+#if OPT_FILTER && defined(WIN32)
+	flt_array();
+#endif
 	/* set up so the global value pointers point at the global
 		values.  we never actually use the global pointers
 		directly, but when buffers get a copy of the
