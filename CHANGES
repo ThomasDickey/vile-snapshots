@@ -1,5 +1,19 @@
 Changes for vile 6.3 (released ??? ??? ??, 1996)
 
+(tom)	961113 (f)
+	+ clarified special-character expansion in vile.hlp (Paul Fox).
+	+ add alias to xvile for "-t" option to prevent it from superceding the
+	  normal vile "-t" option (x11.c).
+	+ added resources for xvile pointer shapes (x11.c) requested by Tim Su
+	  <tsu@garage.lucent.com>.
+	+ added -fork command-line option to xvile, to fork process after
+	  initialization (main.c, version.c, x11.c) requested by Richard
+	  Mitchell <mitchell@osb1.wff.nasa.gov>.
+	+ added error handler so that xvile prints usage message if command
+	  line parsing or Xt initialization fails (x11.c).
+	+ add ifdef to file.c to accommodate missing extern for 'environ' in
+	  djgpp 2.x (patch by Jerry Alexandratos).
+
 (tom)	961107 (e)
 	+ correct symbol conflict with shared library on OpenVMS 7.0 by
 	  renaming opendir, etc., and tempnam.  Also, remove redundant rule for

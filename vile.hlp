@@ -1547,13 +1547,19 @@ Special Character Expansion
 ---------------------------
 
 	As in vi, the % and # characters typed while responding to a prompt
-	will expand to the current or "alternate" filename.  The ~ character
-	will expand (when entering a replacement pattern only) to be the
-	previous replacement pattern.  In addition, the colon character
-	(":") expands to the identifier name under the cursor.  Expansion
-	of !  to the last command run is not implemented, except when a
-	shell command is being entered.  These expansions can be suppressed
-	by prefixing with a '\'.
+	will expand to the current or "alternate" filename.
+	
+	Also as in vi, the ~ character will expand to be the previous
+	replacement pattern when entering either a replacement or search
+	pattern,
+	
+	In addition, the colon character (":") expands at most prompts to
+	be the identifier name under the cursor.
+	
+	Expansion of ! to the last command run is implemented, but only
+	when a shell command is being entered.
+	
+	Any of these expansions can be suppressed by prefixing with a '\'.
 
 Key Rebinding
 -------------
@@ -2925,9 +2931,18 @@ X Window System specifics
 			focus.  modeline.background is also used for the
 			scrollbar borders and resize grips.
 
+	forkOnStartup	If true, xvile forks after initialization.
+
 	focusFollowsMouse  If true, the "current" window is the window
 			inhabited by the mouse; no clicking is necessary
 			to change windows.
+
+	pointer.foreground
+	pointer.background   Foreground/Background color of the pointer.
+
+	pointer.normalShape
+	pointer.watchShape   Set the shapes for the normal and watch pointers
+			respectively.
 
 	scrollbarOnLeft Either true or false; control the placement of
 			the scrollbars.  By default, scrollbars are placed
@@ -3399,4 +3414,4 @@ Problems
 
 Copyright 1995,1996 by Paul Fox, Tom Dickey, and Kevin Buettner
 ---------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.304 1996/10/30 13:58:58 pgf Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.305 1996/11/13 11:00:19 tom Exp $

@@ -2,7 +2,7 @@
  * 	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.134 1996/10/05 01:12:37 kev Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.135 1996/11/11 22:11:46 tom Exp $
  *
  */
 
@@ -211,8 +211,6 @@ typedef struct _text_win {
     Pixel	modeline_focus_bg;
     Pixel	selection_fg;
     Pixel	selection_bg;
-    Pixel	cursor_fg;
-    Pixel	cursor_bg;
     int         char_width,
                 char_ascent,
 		char_descent,
@@ -223,6 +221,7 @@ typedef struct _text_win {
     char       *starting_fontname;	/* name of font at startup */
     char       *fontname;		/* name of current font */
     Bool	focus_follows_mouse;
+    Bool	fork_on_startup;
     Bool	scrollbar_on_left;
     Bool	update_window_name;
     Bool	update_icon_name;
@@ -233,6 +232,18 @@ typedef struct _text_win {
     unsigned    rows,
                 cols;
     Bool        show_cursor;
+
+    /* cursor stuff */
+    Pixel	cursor_fg;
+    Pixel	cursor_bg;
+
+    /* pointer stuff */
+    Pixel	pointer_fg;
+    Pixel	pointer_bg;
+    Cursor	normal_pointer;
+#if OPT_WORKING
+    Cursor	watch_pointer;
+#endif
 
     /* selection stuff */
     String	multi_click_char_class;	/* ?? */
@@ -281,10 +292,6 @@ static	Cursor	curs_sb_down_arrow;
 static	Cursor	curs_sb_left_arrow;
 static	Cursor	curs_sb_right_arrow;
 static	Cursor	curs_double_arrow;
-#endif
-static	Cursor	curs_xterm;
-#if OPT_WORKING
-static	Cursor	curs_watch;
 #endif
 
 #if MOTIF_WIDGETS
@@ -505,6 +512,19 @@ BbClassRec bbClassRec = {
 };
 
 WidgetClass bbWidgetClass = (WidgetClass)&bbClassRec;
+
+static void set_pointer(Window win, Cursor cursor)
+{
+    XColor colordefs[2];		/* 0 is foreground, 1 is background */
+
+    XDefineCursor(dpy, win, cursor);
+
+    colordefs[0].pixel = cur_win->pointer_fg;
+    colordefs[1].pixel = cur_win->pointer_bg;
+    XQueryColors (dpy, DefaultColormap (dpy, DefaultScreen (dpy)),
+		  colordefs, 2);
+    XRecolorCursor (dpy, cursor, colordefs, colordefs+1);
+}
 
 /*ARGSUSED*/
 static XtGeometryResult
@@ -931,11 +951,11 @@ update_scrollbar_sizes(void)
      */
     for (i=0; i<cur_win->nscrollbars; i++) {
 	if (XtIsRealized(cur_win->scrollbars[i]))
-	    XDefineCursor(dpy,
+	    set_pointer(
 		    XtWindow(cur_win->scrollbars[i]),
 		    curs_sb_v_double_arrow);
 	if (i < cur_win->nscrollbars-1 && XtIsRealized(cur_win->grips[i]))
-	    XDefineCursor(dpy,
+	    set_pointer(
 		    XtWindow(cur_win->grips[i]),
 		    curs_double_arrow);
     }
@@ -1144,7 +1164,7 @@ do_scroll(
 		XtRemoveTimeOut(cur_win->scroll_repeat_id);
 		cur_win->scroll_repeat_id = (XtIntervalId) 0;
 	    }
-	    XDefineCursor(dpy, XtWindow(w), curs_sb_v_double_arrow);
+	    set_pointer(XtWindow(w), curs_sb_v_double_arrow);
 	    scrollmode = none;
 	    break;
 	case 'F' :	/* Forward */
@@ -1152,14 +1172,14 @@ do_scroll(
 		break;
 	    count = (pos / cur_win->char_height) + 1;
 	    scrollmode = forward;
-	    XDefineCursor(dpy, XtWindow(w), curs_sb_up_arrow);
+	    set_pointer(XtWindow(w), curs_sb_up_arrow);
 	    goto do_scroll_common;
 	case 'B' :	/* Backward */
 	    if (scrollmode != none)
 		break;
 	    count = -((pos / cur_win->char_height) + 1);
 	    scrollmode = backward;
-	    XDefineCursor(dpy, XtWindow(w), curs_sb_down_arrow);
+	    set_pointer(XtWindow(w), curs_sb_down_arrow);
 do_scroll_common:
 	    set_curwp(wp);
 	    mvdnwind(TRUE, count);
@@ -1174,7 +1194,7 @@ do_scroll_common:
 	    if (scrollmode == none) {
 		set_curwp(wp);
 		scrollmode = drag;
-		XDefineCursor(dpy, XtWindow(w), curs_sb_right_arrow);
+		set_pointer(XtWindow(w), curs_sb_right_arrow);
 	    }
 	    /* FALLTHRU */
 	case 'D' :	/* Drag */
@@ -1366,6 +1386,14 @@ update_scrollbar(
 
 #define OLD_RESOURCES 1		/* New stuff not ready for prime time */
 
+#define XtNnormalShape		"normalShape"
+#define XtCNormalShape		"NormalShape"
+#define XtNwatchShape		"watchShape"
+#define XtCWatchShape		"WatchShape"
+
+#define XtNforkOnStartup	"forkOnStartup"
+#define XtCForkOnStartup	"ForkOnStartup"
+
 #define XtNscrollbarWidth	"scrollbarWidth"
 #define XtCScrollbarWidth	"ScrollbarWidth"
 #define XtNfocusFollowsMouse	"focusFollowsMouse"
@@ -1535,6 +1563,15 @@ static XtResource resources[] = {
 #else
 	"#c71bc30bc71b"
 #endif
+    },
+    {
+	XtNforkOnStartup,
+	XtCForkOnStartup,
+	XtRBool,
+	sizeof(Bool),
+	XtOffset(TextWindow, fork_on_startup),
+	XtRImmediate,
+	(XtPointer) False
     },
     {
 	XtNfocusFollowsMouse,
@@ -2050,6 +2087,47 @@ static XtResource cursor_resources[] = {
     },
 };
 
+static XtResource pointer_resources[] = {
+    {
+	XtNforeground,
+	XtCForeground,
+	XtRPixel,
+	sizeof(Pixel),
+	XtOffset(TextWindow, pointer_fg),
+	XtRPixel,
+	(XtPointer) &cur_win_rec.fg
+    },
+    {
+	XtNbackground,
+	XtCBackground,
+	XtRPixel,
+	sizeof(Pixel),
+	XtOffset(TextWindow, pointer_bg),
+	XtRPixel,
+	(XtPointer) &cur_win_rec.bg
+    },
+    {
+	XtNnormalShape,
+	XtCNormalShape,
+	XtRCursor,
+	sizeof(Cursor),
+	XtOffset(TextWindow, normal_pointer),
+	XtRString,
+	(XtPointer) "xterm"
+    },
+#if OPT_WORKING
+    {
+	XtNwatchShape,
+	XtCWatchShape,
+	XtRCursor,
+	sizeof(Cursor),
+	XtOffset(TextWindow, watch_pointer),
+	XtRString,
+	(XtPointer) "watch"
+    },
+#endif
+};
+
 #define CHECK_MIN_MAX(v,min,max)	\
 	do {				\
 	    if ((v) > (max))		\
@@ -2057,6 +2135,12 @@ static XtResource cursor_resources[] = {
 	    else if ((v) < (min))	\
 		(v) = (min);		\
 	} one_time
+
+static void my_error_handler(String message)
+{
+    fprintf(stderr, "%s: %s\n", prog_arg, message);
+    print_usage();
+}
 
 /* ARGSUSED */
 void
@@ -2071,6 +2155,8 @@ x_preparse_args(
     int		i;
     Cardinal	start_cols, start_rows;
     static XrmOptionDescRec options[] = {
+	{"-t",   	(char *)0,          XrmoptionSkipArg,	(caddr_t)0 },
+	{"-fork",   	"*forkOnStartup",   XrmoptionNoArg,	"true" },
 	{"-leftbar",	"*scrollbarOnLeft", XrmoptionNoArg,	"true" },
 	{"-rightbar",	"*scrollbarOnLeft", XrmoptionNoArg,	"false" },
     };
@@ -2126,6 +2212,7 @@ x_preparse_args(
     (void) OlToolkitInitialize( NULL );
 #endif /* OL_WIDGETS */
 
+    XtSetErrorHandler(my_error_handler);
     cur_win->top_widget = XtVaAppInitialize(
 	    &cur_win->app_context,
 	    MY_CLASS,
@@ -2135,6 +2222,7 @@ x_preparse_args(
 	    XtNgeometry,	NULL,
 	    XtNinput,		TRUE,
 	    NULL);
+    XtSetErrorHandler((XtErrorHandler)0);
     dpy = XtDisplay(cur_win->top_widget);
 
 #if 0
@@ -2202,6 +2290,16 @@ x_preparse_args(
 	    "Cursor",
 	    cursor_resources,
 	    XtNumber(cursor_resources),
+	    (ArgList)0,
+	    0);
+
+    XtGetSubresources(
+	    cur_win->top_widget,
+	    (XtPointer)cur_win,
+	    "pointer",
+	    "Pointer",
+	    pointer_resources,
+	    XtNumber(pointer_resources),
 	    (ArgList)0,
 	    0);
 
@@ -2691,6 +2789,16 @@ x_preparse_args(
     cur_win->base_width = -1;	/* force base width to be set when configured */
     XtRealizeWidget(cur_win->top_widget);
 
+    /* We can't test this until after the widget's realized */
+    if (cur_win->fork_on_startup)
+    {
+	int pid = 0;
+	if ((pid=fork()) < 0)
+		fprintf(stderr, "%s: could not fork\n", prog_arg);
+	else if (pid > 0)
+		ExitProgram(BADEXIT);
+    }
+
     cur_win->win = XtWindow(cur_win->screen);
 
     /* We wish to participate in the "delete window" protocol */
@@ -2718,13 +2826,7 @@ x_preparse_args(
     atom_TIMESTAMP	= XInternAtom(dpy, "TIMESTAMP", False);
     atom_TEXT		= XInternAtom(dpy, "TEXT",      False);
 
-#if OPT_WORKING
-    /* Set up watch cursor */
-    curs_watch = XCreateFontCursor(dpy, XC_watch);
-#endif
-    /* Change screen cursor to insertion bar */
-    curs_xterm = XCreateFontCursor(dpy, XC_xterm);
-    XDefineCursor(dpy, XtWindow(cur_win->screen), curs_xterm);
+    set_pointer(XtWindow(cur_win->screen), cur_win->normal_pointer);
 }
 
 #if 0
@@ -4865,26 +4967,26 @@ x_set_watch_cursor(int onflag)
     watch_is_on = onflag;
 
     if (onflag) {
-	XDefineCursor(dpy, XtWindow(cur_win->screen), curs_watch);
+	set_pointer(XtWindow(cur_win->screen), cur_win->watch_pointer);
 #if NO_WIDGETS
 	for (i=0; i<cur_win->nscrollbars; i++) {
-	    XDefineCursor(dpy,
-		    XtWindow(cur_win->scrollbars[i]), curs_watch);
+	    set_pointer(
+		    XtWindow(cur_win->scrollbars[i]), cur_win->watch_pointer);
 	    if (i < cur_win->nscrollbars-1)
-		XDefineCursor(dpy,
-			XtWindow(cur_win->grips[i]), curs_watch);
+		set_pointer(
+			XtWindow(cur_win->grips[i]), cur_win->watch_pointer);
 	}
 #endif /* NO_WIDGETS */
     }
     else {
-	XDefineCursor(dpy, XtWindow(cur_win->screen), curs_xterm);
+	set_pointer(XtWindow(cur_win->screen), cur_win->normal_pointer);
 #if NO_WIDGETS
 	for (i=0; i<cur_win->nscrollbars; i++) {
-	    XDefineCursor(dpy,
+	    set_pointer(
 		    XtWindow(cur_win->scrollbars[i]),
 		    curs_sb_v_double_arrow);
 	    if (i < cur_win->nscrollbars-1)
-		XDefineCursor(dpy,
+		set_pointer(
 			XtWindow(cur_win->grips[i]),
 			curs_double_arrow);
 	}
