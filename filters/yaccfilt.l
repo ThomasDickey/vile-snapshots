@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/yaccfilt.l,v 1.18 2002/12/30 15:41:28 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/yaccfilt.l,v 1.19 2003/02/10 02:06:11 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of YACC program.
  */
@@ -10,6 +10,12 @@
 #include <filters.h>
 
 DefineFilter("yacc");
+
+typedef enum {
+    RuleSection = 0
+    ,ActionSection
+    ,CodeSection
+} SECTIONS;
 
 static char *Comment_attr;
 static char *Error_attr;
@@ -22,7 +28,7 @@ static char *String_attr;
 
 static char *save_attr = "";
 
-static int section = 0;
+static SECTIONS section = RuleSection;
 static int brace_level = 0;
 
 #include <fltstack.h>
@@ -30,9 +36,9 @@ static int brace_level = 0;
 static void
 set_state(void)
 {
-    if (section >= 2) {
+    if (section >= CodeSection) {
 	new_state(CODE);
-    } else if (section >= 1) {
+    } else if (section >= ActionSection) {
 	new_state(ACTIONS);
     } else {
 	new_state(RULES);
@@ -57,7 +63,7 @@ do_filter(FILE *input)
     Preproc_attr = class_attr(NAME_PREPROC);
     String_attr  = class_attr(NAME_LITERAL);
 
-    section = 0;
+    section = RuleSection;
     brace_level = 0;
     save_attr = Error_attr;
 
@@ -74,9 +80,9 @@ SPACE		[ \t]
 DIRECTIVE	^%[^ \t\n]+
 
 IDENT		[a-zA-Z_][a-zA-Z_0-9]*
-QIDENT		\$[0-9$]
+QIDENT		\$([0-9$]|\<{IDENT}\>)
 
-INTEGER		[-+]?([0-9]+)
+INTEGER		[-+]?([0-9]+|("0"[xX][0-9a-fA-Z]+))
 
 SSTRING		\'(\\.|[^'\\])*\'
 DSTRING		\"(\\.|[^"\\])*\"
@@ -95,10 +101,10 @@ PATTERN		(\\.|\[(\\.|.)*\]|[^ \t\n])+
 			set_state();
 			break;
 		    case '{':
-		    	new_state(CODE);
+		    	push_state(CODE);
 			break;
 		    case '}':
-			set_state();
+		    	pop_state();
 			break;
 		    default:
 			if (!strcmp(yytext+1, "token")) {
@@ -122,12 +128,18 @@ PATTERN		(\\.|\[(\\.|.)*\]|[^ \t\n])+
 <CODE>{IDENT}		{ WriteToken(keyword_attr(yytext)); }
 <CODE>{INTEGER}		{ WriteToken(Number_attr); }
 <CODE>\{		{ ECHO; brace_level++; }
-<CODE>\}		{ ECHO; if (--brace_level <= 0) { brace_level = 0; pop_state(); } }
+<CODE>\}		{ ECHO;
+			  if (--brace_level <= 0) {
+			      brace_level = 0;
+			      if (section == ActionSection)
+				  pop_state();
+			  }
+		        }
 
-"/*"			{ WriteToken(Comment_attr); push_state(COMMENT); }
-<COMMENT>[^*]*		{ WriteToken(Comment_attr); }
-<COMMENT>"*"+[^*/]*	{ WriteToken(Comment_attr); }
-<COMMENT>"*"+"/"	{ WriteToken(Comment_attr); pop_state(); }
+"/*"			{ PushQuote(COMMENT, Comment_attr); }
+<COMMENT>[^*]*		{ flt_bfr_append(yytext, yyleng); }
+<COMMENT>"*"+[^*/]*	{ flt_bfr_append(yytext, yyleng); }
+<COMMENT>"*"+"/"	{ PopQuote(); }
 
 ^{SPACE}*#{SPACE}*{IDENT}({SPACE}+(\<[^>]+\>|\"[^"]+\"))? { WriteToken(Preproc_attr); }
 {QIDENT}		{ WriteToken(Ident2_attr); }

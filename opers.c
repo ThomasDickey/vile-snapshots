@@ -3,7 +3,7 @@
  * that take motion operators.
  * written for vile: Copyright (c) 1990, 1995-2002 by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/opers.c,v 1.85 2003/01/03 01:15:09 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/opers.c,v 1.86 2003/02/17 11:44:28 cmorgan Exp $
  *
  */
 
@@ -380,6 +380,14 @@ opersubst(int f, int n)
     regionshape = FULLLINE;
     opcmd = OPOTHER;
     return vile_op(f, n, substregion, "Substitute");
+}
+
+int
+opersubstall(int f, int n)
+{
+    regionshape = FULLLINE;
+    opcmd = OPOTHER;
+    return vile_op(f, n, subst_all_region, "Substitute-all");
 }
 
 int

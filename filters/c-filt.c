@@ -6,18 +6,22 @@
  *		string literal ("Literal") support --  ben stoltz
  *		factor-out hashing and file I/O - tom dickey
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/c-filt.c,v 1.64 2002/12/17 02:02:06 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/c-filt.c,v 1.65 2003/02/17 16:35:34 tom Exp $
  *
  * Usage: refer to vile.hlp and doc/filters.doc .
+ *
+ * Options:
+ *	-j	java special cases
+ *	-p	suppress preprocessor suppoer
  */
 
 #include <filters.h>
 
-DefineOptFilter("c", "p");
+DefineOptFilter("c", "jp");
 
 #define UPPER(c) isalpha(CharOf(c)) ? toupper(CharOf(c)) : c
 
-#define isIdent(c)  (isalpha(CharOf(c)) || (c) == '_')
+#define isIdent(c)  (isalpha(CharOf(c)) || (c) == '_' || (flt_options['j'] && (c) == '$'))
 #define isNamex(c)  (isalnum(CharOf(c)) || (c) == '_')
 
 #define isQuote(c)  ((c) == DQUOTE || (c) == SQUOTE)
@@ -127,7 +131,11 @@ static char *
 write_escape(char *s, char *attr)
 {
     char *base = s++;
-    int want = (*s == '0' || *s == 'x') ? 3 : 1;
+    int want = ((*s == '0' || *s == 'x')
+		? 3
+		: ((flt_options['j'] && *s == 'u')
+		   ? 4
+		   : 1));
     while (want && *s != 0) {
 	s++;
 	want--;
@@ -373,7 +381,7 @@ init_filter(int before GCC_UNUSED)
 }
 
 static void
-do_filter(FILE * input GCC_UNUSED)
+do_filter(FILE *input GCC_UNUSED)
 {
     static unsigned used;
     static char *line;

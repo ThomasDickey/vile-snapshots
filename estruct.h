@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.521 2003/01/03 00:45:21 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.526 2003/02/17 23:38:56 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -1578,7 +1578,7 @@ typedef struct	LINE {
 	    L_FLAG	l_flg;		/* flags for undo ops		*/
 	} l;
 #if OPT_LINE_ATTRS
-	UCHAR  *l_attrs;	/* indexes into the line_attrs
+	UCHAR  *l_attrs;		/* indexes into the line_attr_tbl
 	                                   hash table */
 #endif
 }	LINE;
@@ -1623,8 +1623,9 @@ typedef struct	LINE {
 	/*
 	 * Macros for referencing fields in the LINE struct.
 	 */
-#define lgetc(lp, n)		char2int((lp)->l_text[(n)])
-#define lputc(lp, n, c) 	((lp)->l_text[(n)]=(char)(c))
+#define lgetc(lp, n)		char2int(lvalue(lp)[(n)])
+#define lputc(lp, n, c) 	(lvalue(lp)[(n)]=(char)(c))
+#define lvalue(lp)		((lp)->l_text)
 #define llength(lp)		((lp)->l_used)
 #define line_length(lp)		(llength(lp)+len_rs) /* counting recordsep */
 
@@ -2543,7 +2544,7 @@ typedef struct {
  */
 #define NONE    0L
 #define cmdBIT(n) lBIT(n)	/* ...to simplify typing */
-/* bits 0-11 */
+/* bits 0-12 */
 #define UNDO    cmdBIT(0)	/* command is undo-able, so clean up undo lists */
 #define REDO    cmdBIT(1)	/* command is redo-able, record it for dotcmd */
 #define MOTION  cmdBIT(2)	/* command causes motion, okay after operator cmds */
@@ -2558,13 +2559,13 @@ typedef struct {
 #define VIEWOK  cmdBIT(10)	/* command is okay in view mode, even though it
 				 * _may_ be undoable (macros and maps) */
 #define VL_RECT cmdBIT(11)	/* motion causes rectangular operation */
-#define NOMINI  cmdBIT(12)	/* cannot use in minibuffer edit */
+#define MINIBUF cmdBIT(12)	/* may use in minibuffer edit */
 
 /* These flags are 'ex' argument descriptors, adapted from elvis.  Not all are
  * used or honored or implemented.
  */
-#define argBIT(n) cmdBIT(n+12)	/* ...to simplify adding bits */
-/* bits 12-25 */
+#define argBIT(n) cmdBIT(n+13)	/* ...to simplify adding bits */
+/* bits 13-26 */
 #define FROM    argBIT(0)	/* allow a linespec */
 #define TO      argBIT(1)	/* allow a second linespec */
 #define BANG    argBIT(2)	/* allow a ! after the command name */
@@ -2587,8 +2588,8 @@ typedef struct {
 #define RANGE   (FROM  | TO)	/* range of linespecs allowed */
 
 /* these flags determine the type of cu.* */
-#define typBIT(n) cmdBIT(n+26)	/* ...to simplify adding bits */
-/* bits 26-27 */
+#define typBIT(n) cmdBIT(n+27)	/* ...to simplify adding bits */
+/* bits 27-28 */
 #define CMD_FUNC 0L		/* this is the default (CmdFunc) */
 #define CMD_PROC typBIT(0)	/* named procedure (BUFFER *) */
 #define CMD_PERL typBIT(1)	/* perl subroutine (AV *) */

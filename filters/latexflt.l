@@ -1,25 +1,50 @@
-%s TEXT VARS CODE MATH MATHC
+%s TEXT VERBATIM QUOTE_TT QUOTED MATH MATHC
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/latexflt.l,v 1.20 2002/12/30 15:41:28 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/latexflt.l,v 1.30 2003/02/15 15:58:26 tom Exp $
  *
- * Filter to add vile "attribution" sequences to selected bits of LaTeX input
- * text.
+ * Filter to add vile "attribution" sequences to selected bits of TeX or LaTeX
+ * input text.
  *
  * First version written by Pierre Dittgen (dittgen@univ-mlv.fr)
  * modified by Vanessa Conchodon (conchodo@univ-mlv.fr)
+ * rewritten by Thomas Dickey (2003).
+ *
+ * LIMITATIONS:
+ *
+ * This is really a TeX filter, which can be used for LaTeX.  LaTeX defines
+ * lots of macros.  One of the problems with that, is that TeX macros can
+ * redefine some syntax features.  For example, a macro definition may include
+ * an unbalanced curly brace.  Since the definition may be in a different file,
+ * there is no good way for this filter to keep track of these exceptions.
+ *
+ * LaTeX documents (does not appear in the TeX book) that a comment and
+ * following whitespace are ignored completely, allowing a token to be split
+ * across one or more lines.
+ *
+ * Math mode is toggled only outside curly braces, to avoid extra confusion
+ * with macros.  Studied to see if \[ \] and \( \) markers can be used for math
+ * mode as documented in LaTeX, but that turned out to not work well.
+ *
+ * Because LaTeX simply has so many macros, it is not worth spending time to
+ * build (or use) a .keywords file.  In texmode, this is useful.
  */
 
 #include <filters.h>
 
-DefineFilter("latex");
+/*
+ * Options:
+ *	-a	tells us to highlight any \keyword
+ */
+DefineOptFilter("latex","a");
 
 #define NAME_MATH       "Math"
 #define NAME_MATH_C     "Math_c"
 #define NAME_SECTION    "Section"
 #define NAME_SUBSECTION "Subsection"
 
+static char *Action_attr;
 static char *Comment_attr;
 static char *Ident_attr;
 static char *Ident2_attr;
@@ -31,7 +56,44 @@ static char *Section_attr;	/* subsection */
 static char *String_attr;
 static char *Subsection_attr;	/* section */
 
+static int braces;
+
 #include <fltstack.h>
+
+static void
+write_keyword(void)
+{
+    char *attr;
+    if (flt_options['a'])
+	attr = Keyword_attr;
+    else
+	attr = keyword_attr(yytext);
+    if (!attr || !*attr)
+	attr = "";	/* not Keyword_attr! */
+    WriteToken(attr);
+}
+
+static void
+write_define(int keylen)
+{
+    int save = yytext[keylen];
+    yytext[keylen] = '\0';
+    flt_puts(yytext, keylen, flt_options['a'] ? Keyword_attr : keyword_attr(yytext));
+    yytext[keylen] = save;
+    flt_puts(yytext + keylen, yyleng - keylen, Number_attr);
+}
+
+static void
+write_param(void)
+{
+    WriteToken(Ident2_attr);
+}
+
+static void
+write_text(char *attr)
+{
+    WriteToken(braces ? Ident2_attr : attr);
+}
 
 static void
 init_filter(int before GCC_UNUSED)
@@ -42,6 +104,8 @@ static void
 do_filter(FILE *input)
 {
     yyin = input;
+
+    Action_attr  = class_attr(NAME_ACTION);
 
     Comment_attr = class_attr(NAME_COMMENT);
     Keyword_attr = class_attr(NAME_KEYWORD);
@@ -55,6 +119,8 @@ do_filter(FILE *input)
     Section_attr = class_attr(NAME_SECTION);
     Subsection_attr = class_attr(NAME_SUBSECTION);
 
+    braces = 0;
+
     begin_state(TEXT);
     while (yylex() > 0) {
     }
@@ -66,38 +132,87 @@ do_filter(FILE *input)
 SPACE		[ \t]
 NONSPACE	[^ \t]
 
-NAME		[a-zA-Z]+
-NONNAME		[^a-zA-Z]
+/*
+ * '@' is legal in some TeX library files.
+ */
+NAME		[a-zA-Z@]+
+NONNAME		[^a-zA-Z@]
+MIXED_ALNUM	({NAME}[0-9.-_]+)+{NAME}?
 
-INTEGER		[-+]?([0-9]+)
+OCTAL		\'[0-7]+
+DECIMAL		[0-9]+
+INTEGER		[-+]?({OCTAL}|{DECIMAL})
 REAL		[-+]?([0-9]*\.[0-9]+)([eE][+-]?[0-9]+)?
 NUMBER		({INTEGER}|{REAL})
 
 %%
 
-\\verb:[^:]+:		{ WriteToken(String_attr); }
-\\"begin{verbatim}"	{ WriteToken(String_attr); push_state(CODE); }
-<CODE>[^\n]*		{ WriteToken(String_attr); if (strstr(yytext, "\\end{verbatim}")) pop_state(); }
-
-\\{NAME}		{ char *attr = keyword_attr(yytext); if (!attr || !*attr) attr = Keyword_attr; WriteToken(attr); }
-
-\\{NONNAME} 		{ flt_puts(yytext, yyleng-1, Ident_attr); flt_putc(yytext[yyleng-1]); }
-
-<TEXT>\$[^\$] 		{ WriteToken(Math_attr); push_state(MATH);}
-<MATH>[^\$|/\n]+	{ WriteToken(Math_attr); }
-<MATH>\$ 		{ WriteToken(Math_attr); pop_state(); }
-
-<TEXT>\$\$	 	{ WriteToken(Math_c_attr); push_state(MATHC);}
-<MATHC>[^\$/\n]+	{ WriteToken(Math_c_attr); }
-<MATHC>\$\$		{ WriteToken(Math_c_attr); pop_state(); }
-
-\|			{ WriteToken(Ident2_attr); push_state(VARS); }
-<VARS>[^\n\|]*[\n\|]	{ WriteToken(Ident2_attr); pop_state(); }
-
-{SPACE}*\{		{ WriteToken(String_attr); }
-
-{SPACE}*\} 		{ WriteToken(String_attr); }
+{SPACE}+		{ WriteToken(""); }
 
 <TEXT>"%".*$		{ WriteToken(Comment_attr); }
-
+<TEXT>"#"{INTEGER}({NAME}?)	{ write_param(); }
+<TEXT>{MIXED_ALNUM}	{ WriteToken(""); }
 {NUMBER}		{ WriteToken(Number_attr); }
+
+<TEXT>\\"char"({OCTAL}|{DECIMAL}|"`".) |
+<TEXT>\\verb:[^:]+:		{ WriteToken(String_attr); }
+
+<TEXT>\\"let"\\{NAME}		|
+<TEXT>\\"def"\\{NAME}		|
+<TEXT>\\"def"\\{NONNAME}	{ write_define(4); }
+<TEXT>\\"xdef"\\{NONNAME}	|
+<TEXT>\\"gdef"\\{NONNAME}	{ write_define(5); }
+
+<TEXT>\\"begintt"{NONNAME}	{
+			  yyless(yyleng-1);	/* reinterp {NONAME} */
+			  write_keyword();
+			  push_state(QUOTE_TT);
+			 }
+<QUOTE_TT>\\"endtt"{NONNAME}	{
+			  yyless(yyleng-1);	/* reinterp {NONAME} */
+			  write_keyword();
+			  pop_state();
+			 }
+<QUOTE_TT>[^\n]*		{ WriteToken(String_attr); }
+
+<TEXT>\\"begin{verbatim}"	{ WriteToken(String_attr); push_state(VERBATIM); }
+<VERBATIM>\\"end{verbatim}"	{ WriteToken(String_attr); pop_state(); }
+<VERBATIM>[^\n]*		{ WriteToken(String_attr); }
+
+<TEXT,MATH,MATHC,QUOTED>"|"	{ WriteToken(String_attr);
+			  if (FLT_STATE == QUOTED)
+			      pop_state();
+			  else
+			      push_state(QUOTED);
+			}
+<QUOTED>[^|\n]*		{ WriteToken(String_attr); }
+
+\\{NAME}		{ write_keyword(); }
+
+<TEXT>\\\\		{ WriteToken(String_attr); }
+
+<TEXT>\\{NONNAME} 	{ flt_puts(yytext, yyleng, Number_attr); }
+
+<TEXT>\$[^\$] 		{
+			  yyless(1);	/* reinterpret the second char */
+			  flt_puts(yytext, 1, Action_attr);
+			  if (braces == 0)
+			      push_state(MATH);
+			}
+<MATH>[^\$\n]+		{ write_text(Math_attr); }
+<MATH>\$ 		{ write_text(Action_attr); pop_state(); }
+
+<TEXT>\$\$	 	{ WriteToken(Action_attr);
+			  if (braces == 0)
+			      push_state(MATHC);
+			}
+<MATHC>\\{NONNAME} 	{ flt_puts(yytext, yyleng, Number_attr); }
+<MATHC>[^#%{}\\\$/\n|]+	{ write_text(Math_c_attr); }
+<MATHC>\$\$		{ WriteToken(Action_attr);
+			  if (braces == 0)
+			      pop_state();
+			}
+<MATHC>\${NAME}		{ write_text(Math_c_attr); }
+
+\{			{ WriteToken(Action_attr); ++braces; }
+\} 			{ WriteToken(Action_attr); if (braces) --braces; }

@@ -1,6 +1,6 @@
 dnl Local definitions for autoconf.
 dnl
-dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.117 2002/12/30 15:01:14 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.120 2003/02/16 15:18:51 tom Exp $
 dnl
 dnl ---------------------------------------------------------------------------
 dnl ---------------------------------------------------------------------------
@@ -1151,7 +1151,8 @@ ifelse($1,,,[$1=$LIB_PREFIX])
 	AC_SUBST(LIB_PREFIX)
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl Check if we've got setlocale() and its header, <locale.h>
+dnl Check if we have setlocale() and its header, <locale.h>
+dnl The optional parameter $1 tells what to do if we do have locale support.
 AC_DEFUN([CF_LOCALE],
 [
 AC_MSG_CHECKING(for setlocale())
@@ -1162,7 +1163,7 @@ AC_TRY_LINK([#include <locale.h>],
 	[cf_cv_locale=no])
 	])
 AC_MSG_RESULT($cf_cv_locale)
-test $cf_cv_locale = yes && AC_DEFINE(LOCALE)
+test $cf_cv_locale = yes && { ifelse($1,,AC_DEFINE(LOCALE),[$1]) }
 ])dnl
 dnl ---------------------------------------------------------------------------
 dnl Some 'make' programs support $(MAKEFLAGS), some $(MFLAGS), to pass 'make'
@@ -1301,7 +1302,8 @@ AC_DEFUN([CF_NCURSES_CC_CHECK],[
 	AC_TRY_COMPILE([
 ]ifelse($3,ncursesw,[
 #define _XOPEN_SOURCE_EXTENDED
-#define HAVE_LIBUTF8_H
+#undef  HAVE_LIBUTF8_H	/* in case we used CF_UTF8_LIB */
+#define HAVE_LIBUTF8_H	/* to force ncurses' header file to use cchar_t */
 ])[
 #include <$2>],[
 #ifdef NCURSES_VERSION
@@ -2111,7 +2113,10 @@ AC_TRY_COMPILE([
 	[cf_cv_have_wctype=yes],
 	[cf_cv_have_wctype=no])
 ])
-test "$cf_cv_have_wctype" = yes && AC_DEFINE(HAVE_WCTYPE)
+if test "$cf_cv_have_wctype" = yes ; then
+	AC_DEFINE(HAVE_WCTYPE)
+	AC_SEARCH_LIBS(wctype,[-lw])
+fi
 ])dnl
 dnl ---------------------------------------------------------------------------
 dnl Wrapper for AC_ARG_WITH to specify directory under which to look for curses
@@ -2122,6 +2127,32 @@ AC_ARG_WITH(curses-dir,
 	[CF_PATH_SYNTAX(withval)
 	 cf_cv_curses_dir=$withval],
 	[cf_cv_curses_dir=no])
+])dnl
+dnl ---------------------------------------------------------------------------
+dnl Configure-option for dbmalloc
+AC_DEFUN([CF_WITH_DBMALLOC],[
+AC_MSG_CHECKING(if you want to link with dbmalloc for testing)
+AC_ARG_WITH(dbmalloc,
+	[  --with-dbmalloc         test: use Conor Cahill's dbmalloc library],
+	[with_dbmalloc=$withval],
+	[with_dbmalloc=no])
+AC_MSG_RESULT($with_dbmalloc)
+if test $with_dbmalloc = yes ; then
+	AC_CHECK_LIB(dbmalloc,debug_malloc)
+fi
+])dnl
+dnl ---------------------------------------------------------------------------
+dnl Configure-option for dmalloc
+AC_DEFUN([CF_WITH_DMALLOC],[
+AC_MSG_CHECKING(if you want to link with dmalloc for testing)
+AC_ARG_WITH(dmalloc,
+	[  --with-dmalloc          test: use Gray Watson's dmalloc library],
+	[with_dmalloc=$withval],
+	[with_dmalloc=no])
+AC_MSG_RESULT($with_dmalloc)
+if test $with_dmalloc = yes ; then
+	AC_CHECK_LIB(dmalloc,dmalloc_debug)
+fi
 ])dnl
 dnl ---------------------------------------------------------------------------
 dnl Process an option specifying a list of colon-separated paths.
@@ -2264,13 +2295,15 @@ do
 				LIBS="$cf_lib $LIBS"
 				AC_MSG_CHECKING(for $cf_test in $cf_lib)
 			fi
+			cf_SAVE="$LIBS"
+			LIBS="$X_PRE_LIBS $LIBS $X_EXTRA_LIBS"
 			AC_TRY_LINK([],[$cf_test()],
 				[cf_result=yes],
-				[cf_result=no],
-				[$X_PRE_LIBS $LIBS $X_EXTRA_LIBS])
+				[cf_result=no])
 			AC_MSG_RESULT($cf_result)
 			if test "$cf_result" = yes ; then
 				cf_x_athena_lib="$cf_lib"
+				LIBS="$cf_SAVE"
 				break
 			else
 				LIBS="$cf_save"

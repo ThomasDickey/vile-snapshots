@@ -2,12 +2,13 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/lex-filt.l,v 1.19 2000/08/10 01:30:54 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/lex-filt.l,v 1.21 2003/02/12 00:46:00 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of LEX program.
  */
 
 #include <filters.h>
+#include <fltstack.h>
 
 DefineFilter("lex");
 
@@ -25,11 +26,11 @@ static void
 set_state(void)
 {
     if (section >= 2) {
-	BEGIN(CODE);
+	new_state(CODE);
     } else if (section >= 1) {
-	BEGIN(ACTIONS);
+	new_state(ACTIONS);
     } else {
-	BEGIN(RULES);
+	new_state(RULES);
     }
 }
 
@@ -74,9 +75,10 @@ do_filter(FILE *input)
     Preproc_attr = class_attr(NAME_PREPROC);
     String_attr  = class_attr(NAME_LITERAL);
 
-    BEGIN(RULES);
+    begin_state(RULES);
     while (yylex() > 0) {
     }
+    end_state();
 }
 
 %}
@@ -107,7 +109,7 @@ MATCH		{STATES}?{PATTERN}
 			set_state();
 			break;
 		    case '{':
-		    	BEGIN(CODE);
+		    	new_state(CODE);
 			break;
 		    case '}':
 			set_state();
@@ -117,14 +119,14 @@ MATCH		{STATES}?{PATTERN}
 		    }
 		}
 
-<RULES>^{IDENT}		{ WriteToken(Ident_attr); BEGIN(RULE1); }
-<RULE1>{SPACE}+		{ ECHO; BEGIN(RULEX); }
-<RULEX>.*		{ WriteToken(String_attr); BEGIN(RULES); }
+<RULES>^{IDENT}		{ WriteToken(Ident_attr); new_state(RULE1); }
+<RULE1>{SPACE}+		{ ECHO; new_state(RULEX); }
+<RULEX>.*		{ WriteToken(String_attr); new_state(RULES); }
 
-<ACTIONS>^{MATCH}	{ write_states(yytext, yyleng); BEGIN(ACTION2); }
-<ACTION2>{SPACE}+	{ ECHO; BEGIN(ACTION3); }
-<ACTION3>\{		{ ECHO; nesting = 1; BEGIN(CODE); }
-<ACTION3>[^\{].*$	{ ECHO; BEGIN(ACTIONS); }
+<ACTIONS>^{MATCH}	{ write_states(yytext, yyleng); new_state(ACTION2); }
+<ACTION2>{SPACE}+	{ ECHO; new_state(ACTION3); }
+<ACTION3>\{		{ ECHO; nesting = 1; new_state(CODE); }
+<ACTION3>[^\{].*$	{ ECHO; new_state(ACTIONS); }
 
 <CODE>{IDENT}		{ WriteToken(keyword_attr(yytext)); }
 <CODE>{STRINGS}		{ WriteToken(String_attr); }
@@ -132,9 +134,9 @@ MATCH		{STATES}?{PATTERN}
 <CODE>\{		{ ECHO; nesting++; }
 <CODE>\}		{ ECHO; if (--nesting <= 0) { nesting = 0; set_rules(); } }
 
-<CODE>"/*"		{ WriteToken(Comment_attr); BEGIN(COMMENT); }
-<COMMENT>[^*]*		{ WriteToken(Comment_attr); }
-<COMMENT>"*"+[^*/]*	{ WriteToken(Comment_attr); }
-<COMMENT>"*"+"/"	{ WriteToken(Comment_attr); BEGIN(CODE); }
+<CODE,RULES>"/*"	{ PushQuote(COMMENT, Comment_attr); }
+<COMMENT>[^*]*		{ flt_bfr_append(yytext, yyleng); }
+<COMMENT>"*"+[^*/]*	{ flt_bfr_append(yytext, yyleng); }
+<COMMENT>"*"+"/"	{ PopQuote(); }
 
 <CODE>^{SPACE}*#{SPACE}*{IDENT}({SPACE}+(\<[^>]+\>|\"[^"]+\"))? { WriteToken(Preproc_attr); }

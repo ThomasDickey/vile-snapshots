@@ -5,7 +5,7 @@
  * reading and writing of the disk are
  * in "fileio.c".
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.342 2002/12/31 01:54:41 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.343 2003/02/18 00:24:44 tom Exp $
  */
 
 #include "estruct.h"
@@ -1866,7 +1866,7 @@ setup_file_region(BUFFER *bp, REGION * rp)
 }
 
 static int
-actually_write(REGION * rp, char *fn, int msgf, BUFFER *bp, int forced)
+actually_write(REGION * rp, char *fn, int msgf, BUFFER *bp, int forced, int encoded)
 {
     int s;
     LINE *lp;
@@ -1939,6 +1939,20 @@ actually_write(REGION * rp, char *fn, int msgf, BUFFER *bp, int forced)
 	if ((rp->r_size -= line_length(lp)) <= 0
 	    && !b_val(bp, MDNEWLINE))
 	    ending = "";
+#if OPT_SELECTIONS
+	if (encoded) {
+	    TBUFF *temp;
+	    if ((temp = encode_attributes(lp, bp, rp)) != 0) {
+		text = tb_values(temp);
+		len = tb_length(temp);
+	    }
+	    if ((s = ffputline(text, len, ending)) != FIOSUC) {
+		tb_free(&temp);
+		goto out;
+	    }
+	    tb_free(&temp);
+	} else
+#endif
 	if ((s = ffputline(text, len, ending)) != FIOSUC)
 	    goto out;
 
@@ -2020,7 +2034,12 @@ file_protection(char *fn)
 }
 
 static int
-writereg(REGION * rp, const char *given_fn, int msgf, BUFFER *bp, int forced)
+writereg(REGION * rp,
+	 const char *given_fn,
+	 int msgf,
+	 BUFFER *bp,
+	 int forced,
+	 int encoded)
 {
     int status;
     char fname[NFILEN], *fn;
@@ -2055,7 +2074,7 @@ writereg(REGION * rp, const char *given_fn, int msgf, BUFFER *bp, int forced)
 			&& (protection = file_protection(fn)) >= 0) {
 			chmod(SL_TO_BSL(fn), protection | 0600);
 		    }
-		    status = actually_write(rp, fn, msgf, bp, forced);
+		    status = actually_write(rp, fn, msgf, bp, forced, encoded);
 		    if (protection > 0)
 			chmod(SL_TO_BSL(fn), protection);
 		}
@@ -2076,15 +2095,15 @@ writeout(const char *fn, BUFFER *bp, int forced, int msgf)
 
     setup_file_region(bp, &region);
 
-    return writereg(&region, fn, msgf, bp, forced);
+    return writereg(&region, fn, msgf, bp, forced, FALSE);
 }
 
 /*
  * Write the currently-selected region (i.e., the range of lines from DOT to
  * MK, inclusive).
  */
-int
-writeregion(void)
+static int
+prompt_and_write_region(int encoded)
 {
     REGION region;
     int status;
@@ -2103,9 +2122,24 @@ writeregion(void)
 	    return status;
     }
     if ((status = getregion(&region)) == TRUE)
-	status = writereg(&region, fname, TRUE, curbp, FALSE);
+	status = writereg(&region, fname, TRUE, curbp, FALSE, encoded);
     return status;
 }
+
+int
+writeregion(void)
+{
+    return prompt_and_write_region(FALSE);
+}
+
+#if OPT_SELECTIONS
+int
+write_enc_region(void)
+{
+    return prompt_and_write_region(TRUE);
+}
+
+#endif
 
 /*
  * This function writes the kill register to a file
@@ -2216,7 +2250,7 @@ vl_filename(int f GCC_UNUSED, int n GCC_UNUSED)
  * Return the final status of the read.
  */
 int
-ifile(char *fname, int belowthisline, FILE * haveffp)
+ifile(char *fname, int belowthisline, FILE *haveffp)
 {
     LINEPTR prevp;
     LINEPTR newlp;

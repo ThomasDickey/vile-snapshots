@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/cwebfilt.l,v 1.12 2000/08/09 23:47:52 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/cwebfilt.l,v 1.13 2003/02/17 16:55:07 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Cwebx input
  * text.  Also useful for Cweb
@@ -79,7 +79,10 @@ BLANK		[ \t]
 INTEGER		[-+]?([0-9]+)
 REAL		[-+]?([0-9]*\.[0-9]+)([eE][+-]?[0-9]+)?
 IDENT		[a-zA-Z_][a-zA-Z_0-9]*
-STRING		\"(\\\.|[^\"])*\"
+
+SSTRING		\'(\\.|[^'\\]|@@)\'
+DSTRING		\"(\\.|[^"\\])*\"
+STRING		{SSTRING}|{DSTRING}
 RC		\n
 
 %%

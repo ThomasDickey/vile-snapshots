@@ -1,4 +1,4 @@
-# $Header: /users/source/archives/vile.vcs/filters/RCS/genmake.mak,v 1.20 2002/12/11 02:00:55 tom Exp $
+# $Header: /users/source/archives/vile.vcs/filters/RCS/genmake.mak,v 1.22 2003/02/09 14:54:10 tom Exp $
 # This is a list of filter root names and whether .c or .l files define the
 # filter.  Except for vile-crypt and vile-manfilt (which do not correspond to
 # majormodes), the filter names are constructed as vile-{root}-filt.
@@ -8,6 +8,7 @@ key	key-filt	c
 m4	m4-filt		c
 pas	pas-filt	c
 perl	pl-filt		c
+ruby	rubyfilt	c
 sed	sed-filt	c
 tags	tagsfilt	c
 
@@ -40,6 +41,7 @@ pl	perlfilt	l
 pot	pot-filt	l
 ps	ps-filt		l
 py	py-filt		l
+rb	rb-filt		l
 rc	rc-filt		l
 rcs	rcs-filt	l
 rexx	rexxfilt	l

@@ -160,7 +160,7 @@ mappings:
     imake        vile-imake-filt  imake files
     info         vile-info-filt   GNU info files
     key          vile-key-filt    vile .keyword files
-    latex        vile-latex-filt  latex
+    latex        vile-latex-filt  LaTeX
     lex          vile-lex-filt    flex and lex
     lisp         vile-lisp-filt   lisp
     m4           vile-m4-filt     autoconf and m4
@@ -169,7 +169,7 @@ mappings:
     mms          vile-mms-filt    VMS make files
     nr           vile-nr-filt     nroff/troff files
     pas          vile-pas-filt    Pascal
-    pl           vile-pl-filt     perl
+    pl           vile-pl-filt     Perl
     pot          vile-pot-filt    gettext (.po) files
     ps           vile-ps-filt     PostScript
     py           vile-py-filt     python
@@ -177,6 +177,7 @@ mappings:
     rcs          vile-rcs-filt    RCS archives
     rexx         vile-rexx-filt   REXX
     rpm          vile-rpm-filt    RPM .spec files
+    ruby         vile-ruby-filt   Ruby
     sccs         vile-sccs-filt   SCCS files
     sed          vile-sed-filt    sed scripts
     sh           vile-sh-filt     csh, sh
@@ -188,6 +189,7 @@ mappings:
     tbl          vile-tbl-filt    vile's modetbl and cmdtbl files
     tc           vile-tc-filt     termcap and printcap files
     tcl          vile-tcl-filt    tcl/tk scripts
+    tex          vile-latex-filt  TeX
     texi         vile-texi-filt   texinfo
     ti           vile-ti-filt     terminfo files
     txt          vile-txt-filt    various flavors of text files
@@ -453,5 +455,5 @@ without shell support, but perhaps not (ymmv).
 
 
 ------------------------
-$Header: /users/source/archives/vile.vcs/doc/RCS/config.doc,v 1.13 2002/12/11 02:04:07 tom Exp $
+$Header: /users/source/archives/vile.vcs/doc/RCS/config.doc,v 1.14 2003/02/15 16:00:46 tom Exp $
 ------------------------

@@ -1,4 +1,4 @@
-; $Id: filters.rc,v 1.166 2002/12/11 02:01:37 tom Exp $
+; $Id: filters.rc,v 1.172 2003/02/17 16:33:22 tom Exp $
 ; majormodes in this file are ordered alphabetically for convenience - the
 ; precedence used by vile is strictly alphabetic, counting case.
 
@@ -231,7 +231,7 @@ define-mode imake
 define-mode java
 ~with define-submode java
 	suf '\.java$'
-	filtername 'vile-c-filt -p -k java'
+	filtername 'vile-c-filt -j -p -k java'
 	cindent
 	cindent-chars &cat ':' $fences
 ~endwith
@@ -253,7 +253,9 @@ define-mode key
 
 define-mode latex
 ~with define-submode latex
-	suf '\.\(latex\|ltex\|tex\)$'
+	filtername 'vile-latex-filt -a'
+	suf '\.\(latex\|ltex\|ltx\|sty\|tex\)$'
+	fence-pairs='<>{}()[]'
 	comment-prefix	'^\s*%'
 	comments	'^\s*%.*$'
 ~endwith
@@ -405,6 +407,14 @@ define-mode py
 	comments   '^\s*#\s\+\s*$'
 ~endwith
 
+; Ruby
+define-mode rb
+~with define-submode rb
+	filtername 'vile-ruby-filt -k rb'
+	pre '^#\s*!\s*\.*\/.*ruby*\>'
+	suf '\.rb$'
+~endwith
+
 define-mode rc
 ~with define-submode rc
 	after "vile"
@@ -542,6 +552,15 @@ define-mode tcl
 	pre '^#!\s*\/.*\(wish\|wishx\|tclsh\|tcl\|expectk\)[0-9.]*\>\(\s*-[a-z]\+\)*\s*$'
 	comment-prefix	'^\s*[:#]'
 	comments	'^\s*[:#]\s*$'
+~endwith
+
+define-mode tex
+~with define-submode tex
+	suf '\.\(tex\)$'
+	filtername 'vile-latex-filt -k tex'
+	fence-pairs='<>{}()[]'
+	comment-prefix	'^\s*%'
+	comments	'^\s*%.*$'
 ~endwith
 
 define-mode texi

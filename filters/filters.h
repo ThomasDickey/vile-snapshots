@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.71 2002/12/30 17:36:49 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.75 2003/02/10 11:31:06 tom Exp $
  */
 
 #ifndef FILTERS_H
@@ -179,9 +179,12 @@ extern int vl_lookup_func(const char *name);
 /*
  * Useful character definitions
  */
+#define BQUOTE  '`'
 #define SQUOTE  '\''
 #define DQUOTE  '"'
 
+#define L_ANGLE '<'
+#define R_ANGLE '>'
 #define L_CURLY '{'
 #define R_CURLY '}'
 #define L_PAREN '('
@@ -270,6 +273,7 @@ FILTER_DEF filter_def = { name, init_filter, do_filter, options }
 typedef struct _keyword KEYWORD;
 
 extern char *default_attr;
+extern int abbr_ch;
 extern int eqls_ch;
 extern int meta_ch;
 extern int vile_keywords;
@@ -309,9 +313,10 @@ extern void parse_keyword(char *name, int classflag);
  * Declared in filterio.c and/or builtflt.c
  */
 extern char *flt_gets(char **ptr, unsigned *len);
-extern char *flt_list(void);
 extern char *flt_name(void);
+extern char *flt_put_blanks(char *string);
 extern char *skip_blanks(char *src);
+extern int chop_newline(char *s);
 extern int flt_input(char *buffer, int max_size);
 extern int flt_lookup(char *name);
 extern int flt_start(char *name);
