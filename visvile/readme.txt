@@ -23,3 +23,20 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 - Clark Morgan, Aug 1998
+
+Change Log
+==========
+v1.01, released 9/07/98
+
+- if visvile disabled, no other dialog options are editable
+- added more document type checking to avoid occasionally opening such
+  things as dialog box resource scripts.
+- implemented "CWD set from opened document's path" option
+- implemented "Write all modified buffers to disk prior to build" option.
+  This feature doesn't work as well as it could due to a DevStudio (v5)
+  bug.  Refer to ../doc/visvile.doc for further details.
+- implemented "Build log -> errbuf if build reports errs/warnings"
+  option.
+
+v1.0, released 8/98
+

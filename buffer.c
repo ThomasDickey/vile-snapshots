@@ -5,7 +5,7 @@
  * keys. Like everyone else, they set hints
  * for the display system.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.174 1998/07/16 00:47:13 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.175 1998/09/07 20:04:39 tom Exp $
  *
  */
 
@@ -1745,7 +1745,7 @@ find_b_name(const char *bname)
  * the settings for the flags in in buffer.
  */
 BUFFER	*
-bfind(const char *bname, int bflag)
+bfind(const char *bname, UINT bflag)
 {
 	register BUFFER *bp;
 	register LINEPTR lp;
@@ -1833,7 +1833,7 @@ bfind(const char *bname, int bflag)
  * Given a filename, set up a buffer pointer to correspond
  */
 BUFFER *
-make_bp (const char *fname, int flags)
+make_bp (const char *fname, UINT flags)
 {
 	BUFFER *bp;
 	char bname[NBUFN];

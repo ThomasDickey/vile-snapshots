@@ -44,7 +44,7 @@
  *	tgetc_avail()     true if a key is avail from tgetc() or below.
  *	keystroke_avail() true if a key is avail from keystroke() or below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.186 1998/09/01 20:41:00 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.188 1998/09/07 21:10:06 tom Exp $
  *
  */
 
@@ -126,6 +126,7 @@ no_completion(int c GCC_UNUSED, char *buf GCC_UNUSED, unsigned *pos GCC_UNUSED)
  * We only do shell-completion if filename-completion is configured.
  */
 #if COMPLETE_FILES
+static	int	doing_shell;
 int
 shell_complete(
 int	c,
@@ -143,7 +144,7 @@ unsigned *pos)
 
 	for (base = len; base > first; ) {
 		base--;
-		if (isSpace(buf[base]) && first) {
+		if (isSpace(buf[base]) && (first || doing_shell)) {
 			base++;
 			break;
 		} else if (buf[base] == '$') {
@@ -261,7 +262,7 @@ int	*next)		/* returns 0/1=register, 2=count */
 	char	prompt[80];
 	char	expect[80];
 	char	buffer[10];
-	int	length;
+	UINT	length;
 
 	*expect = EOS;
 	if (state <= 0)
@@ -306,24 +307,30 @@ int	*next)		/* returns 0/1=register, 2=count */
  */
 
 int
-mlreply(const char *prompt, char *buf, int bufn)
+mlreply(const char *prompt, char *buf, UINT bufn)
 {
 	return kbd_string(prompt, buf, bufn, '\n', KBD_NORMAL, no_completion);
 }
 
 /* as above, but don't do anything to backslashes */
 int
-mlreply_no_bs(const char *prompt, char *buf, int bufn)
+mlreply_no_bs(const char *prompt, char *buf, UINT bufn)
 {
+	int s;
 #if COMPLETE_FILES
+	doing_shell = TRUE;
 	init_filec(FILECOMPLETION_BufName);
 #endif
-	return kbd_string(prompt, buf, bufn, '\n', KBD_EXPAND|KBD_SHPIPE, shell_complete);
+	s = kbd_string(prompt, buf, bufn, '\n', KBD_EXPAND|KBD_SHPIPE, shell_complete);
+#if COMPLETE_FILES
+	doing_shell = FALSE;
+#endif
+	return s;
 }
 
 /* as above, but neither expand nor do anything to backslashes */
 int
-mlreply_no_opts(const char *prompt, char *buf, int bufn)
+mlreply_no_opts(const char *prompt, char *buf, UINT bufn)
 {
 	return kbd_string(prompt, buf, bufn, '\n', 0, no_completion);
 }

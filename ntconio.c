@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 console API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntconio.c,v 1.38 1998/09/02 01:36:52 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntconio.c,v 1.39 1998/09/07 23:34:14 tom Exp $
  *
  */
 
@@ -314,26 +314,26 @@ nteeop(void)
 }
 
 static void
-ntrev(UINT reverse)		/* change reverse video state */
+ntrev(UINT attr)		/* change video state */
 {
 	scflush();
-	if (reverse) {
-		if (reverse & VASPCOL)
-			cfcolor = (reverse & (NCOLORS - 1));
-		else if (reverse == VABOLD)
+	cbcolor = nbcolor;
+	cfcolor = nfcolor;
+	if (attr) {
+		if (attr & VASPCOL)
+			cfcolor = (attr & (NCOLORS - 1));
+		else if (attr == VABOLD)
 			cfcolor |= FOREGROUND_INTENSITY;
-		else if (reverse == VAITAL)
+		else if (attr == VAITAL)
 			cbcolor |= BACKGROUND_INTENSITY;
-		else if (reverse & VACOLOR)
-			cfcolor = ((VCOLORNUM(reverse)) & (NCOLORS - 1));
-		else {  /* all other states == reverse video */
-			cbcolor = nfcolor;
-			cfcolor = nbcolor;
+		else if (attr & VACOLOR)
+			cfcolor = ((VCOLORNUM(attr)) & (NCOLORS - 1));
+
+		if (attr & (VASEL|VAREV)) {  /* reverse video? */
+			int temp = cfcolor;
+			cfcolor = cbcolor;
+			cbcolor = temp;
 		}
-	}
-	else {
-		cbcolor = nbcolor;
-		cfcolor = nfcolor;
 	}
 }
 

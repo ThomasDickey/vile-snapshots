@@ -13,7 +13,7 @@
  *	The same goes for vile.  -pgf, 1990-1995
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.334 1998/08/31 01:01:02 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.336 1998/09/07 20:04:14 tom Exp $
  *
  */
 
@@ -464,7 +464,7 @@ MainProgram(int argc, char *argv[])
 		if (vileinit != NULL) { /* set... */
 			int odiscmd;
 			BUFFER *vbp, *obp;
-			int oflags = 0;
+			UINT oflags = 0;
 			if (*vileinit) { /* ...and not null */
 				/* mark as modified, to prevent
 				 * undispbuff() from clobbering */
@@ -1013,9 +1013,9 @@ global_val_init(void)
 ^\\.LI\\>\\|^\\.[plinb]p\\>\\|^\\.\\?\\s*$" );
 
 		/* where do comments start and end, for formatting them */
-	B_REGEXP( VAL_COMMENTS, "^\\s*/\\?\\(\\s*[#*>]\\)\\+/\\?\\s*$" );
+	B_REGEXP( VAL_COMMENTS, "^\\s*/\\?\\(\\s*[#*>/]\\)\\+/\\?\\s*$" );
 
-	B_REGEXP( VAL_CMT_PREFIX, "^\\s*\\(\\s*[#*>]\\)\\+" );
+	B_REGEXP( VAL_CMT_PREFIX, "^\\s*\\(\\(\\s*[#*>]\\)\\|\\(///*\\)\\)\\+" );
 
 		/* where do sections start? */
 	B_REGEXP( VAL_SECTIONS, "^[{\014]\\|^\\.[NS]H\\>\\|^\\.HU\\?\\>\\|\
