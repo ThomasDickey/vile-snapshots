@@ -1,4 +1,4 @@
-; $Id: filters.rc,v 1.92 1999/11/24 22:31:19 tom Exp $
+; $Id: filters.rc,v 1.94 1999/11/27 20:20:11 tom Exp $
 
 define-mode ada
 ~with define-submode ada
@@ -27,7 +27,7 @@ define-mode awk
 define-mode bat
 ~with define-submode bat
 	suf '\.bat$'
-	pre '\s*(@)\?echo\s*(on|off)\?$'
+	pre '\s*\(@\)\?echo\s*\(on\|off\)\?$'
 	dos
 	ignorecase
 	comment-prefix '^\s*rem\>'
@@ -192,6 +192,14 @@ define-mode m4
 	fence-elif '^\s*\<elif\>'
 	fence-else '^\s*\<else\>'
 	fence-fi   '^\s*\<fi\>'
+~elsewith define-submode m4 group 'case'
+	fence-if   '^\s*\<case\>.*\<in\>'
+	fence-elif '^\s*[^)]\+)'
+	fence-else '^\s*\*)'
+	fence-fi   '^\s*\<esac\>'
+~elsewith define-submode m4 group 'do'
+	fence-if   '\(^\s*\<do\>\|;\s*\<do\>\)\s*$'
+	fence-fi   '^\s*\<done\>'
 ~endwith
 
 define-mode mail
@@ -229,7 +237,7 @@ define-mode mms
 
 define-mode nr
 ~with define-submode nr
-	suf '\.\(\([1-9ln][a-z]\?\)\|man\)$'
+	suf '\.\(\([1-9ln][a-z]\?\)\|me\|ms\|man\)$'
 	pre '^\.\\\''
 	comment-prefix	'^\.\\\''
 	comments	'^\.\\\'\s*$'
@@ -237,7 +245,7 @@ define-mode nr
 
 define-mode pas
 ~with define-submode pas
-	suf '\.\(p|pas\)$'
+	suf '\.\(p\|pas\)$'
 ~endwith
 
 ; 'do' should really be a separate group, but since ambiguous fence-fi is

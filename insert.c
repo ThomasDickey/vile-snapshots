@@ -7,7 +7,7 @@
  * Most code probably by Dan Lawrence or Dave Conroy for MicroEMACS
  * Extensions for vile by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/insert.c,v 1.121 1999/11/24 23:58:43 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/insert.c,v 1.122 1999/11/27 14:04:40 tom Exp $
  *
  */
 
@@ -495,7 +495,16 @@ ins_anytime(int playback, int cur_count, int max_count, int *splice)
 
 
 		if (isSpecial(c)
-		 || (isCntrl(c) && !isreturn(c) && !isbackspace(c))) {
+		 || (isCntrl(c)
+		  && (isreturn(c)
+		   || isbackspace(c)
+#if OPT_SHELL && SYS_UNIX && defined(SIGTSTP)	/* job control, ^Z */
+		   || (c == suspc)
+#endif
+		   || (c == tocntrl('D'))
+		   || (c == tocntrl('T'))
+		   || (c == killc)
+		   || (c == wkillc)) == 0)) {
 			/* if we're allowed to honor SPEC bindings,
 				then see if it's bound to something, and
 				execute it */
