@@ -5,7 +5,7 @@
  * keys. Like everyone else, they set hints
  * for the display system.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.152 1997/02/09 20:11:51 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.153 1997/03/15 15:44:30 tom Exp $
  *
  */
 
@@ -593,7 +593,7 @@ int	lockfl)
 /* switch back to the most recent buffer */
 /* ARGSUSED */
 int
-altbuff(int f, int n)
+altbuff(int f GCC_UNUSED, int n GCC_UNUSED)
 {
 	register BUFFER *bp = find_alt();
 	if (bp == 0) {
@@ -612,7 +612,7 @@ altbuff(int f, int n)
  */
 /* ARGSUSED */
 int
-usebuffer(int f, int n)
+usebuffer(int f GCC_UNUSED, int n GCC_UNUSED)
 {
 	register BUFFER *bp;
 	register int	s;
@@ -629,7 +629,7 @@ usebuffer(int f, int n)
 /* switch back to the first buffer (i.e., ":rewind") */
 /* ARGSUSED */
 int
-firstbuffer(int f, int n)
+firstbuffer(int f GCC_UNUSED, int n GCC_UNUSED)
 {
 	int s = histbuff(TRUE,0);
 	if (!global_g_val(GMDABUFF))
@@ -639,7 +639,7 @@ firstbuffer(int f, int n)
 
 /* ARGSUSED */
 int
-nextbuffer(int f, int n)	/* switch to the next buffer in the buffer list */
+nextbuffer(int f GCC_UNUSED, int n GCC_UNUSED)	/* switch to the next buffer in the buffer list */
 {
 	register BUFFER *bp;	/* eligible buffer to switch to*/
 	register BUFFER *stopatbp;	/* eligible buffer to switch to*/
@@ -1069,7 +1069,7 @@ zotbuf(register BUFFER *bp)	/* kill the buffer pointed to by bp */
 
 /* ARGSUSED */
 int
-namebuffer(int f, int n)	/*	Rename the current buffer	*/
+namebuffer(int f GCC_UNUSED, int n GCC_UNUSED)	/*	Rename the current buffer	*/
 {
 	register BUFFER *bp;	/* pointer to scan through all buffers */
 	static char bufn[NBUFN];	/* buffer to hold buffer name */
@@ -1245,8 +1245,8 @@ footnote(int c)
 /* ARGSUSED */
 static void
 makebufflist(
-	int iflag,	/* list hidden buffer flag */
-	void *dummy)
+	int iflag GCC_UNUSED,	/* list hidden buffer flag */
+	void *dummy GCC_UNUSED)
 {
 	register BUFFER *bp;
 	LINEPTR curlp;		/* entry corresponding to buffer-list */
@@ -1335,7 +1335,7 @@ makebufflist(
  */
 /*ARGSUSED*/
 static int
-show_BufferList(BUFFER *bp)
+show_BufferList(BUFFER *bp GCC_UNUSED)
 {
 	register int	status;
 	if ((status = (!updating_list++ != 0)) != FALSE) {
@@ -1373,7 +1373,7 @@ update_scratch(const char *name, int (*func)(BUFFER *))
 
 /* ARGSUSED */
 int
-listbuffers(int f, int n)
+listbuffers(int f GCC_UNUSED, int n)
 {
 #if	OPT_UPBUFF
 	register int status;
@@ -1833,7 +1833,7 @@ unchg_buff(register BUFFER *bp, register int flag)
 
 /* ARGSUSED */
 int
-unmark(int f, int n)	/* unmark the current buffers change flag */
+unmark(int f GCC_UNUSED, int n GCC_UNUSED)	/* unmark the current buffers change flag */
 {
 	unchg_buff(curbp, 0);
 	return (TRUE);

@@ -3,7 +3,7 @@
  * paragraph at a time.  There are all sorts of word mode commands.  If I
  * do any sentence mode commands, they are likely to be put in this file. 
  *
- * $Header: /users/source/archives/vile.vcs/RCS/word.c,v 1.54 1996/10/03 01:02:51 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/word.c,v 1.56 1997/03/15 15:52:41 tom Exp $
  *
  */
 
@@ -337,6 +337,7 @@ formatregion(void)
 	register int i;			/* index during word copy	*/
 	register int newlen;		/* tentative new line length	*/
 	register int finished;		/* Are we at the End-Of-Paragraph? */
+	register int is_cpluscomment;	/* doing a c++ comment		*/
 	register int firstflag;		/* first word? (needs no space)	*/
 	register int is_comment;	/* doing a comment block?	*/
 	register int comment_char = -1;	/* # or *, for shell or C	*/
@@ -389,15 +390,21 @@ formatregion(void)
 		wordlen = 0;
 		sentence = FALSE;
 
-		is_comment = ( ((c = char_at(DOT)) == '#') ||
+		c = char_at(DOT);
+		is_cpluscomment = ((c == '/') &&
+			DOT.o+1 < llength(DOT.l) &&
+			lgetc(DOT.l,DOT.o+1) == '/');
+		is_comment = ( ((c == '#') ||
 				(c == '>') ||
 				(c == '*') ||
+				is_cpluscomment || 
 				((c == '/') &&
 				DOT.o+1 < llength(DOT.l) &&
-				 lgetc(DOT.l,DOT.o+1) == '*'));
+				 lgetc(DOT.l,DOT.o+1) == '*')) );
 
 		if (is_comment)
-			comment_char = (c == '#' || c == '>') ? c :'*';
+			comment_char = (c == '#' || c == '>') ? c :
+					is_cpluscomment ? '/' : '*';
 
 		/* scan through lines, filling words */
 		firstflag = TRUE;
@@ -437,8 +444,9 @@ formatregion(void)
 			/* if not a separator, just add it in */
 			if (!isblank(c)) {
 				/* was it the end of a "sentence"? */
-				sentence = (c == '.' || c == '?' ||
-						c == ':' || c == '!');
+				sentence = ((c == '.' || c == '?' ||
+						c == ':' || c == '!') &&
+						global_g_val(GMDSPACESENT));
 				if (wordlen < NSTRING - 1)
 					wbuf[wordlen++] = (char)c;
 			} else if (wordlen) {
@@ -470,6 +478,10 @@ formatregion(void)
 						strncmp("/*",wbuf,2)) {
 					s = linsert(1, comment_char);
 					if (s != TRUE) return s;
+					if (is_cpluscomment) {
+						s = linsert(1, comment_char);
+						if (s != TRUE) return s;
+					}
 					s = linsert(1, ' ');
 					if (s != TRUE) return s;
 					clength += 2;
@@ -508,7 +520,7 @@ formatregion(void)
 			and report on them.			*/
 /*ARGSUSED*/
 int
-wordcount(int f, int n)
+wordcount(int f GCC_UNUSED, int n GCC_UNUSED)
 {
 	register LINE *lp;	/* current line to scan */
 	register int offset;	/* current char to scan */

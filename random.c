@@ -2,7 +2,7 @@
  * This file contains the command processing functions for a number of random
  * commands. There is no functional grouping here, for sure.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.183 1997/01/25 18:01:12 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.184 1997/03/15 16:02:01 tom Exp $
  *
  */
 
@@ -123,7 +123,7 @@ void *vargp)
  */
 /* ARGSUSED */
 int
-showcpos(int f, int n)
+showcpos(int f GCC_UNUSED, int n GCC_UNUSED)
 {
 	register LINE	*lp;		/* current line */
 	register B_COUNT numchars = 0;	/* # of chars in file */
@@ -196,7 +196,7 @@ showcpos(int f, int n)
 
 /* ARGSUSED */
 int
-showlength(int f, int n)
+showlength(int f GCC_UNUSED, int n GCC_UNUSED)
 {
 	/* actually, can be used to show any address-value */
 	mlforce("%d", line_no(curbp, MK.l));
@@ -392,7 +392,7 @@ gocol(int n)
  */
 /* ARGSUSED */
 int
-twiddle(int f, int n)
+twiddle(int f GCC_UNUSED, int n GCC_UNUSED)
 {
 	MARK		dot;
 	register char	cl;
@@ -515,7 +515,7 @@ backdelchar(int f, int n)
 /* 'D' is synonymous with 'd$' */
 /* ARGSUSED */
 int
-deltoeol(int f, int n)
+deltoeol(int f GCC_UNUSED, int n GCC_UNUSED)
 {
 	if (is_empty_line(DOT))
 		return TRUE;
@@ -567,7 +567,7 @@ chgchar(int f, int n)
 
 /* ARGSUSED */
 int
-clrmes(int f, int n)
+clrmes(int f GCC_UNUSED, int n GCC_UNUSED)
 {
 	mlerase();
 	return(TRUE);
@@ -580,7 +580,7 @@ clrmes(int f, int n)
 
 /* ARGSUSED */
 int
-writemsg(int f, int n)
+writemsg(int f GCC_UNUSED, int n GCC_UNUSED)
 {
 	register int status;
 	char buf[NPAT];		/* buffer to receive message into */
@@ -596,7 +596,7 @@ writemsg(int f, int n)
 
 /* ARGSUSED */
 int
-userbeep(int f, int n)
+userbeep(int f GCC_UNUSED, int n GCC_UNUSED)
 {
 	TTbeep();
 	return TRUE;
@@ -886,7 +886,7 @@ update_dos_drv_dir(const char *cwd)
 
 /* ARGSUSED */
 int
-cd(int f, int n)
+cd(int f GCC_UNUSED, int n GCC_UNUSED)
 {
 	register int status;
 	static	TBUFF	*last;
@@ -906,7 +906,7 @@ cd(int f, int n)
 
 /* ARGSUSED */
 int
-pwd(int f, int n)
+pwd(int f GCC_UNUSED, int n GCC_UNUSED)
 {
 	mlforce("%s",current_directory(f));
 	return TRUE;

@@ -506,11 +506,11 @@ Text manipulation command:
 		commands -- i.e. blank lines, or lines beginning in .I .L
 		.P .Q or .b.  This makes it possible to use "3^A-f}" or
 		"^A-fG" to reformat multiple paragraphs.  The reformatting
-		operation knows a little about both C and shell comments,
-		and will attempt to do the "right" thing with lines that
-		start with '#' or '*' characters.  (It also knows about the
-		'>' character, making it fairly easy to reformat mail and
-		news inclusions...  but is it ethical?  :-)
+		operation knows a little about both C, C++, and shell
+		comments, and will attempt to do the "right" thing with
+		lines that start with '#' or '*' characters.  (It also knows
+		about the '>' character, making it fairly easy to reformat
+		mail and news inclusions...  but is it ethical?  :-)
 
 	^X-s	For every occurrence of a search string, put in a replace-
 		ment string.  This is similar to "s/pattern/replacement/g"
@@ -1332,6 +1332,11 @@ Editor modes
 		to true.  Warning: If your keyboard repeats really fast and
 		you have smoothscroll enabled, it may take a while for vile
 		to catch up.  (U)
+
+	spaces-after-sentence (sas) Insert two spaces after each sentence
+		when formatting a paragraph.  By default this option is
+		turned on.  When disabled, the format routiine will insert
+		only one space after each sentence.  (U)
 
 	tabinsert (ti) Allow the physical insertion of tab characters into
 		the buffer.  If turned off ("notabinsert"), and an attempt
@@ -3434,4 +3439,4 @@ Problems
 
 Copyright 1995,1996 by Paul Fox, Tom Dickey, and Kevin Buettner
 ---------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.314 1997/02/28 23:54:48 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.315 1997/03/09 00:08:20 otto.lind Exp $

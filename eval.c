@@ -3,7 +3,7 @@
 
 	written 1986 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.138 1997/02/04 00:55:32 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.139 1997/03/15 15:45:01 tom Exp $
  *
  */
 
@@ -101,7 +101,7 @@ static char *directory;	/* $TMP environment is "$directory" variable */
 /* list the current vars into the current buffer */
 /* ARGSUSED */
 static void
-makevarslist(int dum1, void *ptr)
+makevarslist(int dum1 GCC_UNUSED, void *ptr)
 {
 	register UVAR *p;
 	register int j;
@@ -1228,8 +1228,8 @@ s2offset(char *s, char *n)
 
 /* ARGSUSED */
 static int
-gtlbl(			/* find the line number of the given label */
-const char *tokn)	/* label name to find */
+gtlbl(				/* find the line number of the given label */
+const char *tokn GCC_UNUSED)	/* label name to find */
 {
 	/* FIXME XXX */
 	return(1);

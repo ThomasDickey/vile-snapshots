@@ -5,7 +5,7 @@
  *	reading and writing of the disk are in "fileio.c".
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.205 1997/03/14 10:33:32 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.207 1997/03/15 15:48:13 tom Exp $
  *
  */
 
@@ -324,7 +324,7 @@ set_buffer_name(BUFFER *bp)
  */
 /* ARGSUSED */
 int
-fileread(int f, int n)
+fileread(int f GCC_UNUSED, int n GCC_UNUSED)
 {
         register int    s;
 	char fname[NFILEN];
@@ -375,7 +375,7 @@ set_last_file_edited(const char *f)
 
 /* ARGSUSED */
 int
-filefind(int f, int n)
+filefind(int f GCC_UNUSED, int n GCC_UNUSED)
 {
 	register int	s;
 	register BUFFER *bp;
@@ -402,7 +402,7 @@ filefind(int f, int n)
 
 /* ARGSUSED */
 int
-viewfile(int f, int n)	/* visit a file in VIEW mode */
+viewfile(int f GCC_UNUSED, int n GCC_UNUSED)	/* visit a file in VIEW mode */
 {
 	char fname[NFILEN];	/* file user wishes to find */
 	register int s;		/* status return */
@@ -431,7 +431,7 @@ viewfile(int f, int n)	/* visit a file in VIEW mode */
  */
 /* ARGSUSED */
 int
-insfile(int f, int n)
+insfile(int f GCC_UNUSED, int n GCC_UNUSED)
 {
         register int    s;
 	char fname[NFILEN];
@@ -620,7 +620,7 @@ guess_dosmode(BUFFER *bp)
  */
 /*ARGSUSED*/
 int
-set_dosmode(int f, int n)
+set_dosmode(int f, int n GCC_UNUSED)
 {
 	make_local_b_val(curbp, MDDOS);
 
@@ -1322,29 +1322,34 @@ filesave(int f, int n)
         return s;
 }
 
+static void
+setup_file_region(BUFFER *bp, REGION *rp)
+{
+	(void)bsizes(bp);	/* make sure we have current count */
+	/* starting at the beginning of the buffer */
+	rp->r_orig.l = lforw(buf_head(bp));
+        rp->r_orig.o = 0;
+        rp->r_size   = bp->b_bytecount;
+        rp->r_end    = bp->b_line;
+}
+
 /*
- * This function performs the details of file
- * writing. Uses the file management routines in the
- * "fileio.c" package. The number of lines written is
- * displayed. Sadly, it looks inside a LINE; provide
- * a macro for this. Most of the grief is error
- * checking of some sort.
+ * Write a whole file
  */
 int
 writeout(const char *fn, BUFFER *bp, int forced, int msgf)
 {
         REGION region;
 
-	(void)bsizes(bp);	/* make sure we have current count */
-	/* starting at the beginning of the buffer */
-	region.r_orig.l = lforw(buf_head(bp));
-        region.r_orig.o = 0;
-        region.r_size   = bp->b_bytecount;
-        region.r_end    = bp->b_line;
+	setup_file_region(bp, &region);
 
 	return writereg(&region, fn, msgf, bp, forced);
 }
 
+/*
+ * Write the currently-selected region (i.e., the range of lines from DOT to
+ * MK, inclusive).
+ */
 int
 writeregion(void)
 {
@@ -1417,10 +1422,27 @@ int	forced)
 #if OPT_PROCEDURES
 	{
 	    static int writehooking;
+
 	    if (!writehooking && *writehook) {
 		    writehooking = TRUE;
 		    run_procedure(writehook);
 		    writehooking = FALSE;
+
+		    /*
+		     * The write-hook may have modified the buffer.  Assume
+		     * the worst, and reconstruct the region.
+		     */
+		    (void)bsizes(bp);
+		    if (whole_file
+		     || line_no(bp, rp->r_orig.l) > bp->b_linecount
+		     || line_no(bp, rp->r_end.l)  > bp->b_linecount) {
+			setup_file_region(bp, rp);
+		    } else {
+			DOT = rp->r_orig;
+			MK  = rp->r_end;
+			(void)getregion(rp);
+		    }
+		    offset = rp->r_orig.o;
 	    }
 	}
 #endif
@@ -1615,7 +1637,7 @@ kwrite(const char *fn, int msgf)
  */
 /* ARGSUSED */
 int
-filename(int f, int n)
+filename(int f GCC_UNUSED, int n GCC_UNUSED)
 {
         register int    s;
         char            fname[NFILEN];

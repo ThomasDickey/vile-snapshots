@@ -2,7 +2,7 @@
  * Window management. Some of the functions are internal, and some are
  * attached to keys that the user actually types.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/window.c,v 1.72 1997/01/19 15:40:58 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/window.c,v 1.73 1997/03/15 15:52:41 tom Exp $
  *
  */
 
@@ -114,7 +114,7 @@ reposition(int f, int n)
  */
 /* ARGSUSED */
 int
-vile_refresh(int f, int n)
+vile_refresh(int f, int n GCC_UNUSED)
 {
 
 	if (f == FALSE) {
@@ -377,7 +377,7 @@ mvleftwind(int f, int n)
  */
 /* ARGSUSED */
 int
-onlywind(int f, int n)
+onlywind(int f GCC_UNUSED, int n GCC_UNUSED)
 {
         register WINDOW *wp;
 
@@ -410,7 +410,7 @@ onlywind(int f, int n)
 
 /* ARGSUSED */
 int
-delwind(int f, int n)
+delwind(int f GCC_UNUSED, int n GCC_UNUSED)
 {
 	return delwp(curwp);
 }
@@ -829,7 +829,7 @@ scrnextdw(int f, int n)	/* scroll the next window down (forward) a page */
 #if ! SMALLER
 /* ARGSUSED */
 int
-savewnd(int f, int n)	/* save ptr to current window */
+savewnd(int f GCC_UNUSED, int n GCC_UNUSED)	/* save ptr to current window */
 {
 	swindow = curwp;
 	return(TRUE);
@@ -837,7 +837,7 @@ savewnd(int f, int n)	/* save ptr to current window */
 
 /* ARGSUSED */
 int
-restwnd(int f, int n)	/* restore the saved screen */
+restwnd(int f GCC_UNUSED, int n GCC_UNUSED)	/* restore the saved screen */
 {
 	register WINDOW *wp;
 

@@ -1,7 +1,7 @@
 /*	tcap:	Unix V5, V7 and BS4.2 Termcap video driver
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.86 1997/02/26 12:06:48 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.87 1997/03/15 15:32:25 tom Exp $
  *
  */
 
@@ -662,7 +662,7 @@ tcapeeop(void)
 
 /*ARGSUSED*/
 static int
-tcapcres(char *res)	/* change screen resolution */
+tcapcres(char *res GCC_UNUSED)	/* change screen resolution */
 {
 	return(TRUE);
 }
@@ -995,7 +995,7 @@ static	int	xterm_button (int c);
 
 /*ARGSUSED*/
 int
-mouse_motion(int f, int n)
+mouse_motion(int f GCC_UNUSED, int n GCC_UNUSED)
 {
 	return xterm_button('M');
 }

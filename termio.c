@@ -3,7 +3,7 @@
  * characters, and write characters in a barely buffered fashion on the display.
  * All operating systems.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/termio.c,v 1.146 1996/10/03 01:02:51 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/termio.c,v 1.147 1997/03/15 15:51:38 tom Exp $
  *
  */
 #include	"estruct.h"
@@ -222,7 +222,7 @@ ttopen(void)
 */
 /* ARGSUSED */
 int
-flow_control_enable(int f, int n)
+flow_control_enable(int f, int n GCC_UNUSED)
 {
 #if !DISP_X11
 	if (!f) {
@@ -1108,26 +1108,26 @@ static OUTC_DCL null_putc(OUTC_ARGS) { OUTC_RET c; }
 static int  null_typahead(void)	{ return FALSE; }
 static void null_flush(void)	{ }
 /*ARGSUSED*/
-static void null_move(int row, int col) { }
+static void null_move(int row GCC_UNUSED, int col GCC_UNUSED) { }
 static void null_eeol(void)	{ }
 static void null_eeop(void)	{ }
 static void null_beep(void)	{ }
 /*ARGSUSED*/
-static void null_rev(int state) { }
+static void null_rev(int state GCC_UNUSED) { }
 /*ARGSUSED*/
-static int null_cres(char *res) { return(FALSE); }
+static int null_cres(char *res GCC_UNUSED) { return(FALSE); }
 
 /*
  * These are public, since we'll use them as placeholders for unimplemented
  * device methods.
  */
-/*ARGSUSED*/ void null_t_setfor (int f) { }
-/*ARGSUSED*/ void null_t_setback (int b) { }
-/*ARGSUSED*/ void null_t_setpal (char *p) { }
-/*ARGSUSED*/ void null_t_scroll (int f, int t, int n) { }
+/*ARGSUSED*/ void null_t_setfor (int f GCC_UNUSED) { }
+/*ARGSUSED*/ void null_t_setback (int b GCC_UNUSED) { }
+/*ARGSUSED*/ void null_t_setpal (char *p GCC_UNUSED) { }
+/*ARGSUSED*/ void null_t_scroll (int f GCC_UNUSED, int t GCC_UNUSED, int n GCC_UNUSED) { }
 /*ARGSUSED*/ void null_t_pflush (void) { }
-/*ARGSUSED*/ void null_t_icursor (int c) { }
-/*ARGSUSED*/ void null_t_title (char *t) { }
+/*ARGSUSED*/ void null_t_icursor (int c GCC_UNUSED) { }
+/*ARGSUSED*/ void null_t_title (char *t GCC_UNUSED) { }
 
 /******************************************************************************/
 

@@ -5,7 +5,7 @@
  * commands. Some functions are just for
  * internal use.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/region.c,v 1.79 1996/04/17 02:50:40 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/region.c,v 1.80 1997/03/15 16:03:10 tom Exp $
  *
  */
 
@@ -209,7 +209,7 @@ stringrect(void)
  */
 /*ARGSUSED*/
 static int
-shift_right_line(void *flagp, int l, int r)
+shift_right_line(void *flagp GCC_UNUSED, int l GCC_UNUSED, int r GCC_UNUSED)
 {
 	int s, t;
 
@@ -254,7 +254,7 @@ shiftrregion(void)
  */
 /*ARGSUSED*/
 static int
-shift_left_line(void *flagp, int l, int r)
+shift_left_line(void *flagp GCC_UNUSED, int l GCC_UNUSED, int r GCC_UNUSED)
 {
 	register int	i;
 	register int	lim;
@@ -309,7 +309,7 @@ shiftlregion(void)
  */
 /*ARGSUSED*/
 int
-detabline(void *flagp, int l, int r)
+detabline(void *flagp GCC_UNUSED, int l GCC_UNUSED, int r GCC_UNUSED)
 {
 	register int	s;
 	register int	c;
@@ -360,7 +360,7 @@ detab_region(void)
  */
 /*ARGSUSED*/
 int
-entabline(void *flagp, int l, int r)
+entabline(void *flagp GCC_UNUSED, int l GCC_UNUSED, int r GCC_UNUSED)
 {
 	register int fspace;	/* pointer to first space if in a run */
 	register int ccol;	/* current cursor column */
@@ -431,7 +431,7 @@ entab_region(void)
 /* (dot is even preserved if it was sitting on the newline) */
 /*ARGSUSED*/
 int
-trimline(void *flag, int l, int r)
+trimline(void *flag GCC_UNUSED, int l GCC_UNUSED, int r GCC_UNUSED)
 {
 	register int off;
 	register LINE *lp;
@@ -562,7 +562,7 @@ _yankchar(int c)
 
 /*ARGSUSED*/
 static int
-yank_line(void *flagp, int l, int r)
+yank_line(void *flagp GCC_UNUSED, int l, int r)
 {
 	int s;
 	charprocfunc = _yankchar;
@@ -1003,7 +1003,7 @@ int convert_cols)	/* if rectangle, convert columns to offsets */
 /*ARGSUSED*/
 static int
 do_chars_in_line(
-void	*flagp,
+void	*flagp GCC_UNUSED,
 int	ll, int	rr)		/* offsets of of chars to be processed */
 {
 	register int    c,nc;

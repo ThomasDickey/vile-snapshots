@@ -7,7 +7,7 @@
  * Most code probably by Dan Lawrence or Dave Conroy for MicroEMACS
  * Extensions for vile by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/insert.c,v 1.100 1997/02/09 19:39:55 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/insert.c,v 1.101 1997/03/15 15:48:13 tom Exp $
  *
  */
 
@@ -1105,7 +1105,7 @@ tab(int f, int n)
 
 /*ARGSUSED*/
 static int
-shiftwidth(int f, int n)
+shiftwidth(int f GCC_UNUSED, int n GCC_UNUSED)
 {
 	int logical_col;
 	int char_index;

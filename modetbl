@@ -11,7 +11,7 @@
 #
 # The modes are table entries in the BUFFER and WINDOW structures.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.75 1997/01/10 11:07:43 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.76 1997/03/09 00:08:20 otto.lind Exp $
 #
 #
 # Mode-table entries.  Capitalized letters are used for abbreviations.
@@ -47,6 +47,7 @@ bool							# GMD prefix
 	"warn-rename"	WARNRENAME	0		# warn before renaming a buffer
 	"xterm-mouse"	XTERM_MOUSE	chgd_xterm	# mode to control whether we allow mouse-clicking
 	"SmoothScroll"	SMOOTH_SCROLL	0		# should we update even if there is typeahead?
+	"Spaces-After-Sentence" SPACESENT	0	# add two spaces after a
 enum
 	"fcolor"	FCOLOR		chgd_color	OPT_COLOR	# foreground color
 	"bcolor"	BCOLOR		chgd_color	OPT_COLOR	# background color

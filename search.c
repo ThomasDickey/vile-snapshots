@@ -3,7 +3,7 @@
  * and backward directions.
  *  heavily modified by Paul Fox, 1990
  *
- * $Header: /users/source/archives/vile.vcs/RCS/search.c,v 1.106 1996/12/17 11:52:43 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/search.c,v 1.107 1997/03/15 15:51:38 tom Exp $
  *
  * original written Aug. 1986 by John M. Gamble, but I (pgf) have since
  * replaced his regex stuff with Henry Spencer's regexp package.
@@ -227,7 +227,7 @@ backsearch(int f, int n)
 
 /* ARGSUSED */
 static int
-rsearch(int f, int n, int dummy, int fromscreen)
+rsearch(int f, int n, int dummy GCC_UNUSED, int fromscreen)
 {
 	register int status;
 	int wrapok;
@@ -579,7 +579,7 @@ need_to_rehilite(void)
 #if OPT_HILITEMATCH
 /* ARGSUSED */
 int
-clear_match_attrs(int f, int n)
+clear_match_attrs(int f GCC_UNUSED, int n GCC_UNUSED)
 {
 	int status;
 	MARK origdot, origmark;
@@ -697,7 +697,7 @@ eq(register int bc, register int pc)
 
 /* ARGSUSED */
 int
-scrsearchpat(int f, int n)
+scrsearchpat(int f GCC_UNUSED, int n GCC_UNUSED)
 {
 	int s;
 	s =  readpattern("", pat, &gregexp, EOS, TRUE);

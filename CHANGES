@@ -1,5 +1,17 @@
 Changes for vile 7.1 (released ??? ??? ??, 1997)
 
+(tom)	970315 (b)
+	+ use macro GCC_UNUSED throughout to quiet gcc warnings about unused
+	  (dummy) parameters.
+	+ modify configure script to use VC_GCC_WARNINGS
+	+ add mode to control whether formatting adds one or two spaces
+	  after sentences (patch by Otto Lind).
+	+ handle C++ comments (patch by Otto Lind <otto.lind@softwire.com>).
+	+ implement colored attributes in OS/2 video driver (os2vio.c)
+	+ modify writereg() so that it recomputes the region size after
+	  invoking the $write-hook; this is necessary since it may change the
+	  file's size (reported by Bob Wall <wall@vlt.com>).
+
 (tom)	970314 (a)
 	+ modify c-filt.c, manfilt.c to simplify compiling w/o auto-configure
 	  "config.h".

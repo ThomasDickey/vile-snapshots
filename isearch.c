@@ -7,7 +7,7 @@
  *
  * original author: D. R. Banks 9-May-86
  *
- * $Header: /users/source/archives/vile.vcs/RCS/isearch.c,v 1.46 1997/02/09 20:12:15 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/isearch.c,v 1.47 1997/03/15 15:48:13 tom Exp $
  *
  */
 
@@ -123,7 +123,7 @@ fisearch(int f, int n)
 
 /* ARGSUSED */
 static int
-isearch(int f, int n)
+isearch(int f GCC_UNUSED, int n)
 {
 	int             status;	/* Search status */
 	int             col;	/* prompt column */

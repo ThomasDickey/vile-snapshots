@@ -4,7 +4,7 @@
  *	the cursor.
  *	written for vile: Copyright (c) 1990, 1995 by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tags.c,v 1.78 1996/10/17 10:44:58 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tags.c,v 1.79 1997/03/15 15:51:38 tom Exp $
  *
  */
 #include	"estruct.h"
@@ -41,7 +41,7 @@ static	int	update_tagstack ( BUFFER *bp );
 
 /* ARGSUSED */
 int
-gototag(int f, int n)
+gototag(int f GCC_UNUSED, int n GCC_UNUSED)
 {
 	register int s;
 	int taglen;
@@ -66,7 +66,7 @@ gototag(int f, int n)
  */
 /*ARGSUSED*/
 int
-nexttag(int f, int n)
+nexttag(int f GCC_UNUSED, int n GCC_UNUSED)
 {
 	int	s = FALSE;
 	if (tagname[0] != EOS)
@@ -541,7 +541,7 @@ tossuntag(void)
 #if OPT_SHOW_TAGS
 /*ARGSUSED*/
 static void
-maketagslist (int value, void *dummy)
+maketagslist (int value GCC_UNUSED, void *dummy GCC_UNUSED)
 {
 	register UNTAG *utp;
 	register int	n;
@@ -573,7 +573,7 @@ maketagslist (int value, void *dummy)
 #if OPT_UPBUFF
 /* ARGSUSED */
 static int
-update_tagstack(BUFFER *bp)
+update_tagstack(BUFFER *bp GCC_UNUSED)
 {
 	return showtagstack(FALSE,1);
 }
@@ -584,7 +584,7 @@ update_tagstack(BUFFER *bp)
  */
 /*ARGSUSED*/
 int
-showtagstack(int f, int n)
+showtagstack(int f, int n GCC_UNUSED)
 {
 	return liststuff(TAGSTACK_BufName, FALSE, maketagslist, f, (void *)0);
 }

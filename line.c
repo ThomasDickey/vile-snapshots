@@ -10,7 +10,7 @@
  * editing must be being displayed, which means that "b_nwnd" is non zero,
  * which means that the dot and mark values in the buffer headers are nonsense.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.103 1996/06/18 23:11:57 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.104 1997/03/15 16:00:53 tom Exp $
  *
  */
 
@@ -1448,7 +1448,7 @@ execkreg(int f, int n)
 
 /* ARGSUSED */
 int
-loadkreg(int f, int n)
+loadkreg(int f GCC_UNUSED, int n GCC_UNUSED)
 {
 	int s;
 	char respbuf[NFILEN];
@@ -1482,7 +1482,7 @@ static	int	show_all_chars;
 static void
 makereglist(
 int iflag,	/* list nonprinting chars flag */
-void *dummy)
+void *dummy GCC_UNUSED)
 {
 	register KILL	*kp;
 	register int	i, ii, j, c;
@@ -1549,7 +1549,7 @@ static int will_relist_regs;
 
 /*ARGSUSED*/
 int
-showkreg(int f, int n)
+showkreg(int f, int n GCC_UNUSED)
 {
 	will_relist_regs = FALSE;
 	return liststuff(REGISTERS_BufName, FALSE,

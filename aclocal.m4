@@ -1,7 +1,7 @@
 dnl
 dnl Local definitions for autoconf.
 dnl ------------------------
-dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.23 1997/02/26 12:06:26 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.24 1997/03/15 15:24:39 tom Exp $
 dnl
 dnl ---------------------------------------------------------------------------
 dnl ---------------------------------------------------------------------------
@@ -162,6 +162,125 @@ AC_CACHE_VAL(vc_cv_extern_errno,[
 AC_MSG_RESULT($vc_cv_extern_errno)
 test $vc_cv_extern_errno = yes && AC_DEFINE(HAVE_EXTERN_ERRNO)
 ])
+dnl ---------------------------------------------------------------------------
+dnl Test for availability of useful gcc __attribute__ directives to quiet
+dnl compiler warnings.  Though useful, not all are supported -- and contrary
+dnl to documentation, unrecognized directives cause older compilers to barf.
+AC_DEFUN([VC_GCC_ATTRIBUTES],
+[cat > conftest.i <<EOF
+#ifndef	GCC_PRINTF
+#define	GCC_PRINTF 0
+#endif
+#ifndef	GCC_SCANF
+#define	GCC_SCANF 0
+#endif
+#ifndef GCC_NORETURN
+#define GCC_NORETURN /* nothing */
+#endif
+#ifndef GCC_UNUSED
+#define GCC_UNUSED /* nothing */
+#endif
+EOF
+if test -n "$GCC"
+then
+	AC_CHECKING([for gcc __attribute__ directives])
+	changequote(,)dnl
+cat > conftest.$ac_ext <<EOF
+#line __oline__ "configure"
+#include "confdefs.h"
+#include "conftest.h"
+#include "conftest.i"
+#if	GCC_PRINTF
+#define GCC_PRINTFLIKE(fmt,var) __attribute__((format(printf,fmt,var)))
+#else
+#define GCC_PRINTFLIKE(fmt,var) /*nothing*/
+#endif
+#if	GCC_SCANF
+#define GCC_SCANFLIKE(fmt,var)  __attribute__((format(scanf,fmt,var)))
+#else
+#define GCC_SCANFLIKE(fmt,var)  /*nothing*/
+#endif
+extern void wow(char *,...) GCC_SCANFLIKE(1,2);
+extern void oops(char *,...) GCC_PRINTFLIKE(1,2) GCC_NORETURN;
+extern void foo(void) GCC_NORETURN;
+int main(int argc GCC_UNUSED, char *argv[] GCC_UNUSED) { return 0; }
+EOF
+	changequote([,])dnl
+#	for vc_attribute in scanf printf unused noreturn
+	for vc_attribute in printf unused noreturn
+	do
+		VC_UPPERCASE($vc_attribute,VC_ATTRIBUTE)
+		vc_directive="__attribute__(($vc_attribute))"
+		echo "checking for gcc $vc_directive" 1>&AC_FD_CC
+		case $vc_attribute in
+		scanf|printf)
+		cat >conftest.h <<EOF
+#define GCC_$VC_ATTRIBUTE 1
+EOF
+			;;
+		*)
+		cat >conftest.h <<EOF
+#define GCC_$VC_ATTRIBUTE $vc_directive
+EOF
+			;;
+		esac
+		if AC_TRY_EVAL(ac_compile); then
+			test -n "$verbose" && AC_MSG_RESULT(... $vc_attribute)
+			cat conftest.h >>confdefs.h
+		else
+			sed -e 's/__attr.*/\/*nothing*\//' conftest.h >>confdefs.h
+		fi
+	done
+else
+	fgrep define conftest.i >>confdefs.h
+fi
+rm -rf conftest*
+])dnl
+dnl ---------------------------------------------------------------------------
+dnl Check if the compiler supports useful warning options.  There's a few that
+dnl we don't use, simply because they're too noisy:
+dnl
+dnl	-Wconversion (useful in older versions of gcc, but not in gcc 2.7.x)
+dnl	-Wredundant-decls (system headers make this too noisy)
+dnl	-Wtraditional (combines too many unrelated messages, only a few useful)
+dnl	-Wwrite-strings (too noisy, but should review occasionally)
+dnl
+AC_DEFUN([VC_GCC_WARNINGS],
+[vc_warn_CFLAGS=""
+if test -n "$GCC"
+then
+	VC_GCC_ATTRIBUTES
+	changequote(,)dnl
+	cat > conftest.$ac_ext <<EOF
+#line __oline__ "configure"
+int main(int argc, char *argv[]) { return argv[argc-1] == 0; }
+EOF
+	changequote([,])dnl
+	AC_CHECKING([for gcc warning options])
+	vc_save_CFLAGS="$CFLAGS"
+	vc_warn_CFLAGS="-W -Wall"
+	for vc_opt in \
+		Wbad-fuvction-cast \
+		Wcast-align \
+		Wcast-qual \
+		Winline \
+		Wmissing-declarations \
+		Wmissing-prototypes \
+		Wnested-externs \
+		Wpointer-arith \
+		Wshadow \
+		Wstrict-prototypes
+	do
+		CFLAGS="$vc_save_CFLAGS $vc_warn_CFLAGS -$vc_opt"
+		if AC_TRY_EVAL(ac_compile); then
+			test -n "$verbose" && AC_MSG_RESULT(... -$vc_opt)
+			vc_warn_CFLAGS="$vc_warn_CFLAGS -$vc_opt"
+		fi
+	done
+	rm -f conftest*
+	CFLAGS="$vc_save_CFLAGS"
+fi
+])dnl
 dnl ---------------------------------------------------------------------------
 dnl
 dnl Note: must follow AC_FUNC_SETPGRP, but cannot use AC_REQUIRE, since that
@@ -395,9 +514,7 @@ dnl
 AC_DEFUN([VC_MISSING_EXTERN],
 [for ac_func in $1
 do
-changequote(,)dnl
-ac_tr_func=`echo $ac_func | tr '[a-z]' '[A-Z]'`
-changequote([,])dnl
+VC_UPPERCASE($ac_func,ac_tr_func)
 VC_MISSING_CHECK(${ac_func}, ${ac_tr_func})dnl
 done
 ])dnl
@@ -526,4 +643,12 @@ case $vc_cv_type_outchar in
 	AC_DEFINE(OUTC_ARGS,char c)
 	;;
 esac
+])dnl
+dnl ---------------------------------------------------------------------------
+dnl Make an uppercase version of a given name
+AC_DEFUN([VC_UPPERCASE],
+[
+changequote(,)dnl
+$2=`echo $1 |tr '[a-z]' '[A-Z]'`
+changequote([,])dnl
 ])dnl

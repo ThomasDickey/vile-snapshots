@@ -5,7 +5,7 @@
  * functions that adjust the top line in the window and invalidate the
  * framing, are hard.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/basic.c,v 1.92 1996/04/17 02:49:32 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/basic.c,v 1.93 1997/03/15 15:38:06 tom Exp $
  *
  */
 
@@ -57,7 +57,7 @@ half_pages(int f, int n)
  */
 /* ARGSUSED */
 int
-gotobol(int f, int n)
+gotobol(int f GCC_UNUSED, int n GCC_UNUSED)
 {
 	DOT.o  = w_left_margin(curwp);
 	return mvleftwind(TRUE, -w_val(curwp,WVAL_SIDEWAYS));
@@ -243,7 +243,7 @@ gotoline(int f, int n)
  */
 /* ARGSUSED */
 int
-gotobob(int f, int n)
+gotobob(int f GCC_UNUSED, int n GCC_UNUSED)
 {
 	DOT.l  = lforw(buf_head(curbp));
 	DOT.o  = w_left_margin(curwp);
@@ -256,7 +256,7 @@ gotobob(int f, int n)
  */
 /* ARGSUSED */
 int
-gotoeob(int f, int n)
+gotoeob(int f GCC_UNUSED, int n GCC_UNUSED)
 {
 	DOT.l  = lback(buf_head(curbp));
 	curwp->w_flag |= WFMOVE;
@@ -295,7 +295,7 @@ gotobos(int f, int n)
  */
 /* ARGSUSED */
 int
-gotomos(int f, int n)
+gotomos(int f GCC_UNUSED, int n)
 {
 	register LINEPTR lp, head;
 	int	half = (curwp->w_ntrows+1) / 2;
@@ -401,7 +401,7 @@ forwline(int f, int n)
  */
 /* ARGSUSED */
 int
-firstnonwhite(int f, int n)
+firstnonwhite(int f GCC_UNUSED, int n GCC_UNUSED)
 {
 	DOT.o  = firstchar(DOT.l);
 	if (DOT.o < w_left_margin(curwp)) {
@@ -416,7 +416,7 @@ firstnonwhite(int f, int n)
 /* ARGSUSED */
 #if !SMALLER
 int
-lastnonwhite(int f, int n)
+lastnonwhite(int f GCC_UNUSED, int n GCC_UNUSED)
 {
 	DOT.o  = lastchar(DOT.l);
 	if (DOT.o < w_left_margin(curwp))
@@ -959,7 +959,7 @@ backhpage(int f, int n)
  */
 /* ARGSUSED */
 int
-setnmmark(int f, int n)
+setnmmark(int f GCC_UNUSED, int n GCC_UNUSED)
 {
 	int c,i;
 
@@ -996,7 +996,7 @@ setnmmark(int f, int n)
 
 /* ARGSUSED */
 int
-golinenmmark(int f, int n)
+golinenmmark(int f GCC_UNUSED, int n GCC_UNUSED)
 {
 	int c;
 	register int s;
@@ -1014,7 +1014,7 @@ golinenmmark(int f, int n)
 
 /* ARGSUSED */
 int
-goexactnmmark(int f, int n)
+goexactnmmark(int f GCC_UNUSED, int n GCC_UNUSED)
 {
 	int c;
 	register int s;
@@ -1028,7 +1028,7 @@ goexactnmmark(int f, int n)
 
 /* ARGSUSED */
 int
-gorectnmmark(int f, int n)
+gorectnmmark(int f GCC_UNUSED, int n GCC_UNUSED)
 {
 	int c;
 	register int s;
@@ -1136,7 +1136,7 @@ setmark(void)
 
 /* ARGSUSED */
 int
-gomark(int f, int n)
+gomark(int f GCC_UNUSED, int n GCC_UNUSED)
 {
 	DOT = MK;
 	curwp->w_flag |= WFMOVE;

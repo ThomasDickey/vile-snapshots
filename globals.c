@@ -2,7 +2,7 @@
  *	matching lines, then for each such line, an action is performed.
  *	written for vile: Copyright (c) 1990, 1995 by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/globals.c,v 1.40 1996/09/17 14:44:06 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/globals.c,v 1.41 1997/03/15 15:48:13 tom Exp $
  *
  */
 
@@ -26,7 +26,7 @@ vglobals(int f, int n)
 
 /* ARGSUSED */
 static int
-globber(int f, int n, int g_or_v)
+globber(int f GCC_UNUSED, int n GCC_UNUSED, int g_or_v)
 {
 	int c, s;
 	register LINE *lp;
