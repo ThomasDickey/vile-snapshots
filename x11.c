@@ -2,7 +2,7 @@
  *	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.206 1999/04/18 20:16:40 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.207 1999/04/29 22:36:21 tom Exp $
  *
  */
 
@@ -3294,6 +3294,29 @@ x_preparse_args(
 # endif
 #endif
 	XWMHints *hints = XAllocWMHints();
+	XIconSize *size_list;
+	int size_size;
+
+#if OPT_TRACE
+	/* FIXME: get some information about the desired icon sizes to see
+	 * if it's worth supplying an explicit 16x16.  That appears to be
+	 * possible with XVision -TD
+	 */
+	if (XGetIconSizes(dpy, DefaultRootWindow(dpy), &size_list, &size_size)) {
+	    int n;
+	    Trace("XGetIconSizes size_size=%d\n", size_size);
+	    for (n = 0; n < size_size; n++)
+		Trace("[%d] min %dx%d, max %dx%d, inc %dx%d\n",
+		    n,
+		    size_list[n].min_width,
+		    size_list[n].min_height,
+		    size_list[n].max_width,
+		    size_list[n].max_height,
+		    size_list[n].width_inc,
+		    size_list[n].height_inc);
+	    XFree(size_list);
+	}
+#endif
 
 	if (hints)
 	{

@@ -1,4 +1,4 @@
-# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.in,v 1.46 1999/04/29 09:55:12 tom Exp $
+# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.in,v 1.48 1999/04/29 23:45:17 tom Exp $
 #
 
 #### Start of system configuration section. ####
@@ -93,6 +93,8 @@ LEX_ALL = \
 	vile-mms-filt$x \
 	vile-nr-filt$x \
 	vile-perl-filt$x \
+	vile-rcs-filt$x \
+	vile-sccs-filt$x \
 	vile-sh-filt$x \
 	vile-spell-filt$x \
 	vile-sql-filt$x \
@@ -161,6 +163,12 @@ vile-pas-filt$x : pas-filt.o $(CF_DEPS)
 vile-perl-filt$x : perlfilt.o $(LF_DEPS)
 	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ perlfilt.o $(LF_ARGS)
 
+vile-rcs-filt$x : rcs-filt.o $(LF_DEPS)
+	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ rcs-filt.o $(LF_ARGS)
+
+vile-sccs-filt$x : sccsfilt.o $(LF_DEPS)
+	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ sccsfilt.o $(LF_ARGS)
+
 vile-sh-filt$x : sh-filt.o $(LF_DEPS)
 	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ sh-filt.o $(LF_ARGS)
 
@@ -201,7 +209,7 @@ INSTALL_C = \
 	$(datadir)/pas.keywords \
 	$(datadir)/vile.keywords
 
-INSTALL_LEX = \
+INSTALL_LEX_BIN = \
 	$(bindir)/vile-ada-filt$x \
 	$(bindir)/vile-awk-filt$x \
 	$(bindir)/vile-bat-filt$x \
@@ -215,15 +223,19 @@ INSTALL_LEX = \
 	$(bindir)/vile-mms-filt$x \
 	$(bindir)/vile-nr-filt$x \
 	$(bindir)/vile-perl-filt$x \
+	$(bindir)/vile-rcs-filt$x \
+	$(bindir)/vile-sccs-filt$x \
 	$(bindir)/vile-sh-filt$x \
 	$(bindir)/vile-spell-filt$x \
 	$(bindir)/vile-sql-filt$x \
 	$(bindir)/vile-tc-filt$x \
 	$(bindir)/vile-tcl-filt$x \
-	$(bindir)/vile-txt-filt$x \
 	$(bindir)/vile-ti-filt$x \
+	$(bindir)/vile-txt-filt$x \
 	$(bindir)/vile-vile-filt$x \
-	$(bindir)/vile-yacc-filt$x \
+	$(bindir)/vile-yacc-filt$x
+
+INSTALL_LEX_TXT = \
 	$(datadir)/ada.keywords \
 	$(datadir)/awk.keywords \
 	$(datadir)/bat.keywords \
@@ -240,6 +252,8 @@ INSTALL_LEX = \
 	$(datadir)/make.keywords \
 	$(datadir)/nr.keywords \
 	$(datadir)/perl.keywords \
+	$(datadir)/rcs.keywords \
+	$(datadir)/sccs.keywords \
 	$(datadir)/sh.keywords \
 	$(datadir)/spell.rc \
 	$(datadir)/sql.keywords \
@@ -247,6 +261,8 @@ INSTALL_LEX = \
 	$(datadir)/tcl.keywords \
 	$(datadir)/ti.keywords \
 	$(datadir)/yacc.keywords
+
+INSTALL_LEX = $(INSTALL_LEX_BIN) $(INSTALL_LEX_TXT)
 
 INSTALL_FILES = $(INSTALL_C) @MAKE_LEX@ $(INSTALL_LEX)
 
@@ -312,6 +328,8 @@ $(bindir)/vile-mms-filt$x :	vile-mms-filt$x		; $(INSTALL_PROGRAM) $? $@
 $(bindir)/vile-nr-filt$x :	vile-nr-filt$x		; $(INSTALL_PROGRAM) $? $@
 $(bindir)/vile-pas-filt$x :	vile-pas-filt$x		; $(INSTALL_PROGRAM) $? $@
 $(bindir)/vile-perl-filt$x :	vile-perl-filt$x	; $(INSTALL_PROGRAM) $? $@
+$(bindir)/vile-rcs-filt$x :	vile-rcs-filt$x		; $(INSTALL_PROGRAM) $? $@
+$(bindir)/vile-sccs-filt$x :	vile-sccs-filt$x	; $(INSTALL_PROGRAM) $? $@
 $(bindir)/vile-sh-filt$x :	vile-sh-filt$x		; $(INSTALL_PROGRAM) $? $@
 $(bindir)/vile-spell-filt$x :	vile-spell-filt$x	; $(INSTALL_PROGRAM) $? $@
 $(bindir)/vile-sql-filt$x :	vile-sql-filt$x		; $(INSTALL_PROGRAM) $? $@
@@ -344,6 +362,8 @@ $(datadir)/make.keywords :	$(srcdir)/make.key	; $(INSTALL_DATA) $? $@
 $(datadir)/nr.keywords :	$(srcdir)/nr.key	; $(INSTALL_DATA) $? $@
 $(datadir)/pas.keywords :	$(srcdir)/pas.key	; $(INSTALL_DATA) $? $@
 $(datadir)/perl.keywords :	$(srcdir)/perl.key	; $(INSTALL_DATA) $? $@
+$(datadir)/rcs.keywords :	$(srcdir)/rcs.key	; $(INSTALL_DATA) $? $@
+$(datadir)/sccs.keywords :	$(srcdir)/sccs.key	; $(INSTALL_DATA) $? $@
 $(datadir)/sh.keywords :	$(srcdir)/sh.key	; $(INSTALL_DATA) $? $@
 $(datadir)/sql.keywords :	$(srcdir)/sql.key	; $(INSTALL_DATA) $? $@
 $(datadir)/tc.keywords :	$(srcdir)/tc.key	; $(INSTALL_DATA) $? $@

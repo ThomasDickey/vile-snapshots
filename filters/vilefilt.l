@@ -1,7 +1,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/vilefilt.l,v 1.8 1999/03/07 19:22:21 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/vilefilt.l,v 1.9 1999/05/01 02:54:38 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of vile macros
  * - T.Dickey
@@ -58,7 +58,7 @@ ESCAPED		\\.
 CTRLV		\026
 VISIBLE		.|^.
 BINDING		(M-)?((^[AX]-(^)?{VISIBLE})|((#|FN)-?{VISIBLE})|^.)
-DSTRING		\"((\\.)|[^\"\n])*\"
+DSTRING		\"(\\.|[^\\"\n])*\"
 
 FUNCTION	&[a-zA-Z]+
 

@@ -1,7 +1,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/makefilt.l,v 1.18 1999/04/14 00:43:55 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/makefilt.l,v 1.19 1999/05/01 02:53:39 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Makefile
  *
@@ -74,8 +74,8 @@ do_filter(FILE *input, FILE *output)
 
 SPACE		[ \t]
 
-SSTRING		\'((\\.)|[^\'])*\'
-DSTRING		\"((\\\.)|[^\"])*\"
+SSTRING		\'(\\.|[^'\\])*\'
+DSTRING		\"(\\.|[^"\\])*\"
 STRINGS		({SSTRING}|{DSTRING})
 
 NAME		[a-zA-Z_][a-zA-Z_0-9.-]+

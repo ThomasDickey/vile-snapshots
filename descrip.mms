@@ -11,7 +11,7 @@
 # all as "0".  If you use tcap.c, you'll need libtermcap.a too.  If you use
 # x11.c, you'll need libX11.a too.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/descrip.mms,v 1.39 1999/03/26 02:06:08 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/descrip.mms,v 1.40 1999/04/30 10:31:00 cmorgan Exp $
 
 .IFDEF __XVILE__
 
@@ -169,14 +169,14 @@ all :
 #
 .IFDEF __ALPHA__
 CC_OPTIONS = /PREFIX_LIBRARY_ENTRIES=ALL_ENTRIES
-CC_DEFS = ,HAVE_ALARM
+CC_DEFS = ,HAVE_ALARM,HAVE_STRERROR
 .ELSE
 .IFDEF __DECC__
 CC_OPTIONS = /DECC /PREFIX_LIBRARY_ENTRIES=ALL_ENTRIES
-CC_DEFS = ,HAVE_ALARM
+CC_DEFS = ,HAVE_ALARM,HAVE_STRERROR
 .ELSE
 CC_OPTIONS = /VAXC
-CC_DEFS = ,HAVE_SYS_ERRLIST
+CC_DEFS = ,HAVE_STRERROR
 .ENDIF
 .ENDIF
 

@@ -1,4 +1,4 @@
-MANIFEST for vile, version v8_3a
+MANIFEST for vile, version v8_3b
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 CHANGES                         Change-log for VILE
@@ -188,6 +188,10 @@ filters/pas-filt.c              Pascal syntax filter for vile
 filters/pas.key                 keywords for pascal highlighting filter
 filters/perl.key                keywords for perl syntax filter
 filters/perlfilt.l              Perl syntax filter for vile
+filters/rcs-filt.l              syntax filter for RCS archives
+filters/rcs.key                 keywords for RCS syntax filter
+filters/sccs.key                keywords for SCCS syntax filter
+filters/sccsfilt.l              syntax filter for SCCS files.
 filters/sh-filt.l               a sh/ksh/csh syntax filter for vile
 filters/sh.key                  keywords for "sh" syntax filter
 filters/spell.rc                defines a filter for spell-checking

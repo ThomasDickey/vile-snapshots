@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/htmlfilt.l,v 1.14 1999/03/07 19:18:45 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/htmlfilt.l,v 1.15 1999/05/01 02:45:01 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of HTML input
  * text.
@@ -107,8 +107,8 @@ IDENT		[a-zA-Z_][a-zA-Z_0-9]*
 NOSTRBRK	"\\\""
 STRING		\"([^"]|{NOSTRBRK})*\"
 
-SSTRING		\'((\\.)|[^\'])*\'
-DSTRING		\"((\\.)|[^\"])*\"
+SSTRING		\'(\\.|[^'\\])*\'
+DSTRING		\"(\\.|[^"\\])*\"
 STRINGS		({SSTRING}|{DSTRING})
 
 %%

@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.25 1999/04/04 22:51:12 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.26 1999/04/30 01:23:01 tom Exp $
  */
 
 #ifndef FILTERS_H
@@ -143,7 +143,6 @@ extern int yylex(void);
  */
 extern char *filter_name;
 
-extern int is_ident(int ch);
 extern void init_filter(int before);
 extern void do_filter(FILE *Input, FILE *Output);
 

@@ -1,4 +1,4 @@
-$! $Header: /users/source/archives/vile.vcs/RCS/vmsbuild.com,v 1.26 1999/04/23 12:26:52 tom Exp $
+$! $Header: /users/source/archives/vile.vcs/RCS/vmsbuild.com,v 1.27 1999/04/30 10:31:00 cmorgan Exp $
 $! VMS build-script for vile.  Requires installed C compiler
 $!
 $! Tested with:
@@ -75,14 +75,14 @@ $ then
 $  arch = "__alpha__=1"
 $  comp  = "__decc__=1"
 $  CFLAGS = "/prefix=all"
-$  DEFS = ",HAVE_ALARM"
+$  DEFS = ",HAVE_ALARM,HAVE_STRERROR"
 $  if f$trnlnm("SYS").eqs."" then define sys sys$library:
 $ else
 $  arch = "__vax__=1"
 $  if f$search("SYS$SYSTEM:DECC$COMPILER.EXE").eqs.""
 $   then
 $    if f$trnlnm("SYS").eqs."" then define sys sys$library:
-$    DEFS = ",HAVE_SYS_ERRLIST"
+$    DEFS = ",HAVE_STRERROR"
 $    write optf "sys$library:vaxcrtl.exe/share"
 $    if f$search("SYS$SYSTEM:VAXC.EXE").eqs.""
 $     then
