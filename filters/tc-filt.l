@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/tc-filt.l,v 1.9 1999/12/04 20:59:04 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/tc-filt.l,v 1.10 1999/12/14 11:18:40 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of termcap
  */
@@ -14,6 +14,7 @@ char *filter_name = "tc";
 
 static char *Action_attr;
 static char *Comment_attr;
+static char *Error_attr;
 static char *Number_attr;
 static char *Keyword_attr;
 static char *Ident_attr;
@@ -33,8 +34,24 @@ check_name(char *name)
     if (attr == 0)
 	attr = "";
     if (strcmp(attr, Keyword_attr))
-    	attr = Action_attr;
+    	attr = Action_attr;	/* not necessarily an error */
     return attr;
+}
+
+static int
+ok_number(char *string)
+{
+    int result = 0;
+    while (*string != 0) {
+	if (isdigit(*string)) {
+	    result++;
+	} else {
+	    result = 0;
+	    break;
+	}
+	string++;
+    }
+    return result;
 }
 
 static void
@@ -42,9 +59,11 @@ write_capname(char *name, int len)
 {
     write_token(yyout, name, (len >= 2) ? 2 : len, check_name(name));
     if (len > 2) {
-	char *attr = Action_attr;
+	char *attr = Error_attr;
 	if (len == 3 && name[2] == '@')
 	    attr = "";
+	else if (len > 3 && name[2] == '#' && ok_number(name + 3))
+	    attr = Number_attr;
 	write_token(yyout, name + 2, len - 2, attr);
     }
 }
@@ -71,6 +90,7 @@ do_filter(FILE *input, FILE *output)
 
     Action_attr  = class_attr(NAME_ACTION);
     Comment_attr = class_attr(NAME_COMMENT);
+    Error_attr   = class_attr(NAME_ERROR);
     Keyword_attr = class_attr(NAME_KEYWORD);
     Number_attr  = class_attr(NAME_NUMBER);
     Ident_attr   = class_attr(NAME_IDENT);
@@ -83,7 +103,7 @@ do_filter(FILE *input, FILE *output)
 %}
 
 BLANK		[ \t]
-CAPCHAR		[^\.|# \t\n:=]
+CAPCHAR		[^\.| \t\n:=]
 CAPNAME		{CAPCHAR}+
 DOTNAME		(\.)+{CAPNAME}
 

@@ -5,7 +5,7 @@
  * keys. Like everyone else, they set hints
  * for the display system.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.206 1999/11/24 21:34:31 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.207 1999/12/14 11:44:53 kev Exp $
  *
  */
 
@@ -2114,6 +2114,7 @@ chg_buff(register BUFFER *bp, register USHORT flag)
 		flag |= WFMODE;		/* update mode lines.	*/
 		b_set_changed(bp);
 	}
+	b_set_recentlychanged(bp);
 #if	OPT_UPBUFF
 	if (update_on_chg(bp))
 		updatelistbuffers();
@@ -2145,6 +2146,7 @@ unchg_buff(register BUFFER *bp, register USHORT flag)
 		flag |= WFMODE;			/* update mode lines.	*/
 		b_clr_changed(bp);
 		b_clr_counted(bp);
+		b_set_recentlychanged(bp);
 		b_match_attrs_dirty(bp);
 
 		for_each_visible_window(wp) {

@@ -1,7 +1,5 @@
-require "Comm.pl";
-
-#$Debug = 1;
-Comm::init();
+use IO::Pty;
+require POSIX;
 
 my %shells = ();
 
@@ -127,6 +125,29 @@ sub terminal_emulation ($$) {
     }
 }
 
+sub start_shell {
+    my $shell = $ENV{SHELL};
+    $shell = '/bin/sh' unless defined($shell);
+
+    my $pty     = new IO::Pty		or die "Can't open new pty: $!";
+
+    my $pid = fork;
+    die "Can't fork"			if $pid < 0;
+
+    if ($pid == 0) {
+	POSIX::setsid();
+	my $tty	= $pty->slave;
+	open(STDIN, "<&".fileno($tty))	or die "Can't reopen STDIN";
+	open(STDOUT, ">&STDIN")		or die "Can't reopen STDOUT";
+	open(STDERR, ">&STDIN")		or die "Can't reopen STDERR";
+	system("stty sane");
+	close $pty;
+	close $tty;
+	exec $shell;
+    }
+    return ($pty, $pid);
+}
+
 
 
 sub shell {
@@ -135,11 +156,8 @@ sub shell {
 
     $| = 1;
 
-    my $shell = $ENV{SHELL};
-    $shell = '/bin/sh' unless defined($shell);
-
-    my ( $Proc_pty_handle, $Proc_tty_handle, $pid ) = &open_proc( $shell );
-    die "open_proc failed" unless $Proc_pty_handle;
+    my ($pty, $pid ) = start_shell();
+    die "start_shell failed" unless $pty;
 
     my $vbp = new Vile::Buffer;
     $vbp->buffername("shell-$pid");
@@ -149,28 +167,31 @@ sub shell {
     Vile::update();
 
 
-    $shells{$pid}{PTY_HANDLE} = $Proc_pty_handle;
+    $shells{$pid}{PTY_HANDLE} = $pty;
     $shells{$pid}{BUF_HANDLE} = $vbp;
 
     my $sanity_initialized = 0;
 
     Vile::watchfd(
-	fileno($Proc_pty_handle),
+	fileno($pty),
 	'read',
 	sub {
 	    my $buf = ' ' x 4096;
 	    my @olddot = $vbp->dot;
 	    my $lastlnum;
 
-	    unless ($sanity_initialized) {
-		&stty_sane($Proc_tty_handle);	# use $Proc_pty_handle for HP
-		$sanity_initialized = 1;
+	    # Fetch data from input stream
+	    if (!sysread $pty, $buf, 4096) {
+		Vile::unwatchfd(fileno($pty));
+		close $pty;
+		delete $shells{$pid};
+		waitpid $pid, 0;
+		print STDOUT "End of file from shell.  Use ^G to escape";
+		Vile::update();
+		return;
 	    }
 
-	    # Fetch data from input stream
-	    sysread $Proc_pty_handle, $buf, 4096;
-
-	    $buf =~ s/\r\n/\n/gs;		# nuke ^M's
+	    $buf =~ s/\r\n/\n/gs;		# nuke ^M characters
 
 	    @dot = $vbp->dot('$','$$');
 
@@ -210,10 +231,16 @@ sub shell {
 	}
     );
 
+    print STDOUT "Shell started.  Use ^G to escape";
+    Vile::update();
+
     my $c;
     while (($c = Vile::keystroke()) != 7) {		# ^G escapes
-	print $Proc_pty_handle chr($c);
+	print $pty chr($c);
     }
+
+    print STDOUT 'Editor resumed.  Use ":perl resume_shell" to return.';
+    Vile::update();
 
     Vile::working($oldworking);			# restore "working..." message
     						# to previous state
@@ -228,7 +255,7 @@ sub resume_shell {
 	return;
     }
 
-    my $Proc_pty_handle = $shells{$pid}{PTY_HANDLE};
+    my $pty = $shells{$pid}{PTY_HANDLE};
     my $vbp = $shells{$pid}{BUF_HANDLE};
 
     my $oldworking = Vile::working();		# fetch old value of working
@@ -237,9 +264,12 @@ sub resume_shell {
     $vbp->dot('$','$$');
     Vile::update();
 
+    print STDOUT "Shell resumed.  Use ^G to escape";
+    Vile::update();
+
     my $c;
     while (($c = Vile::keystroke()) != 7) {		# ^G escapes
-	print $Proc_pty_handle chr($c);
+	print $pty chr($c);
     }
 
     Vile::working($oldworking);			# restore "working..." message

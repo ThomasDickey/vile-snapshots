@@ -3,7 +3,7 @@
  * characters, and write characters in a barely buffered fashion on the display.
  * All operating systems.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/termio.c,v 1.177 1999/12/03 02:40:21 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/termio.c,v 1.178 1999/12/14 11:44:53 kev Exp $
  *
  */
 #include	"estruct.h"
@@ -101,6 +101,15 @@ error "No termios or sgtty"
    */
 #  undef USE_FCNTL
 #  define USE_FIONREAD 1
+# endif
+# if HAVE_SELECT && HAVE_TYPE_FD_SET
+   /* Attempt to use the select call if possible to find out if input is
+    * ready.  This will allow us to use the file descriptor watching
+    * facilities.
+    */
+#  define USE_SELECT 1
+#  undef USE_FCNTL
+#  undef USE_FIONREAD
 # endif
 #endif
 
@@ -619,6 +628,41 @@ ttflush(void)
 	(void)fflush(stdout);
 }
 
+#if USE_SELECT
+static fd_set watchfd_read_fds;
+static fd_set watchfd_write_fds;
+static int    watchfd_maxfd;
+#endif
+
+int
+ttwatchfd(int fd, WATCHTYPE type, long *idp)
+{
+#if USE_SELECT
+    *idp = (long) fd;
+    if (fd > watchfd_maxfd)
+	watchfd_maxfd = fd;
+    if (type & WATCHREAD)
+	FD_SET(fd, &watchfd_read_fds);
+    if (type & WATCHWRITE)
+	FD_SET(fd, &watchfd_write_fds);
+#endif
+    return TRUE;
+}
+
+void
+ttunwatchfd(int fd, long id GCC_UNUSED)
+{
+#if USE_SELECT
+    FD_CLR(fd, &watchfd_read_fds);
+    FD_CLR(fd, &watchfd_write_fds);
+    do {
+	watchfd_maxfd--;
+    } while (watchfd_maxfd > 0
+	  && !FD_ISSET(watchfd_maxfd, &watchfd_read_fds)
+          && !FD_ISSET(watchfd_maxfd, &watchfd_write_fds));
+#endif
+}
+
 /*
  * Read a character from the terminal, performing no editing and doing no echo
  * at all.
@@ -626,7 +670,44 @@ ttflush(void)
 int
 ttgetc(void)
 {
-#if	USE_FCNTL
+#if USE_SELECT
+    {
+	char c;
+	for (;;) {
+	    fd_set read_fds = watchfd_read_fds;
+	    fd_set write_fds = watchfd_write_fds;
+	    int fd, status;
+	    struct timeval tval;
+	    tval.tv_sec  = global_b_val(VAL_AUTOCOLOR);
+	    tval.tv_usec = 0;
+	    FD_SET(0, &read_fds);		/* add stdin to the set */
+	    status = select(watchfd_maxfd+1,
+	                    &read_fds, &write_fds, (fd_set *)0,
+	                    global_b_val(VAL_AUTOCOLOR) > 0 ? &tval : NULL);
+	    if (status < 0) {			/* Error */
+		if (errno == EINTR)
+		    continue;
+		else
+		    return -1;
+	    } else if (status > 0) {		/* process descriptors */
+		for (fd = watchfd_maxfd; fd > 0; fd--) {
+		    if (FD_ISSET(fd, &read_fds) 
+		        || FD_ISSET(fd, &write_fds))
+			dowatchcallback(fd);
+		}
+		if (FD_ISSET(0, &read_fds))
+		    break;
+	    } else {				/* Timeout */
+		autocolor();
+	    }
+	}
+	if (read(0, &c, 1) != 1)
+	    return -1;
+	else
+	    return (int) c & 0xff;
+    }
+#else
+#if USE_FCNTL
 	if( ! kbd_char_good ) {
 		int n;
 		set_kbd_polling(FALSE);
@@ -675,6 +756,7 @@ ttgetc(void)
 	}
 	return c;
 #endif
+#endif
 }
 #endif /* !DISP_X11 */
 
@@ -689,7 +771,7 @@ tttypahead(void)
 	return x_typahead(0);
 #else
 
-# if (HAVE_SELECT && HAVE_TYPE_FD_SET) || (HAVE_POLL && HAVE_POLL_H) || defined(__BEOS__)
+# if USE_SELECT || (HAVE_POLL && HAVE_POLL_H) || defined(__BEOS__)
 	/* use the watchinput part of catnap if it's useful */
 	return catnap(0, TRUE);
 # else

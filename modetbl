@@ -11,7 +11,7 @@
 #
 # The modes are table entries in the BUFFER and WINDOW structures.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.160 1999/12/09 11:03:06 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.162 1999/12/14 12:15:42 tom Exp $
 #
 #
 # Mode-table entries.  Capitalized letters are used for abbreviations.
@@ -113,6 +113,7 @@ enum
 	"RecordSeparator" RECORD_SEP	chgd_rs		# record-separator affects dos/unix modes
 	"visual-matches"  HILITEMATCH	chgd_hilite	OPT_HILITEMATCH # highlight all search matches
 int							# VAL_ prefix
+	"AutoColor"	AUTOCOLOR	0		OPT_COLOR&&!SMALLER # auto color
 	"AutoSaveCNT"	ASAVECNT	0		# how often auto-saves occur
 	"C-ShiftWidth"	C_SWIDTH	0		!OPT_MAJORMODE # shift-width for C buffers
 	"C-TabStop"	C_TAB		chgd_major_w	!OPT_MAJORMODE # tab spacing for C buffers
@@ -177,6 +178,7 @@ string
 # organized into groups of universal/buffer/window.
 .environment
 "abufname"	ABUFNAME		# alternate buffer name (i.e. '#')
+"autocolor-hook" AUTOCOLORHOOK	OPT_HOOKS	# procedure to run for auto-coloring
 "bchars"	BCHARS			# chars in current buffer
 "bflags"	BFLAGS			# status flags for current buffer
 "blines"	BLINES			# lines in current buffer

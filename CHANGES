@@ -1,5 +1,47 @@
 Changes for vile 9.1 (released ??? ??? ??, 1999)
 
+ (kev) 991214 (f)
+ 	+ buffer.c (chg_buff, unchg_buff): Set the "recently changed"
+	  flag for syntax coloring purposes.
+	+ edef.h (autocolorhook): Declare.
+	+ macros/vileinit.rc: Added example code for automatic syntax
+	  coloring.
+	+ main.c (global_val_init): Initialize VAL_AUTOCOLOR.
+	+ modetbl (AUTOCOLOR): New mode.
+	  (autocolor-hook): New hook.
+	+ perl/shell.pl: Revised to use IO:Pty instead of Comm.pl (which
+	  seems to be no longer maintained).
+	+ proto.h (autocolor, ttwatchfd, ttunwatchfd): New declarations.
+	+ random.c (run_a_hook): Return status from running the command
+	  instead of unconditionally returning TRUE.
+	  (autocolor): New function.
+	+ statevar.c (var_AUTOCOLORHOOK): New function.
+	+ tcap.c (term): Use ttwatchfd and ttunwatchfd instead of the
+	  nullterm versions.
+	+ termio.c (USE_SELECT): New alternative to USE_FCNTL and
+	  USE_FIONREAD.  Preferred over both of these methods for
+	  determining if there are new characters to be read from
+	  the keyboard.
+	  (watchfd_read_fds, watchfd_write_fds, watchfd_maxfd): New
+	  static variables.
+	  (ttwatchfd, ttunwatchfd): New functions.
+	  (ttgetc): Added new USE_SELECT code for reading a character.
+	  This new code also watches for activity on file descriptors
+	  registered with watchfd() and will invoke the automatic
+	  syntax coloring function, autocolor, as appropriate.
+	+ vile.hlp: Documented new autocolor mechanism.
+	+ x11.c (x_start_autocolor_timer, x_autocolor_timeout,
+	  x_stop_autocolor_timer): New functions.
+	  (x_getc): Call x_start_autocolor_timer and x_stop_autocolor_timer
+	  as appropriate.
+	  (x_key_press): Call x_start_autocolor_timer to reset the timer
+	  on each keystroke.
+ 	> patches by Tom Dickey:
+	+ color continued comment-lines in makemode.
+	+ correct c-filt.c parsing of numbers such as 0.0, from 9.0e rewrite.
+	+ correct display of termcap numbers, which were highlighted as errors
+	  after allowing '#' in capability-names.
+
  (tom) 991212 (e)
  	+ improve c-filt.c's parsing of numbers to flag spuriously-repeated
 	  suffixes as errors (request by Kevin Buettner).
@@ -21,12 +63,12 @@ Changes for vile 9.1 (released ??? ??? ??, 1999)
 	  pipes, e.g., for syntax filtering, when now32pipe was specified.
 	+ remove obsolete/unused Win31 ifdef's (reported by Clark Morgan).
 	> patch by Clark Morgan:
-	+ changed the VMS build document (README.VMS) to specify exclusive use 
-	  of vmsbuild.com rather than MMS directly. 
+	+ changed the VMS build document (README.VMS) to specify exclusive use
+	  of vmsbuild.com rather than MMS directly.
 	+ changed vmsbuild.com to accept a compiler specification on the
 	  command line, which is much more convenient than editing the build
 	  script by hand.  compiler defaults to VAXC on Vax hosts and DECC on
-	  Alpha hosts. 
+	  Alpha hosts.
 
  (tom) 991209 (d)
 	+ implement "before" and "after" qualifiers for majormodes.

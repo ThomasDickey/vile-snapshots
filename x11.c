@@ -2,7 +2,7 @@
  *	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.234 1999/12/10 01:36:52 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.235 1999/12/14 11:44:53 kev Exp $
  *
  */
 
@@ -479,6 +479,9 @@ static	void	x_key_press (Widget w, XtPointer unused, XEvent *ev,
 			Boolean *continue_to_dispatch);
 static	void	x_wm_delwin (Widget w, XtPointer unused, XEvent *ev,
 			Boolean *continue_to_dispatch);
+static	void	x_start_autocolor_timer (void);
+static	void	x_autocolor_timeout (XtPointer flagp, XtIntervalId *id);
+static	void	x_stop_autocolor_timer (void);
 #if OPT_KEV_SCROLLBARS || OPT_XAW_SCROLLBARS
 static	Boolean	too_light_or_too_dark (Pixel pixel);
 #endif
@@ -5946,6 +5949,7 @@ x_getc(void)
 #if OPT_WORKING
     x_set_watch_cursor(FALSE);
 #endif
+    x_start_autocolor_timer();
     for_ever {
 
 	if (tb_more(PasteBuf)) {	/* handle any queued pasted text */
@@ -5985,6 +5989,8 @@ x_getc(void)
 	} while (x_has_events()
 	    && !kqfull(cur_win));
     }
+
+    x_stop_autocolor_timer();
 
     return c;
 }
@@ -6162,6 +6168,8 @@ x_key_press(
 
     if (ev->type != KeyPress)
 	return;
+
+    x_start_autocolor_timer();
 
 #if OPT_LOCALE
     if (!XFilterEvent(ev, *(&ev->xkey.window))) {
@@ -6448,6 +6456,43 @@ static void
 x_unwatchfd(int fd GCC_UNUSED, long id)
 {
     XtRemoveInput((XtInputId) id);
+}
+
+/* Autocolor functions
+ *
+ * Note that these are self contained and could be moved to another
+ * file if desired.
+ */
+
+static XtIntervalId x_autocolor_timeout_id;
+
+void
+x_start_autocolor_timer()
+{
+    int secs = global_b_val(VAL_AUTOCOLOR);
+    x_stop_autocolor_timer();
+    if (secs > 0)
+	x_autocolor_timeout_id = XtAppAddTimeOut(cur_win->app_context,
+						 (unsigned long) secs * 1000,
+						 x_autocolor_timeout,
+						 (XtPointer) 0);
+}
+
+void
+x_stop_autocolor_timer()
+{
+    if (x_autocolor_timeout_id != 0)
+	XtRemoveTimeOut(x_autocolor_timeout_id);
+    x_autocolor_timeout_id = 0;
+}
+
+void
+x_autocolor_timeout(XtPointer data GCC_UNUSED, XtIntervalId *id GCC_UNUSED)
+{
+    if (kqempty(cur_win)) {
+	autocolor();
+	XSync(dpy, False);
+    }
 }
 
 /*

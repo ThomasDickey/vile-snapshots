@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.404 1999/12/10 23:18:56 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.406 1999/12/15 00:35:48 tom Exp $
  *
  */
 
@@ -772,6 +772,7 @@ extern int line_report (L_NUM before);
 extern int liststuff (const char *name, int appendit, void (*)(LIST_ARGS), int iarg, void *vargp);
 extern int restore_dot(MARK saved_dot);
 extern int set_directory (const char *dir);
+extern void autocolor (void);
 extern void ch_fname (BUFFER *bp, const char *fname);
 extern void set_directory_from_file(BUFFER *bp);
 extern void set_rdonly (BUFFER *bp, const char *name, int mode);
@@ -940,6 +941,7 @@ extern int  nullterm_watchfd (int fd, WATCHTYPE type, long *idp);
 extern int  open_terminal (TERM *termp);
 extern int  ttgetc (void);
 extern int  tttypahead (void);
+extern int ttwatchfd (int fd, WATCHTYPE type, long *idp);
 extern void nullterm_cursorvis (int flag);
 extern void nullterm_icursor (int c);
 extern void nullterm_kclose (void);
@@ -957,6 +959,7 @@ extern void ttclose (void);
 extern void ttflush (void);
 extern void ttopen (void);
 extern void ttunclean (void);
+extern void ttunwatchfd (int fd, long id);
 
 /* ucrypt.c */
 #if	OPT_ENCRYPT
@@ -1085,7 +1088,7 @@ extern int reposition (int f, int n);
 extern int resize (int f, int n);
 #endif
 
-#if OPT_SEL_YANK || OPT_PERL
+#if OPT_SEL_YANK || OPT_PERL || OPT_COLOR
 extern WINDOW * push_fake_win(BUFFER *bp);
 extern BUFFER * pop_fake_win(WINDOW *oldwp);
 #endif

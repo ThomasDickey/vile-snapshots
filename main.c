@@ -22,7 +22,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.414 1999/12/10 23:18:13 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.415 1999/12/14 11:44:53 kev Exp $
  */
 
 #define realdef /* Make global definitions not external */
@@ -1108,6 +1108,9 @@ global_val_init(void)
 	set_global_b_val_ptr(VAL_FENCES, strmalloc("{}()[]")); /* fences */
 #if OPT_MAJORMODE
 	set_global_b_val(VAL_FENCE_LIMIT, 10);	/* fences iteration timeout */
+#endif
+#if !SMALLER
+	set_global_b_val(VAL_AUTOCOLOR, 0);	/* auto syntax coloring timeout */
 #endif
 
 #if SYS_VMS

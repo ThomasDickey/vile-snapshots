@@ -2,7 +2,7 @@
  * This file contains the command processing functions for a number of random
  * commands. There is no functional grouping here, for sure.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.215 1999/11/16 00:15:52 Ryan.Murray Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.216 1999/12/14 11:44:53 kev Exp $
  *
  */
 
@@ -1313,10 +1313,11 @@ int
 run_a_hook(HOOK *hook)
 {
 	if (!hook->latch && hook->proc[0]) {
+		int status;
 		DisableHook(hook);
-		docmd(hook->proc,TRUE,FALSE,1);
+		status = docmd(hook->proc,TRUE,FALSE,1);
 		EnableHook(hook);
-		return TRUE;
+		return status;
 	}
 	return FALSE;
 }
@@ -1334,3 +1335,26 @@ run_readhook(void)
 	return result;
 }
 #endif
+
+void
+autocolor()
+{
+    WINDOW *wp;
+    int do_update = FALSE;
+    if (reading_msg_line)
+	return;
+    for_each_visible_window(wp) {
+	if (b_is_recentlychanged(wp->w_bufp)
+	 && b_val(wp->w_bufp, VAL_AUTOCOLOR) > 0) {
+	    WINDOW *oldwp;
+	    oldwp = push_fake_win(wp->w_bufp);
+	    if (run_a_hook(&autocolorhook)) {
+		b_clr_recentlychanged(wp->w_bufp);
+		do_update = TRUE;
+	    }
+	    pop_fake_win(oldwp);
+	}
+    }
+    if (do_update)
+	update(FALSE);
+}
