@@ -1,6 +1,6 @@
 dnl Local definitions for autoconf.
 dnl
-dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.33 1997/09/07 21:22:42 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.37 1997/09/19 01:19:44 tom Exp $
 dnl
 dnl ---------------------------------------------------------------------------
 dnl ---------------------------------------------------------------------------
@@ -18,6 +18,31 @@ define(CF_AC_PREREQ,
 [CF_PREREQ_COMPARE(
 AC_PREREQ_CANON(AC_PREREQ_SPLIT(AC_ACVERSION)),
 AC_PREREQ_CANON(AC_PREREQ_SPLIT([$1])), [$1], [$2], [$3])])dnl
+dnl ---------------------------------------------------------------------------
+dnl Add an include-directory to $CPPFLAGS.  Don't add /usr/include, since it's
+dnl redundant.  Also, don't add /usr/local/include if we're using gcc.
+AC_DEFUN([CF_ADD_INCDIR],
+[
+for cf_add_incdir in $1
+do
+	while true
+	do
+		case $cf_add_incdir in
+		/usr/include) # (vi
+			;;
+		/usr/local/include) # (vi
+			test -z "$GCC" && CPPFLAGS="$CPPFLAGS -I$cf_add_incdir"
+			;;
+		*) # (vi
+			CPPFLAGS="$CPPFLAGS -I$cf_add_incdir"
+			;;
+		esac
+		cf_top_incdir=`echo $cf_add_incdir | sed -e 's:/include/.*$:/include:'`
+		test "$cf_top_incdir" = "$cf_add_incdir" && break
+		cf_add_incdir="$cf_top_incdir"
+	done
+done
+])dnl
 dnl ---------------------------------------------------------------------------
 dnl This is adapted from the macros 'fp_PROG_CC_STDC' and 'fp_C_PROTOTYPES'
 dnl in the sharutils 4.2 distribution.
@@ -177,21 +202,31 @@ test $cf_cv_have_term_h = yes && AC_DEFINE(HAVE_TERM_H)
 dnl ---------------------------------------------------------------------------
 dnl You can always use "make -n" to see the actual options, but it's hard to
 dnl pick out/analyze warning messages when the compile-line is long.
+dnl
+dnl Sets:
+dnl	ECHO_LD - symbol to prefix "cc -o" lines
+dnl	RULE_CC - symbol to put before implicit "cc -c" lines (e.g., .c.o)
+dnl	SHOW_CC - symbol to put before explicit "cc -c" lines
+dnl	ECHO_CC - symbol to put before any "cc" line
+dnl
 AC_DEFUN([CF_DISABLE_ECHO],[
 AC_MSG_CHECKING(if you want to see long compiling messages)
 CF_ARG_DISABLE(echo,
 	[  --disable-echo          test: display \"compiling\" commands],
 	[
     ECHO_LD='@echo linking [$]@;'
+    RULE_CC='	@echo compiling [$]<'
     SHOW_CC='	@echo compiling [$]@'
     ECHO_CC='@'
 ],[
     ECHO_LD=''
+    RULE_CC='# compiling'
     SHOW_CC='# compiling'
     ECHO_CC=''
 ])
 AC_MSG_RESULT($enableval)
 AC_SUBST(ECHO_LD)
+AC_SUBST(RULE_CC)
 AC_SUBST(SHOW_CC)
 AC_SUBST(ECHO_CC)
 ])dnl
@@ -208,6 +243,48 @@ AC_CACHE_VAL(cf_cv_extern_errno,[
         [cf_cv_extern_errno=no])])
 AC_MSG_RESULT($cf_cv_extern_errno)
 test $cf_cv_extern_errno = no && AC_DEFINE(DECL_ERRNO)
+])dnl
+dnl ---------------------------------------------------------------------------
+dnl Look for a non-standard library, given parameters for AC_TRY_LINK.  We
+dnl prefer a standard location, and use -L options only if we do not find the
+dnl library in the standard library location(s).
+dnl	$1 = library name
+dnl	$2 = includes
+dnl	$3 = code fragment to compile/link
+dnl	$4 = corresponding function-name
+dnl
+dnl Sets the variable "$cf_libdir" as a side-effect, so we can see if we had
+dnl to use a -L option.
+AC_DEFUN([CF_FIND_LIBRARY],
+[
+	cf_cv_have_lib_$1=no
+	cf_libdir=""
+	AC_CHECK_FUNC($4,cf_cv_have_lib_$1=yes,[
+		cf_save_LIBS="$LIBS"
+		AC_MSG_CHECKING(for $4 in -l$1)
+		LIBS="-l$1 $LIBS"
+		AC_TRY_LINK([$2],[$3],
+			[AC_MSG_RESULT(yes)
+			 cf_cv_have_lib_$1=yes
+			],
+			[AC_MSG_RESULT(no)
+			CF_LIBRARY_PATH(cf_search,$1)
+			for cf_libdir in $cf_search
+			do
+				AC_MSG_CHECKING(for -l$1 in $cf_libdir)
+				LIBS="-L$cf_libdir -l$1 $cf_save_LIBS"
+				AC_TRY_LINK([$2],[$3],
+					[AC_MSG_RESULT(yes)
+			 		 cf_cv_have_lib_$1=yes
+					 break],
+					[AC_MSG_RESULT(no)
+					 LIBS="$cf_save_LIBS"])
+			done
+			])
+		])
+if test $cf_cv_have_lib_$1 = no ; then
+	AC_ERROR(Cannot link $1 library)
+fi
 ])dnl
 dnl ---------------------------------------------------------------------------
 dnl Test for availability of useful gcc __attribute__ directives to quiet
@@ -334,6 +411,87 @@ fi
 AC_SUBST(EXTRA_CFLAGS)
 ])dnl
 dnl ---------------------------------------------------------------------------
+dnl Construct a search-list for a nonstandard header-file
+AC_DEFUN([CF_HEADER_PATH],
+[$1=""
+if test -d "$includedir"  ; then
+test "$includedir" != NONE       && $1="[$]$1 $includedir $includedir/$2"
+fi
+if test -d "$oldincludedir"  ; then
+test "$oldincludedir" != NONE    && $1="[$]$1 $oldincludedir $oldincludedir/$2"
+fi
+if test -d "$prefix"; then
+test "$prefix" != NONE           && $1="[$]$1 $prefix/include $prefix/include/$2"
+fi
+test "$prefix" != /usr/local     && $1="[$]$1 /usr/local/include /usr/local/include/$2"
+test "$prefix" != /usr           && $1="[$]$1 /usr/include /usr/include/$2"
+])dnl
+dnl ---------------------------------------------------------------------------
+dnl Use imake to obtain compiler flags.  We could, in principal, write tests to
+dnl get these, but if imake is properly configured there is no point in doing
+dnl this.
+AC_DEFUN([CF_IMAKE_CFLAGS],
+[
+AC_PATH_PROGS(IMAKE,xmkmf imake)
+case $IMAKE in # (vi
+*/imake)
+	cf_imake_opts="-DUseInstalled=YES" # (vi
+	;;
+*)
+	cf_imake_opts=
+	;;
+esac
+
+# If it's installed properly, imake (or its wrapper, xmkmf) will point to the
+# config directory.
+if mkdir conftestdir; then
+	cd conftestdir
+	echo >./Imakefile
+	test -f ../Imakefile && cat ../Imakefile >>./Imakefile
+	cat >> ./Imakefile <<'CF_EOF'
+findstddefs:
+	@echo 'IMAKE_CFLAGS="${STD_DEFINES} ifelse($1,,,$1)"'
+CF_EOF
+	if ( $IMAKE $cf_imake_opts 1>/dev/null 2>&AC_FD_CC && test -f Makefile)
+	then
+		CF_VERBOSE(Using $IMAKE)
+	else
+		# sometimes imake doesn't have the config path compiled in.  Find it.
+		cf_config=
+		for cf_libpath in $X_LIBS $LIBS ; do
+			case $cf_libpath in # (vi
+			-L*)
+				cf_libpath=`echo .$cf_libpath | sed -e 's/^...//'`
+				cf_libpath=$cf_libpath/X11/config
+				if test -d $cf_libpath ; then
+					cf_config=$cf_libpath
+					break
+				fi
+				;;
+			esac
+		done
+		if test -z "$cf_config" ; then
+			AC_ERROR(Could not find imake config-directory)
+		fi
+		cf_imake_opts="$cf_imake_opts -I$cf_config"
+		if ( $IMAKE -v $cf_imake_opts 2>&AC_FD_CC)
+		then
+			CF_VERBOSE(Using $IMAKE $cf_config)
+		else
+			AC_ERROR(Cannot run $IMAKE)
+		fi
+	fi
+
+	# GNU make sometimes prints "make[1]: Entering...", which
+	# would confuse us.
+	eval `make findstddefs 2>/dev/null | grep -v make`
+
+	cd ..
+	rm -rf conftestdir
+fi
+AC_SUBST(IMAKE_CFLAGS)
+])dnl
+dnl ---------------------------------------------------------------------------
 dnl Note: must follow AC_FUNC_SETPGRP, but cannot use AC_REQUIRE, since that
 dnl messes up the messages...
 AC_DEFUN([CF_KILLPG],
@@ -367,6 +525,23 @@ main()
 )])
 AC_MSG_RESULT($cf_cv_need_killpg)
 test $cf_cv_need_killpg = yes && AC_DEFINE(HAVE_KILLPG)
+])dnl
+dnl ---------------------------------------------------------------------------
+dnl Construct a search-list for a nonstandard library-file
+AC_DEFUN([CF_LIBRARY_PATH],
+[$1=""
+if test -d "$libdir"  ; then
+test "$libdir" != NONE           && $1="[$]$1 $libdir $libdir/$2"
+fi
+if test -d "$exec_prefix"; then
+test "$exec_prefix" != NONE      && $1="[$]$1 $exec_prefix/lib $exec_prefix/lib/$2"
+fi
+if test -d "$prefix"; then
+test "$prefix" != NONE           && \
+test "$prefix" != "$exec_prefix" && $1="[$]$1 $prefix/lib $prefix/lib/$2"
+fi
+test "$prefix" != /usr/local     && $1="[$]$1 /usr/local/lib /usr/local/lib/$2"
+test "$prefix" != /usr           && $1="[$]$1 /usr/lib /usr/lib/$2"
 ])dnl
 dnl ---------------------------------------------------------------------------
 dnl
@@ -570,6 +745,140 @@ CF_MISSING_CHECK(${ac_func}, ${ac_tr_func})dnl
 done
 ])dnl
 dnl ---------------------------------------------------------------------------
+dnl Look for the SVr4 curses clone 'ncurses' in the standard places, adjusting
+dnl the CPPFLAGS variable.
+dnl
+dnl The header files may be installed as either curses.h, or ncurses.h
+dnl (obsolete).  If not installed for overwrite, the curses.h file would be
+dnl in an ncurses subdirectory (e.g., /usr/include/ncurses), but someone may
+dnl have installed overwriting the vendor's curses.  Only very old versions
+dnl (pre-1.9.2d, the first autoconf'd version) of ncurses don't define
+dnl either __NCURSES_H or NCURSES_VERSION in the header.
+dnl
+dnl If the installer has set $CFLAGS or $CPPFLAGS so that the ncurses header
+dnl is already in the include-path, don't even bother with this, since we cannot
+dnl easily determine which file it is.  In this case, it has to be <curses.h>.
+dnl
+AC_DEFUN([CF_NCURSES_CPPFLAGS],
+[
+AC_MSG_CHECKING(for ncurses header file)
+AC_CACHE_VAL(cf_cv_ncurses_header,[
+	AC_TRY_COMPILE([#include <curses.h>],[
+#ifdef NCURSES_VERSION
+printf("%s\n", NCURSES_VERSION);
+#else
+#ifdef __NCURSES_H
+printf("pre-1.8.7\n");
+#else
+make an error
+#endif
+#endif
+	],
+	[cf_cv_ncurses_header=predefined],[
+	CF_HEADER_PATH(cf_search,ncurses)
+	test -n "$verbose" && echo
+	for cf_incdir in $cf_search
+	do
+		for cf_header in \
+			curses.h \
+			ncurses.h
+		do
+			if egrep "NCURSES" $cf_incdir/$cf_header 1>&5 2>&1; then
+				cf_cv_ncurses_header=$cf_incdir/$cf_header 
+				test -n "$verbose" && echo $ac_n "	... found $ac_c" 1>&6
+				break
+			fi
+			test -n "$verbose" && echo "	... tested $cf_incdir/$cf_header" 1>&6
+		done
+		test -n "$cf_cv_ncurses_header" && break
+	done
+	test -z "$cf_cv_ncurses_header" && AC_ERROR(not found)
+	])])
+AC_MSG_RESULT($cf_cv_ncurses_header)
+AC_DEFINE(NCURSES)
+
+changequote(,)dnl
+cf_incdir=`echo $cf_cv_ncurses_header | sed -e 's:/[^/]*$::'`
+changequote([,])dnl
+
+case $cf_cv_ncurses_header in # (vi
+*/ncurses.h)
+	AC_DEFINE(HAVE_NCURSES_H)
+	;;
+esac
+
+case $cf_cv_ncurses_header in # (vi
+predefined) # (vi
+	cf_cv_ncurses_header=curses.h
+	;;
+*)
+	CF_ADD_INCDIR($cf_incdir)
+	;;
+esac
+])dnl
+dnl ---------------------------------------------------------------------------
+dnl Look for the ncurses library.  This is a little complicated on Linux,
+dnl because it may be linked with the gpm (general purpose mouse) library.
+dnl Some distributions have gpm linked with (bsd) curses, which makes it
+dnl unusable with ncurses.  However, we don't want to link with gpm unless
+dnl ncurses has a dependency, since gpm is normally set up as a shared library,
+dnl and the linker will record a dependency.
+AC_DEFUN([CF_NCURSES_LIBS],
+[AC_REQUIRE([CF_NCURSES_CPPFLAGS])
+
+cf_ncurses_LIBS=""
+AC_CHECK_LIB(gpm,Gpm_Open,[AC_CHECK_LIB(gpm,initscr,,[cf_ncurses_LIBS="-lgpm"])])
+
+case $host_os in #(vi
+freebsd*)
+	# This is only necessary if you are linking against an obsolete
+	# version of ncurses (but it should do no harm, since it's static).
+	AC_CHECK_LIB(mytinfo,tgoto,[cf_ncurses_LIBS="-lmytinfo $cf_ncurses_LIBS"])
+	;;
+esac
+
+LIBS="$cf_ncurses_LIBS $LIBS"
+CF_FIND_LIBRARY(ncurses,
+	[#include <$cf_cv_ncurses_header>],
+	[initscr()],
+	initscr)
+
+if test -n "$cf_ncurses_LIBS" ; then
+	AC_MSG_CHECKING(if we can link ncurses without $cf_ncurses_LIBS)
+	cf_ncurses_SAVE="$LIBS"
+	for p in $cf_ncurses_LIBS ; do
+		q=`echo $LIBS | sed -e 's/'$p' //' -e 's/'$p'$//'`
+		if test "$q" != "$LIBS" ; then
+			LIBS="$q"
+		fi
+	done
+	AC_TRY_LINK([#include <$cf_cv_ncurses_header>],
+		[initscr(); tgoto((char *)0, 0, 0);],
+		[AC_MSG_RESULT(yes)],
+		[AC_MSG_RESULT(no)
+		 LIBS="$cf_ncurses_SAVE"])
+fi
+])dnl
+dnl ---------------------------------------------------------------------------
+dnl Within AC_OUTPUT, check if the given file differs from the target, and
+dnl update it if so.  Otherwise, remove the generated file.
+dnl
+dnl Parameters:
+dnl $1 = input, which configure has done substitutions upon
+dnl $2 = target file
+dnl
+AC_DEFUN([CF_OUTPUT_IF_CHANGED],[
+if ( cmp -s $1 $2 2>/dev/null )
+then
+	echo "$2 is unchanged"
+	rm -f $1
+else
+	echo "creating $2"
+	rm -f $2
+	mv $1 $2
+fi
+])dnl
+dnl ---------------------------------------------------------------------------
 dnl CF_RESTARTABLE_PIPEREAD is a modified version of AC_RESTARTABLE_SYSCALLS
 dnl from acspecific.m4, which uses a read on a pipe (surprise!) rather than a
 dnl wait() as the test code.  apparently there is a POSIX change, which OSF/1
@@ -629,6 +938,40 @@ main () {
 [cf_cv_can_restart_read=unknown])])
 AC_MSG_RESULT($cf_cv_can_restart_read)
 test $cf_cv_can_restart_read = yes && AC_DEFINE(HAVE_RESTARTABLE_PIPEREAD)
+])dnl
+dnl ---------------------------------------------------------------------------
+dnl This bypasses the normal autoconf process because we're generating an
+dnl arbitrary number of NEED_xxxx definitions with the CF_HAVE_FUNCS macro. 
+dnl Rather than populate an aclocal.h file with all of those definitions, we do
+dnl it here.
+dnl
+dnl Parameters:
+dnl $1 = input, which configure has done substitutions upon (will delete)
+dnl $2 = target file
+dnl
+AC_DEFUN([CF_SED_CONFIG_H],[
+changequote({,})dnl
+{
+cf_config_h=conf$$
+rm -f $cf_config_h
+echo '/* generated by configure-script */' >$cf_config_h
+if test -n "$ac_cv_path_TD_CONFIG" ; then
+	$ac_cv_path_TD_CONFIG $1 |egrep -v '^#' >$cf_config_h
+	$ac_cv_path_TD_CONFIG $1 |egrep '^#' | sort >>$cf_config_h
+else
+grep -v '^ -D' $1 >>$cf_config_h
+sed	-e '/^ -D/!d' \
+	-e '/^# /d' \
+	-e 's/ -D/\
+#define /g' \
+	-e 's/\(#define [A-Za-z_][A-Za-z0-9_]*\)=/\1	/g' \
+	-e 's@\\@@g' \
+	$1 | sort >>$cf_config_h
+fi
+}
+changequote([,])dnl
+CF_OUTPUT_IF_CHANGED($cf_config_h,$2)
+rm -f $1 $cf_config_h
 ])dnl
 dnl ---------------------------------------------------------------------------
 dnl Check for declaration of sys_errlist in one of stdio.h and errno.h.
@@ -706,7 +1049,7 @@ int*)
 esac
 case $cf_cv_type_outchar in
 *char*)
-	AC_DEFINE(OUTC_ARGS,char)
+	AC_DEFINE(OUTC_ARGS,char c)
 	;;
 esac
 ])dnl
@@ -718,4 +1061,87 @@ AC_DEFUN([CF_UPPER],
 changequote(,)dnl
 $1=`echo $2 | tr '[a-z]' '[A-Z]'`
 changequote([,])dnl
+])dnl
+dnl ---------------------------------------------------------------------------
+dnl Use AC_VERBOSE w/o the warnings
+AC_DEFUN([CF_VERBOSE],
+[test -n "$verbose" && echo "	$1" 1>&AC_FD_MSG
+])dnl
+dnl ---------------------------------------------------------------------------
+dnl Check for Xaw (Athena) libraries
+dnl
+AC_DEFUN([CF_X_ATHENA],
+[AC_REQUIRE([CF_X_TOOLKIT])
+AC_CHECK_HEADERS(X11/Xaw/SimpleMenu.h)
+AC_CHECK_LIB(Xmu, XmuClientWindow)
+AC_CHECK_LIB(Xext,XextCreateExtension,
+	[LIBS="-lXext $LIBS"])
+AC_CHECK_LIB(Xmu_s, XmuClientWindow)
+AC_CHECK_LIB(Xaw, XawSimpleMenuAddGlobalActions,
+	[LIBS="-lXaw $LIBS"],[
+AC_CHECK_LIB(Xaw_s, XawSimpleMenuAddGlobalActions,
+	[LIBS="-lXaw_s $LIBS"],
+	AC_ERROR(
+[Unable to successfully link Athena library (-lXaw) with test program]),
+	[$X_PRE_LIBS $LIBS $X_EXTRA_LIBS])])
+])dnl
+dnl ---------------------------------------------------------------------------
+dnl Check for X Toolkit libraries
+dnl
+AC_DEFUN([CF_X_TOOLKIT],
+[
+AC_REQUIRE([CF_CHECK_CACHE])
+# We need to check for -lsocket and -lnsl here in order to work around an
+# autoconf bug.  autoconf-2.12 is not checking for these prior to checking for
+# the X11R6 -lSM and -lICE libraries.  The resultant failures cascade...
+# 	(tested on Solaris 2.5 w/ X11R6)
+SYSTEM_NAME=`echo "$cf_cv_system_name"|tr ' ' -`
+cf_have_X_LIBS=no
+case $SYSTEM_NAME in
+irix5*) ;;
+clix*)
+	# FIXME: modify the library lookup in autoconf to
+	# allow _s.a suffix ahead of .a
+	AC_CHECK_LIB(c_s,open,
+		[LIBS="-lc_s $LIBS"
+	AC_CHECK_LIB(bsd,gethostname,
+		[LIBS="-lbsd $LIBS"
+	AC_CHECK_LIB(nsl_s,gethostname,
+		[LIBS="-lnsl_s $LIBS"
+	AC_CHECK_LIB(X11_s,XOpenDisplay,
+		[LIBS="-lX11_s $LIBS"
+	AC_CHECK_LIB(Xt_s,XtAppInitialize,
+		[LIBS="-lXt_s $LIBS"
+		 cf_have_X_LIBS=Xt
+		]) ]) ]) ]) ])
+	;;
+*)
+	AC_CHECK_LIB(socket,socket)
+	AC_CHECK_LIB(nsl,gethostname)
+	;;
+esac
+
+if test $cf_have_X_LIBS = no ; then
+	AC_PATH_XTRA
+	LDFLAGS="$LDFLAGS $X_LIBS"
+	CFLAGS="$CFLAGS $X_CFLAGS"
+	AC_CHECK_LIB(X11,XOpenDisplay,
+		[LIBS="-lX11 $LIBS"],,
+		[$X_PRE_LIBS $LIBS $X_EXTRA_LIBS])
+	AC_CHECK_LIB(Xt, XtAppInitialize,
+		[AC_DEFINE(HAVE_LIBXT)
+		 cf_have_X_LIBS=Xt
+		 LIBS="-lXt $X_PRE_LIBS $LIBS"],,
+		[$X_PRE_LIBS $LIBS $X_EXTRA_LIBS])
+else
+	LDFLAGS="$LDFLAGS $X_LIBS"
+	CFLAGS="$CFLAGS $X_CFLAGS"
+fi
+
+if test $cf_have_X_LIBS = no ; then
+	AC_WARN(
+[Unable to successfully link X Toolkit library (-lXt) with
+test program.  You will have to check and add the proper libraries by hand
+to makefile.])
+fi
 ])dnl

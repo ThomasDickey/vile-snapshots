@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.102 1997/09/06 16:45:39 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.104 1997/09/19 00:52:27 tom Exp $
  *
  */
 
@@ -70,6 +70,7 @@ static const char **my_mode_list;	/* copy of 'all_modes[]' */
 
 static MAJORMODE * lookup_mm_data(const char *name);
 static MAJORMODE_LIST * lookup_mm_list(const char *name);
+static char * majorname(char *dst, const char *majr, int flag);
 static const char *ModeName(const char *name);
 static int attach_mmode(BUFFER *bp, const char *name);
 static int detach_mmode(BUFFER *bp, const char *name);
@@ -118,6 +119,7 @@ same_val(const struct VALNAMES *names, struct VAL *tst, struct VAL *ref)
 	switch (names->type) {
 #if OPT_MAJORMODE
 	case VALTYPE_MAJOR:
+		/*FALLTHRU*/
 #endif
 	case VALTYPE_BOOL:
 	case VALTYPE_ENUM:
@@ -183,6 +185,9 @@ string_mode_val(VALARGS *args)
 	register const struct VALNAMES *names = args->names;
 	register struct VAL     *values = args->local;
 	switch(names->type) {
+#if OPT_MAJORMODE
+	case VALTYPE_MAJOR:
+#endif
 	case VALTYPE_BOOL:
 		return values->vp->i ? truem : falsem;
 	case VALTYPE_ENUM:
@@ -1128,7 +1133,27 @@ find_mode(const char *mode, int global, VALARGS *args)
 				args->names  += j;
 				args->local  += j;
 				args->global += j;
-				TRACE(("...found class %d\n", class))
+				TRACE(("...found class %d %s\n", class, rp))
+#if OPT_MAJORMODE
+				if (class == 3) {
+					char *it = (curbp->majr != 0)
+						? curbp->majr->name
+						: "?";
+					make_global_val(args->local,args->global,0);
+					if (global) {
+						MAJORMODE_LIST *ptr =
+							lookup_mm_list(it);
+						args->local[0].v.i =
+							(ptr != 0 && ptr->flag);
+						;
+					} else {
+						char temp[NSTRING];
+						majorname(temp, it, TRUE);
+						make_local_val(args->local,0);
+						args->local[0].v.i = !strcmp(temp, rp);
+					}
+				}
+#endif
 				return TRUE;
 			}
 		}

@@ -21,7 +21,7 @@
 # gnu autoconf support by kevin buettner, 5/94
 # original makefile for uemacs: Adam Fritz July 30,1987  (do you recognize it?)
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.83 1997/09/07 22:04:45 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.85 1997/09/18 23:14:11 tom Exp $
 #
 
 #### Start of system configuration section. ####
@@ -60,14 +60,14 @@ mandir		= $(prefix)/man/man$(manext)
 SHELL		= /bin/sh
 RM              = rm -f
 
-CPPFLAGS	= -I. -I$(srcdir) -DHAVE_CONFIG_H $(X_CFLAGS) 
+CPPFLAGS	= -I. -I$(srcdir) -DHAVE_CONFIG_H $(X_CFLAGS) @CPPFLAGS@
 
 LDFLAGS		= 
 
 INSTALL_DIRS    = $(bindir) $(libdir) $(mandir)
 
 .c.o:
-@SHOW_CC@
+@RULE_CC@
 	@ECHO_CC@$(CC) -c $(CPPFLAGS) $(CFLAGS) -DHELP_LOC=\"$(libdir)/\" $<
 
 # All of the makefiles which should be preserved and distributed

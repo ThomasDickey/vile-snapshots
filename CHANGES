@@ -1,5 +1,20 @@
 Changes for vile 7.3 (released ??? ??? ??, 1997)
 
+(tom)	970918 (d)
+	+ amend logic for find_mode() so that "&glo cmode" and "&loc cmode"
+	  work as before majormode changes (reported by Sean Ahern).
+	+ merge autoconf macros from tin/xterm, which mainly affect the
+	  configuration tests for ncurses and imake $CFLAGS, used to augment
+	  autoconf's tests for X Windows.
+	+ also (since some systems have deficient 'sed' programs) provide
+	  alternate hook for using a program 'td_config', which is currently
+	  bundled in td_lib.tgz, that does the sorting operation of config.h in
+	  a reasonably portable manner.
+	+ add mode 'maplength' to control the maximum length of a map
+	  string.
+	+ correct definition of OUTC_ARGS for the case where it should be a
+	  'char' value (patch by Jason Molenda <crash@cygnus.co.jp>).
+
 (tom)	970907 (c)
 	+ modify CF_CACHE_CHECK macro to use AC_CANONICAL_HOST to obtain a
 	  "better" value for SYSTEM_NAME.  This is displayed as part of the

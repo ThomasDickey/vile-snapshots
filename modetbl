@@ -11,7 +11,7 @@
 #
 # The modes are table entries in the BUFFER and WINDOW structures.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.83 1997/09/06 00:05:29 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.84 1997/09/18 00:45:03 tom Exp $
 #
 #
 # Mode-table entries.  Capitalized letters are used for abbreviations.
@@ -53,6 +53,7 @@ enum
 	"bcolor"	BCOLOR		chgd_color	OPT_COLOR	# background color
 	"Popup-Choices"	POPUP_CHOICES	0		OPT_POPUPCHOICE&&OPT_ENUM_MODES # popup buffer showing file-completion choices
 int							# VAL_ prefix
+	"maplength"	MAPLENGTH	0		# maximum length of :map string
 	"printing-low"	PRINT_LOW	chgd_charset	# low end of high-bit-set printable range
 	"printing-high"	PRINT_HIGH	chgd_charset	# high end of high-bit-set printable range
 	"report"	REPORT		0		# threshold for reporting changes
