@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 screen API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.49 1999/06/07 01:05:26 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.53 1999/09/21 01:57:52 tom Exp $
  * Written by T.E.Dickey for vile (october 1997).
  * -- improvements by Clark Morgan (see w32cbrd.c, w32pipe.c).
  */
@@ -9,6 +9,7 @@
 #include <windows.h>
 #include <windowsx.h>
 #include <commdlg.h>
+#include <shellapi.h>
 #include <stdlib.h>
 #include <math.h>
 
@@ -26,6 +27,8 @@
 
 #define FIXME_POSCHANGING 1		/* this doesn't seem to help */
 #define FIXME_RECUR_SB 0		/* I'm not sure this is needed */
+
+#define OPT_POPUP_WINOPEN 0		/* if right button pops up winopen */
 
 #if OPT_TRACE
 #define IGN_PROC(tag,name) \
@@ -52,7 +55,7 @@
 #define MY_FONT  SYSTEM_FIXED_FONT	/* or ANSI_FIXED_FONT		*/
 #define GetMyFont() vile_font
 
-#define MM_FILE 1
+#define MM_OPEN 1
 #define MM_FONT 2
 
 #define NROW	128			/* Max Screen size.		*/
@@ -105,7 +108,7 @@ static	void	nticursor	(int);
 static	void	handle_scrollbar (HWND hWnd, int msg, int nPos);
 #endif
 #if OPT_TITLE
-static	void	nttitle		(char *);
+static	void	nttitle		(const char *);
 #endif
 
 static	HANDLE	vile_hinstance;
@@ -207,6 +210,7 @@ TERM    term    = {
 	nullterm_setback,
 	nullterm_setpal,
 #endif
+	nullterm_setccol,
 	ntscroll,
 	nullterm_pflush,
 #if OPT_ICURSOR
@@ -262,6 +266,7 @@ message2s(unsigned code)
 		{ WM_CLOSE,		"WM_CLOSE" },
 		{ WM_CREATE,		"WM_CREATE" },
 		{ WM_CTLCOLORSCROLLBAR,	"WM_CTLCOLORSCROLLBAR" },
+		{ WM_DROPFILES,		"WM_DROPFILES" },
 		{ WM_ENABLE,		"WM_ENABLE" },
 		{ WM_ENTERIDLE,		"WM_ENTERIDLE" },
 		{ WM_ENTERMENULOOP,	"WM_ENTERMENULOOP" },
@@ -1158,7 +1163,7 @@ ntwinio_current_font(void)
 
 #if OPT_TITLE
 static void
-nttitle(char *title)		/* set the current window title */
+nttitle(const char *title)	/* set the current window title */
 {
 	SetWindowText(winvile_hwnd(), title);
 }
@@ -1552,16 +1557,39 @@ get_keyboard_state(void)
 }
 
 static int
+MouseClickSetPos(POINT *result)
+{
+	DWORD dword;
+	POINTS points;
+
+	dword = GetMessagePos();
+	points = MAKEPOINTS(dword);
+	POINTSTOPOINT((*result), points);
+	ScreenToClient(cur_win->main_hwnd, result);
+	result->x /= nCharWidth;
+	result->y /= nLineHeight;
+
+	TRACE(("GETC:setcursor(%d, %d)\n", result->y, result->x))
+	return setcursor(result->y, result->x);
+}
+
+static int
 ntgetch(void)
 {
+	static DWORD lastclick = 0;
+	static int clicks = 0;
+
+	DWORD dword;
+	DWORD thisclick;
 	int buttondown = FALSE;
-	MSG msg;
-	POINTS points;
-	POINT first;
 	int have_focus = 0;
 	int result = 0;
-	DWORD dword;
 	KEY_EVENT_RECORD ker;
+	MSG msg;
+	POINT first;
+	POINT latest;
+	POINTS points;
+	UINT clicktime = GetDoubleClickTime();
 
 	if (saveCount > 0) {
 		saveCount--;
@@ -1597,6 +1625,7 @@ ntgetch(void)
 		switch(msg.message) {
 		case WM_DESTROY:
 			TRACE(("GETC:DESTROY\n"))
+			DragAcceptFiles(cur_win->main_hwnd, FALSE);
 			PostQuitMessage(0);
 			continue;
 
@@ -1633,19 +1662,48 @@ ntgetch(void)
 		case WM_LBUTTONDOWN:
 			TRACE(("GETC:LBUTTONDOWN %s\n", which_window(msg.hwnd)))
 			if (msg.hwnd == cur_win->text_hwnd) {
-				dword = GetMessagePos();
-				points = MAKEPOINTS(dword);
-				POINTSTOPOINT(first, points);
-				ScreenToClient(cur_win->main_hwnd, &first);
-				first.x /= nCharWidth;
-				first.y /= nLineHeight;
-				TRACE(("GETC:setcursor(%d, %d)\n", first.y, first.x))
-				if (setcursor(first.y, first.x)) {
+				if (MouseClickSetPos(&first)) {
 					fhide_cursor();
 					(void)sel_begin();
 					(void)update(TRUE);
 					buttondown = TRUE;
 				}
+			} else {
+				DispatchMessage(&msg);
+			}
+			break;
+
+		case WM_LBUTTONUP:
+			TRACE(("GETC:LBUTTONUP %s\n", which_window(msg.hwnd)))
+			if (msg.hwnd == cur_win->text_hwnd) {
+				fhide_cursor();
+
+				thisclick = GetTickCount();
+				TRACE(("CLICK %d/%d\n", lastclick, thisclick))
+					if (thisclick - lastclick < clicktime) {
+					clicks++;
+					TRACE(("MOUSE CLICKS %d\n", clicks))
+				} else {
+					clicks = 0;
+				}
+				lastclick = thisclick;
+
+				switch (clicks) {
+				case 1:
+					on_double_click();
+					break;
+				case 2:
+					on_triple_click();
+					break;
+				}
+
+				if (buttondown) {
+					buttondown = FALSE;
+					(void)MouseClickSetPos(&latest);
+					sel_yank(0);
+				}
+				(void)update(TRUE);
+				fshow_cursor();
 			} else {
 				DispatchMessage(&msg);
 			}
@@ -1667,9 +1725,23 @@ ntgetch(void)
 			break;
 #endif
 #endif
+		case WM_MBUTTONDOWN:
+			TRACE(("GETC:MBUTTONDOWN %s\n", which_window(msg.hwnd)))
+			if (msg.hwnd == cur_win->text_hwnd) {
+				(void)MouseClickSetPos(&latest);
+				sel_yank(0);
+				sel_release();
+				paste_selection();
+				(void)update(TRUE);
+			} else {
+				DispatchMessage(&msg);
+			}
+			break;
+
 		case WM_RBUTTONDOWN:
 			TRACE(("GETC:RBUTTONDOWN %s\n", which_window(msg.hwnd)))
 			if (msg.hwnd == cur_win->text_hwnd) {
+#if OPT_POPUP_WINOPEN
 				static HMENU hmenu;
 				POINT	     point;
 
@@ -1688,13 +1760,20 @@ ntgetch(void)
 					       0,
 					       msg.hwnd,
 					       NULL) ;
+#else
+				if (MouseClickSetPos(&latest)) {
+					sel_extend(FALSE,TRUE);
+					(void)update(TRUE);
+				}
+#endif
 			} else {
 				DispatchMessage(&msg);
 			}
 			break;
 
+#if OPT_POPUP_WINOPEN
 		case WM_COMMAND:
-		    if (LOWORD(msg.wParam) == IDM_OPEN) {
+			if (LOWORD(msg.wParam) == IDM_OPEN) {
 				winopen(0, 0);
 
 				/*
@@ -1706,6 +1785,7 @@ ntgetch(void)
 			else
 				DispatchMessage(&msg);
 			break;
+#endif
 
 		case WM_MOUSEMOVE:
 			if (buttondown) {
@@ -1724,21 +1804,6 @@ ntgetch(void)
 				if (!sel_extend(TRUE, TRUE))
 					break;
 				(void)update(TRUE);
-			}
-			break;
-
-		case WM_LBUTTONUP:
-			TRACE(("GETC:LBUTTONUP %s\n", which_window(msg.hwnd)))
-			if (msg.hwnd == cur_win->text_hwnd) {
-				fhide_cursor();
-				if (buttondown) {
-					sel_yank(0);
-					buttondown = FALSE;
-				}
-				(void)update(TRUE);
-				fshow_cursor();
-			} else {
-				DispatchMessage(&msg);
 			}
 			break;
 
@@ -2262,6 +2327,28 @@ static void repaint_window(HWND hWnd)
 	EndPaint(hWnd, &ps);
 }
 
+static void
+receive_dropped_files(HDROP hDrop)
+{
+	char name[NFILEN];
+	UINT inx = 0xFFFFFFFF;
+	UINT limit = DragQueryFile(hDrop, inx, name, sizeof(name)); 
+	BUFFER *bp = 0;
+
+	TRACE(("receiving %d dropped files\n", limit))
+	while (++inx < limit) {
+		DragQueryFile(hDrop, inx, name, sizeof(name)); 
+		TRACE(("...'%s'\n", name))
+		if ((bp = getfile2bp(name, FALSE, FALSE)) != 0)
+			bp->b_flag |= BFARGS; /* treat this as an argument */
+	}
+	if (bp != 0) {
+            swbuffer(bp);  /* editor switches to 1st buffer */
+	    update(TRUE);
+	}
+	DragFinish(hDrop);
+}
+
 static int khit = 0;
 
 int kbhit(void)
@@ -2376,6 +2463,7 @@ LONG FAR PASCAL MainWndProc(
 		break;
 
 	case WM_DESTROY:
+		DragAcceptFiles(cur_win->main_hwnd, FALSE);
 		PostQuitMessage(0);
 		break;
 
@@ -2397,6 +2485,10 @@ LONG FAR PASCAL MainWndProc(
 		ResizeClient();
 		return (DefWindowProc(hWnd, message, wParam, lParam));
 
+	case WM_DROPFILES:
+		receive_dropped_files((HDROP)wParam);
+		return 0;
+
 	case WM_SYSCOMMAND:
 		TRACE(("MAIN:WM_SYSCOMMAND %s at %d,%d\n",
 			syscommand2s(LOWORD(wParam)),
@@ -2404,6 +2496,10 @@ LONG FAR PASCAL MainWndProc(
 			LOWORD(lParam)))
 		switch(LOWORD(wParam))
 		{
+		case MM_OPEN:
+			winopen(0, 0);
+			update(FALSE);
+			break;
 		case MM_FONT:
 			set_font();
 			break;
@@ -2538,13 +2634,11 @@ InitInstance(HINSTANCE hInstance)
 	cur_win->nscrollbars = -1;
 
 	/*
-	 * Insert "File" and "Font" before "Close" in the system menu.
+	 * Insert "Open" and "Font" before "Close" in the system menu.
 	 */
 	vile_menu = GetSystemMenu(cur_win->main_hwnd, FALSE);
 	AppendMenu(vile_menu, MF_SEPARATOR, 0, NULL);
-#if 0	/* FIXME: later */
-	AppendMenu(vile_menu, MF_STRING, MM_FILE, "File");
-#endif
+	AppendMenu(vile_menu, MF_STRING, MM_OPEN, "&Open");
 	AppendMenu(vile_menu, MF_STRING, MM_FONT, "&Font");
 
 #if OPT_SCROLLBARS
@@ -2554,6 +2648,8 @@ InitInstance(HINSTANCE hInstance)
 
 	get_font(&vile_logfont);
 	use_font(vile_font, FALSE);
+
+	DragAcceptFiles(cur_win->main_hwnd, TRUE);
 
 	return (TRUE);
 }

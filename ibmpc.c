@@ -6,7 +6,7 @@
  * Modified by Pete Ruczynski (pjr) for auto-sensing and selection of
  * display type.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ibmpc.c,v 1.92 1999/05/10 23:41:35 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ibmpc.c,v 1.93 1999/09/19 19:41:25 tom Exp $
  *
  */
 
@@ -327,6 +327,7 @@ TERM    term    = {
 	nullterm_setback,
 	nullterm_setpal,
 #endif
+	nullterm_setccol,
 	ibmscroll,
 	nullterm_pflush,
 	nullterm_icursor,

@@ -5,7 +5,7 @@
  * reading and writing of the disk are
  * in "fileio.c".
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.255 1999/09/14 00:26:22 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.256 1999/09/19 21:53:10 tom Exp $
  */
 
 #include	"estruct.h"
@@ -685,7 +685,6 @@ strip_if_dosmode(BUFFER *bp, int doslines, int unixlines)
 			if (llength(lp) > 0 &&
 				  lgetc(lp, llength(lp)-1) == '\r') {
 				llength(lp)--;
-				bp->b_bytecount--;
 			}
 		}
 	}

@@ -1,16 +1,21 @@
-$! $Header: /users/source/archives/vile.vcs/RCS/vmsbuild.com,v 1.27 1999/04/30 10:31:00 cmorgan Exp $
+$! $Header: /users/source/archives/vile.vcs/RCS/vmsbuild.com,v 1.28 1999/09/19 18:16:10 cmorgan Exp $
 $! VMS build-script for vile.  Requires installed C compiler
 $!
-$! Tested with:
-$!	VMS system version 5.4-2
-$!	VAX-C version 3.2
-$! and
-$!	VMS system version 6.1, 6.2
-$!	DEC C version 5.0, 5.2
-$!
-$! To build vile invoke @vmsbuild 
+$! Screen Configurations
+$! ---------------------
+$! To build vile invoke @vmsbuild
 $! To build xvile invoke @vmsbuild xvile
 $!
+$! Configuration Note
+$! ------------------
+$! If you elect to build both vile and xvile from the same source
+$! directory, be sure to execute these commands before each build:
+$!
+$!   $ del *.obj;*
+$!   $ del ne*.h;*
+$!
+$! These commands create a clean build environment for the
+$! editor's two different screen configurations (X versus SMG).
 $!
 $!
 $!      Build the option-file
@@ -95,7 +100,7 @@ $     else
 $      write optf "gnu_cc:[000000]gcclib.olb/lib"
 $      comp = "__gcc__=1"
 $      CC = "GCC"
-$     endif 
+$     endif
 $    else
 $    comp  = "__vaxc__=1"
 $    endif
@@ -235,13 +240,13 @@ $	call make window
 $	call make word
 $	call make wordmov
 $
-$	link /exec='target/map/cross main.obj, 'SCREEN.obj, vms_link/opt 
+$	link /exec='target/map/cross main.obj, 'SCREEN.obj, vms_link/opt
 $	goto build_last
 $
 $ install :
 $	WRITE SYS$ERROR "** no rule for install"
 $	goto build_last
-$	
+$
 $ clobber :
 $	if f$search("vile.com") .nes. "" then delete vile.com;*
 $	if f$search("xvile.com") .nes. "" then delete xvile.com;*

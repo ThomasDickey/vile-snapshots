@@ -14,6 +14,22 @@ otherwise, use this canned build script:
 in either case, before building the editor, edit descrip.mms or
 vmsbuild.com to specify the compiler of your choice.
 
+to build xvile, use either of these commands as appropriate:
+
+    $ mms/macro="__XVILE__=1"
+    $ @vmsbuild xvile
+
+Tested systems
+--------------
+    VMS system version 5.4-2
+    VAX-C version 3.2
+and
+    VMS system version 6.1, 6.2
+    DEC C version 5.0, 5.2
+and
+    VMS/VAX system version V7.1
+    DEC C V5.6-003
+
                         +++++++++++++++++++++++++++
                         warning   warning   warning
                         +++++++++++++++++++++++++++

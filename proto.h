@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.384 1999/09/14 01:09:54 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.387 1999/09/20 11:01:24 tom Exp $
  *
  */
 
@@ -866,19 +866,28 @@ extern	void	free_attrib	(BUFFER *bp, AREGION *ap);
 extern	void	free_attribs	(BUFFER *bp);
 extern	void	sel_reassert_ownership (BUFFER *bp);
 extern	void	sel_release	(void);
+
 #if OPT_MOUSE
 extern	int	on_mouse_click	(int button, int y, int x);
+extern	int	paste_selection	(void);
+extern	void	on_double_click	(void);
+extern	void	on_triple_click	(void);
 #endif
+
 #if OPT_PERL || OPT_TCL
 extern	BUFFER *get_selection_buffer_and_region(AREGION *arp);
 #endif /* OPT_PERL || OPT_TCL */
+
 #if OPT_SEL_YANK
 extern	int	sel_yank	(int reg);
 extern	int	sel_attached	(void);
 extern	BUFFER *sel_buffer	(void);
 #endif
+
 #else
+
 #define	do_sweep(flag) /*nothing*/
+
 #endif /* OPT_SELECTIONS */
 
 /* spawn.c */
@@ -922,22 +931,23 @@ void	tb_unput (TBUFF *p);
 
 /* termio.c */
 extern OUTC_DCL ttputc (OUTC_ARGS);
+extern int  nullterm_setdescrip (const char *res);
 extern int  nullterm_watchfd (int fd, WATCHTYPE type, long *idp);
 extern int  open_terminal (TERM *termp);
 extern int  ttgetc (void);
 extern int  tttypahead (void);
 extern void nullterm_cursorvis (int flag);
 extern void nullterm_icursor (int c);
+extern void nullterm_kclose (void);
+extern void nullterm_kopen (void);
 extern void nullterm_pflush (void);
 extern void nullterm_scroll (int f, int t, int n);
 extern void nullterm_setback (int b);
+extern void nullterm_setccol (int c);
 extern void nullterm_setfore (int f);
 extern void nullterm_setpal (const char *p);
-extern void nullterm_settitle (char *t);
+extern void nullterm_settitle (const char *t);
 extern void nullterm_unwatchfd (int fd, long id);
-extern void nullterm_kopen(void);
-extern void nullterm_kclose(void);
-extern int  nullterm_setdescrip(const char *res);
 extern void ttclean (int f);
 extern void ttclose (void);
 extern void ttflush (void);

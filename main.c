@@ -23,7 +23,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.399 1999/09/10 10:59:58 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.400 1999/09/19 20:19:05 tom Exp $
  */
 
 #define realdef /* Make global definitions not external */
@@ -988,6 +988,7 @@ global_val_init(void)
 #if OPT_COLOR
 	set_global_g_val(GVAL_FCOLOR,	C_WHITE); /* foreground color */
 	set_global_g_val(GVAL_BCOLOR,	C_BLACK); /* background color */
+	set_global_g_val(GVAL_CCOLOR,	ENUM_UNKNOWN);	/* cursor color */
 #endif
 
 	/*

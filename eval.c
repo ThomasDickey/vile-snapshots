@@ -2,7 +2,7 @@
  *	eval.c -- function and variable evaluation
  *	original by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.252 1999/09/14 09:56:56 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.253 1999/09/21 01:06:04 tom Exp $
  *
  */
 
@@ -1476,7 +1476,7 @@ complete_vars(DONE_ARGS)
 }
 
 static int
-read_argument(TBUFF **paramp, PARAM_INFO *info)
+read_argument(TBUFF **paramp, const PARAM_INFO *info)
 {
     int status = TRUE;
     char *prompt;

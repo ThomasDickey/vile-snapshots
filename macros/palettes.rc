@@ -1,24 +1,43 @@
-; $Header: /users/source/archives/vile.vcs/macros/RCS/palettes.rc,v 1.4 1999/09/14 00:37:31 tom Exp $
+; $Header: /users/source/archives/vile.vcs/macros/RCS/palettes.rc,v 1.5 1999/09/14 10:17:30 tom Exp $
 ; Sample color schemes.
 
 ; Note that while the palette strings reference up to 16 colors, you will have
 ; only 8 available if vile is linked with termcap.  To get 16 colors, you need
 ; terminfo (e.g., ncurses), and a terminal emulator that supports 16 colors.
 
+~local %palette
+~local %dark-palette
+~local %light-palette
+
+set color-scheme=default
+setv %dark-palette " "
+setv %light-palette ""
+setv %palette 0
+~while &less %palette $ncolors
+	~if &or &equal %palette 3 &equal %palette 11
+		setv %light-palette &cat %light-palette &cat " " &word &add 1 %palette $palette
+		setv %dark-palette  &cat %dark-palette  &cat " " &word %palette $palette
+	~elseif &or &equal %palette 4 &equal %palette 12
+		setv %light-palette &cat %light-palette &cat " " &word %palette $palette
+		setv %dark-palette  &cat %dark-palette  &cat " " &word &sub %palette 1 $palette
+	~else
+		setv %light-palette &cat %light-palette &cat " " &word %palette $palette
+		setv %dark-palette  &cat %dark-palette  &cat " " &word %palette $palette
+	~endif
+	setv %palette &add %palette 1
+~endwhile
+
 ; on a light background, we don't like to use yellow - map it to blue
-define-color-scheme light \
-	use=default \
-	palette="0 1 2 4 4 5 6 7 8 9 10 12 12 13 14 15"
+define-color-scheme light use=default palette=%light-palette
 
 ; on a dark background, we don't like to use blue - map it to yellow
-define-color-scheme dark \
-	use=default \
-	palette="0 1 2 3 3 5 6 7 8 9 10 11 11 13 14 15"
+define-color-scheme dark  use=default palette=%dark-palette
 
-~if &isa color default
-	define-color-scheme light fcolor=default bcolor=default
-	define-color-scheme dark fcolor=default bcolor=default
-~endif
+; FIXME - implement "&isa"
+;~if &isa color default
+;	define-color-scheme light fcolor=default bcolor=default
+;	define-color-scheme dark  fcolor=default bcolor=default
+;~endif
 
 define-color-scheme reverse video-attr=rev
 

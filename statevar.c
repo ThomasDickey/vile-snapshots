@@ -3,7 +3,7 @@
  *	for getting and setting the values of the vile state variables,
  *	plus helper utility functions.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.20 1999/08/23 00:13:16 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.21 1999/09/19 19:17:36 tom Exp $
  */
 
 #include	"estruct.h"
@@ -1062,7 +1062,7 @@ int var_TITLE(TBUFF **rp, const char *vp)
 		tb_scopy(rp, w32_wdw_title());
 		return TRUE;
 	} else if (vp) {
-		term.title((char *) vp);
+		term.set_title(vp);
 		return TRUE;
 	} else {
 		return FALSE;
@@ -1077,7 +1077,7 @@ int var_TITLE(TBUFF **rp, const char *vp)
 		tb_scopy(rp, x_get_window_name());
 		return TRUE;
 	} else if (vp) {
-		x_set_window_name(vp);
+		term.set_title(vp);
 		return TRUE;
 	} else {
 		return FALSE;

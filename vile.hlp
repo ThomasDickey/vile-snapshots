@@ -1079,6 +1079,12 @@ Editor modes
 		or via .Xdefaults.  See notes about the color palette down
 		below, under DOS specifics.  (U)
 
+	ccolor	On systems supporting this, will set the cursor color.
+		On most systems, the choice of colors is fixed, although the
+		X11 version (xvile) can be given customized colors at startup
+		or via .Xdefaults.  See notes about the color palette down
+		below, under DOS specifics.  (U)
+
 	check-modtime  Check modification-time.  If a file has changed since
 		it was last read or written, vile will issue a "file newer
 		than buffer" warning and prompt appropriately for
@@ -4184,4 +4190,4 @@ Problems
 
 Copyright 1995-1999 by Paul Fox, Tom Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.441 1999/09/13 23:51:59 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.442 1999/09/19 19:58:57 tom Exp $

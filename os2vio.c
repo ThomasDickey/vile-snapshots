@@ -3,7 +3,7 @@
  * Modified from a really old version of "borland.c" (before the VIO
  * stuff went in there.)
  *
- * $Header: /users/source/archives/vile.vcs/RCS/os2vio.c,v 1.23 1999/05/10 23:41:28 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/os2vio.c,v 1.26 1999/09/21 01:07:46 tom Exp $
  */
 
 #include "estruct.h"
@@ -35,7 +35,7 @@
 #define	NPAUSE	200			/* # times thru update to pause */
 #define	SPACE	32			/* space character		*/
 
-#define	AttrColor(b, f)	((((UINT)ctrans[b] & 15) << 4) | ((UINT)ctrans[f] & 15))
+#define	AttrColor(b, f)	((((UINT)ctrans[b] & 7) << 4) | ((UINT)ctrans[f] & 15))
 
 static	void	vio_move   (int,int);
 static	void	vio_eeol   (void);
@@ -113,6 +113,7 @@ TERM term = {
 	vio_fcol,
 	vio_bcol,
 	set_ctrans,
+	nullterm_setccol,
 	vio_scroll,
 	nullterm_pflush,
 	nullterm_icursor,
@@ -184,6 +185,8 @@ set_cursor(int cmode)
 static void
 vio_fcol(int color)
 {
+	if (color < 0)
+		color = C_WHITE;
 	/* Flush any old text that needs to be written using the old colour. */
 	flush_if_necessary();
 
@@ -198,6 +201,8 @@ vio_fcol(int color)
 static void
 vio_bcol(int color)
 {
+	if (color < 0)
+		color = C_BLACK;
 	/* Flush any old text that needs to be written using the old colour. */
 	flush_if_necessary();
 

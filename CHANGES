@@ -1,5 +1,42 @@
 Changes for vile 8.4 (released ??? ??? ??, ????)
 
+(tom) 990920 (t)
+	+ implement drag/drop for winvile.
+	+ ensure that win32 and termcap versions do not allow paste into buffer
+	  that is marked 'view'.
+	+ correct background in os2vio.c (the 980930 change for blink versus
+	  bright does not apply to OS/2 full-screen windows, but only the
+	  stand-alone mode). 
+	+ modify dummy functions for setting fcolor, bcolor, ccolor to restore
+	  the default value rather than allow setting misleading value to be
+	  set when the corresponding mode is not really supported.
+	+ ifdef'd out with OPT_POPUP_WINOPEN popup menu for winopen command,
+	  added it to the system menu.  This gets in the way of mouse
+	  selection/extension and (for 2-button mice) prevents pasting with the
+	  middle button.
+	+ implement double- and triple-click selection with win32 console and
+	  gui, as well as pasting with button-2.  There's no simple way to
+	  implement button-3 extension as in tcap.c, however, for win32 console.
+	+ correct a spurious decrement of bp->b_bytecount in
+	  strip_if_dosmode(), from 8.3q changes.
+	+ implement 'default' color for all drivers, to simplify ccolor.
+	+ add term.setccol(), to allow changing the cursor color for
+	  drivers that support it, e.g., xvile, along with mode ccolor.
+	+ change OPT_TITLE's action routine to show $progname value rather
+	  than "vile".
+	+ make OPT_TITLE apply to xvile, using X resources rather than WM
+	  properties (patch by Rick Sladkey, modified by suggestion from Kevin
+	  Buettner to integrate it with existing $title logic).
+	+ fix:  xvile doesn't recognize XK_KP_* keypad keys such as the arrow
+	  keys on the numeric keypad when numlock is off.  This is particularly
+	  bad for users with Sun Type 4 keyboards where there is only a single
+	  numeric/cursor keypad.  (The Solaris X server may not return XK_KP_*
+	  keysyms by default, the OpenBSD one does.) (patch by Christian
+	  Weisgerber <naddy@mips.rhein-neckar.de>).
+	+ add a note to the VMS build scripts (descrip.mms and vmsbuild.com)
+	  to caution installers to delete generated headers and object files
+	  between building vile.exe and xvile.exe (patch by Clark Morgan).
+
 (tom) 990914 (s)
 	+ modify list mode to show the actual record separator rather than ^J.
 	+ correction to change in 8.3q, to writereg() and getregion(), to

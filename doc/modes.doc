@@ -192,7 +192,7 @@ solely by the define-submode command:
 		between "/*" and "*/".  The names use "fence-" followed any of
 		the following keywords with a regular expression:  begin, end.
 
-	indent
+	indent	(not implemented)
 		The keyword "cstyle", or any of the following keywords
 		with a regular expression: begin, end, if, then, else,
 		elif, endif.
@@ -247,5 +247,5 @@ Note that the following are equivalent once you have defined the majormode "c":
 	define-submode c tabstop=8
 
 -------------------------------
-$Header: /users/source/archives/vile.vcs/doc/RCS/modes.doc,v 1.4 1999/07/02 23:04:39 tom Exp $
+$Header: /users/source/archives/vile.vcs/doc/RCS/modes.doc,v 1.5 1999/09/19 20:56:48 tom Exp $
 -------------------------------

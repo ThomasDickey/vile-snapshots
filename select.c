@@ -18,7 +18,7 @@
  * transferring the selection are not dealt with in this file.  Procedures
  * for dealing with the representation are maintained in this file.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.98 1999/06/14 00:33:07 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.100 1999/09/21 00:34:27 tom Exp $
  *
  */
 
@@ -632,15 +632,65 @@ release_selection(int status)
 }
 
 #if OPT_MOUSE
-static int
+int
 paste_selection(void)
 {
 	if (!doingsweep) {
 		TRACE(("MOUSE paste selection\n"))
+		if (b_val(curbp,MDVIEW))
+			return FALSE;
 		mayneedundo();
 		return putafter(FALSE, 1);
 	}
 	return SEL_PASTE;
+}
+
+void
+on_double_click(void)
+{
+	MARK save = DOT;
+
+	TRACE(("MOUSE double-click DOT %d.%d\n", line_no(curbp, DOT.l), DOT.o))
+	sel_release();
+	if (!is_at_end_of_line(DOT)
+	 && !isSpace(char_at(DOT))) {
+		while (DOT.o >= 0) {
+			DOT.o--;
+			if (isSpace(char_at(DOT))) {
+				DOT.o++;
+				break;
+			}
+		}
+		sel_begin();
+		MK = DOT;
+		while (!is_at_end_of_line(DOT)) {
+			DOT.o++;
+			if (is_at_end_of_line(DOT)
+			 || isSpace(char_at(DOT))) {
+				DOT.o--;
+				break;
+			}
+		}
+		sel_extend(FALSE,TRUE);
+	}
+	DOT = save;
+	update(TRUE);
+}
+
+void
+on_triple_click(void)
+{
+	MARK save = DOT;
+
+	TRACE(("MOUSE triple-click DOT %d.%d\n", line_no(curbp, DOT.l), DOT.o))
+	sel_release();
+	gotobol(FALSE, 1);
+	sel_begin();
+	MK = DOT;
+	gotoeol(FALSE, 1);
+	sel_extend(FALSE,TRUE);
+	DOT = save;
+	update(TRUE);
 }
 
 /*

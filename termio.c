@@ -3,7 +3,7 @@
  * characters, and write characters in a barely buffered fashion on the display.
  * All operating systems.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/termio.c,v 1.169 1999/09/05 23:49:16 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/termio.c,v 1.172 1999/09/20 23:15:56 tom Exp $
  *
  */
 #include	"estruct.h"
@@ -1100,6 +1100,7 @@ TERM null_term = {
 	nullterm_setfore,
 	nullterm_setback,
 	nullterm_setpal,
+	nullterm_setccol,
 	nullterm_scroll,
 	nullterm_pflush,
 	nullterm_icursor,
@@ -1124,23 +1125,30 @@ static void nullterm_beep(void)	{ }
 /*ARGSUSED*/
 static void nullterm_rev(UINT state GCC_UNUSED) { }
 
+#if OPT_COLOR
+#define NO_COLOR(name,value) name = value;
+#else
+#define NO_COLOR(name,value) /*nothing*/
+#endif
+
 /*
  * These are public, since we'll use them as placeholders for unimplemented
  * device methods.
  */
-/*ARGSUSED*/ void nullterm_kopen(void)	{ }
-/*ARGSUSED*/ void nullterm_kclose(void)	{ }
-/*ARGSUSED*/ void nullterm_setfore (int f GCC_UNUSED) { }
-/*ARGSUSED*/ void nullterm_setback (int b GCC_UNUSED) { }
-/*ARGSUSED*/ void nullterm_setpal (const char *p GCC_UNUSED) { }
-/*ARGSUSED*/ void nullterm_scroll (int f GCC_UNUSED, int t GCC_UNUSED, int n GCC_UNUSED) { }
-/*ARGSUSED*/ void nullterm_pflush (void) { }
-/*ARGSUSED*/ void nullterm_icursor (int c GCC_UNUSED) { }
-/*ARGSUSED*/ void nullterm_settitle (char *t GCC_UNUSED) { }
+/*ARGSUSED*/ int  nullterm_setdescrip (const char *res GCC_UNUSED) { return(FALSE); }
 /*ARGSUSED*/ int  nullterm_watchfd (int fd GCC_UNUSED, WATCHTYPE type GCC_UNUSED, long *idp GCC_UNUSED) { return 0; }
-/*ARGSUSED*/ void nullterm_unwatchfd (int fd GCC_UNUSED, long id GCC_UNUSED) { }
 /*ARGSUSED*/ void nullterm_cursorvis (int flag GCC_UNUSED) { }
-/*ARGSUSED*/ int  nullterm_setdescrip(const char *res GCC_UNUSED) { return(FALSE); }
+/*ARGSUSED*/ void nullterm_icursor (int c GCC_UNUSED) { }
+/*ARGSUSED*/ void nullterm_kclose (void) { }
+/*ARGSUSED*/ void nullterm_kopen (void) { }
+/*ARGSUSED*/ void nullterm_pflush (void) { }
+/*ARGSUSED*/ void nullterm_scroll (int f GCC_UNUSED, int t GCC_UNUSED, int n GCC_UNUSED) { }
+/*ARGSUSED*/ void nullterm_setback (int b GCC_UNUSED) { NO_COLOR(gbcolor,C_BLACK) }
+/*ARGSUSED*/ void nullterm_setccol (int c GCC_UNUSED) { NO_COLOR(gccolor,ENUM_UNKNOWN) }
+/*ARGSUSED*/ void nullterm_setfore (int f GCC_UNUSED) { NO_COLOR(gbcolor,C_WHITE) }
+/*ARGSUSED*/ void nullterm_setpal (const char *p GCC_UNUSED) { }
+/*ARGSUSED*/ void nullterm_settitle (const char *t GCC_UNUSED) { }
+/*ARGSUSED*/ void nullterm_unwatchfd (int fd GCC_UNUSED, long id GCC_UNUSED) { }
 
 /******************************************************************************/
 
