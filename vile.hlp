@@ -2061,6 +2061,7 @@ Programmed procedures and macros
 	$wline		number of lines in current window
 	$word		current "word"
 	$write-hook	name of procedure to run before a file is written
+	$xshell		name of the terminal program for spawned xvile commands.
 
 	In addition to the environment variables, you may set and use the
 	values of the editor modes (i.e., universal modes, buffer-only modes or
@@ -3494,4 +3495,4 @@ Problems
 
 Copyright 1995,1996,1997 by Paul Fox, Tom Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.330 1997/09/06 01:12:44 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.331 1997/10/06 11:01:04 tom Exp $

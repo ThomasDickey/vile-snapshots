@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.234 1997/08/24 22:58:26 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.235 1997/10/05 21:46:13 kev Exp $
  *
  */
 
@@ -663,7 +663,7 @@ vtset(LINEPTR lp, WINDOW *wp)
 #endif
 	from = lp->l_text + skip;
 #ifdef WMDLINEWRAP
-	allow_wrap = w_val(wp,WMDLINEWRAP) ? mode_row(wp) : 0;
+	allow_wrap = w_val(wp,WMDLINEWRAP) ? mode_row(wp)-1 : 0;
 #endif
 
 	while ((vtcol <= term.t_ncol)
@@ -982,6 +982,7 @@ reframe(WINDOW *wp)
 		i = wp->w_force;  /* (is 0, unless reposition() was called) */
 
 	wp->w_flag |= WFMODE;
+	wp->w_line.o = 0;
 
 	/* w_force specifies which line of the window dot should end up on */
 	/* 	positive --> lines from the top				*/
@@ -1068,15 +1069,16 @@ kill_tildes:
 	if (w_val(wp,WMDLINEWRAP)
 	 && sameline(wp->w_line, wp->w_dot)) {
 		int want = mark2col(wp, wp->w_dot) / term.t_ncol;
-		if (want >= wp->w_ntrows) {
+		if (want + wp->w_line.o >= wp->w_ntrows) {
 			wp->w_line.o = wp->w_ntrows - want - 1;
 			wp->w_flag |= WFHARD;
 			wp->w_flag &= ~WFFORCE;
-		} else {
-			wp->w_line.o = 0;
 		}
-	} else {
-		wp->w_line.o = 0;
+		else if (want + wp->w_line.o < 0) {
+			wp->w_line.o = -want;
+			wp->w_flag |= WFHARD;
+			wp->w_flag &= ~WFFORCE;
+		}
 	}
 #endif
 }
@@ -1513,13 +1515,16 @@ updattrs(WINDOW *wp)
 	    if (w_val(wp,WMDLINEWRAP))
 		for (col = start_col; col <= end_col; col++) {
 		    int x = row + col / term.t_ncol;
-		    if (x < term.t_nrow) {
-			    int y = col % term.t_ncol;
-			    vscreen[x]->v_attrs[y] =
-				(vscreen[x]->v_attrs[y]
-				 | (attr & ~VAREV))
-				^ (attr & VAREV);
+		    if  (x < 0)
+			continue;
+		    if (x < mode_row(wp)) {
+			int y = col % term.t_ncol;
+			vscreen[x]->v_attrs[y] =
+			    (vscreen[x]->v_attrs[y] | (attr & ~VAREV))
+			    ^ (attr & VAREV);
 		    }
+		    else
+			break;
 		}
 	    else
 #endif

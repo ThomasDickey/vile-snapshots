@@ -1,5 +1,34 @@
 Changes for vile 7.3 (released ??? ??? ??, 1997)
 
+(tom)	971006 (f)
+	+ document --with-screen values better in configure --help.
+	+ implement Athena widget scrollbar support in x11.c, using Kevin's
+	  dragging support from the no-widget case.
+	+ add $xshell environment variable, use this to control :sh command
+	  from xvile.
+	+ new CF_X_ATHENA configure macro adds configure options --with-Xaw3d
+	  and --with-neXtaw.
+	+ corrected CF_IMAKE_CFLAGS, which was not using the imake symbol that
+	  specified X function prototypes.  (This was old behavior, which did
+	  not seem to matter until adding Xaw scrollbars on Linux).
+
+(kev)	971005 (e)
+	+ basic.c (setwmark): In linewrap mode, account for undisplayed
+	  rows before the first row shown of a very long wrapped line.
+	+ display.c (vtset): Don't allow wrapped lines to overflow onto
+	  the mode line.  I don't think characters from the buffer were
+	  ever getting written to the modeline, but vteeol() would sometimes
+	  erase the modeline when displaying very long wrapped lines.
+	  (reframe): Handle reframes of long wrapped lines more gracefully.
+	  In particular, once the top row of a very long wrapped line
+	  goes off the top, it is now possible to have the cursor positioned
+	  on somewhere other than the bottom row.  Scrolling up or down
+	  via right or left right movement within a long wrapped line also
+	  looks a lot better now.
+	  (updattrs): Don't attempt to access rows before the top row
+	  of a window when updating attributes.  Also, don't access
+	  rows of or below the the mode line.  This fixes a SEGFAULT.
+
 (tom)	970918 (d)
 	+ amend logic for find_mode() so that "&glo cmode" and "&loc cmode"
 	  work as before majormode changes (reported by Sean Ahern).

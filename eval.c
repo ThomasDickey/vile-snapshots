@@ -3,7 +3,7 @@
 
 	written 1986 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.147 1997/09/06 00:23:37 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.148 1997/09/29 10:39:40 tom Exp $
  *
  */
 
@@ -91,6 +91,9 @@ char	*value)
 #if OPT_EVAL
 static char *shell;	/* $SHELL environment is "$shell" variable */
 static char *directory;	/* $TMP environment is "$directory" variable */
+#if DISP_X11
+static char *x_shell;	/* $XSHELL environment is "$xshell" variable */
+#endif
 #endif
 
 #if OPT_SHOW_EVAL
@@ -484,6 +487,10 @@ gtenv(const char *vname)	/* name of environment variable to retrieve */
 		ElseIf( EVFONT )	value = x_current_fontname();
 		ElseIf( EVTITLE )	value = x_get_window_name();
 		ElseIf( EVICONNAM )	value = x_get_icon_name();
+		ElseIf( EVXSHELL )
+			if (x_shell == 0)
+				SetEnv(&x_shell, DftEnv("XSHELL", "xterm"));
+			value = x_shell;
 #endif
 		ElseIf( EVSHELL )
 			if (shell == 0)
@@ -855,8 +862,9 @@ char *value)	/* value to set to */
 			status = set_directory(value);
 #if DISP_X11
 		ElseIf( EVFONT ) status = x_setfont(value);
-		ElseIf( EVTITLE ) x_set_window_name(value); status = TRUE;
-		ElseIf( EVICONNAM ) x_set_icon_name(value); status = TRUE;
+		ElseIf( EVTITLE ) x_set_window_name(value);
+		ElseIf( EVICONNAM ) x_set_icon_name(value);
+		ElseIf( EVXSHELL ) SetEnv(&x_shell, value);
 #endif
 		ElseIf( EVSHELL )
 			SetEnv(&shell, value);
@@ -1415,6 +1423,9 @@ ev_leaks(void)
 	}
 	FreeAndNull(shell);
 	FreeAndNull(directory);
+#if DISP_X11
+	FreeAndNull(x_shell);
+#endif
 #endif
 }
 #endif	/* NO_LEAKS */

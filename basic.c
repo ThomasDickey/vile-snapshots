@@ -5,7 +5,7 @@
  * functions that adjust the top line in the window and invalidate the
  * framing, are hard.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/basic.c,v 1.93 1997/03/15 15:38:06 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/basic.c,v 1.94 1997/10/05 21:46:13 kev Exp $
  *
  */
 
@@ -1202,7 +1202,18 @@ setwmark(int row, int col)
 		DOT.l = lforw(DOT.l);
 		DOT.o = w_left_margin(curwp);
 	} else {	/* move to the right row */
-		row -= curwp->w_toprow;
+		row -= curwp->w_toprow + curwp->w_line.o;
+		    /* 
+		     * In the statement above, wp->w_line.o will
+		     * normally be zero.  But when the top line of the
+		     * window is wrapped and the beginning of the line
+		     * is not visible, it will have the number of
+		     * lines that would appear before the top line
+		     * negated.  (E.g, if the wrapped line occupied
+		     * 2 lines before the top window line, then wp->w_line.o
+		     * will have the value -2.)
+		     */
+
 		dlp = curwp->w_line.l;	/* get pointer to 1st line */
 		while ((row -= line_height(curwp,dlp)) >= 0
 		  &&   dlp != buf_head(curbp))

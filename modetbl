@@ -11,7 +11,7 @@
 #
 # The modes are table entries in the BUFFER and WINDOW structures.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.84 1997/09/18 00:45:03 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.85 1997/09/29 10:19:42 tom Exp $
 #
 #
 # Mode-table entries.  Capitalized letters are used for abbreviations.
@@ -200,6 +200,7 @@ regex							# MVAL_ prefix
 "wline"		WLINE			# # of lines in current window
 "word"		WORD			# current word
 "write-hook"	WRHOOK		OPT_PROCEDURES	# procedure to run when writing
+"xshell"	XSHELL		DISP_X11	# xterm emulator, etc.
 
 .functions
 "abs"	ABS		MONAMIC		# absolute value of a number

@@ -1,7 +1,7 @@
 /*	Spawn:	various DOS access commands
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.115 1997/03/15 16:03:33 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.116 1997/09/29 11:07:57 tom Exp $
  *
  */
 
@@ -12,7 +12,7 @@
 #if SYS_VMS
 #include <starlet.h>
 #include <lib$routines.h>
-extern	int	sys(char *);	/*FIXME: not the same as 'system()'?*/
+extern	int	vms_system(char *);	/*FIXME: not the same as 'system()'?*/
 #endif
 
 static	int spawn1(int rerun, int pressret);
@@ -55,16 +55,23 @@ extern  short	iochan;				/* In "termio.c"	*/
 int
 spawncli(int f GCC_UNUSED, int n GCC_UNUSED)
 {
-/* i never thought i'd see an ifdef like this one... strange bedfellows */
-#if DISP_X11 || SYS_WIN31
-	mlforce("[This version of vile cannot spawn an interactive shell]");
-	return FALSE;
-#else
+#undef OK_SPAWN
+
 #if	SYS_UNIX
+#define	OK_SPAWN
 	bottomleft();
 	ttclean(TRUE);
 	TTputc('\n');
+#if	DISP_X11
+	{
+//		int flag = im_waiting(TRUE);
+		//(void)system(gtenv("xshell"));
+		(void)system("xterm");
+//		(void)im_waiting(flag);
+	}
+#else
 	(void)system_SHELL((char *)0);
+#endif
 	TTflush();
 	ttunclean();
 	sgarbf = TRUE;
@@ -73,13 +80,17 @@ spawncli(int f GCC_UNUSED, int n GCC_UNUSED)
 
 
 #if	SYS_VMS
+#define	OK_SPAWN
 	bottomleft();
 	mlforce("[Starting DCL]\r\n");
 	TTflush();				/* Ignore "ttcol".	*/
 	sgarbf = TRUE;
-	return sys(NULL);			/* NULL => DCL.		*/
+	return vms_system(NULL);		/* NULL => DCL.		*/
 #endif
+
+
 #if	SYS_MSDOS || SYS_OS2 || SYS_WINNT
+#define	OK_SPAWN
 	bottomleft();
 	TTflush();
 	TTkclose();
@@ -108,6 +119,11 @@ spawncli(int f GCC_UNUSED, int n GCC_UNUSED)
 	sgarbf = TRUE;
 	return AfterShell();
 #endif
+
+
+#ifndef	OK_SPAWN
+	mlforce("[This version of vile cannot spawn an interactive shell]");
+	return FALSE;
 #endif
 }
 
@@ -308,7 +324,7 @@ spawn1(int rerun, int pressret)
 #if	SYS_VMS
 	TTputc('\n');			/* Already have '\r'	*/
 	TTflush();
-	s = sys(line);			/* Run the command.	*/
+	s = vms_system(line);		/* Run the command.	*/
 	mlforce("\r\n\n[End]");		/* Pause.		*/
 	TTflush();
 	(void)keystroke();
@@ -625,7 +641,7 @@ vile_filter(int f GCC_UNUSED, int n GCC_UNUSED)
  * and the way out, because DCL does not want the channel to be in raw mode.
  */
 int
-sys(register char *cmd)
+vms_system(register char *cmd)
 {
 	struct  dsc$descriptor  cdsc;
 	struct  dsc$descriptor  *cdscp;
