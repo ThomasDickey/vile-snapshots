@@ -1,5 +1,22 @@
 Changes for vile 8.4 (released ??? ??? ??, ????)
 
+(tom) 990829 (p)
+	+ modify test for terminfo/termcap library support to look for curses
+	  library first.  SCO's native termlib does not support color, though
+	  the UDK's termlib does.
+	+ eliminate SCO-specific ifdef SYSTEM_LOOKS_LIKE_SCO, which really
+	  applied to v4.  Tested with sco3.2v5.0.5 (aka v5).
+	+ correct a negative array index for ctrans[] in show-colors command.
+	+ remove unneeded putnpad() from tcap.c
+	+ fix excess initialization of kbindtbl when --disable-extensions is
+	  configured using macro KBIND_LINK.
+	+ modify htmlfilt.l to highlight aliases for special characters, e.g.,
+	  "&lt;".
+	+ minor fixes for tc-filt.l, to allow for entries that are missing the
+	  trailing '\', and to allow for entries without a description.  Also,
+	  allow '.' and '_' in alias names.
+	+ correct typo in suffix expression for cshmode.
+
 (tom) 990822 (o)
 	+ add &pquote function to simplify use of &lookup when the result might
 	  contain spaces, and $exec-suffix variable.

@@ -2,7 +2,7 @@
  *		The routines in this file handle the conversion of pathname
  *		strings.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.92 1999/08/21 13:06:08 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.93 1999/08/29 23:36:32 tom Exp $
  *
  *
  */
@@ -59,7 +59,7 @@ curr_dir_on_drive(int d)
 #endif
 
 #ifdef GMDRESOLVE_LINKS
-#if HAVE_SYS_ITIMER_H && SYSTEM_LOOKS_LIKE_SCO
+#if HAVE_SYS_ITIMER_H && defined(HAVE_SETITIMER)
 #include <sys/itimer.h>
 #endif
 static	char * resolve_directory ( char *path_name, char **file_namep );

@@ -1,6 +1,6 @@
-revlist for vile, version v8_3o
+revlist for vile, version v8_3p
 --------------------------------------------------------------------------------
-CHANGES	1.409
+CHANGES	1.412
 CHANGES.R3	1.1
 CHANGES.R4	1.1
 CHANGES.R5	1.1
@@ -12,7 +12,7 @@ MANIFEST	none
 README	1.74
 README.PC	1.22
 README.VMS	1.2
-aclocal.m4	1.73
+aclocal.m4	1.74
 ansi.c	1.38
 api.c	1.18
 api.h	1.11
@@ -28,7 +28,7 @@ cmdtbl	1.184
 config.emx	1.1
 config_h.in	1.2
 configure	none
-configure.in	1.115
+configure.in	1.117
 csrch.c	1.29
 descrip.mms	1.40
 dirstuff.h	1.23
@@ -36,8 +36,8 @@ display.c	1.293
 djhandl.c	1.6
 dumbterm.c	1.16
 edef.h	1.254
-estruct.h	1.409
-eval.c	1.237
+estruct.h	1.411
+eval.c	1.238
 exec.c	1.195
 externs.c	1.7
 fences.c	1.72
@@ -70,7 +70,7 @@ map.c	1.87
 menu.c	1.32
 mkdirs.sh	1.3
 mkprlenv.wnt	1.5
-mktbls.c	1.101
+mktbls.c	1.102
 modes.c	1.169
 modetbl	1.145
 msgs.c	1.19
@@ -82,8 +82,8 @@ opers.c	1.66
 os2keys.h	1.1
 os2pipe.c	1.4
 os2vio.c	1.23
-patchlev.h	1.186
-path.c	1.92
+patchlev.h	1.187
+path.c	1.93
 perl.xs	1.46
 proto.h	1.372
 pscreen.h	1.1
@@ -91,7 +91,7 @@ ptypemap	1.5
 random.c	1.203
 regexp.c	1.65
 region.c	1.98
-revlist	v8_3o
+revlist	v8_3p
 search.c	1.116
 select.c	1.98
 sinstall.sh	1.1
@@ -99,9 +99,9 @@ spawn.c	1.145
 statevar.c	1.20
 tags.c	1.99
 tbuff.c	1.35
-tcap.c	1.118
+tcap.c	1.119
 tcap.h	1.4
-termio.c	1.165
+termio.c	1.166
 trace.c	1.14
 trace.h	1.9
 ucrypt.c	1.11
@@ -139,7 +139,7 @@ doc/filters.doc	1.9
 doc/hilite.doc	1.1
 doc/indent.pro	1.1
 doc/macros.doc	1.28
-doc/menus.doc	1.3
+doc/menus.doc	1.4
 doc/modes.doc	1.4
 doc/oleauto.doc	1.6
 doc/perl.doc	1.2
@@ -165,9 +165,9 @@ filters/fdl-filt.l	1.2
 filters/fdl.key	1.3
 filters/filters.c	1.47
 filters/filters.h	1.26
-filters/filters.rc	1.76
+filters/filters.rc	1.77
 filters/html.key	1.6
-filters/htmlfilt.l	1.16
+filters/htmlfilt.l	1.17
 filters/imake.key	1.1
 filters/java.key	1.1
 filters/js.key	1.1
@@ -206,7 +206,7 @@ filters/sql-filt.l	1.6
 filters/sql.key	1.4
 filters/tbl-filt.l	1.1
 filters/tbl.key	1.1
-filters/tc-filt.l	1.5
+filters/tc-filt.l	1.8
 filters/tc.key	1.2
 filters/tcl-filt.l	1.6
 filters/tcl.key	1.8

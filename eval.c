@@ -2,7 +2,7 @@
  *	eval.c -- function and variable evaluation
  *	original by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.237 1999/08/23 01:18:15 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.238 1999/08/29 23:45:49 tom Exp $
  *
  */
 
@@ -1194,7 +1194,7 @@ makecolorlist(int dum1 GCC_UNUSED, void *ptr GCC_UNUSED)
 	bprintf("--- Color palette %*P\n", term.cols-1, '-');
 	bprintf("\nColor name       Internal  $palette   Examples\n");
 	for (j = -1; j < ncolors; j++) {
-		k = ctrans[j];
+		k = j >= 0 ? ctrans[j] : j;
 		bprintf("\n%16s ", get_color_name(j));
 		bprintf("%d%*P", j, 10, ' ');
 		bprintf("%d%*P", k, 10, ' ');
