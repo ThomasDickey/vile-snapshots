@@ -1,11 +1,11 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_REVISION($Revision: 1.72 $)
+AC_REVISION($Revision: 1.73 $)
 AC_PREREQ(2.12)
 
 ### Use "configure -with-screen" to override the default configuration, which is
 ### termcap-based on unix systems.
 
-dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.72 1997/12/06 00:54:17 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.73 1997/12/07 12:25:11 tom Exp $
 
 dnl
 AC_INIT(mktbls.c)
@@ -433,7 +433,7 @@ fi
 ###	Do these last, since they rely on a properly constructed config.h
 
 ###	Mandatory checks for missing prototypes:
-CHECK_DECL_FLAG="-I. -Dscrn_chosen"
+CHECK_DECL_FLAG="-I. -I$srcdir -Dscrn_chosen"
 VILE_CHECK_HDRS='
 #define CHECK_PROTOTYPES 1
 #include <estruct.h>

@@ -1,5 +1,9 @@
 Changes for vile 7.3 (released ??? ??? ??, 1997)
 
+ (tom)	971207 (t)
+ 	+ correct include-path for configure script's check for missing
+	  externs, to work with --srcdir option (analysis by Kevin Buettner).
+
  (tom)	971205 (s)
  	+ add logic to configure.in to use a filter (installed by td_lib)
 	  named 'td_config' which works around limited 'sed' when constructing
