@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/key-filt.c,v 1.5 1999/12/09 02:14:19 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/key-filt.c,v 1.6 2000/01/10 00:00:33 tom Exp $
  *
  * Filter to add vile "attribution" sequences to a vile keyword file.  It's
  * done best in C because the delimiters may change as a result of processing
@@ -12,6 +12,7 @@
 
 char *filter_name = "key";
 
+static char *Action_attr;
 static char *Comment_attr;
 static char *Error_attr;
 static char *Ident_attr;
@@ -34,13 +35,14 @@ color_of(char *s)
     if (is_class(s)) {
 	result = Ident2_attr;
     } else if (*s != 0) {
-	result = Literal_attr;
+	result = Action_attr;
 	while (*s != 0) {
 	    if (quoted) {
 		if (*s == QUOTE)
 		    quoted = 0;
 	    } else if (*s == QUOTE) {
 		quoted = 1;
+		result = Literal_attr;
 	    } else if (strchr("RUBI", *s) == 0) {
 		if (*s++ != 'C' || !isxdigit(*s)) {
 		    result = Error_attr;
@@ -146,6 +148,7 @@ do_filter(FILE * input, FILE * output)
      * Unlike most filters, we make a copy of the attributes, since we will be
      * manipulating the class symbol table.
      */
+    Action_attr  = strmalloc(class_attr(NAME_ACTION));
     Comment_attr = strmalloc(class_attr(NAME_COMMENT));
     Error_attr   = strmalloc(class_attr(NAME_ERROR));
     Ident_attr   = strmalloc(class_attr(NAME_IDENT));

@@ -1,5 +1,41 @@
 Changes for vile 9.1 (released ??? ??? ??, 1999)
 
+ 20000109 (q)
+	> Ed Henderson <evhendrs@micron.net>:
+	+ implement autoscrolling feature for winvile, which makes the buffer
+	  scroll in the direction where the mouse leaves the window,
+	  automatically extending selection highlighting.
+	+ make the scroll speed increase over time, rather than distance
+	  above/below the window (suggested by Clark Morgan).
+	> Clark Morgan:
+	+ fix build with dbg=1 for winvile (reported by Ed Henderson).
+	+ update doc/modes.doc, using ~with to simplify perlmode example, and
+	  adding cindent to cmode description.
+	> Brendan O'Dea:
+	+ back out change that attempted to make the .pl files use "#!/bin/echo"
+	  to work around a warning from the Debian package checker - but it now
+	  adds a different warning.
+	> Tom Dickey:
+	+ modify configure --with-xpm option to allow builder to specify path
+	  of Xpm library in the configure --with-xpm option (adapted from patch
+	  by Albert Chin-A-Young <china@thewrittenword.com>).
+	+ modify sh-filt.c to mark ':' lines as Action (should be ':'
+	  statements, but we do not parse statements yet).
+	+ modify key-filt.c to show color codes in Action color rather than
+	  Literal, to make it simpler to distinguish special constants such
+	  as m4's LeftQuote.
+	+ document show-colors and show-color-schemes in vile.hlp
+	+ modify the [Color Palette] buffer created by show-colors to make it
+	  clearer that the internal codes used in the syntax filters are a
+	  single hexadecimal digit (suggested by Clark Morgan).
+	+ comment-out the perlmode "while" group, since perl's ambiguities make
+	  it not very useful.  Retained the default (if) group, since there are
+	  usually more if/elsif/else statements than the others (feedback from
+	  Kevin Buettner).
+	+ add table entries to tcap.c for terminfo italic mode (sitm/ritm),
+	  with terminfo's termcap equivalences (ZH/ZR).  If not found, we
+	  continue to fallback to underlining.
+
  20000104 (p)
 	> Kevin Buettner:
 	+ window.c (push_fake_win, pop_fake_win): Set curbp.

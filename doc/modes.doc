@@ -93,6 +93,17 @@ include the following in your .vilerc file:
 	define-submode perl suffixes "\\.pl$"
 	define-submode perl shiftwidth 4
 
+To avoid the tediousness of this syntax, use the ~with and ~endwidth
+keywords, like so:
+
+	define-majormode perl
+	    ~with define-submode perl
+	    preamble "^#.*perl\\>"
+	    suffixes "\\.pl$"
+	    shiftwidth 4
+	~endwith
+
+
 
 The "define-majormode" command
 ------------------------------
@@ -251,6 +262,8 @@ define-mode c
 	fence-elif="^\\s*#\\s*elif\\>"
 	fence-else="^\\s*#\\s*else\\>"
 	fence-fi="^\\s*#\\s*endif\\>"
+	cindent
+~endwith
 
 Note that the following are equivalent once you have defined the majormode "c":
 	set cts=8
@@ -258,5 +271,5 @@ Note that the following are equivalent once you have defined the majormode "c":
 	define-submode c tabstop=8
 
 -------------------------------
-$Header: /users/source/archives/vile.vcs/doc/RCS/modes.doc,v 1.6 1999/12/10 01:31:29 tom Exp $
+$Header: /users/source/archives/vile.vcs/doc/RCS/modes.doc,v 1.7 2000/01/09 22:58:35 cmorgan Exp $
 -------------------------------
