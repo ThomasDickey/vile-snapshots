@@ -301,7 +301,7 @@ oleauto_init(void)
      * CVile's constructor argument extracts a handle to the DevStudio 5
      * frame using a sequence of win32 calls that was determined by trial
      * and error.  'Twill be interesting to see if this works with later
-     * DevStudio versions.
+     * DevStudio versions.  [works with DevStudio 6.0]
      */
     pVile = new CVile(::GetParent(::GetActiveWindow()));
     get_addin_config();  // Execute this code _after_ creating pVile.

@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.339 1999/04/14 01:24:35 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.340 1999/05/10 23:41:26 tom Exp $
  *
  */
 
@@ -900,7 +900,7 @@ extern void nullterm_scroll (int f, int t, int n);
 extern void nullterm_setback (int b);
 extern void nullterm_setfore (int f);
 extern void nullterm_setpal (const char *p);
-extern void nullterm_settitile (char *t);
+extern void nullterm_settitle (char *t);
 extern void nullterm_unwatchfd (int fd, long id);
 extern void nullterm_kopen(void);
 extern void nullterm_kclose(void);

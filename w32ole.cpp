@@ -17,7 +17,7 @@
  *   "FAILED" may not be used to test an OLE return code.  Use SUCCEEDED
  *   instead.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32ole.cpp,v 1.6 1998/10/24 15:11:33 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32ole.cpp,v 1.7 1999/05/10 23:30:00 cmorgan Exp $
  */
 
 #include <windows.h>
@@ -925,7 +925,22 @@ execute_action(int action)
     int rc = TRUE;
 
     if (action & FLUSH_BUFFERS)
+    {
         rc = writeall(FALSE, 1, FALSE, FALSE, FALSE);
+        update(FALSE);  /* move cursor out of mini-buffer */
+
+        /*
+         * I've noticed that when flushing modified files to a networked,
+         * NTFS server, a race condition exists between the time when the
+         * flushed files' timestamps change and DevStudio receives a
+         * redirected keystroke.  This race condition is particularly
+         * noticeable when F7 is redirected (tells DevStudio to rebuild a
+         * project) and nothing happens because DevStudio doesn't think any
+         * files are out of date.  Avoid the race condition by giving the
+         * network a chance to completely flush data to disk.
+         */
+        Sleep(500);
+    }
     if (rc && (action & SWITCH_FOCUS))
         (void) SetForegroundWindow(redirect_hwnd);
     return (rc);

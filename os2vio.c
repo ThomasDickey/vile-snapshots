@@ -3,7 +3,7 @@
  * Modified from a really old version of "borland.c" (before the VIO
  * stuff went in there.)
  *
- * $Header: /users/source/archives/vile.vcs/RCS/os2vio.c,v 1.22 1999/04/13 23:29:34 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/os2vio.c,v 1.23 1999/05/10 23:41:28 tom Exp $
  */
 
 #include "estruct.h"
@@ -119,7 +119,7 @@ TERM term = {
 #if OPT_TITLE
 	vio_title,
 #else
-	nullterm_settitile,
+	nullterm_settitle,
 #endif
 	nullterm_watchfd,
 	nullterm_unwatchfd,

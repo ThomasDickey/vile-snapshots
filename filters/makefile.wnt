@@ -1,7 +1,7 @@
 #
 # makefile for vile filters on WIN32 using Microsoft Visual C++
 #
-# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.wnt,v 1.8 1999/04/29 11:08:18 tom Exp $
+# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.wnt,v 1.9 1999/05/10 23:30:00 cmorgan Exp $
 #
 #
 !include <ntwin32.mak>
@@ -95,7 +95,7 @@ uninstall :: $(UTILS)
 !endif
 
 !if "$(VILE_STARTUP_PATH)" == ""
-install :
+install ::
 	@ echo Sorry, you have not set VILE_STARTUP_PATH
 !else if !exist("$(VILE_STARTUP_PATH)")
 install :: $(SCRIPTS) $(KEYS)

@@ -66,10 +66,23 @@ filters.
 
 Each line in the keyword file consists of two strings separated by a colon (:).
 If the first string is empty, the line is treated as a comment.  The second
-string is used as the highlighting attributes for the first string.  An
-empty attribute string implies "Keyword".  If the second string matches
-a keyword class (or in fact, any other keyword), the highlighting attributes
-of that keyword are used.
+string is interpreted as follows:
+
+	+ if quoted with single quotes, any value is permitted.  Use a doubled
+	  quote to insert a quote character.  Literal values of this type are
+	  used to override internal parameters of the filter programs.  See
+	  m4-filt.c for an example.
+
+	+ otherwise (the usual case), the string is an identifier, which
+	  happens to include the characters used in vile's control/A
+	  highlighting attributes (digits plus the characters ABCDEFIRU).
+
+	  If the second string matches a keyword class (or in fact, any other
+	  keyword), the highlighting attributes of that keyword are used.  An
+	  empty attribute string implies "Keyword".
+
+	  If it does not match a keyword, it must be a set of highlighting
+	  attributes, which will be used for the first string.
 
 The keyword file reader supports a limited include facility.  If a line begins
 with ".include", it reads from the given keyword file.  A few filters (such as
@@ -100,6 +113,7 @@ The following are implemented:
 	vile-html-filt	(HTML with embedded JavaScript)
 	vile-latex-filt	(LaTeX or TeX)
 	vile-lex-filt	(lex)
+	vile-m4-filt	(m4)
 	vile-mail-filt	(mail folders)
 	vile-make-filt	(make)
 	vile-manfilt	(manpage)
@@ -128,4 +142,4 @@ Not all filters use a keywords file (yet).
 The lex filters have been well tested only with flex, which treats newlines
 differently.  Older versions of lex may not support the %x states.
 
--- $Header: /users/source/archives/vile.vcs/doc/RCS/filters.doc,v 1.7 1999/05/03 01:19:25 tom Exp $
+-- $Header: /users/source/archives/vile.vcs/doc/RCS/filters.doc,v 1.9 1999/05/08 01:16:15 tom Exp $

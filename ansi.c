@@ -4,7 +4,7 @@
  * "termio.c". It compiles into nothing if not an ANSI device.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ansi.c,v 1.37 1999/04/23 23:44:03 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ansi.c,v 1.38 1999/05/10 23:41:42 tom Exp $
  */
 
 
@@ -96,7 +96,7 @@ TERM	term	= {
 	ansiscroll,
 	nullterm_pflush,
 	nullterm_icursor,
-	nullterm_settitile,
+	nullterm_settitle,
 	nullterm_watchfd,
 	nullterm_unwatchfd,
 	nullterm_cursorvis,

@@ -1,6 +1,6 @@
 dnl Local definitions for autoconf.
 dnl
-dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.68 1999/04/28 00:18:03 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.69 1999/05/07 22:46:09 tom Exp $
 dnl
 dnl ---------------------------------------------------------------------------
 dnl ---------------------------------------------------------------------------
@@ -69,7 +69,7 @@ do
 	AC_TRY_COMPILE(
 [
 #ifndef CC_HAS_PROTOS
-#if !defined(__STDC__) || __STDC__ != 1
+#if !defined(__STDC__) || (__STDC__ != 1)
 choke me
 #endif
 #endif
@@ -134,7 +134,7 @@ fi
 dnl ---------------------------------------------------------------------------
 dnl Allow user to disable a normally-on option.
 AC_DEFUN([CF_ARG_DISABLE],
-[CF_ARG_OPTION($1,[$2 (default: on)],[$3],[$4],yes)])dnl
+[CF_ARG_OPTION($1,[$2],[$3],[$4],yes)])dnl
 dnl ---------------------------------------------------------------------------
 dnl Restricted form of AC_ARG_ENABLE that ensures user doesn't give bogus
 dnl values.
@@ -420,7 +420,7 @@ if test $cf_cv_have_lib_$1 = no ; then
 fi
 case $host_os in #(vi
 linux*) # Suse Linux does not follow /usr/lib convention
-	$1="[$]$1 /lib"
+	LIBS="$LIBS -L/lib"
 	;;
 esac
 ])dnl
@@ -557,7 +557,7 @@ then
 	changequote(,)dnl
 	cat > conftest.$ac_ext <<EOF
 #line __oline__ "configure"
-int main(int argc, char *argv[]) { return argv[argc-1] == 0; }
+int main(int argc, char *argv[]) { return (argv[argc-1] == 0) ; }
 EOF
 	changequote([,])dnl
 	AC_CHECKING([for gcc warning options])

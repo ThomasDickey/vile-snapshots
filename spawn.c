@@ -1,7 +1,7 @@
 /*	Spawn:	various DOS access commands
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.143 1999/04/13 23:29:34 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.144 1999/05/11 00:24:42 tom Exp $
  *
  */
 
@@ -795,6 +795,7 @@ open_region_filter(void)
     (void)fclose(fw);
 #endif
     ffp = fr;
+    count_fline = 0;
     return s;
 #else
     mlforce("[Region filtering not available -- try buffer filtering]");

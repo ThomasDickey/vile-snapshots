@@ -23,7 +23,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.373 1999/04/15 01:41:35 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.375 1999/05/10 22:34:04 tom Exp $
  */
 
 #define realdef /* Make global definitions not external */
@@ -951,6 +951,9 @@ global_val_init(void)
 	set_global_g_val(GVAL_REPORT,	5);	/* report changes */
 #if	OPT_XTERM
 	set_global_g_val(GMDXTERM_MOUSE,FALSE);	/* mouse-clicking */
+#endif
+#ifdef GMDWARNBLANKS
+	set_global_g_val(GMDWARNBLANKS,FALSE);	/* if filenames have blanks */
 #endif
 	set_global_g_val(GMDWARNUNREAD,TRUE);	/* warn if quitting without
 						looking at all buffers */

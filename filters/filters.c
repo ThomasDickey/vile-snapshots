@@ -1,13 +1,15 @@
 /*
  * Common utility functions for vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.42 1999/04/27 23:35:43 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.45 1999/05/08 12:18:33 tom Exp $
  *
  */
 
 #include <filters.h>
 
 #define MY_NAME "vile"
+
+#define QUOTE '\''
 
 #ifdef DEBUG
 #define TRACE(p) printf p;
@@ -39,7 +41,7 @@ typedef struct _keyword KEYWORD;
 struct _keyword {
     char *kw_name;
     char *kw_attr;
-    unsigned kw_size;	/* strlen(kw_name) */
+    unsigned kw_size;		/* strlen(kw_name) */
     unsigned short kw_flag;	/* nonzero for classes */
     unsigned short kw_used;	/* nonzero for classes */
     KEYWORD *next;
@@ -121,18 +123,20 @@ ExecSource(char *param)
 static KEYWORD *
 FindIdentifier(const char *name)
 {
-    unsigned size = strlen(name);
-    KEYWORD *hash_id;
+    unsigned size;
     int Index;
+    KEYWORD *hash_id = 0;
 
-    Index = hash_function(name);
-    hash_id = hashtable[Index];
-    while (hash_id != NULL) {
-	if (hash_id->kw_size == size
-	 && strcmp(hash_id->kw_name, name) == 0) {
-	    break;
+    if (name != 0 && (size = strlen(name)) != 0) {
+	Index = hash_function(name);
+	hash_id = hashtable[Index];
+	while (hash_id != NULL) {
+	    if (hash_id->kw_size == size
+	     && strcmp(hash_id->kw_name, name) == 0) {
+		break;
+	    }
+	    hash_id = hash_id->next;
 	}
-	hash_id = hash_id->next;
     }
     return hash_id;
 }
@@ -280,20 +284,32 @@ static void
 ParseKeyword(char *name, int classflag)
 {
     char *args = 0;
-    char *s;
+    char *s, *t;
+    int quoted = 0;
 
     if ((s = strchr(name, eqls_ch)) != 0) {
 	*s++ = 0;
 	s = SkipBlanks(s);
 	if (*s != 0) {
-	    args = s;
+	    args = t = s;
 	    while (*s != 0) {
-		if (!isdigit(*s) && strchr("ABCDEFIRU", *s) == 0) {
-		    args = 0;
-		    break;
+		if (quoted) {
+		    if (*s == QUOTE) {
+			if (*++s != QUOTE)
+			    quoted = 0;
+		    }
+		} else {
+		    if (*s == QUOTE) {
+			quoted = 1;
+			s++;
+		    } else if (!isalnum(*s)) {
+			args = 0;	/* error: ignore */
+			break;
+		    }
 		}
-		s++;
+		*t++ = *s++;
 	    }
+	    *t = 0;
 	}
 	TrimBlanks(name);
     }
@@ -423,13 +439,15 @@ ci_keyword_attr(char *text)
 char *
 class_attr(char *name)
 {
-    KEYWORD *hash_id = IsClass(name);
-    if (hash_id != 0) {
+    KEYWORD *hash_id;
+    char *result = 0;
+
+    while ((hash_id = IsClass(name)) != 0) {
 	VERBOSE(hash_id->kw_used, ("class_attr(%s) = %s\n",
 		name, AttrsOnce(hash_id)));
-	return hash_id->kw_attr;
+	name = result = hash_id->kw_attr;
     }
-    return 0;
+    return result;
 }
 
 char *
@@ -512,7 +530,14 @@ char *
 keyword_attr(char *name)
 {
     KEYWORD *hash_id = IsKeyword(name);
-    return hash_id ? hash_id->kw_attr : 0;
+    char *result = 0;
+
+    if (hash_id != 0) {
+	result = hash_id->kw_attr;
+	while ((hash_id = IsClass(result)) != 0)
+	    result = hash_id->kw_attr;
+    }
+    return result;
 }
 
 char *

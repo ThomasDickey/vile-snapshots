@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 console API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntconio.c,v 1.42 1999/04/13 23:29:34 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntconio.c,v 1.43 1999/05/10 23:41:33 tom Exp $
  *
  */
 
@@ -118,7 +118,7 @@ TERM    term    = {
 #if OPT_TITLE
 	nttitle,
 #else
-	nullterm_settitile,
+	nullterm_settitle,
 #endif
 	nullterm_watchfd,
 	nullterm_unwatchfd,

@@ -1,7 +1,7 @@
 /*	tcap:	Unix V5, V7 and BS4.2 Termcap video driver
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.116 1999/04/13 23:29:34 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.117 1999/05/10 23:41:24 tom Exp $
  *
  */
 
@@ -226,7 +226,7 @@ TERM term = {
 	nullterm_scroll,		/* set dynamically at open time */
 	nullterm_pflush,
 	nullterm_icursor,
-	nullterm_settitile,
+	nullterm_settitle,
 	nullterm_watchfd,
 	nullterm_unwatchfd,
 	tcapcursor,

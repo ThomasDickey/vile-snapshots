@@ -5,7 +5,7 @@
  * Written by T.E.Dickey for vile (march 1993).
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/filec.c,v 1.85 1999/04/13 23:29:34 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/filec.c,v 1.87 1999/05/10 23:10:49 tom Exp $
  *
  */
 
@@ -570,6 +570,19 @@ fillMyBuff(char * name)
 	if (is_environ(name)) {
 		LINEPTR lp;
 		int n;
+		size_t len = strlen(name) - 1;
+
+		/*
+		 * If an environment variable happens to evaluate to a
+		 * directory name, this chunk of logic returns a '1' to tell
+		 * our caller that it's time to add a slash.
+		 */
+		for (n = 0; (s = environ[n]) != 0; n++) {
+			if (!strncmp(s, name+1, len)
+			 && s[len] == '=') {
+				return already_scanned(name) ? 1 : 0;
+			}
+		}
 
 		/*
 		 * The presence of any environment variable in the list is
@@ -1094,6 +1107,37 @@ path_completion(int c, char *buf, unsigned *pos)
 #endif	/* filename-completion */
 
 /******************************************************************************/
+
+#ifdef GMDWARNBLANKS
+static int
+has_non_graphics (char *path)
+{
+	int ch;
+	while ((ch = *path++) != EOS) {
+		if (isSpace(ch) || !isPrint(ch))
+			return TRUE;
+	}
+	return FALSE;
+}
+
+static int
+strip_non_graphics (char *path)
+{
+	char *t = path;
+	int ch;
+	int rc = FALSE;
+	while ((ch = *path++) != EOS) {
+		if (!isSpace(ch) && isPrint(ch)) {
+			*t++ = ch;
+			rc = TRUE;
+		}
+	}
+	*t = 0;
+	return rc;
+}
+#endif
+
+/******************************************************************************/
 int
 mlreply_file(
 const char * prompt,
@@ -1163,6 +1207,20 @@ char *	result)
 			s = kbd_string(prompt, Reply+1, sizeof(Reply)-1,
 				'\n', KBD_OPTIONS|KBD_MAYBEC, complete);
 		}
+		/*
+		 * Not everyone expects to be able to write files whose names
+		 * have embedded (or leading/trailing) blanks.
+		 */
+#ifdef GMDWARNBLANKS
+		if (s == TRUE
+		 && global_g_val(GMDWARNBLANKS)
+		 && has_non_graphics(Reply)) {
+			if ((s = mlyesno("Strip nonprinting chars?")) == TRUE)
+				s = strip_non_graphics(Reply);
+		}
+		if (s != TRUE)
+			return s;
+#endif
 	} else if (!screen_to_bname(Reply)) {
 		return FALSE;
 	}

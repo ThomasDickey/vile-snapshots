@@ -1,5 +1,32 @@
 Changes for vile 8.4 (released ??? ??? ??, ????)
 
+(tom) 990510 (c)
+	+ fix an overlooked reset of lines read if we are reading via
+	  attribute-from-filter
+	+ add logic to pathname completion to supply slash if given an
+	  environment variable that evaluates to a directory name, e.g., $HOME
+	  (request by Kuntal Daftary).
+	+ add warn-blanks mode, to allow users to be prompted if they give a
+	  filename which has nonprinting characters (request by Tom Serkowski
+	  <Tom.Serkowski@taurus.srccomp.com>)
+	+ correct (supply) class-inheritance in filters.c function keyword_attr.
+	+ modify filters.c to support arbitrary strings as .class values, used
+	  this to parameterize m4 filter.
+	+ minor resync of autoconf macros with xterm and lynx.
+	+ add M4 syntax filter.
+	+ correct handling in makefilt.l of escaped quotes outside a string.
+	  Also, highlight $(name), like ${name}.
+	> patch by Clark Morgan:
+	+ remove race condition in winvile (in ole-auto mode) when keystrokes
+	  are redirected to DevStudio (noticed on a networked, NTFS drive).
+	+ fix typo in filters/makefile.wnt -- nmake won't allow use of both
+	  ':' and '::' for the same target.
+	> patch by Gary Ross to add support to xvile for wheel mouse:
+	+ modified x_process_event to scroll up/down for Button4 and Button5
+	  button press events.
+	+ added a new resource XVile.wheelScrollAmount to set the number of
+	  lines scrolled for each occurrence of these events.  (Default is 3).
+
 (tom) 990503 (b)
 	+ correction to SSTRING and DSTRING symbols in perl, other syntax
 	  highlighters.  The backslash character was not given as part of the
@@ -7,7 +34,7 @@ Changes for vile 8.4 (released ??? ??? ??, ????)
 	  backslashes handled improperly.
 	+ improve mlerror() function for VMS.  Any errno with the special value
 	  EVMSERR requires special translation.  This translation was not being
-	  one by vile, which caused the editor to occasionally display an
+	  done by vile, which caused the editor to occasionally display an
 	  "unknown error" message.  Example:
 		  $ vile x.y.z    ! invalid file syntax not flagged by vile
 	  (patch by Clark Morgan).

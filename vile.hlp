@@ -1554,6 +1554,12 @@ Editor modes
 		indication will occur at all if "errorbells" mode is not
 		set on.  (U)
 
+	warn-blanks  When prompted for a filename, vile normally allows you to
+		use leading and trailing blanks and other nonprinting
+		characters.  Set this mode if you prefer to be prompted.  Vile
+		will then prompt you if you want the nonprinting characters to
+		be stripped from the given filename.  (U)
+
 	warn-rename  When using ":e" to find a file that has the same name
 		as another buffer, vile will normally offer for you to edit
 		the proposed alternate name for the buffer constructed by
@@ -3441,6 +3447,8 @@ X Window System specifics
 			respectively.
 	menuHeight	resource controlling the Athena menu-height
 
+	wheelScrollAmount Amount to scroll for a wheel mouse, per button-press.
+
 	Sample .Xdefault entries
 	------------------------
 
@@ -4070,4 +4078,4 @@ Problems
 
 Copyright 1995-1999 by Paul Fox, Tom Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.408 1999/04/29 01:08:10 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.410 1999/05/11 01:02:23 tom Exp $
