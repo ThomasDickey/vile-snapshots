@@ -11,7 +11,7 @@
 #
 # The modes are table entries in the BUFFER and WINDOW structures.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.172 2000/03/14 02:35:12 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.173 2000/04/21 09:46:49 tom Exp $
 #
 #
 # Mode-table entries.  Capitalized letters are used for abbreviations.
@@ -211,6 +211,7 @@ string
 "exec-suffix"	EXEC_SUFFIX		# suffix to append when looking for execable programs
 "exit-hook"	EXITHOOK	OPT_HOOKS	# procedure to run when quitting
 "filename-expr"	FILENAME_EXPR	OPT_FINDERR	# regular expression for %F
+"filename-ic"	FILENAME_IC		# true if we set OPT_CASELESS
 "font"		FONT		DISP_X11||DISP_NTWIN	# current font
 "forward-search" FWD_SEARCH		# search-direction (true if forward)
 "helpfile"	HELPFILE		# helpfile (vile.hlp)

@@ -2285,6 +2285,7 @@ Programmed procedures and macros
 	$exit-hook	name of procedure to run when quitting
 	$fence-limit	iteration limit for complex fences
 	$filename-expr	actual pattern for %F in [Error Expressions]
+	$filename-ic	ignore case in filename completion	(read only)
 	$font		current font name (X11/winvile versions only)
 	$forward-search	search direction, true=forward
 	$helpfile	help-filename (vile.hlp)
@@ -4634,6 +4635,14 @@ Win32 specifics
 	delete-text-selection  Delete the current text selection to the 
 			unnamed register.  Bound to Alt+Delete.
 
+	reset-rgb-palette  Set red/green/blue values to their initial state.
+			If you give a parameter, this is used to specify a
+			single color number.
+
+	set-rgb-palette  Set red/green/blue values for the specified color.
+			Values range from 0-255.  Example:
+				set-rgb-palette red 200 0 0
+
 	swap-clipboard-keys  See discussion of clipboard above.
 
 	winopen		Launches the Windows common open dialog box to open
@@ -4968,4 +4977,4 @@ Problems
 
 Copyright 1995-2000 by Paul Fox, Tom Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.481 2000/03/14 03:16:48 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.484 2000/04/25 10:45:52 tom Exp $

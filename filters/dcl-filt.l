@@ -1,7 +1,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/dcl-filt.l,v 1.9 2000/02/28 11:58:59 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/dcl-filt.l,v 1.10 2000/04/21 10:55:16 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of DCL files.
  *
@@ -33,30 +33,8 @@ static char *String_attr;
 static int abbrev_len;
 
 static void
-add_abbrev(const char *name, int size, const char *attr)
-{
-    if (size > abbrev_len
-     && isalpha(name[0]) && islower(name[0])
-     && strncmp(name, "then", abbrev_len)
-     && strncmp(name, "else", abbrev_len)
-     && strncmp(name, "endif", abbrev_len)) {
-	char *temp = strmalloc(name);
-	temp[abbrev_len] = 0;
-	if (keyword_attr(temp) == 0) {
-	    insert_keyword(temp, attr, 0);
-	}
-	free(temp);
-    }
-}
-
-static void
 init_filter(int before GCC_UNUSED)
 {
-    /* This looks ugly, but not many languages support abbreviations.  So we
-     * use a special case.
-     */
-    for (abbrev_len = 4; abbrev_len > 1; abbrev_len--)
-	for_each_keyword(add_abbrev);
 }
 
 static void

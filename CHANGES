@@ -1,5 +1,43 @@
 Changes for vile 9.2 (released ??? ??? ?? 2000)
 
+ 20000425 (f)
+ 	> Brendan O'Dea:
+	+ fix unquoted '^' character from 9.1e configure script changes.
+	+ mods to build with Perl 5.6.0, which now requires that all perl
+	  globals need a PL_ prefix (which affects `errgv', `na' and `sv_undef'
+	  in perl.xs/ptypemap).  The change is backward compatible to 5.005 and
+	  *should* be to 5.004 (untested).
+	> Clark Morgan:
+	+ modify joinregion() to refrain from modifying an empty region, i.e.,
+	  where the start/end lines are the same.
+	> Tom Dickey:
+	+ add reset-rgb-palette command for winvile.
+	+ add set-rgb-palette command for winvile (adapted from a patch by Ian
+	  Jamison <IJamison@iss-dsp.com>).
+	+ install Vileserv.pm without executable permissions (reported and
+	  suggested solution by Brendan O'Dea).
+	+ change an "ls -1" to "find" in configure script, to work around
+	  nonportability to SVr3 (reported by Brendan O'Dea).
+	+ add :g! and :v! as synonyms for :v and :g, respectively.
+	+ modify bat-filt.l to highlight variables that are set or used in
+	  a script.  also, highlight quoted strings.
+	+ fix double-quotes with continuation lines in esqlfilt.l
+	+ corrected wildcard patterns for dos/win32 in vileinit.rc
+	+ add '#' to URL patterns in syntax filters.
+	+ implement abbreviations for syntax keywords, using '*' as the
+	  default delimiter.
+	+ add vimmode, for vim syntax files
+	+ implement $filename-ic, to use in filters.rc to avoid matching
+	  xresmode for systems that have case-independent matching for
+	  filenames.
+	+ make configure macros that search for header- and library-paths a
+	  little more general, e.g., searching under /usr/foo/lib or $HOME/foo,
+	  from tin updates (CF_FIND_LIBRARY, CF_HEADER_PATH, CF_LIBRARY_PATH,
+	  CF_NCURSES_LIBS).
+	+ update config.guess, config.sub
+	+ add a 'depend' rule to makefile.in
+	+ update ne*.h rules in makefile.blc
+
  20000318 (e)
 	> Tom Dickey:
 	+ add configure --with-builtin-filters option.  This is only to test

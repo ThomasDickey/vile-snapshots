@@ -1,7 +1,7 @@
 #
 # makefile for vile on WIN32 using Borland C++
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.blc,v 1.11 1999/03/26 00:28:08 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.blc,v 1.12 2000/04/20 10:10:57 tom Exp $
 #
 #
 
@@ -14,7 +14,15 @@ HDRS = estruct.h edef.h proto.h dirstuff.h
 
 # these headers are built by the mktbls program from the information in cmdtbl
 # and in modetbl
-BUILTHDRS = nebind.h neproto.h nefunc.h nemode.h nename.h nevars.h nefkeys.h nefsms.h
+BUILTHDRS = \
+	nebind.h \
+	nefkeys.h \
+	nefsms.h \
+	nefunc.h \
+	nemode.h \
+	nename.h \
+	neproto.h \
+	nevars.h
 
 SRC = 	main.c ntconio.c basic.c bind.c btree.c buffer.c \
 	csrch.c display.c eval.c exec.c externs.c \
@@ -51,13 +59,18 @@ $(OBJ)
 $(OBJ):	estruct.h
 
 nebind.h \
+nefkeys.h \
+neexec.h \
 nefunc.h \
+neproto.h :	nename.h
+
 nename.h :	cmdtbl mktbls.exe
 	mktbls.exe cmdtbl
 
-nevars.h \
 nefsms.h \
-nemode.h:	modetbl mktbls.exe
+nevars.h :	nemode.h
+
+nemode.h :	modetbl mktbls.exe
 	mktbls.exe modetbl
 
 mktbls.exe:  mktbls.c

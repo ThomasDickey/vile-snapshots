@@ -28,11 +28,11 @@ T_VileBuf
 	if ($var != 0)
 	    newVBrv($arg, $var);
 	else
-	    sv_setsv($arg, &sv_undef);
+	    sv_setsv($arg, &PL_sv_undef);
 
 T_VileWin
 	if ($var != 0)
 	    newVWrv($arg, $var);
 	else
-	    sv_setsv($arg, &sv_undef);
+	    sv_setsv($arg, &PL_sv_undef);
 

@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.442 2000/03/13 11:27:02 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.443 2000/04/21 09:44:57 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -221,7 +221,6 @@
 # define SYS_SUNOS 1	/* FIXME: need to tweak lint ifdefs */
 #endif
 
-#define IBM_KBD 	(SYS_MSDOS || SYS_OS2 || SYS_WINNT)
 #define IBM_VIDEO 	(SYS_MSDOS || SYS_OS2 || SYS_WINNT)
 #define CRLF_LINES 	(SYS_MSDOS || SYS_OS2 || SYS_WINNT)
 

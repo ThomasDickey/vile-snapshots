@@ -1,4 +1,4 @@
-MANIFEST for vile, version v9_1e
+MANIFEST for vile, version v9_1f
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 CHANGES                         Change-log for VILE
@@ -240,6 +240,7 @@ filters/ti.key                  terminfo keywords
 filters/txt-filt.l              syntax filter for ordinary text
 filters/vile.key                fallback template for highlighting colors
 filters/vilefilt.l              syntax filter for vile macros
+filters/vim.key                 keywords for vim syntax files
 filters/xres.key                keywords for X resource filter
 filters/xresfilt.l              syntax filter for X resource files
 filters/xs-filt.l               syntax filter for Perl extensions

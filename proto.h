@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.420 2000/03/14 02:50:48 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.421 2000/04/25 01:50:46 tom Exp $
  *
  */
 
@@ -656,9 +656,14 @@ extern int string_to_number (const char *from, int *np);
 extern void copy_mvals (int maximum, struct VAL *dst, struct VAL *src);
 extern void free_local_vals (const struct VALNAMES *names, struct VAL *gbl, struct VAL *val);
 extern void set_record_sep(BUFFER *bp, RECORD_SEP value);
+extern void set_winflags(int glob_vals, USHORT flags);
 
 #if OPT_COLOR_SCHEMES
 extern void init_scheme(void);
+#endif
+
+#if OPT_ENUM_MODES
+extern int fsm_complete(int c, char *buf, unsigned *pos);
 #endif
 
 #if OPT_EVAL || OPT_COLOR

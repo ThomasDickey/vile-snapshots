@@ -3,7 +3,7 @@
  * paragraph at a time.  There are all sorts of word mode commands.  If I
  * do any sentence mode commands, they are likely to be put in this file.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/word.c,v 1.71 1999/12/13 00:18:04 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/word.c,v 1.72 2000/04/22 00:53:35 cmorgan Exp $
  *
  */
 
@@ -287,6 +287,11 @@ joinregion(void)
 
 	DOT = region.r_orig;
 	end = region.r_end.l;
+	if (DOT.l == end) {
+	    /* Degenerate case -- nothing to join */
+
+	    return (TRUE);
+	}
 	regionshape = EXACT;
 
 	while (!done && status == TRUE) {

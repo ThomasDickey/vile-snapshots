@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/txt-filt.l,v 1.10 2000/02/28 11:58:59 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/txt-filt.l,v 1.11 2000/04/21 11:07:01 tom Exp $
  *
  * Filter to add vile "attribution" sequences to an ordinary text file
  */
@@ -93,7 +93,7 @@ NAME		[a-zA-Z0-9_.#-]+
 ADDRESS		({NAME}|\.)+
 EMAIL		{NAME}@{ADDRESS}
 
-URL		[A-Za-z]+"://"[0-9a-zA-Z%/.~_-]+
+URL		[A-Za-z]+"://"[0-9a-zA-Z%/.~_#-]+
 
 %%
 

@@ -3,7 +3,7 @@
  *	for getting and setting the values of the vile state variables,
  *	plus helper utility functions.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.33 2000/03/14 02:59:33 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.34 2000/04/21 09:45:06 tom Exp $
  */
 
 #include	"estruct.h"
@@ -546,6 +546,23 @@ int var_EOC(TBUFF **rp, const char *vp)
 {
 	if (rp) {
 		render_boolean(rp, ev_end_of_cmd ? 1 : 0);
+		return TRUE;
+	} else if (vp) {
+		return ABORT;  /* read-only */
+	} else {
+		return FALSE;
+	}
+}
+
+int var_FILENAME_IC(TBUFF **rp, const char *vp)
+{
+#if OPT_CASELESS || SYS_VMS
+	static int myvalue = TRUE;
+#else
+	static int myvalue = FALSE;
+#endif
+	if (rp) {
+		render_boolean(rp, myvalue);
 		return TRUE;
 	} else if (vp) {
 		return ABORT;  /* read-only */

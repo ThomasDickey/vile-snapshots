@@ -13,7 +13,7 @@
  * vile.  The file api.c (sometimes) provides a middle layer between
  * this interface and the rest of vile.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.72 2000/03/14 01:24:44 bod Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.73 2000/04/20 10:45:32 bod Exp $
  */
 
 /*#
@@ -133,6 +133,9 @@
 #define PL_ofs ofs
 #define PL_ors ors
 #define PL_orslen orslen
+#define PL_errgv errgv			
+#define PL_na na			
+#define PL_sv_undef sv_undef			
 #endif
 
 #undef MARK			/* Perl unnecessarily defines this */
@@ -167,7 +170,7 @@ static int
 write_message(char *prefix, SV *sv)
 {
     int count = 0;
-    char *text = SvPV(sv, na);
+    char *text = SvPV(sv, PL_na);
     char *nl;
 
     while (text)
@@ -203,7 +206,7 @@ require(char *file, int optional)
     perl_require_pv(file);
 
     /* OK */
-    if (!SvTRUE(GvSV(errgv)))
+    if (!SvTRUE(GvSV(PL_errgv)))
 	return TRUE;
 
     if (optional)
@@ -217,14 +220,14 @@ require(char *file, int optional)
 	sv_catpv(tmp, file);
 	sv_catpv(tmp, " ");
 	check = SvPV(tmp, sz);
-	not_found = !strncmp(SvPV(GvSV(errgv), na), check, sz);
+	not_found = !strncmp(SvPV(GvSV(PL_errgv), PL_na), check, sz);
 	SvREFCNT_dec(tmp);
 
 	if (not_found)
 	    return SORTOFTRUE;
     }
 
-    write_message("perl require:", GvSV(errgv));
+    write_message("perl require:", GvSV(PL_errgv));
     return FALSE;
 }
 
@@ -412,7 +415,7 @@ do_perl_cmd(SV *cmd, int inplace)
 	fprintf(stderr, "do_perl_command: before eval:\n");
 	sv_dump(svcurbuf);
 #endif
-	sv_setpv(GvSV(errgv),"");
+	sv_setpv(GvSV(PL_errgv),"");
 	if (SvROK(cmd) && SvTYPE(SvRV(cmd)) == SVt_PVCV)
 	{
 	    dSP;
@@ -430,7 +433,7 @@ do_perl_cmd(SV *cmd, int inplace)
 	isnamedcmd = old_isnamedcmd;
 	recursecount--;
 	if (recursecount == 0) {
-	    sv_setsv(svcurbuf, &sv_undef);
+	    sv_setsv(svcurbuf, &PL_sv_undef);
 	    api_command_cleanup();
 	}
 	else {
@@ -443,10 +446,10 @@ do_perl_cmd(SV *cmd, int inplace)
 	if (!is_visible_window(curwp))
 	    mlforce("BUG: curwp not set to a visible window");
 
-	if (!SvTRUE(GvSV(errgv)))
+	if (!SvTRUE(GvSV(PL_errgv)))
 	    return TRUE;
 
-	write_message("perl cmd:", GvSV(errgv));
+	write_message("perl cmd:", GvSV(PL_errgv));
     }
 
     return FALSE;
@@ -476,7 +479,7 @@ perl_call_sub(void *data, int oper, int f, int n)
     {
 	case 2: /* (name, sub, require) */
 	    if ((req = av_fetch(av, 2, 0)) && SvTRUE(*req))
-		if (!require(SvPV(*req, na), FALSE))
+		if (!require(SvPV(*req, PL_na), FALSE))
 		    return FALSE;
 
 	    /* FALLTHRU */
@@ -499,7 +502,7 @@ perl_call_sub(void *data, int oper, int f, int n)
     {
 	opcmd = OPOTHER;
 	opsv = *sub;
-	f = vile_op(f, n, perl_oper, SvPV(*name, na));
+	f = vile_op(f, n, perl_oper, SvPV(*name, PL_na));
     }
     else
     {
@@ -1235,10 +1238,10 @@ sv2linenum(SV *sv)
 {
     I32 linenum;
 
-    if (!SvIOKp(sv) && strcmp(SvPV(sv,na),"$") == 0) {
+    if (!SvIOKp(sv) && strcmp(SvPV(sv,PL_na),"$") == 0) {
 	linenum = line_count(curbp);
     }
-    else if (!SvIOKp(sv) && strcmp(SvPV(sv,na),"$$") == 0) {
+    else if (!SvIOKp(sv) && strcmp(SvPV(sv,PL_na),"$$") == 0) {
 	linenum = line_count(curbp) + 1;
     }
     else {
@@ -1265,12 +1268,12 @@ static I32
 sv2offset(SV *sv)
 {
     I32 offset;
-    if (!SvIOKp(sv) && strcmp(SvPV(sv,na),"$") == 0) {
+    if (!SvIOKp(sv) && strcmp(SvPV(sv,PL_na),"$") == 0) {
 	offset = llength(DOT.l) - 1;
 	if (offset < 0)
 	    offset = 0;
     }
-    else if (!SvIOKp(sv) && strcmp(SvPV(sv,na),"$$") == 0) {
+    else if (!SvIOKp(sv) && strcmp(SvPV(sv,PL_na),"$$") == 0) {
 	offset = llength(DOT.l);
     }
     else {
@@ -1327,7 +1330,7 @@ svgetline(SV **svp, VileBuf *vbp, char *rsstr GCC_UNUSED, int rslen GCC_UNUSED)
     int len_rs = strlen(ending);
 
     if (   is_header_line(DOT, curbp) || vbp->region.r_size <= 0) {
-	*svp = newSVsv(&sv_undef);
+	*svp = newSVsv(&PL_sv_undef);
 	return FALSE;
     }
 
@@ -1390,7 +1393,7 @@ svgetregion(SV **svp, VileBuf *vbp, char *rsstr GCC_UNUSED, int rslen GCC_UNUSED
     int	len_rs = strlen(ending);
 
     if (is_header_line(DOT, curbp) || vbp->region.r_size <= 0) {
-	*svp = newSVsv(&sv_undef);
+	*svp = newSVsv(&PL_sv_undef);
 	return FALSE;
     }
 
@@ -1455,7 +1458,7 @@ svgettors(SV **svp, VileBuf *vbp, char *rsstr, int rslen)
     /* See if we're already at the end of the region and have nothing
        to do. */
     if (is_header_line(DOT, curbp) || vbp->region.r_size <= 0) {
-	*svp = newSVsv(&sv_undef);
+	*svp = newSVsv(&PL_sv_undef);
 	return FALSE;
     }
 
@@ -1584,7 +1587,7 @@ have_length:
 
     /* Make sure there's still something left to return */
     if (len <= 0) {
-	*svp = newSVsv(&sv_undef);
+	*svp = newSVsv(&PL_sv_undef);
 	return FALSE;
     }
 
@@ -1804,8 +1807,8 @@ Warn(warning)
     char *warning
 
     CODE:
-	write_message("perl warn:", GvSV(errgv));
-	sv_catpv(GvSV(errgv),warning);
+	write_message("perl warn:", GvSV(PL_errgv));
+	sv_catpv(GvSV(PL_errgv),warning);
 
   #
   # =item beep
@@ -1837,7 +1840,7 @@ buffers(...)
     PPCODE:
 
 	if (! (items == 0
-	       || (items == 1 && strcmp(SvPV(ST(0), na), "Vile") == 0)) )
+	       || (items == 1 && strcmp(SvPV(ST(0), PL_na), "Vile") == 0)) )
 	{
 	    /* Must be called as either Vile::buffers() or Vile->buffers() */
 	    croak("buffers: called with too many arguments");
@@ -1907,7 +1910,7 @@ keystroke(...)
 
 	if (items == 1 && !SvTRUE(ST(0))) {
 	    if (!sysmapped_c_avail()) {
-		XPUSHs(&sv_undef);
+		XPUSHs(&PL_sv_undef);
 		noget = TRUE;
 	    }
 	}
@@ -1972,7 +1975,7 @@ mlreply(prompt, ...)
 
     PPCODE:
 	if (items == 2) {
-	    strncpy(buf, SvPV(ST(1),na), NLINE-1);
+	    strncpy(buf, SvPV(ST(1),PL_na), NLINE-1);
 	    buf[NLINE-1] = EOS;
 	}
 	else if (items > 2)
@@ -1997,7 +2000,7 @@ mlreply(prompt, ...)
 #endif
 	XPUSHs((status == TRUE || status == FALSE)
 		 ? sv_2mortal(newSVpv(buf, 0))
-		 : &sv_undef);
+		 : &PL_sv_undef);
 
 
   #
@@ -2028,7 +2031,7 @@ mlreply_dir(prompt, ...)
 
     PPCODE:
 	if (items == 2) {
-	    tb_scopy(&last, SvPV(ST(1),na));
+	    tb_scopy(&last, SvPV(ST(1),PL_na));
 	}
 	else if (items > 2) {
 	    croak("Too many arguments to mlreply_dir");
@@ -2042,7 +2045,7 @@ mlreply_dir(prompt, ...)
 #endif
 	XPUSHs((status == TRUE || status == FALSE)
 		 ? sv_2mortal(newSVpv(buf, 0))
-		 : &sv_undef);
+		 : &PL_sv_undef);
 
 
   #
@@ -2073,7 +2076,7 @@ mlreply_file(prompt, ...)
 
     PPCODE:
 	if (items == 2) {
-	    tb_scopy(&last, SvPV(ST(1),na));
+	    tb_scopy(&last, SvPV(ST(1),PL_na));
 	}
 	else if (items > 2) {
 	    croak("Too many arguments to mlreply_file");
@@ -2087,7 +2090,7 @@ mlreply_file(prompt, ...)
 #endif
 	XPUSHs((status == TRUE || status == FALSE)
 		 ? sv_2mortal(newSVpv(buf, 0))
-		 : &sv_undef);
+		 : &PL_sv_undef);
 
   #
   # =item selection_buffer
@@ -2148,7 +2151,7 @@ selection_buffer(...)
 #if OPT_SELECTIONS
 	argno = 0;
 
-	if (strcmp(SvPV(ST(argno), na), "Vile") == 0)
+	if (strcmp(SvPV(ST(argno), PL_na), "Vile") == 0)
 	    argno++;
 
 	if (items - argno == 0) { /* getter */
@@ -2163,7 +2166,7 @@ selection_buffer(...)
 		XPUSHs(sv_2mortal(newVBrv(newSV(0), vbp)));
 	    }
 	    else {
-		XPUSHs(&sv_undef);
+		XPUSHs(&PL_sv_undef);
 	    }
 	}
 	else if (items - argno == 1) { /* setter */
@@ -2184,7 +2187,7 @@ selection_buffer(...)
 		XPUSHs(ST(argno));
 	    }
 	    else {
-		XPUSHs(&sv_undef);
+		XPUSHs(&PL_sv_undef);
 	    }
 	}
 	else {
@@ -2278,7 +2281,7 @@ set(...)
 	else {
 	    /* We're in the Vile package.  See if we're called via
 	       Vile->set */
-	    if (strcmp(SvPV(ST(argno), na), "Vile") == 0)
+	    if (strcmp(SvPV(ST(argno), PL_na), "Vile") == 0)
 		argno++;
 	}
 
@@ -2296,7 +2299,7 @@ set(...)
 	}
 
 	while (argno < items) {
-	    mode = SvPV(ST(argno), na);
+	    mode = SvPV(ST(argno), PL_na);
 	    argno++;
 
 	    TRACE(("Vile::%s(%d:%s)\n", issetter ? "set" : "get", argno, mode));
@@ -2323,7 +2326,7 @@ set(...)
 			}
 		    }
 		    else {
-			val = SvPV(ST(argno), na);
+			val = SvPV(ST(argno), PL_na);
 			argno++;
 		    }
 
@@ -2344,7 +2347,7 @@ set(...)
 			croak("set: value required for %s", mode);
 		    }
 		    else {
-			val = SvPV(ST(argno), na);
+			val = SvPV(ST(argno), PL_na);
 			argno++;
 		    }
 		    status = set_state_variable(mode, val);
@@ -2515,7 +2518,7 @@ register(name, ...)
 	cmd->c_flags = REDO|UNDO|CMD_PERL|ix;
 #if OPT_ONLINEHELP
 	cmd->c_help = strmalloc((items > 2 && SvTRUE(ST(2)))
-				? SvPV(ST(2), na)
+				? SvPV(ST(2), PL_na)
 				: "Perl subroutine");
 #endif
 
@@ -2601,7 +2604,7 @@ watchfd(fd, watchtypestr, ...)
 	}
 	else {
 	    /* It's just a string (how boring) */
-	    cmd = strdup(SvPV(ST(2),na));
+	    cmd = strdup(SvPV(ST(2),PL_na));
 	}
 	TRACE(("Vile::watchfd(fd=%d, watchtype=%d, cmd=%s)\n", fd, watchtype, cmd));
 	watchfd(fd, watchtype, cmd);
@@ -2755,7 +2758,7 @@ READLINE(vbp)
 #endif
 	    EXTEND(sp,1);
 	    if (status != TRUE && status != FALSE) {
-		PUSHs(&sv_undef);
+		PUSHs(&PL_sv_undef);
 	    }
 	    else {
 		use_ml_as_prompt = 0;
@@ -2875,7 +2878,7 @@ attribute(vbp, ...)
 	    int status;
 
 	    for (i = 1; i < items; i++) {
-		atname = SvPV(ST(i), na);
+		atname = SvPV(ST(i), PL_na);
 		if (       strcmp(atname, "underline") == 0) {
 		    vattr |= VAUL;
 		} else if (strcmp(atname, "bold"     ) == 0) {
@@ -2906,7 +2909,7 @@ attribute(vbp, ...)
 			}
 			else {
 			    /* It's just a string */
-			    hypercmd = strdup(SvPV(ST(i),na));
+			    hypercmd = strdup(SvPV(ST(i),PL_na));
 			}
 		    }
 		    else {
@@ -2928,7 +2931,7 @@ attribute(vbp, ...)
 	    if (status == TRUE)		/* not the same as "if (status)" */
 		XPUSHs(ST(0));		/* return buffer object */
 	    else
-		XPUSHs(&sv_undef);	/* else return undef */
+		XPUSHs(&PL_sv_undef);	/* else return undef */
 	}
 #else
 	croak("%s requires vile to be compiled with OPT_SELECTIONS",
@@ -3020,9 +3023,9 @@ buffername(vbp,...)
 		  ix == 0 ? "buffername" : "filename");
 	else if (items == 2) {
 	    if (ix == 0)
-		status = renamebuffer(curbp, SvPV(ST(1),na));
+		status = renamebuffer(curbp, SvPV(ST(1),PL_na));
 	    else
-		ch_fname(curbp, SvPV(ST(1),na));
+		ch_fname(curbp, SvPV(ST(1),PL_na));
 	}
 
 	if (status == TRUE) {
@@ -3030,7 +3033,7 @@ buffername(vbp,...)
 				      curbp->b_bname : curbp->b_fname, 0)));
 	}
 	else {
-	    XPUSHs(&sv_undef);		/* return undef */
+	    XPUSHs(&PL_sv_undef);		/* return undef */
 	}
 
   #
@@ -3062,7 +3065,7 @@ command(vbp,cline)
 	    XPUSHs(ST(0));		/* return buffer object */
 	}
 	else {
-	    XPUSHs(&sv_undef);		/* return undef */
+	    XPUSHs(&PL_sv_undef);		/* return undef */
 	}
 
   #
@@ -3464,7 +3467,7 @@ motion(vbp,mstr)
 
 	gimme = GIMME_V;
 	if (!status) {
-	    XPUSHs(&sv_undef);		/* return undef */
+	    XPUSHs(&PL_sv_undef);		/* return undef */
 	}
 	else if (gimme == G_SCALAR) {
 	    XPUSHs(ST(0));		/* return the buffer object */
@@ -3562,7 +3565,7 @@ new(...)
 	if (items > 2)
 	    croak("Too many arguments to %s", GvNAME(CvGV(cv)));
 
-	name = (items == 1) ? NULL : (char *)SvPV(ST(1),na);
+	name = (items == 1) ? NULL : (char *)SvPV(ST(1),PL_na);
 
 	(void) api_edit(name, &newvbp);
 
@@ -3731,7 +3734,7 @@ set_region(vbp, ...)
 	    case 2: {
 		/* Set up a "motion" region */
 		vbp->region.r_orig = DOT;	/* Remember DOT */
-		if (api_motion(vbp, SvPV(ST(1), na))) {
+		if (api_motion(vbp, SvPV(ST(1), PL_na))) {
 		    /* DOT is now at the other end of the motion */
 		    MK = vbp->region.r_orig;	/* Put remembered DOT in MK */
 		    regionshape = EXACT;
@@ -3755,7 +3758,7 @@ set_region(vbp, ...)
 		break;
 	    case 6:
 		/* Set up any kind of region (exact, fullline, or rectangle) */
-		shapestr = SvPV(ST(5), na);
+		shapestr = SvPV(ST(5), PL_na);
 		if (strcmp(shapestr, "exact"))
 		    regionshape = EXACT;
 		else if (strcmp(shapestr, "rectangle"))
@@ -3974,7 +3977,7 @@ current_window(...)
     CODE:
 	argno = 0;
 
-	if (strcmp(SvPV(ST(argno), na), "Vile") == 0)
+	if (strcmp(SvPV(ST(argno), PL_na), "Vile") == 0)
 	    argno++;
 
 	if (items - argno == 0) { /* getter */
@@ -4031,7 +4034,7 @@ delete(vw)
 	    count++;
 	}
 	if (count <= 1 || !delwp(vw)) {
-	    XPUSHs(&sv_undef);
+	    XPUSHs(&PL_sv_undef);
 	}
 	else {
 	    XPUSHs(sv_2mortal(newSViv(1)));
@@ -4174,7 +4177,7 @@ new(...)
 	    croak("Vile::Window::new: Too many arguments.");
 	else if (items < 1)
 	    croak("Vile::Window::new: Too few arguments.");
-	else if (strcmp(SvPV(ST(0),na), "Vile::Window") == 0) {
+	else if (strcmp(SvPV(ST(0),PL_na), "Vile::Window") == 0) {
 	    vw = wpopup();
 	}
 	else if (sv_isa(ST(0), "Vile::Window")) {
