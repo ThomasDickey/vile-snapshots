@@ -4,7 +4,7 @@
  *	original by Daniel Lawrence, but
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.253 2002/12/23 00:18:38 Mark.Robinson Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.254 2003/01/03 01:17:04 tom Exp $
  *
  */
 
@@ -841,7 +841,8 @@ execute(const CMDFUNC * execfunc, int f, int n)
     register int status;
     register CMDFLAGS flags;
 
-    TRACE((T_CALLED "execute(execfunc=%p, f=%d, n=%d)\n", execfunc, f, n));
+    TRACE((T_CALLED "execute(execfunc=%p(%s), f=%d, n=%d)\n",
+	   execfunc, execfunc->c_name ? execfunc->c_name : "?", f, n));
 
     if (execfunc == NULL) {
 #if OPT_REBIND

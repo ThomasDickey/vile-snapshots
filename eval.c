@@ -2,7 +2,7 @@
  *	eval.c -- function and variable evaluation
  *	original by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.318 2002/12/22 22:48:10 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.319 2002/12/30 19:34:08 tom Exp $
  *
  */
 
@@ -775,6 +775,11 @@ run_func(int fnum)
 	    || (args[i]->tb_errs)) {
 	    arg[i] = error_val;
 	    is_error = TRUE;
+	} else if (arg[i][0] == SQUOTE) {
+	    /* trim leading quote from recursive result from this function */
+	    for (cp = arg[i] + 1; (cp[-1] = cp[0]) != EOS; ++cp) {
+		;
+	    }
 	}
 	tb_free(&result);	/* in case mac_tokval() called us */
 	TPRINTF(("...arg[%d] = '%s'\n", i, arg[i]));

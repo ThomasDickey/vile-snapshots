@@ -3,7 +3,7 @@
  * and mark.  Some functions are commands.  Some functions are just for
  * internal use.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/region.c,v 1.110 2002/10/11 14:08:53 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/region.c,v 1.111 2002/12/31 01:21:39 tom Exp $
  *
  */
 
@@ -870,6 +870,15 @@ getregion(REGION * rp)
 #if OPT_SELECTIONS
     rp->r_attr_id = (USHORT) assign_attr_id();
 #endif
+
+    /*
+     * If the buffer is completely empty, the region has to match.
+     */
+    if (curbp != 0 && is_empty_buf(curbp)) {
+	memset(rp, 0, sizeof(*rp));
+	rp->r_orig.l = rp->r_end.l = buf_head(curbp);
+	return TRUE;
+    }
 
     if (MK.l == NULL) {
 	mlforce("BUG: getregion: no mark set in this window");

@@ -2,7 +2,7 @@
  *	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.266 2002/12/06 23:32:52 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.267 2002/12/26 22:10:03 tom Exp $
  *
  */
 
@@ -123,6 +123,11 @@
 #include	<X11/Xaw3d/Grip.h>
 #include	<X11/Xaw3d/Scrollbar.h>
 #endif
+#ifdef HAVE_LIB_XAWPLUS
+#include	<X11/XawPlus/Form.h>
+#include	<X11/XawPlus/Grip.h>
+#include	<X11/XawPlus/Scrollbar.h>
+#endif
 #ifdef HAVE_LIB_NEXTAW
 #include	<X11/neXtaw/Form.h>
 #include	<X11/neXtaw/Grip.h>
@@ -221,8 +226,6 @@
 
 /* Keyboard queue size */
 #define KQSIZE 64
-
-static Display *dpy;
 
 #if OPT_MENUS
 #if ATHENA_WIDGETS
@@ -406,6 +409,8 @@ typedef struct _text_win {
     XtTranslations my_resizeGrip_trans;
 #endif
 } TextWindowRec, *TextWindow;
+
+static Display *dpy;
 
 static TextWindowRec cur_win_rec;
 static TextWindow cur_win = &cur_win_rec;

@@ -5,7 +5,7 @@
  * reading and writing of the disk are
  * in "fileio.c".
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.341 2002/12/22 22:48:30 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.342 2002/12/31 01:54:41 tom Exp $
  */
 
 #include "estruct.h"
@@ -2289,7 +2289,8 @@ ifile(char *fname, int belowthisline, FILE * haveffp)
 
     /* mark the window for changes.  could this be moved up to
      * where we actually insert a line? */
-    chg_buff(curbp, WFHARD);
+    if (nline)
+	chg_buff(curbp, WFHARD);
 
   out:
     /* copy window parameters back to the buffer structure */

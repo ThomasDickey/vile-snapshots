@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/xml-filt.l,v 1.9 2002/12/17 01:38:50 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/xml-filt.l,v 1.10 2002/12/30 15:41:28 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of XML input
  * text.
@@ -29,7 +29,7 @@ static char **Tags;
 static unsigned Num_tags = 0;
 static int In_error = 0;
 
-#include "fltstack.h"
+#include <fltstack.h>
 
 static char *
 xml_attr(char *name)

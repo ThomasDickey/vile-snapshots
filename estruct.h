@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.520 2002/12/23 00:15:31 Mark.Robinson Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.521 2003/01/03 00:45:21 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -2449,6 +2449,9 @@ typedef	struct {
 	CMDFLAGS c_flags;	/* what sort of command is it? */
 #if OPT_MACRO_ARGS
 	PARAM_INFO *c_args;	/* if nonnull, lists types of parameters */
+#endif
+#if OPT_TRACE
+	const char *c_name;
 #endif
 #if OPT_ONLINEHELP
 	const char *c_help;	/* short help message for the command */

@@ -1,12 +1,12 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_REVISION($Revision: 1.180 $)
+AC_REVISION($Revision: 1.182 $)
 AC_PREREQ(2.13.20020210)
 rm -f config.cache
 
 ### Use "configure -with-screen" to override the default configuration, which is
 ### termcap-based on unix systems.
 
-dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.180 2002/12/23 01:18:21 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.182 2002/12/30 17:30:47 tom Exp $
 
 dnl
 AC_INIT(mktbls.c)
@@ -112,6 +112,7 @@ AC_ARG_WITH(builtin-filters,
 
 [VILE_BUILTIN_FILTERS=none])
 test -z "$VILE_BUILTIN_FILTERS" && VILE_BUILTIN_FILTERS=none
+test "$VILE_BUILTIN_FILTERS" = no && VILE_BUILTIN_FILTERS=none
 AC_MSG_RESULT($VILE_BUILTIN_FILTERS)
 
 if test "$VILE_BUILTIN_FILTERS" != none ; then
@@ -335,7 +336,7 @@ AC_MSG_RESULT($screen)
 
 : See if this is any type of xvile configuration:
 case "$screen" in
-	[[Oo]]pen[[Ll]]ook | [[Mm]]otif* | [[xX]] | [[Aa]]thena | [[xX]][[atTmMoO]]* | [[xX]]11 | neXtaw )
+	[[Oo]]pen[[Ll]]ook | [[Mm]]otif* | [[xX]] | [[Aa]]thena | [[xX]][[atTmMoO]]* | [[xX]]11 | neXtaw | XawPlus )
 		EXTRA_INSTALL_FILES="$EXTRA_INSTALL_FILES \$(INSTALL_X_FILES)"
 		CF_X_TOOLKIT
 		CF_IMAKE_CFLAGS
@@ -363,7 +364,7 @@ case "$screen" in
 	 	test "$cf_extensions" = yes && EXTRAOBJS="$EXTRAOBJS x11menu.o menu.o"
 	 	test "$cf_extensions" = no && EXTRAOBJS="$EXTRAOBJS select.o"
 	;;
-	[[Aa]]thena* | [[Xx]]aw* | neXtaw )
+	[[Aa]]thena* | [[Xx]]aw* | neXtaw | XawPlus )
 		AC_DEFINE(ATHENA_WIDGETS)
 		case $screen in #(vi
 		*aw*)

@@ -1,5 +1,31 @@
 Changes for vile 9.4 (released ??? ??? ?? ????)
 
+ 20030102 (j)
+	> Clark Morgan:
+	+ fix a couple of compile-problems.
+	> Tom Dickey:
+	+ correct operation of chgreg() when no text is present in the buffer
+	  before inserting the replacement.  This makes a command such as
+	  	1GcG<esc>
+	  work properly (report by Paul Fox).
+	+ modify tracing code to show names of CMDFUNC's.
+	+ modify ifile() to mark a buffer changed only if data were read from
+	  the inserted file.  Otherwise an error was reported when trying to
+	  undo the modified state.
+	+ modify getregion() to check if the buffer is empty, and in that case
+	  return an empty region with status indicating there is a region.
+	  That allows filtering of empty buffers (report by Paul Fox).
+	+ trim a leading quote from internal arguments in run_func(), to make
+	  this type of construct work properly:
+		setv %w='*.[Cchis] llib-l*'
+		use-reg f load-reg &cat "^X!grep -n -w : " &cat %w "^M"
+	+ modify sh-filt.l to handle escaped newlines within quotes.
+	+ change some quoted includes in filters to bracketed form (report by
+	  Paul Fox).
+	+ more fixes to ncurses configure-script check.
+	+ add a configure option for XawPlus (see homepage
+	  http://people.freenet.de/kra/XawPlus/)
+
  20021223 (i)
  	> Adam Denton:
 	+ implement xml-filter based on html-filter.

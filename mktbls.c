@@ -15,7 +15,7 @@
  * by Tom Dickey, 1993.    -pgf
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/mktbls.c,v 1.126 2002/12/07 00:01:30 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/mktbls.c,v 1.127 2003/01/03 00:46:57 tom Exp $
  *
  */
 
@@ -1634,6 +1634,9 @@ save_funcs(
     s = append(s, "),\n\t");
     s = append(s, flags);
     s = append(s, "\n#if OPT_MACRO_ARGS\n\t\t,0\n#endif");
+    s = append(s, "\n#if OPT_TRACE\n\t\t,\"");
+    s = append(s, func);
+    s = append(s, "\"\n#endif");
     s = append(s, "\n#if OPT_ONLINEHELP\n\t\t,\"");
     s = append(s, help);
     (void) append(s, "\"\n#endif\n };");

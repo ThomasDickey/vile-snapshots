@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/yaccfilt.l,v 1.17 2002/12/11 01:31:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/yaccfilt.l,v 1.18 2002/12/30 15:41:28 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of YACC program.
  */
@@ -25,7 +25,7 @@ static char *save_attr = "";
 static int section = 0;
 static int brace_level = 0;
 
-#include "fltstack.h"
+#include <fltstack.h>
 
 static void
 set_state(void)
