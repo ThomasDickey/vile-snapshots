@@ -1,5 +1,9 @@
 Changes for vile 6.4 (released ??? ??? ??, 1996)
 
+(tom)	961216 (c)
+	+ correction to infinite-loop fix in 6.3b
+	+ add $helpfile symbol, initialized to "vile.hlp".
+
 (tom)	961208 (b)
 	+ added "print-prefixed-lines-til" command to print into [p-lines]
 	  while prefixing the lines with filename and line-number.

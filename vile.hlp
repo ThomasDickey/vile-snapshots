@@ -1973,6 +1973,7 @@ Programmed procedures and macros
 	$flicker	set true to suppress CGA flicker on a PC.  ugh.
 	$font		current font name (X11 version only)
 	$forward-search	search direction, true=forward
+	$helpfile	help-filename (vile.hlp)
 	$iconname	current icon name (X11 version only)
 	$identifier	current punctuated word
 	$kill		some of the kill register		(read only)
@@ -3414,4 +3415,4 @@ Problems
 
 Copyright 1995,1996 by Paul Fox, Tom Dickey, and Kevin Buettner
 ---------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.306 1996/11/18 11:26:27 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.307 1996/12/17 11:43:50 tom Exp $

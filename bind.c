@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.140 1996/10/15 01:17:22 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.141 1996/12/17 11:41:57 tom Exp $
  *
  */
 
@@ -82,8 +82,7 @@ help(int f, int n)
 		return FALSE;
 
 	if (bp->b_active == FALSE) { /* never been used */
-		fname = flook(pathname[PATH_HELPFILE_NAME], 
-					FL_ANYWHERE|FL_READABLE);
+		fname = flook(helpfile, FL_ANYWHERE|FL_READABLE);
 		if (fname == NULL) {
 			mlforce("[Sorry, can't find the help information]");
 			(void)zotbuf(bp);
