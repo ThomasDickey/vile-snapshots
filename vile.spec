@@ -4,7 +4,7 @@ Version: 8.1
 Release: Radek
 Copyright: Freely Distributable, copyright statements must be maintained
 Group: Applications/Editors
-Source: ftp.clark.net:/pub/dickey/vile/vile-8.0.tgz
+Source: ftp.clark.net:/pub/dickey/vile/vile-8.1.tgz
 Packager: Radek Liboska <liboska@uochb.cas.cz>
 #Patch1 : vile-8.1.patch
 
