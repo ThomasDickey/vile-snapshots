@@ -2,7 +2,7 @@
  * 	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.139 1997/01/19 19:35:42 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.141 1997/01/21 03:08:05 kev Exp $
  *
  */
 
@@ -226,6 +226,7 @@ typedef struct _text_win {
     Bool	update_window_name;
     Bool	update_icon_name;
     Bool	persistent_selections;
+    Bool	selection_sets_DOT;
 
     /* text stuff */
     Bool        reverse;
@@ -255,11 +256,8 @@ typedef struct _text_win {
     Bool	was_on_msgline;
     Bool	did_select;
     Bool	pasting;
+    MARK	prevDOT;		/* DOT prior to selection */
     XtIntervalId sel_scroll_id;
-    struct	{
-	int	col;
-	int	row;
-    } click_pos[2];
 
     /* key press queue */
     int		kqhead;
@@ -1429,6 +1427,8 @@ update_scrollbar(
 #define	XtCScrollRepeatInterval	"ScrollRepeatInterval"
 #define XtNpersistentSelections	"persistentSelections"
 #define XtCPersistentSelections	"PersistentSelections"
+#define XtNselectionSetsDOT	"selectionSetsDOT"
+#define XtCSelectionSetsDOT	"SelectionSetsDOT"
 #define XtNblinkInterval	"blinkInterval"
 #define XtCBlinkInterval	"BlinkInterval"
 #define XtNsliderIsSolid	"sliderIsSolid"
@@ -1643,6 +1643,15 @@ static XtResource resources[] = {
 	XtOffset(TextWindow, persistent_selections),
 	XtRImmediate,
 	(XtPointer) True
+    },
+    {
+	XtNselectionSetsDOT,
+	XtCSelectionSetsDOT,
+	XtRBool,
+	sizeof(Bool),
+	XtOffset(TextWindow, selection_sets_DOT),
+	XtRImmediate,
+	(XtPointer) False
     },
     {
 	XtNblinkInterval,
@@ -4338,6 +4347,7 @@ start_selection(
 
 	tw->lasttime = ev->time;
 	tw->numclicks = 1;
+	tw->prevDOT = DOT;
 
 	tw->was_on_msgline = onMsgRow(tw);
 
@@ -4497,11 +4507,6 @@ x_process_event(
 	    start_selection(cur_win, (XButtonPressedEvent *) ev, nr, nc);
 	    onr = nr;
 	    onc = nc;
-	    if (!cur_win->did_select)
-		cur_win->click_pos[1] = cur_win->click_pos[0];
-	    cur_win->click_pos[0].row = nr;
-	    cur_win->click_pos[0].col = nc;
-	    cur_win->did_select = False;
 	    break;
 	case Button2:		/* paste selection */
 	    /*
@@ -4510,12 +4515,6 @@ x_process_event(
 	     */
 	    if (ev->xbutton.state & ShiftMask) {
 		if (!setcursor(nr, nc)) {
-		    kbd_alarm();	/* don't know how to paste here */
-		    break;
-		}
-	    } else {
-		if (!setcursor(cur_win->click_pos[1].row,
-			       cur_win->click_pos[1].col)) {
 		    kbd_alarm();	/* don't know how to paste here */
 		    break;
 		}
@@ -4543,17 +4542,17 @@ x_process_event(
 	    if (cur_win->persistent_selections)
 		sel_yank(SEL_KREG);
 
-	    if (cur_win->did_select)
-		cur_win->click_pos[0] = cur_win->click_pos[1];
-	    else
-		cur_win->click_pos[1] = cur_win->click_pos[0];
-
 	    /* FALLTHRU */
 	case Button3:
 	    if (cur_win->sel_scroll_id != ((XtIntervalId) 0)) {
 		XtRemoveTimeOut(cur_win->sel_scroll_id);
 		cur_win->sel_scroll_id = (XtIntervalId) 0;
 	    }
+	    if (cur_win->did_select && !cur_win->selection_sets_DOT) {
+		DOT = cur_win->prevDOT;
+		(void)update(TRUE);
+	    }
+	    cur_win->did_select = False;
 	    cur_win->wipe_permitted = False;
 	    display_cursor((XtPointer) 0, (XtIntervalId *) 0);
 	    break;
@@ -5231,11 +5230,11 @@ x_getc(void)
 	     * Set the default position for new pasting to just past the newly
 	     * inserted text.
 	     */
+	    if (DOT.o < llength(DOT.l))
+		DOT.o++;		/* Advance DOT so that consecutive
+					   pastes come out right */
 	    cur_win->pasting = False;
 	    update(TRUE);	/* make sure ttrow & ttcol are valid */
-	    cur_win->click_pos[0].row = ttrow;
-	    cur_win->click_pos[0].col = ttcol + 1;
-	    cur_win->click_pos[1] = cur_win->click_pos[0];
 	}
 
 	if (!kqempty(cur_win)) {

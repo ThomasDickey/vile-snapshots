@@ -2,7 +2,7 @@
  *		The routines in this file handle the conversion of pathname
  *		strings.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.75 1996/08/13 02:10:07 pgf Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.76 1997/01/23 00:48:53 tom Exp $
  *
  *
  */
@@ -1591,7 +1591,17 @@ is_internalname(const char *fn)
 #endif
 	if (!strcmp(fn, non_filename()))
 		return TRUE;
-	return (*fn == EOS) || ((*fn == SCRTCH_LEFT[0]) && (fn[strlen(fn)-1] == SCRTCH_RIGHT[0]));
+	return (*fn == EOS) || is_scratchname(fn);
+}
+
+/*
+ * Make the simple test only for bracketed name.  We only use this when we're
+ * certain it's a buffer name.
+ */
+int
+is_scratchname(const char *fn)
+{
+	return ((*fn == SCRTCH_LEFT[0]) && (fn[strlen(fn)-1] == SCRTCH_RIGHT[0]));
 }
 
 /*
