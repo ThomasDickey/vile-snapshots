@@ -11,7 +11,7 @@
 #
 # The modes are table entries in the BUFFER and WINDOW structures.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.128 1999/06/06 23:23:30 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.129 1999/06/20 21:33:58 tom Exp $
 #
 #
 # Mode-table entries.  Capitalized letters are used for abbreviations.
@@ -174,8 +174,8 @@ string
 "bchars"	BCHARS			# chars in current buffer
 "blines"	BLINES			# lines in current buffer
 "cbufname"	CBUFNAME		# current buffer name
-"buffer-hook"	BUFHOOK		OPT_PROCEDURES	# procedure to run when entering buf
-"cd-hook"	CDHOOK		OPT_PROCEDURES	# procedure to run when cd'ing
+"buffer-hook"	BUFHOOK		OPT_HOOKS	# procedure to run when entering buf
+"cd-hook"	CDHOOK		OPT_HOOKS	# procedure to run when cd'ing
 "cfgopts"	CFGOPTS			# "interesting" compiled options (comma-delimited)
 "cfilname"	CFNAME			# current file name
 "char"		CURCHAR			# current character under the cursor
@@ -189,7 +189,7 @@ string
 "discmd"	DISCMD			# display commands on command line
 "disinp"	DISINP			# display command line input characters
 "end-of-cmd"	EOC			# true if they ended the cmd with <CR>
-"exit-hook"	EXITHOOK	OPT_PROCEDURES	# procedure to run when quitting
+"exit-hook"	EXITHOOK	OPT_HOOKS	# procedure to run when quitting
 "font"		FONT		DISP_X11||DISP_NTWIN	# current font
 "forward-search" FWD_SEARCH		# search-direction (true if forward)
 "helpfile"	HELPFILE		# helpfile (vile.hlp)
@@ -218,7 +218,7 @@ string
 "pid"		PROCESSID		# vile's process-id
 "progname"	PROGNAME		# returns current prog name - "vile"
 "qidentifier"	QIDENTIF		# current qualified identifier
-"read-hook"	RDHOOK		OPT_PROCEDURES	# procedure to run when reading
+"read-hook"	RDHOOK		OPT_HOOKS	# procedure to run when reading
 "replace"	REPLACE			# replacement pattern
 "search"	SEARCH			# search pattern
 "seed"		SEED			# current random number seed
@@ -232,7 +232,7 @@ string
 "version"	VERSION			# current version number
 "wlines"	WLINES			# # of lines in current window
 "word"		WORD			# current word
-"write-hook"	WRHOOK		OPT_PROCEDURES	# procedure to run when writing
+"write-hook"	WRHOOK		OPT_HOOKS	# procedure to run when writing
 "xdisplay"	XDISPLAY	DISP_X11&&OPT_SHELL	# X Windows display, etc.
 "xshell"	XSHELL		DISP_X11&&OPT_SHELL	# xterm emulator, etc.
 

@@ -1,4 +1,4 @@
-# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.in,v 1.51 1999/06/06 22:52:35 tom Exp $
+# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.in,v 1.52 1999/06/21 23:46:34 tom Exp $
 #
 
 #### Start of system configuration section. ####
@@ -32,11 +32,9 @@ TARGET		= @TARGET@$x
 prefix		= @prefix@
 exec_prefix	= @exec_prefix@
 
-manext		= 1
 libdir		= @libdir@
 bindir		= @VILE_LIBDIR_PATH@
 datadir		= @datadir@/vile
-mandir		= @mandir@/man$(manext)
 
 #### End of system configuration section. ####
 
@@ -48,7 +46,11 @@ CPPFLAGS	= -I. -I.. -I$(srcdir) -DHAVE_CONFIG_H @CPPFLAGS@
 
 LDFLAGS		= @IMAKE_LOADFLAGS@
 
-INSTALL_DIRS    = $(bindir) $(datadir)
+DESTDIR		=
+BINDIR		= $(DESTDIR)$(bindir)
+DATADIR		= $(DESTDIR)$(datadir)
+
+INSTALL_DIRS    = $(BINDIR) $(DATADIR)
 
 .SUFFIXES: .l .c .i .o
 
@@ -208,71 +210,71 @@ check: $(TARGET)
 	@echo Sorry, no batch tests available.
 
 INSTALL_C = \
-	$(bindir)/vile-c-filt$x \
-	$(bindir)/vile-crypt$x \
-	$(bindir)/vile-manfilt$x \
-	$(bindir)/vile-pas-filt$x \
-	$(datadir)/c.keywords \
-	$(datadir)/filters.rc \
-	$(datadir)/pas.keywords \
-	$(datadir)/vile.keywords
+	$(BINDIR)/vile-c-filt$x \
+	$(BINDIR)/vile-crypt$x \
+	$(BINDIR)/vile-manfilt$x \
+	$(BINDIR)/vile-pas-filt$x \
+	$(DATADIR)/c.keywords \
+	$(DATADIR)/filters.rc \
+	$(DATADIR)/pas.keywords \
+	$(DATADIR)/vile.keywords
 
 INSTALL_LEX_BIN = \
-	$(bindir)/vile-ada-filt$x \
-	$(bindir)/vile-awk-filt$x \
-	$(bindir)/vile-bat-filt$x \
-	$(bindir)/vile-dcl-filt$x \
-	$(bindir)/vile-diff-filt$x \
-	$(bindir)/vile-html-filt$x \
-	$(bindir)/vile-latex-filt$x \
-	$(bindir)/vile-lex-filt$x \
-	$(bindir)/vile-m4-filt$x \
-	$(bindir)/vile-mail-filt$x \
-	$(bindir)/vile-make-filt$x \
-	$(bindir)/vile-mms-filt$x \
-	$(bindir)/vile-nr-filt$x \
-	$(bindir)/vile-perl-filt$x \
-	$(bindir)/vile-rcs-filt$x \
-	$(bindir)/vile-sccs-filt$x \
-	$(bindir)/vile-sh-filt$x \
-	$(bindir)/vile-spell-filt$x \
-	$(bindir)/vile-sql-filt$x \
-	$(bindir)/vile-tc-filt$x \
-	$(bindir)/vile-tcl-filt$x \
-	$(bindir)/vile-ti-filt$x \
-	$(bindir)/vile-txt-filt$x \
-	$(bindir)/vile-vile-filt$x \
-	$(bindir)/vile-xs-filt$x \
-	$(bindir)/vile-yacc-filt$x
+	$(BINDIR)/vile-ada-filt$x \
+	$(BINDIR)/vile-awk-filt$x \
+	$(BINDIR)/vile-bat-filt$x \
+	$(BINDIR)/vile-dcl-filt$x \
+	$(BINDIR)/vile-diff-filt$x \
+	$(BINDIR)/vile-html-filt$x \
+	$(BINDIR)/vile-latex-filt$x \
+	$(BINDIR)/vile-lex-filt$x \
+	$(BINDIR)/vile-m4-filt$x \
+	$(BINDIR)/vile-mail-filt$x \
+	$(BINDIR)/vile-make-filt$x \
+	$(BINDIR)/vile-mms-filt$x \
+	$(BINDIR)/vile-nr-filt$x \
+	$(BINDIR)/vile-perl-filt$x \
+	$(BINDIR)/vile-rcs-filt$x \
+	$(BINDIR)/vile-sccs-filt$x \
+	$(BINDIR)/vile-sh-filt$x \
+	$(BINDIR)/vile-spell-filt$x \
+	$(BINDIR)/vile-sql-filt$x \
+	$(BINDIR)/vile-tc-filt$x \
+	$(BINDIR)/vile-tcl-filt$x \
+	$(BINDIR)/vile-ti-filt$x \
+	$(BINDIR)/vile-txt-filt$x \
+	$(BINDIR)/vile-vile-filt$x \
+	$(BINDIR)/vile-xs-filt$x \
+	$(BINDIR)/vile-yacc-filt$x
 
 INSTALL_LEX_TXT = \
-	$(datadir)/ada.keywords \
-	$(datadir)/awk.keywords \
-	$(datadir)/bat.keywords \
-	$(datadir)/csh.keywords \
-	$(datadir)/dcl.keywords \
-	$(datadir)/diff.keywords \
-	$(datadir)/html.keywords \
-	$(datadir)/imake.keywords \
-	$(datadir)/java.keywords \
-	$(datadir)/js.keywords \
-	$(datadir)/latex.keywords \
-	$(datadir)/lex.keywords \
-	$(datadir)/m4.keywords \
-	$(datadir)/mail.keywords \
-	$(datadir)/make.keywords \
-	$(datadir)/nr.keywords \
-	$(datadir)/perl.keywords \
-	$(datadir)/rcs.keywords \
-	$(datadir)/sccs.keywords \
-	$(datadir)/sh.keywords \
-	$(datadir)/spell.rc \
-	$(datadir)/sql.keywords \
-	$(datadir)/tc.keywords \
-	$(datadir)/tcl.keywords \
-	$(datadir)/ti.keywords \
-	$(datadir)/xs.keywords \
-	$(datadir)/yacc.keywords
+	$(DATADIR)/ada.keywords \
+	$(DATADIR)/awk.keywords \
+	$(DATADIR)/bat.keywords \
+	$(DATADIR)/csh.keywords \
+	$(DATADIR)/dcl.keywords \
+	$(DATADIR)/diff.keywords \
+	$(DATADIR)/html.keywords \
+	$(DATADIR)/imake.keywords \
+	$(DATADIR)/java.keywords \
+	$(DATADIR)/js.keywords \
+	$(DATADIR)/latex.keywords \
+	$(DATADIR)/lex.keywords \
+	$(DATADIR)/m4.keywords \
+	$(DATADIR)/mail.keywords \
+	$(DATADIR)/make.keywords \
+	$(DATADIR)/nr.keywords \
+	$(DATADIR)/perl.keywords \
+	$(DATADIR)/rcs.keywords \
+	$(DATADIR)/sccs.keywords \
+	$(DATADIR)/sh.keywords \
+	$(DATADIR)/spell.rc \
+	$(DATADIR)/sql.keywords \
+	$(DATADIR)/tc.keywords \
+	$(DATADIR)/tcl.keywords \
+	$(DATADIR)/ti.keywords \
+	$(DATADIR)/xs.keywords \
+	$(DATADIR)/yacc.keywords
 
 INSTALL_LEX = $(INSTALL_LEX_BIN) $(INSTALL_LEX_TXT)
 
@@ -323,70 +325,70 @@ dotags:
 	dotags *.[chyl]
 
 # dependency-rules for install/installdirs
-$(bindir)/vile-ada-filt$x :	vile-ada-filt$x		; $(INSTALL_PROGRAM) $? $@
-$(bindir)/vile-awk-filt$x :	vile-awk-filt$x		; $(INSTALL_PROGRAM) $? $@
-$(bindir)/vile-bat-filt$x :	vile-bat-filt$x		; $(INSTALL_PROGRAM) $? $@
-$(bindir)/vile-c-filt$x :	vile-c-filt$x		; $(INSTALL_PROGRAM) $? $@
-$(bindir)/vile-crypt$x :	vile-crypt$x		; $(INSTALL_PROGRAM) $? $@
-$(bindir)/vile-dcl-filt$x :	vile-dcl-filt$x		; $(INSTALL_PROGRAM) $? $@
-$(bindir)/vile-diff-filt$x :	vile-diff-filt$x	; $(INSTALL_PROGRAM) $? $@
-$(bindir)/vile-html-filt$x :	vile-html-filt$x	; $(INSTALL_PROGRAM) $? $@
-$(bindir)/vile-latex-filt$x :	vile-latex-filt$x	; $(INSTALL_PROGRAM) $? $@
-$(bindir)/vile-lex-filt$x :	vile-lex-filt$x		; $(INSTALL_PROGRAM) $? $@
-$(bindir)/vile-m4-filt$x :	vile-m4-filt$x		; $(INSTALL_PROGRAM) $? $@
-$(bindir)/vile-mail-filt$x :	vile-mail-filt$x	; $(INSTALL_PROGRAM) $? $@
-$(bindir)/vile-make-filt$x :	vile-make-filt$x	; $(INSTALL_PROGRAM) $? $@
-$(bindir)/vile-manfilt$x :	vile-manfilt$x		; $(INSTALL_PROGRAM) $? $@
-$(bindir)/vile-mms-filt$x :	vile-mms-filt$x		; $(INSTALL_PROGRAM) $? $@
-$(bindir)/vile-nr-filt$x :	vile-nr-filt$x		; $(INSTALL_PROGRAM) $? $@
-$(bindir)/vile-pas-filt$x :	vile-pas-filt$x		; $(INSTALL_PROGRAM) $? $@
-$(bindir)/vile-perl-filt$x :	vile-perl-filt$x	; $(INSTALL_PROGRAM) $? $@
-$(bindir)/vile-rcs-filt$x :	vile-rcs-filt$x		; $(INSTALL_PROGRAM) $? $@
-$(bindir)/vile-sccs-filt$x :	vile-sccs-filt$x	; $(INSTALL_PROGRAM) $? $@
-$(bindir)/vile-sh-filt$x :	vile-sh-filt$x		; $(INSTALL_PROGRAM) $? $@
-$(bindir)/vile-spell-filt$x :	vile-spell-filt$x	; $(INSTALL_PROGRAM) $? $@
-$(bindir)/vile-sql-filt$x :	vile-sql-filt$x		; $(INSTALL_PROGRAM) $? $@
-$(bindir)/vile-tc-filt$x :	vile-tc-filt$x		; $(INSTALL_PROGRAM) $? $@
-$(bindir)/vile-tcl-filt$x :	vile-tcl-filt$x		; $(INSTALL_PROGRAM) $? $@
-$(bindir)/vile-txt-filt$x :	vile-txt-filt$x		; $(INSTALL_PROGRAM) $? $@
-$(bindir)/vile-ti-filt$x :	vile-ti-filt$x		; $(INSTALL_PROGRAM) $? $@
-$(bindir)/vile-vile-filt$x :	vile-vile-filt$x	; $(INSTALL_PROGRAM) $? $@
-$(bindir)/vile-xs-filt$x :	vile-xs-filt$x		; $(INSTALL_PROGRAM) $? $@
-$(bindir)/vile-yacc-filt$x :	vile-yacc-filt$x	; $(INSTALL_PROGRAM) $? $@
+$(BINDIR)/vile-ada-filt$x :	vile-ada-filt$x		; $(INSTALL_PROGRAM) $? $@
+$(BINDIR)/vile-awk-filt$x :	vile-awk-filt$x		; $(INSTALL_PROGRAM) $? $@
+$(BINDIR)/vile-bat-filt$x :	vile-bat-filt$x		; $(INSTALL_PROGRAM) $? $@
+$(BINDIR)/vile-c-filt$x :	vile-c-filt$x		; $(INSTALL_PROGRAM) $? $@
+$(BINDIR)/vile-crypt$x :	vile-crypt$x		; $(INSTALL_PROGRAM) $? $@
+$(BINDIR)/vile-dcl-filt$x :	vile-dcl-filt$x		; $(INSTALL_PROGRAM) $? $@
+$(BINDIR)/vile-diff-filt$x :	vile-diff-filt$x	; $(INSTALL_PROGRAM) $? $@
+$(BINDIR)/vile-html-filt$x :	vile-html-filt$x	; $(INSTALL_PROGRAM) $? $@
+$(BINDIR)/vile-latex-filt$x :	vile-latex-filt$x	; $(INSTALL_PROGRAM) $? $@
+$(BINDIR)/vile-lex-filt$x :	vile-lex-filt$x		; $(INSTALL_PROGRAM) $? $@
+$(BINDIR)/vile-m4-filt$x :	vile-m4-filt$x		; $(INSTALL_PROGRAM) $? $@
+$(BINDIR)/vile-mail-filt$x :	vile-mail-filt$x	; $(INSTALL_PROGRAM) $? $@
+$(BINDIR)/vile-make-filt$x :	vile-make-filt$x	; $(INSTALL_PROGRAM) $? $@
+$(BINDIR)/vile-manfilt$x :	vile-manfilt$x		; $(INSTALL_PROGRAM) $? $@
+$(BINDIR)/vile-mms-filt$x :	vile-mms-filt$x		; $(INSTALL_PROGRAM) $? $@
+$(BINDIR)/vile-nr-filt$x :	vile-nr-filt$x		; $(INSTALL_PROGRAM) $? $@
+$(BINDIR)/vile-pas-filt$x :	vile-pas-filt$x		; $(INSTALL_PROGRAM) $? $@
+$(BINDIR)/vile-perl-filt$x :	vile-perl-filt$x	; $(INSTALL_PROGRAM) $? $@
+$(BINDIR)/vile-rcs-filt$x :	vile-rcs-filt$x		; $(INSTALL_PROGRAM) $? $@
+$(BINDIR)/vile-sccs-filt$x :	vile-sccs-filt$x	; $(INSTALL_PROGRAM) $? $@
+$(BINDIR)/vile-sh-filt$x :	vile-sh-filt$x		; $(INSTALL_PROGRAM) $? $@
+$(BINDIR)/vile-spell-filt$x :	vile-spell-filt$x	; $(INSTALL_PROGRAM) $? $@
+$(BINDIR)/vile-sql-filt$x :	vile-sql-filt$x		; $(INSTALL_PROGRAM) $? $@
+$(BINDIR)/vile-tc-filt$x :	vile-tc-filt$x		; $(INSTALL_PROGRAM) $? $@
+$(BINDIR)/vile-tcl-filt$x :	vile-tcl-filt$x		; $(INSTALL_PROGRAM) $? $@
+$(BINDIR)/vile-txt-filt$x :	vile-txt-filt$x		; $(INSTALL_PROGRAM) $? $@
+$(BINDIR)/vile-ti-filt$x :	vile-ti-filt$x		; $(INSTALL_PROGRAM) $? $@
+$(BINDIR)/vile-vile-filt$x :	vile-vile-filt$x	; $(INSTALL_PROGRAM) $? $@
+$(BINDIR)/vile-xs-filt$x :	vile-xs-filt$x		; $(INSTALL_PROGRAM) $? $@
+$(BINDIR)/vile-yacc-filt$x :	vile-yacc-filt$x	; $(INSTALL_PROGRAM) $? $@
 
-$(datadir)/filters.rc :		$(srcdir)/filters.rc	; $(INSTALL_DATA) $? $@
-$(datadir)/spell.rc :		$(srcdir)/spell.rc	; $(INSTALL_DATA) $? $@
+$(DATADIR)/filters.rc :		$(srcdir)/filters.rc	; $(INSTALL_DATA) $? $@
+$(DATADIR)/spell.rc :		$(srcdir)/spell.rc	; $(INSTALL_DATA) $? $@
 
 # Install one of these for each filter program
-$(datadir)/ada.keywords :	$(srcdir)/ada.key	; $(INSTALL_DATA) $? $@
-$(datadir)/awk.keywords :	$(srcdir)/awk.key	; $(INSTALL_DATA) $? $@
-$(datadir)/bat.keywords :	$(srcdir)/bat.key	; $(INSTALL_DATA) $? $@
-$(datadir)/c.keywords :		$(srcdir)/c.key		; $(INSTALL_DATA) $? $@
-$(datadir)/csh.keywords :	$(srcdir)/csh.key	; $(INSTALL_DATA) $? $@
-$(datadir)/dcl.keywords :	$(srcdir)/dcl.key	; $(INSTALL_DATA) $? $@
-$(datadir)/diff.keywords :	$(srcdir)/diff.key	; $(INSTALL_DATA) $? $@
-$(datadir)/html.keywords :	$(srcdir)/html.key	; $(INSTALL_DATA) $? $@
-$(datadir)/imake.keywords :	$(srcdir)/imake.key	; $(INSTALL_DATA) $? $@
-$(datadir)/java.keywords :	$(srcdir)/java.key	; $(INSTALL_DATA) $? $@
-$(datadir)/js.keywords :	$(srcdir)/js.key	; $(INSTALL_DATA) $? $@
-$(datadir)/latex.keywords :	$(srcdir)/latex.key	; $(INSTALL_DATA) $? $@
-$(datadir)/lex.keywords :	$(srcdir)/lex.key	; $(INSTALL_DATA) $? $@
-$(datadir)/m4.keywords :	$(srcdir)/m4.key	; $(INSTALL_DATA) $? $@
-$(datadir)/mail.keywords :	$(srcdir)/mail.key	; $(INSTALL_DATA) $? $@
-$(datadir)/make.keywords :	$(srcdir)/make.key	; $(INSTALL_DATA) $? $@
-$(datadir)/nr.keywords :	$(srcdir)/nr.key	; $(INSTALL_DATA) $? $@
-$(datadir)/pas.keywords :	$(srcdir)/pas.key	; $(INSTALL_DATA) $? $@
-$(datadir)/perl.keywords :	$(srcdir)/perl.key	; $(INSTALL_DATA) $? $@
-$(datadir)/rcs.keywords :	$(srcdir)/rcs.key	; $(INSTALL_DATA) $? $@
-$(datadir)/sccs.keywords :	$(srcdir)/sccs.key	; $(INSTALL_DATA) $? $@
-$(datadir)/sh.keywords :	$(srcdir)/sh.key	; $(INSTALL_DATA) $? $@
-$(datadir)/sql.keywords :	$(srcdir)/sql.key	; $(INSTALL_DATA) $? $@
-$(datadir)/tc.keywords :	$(srcdir)/tc.key	; $(INSTALL_DATA) $? $@
-$(datadir)/tcl.keywords :	$(srcdir)/tcl.key	; $(INSTALL_DATA) $? $@
-$(datadir)/ti.keywords :	$(srcdir)/ti.key	; $(INSTALL_DATA) $? $@
-$(datadir)/vile.keywords :	$(srcdir)/vile.key	; $(INSTALL_DATA) $? $@
-$(datadir)/xs.keywords :	$(srcdir)/xs.key	; $(INSTALL_DATA) $? $@
-$(datadir)/yacc.keywords :	$(srcdir)/yacc.key	; $(INSTALL_DATA) $? $@
+$(DATADIR)/ada.keywords :	$(srcdir)/ada.key	; $(INSTALL_DATA) $? $@
+$(DATADIR)/awk.keywords :	$(srcdir)/awk.key	; $(INSTALL_DATA) $? $@
+$(DATADIR)/bat.keywords :	$(srcdir)/bat.key	; $(INSTALL_DATA) $? $@
+$(DATADIR)/c.keywords :		$(srcdir)/c.key		; $(INSTALL_DATA) $? $@
+$(DATADIR)/csh.keywords :	$(srcdir)/csh.key	; $(INSTALL_DATA) $? $@
+$(DATADIR)/dcl.keywords :	$(srcdir)/dcl.key	; $(INSTALL_DATA) $? $@
+$(DATADIR)/diff.keywords :	$(srcdir)/diff.key	; $(INSTALL_DATA) $? $@
+$(DATADIR)/html.keywords :	$(srcdir)/html.key	; $(INSTALL_DATA) $? $@
+$(DATADIR)/imake.keywords :	$(srcdir)/imake.key	; $(INSTALL_DATA) $? $@
+$(DATADIR)/java.keywords :	$(srcdir)/java.key	; $(INSTALL_DATA) $? $@
+$(DATADIR)/js.keywords :	$(srcdir)/js.key	; $(INSTALL_DATA) $? $@
+$(DATADIR)/latex.keywords :	$(srcdir)/latex.key	; $(INSTALL_DATA) $? $@
+$(DATADIR)/lex.keywords :	$(srcdir)/lex.key	; $(INSTALL_DATA) $? $@
+$(DATADIR)/m4.keywords :	$(srcdir)/m4.key	; $(INSTALL_DATA) $? $@
+$(DATADIR)/mail.keywords :	$(srcdir)/mail.key	; $(INSTALL_DATA) $? $@
+$(DATADIR)/make.keywords :	$(srcdir)/make.key	; $(INSTALL_DATA) $? $@
+$(DATADIR)/nr.keywords :	$(srcdir)/nr.key	; $(INSTALL_DATA) $? $@
+$(DATADIR)/pas.keywords :	$(srcdir)/pas.key	; $(INSTALL_DATA) $? $@
+$(DATADIR)/perl.keywords :	$(srcdir)/perl.key	; $(INSTALL_DATA) $? $@
+$(DATADIR)/rcs.keywords :	$(srcdir)/rcs.key	; $(INSTALL_DATA) $? $@
+$(DATADIR)/sccs.keywords :	$(srcdir)/sccs.key	; $(INSTALL_DATA) $? $@
+$(DATADIR)/sh.keywords :	$(srcdir)/sh.key	; $(INSTALL_DATA) $? $@
+$(DATADIR)/sql.keywords :	$(srcdir)/sql.key	; $(INSTALL_DATA) $? $@
+$(DATADIR)/tc.keywords :	$(srcdir)/tc.key	; $(INSTALL_DATA) $? $@
+$(DATADIR)/tcl.keywords :	$(srcdir)/tcl.key	; $(INSTALL_DATA) $? $@
+$(DATADIR)/ti.keywords :	$(srcdir)/ti.key	; $(INSTALL_DATA) $? $@
+$(DATADIR)/vile.keywords :	$(srcdir)/vile.key	; $(INSTALL_DATA) $? $@
+$(DATADIR)/xs.keywords :	$(srcdir)/xs.key	; $(INSTALL_DATA) $? $@
+$(DATADIR)/yacc.keywords :	$(srcdir)/yacc.key	; $(INSTALL_DATA) $? $@
 
 $(INSTALL_DIRS):
 	$(SHELL) ${top_srcdir}/mkdirs.sh $@

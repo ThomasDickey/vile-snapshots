@@ -5,46 +5,14 @@
  * keys. Like everyone else, they set hints
  * for the display system.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.190 1999/06/14 22:58:12 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.192 1999/06/20 21:33:13 tom Exp $
  *
  */
 
 #include	"estruct.h"
 #include	"edef.h"
 
-/*--------------------------------------------------------------------------*/
-#if	OPT_UPBUFF
-static	int	show_BufferList ( BUFFER *bp );
 #define	update_on_chg(bp) (!b_is_temporary(bp) || show_all)
-#endif
-
-#if	OPT_PROCEDURES
-static	void	run_buffer_hook (void);
-#endif
-
-#if	!OPT_MAJORMODE
-static	int	cmode_active ( BUFFER *bp );
-#endif
-
-static	BUFFER *find_BufferList (void);
-static	BUFFER *find_b_number ( const char *number  );
-static	BUFFER *find_latest (void);
-static	BUFFER *find_nth_created ( int n );
-static	BUFFER *find_nth_used ( int n );
-static	int	countBuffers (void);
-static	int	hist_show (void);
-static	int	lookup_hist ( BUFFER *bp );
-static	void	FreeBuffer ( BUFFER *bp );
-static	void	MarkDeleted ( BUFFER *bp );
-static	void	MarkUnused ( BUFFER *bp );
-static	void	TrackAlternate ( BUFFER *bp );
-static	void	makebufflist (LIST_ARGS);
-
-#if !SMALLER
-static	void	footnote ( int c );
-#endif
-
-/*--------------------------------------------------------------------------*/
 
 static	BUFFER	*last_bp,	/* noautobuffer value */
 		*this_bp,	/* '%' buffer */
@@ -356,7 +324,7 @@ lookup_hist(BUFFER *bp1)
  * this if curwp->w_bufp != curbp, since that would break the use of DOT and MK
  * throughout the program when performing editing operations.
  */
-#if OPT_PROCEDURES
+#if OPT_HOOKS
 static void
 run_buffer_hook(void)
 {
@@ -655,7 +623,7 @@ ask_for_bname(char *prompt, char *bufn, size_t len)
 #else
 		status = mlreply(prompt, bufn, len);
 #endif
-	} else if ((status = screen_to_bname(bufn)) != TRUE) {
+	} else if ((status = screen_string(bufn,len,SCREEN_STRING)) != TRUE) {
 		mlforce("[Nothing selected]");
 	}
 

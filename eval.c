@@ -2,7 +2,7 @@
  *	eval.c -- function and variable evaluation
  *	original by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.206 1999/06/01 23:08:32 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.214 1999/06/21 10:54:37 tom Exp $
  *
  */
 
@@ -30,6 +30,14 @@ typedef struct	{
 #define VW_TEMPVAR	2
 #define VW_MODE		3
 
+typedef struct PROC_ARGS {
+	struct	PROC_ARGS *nxt_args;
+	int	num_args;	/* total argument count */
+	TBUFF **all_args;
+} PROC_ARGS;
+
+static PROC_ARGS *arg_stack;
+
 static	SIZE_T	s2size ( char *s );
 static	char *	s2offset ( char *s, char *n );
 static	int	PromptAndSet ( const char *var, int f, int n );
@@ -46,11 +54,20 @@ static	int	lookup_statevar(const char *vname);
 static void
 makevarslist(int dum1 GCC_UNUSED, void *ptr)
 {
-	register UVAR *p;
-	register int j;
+	UVAR *p;
+	int j, k;
 
 	bprintf("--- State variables %*P\n", term.cols-1, '-');
 	bprintf("%s", (char *)ptr);
+	if (arg_stack != 0 && ((k = arg_stack->num_args) != 0)) {
+		bprintf("--- %s parameters %*P",
+			tb_values(arg_stack->all_args[0]),
+			term.cols-1, '-');
+		for (j = 1; j <= k; j++) {
+			bprintf("\n$%d = %s", j,
+				tb_values(arg_stack->all_args[j]));
+		}
+	}
 	for (p = temp_vars, j = 0; p != 0; p = p->next) {
 		if (!j++)
 			bprintf("--- Temporary variables %*P", term.cols-1, '-');
@@ -96,8 +113,12 @@ get_listvalue(const char *name, int showall)
 
 /* ARGSUSED */
 #if OPT_SHOW_EVAL
-int
-listvars(int f, int n)
+
+static int show_vars_f;
+static int show_vars_n;
+
+static int
+show_VariableList(BUFFER *bp GCC_UNUSED)
 {
 	char *values;
 	register WINDOW *wp = curwp;
@@ -106,8 +127,8 @@ listvars(int f, int n)
 	register char *v;
 	register const char *vv;
 	static	const char fmt[] = { "$%s = %*S\n" };
-	const char *const *Names = f ? list_of_modes() : statevars;
-	int	showall = f ? (n > 1) : FALSE;
+	const char *const *Names = show_vars_f ? list_of_modes() : statevars;
+	int	showall = show_vars_f ? (show_vars_n > 1) : FALSE;
 
 	/* collect data for state-variables, since some depend on window */
 	for (s = t = 0; Names[s] != 0; s++) {
@@ -135,6 +156,28 @@ listvars(int f, int n)
 	/* back to the buffer whose modes we just listed */
 	swbuffer(wp->w_bufp);
 	return s;
+}
+
+#if OPT_UPBUFF
+/*
+ * If the list-variables window is visible, update it after operations that
+ * would modify the list.
+ */
+static void
+updatelistvariables(void)
+{
+	update_scratch(VARIABLES_BufName, show_VariableList);
+}
+#else
+#define updatelistvariables() /*nothing*/
+#endif
+
+int
+listvars(int f, int n)
+{
+	show_vars_f = f;
+	show_vars_n = n;
+	return show_VariableList(curbp);
 }
 #endif /* OPT_SHOW_EVAL */
 
@@ -503,9 +546,10 @@ setvar(int f, int n)
 		tb_scopy(&var, "");
 	status = kbd_reply("Variable name: ", &var,
 		mode_eol, '=', KBD_NOEVAL|KBD_LOWERC, vars_complete);
-	if (status != TRUE)
-		return status;
-	return PromptAndSet(tb_values(var), f, n);
+	if (status == TRUE)
+		status = PromptAndSet(tb_values(var), f, n);
+	updatelistvariables();
+	return status;
 }
 
 static int
@@ -522,31 +566,32 @@ PromptAndSet(const char *name, int f, int n)
 
 	if (vd.v_type == VW_NOVAR) {
 		mlforce("[Can't find variable '%s']", var);
-		return FALSE;
+		status = FALSE;
 	} else if (vd.v_type == VW_MODE) {
 		VALARGS	args;
 		(void)find_mode(curbp, var+1, -TRUE, &args);
 		set_end_string('=');
-		return adjvalueset(var+1, TRUE, -TRUE, &args);
+		status = adjvalueset(var+1, TRUE, -TRUE, &args);
+	} else {
+		if (f == TRUE) {  /* new (numeric) value passed as arg */
+			static TBUFF *tmp;
+			(void)vl_strncpy(value, render_int(&tmp, n), sizeof(value));
+		} else {  /* get it from user */
+			value[0] = EOS;
+			(void)lsprintf(prompt, "Value of %s: ", var);
+			status = mlreply(prompt, value, sizeof(value));
+			if (status != TRUE)
+				return status;
+		}
+
+		status = SetVarValue(&vd, value);
+
+		if (status == ABORT) {
+			mlforce("[Variable %s is readonly]", var);
+		} else if (status != TRUE) {
+			mlforce("[Cannot set %s to %s]", var, value);
+		}
 	}
-
-	if (f == TRUE) {  /* new (numeric) value passed as arg */
-		static TBUFF *tmp;
-		(void)vl_strncpy(value, render_int(&tmp, n), sizeof(value));
-	} else {  /* get it from user */
-		value[0] = EOS;
-		(void)lsprintf(prompt, "Value of %s: ", var);
-		status = mlreply(prompt, value, sizeof(value));
-		if (status != TRUE)
-			return status;
-	}
-
-	status = SetVarValue(&vd, value);
-
-	if (status == ABORT)
-		mlforce("[Variable %s is readonly]", var);
-	else if (status != TRUE)
-		mlforce("[Cannot set %s to %s]", var, value);
 
 	return status;
 }
@@ -605,6 +650,7 @@ set_state_variable(const char *name, const char *value)
 		status = PromptAndSet(var, FALSE, 0);
 	}
 
+	updatelistvariables();
 	return status;
 }
 
@@ -913,6 +959,135 @@ const char *tokn)
 
 #if OPT_EVAL
 
+/*
+ * When first executing a macro, save the remainder of the argument string
+ * as an array of strings.
+ */
+void
+save_arguments(BUFFER *bp)
+{
+    PROC_ARGS *p = typealloc(PROC_ARGS);
+    int num_args = 0;
+    int max_args = 2;
+    const char *temp;
+    const char *oldexec = execstr;
+    TBUFF *params = 0;
+
+    TRACE(("save_arguments(%s)%s\n", bp->b_bname, execstr))
+    if (execstr == 0
+     && more_named_cmd()) {
+	if (kbd_reply( (char *)0,	/* no-prompt => splice */
+			&params,		/* in/out buffer */
+			eol_history,
+			EOS,		/* may be a conflict */
+			0,		/* no expansion, etc. */
+			no_completion) == TRUE) {
+	    execstr = tb_values(params);
+	} else {
+	    execstr = "";
+	}
+    }
+    if (execstr == 0)
+	execstr = "";
+    for (temp = execstr; *temp; temp++) {
+	if (isSpace(*temp))
+	    max_args++;
+    }
+    p->nxt_args = arg_stack;
+    arg_stack   = p;
+    p->all_args = typecallocn(TBUFF *, max_args);
+    tb_scopy(&(p->all_args[num_args++]), bp->b_bname);
+
+    while (mac_token(&(p->all_args[num_args]))) {
+	tb_scopy(&(p->all_args[num_args]),
+	    tokval(tb_values(p->all_args[num_args])));
+	TRACE(("...ARG%d:%s\n", num_args, tb_values(p->all_args[num_args])))
+	num_args++;
+    }
+
+    p->num_args = num_args - 1;
+    execstr = oldexec;
+    tb_free(&params);
+
+    updatelistvariables();
+}
+
+/*
+ * Pop the list of arguments off our stack
+ */
+void
+restore_arguments(BUFFER *bp)
+{
+    PROC_ARGS *p = arg_stack;
+
+    TRACE(("restore_arguments(%s)\n", bp->b_bname))
+
+    if (p != 0) {
+	arg_stack = p->nxt_args;
+	while (p->num_args >= 0) {
+	    tb_free(&(p->all_args[p->num_args]));
+	    p->num_args -= 1;
+	}
+	free(p->all_args);
+	free(p);
+    }
+
+    updatelistvariables();
+}
+
+/*
+ * Return the argument value if it is a number in range, the number of
+ * arguments for '#', and the whole argument list for '*'.  As a special case,
+ * return the list with individual words quoted for '@'.
+ */
+static const char *
+get_argument(const char *name)
+{
+    static TBUFF *value;
+    int num;
+    char *str;
+    const char *result = error_val;
+
+    if (arg_stack != 0) {
+	if (*name == '#') {
+	    result = render_int(&value, arg_stack->num_args);
+	} else if (*name == '*') {
+	    tb_init(&value, EOS);
+	    for (num = 1; num <= arg_stack->num_args; num++) {
+		if (num > 1)
+		    tb_append(&value, ' ');
+		tb_sappend(&value, tb_values(arg_stack->all_args[num]));
+	    }
+	    tb_append(&value, EOS);
+	    result = tb_values(value);
+	} else if (*name == '@') {
+	    tb_init(&value, EOS);
+	    for (num = 1; num <= arg_stack->num_args; num++) {
+		if (num > 1)
+		    tb_append(&value, ' ');
+		str = tb_values(arg_stack->all_args[num]);
+		tb_append(&value, '"');
+		while (*str != EOS) {
+		    if (*str == '\\' || *str == '"')
+			tb_append(&value, '\\');
+		    tb_append(&value, *str++);
+		}
+		tb_append(&value, '"');
+	    }
+	    tb_append(&value, EOS);
+	    result = tb_values(value);
+	} else if (isDigit(*name)) {
+	    if ((num = scan_int(name)) <= arg_stack->num_args) {
+		if (num > 0 || !strcmp(name, "0"))
+		    result = tb_values(arg_stack->all_args[num]);
+	    } else {
+		result = "";
+	    }
+	}
+    }
+    return result;
+}
+
 /* the argument simply represents itself */
 static const char *
 simple_arg_eval(const char *argp)
@@ -959,17 +1134,21 @@ static const char *
 statevar_arg_eval(const char *argp)
 {
 	int vnum;
-	vnum = lookup_statevar(argp+1);
-	if (vnum != ILLEGAL_NUM)
-		return get_statevar_val(vnum);
+	const char *result;
+
+	if ((result = get_argument(++argp)) == error_val) {
+	    vnum = lookup_statevar(argp);
+	    if (vnum != ILLEGAL_NUM)
+		result = get_statevar_val(vnum);
 #if !SMALLER
-	{
-	    VALARGS	args;
-	    if (is_mode_name(argp+1, TRUE, &args) == TRUE)
+	    {
+		VALARGS	args;
+		if (is_mode_name(argp, TRUE, &args) == TRUE)
 		    return string_mode_val(&args);
-	}
+	    }
 #endif
-	return error_val;
+	}
+	return result;
 }
 
 /* run a function to evalute it */

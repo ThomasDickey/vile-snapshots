@@ -20,7 +20,7 @@
 #
 # gnu autoconf support by kevin buettner, 5/94
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.137 1999/04/28 10:34:12 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.141 1999/06/22 01:34:41 tom Exp $
 #
 
 #### Start of system configuration section. ####
@@ -58,8 +58,8 @@ prefix		= @prefix@
 exec_prefix	= @exec_prefix@
 
 manext		= 1
-bindir		= @bindir@
 libdir		= @libdir@
+bindir		= @bindir@
 datadir		= @datadir@/vile
 perldir		= $(datadir)/perl
 mandir		= @mandir@/man$(manext)
@@ -80,7 +80,13 @@ CPPFLAGS	= -I. -I$(srcdir) $(X_CFLAGS) \
 
 LDFLAGS		= @IMAKE_LOADFLAGS@
 
-INSTALL_DIRS    = $(bindir) $(datadir) $(mandir) @EXTRA_INSTALL_DIRS@
+DESTDIR		=
+BINDIR		= $(DESTDIR)$(bindir)
+DATADIR		= $(DESTDIR)$(datadir)
+PERLDIR		= $(DESTDIR)$(perldir)
+MANDIR		= $(DESTDIR)$(mandir)
+
+INSTALL_DIRS    = $(BINDIR) $(DATADIR) $(MANDIR) @EXTRA_INSTALL_DIRS@
 
 .SUFFIXES: .c .i .o
 
@@ -149,25 +155,29 @@ SCREENS = \
 # other source code, some used in other makefiles, some useful tools,
 #  some possibly obsolete
 PERL_SRC = \
+	$(srcdir)/perl/Vile.pm \
 	$(srcdir)/perl/Vileserv.pm \
 	$(srcdir)/perl/dir.pl \
 	$(srcdir)/perl/glob2re.pl \
 	$(srcdir)/perl/hgrep.pl \
 	$(srcdir)/perl/hilite.pl \
+	$(srcdir)/perl/lock.pl \
 	$(srcdir)/perl/manfilt.pl \
 	$(srcdir)/perl/mime.pl \
 	$(srcdir)/perl/plugins.pl \
 	$(srcdir)/perl/search.pl \
 	$(srcdir)/perl/shell.pl \
+	$(srcdir)/perl/spell.pl \
 	$(srcdir)/perl/syntax.pl \
 	$(srcdir)/perl/tailf.pl \
 	$(srcdir)/perl/vileget \
 	$(srcdir)/perl/visit.pl
 
 MACRO_SRC = \
+	$(srcdir)/macros/digraphs.rc \
 	$(srcdir)/macros/manpage.rc \
 	$(srcdir)/macros/pictmode.rc \
-	$(srcdir)/macros/digraphs.rc
+	$(srcdir)/macros/vileperl.rc
 
 OTHERSRC = \
 	djhandl.c \
@@ -295,27 +305,38 @@ $(MKTBLS):  $(srcdir)/mktbls.c
 check: $(TARGET)
 	@echo Sorry, no batch tests available.
 
-INSTALL_PERL_DIRS = $(perldir)
+INSTALL_MACRO_FILES = \
+	$(DATADIR)/digraphs.rc \
+	$(DATADIR)/manpage.rc \
+	$(DATADIR)/pictmode.rc \
+	$(DATADIR)/vileperl.rc
+
+INSTALL_PERL_DIRS = $(PERLDIR)
 INSTALL_PERL_FILES = \
-	$(bindir)/vileget \
-	$(perldir)/Vileserv.pm \
-	$(perldir)/dir.pl \
-	$(perldir)/glob2re.pl \
-	$(perldir)/hgrep.pl \
-	$(perldir)/hilite.pl \
-	$(perldir)/manfilt.pl \
-	$(perldir)/mime.pl \
-	$(perldir)/plugins.pl \
-	$(perldir)/search.pl \
-	$(perldir)/shell.pl \
-	$(perldir)/syntax.pl \
-	$(perldir)/tailf.pl \
-	$(perldir)/visit.pl
+	$(BINDIR)/vileget \
+	$(PERLDIR)/Vile.pm \
+	$(PERLDIR)/Vileserv.pm \
+	$(PERLDIR)/dir.pl \
+	$(PERLDIR)/glob2re.pl \
+	$(PERLDIR)/hgrep.pl \
+	$(PERLDIR)/hilite.pl \
+	$(PERLDIR)/lock.pl \
+	$(PERLDIR)/manfilt.pl \
+	$(PERLDIR)/mime.pl \
+	$(PERLDIR)/plugins.pl \
+	$(PERLDIR)/search.pl \
+	$(PERLDIR)/shell.pl \
+	$(PERLDIR)/spell.pl \
+	$(PERLDIR)/syntax.pl \
+	$(PERLDIR)/tailf.pl \
+	$(PERLDIR)/visit.pl
 
 INSTALL_FILES = \
-	$(bindir)/$(TARGET) \
-	$(mandir)/@TARGET@.$(manext) \
-	$(datadir)/vile.hlp @EXTRA_INSTALL_FILES@
+	$(BINDIR)/$(TARGET) \
+	$(BINDIR)/@TARGET@-pager \
+	$(MANDIR)/@TARGET@.$(manext) \
+	$(INSTALL_MACRO_FILES) \
+	$(DATADIR)/vile.hlp @EXTRA_INSTALL_FILES@
 
 install-$(TARGET) \
 install :: $(INSTALL_DIRS) \
@@ -573,45 +594,64 @@ word.o:		nefunc.h
 x11.o:		nefunc.h
 
 # dependency-rules for install/installdirs
-$(bindir)/$(TARGET):       $(TARGET)
-	$(INSTALL_PROGRAM) $(TARGET) $@
+$(BINDIR)/$(TARGET):		$(TARGET)
+	$(INSTALL_PROGRAM)	$(TARGET) $@
+$(BINDIR)/vileget:		$(srcdir)/perl/vileget
+	$(INSTALL_SCRIPT)	$(srcdir)/perl/vileget $@
 
-$(mandir)/vile.$(manext):  $(srcdir)/vile.1
-	$(INSTALL_DATA)    $(srcdir)/vile.1 $@
-$(mandir)/xvile.$(manext): $(srcdir)/vile.1
-	$(INSTALL_DATA)    $(srcdir)/vile.1 $@
+$(BINDIR)/@TARGET@-pager:	$(srcdir)/macros/vile-pager
+	sed -e 's/ vile / @TARGET@ /' $(srcdir)/macros/vile-pager >$@
+	chmod 755 $@
 
-$(datadir)/vile.hlp:       $(srcdir)/vile.hlp
-	$(INSTALL_DATA)    $(srcdir)/vile.hlp $@
+$(DATADIR)/digraphs.rc:		$(srcdir)/macros/digraphs.rc
+	$(INSTALL_DATA)		$(srcdir)/macros/digraphs.rc $@
+$(DATADIR)/manpage.rc:		$(srcdir)/macros/manpage.rc
+	$(INSTALL_DATA)		$(srcdir)/macros/manpage.rc $@
+$(DATADIR)/pictmode.rc:		$(srcdir)/macros/pictmode.rc
+	$(INSTALL_DATA)		$(srcdir)/macros/pictmode.rc $@
+$(DATADIR)/vileperl.rc:		$(srcdir)/macros/vileperl.rc
+	$(INSTALL_DATA)		$(srcdir)/macros/vileperl.rc $@
 
-$(bindir)/vileget:	   $(srcdir)/perl/vileget
-	$(INSTALL_SCRIPT)  $(srcdir)/perl/vileget $@
-$(perldir)/Vileserv.pm:    $(srcdir)/perl/Vileserv.pm
-	$(INSTALL_SCRIPT)  $(srcdir)/perl/Vileserv.pm $@
-$(perldir)/dir.pl:	   $(srcdir)/perl/dir.pl
-	$(INSTALL_DATA)    $(srcdir)/perl/dir.pl $@
-$(perldir)/glob2re.pl:     $(srcdir)/perl/glob2re.pl
-	$(INSTALL_SCRIPT)  $(srcdir)/perl/glob2re.pl $@
-$(perldir)/hgrep.pl:       $(srcdir)/perl/hgrep.pl
-	$(INSTALL_SCRIPT)  $(srcdir)/perl/hgrep.pl $@
-$(perldir)/hilite.pl:      $(srcdir)/perl/hilite.pl
-	$(INSTALL_DATA)    $(srcdir)/perl/hilite.pl $@
-$(perldir)/manfilt.pl:     $(srcdir)/perl/manfilt.pl
-	$(INSTALL_SCRIPT)  $(srcdir)/perl/manfilt.pl $@
-$(perldir)/mime.pl:	   $(srcdir)/perl/mime.pl
-	$(INSTALL_DATA)    $(srcdir)/perl/mime.pl $@
-$(perldir)/plugins.pl:     $(srcdir)/perl/plugins.pl
-	$(INSTALL_DATA)    $(srcdir)/perl/plugins.pl $@
-$(perldir)/search.pl:      $(srcdir)/perl/search.pl
-	$(INSTALL_DATA)    $(srcdir)/perl/search.pl $@
-$(perldir)/shell.pl:       $(srcdir)/perl/shell.pl
-	$(INSTALL_DATA)    $(srcdir)/perl/shell.pl $@
-$(perldir)/syntax.pl:      $(srcdir)/perl/syntax.pl
-	$(INSTALL_DATA)    $(srcdir)/perl/syntax.pl $@
-$(perldir)/tailf.pl:       $(srcdir)/perl/tailf.pl
-	$(INSTALL_DATA)    $(srcdir)/perl/tailf.pl $@
-$(perldir)/visit.pl:       $(srcdir)/perl/visit.pl
-	$(INSTALL_DATA)    $(srcdir)/perl/visit.pl $@
+$(DATADIR)/vile.hlp:		$(srcdir)/vile.hlp
+	$(INSTALL_DATA)		$(srcdir)/vile.hlp $@
+
+$(MANDIR)/vile.$(manext):	$(srcdir)/vile.1
+	$(INSTALL_DATA)		$(srcdir)/vile.1 $@
+$(MANDIR)/xvile.$(manext):	$(srcdir)/vile.1
+	$(INSTALL_DATA)		$(srcdir)/vile.1 $@
+
+$(PERLDIR)/Vile.pm:		$(srcdir)/perl/Vile.pm
+	$(INSTALL_SCRIPT)	$(srcdir)/perl/Vile.pm $@
+$(PERLDIR)/Vileserv.pm:		$(srcdir)/perl/Vileserv.pm
+	$(INSTALL_SCRIPT)	$(srcdir)/perl/Vileserv.pm $@
+$(PERLDIR)/dir.pl:		$(srcdir)/perl/dir.pl
+	$(INSTALL_DATA)		$(srcdir)/perl/dir.pl $@
+$(PERLDIR)/glob2re.pl:		$(srcdir)/perl/glob2re.pl
+	$(INSTALL_SCRIPT)	$(srcdir)/perl/glob2re.pl $@
+$(PERLDIR)/hgrep.pl:		$(srcdir)/perl/hgrep.pl
+	$(INSTALL_SCRIPT)	$(srcdir)/perl/hgrep.pl $@
+$(PERLDIR)/hilite.pl:		$(srcdir)/perl/hilite.pl
+	$(INSTALL_DATA)		$(srcdir)/perl/hilite.pl $@
+$(PERLDIR)/lock.pl:		$(srcdir)/perl/lock.pl
+	$(INSTALL_DATA)		$(srcdir)/perl/lock.pl $@
+$(PERLDIR)/manfilt.pl:		$(srcdir)/perl/manfilt.pl
+	$(INSTALL_SCRIPT)	$(srcdir)/perl/manfilt.pl $@
+$(PERLDIR)/mime.pl:		$(srcdir)/perl/mime.pl
+	$(INSTALL_DATA)		$(srcdir)/perl/mime.pl $@
+$(PERLDIR)/plugins.pl:		$(srcdir)/perl/plugins.pl
+	$(INSTALL_DATA)		$(srcdir)/perl/plugins.pl $@
+$(PERLDIR)/search.pl:		$(srcdir)/perl/search.pl
+	$(INSTALL_DATA)		$(srcdir)/perl/search.pl $@
+$(PERLDIR)/shell.pl:		$(srcdir)/perl/shell.pl
+	$(INSTALL_DATA)		$(srcdir)/perl/shell.pl $@
+$(PERLDIR)/spell.pl:		$(srcdir)/perl/spell.pl
+	$(INSTALL_DATA)		$(srcdir)/perl/spell.pl $@
+$(PERLDIR)/syntax.pl:		$(srcdir)/perl/syntax.pl
+	$(INSTALL_DATA)		$(srcdir)/perl/syntax.pl $@
+$(PERLDIR)/tailf.pl:		$(srcdir)/perl/tailf.pl
+	$(INSTALL_DATA)		$(srcdir)/perl/tailf.pl $@
+$(PERLDIR)/visit.pl:		$(srcdir)/perl/visit.pl
+	$(INSTALL_DATA)		$(srcdir)/perl/visit.pl $@
 
 $(INSTALL_DIRS):
 	$(SHELL) ${srcdir}/mkdirs.sh $@

@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.352 1999/06/13 22:23:30 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.356 1999/06/21 01:08:22 tom Exp $
  *
  */
 
@@ -304,10 +304,14 @@ extern char *skip_text (char *str);
 #if OPT_EVAL
 extern LINEPTR label2lp (BUFFER *bp, const char *label);
 extern char *get_statevar_val (int vnum);
-extern int   rmv_tempvar(const char *name);
-extern int   set_state_variable(const char *name, const char *value);
+extern int rmv_tempvar(const char *name);
+extern int set_state_variable(const char *name, const char *value);
+extern void restore_arguments(BUFFER *bp);
+extern void save_arguments(BUFFER *bp);
 #else
 #define gtenv(name) getenv(name)
+#define restore_arguments(cfp) /*nothing*/
+#define save_arguments(cfp) /*nothing*/
 #endif
 
 #if OPT_EVAL || DISP_X11
@@ -338,10 +342,6 @@ extern int dofile (char *fname);
 extern int end_named_cmd (void);
 extern int execute (const CMDFUNC *execfunc, int f, int n);
 extern int more_named_cmd (void);
-
-#if OPT_PROCEDURES
-extern int run_procedure (const char *name);
-#endif
 
 /* file.c */
 extern SIGT imdying (int ACTUAL_SIG_ARGS);
@@ -756,7 +756,7 @@ extern L_NUM getcline (void);
 extern char * previous_directory (void);
 #endif
 
-#if OPT_PROCEDURES
+#if OPT_HOOKS
 extern int run_a_hook(HOOK *hook);
 #define DisableHook(hook) (hook)->latch += 1
 #define EnableHook(hook)  (hook)->latch -= 1

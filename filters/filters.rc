@@ -1,4 +1,4 @@
-; $Id: filters.rc,v 1.64 1999/06/11 21:34:36 tom Exp $
+; $Id: filters.rc,v 1.65 1999/06/22 01:42:17 tom Exp $
 
 define-mode ada
 ~with define-submode ada
@@ -354,3 +354,9 @@ store-procedure HighlightFilterMsg
 	write-message "[Attaching attributes...]"
 ~endm
 bind-key HighlightFilterMsg ^X-q
+
+store-procedure set-highlighting "Set a majormode and invoke highlighting"
+; show-variables
+setl $1
+HighlightFilter
+~endm

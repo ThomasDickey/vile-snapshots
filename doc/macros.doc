@@ -167,6 +167,21 @@ Creating, executing, storing macros
 
 	       :write-msg-tst
 
+	Named macros may have parameters.  Like Bourne shell, the parameters
+	are denoted '$' followed by a number, e.g., $1 for the first parameter.
+
+		$# gives the number of parameters.
+
+		$* gives a blank-separated list of all parameters.
+
+		$@ gives a blank-separated list of all parameters, quoted.
+
+		$0 is the name of the current procedure, not expanded in the
+		lists.
+
+	The indivdual parameters are evaluated when the macro is invoked, and
+	may consist of expressions.  They are stored as strings.
+
     Storing macros
     --------------
 	In general, macros are stored in the editor's startup file.
@@ -1045,6 +1060,6 @@ Example startup file
 	========================= end vile.rc =======================
 
 -----------------------------------
-  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.17 1999/05/18 11:04:08 tom Exp $
+  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.18 1999/06/21 00:12:07 tom Exp $
 -----------------------------------
 

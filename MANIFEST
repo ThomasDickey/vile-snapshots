@@ -1,4 +1,4 @@
-MANIFEST for vile, version v8_3h
+MANIFEST for vile, version v8_3i
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 CHANGES                         Change-log for VILE
@@ -230,17 +230,21 @@ macros/digraphs.rc              macros for inserting digraphs
 macros/manpage.rc               macros for man-page filtering/display
 macros/pictmode.rc              macros to support "picture-mode" editing
 macros/vile-pager               use vile as a pager
+macros/vileperl.rc              sample initialization for perl scripts
 perl                            subdirectory
+perl/Vile.pm                    utility functions for perl scripts
 perl/Vileserv.pm                provides file-load server capability for xvile
 perl/dir.pl                     directory-browser extension
 perl/glob2re.pl                 utility-script for vile's hypertext
 perl/hgrep.pl                   utility-script for vile's hypertext
 perl/hilite.pl                  keyword-highlighting for perl
+perl/lock.pl                    screen-lock script
 perl/manfilt.pl                 Perl filter for man-pages
 perl/mime.pl                    mime-aware file viewer support
 perl/plugins.pl                 plugins extension to the mime library
 perl/search.pl                  perl lookalike for vile's search commands
 perl/shell.pl                   spawn a shell via a pty
+perl/spell.pl                   interactive spelling checker/corrector
 perl/syntax.pl                  syntax-parsing for perl highlighting
 perl/tailf.pl                   do a "tail -f"
 perl/vileget                    pass file-edit request to xvile session running Vileserv

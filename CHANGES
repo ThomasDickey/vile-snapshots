@@ -1,5 +1,47 @@
 Changes for vile 8.4 (released ??? ??? ??, ????)
 
+(tom) 990621 (i)
+	+ add vile-pager to install rule.
+	+ add macros (e.g., manpage.rc) to install rule.
+	+ implement $(DESTDIR) variable in Unix makefiles to simplify packaging
+	  binary distributions.
+	+ corrections to CF_MAKEFLAGS configure macro, to work with POSIX
+	  'make', which may pass assignments in the $(MAKEFLAGS) variable.
+	+ update some configure script macros: CF_CHECK_ERRNO, CF_HEADER_PATH,
+	  CF_LIBRARY_PATH, from lynx/xterm changes, as well as mkdirs.sh
+	  and install.sh adapted from autoconf.
+	+ make the [Variables] buffer partly animated; updating after
+	  set-variable commands, and as a side effect of the save/restore
+	  function for macro arguments.  Most variables are set internally,
+	  however, so do not expect the buffer to jitter as you move the cursor
+	  around.
+	+ implement parameters for procedures (see macros.doc).
+	+ modify ifdef's for hooks to use new symbol OPT_HOOKS, since they are
+	  not really dependent on OPT_PROCEDURES anymore.
+	+ change run_a_hook() to use docmd() rather than run_procedure(), so
+	  the hook can be an arbitrary command, rather than only procedures
+	  (suggested by Brendan O'Dea).
+	+ correct call on screen_string in ask_for_bname, which had the wrong
+	  length, hidden in screen_to_bname macro.  This made ^X-k use a length
+	  of 4, rather than the actual buffer length.
+	> perl scripts by Kuntal Daftary (from his notes):
+	+ lock.pl is a simplistic extension to allow you to lock your vile
+	  sessions, say while temporarily leaving your terminal or something
+	  like that. 
+	+ spell.pl is a spell checker within vile that behaves (almost) like
+	  ispell (and in fact does use ispell internally).  This one is
+	  inspired out of recent mail Christian Lindig providing a spell
+	  filter.  Also thanks to Tom for the -a flag :-)
+	+ pod documentation is within the files themselves. just dump all the files in 
+	  your ~/.vile/perl  
+	+ spell.pl also required me to rig up a mlreply_opts command as an
+	  addition to the mlreply_* family of commands already offered in the
+	  Vile package.  Tho the invocation is quite similar to the builtin
+	  mlreply_* commands, the behavior is simplistic, and does not exactly
+	  match that of other Vile commands, e.g., mini-buffer editing is not
+	  supported and TAB-completion behavior is different. 
+ 
+
 (tom) 990614 (h)
 	+ updated example in menus.doc, dropping references to macros not in
 	  our source distribution.
