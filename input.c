@@ -44,7 +44,7 @@
  *	tgetc_avail()     true if a key is avail from tgetc() or below.
  *	keystroke_avail() true if a key is avail from keystroke() or below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.259 2003/05/24 00:49:25 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.261 2003/07/27 19:06:52 tom Exp $
  *
  */
 
@@ -1311,6 +1311,7 @@ editMinibuffer(TBUFF ** buf, unsigned *cpos, int c, int margin, int quoted)
 	int old_clexec = clexec;
 	int old_named = isnamedcmd;
 	int old_margin = b_left_margin(bminip);
+	int old_shape = regionshape;
 
 	/*
 	 * Reset flags that might cause a recursion into the prompt/reply
@@ -1330,6 +1331,7 @@ editMinibuffer(TBUFF ** buf, unsigned *cpos, int c, int margin, int quoted)
 	DOT.o = first;
 	MK = DOT;
 	curwp->w_line = DOT;
+	regionshape = EXACT;	/* operdel(), etc., do not set this */
 	(void) execute(cfp, FALSE, 1);
 	insertmode = save_insertmode;
 	edited = TRUE;
@@ -1339,6 +1341,7 @@ editMinibuffer(TBUFF ** buf, unsigned *cpos, int c, int margin, int quoted)
 
 	clexec = old_clexec;
 	isnamedcmd = old_named;
+	regionshape = old_shape;
 
 	/*
 	 * Cheat a little, since we may have used an alias for
@@ -1354,7 +1357,8 @@ editMinibuffer(TBUFF ** buf, unsigned *cpos, int c, int margin, int quoted)
 	 * Copy the data back from the minibuffer into our working TBUFF.
 	 */
 	tb_init(buf, EOS);
-	tb_bappend(buf, lvalue(DOT.l) + margin, llength(DOT.l) - margin);
+	if (llength(DOT.l) > margin)
+	    tb_bappend(buf, lvalue(DOT.l) + margin, llength(DOT.l) - margin);
 
 	/*
 	 * Below are some workarounds for making it appear that we're doing the

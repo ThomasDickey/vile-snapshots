@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.520 2003/06/21 14:58:00 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.521 2003/07/27 15:19:24 tom Exp $
  *
  */
 
@@ -1151,7 +1151,7 @@ extern int  undo_ok(void);
 /* version.c */
 extern const char * getversion (void);
 extern const char * non_filename (void);
-extern void print_usage (void);
+extern void print_usage (int code);
 
 /* vms2unix.c */
 #if OPT_VMS_PATH

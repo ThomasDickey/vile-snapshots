@@ -1,7 +1,7 @@
 /*	Crypt:	Encryption routines for MicroEMACS
  *		written by Dana Hoggatt and Paul Fox.
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/ecrypt.c,v 1.6 2002/10/09 23:38:39 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/ecrypt.c,v 1.7 2003/07/27 17:35:40 tom Exp $
  *
  */
 
@@ -208,7 +208,7 @@ ue_crypt(register char *bptr,	/* buffer of characters to be encrypted */
 }
 
 static void
-filecrypt(FILE * ifp, char *key, int mailmode)
+filecrypt(FILE *ifp, char *key, int mailmode)
 {
     char buf[BUFSIZ];
     char *p;
@@ -278,8 +278,8 @@ main(int argc, char **argv)
     }
     if (!key[0]) {
 #ifdef HAVE_GETPASS
-	char *userkey;
-	userkey = (char *) getpass("Enter key: ");
+	char *userkey = (char *) getpass("Enter key: ");
+	size_t len = strlen(userkey);
 
 	/* HACK -- the linux version of getpass is not
 	 * interruptible.  this means there's no way to abort
@@ -289,7 +289,7 @@ main(int argc, char **argv)
 	 * char of the entered key is ^C, and consider it an abort
 	 * if so.  yes, this should really be the INTR char.
 	 */
-	if (userkey[strlen(userkey) - 1] == 3) {
+	if (len == 0 || userkey[len - 1] == 3) {
 	    fprintf(stderr, "Aborted\n");
 	    exit(BADEXIT);
 	}

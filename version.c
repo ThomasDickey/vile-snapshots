@@ -1,7 +1,7 @@
 /*
  * version & usage-messages for vile
  *
- * $Header: /users/source/archives/vile.vcs/RCS/version.c,v 1.54 2002/10/09 13:31:27 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/version.c,v 1.55 2003/07/27 15:19:17 tom Exp $
  *
  */
 
@@ -12,7 +12,7 @@
 static char version_string[NSTRING];
 
 void
-print_usage(void)
+print_usage(int code)
 {
     static const char *const options[] =
     {
@@ -94,7 +94,7 @@ print_usage(void)
 	    (void) fprintf(stderr, "\t%s\n", options[j]);
     }
 #endif
-    ExitProgram(BADEXIT);
+    ExitProgram(code);
 }
 
 const char *

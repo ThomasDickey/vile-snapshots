@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.261 2003/06/30 00:59:22 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.262 2003/07/27 15:53:48 tom Exp $
  *
  */
 
@@ -98,7 +98,7 @@ choice_to_code(const FSM_CHOICES * choices, const char *name, size_t len)
     int code = ENUM_ILLEGAL;
     int i;
 
-    if (choices != 0) {
+    if (choices != 0 && len != 0) {
 	if (len > NSTRING - 1)
 	    len = NSTRING - 1;
 

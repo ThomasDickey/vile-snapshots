@@ -22,7 +22,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.509 2003/06/20 23:17:43 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.510 2003/07/27 15:18:54 tom Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -106,7 +106,7 @@ get_argvalue(char *param, char *argv[], int *argcp)
 	param = argv[*argcp];
     }
     if (param == 0)
-	print_usage();
+	print_usage(BADEXIT);
     return param;
 }
 
@@ -252,7 +252,7 @@ MainProgram(int argc, char *argv[])
 		else if (strcmp(param, "80") == 0)
 		    init_descrip = "NORMAL";
 		else
-		    print_usage();
+		    print_usage(BADEXIT);
 #endif
 		continue;
 	    } else
@@ -270,7 +270,7 @@ MainProgram(int argc, char *argv[])
 			 */
 			new_console = TRUE;
 		    } else
-			print_usage();
+			print_usage(BADEXIT);
 		    break;
 #endif /* DISP_NTCONS */
 #if OPT_EVAL || OPT_DEBUGMACROS
@@ -317,7 +317,7 @@ MainProgram(int argc, char *argv[])
 		    if (param[1] == 'r')
 			ole_register = TRUE;
 		    else
-			print_usage();
+			print_usage(BADEXIT);
 		    break;
 #endif
 		case 's':	/* -s <pattern> */
@@ -354,7 +354,7 @@ MainProgram(int argc, char *argv[])
 		case '?':
 		    /* FALLTHRU */
 		default:	/* unknown switch */
-		    print_usage();
+		    print_usage(GOODEXIT);
 		}
 
 	} else if (*param == '+') {	/* alternate form of -g */
@@ -363,7 +363,7 @@ MainProgram(int argc, char *argv[])
 		if (len > 0 && param[len - 1] == '/')
 		    param[--len] = EOS;
 		if (len == 0)
-		    print_usage();
+		    print_usage(BADEXIT);
 		goto dosearch;
 	    }
 	    gotoflag = TRUE;

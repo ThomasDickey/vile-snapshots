@@ -5,7 +5,7 @@
  *
  * Copyright (c) 1990-2003 by Paul Fox and Thomas Dickey
  *
- * $Header: /users/source/archives/vile.vcs/RCS/finderr.c,v 1.117 2003/05/26 18:09:43 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/finderr.c,v 1.118 2003/07/27 17:07:07 tom Exp $
  *
  */
 
@@ -493,6 +493,8 @@ decode_exp(ERR_PATTERN * exp)
     for (n = 1; !failed && (n < NSUBEXP); n++) {
 	if (p->startp[n] == 0 || p->endp[n] == 0)
 	    continue;		/* discount nested atom */
+	if (p->startp[n] >= p->endp[n])
+	    continue;		/* discount empty atom */
 	temp = 0;
 	if (tb_bappend(&temp,
 		       p->startp[n],

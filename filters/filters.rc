@@ -1,4 +1,4 @@
-; $Id: filters.rc,v 1.173 2003/05/04 19:06:37 tom Exp $
+; $Id: filters.rc,v 1.174 2003/07/27 15:35:18 tom Exp $
 ; majormodes in this file are ordered alphabetically for convenience - the
 ; precedence used by vile is strictly alphabetic, counting case.
 
@@ -475,7 +475,7 @@ define-mode sed
 ; This is matched after 'csh', and will pick up /bin/sh, /bin/bash, /bin/ksh
 define-mode sh
 ~with define-submode sh
-	suf '\.\(sh\|ksh\|[^/]*rc\)$'
+	suf '\(\.\(sh\|ksh\|[^/]*rc\)$\|profile$\|\.bash_[a-z]\+$\)'
 	pre '^\(\(#!\s*\/.*sh\>\(\s*[-]\+[a-z]*\s*\)\?\)\|:\)\s*$'
 	comment-prefix	'^\s*[:#]'
 	comments	'^\s*[:#]\s*$'

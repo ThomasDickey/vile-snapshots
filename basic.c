@@ -5,7 +5,7 @@
  * functions that adjust the top line in the window and invalidate the
  * framing, are hard.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/basic.c,v 1.118 2002/12/14 19:09:41 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/basic.c,v 1.119 2003/07/27 19:01:43 tom Exp $
  *
  */
 
@@ -188,29 +188,33 @@ forwchar(int f, int n)
 int
 forwchar_to_eol(int f, int n)
 {
+    int rc = TRUE;
     int nwas = n;
     int lim;
+
     if (f == FALSE)
 	n = 1;
-    if (n < 0)
-	return backchar_to_bol(f, -n);
-    if (n == 0)
-	return TRUE;
+    if (n < 0) {
+	rc = backchar_to_bol(f, -n);
+    } else if (n != 0) {
 
-    /* normally, we're confined to the text on the line itself.  if
-       we're doing an opcmd, then we're allowed to move to the newline
-       as well, to take care of the internal cases:  's', 'x', and '~'. */
-    if (doingopcmd || insertmode)
-	lim = llength(DOT.l);
-    else
-	lim = llength(DOT.l) - 1;
-    do {
-	if (DOT.o >= lim)
-	    return n != nwas;	/* return ok if we moved at all */
+	/* normally, we're confined to the text on the line itself.  if
+	   we're doing an opcmd, then we're allowed to move to the newline
+	   as well, to take care of the internal cases:  's', 'x', and '~'. */
+	if (doingopcmd || insertmode)
+	    lim = llength(DOT.l);
 	else
-	    DOT.o++;
-    } while (--n != 0);
-    return TRUE;
+	    lim = llength(DOT.l) - 1;
+	do {
+	    if (DOT.o >= lim) {
+		rc = (n != nwas);	/* return ok if we moved at all */
+		break;
+	    } else {
+		DOT.o++;
+	    }
+	} while (--n != 0);
+    }
+    return rc;
 }
 
 /*
