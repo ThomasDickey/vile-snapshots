@@ -202,6 +202,8 @@ The following are implemented:
 	vile-html-filt	(HTML with embedded JavaScript)
 	vile-imake-filt	(imake)
 	vile-info-filt	(GNU info files)
+	vile-ini-filt	(ini)
+	vile-iss-filt	(Inno Setup)
 	vile-key-filt	(Vile keyword files)
 	vile-latex-filt	(LaTeX or TeX)
 	vile-lex-filt	(lex)
@@ -251,6 +253,7 @@ use the same syntax as other majormodes:
 	javamode	Java uses C filter
 	jsmode		JavaScript uses C filter
 	nmakemode	nmake uses C filter
+	nsismode	nsis uses def filter
 	pcmode		printcap uses termcap filter
 	texmode		TeX uses latex filter
 	vbmode		Visual Basic uses basic filter
@@ -262,4 +265,4 @@ NOTE
 The lex filters have been well tested only with flex, which treats newlines
 differently.  Older versions of lex may not support the %x states.
 
--- $Header: /users/source/archives/vile.vcs/doc/RCS/filters.doc,v 1.33 2004/12/14 00:47:49 tom Exp $
+-- $Header: /users/source/archives/vile.vcs/doc/RCS/filters.doc,v 1.34 2005/05/10 22:53:08 tom Exp $

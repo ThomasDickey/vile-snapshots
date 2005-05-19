@@ -1,4 +1,4 @@
-MANIFEST for vile, version v9_4s
+MANIFEST for vile, version v9_4t
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 CHANGES                         Change-log for VILE
@@ -208,6 +208,10 @@ filters/htmlfilt.l              HTML syntax filter for vile
 filters/imake.key               keywords for imake-filter
 filters/imakeflt.l              syntax filter for Imakefile's
 filters/infofilt.l              syntax filter for GNU info files
+filters/ini-filt.l              syntax filter for ".ini" files
+filters/ini.key                 keywords for ini-filters
+filters/iss-filt.l              syntax filter for Inno Setup
+filters/iss.key                 keywords for Inno Setup
 filters/java.key                java keywords
 filters/js.key                  javascript keywords
 filters/key-filt.c              syntax filter for vile keyword files
@@ -241,6 +245,7 @@ filters/mk-key.awk              generate install/uninstall rules for keyword fil
 filters/mms-filt.l              mms syntax filter for vile
 filters/nr-filt.l               nroff syntax highlighting filter for vile
 filters/nr.key                  keywords for nroff filter
+filters/nsis.key                keywords for NullSoft installer
 filters/pas-filt.l              Pascal syntax filter for vile
 filters/pas.key                 keywords for pascal highlighting filter
 filters/pc.key                  keywords for printcap syntax highlighting
@@ -337,6 +342,7 @@ macros/vileperl.rc              sample initialization for perl scripts
 macros/which.rc                 script to show which keyword file is found by filters
 package                         subdirectory
 package/winvile.iss             Inno Setup script for winvile
+package/winvile.nsi             NSIS package for winvile
 perl                            subdirectory
 perl/Breadcrumbs.pm             manages bookmarks for a set of files
 perl/CaptHook.pm                manage various types of hooks from perl

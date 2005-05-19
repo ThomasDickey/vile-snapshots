@@ -1,4 +1,4 @@
-; $Id: modes.rc,v 1.18 2005/02/13 15:34:25 tom Exp $
+; $Id: modes.rc,v 1.21 2005/05/14 12:56:47 tom Exp $
 ; majormodes in this file are ordered alphabetically for convenience - the
 ; precedence used by vile is strictly alphabetic, counting case.  Use the
 ; before and after qualifiers to override the precedence.
@@ -208,7 +208,7 @@ define-mode est
 ; Embedded SQL in C/C++
 define-mode esql
 ~with define-submode esql
-	suffixes	'\.\(ec\|pc\|ppc\)$'
+	suffixes	'\.\(ec\|p[ch]\|pp[ch]\)$'
 	cindent
 	cindent-chars &cat ':#' $fences
 ~endwith
@@ -270,6 +270,13 @@ define-mode html
 	fence-end	'-->'
 ~endwith
 
+define-mode ini
+~with define-submode ini
+	suffixes	'\.\(ini\)$'
+	ignorecase
+	dos
+~endwith
+
 define-mode info
 ~with define-submode info
 	after ti
@@ -282,6 +289,13 @@ define-mode imake
 	before "def"
 	mode-filename	'^I[Mm]akefile.*$'
 	pre '^\s*\(XCOMM\>\|\/\*\*\/#\)'
+~endwith
+
+define-mode iss
+~with define-submode iss
+	suffixes	'\.\(iss\)$'
+	ignorecase
+	dos
 ~endwith
 
 define-mode java
@@ -413,7 +427,7 @@ define-mode nmake
 	dos
 	comment-prefix	'^\s*[!#]'
 	comments	'^\s*[!#]\s*$'
-~with define-submode make group 'nmake'
+~with define-submode nmake group 'nmake'
 	fence-if   '^\s*!if'
 	fence-elif '^\s*!else\s*if'
 	fence-else '^\s*!else\>'
@@ -428,6 +442,13 @@ define-mode nr
 	pre '^\.\\"'
 	comment-prefix	'^\.\\"'
 	comments	'^\.\\"\s*$'
+~endwith
+
+define-mode nsis
+~with define-submode nsis
+	suffixes	'\.\(nsi\)$'
+	ignorecase
+	dos
 ~endwith
 
 define-mode pas

@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/pl-filt.c,v 1.79 2005/02/02 01:37:07 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/pl-filt.c,v 1.81 2005/05/14 11:45:27 tom Exp $
  *
  * Filter to add vile "attribution" sequences to perl scripts.  This is a
  * translation into C of an earlier version written for LEX/FLEX.
@@ -402,6 +402,34 @@ is_NUMBER(char *s, int *err)
     }
 
     return value ? (s - base) : 0;
+}
+
+static char *
+put_NUMBER(char *s, int ok, int *err)
+{
+    if (*err) {
+	flt_error("illegal number");
+	flt_puts(s, ok, Error_attr);
+    } else {
+	flt_puts(s, ok, Number_attr);
+    }
+    s += ok;
+    return s;
+}
+
+static int
+is_ELLIPSIS(char *s)
+{
+    int dots;
+    int ok = 0;
+
+    for (dots = 0; dots < 3; ++dots) {
+	if (!MORE(s) || (*s++ != '.')) {
+	    break;
+	}
+	ok = dots + 1;
+    }
+    return (ok > 1) ? ok : 0;
 }
 
 static int
@@ -1291,15 +1319,12 @@ do_filter(FILE *input GCC_UNUSED)
 			parens = 0;
 		    flt_putc(*s++);
 		    clearOp();
+		} else if ((ok = is_ELLIPSIS(s)) != 0) {
+		    flt_puts(s, ok, "");
+		    s += ok;
 		} else if ((ok = is_NUMBER(s, &err)) != 0) {
 		    clearOp();
-		    if (err) {
-			flt_error("illegal number");
-			flt_puts(s, ok, Error_attr);
-		    } else {
-			flt_puts(s, ok, Number_attr);
-		    }
-		    s += ok;
+		    s = put_NUMBER(s, ok, &err);
 		} else if ((ok = is_KEYWORD(s)) != 0) {
 		    if ((s != the_file)
 			&& (s[-1] == '*')) {	/* typeglob */

@@ -1,5 +1,23 @@
 Changes for vile 9.5 (released ??? ??? ?? ????)
 
+ 20050515 (t)
+	> Tom Dickey:
+	+ add --disable-imake option to configure script, from xterm.
+	+ skip some unnecessary checks in configure script if imake is not
+	  found.
+	+ add ".ph" and ".pph" to esqlmode suffixes.
+	+ add parsing in perl filter for range operator ".." (reported by
+	  H C Dickey).
+	+ correct definition of nmakemode, which left fence operations out
+	  since they were assigned to makemode.
+	+ add syntax filters for iss- and ini-modes.
+	+ add iss-, nsis- and ini-modes
+	+ improved the winvile.iss script, allowing installer to set system-
+	  or user-environment variables, or to put the corresponding paths
+	  in the system- or user-registry settings.
+	+ correct parameters of "~local" in pictmode.rc, which omitted the
+	  "%" designating local variables.
+
  20050324 (s)
 	> Tom Dickey:
 	+ improve rubyfilt.c
