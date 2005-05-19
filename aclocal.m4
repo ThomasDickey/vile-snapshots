@@ -1,6 +1,6 @@
 dnl vile's local definitions for autoconf.
 dnl
-dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.142 2005/03/13 17:39:35 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.144 2005/05/16 00:00:38 tom Exp $
 dnl
 dnl ---------------------------------------------------------------------------
 dnl ---------------------------------------------------------------------------
@@ -1265,7 +1265,7 @@ AC_TRY_COMPILE([
 test $cf_cv_select_with_time = yes && AC_DEFINE(SELECT_WITH_TIME)
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_IMAKE_CFLAGS version: 26 updated: 2005/02/05 10:39:02
+dnl CF_IMAKE_CFLAGS version: 27 updated: 2005/04/05 18:26:15
 dnl ---------------
 dnl Use imake to obtain compiler flags.  We could, in principle, write tests to
 dnl get these, but if imake is properly configured there is no point in doing
@@ -1277,6 +1277,9 @@ dnl	$2 = optional value to append to $IMAKE_LOADFLAGS
 AC_DEFUN([CF_IMAKE_CFLAGS],
 [
 AC_PATH_PROGS(IMAKE,xmkmf imake)
+
+if test -n "$IMAKE" ; then
+
 case $IMAKE in # (vi
 */imake)
 	cf_imake_opts="-DUseInstalled=YES" # (vi
@@ -1292,7 +1295,6 @@ esac
 
 # If it's installed properly, imake (or its wrapper, xmkmf) will point to the
 # config directory.
-if test -n "$IMAKE" ; then
 if mkdir conftestdir; then
 	CDPATH=; export CDPATH
 	cf_makefile=`cd $srcdir;pwd`/Imakefile
@@ -1395,7 +1397,6 @@ CF_EOF
 	    fi
 	fi
 fi
-fi
 
 # Some imake configurations define PROJECTROOT with an empty value.  Remove
 # the empty definition.
@@ -1406,6 +1407,8 @@ case $IMAKE_CFLAGS in
 	IMAKE_CFLAGS=`echo "$IMAKE_CFLAGS" |sed -e "s,-DPROJECTROOT=[[ 	]], ,"`
 	;;
 esac
+
+fi
 
 CF_VERBOSE(IMAKE_CFLAGS $IMAKE_CFLAGS)
 CF_VERBOSE(IMAKE_LOADFLAGS $IMAKE_LOADFLAGS)
@@ -2688,6 +2691,82 @@ if test "$with_dmalloc" = yes ; then
 fi
 ])dnl
 dnl ---------------------------------------------------------------------------
+dnl CF_WITH_IMAKE_CFLAGS version: 7 updated: 2005/04/05 18:26:15
+dnl --------------------
+dnl xterm and similar programs build more readily when propped up with imake's
+dnl hand-tuned definitions.  If we do not use imake, provide fallbacks for the
+dnl most common definitions that we're not likely to do by autoconf tests.
+AC_DEFUN([CF_WITH_IMAKE_CFLAGS],[
+
+AC_MSG_CHECKING(if we should use imake to help)
+CF_ARG_DISABLE(imake,
+	[  --disable-imake         disable use of imake for definitions],
+	[enable_imake=no],
+	[enable_imake=yes])
+AC_MSG_RESULT($enable_imake)
+
+if test "$enable_imake" = yes ; then
+	CF_IMAKE_CFLAGS(ifelse($1,,,$1))
+fi
+
+if test -n "$IMAKE" && test -n "$IMAKE_CFLAGS" ; then
+	CF_ADD_CFLAGS($IMAKE_CFLAGS)
+else
+	IMAKE_CFLAGS=
+	IMAKE_LOADFLAGS=
+	CF_VERBOSE(make fallback definitions)
+
+	# We prefer config.guess' values when we can get them, to avoid
+	# inconsistent results with uname (AIX for instance).  However,
+	# config.guess is not always consistent either.
+	case $host_os in
+	*[[0-9]].[[0-9]]*)
+		UNAME_RELEASE="$host_os"
+		;;
+	*)
+		UNAME_RELEASE=`(uname -r) 2>/dev/null` || UNAME_RELEASE=unknown
+		;;
+	esac
+
+	case .$UNAME_RELEASE in
+	*[[0-9]].[[0-9]]*)
+		OSMAJORVERSION=`echo "$UNAME_RELEASE" |sed -e 's/^[[^0-9]]*//' -e 's/\..*//'`
+		OSMINORVERSION=`echo "$UNAME_RELEASE" |sed -e 's/^[[^0-9]]*//' -e 's/^[[^.]]*\.//' -e 's/\..*//' -e 's/[[^0-9]].*//' `
+		test -z "$OSMAJORVERSION" && OSMAJORVERSION=1
+		test -z "$OSMINORVERSION" && OSMINORVERSION=0
+		IMAKE_CFLAGS="-DOSMAJORVERSION=$OSMAJORVERSION -DOSMINORVERSION=$OSMINORVERSION $IMAKE_CFLAGS"
+		;;
+	esac
+
+	# FUNCPROTO is standard with X11R6, but XFree86 drops it, leaving some
+	# fallback/fragments for NeedPrototypes, etc.
+	IMAKE_CFLAGS="-DFUNCPROTO=15 $IMAKE_CFLAGS"
+
+	# If this is not set properly, Xaw's scrollbars will not work
+	case `$ac_config_guess` in
+	*freebsd*|*gnu*|*irix5*|*irix6*|*linux-gnu*|*netbsd*|*openbsd*)
+		IMAKE_CFLAGS="-DNARROWPROTO=1 $IMAKE_CFLAGS"
+	esac
+
+	# Other special definitions:
+	case $host_os in
+	aix*)
+		# imake on AIX 5.1 defines AIXV3.  really.
+		IMAKE_CFLAGS="-DAIXV3 -DAIXV4 $IMAKE_CFLAGS"
+		;;
+	irix[[56]].*) #(vi
+		# these are needed to make SIGWINCH work in xterm
+		IMAKE_CFLAGS="-DSYSV -DSVR4 $IMAKE_CFLAGS"
+		;;
+	esac
+
+	CF_ADD_CFLAGS($IMAKE_CFLAGS)
+
+	AC_SUBST(IMAKE_CFLAGS)
+	AC_SUBST(IMAKE_LOADFLAGS)
+fi
+])dnl
+dnl ---------------------------------------------------------------------------
 dnl CF_WITH_PATHLIST version: 5 updated: 2001/12/10 01:28:30
 dnl ----------------
 dnl Process an option specifying a list of colon-separated paths.
@@ -2753,7 +2832,7 @@ fi
 fi
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_XOPEN_SOURCE version: 17 updated: 2005/02/06 12:07:45
+dnl CF_XOPEN_SOURCE version: 19 updated: 2005/05/15 19:19:07
 dnl ---------------
 dnl Try to get _XOPEN_SOURCE defined properly that we can use POSIX functions,
 dnl or adapt to the vendor's definitions to get equivalent functionality.
@@ -2769,6 +2848,9 @@ cf_POSIX_C_SOURCE=ifelse($2,,199506L,$2)
 case $host_os in #(vi
 aix[[45]]*) #(vi
 	CPPFLAGS="$CPPFLAGS -D_ALL_SOURCE"
+	;;
+darwin*) #(vi
+	# setting _XOPEN_SOURCE breaks things on Darwin
 	;;
 freebsd*) #(vi
 	# 5.x headers associate

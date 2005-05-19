@@ -1,4 +1,4 @@
-; $Header: /users/source/archives/vile.vcs/macros/RCS/pictmode.rc,v 1.3 1999/08/21 14:00:58 tom Exp $
+; $Header: /users/source/archives/vile.vcs/macros/RCS/pictmode.rc,v 1.4 2005/04/19 19:21:59 tom Exp $
 ; this procedure implements a primitive ascii picture-drawing mode.
 ;		pgf, may '95
 
@@ -41,7 +41,7 @@ store-procedure replc
 	~endif
 ~endm
 store-procedure pic
-	~local keywas linechar textkey userchar
+	~local %keywas %linechar %textkey %userchar
 	set-variable %keywas &chr 0
 	set-variable %userchar &chr 0
 	set-variable %linechar &chr 0

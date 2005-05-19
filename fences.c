@@ -9,7 +9,7 @@
  * Extensions for vile by Paul Fox
  * Rewrote to use regular expressions - T.Dickey
  *
- * $Header: /users/source/archives/vile.vcs/RCS/fences.c,v 1.82 2002/10/20 12:53:13 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/fences.c,v 1.83 2005/05/15 23:11:09 tom Exp $
  *
  */
 
@@ -147,6 +147,7 @@ match_complex(TRACEARG(int group)
     int code = CPP_UNKNOWN;
 
 #define any_rexp(bv,n) (bv[n].vp->r)
+#define any_mode(bv,n) (bv[n].vp->i)
 
     for (j = 0; j < TABLESIZE(modes); j++) {
 	switch (modes[j]) {
@@ -385,6 +386,7 @@ find_complex(int sdir, int *newkey)
     int rc = FALSE;
     int key;
     int group = -1;
+    int save_ic = ignorecase;
     MARK oldpos, oldpre;
     struct VAL *vals;
 
@@ -394,6 +396,7 @@ find_complex(int sdir, int *newkey)
     TRACE(("find_complex %4d:%s\n", line_no(curbp, DOT.l), lp_visible(DOT.l)));
     limit_iterations();
     for_each_modegroup(curbp, group, 0, vals) {
+	ignorecase = any_mode(vals, MDIGNCASE);
 	if ((key = match_complex(TRACEARG(group) DOT.l, vals)) != CPP_UNKNOWN) {
 	    start_fence_op(sdir, oldpos, oldpre);
 	    sdir = ((key == CPP_ENDIF)
@@ -410,6 +413,7 @@ find_complex(int sdir, int *newkey)
 #endif
 	}
     }
+    ignorecase = save_ic;
 #if OPT_MAJORMODE
     TRACE(("...find_complex %d (iterations %ld)\n", rc, iterations));
 #endif
@@ -540,9 +544,8 @@ comment_fence(int sdir)
 }
 
 static int
-getfence(
-	    int ch,		/* fence type to match against */
-	    int sdir)		/* direction to scan if we're not on a fence to begin with */
+getfence(int ch,		/* fence type to match against */
+	 int sdir)		/* direction to scan if we're not on a fence to begin with */
 {
     MARK oldpos;		/* original pointer */
     MARK oldpre;

@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/rubyfilt.c,v 1.36 2005/03/25 02:06:00 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/rubyfilt.c,v 1.38 2005/05/14 12:38:54 tom Exp $
  *
  * Filter to add vile "attribution" sequences to ruby scripts.  This is a
  * translation into C of an earlier version written for LEX/FLEX.
@@ -19,6 +19,9 @@ DefineFilter("ruby");
 
 #define isIdent(c)   (isalnum(CharOf(c)) || c == '_')
 #define isIdent0(c)  (isalpha(CharOf(c)) || c == '_')
+
+#define MORE(s)	     ((s) < the_last)
+#define ATLEAST(s,n) (the_last - (s) > (n))
 
 #ifdef DEBUG
 #define DPRINTF(params) if(FltOptions('d'))printf params
@@ -149,7 +152,7 @@ static int
 is_BLANK(char *s)
 {
     int found = 0;
-    while ((s != the_last) && isBlank(*s)) {
+    while (MORE(s) && isBlank(*s)) {
 	found++;
 	s++;
     }
@@ -182,7 +185,7 @@ is_STRINGS(char *s, int *err, int left_delim, int right_delim, int single)
 	    ++level;
 
 	for (;;) {
-	    if (s >= the_last) {
+	    if (!MORE(s)) {
 		*err = 1;	/* unterminated string */
 		break;
 	    }
@@ -227,7 +230,7 @@ is_QIDENT(char *s)
     int ch;
     int leading = 1;
 
-    while (s != the_last) {
+    while (MORE(s)) {
 	ch = CharOf(*s);
 	if (leading && isIdent0(ch)) {
 	    leading = 0;
@@ -255,7 +258,7 @@ is_KEYWORD(char *s)
     int found = 0;
 
     if (isIdent0(CharOf(s[0]))) {
-	while ((s + found < the_last) && isIdent(s[found])) {
+	while (ATLEAST(s, found) && isIdent(s[found])) {
 	    ++found;
 	}
     }
@@ -271,11 +274,11 @@ is_GLOBAL(char *s)
 {
     int found = 0;
 
-    if (*s == '$' && (++s < the_last)) {
+    if (*s == '$' && MORE(++s)) {
 	if (*s != '\0' && strchr("-_./,\"\\#%=~|$?&`'+*[];!@<>():", *s)) {
 	    found = 1;
 	} else if (isdigit(CharOf(*s))) {
-	    while ((s + found + 1) != the_last
+	    while (ATLEAST(s, found)
 		   && isdigit(CharOf(s[found])))
 		++found;
 	} else {
@@ -298,7 +301,7 @@ is_INSTANCE(char *s)
     int found = 0;
 
     if (*s == '@') {
-	while ((*s++ == '@') && (s < the_last)) {
+	while ((*s++ == '@') && MORE(s)) {
 	    ;
 	}
 	if ((found = is_KEYWORD(s)) != 0)
@@ -332,13 +335,13 @@ is_CHAR(char *s, int *err)
 {
     int found = 0;
 
-    if (*s == '?' && (s + 5 < the_last)) {
+    if (*s == '?' && ATLEAST(s, 5)) {
 	if ((*++s == BACKSLASH)
 	    && ((*++s == 'M') || (*s == 'C'))
 	    && (s[1] == '-')) {
 	    *err = 0;
 	    found = 5;
-	    if (*s == 'M' && (s + 5 < the_last)
+	    if (*s == 'M' && ATLEAST(s, 5)
 		&& s[2] == BACKSLASH
 		&& s[3] == 'C'
 		&& s[4] == '-') {
@@ -372,7 +375,7 @@ is_NUMBER(char *s, int *err)
     int dot = 0;
 
     *err = 0;
-    while (s != the_last) {
+    while (MORE(s)) {
 	int ch = CharOf(*s);
 
 	if ((s == base) && (ch == '+' || ch == '-')) {
@@ -388,7 +391,7 @@ is_NUMBER(char *s, int *err)
 		}
 	    }
 	} else if (ch == '.') {
-	    if (the_last - s > 1
+	    if (ATLEAST(s, 1)
 		&& (s[1] == '.' || isalpha(CharOf(s[1])))) {
 		break;
 	    }
@@ -404,7 +407,7 @@ is_NUMBER(char *s, int *err)
 	    /* EMPTY */ ;
 	} else if (radix == 0) {
 	    if (ch == '0') {
-		if ((s + 1) == the_last) {
+		if (!ATLEAST(s, 1)) {
 		    radix = 10;
 		} else if (s[1] == 'x') {
 		    radix = 16;
@@ -430,7 +433,7 @@ is_NUMBER(char *s, int *err)
 		value = 1;
 	    } else {
 		if (value) {
-		    while (s != the_last) {
+		    while (MORE(s)) {
 			ch = CharOf(*s);
 			if (isalnum(ch)) {
 			    *err = 1;
@@ -460,9 +463,9 @@ is_COMMENT(char *s)
     char *t = is_BLANK(s) + s;
 
     if (*t++ == '#') {
-	while (t != the_last) {
+	while (MORE(t)) {
 	    if (*t == '\n') {
-		if ((t + 1) == the_last
+		if (!ATLEAST(t, 1)
 		    || t[1] != '#')
 		    break;
 	    }
@@ -486,7 +489,7 @@ end_marker(char *s, char *marker, int only)
 {
     int len = strlen(marker);
 
-    return (the_last - s > len
+    return (ATLEAST(s, len)
 	    && !strncmp(s, marker, len)
 	    && isspace(CharOf(s[len]))
 	    && (!only || (s[len] == '\n')));
@@ -521,7 +524,7 @@ begin_HERE(char *s, int *quoted, int *strip_here)
     int ok;
     int strip = 0;
 
-    if (the_last - s > 3
+    if (ATLEAST(s, 3)
 	&& s[0] == '<'
 	&& s[1] == '<'
 	&& !isBlank(s[2])) {
@@ -557,7 +560,7 @@ skip_BLANKS(char *s)
 {
     char *base = s;
 
-    while (s != the_last) {
+    while (MORE(s)) {
 	if (!isspace(CharOf(*s))) {
 	    break;
 	}
@@ -638,7 +641,7 @@ is_OPERATOR(char *s)
     if (ispunct(*s)) {
 	unsigned n;
 	for (n = 0; n < TABLESIZE(table); ++n) {
-	    if ((the_last - s) >= table[n].len
+	    if (ATLEAST(s, table[n].len)
 		&& table[n].ops[0] == *s
 		&& !memcmp(s, table[n].ops, table[n].len)) {
 		found = table[n].len;
@@ -662,7 +665,7 @@ is_REGEXP(char *s, int left_delim, int right_delim)
     int level = 0;
     int range = 0;
 
-    while (s < the_last) {
+    while (MORE(s)) {
 	if (left_delim != right_delim) {
 	    if (*s == left_delim) {
 		++level;
@@ -688,7 +691,7 @@ is_REGEXP(char *s, int left_delim, int right_delim)
 	    ++s;
 	} else if (s != base && *s == right_delim) {
 	    ++s;
-	    while (s < the_last && isalpha(CharOf(*s))) {
+	    while (MORE(s) && isalpha(CharOf(*s))) {
 		++s;
 	    }
 	    found = s - base;
@@ -736,7 +739,7 @@ is_Regexp(char *s, int *delim)
     if (*s == '/') {
 	*delim = balanced_delimiter(s);
 	found = is_REGEXP(s, *s, *delim);
-    } else if (s + 4 < the_last
+    } else if (ATLEAST(s, 4)
 	       && s[0] == '%'
 	       && s[1] == 'r'
 	       && !isalnum(CharOf(s[2]))) {
@@ -756,10 +759,10 @@ is_String(char *s, int *delim, int *err)
     int found = 0;
 
     *delim = 0;
-    if (s + 2 < the_last) {
+    if (ATLEAST(s, 2)) {
 	switch (*s) {
 	case '%':
-	    if (s + 4 < the_last) {
+	    if (ATLEAST(s, 4)) {
 		switch (s[1]) {
 		case 'q':
 		case 'w':
@@ -811,7 +814,7 @@ line_size(char *s)
 {
     char *base = s;
 
-    while (s != the_last) {
+    while (MORE(s)) {
 	if (*s == '\n')
 	    break;
 	s++;
@@ -822,7 +825,7 @@ line_size(char *s)
 static char *
 put_newline(char *s)
 {
-    if (s != the_last)
+    if (MORE(s))
 	flt_putc(*s++);
     return s;
 }
@@ -837,9 +840,9 @@ var_embedded(char *s)
     int found = 0;
     int delim;
 
-    if (*s == '#' && (++s < the_last)) {
+    if (*s == '#' && MORE(++s)) {
 	if (*s == L_CURLY) {
-	    for (found = 1; s + found < the_last; ++found) {
+	    for (found = 1; ATLEAST(s, found); ++found) {
 		/* FIXME: this check for %q{xxx} is too naive... */
 		if (s[found] == '%' && (strchr("wqQ", s[found + 1]) != 0)) {
 		    int ignore;
@@ -980,7 +983,7 @@ put_REGEXP(char *s, int length, int delim)
 	} else if (s != first && *s == delim) {
 	    flt_bfr_append(s, 1);
 	    last = ++s;
-	    while (s < the_last && isalpha(CharOf(*s))) {
+	    while (MORE(s) && isalpha(CharOf(*s))) {
 		++s;
 	    }
 	    flt_bfr_embed(last, s - last, Keyword_attr);
@@ -1055,7 +1058,7 @@ do_filter(FILE *input GCC_UNUSED)
 	the_last = the_file + the_size;
 
 	s = the_file;
-	while (s != the_last) {
+	while (MORE(s)) {
 	    if (*s == '\n') {
 		in_line = -1;
 		if (state == eCODE)
@@ -1179,7 +1182,7 @@ do_filter(FILE *input GCC_UNUSED)
 		    Parsed(this_tok, tVARIABLE);
 		    s = put_VARIABLE(s, ok);
 		    had_op = 0;
-		} else if (s + (ok = 2) <= the_last && !strncmp(s, "?\"", ok)) {
+		} else if (ATLEAST(s, (ok = 2)) && !strncmp(s, "?\"", ok)) {
 		    Parsed(this_tok, tVARIABLE);
 		    s = put_VARIABLE(s, ok);	/* csv.rb uses it, undocumented */
 		    had_op = 0;

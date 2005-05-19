@@ -1,4 +1,4 @@
-# $Header: /users/source/archives/vile.vcs/filters/RCS/genmake.mak,v 1.24 2004/08/26 15:50:50 tom Exp $
+# $Header: /users/source/archives/vile.vcs/filters/RCS/genmake.mak,v 1.26 2005/05/10 22:51:21 tom Exp $
 # This is a list of filter root names and whether .c or .l files define the
 # filter.  Except for vile-crypt and vile-manfilt (which do not correspond to
 # majormodes), the filter names are constructed as vile-{root}-filt.
@@ -30,6 +30,8 @@ fdl	fdl-filt	l
 html	htmlfilt	l
 imake	imakeflt	l
 info	infofilt	l
+ini	ini-filt	l
+iss	iss-filt	l
 latex	latexflt	l
 lex	lex-filt	l
 lisp	lispfilt	l
