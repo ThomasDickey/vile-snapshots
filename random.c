@@ -2,7 +2,7 @@
  * This file contains the command processing functions for a number of random
  * commands. There is no functional grouping here, for sure.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.282 2005/01/24 00:23:42 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.283 2005/05/22 00:50:19 tom Exp $
  *
  */
 
@@ -235,9 +235,7 @@ showcpos(int f GCC_UNUSED, int n GCC_UNUSED)
     ecol = mk_to_vcol(DOT, FALSE, curbp, 0, 0);
     DOT.o = savepos;
 
-    ratio = 0;			/* Ratio before dot. */
-    if (numchars != 0)
-	ratio = (100L * predchars) / numchars;
+    ratio = PERCENT(predchars, numchars);
 
     /* summarize and report the info */
     if (numlines == 0 && numchars == 0) {

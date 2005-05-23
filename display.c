@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.399 2005/03/15 02:23:43 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.401 2005/05/22 00:50:47 tom Exp $
  *
  */
 
@@ -2696,7 +2696,7 @@ percentage(WINDOW *wp)
 #endif
 	val = line_no(bp, wp->w_dot.l);
 
-    return (denom == 0) ? 100 : ((val * 100) / denom);
+    return PERCENT(val, denom);
 }
 
 /*
@@ -2881,7 +2881,11 @@ special_formatter(TBUFF **result, const char *fs, WINDOW *wp)
 		    execstr = temp;
 
 		    strncpy0(temp, save_fs, fs + 1 - save_fs);
-		    execstr = get_token(execstr, &tok, EOS, (int *) 0);
+		    execstr = get_token(execstr,
+					&tok,
+					eol_null,
+					EOS,
+					(int *) 0);
 		    vl_strncpy(temp, tokval(temp), sizeof(temp));
 
 		    tb_free(&tok);

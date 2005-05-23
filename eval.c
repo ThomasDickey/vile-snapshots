@@ -2,7 +2,7 @@
  *	eval.c -- function and variable evaluation
  *	original by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.345 2005/03/13 17:59:08 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.346 2005/05/20 23:01:32 tom Exp $
  *
  */
 
@@ -1375,7 +1375,7 @@ FindVar(char *var, VWRAP * vd)
 	if (vl_lookup_func(var) == UFINDIRECT) {
 	    TBUFF *tok = 0;
 	    /* grab token, and eval it */
-	    execstr = get_token(execstr, &tok, EOS, (int *) 0);
+	    execstr = get_token(execstr, &tok, eol_null, EOS, (int *) 0);
 	    (void) vl_strncpy(var, tokval(tb_values(tok)), NLINE);
 	    FindVar(var, vd);	/* recursive, but probably safe */
 	    tb_free(&tok);

@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.545 2005/03/13 18:06:02 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.547 2005/05/21 15:44:49 tom Exp $
  *
  */
 
@@ -327,8 +327,8 @@ extern char * get_xshellflags (void);
 /* eval.c */
 extern UINT mac_tokens (void);
 extern char * get_directory (void);
-extern char * get_token (char *src, TBUFF **tok, int eolchar, int *actual);
-extern char * get_token2 (char *src, TBUFF **tok, int eolchar, int *actual);
+extern char * get_token (char *src, TBUFF **tok, int (*endfunc) (EOL_ARGS), int eolchar, int *actual);
+extern char * get_token2 (char *src, TBUFF **tok, int (*endfunc) (EOL_ARGS), int eolchar, int *actual);
 extern char * mac_tokval (TBUFF **tok);
 extern char * mklower (char *str);
 extern char * mktrimmed (char *str);
@@ -479,7 +479,7 @@ extern void init_filec(const char *buffer_name);
 #endif
 
 /* fileio.c */
-extern B_COUNT ffsize (void);
+extern int ffsize (B_COUNT *have);
 extern int ffaccess (char *fn, UINT mode);
 extern int ffclose (void);
 extern int ffexists (char *p);
@@ -496,8 +496,8 @@ extern void ffdocrypt (int crypting);
 #endif
 
 #if ! SYS_MSDOS
-extern int ffread (char *buf, long len);
-extern void ffseek (long n);
+extern int ffread (char *buf, B_COUNT want, B_COUNT *have);
+extern void ffseek (B_COUNT n);
 extern void ffrewind (void);
 #endif
 
@@ -562,6 +562,7 @@ extern char *user_reply(const char *prompt, const char *dftval);
 extern int dotcmdbegin (void);
 extern int dotcmdfinish (void);
 extern int end_string (void);
+extern int eol_null(EOL_ARGS);
 extern int eol_history(EOL_ARGS);
 extern int get_recorded_char (int eatit);
 extern int is_edit_char (int c);
@@ -674,7 +675,7 @@ extern int index2reg (int c);
 extern int index2ukb (int inx);
 extern int kinsert (int c);
 extern int kinsertlater (int c);
-extern int ldelete (long n, int kflag);
+extern int ldelete (B_COUNT n, int kflag);
 extern int lreplc(LINE *lp, C_NUM off, int c);
 extern int linsert (int n, int c);
 extern int lnewline (void);

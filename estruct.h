@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.572 2005/03/13 22:56:47 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.576 2005/05/22 19:20:16 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -185,7 +185,8 @@
 #ifndef HAVE_CONFIG_H		/* we did not run the configure script */
 
 #if CC_NEWDOSCC
-# define HAVE_GETCWD 1
+# define HAVE_GETCWD		1
+# define HAVE_LIMITS_H		1
 #endif
 
 #if CC_CSETPP
@@ -712,6 +713,7 @@
 #define OPT_CHARCLASS_CHOICES	 OPT_SHOW_CTYPE
 #define OPT_COLOR_CHOICES	 (OPT_ENUM_MODES && OPT_COLOR)
 #define OPT_DIRECTIVE_CHOICES    !SMALLER
+#define OPT_FORBUFFERS_CHOICES   !SMALLER
 #define OPT_HILITE_CHOICES	 (OPT_ENUM_MODES && OPT_HILITEMATCH)
 #define OPT_LOOKUP_CHOICES       !SMALLER
 #define OPT_MMQUALIFIERS_CHOICES OPT_MAJORMODE
@@ -815,6 +817,10 @@ extern char *rindex (const char *s, int c);
 
 #ifdef HAVE_SYS_PARAM_H
 #include <sys/param.h>
+#endif
+
+#ifdef HAVE_LIMITS_H
+#include <limits.h>
 #endif
 
 /*	System dependent library redefinitions, structures and includes	*/
@@ -1136,6 +1142,12 @@ typedef	enum {
 	, D_TRACE
 #endif
 } DIRECTIVE;
+
+typedef enum {
+	FB_MIXED = 0
+	, FB_GLOB
+	, FB_REGEX
+} FOR_BUFFERS;
 
 typedef enum {
 	MMQ_ANY = 0
@@ -1581,7 +1593,7 @@ typedef	struct {
 } L_FLAG;		/* LINE-flags */
 
 typedef	ULONG		CMDFLAGS;	/* CMDFUNC flags */
-typedef	long		B_COUNT;	/* byte-count */
+typedef	ULONG		B_COUNT;	/* byte-count */
 
 /*
  * Normally we build with ANSI C compilers, but allow for the possibility of
@@ -1704,7 +1716,7 @@ typedef struct	LINE {
 #define lputc(lp, n, c)		(lvalue(lp)[(n)]=(char)(c))
 #define lvalue(lp)		((lp)->l_text)
 #define llength(lp)		((lp)->l_used)
-#define line_length(lp)		(llength(lp)+len_rs) /* counting recordsep */
+#define line_length(lp)		((B_COUNT)(llength(lp))+len_rs) /* counting recordsep */
 
 #define liscopied(lp)		((lp)->l.l_undo_cookie == current_undo_cookie)
 #define lsetcopied(lp)		((lp)->l.l_undo_cookie = current_undo_cookie)
@@ -2785,6 +2797,8 @@ extern void _exit (int code);
 
 /* array/table size */
 #define	TABLESIZE(v)	(sizeof(v)/sizeof(v[0]))
+
+#define PERCENT(num,den) ((den) ? (int)((100.0 * (num))/(den)) : 100)
 
 /* Quiet compiler warnings on places where we're being blamed incorrectly,
  * e.g., for casting away const, or for alignment problems.  It's always

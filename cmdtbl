@@ -97,7 +97,7 @@
 #		in '!' listed, then the flag does nothing, and should be
 #		viewed simply as documentation.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.235 2005/01/26 19:17:55 cmorgan Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.237 2005/05/22 02:11:53 tom Exp $
 #
 #
 
@@ -894,6 +894,11 @@ joinlines	REDO|UNDO
 	"join-lines"			!FEWNAMES
 	'J'
 	<join CNT lines together with the current one>
+for_buffers	NONE			!SMALLER
+	"for-buffers"			!FEWNAMES
+	"fb"
+	'^X-x'
+	<for each buffer matched by the pattern, perform the command>
 killbuffer	GOAL
 	"delete-buffer"			!FEWNAMES
 	"kill-buffer"			!FEWNAMES

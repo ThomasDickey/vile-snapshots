@@ -22,7 +22,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.537 2005/03/14 00:39:43 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.538 2005/05/22 19:27:28 tom Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -1176,6 +1176,9 @@ init_mode_value(struct VAL *d, MODECLASS v_class, int v_which)
 #endif
 #ifdef GVAL_FINDCFG
 	    setTXT(GVAL_FINDCFG, "");
+#endif
+#ifdef GVAL_FOR_BUFFERS
+	    setINT(GVAL_FOR_BUFFERS, FB_MIXED);
 #endif
 #ifdef GVAL_GLOB
 	    setTXT(GVAL_GLOB, "!echo %s");

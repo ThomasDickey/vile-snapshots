@@ -1,6 +1,6 @@
 dnl vile's local definitions for autoconf.
 dnl
-dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.144 2005/05/16 00:00:38 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.145 2005/05/22 16:43:09 tom Exp $
 dnl
 dnl ---------------------------------------------------------------------------
 dnl ---------------------------------------------------------------------------
@@ -1486,6 +1486,16 @@ main()
 
 test $cf_cv_need_killpg = yes && AC_DEFINE(HAVE_KILLPG)
 ])dnl
+dnl ---------------------------------------------------------------------------
+dnl CF_LARGEFILE version: 1 updated: 2005/05/22 12:42:40
+dnl ------------
+dnl Add checks for large file support.
+AC_DEFUN([CF_LARGEFILE],[
+ifdef([AC_FUNC_FSEEKO],[
+	AC_FUNC_FSEEKO
+	AC_SYS_LARGEFILE
+])
+])
 dnl ---------------------------------------------------------------------------
 dnl CF_LEX_STATES version: 2 updated: 1999/05/07 22:29:23
 dnl -------------

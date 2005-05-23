@@ -1,7 +1,7 @@
 /*
  * debugging support -- tom dickey.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.52 2005/02/09 21:42:26 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.53 2005/05/22 16:58:55 tom Exp $
  *
  */
 
@@ -479,11 +479,10 @@ record_alloc(char *newp, char *oldp, unsigned len)
  *	public entrypoints						*
  ************************************************************************/
 #if DOALLOC
-char *
-doalloc(char *oldp, unsigned amount)
+void *
+doalloc(void *oldp, unsigned amount)
 {
-    int j;
-    char *newp;
+    void *newp;
 
     check_opt_working();
     count_alloc += (oldp == 0);
@@ -497,7 +496,7 @@ doalloc(char *oldp, unsigned amount)
 #else
     /* this is a little cleaner for valgrind's purpose, but slower */
     if (oldp != 0) {
-	j = FindArea(oldp);
+	int j = FindArea(oldp);
 	assert(j >= 0);
 
 	newp = typecallocn(char, amount);

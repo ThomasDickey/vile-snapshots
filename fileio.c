@@ -2,7 +2,7 @@
  * The routines in this file read and write ASCII files from the disk. All of
  * the knowledge about files are here.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/fileio.c,v 1.175 2005/01/21 11:46:18 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/fileio.c,v 1.179 2005/05/22 16:28:46 tom Exp $
  *
  */
 
@@ -514,25 +514,31 @@ ffdocrypt(int crypting)
 }
 #endif
 
-B_COUNT
-ffsize(void)
+#if SYS_WINNT || (SYS_MSDOS && CC_DJGPP)
+#define FFSIZE_FTELL 1
+#else
+#define FFSIZE_FTELL 0
+#endif
+
+int
+ffsize(B_COUNT * have)
 {
-    long result = -1L;
+    int result = -1;
 
-#if SYS_WINNT
-
+#if FFSIZE_FTELL
     long prev;
+
     prev = ftell(ffp);
-    if (fseek(ffp, 0, 2) >= 0) {
-	result = ftell(ffp);
-	fseek(ffp, prev, 0);
+    if (fseek(ffp, 0, SEEK_END) >= 0) {
+	result = 0;
+	*have = ftell(ffp);
+	fseek(ffp, prev, SEEK_SET);
     }
 #else
-#if SYS_UNIX || SYS_VMS || SYS_OS2
-
     struct stat statbuf;
-    if (fstat(fileno(ffp), &statbuf) == 0) {
-	result = (B_COUNT) statbuf.st_size;
+
+    if ((result = fstat(fileno(ffp), &statbuf)) == 0) {
+	*have = (B_COUNT) statbuf.st_size;
     }
 #if SYS_VMS
     if (result == -1) {
@@ -543,30 +549,10 @@ ffsize(void)
 	 */
 	result = 0;
     }
-#endif
+#endif /* SYS_VMS */
+#endif /* FFSIZE_FTELL */
 
-#else
-#if SYS_MSDOS
-#if CC_DJGPP
-
-    long prev;
-    prev = ftell(ffp);
-    if (fseek(ffp, 0, 2) >= 0) {
-	result = ftell(ffp);
-	fseek(ffp, prev, 0);
-    }
-#else
-
-    int fd = fileno(ffp);
-    if (fd >= 0)
-	result = filelength(fd);
-
-#endif /* CC_DJGPP */
-#endif /* SYS_MSDOS */
-#endif /* SYS_UNIX || SYS_VMS || SYS_OS2 */
-#endif /* SYS_WINNT */
-
-    TRACE(("ffsize = %ld\n", result));
+    TRACE(("ffsize %s %lu\n", (result < 0) ? "failed" : "succeeded", *have));
     return result;
 }
 
@@ -603,45 +589,69 @@ ffexists(char *p)
     return (status);
 }
 
-#if !SYS_MSDOS
-int
-ffread(char *buf, long len)
-{
-    int result;
-#if SYS_VMS
-    int got;
-    /*
-     * If the input file is record-formatted (as opposed to stream-lf, a
-     * single read won't get the whole file.
-     */
-    for (result = 0; len > 0; result += got) {
-	got = read(fileno(ffp), buf + result, len - result);
-	if (got <= 0)
-	    break;
-    }
-    fseek(ffp, len, 1);		/* resynchronize stdio */
+/*
+ * Not every system has read().  Use fread() for the others.
+ * Also, do not use read() when we use ftell(), since the latter is
+ * buffered and the former is not.
+ */
+#if CC_CSETPP
+#define FFREAD_FREAD 1
 #else
-# if CC_CSETPP
-    if ((result = fread(buf, len, 1, ffp)) == 1)
-	result = len;
-    else
-	result = -1;
-# else
-    result = read(fileno(ffp), buf, (size_t) len);
-    if (result >= 0)
-	fseek(ffp, len, 1);	/* resynchronize stdio */
-# endif
+#define FFREAD_FREAD FFSIZE_FTELL
 #endif
+
+/*
+ * fread() and read() return ssize_t, which may be a signed long.
+ * But ssize_t is less common in header files, so simply use long.
+ * Ditto for the limit - use LONG_MAX, which should appear in limits.h
+ * but older headers may not).
+ */
+#ifndef LONG_MAX
+#define LONG_MAX (((unsigned long)(~0)) >> 1)
+#endif
+
+int
+ffread(char *buf, B_COUNT want, B_COUNT * have)
+{
+    int result = 0;
+    long got;
+
+    *have = 0;
+    if (want != 0) {
+	/*
+	 * Depending on the system, a single read will not necessarily return
+	 * all of the data in one call.  Also, since B_COUNT is unsigned, and
+	 * read()'s return-value is not, we have to limit the requests to
+	 * avoid overflow.
+	 */
+	while (want != 0) {
+	    long ask = (((want - *have) > LONG_MAX)
+			? LONG_MAX
+			: (want - *have));
+
+#if FFREAD_FREAD
+	    got = fread(buf + *have, 1, ask, ffp);
+#else
+	    got = read(fileno(ffp), buf + *have, ask);
+#endif
+	    if (got <= 0)
+		break;
+	    *have += got;
+	}
+	if (*have == 0)
+	    result = -1;
+    }
+    TRACE(("ffread %s %lu\n", (result < 0) ? "failed" : "succeeded", *have));
     return result;
 }
 
 void
-ffseek(long n)
+ffseek(B_COUNT n)
 {
 #if SYS_VMS
     ffrewind();			/* see below */
 #endif
-    fseek(ffp, n, 0);
+    fseek(ffp, n, SEEK_SET);
 }
 
 void
@@ -658,10 +668,9 @@ ffrewind(void)
     (void) fclose(ffp);
     ffp = fopen(temp, FOPEN_READ);
 #else
-    fseek(ffp, 0L, 0);
+    fseek(ffp, 0L, SEEK_SET);
 #endif
 }
-#endif
 
 /*
  * Close a file. Should look at the status in all systems.

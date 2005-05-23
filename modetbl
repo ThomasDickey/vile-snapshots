@@ -11,7 +11,7 @@
 #
 # The modes are table entries in the BUFFER and WINDOW structures.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.233 2005/01/15 16:33:33 cmorgan Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.234 2005/05/22 19:23:31 tom Exp $
 #
 #
 # Mode-table entries.  Capitalized letters are used for abbreviations.
@@ -64,6 +64,7 @@ enum
 	"Color-Scheme"	COLOR_SCHEME	chgd_scheme	OPT_COLOR_SCHEMES # color palette combination
 	"ccolor"	CCOLOR		chgd_color	OPT_COLOR	# cursor color
 	"fcolor"	FCOLOR		chgd_color	OPT_COLOR	# foreground color
+	"For-Buffers"	FOR_BUFFERS	0		OPT_FORBUFFERS_CHOICES	# for-buffers pattern style
 	"bcolor"	BCOLOR		chgd_color	OPT_COLOR	# background color
 	"mcolor"	MCOLOR		chgd_hilite	OPT_HILITEMATCH # modeline color
 	"Mini-Hilite"   MINI_HILITE	0		# highlight minibuffer when using vi-commands
@@ -457,6 +458,11 @@ string
 "endwith"	D_ENDWITH
 "endm"		D_ENDM
 "trace"		D_TRACE
+
+.table forbuffers
+"glob"		FB_GLOB
+"mixed"		FB_MIXED
+"regex"		FB_REGEX
 
 .table hilite
 "bold"		VABOLD

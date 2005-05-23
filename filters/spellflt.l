@@ -1,7 +1,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/spellflt.l,v 1.19 2005/03/11 00:23:11 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/spellflt.l,v 1.20 2005/05/22 16:15:44 tom Exp $
  *
  * Filter to add vile "attribution" sequences to misspelled words.
  */
@@ -84,8 +84,8 @@ pipe_read(char *buffer, FILE *s)
 	}
 
 	if (!done) {
-	    lastsize = ffread(lastdata, sizeof(lastdata));
-	    done = (lastsize <= 0);
+	    if (ffread(lastdata, sizeof(lastdata), &lastsize) <= 0)
+		done = 1;
 	}
     } while (!done);
 

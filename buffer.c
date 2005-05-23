@@ -5,7 +5,7 @@
  * keys. Like everyone else, they set hints
  * for the display system.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.282 2005/01/24 01:43:28 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.289 2005/05/22 19:49:41 tom Exp $
  *
  */
 
@@ -1042,7 +1042,7 @@ swbuffer(BUFFER *bp)
 static int
 suckitin(BUFFER *bp, int copy, int lockfl)
 {
-    int s;
+    int s = FALSE;
 
     TRACE((T_CALLED "suckitin(%s, %s)\n", bp->b_bname, copy ? "copy" : "new"));
     if (copy) {
@@ -1318,6 +1318,142 @@ kill_that_buffer(BUFFER *bp)
     return s;
 }
 
+static void
+free_buffer_list(char **list)
+{
+    int n;
+    for (n = 0; list[n] != 0; ++n) {
+	free(list[n]);
+    }
+    free(list);
+}
+
+/*
+ * Make a list of buffer names to process.
+ */
+static char **
+make_buffer_list(char *bufn)
+{
+    BUFFER *bp;
+    int count = 0;
+    int limit = countBuffers();
+    char **result = typecallocn(char *, limit + 1);
+
+    if (result != 0) {
+#if OPT_FORBUFFERS_CHOICES
+#if OPT_GLOB_RANGE
+	/*
+	 * If it looks like a scratch buffer, try to find exactly that before
+	 * possibly getting confused with range expressions, etc.
+	 */
+	if (global_g_val(GVAL_FOR_BUFFERS) == FB_MIXED
+	    && is_scratchname(bufn)
+	    && (bp = find_b_name(bufn)) != 0) {
+	    result[count++] = strmalloc(bp->b_bname);
+	} else
+#endif
+	    if (global_g_val(GVAL_FOR_BUFFERS) == FB_MIXED
+		|| global_g_val(GVAL_FOR_BUFFERS) == FB_GLOB) {
+	    for_each_buffer(bp) {
+		if (glob_match_leaf(bp->b_bname, bufn)) {
+		    result[count++] = strmalloc(bp->b_bname);
+		}
+	    }
+	} else if (global_g_val(GVAL_FOR_BUFFERS) == FB_REGEX) {
+	    regexp *exp;
+
+	    if ((exp = regcomp(bufn, strlen(bufn), TRUE)) != 0) {
+		for_each_buffer(bp) {
+		    if (regexec(exp, bp->b_bname, (char *) 0, 0, -1)) {
+			result[count++] = strmalloc(bp->b_bname);
+		    }
+		}
+		free(exp);
+	    }
+	}
+#else
+	if ((bp = find_buffer(bufn)) != 0) {	/* Try buffer */
+	    result[count++] = strmalloc(bp->b_bname);
+	}
+#endif
+	if (count == 0) {
+	    free_buffer_list(result);
+	    result = 0;
+	}
+    }
+    return result;
+}
+
+#if !SMALLER
+/*
+ * Select a set of buffers with the first parameter, and prompt for a command
+ * to execute on each buffer.
+ */
+int
+for_buffers(int f, int n)
+{
+    BUFFER *bp;
+    int s;
+    char bufn[NFILEN];
+    char command[NSTRING];
+    char **list;
+    int inlist;
+    int updated = 0;
+
+    bufn[0] = EOS;
+    if ((s = ask_for_bname("Buffers: ", bufn, sizeof(bufn))) != TRUE)
+	return s;
+
+    if ((list = make_buffer_list(bufn)) != 0) {
+	*command = EOS;
+	/*
+	 * Don't do command-completion, since we want to allow range
+	 * expressions, e.g.,
+	 *      :fb *.h %trim
+	 *
+	 * FIXME: split-out logic in execute_named_command() to allow proper
+	 * parsing to linespec and command-verb.
+	 */
+	if ((s = kbd_string("Command: ",
+			    command,
+			    sizeof(command),
+			    '\n',
+			    KBD_QUOTES,
+			    no_completion)) == TRUE) {
+	    char *save_execstr = execstr;
+	    int save_clexec = clexec;
+
+	    for (inlist = 0; list[inlist] != 0; ++inlist) {
+		if ((bp = find_b_name(list[inlist])) != 0
+		    && swbuffer(bp)) {
+		    char this_command[NSTRING];
+
+		    /*
+		     * FIXME: does namedcmd() modify what execstr points to?
+		     */
+		    execstr = strcpy(this_command, command);
+		    clexec = TRUE;
+
+		    if (namedcmd(f, n))
+			++updated;
+		}
+	    }
+	    execstr = save_execstr;
+	    clexec = save_clexec;
+	}
+	free_buffer_list(list);
+    } else {
+	mlforce("[No matching buffers]");
+    }
+
+    if (updated) {
+	mlforce("[Processed %d buffer%s]", updated, PLURAL(updated));
+	s = TRUE;
+    }
+    return s;
+}
+#endif /* !SMALLER */
+
 /*
  * Dispose of a buffer, by name.  If this is a screen-command, pick the name up
  * from the screen.  Otherwise, ask for the name.  Look it up (don't get too
@@ -1338,11 +1474,15 @@ killbuffer(int f, int n)
     BUFFER *bp;
     int s;
     char bufn[NFILEN];
+    char **list;
+    int inlist;
+    int removed = 0;
 
 #if OPT_UPBUFF
     C_NUM save_COL;
     MARK save_DOT;
     MARK save_TOP;
+
     int animated = (f
 		    && valid_window(curwp)
 		    && (n > 1)
@@ -1364,49 +1504,18 @@ killbuffer(int f, int n)
     if (!f)
 	n = 1;
     for_ever {
-	BUFFER *bp_next;
 	bufn[0] = EOS;
 	if ((s = ask_for_bname("Kill buffer: ", bufn, sizeof(bufn))) != TRUE)
 	    break;
 
-#if !SMALLER			/* allow user to kill a glob'd expression. */
-	s = 0;
-#if OPT_GLOB_RANGE
-	/*
-	 * If it looks like a scratch buffer, try to find exactly that before
-	 * possibly getting confused with range expressions, etc.
-	 */
-	if (is_scratchname(bufn)
-	    && (bp = find_b_name(bufn)) != 0
-	    && kill_that_buffer(bp)) {
-	    s = 1;
-	}
-	if (s == 0)
-#endif
-	{
-	    for (bp = bheadp; bp; bp = bp_next) {
-		/* Fetch next buffer prior to possible destruction */
-		bp_next = bp->b_bufp;
-		/* Attempt match and kill if match okay */
-		if (glob_match_leaf(bp->b_bname, bufn)) {
-		    if (kill_that_buffer(bp))
-			s++;
+	if ((list = make_buffer_list(bufn)) != 0) {
+	    for (inlist = 0; list[inlist] != 0; ++inlist) {
+		if ((bp = find_b_name(list[inlist])) != 0
+		    && kill_that_buffer(bp)) {
+		    ++removed;
 		}
 	    }
-	}
-
-	if (s != 0) {
-	    mlforce("[Removed %d buffer%s]", s, PLURAL(s));
-	    s = TRUE;
-	} else			/* perhaps filename or buffer number */
-#endif /* !SMALLER */
-	{
-	    if ((bp = find_any_buffer(bufn)) == 0) {	/* Try buffer */
-		s = FALSE;
-		break;
-	    }
-	    if ((s = kill_that_buffer(bp)) != TRUE)
-		break;
+	    free_buffer_list(list);
 	}
 
 	if (--n > 0) {
@@ -1421,6 +1530,10 @@ killbuffer(int f, int n)
 	    break;
     }
 
+    if (removed) {
+	mlforce("[Removed %d buffer%s]", removed, PLURAL(removed));
+	s = TRUE;
+    }
 #if OPT_UPBUFF
     if (animated && !special) {
 	curgoal = save_COL;
@@ -2068,7 +2181,7 @@ next_buffer_line(const char *bname)
 
     /* how much left on the current line? */
     blen = llength(bp->b_dot.l);
-    if (blen > bp->b_dot.o)
+    if (blen > (B_COUNT) bp->b_dot.o)
 	blen -= bp->b_dot.o;
     else
 	blen = 0;
@@ -2387,30 +2500,28 @@ bsizes(BUFFER *bp)
 {
     int code = FALSE;
 
-    if (valid_buffer(curbp)) {
+    if (valid_buffer(curbp)
+	&& !b_is_counted(bp)) {
 	LINE *lp;		/* current line */
 	B_COUNT numchars = 0;	/* # of chars in file */
 	L_NUM numlines = 0;	/* # of lines in file */
 	L_NUM ending = len_record_sep(bp);
 
-	if (!b_is_counted(bp)) {
-
-	    /* count chars and lines */
-	    for_each_line(lp, bp) {
-		++numlines;
-		numchars += llength(lp) + ending;
+	/* count chars and lines */
+	for_each_line(lp, bp) {
+	    ++numlines;
+	    numchars += llength(lp) + ending;
 #if !SMALLER			/* tradeoff between codesize & data */
-		lp->l_number = numlines;
+	    lp->l_number = numlines;
 #endif
-	    }
-	    if (!b_val(bp, MDNEWLINE))
-		numchars -= ending;
-
-	    bp->b_bytecount = numchars;
-	    bp->b_linecount = numlines;
-	    b_set_counted(bp);
-	    code = TRUE;
 	}
+	if (!b_val(bp, MDNEWLINE))
+	    numchars -= ending;
+
+	bp->b_bytecount = numchars;
+	bp->b_linecount = numlines;
+	b_set_counted(bp);
+	code = TRUE;
     }
     return code;
 }

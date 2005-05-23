@@ -8,7 +8,7 @@
 /************************************************************************/
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/menu.c,v 1.45 2005/01/17 01:02:06 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/menu.c,v 1.46 2005/05/20 23:01:32 tom Exp $
  */
 
 /* Vile includes */
@@ -156,7 +156,7 @@ vlmenu_is_bind(char *action)
 {
     static TBUFF *tok;
 
-    (void) get_token(action, &tok, EOS, (int *) 0);
+    (void) get_token(action, &tok, eol_null, EOS, (int *) 0);
     if (tb_length(tok) != 0
 	&& engl2fnc(tb_values(tok)) != NULL)
 	return 1;
@@ -171,7 +171,7 @@ char *
 vlmenu_is_cmd(char *action)
 {
     static TBUFF *tok;
-    char *result = (char *) get_token(action, &tok, EOS, (int *) 0);
+    char *result = (char *) get_token(action, &tok, eol_null, EOS, (int *) 0);
 
     if (tb_length(tok) != 0
 	&& !strcmp(tb_values(tok), "cmd"))
