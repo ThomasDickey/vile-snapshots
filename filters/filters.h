@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.91 2005/03/15 21:29:21 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.92 2005/05/22 16:56:05 tom Exp $
  */
 
 #ifndef FILTERS_H
@@ -128,6 +128,8 @@ extern	int	sscanf	( const char *src, const char *fmt, ... );
 #define	typecallocn(cast,ntypes)	(cast *)calloc(sizeof(cast),ntypes)
 #define	typereallocn(cast,ptr,ntypes)	(cast *)realloc((char *)(ptr),\
 							(ntypes)*sizeof(cast))
+
+#define	FreeAndNull(p)	if ((p) != 0)	{ free(p); p = 0; }
 
 extern	char *home_dir(void);
 
@@ -408,6 +410,15 @@ extern char *vile_getenv(const char *name);
 			flt_bfr_append(yytext, yyleng);\
 			flt_bfr_finish();\
 			pop_state()
+
+/*
+ * If we're not making built-in filters, we won't be linking with trace.o,
+ * and do not implement leak-checking for that case.
+ */
+#if !OPT_FILTER
+#undef  NO_LEAKS
+#define NO_LEAKS 0
+#endif
 
 #if CAN_TRACE && NO_LEAKS
 #include <trace.h>

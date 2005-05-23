@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.303 2005/01/23 13:09:16 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.304 2005/05/22 19:28:12 tom Exp $
  *
  */
 
@@ -845,6 +845,9 @@ static struct FSM fsm_tbl[] =
 #endif
 #if OPT_BACKUP_CHOICES
     {"backup-style", fsm_backup_choices},
+#endif
+#if OPT_FORBUFFERS_CHOICES
+    {"for-buffers", fsm_forbuffers_choices},
 #endif
 #if OPT_HILITE_CHOICES
     {"mcolor", fsm_hilite_choices},

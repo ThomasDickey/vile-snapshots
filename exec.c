@@ -4,7 +4,7 @@
  *	original by Daniel Lawrence, but
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.276 2005/02/15 23:18:12 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.277 2005/05/21 00:31:12 tom Exp $
  *
  */
 
@@ -198,7 +198,8 @@ execute_named_command(int f, int n)
 	    } else if (isreturn(c) && (status == FALSE)) {
 		return FALSE;
 	    } else {
-		unkeystroke(c);	/* ...so we can splice */
+		if (!clexec)	/* if there's an I/O vs a buffer */
+		    unkeystroke(c);	/* ...so we can splice */
 	    }
 	    cmode = 1;
 	    repeat_cmd = EOS;
@@ -233,8 +234,9 @@ execute_named_command(int f, int n)
 			c = end_string();
 			if (isPunct(c)
 			    && strchr(global_g_val_ptr(GVAL_EXPAND_CHARS),
-				      c) != 0)
+				      c) != 0) {
 			    unkeystroke(c);
+			}
 		    }
 		    break;
 		}
@@ -283,7 +285,7 @@ execute_named_command(int f, int n)
 
     /* parse the accumulated lspec */
     if (rangespec(tb_values(lspec), &fromline, &toline, &lflag) != TRUE) {
-	mlforce("[Improper line range]");
+	mlforce("[Improper line range '%s']", tb_values(lspec));
 	return FALSE;
     }
 
@@ -497,8 +499,9 @@ execute_named_command(int f, int n)
 	&& end_string() != ' '
 	&& !end_of_cmd()) {
 	status = FALSE;
-	if (!mapped_c_avail())
+	if (!mapped_c_avail()) {
 	    unkeystroke(end_string());
+	}
 	(void) kbd_seq();
 	mlforce("[Extra characters after \"%s\" command]", fnp);
     } else {
@@ -940,10 +943,10 @@ execute(const CMDFUNC * execfunc, int f, int n)
  * actually found.
  */
 char *
-get_token(char *src, TBUFF **tok, int eolchar, int *actual)
+get_token(char *src, TBUFF **tok, int (*endfunc) (EOL_ARGS), int eolchar, int *actual)
 {
     tb_init(tok, EOS);
-    return get_token2(src, tok, eolchar, actual);
+    return get_token2(src, tok, endfunc, eolchar, actual);
 }
 
 /*
@@ -951,7 +954,7 @@ get_token(char *src, TBUFF **tok, int eolchar, int *actual)
  * re-gluing a "!" to a quoted string from kbd_reply().
  */
 char *
-get_token2(char *src, TBUFF **tok, int eolchar, int *actual)
+get_token2(char *src, TBUFF **tok, int (*endfunc) (EOL_ARGS), int eolchar, int *actual)
 {
     int quotef = EOS;		/* nonzero iff the current string quoted */
     int c, i, d, chr;
@@ -1063,6 +1066,10 @@ get_token2(char *src, TBUFF **tok, int eolchar, int *actual)
 		    if (!isBlank(c))
 			src++;
 		    break;
+		} else if (endfunc(tb_values(*tok), tb_length(*tok), c, eolchar)) {
+		    if (actual != 0)
+			*actual = *src;
+		    break;
 		} else if (c == DQUOTE) {
 		    quotef = c;
 		    /* note that leading quote
@@ -1168,7 +1175,7 @@ mac_token(TBUFF **tok)
     clexec = TRUE;
 
     /* get and advance past token */
-    execstr = get_token(execstr, tok, EOS, (int *) 0);
+    execstr = get_token(execstr, tok, eol_null, EOS, (int *) 0);
 
     clexec = savcle;
     return (execstr != oldstr);
@@ -1806,7 +1813,11 @@ begin_directive(char **const cmdpp,
 	    LINE *glp;		/* line to goto */
 
 	    /* grab label to jump to */
-	    *cmdpp = (char *) get_token(*cmdpp, &label, EOS, (int *) 0);
+	    *cmdpp = (char *) get_token(*cmdpp,
+					&label,
+					eol_null,
+					EOS,
+					(int *) 0);
 #if VILE_MAYBE
 	    /* i think a simple re-eval would get us variant
 	     * targets, i.e. ~goto %somelabel.  */

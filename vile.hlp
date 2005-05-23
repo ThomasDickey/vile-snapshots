@@ -1469,6 +1469,16 @@ Editor modes
 		occur at all if "errorbells" mode is not set on.  See also
 		the vtflash mode (described below).  (U)
 
+	for-buffers (fb) specifies whether globbing or regular expressions
+		are used to select buffer names in the for-buffers and
+		kill-buffer commands.  (U)
+		
+		The choices are
+			mixed	globbing with special exclusion for internal
+				names, i.e., with square brackets
+			glob	the same as filename globbing
+			regex	regular expressions
+
 	glob	Controls how wildcard characters (e.g., '*' and '?') are
 		treated in prompts for filenames.  Set glob to 'off' to
 		disable expansion, or to 'on' to use the internal globber.
@@ -6183,4 +6193,4 @@ Problems
 
 Copyright 1995-2005 by Paul Fox, Thomas Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.599 2005/03/15 20:04:13 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.600 2005/05/22 19:46:54 tom Exp $

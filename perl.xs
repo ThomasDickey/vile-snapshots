@@ -13,7 +13,7 @@
  * vile.  The file api.c (sometimes) provides a middle layer between
  * this interface and the rest of vile.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.100 2005/03/13 18:04:25 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.102 2005/05/22 17:12:25 tom Exp $
  */
 
 /*#
@@ -1398,14 +1398,16 @@ sv2offset(SV *sv)
 static int
 svgetline(SV **svp, VileBuf *vbp, char *rsstr GCC_UNUSED, int rslen GCC_UNUSED)
 {
-    int len;
-    int nllen;
+    B_COUNT len;
+    B_COUNT nllen;
     char *text;
     SV *sv;
     char *ending = get_record_sep(curbp);
-    int len_rs = strlen(ending);
+    B_COUNT len_rs = strlen(ending);
 
-    if (   is_header_line(DOT, curbp) || vbp->region.r_size <= 0) {
+    if (is_header_line(DOT, curbp)
+     || vbp->region.r_size <= 0
+     || llength(DOT.l) < DOT.o) {
 	*svp = newSVsv(&PL_sv_undef);
 	return FALSE;
     }
@@ -1433,9 +1435,6 @@ svgetline(SV **svp, VileBuf *vbp, char *rsstr GCC_UNUSED, int rslen GCC_UNUSED)
 
     if (vbp->inplace_edit)
 	vbp->ndel += len + nllen;
-
-    if (len < 0)
-	len = 0;		/* shouldn't happen */
 
     *svp = sv = newSV(len + nllen + 1);	/* +1 for \0 */
 

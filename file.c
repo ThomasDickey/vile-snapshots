@@ -5,7 +5,7 @@
  * reading and writing of the disk are
  * in "fileio.c".
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.370 2005/01/31 21:27:13 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.372 2005/05/21 16:41:05 tom Exp $
  */
 
 #include "estruct.h"
@@ -1391,6 +1391,7 @@ static int
 quickreadf(BUFFER *bp, int *nlinep)
 {
     B_COUNT length;
+    B_COUNT request;
     B_COUNT offset;
     LINE *lp;
     L_NUM lineno = 0;
@@ -1402,13 +1403,13 @@ quickreadf(BUFFER *bp, int *nlinep)
     TRACE((T_CALLED "quickreadf(buffer=%s, file=%s)\n", bp->b_bname, bp->b_fname));
 
     beginDisplay();
-    if ((length = ffsize()) < 0) {
+    if (ffsize(&request) < 0) {
 	mlwarn("[Can't size file]");
 	rc = FIOERR;
     }
     /* avoid malloc(0) problems down below; let slowreadf() do the work */
-    else if (length == 0
-	     || (buffer = castalloc(UCHAR, (size_t) length)) == NULL) {
+    else if (request == 0
+	     || (buffer = castalloc(UCHAR, request)) == NULL) {
 	rc = FIOMEM;
     }
 #if OPT_ENCRYPT
@@ -1416,7 +1417,8 @@ quickreadf(BUFFER *bp, int *nlinep)
 	free(buffer);
     }
 #endif
-    else if ((length = ffread((char *) buffer, length)) < 0) {
+    else if (ffread((char *) buffer, request, &length) < 0
+	     || (length != request)) {
 	free(buffer);
 	mlerror("reading");
 	rc = FIOERR;
@@ -2001,7 +2003,7 @@ actually_write(REGION * rp, char *fn, int msgf, BUFFER *bp, int forced, int enco
     int s;
     LINE *lp;
     int nline;
-    int i;
+    B_COUNT i;
     B_COUNT nchar;
     const char *ending = get_record_sep(bp);
     int len_rs = strlen(ending);
@@ -2179,7 +2181,8 @@ writereg(REGION * rp,
 
     if (no_file_name(given_fn)) {
 	status = FALSE;
-    } else if (!forced && b_val(bp, MDREADONLY)) {
+    } else if (!forced && b_val(bp, MDREADONLY)
+	       && (bp->b_fname == 0 || !strcmp(given_fn, bp->b_fname))) {
 	mlwarn("[Buffer mode is \"readonly\"]");
 	status = FALSE;
     } else {

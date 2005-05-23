@@ -1,5 +1,28 @@
 Changes for vile 9.5 (released ??? ??? ?? ????)
 
+ 20050522 (u)
+	> Paul Fox:
+	+ relax a check in ":w" by checking if the given name differs from
+	  the current filename.  If so, do not require ":w!" to write a
+	  readonly file to a different location.  This allows one to reuse
+	  the filename history for ":w".
+	> Tom Dickey:
+	+ add mode for-buffers, which specifies whether kill-buffer (and
+	  for-buffers) command use globbing or regular expressions (request
+	  by Clark Morgan).
+	+ fix ifdef's in filters.h to allow configuring --with-no-leaks when
+	  no built-in filters are used.
+	+ add configure script option for largefile support.
+	+ modify computed percentages in ruler and ^G command to avoid overflow
+	  (report by Dave Kristol)
+	+ modify interfaces of ffread() and ffsize() to allow results to be
+	  returned as ULONG.
+	+ change B_COUNT to an unsigned type (ULONG), to allow for reading
+	  files larger than a signed value would allow (report by Dave
+	  Kristol).
+	+ add command for-buffers, which performs the same command for the
+	  specified buffers.
+
  20050515 (t)
 	> Tom Dickey:
 	+ add --disable-imake option to configure script, from xterm.
