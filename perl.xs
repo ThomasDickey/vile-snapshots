@@ -13,7 +13,7 @@
  * vile.  The file api.c (sometimes) provides a middle layer between
  * this interface and the rest of vile.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.102 2005/05/22 17:12:25 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.103 2005/05/27 19:28:26 tom Exp $
  */
 
 /*#
@@ -3853,7 +3853,6 @@ set_region(vbp, ...)
 		/* Set up an exact region */
 		regionshape = EXACT;
 		goto set_region_common;
-		break;
 	    case 6:
 		/* Set up any kind of region (exact, fullline, or rectangle) */
 		shapestr = SvPV(ST(5), PL_na);

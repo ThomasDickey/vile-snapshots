@@ -10,7 +10,7 @@
  * editing must be being displayed, which means that "b_nwnd" is non zero,
  * which means that the dot and mark values in the buffer headers are nonsense.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.168 2005/01/24 00:23:42 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.169 2005/05/27 22:28:28 tom Exp $
  *
  */
 
@@ -1737,13 +1737,11 @@ makereglist(
 		lsettrimmed(lback(DOT.l));
 	    }
 	    if (i > 0) {
-		bprintf("%c:%*Q",
-			index2reg(i),
-			REGS_PREFIX - 2, ' ');
+		bprintf("%c:", index2reg(i));
 	    } else {
-		bprintf("%.*s",
-			REGS_PREFIX, "(unnamed)");
+		bprintf("%s", "(unnamed)");
 	    }
+	    bpadc(' ', REGS_PREFIX - DOT.o);
 	    do {
 		j = KbSize(ii, kp);
 		p = kp->d_chunk;
@@ -1751,7 +1749,7 @@ makereglist(
 		while (j-- > 0) {
 		    if (first) {
 			first = FALSE;
-			bprintf("%*Q", REGS_PREFIX, ' ');
+			bpadc(' ', REGS_PREFIX - DOT.o);
 		    }
 		    c = *p++;
 		    if (isPrint(c) || !iflag) {

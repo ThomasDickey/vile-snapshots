@@ -5,7 +5,7 @@
  * reading and writing of the disk are
  * in "fileio.c".
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.372 2005/05/21 16:41:05 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.377 2005/05/30 23:01:49 tom Exp $
  */
 
 #include "estruct.h"
@@ -793,7 +793,7 @@ writelinesmsg(char *fn, int nline, B_COUNT nchar)
 	    action = "Wrote";
 	}
 	sprintf(strlines, "%d", nline);
-	sprintf(strchars, "%ld", nchar);
+	sprintf(strchars, "%lu", nchar);
 	lines_len = strlen(strlines);
 	chars_len = strlen(strchars);
 	outlen = (term.cols - 1) -
@@ -1286,7 +1286,6 @@ init_b_traits(BUFFER *bp)
 #endif
 }
 
-#if ! SYS_MSDOS
 /*
  * Analyze the file to determine its format
  */
@@ -1406,10 +1405,10 @@ quickreadf(BUFFER *bp, int *nlinep)
     if (ffsize(&request) < 0) {
 	mlwarn("[Can't size file]");
 	rc = FIOERR;
-    }
-    /* avoid malloc(0) problems down below; let slowreadf() do the work */
-    else if (request == 0
-	     || (buffer = castalloc(UCHAR, request)) == NULL) {
+    } else if (request == 0) {
+	/* avoid malloc(0) problems down below; let slowreadf() do the work */
+	rc = FIONUL;
+    } else if ((buffer = castalloc(UCHAR, request)) == NULL) {
 	rc = FIOMEM;
     }
 #if OPT_ENCRYPT
@@ -1502,7 +1501,6 @@ quickreadf(BUFFER *bp, int *nlinep)
     endofDisplay();
     returnCode(rc);
 }
-#endif /* ! SYS_MSDOS */
 
 /*
  * Read file "fname" into a buffer, blowing away any text found there.  Returns
@@ -1603,10 +1601,18 @@ readin(char *fname, int lockfl, BUFFER *bp, int mflg)
 #if OPT_WORKING
 	max_working = cur_working = old_working = 0;
 #endif
-#if ! SYS_MSDOS
-	if ((ffstatus == file_is_pipe) || (s = quickreadf(bp, &nline)) == FIOMEM)
-#endif
+
+	if (ffstatus == file_is_pipe
+	    || global_g_val(GVAL_READER_POLICY) == RP_SLOW) {
 	    s = slowreadf(bp, &nline);
+	} else {
+	    s = quickreadf(bp, &nline);
+	    if (s == FIONUL
+		|| (s == FIOMEM
+		    && global_g_val(GVAL_READER_POLICY) == RP_BOTH))
+		s = slowreadf(bp, &nline);
+	}
+
 #if OPT_WORKING
 	cur_working = 0;
 #endif
@@ -1919,6 +1925,7 @@ unqname(char *name)
     /* check to see if this name is in use */
     vl_strncpy(newname, name, NBUFN);
     adjust = is_scratchname(newname);
+    strcpy(suffixbuf, "-");
     while (find_b_name(newname) != NULL) {
 	/* from "foo" create "foo-1" or "foo-a1b5" */
 	/* from "thisisamuchlongernam" create
@@ -1927,7 +1934,7 @@ unqname(char *name)
 	/* that is, put suffix at end if it fits, or else
 	   overwrite some of the name to make it fit */
 	/* the suffix is in "base 36" */
-	suffixlen = (int) (lsprintf(suffixbuf, "-%r", 36, ++i) - suffixbuf);
+	suffixlen = format_int(suffixbuf + 1, ++i, 36) + 1;
 	k = NBUFN - 1 - suffixlen;
 	if (j < k)
 	    k = j;

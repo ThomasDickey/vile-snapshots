@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.282 2005/02/09 23:09:59 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.283 2005/05/27 21:53:42 tom Exp $
  *
  */
 
@@ -302,7 +302,10 @@ makechrslist(int dum1 GCC_UNUSED, void *ptr GCC_UNUSED)
     int i;
     char temp[NLINE];
 
-    bprintf("--- Terminal Character Settings %*P\n", term.cols - 1, '-');
+    bprintf("--- Terminal Character Settings ");
+    bpadc('-', term.cols - DOT.o);
+    bputc('\n');
+
     for (i = 0; TermChrs[i].name != 0; i++) {
 	bprintf("\n%s = %s",
 		TermChrs[i].name,

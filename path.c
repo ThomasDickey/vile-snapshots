@@ -2,7 +2,7 @@
  *		The routines in this file handle the conversion of pathname
  *		strings.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.147 2005/01/24 01:40:54 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.148 2005/05/25 23:46:22 tom Exp $
  *
  *
  */
@@ -223,7 +223,7 @@ is_vms_pathname(const char *path, int option)
 	    break;
 	case '!':
 	case '/':
-	case '~':
+	case TILDE:
 	    return FALSE;	/* a DEC-shell name */
 	default:
 	    if (!ispath(*path))
@@ -514,7 +514,7 @@ home_dir(void)
 char *
 home_path(char *path)
 {
-    if (*path == '~') {
+    if (*path == TILDE) {
 	char temp[NFILEN];
 	char *s;
 	char *d;
@@ -1655,7 +1655,7 @@ is_absolute_pathname(char *path)
 
 #if SYS_UNIX || OPT_MSDOS_PATH || SYS_VMS
 #if SYS_UNIX
-    if (path[0] == '~')
+    if (path[0] == TILDE)
 	return TRUE;
 #endif
     if (is_slashc(path[0]))

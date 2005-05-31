@@ -5,7 +5,7 @@
  *
  * Copyright (c) 1990-2005 by Paul Fox and Thomas Dickey
  *
- * $Header: /users/source/archives/vile.vcs/RCS/finderr.c,v 1.129 2005/01/24 22:21:49 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/finderr.c,v 1.130 2005/05/27 22:24:25 tom Exp $
  *
  */
 
@@ -914,8 +914,8 @@ make_err_regex_list(int dum1 GCC_UNUSED, void *ptr GCC_UNUSED)
     BUFFER *bp;
     LINE *lp;
 
-    bprintf("--- Error Meta-Expressions and Resulting Regular Expressions %*P",
-	    term.cols - 1, '-');
+    bprintf("--- Error Meta-Expressions and Resulting Regular Expressions ");
+    bpadc('-', term.cols - DOT.o);
 
     if (exp_table == 0)
 	load_patterns();

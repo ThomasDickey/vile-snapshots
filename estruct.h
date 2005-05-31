@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.576 2005/05/22 19:20:16 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.581 2005/05/30 22:26:22 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -720,6 +720,7 @@
 #define OPT_PARAMTYPES_CHOICES   OPT_MACRO_ARGS
 #define OPT_PATH_CHOICES         !SMALLER
 #define OPT_POPUP_CHOICES	 (OPT_ENUM_MODES && OPT_POPUPCHOICE)
+#define OPT_READERPOLICY_CHOICES !SMALLER
 #define OPT_RECORDFORMAT_CHOICES (OPT_ENUM_MODES && SYS_VMS)
 #define OPT_RECORDATTRS_CHOICES  (OPT_ENUM_MODES && SYS_VMS)
 #define OPT_RECORDSEP_CHOICES    !SMALLER
@@ -1073,6 +1074,9 @@ extern void endofDisplay(void);
 #define SQUOTE     '\''
 #define DQUOTE     '"'
 #define BACKSLASH  '\\'
+#define TILDE      '~'
+
+#define isEscaped(s)	((s)[-1] == BACKSLASH)
 
 /* protect against losing namespaces */
 #undef	FALSE
@@ -1206,6 +1210,12 @@ typedef enum {
 	, RS_CRLF		/* dos */
 } RECORD_SEP;
 
+typedef enum {
+	RP_QUICK
+	, RP_SLOW
+	, RP_BOTH
+} READERPOLICY_CHOICES;
+
 #if CRLF_LINES
 #define RS_DEFAULT RS_CRLF
 #else
@@ -1293,15 +1303,18 @@ typedef UINT WATCHTYPE;
 #define	FORWARD	TRUE
 #define REVERSE	FALSE
 
+typedef enum {
 	/* nonfatal codes */
-#define FIOBAD  -1			/* File I/O, truncation		*/
-#define FIOSUC  0			/* File I/O, success.		*/
-#define FIOEOF  1			/* File I/O, end of file.	*/
+    FIOBAD = -1			/* File I/O, truncation		*/
+    ,FIOSUC			/* File I/O, success.		*/
+    ,FIOEOF			/* File I/O, end of file.	*/
 	/* error codes */
-#define FIOFNF  2			/* File I/O, file not found.	*/
-#define FIOERR  3			/* File I/O, error.		*/
-#define FIOMEM  4			/* File I/O, out of memory	*/
-#define FIOABRT 5			/* File I/O, aborted		*/
+    ,FIONUL			/* File I/O, empty file		*/
+    ,FIOFNF			/* File I/O, file not found.	*/
+    ,FIOERR			/* File I/O, error.		*/
+    ,FIOMEM			/* File I/O, out of memory	*/
+    ,FIOABRT			/* File I/O, aborted		*/
+} FIO_TYPES;
 
 /* three flavors of insert mode	*/
 /* it's FALSE, or one of:	*/
@@ -2860,7 +2873,7 @@ extern void ExitProgram(int code);
 #define	GCC_UNUSED /* nothing */
 #endif
 
-#if 0				/* requires a patch to gcc */
+#if 1				/* requires a patch to gcc */
 #define VILE_PRINTF(fmt,var) GCC_PRINTFLIKE(fmt,var)
 #else
 #define VILE_PRINTF(fmt,var) /*nothing*/

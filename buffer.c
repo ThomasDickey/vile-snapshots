@@ -5,7 +5,7 @@
  * keys. Like everyone else, they set hints
  * for the display system.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.289 2005/05/22 19:49:41 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.292 2005/05/27 21:58:46 tom Exp $
  *
  */
 
@@ -1371,6 +1371,11 @@ make_buffer_list(char *bufn)
 		free(exp);
 	    }
 	}
+	if (count == 0) {
+	    if ((bp = find_buffer(bufn)) != 0) {	/* Try buffer */
+		result[count++] = strmalloc(bp->b_bname);
+	    }
+	}
 #else
 	if ((bp = find_buffer(bufn)) != 0) {	/* Try buffer */
 	    result[count++] = strmalloc(bp->b_bname);
@@ -1927,7 +1932,13 @@ makebufflist(int unused GCC_UNUSED, void *dummy GCC_UNUSED)
 
     bprintf("      %7s %*s %s\n", "Size", NBUFN - 1, "Buffer name",
 	    "Contents");
-    bprintf("      %7Q %*Q %30Q\n", '-', NBUFN - 1, '-', '-');
+    bpadc(' ', 6);
+    bpadc('-', 7);
+    bputc(' ');
+    bpadc('-', NBUFN - 1);
+    bputc(' ');
+    bpadc('-', term.cols - DOT.o);
+    bputc('\n');
 
     /* output the list of buffers */
     for_each_buffer(bp) {
@@ -1957,7 +1968,7 @@ makebufflist(int unused GCC_UNUSED, void *dummy GCC_UNUSED)
 	    bprintf(" %2d%c ", nbuf++, this_or_that);
 
 	(void) bsizes(bp);
-	bprintf("%7ld %.*s ", bp->b_bytecount, NBUFN - 1, bp->b_bname);
+	bprintf("%7lu %.*s ", bp->b_bytecount, NBUFN - 1, bp->b_bname);
 	{
 	    char *p;
 
@@ -1978,7 +1989,7 @@ makebufflist(int unused GCC_UNUSED, void *dummy GCC_UNUSED)
     /* show the actual size of the buffer-list */
     if (curlp != 0) {
 	(void) bsizes(curbp);
-	(void) lsprintf(temp, "%7ld", curbp->b_bytecount);
+	(void) lsprintf(temp, "%7lu", curbp->b_bytecount);
 	(void) memcpy(curlp->l_text + 6, temp, strlen(temp));
     }
 }

@@ -4,7 +4,7 @@
  *	Definitions to interface to unix-like DIRECTORY(3) procedures.
  *	Include this after "estruct.h"
  *
- * $Header: /users/source/archives/vile.vcs/RCS/dirstuff.h,v 1.27 2004/11/19 19:49:27 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/dirstuff.h,v 1.30 2005/05/27 23:26:34 tom Exp $
  *
  */
 
@@ -29,7 +29,17 @@
 # else
 #   include <dirent.h>
 # endif
-# define	DIRENT	struct dirent
+
+# if defined(_FILE_OFFSET_BITS) && defined(HAVE_STRUCT_DIRENT64)
+#  if !defined(_LP64) && (_FILE_OFFSET_BITS == 64)
+#   define	DIRENT	struct dirent64
+#  else
+#   define	DIRENT	struct dirent
+#  endif
+# else
+#  define	DIRENT	struct dirent
+# endif
+
 #else	/* apollo & other old bsd's */
 # define	DIRENT	struct direct
 # define USE_D_NAMLEN 1

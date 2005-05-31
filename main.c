@@ -22,7 +22,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.538 2005/05/22 19:27:28 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.539 2005/05/30 22:54:28 tom Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -1134,6 +1134,9 @@ init_mode_value(struct VAL *d, MODECLASS v_class, int v_which)
 #endif
 #ifdef GMDPOPUP_MSGS
 	    setINT(GMDPOPUP_MSGS, -TRUE);	/* popup-msgs */
+#endif
+#ifdef GVAL_READER_POLICY
+	    setINT(GVAL_READER_POLICY, RP_BOTH);
 #endif
 #ifdef GMDRESOLVE_LINKS
 	    setINT(GMDRESOLVE_LINKS, FALSE);	/* set noresolve-links by default in case we've got NFS problems */

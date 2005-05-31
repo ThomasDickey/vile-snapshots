@@ -11,7 +11,7 @@
 #
 # The modes are table entries in the BUFFER and WINDOW structures.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.234 2005/05/22 19:23:31 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.235 2005/05/30 22:49:48 tom Exp $
 #
 #
 # Mode-table entries.  Capitalized letters are used for abbreviations.
@@ -69,6 +69,7 @@ enum
 	"mcolor"	MCOLOR		chgd_hilite	OPT_HILITEMATCH # modeline color
 	"Mini-Hilite"   MINI_HILITE	0		# highlight minibuffer when using vi-commands
 	"Popup-Choices"	POPUP_CHOICES	0		OPT_POPUPCHOICE&&OPT_ENUM_MODES # popup buffer showing file-completion choices
+	"Reader-Policy"	READER_POLICY	0		# tell whether slowreadf() should be used if we run out of memory
 	"video-attrs"	VIDEO		chgd_color	OPT_COLOR	# video attributes, especially reverse
 	"vtflash"	VTFLASH		0		VTFLASH_HOST&&(OPT_FLASH) # flash using DEC VT esc sequences
 int							# VAL_ prefix
@@ -529,6 +530,11 @@ string
 "delayed"	POPUP_CHOICES_DELAYED
 "immediate"	POPUP_CHOICES_IMMED
 "off"		POPUP_CHOICES_OFF
+
+.table readerpolicy
+"both"		RP_BOTH
+"quick"		RP_QUICK
+"slow"		RP_SLOW
 
 .table recordformat		SYS_VMS
 "udf"		FAB$C_UDF

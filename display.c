@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.401 2005/05/22 00:50:47 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.405 2005/05/28 00:36:15 tom Exp $
  *
  */
 
@@ -240,9 +240,10 @@ dofmt(const char *fmt, va_list *app)
     int n;
     int nchars = 0;
     int islong;
+    UINT uint_value;
+    ULONG ulong_value;
     int int_value;
     long long_value;
-    UINT radix;
     OutFunc outfunc = dfoutfn;	/* local copy, for recursion */
 
     TRACE2(("dofmt fmt='%s'\n", visible_buff(fmt, strlen(fmt), FALSE)));
@@ -304,6 +305,16 @@ dofmt(const char *fmt, va_list *app)
 	    n = dfputli(outfunc, (ULONG) long_value, 10);
 	    break;
 
+	case 'u':
+	    if (!islong) {
+		uint_value = va_arg(*app, UINT);
+		n = dfputi(outfunc, uint_value, 10);
+		break;
+	    }
+	    ulong_value = va_arg(*app, ULONG);
+	    n = dfputli(outfunc, ulong_value, 10);
+	    break;
+
 	case 'o':
 	    n = dfputi(outfunc, va_arg(*app, UINT), 8);
 	    break;
@@ -318,40 +329,12 @@ dofmt(const char *fmt, va_list *app)
 	    n = dfputli(outfunc, va_arg(*app, ULONG), 16);
 	    break;
 
-	case 'r':
-	case 'R':
-	    radix = va_arg(*app, UINT);
-	    if (radix < 2 || radix > 36)
-		radix = 10;
-	    if (islong || c == 'R')
-		n = dfputli(outfunc,
-			    va_arg(*app, ULONG), radix);
-	    else
-		n = dfputi(outfunc,
-			   va_arg(*app, UINT), radix);
-	    break;
-
 	case 's':
 	    n = dfputsn(outfunc, va_arg(*app, char *), the_width, the_limit);
 	    break;
 
 	case 'f':
 	    n = dfputf(outfunc, va_arg(*app, double));
-	    break;
-
-	case 'P':		/* output padding -- pads total output to
-				   "the_width" chars, using c as the pad char */
-	    the_width -= nchars;
-	    /* FALLTHROUGH */
-
-	case 'Q':		/* field padding -- puts out "the_width"
-				   copies of c */
-	    n = 0;
-	    c = va_arg(*app, int);
-	    while (n < the_width) {
-		(*outfunc) (c);
-		n++;
-	    }
 	    break;
 
 	default:
@@ -2983,6 +2966,7 @@ update_modeline(WINDOW *wp)
 #if OPT_MLFORMAT
     static TBUFF *result;
 #else
+    static char lchar_pad[4];
     BUFFER *bp;
     char temp[NFILEN];
     int col;
@@ -3060,13 +3044,14 @@ update_modeline(WINDOW *wp)
 	}
 	ms = lsprintf(ms, " %s ", temp);
     }
+    memset(lchar_pad, lchar, 3);
 #ifdef WMDRULER
     if (w_val(wp, WMDRULER))
-	(void) lsprintf(right_ms, " (%d,%d) %3P",
-			wp->w_ruler_line, wp->w_ruler_col, lchar);
+	(void) lsprintf(right_ms, " (%d,%d) %s",
+			wp->w_ruler_line, wp->w_ruler_col, lchar_pad);
     else
 #endif
-	(void) lsprintf(right_ms, " %s %3P", rough_position(wp), lchar);
+	(void) lsprintf(right_ms, " %s %s", rough_position(wp), lchar_pad);
 
     *ms++ = EOS;
     right_len = strlen(right_ms);
@@ -3906,6 +3891,16 @@ lsprintf(char *buf, const char *fmt,...)
     return lsp;
 }
 
+int
+format_int(char *buf, UINT number, UINT radix)
+{
+    if ((lsp = buf) != 0) {
+	dfputi(lspputc, number, radix);
+	*lsp = EOS;
+    }
+    return (lsp - buf);
+}
+
 /*
  * Buffer printf -- like regular printf, but puts characters
  *	into the BUFFER.
@@ -3917,6 +3912,13 @@ bputc(int c)
 	(void) lnewline();
     else
 	(void) linsert(1, c);
+}
+
+void
+bpadc(int c, int count)
+{
+    while (count-- > 0)
+	bputc(c);
 }
 
 /* printf into curbp, at DOT */
