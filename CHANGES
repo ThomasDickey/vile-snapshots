@@ -1,5 +1,39 @@
 Changes for vile 9.5 (released ??? ??? ?? ????)
 
+ 20050530 (v)
+	> Tom Dickey:
+	+ add reader-policy mode, which allows one to control whether vile will
+	  fall-back to slowreadf() if it encounters an error.  The case where
+	  quickreadf() would fail that slowreadf() might succeed is for reading
+	  a very large file when memory was also fragmented.  But using
+	  slowreadf() would (besides being much slower), also use even more
+	  memory in this case, making it unlikely that it would succeed in any
+	  case (discussion with Dave Kristol).
+	+ fixes to build clean(er) with Intel compiler:
+	  + adjust ifdef's for fallback prototype for open() in case it is
+	    really open64().
+	  + add a "%u" format type to dofmt(), use it to display file-sizes.
+	  + define DIRENT to struct dirent64 for the case where
+	    _FILE_OFFSET_BITS is 64 and _LP64 is not defined.  Use a configure
+	    script check to ensure the type exists.
+	  + add/use function bpadc() to replace "%P" and "%Q" formats in
+	    dofmt().
+	  + add/use function format_int() to replace "%r" format in dofmt().
+	+ modify name-completion to allow completion of filenames containing
+	  a '$':
+	  + modify shell_complete() to only try to expand $variables if the
+	    '$' is not escaped.
+	  + modify glob's expansion of $variables to ignore a trailing '$' or a
+	    '$' not followed by a name-character, as well as a '$' preceded by
+	    a backslash.
+	  + split string_has_wildcards() into two parts; the new part (called
+	    from the old) string_has_globs() checks only for wildcards that are
+	    processed after expanding tilde and environment variables.
+	  + escape backslashes and $'s in expand_wild_args() to account for the
+	    checks for backslashes added in this change.
+	+ restore default search for buffer by number omitted in changes to
+	  use for-buffer mode, e.g., ":ki 1".
+
  20050522 (u)
 	> Paul Fox:
 	+ relax a check in ":w" by checking if the given name differs from

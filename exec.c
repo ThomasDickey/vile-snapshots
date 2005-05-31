@@ -4,7 +4,7 @@
  *	original by Daniel Lawrence, but
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.277 2005/05/21 00:31:12 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.278 2005/05/24 21:19:06 tom Exp $
  *
  */
 
@@ -2202,7 +2202,7 @@ perform_dobuf(BUFFER *bp, WHLOOP * whlist)
 	 */
 	if (lforw(lp) != buf_head(bp)
 	    && linlen != 0
-	    && cmdp[linlen - 1] == BACKSLASH) {
+	    && isEscaped(cmdp + linlen)) {
 	    glue = linlen + (size_t) (cmdp - linebuf) - 1;
 	    continue;
 	}

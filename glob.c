@@ -13,7 +13,7 @@
  *
  *	modify (ifdef-style) 'expand_leaf()' to allow ellipsis.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/glob.c,v 1.81 2005/01/21 23:04:20 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/glob.c,v 1.86 2005/05/27 01:44:29 tom Exp $
  *
  */
 
@@ -94,19 +94,28 @@ static size_t myLen = 0;	/* length and index of the expanded list */
 static char **myVec = 0;	/* the expanded list */
 
 /*--------------------------------------------------------------------------*/
-int
-string_has_wildcards(const char *item)
+static void
+strip_escapes(char *buffer)
 {
-#if OPT_VMS_PATH || SYS_WINNT	/* either host can support ~/whatever */
-    if (*item == '~')
-	return TRUE;
-#endif
+    int j, k, ch;
+
+    for (j = k = 0; (ch = buffer[j]) != EOS; ++j) {
+	if (ch == BACKSLASH)
+	    ++j;
+	if ((buffer[k++] = buffer[j]) == EOS)
+	    break;
+    }
+    buffer[k] = EOS;
+}
+
+/*
+ * Use this function to decide if we should perform wildcard expansion.
+ */
+static int
+string_has_globs(const char *item)
+{
 #if OPT_VMS_PATH || SYS_UNIX || OPT_MSDOS_PATH
     while (*item != EOS) {
-#if UNIX_GLOBBING
-	if (iswild(*item))
-	    return TRUE;
-#endif
 	if (*item == GLOB_SINGLE || *item == GLOB_MULTI)
 	    return TRUE;
 #if OPT_GLOB_ELLIPSIS || SYS_VMS
@@ -118,15 +127,44 @@ string_has_wildcards(const char *item)
 	if (*item == GLOB_RANGE[0])
 	    return TRUE;
 #endif
+#endif
+	item++;
+    }
+#endif
+    return FALSE;
+}
+
+/*
+ * Use this function to decide if we should do wildcard/tilde/variable
+ * expansion.
+ */
+int
+string_has_wildcards(const char *item)
+{
+    const char *base = item;
+
+#if OPT_VMS_PATH || SYS_WINNT	/* either host can support ~/whatever */
+    if (*item == TILDE)
+	return TRUE;
+#endif
+#if OPT_VMS_PATH || SYS_UNIX || OPT_MSDOS_PATH
+    while (*item != EOS) {
+#if UNIX_GLOBBING
+	if (iswild(*item))
+	    return TRUE;
+#endif
+#if !OPT_VMS_PATH
 #if OPT_GLOB_ENVIRON
-	if (*item == '$' && (isname(item[1]) || isdelim(item[1])))
+	if (*item == '$'
+	    && (item == base || !isEscaped(item))
+	    && (isname(item[1]) || isdelim(item[1])))
 	    return TRUE;
 #endif
 #endif
 	item++;
     }
 #endif
-    return FALSE;
+    return string_has_globs(base);
 }
 
 /*
@@ -230,7 +268,7 @@ glob_match_leaf(char *leaf, char *pattern)
 		    int lo = CharOf(pattern[-1]);
 		    int hi = CharOf(pattern[1]);
 		    if (hi == GLOB_RANGE[1])
-			hi = '~';
+			hi = '~';	/* last-printable ASCII */
 		    if (((cs_char(lo) <= cs_char(*leaf))
 			 && (cs_char(*leaf) <= cs_char(hi))) != negate)
 			found = TRUE;
@@ -286,7 +324,7 @@ wild_leaf(char *pattern)
 	for (k = j + 1; (c = pattern[k]) != EOS; k++) {
 	    if (is_slashc(c)) {
 		pattern[k] = EOS;
-		ok = string_has_wildcards(pattern + j);
+		ok = string_has_globs(pattern + j);
 		pattern[k] = c;
 		if (ok)
 		    return pattern + j;
@@ -301,7 +339,7 @@ wild_leaf(char *pattern)
 	else
 	    j++;		/* leaf is empty */
     }
-    return string_has_wildcards(pattern + j) ? pattern + j : 0;
+    return string_has_globs(pattern + j) ? pattern + j : 0;
 }
 
 #if !SYS_OS2
@@ -396,7 +434,7 @@ expand_leaf(char *path,		/* built-up pathname, top-level */
 	    if (!glob_match_leaf(leaf, wild))
 		continue;
 	    if (next != 0) {	/* there are more leaves */
-		if (!string_has_wildcards(next)) {
+		if (!string_has_globs(next)) {
 		    s = skip_string(leaf);
 		    *s++ = SLASHC;
 		    (void) strcpy(s, next);
@@ -506,7 +544,7 @@ expand_leaf(char *path,		/* built-up pathname, top-level */
 		continue;
 
 	    if (next != 0) {	/* there are more leaves */
-		if (!string_has_wildcards(next)) {
+		if (!string_has_globs(next)) {
 		    s = skip_string(leaf);
 		    *s++ = SLASHC;
 		    (void) strcpy(s, next);
@@ -649,6 +687,10 @@ glob_from_pipe(const char *pattern)
  *	$NAME
  *	$(NAME)
  *	${NAME}
+ *
+ * but ignores
+ *	NAME$
+ *	\$NAME
  */
 static void
 expand_environ(char *pattern)
@@ -659,15 +701,19 @@ expand_environ(char *pattern)
     char save[NFILEN];
 
     for (j = 0; pattern[j] != EOS; j++) {
-	if (pattern[j] == '$') {
+	if (j != 0 && isEscaped(pattern + j))
+	    continue;
 
-	    k = j + 1;
+	k = j + 1;
+	if (pattern[j] == '$' && pattern[k] != EOS) {
 	    if (pattern[k] == '(')
 		delim = ')';
 	    else if (pattern[k] == '{')
 		delim = '}';
-	    else
+	    else if (isAlnum(pattern[k]))
 		delim = EOS;
+	    else
+		continue;
 
 	    if (delim != EOS)
 		k++;
@@ -803,13 +849,15 @@ expand_pattern(char *item)
 #endif
 #endif
 	expand_environ(pattern);
-	if (string_has_wildcards(pattern)) {
+	if (string_has_globs(pattern)) {
+	    strip_escapes(pattern);
 	    if ((result = expand_leaf(builtup, pattern)) != FALSE
 		&& (myLen - first > 1)) {
 		qsort((char *) &myVec[first], myLen - first,
 		      sizeof(*myVec), compar);
 	    }
 	} else {
+	    strip_escapes(pattern);
 	    result = record_a_match(pattern);
 	}
     }
@@ -1024,7 +1072,16 @@ expand_wild_args(int *argcp, char ***argvp)
     }
 #endif
     if (glob_needed(*argvp)) {
-	char **newargs = glob_expand(*argvp);
+	char **newargs;
+	int n;
+
+	for (n = 0; n < *argcp; ++n) {
+	    char *test = add_backslashes2((*argvp)[n], "\\$");
+	    if (test != (*argvp)[n]) {
+		(*argvp)[n] = strmalloc(test);
+	    }
+	}
+	newargs = glob_expand(*argvp);
 	if (newargs != 0) {
 	    *argvp = newargs;
 	    *argcp = glob_length(newargs);

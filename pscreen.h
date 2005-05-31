@@ -5,7 +5,8 @@
 #ifndef PSCREEN_H
 #define PSCREEN_H 1
 
-extern VIDEO **pscreen;
+extern VIDEO **vscreen;		/* Virtual screen. */
+extern VIDEO **pscreen;		/* Physical screen. */
 
 #define IS_DIRTY_LINE(r)	(pscreen[(r)]->v_flag & VFCHG)
 #define IS_DIRTY(r,c)		(pscreen[(r)]->v_attrs[(c)] & VADIRTY)

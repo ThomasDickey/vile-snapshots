@@ -44,7 +44,7 @@
  *	tgetc_avail()     true if a key is avail from tgetc() or below.
  *	keystroke_avail() true if a key is avail from keystroke() or below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.279 2005/05/21 00:28:54 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.283 2005/05/27 01:44:55 tom Exp $
  *
  */
 
@@ -136,7 +136,9 @@ shell_complete(DONE_ARGS)
 	    if (isSpace(buf[base]) && (first || doing_shell)) {
 		base++;
 		break;
-	    } else if (buf[base] == '$') {
+	    } else if (buf[base] == '$'
+		       && (base == 0
+			   || (!isEscaped(buf + base)))) {
 		break;
 	    }
 	}
@@ -781,16 +783,16 @@ kbd_delimiter(void)
  * pathnames and buffer names.  Escape those by doubling them.
  */
 char *
-add_backslashes(char *text)
+add_backslashes2(char *text, char *find)
 {
     static TBUFF *temp = 0;
     int n;
 
     if (text != 0) {
-	if (strchr(text, BACKSLASH) != 0) {
+	if (strpbrk(text, find) != 0) {
 	    temp = tb_init(&temp, EOS);
 	    for (n = 0; text[n] != EOS; ++n) {
-		if (text[n] == BACKSLASH)
+		if (strchr(find, text[n]))
 		    temp = tb_append(&temp, BACKSLASH);
 		temp = tb_append(&temp, text[n]);
 	    }
@@ -800,6 +802,16 @@ add_backslashes(char *text)
 	}
     }
     return text;
+}
+
+/*
+ * If we are NOT processing MSDOS pathnames, we may have literal backslashes in
+ * pathnames and buffer names.  Escape those by doubling them.
+ */
+char *
+add_backslashes(char *text)
+{
+    return add_backslashes2(text, "\\");
 }
 
 /*
@@ -864,10 +876,10 @@ countBackSlashes(TBUFF *buf, UINT len)
     char *buffer = tb_values(buf);
     UINT count;
 
-    if (len && buffer != 0 && buffer[len - 1] == BACKSLASH) {
+    if (len && buffer != 0 && isEscaped(buffer + len)) {
 	count = 1;
 	while (count + 1 <= len &&
-	       buffer[len - 1 - count] == BACKSLASH)
+	       isEscaped(buffer + len - count))
 	    count++;
     } else {
 	count = 0;

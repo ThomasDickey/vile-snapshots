@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.304 2005/05/22 19:28:12 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.306 2005/05/30 22:53:01 tom Exp $
  *
  */
 
@@ -413,22 +413,21 @@ listvalueset(const char *which,
 
 	    if (col == 0)
 		bputc(' ');
-	    padded = (col + 1) < perline ? ONE_COL : 1;
+	    padded = DOT.o + ((col + 1) < perline ? ONE_COL : 1);
 	    if (is_bool_type(names[j].type)) {
-		bprintf("%s%s%*P",
+		bprintf("%s%s",
 			values[j].vp->i ? "  " : NO_PREFIX,
-			ModeName(names[j].name),
-			padded, ' ');
+			ModeName(names[j].name));
 	    } else {
 		VALARGS args;	/* FIXME */
 		args.names = names + j;
 		args.local = values + j;
 		args.global = 0;
-		bprintf("  %s=%s%*P",
+		bprintf("  %s=%s",
 			ModeName(names[j].name),
-			string_mode_val(&args),
-			padded, ' ');
+			string_mode_val(&args));
 	    }
+	    bpadc(' ', padded - DOT.o);
 	    any++;
 	    if (++col >= perline) {
 		col = 0;
@@ -481,15 +480,16 @@ makemodelist(int local, void *ptr)
 
 #if OPT_MAJORMODE
     if (local && (localbp->majr != 0)) {
-	bprintf("--- \"%s\" settings, if different than \"%s\" majormode %*P\n",
+	bprintf("--- \"%s\" settings, if different than \"%s\" majormode ",
 		localbp->b_bname,
-		localbp->majr->shortname,
-		term.cols - 1, '-');
+		localbp->majr->shortname);
 	globl_b_vals = get_sm_vals(localbp->majr);
     } else
 #endif
-	bprintf("--- \"%s\" settings, if different than globals %*P\n",
-		localbp->b_bname, term.cols - 1, '-');
+	bprintf("--- \"%s\" settings, if different than globals ",
+		localbp->b_bname);
+    bpadc('-', term.cols - DOT.o);
+    bputc('\n');
 
     nflag = listvalueset(bb, FALSE, FALSE, b_valnames, local_b_vals, globl_b_vals);
     nflg2 = listvalueset(ww, nflag, FALSE, w_valnames, local_w_vals, global_w_values.wv);
@@ -497,8 +497,9 @@ makemodelist(int local, void *ptr)
 	bputc('\n');
     bputc('\n');
 
-    bprintf("--- %s settings %*P\n",
-	    local ? "Local" : "Global", term.cols - 1, '-');
+    bprintf("--- %s settings ", local ? "Local" : "Global");
+    bpadc('-', term.cols - DOT.o);
+    bputc('\n');
 
     if (local) {
 	nflag = listvalueset(bb, nflag, local, b_valnames, local_b_vals,
@@ -863,6 +864,9 @@ static struct FSM fsm_tbl[] =
 #if SYS_VMS
     {"record-format", fsm_recordformat_choices},
     {"record-attrs", fsm_recordattrs_choices},
+#endif
+#if OPT_READERPOLICY_CHOICES
+    {"reader-policy", fsm_readerpolicy_choices},
 #endif
 #if OPT_RECORDSEP_CHOICES
     {"recordseparator", fsm_recordsep_choices},
@@ -3354,12 +3358,16 @@ makemajorlist(int local, void *ptr GCC_UNUSED)
 	    if (local)
 		TheMajor = my_majormodes[j].shortname;
 	    data = my_majormodes[j].data;
-	    bprintf("--- \"%s\" majormode settings %*P(%d:%d)%*P\n",
-		    my_majormodes[j].shortname,
-		    term.cols - 12, '-',
+
+	    bprintf("--- \"%s\" majormode settings ",
+		    my_majormodes[j].shortname);
+	    bpadc('-', term.cols - 12 - DOT.o);
+	    bprintf("(%d:%d)",
 		    find_majormode_order(j) + 1,
-		    count,
-		    term.cols - 1, '-');
+		    count);
+	    bpadc('-', term.cols - DOT.o);
+	    bputc('\n');
+
 	    nflag = listvalueset("Qualifier", FALSE, TRUE,
 				 m_valnames,
 				 data->mm.mv,

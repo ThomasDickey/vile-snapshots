@@ -2,7 +2,7 @@
  *	eval.c -- function and variable evaluation
  *	original by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.346 2005/05/20 23:01:32 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.348 2005/05/27 22:21:58 tom Exp $
  *
  */
 
@@ -65,10 +65,12 @@ makectypelist(int dum1 GCC_UNUSED, void *ptr GCC_UNUSED)
     CHARTYPE k;
     const char *s;
 
-    bprintf("--- Printable Characters for locale %s (%s) %*P\n",
+    bprintf("--- Printable Characters for locale %s (%s) ",
 	    NONNULL(vl_locale),
-	    NONNULL(vl_encoding),
-	    term.cols - 1, '-');
+	    NONNULL(vl_encoding));
+    bpadc('-', term.cols - DOT.o);
+    bputc('\n');
+
     for (i = 0; i < N_chars; i++) {
 	bprintf("\n%d\t", (int) i);
 	if ((i == '\n') || (i == '\t'))		/* vtlistc() may not do these */
@@ -316,12 +318,15 @@ makevarslist(int dum1 GCC_UNUSED, void *ptr)
     UVAR *p;
     int j, k;
 
-    bprintf("--- State variables %*P\n", term.cols - 1, '-');
+    bprintf("--- State variables ");
+    bpadc('-', term.cols - DOT.o);
+    bputc('\n');
+
     bprintf("%s", (char *) ptr);
     if (arg_stack != 0 && ((k = arg_stack->num_args) != 0)) {
-	bprintf("--- %s parameters %*P",
-		tb_values(arg_stack->all_args[0]),
-		term.cols - 1, '-');
+	bprintf("--- %s parameters ",
+		tb_values(arg_stack->all_args[0]));
+	bpadc('-', term.cols - DOT.o);
 	for (j = 1; j <= k; j++) {
 	    bprintf("\n$%d = %s", j,
 		    tb_values(arg_stack->all_args[j]));
@@ -331,7 +336,8 @@ makevarslist(int dum1 GCC_UNUSED, void *ptr)
 	bputc('\n');
     for (p = temp_vars, j = 0; p != 0; p = p->next) {
 	if (!j++)
-	    bprintf("--- Temporary variables %*P", term.cols - 1, '-');
+	    bprintf("--- Temporary variables ");
+	bpadc('-', term.cols - DOT.o);
 	bprintf("\n%%%s = %s", p->u_name, p->u_value);
     }
 }
@@ -1771,7 +1777,7 @@ set_ctrans(const char *thePalette)
 static void
 show_attr(int color, const char *attr, const char *name)
 {
-    bprintf(" %c%d%sC", CONTROL_A, (int) strlen(name), attr);
+    bprintf(" %c%d%sC", (char) CONTROL_A, (int) strlen(name), attr);
     if (color >= 0)
 	bprintf("%X", color);
     bprintf(":%s", name);
@@ -1784,12 +1790,13 @@ show_attr(int color, const char *attr, const char *name)
 static void
 makecolorlist(int dum1 GCC_UNUSED, void *ptr GCC_UNUSED)
 {
-    int j, k;
+    int j, k, next;
     REGION region;
-    char temp[11];
-    char *s;
 
-    bprintf("--- Color palette %*P\n", term.cols - 1, '-');
+    bprintf("--- Color palette ");
+    bpadc('-', term.cols - DOT.o);
+    bputc('\n');
+
     bprintf("\nColor name       Internal  $palette   Examples\n");
     for (j = -1; j < NCOLORS; j++) {
 	if (!is_color_code(j))
@@ -1801,18 +1808,20 @@ makecolorlist(int dum1 GCC_UNUSED, void *ptr GCC_UNUSED)
 	 * filters.  That's 'C' followed by a single digit, in
 	 * hexadecimal because we allow up to 16 colors.
 	 */
+	next = DOT.o + 10;
 	if (j >= 0)
-	    bprintf("C%X%*P", j, 10, ' ');
-	else
-	    bprintf("%*P", 10, ' ');
+	    bprintf("C%X", j);
+	bpadc(' ', next - DOT.o);
+
 	/*
 	 * $palette values are in decimal, but it's useful to see the
 	 * hexadecimal equivalents.
 	 */
-	s = lsprintf(temp, "%d", k);
+	next = DOT.o + 10;
+	bprintf("%d", k);
 	if (k > 9)
-	    (void) lsprintf(s, " (%X)", k);
-	bprintf("%s%*P", temp, (int) sizeof(temp) - 1, ' ');
+	    bprintf(" (%X)", k);
+	bpadc(' ', next - DOT.o);
 
 	show_attr(j, "", "Normal");
 	show_attr(j, "B", "Bold");

@@ -1,7 +1,7 @@
 /*
  * Main program and I/O for external vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filterio.c,v 1.26 2005/03/15 21:27:13 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filterio.c,v 1.27 2005/05/27 23:07:58 tom Exp $
  *
  */
 
@@ -273,7 +273,7 @@ vile_getenv(const char *name)
 DIRECTIVE
 dname_to_dirnum(char **s GCC_UNUSED, int length GCC_UNUSED)
 {
-    return 0;
+    return D_KNOWN;
 }
 
 /* ARGSUSED */

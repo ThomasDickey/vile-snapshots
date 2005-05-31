@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.547 2005/05/21 15:44:49 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.551 2005/05/28 00:29:36 tom Exp $
  *
  */
 
@@ -229,6 +229,7 @@ extern LINE *b2printf(BUFFER *bp, const char *fmt, ...) VILE_PRINTF(2,3);
 extern LINE *b2vprintf(BUFFER *bp, const char *fmt, va_list ap);
 extern char *lsprintf (char *buf, const char *fmt, ...) VILE_PRINTF(2,3);
 extern int col_limit (WINDOW *wp);
+extern int format_int(char *buf, UINT number, UINT radix);
 extern int im_waiting (int flag);
 extern int mk_to_vcol (MARK mark, int expanded, BUFFER *bp, int col, int adjust);
 extern int nu_width (WINDOW *wp);
@@ -237,6 +238,7 @@ extern int update (int force);
 extern int video_alloc (VIDEO **vpp);
 extern int vtinit (void);
 extern void bottomleft (void);
+extern void bpadc (int c, int count);
 extern void bprintf (/*@observer@*/ const char *fmt, ...) VILE_PRINTF(1,2);
 extern void bputc (int c);
 extern void dbgwrite (const char *fmt, ...) VILE_PRINTF(1,2);
@@ -557,6 +559,7 @@ extern	void	scwrite (int row, int col, int nchar, const char *outstr, VIDEO_ATTR
 #endif
 
 /* input.c */
+extern char *add_backslashes2(char *text, char *find);
 extern char *add_backslashes(char *text);
 extern char *user_reply(const char *prompt, const char *dftval);
 extern int dotcmdbegin (void);
@@ -1522,7 +1525,7 @@ extern	void *	memset	(void *dst, int ch, size_t n);
 #if defined(MISSING_EXTERN_MKDIR) && defined(HAVE_MKDIR)
 extern	int	mkdir	(const char *path, int mode);
 #endif
-#ifdef MISSING_EXTERN_OPEN
+#if defined(MISSING_EXTERN_OPEN) && !defined(open)
 extern	int	open	(char *path, int flags);
 #endif
 #ifdef MISSING_EXTERN_PCLOSE
