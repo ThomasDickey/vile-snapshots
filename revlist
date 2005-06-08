@@ -1,6 +1,6 @@
-revlist for vile, version v9_4v
+revlist for vile, version v9_4w
 --------------------------------------------------------------------------------
-CHANGES	1.834
+CHANGES	1.836
 CHANGES.R3	1.1
 CHANGES.R4	1.1
 CHANGES.R5	1.1
@@ -13,7 +13,7 @@ MANIFEST	none
 README	1.90
 README.PC	1.32
 README.VMS	1.5
-aclocal.m4	1.146
+aclocal.m4	1.147
 ansi.c	1.45
 api.c	1.36
 api.h	1.12
@@ -22,7 +22,7 @@ bind.c	1.283
 borland.c	1.32
 btree.c	1.21
 btree.h	1.4
-buffer.c	1.292
+buffer.c	1.293
 buglist	1.399
 builtflt.c	1.47
 chgdfunc.h	1.17
@@ -35,20 +35,20 @@ csrch.c	1.32
 curses.c	1.20
 descrip.mms	1.46
 dirstuff.h	1.30
-display.c	1.405
+display.c	1.406
 djhandl.c	1.6
 dumbterm.c	1.18
 edef.h	1.320
-estruct.h	1.581
+estruct.h	1.583
 eval.c	1.348
 exec.c	1.278
 externs.c	1.10
 fences.c	1.83
-file.c	1.377
+file.c	1.379
 filec.c	1.121
 fileio.c	1.179
 finderr.c	1.130
-glob.c	1.86
+glob.c	1.87
 globals.c	1.48
 gppconio.c	1.2
 history.c	1.82
@@ -74,7 +74,7 @@ menu.c	1.46
 mkdirs.sh	1.6
 mkprlenv.wnt	1.8
 mktbls.c	1.132
-modes.c	1.306
+modes.c	1.307
 modetbl	1.235
 msgs.c	1.26
 npopen.c	1.92
@@ -85,18 +85,18 @@ opers.c	1.90
 os2keys.h	1.1
 os2pipe.c	1.5
 os2vio.c	1.31
-patchlev.h	1.329
-path.c	1.148
-perl.xs	1.103
+patchlev.h	1.330
+path.c	1.149
+perl.xs	1.104
 plugin.c	1.1
 plugin.h	1.1
-proto.h	1.551
+proto.h	1.552
 pscreen.h	1.2
 ptypemap	1.7
 random.c	1.283
 regexp.c	1.110
 region.c	1.131
-revlist	v9_4v
+revlist	v9_4w
 search.c	1.137
 select.c	1.157
 sinstall.sh	1.1
@@ -112,11 +112,11 @@ trace.h	1.23
 ucrypt.c	1.15
 undo.c	1.88
 version.c	1.57
-vile-9.4.spec	1.24
+vile-9.4.spec	1.25
 vile.1	1.30
 vile.hlp	1.601
 vile.wmconfig	1.1
-vms2unix.c	1.41
+vms2unix.c	1.42
 vmsbuild.com	1.42
 vmspipe.c	1.14
 vmsvt.c	1.57
@@ -136,7 +136,7 @@ window.c	1.106
 winvile.h	1.10
 winvile.odl	1.6
 winvile.rc	1.11
-word.c	1.77
+word.c	1.78
 wordmov.c	1.22
 wvwrap.cpp	1.9
 x11.c	1.279
@@ -195,9 +195,9 @@ filters/est-filt.l	1.3
 filters/est.key	1.1
 filters/fdl-filt.l	1.9
 filters/fdl.key	1.4
-filters/filterio.c	1.27
+filters/filterio.c	1.28
 filters/filters.c	1.98
-filters/filters.h	1.92
+filters/filters.h	1.93
 filters/filters.rc	1.202
 filters/fltstack.h	1.9
 filters/genmake.c	1.4

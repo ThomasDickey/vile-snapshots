@@ -5,7 +5,7 @@
  * reading and writing of the disk are
  * in "fileio.c".
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.377 2005/05/30 23:01:49 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.379 2005/06/04 20:33:07 tom Exp $
  */
 
 #include "estruct.h"
@@ -1117,11 +1117,7 @@ apply_dosmode(BUFFER *bp, int doslines, int unixlines)
      * Make 'dos' and 'recordseparator' modes local, since this
      * transformation should apply only to the specified file.
      */
-    make_local_b_val(bp, MDDOS);
-    make_local_b_val(bp, VAL_RECORD_SEP);
-
-    set_b_val(bp, MDDOS, result);
-    set_b_val(bp, VAL_RECORD_SEP, result ? RS_CRLF : RS_LF);
+    set_record_sep(bp, result ? RS_CRLF : RS_LF);
 }
 
 static void
@@ -1192,11 +1188,8 @@ explicit_dosmode(BUFFER *bp, RECORD_SEP record_sep)
 {
     TRACE(("explicit_dosmode(%s)\n",
 	   choice_to_name(fsm_recordsep_choices, record_sep)));
-    make_local_b_val(bp, MDDOS);
-    make_local_b_val(bp, VAL_RECORD_SEP);
 
-    set_b_val(bp, MDDOS, (record_sep == RS_CRLF));
-    set_b_val(bp, VAL_RECORD_SEP, record_sep);
+    set_record_sep(bp, record_sep);
 }
 
 /*
@@ -1208,7 +1201,6 @@ modified_record_sep(RECORD_SEP record_sep)
     explicit_dosmode(curbp, record_sep);
     guess_dosmode(curbp);
     explicit_dosmode(curbp, record_sep);	/* ignore the guess - only want to strip CR's */
-    set_record_sep(curbp, (RECORD_SEP) b_val(curbp, VAL_RECORD_SEP));
     return TRUE;
 }
 
@@ -2013,7 +2005,7 @@ actually_write(REGION * rp, char *fn, int msgf, BUFFER *bp, int forced, int enco
     B_COUNT i;
     B_COUNT nchar;
     const char *ending = get_record_sep(bp);
-    int len_rs = strlen(ending);
+    int len_rs = len_record_sep(bp);
     C_NUM offset = rp->r_orig.o;
 
     /* this is adequate as long as we cannot write parts of lines */

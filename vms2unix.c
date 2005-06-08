@@ -3,7 +3,7 @@
  *
  *	Miscellaneous routines for UNIX/VMS compatibility.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/vms2unix.c,v 1.41 2005/05/25 23:48:24 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/vms2unix.c,v 1.42 2005/06/03 00:03:29 tom Exp $
  *
  */
 #include "estruct.h"
@@ -369,7 +369,7 @@ unix2vms_path(char *dst, const char *src)
 		device = TRUE;
 	}
 	d += len;
-    } else if (*s == TILDE) {	/* process home-directory reference */
+    } else if (*s == CH_TILDE) {	/* process home-directory reference */
 	char *home = getenv("SYS$LOGIN");
 #if !SYS_VMS
 	if (home == 0)

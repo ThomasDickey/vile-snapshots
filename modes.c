@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.306 2005/05/30 22:53:01 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.307 2005/06/03 00:43:27 tom Exp $
  *
  */
 
@@ -1913,41 +1913,11 @@ chgd_major_w(BUFFER *bp, VALARGS * args, int glob_vals, int testing)
     return TRUE;
 }
 
-int
-len_record_sep(BUFFER *bp)
-{
-    return strlen(get_record_sep(bp));
-}
-
-char *
-get_record_sep(BUFFER *bp)
-{
-    char *s = "";
-    RECORD_SEP code = (RECORD_SEP) b_val(bp, VAL_RECORD_SEP);
-
-    if (code == RS_AUTO)
-	code = RS_DEFAULT;
-
-    switch (code) {
-    case RS_LF:
-	s = "\n";
-	break;
-    case RS_CRLF:
-	s = "\r\n";
-	break;
-    case RS_CR:
-	s = "\r";
-	break;
-    case RS_AUTO:
-	break;
-    }
-
-    return s;
-}
-
 void
 set_record_sep(BUFFER *bp, RECORD_SEP code)
 {
+    const char *recordsep = "\n";
+
     if (code == RS_AUTO)
 	code = RS_DEFAULT;
 
@@ -1960,6 +1930,23 @@ set_record_sep(BUFFER *bp, RECORD_SEP code)
     relist_settings();
     updatelistbuffers();
     set_winflags(TRUE, WFMODE);
+
+    switch (code) {
+    case RS_AUTO:
+	/* see above */
+	break;
+    case RS_LF:
+	/* see above */
+	break;
+    case RS_CRLF:
+	recordsep = "\r\n";
+	break;
+    case RS_CR:
+	recordsep = "\r";
+	break;
+    }
+    (bp)->b_recordsep_str = recordsep;
+    (bp)->b_recordsep_len = strlen(get_record_sep(bp));
 }
 
 	/* Change the record separator */

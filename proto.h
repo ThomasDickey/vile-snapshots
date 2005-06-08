@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.551 2005/05/28 00:29:36 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.552 2005/06/03 00:38:55 tom Exp $
  *
  */
 
@@ -736,7 +736,6 @@ void purge_msgs (void);
 /* modes.c */
 extern REGEXVAL * free_regexval (REGEXVAL *rp);
 extern REGEXVAL * new_regexval (const char *pattern, int magic);
-extern char * get_record_sep (BUFFER *bp);
 extern const FSM_CHOICES * name_to_choices (const char *name);
 extern const char * choice_to_name (const FSM_CHOICES *choices, int code);
 extern const char * string_mode_val (VALARGS *args);
@@ -747,7 +746,6 @@ extern int find_mode (BUFFER *bp, const char *mode, int global, VALARGS *args);
 extern int find_mode_class (BUFFER *bp, const char *mode, int global, VALARGS * args, MODECLASS mode_class);
 extern int find_submode (BUFFER *bp, const char *mode, int global, VALARGS * args);
 extern int getfillcol (BUFFER *bp);
-extern int len_record_sep (BUFFER *bp);
 extern int lookup_valnames (const char *rp, const struct VALNAMES *table);
 extern int mode_eol (EOL_ARGS);
 extern int set_mode_value (BUFFER *bp, const char *cp, int defining, int setting, int global, VALARGS *args, const char *rp);

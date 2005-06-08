@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.405 2005/05/28 00:36:15 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.406 2005/06/03 00:42:53 tom Exp $
  *
  */
 
@@ -743,7 +743,7 @@ vtset(LINE *lp, WINDOW *wp)
 	else if (!b_val(bp, MDNEWLINE) && (lforw(lp) == buf_head(bp)))
 	    /*EMPTY */ ;
 	else {
-	    char *s = get_record_sep(bp);
+	    const char *s = get_record_sep(bp);
 	    while (*s != EOS)
 		vtlistc(*s++);
 	}
