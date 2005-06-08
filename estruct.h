@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.581 2005/05/30 22:26:22 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.583 2005/06/03 00:30:03 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -1074,7 +1074,7 @@ extern void endofDisplay(void);
 #define SQUOTE     '\''
 #define DQUOTE     '"'
 #define BACKSLASH  '\\'
-#define TILDE      '~'
+#define CH_TILDE   '~'
 
 #define isEscaped(s)	((s)[-1] == BACKSLASH)
 
@@ -2126,6 +2126,8 @@ typedef struct	BUFFER {
 	UINT	b_flag;			/* Flags			*/
 	short	b_inuse;		/* nonzero if executing macro	*/
 	short	b_acount;		/* auto-save count		*/
+	const char *b_recordsep_str;	/* string for recordsep		*/
+	int	b_recordsep_len;	/* ...its length		*/
 	char	*b_fname;		/* File name			*/
 	int	b_fnlen;		/* length of filename		*/
 	char	b_bname[NBUFN];		/* Buffer name			*/
@@ -2305,6 +2307,9 @@ typedef struct	BUFFER {
 #define HILITE_ON	1
 #define HILITE_DIRTY	2
 #endif
+
+#define len_record_sep(bp)	((bp)->b_recordsep_len)
+#define get_record_sep(bp)	((bp)->b_recordsep_str)
 
 /* macro for iterating over the marks associated with the current buffer */
 

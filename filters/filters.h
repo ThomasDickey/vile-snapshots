@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.92 2005/05/22 16:56:05 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.93 2005/06/03 00:41:37 tom Exp $
  */
 
 #ifndef FILTERS_H
@@ -133,7 +133,7 @@ extern	int	sscanf	( const char *src, const char *fmt, ... );
 
 extern	char *home_dir(void);
 
-typedef enum { D_UNKNOWN = -1, D_KNOWN = 0 } DIRECTIVE;
+typedef enum { D_UNKNOWN = -1, D_ENDM = 0 } DIRECTIVE;
 extern DIRECTIVE dname_to_dirnum(char **cmdp, int length);
 
 typedef struct { int dummy; } CMDFUNC;

@@ -1,5 +1,14 @@
 Changes for vile 9.5 (released ??? ??? ?? ????)
 
+ 20050608 (w)
+	+ eliminate some strlen() calls to improve performance by caching the
+	  record separator value and its length in BUFFER.
+	+ fix inconsistent use of dummy value for DIRECTIVE in filterio.c
+	  (report by Clark Morgan).
+	+ change TILDE to CH_TILDE to avoid symbol conflict on AIX.
+	+ improve largefile support by ensuring that _LARGE_FILES and/or
+	  _LARGEFILE_SOURCE are defined before including any header file.
+
  20050530 (v)
 	> Tom Dickey:
 	+ add reader-policy mode, which allows one to control whether vile will

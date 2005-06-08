@@ -13,7 +13,7 @@
  *
  *	modify (ifdef-style) 'expand_leaf()' to allow ellipsis.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/glob.c,v 1.86 2005/05/27 01:44:29 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/glob.c,v 1.87 2005/06/03 00:03:29 tom Exp $
  *
  */
 
@@ -144,7 +144,7 @@ string_has_wildcards(const char *item)
     const char *base = item;
 
 #if OPT_VMS_PATH || SYS_WINNT	/* either host can support ~/whatever */
-    if (*item == TILDE)
+    if (*item == CH_TILDE)
 	return TRUE;
 #endif
 #if OPT_VMS_PATH || SYS_UNIX || OPT_MSDOS_PATH

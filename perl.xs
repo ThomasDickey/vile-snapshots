@@ -13,7 +13,7 @@
  * vile.  The file api.c (sometimes) provides a middle layer between
  * this interface and the rest of vile.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.103 2005/05/27 19:28:26 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.104 2005/06/03 20:27:30 tom Exp $
  */
 
 /*#
@@ -1402,8 +1402,8 @@ svgetline(SV **svp, VileBuf *vbp, char *rsstr GCC_UNUSED, int rslen GCC_UNUSED)
     B_COUNT nllen;
     char *text;
     SV *sv;
-    char *ending = get_record_sep(curbp);
-    B_COUNT len_rs = strlen(ending);
+    const char *ending = get_record_sep(curbp);
+    B_COUNT len_rs = len_record_sep(curbp);
 
     if (is_header_line(DOT, curbp)
      || vbp->region.r_size <= 0
@@ -1464,8 +1464,8 @@ svgetregion(SV **svp, VileBuf *vbp, char *rsstr GCC_UNUSED, int rslen GCC_UNUSED
     SV *sv;
     LINE *lp;
     int off;
-    char *ending = get_record_sep(curbp);
-    int	len_rs = strlen(ending);
+    const char *ending = get_record_sep(curbp);
+    int	len_rs = len_record_sep(curbp);
 
     if (is_header_line(DOT, curbp) || vbp->region.r_size <= 0) {
 	*svp = newSVsv(&PL_sv_undef);
@@ -1527,8 +1527,8 @@ svgettors(SV **svp, VileBuf *vbp, char *rsstr, int rslen)
     int orig_rslen = rslen;
     LINE *lp;
     int off;
-    char *ending = get_record_sep(curbp);
-    int	len_rs = strlen(ending);
+    const char *ending = get_record_sep(curbp);
+    int	len_rs = len_record_sep(curbp);
     char temp[10];
 
     /* See if we're already at the end of the region and have nothing

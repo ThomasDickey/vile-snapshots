@@ -3,7 +3,7 @@
  * paragraph at a time.  There are all sorts of word mode commands.  If I
  * do any sentence mode commands, they are likely to be put in this file.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/word.c,v 1.77 2005/01/19 01:53:42 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/word.c,v 1.78 2005/06/03 20:26:23 tom Exp $
  *
  */
 
@@ -665,7 +665,7 @@ wordcount(int f GCC_UNUSED, int n GCC_UNUSED)
     int status;			/* status return code */
     REGION region;		/* region to look at */
     const char *ending = get_record_sep(curbp);
-    int len_rs = strlen(ending);
+    int len_rs = len_record_sep(curbp);
 
     /* make sure we have a region to count */
     if ((status = getregion(&region)) != TRUE) {
