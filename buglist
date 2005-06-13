@@ -1,7 +1,7 @@
 ------------------------
 vile bug/enhancement/wish list (mostly wishes ;-)
 ------------------------
-$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.399 2004/12/15 01:27:01 tom Exp $
+$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.401 2005/06/12 21:58:37 tom Exp $
 ----------------------
 	(E means enhancement, L,M,H are low, medium, high priority)
 
@@ -1505,8 +1505,7 @@ The curses.c driver is still experimental.  It has really only been tested
 with ncurses on Linux.  There are some problems displaying on backgrounds
 other than black.  The chief problem however is that under some circumstances
 the terminal modes are not properly saved/restored when executing a shell
-command (and a staircase effect results).  To see this, type
-	:r !date
+command (and a staircase effect results).
 
 -- 01-01-06 (tom)
 
@@ -1547,11 +1546,6 @@ one user complains that win95 vile.exe does something similar.
 modify hooks so I can pass parameters to them, adding logic to support an
 $open-hook
 
--- 01-12-30 (tom)
-
-add an unfilter command, to change attributes to ANSI controls and/or
-overstrikes
-
 -- 02-01-16 (tom)
 
 The undo-dos-trim mode allows undo of the changes made to the buffer, but does
@@ -1583,12 +1577,6 @@ nrmode should be able to handle \fRxx\fByy\fIaa\fR
 :error-buffer doesn't allow us to use finderr pointing into an internal buffer
 such as the <manpage> stuff, since the patterns for buffer names include
 characters that normally aren't part of filenames.
-
--- 02-05-10 (tom)
-
-The perl filter does not handle nested quote-like operators (see Perl's CPAN.pm
-for example).  Doing this would require making the xxx_PATTERN code recursive,
-on regions.  vim does not (I think cannot) handle this.
 
 -- 03-03-18 (tom)
 

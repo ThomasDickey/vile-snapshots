@@ -5,7 +5,7 @@
  * reading and writing of the disk are
  * in "fileio.c".
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.379 2005/06/04 20:33:07 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.380 2005/06/12 22:00:00 tom Exp $
  */
 
 #include "estruct.h"
@@ -272,6 +272,7 @@ CleanAfterPipe(int Wrote)
     if (must_clean_pipe) {
 #if SYS_UNIX || SYS_MSDOS
 	ttunclean();		/* may clear the screen as a side-effect */
+	term.kopen();
 	term.flush();
 	if (Wrote)
 	    pressreturn();
