@@ -1,6 +1,6 @@
-revlist for vile, version v9_4w
+revlist for vile, version v9_4x
 --------------------------------------------------------------------------------
-CHANGES	1.836
+CHANGES	1.839
 CHANGES.R3	1.1
 CHANGES.R4	1.1
 CHANGES.R5	1.1
@@ -23,7 +23,7 @@ borland.c	1.32
 btree.c	1.21
 btree.h	1.4
 buffer.c	1.293
-buglist	1.399
+buglist	1.401
 builtflt.c	1.47
 chgdfunc.h	1.17
 cmdtbl	1.237
@@ -44,7 +44,7 @@ eval.c	1.348
 exec.c	1.278
 externs.c	1.10
 fences.c	1.83
-file.c	1.379
+file.c	1.380
 filec.c	1.121
 fileio.c	1.179
 finderr.c	1.130
@@ -85,7 +85,7 @@ opers.c	1.90
 os2keys.h	1.1
 os2pipe.c	1.5
 os2vio.c	1.31
-patchlev.h	1.330
+patchlev.h	1.331
 path.c	1.149
 perl.xs	1.104
 plugin.c	1.1
@@ -96,7 +96,7 @@ ptypemap	1.7
 random.c	1.283
 regexp.c	1.110
 region.c	1.131
-revlist	v9_4w
+revlist	v9_4x
 search.c	1.137
 select.c	1.157
 sinstall.sh	1.1
@@ -112,7 +112,7 @@ trace.h	1.23
 ucrypt.c	1.15
 undo.c	1.88
 version.c	1.57
-vile-9.4.spec	1.25
+vile-9.4.spec	1.26
 vile.1	1.30
 vile.hlp	1.601
 vile.wmconfig	1.1
@@ -197,8 +197,9 @@ filters/fdl-filt.l	1.9
 filters/fdl.key	1.4
 filters/filterio.c	1.28
 filters/filters.c	1.98
-filters/filters.h	1.93
+filters/filters.h	1.94
 filters/filters.rc	1.202
+filters/flt_defs.h	1.1
 filters/fltstack.h	1.9
 filters/genmake.c	1.4
 filters/genmake.mak	1.26
@@ -225,20 +226,20 @@ filters/m4.key	1.3
 filters/mail.key	1.3
 filters/mailfilt.l	1.14
 filters/make.key	1.8
-filters/makefile.2nd	1.8
+filters/makefile.2nd	1.9
 filters/makefile.djg	1.3
 filters/makefile.emx	1.4
 filters/makefile.icc	1.3
-filters/makefile.in	1.79
+filters/makefile.in	1.80
 filters/makefile.wnt	1.31
 filters/makefilt.l	1.50
 filters/makelist.sh	1.5
 filters/manfilt.c	1.36
 filters/mk-0th.awk	1.9
 filters/mk-0th.bat	1.6
-filters/mk-1st.awk	1.11
+filters/mk-1st.awk	1.12
 filters/mk-1st.bat	1.6
-filters/mk-2nd.awk	1.13
+filters/mk-2nd.awk	1.16
 filters/mk-2nd.bat	1.7
 filters/mk-key.awk	1.2
 filters/mms-filt.l	1.9

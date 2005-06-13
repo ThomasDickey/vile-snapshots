@@ -1,4 +1,4 @@
-# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.in,v 1.79 2004/04/11 14:07:20 tom Exp $
+# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.in,v 1.80 2005/06/09 22:53:05 tom Exp $
 #
 
 #### Start of system configuration section. ####
@@ -58,8 +58,6 @@ LIBDIR		= $(DESTDIR)$(libdir)
 DATADIR		= $(DESTDIR)$(datadir)
 
 INSTALL_DIRS    = $(BINDIR) $(DATADIR)
-
-.SUFFIXES: .l .c .i $o $(so)
 
 LF_DEPS = filterio$o filters$o
 LF_ARGS = $(LF_DEPS) $(LEXLIB)

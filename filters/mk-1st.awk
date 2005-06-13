@@ -1,9 +1,9 @@
-# $Header: /users/source/archives/vile.vcs/filters/RCS/mk-1st.awk,v 1.11 2004/03/17 22:57:27 tom Exp $
+# $Header: /users/source/archives/vile.vcs/filters/RCS/mk-1st.awk,v 1.12 2005/06/09 23:33:50 tom Exp $
 #
 # Generate makefile lists for vile's external and built-in filters.  We will
 # build each filter only one way (external _or_ built-in).  This script uses
 # these parameters:
-#	mode =	one of 'built-in','dynamic' or 'external'
+#	mode =	one of 'built-in','loadable' or 'external'
 #	list =	a list of the filter root-names to use, with 'all'
 #		matching all root-names.
 function dump_list(format, name, names, only) {
@@ -65,9 +65,11 @@ END	{
 	    } else if (mode == "built-in") {
 		dump_list("%s$o", "C_OBJ", root, ".c");
 		dump_list("%s$o", "LEX_OBJ", root, ".l");
+		dump_list("%s.c", "BUILTSRCS", root, ".l");
 	    } else {
 		dump_list("%s", "C_DYN", prog, ".c");
 		dump_list("%s", "LEX_DYN", prog, ".l");
+		dump_list("%s.c", "BUILTSRCS", root, ".l");
 		dump_list("$(BINDIR)/%s", "INSTALL_DYN_C", prog, ".c");
 		dump_list("$(BINDIR)/%s", "INSTALL_DYN_LEX", prog, ".l");
 	    }

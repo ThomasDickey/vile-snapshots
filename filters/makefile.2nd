@@ -1,8 +1,10 @@
-# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.2nd,v 1.8 2003/10/30 00:39:23 tom Exp $
+# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.2nd,v 1.9 2005/06/09 22:56:09 tom Exp $
 #
 
 .SUFFIXES: .l .c .i $o
 
+# This rule is not used for built-in filters since we generate explicit
+# rules to rename the entrypoints of each filter.
 .l$o:
 @RULE_CC@
 	@ECHO_CC@$(LEX) -t $< > $*.c

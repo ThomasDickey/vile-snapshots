@@ -1,4 +1,4 @@
-# $Header: /users/source/archives/vile.vcs/filters/RCS/mk-2nd.awk,v 1.13 2004/03/17 23:54:16 tom Exp $
+# $Header: /users/source/archives/vile.vcs/filters/RCS/mk-2nd.awk,v 1.16 2005/06/12 19:14:10 tom Exp $
 #
 # Generate makefile rules for vile's external and built-in filters.  We will
 # build each filter only one way, to avoid conflict with the generated files. 
@@ -71,6 +71,11 @@ END	{
 		    printf "%s :\t%s\t\t; $(INSTALL_PROGRAM) $? $@\n", dst, src
 		}
 	    } else if ( mode == "built-in" ) {
+		if ( mode == "built-in" ) {
+		    comp="$(CC) -c $(CPPFLAGS) $(CFLAGS) -Dfilter_def=define_"
+		} else {
+		    comp="$(CC) -c $(SH_CFLAGS) $(CPPFLAGS) $(CFLAGS) -Dfilter_def=define_"
+		}
 		for (i = 0; i < count; i++) {
 		    dst = sprintf("%s$o", root[i]);
 		    print ""
@@ -78,9 +83,18 @@ END	{
 		    if (index(compiling,"#") == 0)
 			printf "\t@echo compiling %s\n", file[i]
 		    if (type[i] == "l") {
-			printf "\t%s$(LEX) -P%s_ -t %s/%s > %s.c\n", show, name[i], from, file[i], root[i]
+			printf "\t%s echo '#include <flt_defs.h>' > %s.c\n", show, root[i]
+			printf "\t%s$(LEX) -P%s_ -t %s/%s >> %s.c\n", show, name[i], from, file[i], root[i]
 			printf "\t%s$(CC) -c $(CPPFLAGS) $(CFLAGS) -Dfilter_def=define_%s %s/%s.c\n", show, name[i], ".", root[i]
 			printf "\t%s $(RM) %s.c\n", show, root[i]
+
+			dst = sprintf("%s.c", root[i]);
+			print ""
+			printf "%s : %s\n", dst, file[i]
+			if (index(compiling,"#") == 0)
+			    printf "\t@echo processing %s\n", file[i]
+			printf "\t%s echo '#include <flt_defs.h>' > %s.c\n", show, root[i]
+			printf "\t%s$(LEX) -P%s_ -t %s/%s >> %s.c\n", show, name[i], from, file[i], root[i]
 		    } else {
 			printf "\t%s$(CC) -c $(CPPFLAGS) $(CFLAGS) -Dfilter_def=define_%s %s/%s.c\n", show, name[i], from, root[i]
 		    }
