@@ -1,5 +1,17 @@
 Changes for vile 9.5 (released ??? ??? ?? ????)
 
+ 20050618 (y)
+	> Tom Dickey:
+	+ revert 9.4p change to vilefilt.l
+	+ add ".mm" to nroff mode.
+	+ modify ShowFormatted macro to support "-mm" macros.
+	+ modify dequoting of winvile's command-line to allow for quoting to
+	  be within parameters, e.g.,
+	  	winvile +"100" makefile
+	+ fix a pointer for tgetstr() result which was not initialized for the
+	  termcap driver.  The corresponding terminfo call does not use the
+	  pointer (since 9.3d).
+
  20050612 (x)
 	> Tom Dickey:
 	+ fix a problem with curses driver where doing

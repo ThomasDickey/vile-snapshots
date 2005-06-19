@@ -3,7 +3,7 @@
 ;;
 ;; Author: Kevin Buettner
 ;;
-;; $Header: /users/source/archives/vile.vcs/macros/RCS/manpage.rc,v 1.20 2005/02/15 23:59:02 tom Exp $
+;; $Header: /users/source/archives/vile.vcs/macros/RCS/manpage.rc,v 1.21 2005/06/17 20:30:44 tom Exp $
 ;;
 
 store-procedure ShowManpage "Prompt for, and display a manual-page"
@@ -43,7 +43,7 @@ store-procedure ShowManpage "Prompt for, and display a manual-page"
 bind-key ShowManpage ^X-m
 
 store-procedure ShowFormatted "Render the current buffer with nroff -man or -ms"
-	~local %type %filter %manpagesrc %manpagebuf $error-buffer
+	~local %type %macros %filter %manpagesrc %manpagebuf $error-buffer
 	set-variable %filter &lookup e+l+p &cat vile-manfilt $exec-suffix
 	~if &seq %filter ""
 		write-message "[Cannot find manpage-filter]"
@@ -72,17 +72,18 @@ store-procedure ShowFormatted "Render the current buffer with nroff -man or -ms"
 		~else
 			edit-file &cat "!pod2text " &cat &pquote $cfilname &cat " | " %filter
 		~endif
-	~elseif &seq $pathlist-separator ":"
-		~if &seq %type ".ms"
-			edit-file &cat "!tbl " &cat &pquote $cfilname &cat " | nroff -ms | " %filter
-		~else
-			edit-file &cat "!tbl " &cat &pquote $cfilname &cat " | nroff -man | " %filter
-		~endif
 	~else
 		~if &seq %type ".ms"
-			edit-file &cat "!cawf -ms  " &cat &pquote $cfilname &cat " | " %filter
+			setv %macros="-ms"
+		~elseif &seq %type ".mm"
+			setv %macros="-mm"
 		~else
-			edit-file &cat "!cawf -man " &cat &pquote $cfilname &cat " | " %filter
+			setv %macros="-man"
+		~endif
+		~if &seq $pathlist-separator ":"
+			edit-file &cat "!tbl " &cat &pquote $cfilname &cat " | nroff " &cat %macros &cat " | " %filter
+		~else
+			edit-file &cat "!cawf " &cat %macros &cat " " &cat &pquote $cfilname &cat " | " %filter
 		~endif
 	~endif
 	~if &isa Majormode txt
