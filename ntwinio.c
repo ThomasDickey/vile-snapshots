@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 screen API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.143 2005/03/10 23:58:17 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.145 2005/06/17 22:50:50 tom Exp $
  * Written by T.E.Dickey for vile (october 1997).
  * -- improvements by Clark Morgan (see w32cbrd.c, w32pipe.c).
  */
@@ -3669,8 +3669,8 @@ WinMain(
 {
     int argc;
     int n;
-    int maxargs = (strlen(lpCmdLine) + 1) / 2;
-    char **argv = typeallocn(char *, maxargs + 10);
+    int maxargs = strlen(lpCmdLine) + 1;
+    char **argv = typecallocn(char *, maxargs + 10);
     char *ptr, *fontstr;
 #ifdef VILE_OLE
     int oa_invoke, oa_reg;
@@ -3686,34 +3686,43 @@ WinMain(
     if (ffaccess(lpCmdLine, FL_READABLE)) {
 	argv[++argc] = lpCmdLine;
     } else {
+	char *dst;
 	for (ptr = lpCmdLine; *ptr != '\0';) {
 	    char delim = ' ';
 
+	    /* skip spaces before parameter */
 	    while (*ptr == ' ')
 		ptr++;
 
-	    if (*ptr == '"') {
-		delim = *ptr++;
-	    }
 	    if (*argv[argc]) {
 		TRACE(("argv[%d]:%s\n", argc, argv[argc]));
 		++argc;
 	    }
-	    argv[argc] = ptr;
 	    if (argc + 1 >= maxargs) {
 		break;
 	    }
-	    while (*ptr != delim && *ptr != '\0')
-		ptr++;
-	    if (*ptr == delim)
-		*ptr++ = '\0';
+	    argv[argc] = dst = ptr;
+	    while (*ptr != delim && *ptr != '\0') {
+		if (*ptr == '"') {
+		    ptr++;
+		    delim = (char) ((delim == ' ') ? '"' : ' ');
+		} else {
+		    *dst++ = *ptr++;
+		}
+	    }
+	    if (*ptr == '\0') {
+		*dst = '\0';
+	    } else if (*ptr == '"') {
+		*dst = '\0';
+		++ptr;
+	    }
 	}
     }
     if (*argv[argc]) {
 	TRACE(("argv[%d]:%s\n", argc, argv[argc]));
 	++argc;
     }
-    fontstr = argv[argc] = 0;
+    fontstr = 0;
 
     /*
      * If our working directory is ${HOMEDRIVE}${HOME} and we're given a

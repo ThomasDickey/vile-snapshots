@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.406 2005/06/03 00:42:53 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.407 2005/06/17 23:32:03 tom Exp $
  *
  */
 
@@ -238,7 +238,6 @@ dofmt(const char *fmt, va_list *app)
     int the_width;
     int the_limit;
     int n;
-    int nchars = 0;
     int islong;
     UINT uint_value;
     ULONG ulong_value;
@@ -250,7 +249,6 @@ dofmt(const char *fmt, va_list *app)
     while ((c = *fmt++) != 0) {
 	if (c != '%') {
 	    (*outfunc) (c);
-	    nchars++;
 	    continue;
 	}
 	the_width = -1;
@@ -291,7 +289,6 @@ dofmt(const char *fmt, va_list *app)
 		    }
 		    int_value = -int_value;
 		    (*outfunc) ('-');
-		    nchars++;
 		}
 		n = dfputi(outfunc, (UINT) int_value, 10);
 		break;
@@ -300,7 +297,6 @@ dofmt(const char *fmt, va_list *app)
 	    if (long_value < 0) {
 		long_value = -long_value;
 		(*outfunc) ('-');
-		nchars++;
 	    }
 	    n = dfputli(outfunc, (ULONG) long_value, 10);
 	    break;
@@ -342,10 +338,8 @@ dofmt(const char *fmt, va_list *app)
 	    n = 1;
 	}
 	the_width -= n;
-	nchars += n;
 	while (the_width-- > 0) {
 	    (*outfunc) (' ');
-	    nchars++;
 	}
     }
 }
