@@ -1,4 +1,4 @@
-MANIFEST for vile, version v9_4y
+MANIFEST for vile, version v9_4z
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 CHANGES                         Change-log for VILE
@@ -28,6 +28,8 @@ builtflt.c                      interface from vile to built-in filters
 chgdfunc.h                      prototypes for mode-functions with side-effects
 cmdtbl                          used by 'mktbls' to generate VILE's command-tables
 config.emx                      configure-ifdefs for EMX (OS/2)
+config.guess                    guess configuration
+config.sub                      substitute configuration
 config_h.in                     template for config.h
 configure.in                    used by 'autoconf' to generate 'configure'
 csrch.c                         current-line character-scanning commands

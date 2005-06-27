@@ -1,12 +1,20 @@
 Changes for vile 9.5 (released ??? ??? ?? ????)
 
+ 20050626 (z)
+	> Tom Dickey:
+	+ add ".dcl" filetype for dclmode.
+	+ add ".cls" filetype for vbmode, add symbols for Visual Basic class
+	  modules to vb.key
+	+ fix to ntwinio.c change from 9.4y which broke parsing of multiple
+	  filenames on the command-line.
+
  20050618 (y)
 	> Tom Dickey:
 	+ revert 9.4p change to vilefilt.l
 	+ add ".mm" to nroff mode.
 	+ modify ShowFormatted macro to support "-mm" macros.
-	+ modify dequoting of winvile's command-line to allow for quoting to
-	  be within parameters, e.g.,
+	+ modify dequoting of winvile's command-line in ntwinio.c to allow for
+	  quoting to be within parameters, e.g.,
 	  	winvile +"100" makefile
 	+ fix a pointer for tgetstr() result which was not initialized for the
 	  termcap driver.  The corresponding terminfo call does not use the

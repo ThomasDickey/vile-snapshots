@@ -1,6 +1,6 @@
-revlist for vile, version v9_4y
+revlist for vile, version v9_4z
 --------------------------------------------------------------------------------
-CHANGES	1.844
+CHANGES	1.846
 CHANGES.R3	1.1
 CHANGES.R4	1.1
 CHANGES.R5	1.1
@@ -28,6 +28,8 @@ builtflt.c	1.47
 chgdfunc.h	1.17
 cmdtbl	1.237
 config.emx	1.2
+config.guess	1.1
+config.sub	1.1
 config_h.in	1.2
 configure	none
 configure.in	1.219
@@ -55,7 +57,7 @@ history.c	1.82
 ibmpc.c	1.97
 input.c	1.283
 insert.c	1.142
-install.sh	1.6
+install.sh	1.7
 isearch.c	1.60
 itbuff.c	1.25
 lckfiles.c	1.11
@@ -79,13 +81,13 @@ modetbl	1.235
 msgs.c	1.26
 npopen.c	1.92
 ntconio.c	1.82
-ntwinio.c	1.145
+ntwinio.c	1.146
 oneliner.c	1.107
 opers.c	1.90
 os2keys.h	1.1
 os2pipe.c	1.5
 os2vio.c	1.31
-patchlev.h	1.332
+patchlev.h	1.333
 path.c	1.149
 perl.xs	1.104
 plugin.c	1.1
@@ -96,7 +98,7 @@ ptypemap	1.7
 random.c	1.283
 regexp.c	1.110
 region.c	1.131
-revlist	v9_4y
+revlist	v9_4z
 search.c	1.137
 select.c	1.157
 sinstall.sh	1.1
@@ -112,7 +114,7 @@ trace.h	1.23
 ucrypt.c	1.15
 undo.c	1.88
 version.c	1.57
-vile-9.4.spec	1.27
+vile-9.4.spec	1.28
 vile.1	1.30
 vile.hlp	1.601
 vile.wmconfig	1.1
@@ -169,7 +171,7 @@ filters/au3.key	1.4
 filters/awk-filt.l	1.14
 filters/awk.key	1.2
 filters/bas-filt.l	1.8
-filters/basic.key	1.3
+filters/basic.key	1.4
 filters/bat-filt.l	1.18
 filters/bat.key	1.4
 filters/c-filt.c	1.73
@@ -297,7 +299,7 @@ filters/ti.key	1.2
 filters/txt-filt.l	1.17
 filters/unfilter.c	1.8
 filters/unfilter.h	1.1
-filters/vb.key	1.2
+filters/vb.key	1.5
 filters/vile.key	1.8
 filters/vilefilt.l	1.30
 filters/vim.key	1.2
@@ -327,7 +329,7 @@ macros/digraphs.rc	1.2
 macros/gnugpg.rc	1.3
 macros/loaderrs.rc	1.1
 macros/manpage.rc	1.21
-macros/modes.rc	1.22
+macros/modes.rc	1.24
 macros/palettes.rc	1.7
 macros/pictmode.rc	1.4
 macros/search.rc	1.3
