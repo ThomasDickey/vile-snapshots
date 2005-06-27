@@ -1,4 +1,4 @@
-; $Id: modes.rc,v 1.22 2005/06/17 20:15:20 tom Exp $
+; $Id: modes.rc,v 1.24 2005/06/26 22:02:17 tom Exp $
 ; majormodes in this file are ordered alphabetically for convenience - the
 ; precedence used by vile is strictly alphabetic, counting case.  Use the
 ; before and after qualifiers to override the precedence.
@@ -165,7 +165,7 @@ define-mode cweb
 ; excludes the if-block.
 define-mode dcl
 ~with define-submode dcl
-	suffixes	'\.\(com\|tpu\)$'
+	suffixes	'\.\(com\|dcl\|tpu\)$'
 	comment-prefix	'^\s*\$!'
 	comments	'^\s*\$!\s*$'
 	ignorecase
@@ -691,7 +691,7 @@ define-mode txt
 define-mode vb
 ~with define-submode vb
 	before		"basic"
-	suffixes	'\.\(bas\|frm\)$'
+	suffixes	'\.\(bas\|cls\|frm\)$'
 	pre		'\(^VERSION\|VB_Name\)'
 	qualifiers=all
 	comment-prefix	"^\\s*'"

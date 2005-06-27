@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 screen API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.145 2005/06/17 22:50:50 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.146 2005/06/20 19:20:28 tom Exp $
  * Written by T.E.Dickey for vile (october 1997).
  * -- improvements by Clark Morgan (see w32cbrd.c, w32pipe.c).
  */
@@ -3710,11 +3710,13 @@ WinMain(
 		    *dst++ = *ptr++;
 		}
 	    }
-	    if (*ptr == '\0') {
-		*dst = '\0';
-	    } else if (*ptr == '"') {
-		*dst = '\0';
+	    if (*ptr == '"') {
 		++ptr;
+	    }
+	    if (dst != ptr) {
+		*dst = '\0';
+	    } else if (*ptr == ' ') {
+		*ptr++ = '\0';
 	    }
 	}
     }
