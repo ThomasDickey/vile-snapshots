@@ -1,4 +1,4 @@
-$! $Header: /users/source/archives/vile.vcs/RCS/vmsbuild.com,v 1.42 2004/11/03 23:03:35 tom Exp $
+$! $Header: /users/source/archives/vile.vcs/RCS/vmsbuild.com,v 1.43 2005/07/09 15:01:30 Peter.Prymmer Exp $
 $! VMS build-script for vile.  Requires installed C compiler
 $!
 $! Screen Configurations
@@ -255,7 +255,14 @@ $ all:
 $	if f$search("mktbls.exe") .eqs. ""
 $	then
 $		call make mktbls
-$		link /exec=mktbls/map/cross mktbls.obj,SYS$LIBRARY:VAXCRTL/LIB
+$!      sys$library:vaxcrtl.olb did not ship with VMS V8.2 HP rx2600 IA64,
+$!      nor with layered product HP C V7.1-011 on OpenVMS IA64 V8.2
+$               if f$search("SYS$LIBRARY:VAXCRTL.OLB") .nes. ""
+$               then
+$                       link /exec=mktbls/map/cross mktbls.obj,SYS$LIBRARY:VAXCRTL/LIB
+$               else
+$                       link /exec=mktbls/map/cross mktbls.obj
+$               endif
 $	endif
 $	if f$search("nebind.h") .eqs. "" then mktbls cmdtbl
 $	if f$search("nemode.h") .eqs. "" then mktbls modetbl

@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.583 2005/06/03 00:30:03 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.584 2005/07/09 15:49:55 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -2824,7 +2824,11 @@ extern void _exit (int code);
  *
  * FIXME: c99 may require a wider type.
  */
+#ifdef __GNUC__
 #define TYPECAST(type,ptr) (type*)((long)(ptr))
+#else
+#define TYPECAST(type,ptr) (type*)(ptr)
+#endif
 
 /* structure-allocate, for appeasing strict compilers */
 #define	castalloc(cast,nbytes)		(cast *)malloc(nbytes)

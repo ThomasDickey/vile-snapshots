@@ -2,7 +2,7 @@
  *		The routines in this file handle the conversion of pathname
  *		strings.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.149 2005/06/03 00:03:29 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.150 2005/07/09 15:01:56 Peter.Prymmer Exp $
  *
  *
  */
@@ -2056,8 +2056,9 @@ bsl_to_sl_inplace(char *p)
 char *
 version_of(char *fname)
 {
+    char *s;
     if (fname != 0) {
-	char *s = strchr(fname, ';');
+	s = strchr(fname, ';');
 	if (s == 0) {
 	    fname = pathleaf(fname);
 	    if ((s = strchr(fname, '.')) == 0

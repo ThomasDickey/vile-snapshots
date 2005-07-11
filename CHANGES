@@ -1,5 +1,23 @@
 Changes for vile 9.5 (released ??? ??? ?? ????)
 
+ 20050710 (za)
+	> Peter Prymmer:
+	+ fixes for building on VMS
+	> Tom Dickey:
+	+ suppress a check for VMS from changes to quickreadf() in 9.4u which
+	  made vile unable to read VFC files.
+	+ improve configure checks for _XOPEN_SOURCE and _POSIX_C_SOURCE by
+	  not adding a -U option to cancel conflicting -D's, but by stripping
+	  the conflicting option from $CFLAGS and $CPPFLAGS.  This addresses
+	  compilers that do not process options left-to-right (report by Urs
+	  Jansen).
+	+ update list of warning options for Intel C compiler for 9.0 running
+	  on 64-bit platform.
+	+ modify configure script to allow it to define _GNU_SOURCE for Intel
+	  compiler (report by Urs Jansen).
+	+ deprecate TYPECAST() macro by using it only for gcc
+	+ add ".asp" to jspmode suffixes
+
  20050626 (z)
 	> Tom Dickey:
 	+ add ".dcl" filetype for dclmode.

@@ -5,7 +5,7 @@
  * reading and writing of the disk are
  * in "fileio.c".
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.380 2005/06/12 22:00:00 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.383 2005/07/10 00:45:47 tom Exp $
  */
 
 #include "estruct.h"
@@ -1410,7 +1410,16 @@ quickreadf(BUFFER *bp, int *nlinep)
     }
 #endif
     else if (ffread((char *) buffer, request, &length) < 0
-	     || (length != request)) {
+#if !SYS_VMS
+	/*
+	 * For most systems, the advertised size of the file will match the
+	 * number of chars that we can read from it.  However, VMS's structured
+	 * filetypes such as VFC or VAR/CR will return fewer since we are not
+	 * using the structure information.
+	 */
+	     || (length != request)
+#endif
+	) {
 	free(buffer);
 	mlerror("reading");
 	rc = FIOERR;
@@ -2069,9 +2078,13 @@ actually_write(REGION * rp, char *fn, int msgf, BUFFER *bp, int forced, int enco
 	 * after the line), allow 'newline' mode to suppress the
 	 * trailing newline.
 	 */
-	if ((rp->r_size -= line_length(lp)) <= 0
-	    && !b_val(bp, MDNEWLINE))
-	    ending = "";
+	if (rp->r_size <= line_length(lp)) {
+	    rp->r_size = 0;
+	    if (!b_val(bp, MDNEWLINE))
+		ending = "";
+	} else {
+	    rp->r_size -= line_length(lp);
+	}
 #if OPT_SELECTIONS
 	if (encoded) {
 	    TBUFF *temp;
