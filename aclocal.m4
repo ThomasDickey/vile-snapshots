@@ -1,6 +1,6 @@
 dnl vile's local definitions for autoconf.
 dnl
-dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.147 2005/06/02 23:48:48 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.150 2005/07/09 20:25:28 tom Exp $
 dnl
 dnl ---------------------------------------------------------------------------
 dnl ---------------------------------------------------------------------------
@@ -1064,7 +1064,7 @@ if test "$GCC" = yes ; then
 fi
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_GCC_WARNINGS version: 18 updated: 2004/12/03 20:51:07
+dnl CF_GCC_WARNINGS version: 19 updated: 2005/07/09 13:23:07
 dnl ---------------
 dnl Check if the compiler supports useful warning options.  There's a few that
 dnl we don't use, simply because they're too noisy:
@@ -1087,30 +1087,51 @@ AC_DEFUN([CF_GCC_WARNINGS],
 [
 AC_REQUIRE([CF_INTEL_COMPILER])
 AC_REQUIRE([CF_GCC_VERSION])
+
+cat > conftest.$ac_ext <<EOF
+#line __oline__ "configure"
+int main(int argc, char *argv[[]]) { return (argv[[argc-1]] == 0) ; }
+EOF
+
 if test "$INTEL_COMPILER" = yes
 then
 # The "-wdXXX" options suppress warnings:
 # remark #1419: external declaration in primary source file
+# remark #1682: implicit conversion of a 64-bit integral type to a smaller integral type (potential portability problem)
+# remark #1683: explicit conversion of a 64-bit integral type to a smaller integral type (potential portability problem)
+# remark #1684: conversion from pointer to same-sized integral type (potential portability problem)
 # remark #193: zero used for undefined preprocessing identifier
 # remark #593: variable "curs_sb_left_arrow" was set but never used
 # remark #810: conversion from "int" to "Dimension={unsigned short}" may lose significant bits
 # remark #869: parameter "tw" was never referenced
 # remark #981: operands are evaluated in unspecified order
 # warning #269: invalid format string conversion
-	EXTRA_CFLAGS="$EXTRA_CFLAGS -Wall \
- -wd1419 \
- -wd193 \
- -wd279 \
- -wd593 \
- -wd810 \
- -wd869 \
- -wd981"
+
+	AC_CHECKING([for $CC warning options])
+	cf_save_CFLAGS="$CFLAGS"
+	EXTRA_CFLAGS="-Wall"
+	for cf_opt in $1 \
+		wd1419 \
+		wd1682 \
+		wd1683 \
+		wd1684 \
+		wd193 \
+		wd279 \
+		wd593 \
+		wd810 \
+		wd869 \
+		wd981
+	do
+		CFLAGS="$cf_save_CFLAGS $EXTRA_CFLAGS -$cf_opt"
+		if AC_TRY_EVAL(ac_compile); then
+			test -n "$verbose" && AC_MSG_RESULT(... -$cf_opt)
+			EXTRA_CFLAGS="$EXTRA_CFLAGS -$cf_opt"
+		fi
+	done
+	CFLAGS="$cf_save_CFLAGS"
+
 elif test "$GCC" = yes
 then
-	cat > conftest.$ac_ext <<EOF
-#line __oline__ "configure"
-int main(int argc, char *argv[[]]) { return (argv[[argc-1]] == 0) ; }
-EOF
 	AC_CHECKING([for $CC warning options])
 	cf_save_CFLAGS="$CFLAGS"
 	EXTRA_CFLAGS="-W -Wall"
@@ -1147,13 +1168,14 @@ EOF
 			EXTRA_CFLAGS="$EXTRA_CFLAGS -$cf_opt"
 		fi
 	done
-	rm -f conftest*
 	CFLAGS="$cf_save_CFLAGS"
 fi
+rm -f conftest*
+
 AC_SUBST(EXTRA_CFLAGS)
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_GNU_SOURCE version: 4 updated: 2004/12/03 20:43:00
+dnl CF_GNU_SOURCE version: 6 updated: 2005/07/09 13:23:07
 dnl -------------
 dnl Check if we must define _GNU_SOURCE to get a reasonable value for
 dnl _XOPEN_SOURCE, upon which many POSIX definitions depend.  This is a defect
@@ -1163,9 +1185,6 @@ dnl
 dnl Well, yes we could work around it...
 AC_DEFUN([CF_GNU_SOURCE],
 [
-AC_REQUIRE([CF_INTEL_COMPILER])
-
-if test "$INTEL_COMPILER" = no ; then
 AC_CACHE_CHECK(if we must define _GNU_SOURCE,cf_cv_gnu_source,[
 AC_TRY_COMPILE([#include <sys/types.h>],[
 #ifndef _XOPEN_SOURCE
@@ -1184,7 +1203,6 @@ make an error
 	])
 ])
 test "$cf_cv_gnu_source" = yes && CPPFLAGS="$CPPFLAGS -D_GNU_SOURCE"
-fi
 ])dnl
 dnl ---------------------------------------------------------------------------
 dnl CF_HEADER_PATH version: 8 updated: 2002/11/10 14:46:59
@@ -2074,7 +2092,7 @@ case ".[$]$1" in #(vi
 esac
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_POSIX_C_SOURCE version: 3 updated: 2005/02/04 06:56:22
+dnl CF_POSIX_C_SOURCE version: 4 updated: 2005/07/09 16:12:18
 dnl -----------------
 dnl Define _POSIX_C_SOURCE to the given level, and _POSIX_SOURCE if needed.
 dnl
@@ -2091,6 +2109,13 @@ dnl	$1 is the nominal value for _POSIX_C_SOURCE
 AC_DEFUN([CF_POSIX_C_SOURCE],
 [
 cf_POSIX_C_SOURCE=ifelse($1,,199506L,$1)
+
+cf_save_CFLAGS="$CFLAGS"
+cf_save_CPPFLAGS="$CPPFLAGS"
+
+CF_REMOVE_DEFINE(cf_trim_CFLAGS,$cf_save_CFLAGS,_POSIX_C_SOURCE)
+CF_REMOVE_DEFINE(cf_trim_CPPFLAGS,$cf_save_CPPFLAGS,_POSIX_C_SOURCE)
+
 AC_CACHE_CHECK(if we should define _POSIX_C_SOURCE,cf_cv_posix_c_source,[
 	CF_MSG_LOG(if the symbol is already defined go no further)
 	AC_TRY_COMPILE([#include <sys/types.h>],[
@@ -2099,12 +2124,12 @@ make an error
 #endif],
 	[cf_cv_posix_c_source=no],
 	[cf_want_posix_source=no
-	 case .$cf_POSIX_C_SOURCE in
-	 .[[12]]??*)
-		cf_cv_posix_c_source="-U_POSIX_C_SOURCE -D_POSIX_C_SOURCE=$cf_POSIX_C_SOURCE"
+	 case .$cf_POSIX_C_SOURCE in #(vi
+	 .[[12]]??*) #(vi
+		cf_cv_posix_c_source="-D_POSIX_C_SOURCE=$cf_POSIX_C_SOURCE"
 		;;
-	 .2)
-		cf_cv_posix_c_source="-U_POSIX_C_SOURCE -D_POSIX_C_SOURCE=$cf_POSIX_C_SOURCE"
+	 .2) #(vi
+		cf_cv_posix_c_source="-D_POSIX_C_SOURCE=$cf_POSIX_C_SOURCE"
 		cf_want_posix_source=yes
 		;;
 	 .*)
@@ -2116,21 +2141,27 @@ make an error
 #ifdef _POSIX_SOURCE
 make an error
 #endif],[],
-		cf_cv_posix_c_source="$cf_cv_posix_c_source -U_POSIX_SOURCE -D_POSIX_SOURCE")
+		cf_cv_posix_c_source="$cf_cv_posix_c_source -D_POSIX_SOURCE")
 	 fi
 	 CF_MSG_LOG(ifdef from value $cf_POSIX_C_SOURCE)
-	 cf_save="$CPPFLAGS"
-	 CPPFLAGS="$CPPFLAGS $cf_cv_posix_c_source"
+	 CFLAGS="$cf_trim_CFLAGS"
+	 CPPFLAGS="$cf_trim_CPPFLAGS $cf_cv_posix_c_source"
 	 CF_MSG_LOG(if the second compile does not leave our definition intact error)
 	 AC_TRY_COMPILE([#include <sys/types.h>],[
 #ifndef _POSIX_C_SOURCE
 make an error
 #endif],,
-	[cf_cv_posix_c_source=no])
-	CPPFLAGS="$cf_save"
+	 [cf_cv_posix_c_source=no])
+	 CFLAGS="$cf_save_CFLAGS"
+	 CPPFLAGS="$cf_save_CPPFLAGS $cf_cv_posix_c_source"
 	])
 ])
-test "$cf_cv_posix_c_source" != no && CPPFLAGS="$CPPFLAGS $cf_cv_posix_c_source"
+
+if test "$cf_cv_posix_c_source" != no ; then
+	CFLAGS="$cf_trim_CFLAGS"
+	CPPFLAGS="$cf_trim_CPPFLAGS $cf_cv_posix_c_source"
+fi
+
 ])dnl
 dnl ---------------------------------------------------------------------------
 dnl CF_PREREQ_COMPARE version: 2 updated: 1997/09/06 13:24:56
@@ -2200,6 +2231,24 @@ else
   AC_MSG_RESULT(no)
 fi
 AC_SUBST(PERL)dnl
+])dnl
+dnl ---------------------------------------------------------------------------
+dnl CF_REMOVE_DEFINE version: 2 updated: 2005/07/09 16:12:18
+dnl ----------------
+dnl Remove all -U and -D options that refer to the given symbol from a list
+dnl of C compiler options.  This works around the problem that not all
+dnl compilers process -U and -D options from left-to-right, so a -U option
+dnl cannot be used to cancel the effect of a preceding -D option.
+dnl
+dnl $1 = target (which could be the same as the source variable)
+dnl $2 = source (including '$')
+dnl $3 = symbol to remove
+define([CF_REMOVE_DEFINE],
+[
+# remove $3 symbol from $2
+$1=`echo "$2" | \
+	sed	-e 's/-[[UD]]$3\(=[[^ 	]]*\)\?[[ 	]]/ /g' \
+		-e 's/-[[UD]]$3\(=[[^ 	]]*\)\?[$]//g'`
 ])dnl
 dnl ---------------------------------------------------------------------------
 dnl CF_RESTARTABLE_PIPEREAD version: 3 updated: 2001/12/30 18:23:20
@@ -2866,7 +2915,7 @@ fi
 fi
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_XOPEN_SOURCE version: 19 updated: 2005/05/15 19:19:07
+dnl CF_XOPEN_SOURCE version: 20 updated: 2005/07/09 16:23:58
 dnl ---------------
 dnl Try to get _XOPEN_SOURCE defined properly that we can use POSIX functions,
 dnl or adapt to the vendor's definitions to get equivalent functionality.
@@ -2939,7 +2988,11 @@ make an error
 	CPPFLAGS="$cf_save"
 	])
 ])
-test "$cf_cv_xopen_source" != no && CPPFLAGS="$CPPFLAGS -U_XOPEN_SOURCE -D_XOPEN_SOURCE=$cf_cv_xopen_source"
+	if test "$cf_cv_xopen_source" != no ; then
+		CF_REMOVE_DEFINE(CFLAGS,$CFLAGS,_XOPEN_SOURCE)
+		CF_REMOVE_DEFINE(CPPFLAGS,$CPPFLAGS,_XOPEN_SOURCE)
+		CPPFLAGS="$CPPFLAGS -D_XOPEN_SOURCE=$cf_cv_xopen_source"
+	fi
 	CF_POSIX_C_SOURCE($cf_POSIX_C_SOURCE)
 	;;
 esac

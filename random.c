@@ -2,7 +2,7 @@
  * This file contains the command processing functions for a number of random
  * commands. There is no functional grouping here, for sure.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.283 2005/05/22 00:50:19 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.286 2005/07/10 20:20:20 tom Exp $
  *
  */
 
@@ -384,8 +384,8 @@ int
 gotochr(int f, int n)
 {
     LINE *lp;
-    int len;
-    int len_rs = len_record_sep(curbp);
+    B_COUNT len;
+    B_COUNT len_rs = len_record_sep(curbp);
 
     if (!f) {
 	DOT.l = lback(buf_head(curbp));
@@ -394,12 +394,13 @@ gotochr(int f, int n)
 	B_COUNT goal = n;
 	for_each_line(lp, curbp) {
 	    len = line_length(lp);
-	    if ((goal -= len) <= 0) {
+	    if (goal <= len) {
 		DOT.l = lp;
 		if ((DOT.o = goal + len - 1) >= llength(lp))
 		    DOT.o = llength(lp) - 1;
 		break;
 	    }
+	    goal -= len;
 	}
 	if (goal > 0)
 	    return FALSE;
