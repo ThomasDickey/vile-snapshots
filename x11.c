@@ -2,7 +2,7 @@
  *	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.279 2005/01/22 00:52:08 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.280 2005/07/11 21:10:12 tom Exp $
  *
  */
 
@@ -2909,7 +2909,7 @@ x_preparse_args(int *pargc, char ***pargv)
 	static Pixel black;
 	TRACE(("force default value of fcolor0 to Black\n"));
 	black = BlackPixel(dpy, DefaultScreen(dpy));
-	color_resources[0].default_addr = &black;
+	color_resources[0].default_addr = (XtPointer) &black;
     }
 
     XtGetSubresources(cur_win->top_widget,

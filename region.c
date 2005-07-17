@@ -3,7 +3,7 @@
  * and mark.  Some functions are commands.  Some functions are just for
  * internal use.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/region.c,v 1.131 2005/01/19 01:59:23 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/region.c,v 1.132 2005/07/14 00:36:03 tom Exp $
  *
  */
 
@@ -529,7 +529,8 @@ entabline(void *flagp GCC_UNUSED, int l GCC_UNUSED, int r GCC_UNUSED)
 		    while (ooff < llength(lp))
 			(void) lreplc(lp, noff++, lgetc(lp, ooff++));
 		    DOT.o = noff;
-		    (void) ldelete(ooff - noff, FALSE);
+		    if (ooff > noff)
+			(void) ldelete(ooff - noff, FALSE);
 		}
 		(void) gocol(savecol);
 		return TRUE;
@@ -572,7 +573,8 @@ trimline(void *flag GCC_UNUSED, int l GCC_UNUSED, int r GCC_UNUSED)
     int off;
     LINE *lp;
     int odoto, s;
-    int delcnt, was_at_eol;
+    B_COUNT delcnt;
+    int was_at_eol;
 
     lp = DOT.l;
 
@@ -583,15 +585,16 @@ trimline(void *flag GCC_UNUSED, int l GCC_UNUSED, int r GCC_UNUSED)
        that's okay, since the math still works. */
     off = lastchar(lp);
 
-    delcnt = llength(lp) - (off + 1);
-    if (!delcnt)
+    if (llength(lp) <= (off + 1))
 	return TRUE;
+
+    delcnt = llength(lp) - (off + 1);
 
     odoto = DOT.o;
     was_at_eol = (odoto == llength(lp));
 
     DOT.o = off + 1;
-    s = ldelete((B_COUNT) delcnt, FALSE);
+    s = ldelete(delcnt, FALSE);
 
     if (odoto > off) {		/* do we need to back up? */
 	odoto = llength(lp);
@@ -654,7 +657,8 @@ blankline(void *flagp, int l, int r)
 
     if (llength(lp) <= r) {
 	/* then the rect doesn't extend to the end of line */
-	ldelete((B_COUNT) (llength(lp) - l), FALSE);
+	if (llength(lp) > l)
+	    ldelete((B_COUNT) (llength(lp) - l), FALSE);
 
 	/* so there's nothing beyond the rect, so insert at
 	   most r-l chars of the string, or nothing */
@@ -665,10 +669,12 @@ blankline(void *flagp, int l, int r)
 	} else {
 	    len = 0;
 	}
-    } else {
+    } else if (r > l) {
 	/* the line goes on, so delete and reinsert exactly */
-	ldelete((B_COUNT) (r - l), FALSE);
 	len = r - l;
+	ldelete((B_COUNT) len, FALSE);
+    } else {
+	len = 0;
     }
 
     s = lstrinsert(string, len);

@@ -97,7 +97,7 @@
 #		in '!' listed, then the flag does nothing, and should be
 #		viewed simply as documentation.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.237 2005/05/22 02:11:53 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.238 2005/07/17 17:58:39 tom Exp $
 #
 #
 
@@ -1590,7 +1590,7 @@ shrinkwind	GOAL
 vl_source	NONE|(EXRCOK|NAMEDF)
 	"exsource"
 	<source a file of ex commands>
-spawn		NONE			OPT_SHELL
+vl_spawn	NONE			OPT_SHELL
 	"shell-command"			!FEWNAMES
 	<run a shell command>
 poundc_func	NONE

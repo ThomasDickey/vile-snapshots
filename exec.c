@@ -4,7 +4,7 @@
  *	original by Daniel Lawrence, but
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.278 2005/05/24 21:19:06 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.279 2005/07/17 18:00:32 tom Exp $
  *
  */
 
@@ -391,7 +391,7 @@ execute_named_command(int f, int n)
 	} else if (flags & DFLNONE) {
 #if OPT_SHELL
 	    if (cfp == &f_operfilter) {
-		cfp = &f_spawn;
+		cfp = &f_vl_spawn;
 		(void) setmark();	/* not that it matters */
 	    } else
 #endif

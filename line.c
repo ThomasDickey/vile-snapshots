@@ -10,7 +10,7 @@
  * editing must be being displayed, which means that "b_nwnd" is non zero,
  * which means that the dot and mark values in the buffer headers are nonsense.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.169 2005/05/27 22:28:28 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.170 2005/07/14 00:50:54 tom Exp $
  *
  */
 
@@ -612,24 +612,32 @@ ldelete(B_COUNT nchars, int kflag)
     LINE *dotp;
     LINE *nlp;
     int doto;
-    int chunk;
+    B_COUNT uchunk;
+    int schunk;
     WINDOW *wp;
     int i;
     int status = TRUE;
-    int len_rs = len_record_sep(curbp);
+    B_COUNT len_rs = len_record_sep(curbp);
 
     lines_deleted = 0;
-    while (nchars > 0) {
+    while (nchars != 0) {
 	dotp = DOT.l;
 	doto = DOT.o;
 	if (dotp == buf_head(curbp)) {	/* Hit end of buffer. */
 	    status = FALSE;
 	    break;
 	}
-	chunk = dotp->l_used - doto;	/* Size of chunk.    */
-	if (chunk > (int) nchars)
-	    chunk = (int) nchars;
-	if (chunk == 0) {	/* End of line, merge.  */
+	uchunk = dotp->l_used - doto;	/* Size of chunk.    */
+	if (uchunk > nchars)
+	    uchunk = nchars;
+
+	schunk = uchunk;
+	if (schunk < 0) {
+	    status = FALSE;
+	    break;		/* oops: sign-extension */
+	}
+
+	if (uchunk == 0) {	/* End of line, merge.  */
 	    /* first take out any whole lines below this one */
 	    nlp = lforw(dotp);
 	    while (nlp != buf_head(curbp)
@@ -656,7 +664,7 @@ ldelete(B_COUNT nchars, int kflag)
 		break;
 	    if (kflag && (status = kinsert('\n')) != TRUE)
 		break;
-	    nchars -= len_rs;
+	    nchars = (nchars > len_rs) ? (nchars - len_rs) : 0;
 	    lines_deleted++;
 	    continue;
 	}
@@ -664,7 +672,7 @@ ldelete(B_COUNT nchars, int kflag)
 	chg_buff(curbp, WFEDIT);
 
 	cp1 = dotp->l_text + doto;	/* Scrunch text.     */
-	cp2 = cp1 + chunk;
+	cp2 = cp1 + schunk;
 	if (kflag) {		/* Kill?                */
 	    while (cp1 != cp2) {
 		if ((status = kinsert(*cp1)) != TRUE)
@@ -677,10 +685,10 @@ ldelete(B_COUNT nchars, int kflag)
 	}
 	while (cp2 != dotp->l_text + dotp->l_used)
 	    *cp1++ = *cp2++;
-	dotp->l_used -= chunk;
+	dotp->l_used -= schunk;
 #if ! WINMARK
 	if (MK.l == dotp && MK.o > doto) {
-	    MK.o -= chunk;
+	    MK.o -= schunk;
 	    if (MK.o < doto)
 		MK.o = doto;
 	}
@@ -688,21 +696,21 @@ ldelete(B_COUNT nchars, int kflag)
 	for_each_window(wp) {	/* Fix windows          */
 	    if (wp->w_dot.l == dotp
 		&& wp->w_dot.o > doto) {
-		wp->w_dot.o -= chunk;
+		wp->w_dot.o -= schunk;
 		if (wp->w_dot.o < doto)
 		    wp->w_dot.o = doto;
 	    }
 #if WINMARK
 	    if (wp->w_mark.l == dotp
 		&& wp->w_mark.o > doto) {
-		wp->w_mark.o -= chunk;
+		wp->w_mark.o -= schunk;
 		if (wp->w_mark.o < doto)
 		    wp->w_mark.o = doto;
 	    }
 #endif
 	    if (wp->w_lastdot.l == dotp
 		&& wp->w_lastdot.o > doto) {
-		wp->w_lastdot.o -= chunk;
+		wp->w_lastdot.o -= schunk;
 		if (wp->w_lastdot.o < doto)
 		    wp->w_lastdot.o = doto;
 	    }
@@ -710,18 +718,18 @@ ldelete(B_COUNT nchars, int kflag)
 	do_mark_iterate(mp, {
 	    if (mp->l == dotp
 		&& mp->o > doto) {
-		mp->o -= chunk;
+		mp->o -= schunk;
 		if (mp->o < doto)
 		    mp->o = doto;
 	    }
 	});
 #if OPT_LINE_ATTRS
-	if (!lattr_shift(curbp, dotp, doto, -chunk)) {
+	if (!lattr_shift(curbp, dotp, doto, -schunk)) {
 	    status = FALSE;
 	    break;
 	}
 #endif
-	nchars -= chunk;
+	nchars -= uchunk;
     }
     return (status);
 }

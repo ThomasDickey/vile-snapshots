@@ -1,7 +1,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/nr-filt.l,v 1.15 2003/05/20 20:38:41 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/nr-filt.l,v 1.16 2005/07/11 22:32:28 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of NROFF
  */
@@ -39,26 +39,6 @@ write_font(char *text, int size)
     flt_puts(text + size - 3, 3, Ident2_attr);
 }
 
-static void
-init_filter(int before GCC_UNUSED)
-{
-}
-
-static void
-do_filter(FILE *inputs)
-{
-    yyin = inputs;
-
-    Action_attr  = class_attr(NAME_ACTION);
-    Comment_attr = class_attr(NAME_COMMENT);
-    Ident2_attr  = class_attr(NAME_IDENT2);
-    Keyword_attr = class_attr(NAME_KEYWORD);
-    String_attr  = class_attr(NAME_LITERAL);
-
-    while (yylex() > 0) {
-    }
-}
-
 %}
 
 COMMAND		^(\.[a-zA-Z0-9]+([ \t][^\n]+)?|'\\\"[^\n]+)
@@ -78,3 +58,25 @@ FONT		\\f[A-Z1-4]
 \\[s][+-]?[0-9]+		{ WriteToken(Ident2_attr); }
 
 {COMMENT}[^\n]*			{ WriteToken(Comment_attr); }
+
+%%
+
+static void
+init_filter(int before GCC_UNUSED)
+{
+}
+
+static void
+do_filter(FILE *inputs)
+{
+    yyin = inputs;
+
+    Action_attr  = class_attr(NAME_ACTION);
+    Comment_attr = class_attr(NAME_COMMENT);
+    Ident2_attr  = class_attr(NAME_IDENT2);
+    Keyword_attr = class_attr(NAME_KEYWORD);
+    String_attr  = class_attr(NAME_LITERAL);
+
+    while (yylex() > 0) {
+    }
+}

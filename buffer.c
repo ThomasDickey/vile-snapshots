@@ -5,7 +5,7 @@
  * keys. Like everyone else, they set hints
  * for the display system.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.293 2005/06/04 20:43:00 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.294 2005/07/17 14:56:19 tom Exp $
  *
  */
 
@@ -2390,7 +2390,7 @@ bfind(const char *bname, UINT bflag)
 #if OPT_PERL || OPT_TCL
 	    bp->b_api_private = 0;
 #endif
-	    set_record_sep(bp, global_b_val(VAL_RECORD_SEP));
+	    set_record_sep(bp, (RECORD_SEP) global_b_val(VAL_RECORD_SEP));
 	}
     }
     endofDisplay();

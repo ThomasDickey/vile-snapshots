@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/api.h,v 1.12 1999/12/20 21:23:34 kev Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/api.h,v 1.13 2005/07/13 22:37:45 tom Exp $
  */
 
 /*
@@ -59,7 +59,7 @@ extern	VileBuf *api_fscreen(char *);
 extern	VileBuf *api_bp2vbp(BUFFER *bp);
 extern	void	api_command_cleanup(void);
 extern	int	api_dotinsert(VileBuf *sp, char *text, int len);
-extern	int	api_dotgline(VileBuf *, char **, int *, int *);
+extern	int	api_dotgline(VileBuf *, char **, B_COUNT *, int *);
 extern	int	api_gotoline(VileBuf *sp, int lno);
 extern	void	api_setup_fake_win(VileBuf *sp, int do_delete);
 extern	int	api_delregion(VileBuf *vbp);

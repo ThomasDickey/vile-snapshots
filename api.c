@@ -199,7 +199,7 @@ api_setup_fake_win(VileBuf * vbp, int do_delete)
 	    vbp->changed = 0;
 	}
 
-	if (vbp->ndel > 0 && do_delete) {
+	if (vbp->ndel != 0 && do_delete) {
 	    int status;
 	    /* Do lazy delete; FALSE means don't put text in kill buffer */
 	    status = ldelete(vbp->ndel, FALSE);
@@ -405,7 +405,7 @@ api_gline(VileBuf * vbp, int lno, char **linep, int *lenp)
 
 #if 0				/* Not used. */
 int
-api_dotgline(VileBuf * vbp, char **linep, int *lenp, int *neednewline)
+api_dotgline(VileBuf * vbp, char **linep, B_COUNT * lenp, int *neednewline)
 {
 
     api_setup_fake_win(vbp, TRUE);
@@ -417,22 +417,34 @@ api_dotgline(VileBuf * vbp, char **linep, int *lenp, int *neednewline)
     /* FIXME: Handle rectangular regions. */
 
     if (is_header_line(DOT, curbp)
-	|| (DOT.l == vbp->region.r_end.l
-	    && (vbp->regionshape == FULLLINE
-		|| (vbp->regionshape == EXACT
-		    && DOT.o >= vbp->region.r_end.o)))) {
+	|| !lisreal(DOT.l)
+	|| DOT.o < 0) {
+	return FALSE;
+    }
+
+    if ((DOT.l == vbp->region.r_end.l
+	 && (vbp->regionshape == FULLLINE
+	     || (vbp->regionshape == EXACT
+		 && DOT.o >= vbp->region.r_end.o)))) {
 	return FALSE;
     }
 
     *linep = DOT.l->l_text + DOT.o;
-    *lenp = llength(DOT.l) - DOT.o;
 
-    if (vbp->regionshape == EXACT && DOT.l == vbp->region.r_end.l) {
-	*lenp -= llength(DOT.l) - vbp->region.r_end.o;
+    if (llength(DOT.l) >= DOT.o) {
+	*lenp = llength(DOT.l) - DOT.o;
+
+	if (vbp->regionshape == EXACT && DOT.l == vbp->region.r_end.l) {
+	    B_COUNT next = *lenp + vbp->region.r_end.o;
+	    if (next >= (B_COUNT) llength(DOT.l)) {
+		*lenp = next - llength(DOT.l);
+	    } else {
+		*lenp = 0;
+	    }
+	}
+    } else {
+	*lenp = 0;
     }
-
-    if (*lenp < 0)
-	*lenp = 0;		/* Make sure return length is non-negative */
 
     if (*lenp == 0) {
 	*linep = "";		/* Make sure we pass back a zero length,

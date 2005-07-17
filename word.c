@@ -3,7 +3,7 @@
  * paragraph at a time.  There are all sorts of word mode commands.  If I
  * do any sentence mode commands, they are likely to be put in this file.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/word.c,v 1.78 2005/06/03 20:26:23 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/word.c,v 1.79 2005/07/14 00:02:44 tom Exp $
  *
  */
 
@@ -520,7 +520,7 @@ do_formatting(TBUFF **wp, TBUFF **cp)
 			}
 			if (DOT.l != pastline
 			    && !dot_at_section_break()) {
-			    int spcs = DOT.o;
+			    B_COUNT spcs = DOT.o;
 			    DOT.o = 0;
 			    s = ldelete(spcs, FALSE);
 			    if (s != TRUE)
