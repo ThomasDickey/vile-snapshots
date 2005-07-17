@@ -18,7 +18,7 @@
  * transferring the selection are not dealt with in this file.  Procedures
  * for dealing with the representation are maintained in this file.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.157 2005/03/17 22:21:07 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.158 2005/07/14 00:07:09 tom Exp $
  *
  */
 
@@ -1668,14 +1668,16 @@ attribute_cntl_a_sequences(void)
 	    if (char_at(DOT) == CONTROL_A) {
 		offset = decode_attribute(DOT.l->l_text, llength(DOT.l),
 					  DOT.o, &count);
+		if (offset > DOT.o) {
 #if EFFICIENCY_HACK
-		new_attribs = curbp->b_attribs;
-		curbp->b_attribs = orig_attribs;
-		ldelete((B_COUNT) (offset - DOT.o), FALSE);
-		curbp->b_attribs = new_attribs;
+		    new_attribs = curbp->b_attribs;
+		    curbp->b_attribs = orig_attribs;
+		    ldelete((B_COUNT) (offset - DOT.o), FALSE);
+		    curbp->b_attribs = new_attribs;
 #else
-		ldelete((B_COUNT) (offset - DOT.o), FALSE);
+		    ldelete((B_COUNT) (offset - DOT.o), FALSE);
 #endif
+		}
 		set_mark_after(count, len_record_sep(curbp));
 		if (apply_attribute())
 		    (void) attributeregion();

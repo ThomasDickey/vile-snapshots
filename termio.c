@@ -3,7 +3,7 @@
  * characters, and write characters in a barely buffered fashion on the display.
  * All operating systems.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/termio.c,v 1.199 2005/01/25 14:34:18 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/termio.c,v 1.200 2005/07/11 22:44:41 tom Exp $
  *
  */
 
@@ -146,7 +146,7 @@ error "No termios or sgtty"
 
 #ifndef O_NDELAY
 #undef USE_FCNTL
-#define USE_FCNTL 1
+#define USE_FCNTL 0
 #endif
 
 #if USE_FCNTL

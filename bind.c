@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.283 2005/05/27 21:53:42 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.284 2005/07/13 23:25:16 tom Exp $
  *
  */
 
@@ -2234,7 +2234,8 @@ kbd_erase_to_end(int column)
     MK = DOT;
     if (llength(DOT.l) > 0) {
 	DOT.o = column;
-	ldelete(llength(DOT.l) - DOT.o, FALSE);
+	if (llength(DOT.l) > DOT.o)
+	    ldelete(llength(DOT.l) - DOT.o, FALSE);
 	TRACE(("NULL:%2d:%s\n", llength(DOT.l), lp_visible(DOT.l)));
     }
     curbp = savebp;

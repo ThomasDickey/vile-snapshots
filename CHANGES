@@ -1,5 +1,31 @@
 Changes for vile 9.5 (released ??? ??? ?? ????)
 
+ 20050717 (zb)
+	> Clark Morgan:
+	+ if winvile is minimized, don't resize client rectangle.  This fixes
+	  a case where minimizing the editor with more than one window, then
+	  restoring it, only one window was shown.
+	+ amend change from 9.4p which changes the pointer symbol; fixes a case
+	  where the pointer is not restored when moving along a mode line onto
+	  the scrollbar.
+	> Tom Dickey:
+	+ rename spawn() to vl_spawn(), since QNX has a conflicting symbol.
+	  Doing this makes shell and pipe commands work for QNX.
+	+ amend change made in 9.4za to check if the compiler can support
+	  the -U/-D combination.
+	+ fix sign-extension problem in ldelete() caused by B_COUNT change
+	  in 9.4u (report/analysis by Clark Morgan).
+	+ remove a chunk in tcap.c which assumed that all xterms implement
+	  scrolling.  Since the test-variable could be set when the terminal
+	  implements xterm-mouse (termcap Km or terminfo kmous), then this
+	  could cause misbehavior.
+	+ fix an ifdef for O_NDELAY in termio.c that broke BeOS build in 9.3e
+	+ amend test for struct dirent64 to ensure it is used only when it is
+	  part of the prototype for readdir().
+	+ apply change used in 9.4x for built-in filters to fix redefinition
+	  to use this in loadable and external filters.
+	+ compiler-warning fixes for various platforms.
+
  20050710 (za)
 	> Peter Prymmer:
 	+ fixes for building on VMS

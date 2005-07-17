@@ -1,15 +1,22 @@
-# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.2nd,v 1.9 2005/06/09 22:56:09 tom Exp $
+# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.2nd,v 1.10 2005/07/11 20:28:55 tom Exp $
 #
 
 .SUFFIXES: .l .c .i $o
 
-# This rule is not used for built-in filters since we generate explicit
-# rules to rename the entrypoints of each filter.
+# This rule is only used for external filters since we generate explicit
+# rules to rename the entrypoints of each built-in or loadable filter.
 .l$o:
 @RULE_CC@
-	@ECHO_CC@$(LEX) -t $< > $*.c
+	@ECHO_CC@echo "#include <flt_defs.h>" > $*.c
+	@ECHO_CC@$(LEX) -t $< >> $*.c
 	@ECHO_CC@$(CC) -c $(CPPFLAGS) $(CFLAGS) $*.c
 	-$(RM) $*.c
+
+.l.c:
+@RULE_CC@
+	@ECHO_CC@echo "#include <flt_defs.h>" > $*.c
+	@ECHO_CC@$(LEX) -t $< >> $*.c
+
 .c.i:
 @RULE_CC@
 	@ECHO_CC@$(CPP) -C $(CPPFLAGS) $(QUOTDEFS) $< >$@

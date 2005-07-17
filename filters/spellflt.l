@@ -1,7 +1,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/spellflt.l,v 1.20 2005/05/22 16:15:44 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/spellflt.l,v 1.21 2005/07/11 22:33:37 tom Exp $
  *
  * Filter to add vile "attribution" sequences to misspelled words.
  */
@@ -122,6 +122,22 @@ open_tempfile(char *fname)
     return fp;
 }
 
+%}
+
+ALPHA		[a-zA-Z\240-\377]
+DIGIT		[0-9]
+WORD		{ALPHA}({ALPHA}|{DIGIT})*
+
+%%
+
+{WORD}		{ char *attr = keyword_attr(yytext);
+		  if (attr != 0)
+		      flt_error(yytext);
+		  WriteToken(attr);
+		}
+
+%%
+
 static void
 init_filter(int before GCC_UNUSED)
 {
@@ -187,17 +203,3 @@ do_filter(FILE *inputs GCC_UNUSED)
     remove(name);
 #endif /* HAVE_POPEN */
 }
-
-%}
-
-ALPHA		[a-zA-Z\240-\377]
-DIGIT		[0-9]
-WORD		{ALPHA}({ALPHA}|{DIGIT})*
-
-%%
-
-{WORD}		{ char *attr = keyword_attr(yytext);
-		  if (attr != 0)
-		      flt_error(yytext);
-		  WriteToken(attr);
-		}

@@ -7,7 +7,7 @@
  * Most code probably by Dan Lawrence or Dave Conroy for MicroEMACS
  * Extensions for vile by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/insert.c,v 1.142 2005/01/19 01:46:17 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/insert.c,v 1.143 2005/07/13 23:42:48 tom Exp $
  *
  */
 
@@ -1171,7 +1171,8 @@ inspound(void)
 	if (autoindented > llength(DOT.l))
 	    autoindented = llength(DOT.l);
 	DOT.o = w_left_margin(curwp);
-	(void) ldelete((B_COUNT) autoindented, FALSE);
+	if (autoindented > 0)
+	    (void) ldelete((B_COUNT) autoindented, FALSE);
     }
     autoindented = -1;
 

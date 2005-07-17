@@ -22,7 +22,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.539 2005/05/30 22:54:28 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.540 2005/07/11 22:25:32 tom Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -785,7 +785,7 @@ MainProgram(int argc, char *argv[])
      * initialized.  Give it one last chance.
      */
     if ((startstat != TRUE) && tb_length(mlsave))
-	mlforce("%.*s", tb_length(mlsave), tb_values(mlsave));
+	mlforce("%.*s", (int) tb_length(mlsave), tb_values(mlsave));
 
     /* process commands */
     main_loop();

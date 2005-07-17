@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 screen API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.146 2005/06/20 19:20:28 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.148 2005/07/17 18:15:25 cmorgan Exp $
  * Written by T.E.Dickey for vile (october 1997).
  * -- improvements by Clark Morgan (see w32cbrd.c, w32pipe.c).
  */
@@ -3117,8 +3117,13 @@ ntgetch(void)
 		     * bottom mode line.
 		     */
 
-		    if (pt.y == mode_row(wp) && (pt.y < term.rows - 1 - 1)) {
-			/* on movable mode line, show appropriate cursor */
+		    if (pt.y == mode_row(wp) &&
+			(pt.y < term.rows - 1 - 1) &&
+			(pt.x < term.cols)) {
+			/* 
+			 * On movable mode line and cursor not in scrollbar
+			 * rectangle, so show appropriate cursor.
+			 */
 
 			SetCursor(wdwsize_cursor);
 		    }
@@ -3383,7 +3388,8 @@ MainWndProc(
 	break;
 
     case WM_WINDOWPOSCHANGED:
-	ResizeClient();
+	if (!IsIconic(hWnd))
+	    ResizeClient();	/* ignore if window minimized */
 	return (DefWindowProc(hWnd, message, wParam, lParam));
 
     case WM_WINDOWPOSCHANGING:

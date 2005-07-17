@@ -1,7 +1,7 @@
 /*	tcap:	Unix V5, V7 and BS4.2 Termcap video driver
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.157 2005/06/16 22:09:36 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.158 2005/07/13 22:13:00 tom Exp $
  *
  */
 
@@ -417,15 +417,6 @@ tcap_open(void)
 
     if (tc_CE == NULL)		/* will we be able to use clear to EOL? */
 	eolexist = FALSE;
-
-    if (!tc_CS || !tc_SR) {	/* some xterm's termcap entry is missing entries */
-	if (i_am_xterm) {
-	    if (!tc_CS)
-		tc_CS = "\033[%i%d;%dr";
-	    if (!tc_SR)
-		tc_SR = "\033M";
-	}
-    }
 
     if (tc_CS && tc_SR) {
 	if (tc_SF == NULL)	/* assume '\n' scrolls forward */

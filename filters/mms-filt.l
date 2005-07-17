@@ -1,7 +1,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/mms-filt.l,v 1.9 2003/05/20 20:38:41 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/mms-filt.l,v 1.10 2005/07/11 22:31:59 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of VMS mms script
  * - T.Dickey
@@ -48,25 +48,6 @@ write_keyword(char *text, int size)
 	flt_putc(':');
 }
 
-static void
-init_filter(int before GCC_UNUSED)
-{
-}
-
-static void
-do_filter(FILE *inputs)
-{
-    yyin = inputs;
-
-    Comment_attr = class_attr(NAME_COMMENT);
-    Ident2_attr  = class_attr(NAME_IDENT2);
-    Keyword_attr = class_attr(NAME_KEYWORD);
-    String_attr  = class_attr(NAME_LITERAL);
-
-    while (yylex() > 0) {
-    }
-}
-
 %}
 
 SPACE		[ \t]
@@ -100,3 +81,24 @@ COMMENT		"#"[^\n]*
 
 {INLINECOMMENT}			|
 {COMMENT}			{ WriteToken(Comment_attr); }
+
+%%
+
+static void
+init_filter(int before GCC_UNUSED)
+{
+}
+
+static void
+do_filter(FILE *inputs)
+{
+    yyin = inputs;
+
+    Comment_attr = class_attr(NAME_COMMENT);
+    Ident2_attr  = class_attr(NAME_IDENT2);
+    Keyword_attr = class_attr(NAME_KEYWORD);
+    String_attr  = class_attr(NAME_LITERAL);
+
+    while (yylex() > 0) {
+    }
+}

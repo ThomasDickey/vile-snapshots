@@ -1,7 +1,7 @@
 /*	Spawn:	various DOS access commands
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.184 2005/01/23 17:44:52 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.185 2005/07/17 18:00:44 tom Exp $
  *
  */
 
@@ -295,7 +295,7 @@ respawn(int f, int n GCC_UNUSED)
 
 /* ARGSUSED */
 int
-spawn(int f, int n GCC_UNUSED)
+vl_spawn(int f, int n GCC_UNUSED)
 {
     return spawn1(FALSE, !f);
 }

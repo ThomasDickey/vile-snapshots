@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/rc-filt.l,v 1.4 2003/05/20 20:38:41 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/rc-filt.l,v 1.5 2005/07/11 22:32:48 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Windows
  * resource files.
@@ -31,24 +31,6 @@ show_prepro(char *text)
     set_symbol_table(filter_def.filter_name);
 }
 
-static void
-init_filter(int before GCC_UNUSED)
-{
-}
-
-static void
-do_filter(FILE *inputs)
-{
-    yyin = inputs;
-
-    Comment_attr = class_attr(NAME_COMMENT);
-    Number_attr  = class_attr(NAME_NUMBER);
-    Preproc_attr = class_attr(NAME_PREPROC);
-    String_attr  = class_attr(NAME_LITERAL);
-
-    while (yylex() > 0) {
-    }
-}
 %}
 
 INTEGER		[-+]?([0-9]+)
@@ -69,3 +51,24 @@ NUMBER		({DECIMAL}|{OCTAL}|{HEXADECIMAL})[L]?
 {NUMBER}		{ WriteToken(Number_attr); }
 
 "//"[^\n]*		{ WriteToken(Comment_attr); }
+
+%%
+
+static void
+init_filter(int before GCC_UNUSED)
+{
+}
+
+static void
+do_filter(FILE *inputs)
+{
+    yyin = inputs;
+
+    Comment_attr = class_attr(NAME_COMMENT);
+    Number_attr  = class_attr(NAME_NUMBER);
+    Preproc_attr = class_attr(NAME_PREPROC);
+    String_attr  = class_attr(NAME_LITERAL);
+
+    while (yylex() > 0) {
+    }
+}

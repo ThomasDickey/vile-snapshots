@@ -4,7 +4,7 @@
  *	Copyright (c) 1990, 1995-1999 by Paul Fox, except for delins(), which is
  *	Copyright (c) 1986 by University of Toronto, as noted below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/oneliner.c,v 1.107 2005/01/19 02:01:01 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/oneliner.c,v 1.108 2005/07/13 23:43:54 tom Exp $
  */
 
 #include	"estruct.h"
@@ -489,10 +489,10 @@ delins(regexp * exp, char *sourc, int lensrc)
 	len_delins = dlength + 1;
     }
 
-    (void) memcpy(buf_delins, exp->startp[0], (size_t) dlength);
+    (void) memcpy(buf_delins, exp->startp[0], dlength);
     buf_delins[dlength] = EOS;
 
-    if (ldelete((long) dlength, FALSE) != TRUE) {
+    if (ldelete(dlength, FALSE) != TRUE) {
 	mlforce("[Error while deleting]");
 	return FALSE;
     }
