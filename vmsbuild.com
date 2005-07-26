@@ -1,4 +1,4 @@
-$! $Header: /users/source/archives/vile.vcs/RCS/vmsbuild.com,v 1.43 2005/07/09 15:01:30 Peter.Prymmer Exp $
+$! $Header: /users/source/archives/vile.vcs/RCS/vmsbuild.com,v 1.44 2005/07/24 20:25:20 tom Exp $
 $! VMS build-script for vile.  Requires installed C compiler
 $!
 $! Screen Configurations
@@ -66,7 +66,7 @@ $! -----------------------------------------------------------
 $!      Build the option-file
 $!
 $ open/write optf vms_link.opt
-$ write optf "Identification=""Vile 9.4k"""
+$ write optf "Identification=""Vile 9.5"""
 $ write optf "basic.obj"
 $ write optf "bind.obj"
 $ write optf "btree.obj"

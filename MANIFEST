@@ -1,4 +1,4 @@
-MANIFEST for vile, version v9_4zb
+MANIFEST for vile, version v9_5
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 CHANGES                         Change-log for VILE
@@ -31,6 +31,7 @@ config.emx                      configure-ifdefs for EMX (OS/2)
 config.guess                    guess configuration
 config.sub                      substitute configuration
 config_h.in                     template for config.h
+configure                       Configuration script for UNIX
 configure.in                    used by 'autoconf' to generate 'configure'
 csrch.c                         current-line character-scanning commands
 curses.c                        terminal driver using curses
@@ -113,7 +114,7 @@ trace.h                         development: trace to logfile
 ucrypt.c                        interface to Unix crypt(1)
 undo.c                          support for "undo"
 version.c                       version & usage messages
-vile-9.4.spec                   sample rpm spec file for vile 9.4
+vile-9.5.spec                   sample rpm spec file for vile 9.5
 vile.1                          man-page for VILE
 vile.hlp                        help-file
 vile.wmconfig                   windowmaker config file for vile
