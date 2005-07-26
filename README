@@ -1,5 +1,5 @@
 
-README for vile, version 9.4
+README for vile, version 9.5
 ----------------------------
 
 vile is a text editor which is extremely compatible with vi in terms
@@ -42,7 +42,7 @@ ftp://ftp.phred.org/pub/vile.  otherwise, you'll need to build vile
 yourself.  In either case, refer to the file README.VMS .
 
 if you like vile, and wish to be informed of new releases, let me know -- i
-maintain a mailing list for that purpose (scroll down a bit for details). 
+maintain a mailing list for that purpose (scroll down a bit for details).
 don't worry -- the volume won't fill your inbox.
 
 paul fox, pgf@foxharp.boston.ma.us (original author)
@@ -371,7 +371,7 @@ Nov, 1999
 
     In addition to improvements to syntax highlighting, e.g., user-definable
     color schemes, vile's macro language has been extended
-    
+
     	+ procedures can be parameterized.
 
 	+ several new functions simplify handling of external filenames, and
@@ -556,7 +556,7 @@ June, 2002
       hosts, modified capturecmd (aka ^X-!) to support find operations that
       span directory tree(s).
 
-    + reimplement ":args" command to accept a filename expression. 
+    + reimplement ":args" command to accept a filename expression.
 
     + add commands "ww!" and "wall!", to respectively write all changed
       buffers and write all buffers, using the "w!" behavior of ignoring
@@ -626,7 +626,7 @@ June, 2002
 
     + add Verlog and ECLiPSe (Prolog dialect) filters
 
-    + add syntax filter for BASIC, and majormodes basicmode and 
+    + add syntax filter for BASIC, and majormodes basicmode and
       Visual Basic (vbmode).
 
     Other Changes:
@@ -635,6 +635,526 @@ June, 2002
 
     + add $prompt variable, to allow changing the command-line prompt.
 
+Aug, 2003
+    vile 9.4 is released.  Highlights since 9.3 (aside from bug fixes):
+
+    General changes:
+
+    + regular expressions and searches allow null characters.
+
+    + minibuffer editing commands are more complete, implementing all of the
+      inline cursor search- and motion-commands.
+
+    + implement new editing commands in the minibuffer:  r, ~, x, X.
+
+    + use insert-mode bindings when mini-edit mode is active.  Use insert-key
+      to toggle, rather than set mini-edit mode.
+
+    + modify buffer- and filename-completion on Unix to escape backslashes
+      which are stored in the [Completions] buffer.  Doing this allows one
+      to complete a buffer or filename containing a backslash.
+
+    + improve history-editing by quoting tokens which contain embedded blanks
+      or other special characters, using that to retrieve tokens from the
+      history buffer unambiguously.
+
+    + save/restore window modes such as linewrap when rereading a file,
+      or when executing a shell command.
+
+    + use realpath() if it is available, and "$VILE_PWD" environment variable
+      rather than "." as parameter to getcwd() if it is valid, to speed up
+      operation on quasi-filesystems such as ClearCase.
+
+    + add configure option --with-screen=XawPlus for XawPlus library.
+
+    + add configure option --with-screen=ncursesw to allow building the
+      curses driver using the wide-character version of ncurses.
+
+    + add check in tcap.c for terminfo kmous capability like xterm, in case
+      we are running in screen, which also supports xterm mouse protocol.
+
+    + modify support for "^X-e" to make it use the whole line if the current
+      buffer is a directory.
+
+    Locale Improvements:
+
+    + change default for --with-locale option to yes.  Note that this
+      option is only tested if locale support is found, and it is becoming
+      less common to encounter systems with broken locale support.
+
+    + add "locale" to the "$cfgopts" variable if vile is compiled with
+      locale support.
+
+    + modify vile-manfilt to decode UTF-8 emitted by groff 1.18
+
+    + in UTF-8 locale, adjust termcap driver to use UTF-8 to display codes
+      in the 160-255 range, setting vile's locale to non-UTF-8 locale.
+      (yes, this is a short-term fix).
+
+    + add configure check for wctype functions, to work around defect in
+      glibc's ctype functions: in UTF-8 locale, the latter return useless
+      information on character classes.  This works on Solaris.
+
+    + move upper/lower case-conversion into tables so that locale support can
+      augment the built-in translation.
+
+    New Commands:
+
+    + "which-keywords" macro shows the location of files containing keywords
+      for the given majormode.
+
+    + "edit-buffer" simplifies "which-keywords" and similar macros.
+
+    + "encode-attributes-til" and "write-encoded-til" convert the syntax
+      highlighting in a region back to control/A sequences, or write the
+      corresponding data to a file.  There is a corresponding alias
+      "decode-attributes-til" for "attribute-cntl_a-sequences-til".
+
+    + "substitute-all-til" implements the "^X-s" binding.
+
+    New Modes:
+
+    + add "overlap-matches" mode, to control whether highlighting for the
+      visual-matches mode should skip to the next character, or past the
+      current match when checking.
+
+    + add "percent-crlf" mode, which controls the threshold at which the
+      whole file will be considered DOS-format (CRLF record separators)
+      if the given percentage already ends with CR/LF.
+
+    + "yankmotion" mode controls whether the cursor should be moved as in vi
+      after yanking text.
+
+    + add "xterm-title" mode.
+
+    + add logmode majormode, to distinguish some makefiles from logfiles.
+
+    + add "texmode" majormode, as a variation of latexmode.
+
+    New Variables and Functions:
+
+    + add several short-named relational operators "&geq", "&gt", "&leq",
+      "&lt", "&neq", "&sgeq", "&sgt", "&sleq", "&slt", "&sneq" to reduce
+      the need for "&not".
+
+    + add "$pathname-separator" variable.
+
+    Syntax Filters:
+
+    + add Ruby syntax filter.
+
+    + add syntax filter for rpm ".spec" files.
+
+    + add syntax filter for PostScript ".ps" files.
+
+    + add syntax filter for enscript ".st" files.
+
+    + add xml-filter based on html-filter.
+
+    + add pot-filt.l, to highlight ".po" files.  Using sh-filt.l was
+      not satisfactory since the quoting rules were not close enough.
+
+    + add syntax filters and corresponding modes for assembler (GNU and M$),
+      info and texinfo.
+
+    + add -j option to c-filt.c, to implement some java-specific features
+      such as "$" as part of an identifier, and \u escapes.
+
+    + add un-filters (atr2ansi, atr2html, atr2text) which convert encoded
+      control/A text to different forms.
+
+    + modify spell.rc, spellflt.l and select.c to allow spell filter to
+      work as a built-in filter.
+
+    + modify built-in spell filter to work with encrypted files.
+
+    + add a -t option to filters, to pass tabstop value.  Use this in
+      makefilt.l to provide better highlighting of problems with leading
+      whitespace.
+
+    + modify manpage.rc to check if the current buffer is perl, and if so,
+      to render contents using pod2man or pod2text.
+
+    + set "vilemode" for [History] buffer.
+
+    + reorder lex-based filters to allow building with flex 2.5.31, which
+      introduces several incompatibilities with respect to flex 2.5.4
+      and lex.
+
+    + add configure check/warning for flex 2.5.31, which has broken support
+      for the "-P" option used for built-in filters.
+
+    Win32 changes:
+
+    + implemented tilde-expansion on win32.  Actually it was present, but
+      globbing did not work, and the environment variables did not match
+      the Windows 2000 configuration.
+
+    VMS changes:
+
+    + filename matching is case-independent, allowing majormodes to be
+      recognized.
+
+July 2005,
+    vile 9.5 is released.  Highlights since 9.4 (aside from bug fixes):
+
+    General changes:
+
+    + syntax filters can now be dynamically loaded.  This allows the
+      main executable to be smaller, and is faster than external
+      filters.  Loadable filters are configured using the
+      "--with-loadable-filters" option to configure script.  This works
+      for several platforms using gcc.
+
+    + add configure script option for largefile support, change buffer
+      size datatypes an unsigned type to allow for reading files larger
+      than a signed value would allow.
+
+    + modify historical-buffer to allow tab/back-tab to cycle through
+      the first 9 buffers, solves the problem of seeing more than the
+      first few possibilities on the message line.  Toggling with the
+      repeated '_' selects the first buffer shown.
+
+    + modify name-completion to allow completion of filenames containing
+      a '$'.
+
+    + relax a check in ":w" by checking if the given name differs from
+      the current filename.  If so, do not require ":w!" to write a
+      readonly file to a different location.  This allows one to reuse
+      the filename history for ":w".
+
+    + modify special treatment of "#" which prevents it from being
+      shifted with ">>" by disabling that when cindent is unset.
+
+    + add a few ex-commands:  nu, j!, wq!
+
+    + modify statevars.c to make read/write of $title consistent, i.e.,
+      will warn that it cannot be set in the termcap configuration.
+
+    + modify [Messages] buffer so that it is only invisible, not a
+      scratch buffer.  The latter makes it be automatically removed
+      after viewing and closing the window.
+
+    + add pattern for "ant" (Java make-program) to a few of the patterns
+      in finderr.c
+
+    + modify PromptAndSet() to allow a cancelled prompt for variable's
+      value to store an ERROR token, which can be tested in scripts with
+      &error.
+
+    + split-out modes.rc from filters.rc to make configuration more
+      flexible, e.g., for configure --disable-filters.
+
+    + modify minubuffer editing to allow one to use ^Ga to toggle
+      miniedit mode and append to the buffer shown from a previous
+      command rather than having it erased.
+
+    + modify name-completion for majormode names used as macro
+      parameters to use the long name (with "mode" ending) rather than
+      the short name, for consistency.
+
+    + modify perl.xs to allow for $VILE_LIBDIR_PATH to be a list of
+      paths.  Only add the corresponding xxx/perl names to @INC if they
+      correspond to a real directory.
+
+    + change minimum/maximum repeat counts for regular expressions from
+      a byte to an integer.
+
+    + modify interpretation of "~local", "~with", "~elsewith" and
+      "~endwith" so they are within the normal "~if"/"~endif" hierarchy.
+
+    + modify minibuffer editing to shift the display left/right as
+      needed after doing the initial tab of a name-completion, in case
+      that left the cursor position past the end of the line.
+
+    + add experimental plugin support and example.
+
+    Locale Improvements:
+
+    + workaround for broken locale table on Solaris8 and Windows2000,
+      etc., which shows tab as both as printable and a control
+      character.  The ISO C standard states that control characters are
+      not printable.
+
+    + extend workaround for UTF-8 locale in termcap driver to translate
+      UTF-8 input to Latin-1.
+
+    + improve/extend checks for locales which correspond to 8-bit
+      character encoding, resetting to POSIX locale (ASCII) if the
+      nl_langinfo() function returns a value that does not look like
+      ASCII or ISO-8859-x.  This change applies to the termcap/terminfo
+      and X11 drivers.
+
+    + show locale and encoding values in the header of the [Printable
+      Chars] buffer.
+
+    + add $encoding and $locale variables to show what vile's internal
+      8-bit encoding and locale are set to.
+
+    + turn on locale feature on win32
+
+    New Commands:
+
+    + add macro "which-menu" to which.rc, which shows the locations that
+      xvile checks for a menu-file.
+
+    + add macro "show-each-buffer" (file showeach.rc), which splits up
+      the screen into equal chunks to display as many of the non-scratch
+      buffers as possible.
+
+    + add macro "which-filter" to show which locations would be checked
+      for an external filter.  If the filter happens to be built-in,
+      this is also noted, in the message line.
+
+    + improve "eval" command, provide for mixture of functions and other
+      tokens which are passed to the script interpreter.
+
+    + modify SpellFilter macro to use the results from [Filter Messages]
+      with the error-finder to step through the misspellings.
+
+    + add macro "show-filtermsgs" to show syntax filter messages,
+      setting the list to the error-buffer to provide simple stepping
+      through the errors which are found.
+
+    + add commands "popup-buffer" and "popdown-buffer", which open/close
+      windows for the given buffer rather than changing the current
+      window to show a different buffer.  The "popup-buffer" command is
+      a wrapper for the existing logic used for help and similar
+      commands.  The "popdown-buffer" command differs from
+      "delete-window" by closing all windows for the given buffer.
+
+    + add command "for-buffers", which performs the same command for the
+      specified buffers.
+
+    New Modes:
+
+    + add "reader-policy" mode, which allows one to control whether vile
+      will fall-back to line-by-line reading if it encounters an error.
+
+    + add mode "for-buffers", which specifies whether kill-buffer (and
+      for-buffers) command use globbing or regular expressions.
+
+    + add "filtermsgs" mode, for built-in filters to report syntax
+      errors into [Filter Messages] buffer so that one may use the error
+      finder to locate these.
+
+    + add mode "ignoresuffix", which tells vile to strip the given
+      pattern from a filename before matching majormode suffixes against
+      it.
+
+    + add mode "showchar", which turns on a field in the modeline that
+      tells what the character value is at the current editing position.
+
+    New Variables and Functions:
+
+    + add new operators to make it simpler for macros to check for
+      features:  "&isa", "&classof" and "&mclass".
+
+    + add "&match" and "&cmatch" functions for checking if a given
+      regular expression matches a string.
+
+    + add "$error-tabstop" variable, to allow changing the tabstop value
+      used when interpreting "%C" results in the error finder.  Most
+      programs assume 8, and that does not work well when editing
+      buffers with other tabstops such as 4.
+
+    + add "$goal-column" variable for debugging.
+
+    Syntax Filters:
+
+    + modify ".table" command in filters parsing to read the user's
+      color definitions, e.g., from .vile.keywords, as is done in a
+      ".source" command.
+
+    + add a ".brief" to filters parsing, which uses "?" to match zero or
+      all of the following characters, in constrast to ".abbrev" which
+      uses "*" to match zero or more of the following characters.
+
+    + several new majormodes, with corresponding syntax filters:
+
+        + ".jsp" files are really (close to) a variety of HTML files.
+          Add simple support for JSP in htmlfilt.l
+        + add iss-, nsis- and ini-modes
+        + add lispmode, to use vile-lisp-filt.
+        + add nmakemode, for special cases such as M$'s ".dsp" files.
+        + add syntax filter for AutoIt version 3 and majormode au3mode.
+        + add syntax filters for iss- and ini-modes.
+        + add vbsmode using ".vbs" suffix based on basmode.
+
+    + extend suffixes for several majormodes:
+
+        + add ".asp" to jspmode suffixes
+        + add ".cls" filetype for vbmode, add symbols for Visual Basic
+          class modules to vb.key
+        + add ".dcl" filetype for dclmode.
+        + add ".el" to suffixes for lispmode.
+        + add ".hpp" to suffixes for cppmode.
+        + add ".jad" suffix for javamode for Java Disassembler.
+        + add ".mm" to nroff mode.
+        + add ".ph" and ".pph" to esqlmode suffixes.
+        + add ".shar" to shmode suffixes.
+        + add ".termcap" and ".terminfo" suffixes for tcmode and timode
+        + add ".tic" as a suffix for timode.
+        + make "TODO" a txtmode file.
+        + modify pattern for logmode to allow filenames such as gmake.out
+
+    + add a mode-pathname setting for cppmode, so files under (for
+      example) /usr/include/g++ will be treated as C++.  Newer C++
+      headers have no suffixes.
+
+    + add an "-s" option to c-filt.c, for JavaScript (to support
+      jsmode).  Use this to control whether to allow regular expressions
+      in certain cases.
+
+    + modify ShowFormatted macro to support "-mm" macros.
+
+    + modify spellflt.l to allow it to be used in winvile, using npopen,
+      as a built-in filter.
+
+    + rewrote pascal syntax filter in lex, adding highlighting for
+      numbers, and TurboC, Delphi comments.
+
+    + modify cppmode's suffixes to look for .C, .H and .CC only on
+      systems where filenames are case-sensitive.
+
+    + split up the majormode "suffixes" into suffixes, mode-filename and
+      mode-pathname to make it clearer how to associated regular
+      expressions with the filename for majormodes.
+
+    + change highlighting for misspelled words to Error class.
+
+    + add environment variable VILE_SPELL_FILT to vile-spell-filt, to
+      allow overriding the compiled-in program and options used for
+      performing the lookup.
+
+    + many improvements to parsing and highlighting in existing filters
+      (see CHANGES).
+
+    X11 changes:
+
+    + add --disable-imake option to configure script, from xterm.
+
+    + modify xvile's wheelScrollAmount resource to scroll by pages if
+      the resource value is negative.
+
+    + revise lookup for xvile's menu file to look for dotnames in the
+      current and home-directories, while non-dotnames may be found
+      there and in $HOME/.vile and on $startup-path.  Combine this with
+      changing the default for $menu-file back to ".vilemenu" as
+      documented rather than "vilemenu.rc".  The latter name is used in
+      the non-dotname locations if $menu-file is a dot-name.
+
+    Win32 changes:
+
+    + several changes to allow winvile to remember recent files and
+      folders
+
+      + winvile remembers up to 20 of the files it has recently
+        opened/created (feature disabled by default).
+
+      + winvile remembers up to 20 of the folders it has recently
+        visited via an implicit or explicit cd (feature disabled by
+        default).
+
+      + Remembered files/folders are accessible and "replayable" from
+        winvile's system menu.
+
+      + Two new modes:  recent-folders and recent-files specify maximum
+        number of folders/files that may appear in winvile's system
+        menu.  Range is 0-20; a value of 0 disables feature.
+
+      + Two new commands:  purge-recent-folders and purge-recent-files
+        clear the list of folders/files that appear in winvile's system
+        menu.
+
+      + modes and commands work in console mode (minimizes conflicts
+        when sharing a single vile.rc), but the files/folders that
+        console vile accesses are _not_ remembered.
+
+    + improve the winvile resize/status window:
+
+      + make resize window wide enough to show geometries that exceed 99
+        columns
+
+      + make resize window continually center itself over the editor's
+        frame (NT and XP only).
+
+    + modify dequoting of winvile's command-line in ntwinio.c to allow
+      for quoting to be within parameters, e.g.,
+
+            winvile +"100" makefile
+
+    + reenable SHIFT+INSERT in the win32 mini-buffer (for both vile.exe
+      and winvile.exe).  Unfortunately, the cygwin shell eats
+      SHIFT+INSERT for console vile (mini-buffer input only).  now, it's
+      once again possible to:
+
+            $ vile somefile
+            /<shift+insert>     <- search for string sitting on clipboard
+
+    + modify environment variable lookup for win32 to look in the
+      registry for the VILE* environment variables:
+
+            VILEINIT
+            VILE_HELP_FILE
+            VILE_LIBDIR_PATH
+            VILE_STARTUP_PATH
+            VILE_ERROR_ABORT
+
+      This change is made to make it more easily installable; Windows
+      changes to environment variables apparently do not take effect
+      until the machine is rebooted.  Registry changes take effect
+      immediately.
+
+    + add package script for winvile using Inno Setup.
+
+    + improve cursor display in winvile:
+
+        + when selecting text, show I-beam cursor.
+
+        + when selecting a movable mode line, show a double-headed,
+          north-south cursor.
+
+        + when moving the mouse over a movable mode line, show a
+          double-headed, north-south cursor.
+
+    + don't allow mouse capture if the left mouse button is pressed in
+      the area encompassing the editor's last two lines (message line
+      and nonmovable mode line).  Don't allow mouse capture if the left
+      mouse button is pressed on movable mode line.  Corrects
+      long-standing winvile bugs.
+
+    + add graphical change-directory to [win]vile via new command
+      "wincd".  The graphical change-directory is also accessible via
+      winvile's system menu and right mouse popup menu.
+
+    + ensure that files created via winvile's "Save As" and vile's ":f"
+      commands are remembered in winvile's "Recent Files" list.
+
+    + make filename completion with cygwin ignore case.
+
+    VMS changes:
+
+    + add VMS mode record-attrs, modify logic in vms_creat() to use this
+      information to make the default VFC files written from DCL
+      editable.  Those use PRN (print file format) record attributes.
+
+    + modify which.rc to use &pcat rather than $pathname-separator,
+      since the latter is ambiguous on VMS.
+
+    + modify infer_majormode() to work with VMS pathnames.
+
+    + correct logic for VMS pathnames so that a directory buffer will,
+      as on Unix, give the same buffer name as the directory leaf.
+
+    + improve fakevms test-driver and related OPT_VMS_PATH code for VMS
+      pathnames, making name-completion work for VMS pathnames on Unix.
+
+    + modify catnap() function to use IEEE floating point on IA64, since
+      that platform does not support F-floats.
+
+    + modify vmsbuild.com and descrip.mms to work with IA64.
+
 -------------------------------
-$Header: /users/source/archives/vile.vcs/RCS/README,v 1.90 2003/08/04 22:46:30 tom Exp $
+$Header: /users/source/archives/vile.vcs/RCS/README,v 1.93 2005/07/25 23:29:24 tom Exp $
 -------------------------------

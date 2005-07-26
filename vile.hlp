@@ -1,5 +1,5 @@
 
-Getting along with vile						(version 9.4)
+Getting along with vile						(version 9.5)
 -----------------------						-------------
 
 	Use Ctrl-D and Ctrl-U to scroll through this help information.
@@ -6204,4 +6204,4 @@ Problems
 
 Copyright 1995-2005 by Paul Fox, Thomas Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.601 2005/05/30 23:08:41 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.602 2005/07/24 20:25:30 tom Exp $
