@@ -5,7 +5,7 @@
  * reading and writing of the disk are
  * in "fileio.c".
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.383 2005/07/10 00:45:47 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.385 2005/09/04 18:09:22 tom Exp $
  */
 
 #include "estruct.h"
@@ -1156,6 +1156,7 @@ strip_if_dosmode(BUFFER *bp)
 		chg_buff(bp, WFHARD);
 	    else
 		set_winflags(TRUE, WFHARD);
+	    b_clr_counted(bp);
 	}
     }
 }
@@ -1496,7 +1497,6 @@ quickreadf(BUFFER *bp, int *nlinep)
 	    set_record_sep(bp, rscode);
 	    strip_if_dosmode(bp);
 
-	    b_clr_counted(bp);
 	    rc = FIOSUC;
 	}
     }
@@ -1537,7 +1537,7 @@ readin(char *fname, int lockfl, BUFFER *bp, int mflg)
 
     if (*fname == EOS) {
 	TRACE(("...called with NULL fname\n"));
-	returnCode(FALSE);	/* we do not want to do that */
+	returnCode(TRUE);	/* we do not want to do that */
     }
 
     if ((s = bclear(bp)) != TRUE)	/* Might be old.    */

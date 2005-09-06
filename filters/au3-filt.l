@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/au3-filt.l,v 1.3 2004/12/10 00:17:13 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/au3-filt.l,v 1.4 2005/09/04 21:10:12 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of AutoIt
  * input text.
@@ -25,11 +25,11 @@ static int if0_level;
 
 %}
 
-HEX		0[Xx][A-Fa-f0-9]+
-INTEGER		[-+]?([0-9]+)
-REAL		[-+]?([0-9]*\.[0-9]+)([eE][+-]?[0-9]+)?
+HEX		0[Xx][[:xdigit:]]+
+INTEGER		[-+]?([[:digit:]]+)
+REAL		[-+]?([[:digit:]]*\.[[:digit:]]+)([eE][+-]?[[:digit:]]+)?
 
-IDENT		([$@])?[a-zA-Z_][a-zA-Z_0-9]*
+IDENT		([$@])?[[:alpha:]_][[:alnum:]_]*
 
 SSTRING		\'([^'\n]|'')*\'
 DSTRING		\"([^"\n]|"")*\"

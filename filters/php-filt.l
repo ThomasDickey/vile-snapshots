@@ -2,29 +2,30 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/rexxfilt.l,v 1.8 2005/09/04 21:15:43 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/php-filt.l,v 1.4 2005/09/04 20:37:43 tom Exp $
  *
- * Filter to add vile "attribution" sequences to selected bits of REXX source
+ * Filter to add vile "attribution" sequences to PHP scripts.
  * - T.Dickey
  */
 
 #include <filters.h>
 
-DefineFilter("rexx");
+DefineFilter("php");
 
+static char *Action_attr;
 static char *Comment_attr;
+static char *Ident2_attr;
 static char *Number_attr;
 static char *String_attr;
-
-static int my_state;
-
 %}
 
-SSTRING		\'([^'])*\'
-DSTRING		\"([^"])*\"
+BLANK		[[:blank:]]*
+
+SSTRING		\'(\\.|[^'\\])*\'
+DSTRING		\"(\\.|[^"\\]|\\\n)*\"
 STRINGS		({SSTRING}|{DSTRING})
 
-KEYWORD		[[:alpha:]@#$!?_][[:alnum:].@#$!?_]*
+IDENT		[[:alpha:]][[:alnum:]_]*
 
 SIGN		[-+]
 DECIMAL		[[:digit:]_]+
@@ -35,12 +36,19 @@ NUMBER		{SIGN}?({DECIMAL}|{OCTAL}|{HEXADECIMAL}|{REAL})
 
 %%
 
-<CODE>{KEYWORD}		{ WriteToken(ci_keyword_attr(yytext)); }
+<CODE>"<?"("php")?	{ WriteToken(Action_attr); }
+<CODE>"?>"		{ WriteToken(Action_attr); }
+
+<CODE>"$"{IDENT}	{ WriteToken(Ident2_attr); }
+<CODE>{IDENT}		{ WriteToken(keyword_attr(yytext)); }
+<CODE>";"		{ ECHO; }
 
 <CODE>"/*"		{ WriteToken(Comment_attr); BEGIN(COMMENT); }
 <COMMENT>[^*]*		{ WriteToken(Comment_attr); }
 <COMMENT>"*"+[^*/]*	{ WriteToken(Comment_attr); }
-<COMMENT>"*"+"/"	{ WriteToken(Comment_attr); BEGIN(my_state); }
+<COMMENT>"*"+"/"	{ WriteToken(Comment_attr); BEGIN(CODE); }
+
+<CODE>"//"[^\n]*	{ WriteToken(Comment_attr); }
 
 <CODE>{STRINGS}		{ WriteToken(String_attr); }
 
@@ -58,12 +66,13 @@ do_filter(FILE *inputs)
 {
     yyin = inputs;
 
+    Action_attr  = class_attr(NAME_ACTION);
     Comment_attr = class_attr(NAME_COMMENT);
+    Ident2_attr  = class_attr(NAME_IDENT2);
     Number_attr  = class_attr(NAME_NUMBER);
     String_attr  = class_attr(NAME_LITERAL);
 
-    my_state = CODE;
-    BEGIN(my_state);
+    BEGIN(CODE);
     while (yylex() > 0) {
     }
 }

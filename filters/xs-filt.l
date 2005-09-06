@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/xs-filt.l,v 1.10 2003/05/20 20:38:41 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/xs-filt.l,v 1.11 2005/09/04 21:15:43 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Perl/C
  * extension source
@@ -32,13 +32,13 @@ STRINGS		({SSTRING}|{DSTRING})
 
 INCLUDE		(<[^>]+>|\"[^"]+\")
 
-KEYWORD		[a-zA-Z_][a-zA-Z_0-9]*
+KEYWORD		[[:alpha:]_][[:alnum:]_]*
 
 SIGN		[-+]
-DECIMAL		[0-9_]+
+DECIMAL		[[:digit:]_]+
 OCTAL		0[0-7_]+
-HEXADECIMAL	0x[0-9a-fA-F_]+
-REAL		[-+]?([0-9_]*\.[0-9][0-9_]*)([eE][+-]?[0-9_]+)?
+HEXADECIMAL	0x[[:xdigit:]_]+
+REAL		[-+]?([[:digit:]_]*\.[[:digit:]][[:digit:]_]*)([eE][+-]?[[:digit:]_]+)?
 NUMBER		{SIGN}?({DECIMAL}|{OCTAL}|{HEXADECIMAL}|{REAL})
 
 %%

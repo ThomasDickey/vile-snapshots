@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/est-filt.l,v 1.3 2003/05/20 20:38:41 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/est-filt.l,v 1.4 2005/09/04 21:10:12 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of enscript
  * syntax-description files.
@@ -23,12 +23,12 @@ static char *String_attr;
 SSTRING		\'(\\.|[^'\\])*\'
 DSTRING		\"((\\\")|[^"\n])*\"
 
-KEYWORD		[a-zA-Z_][a-zA-Z_0-9]*
-IDENT		\$[a-zA-Z_0-9]+
+KEYWORD		[[:alpha:]_][[:alnum:]_]*
+IDENT		\$[[:alnum:]_]+
 
 SIGN		[-+]
-INTEGER		{SIGN}?([0-9]+)
-REAL		{SIGN}?[0-9]+\.[0-9]*|{SIGN}?\.[0-9]+
+INTEGER		{SIGN}?([[:digit:]]+)
+REAL		{SIGN}?[[:digit:]]+\.[[:digit:]]*|{SIGN}?\.[[:digit:]]+
 
 RANGE		"["(\\.|.)+"]"
 

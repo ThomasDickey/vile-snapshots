@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/pot-filt.l,v 1.3 2004/12/10 00:31:30 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/pot-filt.l,v 1.4 2005/09/04 21:15:43 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of gettext files.
  */
@@ -23,13 +23,13 @@ static char *String_attr;
 
 SSTRING		\'([^']|\n)*\'
 
-NAME		[a-zA-Z0-9_]
+NAME		[[:alnum:]_]
 
-IDENT		[a-zA-Z_]{NAME}*
+IDENT		[[:alpha:]_]{NAME}*
 
-INTEGER		[-+]?([0-9]+)
+INTEGER		[-+]?([[:digit:]]+)
 
-FORMAT		"%"[.*0-9l$#+-]*[cdeEfFgGisuxX]
+FORMAT		"%"[.*[:digit:]l$#+-]*[cdeEfFgGisuxX]
 
 %%
 

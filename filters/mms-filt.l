@@ -1,7 +1,10 @@
+%a 5000
+%o 6000
+
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/mms-filt.l,v 1.10 2005/07/11 22:31:59 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/mms-filt.l,v 1.12 2005/09/05 01:37:56 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of VMS mms script
  * - T.Dickey
@@ -56,7 +59,7 @@ SSTRING		\'\'(\\.|[^'\\])*\'
 DSTRING		\"(\\.|[^"\\])*\"
 STRINGS		({SSTRING}|{DSTRING})
 
-IDENT		[$a-zA-Z_][$a-zA-Z0-9_]*
+IDENT		[$[:alpha:]_][$[:alnum:]_]*
 PARAM		'{IDENT}
 
 INLINECOMMENT	![^\n]*

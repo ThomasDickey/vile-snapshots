@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/rcs-filt.l,v 1.8 2003/05/20 20:38:41 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/rcs-filt.l,v 1.9 2005/09/04 21:15:43 tom Exp $
  *
  * Filter to add vile "attribution" sequences to RCS archives.
  */
@@ -21,8 +21,8 @@ static void flush_quoted(void);
 
 %}
 
-NUMBER		[0-9]+(\.[0-9]+)*
-NAME		[a-zA-Z0-9]+
+NUMBER		[[:digit:]]+(\.[[:digit:]]+)*
+NAME		[[:alnum:]]+
 
 %%
 

@@ -4,7 +4,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/ps-filt.l,v 1.5 2004/12/10 00:32:04 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/ps-filt.l,v 1.7 2005/09/05 11:03:11 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of PostScript
  * files.
@@ -25,15 +25,15 @@ static char *String_attr;
 
 %}
 
-NAME		[a-zA-Z$_!@#&*_+=|:";',.?]
+NAME		[[:alpha:]$_!@#&*_+=|:\";'\,.?]
 
 ACTION		[/{}[\]]
-IDENT		{NAME}({NAME}|[0-9])*
+IDENT		{NAME}({NAME}|[[:digit:]])*
 
 SIGN		[-+]
-INTEGER		{SIGN}?([0-9]+)
-REAL		{SIGN}?[0-9]+\.[0-9]*|{SIGN}?\.[0-9]+
-RADIX		([0-9]+)"#"([0-9A-Fa-f]+)
+INTEGER		{SIGN}?([[:digit:]]+)
+REAL		{SIGN}?[[:digit:]]+\.[[:digit:]]*|{SIGN}?\.[[:digit:]]+
+RADIX		([[:digit:]]+)"#"([[:xdigit:]]+)
 NUMBER		{INTEGER}|{REAL}|{RADIX}
 
 %%
@@ -57,8 +57,8 @@ NUMBER		{INTEGER}|{REAL}|{RADIX}
 <NORMAL>">>"		{ WriteToken(Action_attr); }
 
 <NORMAL>"<"		{ BeginQuote(HEX_TEXT, String_attr); }
-<HEX_TEXT>[0-9A-Fa-f]+	{ flt_bfr_append(yytext, yyleng); }
-<HEX_TEXT>[^>0-9A-Fa-f]+ { flt_error("expected a number");
+<HEX_TEXT>[[:xdigit:]]+	{ flt_bfr_append(yytext, yyleng); }
+<HEX_TEXT>[^>[:xdigit:]]+ { flt_error("expected a number");
 			  flt_bfr_embed(yytext, yyleng, Error_attr); }
 <HEX_TEXT>">"		{ FinishQuote(NORMAL); }
 

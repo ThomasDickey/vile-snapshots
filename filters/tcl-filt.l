@@ -1,10 +1,10 @@
 %s VERB ARGS
 
-%a 2500
+%a 5000
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/tcl-filt.l,v 1.14 2004/12/10 00:43:07 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/tcl-filt.l,v 1.16 2005/09/05 01:41:49 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of TCL/TK script.
  *
@@ -40,7 +40,7 @@ STRINGS		({SSTRING}|{DSTRING})
 
 ACTION		([\.`]|\\\n)
 
-BASICIDENT      [a-zA-Z_-][a-zA-Z_0-9-]*
+BASICIDENT      [[:alpha:]_-][[:alnum:]_-]*
 IDENT           (::)?{BASICIDENT}(::{BASICIDENT})*
 IDENT1		\${IDENT}
 IDENT2		\$\{[^\}]*\}
@@ -48,16 +48,16 @@ IDENTX		\$[\*@#\?\$!-]
 WIDGET		(\.{IDENT})+
 
 SIGN		[-+]
-DECIMAL		[0-9]+
+DECIMAL		[[:digit:]]+
 OCTAL		0[0-7]+
-HEXADECIMAL	0x[0-9a-fA-Z]+
+HEXADECIMAL	0x[[:xdigit:]]+
 EXP		[eE]{SIGN}?{DECIMAL}
 REAL		(({DECIMAL}\.{DECIMAL}?)|({DECIMAL}?\.{DECIMAL})){EXP}?
 NUMBER		{SIGN}?({DECIMAL}|{OCTAL}|{HEXADECIMAL}|{REAL})
 
-NODECIMAL	[0-9]+[g-zG-Z]+
+NODECIMAL	[[:digit:]]+[g-zG-Z]+
 NOOCTAL      	0[0-7]*([89]+[0-7]*)+
-NOHEXADECIMAL	0X[0-9a-fA-Z]+
+NOHEXADECIMAL	0X[[:xdigit:]]+
 NOREAL		\.?{EXP}
 NONUMBER	{SIGN}?({NODECIMAL}|{NOOCTAL}|{NOHEXADECIMAL}|{NOREAL})
 

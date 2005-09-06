@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/texifilt.l,v 1.2 2003/05/20 20:38:41 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/texifilt.l,v 1.4 2005/09/05 10:59:09 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of texinfo input.
  */
@@ -20,12 +20,12 @@ static char *String_attr;
 
 SPACE		[ \t]
 
-PUNCT		[!"'*-.:=?@^`{}~]
+PUNCT		[!"'*.:=?@^`{}~-]
 
-NAME		[a-zA-Z]+
+NAME		[[:alpha:]]+
 
-INTEGER		[-+]?([0-9]+)
-REAL		[-+]?([0-9]*\.[0-9]+)([eE][+-]?[0-9]+)?
+INTEGER		[-+]?([[:digit:]]+)
+REAL		[-+]?([[:digit:]]*\.[[:digit:]]+)([eE][+-]?[[:digit:]]+)?
 NUMBER		({INTEGER}|{REAL})
 
 %%

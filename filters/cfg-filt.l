@@ -1,7 +1,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/cfg-filt.l,v 1.9 2005/07/11 22:31:35 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/cfg-filt.l,v 1.10 2005/09/04 21:10:12 tom Exp $
  *
  * Filter to add vile "attribution" sequences to an ordinary Lynx config-file
  */
@@ -33,20 +33,20 @@ mixedcase(const char *name)
 
 COMMENT		^[ \t]*#[^\n]*\n
 
-KEYWORD		([a-zA-Z_][a-zA-Z0-9_.]*|[A-Z][+/&][A-Z])
+KEYWORD		([[:alpha:]_][[:alnum:]_.]*|[[:upper:]][+/&][[:upper:]])
 
 SIGN		[-+]
-DECIMAL		[0-9_]+
+DECIMAL		[[:digit:]_]+
 OCTAL		0[0-7_]+
-HEXADECIMAL	0x[0-9a-fA-F_]+
-REAL		[-+]?([0-9_]*\.[0-9][0-9_]*)([eE][+-]?[0-9_]+)?
+HEXADECIMAL	0x[[:xdigit:]_]+
+REAL		[-+]?([[:digit:]_]*\.[[:digit:]][[:digit:]_]*)([eE][+-]?[[:digit:]_]+)?
 NUMBER		{SIGN}?({DECIMAL}|{OCTAL}|{HEXADECIMAL}|{REAL})
 
-NAME		[a-zA-Z0-9_.-]+
+NAME		[[:alnum:]_.-]+
 ADDRESS		({NAME}|\.)+
 EMAIL		{NAME}@{ADDRESS}
 
-URL		[A-Za-z]+"://"[0-9a-zA-Z%/.~_#?=-]+
+URL		[[:alpha:]]+"://"[[:alnum:]%/.~_#?=-]+
 
 %%
 

@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/sml-filt.l,v 1.4 2003/05/20 20:38:41 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/sml-filt.l,v 1.5 2005/09/04 21:15:43 tom Exp $
 
     Filter to add vile "attribution" sequences to selected bits of SML
     input text.
@@ -40,12 +40,12 @@ static void start_string(void);
 
 %}
 
-DECIMAL		[~]?([0-9]+)
-HEX		[~]?0[xX]([0-9A-Fa-f]+)
-WORD		0[wW]([0-9]+)
-WORDHEX		0[wW][xX]([0-9A-Fa-f]+)
-REAL		[~]?([0-9]*\.[0-9]+)([eE][~]?[0-9]+)?
-IDENT		[a-zA-Z][a-zA-Z_0-9']*
+DECIMAL		[~]?([[:digit:]]+)
+HEX		[~]?0[xX]([[:xdigit:]]+)
+WORD		0[wW]([[:digit:]]+)
+WORDHEX		0[wW][xX]([[:xdigit:]]+)
+REAL		[~]?([[:digit:]]*\.[[:digit:]]+)([eE][~]?[[:digit:]]+)?
+IDENT		[[:alpha:]][[:alnum:]_']*
 
 NUMBER		{DECIMAL}|{HEX}|{WORD}|{WORDHEX}|{REAL}
 

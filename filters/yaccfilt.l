@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/yaccfilt.l,v 1.21 2003/05/24 00:49:25 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/yaccfilt.l,v 1.22 2005/09/04 21:15:43 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of YACC program.
  */
@@ -42,10 +42,10 @@ SPACE		[ \t]
 
 DIRECTIVE	^%[^ \t\n]+
 
-IDENT		[a-zA-Z_][a-zA-Z_0-9]*
-QIDENT		\$([0-9$]|\<{IDENT}\>)
+IDENT		[[:alpha:]_][[:alnum:]_]*
+QIDENT		\$([[:digit:]$]|\<{IDENT}\>)
 
-INTEGER		[-+]?([0-9]+|("0"[xX][0-9a-fA-Z]+))
+INTEGER		[-+]?([[:digit:]]+|("0"[xX][[:xdigit:]]+))
 
 SSTRING		\'(\\.|[^'\\])*\'
 DSTRING		\"(\\.|[^"\\])*\"

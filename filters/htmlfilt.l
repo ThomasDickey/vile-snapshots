@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/htmlfilt.l,v 1.34 2005/02/02 21:31:15 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/htmlfilt.l,v 1.35 2005/09/04 21:10:12 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of HTML input
  * text.
@@ -31,10 +31,10 @@ static void may_resume_html(char *text);
 
 SPACE		[ \t]
 
-INTEGER		[-+]?([0-9]+)
-REAL		[-+]?([0-9]*\.[0-9]+)([eE][+-]?[0-9]+)?
-HEXNUM		"#"[xX]?[0-9A-Fa-f]+
-IDENT		[a-zA-Z_][a-zA-Z_0-9-]*
+INTEGER		[-+]?([[:digit:]]+)
+REAL		[-+]?([[:digit:]]*\.[[:digit:]]+)([eE][+-]?[[:digit:]]+)?
+HEXNUM		"#"[xX]?[[:xdigit:]]+
+IDENT		[[:alpha:]_][[:alnum:]_-]*
 
 HSTRING		\"([^"])*\"
 QSTRING		\\["]([^"]|\\["])*\\["]

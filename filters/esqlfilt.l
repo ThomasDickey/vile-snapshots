@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/esqlfilt.l,v 1.13 2004/11/23 22:37:45 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/esqlfilt.l,v 1.14 2005/09/04 21:10:12 tom Exp $
  *
  * Filter to add vile "attribution" sequences to embedded SQL with C/C++.
  * - T.Dickey
@@ -41,13 +41,13 @@ STRINGS		({SSTRING}|{DSTRING})
 
 INCLUDE		("<"[^>]+">"|\"[^"]+\")
 
-IDENT		[a-zA-Z_][a-zA-Z_0-9]*
+IDENT		[[:alpha:]_][[:alnum:]_]*
 
 SIGN		[-+]
-DECIMAL		[0-9_]+
+DECIMAL		[[:digit:]_]+
 OCTAL		0[0-7_]+
-HEXADECIMAL	0x[0-9a-fA-F_]+
-REAL		[-+]?([0-9_]*\.[0-9][0-9_]*)([eE][+-]?[0-9_]+)?
+HEXADECIMAL	0x[[:xdigit:]_]+
+REAL		[-+]?([[:digit:]_]*\.[[:digit:]][[:digit:]_]*)([eE][+-]?[[:digit:]_]+)?
 NUMBER		{SIGN}?({DECIMAL}|{OCTAL}|{HEXADECIMAL}|{REAL})
 
 %%

@@ -1,6 +1,6 @@
 dnl vile's local definitions for autoconf.
 dnl
-dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.154 2005/07/17 15:05:16 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.158 2005/09/05 13:50:29 tom Exp $
 dnl
 dnl ---------------------------------------------------------------------------
 dnl ---------------------------------------------------------------------------
@@ -1050,7 +1050,7 @@ rm -rf conftest*
 fi
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_GCC_VERSION version: 3 updated: 2003/09/06 19:16:57
+dnl CF_GCC_VERSION version: 4 updated: 2005/08/27 09:53:42
 dnl --------------
 dnl Find version of gcc
 AC_DEFUN([CF_GCC_VERSION],[
@@ -1058,13 +1058,13 @@ AC_REQUIRE([AC_PROG_CC])
 GCC_VERSION=none
 if test "$GCC" = yes ; then
 	AC_MSG_CHECKING(version of $CC)
-	GCC_VERSION="`${CC} --version|sed -e '2,$d' -e 's/^[[^0-9.]]*//' -e 's/[[^0-9.]].*//'`"
+	GCC_VERSION="`${CC} --version| sed -e '2,$d' -e 's/^.*(GCC) //' -e 's/^[[^0-9.]]*//' -e 's/[[^0-9.]].*//'`"
 	test -z "$GCC_VERSION" && GCC_VERSION=unknown
 	AC_MSG_RESULT($GCC_VERSION)
 fi
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_GCC_WARNINGS version: 19 updated: 2005/07/09 13:23:07
+dnl CF_GCC_WARNINGS version: 20 updated: 2005/08/06 18:37:29
 dnl ---------------
 dnl Check if the compiler supports useful warning options.  There's a few that
 dnl we don't use, simply because they're too noisy:
@@ -1085,8 +1085,8 @@ dnl	If $with_ext_const is "yes", add a check for -Wwrite-strings
 dnl
 AC_DEFUN([CF_GCC_WARNINGS],
 [
-AC_REQUIRE([CF_INTEL_COMPILER])
 AC_REQUIRE([CF_GCC_VERSION])
+CF_INTEL_COMPILER(GCC,INTEL_COMPILER,CFLAGS)
 
 cat > conftest.$ac_ext <<EOF
 #line __oline__ "configure"
@@ -1435,35 +1435,38 @@ AC_SUBST(IMAKE_CFLAGS)
 AC_SUBST(IMAKE_LOADFLAGS)
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_INTEL_COMPILER version: 1 updated: 2004/12/03 20:27:48
+dnl CF_INTEL_COMPILER version: 3 updated: 2005/08/06 18:37:29
 dnl -----------------
-dnl Check if the given compiler is really the Intel compiler for Linux.
-dnl It tries to imitate gcc, but does not return an error when it finds a
-dnl mismatch between prototypes, e.g., as exercised by CF_MISSING_CHECK.
+dnl Check if the given compiler is really the Intel compiler for Linux.  It
+dnl tries to imitate gcc, but does not return an error when it finds a mismatch
+dnl between prototypes, e.g., as exercised by CF_MISSING_CHECK.
 dnl
-dnl This macro should be run "soon" after AC_PROG_CC, to ensure that it is
-dnl not mistaken for gcc.
+dnl This macro should be run "soon" after AC_PROG_CC or AC_PROG_CPLUSPLUS, to
+dnl ensure that it is not mistaken for gcc/g++.  It is normally invoked from
+dnl the wrappers for gcc and g++ warnings.
+dnl
+dnl $1 = GCC (default) or GXX
+dnl $2 = INTEL_COMPILER (default) or INTEL_CPLUSPLUS
+dnl $3 = CFLAGS (default) or CXXFLAGS
 AC_DEFUN([CF_INTEL_COMPILER],[
-AC_REQUIRE([AC_PROG_CC])
+ifelse($2,,INTEL_COMPILER,[$2])=no
 
-INTEL_COMPILER=no
-
-if test "$GCC" = yes ; then
+if test "$ifelse($1,,[$1],GCC)" = yes ; then
 	case $host_os in
 	linux*|gnu*)
-		AC_MSG_CHECKING(if this is really Intel compiler)
-		cf_save_CFLAGS="$CFLAGS"
-		CFLAGS="$CFLAGS -no-gcc"
+		AC_MSG_CHECKING(if this is really Intel ifelse($1,GXX,C++,C) compiler)
+		cf_save_CFLAGS="$ifelse($3,,CFLAGS,[$3])"
+		ifelse($3,,CFLAGS,[$3])="$ifelse($3,,CFLAGS,[$3]) -no-gcc"
 		AC_TRY_COMPILE([],[
 #ifdef __INTEL_COMPILER
 #else
 make an error
 #endif
-],[INTEL_COMPILER=yes
+],[ifelse($2,,INTEL_COMPILER,[$2])=yes
 cf_save_CFLAGS="$cf_save_CFLAGS -we147 -no-gcc"
 ],[])
-		CFLAGS="$cf_save_CFLAGS"
-		AC_MSG_RESULT($INTEL_COMPILER)
+		ifelse($3,,CFLAGS,[$3])="$cf_save_CFLAGS"
+		AC_MSG_RESULT($ifelse($2,,INTEL_COMPILER,[$2]))
 		;;
 	esac
 fi
@@ -1540,6 +1543,33 @@ ifdef([AC_FUNC_FSEEKO],[
 	test "$cf_cv_struct_dirent64" = yes && AC_DEFINE(HAVE_STRUCT_DIRENT64)
 ])
 ])
+dnl ---------------------------------------------------------------------------
+dnl CF_LEX_CHAR_CLASSES version: 4 updated: 2005/09/05 09:46:13
+dnl -------------------
+dnl Check if the lex/flex program accepts character-classes, i.e., [:alpha:],
+dnl which are said to be a POSIX feature.
+AC_DEFUN([CF_LEX_CHAR_CLASSES],[
+AC_MSG_CHECKING(if $LEX supports character classes)
+cat >conftest.l <<CF_EOF
+IDENT	[[[:alpha:]][[:alnum:]]]+
+DATE	"#"[[:blank:]][[:alnum:]\,:./]+"#"
+%%
+{IDENT}	{ ECHO; }
+{DATE}	{ ECHO; }
+CF_EOF
+cf_lex_char_classes="$LEX conftest.l 1>&AC_FD_CC"
+if AC_TRY_EVAL(cf_lex_char_classes); then
+	LEX_CHAR_CLASSES=yes
+else
+	LEX_CHAR_CLASSES=no
+fi
+AC_MSG_RESULT($LEX_CHAR_CLASSES)
+rm -f conftest.* $LEX_OUTPUT_ROOT.c
+if test "$LEX_CHAR_CLASSES" != yes ; then
+	AC_WARN(Your $LEX program does not support character classes.  Get flex.)
+fi
+AC_SUBST(LEX_CHAR_CLASSES)
+])dnl
 dnl ---------------------------------------------------------------------------
 dnl CF_LEX_STATES version: 2 updated: 1999/05/07 22:29:23
 dnl -------------
@@ -2948,7 +2978,7 @@ fi
 fi
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_XOPEN_SOURCE version: 21 updated: 2005/07/14 17:00:39
+dnl CF_XOPEN_SOURCE version: 22 updated: 2005/08/06 18:06:32
 dnl ---------------
 dnl Try to get _XOPEN_SOURCE defined properly that we can use POSIX functions,
 dnl or adapt to the vendor's definitions to get equivalent functionality.
@@ -2998,6 +3028,9 @@ openbsd*) #(vi
 	;;
 osf[[45]]*) #(vi
 	CPPFLAGS="$CPPFLAGS -D_OSF_SOURCE"
+	;;
+nto-qnx*) #(vi
+	CPPFLAGS="$CPPFLAGS -D_QNX_SOURCE"
 	;;
 sco*) #(vi
 	# setting _XOPEN_SOURCE breaks Lynx on SCO Unix / OpenServer

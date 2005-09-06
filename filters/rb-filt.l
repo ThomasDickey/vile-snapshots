@@ -1,9 +1,11 @@
 %s CODE HERE SSTRING DSTRING RD SUBST
 
+%o 6000
+
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/rb-filt.l,v 1.12 2005/02/15 23:29:32 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/rb-filt.l,v 1.14 2005/09/05 01:38:39 tom Exp $
  *
  * Filter to add vile "attribution" sequences to a Ruby script
  * based on the Python filter.
@@ -45,8 +47,8 @@ static void pop_quote(char *text, int length);
 %}
 
 CHAR		\?(\\M-)?(\\C-)?.
-VAR		[a-z_][a-zA-Z0-9_]*
-CONST		[A-Z][a-zA-Z0-9_]*
+VAR		[[:lower:]_][[:alnum:]_]*
+CONST		[[:upper:]][[:alnum:]_]*
 INSTANCE	@+({CONST}|{VAR})
 GLOBAL		\$([-_.\/,"\\#%=~|\$?&`'+*\[\];!@<>():]|{CONST}|{VAR})
 
@@ -59,14 +61,14 @@ COMMENT		#.*\n
 BLANK		[ \t]*
 SSTRING         \'(\\.|[^']|\n)*\'
 DSTRING         \"(\\.|[^"]|\n)*\"
-KEYWORD		[a-zA-Z_][a-zA-Z0-9_]*
+KEYWORD		[[:alpha:]_][[:alnum:]_]*
 QIDENT		({SSTRING}|{DSTRING}|{KEYWORD}|"`"{KEYWORD}"`")
 
 SIGN		[-+]
-DECIMAL		[0-9_]+
+DECIMAL		[[:digit:]_]+
 OCTAL		0[0-7_]+
-HEXADECIMAL	0x[0-9a-fA-F_]+
-REAL		[-+]?([0-9_]*\.[0-9][0-9_]*)([eE][+-]?[0-9_]+)?
+HEXADECIMAL	0x[[:xdigit:]_]+
+REAL		[-+]?([[:digit:]_]*\.[[:digit:]][[:digit:]_]*)([eE][+-]?[[:digit:]_]+)?
 NUMBER		{SIGN}?({DECIMAL}|{OCTAL}|{HEXADECIMAL})[L]?|{REAL}
 
 %%

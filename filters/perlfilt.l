@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/perlfilt.l,v 1.40 2004/11/23 22:41:08 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/perlfilt.l,v 1.43 2005/09/05 13:38:18 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of PERL input
  * text.
@@ -41,20 +41,20 @@ SSTRING		\'(\\.|\\\n|[^'\\])*\'
 DSTRING		\"(\\.|\\\n|[^"\\])*\"
 STRINGS		({SSTRING}|{DSTRING})
 
-KEYWORD		[a-zA-Z_][a-zA-Z_0-9]*
-QIDENT		["'`]?[a-zA-Z_][a-zA-Z_0-9]+["'`]?
+KEYWORD		[[:alpha:]_][[:alnum:]_]*
+QIDENT		["'`]?[[:alpha:]_][[:alnum:]_]+["'`]?
 
-NORMALVARS	[\$%@][a-zA-Z_0-9]+('[a-zA-Z0-9]+)?
-OTHERVARS	(\$[-_.\/,"\\#%=~|\$?&`'+*\[\];!@<>():])|(\$\^[@-\177]?)
+NORMALVARS	[\$%@][[:alnum:]_]+('[[:alnum:]]+)?
+OTHERVARS	(\$[-_.\/,"\\#%=~|\$?\&`'+*\[\];!@<>():])|(\$\^[[:graph:]]?)
 IDENT		{NORMALVARS}|{OTHERVARS}
 
 SIGN		[-+]
-DECIMAL		[0-9_]+
+DECIMAL		[[:digit:]_]+
 OCTAL		0[0-7_]+
 BINARY		0b[01_]+
-HEXADECIMAL	0x[0-9a-fA-F_]+
-VERSION		v[0-9_]+(\.[0-9_]+)*
-REAL		[-+]?([0-9_]*\.[0-9][0-9_]*)([eE][+-]?[0-9_]+)?
+HEXADECIMAL	0x[[:xdigit:]_]+
+VERSION		v[[:digit:]_]+(\.[[:digit:]_]+)*
+REAL		[-+]?([[:digit:]_]*\.[[:digit:]][[:digit:]_]*)([eE][+-]?[[:digit:]_]+)?
 NUMBER		{SIGN}?({DECIMAL}|{OCTAL}|{HEXADECIMAL}|{REAL}|{BINARY}|{VERSION})
 
 %%
@@ -91,7 +91,7 @@ NUMBER		{SIGN}?({DECIMAL}|{OCTAL}|{HEXADECIMAL}|{REAL}|{BINARY}|{VERSION})
 
 <CODE>{NUMBER}		{ WriteToken(Number_attr); }
 
-<CODE>-[a-zA-Z]		{ WriteToken(Keyword_attr); }
+<CODE>-[[:alpha:]]	{ WriteToken(Keyword_attr); }
 
 <CODE>{KEYWORD}		{ WriteToken(keyword_attr(yytext)); if (!strcmp(yytext, "__END__")) { BEGIN(IGNORED); } }
 
@@ -104,7 +104,7 @@ NUMBER		{SIGN}?({DECIMAL}|{OCTAL}|{HEXADECIMAL}|{REAL}|{BINARY}|{VERSION})
 
 <IGNORED>[^\n]*		{ WriteToken(Comment_attr); }
 
-<CODE>\n\n=[a-z].*	{
+<CODE>\n\n=[[:lower:]].* {
 			    flt_puts("\n\n", 2, "");
 			    WriteToken2(Comment_attr,2);
 			    BEGIN(POD);

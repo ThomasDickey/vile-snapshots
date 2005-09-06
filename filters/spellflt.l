@@ -1,7 +1,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/spellflt.l,v 1.21 2005/07/11 22:33:37 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/spellflt.l,v 1.23 2005/09/04 21:40:23 tom Exp $
  *
  * Filter to add vile "attribution" sequences to misspelled words.
  */
@@ -124,9 +124,7 @@ open_tempfile(char *fname)
 
 %}
 
-ALPHA		[a-zA-Z\240-\377]
-DIGIT		[0-9]
-WORD		{ALPHA}({ALPHA}|{DIGIT})*
+WORD		[[:alpha:]]([[:alnum:]])*
 
 %%
 

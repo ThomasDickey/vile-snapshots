@@ -6,7 +6,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/vilefilt.l,v 1.30 2005/06/18 15:48:49 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/vilefilt.l,v 1.31 2005/09/04 21:15:43 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of vile macros
  * - T.Dickey
@@ -43,12 +43,12 @@ static int is_prepro(char *text, int len);
 %}
 
 SPACE		[ \t]+
-DECIMAL		[0-9]+
-HEXADECIMAL	0[xX][0-9a-fA-F_]+
+DECIMAL		[[:digit:]]+
+HEXADECIMAL	0[xX][[:xdigit:]_]+
 NUMBER		({DECIMAL}|{HEXADECIMAL})
-NAME		[a-zA-Z_][a-zA-Z_0-9]*(-[a-zA-Z_0-9]+)*
+NAME		[[:alpha:]_][[:alnum:]_]*(-[[:alnum:]_]+)*
 
-PREPROC		\~[a-z]+
+PREPROC		\~[[:lower:]]+
 
 SEMICMT		;.*
 QUOTECMT1	^[ \t]*\"[^\n]*
@@ -66,7 +66,7 @@ BINDING		(M-)?((^[AX]-(^)?{VISIBLE})|((#|FN)-?{VISIBLE})|^.)
 SSTRING		(\'(\\.|[^'\n])*\')
 DSTRING		\"(\\.|[^\\"\n])*\"
 
-FUNCTION	&[a-zA-Z]+
+FUNCTION	&[[:alpha:]]+
 
 VARIABLE	[$%]{NAME}
 

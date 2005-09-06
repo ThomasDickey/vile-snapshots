@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/ti-filt.l,v 1.15 2004/08/08 18:56:50 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/ti-filt.l,v 1.16 2005/09/04 21:15:43 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of terminfo
  */
@@ -28,15 +28,15 @@ static void echo_vals(char *text, int size, char *attr);
 
 SPACE		[ \t]
 
-CAPNAME		[a-zA-Z][a-zA-Z0-9_]*
+CAPNAME		[[:alpha:]][[:alnum:]_]*
 DOTNAME		\.{CAPNAME}
 
-ALIAS		[a-zA-Z_\.0-9+-]+
+ALIAS		[[:alnum:]_\.+-]+
 
 COMMA		[,]
 ESCNL		{COMMA}{SPACE}*\\\n\t
 
-NUMBER		"#"[0-9]+
+NUMBER		"#"[[:digit:]]+
 STRING		"="(\\.|\^.|[^,\^\\])*
 
 %%

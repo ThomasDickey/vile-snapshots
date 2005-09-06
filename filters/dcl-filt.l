@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/dcl-filt.l,v 1.15 2004/11/23 22:35:27 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/dcl-filt.l,v 1.16 2005/09/04 21:10:12 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of DCL files.
  *
@@ -44,8 +44,8 @@ static void handle_literal(char *text, int length);
 %}
 
 BLANK		[ \t]
-LABEL		[a-zA-Z0-9_]+
-IDENT		[a-zA-Z_][$a-zA-Z0-9_]*
+LABEL		[[:alnum:]_]+
+IDENT		[[:alpha:]_][$[:alnum:]_]*
 OPTION		"/"{IDENT}
 
 PARAM		'{IDENT}
@@ -56,7 +56,7 @@ LABELPLUS	{LABEL}{BLANK}*:{BLANK}+
 INLINECOMMENT	![^\n]*
 COMMENT		^({BLANK}*)($)?({BLANK}*)(![^\n]*)?
 
-NUMBER		([0-9]+)|(%[dD][0-9]+)|(%[oO][0-7]+)|(%[xX][a-fA-F0-9]+)
+NUMBER		([[:digit:]]+)|(%[dD][[:digit:]]+)|(%[oO][0-7]+)|(%[xX][[:xdigit:]]+)
 
 STRING		\"([^"\n]|(""))*\"
 

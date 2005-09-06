@@ -190,8 +190,10 @@ The following are implemented:
 	vile-awk-filt	(awk)
 	vile-basic-filt	(BASIC)
 	vile-bat-filt	(DOS batchfiles)
+	vile-bnf-filt	(BNF)
 	vile-c-filt	(C language)
 	vile-cfg-filt	(Lynx configure file)
+	vile-css-filt	(Cascading Style Sheets)
 	vile-cweb-filt	(CWEBx)
 	vile-dcl-filt	(VMS DCL batchfiles)
 	vile-def-filt	(Windows linker definition files)
@@ -211,10 +213,12 @@ The following are implemented:
 	vile-mail-filt	(mail folders)
 	vile-make-filt	(make)
 	vile-manfilt	(manual-page)
+	vile-midl-filt	(Microsoft Interface Definition Language)
 	vile-mms-filt	(VMS makefiles)
 	vile-nr-filt	(nroff)
 	vile-pas-filt	(Pascal)
 	vile-perl-filt	(Perl, in C)
+	vile-php-filt	(PHP)
 	vile-pl-filt	(Perl, in lex)
 	vile-pot-filt	(gettext (.po) files)
 	vile-ps-filt	(PostScript)
@@ -239,6 +243,7 @@ The following are implemented:
 	vile-txt-filt	(plain text files, such as vile.hlp)
 	vile-vile-filt	(Vile's macros)
 	vile-vlog-filt	(Verilog)
+	vile-wbt-filt	(WinBatch)
 	vile-xml-filt	(XML)
 	vile-xres-filt	(X Window resources)
 	vile-xs-filt	(Perl extension)
@@ -265,4 +270,4 @@ NOTE
 The lex filters have been well tested only with flex, which treats newlines
 differently.  Older versions of lex may not support the %x states.
 
--- $Header: /users/source/archives/vile.vcs/doc/RCS/filters.doc,v 1.34 2005/05/10 22:53:08 tom Exp $
+-- $Header: /users/source/archives/vile.vcs/doc/RCS/filters.doc,v 1.35 2005/09/05 01:00:58 tom Exp $
