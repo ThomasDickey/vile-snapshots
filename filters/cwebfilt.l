@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/cwebfilt.l,v 1.15 2004/11/23 22:31:40 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/cwebfilt.l,v 1.16 2005/09/04 21:10:12 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Cwebx input
  * text.  Also useful for Cweb
@@ -40,9 +40,9 @@ static int in_code;	/* FIXME: should implement a stack */
 SPC		[ ]
 BLANK		[ \t]
 
-INTEGER		[-+]?([0-9]+)
-REAL		[-+]?([0-9]*\.[0-9]+)([eE][+-]?[0-9]+)?
-IDENT		[a-zA-Z_][a-zA-Z_0-9]*
+INTEGER		[-+]?([[:digit:]]+)
+REAL		[-+]?([[:digit:]]*\.[[:digit:]]+)([eE][+-]?[[:digit:]]+)?
+IDENT		[[:alpha:]_][[:alnum:]_]*
 
 SSTRING		\'(\\.|[^'\\]|@@)\'
 DSTRING		\"(\\.|[^"\\])*\"
@@ -94,8 +94,8 @@ RC		\n
 
 {STRING}		{ WriteToken(String_attr); }
 
-\\[a-zA-Z][a-zA-Z]*	{ WriteToken(TeX_mot_cle); }
-\\[^\\a-zA-z][ a-zA-Z]	{ WriteToken(Keyword_attr); }
+\\[[:alpha:]][[:alpha:]]*	{ WriteToken(TeX_mot_cle); }
+\\[^\\[:alpha:]][ [:alpha:]]	{ WriteToken(Keyword_attr); }
 
 
 "@*"[1-9]*[ ]*[^\.]*"." { WriteToken(Cweb_code_titre); }

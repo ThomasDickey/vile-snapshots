@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Id: lispfilt.l,v 1.10 2005/01/15 17:38:06 tom Exp $
+ * $Id: lispfilt.l,v 1.11 2005/09/04 20:36:24 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of lisp code.
  *
@@ -34,8 +34,8 @@ static const char *paren_attr(void);
 
 SIGN		[-+]
 POINT		[.]
-DIGIT		([0-9])
-DECIMAL		[0-9]
+DIGIT		([[:digit:]])
+DECIMAL		[[:digit:]]
 SLASH		[/]
 
 INTEGER		({SIGN}?{DECIMAL}+{POINT}?)|({SIGN}?{DIGIT}+)

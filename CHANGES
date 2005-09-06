@@ -1,3 +1,27 @@
+Changes for vile 9.6 (released ??? ??? ?? ????)
+
+ 20050905 (a)
+	> Tom Dickey:
+	+ review/improve vl-filt.l based on Verilog LRM draft
+	+ add configure check for lex's which support character classes, and
+	  add filters/noclass.sh to work around those which do not.
+	+ improvements to configure script from ncurses:
+	  + improve check for Intel compiler warnings
+	  + improve check for gcc version
+	  + define _QNX_SOURCE for QNX
+	+ revert part of 9.4n, which caused readin() to return false if there
+	  was no filename associated with the buffer.  Doing this broke some
+	  macros such as which-keywords (using buffer constructed by the
+	  macro).  Previously it returned true, indicating success.
+	+ improve parsing of range expressions in lex-filt.l, fixes a case
+	  exposed by css-filt.l
+	+ correct a case where slowread() in dosmode would compute a correct
+	  buffer size.
+	+ modify bat-filt.l to highlight "echo." consistently with M$ usage.
+	+ modify bat-filt.l to highlight "%*".
+	+ add syntax filters for bnf, css, midl, php and wbt (WinBatch).
+	+ modify syntax filters to use flex's character classes.
+
 Changes for vile 9.5 (released Mon Jul 25 2005)
 
  20050717 (zb)

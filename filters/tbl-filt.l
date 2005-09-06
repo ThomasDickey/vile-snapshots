@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/tbl-filt.l,v 1.8 2003/05/20 20:38:41 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/tbl-filt.l,v 1.9 2005/09/04 21:15:43 tom Exp $
  *
  * Filter to add vile "attribution" sequences to a vile mktbls datafile.
  */
@@ -25,13 +25,13 @@ static int mixedcase(const char *name);
 
 COMMENT		[ \t]*#[^\n]*\n
 
-KEYWORD		[a-zA-Z_.][a-zA-Z$0-9_.]*
+KEYWORD		[[:alpha:]_.][[:alnum:]$_.]*
 
 SIGN		[-+]
-DECIMAL		[0-9_]+
+DECIMAL		[[:digit:]_]+
 OCTAL		0[0-7_]+
-HEXADECIMAL	0x[0-9a-fA-F_]+
-REAL		[-+]?([0-9_]*\.[0-9][0-9_]*)([eE][+-]?[0-9_]+)?
+HEXADECIMAL	0x[[:xdigit:]_]+
+REAL		[-+]?([[:digit:]_]*\.[[:digit:]][[:digit:]_]*)([eE][+-]?[[:digit:]_]+)?
 NUMBER		{SIGN}?({DECIMAL}|{OCTAL}|{HEXADECIMAL}|{REAL})
 
 %%

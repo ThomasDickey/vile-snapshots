@@ -1,9 +1,11 @@
 %s HEADER BODY
 
+%o 7000
+
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/mailfilt.l,v 1.14 2003/05/20 20:38:41 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/mailfilt.l,v 1.16 2005/09/05 01:31:56 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of mail
  */
@@ -25,13 +27,13 @@ BLANK		[ \t]
 
 BEGIN_HEADER	^"From "{EMAIL}
 
-LABEL		^[A-Za-z]([A-Za-z-]+):
+LABEL		^[[:alpha:]]([[:alpha:]-]+):
 
-NAME		[a-zA-Z0-9_+.#-]+
+NAME		[[:alnum:]_+.#-]+
 ADDRESS		({NAME}|\.)+
 EMAIL		{NAME}@{ADDRESS}
 
-URL		[A-Za-z]+"://"[0-9a-zA-Z%/.~_#?=-]+
+URL		[[:alpha:]]+"://"[[:alnum:]%/.~_#?=-]+
 
 %%
 

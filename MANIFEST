@@ -1,4 +1,4 @@
-MANIFEST for vile, version v9_5
+MANIFEST for vile, version v9_5a
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 CHANGES                         Change-log for VILE
@@ -176,12 +176,16 @@ filters/bas-filt.l              syntax filter for BASIC
 filters/basic.key               keywords for basic syntax filter
 filters/bat-filt.l              dos batchfile syntax filter for vile
 filters/bat.key                 dos batchfile keywords
+filters/bnf-filt.l              BNF filter
+filters/bnf.key                 keywords for BNF filter
 filters/c-filt.c                c filter
 filters/c-filt.flx              original flex-based c-filter
 filters/c.key                   keywords for C
 filters/cfg-filt.l              syntax filter for Lynx config file.
 filters/cpp.key                 C++ keywords
 filters/csh.key                 keywords for csh/tcsh syntax highlighting filter
+filters/css-filt.l              syntax filter for CSS files
+filters/css.key                 keywords for css mode
 filters/cweb.key                keyword table for cweb syntax filter
 filters/cwebfilt.l              cwebx syntax filter for vile
 filters/dcl-filt.l              VAX dcl syntax highlighting filter for vile
@@ -239,6 +243,8 @@ filters/makefile.wnt            makefile for filters with Visual C++
 filters/makefilt.l              makefile syntax filter for vile
 filters/makelist.sh             script to construct a list of filter names
 filters/manfilt.c               manpage-filter
+filters/midl.key                keywords for MIDL
+filters/midlfilt.l              syntax filter for MIDL
 filters/mk-0th.awk              construct builtflt.h
 filters/mk-0th.bat              generate builtflt.h from genmake.mak
 filters/mk-1st.awk              script to generate lists of built-in/external filters
@@ -247,6 +253,7 @@ filters/mk-2nd.awk              script to generate rules for building filters
 filters/mk-2nd.bat              generate rules for makefile.wnt
 filters/mk-key.awk              generate install/uninstall rules for keyword files
 filters/mms-filt.l              mms syntax filter for vile
+filters/noclass.sh              script to support lex's w/o character-classes
 filters/nr-filt.l               nroff syntax highlighting filter for vile
 filters/nr.key                  keywords for nroff filter
 filters/nsis.key                keywords for NullSoft installer
@@ -255,6 +262,8 @@ filters/pas.key                 keywords for pascal highlighting filter
 filters/pc.key                  keywords for printcap syntax highlighting
 filters/perl.key                keywords for perl syntax filter
 filters/perlfilt.l              Perl syntax filter for vile
+filters/php-filt.l              syntax filter for php
+filters/php.key                 keywords for phpmode
 filters/pl-filt.c               syntax highlighter for perl
 filters/pot-filt.l              syntax filter for gettext ".po" files
 filters/pot.key                 keywords for pot (gettext) mode
@@ -307,6 +316,8 @@ filters/vilefilt.l              syntax filter for vile macros
 filters/vim.key                 keywords for vim syntax files
 filters/vl-filt.l               Verilog syntax highlighting filter
 filters/vlog.key                verilog keywords, from vgrind definition
+filters/wbt-filt.l              syntax highlighter for winbatch
+filters/wbt.key                 WinBatch keywords
 filters/xml-filt.l              syntax filter for xml
 filters/xml.key                 keywords for xml syntax highlighter
 filters/xres.key                keywords for X resource filter

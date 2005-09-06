@@ -1,9 +1,11 @@
 %s NORMAL QUOTED QUOTES QUOTE1
 
+%o 6000
+
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/infofilt.l,v 1.2 2003/05/20 20:38:41 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/infofilt.l,v 1.4 2005/09/05 01:30:11 tom Exp $
  *
  * Filter to add vile "attribution" sequences to an info file.
  * (An extension of "text" mode).
@@ -26,24 +28,24 @@ static int mixedcase(const char *name);
 
 COMMENT		^-[-]+[ \t]+[^\n]+\n
 
-KEYWORD		([a-zA-Z_][a-zA-Z0-9_.]*|[A-Z][+/&][A-Z])
+KEYWORD		([[:alpha:]_][[:alnum:]_.]*|[[:upper:]][+/&][[:upper:]])
 
 SIGN		[-+]
-DECIMAL		[0-9_]+
+DECIMAL		[[:digit:]_]+
 OCTAL		0[0-7_]+
-HEXADECIMAL	0x[0-9a-fA-F_]+
-REAL		[-+]?([0-9_]*\.[0-9][0-9_]*)([eE][+-]?[0-9_]+)?
+HEXADECIMAL	0x[[:xdigit:]_]+
+REAL		[-+]?([[:digit:]_]*\.[[:digit:]][[:digit:]_]*)([eE][+-]?[[:digit:]_]+)?
 NUMBER		{SIGN}?({DECIMAL}|{OCTAL}|{HEXADECIMAL}|{REAL})
 
-NAME		[a-zA-Z0-9_.#-]+
+NAME		[[:alnum:]_.#-]+
 ADDRESS		({NAME}|\.)+
 EMAIL		{NAME}@{ADDRESS}
 
-URL		[A-Za-z]+"://"[0-9a-zA-Z%/.~_#?=-]+
+URL		[[:alpha:]]+"://"[[:alnum:]%/.~_#?=-]+
 
 %%
 
-<NORMAL>[A-Z]\'{KEYWORD} { ECHO; }
+<NORMAL>[[:upper:]]\'{KEYWORD} { ECHO; }
 
 <NORMAL>{KEYWORD}	{ WriteToken(mixedcase(yytext) ? "" : Keyword_attr); }
 <NORMAL>{COMMENT}	{ WriteToken(Comment_attr); }

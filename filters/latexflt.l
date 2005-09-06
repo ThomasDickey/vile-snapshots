@@ -1,11 +1,11 @@
 %s TEXT VERBATIM QUOTE_TT QUOTED MATH MATHC
 
 %o 6000
-%a 3000
+%a 4000
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/latexflt.l,v 1.39 2004/11/24 01:01:38 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/latexflt.l,v 1.41 2005/09/05 01:30:55 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of TeX or LaTeX
  * input text.
@@ -76,14 +76,14 @@ static void write_text(char *attr);
 SPACE		[ \t]
 NONSPACE	[^ \t]
 
-NAME		[a-zA-Z@]+
-NONNAME		[^a-zA-Z@]
-MIXED_ALNUM	({NAME}[0-9.-_]+)+{NAME}?
+NAME		[[:alpha:]@]+
+NONNAME		[^[:alpha:]@]
+MIXED_ALNUM	({NAME}[[:digit:].-_]+)+{NAME}?
 
 OCTAL		\'[0-7]+
-DECIMAL		[0-9]+
+DECIMAL		[[:digit:]]+
 INTEGER		[-+]?({OCTAL}|{DECIMAL})
-REAL		[-+]?([0-9]*\.[0-9]+)([eE][+-]?[0-9]+)?
+REAL		[-+]?([[:digit:]]*\.[[:digit:]]+)([eE][+-]?[[:digit:]]+)?
 NUMBER		({INTEGER}|{REAL})
 
 %%
@@ -104,8 +104,8 @@ NUMBER		({INTEGER}|{REAL})
 <TEXT>\\"xdef"\\{NONNAME}	|
 <TEXT>\\"gdef"\\{NONNAME}	{ write_define(5); }
 
-<TEXT>\\"let"[^a-zA-Z]		|
-<TEXT>\\"def"[^a-zA-Z]		{ write_define(4); }
+<TEXT>\\"let"[^[:alpha:]]	|
+<TEXT>\\"def"[^[:alpha:]]	{ write_define(4); }
 
 <TEXT>\\"begintt"{NONNAME}	{
 			  yyless(yyleng-1);	/* reinterp {NONAME} */

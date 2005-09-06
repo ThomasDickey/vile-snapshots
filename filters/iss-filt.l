@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/iss-filt.l,v 1.3 2005/05/12 00:15:20 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/iss-filt.l,v 1.4 2005/09/04 21:15:43 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Inno Setup
  * input text.
@@ -22,12 +22,12 @@ static char *String_attr;
 
 BLANK		[ \t]
 
-IDENT		[a-zA-Z_][a-zA-Z_0-9_]*
+IDENT		[[:alpha:]_][[:alnum:]_]*
 
 STRING		\'([^'\n]|(''))*\'
 
-HEXADECIMAL	\$[0-9a-fA-F_]+
-UNSIGNED	[0-9]+
+HEXADECIMAL	\$[[:xdigit:]_]+
+UNSIGNED	[[:digit:]]+
 INTEGER		[-+]?{UNSIGNED}
 REAL		[-+]?(({UNSIGNED}?\.{UNSIGNED})|({UNSIGNED}(\.{UNSIGNED}?)?))([eE]{INTEGER})?
 

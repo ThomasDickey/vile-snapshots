@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/rc-filt.l,v 1.5 2005/07/11 22:32:48 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/rc-filt.l,v 1.6 2005/09/04 21:15:43 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Windows
  * resource files.
@@ -33,14 +33,14 @@ show_prepro(char *text)
 
 %}
 
-INTEGER		[-+]?([0-9]+)
-IDENT		[a-zA-Z][a-zA-Z_0-9]*
+INTEGER		[-+]?([[:digit:]]+)
+IDENT		[[:alpha:]][[:alnum:]_]*
 
 STRING		\"([^"]|(""))*\"
 
-DECIMAL		[0-9_]+
+DECIMAL		[[:digit:]_]+
 OCTAL		0[0-7_]+
-HEXADECIMAL	0x[0-9a-fA-F_]+
+HEXADECIMAL	0x[[:xdigit:]_]+
 NUMBER		({DECIMAL}|{OCTAL}|{HEXADECIMAL})[L]?
 
 %%

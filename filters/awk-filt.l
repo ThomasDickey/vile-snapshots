@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/awk-filt.l,v 1.14 2003/05/20 20:38:41 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/awk-filt.l,v 1.15 2005/09/04 21:10:12 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of awk
  * input text.
@@ -27,12 +27,12 @@ BLANK		[ \t]*
 
 DSTRING		\"((\\\")|[^"\n])*\"
 
-KEYWORD		[a-zA-Z_][a-zA-Z_0-9]*
-IDENT		\$[a-zA-Z_0-9]+
+KEYWORD		[[:alpha:]_][[:alnum:]_]*
+IDENT		\$[[:alnum:]_]+
 
 SIGN		[-+]
-INTEGER		{SIGN}?([0-9]+)
-REAL		{SIGN}?([0-9]*\.[0-9]+)([eE]{SIGN}?[0-9]+)?
+INTEGER		{SIGN}?([[:digit:]]+)
+REAL		{SIGN}?([[:digit:]]*\.[[:digit:]]+)([eE]{SIGN}?[[:digit:]]+)?
 
 PATTERN		"/"(\\.|\[(\\.|.)*\]|[^ \t\n])*"/"
 

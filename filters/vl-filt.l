@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/vl-filt.l,v 1.5 2004/12/10 01:29:59 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/vl-filt.l,v 1.11 2005/09/04 23:17:58 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of VeriLog
  * program.
@@ -27,15 +27,15 @@ static void do_define(char *string);
 
 SPACE		[ \t]
 
-DIRECTIVE	`[a-zA-Z_][a-zA-Z_0-9]*
-IDENT		[a-zA-Z_][a-zA-Z_0-9]*
-ESCNAME		\\[^ \n]+
-SYSNAME		\$[a-zA-Z_][a-zA-Z_0-9]*
+DIRECTIVE	`[[:alpha:]_][[:alnum:]_]*
+IDENT		[[:alpha:]$_]+
+ESCNAME		\\[[:graph:]]+
+SYSNAME		\$[[:alpha:]_][[:alnum:]_]*
 
-DECIMAL		('[d])?([0-9_]+)
-BINARY		'b([0-1_]+)
-OCTAL		'o([0-7_]+)
-HEXADECIMAL	'h([0-9a-f_]+)
+DECIMAL		('[dD])?([[:digit:]_]+)
+BINARY		'[bB]([xXzZ?01_]+)
+OCTAL		'[oO]([xXzZ?0-7_]+)
+HEXADECIMAL	'[hH]([xXzZ?[:xdigit:]_]+)
 INTEGER		{DECIMAL}|{HEXADECIMAL}|{OCTAL}|{BINARY}
 
 DSTRING		\"(\\.|[^"\\])*\"
@@ -63,7 +63,7 @@ DSTRING		\"(\\.|[^"\\])*\"
 			  }
 			}
 
-<CODE>{INTEGER}		{ WriteToken(Number_attr); }
+<CODE>{INTEGER}		{ WriteToken(Number_attr); /* '_' should be embedded */ }
 
 <CODE>"//"[^\n]*	{ WriteToken(Comment_attr); }
 <CODE>"/*"		{ WriteToken(Comment_attr); BEGIN(COMMENT); }

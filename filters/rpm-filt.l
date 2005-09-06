@@ -1,11 +1,11 @@
 %x META TEXT NORMAL HEREDOC QUOTED QUOTED2 SUBST
 
-%o 6000
-%a 3000
+%o 10000
+%a 10000
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/rpm-filt.l,v 1.8 2004/12/10 00:34:04 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/rpm-filt.l,v 1.11 2005/09/05 14:29:32 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of rpm spec-file.
  */
@@ -44,24 +44,24 @@ SPACE		[ \t]
 SSTRING		\'([^']|\n)*\'
 DSTRING		\"([^"]|\n)*\"
 
-NAME		[a-zA-Z0-9_]
+NAME		[[:alnum:]_]
 
 WILDCARD	(\?|\*)
 WILDNAME	({NAME}|{WILDCARD})
 FILENAME	(([./]{WILDNAME}+)|({WILDNAME}+[./]{WILDNAME}*)|({NAME}*{WILDCARD})|\.+\/+)+
 
 ACTION		[\.`{}]
-IDENT		[a-zA-Z_]{NAME}*
+IDENT		[[:alpha:]_]{NAME}*
 QIDENT		({SSTRING}|{DSTRING}|[^ \"'$\t\n])+
-IDENT0		[-]+[0-9]*[a-zA-Z_-]+[0-9a-zA-Z_-]*
+IDENT0		[-]+[[:digit:]]*[[:alpha:]_-]+[[:alnum:]_-]*
 IDENT1		[%$]{NAME}+
 IDENT2		[%$]\{{IDENT}\}
 IDENT2L		[%$]\{{IDENT}
 IDENT2R		\}
-IDENTEQLS	[a-zA-Z_]{NAME}*=
+IDENTEQLS	[[:alpha:]_]{NAME}*=
 IDENTX		\$[\*@#\?\$!-]
 
-INTEGER		[-+]?([0-9]+)
+INTEGER		[-+]?([[:digit:]]+)
 
 SECTION		%{IDENT}
 
@@ -126,7 +126,7 @@ SECTION		%{IDENT}
 <HEREDOC>^[\t]*{QIDENT}$ {
 			    int used = 0;
 			    if (strip_tabs) {
-				used = skip_blanks(yytext) - yytext;
+				used = skip_blanks(yytext) - (char *) yytext;
 				if (used != 0)
 				    flt_bfr_append(yytext, used);
 			    }

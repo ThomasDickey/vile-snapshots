@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/xresfilt.l,v 1.15 2004/12/10 00:49:51 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/xresfilt.l,v 1.16 2005/09/04 21:15:43 tom Exp $
  *
  * Filter to add vile "attribution" sequences to an X resource file.
  */
@@ -31,18 +31,18 @@ SPACE		[ \t]
 COMMENT		![^\n]*\n
 
 SIGN		[-+]
-DECIMAL		[0-9]+
+DECIMAL		[[:digit:]]+
 OCTAL		0[0-7]+
-HEX		[0-9a-fA-Z]
+HEX		[[:xdigit:]]
 HEXADECIMAL	0x{HEX}+
-REAL		[-+]?([0-9]*\.[0-9]+)([eE][+-]?[0-9]+)?
+REAL		[-+]?([[:digit:]]*\.[[:digit:]]+)([eE][+-]?[[:digit:]]+)?
 RGB		[Rr][Gg][Bb]:{HEX}+"/"{HEX}+"/"{HEX}+
 COLOR		(#{HEX}+|{RGB})
 NUMBER		{SIGN}?({DECIMAL}|{OCTAL}|{HEXADECIMAL}|{REAL}|{COLOR})
 
 ESCAPED		(\\[0-7][0-7][0-7]|\\.)
 
-NAME		[a-zA-Z0-9_-]+
+NAME		[[:alnum:]_-]+
 KEYWORD		({NAME}|<{NAME}>)
 
 %%

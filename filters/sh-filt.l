@@ -1,11 +1,11 @@
 %x NORMAL HEREDOC QUOTED SUBST
 
-%o 6000
-%a 3000
+%o 10000
+%a 5000
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/sh-filt.l,v 1.61 2005/02/02 23:57:34 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/sh-filt.l,v 1.64 2005/09/05 14:29:59 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Shell script.
  */
@@ -54,24 +54,24 @@ SPACE		[ \t]
 SSTRING		\'([^']|\n)*\'
 DSTRING		\"([^"]|\n)*\"
 
-NAME		[a-zA-Z0-9_]
+NAME		[[:alnum:]_]
 
 WILDCARD	(\?|\*)
 WILDNAME	({NAME}|{WILDCARD})
 FILENAME	(([./]{WILDNAME}+)|({WILDNAME}+[./]{WILDNAME}*)|({NAME}*{WILDCARD})|\.+\/+)+
 
-INTEGER		[-+]?([0-9]+)
+INTEGER		[-+]?([[:digit:]]+)
 
 BACKTIC		`
 ACTION		[\.{}]
-IDENT		[a-zA-Z_]{NAME}*
+IDENT		[[:alpha:]_]{NAME}*
 QIDENT		({SSTRING}|{DSTRING}|[^ \"'$\t\n])+
-IDENT0		[-]+[0-9]*[a-zA-Z_-]+[0-9a-zA-Z_-]*
+IDENT0		[-]+[[:digit:]]*[[:alpha:]_-]+[[:alnum:]_-]*
 IDENT1		\${NAME}+
 IDENT2		\$\{[#]?{IDENT}\}
 IDENT2L		\$\{([#]?{IDENT}|{INTEGER})
 IDENT2R		\}
-IDENTEQLS	[a-zA-Z_]{NAME}*=
+IDENTEQLS	[[:alpha:]_]{NAME}*=
 IDENTX		\$[\*@#\?\$!-]
 
 %%
@@ -137,7 +137,7 @@ IDENTX		\$[\*@#\?\$!-]
 <HEREDOC>^[\t]*{QIDENT}$ {
 			    int used = 0;
 			    if (strip_tabs) {
-				used = skip_blanks(yytext) - yytext;
+				used = skip_blanks(yytext) - (char *) yytext;
 				if (used != 0)
 				    flt_bfr_append(yytext, used);
 			    }

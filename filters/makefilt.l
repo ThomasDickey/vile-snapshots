@@ -1,9 +1,12 @@
 %x NORMAL COMMENT QUOTE1 QUOTE2
 
+%a 6000
+%o 10000
+
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/makefilt.l,v 1.50 2004/12/10 01:48:37 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/makefilt.l,v 1.52 2005/09/05 01:32:51 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Makefile
  *
@@ -32,10 +35,10 @@ static void missing_quote(char *text, int length);
 
 SPACE		[ \t]
 
-ID		[a-zA-Z_][a-zA-Z_0-9]+
-NAME		[a-zA-Z_][a-zA-Z_0-9.-]+
+ID		[[:alpha:]_][[:alnum:]_]+
+NAME		[[:alpha:]_][[:alnum:]_.-]+
 
-MACRO		([$]?\$\{{ID}\}|[$]?\${ID}|[$]?\$[A-Za-z@!%^&*?<]|\${SPACE}*\([^\)]+\))
+MACRO		([$]?\$\{{ID}\}|[$]?\${ID}|[$]?\$[[:alpha:]@!%^&*?<]|\${SPACE}*\([^\)]+\))
 
 OPER		[+:?]?=
 

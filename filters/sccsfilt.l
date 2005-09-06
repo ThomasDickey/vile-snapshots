@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/sccsfilt.l,v 1.11 2004/12/10 00:38:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/sccsfilt.l,v 1.12 2005/09/04 20:58:11 tom Exp $
  *
  * Filter to add vile "attribution" sequences to SCCS files.
  */
@@ -27,7 +27,7 @@ MARKED		^\001[^\n]*
 
 EXPANDED	"@(#)"[^\n]*
 
-UNEXPANDED	"%"[A-Z]"%"
+UNEXPANDED	"%"[[:upper:]]"%"
 
 %%
 

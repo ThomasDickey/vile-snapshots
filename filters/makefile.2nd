@@ -1,4 +1,4 @@
-# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.2nd,v 1.10 2005/07/11 20:28:55 tom Exp $
+# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.2nd,v 1.11 2005/09/04 19:56:39 tom Exp $
 #
 
 .SUFFIXES: .l .c .i $o
@@ -8,14 +8,14 @@
 .l$o:
 @RULE_CC@
 	@ECHO_CC@echo "#include <flt_defs.h>" > $*.c
-	@ECHO_CC@$(LEX) -t $< >> $*.c
+	@ECHO_CC@@LEX_CHAR_CLASSES@ $(LEX) -t $< >> $*.c
 	@ECHO_CC@$(CC) -c $(CPPFLAGS) $(CFLAGS) $*.c
 	-$(RM) $*.c
 
 .l.c:
 @RULE_CC@
 	@ECHO_CC@echo "#include <flt_defs.h>" > $*.c
-	@ECHO_CC@$(LEX) -t $< >> $*.c
+	@ECHO_CC@@LEX_CHAR_CLASSES@ $(LEX) -t $< >> $*.c
 
 .c.i:
 @RULE_CC@

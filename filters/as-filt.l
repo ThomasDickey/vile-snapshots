@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/as-filt.l,v 1.3 2004/12/10 00:16:00 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/as-filt.l,v 1.4 2005/09/04 21:10:12 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of assembler files.
  */
@@ -25,16 +25,16 @@ static char * expect_attr(char *name);
 
 SSTRING		\'([^']|\n)*\'
 
-NAME		[a-zA-Z0-9_.$]
+NAME		[[:alnum:]_.$]
 
-IDENT		[a-zA-Z_.]{NAME}*
+IDENT		[[:alpha:]_.]{NAME}*
 
 BINARY		0[bB][0-1]+
-DECIMAL		[0-9]+
-HEX		0[xX][0-9a-fA-F]+
+DECIMAL		[[:digit:]]+
+HEX		0[xX][[:xdigit:]]+
 INTEGER		({BINARY}|{DECIMAL}|{HEX})
 
-FORMAT		"%"[.*0-9l#+-]*[cdeEfFgGisuxX]
+FORMAT		"%"[.*[:digit:]l#+-]*[cdeEfFgGisuxX]
 
 %%
 

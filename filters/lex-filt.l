@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/lex-filt.l,v 1.24 2005/02/02 21:14:18 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/lex-filt.l,v 1.26 2005/09/03 15:04:26 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of LEX program.
  */
@@ -28,19 +28,21 @@ static void write_states(char *text, int len);
 
 %}
 
-SPACE		[ \t]
+SPACE		[[:blank:]]
 
-DIRECTIVE	^%[^ \t]
+DIRECTIVE	^%[^[:blank:]]
 
-IDENT		[a-zA-Z_][a-zA-Z_0-9]*
+IDENT		[[:alpha:]_][[:alnum:]_]*
 
-INTEGER		[-+]?([0-9]+)
+INTEGER		[-+]?([[:digit:]]+)
 
 SSTRING		\'(\\.|[^'\\])*\'
 DSTRING		\"(\\.|[^"\\])*\"
 STRINGS		({SSTRING}|{DSTRING})
 
-PATTERN		(\\.|\[(\\.|.)*\]|[^ \t\n])+
+QUOTED		\"([^"\r\n]|\\\")+\"
+RANGE		"["([^\n\r\[\]]|\\\[|\\\])*"]"
+PATTERN		(\\.|{RANGE}|[^ \t\n])+
 STATES		("<"({IDENT}|\,)+">")
 MATCH		{STATES}?{PATTERN}
 

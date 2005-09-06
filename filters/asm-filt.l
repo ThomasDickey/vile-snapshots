@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/asm-filt.l,v 1.3 2004/12/10 00:16:37 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/asm-filt.l,v 1.4 2005/09/04 21:10:12 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of M$ assembler files.
  */
@@ -28,18 +28,18 @@ SSTRING		\'([^'\n]|'')*\'
 DSTRING		\"([^"\n]|"")*\"
 STRING		{SSTRING}|{DSTRING}
 
-NAME		[a-zA-Z0-9_$?@]
+NAME		[[:alnum:]_$?@]
 
-IDENT		[a-zA-Z_.]{NAME}*
+IDENT		[[:alpha:]_.]{NAME}*
 
 BINARY		[0-1]+[bB]
-DECIMAL		[0-9]+
-HEX		[0-9a-fA-F]+[hH]
-FLOAT		[0-9a-fA-F]+[rR]
-REAL		[-+]?([0-9]*\.[0-9]+)([eE][+-]?[0-9]+)?
+DECIMAL		[[:digit:]]+
+HEX		[[:xdigit:]]+[hH]
+FLOAT		[[:xdigit:]]+[rR]
+REAL		[-+]?([[:digit:]]*\.[[:digit:]]+)([eE][+-]?[[:digit:]]+)?
 NUMBER		({HEX}|{FLOAT}|{BINARY}|{REAL}|{DECIMAL})
 
-FORMAT		"%"[.*0-9l#+-]*[cdeEfFgGisuxX]
+FORMAT		"%"[.*[:digit:]l#+-]*[cdeEfFgGisuxX]
 
 %%
 
@@ -52,7 +52,7 @@ FORMAT		"%"[.*0-9l#+-]*[cdeEfFgGisuxX]
 <NORMAL>";"[^\n]*	{ WriteToken(Comment_attr); }
 
 <NORMAL>{NUMBER}	{ WriteToken(Number_attr); }
-<NORMAL>[0-9]{NUMBER}{NAME}+ {
+<NORMAL>[[:digit:]]{NUMBER}{NAME}+ {
 			  flt_error("not a number");
 			  WriteToken(Error_attr);
 			}

@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/sql-filt.l,v 1.25 2005/03/12 16:02:05 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/sql-filt.l,v 1.27 2005/09/05 11:18:50 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of SQL script
  * - T.Dickey
@@ -15,8 +15,8 @@
 DefineOptFilter("sql", "d");
 
 #define DPRINTF(params) if(FltOptions('d'))printf params
-#define set_state(name) DPRINTF(("{" #name ":%d}", name)); BEGIN(name)
-#define new_state(state) saved_state = YYSTATE; set_state(state)
+#define set_state(name) DPRINTF(("{" #name ":%d}", name)); BEGIN(name); began_state = name
+#define new_state(state) saved_state = began_state; set_state(state)
 #define old_state()      set_state(saved_state);
 
 
@@ -29,6 +29,7 @@ static char *Number_attr;
 static char *String_attr;
 
 static int next_line;		/* state after one-line SQL*Plus */
+static int began_state = LEAD;
 static int saved_state = LEAD;
 
 /******************************************************************************/
@@ -40,7 +41,7 @@ SPACE		[ \t]+
 ACTION		[@!$]
 
 UNITS		[kKmM]
-INTEGER		[0-9]+
+INTEGER		[[:digit:]]+
 SIGN		[+-]
 REAL		{INTEGER}?(\.{INTEGER}([eE]{SIGN}?{INTEGER})?)
 NUMBER		{SIGN}?({INTEGER}|{REAL})({UNITS})?
@@ -49,7 +50,7 @@ SSTRING		\'([^\']|\'\')*\'
 DSTRING		\"([^"])*\"
 STRING		({SSTRING}|{DSTRING})
 
-IDENT		[%]?[a-zA-Z][a-zA-Z0-9_$#]*
+IDENT		[%]?[[:alpha:]][[:alnum:]_$#]*
 LABEL		"<<"{IDENT}">>"
 HOSTVAR		":"{IDENT}
 

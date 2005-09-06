@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/xml-filt.l,v 1.12 2004/12/09 22:09:24 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/xml-filt.l,v 1.13 2005/09/04 21:15:43 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of XML input
  * text.
@@ -46,12 +46,12 @@ static void xml_command(char *text);
 
 SPACE		[ \t]
 
-INTEGER		[-+]?([0-9]+)
-REAL		[-+]?([0-9]*\.[0-9]+)([eE][+-]?[0-9]+)?
-HEXNUM		"#"[0-9A-Fa-f]+
+INTEGER		[-+]?([[:digit:]]+)
+REAL		[-+]?([[:digit:]]*\.[[:digit:]]+)([eE][+-]?[[:digit:]]+)?
+HEXNUM		"#"[[:xdigit:]]+
 NUMBER		{INTEGER}|{REAL}|{HEXNUM}
 
-IDENT		[a-zA-Z_!?][a-zA-Z_0-9.-]*
+IDENT		[[:alpha:]_!?][[:alnum:]_.-]*
 
 HSTRING		\"[^"]*\"
 QSTRING		\\["]([^"]|\\["])*\\["]

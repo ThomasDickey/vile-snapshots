@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/bat-filt.l,v 1.18 2004/12/10 00:17:39 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/bat-filt.l,v 1.21 2005/09/02 23:27:59 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of DOS (and
  * similar, such as W95, NT) batch file.
@@ -29,9 +29,9 @@ static void write_label(char *text, int length);
 TEXT		[^\r\n]
 BLANK		[ \t\r]
 
-IDENT		[a-zA-Z_.][a-zA-Z_0-9.]*
+IDENT		[[:alpha:]_.][[:alnum:]_.]*
 
-PARAM		%[0-9]
+PARAM		%[[:digit:]*]
 VARIABLE	%%{IDENT}|%{IDENT}%
 IDENT2		({PARAM}|{VARIABLE})
 
@@ -52,7 +52,15 @@ IDENT2		({PARAM}|{VARIABLE})
 <INITIAL>^{BLANK}*:{BLANK}*{IDENT} { write_label(yytext, yyleng); }
 
 <INITIAL>{IDENT}		{ char *temp = lowercase_of(yytext);
-				  char *attr = keyword_attr(temp);
+				  char *type = strrchr(temp, '.');
+				  char *attr;
+
+				  /* "echo." is a legal "echo", and the "."
+				   * is not echoed.  So we highlight it as
+				   * part of the name.
+				   */
+				  if (type != 0)
+				      *type = '\0';
 				  if (!strcmp(temp, "echo")) {
 					BEGIN(ECHOING);
 				  } else if (!strcmp(temp, "rem")) {
@@ -60,7 +68,15 @@ IDENT2		({PARAM}|{VARIABLE})
 				  } else if (!strcmp(temp, "set")) {
 					setting = 1;
 				  }
-				  WriteToken(attr);
+				  attr = keyword_attr(temp);
+				  if (type != 0) {
+				      int len = (type - temp) + 1;
+
+				      flt_puts(yytext, len, attr);
+				      flt_puts(yytext + len, yyleng - len, String_attr);
+				  } else {
+				      flt_puts(yytext, yyleng, attr);
+				  }
 				}
 
 <INITIAL>({IDENT2})		{ WriteToken(Ident2_attr); }

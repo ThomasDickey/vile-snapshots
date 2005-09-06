@@ -1,9 +1,12 @@
 %x NORMAL COMMENT QUOTE1 QUOTE2 CCOMMENT
 
+%a 6000
+%o 10000
+
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/imakeflt.l,v 1.11 2004/12/10 00:24:53 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/imakeflt.l,v 1.14 2005/09/05 10:35:35 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Imakefile
  *
@@ -32,10 +35,10 @@ static void write_keyword(char *text, int size, int prepro, int caseless);
 
 SPACE		[ \t]
 
-ID		[a-zA-Z_][a-zA-Z_0-9]+
-NAME		[a-zA-Z_][a-zA-Z_0-9.-]+
+ID		[[:alpha:]_][[:alnum:]_]+
+NAME		[[:alpha:]_][[:alnum:]_.-]+
 
-MACRO		([$]?\$\{{ID}\}|[$]?\${ID}|[$]?\$[A-Za-z@!%^&*?<]|\${SPACE}*\([^\)]+\))
+MACRO		([$]?\$\{{ID}\}|[$]?\${ID}|[$]?\$[[:alpha:]@!%^&*?<]|\${SPACE}*\([^\)]+\))
 
 OPER		[+:?]?=
 
