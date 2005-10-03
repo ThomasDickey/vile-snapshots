@@ -1,7 +1,7 @@
 Summary: VILE VI Like Emacs editor
-# $Header: /users/source/archives/vile.vcs/RCS/vile-9.5.spec,v 1.2 2005/08/30 00:40:38 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/vile-9.5.spec,v 1.3 2005/09/22 22:09:45 tom Exp $
 Name: vile
-Version: 9.5a
+Version: 9.5b
 # each patch should update the version
 Release: 1
 Copyright: GPL
@@ -9,6 +9,7 @@ Group: Applications/Editors
 URL: ftp://invisible-island.net/vile
 Source0: vile-9.5.tgz
 Patch1: vile-9.5a.patch.gz
+Patch2: vile-9.5b.patch.gz
 # each patch should add itself to this list
 Packager: Thomas Dickey <dickey@invisible-island.net>
 BuildRoot: %{_tmppath}/%{name}-root
@@ -22,6 +23,7 @@ rebinding, and real X window system support.
 %prep
 %setup -q -n vile-9.5
 %patch1 -p1
+%patch2 -p1
 # each patch should add itself to this list
 
 %build
@@ -73,6 +75,9 @@ install xvile.wmconfig $RPM_BUILD_ROOT/%{_sysconfdir}/X11/wmconfig/xvile
 
 %changelog
 # each patch should add its ChangeLog entries here
+
+* Thu Sep 22 2005 Thomas Dickey
+- added patch for 9.5b
 
 * Sun Aug 29 2005 Thomas Dickey
 - added patch for 9.5a

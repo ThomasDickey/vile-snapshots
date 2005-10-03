@@ -4,7 +4,7 @@
  *	original by Daniel Lawrence, but
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.279 2005/07/17 18:00:32 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.280 2005/09/22 22:05:19 tom Exp $
  *
  */
 
@@ -1419,7 +1419,7 @@ storeproc(int f, int n)
     /* get the name of the procedure */
     tb_scopy(&name, "");
     if ((status = kbd_reply("Procedure name: ", &name,
-			    eol_history, ' ', KBD_NORMAL, no_completion)) != TRUE)
+			    eol_command, ' ', KBD_NORMAL, no_completion)) != TRUE)
 	return status;
 
     return setup_macro_buffer(name, -1);

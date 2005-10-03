@@ -1,5 +1,39 @@
 Changes for vile 9.6 (released ??? ??? ?? ????)
 
+ 20051002 (b)
+	> Tom Dickey:
+	+ update config.guess, config.sub
+	+ improve os2vio.c, adding a check to distinguish between fullscreen
+	  and VIO to allow using bright background colors in the latter (report
+	  by George Eccles).
+	+ add KEY_xxx definitions to OS/2 and Win32 drivers, defining up to
+	  KEY_F35 for the former and KEY_F24 for the latter (report by George
+	  Eccles).
+	+ several improvements and fixes to lex-filt.l
+	  + expressions for regular expression parsing are more complete, which
+	    allows separating patterns from state lists.  That allows some
+	    error-checking in the rules section to flag spurious whitespace
+	    after a regular expression.  The more-complete regular expressions
+	    make the parser much larger (about 5 times the original size).
+	    A rewrite in C might be shorter.
+	  + ignore case of "%s" vs "%S" or "%state", etc.
+	  + parse the pattern names, applying highlighting to the names where
+	    they are embedded in regular expressions.
+	  + parse the "%s" (state) lists, applying highlighting to the states.
+	  + handle flex's <<EOF>> token.
+	  + handle character classes in the RANGE pattern.
+	+ remove an update() call from the logic in input.c which decodes
+	  hex/octal input after a ^V.  That caused the screen to move the view
+	  according to the address in the command, e.g.,
+		:%s/^Vx12
+	  would scroll to the bottom on entry of the "x" (report by Daniel L
+	  Ashbrook).
+	+ correct behavior of set-dos command, which did not recompute the
+	  buffer-size.
+	+ make end-of-token test for store-proc consistent with bind-key,
+	  i.e., alphanumerics and hyphen.  Amend that test to allow underscore
+	  (report by George Eccles).
+
  20050905 (a)
 	> Tom Dickey:
 	+ review/improve vl-filt.l based on Verilog LRM draft

@@ -5,7 +5,7 @@
  * reading and writing of the disk are
  * in "fileio.c".
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.385 2005/09/04 18:09:22 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.386 2005/09/22 23:19:30 tom Exp $
  */
 
 #include "estruct.h"
@@ -1200,10 +1200,17 @@ explicit_dosmode(BUFFER *bp, RECORD_SEP record_sep)
 static int
 modified_record_sep(RECORD_SEP record_sep)
 {
+    TRACE((T_CALLED "modified_record_sep(%s)\n",
+	   choice_to_name(fsm_recordsep_choices, record_sep)));
+
     explicit_dosmode(curbp, record_sep);
     guess_dosmode(curbp);
     explicit_dosmode(curbp, record_sep);	/* ignore the guess - only want to strip CR's */
-    return TRUE;
+
+    b_clr_counted(curbp);
+    bsizes(curbp);
+
+    returnCode(TRUE);
 }
 
 /*

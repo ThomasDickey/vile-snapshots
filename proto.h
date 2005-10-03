@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.552 2005/06/03 00:38:55 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.553 2005/09/22 22:05:19 tom Exp $
  *
  */
 
@@ -123,6 +123,7 @@ extern char *kcod2prc (int c, char *seq);
 extern char *kcod2pstr (int c, char *seq, int limit);
 extern const CMDFUNC *engl2fnc (const char *fname);
 extern const CMDFUNC *kcod2fnc (BINDINGS *bs, int c);
+extern int eol_command (EOL_ARGS);
 extern int fnc2kcod (const CMDFUNC *);
 extern int fnc2kins (const CMDFUNC *);
 extern int kbd_complete (DONE_ARGS, const char *table, size_t size_entry);

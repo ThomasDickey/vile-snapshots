@@ -5,7 +5,7 @@
  * keys. Like everyone else, they set hints
  * for the display system.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.294 2005/07/17 14:56:19 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.296 2005/09/26 22:50:14 tom Exp $
  *
  */
 
@@ -2532,6 +2532,13 @@ bsizes(BUFFER *bp)
 
 	bp->b_bytecount = numchars;
 	bp->b_linecount = numlines;
+
+	TRACE(("bsizes %s %s %d lines, %lu bytes\n",
+	       bp->b_bname,
+	       b_val(bp, MDDOS) ? "dos" : "unix",
+	       numlines,
+	       (unsigned long) numchars));
+
 	b_set_counted(bp);
 	code = TRUE;
     }

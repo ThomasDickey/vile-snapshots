@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.284 2005/07/13 23:25:16 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.286 2005/10/02 21:15:05 tom Exp $
  *
  */
 
@@ -871,12 +871,12 @@ make_key_names(int iarg GCC_UNUSED, void *varg GCC_UNUSED)
 	{ KEY_F27,	   "KEY_F27" },
 	{ KEY_F28,	   "KEY_F28" },
 	{ KEY_F29,	   "KEY_F29" },
+	{ KEY_F30,	   "KEY_F30" },
 	{ KEY_F31,	   "KEY_F31" },
 	{ KEY_F32,	   "KEY_F32" },
 	{ KEY_F33,	   "KEY_F33" },
 	{ KEY_F34,	   "KEY_F34" },
 	{ KEY_F35,	   "KEY_F35" },
-	{ KEY_F30,	   "KEY_F30" },
 	{ 0,		   0 },
 	{ KEY_KP_F1,	   "KEY_KP_F1" },
 	{ KEY_KP_F2,	   "KEY_KP_F2" },
@@ -2796,9 +2796,9 @@ is_shift_cmd(const char *buffer, unsigned cpos)
  *	so it can be picked up by the commands argument getter later.
  */
 
-#define ismostpunct(c) (isPunct(c) && (c) != '-')
+#define ismostpunct(c) (isPunct(c) && (c) != '-' && (c) != '_')
 
-static int
+int
 eol_command(const char *buffer, unsigned cpos, int c, int eolchar)
 {
     /*

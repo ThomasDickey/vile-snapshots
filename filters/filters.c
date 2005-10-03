@@ -1,7 +1,7 @@
 /*
  * Common utility functions for vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.98 2005/03/13 18:00:39 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.99 2005/09/30 00:59:45 tom Exp $
  *
  */
 
@@ -403,9 +403,14 @@ flt_bfr_embed(char *text, int length, char *attr)
 {
     char *save = flt_bfr_attr;
 
-    flt_bfr_finish();
-    flt_puts(text, length, attr);
-    flt_bfr_attr = save;
+    if ((save == 0 && attr == 0) ||
+	(save != 0 && attr != 0 && !strcmp(save, attr))) {
+	flt_bfr_append(text, length);
+    } else {
+	flt_bfr_finish();
+	flt_puts(text, length, attr);
+	flt_bfr_attr = save;
+    }
 }
 
 void

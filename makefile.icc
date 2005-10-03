@@ -1,6 +1,6 @@
 #
 # 'vile' and 'mktbls' makefile for IBM C Set ++ 2.x (OS/2)
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.icc,v 1.13 1999/03/26 00:26:04 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.icc,v 1.14 2005/10/02 23:26:34 tom Exp $
 #
 
 #
@@ -111,7 +111,7 @@ VILE_DEPS =  \
 version:
 	@-del version$O
 
-$(TARGET) : version $(VILE_DEPS)
+$(TARGET) : $(VILE_DEPS)
   $(CC) $(CFLAGS) $(VILE_DEPS) /Fe$@
 
 #		*Individual File Dependencies*
@@ -211,7 +211,7 @@ wordmov$O:	$(VILE_CFG) wordmov.c
 
 main$O:		$(VILE_CFG) main.c	nevars.h
 
-$(SCREEN)$O:	$(VILE_CFG) $(SCREEN).c
+$(SCREEN)$O:	$(VILE_CFG) $(SCREEN).c os2keys.h
 
 nebind.h \
 nefunc.h \
