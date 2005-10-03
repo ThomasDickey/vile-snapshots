@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 console API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntconio.c,v 1.82 2005/01/20 11:58:44 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntconio.c,v 1.83 2005/10/02 21:47:00 tom Exp $
  *
  */
 
@@ -648,6 +648,11 @@ static struct {
     { VK_F18,		KEY_F18 },
     { VK_F19,		KEY_F19 },
     { VK_F20,		KEY_F20 },
+    { VK_F21,		KEY_F21 },
+    { VK_F22,		KEY_F22 },
+    { VK_F23,		KEY_F23 },
+    { VK_F24,		KEY_F24 },
+    /* winuser.h stops with VK_F24 */
     /* Allow ^-6 to invoke the alternate-buffer command, a la Unix.  */
     { '6',		'6' },
     /* Support recognition of ^@ */

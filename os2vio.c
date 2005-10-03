@@ -3,7 +3,7 @@
  * Modified from a really old version of "borland.c" (before the VIO
  * stuff went in there.)
  *
- * $Header: /users/source/archives/vile.vcs/RCS/os2vio.c,v 1.31 2005/01/18 01:40:09 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/os2vio.c,v 1.32 2005/10/02 23:13:25 tom Exp $
  */
 
 #include "estruct.h"
@@ -35,7 +35,7 @@
 #define	NPAUSE	200		/* # times thru update to pause */
 #define	SPACE	32		/* space character              */
 
-#define	AttrColor(b, f)	((((UINT)ctrans[b] & 7) << 4) | ((UINT)ctrans[f] & 15))
+#define	AttrColor(b, f)	((((UINT)ctrans[b] & (blinking ? 7 : 15)) << 4) | ((UINT)ctrans[f] & 15))
 
 int cfcolor = -1;		/* current foreground color */
 int cbcolor = -1;		/* current background color */
@@ -56,6 +56,7 @@ static int CursorRow, CursorColumn;
 static int MaxRows, MaxColumns;
 static int TextFree;
 static int TextRow, TextColumn;
+static int blinking = 1;
 
 #define blank_cell()	( BlankCell[1] = TextAttr, BlankCell )
 
@@ -69,6 +70,7 @@ scinit(int rows)
 
     vinfo.cb = sizeof(vinfo);
     (void) VioGetMode(&vinfo, 0);
+    TRACE(("scinit VioGetMode %dx%d\n", vinfo.row, vinfo.col));
 
     MaxRows = vinfo.row;
     MaxColumns = vinfo.col;
@@ -393,9 +395,9 @@ flash_display(void)
 #endif
 
 static void
-vio_beep()
+vio_beep(void)
 {
-#if	OPT_FLASH
+#if OPT_FLASH
     if (global_g_val(GMDFLASH)) {
 	flash_display();
 	return;
@@ -408,6 +410,10 @@ vio_beep()
 static void
 vio_open(void)
 {
+#if OPT_COLOR
+    PTIB ptib;
+    PPIB ppib;
+#endif
     int i;
 
     /* Initialize output buffer. */
@@ -421,12 +427,21 @@ vio_open(void)
     }
 
 #if OPT_COLOR
-    {
+    blinking = 1;		/* nonzero if "bright" background would blink */
+    DosGetInfoBlocks(&ptib, &ppib);
+    TRACE(("DosGetInfoBlocks pib_ultype = %d\n", ppib->pib_ultype));
+    /* 0=FS, 1=DOS, 2=VIO, 3=PM */
+    if (ppib->pib_ultype == 2) {
+	blinking = 0;		/* VIO won't blink */
+    } else if (ppib->pib_ultype == 0) {
 	VIOINTENSITY intense;
 	intense.cb = sizeof(intense);
 	intense.type = 2;
 	intense.fs = 1;		/* ask for bright colors, not blink */
-	VioSetState(&intense, 0);
+	if (VioSetState(&intense, 0) == 0) {
+	    blinking = 0;
+	    TRACE(("vio_open VioSetState\n"));
+	}
     }
     set_palette(initpalettestr);
     vio_fcol(gfcolor);
@@ -454,7 +469,7 @@ vio_close(void)
 }
 
 static void
-vio_kopen()
+vio_kopen(void)
 {				/* open the keyboard */
     MouOpen(NULL, &hmou);
     MouDrawPtr(hmou);
@@ -462,7 +477,7 @@ vio_kopen()
 }
 
 static void
-vio_kclose()
+vio_kclose(void)
 {				/* close the keyboard */
     MouClose(hmou);
     return;

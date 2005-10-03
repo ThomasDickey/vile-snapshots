@@ -5,7 +5,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/mailfilt.l,v 1.16 2005/09/05 01:31:56 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/mailfilt.l,v 1.17 2005/09/30 22:32:32 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of mail
  */
@@ -25,13 +25,13 @@ static void write_label(char *text, int size);
 
 BLANK		[ \t]
 
-BEGIN_HEADER	^"From "{EMAIL}
-
 LABEL		^[[:alpha:]]([[:alpha:]-]+):
 
 NAME		[[:alnum:]_+.#-]+
 ADDRESS		({NAME}|\.)+
 EMAIL		{NAME}@{ADDRESS}
+
+BEGIN_HEADER	^"From "{EMAIL}
 
 URL		[[:alpha:]]+"://"[[:alnum:]%/.~_#?=-]+
 
