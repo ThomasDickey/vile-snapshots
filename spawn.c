@@ -1,7 +1,7 @@
 /*	Spawn:	various DOS access commands
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.185 2005/07/17 18:00:44 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.187 2005/11/23 17:15:24 tom Exp $
  *
  */
 
@@ -248,8 +248,10 @@ SIGT
 rtfrmshell(int ACTUAL_SIG_ARGS GCC_UNUSED)
 {
 #if USE_UNIX_JOB_CTL
+    TRACE(("entering rtfrmshell...\n"));
     endofDisplay();
     kbd_openup();
+    term.kopen();
     ttunclean();
     sgarbf = TRUE;
     setup_handler(SIGCONT, rtfrmshell);		/* suspend & restart */

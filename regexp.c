@@ -1,4 +1,34 @@
 /*
+ * $Header: /users/source/archives/vile.vcs/RCS/regexp.c,v 1.116 2005/11/20 20:10:04 tom Exp $
+ *
+ * Copyright 2005, Thomas E. Dickey and Paul G. Fox
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the
+ * "Software"), to deal in the Software without restriction, including
+ * without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, distribute with modifications, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included
+ * in all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+ * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+ * IN NO EVENT SHALL THE ABOVE COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+ * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
+ * THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ *
+ * Except as contained in this notice, the name(s) of the above copyright
+ * holders shall not be used in advertising or otherwise to promote the
+ * sale, use or other dealings in this Software without prior written
+ * authorization.
+ *
+ * ----------------------------------------------------------------------------
+ *
  *	This code has been MODIFIED for use in vile (see the original
  *	copyright information down below) -- in particular:
  *	 - regexec no longer needs to scan a null terminated string
@@ -23,9 +53,6 @@
  *	  - add test-driver
  *
  *		ted, 05/03
- *
- * $Header: /users/source/archives/vile.vcs/RCS/regexp.c,v 1.110 2005/01/17 00:54:28 tom Exp $
- *
  */
 
 /*
@@ -53,49 +80,64 @@
  * regular-expression syntax might require a total rethink.
  */
 
-#include "estruct.h"
-
 #ifdef DEBUG_REGEXP
-#define realdef			/* Make global definitions not external */
+#define UNBUNDLED_VILE_REGEX
 #endif
 
-#ifdef DEBUG_REGEXP
+#ifdef UNBUNDLED_VILE_REGEX
 
-# include <ctype.h>
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define OPT_VILE_CTYPE 0	/* use macros but not data */
+
+#include <vl_regex.h>
+#include <vl_alloc.h>
+#include <vl_ctype.h>
+
+#else
+
+#include <estruct.h>
+
+#endif
+
+#if OPT_VILE_CTYPE
+#include <edef.h>		/* use global data from vile */
+#endif
+
+#if !defined(OPT_WORKING) || defined(DEBUG_REGEXP)
 # undef  beginDisplay
 # define beginDisplay()		/* nothing */
 # undef  endofDisplay
 # define endofDisplay()		/* nothing */
+#endif
 
-# undef  istype
-# undef  isAlnum
-# undef  isAlpha
-# undef  isCntrl
-# undef  isDigit
-# undef  isLower
-# undef  isPrint
-# undef  isPunct
-# undef  isSpace
-# undef  isUpper
-# undef  toUpper
-# undef  toLower
-# undef  isident
-# undef  isXDigit
+#ifndef FALSE
+#define FALSE 0
+#endif
 
-# define isAlnum(c)	isalnum(c)
-# define isAlpha(c)	isalpha(c)
-# define isCntrl(c)	iscntrl(c)
-# define isDigit(c)	isdigit(c)
-# define isLower(c)	islower(c)
-# define isPrint(c)	isprint(c)
-# define isPunct(c)	ispunct(c)
-# define isSpace(c)	isspace(c)
-# define isUpper(c)	isupper(c)
-# define toUpper(c)	toupper(c)
-# define toLower(c)	tolower(c)
-# define isident(c)     isalnum(c)
-# define isXDigit(c)	isxdigit(c)
+#ifndef TRUE
+#define TRUE 1
+#endif
+
+#ifndef NO_LEAKS
+#define NO_LEAKS 0
+#endif
+
+#ifndef OPT_TRACE
+#define OPT_TRACE 0
+#endif
+
+#ifndef TRACE
+#define TRACE(p)		/* nothing */
+#endif
+
+#ifdef DEBUG_REGEXP
 
 /* #define OPT_TRACE 1 */
 /* #define REGDEBUG  1 */
@@ -106,8 +148,6 @@
 #  define TRACE(p)		/* nothing */
 # endif
 #endif
-
-#include "edef.h"
 
 #if OPT_TRACE
 /* #define REGDEBUG  1 */
@@ -122,6 +162,10 @@
 #undef PLUS			/* vile conflict */
 #undef min
 #undef max
+
+#if !OPT_VILE_CTYPE
+int ignorecase = FALSE;
+#endif
 
 static char *reg(int paren, int *flagp);
 static char *regatom(int *flagp, int at_bop);
@@ -245,9 +289,9 @@ typedef enum {
 #define is_BLANK(c) (isSpace(c) && !isreturn(c))
 #define is_CNTRL(c) isCntrl(c)
 #define is_DIGIT(c) isDigit(c)
-#define is_GRAPH(c) isPrint(c)
+#define is_GRAPH(c) isGraph(c)
 #define is_LOWER(c) isLower(c)
-#define is_PRINT(c) (isPrint(c) || isSpace(c))
+#define is_PRINT(c) (isPrint(c) || (isSpace(c) && !isCntrl(c)))
 #define is_PUNCT(c) isPunct(c)
 #define is_SPACE(c) isSpace(c)
 #define is_UPPER(c) isUpper(c)
@@ -401,7 +445,11 @@ regmassage(const char *in_text,
 	   size_t *out_size,
 	   int magic)
 {
-    const char *metas = magic ? MAGICMETA : NOMAGICMETA;
+    const char *metas = ((magic > 0)
+			 ? MAGICMETA
+			 : (magic < 0)
+			 ? "<>"
+			 : NOMAGICMETA);
     char *nxt = out_text;
     size_t n;
 
@@ -921,7 +969,7 @@ parse_char_class(char **src)
     /* *INDENT-ON* */
 
     unsigned n;
-    for (n = 0; n < TABLESIZE(char_classes); n++) {
+    for (n = 0; n < sizeof(char_classes) / sizeof(char_classes[0]); n++) {
 	unsigned len = strlen(char_classes[n].name);
 	if (!strncmp(*src, char_classes[n].name, len)) {
 	    *src += len;
@@ -1369,7 +1417,7 @@ regtail(char *p, char *val)
 
     /* Find last node. */
     scan = p;
-    for_ever {
+    for (;;) {
 	temp = regnext(scan);
 	if (temp == NULL)
 	    break;
@@ -2543,6 +2591,7 @@ regprop(char *op)
 }
 #endif
 
+#if defined(llength) && defined(lforw) && defined(lback)
 /* vile support:
  * like regexec, but takes LINE * as input instead of char *
  */
@@ -2578,10 +2627,9 @@ lregexec(
 	return s;
     }
 }
+#endif /* VILE LINE */
 
 #ifdef DEBUG_REGEXP
-int ignorecase = FALSE;
-
 void
 mlforce(const char *dummy,...)
 {
@@ -2719,10 +2767,14 @@ put_string(char *s, unsigned length, int literal)
 
 /*
  * Read script containing patterns (p), test-data (q) and results (r).  The
- * first character of each line is its type.  Comments begin with '#'.  Use an
- * uppercase p/q/r to suppress backslash interpretation of the line, e.g., to
- * simplify typing patterns.  Lines beginning with '?' are error messages.
- * Other lines are converted to comments.
+ * first character of each line is its type:
+ * >	Comments begin with '#'.
+ * >	Use an uppercase p/q/r to suppress backslash interpretation of the line,
+ *	e.g., to simplify typing patterns.
+ * >	Use M/m to switch magic on/off in the call to regcomp().
+ * >	Use N to disable regmassage (used for vile), so expressions are POSIX.
+ * >	Lines beginning with '?' are error messages.
+ * >	Other lines are converted to comments.
  *
  * The output of the test driver contains the comment lines, p- and q-lines as
  * well as the computed r-lines.  Because special characters are encoded as
@@ -2733,6 +2785,7 @@ static void
 test_regexp(FILE *fp)
 {
     char *s;
+    int magic = TRUE;
     int linenum = 0;
     int literal;
     int subexp;
@@ -2743,6 +2796,18 @@ test_regexp(FILE *fp)
     while ((s = get_string(fp, &length, ++linenum)) != 0) {
 	literal = 0;
 	switch (*s) {
+	case 'N':
+	    magic = -1;
+	    put_string(s, length, TRUE);
+	    break;
+	case 'M':
+	    magic = 1;
+	    put_string(s, length, TRUE);
+	    break;
+	case 'm':
+	    magic = 0;
+	    put_string(s, length, TRUE);
+	    break;
 	case 'P':
 	    literal = 1;
 	    /* FALLTHRU */
@@ -2752,7 +2817,7 @@ test_regexp(FILE *fp)
 	    if (pattern != 0)
 		free(pattern);
 	    ++s, --length;
-	    pattern = regcomp(s, length, TRUE);
+	    pattern = regcomp(s, length, magic);
 	    break;
 	case 'Q':
 	    literal = 1;

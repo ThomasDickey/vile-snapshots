@@ -1,4 +1,4 @@
-; $Id: modes.rc,v 1.28 2005/09/05 00:41:00 tom Exp $
+; $Id: modes.rc,v 1.31 2005/11/15 23:05:18 tom Exp $
 ; majormodes in this file are ordered alphabetically for convenience - the
 ; precedence used by vile is strictly alphabetic, counting case.  Use the
 ; before and after qualifiers to override the precedence.
@@ -165,6 +165,14 @@ define-mode css
 ~with define-submode css
 	suffixes	'\.\(css\)$'
 	ignorecase
+~endwith
+
+; disable wrapping in ".csv" files
+define-mode csv
+~with define-submode csv
+	suffixes	'\.\(csv\)$'
+	fillcol=0
+	wrapmargin=0
 ~endwith
 
 define-mode cweb
@@ -602,7 +610,7 @@ define-mode sed
 define-mode sh
 ~with define-submode sh
 	mode-filename	'^[a-z-]*profile$'
-	suffixes	'\(\.\(sh\|ksh\|shar\|.*rc\)$\|\.bash_[a-z]\+$\)'
+	suffixes	'\(\.\(sh\|ksh\|shar\|.*rc\|bash_[a-z]\+\|ebuild\)$\)'
 	pre '^\(\(#!\s*\/.*sh\>\(\s*[-]\+[\a]*\s*\)\?\)\|:\)\s*$'
 	comment-prefix	'^\s*[:#]'
 	comments	'^\s*[:#]\s*$'
@@ -806,7 +814,7 @@ define-mode xres
 	mode-filename	'^\(\.Xdefaults\(-.\+$\)\?\)$'
 	suffixes	'\.\(ad\)$'
 	~if &not $filename-ic
-		mode-pathname	'\(app-defaults/[A-Z]\?[A-Z][a-z0-9-]\+\)$'
+		mode-pathname	'\(app-defaults/[A-Z][A-Z0-9]*\([a-z0-9-][A-Z]\?\.\?\)\+\)$'
 	~endif
 	comment-prefix	'^\s*!'
 	comments	'^\s*!\s*$'

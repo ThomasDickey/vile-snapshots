@@ -1,7 +1,7 @@
 /*
  * debugging support -- tom dickey.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/trace.h,v 1.23 2005/05/22 16:58:43 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/trace.h,v 1.24 2005/11/23 21:18:33 tom Exp $
  *
  */
 #ifndef	_trace_h
@@ -92,5 +92,22 @@ extern	void	trace_window (WINDOW *p);
 #define T_LENGTH 10
 
 #define TRACE_NULL(s) ((s) != 0 ? (s) : "<null>")
+
+#define TRACE_CMDFUNC(p) \
+	   ((p)->c_flags & CMD_PERL \
+	    ? "perl" \
+	    : ((p)->c_flags & CMD_PROC \
+	       ? "proc" \
+	       : "func")), \
+	   ((p)->c_name \
+	    ? (p)->c_name \
+	    : "?")
+
+#define TRACE_BINDINGS(p) \
+	    (p) == &dft_bindings ? "default" : \
+	    (p) == &sel_bindings ? "select" : \
+	    (p) == &ins_bindings ? "insert" : \
+	    (p) == &cmd_bindings ? "command" : \
+	    "?"
 
 #endif	/* _trace_h */

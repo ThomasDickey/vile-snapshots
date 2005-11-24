@@ -3,7 +3,7 @@
  * characters, and write characters in a barely buffered fashion on the display.
  * All operating systems.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/termio.c,v 1.200 2005/07/11 22:44:41 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/termio.c,v 1.201 2005/11/23 12:13:03 tom Exp $
  *
  */
 
@@ -1512,6 +1512,24 @@ nullterm_unwatchfd(int fd GCC_UNUSED, long id GCC_UNUSED)
 {
 }
 
+/*ARGSUSED*/
+void
+nullterm_mopen(void)
+{
+}
+
+/*ARGSUSED*/
+void
+nullterm_mclose(void)
+{
+}
+
+/*ARGSUSED*/
+void
+nullterm_mevent(void)
+{
+}
+
 TERM null_term =
 {
     1,
@@ -1544,6 +1562,9 @@ TERM null_term =
     nullterm_watchfd,
     nullterm_unwatchfd,
     nullterm_cursorvis,
+    nullterm_mopen,
+    nullterm_mclose,
+    nullterm_mevent,
 };
 
 /******************************************************************************/

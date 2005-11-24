@@ -2,7 +2,7 @@
  *	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.280 2005/07/11 21:10:12 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.281 2005/11/23 13:30:33 tom Exp $
  *
  */
 
@@ -586,6 +586,9 @@ TERM term =
     x_watchfd,
     x_unwatchfd,
     nullterm_cursorvis,
+    nullterm_mopen,
+    nullterm_mclose,
+    nullterm_mevent,
 };
 
 #define	x_width(tw)		((tw)->cols * (tw)->char_width)

@@ -3748,7 +3748,7 @@ EOF
 
 	cf_extensions=no
 else
-	EXTRAOBJS="$EXTRAOBJS api.o btree.o history.o isearch.o select.o statevar.o ucrypt.o"
+	EXTRAOBJS="$EXTRAOBJS api.o btree.o history.o isearch.o select.o statevar.o ucrypt.o xterm.o"
 	cf_extensions=yes
 fi
 

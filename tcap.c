@@ -1,7 +1,7 @@
 /*	tcap:	Unix V5, V7 and BS4.2 Termcap video driver
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.158 2005/07/13 22:13:00 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.168 2005/11/23 19:15:30 tom Exp $
  *
  */
 
@@ -24,8 +24,8 @@
 #define WINDOW vile_WINDOW
 
 #if USE_TERMCAP
-#  define TCAPSLEN 768
-static char tcapbuf[TCAPSLEN];
+#  define TCAPSLEN 1024
+static char tc_parsed[TCAPSLEN];
 #endif
 
 static char *tc_CM, *tc_CE, *tc_CL, *tc_ME, *tc_MR, *tc_SO, *tc_SE;
@@ -102,69 +102,6 @@ static int given_bcolor = NO_COLOR;
 static int shown_fcolor = NO_COLOR;
 static int shown_bcolor = NO_COLOR;
 #endif /* OPT_COLOR */
-/* *INDENT-OFF* */
-static const struct {
-    char * capname;
-    int    code;
-} keyseqs[] = {
-    /* Arrow keys */
-    { CAPNAME("ku","kcuu1"),	KEY_Up },		/* up */
-    { CAPNAME("kd","kcud1"),	KEY_Down },		/* down */
-    { CAPNAME("kr","kcuf1"),	KEY_Right },		/* right */
-    { CAPNAME("kl","kcub1"),	KEY_Left },		/* left */
-    /* other cursor-movement */
-    { CAPNAME("kh","khome"),	KEY_Home },		/* home */
-    { CAPNAME("kH","kll"),	KEY_End },		/* end (variant) */
-    { CAPNAME("@7","kend"),	KEY_End },		/* end */
-    { CAPNAME("kB","kcbt"),	KEY_BackTab },		/* back-tab */
-    /* page scroll */
-    { CAPNAME("kN","knp"),	KEY_Next },		/* next page */
-    { CAPNAME("kP","kpp"),	KEY_Prior },		/* previous page */
-    /* editing */
-    { CAPNAME("kI","kich1"),	KEY_Insert },		/* Insert */
-    { CAPNAME("kD","kdch1"),	KEY_Delete },		/* Delete */
-    { CAPNAME("@0","kfnd"),	KEY_Find },		/* Find */
-    { CAPNAME("*6","kslt"),	KEY_Select },		/* Select */
-    /* command */
-    { CAPNAME("%1","khlp"),	KEY_Help },		/* Help */
-    /* function keys */
-    { CAPNAME("k1","kf1"),	KEY_F1 },		/* F1 */
-    { CAPNAME("k2","kf2"),	KEY_F2 },
-    { CAPNAME("k3","kf3"),	KEY_F3 },
-    { CAPNAME("k4","kf4"),	KEY_F4 },
-    { CAPNAME("k5","kf5"),	KEY_F5 },
-    { CAPNAME("k6","kf6"),	KEY_F6 },
-    { CAPNAME("k7","kf7"),	KEY_F7 },
-    { CAPNAME("k8","kf8"),	KEY_F8 },
-    { CAPNAME("k9","kf9"),	KEY_F9 },
-    { CAPNAME("k;","kf10"),	KEY_F10 },		/* F10 */
-    { CAPNAME("F1","kf11"),	KEY_F11 },		/* F11 */
-    { CAPNAME("F2","kf12"),	KEY_F12 },		/* F12 */
-    { CAPNAME("F3","kf13"),	KEY_F13 },		/* F13 */
-    { CAPNAME("F4","kf14"),	KEY_F14 },
-    { CAPNAME("F5","kf15"),	KEY_F15 },
-    { CAPNAME("F6","kf16"),	KEY_F16 },
-    { CAPNAME("F7","kf17"),	KEY_F17 },
-    { CAPNAME("F8","kf18"),	KEY_F18 },
-    { CAPNAME("F9","kf19"),	KEY_F19 },		/* F19 */
-    { CAPNAME("FA","kf20"),	KEY_F20 },		/* F20 */
-    { CAPNAME("FB","kf21"),	KEY_F21 },
-    { CAPNAME("FC","kf22"),	KEY_F22 },
-    { CAPNAME("FD","kf23"),	KEY_F23 },
-    { CAPNAME("FE","kf24"),	KEY_F24 },
-    { CAPNAME("FF","kf25"),	KEY_F25 },
-    { CAPNAME("FG","kf26"),	KEY_F26 },
-    { CAPNAME("FH","kf27"),	KEY_F27 },
-    { CAPNAME("FI","kf28"),	KEY_F28 },
-    { CAPNAME("FJ","kf29"),	KEY_F29 },
-    { CAPNAME("FK","kf30"),	KEY_F30 },
-    { CAPNAME("FL","kf31"),	KEY_F31 },
-    { CAPNAME("FM","kf32"),	KEY_F32 },
-    { CAPNAME("FN","kf33"),	KEY_F33 },
-    { CAPNAME("FO","kf34"),	KEY_F34 },
-    { CAPNAME("FP","kf35"),	KEY_F35 }
-};
-/* *INDENT-ON* */
 
 #if SYS_OS2_EMX
 #include "os2keys.h"
@@ -197,23 +134,9 @@ static void tcap_attr(UINT attr);
 static void tcap_rev(UINT state);
 #endif
 
-#define	XtermPos()	((unsigned)(keystroke() - 040))
-
-#if OPT_XTERM >= 3
-# define XTERM_ENABLE_TRACKING   "\033[?1001h"	/* mouse hilite tracking */
-# define XTERM_DISABLE_TRACKING  "\033[?1001l"
-#else
-# if OPT_XTERM >= 2
-#  define XTERM_ENABLE_TRACKING   "\033[?1000h"		/* normal tracking mode */
-#  define XTERM_DISABLE_TRACKING  "\033[?1000l"
-# else
-#  define XTERM_ENABLE_TRACKING   "\033[?9h"	/* X10 compatibility mode */
-#  define XTERM_DISABLE_TRACKING  "\033[?9l"
-# endif
-#endif
-
 static int i_am_xterm;
-static int x_origin = 1, y_origin = 1;
+
+#include "xtermkeys.h"
 
 #ifdef HAVE_TPARM		/* usually terminfo */
 #define CALL_TPARM(cap,code) tparm(cap, code,0,0,0,0,0,0,0,0)
@@ -225,9 +148,8 @@ static void
 tcap_open(void)
 {
 #if USE_TERMCAP
-    char tcbuf[2048];
-    char err_str[72];
-    char *p = tcapbuf;
+    char tc_rawdata[4096];
+    char *p = tc_parsed;
 #endif
     char *t;
     char *tv_stype;
@@ -279,14 +201,6 @@ tcap_open(void)
     ,{ CAPNAME("vi","civis"), &tc_VI }	/* make cursor invisible */
     /* FIXME: do xmc/ug */
     };
-
-    static char * fallback_arrows[] = {
-/*	 "\033",	** VT52 (type-ahead checks make this not useful) */
-	"\033O",	/* SS3 */
-	"\033[",	/* CSI */
-	"\217",	/* SS3 */
-	"\233",	/* CSI */
-    };
     /* *INDENT-ON* */
 
     TRACE((T_CALLED "tcap_open()\n"));
@@ -300,11 +214,11 @@ tcap_open(void)
 #if USE_TERMINFO
     setupterm(tv_stype, fileno(stdout), (int *) 0);
 #else
-    if ((tgetent(tcbuf, tv_stype)) != 1) {
-	(void) lsprintf(err_str, "Unknown terminal type %s!", tv_stype);
-	puts(err_str);
+    if ((tgetent(tc_rawdata, tv_stype)) != 1) {
+	fprintf(stderr, "Unknown terminal type %s!\n", tv_stype);
 	ExitProgram(BADEXIT);
     }
+    TRACE(("tc_rawdata used %d of %d\n", strlen(tc_rawdata), sizeof(tc_rawdata)));
 #endif
 
 #if OPT_LOCALE
@@ -335,40 +249,19 @@ tcap_open(void)
 #endif
 
     /* are we probably an xterm?  */
+#if OPT_XTERM
     i_am_xterm = FALSE;
-    if (!strncmp(tv_stype, "xterm", sizeof("xterm") - 1)
-	|| !strncmp(tv_stype, "rxvt", sizeof("rxvt") - 1)) {
-	i_am_xterm = TRUE;
-    } else if ((t = TGETSTR(CAPNAME("Km", "kmous"), &p)) != 0
-	       && (t != (char *) (-1))
-	       && !strcmp(t, "\033[M")) {
-	i_am_xterm = TRUE;
-    } else if (TGETFLAG(CAPNAME("XT", "XT")) > 0) {	/* screen */
-	i_am_xterm = TRUE;
+    I_AM_XTERM(tv_stype)
+	if (i_am_xterm) {
+	xterm_open(&term);
     }
-#if USE_TERMCAP
-    else {
-	p = tcbuf;
-	while (*p && *p != ':') {
-	    if (*p == 'x'
-		&& strncmp(p, "xterm", sizeof("xterm") - 1) == 0) {
-		i_am_xterm = TRUE;
-		break;
-	    }
-	    p++;
-	}
-    }
-#endif
-    if (i_am_xterm) {
-	x_origin = 0;
-	y_origin = 0;
-    }
+#endif /* OPT_XTERM */
 
     term.maxrows = term.rows;
     term.maxcols = term.cols;
 
 #if USE_TERMCAP
-    p = tcapbuf;
+    p = tc_parsed;
 #endif
     for (i = 0; i < TABLESIZE(tc_strings); i++) {
 	/* allow aliases */
@@ -463,69 +356,21 @@ tcap_open(void)
 #endif
 
     /*
-     * Provide fallback definitions for all ANSI/ISO/DEC cursor keys.
+     * Read the termcap data now so tcap_init_fkeys() does not depend on the
+     * state of tgetstr() vs the buffer.
      */
-    for (i = 0; i < TABLESIZE(fallback_arrows); i++) {
-	for (j = 'A'; j <= 'D'; j++) {
-	    char temp[80];
-	    lsprintf(temp, "%s%c", fallback_arrows[i], j);
-	    addtosysmap(temp, strlen(temp), SPEC | j);
-	}
+    for (i = 0; i < TABLESIZE(keyseqs); ++i) {
+	keyseqs[i].result = TGETSTR(keyseqs[i].capname, &p);
+#if USE_TERMINFO
+	if (NO_CAP(keyseqs[i].result))
+	    keyseqs[i].result = 0;
+#endif
     }
-
-#if SYS_OS2_EMX
-    for (i = TABLESIZE(VIO_KeyMap); i--;) {
-	addtosysmap(VIO_KeyMap[i].seq, 2, VIO_KeyMap[i].code);
-    }
-#endif
-    for (i = TABLESIZE(keyseqs); i--;) {
-	char *seq = TGETSTR(keyseqs[i].capname, &p);
-	if (!NO_CAP(seq)) {
-	    int len;
-	    TRACE(("TGETSTR(%s) = %s\n", keyseqs[i].capname, str_visible(seq)));
-#define DONT_MAP_DEL 1
-#if DONT_MAP_DEL
-	    /* NetBSD, FreeBSD, etc. have the kD (delete) function key
-	       defined as the DEL char.  i don't like this hack, but
-	       until we (and we may never) have separate system "map"
-	       and "map!" maps, we can't allow this -- DEL has different
-	       semantics in insert and command mode, whereas KEY_Delete
-	       has the same semantics (whatever they may be) in both.
-	       KEY_Delete is the only non-motion system map, by the
-	       way -- so the rest are benign in insert or command
-	       mode.  */
-	    if (strcmp(seq, "\177") == 0)
-		continue;
-#endif
-	    addtosysmap(seq, len = strlen(seq), keyseqs[i].code);
-	    /*
-	     * Termcap represents nulls as octal 200, which is ambiguous
-	     * (ugh).  To avoid losing escape sequences that may contain
-	     * nulls, check here, and add a mapping for the strings with
-	     * explicit nulls.
-	     */
-#define TCAP_NULL '\200'
-	    if (strchr(seq, TCAP_NULL) != 0) {
-		char temp[BUFSIZ];
-		(void) strcpy(temp, seq);
-		for (j = 0; j < len; j++)
-		    if (char2int(temp[j]) == TCAP_NULL)
-			temp[j] = '\0';
-		addtosysmap(temp, len, keyseqs[i].code);
-	    }
-	}
-    }
-#if OPT_XTERM
-    addtosysmap("\033[M", 3, KEY_Mouse);
-#if OPT_XTERM >= 3
-    addtosysmap("\033[t", 3, KEY_text);
-    addtosysmap("\033[T", 3, KEY_textInvalid);
-#endif
-#endif
+    tcap_init_fkeys();
 
 #if USE_TERMCAP
-    TRACE(("tcapbuf used %d of %d\n", p - tcapbuf, sizeof(tcapbuf)));
-    if (p >= &tcapbuf[sizeof(tcapbuf)]) {
+    TRACE(("tc_parsed used %d of %d\n", p - tc_parsed, sizeof(tc_parsed)));
+    if (p >= &tc_parsed[sizeof(tc_parsed)]) {
 	puts("Terminal description too big!\n");
 	ExitProgram(BADEXIT);
     }
@@ -571,10 +416,7 @@ static void
 tcap_kopen(void)
 {
     TRACE((T_CALLED "tcap_kopen()\n"));
-#if OPT_XTERM
-    if (i_am_xterm && global_g_val(GMDXTERM_MOUSE))
-	putpad(XTERM_ENABLE_TRACKING);
-#endif
+    term.mopen();
     if (!keyboard_open) {
 	keyboard_open = TRUE;
 	if (tc_TI) {
@@ -592,10 +434,7 @@ static void
 tcap_kclose(void)
 {
     TRACE((T_CALLED "tcap_kclose()\n"));
-#if OPT_XTERM
-    if (i_am_xterm && global_g_val(GMDXTERM_MOUSE))
-	putpad(XTERM_DISABLE_TRACKING);
-#endif
+    term.mclose();
     if (keyboard_open) {
 	keyboard_open = FALSE;
 	if (tc_TE)
@@ -1281,226 +1120,6 @@ mb_getch(void)
     return ch;
 }
 
-#if OPT_XTERM
-/* Finish decoding a mouse-click in an xterm, after the ESC and '[' chars.
- *
- * There are 3 mutually-exclusive xterm mouse-modes (selected here by values of
- * OPT_XTERM):
- *	(1) X10-compatibility (not used here)
- *		Button-press events are received.
- *	(2) normal-tracking
- *		Button-press and button-release events are received.
- *		Button-events have modifiers (e.g., shift, control, meta).
- *	(3) hilite-tracking
- *		Button-press and text-location events are received.
- *		Button-events have modifiers (e.g., shift, control, meta).
- *		Dragging with the mouse produces highlighting.
- *		The text-locations are checked by xterm to ensure validity.
- *
- * NOTE:
- *	The hilite-tracking code is here for testing and (later) use.  Because
- *	we cannot guarantee that we always are decoding escape-sequences when
- *	reading from the terminal, there is the potential for the xterm hanging
- *	when a mouse-dragging operation is begun: it waits for us to specify
- *	the screen locations that limit the highlighting.
- *
- *	While highlighting, the xterm accepts other characters, but the display
- *	does not appear to be refreshed until highlighting is ended. So (even
- *	if we always capture the beginning of highlighting) we cannot simply
- *	loop here waiting for the end of highlighting.
- *
- *	1993/aug/6 dickey@software.org
- */
-
-static int xterm_button(int c);
-
-/*ARGSUSED*/
-int
-mouse_motion(int f GCC_UNUSED, int n GCC_UNUSED)
-{
-    return xterm_button('M');
-}
-
-#if OPT_XTERM >= 3
-/*ARGSUSED*/
-int
-xterm_mouse_t(int f, int n)
-{
-    return xterm_button('t');
-}
-
-/*ARGSUSED*/
-int
-xterm_mouse_T(int f, int n)
-{
-    return xterm_button('T');
-}
-#endif /* OPT_XTERM >= 3 */
-
-static int
-xterm_button(int c)
-{
-    int event;
-    int button;
-    int x;
-    int y;
-    int status;
-#if OPT_XTERM >= 3
-    WINDOW *wp;
-    int save_row = ttrow;
-    int save_col = ttcol;
-    int firstrow, lastrow;
-    int startx, endx, mousex;
-    int starty, endy, mousey;
-    MARK save_dot;
-    char temp[NSTRING];
-    static const char *fmt = "\033[%d;%d;%d;%d;%dT";
-#endif /* OPT_XTERM >= 3 */
-
-    if ((status = (global_g_val(GMDXTERM_MOUSE))) != 0) {
-	beginDisplay();
-	switch (c) {
-#if OPT_XTERM < 3
-	    /*
-	     * If we get a click on a modeline, clear the current selection,
-	     * if any.  Allow implied movement of the mouse (distance between
-	     * pressing and releasing a mouse button) to drag the modeline.
-	     *
-	     * Likewise, if we get a click _not_ on a modeline, make that
-	     * start/extend a selection.
-	     */
-	case 'M':		/* button-event */
-	    event = keystroke();
-	    x = XtermPos() + x_origin - 1;
-	    y = XtermPos() + y_origin - 1;
-	    button = (event & 3) + 1;
-
-	    if (button > 3)
-		button = 0;
-	    TRACE(("MOUSE-button event %d -> btn %d loc %d.%d\n",
-		   event, button, y, x));
-	    status = on_mouse_click(button, y, x);
-	    break;
-#else /* OPT_XTERM >=3, highlighting mode */
-	case 'M':		/* button-event */
-	    event = keystroke();
-	    x = XtermPos() + x_origin;
-	    y = XtermPos() + y_origin;
-
-	    button = (event & 3) + 1;
-	    TRACE(("MOUSE-button event:%d x:%d y:%d\n", event, x, y));
-	    if (button > 3) {
-		endofDisplay();
-		return TRUE;	/* button up */
-	    }
-	    wp = row2window(y - 1);
-	    if (insertmode && wp != curwp) {
-		kbd_alarm();
-		return ABORT;
-	    }
-	    /* Tell the xterm how to highlight the selection.
-	     * It won't do anything else until we do this.
-	     */
-	    if (wp != 0) {
-		firstrow = wp->w_toprow + 1;
-		lastrow = mode_row(wp) + 1;
-	    } else {		/* from message-line */
-		firstrow = term.rows;
-		lastrow = term.rows + 1;
-	    }
-	    if (y >= lastrow)	/* don't select modeline */
-		y = lastrow - 1;
-	    (void) lsprintf(temp, fmt, 1, x, y, firstrow, lastrow);
-	    putpad(temp);
-	    term.flush();
-	    /* Set the dot-location if button 1 was pressed in a
-	     * window.
-	     */
-	    if (wp != 0
-		&& button == 1
-		&& !reading_msg_line
-		&& setcursor(y - 1, x - 1)) {
-		(void) update(TRUE);
-		status = TRUE;
-	    } else if (button <= 3) {
-		/* abort the selection */
-		(void) lsprintf(temp, fmt, 0, x, y, firstrow, lastrow);
-		putpad(temp);
-		term.flush();
-		status = ABORT;
-	    } else {
-		status = FALSE;
-	    }
-	    break;
-	case 't':		/* reports valid text-location */
-	    x = XtermPos();
-	    y = XtermPos();
-
-	    TRACE(("MOUSE-valid: x:%d y:%d\n", x, y));
-	    setwmark(y - 1, x - 1);
-	    yankregion();
-
-	    movecursor(save_row, save_col);
-	    (void) update(TRUE);
-	    break;
-	case 'T':		/* reports invalid text-location */
-	    /*
-	     * The starting-location returned is not the location
-	     * at which the mouse was pressed.  Instead, it is the
-	     * top-most location of the selection.  In turn, the
-	     * ending-location is the bottom-most location of the
-	     * selection.  The mouse-up location is not necessarily
-	     * a pointer to valid text.
-	     *
-	     * This case handles multi-clicking events as well as
-	     * selections whose start or end location was not
-	     * pointing to text.
-	     */
-	    save_dot = DOT;
-	    startx = XtermPos();	/* starting-location */
-	    starty = XtermPos();
-	    endx = XtermPos();	/* ending-location */
-	    endy = XtermPos();
-	    mousex = XtermPos();	/* location at mouse-up */
-	    mousey = XtermPos();
-
-	    TRACE(("MOUSE-invalid: start(%d,%d) end(%d,%d) mouse(%d,%d)\n",
-		   starty, startx,
-		   endy, endx,
-		   mousey, mousex));
-	    setcursor(starty - 1, startx - 1);
-	    setwmark(endy - 1, endx - 1);
-	    if (MK.o != 0 && !is_at_end_of_line(MK))
-		MK.o += 1;
-	    yankregion();
-
-	    DOT = save_dot;
-	    movecursor(save_row, save_col);
-	    (void) update(TRUE);
-	    break;
-#endif /* OPT_XTERM < 3 */
-	default:
-	    status = FALSE;
-	}
-	endofDisplay();
-    }
-    return status;
-}
-
-static void
-tcap_settitle(const char *string)
-{
-    if (i_am_xterm && global_g_val(GMDXTERM_TITLE) && string != 0) {
-	putpad("\033]0;");
-	putpad(string);
-	putpad("\007");
-	term.flush();
-    }
-}
-#else
-#define tcap_settitle nullterm_settitle
-#endif /* OPT_XTERM */
-
 TERM term =
 {
     0,				/* the first four values are set dynamically */
@@ -1533,10 +1152,13 @@ TERM term =
     nullterm_scroll,		/* set dynamically at open time */
     nullterm_pflush,
     nullterm_icursor,
-    tcap_settitle,
+    nullterm_settitle,		/* filled in by xterm_open() */
     ttwatchfd,
     ttunwatchfd,
     tcap_cursor,
+    nullterm_mopen,		/* filled in by xterm_open() */
+    nullterm_mclose,		/* filled in by xterm_open() */
+    nullterm_mevent,		/* filled in by xterm_open() */
 };
 
 #endif /* DISP_TERMCAP */

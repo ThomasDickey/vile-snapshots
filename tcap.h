@@ -1,7 +1,7 @@
 /*
  * Configurable headers used by termcap/terminfo driver for vile.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tcap.h,v 1.9 2002/12/22 17:19:16 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tcap.h,v 1.10 2005/11/23 15:44:04 tom Exp $
  */
 
 #ifndef VILE_TCAP_H
@@ -91,6 +91,20 @@ extern "C" {
 #ifdef HAVE_EXTERN_TCAP_PC
 extern char PC;			/* used in 'tputs()' */
 #endif
+
+#define I_AM_XTERM(given) \
+    if (given != 0 && \
+    	(strstr(given, "xterm") != 0 || strstr(given, "rxvt") != 0)) { \
+	i_am_xterm = TRUE; \
+    } else if ((t = TGETSTR(CAPNAME("Km", "kmous"), &p)) != 0 \
+	       && (t != (char *) (-1)) \
+	       && !strcmp(t, "\033[M")) { \
+	i_am_xterm = TRUE; \
+    } else if (TGETFLAG(CAPNAME("XT", "XT")) > 0) {  \
+	i_am_xterm = TRUE; \
+    } else { \
+	i_am_xterm = FALSE; \
+    }
 
 #ifdef MISSING_EXTERN_TGETENT
 extern	int	tgetent (char *buffer, char *termtype);

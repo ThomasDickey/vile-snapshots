@@ -1,4 +1,4 @@
-MANIFEST for vile, version v9_5b
+MANIFEST for vile, version v9_5c
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 CHANGES                         Change-log for VILE
@@ -54,7 +54,6 @@ glob.c                          globbing (wildcard & environment-variable substi
 globals.c                       ed/vi/ex style global commands
 gppconio.c                      patched console I/O support for DJGCC
 history.c                       command-history
-ibmpc.c                         IBM PC terminal driver (direct I/O)
 input.c                         various input-routines
 insert.c                        functions for character-insertion
 install.sh                      install-script, needed for configure
@@ -118,6 +117,9 @@ vile-9.5.spec                   sample rpm spec file for vile 9.5
 vile.1                          man-page for VILE
 vile.hlp                        help-file
 vile.wmconfig                   windowmaker config file for vile
+vl_alloc.h                      malloc-macros for vile
+vl_ctype.h                      character-set tests for vile
+vl_regex.h                      interface for vile's regexp.c
 vms2unix.c                      VMS/UNIX compatibility support functions
 vmsbuild.com                    VAX/VMS DCL build script
 vmspipe.c                       pipe-filter support for VMS
@@ -144,6 +146,8 @@ wvwrap.cpp                      wrapper for winvile, e.g., from NT Explorer
 x11.c                           X11 (Xt, Motif or Openlook) terminal driver
 x11menu.c                       X11-specific part of menu support
 xshell.sh                       wrapper/sample script for xvile
+xterm.c                         xterm-specific I/O driver support
+xtermkeys.h                     generate bindings for xterm key-modifiers
 xvile.wmconfig                  windowmaker config file for xvile
 doc                             subdirectory
 doc/Vileserv.doc                overview of Vileserv and vileget scripts

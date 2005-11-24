@@ -1,5 +1,45 @@
 Changes for vile 9.6 (released ??? ??? ?? ????)
 
+ 20051123 (c)
+	> Clark Morgan:
+	+ remove an obsolete comment in macros.doc regarding underscore in
+	  macro names.
+ 	> Paul Fox:
+	+ correct logic for check_percent_crlf(), ensuring that empty buffers
+	  are not counted as having CRLF endings.
+	> Tom Dickey:
+	+ fix to_tabstop() function used for :describe-bindings to ensure that
+	  a binding that happens to be 8 columns will still have a tab after
+	  it.
+	+ add a fflush() to ensure that the control string to reset xterm mouse
+	  mode is written during ^Z handling (report by Fabien Coutant).
+	+ add a call to term.kopen() in rtfrmshell(), making ^Z/resume work
+	  properly with the curses driver (report by Fabien Coutant).
+	+ make mouse work for curses driver just like the termcap/terminfo
+	  driver.
+	+ split xterm-specific code out of tcap.c as xterm.c, to share with
+	  curses.c
+	+ indent'd borland.c
+	+ remove ibmpc.c
+	+ check if stdout is not a tty on startup, print error message and
+	  exit (request by Paul Fox).
+	+ add mode xterm-fkeys, to allow termcap driver to generate
+	  shift/control/alt modifiers for function keys.
+	+ modify regexp.c so tab is not matched by \p or [[:print:]] for
+	  consistency with POSIX regular expressions.
+	+ modified regexp.c, add headers vl_regex.h, vl_alloc.h and vl_ctype.h
+	  to allow it to be easily built outside vile (request by Adrian Kole).
+	+ add KEY_BackTab to the output of show-key-names
+	+ fix kcod2prc() so that a shifted-tab is converted to "Shift+^I"
+	  rather than emitting a literal tab in the result.
+	+ update vilemenu.rc fonts to work on Debian/testing.
+	+ improve scrollbar/cursor tracking in winvile by calling
+	  gui_update_scrollbar() when WFMOVE flag is set (report by Deraj
+	  Puma).
+	+ add a simple csvmode for ".csv" files.
+	+ add ".ebuild" suffix for shmode.
+	+ improve mode-pathname for xresmode to handle things like KOI8Term.
+
  20051002 (b)
 	> Tom Dickey:
 	+ update config.guess, config.sub

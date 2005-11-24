@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.553 2005/09/22 22:05:19 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.559 2005/11/23 13:18:25 tom Exp $
  *
  */
 
@@ -34,6 +34,7 @@ extern void init_mode_value(struct VAL *, MODECLASS c, int n);
 extern void not_interrupted (void);
 extern void setup_handler (int sig, void (*disp) (int ACTUAL_SIG_ARGS));
 extern void tidy_exit (int code);
+extern void tcap_init_fkeys(void);
 extern void tcap_setup_locale(char *real_locale, char *fake_locale);
 
 #ifndef interrupted
@@ -67,9 +68,15 @@ extern int valid_window(WINDOW *wp);
 #endif
 
 /* screen-drivers */
+#if OPT_XTERM
+extern void xterm_open (TERM *);
+extern void xterm_mopen (void);
+extern void xterm_mclose (void);
+extern void xterm_settitle (const char *t);
 #if OPT_XTERM >= 3
 extern int xterm_mouse_t (int f, int n);
 extern int xterm_mouse_T (int f, int n);
+#endif
 #endif
 
 #if OPT_PERL
@@ -710,6 +717,7 @@ extern int sysmapped_c (void);
 extern int sysmapped_c_avail (void);
 extern void abbr_check (int *backsp_limit_p);
 extern void addtosysmap (const char *seq, int seqlen, int code);
+extern void delfromsysmap (const char *seq, int seqlen);
 extern void mapungetc (int c);
 
 /* menu.c */
@@ -962,11 +970,7 @@ extern void update_dos_drv_dir (char * cwd);
 #endif
 
 /* regexp.c */
-#define regcomp  vl_regcomp
-#define regexec  vl_regexec
 #define lregexec vl_lregexec
-extern regexp * regcomp (const char *origexp, size_t exp_len, int magic);
-extern int regexec (regexp *prog, char *string, char *stringend, int startoff, int endoff);
 extern int lregexec (regexp *prog, LINE *lp, int startoff, int endoff);
 
 /* region.c */
@@ -1006,7 +1010,6 @@ extern int fsearch (int f, int n, int marking, int fromscreen);
 extern int readpattern (const char *prompt, TBUFF **apat, regexp **srchexpp, int c, int fromscreen);
 extern int scanner (regexp *exp, int direct, int wrapok, int *wrappedp);
 extern void attrib_matches (void);
-extern void regerror (const char *s);
 extern void scanboundry (int wrapok, MARK dot, int dir);
 
 #if OPT_HILITEMATCH
@@ -1129,24 +1132,10 @@ void	tb_unput (TBUFF *p);
 
 /* termio.c */
 extern OUTC_DCL ttputc (OUTC_ARGS);
-extern int  nullterm_setdescrip (const char *res);
-extern int  nullterm_watchfd (int fd, WATCHTYPE type, long *idp);
 extern int  open_terminal (TERM *termp);
 extern int  ttgetc (void);
 extern int  tttypahead (void);
-extern int ttwatchfd (int fd, WATCHTYPE type, long *idp);
-extern void nullterm_cursorvis (int flag);
-extern void nullterm_icursor (int c);
-extern void nullterm_kclose (void);
-extern void nullterm_kopen (void);
-extern void nullterm_pflush (void);
-extern void nullterm_scroll (int f, int t, int n);
-extern void nullterm_setback (int b);
-extern void nullterm_setccol (int c);
-extern void nullterm_setfore (int f);
-extern void nullterm_setpal (const char *p);
-extern void nullterm_settitle (const char *t);
-extern void nullterm_unwatchfd (int fd, long id);
+extern int  ttwatchfd (int fd, WATCHTYPE type, long *idp);
 extern void ttclean (int f);
 extern void ttclose (void);
 extern void ttflush (void);
@@ -1155,6 +1144,24 @@ extern void ttunclean (void);
 extern void ttunwatchfd (int fd, long id);
 extern void vl_save_tty (void);
 extern void vl_restore_tty (void);
+
+extern int  nullterm_setdescrip (const char *res);
+extern int  nullterm_watchfd (int fd, WATCHTYPE type, long *idp);
+extern void nullterm_cursorvis (int flag);
+extern void nullterm_icursor (int c);
+extern void nullterm_kclose (void);
+extern void nullterm_kopen (void);
+extern void nullterm_mclose (void);
+extern void nullterm_mevent (void);
+extern void nullterm_mopen (void);
+extern void nullterm_pflush (void);
+extern void nullterm_scroll (int f, int t, int n);
+extern void nullterm_setback (int b);
+extern void nullterm_setccol (int c);
+extern void nullterm_setfore (int f);
+extern void nullterm_setpal (const char *p);
+extern void nullterm_settitle (const char *t);
+extern void nullterm_unwatchfd (int fd, long id);
 
 /* ucrypt.c */
 #if	OPT_ENCRYPT

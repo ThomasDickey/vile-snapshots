@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/rubyfilt.c,v 1.38 2005/05/14 12:38:54 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/rubyfilt.c,v 1.39 2005/10/08 22:49:03 tom Exp $
  *
  * Filter to add vile "attribution" sequences to ruby scripts.  This is a
  * translation into C of an earlier version written for LEX/FLEX.
@@ -638,7 +638,7 @@ is_OPERATOR(char *s)
 	    OPS("~"),
     };
 
-    if (ispunct(*s)) {
+    if (ispunct(CharOf(*s))) {
 	unsigned n;
 	for (n = 0; n < TABLESIZE(table); ++n) {
 	    if (ATLEAST(s, table[n].len)

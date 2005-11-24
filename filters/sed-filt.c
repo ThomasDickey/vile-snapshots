@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/sed-filt.c,v 1.20 2004/12/10 00:39:11 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/sed-filt.c,v 1.21 2005/11/16 20:55:12 tom Exp $
  *
  * Filter to add vile "attribution" sequences to sed scripts.
  */
@@ -261,7 +261,7 @@ do_filter(FILE * input GCC_UNUSED)
     static char *line;
 
     char *s;
-    int addresses;
+    int addresses = 0;
     int escaped_newline;
     States state = LeadingBlanks;
 

@@ -11,7 +11,7 @@
 #
 # The modes are table entries in the BUFFER and WINDOW structures.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.235 2005/05/30 22:49:48 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.237 2005/11/21 00:53:37 tom Exp $
 #
 #
 # Mode-table entries.  Capitalized letters are used for abbreviations.
@@ -56,6 +56,7 @@ bool							# GMD prefix
 	"warn-unread"	WARNUNREAD	0		# warn if quitting with unread buffers
 	"warn-reread"	WARNREREAD	0		# warn before rereading a buffer
 	"warn-rename"	WARNRENAME	0		# warn before renaming a buffer
+	"xterm-fkeys"	XTERM_FKEYS	chgd_xtermkeys	# mode to control whether we recognize xterm's function-key modifiers
 	"xterm-mouse"	XTERM_MOUSE	chgd_xterm	# mode to control whether we allow mouse-clicking
 	"xterm-title"	XTERM_TITLE	chgd_swaptitle	OPT_TITLE	# mode to control whether we allow xterm title updates
 	"SmoothScroll"	SMOOTH_SCROLL	0		# should we update even if there is typeahead?

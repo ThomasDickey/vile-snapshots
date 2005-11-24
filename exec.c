@@ -4,7 +4,7 @@
  *	original by Daniel Lawrence, but
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.280 2005/09/22 22:05:19 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.281 2005/11/23 21:20:59 tom Exp $
  *
  */
 
@@ -859,14 +859,7 @@ execute(const CMDFUNC * execfunc, int f, int n)
 
     TRACE((T_CALLED "execute(execfunc=%p(%s:%s), f=%d, n=%d)\n",
 	   execfunc,
-	   (execfunc->c_flags & CMD_PERL
-	    ? "perl"
-	    : (execfunc->c_flags & CMD_PROC
-	       ? "proc"
-	       : "func")),
-	   (execfunc->c_name
-	    ? execfunc->c_name
-	    : "?"),
+	   TRACE_CMDFUNC(execfunc),
 	   f, n));
 
     flags = execfunc->c_flags;

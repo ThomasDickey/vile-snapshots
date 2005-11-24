@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.307 2005/06/03 00:43:27 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.311 2005/11/23 13:42:42 tom Exp $
  *
  */
 
@@ -2070,7 +2070,7 @@ chgd_working(BUFFER *bp GCC_UNUSED,
 int
 chgd_xterm(BUFFER *bp GCC_UNUSED,
 	   VALARGS * args GCC_UNUSED,
-	   int glob_vals,
+	   int glob_vals GCC_UNUSED,
 	   int testing GCC_UNUSED)
 {
 #if OPT_XTERM
@@ -2081,6 +2081,22 @@ chgd_xterm(BUFFER *bp GCC_UNUSED,
 	set_global_g_val(GMDXTERM_MOUSE, new_state);
 	term.kopen();
 	vile_refresh(FALSE, 0);
+    }
+#endif
+    return TRUE;
+}
+
+	/* Change the xterm-fkeys mode */
+/*ARGSUSED*/
+int
+chgd_xtermkeys(BUFFER *bp GCC_UNUSED,
+	   VALARGS * args GCC_UNUSED,
+	   int glob_vals GCC_UNUSED,
+	   int testing GCC_UNUSED)
+{
+#if DISP_TERMCAP || DISP_CURSES
+    if (glob_vals && !testing) {
+	tcap_init_fkeys();
     }
 #endif
     return TRUE;
@@ -3001,6 +3017,7 @@ prompt_submode(MAJORMODE * ptr, char **result, int defining)
 
     /* prompt the user and get an answer */
     tb_scopy(&cbuf, "");
+    *result = 0;
     while ((status = kbd_reply("submode: ",
 			       &cbuf,
 			       eol_history, '=',

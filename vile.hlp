@@ -1990,6 +1990,10 @@ Editor modes
 		typed.  The target maximum width of lines is changed with
 		the "fillcol" setting.  (B)
 
+	xterm-fkeys Support xterm's modified function keys by generating
+		system bindings for the shift-, control-, alt-modifiers
+		of each function key listed in the terminal description.
+
 	xterm-mouse Enables mouse-clicking if you are running within an
 		xterm.  That is, it allows vile to receive mouse events.
 		Since this mode overrides xterm's cut & paste, you will
@@ -6204,4 +6208,4 @@ Problems
 
 Copyright 1995-2005 by Paul Fox, Thomas Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.602 2005/07/24 20:25:30 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.603 2005/11/24 01:35:59 tom Exp $

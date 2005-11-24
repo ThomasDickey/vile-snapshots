@@ -5,7 +5,7 @@
  * reading and writing of the disk are
  * in "fileio.c".
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.386 2005/09/22 23:19:30 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.388 2005/11/15 22:32:22 tom Exp $
  */
 
 #include "estruct.h"
@@ -435,6 +435,7 @@ fileuid_get(const char *fname, FUID * fuid)
 
     TRACE(("fileuid_get(%s) discarding cache\n", fname));
     (void) file_stat(fname, 0);
+    memset(fuid, 0, sizeof(*fuid));
     if (file_stat(fname, &sb) == 0) {
 	fuid->ino = sb.st_ino;
 	fuid->dev = sb.st_dev;
@@ -1086,7 +1087,7 @@ check_percent_crlf(BUFFER *bp, int doslines, int unixlines)
 {
     double total = (doslines + unixlines) * b_val(bp, VAL_PERCENT_CRLF);
     double value = (doslines * 100);
-    return (value >= total);
+    return (total != 0) && (value >= total);
 }
 
 /*

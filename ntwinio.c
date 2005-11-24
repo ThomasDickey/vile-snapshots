@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 screen API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.149 2005/10/02 21:47:00 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.150 2005/11/23 12:19:35 tom Exp $
  * Written by T.E.Dickey for vile (october 1997).
  * -- improvements by Clark Morgan (see w32cbrd.c, w32pipe.c).
  */
@@ -4222,4 +4222,7 @@ TERM term =
     nullterm_watchfd,
     nullterm_unwatchfd,
     nullterm_cursorvis,
+    nullterm_mopen,
+    nullterm_mclose,
+    nullterm_mevent,
 };

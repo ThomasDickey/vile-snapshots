@@ -20,7 +20,7 @@
 #
 # gnu autoconf support by kevin buettner, 5/94
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.195 2005/03/10 20:01:53 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.196 2005/11/23 12:28:27 tom Exp $
 
 SHELL		= /bin/sh
 
@@ -234,7 +234,7 @@ VILESRC = main.c api.c basic.c bind.c btree.c buffer.c csrch.c \
 	modes.c msgs.c npopen.c oneliner.c opers.c path.c random.c \
 	regexp.c region.c search.c select.c spawn.c statevar.c tags.c \
 	tbuff.c termio.c ucrypt.c undo.c version.c \
-	watch.c window.c word.c wordmov.c
+	watch.c window.c word.c wordmov.c xterm.c
 
 ALLSRC = $(VILESRC) $(SCREENS) $(OTHERSRC) $(HDRS)
 
@@ -274,6 +274,7 @@ BUILTLIBS = @BUILTLIBS@
 #	spawn.o
 #	statevar.o
 #	ucrypt.o
+#	xterm.o
 OBJ = $(SCREEN)$o \
 	main$o basic$o bind$o buffer$o csrch$o \
 	display$o dumbterm$o eval$o exec$o externs$o fences$o file$o \

@@ -22,7 +22,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.540 2005/07/11 22:25:32 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.545 2005/11/23 23:03:36 tom Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -262,6 +262,17 @@ MainProgram(int argc, char *argv[])
 #endif
 
     /*
+     * Do not try to pipe results (vile has no ex-mode, which would be used
+     * in this case).
+     */
+#if DISP_TERMCAP || DISP_CURSES || DISP_ANSI
+    if (!isatty(fileno(stdout))) {
+	fprintf(stderr, "vile: ex mode is not implemented\n");
+	ExitProgram(BADEXIT);
+    }
+#endif
+
+    /*
      * Allow for I/O to the command-line before we initialize the screen
      * driver.
      *
@@ -461,7 +472,7 @@ MainProgram(int argc, char *argv[])
 #if !SYS_WINNT
 #if !DISP_X11
 #if SYS_UNIX
-	char *tty = "/dev/tty";
+	char *tty = 0;
 #else
 	FILE *in;
 	int fd;
@@ -478,20 +489,34 @@ MainProgram(int argc, char *argv[])
 	ffp = fdopen(dup(fileno(stdin)), "r");
 #if !DISP_X11
 # if SYS_UNIX
-# if defined(HAVE_TTYNAME) && !defined(HAVE_DEV_TTY)
-	tty = ttyname(fileno(stderr));
+# if defined(HAVE_TTYNAME)
+	if (isatty(fileno(stdout)))
+	    tty = ttyname(fileno(stdout));
+	if (tty == 0 && isatty(fileno(stderr)))
+	    tty = ttyname(fileno(stderr));
 # endif
+# if defined(HAVE_DEV_TTY)
+	if (tty == 0)
+	    tty = "/dev/tty";
+# endif
+	if (tty == 0) {
+	    fprintf(stderr, "cannot open any terminal\n");
+	    tidy_exit(BADEXIT);
+	}
 	/*
 	 * Note: On Linux, the low-level close/dup operation
 	 * doesn't work, since something hangs, apparently
 	 * because substituting the file descriptor doesn't communicate
 	 * properly up to the stdio routines.
 	 */
+	TRACE(("call freopen(%s) for stdin\n", tty));
 	if ((freopen(tty, "r", stdin)) == 0
 	    || !isatty(fileno(stdin))) {
+	    TRACE(("...failed to reopen stdin\n"));
 	    fprintf(stderr, "cannot open a terminal (%s)\n", tty);
 	    tidy_exit(BADEXIT);
 	}
+	TRACE(("...successfully reopened stdin\n"));
 #else
 # if SYS_WINNT
 #  if DISP_NTCONS
@@ -523,8 +548,9 @@ MainProgram(int argc, char *argv[])
 	if ((fd >= 0)
 	    && (close(0) >= 0)
 	    && (fd = dup(fd)) == 0
-	    && (in = fdopen(fd, "r")) != 0)
-	    *stdin = *in;
+	    && (in = fdopen(fd, "r")) != 0) {
+	    *stdin = *in;	/* FIXME: won't work on opaque FILE's */
+	}
 #  endif			/* SYS_WINNT */
 # endif				/* SYS_UNIX */
 #endif /* DISP_X11 */
@@ -536,9 +562,11 @@ MainProgram(int argc, char *argv[])
 	    set_b_val(bp, MDCRYPT, TRUE);
 	}
 #endif
-	(void) slowreadf(bp, &nline);
-	set_rdonly(bp, bp->b_fname, MDREADONLY);
-	(void) ffclose();
+	if (ffp != 0) {
+	    (void) slowreadf(bp, &nline);
+	    set_rdonly(bp, bp->b_fname, MDREADONLY);
+	    (void) ffclose();
+	}
 
 	if (is_empty_buf(bp)) {
 	    (void) zotbuf(bp);
@@ -1155,6 +1183,9 @@ init_mode_value(struct VAL *d, MODECLASS v_class, int v_which)
 #endif
 #ifdef GMDWORKING
 	    setINT(GMDWORKING, TRUE);	/* we put up "working..." */
+#endif
+#ifdef GMDXTERM_FKEYS
+	    setINT(GMDXTERM_FKEYS, FALSE);	/* function-key modifiers */
 #endif
 #ifdef GMDXTERM_MOUSE
 	    setINT(GMDXTERM_MOUSE, FALSE);	/* mouse-clicking */
