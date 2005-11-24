@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.584 2005/07/09 15:49:55 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.589 2005/11/23 13:46:16 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -532,6 +532,9 @@
 				   ']]' and '[[' be stuttered?  they must be
 				   stuttered in real vi, I prefer them not
 				   to be */
+#define OPT_VILE_ALLOC	1	/* use vile's malloc-macros */
+#define OPT_VILE_CTYPE	1	/* use vile's character-testing macros */
+#define OPT_VILE_REGEX	1	/* use vile's regular expressions */
 #define OPT_W32PIPES    SYS_WINNT /* Win32 pipes */
 #define WINMARK		0	/* experimental */
 
@@ -576,7 +579,8 @@
 #endif
 #endif
 
-#define OPT_KEY_MODIFY	(SYS_WINNT | DISP_X11)	/* allow shift/ctrl/alt mods */
+/* allow shift/ctrl/alt mods */
+#define OPT_KEY_MODIFY	(SYS_WINNT | DISP_X11 | DISP_TERMCAP | DISP_CURSES)
 
 /* the "working..." message -- we must have the alarm() syscall, and
    system calls must be restartable after an interrupt by default or be
@@ -656,7 +660,7 @@
  */
 #define OPT_PSCREEN  (XTOOLKIT)
 
-#if	DISP_TERMCAP && !SMALLER
+#if	(DISP_TERMCAP || DISP_CURSES) && !SMALLER
 /* the setting "xterm-mouse" is always available, i.e.  the modetbl entry
  * is not conditional.  but all of the code that supports xterm-mouse _is_
  * ifdefed.  this makes it easier for users to be able to put "set
@@ -1398,121 +1402,36 @@ typedef enum {
 			? ((col) + 1) \
 			: ((col) + (((c) & HIGHBIT) ? 4 : 2))))
 
-/* these are the bits that go into the vl_chartypes_ array */
-/* the macros below test for them */
-#if OPT_WIDE_CTYPES
-#define chrBIT(n) lBIT(n)
-#else
-#define chrBIT(n) iBIT(n)
+#if OPT_VILE_ALLOC
+#include <vl_alloc.h>
 #endif
 
-typedef enum {
-	vl_UPPER = 0
-	, vl_LOWER
-	, vl_DIGIT
-	, vl_SPACE
-	, vl_BSPACE
-	, vl_CNTRL
-	, vl_PRINT
-	, vl_PUNCT
-	, vl_IDENT
-	, vl_PATHN
-	, vl_WILD
-	, vl_LINESPEC
-	, vl_FENCE
-	, vl_NONSPACE
-	, vl_QIDENT
-#if OPT_WIDE_CTYPES
-	, vl_SCRTCH
-	, vl_SHPIPE
-	, vl_XDIGIT
+#if OPT_VILE_CTYPE
+#include <vl_ctype.h>
 #endif
-	, vl_UNUSED
-} VL_CTYPES;
 
-#define vl_upper    chrBIT(vl_UPPER)	/* upper case */
-#define vl_lower    chrBIT(vl_LOWER)	/* lower case */
-#define vl_digit    chrBIT(vl_DIGIT)	/* digits */
-#define vl_space    chrBIT(vl_SPACE)	/* whitespace */
-#define vl_bspace   chrBIT(vl_BSPACE)	/* backspace character (^H, DEL, and user's) */
-#define vl_cntrl    chrBIT(vl_CNTRL)	/* control characters, including DEL */
-#define vl_print    chrBIT(vl_PRINT)	/* printable */
-#define vl_punct    chrBIT(vl_PUNCT)	/* punctuation */
-#define vl_ident    chrBIT(vl_IDENT)	/* is typically legal in "normal" identifier */
-#define vl_pathn    chrBIT(vl_PATHN)	/* is typically legal in a file's pathname */
-#define vl_wild     chrBIT(vl_WILD)	/* is typically a shell wildcard char */
-#define vl_linespec chrBIT(vl_LINESPEC)	/* ex-style line range: 1,$ or 13,15 or % etc.*/
-#define vl_fence    chrBIT(vl_FENCE)	/* a fence, i.e. (, ), [, ], {, } */
-#define vl_nonspace chrBIT(vl_NONSPACE)	/* non-whitespace */
-#define vl_qident   chrBIT(vl_QIDENT)	/* is typically legal in "qualified" identifier */
+#if OPT_VILE_REGEX
+#define regcomp  vl_regcomp
+#define regexec  vl_regexec
+#include <vl_regex.h>
+#endif
 
 #if OPT_WIDE_CTYPES
-#define vl_scrtch   chrBIT(vl_SCRTCH)	/* legal in scratch-buffer names */
-#define vl_shpipe   chrBIT(vl_SHPIPE)	/* legal in shell/pipe-buffer names */
-#define vl_xdigit   chrBIT(vl_XDIGIT)	/* hex digit */
-#define isXDigit(c)	istype(vl_xdigit, c)
-
 #define	SCREEN_STRING (vl_pathn|vl_scrtch|vl_shpipe)
-typedef	ULONG CHARTYPE;
 #else
 #define	SCREEN_STRING (vl_pathn)
-typedef USHORT CHARTYPE;
 #endif
 
 #define screen_to_bname(buf) screen_string(buf,sizeof(buf),(CHARTYPE)SCREEN_STRING)
 
-/* these parallel the ctypes.h definitions, except that
-	they force the char to valid range first */
-#define CharOf(c)   ((unsigned char)(c))
-#define vlCTYPE(c)  vl_chartypes_[CharOf(c)]
-#define istype(m,c) ((vlCTYPE(c) & (m)) != 0)
-
-#define isAlnum(c)	istype(vl_lower|vl_upper|vl_digit, c)
-#define isAlpha(c)	istype(vl_lower|vl_upper, c)
-#define isCntrl(c)	istype(vl_cntrl, c)
-#define isDigit(c)	istype(vl_digit, c)
-#define isLower(c)	istype(vl_lower, c)
-#define isPrint(c)	istype(vl_print, c)
-#define isPunct(c)	istype(vl_punct, c)
-#define isSpace(c)	istype(vl_space, c)
-#define isUpper(c)	istype(vl_upper, c)
-
-#define isbackspace(c)	(istype(vl_bspace, c) || (c) == backspc)
-#define isfence(c)	istype(vl_fence, c)
-#define isident(c)	istype(vl_ident, c)
-#define isqident(c)	istype(vl_qident, c)
-#define islinespecchar(c)	istype(vl_linespec, c)
-#define ispath(c)	istype(vl_pathn, c)
-#define iswild(c)	istype(vl_wild, c)
-
 #define KEY_Space	' '
 #define KEY_Tab		'\t'
-
-/* macro for cases where return & newline are equivalent */
-#define	isreturn(c)	((c == '\r') || (c == '\n'))
-
-/* macro for whitespace (non-return) */
-#define	isBlank(c)      ((c == '\t') || (c == ' '))
 
 #if OPT_KEY_MODIFY
 #define isBackTab(c)	((c) == KEY_BackTab || (((c) & mod_SHIFT) != 0 && CharOf(c) == KEY_Tab))
 #else
 #define isBackTab(c)	((c) == KEY_BackTab)
 #endif
-
-#define	isGraph(c)	(!isSpecial(c) && !isSpace(c) && isPrint(c))
-
-/* DIFCASE represents the difference between upper
-   and lower case letters, DIFCNTRL the difference between upper case and
-   control characters.	They are xor-able values.  */
-#define	DIFCASE		0x20
-#define	DIFCNTRL	0x40
-#define toUpper(c)	vl_uppercase[CharOf(c)]
-#define toLower(c)	vl_lowercase[CharOf(c)]
-#define tocntrl(c)	(((unsigned)(c))^DIFCNTRL)
-#define toalpha(c)	(((unsigned)(c))^DIFCNTRL)
-
-#define nocase_eq(bc,pc) (CharOf(bc) == CharOf(pc) || (toUpper(bc) == toUpper(pc)))
 
 #define ESC		tocntrl('[')
 #define BEL		tocntrl('G')	/* ascii bell character		*/
@@ -1526,41 +1445,6 @@ typedef USHORT CHARTYPE;
 #endif
 
 #define ABORTED(c) ((c) == esc_c || (c) == intrc || interrupted())
-
-/*
- * Definitions etc. for regexp(3) routines.
- *
- *	the regexp code is:
- *	Copyright (c) 1986 by University of Toronto.
- *	Written by Henry Spencer.  Not derived from licensed software.
- *
- */
-#define NSUBEXP  10
-typedef struct regexp {
-	char *startp[NSUBEXP];
-	char *endp[NSUBEXP];
-	size_t mlen;		/* convenience:  endp[0] - startp[0] */
-	int regstart;		/* Internal use only. */
-	char reganch;		/* Internal use only. */
-	int regmust;		/* Internal use only. */
-	unsigned regmlen;	/* Internal use only. */
-	size_t size;		/* vile addition -- how big is this */
-	char program[1];	/* Unwarranted chumminess with compiler. */
-} regexp;
-
-/*
- * The first byte of the regexp internal "program" is actually this magic
- * number; the start node begins in the second byte.
- */
-#define	REGEXP_MAGIC	0234
-
-#ifndef CHARBITS
-#define	UCHAR_AT(p)	((int)*(UCHAR *)(p))
-#else
-#define	UCHAR_AT(p)	((int)*(p)&CHARBITS)
-#endif
-
-/* end of regexp stuff */
 
 /*
  * Data for read/write/etc, hooks
@@ -2489,6 +2373,10 @@ typedef struct	{
 	void	(*unwatchfd)(int, long);
 					/* Don't watch file descriptor	*/
 	void	(*cursorvis)(int flag);	/* hide/show cursor		*/
+	/* mouse interface, e.g., for xterm and clones */
+	void	(*mopen) (void);	/* mouse open			*/
+	void	(*mclose) (void);	/* mouse close			*/
+	void	(*mevent) (void);	/* mouse event			*/
 }	TERM;
 
 
@@ -2829,20 +2717,6 @@ extern void _exit (int code);
 #else
 #define TYPECAST(type,ptr) (type*)(ptr)
 #endif
-
-/* structure-allocate, for appeasing strict compilers */
-#define	castalloc(cast,nbytes)		(cast *)malloc(nbytes)
-#define	castrealloc(cast,ptr,nbytes)	(cast *)realloc((ptr),(nbytes))
-#define	typecalloc(cast)		(cast *)calloc(sizeof(cast),1)
-#define	typecallocn(cast,ntypes)	(cast *)calloc(sizeof(cast),ntypes)
-#define	typealloc(cast)			(cast *)malloc(sizeof(cast))
-#define	typeallocn(cast,ntypes)		(cast *)malloc((ntypes)*sizeof(cast))
-#define	typereallocn(cast,ptr,ntypes)	(cast *)realloc((ptr),\
-							(ntypes)*sizeof(cast))
-#define	typeallocplus(cast,extra)	(cast *)calloc((extra)+sizeof(cast),1)
-
-#define	FreeAndNull(p)	if ((p) != 0)	{ free(p); p = 0; }
-#define	FreeIfNeeded(p)	if ((p) != 0)	free(p)
 
 #if defined(VILE_ERROR_ABORT)
 extern void ExitProgram(int code);

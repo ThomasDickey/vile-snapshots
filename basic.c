@@ -5,7 +5,7 @@
  * functions that adjust the top line in the window and invalidate the
  * framing, are hard.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/basic.c,v 1.122 2005/05/27 21:48:44 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/basic.c,v 1.123 2005/11/16 01:22:08 tom Exp $
  *
  */
 
@@ -291,7 +291,9 @@ gotoeob(int f GCC_UNUSED, int n GCC_UNUSED)
 int
 gotobos(int f, int n)
 {
+    LINE *last = DOT.l;
     int nn = curwp->w_ntrows;
+
     if (!f || n <= 0)
 	n = 1;
 
@@ -303,7 +305,7 @@ gotobos(int f, int n)
 	DOT.l = lforw(DOT.l);
     }
 
-    if (nn <= 0)		/* we went past the end of window */
+    if (DOT.l != last)
 	curwp->w_flag |= WFMOVE;
     return firstnonwhite(FALSE, 1);
 }
@@ -317,6 +319,7 @@ gotobos(int f, int n)
 int
 gotomos(int f GCC_UNUSED, int n)
 {
+    LINE *last = DOT.l;
     LINE *lp, *head;
     int half = (curwp->w_ntrows + 1) / 2;
 
@@ -336,6 +339,8 @@ gotomos(int f GCC_UNUSED, int n)
 	}
     }
 
+    if (DOT.l != last)
+	curwp->w_flag |= WFMOVE;
     return firstnonwhite(FALSE, 1);
 }
 
@@ -347,7 +352,9 @@ gotomos(int f GCC_UNUSED, int n)
 int
 gotoeos(int f, int n)
 {
+    LINE *last = DOT.l;
     int nn;
+
     if (f == FALSE || n <= 0)
 	n = 1;
 
@@ -373,6 +380,8 @@ gotoeos(int f, int n)
 	    break;
 	DOT.l = lback(DOT.l);
     }
+    if (DOT.l != last)
+	curwp->w_flag |= WFMOVE;
     return firstnonwhite(FALSE, 1);
 }
 

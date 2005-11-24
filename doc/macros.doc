@@ -140,12 +140,6 @@ Creating, executing, storing macros
 		      show-commands command generates a list of all existing
 		      commands).
 
-		      Note:  due to vile's use of the underscore ('_') as a
-		      command terminator, this character should _not_ be
-		      used as a word separator within "unique-name".
-		      Instead, use either a hyphen ('-') or mixed case
-		      alphabetics.
-
 	help-string   is an optional description of the macro.  This string
 		      is displayed in the listing created by show-commands.
 
@@ -1480,6 +1474,6 @@ Example startup file
 	========================= end vile.rc =======================
 
 -----------------------------------
-  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.94 2004/12/12 20:29:24 tom Exp $
+  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.95 2005/11/23 16:50:27 cmorgan Exp $
 -----------------------------------
 

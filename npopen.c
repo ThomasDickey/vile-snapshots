@@ -1,7 +1,7 @@
 /*	npopen:  like popen, but grabs stderr, too
  *		written by John Hutchinson, heavily modified by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/npopen.c,v 1.92 2005/01/23 00:59:40 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/npopen.c,v 1.94 2005/11/18 01:30:37 tom Exp $
  *
  */
 
@@ -213,9 +213,9 @@ exec_sh_c(char *cmd)
 	    if (cmd[i] == '/')
 		cmd[i] = '\\';
 #endif
-	(void) execlp(sh, shname, SHELL_C, cmd, 0);
+	(void) execlp(sh, shname, SHELL_C, cmd, (void *) 0);
     } else {
-	(void) execlp(sh, shname, 0);
+	(void) execlp(sh, shname, (void *) 0);
     }
     (void) write(2, "exec failed\r\n", 14);
     exit(-1);

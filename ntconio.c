@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 console API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntconio.c,v 1.83 2005/10/02 21:47:00 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntconio.c,v 1.84 2005/11/23 12:19:35 tom Exp $
  *
  */
 
@@ -1516,4 +1516,7 @@ TERM term =
     nullterm_watchfd,
     nullterm_unwatchfd,
     nullterm_cursorvis,
+    nullterm_mopen,
+    nullterm_mclose,
+    nullterm_mevent,
 };

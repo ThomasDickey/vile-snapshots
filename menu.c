@@ -8,7 +8,7 @@
 /************************************************************************/
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/menu.c,v 1.46 2005/05/20 23:01:32 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/menu.c,v 1.48 2005/11/18 01:30:37 tom Exp $
  */
 
 /* Vile includes */
@@ -103,7 +103,11 @@ common_action(char *action)
 		_exit(0);	/* abandon exec'ing process */
 	    } else if (pid == 0) {
 		newprocessgroup(FALSE, 1);
-		execl(path, "xvile", "-display", x_get_display_name(), NULL, 0);
+		execl(path,
+		      "xvile",
+		      "-display",
+		      x_get_display_name(),
+		      (void *) 0);
 		_exit(errno);	/* just in case exec-failed */
 	    }
 	}

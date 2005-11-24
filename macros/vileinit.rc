@@ -1,4 +1,4 @@
-; $Header: /users/source/archives/vile.vcs/macros/RCS/vileinit.rc,v 1.25 2005/03/11 01:43:31 tom Exp $
+; $Header: /users/source/archives/vile.vcs/macros/RCS/vileinit.rc,v 1.32 2005/11/23 21:56:35 tom Exp $
 ; This is a sample which may be installed as .vilerc (or vile.rc for non-Unix
 ; systems), or source'd as-is to provide quick initialization of some useful
 ; macros and settings.
@@ -55,33 +55,67 @@ bind-cmdmode-key goto-eol FN-E
 	setv $xshell-flags=""
 ~elseif &seq $progname winvile
 ~elseif &or &sin $cfgopts "terminfo" \
-	    &sin $cfgopts "termcap"
+	&or &sin $cfgopts "termcap" \
+	    &sin $cfgopts "curses"
 
 	set xterm-mouse
+	set xterm-fkeys
 
 	; If your keyboard is setup to transmit META as an escape character,
 	; these mappings are useful for undo/redo/kill
 	map u u
 	map r r
 	map k k
+
 	; Shifted arrow-keys from XFree86 xterm, mapped to next-row and
 	; previous-row.  They are available when the sunKeyboard resource
-	; is false.  Old flavor (see modifyCursorKeys in manpage):
-	map [2A 
-	map O2A 
-	map [2B 
-	map O2B 
-	map [2C #C
-	map O2C #C
-	map [2D #D
-	map O2D #D
-	; These are the newer flavor:
-	map [1;2A 
-	map [1;2B 
-	map [1;2C #C
-	map [1;2D #D
-	; You may have a back-tab (map it to previous-window)
+	; is false, i.e., the "VT220 Keyboard" menu option is not checked.
+	~if &sin &env 'TERM' 'xterm'
+		; These are the newer flavor:
+		;map [1;2A 
+		;map [1;2B 
+		;map [1;2C #C
+		;map [1;2D #D
+	~elseif &or \
+		&sin &env 'TERM' 'konsole' \
+		&sin &env 'TERM' 'gnome'
+		; GNOME or KDE (unclear because the developers do not give
+		; credit except in the vaguest possible terms) copied the
+		; bindings for xterm-94, and then one copied from the other.
+		; However, this is the old, deprecated flavor, before xterm
+		; patch #167 (see modifyCursorKeys in the xterm manpage):
+		map [2A 
+		map O2A 
+		map [2B 
+		map O2B 
+		map [2C #C
+		map O2C #C
+		map [2D #D
+		map O2D #D
+	~elseif &sin &env 'TERM' 'rxvt'
+		map [a 
+		map [b 
+		map [c #C
+		map [d #D
+	~endif
+	; You may have a back-tab (map it to previous-window).  This is fairly
+	; standard since it is adapted from the control sequence with the same
+	; name.
 	map [Z O
+	;
+	; If "xterm-fkeys" is enabled, it alters the input decoding so that
+	; function keys can have shift/control/alt modifiers.  That means it
+	; may override the map commands for the shifted cursor keys:
+	bind-key previous-row Shift+#A
+	bind-key next-row     Shift+#B
+	bind-key right-arrow  Shift+#C
+	bind-key left-arrow   Shift+#D
+	; ...and the alt-keys:
+	bind-key undo-changes-backward	M-u
+	bind-key redo-changes-forward	M-r
+	bind-key kill-buffer		M-k
+	; ...and of course back-tab:
+	bind-key previous-window	#b
 ~endif
 
 ; Useful macros for function keys:

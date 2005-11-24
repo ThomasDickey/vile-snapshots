@@ -3,7 +3,7 @@
  *	Original interface by Otto Lind, 6/3/93
  *	Additional map and map! support by Kevin Buettner, 9/17/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/map.c,v 1.104 2005/02/09 22:42:57 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/map.c,v 1.108 2005/11/23 01:33:46 tom Exp $
  *
  */
 
@@ -269,33 +269,33 @@ addtomap(struct maprec **mpp,
 }
 
 static int
-delfrommap(struct maprec **mpp, const char *ks)
+delfrommap(struct maprec **mpp, const char *ks, int length)
 {
     struct maprec **save_m = mpp;
     struct maprec ***mstk = 0;
-    const char *save_k = ks;
     int depth = 0;
     int pass;
+    int n;
 
-    if (ks == 0 || *ks == 0)
+    if (ks == 0 || length == 0)
 	return FALSE;
 
     for (pass = 0; pass < 2; pass++) {
 	mpp = save_m;
-	ks = save_k;
 	depth = 0;
-	while (*mpp && *ks) {
+	n = 0;
+	while (*mpp && n < length) {
 	    if (pass)
 		mstk[depth] = mpp;
-	    if ((*mpp)->ch == char2int(*ks)) {
+	    if ((*mpp)->ch == char2int(ks[n])) {
 		mpp = &(*mpp)->dlink;
-		ks++;
+		n++;
 		depth++;
 	    } else
 		mpp = &(*mpp)->flink;
 	}
 
-	if (*ks)
+	if (n < length)
 	    return FALSE;	/* not in map */
 	if (!pass) {
 	    mstk = typecallocn(struct maprec **, depth + 1);
@@ -477,13 +477,29 @@ maplookup(int c,
     return matchedcnt;
 }
 
+static void
+reverse_abbr(struct maprec **mpp, const char *bufname, TBUFF *kbuf)
+{
+    if ((*mpp && *mpp == abbr_map) || (strcmp(bufname, ABBR_BufName) == 0)) {
+	/* reverse the lhs */
+	int i;
+	char t;
+	int len = tb_length(kbuf) - 1;
+	char *s = tb_values(kbuf);
+	for (i = 0; i < len / 2; i++) {
+	    t = s[len - i - 1];
+	    s[len - i - 1] = s[i];
+	    s[i] = t;
+	}
+    }
+}
+
 static int
 map_common(struct maprec **mpp, const char *bufname, UINT remapflag)
 {
     int status;
     static TBUFF *kbuf;
     static TBUFF *val;
-    int len;
 
 #if OPT_SHOW_MAPS
     if (end_named_cmd()) {
@@ -508,20 +524,9 @@ map_common(struct maprec **mpp, const char *bufname, UINT remapflag)
     if (status != TRUE)
 	return status;
 
-    len = tb_length(kbuf) - 1;
-    if ((*mpp && *mpp == abbr_map) || (strcmp(bufname, ABBR_BufName) == 0)) {
-	/* reverse the lhs */
-	int i;
-	char t;
-	char *s = tb_values(kbuf);
-	for (i = 0; i < len / 2; i++) {
-	    t = s[len - i - 1];
-	    s[len - i - 1] = s[i];
-	    s[i] = t;
-	}
-    }
+    reverse_abbr(mpp, bufname, kbuf);
 
-    status = addtomap(mpp, tb_values(kbuf), len,
+    status = addtomap(mpp, tb_values(kbuf), tb_length(kbuf) - 1,
 		      MAPF_USERTIMER | remapflag, -1, tb_values(val));
     relist_mappings(bufname);
     return status;
@@ -544,20 +549,9 @@ unmap_common(struct maprec **mpp, const char *bufname)
     if (status != TRUE)
 	return status;
 
-    if ((*mpp && *mpp == abbr_map) || (strcmp(bufname, ABBR_BufName) == 0)) {
-	/* reverse the lhs */
-	int i;
-	char t;
-	int len = tb_length(kbuf) - 1;
-	char *s = tb_values(kbuf);
-	for (i = 0; i < len / 2; i++) {
-	    t = s[len - i - 1];
-	    s[len - i - 1] = s[i];
-	    s[i] = t;
-	}
-    }
+    reverse_abbr(mpp, bufname, kbuf);
 
-    if (delfrommap(mpp, tb_values(kbuf)) != TRUE) {
+    if (delfrommap(mpp, tb_values(kbuf), tb_length(kbuf) - 1) != TRUE) {
 	mlforce("[Sequence not mapped]");
 	return FALSE;
     }
@@ -649,6 +643,14 @@ void
 addtosysmap(const char *seq, int seqlen, int code)
 {
     addtomap(&map_syskey, seq, seqlen, MAPF_SYSTIMER, code, (char *) 0);
+    relist_mappings(SYSMAP_BufName);
+}
+
+void
+delfromsysmap(const char *seq, int seqlen)
+{
+    delfrommap(&map_syskey, seq, seqlen);
+    relist_mappings(SYSMAP_BufName);
 }
 
 #define INPUT_FROM_TTGET 1

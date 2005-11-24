@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.407 2005/06/17 23:32:03 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.409 2005/11/16 01:20:27 tom Exp $
  *
  */
 
@@ -236,7 +236,7 @@ dofmt(const char *fmt, va_list *app)
 {
     int c;			/* current char in format string */
     int the_width;
-    int the_limit;
+    int the_limit = 0;
     int n;
     int islong;
     UINT uint_value;
@@ -1634,7 +1634,7 @@ recompute_buffer(BUFFER *bp)
 	if (tbl[num].line != tbl[num].top)
 	    (void) gotoline(TRUE, tbl[num].line);
 	(void) gocol(tbl[num].col);
-	wp->w_flag |= WFMOVE;
+	wp->w_flag |= WFMOVE | WFSBAR;
 	copy_mvals(NUM_W_VALUES, wp->w_values.wv, tbl[num].w_vals);
     }
     curwp = savewp;
@@ -3460,7 +3460,7 @@ update(int force /* force update past type ahead? */ )
 		else if (wp->w_flag & ~(WFMOVE | WFMODE))
 		    update_all(wp);	/* update all lines */
 #if OPT_SCROLLBARS
-		if (wp->w_flag & (WFHARD | WFSBAR))
+		if (wp->w_flag & (WFHARD | WFMOVE | WFSBAR))
 		    gui_update_scrollbar(wp);
 #endif /* OPT_SCROLLBARS */
 

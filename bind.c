@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.286 2005/10/02 21:15:05 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.290 2005/11/24 01:30:54 tom Exp $
  *
  */
 
@@ -618,6 +618,9 @@ install_bind(int c, const CMDFUNC * kcmd, BINDINGS * bs)
 {
     KBIND *kbp;			/* pointer into a binding table */
 
+    TRACE(("install_bind(%#x, %s(%s), %s)\n",
+	   c, TRACE_CMDFUNC(kcmd), TRACE_BINDINGS(bs)));
+
     if (c < 0)
 	return FALSE;		/* not a legal key-code */
 
@@ -841,6 +844,7 @@ make_key_names(int iarg GCC_UNUSED, void *varg GCC_UNUSED)
 	{ KEY_Next,	   "KEY_Next" },
 	{ KEY_Prior,	   "KEY_Prior" },
 	{ KEY_Select,	   "KEY_Select" },
+	{ KEY_BackTab,	   "KEY_BackTab" },
 	{ 0,		   0 },
 	{ KEY_F1,	   "KEY_F1" },
 	{ KEY_F2,	   "KEY_F2" },
@@ -1010,8 +1014,9 @@ quote_and_pad(char *dst, const char *src)
 static char *
 to_tabstop(char *buffer)
 {
+    unsigned len = strlen(buffer);
     unsigned cpos = converted_len(buffer);
-    if (cpos & 7)
+    if (cpos & 7 || (len != 0 && !isBlank(buffer[len - 1])))
 	(void) strcat(buffer, "\t");
     return skip_string(buffer);
 }
@@ -1594,7 +1599,10 @@ which_exec(int f, int n)
 }
 #endif
 
-/* translate a keycode to its binding-string */
+/*
+ * Translate a keycode to its binding-string.
+ * seq[0] gets the length of the result.
+ */
 char *
 kcod2pstr(int c, char *seq, int limit)
 {
@@ -1720,16 +1728,16 @@ char *
 kcod2prc(int c, char *seq)
 {
     char temp[NSTRING];
+    int length;
 
-    (void) kcod2pstr(c, temp, sizeof(temp));
+    length = kcod2pstr(c, temp, sizeof(temp))[0];
 #if OPT_KEY_MODIFY
-    if (c & mod_KEY) {
-	/* Translation is complete, by defn. */
-
-	strcpy(seq, temp + 1);
+    if ((c & mod_KEY) != 0 && length != 0) {
+	(void) strcpy(seq, temp + 1);
+	(void) bytes2prc(seq + length - 1, temp + length, 1);
     } else
 #endif
-	(void) bytes2prc(seq, temp + 1, (int) *temp);
+	(void) bytes2prc(seq, temp + 1, length);
     TRACE(("kcod2prc(%#x) ->%s\n", c, seq));
     return seq;
 }

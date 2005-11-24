@@ -1,7 +1,7 @@
 /*
  * A terminal driver using the curses library
  *
- * $Header: /users/source/archives/vile.vcs/RCS/curses.c,v 1.20 2002/12/22 19:21:27 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/curses.c,v 1.25 2005/11/23 19:15:44 tom Exp $
  */
 
 #include	"estruct.h"
@@ -17,6 +17,11 @@
 
 #define is_default(color) (color < 0 || color == 255)
 
+#if USE_TERMCAP
+#  define TCAPSLEN 1024
+static char tc_parsed[TCAPSLEN];
+#endif
+
 #if OPT_COLOR
 	/* ANSI: black, red, green, yellow, blue, magenta, cyan, white   */
 static const char ANSI_palette[] =
@@ -24,91 +29,27 @@ static const char ANSI_palette[] =
 
 #endif /* OPT_COLOR */
 
-static const struct {
-    char *capname;
-    int code;
-} keyseqs[] = {
-    /* *INDENT-OFF* */
-    /* Arrow keys */
-    { CAPNAME("ku", "kcuu1"), KEY_Up },
-    { CAPNAME("kd", "kcud1"), KEY_Down },
-    { CAPNAME("kr", "kcuf1"), KEY_Right },
-    { CAPNAME("kl", "kcub1"), KEY_Left },
-    /* other cursor-movement */
-    { CAPNAME("kh", "khome"), KEY_Home },
-    { CAPNAME("kH", "kll"), KEY_End },
-    { CAPNAME("@7", "kend"), KEY_End },
-    /* page scroll */
-    { CAPNAME("kN", "knp"), KEY_Next },
-    { CAPNAME("kP", "kpp"), KEY_Prior },
-    /* editing */
-    { CAPNAME("kI", "kich1"), KEY_Insert },
-    { CAPNAME("kD", "kdch1"), KEY_Delete },
-    { CAPNAME("@0", "kfnd"), KEY_Find },
-    { CAPNAME("*6", "kslt"), KEY_Select },
-    /* command */
-    { CAPNAME("%1", "khlp"), KEY_Help },
-    /* function keys */
-    { CAPNAME("k1", "kf1"), KEY_F1 },
-    { CAPNAME("k2", "kf2"), KEY_F2 },
-    { CAPNAME("k3", "kf3"), KEY_F3 },
-    { CAPNAME("k4", "kf4"), KEY_F4 },
-    { CAPNAME("k5", "kf5"), KEY_F5 },
-    { CAPNAME("k6", "kf6"), KEY_F6 },
-    { CAPNAME("k7", "kf7"), KEY_F7 },
-    { CAPNAME("k8", "kf8"), KEY_F8 },
-    { CAPNAME("k9", "kf9"), KEY_F9 },
-    { CAPNAME("k;", "kf10"), KEY_F10 },
-    { CAPNAME("F1", "kf11"), KEY_F11 },
-    { CAPNAME("F2", "kf12"), KEY_F12 },
-    { CAPNAME("F3", "kf13"), KEY_F13 },
-    { CAPNAME("F4", "kf14"), KEY_F14 },
-    { CAPNAME("F5", "kf15"), KEY_F15 },
-    { CAPNAME("F6", "kf16"), KEY_F16 },
-    { CAPNAME("F7", "kf17"), KEY_F17 },
-    { CAPNAME("F8", "kf18"), KEY_F18 },
-    { CAPNAME("F9", "kf19"), KEY_F19 },
-    { CAPNAME("FA", "kf20"), KEY_F20 },
-    { CAPNAME("FB", "kf21"), KEY_F21 },
-    { CAPNAME("FC", "kf22"), KEY_F22 },
-    { CAPNAME("FD", "kf23"), KEY_F23 },
-    { CAPNAME("FE", "kf24"), KEY_F24 },
-    { CAPNAME("FF", "kf25"), KEY_F25 },
-    { CAPNAME("FG", "kf26"), KEY_F26 },
-    { CAPNAME("FH", "kf27"), KEY_F27 },
-    { CAPNAME("FI", "kf28"), KEY_F28 },
-    { CAPNAME("FJ", "kf29"), KEY_F29 },
-    { CAPNAME("FK", "kf30"), KEY_F30 },
-    { CAPNAME("FL", "kf31"), KEY_F31 },
-    { CAPNAME("FM", "kf32"), KEY_F32 },
-    { CAPNAME("FN", "kf33"), KEY_F33 },
-    { CAPNAME("FO", "kf34"), KEY_F34 },
-    { CAPNAME("FP", "kf35"), KEY_F35 }
-    /* *INDENT-ON* */
-
-};
-
 #if SYS_OS2_EMX
 #include "os2keys.h"
 #endif
 
+static int i_am_xterm = 1;
 static int in_screen = FALSE;
 static int can_color = FALSE;
+
+#include "xtermkeys.h"
 
 static void
 initialize(void)
 {
-    size_t i;
-    int j;
     static int already_open = 0;
 
-    static char *fallback_arrows[] =
-    {
-	"\033O",		/* SS3 */
-	"\033[",		/* CSI */
-	"\217",			/* SS3 */
-	"\233",			/* CSI */
-    };
+#if USE_TERMCAP
+    char tc_rawdata[4096];
+    char *p = tc_parsed;
+#endif
+    unsigned i;
+    int j;
 
     if (already_open)
 	return;
@@ -119,6 +60,24 @@ initialize(void)
     nonl();
     nodelay(stdscr, TRUE);
     idlok(stdscr, TRUE);
+
+#if USE_TERMCAP
+    if ((tgetent(tc_rawdata, getenv("TERM"))) != 1) {
+	fprintf(stderr, "Unknown terminal type %s!\n", getenv("TERM"));
+	ExitProgram(BADEXIT);
+    }
+    TRACE(("tc_rawdata used %d of %d\n", strlen(tc_rawdata), sizeof(tc_rawdata)));
+#endif
+
+#if OPT_XTERM
+    {
+	char *t = getenv("TERM");
+	I_AM_XTERM(t)
+	    if (i_am_xterm) {
+	    xterm_open(&term);
+	}
+    }
+#endif
 
     term.maxrows = term.rows = LINES;
     term.maxcols = term.cols = COLS;
@@ -144,58 +103,17 @@ initialize(void)
 #endif
 
     /*
-     * Provide fallback definitions for all ANSI/ISO/DEC cursor keys.
+     * Read the termcap data now so tcap_init_fkeys() does not depend on the
+     * state of tgetstr() vs the buffer.
      */
-    for (i = 0; i < TABLESIZE(fallback_arrows); i++) {
-	for (j = 'A'; j <= 'D'; j++) {
-	    char temp[80];
-	    lsprintf(temp, "%s%c", fallback_arrows[i], j);
-	    addtosysmap(temp, strlen(temp), SPEC | j);
-	}
-    }
-
-#if SYS_OS2_EMX
-    for (i = TABLESIZE(VIO_KeyMap); i--;) {
-	addtosysmap(VIO_KeyMap[i].seq, 2, VIO_KeyMap[i].code);
-    }
+    for (i = 0; i < TABLESIZE(keyseqs); ++i) {
+	keyseqs[i].result = TGETSTR(keyseqs[i].capname, &p);
+#if USE_TERMINFO
+	if (NO_CAP(keyseqs[i].result))
+	    keyseqs[i].result = 0;
 #endif
-    for (i = TABLESIZE(keyseqs); i--;) {
-	char *seq = TGETSTR(keyseqs[i].capname, &p);
-	if (!NO_CAP(seq)) {
-	    int len;
-	    TRACE(("TGETSTR(%s) = %s\n", keyseqs[i].capname, str_visible(seq)));
-#define DONT_MAP_DEL 1
-#if DONT_MAP_DEL
-	    /* NetBSD, FreeBSD, etc. have the kD (delete) function key
-	       defined as the DEL char.  i don't like this hack, but
-	       until we (and we may never) have separate system "map"
-	       and "map!" maps, we can't allow this -- DEL has different
-	       semantics in insert and command mode, whereas KEY_Delete
-	       has the same semantics (whatever they may be) in both.
-	       KEY_Delete is the only non-motion system map, by the
-	       way -- so the rest are benign in insert or command
-	       mode.  */
-	    if (strcmp(seq, "\177") == 0)
-		continue;
-#endif
-	    addtosysmap(seq, len = strlen(seq), keyseqs[i].code);
-	    /*
-	     * Termcap represents nulls as octal 200, which is ambiguous
-	     * (ugh).  To avoid losing escape sequences that may contain
-	     * nulls, check here, and add a mapping for the strings with
-	     * explicit nulls.
-	     */
-#define TCAP_NULL '\200'
-	    if (strchr(seq, TCAP_NULL) != 0) {
-		char temp[BUFSIZ];
-		(void) strcpy(temp, seq);
-		for (j = 0; j < len; j++)
-		    if (char2int(temp[j]) == TCAP_NULL)
-			temp[j] = '\0';
-		addtosysmap(temp, len, keyseqs[i].code);
-	    }
-	}
     }
+    tcap_init_fkeys();
 
     ttopen();
     already_open = TRUE;
@@ -268,6 +186,8 @@ static void
 curs_kopen(void)
 {
     static int initialized = FALSE;
+
+    term.mopen();
     if (!initialized) {
 	initialized = TRUE;
 	initialize();
@@ -281,6 +201,7 @@ static void
 curs_kclose(void)
 {
     endwin();
+    term.mclose();
     in_screen = FALSE;
     TRACE(("curs_kclose\n"));
 }
@@ -509,6 +430,9 @@ TERM term =
     ttwatchfd,
     ttunwatchfd,
     curs_cursor,
+    nullterm_mopen,
+    nullterm_mclose,
+    nullterm_mevent,
 };
 
 #endif /* DISP_CURSES */

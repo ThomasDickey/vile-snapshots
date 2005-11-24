@@ -14,7 +14,7 @@
  *   -- support wide and narrow screen resolutions,
  *   -- support visual bells.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/vmsvt.c,v 1.57 2004/10/29 21:16:10 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/vmsvt.c,v 1.58 2005/11/23 12:19:01 tom Exp $
  *
  */
 
@@ -721,6 +721,9 @@ TERM term =
     nullterm_watchfd,
     nullterm_unwatchfd,
     nullterm_cursorvis,
+    nullterm_mopen,
+    nullterm_mclose,
+    nullterm_mevent,
 };
 
 #endif
