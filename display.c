@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.409 2005/11/16 01:20:27 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.410 2005/11/30 01:34:50 tom Exp $
  *
  */
 
@@ -35,20 +35,9 @@
 
 VIDEO **vscreen;		/* Virtual screen. */
 VIDEO **pscreen;		/* Physical screen. */
-#if FRAMEBUF
-#define PSCREEN vscreen
-#else
-#define PSCREEN pscreen
-#endif
 static int *lmap;
 
-#if DISP_IBMPC
-#define PScreen(n) scread((VIDEO *)0,n)
-#else
-#define	PScreen(n) pscreen[n]
-#endif
-
-#if OPT_SCROLLCODE && (DISP_IBMPC || !FRAMEBUF)
+#if OPT_SCROLLCODE
 #define CAN_SCROLL 1
 #else
 #define CAN_SCROLL 0
@@ -417,16 +406,12 @@ vtalloc(void)
 
     if (term.maxrows > vrows) {
 	GROW(vscreen, VIDEO *, vrows, term.maxrows);
-#if ! FRAMEBUF
 	GROW(pscreen, VIDEO *, vrows, term.maxrows);
-#endif
 	GROW(lmap, int, vrows, term.maxrows);
     } else {
 	for (i = term.maxrows; i < vrows; i++) {
 	    freeVIDEO(vscreen[i]);
-#if ! FRAMEBUF
 	    freeVIDEO(pscreen[i]);
-#endif
 	}
     }
 
@@ -435,10 +420,8 @@ vtalloc(void)
     for (i = first; i < term.maxrows; ++i) {
 	if (!video_alloc(&vscreen[i]))
 	    return FALSE;
-#if ! FRAMEBUF
 	if (!video_alloc(&pscreen[i]))
 	    return FALSE;
-#endif /* !FRAMEBUF */
     }
     vcols = term.maxcols;
     vrows = term.maxrows;
@@ -460,7 +443,6 @@ vtfree(void)
 	free((char *) vscreen);
 	vscreen = 0;
     }
-#if ! FRAMEBUF
     if (pscreen) {
 	for (i = 0; i < term.maxrows; ++i) {
 	    freeVIDEO(pscreen[i]);
@@ -468,7 +450,6 @@ vtfree(void)
 	free((char *) pscreen);
 	pscreen = 0;
     }
-#endif
     FreeIfNeeded(lmap);
 }
 #endif
@@ -1018,41 +999,6 @@ dot_to_vcol(WINDOW *wp)
  * colto   - col to go to
  */
 
-#if FRAMEBUF
-/*
- * UPDATELINE specific code for the IBM-PC and other compatibles
- */
-static void
-update_line(int row, int colfrom, int colto)
-{
-    struct VIDEO *vp1 = vscreen[row];	/* virtual screen image */
-    int req = (vp1->v_flag & VFREQ) == VFREQ;
-
-#if OPT_COLOR
-    CurFcolor(vp1) = ReqFcolor(vp1);
-    CurBcolor(vp1) = ReqBcolor(vp1);
-#endif
-#if OPT_VIDEO_ATTRS
-    scwrite(row, colfrom, colto - colfrom,
-	    VideoText(vp1),
-	    VideoAttr(vp1),
-	    ReqFcolor(vp1),
-	    ReqBcolor(vp1));
-#else /* highlighting, anyway */
-    scwrite(row, colfrom, colto - colfrom,
-	    VideoText(vp1),
-	    (VIDEO_ATTR *) 0,
-	    req ? ReqBcolor(vp1) : ReqFcolor(vp1),
-	    req ? ReqFcolor(vp1) : ReqBcolor(vp1));
-#endif
-    vp1->v_flag &= ~(VFCHG | VFCOL);	/* flag this line as updated */
-    if (req)
-	vp1->v_flag |= VFREV;
-    else
-	vp1->v_flag &= ~VFREV;
-}
-
-#else /* !FRAMEBUF */
 #if OPT_PSCREEN
 /*
  * Update a single row on the physical screen.
@@ -1103,7 +1049,7 @@ static void
 update_line(int row, int colfrom, int colto)
 {
     struct VIDEO *vp1 = vscreen[row];	/* virtual screen image */
-    struct VIDEO *vp2 = PSCREEN[row];	/* physical screen image */
+    struct VIDEO *vp2 = pscreen[row];	/* physical screen image */
     int xl = colfrom;
     int xr = colto;
     int xx;
@@ -1290,12 +1236,11 @@ update_line(int row, int colfrom, int colto)
     return;
 }
 #endif /* OPT_PSCREEN(update_line) */
-#endif /* FRAMEBUF(update_line) */
 
 void
 kbd_openup(void)
 {
-#if !FRAMEBUF && !OPT_PSCREEN
+#if !OPT_PSCREEN
     int i;
     size_t alen = sizeof(VIDEO_ATTR) * term.cols;
 #endif
@@ -1304,7 +1249,7 @@ kbd_openup(void)
     term.putch('\n');
     term.putch('\r');
     term.flush();
-#if !FRAMEBUF && !OPT_PSCREEN
+#if !OPT_PSCREEN
     if (pscreen != 0) {
 	for (i = 0; i < term.rows - 1; ++i) {
 	    (void) memcpy(pscreen[i]->v_text,
@@ -2004,7 +1949,7 @@ update_window_attrs(WINDOW *wp)
 static void
 update_garbaged_screen(void)
 {
-#if !FRAMEBUF && !OPT_PSCREEN
+#if !OPT_PSCREEN
     int j;
 #endif
     int i;
@@ -2018,7 +1963,7 @@ update_garbaged_screen(void)
 	CurFcolor(vscreen[i]) = -1;
 	CurBcolor(vscreen[i]) = -1;
 #endif
-#if ! FRAMEBUF && ! OPT_PSCREEN
+#if !OPT_PSCREEN
 	for (j = 0; j < term.cols; ++j) {
 	    CELL_TEXT(i, j) = ' ';
 #if OPT_VIDEO_ATTRS
@@ -2197,7 +2142,7 @@ static int
 texttest(int vrow, int prow)
 {
     struct VIDEO *vpv = vscreen[vrow];	/* virtual screen image */
-    struct VIDEO *vpp = PScreen(prow);	/* physical screen image */
+    struct VIDEO *vpp = pscreen[prow];	/* physical screen image */
 
     return (!memcmp(vpv->v_text, vpp->v_text, (size_t) term.cols));
 }
@@ -2264,7 +2209,7 @@ simple_scroll(int inserts)
 	return FALSE;		/* there isn't one */
 
     vpv = vscreen[first];
-    vpp = PScreen(first);
+    vpp = pscreen[first];
 
     if (inserts) {
 	/* determine types of potential scrolls */
@@ -2363,11 +2308,11 @@ simple_scroll(int inserts)
 	scroll_screen(from, to, count);
 #if !OPT_PSCREEN
 	for (i = 0; i < count; i++) {
-	    vpp = PScreen(to + i);
+	    vpp = pscreen[to + i];
 	    vpv = vscreen[to + i];
 	    (void) memcpy(vpp->v_text, vpv->v_text, (size_t) cols);
 	}
-#if OPT_VIDEO_ATTRS && !FRAMEBUF
+#if OPT_VIDEO_ATTRS
 #define SWAP_ATTR_PTR(a, b) do { VIDEO_ATTR *temp = pscreen[a]->v_attrs;  \
 				 pscreen[a]->v_attrs = pscreen[b]->v_attrs; \
 				 pscreen[b]->v_attrs = temp; } one_time
@@ -2398,7 +2343,7 @@ simple_scroll(int inserts)
 	}
 	for (i = from; i < to; i++) {
 	    char *txt;
-	    txt = PScreen(i)->v_text;
+	    txt = pscreen[i]->v_text;
 	    for (j = 0; j < term.cols; ++j)
 		txt[j] = ' ';
 	    vscreen[i]->v_flag |= VFCHG;

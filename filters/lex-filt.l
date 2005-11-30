@@ -1,8 +1,13 @@
 %s RULES RULE1 RULEX RULER STATES ACTIONS ACTION1 ACTION2 ACTION3 CODE COMMENT
 
+%a 20000
+%n 10000
+%o 30000
+%p 25000
+
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/lex-filt.l,v 1.41 2005/10/01 00:29:52 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/lex-filt.l,v 1.43 2005/11/29 22:51:01 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of LEX program.
  */
@@ -63,7 +68,7 @@ RANGE0		(\^[^\n\r])
 RANGE1		([^\n\r\]]|{CCLASS}|{ESCAPED})
 RANGE		("["{RANGE0}?{RANGE1}*"]")
 
-LIMITED		([[:digit:]]+(,[[:digit:]]+)*)
+LIMITED		([[:digit:]]+([,][[:digit:]]+)*)
 BRACED		("{"({IDENT}|{LIMITED}+)"}")
 
 PATTERN0	({ESCAPED}|{BRACED}|{QUOTED}|{RANGE}|{UNQUOTED0})

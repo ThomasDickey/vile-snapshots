@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.559 2005/11/23 13:18:25 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.561 2005/11/30 02:17:38 tom Exp $
  *
  */
 
@@ -560,12 +560,6 @@ extern	void	hst_reset (void);
 #define	hst_reset()
 #endif
 
-/* ibmpc.c */
-#if SYS_MSDOS || SYS_OS2 || SYS_WINNT
-extern	VIDEO *	scread (VIDEO *vp, int row);
-extern	void	scwrite (int row, int col, int nchar, const char *outstr, VIDEO_ATTR *attrstr, int forg, int bacg);
-#endif
-
 /* input.c */
 extern char *add_backslashes2(char *text, char *find);
 extern char *add_backslashes(char *text);
@@ -962,10 +956,6 @@ extern void update_dos_drv_dir (char * cwd);
      extern int dos_crit_handler (UINT deverror, UINT errcode, UINT *devhdr);
 # else
      extern void dos_crit_handler (void);
-# endif
-# if OPT_MS_MOUSE
-     extern int ms_exists (void);
-     extern void ms_processing (void);
 # endif
 #endif
 

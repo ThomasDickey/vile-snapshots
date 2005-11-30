@@ -94,23 +94,15 @@ that should work, with varying degrees of success:
 		libraries emulate the borland screen i/o routines, so this
 		screen driver is used there as well.
 
-	ibmpc.c (need #define IBMPC in estruct.h or makefile): goes
-		straight to the video controller and the screen, should
-		support most popular video modes on CGA/EGA/VGA cards.
-		this is fine under regular DOS, but starts causing problems
-		in a Windows DOS-box, due to its direct video accesses.
-
 	ansi.c (need #define ANSI in estruct.h or makefile):  uses ANSI.SYS.
-		this may be more portable than ibmpc.c, since it relies on
-		the ansi driver for its cursor/scrolling/color services.
-		if you can change the resolution of your screen (to 43 or
-		50 line mode) with your ansi driver, just use the
-		"screen-rows" and/or "screen-columns" vile commands to make
-		its idea of the size match your physical screen, and
-		you'll be all set.  (i've only tested it with a free/public
-		replacement program called NNANSI.  i got my copy from a
-		simtel mirror.  i can probably find you a copy if you need
-		it.)
+		it relies on the ansi driver for its cursor/scrolling/color
+		services.  if you can change the resolution of your screen (to
+		43 or 50 line mode) with your ansi driver, just use the
+		"screen-rows" and/or "screen-columns" vile commands to make its
+		idea of the size match your physical screen, and you'll be all
+		set.  (i've only tested it with a free/public replacement
+		program called NNANSI.  i got my copy from a simtel mirror.  i
+		can probably find you a copy if you need it.)
 
 
 OS/2 information
@@ -264,5 +256,5 @@ tom dickey, dickey@invisible-island.net
 paul fox, pgf@foxharp.boston.ma.us (home)
 
 ------------------------
-$Header: /users/source/archives/vile.vcs/RCS/README.PC,v 1.32 2005/03/15 20:08:15 tom Exp $
+$Header: /users/source/archives/vile.vcs/RCS/README.PC,v 1.33 2005/11/30 01:32:30 tom Exp $
 ------------------------

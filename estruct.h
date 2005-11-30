@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.589 2005/11/23 13:46:16 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.591 2005/11/30 02:18:18 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -367,7 +367,6 @@
 #define DISP_ANSI	0		/* ansi escape sequences	*/
 #define	DISP_VMSVT	SYS_VMS		/* various VMS terminal entries	*/
 #define	DISP_BORLAND	0		/* Borland console I/O routines */
-#define	DISP_IBMPC	(SYS_MSDOS && !DISP_BORLAND && !DISP_ANSI)
 #define	DISP_X11	0		/* X Window System */
 #define DISP_NTCONS	0		/* Windows/NT console		*/
 #define DISP_NTWIN	0		/* Windows/NT screen/windows	*/
@@ -387,10 +386,6 @@
 
 #ifndef DISP_CURSES
 #define DISP_CURSES	0
-#endif
-
-#ifndef DISP_IBMPC
-#define DISP_IBMPC	0
 #endif
 
 #ifndef DISP_NTCONS
@@ -520,8 +515,7 @@
 #define	OPT_SCROLLCODE	1	/* code in display.c for scrolling the screen.
 				   Only useful if your display can scroll
 				   regions, or at least insert/delete lines.
-				   ANSI, TERMCAP, IBMPC, VMSVT and AT386 can
-				   do this */
+				   ANSI, TERMCAP/CURSES and VMSVT can do this */
 #define OPT_CVMVAS	1	/* arguments to forward/back page and half page
 				   are in pages	instead of rows (in vi,
 				   they're rows, and the argument is "sticky",
@@ -614,7 +608,7 @@
 #define OPT_EVAL        !SMALLER		/* expression-evaluation */
 #define OPT_FILEBACK    (!SMALLER && !SYS_VMS)	/* file backup style */
 #define OPT_FINDERR     !SMALLER		/* finderr support. */
-#define OPT_FLASH       (!SMALLER || DISP_IBMPC)/* visible-bell */
+#define OPT_FLASH       !SMALLER		/* visible-bell */
 #define OPT_FORMAT      !SMALLER		/* region formatting support. */
 #define OPT_HILITEMATCH !SMALLER		/* highlight all matches of a search */
 #define OPT_HISTORY     !SMALLER		/* command-history */
@@ -625,7 +619,6 @@
 #define OPT_MAJORMODE   !SMALLER		/* majormode support */
 #define OPT_MACRO_ARGS	(!SMALLER && OPT_EVAL)	/* macro argument parsing */
 #define OPT_MLFORMAT    !SMALLER		/* modeline-format */
-#define OPT_MS_MOUSE    (!SMALLER && DISP_IBMPC)/* MsDos-mouse */
 #define OPT_NAMEBST     !SMALLER		/* name's stored in a bst */
 #define OPT_ONLINEHELP  !SMALLER		/* short per-command help */
 #define OPT_POPUPCHOICE !SMALLER		/* popup-choices mode */
@@ -678,7 +671,7 @@
 #define OPT_SEL_YANK    ((DISP_X11 && XTOOLKIT) || SYS_WINNT || SYS_OS2)
 
 	/* any mouse capability */
-#define OPT_MOUSE       (OPT_SEL_YANK || OPT_XTERM || OPT_MS_MOUSE)
+#define OPT_MOUSE       (OPT_SEL_YANK || OPT_XTERM)
 
 	/* menus */
 #define	OPT_MENUS	(!SMALLER && DISP_X11 && (MOTIF_WIDGETS||ATHENA_WIDGETS))
@@ -966,8 +959,6 @@ extern void endofDisplay(void);
 #endif
 
 /* only the raw pc screen driver has a memory-mapped "frame buffer" */
-#define	FRAMEBUF	DISP_IBMPC
-
 #if SYS_OS2
 /*
  * The OS/2 toolkit defines identical typedefs for UCHAR, etc.;

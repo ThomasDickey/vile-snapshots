@@ -1,6 +1,6 @@
 #
 # 'vile' and 'mktbls' makefile for IBM C Set ++ 2.x (OS/2)
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.icc,v 1.14 2005/10/02 23:26:34 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.icc,v 1.15 2005/11/29 20:28:16 tom Exp $
 #
 
 #
@@ -16,7 +16,7 @@ CC = icc
 PROD_FLAGS  = /O+
 
 #
-CFLAGS = /Q /Wpro $(DEBUG_FLAGS) /Dscrn_chosen /DDISP_VIO=1
+CFLAGS = /Q /I . /Wpro $(DEBUG_FLAGS) /Dscrn_chosen /DDISP_VIO=1
 
 # File extension for object files:
 O = .obj

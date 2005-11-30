@@ -1,4 +1,4 @@
-MANIFEST for vile, version v9_5c
+MANIFEST for vile, version v9_5d
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 CHANGES                         Change-log for VILE
@@ -27,7 +27,6 @@ buglist                         bug-list
 builtflt.c                      interface from vile to built-in filters
 chgdfunc.h                      prototypes for mode-functions with side-effects
 cmdtbl                          used by 'mktbls' to generate VILE's command-tables
-config.emx                      configure-ifdefs for EMX (OS/2)
 config.guess                    guess configuration
 config.sub                      substitute configuration
 config_h.in                     template for config.h
@@ -67,8 +66,6 @@ makefile.djg                    makefile for DJGCC
 makefile.emx                    makefile for EMX (OS/2) with gcc and gmake
 makefile.icc                    makefile for C Set++ 2.x (OS/2)
 makefile.in                     used by 'configure' to generate a makefile
-makefile.tbc                    makefile for TurboC (MS-DOS)
-makefile.wat                    makefile for Watcom (MS-DOS) with wmake
 makefile.wnt                    makefile for Win32 with Microsoft Visual C++
 map.c                           map and map! commands
 menu.c                          menu-support for xvile
