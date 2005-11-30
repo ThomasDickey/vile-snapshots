@@ -1,5 +1,16 @@
 Changes for vile 9.6 (released ??? ??? ?? ????)
 
+ 20051129 (d)
+	> Tom Dickey:
+	+ fix vl_ctype.h to avoid redefinition of UCHAR (reports by Clark
+	  Morgan, Mark Robinson).
+	+ fix lex-filt.l to build with lex (report by Dave Rolfe).
+	+ fix include-path in makefile.wnt, makefile.djg makefile.icc to work
+	  with split-out headers for regexp.c
+	+ remove code for DISP_IBMPC
+	+ remove makefile.emx and config.emx (obsolete).
+	+ remove makefile.wat and makefile.tbc, since they used ibmpc.c
+
  20051123 (c)
 	> Clark Morgan:
 	+ remove an obsolete comment in macros.doc regarding underscore in
@@ -20,7 +31,7 @@ Changes for vile 9.6 (released ??? ??? ?? ????)
 	+ split xterm-specific code out of tcap.c as xterm.c, to share with
 	  curses.c
 	+ indent'd borland.c
-	+ remove ibmpc.c
+	+ remove ibmpc.c (obsolete)
 	+ check if stdout is not a tty on startup, print error message and
 	  exit (request by Paul Fox).
 	+ add mode xterm-fkeys, to allow termcap driver to generate

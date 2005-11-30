@@ -20,7 +20,7 @@
 #
 # gnu autoconf support by kevin buettner, 5/94
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.196 2005/11/23 12:28:27 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.198 2005/11/30 01:17:59 tom Exp $
 
 SHELL		= /bin/sh
 
@@ -102,27 +102,21 @@ INSTALL_DIRS    = $(BINDIR) $(DATADIR) $(MANDIR) @EXTRA_INSTALL_DIRS@
 # All of the makefiles which should be preserved and distributed
 UNIXMAKIN = makefile.in				# for use with configure
 VMSMAK =   descrip.mms vmsbuild.com		# on VMS
-TURBOMAK = makefile.tbc				# on DOS or OS/2, TURBO C or Borland C
-WATMAK =   makefile.wat				# on DOS, using Watcom C/386
 MSCMAK =	# still waiting for this one	# on DOS, using Microsoft C
 DJGPPMAK = makefile.djg				# on DOS, DJGCC v1.09
 NTMAK = makefile.wnt				# on Windows/NT
 BCCNTMAK = makefile.blc				# Borland C on Windows/NT
 OS2MAK = makefile.icc				# OS/2, (IBM C Set ++ 2.x)
-EMXMAK = makefile.emx config.emx		# OS/2, (EMX with gcc)
 
 MAKFILES = \
 	$(UNIXMAKIN) \
 	$(VMSMAK) \
-	$(TURBOMAK) \
-	$(WATMAK) \
 	$(DJGPPMAK) \
 	$(MSCMAK) \
 	$(BORMAK) \
 	$(NTMAK) \
 	$(BCCNTMAK) \
-	$(OS2MAK) \
-	$(EMXMAK)
+	$(OS2MAK)
 
 ALLTOOLS = $(MAKFILES) mktbls.c cmdtbl modetbl \
 	configure config_h.in \
@@ -146,7 +140,6 @@ HDRS = \
 SCREENS = \
 	ansi.c \
 	borland.c \
-	ibmpc.c \
 	ntconio.c \
 	ntwinio.c \
 	os2vio.c \

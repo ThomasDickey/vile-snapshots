@@ -3,7 +3,7 @@
  * characters, and write characters in a barely buffered fashion on the display.
  * All operating systems.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/termio.c,v 1.201 2005/11/23 12:13:03 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/termio.c,v 1.203 2005/11/30 01:29:42 tom Exp $
  *
  */
 
@@ -1149,9 +1149,6 @@ ttputc(OUTC_ARGS)
     OUTC_RET putch(c);
 #endif
 #if SYS_MSDOS
-# if DISP_IBMPC
-    /* unneeded currently -- output is memory-mapped */
-# endif
 # if DISP_ANSI
     OUTC_RET putchar(c);
 # endif
@@ -1232,15 +1229,6 @@ ttgetc(void)
      * If we've got a mouse, poll waiting for mouse movement and mouse
      * clicks until we've got a character to return.
      */
-# if OPT_MS_MOUSE
-    if (ms_exists()) {
-	for_ever {
-	    if (tttypahead())
-		break;
-	    ms_processing();
-	}
-    }
-# endif				/* OPT_MS_MOUSE */
 #if CC_MSC || CC_TURBO || SYS_OS2
     return getch();
 #endif

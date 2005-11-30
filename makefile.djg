@@ -3,7 +3,7 @@
 #
 # T.DANG (dang@cogit.ign.fr)
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.djg,v 1.32 2003/09/17 00:14:01 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.djg,v 1.34 2005/11/30 01:17:49 tom Exp $
 #
 #
 
@@ -16,15 +16,11 @@ DEBUG = -g
 #DEBUG =
 OPTIM = -O2
 
-# Use these two lines for the IBM/PC display (not DPMI compatible).
-#CFLAGS= -Wall $(DEBUG) $(OPTIM) -DDISP_IBMPC -Dscrn_chosen
-#DISP_SRC = ibmpc.c
-
 # DEBUG	+= -DOPT_TRACE
 # TRACE_C = trace.c
 
 # Use these two lines for the Borland/CONIO display (DPMI compatible).
-CFLAGS= -Wall $(DEBUG) $(OPTIM) -DDISP_BORLAND -Dscrn_chosen
+CFLAGS= -Wall -I. $(DEBUG) $(OPTIM) -DDISP_BORLAND -Dscrn_chosen
 DISP_SRC = borland.c gppconio.c
 
 # these are normal editable headers
@@ -63,21 +59,6 @@ dist :	vile
 	zip ..\pcvile.zip *.rc 
 	cd ..
 	zip pcvile.zip \\djgpp\\bin\\go32-v2.exe
-
-# for my poor slow omnibook, i do incremental linking when working on
-# just a couple of modules...
-NOBJ = $(OBJ)
-NOBJ := $(filter-out ibmpc.o, $(NOBJ))
-NOBJ := $(filter-out filec.o, $(NOBJ))
-NOBJ := $(filter-out glob.o, $(NOBJ))
-XOBJ =  ibmpc.o filec.o glob.o
-
-rvile.o: $(NOBJ)
-	ld -r -o rvile.o $(NOBJ) -L/djgpp/lib -lpc -lc -lgcc
-
-ivile: $(XOBJ) rvile.o
-	ld -o vile /djgpp/lib/crt0.o rvile.o $(XOBJ) -L/djgpp/lib -lpc -lc -lgcc
-	coff2exe vile
 
 nebind.h \
 nefunc.h \

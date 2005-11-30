@@ -22,7 +22,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.545 2005/11/23 23:03:36 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.546 2005/11/30 01:24:33 tom Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -295,11 +295,11 @@ MainProgram(int argc, char *argv[])
 	/* evaluate switches */
 	if (*param == '-') {
 	    ++param;
-#if DISP_IBMPC || DISP_BORLAND || SYS_VMS
+#if DISP_BORLAND || SYS_VMS
 	    /* if it's a digit, it's probably a screen
 	       resolution */
 	    if (isDigit(*param)) {
-#if DISP_IBMPC || DISP_BORLAND
+#if DISP_BORLAND
 		current_res_name = param;
 #else
 		if (strcmp(param, "132") == 0)
@@ -311,7 +311,7 @@ MainProgram(int argc, char *argv[])
 #endif
 		continue;
 	    } else
-#endif /* DISP_IBMPC */
+#endif /* screen resolution stuff */
 		switch (*param) {
 #if DISP_NTCONS
 		case 'c':

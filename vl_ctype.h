@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/vl_ctype.h,v 1.2 2005/11/20 19:57:02 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/vl_ctype.h,v 1.4 2005/11/30 00:31:04 tom Exp $
  *
  * Character-type tests, like <ctype.h> for vile (vi-like-emacs).
  *
@@ -42,10 +42,14 @@
 #endif
 
 #ifndef OPT_WIDE_CTYPES
-#define OPT_WIDE_CTYPES !SMALLER		/* extra char-types tests */
+#define OPT_WIDE_CTYPES !SMALLER	/* extra char-types tests */
 #endif
 
-#define UCHAR unsigned char
+#if defined(__OS2__)
+# include <os2def.h>
+#elif !defined(WIN32)
+# define UCHAR unsigned char
+#endif
 
 #define N_chars    256			/* must be a power-of-2		*/
 

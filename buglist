@@ -1,7 +1,7 @@
 ------------------------
 vile bug/enhancement/wish list (mostly wishes ;-)
 ------------------------
-$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.402 2005/07/17 18:21:56 tom Exp $
+$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.403 2005/11/30 01:18:33 tom Exp $
 ----------------------
 	(E means enhancement, L,M,H are low, medium, high priority)
 
@@ -271,19 +271,6 @@ width of a region is kept in units of offset, not of columns.
 i think this will break rectangular inserts of non-rectangular regions,
 where the longest line may not extend to the furthest column, due to
 tabs in other lines.
-
-
--------------------------
-
-I'm using the DOS version and I prefer to use 80x28 or even higher res like
-80x50 by setting set sres=80x50 in vile.rc.  The problem is that when a
-command is executed with :!<shell-command> the mode switches back to 80x25.
-It switches back to 80x25 permanently. I think it's acceptable that it
-switches to 80x25 when it's in shell command execution.  However, technically
-it should switch back to the preferred mode when it's done.
-
-[ can anyone confirm or deny this is still true? ]
-[ I don't see it happening with ibmpc.c - dickey ]
 
 ---------------------------
 

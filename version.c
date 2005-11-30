@@ -1,7 +1,7 @@
 /*
  * version & usage-messages for vile
  *
- * $Header: /users/source/archives/vile.vcs/RCS/version.c,v 1.57 2005/03/10 23:58:52 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/version.c,v 1.58 2005/11/30 01:25:16 tom Exp $
  *
  */
 
@@ -60,7 +60,7 @@ print_usage(int code)
 	"-leftbar       Put scrollbar(s) on left",
 	"-rightbar      Put scrollbar(s) on right (default)",
 #endif
-#if DISP_IBMPC || DISP_BORLAND
+#if DISP_BORLAND
 	"-2             25-line mode",
 	"-4             43-line mode",
 	"-5             50-line mode",

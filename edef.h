@@ -6,7 +6,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.320 2005/03/10 19:54:57 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.322 2005/11/30 02:18:33 tom Exp $
  */
 
 #ifndef VILE_EDEF_H
@@ -466,9 +466,9 @@ extern	TERM	null_term;
 
 decl_init(int utf8_locale, FALSE);
 
-#if DISP_IBMPC || DISP_BORLAND || DISP_VIO
+#if DISP_BORLAND || DISP_VIO
 decl_init( char *current_res_name, "default");
-#endif	/* IBMPC */
+#endif	/* resolution */
 
 #ifdef __cplusplus
 }

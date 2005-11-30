@@ -1,7 +1,7 @@
 /*	Spawn:	various DOS access commands
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.187 2005/11/23 17:15:24 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.188 2005/11/30 01:24:52 tom Exp $
  *
  */
 
@@ -370,9 +370,6 @@ ShellPrompt(TBUFF **holds,
 static int
 spawn1(int rerun, int pressret)
 {
-#if DISP_IBMPC
-    int closed;
-#endif
 #if COMMON_SH_PROMPT
     int s;
     char line[NLINE];		/* command line send to shell */
@@ -425,14 +422,6 @@ spawn1(int rerun, int pressret)
     kbd_erase_to_end(0);
     kbd_flush();
     term.kclose();
-#if	DISP_IBMPC
-    /* If we don't reset to 80x25, parts of the shell-output will go
-     * astray.
-     */
-    closed = term.cols != 80 || term.rows != 25;
-    if (closed)
-	term.close();
-#endif
 #if SYS_WINNT
 # if DISP_NTWIN
     w32_system_winvile(line, &pressret);
@@ -449,13 +438,6 @@ spawn1(int rerun, int pressret)
     if (pressret) {
 	pressreturn();
     }
-#endif
-#if	DISP_IBMPC
-    /* Reopen the display _after_ the prompt, to keep the shell-output
-     * in the same type of screen as the prompt.
-     */
-    if (closed)
-	term.open();
 #endif
 #if DISP_NTCONS
     ntcons_reopen();

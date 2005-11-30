@@ -9,7 +9,7 @@
  * Note: Visual flashes are not yet supported.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/borland.c,v 1.33 2005/11/23 12:23:49 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/borland.c,v 1.34 2005/11/30 01:25:29 tom Exp $
  *
  */
 
@@ -23,9 +23,8 @@
 #undef OPT_COLOR
 #endif /* SYS_OS2 */
 
-#if !DISP_BORLAND || DISP_IBMPC
+#if !DISP_BORLAND
 #error misconfigured:  DISP_BORLAND should be defined if using borland.c
-#error (and DISP_IBMPC should not be defined)
 #endif
 
 #define NROW	50		/* Max Screen size.             */
