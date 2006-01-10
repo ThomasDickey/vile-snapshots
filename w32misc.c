@@ -2,7 +2,7 @@
  * w32misc:  collection of unrelated, common win32 functions used by both
  *           the console and GUI flavors of the editor.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32misc.c,v 1.45 2005/02/01 00:12:40 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32misc.c,v 1.46 2005/12/21 00:59:05 tom Exp $
  */
 
 #include "estruct.h"
@@ -37,11 +37,16 @@ stdin_data_available(void)
 {
     FILE *fp;
     int  rc = 0;
+    int fd1 = fileno(stdin);
+    int fd2;
 
-    if ((fp = fdopen(dup(fileno(stdin)), "r")) != NULL)
-    {
-        fclose(fp);
-        rc = 1;
+    if (fd1 >= 0) {
+	if ((fd2 = dup(fd1)) >= 0) {
+	    if ((fp = fdopen(fd2, "r")) != NULL) {
+		fclose(fp);
+		rc = 1;
+	    }
+	}
     }
     return (rc);
 }

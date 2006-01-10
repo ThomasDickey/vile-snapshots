@@ -1,7 +1,7 @@
 #
 # makefile for vile on WIN32 using Microsoft Visual C++
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.wnt,v 1.86 2005/11/24 18:50:25 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.wnt,v 1.89 2006/01/10 00:20:15 tom Exp $
 #
 #
 !include <ntwin32.mak>
@@ -247,8 +247,14 @@ winvile.res :	winvile.rc winvile.h
 	$(RC) -DVILE_ICON="$(ICON).ico" -Iicons winvile.rc
 
 # collect some perl environment info
+!if "$(PERLCFG)" != "$(DEVNULL)"
+!if !exist("$(PERLCFG)")
 $(PERLCFG): $(PERL_SCRIPTS) mkprlenv.wnt
+	echo making PERLCFG $(PERLCFG)
 !INCLUDE "mkprlenv.wnt"
+	echo ...made PERLCFG $(PERLCFG)
+!endif
+!endif
 
 $(OBJ): estruct.h edef.h proto.h $(MYHDRS)
 builtflt.obj : builtflt.h
@@ -301,10 +307,25 @@ w32ole.res: w32ole.rc winvile.tlb
 winviletlb.h winvile.tlb: winvile.odl
 	midl -h winviletlb.h -tlb winvile.tlb winvile.odl
 
+test_btree.exe :	btree.c
+	$(CC) -Fo$* -DDEBUG_BTREE $(CPPFLAGS) $(CFLAGS) btree.c $(LDFLAGS)
+
+test_regexp.exe :	regexp.c
+	$(CC) -Fo$* -DDEBUG_REGEXP $(CPPFLAGS) $(CFLAGS) regexp.c $(LDFLAGS)
+
+TEST_IO_OBJS	= \
+	$(SCREEN).obj \
+	test_io.obj
+
+test_io.exe :		$(TEST_IO_OBJS)
+	$(link) $(TEST_IO_OBJS) $(LDFLAGS) $(LIBS) -out:$(@)
+
 clean ::
 	-del *.bak
 	-del *.exe
+	-del *.ilk
 	-del *.map
+	-del *.pdb
 	-del *.obj
 	-del ne*.h
 	-del $(THE_PERLCFG)

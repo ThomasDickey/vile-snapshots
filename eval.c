@@ -2,7 +2,7 @@
  *	eval.c -- function and variable evaluation
  *	original by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.348 2005/05/27 22:21:58 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.349 2005/12/10 01:38:33 tom Exp $
  *
  */
 
@@ -335,9 +335,10 @@ makevarslist(int dum1 GCC_UNUSED, void *ptr)
     if (temp_vars != 0)
 	bputc('\n');
     for (p = temp_vars, j = 0; p != 0; p = p->next) {
-	if (!j++)
+	if (!j++) {
 	    bprintf("--- Temporary variables ");
-	bpadc('-', term.cols - DOT.o);
+	    bpadc('-', term.cols - DOT.o);
+	}
 	bprintf("\n%%%s = %s", p->u_name, p->u_value);
     }
 }

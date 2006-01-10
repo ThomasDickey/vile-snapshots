@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/flt_defs.h,v 1.1 2005/06/09 23:39:40 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/flt_defs.h,v 1.2 2006/01/09 23:26:33 tom Exp $
  */
 
 #ifndef FLT_DEFS_H
@@ -113,6 +113,10 @@ extern	int	sscanf	( const char *src, const char *fmt, ... );
 
 #ifndef GCC_UNUSED
 #define GCC_UNUSED /*nothing*/
+#endif
+
+#ifndef VILE_PRINTF
+#define VILE_PRINTF(a,b) /*nothing*/
 #endif
 
 #define BACKSLASH '\\'

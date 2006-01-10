@@ -1,7 +1,7 @@
 #
 # makefile for vile filters on WIN32 using Microsoft Visual C++
 #
-# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.wnt,v 1.31 2005/03/10 23:45:11 tom Exp $
+# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.wnt,v 1.32 2005/12/10 01:30:22 tom Exp $
 #
 #
 !include <ntwin32.mak>
@@ -179,6 +179,7 @@ clean:
 	- del lex.*.c
 	- del *.bak
 	- del *.tmp
+	- del *.pdb
 	- del *$x
 	- del *$o
 	- del *.lib

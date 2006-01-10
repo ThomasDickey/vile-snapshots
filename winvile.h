@@ -40,3 +40,5 @@
 
 #define WM_WVILE_CURSOR_ON               (WM_USER + 1)
 #define WM_WVILE_CURSOR_OFF              (WM_USER + 2)
+#define WM_WVILE_FLASH_START             (WM_USER + 3)
+#define WM_WVILE_FLASH_STOP              (WM_USER + 4)

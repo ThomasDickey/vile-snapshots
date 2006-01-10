@@ -1,5 +1,5 @@
 /*
- * $Id: btree.c,v 1.21 2005/01/24 22:21:38 tom Exp $
+ * $Id: btree.c,v 1.22 2006/01/10 01:19:19 tom Exp $
  * Copyright 1997-2005 by Thomas E. Dickey
  *
  * Maintains a balanced binary tree (aka AVL tree) of unspecified nodes.  The
@@ -38,6 +38,8 @@
 #define	for_ever for(;;)
 #define beginDisplay()		/* nothing */
 #define endofDisplay()		/* nothing */
+
+#include <time.h>
 
 #else
 #include "estruct.h"
@@ -896,7 +898,7 @@ main(int argc, char *argv[])
 		printf("** list(%s)\n", t);
 		for (n = 0; list[n] != 0; n++)
 		    printf("[%d] '%s'\n", n, list[n]);
-		free(list);
+		free((char *) list);
 	    } else
 		printf("** list(%s) fail\n", t);
 	    break;
@@ -910,8 +912,9 @@ main(int argc, char *argv[])
 	    btree_printf(&text_tree);
 	    break;
 	case 'r':
+	    srand((unsigned) time(NULL));
 	    for (n = 0; n < MAX_VEC; n++) {
-		vector[n] = random();
+		vector[n] = rand();
 		sprintf(buffer, "%d", vector[n]);
 		temp.bi_key = buffer;
 		(void) btree_insert(&text_tree, &temp);
@@ -919,7 +922,7 @@ main(int argc, char *argv[])
 	    }
 	    for (m = 0; m < 2; m++)
 		for (n = 0; n < MAX_VEC; n++) {
-		    unsigned delete = random() & 1;
+		    unsigned delete = rand() & 1;
 		    char *name = delete ? "delete" : "insert";
 		    int ok;
 

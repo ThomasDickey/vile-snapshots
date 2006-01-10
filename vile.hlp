@@ -455,6 +455,11 @@ Text manipulation command:
 	below), so it can work on regions: for example use '^A-&}' to
 	"repeat the previous substitution over the rest of this paragraph".
 
+	The named marks such as "'a" work as they do in vi.  vile allows
+	a decimal digit as a mark.  It also recognizes special marks for
+	the beginning and end of a selection: '< for the beginning and
+	'> for the end (see the discussion of the quoted motion command).
+
 	Infinite Undo
 	--------------
 	The regular undo ('u') and line-undo ('U') are available for all
@@ -3592,7 +3597,8 @@ Mode line customization
 		%C	character value at current edit-position.
 		%f	file name when not internal buffer and when not the
 			same as the buffer name.
-		%F	internal buffer name
+		%F	file name when it is internal buffer name and not the
+			same as the buffer name.
 		%i	insert/overwrite/replace mode indicator, displayed
 			only when in insert, overwrite, or replace mode.
 			When not in one of these modes, the separator
@@ -3601,6 +3607,10 @@ Mode line customization
 		%L	number of lines in buffer, if ruler is set
 		%m	major mode(s), e.g., cmode, view-only, etc.  Displayed
 			in square brackets.
+		%n	relative file name when not internal buffer name,
+			otherwise the buffer name.
+		%N	absolute file name when not internal buffer name,
+			otherwise the buffer name.
 		%p	line number as percentage of number of lines if
 			"ruler" is set
 		%P	line number as percentage of number of lines
@@ -6206,6 +6216,6 @@ Problems
 	Requests to be put on the announcement list should go to
 		announce-request@vile.cx
 
-Copyright 1995-2005 by Paul Fox, Thomas Dickey, and Kevin Buettner
+Copyright 1995-2005,2006 by Paul Fox, Thomas Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.603 2005/11/24 01:35:59 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.606 2006/01/09 23:49:18 tom Exp $

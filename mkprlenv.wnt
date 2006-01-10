@@ -27,7 +27,7 @@
 # Consult the macro $(PERL_SCRIPTS) in the file makefile.wnt to ascertain the
 # current list of vile-based perl scripts known to work in a Win32 environment.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/mkprlenv.wnt,v 1.8 2001/01/03 01:27:14 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/mkprlenv.wnt,v 1.9 2005/12/07 11:55:18 tom Exp $
 #
     perl -w <<
 	require Config;
@@ -175,7 +175,7 @@
 #
 # Delete things that are affected by the perl configuration before
 # going any further.
-    -del $(TARGET)
+    -del $(EXEFILE)
     -del perl.c
 # Look ma, a recursive make
     $(MAKE) -f makefile.wnt CFG=$(CFG) OPT=$(OPT) ICON=$(ICON)

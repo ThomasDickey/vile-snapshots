@@ -5,7 +5,7 @@
  * keys. Like everyone else, they set hints
  * for the display system.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.296 2005/09/26 22:50:14 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.298 2005/12/25 22:00:59 tom Exp $
  *
  */
 
@@ -304,6 +304,8 @@ MarkUnused(BUFFER *bp)
 static void
 FreeBuffer(BUFFER *bp)
 {
+    WINDOW *wp;
+
     beginDisplay();
 
     if (bp->b_fname != out_of_mem)
@@ -328,6 +330,13 @@ FreeBuffer(BUFFER *bp)
 #endif
 	free((char *) bp);	/* Release buffer block */
     }
+
+    for_each_window(wp) {
+	if (wp->w_bufp == bp) {
+	    wp->w_bufp = 0;
+	}
+    }
+
     endofDisplay();
 }
 
@@ -1094,113 +1103,117 @@ swbuffer_lfl(BUFFER *bp, int lockfl, int this_window)
 	if (!b_is_reading(bp) &&
 	    !bp->b_active)	/* on second thought, yes there is */
 	    s = suckitin(bp, TRUE, lockfl);
-
-	returnCode(s);
-    }
+    } else {
 #if !WINMARK
-    /* Whatever else we do, make sure MK isn't bogus when we leave */
-    MK = nullmark;
+	/* Whatever else we do, make sure MK isn't bogus when we leave */
+	MK = nullmark;
 #endif
 
-    if (valid_buffer(curbp)) {
-	/* if we'll have to take over this window, and it's the last */
-	if ((this_window || bp->b_nwnd == 0)
-	    && curbp->b_nwnd != 0 && --(curbp->b_nwnd) == 0) {
-	    undispbuff(curbp, curwp);
-	} else if (DOT.l != 0 && (this_window || bp->b_nwnd == 0)) {
-	    /* Window is still getting taken over so make a
-	       copy of the traits for a possible future
-	       set-window */
-	    copy_traits(&(curbp->b_wtraits), &(curwp->w_traits));
+	if (valid_buffer(curbp)) {
+	    /* if we'll have to take over this window, and it's the last */
+	    if ((this_window || bp->b_nwnd == 0)
+		&& curbp->b_nwnd != 0 && --(curbp->b_nwnd) == 0) {
+		undispbuff(curbp, curwp);
+	    } else if (DOT.l != 0 && (this_window || bp->b_nwnd == 0)) {
+		/* Window is still getting taken over so make a
+		   copy of the traits for a possible future
+		   set-window */
+		copy_traits(&(curbp->b_wtraits), &(curwp->w_traits));
+	    }
 	}
-    }
 
-    /* don't let make_current() call the hook -- there's
-       more to be done down below */
-    DisableHook(&bufhook);
-    make_current(bp);		/* sets curbp */
-    EnableHook(&bufhook);
+	/* don't let make_current() call the hook -- there's
+	   more to be done down below */
+	DisableHook(&bufhook);
+	make_current(bp);	/* sets curbp */
+	EnableHook(&bufhook);
 
-    bp = curbp;			/* if running the bufhook caused an error, we may
-				   be in a different buffer than we thought
-				   we were going to */
+	bp = curbp;		/* if running the bufhook caused an error,
+				   we may be in a different buffer than we
+				   thought we were going to */
 
 #if !SMALLER
-    if (this_window) {
-	/* Put buffer in this window even if it's already on
-	   screen */
-	LINE *lp;
-	int trait_matches;
-	if (curwp == 0)
-	    returnCode(FALSE);
-	if (curwp->w_bufp == bp)
-	    returnCode(TRUE);
-	if (curwp->w_bufp->b_nwnd == 0)
-	    undispbuff(curwp->w_bufp, curwp);
-	else
-	    copy_traits(&(curwp->w_bufp->b_wtraits),
-			&(curwp->w_traits));
+	if (this_window) {
+	    /* Put buffer in this window even if it's already on screen */
+	    LINE *lp;
+	    int trait_matches;
 
-	/* Initialize the window using the saved buffer traits
-	 * if possible.  If they don't pass a sanity check,
-	 * simply initialize the newest window to be a clone
-	 * of any other window on the buffer, or initialize it
-	 * as we do in popupbuff().
-	 */
+	    if (curwp == 0)
+		returnCode(FALSE);
+	    else if (curwp->w_bufp == bp)
+		returnCode(TRUE);
 
-	trait_matches = 0;
+	    if (curwp->w_bufp->b_nwnd == 0)
+		undispbuff(curwp->w_bufp, curwp);
+	    else
+		copy_traits(&(curwp->w_bufp->b_wtraits),
+			    &(curwp->w_traits));
+
+	    /* Initialize the window using the saved buffer traits if possible. 
+	     * If they don't pass a sanity check, simply initialize the newest
+	     * window to be a clone of any other window on the buffer, or
+	     * initialize it as we do in popupbuff().
+	     */
+	    trait_matches = 0;
 #if WINMARK
 #define TRAIT_MATCHES_NEEDED 5
 #else
 #define TRAIT_MATCHES_NEEDED 4
 #endif
-	for_each_line(lp, bp) {
-	    if (lp == bp->b_dot.l && llength(lp) > bp->b_dot.o)
-		trait_matches++;
+	    for_each_line(lp, bp) {
+		if (lp == bp->b_dot.l && llength(lp) > bp->b_dot.o)
+		    trait_matches++;
 #if WINMARK
-	    if (lp == bp->b_mark.l && llength(lp) > bp->b_mark.o)
-		trait_matches++;
+		if (lp == bp->b_mark.l && llength(lp) > bp->b_mark.o)
+		    trait_matches++;
 #endif
-	    if (lp == bp->b_lastdot.l && llength(lp) > bp->b_lastdot.o)
-		trait_matches++;
-	    if (lp == bp->b_tentative_lastdot.l && llength(lp) > bp->b_tentative_lastdot.o)
-		trait_matches++;
-	    if (lp == bp->b_wline.l && llength(lp) > bp->b_wline.o)
-		trait_matches++;
+		if (lp == bp->b_lastdot.l && llength(lp) > bp->b_lastdot.o)
+		    trait_matches++;
+		if (lp == bp->b_tentative_lastdot.l && llength(lp) > bp->b_tentative_lastdot.o)
+		    trait_matches++;
+		if (lp == bp->b_wline.l && llength(lp) > bp->b_wline.o)
+		    trait_matches++;
+		if (trait_matches == TRAIT_MATCHES_NEEDED)
+		    break;
+	    }
 	    if (trait_matches == TRAIT_MATCHES_NEEDED)
-		break;
-	}
-	if (trait_matches == TRAIT_MATCHES_NEEDED)
-	    copy_traits(&(curwp->w_traits), &(bp->b_wtraits));
-	else if ((wp = bp2any_wp(bp)) == 0)
-	    init_window(curwp, bp);
-	else
-	    clone_window(curwp, wp);
-    } else
+		copy_traits(&(curwp->w_traits), &(bp->b_wtraits));
+	    else if ((wp = bp2any_wp(bp)) == 0)
+		init_window(curwp, bp);
+	    else
+		clone_window(curwp, wp);
+
+	    curwp->w_bufp = bp;
+	    s = suckitin(bp, (bp->b_nwnd++ == 0), lockfl);
+	} else
 #endif /* !SMALLER */
-	/* get it already on the screen if possible */
-    if (bp->b_nwnd != 0) {	/* then it's on the screen somewhere */
-	if ((wp = bp2any_wp(bp)) == 0)
-	    mlforce("BUG: swbuffer: wp still NULL");
-	curwp = wp;
-	upmode();
+	    /* get it already on the screen if possible */
+	if (bp->b_nwnd != 0) {	/* then it's on the screen somewhere */
+	    if ((wp = bp2any_wp(bp)) == 0)
+		mlforce("BUG: swbuffer: wp still NULL");
+	    curwp = wp;
+	    upmode();
 #ifdef MDCHK_MODTIME
-	(void) check_file_changed(bp, bp->b_fname);
+	    (void) check_file_changed(bp, bp->b_fname);
 #endif
 #if OPT_UPBUFF
-	if (bp != find_BufferList())
-	    updatelistbuffers();
+	    if (bp != find_BufferList())
+		updatelistbuffers();
 #endif
-	run_buffer_hook();
-	returnCode(find_bp(bp) != 0);
-    } else if (curwp == 0) {
-	returnCode(FALSE);	/* we haven't started displaying yet */
+	    run_buffer_hook();
+	    s = (find_bp(bp) != 0);
+	} else if (curwp == 0) {
+	    s = FALSE;		/* we haven't started displaying yet */
+	} else {
+	    /* oh well, suck it into this window */
+	    curwp->w_bufp = bp;
+	    s = suckitin(bp, (bp->b_nwnd++ == 0), lockfl);
+	}
     }
-
-    /* oh well, suck it into this window */
-
-    curwp->w_bufp = bp;
-    returnCode(suckitin(bp, (bp->b_nwnd++ == 0), lockfl));
+#if OPT_TITLE
+    set_editor_title();
+#endif
+    returnCode(s);
 }
 
 #if VILE_NEEDED
@@ -1624,8 +1637,6 @@ zotbuf(BUFFER *bp)
 
     if (buffer_in_use(bp))
 	returnCode(FALSE);
-#define no_del
-#ifdef no_del
     if (buffer_is_visible(bp))	/* Error if on screen.      */
 	returnCode(FALSE);
     if (is_fake_window(wheadp)) {
@@ -1642,21 +1653,6 @@ zotbuf(BUFFER *bp)
 	    }
 	}
     }
-#else
-    if (curbp == bp) {
-	didswitch = TRUE;
-	if (buffer_is_solo(bp)) {
-	    returnCode(FALSE);
-	}
-    }
-    if (bp->b_nwnd != 0 || is_fake_window(wheadp)) {
-	/* then it's on the screen somewhere
-	   or there are fake windows to worry about */
-	(void) zotwp(bp);
-	if (find_bp(bp) == 0)	/* delwp must have zotted us */
-	    returnCode(TRUE);
-    }
-#endif
 #if OPT_LCKFILES
     /* If Buffer is killed and not locked by other then release own lock */
     if (global_g_val(GMDUSEFILELOCK)) {

@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.290 2005/11/24 01:30:54 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.291 2005/12/26 00:28:04 tom Exp $
  *
  */
 
@@ -1732,9 +1732,11 @@ kcod2prc(int c, char *seq)
 
     length = kcod2pstr(c, temp, sizeof(temp))[0];
 #if OPT_KEY_MODIFY
-    if ((c & mod_KEY) != 0 && length != 0) {
+    if ((c & mod_KEY) != 0 && (length != 0)) {
 	(void) strcpy(seq, temp + 1);
-	(void) bytes2prc(seq + length - 1, temp + length, 1);
+	if (length < (int) (1 + strlen(temp + 1) + (CharOf(c) == 0))) {
+	    (void) bytes2prc(seq + length - 1, temp + length, 1);
+	}
     } else
 #endif
 	(void) bytes2prc(seq, temp + 1, length);

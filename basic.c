@@ -5,7 +5,7 @@
  * functions that adjust the top line in the window and invalidate the
  * framing, are hard.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/basic.c,v 1.123 2005/11/16 01:22:08 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/basic.c,v 1.124 2005/12/27 02:07:06 tom Exp $
  *
  */
 
@@ -1069,6 +1069,34 @@ back_row(int f, int n)
     return code;
 }
 
+#if NMARKS > 26
+static int
+nmark2inx(int c)
+{
+    if (isDigit(c)) {
+	return c - '0' + 26;
+    } else if (isLower(c)) {
+	return c - 'a';
+    }
+    return -1;
+}
+
+static int
+inx2nmark(int c)
+{
+    if (c > 36 || c < 0) {
+	return '?';
+    } else if (c >= 26) {
+	return c - 26 + '0';
+    } else {
+	return c + 'a';
+    }
+}
+#else
+#define nmark2inx(c) ((c) - 'a')
+#define inx2nmark(c) ((c) + 'a')
+#endif
+
 #if OPT_SHOW_MARKS
 static int
 show_mark(int count, BUFFER *bp, MARK mark, int name)
@@ -1123,7 +1151,7 @@ makemarkslist(int value GCC_UNUSED, void *dummy GCC_UNUSED)
     }
     if (bp->b_nmmarks != 0) {
 	for (n = 0; n < NMARKS; n++) {
-	    done += show_mark(done, bp, bp->b_nmmarks[n], n + 'a');
+	    done += show_mark(done, bp, bp->b_nmmarks[n], inx2nmark(n));
 	}
     }
 #if OPT_SELECTIONS
@@ -1172,6 +1200,10 @@ can_set_nmmark(int c)
 {
     if (isLower(c) || c == SQUOTE)
 	return TRUE;
+#if !SMALLER
+    if (isDigit(c))
+	return TRUE;
+#endif
 #if OPT_SELECTIONS
     if (c == '<' || c == '>')
 	return TRUE;
@@ -1196,7 +1228,7 @@ get_nmmark(int c, MARK *markp)
 	} else
 #endif
 	if (curbp->b_nmmarks != NULL) {
-	    *markp = curbp->b_nmmarks[c - 'a'];
+	    *markp = curbp->b_nmmarks[nmark2inx(c)];
 	} else {
 	    result = FALSE;
 	}
@@ -1238,7 +1270,7 @@ setnmmark(int f GCC_UNUSED, int n GCC_UNUSED)
 	    return ABORT;
     }
 
-    if (c < 'a' || c > 'z') {
+    if (nmark2inx(c) < 0) {
 	return invalid_nmmark();
     }
 
@@ -1255,7 +1287,7 @@ setnmmark(int f GCC_UNUSED, int n GCC_UNUSED)
 	}
     }
 
-    curbp->b_nmmarks[c - 'a'] = DOT;
+    curbp->b_nmmarks[nmark2inx(c)] = DOT;
     return show_mark_is_set(c);
 }
 
