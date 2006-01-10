@@ -1,5 +1,55 @@
 Changes for vile 9.6 (released ??? ??? ?? ????)
 
+ 20060109 (e)
+	> Clark Morgan:
+	+ improved winvile's "flash".
+	+ several changes to w32reg.c:
+	  + if at all possible, don't register ole-enabled winvile using the
+	    path ".\winvile.exe" (obscure cygwin corner case).
+	  + remove use of toUpper(), which is not legit for winvile in this
+	    context because the underlying mapping array is apparently _not_
+	    initialized.  With this fix, "winvile -Ou" now displays the
+	    editor's name in MessageBox text (rather than "").
+	  + fixed lots of misuses of registry APIs (not properly testing return
+	    code).  With fixes in place, winvile -Ou/-Or now properly reports
+	    an error when registration/unregistration is attempted by an
+	    account with insufficient privileges.
+	+ add section definitions to vbmode.
+	+ fix:  wvwrap caused winvile to show an 8.3 folder name in Recent
+	  Folders list.
+	+ fix:  when CD'ing to a directory stored in winvile's "recent folders"
+	  list, the cursor stayed in the mini-buffer following a call to pwd().
+	> Tom Dickey:
+	+ adjust makefile dependencies to allow "make -j4" when building the
+	  loadable filter configuration (report by Ciaran McCreesh).
+	+ add "+", ",", "&", "@" and ";" to URL patterns in filters.
+	+ modify nr-filt.l to allow for optional blanks between the leading
+	  "." and the command.  This is common in nroff library macros, not
+	  in manpages, etc.
+	+ improve lex-filt.l, allowing for some flex extensions:
+	  + allow code in action rules to not have curly braces
+	  + allow curly-braces to surround chunks of flex actions
+	  + "*" as a state name.
+	+ add named marks for decimal digits (request by George Eccles).
+	+ fix stray ^@'s on the winvile popup menu resulting from changes to
+	  kcod2prc() for xterm-fkeys mode (report by Clark Morgan).
+	+ add a call to set_editor_title() at the end of swbuffer_lfl() to
+	  make title updates work properly with termcap configuration.
+	+ add %n and %N substitutions for $title-format (prompted by Clark
+	  Morgan comments).
+	+ modify FreeBuffer() to clear window's buffer-pointers that point to
+	  the freed buffer, e.g., to prevent reference to free memory in title
+	  updates (report by Clark Morgan).
+	+ check file descriptors in stdin_data_available() to avoid doing a
+	  fdopen() on an invalid descriptor.
+	+ add "#import" in cpp.key
+	+ modify preamble for xml- and html-modes to ensure that the first
+	  tag determines the type.
+	+ fixes to makefile.wnt and mkprlenv.wnt to work with Visual C++ 7.
+	+ correct padding of subtitle line for "Temporary variables" in
+	  [Variables] buffer, which was applied to all temporary variable
+	  lines.
+
  20051129 (d)
 	> Tom Dickey:
 	+ fix vl_ctype.h to avoid redefinition of UCHAR (reports by Clark

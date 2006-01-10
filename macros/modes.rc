@@ -1,4 +1,4 @@
-; $Id: modes.rc,v 1.31 2005/11/15 23:05:18 tom Exp $
+; $Id: modes.rc,v 1.33 2006/01/04 23:03:34 cmorgan Exp $
 ; majormodes in this file are ordered alphabetically for convenience - the
 ; precedence used by vile is strictly alphabetic, counting case.  Use the
 ; before and after qualifiers to override the precedence.
@@ -275,7 +275,7 @@ define-mode fdl
 define-mode html
 ~with define-submode html
 	suffixes	'\.\(html\|htm\)$'
-	pre '\(<html>\|<script>\|<!doctype\|<!--\)'
+	pre		'^\s*\(<html>\|<script>\|<!doctype\|<!--\)'
 	fence-pairs	'<>()[]{}'
 	ignorecase
 	comment-prefix	'^\s*--'
@@ -554,7 +554,7 @@ define-mode rc
 ~with define-submode rc
 	after "vile"
 	suffixes	'\.rc\d*$'
-	preamble '^\s*[^;"]'
+	preamble	'^\s*[^;"]'
 	qualifiers=all
 	comment-prefix	'^\s*//'
 	comments	'^\s*//\s*$'
@@ -731,6 +731,7 @@ define-mode vb
 	dos
 	ignorecase
 	notabinsert
+	sections '^\(Public\|Private\)\s\+\(Sub\|Function\)'
 ~endwith
 
 define-mode vbs

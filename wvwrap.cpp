@@ -10,7 +10,7 @@
  * Note:  A great deal of the code included in this file is copied
  * (almost verbatim) from other vile modules.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/wvwrap.cpp,v 1.9 2005/01/17 01:45:21 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/wvwrap.cpp,v 1.10 2006/01/04 22:53:39 cmorgan Exp $
  */
 
 #include "w32vile.h"
@@ -229,14 +229,31 @@ WinMain( HINSTANCE hInstance,      // handle to current instance
             }
             else
             {
+                 /*
+                  * To add insult to injury, Windows Explorer has a habit
+                  * of passing 8.3 filenames to wvwrap (noted on a win2K
+                  * system and a FAT32 partition).  If the folder portion
+                  * of the file's path happens to be in 8.3 format (i.e.,
+                  * a tilde included in the folder name), then 8.3 folder
+                  * names appear in winvile's Recent Folders list.
+                  * Needless to say, it's no fun trying to decipher 8.3
+                  * folder names.
+                  */
+
+                char folder[FILENAME_MAX], *fp;
+
+                if (GetLongPathName(*argv, folder, sizeof(folder)) > 0)
+                    fp = folder;
+                else
+                    fp = *argv;
+
                 if (insert_mode)
                 {
                     dynbuf[0] = '\033';
                     offset    = 1;
                 }
-                add_delim = (isalpha((*argv)[0]) &&
-                                       (*argv)[1] == ':' &&
-                                                  (*argv)[2] == '\0');
+                add_delim = (isalpha(fp[0]) && fp[1] == ':' && fp[2] == '\0');
+
                 /*
                  * With regard to the following code, note that the
                  * original file might be in the form "<drive>:\leaf", in
@@ -246,7 +263,7 @@ WinMain( HINSTANCE hInstance,      // handle to current instance
                  */
                 sprintf(dynbuf + offset,
                         ":cd %s%s\n",
-                        *argv,
+                        fp,
                         (add_delim) ? "\\" : "");
             }
             dynbuf_idx = strlen(dynbuf);

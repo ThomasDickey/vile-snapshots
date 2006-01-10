@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.591 2005/11/30 02:18:18 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.592 2005/12/26 01:29:43 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -1018,11 +1018,15 @@ extern void endofDisplay(void);
 #define CLIP_KREG  (NKREGS-1)
 #define SEL_KREG   (NKREGS-2)
 #define KEYST_KREG (NKREGS-3)
-#define NMARKS  26
 #else
 #define	NKREGS	37			/* number of kill buffers	*/
 #define KEYST_KREG (NKREGS-1)
+#endif
+
+#if SMALLER
 #define NMARKS  26
+#else
+#define NMARKS  36
 #endif
 
 /* special characters assigned to kill-registers */

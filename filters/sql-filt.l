@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/sql-filt.l,v 1.27 2005/09/05 11:18:50 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/sql-filt.l,v 1.28 2005/12/23 21:02:45 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of SQL script
  * - T.Dickey
@@ -29,8 +29,8 @@ static char *Number_attr;
 static char *String_attr;
 
 static int next_line;		/* state after one-line SQL*Plus */
-static int began_state = LEAD;
-static int saved_state = LEAD;
+static int began_state;
+static int saved_state;
 
 /******************************************************************************/
 
@@ -208,6 +208,8 @@ do_filter(FILE *inputs)
     Number_attr  = class_attr(NAME_NUMBER);
     String_attr  = class_attr(NAME_LITERAL);
 
+    began_state = LEAD;
+    saved_state = LEAD;
     set_state(LEAD);
     while (yylex() > 0) {
     }

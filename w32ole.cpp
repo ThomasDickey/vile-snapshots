@@ -17,7 +17,7 @@
  *   "FAILED" may not be used to test an OLE return code.  Use SUCCEEDED
  *   instead.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32ole.cpp,v 1.22 2005/01/26 23:20:01 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32ole.cpp,v 1.23 2005/12/20 22:18:06 tom Exp $
  */
 
 #include "w32vile.h"
@@ -38,10 +38,19 @@ extern "C"
 #include "w32reg.h"
 
 #include <initguid.h>
+
+#if __MSC_VER == 1200		/* Visual C++ 6.0 */
+#define VC6_ADDIN 1
+#else
+#define VC6_ADDIN 0
+#endif
+
+#if VC6_ADDIN
 #include <objmodel/appguid.h>
 #include <objmodel/textguid.h>
 #include <objmodel/appauto.h>
 #include <objmodel/textauto.h>
+#endif
 
 static size_t   ansibuf_len,   /* scaled in bytes   */
                 olebuf_len;    /* scaled in wchar_t */
@@ -748,6 +757,7 @@ waitfile(int f, int n)
 int
 syncfile(int f, int n)
 {
+#if VC6_ADDIN
     static CLSID     ds_clsid;   /* dev studio class id */
     HRESULT          hr;
     static int       initialized;
@@ -919,6 +929,9 @@ syncfile(int f, int n)
 syncfile_exit:
     pApp->Release();
     return (rc);
+#else
+    return 0;			// FIXME
+#endif
 }
 
 /* ------------------- Key Redirection Implementation -------------------- */

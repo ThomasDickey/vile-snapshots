@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/css-filt.l,v 1.10 2005/09/03 11:52:59 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/css-filt.l,v 1.11 2006/01/09 19:24:31 tom Exp $
  *
  * Filter to add vile "attribution" sequences to Cascading Style Sheets.
  */
@@ -49,7 +49,7 @@ DECIMAL		[[:digit:]]+
 REAL		([[:digit:]]*\.[[:digit:]]+)
 NUMBER		({DECIMAL}|{REAL})
 
-URL		[[:alpha:]]+"://"[[:alnum:]%/.~_#?=-]+
+URL		[[:alpha:]]+"://"[[:alnum:]#%&+,./?;@_=~-]+
 
 %%
 

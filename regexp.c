@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/regexp.c,v 1.116 2005/11/20 20:10:04 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/regexp.c,v 1.117 2006/01/10 01:19:19 tom Exp $
  *
  * Copyright 2005, Thomas E. Dickey and Paul G. Fox
  *
@@ -2717,7 +2717,7 @@ get_string(FILE *fp, unsigned *length, int linenum)
 		have *= 2;
 		result = typereallocn(char, result, have);
 	    }
-	    result[*length] = value;
+	    result[*length] = (char) value;
 	    *length += 1;
 	    if (literal < 0)
 		literal = (value == '#' || isupper(value)) ? 1 : 0;

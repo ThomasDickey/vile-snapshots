@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/pot-filt.l,v 1.4 2005/09/04 21:15:43 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/pot-filt.l,v 1.5 2006/01/09 20:24:38 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of gettext files.
  */
@@ -46,7 +46,7 @@ FORMAT		"%"[.*[:digit:]l$#+-]*[cdeEfFgGisuxX]
 <QUOTED>{FORMAT}	{ flt_bfr_embed(yytext, yyleng, Number_attr); }
 <QUOTED>[^%\n"\\]+	{ flt_bfr_append(yytext, yyleng); }
 <QUOTED>"%%"		{ flt_bfr_append(yytext, yyleng); }
-<QUOTED>"%"		{ flt_error("unexpected '%'");
+<QUOTED>"%"		{ flt_error("unexpected '%%'");
 			  flt_bfr_embed(yytext, yyleng, Error_attr); }
 <QUOTED>[\n]		{ flt_bfr_append(yytext, yyleng); }
 <QUOTED>"\""		{ FinishQuote(NORMAL); }

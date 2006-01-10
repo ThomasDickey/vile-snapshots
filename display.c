@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.410 2005/11/30 01:34:50 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.413 2005/12/25 21:44:45 tom Exp $
  *
  */
 
@@ -2385,18 +2385,13 @@ update_physical_screen(int force GCC_UNUSED)
     }
 }
 
-/*
- * Redisplay the mode line for the window pointed to by the "wp".
- * modeline() is the only routine that has any idea of how the modeline is
- * formatted.  You can change the modeline format by hacking at this
- * routine.  Called by "update" any time there is a dirty window.
- */
 #if OPT_MLFORMAT || OPT_POSFORMAT || OPT_TITLE
 static void
-mlfs_prefix(const char **fsp, char **msp, int lchar)
+mlfs_prefix(const char **fsp, char **msp, char lchar)
 {
     const char *fs = *fsp;
     char *ms = *msp;
+
     if (*fs == ':') {
 	fs++;
 	while (*fs && *fs != ':') {
@@ -2415,7 +2410,7 @@ mlfs_prefix(const char **fsp, char **msp, int lchar)
 		    *ms++ = ':';
 		    break;
 		case '-':
-		    *ms++ = (char) lchar;
+		    *ms++ = lchar;
 		    break;
 		default:
 		    *ms++ = '%';
@@ -2430,7 +2425,7 @@ mlfs_prefix(const char **fsp, char **msp, int lchar)
 }
 
 static void
-mlfs_suffix(const char **fsp, char **msp, int lchar)
+mlfs_suffix(const char **fsp, char **msp, char lchar)
 {
     mlfs_prefix(fsp, msp, lchar);
     if (**fsp == ':')
@@ -2542,10 +2537,10 @@ modeline_modes(BUFFER *bp, char **msptr)
     return (mcnt != 0);
 }
 
-static int
-modeline_show(WINDOW *wp, int lchar)
+static char
+modeline_show(WINDOW *wp, char lchar)
 {
-    int ic = lchar;
+    char ic = lchar;
     BUFFER *bp = wp->w_bufp;
 
     if (b_val(bp, MDSHOWMODE)) {
@@ -2636,10 +2631,11 @@ special_formatter(TBUFF **result, const char *fs, WINDOW *wp)
     char temp[NFILEN];
     int col;
     int fc;
-    int lchar;
+    char lchar;
     int need_eighty_column_indicator;
     int right_len;
     int n;
+    int skip = TRUE;
 
     if (fs == 0)
 	return;
@@ -2679,20 +2675,20 @@ special_formatter(TBUFF **result, const char *fs, WINDOW *wp)
 		need_eighty_column_indicator = TRUE;
 		break;
 	    case '-':
-		*ms++ = (char) lchar;
+		*ms++ = lchar;
 		break;
 	    case '=':
 		*ms = EOS;
 		ms = right_ms;
 		break;
 	    case 'i':		/* insert mode indicator */
-		*ms++ = (char) modeline_show(wp, lchar);
+		*ms++ = modeline_show(wp, lchar);
 		break;
 	    case 'b':
-		ms = lsprintf(ms, "%s", bp->b_bname);
+		ms = lsprintf(ms, "%s", bp ? bp->b_bname : UNNAMED_BufName);
 		break;
 	    case 'm':
-		if (modeline_modes(bp, (char **) 0)) {
+		if (bp != 0 && modeline_modes(bp, (char **) 0)) {
 		    mlfs_prefix(&fs, &ms, lchar);
 		    (void) modeline_modes(bp, &ms);
 		    mlfs_suffix(&fs, &ms, lchar);
@@ -2700,34 +2696,61 @@ special_formatter(TBUFF **result, const char *fs, WINDOW *wp)
 		    mlfs_skipfix(&fs);
 		break;
 	    case 'f':
-	    case 'F':{
-		    char *p;
-		    int skip = TRUE;	/* assumption */
+	    case 'F':
+		skip = TRUE;	/* assumption */
 
-		    if (bp->b_fname != 0) {
-			/*
-			 * when b_fname is a pipe cmd, it can be
-			 * arbitrarily long
-			 */
+		if (bp != 0 && bp->b_fname != 0) {
+		    char *p;
+
+		    /*
+		     * when b_fname is a pipe cmd, it can be
+		     * arbitrarily long
+		     */
+		    vl_strncpy(temp, bp->b_fname, sizeof(temp));
+		    temp[sizeof(temp) - 1] = '\0';
+
+		    if ((p = shorten_path(temp, FALSE)) != 0
+			&& *p
+			&& !eql_bname(bp, p)
+			&& ((fc == 'f')
+			    ? !is_internalname(p)
+			    : is_internalname(p))) {
+			mlfs_prefix(&fs, &ms, lchar);
+			for (; *p == ' '; p++) ;
+			ms = lsprintf(ms, "%s", p);
+			mlfs_suffix(&fs, &ms, lchar);
+			skip = FALSE;
+		    }
+		}
+		if (skip)
+		    mlfs_skipfix(&fs);
+		break;
+	    case 'n':
+	    case 'N':
+		mlfs_prefix(&fs, &ms, lchar);
+		if (bp != 0) {
+		    if (bp->b_fname != 0 && !is_internalname(bp->b_bname)) {
+			char *p;
 
 			vl_strncpy(temp, bp->b_fname, sizeof(temp));
 			temp[sizeof(temp) - 1] = '\0';
-			if ((p = shorten_path(temp, FALSE)) != 0
-			    && *p
-			    && !eql_bname(bp, p)
-			    && (fc == 'f' ? !is_internalname(p)
-				: is_internalname(p))) {
-			    mlfs_prefix(&fs, &ms, lchar);
-			    for (; *p == ' '; p++) ;
-			    ms = lsprintf(ms, "%s", p);
-			    mlfs_suffix(&fs, &ms, lchar);
-			    skip = FALSE;
+
+			if (fc == 'n') {
+			    p = shorten_path(temp, FALSE);
+			    if (p == 0)
+				p = temp;
+			} else {
+			    p = temp;
 			}
+			ms = lsprintf(ms, "%s", p);
+		    } else {
+			ms = lsprintf(ms, "%s", bp->b_bname);
 		    }
-		    if (skip)
-			mlfs_skipfix(&fs);
-		    break;
+		} else {
+		    ms = lsprintf(ms, "%s", UNNAMED_BufName);
 		}
+		mlfs_suffix(&fs, &ms, lchar);
+		break;
 #ifdef WMDRULER
 	    case 'l':		/* line number */
 	    case 'c':		/* column number */
@@ -2899,6 +2922,12 @@ special_formatter(TBUFF **result, const char *fs, WINDOW *wp)
 }
 #endif
 
+/*
+ * Redisplay the mode line for the window pointed to by the "wp".
+ * This is the only routine that has any idea of how the modeline is
+ * formatted.  You can change the modeline format by hacking at this
+ * routine.  Called by "update" any time there is a dirty window.
+ */
 static void
 update_modeline(WINDOW *wp)
 {

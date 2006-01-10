@@ -1,4 +1,4 @@
-%s RULES RULE1 RULEX RULER STATES ACTIONS ACTION1 ACTION2 ACTION3 CODE COMMENT
+%s RULES RULE1 RULEX RULER STATES ACTIONS ACTION0 ACTION1 ACTION2 ACTION3 CODE CODE1 COMMENT
 
 %a 20000
 %n 10000
@@ -7,7 +7,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/lex-filt.l,v 1.43 2005/11/29 22:51:01 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/lex-filt.l,v 1.58 2006/01/09 23:41:53 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of LEX program.
  */
@@ -21,6 +21,7 @@ DefineFilter("lex");
 #define NAME_LEX_SECTION "LexSection"
 #define NAME_LEX_STATES  "LexStates"
 
+static char *Action_attr;
 static char *Comment_attr;
 static char *Error_attr;
 static char *Ident_attr;
@@ -35,7 +36,9 @@ static char *States_attr;
 
 static int section = 0;
 static int nesting = 0;
+static int bracket = 0;
 
+static void end_action(void);
 static void set_rules(void);
 static void set_state(void);
 static void write_patterns(char *text, int len);
@@ -76,7 +79,7 @@ PATTERN1	({ESCAPED}|{BRACED}|{QUOTED}|{RANGE}|{UNQUOTED1})
 PATTERN		(({PATTERN0}|"("{PATTERN1}")")+|"<<EOF>>")
 PATTERNS	(({PATTERN0}|{PATTERN1}|"("{PATTERN1}")")+|"<<EOF>>")
 
-STATES		("<"({IDENT}|\,)+">")
+STATES		("<"("*"|({IDENT}|\,)+)">")
 
 %%
 
@@ -104,46 +107,85 @@ STATES		("<"({IDENT}|\,)+">")
 		    }
 		}
 
-<STATES>{IDENT}		{ insert_keyword(yytext, States_attr, 0);
-			  WriteToken(keyword_attr(yytext)); }
+<STATES>{IDENT}		{
+			  char *attr = class_attr(yytext);
+			  if (attr == 0) {
+			    insert_keyword(yytext, States_attr, 0);
+			    attr = keyword_attr(yytext);
+			  } else {
+			    attr = Error_attr;
+			    flt_error("Keyword \"%s\" is already a classname", yytext);
+			  }
+			  WriteToken(attr);
+			}
 <STATES>{SPACE}		{ ECHO; }
-<STATES>[^\n[:blank:]]	{ WriteToken(Error_attr); }
+<STATES>[^\n[:blank:]]	{ WriteToken(Error_attr);
+			  flt_error("Expected newline or blanks");
+			}
 <STATES>[\n]		{ ECHO; set_state(); }
 
 <RULES>^{IDENT}		{
 			  if (set_symbol_table(NAME_LEX_PATTERN)) {
-			      insert_keyword(yytext, Pattern_attr, 0);
-			      WriteToken(keyword_attr(yytext));
+			      char *attr = class_attr(yytext);
+			      if (attr == 0) {
+				  insert_keyword(yytext, Pattern_attr, 0);
+				  attr = keyword_attr(yytext);
+			      } else {
+				  attr = Error_attr;
+				  flt_error("Keyword \"%s\" is already a classname", yytext);
+			      }
+			      WriteToken(attr);
 			      set_symbol_table(filter_def.filter_name);
 			  } else {
 			      WriteToken(Ident_attr);
 			  }
 			  new_state(RULE1);
 			}
+<RULES>"//"[^\n]*	{ WriteToken(Comment_attr); }
+<RULES>"/*"		{ PushQuote(COMMENT, Comment_attr); }
+
 <RULE1>{SPACE}+		{ ECHO; new_state(RULEX); }
 <RULEX>{PATTERNS}	{ write_patterns(yytext, yyleng); new_state(RULER); }
-<RULER>[^\n]*		{ WriteToken(Error_attr); }
+<RULER>[^\n]*		{ WriteToken(Error_attr);
+			  flt_error("Expected newline");
+			}
 <RULER>[\n]		{ ECHO; new_state(RULES); }
 
-<ACTIONS>^{STATES}?	{ write_states(yytext, yyleng); new_state(ACTION1); }
+<ACTIONS>^{SPACE}+	{ ECHO; new_state(CODE1); }
+<ACTIONS>{SPACE}+	{ ECHO; }
+<ACTIONS>^{STATES}	{ write_states(yytext, yyleng); new_state(ACTION1); }
 <ACTIONS>^{PATTERN}	{ write_patterns(yytext, yyleng); new_state(ACTION2); }
-<ACTION1>{PATTERN}?	{ write_patterns(yytext, yyleng); new_state(ACTION2); }
-<ACTION1>[\n]		{ ECHO; new_state(ACTIONS); }
+
+<ACTION0>"//"[^\n]*	{ WriteToken(Comment_attr); }
+<ACTION0>^{SPACE}+	{ ECHO; }
+<ACTION0>{STATES}	{ write_states(yytext, yyleng); new_state(ACTION1); }
+<ACTION0>"/*"		{ PushQuote(COMMENT, Comment_attr); }
+<ACTION0>{PATTERN}	{ write_patterns(yytext, yyleng); new_state(ACTION2); }
+
+<ACTION1>"{"		{ WriteToken(Action_attr); ++bracket; new_state(ACTION0); }
+<ACTIONS,ACTION0>"}"	{ if (bracket) { --bracket; WriteToken(Action_attr); end_action(); } else ECHO; }
+<ACTION1>{PATTERN}	{ write_patterns(yytext, yyleng); new_state(ACTION2); }
 <ACTION1>{SPACE}+	{ ECHO; new_state(ACTION3); }
-<ACTION2>[\n]		{ ECHO; new_state(ACTIONS); }
+<ACTION1>[\n]		{ ECHO; end_action(); }
+
 <ACTION2>{SPACE}+	{ ECHO; new_state(ACTION3); }
+<ACTION2>[\n]		{ ECHO; end_action(); }
+
+<ACTION3>{IDENT}	{ WriteToken(keyword_attr(yytext)); new_state(CODE1); }
+<ACTION3>"//"[^\n]*	{ WriteToken(Comment_attr); }
+<ACTION3>"/*"		{ PushQuote(COMMENT, Comment_attr); }
 <ACTION3>\{		{ ECHO; nesting = 1; new_state(CODE); }
-<ACTION3>[^\{/\n].*$	{ ECHO; }
-<ACTION3>[\n]		{ ECHO; new_state(ACTIONS); }
+<ACTION3>[\n]		{ ECHO; end_action(); }
 
-<CODE>{IDENT}		{ WriteToken(keyword_attr(yytext)); }
-<CODE>{STRINGS}		{ WriteToken(String_attr); }
-<CODE>{INTEGER}		{ WriteToken(Number_attr); }
-<CODE>\{		{ ECHO; nesting++; }
-<CODE>\}		{ ECHO; if (--nesting <= 0) { nesting = 0; set_rules(); } }
+<CODE,CODE1>{IDENT}	{ WriteToken(keyword_attr(yytext)); }
+<CODE,CODE1>{STRINGS}	{ WriteToken(String_attr); }
+<CODE,CODE1>{INTEGER}	{ WriteToken(Number_attr); }
+<CODE1>[\n]		{ ECHO; set_rules(); }
+<CODE,CODE1>\{		{ ECHO; nesting++; }
+<CODE,CODE1>\}		{ ECHO; if (--nesting <= 0) { nesting = 0; set_rules(); } }
 
-<ACTION3,CODE,RULES>"//"[^\n]*	{ WriteToken(Comment_attr); }
-<ACTION3,CODE,RULES>"/*"	{ PushQuote(COMMENT, Comment_attr); }
+<CODE,CODE1>"//"[^\n]*	{ WriteToken(Comment_attr); }
+<CODE,CODE1>"/*"	{ PushQuote(COMMENT, Comment_attr); }
 <COMMENT>[^*]*		{ flt_bfr_append(yytext, yyleng); }
 <COMMENT>"*"+[^*/]*	{ flt_bfr_append(yytext, yyleng); }
 <COMMENT>"*"+"/"	{ PopQuote(); }
@@ -153,12 +195,21 @@ STATES		("<"({IDENT}|\,)+">")
 %%
 
 static void
+end_action(void)
+{
+    if (bracket)
+	new_state(ACTION0);
+    else
+	new_state(ACTIONS);
+}
+
+static void
 set_state(void)
 {
     if (section >= 2) {
 	new_state(CODE);
     } else if (section >= 1) {
-	new_state(ACTIONS);
+	end_action();
     } else {
 	new_state(RULES);
     }
@@ -175,8 +226,14 @@ static void
 write_1state(char *text, int len)
 {
     char *attr = keyword_attr(text);
-    if (attr == 0)
-	attr = Error_attr;
+    if (attr == 0) {
+	if (len == 1 && *text == '*') {
+	    attr = Keyword_attr;
+	} else {
+	    attr = Error_attr;
+	    flt_error("Unknown state name \"%s\"", text);
+	}
+    }
     flt_bfr_embed(text, len, attr);
 }
 
@@ -305,7 +362,6 @@ write_patterns(char *text, int len)
 	    } else if (ch == L_BLOCK) {
 		ranges = 1;
 	    } else if (ch == L_CURLY) {
-		flt_bfr_append(text + first, last - first);
 		if ((next = parse_ident(text, last + 1, len)) > 0) {
 		    int save = text[next - 1];
 		    text[next - 1] = 0;
@@ -315,17 +371,18 @@ write_patterns(char *text, int len)
 		     * is a forward reference.  But show an error anyway since
 		     * it is more likely to be useful.
 		     */
-		    if ((attr = keyword_attr(text + last + 1)) == 0)
+		    flt_bfr_append(text + first, last - first);
+		    if ((attr = keyword_attr(text + last + 1)) == 0) {
 			attr = Error_attr;
+			flt_error("Undefined name \"%s\"", text + last + 1);
+		    }
 		    text[next - 1] = save;
 		    flt_bfr_embed(text + last, next - last, attr);
 		    first = next;
 		} else if ((next = parse_limits(text, last + 1, len)) >= 0) {
+		    flt_bfr_append(text + first, last - first);
 		    flt_bfr_embed(text + last, next - last, Number_attr);
 		    first = next;
-		} else {
-		    flt_bfr_embed(text + last, len - last, Error_attr);
-		    break;
 		}
 	    }
 	}
@@ -349,6 +406,7 @@ do_filter(FILE *inputs)
     section = 0;
     nesting = 0;
 
+    Action_attr  = class_attr(NAME_ACTION);
     Comment_attr = class_attr(NAME_COMMENT);
     Error_attr   = class_attr(NAME_ERROR);
     Ident_attr   = class_attr(NAME_IDENT);

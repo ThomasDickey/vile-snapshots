@@ -1,4 +1,4 @@
-MANIFEST for vile, version v9_5d
+MANIFEST for vile, version v9_5e
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 CHANGES                         Change-log for VILE
@@ -105,6 +105,7 @@ tbuff.c                         temporary-buffer management functions
 tcap.c                          TERMCAP terminal driver
 tcap.h                          interface of tcap.c
 termio.c                        low-level terminal I/O support
+test_io.c                       I/O stub for testing linkage requirements
 trace.c                         development: trace to logfile
 trace.h                         development: trace to logfile
 ucrypt.c                        interface to Unix crypt(1)

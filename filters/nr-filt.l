@@ -1,7 +1,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/nr-filt.l,v 1.17 2005/09/04 21:15:43 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/nr-filt.l,v 1.18 2006/01/09 19:04:36 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of NROFF
  */
@@ -41,8 +41,8 @@ write_font(char *text, int size)
 
 %}
 
-COMMAND		^(\.[[:alnum:]]+([ \t][^\n]+)?|'\\\"[^\n]+)
-COMMENT		^\.\\\"
+COMMAND		^(\.[[:blank:]]*[[:alnum:]]+([ \t][^\n]+)?|'\\\"[^\n]+)
+COMMENT		^\.[[:blank:]]*\\\"
 
 ENIT		\\[e *\n\\+-]
 

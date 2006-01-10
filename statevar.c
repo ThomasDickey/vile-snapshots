@@ -3,7 +3,7 @@
  *	for getting and setting the values of the vile state variables,
  *	plus helper utility functions.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.94 2005/03/13 18:20:19 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.95 2005/12/25 22:36:49 tom Exp $
  */
 
 #include	"estruct.h"
@@ -1431,7 +1431,9 @@ var_TITLE(TBUFF **rp, const char *vp)
 int
 var_TITLEFORMAT(TBUFF **rp, const char *vp)
 {
-    return any_rw_STR(rp, vp, &title_format);
+    int code = any_rw_STR(rp, vp, &title_format);
+    set_editor_title();
+    return code;
 }
 #endif /* OPT_TITLE */
 

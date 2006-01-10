@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 screen API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.150 2005/11/23 12:19:35 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.153 2006/01/09 23:51:18 tom Exp $
  * Written by T.E.Dickey for vile (october 1997).
  * -- improvements by Clark Morgan (see w32cbrd.c, w32pipe.c).
  */
@@ -1455,15 +1455,8 @@ nteeol(void)
 static void
 flash_display(void)
 {
-    RECT rect;
-    HDC hDC;
-
-    GetClientRect(cur_win->text_hwnd, &rect);
-    hDC = GetDC(cur_win->text_hwnd);
-    InvertRect(hDC, &rect);
-    Sleep(100);
-    InvertRect(hDC, &rect);
-    ReleaseDC(cur_win->text_hwnd, hDC);
+    PostMessage(cur_win->text_hwnd, WM_WVILE_FLASH_START, 0, 0);
+    PostMessage(cur_win->text_hwnd, WM_WVILE_FLASH_STOP, 0, 0);
 }
 #endif
 
@@ -2007,7 +2000,7 @@ AboutBoxProc(HWND hDlg, UINT iMsg, WPARAM wParam, LPARAM lParam)
 	/* talk about copyright */
 	hwnd = GetDlgItem(hDlg, IDM_ABOUT_COPYRIGHT);
 	sprintf(buf,
-		"\nCopyright \xA9 Thomas Dickey 1997-2005\n\n"
+		"\nCopyright \xA9 Thomas Dickey 1997-2005,2006\n\n"
 		"%s is free software, distributed under the terms of the GNU "
 		"Public License (see COPYING).",
 		prognam);
@@ -2116,10 +2109,12 @@ handle_builtin_menu(WPARAM code)
 	break;
     default:
 	if (cmd >= IDM_RECENT_FILES && cmd < IDM_RECENT_FLDRS) {
-	    update(!edit_recent_file(cmd));
+	    (void) edit_recent_file(cmd);
+	    update(TRUE);	/* force cursor out of mini-buffer */
 	} else if (cmd >= IDM_RECENT_FLDRS &&
 		   cmd < (IDM_RECENT_FLDRS + MAX_RECENT_FLDRS)) {
-	    update(!cd_recent_folder(cmd));
+	    (void) cd_recent_folder(cmd);
+	    update(TRUE);	/* force cursor out of mini-buffer */
 	} else
 	    result = FALSE;
 	break;
@@ -3327,6 +3322,9 @@ TextWndProc(
 	       WPARAM wParam,
 	       LONG lParam)
 {
+    RECT rect;
+    HDC hDC;
+
     TRACE(("TEXT:%s, %s\n", message2s(message), which_window(hWnd)));
 
     switch (message) {
@@ -3340,6 +3338,19 @@ TextWndProc(
 	    TRACE(("...repaint %s\n", which_window(hWnd)));
 	    return (DefWindowProc(hWnd, message, wParam, lParam));
 	}
+	break;
+    case WM_WVILE_FLASH_START:
+	GetClientRect(cur_win->text_hwnd, &rect);
+	hDC = GetDC(cur_win->text_hwnd);
+	InvertRect(hDC, &rect);
+	ReleaseDC(cur_win->text_hwnd, hDC);
+	break;
+    case WM_WVILE_FLASH_STOP:
+	Sleep(200);
+	GetClientRect(cur_win->text_hwnd, &rect);
+	hDC = GetDC(cur_win->text_hwnd);
+	InvertRect(hDC, &rect);
+	ReleaseDC(cur_win->text_hwnd, hDC);
 	break;
     default:
 	return (DefWindowProc(hWnd, message, wParam, lParam));
