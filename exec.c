@@ -4,7 +4,7 @@
  *	original by Daniel Lawrence, but
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.281 2005/11/23 21:20:59 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.282 2006/02/16 01:16:23 tom Exp $
  *
  */
 
@@ -2384,6 +2384,7 @@ perform_dobuf(BUFFER *bp, WHLOOP * whlist)
 int
 dobuf(BUFFER *bp, int limit)
 {
+    TBUFF *macro_result = 0;
     int status = FALSE;
     WHLOOP *whlist;
     int save_vl_msgs;
@@ -2399,7 +2400,7 @@ dobuf(BUFFER *bp, int limit)
 	save_cmd_count = cmd_count;
 
 	/* macro arguments are readonly, so we do this once */
-	if (save_arguments(bp) != ABORT) {
+	if ((status = save_arguments(bp)) != ABORT) {
 	    vl_msgs = FALSE;
 
 	    for (counter = 1; counter <= limit; counter++) {
@@ -2427,14 +2428,51 @@ dobuf(BUFFER *bp, int limit)
 		    break;
 	    }
 
+	    /*
+	     * If the caller set $return, use that value.
+	     */
+	    if (this_macro_result != 0)
+		tb_copy(&macro_result, this_macro_result);
+
 	    restore_arguments(bp);
 	    vl_msgs = save_vl_msgs;
 	    cmd_count = save_cmd_count;
+	} else {
 	}
     } else {
 	mlwarn("[Too many levels of files]");
+	tb_error(&macro_result);
     }
     dobufnesting--;
+
+    /*
+     * Set $_ from our TBUFF (preferred), or a readable form of the status
+     * codes.  In the latter case, this is not the same as $status, since we
+     * try to show the ABORT and SORTOFTRUE cases as well.
+     */
+    tb_free(&last_macro_result);
+    if (macro_result != 0) {
+	last_macro_result = macro_result;
+    } else {
+	switch (status) {
+	case FALSE:
+	    tb_scopy(&last_macro_result, "FALSE");
+	    break;
+	case TRUE:
+	    tb_scopy(&last_macro_result, "TRUE");
+	    break;
+	case ABORT:
+	    tb_scopy(&last_macro_result, "ABORT");
+	    break;
+	case SORTOFTRUE:
+	    tb_scopy(&last_macro_result, "SORTOFTRUE");
+	    break;
+	default:
+	    tb_error(&last_macro_result);
+	    break;
+	}
+    }
+
     endofDisplay();
 
     return status;

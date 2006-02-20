@@ -202,8 +202,8 @@ Creating, executing, storing macros
 
 		store-procedure Filter f="Input" f="Output"
 
-	to begin a macro 'Filter' with two parameters, in/out, internally
-	referenced by $1 and $2.
+	to begin a macro 'Filter' with two parameters, Input and Output,
+	internally referenced by $1 and $2.
 
 	The 'enum' parameter type is special; it requires a second keyword
 	which denotes the symbol table which is used for name-completion.
@@ -230,6 +230,29 @@ Creating, executing, storing macros
 		video-attrs
 		visual-matches
 		vtflash
+
+    Returning values
+    ----------------
+	Any macro can return a value to a calling script.  This is done
+	using special variables:
+
+		$return	is a symbol that a macro can set to any string.
+
+		$_	is copied from $return when completing a macro.
+			If no string was assigned to $return within the
+			macro, $_ will contain a readable form of the
+			exit status.  These are the standard values used
+			within vile:
+
+				TRUE
+				FALSE
+				ABORT
+				SORTOFTRUE
+
+			$_ may also contain the special symbol ERROR if
+			the macro could not run, e.g., due to too much
+			recursion, or if the exit status was none of the
+			standard values.
 
     Storing macros
     --------------
@@ -1474,6 +1497,6 @@ Example startup file
 	========================= end vile.rc =======================
 
 -----------------------------------
-  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.95 2005/11/23 16:50:27 cmorgan Exp $
+  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.96 2006/02/16 01:22:49 tom Exp $
 -----------------------------------
 

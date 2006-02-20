@@ -1,4 +1,4 @@
-MANIFEST for vile, version v9_5e
+MANIFEST for vile, version v9_5f
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 CHANGES                         Change-log for VILE
@@ -63,7 +63,6 @@ line.c                          line-management functions
 main.c                          main program of VILE
 makefile.blc                    makefile for Win32 with Borland C++
 makefile.djg                    makefile for DJGCC
-makefile.emx                    makefile for EMX (OS/2) with gcc and gmake
 makefile.icc                    makefile for C Set++ 2.x (OS/2)
 makefile.in                     used by 'configure' to generate a makefile
 makefile.wnt                    makefile for Win32 with Microsoft Visual C++
@@ -78,6 +77,7 @@ msgs.c                          pop-up message support
 npopen.c                        pipe-command support
 ntconio.c                       Win32 console terminal driver
 ntwinio.c                       GUI terminal driver for WinNT
+nullterm.c                      null device-driver
 oneliner.c                      commands that operate upon single lines
 opers.c                         operator-commands (that use motions)
 os2keys.h                       function-key definitions for OS/2
@@ -185,6 +185,7 @@ filters/c-filt.flx              original flex-based c-filter
 filters/c.key                   keywords for C
 filters/cfg-filt.l              syntax filter for Lynx config file.
 filters/cpp.key                 C++ keywords
+filters/cs.key                  keywords for C#
 filters/csh.key                 keywords for csh/tcsh syntax highlighting filter
 filters/css-filt.l              syntax filter for CSS files
 filters/css.key                 keywords for css mode

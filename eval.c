@@ -2,7 +2,7 @@
  *	eval.c -- function and variable evaluation
  *	original by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.349 2005/12/10 01:38:33 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.351 2006/02/16 01:02:34 tom Exp $
  *
  */
 
@@ -39,6 +39,7 @@ typedef struct PROC_ARGS {
     struct PROC_ARGS *nxt_args;
     int num_args;		/* total argument count */
     TBUFF **all_args;
+    TBUFF *result;		/* function can assign to $return */
 } PROC_ARGS;
 
 static PROC_ARGS *arg_stack;
@@ -1306,25 +1307,35 @@ lookup_statevar(const char *name)
     return ILLEGAL_NUM;
 }
 
-/* get a state variable's value */
+/*
+ * Get a state variable's value.  This function may in turn be called by
+ * the statevar_func[], so it has to manage a stack of results.
+ */
 static char *
 get_statevar_val(int vnum)
 {
-    static TBUFF *result;
+    char *result = error_val;
+    static TBUFF *buffer[9];
+    static unsigned nested;
     int s;
 
-    if (vnum == ILLEGAL_NUM)
-	return error_val;
+    if (vnum != ILLEGAL_NUM) {
+	unsigned old_level = nested;
+	unsigned new_level = ((nested < TABLESIZE(buffer) - 1)
+			      ? (nested + 1)
+			      : nested);
 
-    tb_init(&result, EOS);
-    s = (*statevar_func[vnum]) (&result, (const char *) NULL);
+	nested = new_level;
+	tb_init(&buffer[nested], EOS);
+	s = (*statevar_func[vnum]) (&buffer[nested], (const char *) NULL);
 
-    if (s == TRUE) {
-	tb_append(&result, EOS);	/* trailing null, just in case... */
-	return tb_values(result);
-    } else {
-	return error_val;
+	if (s == TRUE) {
+	    tb_append(&buffer[nested], EOS);	/* trailing null, just in case... */
+	    result = tb_values(buffer[nested]);
+	}
+	nested = old_level;
     }
+    return result;
 }
 
 /*
@@ -2297,7 +2308,16 @@ save_arguments(BUFFER *bp)
 
 	p->nxt_args = arg_stack;
 	p->all_args = all_args;
+
 	arg_stack = p;
+
+	/*
+	 * Remember the caller's $return variable, if any.
+	 * Coming into a macro, we have no value in $return, but can leave $_
+	 * as is.
+	 */
+	p->result = this_macro_result;
+	this_macro_result = 0;
 
 	tb_scopy(&(p->all_args[num_args]), bp->b_bname);
 	if (p->all_args[num_args] == 0) {
@@ -2362,7 +2382,7 @@ save_arguments(BUFFER *bp)
 }
 
 /*
- * Pop the list of arguments off our stack
+ * Pop the list of arguments off our stack.
  */
 /* ARGSUSED */
 void
@@ -2373,6 +2393,12 @@ restore_arguments(BUFFER *bp GCC_UNUSED)
     TRACE(("restore_arguments(%s)\n", bp->b_bname));
 
     if (p != 0) {
+	/*
+	 * Restore the caller's $return variable.
+	 */
+	tb_free(&this_macro_result);
+	this_macro_result = p->result;
+
 	arg_stack = p->nxt_args;
 	while (p->num_args >= 0) {
 	    tb_free(&(p->all_args[p->num_args]));

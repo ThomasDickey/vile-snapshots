@@ -14,12 +14,13 @@
  *   -- support wide and narrow screen resolutions,
  *   -- support visual bells.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/vmsvt.c,v 1.58 2005/11/23 12:19:01 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/vmsvt.c,v 1.63 2006/01/13 01:25:13 tom Exp $
  *
  */
 
 #include	"estruct.h"	/* Emacs' structures            */
 #include	"edef.h"	/* Emacs' definitions           */
+#include	"nefunc.h"	/* f_backchar_to_bol            */
 
 #if DISP_VMSVT
 
@@ -33,10 +34,18 @@
 #include	<smg$routines.h>
 #include	<ssdef.h>
 
+#include	<descrip.h>
+#include	<iodef.h>
+#include	<ttdef.h>
+#include	<tt2def.h>
+
 /* function prototypes needed for the dispatch table */
-static void vmsscrollregion(int top, int bot);
-static void vmsscroll_reg(int from, int to, int n);
-static void vmsscroll_delins(int from, int to, int n);
+static OUTC_DCL vmsvt_putc(OUTC_ARGS);
+static int vmsvt_typahead(void);
+static void vmsvt_flush(void);
+static void vmsvt_scrollregion(int top, int bot);
+static void vmsvt_scroll_reg(int from, int to, int n);
+static void vmsvt_scroll_delins(int from, int to, int n);
 
 /* SMG stuff (just like termcap) */
 static int initialized;
@@ -74,7 +83,7 @@ struct vmskeyseqs {
     char *seq;
     int code;
 };
-struct vmskeyseqs vt100seqs[] =
+static struct vmskeyseqs vt100seqs[] =
 {
     { "\033[A",   KEY_Up },
     { "\033[B",   KEY_Down },
@@ -150,7 +159,7 @@ struct vmskeyseqs vt100seqs[] =
     { "\2332~",   KEY_Insert },
     { "\2334~",   KEY_Select },
 };
-struct vmskeyseqs vt52seqs[] =
+static struct vmskeyseqs vt52seqs[] =
 {
     { "\33A",     KEY_Up },
     { "\33B",     KEY_Down },
@@ -163,21 +172,46 @@ struct vmskeyseqs vt52seqs[] =
 };
 /* *INDENT-ON* */
 
+typedef struct {
+    USHORT status;		/* I/O completion status */
+    USHORT count;		/* byte transfer count   */
+    int dev_dep_data;		/* device-dependent data */
+} QIO_SB;			/* This is a QIO I/O Status Block */
+
+#define NIBUF	1024		/* Input buffer size            */
+#define NOBUF	1024		/* MM says big buffers win!     */
+#define EFN	0		/* Event flag                   */
+
+static char obuf[NOBUF];	/* Output buffer                */
+static int nobuf;		/* # of bytes in above          */
+
+static char ibuf[NIBUF];	/* Input buffer                 */
+static int nibuf;		/* # of bytes in above          */
+
+static int ibufi;		/* Read index                   */
+
+/*
+ * Public data also used by spawn.c
+ */
+int oldmode[3];			/* Old TTY mode bits            */
+int newmode[3];			/* New TTY mode bits            */
+short iochan;			/* TTY I/O channel              */
+
 /***
- *  ttputs  -  Send a string to ttputc
+ *  Send a string to vmsvt_putc
  *
  *  Nothing returned
  ***/
 static void
-ttputs(char *string)		/* String to write              */
+vmsvt_puts(char *string)	/* String to write              */
 {
     if (string)
 	while (*string != EOS)
-	    ttputc(*string++);
+	    vmsvt_putc(*string++);
 }
 
 /***
- *  vmsvt_tgoto - 2-argument request, e.g., for cursor movement.
+ *  2-argument request, e.g., for cursor movement.
  *
  *  Nothing returned
  ***/
@@ -208,24 +242,24 @@ vmsvt_tgoto(request_code, parm1, parm2)
 					       &ret_length,
 					       buffer,
 					       arg_list))) {
-	ttputs("OOPS");
+	vmsvt_puts("OOPS");
 	return;
     } else if (ret_length > 0) {
 	char *cp = buffer;
 	while (ret_length-- > 0)
-	    ttputc(*cp++);
+	    vmsvt_putc(*cp++);
     }
 }
 
 static void
-vmsmove(int row, int col)
+vmsvt_move(int row, int col)
 {
     vmsvt_tgoto(SMG$K_SET_CURSOR_ABS, row + 1, col + 1);
 }
 
 #if OPT_VIDEO_ATTRS
 static void
-vmsattr(UINT attr)
+vmsvt_attr(UINT attr)
 {
 #define VA_SGR (VASEL|VAREV|VAUL|VAITAL|VABOLD)
     /* *INDENT-OFF* */
@@ -261,7 +295,7 @@ vmsattr(UINT attr)
 	    if ((tbl[n].mask & diff) != 0
 		&& (tbl[n].mask & attr) == 0
 		&& (s = *(tbl[n].end)) != 0) {
-		ttputs(s);
+		vmsvt_puts(s);
 #if OPT_COLOR
 		if (!ends)	/* do this once */
 		    reinitialize_colors();
@@ -276,16 +310,16 @@ vmsattr(UINT attr)
 	    if ((tbl[n].mask & diff) != 0
 		&& (tbl[n].mask & attr) != 0
 		&& (s = *(tbl[n].start)) != 0) {
-		ttputs(s);
+		vmsvt_puts(s);
 		diff &= ~(tbl[n].mask);
 	    }
 	}
 
 	if (tc_SO != 0 && tc_SE != 0) {
 	    if (ends && (attr & (VAREV | VASEL))) {
-		ttputs(tc_SO);
+		vmsvt_puts(tc_SO);
 	    } else if (diff & VA_SGR) {		/* we didn't find it */
-		ttputs(tc_SE);
+		vmsvt_puts(tc_SE);
 	    }
 	}
 #if OPT_COLOR
@@ -313,23 +347,23 @@ tcaprev(UINT state)
 	return;
     revstate = state;
     if (state)
-	ttputs(tc_SO);
+	vmsvt_puts(tc_SO);
     else
-	ttputs(tc_SE);
+	vmsvt_puts(tc_SE);
 }
 
 #endif /* OPT_VIDEO_ATTRS */
 
 static void
-vmseeol(void)
+vmsvt_eeol(void)
 {
-    ttputs(erase_to_end_line);
+    vmsvt_puts(erase_to_end_line);
 }
 
 static void
-vmseeop(void)
+vmsvt_eeop(void)
 {
-    ttputs(erase_whole_display);
+    vmsvt_puts(erase_whole_display);
 }
 
 static void
@@ -448,8 +482,12 @@ get_terminal_type(void)
 }
 
 static void
-vmsopen(void)
+vmsvt_open(void)
 {
+    QIO_SB iosb;
+    int status;
+    $DESCRIPTOR(odsc, "SYS$COMMAND");
+
     int i, keyseq_tablesize;
     struct vmskeyseqs *keyseqs;
 
@@ -496,9 +534,9 @@ vmsopen(void)
     if (scroll_regn && scroll_back) {
 	if (scroll_forw == NULL)	/* assume '\n' scrolls forward */
 	    scroll_forw = "\n";
-	term.scroll = vmsscroll_reg;
+	term.scroll = vmsvt_scroll_reg;
     } else if (delete_line && insert_line)
-	term.scroll = vmsscroll_delins;
+	term.scroll = vmsvt_scroll_delins;
     else
 	term.scroll = nullterm_scroll;
 
@@ -509,7 +547,34 @@ vmsopen(void)
 		  : "WIDE");
 
     /* Open terminal I/O drivers */
-    ttopen();
+    status = sys$assign(&odsc, &iochan, 0, 0);
+    if (status != SS$_NORMAL)
+	tidy_exit(status);
+    status = sys$qiow(EFN, iochan, IO$_SENSEMODE, &iosb, 0, 0,
+		      oldmode, sizeof(oldmode), 0, 0, 0, 0);
+    if (status != SS$_NORMAL
+	|| iosb.status != SS$_NORMAL)
+	tidy_exit(status);
+    newmode[0] = oldmode[0];
+    newmode[1] = oldmode[1];
+    newmode[1] |= TT$M_NOBRDCST;	/* turn on no-broadcast */
+    newmode[1] &= ~TT$M_TTSYNC;
+    newmode[1] &= ~TT$M_ESCAPE;	/* turn off escape-processing */
+    newmode[1] &= ~TT$M_HOSTSYNC;
+    newmode[1] &= ~TT$M_NOTYPEAHD;	/* turn off no-typeahead */
+    newmode[2] = oldmode[2];
+    newmode[2] |= TT2$M_PASTHRU;	/* turn on pass-through */
+    newmode[2] |= TT2$M_ALTYPEAHD;	/* turn on big typeahead buffer */
+    status = sys$qiow(EFN, iochan, IO$_SETMODE, &iosb, 0, 0,
+		      newmode, sizeof(newmode), 0, 0, 0, 0);
+    if (status != SS$_NORMAL
+	|| iosb.status != SS$_NORMAL)
+	tidy_exit(status);
+    term.rows = (newmode[1] >> 24);
+    term.cols = newmode[0] >> 16;
+
+    /* make sure backspace is bound to backspace */
+    asciitbl[backspc] = &f_backchar_to_bol;
 
     /* Set predefined keys */
     for (i = keyseq_tablesize; i--;)
@@ -522,23 +587,23 @@ vmsopen(void)
 
 /* move howmany lines starting at from to to */
 static void
-vmsscroll_reg(int from, int to, int n)
+vmsvt_scroll_reg(int from, int to, int n)
 {
     int i;
     if (to == from)
 	return;
     if (to < from) {
-	vmsscrollregion(to, from + n - 1);
-	vmsmove(from + n - 1, 0);
+	vmsvt_scrollregion(to, from + n - 1);
+	vmsvt_move(from + n - 1, 0);
 	for (i = from - to; i > 0; i--)
-	    ttputs(scroll_forw);
+	    vmsvt_puts(scroll_forw);
     } else {			/* from < to */
-	vmsscrollregion(from, to + n - 1);
-	vmsmove(from, 0);
+	vmsvt_scrollregion(from, to + n - 1);
+	vmsvt_move(from, 0);
 	for (i = to - from; i > 0; i--)
-	    ttputs(scroll_back);
+	    vmsvt_puts(scroll_back);
     }
-    vmsscrollregion(0, term.rows - 1);
+    vmsvt_scrollregion(0, term.rows - 1);
 }
 
 /*
@@ -548,7 +613,7 @@ OPT_PRETTIER_SCROLL is prettier but slower -- it scrolls
 
 /* move howmany lines starting at from to to */
 static void
-vmsscroll_delins(int from, int to, int n)
+vmsvt_scroll_delins(int from, int to, int n)
 {
     int i;
     if (to == from)
@@ -556,7 +621,7 @@ vmsscroll_delins(int from, int to, int n)
     /* patch: should make this more like 'tcap.c', or merge logic somehow */
 #if OPT_PRETTIER_SCROLL
     if (absol(from - to) > 1) {
-	vmsscroll_delins(from, (from < to) ? to - 1 : to + 1, n);
+	vmsvt_scroll_delins(from, (from < to) ? to - 1 : to + 1, n);
 	if (from < to)
 	    from = to - 1;
 	else
@@ -564,38 +629,38 @@ vmsscroll_delins(int from, int to, int n)
     }
 #endif
     if (to < from) {
-	vmsmove(to, 0);
+	vmsvt_move(to, 0);
 	for (i = from - to; i > 0; i--)
-	    ttputs(delete_line);
-	vmsmove(to + n, 0);
+	    vmsvt_puts(delete_line);
+	vmsvt_move(to + n, 0);
 	for (i = from - to; i > 0; i--)
-	    ttputs(insert_line);
+	    vmsvt_puts(insert_line);
     } else {
-	vmsmove(from + n, 0);
+	vmsvt_move(from + n, 0);
 	for (i = to - from; i > 0; i--)
-	    ttputs(delete_line);
-	vmsmove(from, 0);
+	    vmsvt_puts(delete_line);
+	vmsvt_move(from, 0);
 	for (i = to - from; i > 0; i--)
-	    ttputs(insert_line);
+	    vmsvt_puts(insert_line);
     }
 }
 
 /* cs is set up just like cm, so we use tgoto... */
 static void
-vmsscrollregion(int top, int bot)
+vmsvt_scrollregion(int top, int bot)
 {
     vmsvt_tgoto(SMG$K_SET_SCROLL_REGION, top + 1, bot + 1);
 }
 
 /***
- *  vmscres  -	Change screen resolution
+ *  Change screen resolution
  *
  *  support these values:   WIDE -> 132 columns, NORMAL -> 80 columns
  *
  *  T -> if resolution successfully changed, F otherwise.
  ***/
 static int
-vmscres(const char *res)
+vmsvt_cres(const char *res)
 {
     char buf[NLINE];
     int rc = FALSE;
@@ -608,11 +673,11 @@ vmscres(const char *res)
     strcpy(buf, res);
     mkupper(buf);
     if (strcmp(buf, "WIDE") == 0 && set_wide != 0) {
-	ttputs(set_wide);
+	vmsvt_puts(set_wide);
 	term.cols = wide_cols;
 	rc = TRUE;
     } else if (strcmp(buf, "NORMAL") == 0 && set_narrow != 0) {
-	ttputs(set_narrow);
+	vmsvt_puts(set_narrow);
 	term.cols = narrow_cols;
 	rc = TRUE;
     } else
@@ -623,7 +688,7 @@ vmscres(const char *res)
 }
 
 static void
-vmsclose(void)
+vmsvt_close(void)
 {
     if (tc.t_type != TT$_VT52) {
 	/*
@@ -631,28 +696,42 @@ vmsclose(void)
 	 * cleanup as usual.
 	 */
 	if (tc.t_width != term.cols)
-	    vmscres((tc.t_width == narrow_cols) ? "NORMAL" : "WIDE");
+	    vmsvt_cres((tc.t_width == narrow_cols) ? "NORMAL" : "WIDE");
     }
-    ttclose();
+    /*
+     * Note: this code used to check for errors when closing the output,
+     * but it didn't work properly (left the screen set in 1-line mode)
+     * when I was running as system manager, so I took out the error
+     * checking -- T.Dickey 94/7/15.
+     */
+    int status;
+    QIO_SB iosb;
+
+    vmsvt_flush();
+    status = sys$qiow(EFN, iochan, IO$_SETMODE, &iosb, 0, 0,
+		      oldmode, sizeof(oldmode), 0, 0, 0, 0);
+    if (status == SS$_IVCHAN)
+	return;			/* already closed it */
+    (void) sys$dassgn(iochan);
 }
 
 /***
- *  vmsbeep  -	Ring the bell
+ *  Ring the bell
  *
  *  Nothing returned
  ***/
 static void
-vmsbeep(void)
+vmsvt_beep(void)
 {
 #if OPT_FLASH
     int hit = 0;
 
     if (global_g_val(GMDFLASH) && dark_off != NULL && dark_on != NULL) {
 	hit = 1;
-	ttputs(dark_off);
+	vmsvt_puts(dark_off);
 	term.flush();
 	catnap(200, FALSE);
-	ttputs(dark_on);
+	vmsvt_puts(dark_on);
     }
     if (!hit && tc.t_type != TT$_VT52) {
 	/* *INDENT-OFF* */
@@ -670,19 +749,115 @@ vmsbeep(void)
 	str1 = seq[val][0];
 	if (str1) {
 	    str2 = seq[val][1];
-	    ttputs(str1);
+	    vmsvt_puts(str1);
 	    term.flush();
 	    catnap(200, FALSE);
-	    ttputs(str2);
+	    vmsvt_puts(str2);
 	    hit = 1;
 	}
     }
     if (!hit)
 #endif
-	ttputc(BEL);
+	vmsvt_putc(BEL);
 }
 
-/* Dispatch table. All hard fields just point into the terminal I/O code. */
+static void
+read_vms_tty(int length)
+{
+    int status;
+    QIO_SB iosb;
+    int term[2] =
+    {0, 0};
+    unsigned mask = (IO$_READVBLK
+		     | IO$M_NOECHO
+		     | IO$M_NOFILTR
+		     | IO$M_TRMNOECHO);
+
+    status = sys$qiow(EFN, iochan,
+		      ((length == 1)
+		       ? mask
+		       : mask | IO$M_TIMED),
+		      &iosb, 0, 0, ibuf, length, 0, term, 0, 0);
+
+    if (status != SS$_NORMAL)
+	tidy_exit(status);
+    if (iosb.status == SS$_ENDOFFILE)
+	tidy_exit(status);
+
+    nibuf = iosb.count;
+    ibufi = 0;
+}
+
+/*
+ * Read a character from the terminal, performing no editing and doing no echo
+ * at all.  More complex in VMS than almost anyplace else, which figures.
+ */
+static int
+vmsvt_getc(void)
+{
+    while (ibufi >= nibuf) {
+	if (!vmsvt_typahead())
+	    read_vms_tty(1);
+    }
+    return (ibuf[ibufi++] & 0xFF);	/* Allow multinational  */
+}
+
+/*
+ * Write a character to the display. On VMS, terminal output is buffered, and
+ * we just put the characters in the big array, after checking for overflow.
+ */
+static OUTC_DCL
+vmsvt_putc(OUTC_ARGS)
+{
+    if (nobuf >= NOBUF)
+	vmsvt_flush();
+    obuf[nobuf++] = c;
+    OUTC_RET c;
+}
+
+static int
+vmsvt_typahead(void)
+{
+    if (ibufi >= nibuf) {
+	read_vms_tty(NIBUF);
+	return (nibuf > 0);
+    }
+    return TRUE;
+}
+
+/*
+ * Flush terminal buffer. Does real work where the terminal output is buffered
+ * up. A no-operation on systems where byte at a time terminal I/O is done.
+ */
+static void
+vmsvt_flush(void)
+{
+    QIO_SB iosb;
+
+    if (nobuf != 0) {
+	(void) sys$qiow(EFN, iochan, IO$_WRITELBLK | IO$M_NOFORMAT,
+			&iosb, 0, 0, obuf, nobuf, 0, 0, 0, 0);
+	nobuf = 0;
+    }
+}
+
+static void
+vmsvt_clean(int f)
+{
+    if (f)
+	term.openup();
+
+    term.flush();
+    term.close();
+    term.kclose();
+}
+
+static void
+vmsvt_unclean(void)
+{
+}
+
+/* Dispatch table. */
 TERM term =
 {
     24,				/* Max number of rows allowable */
@@ -692,24 +867,27 @@ TERM term =
 				/* Filled in */ 0,
 				/* Current number of columns    */
     100,			/* # times thru update to pause */
-    vmsopen,			/* Open terminal at the start   */
-    vmsclose,			/* Close terminal at end        */
+    vmsvt_open,			/* Open terminal at the start   */
+    vmsvt_close,		/* Close terminal at end        */
     nullterm_kopen,		/* Open keyboard                */
     nullterm_kclose,		/* Close keyboard               */
-    ttgetc,			/* Get character from keyboard  */
-    ttputc,			/* Put character to display     */
-    tttypahead,			/* char ready for reading       */
-    ttflush,			/* Flush output buffers         */
-    vmsmove,			/* Move cursor, origin 0        */
-    vmseeol,			/* Erase to end of line         */
-    vmseeop,			/* Erase to end of page         */
-    vmsbeep,			/* Beep                         */
+    vmsvt_clean,		/* cleanup keyboard             */
+    vmsvt_unclean,		/* uncleanup keyboard           */
+    nullterm_openup,
+    vmsvt_getc,			/* Get character from keyboard  */
+    vmsvt_putc,			/* Put character to display     */
+    vmsvt_typahead,		/* char ready for reading       */
+    vmsvt_flush,		/* Flush output buffers         */
+    vmsvt_move,			/* Move cursor, origin 0        */
+    vmsvt_eeol,			/* Erase to end of line         */
+    vmsvt_eeop,			/* Erase to end of page         */
+    vmsvt_beep,			/* Beep                         */
 #if OPT_VIDEO_ATTRS
-    vmsattr,			/* Set attribute video state    */
+    vmsvt_attr,			/* Set attribute video state    */
 #else
-    vmsrev,			/* Set reverse video state      */
+    vmsvt_rev,			/* Set reverse video state      */
 #endif
-    vmscres,			/* Change screen resolution     */
+    vmsvt_cres,			/* Change screen resolution     */
     nullterm_setfore,		/* N/A: Set foreground color    */
     nullterm_setback,		/* N/A: Set background color    */
     nullterm_setpal,		/* N/A: Set palette colors      */

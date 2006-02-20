@@ -2706,6 +2706,7 @@ Programmed procedures (aka macros)
 	character.  There are two types of built-in variables (the so-called
 	"state" variables, and mode values).  The state variables are:
 
+	$_		most-recent macro $return value
 	$abufname	alternate buffer name (i.e. last visited) (read only)
 	$autocolor-hook	name of the hook that runs when autocolor is enabled
 	$bchars		number of characters in current buffer	(read only)
@@ -2812,6 +2813,7 @@ Programmed procedures (aka macros)
 	$qidentifier	current qualified name (as with C++ ::)
 	$read-hook	name of procedure to run after a file is read
 	$replace	replacement pattern
+	$return		set within a macro to provide $_ on completion
 	$search		search pattern
 	$seed		current random number seed
 	$shell		name of the shell program for spawned commands.
@@ -3607,13 +3609,15 @@ Mode line customization
 		%L	number of lines in buffer, if ruler is set
 		%m	major mode(s), e.g., cmode, view-only, etc.  Displayed
 			in square brackets.
-		%n	relative file name when not internal buffer name,
+		%n	file leaf name when not internal buffer name,
 			otherwise the buffer name.
-		%N	absolute file name when not internal buffer name,
+		%N	absolute file path when not internal buffer name,
 			otherwise the buffer name.
 		%p	line number as percentage of number of lines if
 			"ruler" is set
 		%P	line number as percentage of number of lines
+		%r	relative file name when not internal buffer name,
+			otherwise the buffer name.
 		%S	rough position of window with respect to buffer (top,
 			bot, all, emp, mid) when ruler not set (or ruler is
 			set, but buffer is empty).
@@ -3756,9 +3760,9 @@ Color basics
 
 	b) vile is compiled and linked with the terminfo library.
 
-	Hint 1:  On linux hosts, the "xterm" terminal type supports 8
-	colors (i.e., ensure that "export TERM=xterm" or csh equiv is
-	included in your shell startup file).
+	Hint 1:  Modern xterm and similar terminal emulators support 8 colors
+	(i.e., ensure that the correct $TERM is used, e.g., "export TERM=xterm"
+	or csh equiv is included in your shell startup file).
 
 	Hint 2:  To determine if the editor was compiled with terminfo,
 	type :show-variables and examine the value of $cfgopts.  If this
@@ -6218,4 +6222,4 @@ Problems
 
 Copyright 1995-2005,2006 by Paul Fox, Thomas Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.606 2006/01/09 23:49:18 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.610 2006/02/16 01:26:06 tom Exp $

@@ -17,7 +17,7 @@
  *   "FAILED" may not be used to test an OLE return code.  Use SUCCEEDED
  *   instead.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32ole.cpp,v 1.23 2005/12/20 22:18:06 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32ole.cpp,v 1.25 2006/01/15 18:16:12 tom Exp $
  */
 
 #include "w32vile.h"
@@ -39,10 +39,16 @@ extern "C"
 
 #include <initguid.h>
 
-#if __MSC_VER == 1200		/* Visual C++ 6.0 */
-#define VC6_ADDIN 1
+#if (_MSC_VER >= 1200) && (_MSC_VER < 1300)
+#define VC6_ADDIN 1             /* Visual C++ 6.0 */
 #else
 #define VC6_ADDIN 0
+#endif
+
+#if (_MSC_VER >= 1300) && (_MSC_VER < 1400)
+#define VC7_ADDIN 1             /* Visual C++ 7.0 */
+#else
+#define VC7_ADDIN 0
 #endif
 
 #if VC6_ADDIN
@@ -50,6 +56,10 @@ extern "C"
 #include <objmodel/textguid.h>
 #include <objmodel/appauto.h>
 #include <objmodel/textauto.h>
+#endif
+
+#if VC7_ADDIN
+#include <objbase.h>
 #endif
 
 static size_t   ansibuf_len,   /* scaled in bytes   */

@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.311 2005/11/23 13:42:42 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.314 2006/02/15 21:09:04 tom Exp $
  *
  */
 
@@ -64,7 +64,10 @@ static struct VAL *major_l_vals;	/* dummy, for convenience */
 static struct VALNAMES *major_valnames;
 
 static int did_attach_mmode;
+
 static const char **my_mode_list;	/* copy of 'all_modes[]' */
+static int sizeof_my_mode_list;	/* ...its length */
+
 #define is_bool_type(type) ((type) == VALTYPE_BOOL || (type) == VALTYPE_MAJOR)
 
 static MAJORMODE_LIST *lookup_mm_list(const char *name);
@@ -2090,9 +2093,9 @@ chgd_xterm(BUFFER *bp GCC_UNUSED,
 /*ARGSUSED*/
 int
 chgd_xtermkeys(BUFFER *bp GCC_UNUSED,
-	   VALARGS * args GCC_UNUSED,
-	   int glob_vals GCC_UNUSED,
-	   int testing GCC_UNUSED)
+	       VALARGS * args GCC_UNUSED,
+	       int glob_vals GCC_UNUSED,
+	       int testing GCC_UNUSED)
 {
 #if DISP_TERMCAP || DISP_CURSES
     if (glob_vals && !testing) {
@@ -2186,17 +2189,20 @@ is_varmode(const char *name)
 static size_t
 count_modes(void)
 {
-    size_t n;
-
     init_my_mode_list();
 
-    if (my_mode_list != 0) {
-	for (n = 0; my_mode_list[n] != 0; n++)
-	    continue;
-    } else {
-	n = 0;
+    if (sizeof_my_mode_list < 0) {
+	size_t n;
+
+	if (my_mode_list != 0) {
+	    for (n = 0; my_mode_list[n] != 0; n++)
+		continue;
+	} else {
+	    n = 0;
+	}
+	sizeof_my_mode_list = n;
     }
-    return n;
+    return sizeof_my_mode_list;
 }
 
 /*
@@ -2672,6 +2678,7 @@ insert_per_major(size_t count, const char *name)
 		for (k = ++count; k != j; k--)
 		    my_mode_list[k] = my_mode_list[k - 1];
 		my_mode_list[j] = newname;
+		sizeof_my_mode_list++;
 	    } else {
 		no_memory("insert_per_major");
 	    }
@@ -2701,6 +2708,7 @@ remove_per_major(size_t count, const char *name)
 	    count--;
 	    for (k = j; k <= count; k++)
 		my_mode_list[k] = my_mode_list[k + 1];
+	    sizeof_my_mode_list--;
 	}
     }
     return count;
@@ -2841,7 +2849,7 @@ static void
 init_sm_vals(struct VAL *dst)
 {
     int k;
-    for (k = 0; k < MAX_B_VALUES; k++) {
+    for (k = 0; k < NUM_B_VALUES; k++) {
 	make_global_val(dst, global_b_values.bv, k);
     }
 }
@@ -2863,6 +2871,31 @@ free_sm_vals(MAJORMODE * ptr)
 	free(p->sm_name);
 	free(p);
 	endofDisplay();
+    }
+}
+
+/*
+ * Help initialization of submode groups by copying mode values from the
+ * base, e.g., ignorecase for majormodes that need this in their fence patterns.
+ *
+ * We do not copy the regular expressions since those are what submode groups
+ * are designed for, and do not want to have leftover patterns from the
+ * base contaminating the fence-fi, fence-else, etc.
+ */
+static void
+copy_sm_vals(struct VAL *dst, struct VAL *src, int type)
+{
+    int n;
+
+    if (src != 0) {
+	int last = NUM_B_VALUES;
+	for (n = 0; n < last; n++) {
+	    if (b_valnames[n].type == type
+		&& is_local_val(src, n)) {
+		dst[n] = src[n];
+		make_local_val(dst, n);
+	    }
+	}
     }
 }
 
@@ -2901,6 +2934,17 @@ get_sm_vals(MAJORMODE * ptr)
 
 	if (p != 0) {
 	    init_sm_vals(&(p->sm_vals.bv[0]));
+	    if (ptr->sm != 0) {
+		copy_sm_vals(&(p->sm_vals.bv[0]),
+			     &(ptr->sm->sm_vals.bv[0]),
+			     VALTYPE_BOOL);
+		copy_sm_vals(&(p->sm_vals.bv[0]),
+			     &(ptr->sm->sm_vals.bv[0]),
+			     VALTYPE_INT);
+		copy_sm_vals(&(p->sm_vals.bv[0]),
+			     &(ptr->sm->sm_vals.bv[0]),
+			     VALTYPE_ENUM);
+	    }
 	    if (q != 0)
 		q->sm_next = p;
 	    else
@@ -2987,6 +3031,9 @@ get_submode_valx(BUFFER *bp, int n, int *m)
     return (result);
 }
 
+/*
+ * Look in the submode's list of qualifiers, e.g., for "group" or "name".
+ */
 static int
 ok_subqual(MAJORMODE * ptr, char *name)
 {
@@ -3058,7 +3105,7 @@ attach_mmode(BUFFER *bp, const char *name)
 	    struct VAL *mm = get_sm_vals(bp->majr);
 
 	    /* adjust buffer modes */
-	    for (n = 0; n < MAX_B_VALUES; n++) {
+	    for (n = 0; n < NUM_B_VALUES; n++) {
 		if (!is_local_b_val(bp, n)
 		    && is_local_val(mm, n)) {
 		    make_global_val(bp->b_values.bv, mm, n);
@@ -3107,7 +3154,7 @@ detach_mmode(BUFFER *bp, const char *name)
 	&& !strcmp(mp->shortname, name)) {
 	TRACE(("detach_mmode '%s', given '%s'\n", name, mp->shortname));
 	/* readjust the buffer's modes */
-	for (n = 0; n < MAX_B_VALUES; n++) {
+	for (n = 0; n < NUM_B_VALUES; n++) {
 	    if (!is_local_b_val(bp, n)
 		&& is_local_val(get_sm_vals(mp), n)) {
 		make_global_b_val(bp, n);
@@ -3213,8 +3260,10 @@ free_majormode(const char *name)
 static void
 init_my_mode_list(void)
 {
-    if (my_mode_list == 0)
+    if (my_mode_list == 0) {
 	my_mode_list = TYPECAST(const char *, all_modes);
+	sizeof_my_mode_list = -1;
+    }
 }
 
 static int

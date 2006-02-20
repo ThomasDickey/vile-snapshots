@@ -1,6 +1,6 @@
 /*	Dumb terminal driver, for I/O before we get into screen mode.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/dumbterm.c,v 1.19 2005/11/23 12:19:35 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/dumbterm.c,v 1.21 2006/01/12 23:13:40 tom Exp $
  *
  */
 
@@ -128,6 +128,9 @@ TERM dumb_term =
     0,				/* ...and this, just in case we exit */
     dumb_kopen,
     dumb_kclose,
+    nullterm_clean,
+    nullterm_unclean,
+    nullterm_openup,
     dumb_getc,
     dumb_putc,
     dumb_typahead,

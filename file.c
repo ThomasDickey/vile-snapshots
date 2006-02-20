@@ -5,7 +5,7 @@
  * reading and writing of the disk are
  * in "fileio.c".
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.388 2005/11/15 22:32:22 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.390 2006/02/15 01:25:01 tom Exp $
  */
 
 #include "estruct.h"
@@ -255,7 +255,7 @@ CleanToPipe(int writing)
 	    beginDisplay();
 	}
 #if SYS_UNIX || SYS_MSDOS
-	ttclean(TRUE);
+	term.clean(TRUE);
 #else
 #ifdef GMDW32PIPES
 	kbd_erase_to_end(0);
@@ -271,7 +271,7 @@ CleanAfterPipe(int Wrote)
 {
     if (must_clean_pipe) {
 #if SYS_UNIX || SYS_MSDOS
-	ttunclean();		/* may clear the screen as a side-effect */
+	term.unclean();		/* may clear the screen as a side-effect */
 	term.kopen();
 	term.flush();
 	if (Wrote)
@@ -541,7 +541,7 @@ reset_to_unnamed(BUFFER *bp)
     WINDOW *wp;
     int n;
 
-    for (n = 0; n < MAX_B_VALUES; ++n) {
+    for (n = 0; n < NUM_B_VALUES; ++n) {
 	if (is_local_b_val(bp, n)) {
 	    make_global_b_val(bp, n);
 	}
@@ -2758,7 +2758,7 @@ imdying(int ACTUAL_SIG_ARGS)
     }
     term.cursorvis(TRUE);	/* ( this might work ;-) */
     if (signo != SIGHUP && signo != SIGINT) {
-	ttclean(FALSE);
+	term.clean(FALSE);
 #ifdef VILE_ERROR_ABORT
 	ExitProgram(signo);
 #else

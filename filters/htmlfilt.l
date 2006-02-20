@@ -1,8 +1,8 @@
-%x HTMLNOTE HTMLCODE JS_NOTE JS_CODE JSP_MODE
+%x HTMLNOTE HTMLCODE HTMLQUOT JS_NOTE JS_CODE JSP_MODE
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/htmlfilt.l,v 1.35 2005/09/04 21:10:12 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/htmlfilt.l,v 1.36 2006/02/14 00:58:42 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of HTML input
  * text.
@@ -36,15 +36,14 @@ REAL		[-+]?([[:digit:]]*\.[[:digit:]]+)([eE][+-]?[[:digit:]]+)?
 HEXNUM		"#"[xX]?[[:xdigit:]]+
 IDENT		[[:alpha:]_][[:alnum:]_-]*
 
-HSTRING		\"([^"])*\"
-QSTRING		\\["]([^"]|\\["])*\\["]
-STRING		{HSTRING}|{QSTRING}
+STRING		\"([^"])*\"
 
 SSTRING		\'(\\.|[^'\\])*\'
 DSTRING		\"(\\.|[^"\\])*\"
 STRINGS		({SSTRING}|{DSTRING})
 
-ESCAPED		&({IDENT}|{HEXNUM});
+URI_REF		"%"[[:xdigit:]][[:xdigit:]]
+CHR_REF		&({IDENT}|{HEXNUM});
 
 %%
 
@@ -71,8 +70,14 @@ ESCAPED		&({IDENT}|{HEXNUM});
 <HTMLNOTE>[-]+[^-\>\n]*	{ flt_bfr_append(yytext, yyleng); }
 <HTMLNOTE>[-]+"->"	{ FinishQuote(INITIAL); }
 
-<INITIAL>{ESCAPED}	|
-<HTMLCODE>{STRING}	{ WriteToken(String_attr); }
+<INITIAL,HTMLCODE>{URI_REF}	|
+<INITIAL,HTMLCODE>{CHR_REF}	{ WriteToken(Number_attr); }
+
+<HTMLCODE>["]		{ BeginQuote(HTMLQUOT, String_attr); }
+<HTMLQUOT>{URI_REF}	|
+<HTMLQUOT>{CHR_REF}	{ flt_bfr_embed(yytext, yyleng, Number_attr); }
+<HTMLQUOT>[^"]		{ flt_bfr_append(yytext, yyleng); }
+<HTMLQUOT>["]		{ FinishQuote(HTMLCODE); }
 
 <HTMLCODE>{REAL}	|
 <HTMLCODE>{INTEGER}	|

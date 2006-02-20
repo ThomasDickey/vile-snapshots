@@ -9,7 +9,7 @@
  * Note: Visual flashes are not yet supported.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/borland.c,v 1.34 2005/11/30 01:25:29 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/borland.c,v 1.36 2006/01/12 23:37:34 tom Exp $
  *
  */
 
@@ -506,6 +506,9 @@ TERM term =
     borclose,
     borkopen,
     borkclose,
+    ttclean,
+    ttunclean,
+    nullterm_openup,
     borttgetc,
     borputc,
     bortttypahead,

@@ -11,7 +11,7 @@
 #
 # The modes are table entries in the BUFFER and WINDOW structures.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.237 2005/11/21 00:53:37 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.238 2006/02/16 00:35:21 tom Exp $
 #
 #
 # Mode-table entries.  Capitalized letters are used for abbreviations.
@@ -207,6 +207,7 @@ string
 # The "environment" variables are similar to modes, but are not so neatly
 # organized into groups of universal/buffer/window.
 .environment
+"_"		_STATUS		OPT_EVAL	# function's result (external)
 "abufname"	ABUFNAME		# alternate buffer name (i.e. '#')
 "autocolor-hook" AUTOCOLORHOOK	OPT_HOOKS&&OPT_COLOR	# procedure to run for auto-coloring
 "bchars"	BCHARS			# chars in current buffer
@@ -245,8 +246,8 @@ string
 "filename-expr"	FILENAME_EXPR	OPT_FINDERR	# regular expression for %F
 "filename-ic"	FILENAME_IC		# true if we set OPT_CASELESS
 "filter-list"	FILTER_LIST	OPT_FILTER	# list of builtin-filters
-"findpath"	FINDPATH	OPT_FINDPATH	# directory(s) used with "find" feature
 "find-cmd"	FINDCMD		OPT_FINDPATH	# shell cmd emitted via "find" feature (debug)
+"findpath"	FINDPATH	OPT_FINDPATH	# directory(s) used with "find" feature
 "font"		FONT		DISP_X11||DISP_NTWIN	# current font
 "forward-search" FWD_SEARCH		# search-direction (true if forward)
 "goal-column"	GOAL_COLUMN	OPT_TRACE	# goal-column (debug-only)
@@ -277,8 +278,8 @@ string
 "palette"	PALETTE			# current palette string
 "patchlevel"	PATCHLEVEL		# current patch-level of vile (empty for release)
 "pathlist-separator" PATHCHR		# separator for lists of pathnames
-"pathname-separator" PATHSEP		# separator for levels of pathnames
 "pathname"	PATHNAME		# current path-like word
+"pathname-separator" PATHSEP		# separator for levels of pathnames
 "pending"	PENDING			# type ahead pending flag
 "pid"		PROCESSID		# vile's process-id
 "position-format" POSFORMAT	OPT_POSFORMAT # position format string
@@ -287,6 +288,7 @@ string
 "qidentifier"	QIDENTIF		# current qualified identifier
 "read-hook"	RDHOOK		OPT_HOOKS	# procedure to run when reading
 "replace"	REPLACE			# replacement pattern
+"return"	RETURN		OPT_EVAL	# function's return-result (internal)
 "search"	SEARCH			# search pattern
 "seed"		SEED			# current random number seed
 "shell"		SHELL		OPT_SHELL	# shell-environment variable

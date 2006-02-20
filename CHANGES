@@ -1,5 +1,70 @@
 Changes for vile 9.6 (released ??? ??? ?? ????)
 
+ 20060219 (f)
+	> Clark Morgan:
+	+ update vile.hlp for %n and %N title format changes.
+	> Tom Dickey:
+	+ fix sh-filt.l for parameter substitutions containing an escaped
+	  quote, e.g.,
+		VERSION=${VERSION#*VERSION \"}
+		VERSION=${VERSION%\"*}
+	+ add csmode (for C# ".cs" files) and cs.key, using vile-c-filter for
+	  parsing.
+	+ modify ntwinio.c to invoke build_recent_file_and_folder_menus() in
+	  the WM_INITMENUPOPUP event rather than WM_SYSCOMMAND.  This makes
+	  winvile initialize the recent-folders and recent-files if one uses a
+	  right-click on the title of the window.
+	+ change winvile's registry subkey for recent-folders and recent-files
+	  to match environment variable settings from 9.4r, e.g., change
+		"Software\winvile\MRUFiles"
+	  to
+		"Software\VI Like Emacs\MRUFiles"
+	+ add new symbols $return and $_ which can be used to implement simple
+	  functions (request by William James).
+	+ fix filters/makefile.2nd to allow build for gcov
+	+ improve majormodes for complex fences by initializing the (non-string)
+	  buffer mode values for submode groups according to the values in
+	  the submode.  This makes ignorecase work as expected in the complex
+	  fence matching for vbmode.
+	+ add complex fences to vbmode.
+	+ minor fix to bat-filt.l to avoid highlighting ".bat" as a string in
+		call foo.bat
+	+ change htmlfilt.l to highlight character- and URI-references as
+	  numbers to make them distinct from strings with ordinary text.
+	+ add makefile rules for installing/uninstalling files from doc
+	  directory:
+		install-doc
+		uninstall-doc
+	  as well as installing/uninstalling macros
+		install-macros
+		uninstall-macros
+		uninstall-perl
+	+ correct logic for goto-char, broken in 9.4za (report by William
+	  James).
+	+ fix change to cpp.key in 9.5e, which put the C keywords in the wrong
+	  table.
+	+ add spell.rc to makefile.wnt install rule.
+	+ add test_io.exe rule to vmsbuild.com
+	+ add TERM.clean(), TERM.unclean(), TERM.openup() to help move diverse
+	  code out of termio.c
+	+ modify var_TITLEFORMAT() only call set_editor_title() when setting
+	  $title-format, and modify get_statevar_val() to handle some limited
+	  recursion just in case there are other cases where it could be called
+	  from the statevar.c module while retrieving a value.  This fixes a
+	  bug introduced in 9.5e (report by Clark Morgan).
+	+ update title when doing a "cd", in case it uses %r substitution.
+	+ change %n in modeline substitutions to use file name (pathleaf)
+	  rather than relative path (shorten_path).  Use %r for the latter.
+	  (request by Clark Morgan).
+	+ move VMS-specific code from termio.c to vmsvt.c
+	+ remove unused start_debug_log() and mallocdbg() from main.c
+	+ correct typo in ifdef for Visual Studio C++ 6.0 ifdef in w32ole.cpp
+	  from 9.5e changes.
+	+ move 9.5c check for stdout not a tty on startup to allow "vile -V"
+	  to pipe to other programs.
+	+ split-out nullterm.c
+	+ add test_io stub, to help isolate dependencies of the I/O drivers.
+
  20060109 (e)
 	> Clark Morgan:
 	+ improved winvile's "flash".

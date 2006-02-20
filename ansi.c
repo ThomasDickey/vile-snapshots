@@ -4,7 +4,7 @@
  * "termio.c". It compiles into nothing if not an ANSI device.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ansi.c,v 1.46 2005/11/23 12:19:35 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ansi.c,v 1.48 2006/01/12 23:37:34 tom Exp $
  */
 
 #include	"estruct.h"
@@ -345,6 +345,9 @@ TERM term =
     nullterm_kopen,
     nullterm_kclose,
     ansiclose,
+    ttclean,
+    ttunclean,
+    nullterm_openup,
     ttgetc,
     ttputc,
     tttypahead,

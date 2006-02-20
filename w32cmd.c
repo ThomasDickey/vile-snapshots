@@ -2,7 +2,7 @@
  * w32cmd:  collection of functions that add Win32-specific editor
  *          features (modulo the clipboard interface) to [win]vile.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32cmd.c,v 1.35 2005/01/26 19:17:55 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32cmd.c,v 1.36 2006/02/19 18:21:15 tom Exp $
  */
 
 #include "estruct.h"
@@ -19,8 +19,8 @@
 #define FOOTER_OFFS      0.333  /* inches from bottom of page */
 #define _FF_             '\f'
 
-#define REGKEY_RECENT_FILES "Software\\winvile\\MRUFiles"
-#define REGKEY_RECENT_FLDRS "Software\\winvile\\MRUFolders"
+#define REGKEY_RECENT_FILES VILE_SUBKEY "\\MRUFiles"
+#define REGKEY_RECENT_FLDRS VILE_SUBKEY "\\MRUFolders"
 #define RECENT_REGVALUE_FMT "%02X"
 
 /* --------------------------------------------------------------------- */
@@ -2167,13 +2167,13 @@ winpg_setup(int f, int n)
  *
  * Recent Files
  * ------------
- * Key:        HKCU\Software\winvile\MRUFiles
+ * Key:        REGKEY_RECENT_FILES
  * Value Name: Hex(0 to (MAX_RECENT_FILES - 1))
  * Value Data: nul-terminated file path
  *
  * Recent Folders
  * --------------
- * Key:        HKCU\Software\winvile\MRUFolders
+ * Key:        REGKEY_RECENT_FLDRS
  * Value Name: Hex(0 to (MAX_RECENT_FLDRS - 1))
  * Value Data: nul-terminated directory path
  *

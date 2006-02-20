@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/bat-filt.l,v 1.21 2005/09/02 23:27:59 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/bat-filt.l,v 1.22 2006/02/14 01:27:10 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of DOS (and
  * similar, such as W95, NT) batch file.
@@ -54,6 +54,7 @@ IDENT2		({PARAM}|{VARIABLE})
 <INITIAL>{IDENT}		{ char *temp = lowercase_of(yytext);
 				  char *type = strrchr(temp, '.');
 				  char *attr;
+				  int echoing = 0;
 
 				  /* "echo." is a legal "echo", and the "."
 				   * is not echoed.  So we highlight it as
@@ -61,15 +62,16 @@ IDENT2		({PARAM}|{VARIABLE})
 				   */
 				  if (type != 0)
 				      *type = '\0';
+				  attr = keyword_attr(temp);
 				  if (!strcmp(temp, "echo")) {
 					BEGIN(ECHOING);
-				  } else if (!strcmp(temp, "rem")) {
+					echoing = 1;
+				  } else if (attr != 0 && Comment_attr == attr) {
 					BEGIN(COMMENT);
 				  } else if (!strcmp(temp, "set")) {
 					setting = 1;
 				  }
-				  attr = keyword_attr(temp);
-				  if (type != 0) {
+				  if (type != 0 && echoing) {
 				      int len = (type - temp) + 1;
 
 				      flt_puts(yytext, len, attr);

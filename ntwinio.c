@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 screen API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.153 2006/01/09 23:51:18 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.157 2006/02/19 18:17:19 tom Exp $
  * Written by T.E.Dickey for vile (october 1997).
  * -- improvements by Clark Morgan (see w32cbrd.c, w32pipe.c).
  */
@@ -21,6 +21,8 @@
 #include "nefsms.h"
 #include "nefunc.h"
 #include "chgdfunc.h"
+
+#define ABS(x) (((x) < 0) ? -(x) : (x))
 
 #define MIN_ROWS MINWLNS
 #define MIN_COLS 15
@@ -671,7 +673,7 @@ SetRGBPalette(int f, int n)
     /* ask for setting string */
     while (count < 3) {
 	*tstring = EOS;
-	lsprintf(prompt, "Palette value (%s): ", table[count].name);
+	sprintf(prompt, "Palette value (%s): ", table[count].name);
 	status = mlreply(prompt, tstring, sizeof(tstring));
 	if (status != TRUE)
 	    return (status);
@@ -1492,7 +1494,7 @@ ntscroll(int from, int to, int n)
     if (to == from)
 	return;
 #if OPT_PRETTIER_SCROLL
-    if (absol(from - to) > 1) {
+    if (ABS(from - to) > 1) {
 	ntscroll(from, (from < to) ? to - 1 : to + 1, n);
 	if (from < to)
 	    from = to - 1;
@@ -2671,7 +2673,7 @@ fix_scrollbar_tracking(int nPos)
     int test_line;
 
     for (test_line = nPos; test_line < last_line; test_line += 0x10000) {
-	int check = absol(this_line - test_line);
+	int check = ABS(this_line - test_line);
 	if (check < diff_line) {
 	    diff_line = check;
 	    nPos = test_line;
@@ -3499,18 +3501,20 @@ MainWndProc(
 	receive_dropped_files((HDROP) wParam);
 	return 0;
 
+    case WM_INITMENUPOPUP:
+	TRACE(("MAIN:WM_INITMENUPOPUP %s at %d,%d\n",
+	       syscommand2s(LOWORD(wParam)),
+	       HIWORD(lParam),
+	       LOWORD(lParam)));
+	build_recent_file_and_folder_menus();
+	return (DefWindowProc(hWnd, message, wParam, lParam));
+
     case WM_SYSCOMMAND:
 	TRACE(("MAIN:WM_SYSCOMMAND %s at %d,%d\n",
 	       syscommand2s(LOWORD(wParam)),
 	       HIWORD(lParam),
 	       LOWORD(lParam)));
-	{
-	    WPARAM cmd = wParam & 0xFFF0;
-	    if (cmd == SC_KEYMENU || cmd == SC_MOUSEMENU)
-		build_recent_file_and_folder_menus();
-	    else
-		handle_builtin_menu(wParam);
-	}
+	handle_builtin_menu(wParam);
 	return (DefWindowProc(hWnd, message, wParam, lParam));
 
 #if OPT_SCROLLBARS
@@ -4166,15 +4170,17 @@ gui_usage(char *program, const char *const *options, size_t length)
 
     if ((buf = typeallocn(char, need)) != 0) {
 
-	s = lsprintf(buf, fmt1, prognam);
+	sprintf(s = buf, fmt1, prognam);
 	for (n = 0; n < length; n++) {
 	    char temp[80];
+
+	    s += strlen(s);
 	    if ((need = option_size(options[n])) != 0) {
 		strncpy(temp, options[n], need);
 		temp[need] = EOS;
-		s = lsprintf(s, fmt2, temp, skip_cblanks(options[n] + need));
+		sprintf(s, fmt2, temp, skip_cblanks(options[n] + need));
 	    } else {
-		s = lsprintf(s, fmt3, options[n]);
+		sprintf(s, fmt3, options[n]);
 	    }
 	}
 
@@ -4198,6 +4204,9 @@ TERM term =
     ntclose,
     ntkopen,
     ntkclose,
+    nullterm_clean,
+    nullterm_unclean,
+    nullterm_openup,
     ntgetch,
     ntputc,
     nttypahead,

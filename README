@@ -62,7 +62,7 @@ Development patches are found at
 	ftp://ftp.phred.org/pub/vile/patches/
 
 In addition, we have distributed copies at other sites, including
-metalabs.unc.edu (Linux), hobbes.nmsu.edu (OS/2) and the VMS Freeware
+metalabs.unc.edu, hobbes.nmsu.edu (OS/2) and the VMS Freeware
 CDROM's.
 
 ------------------------------------------------------
@@ -1156,5 +1156,5 @@ July 2005,
     + modify vmsbuild.com and descrip.mms to work with IA64.
 
 -------------------------------
-$Header: /users/source/archives/vile.vcs/RCS/README,v 1.93 2005/07/25 23:29:24 tom Exp $
+$Header: /users/source/archives/vile.vcs/RCS/README,v 1.94 2006/01/11 21:25:35 tom Exp $
 -------------------------------

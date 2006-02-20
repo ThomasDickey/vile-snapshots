@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.413 2005/12/25 21:44:45 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.415 2006/01/12 23:46:38 tom Exp $
  *
  */
 
@@ -2725,6 +2725,7 @@ special_formatter(TBUFF **result, const char *fs, WINDOW *wp)
 		if (skip)
 		    mlfs_skipfix(&fs);
 		break;
+	    case 'r':
 	    case 'n':
 	    case 'N':
 		mlfs_prefix(&fs, &ms, lchar);
@@ -2735,12 +2736,18 @@ special_formatter(TBUFF **result, const char *fs, WINDOW *wp)
 			vl_strncpy(temp, bp->b_fname, sizeof(temp));
 			temp[sizeof(temp) - 1] = '\0';
 
-			if (fc == 'n') {
+			switch (fc) {
+			case 'r':
 			    p = shorten_path(temp, FALSE);
 			    if (p == 0)
 				p = temp;
-			} else {
+			    break;
+			case 'n':
+			    p = pathleaf(temp);
+			    break;
+			default:
 			    p = temp;
+			    break;
 			}
 			ms = lsprintf(ms, "%s", p);
 		    } else {
@@ -3684,7 +3691,7 @@ mlmsg(const char *fmt, va_list *app)
 	    kbd_flush();
 	}
 	if (do_crlf) {
-	    kbd_openup();
+	    term.openup();
 	}
 	endofDisplay();
     }

@@ -20,7 +20,7 @@
 #
 # gnu autoconf support by kevin buettner, 5/94
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.199 2006/01/09 20:48:25 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.202 2006/02/17 00:50:20 tom Exp $
 
 SHELL		= /bin/sh
 
@@ -64,6 +64,7 @@ manext		= 1
 libdir		= @libdir@
 bindir		= @bindir@
 datadir		= @datadir@/vile
+docdir		= $(datadir)/doc
 perldir		= $(datadir)/perl
 mandir		= @mandir@/man$(manext)
 
@@ -85,10 +86,11 @@ LDFLAGS		= @IMAKE_LOADFLAGS@ @LDFLAGS@
 
 BINDIR		= $(DESTDIR)$(bindir)
 DATADIR		= $(DESTDIR)$(datadir)
+DOCDIR		= $(DESTDIR)$(docdir)
 PERLDIR		= $(DESTDIR)$(perldir)
 MANDIR		= $(DESTDIR)$(mandir)
 
-INSTALL_DIRS    = $(BINDIR) $(DATADIR) $(MANDIR) @EXTRA_INSTALL_DIRS@
+INSTALL_DIRS    = $(BINDIR) $(DATADIR) $(DOCDIR) $(MANDIR) @EXTRA_INSTALL_DIRS@
 
 .SUFFIXES: .c .i $o
 
@@ -101,8 +103,7 @@ INSTALL_DIRS    = $(BINDIR) $(DATADIR) $(MANDIR) @EXTRA_INSTALL_DIRS@
 
 # All of the makefiles which should be preserved and distributed
 UNIXMAKIN = makefile.in				# for use with configure
-VMSMAK =   descrip.mms vmsbuild.com		# on VMS
-MSCMAK =	# still waiting for this one	# on DOS, using Microsoft C
+VMSMAK = descrip.mms vmsbuild.com		# on VMS
 DJGPPMAK = makefile.djg				# on DOS, DJGCC v1.09
 NTMAK = makefile.wnt				# on Windows/NT
 BCCNTMAK = makefile.blc				# Borland C on Windows/NT
@@ -112,7 +113,6 @@ MAKFILES = \
 	$(UNIXMAKIN) \
 	$(VMSMAK) \
 	$(DJGPPMAK) \
-	$(MSCMAK) \
 	$(BORMAK) \
 	$(NTMAK) \
 	$(BCCNTMAK) \
@@ -175,7 +175,6 @@ PERL_SRC = \
 	$(srcdir)/perl/vileget \
 	$(srcdir)/perl/winops.pm
 
-
 MACRO_SRC = \
 	$(srcdir)/macros/color-ls.rc \
 	$(srcdir)/macros/dates.rc \
@@ -202,15 +201,16 @@ OTHERSRC = \
 
 # documentation, such as it is
 DOCS =	\
+	doc/Vileserv.doc \
 	doc/config.doc \
-	doc/hilite.doc \
+	doc/dir.doc \
+	doc/filters.doc \
 	doc/macros.doc \
 	doc/menus.doc \
 	doc/modes.doc \
 	doc/oleauto.doc \
 	doc/perl.doc \
 	doc/visvile.doc \
-	doc/w32modes.doc \
 	vile.1 \
 	vile.hlp
 
@@ -224,7 +224,7 @@ VILESRC = main.c api.c basic.c bind.c btree.c buffer.c csrch.c \
 	display.c dumbterm.c eval.c exec.c externs.c fences.c file.c \
 	filec.c fileio.c finderr.c glob.c globals.c \
 	history.c input.c insert.c isearch.c itbuff.c lckfiles.c line.c map.c \
-	modes.c msgs.c npopen.c oneliner.c opers.c path.c random.c \
+	modes.c msgs.c npopen.c nullterm.c oneliner.c opers.c path.c random.c \
 	regexp.c region.c search.c select.c spawn.c statevar.c tags.c \
 	tbuff.c termio.c ucrypt.c undo.c version.c \
 	watch.c window.c word.c wordmov.c xterm.c
@@ -233,7 +233,7 @@ ALLSRC = $(VILESRC) $(SCREENS) $(OTHERSRC) $(HDRS)
 
 # this is for work-in-progress files being shared among developers
 #  which don't need to go into general releases yet.
-DEVELOPER_ONLY = NOTES.X11 empty.rc mktbls.bat \
+DEVELOPER_ONLY = \
 	trace.c trace.h \
 	fakevms.c fakevms.h
 
@@ -273,7 +273,7 @@ OBJ = $(SCREEN)$o \
 	display$o dumbterm$o eval$o exec$o externs$o fences$o file$o \
 	filec$o fileio$o finderr$o glob$o globals$o \
 	input$o insert$o itbuff$o lckfiles$o line$o map$o \
-	modes$o msgs$o oneliner$o opers$o path$o random$o \
+	modes$o msgs$o nullterm$o oneliner$o opers$o path$o random$o \
 	regexp$o region$o search$o tags$o \
 	tbuff$o termio$o undo$o version$o \
 	watch$o window$o word$o wordmov$o @EXTRAOBJS@
@@ -337,6 +337,18 @@ $(MKTBLS):  $(srcdir)/mktbls.c
 check: $(TARGET)
 	@echo Sorry, no batch tests available.
 
+INSTALL_DOC_FILES = \
+	$(DOCDIR)/Vileserv.doc \
+	$(DOCDIR)/config.doc \
+	$(DOCDIR)/dir.doc \
+	$(DOCDIR)/filters.doc \
+	$(DOCDIR)/macros.doc \
+	$(DOCDIR)/menus.doc \
+	$(DOCDIR)/modes.doc \
+	$(DOCDIR)/oleauto.doc \
+	$(DOCDIR)/perl.doc \
+	$(DOCDIR)/visvile.doc
+
 INSTALL_MACRO_FILES = \
 	$(DATADIR)/color-ls.rc \
 	$(DATADIR)/dates.rc \
@@ -398,13 +410,26 @@ install :: $(INSTALL_DIRS) \
 	$(INSTALL_FILES)
 	@echo 'Completed installation.'
 
-install-perl : $(INSTALL_PERL_DIRS) $(INSTALL_PERL_FILES)
+install-doc :		$(DOCDIR)		$(INSTALL_DOC_FILES)
 
-installdirs: $(INSTALL_DIRS)
+install-macros :	$(DATADIR)		$(INSTALL_MACRO_FILES)
+
+install-perl :		$(INSTALL_PERL_DIRS)	$(INSTALL_PERL_FILES)
+
+installdirs:		$(INSTALL_DIRS)
 
 uninstall-$(TARGET) \
 uninstall ::
 	- $(RM) $(INSTALL_FILES)
+
+uninstall-doc :
+	- $(RM) $(INSTALL_DOC_FILES)
+
+uninstall-macros :
+	- $(RM) $(INSTALL_MACRO_FILES)
+
+uninstall-perl :
+	- $(RM) $(INSTALL_PERL_FILES)
 
 # The makefile is technically dependent upon the config.status file, but
 # gmake gets overly ambitious and remakes the makefile too often.
@@ -595,38 +620,41 @@ perl.c: $(srcdir)/perl.xs $(srcdir)/ptypemap
 		-typemap ptypemap \
 		$(srcdir)/perl.xs > $@
 
-$(OBJ): estruct.h $(BUILTHDRS)
+$(OBJ): estruct.h edef.h $(BUILTHDRS)
 
 api$o :		api.h
-bind$o :	nefunc.h btree.h
+bind$o :	btree.h
 btree$o :	btree.h
-eval$o :	nevars.h
-exec$o :	neexec.h nefunc.h
-externs$o :	nebind.h nename.h neproto.h nefunc.h
+curses$o :	tcap.h xtermkeys.h
+display$o :	pscreen.h
 filec$o :	dirstuff.h
 glob$o :	dirstuff.h
-globals$o :	nefunc.h
-main$o :	chgdfunc.h nevars.h
-modes$o :	chgdfunc.h nefsms.h
-opers$o :	nefunc.h
+main$o :	chgdfunc.h
+modes$o :	chgdfunc.h
 path$o :	dirstuff.h
 perl$o :	api.h
-random$o :	nefunc.h
-select$o :	nefunc.h
-statevar$o :	nevars.h
-spawn$o :	nefunc.h
+random$o :	dirstuff.h
+statevar$o :	patchlev.h
 tags$o :	btree.h
-tcap$o :	tcap.h
-termio$o :	nefunc.h
+tcap$o :	tcap.h xtermkeys.h
 version$o :	patchlev.h
-word$o :	nefunc.h
-x11$o :		nefunc.h
+x11$o :		pscreen.h
+
+# test-drivers
 
 test_btree$x:	btree.c
 	$(CC) -o $@ -DDEBUG_BTREE $(CPPFLAGS) $(CFLAGS) btree.c $(LDFLAGS)
 
 test_regexp$x:	regexp.c
 	$(CC) -o $@ -DDEBUG_REGEXP $(CPPFLAGS) $(CFLAGS) regexp.c $(LDFLAGS)
+
+TEST_IO_OBJS	= \
+	$(SCREEN)$o \
+	nullterm$o \
+	test_io$o
+
+test_io$x :	$(TEST_IO_OBJS)
+	$(CC) -o $@ $(TEST_IO_OBJS) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) $(LIBS)
 
 # dependency-rules for install/installdirs
 $(BINDIR)/$(TARGET):		$(TARGET)
@@ -640,6 +668,27 @@ $(BINDIR)/vileget:		$(srcdir)/perl/vileget
 $(BINDIR)/@TARGET@-pager:	$(srcdir)/macros/vile-pager
 	sed -e 's/ vile / @TARGET@ /' $(srcdir)/macros/vile-pager >$@
 	chmod 755 $@
+
+$(DOCDIR)/Vileserv.doc:		$(srcdir)/doc/Vileserv.doc
+	$(INSTALL_DATA)		$(srcdir)/doc/Vileserv.doc $@
+$(DOCDIR)/config.doc:		$(srcdir)/doc/config.doc
+	$(INSTALL_DATA)		$(srcdir)/doc/config.doc $@
+$(DOCDIR)/dir.doc:		$(srcdir)/doc/dir.doc
+	$(INSTALL_DATA)		$(srcdir)/doc/dir.doc $@
+$(DOCDIR)/filters.doc:		$(srcdir)/doc/filters.doc
+	$(INSTALL_DATA)		$(srcdir)/doc/filters.doc $@
+$(DOCDIR)/macros.doc:		$(srcdir)/doc/macros.doc
+	$(INSTALL_DATA)		$(srcdir)/doc/macros.doc $@
+$(DOCDIR)/menus.doc:		$(srcdir)/doc/menus.doc
+	$(INSTALL_DATA)		$(srcdir)/doc/menus.doc $@
+$(DOCDIR)/modes.doc:		$(srcdir)/doc/modes.doc
+	$(INSTALL_DATA)		$(srcdir)/doc/modes.doc $@
+$(DOCDIR)/oleauto.doc:		$(srcdir)/doc/oleauto.doc
+	$(INSTALL_DATA)		$(srcdir)/doc/oleauto.doc $@
+$(DOCDIR)/perl.doc:		$(srcdir)/doc/perl.doc
+	$(INSTALL_DATA)		$(srcdir)/doc/perl.doc $@
+$(DOCDIR)/visvile.doc:		$(srcdir)/doc/visvile.doc
+	$(INSTALL_DATA)		$(srcdir)/doc/visvile.doc $@
 
 $(DATADIR)/color-ls.rc:		$(srcdir)/macros/color-ls.rc
 	$(INSTALL_DATA)		$(srcdir)/macros/color-ls.rc $@

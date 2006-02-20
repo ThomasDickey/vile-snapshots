@@ -6,7 +6,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.322 2005/11/30 02:18:33 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.323 2006/02/16 00:13:49 tom Exp $
  */
 
 #ifndef VILE_EDEF_H
@@ -296,6 +296,11 @@ decl_uninit( struct VAL *relisting_w_vals );
 
 decl_init( char out_of_mem[], "Out of Memory" );
 decl_init( char error_val[], "ERROR" );
+
+#if OPT_EVAL
+decl_uninit( TBUFF *this_macro_result ); /* "$result" variable		*/
+decl_uninit( TBUFF *last_macro_result ); /* "$_" variable		*/
+#endif
 
 #if OPT_EVAL || OPT_COLOR
 decl_uninit( TBUFF *tb_curpalette );	/* current colormap palete	*/
