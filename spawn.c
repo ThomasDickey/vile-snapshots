@@ -1,7 +1,7 @@
 /*	Spawn:	various DOS access commands
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.188 2005/11/30 01:24:52 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.190 2006/01/12 23:46:38 tom Exp $
  *
  */
 
@@ -137,16 +137,16 @@ spawncli(int f GCC_UNUSED, int n GCC_UNUSED)
 
 #if	SYS_UNIX
 #define	OK_SPAWN
-    ttclean(TRUE);
+    term.clean(TRUE);
     file_stat(0, 0);
-    kbd_openup();
+    term.openup();
 #if	DISP_X11 && !SMALLER
     (void) x_window_SHELL((char *) 0);
 #else
     (void) system_SHELL((char *) 0);
 #endif
-    kbd_openup();
-    ttunclean();
+    term.openup();
+    term.unclean();
     term.kopen();
     sgarbf = TRUE;
     return AfterShell();
@@ -221,7 +221,7 @@ bktoshell(int f, int n)		/* suspend and wait to wake up */
 	return FALSE;
 
     beginDisplay();
-    ttclean(TRUE);
+    term.clean(TRUE);
     file_stat(0, 0);
 
 /* #define simulate_job_control_for_debug */
@@ -250,9 +250,9 @@ rtfrmshell(int ACTUAL_SIG_ARGS GCC_UNUSED)
 #if USE_UNIX_JOB_CTL
     TRACE(("entering rtfrmshell...\n"));
     endofDisplay();
-    kbd_openup();
+    term.openup();
     term.kopen();
-    ttunclean();
+    term.unclean();
     sgarbf = TRUE;
     setup_handler(SIGCONT, rtfrmshell);		/* suspend & restart */
     (void) update(TRUE);
@@ -390,12 +390,12 @@ spawn1(int rerun, int pressret)
     (void) system_SHELL(line);
 #endif
 #else
-    ttclean(TRUE);
+    term.clean(TRUE);
     file_stat(0, 0);
 
     (void) system_SHELL(line);
 
-    ttunclean();
+    term.unclean();
     if (pressret)
 	pressreturn();
     term.open();
@@ -881,7 +881,7 @@ vile_filter(int f GCC_UNUSED, int n GCC_UNUSED)
 #endif
 #if	SYS_UNIX
     bottomleft();
-    ttclean(TRUE);
+    term.clean(TRUE);
     file_stat(0, 0);
     if ((t = strchr(line, '|')) != 0) {
 	char temp[NLINE];
@@ -892,7 +892,7 @@ vile_filter(int f GCC_UNUSED, int n GCC_UNUSED)
     }
     (void) strcat(line, " >fltout");
     system(line);
-    ttunclean();
+    term.unclean();
     term.flush();
     sgarbf = TRUE;
     s = TRUE;

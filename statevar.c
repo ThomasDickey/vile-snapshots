@@ -3,7 +3,7 @@
  *	for getting and setting the values of the vile state variables,
  *	plus helper utility functions.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.95 2005/12/25 22:36:49 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.97 2006/02/16 00:28:41 tom Exp $
  */
 
 #include	"estruct.h"
@@ -162,6 +162,35 @@ any_rw_EXPR(TBUFF **rp, const char *vp, TBUFF **value)
 	    tb_scopy(value, vp);
 	    return TRUE;
 	}
+    }
+    return FALSE;
+}
+
+static int
+any_ro_TBUFF(TBUFF **rp, const char *vp, TBUFF **value)
+{
+    if (rp) {
+	if (value != 0) {
+	    tb_copy(rp, *value);
+	    return TRUE;
+	}
+    } else if (vp) {
+	return ABORT;		/* read-only */
+    }
+    return FALSE;
+}
+
+static int
+any_rw_TBUFF(TBUFF **rp, const char *vp, TBUFF **value)
+{
+    if (rp) {
+	if (value != 0) {
+	    tb_copy(rp, *value);
+	    return TRUE;
+	}
+    } else if (vp) {
+	tb_scopy(value, vp);
+	return TRUE;
     }
     return FALSE;
 }
@@ -1402,8 +1431,22 @@ setcmdstatus(int s)
 int
 var_STATUS(TBUFF **rp, const char *vp)
 {
-    return any_rw_BOOL(rp, vp, &lastcmdstatus);
+    return any_ro_BOOL(rp, vp, lastcmdstatus);
 }
+
+#if OPT_EVAL
+int
+var__STATUS(TBUFF **rp, const char *vp)
+{
+    return any_ro_TBUFF(rp, vp, &last_macro_result);
+}
+
+int
+var_RETURN(TBUFF **rp, const char *vp)
+{
+    return any_rw_TBUFF(rp, vp, &this_macro_result);
+}
+#endif /* OPT_EVAL */
 
 #if OPT_TITLE
 int
@@ -1432,7 +1475,8 @@ int
 var_TITLEFORMAT(TBUFF **rp, const char *vp)
 {
     int code = any_rw_STR(rp, vp, &title_format);
-    set_editor_title();
+    if (!rp && vp)
+	set_editor_title();
     return code;
 }
 #endif /* OPT_TITLE */

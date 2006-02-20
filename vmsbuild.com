@@ -1,4 +1,4 @@
-$! $Header: /users/source/archives/vile.vcs/RCS/vmsbuild.com,v 1.44 2005/07/24 20:25:20 tom Exp $
+$! $Header: /users/source/archives/vile.vcs/RCS/vmsbuild.com,v 1.46 2006/01/14 01:44:31 tom Exp $
 $! VMS build-script for vile.  Requires installed C compiler
 $!
 $! Screen Configurations
@@ -43,25 +43,8 @@ $!
 $ start:
 $! -----------------------------------------------------------
 $! pickup user's compiler choice, if any
-$! -----------------------------------------------------------
 $!
-$ comp = ""
-$ using_vaxc = 0
-$ if "''p2'" .nes. ""
-$ then
-$    comp = f$edit(p2, "UPCASE")
-$    if "''comp'" .eqs. "VAXC"
-$    then
-$        gosub vaxc_config
-$    else
-$        if "''comp'" .eqs. "DECC"
-$        then
-$            gosub decc_config
-$        else
-$            gosub usage
-$        endif
-$    endif
-$ endif
+$	gosub parm2_compiler
 $! -----------------------------------------------------------
 $!      Build the option-file
 $!
@@ -94,6 +77,7 @@ $ write optf "map.obj"
 $ write optf "modes.obj"
 $ write optf "msgs.obj"
 $ write optf "npopen.obj"
+$ write optf "nullterm.obj"
 $ write optf "oneliner.obj"
 $ write optf "opers.obj"
 $ write optf "path.obj"
@@ -119,137 +103,140 @@ $ write optf "wordmov.obj"
 $! ----------------------------------
 $! Look for the compiler used and specify architecture.
 $!
-$ CC = "CC"
-$ arch = "UNKNOWN"
+$!!!	gosub set_compiler
+$!!!	gosub set_symbols
 $!
-$ if f$getsyi("ARCH_NAME") .eqs. "Alpha"
-$ then
-$  arch = "__alpha__=1"
-$  if "''comp'" .eqs. "" then gosub decc_config
-$ endif
+$	CC = "CC"
+$	arch = "UNKNOWN"
 $!
-$ if f$getsyi("ARCH_NAME") .eqs. "IA64"
-$ then
-$  arch = "__ia64__=1"
-$  if "''comp'" .eqs. "" then gosub decc_config
-$ endif
+$	if f$getsyi("ARCH_NAME") .eqs. "Alpha"
+$	then
+$		arch = "__alpha__=1"
+$		if "''comp'" .eqs. "" then gosub decc_config
+$	endif
 $!
-$ if f$getsyi("ARCH_NAME") .eqs. "VAX"
-$ then
-$  arch = "__vax__=1"
-$  if "''comp'" .nes. "" then goto screen_config
-$  if f$search("SYS$SYSTEM:VAXC.EXE").nes.""
-$  then
-$   gosub vaxc_config
-$  else
-$   if f$search("SYS$SYSTEM:DECC$COMPILER.EXE").nes.""
-$   then
-$    gosub decc_config
-$   else
-$    DEFS = ",HAVE_STRERROR"
-$    if f$trnlnm("GNU_CC").eqs.""
-$    then
-$     write sys$output "C compiler required to rebuild vile"
-$     close optf
-$     exit
-$    else
-$     write optf "gnu_cc:[000000]gcclib.olb/lib"
-$     comp = "__gcc__=1"
-$     CC = "GCC"
-$    endif
-$   endif
-$  endif
-$ endif
+$	if f$getsyi("ARCH_NAME") .eqs. "IA64"
+$	then
+$		arch = "__ia64__=1"
+$		if "''comp'" .eqs. "" then gosub decc_config
+$	endif
+$!
+$	if f$getsyi("ARCH_NAME") .eqs. "VAX"
+$	then
+$		arch = "__vax__=1"
+$		if "''comp'" .nes. "" then goto screen_config
+$		if f$search("SYS$SYSTEM:VAXC.EXE").nes.""
+$		then
+$			gosub vaxc_config
+$		else
+$			if f$search("SYS$SYSTEM:DECC$COMPILER.EXE").nes.""
+$			then
+$				gosub decc_config
+$			else
+$				DEFS = ",HAVE_STRERROR"
+$				if f$trnlnm("GNU_CC").eqs.""
+$				then
+$					write sys$output "C compiler required to rebuild vile"
+$					close optf
+$					exit
+$				else
+$					write optf "gnu_cc:[000000]gcclib.olb/lib"
+$					comp = "__gcc__=1"
+$					CC = "GCC"
+$				endif
+$			endif
+$		endif
+$	endif
 $
-$ if "''arch'" .eqs. "UNKNOWN"
-$ then
-$   write sys$output "Cannot determine architecture type"
-$   exit 1
-$ endif
+$	if "''arch'" .eqs. "UNKNOWN"
+$	then
+$		write sys$output "Cannot determine architecture type"
+$		exit 1
+$	endif
 $!
 $ screen_config:
 $!
-$ MKTBLS :== $SYS$DISK:'F$DIRECTORY()MKTBLS.EXE	! make a foreign command
+$	MKTBLS :== $SYS$DISK:'F$DIRECTORY()MKTBLS.EXE	! make a foreign command
 $!
-$ if "''p1'" .nes. "XVILE" .and. "''p1'" .nes. "XVILE.EXE"
-$  then
+$	if "''p1'" .nes. "XVILE" .and. "''p1'" .nes. "XVILE.EXE"
+$	then
 $! for regular vile, use these:
-$   SCREEN := vmsvt
-$   TARGET := vile
-$   SCRDEF := "DISP_VMSVT,scrn_chosen"
-$   mmstar = "__vile__=1"
-$ else
+$		SCREEN := vmsvt
+$		TARGET := vile
+$		SCRDEF := "DISP_VMSVT,scrn_chosen"
+$		mmstar = "__vile__=1"
+$	else
 $! for building the X toolkit version:
-$   SCREEN := x11
-$   TARGET := xvile
-$   SCRDEF = "NO_WIDGETS,XTOOLKIT,DISP_X11,scrn_chosen"
-$   mmstar = "__xvile__=1"
+$		SCREEN := x11
+$		TARGET := xvile
+$		SCRDEF = "NO_WIDGETS,XTOOLKIT,DISP_X11,scrn_chosen"
+$		mmstar = "__xvile__=1"
 $!
 $!  Find out which X-Version we're running.  This will fail for older
 $!  VMS versions (i.e., v5.5-1).  Therefore, choose DECWindows XUI for
 $!  default.
 $!
-$   On Error Then GoTo XUI
-$   @sys$update:decw$get_image_version sys$share:decw$xlibshr.exe decw$version
-$   if f$extract(4,3,decw$version).eqs."1.0"
-$   then
-$     write optf "Sys$share:DECW$DWTLIBSHR.EXE/Share"
-$   endif
-$   if f$extract(4,3,decw$version).eqs."1.1"
-$   then
-$     write optf "menu.obj"
-$     write optf "x11menu.obj"
-$     write optf "sys$share:decw$xmlibshr.exe/share"
-$     write optf "sys$share:decw$xtshr.exe/share"
-$     SCRDEF := "MOTIF_WIDGETS,XTOOLKIT,DISP_X11,scrn_chosen"
-$     mmstar = "__xmvile__=1"
-$     GoTo MAIN2
-$   endif
-$   if f$extract(4,3,decw$version).eqs."1.2"
-$   then
-$     write optf "menu.obj"
-$     write optf "x11menu.obj"
-$     write optf "sys$share:decw$xmlibshr12.exe/share"
-$     write optf "sys$share:decw$xtlibshrr5.exe/share"
-$     SCRDEF := "MOTIF_WIDGETS,XTOOLKIT,DISP_X11,scrn_chosen"
-$     mmstar = "__xmvile__=1"
-$     GoTo MAIN2
-$   endif
-$   GoTo MAIN
+$		On Error Then GoTo XUI
+$		@sys$update:decw$get_image_version sys$share:decw$xlibshr.exe decw$version
+$		if f$extract(4,3,decw$version).eqs."1.0"
+$		then
+$			write optf "Sys$share:DECW$DWTLIBSHR.EXE/Share"
+$		endif
+$		if f$extract(4,3,decw$version).eqs."1.1"
+$		then
+$			write optf "menu.obj"
+$			write optf "x11menu.obj"
+$			write optf "sys$share:decw$xmlibshr.exe/share"
+$			write optf "sys$share:decw$xtshr.exe/share"
+$			SCRDEF := "MOTIF_WIDGETS,XTOOLKIT,DISP_X11,scrn_chosen"
+$			mmstar = "__xmvile__=1"
+$			GoTo MAIN2
+$		endif
+$		if f$extract(4,3,decw$version).eqs."1.2"
+$		then
+$			write optf "menu.obj"
+$			write optf "x11menu.obj"
+$			write optf "sys$share:decw$xmlibshr12.exe/share"
+$			write optf "sys$share:decw$xtlibshrr5.exe/share"
+$			SCRDEF := "MOTIF_WIDGETS,XTOOLKIT,DISP_X11,scrn_chosen"
+$			mmstar = "__xmvile__=1"
+$			GoTo MAIN2
+$		endif
+$		GoTo MAIN
 $!
-$XUI :
-$   write optf "Sys$share:DECW$DWTLIBSHR.EXE/Share"
+$ XUI :
+$		write optf "Sys$share:DECW$DWTLIBSHR.EXE/Share"
 $!
-$MAIN :
-$   write optf "sys$share:decw$xtshr.exe/share"
-$   write optf "sys$share:decw$xlibshr.exe/share"
-$ endif
+$ MAIN :
+$		write optf "sys$share:decw$xtshr.exe/share"
+$		write optf "sys$share:decw$xlibshr.exe/share"
+$	endif
 $!
-$MAIN2 :
-$ if using_vaxc .eq. 1 then write optf "sys$library:vaxcrtl.exe/share"
-$ close optf
+$ MAIN2 :
+$	if using_vaxc .eq. 1 then write optf "sys$library:vaxcrtl.exe/share"
+$		close optf
 $! -------------- vms_link.opt is created -------------
-$ if f$edit("''p1'", "UPCASE") .eqs. "VMS_LINK.OPT"
-$ then
+$		if f$edit("''p1'", "UPCASE") .eqs. "VMS_LINK.OPT"
+$		then
 $!  mms called this script to build vms_link.opt.  all done
-$   exit
-$ endif
+$			exit
+$		endif
 $!
-$ if f$search("SYS$SYSTEM:MMS.EXE").eqs.""
-$ then
+$	if f$search("SYS$SYSTEM:MMS.EXE").eqs.""
+$	then
 $!  can also use /Debug /Listing, /Show=All
 $
-$   CFLAGS := 'CFLAGS/Diagnostics /Define=("os_chosen","''SCRDEF'''DEFS'") /Include=([])
+$		CFLAGS := 'CFLAGS/Diagnostics /Define=("os_chosen","''SCRDEF'''DEFS'") /Include=([])
 $
-$  	if "''p3'" .nes. "" then gosub 'p3
-$  	if "''p3'" .nes. "" then exit 1
+$		if "''p3'" .nes. "" then gosub 'p3
+$		if "''p3'" .nes. "" then exit 1
 $!
-$	gosub all
+$		gosub all
 $!
-$  else
-$   mms/ignore=warning/macro=('comp','mmstar','arch') 'p3
-$  endif
-$ exit
+$	else
+$		mms/ignore=warning/macro=('comp','mmstar','arch') 'p3
+$	endif
+$	exit
 $!
 $ all:
 $	if f$search("mktbls.exe") .eqs. ""
@@ -298,6 +285,7 @@ $	if "''mmstar'" .eqs. "__xmvile__=1" then call make x11menu
 $	call make modes
 $	call make msgs
 $	call make npopen
+$	call make nullterm
 $	call make oneliner
 $	call make opers
 $	call make path
@@ -399,6 +387,136 @@ $	close test_script
 $	write sys$output "** made xvile.com"
 $	return
 $!
+$! Test-drivers
+$ test_io :
+$	gosub parm2_compiler 'p2
+$	gosub set_compiler
+$	gosub set_symbols
+$!
+$	call make test_io
+$	call make vmsvt
+$	call make nullterm
+$	call linkit test_io test_io.obj,vmsvt.obj,nullterm.obj
+$!
+$	return
+$! --------------------------------
+$! Set compiler symbol "comp" based on 2nd parameter.
+$ parm2_compiler:
+$	comp = ""
+$	using_vaxc = 0
+$	if "''p2'" .nes. ""
+$	then
+$		comp = f$edit(p2, "UPCASE")
+$		if "''comp'" .eqs. "VAXC"
+$		then
+$			gosub vaxc_config
+$		else
+$			if "''comp'" .eqs. "DECC"
+$			then
+$				gosub decc_config
+$			else
+$				gosub usage
+$			endif
+$		endif
+$	endif
+$	return
+$! ----------------------------------
+$! Look for the compiler used and specify architecture.
+$ set_compiler:
+$	CC = "CC"
+$	arch = "UNKNOWN"
+$!
+$	if f$getsyi("ARCH_NAME") .eqs. "Alpha"
+$	then
+$		arch = "__alpha__=1"
+$		if "''comp'" .eqs. "" then gosub decc_config
+$	endif
+$!
+$	if f$getsyi("ARCH_NAME") .eqs. "IA64"
+$	then
+$		arch = "__ia64__=1"
+$		if "''comp'" .eqs. "" then gosub decc_config
+$	endif
+$!
+$	if f$getsyi("ARCH_NAME") .eqs. "VAX"
+$	then
+$		arch = "__vax__=1"
+$		if "''comp'" .nes. "" then goto done_compiler
+$		if f$search("SYS$SYSTEM:VAXC.EXE").nes.""
+$		then
+$			gosub vaxc_config
+$		else
+$			if f$search("SYS$SYSTEM:DECC$COMPILER.EXE").nes.""
+$			then
+$				gosub decc_config
+$			else
+$				DEFS = ",HAVE_STRERROR"
+$				if f$trnlnm("GNU_CC").eqs.""
+$				then
+$					write sys$output "C compiler required to rebuild vile"
+$					exit
+$				else
+$					comp = "__gcc__=1"
+$					CC = "GCC"
+$				endif
+$			endif
+$		endif
+$	endif
+$
+$	if "''arch'" .eqs. "UNKNOWN"
+$	then
+$		write sys$output "Cannot determine architecture type"
+$		exit 1
+$	endif
+$ done_compiler:
+$	return
+$! ----------------------------------
+$! Look for the compiler used and specify architecture.
+$ set_symbols:
+$	MKTBLS :== $SYS$DISK:'F$DIRECTORY()MKTBLS.EXE	! make a foreign command
+$!
+$	if "''p1'" .eqs. "XVILE" .or. "''p1'" .eqs. "XVILE.EXE"
+$	then
+$! for building the X toolkit version:
+$		SCREEN := x11
+$		TARGET := xvile
+$		SCRDEF = "NO_WIDGETS,XTOOLKIT,DISP_X11,scrn_chosen"
+$		mmstar = "__xvile__=1"
+$!
+$!  Find out which X-Version we're running.  This will fail for older
+$!  VMS versions (i.e., v5.5-1).  Therefore, choose DECWindows XUI for
+$!  default.
+$!
+$		On Error Then GoTo done_symbol
+$		@sys$update:decw$get_image_version sys$share:decw$xlibshr.exe decw$version
+$		if f$extract(4,3,decw$version).eqs."1.1"
+$		then
+$			SCRDEF := "MOTIF_WIDGETS,XTOOLKIT,DISP_X11,scrn_chosen"
+$			mmstar = "__xmvile__=1"
+$		endif
+$		if f$extract(4,3,decw$version).eqs."1.2"
+$		then
+$			SCRDEF := "MOTIF_WIDGETS,XTOOLKIT,DISP_X11,scrn_chosen"
+$			mmstar = "__xmvile__=1"
+$		endif
+$	else
+$! for regular vile, use these:
+$		SCREEN := vmsvt
+$		TARGET := vile
+$		SCRDEF := "DISP_VMSVT,scrn_chosen"
+$		mmstar = "__vile__=1"
+$	endif
+$!  can also use /Debug /Listing, /Show=All
+$	CFLAGS := 'CFLAGS/Diagnostics /Define=("os_chosen","''SCRDEF'''DEFS'") /Include=([])
+$	if f$search("SYS$SYSTEM:MMS.EXE").eqs.""
+$	then
+$		BUILDS = "with_dcl"
+$	else
+$		BUILDS = "with_mms"
+$	endif
+$ done_symbol :
+$	return
+$!
 $ make: subroutine
 $	if f$search("''p1'.obj") .eqs. ""
 $	then
@@ -406,9 +524,21 @@ $		write sys$output "compiling ''p1'"
 $		'CC 'CFLAGS 'p1.c
 $		if f$search("''p1'.dia") .nes. "" then delete 'p1.dia;*
 $	endif
-$exit
-$	return
+$	exit
 $ endsubroutine
+$!
+$ linkit: subroutine
+$!      sys$library:vaxcrtl.olb did not ship with VMS V8.2 HP rx2600 IA64,
+$!      nor with layered product HP C V7.1-011 on OpenVMS IA64 V8.2
+$	if f$search("SYS$LIBRARY:VAXCRTL.OLB") .nes. ""
+$	then
+$		link /exec='p1/map/cross 'p2,SYS$LIBRARY:VAXCRTL/LIB
+$	else
+$		link /exec='p1/map/cross 'p2
+$	endif
+$	exit
+$ endsubroutine
+$!
 $ vaxc_config:
 $    comp       = "__vaxc__=1"
 $    CFLAGS     = "/VAXC"
@@ -431,5 +561,6 @@ $    write sys$output "                   or"
 $    write sys$output "      $ @vmsbuild xvile [{decc | vaxc} [<bldtarget>]]"
 $    write sys$output "bldtarget is one of"
 $    write sys$output "      all install clobber clean"
-$!    write sys$output "      vms_link.opt vile_com xvile_com"
+$    write sys$output "      vile_com xvile_com"
+$    write sys$output "      test_io test_btree test_regexp"
 $    exit 2

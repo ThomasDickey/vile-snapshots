@@ -1,4 +1,4 @@
-; $Id: modes.rc,v 1.33 2006/01/04 23:03:34 cmorgan Exp $
+; $Id: modes.rc,v 1.36 2006/02/20 00:36:05 tom Exp $
 ; majormodes in this file are ordered alphabetically for convenience - the
 ; precedence used by vile is strictly alphabetic, counting case.  Use the
 ; before and after qualifiers to override the precedence.
@@ -139,6 +139,17 @@ define-mode cpp
 	~endif
 	cindent
 	cindent-chars   &cat ':#' $fences
+~endwith
+
+; "C#", aka "C-flat" or "C-sharp".
+define-mode cs
+~with define-submode cs
+	suffixes	'\.\(cs\)$'
+	cindent
+	cindent-chars   &cat ':#' $fences
+	tabstop=4
+	shiftwidth=4
+	dos
 ~endwith
 
 define-mode csh
@@ -731,9 +742,29 @@ define-mode vb
 	dos
 	ignorecase
 	notabinsert
-	sections '^\(Public\|Private\)\s\+\(Sub\|Function\)'
+	fence-if	'^\s*if\>'
+	fence-elif	'^\s*elseif\>'
+	fence-else	'^\s*else\>'
+	fence-fi	'^\s*end\s\+if\>'
+	sections '^\(Public\|Private\)\s\+\(Sub\|Function\|Property\)'
+~elsewith define-submode vb group 'for-loop'
+	fence-if	'^\s*for\>'
+	fence-fi	'^\s*next\>'
+~elsewith define-submode vb group 'while-loop'
+	fence-if	'^\s*while\>'
+	fence-fi	'^\s*wend\>'
+~elsewith define-submode vb group 'sub'
+	fence-if	'^\s*\(\(Public\|Private\)\s\+\)\?sub\>'
+	fence-fi	'^\s*end\s\+sub\>'
+~elsewith define-submode vb group 'function'
+	fence-if	'^\s*\(\(Public\|Private\)\s\+\)\?function\>'
+	fence-fi	'^\s*end\s\+function\>'
+~elsewith define-submode vb group 'property'
+	fence-if	'^\s*\(\(Public\|Private\)\s\+\)\?property\>'
+	fence-fi	'^\s*end\s\+property\>'
 ~endwith
 
+; FIXME this should be the same as vbmode except for the preamble
 define-mode vbs
 ~with define-submode vbs
 	before		"basic"

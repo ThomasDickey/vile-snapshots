@@ -1,7 +1,7 @@
 /*
  * version & usage-messages for vile
  *
- * $Header: /users/source/archives/vile.vcs/RCS/version.c,v 1.58 2005/11/30 01:25:16 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/version.c,v 1.59 2006/01/12 22:37:43 tom Exp $
  *
  */
 
@@ -82,7 +82,7 @@ print_usage(int code)
 	"single-letter options usually are case-independent"
     };
 
-    ttclean(TRUE);
+    term.clean(TRUE);
 #if DISP_NTWIN
     gui_usage(prog_arg, options, TABLESIZE(options));
 #else

@@ -5,7 +5,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/sh-filt.l,v 1.64 2005/09/05 14:29:59 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/sh-filt.l,v 1.65 2006/02/20 00:45:18 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Shell script.
  */
@@ -165,8 +165,9 @@ IDENTX		\$[\*@#\?\$!-]
 
 <SUBST>{BACKTIC}	{ handle_backtic(yytext, yyleng); }
 <SUBST>{IDENT2R}	{ flt_bfr_embed(yytext, yyleng, Ident_attr); pop_stk(); }
+<SUBST>\\\"		{ flt_bfr_embed(yytext, yyleng, String_attr); }
 <SUBST>\"		{ push_stk(QUOTED); BeginQuote(QUOTED, String_attr); }
-<SUBST>[^"}]+		{ flt_bfr_embed(yytext, yyleng, ""); }
+<SUBST>[^"}\\]+		{ flt_bfr_embed(yytext, yyleng, ""); }
 
 %%
 

@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.561 2005/11/30 02:17:38 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.564 2006/01/13 01:29:15 tom Exp $
  *
  */
 
@@ -1137,6 +1137,7 @@ extern void vl_restore_tty (void);
 
 extern int  nullterm_setdescrip (const char *res);
 extern int  nullterm_watchfd (int fd, WATCHTYPE type, long *idp);
+extern void nullterm_clean (int flag);
 extern void nullterm_cursorvis (int flag);
 extern void nullterm_icursor (int c);
 extern void nullterm_kclose (void);
@@ -1145,12 +1146,14 @@ extern void nullterm_mclose (void);
 extern void nullterm_mevent (void);
 extern void nullterm_mopen (void);
 extern void nullterm_pflush (void);
+extern void nullterm_openup (void);
 extern void nullterm_scroll (int f, int t, int n);
 extern void nullterm_setback (int b);
 extern void nullterm_setccol (int c);
 extern void nullterm_setfore (int f);
 extern void nullterm_setpal (const char *p);
 extern void nullterm_settitle (const char *t);
+extern void nullterm_unclean (void);
 extern void nullterm_unwatchfd (int fd, long id);
 
 /* ucrypt.c */
@@ -1342,7 +1345,7 @@ extern	char *	x_get_icon_name		(void);
 extern	char *	x_get_window_name	(void);
 extern	int	x_preparse_args		(int *pargc, char ***pargv);
 extern	int	x_setfont		(const char *fname);
-extern	int	x_typahead		(int milli);
+extern	int	x_milli_sleep		(int milli);
 extern	void	x_move_events		(void);
 extern	void	x_set_icon_name		(const char *name);
 extern	void	x_set_window_name	(const char *name);

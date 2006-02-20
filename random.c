@@ -2,7 +2,7 @@
  * This file contains the command processing functions for a number of random
  * commands. There is no functional grouping here, for sure.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.287 2005/07/14 00:09:57 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.291 2006/02/19 20:53:10 tom Exp $
  *
  */
 
@@ -378,7 +378,7 @@ getcline(void)
 
 #if !SMALLER
 /*
- * Go to the given character index in the buffer
+ * Go to the given character index in the buffer.
  */
 int
 gotochr(int f, int n)
@@ -396,8 +396,10 @@ gotochr(int f, int n)
 	    len = line_length(lp);
 	    if (goal <= len) {
 		DOT.l = lp;
-		if ((DOT.o = goal + len - 1) >= llength(lp))
+		/* we cannot move into the middle of the line-separator */
+		if ((DOT.o = goal - 1) >= llength(lp))
 		    DOT.o = llength(lp) - 1;
+		goal = 0;
 		break;
 	    }
 	    goal -= len;
@@ -772,7 +774,7 @@ catnap(int milli, int watchinput)
 {
 #if DISP_X11
     if (watchinput)
-	x_typahead(milli);
+	x_milli_sleep(milli);
     else
 #endif
     {
@@ -1142,6 +1144,7 @@ cd_and_pwd(char *path)
 
     if (chdir(SL_TO_BSL(path)) == 0) {
 	did_chdir = TRUE;
+
 	if (dirs_add_active) {
 	    /* the directory is legit -- that's all we care about */
 
@@ -1159,6 +1162,9 @@ cd_and_pwd(char *path)
 	mlforce("%s", p);
 #else
 	(void) pwd(TRUE, 1);
+#endif
+#if OPT_TITLE
+	set_editor_title();
 #endif
 	run_a_hook(&cdhook);
 	updatelistbuffers();
@@ -1456,13 +1462,17 @@ name_of_hook(HOOK * hook)
     else if (hook == &writehook)
 	result = "$write-hook";
     else if (hook == &bufhook)
-	result = "$buf-hook";
+	result = "$buffer-hook";
     else if (hook == &exithook)
 	result = "$exit-hook";
+#if OPT_COLOR
     else if (hook == &autocolorhook)
 	result = "autocolor-hook";
+#endif
+#if OPT_MAJORMODE
     else if (hook == &majormodehook)
 	result = "$majormode-hook";
+#endif
     return result;
 }
 

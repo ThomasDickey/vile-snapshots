@@ -3,7 +3,7 @@
  * characters, and write characters in a barely buffered fashion on the display.
  * All operating systems.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/termio.c,v 1.203 2005/11/30 01:29:42 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/termio.c,v 1.211 2006/01/13 01:29:15 tom Exp $
  *
  */
 
@@ -13,11 +13,6 @@
 
 #if CC_DJGPP
 # include <pc.h>		/* for kbhit() */
-#endif
-
-#if SYS_VMS
-#include <starlet.h>
-#include <lib$routines.h>
 #endif
 
 #if SYS_UNIX
@@ -316,7 +311,7 @@ ttopen(void)
 
     ttmiscinit();
 
-    ttunclean();
+    term.unclean();
 }
 
 /* we disable the flow control chars so we can use ^S as a command, but
@@ -337,7 +332,7 @@ flow_control_enable(int f, int n GCC_UNUSED)
 	ntermios.c_cc[VSTART] = VDISABLE;
 	ntermios.c_cc[VSTOP] = VDISABLE;
     }
-    ttunclean();
+    term.unclean();
 #endif
     return TRUE;
 }
@@ -345,7 +340,7 @@ flow_control_enable(int f, int n GCC_UNUSED)
 void
 ttclose(void)
 {
-    ttclean(TRUE);
+    term.clean(TRUE);
 }
 
 /*
@@ -360,7 +355,7 @@ ttclean(int f)
 {
 #if !DISP_X11
     if (f)
-	kbd_openup();
+	term.openup();
 
     (void) fflush(stdout);
     vl_restore_tty();
@@ -467,7 +462,7 @@ ttopen(void)
 #endif
 
     ttmiscinit();
-    ttunclean();
+    term.unclean();
 }
 
 /* we disable the flow control chars so we can use ^S as a command, but
@@ -481,7 +476,7 @@ flow_control_enable(int f, int n)
     ntermio.c_iflag &= ~(IXON | IXANY | IXOFF);
     if (!f)
 	ntermio.c_iflag |= otermio.c_iflag & (IXON | IXANY | IXOFF);
-    ttunclean();
+    term.unclean();
 #endif
     return TRUE;
 }
@@ -489,7 +484,7 @@ flow_control_enable(int f, int n)
 void
 ttclose(void)
 {
-    ttclean(TRUE);
+    term.clean(TRUE);
 }
 
 void
@@ -497,7 +492,7 @@ ttclean(int f)
 {
 #if ! DISP_X11
     if (f)
-	kbd_openup();
+	term.openup();
 
     (void) fflush(stdout);
     term.flush();
@@ -638,7 +633,7 @@ flow_control_enable(int f, int n)
 	ntchars.t_startc = -1;
 	ntchars.t_stopc = -1;
     }
-    ttunclean();
+    term.unclean();
 #endif
     return TRUE;
 }
@@ -646,7 +641,7 @@ flow_control_enable(int f, int n)
 void
 ttclose(void)
 {
-    ttclean(TRUE);
+    term.clean(TRUE);
 }
 
 void
@@ -654,7 +649,7 @@ ttclean(int f)
 {
 #if ! DISP_X11
     if (f)
-	kbd_openup();
+	term.openup();
 
     term.flush();
     term.close();
@@ -962,7 +957,7 @@ tttypahead(void)
 {
 
 #if DISP_X11
-    return x_typahead(0);
+    return x_milli_sleep(0);
 #else
 
 # if USE_SELECT || USE_POLL || defined(__BEOS__)
@@ -1017,72 +1012,9 @@ ttmiscinit(void)
 # endif
 #endif
 
-#if SYS_VMS
-#include	<stsdef.h>
-#include	<ssdef.h>
-#include	<descrip.h>
-#include	<iodef.h>
-#include	<ttdef.h>
-#include	<tt2def.h>
-
-typedef struct {
-    USHORT status;		/* I/O completion status */
-    USHORT count;		/* byte transfer count   */
-    int dev_dep_data;		/* device-dependent data */
-} QIO_SB;			/* This is a QIO I/O Status Block */
-
-#define NIBUF	1024		/* Input buffer size            */
-#define NOBUF	1024		/* MM says big buffers win!     */
-#define EFN	0		/* Event flag                   */
-
-char obuf[NOBUF];		/* Output buffer                */
-int nobuf;			/* # of bytes in above          */
-
-char ibuf[NIBUF];		/* Input buffer                 */
-int nibuf;			/* # of bytes in above          */
-
-int ibufi;			/* Read index                   */
-
-int oldmode[3];			/* Old TTY mode bits            */
-int newmode[3];			/* New TTY mode bits            */
-short iochan;			/* TTY I/O channel              */
-#endif
-
 void
 ttopen(void)
 {
-#if SYS_VMS
-    QIO_SB iosb;
-    int status;
-    $DESCRIPTOR(odsc, "SYS$COMMAND");
-
-    status = sys$assign(&odsc, &iochan, 0, 0);
-    if (status != SS$_NORMAL)
-	tidy_exit(status);
-    status = sys$qiow(EFN, iochan, IO$_SENSEMODE, &iosb, 0, 0,
-		      oldmode, sizeof(oldmode), 0, 0, 0, 0);
-    if (status != SS$_NORMAL
-	|| iosb.status != SS$_NORMAL)
-	tidy_exit(status);
-    newmode[0] = oldmode[0];
-    newmode[1] = oldmode[1];
-    newmode[1] |= TT$M_NOBRDCST;	/* turn on no-broadcast */
-    newmode[1] &= ~TT$M_TTSYNC;
-    newmode[1] &= ~TT$M_ESCAPE;	/* turn off escape-processing */
-    newmode[1] &= ~TT$M_HOSTSYNC;
-    newmode[1] &= ~TT$M_NOTYPEAHD;	/* turn off no-typeahead */
-    newmode[2] = oldmode[2];
-    newmode[2] |= TT2$M_PASTHRU;	/* turn on pass-through */
-    newmode[2] |= TT2$M_ALTYPEAHD;	/* turn on big typeahead buffer */
-    status = sys$qiow(EFN, iochan, IO$_SETMODE, &iosb, 0, 0,
-		      newmode, sizeof(newmode), 0, 0, 0, 0);
-    if (status != SS$_NORMAL
-	|| iosb.status != SS$_NORMAL)
-	tidy_exit(status);
-    term.rows = (newmode[1] >> 24);
-    term.cols = newmode[0] >> 16;
-
-#endif
     /* make sure backspace is bound to backspace */
     asciitbl[backspc] = &f_backchar_to_bol;
 }
@@ -1090,26 +1022,7 @@ ttopen(void)
 void
 ttclose(void)
 {
-#if SYS_VMS
-    /*
-     * Note: this code used to check for errors when closing the output,
-     * but it didn't work properly (left the screen set in 1-line mode)
-     * when I was running as system manager, so I took out the error
-     * checking -- T.Dickey 94/7/15.
-     */
-    int status;
-    QIO_SB iosb;
-
-    ttflush();
-    status = sys$qiow(EFN, iochan, IO$_SETMODE, &iosb, 0, 0,
-		      oldmode, sizeof(oldmode), 0, 0, 0, 0);
-    if (status == SS$_IVCHAN)
-	return;			/* already closed it */
-    (void) sys$dassgn(iochan);
-#endif
-#if !SYS_VMS
-    ttclean(TRUE);
-#endif
+    term.clean(TRUE);
 }
 
 void
@@ -1117,7 +1030,7 @@ ttclean(int f)
 {
 #if !DISP_X11
     if (f)
-	kbd_openup();
+	term.openup();
 
     term.flush();
     term.close();
@@ -1131,20 +1044,13 @@ ttunclean(void)
 }
 
 /*
- * Write a character to the display. On VMS, terminal output is buffered, and
- * we just put the characters in the big array, after checking for overflow.
+ * Write a character to the display.
  * On CPM terminal I/O unbuffered, so we just write the byte out. Ditto on
  * MS-DOS (use the very very raw console output routine).
  */
 OUTC_DCL
 ttputc(OUTC_ARGS)
 {
-#if SYS_VMS
-    if (nobuf >= NOBUF)
-	ttflush();
-    obuf[nobuf++] = c;
-    OUTC_RET c;
-#endif
 #if SYS_OS2 && !DISP_VIO
     OUTC_RET putch(c);
 #endif
@@ -1162,16 +1068,6 @@ ttputc(OUTC_ARGS)
 void
 ttflush(void)
 {
-#if SYS_VMS
-    QIO_SB iosb;
-
-    if (nobuf != 0) {
-	(void) sys$qiow(EFN, iochan, IO$_WRITELBLK | IO$M_NOFORMAT,
-			&iosb, 0, 0, obuf, nobuf, 0, 0, 0, 0);
-	nobuf = 0;
-    }
-#endif
-
 #if SYS_MSDOS
 # if DISP_ANSI
     fflush(stdout);
@@ -1179,51 +1075,15 @@ ttflush(void)
 #endif
 }
 
-#if SYS_VMS
-static void
-read_vms_tty(int length)
-{
-    int status;
-    QIO_SB iosb;
-    int term[2] =
-    {0, 0};
-    unsigned mask = (IO$_READVBLK
-		     | IO$M_NOECHO
-		     | IO$M_NOFILTR
-		     | IO$M_TRMNOECHO);
-
-    status = sys$qiow(EFN, iochan,
-		      ((length == 1)
-		       ? mask
-		       : mask | IO$M_TIMED),
-		      &iosb, 0, 0, ibuf, length, 0, term, 0, 0);
-
-    if (status != SS$_NORMAL)
-	tidy_exit(status);
-    if (iosb.status == SS$_ENDOFFILE)
-	tidy_exit(status);
-
-    nibuf = iosb.count;
-    ibufi = 0;
-}
-#endif
-
 /*
  * Read a character from the terminal, performing no editing and doing no echo
- * at all. More complex in VMS that almost anyplace else, which figures. Very
- * simple on CPM, because the system can do exactly what you want.
+ * at all.  Very simple on CPM, because the system can do exactly what you
+ * want.
  * This should be a terminal dispatch function.
  */
 int
 ttgetc(void)
 {
-#if SYS_VMS
-    while (ibufi >= nibuf) {
-	if (!tttypahead())
-	    read_vms_tty(1);
-    }
-    return (ibuf[ibufi++] & 0xFF);	/* Allow multinational  */
-#else
 #if SYS_MSDOS || SYS_OS2
     /*
      * If we've got a mouse, poll waiting for mouse movement and mouse
@@ -1256,28 +1116,18 @@ ttgetc(void)
     /* Not used. */
     return 0;
 #endif
-#endif
-
 }
 
 /* tttypahead:	See if the user has more characters waiting in the
 		keyboard buffer
 */
-#if !  SYS_WINNT
+#if !  SYS_WINNT && !SYS_VMS
 int
 tttypahead(void)
 {
 
 #if DISP_X11
-    return x_typahead(0);
-#endif
-
-#if DISP_VMSVT
-    if (ibufi >= nibuf) {
-	read_vms_tty(NIBUF);
-	return (nibuf > 0);
-    }
-    return TRUE;
+    return x_milli_sleep(0);
 #endif
 
 #if SYS_MSDOS || SYS_OS2
@@ -1336,228 +1186,6 @@ getscreensize(int *widthp, int *heightp)
 /******************************************************************************/
 
 /*
- * Define an empty terminal type for machines where we cannot use 'dumb_term',
- * so that command-line prompting will have something to talk to.
- */
-
-static void
-nullterm_open(void)
-{
-}
-
-static void
-nullterm_close(void)
-{
-}
-
-static int
-nullterm_getch(void)
-{
-    return esc_c;
-}
-
-/*ARGSUSED*/
-static OUTC_DCL
-nullterm_putch(OUTC_ARGS)
-{
-    OUTC_RET c;
-}
-
-static int
-nullterm_typahead(void)
-{
-    return FALSE;
-}
-
-static void
-nullterm_flush(void)
-{
-}
-
-/*ARGSUSED*/
-static void
-nullterm_curmove(int row GCC_UNUSED, int col GCC_UNUSED)
-{
-}
-
-static void
-nullterm_eeol(void)
-{
-}
-
-static void
-nullterm_eeop(void)
-{
-}
-
-static void
-nullterm_beep(void)
-{
-}
-
-/*ARGSUSED*/
-static void
-nullterm_rev(UINT state GCC_UNUSED)
-{
-}
-
-#if OPT_COLOR
-#define NO_COLOR(name,value) name = value;
-#else
-#define NO_COLOR(name,value)	/*nothing */
-#endif
-
-/*
- * These are public, since we'll use them as placeholders for unimplemented
- * device methods.
- */
-/*ARGSUSED*/
-int
-nullterm_setdescrip(const char *res GCC_UNUSED)
-{
-    return (FALSE);
-}
-
-/*ARGSUSED*/
-int
-nullterm_watchfd(int fd GCC_UNUSED, WATCHTYPE type GCC_UNUSED, long *idp GCC_UNUSED)
-{
-    return 0;
-}
-
-/*ARGSUSED*/
-void
-nullterm_cursorvis(int flag GCC_UNUSED)
-{
-}
-
-/*ARGSUSED*/
-void
-nullterm_icursor(int c GCC_UNUSED)
-{
-}
-
-/*ARGSUSED*/
-void
-nullterm_kclose(void)
-{
-}
-
-/*ARGSUSED*/
-void
-nullterm_kopen(void)
-{
-}
-
-/*ARGSUSED*/
-void
-nullterm_pflush(void)
-{
-}
-
-/*ARGSUSED*/
-void
-nullterm_scroll(int f GCC_UNUSED, int t GCC_UNUSED, int n GCC_UNUSED)
-{
-}
-
-/*ARGSUSED*/
-void
-nullterm_setback(int b GCC_UNUSED)
-{
-    NO_COLOR(gbcolor, C_BLACK)
-}
-
-/*ARGSUSED*/
-void
-nullterm_setccol(int c GCC_UNUSED)
-{
-    NO_COLOR(gccolor, ENUM_UNKNOWN)
-}
-
-/*ARGSUSED*/
-void
-nullterm_setfore(int f GCC_UNUSED)
-{
-    NO_COLOR(gbcolor, C_WHITE)
-}
-
-/*ARGSUSED*/
-void
-nullterm_setpal(const char *p GCC_UNUSED)
-{
-}
-
-/*ARGSUSED*/
-void
-nullterm_settitle(const char *t GCC_UNUSED)
-{
-}
-
-/*ARGSUSED*/
-void
-nullterm_unwatchfd(int fd GCC_UNUSED, long id GCC_UNUSED)
-{
-}
-
-/*ARGSUSED*/
-void
-nullterm_mopen(void)
-{
-}
-
-/*ARGSUSED*/
-void
-nullterm_mclose(void)
-{
-}
-
-/*ARGSUSED*/
-void
-nullterm_mevent(void)
-{
-}
-
-TERM null_term =
-{
-    1,
-    1,
-    80,
-    80,
-    0,				/* NPAUSE */
-    nullterm_open,
-    nullterm_close,
-    nullterm_kopen,
-    nullterm_kclose,
-    nullterm_getch,
-    nullterm_putch,
-    nullterm_typahead,
-    nullterm_flush,
-    nullterm_curmove,
-    nullterm_eeol,
-    nullterm_eeop,
-    nullterm_beep,
-    nullterm_rev,
-    nullterm_setdescrip,
-    nullterm_setfore,
-    nullterm_setback,
-    nullterm_setpal,
-    nullterm_setccol,
-    nullterm_scroll,
-    nullterm_pflush,
-    nullterm_icursor,
-    nullterm_settitle,
-    nullterm_watchfd,
-    nullterm_unwatchfd,
-    nullterm_cursorvis,
-    nullterm_mopen,
-    nullterm_mclose,
-    nullterm_mevent,
-};
-
-/******************************************************************************/
-
-/*
  * This function is used during terminal initialization to allow us to setup
  * either a dumb or null terminal driver to handle stray command-line and other
  * debris, then (in the second call), open the screen driver.
@@ -1567,6 +1195,18 @@ open_terminal(TERM * termp)
 {
     static TERM save_term;
     static int initialized;
+
+    /*
+     * Help separate dumb_term from termio.c
+     */
+    if (termp != 0 && termp != &null_term) {
+	if (termp->clean == nullterm_clean)
+	    termp->clean = ttclean;
+	if (termp->unclean == nullterm_unclean)
+	    termp->unclean = ttunclean;
+	if (termp->openup == nullterm_openup)
+	    termp->openup = kbd_openup;
+    }
 
     if (!initialized++) {
 

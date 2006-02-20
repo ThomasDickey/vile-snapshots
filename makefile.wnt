@@ -1,7 +1,7 @@
 #
 # makefile for vile on WIN32 using Microsoft Visual C++
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.wnt,v 1.89 2006/01/10 00:20:15 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.wnt,v 1.91 2006/01/15 19:02:35 tom Exp $
 #
 #
 !include <ntwin32.mak>
@@ -208,7 +208,7 @@ SRC = 	main.c $(SCREEN).c \
 	fences.c file.c filec.c \
 	fileio.c finderr.c glob.c globals.c history.c \
 	input.c insert.c itbuff.c isearch.c \
-	line.c modes.c msgs.c oneliner.c opers.c \
+	line.c modes.c msgs.c nullterm.c oneliner.c opers.c \
 	path.c random.c regexp.c \
 	region.c search.c select.c spawn.c statevar.c \
 	tags.c tbuff.c termio.c ucrypt.c undo.c \
@@ -222,7 +222,7 @@ OBJ = 	main.obj $(SCREEN).obj \
 	fences.obj file.obj filec.obj \
 	fileio.obj finderr.obj glob.obj globals.obj history.obj \
 	input.obj insert.obj itbuff.obj isearch.obj \
-	line.obj modes.obj msgs.obj oneliner.obj opers.obj \
+	line.obj modes.obj msgs.obj nullterm.obj oneliner.obj opers.obj \
 	path.obj random.obj regexp.obj \
 	region.obj search.obj select.obj spawn.obj statevar.obj \
 	tags.obj tbuff.obj termio.obj ucrypt.obj undo.obj \
@@ -315,6 +315,7 @@ test_regexp.exe :	regexp.c
 
 TEST_IO_OBJS	= \
 	$(SCREEN).obj \
+	nullterm.obj \
 	test_io.obj
 
 test_io.exe :		$(TEST_IO_OBJS)
@@ -356,6 +357,7 @@ clean ::
 
 SCRIPTS	= \
 	filters\filters.rc \
+	filters\spell.rc \
 	macros\dates.rc \
 	macros\digraphs.rc \
 	macros\gnugpg.rc \
@@ -384,32 +386,23 @@ all :: $(SCRIPTS) vile.hlp
 	- !copy $** "$(VILE_STARTUP_PATH)"\$(**F)
 !endif
 
-api.obj:	api.h
-bind.obj:	nefunc.h btree.h
-btree.obj:	btree.h
-eval.obj:	nevars.h
-exec.obj:	neexec.h nefunc.h
-externs.obj:	nebind.h nename.h neproto.h nefunc.h
-filec.obj:	dirstuff.h
-glob.obj:	dirstuff.h
-globals.obj:	nefunc.h
-main.obj:	chgdfunc.h nevars.h
-modes.obj:	chgdfunc.h nefsms.h
-ntwinio.obj:	winvile.h pscreen.h patchlev.h
-opers.obj:	nefunc.h
-path.obj:	dirstuff.h
-perl.obj:	api.h
-random.obj:	nefunc.h
-select.obj:	nefunc.h
-spawn.obj:	nefunc.h
-statevar.obj:	nevars.h
-tags.obj:	btree.h
-termio.obj:	nefunc.h
-version.obj:	patchlev.h
-w32cmd.obj:	nefunc.h winvile.h
-w32misc.obj:	nefunc.h
-w32ole.obj:	w32ole.h winviletlb.h w32reg.h
-w32oo.obj:	dirstuff.h
-w32reg.obj:	w32reg.h
-word.obj:	nefunc.h
-wvwrap.obj:	w32reg.h w32ole.h winviletlb.h
+api.obj :	api.h
+bind.obj :	btree.h
+btree.obj :	btree.h
+display.obj :	pscreen.h
+filec.obj :	dirstuff.h
+glob.obj :	dirstuff.h
+main.obj :	chgdfunc.h 
+modes.obj :	chgdfunc.h 
+ntwinio.obj :	winvile.h pscreen.h patchlev.h
+path.obj :	dirstuff.h
+perl.obj :	api.h
+random.obj :	dirstuff.h
+statevar.obj :	patchlev.h
+tags.obj :	btree.h
+version.obj :	patchlev.h
+w32cmd.obj :	winvile.h
+w32ole.obj :	w32ole.h winviletlb.h w32reg.h
+w32oo.obj :	dirstuff.h
+w32reg.obj :	w32reg.h
+wvwrap.obj :	w32reg.h w32ole.h winviletlb.h

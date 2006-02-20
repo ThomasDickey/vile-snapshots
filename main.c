@@ -22,7 +22,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.546 2005/11/30 01:24:33 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.549 2006/01/12 22:37:21 tom Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -91,7 +91,6 @@ static void global_val_init(void);
 static void main_loop(void);
 static void make_startup_file(char *name);
 static void siginit(int enabled);
-static void start_debug_log(int ac, char **av);
 
 extern const int nametblsize;
 
@@ -247,8 +246,6 @@ MainProgram(int argc, char *argv[])
     setuid(geteuid());
 #endif
 
-    start_debug_log(argc, argv);
-
     get_executable_dir();
 
     if (strcmp(pathleaf(prog_arg), "view") == 0)
@@ -258,17 +255,6 @@ MainProgram(int argc, char *argv[])
     if (argc != 2 || strcmp(argv[1], "-V") != 0) {
 	if (x_preparse_args(&argc, &argv) != TRUE)
 	    startstat = FALSE;
-    }
-#endif
-
-    /*
-     * Do not try to pipe results (vile has no ex-mode, which would be used
-     * in this case).
-     */
-#if DISP_TERMCAP || DISP_CURSES || DISP_ANSI
-    if (!isatty(fileno(stdout))) {
-	fprintf(stderr, "vile: ex mode is not implemented\n");
-	ExitProgram(BADEXIT);
     }
 #endif
 
@@ -446,6 +432,18 @@ MainProgram(int argc, char *argv[])
 #endif
 	}
     }
+
+    /*
+     * Do not try to pipe results (vile has no ex-mode, which would be used
+     * in this case).
+     */
+#if DISP_TERMCAP || DISP_CURSES || DISP_ANSI
+    if (!isatty(fileno(stdout))) {
+	fprintf(stderr, "vile: ex mode is not implemented\n");
+	ExitProgram(BADEXIT);
+    }
+#endif
+
 #ifdef VILE_OLE
     if (ole_register) {
 	/*
@@ -1003,7 +1001,7 @@ tidy_exit(int code)
 #if DISP_X11
     term.close();		/* need this if $xshell left subprocesses */
 #endif
-    ttclean(TRUE);
+    term.clean(TRUE);
 #if SYS_UNIX
     setup_handler(SIGHUP, SIG_IGN);
 #endif
@@ -2649,79 +2647,22 @@ track_free(char *p)
 }
 #endif /* OPT_HEAPSIZE */
 
-#ifdef MALLOCDEBUG
-mallocdbg(int f, int n)
-{
-    int lvl;
-    lvl = malloc_debug(n);
-    mlwrite("malloc debug level was %d", lvl);
-    if (!f) {
-	malloc_debug(lvl);
-    } else if (n > 2) {
-	malloc_verify();
-    }
-    return TRUE;
-}
-#endif
-
-/*
- *	the log file is left open, unbuffered.  thus any code can do
- *
- *	extern FILE *FF;
- *	fprintf(FF, "...", ...);
- *
- *	to log events without disturbing the screen
- */
-
-#ifdef DEBUGLOG
-/* suppress the declaration so that the link will fail if someone uses it */
-FILE *FF;
-#endif
-
-/*ARGSUSED*/
-static void
-start_debug_log(int ac GCC_UNUSED, char **av GCC_UNUSED)
-{
-#ifdef DEBUGLOG
-    int i;
-    FF = fopen("vilelog", "w");
-    setbuf(FF, NULL);
-    for (i = 0; i < ac; i++)
-	(void) fprintf(FF, "arg %d: %s\n", i, av[i]);
-#endif
-}
-
 #if SYS_MSDOS
-
-#if CC_TURBO
 int
 showmemory(int f, int n)
 {
+#if CC_TURBO
     extern long coreleft(void);
     mlforce("Memory left: %ld bytes", coreleft());
-    return TRUE;
-}
-#endif
-
-#if CC_WATCOM
-int
-showmemory(int f, int n)
-{
+#elif CC_WATCOM
     mlforce("Watcom C doesn't provide a very useful 'memory-left' call.");
-    return TRUE;
-}
-#endif
-
-#if CC_DJGPP
-int
-showmemory(int f, int n)
-{
+#elif CC_DJGPP
     mlforce("Memory left: %ld Kb virtual, %ld Kb physical",
 	    _go32_dpmi_remaining_virtual_memory() / 1024,
 	    _go32_dpmi_remaining_physical_memory() / 1024);
+#endif
     return TRUE;
 }
-#endif
 #endif /* SYS_MSDOS */
 
 char *

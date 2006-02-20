@@ -1,6 +1,6 @@
 #
 # 'vile' and 'mktbls' makefile for IBM C Set ++ 2.x (OS/2)
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.icc,v 1.15 2005/11/29 20:28:16 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.icc,v 1.16 2006/01/10 23:58:44 tom Exp $
 #
 
 #
@@ -57,7 +57,6 @@ $(MKTBLS): $(MKTBLS_DEPS)
 mktbls$O: mktbls.c
 
 VILE_DEPS =  \
- version$O \
  basic$O \
  bind$O \
  btree$O \
@@ -77,13 +76,15 @@ VILE_DEPS =  \
  history$O \
  input$O \
  insert$O \
- itbuff$O \
  isearch$O \
+ itbuff$O \
  line$O \
+ main$O \
  map$O \
  modes$O \
  msgs$O \
  npopen$O \
+ nullterm$O \
  oneliner$O \
  opers$O \
  os2pipe$O \
@@ -93,17 +94,17 @@ VILE_DEPS =  \
  region$O \
  search$O \
  select$O \
- statevar$O \
  spawn$O \
+ statevar$O \
  tags$O \
  tbuff$O \
  termio$O \
  ucrypt$O \
  undo$O \
+ version$O \
  window$O \
  word$O \
  wordmov$O \
- main$O \
  $(SCREEN)$O
 
 #		*Explicit Rules*
@@ -168,6 +169,8 @@ modes$O:	$(VILE_CFG) modes.c
 msgs$O:		$(VILE_CFG) msgs.c
 
 npopen$O:	$(VILE_CFG) npopen.c
+
+nullterm$O:	$(VILE_CFG) nullterm.c
 
 oneliner$O:	$(VILE_CFG) oneliner.c
 

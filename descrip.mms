@@ -5,7 +5,7 @@
 # estruct.h to make sure the correct one is #defined as "1", and the others
 # all as "0".
 #
-# $Header: /users/source/archives/vile.vcs/RCS/descrip.mms,v 1.46 2004/11/02 22:55:11 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/descrip.mms,v 1.48 2006/01/12 21:23:53 tom Exp $
 
 # Editor Configuration Note
 # -------------------------
@@ -81,6 +81,7 @@ SRC =	main.c \
 	modes.c \
 	msgs.c \
 	npopen.c \
+	nullterm.c \
 	oneliner.c \
 	opers.c \
 	path.c \
@@ -133,6 +134,7 @@ OBJ =	$(MENUS)main.obj,\
 	modes.obj,\
 	msgs.obj,\
 	npopen.obj,\
+	nullterm.obj,\
 	oneliner.obj,\
 	opers.obj,\
 	path.obj,\
@@ -158,7 +160,7 @@ OBJ =	$(MENUS)main.obj,\
 
 all :
 
-        $(MMS)$(MMSQUALIFIERS) $(TARGET)
+	$(MMS)$(MMSQUALIFIERS) $(TARGET)
 
 #
 # I've built on an Alpha with CC_OPTIONS set to
@@ -172,7 +174,7 @@ all :
 # compiler does not suffer from this problem.
 #
 # Configuration where problem was observed:
-#                DEC C V5.6-003 on OpenVMS VAX V7.1
+#	DEC C V5.6-003 on OpenVMS VAX V7.1
 #                                                    --C. Morgan
 #
 .IFDEF __IA64__
@@ -274,6 +276,26 @@ $(TARGET) : $(OBJ), vms_link.opt, descrip.mms $(OPTFILE)
 
 vms_link.opt :
 	@vmsbuild vms_link_opt
+
+# test-drivers
+
+test_btree.obj :	btree.c
+	$(CC) $(CFLAGS) /Define=("DEBUG_BTREE") btree.c
+test_btree.exe :	test_btree.obj
+	$(LINK) $(LINKFLAGS) test_btree.obj $(OPTIONS)
+
+test_regexp.obj :	regexp.c
+	$(CC) $(CFLAGS) /Define=("DEBUG_REGEXP") regexp.c
+test_regexp.exe :	test_regexp.obj
+	$(LINK) $(LINKFLAGS) test_regexp.obj $(OPTIONS)
+
+TEST_IO_OBJS	= \
+	$(SCREEN).obj, \
+	nullterm.obj, \
+	test_io.obj
+
+test_io.exe :	$(TEST_IO_OBJS)
+	$(LINK) $(LINKFLAGS) $(TEST_IO_OBJS) $(OPTIONS)
 
 # Runs VILE from the current directory (used for testing)
 vile.com :

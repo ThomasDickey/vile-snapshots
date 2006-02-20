@@ -1,4 +1,4 @@
-; $Id: filters.rc,v 1.203 2005/11/15 23:06:55 tom Exp $
+; $Id: filters.rc,v 1.204 2006/02/19 23:50:48 tom Exp $
 ; majormodes in this file are ordered alphabetically for convenience - the
 ; precedence used by vile is strictly alphabetic, counting case.
 
@@ -14,6 +14,11 @@ unsetv %filters-modes
 define-mode cpp
 ~with define-submode cpp
 	filtername	'vile-c-filt -k cpp'
+~endwith
+
+define-mode cs
+~with define-submode cs
+	filtername	'vile-c-filt -k cs'
 ~endwith
 
 define-mode csh

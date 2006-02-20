@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.592 2005/12/26 01:29:43 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.595 2006/02/14 23:57:49 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -1928,8 +1928,8 @@ typedef struct MINORMODE {
 typedef struct {
 	char *shortname;	/* name without "mode" suffix */
 	char *longname;		/* name with "mode" suffix */
-	M_VALUES mm;
-	Q_VALUES mq;
+	M_VALUES mm;		/* majormode-specific flags, e.g., "preamble" */
+	Q_VALUES mq;		/* qualifier values such as "group" */
 	MINORMODE *sm;
 } MAJORMODE;
 
@@ -2343,6 +2343,9 @@ typedef struct	{
 	void	(*close) (void);	/* Close terminal at end.	*/
 	void	(*kopen) (void);	/* keyboard open		*/
 	void	(*kclose) (void);	/* keyboard close		*/
+	void	(*clean) (int f);	/* cleanup before shell-out	*/
+	void	(*unclean) (void);	/* cleanup after shell-out	*/
+	void	(*openup) (void);	/* open new line for prompt	*/
 	int	(*getch) (void);	/* Get character from keyboard. */
 	OUTC_DCL(*putch) (OUTC_ARGS);	/* Put character to display.	*/
 	int	(*typahead) (void);	/* character ready?		*/

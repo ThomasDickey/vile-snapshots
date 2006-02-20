@@ -1,7 +1,7 @@
 /*
  * A terminal driver using the curses library
  *
- * $Header: /users/source/archives/vile.vcs/RCS/curses.c,v 1.25 2005/11/23 19:15:44 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/curses.c,v 1.27 2006/01/12 23:37:34 tom Exp $
  */
 
 #include	"estruct.h"
@@ -399,6 +399,9 @@ TERM term =
     curs_close,
     curs_kopen,
     curs_kclose,
+    ttclean,
+    ttunclean,
+    nullterm_openup,
     curs_getc,
     curs_putc,
     curs_typahead,

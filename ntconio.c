@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 console API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntconio.c,v 1.84 2005/11/23 12:19:35 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntconio.c,v 1.87 2006/01/15 14:03:49 tom Exp $
  *
  */
 
@@ -22,6 +22,8 @@
 #define NCOL    256		/* Edit if you want to.         */
 #define	NPAUSE	200		/* # times thru update to pause */
 #define NOKYMAP (-1)
+
+#define ABS(x) (((x) < 0) ? -(x) : (x))
 
 #define DFT_BCOLOR  C_BLACK
 #define DFT_FCOLOR  ((ncolors >= 8) ? 7 : (ncolors - 1))
@@ -242,7 +244,7 @@ ntscroll(int from, int to, int n)
     if (to == from)
 	return;
 #if OPT_PRETTIER_SCROLL
-    if (absol(from - to) > 1) {
+    if (ABS(from - to) > 1) {
 	ntscroll(from, (from < to) ? to - 1 : to + 1, n);
 	if (from < to)
 	    from = to - 1;
@@ -276,7 +278,7 @@ ntscroll(int from, int to, int n)
 	Sleep(scroll_pause);
     }
 #if !OPT_PRETTIER_SCROLL
-    if (absol(from - to) > n) {
+    if (ABS(from - to) > n) {
 	DWORD cnt;
 	DWORD written;
 	COORD coordCursor;
@@ -1481,6 +1483,9 @@ TERM term =
     ntclose,
     ntkopen,
     ntkclose,
+    nullterm_clean,
+    nullterm_unclean,
+    nullterm_openup,
     ntgetch,
     ntputc,
     nttypahead,

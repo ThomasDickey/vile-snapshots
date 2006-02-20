@@ -2,7 +2,7 @@
  *	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.281 2005/11/23 13:30:33 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.285 2006/01/13 01:31:23 tom Exp $
  *
  */
 
@@ -455,39 +455,21 @@ struct eventqueue {
 static struct eventqueue *evqhead = NULL;
 static struct eventqueue *evqtail = NULL;
 
-static int x_getc(void);
-
-static void x_open(void);
-static void x_close(void);
 static void x_flush(void);
 static void x_beep(void);
-static void x_rev(UINT state);
 
 #if OPT_COLOR
-static void x_fcol(int color);
-static void x_bcol(int color);
-static void x_ccol(int color);
+static void x_ccol(int);
 #else
 #define	x_fcol	nullterm_setfore
 #define	x_bcol	nullterm_setback
 #define	x_ccol	nullterm_setccol
 #endif
 
-static void x_setpal(const char *s);
-static void x_scroll(int from, int to, int count);
-
-static int x_watchfd(int fd, WATCHTYPE type, long *idp);
-static void x_unwatchfd(int fd, long id);
-
 static int set_character_class(char *s);
 static void x_touch(TextWindow tw, int sc, int sr, UINT ec, UINT er);
-static void x_paste_selection(Atom selection);
 static void x_own_selection(Atom selection);
 static Boolean x_get_selected_text(UCHAR ** datp, size_t *lenp);
-static Boolean x_get_clipboard_text(UCHAR ** datp, size_t *lenp);
-static Boolean x_convert_selection(Widget w, Atom * selection, Atom * target,
-				   Atom * type, XtPointer *value, ULONG * length,
-				   int *format);
 static void extend_selection(TextWindow tw, int nr, int nc, Bool wipe);
 static void x_process_event(Widget w, XtPointer unused, XEvent * ev,
 			    Boolean * continue_to_dispatch);
@@ -523,8 +505,6 @@ static void display_cursor(XtPointer client_data, XtIntervalId * idp);
 static void check_visuals(void);
 #endif
 #if MOTIF_WIDGETS
-static void grip_moved(Widget w, XtPointer unused, XEvent * ev,
-		       Boolean * continue_to_dispatch);
 static void pane_button(Widget w, XtPointer unused, XEvent * ev,
 			Boolean * continue_to_dispatch);
 #endif /* MOTIF_WIDGETS */
@@ -544,52 +524,9 @@ static int x_has_events(void);
 #else
 #define x_has_events() (XtAppPending(cur_win->app_context) & XtIMXEvent)
 #endif /* OPT_WORKING */
-static int evqempty(void);
 static void evqadd(const XEvent * evp);
 
 #define	FONTNAME	"7x13"
-
-TERM term =
-{
-    0,				/* these four values are set dynamically at
-				 * open time */
-    0,
-    0,
-    0,
-    0,
-    x_open,
-    x_close,
-    nullterm_kopen,
-    nullterm_kclose,
-    x_getc,
-    psc_putchar,
-    tttypahead,
-    psc_flush,
-    psc_move,
-    psc_eeol,
-    psc_eeop,
-    x_beep,
-    x_rev,
-    nullterm_setdescrip,
-    x_fcol,
-    x_bcol,
-    x_setpal,
-    x_ccol,
-    x_scroll,
-    x_flush,
-    nullterm_icursor,
-#if OPT_TITLE
-    x_set_window_name,
-#else
-    nullterm_settitle,
-#endif
-    x_watchfd,
-    x_unwatchfd,
-    nullterm_cursorvis,
-    nullterm_mopen,
-    nullterm_mclose,
-    nullterm_mevent,
-};
 
 #define	x_width(tw)		((tw)->cols * (tw)->char_width)
 #define	x_height(tw)		((tw)->rows * (tw)->char_height)
@@ -6190,7 +6127,7 @@ x_getc(void)
  * milli - milliseconds to wait for type-ahead
  */
 int
-x_typahead(int milli)
+x_milli_sleep(int milli)
 {
     int status;
     XtIntervalId timeoutid = 0;
@@ -6249,6 +6186,12 @@ x_typahead(int milli)
     (void) im_waiting(olddkr);
 
     return status;
+}
+
+static int
+x_typeahead(void)
+{
+    return x_milli_sleep(0);
 }
 
 /*ARGSUSED*/
@@ -6875,5 +6818,50 @@ init_xlocale(void)
 }
 
 #endif /* OPT_LOCALE */
+
+TERM term =
+{
+    0,				/* these four values are set dynamically at
+				 * open time */
+    0,
+    0,
+    0,
+    0,
+    x_open,
+    x_close,
+    nullterm_kopen,
+    nullterm_kclose,
+    nullterm_clean,
+    nullterm_unclean,
+    nullterm_openup,
+    x_getc,
+    psc_putchar,
+    x_typeahead,
+    psc_flush,
+    psc_move,
+    psc_eeol,
+    psc_eeop,
+    x_beep,
+    x_rev,
+    nullterm_setdescrip,
+    x_fcol,
+    x_bcol,
+    x_setpal,
+    x_ccol,
+    x_scroll,
+    x_flush,
+    nullterm_icursor,
+#if OPT_TITLE
+    x_set_window_name,
+#else
+    nullterm_settitle,
+#endif
+    x_watchfd,
+    x_unwatchfd,
+    nullterm_cursorvis,
+    nullterm_mopen,
+    nullterm_mclose,
+    nullterm_mevent,
+};
 
 #endif /* DISP_X11 && XTOOLKIT */

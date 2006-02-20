@@ -3,7 +3,7 @@
  * Modified from a really old version of "borland.c" (before the VIO
  * stuff went in there.)
  *
- * $Header: /users/source/archives/vile.vcs/RCS/os2vio.c,v 1.33 2005/11/23 12:19:35 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/os2vio.c,v 1.35 2006/01/12 23:37:34 tom Exp $
  */
 
 #include "estruct.h"
@@ -582,6 +582,9 @@ TERM term =
     vio_close,
     vio_kopen,
     vio_kclose,
+    ttclean,
+    ttunclean,
+    nullterm_openup,
     vio_getc,
     vio_putc,
     tttypahead,
