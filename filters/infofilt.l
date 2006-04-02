@@ -5,7 +5,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/infofilt.l,v 1.5 2006/01/09 19:24:31 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/infofilt.l,v 1.6 2006/04/02 16:49:54 tom Exp $
  *
  * Filter to add vile "attribution" sequences to an info file.
  * (An extension of "text" mode).
@@ -41,7 +41,7 @@ NAME		[[:alnum:]_.#-]+
 ADDRESS		({NAME}|\.)+
 EMAIL		{NAME}@{ADDRESS}
 
-URL		[[:alpha:]]+"://"[[:alnum:]#%&+,./?;@_=~-]+
+URL		[[:alpha:]]+"://"[[:alnum:]#%&+\,.\/?;@_=~-]+
 
 %%
 

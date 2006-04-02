@@ -5,7 +5,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/mailfilt.l,v 1.18 2006/01/09 19:24:31 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/mailfilt.l,v 1.19 2006/04/02 16:49:54 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of mail
  */
@@ -33,7 +33,7 @@ EMAIL		{NAME}@{ADDRESS}
 
 BEGIN_HEADER	^"From "{EMAIL}
 
-URL		[[:alpha:]]+"://"[[:alnum:]#%&+,./?;@_=~-]+
+URL		[[:alpha:]]+"://"[[:alnum:]#%&+\,.\/?;@_=~-]+
 
 %%
 
