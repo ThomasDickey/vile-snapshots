@@ -1,5 +1,20 @@
 Changes for vile 9.6 (released ??? ??? ?? ????)
 
+ 20060402 (g)
+	> Tom Dickey:
+	+ minor fixes to make most of the lex filters build with "old" lex,
+	  e.g.,
+		http://heirloom.sourceforge.net/devtools.html
+	  Note: the lex-filt.l file is too complex for some older lex's.
+	+ add lua mode
+	+ save/restore curgoal variable in b2vprintf() to avoid side effects
+	  when invoking "backward-row" or "forward-row" commands (report
+	  by Chris Green).
+	+ add delphi mode
+	+ add "*.cs" files to grep macros on win32 platform
+	+ improve csmode by making the section macros look for function
+	  headers.
+
  20060219 (f)
 	> Clark Morgan:
 	+ update vile.hlp for %n and %N title format changes.

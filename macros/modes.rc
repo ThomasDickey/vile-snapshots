@@ -1,4 +1,4 @@
-; $Id: modes.rc,v 1.36 2006/02/20 00:36:05 tom Exp $
+; $Id: modes.rc,v 1.39 2006/04/02 14:35:31 tom Exp $
 ; majormodes in this file are ordered alphabetically for convenience - the
 ; precedence used by vile is strictly alphabetic, counting case.  Use the
 ; before and after qualifiers to override the precedence.
@@ -150,6 +150,10 @@ define-mode cs
 	tabstop=4
 	shiftwidth=4
 	dos
+	sections='^\(\([{]\)\|\(\s*\(public\|private\|protected\|static\).*[(]\)\)'
+~elsewith define-submode cs group 'region'
+	fence-if	'^\s*#region\>'
+	fence-fi	'^\s*#endregion\>'
 ~endwith
 
 define-mode csh
@@ -207,6 +211,33 @@ define-mode dcl
 	fence-if	'^\s*\(\$\s*\)\?\<if\>'
 	fence-else	'^\s*\(\$\s*\)\?\<else\>'
 	fence-fi	'^\s*\(\$\s*\)\?\<endif\>'
+~endwith
+
+define-mode delphi
+~with define-submode delphi
+~if &sin $os 'win32'
+	suffixes	'\.\(dfm\|dpr\|pas\)$'
+~else
+	suffixes	'\.\(dfm\|dpr\)$'
+~endif
+	dos
+	before pas
+	ignorecase
+; no mistake - pascal fence-fi has no useful marker past the last else
+	fence-if   '^\$\s*if\>'
+	fence-elif '^\$\s*else\s+if\>'
+	fence-fi   '^\$\s*else\>\s*$'
+; I would have fences for case statements but there is too much conflict with
+; block, etc
+~elsewith define-submode delphi group 'unit'
+	fence-if	'^\s*\<unit\>'
+	fence-fi	'^\s*\<end\>\s*\.'
+~elsewith define-submode delphi group 'block'
+	fence-if	'^\s*\<begin\|type\>'
+	fence-fi	'^\s*\<end\>\s*;'
+~elsewith define-submode delphi group 'object'
+	fence-if	'^\s*\<object\>'
+	fence-fi	'^\s*\<end\>\s*$'
 ~endwith
 
 define-mode def
@@ -393,6 +424,13 @@ define-mode log
 	mode-filename	'^\(run\|\w\?make\).*\.out$'
 	suffixes	'\.\(log.*\)$'
 	before make
+~endwith
+
+define-mode lua
+~with define-submode lua
+	suffixes	'\.\(lua\)$'
+	cindent
+	cindent-chars &cat ':#' $fences
 ~endwith
 
 ; actually, m4 used for autoconf scripts, which is Bourne-shell

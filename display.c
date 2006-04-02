@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.415 2006/01/12 23:46:38 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.416 2006/03/14 23:54:16 tom Exp $
  *
  */
 
@@ -3924,6 +3924,7 @@ b2vprintf(BUFFER *bp, const char *fmt, va_list ap)
     OutFunc save_outfn;
 
     if ((save_wp = push_fake_win(bp)) != 0) {
+	int save_curgoal = curgoal;
 
 	save_outfn = dfoutfn;
 	dfoutfn = bputc;
@@ -3942,6 +3943,7 @@ b2vprintf(BUFFER *bp, const char *fmt, va_list ap)
 
 	pop_fake_win(save_wp, save_bp);
 	dfoutfn = save_outfn;
+	curgoal = save_curgoal;
     }
     return result;
 }
