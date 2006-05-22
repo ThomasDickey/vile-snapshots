@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/tagsfilt.c,v 1.7 2002/05/01 19:43:40 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/tagsfilt.c,v 1.8 2006/05/21 21:01:05 tom Exp $
  *
  * Filter to add vile "attribution" sequences to a tags file.  It's done best
  * in C because the file consists only of columns of data that are delimited
@@ -27,15 +27,18 @@ skip_field(char *src)
 static void
 init_filter(int before GCC_UNUSED)
 {
+    (void) before;
 }
 
 static void
-do_filter(FILE * input GCC_UNUSED)
+do_filter(FILE *input GCC_UNUSED)
 {
     static unsigned used;
     static char *line;
 
     char *s, *t;
+
+    (void) input;
 
     Comment_attr = class_attr(NAME_COMMENT);
     Ident_attr = class_attr(NAME_IDENT);

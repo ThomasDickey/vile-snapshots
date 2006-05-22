@@ -2,7 +2,7 @@
  *	eval.c -- function and variable evaluation
  *	original by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.351 2006/02/16 01:02:34 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.353 2006/04/25 20:22:26 tom Exp $
  *
  */
 
@@ -407,7 +407,7 @@ show_VariableList(BUFFER *bp GCC_UNUSED)
     if (Names != 0) {
 	showall = show_vars_f ? (show_vars_n > 1) : FALSE;
 	/* collect data for state-variables, since some depend on window */
-	for (s = t = 0; Names[s] != 0; s++) {
+	for (s = 0, t = 0; Names[s] != 0; s++) {
 	    if ((vv = get_listvalue(Names[s], showall)) != 0)
 		t += strlen(Names[s]) + strlen(fmt) + strlen(vv);
 	}
@@ -471,7 +471,7 @@ vl_lookup_func(const char *name)
     char downcased[NSTRING];
     int fnum = ILLEGAL_NUM;
     int n;
-    unsigned m;
+    size_t m;
 
     if (name[0] == '&'
 	&& name[1] != EOS) {
@@ -538,14 +538,14 @@ extract_token(TBUFF **result, const char *count, const char *delims, const char 
 static void
 translate_string(TBUFF **result, const char *from, const char *to, const char *string)
 {
-    int len_to = strlen(to);
+    int len_to = (int) strlen(to);
     char *s, *t;
 
     if (tb_scopy(result, string) != 0) {
 	if ((s = tb_values(*result)) != 0) {
 	    for (; *s != EOS; ++s) {
 		if ((t = strchr(from, *s)) != 0
-		    && (t - from) < len_to) {
+		    && (int) (t - from) < len_to) {
 		    *s = to[t - from];
 		}
 	    }
@@ -2746,7 +2746,7 @@ static const char *
 s2offset(const char *s, const char *n)
 {
     size_t len = strlen(s) + 1;
-    UINT off = s2size(n);
+    size_t off = s2size(n);
     if (off > len)
 	off = len;
     if (off == 0)
@@ -2767,7 +2767,7 @@ label2lp(BUFFER *bp, const char *label)
     if (bp != 0 && label != 0 && *label != EOS) {
 	LINE *glp;
 	size_t len = strlen(label);
-	int need = len + 1;
+	int need = (int) len + 1;
 	int col;
 
 	if (len > 1) {
@@ -2857,9 +2857,9 @@ absol(int x)
  * when parsing.
  */
 int
-must_quote_token(const char *values, unsigned last)
+must_quote_token(const char *values, size_t last)
 {
-    unsigned n;
+    size_t n;
 
     if (last != 0 && values != 0) {
 	for (n = 0; n < last; n++) {
@@ -2878,9 +2878,9 @@ must_quote_token(const char *values, unsigned last)
  * Appends the buffer, with quotes
  */
 void
-append_quoted_token(TBUFF **dst, const char *values, unsigned last)
+append_quoted_token(TBUFF **dst, const char *values, size_t last)
 {
-    unsigned n;
+    size_t n;
 
     TRACE(("append_quoted_token\n"));
     tb_append(dst, DQUOTE);

@@ -22,7 +22,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.549 2006/01/12 22:37:21 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.551 2006/05/21 00:22:10 cmorgan Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -400,8 +400,8 @@ MainProgram(int argc, char *argv[])
 
 	} else if (*param == '+') {	/* alternate form of -g */
 	    if (*(++param) == '/') {
-		int len = strlen(param);
-		if (len > 0 && param[len - 1] == '/')
+		size_t len = strlen(param);
+		if (len != 0 && param[len - 1] == '/')
 		    param[--len] = EOS;
 		if (len == 0)
 		    print_usage(BADEXIT);
@@ -1128,6 +1128,9 @@ init_mode_value(struct VAL *d, MODECLASS v_class, int v_which)
 	    setTXT(GVAL_EXPAND_CHARS, expand_chars);
 #ifdef GMDALL_VERSIONS
 	    setINT(GMDALL_VERSIONS, FALSE);
+#endif
+#ifdef GMDCBRD_ECHO
+	    setINT(GMDCBRD_ECHO, TRUE);
 #endif
 #ifdef GMDCD_ON_OPEN
 	    setINT(GMDCD_ON_OPEN, cd_on_open);

@@ -1,12 +1,12 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_REVISION($Revision: 1.221 $)
+AC_REVISION($Revision: 1.222 $)
 AC_PREREQ(2.13.20030927)
 rm -f config.cache
 
 ### Use "configure -with-screen" to override the default configuration, which is
 ### termcap-based on unix systems.
 
-dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.221 2005/11/23 12:27:59 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.222 2006/04/05 13:49:06 tom Exp $
 
 define(MAKELIST, sh $srcdir/filters/makelist.sh $srcdir/filters/genmake.mak)
 
@@ -67,7 +67,7 @@ if test "$DISABLE_EXTS" = yes ; then
 	AC_DEFINE(FEWNAMES)
 	cf_extensions=no
 else
-	EXTRAOBJS="$EXTRAOBJS api.o btree.o history.o isearch.o select.o statevar.o ucrypt.o xterm.o"
+	EXTRAOBJS="$EXTRAOBJS api\$o btree\$o history\$o isearch\$o select\$o statevar\$o ucrypt\$o xterm\$o"
 	cf_extensions=yes
 fi
 
@@ -80,7 +80,7 @@ AC_MSG_RESULT($DISABLE_SHELL)
 if test "$DISABLE_SHELL" = yes ; then
 	AC_DEFINE(OPT_SHELL,0)
 else
-	EXTRAOBJS="$EXTRAOBJS npopen.o spawn.o"
+	EXTRAOBJS="$EXTRAOBJS npopen\$o spawn\$o"
 fi
 
 ###	use option --with-cflags to set default CFLAGS
@@ -297,7 +297,7 @@ if test "$with_perl" = yes ; then
 	fi
 	perl_lib_path=`$PERL -MConfig -e 'print $Config{privlib}'`
 	AC_DEFINE(OPT_PERL)
-	EXTRAOBJS="$EXTRAOBJS perl.o"
+	EXTRAOBJS="$EXTRAOBJS perl\$o"
 	BUILTSRCS="$BUILTSRCS perl.c"
 	LINK_PREFIX=`$PERL -MConfig -e 'print $Config{shrpenv}'`
 	ac_link="$LINK_PREFIX $ac_link"
@@ -462,13 +462,13 @@ case "$screen" in
 	[[Oo]]pen* | [[Xx]]ol )
 		AC_DEFINE(OL_WIDGETS)
 		CF_X_OPENLOOK
-	 	test "$cf_extensions" = no && EXTRAOBJS="$EXTRAOBJS select.o"
+	 	test "$cf_extensions" = no && EXTRAOBJS="$EXTRAOBJS select\$o"
 	;;
 	[[mM]]otif* | [[Xx]]m )
 		AC_DEFINE(MOTIF_WIDGETS)
 		CF_X_MOTIF
-	 	test "$cf_extensions" = yes && EXTRAOBJS="$EXTRAOBJS x11menu.o menu.o"
-	 	test "$cf_extensions" = no && EXTRAOBJS="$EXTRAOBJS select.o"
+	 	test "$cf_extensions" = yes && EXTRAOBJS="$EXTRAOBJS x11menu\$o menu\$o"
+	 	test "$cf_extensions" = no && EXTRAOBJS="$EXTRAOBJS select\$o"
 	;;
 	[[Aa]]thena* | [[Xx]]aw* | neXtaw | XawPlus )
 		AC_DEFINE(ATHENA_WIDGETS)
@@ -478,12 +478,12 @@ case "$screen" in
 			;;
 		esac
 		CF_X_ATHENA
-	 	test "$cf_extensions" = yes && EXTRAOBJS="$EXTRAOBJS x11menu.o menu.o"
-	 	test "$cf_extensions" = no && EXTRAOBJS="$EXTRAOBJS select.o"
+	 	test "$cf_extensions" = yes && EXTRAOBJS="$EXTRAOBJS x11menu\$o menu\$o"
+	 	test "$cf_extensions" = no && EXTRAOBJS="$EXTRAOBJS select\$o"
 	;;
 	x | X | [[Xx]][[Tt]]* | [[Xx]]11 )
 		AC_DEFINE(NO_WIDGETS)
-	 	test "$cf_extensions" = no && EXTRAOBJS="$EXTRAOBJS select.o"
+	 	test "$cf_extensions" = no && EXTRAOBJS="$EXTRAOBJS select\$o"
 	;;
 	ansi)
 		SCREEN=ansi
@@ -710,7 +710,7 @@ AC_ARG_WITH(purify,
 AC_ARG_WITH(fakevms,
 	[  --with-fakevms          test: use fake VMS I/O module],
 	[AC_DEFINE(OPT_VMS_PATH)
-	 EXTRAOBJS="$EXTRAOBJS fakevms.o vms2unix.o"])
+	 EXTRAOBJS="$EXTRAOBJS fakevms\$o vms2unix\$o"])
 
 AC_ARG_WITH(no-leaks,
 	[  --with-no-leaks         test: free permanent memory, analyze leaks],
@@ -729,7 +729,7 @@ AC_ARG_WITH(trace,
 	 with_trace=yes],
 	[with_trace=])
 
-test -n "${with_trace}${with_no_leaks}" && EXTRAOBJS="$EXTRAOBJS trace.o"
+test -n "${with_trace}${with_no_leaks}" && EXTRAOBJS="$EXTRAOBJS trace\$o"
 
 CF_WITH_WARNINGS
 
@@ -851,7 +851,7 @@ else
 fi
 
 if test "$cf_filter_libs" = yes ; then
-	EXTRAOBJS="$EXTRAOBJS builtflt.o"
+	EXTRAOBJS="$EXTRAOBJS builtflt\$o"
 	CPPFLAGS="-I\$(srcdir)/filters $CPPFLAGS"
 	FILTER_LIBS="-Lfilters -lvlflt"
 	LIBBUILTFLT="${LIB_PREFIX}vlflt.a"
@@ -884,7 +884,7 @@ if test "$with_plugins" != no ; then
 	# TODO: how to do with other compilers ? can libtool help ?
 	fi
 	AC_DEFINE(OPT_PLUGIN)
-	EXTRAOBJS="$EXTRAOBJS plugin.o"
+	EXTRAOBJS="$EXTRAOBJS plugin\$o"
 fi
 
 if test "$cf_need_libdl" = yes ; then

@@ -5,7 +5,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/rpm-filt.l,v 1.11 2005/09/05 14:29:32 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/rpm-filt.l,v 1.13 2006/05/21 19:50:19 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of rpm spec-file.
  */
@@ -52,7 +52,7 @@ FILENAME	(([./]{WILDNAME}+)|({WILDNAME}+[./]{WILDNAME}*)|({NAME}*{WILDCARD})|\.+
 
 ACTION		[\.`{}]
 IDENT		[[:alpha:]_]{NAME}*
-QIDENT		({SSTRING}|{DSTRING}|[^ \"'$\t\n])+
+QIDENT		({SSTRING}|{DSTRING}|[^ \"'$\t\r\n])+
 IDENT0		[-]+[[:digit:]]*[[:alpha:]_-]+[[:alnum:]_-]*
 IDENT1		[%$]{NAME}+
 IDENT2		[%$]\{{IDENT}\}
@@ -69,10 +69,10 @@ SECTION		%{IDENT}
 
 <NORMAL>{SECTION}	{ begin_section(yytext); }
 
-<TEXT>^"%"[^\n \t]*	{ begin_section(yytext); }
+<TEXT>^"%"[^\r\n \t]*	{ begin_section(yytext); }
 <TEXT>{IDENT1}		|
 <TEXT>{IDENT2}		{ WriteToken(keyword_attr(yytext)); }
-<TEXT>[^%\n]*		{ WriteToken(String_attr); }
+<TEXT>[^%\r\n]*		{ WriteToken(String_attr); }
 <TEXT>\n		{ ECHO; }
 
 <NORMAL>{IDENT0}	|
@@ -80,7 +80,7 @@ SECTION		%{IDENT}
 
 <NORMAL>{IDENT}		{ WriteToken(keyword_attr(yytext)); }
 
-<NORMAL>"#"[^\n]*	{ WriteToken(Comment_attr); }
+<NORMAL>"#"[^\r\n]*	{ WriteToken(Comment_attr); }
 
 <NORMAL>^{SPACE}*:	{ color_delimiter(yytext, yyleng, Action_attr); }
 
@@ -138,7 +138,7 @@ SECTION		%{IDENT}
 				flt_bfr_append(yytext, yyleng);
 			    }
 			}
-<HEREDOC>[^\n\$]+	{ flt_bfr_append(yytext, yyleng); }
+<HEREDOC>[^\r\n\$]+	{ flt_bfr_append(yytext, yyleng); }
 <HEREDOC>\n		{ flt_bfr_append(yytext, yyleng); }
 <HEREDOC>.		{ flt_bfr_append(yytext, yyleng); }
 
@@ -146,7 +146,7 @@ SECTION		%{IDENT}
 <QUOTED>{IDENT1}	|
 <QUOTED>{IDENT2}	{ flt_bfr_embed(yytext, yyleng, meta_variable(yytext)); }
 <QUOTED>{IDENT2L}	{ if (embed_or_append(yytext, yyleng)) push_state(SUBST); }
-<QUOTED>[^\n\\\"$]+	{ flt_bfr_append(yytext, yyleng); }
+<QUOTED>[^\r\n\\\"$]+	{ flt_bfr_append(yytext, yyleng); }
 <QUOTED>[\n$]		{ flt_bfr_append(yytext, yyleng); }
 <QUOTED>\"		{ FinishQuote(NORMAL); pop_state(); }
 
@@ -252,6 +252,7 @@ color_delimiter(char *text, int size, char *attr)
 static void
 init_filter(int before GCC_UNUSED)
 {
+    (void) before;
 }
 
 static void

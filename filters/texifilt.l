@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/texifilt.l,v 1.4 2005/09/05 10:59:09 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/texifilt.l,v 1.6 2006/05/21 19:50:48 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of texinfo input.
  */
@@ -47,7 +47,7 @@ NUMBER		({INTEGER}|{REAL})
 			  WriteToken2(keyword_attr(yytext + 1), 1);
 			}
 
-<NOTE>[^\n]*		{ WriteToken(Comment_attr); }
+<NOTE>[^\r\n]*		{ WriteToken(Comment_attr); }
 <NOTE>\n		{ ECHO; BEGIN(TEXT); }
 
 <TEXT>{NUMBER}		{ WriteToken(Number_attr); }
@@ -58,6 +58,7 @@ NUMBER		({INTEGER}|{REAL})
 static void
 init_filter(int before GCC_UNUSED)
 {
+    (void) before;
 }
 
 static void

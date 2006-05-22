@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/pl-filt.c,v 1.82 2005/07/11 22:35:34 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/pl-filt.c,v 1.83 2006/05/21 19:47:50 tom Exp $
  *
  * Filter to add vile "attribution" sequences to perl scripts.  This is a
  * translation into C of an earlier version written for LEX/FLEX.
@@ -1154,6 +1154,7 @@ is_FORMAT(char *s, int len)
 static void
 init_filter(int before GCC_UNUSED)
 {
+    (void) before;
 }
 
 #define opRightArrow() (had_op != 0 && old_op == had_op - 1 && *old_op == '-' && *had_op == '>')
@@ -1186,6 +1187,8 @@ do_filter(FILE *input GCC_UNUSED)
     size_t request = 0;
     unsigned actual = 0;
     unsigned mark_len = 0;
+
+    (void) input;
 
     Action_attr = class_attr(NAME_ACTION);
     Comment_attr = class_attr(NAME_COMMENT);

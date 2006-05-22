@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/sccsfilt.l,v 1.12 2005/09/04 20:58:11 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/sccsfilt.l,v 1.14 2006/05/21 19:50:19 tom Exp $
  *
  * Filter to add vile "attribution" sequences to SCCS files.
  */
@@ -23,9 +23,9 @@ static char *String_attr;
 
 %}
 
-MARKED		^\001[^\n]*
+MARKED		^\001[^\r\n]*
 
-EXPANDED	"@(#)"[^\n]*
+EXPANDED	"@(#)"[^\r\n]*
 
 UNEXPANDED	"%"[[:upper:]]"%"
 
@@ -56,16 +56,17 @@ UNEXPANDED	"%"[[:upper:]]"%"
 		    }
 		}
 <INSERT>.		|
-<INSERT>[^%@\n]*	{ WriteToken(Insert_attr); }
+<INSERT>[^%@\r\n]*	{ WriteToken(Insert_attr); }
 
 <DELETE>.		|
-<DELETE>[^%@\n]*	{ WriteToken(Delete_attr); }
+<DELETE>[^%@\r\n]*	{ WriteToken(Delete_attr); }
 
 %%
 
 static void
 init_filter(int before GCC_UNUSED)
 {
+    (void) before;
 }
 
 static void

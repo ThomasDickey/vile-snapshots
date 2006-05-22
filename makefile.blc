@@ -1,7 +1,7 @@
 #
 # makefile for vile on WIN32 using Borland C++
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.blc,v 1.19 2006/01/11 00:00:59 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.blc,v 1.20 2006/04/21 13:38:05 tom Exp $
 #
 # Tested with
 #	Borland C++ 5.5.1
@@ -28,7 +28,7 @@ LDFLAGS = -v -tWM -tW
 RESFILE = $(TARGET).res
 !endif
 
-CFLAGS = -v -tWM -w-par -DWIN32_LEAN_AND_MEAN -Dscrn_chosen $(DISP_DEF)
+CFLAGS = -v -tWM -w-par -DWIN32_LEAN_AND_MEAN -Dscrn_chosen $(DISP_DEF) -I.
 
 # Use
 #	make -Dtrace
@@ -96,8 +96,6 @@ $(OBJ)
 	brc32 $(RESFILE)
 !endif
 
-$(OBJ):	estruct.h
-
 nebind.h \
 nefkeys.h \
 neexec.h \
@@ -125,27 +123,66 @@ clean:
 	- del *.obj
 	- del ne*.h
 
-$(OBJ) :	$(BUILTHDRS)
+VILEHDRS = $(BUILTHDRS) estruct.h
 
-api.obj :	api.h
-bind.obj :	btree.h
-btree.obj :	btree.h
-display.obj :	pscreen.h
-filec.obj :	dirstuff.h
-glob.obj :	dirstuff.h
-main.obj :	chgdfunc.h 
-modes.obj :	chgdfunc.h 
-ntwinio.obj :	winvile.h pscreen.h patchlev.h
-path.obj :	dirstuff.h
-perl.obj :	api.h
-random.obj :	dirstuff.h
-statevar.obj :	patchlev.h
-tags.obj :	btree.h
-version.obj :	patchlev.h
-w32cmd.obj :	winvile.h
-w32ole.obj :	w32ole.h winviletlb.h w32reg.h
-w32oo.obj :	dirstuff.h
-w32reg.obj :	w32reg.h
+api.obj :	$(VILEHDRS)	api.h
+$(SCREEN).obj :	$(VILEHDRS)	winvile.h pscreen.h patchlev.h
+basic.obj :	$(VILEHDRS)
+bind.obj :	$(VILEHDRS)
+btree.obj :	$(VILEHDRS)	btree.h
+buffer.obj :	$(VILEHDRS)
+csrch.obj :	$(VILEHDRS)
+display.obj :	$(VILEHDRS)	pscreen.h
+eval.obj :	$(VILEHDRS)
+exec.obj :	$(VILEHDRS)
+externs.obj :	$(VILEHDRS)
+fences.obj :	$(VILEHDRS)
+file.obj :	$(VILEHDRS)
+filec.obj :	$(VILEHDRS)	dirstuff.h
+fileio.obj :	$(VILEHDRS)
+finderr.obj :	$(VILEHDRS)
+glob.obj :	$(VILEHDRS)	dirstuff.h
+globals.obj :	$(VILEHDRS)
+history.obj :	$(VILEHDRS)
+input.obj :	$(VILEHDRS)
+insert.obj :	$(VILEHDRS)
+isearch.obj :	$(VILEHDRS)
+itbuff.obj :	$(VILEHDRS)
+line.obj :	$(VILEHDRS)
+main.obj :	$(VILEHDRS)	chgdfunc.h 
+map.obj :	$(VILEHDRS)
+modes.obj :	$(VILEHDRS)	chgdfunc.h 
+msgs.obj :	$(VILEHDRS)
+nullterm.obj :	$(VILEHDRS)
+oneliner.obj :	$(VILEHDRS)
+opers.obj :	$(VILEHDRS)
+path.obj :	$(VILEHDRS)	dirstuff.h
+perl.obj :	$(VILEHDRS)	api.h
+random.obj :	$(VILEHDRS)	dirstuff.h
+regexp.obj :	$(VILEHDRS)
+region.obj :	$(VILEHDRS)
+search.obj :	$(VILEHDRS)
+select.obj :	$(VILEHDRS)
+spawn.obj :	$(VILEHDRS)
+statevar.obj :	$(VILEHDRS)	patchlev.h
+tags.obj :	$(VILEHDRS)	btree.h
+tbuff.obj :	$(VILEHDRS)
+termio.obj :	$(VILEHDRS)
+trace.obj :	$(VILEHDRS)
+ucrypt.obj :	$(VILEHDRS)
+undo.obj :	$(VILEHDRS)
+version.obj :	$(VILEHDRS)	patchlev.h
+w32cbrd.obj :	$(VILEHDRS)
+w32cmd.obj :	$(VILEHDRS)	winvile.h
+w32ole.obj :	$(VILEHDRS)	w32ole.h winviletlb.h w32reg.h
+w32misc.obj :	$(VILEHDRS)
+w32oo.obj :	$(VILEHDRS)	dirstuff.h
+w32pipe.obj :	$(VILEHDRS)
+w32reg.obj :	$(VILEHDRS)	w32reg.h
+window.obj :	$(VILEHDRS)
+word.obj :	$(VILEHDRS)
+wordmov.obj :	$(VILEHDRS)
+
 wvwrap.obj :	w32reg.h w32ole.h winviletlb.h
 
 winvile.res :	winvile.rc winvile.h

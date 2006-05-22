@@ -7,7 +7,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/lex-filt.l,v 1.58 2006/01/09 23:41:53 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/lex-filt.l,v 1.60 2006/05/21 19:50:19 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of LEX program.
  */
@@ -58,7 +58,7 @@ SSTRING		\'(\\.|[^'\\])*\'
 DSTRING		\"(\\.|[^"\\])*\"
 STRINGS		({SSTRING}|{DSTRING})
 
-ESCAPED		(\\[^\n\r])
+ESCAPED		(\\[^\r\n])
 
 UNQUOTED0	([^{}"\\[\][:space:]<>])
 UNQUOTED1	([^{}"\\[\][:space:]])
@@ -67,8 +67,8 @@ QUOTED		(\"([^"\\\r\n]|{ESCAPED})*\")
 
 CCLASS		("[:"{IDENT}":]")
 
-RANGE0		(\^[^\n\r])
-RANGE1		([^\n\r\]]|{CCLASS}|{ESCAPED})
+RANGE0		(\^[^\r\n])
+RANGE1		([^\r\n\]]|{CCLASS}|{ESCAPED})
 RANGE		("["{RANGE0}?{RANGE1}*"]")
 
 LIMITED		([[:digit:]]+([,][[:digit:]]+)*)
@@ -119,7 +119,7 @@ STATES		("<"("*"|({IDENT}|\,)+)">")
 			  WriteToken(attr);
 			}
 <STATES>{SPACE}		{ ECHO; }
-<STATES>[^\n[:blank:]]	{ WriteToken(Error_attr);
+<STATES>[^\r\n[:blank:]]	{ WriteToken(Error_attr);
 			  flt_error("Expected newline or blanks");
 			}
 <STATES>[\n]		{ ECHO; set_state(); }
@@ -141,12 +141,12 @@ STATES		("<"("*"|({IDENT}|\,)+)">")
 			  }
 			  new_state(RULE1);
 			}
-<RULES>"//"[^\n]*	{ WriteToken(Comment_attr); }
+<RULES>"//"[^\r\n]*	{ WriteToken(Comment_attr); }
 <RULES>"/*"		{ PushQuote(COMMENT, Comment_attr); }
 
 <RULE1>{SPACE}+		{ ECHO; new_state(RULEX); }
 <RULEX>{PATTERNS}	{ write_patterns(yytext, yyleng); new_state(RULER); }
-<RULER>[^\n]*		{ WriteToken(Error_attr);
+<RULER>[^\r\n]*		{ WriteToken(Error_attr);
 			  flt_error("Expected newline");
 			}
 <RULER>[\n]		{ ECHO; new_state(RULES); }
@@ -156,7 +156,7 @@ STATES		("<"("*"|({IDENT}|\,)+)">")
 <ACTIONS>^{STATES}	{ write_states(yytext, yyleng); new_state(ACTION1); }
 <ACTIONS>^{PATTERN}	{ write_patterns(yytext, yyleng); new_state(ACTION2); }
 
-<ACTION0>"//"[^\n]*	{ WriteToken(Comment_attr); }
+<ACTION0>"//"[^\r\n]*	{ WriteToken(Comment_attr); }
 <ACTION0>^{SPACE}+	{ ECHO; }
 <ACTION0>{STATES}	{ write_states(yytext, yyleng); new_state(ACTION1); }
 <ACTION0>"/*"		{ PushQuote(COMMENT, Comment_attr); }
@@ -172,7 +172,7 @@ STATES		("<"("*"|({IDENT}|\,)+)">")
 <ACTION2>[\n]		{ ECHO; end_action(); }
 
 <ACTION3>{IDENT}	{ WriteToken(keyword_attr(yytext)); new_state(CODE1); }
-<ACTION3>"//"[^\n]*	{ WriteToken(Comment_attr); }
+<ACTION3>"//"[^\r\n]*	{ WriteToken(Comment_attr); }
 <ACTION3>"/*"		{ PushQuote(COMMENT, Comment_attr); }
 <ACTION3>\{		{ ECHO; nesting = 1; new_state(CODE); }
 <ACTION3>[\n]		{ ECHO; end_action(); }
@@ -184,7 +184,7 @@ STATES		("<"("*"|({IDENT}|\,)+)">")
 <CODE,CODE1>\{		{ ECHO; nesting++; }
 <CODE,CODE1>\}		{ ECHO; if (--nesting <= 0) { nesting = 0; set_rules(); } }
 
-<CODE,CODE1>"//"[^\n]*	{ WriteToken(Comment_attr); }
+<CODE,CODE1>"//"[^\r\n]*	{ WriteToken(Comment_attr); }
 <CODE,CODE1>"/*"	{ PushQuote(COMMENT, Comment_attr); }
 <COMMENT>[^*]*		{ flt_bfr_append(yytext, yyleng); }
 <COMMENT>"*"+[^*/]*	{ flt_bfr_append(yytext, yyleng); }
@@ -396,6 +396,7 @@ write_patterns(char *text, int len)
 static void
 init_filter(int before GCC_UNUSED)
 {
+    (void) before;
 }
 
 static void

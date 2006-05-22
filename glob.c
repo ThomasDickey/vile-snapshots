@@ -13,7 +13,7 @@
  *
  *	modify (ifdef-style) 'expand_leaf()' to allow ellipsis.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/glob.c,v 1.87 2005/06/03 00:03:29 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/glob.c,v 1.88 2006/04/21 00:21:04 tom Exp $
  *
  */
 
@@ -747,7 +747,7 @@ expand_environ(char *pattern)
 
 	    (void) strcpy(pattern + j, s);
 	    (void) strcat(pattern, save);
-	    j += strlen(s) - 1;
+	    j += (int) strlen(s) - 1;
 	}
     }
 }

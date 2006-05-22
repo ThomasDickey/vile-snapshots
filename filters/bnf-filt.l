@@ -1,6 +1,6 @@
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/bnf-filt.l,v 1.7 2005/09/02 22:18:08 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/bnf-filt.l,v 1.9 2006/05/21 19:50:19 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of BNF syntax.
  */
@@ -29,7 +29,7 @@ BSTRING		\'(=.|[^'=])*\'
 "::="			|
 [<>\[\]{}?|;+*/-]	{ WriteToken(Action_attr); }
 
-"!"[^\n]*		{ WriteToken(Comment_attr); }
+"!"[^\r\n]*		{ WriteToken(Comment_attr); }
 
 {NUMBER}		{ WriteToken(Number_attr); }
 {BSTRING}		{ WriteToken(String_attr); }
@@ -39,6 +39,7 @@ BSTRING		\'(=.|[^'=])*\'
 static void
 init_filter(int before GCC_UNUSED)
 {
+    (void) before;
 }
 
 static void

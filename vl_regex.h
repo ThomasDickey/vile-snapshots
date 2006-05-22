@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/vl_regex.h,v 1.3 2005/11/18 19:00:12 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/vl_regex.h,v 1.4 2006/04/20 00:00:49 tom Exp $
  *
  * Copyright 2005, Thomas E. Dickey and Paul G. Fox
  *
@@ -51,7 +51,7 @@ typedef struct regexp {
 	int regstart;		/* Internal use only. */
 	char reganch;		/* Internal use only. */
 	int regmust;		/* Internal use only. */
-	unsigned regmlen;	/* Internal use only. */
+	size_t regmlen;		/* Internal use only. */
 	size_t size;		/* vile addition -- how big is this */
 	char program[1];	/* Unwarranted chumminess with compiler. */
 } regexp;

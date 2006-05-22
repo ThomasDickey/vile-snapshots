@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/rcs-filt.l,v 1.9 2005/09/04 21:15:43 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/rcs-filt.l,v 1.11 2006/05/21 19:50:19 tom Exp $
  *
  * Filter to add vile "attribution" sequences to RCS archives.
  */
@@ -30,7 +30,7 @@ NAME		[[:alnum:]]+
 <INITIAL>{NAME}		{ WriteToken(keyword_attr(yytext)); }
 <INITIAL>{NUMBER}	{ WriteToken(Number_attr); }
 <INITIAL>"@"		{ add_to_quoted(yytext, yyleng); BEGIN(QUOTED); }
-<QUOTED>[^@\n]*		{ add_to_quoted(yytext, yyleng); }
+<QUOTED>[^@\r\n]*	{ add_to_quoted(yytext, yyleng); }
 <QUOTED>@		{ add_to_quoted(yytext, yyleng); flush_quoted(); BEGIN(INITIAL); }
 <QUOTED>[\n]		{ flush_quoted(); ECHO; }
 
@@ -107,6 +107,7 @@ flush_quoted(void)
 static void
 init_filter(int before GCC_UNUSED)
 {
+    (void) before;
 }
 
 static void

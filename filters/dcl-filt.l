@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/dcl-filt.l,v 1.16 2005/09/04 21:10:12 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/dcl-filt.l,v 1.18 2006/05/21 19:50:19 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of DCL files.
  *
@@ -53,12 +53,12 @@ PARAM		'{IDENT}
 LABELLINE	{LABEL}{BLANK}*:$
 LABELPLUS	{LABEL}{BLANK}*:{BLANK}+
 
-INLINECOMMENT	![^\n]*
-COMMENT		^({BLANK}*)($)?({BLANK}*)(![^\n]*)?
+INLINECOMMENT	![^\r\n]*
+COMMENT		^({BLANK}*)($)?({BLANK}*)(![^\r\n]*)?
 
 NUMBER		([[:digit:]]+)|(%[dD][[:digit:]]+)|(%[oO][0-7]+)|(%[xX][[:xdigit:]]+)
 
-STRING		\"([^"\n]|(""))*\"
+STRING		\"([^"\r\n]|(""))*\"
 
 %%
 
@@ -83,7 +83,7 @@ STRING		\"([^"\n]|(""))*\"
 
 <NORMAL>[\n]		{ handle_newline(); }
 
-<LITERAL>[^\n]+		{ handle_literal(yytext, yyleng); }
+<LITERAL>[^\r\n]+	{ handle_literal(yytext, yyleng); }
 <LITERAL>[\n]		{ ECHO; }
 
 %%
@@ -145,6 +145,7 @@ handle_literal(char *text, int length)
 static void
 init_filter(int before GCC_UNUSED)
 {
+    (void) before;
 }
 
 static void

@@ -2,7 +2,7 @@
  * The routines in this file read and write ASCII files from the disk. All of
  * the knowledge about files are here.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/fileio.c,v 1.179 2005/05/22 16:28:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/fileio.c,v 1.181 2006/04/25 21:00:42 tom Exp $
  *
  */
 
@@ -630,7 +630,8 @@ ffread(char *buf, B_COUNT want, B_COUNT * have)
 			: (want - *have));
 
 #if FFREAD_FREAD
-	    got = fread(buf + *have, 1, ask, ffp);
+	    /* size_t may not fit in long, making a sign-extension */
+	    got = (long) fread(buf + *have, 1, ask, ffp);
 #else
 	    got = read(fileno(ffp), buf + *have, ask);
 #endif
@@ -784,7 +785,7 @@ ffputc(int c)
 
 /* "Small" exponential growth - EJK */
 static int
-alloc_linebuf(unsigned needed)
+alloc_linebuf(size_t needed)
 {
     beginDisplay();
     needed += 2;
@@ -816,7 +817,7 @@ alloc_linebuf(unsigned needed)
  * the 'lenp' parameter.
  */
 int
-ffgetline(int *lenp)
+ffgetline(size_t *lenp)
 {
     int c;
     size_t i;			/* current index into fflinebuf */

@@ -5,7 +5,7 @@
  * Written by T.E.Dickey for vile (march 1993).
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/filec.c,v 1.121 2005/01/20 01:58:58 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/filec.c,v 1.124 2006/05/21 10:58:58 tom Exp $
  *
  */
 
@@ -88,8 +88,8 @@ static void vms2hybrid(char *path);
 static int
 trailing_slash(const char *path)
 {
-    int len = strlen(path);
-    if (len > 0) {
+    size_t len = strlen(path);
+    if (len != 0) {
 #if OPT_VMS_PATH
 	if (is_vms_pathname(path, TRUE))
 	    return TRUE;
@@ -551,7 +551,7 @@ sortMyBuff(BUFFER *bp)
 #endif /* USE_QSORT */
 
 int
-fill_directory_buffer(BUFFER *bp, char *path, int dots GCC_UNUSED)
+fill_directory_buffer(BUFFER *bp, char *path, size_t dots GCC_UNUSED)
 {
     int count = 0;
     char *s;
@@ -831,10 +831,10 @@ makeMyList(BUFFER *bp, char *name)
     int n;
     LINE *lp;
     char *slashocc;
-    int len = strlen(name);
+    int len = (int) strlen(name);
 
     beginDisplay();
-    if (is_slashc(name[len - 1]))
+    if (len != 0 && is_slashc(name[len - 1]))
 	len++;
 
     (void) bsizes(bp);
@@ -881,7 +881,7 @@ freeMyList(BUFFER *bp)
 #endif
 
 static void
-force_output(int c, char *buf, unsigned *pos)
+force_output(int c, char *buf, size_t *pos)
 {
     kbd_putc(c);
     term.flush();
@@ -943,8 +943,8 @@ path_completion(DONE_ARGS)
     } else if (action) {
 	char *s;
 	char path[NFILEN];
-	unsigned oldlen;
-	unsigned newlen;
+	size_t oldlen;
+	size_t newlen;
 
 	/* initialize only on demand */
 	if (MyBuff == 0) {

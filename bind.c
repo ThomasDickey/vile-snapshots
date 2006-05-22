@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.291 2005/12/26 00:28:04 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.296 2006/05/21 22:34:06 tom Exp $
  *
  */
 
@@ -44,7 +44,7 @@ static void makebindlist(LIST_ARGS);
 #endif /* OPT_REBIND */
 
 #if OPT_NAMEBST
-static int kbd_complete_bst(unsigned flags, int c, char *buf, unsigned *pos);
+static int kbd_complete_bst(unsigned flags, int c, char *buf, size_t *pos);
 #else
 #define kbd_complete_bst(params) \
 	kbd_complete(params, \
@@ -341,12 +341,12 @@ chr_complete(DONE_ARGS)
 
 static int
 /*ARGSUSED*/
-chr_eol(
-	   const char *buffer GCC_UNUSED,
-	   unsigned cpos GCC_UNUSED,
-	   int c GCC_UNUSED,
-	   int eolchar GCC_UNUSED)
+chr_eol(EOL_ARGS)
 {
+    (void) buffer;
+    (void) cpos;
+    (void) eolchar;
+
     return isSpace(c);
 }
 
@@ -1014,7 +1014,7 @@ quote_and_pad(char *dst, const char *src)
 static char *
 to_tabstop(char *buffer)
 {
-    unsigned len = strlen(buffer);
+    size_t len = strlen(buffer);
     unsigned cpos = converted_len(buffer);
     if (cpos & 7 || (len != 0 && !isBlank(buffer[len - 1])))
 	(void) strcat(buffer, "\t");
@@ -1337,12 +1337,12 @@ ourstrstr(const char *haystack, const char *needle, int anchor)
     if (anchor && *needle == '^') {
 	return strcmp(needle + 1, haystack) ? 0 : 1;
     } else {
-	int nl = strlen(needle);
-	int hl = strlen(haystack);
+	size_t nl = strlen(needle);
+	size_t hl = strlen(haystack);
 	const char *hp = haystack;
 	while (hl >= nl && *hp) {
-	    if (!strncmp(hp, needle, (size_t) nl))
-		return hp - haystack + 1;
+	    if (!strncmp(hp, needle, nl))
+		return (int) (hp - haystack + 1);
 	    hp++;
 	    hl--;
 	}
@@ -1638,7 +1638,7 @@ static const struct {
  * code.
  */
 int
-kcod2escape_seq(int c, char *ptr, int limit)
+kcod2escape_seq(int c, char *ptr, size_t limit)
 {
     char *base = ptr;
 
@@ -1650,7 +1650,7 @@ kcod2escape_seq(int c, char *ptr, int limit)
 
 #if OPT_KEY_MODIFY
 	if (c & mod_KEY) {
-	    int len;
+	    size_t len;
 	    unsigned n;
 	    for (n = 0; n < TABLESIZE(key_modifiers); ++n) {
 		if (c & key_modifiers[n].code) {
@@ -1999,11 +1999,11 @@ decode_prefix(const char *kk, UINT * prefix)
 	if (bits == 0 && len > 3 && *(kk + 2) == '-') {
 	    if (*kk == '^') {
 		ch = (UCHAR) (kk[1]);
-		if (isCntrl(cntl_a) && ch == toalpha(cntl_a))
+		if (isCntrl(cntl_a) && ch == (UCHAR) toalpha(cntl_a))
 		    bits = CTLA;
-		if (isCntrl(cntl_x) && ch == toalpha(cntl_x))
+		if (isCntrl(cntl_x) && ch == (UCHAR) toalpha(cntl_x))
 		    bits = CTLX;
-		if (isCntrl(poundc) && ch == toalpha(poundc))
+		if (isCntrl(poundc) && ch == (UCHAR) toalpha(poundc))
 		    bits = SPEC;
 	    } else if (!strncmp(kk, "FN", 2)) {
 		bits = SPEC;
@@ -2041,7 +2041,7 @@ prc2kcod(const char *kk)
 	char temp[NSTRING];
 
 	while ((s = strchr(kk, '+')) != 0) {
-	    if ((len = (s - kk) + 1) >= (int) sizeof(temp))
+	    if ((len = (UINT) (s - kk) + 1) >= sizeof(temp))
 		break;
 	    if (s == kk || s[1] == '\n' || s[1] == '\0')
 		break;
@@ -2383,7 +2383,7 @@ makecmpllist(int case_insensitive, void *cinfop)
     const char *last = skip_partial(case_insensitive, buf, len, first, size_entry);
     const char *p;
     size_t maxlen;
-    int slashcol;
+    size_t slashcol;
     int cmpllen;
     int cmplcols;
     int cmplrows;
@@ -2401,19 +2401,19 @@ makecmpllist(int case_insensitive, void *cinfop)
     slashcol = (int) (pathleaf(buf) - buf);
     if (slashcol != 0) {
 	char b[NLINE];
-	(void) strncpy(b, buf, (size_t) slashcol);
+	(void) strncpy(b, buf, slashcol);
 	(void) strncpy(&b[slashcol], &(THIS_NAME(first))[slashcol],
 		       (len - slashcol));
 	b[slashcol + (len - slashcol)] = EOS;
 	bprintf("Completions prefixed by %s:\n", b);
     }
 
-    cmplcols = term.cols / (maxlen - slashcol + 1);
+    cmplcols = term.cols / (int) (maxlen - slashcol + 1);
 
     if (cmplcols == 0)
 	cmplcols = 1;
 
-    nentries = (int) (last - first) / size_entry;
+    nentries = (int) ((last - first) / size_entry);
     cmplrows = nentries / cmplcols;
     cmpllen = term.cols / cmplcols;
     if (cmplrows * cmplcols < nentries)
@@ -2771,7 +2771,7 @@ kbd_complete(DONE_ARGS, const char *table, size_t size_entry)
  * repeated characters (but they must all be the same).
  */
 static int
-is_shift_cmd(const char *buffer, unsigned cpos)
+is_shift_cmd(const char *buffer, size_t cpos)
 {
     if (buffer != 0) {
 	int c = *buffer;
@@ -2809,7 +2809,7 @@ is_shift_cmd(const char *buffer, unsigned cpos)
 #define ismostpunct(c) (isPunct(c) && (c) != '-' && (c) != '_')
 
 int
-eol_command(const char *buffer, unsigned cpos, int c, int eolchar)
+eol_command(EOL_ARGS)
 {
     /*
      * Handle special case of repeated-character implying repeat-count
@@ -2852,7 +2852,7 @@ cmd_complete(DONE_ARGS)
 	 * ">>>").
 	 */
 	if ((*pos > 1) && is_shift_cmd(buf, *pos)) {
-	    unsigned len = 1;
+	    size_t len = 1;
 	    char tmp[NLINE];
 	    tmp[0] = *buf;
 	    tmp[1] = EOS;
@@ -3070,9 +3070,9 @@ kbd_complete_bst(
 		    unsigned flags GCC_UNUSED,
 		    int c,	/* TESTC, NAMEC or isreturn() */
 		    char *buf,
-		    unsigned *pos)
+		    size_t *pos)
 {
-    unsigned cpos = *pos;
+    unsigned cpos = (unsigned) *pos;
     int status = FALSE;
     const char **nptr;
 

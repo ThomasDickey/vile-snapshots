@@ -44,7 +44,7 @@
  *	tgetc_avail()     true if a key is avail from tgetc() or below.
  *	keystroke_avail() true if a key is avail from keystroke() or below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.284 2005/09/26 23:01:43 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.289 2006/05/21 22:32:27 tom Exp $
  *
  */
 
@@ -122,9 +122,9 @@ int
 shell_complete(DONE_ARGS)
 {
     int status = FALSE;
-    unsigned len = *pos;
-    int base;
-    int first = 0;
+    size_t len = *pos;
+    size_t base;
+    size_t first = 0;
 
     TRACE(("shell_complete %d:'%s'\n", *pos, buf));
     if (buf != 0) {
@@ -622,11 +622,11 @@ kbd_seq_nomap(void)
 /* get a string consisting of inclchartype characters from the current
 	position.  if inclchartype is 0, return everything to eol */
 int
-screen_string(char *buf, int bufn, CHARTYPE inclchartype)
+screen_string(char *buf, size_t bufn, CHARTYPE inclchartype)
 {
     static TBUFF *temp;
     int rc;
-    int len;
+    size_t len;
 
     if ((rc = screen2tbuff(&temp, inclchartype)) == TRUE) {
 	if ((len = tb_length(temp)) >= bufn)
@@ -870,11 +870,11 @@ remove_backslashes(TBUFF *buf)
 /* count backslashes so we can tell at any point whether we have the current
  * position escaped by one.
  */
-static UINT
-countBackSlashes(TBUFF *buf, UINT len)
+static size_t
+countBackSlashes(TBUFF *buf, size_t len)
 {
     char *buffer = tb_values(buf);
-    UINT count;
+    size_t count;
 
     if (len && buffer != 0 && isEscaped(buffer + len)) {
 	count = 1;
@@ -924,11 +924,11 @@ show1Char(int c)
 /* expand a single character (only used on interactive input) */
 static int
 expandChar(TBUFF **buf,
-	   unsigned *position,
+	   size_t *position,
 	   int c,
 	   KBD_OPTIONS options)
 {
-    int cpos = *position;
+    int cpos = (int) *position;
     char *cp;
     BUFFER *bp;
     char str[NFILEN];
@@ -1042,11 +1042,11 @@ is_edit_char(int c)
  * Erases the response from the screen for 'kbd_string()'
  */
 void
-kbd_kill_response(TBUFF *buffer, unsigned *position, int c)
+kbd_kill_response(TBUFF *buffer, size_t *position, int c)
 {
     char *buf = tb_values(buffer);
     TBUFF *tmp = 0;
-    int cpos = *position;
+    int cpos = (int) *position;
     UINT mark = cpos;
 
     if (buf != 0) {
@@ -1083,11 +1083,11 @@ kbd_kill_response(TBUFF *buffer, unsigned *position, int c)
 int
 kbd_show_response(TBUFF **dst,	/* string with escapes */
 		  char *src,	/* string w/o escapes */
-		  unsigned bufn,	/* # of chars we read from 'src[]' */
+		  size_t bufn,	/* # of chars we read from 'src[]' */
 		  int eolchar,
 		  KBD_OPTIONS options)
 {
-    unsigned k;
+    size_t k;
 
     /* add backslash escapes in front of volatile characters */
     tb_init(dst, 0);
@@ -1117,21 +1117,27 @@ kbd_show_response(TBUFF **dst,	/* string with escapes */
     }
     if (vl_echo)
 	kbd_flush();
-    return tb_length(*dst);
+    return (int) tb_length(*dst);
 }
 
 /* check only for eol-character */
 int
 /*ARGSUSED*/
-eol_null(const char *buffer GCC_UNUSED, unsigned cpos GCC_UNUSED, int c, int eolchar)
+eol_null(EOL_ARGS)
 {
+    (void) buffer;
+    (void) cpos;
+
     return (c == eolchar);
 }
 
 int
 /*ARGSUSED*/
-eol_history(const char *buffer GCC_UNUSED, unsigned cpos GCC_UNUSED, int c, int eolchar)
+eol_history(EOL_ARGS)
 {
+    (void) buffer;
+    (void) cpos;
+
     if (isPrint(eolchar) || eolchar == '\r') {
 	if (c == eolchar || (eolchar == '\r' && c == '\n'))
 	    return TRUE;
@@ -1180,7 +1186,7 @@ kbd_is_pushed_back(void)
 int
 kbd_string(const char *prompt,	/* put this out first */
 	   char *extbuf,	/* the caller's (possibly full) buffer */
-	   unsigned bufn,	/* the length of  " */
+	   size_t bufn,		/* the length of  " */
 	   int eolchar,		/* char we can terminate on, in addition to '\n' */
 	   KBD_OPTIONS options,	/* KBD_EXPAND/KBD_QUOTES, etc. */
 	   int (*complete) (DONE_ARGS))		/* handles completion */
@@ -1321,7 +1327,7 @@ fakeKeyCode(const CMDFUNC * f)
 }
 
 static int
-editMinibuffer(TBUFF **buf, unsigned *cpos, int c, int margin, int quoted)
+editMinibuffer(TBUFF **buf, size_t *cpos, int c, int margin, int quoted)
 {
     int edited = FALSE;
     const CMDFUNC *cfp;
@@ -1352,7 +1358,7 @@ editMinibuffer(TBUFF **buf, unsigned *cpos, int c, int margin, int quoted)
 	miniedit = !miniedit;
     } else if ((miniedit || isSpecial(c))
 	       && (cfp != 0) && (cfp->c_flags & MINIBUF) != 0) {
-	int first = *cpos + margin;
+	C_NUM first = (C_NUM) * cpos + margin;
 	int old_clexec = clexec;
 	int old_named = isnamedcmd;
 	int old_margin = b_left_margin(bminip);
@@ -1610,7 +1616,7 @@ kbd_reply(const char *prompt,	/* put this out first */
 {
     int c;
     int done;
-    unsigned cpos;		/* current position */
+    size_t cpos;		/* current position */
     int status;
     int shell;
     int margin;
@@ -1618,11 +1624,11 @@ kbd_reply(const char *prompt,	/* put this out first */
     MARK saveMK;		/* FIXME: may be lost by name-completion swbuffer */
 
     int quotef;			/* are we quoting the next char? */
-    UINT backslashes;		/* are we quoting the next expandable char? */
+    size_t backslashes;		/* are we quoting the next expandable char? */
     UINT dontmap = (options & KBD_NOMAP);
     int firstch = TRUE;
     int lastch;
-    unsigned newpos;
+    size_t newpos;
     TBUFF *buf = 0;
     const char *result;
 
@@ -1883,7 +1889,7 @@ kbd_reply(const char *prompt,	/* put this out first */
 					     tbreserve(&buf), &cpos));
 		    }
 		    firstch = FALSE;
-		    shiftMiniBuffer(cpos + margin);
+		    shiftMiniBuffer((int) (cpos + margin));
 		    continue;
 		}
 	    }
@@ -2152,7 +2158,7 @@ void
 get_kbd_macro(TBUFF **rp)
 {
     char temp[80];
-    unsigned n, last, len;
+    size_t n, last, len;
 
     *rp = tb_init(rp, EOS);
     if ((last = itb_length(KbdMacro)) != 0) {
@@ -2215,7 +2221,7 @@ int
 kbd_mac_save(int f GCC_UNUSED, int n GCC_UNUSED)
 {
     TBUFF *p = 0;
-    unsigned j, len;
+    size_t j, len;
 
     ksetup();
     get_kbd_macro(&p);

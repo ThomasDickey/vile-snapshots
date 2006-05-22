@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/est-filt.l,v 1.4 2005/09/04 21:10:12 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/est-filt.l,v 1.6 2006/05/21 19:50:19 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of enscript
  * syntax-description files.
@@ -21,7 +21,7 @@ static char *String_attr;
 %}
 
 SSTRING		\'(\\.|[^'\\])*\'
-DSTRING		\"((\\\")|[^"\n])*\"
+DSTRING		\"((\\\")|[^"\r\n])*\"
 
 KEYWORD		[[:alpha:]_][[:alnum:]_]*
 IDENT		\$[[:alnum:]_]+
@@ -37,7 +37,7 @@ RANGE		"["(\\.|.)+"]"
 <CODE>"/*"			{ BeginQuote(NOTE, Comment_attr); }
 <NOTE>"*"[^/]			{ flt_bfr_append(yytext, yyleng); }
 <NOTE>\n			{ flt_bfr_append(yytext, yyleng); }
-<NOTE>[^*\n]			{ flt_bfr_append(yytext, yyleng); }
+<NOTE>[^*\r\n]			{ flt_bfr_append(yytext, yyleng); }
 <NOTE>"*/"			{ FinishQuote(CODE); }
 
 <CODE>{KEYWORD}			{ WriteToken(keyword_attr(yytext)); }
@@ -64,6 +64,7 @@ RANGE		"["(\\.|.)+"]"
 static void
 init_filter(int before GCC_UNUSED)
 {
+    (void) before;
 }
 
 static void

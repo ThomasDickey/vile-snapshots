@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/ini-filt.l,v 1.4 2005/09/04 21:15:43 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/ini-filt.l,v 1.6 2006/05/21 19:50:19 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of M$ ini-definition
  * input text.
@@ -46,8 +46,8 @@ NUMBER		{INTEGER}
 <NORMAL,VALUE>{NUMBER}	{ WriteToken(Number_attr); }
 <VALUE>[\n]		{ ECHO; BEGIN(NORMAL); }
 
-<NORMAL>"//"[^\n]*	{ WriteToken(Comment_attr); }
-<NORMAL>";"[^\n]*	{ WriteToken(Comment_attr); }
+<NORMAL>"//"[^\r\n]*	{ WriteToken(Comment_attr); }
+<NORMAL>";"[^\r\n]*	{ WriteToken(Comment_attr); }
 
 <NORMAL>"/*"		{ BeginQuote(COMMENT, Comment_attr); }
 <COMMENT>[^*]*		{ flt_bfr_append(yytext, yyleng); }
@@ -59,6 +59,7 @@ NUMBER		{INTEGER}
 static void
 init_filter(int before GCC_UNUSED)
 {
+    (void) before;
 }
 
 static void

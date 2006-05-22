@@ -332,6 +332,9 @@ File manipulation commands:
 	will suppress the per-file and "Press return to continue" message.
 	This may be useful when using the command from within a macro.
 
+	The write-all-buffers command attempts to write all buffers whether
+	marked "modified" or not.
+
 	As in vi, ranges of lines specified by line numbers (including '.',
 	'$', and '%' shorthands) or marks may precede these commands.
 	Unlike vi, search patterns cannot be used as line specifiers.
@@ -1477,7 +1480,7 @@ Editor modes
 	for-buffers (fb) specifies whether globbing or regular expressions
 		are used to select buffer names in the for-buffers and
 		kill-buffer commands.  (U)
-		
+
 		The choices are
 			mixed	globbing with special exclusion for internal
 				names, i.e., with square brackets
@@ -1665,7 +1668,7 @@ Editor modes
 		means that the quick method is tried first, and if it fails to
 		allocate the large chunks needed for the buffer, it will retry
 		using the slow (small chunk) method.  Set to "fast" to use
-		only the fast method, and to "slow" for only the slow method. 
+		only the fast method, and to "slow" for only the slow method.
 		(U)
 
 	readonly (ro) Prevent writing a buffer to its associated file.  Unlike
@@ -5874,6 +5877,10 @@ Win32 specifics
 
 	Modes
 	-----
+	echo-to-clipboard
+			all text selected with the mouse is automatically
+			copied to the Windows clipboard. (U)
+
 	icursor		denotes a string that configures the characteristics
 			of an insertion cursor.
 
@@ -6211,15 +6218,17 @@ Where to Get It
 	CDROM's.
 
 
-
 Problems
 --------
-	Send bug reports to
-		bugs@vile.cx
+	Submit bug reports via the project mailing list, or via
+	the web-based bug reporting system.  Both of these are
+	available here:
+		https://savannah.nongnu.org/projects/vile
 
-	Requests to be put on the announcement list should go to
-		announce-request@vile.cx
+	Subscribing to the mailing list is also the best way to
+	keep informed of new releases.
+
 
 Copyright 1995-2005,2006 by Paul Fox, Thomas Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.610 2006/02/16 01:26:06 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.612 2006/05/21 00:31:14 pgf Exp $

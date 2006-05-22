@@ -3,7 +3,7 @@
  * and backward directions.
  *  heavily modified by Paul Fox, 1990
  *
- * $Header: /users/source/archives/vile.vcs/RCS/search.c,v 1.137 2005/01/26 23:04:42 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/search.c,v 1.138 2006/04/19 23:52:57 tom Exp $
  *
  * original written Aug. 1986 by John M. Gamble, but I (pgf) have since
  * replaced his regex stuff with Henry Spencer's regexp package.
@@ -669,7 +669,7 @@ attrib_matches(void)
 		videoattribute = VCOLORATTR(c + 1);
 	}
 	MK.l = DOT.l;
-	MK.o = DOT.o + gregexp->mlen;
+	MK.o = DOT.o + (C_NUM) gregexp->mlen;
 
 	/* provide a location for the next non-overlapping match */
 	nextdot = MK;

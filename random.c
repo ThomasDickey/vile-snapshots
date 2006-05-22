@@ -2,7 +2,7 @@
  * This file contains the command processing functions for a number of random
  * commands. There is no functional grouping here, for sure.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.291 2006/02/19 20:53:10 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.292 2006/04/20 00:02:43 tom Exp $
  *
  */
 
@@ -1400,7 +1400,7 @@ ch_fname(BUFFER *bp, const char *fname)
     beginDisplay();
     if ((np = castalloc(char, strlen(fname) + NFILEN)) == NULL) {
 	bp->b_fname = out_of_mem;
-	bp->b_fnlen = strlen(bp->b_fname);
+	bp->b_fnlen = (int) strlen(bp->b_fname);
 	no_memory("ch_fname");
     } else {
 	strcpy(np, fname);
@@ -1409,7 +1409,7 @@ ch_fname(BUFFER *bp, const char *fname)
 	if (!isInternalName(np))
 	    (void) lengthen_path(np);
 
-	len = strlen(np) + 1;
+	len = (int) strlen(np) + 1;
 
 	if (bp->b_fname == 0 || strcmp(bp->b_fname, np)) {
 
@@ -1424,7 +1424,7 @@ ch_fname(BUFFER *bp, const char *fname)
 	    if (!bp->b_fname) {
 		if ((bp->b_fname = strmalloc(np)) == 0) {
 		    bp->b_fname = out_of_mem;
-		    bp->b_fnlen = strlen(bp->b_fname);
+		    bp->b_fnlen = (int) strlen(bp->b_fname);
 		    no_memory("ch_fname");
 		    (void) free(np);
 		    endofDisplay();

@@ -10,7 +10,7 @@
  * editing must be being displayed, which means that "b_nwnd" is non zero,
  * which means that the dot and mark values in the buffer headers are nonsense.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.170 2005/07/14 00:50:54 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.171 2006/04/20 00:09:10 tom Exp $
  *
  */
 
@@ -810,7 +810,8 @@ ldelnewline(void)
     LINE *lp1;
     LINE *lp2;
     WINDOW *wp;
-    size_t len, add;
+    C_NUM len;
+    C_NUM add;
 
     lp1 = DOT.l;
     len = llength(lp1);
@@ -837,7 +838,7 @@ ldelnewline(void)
     copy_for_undo(DOT.l);
 
     /* no room in line above, make room */
-    if (add > lp1->l_size - len) {
+    if (add > (C_NUM) lp1->l_size - len) {
 	char *ntext;
 	size_t nsize;
 	/* first, create the new image */

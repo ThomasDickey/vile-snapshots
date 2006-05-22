@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/asm-filt.l,v 1.4 2005/09/04 21:10:12 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/asm-filt.l,v 1.6 2006/05/21 19:50:19 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of M$ assembler files.
  */
@@ -24,8 +24,8 @@ static char *String_attr;
 
 %}
 
-SSTRING		\'([^'\n]|'')*\'
-DSTRING		\"([^"\n]|"")*\"
+SSTRING		\'([^'\r\n]|'')*\'
+DSTRING		\"([^"\r\n]|"")*\"
 STRING		{SSTRING}|{DSTRING}
 
 NAME		[[:alnum:]_$?@]
@@ -49,7 +49,7 @@ FORMAT		"%"[.*[:digit:]l#+-]*[cdeEfFgGisuxX]
 			      BEGIN(QUOTE1);
 			  }
 			}
-<NORMAL>";"[^\n]*	{ WriteToken(Comment_attr); }
+<NORMAL>";"[^\r\n]*	{ WriteToken(Comment_attr); }
 
 <NORMAL>{NUMBER}	{ WriteToken(Number_attr); }
 <NORMAL>[[:digit:]]{NUMBER}{NAME}+ {
@@ -57,7 +57,7 @@ FORMAT		"%"[.*[:digit:]l#+-]*[cdeEfFgGisuxX]
 			  WriteToken(Error_attr);
 			}
 <QUOTE1>[<>]		{ WriteToken(Action_attr); }
-<QUOTE1>[^\n<>]*	{ WriteToken(String_attr); }
+<QUOTE1>[^\r\n<>]*	{ WriteToken(String_attr); }
 <QUOTE1>\n		{ ECHO; BEGIN(NORMAL); }
 
 <NORMAL>\\.		|
@@ -68,6 +68,7 @@ FORMAT		"%"[.*[:digit:]l#+-]*[cdeEfFgGisuxX]
 static void
 init_filter(int before GCC_UNUSED)
 {
+    (void) before;
 }
 
 static void

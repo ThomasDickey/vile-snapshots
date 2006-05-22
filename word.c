@@ -3,7 +3,7 @@
  * paragraph at a time.  There are all sorts of word mode commands.  If I
  * do any sentence mode commands, they are likely to be put in this file.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/word.c,v 1.79 2005/07/14 00:02:44 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/word.c,v 1.80 2006/04/19 22:40:54 tom Exp $
  *
  */
 
@@ -555,7 +555,7 @@ do_formatting(TBUFF **wp, TBUFF **cp)
 		    if (c == '?' || c == ':' || c == '!') {
 			sentence = TRUE;
 		    } else if (c == '.') {
-			unsigned len = tb_length(*wp);
+			size_t len = tb_length(*wp);
 			if (len == 4) {
 			    char *ptr = tb_values(*wp);
 			    /*
@@ -576,7 +576,7 @@ do_formatting(TBUFF **wp, TBUFF **cp)
 		/* at a word break with a word waiting */
 		/* calculate tentative new length
 		   with word added */
-		newlen = clength + 1 + tb_length(*wp);
+		newlen = (int) (clength + 1 + tb_length(*wp));
 		if (newlen <= fillcolumn) {
 		    /* add word to current line */
 		    if (!firstflag) {

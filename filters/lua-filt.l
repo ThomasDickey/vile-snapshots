@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/lua-filt.l,v 1.3 2006/04/02 15:43:00 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/lua-filt.l,v 1.5 2006/05/21 19:50:19 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of lua
  * input text.
@@ -45,7 +45,7 @@ LONG_R		"]"[=]*"]"
 <LONG_CMT>[^[=\]]+	{ WriteToken(Comment_attr); }
 <LONG_CMT>.		{ WriteToken(Comment_attr); }
 
-<INITIAL>"--"[^\n]*	{ WriteToken(Comment_attr); }
+<INITIAL>"--"[^\r\n]*	{ WriteToken(Comment_attr); }
 
 <INITIAL>{LONG_L}	{ WriteToken(String_attr); push_state(LONG_STR); long_str = yyleng; }
 <LONG_STR>{LONG_R}	{ WriteToken(String_attr); if (yyleng == long_str) pop_state(); }
@@ -57,6 +57,7 @@ LONG_R		"]"[=]*"]"
 static void
 init_filter(int before GCC_UNUSED)
 {
+    (void) before;
 }
 
 static void

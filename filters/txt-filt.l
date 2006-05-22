@@ -5,7 +5,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/txt-filt.l,v 1.21 2006/04/02 16:56:19 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/txt-filt.l,v 1.23 2006/05/21 19:50:48 tom Exp $
  *
  * Filter to add vile "attribution" sequences to an ordinary text file
  */
@@ -24,7 +24,7 @@ static int mixedcase(const char *name);
 
 %}
 
-COMMENT		(^(-[-]+[ \t]+[^\n]+))|([ \t]*-[ \t-]*)\n
+COMMENT		(^(-[-]+[ \t]+[^\r\n]+))|([ \t]*-[ \t-]*)\n
 
 KEYWORD		([[:alpha:]_][[:alnum:]_.]*|[[:upper:]][+/&][[:upper:]])
 
@@ -89,6 +89,7 @@ mixedcase(const char *name)
 static void
 init_filter(int before GCC_UNUSED)
 {
+    (void) before;
 }
 
 static void

@@ -2,7 +2,7 @@
  *		The routines in this file handle the conversion of pathname
  *		strings.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.150 2005/07/09 15:01:56 Peter.Prymmer Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.151 2006/04/20 00:03:55 tom Exp $
  *
  *
  */
@@ -934,9 +934,9 @@ case_correct_path(char *old_file, char *new_file)
 
 	/* Canonicalize the system name and share name. */
 	if (next)
-	    len = next - old_file + 1;
+	    len = (int) (next - old_file + 1);
 	else
-	    len = strlen(old_file);
+	    len = (int) strlen(old_file);
 	(void) memcpy(new_file, old_file, len);
 	new_file[len] = EOS;
 	(void) mklower(new_file);
@@ -972,7 +972,7 @@ case_correct_path(char *old_file, char *new_file)
 	next = strchr(current, SLASHC);
 	if (!next)
 	    next = end;
-	len = next - current;
+	len = (int) (next - current);
 	(void) memcpy(sofar, current, len);
 	sofar[len] = EOS;
 	h = FindFirstFile(new_file, &fd);
@@ -1609,7 +1609,7 @@ lengthen_path(char *path)
 #else
 	(void) strcpy(temp, cwd);
 #endif
-	len = strlen(temp);
+	len = (int) strlen(temp);
 	temp[len++] = SLASHC;
 	(void) vl_strncpy(temp + len, f, sizeof(temp) - len);
 	(void) strcpy(path, temp);
@@ -2227,7 +2227,7 @@ path_trunc(char *path, int max_path_len, char *trunc_buf, int trunc_buf_len)
     max_len = max_path_len;
     if (trunc_buf_len - 1 < max_len)	/* "- 1" -> terminating NUL */
 	max_len = trunc_buf_len - 1;
-    path_len = strlen(path);
+    path_len = (int) strlen(path);
     if (path_len <= max_len)
 	strcpy(trunc_buf, path);	/* fits -- no issues */
     else {

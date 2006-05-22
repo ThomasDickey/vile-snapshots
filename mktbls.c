@@ -15,12 +15,24 @@
  * by Tom Dickey, 1993.    -pgf
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/mktbls.c,v 1.132 2004/12/03 00:01:22 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/mktbls.c,v 1.135 2006/05/21 20:53:14 tom Exp $
  *
  */
 
-#if defined(__OS2__) && defined(__IBMC__) && (__IBMC__ >= 200)
+/*
+ * gcc (at least through 4.04) allows offsets, but g++ does not.
+ *
+ * Visual C++ warns about cases for 64-bit compiles that do not work with
+ * the default USE_OFFSETS=1, and that works with modern C compilers, but
+ * that does not work with some legacy C compilers, e.g., Solaris.  Since
+ * the Unix compilers mostly follow LP64 model, it is not (yet) necessary
+ * to make a configure script check to distinguish between the two - just
+ * support that USE_OFFSET=2 for Visual C++.
+ */
+#if defined(__GNUG__) || (defined(__OS2__) && defined(__IBMC__) && (__IBMC__ >= 200))
 #define USE_OFFSETS 0
+#elif defined(_MSC_VER)
+#define USE_OFFSETS 2
 #else
 #define USE_OFFSETS 1
 #endif
@@ -419,7 +431,9 @@ LastCol(char *buffer)
 static char *
 PadTo(int col, char *buffer)
 {
-    int any = 0, len = strlen(buffer), now;
+    int any = 0;
+    int len = (int) strlen(buffer);
+    int now;
     char with;
 
     for (;;) {
@@ -497,7 +511,7 @@ Parse(char *input, char **vec)
 
     for (c = 0; c < MAX_PARSE; c++)
 	vec[c] = "";
-    for (c = strlen(input); c > 0 && isSpace(input[c - 1]); c--)
+    for (c = (int) strlen(input); c > 0 && isSpace(input[c - 1]); c--)
 	input[c - 1] = EOS;
 
     for (n = 0; (c = input[n++]) != EOS;) {
@@ -708,7 +722,7 @@ static char *
 Name2Address(char *name, char *type)
 {
     /*  "+ 10" for comfort */
-    unsigned len = strlen(name) + 10;
+    unsigned len = (unsigned) strlen(name) + 10;
     char *base = Alloc(len);
     char *temp;
 
@@ -727,18 +741,20 @@ Name2Address(char *name, char *type)
 static void
 DefineOffset(FILE *fp)
 {
-#if USE_OFFSETS
-    Fprintf(fp,
-	    "#ifndef\tMember_Offset\n\
+    Fprintf(fp, "#ifndef\tMember_Offset\n");
+#if USE_OFFSETS == 2
+    Fprintf(fp, "\
+#define\tMember_Offset(T,M) ((int)(((long)(&(((T*)0)->M) - (char *)0))/\\\n\
+\t\t\t\t ((long)(&(((T*)0)->Q1) - &(((T*)0)->s_MAX)))))\n");
+#elif USE_OFFSETS == 1
+    Fprintf(fp, "\
 #define\tMember_Offset(T,M) ((int)(((long)&(((T*)0)->M))/\\\n\
-\t\t\t\t ((long)&(((T*)0)->Q1) - (long)&(((T*)0)->s_MAX))))\n\
-#endif\n");
+\t\t\t\t ((long)&(((T*)0)->Q1) - (long)&(((T*)0)->s_MAX))))\n");
 #else
-    Fprintf(fp,
-	    "#ifndef\tMember_Offset\n\
-#define\tMember_Offset(T,M) ((vile_ ## M)-1)\n\
-#endif\n");
+    Fprintf(fp, "\
+#define\tMember_Offset(T,M) ((vile_ ## M)-1)\n");
 #endif
+    Fprintf(fp, "#endif\n");
 }
 
 /* generate the index-struct (used for deriving ifdef-able index definitions) */

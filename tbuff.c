@@ -7,7 +7,7 @@
  *	To do:	add 'tb_ins()' and 'tb_del()' to support cursor-level command
  *		editing.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tbuff.c,v 1.64 2006/02/16 01:00:30 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tbuff.c,v 1.66 2006/04/21 10:55:46 tom Exp $
  *
  */
 
@@ -484,8 +484,8 @@ tb_dequote(TBUFF **p)
 	int escaped = FALSE;
 	UINT delim = CharOf(value[0]);
 	UINT j, k, ch;
-	UINT have = tb_length(*p);
-	UINT used = have;
+	size_t have = tb_length(*p);
+	size_t used = have;
 
 	if (delim == SQUOTE) {
 	    for (j = k = 0; k < have; ++k) {
@@ -536,8 +536,8 @@ tb_enquote(TBUFF **p)
 	TRACE2(("...empty\n"));
     } else if (value != error_val && tb_length(*p)) {
 	UINT j;
-	UINT have = tb_length(*p) - 1;
-	UINT need = 2 + have;
+	size_t have = tb_length(*p) - 1;
+	size_t need = 2 + have;
 	int delim;
 
 	/* decide which delimiter we can use */
@@ -560,11 +560,12 @@ tb_enquote(TBUFF **p)
 	tb_alloc(p, need + 1);
 	(*p)->tb_used = need + 1;
 
+	value = tb_values(*p);
 	value[need] = EOS;
 	value[need - 1] = (char) delim;
 	for (j = 0; j < have; ++j) {
-	    UINT i = have - j - 1;
-	    UINT k = need - j - 2;
+	    size_t i = have - j - 1;
+	    size_t k = need - j - 2;
 	    UINT ch = CharOf(value[k] = value[i]);
 	    if (delim == DQUOTE && (ch == DQUOTE || ch == BACKSLASH)) {
 		--need;
@@ -615,6 +616,21 @@ tb_length(TBUFF *p)
 	}
     }
     valid_tbuff(p);
+    return result;
+}
+
+/*
+ * returns the length of the data, assuming it is terminated by a trailing null which we
+ * do not want to count.
+ */
+int
+tb_length0(TBUFF *p)
+{
+    int result = (int) tb_length(p);
+
+    /* FIXME: we should have an assertion here */
+    if (result)
+	--result;
     return result;
 }
 

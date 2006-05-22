@@ -2,7 +2,7 @@
  * w32misc:  collection of unrelated, common win32 functions used by both
  *           the console and GUI flavors of the editor.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32misc.c,v 1.46 2005/12/21 00:59:05 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32misc.c,v 1.47 2006/04/21 11:53:40 tom Exp $
  */
 
 #include "estruct.h"
@@ -212,7 +212,7 @@ mk_shell_cmd_str(char *cmd, int *allocd_mem, int prepend_shc)
     char        *out_str, *cp, *shell, *shell_c = "/c";
 
     shell        = get_shell();
-    len          = strlen(shell);
+    len          = (int) strlen(shell);
     bourne_shell = (len >= 2 &&
                     toLower(shell[len - 2]) == 's' &&
                     toLower(shell[len - 1]) == 'h')
@@ -243,7 +243,7 @@ mk_shell_cmd_str(char *cmd, int *allocd_mem, int prepend_shc)
 
         if (prepend_shc)
         {
-            alloc_len = strlen(cmd) + strlen(shell) + SHELL_C_LEN + 1;
+            alloc_len = (int) (strlen(cmd) + strlen(shell) + SHELL_C_LEN + 1);
             if ((out_str = typeallocn(char, alloc_len)) == NULL)
                 return (out_str);
             *allocd_mem = TRUE;
@@ -258,9 +258,9 @@ mk_shell_cmd_str(char *cmd, int *allocd_mem, int prepend_shc)
     }
 
     /* Else apply solutions 1-2 above. */
-    alloc_len = strlen(cmd) * 2; /* worst case -- every cmd byte quoted */
+    alloc_len = (int) strlen(cmd) * 2; /* worst case -- every cmd byte quoted */
     if (prepend_shc)
-        alloc_len += strlen(shell) + SHELL_C_LEN;
+        alloc_len += (int) strlen(shell) + SHELL_C_LEN;
     alloc_len += 3;              /* terminating nul + 2 quote chars     */
     if ((out_str = typeallocn(char, alloc_len)) == NULL)
     {
@@ -349,7 +349,7 @@ w32_CreateProcess(char *cmd, int no_wait)
         {
             /* wait for shell process to exit */
 
-            (void) cwait(&rc, (int) pi.hProcess, 0);
+            (void) cwait(&rc, (CWAIT_PARAM_TYPE) pi.hProcess, 0);
         }
         (void) CloseHandle(pi.hProcess);
         (void) CloseHandle(pi.hThread);
@@ -695,7 +695,7 @@ w32_system_winvile(const char *cmd, int *pressret)
         }
         if (! no_shell)
         {
-            (void) cwait(&rc, (int) pi.hProcess, 0);
+            (void) cwait(&rc, (CWAIT_PARAM_TYPE) pi.hProcess, 0);
             restore_signals();
             if (*pressret)
             {
@@ -1035,7 +1035,7 @@ char *
 w32_wdw_title(void)
 {
     static char   *buf;
-    static size_t bufsize;
+    static DWORD  bufsize;
     int           nchars;
 
     if (! buf)

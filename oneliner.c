@@ -4,7 +4,7 @@
  *	Copyright (c) 1990, 1995-1999 by Paul Fox, except for delins(), which is
  *	Copyright (c) 1986 by University of Toronto, as noted below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/oneliner.c,v 1.108 2005/07/13 23:43:54 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/oneliner.c,v 1.109 2006/04/20 00:06:27 tom Exp $
  */
 
 #include	"estruct.h"
@@ -379,7 +379,7 @@ substline(regexp * exp, int nth_occur, int printit, int globally, int *confirmp)
 		    (void) update(TRUE);
 		    skipped = TRUE;
 		    /* so we don't match this again */
-		    DOT.o += exp->mlen;
+		    DOT.o += (C_NUM) exp->mlen;
 		    break;
 		case 'q':
 		    mlerase();
@@ -394,7 +394,7 @@ substline(regexp * exp, int nth_occur, int printit, int globally, int *confirmp)
 		yes = TRUE;
 	    }
 	    if (yes) {
-		s = delins(exp, tb_values(replacepat), tb_length(replacepat));
+		s = delins(exp, tb_values(replacepat), (int) tb_length(replacepat));
 		if (s != TRUE)
 		    returnCode(s);
 		if (!again++)
@@ -450,7 +450,7 @@ substline(regexp * exp, int nth_occur, int printit, int globally, int *confirmp)
  */
 
 static char *buf_delins;
-static UINT len_delins;
+static size_t len_delins;
 
 /*
  - delins - perform substitutions after a regexp match
@@ -492,7 +492,7 @@ delins(regexp * exp, char *sourc, int lensrc)
     (void) memcpy(buf_delins, exp->startp[0], dlength);
     buf_delins[dlength] = EOS;
 
-    if (ldelete(dlength, FALSE) != TRUE) {
+    if (ldelete((L_NUM) dlength, FALSE) != TRUE) {
 	mlforce("[Error while deleting]");
 	return FALSE;
     }
@@ -554,8 +554,8 @@ delins(regexp * exp, char *sourc, int lensrc)
 	case '&':
 	    if (exp->startp[no] != NULL && exp->endp[no] != NULL) {
 		char *cp = buf_delins;
-		long len = exp->endp[no] - exp->startp[no];
-		long adj = exp->startp[no] - exp->startp[0];
+		long len = (long) (exp->endp[no] - exp->startp[no]);
+		long adj = (long) (exp->startp[no] - exp->startp[0]);
 		cp += (size_t) adj;
 		while ((s == TRUE) && len--) {
 		    c = *cp++;

@@ -1,7 +1,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/nr-filt.l,v 1.18 2006/01/09 19:04:36 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/nr-filt.l,v 1.20 2006/05/21 19:50:19 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of NROFF
  */
@@ -41,7 +41,7 @@ write_font(char *text, int size)
 
 %}
 
-COMMAND		^(\.[[:blank:]]*[[:alnum:]]+([ \t][^\n]+)?|'\\\"[^\n]+)
+COMMAND		^(\.[[:blank:]]*[[:alnum:]]+([ \t][^\r\n]+)?|'\\\"[^\r\n]+)
 COMMENT		^\.[[:blank:]]*\\\"
 
 ENIT		\\[e *\n\\+-]
@@ -52,18 +52,19 @@ FONT		\\f[[:upper:]1-4]
 
 {COMMAND}			{ write_cmd(yytext, yyleng); }
 
-{FONT}([^\\\n]|{ENIT})+(\\f[^PR1]|\n)	{ WriteToken(Action_attr); /* err? */ }
-{FONT}([^\\\n]|{ENIT})+\\f[PR1]	{ write_font(yytext, yyleng); }
+{FONT}([^\\\r\n]|{ENIT})+(\\f[^PR1]|\n)	{ WriteToken(Action_attr); /* err? */ }
+{FONT}([^\\\r\n]|{ENIT})+\\f[PR1]	{ write_font(yytext, yyleng); }
 {ENIT}				{ WriteToken(Ident2_attr); }
 \\[s][+-]?[[:digit:]]+		{ WriteToken(Ident2_attr); }
 
-{COMMENT}[^\n]*			{ WriteToken(Comment_attr); }
+{COMMENT}[^\r\n]*		{ WriteToken(Comment_attr); }
 
 %%
 
 static void
 init_filter(int before GCC_UNUSED)
 {
+    (void) before;
 }
 
 static void

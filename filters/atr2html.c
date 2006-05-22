@@ -1,7 +1,7 @@
 /*
  * Convert attributed text to html.
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/atr2html.c,v 1.2 2003/05/07 20:32:30 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/atr2html.c,v 1.3 2006/05/21 19:47:02 tom Exp $
  */
 #include <unfilter.h>
 
@@ -55,6 +55,9 @@ void
 write_unfilter(FILE *dst, int ch, int attrib GCC_UNUSED)
 {
     char *alias = 0;
+
+    (void) attrib;
+
     switch (ch) {
     case '<':
 	alias = "&lt;";

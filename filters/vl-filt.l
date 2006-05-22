@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/vl-filt.l,v 1.11 2005/09/04 23:17:58 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/vl-filt.l,v 1.13 2006/05/21 19:50:48 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of VeriLog
  * program.
@@ -65,7 +65,7 @@ DSTRING		\"(\\.|[^"\\])*\"
 
 <CODE>{INTEGER}		{ WriteToken(Number_attr); /* '_' should be embedded */ }
 
-<CODE>"//"[^\n]*	{ WriteToken(Comment_attr); }
+<CODE>"//"[^\r\n]*	{ WriteToken(Comment_attr); }
 <CODE>"/*"		{ WriteToken(Comment_attr); BEGIN(COMMENT); }
 <COMMENT>[^*]*		{ WriteToken(Comment_attr); }
 <COMMENT>"*"+[^*/]*	{ WriteToken(Comment_attr); }
@@ -93,6 +93,7 @@ do_define(char *string)
 static void
 init_filter(int before GCC_UNUSED)
 {
+    (void) before;
 }
 
 static void

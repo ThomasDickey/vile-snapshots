@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/yaccfilt.l,v 1.22 2005/09/04 21:15:43 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/yaccfilt.l,v 1.24 2006/05/21 19:50:48 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of YACC program.
  */
@@ -40,7 +40,7 @@ static void set_state(void);
 
 SPACE		[ \t]
 
-DIRECTIVE	^%[^ \t\n]+
+DIRECTIVE	^%[^ \t\r\n]+
 
 IDENT		[[:alpha:]_][[:alnum:]_]*
 QIDENT		\$([[:digit:]$]|\<{IDENT}\>)
@@ -51,7 +51,7 @@ SSTRING		\'(\\.|[^'\\])*\'
 DSTRING		\"(\\.|[^"\\])*\"
 STRINGS		({SSTRING}|{DSTRING})
 
-PATTERN		(\\.|\[(\\.|.)*\]|[^ \t\n])+
+PATTERN		(\\.|\[(\\.|.)*\]|[^ \t\r\n])+
 
 %%
 
@@ -141,6 +141,7 @@ set_state(void)
 static void
 init_filter(int before GCC_UNUSED)
 {
+    (void) before;
 }
 
 static void

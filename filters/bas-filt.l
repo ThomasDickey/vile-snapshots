@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/bas-filt.l,v 1.10 2005/09/05 11:04:44 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/bas-filt.l,v 1.12 2006/05/21 19:50:19 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Basic
  * input text.
@@ -54,9 +54,9 @@ NUMBER		{INTEGER}|{REAL}|{UUID}|({INTEGER}{HEX}|("&[Hh]"|\$){HEX}){TYPES}
 <NORMAL>{DATE}			|
 <NORMAL>{STRING}		{ WriteToken(String_attr); }
 <NORMAL>{NUMBER}		{ WriteToken(Number_attr); }
-<NORMAL>"'"[^\n]*		{ WriteToken(Comment_attr); }
+<NORMAL>"'"[^\r\n]*		{ WriteToken(Comment_attr); }
 
-<COMMENT>[^\n]*			{ WriteToken(Comment_attr); }
+<COMMENT>[^\r\n]*		{ WriteToken(Comment_attr); }
 <COMMENT>[\n]			{ ECHO; BEGIN(NORMAL); }
 
 %%
@@ -84,6 +84,7 @@ is_hex(char *s)
 static void
 init_filter(int before GCC_UNUSED)
 {
+    (void) before;
 }
 
 static void

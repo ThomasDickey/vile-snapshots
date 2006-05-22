@@ -3,7 +3,7 @@
  * and mark.  Some functions are commands.  Some functions are just for
  * internal use.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/region.c,v 1.132 2005/07/14 00:36:03 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/region.c,v 1.133 2006/04/19 23:55:02 tom Exp $
  *
  */
 
@@ -290,7 +290,7 @@ open_hole_in_line(void *flagp, int l, int r)
     }
     DOT.o = l;
     if (string) {
-	len = strlen(string);
+	len = (int) strlen(string);
 	if (len < r - l)
 	    len = r - l;
     } else {
@@ -422,12 +422,12 @@ shiftlregion(void)
  */
 /*ARGSUSED*/
 int
-detabline(void *flagp GCC_UNUSED, int l GCC_UNUSED, int r GCC_UNUSED)
+detabline(void *flagp, int l GCC_UNUSED, int r GCC_UNUSED)
 {
     int s;
     int c;
     int ocol;
-    long leadingonly = (long) flagp;
+    int leadingonly = (flagp != 0);
     LINE *lp = DOT.l;
 
     if (llength(lp) == 0)
@@ -483,10 +483,10 @@ l_detab_region(void)
  */
 /*ARGSUSED*/
 int
-entabline(void *flagp GCC_UNUSED, int l GCC_UNUSED, int r GCC_UNUSED)
+entabline(void *flagp, int l GCC_UNUSED, int r GCC_UNUSED)
 {
     int savecol;
-    long leadingonly = (long) flagp;
+    int leadingonly = (flagp != 0);
     LINE *lp = DOT.l;
     C_NUM ocol, ncol;
     C_NUM ooff, noff;
@@ -663,7 +663,7 @@ blankline(void *flagp, int l, int r)
 	/* so there's nothing beyond the rect, so insert at
 	   most r-l chars of the string, or nothing */
 	if (string) {
-	    len = strlen(string);
+	    len = (int) strlen(string);
 	    if (len > r - l)
 		len = r - l;
 	} else {
@@ -1263,7 +1263,7 @@ encode_region(void)
 		    regionshape = EXACT;
 		    deltoeol(TRUE, 1);
 		    DOT.o = b_left_margin(curbp);
-		    lstrinsert(tb_values(text), tb_length(text));
+		    lstrinsert(tb_values(text), (int) tb_length(text));
 
 		    forwbline(FALSE, 1);
 		    gotobol(FALSE, 1);

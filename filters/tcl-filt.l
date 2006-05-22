@@ -4,7 +4,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/tcl-filt.l,v 1.16 2005/09/05 01:41:49 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/tcl-filt.l,v 1.18 2006/05/21 19:50:48 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of TCL/TK script.
  *
@@ -34,8 +34,8 @@ static char *String_attr;
 
 SPACE		[ \t]
 
-SSTRING		\'([^\\'\n]|\\[^'\n])*\'
-DSTRING		\"([^"\n]|\\[^\n])*[\"]?
+SSTRING		\'([^\\'\r\n]|\\[^'\r\n])*\'
+DSTRING		\"([^"\r\n]|\\[^\r\n])*[\"]?
 STRINGS		({SSTRING}|{DSTRING})
 
 ACTION		([\.`]|\\\n)
@@ -66,7 +66,7 @@ NONUMBER	{SIGN}?({NODECIMAL}|{NOOCTAL}|{NOHEXADECIMAL}|{NOREAL})
 [{}]			{ WriteToken(Braces_attr); }
 {IDENT}			{ WriteToken(keyword_attr(yytext)); BEGIN(ARGS); }
 
-<VERB>"#"([^\n]|\\\n)*$	{ WriteToken(Comment_attr); }
+<VERB>"#"([^\r\n]|\\\n)*$	{ WriteToken(Comment_attr); }
 <ARGS>[;\n]		{ ECHO; BEGIN(VERB); }
 
 {ACTION}		{ WriteToken(Action_attr); }
@@ -90,6 +90,7 @@ NONUMBER	{SIGN}?({NODECIMAL}|{NOOCTAL}|{NOHEXADECIMAL}|{NOREAL})
 static void
 init_filter(int before GCC_UNUSED)
 {
+    (void) before;
 }
 
 static void

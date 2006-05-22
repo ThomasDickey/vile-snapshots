@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/sql-filt.l,v 1.28 2005/12/23 21:02:45 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/sql-filt.l,v 1.31 2006/05/21 19:50:48 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of SQL script
  * - T.Dickey
@@ -46,8 +46,8 @@ SIGN		[+-]
 REAL		{INTEGER}?(\.{INTEGER}([eE]{SIGN}?{INTEGER})?)
 NUMBER		{SIGN}?({INTEGER}|{REAL})({UNITS})?
 
-SSTRING		\'([^\']|\'\')*\'
-DSTRING		\"([^"])*\"
+SSTRING		\'([^\'\n]|\'\')*\'
+DSTRING		\"([^"\n])*\"
 STRING		({SSTRING}|{DSTRING})
 
 IDENT		[%]?[[:alpha:]][[:alnum:]_$#]*
@@ -140,8 +140,8 @@ HOSTVAR		":"{IDENT}
 			}
 <LEAD,MORE,BODY>{SPACE}	{ ECHO; }
 
-<LEAD,MORE,BODY>--[^\n]* { WriteToken(Comment_attr); new_state(INLINE_CMT); }
-<INLINE_CMT>[^\n]*	{ WriteToken(Comment_attr); }
+<LEAD,MORE,BODY>--[^\r\n]* { WriteToken(Comment_attr); new_state(INLINE_CMT); }
+<INLINE_CMT>[^\r\n]*	{ WriteToken(Comment_attr); }
 <INLINE_CMT>\n		{ ECHO; old_state(); }
 
 <LEAD,MORE,BODY>"/*"	{ WriteToken(Comment_attr);
@@ -152,21 +152,21 @@ HOSTVAR		":"{IDENT}
 			  WriteToken(Comment_attr);
 			  old_state();
 			}
-<COMMENT0>[^\n]		{ WriteToken(Comment_attr); }
+<COMMENT0>[^\r\n]	{ WriteToken(Comment_attr); }
 <COMMENT0>\n		{
 			  ECHO;
 			  set_state(COMMENT);
 			}
 
-<COMMENT>^[^\n]*"*/"	{ WriteToken(Comment_attr);
+<COMMENT>^[^\r\n]*"*/"	{ WriteToken(Comment_attr);
 			  old_state();
 			}
-<COMMENT>^[^\n]*	{ WriteToken(Comment_attr); }
+<COMMENT>^[^\r\n]*	{ WriteToken(Comment_attr); }
 <COMMENT>\n		{ ECHO; }
 
 <LEAD,MORE>{LABEL}	{ WriteToken(Action_attr); }
 
-<LEAD,MORE>{ACTION}[^=][^\n]* {
+<LEAD,MORE>{ACTION}[^=][^\r\n]* {
 			    WriteToken(Action_attr);
 			    new_state(ONE_LINE);
 			    next_line = LEAD;
@@ -175,7 +175,7 @@ HOSTVAR		":"{IDENT}
 			    WriteToken(Action_attr);
 			    new_state(SERVER);
 			}
-<ONE_LINE>[^\n]*	{ WriteToken(String_attr);
+<ONE_LINE>[^\r\n]*	{ WriteToken(String_attr);
 			  if (yyleng != 0 && yytext[yyleng - 1] == '-')
 			  	next_line = ONE_LINE;
 			    else
@@ -193,6 +193,7 @@ HOSTVAR		":"{IDENT}
 static void
 init_filter(int before GCC_UNUSED)
 {
+    (void) before;
 }
 
 static void

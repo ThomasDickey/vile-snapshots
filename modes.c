@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.314 2006/02/15 21:09:04 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.317 2006/05/21 19:24:48 tom Exp $
  *
  */
 
@@ -257,7 +257,7 @@ string_val(const struct VALNAMES *names, struct VAL *values)
 /*
  * Returns the formatted length of a string value.
  */
-static int
+static size_t
 size_val(const struct VALNAMES *names, struct VAL *values)
 {
     return strlen(ModeName(names->name))
@@ -896,11 +896,11 @@ fsm_size(const FSM_CHOICES * list)
 const FSM_CHOICES *
 name_to_choices(const char *name)
 {
-    size_t i;
+    int i;
     const FSM_CHOICES *result = 0;
 
     fsm_idx = -1;
-    for (i = 1; i < TABLESIZE(fsm_tbl); i++) {
+    for (i = 1; i < (int) TABLESIZE(fsm_tbl); i++) {
 	if (strcmp(fsm_tbl[i].mode_name, name) == 0) {
 	    fsm_idx = i;
 	    result = fsm_tbl[i].choices;
@@ -1266,8 +1266,11 @@ mode_complete(DONE_ARGS)
 
 int
 /*ARGSUSED*/
-mode_eol(const char *buffer GCC_UNUSED, unsigned cpos GCC_UNUSED, int c, int eolchar)
+mode_eol(EOL_ARGS)
 {
+    (void) buffer;
+    (void) cpos;
+
     return (c == ' ' || c == eolchar);
 }
 
@@ -1949,7 +1952,7 @@ set_record_sep(BUFFER *bp, RECORD_SEP code)
 	break;
     }
     (bp)->b_recordsep_str = recordsep;
-    (bp)->b_recordsep_len = strlen(get_record_sep(bp));
+    (bp)->b_recordsep_len = (int) strlen(get_record_sep(bp));
 }
 
 	/* Change the record separator */
@@ -2200,7 +2203,7 @@ count_modes(void)
 	} else {
 	    n = 0;
 	}
-	sizeof_my_mode_list = n;
+	sizeof_my_mode_list = (int) n;
     }
     return sizeof_my_mode_list;
 }
@@ -2280,7 +2283,7 @@ ok_submode(const char *name)
 
 /* format the name of a majormode's qualifier */
 static char *
-per_major(char *dst, const char *majr, int code, int brief)
+per_major(char *dst, const char *majr, size_t code, int brief)
 {
     if (brief) {
 	if (!strcmp(m_valnames[code].shortname, "X")) {
@@ -2502,7 +2505,7 @@ put_majormode_after(unsigned j, char *s)
 	       my_majormodes[majormodes_order[j]].shortname,
 	       s));
 
-	for (k = count_majormodes() - 1;
+	for (k = (int) count_majormodes() - 1;
 	     k >= 0 && (kk = majormodes_order[k]) >= 0;
 	     k--) {
 	    t = my_majormodes[kk].shortname;
@@ -2656,7 +2659,7 @@ found_per_submode(const char *majr, int code)
     init_my_mode_list();
 
     (void) per_submode(temp, majr, code, TRUE);
-    return search_mode_list(temp, count_modes(), FALSE) >= 0;
+    return search_mode_list(temp, (int) count_modes(), FALSE) >= 0;
 }
 
 /*
@@ -2669,8 +2672,8 @@ insert_per_major(size_t count, const char *name)
 	size_t j, k;
 	int found;
 
-	TRACE(("insert_per_major %ld %s\n", (long) count, name));
-	if ((found = search_mode_list(name, count, TRUE)) >= 0) {
+	TRACE(("insert_per_major %lu %s\n", (ULONG) count, name));
+	if ((found = search_mode_list(name, (int) count, TRUE)) >= 0) {
 	    char *newname = strmalloc(name);
 
 	    if (newname != 0) {
@@ -2697,7 +2700,7 @@ remove_per_major(size_t count, const char *name)
 	int found;
 	size_t j, k;
 
-	if ((found = search_mode_list(name, count, FALSE)) >= 0) {
+	if ((found = search_mode_list(name, (int) count, FALSE)) >= 0) {
 	    j = found;
 	    if (my_mode_list != all_modes
 		&& !in_all_modes(my_mode_list[j])) {
@@ -3266,10 +3269,10 @@ init_my_mode_list(void)
     }
 }
 
-static int
-extend_mode_list(int increment)
+static size_t
+extend_mode_list(size_t increment)
 {
-    int j, k;
+    size_t j, k;
 
     beginDisplay();
 
@@ -3404,7 +3407,7 @@ makemajorlist(int local, void *ptr GCC_UNUSED)
     MINORMODE *vals;
 
     if (my_majormodes != 0) {
-	int count = count_majormodes();
+	unsigned count = (unsigned) count_majormodes();
 	if (show_active_majormodes(0))
 	    bputc('\n');
 	for (j = 0; my_majormodes[j].shortname != 0; j++) {
@@ -3415,7 +3418,7 @@ makemajorlist(int local, void *ptr GCC_UNUSED)
 	    bprintf("--- \"%s\" majormode settings ",
 		    my_majormodes[j].shortname);
 	    bpadc('-', term.cols - 12 - DOT.o);
-	    bprintf("(%d:%d)",
+	    bprintf("(%d:%u)",
 		    find_majormode_order(j) + 1,
 		    count);
 	    bpadc('-', term.cols - DOT.o);
@@ -3665,7 +3668,8 @@ do_a_submode(int defining)
     int status;
     MAJORMODE *ptr;
     VALARGS args;
-    int j, k;
+    int j;
+    size_t k;
     int qualifier = FALSE;
     char temp[NSTRING];
     const char *rp;

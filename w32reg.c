@@ -2,7 +2,7 @@
  * w32reg.c:  Winvile OLE registration code (currently only used for OLE
  *            automation).
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32reg.c,v 1.9 2006/01/05 00:06:00 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32reg.c,v 1.10 2006/04/19 22:51:01 tom Exp $
  */
 
 #include "estruct.h"
@@ -280,7 +280,7 @@ oleauto_register(OLEAUTO_OPTIONS *opts)
         strcat((char *) value, " -invisible");
     if (opts->multiple)
         strcat((char *) value, " -multiple");
-    val_len = strlen((char *) value);
+    val_len = (int) strlen((char *) value);
     if (opts->rows)
     {
         val_len += sprintf(((char *) value) + val_len,
@@ -387,7 +387,7 @@ oleauto_register(OLEAUTO_OPTIONS *opts)
     /* -------------------------- Step 4 --------------------------- */
 
     strcat(key, "\\9\\win32");
-    val_len = strlen(strcpy((char *) value, editor_path));
+    val_len = (int) strlen(strcpy((char *) value, editor_path));
     if ((rc = RegCreateKeyEx(HKEY_CLASSES_ROOT,
                              key,
                              0,

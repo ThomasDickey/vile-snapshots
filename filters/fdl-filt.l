@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/fdl-filt.l,v 1.10 2005/09/04 21:10:12 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/fdl-filt.l,v 1.12 2006/05/21 19:50:19 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of fdl
  * input text.  This treats all of the text area as quoted, except for
@@ -25,7 +25,7 @@ static void handle_keyword(char *name);
 %}
 
 BLANK		[ \t]*
-REMAINDER	[^\n]*
+REMAINDER	[^\r\n]*
 
 KEYWORD		$[[:alpha:]_][[:alnum:]_]*
 
@@ -47,7 +47,7 @@ KEYWORD		$[[:alpha:]_][[:alnum:]_]*
 			  BEGIN(INITIAL); }
 
 <TEXT>[_]+		{ WriteToken(Ident2_attr); }
-<TEXT>[^$_\n]+		{ WriteToken(String_attr); }
+<TEXT>[^$_\r\n]+	{ WriteToken(String_attr); }
 
 %%
 
@@ -69,6 +69,7 @@ handle_keyword(char *name)
 static void
 init_filter(int before GCC_UNUSED)
 {
+    (void) before;
 }
 
 static void

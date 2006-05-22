@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/rc-filt.l,v 1.6 2005/09/04 21:15:43 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/rc-filt.l,v 1.8 2006/05/21 19:50:19 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Windows
  * resource files.
@@ -50,13 +50,14 @@ NUMBER		({DECIMAL}|{OCTAL}|{HEXADECIMAL})[L]?
 {STRING}		{ WriteToken(String_attr); }
 {NUMBER}		{ WriteToken(Number_attr); }
 
-"//"[^\n]*		{ WriteToken(Comment_attr); }
+"//"[^\r\n]*		{ WriteToken(Comment_attr); }
 
 %%
 
 static void
 init_filter(int before GCC_UNUSED)
 {
+    (void) before;
 }
 
 static void

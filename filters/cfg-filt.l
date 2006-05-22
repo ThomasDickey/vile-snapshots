@@ -1,7 +1,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/cfg-filt.l,v 1.12 2006/04/02 16:49:05 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/cfg-filt.l,v 1.14 2006/05/21 19:50:19 tom Exp $
  *
  * Filter to add vile "attribution" sequences to an ordinary Lynx config-file
  */
@@ -31,7 +31,7 @@ mixedcase(const char *name)
 
 %}
 
-COMMENT		^[ \t]*#[^\n]*\n
+COMMENT		^[ \t]*#[^\r\n]*\n
 
 KEYWORD		([[:alpha:]_][[:alnum:]_.]*|[[:upper:]][+/&][[:upper:]])
 
@@ -50,7 +50,7 @@ URL		[[:alpha:]]+"://"[[:alnum:]#%&+\,.\/?;@_=~-]+
 
 %%
 
-^\.[^\n]*$	{ WriteToken(String_attr); }
+^\.[^\r\n]*$	{ WriteToken(String_attr); }
 
 {KEYWORD}	{ WriteToken(mixedcase(yytext) ? "" : Keyword_attr); }
 
@@ -68,6 +68,7 @@ URL		[[:alpha:]]+"://"[[:alnum:]#%&+\,.\/?;@_=~-]+
 static void
 init_filter(int before GCC_UNUSED)
 {
+    (void) before;
 }
 
 static void

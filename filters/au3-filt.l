@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/au3-filt.l,v 1.4 2005/09/04 21:10:12 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/au3-filt.l,v 1.6 2006/05/21 19:50:19 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of AutoIt
  * input text.
@@ -31,15 +31,15 @@ REAL		[-+]?([[:digit:]]*\.[[:digit:]]+)([eE][+-]?[[:digit:]]+)?
 
 IDENT		([$@])?[[:alpha:]_][[:alnum:]_]*
 
-SSTRING		\'([^'\n]|'')*\'
-DSTRING		\"([^"\n]|"")*\"
+SSTRING		\'([^'\r\n]|'')*\'
+DSTRING		\"([^"\r\n]|"")*\"
 STRING		{SSTRING}|{DSTRING}
 
 NUMBER		{HEX}|{INTEGER}|{REAL}
 
 %%
 
-<NORMAL,IFCMT>^#[^\n]*$		{ char *text = lowercase_of(yytext);
+<NORMAL,IFCMT>^#[^\r\n]*$	{ char *text = lowercase_of(yytext);
 				  WriteToken(Prepro_attr);
 				  if (!strncmp(text, "#comments-start", 15)
 				   || !strncmp(text, "#cs", 3)) {
@@ -56,7 +56,7 @@ NUMBER		{HEX}|{INTEGER}|{REAL}
 				    BEGIN(NORMAL);
 				  }
 				}
-<IFCMT>^[^\n]*$			{ WriteToken(Comment_attr); }
+<IFCMT>^[^\r\n]*$		{ WriteToken(Comment_attr); }
 <IFCMT>.			{ ECHO; }
 
 <NORMAL>;			{ WriteToken(Comment_attr); BEGIN(COMMENT); }
@@ -74,9 +74,9 @@ NUMBER		{HEX}|{INTEGER}|{REAL}
 				}
 <NORMAL>{STRING}		{ WriteToken(String_attr); }
 <NORMAL>{NUMBER}		{ WriteToken(Number_attr); }
-<NORMAL>"'"[^\n]*		{ WriteToken(Comment_attr); }
+<NORMAL>"'"[^\r\n]*		{ WriteToken(Comment_attr); }
 
-<COMMENT>[^\n]*			{ WriteToken(Comment_attr); }
+<COMMENT>[^\r\n]*		{ WriteToken(Comment_attr); }
 <COMMENT>[\n]			{ ECHO; BEGIN(NORMAL); }
 
 %%
@@ -84,6 +84,7 @@ NUMBER		{HEX}|{INTEGER}|{REAL}
 static void
 init_filter(int before GCC_UNUSED)
 {
+    (void) before;
 }
 
 static void

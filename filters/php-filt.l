@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/php-filt.l,v 1.4 2005/09/04 20:37:43 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/php-filt.l,v 1.6 2006/05/21 19:50:19 tom Exp $
  *
  * Filter to add vile "attribution" sequences to PHP scripts.
  * - T.Dickey
@@ -48,7 +48,7 @@ NUMBER		{SIGN}?({DECIMAL}|{OCTAL}|{HEXADECIMAL}|{REAL})
 <COMMENT>"*"+[^*/]*	{ WriteToken(Comment_attr); }
 <COMMENT>"*"+"/"	{ WriteToken(Comment_attr); BEGIN(CODE); }
 
-<CODE>"//"[^\n]*	{ WriteToken(Comment_attr); }
+<CODE>"//"[^\r\n]*	{ WriteToken(Comment_attr); }
 
 <CODE>{STRINGS}		{ WriteToken(String_attr); }
 
@@ -59,6 +59,7 @@ NUMBER		{SIGN}?({DECIMAL}|{OCTAL}|{HEXADECIMAL}|{REAL})
 static void
 init_filter(int before GCC_UNUSED)
 {
+    (void) before;
 }
 
 static void
