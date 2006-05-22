@@ -1,18 +1,21 @@
 /*
  * Convert attributed text to something like nroff output.
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/atr2text.c,v 1.2 2003/05/07 19:47:34 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/atr2text.c,v 1.3 2006/05/21 19:42:45 tom Exp $
  */
 #include <unfilter.h>
 
 void
 begin_unfilter(FILE *dst GCC_UNUSED)
 {
+    (void) dst;
 }
 
 void
 markup_unfilter(FILE *dst GCC_UNUSED, int attrib GCC_UNUSED)
 {
+    (void) dst;
+    (void) attrib;
 }
 
 void
@@ -33,4 +36,5 @@ write_unfilter(FILE *dst, int ch, int attrib)
 void
 end_unfilter(FILE *dst GCC_UNUSED)
 {
+    (void) dst;
 }

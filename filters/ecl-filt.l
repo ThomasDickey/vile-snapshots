@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/ecl-filt.l,v 1.5 2005/09/05 11:12:23 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/ecl-filt.l,v 1.6 2006/05/21 19:50:19 tom Exp $
  *
  * Filter to add vile "attribution" sequences to Prolog/ECLiPSe code
  *
@@ -55,6 +55,7 @@ STRINGS		({SSTRING}|{DSTRING})
 static void
 init_filter(int before GCC_UNUSED)
 {
+    (void) before;
 }
 
 static void

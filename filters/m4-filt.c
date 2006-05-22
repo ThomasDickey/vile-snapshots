@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/m4-filt.c,v 1.25 2005/01/19 22:07:00 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/m4-filt.c,v 1.27 2006/05/21 19:47:35 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of m4
  * input text.  This is in C rather than LEX because M4's quoting delimiters
@@ -349,27 +349,35 @@ write_literal(char *s, int *literal)
     static unsigned have;
     static unsigned used;
 
-    unsigned c_length = has_endofliteral(s, literal);
-    unsigned need = c_length;
+    char *result = s;
 
-    if (*literal == 0) {
-	if (need > rightquote.used) {
-	    need -= rightquote.used;
+    if (s != 0) {
+	unsigned c_length = has_endofliteral(s, literal);
+	unsigned need = c_length;
+
+	if (*literal == 0) {
+	    if (need > rightquote.used) {
+		need -= rightquote.used;
+		buffer = do_alloc(buffer, used + need + 1, &have);
+		strncpy(buffer + used, s, need);
+		used += need;
+	    }
+	    if (used) {
+		flt_puts(buffer, used, Literal_attr);
+		used = 0;
+	    }
+	    write_quote(rightquote);
+	} else {
 	    buffer = do_alloc(buffer, used + need + 1, &have);
 	    strncpy(buffer + used, s, need);
 	    used += need;
 	}
-	if (used) {
-	    flt_puts(buffer, used, Literal_attr);
-	    used = 0;
-	}
-	write_quote(rightquote);
-    } else {
-	buffer = do_alloc(buffer, used + need + 1, &have);
-	strncpy(buffer + used, s, need);
-	used += need;
+	result += c_length;
+    } else if (used) {
+	flt_puts(buffer, used, Error_attr);
+	used = 0;
     }
-    return s + c_length;
+    return result;
 }
 
 static char *
@@ -400,6 +408,8 @@ do_filter(FILE *input GCC_UNUSED)
     char *s;
     char **args;
     int literal, comment, parens;
+
+    (void) input;
 
     new_quote(&leftquote, class_attr(NAME_L_QUOTE));
     new_quote(&rightquote, class_attr(NAME_R_QUOTE));
@@ -433,7 +443,7 @@ do_filter(FILE *input GCC_UNUSED)
 		literal++;
 		s = write_literal(s, &literal);
 	    } else if (isQuote(s, rightquote)) {
-		flt_error("unexpected quote");
+		flt_error("unexpected right-quote");
 		wrong_quote(rightquote);
 		s += rightquote.used;
 		if (--literal > 0)
@@ -462,5 +472,9 @@ do_filter(FILE *input GCC_UNUSED)
 		flt_putc(*s++);
 	    }
 	}
+    }
+    if (literal) {
+	flt_error("missing right-quote");
+	(void) write_literal(0, &literal);
     }
 }

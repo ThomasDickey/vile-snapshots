@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/as-filt.l,v 1.4 2005/09/04 21:10:12 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/as-filt.l,v 1.6 2006/05/21 19:50:19 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of assembler files.
  */
@@ -41,7 +41,7 @@ FORMAT		"%"[.*[:digit:]l#+-]*[cdeEfFgGisuxX]
 <NORMAL>"$"		{ WriteToken(Prepro_attr); }
 <NORMAL>{IDENT}		{ WriteToken(ci_keyword_attr(yytext)); }
 <NORMAL>"%"{IDENT}	{ WriteToken(expect_attr(yytext)); }
-<NORMAL>";"[^\n]*	{ WriteToken(Comment_attr); }
+<NORMAL>";"[^\r\n]*	{ WriteToken(Comment_attr); }
 <NORMAL>{INTEGER}	{ WriteToken(Number_attr); }
 
 <NORMAL>"^#.*"		{ WriteToken(Prepro_attr); }
@@ -52,7 +52,7 @@ FORMAT		"%"[.*[:digit:]l#+-]*[cdeEfFgGisuxX]
 
 <QUOTED>\\.		{ flt_bfr_embed(yytext, yyleng, Action_attr); }
 <QUOTED>{FORMAT}	{ flt_bfr_embed(yytext, yyleng, Number_attr); }
-<QUOTED>[^%\n"\\]+	{ flt_bfr_append(yytext, yyleng); }
+<QUOTED>[^%\r\n"\\]+	{ flt_bfr_append(yytext, yyleng); }
 <QUOTED>"%%"		{ flt_bfr_append(yytext, yyleng); }
 <QUOTED>"%"		{ flt_bfr_embed(yytext, yyleng, Error_attr); }
 <QUOTED>[\n]		{ flt_bfr_append(yytext, yyleng); }
@@ -79,6 +79,7 @@ expect_attr(char *name)
 static void
 init_filter(int before GCC_UNUSED)
 {
+    (void) before;
 }
 
 static void

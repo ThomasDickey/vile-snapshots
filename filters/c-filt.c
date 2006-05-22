@@ -6,7 +6,7 @@
  *		string literal ("Literal") support --  ben stoltz
  *		factor-out hashing and file I/O - tom dickey
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/c-filt.c,v 1.73 2004/12/10 00:21:07 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/c-filt.c,v 1.74 2006/05/21 19:43:05 tom Exp $
  *
  * Usage: refer to vile.hlp and doc/filters.doc .
  *
@@ -438,6 +438,7 @@ parse_prepro(char *s, int *literal)
 static void
 init_filter(int before GCC_UNUSED)
 {
+    (void) before;
 }
 
 static void
@@ -454,6 +455,8 @@ do_filter(FILE *input GCC_UNUSED)
     int was_eql;
     int was_esc;
     unsigned len;
+
+    (void) input;
 
     Comment_attr = class_attr(NAME_COMMENT);
     Error_attr = class_attr(NAME_ERROR);

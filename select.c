@@ -18,7 +18,7 @@
  * transferring the selection are not dealt with in this file.  Procedures
  * for dealing with the representation are maintained in this file.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.158 2005/07/14 00:07:09 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.161 2006/05/21 00:22:10 cmorgan Exp $
  *
  */
 
@@ -448,6 +448,11 @@ sel_yank(int reg)
 	regionshape = selregion.ar_shape;
 	yankregion();
 	haveregion = NULL;
+
+#ifdef GMDCBRD_ECHO
+	if (global_g_val(GMDCBRD_ECHO))
+	    cbrdcpy_unnamed(FALSE, FALSE);
+#endif
 
 	pop_fake_win(save_wp, save_bp);
 
@@ -1501,13 +1506,13 @@ setup_region(void)
  * Set videoattribute and hypercmd as side-effects.
  */
 int
-decode_attribute(char *text, int length, int offset, int *countp)
+decode_attribute(char *text, size_t length, size_t offset, int *countp)
 {
     int c;			/* current char during scan */
     int count = 0;
     int found;
 #if OPT_HYPERTEXT
-    int save_offset;
+    size_t save_offset;
 #endif
 
     while (text[offset] == CONTROL_A) {
@@ -1589,7 +1594,7 @@ decode_attribute(char *text, int length, int offset, int *countp)
 	    break;
     }
     *countp = count;
-    return offset;
+    return (int) offset;
 }
 
 /*
@@ -1711,9 +1716,9 @@ attribute_from_filter(void)
 {
     LINE *pastline;
     int skip;
-    int nbytes;
+    size_t nbytes;
+    size_t n;
     int done;
-    int n;
     int result = TRUE;
     int drained = FALSE;
 
@@ -1919,7 +1924,7 @@ lattr_shift(BUFFER *bp GCC_UNUSED, LINE *lp, int doto, int shift)
 	lap = lp->l_attrs;
 	if (shift > 0) {
 	    int f, t, len;
-	    len = strlen((char *) lap);
+	    len = (int) strlen((char *) lap);
 	    t = len - 1;
 	    if (t > 0) {
 		for (f = t; f >= doto && f > t - shift; f--) {
@@ -2026,7 +2031,7 @@ add_line_attrib(BUFFER *bp, REGION * rp, REGIONSHAPE rs, VIDEO_ATTR vattr,
     last = rp->r_end.o;
 
     if (lp->l_attrs != NULL) {
-	int len = strlen((char *) (lp->l_attrs));
+	int len = (int) strlen((char *) (lp->l_attrs));
 	/* Make sure the line attribute is long enough */
 	if (len < rp->r_end.o) {
 	    last = rp->r_end.o;

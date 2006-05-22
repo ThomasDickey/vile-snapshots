@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.416 2006/03/14 23:54:16 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.418 2006/04/25 20:18:04 tom Exp $
  *
  */
 
@@ -105,7 +105,7 @@ dfputsn(OutFunc outfunc, const char *s, int width, int limit)
     int l = 0;
 
     if (s != 0) {
-	int length = strlen(s);
+	int length = (int) strlen(s);
 
 	if (width < 0)
 	    width = length;
@@ -590,11 +590,11 @@ vtlistc(int c)
 }
 
 static void
-vtputsn(const char *s, int n)
+vtputsn(const char *s, size_t n)
 {
     int c;
     if (s != 0) {
-	while (n-- > 0 && (c = *s++) != EOS)
+	while (n-- != 0 && (c = *s++) != EOS)
 	    vtputc(c);
     }
 }
@@ -634,7 +634,7 @@ vtset(LINE *lp, WINDOW *wp)
 	char temp[NU_WIDTH + 2];
 
 	vtcol = 0;		/* make sure we always see line numbers */
-	vtputsn(right_num(temp, NU_WIDTH - NU_GUTTER, (int) line),
+	vtputsn(right_num(temp, NU_WIDTH - NU_GUTTER, line),
 		NU_WIDTH - NU_GUTTER);
 	vtputsn("  ", NU_GUTTER);
 	horscroll = skip - vtcol;
@@ -1311,7 +1311,7 @@ kbd_flush(void)
 				 : 0),
 		   term.cols);
 	if (my_overlay[0] != EOS) {
-	    int n = term.cols - strlen(my_overlay) - 1;
+	    int n = term.cols - (int) strlen(my_overlay) - 1;
 	    if (n > 0) {
 		(void) memcpy(&vscreen[row]->v_text[n],
 			      my_overlay,
@@ -2888,7 +2888,7 @@ special_formatter(TBUFF **result, const char *fs, WINDOW *wp)
     tb_bappend(result, left_ms, strlen(left_ms));
 
     if (tb_values(*result) != 0 && ((int) tb_length(*result) < term.cols)
-	&& (right_len = strlen(right_ms)) != 0) {
+	&& (right_len = (int) strlen(right_ms)) != 0) {
 	for (n = term.cols - (int) tb_length(*result) - right_len;
 	     n > 0;
 	     n--)
@@ -2917,7 +2917,7 @@ special_formatter(TBUFF **result, const char *fs, WINDOW *wp)
 	col = 80 - left;
 
 	if ((n > 80) && (col >= 0)) {
-	    for (n = tb_length(*result); n < col; n++)
+	    for (n = (int) tb_length(*result); n < col; n++)
 		tb_append(result, lchar);
 	    if ((ss = tb_values(*result)) != 0
 		&& ss[col] == lchar) {
@@ -3039,7 +3039,8 @@ update_modeline(WINDOW *wp)
 	vtcol = 0;
     } else
 	n = 0;
-    vtputsn(right_ms + n, term.cols - vtcol);
+    if (term.cols > vtcol)
+	vtputsn(right_ms + n, term.cols - vtcol);
     col = -nu_width(wp);
 #ifdef WMDLINEWRAP
     if (!w_val(wp, WMDLINEWRAP))
@@ -3873,7 +3874,7 @@ format_int(char *buf, UINT number, UINT radix)
 	dfputi(lspputc, number, radix);
 	*lsp = EOS;
     }
-    return (lsp - buf);
+    return (int) (lsp - buf);
 }
 
 /*

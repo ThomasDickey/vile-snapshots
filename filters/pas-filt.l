@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/pas-filt.l,v 1.3 2005/09/04 21:15:43 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/pas-filt.l,v 1.5 2006/05/21 19:50:19 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Pascal
  * input text.  A few TurboC and Delphi extensions are recognized:
@@ -29,7 +29,7 @@ REAL		[-+]?(({UNSIGNED}?\.{UNSIGNED})|({UNSIGNED}(\.{UNSIGNED}?)?))([eE]{INTEGER
 IDENT		[[:alpha:]_][[:alnum:]_]*
 
 CHARACTER	"#"{UNSIGNED}
-STRING		\'([^'\n]|(''))*\'
+STRING		\'([^'\r\n]|(''))*\'
 
 NUMBER		{HEXADECIMAL}|{INTEGER}|{REAL}
 
@@ -50,7 +50,7 @@ NUMBER		{HEXADECIMAL}|{INTEGER}|{REAL}
 <CMT_STANDARD>\n	|
 <CMT_STANDARD>.		{ flt_bfr_append(yytext, yyleng); }
 
-<NORMAL>"//"[^\n]*	{ WriteToken(Comment_attr); /* Delphi */ }
+<NORMAL>"//"[^\r\n]*	{ WriteToken(Comment_attr); /* Delphi */ }
 
 <NORMAL>.		{ ECHO; }
 
@@ -59,6 +59,7 @@ NUMBER		{HEXADECIMAL}|{INTEGER}|{REAL}
 static void
 init_filter(int before GCC_UNUSED)
 {
+    (void) before;
 }
 
 static void

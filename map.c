@@ -3,7 +3,7 @@
  *	Original interface by Otto Lind, 6/3/93
  *	Additional map and map! support by Kevin Buettner, 9/17/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/map.c,v 1.108 2005/11/23 01:33:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/map.c,v 1.109 2006/04/20 09:49:23 tom Exp $
  *
  */
 
@@ -484,7 +484,7 @@ reverse_abbr(struct maprec **mpp, const char *bufname, TBUFF *kbuf)
 	/* reverse the lhs */
 	int i;
 	char t;
-	int len = tb_length(kbuf) - 1;
+	int len = tb_length0(kbuf);
 	char *s = tb_values(kbuf);
 	for (i = 0; i < len / 2; i++) {
 	    t = s[len - i - 1];
@@ -526,7 +526,7 @@ map_common(struct maprec **mpp, const char *bufname, UINT remapflag)
 
     reverse_abbr(mpp, bufname, kbuf);
 
-    status = addtomap(mpp, tb_values(kbuf), tb_length(kbuf) - 1,
+    status = addtomap(mpp, tb_values(kbuf), tb_length0(kbuf),
 		      MAPF_USERTIMER | remapflag, -1, tb_values(val));
     relist_mappings(bufname);
     return status;
@@ -551,7 +551,7 @@ unmap_common(struct maprec **mpp, const char *bufname)
 
     reverse_abbr(mpp, bufname, kbuf);
 
-    if (delfrommap(mpp, tb_values(kbuf), tb_length(kbuf) - 1) != TRUE) {
+    if (delfrommap(mpp, tb_values(kbuf), tb_length0(kbuf)) != TRUE) {
 	mlforce("[Sequence not mapped]");
 	return FALSE;
     }

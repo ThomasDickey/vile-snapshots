@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/ti-filt.l,v 1.16 2005/09/04 21:15:43 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/ti-filt.l,v 1.18 2006/05/21 19:50:48 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of terminfo
  */
@@ -41,14 +41,14 @@ STRING		"="(\\.|\^.|[^,\^\\])*
 
 %%
 
-^"#"[^\n]*			{ WriteToken(Comment_attr); }
+^"#"[^\r\n]*			{ WriteToken(Comment_attr); }
 
 ^{ALIAS}","			{ flt_puts(yytext, yyleng - 1, Ident_attr);
 				  flt_putc(',');
 				  BEGIN(CAPS);
 				}
 ^({ALIAS}"|")+			{ WriteToken(Ident_attr); BEGIN(DESC); }
-<DESC>[^,\n]*			{ WriteToken(Comment_attr); BEGIN(GAPS); }
+<DESC>[^,\r\n]*			{ WriteToken(Comment_attr); BEGIN(GAPS); }
 <GAPS,VALS>({COMMA}|{ESCNL})*	{ commented = 0; ECHO; BEGIN(CAPS); }
 <CAPS>{CAPNAME}			{ WriteToken(check_name(yytext)); BEGIN(VALS); }
 <CAPS>{DOTNAME}			{ WriteToken(Comment_attr); commented = 1; BEGIN(VALS); }
@@ -85,6 +85,7 @@ check_name(char *name)
 static void
 init_filter(int before GCC_UNUSED)
 {
+    (void) before;
 }
 
 static void

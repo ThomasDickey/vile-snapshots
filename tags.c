@@ -5,7 +5,7 @@
  *	the cursor.
  *	written for vile: Copyright (c) 1990, 1995-2003 by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tags.c,v 1.128 2005/05/27 22:59:14 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tags.c,v 1.130 2006/04/25 20:13:21 tom Exp $
  *
  */
 #include "estruct.h"
@@ -220,7 +220,7 @@ store_tag(LINE *lp)
 
 /* check if the binary-tree is up-to-date.  If not, rebuild it. */
 static const char **
-init_tags_cmpl(char *buf, unsigned cpos)
+init_tags_cmpl(char *buf, size_t cpos)
 {
     int tf_num;
     BUFFER *bp;
@@ -282,7 +282,7 @@ init_tags_cmpl(char *buf, unsigned cpos)
 static int
 tags_completion(DONE_ARGS)
 {
-    unsigned cpos = *pos;
+    size_t cpos = *pos;
     int status = FALSE;
     const char **nptr;
 
@@ -951,7 +951,7 @@ maketagslist(int value GCC_UNUSED, void *dummy GCC_UNUSED)
 
     if (taglen == 0) {
 	for (utp = untaghead; utp != 0; utp = utp->u_stklink) {
-	    n = strlen(utp->u_templ);
+	    n = (int) strlen(utp->u_templ);
 	    if (n > taglen)
 		taglen = n;
 	}

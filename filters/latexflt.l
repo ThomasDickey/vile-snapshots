@@ -5,7 +5,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/latexflt.l,v 1.41 2005/09/05 01:30:55 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/latexflt.l,v 1.43 2006/05/21 19:50:19 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of TeX or LaTeX
  * input text.
@@ -117,11 +117,11 @@ NUMBER		({INTEGER}|{REAL})
 			  write_keyword();
 			  pop_state();
 			 }
-<QUOTE_TT>[^\n]*		{ WriteToken(String_attr); }
+<QUOTE_TT>[^\r\n]*		{ WriteToken(String_attr); }
 
 <TEXT>\\"begin{verbatim}"	{ WriteToken(String_attr); push_state(VERBATIM); }
 <VERBATIM>\\"end{verbatim}"	{ WriteToken(String_attr); pop_state(); }
-<VERBATIM>[^\n]*		{ WriteToken(String_attr); }
+<VERBATIM>[^\r\n]*		{ WriteToken(String_attr); }
 
 <TEXT,MATH,MATHC,QUOTED>"|"	{ WriteToken(String_attr);
 			  if (braces != 0)
@@ -131,7 +131,7 @@ NUMBER		({INTEGER}|{REAL})
 			  else if (FLT_STATE != TEXT)
 			      push_state(QUOTED);
 			}
-<QUOTED>[^|\n]*		{ WriteToken(String_attr); }
+<QUOTED>[^|\r\n]*	{ WriteToken(String_attr); }
 
 \\{NAME}		{ write_keyword(); }
 
@@ -145,7 +145,7 @@ NUMBER		({INTEGER}|{REAL})
 			  if (braces == 0)
 			      push_state(MATH);
 			}
-<MATH>[^\$\n]+		{ write_text(Math_attr); }
+<MATH>[^\$\r\n]+	{ write_text(Math_attr); }
 <MATH>\$ 		{ write_text(Action_attr); pop_state(); }
 
 <TEXT>\$\$	 	{ WriteToken(Action_attr);
@@ -153,7 +153,7 @@ NUMBER		({INTEGER}|{REAL})
 			      push_state(MATHC);
 			}
 <MATHC>\\{NONNAME} 	{ flt_puts(yytext, yyleng, Number_attr); }
-<MATHC>[^#%{}\\\$/\n|]+	{ write_text(Math_c_attr); }
+<MATHC>[^#%{}\\\$/\r\n|]+	{ write_text(Math_c_attr); }
 <MATHC>\$\$		{ WriteToken(Action_attr);
 			  if (braces == 0)
 			      pop_state();
@@ -203,6 +203,7 @@ write_text(char *attr)
 static void
 init_filter(int before GCC_UNUSED)
 {
+    (void) before;
 }
 
 static void

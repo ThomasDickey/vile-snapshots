@@ -9,7 +9,7 @@
  * Extensions for vile by Paul Fox
  * Rewrote to use regular expressions - T.Dickey
  *
- * $Header: /users/source/archives/vile.vcs/RCS/fences.c,v 1.83 2005/05/15 23:11:09 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/fences.c,v 1.84 2006/04/25 20:50:30 tom Exp $
  *
  */
 
@@ -524,7 +524,7 @@ comment_fence(int sdir)
     if (sdir == FORWARD) {
 	size_t off = (size_t) (DOT.o - S_COL(BlkBegin));
 	if (BlkEnd->mlen > off)
-	    forwchar(TRUE, BlkEnd->mlen - off);
+	    forwchar(TRUE, (int) (BlkEnd->mlen - off));
     }
 
     scanboundry(FALSE, DOT, sdir);
@@ -533,9 +533,9 @@ comment_fence(int sdir)
 	if (!doingopcmd || doingsweep) {
 	    sweephack = TRUE;
 	    if (sdir == FORWARD && (BlkEnd->mlen > 1))
-		forwchar(TRUE, BlkEnd->mlen - 1);
+		forwchar(TRUE, (int) (BlkEnd->mlen - 1));
 	} else if (sdir == FORWARD && (BlkEnd->mlen > 1)) {
-	    forwchar(TRUE, BlkEnd->mlen - 0);
+	    forwchar(TRUE, (int) (BlkEnd->mlen - 0));
 	}
 	curwp->w_flag |= WFMOVE;
 	return TRUE;

@@ -5,7 +5,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/mailfilt.l,v 1.19 2006/04/02 16:49:54 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/mailfilt.l,v 1.20 2006/05/21 19:50:19 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of mail
  */
@@ -59,6 +59,7 @@ write_label(char *text, int size)
 static void
 init_filter(int before GCC_UNUSED)
 {
+    (void) before;
 }
 
 static void

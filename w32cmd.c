@@ -2,7 +2,7 @@
  * w32cmd:  collection of functions that add Win32-specific editor
  *          features (modulo the clipboard interface) to [win]vile.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32cmd.c,v 1.36 2006/02/19 18:21:15 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32cmd.c,v 1.37 2006/04/21 11:56:00 tom Exp $
  */
 
 #include "estruct.h"
@@ -213,7 +213,7 @@ commdlg_open_files(int chdir_allowed, const char *dir)
     nfile = 0;
     for_ever
     {
-        len = strlen(cp);
+        len = (int) strlen(cp);
         if (len == 0)
             break;
         nfile++;
@@ -911,7 +911,7 @@ printer_abort_proc(HDC hPrintDC, int errcode)
 
 
 
-static BOOL CALLBACK
+static DIALOG_PROC_RETVAL CALLBACK
 printer_dlg_proc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     switch (msg)
@@ -1264,7 +1264,7 @@ print_rgn_data(void *argp, int l, int r)
                 printrect.left,
                 printrect.top + pparam->ychar * pparam->ypos++,
                 pparam->buf,
-                strlen(pparam->buf));
+                (int) strlen(pparam->buf));
         if (saw_ff || (++pparam->plines % pparam->mlpp == 0))
         {
             if (! winprint_endpage(pparam))
@@ -1409,7 +1409,7 @@ winprint_curbuffer_collated(PRINT_PARAM *pparam)
                     printrect.left,
                     printrect.top + pparam->ychar * pparam->ypos++,
                     pparam->buf,
-                    strlen(pparam->buf));
+                    (int) strlen(pparam->buf));
             if (saw_ff || (++pparam->plines % pparam->mlpp == 0))
             {
                 if (! winprint_endpage(pparam))
@@ -1556,7 +1556,7 @@ winprint_curbuffer_uncollated(PRINT_PARAM *pparam,
                     printrect.left,
                     printrect.top + pparam->ychar * pparam->ypos++,
                     pparam->buf,
-                    strlen(pparam->buf));
+                    (int) strlen(pparam->buf));
             if (saw_ff || (++pparam->plines % pparam->mlpp == 0))
             {
                 eop = TRUE;
@@ -1757,6 +1757,15 @@ get_printing_font(HDC hdc, HWND hwnd)
 }
 
 
+static HINSTANCE
+GetHinstance(HWND hwnd)
+{
+#if (_MSC_VER >= 1300)
+    return (HINSTANCE) GetWindowLongPtr(hwnd, GWLP_HINSTANCE);
+#else
+    return (HINSTANCE) GetWindowLong(hwnd, GWL_HINSTANCE);
+#endif
+}
 
 /*
  * this feature doesn't support printing by "pages" because vile doesn't
@@ -1992,10 +2001,7 @@ winprint(int f, int n)
     (void) EnableWindow(hwnd, FALSE);
 
     /* up goes the _modeless_ 'abort printing' dialog box */
-    hDlgCancelPrint = CreateDialog((HINSTANCE) GetWindowLong(
-                                                    hwnd,
-                                                    GWL_HINSTANCE
-                                                             ),
+    hDlgCancelPrint = CreateDialog(GetHinstance(hwnd),
                                    "PrintCancelDlg",
                                    hwnd,
                                    printer_dlg_proc);
@@ -2626,7 +2632,7 @@ store_recent_file_or_folder(const char *path, int is_file)
                           0,
                           REG_SZ,
                           (const BYTE *) path,
-                          strlen(path) + 1) != ERROR_SUCCESS)
+                          (DWORD) strlen(path) + 1) != ERROR_SUCCESS)
         {
             disp_win32_error(W32_SYS_ERROR, winvile_hwnd());
         }
@@ -2674,7 +2680,7 @@ store_recent_file_or_folder(const char *path, int is_file)
                               0,
                               REG_SZ,
                               (const BYTE *) *listp,
-                              strlen(*listp) + 1) != ERROR_SUCCESS)
+                              (DWORD) strlen(*listp) + 1) != ERROR_SUCCESS)
             {
                 disp_win32_error(W32_SYS_ERROR, winvile_hwnd());
                 break;

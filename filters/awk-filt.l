@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/awk-filt.l,v 1.15 2005/09/04 21:10:12 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/awk-filt.l,v 1.17 2006/05/21 19:50:19 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of awk
  * input text.
@@ -25,7 +25,7 @@ static int nesting;
 
 BLANK		[ \t]*
 
-DSTRING		\"((\\\")|[^"\n])*\"
+DSTRING		\"((\\\")|[^"\r\n])*\"
 
 KEYWORD		[[:alpha:]_][[:alnum:]_]*
 IDENT		\$[[:alnum:]_]+
@@ -34,7 +34,7 @@ SIGN		[-+]
 INTEGER		{SIGN}?([[:digit:]]+)
 REAL		{SIGN}?([[:digit:]]*\.[[:digit:]]+)([eE]{SIGN}?[[:digit:]]+)?
 
-PATTERN		"/"(\\.|\[(\\.|.)*\]|[^ \t\n])*"/"
+PATTERN		"/"(\\.|\[(\\.|.)*\]|[^ \t\r\n])*"/"
 
 %%
 
@@ -64,6 +64,7 @@ PATTERN		"/"(\\.|\[(\\.|.)*\]|[^ \t\n])*"/"
 static void
 init_filter(int before GCC_UNUSED)
 {
+    (void) before;
 }
 
 static void

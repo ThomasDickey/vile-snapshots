@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/w32vile.h,v 1.2 2001/12/24 15:03:20 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32vile.h,v 1.4 2006/04/25 22:21:20 tom Exp $
  *
  * Do the pragmas in a separate file to avoid contaminating portable code.
  */
@@ -14,5 +14,17 @@
 #pragma warning (disable : 4514) /* unreferenced inline function has been removed */
 
 #include <windows.h>
+
+#if (_MSC_VER >= 1300) && (_MSC_VER < 1400)
+#define CWAIT_PARAM_TYPE   intptr_t
+#define DIALOG_PROC_RETVAL INT_PTR	/* but it still returns TRUE or FALSE */
+#define SETTIMER_RETVAL    UINT_PTR
+#define WINDOW_PROC_RETVAL LRESULT
+#else
+#define CWAIT_PARAM_TYPE   int
+#define DIALOG_PROC_RETVAL BOOL
+#define SETTIMER_RETVAL    UINT
+#define WINDOW_PROC_RETVAL LONG
+#endif
 
 #endif /* W32VILE_H_incl */

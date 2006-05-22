@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/rubyfilt.c,v 1.39 2005/10/08 22:49:03 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/rubyfilt.c,v 1.40 2006/05/21 19:48:09 tom Exp $
  *
  * Filter to add vile "attribution" sequences to ruby scripts.  This is a
  * translation into C of an earlier version written for LEX/FLEX.
@@ -1003,6 +1003,7 @@ put_REGEXP(char *s, int length, int delim)
 static void
 init_filter(int before GCC_UNUSED)
 {
+    (void) before;
 }
 
 static void
@@ -1025,6 +1026,8 @@ do_filter(FILE *input GCC_UNUSED)
     int strip_here = 0;		/* strip leading blanks in here-document */
     int quote_here = 0;		/* tokens in here-document are quoted */
     int had_op = 1;		/* true to allow regex */
+
+    (void) input;
 
     Comment_attr = class_attr(NAME_COMMENT);
     Error_attr = class_attr(NAME_ERROR);

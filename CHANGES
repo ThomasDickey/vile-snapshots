@@ -1,5 +1,37 @@
 Changes for vile 9.6 (released ??? ??? ?? ????)
 
+ 20060521 (h)
+	> Clark Morgan:
+	+ document write-all-buffers command.
+	+ add echo-to-clipboard mode for Win32 hosts:
+	  all text selected with the mouse is automatically
+	  copied to the Windows clipboard. (U)
+ 	> Paul Fox:
+	+ updated contact information in README, vile.1 and vile.hlp
+	> Tom Dickey:
+	+ allow a version number in rbmode (ruby) preamble.
+	+ add check in m4-filt.c for unbalanced quote, show the affected area
+	  as an error.
+	+ add ".ddl" suffix to sqlmode.
+	+ add ".dsr" suffix to vbmode.
+	+ fix makefile.blc, broken in 9.5f cleanup.
+	+ fixes for 64-bit warnings of Visual Studio .NET 2003:
+	  + modify Member_Offset() macro to cast the difference between
+	    addresses to a long rather than casting a pointer to a long.
+	    Use this flavor for Visual C++.
+	  + size_t is not necessarily the same size as unsigned - modify code
+	    to use size_t where it is consistent, otherwise cast as needed.
+	+ updated for python keywords
+	+ modify some lex filters, e.g., sql, to exclude \r in the places that
+	  exclude \n, since \r should not be colored.
+	+ fix for tb_enquote(); a value pointed to memory that had been
+	  reallocated.
+	+ make OBJEXT configure feature work for optional objects such as api.o
+	+ updated configure macros CF_CURSES_CPPFLAGS, CF_CURSES_LIBS,
+	  CF_NCURSES_CPPFLAGS, CF_PATH_SYNTAX, CF_WITH_IMAKE_CFLAGS,
+	  CF_XOPEN_SOURCE.
+	+ update config.guess, config.sub
+
  20060402 (g)
 	> Tom Dickey:
 	+ minor fixes to make most of the lex filters build with "old" lex,

@@ -5,7 +5,7 @@
  * reading and writing of the disk are
  * in "fileio.c".
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.391 2006/04/02 17:45:36 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.393 2006/04/25 22:07:14 tom Exp $
  */
 
 #include "estruct.h"
@@ -796,8 +796,8 @@ writelinesmsg(char *fn, int nline, B_COUNT nchar)
 	}
 	sprintf(strlines, "%d", nline);
 	sprintf(strchars, "%lu", nchar);
-	lines_len = strlen(strlines);
-	chars_len = strlen(strchars);
+	lines_len = (int) strlen(strlines);
+	chars_len = (int) strlen(strchars);
 	outlen = (term.cols - 1) -
 	    (
 		(sizeof(WRITE_FILE_FMT) - 13) +
@@ -880,10 +880,10 @@ ff_load_directory(char *fname)
 static int
 kifile(char *fname)
 {
-    int i;
     int s;
     int nline;
-    int nbytes;
+    size_t i;
+    size_t nbytes;
 
     TRACE((T_CALLED "kifile(%s)\n", NONNULL(fname)));
 
@@ -1716,7 +1716,7 @@ int
 slowreadf(BUFFER *bp, int *nlinep)
 {
     int s;
-    int len;
+    size_t len;
 #if OPT_DOSFILES
     int doslines = 0, unixlines = 0;
 #endif
@@ -1746,14 +1746,14 @@ slowreadf(BUFFER *bp, int *nlinep)
 	 * keep any CR's that we read.
 	 */
 	if (global_b_val(MDDOS)) {
-	    if (len > 0 && fflinebuf[len - 1] == '\r') {
+	    if (len != 0 && fflinebuf[len - 1] == '\r') {
 		doslines++;
 	    } else {
 		unixlines++;
 	    }
 	}
 #endif
-	if (addline(bp, fflinebuf, len) != TRUE) {
+	if (addline(bp, fflinebuf, (int) len) != TRUE) {
 	    s = FIOMEM;
 	    break;
 	}
@@ -2098,7 +2098,7 @@ actually_write(REGION * rp, char *fn, int msgf, BUFFER *bp, int forced, int enco
 	    TBUFF *temp;
 	    if ((temp = encode_attributes(lp, bp, rp)) != 0) {
 		text = tb_values(temp);
-		len = tb_length(temp);
+		len = (int) tb_length(temp);
 	    }
 	    if ((s = ffputline(text, len, ending)) != FIOSUC) {
 		tb_free(&temp);
@@ -2453,7 +2453,7 @@ ifile(char *fname, int belowthisline, FILE *haveffp)
     LINE *newlp;
     LINE *nextp;
     int status;
-    int nbytes;
+    size_t nbytes;
     int nline;
 
     TRACE((T_CALLED "ifile(fname=%s, belowthisline=%d, haveffp=%p)\n",
@@ -2492,7 +2492,7 @@ ifile(char *fname, int belowthisline, FILE *haveffp)
     while ((status = ffgetline(&nbytes)) <= FIOSUC) {
 #if OPT_DOSFILES
 	if (b_val(curbp, MDDOS)
-	    && (nbytes > 0)
+	    && (nbytes != 0)
 	    && fflinebuf[nbytes - 1] == '\r')
 	    nbytes--;
 #endif
@@ -2502,7 +2502,7 @@ ifile(char *fname, int belowthisline, FILE *haveffp)
 	}
 
 	beginDisplay();
-	if (add_line_at(curbp, prevp, fflinebuf, nbytes) != TRUE) {
+	if (add_line_at(curbp, prevp, fflinebuf, (int) nbytes) != TRUE) {
 	    status = FIOMEM;
 	    newlp = 0;
 	} else {

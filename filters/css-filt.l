@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/css-filt.l,v 1.12 2006/04/02 16:49:54 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/css-filt.l,v 1.13 2006/05/21 19:50:19 tom Exp $
  *
  * Filter to add vile "attribution" sequences to Cascading Style Sheets.
  */
@@ -150,6 +150,7 @@ string_escapes(char *text, int length)
 static void
 init_filter(int before GCC_UNUSED)
 {
+    (void) before;
 }
 
 static void

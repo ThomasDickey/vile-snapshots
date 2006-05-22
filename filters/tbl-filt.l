@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/tbl-filt.l,v 1.9 2005/09/04 21:15:43 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/tbl-filt.l,v 1.11 2006/05/21 19:50:48 tom Exp $
  *
  * Filter to add vile "attribution" sequences to a vile mktbls datafile.
  */
@@ -23,7 +23,7 @@ static int mixedcase(const char *name);
 
 %}
 
-COMMENT		[ \t]*#[^\n]*\n
+COMMENT		[ \t]*#[^\r\n]*\n
 
 KEYWORD		[[:alpha:]_.][[:alnum:]$_.]*
 
@@ -80,6 +80,7 @@ mixedcase(const char *name)
 static void
 init_filter(int before GCC_UNUSED)
 {
+    (void) before;
 }
 
 static void

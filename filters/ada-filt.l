@@ -1,6 +1,6 @@
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/ada-filt.l,v 1.12 2005/09/04 21:10:12 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/ada-filt.l,v 1.14 2006/05/21 19:49:01 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Ada
  * input text.
@@ -33,13 +33,14 @@ NUMBER		{INTEGER}|{REAL}
 {QUOTECHAR}		|
 {STRING}		{ WriteToken(String_attr); }
 {NUMBER}		{ WriteToken(Number_attr); }
-"--"[^\n]*		{ WriteToken(Comment_attr); }
+"--"[^\r\n]*		{ WriteToken(Comment_attr); }
 
 %%
 
 static void
 init_filter(int before GCC_UNUSED)
 {
+    (void) before;
 }
 
 static void

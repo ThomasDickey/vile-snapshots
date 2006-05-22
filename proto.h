@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.564 2006/01/13 01:29:15 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.567 2006/05/21 10:52:15 tom Exp $
  *
  */
 
@@ -136,7 +136,7 @@ extern int fnc2kins (const CMDFUNC *);
 extern int kbd_complete (DONE_ARGS, const char *table, size_t size_entry);
 extern int kbd_engl_stat (const char *prompt, char *buffer, int stated);
 extern int kbd_length (void);
-extern int kcod2escape_seq (int c, char *ptr, int limit);
+extern int kcod2escape_seq (int c, char *ptr, size_t limit);
 extern int no_such_function (const char *fname);
 extern void kbd_erase (void);
 extern void kbd_erase_to_end (int column);
@@ -356,10 +356,10 @@ extern int is_truem (const char *val);
 extern int mac_literalarg (TBUFF **tok);
 extern int mac_token (TBUFF **tok);
 extern int macroize (TBUFF **p, TBUFF *src, int skip);
-extern int must_quote_token (const char * values, unsigned last);
+extern int must_quote_token (const char * values, size_t last);
 extern int scan_bool (const char *s );
 extern int toktyp (const char *tokn);
-extern void append_quoted_token (TBUFF ** dst, const char * values, unsigned last);
+extern void append_quoted_token (TBUFF ** dst, const char * values, size_t last);
 
 #ifdef const
 #define skip_blanks(s) skip_cblanks(s)
@@ -424,7 +424,7 @@ extern char *render_hex(TBUFF **rp, UINT i);
 #endif
 
 /* exec.c */
-extern DIRECTIVE dname_to_dirnum(char **cmdp, int length);
+extern DIRECTIVE dname_to_dirnum(char **cmdp, size_t length);
 extern int do_source (char *fname, int n, int optional);
 extern int dobuf (BUFFER *bp, int n);
 extern int docmd (char *cline, int execflag, int f, int n);
@@ -483,7 +483,7 @@ extern int mlreply_dir (const char *prompt, TBUFF **buf, char *result);
 extern int mlreply_file (const char *prompt, TBUFF **buf, UINT flag, char *result);
 
 #if COMPLETE_FILES || COMPLETE_DIRS
-extern int fill_directory_buffer(BUFFER *bp, char *path, int dots);
+extern int fill_directory_buffer(BUFFER *bp, char *path, size_t dots);
 extern int path_completion (DONE_ARGS);
 extern void init_filec(const char *buffer_name);
 #endif
@@ -542,7 +542,7 @@ extern	void	expand_wild_args (int *argcp, char ***argvp);
 
 /* history.c */
 #if OPT_HISTORY
-extern	int	edithistory (TBUFF **buffer, UINT *position, int *given, UINT options, int (*func)(EOL_ARGS), int eolchar);
+extern	int	edithistory (TBUFF **buffer, size_t *position, int *given, UINT options, int (*func)(EOL_ARGS), int eolchar);
 extern	void	hst_append (TBUFF *cmd, int glue, int can_extend);
 extern	void	hst_append_s (char *cmd, int glue, int can_extend);
 extern	void	hst_flush (void);
@@ -578,8 +578,8 @@ extern int kbd_replaying (int match);
 extern int kbd_reply (const char *prompt, TBUFF **extbuf, int (*efunc)(EOL_ARGS), int eolchar, KBD_OPTIONS options, int (*cfunc)(DONE_ARGS));
 extern int kbd_seq (void);
 extern int kbd_seq_nomap (void);
-extern int kbd_show_response (TBUFF **dst, char *src, UINT bufn, int eolchar, KBD_OPTIONS options);
-extern int kbd_string (const char *prompt, char *extbuf, UINT bufn, int eolchar, KBD_OPTIONS options, int (*func)(DONE_ARGS));
+extern int kbd_show_response (TBUFF **dst, char *src, size_t bufn, int eolchar, KBD_OPTIONS options);
+extern int kbd_string (const char *prompt, char *extbuf, size_t bufn, int eolchar, KBD_OPTIONS options, int (*func)(DONE_ARGS));
 extern int kbd_string2 (const char *prompt, TBUFF **result, int eolchar, KBD_OPTIONS options, int (*complete)(DONE_ARGS));
 extern int kbm_started (int macnum, int force);
 extern int keystroke (void);
@@ -598,14 +598,14 @@ extern int mlyesno (const char *prompt);
 extern int no_completion (DONE_ARGS);
 extern int read_quoted(int count, int verbose);
 extern int screen2tbuff (TBUFF **buf, CHARTYPE inclchartype);
-extern int screen_string (char *buf, int bufn, CHARTYPE inclchartype);
+extern int screen_string (char *buf, size_t bufn, CHARTYPE inclchartype);
 extern int start_kbm (int n, int macnum, ITBUFF *ptr);
 extern int tgetc (int quoted);
 extern int tgetc_avail (void);
 extern void dotcmdstop (void);
 extern void get_kbd_macro(TBUFF **rp);
 extern void incr_dot_kregnum (void);
-extern void kbd_kill_response (TBUFF *buf, UINT *position, int c);
+extern void kbd_kill_response (TBUFF *buf, size_t *position, int c);
 extern void kbd_mac_check(void);
 extern void kbd_pushback (TBUFF *buf, int skip);
 extern void set_end_string (int c);
@@ -1016,7 +1016,7 @@ extern	int	attribute_cntl_a_seqs_in_region(REGION *rp, REGIONSHAPE shape);
 extern	int	attributeregion (void);
 extern	int	attributeregion_in_region(REGION *rp, REGIONSHAPE shape,
 					    VIDEO_ATTR vattr, char *hc);
-extern	int	decode_attribute (char *text, int length, int offset, int *countp);
+extern	int	decode_attribute (char *text, size_t length, size_t offset, int *countp);
 extern	int	sel_begin	(void);
 extern	int	sel_extend	(int wiping, int include_dot);
 extern	int	sel_get_leftmark(MARK *result);
@@ -1113,6 +1113,7 @@ int	tb_more (TBUFF *p);
 int	tb_next (TBUFF *p);
 int	tb_peek (TBUFF *p);
 size_t	tb_length (TBUFF *p);
+int	tb_length0 (TBUFF *p);
 void	tb_first (TBUFF *p);
 void	tb_free (TBUFF **p);
 void	tb_setlen (TBUFF **p, int n);
@@ -1324,7 +1325,7 @@ extern int win2index (WINDOW *wp_to_find);
 #endif
 
 /* word.c */
-extern int ffgetline (int *lenp);
+extern int ffgetline (size_t *lenp);
 extern int formatregion (void);
 extern int isendviwordf (void);
 extern int isendwordf (void);

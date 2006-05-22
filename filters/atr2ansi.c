@@ -1,7 +1,7 @@
 /*
  * Convert attributed text to ANSI-style escape sequences, allowing color.
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/atr2ansi.c,v 1.2 2003/05/07 19:18:16 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/atr2ansi.c,v 1.3 2006/05/21 19:42:21 tom Exp $
  */
 #include <unfilter.h>
 
@@ -12,6 +12,8 @@ static int last_attrib;
 void
 begin_unfilter(FILE *dst GCC_UNUSED)
 {
+    (void) dst;
+
     last_attrib = 0;
 }
 
@@ -40,11 +42,15 @@ markup_unfilter(FILE *dst, int attrib)
 void
 write_unfilter(FILE *dst, int ch, int attrib GCC_UNUSED)
 {
+    (void) attrib;
+
     fputc(ch, dst);
 }
 
 void
 end_unfilter(FILE *dst GCC_UNUSED)
 {
+    (void) dst;
+
     markup_unfilter(dst, 0);
 }

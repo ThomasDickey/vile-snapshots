@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.595 2006/02/14 23:57:49 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.597 2006/05/21 20:58:10 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -968,10 +968,10 @@ extern void endofDisplay(void);
 # include <os2def.h>
 #else
 # if !defined(WIN32)
-#  define UCHAR unsigned char
-#  define UINT unsigned int
+#  define UCHAR  unsigned char
+#  define UINT   unsigned int
 #  define USHORT unsigned short
-#  define ULONG unsigned long
+#  define ULONG  unsigned long
 # endif
 #endif
 
@@ -1064,8 +1064,8 @@ extern void endofDisplay(void);
 
 #define	char2int(c)	((int)(c & 0xff)) /* mask off sign-extension, etc. */
 
-#define	PLURAL(n)	((n) != 1 ? "s" : "")
-#define NONNULL(s)	((s) != 0 ? (s) : "")
+#define	PLURAL(n)	((n) != 1 ? "s" : (char *) "")
+#define NONNULL(s)	((s) != 0 ? (s) : (char *) "")
 #define isEmpty(s)	((s) == 0 || *(s) == EOS)
 
 #define EOS        '\0'
@@ -2467,8 +2467,8 @@ typedef	struct {
 /*
  * Other useful argument templates
  */
-#define EOL_ARGS  const char * buffer, unsigned cpos, int c, int eolchar
-#define DONE_ARGS KBD_OPTIONS flags, int c, char *buf, unsigned *pos
+#define EOL_ARGS  const char * buffer, size_t cpos, int c, int eolchar
+#define DONE_ARGS KBD_OPTIONS flags, int c, char *buf, size_t *pos
 #define LIST_ARGS int flag, void *ptr
 #define REGN_ARGS void *flagp, int l, int r
 
@@ -2740,11 +2740,13 @@ extern void ExitProgram(int code);
 #undef GCC_UNUSED
 #endif
 
+#ifndef GCC_PRINTFLIKE
 #ifdef GCC_PRINTF
 #define GCC_PRINTFLIKE(fmt,var) __attribute__((format(printf,fmt,var)))
 #else
 #define GCC_PRINTFLIKE(fmt,var) /*nothing*/
 #endif
+#endif /* GCC_PRINTFLIKE */
 
 #ifndef	GCC_NORETURN
 #define	GCC_NORETURN /* nothing */
@@ -2878,6 +2880,7 @@ extern void ExitProgram(int code);
 
 /* extra checking if we're tracing */
 #if !OPT_TRACE
+#undef  NDEBUG
 #define NDEBUG			/* turn off assert's */
 #define valid_buffer(bp)        ((bp) != NULL)
 #define valid_window(wp)        ((wp) != NULL)

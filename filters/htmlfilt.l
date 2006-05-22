@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/htmlfilt.l,v 1.36 2006/02/14 00:58:42 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/htmlfilt.l,v 1.38 2006/05/21 19:50:19 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of HTML input
  * text.
@@ -66,8 +66,8 @@ CHR_REF		&({IDENT}|{HEXNUM});
 
 <INITIAL>"<!--"		{ BeginQuote(HTMLNOTE, Comment_attr); }
 <HTMLNOTE>[\n]		{ flt_bfr_append(yytext, yyleng); }
-<HTMLNOTE>[^\n-]+	{ flt_bfr_append(yytext, yyleng); }
-<HTMLNOTE>[-]+[^-\>\n]*	{ flt_bfr_append(yytext, yyleng); }
+<HTMLNOTE>[^\r\n-]+	{ flt_bfr_append(yytext, yyleng); }
+<HTMLNOTE>[-]+[^-\>\r\n]*	{ flt_bfr_append(yytext, yyleng); }
 <HTMLNOTE>[-]+"->"	{ FinishQuote(INITIAL); }
 
 <INITIAL,HTMLCODE>{URI_REF}	|
@@ -86,13 +86,13 @@ CHR_REF		&({IDENT}|{HEXNUM});
 <JS_CODE>{IDENT}	{ WriteToken(keyword_attr(yytext)); }
 <JS_CODE>{STRINGS}	{ WriteToken(String_attr); }
 <JS_CODE>{INTEGER}	{ WriteToken(Number_attr); }
-<JS_CODE>"//"[^\n]*	{ WriteToken(Comment_attr); }
+<JS_CODE>"//"[^\r\n]*	{ WriteToken(Comment_attr); }
 
 <JS_CODE>"<"{SPACE}*(\/)?{IDENT}{SPACE}*">" { may_resume_html(yytext); }
 
 <JS_CODE>"/*"		{ BeginQuote(JS_NOTE, Comment_attr); }
 <JS_NOTE>\n		{ flt_bfr_append(yytext, yyleng); }
-<JS_NOTE>[^*\n]+	{ flt_bfr_append(yytext, yyleng); }
+<JS_NOTE>[^*\r\n]+	{ flt_bfr_append(yytext, yyleng); }
 <JS_NOTE>[*]+[^*/]*	{ flt_bfr_append(yytext, yyleng); }
 <JS_NOTE>[*]+"/"	{ FinishQuote(JS_CODE); }
 
@@ -149,6 +149,7 @@ may_resume_html(char *text)
 static void
 init_filter(int before GCC_UNUSED)
 {
+    (void) before;
 }
 
 static void

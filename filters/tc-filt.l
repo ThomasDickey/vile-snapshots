@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/tc-filt.l,v 1.22 2005/09/04 21:15:43 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/tc-filt.l,v 1.24 2006/05/21 19:50:48 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of termcap
  */
@@ -27,23 +27,23 @@ static void write_capname(char *name, int len);
 
 %}
 
-CAPNAME		[^\.| \t\n:=]+
+CAPNAME		[^\.| \t\r\n:=]+
 DOTNAME		(\.)+{CAPNAME}
 
 ALIAS		[[:alnum:]_\.+-]+
 
 NUMBER		"#"[[:digit:]]+
-STRING		[^#:\\\n](\\[.\n]|[^:\n])*
+STRING		[^#:\\\r\n](\\[.\n]|[^:\r\n])*
 
 %%
 
-^"#"[^\n]*			{ WriteToken(Comment_attr); }
+^"#"[^\r\n]*			{ WriteToken(Comment_attr); }
 \n\n				{ ECHO; BEGIN(INITIAL); }
 
 ^({ALIAS}"|"|(\\\n\t)*)*	{ WriteToken(Ident_attr); BEGIN(DESC); }
 ^{ALIAS}			{ WriteToken(Ident_attr); BEGIN(GAPS); }
 
-<DESC>[^:\n]*			{ WriteToken(Comment_attr); BEGIN(GAPS); }
+<DESC>[^:\r\n]*			{ WriteToken(Comment_attr); BEGIN(GAPS); }
 <GAPS,VALS>(:|:\\\n\t)+		{ commented=0; ECHO; BEGIN(CAPS); }
 <GAPS,CAPS>\n(\t)+		{ flt_error("unexpected whitespace");
 				  WriteToken(Error_attr); }
@@ -116,6 +116,7 @@ begin_value(char *name)
 static void
 init_filter(int before GCC_UNUSED)
 {
+    (void) before;
 }
 
 static void

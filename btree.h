@@ -1,5 +1,5 @@
 /*
- * $Id: btree.h,v 1.4 2001/12/21 12:19:24 tom Exp $
+ * $Id: btree.h,v 1.5 2006/04/25 20:13:37 tom Exp $
  *
  * Interface for btree.c
  */
@@ -42,7 +42,7 @@ extern "C" {
 extern	int	 btree_delete(BI_TREE *tree, const char *data);
 extern	int	 btree_freeup(BI_TREE *tree);
 extern	BI_DATA *btree_insert(BI_TREE *tree, BI_DATA *data);
-extern	const char **btree_parray(BI_TREE *tree, char *name, unsigned len);
+extern	const char **btree_parray(BI_TREE *tree, char *name, size_t len);
 extern	BI_NODE *btree_pmatch(BI_NODE *n, const int mode, const char *name);
 extern	void	 btree_printf(BI_TREE *tree);
 extern	BI_DATA *btree_search(BI_TREE *tree, const char *data);

@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/mms-filt.l,v 1.12 2005/09/05 01:37:56 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/mms-filt.l,v 1.14 2006/05/21 19:50:19 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of VMS mms script
  * - T.Dickey
@@ -62,8 +62,8 @@ STRINGS		({SSTRING}|{DSTRING})
 IDENT		[$[:alpha:]_][$[:alnum:]_]*
 PARAM		'{IDENT}
 
-INLINECOMMENT	![^\n]*
-COMMENT		"#"[^\n]*
+INLINECOMMENT	![^\r\n]*
+COMMENT		"#"[^\r\n]*
 
 %%
 
@@ -90,6 +90,7 @@ COMMENT		"#"[^\n]*
 static void
 init_filter(int before GCC_UNUSED)
 {
+    (void) before;
 }
 
 static void

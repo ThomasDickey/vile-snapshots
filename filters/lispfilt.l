@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Id: lispfilt.l,v 1.11 2005/09/04 20:36:24 tom Exp $
+ * $Id: lispfilt.l,v 1.13 2006/05/21 19:50:19 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of lisp code.
  *
@@ -47,7 +47,7 @@ FLOAT		({SIGN}?{DECIMAL}*{POINT}{DECIMAL}+{EXPONENT}?)|({SIGN}?{DECIMAL}+({POINT
 
 NUMBER		{INTEGER}|{RATIO}|{FLOAT}
 
-COMMENT		;[^\n]*
+COMMENT		;[^\r\n]*
 IDENT		[^[:space:]\"\(\)|]+
 
 LPAREN		\(
@@ -58,7 +58,7 @@ RPAREN		\)
 <NORMAL>#\|		{ BeginQuote(COMMENT, Comment_attr); }
 <COMMENT>\|#		{ FinishQuote(NORMAL); }
 <COMMENT>[\n]		{ flt_bfr_append(yytext, yyleng); }
-<COMMENT>[^\n]		{ flt_bfr_append(yytext, yyleng); }
+<COMMENT>[^\r\n]	{ flt_bfr_append(yytext, yyleng); }
 
 <NORMAL>{COMMENT}	{ WriteToken(Comment_attr); }
 
@@ -95,6 +95,7 @@ paren_attr(void)
 static void
 init_filter(int before GCC_UNUSED)
 {
+    (void) before;
 }
 
 static void

@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 screen API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.157 2006/02/19 18:17:19 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.159 2006/04/25 23:13:32 tom Exp $
  * Written by T.E.Dickey for vile (october 1997).
  * -- improvements by Clark Morgan (see w32cbrd.c, w32pipe.c).
  */
@@ -92,7 +92,7 @@ static HCURSOR selection_cursor;
 static HCURSOR wdwsize_cursor;
 static HMENU vile_menu, popup_menu;
 static LOGFONT vile_logfont;
-static UINT nIDTimer = 0;
+static SETTIMER_RETVAL nIDTimer = 0;
 static int ac_active = FALSE;	/* AutoColor active? */
 static int caret_disabled = TRUE;
 static int caret_exists = 0;
@@ -486,7 +486,7 @@ AdjustedWidth(int wide)
 }
 
 #if FIXME_POSCHANGING
-static int
+static WINDOW_PROC_RETVAL
 AdjustPosChanging(HWND hwnd, WINDOWPOS * pos)
 {
     if (!(pos->flags & SWP_NOSIZE)) {
@@ -532,7 +532,7 @@ sizing_window(void)
  * Handle WM_SIZING, forcing the screen size to stay in multiples of a
  * character cell.
  */
-static int
+static WINDOW_PROC_RETVAL
 AdjustResizing(HWND hwnd, WPARAM fwSide, RECT * rect)
 {
     int wide = rect->right - rect->left;
@@ -1982,7 +1982,7 @@ invoke_popup_menu(MSG msg)
     TRACE(("...invoke_popup_menu\n"));
 }
 
-static BOOL CALLBACK
+static DIALOG_PROC_RETVAL CALLBACK
 AboutBoxProc(HWND hDlg, UINT iMsg, WPARAM wParam, LPARAM lParam)
 {
     char buf[512];
@@ -2441,12 +2441,12 @@ set_scrollbar_range(int n, WINDOW *wp)
  * the borders of the dummy window we're surrounding it with.  That's because
  * the resize-grip itself isn't resizable.
  */
-LONG FAR PASCAL
+WINDOW_PROC_RETVAL FAR PASCAL
 GripWndProc(
 	       HWND hWnd,
 	       UINT message,
 	       WPARAM wParam,
-	       LONG lParam)
+	       LPARAM lParam)
 {
     PAINTSTRUCT ps;
     HBRUSH brush;
@@ -2842,7 +2842,7 @@ ntgetch(void)
 
 	case WM_CHAR:
 	    TRACE(("GETC:CHAR:%#x\n", msg.wParam));
-	    result = msg.wParam;
+	    result = (int) msg.wParam;
 	    /*
 	     * Check for modifieers on control keys such as tab.
 	     */
@@ -3317,12 +3317,12 @@ HandleClose(HWND hWnd)
     quit(FALSE, 1);
 }
 
-LONG FAR PASCAL
+WINDOW_PROC_RETVAL FAR PASCAL
 TextWndProc(
 	       HWND hWnd,
 	       UINT message,
 	       WPARAM wParam,
-	       LONG lParam)
+	       LPARAM lParam)
 {
     RECT rect;
     HDC hDC;
@@ -3362,12 +3362,12 @@ TextWndProc(
     return (0);
 }
 
-LONG FAR PASCAL
+WINDOW_PROC_RETVAL FAR PASCAL
 MainWndProc(
 	       HWND hWnd,
 	       UINT message,
 	       WPARAM wParam,
-	       LONG lParam)
+	       LPARAM lParam)
 {
     static int resize_pending;	/* a resize, not a move */
     static HWND resize_hwnd;
@@ -3550,7 +3550,7 @@ InitInstance(HINSTANCE hInstance)
 
     ZeroMemory(&wc, sizeof(&wc));
     wc.style = CS_VREDRAW | CS_HREDRAW;
-    wc.lpfnWndProc = (WNDPROC) MainWndProc;
+    wc.lpfnWndProc = MainWndProc;
     wc.cbClsExtra = 0;
     wc.cbWndExtra = 0;
     wc.hInstance = hInstance;
@@ -3695,7 +3695,7 @@ WinMain(
 {
     int argc;
     int n;
-    int maxargs = strlen(lpCmdLine) + 1;
+    size_t maxargs = strlen(lpCmdLine) + 1;
     char **argv = typecallocn(char *, maxargs + 10);
     char *ptr, *fontstr;
 #ifdef VILE_OLE
@@ -3724,7 +3724,7 @@ WinMain(
 		TRACE(("argv[%d]:%s\n", argc, argv[argc]));
 		++argc;
 	    }
-	    if (argc + 1 >= maxargs) {
+	    if ((size_t) (argc + 1) >= maxargs) {
 		break;
 	    }
 	    argv[argc] = dst = ptr;

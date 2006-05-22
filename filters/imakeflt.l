@@ -6,7 +6,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/imakeflt.l,v 1.14 2005/09/05 10:35:35 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/imakeflt.l,v 1.16 2006/05/21 19:50:19 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Imakefile
  *
@@ -70,7 +70,7 @@ OPER		[+:?]?=
 <NORMAL>\"			{ BeginQuote(QUOTE2, String_attr); }
 
 <NORMAL>"#"			{ BeginQuote(COMMENT, Comment_attr); }
-<COMMENT>(\\.|\\\n|[^\n])*	{ flt_bfr_append(yytext, yyleng); }
+<COMMENT>(\\.|\\\n|[^\r\n])*	{ flt_bfr_append(yytext, yyleng); }
 <COMMENT>\n			{ FinishQuote(NORMAL); }
 
 <QUOTE1,QUOTE2>{MACRO}		{ flt_bfr_embed(yytext, yyleng, Ident2_attr); }
@@ -78,17 +78,17 @@ OPER		[+:?]?=
 				  flt_bfr_embed(yytext, yyleng, Error_attr); }
 <QUOTE1,QUOTE2>\\\n		{ flt_bfr_append(yytext, yyleng); }
 
-<QUOTE1>(\\.|[^\n\'])		{ flt_bfr_append(yytext, yyleng); }
+<QUOTE1>(\\.|[^\r\n\'])		{ flt_bfr_append(yytext, yyleng); }
 <QUOTE1>\'			{ FinishQuote(NORMAL); }
 
-<QUOTE2>(\\.|[^\n\"])		{ flt_bfr_append(yytext, yyleng); }
+<QUOTE2>(\\.|[^\r\n\"])		{ flt_bfr_append(yytext, yyleng); }
 <QUOTE2>\"			{ FinishQuote(NORMAL); }
 
 <QUOTE1,QUOTE2>[\n]		{ missing_quote(yytext, yyleng); }
 
 <NORMAL>\\[/]			{ WriteToken(String_attr); }
 <NORMAL>"/*"			{ BeginQuote(CCOMMENT, Comment_attr); }
-<CCOMMENT>("*"[^/]|\n|[^*\n])*	{ flt_bfr_append(yytext, yyleng); }
+<CCOMMENT>("*"[^/]|\n|[^*\r\n])*	{ flt_bfr_append(yytext, yyleng); }
 <CCOMMENT>"*/"			{ FinishQuote(NORMAL); }
 
 <NORMAL>^{SPACE}*#{SPACE}*{NAME} { if (!preprocessor(yytext, yyleng)) {
@@ -338,6 +338,7 @@ missing_quote(char *text, int length)
 static void
 init_filter(int before GCC_UNUSED)
 {
+    (void) before;
 }
 
 static void

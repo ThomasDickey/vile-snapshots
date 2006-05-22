@@ -60,7 +60,7 @@
  *    situation, kill the app by typing ^C (and then please apply for a
  *    QA position with a certain Redmond company).
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32pipe.c,v 1.32 2005/01/26 23:19:49 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32pipe.c,v 1.33 2006/04/21 11:53:40 tom Exp $
  */
 
 #define HAVE_FCNTL_H 1
@@ -360,7 +360,7 @@ native_inout_popen(FILE **fr, FILE **fw, char *cmd)
         {
             if (! rc)
             {
-                size_t len;
+                unsigned len;
 
                 /*
                  * Shell process failed, put complaint in user's buffer.
@@ -368,7 +368,7 @@ native_inout_popen(FILE **fr, FILE **fw, char *cmd)
                  * previously failed CreateProcess() call damaged the
                  * handle.
                  */
-                len = lsprintf(buf, SHELL_ERR_MSG, get_shell()) - buf;
+                len = (unsigned) (lsprintf(buf, SHELL_ERR_MSG, get_shell()) - buf);
                 (void) write(rp[2], buf, len);
                 (void) close(rp[2]);   /* in weird state; why not? */
             }
@@ -416,7 +416,7 @@ native_npclose(FILE *fp)
     (void) fclose(fp);
     if (proc_handle != BAD_PROC_HANDLE)
     {
-        (void) cwait(&term_status, (int) proc_handle, 0);
+        (void) cwait(&term_status, (CWAIT_PARAM_TYPE) proc_handle, 0);
 	TRACE(("...CreateProcess finished waiting in native_npclose\n"));
         (void) CloseHandle(proc_handle);
         proc_handle = BAD_PROC_HANDLE;
@@ -567,7 +567,7 @@ tmp_inout_popen(FILE **fr, FILE **fw, char *cmd)
              * suck in shortly.
              */
 
-            len = lsprintf(buf, SHELL_ERR_MSG, get_shell()) - buf;
+            len = (DWORD) (lsprintf(buf, SHELL_ERR_MSG, get_shell()) - buf);
             (void) WriteFile(handles[1], buf, len, &dummy, NULL);
             FlushFileBuffers(handles[1]);
         }
@@ -575,7 +575,7 @@ tmp_inout_popen(FILE **fr, FILE **fw, char *cmd)
         {
             /* wait for exec'd process to exit */
 
-            (void) cwait(&term_status, (int) proc_handle, 0);
+            (void) cwait(&term_status, (CWAIT_PARAM_TYPE) proc_handle, 0);
 	    TRACE(("...CreateProcess finished waiting in tmp_inout_popen\n"));
             (void) CloseHandle(proc_handle);
             proc_handle = BAD_PROC_HANDLE;
@@ -658,7 +658,7 @@ npflush(void)
         {
             /* now wait for app to exit */
 
-            (void) cwait(&term_status, (int) proc_handle, 0);
+            (void) cwait(&term_status, (CWAIT_PARAM_TYPE) proc_handle, 0);
 	    TRACE(("...CreateProcess finished waiting in npflush\n"));
             (void) CloseHandle(proc_handle);
             proc_handle = BAD_PROC_HANDLE;
@@ -730,7 +730,7 @@ tmp_npclose(FILE *fp)
             {
                 /* now wait for app to exit */
 
-                (void) cwait(&term_status, (int) proc_handle, 0);
+                (void) cwait(&term_status, (CWAIT_PARAM_TYPE) proc_handle, 0);
 		TRACE(("...CreateProcess finished waiting in tmp_npclose\n"));
                 (void) CloseHandle(proc_handle);
                 proc_handle = BAD_PROC_HANDLE;

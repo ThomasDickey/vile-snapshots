@@ -66,11 +66,17 @@ metalabs.unc.edu, hobbes.nmsu.edu (OS/2) and the VMS Freeware
 CDROM's.
 
 ------------------------------------------------------
-Send bug reports to
-	bugs@vile.cx
 
-Requests to be put on the announcement list should go to
-	announce-request@vile.cx
+There is a project mailing list.  You can subscribe to it here:
+    https://savannah.nongnu.org/projects/vile/
+
+To submit bug reports, either subscribe to the list (since
+non-subscribers aren't allowed to post) or use the bug system at
+that same URL.
+
+There is also a project place-holder page at:
+	http://www.vile.cx
+from which you can find most other sites mentioned in this README.
 
 ------------------------------------------------------
 
@@ -1156,5 +1162,5 @@ July 2005,
     + modify vmsbuild.com and descrip.mms to work with IA64.
 
 -------------------------------
-$Header: /users/source/archives/vile.vcs/RCS/README,v 1.94 2006/01/11 21:25:35 tom Exp $
+$Header: /users/source/archives/vile.vcs/RCS/README,v 1.95 2006/05/21 00:29:29 pgf Exp $
 -------------------------------

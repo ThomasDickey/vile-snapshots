@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/bat-filt.l,v 1.22 2006/02/14 01:27:10 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/bat-filt.l,v 1.24 2006/05/21 19:50:19 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of DOS (and
  * similar, such as W95, NT) batch file.
@@ -40,7 +40,7 @@ IDENT2		({PARAM}|{VARIABLE})
 <INITIAL>^{BLANK}*@		{ WriteToken(Action_attr); }
 <INITIAL>\032			{ WriteToken(Action_attr); }
 
-<ECHOING>[^\n]*			{ WriteToken(String_attr); BEGIN(INITIAL); }
+<ECHOING>[^\r\n]*		{ WriteToken(String_attr); BEGIN(INITIAL); }
 <ECHOING>\n			{ ECHO; BEGIN(INITIAL); }
 
 <INITIAL>=			{ ECHO; setting=0; }
@@ -89,7 +89,7 @@ IDENT2		({PARAM}|{VARIABLE})
 <INITIAL>\n			{ ECHO; setting = 0; }
 
 <QUOTED>{IDENT2}		{ flt_bfr_embed(yytext, yyleng, variable_attr(yytext)); }
-<QUOTED>(\\\"|[^\n\"])+		{ flt_bfr_append(yytext, yyleng); }
+<QUOTED>(\\\"|[^\r\n\"])+	{ flt_bfr_append(yytext, yyleng); }
 <QUOTED>(.|\n)			{ flt_bfr_append(yytext, yyleng);
 				  flt_bfr_finish();
 				  BEGIN(INITIAL);
@@ -129,6 +129,7 @@ write_label(char *text, int length)
 static void
 init_filter(int before GCC_UNUSED)
 {
+    (void) before;
 }
 
 static void

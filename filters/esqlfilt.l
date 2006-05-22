@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/esqlfilt.l,v 1.14 2005/09/04 21:10:12 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/esqlfilt.l,v 1.16 2006/05/21 19:50:19 tom Exp $
  *
  * Filter to add vile "attribution" sequences to embedded SQL with C/C++.
  * - T.Dickey
@@ -67,7 +67,7 @@ NUMBER		{SIGN}?({DECIMAL}|{OCTAL}|{HEXADECIMAL}|{REAL})
 <COMMENT>"*"+[^*/]*	{ WriteToken(Comment_attr); }
 <COMMENT>"*"+"/"	{ WriteToken(Comment_attr); BEGIN(my_state); }
 
-<CODE,SQL>"//"[^\n]*	{ WriteToken(Comment_attr); }
+<CODE,SQL>"//"[^\r\n]*	{ WriteToken(Comment_attr); }
 
 <CODE,SQL>{STRINGS}	{ WriteToken(String_attr); }
 
@@ -164,6 +164,7 @@ process_keyword(char *text, int len)
 static void
 init_filter(int before GCC_UNUSED)
 {
+    (void) before;
 }
 
 static void

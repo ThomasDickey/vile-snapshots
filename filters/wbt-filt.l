@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/wbt-filt.l,v 1.3 2005/09/04 21:15:43 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/wbt-filt.l,v 1.5 2006/05/21 19:50:48 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of WinBatch script.
  */
@@ -21,9 +21,9 @@ static char *String_attr;
 
 %}
 
-BSTRING		\`([^`\n]|``)*\`
-SSTRING		\'([^'\n]|'')*\'
-DSTRING		\"([^"\n]|"")*\"
+BSTRING		\`([^`\r\n]|``)*\`
+SSTRING		\'([^'\r\n]|'')*\'
+DSTRING		\"([^"\r\n]|"")*\"
 STRING		{DSTRING}|{SSTRING}|{BSTRING}
 
 NAME		[[:alnum:]]
@@ -40,7 +40,7 @@ NUMBER		({REAL}|{DECIMAL})
 <NORMAL>#{IDENT}	{ WriteToken(want_attr(Prepro_attr, yytext)); }
 <NORMAL>"@"{IDENT}	{ WriteToken(want_attr(Number_attr, yytext)); }
 
-<NORMAL>";"[^\n]*	{ WriteToken(Comment_attr); }
+<NORMAL>";"[^\r\n]*	{ WriteToken(Comment_attr); }
 
 <NORMAL>{NUMBER}	{ WriteToken(Number_attr); }
 <NORMAL>[[:digit:]]{NUMBER}{NAME}+ {
@@ -63,6 +63,7 @@ want_attr(char *want, char *name)
 static void
 init_filter(int before GCC_UNUSED)
 {
+    (void) before;
 }
 
 static void

@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/py-filt.l,v 1.12 2005/09/04 21:15:43 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/py-filt.l,v 1.13 2006/05/21 19:50:19 tom Exp $
  *
  * Filter to add vile "attribution" sequences to a Python script
  */
@@ -61,6 +61,7 @@ NUMBER		{SIGN}?({DECIMAL}|{OCTAL}|{HEXADECIMAL})[L]?|{REAL}
 static void
 init_filter(int before GCC_UNUSED)
 {
+    (void) before;
 }
 
 static void

@@ -3,7 +3,7 @@
  *	for getting and setting the values of the vile state variables,
  *	plus helper utility functions.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.97 2006/02/16 00:28:41 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.98 2006/04/19 23:51:34 tom Exp $
  */
 
 #include	"estruct.h"
@@ -216,7 +216,7 @@ any_REPL(TBUFF **rp, const char *vp, CHARTYPE type)
 	lgrabtext(rp, type);
 	return TRUE;
     } else if (vp && valid_buffer(curbp)) {
-	return lrepltext(type, vp, strlen(vp));
+	return lrepltext(type, vp, (int) strlen(vp));
     } else {
 	return FALSE;
     }

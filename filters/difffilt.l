@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/difffilt.l,v 1.6 2003/05/20 20:38:41 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/difffilt.l,v 1.7 2006/05/21 19:50:19 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of diff output
  */
@@ -48,6 +48,7 @@ MARKED		[^\n]*\n
 static void
 init_filter(int before GCC_UNUSED)
 {
+    (void) before;
 }
 
 static void

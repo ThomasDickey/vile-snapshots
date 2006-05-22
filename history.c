@@ -55,7 +55,7 @@
  *	not (yet) correspond to :-commands.  Before implementing, probably will
  *	have to make TESTC a settable mode.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/history.c,v 1.82 2005/01/20 01:58:52 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/history.c,v 1.84 2006/05/21 10:53:43 tom Exp $
  *
  */
 
@@ -71,7 +71,7 @@
 
 typedef struct {
     TBUFF **buffer;
-    unsigned *position;
+    size_t *position;
     int (*endfunc) (EOL_ARGS);
     int eolchar;
     UINT options;
@@ -219,7 +219,7 @@ parseArg(HST * parm, LINE *lp)
 {
     return endOfParm(parm,
 		     lp->l_text,
-		     willGlue() + tb_length(MyText),
+		     willGlue() + (int) tb_length(MyText),
 		     llength(lp));
 }
 
@@ -385,7 +385,7 @@ hst_remove(const char *cmd)
 {
     if (MyLevel == 1 && cmd != 0 && *cmd != EOS) {
 	TBUFF *temp = 0;
-	unsigned len = tb_length(tb_scopy(&temp, cmd)) - 1;
+	size_t len = tb_length(tb_scopy(&temp, cmd)) - 1;
 
 	TRACE(("hst_remove(%s)\n", cmd));
 	while (*cmd++)
@@ -491,7 +491,7 @@ hst_find(HST * parm, BUFFER *bp, LINE *lp, int direction)
 	    continue;		/* prefix mismatches */
 
 	if (willGlue()) {	/* avoid conflicts setall/set */
-	    int len = tb_length(MyText);
+	    int len = (int) tb_length(MyText);
 	    if (len > 0
 		&& (len > 1 || !isPunct(tb_values(MyText)[0]))
 		&& llength(lp) > len
@@ -542,7 +542,7 @@ hst_display(HST * parm, char *src, int srclen)
 
     if (src != 0 && srclen != 0) {
 	char *stripped;
-	int offset = tb_length(MyText) + willGlue();
+	int offset = (int) tb_length(MyText) + willGlue();
 	int n = endOfParm(parm, src, offset, srclen) - offset;
 
 	src += offset;
@@ -631,7 +631,7 @@ hst_scroll(LINE *lp1, HST * parm)
  */
 int
 edithistory(TBUFF **buffer,
-	    unsigned *position,
+	    size_t *position,
 	    int *given,
 	    UINT options,
 	    int (*endfunc) (EOL_ARGS),

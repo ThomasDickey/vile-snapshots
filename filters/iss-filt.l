@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/iss-filt.l,v 1.4 2005/09/04 21:15:43 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/iss-filt.l,v 1.6 2006/05/21 19:50:19 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Inno Setup
  * input text.
@@ -24,7 +24,7 @@ BLANK		[ \t]
 
 IDENT		[[:alpha:]_][[:alnum:]_]*
 
-STRING		\'([^'\n]|(''))*\'
+STRING		\'([^'\r\n]|(''))*\'
 
 HEXADECIMAL	\$[[:xdigit:]_]+
 UNSIGNED	[[:digit:]]+
@@ -57,11 +57,11 @@ NUMBER		{HEXADECIMAL}|{INTEGER}|{REAL}
 <SETUP,VALUE>{NUMBER}	{ WriteToken(Number_attr); }
 <VALUE>[\n]		{ ECHO; BEGIN(SETUP); }
 
-<SETUP,FLAGS>"//"[^\n]*	{ WriteToken(Comment_attr); }
-<SETUP,FLAGS>^";"[^\n]*	{ WriteToken(Comment_attr); }
+<SETUP,FLAGS>"//"[^\r\n]*	{ WriteToken(Comment_attr); }
+<SETUP,FLAGS>^";"[^\r\n]*	{ WriteToken(Comment_attr); }
 
 <FLAGS>":"{BLANK}*	{ ECHO; BEGIN(OTHER); }
-<OTHER>[^;\n]+		{ WriteToken(String_attr); }
+<OTHER>[^;\r\n]+	{ WriteToken(String_attr); }
 <OTHER>";"		{ ECHO; BEGIN(FLAGS); }
 <OTHER>[\n]		{ ECHO; BEGIN(FLAGS); }
 
@@ -79,7 +79,7 @@ NUMBER		{HEXADECIMAL}|{INTEGER}|{REAL}
 <CMT_STANDARD>\n	|
 <CMT_STANDARD>.		{ flt_bfr_append(yytext, yyleng); }
 
-<CODE>"//"[^\n]*	{ WriteToken(Comment_attr); /* Delphi */ }
+<CODE>"//"[^\r\n]*	{ WriteToken(Comment_attr); /* Delphi */ }
 
 <CODE>.			{ ECHO; }
 
@@ -88,6 +88,7 @@ NUMBER		{HEXADECIMAL}|{INTEGER}|{REAL}
 static void
 init_filter(int before GCC_UNUSED)
 {
+    (void) before;
 }
 
 static void

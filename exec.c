@@ -4,7 +4,7 @@
  *	original by Daniel Lawrence, but
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.282 2006/02/16 01:16:23 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.285 2006/05/21 19:24:48 tom Exp $
  *
  */
 
@@ -81,8 +81,10 @@ static BUFFER *macrobuffer = NULL;
 
 /*ARGSUSED*/
 static int
-eol_range(const char *buffer, unsigned cpos, int c, int eolchar GCC_UNUSED)
+eol_range(EOL_ARGS)
 {
+    (void) eolchar;
+
     if (is_edit_char(c))
 	return FALSE;
 
@@ -1628,14 +1630,14 @@ pop_buffer(IFSTK * save)
  *	length is the nominal maximum length (*cmdp is null-terminated)
  */
 DIRECTIVE
-dname_to_dirnum(char **cmdpp, int length)
+dname_to_dirnum(char **cmdpp, size_t length)
 {
     DIRECTIVE dirnum = D_UNKNOWN;
-    int n;
+    size_t n;
     int code;
     const char *ptr = (*cmdpp);
 
-    if ((--length > 0)
+    if ((length-- > 1)
 	&& (*ptr++ == DIRECTIVE_CHAR)) {
 	for (n = 0; n < length; n++) {
 	    if (!isAlnum(ptr[n]))
@@ -2036,7 +2038,7 @@ line_in_buffer(BUFFER *bp, LINE *test_lp)
 
 #if ! SMALLER
 static void
-compute_indent(char *cmd, int length, int *indent, int *indstate)
+compute_indent(char *cmd, size_t length, int *indent, int *indstate)
 {
     static BUFFER *save;
 
@@ -2196,7 +2198,7 @@ perform_dobuf(BUFFER *bp, WHLOOP * whlist)
 	if (lforw(lp) != buf_head(bp)
 	    && linlen != 0
 	    && isEscaped(cmdp + linlen)) {
-	    glue = linlen + (size_t) (cmdp - linebuf) - 1;
+	    glue = (int) (linlen + (cmdp - linebuf) - 1);
 	    continue;
 	}
 	cmdp = skip_space_tab(linebuf);
@@ -2237,7 +2239,7 @@ perform_dobuf(BUFFER *bp, WHLOOP * whlist)
 
 	if (*cmdp == DIRECTIVE_CHAR) {
 
-	    dirnum = dname_to_dirnum(&cmdp, (int) linlen);
+	    dirnum = dname_to_dirnum(&cmdp, linlen);
 	    if (dirnum == D_UNKNOWN) {
 		mlforce("[Unknown directive \"%s\"]", cmdp);
 		status = FALSE;
@@ -2308,7 +2310,7 @@ perform_dobuf(BUFFER *bp, WHLOOP * whlist)
 	    /* check if next word is also a directive */
 	    cmdp = skip_space_tab(cmdp);
 	    if (*cmdp == DIRECTIVE_CHAR) {
-		dirnum = dname_to_dirnum(&cmdp, (int) linlen);
+		dirnum = dname_to_dirnum(&cmdp, linlen);
 		if (dirnum == D_UNKNOWN) {
 		    mlforce("[Unknown directive \"%s\"]", cmdp);
 		    status = FALSE;

@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/midlfilt.l,v 1.2 2005/09/05 00:48:14 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/midlfilt.l,v 1.4 2006/05/21 19:50:19 tom Exp $
  *
  * Filter to add vile "attribution" sequences to MIDL / ODL files.
  * - T.Dickey
@@ -38,7 +38,7 @@ NUMBER		{SIGN}?({DECIMAL}|{REAL})
 <COMMENT>"*"+[^*/]*	{ WriteToken(Comment_attr); }
 <COMMENT>"*"+"/"	{ WriteToken(Comment_attr); BEGIN(CODE); }
 
-<CODE>"//"[^\n]*	{ WriteToken(Comment_attr); }
+<CODE>"//"[^\r\n]*	{ WriteToken(Comment_attr); }
 
 <CODE>{STRINGS}		{ WriteToken(String_attr); }
 
@@ -54,6 +54,7 @@ NUMBER		{SIGN}?({DECIMAL}|{REAL})
 static void
 init_filter(int before GCC_UNUSED)
 {
+    (void) before;
 }
 
 static void

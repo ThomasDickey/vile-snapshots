@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/xml-filt.l,v 1.13 2005/09/04 21:15:43 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/xml-filt.l,v 1.15 2006/05/21 19:50:48 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of XML input
  * text.
@@ -81,8 +81,8 @@ VALUE		#{IDENT}
 
 <INITIAL,INLINE>"<!--"	{ PushQuote(COMMENT, Comment_attr); }
 <COMMENT>[\n]		|
-<COMMENT>[^\n-]+	|
-<COMMENT>[-]+[^-\>\n]*	{ flt_bfr_append(yytext, yyleng); }
+<COMMENT>[^\r\n-]+	|
+<COMMENT>[-]+[^-\>\r\n]*	{ flt_bfr_append(yytext, yyleng); }
 <COMMENT>[-]+"->"	{ PopQuote(); }
 
 <XMLATTR>"["		{ WriteToken(Action_attr); push_state(INLINE); }
@@ -192,6 +192,7 @@ xml_close(char *text)
 static void
 init_filter(int before GCC_UNUSED)
 {
+    (void) before;
 }
 
 static void

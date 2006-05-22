@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/xresfilt.l,v 1.16 2005/09/04 21:15:43 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/xresfilt.l,v 1.18 2006/05/21 19:50:48 tom Exp $
  *
  * Filter to add vile "attribution" sequences to an X resource file.
  */
@@ -28,7 +28,7 @@ static void quoted_name(char *text, int length);
 
 SPACE		[ \t]
 
-COMMENT		![^\n]*\n
+COMMENT		![^\r\n]*\n
 
 SIGN		[-+]
 DECIMAL		[[:digit:]]+
@@ -53,7 +53,7 @@ KEYWORD		({NAME}|<{NAME}>)
 
 <RESVALUE>{NUMBER}	{ flt_bfr_embed(yytext, yyleng, Number_attr); }
 <RESVALUE>{KEYWORD}	{ quoted_name(yytext, yyleng); }
-<RESVALUE>![^\\\n]*	{ flt_bfr_embed(yytext, yyleng, Comment_attr); }
+<RESVALUE>![^\\\r\n]*	{ flt_bfr_embed(yytext, yyleng, Comment_attr); }
 <RESVALUE>\\\n		{ flt_bfr_append(yytext, yyleng); }
 <RESVALUE>({ESCAPED}|.)	{ flt_bfr_append(yytext, yyleng); }
 <RESVALUE>\n		{ flt_bfr_finish(); ECHO; BEGIN(NORMAL); }
@@ -123,6 +123,7 @@ quoted_name(char *text, int length)
 static void
 init_filter(int before GCC_UNUSED)
 {
+    (void) before;
 }
 
 static void

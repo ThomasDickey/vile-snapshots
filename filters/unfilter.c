@@ -1,7 +1,7 @@
 /*
  * Parsing and I/O support for atr2text, etc.
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/unfilter.c,v 1.8 2005/01/18 23:23:26 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/unfilter.c,v 1.9 2006/05/21 19:46:51 tom Exp $
  */
 #define CAN_TRACE 0
 #define CAN_VMS_PATH 0
@@ -150,6 +150,9 @@ unfilter(FILE *src, FILE *dst)
 int
 main(int argc GCC_UNUSED, char *argv[]GCC_UNUSED)
 {
+    (void) argc;
+    (void) argv;
+
     unfilter(stdin, stdout);
     exit(GOODEXIT);
 }

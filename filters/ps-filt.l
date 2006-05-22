@@ -4,7 +4,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/ps-filt.l,v 1.7 2005/09/05 11:03:11 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/ps-filt.l,v 1.9 2006/05/21 19:50:19 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of PostScript
  * files.
@@ -40,7 +40,7 @@ NUMBER		{INTEGER}|{REAL}|{RADIX}
 
 <NORMAL>{IDENT}		{ WriteToken(keyword_attr(yytext)); }
 
-<NORMAL>"%"[^\n]*	{ WriteToken(Comment_attr); }
+<NORMAL>"%"[^\r\n]*	{ WriteToken(Comment_attr); }
 
 <NORMAL>{ACTION}	{ WriteToken(Action_attr); }
 
@@ -67,6 +67,7 @@ NUMBER		{INTEGER}|{REAL}|{RADIX}
 static void
 init_filter(int before GCC_UNUSED)
 {
+    (void) before;
 }
 
 static void

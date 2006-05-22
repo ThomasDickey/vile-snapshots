@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/regexp.c,v 1.117 2006/01/10 01:19:19 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/regexp.c,v 1.118 2006/04/20 00:01:45 tom Exp $
  *
  * Copyright 2005, Thomas E. Dickey and Paul G. Fox
  *
@@ -609,7 +609,7 @@ regcomp(const char *exp_text, size_t exp_len, int magic)
 		    len = OPSIZE(scan);
 		}
 	    if (longest) {
-		r->regmust = longest - r->program;
+		r->regmust = (int) (longest - r->program);
 		r->regmlen = len;
 	    }
 	}
@@ -970,7 +970,7 @@ parse_char_class(char **src)
 
     unsigned n;
     for (n = 0; n < sizeof(char_classes) / sizeof(char_classes[0]); n++) {
-	unsigned len = strlen(char_classes[n].name);
+	size_t len = strlen(char_classes[n].name);
 	if (!strncmp(*src, char_classes[n].name, len)) {
 	    *src += len;
 	    return char_classes[n].escape;
@@ -1013,7 +1013,7 @@ reg_strcspn(const char *s, const char *reject)
 	}
 	++s;
     }
-    return (s - base);
+    return (int) (s - base);
 }
 
 /*
@@ -1426,9 +1426,9 @@ regtail(char *p, char *val)
 
     if (OP(scan) == BACK
 	|| OP(scan) == RCOMPLX)
-	offset = scan - val;
+	offset = (int) (scan - val);
     else
-	offset = val - scan;
+	offset = (int) (val - scan);
     SET_NEXT(scan, offset);
 }
 
@@ -1466,7 +1466,7 @@ static char **regendp;		/* Ditto for endp. */
 static int
 regstrncmp(const char *txt_a,
 	   const char *txt_b,
-	   unsigned len_b,
+	   size_t len_b,
 	   const char *end_a)
 {
     if (end_a == NULL
@@ -1630,7 +1630,7 @@ regexec(
     }
 
     if (endoff < 0)
-	endoff = stringend - string;
+	endoff = (int) (stringend - string);
 
     endsrch = &string[endoff];
 
@@ -2142,7 +2142,7 @@ regrepeat(const char *p)
 
     switch (OP(p)) {
     case ANY:
-	count = regnomore - scan;
+	count = (int) (regnomore - scan);
 	scan += count;
 	break;
     case EXACTLY:
