@@ -4,7 +4,7 @@
  *	original by Daniel Lawrence, but
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.285 2006/05/21 19:24:48 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.286 2006/06/01 00:42:45 tom Exp $
  *
  */
 
@@ -1946,6 +1946,7 @@ setup_dobuf(BUFFER *bp, WHLOOP ** result)
 		break;
 	    }
 
+	    twhp = 0;
 	    if (dirnum == D_ENDWHILE) {
 		/* walk back, filling in unfilled
 		 * 'there' pointers on the breaks,
@@ -1965,24 +1966,39 @@ setup_dobuf(BUFFER *bp, WHLOOP ** result)
 		    }
 		    twhp = twhp->w_next;
 		}
+	    } else if (dirnum == D_BREAK) {
+		/*
+		 * Do the same search for break (looking for while), but do not
+		 * modify the pointers.
+		 */
+		twhp = whp->w_next;
+		while (twhp) {
+		    if (!twhp->w_there) {
+			if (twhp->w_type == D_WHILE) {
+			    break;
+			}
+		    }
+		    twhp = twhp->w_next;
+		}
+	    }
+	    if (dirnum != D_WHILE) {
 		if (!twhp) {
 		    /* no while for an endwhile */
 		    mlforce("[%s doesn't follow %s in '%s']",
-			    directive_name(D_ENDWHILE),
+			    directive_name(dirnum),
 			    directive_name(D_WHILE),
 			    bp->b_bname);
 		    status = FALSE;
 		    break;
 		}
 	    }
-
 	}
     }
 
     /* no endwhile for a while or break */
     if (status == TRUE && whp && whp->w_type != D_ENDWHILE) {
 	mlforce("[%s with no matching %s in '%s']",
-		directive_name(D_WHILE),
+		directive_name(whp->w_type),
 		directive_name(D_ENDWHILE),
 		bp->b_bname);
 	status = FALSE;

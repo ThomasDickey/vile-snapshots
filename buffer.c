@@ -5,7 +5,7 @@
  * keys. Like everyone else, they set hints
  * for the display system.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.299 2006/04/25 20:14:32 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.300 2006/05/23 00:58:39 tom Exp $
  *
  */
 
@@ -2511,9 +2511,9 @@ bsizes(BUFFER *bp)
     if (valid_buffer(curbp)
 	&& !b_is_counted(bp)) {
 	LINE *lp;		/* current line */
+	B_COUNT ending = len_record_sep(bp);
 	B_COUNT numchars = 0;	/* # of chars in file */
 	L_NUM numlines = 0;	/* # of lines in file */
-	L_NUM ending = len_record_sep(bp);
 
 	/* count chars and lines */
 	for_each_line(lp, bp) {
@@ -2523,8 +2523,12 @@ bsizes(BUFFER *bp)
 	    lp->l_number = numlines;
 #endif
 	}
-	if (!b_val(bp, MDNEWLINE))
-	    numchars -= ending;
+	if (!b_val(bp, MDNEWLINE)) {
+	    if (numchars > ending)
+		numchars -= ending;
+	    else
+		numchars = 0;
+	}
 
 	bp->b_bytecount = numchars;
 	bp->b_linecount = numlines;
