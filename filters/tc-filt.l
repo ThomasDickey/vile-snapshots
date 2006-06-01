@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/tc-filt.l,v 1.24 2006/05/21 19:50:48 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/tc-filt.l,v 1.26 2006/05/30 20:24:21 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of termcap
  */
@@ -24,10 +24,11 @@ static int commented;
 
 static void begin_value(char *name);
 static void write_capname(char *name, int len);
+static void write_value(char *name, int len, char *attr);
 
 %}
 
-CAPNAME		[^\.| \t\r\n:=]+
+CAPNAME		[^\.| #\\\t\r\n:=]+
 DOTNAME		(\.)+{CAPNAME}
 
 ALIAS		[[:alnum:]_\.+-]+
@@ -49,9 +50,9 @@ STRING		[^#:\\\r\n](\\[.\n]|[^:\r\n])*
 				  WriteToken(Error_attr); }
 <CAPS>{CAPNAME}			{ write_capname(yytext, yyleng); begin_value(yytext); }
 <CAPS>{DOTNAME}			{ WriteToken(Comment_attr); commented = 1; begin_value(yytext); }
-<VALS>{NUMBER}			{ WriteToken(commented ? Comment_attr : Number_attr); BEGIN(GAPS); }
-<VALS>{STRING}			{ WriteToken(commented ? Comment_attr : String_attr); BEGIN(GAPS); }
-<LINK>{STRING}			{ WriteToken(commented ? Comment_attr : Ident_attr); BEGIN(GAPS); }
+<VALS>{NUMBER}			{ write_value(yytext, yyleng, Number_attr); }
+<VALS>{STRING}			{ write_value(yytext, yyleng, String_attr); }
+<LINK>{STRING}			{ write_value(yytext, yyleng, Ident_attr); }
 
 %%
 
@@ -102,6 +103,18 @@ write_capname(char *name, int len)
 	}
 	flt_puts(name + 2, len - 2, attr);
     }
+}
+
+static void
+write_value(char *name, int len, char *attr)
+{
+    if (commented) {
+	flt_puts(name, len, Comment_attr);
+    } else {
+	flt_puts(name, 1, "");
+	flt_puts(name + 1, len - 1, attr);
+    }
+    BEGIN(GAPS);
 }
 
 static void

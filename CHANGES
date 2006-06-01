@@ -1,5 +1,18 @@
 Changes for vile 9.6 (released ??? ??? ?? ????)
 
+ 20060531 (i)
+	> Tom Dickey:
+	+ fix error-reporting for a "~break" without a preceding "~while"
+	  (report by Clark Morgan).
+	+ minor fixes for tc-filt.l (termcap mode).
+	+ fix x11.c for Motif broken in 9.5f cleanup (reported by Paul Fox).
+	+ improve bas-filt.l by not highlighting incidental matches in the
+	  attribute section of a Visual Basic form-file.
+	+ correct parsing of hexadecimal constants in bas-filt.l
+	+ add .ctl suffix for vbmode
+	+ fix a case in bsizes() which subtracted line-ending from zero-sized
+	  buffer when nonewline mode was set (Debian #368007).
+
  20060521 (h)
 	> Clark Morgan:
 	+ document write-all-buffers command.

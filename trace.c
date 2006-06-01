@@ -1,7 +1,7 @@
 /*
  * debugging support -- tom dickey.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.53 2005/05/22 16:58:55 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.54 2006/05/23 00:51:35 tom Exp $
  *
  */
 
@@ -669,9 +669,10 @@ trace_mark(char *name, MARK *mk, BUFFER *bp)
 void
 trace_region(REGION * rp, BUFFER *bp)
 {
-    Trace("region %d.%d .. %d.%d (%s)\n",
+    Trace("region %d.%d .. %d.%d (%ld:%s)\n",
 	  line_no(bp, rp->r_orig.l), rp->r_orig.o,
 	  line_no(bp, rp->r_end.l), rp->r_end.o,
+	  (long) rp->r_size,
 	  (regionshape == EXACT
 	   ? "exact"
 	   : (regionshape == FULLLINE

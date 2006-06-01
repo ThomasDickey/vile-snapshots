@@ -8,7 +8,7 @@
 /************************************************************************/
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/x11menu.c,v 1.8 2005/01/18 01:08:06 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11menu.c,v 1.9 2006/05/30 19:35:21 tom Exp $
  */
 
 #define NEED_X_INCLUDES 1
@@ -188,7 +188,9 @@ gui_add_menu_item(void *pm, char *nom, char *accel GCC_UNUSED, int the_class)
 /* A buffer button takes part from the list tokens (L)                  */
 /************************************************************************/
 static void
-list_proc_back(Widget w GCC_UNUSED, XtPointer bname, XtPointer call GCC_UNUSED)
+list_proc_back(Widget w GCC_UNUSED,
+	       XtPointer bname GCC_UNUSED,
+	       XtPointer call GCC_UNUSED)
 {
     int num_buff;
     int oldflag = im_waiting(-1);

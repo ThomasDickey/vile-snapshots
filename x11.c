@@ -2,7 +2,7 @@
  *	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.285 2006/01/13 01:31:23 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.286 2006/05/30 00:43:52 tom Exp $
  *
  */
 
@@ -823,7 +823,7 @@ update_scrollbar_sizes(void)
 #if MOTIF_WIDGETS
 
 static void
-JumpProc(Widget scrollbar,
+JumpProc(Widget scrollbar GCC_UNUSED,
 	 XtPointer closure,
 	 XtPointer call_data)
 {
@@ -839,6 +839,39 @@ JumpProc(Widget scrollbar,
     dont_update_sb = TRUE;
     (void) update(TRUE);
     dont_update_sb = FALSE;
+}
+
+static void
+grip_moved(Widget w GCC_UNUSED,
+	   XtPointer unused GCC_UNUSED,
+	   XEvent * ev GCC_UNUSED,
+	   Boolean * continue_to_dispatch GCC_UNUSED)
+{
+    int i;
+    WINDOW *wp, *saved_curwp;
+    Dimension height;
+    int lines;
+
+    if (!lookfor_sb_resize)
+	return;
+    lookfor_sb_resize = FALSE;
+    saved_curwp = curwp;
+
+    i = 0;
+    for_each_visible_window(wp) {
+	XtVaGetValues(cur_win->scrollbars[i],
+		      XtNheight, &height,
+		      NULL);
+	lines = (height + (cur_win->char_height / 2)) / cur_win->char_height;
+	if (lines <= 0) {
+	    lines = 1;
+	}
+	curwp = wp;
+	resize(TRUE, lines);
+	i++;
+    }
+    set_curwp(saved_curwp);
+    (void) update(TRUE);
 }
 
 static void
@@ -4776,8 +4809,8 @@ x_paste_selection(Atom selection)
 {
     if (cur_win->have_selection && selection == XA_PRIMARY) {
 	/* local transfer */
-	UCHAR *data;
-	size_t len_st;
+	UCHAR *data = 0;
+	size_t len_st = 0;
 	ULONG len_ul;
 
 	Atom type = XA_STRING;
@@ -5608,41 +5641,6 @@ check_scrollbar_allocs(void)
     return TRUE;
 }
 
-#if MOTIF_WIDGETS
-static void
-grip_moved(Widget w,
-	   XtPointer unused,
-	   XEvent * ev,
-	   Boolean * continue_to_dispatch)
-{
-    int i;
-    WINDOW *wp, *saved_curwp;
-    Dimension height;
-    int lines;
-
-    if (!lookfor_sb_resize)
-	return;
-    lookfor_sb_resize = FALSE;
-    saved_curwp = curwp;
-
-    i = 0;
-    for_each_visible_window(wp) {
-	XtVaGetValues(cur_win->scrollbars[i],
-		      XtNheight, &height,
-		      NULL);
-	lines = (height + (cur_win->char_height / 2)) / cur_win->char_height;
-	if (lines <= 0) {
-	    lines = 1;
-	}
-	curwp = wp;
-	resize(TRUE, lines);
-	i++;
-    }
-    set_curwp(saved_curwp);
-    (void) update(TRUE);
-}
-#endif
-
 static void
 configure_bar(Widget w,
 	      XEvent * event,
@@ -5690,10 +5688,10 @@ configure_bar(Widget w,
 
 #if MOTIF_WIDGETS
 static void
-pane_button(Widget w,
-	    XtPointer unused,
-	    XEvent * ev,
-	    Boolean * continue_to_dispatch)
+pane_button(Widget w GCC_UNUSED,
+	    XtPointer unused GCC_UNUSED,
+	    XEvent * ev GCC_UNUSED,
+	    Boolean * continue_to_dispatch GCC_UNUSED)
 {
     lookfor_sb_resize = TRUE;
 }
@@ -5701,7 +5699,7 @@ pane_button(Widget w,
 
 /*ARGSUSED*/
 static void
-x_change_focus(Widget w,
+x_change_focus(Widget w GCC_UNUSED,
 	       XtPointer unused GCC_UNUSED,
 	       XEvent * ev,
 	       Boolean * continue_to_dispatch GCC_UNUSED)
