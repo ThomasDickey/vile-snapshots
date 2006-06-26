@@ -1,5 +1,16 @@
 Changes for vile 9.6 (released ??? ??? ?? ????)
 
+ 20060625 (j)
+	> Tom Dickey:
+	+ fix expression for shmode $mode-filename to match ".profile".
+	+ various small build-fixes (prompted by reports by Paul Fox, Clark
+	  Morgan).
+	+ amend 20050214 change to set_files_to_edit(), which caused partly-
+	  read buffer to be discarded if ffgetline() was interrupted, e.g.,
+	  by a ^C during a slow pipe read.  Now the buffer contents are
+	  retained.
+	+ update config.guess, config.sub
+
  20060531 (i)
 	> Tom Dickey:
 	+ fix error-reporting for a "~break" without a preceding "~while"

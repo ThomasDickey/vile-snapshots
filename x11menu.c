@@ -8,7 +8,7 @@
 /************************************************************************/
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/x11menu.c,v 1.9 2006/05/30 19:35:21 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11menu.c,v 1.10 2006/06/12 23:50:33 tom Exp $
  */
 
 #define NEED_X_INCLUDES 1
@@ -94,8 +94,7 @@ gui_make_menu(void *menubar, char *nom, int the_class GCC_UNUSED)
 		      Nval(XmNmenuHelpWidget, cascade),
 		      NULL);
     }
-#endif /* MOTIF_WIDGETS */
-#if ATHENA_WIDGETS
+#elif ATHENA_WIDGETS
     static Widget last;
     String str = XtMalloc(strlen(nom) + 10);
 
@@ -168,9 +167,7 @@ gui_add_menu_item(void *pm, char *nom, char *accel GCC_UNUSED, int the_class)
     XmStringFree(xms_accl);
     XmStringFree(xms_name);
 
-    return w;
-#endif /* MOTIF_WIDGETS */
-#if ATHENA_WIDGETS
+#elif ATHENA_WIDGETS
     w = XtVaCreateManagedWidget("menuEntry",
 				((the_class == 'B')
 				 ? smeBSBObjectClass
@@ -204,8 +201,7 @@ list_proc_back(Widget w GCC_UNUSED,
 #endif
     XmStringGetLtoR(xms, XmFONTLIST_DEFAULT_TAG, &accel);
     num_buff = atoi(&accel[1]);
-#endif
-#if ATHENA_WIDGETS
+#elif ATHENA_WIDGETS
     num_buff = (int) bname;
 #endif
 
@@ -260,8 +256,7 @@ gui_add_func_callback(void *w, void *closure)
 {
 #if MOTIF_WIDGETS
     XtAddCallback((Widget) w, XmNactivateCallback, proc_back, closure);
-#endif
-#if ATHENA_WIDGETS
+#elif ATHENA_WIDGETS
     XtAddCallback((Widget) w, XtNcallback, proc_back, closure);
 #endif /* ATHENA_WIDGETS */
 }
@@ -331,8 +326,7 @@ post_buffer_list(Widget w GCC_UNUSED,
 	    XmStringFree(xms);
 	    XtRemoveCallback(pm_buffer[nb_item_menu_list],
 			     XmNactivateCallback, list_proc_back, NULL);
-#endif
-#if ATHENA_WIDGETS
+#elif ATHENA_WIDGETS
 	    XtVaSetValues(pm_buffer[nb_item_menu_list],
 			  Nval(XtNlabel, string),
 			  NULL);
@@ -346,8 +340,7 @@ post_buffer_list(Widget w GCC_UNUSED,
 		      XmNactivateCallback,
 		      list_proc_back,
 		      NULL);
-#endif
-#if ATHENA_WIDGETS
+#elif ATHENA_WIDGETS
 	XtAddCallback(pm_buffer[nb_item_menu_list],
 		      XtNcallback,
 		      list_proc_back,

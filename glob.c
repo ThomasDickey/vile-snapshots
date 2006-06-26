@@ -13,7 +13,7 @@
  *
  *	modify (ifdef-style) 'expand_leaf()' to allow ellipsis.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/glob.c,v 1.88 2006/04/21 00:21:04 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/glob.c,v 1.89 2006/06/12 23:51:51 tom Exp $
  *
  */
 
@@ -94,6 +94,7 @@ static size_t myLen = 0;	/* length and index of the expanded list */
 static char **myVec = 0;	/* the expanded list */
 
 /*--------------------------------------------------------------------------*/
+#if UNIX_GLOBBING
 static void
 strip_escapes(char *buffer)
 {
@@ -107,6 +108,7 @@ strip_escapes(char *buffer)
     }
     buffer[k] = EOS;
 }
+#endif
 
 /*
  * Use this function to decide if we should perform wildcard expansion.

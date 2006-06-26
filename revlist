@@ -1,6 +1,6 @@
-revlist for vile, version v9_5i
+revlist for vile, version v9_5j
 --------------------------------------------------------------------------------
-CHANGES	1.926
+CHANGES	1.929
 CHANGES.R3	1.1
 CHANGES.R4	1.1
 CHANGES.R5	1.1
@@ -13,7 +13,7 @@ MANIFEST	none
 README	1.95
 README.PC	1.33
 README.VMS	1.5
-aclocal.m4	1.160
+aclocal.m4	1.161
 ansi.c	1.48
 api.c	1.37
 api.h	1.13
@@ -27,10 +27,10 @@ buglist	1.403
 builtflt.c	1.47
 chgdfunc.h	1.18
 cmdtbl	1.238
-config.guess	1.3
-config.sub	1.3
+config.guess	1.4
+config.sub	1.4
 config_h.in	1.2
-configure	1.4
+configure	1.5
 configure.in	1.222
 csrch.c	1.32
 curses.c	1.27
@@ -42,14 +42,14 @@ dumbterm.c	1.21
 edef.h	1.323
 estruct.h	1.597
 eval.c	1.353
-exec.c	1.286
+exec.c	1.288
 externs.c	1.10
 fences.c	1.84
-file.c	1.393
+file.c	1.394
 filec.c	1.124
 fileio.c	1.181
 finderr.c	1.130
-glob.c	1.88
+glob.c	1.89
 globals.c	1.48
 gppconio.c	1.2
 history.c	1.84
@@ -83,7 +83,7 @@ opers.c	1.90
 os2keys.h	1.2
 os2pipe.c	1.5
 os2vio.c	1.35
-patchlev.h	1.345
+patchlev.h	1.346
 path.c	1.151
 perl.xs	1.104
 plugin.c	1.1
@@ -94,7 +94,7 @@ ptypemap	1.7
 random.c	1.292
 regexp.c	1.118
 region.c	1.133
-revlist	v9_5i
+revlist	v9_5j
 search.c	1.138
 select.c	1.161
 sinstall.sh	1.1
@@ -111,7 +111,7 @@ trace.h	1.24
 ucrypt.c	1.15
 undo.c	1.88
 version.c	1.59
-vile-9.5.spec	1.10
+vile-9.5.spec	1.11
 vile.1	1.31
 vile.hlp	1.612
 vile.wmconfig	1.1
@@ -142,7 +142,7 @@ word.c	1.80
 wordmov.c	1.22
 wvwrap.cpp	1.10
 x11.c	1.286
-x11menu.c	1.9
+x11menu.c	1.10
 xshell.sh	1.4
 xterm.c	1.2
 xtermkeys.h	1.6
@@ -204,11 +204,11 @@ filters/est-filt.l	1.6
 filters/est.key	1.1
 filters/fdl-filt.l	1.12
 filters/fdl.key	1.4
-filters/filterio.c	1.28
+filters/filterio.c	1.29
 filters/filters.c	1.99
 filters/filters.h	1.96
 filters/filters.rc	1.205
-filters/flt_defs.h	1.2
+filters/flt_defs.h	1.3
 filters/fltstack.h	1.9
 filters/genmake.c	1.4
 filters/genmake.mak	1.30
@@ -345,7 +345,7 @@ macros/digraphs.rc	1.2
 macros/gnugpg.rc	1.3
 macros/loaderrs.rc	1.1
 macros/manpage.rc	1.21
-macros/modes.rc	1.44
+macros/modes.rc	1.46
 macros/palettes.rc	1.7
 macros/pictmode.rc	1.4
 macros/search.rc	1.3
