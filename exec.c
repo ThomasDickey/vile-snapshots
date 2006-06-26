@@ -4,7 +4,7 @@
  *	original by Daniel Lawrence, but
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.286 2006/06/01 00:42:45 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.288 2006/06/12 22:28:06 tom Exp $
  *
  */
 
@@ -2449,8 +2449,10 @@ dobuf(BUFFER *bp, int limit)
 	    /*
 	     * If the caller set $return, use that value.
 	     */
+#if OPT_EVAL
 	    if (this_macro_result != 0)
 		tb_copy(&macro_result, this_macro_result);
+#endif
 
 	    restore_arguments(bp);
 	    vl_msgs = save_vl_msgs;
@@ -2468,6 +2470,7 @@ dobuf(BUFFER *bp, int limit)
      * codes.  In the latter case, this is not the same as $status, since we
      * try to show the ABORT and SORTOFTRUE cases as well.
      */
+#if OPT_EVAL
     tb_free(&last_macro_result);
     if (macro_result != 0) {
 	last_macro_result = macro_result;
@@ -2490,6 +2493,7 @@ dobuf(BUFFER *bp, int limit)
 	    break;
 	}
     }
+#endif /* OPT_EVAL */
 
     endofDisplay();
 

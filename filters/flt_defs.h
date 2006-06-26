@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/flt_defs.h,v 1.2 2006/01/09 23:26:33 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/flt_defs.h,v 1.3 2006/06/12 22:25:55 tom Exp $
  */
 
 #ifndef FLT_DEFS_H
@@ -138,7 +138,7 @@ extern	int	sscanf	( const char *src, const char *fmt, ... );
 extern	char *home_dir(void);
 
 typedef enum { D_UNKNOWN = -1, D_ENDM = 0 } DIRECTIVE;
-extern DIRECTIVE dname_to_dirnum(char **cmdp, int length);
+extern DIRECTIVE dname_to_dirnum(char **cmdp, size_t length);
 
 typedef struct { int dummy; } CMDFUNC;
 extern const CMDFUNC * engl2fnc(const char *fname);

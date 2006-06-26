@@ -5,7 +5,7 @@
  * reading and writing of the disk are
  * in "fileio.c".
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.393 2006/04/25 22:07:14 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.394 2006/06/03 21:01:48 tom Exp $
  */
 
 #include "estruct.h"
@@ -51,12 +51,21 @@
 static FFType ffshadow;
 #endif
 
-#define FIO2Status(fio) \
-	  ((fio) < FIOERR) \
-	   ? TRUE \
-	   : (((fio) == FIOERR) \
-	      ? FALSE \
-	      : ABORT)
+static int
+FIO2Status(int fio)
+{
+    int result;
+
+    if (fio < FIOERR)		/* no error - all ok */
+	result = TRUE;
+    else if (fio == FIOERR)	/* a non-fatal error */
+	result = FALSE;
+    else if (fio == FIOABRT)	/* user killed it */
+	result = SORTOFTRUE;
+    else			/* something bad happened */
+	result = ABORT;
+    return result;
+}
 
 /*--------------------------------------------------------------------------*/
 
@@ -706,7 +715,7 @@ set_files_to_edit(const char *prompt, int appflag)
 	}
 	if (find_bp(firstbp) != 0) {
 	    status = bp2swbuffer(firstbp, FALSE, TRUE);
-	    if (status != TRUE)
+	    if (status == ABORT)
 		reset_to_unnamed(firstbp);
 	}
     }
