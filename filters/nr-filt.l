@@ -1,7 +1,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/nr-filt.l,v 1.20 2006/05/21 19:50:19 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/nr-filt.l,v 1.24 2006/08/13 22:55:20 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of NROFF
  */
@@ -20,13 +20,19 @@ static void
 write_cmd(char *text, int size)
 {
     int cmd = size;
+    int got = 0;
     char *s;
+
     for (s = text; *s; s++) {
-	if (isspace(CharOf(*s))) {
+	int ch = CharOf(*s);
+	if (isalnum(ch)) {
+	    got++;
+	} else if ((got && isspace(ch)) || ((s != text) && ispunct(ch))) {
 	    if (cmd == size)
 		cmd = (s - text) + 1;
 	}
     }
+
     flt_puts(text, cmd, Keyword_attr);
     flt_puts(text+cmd, size-cmd, String_attr);
 }
@@ -41,8 +47,8 @@ write_font(char *text, int size)
 
 %}
 
-COMMAND		^(\.[[:blank:]]*[[:alnum:]]+([ \t][^\r\n]+)?|'\\\"[^\r\n]+)
-COMMENT		^\.[[:blank:]]*\\\"
+COMMAND		^[\.'][[:blank:]]*([[:alnum:]]+|(\\[^\\\r\n\"#])+)([ \t][^\r\n]+)?
+COMMENT		^[\.'][[:blank:]]*(\\\"|#)
 
 ENIT		\\[e *\n\\+-]
 

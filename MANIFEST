@@ -1,4 +1,4 @@
-MANIFEST for vile, version v9_5j
+MANIFEST for vile, version v9_5k
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 CHANGES                         Change-log for VILE
@@ -248,6 +248,8 @@ filters/makefile.wnt            makefile for filters with Visual C++
 filters/makefilt.l              makefile syntax filter for vile
 filters/makelist.sh             script to construct a list of filter names
 filters/manfilt.c               manpage-filter
+filters/mcrl.key                filters for mCRL/mCRL2
+filters/mcrlfilt.l              filters for mCRL/mCRL2
 filters/midl.key                keywords for MIDL
 filters/midlfilt.l              syntax filter for MIDL
 filters/mk-0th.awk              construct builtflt.h

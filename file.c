@@ -5,7 +5,7 @@
  * reading and writing of the disk are
  * in "fileio.c".
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.394 2006/06/03 21:01:48 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.395 2006/09/24 23:57:43 tom Exp $
  */
 
 #include "estruct.h"
@@ -626,6 +626,15 @@ fileread(int f GCC_UNUSED, int n GCC_UNUSED)
 	reset_to_unnamed(curbp);
     } else {
 	set_buffer_name(curbp);
+#if OPT_FINDERR
+	/*
+	 * Doing ":e!" on [Output] will reset the buffer name to match the
+	 * command.  Even if it was not [Output], it is still useful to make
+	 * the error-buffer match the last-read shell/pipe output.
+	 */
+	if (isShellOrPipe(curbp->b_fname))
+	    set_febuff(curbp->b_bname);
+#endif
     }
     restore_window_modes(curbp, save_wvals);
 

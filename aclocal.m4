@@ -1,6 +1,6 @@
 dnl vile's local definitions for autoconf.
 dnl
-dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.161 2006/06/25 19:46:13 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.163 2006/09/24 23:30:12 tom Exp $
 dnl
 dnl ---------------------------------------------------------------------------
 dnl ---------------------------------------------------------------------------
@@ -1545,13 +1545,14 @@ main()
 test $cf_cv_need_killpg = yes && AC_DEFINE(HAVE_KILLPG)
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_LARGEFILE version: 5 updated: 2005/07/17 11:03:36
+dnl CF_LARGEFILE version: 6 updated: 2006/09/23 19:07:52
 dnl ------------
 dnl Add checks for large file support.
 AC_DEFUN([CF_LARGEFILE],[
 ifdef([AC_FUNC_FSEEKO],[
+    AC_SYS_LARGEFILE
+    if test "$enable_largefile" != no ; then
 	AC_FUNC_FSEEKO
-	AC_SYS_LARGEFILE
 
 	# Normally we would collect these definitions in the config.h,
 	# but (like _XOPEN_SOURCE), some environments rely on having these
@@ -1578,6 +1579,7 @@ ifdef([AC_FUNC_FSEEKO],[
 		[cf_cv_struct_dirent64=no])
 	])
 	test "$cf_cv_struct_dirent64" = yes && AC_DEFINE(HAVE_STRUCT_DIRENT64)
+    fi
 ])
 ])
 dnl ---------------------------------------------------------------------------
@@ -1696,7 +1698,7 @@ AC_MSG_RESULT($cf_cv_locale)
 test $cf_cv_locale = yes && { ifelse($1,,AC_DEFINE(LOCALE),[$1]) }
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_MAKEFLAGS version: 9 updated: 2001/12/30 18:17:27
+dnl CF_MAKEFLAGS version: 10 updated: 2006/08/05 09:56:13
 dnl ------------
 dnl Some 'make' programs support $(MAKEFLAGS), some $(MFLAGS), to pass 'make'
 dnl options to lower-levels.  It's very useful for "make -n" -- if we have it.
@@ -1725,7 +1727,8 @@ CF_EOF
 			esac
 			break
 			;;
-		*)	echo no match "$cf_result"
+		.-)	;;
+		*)	echo "given option \"$cf_option\", no match \"$cf_result\""
 			;;
 		esac
 	done
@@ -2147,13 +2150,19 @@ ifelse($1,,,[$1=$PATHSEP])
 	AC_SUBST(PATHSEP)
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_PATH_SYNTAX version: 10 updated: 2006/01/02 19:36:00
+dnl CF_PATH_SYNTAX version: 11 updated: 2006/09/02 08:55:46
 dnl --------------
 dnl Check the argument to see that it looks like a pathname.  Rewrite it if it
 dnl begins with one of the prefix/exec_prefix variables, and then again if the
 dnl result begins with 'NONE'.  This is necessary to work around autoconf's
 dnl delayed evaluation of those symbols.
 AC_DEFUN([CF_PATH_SYNTAX],[
+if test "x$prefix" != xNONE; then
+  cf_path_syntax="$prefix"
+else
+  cf_path_syntax="$ac_default_prefix"
+fi
+
 case ".[$]$1" in #(vi
 .\[$]\(*\)*|.\'*\'*) #(vi
   ;;
@@ -2165,12 +2174,12 @@ case ".[$]$1" in #(vi
   eval $1="[$]$1"
   case ".[$]$1" in #(vi
   .NONE/*)
-    $1=`echo [$]$1 | sed -e s%NONE%$ac_default_prefix%`
+    $1=`echo [$]$1 | sed -e s%NONE%$cf_path_syntax%`
     ;;
   esac
   ;; #(vi
 .no|.NONE/*)
-  $1=`echo [$]$1 | sed -e s%NONE%$ac_default_prefix%`
+  $1=`echo [$]$1 | sed -e s%NONE%$cf_path_syntax%`
   ;;
 *)
   ifelse($2,,[AC_ERROR([expected a pathname, not \"[$]$1\"])],$2)

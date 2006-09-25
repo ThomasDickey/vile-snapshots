@@ -1,7 +1,7 @@
 /*
  * Configurable headers used by termcap/terminfo driver for vile.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tcap.h,v 1.10 2005/11/23 15:44:04 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tcap.h,v 1.11 2006/08/13 20:33:31 tom Exp $
  */
 
 #ifndef VILE_TCAP_H
@@ -23,6 +23,15 @@ extern "C" {
 #  ifndef _XOPEN_SOURCE_EXTENDED
 #    define _XOPEN_SOURCE_EXTENDED 1
 #  endif
+#endif
+
+/*
+ * Workaround for breakage in FreeBSD's header files (updates to wchar.h were
+ * not reflected in updates to curses.h).
+ */
+#if DISP_CURSES && defined(__FreeBSD__) && defined(FREEBSD_BROKE_NCURSES)
+#define __wint_t
+#define __wchar_t
 #endif
 
 #ifdef NEED_CURSES_H

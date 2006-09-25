@@ -1,5 +1,23 @@
 Changes for vile 9.6 (released ??? ??? ?? ????)
 
+ 200608?? (k)
+	> Paul van Tilburg
+	+ add syntax filter (mcrl) for mCRL/mCRL2 modeling language.
+	> Tom Dickey:
+	+ modify fileread() to ensure that the error-buffer is reset after
+	  reading (or re-reading) a shell/pipe command, e.g., using ":e!".
+	+ fix configure --disable-largefile option (from ncurses).
+	+ minor fixes for nroff filter to improve rendition of groff's macros. 
+	+ add configure check for ncurses 5.2(sic) on FreeBSD, which was broken by
+	  an incomplete set of changes to wchar.h (report by Chris Green).
+	+ add configure check for aspell, whose attempt at a compatibility script
+	  for ispell does not recognize ispell's options.
+	+ workaround for breakage in FreeBSD's header files: updates to wchar.h
+	  were not reflected in updates to curses.h (report by Chris Green).
+	+ remove reference to obsolete http://www.vile.cx from README (report
+	  by Paul Fox).
+	+ update config.guess, config.sub
+
  20060625 (j)
 	> Tom Dickey:
 	+ fix expression for shmode $mode-filename to match ".profile".
