@@ -74,10 +74,6 @@ To submit bug reports, either subscribe to the list (since
 non-subscribers aren't allowed to post) or use the bug system at
 that same URL.
 
-There is also a project place-holder page at:
-	http://www.vile.cx
-from which you can find most other sites mentioned in this README.
-
 ------------------------------------------------------
 
 extracts from the original README, from February, 1992:
@@ -1162,5 +1158,5 @@ July 2005,
     + modify vmsbuild.com and descrip.mms to work with IA64.
 
 -------------------------------
-$Header: /users/source/archives/vile.vcs/RCS/README,v 1.95 2006/05/21 00:29:29 pgf Exp $
+$Header: /users/source/archives/vile.vcs/RCS/README,v 1.96 2006/08/13 15:42:38 tom Exp $
 -------------------------------

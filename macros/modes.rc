@@ -1,4 +1,4 @@
-; $Id: modes.rc,v 1.46 2006/06/25 21:42:56 tom Exp $
+; $Id: modes.rc,v 1.47 2006/08/09 22:44:23 tom Exp $
 ; majormodes in this file are ordered alphabetically for convenience - the
 ; precedence used by vile is strictly alphabetic, counting case.  Use the
 ; before and after qualifiers to override the precedence.
@@ -337,6 +337,15 @@ define-mode midl
 ~with define-submode midl
 	suffixes	'\.\(idl\)$'
 	dos
+~endwith
+
+define-mode mcrl
+~with define-submode mcrl
+	suffixes	'\.\(mcrl\)$'
+	fence-pairs     '{}()[]'
+	comment-prefix  '^\s*%'
+	comments        '^\s*%.*$'
+	comments	'^\s*%\s+*$'
 ~endwith
 
 define-mode ini

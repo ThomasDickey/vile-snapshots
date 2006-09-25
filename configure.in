@@ -1,12 +1,12 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_REVISION($Revision: 1.222 $)
+AC_REVISION($Revision: 1.224 $)
 AC_PREREQ(2.13.20030927)
 rm -f config.cache
 
 ### Use "configure -with-screen" to override the default configuration, which is
 ### termcap-based on unix systems.
 
-dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.222 2006/04/05 13:49:06 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.224 2006/08/13 20:49:42 tom Exp $
 
 define(MAKELIST, sh $srcdir/filters/makelist.sh $srcdir/filters/genmake.mak)
 
@@ -142,7 +142,7 @@ AC_MSG_RESULT($VILE_BUILT_IN_FILTERS)
 
 AC_MSG_CHECKING(if you want loadable syntax filters)
 AC_ARG_WITH(loadable-filters,
-[  --with-loadable-filters=XX specify filters to dynamially load at runtime.
+[  --with-loadable-filters=XX specify filters to dynamically load at runtime.
                           Give an option value to specify only certain filters,
 			  i.e., a comma-separated list of filter-names.
                           The default, if no value is given is 'all'.
@@ -523,6 +523,13 @@ case "$screen" in
 			[withval=no])
 		AC_MSG_RESULT($withval)
 		CF_TERMCAP_LIBS($screen)
+	;;
+esac
+
+# work around for broken FreeBSD header files (see tcap.h)
+case "$cf_cv_ncurses_version" in
+5.2.20020615)
+	AC_DEFINE(FREEBSD_BROKE_NCURSES) 	
 	;;
 esac
 
@@ -919,11 +926,21 @@ fi
 AC_SUBST(SH_CFLAGS)
 AC_SUBST(SH_LDFLAGS)
 
-AC_CHECK_PROGS(SPELL_PROG, ispell spell, [])
+AC_CHECK_PROGS(SPELL_PROG, aspell ispell spell, [])
 case .$SPELL_PROG in
-.ispell) AC_DEFINE(ISPELL_PROG);;
-.spell) AC_DEFINE(SPELL_PROG);;
+.aspell)
+	SPELL_OPTS="-x list"
+	;;
+.ispell)
+	SPELL_OPTS="-l -x"
+	;;
+*)
+	SPELL_PROG="spell"
+	SPELL_OPTS="-l"
+	;;
 esac
+AC_DEFINE_UNQUOTED(SPELL_PROG,"$SPELL_PROG")
+AC_DEFINE_UNQUOTED(SPELL_OPTS,"$SPELL_OPTS")
 
 filters_bindir=`echo "$VILE_LIBDIR_PATH" | sed -e 's%'$PATHSEP'.*%%'`
 echo "Computing location to install filter programs: $filters_bindir"

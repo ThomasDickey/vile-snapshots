@@ -1,7 +1,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/spellflt.l,v 1.24 2006/05/21 19:50:19 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/spellflt.l,v 1.25 2006/08/13 20:23:47 tom Exp $
  *
  * Filter to add vile "attribution" sequences to misspelled words.
  */
@@ -23,13 +23,17 @@ DefineFilter("spell");
 #define pclose fclose
 #endif
 
-#if defined(ISPELL_PROG)
-/* -l	Produce a list of misspelled words */
-/* -x	Don't create a backup file. */
-#define SPELL_PIPE "ispell -x -l"
-#else
-#define SPELL_PIPE "spell -l"
+#ifndef SPELL_PROG
+#define SPELL_PROG "spell"
 #endif
+
+/* -l	Produce a list of misspelled words */
+/* -x	Don't create a backup file (ispell, aspell). */
+#ifndef SPELL_OPTS
+#define SPELL_OPTS "-l"
+#endif
+
+#define SPELL_PIPE SPELL_PROG " " SPELL_OPTS
 
 #ifdef HAVE_POPEN
 #define pipe_open(command)	popen(command, "r")
