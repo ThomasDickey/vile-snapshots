@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.96 2006/01/09 20:23:38 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.97 2006/10/03 00:12:43 tom Exp $
  */
 
 #ifndef FILTERS_H
@@ -250,7 +250,8 @@ extern char *strmalloc(const char *src);
 extern char *vile_getenv(const char *name);
 
 #define WriteToken(attr) flt_puts(yytext, yyleng, attr)
-#define WriteToken2(attr,len) flt_puts(yytext+len, yyleng-len, attr)
+#define WriteToken2(attr,len) flt_puts(yytext + (len), yyleng - (len), attr)
+#define WriteToken3(attr,len) flt_puts(yytext, (len), attr)
 
 #define BeginQuote(state, attr) \
 			BEGIN(state); \

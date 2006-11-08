@@ -1,7 +1,7 @@
 /*
  * version & usage-messages for vile
  *
- * $Header: /users/source/archives/vile.vcs/RCS/version.c,v 1.59 2006/01/12 22:37:43 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/version.c,v 1.61 2006/11/04 15:43:59 tom Exp $
  *
  */
 
@@ -16,70 +16,88 @@ print_usage(int code)
 {
     static const char *const options[] =
     {
-	"-h             to get help on startup",
-	"-gNNN          or simply +NNN to go to line NNN",
-#if SYS_WINNT && DISP_NTWIN
-	"-fn fontspec   to change font",
-	"-geometry CxR  to set initial size to R rows and C columns",
+	"-h             display [Help] on startup",
+	"-c command     execute the given ex-style command",
+	"-e             edit in \"noview\" mode -- changes permitted",
+#if OPT_EVAL || OPT_DEBUGMACROS
+	"-D             trace macros into [Trace] buffer",
 #endif
-#if SYS_WINNT && DISP_NTCONS
-	"-console       if stdin is not a tty, start editor in a new console",
+	"-I             use vileinit.rc to initialize",
+#if OPT_ENCRYPT
+	"-k cryptkey    for encrypted files",
 #endif
-#if SYS_WINNT && defined(VILE_OLE) && DISP_NTWIN
+	"-R             edit files \"read-only\" -- no writes permitted",
+#if OPT_TAGS
+#if DISP_X11			/* because -title is predefined */
+	"-T tagname     look up a tag",
+#else
+	"-t tagname     look up a tag",
+#endif
+#endif
+	"-v             edit in \"view\" mode -- no changes permitted",
+	"-V             for version info",
+	"use @cmdfile to run cmdfile as commands (this suppresses "
+	DFT_STARTUP_FILE ")",
+
+#if SYS_VMS
+	"",
+	"VMS-specific:",
+	"-80            80-column mode",
+	"-132           132-column mode",
+#endif
+
+#if DISP_BORLAND
+	"",
+	"DOS-specific:",
+	"-2             25-line mode",
+	"-4             43-line mode",
+	"-5             50-line mode",
+	"-6             60-line mode",
+	"(see help file for more screen resolutions)",
+#endif
+
+#if SYS_WINNT
+	"",
+	"Win32-specific:",
+#if DISP_NTWIN
+	"-fn fontspec   change font",
+	"-geometry CxR  set initial size to R rows and C columns",
+#if defined(VILE_OLE)
 	"-Oa            invoke as an OLE Automation server",
 	"-Or            register ole automation interface and exit",
 	"-Ou            unregister ole automation interface and exit",
 	"-invisible     OLE Automation server does not initially show a window",
 	"-multiple      multiple instances of OLE Automation server permitted",
 #endif
-	"-sstring       or +/string to search for \"string\"",
-#if OPT_TAGS
-#if DISP_X11			/* because -title is predefined */
-	"-Ttagname      to look up a tag",
-#else
-	"-ttagname      to look up a tag",
+#endif				/* DISP_NTWIN */
+
+#if DISP_NTCONS
+	"-console       if stdin is not a tty, start editor in a new console",
 #endif
-#endif
-	"-v             to edit in \"view\" mode -- no changes permitted",
-	"-R             to edit files \"read-only\" -- no writes permitted",
-#if OPT_ENCRYPT
-	"-kcryptkey     for encrypted files (same as -K)",
-#endif
+#endif				/* SYS_WINNT */
+
 #if DISP_X11
-	"-name name     to change program name for X resources",
-	"-title name    to set name in title bar",
-	"-fg color      to change foreground color",
-	"-bg color      to change background color",
-	"-fn fontname   to change font",
-	"-fork          to spawn xvile immediately on startup",
-	"+fork          to force xvile to not spawn on startup",
+	"",
+	"X11-specific:",
+	"-name name     change program name for X resources",
+	"-title name    set name in title bar",
+	"-fg color      change foreground color",
+	"-bg color      change background color",
+	"-fn fontname   change font",
+	"-fork          spawn xvile immediately on startup",
+	"+fork          force xvile to not spawn on startup",
 	"-display       displayname to change the default display",
 	"-rv            for reverse video",
-	"-geometry CxR  to set initial size to R rows and C columns",
-	"-xrm Resource  to change an xvile resource",
-	"-leftbar       Put scrollbar(s) on left",
-	"-rightbar      Put scrollbar(s) on right (default)",
-#endif
-#if DISP_BORLAND
-	"-2             25-line mode",
-	"-4             43-line mode",
-	"-5             50-line mode",
-#if SYS_OS2
-	"-6             60-line mode",
-#endif
-	"(see help file for more screen resolutions)",
-#endif
-#if SYS_VMS
-	"-80            80-column mode",
-	"-132           132-column mode",
-#endif
-#if OPT_EVAL || OPT_DEBUGMACROS
-	"-D             trace macros into [Trace] buffer",
-#endif
-	"-V             for version info",
-	"-I             use vileinit.rc to initialize",
-	"use @cmdfile to run cmdfile as commands (this will suppress .vilerc)",
-	"single-letter options usually are case-independent"
+	"-geometry CxR  set initial size to R rows and C columns",
+	"-xrm resource  change an xvile resource",
+	"-leftbar       put scrollbar(s) on left",
+	"-rightbar      put scrollbar(s) on right (default)",
+#endif				/* DISP_X11 */
+
+	"",
+	"Obsolete:",
+	"-g NNN         or simply +NNN to go to line NNN",
+	"-s string      or +/string to search for \"string\"",
     };
 
     term.clean(TRUE);
@@ -90,8 +108,14 @@ print_usage(int code)
 		   prog_arg);
     {
 	unsigned j;
-	for (j = 0; j < TABLESIZE(options); j++)
-	    (void) fprintf(stderr, "\t%s\n", options[j]);
+	for (j = 0; j < TABLESIZE(options); j++) {
+	    char *colon = strrchr(options[j], ':');
+	    if (colon != 0 && colon[1] == EOS) {
+		(void) fprintf(stderr, "%s\n", options[j]);
+	    } else {
+		(void) fprintf(stderr, "\t%s\n", options[j]);
+	    }
+	}
     }
 #endif
     ExitProgram(code);

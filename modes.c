@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.317 2006/05/21 19:24:48 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.320 2006/10/19 21:34:04 tom Exp $
  *
  */
 
@@ -989,6 +989,21 @@ fsm_complete(DONE_ARGS)
 }
 #endif /* OPT_ENUM_MODES */
 
+static int
+ok_local_mode(void)
+{
+#if OPT_MODELINE
+    /*
+     * When processing modeline, disallow major changes.
+     */
+    if (in_modeline) {
+	TRACE(("ignored (within modeline)\n"));
+	return FALSE;
+    }
+#endif
+    return TRUE;
+}
+
 /*
  * Lookup the mode named with 'cp[]' and adjust its value.
  */
@@ -1015,6 +1030,10 @@ adjvalueset(const char *cp,	/* name of the mode we are changing */
     no = noPrefix(cp);
     if (no && !is_bool_type(names->type))
 	return FALSE;		/* this shouldn't happen */
+
+    if ((names->side_effect == chgd_major) && !ok_local_mode()) {
+	return FALSE;
+    }
 
     /*
      * Check if we're allowed to change this mode in the current context.
@@ -1497,6 +1516,9 @@ do_a_mode(int kind, int global)
     if (tb_length(cbuf) == 0)
 	return FALSE;
     if (!strcmp(tb_values(cbuf), "all")) {
+	if (!ok_local_mode()) {
+	    return FALSE;
+	}
 	hst_glue(' ');
 	return listmodes(FALSE, 1);
     }
@@ -1876,11 +1898,11 @@ chgd_fences(BUFFER *bp GCC_UNUSED, VALARGS * args, int glob_vals GCC_UNUSED, int
     return TRUE;
 }
 
-	/* Change a "major" mode */
+	/* Change a "major" mode (one that we cannot use in majormodes) */
 int
 chgd_major(BUFFER *bp, VALARGS * args, int glob_vals, int testing)
 {
-    /* prevent major-mode changes for scratch-buffers */
+    /* prevent major changes for scratch-buffers */
     if (testing) {
 	if (!glob_vals) {
 	    if (b_is_scratch(bp))
@@ -1892,7 +1914,7 @@ chgd_major(BUFFER *bp, VALARGS * args, int glob_vals, int testing)
     return TRUE;
 }
 
-	/* Change the "undoable" mode */
+	/* Change the "undoable" mode (this is also a major change) */
 int
 chgd_undoable(BUFFER *bp, VALARGS * args, int glob_vals, int testing)
 {
@@ -1905,9 +1927,9 @@ chgd_undoable(BUFFER *bp, VALARGS * args, int glob_vals, int testing)
     return FALSE;
 }
 
-	/* Change a major mode that affects the windows on the buffer */
+	/* Change a mode that affects the window(s) on the buffer */
 int
-chgd_major_w(BUFFER *bp, VALARGS * args, int glob_vals, int testing)
+chgd_win_mode(BUFFER *bp, VALARGS * args, int glob_vals, int testing)
 {
     if (testing) {
 	if (!chgd_major(bp, args, glob_vals, testing))
@@ -1968,7 +1990,7 @@ chgd_rs(BUFFER *bp, VALARGS * args, int glob_vals, int testing)
     }
 
     set_winflags(TRUE, WFMODE);
-    return chgd_major_w(bp, args, glob_vals, testing);
+    return chgd_win_mode(bp, args, glob_vals, testing);
 }
 
 	/* Change something on the mode/status line */
@@ -3512,7 +3534,7 @@ alloc_mode(const char *shortname, int predef)
     major_valnames[j].name = strmalloc(longname);
     major_valnames[j].shortname = strmalloc(shortname);
     major_valnames[j].type = VALTYPE_MAJOR;
-    major_valnames[j].side_effect = chgd_major_w;
+    major_valnames[j].side_effect = chgd_win_mode;
 
     if (major_valnames[j].name == 0
 	|| major_valnames[j].shortname == 0) {

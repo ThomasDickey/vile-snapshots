@@ -3,7 +3,7 @@
  * and backward directions.
  *  heavily modified by Paul Fox, 1990
  *
- * $Header: /users/source/archives/vile.vcs/RCS/search.c,v 1.138 2006/04/19 23:52:57 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/search.c,v 1.142 2006/11/02 21:01:24 tom Exp $
  *
  * original written Aug. 1986 by John M. Gamble, but I (pgf) have since
  * replaced his regex stuff with Henry Spencer's regexp package.
@@ -49,7 +49,7 @@ scrbacksearch(int f, int n)
 int
 forwsearch(int f, int n)
 {
-    register int status;
+    int status;
     hst_init('/');
     status = fsearch(f, n, FALSE, FALSE);
     hst_flush();
@@ -62,7 +62,7 @@ forwsearch(int f, int n)
 int
 fsearch(int f, int n, int marking, int fromscreen)
 {
-    register int status = TRUE;
+    int status = TRUE;
     int wrapok;
     MARK curpos;
     int didmark = FALSE;
@@ -153,7 +153,7 @@ fsearch(int f, int n, int marking, int fromscreen)
 int
 forwhunt(int f, int n)
 {
-    register int status = TRUE;
+    int status = TRUE;
     int wrapok;
     MARK curpos;
     int didwrap;
@@ -217,7 +217,7 @@ forwhunt(int f, int n)
 int
 backsearch(int f, int n)
 {
-    register int status;
+    int status;
     hst_init('?');
     status = rsearch(f, n, FALSE, FALSE);
     hst_flush();
@@ -228,7 +228,7 @@ backsearch(int f, int n)
 static int
 rsearch(int f, int n, int dummy GCC_UNUSED, int fromscreen)
 {
-    register int status;
+    int status;
     int wrapok;
     MARK curpos;
     int didwrap;
@@ -291,7 +291,7 @@ rsearch(int f, int n, int dummy GCC_UNUSED, int fromscreen)
 int
 backhunt(int f, int n)
 {
-    register int status = TRUE;
+    int status = TRUE;
     int wrapok;
     MARK curpos;
     int didwrap;
@@ -402,9 +402,13 @@ scanner(
     int wrapped = FALSE;
     int leftmargin = b_left_margin(curbp);
 
+    TRACE((T_CALLED "scanner %s %s\n",
+	   ((direct == FORWARD) ? "forward" : "backward"),
+	   (wrapok ? "wrapok" : "nowrapok")));
+
     if (!exp) {
 	mlforce("BUG: null exp");
-	return FALSE;
+	returnCode(FALSE);
     }
 
     /* Set starting search position to current position
@@ -415,12 +419,12 @@ scanner(
 
     /* Scan each character until we hit the scan boundary */
     for_ever {
-	register int startoff, srchlim;
+	int startoff, srchlim;
 
 	if (interrupted()) {
 	    if (wrappedp)
 		*wrappedp = wrapped;
-	    return ABORT;
+	    returnCode(ABORT);
 	}
 
 	if (sameline(curpos, scanboundpos)) {
@@ -486,7 +490,7 @@ scanner(
 		    last++;
 		if (!lregexec(exp, curpos.l, (int) (got - txt), srchlim)) {
 		    mlforce("BUG: prev. match no good");
-		    return FALSE;
+		    returnCode(FALSE);
 		}
 	    } else if (llength(curpos.l) <= leftmargin
 		       || last < llength(curpos.l))
@@ -498,7 +502,10 @@ scanner(
 		curwp->w_flag |= WFMOVE;	/* flag that we have moved */
 		if (wrappedp)
 		    *wrappedp = wrapped;
-		return TRUE;
+#if OPT_TRACE
+		trace_mark("...scanner", &DOT, curbp);
+#endif
+		returnCode(TRUE);
 	    }
 	} else {
 	    if (sameline(curpos, scanboundpos) &&
@@ -531,7 +538,7 @@ scanner(
 
     if (wrappedp)
 	*wrappedp = wrapped;
-    return FALSE;		/* We could not find a match. */
+    returnCode(FALSE);		/* We could not find a match. */
 }
 
 #if OPT_HILITEMATCH
@@ -810,8 +817,8 @@ scanboundry(int wrapok, MARK dot, int dir)
 static void
 movenext(MARK *pdot, int dir)
 {
-    register LINE *curline;
-    register int curoff;
+    LINE *curline;
+    int curoff;
 
     curline = pdot->l;
     curoff = pdot->o;
@@ -845,8 +852,7 @@ findpat(int f, int n, regexp * exp, int direc)
     if (!exp)
 	return FALSE;
 
-    if (!f)
-	n = 1;
+    n = need_a_count(f, n, 1);
 
     s = TRUE;
     scanboundpos = curbp->b_line;	/* was scanboundry(FALSE,savepos,0); */

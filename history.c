@@ -55,7 +55,7 @@
  *	not (yet) correspond to :-commands.  Before implementing, probably will
  *	have to make TESTC a settable mode.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/history.c,v 1.84 2006/05/21 10:53:43 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/history.c,v 1.85 2006/11/06 00:42:29 tom Exp $
  *
  */
 
@@ -200,7 +200,7 @@ endOfParm(HST * parm, char *src, int offset, int limit)
 		    }
 		} else
 #endif
-		if ((*parm->endfunc) (src, n, src[n], parm->eolchar))
+		if ((parm->endfunc) (src, n, src[n], parm->eolchar))
 		    break;
 	    }
 	}
@@ -531,7 +531,7 @@ hst_find(HST * parm, BUFFER *bp, LINE *lp, int direction)
 static void
 hst_display(HST * parm, char *src, int srclen)
 {
-    TRACE(("hst_display(%.*s) eolchar='%c'\n",
+    TRACE((T_CALLED "hst_display(%.*s) eolchar='%c'\n",
 	   srclen, src,
 	   isreturn(parm->eolchar) ? ' ' : parm->eolchar));
 
@@ -568,6 +568,7 @@ hst_display(HST * parm, char *src, int srclen)
 	    free(stripped);
 #endif
     }
+    returnVoid();
 }
 
 /*

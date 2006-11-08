@@ -2,7 +2,7 @@
  * This file contains the command processing functions for a number of random
  * commands. There is no functional grouping here, for sure.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.292 2006/04/20 00:02:43 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.297 2006/11/08 01:40:23 tom Exp $
  *
  */
 
@@ -410,6 +410,23 @@ gotochr(int f, int n)
     curwp->w_flag |= WFMOVE;
     return TRUE;
 }
+
+/*
+ * Go to the given percent index in the buffer, i.e., the line that matches
+ * the given percent.
+ */
+int
+gotopct(int f, int n)
+{
+    int status = FALSE;
+
+    if (f && (n >= 0 && n <= 100)) {
+	bsizes(curbp);
+	status = gotoline(TRUE,
+			  (int) ((curbp->b_linecount) * (n / 100.0) + 0.5));
+    }
+    return status;
+}
 #endif
 
 /*
@@ -451,14 +468,27 @@ getccol(int bflg)
     return getcol(DOT, bflg);
 }
 
+int
+need_a_count(int f, int n, int need)
+{
+    if (!f)
+	n = need;
+    return n;
+}
+
+int
+need_at_least(int f, int n, int need)
+{
+    return ((!f || n < need) ? need : n);
+}
+
 /*
  * Set current column, based on counting from 1
  */
 int
 gotocol(int f, int n)
 {
-    if (!f || n <= 0)
-	n = 1;
+    n = need_at_least(f, n, 1);
     return gocol(n - 1);
 }
 
@@ -563,9 +593,7 @@ forceblank(int f, int n)
     int s = TRUE;
     B_COUNT len_rs = len_record_sep(curbp);
 
-    if (!f || n < 0)
-	n = 0;
-    n_arg = n;
+    n_arg = need_at_least(f, n, 0);
 
     lp1 = DOT.l;
     /* scan backward */
@@ -1729,8 +1757,7 @@ pushd(int f GCC_UNUSED, int n GCC_UNUSED)
 		cp++;
 		rc = FALSE;
 		if (isDigit(*cp++)) {
-		    while (*cp && isDigit(*cp))
-			cp++;
+		    cp = skip_number(cp);
 		    if (*cp == '\0')
 			rc = TRUE;
 		}
@@ -1805,8 +1832,7 @@ popd(int f GCC_UNUSED, int n GCC_UNUSED)
 	sign = (*cp == '-') ? -1 : 1;
 	cp++;
 	if (isDigit(*cp++)) {
-	    while (*cp && isDigit(*cp))
-		cp++;
+	    cp = skip_number(cp);
 	    if (*cp == '\0')
 		rc = TRUE;
 	}

@@ -5,7 +5,7 @@
  * keys. Like everyone else, they set hints
  * for the display system.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.300 2006/05/23 00:58:39 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.307 2006/11/02 21:01:24 tom Exp $
  *
  */
 
@@ -1048,6 +1048,127 @@ swbuffer(BUFFER *bp)
     returnCode(swbuffer_lfl(bp, TRUE, FALSE));
 }
 
+#if OPT_MODELINE
+#define VI_NAMES "\\(vi\\|vile\\|"PROGRAM_NAME"\\)"
+static struct {
+    int mark;
+    const char *expr;
+    regexp *prog;
+} mls_patterns[] = {
+
+    {
+	3, "^.*\\s" VI_NAMES ":\\s*se\\(t\\)\\?\\s\\+\\(.*\\):.*$", 0
+    },
+    {
+	2, "^.*\\s" VI_NAMES ":\\s*\\(.*\\)\\s*$", 0
+    },
+};
+
+static regexp *
+mls_regcomp(int n)
+{
+    regexp *prog = 0;
+    if (n >= 0 && n < (int) TABLESIZE(mls_patterns)) {
+	prog = mls_patterns[n].prog;
+	if (prog == 0) {
+	    prog = regcomp(mls_patterns[n].expr,
+			   strlen(mls_patterns[n].expr), TRUE);
+	    mls_patterns[n].prog = prog;
+	}
+    }
+    return prog;
+}
+
+static void
+mls_regfree(int n)
+{
+    if (n >= 0) {
+	if (n < (int) TABLESIZE(mls_patterns)) {
+	    if (mls_patterns[n].prog != 0) {
+		free(mls_patterns[n].prog);
+		mls_patterns[n].prog = 0;
+	    }
+	}
+    } else {
+	for (n = 0; n < (int) TABLESIZE(mls_patterns); ++n)
+	    mls_regfree(n);
+    }
+}
+
+static int
+found_modeline(LINE *lp, int *first, int *last)
+{
+    unsigned n;
+
+    for (n = 0; n < TABLESIZE(mls_patterns); ++n) {
+	regexp *prog = mls_regcomp(n);
+	if (lregexec(prog, lp, 0, llength(lp))) {
+	    int j = mls_patterns[n].mark;
+	    *first = prog->startp[j] - prog->startp[0];
+	    *last = prog->endp[j] - prog->startp[0];
+	    return 1;
+	}
+    }
+    return 0;
+}
+
+static void
+do_one_modeline(LINE *lp, int first, int last)
+{
+    TBUFF *data = 0;
+    if (lisreal(lp) && first >= 0 && last > first && last <= llength(lp)) {
+	tb_sappend(&data, "setl ");
+	tb_bappend(&data, lp->l_text + first, last - first);
+	tb_append(&data, EOS);
+
+	in_modeline = TRUE;
+	docmd(tb_values(data), TRUE, FALSE, 1);
+	in_modeline = FALSE;
+
+	tb_free(&data);
+    }
+}
+
+void
+do_modelines(BUFFER *bp)
+{
+    if (b_val(bp, MDMODELINE) &&
+	b_val(bp, VAL_MODELINES) > 0) {
+	LINE *lp;
+	int once = b_val(bp, VAL_MODELINES);
+	int limit = 2 * once;
+	int count;
+	int first, last;
+
+	bsizes(bp);
+
+	TRACE((T_CALLED "do_modelines(%s) limit %d, size %d\n",
+	       bp->b_bname, limit, bp->b_linecount));
+
+	count = 0;
+	for (lp = lforw(buf_head(bp)); count < once; lp = lforw(lp)) {
+	    --limit;
+	    ++count;
+	    if (found_modeline(lp, &first, &last)) {
+		do_one_modeline(lp, first, last);
+	    }
+	}
+
+	count = 0;
+	if (bp->b_linecount < limit) {
+	    once = bp->b_linecount - once;
+	}
+	for (lp = lback(buf_head(bp)); count < once; lp = lback(lp)) {
+	    ++count;
+	    if (found_modeline(lp, &first, &last)) {
+		do_one_modeline(lp, first, last);
+	    }
+	}
+	returnVoid();
+    }
+}
+#endif
+
 static int
 suckitin(BUFFER *bp, int copy, int lockfl)
 {
@@ -1502,8 +1623,8 @@ killbuffer(int f, int n)
     MARK save_TOP;
 
     int animated = (f
-		    && valid_window(curwp)
 		    && (n > 1)
+		    && valid_window(curwp)
 		    && valid_buffer(curbp)
 		    && (curbp == find_BufferList()));
     int special = animated && (DOT.o == 2);
@@ -1519,8 +1640,8 @@ killbuffer(int f, int n)
     }
 #endif
 
-    if (!f)
-	n = 1;
+    n = need_a_count(f, n, 1);
+
     for_ever {
 	bufn[0] = EOS;
 	if ((s = ask_for_bname("Kill buffer: ", bufn, sizeof(bufn))) != TRUE)
@@ -2803,5 +2924,8 @@ bp_leaks(void)
 	bclear(bheadp);
 	FreeBuffer(bheadp);
     }
+#if OPT_MODELINE
+    mls_regfree(-1);
+#endif
 }
 #endif

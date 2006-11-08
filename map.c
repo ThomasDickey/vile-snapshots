@@ -3,7 +3,7 @@
  *	Original interface by Otto Lind, 6/3/93
  *	Additional map and map! support by Kevin Buettner, 9/17/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/map.c,v 1.109 2006/04/20 09:49:23 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/map.c,v 1.110 2006/11/04 01:28:05 tom Exp $
  *
  */
 
@@ -815,6 +815,13 @@ int
 mapped_ungotc_avail(void)
 {
     return mapgetc_ungotcnt > 0;
+}
+
+void
+map_drain(void)
+{
+    while (mapped_ungotc_avail())
+	mapgetc();
 }
 
 static int

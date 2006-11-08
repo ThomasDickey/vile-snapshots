@@ -6,7 +6,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.323 2006/02/16 00:13:49 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.326 2006/11/04 15:40:39 tom Exp $
  */
 
 #ifndef VILE_EDEF_H
@@ -33,7 +33,7 @@ extern "C" {
 #endif
 
 decl_uninit( char *prog_arg );		/* argv[0] from main.c */
-decl_init( char *exec_pathname, ".");	/* replaced at runtime with path-head of argv[0] */
+decl_init( char *exec_pathname, "." );	/* replaced at runtime with path-head of argv[0] */
 
 #ifndef PROGRAM_NAME
 # if DISP_X11
@@ -47,31 +47,37 @@ decl_init( char *exec_pathname, ".");	/* replaced at runtime with path-head of a
 # endif
 #endif /* PROGRAM_NAME */
 
-decl_init( char prognam[], PROGRAM_NAME);
-decl_init( char version[], "version " VILE_VERSION);
+decl_init( char prognam[], PROGRAM_NAME );
+decl_init( char version[], "version " VILE_VERSION );
 
 #ifdef SYSTEM_NAME
-decl_init( char opersys[], SYSTEM_NAME);
+decl_init( char opersys[], SYSTEM_NAME );
 #else
 #if SYS_UNIX
-decl_init( char opersys[], "unix");
+decl_init( char opersys[], "unix" );
 #endif
 #if SYS_VMS
-decl_init( char opersys[], "vms");
+decl_init( char opersys[], "vms" );
 #endif
 #if SYS_MSDOS
-decl_init( char opersys[], "dos");
+decl_init( char opersys[], "dos" );
 #endif
 #if SYS_OS2
-decl_init( char opersys[], "os/2");
+decl_init( char opersys[], "os/2" );
 #endif
 #if SYS_WINNT
-decl_init( char opersys[], "win32");
+decl_init( char opersys[], "win32" );
 #endif
 #endif
 
+#if SYS_MSDOS || SYS_OS2 || SYS_WINNT || SYS_VMS
+#define DFT_STARTUP_FILE "vile.rc"
+#else /* SYS_UNIX */
+#define DFT_STARTUP_FILE ".vilerc"
+#endif
+
 #if SYS_WINNT
-decl_uninit(int nowait_pipe_cmd);	/* if set, don't slowreadf() this pipe
+decl_uninit( int nowait_pipe_cmd );	/* if set, don't slowreadf() this pipe
 					 * command.
 					 */
 #endif
@@ -80,7 +86,7 @@ decl_uninit( int am_interrupted );	/* have we been interrupted */
 decl_init( int i_am_dead, 0 );		/* have we been burned? */
 
 
-decl_init( int autoindented , -1);	/* how many chars (not cols) indented */
+decl_init( int autoindented , -1 );	/* how many chars (not cols) indented */
 decl_uninit( int isnamedcmd );		/* are we typing a command name */
 decl_uninit( int calledbefore );	/* called before during this command? */
 decl_uninit( CHARTYPE vl_chartypes_[N_chars] );	/* character types	*/
@@ -94,8 +100,8 @@ decl_uninit( int insertmode );		/* are we inserting or overwriting? */
 decl_uninit( int lastkey );		/* last keystoke (tgetc)	*/
 decl_uninit( int lastcmd );		/* last command	(kbd_seq)	*/
 decl_uninit( REGIONSHAPE regionshape );	/* shape of region		*/
-decl_init (REGION *haveregion, 0);
-decl_init (REGION *wantregion, 0);
+decl_init( REGION *haveregion, 0 );
+decl_init( REGION *wantregion, 0 );
 #if OPT_VIDEO_ATTRS
 decl_uninit( VIDEO_ATTR videoattribute );
 					/* attribute to set in call to
@@ -112,7 +118,7 @@ decl_uninit( MARK pre_op_dot );		/* current pos. before operator cmd */
 decl_uninit( MARK post_op_dot );	/* current pos. after operator motion */
 
 decl_uninit( MARK scanboundpos );	/* where do searches end? */
-decl_uninit( int scanbound_is_header);	/* is scanboundpos the header line? */
+decl_uninit( int scanbound_is_header );	/* is scanboundpos the header line? */
 
 decl_uninit( short opcmd );		/* what sort of operator?	*/
 decl_uninit( const CMDFUNC *havemotion ); /* so we can use "oper" routines
@@ -136,8 +142,8 @@ decl_init( TBUFF *searchpat, 0 );	/* Search pattern		*/
 decl_init( TBUFF *replacepat, 0 );	/* replacement pattern		*/
 decl_uninit( int  last_srch_direc );	/* Direction of last search */
 decl_uninit( regexp *gregexp );		/* compiled version of searchpat */
-decl_init( TBUFF *tb_matched_pat, 0);	/* text that scan found */
-decl_init( TBUFF *lastfileedited, 0);
+decl_init( TBUFF *tb_matched_pat, 0 );	/* text that scan found */
+decl_init( TBUFF *lastfileedited, 0 );
 
 #if OPT_HOOKS
 decl_uninit( HOOK cdhook );		/* proc to run when change dir */
@@ -153,17 +159,20 @@ decl_uninit( int ignorecase );
 
 decl_init( int curgoal, -1 );		/* column goal			*/
 decl_uninit( char *execstr );		/* string being executed	*/
+
 #if OPT_MLFORMAT
 decl_uninit( char *modeline_format );	/* modeline formatting string */
 #endif
+
 #if OPT_POSFORMAT
 decl_uninit( char *position_format );	/* position formatting string */
 #endif
-decl_init( int	eolexist, TRUE );	/* does clear to EOL exist	*/
+
+decl_init( int eolexist, TRUE );	/* does clear to EOL exist	*/
 decl_uninit( int revexist );		/* does reverse video exist?	*/
 
 #ifdef realdef
-DECL_EXTERN(MARK nullmark) = { NULL, 0 };
+DECL_EXTERN( MARK nullmark) = { NULL, 0 };
 #else
 extern	MARK	nullmark;
 #endif
@@ -179,15 +188,15 @@ decl_uninit( W_VALUES global_w_values );
 
 decl_init( int sgarbf, TRUE );		/* TRUE if screen is garbage	*/
 decl_init( int need_update, TRUE );	/* TRUE if screen is not updated*/
-decl_uninit( int clexec	);		/* command line execution flag	*/
+decl_uninit( int clexec );		/* command line execution flag	*/
 decl_uninit( int clhide );		/* hide results of this command	*/
 decl_init( int quiet, FALSE );		/* hide output of this command	*/
 decl_init( int miniedit, FALSE );	/* editing minibuffer with vi-cmds */
 decl_init( int no_minimsgs, FALSE );	/* suppress messages in minibuffer */
-decl_init( int vl_msgs, TRUE);		/* suppress command output?	*/
+decl_init( int vl_msgs, TRUE );		/* suppress command output?	*/
 decl_init( int no_errs, FALSE );	/* suppress bells/alarms?	*/
-decl_init( int vl_echo, TRUE);		/* echo user input 		*/
-decl_init( int qpasswd, FALSE);		/* querying for password	*/
+decl_init( int vl_echo, TRUE );		/* echo user input 		*/
+decl_init( int qpasswd, FALSE );	/* querying for password	*/
 decl_init( int in_autocolor, FALSE );	/* Autocoloring			*/
 
 decl_uninit( int vtrow );		/* Row location of SW cursor	*/
@@ -208,9 +217,9 @@ decl_init( int rgb_bright, 255 );
 
 #if OPT_TITLE
 decl_init( int auto_set_title, TRUE );	/* automatically set title	*/
-decl_init ( TBUFF * title_format, 0 );	/* format, if any		*/
-decl_init ( TBUFF * current_title, 0 );
-decl_init ( TBUFF * request_title, 0 );
+decl_init( TBUFF * title_format, 0 );	/* format, if any		*/
+decl_init( TBUFF * current_title, 0 );
+decl_init( TBUFF * request_title, 0 );
 #endif
 
 /* Special characters, used in keyboard control (some values are set on
@@ -221,21 +230,21 @@ decl_init ( TBUFF * request_title, 0 );
 decl_init( int cntl_a, tocntrl('A') );	/* rebindable control-A prefix	*/
 decl_init( int cntl_x, tocntrl('X') );	/* rebindable control-X prefix	*/
 decl_init( int reptc, 'K' );		/* rebindable "repeat" arg	*/
-decl_init( int esc_c, tocntrl('[') );	/* rebindable vi esc char	*/
+decl_init( int esc_c,  tocntrl('[') );	/* rebindable vi esc char	*/
 decl_init( int poundc, '#' );		/* pseudo function key prefix	*/
 
 /* rebindable via the "set-terminal" interface */
-decl_init( int editc, tocntrl('G') );	/* toggle edit-mode in minibuffer */
+decl_init( int editc,  tocntrl('G') );	/* toggle edit-mode in minibuffer */
 decl_init( int quotec, tocntrl('V') );	/* current quoting char		*/
-decl_init( int killc, tocntrl('U') );	/* current line kill char	*/
+decl_init( int killc,  tocntrl('U') );	/* current line kill char	*/
 decl_init( int wkillc, tocntrl('W') );	/* current word kill char	*/
-decl_init( int intrc, tocntrl('C') );	/* current interrupt char	*/
-decl_init( int suspc, tocntrl('Z') );	/* current suspend char	*/
+decl_init( int intrc,  tocntrl('C') );	/* current interrupt char	*/
+decl_init( int suspc,  tocntrl('Z') );	/* current suspend char	*/
 decl_init( int startc, tocntrl('Q') );	/* current output start char	*/
-decl_init( int stopc, tocntrl('S') );	/* current output stop char	*/
-decl_init( int backspc, '\b');		/* current backspace char	*/
-decl_init( int name_cmpl, '\t');	/* do name-completion		*/
-decl_init( int test_cmpl, '?');		/* show name-completion		*/
+decl_init( int stopc,  tocntrl('S') );	/* current output stop char	*/
+decl_init( int backspc, '\b' );		/* current backspace char	*/
+decl_init( int name_cmpl, '\t' );	/* do name-completion		*/
+decl_init( int test_cmpl, '?' );	/* show name-completion		*/
 
 decl_uninit( KILLREG kbs[NKREGS] );	/* all chars, 1 thru 9, and default */
 decl_uninit( short ukb );		/* index of current kbuffs */
@@ -249,7 +258,7 @@ decl_uninit( int warnings );		/* from 'mlwarn()', for reporting */
 #if !SMALLER
 decl_uninit( TBUFF *prompt_string );	/* command-line prompt-string	*/
 decl_uninit( WINDOW *swindow );		/* saved window pointer		*/
-decl_init( TBUFF *with_prefix, 0);	/* prefix set by "~with"	*/
+decl_init( TBUFF *with_prefix, 0 );	/* prefix set by "~with"	*/
 #endif
 
 #if OPT_ENCRYPT
@@ -257,8 +266,8 @@ decl_init( char * cryptkey, 0 );	/* top-level crypt-key, if any	*/
 #endif
 
 decl_uninit( int dotcmdactive );	/* current dot command mode	*/
-decl_init( int dotcmdarg, FALSE);	/* was there an arg to '.'? */
-decl_uninit( short dotcmdkreg);		/* original dot command kill reg */
+decl_init( int dotcmdarg, FALSE );	/* was there an arg to '.'? */
+decl_uninit( short dotcmdkreg );	/* original dot command kill reg */
 decl_uninit( ITBUFF *dotcmd );		/* recorded-text of dot-commands */
 decl_uninit( int dotcmdcnt );		/* down-counter for dot-commands */
 decl_uninit( int dotcmdrep );		/* original dot-command repeat-count */
@@ -273,7 +282,11 @@ decl_init( int cmd_count, 0 );		/* 1..n for procedure execution	*/
 decl_init( int tracemacros, FALSE );	/* macro tracing flag		*/
 #endif
 
-decl_init ( int im_displaying, 0 );	/* flag set during screen updates */
+#if OPT_MODELINE
+decl_init( int in_modeline, FALSE );	/* set during vi-style modeline */
+#endif
+
+decl_init( int im_displaying, 0 );	/* flag set during screen updates */
 decl_uninit( int vile_is_busy );	/* disabling flag, e.g., working */
 
 #if OPT_WORKING
@@ -283,7 +296,7 @@ decl_uninit( B_COUNT old_working );	/* previous-value for slowreadf	*/
 #endif
 
 #if OPT_SHELL
-decl_init ( int cd_on_open, FALSE );
+decl_init( int cd_on_open, FALSE );
 #endif
 
 	/* These pointers are nonnull only while animating a given buffer or
@@ -333,7 +346,7 @@ decl_uninit( char *vl_locale );
 #define vl_locale "built-in"
 #endif
 
-decl_init ( L_NUM help_at, -1 );	/* position in help-file */
+decl_init( L_NUM help_at, -1 );		/* position in help-file */
 decl_uninit( char *helpfile );
 decl_init( char vl_pathchr, PATHCHR );	/* $pathlist-separator */
 decl_init( char vl_pathsep, PATHSEP );	/* $pathname-separator */
@@ -347,105 +360,106 @@ decl_uninit( char *libdir_path );
 decl_uninit( char *menu_file );
 #endif
 
-decl_init_const( char hexdigits[], "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+decl_init_const( char hexdigits[], "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ" );
 #if SYS_WINNT
-decl_init_const( char ctrldigits[], "@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_");
+decl_init_const( char ctrldigits[], "@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_" );
 #endif
 
 /*--------------------------------------------------------------------------*/
 
-decl_init_const( char HELP_BufName[],		"[Help]");
-decl_init_const( char BINDINGLIST_BufName[],	"[Binding List]");
-decl_init_const( char CMD_BINDINGS_BufName[],	"[Command-Bindings]");
-decl_init_const( char INS_BINDINGS_BufName[],	"[Insert-Bindings]");
-decl_init_const( char SEL_BINDINGS_BufName[],	"[Select-Bindings]");
+decl_init_const( char HELP_BufName[],		"[Help]" );
+decl_init_const( char BINDINGLIST_BufName[],	"[Binding List]" );
+decl_init_const( char CMD_BINDINGS_BufName[],	"[Command-Bindings]" );
+decl_init_const( char INS_BINDINGS_BufName[],	"[Insert-Bindings]" );
+decl_init_const( char SEL_BINDINGS_BufName[],	"[Select-Bindings]" );
 #if OPT_REBIND
-decl_init_const( char KEY_NAMES_BufName[],	"[Key Names]");
+decl_init_const( char KEY_NAMES_BufName[],	"[Key Names]" );
 # if OPT_TERMCHRS
-decl_init_const( char TERMINALCHARS_BufName[],	"[Terminal Chars]");
+decl_init_const( char TERMINALCHARS_BufName[],	"[Terminal Chars]" );
 # endif
 #endif
 #if OPT_COLOR_SCHEMES
-decl_init_const( char COLOR_SCHEMES_BufName[],	"[Color Schemes]");
+decl_init_const( char COLOR_SCHEMES_BufName[],	"[Color Schemes]" );
 #endif
 #if OPT_SHELL
-decl_init_const( char DIRSTACK_BufName[],	"[DirStack]");
+decl_init_const( char DIRSTACK_BufName[],	"[DirStack]" );
 #endif
 #if OPT_SHOW_COLORS
-decl_init_const( char PALETTE_COLORS_BufName[],	"[Color Palette]");
+decl_init_const( char PALETTE_COLORS_BufName[],	"[Color Palette]" );
 #endif
 #if OPT_SHOW_CTYPE
-decl_init_const( char PRINTABLECHARS_BufName[],	"[Printable Chars]");
+decl_init_const( char PRINTABLECHARS_BufName[],	"[Printable Chars]" );
 #endif
 #if OPT_POPUPCHOICE
-decl_init_const( char COMPLETIONS_BufName[],	"[Completions]");
+decl_init_const( char COMPLETIONS_BufName[],	"[Completions]" );
 #endif
-decl_init_const( char BUFFERLIST_BufName[],	"[Buffer List]");
+decl_init_const( char BUFFERLIST_BufName[],	"[Buffer List]" );
 #if OPT_SHOW_EVAL
-decl_init_const( char VARIABLES_BufName[],	"[Variables]");
+decl_init_const( char VARIABLES_BufName[],	"[Variables]" );
 #endif
-decl_init_const( char MACRO_N_BufName[],	"[Macro %d]");
+decl_init_const( char MACRO_N_BufName[],	"[Macro %d]" );
 #if COMPLETE_FILES
-decl_init_const( char FILECOMPLETION_BufName[],	"[FileCompletion]");
+decl_init_const( char FILECOMPLETION_BufName[],	"[FileCompletion]" );
 #endif
 #if COMPLETE_DIRS
-decl_init_const( char DIRCOMPLETION_BufName[],	"[DirCompletion]");
+decl_init_const( char DIRCOMPLETION_BufName[],	"[DirCompletion]" );
 #endif
-decl_init_const( char OUTPUT_BufName[],		"[Output]");
+decl_init_const( char OUTPUT_BufName[],		"[Output]" );
 #if OPT_EVAL || OPT_DEBUGMACROS
-decl_init_const( char TRACE_BufName[],		"[Trace]");
+decl_init_const( char TRACE_BufName[],		"[Trace]" );
 #endif
 #if OPT_FINDERR
 decl_init( TBUFF *filename_expr, 0 );
 decl_init( TBUFF *error_expr, 0 );
 decl_init( TBUFF *error_match, 0 );
 decl_init( int error_tabstop, 8 );
-decl_init_const( char ERRORS_BufName[],		"[Error Expressions]");
-decl_init_const( char ERR_REGEX_BufName[],	"[Error Patterns]");
+decl_init_const( char ERRORS_BufName[],		"[Error Expressions]" );
+decl_init_const( char ERR_REGEX_BufName[],	"[Error Patterns]" );
 #endif
 #if OPT_HISTORY
-decl_init_const( char HISTORY_BufName[],	"[History]");
+decl_init_const( char HISTORY_BufName[],	"[History]" );
 #endif
 #if OPT_SHOW_REGS
-decl_init_const( char REGISTERS_BufName[],	"[Registers]");
+decl_init_const( char REGISTERS_BufName[],	"[Registers]" );
 #endif
-decl_init_const( char STDIN_BufName[],		"[Standard Input]");
-decl_init_const( char UNNAMED_BufName[],	"[unnamed]");
-decl_init_const( char VILEINIT_BufName[],	"[vileinit]");
+decl_init_const( char STDIN_BufName[],		"[Standard Input]" );
+decl_init_const( char UNNAMED_BufName[],	"[unnamed]" );
+decl_init_const( char VILEINIT_BufName[],	"[vileinit]" );
+decl_init_const( char VILEOPTS_BufName[],	"[vileopts]" );
 #if OPT_SHOW_MAPS
-decl_init_const( char MAP_BufName[],		"[Map Sequences]");
-decl_init_const( char MAPBANG_BufName[],	"[Map! Sequences]");
-decl_init_const( char ABBR_BufName[],		"[Abbreviations]");
-decl_init_const( char SYSMAP_BufName[],		"[System Maps]");
+decl_init_const( char MAP_BufName[],		"[Map Sequences]" );
+decl_init_const( char MAPBANG_BufName[],	"[Map! Sequences]" );
+decl_init_const( char ABBR_BufName[],		"[Abbreviations]" );
+decl_init_const( char SYSMAP_BufName[],		"[System Maps]" );
 #else
 /* needed anyway, since they're passed around as args */
-decl_init_const( char MAP_BufName[],		"");
-decl_init_const( char MAPBANG_BufName[],	"");
-decl_init_const( char ABBR_BufName[],		"");
-decl_init_const( char SYSMAP_BufName[],		"");
+decl_init_const( char MAP_BufName[],		"" );
+decl_init_const( char MAPBANG_BufName[],	"" );
+decl_init_const( char ABBR_BufName[],		"" );
+decl_init_const( char SYSMAP_BufName[],		"" );
 #endif
 #if OPT_SHOW_MARKS
-decl_init_const( char MARKS_BufName[],		"[Named Marks]");
+decl_init_const( char MARKS_BufName[],		"[Named Marks]" );
 #endif
 #if OPT_SHOW_WHICH
-decl_init_const( char WHICH_BufName[],		"[Which Files]");
+decl_init_const( char WHICH_BufName[],		"[Which Files]" );
 #endif
-decl_init_const( char SETTINGS_BufName[],	"[Settings]");
+decl_init_const( char SETTINGS_BufName[],	"[Settings]" );
 #if OPT_MAJORMODE
-decl_init_const( char MAJORMODES_BufName[],	"[Major Modes]");
+decl_init_const( char MAJORMODES_BufName[],	"[Major Modes]" );
 #endif
 #if OPT_POPUP_MSGS
-decl_init_const( char MESSAGES_BufName[],	"[Messages]");
+decl_init_const( char MESSAGES_BufName[],	"[Messages]" );
 #endif
-decl_init_const( char P_LINES_BufName[],	"[p-lines]");
+decl_init_const( char P_LINES_BufName[],	"[p-lines]" );
 #if OPT_SHOW_TAGS
-decl_init_const( char TAGSTACK_BufName[],	"[Tag Stack]");
+decl_init_const( char TAGSTACK_BufName[],	"[Tag Stack]" );
 #endif
 #if OPT_TAGS
-decl_init_const( char TAGFILE_BufName[],	"[Tags %d]");
+decl_init_const( char TAGFILE_BufName[],	"[Tags %d]" );
 #endif
 #ifdef MDFILTERMSGS
-decl_init_const( char FLTMSGS_BufName[],	"[Filter Messages]");
+decl_init_const( char FLTMSGS_BufName[],	"[Filter Messages]" );
 #endif
 
 /* defined in nebind.h and nename.h */
@@ -460,7 +474,7 @@ extern BINDINGS cmd_bindings;
 extern BINDINGS sel_bindings;
 
 /* vars useful for writing procedures that are : commands */
-decl_uninit(int ev_end_of_cmd);
+decl_uninit( int ev_end_of_cmd );
 
 /* terminal structure is defined in the configured screen driver */
 extern	TERM	term;			/* Terminal information.	*/
@@ -469,10 +483,10 @@ extern	TERM	dumb_term;
 #endif
 extern	TERM	null_term;
 
-decl_init(int utf8_locale, FALSE);
+decl_init( int utf8_locale, FALSE );
 
 #if DISP_BORLAND || DISP_VIO
-decl_init( char *current_res_name, "default");
+decl_init( char *current_res_name, "default" );
 #endif	/* resolution */
 
 #ifdef __cplusplus

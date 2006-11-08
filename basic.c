@@ -5,7 +5,7 @@
  * functions that adjust the top line in the window and invalidate the
  * framing, are hard.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/basic.c,v 1.124 2005/12/27 02:07:06 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/basic.c,v 1.126 2006/11/02 01:31:36 tom Exp $
  *
  */
 
@@ -84,8 +84,8 @@ backchar(int f, int n)
 {
     LINE *lp;
 
-    if (f == FALSE)
-	n = 1;
+    n = need_a_count(f, n, 1);
+
     if (n < 0)
 	return (forwchar(f, -n));
     while (n--) {
@@ -109,9 +109,8 @@ backchar(int f, int n)
 int
 backchar_to_bol(int f, int n)
 {
+    n = need_a_count(f, n, 1);
 
-    if (f == FALSE)
-	n = 1;
     if (n < 0)
 	return forwchar_to_eol(f, -n);
     while (n--) {
@@ -153,8 +152,8 @@ gotoeol(int f, int n)
 int
 forwchar(int f, int n)
 {
-    if (f == FALSE)
-	n = 1;
+    n = need_a_count(f, n, 1);
+
     if (n < 0)
 	return (backchar(f, -n));
     while (n--) {
@@ -192,8 +191,8 @@ forwchar_to_eol(int f, int n)
     int nwas = n;
     int lim;
 
-    if (f == FALSE)
-	n = 1;
+    n = need_a_count(f, n, 1);
+
     if (n < 0) {
 	rc = backchar_to_bol(f, -n);
     } else if (n != 0) {
@@ -218,6 +217,39 @@ forwchar_to_eol(int f, int n)
 }
 
 /*
+ * Move to a particular line (the argument).  Count from bottom of file if
+ * argument is negative.
+ */
+int
+vl_gotoline(int n)
+{
+    int status = TRUE;		/* status return */
+
+    MARK odot;
+
+    if (n == 0)			/* if a bogus argument...then leave */
+	return (FALSE);
+
+    odot = DOT;
+
+    DOT.o = w_left_margin(curwp);
+    if (n < 0) {
+	DOT.l = lback(buf_head(curbp));
+	status = backline(TRUE, -n - 1);
+    } else {
+	DOT.l = lforw(buf_head(curbp));
+	status = forwline(TRUE, n - 1);
+    }
+    if (status != TRUE) {
+	DOT = odot;
+	return status;
+    }
+    (void) firstnonwhite(FALSE, 1);
+    curwp->w_flag |= WFMOVE;
+    return TRUE;
+}
+
+/*
  * Implements the vi "G" command.
  *
  * Move to a particular line (the argument).  Count from bottom of file if
@@ -228,32 +260,14 @@ gotoline(int f, int n)
 {
     int status;			/* status return */
 
-    MARK odot;
-
     if (f == FALSE) {
-	return (gotoeob(f, n));
-    }
-
-    if (n == 0)			/* if a bogus argument...then leave */
-	return (FALSE);
-
-    odot = DOT;
-
-    DOT.o = w_left_margin(curwp);
-    if (n < 0) {
-	DOT.l = lback(buf_head(curbp));
-	status = backline(f, -n - 1);
+	status = gotoeob(f, n);
     } else {
-	DOT.l = lforw(buf_head(curbp));
-	status = forwline(f, n - 1);
+	status = vl_gotoline(n);
+	if (status != TRUE)
+	    mlwarn("[Not that many lines in buffer: %d]", absol(n));
     }
-    if (status != TRUE) {
-	DOT = odot;
-	return status;
-    }
-    (void) firstnonwhite(FALSE, 1);
-    curwp->w_flag |= WFMOVE;
-    return TRUE;
+    return status;
 }
 
 /*
@@ -294,8 +308,7 @@ gotobos(int f, int n)
     LINE *last = DOT.l;
     int nn = curwp->w_ntrows;
 
-    if (!f || n <= 0)
-	n = 1;
+    n = need_at_least(f, n, 1);
 
     DOT.l = curwp->w_line.l;
     while (--n != 0) {
@@ -355,8 +368,7 @@ gotoeos(int f, int n)
     LINE *last = DOT.l;
     int nn;
 
-    if (f == FALSE || n <= 0)
-	n = 1;
+    n = need_at_least(f, n, 1);
 
     /* first get to the end */
     DOT.l = curwp->w_line.l;
@@ -397,8 +409,8 @@ forwline(int f, int n)
 {
     LINE *dlp;
 
-    if (f == FALSE)
-	n = 1;
+    n = need_a_count(f, n, 1);
+
     if (n < 0)
 	return (backline(f, -n));
     if (n == 0)
@@ -503,8 +515,8 @@ forwbline(int f, int n)
 {
     int s;
 
-    if (f == FALSE)
-	n = 1;
+    n = need_a_count(f, n, 1);
+
     if ((s = forwline(f, n)) != TRUE)
 	return (s);
     return firstnonwhite(FALSE, 1);
@@ -520,8 +532,8 @@ backbline(int f, int n)
 {
     int s;
 
-    if (f == FALSE)
-	n = 1;
+    n = need_a_count(f, n, 1);
+
     if ((s = backline(f, n)) != TRUE)
 	return (s);
     return firstnonwhite(FALSE, 1);
@@ -537,8 +549,8 @@ backline(int f, int n)
 {
     LINE *dlp;
 
-    if (f == FALSE)
-	n = 1;
+    n = need_a_count(f, n, 1);
+
     if (n < 0)
 	return (forwline(f, -n));
 
@@ -572,8 +584,7 @@ gotobop(int f, int n)
     int was_on_empty;
     int fc;
 
-    if (!f)
-	n = 1;
+    n = need_a_count(f, n, 1);
 
     was_on_empty = is_empty_line(DOT);
     odot = DOT;
@@ -625,8 +636,7 @@ gotoeop(int f, int n)
     int was_on_empty;
     int fc;
 
-    if (!f)
-	n = 1;
+    n = need_a_count(f, n, 1);
 
     fc = firstchar(DOT.l);
     was_on_empty = is_empty_line(DOT);
@@ -1000,8 +1010,8 @@ forw_row(int f, int n)
     int code = TRUE;
     int col, next;
 
-    if (f == FALSE)
-	n = 1;
+    n = need_a_count(f, n, 1);
+
     if (n < 0) {
 	code = back_row(f, -n);
     } else if (n > 0) {
@@ -1038,8 +1048,8 @@ back_row(int f, int n)
     int code = TRUE;
     int col, next;
 
-    if (f == FALSE)
-	n = 1;
+    n = need_a_count(f, n, 1);
+
     if (n < 0) {
 	code = forw_row(f, -n);
     } else if (n > 0) {
@@ -1427,6 +1437,7 @@ int
 godotplus(int f, int n)
 {
     int s;
+
     if (!f || n == 1) {
 	return firstnonwhite(FALSE, 1);
     }

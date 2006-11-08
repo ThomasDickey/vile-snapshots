@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.418 2006/04/25 20:18:04 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.421 2006/11/04 11:48:01 tom Exp $
  *
  */
 
@@ -325,6 +325,7 @@ dofmt(const char *fmt, va_list *app)
 	default:
 	    (*outfunc) (c);
 	    n = 1;
+	    break;
 	}
 	the_width -= n;
 	while (the_width-- > 0) {
@@ -1573,11 +1574,11 @@ recompute_buffer(BUFFER *bp)
     while (num-- != 0) {
 	curwp = wp = tbl[num].wp;
 	curbp = curwp->w_bufp;
-	(void) gotoline(TRUE, tbl[num].top);
+	(void) vl_gotoline(tbl[num].top);
 	wp->w_line.l = wp->w_dot.l;
 	wp->w_line.o = 0;
 	if (tbl[num].line != tbl[num].top)
-	    (void) gotoline(TRUE, tbl[num].line);
+	    (void) vl_gotoline(tbl[num].line);
 	(void) gocol(tbl[num].col);
 	wp->w_flag |= WFMOVE | WFSBAR;
 	copy_mvals(NUM_W_VALUES, wp->w_values.wv, tbl[num].w_vals);
@@ -2854,8 +2855,7 @@ special_formatter(TBUFF **result, const char *fs, WINDOW *wp)
 		 * token, to reformat it.  Don't bother reformatting if
 		 * it is just a 'd' added to make the string unambiguous.
 		 */
-		while (isDigit(*fs))
-		    fs++;
+		fs = skip_cnumber(fs);
 		if (isAlpha(*fs)) {
 		    if ((*fs != 'd' || fs != save_fs)) {
 			char format[NSTRING];

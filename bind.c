@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.296 2006/05/21 22:34:06 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.300 2006/11/08 00:32:20 tom Exp $
  *
  */
 
@@ -227,7 +227,7 @@ vl_help(int f GCC_UNUSED, int n GCC_UNUSED)
 	returnCode(FALSE);
 
     if (help_at >= 0) {
-	if (!gotoline(TRUE, help_at))
+	if (!vl_gotoline(help_at))
 	    returnCode(FALSE);
 	mlwrite("[Type '1G' to return to start of help information]");
 	help_at = -1;		/* until zotbuf is called, we let normal
@@ -1058,6 +1058,7 @@ show_onlinehelp(const CMDFUNC * cmd)
 {
     char outseq[NLINE];		/* output buffer for text */
     const char *text = cmd->c_help;
+    CMDFLAGS flags = cmd->c_flags;
 
     if (text && *text) {
 	if (*text == SQUOTE)
@@ -1071,8 +1072,34 @@ show_onlinehelp(const CMDFUNC * cmd)
     }
     if (!addline(curbp, outseq, -1))
 	return FALSE;
-    if (cmd->c_flags & GLOBOK) {
-	if (!addline(curbp, "  (may follow global command)", -1))
+#if OPT_PROCEDURES
+    if ((cmd->c_flags & CMD_TYPE) == CMD_PROC)
+	flags &= !(UNDO | REDO);
+#endif
+#if OPT_PERL
+    if ((cmd->c_flags & CMD_TYPE) == CMD_PERL)
+	flags &= !(UNDO | REDO);
+#endif
+    if (flags & (RANGE | UNDO | REDO | GLOBOK)) {
+	char *gaps = "";
+	char *next = outseq;
+
+	next = lsprintf(outseq, "  ( ");
+	if (cmd->c_flags & (UNDO | REDO)) {
+	    {
+		next = lsprintf(next, "undoable");
+		gaps = ", ";
+	    }
+	}
+	if (cmd->c_flags & RANGE) {
+	    next = lsprintf(next, "%saccepts range", gaps);
+	    gaps = ", ";
+	}
+	if (cmd->c_flags & GLOBOK) {
+	    next = lsprintf(next, "%smay follow global command", gaps);
+	}
+	(void) lsprintf(next, " )");
+	if (!addline(curbp, outseq, -1))
 	    return FALSE;
     }
 #if OPT_MACRO_ARGS
@@ -2811,29 +2838,31 @@ is_shift_cmd(const char *buffer, size_t cpos)
 int
 eol_command(EOL_ARGS)
 {
-    /*
-     * Handle special case of repeated-character implying repeat-count
-     */
-    if (is_shift_cmd(buffer, cpos) && (c == *buffer))
-	return TRUE;
+    int result = FALSE;
 
-    /*
-     * Shell-commands aren't complete until the line is complete.
-     */
-    if ((cpos != 0) && isShellOrPipe(buffer))
-	return isreturn(c);
-
-    return (c == eolchar)
-	|| (
-	       cpos != 0 && cpos < 3
+    if (is_shift_cmd(buffer, cpos) && (c == *buffer)) {
+	/*
+	 * Handle special case of repeated-character implying repeat-count
+	 */
+	result = TRUE;
+    } else if ((cpos != 0) && isShellOrPipe(buffer)) {
+	/*
+	 * Shell-commands aren't complete until the line is complete.
+	 */
+	result = isreturn(c);
+    } else if (c == eolchar) {
+	result = TRUE;
+    } else if (cpos != 0 && cpos < 3
 	       && ((!ismostpunct(c)
 		    && ismostpunct(buffer[cpos - 1]))
 		   || ((c != '!' && ismostpunct(c))
 		       && (buffer[cpos - 1] == '!'
 			   || !ismostpunct(buffer[cpos - 1]))
 		   )
-	       )
-	);
+	       )) {
+	result = TRUE;
+    }
+    return result;
 }
 
 /*

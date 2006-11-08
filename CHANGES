@@ -1,6 +1,51 @@
 Changes for vile 9.6 (released ??? ??? ?? ????)
 
- 200608?? (k)
+ 20061107 (l)
+	> Tom Dickey:
+	+ modify ":describe-bindings" to show whether the command accepts a
+	  range, and whether it is undoable.
+	+ add ":goto-percent" function.
+	+ add (nvi/vim) ex-commands: a!, c!, i!
+	+ add ":c" as alias for ":change-til" (nvi/vim).
+	+ change unimplemented ":c" to ":co" (reference O'Reilly vi-book)
+	+ fix makefile dependency for tags
+	+ review/update use of "CNT" in describe-bindings
+	+ revised command-line option parsing to use scripting more effectively:
+	  + multiple startup files are allowed.
+	  + most command-line options are translated to their equivalent script
+	    and executed, rather than saving state for the most recent of each
+	    option.  This makes the -s, -S, -g, -G options obsolete (but still
+	    accepted).
+	  + add "-c" option (the POSIX form of "+").
+	+ modify configure script to use ncurses5-config, etc., if found when
+	  handling the --with-screen=ncurses or --with-screen=ncursesw options.
+	  It also is checked when handling the --with-ncurses option for the
+	  termcap/terminfo driver.
+	+ add suffix/name rules for "Jam" files.
+	+ fix preamble pattern for pymode so it does not match a ":" line
+	  which should be shmode.
+	+ implement patterns as line-specifiers in ex-mode.
+	  (this does not work with history-scrolling yet).
+	+ remove incorrect check for empty parameter from which-menu from 9.4m
+	  changes.
+	+ check xvile menu to ensure that "C" header is given, adding a
+	  dummy one if not (report by Chris Green).
+	+ add checks to ensure that neither modelines nor majormodes can alter
+	  these modes: all, crypt, readonly, viewonly.
+	+ implement vi-style modeline, limited to setting buffer- and window-
+	  modes, or majormodes.
+	+ add "#" as an alias for number-lines-til
+	+ improve highlighting of comment-lines (denoted by "--") in txtmode.
+	+ fixes for termcap syntax highlighter (tcmode):
+	  + allow description field to be empty
+	  + color the "|" between aliases.
+	  + improve string- and escape-parsing
+	+ fixes for terminfo syntax highlighter (timode):
+	  + allow description field to be empty
+	  + color the "|" between aliases.
+	  + allow aliases to contain blanks.
+
+ 20060924 (k)
 	> Paul van Tilburg
 	+ add syntax filter (mcrl) for mCRL/mCRL2 modeling language.
 	> Tom Dickey:
@@ -8,10 +53,10 @@ Changes for vile 9.6 (released ??? ??? ?? ????)
 	  reading (or re-reading) a shell/pipe command, e.g., using ":e!".
 	+ fix configure --disable-largefile option (from ncurses).
 	+ minor fixes for nroff filter to improve rendition of groff's macros. 
-	+ add configure check for ncurses 5.2(sic) on FreeBSD, which was broken by
-	  an incomplete set of changes to wchar.h (report by Chris Green).
-	+ add configure check for aspell, whose attempt at a compatibility script
-	  for ispell does not recognize ispell's options.
+	+ add configure check for ncurses 5.2(sic) on FreeBSD, which was broken
+	  by an incomplete set of changes to wchar.h (report by Chris Green).
+	+ add configure check for aspell, whose attempt at a compatibility
+	  script for ispell does not recognize ispell's options.
 	+ workaround for breakage in FreeBSD's header files: updates to wchar.h
 	  were not reflected in updates to curses.h (report by Chris Green).
 	+ remove reference to obsolete http://www.vile.cx from README (report

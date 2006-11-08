@@ -1,4 +1,4 @@
-; $Id: modes.rc,v 1.47 2006/08/09 22:44:23 tom Exp $
+; $Id: modes.rc,v 1.49 2006/10/28 15:52:29 tom Exp $
 ; majormodes in this file are ordered alphabetically for convenience - the
 ; precedence used by vile is strictly alphabetic, counting case.  Use the
 ; before and after qualifiers to override the precedence.
@@ -469,7 +469,7 @@ define-mode mail
 
 define-mode make
 ~with define-submode make
-	mode-filename	'^\([Mm]akefile.*\|make\..*\|.*\.mak\|.*\.mk\)$'
+	mode-filename	'^\([Mm]akefile.*\|make\..*\|.*\.mak\|.*\.mk\|Jamdefs.*\|Jamfile\)$'
 	comment-prefix	'^\s*[!#]'
 	comments	'^\s*[!#]\s*$'
 ~elsewith define-submode make group 'gnumake'
@@ -595,7 +595,7 @@ define-mode ps
 ; Python
 define-mode py
 ~with define-submode py
-	pre '^\(\(#!\s*\/.*python[\d_.-]*\>\(\s*[-]\+[\a]*\s*\)\?\)\|:\)\s*$'
+	pre '^\(\(#!\s*\/.*python[\d_.-]*\>\)\(\(\s*[-]\+[\a]*\s*\)\?\|:\)\)\s*$'
 	suffixes	'\.py$'
 	comment-prefix '^\s*#'
 	comments   '^\s*#\s\+\s*$'
@@ -667,9 +667,10 @@ define-mode sed
 ~endwith
 
 ; This is matched after 'csh', and will pick up /bin/sh, /bin/bash, /bin/ksh
+; FIXME "Jamrules" is something like sh, but uses different rules for "^", etc.
 define-mode sh
 ~with define-submode sh
-	mode-filename	'^[a-z.-]*profile$'
+	mode-filename	'^\(\([a-z.-]*profile\)\|Jamrules\)$'
 	suffixes	'\(\.\(sh\|ksh\|shar\|.*rc\|bash_[a-z]\+\|ebuild\)$\)'
 	pre '^\(\(#!\s*\/.*sh\>\(\s*[-]\+[\a]*\s*\)\?\)\|:\)\s*$'
 	comment-prefix	'^\s*[:#]'

@@ -656,11 +656,15 @@ State Variables
 
 	$sres           Current screen size on a DOS PC (meaningless on a
 			Win32 host).  Values:
-			    "2",     "25",    "80x25",
-			    "4",     "43",    "80x43",
-			    "5",     "50",    "80x50",
-			    "80x14", "80x28",
-			    "40x12", "40x21", "40x25", "40x28", "40x50"
+			    "2",     "25",
+			    "4",     "43",
+			    "5",     "50",
+			    "6",     "60"
+
+			Values for VMS:
+			    "WIDE",  "NORMAL"
+
+			Other drivers ignore the value.
 
 	$startup-file   The name of the startup file (e.g. .vilerc)
 
@@ -1497,6 +1501,6 @@ Example startup file
 	========================= end vile.rc =======================
 
 -----------------------------------
-  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.96 2006/02/16 01:22:49 tom Exp $
+  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.97 2006/11/01 21:23:26 tom Exp $
 -----------------------------------
 

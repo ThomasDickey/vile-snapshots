@@ -78,7 +78,7 @@
 #
 #	This file was designed and constructed by Paul Fox for vile, (c)1990
 #
-#	The flags given in parentheses are "ex" flags, related to what
+#	Some of the flags given are "ex" flags, related to what
 #		kind of line-range arguments the command can take.  Not all are
 #		currently used or implemented, but they were defined in the
 #		command table for the Steve Kirkendall's elvis editor, so I
@@ -97,11 +97,11 @@
 #		in '!' listed, then the flag does nothing, and should be
 #		viewed simply as documentation.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.238 2005/07/17 17:58:39 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.244 2006/11/07 22:44:52 tom Exp $
 #
 #
 
-abbrev		NONE|(EXRCOK|EXTRA)
+abbrev		EXRCOK|EXTRA
 	"abbreviate"
 	"show-abbreviations"
 	<establish shorthand for another string, or show all abbreviations>
@@ -114,13 +114,13 @@ append		REDO|UNDO
 	"append-chars"			!FEWNAMES
 	'a'
 	<insert (CNT copies of) text after the cursor>
-append_i	REDO|UNDO		0
+append_i	REDO|UNDO
 	"append-indented-chars"		!FEWNAMES
 	"a!"
 	<insert (CNT copies of) text after the cursor, toggles autoindent>
 appstring	REDO|UNDO		!SMALLER
 	"append-string"
-	<append the given string after the cursor>
+	<append (CNT copies of) the given string after the cursor>
 appendeol	REDO|UNDO
 	"append-chars-at-eol"		!FEWNAMES
 	'A'
@@ -142,7 +142,7 @@ backdelchar	REDO|UNDO|MINIBUF
 	<delete CNT characters to the left>
 backhunt	ABSM|MOTION		!SMALLER
 	"hunt-backward"
-	<search backward for previously entered pattern>
+	<search backward for CNT'th occurrence of previously entered pattern>
 backhpage	MOTION
 	"previous-half-page"		!FEWNAMES
 	"back-half-page"		!FEWNAMES
@@ -192,11 +192,11 @@ backsearch	ABSM|MOTION
 bcsrch		MOTION|MINIBUF
 	"backward-char-scan"		!FEWNAMES
 	'F'
-	<scan left on the line for the given character>
+	<scan left on the line for CNT'th occurrence of the given character>
 bcsrch_to	MOTION|MINIBUF
 	"backward-char-scan-to"		!FEWNAMES
 	'T'
-	<scan left on the line up to but not including the given character>
+	<scan left on the line up to but not including CNT'th occurrence of the given character>
 bindkey		NONE			OPT_REBIND
 	"bind-key"
 	"rebind-key"
@@ -213,7 +213,7 @@ bind_s_key	NONE			OPT_REBIND
 	"bind-selmode-key"
 	"rebind-selmode-key"
 	<bind a keystroke to a function effective in select mode>
-bktoshell	NONE|(BANG)		OPT_SHELL
+bktoshell	BANG			OPT_SHELL
 	"suspend"
 	"suspend!"
 	"stop"
@@ -237,12 +237,12 @@ chgline		REDO|UNDO
 	"change-line"			!FEWNAMES
 	"delete-line-and-insert-chars"	!FEWNAMES
 	'S'
-	<insert text to replace the current line>
+	<insert text to replace the CNT lines, starting with current line>
 chgtoeol	REDO|UNDO
 	"change-to-eol"			!FEWNAMES
 	"delete-to-eol-and-insert-chars" !FEWNAMES
 	'C'
-	<insert text to replace the rest of the line>
+	<insert text to replace the rest of the line (plus CNT-1 following)>
 clear_match_attrs	NONE		OPT_HILITEMATCH
 	"clear-visual-matches"
 	'='
@@ -259,10 +259,10 @@ show_err_regex	NONE			OPT_FINDERR
 consearch	ABSM|MOTION
 	"continue-search"		!FEWNAMES
 	'n'
-	<search for previous pattern in same direction as before>
-opercopy	OPER|(RANGE|EXTRA)
+	<search for previous pattern in same direction as before, CNT'th occurrence>
+opercopy	OPER|RANGE|EXTRA
 	"copy-til"
-	"c"
+	"co"
 	<copy text in the region>
 kbd_mac_startstop	NONE
 	"end-keyboard-macro"		!FEWNAMES
@@ -273,7 +273,7 @@ kbd_mac_startstop	NONE
 kbd_mac_exec	REDO|UNDO|VIEWOK
 	"execute-keyboard-macro"	!FEWNAMES
 	'^X-&'
-	<execute a previously recorded macro of keystrokes>
+	<execute a previously recorded macro of keystrokes CNT times>
 kbd_mac_save	NONE
 	"save-keyboard-macro"
 	'^X-^'
@@ -282,161 +282,161 @@ cbuf1		REDO			OPT_EXEC_MACROS>0
 	"execute-macro-1"		!FEWNAMES
 	'FN-1'				KEY_F1
 	'FN-P'				KEY_KP_F1
-	<execute [Macro 1]>
+	<execute [Macro 1] CNT times>
 cbuf2		REDO			OPT_EXEC_MACROS>1
 	"execute-macro-2"		!FEWNAMES
 	'FN-2'				KEY_F2
 	'FN-Q'				KEY_KP_F2
-	<execute [Macro 2]>
+	<execute [Macro 2] CNT times>
 cbuf3		REDO			OPT_EXEC_MACROS>2
 	"execute-macro-3"		!FEWNAMES
 	'FN-3'				KEY_F3
 	'FN-R'				KEY_KP_F3
-	<execute [Macro 3]>
+	<execute [Macro 3] CNT times>
 cbuf4		REDO			OPT_EXEC_MACROS>3
 	"execute-macro-4"		!FEWNAMES
 	'FN-4'				KEY_F4
 	'FN-S'				KEY_KP_F4
-	<execute [Macro 4]>
+	<execute [Macro 4] CNT times>
 cbuf5		REDO			OPT_EXEC_MACROS>4
 	"execute-macro-5"		!FEWNAMES
 	'FN-5'				KEY_F5
-	<execute [Macro 5]>
+	<execute [Macro 5] CNT times>
 cbuf6		REDO			OPT_EXEC_MACROS>5
 	"execute-macro-6"		!FEWNAMES
 	'FN-6'				KEY_F6
-	<execute [Macro 6]>
+	<execute [Macro 6] CNT times>
 cbuf7		REDO			OPT_EXEC_MACROS>6
 	"execute-macro-7"		!FEWNAMES
 	'FN-7'				KEY_F7
-	<execute [Macro 7]>
+	<execute [Macro 7] CNT times>
 cbuf8		REDO			OPT_EXEC_MACROS>7
 	"execute-macro-8"		!FEWNAMES
 	'FN-8'				KEY_F8
-	<execute [Macro 8]>
+	<execute [Macro 8] CNT times>
 cbuf9		REDO			OPT_EXEC_MACROS>8
 	"execute-macro-9"		!FEWNAMES
 	'FN-9'				KEY_F9
-	<execute [Macro 9]>
+	<execute [Macro 9] CNT times>
 cbuf10		REDO			OPT_EXEC_MACROS>9
 	'FN-0'				KEY_F10
 	"execute-macro-10"		!FEWNAMES
-	<execute [Macro 10]>
+	<execute [Macro 10] CNT times>
 cbuf11		REDO			OPT_EXEC_MACROS>10
 	"execute-macro-11"		!FEWNAMES
 	'FN-!'				KEY_F11
-	<execute [Macro 11]>
+	<execute [Macro 11] CNT times>
 cbuf12		REDO			OPT_EXEC_MACROS>11
 	'FN-@'				KEY_F12
 	"execute-macro-12"		!FEWNAMES
-	<execute [Macro 12]>
+	<execute [Macro 12] CNT times>
 cbuf13		REDO			OPT_EXEC_MACROS>12
 	'FN-#'				KEY_F13
 	"execute-macro-13"		!FEWNAMES
-	<execute [Macro 13]>
+	<execute [Macro 13] CNT times>
 cbuf14		REDO			OPT_EXEC_MACROS>13
 	'FN-$'				KEY_F14
 	"execute-macro-14"		!FEWNAMES
-	<execute [Macro 14]>
+	<execute [Macro 14] CNT times>
 cbuf15		REDO			OPT_EXEC_MACROS>14
 	'FN-%'				KEY_F15
 	"execute-macro-15"		!FEWNAMES
-	<execute [Macro 15]>
+	<execute [Macro 15] CNT times>
 cbuf16		REDO			OPT_EXEC_MACROS>15
 	'FN-^'				KEY_F16
 	"execute-macro-16"		!FEWNAMES
-	<execute [Macro 16]>
+	<execute [Macro 16] CNT times>
 cbuf17		REDO			OPT_EXEC_MACROS>16
 	'FN-&'				KEY_F17
 	"execute-macro-17"		!FEWNAMES
-	<execute [Macro 17]>
+	<execute [Macro 17] CNT times>
 cbuf18		REDO			OPT_EXEC_MACROS>17
 	'FN-*'				KEY_F18
 	"execute-macro-18"		!FEWNAMES
-	<execute [Macro 18]>
+	<execute [Macro 18] CNT times>
 cbuf19		REDO			OPT_EXEC_MACROS>18
 	'FN-('				KEY_F19
 	"execute-macro-19"		!FEWNAMES
-	<execute [Macro 19]>
+	<execute [Macro 19] CNT times>
 cbuf20		REDO			OPT_EXEC_MACROS>19
 	'FN-)'				KEY_F20
 	"execute-macro-20"		!FEWNAMES
-	<execute [Macro 20]>
+	<execute [Macro 20] CNT times>
 cbuf21		REDO			OPT_EXEC_MACROS>20
 	'FN-\241'			KEY_F21
 	"execute-macro-21"		!FEWNAMES
-	<execute [Macro 21]>
+	<execute [Macro 21] CNT times>
 cbuf22		REDO			OPT_EXEC_MACROS>21
 	'FN-\242'			KEY_F22
 	"execute-macro-22"		!FEWNAMES
-	<execute [Macro 22]>
+	<execute [Macro 22] CNT times>
 cbuf23		REDO			OPT_EXEC_MACROS>22
 	'FN-\243'			KEY_F23
 	"execute-macro-23"		!FEWNAMES
-	<execute [Macro 23]>
+	<execute [Macro 23] CNT times>
 cbuf24		REDO			OPT_EXEC_MACROS>23
 	'FN-\244'			KEY_F24
 	"execute-macro-24"		!FEWNAMES
-	<execute [Macro 24]>
+	<execute [Macro 24] CNT times>
 cbuf25		REDO			OPT_EXEC_MACROS>24
 	'FN-\245'			KEY_F25
 	"execute-macro-25"		!FEWNAMES
-	<execute [Macro 25]>
+	<execute [Macro 25] CNT times>
 cbuf26		REDO			OPT_EXEC_MACROS>25
 	'FN-\246'			KEY_F26
 	"execute-macro-26"		!FEWNAMES
-	<execute [Macro 26]>
+	<execute [Macro 26] CNT times>
 cbuf27		REDO			OPT_EXEC_MACROS>26
 	'FN-\247'			KEY_F27
 	"execute-macro-27"		!FEWNAMES
-	<execute [Macro 27]>
+	<execute [Macro 27] CNT times>
 cbuf28		REDO			OPT_EXEC_MACROS>27
 	'FN-\250'			KEY_F28
 	"execute-macro-28"		!FEWNAMES
-	<execute [Macro 28]>
+	<execute [Macro 28] CNT times>
 cbuf29		REDO			OPT_EXEC_MACROS>28
 	'FN-\251'			KEY_F29
 	"execute-macro-29"		!FEWNAMES
-	<execute [Macro 29]>
+	<execute [Macro 29] CNT times>
 cbuf30		REDO			OPT_EXEC_MACROS>29
 	'FN-\252'			KEY_F30
 	"execute-macro-30"		!FEWNAMES
-	<execute [Macro 30]>
+	<execute [Macro 30] CNT times>
 cbuf31		REDO			OPT_EXEC_MACROS>30
 	'FN-\253'			KEY_F31
 	"execute-macro-31"		!FEWNAMES
-	<execute [Macro 31]>
+	<execute [Macro 31] CNT times>
 cbuf32		REDO			OPT_EXEC_MACROS>31
 	'FN-\254'			KEY_F32
 	"execute-macro-32"		!FEWNAMES
-	<execute [Macro 32]>
+	<execute [Macro 32] CNT times>
 cbuf33		REDO			OPT_EXEC_MACROS>32
 	'FN-\255'			KEY_F33
 	"execute-macro-33"		!FEWNAMES
-	<execute [Macro 33]>
+	<execute [Macro 33] CNT times>
 cbuf34		REDO			OPT_EXEC_MACROS>33
 	'FN-\256'			KEY_F34
 	"execute-macro-34"		!FEWNAMES
-	<execute [Macro 34]>
+	<execute [Macro 34] CNT times>
 cbuf35		REDO			OPT_EXEC_MACROS>34
 	'FN-\257'			KEY_F35
 	"execute-macro-35"		!FEWNAMES
-	<execute [Macro 35]>
+	<execute [Macro 35] CNT times>
 cbuf36		REDO			OPT_EXEC_MACROS>35
 	"execute-macro-36"		!FEWNAMES
-	<execute [Macro 36]>
+	<execute [Macro 36] CNT times>
 cbuf37		REDO			OPT_EXEC_MACROS>36
 	"execute-macro-37"		!FEWNAMES
-	<execute [Macro 37]>
+	<execute [Macro 37] CNT times>
 cbuf38		REDO			OPT_EXEC_MACROS>37
 	"execute-macro-38"		!FEWNAMES
-	<execute [Macro 38]>
+	<execute [Macro 38] CNT times>
 cbuf39		REDO			OPT_EXEC_MACROS>38
 	"execute-macro-39"		!FEWNAMES
-	<execute [Macro 39]>
+	<execute [Macro 39] CNT times>
 cbuf40		REDO			OPT_EXEC_MACROS>39
 	"execute-macro-40"		!FEWNAMES
-	<execute [Macro 40]>
+	<execute [Macro 40] CNT times>
 define_mode	NONE			OPT_MAJORMODE
 	"define-majormode"
 	"define-mode"
@@ -464,7 +464,7 @@ delglobmode	NONE
 	"setno"
 	"unset"
 	<turn off the global value of a mode setting>
-dellocmode	NONE|(EXRCOK|EXTRA)
+dellocmode	EXRCOK|EXTRA
 	"delete-mode"			!FEWNAMES
 	"setlno"
 	"unsetl"
@@ -537,21 +537,21 @@ des_s_key	NONE			OPT_REBIND
 dotcmdplay	UNDO
 	"repeat-last-cmd"		!FEWNAMES
 	'.'
-	<repeat the last text-changing command>
+	<repeat the last text-changing command, CNT times>
 evaluate	NONE			OPT_EVAL
 	"eval"
 	"execute-string"		!FEWNAMES
-	<evaluate expression, reinterpret as a command>
-ex	NONE|(BANG|FILE1)
+	<evaluate expression, reinterpret as a command (CNT as per command)>
+ex		BANG|FILE1
 	"ex"
 	<entry point to the \"exile\" editor.  unimplemented>
 execbuf		NONE			!SMALLER
 	"execute-buffer"		!FEWNAMES
-	<run the given buffer as a script>
+	<run the given buffer as a script, CNT times>
 execfile	NONE			!SMALLER
 	"execute-file"			!FEWNAMES
 	"source"
-	<run the given file as a script>
+	<run the given file as a script, CNT times>
 exechypercmd	NONE			OPT_HYPERTEXT
 	"execute-hypertext-command"	!FEWNAMES
 	<run the hypertext command attached to the region under the cursor>
@@ -565,7 +565,7 @@ execkreg	REDO|UNDO|VIEWOK
 execproc	REDO			OPT_PROCEDURES
 	"execute-procedure"		!FEWNAMES
 	"run"
-	<run the given named stored-procedure as a script>
+	<run the given named stored-procedure as a script, CNT times>
 enlargewind	GOAL
 	"grow-window"			!FEWNAMES
 	'V'
@@ -580,12 +580,12 @@ flow_control_enable	NONE		SYS_UNIX
 fcsrch		MOTION|MINIBUF
 	"forward-char-scan"		!FEWNAMES
 	'f'
-	<scan right on the line for the given character>
+	<scan right on the line for (CNT'th occurrence of) the given character>
 fcsrch_to	MOTION|MINIBUF
 	"forward-char-scan-up-to"	!FEWNAMES
 	't'
-	<scan right on the line up to but not including the given character>
-filefind	NONE|(BANG|FILE1|PLUS)
+	<scan right on the line up to but not including (CNT'th occurrence of) the given character>
+filefind	BANG|FILE1|PLUS
 	"e"
 	"E"
 	"edit-file"			!FEWNAMES
@@ -596,17 +596,17 @@ fileread	NONE
 	"e!"
 	"replace-with-file"		!FEWNAMES
 	<replace the contents of the current buffer with the given file>
-vl_filename	NONE|(NAMEDF)
+vl_filename	NAMEDF
 	"change-file-name"		!FEWNAMES
 	"f"
 	"file"
 	"filename"
 	<change the filename associated with the current buffer>
-filesave	NONE|BANG		!SMALLER
+filesave	BANG			!SMALLER
 	"save-file"
 	"save-file!"
 	<save the contents of the current buffer to its associated filename>
-filewrite	NONE|BANG
+filewrite	BANG
 	"write-file"			!FEWNAMES
 	"write-file!"			!FEWNAMES
 	<syntax: \"write-file [name]\" - write contents of current buffer to its filename or to optional \"name\">
@@ -633,11 +633,11 @@ firstnonwhite	MOTION|MINIBUF
 fisearch	NONE			OPT_ISRCH
 	"incremental-search"		!FEWNAMES
 	'^X-S'
-	<search forwards for a pattern entered character by character>
+	<search forward for a pattern entered character by character>
 flipchar	REDO|UNDO|MINIBUF
 	"flip-character"		!FEWNAMES
 	'~'
-	<exchange upper and lowercase for the current character>
+	<exchange upper and lowercase for CNT characters, begin with current>
 forwdelchar	REDO|UNDO|MINIBUF
 	"delete-next-character"		!FEWNAMES
 	'x'
@@ -712,12 +712,12 @@ forwviendw	MOTION|MINIBUF
 	<move right to the end of CNT \"small\" words>
 forwhunt	ABSM|MOTION		!SMALLER
 	"hunt-forward"			!FEWNAMES
-	<search forward for previously entered pattern>
+	<search forward for CNT'th occurrence of previously entered pattern>
 forwsearch	ABSM|MOTION
 	"search-forward"		!FEWNAMES
 	'/'
 	'FN-f'				KEY_Find
-	<search forwards for fresh pattern>
+	<search forward for CNT'th occurrence of fresh pattern>
 matchfence	ABSM|MOTION		OPT_CFENCE
 	"goto-matching-fence"		!FEWNAMES
 	'%'
@@ -737,20 +737,20 @@ godotplus	MOTION|FL
 	<move CNT whole lines.  same as \"stuttering\" most operators>
 
 # this function is for internal use only, for ex commands
-gomark		MOTION|FL|(RANGE|ZERO)
+gomark		MOTION|FL|RANGE|ZERO
 
 gotobop		ABSM|MOTION
 	"previous-paragraph"		!FEWNAMES
 	"back-paragraph"		!FEWNAMES
 	"up-paragraph"			!FEWNAMES
 	'{'
-	<move to the start of a paragraph>
+	<move to the start of CNT'th paragraph>
 gotoeop		ABSM|MOTION
 	"forward-paragraph"		!FEWNAMES
 	"next-paragraph"		!FEWNAMES
 	"down-paragraph"		!FEWNAMES
 	'}'
-	<move to the end of a paragraph>
+	<move to the end of CNT'th paragraph>
 gotobob		ABSM|MOTION		!SMALLER
 	"beginning-of-file"		!FEWNAMES
 	"goto-beginning-of-file"	!FEWNAMES
@@ -772,7 +772,7 @@ gotoeol		GOAL|MOTION|MINIBUF
 	"end-of-line"			!FEWNAMES
 	"eol"				!FEWNAMES
 	'$'
-	<move to the very end of the line>
+	<move to the very end of the CNT'th line>
 gotobos		ABSM|MOTION|FL
 	"goto-beginning-of-screen"	!FEWNAMES
 	"beginning-of-screen"		!FEWNAMES
@@ -793,35 +793,38 @@ gotobosec	ABSM|MOTION
 	"back-section"			!FEWNAMES
 	"up-section"			!FEWNAMES
 	'['
-	<move to the previous start of a \"section\">
+	<move to the CNT'th previous start of a \"section\">
 gotoeosec	ABSM|MOTION
 	"forward-section"		!FEWNAMES
 	"next-section"			!FEWNAMES
 	"down-section"			!FEWNAMES
 	']'
-	<move to the next start of a \"section\">
+	<move forward to the CNT'th start of a \"section\">
 gotobosent	ABSM|MOTION
 	"previous-sentence"		!FEWNAMES
 	"back-sentence"			!FEWNAMES
 	"up-sentence"			!FEWNAMES
 	'('
-	<move to the previous start of a \"sentence\">
+	<move to the CNT'th previous start of a \"sentence\">
 gotoeosent	ABSM|MOTION
 	"forward-sentence"		!FEWNAMES
 	"next-sentence"			!FEWNAMES
 	"down-sentence"			!FEWNAMES
 	')'
-	<move to the next start of a \"sentence\">
+	<move to the CNT'th start of a \"sentence\">
 gototag		NONE			OPT_TAGS
 	"ta"
 	"tag"
 	"find-tag"			!FEWNAMES
 	'^]'
 	<look up the given (or under-cursor) name as a \"tag\">
-gotochr		ABSM|MOTION|RANGE	!SMALLER
+gotochr		ABSM|MOTION		!SMALLER
 	"goto-char"
 	'^X-G'
 	<go to the CNT'th character.  unspecified CNT means end of buffer>
+gotopct		ABSM|MOTION		!SMALLER
+	"goto-percent"
+	<go to the CNT'th percent of the file.  unspecified CNT means end of buffer>
 gotocol		MOTION|MINIBUF
 	"goto-column"			!FEWNAMES
 	'|'
@@ -878,7 +881,7 @@ insertbol	REDO|UNDO
 	"insert-chars-at-bol"	!FEWNAMES
 	'I'
 	<insert (CNT copies of) text before the first non-white char on line>
-insfile		REDO|UNDO|GLOBOK|(FROM|ZERO|NAMEDF)
+insfile		REDO|UNDO|GLOBOK|FROM|ZERO|NAMEDF
 	"r"
 	"insert-file"			!FEWNAMES
 	"read-file"			!FEWNAMES
@@ -886,10 +889,10 @@ insfile		REDO|UNDO|GLOBOK|(FROM|ZERO|NAMEDF)
 	<read the given file into the current buffer at the current line>
 insspace	REDO|UNDO|MINIBUF	!SMALLER
 	"insert-space"			!FEWNAMES
-	<insert a space character at the cursor>
+	<insert CNT space character(s) at the cursor>
 insstring	REDO|UNDO		!SMALLER
 	"insert-string"
-	<insert the given string at the cursor>
+	<insert (CNT copies of) the given string at the cursor>
 joinlines	REDO|UNDO
 	"join-lines"			!FEWNAMES
 	'J'
@@ -898,13 +901,13 @@ for_buffers	NONE			!SMALLER
 	"for-buffers"			!FEWNAMES
 	"fb"
 	'^X-x'
-	<for each buffer matched by the pattern, perform the command>
+	<for each buffer matched by the pattern, perform the command (CNT as per command)>
 killbuffer	GOAL
 	"delete-buffer"			!FEWNAMES
 	"kill-buffer"			!FEWNAMES
 	"ki"
 	'^X-k'
-	<eliminate the given or under-cursor buffer>
+	<eliminate the given or (CNT times) under-cursor buffer>
 showlength	DFLALL|FROM|TO|NOMOVE
 	"buffer-length"			!FEWNAMES
 	"="
@@ -928,26 +931,26 @@ vl_set_args2	NONE
 showhistory	NONE			OPT_HISTORY
 	"show-history"
 	<show the command history>
-lineputafter	REDO|UNDO|GLOBOK|(FROM|ZERO|OPTREG)
+lineputafter	REDO|UNDO|GLOBOK|FROM|ZERO|OPTREG
 	"put-as-lines-after"		!FEWNAMES
 	"put"
 	'^X-p'
-	<insert from (un)named register, as whole lines, after current line>
-lineputbefore	REDO|UNDO|GLOBOK|(FROM|OPTREG)
+	<insert CNT times from (un)named register, as whole lines, after current line>
+lineputbefore	REDO|UNDO|GLOBOK|FROM|OPTREG
 	"put-as-lines-before"		!FEWNAMES
 	"Put"
 	'^X-P'
-	<insert from (un)named register, as whole lines, before current line>
-rectputafter	REDO|UNDO|GLOBOK|(FROM|ZERO|OPTREG)
+	<insert CNT times from (un)named register, as whole lines, before current line>
+rectputafter	REDO|UNDO|GLOBOK|FROM|ZERO|OPTREG
 	"put-as-rectangle-after"	!FEWNAMES
 	"rput"
 	'^A-p'
-	<insert from (un)named register, as a rectangle, after cursor>
-rectputbefore	REDO|UNDO|GLOBOK|(FROM|OPTREG)
+	<insert CNT times from (un)named register, as a rectangle, after cursor>
+rectputbefore	REDO|UNDO|GLOBOK|FROM|OPTREG
 	"put-as-rectangle-before"	!FEWNAMES
 	"rPut"
 	'^A-P'
-	<insert from (un)named register, as a rectangle, in front of cursor>
+	<insert CNT times from (un)named register, as a rectangle, in front of cursor>
 lineundo	NONE
 	"undo-line-changes"		!FEWNAMES
 	'U'
@@ -963,14 +966,14 @@ showkreg	NONE			OPT_SHOW_REGS
 	"showregisters"			!FEWNAMES
 	"list-registers"		!FEWNAMES
 	<show the contents of all of the named and unnamed registers>
-sysmap		NONE|(EXRCOK|EXTRA)	OPT_SHOW_MAPS
+sysmap		EXRCOK|EXTRA		OPT_SHOW_MAPS
 	"show-system-mapped-chars"
 	<list the system function-key maps>
-map		NONE|(EXRCOK|EXTRA)
+map		EXRCOK|EXTRA
 	"map"
 	"show-mapped-chars"
 	<create a new map, or show list of the current command-mode maps>
-map_bang	NONE|(EXRCOK|EXTRA)
+map_bang	EXRCOK|EXTRA
 	"map!"
 	"show-mapped!-chars"
 	<create a new map, or show list of the current insert-mode maps>
@@ -993,10 +996,10 @@ nexttag		NONE			OPT_TAGS
 newprocessgroup	NONE
 	"new-process-group"
 	<put editor into its own process group (X11 version only)>
-noremap		NONE|(EXRCOK|EXTRA)
+noremap		EXRCOK|EXTRA
 	"noremap"
 	<create a new unremappable command-mode map>
-noremap_bang	NONE|(EXRCOK|EXTRA)
+noremap_bang	EXRCOK|EXTRA
 	"noremap!"
 	<create a new unremappable insert-mode map>
 cntl_a_func	NONE
@@ -1027,7 +1030,7 @@ mvleftwind	GOAL
 	"move-window-left"		!FEWNAMES
 	'^X-^L'
 	<scroll window to left by CNT columns, half screen if CNT unspecified>
-nextbuffer	NONE|(BANG|NAMEDFS)
+nextbuffer	BANG|NAMEDFS
 	"n"
 	"n!"
 	"next-buffer"			!FEWNAMES
@@ -1037,7 +1040,7 @@ namebuffer	NONE
 	<give the current buffer a new name>
 newline		REDO|UNDO		!SMALLER
 	"newline"
-	<insert a newline at the cursor>
+	<insert a newline at the cursor, CNT times>
 newlength	NONE
 	"screen-rows"
 	<tell the editor the screen has CNT rows>
@@ -1057,26 +1060,26 @@ namedcmd	NONE
 	"execute-named-command"		!FEWNAMES
 	":"
 	':'
-	<execute the given function, by name>
+	<execute the given function, by name, applying CNT as its repeat-count>
 openup		REDO|UNDO|(FROM)
 	"open-line-above-and-insert-chars"	!FEWNAMES
 	"i"
 	'O'
 	<insert text in CNT fresh blank line(s), before current line>
-openup_i	REDO|UNDO|(FROM)	0
+openup_i	REDO|UNDO|(FROM)	!SMALLER
 	"insert-indented-chars"		!FEWNAMES
 	"i!"
 	<insert text in CNT fresh blank line(s), before current line, toggle autoindent>
-openup_no_aindent	REDO|UNDO|(FROM|ZERO)
+openup_no_aindent	REDO|UNDO|FROM|ZERO
 	"open-line-above-no-autoindent"	!FEWNAMES
 	'^A-O'
 	<insert text in CNT fresh blank line(s), before current, no autoindent>
-opendown	REDO|UNDO|(FROM|ZERO)
+opendown	REDO|UNDO|FROM|ZERO
 	"open-line-below-and-append-chars"	!FEWNAMES
 	"a"
 	'o'
 	<insert text in CNT fresh blank line(s), after current line>
-opendown_no_aindent	REDO|UNDO|(FROM|ZERO)
+opendown_no_aindent	REDO|UNDO|FROM|ZERO
 	"open-line-below-no-autoindent"	!FEWNAMES
 	'^A-o'
 	<insert text in CNT fresh blank line(s), after current, no autoindent>
@@ -1128,10 +1131,11 @@ operattrul	OPER|GLOBOK|RANGE	OPT_SELECTIONS
 	<display text underlined in the region>
 operchg		OPER|REDO|UNDO
 	"change-til"			!FEWNAMES
+	"c"
 	"delete-and-insert-chars-til"	!FEWNAMES
 	'c'
 	<insert text, replacing that in the region>
-operchg_i	OPER|REDO|UNDO		0
+operchg_i	OPER|REDO|UNDO		!SMALLER
 	"change-indented-chars"		!FEWNAMES
 	"c!"
 	<insert text, replacing that in the region, toggles autoindent>
@@ -1151,7 +1155,7 @@ oper_l_entab	OPER|REDO|UNDO|GLOBOK|(RANGE)
 	"leading-entab-lines-til"	!FEWNAMES
 	'^X-^I'
 	<convert leading spaces to tabs where possible in the region>
-opermove	OPER|(RANGE|EXTRA)
+opermove	OPER|RANGE|EXTRA
 	"move-til"
 	"m"
 	<move text in the region to the given line>
@@ -1173,12 +1177,12 @@ operjoin_x	OPER|REDO|UNDO|GLOBOK|RANGE
 	"j!"
 	"join-exact-lines-til"		!FEWNAMES
 	<join together lines in the region without whitespace adjustment>
-operlinedel	OPER|REDO|UNDO|GLOBOK|(RANGE|OPTREG)
+operlinedel	OPER|REDO|UNDO|GLOBOK|RANGE|OPTREG
 	"delete-lines-til"		!FEWNAMES
 	"d"
 	'^X-d'
 	<delete lines covered by the region>
-operfilter	OPER|REDO|UNDO|(EXRCOK|RANGE|NAMEDFS|DFLNONE|VI_NL) OPT_SHELL
+operfilter	OPER|REDO|UNDO|EXRCOK|RANGE|NAMEDFS|DFLNONE|VI_NL OPT_SHELL
 	"filter-til"			!FEWNAMES
 	"!"
 	'!'
@@ -1194,13 +1198,13 @@ operflip	OPER|REDO|UNDO|GLOBOK|(RANGE)
 	'^A-~'
 	<exchange upper and lowercase on characters in the region>
 # FIXME: RANGE is not done perhaps should be...
-operglobals	(BANG|EXTRA|DFLALL)
+operglobals	BANG|EXTRA|DFLALL
 	"global"
 	"g"
 	"v!"
 	<perform command on all lines containing the given pattern>
 # FIXME: RANGE is not done perhaps should be...
-opervglobals	(BANG|EXTRA|DFLALL)
+opervglobals	BANG|EXTRA|DFLALL
 	"inverse-global"
 	"vglobal"
 	"g!"
@@ -1218,6 +1222,7 @@ operlist	OPER|GLOBOK|(RANGE)
 opernumber	OPER|GLOBOK|(RANGE)
 	"number-lines-til"		!FEWNAMES
 	"nu"
+	"#"
 	<show lines with their line numbers>
 operprint	OPER|GLOBOK|(RANGE)
 	"print-lines-til"		!FEWNAMES
@@ -1246,11 +1251,11 @@ operrshift	OPER|REDO|UNDO|GLOBOK|(RANGE)
 	">"
 	'>'
 	<shift lines in the region right by one \"shiftwidth\">
-opersubst	OPER|REDO|UNDO|GLOBOK|(RANGE|EXTRA)
+opersubst	OPER|REDO|UNDO|GLOBOK|RANGE|EXTRA
 	"substitute-til"		!FEWNAMES
 	"s"
 	<perform a text substitution over the region>
-opersubstall	OPER|REDO|UNDO|GLOBOK|(RANGE|EXTRA)
+opersubstall	OPER|REDO|UNDO|GLOBOK|RANGE|EXTRA
 	"substitute-all-til"	!FEWNAMES
 	'^X-s'
 	<perform an all-occurrence text substitution over the region>
@@ -1268,28 +1273,28 @@ operyank	OPER
 	"yank-til"			!FEWNAMES
 	'y'
 	<get the region into the given named or unnamed register>
-operlineyank	OPER|(RANGE|OPTREG|NOMOVE)
+operlineyank	OPER|RANGE|OPTREG|NOMOVE
 	"yank-lines-til"		!FEWNAMES
 	"y"
 	'^X-y'
 	<get lines covered by region into given named or unnamed register>
-opersubstagain	OPER|REDO|UNDO|GLOBOK|(RANGE|EXTRA)
+opersubstagain	OPER|REDO|UNDO|GLOBOK|RANGE|EXTRA
 	"substitute-again-til"		!FEWNAMES
 	"&"
 	'^A-&'
 	<redo the previous text substitution over the region>
-opertransf	OPER|(RANGE|EXTRA)
+opertransf	OPER|RANGE|EXTRA
 	"transfer-til"
 	"t"
 	<copy text in the region>
-operwrite	OPER|(RANGE|BANG|FILE1|DFLALL|NOMOVE)
+operwrite	OPER|RANGE|BANG|FILE1|DFLALL|NOMOVE
 	"w"
 	"w!"
 	"W"
 	"write-til"			!FEWNAMES
 	'^W'
 	<write from region to the given file.  whole buffer by default>
-oper_wrenc	OPER|(RANGE|BANG|FILE1|DFLALL|NOMOVE)		OPT_SELECTIONS
+oper_wrenc	OPER|RANGE|BANG|FILE1|DFLALL|NOMOVE		OPT_SELECTIONS
 	"write-encoded-til"
 	<write attributed text from region to file.  whole buffer by default>
 overwritechars	REDO|UNDO
@@ -1318,7 +1323,7 @@ poswind		GOAL
 	"position-window"		!FEWNAMES
 	'z'
 	<reframe with cursor at center (.,M,m), top (CR,H,t), or bottom (-,L,b)>
-prevbuffer	NONE|(BANG|NAMEDFS)	!SMALLER
+prevbuffer	BANG|NAMEDFS		!SMALLER
 	"P"
 	"previous-buffer"		!FEWNAMES
 	<switch to previous buffer (or the most-recently-visited, if \"autobuffer\" on>
@@ -1346,7 +1351,7 @@ pwd		NONE			OPT_SHELL
 	"pwd"
 	"print-directory"
 	<show current directory name>
-quit		NONE|(BANG)
+quit		BANG
 	"q"
 	"Q"
 	"exit"
@@ -1359,7 +1364,7 @@ quithard	NONE
 	"q!"
 	"Q!"
 	<leave the editor, regardless of modified buffers>
-quickexit	NONE|(BANG|VI_NL)
+quickexit	BANG|VI_NL
 	"x"
 	"x!"
 	"xit"
@@ -1434,7 +1439,7 @@ sel_motion	ABSM|MOTION		OPT_SELECTIONS
 scrforwsearch	ABSM|MOTION
 	"screen-search-forward"		!FEWNAMES
 	'^X-/'
-	<search forwards for pattern (word) under cursor>
+	<search forward for pattern (word) under cursor>
 scrbacksearch	ABSM|MOTION
 	"screen-search-reverse"		!FEWNAMES
 	'^X-?'
@@ -1520,7 +1525,7 @@ vl_setkey	NONE			OPT_ENCRYPT
 	"X"
 	'^X-X'
 	<set the encryption key on the current buffer>
-setlocmode	NONE|(EXRCOK|EXTRA)
+setlocmode	EXRCOK|EXTRA
 	"setl"
 	"set-mode"			!FEWNAMES
 	<change the current buffer's local value of a mode setting>
@@ -1530,7 +1535,7 @@ setglobmode	NONE
 	"setg"
 	"set-global-mode"
 	<change the global value of a mode setting>
-setnmmark	NONE|(FROM|EXTRA|NOMOVE)
+setnmmark	FROM|EXTRA|NOMOVE
 	"set-named-mark"		!FEWNAMES
 	"k"
 	'm'
@@ -1568,7 +1573,7 @@ listvars	NONE			OPT_SHOW_EVAL
 	"show-variables"
 	"showvars"			!FEWNAMES
 	<report values of all variables, built-in and user>
-showversion	NONE|(EXRCOK)
+showversion	EXRCOK
 	"version"
 	<report version information for the editor>
 showmarks	NONE			OPT_SHOW_MARKS
@@ -1587,7 +1592,7 @@ shrinkwind	GOAL
 	"shrink-window"			!FEWNAMES
 	'v'
 	<decrease the size of the current window by CNT lines>
-vl_source	NONE|(EXRCOK|NAMEDF)
+vl_source	EXRCOK|NAMEDF
 	"exsource"
 	<source a file of ex commands>
 vl_spawn	NONE			OPT_SHELL
@@ -1652,7 +1657,7 @@ forwredo	NONE
 	"redo-changes-forward"		!FEWNAMES
 	'^X-r'
 	<redo changes made to a buffer, after they have been undone>
-unabbr		NONE|(EXRCOK|BANG|EXTRA)
+unabbr		EXRCOK|BANG|EXTRA
 	"unabbreviate"
 	<delete an abbreviation>
 reptc_func	NONE
@@ -1665,13 +1670,13 @@ unimpl		NONE
 unmark		NONE
 	"unmark-buffer"
 	<clear the \"modified\" status of a buffer>
-unmap		NONE|(EXRCOK|BANG|EXTRA)
+unmap		EXRCOK|BANG|EXTRA
 	"unmap"
 	<delete a command-mode mapping>
-unmap_bang	NONE|(EXRCOK|EXTRA)
+unmap_bang	EXRCOK|EXTRA
 	"unmap!"
 	<delete an insert-mode mapping>
-unmap_system	NONE|(EXRCOK|EXTRA)
+unmap_system	EXRCOK|EXTRA
 	"unmap-system-chars"
 	<delete a system function-key mapping>
 untagpop	NONE			OPT_TAGS
@@ -1770,17 +1775,17 @@ SetRGBPalette	NONE			SYS_WINNT&&DISP_NTWIN
 wordcount	RANGE			OPT_WORDCOUNT
 	"count-words"
 	<count words, lines, and chars in the region>
-writeallbuffers	NONE|(BANG|VI_NL)
+writeallbuffers	BANG|VI_NL
 	"wall"
 	"wall!"
 	"write-all-buffers"		!FEWNAMES
 	<attempt to write all buffers whether or not marked \"modified\">
-writeallchanged	NONE|(BANG|VI_NL)
+writeallchanged	BANG|VI_NL
 	"ww"
 	"ww!"
 	"write-changed-buffers"		!FEWNAMES
 	<attempt to write any buffers which are marked \"modified\">
-writequit	NONE|(VI_NL)
+writequit	VI_NL
 	"wq"
 	"wq!"
 	"Wq"
@@ -1815,7 +1820,7 @@ xterm_mouse_t	NONE			(OPT_XTERM>=3)
 xterm_mouse_T	NONE			(OPT_XTERM>=3)
 	'FN-T'				KEY_textInvalid
 	<dummy command to support xterm mouse operation>
-zzquit		NONE|(BANG|VI_NL)
+zzquit		BANG|VI_NL
 	'Z'
 	"stuttered-write-all-and-quit"	!FEWNAMES
 	<if repeated, leave the editor, writing modified buffers as needed>
@@ -1878,7 +1883,7 @@ cbrdpaste	REDO|UNDO		SYS_WINNT
 	"paste-from-clipboard"
 	'SHIFT+INSERT'			W32KY
 	<paste the windows clipboard contents>
-opercbrdcpy	OPER|(RANGE|NOMOVE)	SYS_WINNT
+opercbrdcpy	OPER|RANGE|NOMOVE	SYS_WINNT
 	"copy-to-clipboard-til"
 	'CTRL+INSERT'			W32KY
 	<copies the specified region to the windows clipboard>

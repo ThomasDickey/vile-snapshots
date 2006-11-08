@@ -2,7 +2,7 @@
  *	eval.c -- function and variable evaluation
  *	original by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.353 2006/04/25 20:22:26 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.354 2006/11/04 11:41:25 tom Exp $
  *
  */
 
@@ -1703,6 +1703,14 @@ skip_cblanks(const char *src)
 }
 
 const char *
+skip_cnumber(const char *s)
+{
+    while (isDigit(*s))
+	s++;
+    return s;
+}
+
+const char *
 skip_cstring(const char *src)
 {
     return src + strlen(src);
@@ -1726,6 +1734,14 @@ skip_blanks(char *src)
     while (isSpace(*src))
 	src++;
     return src;
+}
+
+char *
+skip_number(char *s)
+{
+    while (isDigit(*s))
+	s++;
+    return s;
 }
 
 char *

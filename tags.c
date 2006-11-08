@@ -3,9 +3,9 @@
  *	Invoked either by ":ta routine-name" or by "^]" while sitting
  *	on a string.  In the latter case, the tag is the word under
  *	the cursor.
- *	written for vile: Copyright (c) 1990, 1995-2003 by Paul Fox
+ *	written for vile.  Copyright (c) 1990, 1995-2003 by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tags.c,v 1.130 2006/04/25 20:13:21 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tags.c,v 1.134 2006/11/06 21:00:51 tom Exp $
  *
  */
 #include "estruct.h"
@@ -500,7 +500,7 @@ finish_pop(char *fname, L_NUM lineno, C_NUM colno)
     if (s == TRUE) {
 	/* it's an absolute move -- remember where we are */
 	odot = DOT;
-	s = gotoline(TRUE, lineno);
+	s = vl_gotoline(lineno);
 	/* if we moved, update the "last dot" mark */
 	if (s == TRUE) {
 	    gocol(colno);
@@ -911,14 +911,6 @@ nexttag(int f GCC_UNUSED, int n GCC_UNUSED)
 }
 
 int
-cmdlinetag(const char *t)
-{
-    return tag_search(strncpy0(tagname, t, NFILEN),
-		      global_b_val(VAL_TAGLEN),
-		      TRUE);
-}
-
-int
 untagpop(int f, int n)
 {
     L_NUM lineno = 0;
@@ -926,8 +918,8 @@ untagpop(int f, int n)
     char fname[NFILEN];
     int s;
 
-    if (!f)
-	n = 1;
+    n = need_a_count(f, n, 1);
+
     while (n && popuntag(fname, &lineno, &colno))
 	n--;
     if (lineno && fname[0]) {

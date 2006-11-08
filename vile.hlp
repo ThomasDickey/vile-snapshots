@@ -1600,6 +1600,42 @@ Editor modes
 		For more information, see the section describing the ":map"
 		command, below.  (U)
 
+	modeline Controls whether a vi-like modeline feature is enabled.
+		This is a different term than the emacs-like modeline which
+		acts as a status-line for each window.  When enabled, vile
+		scans the given number of lines from top and bottom of the
+		buffer when it is first loaded into memory.  It looks for
+		lines containing one of these special markers after whitespace:
+
+			"vi:"
+			"vile:"
+
+		or (depending on the configuration):
+
+			"xvile:"
+			"winvile:"
+
+		After that, either a "set" command terminated by a colon, e.g.,
+
+			vile:set txtmode:
+
+		or one or more mode assignments, treating colons as a
+		whitespace separator, e.g, these are equivalent,
+
+			vile:ts=4 nu
+			vile:ts=4:nu
+
+		The modelines at the top of the buffer are processed first
+		(working forward from the top), then the ones at the bottom
+		(working backward from the end).  If the buffer is small
+		enough, the available modelines could overlap; but the program
+		interprets each line at most once.
+
+		This is a buffer mode, enabling its use in majormodes.  (B)
+
+	modelines Controls the number of lines from each end of the buffer
+		to scan for vi-like mode lines.  Defaults to 5 (B)
+
 	overlap-matches Modifies the highlighting shown by visual-matches to
 		control whether overlapping matches are shown.  For some
 		conditions, setting this to false will present a more natural
@@ -5387,17 +5423,12 @@ DOS specifics
 	a "set sres=" line in your vile.rc, or if you use a command line
 	option to change it.  Command line options consist of a dash
 	followed by one of the following selectors (these are the same
-	values that can be assigned to "sres"):
-	    "default",
-	    "2",     "25",    "80x25",
-	    "4",     "43",    "80x43",
-	    "5",     "50",    "80x50",
-	    "80x14", "80x28",
-	    "40x12", "40x21", "40x25", "40x28", "40x50",
-
-	[ Currently, under DOS, not all modes may work, as a result of
-	  the screen library being used... (in version 5.5).  More may
-	  work under OS/2. ]
+	values that can be assigned to "sres").  These values are supported
+	by the DOS (borland.c) terminal driver:
+	    "2",     "25",
+	    "4",     "43",
+	    "5",     "50",
+	    "6",     "60"
 
 	If you shell out in 50 line mode, make sure you are in 50 line mode
 	before you exit the dos shell, otherwise you end up with a 50 line
@@ -6231,4 +6262,4 @@ Problems
 
 Copyright 1995-2005,2006 by Paul Fox, Thomas Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.612 2006/05/21 00:31:14 pgf Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.616 2006/11/01 21:21:16 tom Exp $

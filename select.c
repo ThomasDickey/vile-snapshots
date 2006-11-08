@@ -18,7 +18,7 @@
  * transferring the selection are not dealt with in this file.  Procedures
  * for dealing with the representation are maintained in this file.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.161 2006/05/21 00:22:10 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.162 2006/11/02 21:01:24 tom Exp $
  *
  */
 
@@ -932,8 +932,8 @@ multimotion(int f, int n)
      * I'd use int-casts of the enum value, but declaring enums with
      * specific values isn't 100% portable.
      */
-    if (!f || n <= 0)
-	n = 1;
+    n = need_at_least(f, n, 1);
+
     if (n == 3)
 	regionshape = RECTANGLE;
     else if (n == 2)
