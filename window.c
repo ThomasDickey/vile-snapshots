@@ -2,7 +2,7 @@
  * Window management. Some of the functions are internal, and some are
  * attached to keys that the user actually types.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/window.c,v 1.106 2005/01/19 01:56:03 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/window.c,v 1.107 2006/11/02 01:49:42 tom Exp $
  *
  */
 
@@ -204,8 +204,7 @@ poswind(int f, int n)
     int row;
     int s;
 
-    if (!f)
-	n = 1;
+    n = need_a_count(f, n, 1);
 
     if (clexec || isnamedcmd) {
 	static char cbuf[20];
@@ -271,8 +270,7 @@ prevwind(int f, int n)
 int
 mvdnwind(int f, int n)
 {
-    if (!f)
-	n = 1;
+    n = need_a_count(f, n, 1);
     return (mvupwind(TRUE, -n));
 }
 
@@ -292,8 +290,7 @@ mvupwind(int f, int n)
 
     lp = curwp->w_line.l;
 
-    if (!f)
-	n = 1;
+    n = need_a_count(f, n, 1);
 
     if (n < 0)
 	curwp->w_flag |= WFKILLS;

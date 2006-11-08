@@ -15,7 +15,7 @@
  * by Tom Dickey, 1993.    -pgf
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/mktbls.c,v 1.135 2006/05/21 20:53:14 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/mktbls.c,v 1.136 2006/10/19 22:25:52 tom Exp $
  *
  */
 
@@ -1318,10 +1318,16 @@ dump_qmodes(void)
 }
 
 /******************************************************************************/
+static int
+ok_submode(char *side_effect)
+{
+    return strcmp(side_effect, "chgd_major") != 0;
+}
+
 static void
 save_bmodes(char *type, char **vec)
 {
-    char *key = Mode2Key(type, vec[1], vec[4], TRUE);
+    char *key = Mode2Key(type, vec[1], vec[4], ok_submode(vec[3]));
     InsertSorted(&all_bmodes, key, vec[2], vec[3], vec[4], vec[0]);
 #if NO_LEAKS
     free(key);

@@ -5,7 +5,7 @@
  * reading and writing of the disk are
  * in "fileio.c".
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.395 2006/09/24 23:57:43 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.396 2006/10/25 22:01:24 tom Exp $
  */
 
 #include "estruct.h"
@@ -1687,6 +1687,12 @@ readin(char *fname, int lockfl, BUFFER *bp, int mflg)
 #if OPT_LCKFILES
     if (lockfl && s != FIOERR)
 	grab_lck_file(bp, fname);
+#endif
+#if OPT_MODELINE
+    /* do this before the $read-hook, so one can set a majormode in the
+     * modeline, causing the file to be colored.
+     */
+    do_modelines(bp);
 #endif
 #if OPT_HOOKS
     if (s <= FIOEOF && (bp == curbp))

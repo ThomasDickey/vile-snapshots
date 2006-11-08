@@ -1,8 +1,8 @@
 /* ed/vi/ex style global commands, where first the file is scanned for
  *	matching lines, then for each such line, an action is performed.
- *	written for vile: Copyright (c) 1990-1999 by Paul Fox
+ *	written for vile.  Copyright (c) 1990-1999 by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/globals.c,v 1.48 2004/04/11 23:24:54 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/globals.c,v 1.49 2006/11/06 21:00:51 tom Exp $
  *
  */
 

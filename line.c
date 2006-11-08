@@ -10,7 +10,7 @@
  * editing must be being displayed, which means that "b_nwnd" is non zero,
  * which means that the dot and mark values in the buffer headers are nonsense.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.171 2006/04/20 00:09:10 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.172 2006/11/02 01:44:56 tom Exp $
  *
  */
 
@@ -1312,8 +1312,7 @@ doput(int f, int n, int after, REGIONSHAPE shape)
 {
     int s, oukb;
 
-    if (!f)
-	n = 1;
+    n = need_a_count(f, n, 1);
 
     oukb = ukb;
     kregcirculate(FALSE);	/* cf: 'index2ukb()' */
@@ -1631,9 +1630,9 @@ execkreg(int f, int n)
     char *sp;
     KILL *tkp;
 
-    if (!f)
-	n = 1;
-    else if (n <= 0)
+    n = need_a_count(f, n, 1);
+
+    if (n <= 0)
 	return TRUE;
 
     if ((status = mlreply_reg("Execute register: ", cbuf, &c, lastreg)) != TRUE)

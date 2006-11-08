@@ -17,12 +17,12 @@
  * distributable status.  This version of vile is distributed under the
  * terms of the GNU Public License (see COPYING).
  *
- * Copyright (c) 1992-2005 by Paul Fox and Thomas Dickey
+ * Copyright (c) 1992-2006 by Paul Fox and Thomas Dickey
  *
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.551 2006/05/21 00:22:10 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.568 2006/11/06 20:52:12 tom Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -116,6 +116,98 @@ get_argvalue(char *param, char *argv[], int *argcp)
 
 /*--------------------------------------------------------------------------*/
 
+static void
+save_buffer_state(BUFFER **save_bp, UINT * save_flags)
+{
+    *save_bp = curbp;
+    if (*save_bp) {
+	*save_flags = (*save_bp)->b_flag;
+	/* mark as modified, to prevent undispbuff() from clobbering */
+	b_set_changed(*save_bp);
+    }
+}
+
+static void
+restore_buffer_state(BUFFER *save_bp, UINT save_flags)
+{
+    if (save_bp) {
+	swbuffer(save_bp);
+	save_bp->b_flag = save_flags;
+    }
+}
+
+static int
+run_startup_commands(BUFFER *cmds)
+{
+    int result = TRUE;
+    BUFFER *save_bp = NULL;	/* saves curbp when doing startup commands */
+    LINE *lp;
+    UINT save_flags = 0;	/* saves curbp's flags when doing startup */
+
+    TRACE((T_CALLED "run_startup_commands %s\n", cmds->b_bname));
+
+    save_buffer_state(&save_bp, &save_flags);
+
+    /* remove blank lines to make the trace simpler */
+    for (lp = lforw(buf_head(cmds)); lp != buf_head(cmds);) {
+	LINE *nlp = lforw(lp);
+
+	if (lisreal(lp) && !llength(lp)) {
+	    lremove(cmds, lp);
+	}
+	lp = nlp;
+    }
+
+    /* don't want swbuffer to try to read it */
+    cmds->b_active = TRUE;
+    set_rdonly(cmds, cmds->b_fname, MDVIEW);
+
+    /* go execute it! */
+    if (dobuf(cmds, 1) != TRUE) {
+	result = FALSE;
+    }
+    /* if we managed to load a buffer, don't go back to the unnamed buffer */
+    if (cmds != save_bp
+	&& eql_bname(save_bp, UNNAMED_BufName)
+	&& is_empty_buf(save_bp)
+	&& save_bp->b_nwnd == 0
+	&& !b_is_scratch(curbp)) {
+	b_clr_changed(save_bp);
+	(void) zotbuf(save_bp);
+    } else {
+	restore_buffer_state(save_bp, save_flags);
+    }
+    if (result) {		/* remove the now unneeded buffer */
+	b_set_scratch(cmds);	/* make sure it will go */
+	(void) zotbuf(cmds);
+    }
+
+    returnCode(result);
+}
+
+static void
+setup_command(BUFFER *opts_bp, char *param)
+{
+    char *p1;
+    char *p2;
+    /*
+     * Check for special cases where a leading number should be treated
+     * as a repeat-count (see docmd(), which does something similar).
+     */
+    param = skip_blanks(param);
+    p1 = skip_number(param);
+    if (p1 != param) {		/* we found a number */
+	p2 = skip_blanks(p1);
+	if (*p2 == '*' || *p2 == ':') {
+	    b2printf(opts_bp, "%.*s ", p1 - param, param);
+	    param = skip_blanks(p2 + 1);
+	}
+    }
+    b2printf(opts_bp, "execute-named-command %s\n", param);
+}
+
+/*--------------------------------------------------------------------------*/
+
 int
 MainProgram(int argc, char *argv[])
 {
@@ -125,21 +217,15 @@ MainProgram(int argc, char *argv[])
     char *vileinit = NULL;	/* the startup file or VILEINIT var */
     int startstat = TRUE;	/* result of running startup */
     BUFFER *havebp = NULL;	/* initial buffer to read */
+    BUFFER *init_bp = NULL;	/* may contain startup commands */
+    BUFFER *opts_bp = NULL;	/* may contain startup commands */
     char *havename = NULL;	/* name of first buffer in cmd line */
-    int gotoflag = FALSE;	/* do we need to goto line at start? */
-    int gline = FALSE;		/* if so, what line? */
-    int helpflag = FALSE;	/* do we need help at start? */
-    REGEXVAL *search_exp = 0;	/* initial search-pattern */
     const char *msg;
 #if SYS_VMS
     char *init_descrip = NULL;
 #endif
 #ifdef VILE_OLE
     int ole_register = FALSE;
-#endif
-#if OPT_TAGS
-    int didtag = FALSE;		/* look up a tag to start? */
-    char *tname = NULL;
 #endif
 #if DISP_NTCONS
     int new_console = FALSE;
@@ -274,6 +360,15 @@ MainProgram(int argc, char *argv[])
 #endif
 	tt_opened = open_terminal(&null_term);
 
+    /*
+     * Create buffers for storing command-line options.
+     */
+    if ((init_bp = bfind(VILEINIT_BufName, BFEXEC | BFINVS)) == 0)
+	tidy_exit(BADEXIT);
+
+    if ((opts_bp = bfind(VILEOPTS_BufName, BFEXEC | BFINVS)) == 0)
+	tidy_exit(BADEXIT);
+
     /* Parse the passed in parameters */
     for (carg = 1; carg < argc; ++carg) {
 	char *param = argv[carg];
@@ -299,8 +394,8 @@ MainProgram(int argc, char *argv[])
 	    } else
 #endif /* screen resolution stuff */
 		switch (*param) {
-#if DISP_NTCONS
 		case 'c':
+#if DISP_NTCONS
 		    if (strcmp(param, "console") == 0) {
 			/*
 			 * start editor in a new console env if
@@ -310,28 +405,28 @@ MainProgram(int argc, char *argv[])
 			 * unavailable (bug).
 			 */
 			new_console = TRUE;
-		    } else
-			print_usage(BADEXIT);
-		    break;
+			break;
+		    }
 #endif /* DISP_NTCONS */
+		    setup_command(opts_bp, GetArgVal(param));
+		    break;
 #if OPT_EVAL || OPT_DEBUGMACROS
 		case 'D':
+		    /* must be outside [vileinit] and [vileopts] */
 		    tracemacros = TRUE;
 		    break;
 #endif
 		case 'e':	/* -e for Edit file */
 		case 'E':
-		    set_global_b_val(MDVIEW, FALSE);
+		    b2printf(opts_bp, "set noview\n");
 		    break;
 		case 'g':	/* -g for initial goto */
 		case 'G':
-		    gotoflag = TRUE;
-		    param = GetArgVal(param);
-		    gline = atoi(param);
+		    b2printf(opts_bp, "%s goto-line\n", GetArgVal(param));
 		    break;
 		case 'h':	/* -h for initial help */
 		case 'H':
-		    helpflag = TRUE;
+		    b2printf(opts_bp, "help\n");
 		    break;
 
 		case 'i':
@@ -344,6 +439,7 @@ MainProgram(int argc, char *argv[])
 		    if (cfg_locate(vileinit, LOCATE_SOURCE) != 0
 			&& cfg_locate(startup_file, LOCATE_SOURCE) == 0)
 			make_startup_file(vileinit);
+		    b2printf(init_bp, "source %s\n", vileinit);
 		    break;
 
 #if OPT_ENCRYPT
@@ -363,24 +459,20 @@ MainProgram(int argc, char *argv[])
 #endif
 		case 's':	/* -s <pattern> */
 		case 'S':
-		  dosearch:
-		    param = GetArgVal(param);
-		    search_exp = new_regexval(param,
-					      global_b_val(MDMAGIC));
+		    b2printf(opts_bp, "search-forward %s\n", GetArgVal(param));
 		    break;
 #if OPT_TAGS
 		case 't':	/* -t for initial tag lookup */
 		case 'T':
-		    param = GetArgVal(param);
-		    tname = param;
+		    b2printf(opts_bp, "tag %s\n", GetArgVal(param));
 		    break;
 #endif
 		case 'v':	/* -v is view mode */
-		    set_global_b_val(MDVIEW, TRUE);
+		    b2printf(opts_bp, "set view\n");
 		    break;
 
 		case 'R':	/* -R is readonly mode */
-		    set_global_b_val(MDREADONLY, TRUE);
+		    b2printf(opts_bp, "set readonly\n");
 		    break;
 
 		case 'V':
@@ -399,18 +491,10 @@ MainProgram(int argc, char *argv[])
 		}
 
 	} else if (*param == '+') {	/* alternate form of -g */
-	    if (*(++param) == '/') {
-		size_t len = strlen(param);
-		if (len != 0 && param[len - 1] == '/')
-		    param[--len] = EOS;
-		if (len == 0)
-		    print_usage(BADEXIT);
-		goto dosearch;
-	    }
-	    gotoflag = TRUE;
-	    gline = atoi(param);
+	    setup_command(opts_bp, GetArgVal(param));
 	} else if (*param == '@') {
 	    vileinit = ++param;
+	    b2printf(init_bp, "source %s\n", param);
 	} else if (*param != EOS) {
 
 	    /* must be a filename */
@@ -627,58 +711,35 @@ MainProgram(int argc, char *argv[])
     fix_cmode(bp, FALSE);
     swbuffer(bp);
 
-    /* run the specified, or the system startup file here.
-       if vileinit is set, it's the name of the user's
-       command-line startup file, i.e. 'vile @mycmds'
+    /*
+     * Run the specified, or the system startup file here.  If vileinit is set,
+     * it is the name of the user's command-line startup file, e.g.,
+     *
+     * 'vile @mycmds'
+     *
+     * If more than one startup file is named, remember the last.
      */
-    if (vileinit && *vileinit) {
-	if (do_source(vileinit, 1, FALSE) != TRUE) {
-	    startstat = FALSE;
+    if (!is_empty_buf(init_bp)) {
+	startstat = run_startup_commands(init_bp);
+	if (!startstat)
 	    goto begin;
+
+	if (!isEmpty(vileinit)) {
+	    free(startup_file);
+	    startup_file = strmalloc(vileinit);
 	}
-	free(startup_file);
-	startup_file = strmalloc(vileinit);
     } else {
 
 	/* else vileinit is the contents of their VILEINIT variable */
 	vileinit = vile_getenv("VILEINIT");
 	if (vileinit != NULL) {	/* set... */
-	    BUFFER *vbp, *obp;
-	    UINT oflags = 0;
 	    if (*vileinit) {	/* ...and not null */
-		/* mark as modified, to prevent
-		 * undispbuff() from clobbering */
-		obp = curbp;
-		if (obp) {
-		    oflags = obp->b_flag;
-		    b_set_changed(obp);
-		}
 
-		if ((vbp = bfind(VILEINIT_BufName, BFEXEC)) == 0)
-		    tidy_exit(BADEXIT);
+		b2printf(init_bp, "%s", vileinit);
 
-		/* don't want swbuffer to try to read it */
-		vbp->b_active = TRUE;
-		swbuffer(vbp);
-		b_set_scratch(vbp);
-		bprintf("%s", vileinit);
-		/* if we leave it scratch, swbuffer(obp)
-		   may zot it, and we may zot it again */
-		b_clr_scratch(vbp);
-		set_rdonly(vbp, vbp->b_fname, MDVIEW);
-
-		/* go execute it! */
-		if (dobuf(vbp, 1) != TRUE) {
-		    startstat = FALSE;
+		startstat = run_startup_commands(init_bp);
+		if (!startstat)
 		    goto begin;
-		}
-		if (obp) {
-		    swbuffer(obp);
-		    obp->b_flag = oflags;
-		}
-		/* remove the now unneeded buffer */
-		b_set_scratch(vbp);	/* make sure it will go */
-		(void) zotbuf(vbp);
 	    }
 	} else {		/* find and run .vilerc */
 	    if (do_source(startup_file, 1, TRUE) != TRUE) {
@@ -717,48 +778,14 @@ MainProgram(int argc, char *argv[])
 	if (bp2any_wp(bp) && bp2any_wp(havebp))
 	    zotwp(bp);
     }
-#if OPT_TAGS
-    else if (tname) {
-	cmdlinetag(tname);
-	didtag = TRUE;
-    }
-#endif
-    msg = s_NULL;
-    if (helpflag) {
-	if (vl_help(TRUE, 1) != TRUE) {
-	    msg =
-		"[Problem with help information. Type \":quit\" to exit if you wish]";
-	}
-    } else {
-	msg = "[Use ^A-h, ^X-h, or :help to get help]";
-    }
+    /*
+     * Execute command-line options here, after reading the initial buffer.
+     * That ensures that they override the init-file(s).
+     */
+    msg = "[Use ^A-h, ^X-h, or :help to get help]";
+    if (!run_startup_commands(opts_bp))
+	startstat = FALSE;
 
-    /* honor command-line actions */
-    if (gotoflag + (search_exp != 0)
-#if OPT_TAGS
-	+ (tname ? 1 : 0)
-#endif
-	> 1) {
-#if OPT_TAGS
-	msg = "[Search, goto and tag are used one at a time]";
-#else
-	msg = "[Cannot search and goto at the same time]";
-#endif
-    } else if (gotoflag) {
-	if (gotoline(gline != 0, gline) == FALSE) {
-	    msg = "[Not that many lines in buffer]";
-	    (void) gotoeob(FALSE, 1);
-	}
-    } else if (search_exp) {
-	FreeIfNeeded(gregexp);
-	searchpat = tb_string(search_exp->pat);
-	gregexp = search_exp->reg;
-	(void) forwhunt(FALSE, 0);
-#if OPT_TAGS
-    } else if (tname && !didtag) {
-	cmdlinetag(tname);
-#endif
-    }
 #if OPT_POPUP_MSGS
     purge_msgs();
 #endif
@@ -1314,6 +1341,9 @@ init_mode_value(struct VAL *d, MODECLASS v_class, int v_which)
 #ifdef MDLOCKED
 	    setINT(MDLOCKED, FALSE);	/* LOCKED */
 #endif
+#ifdef MDMODELINE
+	    setINT(MDMODELINE, FALSE);
+#endif
 #ifdef MDUPBUFF
 	    setINT(MDUPBUFF, TRUE);	/* animated */
 #endif
@@ -1334,6 +1364,9 @@ init_mode_value(struct VAL *d, MODECLASS v_class, int v_which)
 #endif
 #ifdef VAL_LOCKER
 	    setTXT(VAL_LOCKER, "");	/* Name locker */
+#endif
+#ifdef VAL_MODELINES
+	    setINT(VAL_MODELINES, 5);
 #endif
 #ifdef VAL_RECORD_FORMAT
 	    setINT(VAL_RECORD_FORMAT, FAB$C_UDF);
@@ -1401,12 +1434,6 @@ init_mode_value(struct VAL *d, MODECLASS v_class, int v_which)
 #define DFT_LIBDIR_PATH VILE_LIBDIR_PATH
 #else
 #define DFT_LIBDIR_PATH ""
-#endif
-
-#if SYS_MSDOS || SYS_OS2 || SYS_WINNT || SYS_VMS
-#define DFT_STARTUP_FILE "vile.rc"
-#else /* SYS_UNIX */
-#define DFT_STARTUP_FILE ".vilerc"
 #endif
 
 #define DFT_MLFORMAT \
@@ -1882,10 +1909,7 @@ do_num_proc(int *cp, int *fp, int *np)
 
     f = *fp;
     n = *np;
-    if (f)
-	oldn = n;
-    else
-	oldn = 1;
+    oldn = need_a_count(f, n, 1);
     n = 1;
 
     if (isDigit(c) && c != '0') {
@@ -1930,10 +1954,7 @@ do_rept_arg_proc(int *cp, int *fp, int *np)
     f = *fp;
     n = *np;
 
-    if (f)
-	oldn = n;
-    else
-	oldn = 1;
+    oldn = need_a_count(f, n, 1);
 
     n = 4;			/* start with a 4 */
     f = TRUE;			/* there is a # arg */

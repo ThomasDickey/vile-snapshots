@@ -7,7 +7,7 @@
  * Most code probably by Dan Lawrence or Dave Conroy for MicroEMACS
  * Extensions for vile by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/insert.c,v 1.143 2005/07/13 23:42:48 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/insert.c,v 1.147 2006/11/06 21:26:32 tom Exp $
  *
  */
 
@@ -106,8 +106,7 @@ ins_n_times(int f, int n, int advance)
     int i;
     int flag = FALSE;
 
-    if (!f || n < 0)
-	n = 1;
+    n = need_at_least(f, n, 1);
 
     for (i = 0; i < n; i++) {
 	if ((status = ins_anytime((i != 0), i, n, &flag)) != TRUE)
@@ -124,8 +123,8 @@ openup(int f, int n)
 {
     int s;
 
-    if (!f)
-	n = 1;
+    n = need_a_count(f, n, 1);
+
     if (n < 0)
 	return (FALSE);
     if (n == 0)
@@ -162,6 +161,36 @@ openup(int f, int n)
 }
 
 /*
+ * Implements the nvi/vim ex "i!" command.
+ */
+int
+openup_i(int f, int n)
+{
+    int s;
+    int oallow = allow_aindent;
+
+    allow_aindent = !oallow;
+    s = openup(f, n);
+    allow_aindent = oallow;
+    return s;
+}
+
+/*
+ * Implements the nvi/vim ex "c!" command.
+ */
+int
+operchg_i(int f, int n)
+{
+    int s;
+    int oallow = allow_aindent;
+
+    allow_aindent = !oallow;
+    s = operchg(f, n);
+    allow_aindent = oallow;
+    return s;
+}
+
+/*
  * as above, but override all autoindenting and cmode-ing
  */
 int
@@ -181,8 +210,8 @@ opendown(int f, int n)
 {
     int s;
 
-    if (!f)
-	n = 1;
+    n = need_a_count(f, n, 1);
+
     if (n < 0)
 	return (FALSE);
     if (n == 0)
@@ -281,6 +310,22 @@ append(int f, int n)
 }
 
 /*
+ * Implements the nvi/vim ex "a!" command.
+ */
+int
+append_i(int f, int n)
+{
+    int code;
+    int mode = allow_aindent;
+
+    allow_aindent = !allow_aindent;
+    code = opendown(f, n);
+    allow_aindent = mode;
+
+    return code;
+}
+
+/*
  * Implements the vi 'A' command.
  */
 int
@@ -370,8 +415,8 @@ replacechar(int f, int n)
     }
     c = kcod2key(c);
 
-    if (!f || !n)
-	n = 1;
+    n = need_a_count(f, n, 1);
+
     if (n < 0)
 	s = FALSE;
     else {
@@ -884,8 +929,7 @@ istring(int f, int n, int mode)
     if (status != TRUE)
 	return (status);
 
-    if (!f)
-	n = 1;
+    n = need_a_count(f, n, 1);
 
     if (n < 0)
 	n = -n;
@@ -930,9 +974,9 @@ newline(int f, int n)
 {
     int s;
 
-    if (!f)
-	n = 1;
-    else if (n < 0)
+    n = need_a_count(f, n, 1);
+
+    if (n < 0)
 	return (FALSE);
 
     /* if we are in C or auto-indent modes and this is a default <NL> */
@@ -1185,8 +1229,9 @@ static int
 tab(int f, int n)
 {
     int ccol;
-    if (!f)
-	n = 1;
+
+    n = need_a_count(f, n, 1);
+
     if (n <= 0)
 	return FALSE;
 
@@ -1297,8 +1342,7 @@ quote_next(int f, int n)
 {
     int c, s;
 
-    if (!f)
-	n = 1;
+    n = need_a_count(f, n, 1);
     c = read_quoted(n, TRUE);
 
     if (c < 0) {

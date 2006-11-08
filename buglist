@@ -1,7 +1,9 @@
 ------------------------
+-- vile:txtmode
+------------------------
 vile bug/enhancement/wish list (mostly wishes ;-)
 ------------------------
-$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.403 2005/11/30 01:18:33 tom Exp $
+$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.405 2006/10/28 13:40:54 tom Exp $
 ----------------------
 	(E means enhancement, L,M,H are low, medium, high priority)
 
@@ -48,8 +50,6 @@ E	marks should perhaps be linked onto lines.  this would make a lot
         sort of mark as well.  Implementation of the "tag stack"
 	would be aided by this as well.
 
-E	can't search for a NUL in a buffer.
-
 E	":e" and ":e!" should share the same prompt data, which should be
 	editable / history.  They both should default (like vi!) to the
 	current buffer.
@@ -57,9 +57,6 @@ E	":e" and ":e!" should share the same prompt data, which should be
 E	for consistency, 'execute-macro-nn' should be 'execute-macro nn';
 	doing this would allow modification to eliminate a fixed number of
 	macro-buffers.
-
-E	should ifdef the 'autobuffer' code for users who do not need vi-style
-	buffering.
 
 --------------
 
@@ -107,14 +104,12 @@ I just grabbed a copy of xvi.  I noted some interesting tidbits while
 reading the "differences between vi and xvi" document.  Some of these would
 be nice in vile.
 
-
      As well as the normal named (conjugate) buffers, and the  default
      one  named @, several extra buffers named :, /, ?  and ! contain
      the last command lines entered for each of the command types.  So
      for  instance,  @: will re-execute the last colon command, or you
      can insert it into your buffer, edit it and  then re-execute  it
      (e.g. with dd@@).
-
 
      +    In insert and replace modes, ^A has the same meaning  as  ^@
           in  vi,  except  that it works at any time, not just for the
@@ -123,7 +118,6 @@ be nice in vile.
           the input stream at that point.  The buffer named  <  always
           contains the last thing inserted, so that ^B< is the same as
           ^A.
-
 
 ------------------------
 I wish ^X-!  could execute shell commands async'ly, i.e.  I should not have
@@ -720,10 +714,10 @@ the "$@" should just be $(bindir).
 
 
 ----------------------
-Another point of irritation is the autoindent behaviour when inserting
+Another point of irritation is the autoindent behavior when inserting
 blank lines; where vi will continue with a reduced indent after typing a
 CTRL-D, vile insists on keeping the indent on par with the last non-empty
-line.  (^^D is inteneded to be temporary, 0^D should be permanent, even if
+line.  (^^D is intended to be temporary, 0^D should be permanent, even if
 what you've entered is a blank line.  don't know about simple ^D.)
 
 ----------------------

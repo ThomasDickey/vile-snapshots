@@ -1,16 +1,21 @@
-%s DESC GAPS CAPS VALS LINK
+%s NAME DESC GAPS CAPS VALS LINK
 
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/tc-filt.l,v 1.26 2006/05/30 20:24:21 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/tc-filt.l,v 1.30 2006/11/06 00:57:48 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of termcap
  */
 
 #include <filters.h>
+#undef YY_NO_UNPUT
 
 DefineFilter("tc");
+
+#define WriteAlias(attr) \
+	WriteToken3(attr, yyleng - 1); \
+	WriteToken2(String_attr, yyleng - 1)
 
 static char *Action_attr;
 static char *Comment_attr;
@@ -34,20 +39,33 @@ DOTNAME		(\.)+{CAPNAME}
 ALIAS		[[:alnum:]_\.+-]+
 
 NUMBER		"#"[[:digit:]]+
-STRING		[^#:\\\r\n](\\[.\n]|[^:\r\n])*
+
+GAPS		\\[\n]([[:blank:]]*)
+CNTRL		"^"(([\\][\\]?)|[][[:alnum:]@^~_?])
+ESCAPE		[\\][[:print:]]
+STRING		({CNTRL}|{ESCAPE}|[^#:^\\\r\n])({CNTRL}|{ESCAPE}|[^:^\\\r\n]|{GAPS})*
+STRINGER	({CNTRL}|{ESCAPE})({CNTRL}|{ESCAPE}|[^:^\\\r\n]|{GAPS})*
 
 %%
 
 ^"#"[^\r\n]*			{ WriteToken(Comment_attr); }
 \n\n				{ ECHO; BEGIN(INITIAL); }
 
-^({ALIAS}"|"|(\\\n\t)*)*	{ WriteToken(Ident_attr); BEGIN(DESC); }
+^{ALIAS}"|"			{ WriteAlias(Ident_attr); BEGIN(NAME); }
+<NAME>{ALIAS}"|"		{ WriteAlias(Ident_attr); }
+<NAME>(\\\n\t)+			{ ECHO; }
+<NAME>":"			{ ECHO; BEGIN(GAPS); }
+<NAME>.				{ unput(yytext[0]); BEGIN(DESC); }
 ^{ALIAS}			{ WriteToken(Ident_attr); BEGIN(GAPS); }
 
 <DESC>[^:\r\n]*			{ WriteToken(Comment_attr); BEGIN(GAPS); }
 <GAPS,VALS>(:|:\\\n\t)+		{ commented=0; ECHO; BEGIN(CAPS); }
 <GAPS,CAPS>\n(\t)+		{ flt_error("unexpected whitespace");
 				  WriteToken(Error_attr); }
+<GAPS,CAPS>{GAPS}		{ ECHO; }
+<GAPS,CAPS>{STRINGER}		{ flt_error("unexpected string");
+				  WriteToken(Error_attr); }
+
 <CAPS>{CAPNAME}			{ write_capname(yytext, yyleng); begin_value(yytext); }
 <CAPS>{DOTNAME}			{ WriteToken(Comment_attr); commented = 1; begin_value(yytext); }
 <VALS>{NUMBER}			{ write_value(yytext, yyleng, Number_attr); }

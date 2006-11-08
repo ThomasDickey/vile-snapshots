@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 screen API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.159 2006/04/25 23:13:32 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.160 2006/10/31 21:44:16 tom Exp $
  * Written by T.E.Dickey for vile (october 1997).
  * -- improvements by Clark Morgan (see w32cbrd.c, w32pipe.c).
  */
@@ -2700,7 +2700,7 @@ handle_scrollbar(HWND hWnd, int msg, int nPos)
     switch (msg) {
     case SB_BOTTOM:
 	TRACE(("-> SB_BOTTOM\n"));
-	gotoline(FALSE, 1);
+	gotoeob(FALSE, 1);
 	break;
     case SB_LINEDOWN:
 	TRACE(("-> SB_LINEDOWN\n"));
@@ -2720,7 +2720,7 @@ handle_scrollbar(HWND hWnd, int msg, int nPos)
 	break;
     case SB_THUMBPOSITION:
 	TRACE(("-> SB_THUMBPOSITION: %d\n", nPos));
-	gotoline(TRUE, fix_scrollbar_tracking(nPos) + 1);
+	vl_gotoline(fix_scrollbar_tracking(nPos) + 1);
 	break;
     case SB_THUMBTRACK:
 	TRACE(("-> SB_THUMBTRACK: %d\n", nPos));
@@ -2734,7 +2734,7 @@ handle_scrollbar(HWND hWnd, int msg, int nPos)
 	break;
     case SB_TOP:
 	TRACE(("-> SB_TOP\n"));
-	gotoline(TRUE, 1);
+	vl_gotoline(1);
 	break;
     case SB_ENDSCROLL:
 	TRACE(("-> SB_ENDSCROLL\n"));

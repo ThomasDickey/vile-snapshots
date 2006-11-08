@@ -8,7 +8,7 @@
 /************************************************************************/
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/menu.c,v 1.48 2005/11/18 01:30:37 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/menu.c,v 1.49 2006/10/24 21:57:15 tom Exp $
  */
 
 /* Vile includes */
@@ -340,6 +340,14 @@ print_token(void)
 }
 #endif
 
+static void *
+make_header(void *menub, int count)
+{
+    char label[80];
+    sprintf(label, "Menu%d", count);
+    return gui_make_menu(menub, label, 'C');
+}
+
 /************************************************************************/
 /* Main function : Take the menu-bar as argument and create all the     */
 /* Cascades, PullDowns Menus and Buttons read from the rc file          */
@@ -352,6 +360,7 @@ do_menu(void *menub)
     void *pm = 0;
     void *pm_w;
     int rc;
+    int fixup = 0;
     char *menurc = menu_filename();
 
     if (menurc == 0) {
@@ -376,18 +385,24 @@ do_menu(void *menub)
 
 	    /* SEPARATOR WIDGET */
 	case 'S':
+	    if (pm == 0)
+		pm = make_header(menub, ++fixup);
 	    gui_add_menu_item(pm, "sep", NULL, Token[i].type);
 	    break;
 
 	    /* LIST (BUFFER LIST) */
 	case 'L':
 	    if (!strcmp(Token[i].action, "list_buff")) {
+		if (pm == 0)
+		    pm = make_header(menub, ++fixup);
 		gui_add_list_callback(pm);
 	    }
 	    break;
 
 	    /* BUTTON WIDGET */
 	case 'B':
+	    if (pm == 0)
+		pm = make_header(menub, ++fixup);
 	    if (Token[i].macro > 0) {
 		if ((macro = castalloc(char, 50)) != 0) {
 		    sprintf(macro, "execute-macro-%d", Token[i].macro);

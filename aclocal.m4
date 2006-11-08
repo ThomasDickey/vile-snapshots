@@ -1,6 +1,6 @@
 dnl vile's local definitions for autoconf.
 dnl
-dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.163 2006/09/24 23:30:12 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.165 2006/10/28 19:16:46 tom Exp $
 dnl
 dnl ---------------------------------------------------------------------------
 dnl ---------------------------------------------------------------------------
@@ -503,6 +503,17 @@ int main() {
 		fi
 	fi
 fi
+])dnl
+dnl ---------------------------------------------------------------------------
+dnl CF_CURSES_CONFIG version: 1 updated: 2006/10/28 13:50:41
+dnl ----------------
+dnl Tie together the configure-script macros for curses.
+dnl It might be ncurses - check for that as well.
+AC_DEFUN([CF_CURSES_CONFIG],
+[
+CF_CURSES_CPPFLAGS
+CF_NCURSES_VERSION
+CF_CURSES_LIBS
 ])dnl
 dnl ---------------------------------------------------------------------------
 dnl CF_CURSES_CPPFLAGS version: 9 updated: 2006/02/04 19:44:43
@@ -1320,7 +1331,7 @@ AC_TRY_COMPILE([
 test $cf_cv_select_with_time = yes && AC_DEFINE(SELECT_WITH_TIME)
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_IMAKE_CFLAGS version: 27 updated: 2005/04/05 18:26:15
+dnl CF_IMAKE_CFLAGS version: 28 updated: 2006/10/28 14:00:40
 dnl ---------------
 dnl Use imake to obtain compiler flags.  We could, in principle, write tests to
 dnl get these, but if imake is properly configured there is no point in doing
@@ -1375,8 +1386,8 @@ CF_EOF
 
 	cat >> ./Imakefile <<'CF_EOF'
 findstddefs:
-	@echo IMAKE $(ALLDEFINES)ifelse($1,,,[ $1])       | sed -f fix_cflags.sed
-	@echo IMAKE $(EXTRA_LOAD_FLAGS)ifelse($2,,,[ $2]) | sed -f fix_lflags.sed
+	@echo IMAKE ${ALLDEFINES}ifelse($1,,,[ $1])       | sed -f fix_cflags.sed
+	@echo IMAKE ${EXTRA_LOAD_FLAGS}ifelse($2,,,[ $2]) | sed -f fix_lflags.sed
 CF_EOF
 
 	if ( $IMAKE $cf_imake_opts 1>/dev/null 2>&AC_FD_CC && test -f Makefile)
@@ -1417,7 +1428,7 @@ CF_EOF
 	cd ..
 	rm -rf conftestdir
 
-	# We use $(ALLDEFINES) rather than $(STD_DEFINES) because the former
+	# We use ${ALLDEFINES} rather than ${STD_DEFINES} because the former
 	# declares XTFUNCPROTO there.  However, some vendors (e.g., SGI) have
 	# modified it to support site.cf, adding a kludge for the /usr/include
 	# directory.  Try to filter that out, otherwise gcc won't find its
@@ -1698,24 +1709,24 @@ AC_MSG_RESULT($cf_cv_locale)
 test $cf_cv_locale = yes && { ifelse($1,,AC_DEFINE(LOCALE),[$1]) }
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_MAKEFLAGS version: 10 updated: 2006/08/05 09:56:13
+dnl CF_MAKEFLAGS version: 12 updated: 2006/10/21 08:27:03
 dnl ------------
-dnl Some 'make' programs support $(MAKEFLAGS), some $(MFLAGS), to pass 'make'
+dnl Some 'make' programs support ${MAKEFLAGS}, some ${MFLAGS}, to pass 'make'
 dnl options to lower-levels.  It's very useful for "make -n" -- if we have it.
 dnl (GNU 'make' does both, something POSIX 'make', which happens to make the
-dnl $(MAKEFLAGS) variable incompatible because it adds the assignments :-)
+dnl ${MAKEFLAGS} variable incompatible because it adds the assignments :-)
 AC_DEFUN([CF_MAKEFLAGS],
 [
 AC_CACHE_CHECK(for makeflags variable, cf_cv_makeflags,[
 	cf_cv_makeflags=''
-	for cf_option in '-$(MAKEFLAGS)' '$(MFLAGS)'
+	for cf_option in '-${MAKEFLAGS}' '${MFLAGS}'
 	do
 		cat >cf_makeflags.tmp <<CF_EOF
 SHELL = /bin/sh
 all :
 	@ echo '.$cf_option'
 CF_EOF
-		cf_result=`${MAKE-make} -k -f cf_makeflags.tmp 2>/dev/null`
+		cf_result=`${MAKE-make} -k -f cf_makeflags.tmp 2>/dev/null | sed -e 's,[[ 	]]*$,,'`
 		case "$cf_result" in
 		.*k)
 			cf_result=`${MAKE-make} -k -f cf_makeflags.tmp CC=cc 2>/dev/null`
@@ -1868,6 +1879,45 @@ printf("old\n");
 	]
 	,[$1=$cf_header]
 	,[$1=no])
+])dnl
+dnl ---------------------------------------------------------------------------
+dnl CF_NCURSES_CONFIG version: 4 updated: 2006/10/28 14:36:12
+dnl -----------------
+dnl Tie together the configure-script macros for ncurses.
+dnl Prefer the "-config" script from ncurses 5.6, to simplify analysis.
+dnl Allow that to be overridden using the $NCURSES_CONFIG environment variable.
+dnl
+dnl $1 is the root library name (default: "ncurses")
+AC_DEFUN([CF_NCURSES_CONFIG],
+[
+cf_ncuconfig_root=ifelse($1,,ncurses,$1)
+
+echo "Looking for ${cf_ncuconfig_root}-config"
+AC_PATH_PROGS(NCURSES_CONFIG,${cf_ncuconfig_root}6-config ${cf_ncuconfig_root}5-config,none)
+
+if test "$NCURSES_CONFIG" != none ; then
+
+cf_cv_ncurses_header=curses.h
+
+CPPFLAGS="`$NCURSES_CONFIG --cflags` $CPPFLAGS"
+LIBS="`$NCURSES_CONFIG --libs` $LIBS"
+
+dnl like CF_NCURSES_CPPFLAGS
+AC_DEFINE(NCURSES)
+
+dnl like CF_NCURSES_LIBS
+CF_UPPER(cf_nculib_ROOT,HAVE_LIB$cf_ncuconfig_root)
+AC_DEFINE_UNQUOTED($cf_nculib_ROOT)
+
+dnl like CF_NCURSES_VERSION
+cf_cv_ncurses_version=`$NCURSES_CONFIG --version`
+
+else
+
+CF_NCURSES_CPPFLAGS(ifelse($1,,ncurses,$1))
+CF_NCURSES_LIBS(ifelse($1,,ncurses,$1))
+
+fi
 ])dnl
 dnl ---------------------------------------------------------------------------
 dnl CF_NCURSES_CPPFLAGS version: 18 updated: 2005/12/31 13:26:39
@@ -2657,9 +2707,11 @@ AC_DEFUN([CF_SYS_ERRLIST],
     CF_CHECK_ERRNO(sys_errlist)
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_TERMCAP_LIBS version: 10 updated: 2001/10/18 20:42:39
+dnl CF_TERMCAP_LIBS version: 11 updated: 2006/10/28 15:15:38
 dnl ---------------
 dnl Look for termcap libraries, or the equivalent in terminfo.
+dnl
+dnl The optional parameter may be "ncurses", "ncursesw".
 AC_DEFUN([CF_TERMCAP_LIBS],
 [
 AC_CACHE_VAL(cf_cv_termlib,[
@@ -2673,8 +2725,7 @@ AC_TRY_LINK([],[char *x=(char*)tgoto("",0,0)],
 ifelse([$1],,,[
 case "$1" in # (vi
 ncurses*)
-	CF_NCURSES_CPPFLAGS($1)
-	CF_NCURSES_LIBS($1)
+	CF_NCURSES_CONFIG($1)
 	cf_cv_termlib=terminfo
 	;;
 esac

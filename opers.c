@@ -1,9 +1,9 @@
 /*
  * This file contains the command processing functions for the commands
  * that take motion operators.
- * written for vile: Copyright (c) 1990, 1995-2003 by Paul Fox
+ * written for vile.  Copyright (c) 1990, 1995-2003 by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/opers.c,v 1.90 2004/12/07 01:29:50 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/opers.c,v 1.92 2006/11/06 21:26:32 tom Exp $
  *
  */
 
@@ -189,34 +189,6 @@ operchg(int f, int n)
 	swapmark();
     return s;
 }
-
-#if 0
-#define toggle_b_val(bp, mode) set_b_val(bp, mode, !b_val(bp, mode))
-
-static int
-toggle_autoindent(void)
-{
-    int code = b_val(curbp, MDAIND);
-
-    toggle_b_val(curbp, MDAIND);
-
-    return code;
-}
-
-int
-operchg_i(int f, int n)
-{
-    int s, indent;
-
-    opcmd = OPOTHER;
-    indent = toggle_autoindent();
-    s = vile_op(f, n, chgreg, indent ? "Change (noai)" : "Change (ai)");
-    if (s == TRUE)
-	swapmark();
-    (void) toggle_autoindent();
-    return s;
-}
-#endif
 
 int
 operlinechg(int f, int n)

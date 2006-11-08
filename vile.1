@@ -1,10 +1,10 @@
 .\" obligatory man page for vile
-.\" $Header: /users/source/archives/vile.vcs/RCS/vile.1,v 1.31 2006/05/21 00:30:59 pgf Exp $
+.\" $Header: /users/source/archives/vile.vcs/RCS/vile.1,v 1.36 2006/11/06 01:18:30 tom Exp $
 .TH VILE 1
 .SH NAME
 vile, xvile \- \fBVI L\fRike \fBE\fRmacs
 .SH SYNOPSIS
-.B "vile [-hIiRVv] [-s\fIpattern\fB] [+\fI/pattern\fB] [-t\fItag\fB] [-g\fINNN\fB] [-kcryptkey] [+\fINNN\fB] [@\fIcmdfile\fB] [\fIfilename\fB]..."
+.B "vile [@\fIcmdfile\fB] [+\fIcommand\fB] [-hIiRVv] [-g\fINNN\fB] [-k\fIcryptkey\fB] [-s\fIpattern\fB] [-t\fItag\fB] [\fIfilename\fB]..."
 .SH DESCRIPTION
 .I vile
 is a text editor.  This man page is fairly terse.  More information can
@@ -33,26 +33,78 @@ to the text in front of you, and that is what
 .I vile
 tries to do for vi users.
 .SH OPTIONS
-.IP "+\fINNN\fR and -g\fINNN\fR"
+Vile accumulates most options into two temporary buffers \fI[vileinit]\fP
+and \fI[vileopts]\fP.
+The former is executed before reading the first file into a buffer.
+The latter is executed after reading the first file into a buffer.
+Each is removed after executing (unless an error is detected).
+.
+.SS COMMON OPTIONS
+.
+.IP "-c\fIcommand\fR"
 .I vile
-will begin the session on the first file at the specified line number.
-.IP "+/\fIpattern\fR or -s \fIpattern\fR"
-In the first file,
+will begin the session on the first file invoking the given command.
+Legal commands include many ex-style commands, vile-commands, etc.,
+subject to shell quoting.
+This option is used most often with a line number or search pattern.
+For example
+.sp
+.RS 10
+.nf
+vile -c123 filename
+vile -c/pattern filename
+.fi
+.RE
+.IP
+They correspond to ex-style commands on the given file:
+.sp
+.RS 10
+.nf
+:123
+:/pattern
+.fi
+.RE
+.IP
+These are more verbose equivalents:
+.sp
+.RS 10
+.nf
+vile -c'123 goto-line' filename
+vile -c'search-forward /pattern/' filename
+.fi
+.RE
+.IP
+You can use more than one command, e.g.,
+.sp
+.RS 10
+vile -c'123' -c'10*goto-col' filename
+.RE
+.IP
+to put the cursor on column 10 of line 123.
+The "*" (or ":") separates the repeat count (used by \fIgoto-col\fP) from the
+line- or range-specification used by line-oriented commands.
+.
+.IP @\fIcmdfile\fR
 .I vile
-will execute an initial search for the given pattern.
-.IP "-t \fItag\fR"
-.br
+will run the specified file as its startup
+file, and will bypass any normal startup file (i.e.
+.IR .vilerc )
+or environment variable (i.e.
+.IR $VILEINIT ).
+This is added to \fI[vileinit]\fP.
+.IP -D
+tells \fIvile\fP to trace the results of macro execution into the hidden buffer
+"[Trace]".
+.IP "-e | -E"
+Invokes
 .I vile
-will edit the correct file and move the cursor to the location of the tag.
-This requires a tagsfile created with the
-.IR ctags (1)
-command.  The option -T is equivalent, and can be used when X11 option
-parsing eats the -t.
+in "noview" mode \- changes are permitted to any buffer while
+in this mode (see "-v").
 .IP -h
 Invokes
 .I vile
 on the helpfile.
-.IP -I\ -i
+.IP "-i | -I"
 Tells
 .I vile
 to use
@@ -63,9 +115,12 @@ If you do not have a .vilerc,
 .I vile
 will make a short one that sources
 .I vileinit.rc
-.IP "-k cryptkey | -K cryptkey"
+This is added to \fI[vileinit]\fP.
+.IP "-k \fIcryptkey\fP | -K \fIcryptkey\fP"
 Specifies an encryption/decryption key.
 See below for further discussion.
+This option applies only locally to the buffers named on the command-line,
+and is not added to \fI[vileopts]\fP, since that is executed too late.
 .IP -R
 Invokes
 .I vile
@@ -76,34 +131,55 @@ in this mode.
 is invoked as
 .IR view ,
 or if "readonly" mode is set in the startup file.)
+.IP "-s \fIpattern\fR | -S \fIpattern\fR"
+In the first file,
+.I vile
+will execute an initial search for the given pattern.
+This is not the same as "-c/\fIpattern\fP",
+since that positions the cursor to
+the line matching the pattern.
+This option positions the cursor within the line.
+.IP "-t \fItag\fR"
+.br
+.I vile
+will edit the correct file and move the cursor to the location of the tag.
+This requires a tagsfile created with the
+.IR ctags (1)
+command.  The option -T is equivalent, and can be used when X11 option
+parsing eats the -t.
 .IP -v
 Invokes
 .I vile
 in "view" mode \- no changes are permitted to any buffer while
-in this mode.
-.IP -D
-tells vile to trace the results of macro execution into the hidden buffer
-"[Trace]".
+in this mode (see "-e").
 .IP -V
 .I vile
 will report its version number.
-.IP @\fIcmdfile\fR
-.I vile
-will run the specified file as its startup
-file, and will bypass any normal startup file (i.e.
-.IR .vilerc )
-or environment variable (i.e.
-.IR $VILEINIT ).
-.IP "-25 -43 -50"
+.IP "-25 -43 -50 -60"
 On PC systems you may be able to set the initial screen resolution from the
+command line.
+.IP "-80 -132"
+On VMS systems you may be able to set the initial screen resolution from the
 command line.  See
 .I vile.hlp
 for details.
+.SS X11 OPTIONS
 .PP
 .IR xvile -specific
 command-line options are detailed in the help file (see "Standard X command
 line arguments").  The standard ones (e.g. -display, -fn, -geometry, -name,
 etc.) are all supported.
+.SS OBSOLETE OPTIONS
+vile recognizes some options which duplicate the functionality of the
+POSIX "-c" option:
+.IP "+\fIcommand\fR"
+This has the same effect as "-c\fIcommand\fP".
+.IP "-g \fINNN\fP | -G \fINNN\fP"
+This has the same effect as "-c\fINNN\fP".
+.I vile
+will begin the session on the first file jumping to the given line number
+\fINNN\fP.
+.
 .SH "INVOCATION"
 vile will edit the files specified on the command line.  If no files
 are specified, and standard input is not connected to a terminal, then
@@ -208,9 +284,9 @@ encryption support, including a discussion of a collection of macros that
 interface with GNU's gpg package.
 .SH "ENVIRONMENT VARIABLES"
 .TP
-.B
-VILEINIT
+.B VILEINIT
 Editor initialization commands in lieu of a startup file.
+These are copied into \fI[vileinit]\fP, and executed.
 .TP
 .B VILE_HELP_FILE
 Override the name of the help file, normally ``vile.hlp''.

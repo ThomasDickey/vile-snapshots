@@ -1,8 +1,8 @@
 /*
  * These functions perform vi's on-this-line character scanning functions.
- * written for vile: Copyright (c) 1990, 1995-2002 by Paul Fox
+ * written for vile.  Copyright (c) 1990, 1995-2002 by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/csrch.c,v 1.32 2004/04/11 23:23:13 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/csrch.c,v 1.34 2006/11/06 21:00:51 tom Exp $
  *
 */
 
@@ -26,8 +26,7 @@ fscan(int f, int n, int c)
     int i;
     int doto;
 
-    if (!f || n <= 0)
-	n = 1;
+    n = need_at_least(f, n, 1);
 
     lstchar = c;
     lstscan = FORW;
@@ -65,8 +64,7 @@ bscan(int f, int n, int c)
     int i;
     int doto;
 
-    if (!f || n <= 0)
-	n = 1;
+    n = need_at_least(f, n, 1);
 
     lstchar = c;
     lstscan = BACK;

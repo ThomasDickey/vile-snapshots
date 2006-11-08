@@ -3,7 +3,7 @@
  * paragraph at a time.  There are all sorts of word mode commands.  If I
  * do any sentence mode commands, they are likely to be put in this file.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/word.c,v 1.80 2006/04/19 22:40:54 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/word.c,v 1.81 2006/11/02 01:50:12 tom Exp $
  *
  */
 
@@ -167,9 +167,10 @@ int
 forwviendw(int f, int n)
 {
     int s = FALSE;
-    if (!f)
-	n = 1;
-    else if (n <= 0)
+
+    n = need_a_count(f, n, 1);
+
+    if (n <= 0)
 	return (FALSE);
     if (forwchar(TRUE, 1) == FALSE)
 	return (FALSE);
@@ -199,9 +200,10 @@ int
 forwendw(int f, int n)
 {
     int s = FALSE;
-    if (!f)
-	n = 1;
-    else if (n <= 0)
+
+    n = need_a_count(f, n, 1);
+
+    if (n <= 0)
 	return (FALSE);
     if (forwchar(TRUE, 1) == FALSE)
 	return (FALSE);

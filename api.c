@@ -311,7 +311,7 @@ api_gotoline(VileBuf * vbp, int lno)
     }
 
 #else
-    return gotoline(TRUE, lno);
+    return vl_gotoline(lno);
 #endif
 }
 
@@ -325,7 +325,7 @@ api_aline(VileBuf * vbp, int lno, char *line, int len)
 	linsert_chars(line, len);
 	lnewline();
     } else {			/* append to the end */
-	gotoline(FALSE, 0);
+	gotoeob(FALSE, 0);
 	gotoeol(FALSE, 0);
 	lnewline();
 	linsert_chars(line, len);

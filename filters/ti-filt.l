@@ -1,16 +1,21 @@
-%s DESC GAPS CAPS VALS
+%s NAME DESC GAPS CAPS VALS
 
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/ti-filt.l,v 1.18 2006/05/21 19:50:48 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/ti-filt.l,v 1.21 2006/10/03 20:57:52 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of terminfo
  */
 
 #include <filters.h>
+#undef YY_NO_UNPUT
 
 DefineFilter("ti");
+
+#define WriteAlias(attr) \
+	WriteToken3(attr, yyleng - 1); \
+	WriteToken2(String_attr, yyleng - 1)
 
 static char *Action_attr;
 static char *Comment_attr;
@@ -31,7 +36,7 @@ SPACE		[ \t]
 CAPNAME		[[:alpha:]][[:alnum:]_]*
 DOTNAME		\.{CAPNAME}
 
-ALIAS		[[:alnum:]_\.+-]+
+ALIAS		[[:alnum:]][[:alnum:] _\.+-]*
 
 COMMA		[,]
 ESCNL		{COMMA}{SPACE}*\\\n\t
@@ -47,8 +52,11 @@ STRING		"="(\\.|\^.|[^,\^\\])*
 				  flt_putc(',');
 				  BEGIN(CAPS);
 				}
-^({ALIAS}"|")+			{ WriteToken(Ident_attr); BEGIN(DESC); }
-<DESC>[^,\r\n]*			{ WriteToken(Comment_attr); BEGIN(GAPS); }
+^({ALIAS}"|")			{ WriteAlias(Ident_attr); BEGIN(NAME); }
+<NAME>({ALIAS}"|")		{ WriteAlias(Ident_attr); }
+<NAME>.				{ unput(yytext[0]); BEGIN(DESC); }
+<DESC>[^,\r\n]+			{ WriteToken(Comment_attr); BEGIN(GAPS); }
+<DESC>.				{ unput(yytext[0]); BEGIN(GAPS); }
 <GAPS,VALS>({COMMA}|{ESCNL})*	{ commented = 0; ECHO; BEGIN(CAPS); }
 <CAPS>{CAPNAME}			{ WriteToken(check_name(yytext)); BEGIN(VALS); }
 <CAPS>{DOTNAME}			{ WriteToken(Comment_attr); commented = 1; BEGIN(VALS); }

@@ -1,9 +1,9 @@
 /* these routines take care of undo operations
  * code by Paul Fox, original algorithm mostly by Julia Harper May, 89
  *
- * written for vile: Copyright (c) 1990, 1995-2001 by Paul Fox
+ * written for vile.  Copyright (c) 1990, 1995-2001 by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/undo.c,v 1.88 2005/01/24 00:23:42 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/undo.c,v 1.90 2006/11/06 21:00:51 tom Exp $
  *
  */
 
@@ -362,8 +362,7 @@ inf_undo(int f, int n)
 
     TRACE((T_CALLED "undo(%d,%d)\n", f, n));
 
-    if (!f || n < 1)
-	n = 1;
+    n = need_at_least(f, n, 1);
 
     if (b_val(curbp, MDVIEW)) {
 	status = rdonly();
@@ -390,8 +389,7 @@ backundo(int f, int n)
 
     TRACE((T_CALLED "backundo(%d,%d)\n", f, n));
 
-    if (!f || n < 1)
-	n = 1;
+    n = need_at_least(f, n, 1);
 
     if (b_val(curbp, MDVIEW)) {
 	status = rdonly();
@@ -417,8 +415,7 @@ forwredo(int f, int n)
 
     TRACE((T_CALLED "forwundo(%d,%d)\n", f, n));
 
-    if (!f || n < 1)
-	n = 1;
+    n = need_at_least(f, n, 1);
 
     if (b_val(curbp, MDVIEW)) {
 	status = rdonly();

@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.567 2006/05/21 10:52:15 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.574 2006/11/05 23:47:00 tom Exp $
  *
  */
 
@@ -110,6 +110,7 @@ extern int next_tabcol (int col);
 extern int nextchar (LINE *lp, int off);
 extern int setmark (void);
 extern int show_mark_is_set (int c);
+extern int vl_gotoline (int n);
 extern void swapmark (void);
 
 #if OPT_MOUSE
@@ -222,9 +223,13 @@ extern void undispbuff (BUFFER *bp, WINDOW *wp);
 extern int has_C_suffix (BUFFER *bp);
 #endif
 
+#if OPT_MODELINE
+extern void do_modelines(BUFFER *bp);
+#endif
+
 #if OPT_UPBUFF
-void updatelistbuffers (void);
-void update_scratch (const char *name, UpBuffFunc func);
+extern void updatelistbuffers (void);
+extern void update_scratch (const char *name, UpBuffFunc func);
 #else
 #define updatelistbuffers()
 #define update_scratch(name, func)
@@ -348,6 +353,7 @@ extern char * render_long (TBUFF **rp, long i);
 extern char * skip_space_tab(char *src);
 extern const char * tokval (char *tokn);
 extern const char * skip_cblanks (const char *str);
+extern const char * skip_cnumber (const char *str);
 extern const char * skip_cstring (const char *str);
 extern const char * skip_ctext (const char *str);
 extern int absol (int x);
@@ -363,10 +369,12 @@ extern void append_quoted_token (TBUFF ** dst, const char * values, size_t last)
 
 #ifdef const
 #define skip_blanks(s) skip_cblanks(s)
+#define skip_number(s) skip_cnumber(s)
 #define skip_string(s) skip_cstring(s)
 #define skip_text(s) skip_ctext(s)
 #else
 extern char *skip_blanks (char *str);
+extern char *skip_number (char *str);
 extern char *skip_string (char *str);
 extern char *skip_text (char *str);
 #endif
@@ -424,7 +432,8 @@ extern char *render_hex(TBUFF **rp, UINT i);
 #endif
 
 /* exec.c */
-extern DIRECTIVE dname_to_dirnum(char **cmdp, size_t length);
+extern DIRECTIVE dname_to_dirnum (char **cmdp, size_t length);
+extern const char *skip_linespecs (const char *buffer, int cpos, int *done);
 extern int do_source (char *fname, int n, int optional);
 extern int dobuf (BUFFER *bp, int n);
 extern int docmd (char *cline, int execflag, int f, int n);
@@ -712,6 +721,7 @@ extern int sysmapped_c_avail (void);
 extern void abbr_check (int *backsp_limit_p);
 extern void addtosysmap (const char *seq, int seqlen, int code);
 extern void delfromsysmap (const char *seq, int seqlen);
+extern void map_drain (void);
 extern void mapungetc (int c);
 
 /* menu.c */
@@ -904,6 +914,8 @@ extern int gocol (int n);
 extern int is_user_fence (int ch, int *sdirp);
 extern int line_report (L_NUM before);
 extern int liststuff (const char *name, int appendit, void (*)(LIST_ARGS), int iarg, void *vargp);
+extern int need_a_count (int f, int n, int need);
+extern int need_at_least (int f, int n, int need);
 extern int restore_dot(MARK saved_dot);
 extern int set_directory (const char *dir);
 extern long vl_atol (char *str, int base, int *failed);
@@ -1086,11 +1098,6 @@ extern int open_region_filter (void);
 #else
 #define pressreturn() (void)keystroke()
 #endif
-
-/* tags.c */
-#if OPT_TAGS
-extern int cmdlinetag (const char *t);
-#endif /* OPT_TAGS */
 
 /* tbuff.c */
 TBUFF *	tb_alloc (TBUFF **p, size_t n);

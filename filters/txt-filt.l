@@ -1,16 +1,17 @@
-%s NORMAL QUOTED QUOTES
+%s TEXT NOTE QUOTED QUOTES
 
 %o 6000
 
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/txt-filt.l,v 1.23 2006/05/21 19:50:48 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/txt-filt.l,v 1.29 2006/10/29 20:33:08 tom Exp $
  *
  * Filter to add vile "attribution" sequences to an ordinary text file
  */
 
 #include <filters.h>
+#include <fltstack.h>
 
 DefineFilter("txt");
 
@@ -24,7 +25,7 @@ static int mixedcase(const char *name);
 
 %}
 
-COMMENT		(^(-[-]+[ \t]+[^\r\n]+))|([ \t]*-[ \t-]*)\n
+DASHES		(-([[:blank:]]-)+)
 
 KEYWORD		([[:alpha:]_][[:alnum:]_.]*|[[:upper:]][+/&][[:upper:]])
 
@@ -32,8 +33,10 @@ SIGN		[-+]
 DECIMAL		[[:digit:]_]+
 OCTAL		0[0-7_]+
 HEXADECIMAL	0x[[:xdigit:]_]+
-REAL		[-+]?([[:digit:]_]*\.[[:digit:]][[:digit:]_]*)([eE][+-]?[[:digit:]_]+)?
+REAL		([[:digit:]_]*\.[[:digit:]][[:digit:]_]*)([eE]{SIGN}?[[:digit:]_]+)?
 NUMBER		{SIGN}?({DECIMAL}|{OCTAL}|{HEXADECIMAL}|{REAL})
+
+IDENT		"$"{KEYWORD}:[^$\r\n]+"$"
 
 NAME		[[:alnum:]_.#-]+
 ADDRESS		({NAME}|\.)+
@@ -43,33 +46,48 @@ URL		[[:alpha:]]+"://"[[:alnum:]#%&+\,.\/?;@_=~-]+
 
 %%
 
-<NORMAL>[[:upper:]]\'{KEYWORD} { ECHO; }
+<TEXT>[[:upper:]]\'{KEYWORD} { ECHO; }
 
-<NORMAL>{KEYWORD}	{ WriteToken(mixedcase(yytext) ? "" : Keyword_attr); }
-<NORMAL>{COMMENT}	{ WriteToken(Comment_attr); }
-<NORMAL>{NUMBER}	{ WriteToken(Number_attr); }
-<NORMAL>{EMAIL}		{ WriteToken(Ident2_attr); }
-<NORMAL>{URL}		{ WriteToken(Ident2_attr); }
+<TEXT>^[[:blank:]]*"--"[[:blank:]]	{ PushQuote(NOTE, Comment_attr); }
+<TEXT>^[-]+$		|
+<TEXT>{DASHES}		{ WriteToken(Comment_attr); }
+<TEXT>{KEYWORD}		{ WriteToken(mixedcase(yytext) ? "" : Keyword_attr); }
+<TEXT>{NUMBER}		{ WriteToken(Number_attr); }
+<TEXT>{EMAIL}		{ WriteToken(Ident2_attr); }
+<TEXT>{URL}		{ WriteToken(Ident2_attr); }
+<TEXT>{IDENT}		{ WriteToken(Ident2_attr); }
 
 <QUOTES,QUOTED>{EMAIL}	{ flt_bfr_embed(yytext, yyleng, Ident2_attr); }
 <QUOTES,QUOTED>{URL}	{ flt_bfr_embed(yytext, yyleng, Ident2_attr); }
+<QUOTES,QUOTED>{IDENT}	{ flt_bfr_embed(yytext, yyleng, Ident2_attr); }
 
-<NORMAL>\(\"\)		|
-<NORMAL>\'.\'		{ ECHO; }
+<TEXT>\(\"\)		|
+<TEXT>\'.\'		{ ECHO; }
 
-<NORMAL>\"		{ BeginQuote(QUOTED, String_attr); }
-<QUOTED>\"		{ FinishQuote(NORMAL); }
+<TEXT,NOTE>\"		{ PushQuote(QUOTED, String_attr); }
+<QUOTED>\"		{ PopQuote(); }
 <QUOTED>.		{ flt_bfr_append(yytext, yyleng); }
-<QUOTED>^[\n]		{ FinishQuote(NORMAL); }
+<QUOTED>^[\n]		{ PopQuote(); }
 <QUOTED>[\n]		{ flt_bfr_append(yytext, yyleng); }
 
-<NORMAL>\`\`		{ BeginQuote(QUOTES, String_attr); }
-<QUOTES>\'\'		{ FinishQuote(NORMAL); }
+<TEXT,NOTE>\`\`		{ PushQuote(QUOTES, String_attr); }
+<QUOTES>\'\'		{ PopQuote(); }
 <QUOTES>.		{ flt_bfr_append(yytext, yyleng); }
-<QUOTES>^[\n]		{ FinishQuote(NORMAL); }
+<QUOTES>^[\n]		{ PopQuote(); }
 <QUOTES>[\n]		{ flt_bfr_append(yytext, yyleng); }
 
-<NORMAL>.		{ ECHO; }
+<TEXT>[\r\n]		{ ECHO; }
+<TEXT>.			{ ECHO; }
+
+<NOTE>[\r\n]		{ PopQuote(); }
+<NOTE>{KEYWORD}		{ flt_bfr_embed(yytext, yyleng, mixedcase(yytext) ? Comment_attr : Keyword_attr); }
+<NOTE>{NUMBER}		{ flt_bfr_embed(yytext, yyleng, Number_attr); }
+<NOTE>{EMAIL}		{ flt_bfr_embed(yytext, yyleng, Ident2_attr); }
+<NOTE>{URL}		{ flt_bfr_embed(yytext, yyleng, Ident2_attr); }
+<NOTE>{IDENT}		{ flt_bfr_embed(yytext, yyleng, Ident2_attr); }
+<NOTE>\(\"\)		|
+<NOTE>\'.\'		|
+<NOTE>.			{ flt_puts(yytext, yyleng, Comment_attr); }
 
 %%
 
@@ -103,8 +121,9 @@ do_filter(FILE *inputs)
     Number_attr  = class_attr(NAME_NUMBER);
     String_attr  = class_attr(NAME_LITERAL);
 
-    BEGIN(NORMAL);
+    begin_state(TEXT);
     while (yylex() > 0) {
     }
     flt_bfr_finish();
+    end_state();
 }

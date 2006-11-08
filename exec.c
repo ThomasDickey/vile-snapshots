@@ -4,7 +4,7 @@
  *	original by Daniel Lawrence, but
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.288 2006/06/12 22:28:06 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.307 2006/11/06 00:45:22 tom Exp $
  *
  */
 
@@ -13,12 +13,7 @@
 #include "nefunc.h"
 #include "nefsms.h"
 
-static int rangespec(const char *specp,
-		     LINE **fromlinep,
-		     LINE **tolinep,
-		     CMDFLAGS * flagp);
-
-/* while loops are described by a list of small structs.  these point
+/* while-loops are described by a list of small structs.  these point
  * at the line on which they were found, and at the line to which one
  * might want to go from there, i.e.:
  *
@@ -79,27 +74,369 @@ static BUFFER *macrobuffer = NULL;
 
 /*----------------------------------------------------------------------------*/
 
+#define isSign(c)    ((c) == '-' || (c) == '+')
+#define isPattern(c) ((c) == '?' || (c) == '/')
+
+/* on entry, s points to a pattern delimiter */
+static const char *
+skip_pattern(const char *s, int *done)
+{
+    int ch = *s++;
+
+    while (*s != ch && *s != EOS) {
+	if (*s == BACKSLASH) {
+	    if (*++s == EOS) {
+		/* FIXME let's not try to escape a null */
+		break;
+	    }
+	}
+	++s;
+    }
+    if (*s == EOS) {
+	*done = FALSE;
+    } else {
+	++s;
+    }
+    return s;
+}
+
+/*
+ * Like parse_linespec(), but does not update marks.
+ */
+static const char *
+skip_linespec(const char *s, const char **before, int *done)
+{
+    /* parse each ;-delimited clause of this linespec */
+    do {
+	/* skip an initial ';', if any */
+	if (*s == ';')
+	    s++;
+
+	s = skip_cblanks(s);	/* skip leading spaces */
+
+	*done = TRUE;		/* we usually complete the parse */
+	*before = s;		/* remember what we tried to parse */
+	if (*s == '.') {	/* dot means current position */
+	    s++;
+	} else if (*s == '$') {	/* '$' means the last line */
+	    s++;
+	} else if (isDigit(*s)) {
+	    s = skip_cnumber(s);
+	} else if (*s == SQUOTE) {
+	    /* apostrophe means go to a set mark */
+	    s += 2;		/* FIXME: see making_mark() */
+	} else if (isSign(*s)) {
+	    int ch = *s;
+	    s = skip_cnumber(s + 1);
+	    while (*s == ch)
+		s++;
+	} else if (isPattern(*s)) {
+	    s = skip_pattern(s, done);
+	}
+
+	/* maybe add an offset */
+	if (isSign(*s)) {
+	    *before = s;
+	    s = skip_cnumber(s + 1);
+	}
+    } while (*s == ';' || isSign(*s));
+
+    return s;
+}
+
+/* on entry, s points to a digit */
+static const char *
+parse_number(const char *s, int *number)
+{
+    *number = 0;
+    while (isDigit(*s)) {
+	*number = (*number * 10) + *s - '0';
+	++s;
+    }
+    return s;
+}
+
+/* on entry, s points to a sign */
+static const char *
+parse_signed_number(const char *s, int *number)
+{
+    int ch = *s++;
+
+    s = parse_number(s, number);
+    if (*number == 0)
+	*number = 1;
+    while (*s == ch) {
+	++s;
+	*number += 1;
+    }
+    if (ch == '-')
+	*number = -(*number);
+    return s;
+}
+
+/*
+ * parse an ex-style line spec -- code originally from elvis, file ex.c, by
+ * Steve Kirkendall
+ */
+static const char *
+parse_linespec(const char *s, LINE **markptr)
+{
+    int num;
+    LINE *lp;			/* where the linespec takes us */
+    int status;
+
+    (void) setmark();
+    lp = NULL;
+
+    /* parse each ;-delimited clause of this linespec */
+    do {
+	/* skip an initial ';', if any */
+	if (*s == ';')
+	    s++;
+
+	s = skip_cblanks(s);	/* skip leading spaces */
+
+	if (*s == '.') {
+	    /* dot means current position */
+	    s++;
+	    lp = DOT.l;
+	} else if (*s == '$') {
+	    /* '$' means the last line */
+	    s++;
+	    status = gotoeob(TRUE, 1);
+	    if (status)
+		lp = DOT.l;
+	} else if (isDigit(*s)) {
+	    /* digit means an absolute line number */
+	    s = parse_number(s, &num);
+	    status = gotoline(TRUE, num);
+	    if (status)
+		lp = DOT.l;
+	} else if (*s == SQUOTE) {
+	    /* apostrophe means go to a set mark */
+	    s++;
+	    status = gonmmark(*s);
+	    if (status)
+		lp = DOT.l;
+	    s++;
+	} else if (isSign(*s)) {
+	    s = parse_signed_number(s, &num);
+	    status = forwline(TRUE, num);
+	    if (status)
+		lp = DOT.l;
+	} else if (isPattern(*s)) {
+	    int done = 1;
+	    int found = FALSE;
+	    const char *save = s;
+	    MARK save_DOT = DOT;
+
+	    last_srch_direc = (*save == '/') ? FORWARD : REVERSE;
+	    s = skip_pattern(save, &done);
+	    tb_init(&searchpat, EOS);
+	    tb_bappend(&searchpat, save + 1, s - save - 1 - done);
+	    tb_append(&searchpat, EOS);
+
+	    if ((gregexp = regcomp(tb_values(searchpat),
+				   tb_length(searchpat) - 1,
+				   b_val(curbp, MDMAGIC))) != 0) {
+
+		scanboundry(TRUE, DOT, last_srch_direc);
+		if (scanner(gregexp,
+			    last_srch_direc,
+			    TRUE,
+			    (int *) 0)) {
+		    lp = DOT.l;
+		    found = TRUE;
+		}
+		DOT = save_DOT;
+		if (!found)
+		    mlwarn("[Not found: %s]", tb_values(searchpat));
+	    } else {
+		mlwarn("[Not a legal expression: %s]", tb_values(searchpat));
+	    }
+	} else if (*s == EOS) {	/* empty string matches '.' */
+	    lp = DOT.l;
+	}
+
+	/* if linespec was faulty, quit now */
+	if (!lp) {
+	    *markptr = lp;
+	    swapmark();
+	    return s;
+	}
+
+	/* maybe add an offset */
+	if (isSign(*s)) {
+	    s = parse_signed_number(s, &num);
+	    if (forwline(TRUE, num) == TRUE)
+		lp = DOT.l;
+	}
+    } while (*s == ';' || isSign(*s));
+
+    *markptr = lp;
+    swapmark();
+    return s;
+}
+
+/*
+ * parse an ex-style line range -- code originally from elvis, file ex.c, by
+ * Steve Kirkendall
+ */
+static int
+rangespec(const char *specp, LINE **fromlinep, LINE **tolinep,
+	  CMDFLAGS * flagp)
+{
+    const char *scan;		/* used to scan thru specp */
+    LINE *fromline;		/* first linespec */
+    LINE *toline;		/* second linespec */
+
+    *flagp = 0;
+
+    if (specp == 0)
+	return FALSE;
+
+    /* ignore command lines that start with a double-quote */
+    if (*specp == '"') {
+	*fromlinep = *tolinep = DOT.l;
+	return TRUE;
+    }
+
+    /* permit extra colons at the start of the line */
+    while (isBlank(*specp) || *specp == ':') {
+	specp++;
+    }
+
+    /* parse the line specifier */
+    scan = specp;
+    if (*scan == '0') {
+	fromline = toline = buf_head(curbp);	/* _very_ top of buffer */
+	*flagp |= (FROM | ZERO);
+	scan++;
+    } else if (*scan == '%') {
+	/* '%' means all lines */
+	fromline = lforw(buf_head(curbp));
+	toline = lback(buf_head(curbp));
+	scan++;
+	*flagp |= (FROM | TO);
+    } else {
+	scan = parse_linespec(scan, &toline);
+	*flagp |= FROM;
+	if (toline == 0)
+	    toline = DOT.l;
+	fromline = toline;
+	while (*scan == ',') {
+	    fromline = toline;
+	    scan++;
+	    scan = parse_linespec(scan, &toline);
+	    *flagp |= TO;
+	    if (toline == 0) {
+		/* faulty line spec */
+		return FALSE;
+	    }
+	}
+    }
+
+    if (is_empty_buf(curbp))
+	fromline = toline = 0;
+
+    if (scan == specp)
+	*flagp |= DFLALL;
+
+    /* skip whitespace */
+    scan = skip_cblanks(scan);
+
+    if (*scan) {
+	/* dbgwrite("crud at end %s (%s)",specp, scan); */
+	return FALSE;
+    }
+
+    *fromlinep = fromline;
+    *tolinep = toline;
+
+    return TRUE;
+}
+
+/* special test for 'a style mark references */
+static int
+making_mark(EOL_ARGS)
+{
+    (void) eolchar;
+
+    return (cpos != 0
+	    && buffer[cpos - 1] == SQUOTE
+	    && can_set_nmmark(c));
+}
+
+const char *
+skip_linespecs(const char *buffer, int cpos, int *done)
+{
+    const char *src = buffer;
+    const char *before = 0;
+
+    TRACE(("skip_linespecs(%d) \"%.*s\"\n", cpos, cpos, buffer));
+    if (cpos != 0) {
+	/* skip over previous linespec's */
+	while ((src - buffer) < cpos) {
+	    src = skip_linespec(src, &before, done);
+	    TRACE(("after linespec %d(%d):%.*s\n",
+		   *done,
+		   cpos - (src - buffer),
+		   cpos - (src - buffer),
+		   src));
+	    if (*src != ',')
+		break;
+	    ++src;
+	}
+    }
+    return src;
+}
+
+/*
+ * Check if we've started accepting a /pattern/ or ?pattern?, and not completed
+ * it.  In those cases, we accept further characters in eol_range().
+ */
+static int
+making_pattern(EOL_ARGS)
+{
+    int done = FALSE;
+    int in_regexp = FALSE;
+    const char *src = buffer;
+
+    (void) eolchar;
+
+    TRACE(("making_pattern(buffer=%.*s, cpos=%d, c=%#x, eolchar=%#x)\n",
+	   cpos, buffer, cpos, c, eolchar));
+    if (cpos != 0) {
+	src = skip_linespecs(buffer, cpos, &done);
+	in_regexp = !done || isPattern(c);
+    } else if (isPattern(c)) {
+	in_regexp = TRUE;
+    }
+    TRACE(("...making_pattern:%d\n", in_regexp));
+    return in_regexp;
+}
+
 /*ARGSUSED*/
 static int
 eol_range(EOL_ARGS)
 {
+    int result = FALSE;
+
     (void) eolchar;
 
-    if (is_edit_char(c))
-	return FALSE;
-
-    /* sorry, cannot scroll with arrow keys */
-    if (isSpecial(c) || isCntrl(c))
-	return TRUE;
-
-    if (islinespecchar(c)
-	|| (c == ':' && (cpos == 0 || buffer[cpos - 1] == c))
-	||			/* special test for 'a style mark references */
-	(cpos != 0
-	 && buffer[cpos - 1] == SQUOTE
-	 && can_set_nmmark(c)))
-	return FALSE;
-    return TRUE;
+    if (is_edit_char(c)) {
+	result = FALSE;
+    } else if (isSpecial(c) || isCntrl(c)) {
+	result = TRUE;
+    } else if (islinespecchar(c)
+	       || (c == ':' && (cpos == 0 || buffer[cpos - 1] == c))
+	       || making_mark(buffer, cpos, c, eolchar)
+	       || making_pattern(buffer, cpos, c, eolchar)) {
+	result = FALSE;
+    } else {
+	result = TRUE;
+    }
+    return result;
 }
 
 /*
@@ -531,213 +868,17 @@ int
 namedcmd(int f, int n)
 {
     int status;
+
     hst_init(EOS);
     status = execute_named_command(f, n);
     hst_flush();
+
+    if (clexec)
+	map_drain();		/* don't let stray characters go too far */
+
     return status;
 }
 #endif
-
-/*
- * parse an ex-style line spec -- code originally from elvis, file ex.c, by
- * Steve Kirkendall
- */
-static const char *
-parse_linespec(const char *s, LINE **markptr)
-{
-    int num;
-    LINE *lp;			/* where the linespec takes us */
-    const char *t;
-    int status;
-
-    (void) setmark();
-    lp = NULL;
-
-    /* parse each ;-delimited clause of this linespec */
-    do {
-	/* skip an initial ';', if any */
-	if (*s == ';')
-	    s++;
-
-	/* skip leading spaces */
-	while (isBlank(*s))
-	    s++;
-
-	/* dot means current position */
-	if (*s == '.') {
-	    s++;
-	    lp = DOT.l;
-	} else if (*s == '$') {	/* '$' means the last line */
-	    s++;
-	    status = gotoeob(TRUE, 1);
-	    if (status)
-		lp = DOT.l;
-	} else if (isDigit(*s)) {
-	    /* digit means an absolute line number */
-	    for (num = 0; isDigit(*s); s++) {
-		num = num * 10 + *s - '0';
-	    }
-	    status = gotoline(TRUE, num);
-	    if (status)
-		lp = DOT.l;
-	} else if (*s == SQUOTE) {
-	    /* apostrophe means go to a set mark */
-	    s++;
-	    status = gonmmark(*s);
-	    if (status)
-		lp = DOT.l;
-	    s++;
-	} else if (*s == '+') {
-	    s++;
-	    for (num = 0; isDigit(*s); s++)
-		num = num * 10 + *s - '0';
-	    if (num == 0)
-		num++;
-	    while (*s == '+')
-		s++, num++;
-	    status = forwline(TRUE, num);
-	    if (status)
-		lp = DOT.l;
-	} else if (*s == '-') {
-	    s++;
-	    for (num = 0; isDigit(*s); s++)
-		num = num * 10 + *s - '0';
-	    if (num == 0)
-		num++;
-	    while (*s == '-')
-		s++, num++;
-	    status = forwline(TRUE, -num);
-	    if (status)
-		lp = DOT.l;
-	}
-#if VILE_MAYBE
-	else if (*s == '/' || *s == '?') {	/* slash means do a search */
-	    /* put a null at the end of the search pattern */
-	    t = parseptrn(s);
-
-	    /* search for the pattern */
-	    lp &= ~(BLKSIZE - 1);
-	    if (*s == '/') {
-		pfetch(markline(lp));
-		if (plen > 0)
-		    lp += plen - 1;
-		lp = m_fsrch(lp, s);
-	    } else {
-		lp = m_bsrch(lp, s);
-	    }
-
-	    /* adjust command string pointer */
-	    s = t;
-	}
-#endif
-	else if (*s == EOS) {	/* empty string matches '.' */
-	    lp = DOT.l;
-	}
-
-	/* if linespec was faulty, quit now */
-	if (!lp) {
-	    *markptr = lp;
-	    swapmark();
-	    return s;
-	}
-
-	/* maybe add an offset */
-	t = s;
-	if (*t == '-' || *t == '+') {
-	    s++;
-	    for (num = 0; isDigit(*s); s++) {
-		num = num * 10 + *s - '0';
-	    }
-	    if (num == 0)
-		num = 1;
-	    if (forwline(TRUE, (*t == '+') ? num : -num) == TRUE)
-		lp = DOT.l;
-	}
-    } while (*s == ';' || *s == '+' || *s == '-');
-
-    *markptr = lp;
-    swapmark();
-    return s;
-}
-
-/*
- * parse an ex-style line range -- code originally from elvis, file ex.c, by
- * Steve Kirkendall
- */
-static int
-rangespec(const char *specp, LINE **fromlinep, LINE **tolinep,
-	  CMDFLAGS * flagp)
-{
-    const char *scan;		/* used to scan thru specp */
-    LINE *fromline;		/* first linespec */
-    LINE *toline;		/* second linespec */
-
-    *flagp = 0;
-
-    if (specp == 0)
-	return FALSE;
-
-    /* ignore command lines that start with a double-quote */
-    if (*specp == '"') {
-	*fromlinep = *tolinep = DOT.l;
-	return TRUE;
-    }
-
-    /* permit extra colons at the start of the line */
-    while (isBlank(*specp) || *specp == ':') {
-	specp++;
-    }
-
-    /* parse the line specifier */
-    scan = specp;
-    if (*scan == '0') {
-	fromline = toline = buf_head(curbp);	/* _very_ top of buffer */
-	*flagp |= (FROM | ZERO);
-	scan++;
-    } else if (*scan == '%') {
-	/* '%' means all lines */
-	fromline = lforw(buf_head(curbp));
-	toline = lback(buf_head(curbp));
-	scan++;
-	*flagp |= (FROM | TO);
-    } else {
-	scan = parse_linespec(scan, &toline);
-	*flagp |= FROM;
-	if (toline == 0)
-	    toline = DOT.l;
-	fromline = toline;
-	while (*scan == ',') {
-	    fromline = toline;
-	    scan++;
-	    scan = parse_linespec(scan, &toline);
-	    *flagp |= TO;
-	    if (toline == 0) {
-		/* faulty line spec */
-		return FALSE;
-	    }
-	}
-    }
-
-    if (is_empty_buf(curbp))
-	fromline = toline = 0;
-
-    if (scan == specp)
-	*flagp |= DFLALL;
-
-    /* skip whitespace */
-    while (isBlank(*scan))
-	scan++;
-
-    if (*scan) {
-	/* dbgwrite("crud at end %s (%s)",specp, scan); */
-	return FALSE;
-    }
-
-    *fromlinep = fromline;
-    *tolinep = toline;
-
-    return TRUE;
-}
 
 /*
  * take a passed string as a command line and translate it to be executed as a
@@ -776,8 +917,11 @@ docmd(char *cline, int execflag, int f, int n)
 	}
     } while (!*token);
 
-    /* if it doesn't look like a command (and command names can't
-     * be hidden in variables), then it must be a leading argument */
+    /*
+     * If it doesn't look like a command (and command names can't
+     * be hidden in variables), then it must be a leading argument, e.g., a
+     * repeat-count (CNT).
+     */
     if (toktyp(token) != TOK_LITSTR || isDigit(token[0])) {
 	f = TRUE;
 	n = strtol(tokval(token), 0, 0);
@@ -962,8 +1106,7 @@ get_token2(char *src, TBUFF **tok, int (*endfunc) (EOL_ARGS), int eolchar, int *
 	return src;
 
     /* first scan past any whitespace in the source string */
-    while (isBlank(*src))
-	++src;
+    src = skip_blanks(src);
 
     /* scan through the source string, which may be quoted */
     while ((c = *src) != EOS) {
@@ -1055,6 +1198,17 @@ get_token2(char *src, TBUFF **tok, int (*endfunc) (EOL_ARGS), int eolchar, int *
 		    break;
 		}
 	    } else {
+#if OPT_MODELINE
+		/*
+		 * Multiple settings on the line may be separated by colons.
+		 */
+		if (c == ':' && in_modeline) {
+		    if (actual != 0)
+			*actual = ' ';
+		    src++;
+		    break;
+		} else
+#endif
 		if (c == eolchar) {
 		    if (actual != 0)
 			*actual = *src;
@@ -1088,8 +1242,7 @@ get_token2(char *src, TBUFF **tok, int (*endfunc) (EOL_ARGS), int eolchar, int *
     }
 
     /* scan past any whitespace remaining in the source string */
-    while (isBlank(*src))
-	++src;
+    src = skip_blanks(src);
     token_ended_line = isreturn(*src) || *src == EOS;
 
     tb_append(tok, EOS);
@@ -1444,7 +1597,7 @@ execproc(int f, int n)
     if ((bp = find_b_name(bufn)) == NULL) {
 	return FALSE;
     }
-    return dobuf(bp, f ? n : 1);
+    return dobuf(bp, need_a_count(f, n, 1));
 
 }
 
@@ -1471,7 +1624,7 @@ execbuf(int f, int n)
 	return FALSE;
     }
 
-    return dobuf(bp, f ? n : 1);
+    return dobuf(bp, need_a_count(f, n, 1));
 }
 #endif
 
@@ -2411,6 +2564,7 @@ dobuf(BUFFER *bp, int limit)
 
     static int dobufnesting;	/* flag to prevent runaway recursion */
 
+    TRACE((T_CALLED "dobuf(%s, %d)\n", bp->b_bname, limit));
     beginDisplay();
     if (++dobufnesting < 9) {
 
@@ -2497,7 +2651,7 @@ dobuf(BUFFER *bp, int limit)
 
     endofDisplay();
 
-    return status;
+    returnCode(status);
 }
 
 /*
@@ -2662,7 +2816,7 @@ cbuf(int f, int n, int bufnum)
 	return FALSE;
     }
 
-    return dobuf(bp, f ? n : 1);
+    return dobuf(bp, need_a_count(f, n, 1));
 }
 
 #include "neexec.h"
