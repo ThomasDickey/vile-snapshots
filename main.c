@@ -22,7 +22,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.568 2006/11/06 20:52:12 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.586 2006/12/13 01:29:48 tom Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -245,7 +245,6 @@ MainProgram(int argc, char *argv[])
 	 * can be found by stripping the "UTF-8" string, and also that both
 	 * locales are installed.
 	 */
-#define nonnull(s) ((s) ? (s) : "<null>")
 #if DISP_TERMCAP || DISP_X11
 	if (((env = getenv("LC_ALL")) != 0 && *env != 0) ||
 	    ((env = getenv("LC_CTYPE")) != 0 && *env != 0) ||
@@ -264,8 +263,6 @@ MainProgram(int argc, char *argv[])
 		tcap_setup_locale(env, tmp);
 #endif
 		env = tmp;
-	    } else {
-		env = "";
 	    }
 	} else {
 	    env = "";
@@ -273,6 +270,7 @@ MainProgram(int argc, char *argv[])
 #endif
 	/* set locale according to environment vars */
 	vl_locale = setlocale(LC_ALL, env);
+	TRACE(("setlocale(%s) -> %s\n", NONNULL(env), NONNULL(vl_locale)));
 
 #ifdef HAVE_LANGINFO_CODESET
 	/*
@@ -281,6 +279,8 @@ MainProgram(int argc, char *argv[])
 	 * corresponding encoding.
 	 */
 	vl_encoding = nl_langinfo(CODESET);
+	TRACE(("nl_langinfo(CODESET) -> %s\n", NONNULL(vl_encoding)));
+
 	if (vl_locale == 0
 	    || vl_encoding == 0
 	    || (strstr(vl_encoding, "ASCII") == 0
@@ -289,7 +289,8 @@ MainProgram(int argc, char *argv[])
 		&& strncmp(vl_encoding, "ISO 8859", 8) != 0
 		&& strncmp(vl_encoding, "ISO_8859", 8) != 0
 		&& strncmp(vl_encoding, "ISO8859", 8) != 0
-		&& strncmp(vl_encoding, "8859", 4) != 0)) {
+		&& strncmp(vl_encoding, "8859", 4) != 0
+		&& strncmp(vl_encoding, "KOI8-R", 6) != 0)) {
 	    vl_locale = setlocale(LC_ALL, "C");
 	    vl_encoding = nl_langinfo(CODESET);
 	}
@@ -740,8 +741,11 @@ MainProgram(int argc, char *argv[])
 		startstat = run_startup_commands(init_bp);
 		if (!startstat)
 		    goto begin;
+	    } else {
+		zotbuf(init_bp);
 	    }
 	} else {		/* find and run .vilerc */
+	    zotbuf(init_bp);
 	    if (do_source(startup_file, 1, TRUE) != TRUE) {
 		startstat = FALSE;
 		goto begin;
@@ -1074,6 +1078,28 @@ no_memory(const char *s)
 #define DFT_FENCE_ELSE  "^\\s*#\\s*else\\>"
 #define DFT_FENCE_FI    "^\\s*#\\s*endif\\>"
 
+#define DFT_BUFNAME_EXPR "\\(\\[\\([!]\\?[[:print:]]\\+\\)\\]\\)\\|\\([[:ident:].-]\\+\\)"
+	/*
+	 * The $filename-expr expression is used with a trailing '*' to repeat
+	 * the last field.  Otherwise it is complete.
+	 *
+	 * Limitations - the expressions are used in the error finder, which
+	 * has to choose the first pattern which matches a filename embedded
+	 * in other text.  UNIX-style pathnames could have embedded blanks,
+	 * but it's not common.  It is common on win32, but is not often a
+	 * problem with grep, etc., since the full pathname of the file is not
+	 * usually given.
+	 */
+#if OPT_MSDOS_PATH
+#define DFT_FILENAME_EXPR "\\(\\([[:alpha:]]:\\)\\|\\([\\\\/]\\{2\\}\\)[[:ident:]]\\+\\)\\?[[:file:]]"
+#elif OPT_VMS_PATH
+#define DFT_FILENAME_EXPR "[-/\\w.;\\[\\]<>$:]"
+#else /* UNIX-style */
+#define DFT_FILENAME_EXPR "[[:file:]]"
+#endif
+
+#define DFT_IDENTIFIER_EXPR    "\\w\\+"
+
 			/* where do paragraphs start? */
 #define DFT_PARAGRAPHS  "^\\.[ILPQ]P\\>\\|^\\.P\\>\\|\
 ^\\.LI\\>\\|^\\.[plinb]p\\>\\|^\\.\\?\\s*$"
@@ -1118,6 +1144,16 @@ no_memory(const char *s)
 #define DFT_FENCE_CHARS "{}()[]"
 #define DFT_CINDENT_CHARS ":#" DFT_FENCE_CHARS
 
+#if SYS_VMS
+#define DFT_WILDCARD "*.c,*.h,*.com,*.mms"
+#endif
+#if SYS_UNIX
+#define DFT_WILDCARD "*.[chly] *.def *.cc *.cpp *.xs"
+#endif
+#ifndef DFT_WILDCARD
+#define DFT_WILDCARD "*.c *.h *.def *.cc *.cpp *.cs *.xs"
+#endif
+
 /*
  * For the given class/mode, initialize the VAL struct to the default value
  * for that mode.
@@ -1126,7 +1162,13 @@ void
 init_mode_value(struct VAL *d, MODECLASS v_class, int v_which)
 {
     static const char expand_chars[] =
-    {EXPC_THIS, EXPC_THAT, EXPC_SHELL, EXPC_TOKEN, EXPC_RPAT, 0};
+    {
+	EXPC_THIS,
+	EXPC_THAT,
+	EXPC_SHELL,
+	EXPC_TOKEN,
+	EXPC_RPAT,
+	0};
 
     switch (v_class) {
     case UNI_MODE:
@@ -1320,6 +1362,12 @@ init_mode_value(struct VAL *d, MODECLASS v_class, int v_which)
 	    setTXT(VAL_CINDENT_CHARS, DFT_CINDENT_CHARS);	/* C-style indent flags */
 	    setTXT(VAL_FENCES, "{}()[]");	/* fences */
 	    setTXT(VAL_TAGS, "tags");	/* tags filename */
+#if OPT_CURTOKENS
+	    setINT(VAL_CURSOR_TOKENS, CT_REGEX);
+	    setPAT(VAL_BUFNAME_EXPR, DFT_BUFNAME_EXPR);
+	    setPAT(VAL_IDENTIFIER_EXPR, DFT_IDENTIFIER_EXPR);
+	    setPAT(VAL_PATHNAME_EXPR, DFT_FILENAME_EXPR "\\+");
+#endif
 #ifdef MDCHK_MODTIME
 	    setINT(MDCHK_MODTIME, FALSE);	/* modtime-check */
 #endif
@@ -1381,6 +1429,16 @@ init_mode_value(struct VAL *d, MODECLASS v_class, int v_which)
 	    setIntValue(d, 0);
 	    break;
 	}
+#if OPT_CURTOKENS
+	switch (v_which) {
+	case VAL_BUFNAME_EXPR:
+	case VAL_PATHNAME_EXPR:
+	    set_buf_fname_expr((d == &global_b_values.bv[v_which])
+			       ? curbp
+			       : 0);
+	    break;
+	}
+#endif
 	break;
     case WIN_MODE:
 	switch (v_which) {
@@ -1390,6 +1448,9 @@ init_mode_value(struct VAL *d, MODECLASS v_class, int v_which)
 	    setINT(WVAL_SIDEWAYS, 0);	/* list-mode */
 #ifdef WMDLINEWRAP
 	    setINT(WMDLINEWRAP, FALSE);		/* line-wrap */
+#endif
+#ifdef WMDSHOWVARS
+	    setINT(WMDSHOWVARS, FALSE);		/* showvariables */
 #endif
 #ifdef WMDTERSELECT
 	    setINT(WMDTERSELECT, TRUE);		/* terse selections */
@@ -1404,27 +1465,6 @@ init_mode_value(struct VAL *d, MODECLASS v_class, int v_which)
 	break;
     }
 }
-
-	/*
-	 * The $filename-expr expression is used with a trailing '*' to repeat
-	 * the last field.  Otherwise it is complete.
-	 *
-	 * Limitations - the expressions are used in the error finder, which
-	 * has to choose the first pattern which matches a filename embedded
-	 * in other text.  UNIX-style pathnames could have embedded blanks,
-	 * but it's not common.  It is common on win32, but is not often a
-	 * problem with grep, etc., since the full pathname of the file is not
-	 * usually given.
-	 */
-#if OPT_MSDOS_PATH
-#define DFT_FILENAME_EXPR "\\([a-zA-Z]:\\)\\?[^ \t\":*?<>|]"
-#else
-#if OPT_VMS_PATH
-#define DFT_FILENAME_EXPR "[-/\\w.;\\[\\]<>$:]"
-#else /* UNIX-style */
-#define DFT_FILENAME_EXPR "[-/\\w.~]"
-#endif
-#endif
 
 #define DFT_HELP_FILE "vile.hlp"
 
@@ -1670,7 +1710,10 @@ global_val_init(void)
     set_submode_txt("c", VAL_CINDENT_CHARS, DFT_CINDENT_CHARS);		/* C-style indent flags */
 
     set_majormode_rexp("c", MVAL_MODE_SUFFIXES, DFT_CSUFFIX);
+#ifdef MVAL_MODE_WILDCARD
+    set_majormode_rexp("c", MVAL_MODE_WILDCARD, DFT_WILDCARD);
 #endif
+#endif /* OPT_MAJORMODE */
 
 #if OPT_EVAL
     /*
@@ -2462,7 +2505,6 @@ charinit(void)
     vlCTYPE('_') |= vl_pathn;
     vlCTYPE('~') |= vl_pathn;
     vlCTYPE('-') |= vl_pathn;
-    vlCTYPE('*') |= vl_pathn;
     vlCTYPE('/') |= vl_pathn;
 
     /* legal in "identifiers" */
@@ -2532,8 +2574,10 @@ charinit(void)
     vlCTYPE(R_BLOCK) |= vl_fence;
 
 #if OPT_VMS_PATH
-    vlCTYPE(L_BLOCK) |= vl_pathn;	/* actually, "<", ">" too */
+    vlCTYPE(L_BLOCK) |= vl_pathn;
     vlCTYPE(R_BLOCK) |= vl_pathn;
+    vlCTYPE(L_ANGLE) |= vl_pathn;
+    vlCTYPE(R_ANGLE) |= vl_pathn;
     vlCTYPE('$') |= vl_pathn;
     vlCTYPE(':') |= vl_pathn;
     vlCTYPE(';') |= vl_pathn;

@@ -3,7 +3,7 @@
 ;;
 ;; Author: Kevin Buettner
 ;;
-;; $Header: /users/source/archives/vile.vcs/macros/RCS/manpage.rc,v 1.21 2005/06/17 20:30:44 tom Exp $
+;; $Header: /users/source/archives/vile.vcs/macros/RCS/manpage.rc,v 1.22 2006/11/25 00:30:15 tom Exp $
 ;;
 
 store-procedure ShowManpage "Prompt for, and display a manual-page"
@@ -43,12 +43,14 @@ store-procedure ShowManpage "Prompt for, and display a manual-page"
 bind-key ShowManpage ^X-m
 
 store-procedure ShowFormatted "Render the current buffer with nroff -man or -ms"
-	~local %type %macros %filter %manpagesrc %manpagebuf $error-buffer
+	~local %type %macros %table %nroff %filter %manpagesrc %manpagebuf $error-buffer
+
 	set-variable %filter &lookup e+l+p &cat vile-manfilt $exec-suffix
 	~if &seq %filter ""
 		write-message "[Cannot find manpage-filter]"
 		~return
 	~endif
+
 	~if &sin $cbufname "<"
 		set-variable %manpagebuf $cbufname
 		set-variable %manpagesrc &mid $cbufname 2 &sub &len $cbufname 2
@@ -60,17 +62,46 @@ store-procedure ShowFormatted "Render the current buffer with nroff -man or -ms"
 	~else
 		set-variable %manpagebuf &cat "<" &cat $cbufname ">"
 	~endif
+
+	setv %table &env 'VILE_TABLE_FILT'
+	~if &seq %table ''
+		~if &seq $pathlist-separator ":"
+			setv %table 'tbl'
+		~endif
+	~endif
+
+	setv %nroff &env 'VILE_NROFF_FILT'
+	~if &seq %nroff ''
+		~if &seq $pathlist-separator ":"
+			setv %nroff 'nroff'
+		~else
+			setv %nroff 'cawf'
+		~endif
+	~endif
+
 	set terse
 	~force kill-buffer %manpagebuf
 	setv %type &path end $cfilname
 	~if &or &seq $majormode "html" \
 		&seq $majormode "xml"
-		edit-file &cat "!lynx -force_html -with_backspaces -dump -width=" &cat $pagewid &cat " " &cat &pquote $cfilname &cat " | " %filter
+		edit-file &cat "!lynx -force_html -with_backspaces -dump -width=" \
+			&cat $pagewid \
+			&cat " " \
+			&cat &pquote $cfilname \
+			&cat " | " %filter
 	~elseif &seq $majormode "perl"
-		~if &seq $pathlist-separator ":"
-			edit-file &cat "!pod2man " &cat &pquote $cfilname &cat " | tbl | nroff -man | " %filter
+		~if &seq %table ''
+			edit-file &cat "!pod2text " \
+				&cat &pquote $cfilname \
+				&cat " | " %filter
 		~else
-			edit-file &cat "!pod2text " &cat &pquote $cfilname &cat " | " %filter
+			edit-file &cat "!pod2man " \
+				&cat &pquote $cfilname \
+				&cat " | " \
+				&cat &table \
+				&cat " | " \
+				&cat &nroff \
+				&cat " -man | " %filter
 		~endif
 	~else
 		~if &seq %type ".ms"
@@ -80,12 +111,27 @@ store-procedure ShowFormatted "Render the current buffer with nroff -man or -ms"
 		~else
 			setv %macros="-man"
 		~endif
-		~if &seq $pathlist-separator ":"
-			edit-file &cat "!tbl " &cat &pquote $cfilname &cat " | nroff " &cat %macros &cat " | " %filter
+		~if &seq %table ''
+			edit-file &cat "!" \
+				&cat %nroff \
+				&cat " " \
+				&cat %macros \
+				&cat " " \
+				&cat &pquote $cfilname \
+				&cat " | " %filter
 		~else
-			edit-file &cat "!cawf " &cat %macros &cat " " &cat &pquote $cfilname &cat " | " %filter
+			edit-file &cat "!" \
+				&cat %table \
+				&cat " " \
+				&cat &pquote $cfilname \
+				&cat " | " \
+				&cat %nroff \
+				&cat " " \
+				&cat %macros \
+				&cat " | " %filter
 		~endif
 	~endif
+
 	~if &isa Majormode txt
 		setl txtmode
 	~endif

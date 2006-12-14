@@ -2,7 +2,7 @@
  *	eval.c -- function and variable evaluation
  *	original by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.354 2006/11/04 11:41:25 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.356 2006/11/24 20:13:47 tom Exp $
  *
  */
 
@@ -661,6 +661,7 @@ default_mode_value(TBUFF **result, char *name)
 	tb_scopy(result, init_state_value(vd.v_num));
 	break;
     case VW_MODE:
+	memset(&args, 0, sizeof(args));
 	for (mode_class = UNI_MODE; mode_class <= WIN_MODE; mode_class++) {
 	    switch (mode_class) {
 	    default:
@@ -675,7 +676,9 @@ default_mode_value(TBUFF **result, char *name)
 		break;
 	    }
 	    if ((mode_name = lookup_valnames(name, args.names)) >= 0) {
+		memset(&mode, 0, sizeof(mode));
 		init_mode_value(&mode, (MODECLASS) mode_class, mode_name);
+		args.names += mode_name;
 		args.global = &mode;
 		args.local = args.global;
 		tb_scopy(result, string_mode_val(&args));
@@ -1338,6 +1341,22 @@ get_statevar_val(int vnum)
     return result;
 }
 
+static void
+FindModeVar(char *var, VWRAP * vd)
+{
+    vd->v_num = lookup_statevar(var);
+    if (vd->v_num != ILLEGAL_NUM)
+	vd->v_type = VW_STATEVAR;
+#if !SMALLER
+    else {
+	VALARGS args;
+	if (is_mode_name(var, TRUE, &args) == TRUE) {
+	    vd->v_type = VW_MODE;
+	}
+    }
+#endif
+}
+
 /*
  * Find a variable's type and name
  */
@@ -1357,17 +1376,7 @@ FindVar(char *var, VWRAP * vd)
 
     switch (var[0]) {
     case '$':			/* check for legal state var */
-	vd->v_num = lookup_statevar(var + 1);
-	if (vd->v_num != ILLEGAL_NUM)
-	    vd->v_type = VW_STATEVAR;
-#if !SMALLER
-	else {
-	    VALARGS args;
-	    if (is_mode_name(&var[1], TRUE, &args) == TRUE) {
-		vd->v_type = VW_MODE;
-	    }
-	}
-#endif
+	FindModeVar(var + 1, vd);
 	break;
 
     case '%':			/* check for legal temp variable */
@@ -1398,6 +1407,9 @@ FindVar(char *var, VWRAP * vd)
 	    FindVar(var, vd);	/* recursive, but probably safe */
 	    tb_free(&tok);
 	}
+	break;
+    default:
+	FindModeVar(var, vd);
 	break;
     }
 }

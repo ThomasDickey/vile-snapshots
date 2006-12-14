@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.421 2006/11/04 11:48:01 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.423 2006/12/13 01:34:10 tom Exp $
  *
  */
 
@@ -70,7 +70,7 @@ static int chg_width, chg_height;
 
 /******************************************************************************/
 
-typedef void (*OutFunc) (int c);
+typedef int (*OutFunc) (int c);
 
 static OutFunc dfoutfn;
 
@@ -3392,6 +3392,12 @@ update(int force /* force update past type ahead? */ )
 	    wp->w_traits.w_left_dot = nullmark;
 #endif
     }
+#ifdef WMDSHOWVARS
+    if (curwp != 0
+	&& w_val(curwp, WMDSHOWVARS)) {
+	updatelistvariables();
+    }
+#endif
 
     /* look for scratch-buffers that should be recomputed.  */
 #if OPT_UPBUFF
@@ -3602,10 +3608,11 @@ mlerase(void)
     }
 }
 
-void
+int
 mlsavec(int c)
 {
     tb_append(&mlsave, c);
+    return TRUE;
 }
 
 /*
@@ -3843,10 +3850,11 @@ mlwarn(const char *fmt,...)
 
 static char *lsp;
 
-static void
+static int
 lspputc(int c)
 {
     *lsp++ = (char) c;
+    return TRUE;
 }
 
 /* VARARGS1 */
@@ -3881,13 +3889,17 @@ format_int(char *buf, UINT number, UINT radix)
  * Buffer printf -- like regular printf, but puts characters
  *	into the BUFFER.
  */
-void
+int
 bputc(int c)
 {
+    int status;
+
     if (c == '\n')
-	(void) lnewline();
+	status = lnewline();
     else
-	(void) linsert(1, c);
+	status = linsert(1, c);
+
+    return status;
 }
 
 void

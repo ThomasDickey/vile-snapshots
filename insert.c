@@ -7,7 +7,7 @@
  * Most code probably by Dan Lawrence or Dave Conroy for MicroEMACS
  * Extensions for vile by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/insert.c,v 1.147 2006/11/06 21:26:32 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/insert.c,v 1.148 2006/12/14 00:01:57 tom Exp $
  *
  */
 
@@ -163,6 +163,7 @@ openup(int f, int n)
 /*
  * Implements the nvi/vim ex "i!" command.
  */
+#if !SMALLER
 int
 openup_i(int f, int n)
 {
@@ -189,6 +190,7 @@ operchg_i(int f, int n)
     allow_aindent = oallow;
     return s;
 }
+#endif /* !SMALLER */
 
 /*
  * as above, but override all autoindenting and cmode-ing

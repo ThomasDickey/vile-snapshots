@@ -1,7 +1,7 @@
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/regexp.c,v 1.118 2006/04/20 00:01:45 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/regexp.c,v 1.136 2006/12/13 00:25:51 tom Exp $
  *
- * Copyright 2005, Thomas E. Dickey and Paul G. Fox
+ * Copyright 2005,2006 Thomas E. Dickey and Paul G. Fox
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
@@ -137,6 +137,14 @@
 #define TRACE(p)		/* nothing */
 #endif
 
+#ifndef T_CALLED
+#define T_CALLED ""
+#endif
+
+#ifndef returnCode
+#define returnCode(n) return n
+#endif
+
 #ifdef DEBUG_REGEXP
 
 /* #define OPT_TRACE 1 */
@@ -155,8 +163,10 @@
 
 #ifdef REGDEBUG
 #define REGTRACE(p) TRACE(p)
+#define returnReg(n) returnCode(n)
 #else
-#define REGTRACE(p)		/*nothing */
+#define REGTRACE(p)		/* nothing */
+#define returnReg(n) return n
 #endif
 
 #undef PLUS			/* vile conflict */
@@ -173,9 +183,9 @@ static char *regbranch(int *flagp);
 static char *regnext(char *p);
 static char *regnode(int op);
 static char *regpiece(int *flagp, int at_bop);
-static int regmatch(char *prog, int found);
+static int regmatch(char *prog, int plevel);
 static int regrepeat(const char *p);
-static int regtry(regexp * prog, char *string, char *stringend);
+static int regtry(regexp * prog, char *string, char *stringend, int plevel);
 static void regc(int b);
 static void regninsert(int n, char *opnd);
 static void regopinsert(int op, char *opnd);
@@ -249,30 +259,37 @@ typedef enum {
     ,BEGWORD			/* node Match "" between nonword and word. */
     ,ENDWORD			/* node Match "" between word and nonword. */
 
-    ,ALNUM			/* node Match any alphanumeric, include _ */
+    ,ALNUM			/* node Match any alphanumeric */
     ,ALPHA			/* node Match any alphabetic */
     ,BLANK			/* node Match any space char */
     ,CNTRL			/* node Match any control char */
     ,DIGIT			/* node Match any digit */
     ,GRAPH			/* node Match any graphic char (no whitesp) */
+    ,IDENT			/* node Match any alphanumeric, include _ */
     ,LOWER			/* node Match any lowercase char */
-    ,NALNUM			/* node Match any non-identifier char */
-    ,NALPHA			/* node Match any alphabetic */
-    ,NBLANK			/* node Match any non-space char */
-    ,NCNTRL			/* node Match any non-control char */
-    ,NDIGIT			/* node Match any non-digit */
-    ,NGRAPH			/* node Match any non-graphic char */
-    ,NLOWER			/* node Match any non-lowercase char */
-    ,NPRINT			/* node Match any non-printable char */
-    ,NPUNCT			/* node Match any non-punctuation char  */
-    ,NSPACE			/* node Match single nonwhitespace, excluding BOL and EOL */
-    ,NUPPER			/* node Match any non-uppercase char */
-    ,NXDIGIT			/* node Match any non-hex digit */
+    ,OCTAL			/* node Match any octal digit */
+    ,PATHN			/* node Match any file pathname char */
     ,PRINT			/* node Match any printable char (including whitesp) */
     ,PUNCT			/* node Match any punctuation char */
     ,SPACE			/* node Match single whitespace, excluding BOL and EOL */
     ,UPPER			/* node Match any uppercase char */
     ,XDIGIT			/* node Match any hex digit */
+
+    ,NALNUM			/* node Match any non-alphanumeric char */
+    ,NALPHA			/* node Match any alphabetic */
+    ,NBLANK			/* node Match any non-space char */
+    ,NCNTRL			/* node Match any non-control char */
+    ,NDIGIT			/* node Match any non-digit */
+    ,NGRAPH			/* node Match any non-graphic char */
+    ,NIDENT			/* node Match any non-identifier char */
+    ,NLOWER			/* node Match any non-lowercase char */
+    ,NOCTAL			/* node Match any non-octal digit */
+    ,NPATHN			/* node Match any non-file pathname char */
+    ,NPRINT			/* node Match any non-printable char */
+    ,NPUNCT			/* node Match any non-punctuation char  */
+    ,NSPACE			/* node Match single nonwhitespace, excluding BOL and EOL */
+    ,NUPPER			/* node Match any non-uppercase char */
+    ,NXDIGIT			/* node Match any non-hex digit */
 
     ,NEVER			/* no   No match */
     ,OPEN			/* no   Mark this point in input as start of #n. */
@@ -281,16 +298,100 @@ typedef enum {
     ,CLOSE1, CLOSE2, CLOSE3, CLOSE4, CLOSE5, CLOSE6, CLOSE7, CLOSE8, CLOSE9
 } REGEXP_OP;
 
+/* FIXME: should be OPEN1? */
+#define is_OPENn(n) ((n) >= OPEN && (n) <= OPEN9)
+
+#define OPENn  OPEN1: \
+	  case OPEN2: \
+	  case OPEN3: \
+	  case OPEN4: \
+	  case OPEN5: \
+	  case OPEN6: \
+	  case OPEN7: \
+	  case OPEN8: \
+	  case OPEN9
+
+#define is_CLOSEn(n) ((n) >= CLOSE && (n) <= CLOSE9)
+
+#define CLOSEn CLOSE1: \
+	  case CLOSE2: \
+	  case CLOSE3: \
+	  case CLOSE4: \
+	  case CLOSE5: \
+	  case CLOSE6: \
+	  case CLOSE7: \
+	  case CLOSE8: \
+	  case CLOSE9
+
+/*
+ * Characters used in escapes to correspond with character classes
+ */
+typedef enum {
+    CHR_ALNUM = 'i',
+    CHR_ALPHA = 'a',
+    CHR_BLANK = 'b',
+    CHR_CNTRL = 'c',
+    CHR_DIGIT = 'd',
+    CHR_GRAPH = 'g',
+    CHR_IDENT = 'w',
+    CHR_LOWER = 'l',
+    CHR_OCTAL = 'o',
+    CHR_PATHN = 'f',
+    CHR_PRINT = 'p',
+    CHR_PUNCT = 'q',
+    CHR_SPACE = 's',
+    CHR_UPPER = 'u',
+    CHR_XDIGIT = 'x',
+
+    CHR_NALNUM = 'I',
+    CHR_NALPHA = 'A',
+    CHR_NBLANK = 'B',
+    CHR_NCNTRL = 'C',
+    CHR_NDIGIT = 'D',
+    CHR_NGRAPH = 'G',
+    CHR_NIDENT = 'W',
+    CHR_NLOWER = 'L',
+    CHR_NOCTAL = 'O',
+    CHR_NPATHN = 'F',
+    CHR_NPRINT = 'P',
+    CHR_NPUNCT = 'Q',
+    CHR_NSPACE = 'S',
+    CHR_NUPPER = 'U',
+    CHR_NXDIGIT = 'X',
+} REGEXP_CHR;
+
+#define chr_CLASS(name) CHR_ ## name
+
+#define expand_case_CLASSES() \
+	case_CLASSES(ALNUM, NALNUM); \
+	case_CLASSES(ALPHA, NALPHA); \
+	case_CLASSES(BLANK, NBLANK); \
+	case_CLASSES(CNTRL, NCNTRL); \
+	case_CLASSES(DIGIT, NDIGIT); \
+	case_CLASSES(GRAPH, NGRAPH); \
+	case_CLASSES(IDENT, NIDENT); \
+	case_CLASSES(LOWER, NLOWER); \
+	case_CLASSES(OCTAL, NOCTAL); \
+	case_CLASSES(PATHN, NPATHN); \
+	case_CLASSES(PRINT, NPRINT); \
+	case_CLASSES(PUNCT, NPUNCT); \
+	case_CLASSES(SPACE, NSPACE); \
+	case_CLASSES(UPPER, NUPPER); \
+	case_CLASSES(XDIGIT, NXDIGIT)
+
 /*
  * Macros to ensure consistent use of character classes:
  */
 #define is_ALPHA(c) isAlpha(c)
-#define is_ALNUM(c) isident(c)
+#define is_ALNUM(c) isAlnum(c)
 #define is_BLANK(c) (isSpace(c) && !isreturn(c))
 #define is_CNTRL(c) isCntrl(c)
 #define is_DIGIT(c) isDigit(c)
 #define is_GRAPH(c) isGraph(c)
+#define is_IDENT(c) isident(c)
 #define is_LOWER(c) isLower(c)
+#define is_OCTAL(c) ((c) >= '0' && (c) <= '7')
+#define is_PATHN(c) ispath(c)
 #define is_PRINT(c) (isPrint(c) || (isSpace(c) && !isCntrl(c)))
 #define is_PUNCT(c) isPunct(c)
 #define is_SPACE(c) isSpace(c)
@@ -301,6 +402,8 @@ typedef enum {
 #else
 #define is_XDIGIT(c) (isDigit(c) || (isLower(c) && (c) - 'a' < 6) || (isUpper(c) && (c) - 'A' < 6))
 #endif
+
+#define is_CLASS(name) is_ ## name
 
 /*
  * Opcode notes:
@@ -381,7 +484,10 @@ typedef enum {
 #define	ISMULT(c)	((c) == '*' || (c) == '+' || (c) == '?' || (c) == L_CURL)
 #define	META		"^$.[()|?+*\\<>{}"
 
-#define ANY_ESC "aAbBcCdDgGlLpPqQsSuUwWxX"
+/*
+ * see REGEXP_CHR - this lists all of its values.
+ */
+#define ANY_ESC "aAbBcCdDfFgGiIlLoOpPqQsSuUwWxX"
 
 /*
  * Flags to be passed up and down.
@@ -953,18 +1059,21 @@ parse_char_class(char **src)
 	const char *name;
 	char escape;
     } char_classes[] = {
-	{ "[:alnum:]", 'w' },
-	{ "[:alpha:]", 'a' },
-	{ "[:blank:]", 'b' },
-	{ "[:cntrl:]", 'c' },
-	{ "[:digit:]", 'd' },
-	{ "[:graph:]", 'g' },
-	{ "[:lower:]", 'l' },
-	{ "[:print:]", 'p' },
-	{ "[:punct:]", 'q' },
-	{ "[:space:]", 's' },
-	{ "[:upper:]", 'u' },
-	{ "[:xdigit:]", 'x' },
+	{ "[:alnum:]",	CHR_ALNUM },
+	{ "[:alpha:]",	CHR_ALPHA },
+	{ "[:blank:]",	CHR_BLANK },
+	{ "[:cntrl:]",	CHR_CNTRL },
+	{ "[:digit:]",	CHR_DIGIT },
+	{ "[:file:]",	CHR_PATHN },
+	{ "[:graph:]",	CHR_GRAPH },
+	{ "[:ident:]",	CHR_IDENT },
+	{ "[:lower:]",	CHR_LOWER },
+	{ "[:octal:]",	CHR_OCTAL },
+	{ "[:print:]",	CHR_PRINT },
+	{ "[:punct:]",	CHR_PUNCT },
+	{ "[:space:]",	CHR_SPACE },
+	{ "[:upper:]",	CHR_UPPER },
+	{ "[:xdigit:]", CHR_XDIGIT },
     };
     /* *INDENT-ON* */
 
@@ -1144,103 +1253,24 @@ regatom(int *flagp, int at_bop)
 #endif
 	    return ret;
 	}
+#define simple_node(name) \
+	    ret = regnode(name); \
+	    *flagp |= HASWIDTH | SIMPLE
+
+#define case_CLASSES(with,without) \
+	    case chr_CLASS(with): \
+		simple_node(with); \
+		break; \
+	    case chr_CLASS(without): \
+		simple_node(without); \
+		break
+
 	switch (*regparse) {
-	case 'a':
-	    ret = regnode(ALPHA);
-	    *flagp |= HASWIDTH | SIMPLE;
-	    break;
-	case 'A':
-	    ret = regnode(NALPHA);
-	    *flagp |= HASWIDTH | SIMPLE;
-	    break;
-	case 'b':
-	    ret = regnode(BLANK);
-	    *flagp |= HASWIDTH | SIMPLE;
-	    break;
-	case 'B':
-	    ret = regnode(NBLANK);
-	    *flagp |= HASWIDTH | SIMPLE;
-	    break;
-	case 'c':
-	    ret = regnode(CNTRL);
-	    *flagp |= HASWIDTH | SIMPLE;
-	    break;
-	case 'C':
-	    ret = regnode(NCNTRL);
-	    *flagp |= HASWIDTH | SIMPLE;
-	    break;
-	case 'd':
-	    ret = regnode(DIGIT);
-	    *flagp |= HASWIDTH | SIMPLE;
-	    break;
-	case 'D':
-	    ret = regnode(NDIGIT);
-	    *flagp |= HASWIDTH | SIMPLE;
-	    break;
-	case 'g':
-	    ret = regnode(GRAPH);
-	    *flagp |= HASWIDTH | SIMPLE;
-	    break;
-	case 'G':
-	    ret = regnode(NGRAPH);
-	    *flagp |= HASWIDTH | SIMPLE;
-	    break;
-	case 'l':
-	    ret = regnode(LOWER);
-	    *flagp |= HASWIDTH | SIMPLE;
-	    break;
-	case 'L':
-	    ret = regnode(NLOWER);
-	    *flagp |= HASWIDTH | SIMPLE;
-	    break;
-	case 'p':
-	    ret = regnode(PRINT);
-	    *flagp |= HASWIDTH | SIMPLE;
-	    break;
-	case 'P':
-	    ret = regnode(NPRINT);
-	    *flagp |= HASWIDTH | SIMPLE;
-	    break;
-	case 'q':
-	    ret = regnode(PUNCT);
-	    *flagp |= HASWIDTH | SIMPLE;
-	    break;
-	case 'Q':
-	    ret = regnode(NPUNCT);
-	    *flagp |= HASWIDTH | SIMPLE;
-	    break;
-	case 's':
-	    ret = regnode(SPACE);
-	    *flagp |= HASWIDTH | SIMPLE;
-	    break;
-	case 'S':
-	    ret = regnode(NSPACE);
-	    *flagp |= HASWIDTH | SIMPLE;
-	    break;
-	case 'u':
-	    ret = regnode(UPPER);
-	    *flagp |= HASWIDTH | SIMPLE;
-	    break;
-	case 'U':
-	    ret = regnode(NUPPER);
-	    *flagp |= HASWIDTH | SIMPLE;
-	    break;
-	case 'w':
-	    ret = regnode(ALNUM);
-	    *flagp |= HASWIDTH | SIMPLE;
-	    break;
-	case 'W':
-	    ret = regnode(NALNUM);
-	    *flagp |= HASWIDTH | SIMPLE;
-	    break;
-	case 'x':
-	    ret = regnode(XDIGIT);
-	    *flagp |= HASWIDTH | SIMPLE;
-	    break;
-	case 'X':
-	    ret = regnode(NXDIGIT);
-	    *flagp |= HASWIDTH | SIMPLE;
-	    break;
+
+	    expand_case_CLASSES();
+
+#undef case_CLASSES
+
 	default:
 	    ret = regnode(EXACTLY);
 	    regc(*regparse);
@@ -1456,6 +1486,7 @@ static char *regnomore;		/* String-input end pointer. */
 static char *regbol;		/* Beginning of input, for ^ check. */
 static char **regstartp;	/* Pointer to startp array. */
 static char **regendp;		/* Ditto for endp. */
+static int reg_cnts[NSUBEXP];	/* count closure of \(...\) groups */
 
 /* this very special copy of strncmp allows for caseless operation,
  * and also for non-null terminated strings:
@@ -1512,78 +1543,18 @@ RegStrChr2(const char *s, unsigned length, int c)
 	    default:
 		matched = (CharOf(c) == CharOf(*s));
 		break;
-	    case 'a':
-		matched = is_ALPHA(c);
-		break;
-	    case 'A':
-		matched = !is_ALPHA(c);
-		break;
-	    case 'b':
-		matched = is_BLANK(c);
-		break;
-	    case 'B':
-		matched = !is_BLANK(c);
-		break;
-	    case 'c':
-		matched = is_CNTRL(c);
-		break;
-	    case 'C':
-		matched = !is_CNTRL(c);
-		break;
-	    case 'd':
-		matched = is_DIGIT(c);
-		break;
-	    case 'D':
-		matched = !is_DIGIT(c);
-		break;
-	    case 'g':
-		matched = is_GRAPH(c);
-		break;
-	    case 'G':
-		matched = !is_GRAPH(c);
-		break;
-	    case 'l':
-		matched = is_LOWER(c);
-		break;
-	    case 'L':
-		matched = !is_LOWER(c);
-		break;
-	    case 'p':
-		matched = is_PRINT(c);
-		break;
-	    case 'P':
-		matched = !is_PRINT(c);
-		break;
-	    case 'q':
-		matched = is_PUNCT(c);
-		break;
-	    case 'Q':
-		matched = !is_PUNCT(c);
-		break;
-	    case 's':
-		matched = is_SPACE(c);
-		break;
-	    case 'S':
-		matched = !is_SPACE(c);
-		break;
-	    case 'u':
-		matched = is_UPPER(c);
-		break;
-	    case 'U':
-		matched = !is_UPPER(c);
-		break;
-	    case 'w':
-		matched = is_ALNUM(c);
-		break;
-	    case 'W':
-		matched = !is_ALNUM(c);
-		break;
-	    case 'x':
-		matched = is_XDIGIT(c);
-		break;
-	    case 'X':
-		matched = !is_XDIGIT(c);
-		break;
+
+#define case_CLASSES(with,without) \
+	    case chr_CLASS(with): \
+		matched = is_CLASS(with)(c); \
+		break; \
+	    case chr_CLASS(without): \
+		matched = !is_CLASS(with)(c); \
+		break
+
+		expand_case_CLASSES();
+
+#undef case_CLASSES
 	    }
 	} else {
 	    matched = SAME(*s, c);
@@ -1659,7 +1630,7 @@ regexec(
 
     /* Simplest case:  anchored match need be tried only once. */
     if (startoff == 0 && prog->reganch)
-	return (regtry(prog, string, stringend));
+	return (regtry(prog, string, stringend, 0));
 
     /* Messy cases:  unanchored match. */
     s = &string[startoff];
@@ -1667,14 +1638,14 @@ regexec(
 	/* We know what char it must start with. */
 	while ((s = regstrchr(s, prog->regstart, stringend)) != NULL &&
 	       s < endsrch) {
-	    if (regtry(prog, s, stringend))
+	    if (regtry(prog, s, stringend, 0))
 		return (1);
 	    s++;
 	}
     } else {
 	/* We don't -- general case. */
 	do {
-	    if (regtry(prog, s, stringend))
+	    if (regtry(prog, s, stringend, 0))
 		return (1);
 	} while (s++ != stringend && s < endsrch);
     }
@@ -1690,7 +1661,8 @@ static int			/* 0 failure, 1 success */
 regtry(
 	  regexp * prog,
 	  char *string,
-	  char *stringend)
+	  char *stringend,
+	  int plevel)
 {
     int i;
     char **sp;
@@ -1703,6 +1675,7 @@ regtry(
 #ifdef REGDEBUG
     reg_program = prog->program;
 #endif
+    memset(reg_cnts, 0, sizeof(reg_cnts));
 
     sp = prog->startp;
     ep = prog->endp;
@@ -1710,7 +1683,7 @@ regtry(
 	*sp++ = NULL;
 	*ep++ = NULL;
     }
-    if (regmatch(prog->program + 1, 0)) {
+    if (regmatch(prog->program + 1, plevel)) {
 	prog->startp[0] = string;
 	prog->endp[0] = reginput;
 	prog->mlen = reginput - string;
@@ -1720,6 +1693,74 @@ regtry(
 	return (0);
     }
 }
+
+/*
+ */
+#define decl_state() \
+		char *save_input
+
+#define save_state() \
+		save_input = reginput
+
+#define restore_state() \
+		reginput = save_input
+
+/*
+ * Use this to save/restore once.
+ */
+#define decl_state1() \
+	decl_state(); \
+		int save_cnts[NSUBEXP]; \
+		char *save_1stp[NSUBEXP]; \
+		char *save_endp[NSUBEXP]
+
+#define save_state1() \
+	save_state(); \
+		memcpy(save_1stp, regstartp, sizeof(save_1stp)); \
+		memcpy(save_endp, regendp,   sizeof(save_endp)); \
+		memcpy(save_cnts, reg_cnts,  sizeof(save_cnts))
+
+#define restore_state1() \
+	restore_state(); \
+		memcpy(regstartp, save_1stp, sizeof(save_1stp)); \
+		memcpy(regendp,   save_endp, sizeof(save_endp)); \
+		memcpy(reg_cnts,  save_cnts, sizeof(save_cnts))
+
+/*
+ * Use this to save/restore several times, to find the best.
+ */
+#define decl_state2() \
+	decl_state1(); \
+		int greedy = -1; \
+		int best_cnts[NSUBEXP]; \
+		char *best_1stp[NSUBEXP]; \
+		char *best_endp[NSUBEXP]
+
+#define save_state2() \
+	save_state1(); \
+		memcpy(best_1stp, regstartp, sizeof(save_1stp)); \
+		memcpy(best_endp, regendp,   sizeof(save_endp)); \
+		memcpy(best_cnts, reg_cnts,  sizeof(save_cnts))
+
+#define restore_state2() \
+	restore_state1()
+
+#define update_greedy() \
+		int diff = (reginput - save_input); \
+		if (greedy < diff) { \
+		    REGTRACE(("update_greedy:%d\n", diff)); \
+		    greedy = diff; \
+		    memcpy(best_1stp, regstartp, sizeof(save_1stp)); \
+		    memcpy(best_endp, regendp,   sizeof(save_endp)); \
+		    memcpy(best_cnts, reg_cnts,  sizeof(save_cnts)); \
+		}
+
+#define use_greediest() \
+		REGTRACE(("use_greediest:%d\n", greedy)); \
+		reginput = (save_input + greedy); \
+		memcpy(regstartp, best_1stp, sizeof(save_1stp)); \
+		memcpy(regendp,   best_endp, sizeof(save_endp)); \
+		memcpy(reg_cnts,  best_cnts, sizeof(save_cnts))
 
 /*
  - regmatch - main matching routine
@@ -1732,11 +1773,12 @@ regtry(
  * by recursion.
  */
 static int			/* 0 failure, 1 success */
-regmatch(char *prog, int found)
+regmatch(char *prog, int plevel)
 {
     char *scan;			/* Current node. */
     char *next;			/* Next node. */
 
+    REGTRACE((T_CALLED "regmatch(%d) plevel %d\n", reginput - regbol, plevel));
     if ((scan = prog) != NULL) {
 #ifdef REGDEBUG
 	if (scan != NULL && regnarrate) {
@@ -1763,11 +1805,11 @@ regmatch(char *prog, int found)
 	switch (OP(scan)) {
 	case BOL:
 	    if (reginput != regbol)
-		return (0);
+		returnReg(0);
 	    break;
 	case EOL:
 	    if (reginput != regnomore)
-		return (0);
+		returnReg(0);
 	    break;
 	case BEGWORD:
 	    /* Match if current char isident
@@ -1775,7 +1817,7 @@ regmatch(char *prog, int found)
 	    if ((reginput == regnomore || !isident(*reginput))
 		|| (reginput != regbol
 		    && isident(reginput[-1])))
-		return (0);
+		returnReg(0);
 	    break;
 	case ENDWORD:
 	    /* Match if previous char isident
@@ -1783,131 +1825,28 @@ regmatch(char *prog, int found)
 	    if ((reginput != regnomore && isident(*reginput))
 		|| reginput == regbol
 		|| !isident(reginput[-1]))
-		return (0);
+		returnReg(0);
 	    break;
-	case ALPHA:
-	    if (reginput == regnomore || !is_ALPHA(*reginput))
-		return 0;
-	    reginput++;
-	    break;
-	case NALPHA:
-	    if (reginput == regnomore || is_ALPHA(*reginput))
-		return 0;
-	    reginput++;
-	    break;
-	case ALNUM:		/* includes _ */
-	    if (reginput == regnomore || !is_ALNUM(*reginput))
-		return 0;
-	    reginput++;
-	    break;
-	case NALNUM:
-	    if (reginput == regnomore || is_ALNUM(*reginput))
-		return 0;
-	    reginput++;
-	    break;
-	case BLANK:
-	    if (reginput == regnomore || !is_BLANK(*reginput))
-		return 0;
-	    reginput++;
-	    break;
-	case NBLANK:
-	    if (reginput == regnomore || is_BLANK(*reginput))
-		return 0;
-	    reginput++;
-	    break;
-	case CNTRL:
-	    if (reginput == regnomore || !is_CNTRL(*reginput))
-		return 0;
-	    reginput++;
-	    break;
-	case NCNTRL:
-	    if (reginput == regnomore || is_CNTRL(*reginput))
-		return 0;
-	    reginput++;
-	    break;
-	case DIGIT:
-	    if (reginput == regnomore || !is_DIGIT(*reginput))
-		return 0;
-	    reginput++;
-	    break;
-	case NDIGIT:
-	    if (reginput == regnomore || is_DIGIT(*reginput))
-		return 0;
-	    reginput++;
-	    break;
-	case GRAPH:
-	    if (reginput == regnomore || !is_GRAPH(*reginput))
-		return 0;
-	    reginput++;
-	    break;
-	case NGRAPH:
-	    if (reginput == regnomore || is_GRAPH(*reginput))
-		return 0;
-	    reginput++;
-	    break;
-	case LOWER:
-	    if (reginput == regnomore || !is_LOWER(*reginput))
-		return 0;
-	    reginput++;
-	    break;
-	case NLOWER:
-	    if (reginput == regnomore || is_LOWER(*reginput))
-		return 0;
-	    reginput++;
-	    break;
-	case PRINT:
-	    if (reginput == regnomore || !is_PRINT(*reginput))
-		return 0;
-	    reginput++;
-	    break;
-	case NPRINT:
-	    if (reginput == regnomore || is_PRINT(*reginput))
-		return 0;
-	    reginput++;
-	    break;
-	case PUNCT:
-	    if (reginput == regnomore || !is_PUNCT(*reginput))
-		return 0;
-	    reginput++;
-	    break;
-	case NPUNCT:
-	    if (reginput == regnomore || is_PUNCT(*reginput))
-		return 0;
-	    reginput++;
-	    break;
-	case SPACE:
-	    if (reginput == regnomore || !is_SPACE(*reginput))
-		return 0;
-	    reginput++;
-	    break;
-	case NSPACE:
-	    if (reginput == regnomore || is_SPACE(*reginput))
-		return 0;
-	    reginput++;
-	    break;
-	case UPPER:
-	    if (reginput == regnomore || !is_UPPER(*reginput))
-		return 0;
-	    reginput++;
-	    break;
-	case NUPPER:
-	    if (reginput == regnomore || is_UPPER(*reginput))
-		return 0;
-	    reginput++;
-	    break;
-	case XDIGIT:
-	    if (reginput == regnomore || !is_XDIGIT(*reginput))
-		return 0;
-	    reginput++;
-	    break;
-	case NXDIGIT:
-	    if (reginput == regnomore || is_XDIGIT(*reginput))
-		return 0;
-	    reginput++;
-	    break;
+
+#define case_CLASSES(with,without) \
+	case with: \
+	    if (reginput == regnomore || !is_CLASS(with)(*reginput)) \
+		returnReg(0); \
+	    reginput++; \
+	    break; \
+	case without: \
+	    if (reginput == regnomore || is_CLASS(with)(*reginput)) \
+		returnReg(0); \
+	    reginput++; \
+	    break
+
+	    expand_case_CLASSES();
+
+#undef case_CLASSES
+
 	case ANY:
 	    if (reginput == regnomore)
-		return (0);
+		returnReg(0);
 	    reginput++;
 	    break;
 	case EXACTLY:{
@@ -1915,30 +1854,30 @@ regmatch(char *prog, int found)
 		char *opnd;
 
 		if (reginput == regnomore)
-		    return (0);
+		    returnReg(0);
 
 		opnd = OPERAND(scan);
 		/* Inline the first character, for speed. */
 		if (!SAME(*opnd, *reginput)) {
-		    return (0);
+		    returnReg(0);
 		}
 		len = OPSIZE(scan);
 		if (len > 1
 		    && regstrncmp(reginput, opnd, len, regnomore) != 0)
-		    return (0);
+		    returnReg(0);
 		reginput += len;
 	    }
 	    break;
 	case ANYOF:
 	    if (reginput == regnomore
 		|| RegStrChr2(OPERAND(scan), OPSIZE(scan), *reginput) == 0)
-		return (0);
+		returnReg(0);
 	    reginput++;
 	    break;
 	case ANYBUT:
 	    if (reginput == regnomore
 		|| RegStrChr2(OPERAND(scan), OPSIZE(scan), *reginput) != 0)
-		return (0);
+		returnReg(0);
 	    reginput++;
 	    break;
 	case NEVER:
@@ -1947,61 +1886,57 @@ regmatch(char *prog, int found)
 	    break;
 	case BACK:
 	    break;
-	case OPEN1:
-	case OPEN2:
-	case OPEN3:
-	case OPEN4:
-	case OPEN5:
-	case OPEN6:
-	case OPEN7:
-	case OPEN8:
-	case OPEN9:{
+	case OPENn:{
 		int no;
-		char *save;
+		decl_state1();
 
 		no = OP(scan) - OPEN;
-		save = reginput;
+		save_state1();
 
-		if (regmatch(next, found)) {
-		    /*
-		     * Don't set startp if some later
-		     * invocation of the same parentheses
-		     * already has.
-		     */
-		    if (regstartp[no] == NULL)
-			regstartp[no] = save;
-		    return (1);
-		} else
-		    return (0);
+		/*
+		 * Don't set startp if some earlier
+		 * invocation of the same parentheses
+		 * already has.
+		 */
+		if (regstartp[no] == NULL) {
+		    regstartp[no] = save_input;
+		    REGTRACE(("match atom%d:\n", no));
+		}
+		if (regmatch(next, plevel + 1)) {
+		    returnReg(1);
+		} else {
+		    restore_state1();
+		    returnReg(0);
+		}
 	    }
 	    /* NOTREACHED */
 
-	case CLOSE1:
-	case CLOSE2:
-	case CLOSE3:
-	case CLOSE4:
-	case CLOSE5:
-	case CLOSE6:
-	case CLOSE7:
-	case CLOSE8:
-	case CLOSE9:{
+	case CLOSEn:{
 		int no;
-		char *save;
+		decl_state();
 
 		no = OP(scan) - CLOSE;
-		save = reginput;
+		save_state();
 
-		if (regmatch(next, found)) {
+		reg_cnts[plevel] += 1;
+		if ((plevel + 1) < NSUBEXP)
+		    reg_cnts[plevel + 1] = 0;
+		if (regmatch(next, plevel - 1)) {
 		    /*
-		     * Don't set endp if some later
+		     * Don't set endp if some earlier
 		     * invocation of the same parentheses
 		     * already has.
 		     */
-		    if (regendp[no] == NULL)
-			regendp[no] = save;
-		    return (1);
-		} else
-		    return (0);
+		    if (regendp[no] == NULL) {
+			regendp[no] = save_input;
+			REGTRACE(("close atom%d:%p\n", no, save_input));
+		    }
+		    returnReg(1);
+		} else {
+		    restore_state();
+		    regendp[no] = NULL;
+		    returnReg(0);
+		}
 	    }
 	    /* NOTREACHED */
 
@@ -2009,43 +1944,78 @@ regmatch(char *prog, int found)
 	    if (OP(next) != BRANCH) {	/* No choice. */
 		next = OPERAND(scan);	/* Avoid recursion. */
 		break;
-	    }
+	    } else if (OP(OPERAND(scan)) != RCOMPLX) {
+		decl_state2();
 
-	    /*
-	     * Do looping (BACK, RCOMPLX) via recursion.
-	     */
-	    do {
-		char *save = reginput;
-
-		next = OPERAND(scan);
-		if (OP(next) == RCOMPLX) {
-		    int max = get_RR_MAX(next);
-		    int min = get_RR_MIN(next);
-
-		    if ((max == 0
-			 || found + 1 < max)
-			&& regmatch(next, found + 1)) {
-			found = min;
+		save_state2();
+		do {
+		    if (regmatch(OPERAND(scan), plevel)) {
+			update_greedy();
 		    }
+		    restore_state2();
+		    scan = regnext(scan);
+		} while (scan != NULL && OP(scan) == BRANCH);
 
-		    if (min == 0
-			|| found >= min)
-			return (1);
-		    return (0);
-
-		} else if (OP(next) >= OPEN) {
-		    if (regmatch(next, 0)) {
-			return (1);
-		    }
-		} else {
-		    if (regmatch(next, found)) {
-			return (1);
-		    }
+		if (greedy >= 0) {
+		    use_greediest();
+		    returnReg(1);
 		}
-		reginput = save;
-		scan = regnext(scan);
-	    } while (scan != NULL && OP(scan) == BRANCH);
-	    return (0);
+
+		returnReg(0);
+	    } else {
+		decl_state2();
+		int first = 1;
+		int firstok = 0;
+
+		save_state2();
+		do {
+		    int success = 0;
+
+		    next = OPERAND(scan);
+		    if (OP(next) == RCOMPLX) {
+			int max = get_RR_MAX(next);
+			int min = get_RR_MIN(next);
+
+			if ((max == 0
+			     || reg_cnts[plevel + 1] < max)) {
+			    success = regmatch(next, plevel);
+			} else {
+			    success = 1;
+			}
+
+			REGTRACE(("compare %d vs \\{%d,%d\\}\n",
+				  reg_cnts[plevel + 1], min, max));
+
+			success = ((min == 0
+				    || reg_cnts[plevel + 1] >= min)
+				   && (max == 0
+				       || reg_cnts[plevel + 1] <= max));
+
+		    } else if (is_CLOSEn(OP(next))) {
+			if ((plevel + 1) < NSUBEXP)
+			    reg_cnts[plevel + 1] = 0;
+			success = regmatch(next, plevel);
+		    } else {
+			success = regmatch(next, plevel);
+		    }
+		    if (first) {
+			firstok = success;
+			first = 0;
+		    }
+		    if (success) {
+			update_greedy();
+		    }
+		    restore_state2();
+		    scan = regnext(scan);
+		} while (scan != NULL && OP(scan) == BRANCH);
+
+		if (greedy >= 0) {
+		    use_greediest();
+		    returnReg(firstok);
+		}
+
+		returnReg(0);
+	    }
 
 	case RCOMPLX:
 	    break;
@@ -2056,10 +2026,10 @@ regmatch(char *prog, int found)
 	    {
 		int nxtch;
 		int no;
-		char *save;
 		int min;
 		int max;
 		char *rpt;
+		decl_state();
 
 		/*
 		 * Lookahead to avoid useless match attempts
@@ -2087,35 +2057,38 @@ regmatch(char *prog, int found)
 		    break;
 		}
 
-		save = reginput;
+		save_state();
 		no = regrepeat(rpt);
 
 		if (max > 0 && no > max) {
 		    no = max;
-		    reginput = save + no;
+		    reginput = save_input + no;
 		}
 
 		while (no >= min) {
 		    /* If it could work, try it. */
 		    if ((nxtch == -1
 			 || reginput >= regnomore
-			 || SAME(*reginput, nxtch))
-			&& regmatch(next, found))
-			return (1);
+			 || SAME(*reginput, nxtch))) {
+			if (regmatch(next, plevel)) {
+			    returnReg(1);
+			}
+		    }
 
 		    /* Couldn't or didn't -- back up. */
 		    no--;
-		    reginput = save + no;
+		    reginput = save_input + no;
 		}
-		return (0);
+		restore_state();
+		returnReg(0);
 	    }
 	    /* NOTREACHED */
 
 	case END:
-	    return (1);		/* Success! */
+	    returnReg(1);	/* Success! */
 	default:
 	    regerror("memory corruption");
-	    return (0);
+	    returnReg(0);
 	}
 
 	scan = next;
@@ -2126,7 +2099,7 @@ regmatch(char *prog, int found)
      * the terminating point.
      */
     regerror("corrupted pointers");
-    return (0);
+    returnReg(0);
 }
 
 /*
@@ -2165,150 +2138,25 @@ regrepeat(const char *p)
 	    scan++;
 	}
 	break;
-    case ALPHA:
-	while (scan < regnomore && is_ALPHA(*scan)) {
-	    count++;
-	    scan++;
-	}
-	break;
-    case NALPHA:
-	while (scan < regnomore && !is_ALPHA(*scan)) {
-	    count++;
-	    scan++;
-	}
-	break;
-    case ALNUM:
-	while (scan < regnomore && is_ALNUM(*scan)) {
-	    count++;
-	    scan++;
-	}
-	break;
-    case NALNUM:
-	while (scan < regnomore && !is_ALNUM(*scan)) {
-	    count++;
-	    scan++;
-	}
-	break;
-    case BLANK:
-	while (scan < regnomore && is_BLANK(*scan)) {
-	    count++;
-	    scan++;
-	}
-	break;
-    case NBLANK:
-	while (scan < regnomore && !is_BLANK(*scan)) {
-	    count++;
-	    scan++;
-	}
-	break;
-    case CNTRL:
-	while (scan < regnomore && is_CNTRL(*scan)) {
-	    count++;
-	    scan++;
-	}
-	break;
-    case NCNTRL:
-	while (scan < regnomore && !is_CNTRL(*scan)) {
-	    count++;
-	    scan++;
-	}
-	break;
-    case DIGIT:
-	while (scan < regnomore && is_DIGIT(*scan)) {
-	    count++;
-	    scan++;
-	}
-	break;
-    case NDIGIT:
-	while (scan < regnomore && !is_DIGIT(*scan)) {
-	    count++;
-	    scan++;
-	}
-	break;
-    case GRAPH:
-	while (scan < regnomore && is_GRAPH(*scan)) {
-	    count++;
-	    scan++;
-	}
-	break;
-    case NGRAPH:
-	while (scan < regnomore && !is_GRAPH(*scan)) {
-	    count++;
-	    scan++;
-	}
-	break;
-    case LOWER:
-	while (scan < regnomore && is_LOWER(*scan)) {
-	    count++;
-	    scan++;
-	}
-	break;
-    case NLOWER:
-	while (scan < regnomore && !is_LOWER(*scan)) {
-	    count++;
-	    scan++;
-	}
-	break;
-    case PRINT:
-	while (scan < regnomore && is_PRINT(*scan)) {
-	    count++;
-	    scan++;
-	}
-	break;
-    case NPRINT:
-	while (scan < regnomore && !is_PRINT(*scan)) {
-	    count++;
-	    scan++;
-	}
-	break;
-    case PUNCT:
-	while (scan < regnomore && is_PUNCT(*scan)) {
-	    count++;
-	    scan++;
-	}
-	break;
-    case NPUNCT:
-	while (scan < regnomore && !is_PUNCT(*scan)) {
-	    count++;
-	    scan++;
-	}
-	break;
-    case SPACE:
-	while (scan < regnomore && is_SPACE(*scan)) {
-	    count++;
-	    scan++;
-	}
-	break;
-    case NSPACE:
-	while (scan < regnomore && !is_SPACE(*scan)) {
-	    count++;
-	    scan++;
-	}
-	break;
-    case UPPER:
-	while (scan < regnomore && is_UPPER(*scan)) {
-	    count++;
-	    scan++;
-	}
-	break;
-    case NUPPER:
-	while (scan < regnomore && !is_UPPER(*scan)) {
-	    count++;
-	    scan++;
-	}
-	break;
-    case XDIGIT:
-	while (scan < regnomore && is_XDIGIT(*scan)) {
-	    count++;
-	    scan++;
-	}
-	break;
-    case NXDIGIT:
-	while (scan < regnomore && !is_XDIGIT(*scan)) {
-	    count++;
-	    scan++;
-	}
-	break;
+
+#define case_CLASSES(with,without) \
+    case with: \
+	while (scan < regnomore && is_CLASS(with)(*scan)) { \
+	    count++; \
+	    scan++; \
+	} \
+	break; \
+    case without: \
+	while (scan < regnomore && !is_CLASS(with)(*scan)) { \
+	    count++; \
+	    scan++; \
+	} \
+	break
+
+	expand_case_CLASSES();
+
+#undef case_CLASSES
+
     default:			/* Oh dear.  Called inappropriately. */
 	regerror("internal foulup");
 	count = 0;		/* Best compromise. */
@@ -2426,148 +2274,39 @@ regprop(char *op)
 
     (void) strcpy(buf, ":");
 
+#define case_PROP(name) case name: p = #name; break
+#define case_CLASSES(with,without) case_PROP(with); case_PROP(without)
+
     switch (OP(op)) {
-    case BOL:
-	p = "BOL";
-	break;
-    case EOL:
-	p = "EOL";
-	break;
-    case ANY:
-	p = "ANY";
-	break;
-    case ANYOF:
-	p = "ANYOF";
-	break;
-    case ANYBUT:
-	p = "ANYBUT";
-	break;
-    case BRANCH:
-	p = "BRANCH";
-	break;
-    case EXACTLY:
-	p = "EXACTLY";
-	break;
-    case NEVER:
-	p = "NEVER";
-	break;
-    case NOTHING:
-	p = "NOTHING";
-	break;
-    case BACK:
-	p = "BACK";
-	break;
-    case END:
-	p = "END";
-	break;
-    case BEGWORD:
-	p = "BEGWORD";
-	break;
-    case ENDWORD:
-	p = "ENDWORD";
-	break;
-    case ALPHA:
-	p = "ALPHA";
-	break;
-    case NALPHA:
-	p = "NALPHA";
-	break;
-    case ALNUM:
-	p = "ALNUM";
-	break;
-    case NALNUM:
-	p = "NALNUM";
-	break;
-    case BLANK:
-	p = "BLANK";
-	break;
-    case NBLANK:
-	p = "NBLANK";
-	break;
-    case CNTRL:
-	p = "CNTRL";
-	break;
-    case NCNTRL:
-	p = "NCNTRL";
-	break;
-    case DIGIT:
-	p = "DIGIT";
-	break;
-    case NDIGIT:
-	p = "NDIGIT";
-	break;
-    case GRAPH:
-	p = "GRAPH";
-	break;
-    case NGRAPH:
-	p = "NGRAPH";
-	break;
-    case LOWER:
-	p = "LOWER";
-	break;
-    case NLOWER:
-	p = "NLOWER";
-	break;
-    case PRINT:
-	p = "PRINT";
-	break;
-    case NPRINT:
-	p = "NPRINT";
-	break;
-    case PUNCT:
-	p = "PUNCT";
-	break;
-    case NPUNCT:
-	p = "NPUNCT";
-	break;
-    case SPACE:
-	p = "SPACE";
-	break;
-    case NSPACE:
-	p = "NSPACE";
-	break;
-    case UPPER:
-	p = "UPPER";
-	break;
-    case NUPPER:
-	p = "NUPPER";
-	break;
-    case XDIGIT:
-	p = "XDIGIT";
-	break;
-    case NXDIGIT:
-	p = "NXDIGIT";
-	break;
-    case OPEN1:
-    case OPEN2:
-    case OPEN3:
-    case OPEN4:
-    case OPEN5:
-    case OPEN6:
-    case OPEN7:
-    case OPEN8:
-    case OPEN9:
+	case_PROP(BOL);
+	case_PROP(EOL);
+	case_PROP(ANY);
+	case_PROP(ANYOF);
+	case_PROP(ANYBUT);
+	case_PROP(BRANCH);
+	case_PROP(EXACTLY);
+	case_PROP(NEVER);
+	case_PROP(NOTHING);
+	case_PROP(BACK);
+	case_PROP(END);
+	case_PROP(BEGWORD);
+	case_PROP(ENDWORD);
+
+	expand_case_CLASSES();
+
+    case OPENn:
 	(void) sprintf(STRSKIP(buf), "OPEN%d", OP(op) - OPEN);
 	p = NULL;
 	break;
-    case CLOSE1:
-    case CLOSE2:
-    case CLOSE3:
-    case CLOSE4:
-    case CLOSE5:
-    case CLOSE6:
-    case CLOSE7:
-    case CLOSE8:
-    case CLOSE9:
+
+    case CLOSEn:
 	(void) sprintf(STRSKIP(buf), "CLOSE%d", OP(op) - CLOSE);
 	p = NULL;
 	break;
-    case STAR:
-	p = "STAR";
-	break;
-    case PLUS:
-	p = "PLUS";
-	break;
+
+	case_PROP(STAR);
+	case_PROP(PLUS);
+
     case RSIMPLE:		/* FALLTHROUGH */
     case RCOMPLX:
 	(void) sprintf(STRSKIP(buf), "%s%c", OP(op) == RSIMPLE
@@ -2581,6 +2320,7 @@ regprop(char *op)
 	(void) sprintf(STRSKIP(buf), "%c", R_CURL);
 	p = NULL;
 	break;
+
     default:
 	regerror("corrupted opcode");
 	break;
@@ -2589,6 +2329,8 @@ regprop(char *op)
 	(void) strcat(buf, p);
     return (buf);
 }
+#undef case_PROP
+#undef case_CLASSES
 #endif
 
 #if defined(llength) && defined(lforw) && defined(lback)
@@ -2602,30 +2344,35 @@ lregexec(
 	    int startoff,
 	    int endoff)
 {
+    int s;
+
     if (endoff < startoff)
 	return 0;
 
+    REGTRACE((T_CALLED "lregexec %d..%d\n", startoff, endoff));
     if (lp->l_text) {
-	return regexec(prog, lp->l_text, &(lp->l_text[llength(lp)]),
-		       startoff, endoff);
+	s = regexec(prog, lp->l_text, &(lp->l_text[llength(lp)]),
+		    startoff, endoff);
     } else {
 	/* the prog might be ^$, or something legal on a null string */
 
 	char *nullstr = "";
-	int s;
 
-	if (startoff > 0)
-	    return 0;
-	s = regexec(prog, nullstr, nullstr, 0, 0);
+	if (startoff > 0) {
+	    s = 0;
+	} else {
+	    s = regexec(prog, nullstr, nullstr, 0, 0);
+	}
 	if (s) {
 	    if (prog->mlen > 0) {
 		mlforce("BUG: non-zero match on null string");
-		return 0;
+		s = 0;
+	    } else {
+		prog->startp[0] = prog->endp[0] = NULL;
 	    }
-	    prog->startp[0] = prog->endp[0] = NULL;
 	}
-	return s;
     }
+    returnReg(s);
 }
 #endif /* VILE LINE */
 
@@ -2890,20 +2637,21 @@ main(int argc, char *argv[])
 
 #if 0
     for (n = 0; n < 256; ++n) {
-	printf("%3d [%2X] %c%c%c%c%c%c%c%c%c%c%c%c\n",
+	printf("%3d [%2X] %c%c%c%c%c%c%c%c%c%c%c%c%c\n",
 	       n, n,
-	       is_ALPHA(n) ? 'A' : '-',
-	       is_ALNUM(n) ? 'a' : '-',
-	       is_BLANK(n) ? 'B' : '-',
-	       is_CNTRL(n) ? 'C' : '-',
-	       is_DIGIT(n) ? 'D' : '-',
-	       is_GRAPH(n) ? 'G' : '-',
-	       is_LOWER(n) ? 'L' : '-',
-	       is_PRINT(n) ? 'P' : '-',
-	       is_PUNCT(n) ? 'p' : '-',
-	       is_SPACE(n) ? 'S' : '-',
-	       is_UPPER(n) ? 'U' : '-',
-	       is_XDIGIT(n) ? 'X' : '-');
+	       is_ALPHA(n) ? CHR_ALPHA : '-',
+	       is_ALNUM(n) ? CHR_ALNUM : '-',
+	       is_BLANK(n) ? CHR_BLANK : '-',
+	       is_CNTRL(n) ? CHR_CNTRL : '-',
+	       is_DIGIT(n) ? CHR_DIGIT : '-',
+	       is_GRAPH(n) ? CHR_GRAPH : '-',
+	       is_IDENT(n) ? CHR_IDENT : '-',
+	       is_LOWER(n) ? CHR_LOWER : '-',
+	       is_PRINT(n) ? CHR_PRINT : '-',
+	       is_PUNCT(n) ? CHR_PUNCT : '-',
+	       is_SPACE(n) ? CHR_SPACE : '-',
+	       is_UPPER(n) ? CHR_UPPER : '-',
+	       is_XDIGIT(n) ? CHR_XDIGIT : '-');
     }
 #endif
 

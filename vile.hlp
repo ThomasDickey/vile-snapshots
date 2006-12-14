@@ -1303,6 +1303,11 @@ Editor modes
 		or via .Xdefaults.  See notes about the color palette down
 		below, under DOS specifics.  (U)
 
+	bufname-expr Regular expression used for parsing of $bufname, subject
+		to the cursor-tokens mode.  If the expression is inactive, use
+		character-class based internal function which combines buffer-
+		and filename-classes.  This is a buffer mode.  (B)
+
 	ccolor	On systems supporting this, will set the cursor color.
 		On most systems, the choice of colors is fixed, although the
 		X11 version (xvile) can be given customized colors at startup
@@ -1376,6 +1381,16 @@ Editor modes
 		preserved when doing text reformatting, but are not
 		reachable with the '}' and '{' motions.  A pattern that
 		consists of an empty comment line usually works well.  (B)
+
+	cursor-tokens Controls whether vile uses regular expressions or
+		character classes for parsing tokens from the screen for
+		various commands.  This uses an enumeration:  both, cclass and
+		regex.  If "both", vile tries matching first with the regular
+		expresion, e.g., bufname-expr for $bufname, and if that does
+		not match anything, uses the character-classes.  The main
+		reason for providing the "both" option is that the older
+		character-class based parsing for buffer name does not
+		correspond exactly to a regular expression.  (B)
 
 	dirc	Causes vile to check each name when scanning directories for
 		filename completion.  This is slower, but provides additional
@@ -1517,6 +1532,14 @@ Editor modes
 		visible.  If not set, then only the current line will shift,
 		which may be desirable on slower displays. (W)
 
+	identifier-expr Regular expression used for parsing of $identifier,
+		which also corresponds to the pattern under the cursor used in
+		tags and "screen-search-pattern-grab", etc., subject to the
+		cursor-tokens mode.  If the expression is inactive, use
+		character-class, e.g., the equivalent of
+			\<[[:ident:]]\+\>
+		This is a buffer mode.  (B)
+
 	ignorecase (ic) Text searches normally match the pattern exactly.
 		With this set, searches are case-insensitive. (B)
 
@@ -1646,6 +1669,13 @@ Editor modes
 
 	paragraphs A regular expression defining where the "next-paragraph"
 		('}') and "previous-paragraph" ('{') commands will go. (B)
+
+	pathname-expr Regular expression used for parsing of $pathname, which
+		is expanded by ":" (or "&") in the minibuffer, subject to the
+		cursor-tokens mode.  If the expression is inactive, use
+		character-class, e.g., the equivalent of
+			\<[[:file:]]\+\>
+		This is a buffer mode.  (B)
 
 	percent-crlf Percentage of total lines which must end with CR/LF for
 		vile to automatically convert buffer's recordseparator to
@@ -1806,6 +1836,10 @@ Editor modes
 
 	showram (sr) Displays the amount of ram currently allocated at the
 		end of the message line. (not in all versions) (U)
+
+	showvariables (sv) If set, causes the [Variables] buffer which is
+		created by the "show-variables" command to be updated each
+		time the screen is updated.  (W)
 
 	sideways  Will prompt for a new value for the sideways scroll offset,
 		which allow display of a section of code normally off the
@@ -2176,21 +2210,21 @@ Character Classes
 	columns) are
 
 		arg	ex-style line range: 1,$ or 13,15 or % etc.
-		ctl	control character
+		ctl	[:cntrl:] control character
 		del	delete/backspace
 		fn	fence character, e.g., "{" or "}"
-		id	normal identifier, used for word boundaries
-		lwr	lowercase, e.g., "a"
-		nsp	nonspace
-		num	digit, e.g., "0"
-		path	file/path name
-		prn	printable
-		pun	punctuation
+		id	[:ident:] normal identifier, used for word boundaries
+		lwr	[:lower:] lowercase, e.g., "a"
+		nsp	[:graph:] nonspace
+		num	[:digit:] digit, e.g., "0"
+		path	[:file:] file/path name
+		prn	[:print:] printable
+		pun	[:punct:] punctuation
 		qid	qualified identifiers, used in tags parsing
 		sh	may appear in shell/pipe
-		sp	space
+		sp	[:blank:] space
 		tmp	legal in scratch-buffer names
-		upr	uppercase, e.g., "A"
+		upr	[:upper:] uppercase, e.g., "A"
 		wld	shell wildcard, e.g., "*"
 
 	You can also reset the table to its initial state using
@@ -2759,7 +2793,9 @@ Programmed procedures (aka macros)
 	$blines		number of lines in current buffer	(read only)
 	$brightness	RGB levels for gray, normal, bright in the 0-255 range
 			(winvile version only)
+	$buf-fname-expr	combined buffer+fname expression (read only)
 	$buffer-hook	name of procedure to run when switching to a buffer
+	$bufname        current buffer-name under the cursor.
 	$bwindows	number of windows open on current buffer(read only)
 	$cbufname	current buffer name
 	$cdpath		editor's copy of the $CDPATH env var (read/write)
@@ -2814,7 +2850,7 @@ Programmed procedures (aka macros)
 	$forward-search	search direction, true=forward
 	$helpfile	$VILE_HELP_FILE env var or "vile.hlp"   (read/write)
 	$iconname	current icon name (X11 version only)
-	$identifier	current punctuated word
+	$identifier     current "identifier-like" word under the cursor.
 	$kbd-macro	the keyboard macro, see ^X-( ^X-)	(read only)
 	$kill		some of the kill register		(read only)
 	$lastkey	last keyboard char struck
@@ -2842,7 +2878,7 @@ Programmed procedures (aka macros)
 	$palette	current palette string
 	$patchlevel	current patch-level (empty for release)	(read only)
 	$pathlist-separator separator for lists of pathnames, e.g., $PATH
-	$pathname	current path-like word
+	$pathname       current "path-like" word, under the cursor.
 	$pathname-separator separator for levels of pathnames, e.g., '/'
 	$pending	typeahead pending flag			(read only)
 	$pid		returns vile's process-id		(read only)
@@ -3337,20 +3373,23 @@ Regular Expressions
 	other significance (matching that character)."
 
  \< \>	In addition, vile atoms may be: \< and \>, which match the
- \s \S	beginning and end of a "word".
+      	beginning and end of a "word".
 
-	Vile recognizes the X/Open regular expression character
-	classes, as well as shorthand expressions for them.  You can use
-	the shorthand expressions in a range or as an atom.  Each shorthand
-	expression has a complement, e.g., \w and \W.
+	Vile recognizes the X/Open regular expression character classes (and
+	additional character classes), as well as shorthand expressions for
+	them.  You can use the shorthand expressions in a range or as an atom. 
+	Each shorthand expression has a complement, e.g., \w and \W.
 
- \w \W	[:alnum:], alphanumeric (plus '_')
+ \i \I	[:alnum:]
  \a \A	[:alpha:]
  \b \B	[:blank:]
  \c \C	[:cntrl:]
  \d \D	[:digit:]
+ \f \F	[:file:]
  \g \G	[:graph:]
+ \w \W	[:ident:], alphanumeric (plus '_')
  \l \L	[:lower:]
+ \o \O	[:octal:]
  \p \P	[:print:], printable (note that space is printable)
  \q \Q	[:punct:]
  \s \S	[:space:]
@@ -3494,17 +3533,39 @@ Invocation
 	VILE_HELP_FILE
 		override the name of the help file, normally "vile.hlp".
 		This sets the $helpfile variable.
+
 	VILE_LIBDIR_PATH
 		override the search path for filter programs, normally the
 		library-directory on UNIX systems.  This sets the
 		$libdir-path variable, which is appended to your $PATH
 		variable when running filter commands on UNIX and Win32.
+
 	VILE_PWD
 		if set, assume invoking shell's "$PWD" variable is valid,
 		and use that rather than an initial getcwd() call.
+
+	VILE_NROFF_FILT
+		if set, overrides the choice between "nroff" and "cawf"
+		(depending on platform) in the ShowFormatted macro (^X-n).  You
+		may want to set this to "groff" if your system has groff
+		installed, for instance, but relies on an antique version of
+		nroff for manpages.
+
+	VILE_SPELL_FILT
+		if set, overrides the compiled-in program name and options
+		for the spell-filter.  Normally that is a string such as
+			"spell -l"
+
+	VILE_TABLE_FILT
+		if set, indicates that "tbl" is available.
+		Set this to "cat" if you do not want to use "tbl",
+		but do want to use "nroff", etc (see VILE_NROFF_FILT).
+		It is used in the ShowFormatted macro (^X-n).
+
 	VILE_STARTUP_FILE
 		override the name of the startup file, normally ".vilerc"
 		(or "vile.rc" for non-UNIX systems).
+
 	VILE_STARTUP_PATH
 		override the search path for the startup and help files.
 		This sets the $startup-path variable.
@@ -3520,15 +3581,18 @@ Invocation
 
 	Command line options
 	--------------------
-	The command line options are fairly straightforward.  vile does not
-	support running just _any_ command after a '+', as does vi, but
-	does support the commonly used '+400' to go to line 400 and '+/foo'
-	to search for foo.  Command files can be explicitly executed on
-	startup by prefixing them with the '@' character, as in "vile
-	@mycmds file.c".  This will suppress the operation of VILEINIT and
-	the .vilerc files.
+	The command line options are fairly straightforward.  vile supports
+	running just _any_ command after a '+', as does vi.  It also has some
+	shortcut options to support the commonly used '+400' to go to line 400
+	and '+/foo' to search for foo.  Command files can be explicitly
+	executed on startup by prefixing them with the '@' character, as in
+	"vile @mycmds file.c".  This will suppress the operation of VILEINIT
+	and the .vilerc files.
 
 	Use "vile -?" to get the usage message.
+
+	-c command will execute the given command after loading the first
+		file.
 
 	+NNN and -gNNN  vile will begin the session on the first file
 		at the specified line number.
@@ -6262,4 +6326,4 @@ Problems
 
 Copyright 1995-2005,2006 by Paul Fox, Thomas Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.616 2006/11/01 21:21:16 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.626 2006/12/13 01:33:06 tom Exp $

@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.598 2006/10/16 00:19:14 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.604 2006/12/13 22:30:55 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -604,6 +604,7 @@
 /* individual features that are (normally) controlled by SMALLER */
 #define OPT_BNAME_CMPL  !SMALLER		/* name-completion for buffers */
 #define OPT_B_LIMITS    !SMALLER		/* left-margin */
+#define OPT_CURTOKENS   !SMALLER		/* cursor-tokens mode */
 #define OPT_ENUM_MODES  !SMALLER		/* fixed-string modes */
 #define OPT_EVAL        !SMALLER		/* expression-evaluation */
 #define OPT_FILEBACK    (!SMALLER && !SYS_VMS)	/* file backup style */
@@ -710,6 +711,7 @@
 #define OPT_BOOL_CHOICES	 !SMALLER
 #define OPT_CHARCLASS_CHOICES	 OPT_SHOW_CTYPE
 #define OPT_COLOR_CHOICES	 (OPT_ENUM_MODES && OPT_COLOR)
+#define OPT_CURTOKENS_CHOICES    OPT_CURTOKENS
 #define OPT_DIRECTIVE_CHOICES    !SMALLER
 #define OPT_FORBUFFERS_CHOICES   !SMALLER
 #define OPT_HILITE_CHOICES	 (OPT_ENUM_MODES && OPT_HILITEMATCH)
@@ -1121,6 +1123,12 @@ struct FSM {
 	const FSM_CHOICES * choices;
 };
 
+typedef enum {
+	CT_BOTH = 0
+	, CT_CCLASS
+	, CT_REGEX
+} CURTOKENS;
+
 /*	Directive definitions	*/
 
 typedef	enum {
@@ -1347,6 +1355,8 @@ typedef enum {
 #define R_PAREN ')'
 #define L_BLOCK '['
 #define R_BLOCK ']'
+#define L_ANGLE '<'
+#define R_ANGLE '>'
 
 /* these are the characters that are used in the expand-chars mode */
 #define EXPC_THIS  '%'
@@ -1412,13 +1422,12 @@ typedef enum {
 #include <vl_regex.h>
 #endif
 
+			/* see screen_to_bname() */
 #if OPT_WIDE_CTYPES
-#define	SCREEN_STRING (vl_pathn|vl_scrtch|vl_shpipe)
+#define	SCREEN_STRING (vl_pathn | vl_wild | vl_scrtch | vl_shpipe)
 #else
-#define	SCREEN_STRING (vl_pathn)
+#define	SCREEN_STRING (vl_pathn | vl_wild)
 #endif
-
-#define screen_to_bname(buf) screen_string(buf,sizeof(buf),(CHARTYPE)SCREEN_STRING)
 
 #define KEY_Space	' '
 #define KEY_Tab		'\t'
@@ -1884,15 +1893,17 @@ typedef struct	{
 #endif
 } W_TRAITS;
 
-#define global_w_val(which) global_w_values.wv[which].v.i
-#define set_global_w_val(which,val) global_w_val(which) = val
-#define global_w_val_ptr(which) global_w_values.wv[which].v.p
+#define global_w_val(which)             global_w_values.wv[which].v.i
+#define global_w_val_ptr(which)         global_w_values.wv[which].v.p
+
+#define set_global_w_val(which,val)     global_w_val(which) = val
 #define set_global_w_val_ptr(which,val) global_w_val_ptr(which) = val
 
-#define w_val(wp,val) (wp->w_values.wv[val].vp->i)
-#define set_w_val(wp,which,val) w_val(wp,which) = val
-#define w_val_ptr(wp,val) (wp->w_values.wv[val].vp->p)
-#define set_w_val_ptr(wp,which,val) w_val_ptr(wp,which) = val
+#define w_val(wp,val)                   (wp->w_values.wv[val].vp->i)
+#define w_val_ptr(wp,val)               (wp->w_values.wv[val].vp->p)
+
+#define set_w_val(wp,which,val)         w_val(wp,which) = val
+#define set_w_val_ptr(wp,which,val)     w_val_ptr(wp,which) = val
 
 #define make_local_w_val(wp,which)  \
 	make_local_val(wp->w_values.wv, which)
@@ -2011,7 +2022,10 @@ typedef struct	BUFFER {
 	char	*b_fname;		/* File name			*/
 	int	b_fnlen;		/* length of filename		*/
 	char	b_bname[NBUFN];		/* Buffer name			*/
-#if	OPT_ENCRYPT
+#if OPT_CURTOKENS
+	struct VAL buf_fname_expr;	/* $buf-fname-expr		*/
+#endif
+#if OPT_ENCRYPT
 	char	b_cryptkey[NKEYLEN];	/* encryption key		*/
 #endif
 #if SYS_UNIX
@@ -2070,19 +2084,25 @@ typedef struct	BUFFER {
  */
 #define	for_each_buffer(bp) for (bp = bheadp; bp; bp = bp->b_bufp)
 
-#define global_b_val(which) global_b_values.bv[which].v.i
-#define set_global_b_val(which,val) global_b_val(which) = val
-#define global_b_val_ptr(which) global_b_values.bv[which].v.p
-#define set_global_b_val_ptr(which,val) global_b_val_ptr(which) = val
-#define global_b_val_rexp(which) global_b_values.bv[which].v.r
+#define gbl_b_val(which)                 global_b_values.bv[which]
+
+#define global_b_val(which)              gbl_b_val(which).v.i
+#define global_b_val_ptr(which)          gbl_b_val(which).v.p
+#define global_b_val_rexp(which)         gbl_b_val(which).v.r
+
+#define set_global_b_val(which,val)      global_b_val(which) = val
+#define set_global_b_val_ptr(which,val)  global_b_val_ptr(which) = val
 #define set_global_b_val_rexp(which,val) global_b_val_rexp(which) = val
 
-#define b_val(bp,val) (bp->b_values.bv[val].vp->i)
-#define set_b_val(bp,which,val) b_val(bp,which) = val
-#define b_val_ptr(bp,val) (bp->b_values.bv[val].vp->p)
-#define set_b_val_ptr(bp,which,val) b_val_ptr(bp,which) = val
-#define b_val_rexp(bp,val) (bp->b_values.bv[val].vp->r)
-#define set_b_val_rexp(bp,which,val) b_val_rexp(bp,which) = val
+#define any_b_val(bp,which)              (bp)->b_values.bv[which]
+
+#define b_val(bp,which)                  (any_b_val(bp,which).vp->i)
+#define b_val_ptr(bp,which)              (any_b_val(bp,which).vp->p)
+#define b_val_rexp(bp,which)             (any_b_val(bp,which).vp->r)
+
+#define set_b_val(bp,which,val)          b_val(bp,which) = val
+#define set_b_val_ptr(bp,which,val)      b_val_ptr(bp,which) = val
+#define set_b_val_rexp(bp,which,val)     b_val_rexp(bp,which) = val
 
 #define window_b_val(wp,val) \
 	((wp != 0 && wp->w_bufp != 0) \
@@ -2686,6 +2706,8 @@ typedef struct KILLREG {
 #include <file.h>	/* aka <sys/file.h> */
 #include <rms.h>	/* required to compile nefsms.h */
 #define stricmp(a,b)	strcasecmp(a,b)
+#define strnicmp(a,b,n)	strncasecmp(a,b,n)
+#elif OPT_VMS_PATH
 #define strnicmp(a,b,n)	strncasecmp(a,b,n)
 #endif
 

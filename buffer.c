@@ -5,7 +5,7 @@
  * keys. Like everyone else, they set hints
  * for the display system.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.307 2006/11/02 21:01:24 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.312 2006/12/03 16:48:16 tom Exp $
  *
  */
 
@@ -792,6 +792,7 @@ ask_for_bname(char *prompt, char *bufn, size_t len)
 {
     int status;
 
+    TRACE((T_CALLED "ask_for_bname\n"));
     if (clexec || isnamedcmd) {
 #if OPT_BNAME_CMPL
 	status = kbd_string(prompt, bufn, len,
@@ -799,11 +800,11 @@ ask_for_bname(char *prompt, char *bufn, size_t len)
 #else
 	status = mlreply(prompt, bufn, len);
 #endif
-    } else if ((status = screen_string(bufn, len, SCREEN_STRING)) != TRUE) {
+    } else if ((status = screen_to_bname(bufn, len)) != TRUE) {
 	mlforce("[Nothing selected]");
     }
 
-    return status;
+    returnCode(status);
 }
 
 /*
@@ -1204,7 +1205,7 @@ suckitin(BUFFER *bp, int copy, int lockfl)
 int
 swbuffer_lfl(BUFFER *bp, int lockfl, int this_window)
 {
-    int s = TRUE;
+    int status = TRUE;
     WINDOW *wp;
 
     TRACE((T_CALLED "swbuffer_lfl(bp=%p, lockfl=%d, this_window=%d)\n",
@@ -1223,7 +1224,7 @@ swbuffer_lfl(BUFFER *bp, int lockfl, int this_window)
 
 	if (!b_is_reading(bp) &&
 	    !bp->b_active)	/* on second thought, yes there is */
-	    s = suckitin(bp, TRUE, lockfl);
+	    status = suckitin(bp, TRUE, lockfl);
     } else {
 #if !WINMARK
 	/* Whatever else we do, make sure MK isn't bogus when we leave */
@@ -1234,7 +1235,10 @@ swbuffer_lfl(BUFFER *bp, int lockfl, int this_window)
 	    /* if we'll have to take over this window, and it's the last */
 	    if ((this_window || bp->b_nwnd == 0)
 		&& curbp->b_nwnd != 0 && --(curbp->b_nwnd) == 0) {
-		undispbuff(curbp, curwp);
+#if !SMALLER
+		if (!this_window)
+#endif
+		    undispbuff(curbp, curwp);
 	    } else if (DOT.l != 0 && (this_window || bp->b_nwnd == 0)) {
 		/* Window is still getting taken over so make a
 		   copy of the traits for a possible future
@@ -1259,16 +1263,17 @@ swbuffer_lfl(BUFFER *bp, int lockfl, int this_window)
 	    LINE *lp;
 	    int trait_matches;
 
-	    if (curwp == 0)
+	    if (curwp == 0 || curwp->w_bufp == 0)
 		returnCode(FALSE);
 	    else if (curwp->w_bufp == bp)
 		returnCode(TRUE);
 
-	    if (curwp->w_bufp->b_nwnd == 0)
+	    if (curwp->w_bufp->b_nwnd == 0) {
 		undispbuff(curwp->w_bufp, curwp);
-	    else
+	    } else {
 		copy_traits(&(curwp->w_bufp->b_wtraits),
 			    &(curwp->w_traits));
+	    }
 
 	    /* Initialize the window using the saved buffer traits if possible. 
 	     * If they don't pass a sanity check, simply initialize the newest
@@ -1305,7 +1310,7 @@ swbuffer_lfl(BUFFER *bp, int lockfl, int this_window)
 		clone_window(curwp, wp);
 
 	    curwp->w_bufp = bp;
-	    s = suckitin(bp, (bp->b_nwnd++ == 0), lockfl);
+	    status = suckitin(bp, (bp->b_nwnd++ == 0), lockfl);
 	} else
 #endif /* !SMALLER */
 	    /* get it already on the screen if possible */
@@ -1322,19 +1327,19 @@ swbuffer_lfl(BUFFER *bp, int lockfl, int this_window)
 		updatelistbuffers();
 #endif
 	    run_buffer_hook();
-	    s = (find_bp(bp) != 0);
+	    status = (find_bp(bp) != 0);
 	} else if (curwp == 0) {
-	    s = FALSE;		/* we haven't started displaying yet */
+	    status = FALSE;	/* we haven't started displaying yet */
 	} else {
 	    /* oh well, suck it into this window */
 	    curwp->w_bufp = bp;
-	    s = suckitin(bp, (bp->b_nwnd++ == 0), lockfl);
+	    status = suckitin(bp, (bp->b_nwnd++ == 0), lockfl);
 	}
     }
 #if OPT_TITLE
     set_editor_title();
 #endif
-    returnCode(s);
+    returnCode(status);
 }
 
 #if VILE_NEEDED
@@ -2468,6 +2473,9 @@ bfind(const char *bname, UINT bflag)
 #endif
 	    bp->b_lastdot = nullmark;
 #if OPT_VIDEO_ATTRS
+#endif
+#if OPT_CURTOKENS
+	    set_buf_fname_expr(bp);
 #endif
 	    bp->b_flag = bflag;
 	    bp->b_acount = (short) b_val(bp, VAL_ASAVECNT);

@@ -1,5 +1,44 @@
 Changes for vile 9.6 (released ??? ??? ?? ????)
 
+ 20061212 (m)
+	> Tom Dickey:
+	+ add showvariables mode, for testing expressions used in [Variables].
+	+ correct comparisons used for handling bounds in regular expressions,
+	  e.g., the "2" in "\(this\|[l-m]\)\{2\}".
+	+ change behavior of regular expression OR'd alternatives - only the
+	  first match was used rather than the longest one.
+	+ fix configure script macros which omitted X_EXTRA_LIBS in one case,
+	  and repeated libs in another.
+	+ fill in complete list of event names for xres.key from Xt/TMParse.c
+	+ make ShowFormatted macro more configurable by allowing environment
+	  variables $VILE_NROFF_FILT and $VILE_TABLE_FILT to override the
+	  choice of programs therein.
+	+ disallow source'ing from the current directory if the source'd file
+	  might be writable by other users.
+	+ improve fences in vbs- and vbmode.
+	+ fix xresfilt.l; X resource files do not have embedded comments.
+	+ minor improvements/fixes to &default, to allow it to assume that
+	  '$' is implied for modes.
+	+ modify locale initialization to work with koi8rxterm.
+	+ add character classes [:ident:], [:octal:] and [:path:], and change
+	  the association of \w and \W to [:ident:], making [:alnum:] no longer
+	  include "_".
+	+ add cursor-tokens mode to control whether vile uses regular
+	  expressions, character classes or a combination to obtain tokens
+	  from the screen.
+	+ add $buf-fname-expr to show the combined bufname-expr, pathname-expr
+	  used to interpret ^X-e.
+	+ add bufname-expr, identifier-expr and pathname-expr buffer modes to
+	  provide regular expression parsing of $bufname, $identifier and
+	  $pathname in the show-variables command as well as for the related
+	  expansion of tokens from the cursor position.  If the expressions are
+	  empty, the code falls through to use the corresponding older
+	  character-class parsing.  Default values are provided for each *-expr
+	  mode.
+	+ fix a case where set-window might remove the only window before
+	  attempting to put a file in it.
+	+ quote "$HOME" in CF_SUBDIR_PATH, for cygwin users.
+
  20061107 (l)
 	> Tom Dickey:
 	+ modify ":describe-bindings" to show whether the command accepts a

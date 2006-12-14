@@ -1,7 +1,7 @@
 /*
  * debugging support -- tom dickey.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.54 2006/05/23 00:51:35 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.55 2006/11/23 16:06:58 tom Exp $
  *
  */
 
@@ -503,8 +503,8 @@ doalloc(void *oldp, unsigned amount)
 	if (newp != 0) {
 	    unsigned limit = (amount > area[j].size) ? area[j].size : amount;
 	    TRACE(("memcpy %p .. %p to %p .. %p (%ld -> %d)\n",
-		   oldp, oldp + area[j].size - 1,
-		   newp, newp + area[j].size - 1,
+		   oldp, (char *) oldp + area[j].size - 1,
+		   newp, (char *) newp + area[j].size - 1,
 		   area[j].size, amount));
 	    memcpy(newp, oldp, limit);
 	    free(oldp);

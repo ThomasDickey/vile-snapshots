@@ -3,7 +3,7 @@
  * and backward directions.
  *  heavily modified by Paul Fox, 1990
  *
- * $Header: /users/source/archives/vile.vcs/RCS/search.c,v 1.142 2006/11/02 21:01:24 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/search.c,v 1.143 2006/11/23 19:35:49 tom Exp $
  *
  * original written Aug. 1986 by John M. Gamble, but I (pgf) have since
  * replaced his regex stuff with Henry Spencer's regexp package.
@@ -740,7 +740,7 @@ readpattern(const char *prompt,
 	   fromscreen));
 
     if (fromscreen) {
-	if ((status = screen_string(temp, sizeof(temp), vl_ident)) == TRUE) {
+	if ((status = screen_to_ident(temp, sizeof(temp))) == TRUE) {
 	    if (tb_init(apat, EOS) == 0
 		|| tb_bappend(apat, temp, strlen(temp)) == 0) {
 		status = FALSE;

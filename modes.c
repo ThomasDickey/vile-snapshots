@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.320 2006/10/19 21:34:04 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.326 2006/12/06 23:42:43 tom Exp $
  *
  */
 
@@ -273,30 +273,35 @@ string_mode_val(VALARGS * args)
 {
     const struct VALNAMES *names = args->names;
     struct VAL *values = args->local;
+    union V *actual = values->vp ? values->vp : &(values->v);
     static TBUFF *result;
-    switch (names->type) {
+
+    if (values != 0) {
+	switch (names->type) {
 #if OPT_MAJORMODE
-    case VALTYPE_MAJOR:
+	case VALTYPE_MAJOR:
 #endif
-    case VALTYPE_BOOL:
-	return values->vp->i ? "TRUE" : "FALSE";
-    case VALTYPE_ENUM:
+	case VALTYPE_BOOL:
+	    return actual->i ? "TRUE" : "FALSE";
+	case VALTYPE_ENUM:
 #if OPT_ENUM_MODES
-	{
-	    static char temp[20];	/* FIXME: const workaround */
-	    (void) strcpy(temp,
-			  choice_to_name(valname_to_choices(names), values->vp->i));
-	    return temp;
-	}
+	    {
+		static TBUFF *temp = 0;		/* const workaround */
+		(void) tb_scopy(&temp,
+				choice_to_name(valname_to_choices(names),
+					       actual->i));
+		return tb_values(temp);
+	    }
 #endif /* else, fall-thru to use int-code */
-    case VALTYPE_INT:
-	return render_int(&result, values->vp->i);
-    case VALTYPE_STRING:
-	return NonNull(values->vp->p);
-    case VALTYPE_REGEX:
-	if (values->vp->r == 0)
-	    break;
-	return NonNull(values->vp->r->pat);
+	case VALTYPE_INT:
+	    return render_int(&result, actual->i);
+	case VALTYPE_STRING:
+	    return NonNull(actual->p);
+	case VALTYPE_REGEX:
+	    if (actual->r == 0)
+		break;
+	    return NonNull(actual->r->pat);
+	}
     }
     return error_val;
 }
@@ -840,6 +845,9 @@ static struct FSM fsm_tbl[] =
     {s_fcolor, fsm_color_choices},
     {s_bcolor, fsm_color_choices},
     {s_ccolor, fsm_color_choices},
+#endif
+#if OPT_CURTOKENS_CHOICES
+    {"cursor-tokens", fsm_curtokens_choices},
 #endif
 #if OPT_POPUP_CHOICES
     {"popup-choices", fsm_popup_choices},
@@ -1699,7 +1707,7 @@ set_fsm_choice(const char *name, const FSM_CHOICES * choices)
     }
     returnVoid();
 }
-#endif /* OPT_EVAL */
+#endif /* OPT_ENUM_MODES || OPT_COLOR_SCHEMES */
 
 static int
 is_white(int n)
@@ -2003,6 +2011,91 @@ chgd_status(BUFFER *bp GCC_UNUSED, VALARGS * args GCC_UNUSED, int glob_vals, int
     }
     return TRUE;
 }
+
+#if OPT_CURTOKENS
+static int
+have_b_val_rexp(BUFFER *bp, int mode)
+{
+    return (bp != 0
+	    && bp->b_values.bv[mode].vp != 0
+	    && bp->b_values.bv[mode].vp->r != 0
+	    && bp->b_values.bv[mode].vp->r->pat != 0);
+}
+
+static int
+update_regexval(struct VAL *val, const char *pattern, int magic)
+{
+    int result = TRUE;
+    union V *vp = val->vp;
+
+    vp->r = free_regexval(vp->r);
+    vp->r = new_regexval(pattern, magic);
+    if (vp->r == 0) {
+	vp->r = new_regexval("", TRUE);
+	result = FALSE;
+    }
+    return result;
+}
+
+/*
+ * Maintain the $buf-fname-expr variable, which is the combination of the
+ * bufname-expr and pathname-expr modes.
+ *
+ * Yes, we could add another mode - but since the value is readonly and
+ * derived, it does not really fit as a mode.  It is stored in BUFFER as a
+ * struct VAL so we can treat the value as a local/global mode.
+ */
+void
+set_buf_fname_expr(BUFFER *bp)
+{
+    TBUFF *combined = 0;
+
+    if ((bp == 0 || b_val(bp, VAL_CURSOR_TOKENS) != CT_CCLASS)
+	&& have_b_val_rexp(bp, VAL_BUFNAME_EXPR)
+	&& have_b_val_rexp(bp, VAL_PATHNAME_EXPR)
+	&& tb_sappend(&combined, "\\(")
+	&& tb_sappend(&combined, b_val_rexp(bp, VAL_BUFNAME_EXPR)->pat)
+	&& tb_sappend(&combined, "\\|")
+	&& tb_sappend(&combined, b_val_rexp(bp, VAL_PATHNAME_EXPR)->pat)
+	&& tb_sappend(&combined, "\\)")
+	&& tb_append(&combined, EOS)) {
+	char *pattern = tb_values(combined);
+	struct VAL *global_expr = &buf_fname_expr;
+	struct VAL *local_expr;
+	int local = FALSE;
+
+	TRACE(("set_buf_fname_expr(%s)\n", pattern));
+	if (bp != 0) {
+	    local_expr = &(bp->buf_fname_expr);
+
+	    if (is_local_b_val(bp, VAL_BUFNAME_EXPR)
+		|| is_local_b_val(bp, VAL_PATHNAME_EXPR)) {
+		local = TRUE;
+		local_expr->vp = &(local_expr->v);
+		update_regexval(local_expr, pattern, TRUE);
+	    } else {
+		local_expr->vp = &(global_expr->v);
+	    }
+	}
+	if (!local) {
+	    global_expr->vp = &(global_expr->v);
+	    update_regexval(global_expr, pattern, TRUE);
+	}
+    }
+    tb_free(&combined);
+}
+
+int
+chgd_curtokens(BUFFER *bp,
+	       VALARGS * args GCC_UNUSED,
+	       int glob_vals GCC_UNUSED,
+	       int testing)
+{
+    if (!testing)
+	set_buf_fname_expr(bp);
+    return TRUE;
+}
+#endif
 
 #if OPT_TITLE
 	/* Changed swap-title */

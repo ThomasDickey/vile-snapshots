@@ -20,7 +20,7 @@
 #
 # gnu autoconf support by kevin buettner, 5/94
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.203 2006/11/04 11:56:07 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.204 2006/11/24 01:42:28 tom Exp $
 
 SHELL		= /bin/sh
 
@@ -617,7 +617,7 @@ perl.c: $(srcdir)/perl.xs $(srcdir)/ptypemap
 		-typemap ptypemap \
 		$(srcdir)/perl.xs > $@
 
-$(OBJ): estruct.h edef.h $(BUILTHDRS)
+$(OBJ): estruct.h proto.h edef.h $(BUILTHDRS)
 
 api$o :		api.h
 bind$o :	btree.h

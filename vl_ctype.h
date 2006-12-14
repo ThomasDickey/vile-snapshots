@@ -1,9 +1,9 @@
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/vl_ctype.h,v 1.4 2005/11/30 00:31:04 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/vl_ctype.h,v 1.7 2006/11/24 13:54:07 tom Exp $
  *
  * Character-type tests, like <ctype.h> for vile (vi-like-emacs).
  *
- * Copyright 2005, Thomas E. Dickey
+ * Copyright 2005,2006 Thomas E. Dickey
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
@@ -139,8 +139,8 @@ typedef USHORT CHARTYPE;
 #define vlCTYPE(c)	vl_chartypes_[CharOf(c)]
 #define istype(m,c)	((vlCTYPE(c) & (m)) != 0)
 
-#define isAlnum(c)	istype(vl_lower|vl_upper|vl_digit, c)
-#define isAlpha(c)	istype(vl_lower|vl_upper, c)
+#define isAlnum(c)	istype(vl_lower | vl_upper | vl_digit, c)
+#define isAlpha(c)	istype(vl_lower | vl_upper, c)
 #define isCntrl(c)	istype(vl_cntrl, c)
 #define isDigit(c)	istype(vl_digit, c)
 #define isLower(c)	istype(vl_lower, c)
@@ -153,7 +153,7 @@ typedef USHORT CHARTYPE;
 #define isfence(c)	istype(vl_fence, c)
 #define isident(c)	istype(vl_ident, c)
 #define isqident(c)	istype(vl_qident, c)
-#define islinespecchar(c)	istype(vl_linespec, c)
+#define islinespec(c)	istype(vl_linespec, c)
 #define ispath(c)	istype(vl_pathn, c)
 #define iswild(c)	istype(vl_wild, c)
 
@@ -162,15 +162,15 @@ typedef USHORT CHARTYPE;
 
 #define	isGraph(c)	(!isSpecial(c) && !isSpace(c) && isPrint(c))
 
-/* DIFCASE represents the difference between upper
-   and lower case letters, DIFCNTRL the difference between upper case and
-   control characters.	They are xor-able values.  */
+/* DIFCASE represents the difference between upper and lower case letters,
+   DIFCNTRL the difference between upper case and control characters.
+   They are xor-able values.  */
 #define	DIFCASE		0x20
 #define	DIFCNTRL	0x40
 #define toUpper(c)	vl_uppercase[CharOf(c)]
 #define toLower(c)	vl_lowercase[CharOf(c)]
-#define tocntrl(c)	(((unsigned)(c))^DIFCNTRL)
-#define toalpha(c)	(((unsigned)(c))^DIFCNTRL)
+#define tocntrl(c)	(((unsigned)(c)) ^ DIFCNTRL)
+#define toalpha(c)	(((unsigned)(c)) ^ DIFCNTRL)
 
 #else
 
@@ -188,8 +188,10 @@ typedef USHORT CHARTYPE;
 # define isUpper(c)	isupper(c)
 # define toUpper(c)	toupper(c)
 # define toLower(c)	tolower(c)
-# define isident(c)     isalnum(c)
 # define isXDigit(c)	isxdigit(c)
+
+# define isident(c)     (isalnum(c) || (c) == '_')
+# define ispath(c)      (isalnum(c) || (c) == '/' || (c) == '\\' || (c) == '~')
 
 #endif
 
