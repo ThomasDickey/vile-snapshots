@@ -4,7 +4,7 @@
  * Support functions for "popup-msgs" mode.
  * Written by T.E.Dickey for vile (august 1994).
  *
- * $Header: /users/source/archives/vile.vcs/RCS/msgs.c,v 1.26 2004/12/06 01:13:12 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/msgs.c,v 1.28 2006/12/01 23:02:41 tom Exp $
  */
 #include "estruct.h"
 
@@ -18,11 +18,15 @@
 static BUFFER *
 create_msgs(void)
 {
-    BUFFER *bp = bfind(MESSAGES_BufName, BFINVS);
+    BUFFER *bp = 0;
 
-    if (valid_buffer(bp)) {
-	b_set_invisible(bp);
-	bp->b_active = TRUE;
+    if (wheadp != 0) {		/* we need windows before creating buffers */
+	bp = bfind(MESSAGES_BufName, BFINVS);
+
+	if (valid_buffer(bp)) {
+	    b_set_invisible(bp);
+	    bp->b_active = TRUE;
+	}
     }
     return bp;
 }
@@ -33,7 +37,7 @@ create_msgs(void)
  * visible, it is automatically popped up when a new message line is begun.
  * Since it's a scratch buffer, popping it down destroys it.
  */
-void
+int
 msg_putc(int c)
 {
     BUFFER *savebp = curbp;
@@ -45,7 +49,7 @@ msg_putc(int c)
     register WINDOW *wp;
 
     if ((bp = create_msgs()) == 0)
-	return;
+	return TRUE;
 
     savemk = DOT;
     beginDisplay();
@@ -104,6 +108,8 @@ msg_putc(int c)
 	}
     }
     endofDisplay();
+
+    return TRUE;
 }
 
 void

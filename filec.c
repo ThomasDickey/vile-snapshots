@@ -5,7 +5,7 @@
  * Written by T.E.Dickey for vile (march 1993).
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/filec.c,v 1.124 2006/05/21 10:58:58 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/filec.c,v 1.125 2006/11/23 17:21:19 tom Exp $
  *
  */
 
@@ -1263,7 +1263,7 @@ mlreply_file(const char *prompt, TBUFF **buffer, UINT flag, char *result)
 	if (status != TRUE)
 	    return status;
 #endif
-    } else if (!screen_to_bname(Reply)) {
+    } else if (!screen_to_bname(Reply, sizeof(Reply))) {
 	return FALSE;
     }
     if (flag >= FILEC_UNKNOWN && is_appendname(Reply) != 0) {
@@ -1345,7 +1345,7 @@ mlreply_dir(const char *prompt, TBUFF **buffer, char *result)
 	if (status != TRUE)
 	    return status;
 
-    } else if (!screen_to_bname(Reply)) {
+    } else if (!screen_to_bname(Reply, sizeof(Reply))) {
 	return FALSE;
     }
 

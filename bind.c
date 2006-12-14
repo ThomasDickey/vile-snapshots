@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.300 2006/11/08 00:32:20 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.303 2006/12/14 00:00:58 tom Exp $
  *
  */
 
@@ -1442,6 +1442,28 @@ PATH_value(void)
 #endif
 #endif /* OPT_PATHLOOKUP */
 
+#if SYS_UNIX
+/*
+ * Only source a startup file on Unix if it (and the directory in which it
+ * resides) happens to be in a directory owned by the current user, and neither
+ * is writable by other users.
+ */
+static int
+is_our_file(char *fname)
+{
+    int status = FALSE;
+    struct stat sb;
+
+    if (stat(fname, &sb) == 0) {
+	if ((sb.st_mode & 0022) == 0
+	    && sb.st_uid == getuid()) {
+	    status = TRUE;
+	}
+    }
+    return status;
+}
+#endif
+
 /* config files that vile is interested in may live in various places,
  * and which may be constrained to various r/w/x modes.  the files may
  * be
@@ -1468,7 +1490,20 @@ cfg_locate(char *fname, UINT which)
     /* look in the current directory */
     if (which & FL_CDIR) {
 	if (ffaccess(fname, mode)) {
-	    return (fname);
+#if SYS_UNIX
+	    int success = FALSE;
+	    char *dname = malloc(NFILEN + strlen(fname) + 10);
+	    if (dname != 0) {
+		sprintf(dname, "%s%c..", fname, vl_pathsep);
+		lengthen_path(dname);
+		if (is_our_file(dname) && is_our_file(fname)) {
+		    success = TRUE;
+		}
+		free(dname);
+	    }
+	    if (success)
+#endif
+		return (fname);
 	}
     }
 
@@ -1998,6 +2033,7 @@ engl2fnc(const char *fname)
  * since it is treated the same as
  *	^X-#-a
  */
+#if OPT_EVAL || OPT_REBIND
 static const char *
 decode_prefix(const char *kk, UINT * prefix)
 {
@@ -2049,7 +2085,6 @@ decode_prefix(const char *kk, UINT * prefix)
 }
 
 /* prc2kcod: translate printable code to 10 bit keycode */
-#if OPT_EVAL || OPT_REBIND
 static int
 prc2kcod(const char *kk)
 {
@@ -2181,12 +2216,13 @@ kbd_alarm(void)
 }
 
 /* put a character to the keyboard-prompt */
-void
+int
 kbd_putc(int c)
 {
     BUFFER *savebp;
     WINDOW *savewp;
     MARK savemk;
+    int status;
 
     beginDisplay();
     savebp = curbp;
@@ -2196,12 +2232,12 @@ kbd_putc(int c)
     savemk = MK;
     MK = DOT;
     if ((kbd_expand <= 0) && isreturn(c)) {
-	kbd_erase_to_end(0);
+	status = kbd_erase_to_end(0);
     } else {
 	if ((kbd_expand < 0) && (c == '\t')) {
-	    (void) linsert(1, ' ');
+	    status = linsert(1, ' ');
 	} else {
-	    (void) linsert(1, c);
+	    status = linsert(1, c);
 	}
 #ifdef VILE_DEBUG
 	TRACE(("mini:%2d:%s\n", llength(DOT.l), lp_visible(DOT.l)));
@@ -2211,6 +2247,8 @@ kbd_putc(int c)
     curwp = savewp;
     MK = savemk;
     endofDisplay();
+
+    return status;
 }
 
 /* put a string to the keyboard-prompt */
@@ -2252,33 +2290,34 @@ kbd_erase(void)
     endofDisplay();
 }
 
-void
+int
 kbd_erase_to_end(int column)
 {
     BUFFER *savebp;
     WINDOW *savewp;
     MARK savemk;
 
-    if (!vl_echo || clhide)
-	return;
-
-    beginDisplay();
-    savebp = curbp;
-    savewp = curwp;
-    curbp = bminip;
-    curwp = wminip;
-    savemk = MK;
-    MK = DOT;
-    if (llength(DOT.l) > 0) {
-	DOT.o = column;
-	if (llength(DOT.l) > DOT.o)
-	    ldelete(llength(DOT.l) - DOT.o, FALSE);
-	TRACE(("NULL:%2d:%s\n", llength(DOT.l), lp_visible(DOT.l)));
+    if (vl_echo && !clhide) {
+	beginDisplay();
+	savebp = curbp;
+	savewp = curwp;
+	curbp = bminip;
+	curwp = wminip;
+	savemk = MK;
+	MK = DOT;
+	if (llength(DOT.l) > 0) {
+	    DOT.o = column;
+	    if (llength(DOT.l) > DOT.o)
+		ldelete(llength(DOT.l) - DOT.o, FALSE);
+	    TRACE(("NULL:%2d:%s\n", llength(DOT.l), lp_visible(DOT.l)));
+	}
+	curbp = savebp;
+	curwp = savewp;
+	MK = savemk;
+	endofDisplay();
     }
-    curbp = savebp;
-    curwp = savewp;
-    MK = savemk;
-    endofDisplay();
+
+    return TRUE;
 }
 
 #if OPT_CASELESS

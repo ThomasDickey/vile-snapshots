@@ -411,7 +411,14 @@ State Variables
 	$brightness	RGB levels for gray, normal, bright in the 0-255 range
 			(winvile version only).
 
+	$buf-fname-expr	[READ ONLY] Combines bufname-expr and pathname-expr
+			modes for the current buffer.
+
 	$buffer-hook    Name of procedure to run when switching to a buffer.
+
+	$bufname        current buffer-name under the cursor.
+			This is computed from the bufname-expr and
+			pathname-expr patterns.
 
 	$bwindows       [READ ONLY] Number of windows open on current buffer.
 
@@ -550,6 +557,8 @@ State Variables
 	$iconname       With xvile, contains current icon name.
 
 	$identifier     The current "identifier-like" word under the cursor.
+			This is computed from the identifier-expr pattern.
+			Also see the "tagword" mode.
 
 	$kbd-macro      [READ ONLY]  This is the contents of the keyboard
 			macro buffer.
@@ -619,8 +628,10 @@ State Variables
 
 	$pathlist-separator separates directory names in lists such as $PATH.
 
-	$pathname       [READ ONLY] current "path-like" word, under the
-			cursor.
+	$pathname       current "path-like" word, under the cursor.
+			This is computed from the pathname-expr pattern.
+			If the current buffer is a directory, use the
+			entire line, overriding the regular expression.
 
 	$pathname-separator separates levels of directory names in a path.
 			Usually this is '/', for Unix.
@@ -633,7 +644,7 @@ State Variables
 	$position-format Format of ^G command.  See "Mode line customization"
 			in the vile help file.
 
-	$progname       [READ ONLY] The string "vile" "xvile", or "winvile"
+	$progname       [READ ONLY] The string "vile", "xvile", or "winvile"
 			as appropriate.
 
 	$prompt         The string ": ", used in command-line prompts.
@@ -697,7 +708,7 @@ State Variables
 
 	$wlines         Height of current window.
 
-	$word           [READ ONLY] The "word" at the cursor location.
+	$word           The "word" at the cursor location.
 
 	$write-hook     Name of procedure to run before a file is written
 
@@ -1501,6 +1512,6 @@ Example startup file
 	========================= end vile.rc =======================
 
 -----------------------------------
-  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.97 2006/11/01 21:23:26 tom Exp $
+  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.100 2006/12/02 12:40:20 tom Exp $
 -----------------------------------
 

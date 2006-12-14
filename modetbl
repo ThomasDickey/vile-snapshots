@@ -11,7 +11,7 @@
 #
 # The modes are table entries in the BUFFER and WINDOW structures.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.240 2006/10/16 21:45:37 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.250 2006/12/13 01:15:11 tom Exp $
 #
 #
 # Mode-table entries.  Capitalized letters are used for abbreviations.
@@ -131,6 +131,7 @@ bool							# MD prefix
 	"WrapWords"	WRAP		0		# word wrap
 	"YankMotion"	YANKMOTION	0		# honor vi-style motion after yanking text
 enum
+	"cursor-tokens"	CURSOR_TOKENS	0		OPT_CURTOKENS # specify whether to use regex/cclass for cursor tokens
 	"record-format" RECORD_FORMAT	0		SYS_VMS	# specify record-format to use
 	"record-attrs"	RECORD_ATTRS	0		SYS_VMS	# specify record-attributes to use
 	"RecordSeparator" RECORD_SEP	chgd_rs		# record-separator affects dos/unix modes
@@ -158,6 +159,7 @@ string							# VAL_ prefix
 	"locker"	LOCKER		chgd_disabled	OPT_LCKFILES  # Name of locker
 	"tags"		TAGS		0		# list of tags files
 regex							# VAL_ prefix
+	"bufname-expr"	BUFNAME_EXPR	chgd_curtokens	OPT_CURTOKENS # $bufname
 	"comments"	COMMENTS	0		# matches leading comment for comment reformatting
 	"comment-prefix" CMT_PREFIX	0		# prefix to ignore/preserve when formatting comment
 	"fence-begin"	FENCE_BEGIN	0		# begin a simple (character, non-nestable) fence
@@ -166,6 +168,8 @@ regex							# VAL_ prefix
 	"fence-elif"	FENCE_ELIF	0		# next complex fence
 	"fence-else"	FENCE_ELSE	0		# final complex fence
 	"fence-fi"	FENCE_FI	0		# end a complex fence
+	"identifier-expr" IDENTIFIER_EXPR 0		OPT_CURTOKENS # $identifier
+	"pathname-expr" PATHNAME_EXPR	chgd_curtokens	OPT_CURTOKENS # $pathname
 	"paragraphs"	PARAGRAPHS	0		# delimits a paragraph
 	"sections"	SECTIONS	0		# delimits a section
 	"sentences"	SENTENCES	0		# delimits a sentence
@@ -178,7 +182,8 @@ bool							# WMD prefix
 	"HorizScroll"	HORSCROLL	0		# scroll whole screen
 	"LineWrap"	LINEWRAP	chgd_window	OPT_LINEWRAP # wrap lines wider than screen
 	"ruler"		RULER		chgd_status	!SMALLER # display line+col in modeline
-	"ShowChar"	SHOWCHAR	chgd_status	!SMALLER # display line+col in modeline
+	"ShowChar"	SHOWCHAR	chgd_status	!SMALLER # display $char in modeline
+	"ShowVariables"	SHOWVARS	0		!SMALLER # update [Variables] with cursor-movement
 	"Unprintable-as-Octal" NONPRINTOCTAL  chgd_window # print non-printing chars in octal
 	"Terse-SELections" TERSELECT	0		OPT_SELECTIONS # don't display extent of selections on message line
 int							# VAL_ prefix
@@ -200,6 +205,7 @@ regex							# MVAL_ prefix
 string
 	"before"	BEFORE		chgd_mm_order	# check mode before given
 	"after"		AFTER		chgd_mm_order	# check mode after given
+#	"mode-wildcard" MODE_WILDCARD	0		# e.g., "*.c"
 
 .qualifier
 string
@@ -217,7 +223,9 @@ string
 "bflags"	BFLAGS			# status flags for current buffer
 "blines"	BLINES			# lines in current buffer
 "brightness"	BRIGHTNESS	DISP_NTWIN	# intensity of normal, bold
+"buf-fname-expr" BUF_FNAME_EXPR	OPT_CURTOKENS	# buffer+fname expression
 "buffer-hook"	BUFHOOK		OPT_HOOKS	# procedure to run when entering buf
+"bufname"	BUFNAME		OPT_CURTOKENS	# buffer name under cursor
 "bwindows"	BWINDOWS		# windows open on current buffer
 "cbufname"	CBUFNAME		# current buffer name
 "cd-hook"	CDHOOK		OPT_HOOKS	# procedure to run when cd'ing
@@ -255,8 +263,8 @@ string
 "forward-search" FWD_SEARCH		# search-direction (true if forward)
 "goal-column"	GOAL_COLUMN	OPT_TRACE	# goal-column (debug-only)
 "helpfile"	HELPFILE		# helpfile (vile.hlp)
-"iconname"	ICONNAM		DISP_X11	# current font
-"identifier"	IDENTIF			# current identifier
+"iconname"	ICONNAME	DISP_X11	# current font
+"identifier"	IDENTIFIER	OPT_CURTOKENS	# identifier under cursor
 "kbd-macro"	KBDMACRO		# keyboard-macro buffer (read only)
 "kill"		KILL			# kill buffer (read only)
 "lastkey"	LASTKEY			# last keyboard char struck
@@ -281,14 +289,14 @@ string
 "palette"	PALETTE			# current palette string
 "patchlevel"	PATCHLEVEL		# current patch-level of vile (empty for release)
 "pathlist-separator" PATHCHR		# separator for lists of pathnames
-"pathname"	PATHNAME		# current path-like word
+"pathname"	PATHNAME	OPT_CURTOKENS	# path-like word under cursor
 "pathname-separator" PATHSEP		# separator for levels of pathnames
 "pending"	PENDING			# type ahead pending flag
 "pid"		PROCESSID		# vile's process-id
 "position-format" POSFORMAT	OPT_POSFORMAT # position format string
 "progname"	PROGNAME		# returns current prog name - "vile"
 "prompt"	PROMPT			# command-prompt string - ": "
-"qidentifier"	QIDENTIF		# current qualified identifier
+"qidentifier"	QIDENTIFIER		# current qualified identifier
 "read-hook"	RDHOOK		OPT_HOOKS	# procedure to run when reading
 "replace"	REPLACE			# replacement pattern
 "return"	RETURN		OPT_EVAL	# function's return-result (internal)
@@ -445,6 +453,11 @@ string
 "brightmagenta"	13		OPT_16_COLOR
 "brightcyan"	14		OPT_16_COLOR
 "white"		15		OPT_16_COLOR
+
+.table curtokens		OPT_CURTOKENS
+"both"		CT_BOTH
+"cclass"	CT_CCLASS
+"regex"		CT_REGEX
 
 .table directive		!SMALLER
 "if"		D_IF

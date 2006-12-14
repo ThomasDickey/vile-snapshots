@@ -10,7 +10,7 @@
  * editing must be being displayed, which means that "b_nwnd" is non zero,
  * which means that the dot and mark values in the buffer headers are nonsense.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.172 2006/11/02 01:44:56 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.177 2006/11/24 01:21:35 tom Exp $
  *
  */
 
@@ -734,63 +734,103 @@ ldelete(B_COUNT nchars, int kflag)
     return (status);
 }
 
-/* returns pointer to static copy of text from current pos, consisting
- * of chars of type "type"
- */
 #if OPT_EVAL
-void
-lgrabtext(TBUFF **rp, CHARTYPE type)
-{
-    (void) screen2tbuff(rp, type);
-}
-#endif
-
-#if OPT_EVAL
-
 /*
- * replace the current line with the passed in text
+ * replace (part of) the current line with the passed in text, according to
+ * chartype.
  *
  * np -	new text for the current line
  */
 int
-lrepltext(CHARTYPE type, const char *np, int length)
+lrepl_ctype(CHARTYPE type, const char *np, int length)
 {
-    int status = TRUE;
+    int status;
     int c;
     int n;
 
-    TRACE((T_CALLED "lrepltext:%s%lx:%.*s\n", type ? "word" : "line",
-	   (ULONG) type, length, np));
+    TRACE((T_CALLED "lrepl_ctype:%s%lx:%.*s\n",
+	   type ? "word" : "line",
+	   (ULONG) type, length, NONNULL(np)));
 
-    if (b_val(curbp, MDVIEW))
-	returnCode(rdonly());
+    if ((status = check_editable(curbp)) == TRUE) {
 
-    mayneedundo();
+	mayneedundo();
 
-    if (type != 0) {		/* it's an exact region */
-	regionshape = EXACT;
-	while (DOT.o < llength(DOT.l)
-	       && istype(type, char_at(DOT))) {
-	    if ((status = forwdelchar(FALSE, 1)) != TRUE)
-		returnCode(status);
+	if (type != 0) {	/* it's an exact region */
+	    regionshape = EXACT;
+	    while (DOT.o < llength(DOT.l)
+		   && istype(type, char_at(DOT))) {
+		if ((status = forwdelchar(FALSE, 1)) != TRUE)
+		    break;
+	    }
+	} else {		/* it's the full line */
+	    regionshape = FULLLINE;
+	    DOT.o = w_left_margin(curwp);
+	    if ((status = deltoeol(TRUE, 1)) == TRUE)
+		DOT.o = w_left_margin(curwp);
 	}
-    } else {			/* it's the full line */
-	regionshape = FULLLINE;
-	DOT.o = w_left_margin(curwp);
-	if ((status = deltoeol(TRUE, 1)) != TRUE)
-	    returnCode(status);
-	DOT.o = w_left_margin(curwp);
-    }
 
-    /* insert passed in chars */
-    for (n = 0; n < length; ++n) {
-	c = np[n];
-	if (((c == '\n') ? lnewline() : linsert(1, c)) != TRUE)
-	    returnCode(FALSE);
+	if (status == TRUE) {
+	    /* insert passed in chars */
+	    for (n = 0; n < length; ++n) {
+		c = np[n];
+		if ((status = bputc(c)) != TRUE) {
+		    break;
+		}
+	    }
+	    if (type == 0) {
+		status = lnewline();
+		(void) backline(TRUE, 1);
+	    }
+	}
     }
-    if (type == 0) {
-	status = lnewline();
-	(void) backline(TRUE, 1);
+    returnCode(status);
+}
+
+/*
+ * replace (part of) the current line with the passed in text, according to
+ * regular expression.
+ *
+ * np -	new text for the current line
+ */
+int
+lrepl_regex(REGEXVAL * rexp, const char *np, int length)
+{
+    int status;
+    int c;
+    int n;
+
+    TRACE((T_CALLED "lrepl_regex:%s{%.*s}\n",
+	   rexp ? NONNULL(rexp->pat) : "",
+	   length, np));
+
+    if (rexp == 0 || rexp->reg == 0) {
+	status = FALSE;
+
+    } else if ((status = check_editable(curbp)) == TRUE) {
+	regexp *exp = rexp->reg;
+
+	mayneedundo();
+
+	if (lregexec(exp, DOT.l, DOT.o, llength(DOT.l))) {
+	    int old = exp->endp[0] - exp->startp[0];
+	    if (old > 0) {
+		regionshape = EXACT;
+		status = forwdelchar(TRUE, old);
+	    }
+	} else {
+	    status = FALSE;
+	}
+
+	if (status == TRUE) {
+	    /* insert passed in chars */
+	    for (n = 0; n < length; ++n) {
+		c = np[n];
+		if ((status = bputc(c)) != TRUE) {
+		    break;
+		}
+	    }
+	}
     }
     returnCode(status);
 }

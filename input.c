@@ -44,7 +44,7 @@
  *	tgetc_avail()     true if a key is avail from tgetc() or below.
  *	keystroke_avail() true if a key is avail from keystroke() or below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.289 2006/05/21 22:32:27 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.304 2006/12/11 01:29:54 tom Exp $
  *
  */
 
@@ -619,49 +619,160 @@ kbd_seq_nomap(void)
     return kbd_seq();
 }
 
-/* get a string consisting of inclchartype characters from the current
-	position.  if inclchartype is 0, return everything to eol */
+/*
+ * Check for special cases which override character-classes when getting
+ * data from the screen.
+ */
 int
-screen_string(char *buf, size_t bufn, CHARTYPE inclchartype)
+adjust_chartype(CHARTYPE *mask)
+{
+    int whole_line = FALSE;
+
+    /* if from gototag(), grab from the beginning of the string */
+    if (b_val(curbp, MDTAGWORD)
+	&& *mask == vl_ident) {
+	whole_line = TRUE;
+    } else if (b_is_directory(curbp)
+	       && *mask == SCREEN_STRING) {
+	whole_line = TRUE;
+	*mask = (CHARTYPE) ~0;
+    }
+    return whole_line;
+}
+
+/*
+ * Get a string consisting of inclchartype characters starting from the current
+ * position.  If inclchartype is 0, return everything to end of line.  If
+ * whole_line is true, allow the string to start before the current position.
+ */
+static int
+read_by_ctype(char *buf, size_t bufn, CHARTYPE inclchartype, int whole_line)
 {
     static TBUFF *temp;
     int rc;
     size_t len;
 
-    if ((rc = screen2tbuff(&temp, inclchartype)) == TRUE) {
+#if OPT_CURTOKENS
+    if (b_val(curbp, VAL_CURSOR_TOKENS) == CT_REGEX) {
+	return FALSE;
+    }
+#endif
+
+    TRACE((T_CALLED "read_by_ctype(incl=%#lx)\n", (ULONG) inclchartype));
+    if ((rc = vl_ctype2tbuff(&temp, inclchartype, whole_line)) == TRUE) {
 	if ((len = tb_length(temp)) >= bufn)
 	    len = bufn - 1;
 	strncpy0(buf, tb_values(temp), len + 1);
     } else {
 	*buf = EOS;
     }
-    return rc;
+    TRACE(("result %s\n", buf));
+    returnCode(rc);
 }
 
-/* get a string consisting of inclchartype characters from the current
-	position.  if inclchartype is 0, return everything to eol */
+#if OPT_CURTOKENS
+static int
+read_by_regex(char *buf, size_t bufn, REGEXVAL * rexp, int whole_line)
+{
+    static TBUFF *temp;
+    int rc = FALSE;
+    size_t len;
+
+    if (b_val(curbp, VAL_CURSOR_TOKENS) != CT_CCLASS) {
+	TRACE((T_CALLED "read_by_regex(incl=%s)\n", rexp->pat));
+	*buf = EOS;
+
+	if (*rexp->pat != EOS && rexp->reg != 0) {
+	    if ((rc = vl_regex2tbuff(&temp, rexp, whole_line)) == TRUE) {
+		if ((len = tb_length(temp)) >= bufn)
+		    len = bufn - 1;
+		strncpy0(buf, tb_values(temp), len + 1);
+	    }
+	}
+	TRACE(("result %s\n", buf));
+    }
+    returnCode(rc);
+}
+#else
+#define read_by_regex(buf, bufn, rexp, whole_line) FALSE
+#endif
+
+/*
+ * Obtain a buffer (or file) name from the screen.
+ * It may contain wildcards that we can glob-expand.
+ */
 int
-screen2tbuff(TBUFF **result, CHARTYPE inclchartype)
+screen_to_bname(char *buf, size_t bufn)
+{
+    int rc;
+    CHARTYPE mask = SCREEN_STRING;
+    int whole_line = adjust_chartype(&mask);
+
+    TRACE((T_CALLED "screen_to_bname\n"));
+    rc = read_by_regex(buf, bufn, curbp->buf_fname_expr.vp->r, whole_line);
+    if (rc == FALSE)
+	rc = read_by_ctype(buf, bufn, mask, whole_line);
+    returnCode(rc);
+}
+
+/*
+ * Obtain $pathname from the screen.
+ */
+int
+screen_to_fname(char *buf, size_t bufn)
+{
+    int rc = FALSE;
+    CHARTYPE mask = vl_pathn;
+    int whole_line = adjust_chartype(&mask);
+
+    TRACE((T_CALLED "screen_to_fname\n"));
+    rc = read_by_regex(buf, bufn, b_val_rexp(curbp, VAL_PATHNAME_EXPR), whole_line);
+    if (rc == FALSE)
+	rc = read_by_ctype(buf, bufn, mask, whole_line);
+
+    returnCode(rc);
+}
+
+/*
+ * Obtain $identifier from the screen.
+ */
+int
+screen_to_ident(char *buf, size_t bufn)
+{
+    int rc = FALSE;
+    CHARTYPE mask = vl_ident;
+    int whole_line = adjust_chartype(&mask);
+
+    TRACE((T_CALLED "screen_to_ident\n"));
+    rc = read_by_regex(buf, bufn, b_val_rexp(curbp, VAL_IDENTIFIER_EXPR), whole_line);
+    if (rc == FALSE)
+	rc = read_by_ctype(buf, bufn, mask, whole_line);
+    returnCode(rc);
+}
+
+/*
+ * Get a string consisting of inclchartype characters starting from the current
+ * position.  If inclchartype is 0, return everything to end of line.  If
+ * whole_line is true, allow the string to start before the current position.
+ */
+int
+vl_ctype2tbuff(TBUFF **result, CHARTYPE inclchartype, int whole_line)
 {
     int i = 0;
     MARK save_dot;
     int first = -1;
     int last = -1;
-    int whole_line = 0;
+
+    TRACE((T_CALLED "vl_ctype2tbuff(incl=%#lx)\n", (ULONG) inclchartype));
 
     save_dot = DOT;
 
     tb_init(result, EOS);
-    /* if from gototag(), grab from the beginning of the string */
-    if (b_val(curbp, MDTAGWORD)
-	&& inclchartype == vl_ident) {
-	whole_line = 1;
-    } else if (b_is_directory(curbp)
-	       && inclchartype == SCREEN_STRING) {
-	whole_line = 1;
-	inclchartype = (CHARTYPE) ~0;
-    }
 
+    /*
+     * If we're processing the whole line, find the beginning of the token
+     * by searching to the left.
+     */
     if (whole_line
 	&& DOT.o > 0
 	&& istype(inclchartype, char_at(DOT))) {
@@ -673,6 +784,10 @@ screen2tbuff(TBUFF **result, CHARTYPE inclchartype)
 	    }
 	}
     }
+
+    /*
+     * Search for the start of the token, and then the end of the token.
+     */
     while (!is_at_end_of_line(DOT)) {
 	last = CharOf(char_at(DOT));
 	if (first < 0)
@@ -732,8 +847,54 @@ screen2tbuff(TBUFF **result, CHARTYPE inclchartype)
 
     DOT = save_dot;
 
-    return tb_length(*result) != 0;
+    returnCode(tb_length(*result) != 0);
 }
+
+/*
+ * Get a string matching the given expression, which includes the current
+ * position.  If the "whole_line" parameter is true, allow the string to
+ * start before the current position.
+ */
+#if OPT_CURTOKENS
+int
+vl_regex2tbuff(TBUFF **result, REGEXVAL * rexp, int whole_line)
+{
+    C_NUM given = DOT.o;
+    C_NUM length;
+    C_NUM offset;
+    C_NUM match_off = -1;
+    C_NUM match_len = -1;
+
+    TRACE((T_CALLED "vl_regex2tbuff\n"));
+
+    tb_init(result, EOS);
+
+    if (rexp != 0 && rexp->pat != 0 && rexp->pat[0] && rexp->reg) {
+	regexp *exp = rexp->reg;
+	char *line_text = DOT.l->l_text;
+
+	while (given >= 0) {
+	    if (lregexec(exp, DOT.l, given, llength(DOT.l))) {
+		offset = exp->startp[0] - line_text;
+		length = exp->endp[0] - exp->startp[0];
+		if ((length > match_len) && (offset + length >= DOT.o)) {
+		    match_off = offset;
+		    match_len = length;
+		}
+	    }
+	    if (!whole_line)
+		break;
+	    --given;
+	}
+	if (match_len > 0) {
+	    tb_bappend(result, line_text + match_off, match_len);
+	    tb_append(result, EOS);
+	}
+    }
+
+    returnCode(tb_length(*result) != 0);
+}
+#endif /* OPT_CURTOKENS */
 
 /*
  * Returns the character that ended the last call on 'kbd_string()'
@@ -978,7 +1139,7 @@ expandChar(TBUFF **buf,
 	if (!expand)
 	    return FALSE;
 
-	if (screen_string(str, sizeof(str), vl_pathn))
+	if (screen_to_fname(str, sizeof(str)))
 	    cp = str;
 	else
 	    cp = NULL;

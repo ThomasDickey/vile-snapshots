@@ -4,7 +4,7 @@
  *	original by Daniel Lawrence, but
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.307 2006/11/06 00:45:22 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.308 2006/11/23 14:37:10 tom Exp $
  *
  */
 
@@ -428,7 +428,7 @@ eol_range(EOL_ARGS)
 	result = FALSE;
     } else if (isSpecial(c) || isCntrl(c)) {
 	result = TRUE;
-    } else if (islinespecchar(c)
+    } else if (islinespec(c)
 	       || (c == ':' && (cpos == 0 || buffer[cpos - 1] == c))
 	       || making_mark(buffer, cpos, c, eolchar)
 	       || making_pattern(buffer, cpos, c, eolchar)) {

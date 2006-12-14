@@ -3,7 +3,7 @@
  *	for getting and setting the values of the vile state variables,
  *	plus helper utility functions.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.98 2006/04/19 23:51:34 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.110 2006/12/03 14:21:53 tom Exp $
  */
 
 #include	"estruct.h"
@@ -210,17 +210,34 @@ any_rw_TXT(TBUFF **rp, const char *vp, char **value)
 }
 
 static int
-any_REPL(TBUFF **rp, const char *vp, CHARTYPE type)
+any_CTYPE_MATCH(TBUFF **rp, const char *vp, CHARTYPE type)
 {
+    int whole_line = adjust_chartype(&type);
+
     if (rp) {
-	lgrabtext(rp, type);
+	(void) vl_ctype2tbuff(rp, type, whole_line);
 	return TRUE;
     } else if (vp && valid_buffer(curbp)) {
-	return lrepltext(type, vp, (int) strlen(vp));
+	return lrepl_ctype(type, vp, (int) strlen(vp));
     } else {
 	return FALSE;
     }
 }
+
+#if OPT_CURTOKENS
+static int
+any_REGEX_MATCH(TBUFF **rp, const char *vp, REGEXVAL * rexp)
+{
+    if (rp) {
+	(void) vl_regex2tbuff(rp, rexp, FALSE);
+	return TRUE;
+    } else if (vp && valid_buffer(curbp)) {
+	return lrepl_regex(rexp, vp, (int) strlen(vp));
+    } else {
+	return FALSE;
+    }
+}
+#endif
 
 #if OPT_HOOKS
 static int
@@ -526,6 +543,20 @@ var_BUFHOOK(TBUFF **rp, const char *vp)
 }
 #endif
 
+#if OPT_CURTOKENS
+int
+var_BUF_FNAME_EXPR(TBUFF **rp, const char *vp)
+{
+    return any_ro_STR(rp, vp, curbp->buf_fname_expr.vp->r->pat);
+}
+
+int
+var_BUFNAME(TBUFF **rp, const char *vp)
+{
+    return any_REGEX_MATCH(rp, vp, b_val_rexp(curbp, VAL_BUFNAME_EXPR));
+}
+#endif
+
 int
 var_CBUFNAME(TBUFF **rp, const char *vp)
 {
@@ -587,6 +618,8 @@ var_CFNAME(TBUFF **rp, const char *vp)
 int
 var_CHAR(TBUFF **rp, const char *vp)
 {
+    int status = FALSE;
+
     if (rp) {
 	if (valid_buffer(curbp) && !is_empty_buf(curbp)) {
 	    if (is_at_end_of_line(DOT))
@@ -596,25 +629,18 @@ var_CHAR(TBUFF **rp, const char *vp)
 	} else {
 	    tb_scopy(rp, error_val);
 	}
-	return TRUE;
+	status = TRUE;
     } else if (vp) {
-	if (valid_buffer(curbp) && !b_val(curbp, MDVIEW)) {
-	    int s, c;
+	if ((status = check_editable(curbp)) == TRUE) {
+	    int c;
 	    mayneedundo();
 	    (void) ldelete(1L, FALSE);	/* delete 1 char */
 	    c = scan_int(vp);
-	    if (c == '\n')
-		s = lnewline();
-	    else
-		s = linsert(1, c);
-	    (void) backchar(FALSE, 1);
-	    return s;
-	} else {
-	    return rdonly();
+	    if ((status = bputc(c)) == TRUE)
+		(void) backchar(FALSE, 1);
 	}
-    } else {
-	return FALSE;
     }
+    return status;
 }
 
 #if OPT_ENCRYPT
@@ -933,7 +959,7 @@ var_HELPFILE(TBUFF **rp, const char *vp)
 
 #if DISP_X11
 int
-var_ICONNAM(TBUFF **rp, const char *vp)
+var_ICONNAME(TBUFF **rp, const char *vp)
 {
     if (rp) {
 	tb_scopy(rp, x_get_icon_name());
@@ -947,11 +973,13 @@ var_ICONNAM(TBUFF **rp, const char *vp)
 }
 #endif
 
+#if OPT_CURTOKENS
 int
-var_IDENTIF(TBUFF **rp, const char *vp)
+var_IDENTIFIER(TBUFF **rp, const char *vp)
 {
-    return any_REPL(rp, vp, vl_ident);
+    return any_REGEX_MATCH(rp, vp, b_val_rexp(curbp, VAL_IDENTIFIER_EXPR));
 }
+#endif
 
 int
 var_KBDMACRO(TBUFF **rp, const char *vp)
@@ -1019,7 +1047,7 @@ var_LIBDIR_PATH(TBUFF **rp, const char *vp)
 int
 var_LINE(TBUFF **rp, const char *vp)
 {
-    return any_REPL(rp, vp, (CHARTYPE) 0);
+    return any_CTYPE_MATCH(rp, vp, (CHARTYPE) 0);
 }
 
 int
@@ -1261,11 +1289,13 @@ var_PATCHLEVEL(TBUFF **rp, const char *vp)
     return any_ro_STR(rp, vp, VILE_PATCHLEVEL);
 }
 
+#if OPT_CURTOKENS
 int
 var_PATHNAME(TBUFF **rp, const char *vp)
 {
-    return any_REPL(rp, vp, vl_pathn);
+    return any_REGEX_MATCH(rp, vp, b_val_rexp(curbp, VAL_PATHNAME_EXPR));
 }
+#endif
 
 int
 var_PENDING(TBUFF **rp, const char *vp)
@@ -1309,9 +1339,9 @@ var_PROMPT(TBUFF **rp, const char *vp)
 }
 
 int
-var_QIDENTIF(TBUFF **rp, const char *vp)
+var_QIDENTIFIER(TBUFF **rp, const char *vp)
 {
-    return any_REPL(rp, vp, vl_qident);
+    return any_CTYPE_MATCH(rp, vp, vl_qident);
 }
 
 #if OPT_HOOKS
@@ -1515,7 +1545,7 @@ var_WLINES(TBUFF **rp, const char *vp)
 int
 var_WORD(TBUFF **rp, const char *vp)
 {
-    return any_REPL(rp, vp, vl_nonspace);
+    return any_CTYPE_MATCH(rp, vp, vl_nonspace);
 }
 
 #if OPT_HOOKS

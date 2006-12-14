@@ -6,7 +6,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.326 2006/11/04 15:40:39 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.327 2006/12/03 15:32:29 tom Exp $
  */
 
 #ifndef VILE_EDEF_H
@@ -186,6 +186,10 @@ decl_uninit( G_VALUES global_g_values );
 decl_uninit( B_VALUES global_b_values );
 decl_uninit( W_VALUES global_w_values );
 
+#if OPT_CURTOKENS
+decl_uninit( struct VAL buf_fname_expr );
+#endif
+
 decl_init( int sgarbf, TRUE );		/* TRUE if screen is garbage	*/
 decl_init( int need_update, TRUE );	/* TRUE if screen is not updated*/
 decl_uninit( int clexec );		/* command line execution flag	*/
@@ -280,6 +284,13 @@ decl_init( int cmd_count, 0 );		/* 1..n for procedure execution	*/
 
 #if OPT_EVAL || OPT_DEBUGMACROS
 decl_init( int tracemacros, FALSE );	/* macro tracing flag		*/
+#endif
+
+#if OPT_FINDERR
+decl_init( TBUFF *filename_expr, 0 );
+decl_init( TBUFF *error_expr, 0 );
+decl_init( TBUFF *error_match, 0 );
+decl_init( int error_tabstop, 8 );
 #endif
 
 #if OPT_MODELINE
@@ -409,10 +420,6 @@ decl_init_const( char OUTPUT_BufName[],		"[Output]" );
 decl_init_const( char TRACE_BufName[],		"[Trace]" );
 #endif
 #if OPT_FINDERR
-decl_init( TBUFF *filename_expr, 0 );
-decl_init( TBUFF *error_expr, 0 );
-decl_init( TBUFF *error_match, 0 );
-decl_init( int error_tabstop, 8 );
 decl_init_const( char ERRORS_BufName[],		"[Error Expressions]" );
 decl_init_const( char ERR_REGEX_BufName[],	"[Error Patterns]" );
 #endif
@@ -461,6 +468,8 @@ decl_init_const( char TAGFILE_BufName[],	"[Tags %d]" );
 #ifdef MDFILTERMSGS
 decl_init_const( char FLTMSGS_BufName[],	"[Filter Messages]" );
 #endif
+
+/*--------------------------------------------------------------------------*/
 
 /* defined in nebind.h and nename.h */
 extern const NTAB nametbl[];

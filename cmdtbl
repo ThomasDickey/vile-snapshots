@@ -97,7 +97,7 @@
 #		in '!' listed, then the flag does nothing, and should be
 #		viewed simply as documentation.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.244 2006/11/07 22:44:52 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.245 2006/12/01 21:23:01 tom Exp $
 #
 #
 
@@ -717,7 +717,7 @@ forwsearch	ABSM|MOTION
 	"search-forward"		!FEWNAMES
 	'/'
 	'FN-f'				KEY_Find
-	<search forward for CNT'th occurrence of fresh pattern>
+	<search forward for CNT'th occurrence of fresh $identifier pattern>
 matchfence	ABSM|MOTION		OPT_CFENCE
 	"goto-matching-fence"		!FEWNAMES
 	'%'
@@ -1439,15 +1439,15 @@ sel_motion	ABSM|MOTION		OPT_SELECTIONS
 scrforwsearch	ABSM|MOTION
 	"screen-search-forward"		!FEWNAMES
 	'^X-/'
-	<search forward for pattern (word) under cursor>
+	<search forward for $identifier pattern under cursor>
 scrbacksearch	ABSM|MOTION
 	"screen-search-reverse"		!FEWNAMES
 	'^X-?'
-	<search backwards for pattern (word) under cursor>
+	<search backwards for $identifier pattern under cursor>
 scrsearchpat	NONE
 	"screen-search-pattern-grab"	!FEWNAMES
 	'^A-/'
-	<set search pattern to word under cursor>
+	<set search pattern to $identifier pattern under cursor>
 set_charclass	NONE			OPT_SHOW_CTYPE
 	"set-char-class"
 	<add characters to class, given keyword and regular expression>

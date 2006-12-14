@@ -1,4 +1,4 @@
-; $Id: modes.rc,v 1.49 2006/10/28 15:52:29 tom Exp $
+; $Id: modes.rc,v 1.51 2006/11/25 20:41:56 tom Exp $
 ; majormodes in this file are ordered alphabetically for convenience - the
 ; precedence used by vile is strictly alphabetic, counting case.  Use the
 ; before and after qualifiers to override the precedence.
@@ -742,11 +742,12 @@ define-mode tc
 	comments	'^\s*[:#]\s*$'
 ~endwith
 
+; DCE uses Tcl - http://www.opengroup.org/tech/rfc/rfc68.2.html
 define-mode tcl
 ~with define-submode tcl
 	before "sh"
-	suffixes	'\.\(tcl\|exp\)$'
-	pre '^#!\s*\/.*\(wish\|wishx\|tclsh\|tcl\|expectk\)[0-9.]*\>\(\s*-[\a]\+\)*\s*$'
+	suffixes	'\.\(tcl\|exp\|psm\)$'
+	pre '^#!\s*\/.*\(dcecp\|wish\|wishx\|tclsh\|tcl\|expectk\)[0-9.]*\>\(\s*-[\a]\+\)*\s*$'
 	comment-prefix	'^\s*[:#]'
 	comments	'^\s*[:#]\s*$'
 ~endwith
@@ -781,6 +782,9 @@ define-mode txt
 	comments	'^\s*--\s*$'
 ~endwith
 
+~local %vb-access
+setv %vb-access '^\(\(Public\|Private\|Protected\|Friend\)\s\+\)*'
+
 define-mode vb
 ~with define-submode vb
 	before		"basic"
@@ -798,10 +802,7 @@ define-mode vb
 	fence-elif	'^\s*elseif\>'
 	fence-else	'^\s*else\>'
 	fence-fi	'^\s*end\s\+if\>'
-	sections '^\(\(Public\|Private\)\>\)\?\s*\(Sub\|Function\|Property\)'
-~elsewith define-submode vb group 'attrs'
-	fence-if	'^\s*begin\>'
-	fence-fi	'^\s*end\>\s*$'
+	sections	&cat %vb-access '\(Sub\|Function\|Property\)'
 ~elsewith define-submode vb group 'for-loop'
 	fence-if	'^\s*for\>'
 	fence-fi	'^\s*next\>'
@@ -809,17 +810,20 @@ define-mode vb
 	fence-if	'^\s*while\>'
 	fence-fi	'^\s*wend\>'
 ~elsewith define-submode vb group 'sub'
-	fence-if	'^\s*\(\(Public\|Private\)\s\+\)\?sub\>'
+	fence-if	&cat %vb-access 'sub\>'
 	fence-fi	'^\s*end\s\+sub\>'
 ~elsewith define-submode vb group 'function'
-	fence-if	'^\s*\(\(Public\|Private\)\s\+\)\?function\>'
+	fence-if	&cat %vb-access 'function\>'
 	fence-fi	'^\s*end\s\+function\>'
 ~elsewith define-submode vb group 'property'
-	fence-if	'^\s*\(\(Public\|Private\)\s\+\)\?property\>'
+	fence-if	&cat %vb-access 'property\>'
 	fence-fi	'^\s*end\s\+property\>'
+~elsewith define-submode vb group 'region'
+	fence-if	'^\s*#region\>'
+	fence-fi	'^\s*#end region\>'
 ~endwith
 
-; FIXME this should be the same as vbmode except for the preamble
+; FIXME this should be the same as vbmode except for the preamble and keywords
 define-mode vbs
 ~with define-submode vbs
 	before		"basic"
@@ -831,6 +835,29 @@ define-mode vbs
 	notabinsert
 	tabstop=4
 	shiftwidth=4
+	fence-if	'^\s*if\>'
+	fence-elif	'^\s*elseif\>'
+	fence-else	'^\s*else\>'
+	fence-fi	'^\s*end\s\+if\>'
+	sections	&cat %vb-access '\(Sub\|Function\|Property\)'
+~elsewith define-submode vbs group 'for-loop'
+	fence-if	'^\s*for\>'
+	fence-fi	'^\s*next\>'
+~elsewith define-submode vbs group 'while-loop'
+	fence-if	'^\s*while\>'
+	fence-fi	'^\s*wend\>'
+~elsewith define-submode vbs group 'sub'
+	fence-if	&cat %vb-access 'sub\>'
+	fence-fi	'^\s*end\s\+sub\>'
+~elsewith define-submode vbs group 'function'
+	fence-if	&cat %vb-access 'function\>'
+	fence-fi	'^\s*end\s\+function\>'
+;~elsewith define-submode vbs group 'property'
+;	fence-if	&cat %vb-access 'property\>'
+;	fence-fi	'^\s*end\s\+property\>'
+~elsewith define-submode vbs group 'region'
+	fence-if	'^\s*#region\>'
+	fence-fi	'^\s*#end region\>'
 ~endwith
 
 define-mode vlog

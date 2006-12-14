@@ -3,7 +3,7 @@
  *
  * written for vile.  Copyright (c) 1990, 1995-2001 by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/undo.c,v 1.90 2006/11/06 21:00:51 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/undo.c,v 1.91 2006/11/24 01:09:08 tom Exp $
  *
  */
 
@@ -329,6 +329,15 @@ freeundostacks(BUFFER *bp, int both)
     }
 }
 
+int
+check_editable(BUFFER *bp)
+{
+    int status = TRUE;
+    if (valid_buffer(bp) && b_val(bp, MDVIEW))
+	status = rdonly();
+    return status;
+}
+
 /* ARGSUSED */
 int
 undo(int f GCC_UNUSED, int n GCC_UNUSED)
@@ -338,9 +347,7 @@ undo(int f GCC_UNUSED, int n GCC_UNUSED)
 
     TRACE((T_CALLED "undo(%d,%d)\n", f, n));
 
-    if (b_val(curbp, MDVIEW)) {
-	status = rdonly();
-    } else {
+    if ((status = check_editable(curbp)) == TRUE) {
 	before = vl_line_count(curbp);
 	if ((status = undoworker(curbp->b_udstkindx)) == TRUE) {
 	    if (!line_report(before)) {
@@ -364,9 +371,7 @@ inf_undo(int f, int n)
 
     n = need_at_least(f, n, 1);
 
-    if (b_val(curbp, MDVIEW)) {
-	status = rdonly();
-    } else {
+    if ((status = check_editable(curbp)) == TRUE) {
 	curbp->b_udstkindx ^= 1;	/* flip to other stack */
 	while ((status == TRUE) && n--) {
 	    if ((status = undoworker(curbp->b_udstkindx)) == TRUE) {
@@ -391,9 +396,7 @@ backundo(int f, int n)
 
     n = need_at_least(f, n, 1);
 
-    if (b_val(curbp, MDVIEW)) {
-	status = rdonly();
-    } else {
+    if ((status = check_editable(curbp)) == TRUE) {
 	while ((status == TRUE) && n--) {
 	    status = undoworker(BACK);
 	    if (status) {
@@ -417,9 +420,7 @@ forwredo(int f, int n)
 
     n = need_at_least(f, n, 1);
 
-    if (b_val(curbp, MDVIEW)) {
-	status = rdonly();
-    } else {
+    if ((status = check_editable(curbp)) == TRUE) {
 	while ((status == TRUE) && n--) {
 	    status = undoworker(FORW);
 	    if (status) {
