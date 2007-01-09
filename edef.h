@@ -6,7 +6,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.327 2006/12/03 15:32:29 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.328 2006/12/15 22:47:32 tom Exp $
  */
 
 #ifndef VILE_EDEF_H
@@ -48,7 +48,7 @@ decl_init( char *exec_pathname, "." );	/* replaced at runtime with path-head of 
 #endif /* PROGRAM_NAME */
 
 decl_init( char prognam[], PROGRAM_NAME );
-decl_init( char version[], "version " VILE_VERSION );
+decl_init( char version[], "version " VILE_RELEASE "." VILE_VERSION );
 
 #ifdef SYSTEM_NAME
 decl_init( char opersys[], SYSTEM_NAME );

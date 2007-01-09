@@ -2,7 +2,7 @@
  * Window management. Some of the functions are internal, and some are
  * attached to keys that the user actually types.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/window.c,v 1.107 2006/11/02 01:49:42 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/window.c,v 1.108 2007/01/08 00:40:21 tom Exp $
  *
  */
 
@@ -1179,7 +1179,7 @@ push_fake_win(BUFFER *bp)
     WINDOW *oldwp = 0;
     WINDOW *wp;
 
-    if (valid_buffer(bp)) {
+    if (valid_buffer(bp) && wheadp != 0) {
 	if ((wp = alloc_WINDOW()) != NULL) {
 	    oldwp = curwp;
 	    curwp = wp;

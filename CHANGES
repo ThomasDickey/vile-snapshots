@@ -1,5 +1,24 @@
 Changes for vile 9.6 (released ??? ??? ?? ????)
 
+ 20070108 (n)
+	> Tom Dickey:
+	+ add a character-class check to find_b_file() to prevent names such
+	  as "<vile.1>" from being canonicalized into "vile.1" on win32 via
+	  FindFirstFile().  This fixes a problem where ^X-n would sometimes
+	  display the wrong buffer.
+	+ add shifted-cursor-key bindings for winvile, like xterm.
+	+ amend cursor-tokens mode so that ^X-e in a directory-buffer always
+	  uses the whole line (no regular expressions).
+	+ fix a null-pointer dereference in the cursor-tokens mode.
+	+ minor fix to sh-filt.l to handle lines like
+		: ${BUILD_CC:='${CC}'}
+	+ improve iss-flt.l to highlight preprocessor lines.
+	+ improve winvile.iss (Inno Setup):
+	  + use values in patchlev.h to set the package version information.
+	  + add context menu and Send To shortcuts
+	  + install the keyword files
+	+ add configure --with-valgrind option.
+
  20061212 (m)
 	> Tom Dickey:
 	+ add showvariables mode, for testing expressions used in [Variables].

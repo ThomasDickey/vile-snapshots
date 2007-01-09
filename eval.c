@@ -2,7 +2,7 @@
  *	eval.c -- function and variable evaluation
  *	original by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.356 2006/11/24 20:13:47 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.357 2006/12/14 21:10:34 tom Exp $
  *
  */
 
@@ -682,6 +682,7 @@ default_mode_value(TBUFF **result, char *name)
 		args.global = &mode;
 		args.local = args.global;
 		tb_scopy(result, string_mode_val(&args));
+		free_val(args.names, &mode);
 		break;
 	    }
 	}

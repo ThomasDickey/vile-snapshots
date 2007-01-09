@@ -3,7 +3,7 @@
  *	for getting and setting the values of the vile state variables,
  *	plus helper utility functions.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.110 2006/12/03 14:21:53 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.112 2007/01/08 00:34:20 tom Exp $
  */
 
 #include	"estruct.h"
@@ -53,11 +53,13 @@ SetEnv(char **namep, const char *value)
     char *newvalue;
 
     beginDisplay();
-    if ((newvalue = strmalloc(value)) != 0) {
+    if (*namep == 0 || strcmp(*namep, value)) {
+	if ((newvalue = strmalloc(value)) != 0) {
 #if OPT_EVAL && OPT_SHELL
-	FreeIfNeeded(*namep);
+	    FreeIfNeeded(*namep);
 #endif
-	*namep = newvalue;
+	    *namep = newvalue;
+	}
     }
     endofDisplay();
 }
@@ -547,7 +549,7 @@ var_BUFHOOK(TBUFF **rp, const char *vp)
 int
 var_BUF_FNAME_EXPR(TBUFF **rp, const char *vp)
 {
-    return any_ro_STR(rp, vp, curbp->buf_fname_expr.vp->r->pat);
+    return any_ro_STR(rp, vp, get_buf_fname_expr(curbp)->pat);
 }
 
 int

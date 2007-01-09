@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.584 2006/12/02 14:34:07 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.587 2007/01/08 00:35:51 tom Exp $
  *
  */
 
@@ -751,6 +751,7 @@ void purge_msgs (void);
 #endif
 
 /* modes.c */
+REGEXVAL * get_buf_fname_expr (BUFFER *bp);
 extern REGEXVAL * free_regexval (REGEXVAL *rp);
 extern REGEXVAL * new_regexval (const char *pattern, int magic);
 extern const FSM_CHOICES * name_to_choices (const char *name);
@@ -769,6 +770,7 @@ extern int set_mode_value (BUFFER *bp, const char *cp, int defining, int setting
 extern int string_to_number (const char *from, int *np);
 extern void copy_mvals (int maximum, struct VAL *dst, struct VAL *src);
 extern void free_local_vals (const struct VALNAMES *names, struct VAL *gbl, struct VAL *val);
+extern void free_val (const struct VALNAMES *names, struct VAL *values);
 extern void set_buf_fname_expr (BUFFER *bp);
 extern void set_record_sep (BUFFER *bp, RECORD_SEP value);
 extern void set_winflags (int glob_vals, USHORT flags);
@@ -1639,6 +1641,9 @@ extern	int	wait	(int *sb);
 #endif
 #ifdef MISSING_EXTERN_WRITE
 extern	int	write	(int fd, const char *buffer, int size);
+#endif
+#ifdef MISSING_EXTERN__NC_FREEALL
+extern	void	_nc_freeall (void);
 #endif
 #endif
 
