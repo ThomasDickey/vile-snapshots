@@ -5,7 +5,7 @@
  * keys. Like everyone else, they set hints
  * for the display system.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.312 2006/12/03 16:48:16 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.313 2007/01/08 23:23:30 tom Exp $
  *
  */
 
@@ -138,6 +138,23 @@ find_latest(void)
 }
 
 /*
+ * Check if the given string contains only pathname-characters.
+ */
+static int
+is_pathchars(const char *fname)
+{
+    int result = TRUE;
+    int empty = TRUE;
+    while (*fname != EOS) {
+	if (!ispath(CharOf(*fname)))
+	    break;
+	empty = FALSE;
+	++fname;
+    }
+    return result && !empty;
+}
+
+/*
  * Look for a filename in the buffer-list
  */
 BUFFER *
@@ -146,10 +163,12 @@ find_b_file(const char *fname)
     BUFFER *bp;
     char nfname[NFILEN];
 
-    (void) lengthen_path(vl_strncpy(nfname, fname, sizeof(nfname)));
-    for_each_buffer(bp) {
-	if (same_fname(nfname, bp, FALSE))
-	    return bp;
+    if (is_pathchars(fname)) {
+	(void) lengthen_path(vl_strncpy(nfname, fname, sizeof(nfname)));
+	for_each_buffer(bp) {
+	    if (same_fname(nfname, bp, FALSE))
+		return bp;
+	}
     }
     return 0;
 }

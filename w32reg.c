@@ -2,7 +2,7 @@
  * w32reg.c:  Winvile OLE registration code (currently only used for OLE
  *            automation).
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32reg.c,v 1.10 2006/04/19 22:51:01 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32reg.c,v 1.11 2006/12/22 20:55:40 tom Exp $
  */
 
 #include "estruct.h"
@@ -597,13 +597,12 @@ static void
 make_editor_path(char *path /* must be at least NFILEN chars long */)
 {
     char temp[NFILEN], name[128], *s;
+    UINT which = FL_PATH|FL_EXECABLE;
 
-    /*
-     * Can't use "exec_pathname" in this routine because that global var
-     * is always initialized to "." on a win32 host (bummer).
-     */
+    if (strcmp(exec_pathname, "."))
+	which |= FL_EXECDIR;
     sprintf(name, "%s.exe", prognam);
-    if ((s = cfg_locate(name, FL_PATH|FL_EXECABLE)) != 0)
+    if ((s = cfg_locate(name, which)) != 0)
     {
         if (! (s[0] == '.' && s[1] == '\\'))
         {

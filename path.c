@@ -2,7 +2,7 @@
  *		The routines in this file handle the conversion of pathname
  *		strings.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.152 2006/12/13 22:31:30 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.153 2007/01/08 23:24:37 tom Exp $
  *
  *
  */
@@ -966,7 +966,9 @@ case_correct_path(char *old_file, char *new_file)
 	}
     }
 
-    /* Canonicalize each pathname prefix. */
+    /* Canonicalize each pathname prefix.  Among other things, this discards
+     * characters that cannot appear in a valid pathname, such as '<' and '>'.
+     */
     end = skip_string(old_file);
     while (current < end) {
 	next = strchr(current, SLASHC);

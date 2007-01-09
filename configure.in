@@ -1,12 +1,12 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_REVISION($Revision: 1.225 $)
+AC_REVISION($Revision: 1.227 $)
 AC_PREREQ(2.13.20030927)
 rm -f config.cache
 
 ### Use "configure -with-screen" to override the default configuration, which is
 ### termcap-based on unix systems.
 
-dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.225 2006/10/28 17:46:42 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.227 2006/12/14 23:37:27 tom Exp $
 
 define(MAKELIST, sh $srcdir/filters/makelist.sh $srcdir/filters/genmake.mak)
 
@@ -561,6 +561,7 @@ CF_CRYPT_FUNC
 CF_CHECK_FD_SET
 
 AC_HAVE_FUNCS( \
+_nc_freeall \
 access \
 alarm \
 crypt \
@@ -702,31 +703,12 @@ fi # test $cf_locale != no
 fi # test $cf_cv_locale = yes
 
 ###	Debugging/development options
-CF_WITH_DBMALLOC
-CF_WITH_DMALLOC
-
-AC_ARG_WITH(purify,
-	[  --with-purify           test: use Purify],
-	[AC_DEFINE(USE_PURIFY)
-	 LINK_PREFIX="$LINK_PREFIX purify"
-	 with_purify=yes],
-	[with_purify=])
+CF_WITH_NO_LEAKS
 
 AC_ARG_WITH(fakevms,
 	[  --with-fakevms          test: use fake VMS I/O module],
 	[AC_DEFINE(OPT_VMS_PATH)
 	 EXTRAOBJS="$EXTRAOBJS fakevms\$o vms2unix\$o"])
-
-AC_ARG_WITH(no-leaks,
-	[  --with-no-leaks         test: free permanent memory, analyze leaks],
-	[AC_DEFINE(NO_LEAKS)
-	 cf_doalloc=".${with_dmalloc}${with_dbmalloc}${with_purify}"
-	 case ${cf_doalloc} in #(vi
-	 *yes*) ;;
-	 *) AC_DEFINE(DOALLOC,10000) ;;
-	 esac
-	 with_no_leaks=yes],
-	[with_no_leaks=])
 
 AC_ARG_WITH(trace,
 	[  --with-trace            test: turn on debug-tracing],
@@ -779,6 +761,7 @@ if test -n "$with_warnings"
 then
 CHECK_DECL_HDRS="$VILE_CHECK_HDRS"
 CF_MISSING_EXTERN( \
+_nc_freeall \
 access \
 alarm \
 atoi \

@@ -44,7 +44,7 @@
  *	tgetc_avail()     true if a key is avail from tgetc() or below.
  *	keystroke_avail() true if a key is avail from keystroke() or below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.304 2006/12/11 01:29:54 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.306 2007/01/08 01:18:05 tom Exp $
  *
  */
 
@@ -654,7 +654,8 @@ read_by_ctype(char *buf, size_t bufn, CHARTYPE inclchartype, int whole_line)
 
 #if OPT_CURTOKENS
     if (b_val(curbp, VAL_CURSOR_TOKENS) == CT_REGEX) {
-	return FALSE;
+	if (!(b_is_directory(curbp) && whole_line))
+	    return FALSE;
     }
 #endif
 
@@ -678,7 +679,7 @@ read_by_regex(char *buf, size_t bufn, REGEXVAL * rexp, int whole_line)
     int rc = FALSE;
     size_t len;
 
-    if (b_val(curbp, VAL_CURSOR_TOKENS) != CT_CCLASS) {
+    if (b_val(curbp, VAL_CURSOR_TOKENS) != CT_CCLASS && rexp != 0) {
 	TRACE((T_CALLED "read_by_regex(incl=%s)\n", rexp->pat));
 	*buf = EOS;
 
@@ -700,6 +701,10 @@ read_by_regex(char *buf, size_t bufn, REGEXVAL * rexp, int whole_line)
 /*
  * Obtain a buffer (or file) name from the screen.
  * It may contain wildcards that we can glob-expand.
+ *
+ * If it is not a directory-buffer, we provide a choice between regular
+ * expressions and character classes.  Directory-buffers are guaranteed
+ * to have one filename per line.
  */
 int
 screen_to_bname(char *buf, size_t bufn)
@@ -709,8 +714,13 @@ screen_to_bname(char *buf, size_t bufn)
     int whole_line = adjust_chartype(&mask);
 
     TRACE((T_CALLED "screen_to_bname\n"));
-    rc = read_by_regex(buf, bufn, curbp->buf_fname_expr.vp->r, whole_line);
+#if OPT_CURTOKENS
+    if (b_is_directory(curbp))
+	rc = FALSE;
+    else
+	rc = read_by_regex(buf, bufn, get_buf_fname_expr(curbp), whole_line);
     if (rc == FALSE)
+#endif
 	rc = read_by_ctype(buf, bufn, mask, whole_line);
     returnCode(rc);
 }

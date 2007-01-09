@@ -1,5 +1,5 @@
 .\" obligatory man page for vile
-.\" $Header: /users/source/archives/vile.vcs/RCS/vile.1,v 1.36 2006/11/06 01:18:30 tom Exp $
+.\" $Header: /users/source/archives/vile.vcs/RCS/vile.1,v 1.37 2007/01/08 23:29:41 tom Exp $
 .TH VILE 1
 .SH NAME
 vile, xvile \- \fBVI L\fRike \fBE\fRmacs
@@ -38,9 +38,7 @@ and \fI[vileopts]\fP.
 The former is executed before reading the first file into a buffer.
 The latter is executed after reading the first file into a buffer.
 Each is removed after executing (unless an error is detected).
-.
 .SS COMMON OPTIONS
-.
 .IP "-c\fIcommand\fR"
 .I vile
 will begin the session on the first file invoking the given command.
@@ -83,7 +81,6 @@ vile -c'123' -c'10*goto-col' filename
 to put the cursor on column 10 of line 123.
 The "*" (or ":") separates the repeat count (used by \fIgoto-col\fP) from the
 line- or range-specification used by line-oriented commands.
-.
 .IP @\fIcmdfile\fR
 .I vile
 will run the specified file as its startup
@@ -179,7 +176,6 @@ This has the same effect as "-c\fINNN\fP".
 .I vile
 will begin the session on the first file jumping to the given line number
 \fINNN\fP.
-.
 .SH "INVOCATION"
 vile will edit the files specified on the command line.  If no files
 are specified, and standard input is not connected to a terminal, then

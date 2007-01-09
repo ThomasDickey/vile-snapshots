@@ -22,7 +22,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.586 2006/12/13 01:29:48 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.588 2006/12/22 21:08:49 tom Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -1017,6 +1017,44 @@ get_executable_dir(void)
 	exec_pathname = strmalloc(lengthen_path(strcpy(temp, s)));
     }
     free(s);
+#elif SYS_WINNT
+    static HKEY rootkeys[] =
+    {HKEY_CURRENT_USER, HKEY_LOCAL_MACHINE};
+
+    int j;
+    HKEY hkey;
+    DWORD dwSzBuffer;
+    char buffer[256];
+
+    for (j = 0; j < TABLESIZE(rootkeys); ++j) {
+	if (RegOpenKeyEx(rootkeys[j],
+			 VILE_SUBKEY,
+			 0,
+			 KEY_READ,
+			 &hkey) == ERROR_SUCCESS) {
+	    dwSzBuffer = sizeof(buffer);
+	    if (RegQueryValueEx(hkey,
+				"",
+				NULL,
+				NULL,
+				(LPBYTE) buffer,
+				&dwSzBuffer) == ERROR_SUCCESS
+		&& dwSzBuffer != 0) {
+
+		buffer[dwSzBuffer - 1] = 0;
+		/*
+		 * If the (Default) key has a value, use it for $exec-path
+		 * We need $exec-path to make "winvile -Or" work, since an
+		 * install is not guaranteed to put winvile.exe in %PATH%.
+		 */
+		exec_pathname = strmalloc(buffer);
+		(void) RegCloseKey(hkey);
+		break;
+	    }
+
+	    (void) RegCloseKey(hkey);
+	}
+    }
 #endif
 }
 
@@ -1035,6 +1073,11 @@ tidy_exit(int code)
     term.clean(TRUE);
 #if SYS_UNIX
     setup_handler(SIGHUP, SIG_IGN);
+#endif
+#if NO_LEAKS
+#ifdef HAVE__NC_FREEALL
+    _nc_freeall();
+#endif
 #endif
     ExitProgram(code);
 }
@@ -2217,6 +2260,9 @@ quit(int f, int n GCC_UNUSED)
 	if (exec_pathname != 0
 	    && strcmp(exec_pathname, "."))
 	    FreeAndNull(exec_pathname);
+#endif
+#if OPT_CURTOKENS
+	free_regexval(buf_fname_expr.v.r);
 #endif
 #if OPT_FILTER
 	flt_leaks();

@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/m4-filt.c,v 1.27 2006/05/21 19:47:35 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/m4-filt.c,v 1.28 2006/12/15 00:18:40 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of m4
  * input text.  This is in C rather than LEX because M4's quoting delimiters
@@ -59,6 +59,18 @@ SkipBlanks(char *src)
 	src++;
     return (src);
 }
+
+#if NO_LEAKS
+static void
+free_quote(Quote * q)
+{
+    if (q->text != 0) {
+	free(q->text);
+	q->used = 0;
+	q->text = 0;
+    }
+}
+#endif
 
 static void
 new_quote(Quote * q, const char *s)
@@ -275,6 +287,11 @@ extract_identifier(char *s, char ***args, int *parens)
 	    flt_puts(show, s - show, Ident_attr);
 	}
 	s = parse_directive(name, s, args, parens);
+#if NO_LEAKS
+	free(name);
+	name = 0;
+	have = 0;
+#endif
     }
     return s;
 }
@@ -377,6 +394,13 @@ write_literal(char *s, int *literal)
 	flt_puts(buffer, used, Error_attr);
 	used = 0;
     }
+#if NO_LEAKS
+    if (used == 0 && have != 0 && buffer != 0) {
+	free(buffer);
+	buffer = 0;
+	have = 0;
+    }
+#endif
     return result;
 }
 
@@ -477,4 +501,10 @@ do_filter(FILE *input GCC_UNUSED)
 	flt_error("missing right-quote");
 	(void) write_literal(0, &literal);
     }
+#if NO_LEAKS
+    free_quote(&leftquote);
+    free_quote(&rightquote);
+    free_quote(&leftcmt);
+    free_quote(&rightcmt);
+#endif
 }

@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.326 2006/12/06 23:42:43 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.328 2007/01/08 00:35:17 tom Exp $
  *
  */
 
@@ -635,7 +635,7 @@ new_regexval(const char *pattern, int magic)
 /*
  * Release storage of a VAL struct
  */
-static void
+void
 free_val(const struct VALNAMES *names, struct VAL *values)
 {
     switch (names->type) {
@@ -2083,6 +2083,17 @@ set_buf_fname_expr(BUFFER *bp)
 	}
     }
     tb_free(&combined);
+}
+
+REGEXVAL *
+get_buf_fname_expr(BUFFER *bp)
+{
+    REGEXVAL *result = 0;
+    if (bp->buf_fname_expr.vp != 0)
+	result = bp->buf_fname_expr.vp->r;
+    else
+	result = buf_fname_expr.vp->r;
+    return result;
 }
 
 int
