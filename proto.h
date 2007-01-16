@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.587 2007/01/08 00:35:51 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.590 2007/01/15 21:55:06 tom Exp $
  *
  */
 
@@ -235,6 +235,14 @@ extern void update_scratch (const char *name, UpBuffFunc func);
 #define update_scratch(name, func)
 #endif
 
+/* charsets.c */
+#if OPT_MULTIBYTE
+extern int decode_bom (BUFFER *bp);
+extern int write_bom (BUFFER *bp);
+#else
+#define decode_bom(bp) /* nothing */
+#define write_bom(bp) /* nothing */
+#endif
 /* csrch.c */
 
 /* display.c */

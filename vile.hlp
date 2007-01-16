@@ -1303,6 +1303,9 @@ Editor modes
 		or via .Xdefaults.  See notes about the color palette down
 		below, under DOS specifics.  (U)
 
+	byteorder-mark (bom)  is a prefix used to distinguish different types
+		of UTF-encoding.  (B)
+
 	bufname-expr Regular expression used for parsing of $bufname, subject
 		to the cursor-tokens mode.  If the expression is inactive, use
 		character-class based internal function which combines buffer-
@@ -1464,6 +1467,9 @@ Editor modes
 		and '>' characters ("{}()[]<>") to cause angle brackets to be
 		matched as well.  See "showmatch" mode for another use of the
 		"fence-pairs" mode.  (B)
+
+	file-encoding  Is a placeholder for future work, currently gives some
+		context for the byteorder-mark.  (B)
 
 	fillcol (fc)  Sets the value for the fill column, which is the
 		column at which autowrapping and region formatting will
@@ -6326,4 +6332,4 @@ Problems
 
 Copyright 1995-2005,2006 by Paul Fox, Thomas Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.626 2006/12/13 01:33:06 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.627 2007/01/15 23:25:28 tom Exp $

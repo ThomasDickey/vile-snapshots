@@ -1,4 +1,4 @@
-; $Header: /users/source/archives/vile.vcs/package/RCS/winvile.iss,v 1.8 2006/12/23 02:00:28 tom Exp $
+; $Header: /users/source/archives/vile.vcs/package/RCS/winvile.iss,v 1.9 2007/01/16 01:24:16 tom Exp $
 ; vile:ts=2 sw=2
 ;
 ; This installs winvile as "winvile-ole.exe", since that is the name I use when building the OLE flavor
@@ -31,8 +31,9 @@
 #include "..\patchlev.h"
 
 #define myVer VILE_RELEASE + '.' + VILE_VERSION + VILE_PATCHLEVEL
-#define myAppVer 'WinVile ' + myVer
-#define mySendTo '{sendto}\' + myAppVer + '.lnk'
+#define myAppName 'WinVile'
+#define myAppVer myAppName + ' ' + myVer
+#define mySendTo '{sendto}\' + myAppName + '.lnk'
 
 #define NUM_PATCHLEVEL Pos(VILE_PATCHLEVEL, "@abcdefghijklmnopqrstuvwxyz")
 
@@ -43,7 +44,7 @@ VersionInfoDescription=Setup for "WinVile - VI Like Emacs"
 #emit 'AppVersion=' + myVer
 #emit 'AppVerName=' + myAppVer
 AppPublisher=Thomas E. Dickey
-AppCopyright=© 1997-2005,2006, Thomas E. Dickey
+AppCopyright=© 1997-2006,2007, Thomas E. Dickey
 AppPublisherURL=http://invisible-island.net/vile/
 AppSupportURL=http://invisible-island.net/vile/
 AppUpdatesURL=http://invisible-island.net/vile/
@@ -107,7 +108,7 @@ Type: dirifempty; Name: {app}
 #emit 'Type: files; Name: ' + mySendTo
 
 [Code]
-#emit 'const MY_CONTEXT_MENU = ''Edit with ' + myAppVer + ''';'
+#emit 'const MY_CONTEXT_MENU = ''Edit with ' + myAppName + ''';'
 const MY_EDITOR_APP = '{app}\bin\winvile-ole.exe';
 const MY_REGISTER_OLE = 'Register OLE Server';
 const MY_UNREGISTER_OLE = 'Unregister OLE Server';
@@ -378,7 +379,7 @@ procedure AddSendTo();
 begin
   CreateShellLink(
 #emit 'ExpandConstant(''' + mySendTo + '''),'
-#emit '''SendTo link for ' + myAppVer + ''','
+#emit '''SendTo link for ' + myAppName + ''','
     ExpandConstant(MY_EDITOR_APP),    // program
     '',                               // no params
     '',                               // no target directory

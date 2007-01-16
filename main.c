@@ -22,7 +22,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.588 2006/12/22 21:08:49 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.590 2007/01/14 23:57:23 tom Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -1441,6 +1441,9 @@ init_mode_value(struct VAL *d, MODECLASS v_class, int v_which)
 #ifdef VAL_AUTOCOLOR
 	    setINT(VAL_AUTOCOLOR, 0);	/* auto syntax coloring timeout */
 #endif
+#ifdef VAL_BYTEORDER_MARK 
+	    setINT(VAL_BYTEORDER_MARK, ENUM_UNKNOWN);	/* byteorder-mark NONE */
+#endif
 #ifdef VAL_C_SWIDTH
 	    setINT(VAL_C_SWIDTH, 8);	/* C file shiftwidth */
 #endif
@@ -1449,6 +1452,9 @@ init_mode_value(struct VAL *d, MODECLASS v_class, int v_which)
 #endif
 #ifdef VAL_FENCE_LIMIT
 	    setINT(VAL_FENCE_LIMIT, 10);	/* fences iteration timeout */
+#endif
+#ifdef VAL_FILE_ENCODING 
+	    setINT(VAL_FILE_ENCODING, 0);	/* file-encoding ASCII */
 #endif
 #ifdef VAL_HILITEMATCH
 	    setINT(VAL_HILITEMATCH, 0);		/* no hilite */

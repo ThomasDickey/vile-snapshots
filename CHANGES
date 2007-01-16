@@ -1,5 +1,18 @@
 Changes for vile 9.6 (released ??? ??? ?? ????)
 
+ 20070115 (o)
+	> Tom Dickey:
+	+ change Inno Setup script to not put version numbers on the SendTo
+	  and context-menu entries.
+	+ start adding support for UTF-8 (modes "byteorder-mark" and
+	  "file-encoding").  The byteorder-mark is workable, but the
+	  file-encoding is a stub.  This works to strip the BOM from files
+	  as they are loaded, making syntax highlighting work for XML files.
+	+ correct two places in exec.c which used skip_blanks() rather than
+	  skip_space_tab() from 9.5l changes.  This caused the command
+	  parser to treat ^K as a blank, breaking digraph.rc which uses
+	  that character (report by Gary Jennejohn).
+
  20070108 (n)
 	> Tom Dickey:
 	+ add a character-class check to find_b_file() to prevent names such

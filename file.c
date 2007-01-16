@@ -5,7 +5,7 @@
  * reading and writing of the disk are
  * in "fileio.c".
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.396 2006/10/25 22:01:24 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.399 2007/01/16 00:53:26 tom Exp $
  */
 
 #include "estruct.h"
@@ -1672,8 +1672,10 @@ readin(char *fname, int lockfl, BUFFER *bp, int mflg)
     /*
      * Set the majormode if the file's suffix matches.
      */
-    if (s < FIOERR)
+    if (s < FIOERR) {
+	decode_bom(bp);
 	infer_majormode(bp);
+    }
 
     for_each_window(wp) {
 	if (wp->w_bufp == bp) {
@@ -2100,6 +2102,12 @@ actually_write(REGION * rp, char *fn, int msgf, BUFFER *bp, int forced, int enco
     lp = rp->r_orig.l;
     nline = 0;			/* Number of lines     */
     nchar = 0;			/* Number of chars     */
+
+#if OPT_MULTIBYTE
+    if ((s = write_bom(bp)) != FIOSUC) {
+	goto out;
+    }
+#endif
 
     /* first (maybe partial) line and succeeding whole lines */
     while ((rp->r_size + offset) >= line_length(lp)) {
