@@ -5,7 +5,7 @@
  * keys. Like everyone else, they set hints
  * for the display system.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.313 2007/01/08 23:23:30 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.314 2007/01/14 23:51:45 tom Exp $
  *
  */
 
@@ -711,6 +711,7 @@ imply_alt(char *fname, int copy, int lockfl)
 	DisableHook(&bufhook);
 	if (bp != 0) {
 	    make_current(bp);
+	    decode_bom(bp);
 	    infer_majormode(bp);
 	}
 	make_current(savebp);

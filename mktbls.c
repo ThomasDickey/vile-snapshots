@@ -15,7 +15,7 @@
  * by Tom Dickey, 1993.    -pgf
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/mktbls.c,v 1.136 2006/10/19 22:25:52 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/mktbls.c,v 1.137 2007/01/14 21:15:17 tom Exp $
  *
  */
 
@@ -89,6 +89,7 @@ extern void free(char *ptr);
 #endif
 
 #include <stdio.h>
+#include <ctype.h>
 #include <string.h>
 #include <setjmp.h>
 
@@ -120,11 +121,8 @@ extern void free(char *ptr);
 #define	DIFCNTRL	0x40
 #define tocntrl(c)	((c)^DIFCNTRL)
 #define toalpha(c)	((c)^DIFCNTRL)
-#define	DIFCASE		0x20
 #define	isUpper(c)	((c) >= 'A' && (c) <= 'Z')
 #define	isLower(c)	((c) >= 'a' && (c) <= 'z')
-#define toUpper(c)	((c)^DIFCASE)
-#define toLower(c)	((c)^DIFCASE)
 #define isboolean(c)	((c) == 'b' || (c) == 'M')
 
 #ifndef	TRUE
@@ -238,6 +236,18 @@ static FILE *nefsms;
 static jmp_buf my_top;
 
 /******************************************************************************/
+static int
+toUpper(int c)
+{
+    return toupper((c) & 0xff);
+}
+
+static int
+toLower(int c)
+{
+    return tolower((c) & 0xff);
+}
+
 static int
 isSpace(int c)
 {

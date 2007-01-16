@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.328 2007/01/08 00:35:17 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.329 2007/01/14 21:05:46 tom Exp $
  *
  */
 
@@ -858,6 +858,9 @@ static struct FSM fsm_tbl[] =
 #if OPT_BACKUP_CHOICES
     {"backup-style", fsm_backup_choices},
 #endif
+#if OPT_COLOR
+    {s_video_attrs, fsm_videoattrs_choices},
+#endif
 #if OPT_FORBUFFERS_CHOICES
     {"for-buffers", fsm_forbuffers_choices},
 #endif
@@ -866,8 +869,9 @@ static struct FSM fsm_tbl[] =
     {"visual-matches", fsm_hilite_choices},
     {"mini-hilite", fsm_hilite_choices},
 #endif
-#if OPT_COLOR
-    {s_video_attrs, fsm_videoattrs_choices},
+#if OPT_MULTIBYTE
+    {"byteorder-mark", fsm_byteorder_mark_choices},
+    {"file-encoding", fsm_file_encoding_choices},
 #endif
 #if OPT_VTFLASHSEQ_CHOICES
     {"vtflash", fsm_vtflashseq_choices},

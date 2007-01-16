@@ -4,7 +4,7 @@
  *	original by Daniel Lawrence, but
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.308 2006/11/23 14:37:10 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.309 2007/01/14 20:03:23 tom Exp $
  *
  */
 
@@ -1106,7 +1106,7 @@ get_token2(char *src, TBUFF **tok, int (*endfunc) (EOL_ARGS), int eolchar, int *
 	return src;
 
     /* first scan past any whitespace in the source string */
-    src = skip_blanks(src);
+    src = skip_space_tab(src);
 
     /* scan through the source string, which may be quoted */
     while ((c = *src) != EOS) {
@@ -1242,7 +1242,7 @@ get_token2(char *src, TBUFF **tok, int (*endfunc) (EOL_ARGS), int eolchar, int *
     }
 
     /* scan past any whitespace remaining in the source string */
-    src = skip_blanks(src);
+    src = skip_space_tab(src);
     token_ended_line = isreturn(*src) || *src == EOS;
 
     tb_append(tok, EOS);

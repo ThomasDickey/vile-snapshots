@@ -1,4 +1,4 @@
-MANIFEST for vile, version v9_5n
+MANIFEST for vile, version v9_5o
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 CHANGES                         Change-log for VILE
@@ -25,6 +25,7 @@ btree.h                         interface of btree.c
 buffer.c                        buffer-management
 buglist                         bug-list
 builtflt.c                      interface from vile to built-in filters
+charsets.c                      multibyte-character set support
 chgdfunc.h                      prototypes for mode-functions with side-effects
 cmdtbl                          used by 'mktbls' to generate VILE's command-tables
 config.guess                    guess configuration

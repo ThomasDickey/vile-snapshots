@@ -11,7 +11,7 @@
 #
 # The modes are table entries in the BUFFER and WINDOW structures.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.250 2006/12/13 01:15:11 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.256 2007/01/15 22:29:41 tom Exp $
 #
 #
 # Mode-table entries.  Capitalized letters are used for abbreviations.
@@ -131,6 +131,8 @@ bool							# MD prefix
 	"WrapWords"	WRAP		0		# word wrap
 	"YankMotion"	YANKMOTION	0		# honor vi-style motion after yanking text
 enum
+	"ByteOrder-Mark" BYTEORDER_MARK	chgd_byteorder	OPT_MULTIBYTE # byte-order-mark
+	"file-encoding"	FILE_ENCODING	chgd_fileencode	OPT_MULTIBYTE # file-encoding
 	"cursor-tokens"	CURSOR_TOKENS	0		OPT_CURTOKENS # specify whether to use regex/cclass for cursor tokens
 	"record-format" RECORD_FORMAT	0		SYS_VMS	# specify record-format to use
 	"record-attrs"	RECORD_ATTRS	0		SYS_VMS	# specify record-attributes to use
@@ -411,6 +413,15 @@ string
 "off"		FALSE
 "on"		TRUE
 
+.table byteorder_mark				# see file_encoding
+"auto"		ENUM_UNKNOWN
+"none"		bom_NONE
+"utf-8"		bom_UTF8
+"utf-16le"	bom_UTF16LE
+"utf-16be"	bom_UTF16BE
+"utf-32le"	bom_UTF32LE
+"utf-32be"	bom_UTF32BE
+
 # These names are a little cryptic because I'm squeezing them into an 80-column
 # display for show-printable -TD
 .table charclass		OPT_SHOW_CTYPE
@@ -478,6 +489,15 @@ string
 "endwith"	D_ENDWITH
 "endm"		D_ENDM
 "trace"		D_TRACE
+
+# FIXME: this table should be generated from runtime locale
+.table file_encoding				# see byteorder_mark
+"auto"		ENUM_UNKNOWN
+"ascii"		enc_POSIX
+"8bit"		enc_LOCALE
+"utf-8"		enc_UTF8
+"utf-16"	enc_UTF16
+"utf-32"	enc_UTF32
 
 .table forbuffers
 "glob"		FB_GLOB

@@ -1,12 +1,12 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_REVISION($Revision: 1.227 $)
+AC_REVISION($Revision: 1.228 $)
 AC_PREREQ(2.13.20030927)
 rm -f config.cache
 
 ### Use "configure -with-screen" to override the default configuration, which is
 ### termcap-based on unix systems.
 
-dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.227 2006/12/14 23:37:27 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.228 2007/01/14 21:38:06 tom Exp $
 
 define(MAKELIST, sh $srcdir/filters/makelist.sh $srcdir/filters/genmake.mak)
 
@@ -685,7 +685,7 @@ AC_ARG_WITH(locale,
 AC_MSG_RESULT($cf_locale)
 if test "$cf_locale" != no ; then
 	AC_DEFINE(OPT_LOCALE)
-
+	EXTRAOBJS="$EXTRAOBJS charsets\$o"
 CF_FUNC_ICONV
 if test "$cf_cv_func_iconv" != no ; then
 AC_MSG_CHECKING(if you want to use iconv() for locale support)

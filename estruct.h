@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.604 2006/12/13 22:30:55 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.608 2007/01/15 23:27:36 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -621,6 +621,7 @@
 #define OPT_MACRO_ARGS	(!SMALLER && OPT_EVAL)	/* macro argument parsing */
 #define OPT_MLFORMAT    !SMALLER		/* modeline-format */
 #define OPT_MODELINE    !SMALLER		/* vi-style modeline-support */
+#define OPT_MULTIBYTE   !SMALLER		/* experimental multibyte support */
 #define OPT_NAMEBST     !SMALLER		/* name's stored in a bst */
 #define OPT_ONLINEHELP  !SMALLER		/* short per-command help */
 #define OPT_POPUPCHOICE !SMALLER		/* popup-choices mode */
@@ -705,28 +706,30 @@
 /*
  * Symbols that turn on tables related to OPT_ENUM_MODES in nefsms.h
  */
-#define OPT_COLOR_SCHEMES        (OPT_ENUM_MODES && !SMALLER && OPT_COLOR)
+#define OPT_COLOR_SCHEMES          (OPT_ENUM_MODES && !SMALLER && OPT_COLOR)
 
-#define OPT_BACKUP_CHOICES	 (OPT_ENUM_MODES && OPT_FILEBACK)
-#define OPT_BOOL_CHOICES	 !SMALLER
-#define OPT_CHARCLASS_CHOICES	 OPT_SHOW_CTYPE
-#define OPT_COLOR_CHOICES	 (OPT_ENUM_MODES && OPT_COLOR)
-#define OPT_CURTOKENS_CHOICES    OPT_CURTOKENS
-#define OPT_DIRECTIVE_CHOICES    !SMALLER
-#define OPT_FORBUFFERS_CHOICES   !SMALLER
-#define OPT_HILITE_CHOICES	 (OPT_ENUM_MODES && OPT_HILITEMATCH)
-#define OPT_LOOKUP_CHOICES       !SMALLER
-#define OPT_MMQUALIFIERS_CHOICES OPT_MAJORMODE
-#define OPT_PARAMTYPES_CHOICES   OPT_MACRO_ARGS
-#define OPT_PATH_CHOICES         !SMALLER
-#define OPT_POPUP_CHOICES	 (OPT_ENUM_MODES && OPT_POPUPCHOICE)
-#define OPT_READERPOLICY_CHOICES !SMALLER
-#define OPT_RECORDFORMAT_CHOICES (OPT_ENUM_MODES && SYS_VMS)
-#define OPT_RECORDATTRS_CHOICES  (OPT_ENUM_MODES && SYS_VMS)
-#define OPT_RECORDSEP_CHOICES    !SMALLER
-#define OPT_SHOWFORMAT_CHOICES   !SMALLER
-#define OPT_VIDEOATTRS_CHOICES   (OPT_ENUM_MODES && OPT_COLOR_SCHEMES)
-#define OPT_VTFLASHSEQ_CHOICES   (OPT_ENUM_MODES && VTFLASH_HOST && OPT_FLASH)
+#define OPT_BACKUP_CHOICES	   (OPT_ENUM_MODES && OPT_FILEBACK)
+#define OPT_BOOL_CHOICES	   !SMALLER
+#define OPT_BYTEORDER_MARK_CHOICES OPT_MULTIBYTE
+#define OPT_CHARCLASS_CHOICES	   OPT_SHOW_CTYPE
+#define OPT_COLOR_CHOICES	   (OPT_ENUM_MODES && OPT_COLOR)
+#define OPT_CURTOKENS_CHOICES      OPT_CURTOKENS
+#define OPT_DIRECTIVE_CHOICES      !SMALLER
+#define OPT_FILE_ENCODING_CHOICES  OPT_MULTIBYTE
+#define OPT_FORBUFFERS_CHOICES     !SMALLER
+#define OPT_HILITE_CHOICES	   (OPT_ENUM_MODES && OPT_HILITEMATCH)
+#define OPT_LOOKUP_CHOICES         !SMALLER
+#define OPT_MMQUALIFIERS_CHOICES   OPT_MAJORMODE
+#define OPT_PARAMTYPES_CHOICES     OPT_MACRO_ARGS
+#define OPT_PATH_CHOICES           !SMALLER
+#define OPT_POPUP_CHOICES	   (OPT_ENUM_MODES && OPT_POPUPCHOICE)
+#define OPT_READERPOLICY_CHOICES   !SMALLER
+#define OPT_RECORDATTRS_CHOICES    (OPT_ENUM_MODES && SYS_VMS)
+#define OPT_RECORDFORMAT_CHOICES   (OPT_ENUM_MODES && SYS_VMS)
+#define OPT_RECORDSEP_CHOICES      !SMALLER
+#define OPT_SHOWFORMAT_CHOICES     !SMALLER
+#define OPT_VIDEOATTRS_CHOICES     (OPT_ENUM_MODES && OPT_COLOR_SCHEMES)
+#define OPT_VTFLASHSEQ_CHOICES     (OPT_ENUM_MODES && VTFLASH_HOST && OPT_FLASH)
 
 /*
  * Special characters used in globbing
@@ -1124,6 +1127,15 @@ struct FSM {
 };
 
 typedef enum {
+	bom_NONE = 0
+	, bom_UTF8
+	, bom_UTF16LE
+	, bom_UTF16BE
+	, bom_UTF32LE
+	, bom_UTF32BE
+} BOM_CODES;
+
+typedef enum {
 	CT_BOTH = 0
 	, CT_CCLASS
 	, CT_REGEX
@@ -1161,6 +1173,14 @@ typedef enum {
 	, FB_REGEX
 } FOR_BUFFERS;
 
+typedef enum {
+	enc_POSIX = 0
+	, enc_LOCALE
+	, enc_UTF8
+	, enc_UTF16
+	, enc_UTF32
+} ENC_CHOICES;
+ 
 typedef enum {
 	MMQ_ANY = 0
 	, MMQ_ALL
