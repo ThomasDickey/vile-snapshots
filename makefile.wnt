@@ -1,7 +1,7 @@
 #
 # makefile for vile on WIN32 using Microsoft Visual C++
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.wnt,v 1.92 2007/01/14 21:39:05 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.wnt,v 1.93 2007/04/20 22:58:33 tom Exp $
 #
 #
 !include <ntwin32.mak>
@@ -118,6 +118,7 @@ LDFLAGS  = -nologo /subsystem:windows /incremental:no $(MY_LDOPT)
 SCREEN   = ntwinio
 LIBS     = $(LD_DEBUG) $(guilflags) $(guilibsmt) ole32.lib shell32.lib \
            $(VILE_PERL_LIB) $(OLELIBS)
+EXTRAOBJ = makeargv.obj
 EXTRA    = winvile.res
 !endif
 
@@ -136,8 +137,8 @@ CFLAGS   = $(CFLAGS) -DVILE_OLE
 OLEOBJS  = w32ole.obj w32reg.obj w32ole.res
 OLESRCS  = w32ole.cpp w32reg.c
 WRAPUTIL = wvwrap.exe
-EXTRA    =
 OLELIBS  = uuid.lib oleaut32.lib comsupp.lib
+EXTRA    = 
 !endif
 
 !IF "$(CFG)" == "winvile-with-perl" || "$(CFG)" == "vile-with-perl"
@@ -228,7 +229,7 @@ OBJ = 	main.obj $(SCREEN).obj \
 	tags.obj tbuff.obj termio.obj ucrypt.obj undo.obj \
 	version.obj window.obj word.obj wordmov.obj map.obj \
 	w32cbrd.obj w32cmd.obj w32misc.obj w32oo.obj w32pipe.obj $(PERLOBJS) \
-	$(OLEOBJS) $(DBGOBJS) $(EXTRA)
+	$(OLEOBJS) $(DBGOBJS) $(EXTRAOBJ) $(EXTRA)
 
 .c.obj:
 	$(cc) $(CFLAGS) -c $< -Fo$@
@@ -295,8 +296,8 @@ vile-perl-api.pod: perl.xs
 vile-perl-api.doc: vile-perl-api.pod
 	perl -e "use Pod::Text; pod2text(\"$?\");" > $@
 
-wvwrap.exe: wvwrap.obj
- 	$(link) $(LDFLAGS) wvwrap.obj $(LIBS) -out:$(@)
+wvwrap.exe: wvwrap.obj makeargv.obj
+ 	$(link) $(LDFLAGS) wvwrap.obj makeargv.obj $(LIBS) -out:$(@)
 
 mktbls.exe:  mktbls.c
 	$(cc) $(CFLAGS) mktbls.c -Fomktbls -link $(CON_LDFLAGS)
@@ -392,9 +393,9 @@ btree.obj :	btree.h
 display.obj :	pscreen.h
 filec.obj :	dirstuff.h
 glob.obj :	dirstuff.h
-main.obj :	chgdfunc.h 
-modes.obj :	chgdfunc.h 
-ntwinio.obj :	winvile.h pscreen.h patchlev.h
+main.obj :	chgdfunc.h
+modes.obj :	chgdfunc.h
+ntwinio.obj :	winvile.h pscreen.h patchlev.h makeargv.h
 path.obj :	dirstuff.h
 perl.obj :	api.h
 random.obj :	dirstuff.h
@@ -405,4 +406,4 @@ w32cmd.obj :	winvile.h
 w32ole.obj :	w32ole.h winviletlb.h w32reg.h
 w32oo.obj :	dirstuff.h
 w32reg.obj :	w32reg.h
-wvwrap.obj :	w32reg.h w32ole.h winviletlb.h
+wvwrap.obj :	w32reg.h w32ole.h winviletlb.h makeargv.h

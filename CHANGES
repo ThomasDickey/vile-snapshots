@@ -1,5 +1,20 @@
 Changes for vile 9.6 (released ??? ??? ?? ????)
 
+ 20070425 (p)
+	> Tom Dickey:
+	+ modify spell- and txt-filters to allow users to add words to their
+	  respective ".keywords" files to override the builtin highlighting.
+	+ correct check of return of ffread() in spellflt.l's workaround for
+	  platforms such as win32 which have no usable popen().  That made
+	  spelling checks require two ^X-i presses.
+	+ modify spellflt.l to chop words according to Camel-case, so
+	  tokens such as "ChopWords" are treated by the spell checker as
+	  multiple words.
+	+ fix a limit check in argc/argv[] parsing for winvile (report by
+	  Larry Gensch).
+	+ modify wvwrap.exe to work with pathnames containing "$", "&" and "'".
+	+ change OPT_MULTIBYTE definition to depend on OPT_LOCALE.
+
  20070115 (o)
 	> Tom Dickey:
 	+ change Inno Setup script to not put version numbers on the SendTo
@@ -912,7 +927,7 @@ Changes for vile 9.5 (released Mon Jul 25 2005)
 	  definitions, e.g., from .vile.keywords, as is done in a ".source"
 	  command.
 	+ add a ".brief" to filters parsing, which uses "?" to match zero or
-	  all of the following characters, in constrast to ".abbrev" which uses
+	  all of the following characters, in contrast to ".abbrev" which uses
 	  "*" to match zero or more of the following characters.
 	+ modify sql-filt.l to distinguish between SQL*PLUS and SQL, PL/SQL.
 	  The latter delimit statements with semicolons, while the former makes

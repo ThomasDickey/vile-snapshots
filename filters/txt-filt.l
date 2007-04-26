@@ -5,7 +5,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/txt-filt.l,v 1.29 2006/10/29 20:33:08 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/txt-filt.l,v 1.30 2007/04/25 00:26:21 tom Exp $
  *
  * Filter to add vile "attribution" sequences to an ordinary text file
  */
@@ -51,7 +51,10 @@ URL		[[:alpha:]]+"://"[[:alnum:]#%&+\,.\/?;@_=~-]+
 <TEXT>^[[:blank:]]*"--"[[:blank:]]	{ PushQuote(NOTE, Comment_attr); }
 <TEXT>^[-]+$		|
 <TEXT>{DASHES}		{ WriteToken(Comment_attr); }
-<TEXT>{KEYWORD}		{ WriteToken(mixedcase(yytext) ? "" : Keyword_attr); }
+<TEXT>{KEYWORD}		{ char *attr = keyword_attr(yytext);
+			  if (attr == 0) attr = (mixedcase(yytext) ? "" : Keyword_attr);
+			  WriteToken(attr);
+			}
 <TEXT>{NUMBER}		{ WriteToken(Number_attr); }
 <TEXT>{EMAIL}		{ WriteToken(Ident2_attr); }
 <TEXT>{URL}		{ WriteToken(Ident2_attr); }

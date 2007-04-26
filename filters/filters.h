@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.97 2006/10/03 00:12:43 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.98 2007/04/23 22:44:14 tom Exp $
  */
 
 #ifndef FILTERS_H
@@ -231,6 +231,7 @@ extern int flt_get_col(void);
 extern int flt_get_line(void);
 extern int flt_input(char *buffer, int max_size);
 extern int flt_lookup(char *name);
+extern int flt_restart(char *name);
 extern int flt_start(char *name);
 extern void flt_echo(const char *string, int length);
 extern void flt_error(const char *fmt, ...) VILE_PRINTF(1,2);

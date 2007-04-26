@@ -1,4 +1,6 @@
 /*
+ * vile:notabinsert sw=4:
+ *
  * wvwrap.cpp:  A WinVile WRAPper .
  *
  * Originally written by Ed Henderson.
@@ -10,7 +12,7 @@
  * Note:  A great deal of the code included in this file is copied
  * (almost verbatim) from other vile modules.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/wvwrap.cpp,v 1.10 2006/01/04 22:53:39 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/wvwrap.cpp,v 1.12 2007/04/22 23:35:12 tom Exp $
  */
 
 #include "w32vile.h"
@@ -21,17 +23,37 @@
 #include <ctype.h>
 
 #include <initguid.h>
+
 #include "w32reg.h"
 #include "w32ole.h"
+#include "vl_alloc.h"
+#include "makeargv.h"
 
-#define	typeallocn(cast,ntypes)		(cast *)malloc((ntypes)*sizeof(cast))
-#define	typereallocn(cast,ptr,ntypes)	(cast *)realloc((char *)(ptr),\
-							(ntypes)*sizeof(cast))
+#define DQUOTE '"'
+#define SQUOTE '\''
 
 static size_t   olebuf_len;    /* scaled in wchar_t */
 static OLECHAR  *olebuf;
-static char     **argv;
-static int      argc;
+
+#ifdef OPT_TRACE
+static void
+Trace(const char *fmt, ...)
+{
+    FILE *fp = fopen("c:\\temp\\wvwrap.log", "a");
+    if (fp != 0)
+    {
+        va_list ap;
+        va_start(ap, fmt);
+        vfprintf(fp, fmt, ap);
+        va_end(ap);
+        fclose(fp);
+    }
+}
+#define TRACE(params) Trace params
+#else
+#define OPT_TRACE 0
+#define TRACE(params) /* nothing */
+#endif
 
 //--------------------------------------------------------------
 
@@ -53,8 +75,6 @@ fmt_win32_error(ULONG errcode, char **buf, ULONG buflen)
     return (*buf);
 }
 
-
-
 static int
 nomem(void)
 {
@@ -65,44 +85,6 @@ nomem(void)
     MessageBox(NULL, buf, "wvwrap", MB_OK|MB_ICONSTOP);
     return (1);
 }
-
-
-
-/* from ntwinio.c */
-static void
-make_argv(char *cmdline)
-{
-    int maxargs = (strlen(cmdline) + 1) / 2;
-    char *ptr;
-
-    argv = typeallocn(char *, maxargs);
-    if (! argv)
-        exit(nomem());
-
-    for (ptr = cmdline; *ptr != '\0';)
-    {
-        char delim = ' ';
-
-        while (*ptr == ' ')
-            ptr++;
-
-        if (*ptr == '\''
-         || *ptr == '"'
-         || *ptr == ' ') {
-            delim = *ptr++;
-        }
-        argv[argc++] = ptr;
-        if (argc+1 >= maxargs) {
-            break;
-        }
-        while (*ptr != delim && *ptr != '\0')
-            ptr++;
-        if (*ptr == delim)
-            *ptr++ = '\0';
-    }
-}
-
-
 
 #if (! defined(_UNICODE) || defined(UNICODE))
 /*
@@ -134,6 +116,69 @@ ConvertToUnicode(char *szA)
 }
 #endif
 
+/*
+ * vile's prompts for directory/filename do not expect to strip quotes; they
+ * use the strings exactly as given.  At the same time, the initial "cd" and
+ * "e" commands use the token parsing which stops on a blank.  That makes it
+ * not simple to use OLE to send characters to the server to specify filenames
+ * containing blanks.
+ *
+ * We work around the problem using the "eval" command, which forces a reparse
+ * of the whole line.  That uses an extra level of interpretation, so we have
+ * to double each single quote _twice_ to enter single quotes in the filename.
+ *
+ * Dollar-signs introduce another twist: vile attempts to expand the associated
+ * variables unless the $'s are escaped.  In the globbing, all of the backslashes
+ * count as escapes.
+ *
+ * Obscure, but it works.
+ */
+static char *
+escape_quotes(const char *src)
+{
+    size_t len = 4 * strlen(src) + 1;
+    char *result = typeallocn(char, len);
+
+    if (result == 0)
+        exit (nomem());
+
+    char *dst = result;
+    bool escape = (strchr(src, '$') != 0);
+    while (*src != '\0')
+    {
+        if (*src == SQUOTE)
+        {
+            *dst++ = SQUOTE;
+            *dst++ = SQUOTE;
+            *dst++ = SQUOTE;
+        }
+        else if (*src == '$')
+        {
+            *dst++ = '\\';
+        }
+        else if (*src == '\\' && escape)
+        {
+            *dst++ = '\\';
+        }
+        *dst++ = *src++;
+    }
+    *dst = '\0';
+
+    return result;
+}
+
+
+static void
+append(char *&buffer, size_t &length, char *value)
+{
+    size_t newsize = strlen(buffer) + strlen(value);
+    if ((newsize + 1) > length)
+    {
+        length = (newsize + 1) * 2;
+        buffer = (char *) realloc(buffer, length);
+    }
+    strcat(buffer, value);
+}
 
 
 int WINAPI
@@ -144,7 +189,7 @@ WinMain( HINSTANCE hInstance,      // handle to current instance
   )
 {
     BSTR         bstr;
-    size_t       dynbuf_len, dynbuf_idx;
+    size_t       dynbuf_len;
     HRESULT      hr;
     HWND         hwnd;
     VARIANT_BOOL insert_mode, minimized;
@@ -152,12 +197,20 @@ WinMain( HINSTANCE hInstance,      // handle to current instance
     OLECHAR      *olestr;
     LPUNKNOWN    punk;
     IVileAuto    *pVileAuto;
+    char         **argv;
+    int          argc;
 
-    make_argv(lpCmdLine);
+    if (make_argv(0, lpCmdLine, &argv, &argc) < 0)
+        return (nomem());
+
+#if OPT_TRACE
+    Trace("cmdline:%s\n", lpCmdLine);
+    for (int n = 0; n < argc; ++n)
+        Trace("argv%d:%s\n", n, argv[n]);
+#endif
 
     olebuf_len = 4096;
     dynbuf_len = 4096;
-    dynbuf_idx = 0;
     olebuf     = typeallocn(OLECHAR, olebuf_len);
     dynbuf     = typeallocn(char, dynbuf_len);
     if (! (olebuf && dynbuf))
@@ -208,6 +261,8 @@ WinMain( HINSTANCE hInstance,      // handle to current instance
     {
         char *cp;
 
+        *dynbuf = '\0';
+
         /*
          * When wvwrap starts up (and subsequently launches winvile), the
          * editor's CWD is set to a path deep within the bowels of Windows.
@@ -217,15 +272,23 @@ WinMain( HINSTANCE hInstance,      // handle to current instance
         cp = strrchr(*argv, '\\');
         if (cp)
         {
-            int add_delim, offset = 0;
+            int add_delim;
+
+            if (insert_mode)
+                append(dynbuf, dynbuf_len, "\033");
+
+#if OPT_TRACE
+            /*
+             * Turn on tracing in the server, for debugging.
+             */
+            append(dynbuf, dynbuf_len, ":setv $debug=true\n");
+#endif
 
             *cp = '\0';
             if (cp == *argv)
             {
                 /* filename is of the form:  \<leaf> .  handle this. */
-
-                strcpy(dynbuf, (insert_mode) ? "\033" : "");
-                strcat(dynbuf, ":cd \\\n");
+                append(dynbuf, dynbuf_len, ":cd \\\n");
             }
             else
             {
@@ -247,11 +310,6 @@ WinMain( HINSTANCE hInstance,      // handle to current instance
                 else
                     fp = *argv;
 
-                if (insert_mode)
-                {
-                    dynbuf[0] = '\033';
-                    offset    = 1;
-                }
                 add_delim = (isalpha(fp[0]) && fp[1] == ':' && fp[2] == '\0');
 
                 /*
@@ -261,27 +319,24 @@ WinMain( HINSTANCE hInstance,      // handle to current instance
                  * cd'ing to <drive>:  on a DOS/WIN32 host has special
                  * semantics (which we don't want).
                  */
-                sprintf(dynbuf + offset,
-                        ":cd %s%s\n",
-                        fp,
+                char temp[4096];
+                sprintf(temp, ":eval cd '%s%s'\n",
+                        escape_quotes(fp),
                         (add_delim) ? "\\" : "");
+
+                append(dynbuf, dynbuf_len, temp);
             }
-            dynbuf_idx = strlen(dynbuf);
-            *cp        = '\\';
+            * cp = '\\';
         }
+
         while (argc--)
         {
-            size_t len = strlen(*argv);
-
-            if (dynbuf_idx + len + sizeof(":e \n") >= dynbuf_len)
-            {
-                dynbuf_len *= 2 + len + sizeof(":e \n");
-                dynbuf      = typereallocn(char, dynbuf, dynbuf_len);
-                if (! dynbuf)
-                    return (nomem());
-            }
-            dynbuf_idx += sprintf(dynbuf + dynbuf_idx, ":e %s\n", *argv++);
+            char temp[4096];
+            sprintf(temp, ":eval e '%s'\n", escape_quotes(*argv++));
+            append(dynbuf, dynbuf_len, temp);
         }
+
+        TRACE(("dynbuf:\n%s\n", dynbuf));
         olestr = TO_OLE_STRING(dynbuf);
         bstr   = SysAllocString(olestr);
         if (! (bstr && olestr))
