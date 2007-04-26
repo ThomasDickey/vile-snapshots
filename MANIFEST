@@ -1,4 +1,4 @@
-MANIFEST for vile, version v9_5o
+MANIFEST for vile, version v9_5p
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 CHANGES                         Change-log for VILE
@@ -62,6 +62,8 @@ itbuff.c                        support functions for wide-character strings
 lckfiles.c                      locked-files support
 line.c                          line-management functions
 main.c                          main program of VILE
+makeargv.c                      parse string to argc/argv[]
+makeargv.h                      interface of makeargv.c
 makefile.blc                    makefile for Win32 with Borland C++
 makefile.djg                    makefile for DJGCC
 makefile.icc                    makefile for C Set++ 2.x (OS/2)

@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 screen API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.160 2006/10/31 21:44:16 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.161 2007/04/21 00:25:37 tom Exp $
  * Written by T.E.Dickey for vile (october 1997).
  * -- improvements by Clark Morgan (see w32cbrd.c, w32pipe.c).
  */
@@ -21,6 +21,7 @@
 #include "nefsms.h"
 #include "nefunc.h"
 #include "chgdfunc.h"
+#include "makeargv.h"
 
 #define ABS(x) (((x) < 0) ? -(x) : (x))
 
@@ -3695,9 +3696,8 @@ WinMain(
 {
     int argc;
     int n;
-    size_t maxargs = strlen(lpCmdLine) + 1;
-    char **argv = typecallocn(char *, maxargs + 10);
-    char *ptr, *fontstr;
+    char **argv = 0;
+    char *fontstr;
 #ifdef VILE_OLE
     int oa_invoke, oa_reg;
 
@@ -3707,49 +3707,23 @@ WinMain(
 
     TRACE(("Starting ntvile, CmdLine:%s\n", lpCmdLine));
 
-    argv[argc = 0] = "VILE";
+    if (make_argv("VILE", lpCmdLine, &argv, &argc) < 0)
+	ExitProgram(BADEXIT);
 
-    if (ffaccess(lpCmdLine, FL_READABLE)) {
-	argv[++argc] = lpCmdLine;
-    } else {
-	char *dst;
-	for (ptr = lpCmdLine; *ptr != '\0';) {
-	    char delim = ' ';
-
-	    /* skip spaces before parameter */
-	    while (*ptr == ' ')
-		ptr++;
-
-	    if (*argv[argc]) {
-		TRACE(("argv[%d]:%s\n", argc, argv[argc]));
-		++argc;
-	    }
-	    if ((size_t) (argc + 1) >= maxargs) {
-		break;
-	    }
-	    argv[argc] = dst = ptr;
-	    while (*ptr != delim && *ptr != '\0') {
-		if (*ptr == '"') {
-		    ptr++;
-		    delim = (char) ((delim == ' ') ? '"' : ' ');
-		} else {
-		    *dst++ = *ptr++;
-		}
-	    }
-	    if (*ptr == '"') {
-		++ptr;
-	    }
-	    if (dst != ptr) {
-		*dst = '\0';
-	    } else if (*ptr == ' ') {
-		*ptr++ = '\0';
-	    }
-	}
+    /*
+     * If the command-line really specifies an existing file, override the argv-parser.
+     * This makes "Send To" work.
+     */
+    if (argc > 1 && ffaccess(lpCmdLine, FL_READABLE)) {
+	argc = 1;
+	argv[argc++] = lpCmdLine;
+	argv[argc] = 0;
     }
-    if (*argv[argc]) {
-	TRACE(("argv[%d]:%s\n", argc, argv[argc]));
-	++argc;
-    }
+#if OPT_TRACE
+    for (n = 0; n < argc; ++n)
+	TRACE(("argv[%d] %s\n", n, argv[n]));
+#endif
+
     fontstr = 0;
 
     /*

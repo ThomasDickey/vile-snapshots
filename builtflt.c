@@ -1,7 +1,7 @@
 /*
  * Main program and I/O for external vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/RCS/builtflt.c,v 1.47 2005/02/13 01:03:19 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/builtflt.c,v 1.48 2007/04/23 23:14:18 tom Exp $
  *
  */
 
@@ -504,6 +504,34 @@ flt_start(char *name)
 
 	DOT = save_dot;
 	MK = save_mk;
+
+	return TRUE;
+    }
+    return FALSE;
+}
+
+/*
+ * The spelling filter uses this function, since it parses the buffer more
+ * than once, using the parsed data for a list of words to check.  So we
+ * do not wipe the symbol table.
+ */
+int
+flt_restart(char *name)
+{
+    TRACE(("flt_restart(%s)\n", name));
+    if (flt_lookup(name)
+#ifdef HAVE_LIBDL
+	&& (current_filter->loaded || load_filter(current_filter->filter_name))
+#endif
+	) {
+	need_separator = FALSE;
+	mark_in.l = lforw(buf_head(curbp));
+	mark_in.o = w_left_margin(curwp);
+	mark_out = mark_in;
+	tb_init(&gets_data, 0);
+
+	init_flt_error();
+	set_symbol_table(current_filter->filter_name);
 
 	return TRUE;
     }

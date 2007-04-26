@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.608 2007/01/15 23:27:36 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.609 2007/02/11 17:34:33 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -621,7 +621,7 @@
 #define OPT_MACRO_ARGS	(!SMALLER && OPT_EVAL)	/* macro argument parsing */
 #define OPT_MLFORMAT    !SMALLER		/* modeline-format */
 #define OPT_MODELINE    !SMALLER		/* vi-style modeline-support */
-#define OPT_MULTIBYTE   !SMALLER		/* experimental multibyte support */
+#define OPT_MULTIBYTE   (!SMALLER && OPT_LOCALE) /* experimental multibyte support */
 #define OPT_NAMEBST     !SMALLER		/* name's stored in a bst */
 #define OPT_ONLINEHELP  !SMALLER		/* short per-command help */
 #define OPT_POPUPCHOICE !SMALLER		/* popup-choices mode */
