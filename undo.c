@@ -3,7 +3,7 @@
  *
  * written for vile.  Copyright (c) 1990, 1995-2001 by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/undo.c,v 1.91 2006/11/24 01:09:08 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/undo.c,v 1.92 2007/05/26 11:31:21 tom Exp $
  *
  */
 
@@ -184,36 +184,38 @@ toss_to_undo(LINE *lp)
     LINE *prev;
     int fc;
 
-    if (!OkUndo())
-	return;
+    TRACE2((T_CALLED "toss_to_undo(%p)\n", lp));
+    if (OkUndo()) {
 
-    if (needundocleanup)
-	preundocleanup();
+	if (needundocleanup)
+	    preundocleanup();
 
-    pushline(lp, BACKSTK(curbp));
+	pushline(lp, BACKSTK(curbp));
 
-    next = lforw(lp);
+	next = lforw(lp);
 
-    /* need to save a dot -- either the next line or
-       the previous one */
-    if (next == buf_head(curbp)) {
-	prev = lback(lp);
-	FORWDOT(curbp).l = prev;
-	fc = firstchar(prev);
-	if (fc < 0)		/* all white */
-	    FORWDOT(curbp).o = llength(prev) - 1;
-	else
-	    FORWDOT(curbp).o = fc;
-    } else {
-	FORWDOT(curbp).l = next;
-	fc = firstchar(next);
-	if (fc < 0)		/* all white */
-	    FORWDOT(curbp).o = b_left_margin(curbp);
-	else
-	    FORWDOT(curbp).o = fc;
+	/* need to save a dot -- either the next line or
+	   the previous one */
+	if (next == buf_head(curbp)) {
+	    prev = lback(lp);
+	    FORWDOT(curbp).l = prev;
+	    fc = firstchar(prev);
+	    if (fc < 0)		/* all white */
+		FORWDOT(curbp).o = llength(prev) - 1;
+	    else
+		FORWDOT(curbp).o = fc;
+	} else {
+	    FORWDOT(curbp).l = next;
+	    fc = firstchar(next);
+	    if (fc < 0)		/* all white */
+		FORWDOT(curbp).o = b_left_margin(curbp);
+	    else
+		FORWDOT(curbp).o = fc;
+	}
+
+	dumpuline(lp);
     }
-
-    dumpuline(lp);
+    return2Void();
 }
 
 /*
@@ -230,6 +232,7 @@ copy_for_undo(LINE *lp)
     int status = FALSE;
     LINE *nlp;
 
+    TRACE2((T_CALLED "copy_for_undo(%p)\n", lp));
     if (OkUndo()) {
 	if (needundocleanup)
 	    preundocleanup();
@@ -254,7 +257,7 @@ copy_for_undo(LINE *lp)
 	    status = TRUE;
 	}
     }
-    return status;
+    return2Code(status);
 }
 
 /* push an unreal line onto the undo stack
@@ -267,6 +270,7 @@ tag_for_undo(LINE *lp)
     int status = FALSE;
     LINE *nlp;
 
+    TRACE2((T_CALLED "tag_for_undo(%p)\n", lp));
     if (OkUndo()) {
 	if (needundocleanup)
 	    preundocleanup();
@@ -289,10 +293,10 @@ tag_for_undo(LINE *lp)
 	    status = TRUE;
 	}
     }
-    return status;
+    return2Code(status);
 }
 
-/* Change all PURESTACKSEPS on the stacks to STACKSEPS, so that undo won't
+/* Change all PURESTACKSEP's on the stacks to STACKSEP's, so that undo won't
  * reset the BFCHG bit.  This should be called anytime a non-undoable change is
  * made to a buffer.
  */
@@ -317,16 +321,19 @@ freeundostacks(BUFFER *bp, int both)
 {
     LINE *lp;
 
+    TRACE((T_CALLED "freeundostacks(%p,%d)\n", bp, both));
     while ((lp = popline(FORWSTK(bp), TRUE)) != NULL) {
 	lfree(lp, bp);
     }
     if (both) {
-	while ((lp = popline(BACKSTK(bp), TRUE)) != NULL)
+	while ((lp = popline(BACKSTK(bp), TRUE)) != NULL) {
 	    lfree(lp, bp);
+	}
 	bp->b_udtail = 0;
 	bp->b_udlastsep = 0;
 	bp->b_udcount = 0;
     }
+    returnVoid();
 }
 
 int

@@ -1,7 +1,7 @@
 /*
  * Main program and I/O for external vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/RCS/builtflt.c,v 1.48 2007/04/23 23:14:18 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/builtflt.c,v 1.49 2007/05/08 00:39:55 tom Exp $
  *
  */
 
@@ -323,7 +323,11 @@ flt_error(const char *fmt,...)
 {
 #ifdef MDFILTERMSGS
     if (b_val(curbp, MDFILTERMSGS)) {
-	const char *filename = (curbp != 0) ? curbp->b_fname : "<stdin>";
+	const char *filename = ((curbp != 0)
+				? (isInternalName(curbp->b_fname)
+				   ? curbp->b_bname
+				   : curbp->b_fname)
+				: "<stdin>");
 	BUFFER *bp;
 	va_list ap;
 

@@ -1,5 +1,66 @@
 Changes for vile 9.6 (released ??? ??? ?? ????)
 
+ 20070528 (q)
+	+ change configure script to check for ispell before aspell; Fedora 5's
+	  problem with aspell was eventually fixed.
+	+ make cursor-adjustment after paste in xvile dependent on whether the
+	  pasted text ended with a newline (request by Eric Krohn).
+	+ cleanup the bottom line on the screen when exiting the curses driver,
+	  to match the termcap/terminfo driver (report by Chris Green).
+	+ fixes for pl-filt.c (perl highlighter):
+	  + allow blanks before tag for here-document, e.g.,
+		cat << 'TAG'
+	  + allow '~' as a quote-delimiter (this is used by linklint).
+	+ modify CF_IMAKE_CFLAGS to work with Solaris sed, which (unlike a
+	  standard UNIX implementation) does not honor nested subexpressions.
+	+ add rename-other-buffer command, use that to modify spell.rc so it
+	  can work with scratch buffers which otherwise would be lost, e.g.,
+	  "[Help]".
+	+ add modelines for winvile.rc and w32ole.rc to set the majormode to
+	  rcmode, and modify a special case in main.c to make "vile winvile.rc"
+	  get the corresponding majormode.
+	+ add some null-pointer checks in filters for result from flt_alloc().
+	+ add a check in flt_alloc() in case the pointer has not been
+	  allocated.
+	+ derive $(SRC) from $(OBJ) in makefile.in, to avoid losing trace.c
+	  in tags rule.
+	+ check for empty/default "put" in line.c's PutChar() to avoid
+	  attempting to remove a trailing newline from that, since the
+	  corresponding line has already been freed as part of the undo process
+	  (report by Paul Fox).
+	+ use O_NONBLOCK if O_NDELAY is undefined, needed for a few platforms
+	  which have the POSIX definition but not the legacy, e.g., Minix and
+	  OS X.
+	+ make autocolor work for curses-driver, e.g., --with-screen=ncurses
+	  (report by Chris Green).
+	+ widen the check for "winvile" in vileinit's initialization for win32
+	  shifted cursor bind-key's.
+	+ modify spell filter so that it can get VILE_SPELL_FILT from the
+	  registry on win32.
+	+ improve spell filter camelcasing that when parsing things like
+	  "UXTerm" it splits off the "Term" as a possible word.
+	+ amend 9.5m change to check for file ownership to ensure this is
+	  only done for files that might be source'd.  It was checking files
+	  for read/write too.
+	+ correct syntax highlighting for end of JavaScript embedded in HTML,
+	  which did not allow for the marker in an inline comment.
+ 	+ modify "filename" shown in :show-filtermsgs to use the buffer name
+	  if no filename is available.
+	+ modify preamble patterns for shell modes such as awk, etc., to allow
+	  for programs without an absolute pathname, e.g., "#! awk".
+	+ modify the symbol-table lookup in filters.c to use tsearch() when
+	  available.  For an 8Mb rtf file this improved performance by about
+	  a factor of two (on Linux - Visual C++ has no tsearch).
+	+ add configure check for getc_unlocked(), putc_unlocked() and
+	  tsearch() to use in performance improvements for syntax filters.
+	+ add syntax filter for RTF files.
+	+ improve autocolor on win32 by not allowing the cursor to be repainted
+	  while autocoloring is in progress.
+	+ modify winvile's command-line parsing, adding "-i" option to perform
+	  the case used for "Send To": use the part of the command line after
+	  options as the filename and change working directory to match
+	  (request by Larry Gensch).
+
  20070425 (p)
 	> Tom Dickey:
 	+ modify spell- and txt-filters to allow users to add words to their

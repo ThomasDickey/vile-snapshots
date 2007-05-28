@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/rubyfilt.c,v 1.40 2006/05/21 19:48:09 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/rubyfilt.c,v 1.41 2007/05/26 14:53:12 tom Exp $
  *
  * Filter to add vile "attribution" sequences to ruby scripts.  This is a
  * translation into C of an earlier version written for LEX/FLEX.
@@ -521,6 +521,7 @@ static char *
 begin_HERE(char *s, int *quoted, int *strip_here)
 {
     char *base;
+    char *marker;
     int ok;
     int strip = 0;
 
@@ -536,19 +537,22 @@ begin_HERE(char *s, int *quoted, int *strip_here)
 	}
 	if ((ok = is_QIDENT(s)) != 0) {
 	    unsigned temp = 0;
-	    char *marker = do_alloc((char *) 0, ok + 1, &temp);
-	    char *d = marker;
+
 	    s += ok;
 	    *quoted = 0;
 	    *strip_here = 1;
-	    while (base != s) {
-		if (isIdent(*base))
-		    *d++ = *base;
-		else
-		    *quoted = (*base != DQUOTE);
-		base++;
+
+	    if ((marker = do_alloc((char *) 0, ok + 1, &temp)) != 0) {
+		char *d = marker;
+		while (base != s) {
+		    if (isIdent(*base))
+			*d++ = *base;
+		    else
+			*quoted = (*base != DQUOTE);
+		    base++;
+		}
+		*d = 0;
 	    }
-	    *d = 0;
 	    return marker;
 	}
     }

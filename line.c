@@ -10,7 +10,7 @@
  * editing must be being displayed, which means that "b_nwnd" is non zero,
  * which means that the dot and mark values in the buffer headers are nonsense.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.177 2006/11/24 01:21:35 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.178 2007/05/26 12:02:08 tom Exp $
  *
  */
 
@@ -60,6 +60,7 @@ alloc_LINE(BUFFER *bp)
 	if ((lp = typealloc(LINE)) == NULL) {
 	    (void) no_memory("LINE");
 	}
+	TRACE2(("alloc_LINE %p\n", lp));
     }
     return lp;
 }
@@ -118,6 +119,7 @@ lfree(LINE *lp, BUFFER *bp)
     /* if the buffer doesn't have its own block of LINEs, or this
        one isn't in that range, free it */
     if (!bp->b_LINEs || lp < bp->b_LINEs || lp >= bp->b_LINEs_end) {
+	TRACE2(("lfree(%p)\n", lp));
 	poison(lp, sizeof(*lp));
 	free((char *) lp);
     } else {
@@ -1447,7 +1449,7 @@ PutChar(int n, REGIONSHAPE shape)
 {
     int c;
     int i;
-    int status, wasnl, suppressnl;
+    int status, wasnl, suppressnl, first;
     L_NUM before;
     C_NUM col = 0, width = 0;
     C_NUM reached = 0;
@@ -1466,6 +1468,7 @@ PutChar(int n, REGIONSHAPE shape)
     before = vl_line_count(curbp);
     suppressnl = FALSE;
     wasnl = FALSE;
+    first = TRUE;
 
     /* for each time.... */
     while (n--) {
@@ -1474,83 +1477,11 @@ PutChar(int n, REGIONSHAPE shape)
 	    width = kbs[ukb].kbwidth;
 	    col = getcol(DOT, FALSE);
 	}
-#define SLOWPUT 0
-#if SLOWPUT
-	while (kp != NULL) {
-	    i = KbSize(ukb, kp);
-	    sp = (char *) kp->d_chunk;
-	    while (i--) {
-		c = *sp++;
-		if (shape == RECTANGLE) {
-		    if (width == 0 || c == '\n') {
-			if (checkpad) {
-			    status = force_text_at_col(
-							  col, reached);
-			    if (status != TRUE)
-				break;
-			    checkpad = FALSE;
-			}
-			if (width && linsert(width, ' ')
-			    != TRUE) {
-			    status = FALSE;
-			    break;
-			}
-			if (next_line_at_col(col, &reached)
-			    != TRUE) {
-			    status = FALSE;
-			    break;
-			}
-			checkpad = TRUE;
-			width = kbs[ukb].kbwidth;
-		    }
-		    if (c == '\n') {
-			continue;	/* did it already */
-		    } else {
-			if (checkpad) {
-			    status = force_text_at_col(
-							  col, reached);
-			    if (status != TRUE)
-				break;
-			    checkpad = FALSE;
-			}
-			width--;
-
-			if (is_header_line(DOT, curbp))
-			    suppressnl = TRUE;
-			if (linsert(1, c) != TRUE) {
-			    status = FALSE;
-			    break;
-			}
-			wasnl = FALSE;
-		    }
-		} else {	/* not rectangle */
-		    if (c == '\n') {
-			if (lnewline() != TRUE) {
-			    status = FALSE;
-			    break;
-			}
-			wasnl = TRUE;
-		    } else {
-			if (is_header_line(DOT, curbp))
-			    suppressnl = TRUE;
-			if (linsert(1, c) != TRUE) {
-			    status = FALSE;
-			    break;
-			}
-			wasnl = FALSE;
-		    }
-		}
-	    }
-	    if (status != TRUE)
-		break;
-	    kp = kp->d_next;
-	}
-#else /* SLOWPUT */
 	while (kp != NULL) {
 	    i = KbSize(ukb, kp);
 	    sp = (char *) kp->d_chunk;
 	    if (shape == RECTANGLE) {
-		while (i--) {
+		while (i-- > 0) {
 		    c = *sp++;
 		    if (width == 0 || c == '\n') {
 			if (checkpad) {
@@ -1577,16 +1508,16 @@ PutChar(int n, REGIONSHAPE shape)
 			continue;	/* did it already */
 		    } else {
 			if (checkpad) {
-			    status = force_text_at_col(
-							  col, reached);
+			    status = force_text_at_col(col, reached);
 			    if (status != TRUE)
 				break;
 			    checkpad = FALSE;
 			}
 			width--;
 
-			if (is_header_line(DOT, curbp))
+			if (is_header_line(DOT, curbp)) {
 			    suppressnl = TRUE;
+			}
 			if (linsert(1, c) != TRUE) {
 			    status = FALSE;
 			    break;
@@ -1596,8 +1527,18 @@ PutChar(int n, REGIONSHAPE shape)
 		}
 	    } else {		/* not rectangle */
 		while (i-- > 0) {
-		    if (is_header_line(DOT, curbp))
-			suppressnl = TRUE;
+		    /*
+		     * If we're inserting into a non-empty buffer, will trim
+		     * the extra newline.  Check for the special case where
+		     * we're inserting just a newline - that could be a case
+		     * where the current line is already on the undo stack, and
+		     * we cannot free it a second time.
+		     */
+		    if (first && is_header_line(DOT, curbp)) {
+			if ((i > 0) || (*sp != '\n'))
+			    suppressnl = TRUE;
+		    }
+		    first = FALSE;
 		    if (*sp == '\n') {
 			sp++;
 			if (lnewline() != TRUE) {
@@ -1631,7 +1572,6 @@ PutChar(int n, REGIONSHAPE shape)
 		break;
 	    kp = kp->d_next;
 	}
-#endif /* SLOWPUT */
 	if (status != TRUE)
 	    break;
 	if (wasnl) {

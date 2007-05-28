@@ -1,7 +1,7 @@
 /*
  * Convert attributed text to ANSI-style escape sequences, allowing color.
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/atr2ansi.c,v 1.3 2006/05/21 19:42:21 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/atr2ansi.c,v 1.4 2007/05/05 15:23:03 tom Exp $
  */
 #include <unfilter.h>
 
@@ -21,20 +21,20 @@ void
 markup_unfilter(FILE *dst, int attrib)
 {
     if (attrib != 0) {
-	fputs(CSI "0", dst);
+	vl_fputs(CSI "0", dst);
 	if (attrib & ATR_BOLD)
-	    fputs(";1", dst);
+	    vl_fputs(";1", dst);
 	if (attrib & (ATR_UNDERLINE | ATR_ITALIC))
-	    fputs(";4", dst);
+	    vl_fputs(";4", dst);
 	if (attrib & ATR_REVERSE)
-	    fputs(";7", dst);
+	    vl_fputs(";7", dst);
 	if (attrib & ATR_COLOR) {
-	    fputs(";3", dst);
-	    fputc('0' + (attrib & 7), dst);
+	    vl_fputs(";3", dst);
+	    vl_putc('0' + (attrib & 7), dst);
 	}
-	fputc('m', dst);
+	vl_putc('m', dst);
     } else if (last_attrib != 0) {
-	fputs(CSI "0m", dst);
+	vl_fputs(CSI "0m", dst);
     }
     last_attrib = attrib;
 }
@@ -44,7 +44,7 @@ write_unfilter(FILE *dst, int ch, int attrib GCC_UNUSED)
 {
     (void) attrib;
 
-    fputc(ch, dst);
+    vl_putc(ch, dst);
 }
 
 void

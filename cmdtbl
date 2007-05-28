@@ -97,7 +97,7 @@
 #		in '!' listed, then the flag does nothing, and should be
 #		viewed simply as documentation.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.245 2006/12/01 21:23:01 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.247 2007/05/28 14:00:53 tom Exp $
 #
 #
 
@@ -548,7 +548,7 @@ ex		BANG|FILE1
 execbuf		NONE			!SMALLER
 	"execute-buffer"		!FEWNAMES
 	<run the given buffer as a script, CNT times>
-execfile	NONE			!SMALLER
+execfile	NONE
 	"execute-file"			!FEWNAMES
 	"source"
 	<run the given file as a script, CNT times>
@@ -1038,6 +1038,9 @@ nextbuffer	BANG|NAMEDFS
 namebuffer	NONE
 	"rename-buffer"
 	<give the current buffer a new name>
+name_a_buffer	NONE
+	"rename-other-buffer"
+	<give the specified buffer a new name>
 newline		REDO|UNDO		!SMALLER
 	"newline"
 	<insert a newline at the cursor, CNT times>
@@ -1704,7 +1707,7 @@ popup_buffer	NONE			!SMALLER
 popdown_buffer	NONE			!SMALLER
 	"popdown-buffer"
 	"close-windows"			!FEWNAMES
-	<open all windows for the given buffer>
+	<close all windows for the given buffer>
 usekreg		REDO
 	"use-register"			!FEWNAMES
 	'"'

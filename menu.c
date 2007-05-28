@@ -8,7 +8,7 @@
 /************************************************************************/
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/menu.c,v 1.49 2006/10/24 21:57:15 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/menu.c,v 1.50 2007/05/05 15:30:54 tom Exp $
  */
 
 /* Vile includes */
@@ -203,7 +203,8 @@ parse_menu(const char *rc_filename)
 	return FALSE;
 
     Nb_Token = 0;
-    while (fgets(line, sizeof(line), fp) != NULL && Nb_Token < MAX_TOKEN - 2) {
+    while (vl_fgets(line, sizeof(line), fp) != NULL
+	   && Nb_Token < MAX_TOKEN - 2) {
 	nlig++;
 
 	/* Let a tab begin inline comment */

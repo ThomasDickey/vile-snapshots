@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.423 2006/12/13 01:34:10 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.424 2007/05/28 14:03:37 tom Exp $
  *
  */
 
@@ -1243,8 +1243,11 @@ kbd_openup(void)
 {
 #if !OPT_PSCREEN
     int i;
+#if OPT_VIDEO_ATTRS
     size_t alen = sizeof(VIDEO_ATTR) * term.cols;
 #endif
+#endif
+
     kbd_flush();
     bottomleft();
     term.putch('\n');

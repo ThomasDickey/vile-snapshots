@@ -2,7 +2,7 @@
  *	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.286 2006/05/30 00:43:52 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.287 2007/05/27 22:10:14 tom Exp $
  *
  */
 
@@ -388,6 +388,7 @@ typedef struct _text_win {
     Time lasttime;		/* for multi-click */
     Time click_timeout;
     int numclicks;
+    int last_getc;
     Bool have_selection;
     Bool wipe_permitted;
     Bool was_on_msgline;
@@ -6085,10 +6086,18 @@ x_getc(void)
 	    /*
 	     * Set the default position for new pasting to just past the newly
 	     * inserted text.
+	     *
+	     * Except - when the insert ended with a newline and is at the
+	     * beginning of a line.  That makes whole-line select/paste
+	     * behave "normally".
 	     */
-	    if (DOT.o < llength(DOT.l) && !insertmode)
+	    if (DOT.o < llength(DOT.l)
+		&& !insertmode
+		&& !(DOT.o == 0
+		     && cur_win->last_getc == (NOREMAP | '\n'))) {
 		DOT.o++;	/* Advance DOT so that consecutive
 				   pastes come out right */
+	    }
 	    cur_win->pasting = False;
 	    update(TRUE);	/* make sure ttrow & ttcol are valid */
 	}
@@ -6116,6 +6125,8 @@ x_getc(void)
 
     x_stop_autocolor_timer();
 
+    if (c != (NOREMAP | esc_c))
+	cur_win->last_getc = c;
     return c;
 }
 

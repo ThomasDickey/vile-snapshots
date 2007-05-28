@@ -1,7 +1,7 @@
 /*
  * Common utility functions for vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.99 2005/09/30 00:59:45 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.105 2007/05/26 15:49:21 tom Exp $
  *
  */
 
@@ -23,23 +23,34 @@
 
 #define VERBOSE(level,params)	if (FltOptions('v') >= level) mlforce params
 
+#if defined(HAVE_TSEARCH) && defined(HAVE_SEARCH_H)
+#define USE_TSEARCH 1
+#include <search.h>
+#else
+#define USE_TSEARCH 0
+#endif
+
 #define HASH_LENGTH 256
 
 struct _keyword {
+    KEYWORD *next;
     char *kw_name;
     char *kw_attr;
     unsigned kw_size;		/* strlen(kw_name) */
     unsigned short kw_flag;	/* nonzero for classes */
     unsigned short kw_used;	/* nonzero for classes */
-    KEYWORD *next;
 };
 
 typedef struct _classes CLASS;
 
 struct _classes {
-    char *name;
-    KEYWORD **data;
     CLASS *next;
+    char *name;
+#if USE_TSEARCH
+    void *data;
+#else
+    KEYWORD **data;
+#endif
 };
 
 char *default_attr;
@@ -50,8 +61,14 @@ int eqls_ch = ':';
 int vile_keywords;
 int flt_options[256];
 
-static KEYWORD **hashtable;
+#if USE_TSEARCH
+static void *my_table;
+#else
+static KEYWORD **my_table;
+#endif
+
 static CLASS *classes;
+static CLASS *current_class;
 
 /*
  * flt_bfr_*() function data
@@ -72,6 +89,48 @@ static unsigned len_keyword_file = 0;
 /******************************************************************************
  * Private functions                                                          *
  ******************************************************************************/
+
+#define KW_FLAG(p) ((p) ? ((p)->kw_flag ? "class" : "keyword") : "?")
+
+/* FIXME */
+static void
+init_data(KEYWORD * data, const char *name, const char *attribute, int classflag)
+{
+    data->kw_name = strmalloc(name);
+    data->kw_size = strlen(data->kw_name);
+    data->kw_attr = strmalloc(attribute);
+    data->kw_flag = classflag;
+    data->kw_used = 2;
+}
+
+static void
+free_data(KEYWORD * data)
+{
+    if (data != 0) {
+	if (data->kw_name)
+	    free(data->kw_name);
+	if (data->kw_attr)
+	    free(data->kw_attr);
+	free(data);
+    }
+}
+
+#if USE_TSEARCH
+static void
+free_node(void *p)
+{
+    free_data((KEYWORD *) p);
+}
+
+static int
+compare_data(const void *a, const void *b)
+{
+    const KEYWORD *p = (const KEYWORD *) a;
+    const KEYWORD *q = (const KEYWORD *) b;
+
+    return strcmp(p->kw_name, q->kw_name);
+}
+#endif
 
 static void
 CannotAllocate(const char *where)
@@ -168,21 +227,31 @@ static KEYWORD *
 FindIdentifier(const char *name)
 {
     unsigned size;
-    int Index;
-    KEYWORD *hash_id = 0;
+    KEYWORD *result = 0;
 
     if (name != 0 && (size = strlen(name)) != 0) {
-	Index = hash_function(name);
-	hash_id = hashtable[Index];
-	while (hash_id != NULL) {
-	    if (hash_id->kw_size == size
-		&& strcmp(hash_id->kw_name, name) == 0) {
+#if USE_TSEARCH
+	KEYWORD find;
+	void *pp;
+
+	find.kw_name = (char *) name;
+	if ((pp = tfind(&find, &(current_class->data), compare_data)) != 0) {
+	    result = *(KEYWORD **) pp;
+	}
+#else
+	int Index = hash_function(name);
+
+	result = my_table[Index];
+	while (result != NULL) {
+	    if (result->kw_size == size
+		&& strcmp(result->kw_name, name) == 0) {
 		break;
 	    }
-	    hash_id = hash_id->next;
+	    result = result->next;
 	}
+#endif /* TSEARCH */
     }
-    return hash_id;
+    return result;
 }
 
 static void
@@ -215,7 +284,7 @@ OpenKeywords(char *classname)
     FILE *fp;
     char *path;
     unsigned need;
-    char leaf[20];
+    char myLeaf[20];
 
     need = sizeof(suffix) + strlen(classname) + 2;
     str_keyword_file = do_alloc(str_keyword_file, need, &len_keyword_file);
@@ -244,9 +313,9 @@ OpenKeywords(char *classname)
 
     FIND_IT((str_keyword_name, "%s%c%s%s", PATHDOT, PATHSEP, DOT_TO_HIDE_IT, str_keyword_file));
     FIND_IT((str_keyword_name, "%s%c%s%s", path, PATHSEP, DOT_TO_HIDE_IT, str_keyword_file));
-    sprintf(leaf, "%s%s%c", DOT_TO_HIDE_IT, MY_NAME, PATHSEP);
+    sprintf(myLeaf, "%s%s%c", DOT_TO_HIDE_IT, MY_NAME, PATHSEP);
 
-    FIND_IT((str_keyword_name, "%s%c%s%s", path, PATHSEP, leaf, str_keyword_file));
+    FIND_IT((str_keyword_name, "%s%c%s%s", path, PATHSEP, myLeaf, str_keyword_file));
 
     path = vile_getenv("VILE_STARTUP_PATH");
 #ifdef VILE_STARTUP_PATH
@@ -348,13 +417,13 @@ ci_keyword_attr(char *text)
 char *
 class_attr(char *name)
 {
-    KEYWORD *hash_id;
+    KEYWORD *data;
     char *result = 0;
 
-    while ((hash_id = is_class(name)) != 0) {
-	VERBOSE(hash_id->kw_used, ("class_attr(%s) = %s",
-				   name, AttrsOnce(hash_id)));
-	name = result = hash_id->kw_attr;
+    while ((data = is_class(name)) != 0) {
+	VERBOSE(data->kw_used, ("class_attr(%s) = %s",
+				name, AttrsOnce(data)));
+	name = result = data->kw_attr;
 	VERBOSE(1, ("-> %p\n", result));
     }
     return result;
@@ -364,7 +433,7 @@ void *
 flt_alloc(void *ptr, unsigned need, unsigned *have, unsigned size)
 {
     need += (2 * size);		/* allow for trailing null, etc */
-    if (need > *have) {
+    if ((need > *have) || (ptr == 0)) {
 	need *= 2;
 	if (ptr != 0)
 	    ptr = realloc(ptr, need);
@@ -446,24 +515,28 @@ void
 flt_free_keywords(char *classname)
 {
     CLASS *p, *q;
+#if !USE_TSEARCH
     KEYWORD *ptr;
     int i;
+#endif
 
+    VERBOSE(1, ("flt_free_keywords(%s)", classname));
     for (p = classes, q = 0; p != 0; q = p, p = p->next) {
 	if (!strcmp(classname, p->name)) {
-	    hashtable = p->data;
-
+#if USE_TSEARCH
+	    tdestroy(p->data, free_node);
+#else
+	    my_table = p->data;
 	    for (i = 0; i < HASH_LENGTH; i++) {
-		while ((ptr = hashtable[i]) != 0) {
-		    hashtable[i] = ptr->next;
-		    free(ptr->kw_name);
-		    free(ptr->kw_attr);
-		    free(ptr);
+		while ((ptr = my_table[i]) != 0) {
+		    my_table[i] = ptr->next;
+		    free_data(ptr);
 		}
 	    }
+	    free(p->data);
+#endif
 
 	    free(p->name);
-	    free(p->data);
 	    if (q != 0)
 		q->next = p->next;
 	    else
@@ -472,7 +545,8 @@ flt_free_keywords(char *classname)
 	    break;
 	}
     }
-    hashtable = (classes != 0) ? classes->data : 0;
+    my_table = (classes != 0) ? classes->data : 0;
+    current_class = classes;
 }
 
 void
@@ -515,18 +589,25 @@ flt_make_symtab(char *classname)
 	}
 
 	p->name = strmalloc(classname);
-	p->data = typecallocn(KEYWORD *, HASH_LENGTH);
-	if (p->name == 0 || p->data == 0) {
-	    if (p->name != 0)
-		free(p->name);
+	if (p->name == 0) {
 	    free(p);
 	    CannotAllocate("flt_make_symtab");
 	    return;
 	}
+#if !USE_TSEARCH
+	p->data = typecallocn(KEYWORD *, HASH_LENGTH);
+	if (p->data == 0) {
+	    free(p->name);
+	    free(p);
+	    CannotAllocate("flt_make_symtab");
+	    return;
+	}
+#endif
 
 	p->next = classes;
 	classes = p;
-	hashtable = p->data;
+	my_table = p->data;
+	current_class = p;
 
 	VERBOSE(1, ("flt_make_symtab(%s)", classname));
 
@@ -577,33 +658,20 @@ flt_read_keywords(char *classname)
     Free(line);
 }
 
-/*
- * Iterate over the names in the hash table, not ordered.  This assumes that
- * the called function does not remove any entries from the table.  It is okay
- * to add names, since that will not alter the hash links.
- */
-void
-for_each_keyword(EachKeyword func)
-{
-    int i;
-    KEYWORD *ptr;
-
-    for (i = 0; i < HASH_LENGTH; i++) {
-	for (ptr = hashtable[i]; ptr != 0; ptr = ptr->next) {
-	    (*func) (ptr->kw_name, ptr->kw_size, ptr->kw_attr);
-	}
-    }
-}
-
 char *
 get_symbol_table(void)
 {
+#if USE_TSEARCH
+    if (current_class != 0)
+	return current_class->name;
+#else
     CLASS *p;
     for (p = classes; p != 0; p = p->next) {
-	if (hashtable == p->data) {
+	if (my_table == p->data) {
 	    return p->name;
 	}
     }
+#endif
     return "?";
 }
 
@@ -622,7 +690,6 @@ hash_function(const char *id)
 static KEYWORD *
 alloc_keyword(const char *ident, const char *attribute, int classflag)
 {
-    KEYWORD *first;
     KEYWORD *nxt;
     int Index;
 
@@ -633,23 +700,27 @@ alloc_keyword(const char *ident, const char *attribute, int classflag)
 	    nxt = 0;
 	}
     } else {
-	nxt = first = NULL;
+	nxt = NULL;
 	Index = hash_function(ident);
-	first = hashtable[Index];
 	if ((nxt = typecallocn(KEYWORD, 1)) != NULL) {
-	    nxt->kw_name = strmalloc(ident);
-	    nxt->kw_size = strlen(nxt->kw_name);
-	    nxt->kw_attr = strmalloc(attribute);
-	    nxt->kw_flag = classflag;
-	    nxt->kw_used = 2;
-	    nxt->next = first;
+	    init_data(nxt, ident, attribute, classflag);
+
 	    if (nxt->kw_name != 0
 		&& nxt->kw_attr != 0) {
-		hashtable[Index] = nxt;
+#if USE_TSEARCH
+		void **pp;
+		pp = tsearch(nxt, &(current_class->data), compare_data);
+		if (pp != 0) {
+		    nxt = *(KEYWORD **) pp;
+		} else {
+		    nxt = 0;
+		}
+#else
+		nxt->next = my_table[Index];
+		my_table[Index] = nxt;
+#endif
 	    } else {
-		if (nxt->kw_name != 0)
-		    free(nxt->kw_name);
-		free(nxt);
+		free_data(nxt);
 		nxt = 0;
 	    }
 	}
@@ -713,21 +784,22 @@ insert_keyword(const char *ident, const char *attribute, int classflag)
 KEYWORD *
 is_class(char *name)
 {
-    KEYWORD *hash_id;
-    if ((hash_id = FindIdentifier(name)) != 0
-	&& hash_id->kw_flag != 0) {
-	return hash_id;
+    KEYWORD *result = FindIdentifier(name);
+    if (result != 0) {
+	if (result->kw_flag == 0) {
+	    result = 0;
+	}
     }
-    return 0;
+    return result;
 }
 
 KEYWORD *
 is_keyword(char *name)
 {
-    KEYWORD *hash_id;
-    if ((hash_id = FindIdentifier(name)) != 0
-	&& hash_id->kw_flag == 0) {
-	return hash_id;
+    KEYWORD *result;
+    if ((result = FindIdentifier(name)) != 0
+	&& result->kw_flag == 0) {
+	return result;
     }
     return 0;
 }
@@ -735,13 +807,13 @@ is_keyword(char *name)
 char *
 keyword_attr(char *name)
 {
-    KEYWORD *hash_id = is_keyword(name);
+    KEYWORD *data = is_keyword(name);
     char *result = 0;
 
-    if (hash_id != 0) {
-	result = hash_id->kw_attr;
-	while ((hash_id = is_class(result)) != 0)
-	    result = hash_id->kw_attr;
+    if (data != 0) {
+	result = data->kw_attr;
+	while ((data = is_class(result)) != 0)
+	    result = data->kw_attr;
     }
     VERBOSE(1, ("keyword_attr(%s) = %p %s\n", name, result, NONNULL(result)));
     return result;
@@ -753,16 +825,22 @@ lowercase_of(char *text)
     static char *name;
     static unsigned used;
     unsigned n;
+    char *result;
 
-    name = do_alloc(name, strlen(text), &used);
-    for (n = 0; text[n] != 0; n++) {
-	if (isalpha(CharOf(text[n])) && isupper(CharOf(text[n])))
-	    name[n] = tolower(CharOf(text[n]));
-	else
-	    name[n] = text[n];
+    if ((name = do_alloc(name, strlen(text), &used)) != 0) {
+	for (n = 0; text[n] != 0; n++) {
+	    if (isalpha(CharOf(text[n])) && isupper(CharOf(text[n])))
+		name[n] = tolower(CharOf(text[n]));
+	    else
+		name[n] = text[n];
+	}
+	name[n] = 0;
+	result = name;
+    } else {
+	result = text;		/* not good, but nonfatal */
+	CannotAllocate("lowercase_of");
     }
-    name[n] = 0;
-    return (name);
+    return result;
 }
 
 void
@@ -807,14 +885,14 @@ parse_keyword(char *name, int classflag)
     if (*name && args) {
 	insert_keyword(name, args, classflag);
     } else if (*name) {
-	KEYWORD *hash_id;
+	KEYWORD *data;
 	if (args == 0) {
 	    args = default_attr;
 	    VERBOSE(2, ("using attr \"%s\"", args));
 	}
-	if ((hash_id = FindIdentifier(args)) != 0) {
+	if ((data = FindIdentifier(args)) != 0) {
 	    /*
-	     * Insert the classname rather than the hash_id->kw_attr value,
+	     * Insert the classname rather than the data->kw_attr value,
 	     * since insert_keyword makes a copy of the string we pass to it.
 	     * Retrieving the attribute from the copy will give the unique
 	     * attribute string belonging to the class, so it is possible at
@@ -837,7 +915,7 @@ readline(FILE *fp, char **ptr, unsigned *len)
 	buf = typeallocn(char, *len);
     }
     while (!feof(fp)) {
-	int ch = fgetc(fp);
+	int ch = vl_getc(fp);
 	if (ch == EOF || feof(fp) || ferror(fp)) {
 	    break;
 	}
@@ -852,7 +930,8 @@ readline(FILE *fp, char **ptr, unsigned *len)
 	    break;
     }
     buf[used] = '\0';
-    return used ? (*ptr = buf) : 0;
+    *ptr = buf;
+    return used ? *ptr : 0;
 }
 
 int
@@ -861,7 +940,8 @@ set_symbol_table(const char *classname)
     CLASS *p;
     for (p = classes; p != 0; p = p->next) {
 	if (!strcmp(classname, p->name)) {
-	    hashtable = p->data;
+	    my_table = p->data;
+	    current_class = p;
 	    VERBOSE(3, ("set_symbol_table:%s", classname));
 	    return 1;
 	}

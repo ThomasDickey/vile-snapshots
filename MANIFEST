@@ -1,4 +1,4 @@
-MANIFEST for vile, version v9_5p
+MANIFEST for vile, version v9_5q
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 CHANGES                         Change-log for VILE
@@ -121,6 +121,7 @@ vile.wmconfig                   windowmaker config file for vile
 vl_alloc.h                      malloc-macros for vile
 vl_ctype.h                      character-set tests for vile
 vl_regex.h                      interface for vile's regexp.c
+vl_stdio.h                      customized stdio.h definitions for vile.
 vms2unix.c                      VMS/UNIX compatibility support functions
 vmsbuild.com                    VAX/VMS DCL build script
 vmspipe.c                       pipe-filter support for VMS
@@ -291,6 +292,8 @@ filters/rexx.key                keywords for REXX syntax filter
 filters/rexxfilt.l              syntax filter for REXX
 filters/rpm-filt.l              syntax highlighter for rpm spec-files
 filters/rpm.key                 keywords for rpm spec files
+filters/rtf-filt.l              syntax filter for RTF files
+filters/rtf.key                 control keywords for RTF
 filters/rubyfilt.c              syntax filter for Ruby
 filters/sccs.key                keywords for SCCS syntax filter
 filters/sccsfilt.l              syntax filter for SCCS files.

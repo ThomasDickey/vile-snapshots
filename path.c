@@ -2,7 +2,7 @@
  *		The routines in this file handle the conversion of pathname
  *		strings.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.153 2007/01/08 23:24:37 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.154 2007/05/05 15:24:46 tom Exp $
  *
  *
  */
@@ -100,7 +100,7 @@ readdir(DIR * dp)
 {
     static DIRENT dummy;
 
-    if ((fgets(dummy.d_name, NFILEN, dp)) != NULL) {
+    if ((vl_fgets(dummy.d_name, NFILEN, dp)) != NULL) {
 	/* zap the newline */
 	dummy.d_name[strlen(dummy.d_name) - 1] = EOS;
 	return &dummy;

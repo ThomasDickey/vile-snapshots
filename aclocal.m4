@@ -1,6 +1,6 @@
 dnl vile's local definitions for autoconf.
 dnl
-dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.169 2006/12/16 19:24:05 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.173 2007/05/27 17:05:28 tom Exp $
 dnl
 dnl ---------------------------------------------------------------------------
 dnl ---------------------------------------------------------------------------
@@ -463,7 +463,7 @@ AC_TRY_COMPILE([
 test $cf_cv_macros_fd_set = yes && AC_DEFINE(HAVE_TYPE_FD_SET)
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_CRYPT_FUNC version: 3 updated: 1999/11/11 10:39:43
+dnl CF_CRYPT_FUNC version: 4 updated: 2007/04/28 09:15:55
 dnl -------------
 dnl Check if we have a working crypt() function
 AC_DEFUN([CF_CRYPT_FUNC],
@@ -489,7 +489,7 @@ AC_TRY_RUN([
 extern char *crypt();
 int main() {
 	char *s = crypt("vi-crypt", "vi");
-	exit(strcmp("vi6r2tczBYLvM", s) != 0);
+	${cf_cv_main_return-return}(strcmp("vi6r2tczBYLvM", s) != 0);
 }
 	],[
 	cf_cv_crypt_works=yes],[
@@ -1332,7 +1332,7 @@ AC_TRY_COMPILE([
 test $cf_cv_select_with_time = yes && AC_DEFINE(SELECT_WITH_TIME)
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_IMAKE_CFLAGS version: 28 updated: 2006/10/28 14:00:40
+dnl CF_IMAKE_CFLAGS version: 29 updated: 2007/05/24 20:53:19
 dnl ---------------
 dnl Use imake to obtain compiler flags.  We could, in principle, write tests to
 dnl get these, but if imake is properly configured there is no point in doing
@@ -1369,11 +1369,14 @@ if mkdir conftestdir; then
 
 	cat >fix_cflags.sed <<'CF_EOF'
 s/\\//g
+s/[[ 	]][[ 	]]*/ /g
 s/"//g
-s/\(-D[[a-zA-Z0-9_]][[a-zA-Z0-9_]]*\)=\([[^\\'"0-9 	]][[^ 	]]*\([[ 	]][[ 	]]*[[^- 	]][[^ 	]]*\)*\)/\1='\\"\2\\"'/g
-s/\(-D[[a-zA-Z0-9_]][[a-zA-Z0-9_]]*\)=\([[^\\'"0-9 	]][[^ 	]]*\)[[ 	]]/\1='\\"\2\\"' /g
-s/\(-D[[a-zA-Z0-9_]][[a-zA-Z0-9_]]*\)=\([[^\\'"0-9 	]][[^ 	]]*\)$/\1='\\"\2\\"'/g
-s/^IMAKE[[ 	]]*/IMAKE_CFLAGS="/
+:pack
+s/\(=[[^ ]][[^ ]]*\) \([[^-]]\)/\1	\2/g
+t pack
+s/\(-D[[a-zA-Z0-9_]][[a-zA-Z0-9_]]*\)=\([[^\'0-9 ]][[^ ]]*\)/\1='\\"\2\\"'/g
+s/^IMAKE[[ ]]/IMAKE_CFLAGS="/
+s/	/ /g
 s/$/"/
 CF_EOF
 
@@ -1521,7 +1524,7 @@ cf_save_CFLAGS="$cf_save_CFLAGS -we147 -no-gcc"
 fi
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_KILLPG version: 3 updated: 2001/12/30 18:17:27
+dnl CF_KILLPG version: 4 updated: 2007/05/05 10:45:50
 dnl ---------
 dnl Note: must follow AC_FUNC_SETPGRP, but cannot use AC_REQUIRE, since that
 dnl messes up the messages...
@@ -1547,7 +1550,7 @@ main()
 #endif
     (void) signal(SIGINT, handler);
     (void) kill(-getpid(), SIGINT);
-    exit(1);
+    ${cf_cv_main_return-return}(1);
 }],
 	[cf_cv_need_killpg=no],
 	[cf_cv_need_killpg=yes],
@@ -2105,7 +2108,7 @@ CF_UPPER(cf_nculib_ROOT,HAVE_LIB$cf_nculib_root)
 AC_DEFINE_UNQUOTED($cf_nculib_ROOT)
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_NCURSES_VERSION version: 11 updated: 2003/11/06 19:59:57
+dnl CF_NCURSES_VERSION version: 12 updated: 2007/04/28 09:15:55
 dnl ------------------
 dnl Check for the version of ncurses, to aid in reporting bugs, etc.
 dnl Call CF_CURSES_CPPFLAGS first, or CF_NCURSES_CPPFLAGS.  We don't use
@@ -2136,7 +2139,7 @@ int main()
 	make an error
 # endif
 #endif
-	exit(0);
+	${cf_cv_main_return-return}(0);
 }],[
 	cf_cv_ncurses_version=`cat $cf_tempfile`],,[
 
@@ -2457,7 +2460,7 @@ $1=`echo "$2" | \
 		-e 's/-[[UD]]$3\(=[[^ 	]]*\)\?[$]//g'`
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_RESTARTABLE_PIPEREAD version: 3 updated: 2001/12/30 18:23:20
+dnl CF_RESTARTABLE_PIPEREAD version: 4 updated: 2007/04/28 09:17:29
 dnl -----------------------
 dnl CF_RESTARTABLE_PIPEREAD is a modified version of AC_RESTARTABLE_SYSCALLS
 dnl from acspecific.m4, which uses a read on a pipe (surprise!) rather than a
@@ -2504,12 +2507,12 @@ main () {
       sleep (2);
       write(fd[1],"done",4);
       close(fd[1]);
-      exit (0);
+      ${cf_cv_main_return-return} (0);
   }
   sigwrapper (SIGINT, ucatch);
   status = read(fd[0], buff, sizeof(buff));
   wait (&i);
-  exit (status == -1);
+  ${cf_cv_main_return-return} (status == -1);
 }
 ],
 [cf_cv_can_restart_read=yes],
@@ -2588,6 +2591,17 @@ if test "$cf_cv_sizechange" != no ; then
 		;;
 	esac
 fi
+])dnl
+dnl ---------------------------------------------------------------------------
+dnl CF_STDIO_UNLOCKED version: 1 updated: 2007/05/05 11:11:12
+dnl -----------------
+dnl The four functions getc_unlocked(), getchar_unlocked(), putc_unlocked(),
+dnl putchar_unlocked() are in POSIX.1-2001.
+AC_DEFUN([CF_STDIO_UNLOCKED],[
+AC_HAVE_FUNCS( \
+getc_unlocked \
+putc_unlocked \
+)
 ])dnl
 dnl ---------------------------------------------------------------------------
 dnl CF_STRUCT_TERMIOS version: 5 updated: 2000/11/04 12:22:46
@@ -3224,7 +3238,7 @@ fi
 fi
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_XOPEN_SOURCE version: 24 updated: 2006/04/02 16:41:09
+dnl CF_XOPEN_SOURCE version: 25 updated: 2007/01/29 18:36:38
 dnl ---------------
 dnl Try to get _XOPEN_SOURCE defined properly that we can use POSIX functions,
 dnl or adapt to the vendor's definitions to get equivalent functionality,
@@ -3258,7 +3272,7 @@ hpux*) #(vi
 irix[[56]].*) #(vi
 	CPPFLAGS="$CPPFLAGS -D_SGI_SOURCE"
 	;;
-linux*|gnu*) #(vi
+linux*|gnu*|k*bsd*-gnu) #(vi
 	CF_GNU_SOURCE
 	;;
 mirbsd*) #(vi

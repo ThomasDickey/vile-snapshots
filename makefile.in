@@ -20,7 +20,7 @@
 #
 # gnu autoconf support by kevin buettner, 5/94
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.204 2006/11/24 01:42:28 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.205 2007/05/26 12:21:02 tom Exp $
 
 SHELL		= /bin/sh
 
@@ -243,8 +243,6 @@ DISTFILES = $(ALLTOOLS) $(ALLSRC) $(DOCS) $(TEXTFILES)
 # these are the files that go to coders
 DEV_DISTFILES = $(DISTFILES) $(DEVELOPER_ONLY)
 
-SRC = $(SCREEN).c $(VILESRC)
-
 MKTBLS = ./mktbls$x
 
 # Generated header-files, e.g., nemodes.h
@@ -266,9 +264,10 @@ BUILTLIBS = @BUILTLIBS@
 #	select.o
 #	spawn.o
 #	statevar.o
+#	trace.o
 #	ucrypt.o
 #	xterm.o
-OBJ = $(SCREEN)$o \
+OBJ =	$(SCREEN)$o \
 	main$o basic$o bind$o buffer$o csrch$o \
 	display$o dumbterm$o eval$o exec$o externs$o fences$o file$o \
 	filec$o fileio$o finderr$o glob$o globals$o \
@@ -277,6 +276,8 @@ OBJ = $(SCREEN)$o \
 	regexp$o region$o search$o tags$o \
 	tbuff$o termio$o undo$o version$o \
 	watch$o window$o word$o wordmov$o @EXTRAOBJS@
+
+SRC =	$(OBJ:$o=.c)
 
 ALL =	$(TARGET)
 

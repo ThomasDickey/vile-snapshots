@@ -5,7 +5,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/rb-filt.l,v 1.15 2006/05/21 19:50:19 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/rb-filt.l,v 1.16 2007/05/26 14:42:22 tom Exp $
  *
  * Filter to add vile "attribution" sequences to a Ruby script
  * based on the Python filter.
@@ -150,23 +150,28 @@ NUMBER		{SIGN}?({DECIMAL}|{OCTAL}|{HEXADECIMAL})[L]?|{REAL}
 static int
 save_here(char *text, int len)
 {
-    char *s = here_tag = do_alloc(here_tag, len, &here_len);
+    char *s;
+    int result = 0;
 
-    text += 2;		/* skip over "<<" */
-    if (*text == '-')
-	++text;
-    while (len-- > 0) {
-	if (isIdent(CharOf(*text))) {
-	    *s++ = *text;
-	} else if (*text == '\'' || *text == '\"') {
-	    ;
-	} else {
-	    break;
+    if ((here_tag = do_alloc(here_tag, len, &here_len)) != 0) {
+	s = here_tag;
+	text += 2;		/* skip over "<<" */
+	if (*text == '-')
+	    ++text;
+	while (len-- > 0) {
+	    if (isIdent(CharOf(*text))) {
+		*s++ = *text;
+	    } else if (*text == '\'' || *text == '\"') {
+		;
+	    } else {
+		break;
+	    }
+	    text++;
 	}
-	text++;
+	*s = 0;
+	result = (s != here_tag);
     }
-    *s = 0;
-    return (s - here_tag) != 0;
+    return result;
 }
 
 /*

@@ -2,7 +2,7 @@
  * Window management. Some of the functions are internal, and some are
  * attached to keys that the user actually types.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/window.c,v 1.108 2007/01/08 00:40:21 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/window.c,v 1.109 2007/05/25 23:36:22 tom Exp $
  *
  */
 
@@ -1118,6 +1118,8 @@ winit(int screen)
 {
     WINDOW *wp;
 
+    TRACE((T_CALLED "winit(%d)\n", screen));
+
     wp = typecalloc(WINDOW);	/* First window         */
     if (wp == NULL)
 	ExitProgram(BADEXIT);
@@ -1163,6 +1165,7 @@ winit(int screen)
 	set_w_val(wminip, WMDLINEWRAP, FALSE);
 #endif
     }
+    returnVoid();
 }
 
 #if OPT_SEL_YANK || OPT_PERL || OPT_COLOR || OPT_EVAL || OPT_DEBUGMACROS

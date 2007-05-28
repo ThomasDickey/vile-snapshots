@@ -1,7 +1,7 @@
 /*
  * makeargv.c:  parse string to argv[]
  *
- * $Header: /users/source/archives/vile.vcs/RCS/makeargv.c,v 1.1 2007/04/21 00:25:34 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/makeargv.c,v 1.2 2007/05/04 20:52:18 tom Exp $
  */
 
 #include "w32vile.h"
@@ -18,10 +18,19 @@
 //--------------------------------------------------------------
 
 int
+is_option(const char *param)
+{
+    return (*param == '-'
+	    || *param == '+'
+	    || *param == '@');
+}
+
+int
 make_argv(const char *program,
 	  const char *cmdline,
 	  char ***argvp,
-	  int *argcp)
+	  int *argcp,
+	  char **argend)
 {
 
     int maxargs = 2 + (strlen(cmdline) + 2) / 2;
@@ -48,6 +57,13 @@ make_argv(const char *program,
 
 	while (*ptr == ' ')
 	    ptr++;
+
+	/*
+	 * Save the beginning of non-options in *argend
+	 */
+	if (argend != 0
+	    && !is_option(ptr))
+	    *argend = ptr;
 
 	if (*ptr == SQUOTE
 	    || *ptr == DQUOTE

@@ -5,7 +5,7 @@
  * keys. Like everyone else, they set hints
  * for the display system.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.314 2007/01/14 23:51:45 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.316 2007/05/27 16:45:05 tom Exp $
  *
  */
 
@@ -1833,16 +1833,18 @@ renamebuffer(BUFFER *rbp, char *bufname)
     char bufn[NBUFN];		/* buffer to hold buffer name */
     WINDOW *wp;
 
+    TRACE((T_CALLED "renamebuffer(%s, %s)\n", rbp->b_bname, bufname));
+
     if (*mktrimmed(strcpy(bufn, bufname)) == EOS)
-	return (ABORT);
+	returnCode(ABORT);
 
     bp = find_b_name(bufn);
 
     if (bp == curbp)
-	return (ABORT);		/* no change */
+	returnCode(ABORT);	/* no change */
 
     if (valid_buffer(bp))
-	return FALSE;		/* name already in use */
+	returnCode(FALSE);	/* name already in use */
 
 #if OPT_NAMEBST
     if (is_scratchname(rbp->b_bname)) {
@@ -1850,7 +1852,7 @@ renamebuffer(BUFFER *rbp, char *bufname)
 	(void) strip_brackets(procname, rbp->b_bname);
 	if (search_namebst(procname)
 	    && rename_namebst(procname, bufn) != TRUE)
-	    return ABORT;
+	    returnCode(ABORT);
     }
 #endif
     set_bname(rbp, bufn);	/* copy buffer name to structure */
@@ -1860,13 +1862,11 @@ renamebuffer(BUFFER *rbp, char *bufname)
 	    wp->w_flag |= WFMODE;
     }
 
-    return (TRUE);
+    returnCode(TRUE);
 }
 
-/* Rename the current buffer */
-/* ARGSUSED */
-int
-namebuffer(int f GCC_UNUSED, int n GCC_UNUSED)
+static int
+rename_specific_buffer(BUFFER *bp)
 {
     static char bufn[NBUFN];	/* buffer to hold buffer name */
     const char *prompt = "New name for buffer: ";
@@ -1877,15 +1877,39 @@ namebuffer(int f GCC_UNUSED, int n GCC_UNUSED)
 	if (mlreply(prompt, bufn, sizeof(bufn)) != TRUE)
 	    return (FALSE);
 	prompt = "That name's been used.  New name: ";
-	status = renamebuffer(curbp, bufn);
+	status = renamebuffer(bp, bufn);
 	if (status == ABORT)
 	    return (FALSE);
     } while (status == FALSE);
 
-    b_clr_scratch(curbp);	/* if renamed, we must want it */
+    b_clr_scratch(bp);		/* if renamed, we must want it */
     mlerase();
     updatelistbuffers();
     return (TRUE);
+}
+
+/* Rename the current buffer */
+/* ARGSUSED */
+int
+namebuffer(int f GCC_UNUSED, int n GCC_UNUSED)
+{
+    TRACE((T_CALLED "namebuffer()\n"));
+    returnCode(rename_specific_buffer(curbp));
+}
+
+/*
+ * Rename a buffer, may be the current one.
+ */
+int
+name_a_buffer(int f GCC_UNUSED, int n GCC_UNUSED)
+{
+    BUFFER *bp;
+    int s;
+    char bufn[NBUFN];
+
+    TRACE((T_CALLED "name_a_buffer()\n"));
+    ASK_FOR_OLD_BNAME("Rename buffer: ", s, bufn, bp);
+    returnCode(rename_specific_buffer(bp));
 }
 
 /* create or find a window, and stick this buffer in it.  when
@@ -2466,6 +2490,7 @@ bfind(const char *bname, UINT bflag)
     }
 
     beginDisplay();
+    TRACE((T_CALLED "bfind(%s, %u)\n", bname, bflag));
 
     /* set everything to 0's unless we want nonzero */
     if ((bp = typecalloc(BUFFER)) == NULL) {
@@ -2538,6 +2563,7 @@ bfind(const char *bname, UINT bflag)
 	    set_record_sep(bp, (RECORD_SEP) global_b_val(VAL_RECORD_SEP));
 	}
     }
+    TRACE((T_RETURN "%p\n", bp));
     endofDisplay();
     return (bp);
 }

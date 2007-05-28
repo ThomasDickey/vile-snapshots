@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/xterm.c,v 1.2 2005/11/23 17:13:51 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/xterm.c,v 1.3 2007/05/05 15:23:03 tom Exp $
  *
  * xterm-specific code for vi-like-emacs.
  */
@@ -9,7 +9,7 @@
 
 #if DISP_TERMCAP || DISP_CURSES
 
-#define putpad(s)	fputs(s, stdout)
+#define putpad(s)	vl_fputs(s, stdout)
 #define	XtermPos()	((unsigned)(keystroke() - 040))
 
 #if OPT_XTERM >= 3

@@ -2,7 +2,7 @@
  * The routines in this file read and write ASCII files from the disk. All of
  * the knowledge about files are here.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/fileio.c,v 1.181 2006/04/25 21:00:42 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/fileio.c,v 1.182 2007/05/05 15:01:45 tom Exp $
  *
  */
 
@@ -57,10 +57,10 @@ copy_file(const char *src, const char *dst)
 	if ((ofp = fopen(SL_TO_BSL(dst), FOPEN_WRITE)) != 0) {
 	    ok = TRUE;
 	    for_ever {
-		chr = getc(ifp);
+		chr = vl_getc(ifp);
 		if (feof(ifp))
 		    break;
-		putc(chr, ofp);
+		vl_putc(chr, ofp);
 		if (ferror(ifp) || ferror(ofp)) {
 		    ok = FALSE;
 		    break;
@@ -772,7 +772,7 @@ ffputc(int c)
 	    fflinelen = 0;
 	}
     } else {
-	putc(d, ffp);
+	vl_putc(d, ffp);
 
 	if (ferror(ffp)) {
 	    mlerror("writing");
@@ -851,7 +851,7 @@ ffgetline(size_t *lenp)
     {
 	/* accumulate to a newline */
 	for_ever {
-	    c = getc(ffp);
+	    c = vl_getc(ffp);
 	    if (feof(ffp) || ferror(ffp))
 		break;
 #if OPT_ENCRYPT

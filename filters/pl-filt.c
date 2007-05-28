@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/pl-filt.c,v 1.83 2006/05/21 19:47:50 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/pl-filt.c,v 1.86 2007/05/27 19:05:46 tom Exp $
  *
  * Filter to add vile "attribution" sequences to perl scripts.  This is a
  * translation into C of an earlier version written for LEX/FLEX.
@@ -14,7 +14,12 @@ DefineOptFilter("perl", "d");
 DefineFilter("perl");
 #endif
 
-#define QUOTE_DELIMS "#:/?|!:%',{}[]()@;="
+/*
+ * Punctuation that might be quote-delimiters (it is undocumented whether we
+ * should consider '$' and '&', but reading the parser hints that might work
+ * too).
+ */
+#define QUOTE_DELIMS "#:/?|!:%',{}[]()@;=~"
 /* from Perl's S_scan_str() */
 #define LOOKUP_TERM "([{< )]}> )]}>"
 
@@ -93,6 +98,23 @@ stateName(States state)
     return result;
 }
 #endif
+
+/*
+ * Count consecutive blanks at the current position.
+ */
+static int
+count_blanks(char *s)
+{
+    char *base = s;
+
+    while (MORE(s)) {
+	if (!isspace(CharOf(*s))) {
+	    break;
+	}
+	++s;
+    }
+    return s - base;
+}
 
 /******************************************************************************
  * Lexical functions that match a particular token type                       *
@@ -571,21 +593,28 @@ begin_HERE(char *s, int *quoted)
 	&& s[0] == '<'
 	&& s[1] == '<') {
 	s += 2;
+	s += count_blanks(s);
 	base = s;
 	if ((ok = is_QIDENT(s)) != 0) {
 	    unsigned temp = 0;
 	    char *marker = do_alloc((char *) 0, ok + 1, &temp);
 	    char *d = marker;
+
 	    s += ok;
 	    *quoted = 0;
-	    while (base != s) {
-		if (*base != SQUOTE && *base != DQUOTE && *base != BACKSLASH)
-		    *d++ = *base;
-		else if (*base != DQUOTE)
-		    *quoted = 1;
-		base++;
+
+	    if (marker != 0) {
+		while (base != s) {
+		    if (*base != SQUOTE
+			&& *base != DQUOTE
+			&& *base != BACKSLASH)
+			*d++ = *base;
+		    else if (*base != DQUOTE)
+			*quoted = 1;
+		    base++;
+		}
+		*d = 0;
 	    }
-	    *d = 0;
 	    return marker;
 	}
     }
@@ -595,25 +624,19 @@ begin_HERE(char *s, int *quoted)
 static char *
 skip_BLANKS(char *s)
 {
-    char *base = s;
+    int count = count_blanks(s);
 
-    while (MORE(s)) {
-	if (!isspace(CharOf(*s))) {
-	    break;
-	}
-	++s;
+    if (count) {
+	flt_puts(s, count, "");
     }
-    if (s != base) {
-	flt_puts(base, s - base, "");
-    }
-    return s;
+    return s + count;
 }
 
 /*
  * Return the first character, skipping optional blanks
  */
 static int
-after_blanks(char *s)
+char_after_blanks(char *s)
 {
     int result = '\0';
 
@@ -694,7 +717,7 @@ is_QUOTE(char *s, int *delims)
 	s = base;
 
     if (s != base) {
-	int test = after_blanks(s);
+	int test = char_after_blanks(s);
 	DPRINTF(("is_Quote(%.*s:%c)", (int) (s - base), base, test));
 	if (test == '#' && isspace(CharOf(*s)))
 	    test = 0;
@@ -862,7 +885,7 @@ write_PATTERN(char *s, int len)
 	} else if (s[n] == BACKSLASH) {
 	    escaped = 1;
 	} else if (isBlank(s[n]) && !escaped && !comment &&
-		   (leading || after_blanks(s + n) == '#')) {
+		   (leading || char_after_blanks(s + n) == '#')) {
 	    flt_puts(s + first, (n - first - 0), String_attr);
 	    flt_putc(s[n]);
 	    first = n + 1;
@@ -1344,10 +1367,13 @@ do_filter(FILE *input GCC_UNUSED)
 			state = ePATTERN;
 		    } else {
 			if (is_FORMAT(s, ok)) {
+			    char *try_mark;
 			    quoted = 0;
 			    state = eHERE;
 			    mark_len = 0;
-			    marker = strcpy(do_alloc(0, 2, &mark_len), ".");
+			    try_mark = do_alloc(0, 2, &mark_len);
+			    if (try_mark != 0)
+				marker = strcpy(try_mark, ".");
 			}
 			save = s[ok];
 			s[ok] = 0;

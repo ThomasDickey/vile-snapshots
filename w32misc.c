@@ -2,7 +2,7 @@
  * w32misc:  collection of unrelated, common win32 functions used by both
  *           the console and GUI flavors of the editor.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32misc.c,v 1.47 2006/04/21 11:53:40 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32misc.c,v 1.48 2007/05/05 15:30:00 tom Exp $
  */
 
 #include "estruct.h"
@@ -24,9 +24,9 @@
 #define SHEXE_LEN        (sizeof(SHEXE) - 1)
 #define SHELL_C_LEN      (sizeof(" -c ") - 1)
 
-static int   host_type = HOST_UNDEF; /* nt or 95? */
+static int host_type = HOST_UNDEF;	/* nt or 95? */
 #if !DISP_NTWIN
-static char  saved_title[256];
+static char saved_title[256];
 #endif
 
 /* ------------------------------------------------------------------ */
@@ -36,7 +36,7 @@ int
 stdin_data_available(void)
 {
     FILE *fp;
-    int  rc = 0;
+    int rc = 0;
     int fd1 = fileno(stdin);
     int fd2;
 
@@ -53,7 +53,7 @@ stdin_data_available(void)
 
 #define MAX_SIGS 6
 
-typedef void (*SIGFUNC_TYPE)(int);
+typedef void (*SIGFUNC_TYPE) (int);
 
 static SIGFUNC_TYPE saved_sigs[MAX_SIGS];
 
@@ -81,7 +81,6 @@ restore_signals(void)
 
 #endif
 
-
 static void
 set_host(void)
 {
@@ -90,30 +89,24 @@ set_host(void)
     info.dwOSVersionInfoSize = sizeof(info);
     GetVersionEx(&info);
     host_type = (info.dwPlatformId == VER_PLATFORM_WIN32_NT) ?
-                HOST_NT : HOST_95;
+	HOST_NT : HOST_95;
 }
-
-
 
 int
 is_winnt(void)
 {
     if (host_type == HOST_UNDEF)
-        set_host();
+	set_host();
     return (host_type == HOST_NT);
 }
-
-
 
 int
 is_win95(void)
 {
     if (host_type == HOST_UNDEF)
-        set_host();
+	set_host();
     return (host_type == HOST_95);
 }
-
-
 
 /*
  * FUNCTION
@@ -203,113 +196,98 @@ is_win95(void)
 char *
 mk_shell_cmd_str(char *cmd, int *allocd_mem, int prepend_shc)
 {
-    int         alloc_len,
-                bourne_shell,     /* Boolean, T if user's shell has
-                                   * appearances of a Unix lookalike
-                                   * bourne shell (e.g., sh, ksh, bash).
-                                   */
-                len;
-    char        *out_str, *cp, *shell, *shell_c = "/c";
+    int alloc_len, bourne_shell,	/* Boolean, T if user's shell has
+					 * appearances of a Unix lookalike
+					 * bourne shell (e.g., sh, ksh, bash).
+					 */
+      len;
+    char *out_str, *cp, *shell, *shell_c = "/c";
 
-    shell        = get_shell();
-    len          = (int) strlen(shell);
+    shell = get_shell();
+    len = (int) strlen(shell);
     bourne_shell = (len >= 2 &&
-                    toLower(shell[len - 2]) == 's' &&
-                    toLower(shell[len - 1]) == 'h')
-                           ||
-                   (len >= SHEXE_LEN &&
-                    stricmp(shell + len - SHEXE_LEN, SHEXE) == 0);
-    if (bourne_shell)
-    {
-        shell_c = "-c";
+		    toLower(shell[len - 2]) == 's' &&
+		    toLower(shell[len - 1]) == 'h')
+	||
+	(len >= SHEXE_LEN &&
+	 stricmp(shell + len - SHEXE_LEN, SHEXE) == 0);
+    if (bourne_shell) {
+	shell_c = "-c";
 
-        /* Now check for csh lookalike. */
-        bourne_shell = ! (
-                           (len >= 3 &&
-                           toLower(shell[len - 3]) == 'c')
-                                    ||
-                           (len >= CSHEXE_LEN &&
-                            stricmp(shell + len - CSHEXE_LEN, CSHEXE) == 0)
-                         );
+	/* Now check for csh lookalike. */
+	bourne_shell = !(
+			    (len >= 3 &&
+			     toLower(shell[len - 3]) == 'c')
+			    ||
+			    (len >= CSHEXE_LEN &&
+			     stricmp(shell + len - CSHEXE_LEN, CSHEXE) == 0)
+	    );
     }
-    if (! bourne_shell)
-    {
-        /*
-         * MS-DOS shell or csh.  Do not bother quoting user's command
-         * string, since the former is oblivious to the notion of a unix
-         * shell's argument quoting and the latter does not support nested
-         * double quotes.
-         */
+    if (!bourne_shell) {
+	/*
+	 * MS-DOS shell or csh.  Do not bother quoting user's command
+	 * string, since the former is oblivious to the notion of a unix
+	 * shell's argument quoting and the latter does not support nested
+	 * double quotes.
+	 */
 
-        if (prepend_shc)
-        {
-            alloc_len = (int) (strlen(cmd) + strlen(shell) + SHELL_C_LEN + 1);
-            if ((out_str = typeallocn(char, alloc_len)) == NULL)
-                return (out_str);
-            *allocd_mem = TRUE;
-            sprintf(out_str, "%s %s %s", shell, shell_c, cmd);
-            return (out_str);
-        }
-        else
-        {
-            *allocd_mem = FALSE;
-            return (cmd);
-        }
+	if (prepend_shc) {
+	    alloc_len = (int) (strlen(cmd) + strlen(shell) + SHELL_C_LEN + 1);
+	    if ((out_str = typeallocn(char, alloc_len)) == NULL)
+		  return (out_str);
+	    *allocd_mem = TRUE;
+	    sprintf(out_str, "%s %s %s", shell, shell_c, cmd);
+	    return (out_str);
+	} else {
+	    *allocd_mem = FALSE;
+	    return (cmd);
+	}
     }
 
     /* Else apply solutions 1-2 above. */
-    alloc_len = (int) strlen(cmd) * 2; /* worst case -- every cmd byte quoted */
+    alloc_len = (int) strlen(cmd) * 2;	/* worst case -- every cmd byte quoted */
     if (prepend_shc)
-        alloc_len += (int) strlen(shell) + SHELL_C_LEN;
-    alloc_len += 3;              /* terminating nul + 2 quote chars     */
-    if ((out_str = typeallocn(char, alloc_len)) == NULL)
-    {
-        errno = ENOMEM;
-        return (out_str);
+	alloc_len += (int) strlen(shell) + SHELL_C_LEN;
+    alloc_len += 3;		/* terminating nul + 2 quote chars     */
+    if ((out_str = typeallocn(char, alloc_len)) == NULL) {
+	errno = ENOMEM;
+	return (out_str);
     }
     *allocd_mem = TRUE;
 
     cp = out_str;
     if (prepend_shc)
-        cp += sprintf(cp, "%s %s ", shell, shell_c);
-    if (strchr(cmd, '\'') == NULL)
-    {
-        /* No single quotes in command string.  Solution #1. */
+	cp += sprintf(cp, "%s %s ", shell, shell_c);
+    if (strchr(cmd, '\'') == NULL) {
+	/* No single quotes in command string.  Solution #1. */
 
-        sprintf(cp, "'%s'", cmd);
-        return (out_str);
+	sprintf(cp, "'%s'", cmd);
+	return (out_str);
     }
 
     /* Solution #2. */
     *cp++ = '"';
-    while (*cmd)
-    {
-        if (*cmd == '\\')
-        {
-            *cp++ = *cmd++;
-            if (*cmd)
-            {
-                /* Any quoted char is immune to further quoting. */
+    while (*cmd) {
+	if (*cmd == '\\') {
+	    *cp++ = *cmd++;
+	    if (*cmd) {
+		/* Any quoted char is immune to further quoting. */
 
-                *cp++ = *cmd++;
-            }
-        }
-        else if (*cmd != '"')
-            *cp++ = *cmd++;
-        else
-        {
-            /* bare '"' */
+		*cp++ = *cmd++;
+	    }
+	} else if (*cmd != '"')
+	    *cp++ = *cmd++;
+	else {
+	    /* bare '"' */
 
-            *cp++ = '\\';
-            *cp++ = *cmd++;
-        }
+	    *cp++ = '\\';
+	    *cp++ = *cmd++;
+	}
     }
     *cp++ = '"';
-    *cp   = '\0';
+    *cp = '\0';
     return (out_str);
 }
-
-
 
 /*
  * Semi-generic CreateProcess(). Refer to the w32_system()
@@ -318,52 +296,45 @@ mk_shell_cmd_str(char *cmd, int *allocd_mem, int prepend_shc)
 int
 w32_CreateProcess(char *cmd, int no_wait)
 {
-    PROCESS_INFORMATION  pi;
-    int                  rc = -1;
-    STARTUPINFO          si;
+    PROCESS_INFORMATION pi;
+    int rc = -1;
+    STARTUPINFO si;
 
     memset(&si, 0, sizeof(si));
     si.cb = sizeof(si);
-    if (! no_wait)
-    {
-        /* command requires a shell, so hookup console I/O */
+    if (!no_wait) {
+	/* command requires a shell, so hookup console I/O */
 
-        si.dwFlags    = STARTF_USESTDHANDLES;
-        si.hStdInput  = GetStdHandle(STD_INPUT_HANDLE);
-        si.hStdOutput = GetStdHandle(STD_OUTPUT_HANDLE);
-        si.hStdError  = GetStdHandle(STD_ERROR_HANDLE);
+	si.dwFlags = STARTF_USESTDHANDLES;
+	si.hStdInput = GetStdHandle(STD_INPUT_HANDLE);
+	si.hStdOutput = GetStdHandle(STD_OUTPUT_HANDLE);
+	si.hStdError = GetStdHandle(STD_ERROR_HANDLE);
     }
     if (CreateProcess(NULL,
-                      cmd,
-                      NULL,
-                      NULL,
-                      ! no_wait,       /* Inherit handles */
-                      0,
-                      NULL,
-                      NULL,
-                      &si,
-                      &pi))
-    {
-        /* Success */
-        if (! no_wait)
-        {
-            /* wait for shell process to exit */
+		      cmd,
+		      NULL,
+		      NULL,
+		      !no_wait,	/* Inherit handles */
+		      0,
+		      NULL,
+		      NULL,
+		      &si,
+		      &pi)) {
+	/* Success */
+	if (!no_wait) {
+	    /* wait for shell process to exit */
 
-            (void) cwait(&rc, (CWAIT_PARAM_TYPE) pi.hProcess, 0);
-        }
-        (void) CloseHandle(pi.hProcess);
-        (void) CloseHandle(pi.hThread);
-    }
-    else
-    {
-        /* Bummer */
+	    (void) cwait(&rc, (CWAIT_PARAM_TYPE) pi.hProcess, 0);
+	}
+	(void) CloseHandle(pi.hProcess);
+	(void) CloseHandle(pi.hThread);
+    } else {
+	/* Bummer */
 
-        mlforce("[unable to create win32 process]");
+	mlforce("[unable to create win32 process]");
     }
     return (rc);
 }
-
-
 
 /*
  * FUNCTION
@@ -394,63 +365,55 @@ int
 w32_system(const char *cmd)
 {
     char *cmdstr;
-    int  no_shell, freestr, rc;
+    int no_shell, freestr, rc;
 
     TRACE(("w32_system(%s)\n", cmd));
 
     no_shell = W32_SKIP_SHELL(cmd);
-    if (no_shell)
-    {
-        /*
-         * Must strip off "start " prefix from command because this
-         * idiom is supported by Win95, but not by WinNT.
-         */
+    if (no_shell) {
+	/*
+	 * Must strip off "start " prefix from command because this
+	 * idiom is supported by Win95, but not by WinNT.
+	 */
 
-        if ((cmdstr = typeallocn(char, strlen(cmd) + 1)) == NULL)
-        {
-            (void) no_memory("w32_system");
-            return (-1);
-        }
-        strcpy(cmdstr, cmd + W32_START_STR_LEN);
-        freestr = TRUE;
-    }
-    else
-    {
-        if ((cmdstr = mk_shell_cmd_str((char *) cmd, &freestr, TRUE)) == NULL)
-        {
-            /* heap exhausted! */
+	if ((cmdstr = typeallocn(char, strlen(cmd) + 1)) == NULL) {
+	    (void) no_memory("w32_system");
+	    return (-1);
+	}
+	strcpy(cmdstr, cmd + W32_START_STR_LEN);
+	freestr = TRUE;
+    } else {
+	if ((cmdstr = mk_shell_cmd_str((char *) cmd, &freestr, TRUE)) == NULL) {
+	    /* heap exhausted! */
 
-            (void) no_memory("w32_system");
-            return (-1);
-        }
+	    (void) no_memory("w32_system");
+	    return (-1);
+	}
     }
     set_console_title(cmd);
     rc = w32_CreateProcess(cmdstr, no_shell);
     if (freestr)
-        free(cmdstr);
+	free(cmdstr);
     restore_console_title();
     return (rc);
 }
 
-
-
 #if DISP_NTWIN
 
 static int
-get_console_handles(STARTUPINFO *psi, SECURITY_ATTRIBUTES *psa)
+get_console_handles(STARTUPINFO * psi, SECURITY_ATTRIBUTES * psa)
 {
     CONSOLE_CURSOR_INFO cci;
-    char                shell[NFILEN];
+    char shell[NFILEN];
 
     psi->hStdOutput = GetStdHandle(STD_OUTPUT_HANDLE);
-    psi->dwFlags    = STARTF_USESTDHANDLES;
+    psi->dwFlags = STARTF_USESTDHANDLES;
 
     /* If it's possible to fetch data via hStdOutput, assume all is well. */
-    if (GetConsoleCursorInfo(psi->hStdOutput, &cci))
-    {
-        psi->hStdInput = GetStdHandle(STD_INPUT_HANDLE);
-        psi->hStdError = GetStdHandle(STD_ERROR_HANDLE);
-        return (TRUE);
+    if (GetConsoleCursorInfo(psi->hStdOutput, &cci)) {
+	psi->hStdInput = GetStdHandle(STD_INPUT_HANDLE);
+	psi->hStdError = GetStdHandle(STD_ERROR_HANDLE);
+	return (TRUE);
     }
 
     /*
@@ -489,26 +452,24 @@ get_console_handles(STARTUPINFO *psi, SECURITY_ATTRIBUTES *psa)
      * occur if winvile is launched by windows explorer.
      */
     if ((psi->hStdInput = CreateFile("CONIN$",
-                                     GENERIC_READ,
-                                     FILE_SHARE_READ,
-                                     psa,
-                                     OPEN_EXISTING,
-                                     FILE_ATTRIBUTE_NORMAL,
-                                     NULL)) == INVALID_HANDLE_VALUE)
-    {
-        mlforce("[std input handle creation failed]");
-        return (FALSE);
+				     GENERIC_READ,
+				     FILE_SHARE_READ,
+				     psa,
+				     OPEN_EXISTING,
+				     FILE_ATTRIBUTE_NORMAL,
+				     NULL)) == INVALID_HANDLE_VALUE) {
+	mlforce("[std input handle creation failed]");
+	return (FALSE);
     }
     if ((psi->hStdOutput = CreateFile("CONOUT$",
-                                      GENERIC_WRITE,
-                                      FILE_SHARE_WRITE,
-                                      psa,
-                                      OPEN_EXISTING,
-                                      FILE_ATTRIBUTE_NORMAL,
-                                      NULL)) == INVALID_HANDLE_VALUE)
-    {
-        mlforce("[std output handle creation failed]");
-        return (FALSE);
+				      GENERIC_WRITE,
+				      FILE_SHARE_WRITE,
+				      psa,
+				      OPEN_EXISTING,
+				      FILE_ATTRIBUTE_NORMAL,
+				      NULL)) == INVALID_HANDLE_VALUE) {
+	mlforce("[std output handle creation failed]");
+	return (FALSE);
     }
 
     /*
@@ -521,16 +482,14 @@ get_console_handles(STARTUPINFO *psi, SECURITY_ATTRIBUTES *psa)
     strcpy(shell, get_shell());
     (void) mklower(shell);
     if (strstr(shell, "cmd") || strstr(shell, "command"))
-        psi->hStdError = psi->hStdOutput;
+	psi->hStdError = psi->hStdOutput;
     else
-        psi->hStdError = GetStdHandle(STD_ERROR_HANDLE);
+	psi->hStdError = GetStdHandle(STD_ERROR_HANDLE);
 
-    psi->dwFlags         |= STARTF_USEFILLATTRIBUTE;
-    psi->dwFillAttribute  = FOREGROUND_RED|FOREGROUND_GREEN|FOREGROUND_BLUE;
+    psi->dwFlags |= STARTF_USEFILLATTRIBUTE;
+    psi->dwFillAttribute = FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE;
     return (TRUE);
 }
-
-
 
 /*
  * FUNCTION
@@ -568,189 +527,164 @@ w32_system_winvile(const char *cmd, int *pressret)
 {
 #define PRESS_ANY_KEY "\n[Press any key to continue]"
 
-    char                 *cmdstr;
-    HWND                 hwnd;
-    int                  no_shell, freestr, close_disabled = FALSE, rc = -1;
-    PROCESS_INFORMATION  pi;
-    SECURITY_ATTRIBUTES  sa;
-    STARTUPINFO          si;
+    char *cmdstr;
+    HWND hwnd;
+    int no_shell, freestr, close_disabled = FALSE, rc = -1;
+    PROCESS_INFORMATION pi;
+    SECURITY_ATTRIBUTES sa;
+    STARTUPINFO si;
 
     memset(&si, 0, sizeof(si));
-    si.cb    = sizeof(si);
+    si.cb = sizeof(si);
     no_shell = W32_SKIP_SHELL(cmd);
     memset(&sa, 0, sizeof(sa));
     sa.nLength = sizeof(sa);
-    if (no_shell)
-    {
-        /*
-         * Must strip off "start " prefix from command because this
-         * idiom is supported by Win95, but not by WinNT.
-         */
+    if (no_shell) {
+	/*
+	 * Must strip off "start " prefix from command because this
+	 * idiom is supported by Win95, but not by WinNT.
+	 */
 
-        if ((cmdstr = typeallocn(char, strlen(cmd) + 1)) == NULL)
-        {
-            (void) no_memory("w32_system_winvile");
-            return (-1);
-        }
-        strcpy(cmdstr, cmd + W32_START_STR_LEN);
-        freestr   = TRUE;
-        *pressret = FALSE;  /* Not waiting for the launched cmd to exit. */
-    }
-    else
-    {
-        sa.bInheritHandle = TRUE;
-        if ((cmdstr = mk_shell_cmd_str((char *) cmd, &freestr, TRUE)) == NULL)
-        {
-            /* heap exhausted! */
+	if ((cmdstr = typeallocn(char, strlen(cmd) + 1)) == NULL) {
+	    (void) no_memory("w32_system_winvile");
+	    return (-1);
+	}
+	strcpy(cmdstr, cmd + W32_START_STR_LEN);
+	freestr = TRUE;
+	*pressret = FALSE;	/* Not waiting for the launched cmd to exit. */
+    } else {
+	sa.bInheritHandle = TRUE;
+	if ((cmdstr = mk_shell_cmd_str((char *) cmd, &freestr, TRUE)) == NULL) {
+	    /* heap exhausted! */
 
-            (void) no_memory("w32_system_winvile");
-            return (rc);
-        }
-        if (! AllocConsole())
-        {
-            if (freestr)
-                free(cmdstr);
-            mlforce("[console creation failed]");
-            return (rc);
-        }
-        if (! get_console_handles(&si, &sa))
-        {
-            (void) FreeConsole();
-            if (freestr)
-                free(cmdstr);
-            return (rc);
-        }
-        SetConsoleTitle(cmd);
+	    (void) no_memory("w32_system_winvile");
+	    return (rc);
+	}
+	if (!AllocConsole()) {
+	    if (freestr)
+		free(cmdstr);
+	    mlforce("[console creation failed]");
+	    return (rc);
+	}
+	if (!get_console_handles(&si, &sa)) {
+	    (void) FreeConsole();
+	    if (freestr)
+		free(cmdstr);
+	    return (rc);
+	}
+	SetConsoleTitle(cmd);
 
-        /* don't let signal in dynamic console kill winvile */
-        ignore_signals();
+	/* don't let signal in dynamic console kill winvile */
+	ignore_signals();
 
-        /*
-         * If the spawned console's close button is pressed, both the
-         * console _and_ winvile are killed.  Not good.  Try to disable
-         * console close button before shell process is started, while the
-         * console title is still intact.  Once the shell starts running,
-         * it is free to change the console's title, and many will do so
-         * (e.g., bash).
-         */
-        Sleep(0);     /* yield processor so GDI can create console frame */
-        if ((hwnd = FindWindow(NULL, cmd)) != NULL)
-        {
-            /*
-             * Disable console close button using code borrowed from
-             * Charles Petzold.
-             */
+	/*
+	 * If the spawned console's close button is pressed, both the
+	 * console _and_ winvile are killed.  Not good.  Try to disable
+	 * console close button before shell process is started, while the
+	 * console title is still intact.  Once the shell starts running,
+	 * it is free to change the console's title, and many will do so
+	 * (e.g., bash).
+	 */
+	Sleep(0);		/* yield processor so GDI can create console frame */
+	if ((hwnd = FindWindow(NULL, cmd)) != NULL) {
+	    /*
+	     * Disable console close button using code borrowed from
+	     * Charles Petzold.
+	     */
 
-            (void) EnableMenuItem(GetSystemMenu(hwnd, FALSE),
-                                  SC_CLOSE,
-                                  MF_GRAYED);
-            close_disabled = TRUE;
+	    (void) EnableMenuItem(GetSystemMenu(hwnd, FALSE),
+				  SC_CLOSE,
+				  MF_GRAYED);
+	    close_disabled = TRUE;
 
-            /*
-             * On a Win2K host, the console is often created as a
-             * background window, which means that the user must press
-             * ALT+TAB to bring it to the foreground to interact with the
-             * shell.  Ugh.  This call to SetForegroundWindow() should
-             * work, even on 2K / 98.
-             */
-            (void) SetForegroundWindow(hwnd);
-        }
+	    /*
+	     * On a Win2K host, the console is often created as a
+	     * background window, which means that the user must press
+	     * ALT+TAB to bring it to the foreground to interact with the
+	     * shell.  Ugh.  This call to SetForegroundWindow() should
+	     * work, even on 2K / 98.
+	     */
+	    (void) SetForegroundWindow(hwnd);
+	}
     }
     if (CreateProcess(NULL,
-                      cmdstr,
-                      &sa,
-                      &sa,
-                      ! no_shell,       /* Inherit handles */
-                      0,
-                      NULL,
-                      NULL,
-                      &si,
-                      &pi))
-    {
-        /* Success */
+		      cmdstr,
+		      &sa,
+		      &sa,
+		      !no_shell,	/* Inherit handles */
+		      0,
+		      NULL,
+		      NULL,
+		      &si,
+		      &pi)) {
+	/* Success */
 
-        DWORD        dummy;
-        INPUT_RECORD ir;
+	DWORD dummy;
+	INPUT_RECORD ir;
 
-        if (! close_disabled)
-        {
-            int i;
+	if (!close_disabled) {
+	    int i;
 
-            /*
-             * If the spawned console's close button is pressed, both the
-             * console _and_ winvile are killed.  Not good.
-             */
-            for (i = 0; i < 5; i++)
-            {
-                if ((hwnd = FindWindow(NULL, cmd)) != NULL)
-                {
-                    (void) EnableMenuItem(GetSystemMenu(hwnd, FALSE),
-                                          SC_CLOSE,
-                                          MF_GRAYED);
-                    (void) SetForegroundWindow(hwnd);
-                    break;
-                }
-                Sleep(200);
-            }
-        }
-        if (! no_shell)
-        {
-            (void) cwait(&rc, (CWAIT_PARAM_TYPE) pi.hProcess, 0);
-            restore_signals();
-            if (*pressret)
-            {
-                if (! WriteFile(si.hStdOutput,
-                                PRESS_ANY_KEY,
-                                sizeof(PRESS_ANY_KEY) - 1,
-                                &dummy,
-                                NULL))
-                {
-                    mlforce("[dynamic console write failed]");
-                    rc = -1;
-                }
-                else
-                {
-                    for_ever
-                    {
-                        /* Wait for a single key of input from user. */
+	    /*
+	     * If the spawned console's close button is pressed, both the
+	     * console _and_ winvile are killed.  Not good.
+	     */
+	    for (i = 0; i < 5; i++) {
+		if ((hwnd = FindWindow(NULL, cmd)) != NULL) {
+		    (void) EnableMenuItem(GetSystemMenu(hwnd, FALSE),
+					  SC_CLOSE,
+					  MF_GRAYED);
+		    (void) SetForegroundWindow(hwnd);
+		    break;
+		}
+		Sleep(200);
+	    }
+	}
+	if (!no_shell) {
+	    (void) cwait(&rc, (CWAIT_PARAM_TYPE) pi.hProcess, 0);
+	    restore_signals();
+	    if (*pressret) {
+		if (!WriteFile(si.hStdOutput,
+			       PRESS_ANY_KEY,
+			       sizeof(PRESS_ANY_KEY) - 1,
+			       &dummy,
+			       NULL)) {
+		    mlforce("[dynamic console write failed]");
+		    rc = -1;
+		} else {
+		    for_ever
+		    {
+			/* Wait for a single key of input from user. */
 
-                        if (! ReadConsoleInput(si.hStdInput, &ir, 1, &dummy))
-                        {
-                            mlforce("[dynamic console read failed]");
-                            rc = -1;
-                            break;
-                        }
-                        if (ir.EventType == KEY_EVENT &&
-                                                    ir.Event.KeyEvent.bKeyDown)
-                        {
-                            break;
-                        }
-                    }
-                }
-            }
-        }
-        else
-        {
-            rc = 0;
-        }
-        (void) CloseHandle(pi.hProcess);
-        (void) CloseHandle(pi.hThread);
-    }
-    else
-    {
-        /* Bummer */
+			if (!ReadConsoleInput(si.hStdInput, &ir, 1, &dummy)) {
+			    mlforce("[dynamic console read failed]");
+			    rc = -1;
+			    break;
+			}
+			if (ir.EventType == KEY_EVENT &&
+			    ir.Event.KeyEvent.bKeyDown) {
+			    break;
+			}
+		    }
+		}
+	    }
+	} else {
+	    rc = 0;
+	}
+	(void) CloseHandle(pi.hProcess);
+	(void) CloseHandle(pi.hThread);
+    } else {
+	/* Bummer */
 
-        mlforce("[unable to create Win32 process]");
+	mlforce("[unable to create Win32 process]");
     }
     if (freestr)
-        free(cmdstr);
-    if (! no_shell)
-        FreeConsole();
+	free(cmdstr);
+    if (!no_shell)
+	FreeConsole();
     return (rc);
 }
 #endif /* DISP_NTWIN */
-
-
 
 /*
  * FUNCTION
@@ -784,31 +718,26 @@ w32_keybrd_reopen(int pressret)
 #if DISP_NTCONS
     int c;
 
-    if (pressret)
-    {
-        fputs("[Press return to continue]", stdout);
-        fflush(stdout);
+    if (pressret) {
+	vl_fputs("[Press return to continue]", stdout);
+	fflush(stdout);
 
-        /* loop for a CR, a space, or a : to do another named command */
-        while ((c = _getch()) != '\r' &&
-                c != '\n' &&
-                c != ' ' &&
-                !ABORTED(c))
-        {
-            if (DefaultKeyBinding(c) == &f_namedcmd)
-            {
-                unkeystroke(c);
-                break;
-            }
-        }
-        fputc('\n', stdout);
+	/* loop for a CR, a space, or a : to do another named command */
+	while ((c = _getch()) != '\r' &&
+	       c != '\n' &&
+	       c != ' ' &&
+	       !ABORTED(c)) {
+	    if (DefaultKeyBinding(c) == &f_namedcmd) {
+		unkeystroke(c);
+		break;
+	    }
+	}
+	vl_putc('\n', stdout);
     }
     term.kopen();
     kbd_erase_to_end(0);
 #endif
 }
-
-
 
 /*
  * The code in ntconio.c that saves and restores console titles
@@ -824,8 +753,6 @@ set_console_title(const char *title)
 #endif
 }
 
-
-
 void
 restore_console_title(void)
 {
@@ -833,8 +760,6 @@ restore_console_title(void)
     SetConsoleTitle(saved_title);
 #endif
 }
-
-
 
 /*
  * FUNCTION
@@ -862,19 +787,17 @@ fmt_win32_error(ULONG errcode, char **buf, ULONG buflen)
 {
     int flags = FORMAT_MESSAGE_FROM_SYSTEM;
 
-    if (! *buf)
-        flags |= FORMAT_MESSAGE_ALLOCATE_BUFFER;
+    if (!*buf)
+	flags |= FORMAT_MESSAGE_ALLOCATE_BUFFER;
     FormatMessage(flags,
-                  NULL,
-                  errcode == W32_SYS_ERROR ? GetLastError() : errcode,
-                  MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), /* dflt language */
-                  (*buf) ? *buf : (LPTSTR) buf,
-                  buflen,
-                  NULL);
+		  NULL,
+		  errcode == W32_SYS_ERROR ? GetLastError() : errcode,
+		  MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),	/* dflt language */
+		  (*buf) ? *buf : (LPTSTR) buf,
+		  buflen,
+		  NULL);
     return (*buf);
 }
-
-
 
 /*
  * FUNCTION
@@ -899,11 +822,9 @@ disp_win32_error(ULONG errcode, void *hwnd)
     char *buf = NULL;
 
     fmt_win32_error(errcode, &buf, 0);
-    MessageBox(hwnd, buf, prognam, MB_OK|MB_ICONSTOP);
+    MessageBox(hwnd, buf, prognam, MB_OK | MB_ICONSTOP);
     LocalFree(buf);
 }
-
-
 
 #if DISP_NTWIN
 /*
@@ -937,137 +858,116 @@ disp_win32_error(ULONG errcode, void *hwnd)
  */
 
 int
-parse_font_str(const char *fontstr, FONTSTR_OPTIONS *results)
+parse_font_str(const char *fontstr, FONTSTR_OPTIONS * results)
 {
-    const char    *cp, *tmp;
-    char          *endnum, *facep;
-    ULONG          size;
+    const char *cp, *tmp;
+    char *endnum, *facep;
+    ULONG size;
 
     memset(results, 0, sizeof(*results));
-    size  = 0;
-    cp    = skip_cblanks(fontstr);
+    size = 0;
+    cp = skip_cblanks(fontstr);
 
     /* Up first is either a font face or font size. */
-    if (isDigit(*cp))
-    {
-        errno = 0;
-        size  = strtoul(cp, &endnum, 10);
-        if (errno != 0)
-            return (FALSE);
-        tmp = skip_cblanks(endnum);
-        if (*tmp != '\0')
-        {
-            if (*tmp != ',')
-            {
-                /* Not a 100% integer value, assume this is a font face. */
-
-                size = 0;
-            }
-            else
-                cp = tmp;      /* Valid point size. */
-        }
-        else
-            cp = tmp;         /* Only a point size specified, nothing left. */
+    if (isDigit(*cp)) {
+	errno = 0;
+	size = strtoul(cp, &endnum, 10);
+	if (errno != 0)
+	    return (FALSE);
+	tmp = skip_cblanks(endnum);
+	if (*tmp != '\0') {
+	    if (*tmp != ',') {
+		/* Not a 100% integer value, assume this is a font face. */
+		size = 0;
+	    } else
+		cp = tmp;	/* Valid point size. */
+	} else
+	    cp = tmp;		/* Only a point size specified, nothing left. */
     }
-    if (size == 0)
-    {
-        /* this must be a font face */
+    if (size == 0) {
+	/* this must be a font face */
 
-        facep = results->face;
-        while (*cp)
-        {
-            if (*cp == ',')
-            {
-                cp++;
-                break;
-            }
-            else if (*cp == '\\' && cp[1] == ',')
-            {
-                *facep++  = ',';
-                cp       += 2;
-            }
-            else
-                *facep++ = *cp++;
-        }
-        *facep = '\0';
-        if (results->face[0] == '\0' || *cp == '\0')
-            return (FALSE);
-        else
-        {
-            /* Now pick up non-optional font size (that follows face). */
+	facep = results->face;
+	while (*cp) {
+	    if (*cp == ',') {
+		cp++;
+		break;
+	    } else if (*cp == '\\' && cp[1] == ',') {
+		*facep++ = ',';
+		cp += 2;
+	    } else
+		*facep++ = *cp++;
+	}
+	*facep = '\0';
+	if (results->face[0] == '\0' || *cp == '\0')
+	    return (FALSE);
+	else {
+	    /* Now pick up non-optional font size (that follows face). */
 
-            errno = 0;
-            size  = strtoul(cp, &endnum, 10);
-            if (errno != 0 || size == 0)
-                return (FALSE);
-            cp = endnum;
-        }
+	    errno = 0;
+	    size = strtoul(cp, &endnum, 10);
+	    if (errno != 0 || size == 0)
+		return (FALSE);
+	    cp = endnum;
+	}
     }
 
     /* Now look for optional font style. */
     cp = skip_cblanks(cp);
 
     /* At this point, there are two allowable states:  delimiter or EOS. */
-    if (*cp)
-    {
-        if (*cp++ == ',')
-        {
-            cp = skip_cblanks(cp);
-            if (strncmp(cp, "bold-italic", sizeof("bold-italic") - 1) == 0)
-                results->bold = results->italic = TRUE;
-            else if (strncmp(cp, "italic", sizeof("italic") - 1) == 0)
-                results->italic = TRUE;
-            else if (strncmp(cp, "bold", sizeof("bold") - 1) == 0)
-                results->bold = TRUE;
-            else
-                return (FALSE);
-        }
-        else
-            return (FALSE);
+    if (*cp) {
+	if (*cp++ == ',') {
+	    cp = skip_cblanks(cp);
+	    if (strncmp(cp, "bold-italic", sizeof("bold-italic") - 1) == 0)
+		results->bold = results->italic = TRUE;
+	    else if (strncmp(cp, "italic", sizeof("italic") - 1) == 0)
+		results->italic = TRUE;
+	    else if (strncmp(cp, "bold", sizeof("bold") - 1) == 0)
+		results->bold = TRUE;
+	    else
+		return (FALSE);
+	} else
+	    return (FALSE);
     }
     results->size = size;
     return (TRUE);
 }
-#endif  /* DISP_NTWIN */
+#endif /* DISP_NTWIN */
 
 /* return current window title in dynamic buffer */
 char *
 w32_wdw_title(void)
 {
-    static char   *buf;
-    static DWORD  bufsize;
-    int           nchars;
+    static char *buf;
+    static DWORD bufsize;
+    int nchars;
 
-    if (! buf)
-    {
-        bufsize = 128;
-        buf     = castalloc(char, bufsize);
-        if (! buf)
-            return (error_val);
+    if (!buf) {
+	bufsize = 128;
+	buf = castalloc(char, bufsize);
+	if (!buf)
+	    return (error_val);
     }
     for_ever
     {
 #if DISP_NTWIN
-        nchars = GetWindowText(winvile_hwnd(), buf, bufsize);
+	nchars = GetWindowText(winvile_hwnd(), buf, bufsize);
 #else
-        nchars = GetConsoleTitle(buf, bufsize);
+	nchars = GetConsoleTitle(buf, bufsize);
 #endif
-        if (nchars >= ((int) bufsize - 1))
-        {
-            /* Enlarge buffer and try again. */
+	if (nchars >= ((int) bufsize - 1)) {
+	    /* Enlarge buffer and try again. */
 
-            bufsize *= 2;
-            buf      = castalloc(char, bufsize);
-            if (! buf)
-                return (error_val);
-        }
-        else
-            break;
+	    bufsize *= 2;
+	    buf = castalloc(char, bufsize);
+	    if (!buf)
+		return (error_val);
+	} else
+	    break;
     }
     return ((nchars) ? buf : error_val);
 }
-
-
 
 /*
  * Delete current text selection and optionally copy same to Windows
@@ -1076,25 +976,24 @@ w32_wdw_title(void)
 int
 w32_del_selection(int copy_to_cbrd)
 {
-    AREGION     delrp;
-    MARK        savedot;
+    AREGION delrp;
+    MARK savedot;
     REGIONSHAPE shape;
-    int         status;
+    int status;
 
     /* first, go to beginning of selection, if it exists. */
-    if (! sel_motion(FALSE, FALSE))
-        return (FALSE);
+    if (!sel_motion(FALSE, FALSE))
+	return (FALSE);
 
-    if (! sel_yank(0))      /* copy selection to unnamed register */
-        return (FALSE);
+    if (!sel_yank(0))		/* copy selection to unnamed register */
+	return (FALSE);
 
-    if (! get_selection_buffer_and_region(&delrp))
-    {
-        /* no selected region.  hmmm -- should not happen */
+    if (!get_selection_buffer_and_region(&delrp)) {
+	/* no selected region.  hmmm -- should not happen */
 
-        return (FALSE);
+	return (FALSE);
     }
-    shape   = delrp.ar_shape;
+    shape = delrp.ar_shape;
     savedot = DOT;
 
     /*
@@ -1102,106 +1001,89 @@ w32_del_selection(int copy_to_cbrd)
      * executed by operdel().  The actual code executed depends upon
      * whether or not the region is rectangular.
      */
-    if (shape == RECTANGLE)
-    {
-        DORGNLINES dorgn;
-        int        save;
+    if (shape == RECTANGLE) {
+	DORGNLINES dorgn;
+	int save;
 
-        save        = FALSE;
-        dorgn       = get_do_lines_rgn();
-        DOT         = delrp.ar_region.r_orig;
+	save = FALSE;
+	dorgn = get_do_lines_rgn();
+	DOT = delrp.ar_region.r_orig;
 
-        /* setup dorgn() aka do_lines_in_region() */
-        haveregion  = &delrp.ar_region;
-        regionshape = shape;
-        status      = dorgn(kill_line, &save, FALSE);
-        haveregion  = NULL;
-    }
-    else
-    {
-        lines_deleted = 0;
-        DOT           = delrp.ar_region.r_orig;
-        status        = ldelete(delrp.ar_region.r_size, FALSE);
+	/* setup dorgn() aka do_lines_in_region() */
+	haveregion = &delrp.ar_region;
+	regionshape = shape;
+	status = dorgn(kill_line, &save, FALSE);
+	haveregion = NULL;
+    } else {
+	lines_deleted = 0;
+	DOT = delrp.ar_region.r_orig;
+	status = ldelete(delrp.ar_region.r_size, FALSE);
 #if OPT_SELECTIONS
-        find_release_attr(curbp, &delrp.ar_region);
+	find_release_attr(curbp, &delrp.ar_region);
 #endif
     }
     restore_dot(savedot);
-    if (status)
-    {
-        if (copy_to_cbrd)
-        {
-            /*
-             * cbrdcpy_unnamed() reports number of lines copied, which is
-             * same as number of lines deleted.
-             */
+    if (status) {
+	if (copy_to_cbrd) {
+	    /*
+	     * cbrdcpy_unnamed() reports number of lines copied, which is
+	     * same as number of lines deleted.
+	     */
+	    status = cbrdcpy_unnamed(FALSE, FALSE);
+	} else {
+	    /* No data copied to clipboard, report number of lines deleted. */
 
-            status = cbrdcpy_unnamed(FALSE, FALSE);
-        }
-        else
-        {
-            /* No data copied to clipboard, report number of lines deleted. */
-
-            status = TRUE;
-            if (shape == RECTANGLE)
-            {
-                if (do_report(klines + (kchars != 0)))
-                {
-                    mlwrite("[%d line%s, %d character%s killed]",
-                            klines,
-                            PLURAL(klines),
-                            kchars,
-                            PLURAL(kchars));
-                }
-            }
-            else
-            {
-                if (do_report(lines_deleted))
-                    mlwrite("[%d lines deleted]", lines_deleted);
-            }
-        }
+	    status = TRUE;
+	    if (shape == RECTANGLE) {
+		if (do_report(klines + (kchars != 0))) {
+		    mlwrite("[%d line%s, %d character%s killed]",
+			    klines,
+			    PLURAL(klines),
+			    kchars,
+			    PLURAL(kchars));
+		}
+	    } else {
+		if (do_report(lines_deleted))
+		    mlwrite("[%d lines deleted]", lines_deleted);
+	    }
+	}
     }
     return (status);
 }
-
-
 
 /* slam a string into the editor's input buffer */
 int
 w32_keybrd_write(char *data)
 {
 #if DISP_NTCONS
-    HANDLE        hstdin;
-    INPUT_RECORD  ir;
-    DWORD         unused;
+    HANDLE hstdin;
+    INPUT_RECORD ir;
+    DWORD unused;
 #else
-    HANDLE        hwvile;
+    HANDLE hwvile;
 #endif
-    int           rc;
+    int rc;
 
     rc = TRUE;
 #if DISP_NTCONS
     hstdin = GetStdHandle(STD_INPUT_HANDLE);
     memset(&ir, 0, sizeof(ir));
-    ir.EventType               = KEY_EVENT;
+    ir.EventType = KEY_EVENT;
     ir.Event.KeyEvent.bKeyDown = TRUE;
 #else
     hwvile = winvile_hwnd();
 #endif
-    while (*data && rc)
-    {
+    while (*data && rc) {
 #if DISP_NTCONS
-        ir.Event.KeyEvent.uChar.AsciiChar = *data;
-        rc = WriteConsoleInput(hstdin, &ir, 1, &unused);
+	ir.Event.KeyEvent.uChar.AsciiChar = *data;
+	rc = WriteConsoleInput(hstdin, &ir, 1, &unused);
 #else
-        rc = PostMessage(hwvile, WM_CHAR, *data, 0);
+	rc = PostMessage(hwvile, WM_CHAR, *data, 0);
 #endif
-        data++;
+	data++;
     }
     return (rc);
 }
-
-
 
 #if DISP_NTWIN
 
@@ -1209,20 +1091,20 @@ w32_keybrd_write(char *data)
 void
 w32_center_window(HWND child_hwnd, HWND parent_hwnd)
 {
-    int  w, h;
-    RECT crect,                 /* child rect */
-         prect;                 /* parent rect */
+    int w, h;
+    RECT crect,			/* child rect */
+      prect;			/* parent rect */
 
     GetWindowRect(parent_hwnd, &prect);
     GetWindowRect(child_hwnd, &crect);
     w = crect.right - crect.left;
     h = crect.bottom - crect.top;
     MoveWindow(child_hwnd,
-               prect.left + ((prect.right - prect.left) / 2 - w / 2),
-               prect.top + ((prect.bottom - prect.top) / 2 - h / 2),
-               w,
-               h,
-               TRUE);
+	       prect.left + ((prect.right - prect.left) / 2 - w / 2),
+	       prect.top + ((prect.bottom - prect.top) / 2 - h / 2),
+	       w,
+	       h,
+	       TRUE);
 }
 #endif
 
@@ -1243,156 +1125,140 @@ w32_center_window(HWND child_hwnd, HWND parent_hwnd)
  * the purpose at hand.
  */
 static int
-add_remove_write_acl(const char *filename, int add_acl, DWORD *prev_access_mask)
+add_remove_write_acl(const char *filename, int add_acl, DWORD * prev_access_mask)
 {
 #define WRITABLE_MASK (FILE_WRITE_DATA | FILE_APPEND_DATA)
 
-    BOOL               bDaclPresent, bDaclDefaulted;
-    char               *bslfn, *msg = NULL;
-    DWORD              dwSizeNeeded;
-    int                i, rc = FALSE;
-    PSID               pAceSID, pWorldSID;
-    PACL               pacl;
+    BOOL bDaclPresent, bDaclDefaulted;
+    char *bslfn, *msg = NULL;
+    DWORD dwSizeNeeded;
+    int i, rc = FALSE;
+    PSID pAceSID, pWorldSID;
+    PACL pacl;
     ACCESS_ALLOWED_ACE *pAllowed;
-    BYTE               *pSecDescriptorBuf;
+    BYTE *pSecDescriptorBuf;
 
     SID_IDENTIFIER_AUTHORITY SIDAuthWorld = SECURITY_WORLD_SID_AUTHORITY;
 
     /* does the file exist? */
     bslfn = sl_to_bsl(filename);
     if (access(bslfn, 0) != 0)
-        return (rc);
+	return (rc);
 
     dwSizeNeeded = 0;
     (void) GetFileSecurity(bslfn,
-                           DACL_SECURITY_INFORMATION,
-                           NULL,
-                           0,
-                           &dwSizeNeeded);
-    if (dwSizeNeeded == 0)
-    {
-        fmt_win32_error(W32_SYS_ERROR, &msg, 0);
-        mlforce("[GetFileSecurity: %s]", mktrimmed(msg));
-        LocalFree(msg);
-        return (rc);
+			   DACL_SECURITY_INFORMATION,
+			   NULL,
+			   0,
+			   &dwSizeNeeded);
+    if (dwSizeNeeded == 0) {
+	fmt_win32_error(W32_SYS_ERROR, &msg, 0);
+	mlforce("[GetFileSecurity: %s]", mktrimmed(msg));
+	LocalFree(msg);
+	return (rc);
     }
     if ((pSecDescriptorBuf = malloc(sizeof(BYTE) * dwSizeNeeded)) == NULL)
-        return (no_memory("add_remove_write_acl"));
-    if (! GetFileSecurity(bslfn,
-                          DACL_SECURITY_INFORMATION,
-                          pSecDescriptorBuf,
-                          dwSizeNeeded,
-                          &dwSizeNeeded))
-    {
-        fmt_win32_error(W32_SYS_ERROR, &msg, 0);
-        mlforce("[GetFileSecurity: %s]", mktrimmed(msg));
-        LocalFree(msg);
-        free(pSecDescriptorBuf);
-        return (rc);
+	return (no_memory("add_remove_write_acl"));
+    if (!GetFileSecurity(bslfn,
+			 DACL_SECURITY_INFORMATION,
+			 pSecDescriptorBuf,
+			 dwSizeNeeded,
+			 &dwSizeNeeded)) {
+	fmt_win32_error(W32_SYS_ERROR, &msg, 0);
+	mlforce("[GetFileSecurity: %s]", mktrimmed(msg));
+	LocalFree(msg);
+	free(pSecDescriptorBuf);
+	return (rc);
     }
 
     /* Get DACL from Security Descriptor */
     pacl = NULL;
-    if (! GetSecurityDescriptorDacl((SECURITY_DESCRIPTOR*) pSecDescriptorBuf,
-                                    &bDaclPresent,
-                                    &pacl,
-                                    &bDaclDefaulted))
-    {
-        fmt_win32_error(W32_SYS_ERROR, &msg, 0);
-        mlforce("[GetSecurityDescriptorDacl: %s]", mktrimmed(msg));
-        LocalFree(msg);
-        free(pSecDescriptorBuf);
-        return (rc);
+    if (!GetSecurityDescriptorDacl((SECURITY_DESCRIPTOR *) pSecDescriptorBuf,
+				   &bDaclPresent,
+				   &pacl,
+				   &bDaclDefaulted)) {
+	fmt_win32_error(W32_SYS_ERROR, &msg, 0);
+	mlforce("[GetSecurityDescriptorDacl: %s]", mktrimmed(msg));
+	LocalFree(msg);
+	free(pSecDescriptorBuf);
+	return (rc);
     }
 
     /* Check if DACL present in security descriptor */
-    if (! bDaclPresent || pacl == NULL)
-    {
-        /*
-         * Nothing to manipulate, perhaps a non-NTFS file.  Regardless, a
-         * NULL discretionary ACL implicitly allows all access to an object
-         * (sez docu for GetSecurityDescriptorDacl).
-         */
+    if (!bDaclPresent || pacl == NULL) {
+	/*
+	 * Nothing to manipulate, perhaps a non-NTFS file.  Regardless, a
+	 * NULL discretionary ACL implicitly allows all access to an object
+	 * (sez docu for GetSecurityDescriptorDacl).
+	 */
 
-        free(pSecDescriptorBuf);
-        return (rc);
+	free(pSecDescriptorBuf);
+	return (rc);
     }
 
-    /* Create a well-known SID for "Everyone/World" (code courtesy of MSDN).*/
-    if(! AllocateAndInitializeSid(&SIDAuthWorld,
-                                  1,
-                                  SECURITY_WORLD_RID,
-                                  0, 0, 0, 0, 0, 0, 0,
-                                  &pWorldSID))
-    {
-        fmt_win32_error(W32_SYS_ERROR, &msg, 0);
-        mlforce("[AllocateAndInitializeSid: %s]", mktrimmed(msg));
-        LocalFree(msg);
-        free(pSecDescriptorBuf);
-        return (rc);
+    /* Create a well-known SID for "Everyone/World" (code courtesy of MSDN). */
+    if (!AllocateAndInitializeSid(&SIDAuthWorld,
+				  1,
+				  SECURITY_WORLD_RID,
+				  0, 0, 0, 0, 0, 0, 0,
+				  &pWorldSID)) {
+	fmt_win32_error(W32_SYS_ERROR, &msg, 0);
+	mlforce("[AllocateAndInitializeSid: %s]", mktrimmed(msg));
+	LocalFree(msg);
+	free(pSecDescriptorBuf);
+	return (rc);
     }
-    for (i = 0, pAllowed = NULL; i < pacl->AceCount; i++)
-    {
-        ACE_HEADER *phdr;
+    for (i = 0, pAllowed = NULL; i < pacl->AceCount; i++) {
+	ACE_HEADER *phdr;
 
-        if (GetAce(pacl, i, (LPVOID *) &phdr))
-        {
-            if (phdr->AceType == ACCESS_ALLOWED_ACE_TYPE)
-            {
-                pAllowed = (ACCESS_ALLOWED_ACE *) phdr;
-                pAceSID  = (SID *) &(pAllowed->SidStart);
-                if (EqualSid(pWorldSID, pAceSID))
-                    break;
-            }
-        }
+	if (GetAce(pacl, i, (LPVOID *) & phdr)) {
+	    if (phdr->AceType == ACCESS_ALLOWED_ACE_TYPE) {
+		pAllowed = (ACCESS_ALLOWED_ACE *) phdr;
+		pAceSID = (SID *) & (pAllowed->SidStart);
+		if (EqualSid(pWorldSID, pAceSID))
+		    break;
+	    }
+	}
     }
-    if (i < pacl->AceCount)
-    {
-        /* success */
+    if (i < pacl->AceCount) {
+	/* success */
 
-        int mkchange = FALSE;
+	int mkchange = FALSE;
 
-        if (add_acl)
-        {
-            if ((pAllowed->Mask & WRITABLE_MASK) != WRITABLE_MASK)
-            {
-                /* world ACE does not have "write" permissions...add them */
+	if (add_acl) {
+	    if ((pAllowed->Mask & WRITABLE_MASK) != WRITABLE_MASK) {
+		/* world ACE does not have "write" permissions...add them */
 
-                *prev_access_mask  = pAllowed->Mask;
-                mkchange           = TRUE;
-                pAllowed->Mask    |= FILE_GENERIC_WRITE;
-            }
-        }
-        else
-        {
-            /* restore previous world ACE mask for this file */
+		*prev_access_mask = pAllowed->Mask;
+		mkchange = TRUE;
+		pAllowed->Mask |= FILE_GENERIC_WRITE;
+	    }
+	} else {
+	    /* restore previous world ACE mask for this file */
 
-            pAllowed->Mask = *prev_access_mask;
-            mkchange       = TRUE;
-        }
-        if (mkchange)
-        {
-            rc = SetFileSecurity(bslfn,
-                                 DACL_SECURITY_INFORMATION,
-                                 pSecDescriptorBuf);
+	    pAllowed->Mask = *prev_access_mask;
+	    mkchange = TRUE;
+	}
+	if (mkchange) {
+	    rc = SetFileSecurity(bslfn,
+				 DACL_SECURITY_INFORMATION,
+				 pSecDescriptorBuf);
 
-            if (! rc)
-            {
-                DWORD err = GetLastError();
-                if (! (add_acl && err == ERROR_ACCESS_DENIED))
-                {
-                    fmt_win32_error(err, &msg, 0);
-                    mlforce("[SetFileSecurity: %s]", mktrimmed(msg));
-                    LocalFree(msg);
-                }
-                /*
-                 * Else tried adding write permissions and privs are
-                 * insufficient.  Report no error...whatever action the
-                 * client is attempting will soon fail and an error
-                 * will be reported at that time.
-                 */
-            }
-        }
+	    if (!rc) {
+		DWORD err = GetLastError();
+		if (!(add_acl && err == ERROR_ACCESS_DENIED)) {
+		    fmt_win32_error(err, &msg, 0);
+		    mlforce("[SetFileSecurity: %s]", mktrimmed(msg));
+		    LocalFree(msg);
+		}
+		/*
+		 * Else tried adding write permissions and privs are
+		 * insufficient.  Report no error...whatever action the
+		 * client is attempting will soon fail and an error
+		 * will be reported at that time.
+		 */
+	    }
+	}
     }
     /* Else no World ACE, so add it...someday...maybe...when really bored? */
 
@@ -1411,12 +1277,12 @@ add_remove_write_acl(const char *filename, int add_acl, DWORD *prev_access_mask)
  * by w32_remove_write_acl() to restore the file's original ACCESS_MASK.
  */
 int
-w32_add_write_acl(const char *filename, ULONG *old_access_mask)
+w32_add_write_acl(const char *filename, ULONG * old_access_mask)
 {
     if (is_win95())
-        return (FALSE); /* no such win9x feature */
+	return (FALSE);		/* no such win9x feature */
     else
-        return (add_remove_write_acl(filename, TRUE, old_access_mask));
+	return (add_remove_write_acl(filename, TRUE, old_access_mask));
 }
 
 /*
@@ -1427,7 +1293,7 @@ int
 w32_remove_write_acl(const char *filename, ULONG orig_access_mask)
 {
     if (is_win95())
-        return (FALSE); /* no such win9x feature */
+	return (FALSE);		/* no such win9x feature */
     else
-        return (add_remove_write_acl(filename, FALSE, &orig_access_mask));
+	return (add_remove_write_acl(filename, FALSE, &orig_access_mask));
 }
