@@ -22,7 +22,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.590 2007/01/14 23:57:23 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.594 2007/05/28 14:07:15 tom Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -199,7 +199,7 @@ setup_command(BUFFER *opts_bp, char *param)
     if (p1 != param) {		/* we found a number */
 	p2 = skip_blanks(p1);
 	if (*p2 == '*' || *p2 == ':') {
-	    b2printf(opts_bp, "%.*s ", p1 - param, param);
+	    b2printf(opts_bp, "%.*s ", (int) (p1 - param), param);
 	    param = skip_blanks(p2 + 1);
 	}
     }
@@ -606,11 +606,11 @@ MainProgram(int argc, char *argv[])
 	if (new_console) {
 	    if (FreeConsole()) {
 		if (!AllocConsole()) {
-		    fputs("unable to allocate new console\n", stderr);
+		    vl_fputs("unable to allocate new console\n", stderr);
 		    tidy_exit(BADEXIT);
 		}
 	    } else {
-		fputs("unable to release existing console\n", stderr);
+		vl_fputs("unable to release existing console\n", stderr);
 		tidy_exit(BADEXIT);
 	    }
 	}
@@ -769,6 +769,10 @@ MainProgram(int argc, char *argv[])
 	     */
 	    VALARGS args;
 	    infer_majormode(curbp);
+#if OPT_MODELINE
+	    /* this may override the inferred majormode */
+	    do_modelines(curbp);
+#endif
 	    if (find_mode(curbp, "vilemode", FALSE, &args) == TRUE)
 		run_readhook();
 #else
@@ -1441,7 +1445,7 @@ init_mode_value(struct VAL *d, MODECLASS v_class, int v_which)
 #ifdef VAL_AUTOCOLOR
 	    setINT(VAL_AUTOCOLOR, 0);	/* auto syntax coloring timeout */
 #endif
-#ifdef VAL_BYTEORDER_MARK 
+#ifdef VAL_BYTEORDER_MARK
 	    setINT(VAL_BYTEORDER_MARK, ENUM_UNKNOWN);	/* byteorder-mark NONE */
 #endif
 #ifdef VAL_C_SWIDTH
@@ -1453,7 +1457,7 @@ init_mode_value(struct VAL *d, MODECLASS v_class, int v_which)
 #ifdef VAL_FENCE_LIMIT
 	    setINT(VAL_FENCE_LIMIT, 10);	/* fences iteration timeout */
 #endif
-#ifdef VAL_FILE_ENCODING 
+#ifdef VAL_FILE_ENCODING
 	    setINT(VAL_FILE_ENCODING, 0);	/* file-encoding ASCII */
 #endif
 #ifdef VAL_HILITEMATCH
@@ -2917,7 +2921,7 @@ newprocessgroup(int f GCC_UNUSED, int n GCC_UNUSED)
 	if (pid > 0)
 	    ExitProgram(GOODEXIT);
 	else if (pid < 0) {
-	    fputs("cannot fork\n", stderr);
+	    vl_fputs("cannot fork\n", stderr);
 	    tidy_exit(BADEXIT);
 	}
     }
@@ -2944,6 +2948,8 @@ cmd_mouse_motion(const CMDFUNC * cfp)
     if (cfp != 0
 	&& CMD_U_FUNC(cfp) == mouse_motion)
 	result = TRUE;
+#else
+    (void) cfp;
 #endif
     return result;
 }

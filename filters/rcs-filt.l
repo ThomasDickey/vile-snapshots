@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/rcs-filt.l,v 1.11 2006/05/21 19:50:19 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/rcs-filt.l,v 1.12 2007/05/26 14:49:05 tom Exp $
  *
  * Filter to add vile "attribution" sequences to RCS archives.
  */
@@ -76,9 +76,12 @@ static unsigned save_len;
 static void
 add_to_quoted(char *text, int length)
 {
-    save_bfr = do_alloc(save_bfr, save_len + length + 1, &save_max);
-    strncpy(save_bfr + save_len, text, length + 1);
-    save_len += length;
+    if ((save_bfr = do_alloc(save_bfr, save_len + length + 1, &save_max)) != 0) {
+	strncpy(save_bfr + save_len, text, length + 1);
+	save_len += length;
+    } else {
+	save_len = 0;
+    }
 }
 
 static void

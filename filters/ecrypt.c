@@ -1,7 +1,7 @@
 /*	Crypt:	Encryption routines for MicroEMACS
  *		written by Dana Hoggatt and Paul Fox.
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/ecrypt.c,v 1.8 2004/10/27 19:17:57 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/ecrypt.c,v 1.9 2007/05/05 15:24:46 tom Exp $
  *
  */
 
@@ -218,7 +218,7 @@ filecrypt(FILE *ifp, char *key, int mailmode)
     ue_crypt(key, strlen(key));
 
     while (1) {
-	p = fgets(buf, sizeof(buf), ifp);
+	p = vl_fgets(buf, sizeof(buf), ifp);
 	if (!p) {
 	    if (ferror(ifp))
 		failed("reading file");
@@ -231,7 +231,7 @@ filecrypt(FILE *ifp, char *key, int mailmode)
 	}
 	if (!mailmode)
 	    ue_crypt(buf, strlen(buf));
-	if (fputs(buf, stdout) == EOF)
+	if (vl_fputs(buf, stdout) == EOF)
 	    failed("writing stdout");
     }
 

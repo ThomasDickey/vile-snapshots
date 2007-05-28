@@ -1,7 +1,7 @@
 /*
  * A terminal driver using the curses library
  *
- * $Header: /users/source/archives/vile.vcs/RCS/curses.c,v 1.27 2006/01/12 23:37:34 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/curses.c,v 1.29 2007/05/27 20:35:50 tom Exp $
  */
 
 #include	"estruct.h"
@@ -130,6 +130,12 @@ static void
 curs_close(void)
 {
     TRACE(("curs_close\n"));
+
+    /* see tcap.c */
+    term.curmove(term.rows - 1, 0);	/* cf: dumbterm.c */
+    term.eeol();
+    term.set_title(getenv("TERM"));
+
     vl_restore_tty();
 }
 
@@ -154,8 +160,27 @@ curs_getc(void)
 	fflush(stdout);
 	result = getchar();
     } else if (result == -1) {
+#ifdef VAL_AUTOCOLOR
+	int acmilli = global_b_val(VAL_AUTOCOLOR);
+
+	if (acmilli != 0) {
+	    timeout(acmilli);
+	    for_ever {
+		result = getch();
+		if (result < 0) {
+		    autocolor();
+		} else {
+		    break;
+		}
+	    }
+	} else {
+	    nodelay(stdscr, FALSE);
+	    result = getch();
+	}
+#else
 	nodelay(stdscr, FALSE);
 	result = getch();
+#endif
     }
     last_key = -1;
     TRACE(("curs_getc:%d%s\n", result, in_screen ? "" : "*"));

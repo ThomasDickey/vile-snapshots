@@ -1,7 +1,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/spellflt.l,v 1.33 2007/04/25 00:40:56 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/spellflt.l,v 1.34 2007/05/12 14:18:59 tom Exp $
  *
  * Filter to add vile "attribution" sequences to misspelled words.
  */
@@ -166,9 +166,10 @@ ChopWords(FILE *fp, char *text, int len)
     }
 
     while (len > 0) {
-	int ch = CharOf(text[0]);
-	int all_upper = isupper(ch);
-	int all_lower = islower(ch);
+	int c1 = CharOf(text[0]);
+	int c2;
+	int all_upper = 0;
+	int all_lower = 0;
 	int n;
 
 	/*
@@ -177,21 +178,31 @@ ChopWords(FILE *fp, char *text, int len)
 	 */
 	next = len;
 	for (n = 0; n < len; ++n) {
-	    ch = CharOf(text[n]);
-	    if (isalpha(ch)) {
-		if (isupper(ch)) {
+	    c1 = CharOf(text[n]);
+	    if (isalpha(c1)) {
+		if (isupper(c1)) {
 		    if (all_lower) {
 			next = n;
 			break;
+		    } else if (all_upper) {
+			c2 = ((n + 1) < len) ? CharOf(text[n + 1]) : 0;
+			if (islower(c2)) {
+			    next = n;
+			    break;
+			}
 		    }
-		} else if (all_upper) {
-		    if (n == 1) {
-			all_lower = 1;
-			all_upper = 0;
-		    } else {
-			next = n;
-			break;
+		    ++all_upper;
+		} else {
+		    if (all_upper) {
+			if (n == 1) {
+			    all_lower = 0;
+			    all_upper = 0;
+			} else {
+			    next = n;
+			    break;
+			}
 		    }
+		    ++all_lower;
 		}
 	    }
 	}
@@ -288,7 +299,7 @@ do_filter(FILE *inputs GCC_UNUSED)
      * Run the spelling checker, reading the misspelled words from the pipe.
      * Record those in the keyword table.
      */
-    if ((prog = getenv("VILE_SPELL_FILT")) == 0)
+    if ((prog = vile_getenv("VILE_SPELL_FILT")) == 0)
 	prog = SPELL_PIPE;
     sprintf(buffer, "%s <%s", prog, chop);
     if ((fp = pipe_open(buffer)) != 0) {

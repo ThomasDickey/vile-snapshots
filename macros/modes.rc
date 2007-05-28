@@ -1,4 +1,4 @@
-; $Id: modes.rc,v 1.53 2007/01/15 00:38:05 tom Exp $
+; $Id: modes.rc,v 1.57 2007/05/26 15:28:24 tom Exp $
 ; majormodes in this file are ordered alphabetically for convenience - the
 ; precedence used by vile is strictly alphabetic, counting case.  Use the
 ; before and after qualifiers to override the precedence.
@@ -81,7 +81,7 @@ define-mode au3
 define-mode awk
 ~with define-submode awk
 	suffixes	'\.awk$'
-	pre '^#!\s*\/.*awk\>\(\s*-[\a]\+\)*\s*$'
+	pre '^#!\s*\(\/.*\)\?awk\>\(\s*-[\a]\+\)*\s*$'
 	cindent
 	cindent-chars $fences
 	comment-prefix '^\s*#'
@@ -159,7 +159,7 @@ define-mode cs
 define-mode csh
 ~with define-submode csh
 	suffixes	'\.\(csh.*\|login\|logout\)$'
-	pre '^#!\s*\/.*csh\>\(\s*-[\a]\+\)*\s*$'
+	pre '^#!\s*\(\/.*\)\?csh\>\(\s*-[\a]\+\)*\s*$'
 	comment-prefix	'^\s*#'
 	comments	'^\s*#\s*$'
 	fence-if	'^\s*\<if\>.*\<then\>'
@@ -335,7 +335,7 @@ define-mode html
 
 define-mode midl
 ~with define-submode midl
-	suffixes	'\.\(idl\)$'
+	suffixes	'\.\(idl\|odl\)$'
 	dos
 ~endwith
 
@@ -557,7 +557,7 @@ define-mode pc
 ; very expensive to resolve, we combine it with the similar 'while' group.
 define-mode perl
 ~with define-submode perl
-	pre '^#\s*!\s*\.*\/.*perl[0-9]*\>'
+	pre '^#!\s*\(\/.*\)\?perl[0-9]*\>'
 	suffixes	'\.\(pl\|pm\|PL\)$'
 	before "mail"
 	cindent
@@ -600,7 +600,7 @@ define-mode ps
 ; Python
 define-mode py
 ~with define-submode py
-	pre '^\(\(#!\s*\/.*python[\d_.-]*\>\)\(\(\s*[-]\+[\a]*\s*\)\?\|:\)\)\s*$'
+	pre '^\(\(#!\s*\(\/.*\)\?python[\d_.-]*\>\)\(\(\s*[-]\+[\a]*\s*\)\?\|:\)\)\s*$'
 	suffixes	'\.py$'
 	comment-prefix '^\s*#'
 	comments   '^\s*#\s\+\s*$'
@@ -611,7 +611,7 @@ define-mode py
 ; Ruby
 define-mode rb
 ~with define-submode rb
-	pre '^#\s*!\s*\.*\/.*ruby[0-9]*\>'
+	pre '^#!\s*\(\/.*\)\?ruby[0-9]*\>'
 	suffixes	'\.rb$'
 ~endwith
 
@@ -627,7 +627,7 @@ define-mode rc
 
 define-mode rexx
 ~with define-submode rexx
-	pre '^#\s*!\s*\.*\/.*\(rexx\|regina\|rxcurses\)\>'
+	pre '^#!\s*\(\/.*\)\?\(rexx\|regina\|rxcurses\)\>'
 	suffixes	'\.\(cmd\|rexx\)$'
 	~if &not &seq $os "win32"
 		before "bat"
@@ -650,6 +650,14 @@ define-mode rpm
 	suffixes	'\.spec$'
 ~endwith
 
+define-mode rtf
+~with define-submode rtf
+	preamble	'^{\\rtf\d'
+	suffixes	'\.rtf$'
+	dos
+	notabinsert
+~endwith
+
 ; (see RCS)
 define-mode SCCS
 ~with define-submode SCCS
@@ -666,7 +674,7 @@ define-mode SCCS
 define-mode sed
 ~with define-submode sed
 	suffixes	'\.\(sed\)$'
-	pre '^#!\s*\/sed\>\(\s*-[\a]*\s*\)\*\s*$'
+	pre '^#!\s*\(\/.*\)\?sed\>\(\s*-[\a]*\s*\)\*\s*$'
 	comment-prefix	'^\s*#'
 	comments	'^\s*#\s*$'
 ~endwith
@@ -677,7 +685,7 @@ define-mode sh
 ~with define-submode sh
 	mode-filename	'^\(\([a-z.-]*profile\)\|Jamrules\)$'
 	suffixes	'\(\.\(sh\|ksh\|shar\|.*rc\|bash_[a-z]\+\|ebuild\)$\)'
-	pre '^\(\(#!\s*\/.*sh\>\(\s*[-]\+[\a]*\s*\)\?\)\|:\)\s*$'
+	pre '^\(\(#!\s*\(\/.*\)\?sh\>\(\s*[-]\+[\a]*\s*\)\?\)\|:\)\s*$'
 	comment-prefix	'^\s*[:#]'
 	comments	'^\s*[:#]\s*$'
 	fence-if   '^\s*\<if\>'
@@ -752,7 +760,7 @@ define-mode tcl
 ~with define-submode tcl
 	before "sh"
 	suffixes	'\.\(tcl\|exp\|psm\)$'
-	pre '^#!\s*\/.*\(dcecp\|wish\|wishx\|tclsh\|tcl\|expectk\)[0-9.]*\>\(\s*-[\a]\+\)*\s*$'
+	pre '^#!\s*\(\/.*\)\?\(dcecp\|wish\|wishx\|tclsh\|tcl\|expectk\)[0-9.]*\>\(\s*-[\a]\+\)*\s*$'
 	comment-prefix	'^\s*[:#]'
 	comments	'^\s*[:#]\s*$'
 ~endwith

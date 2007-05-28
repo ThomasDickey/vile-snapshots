@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/perlfilt.l,v 1.45 2006/05/21 19:50:19 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/perlfilt.l,v 1.46 2007/05/26 14:25:56 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of PERL input
  * text.
@@ -74,7 +74,7 @@ NUMBER		{SIGN}?({DECIMAL}|{OCTAL}|{HEXADECIMAL}|{REAL}|{BINARY}|{VERSION})
 			}
 <HERE>^{QIDENT}		{
 			    flt_bfr_append(yytext, yyleng);
-			    if (!strcmp(here_tag, yytext)) {
+			    if (here_tag != 0 && !strcmp(here_tag, yytext)) {
 				flt_bfr_finish();
 				BEGIN(CODE);
 			    }
@@ -117,17 +117,21 @@ NUMBER		{SIGN}?({DECIMAL}|{OCTAL}|{HEXADECIMAL}|{REAL}|{BINARY}|{VERSION})
 static void
 save_here(char *text, int length)
 {
-    char *s = here_tag = do_alloc(here_tag, length, &here_len);
+    char *s;
+
+    here_tag = do_alloc(here_tag, length, &here_len);
     here_exp = 1;
-    while (length--) {
-	if (isIdent(CharOf(*text))) {
-	    *s++ = *text;
-	} else if (*text == '\'') {
-	    here_exp = 0;
+    if ((s = here_tag) != 0) {
+	while (length--) {
+	    if (isIdent(CharOf(*text))) {
+		*s++ = *text;
+	    } else if (*text == '\'') {
+		here_exp = 0;
+	    }
+	    text++;
 	}
-	text++;
+	*s = 0;
     }
-    *s = 0;
     flt_bfr_begin(String_attr);
 }
 

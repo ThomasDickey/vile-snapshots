@@ -1,7 +1,7 @@
 /*
  * version & usage-messages for vile
  *
- * $Header: /users/source/archives/vile.vcs/RCS/version.c,v 1.61 2006/11/04 15:43:59 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/version.c,v 1.62 2007/05/28 14:04:33 tom Exp $
  *
  */
 
@@ -219,6 +219,8 @@ personals(int n)
 	(void) docmd(*cmdp, TRUE, FALSE, 1);
 	cmdp++;
     }
+#else
+    (void) n;
 #endif
 
 }

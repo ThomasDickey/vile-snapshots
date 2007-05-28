@@ -5,7 +5,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/sh-filt.l,v 1.68 2007/01/07 22:57:42 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/sh-filt.l,v 1.69 2007/05/26 14:57:11 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Shell script.
  */
@@ -217,21 +217,24 @@ handle_backtic(char *text, int len)
 static void
 save_here(char *text, int length)
 {
-    char *s = here_tag = do_alloc(here_tag, length, &here_len);
+    char *s;
 
     here_exp = 1;
-    while (length--) {
-	if (isQuote(*text)) {
-	    here_exp = 0;
-	} else if (strchr(" \t", *text) != 0) {
-	    if (s != here_tag)
-		break;
-	} else if (!here_exp || strchr("<->", *text) == 0) {
-	    *s++ = *text;
+    if ((here_tag = do_alloc(here_tag, length, &here_len)) != 0) {
+	s = here_tag;
+	while (length--) {
+	    if (isQuote(*text)) {
+		here_exp = 0;
+	    } else if (strchr(" \t", *text) != 0) {
+		if (s != here_tag)
+		    break;
+	    } else if (!here_exp || strchr("<->", *text) == 0) {
+		*s++ = *text;
+	    }
+	    text++;
 	}
-	text++;
+	*s = 0;
     }
-    *s = 0;
 }
 
 static int
@@ -258,7 +261,7 @@ got_here(char *text, int length)
 		    flt_bfr_embed(text + j, 1, Error_attr);
 		}
 	    } else {
-		if (text[j] != here_tag[k++])
+		if (here_tag != 0 && (text[j] != here_tag[k++]))
 		    return 0;
 		if (pass)
 		    flt_bfr_append(text + j, 1);

@@ -1,7 +1,7 @@
 /*
  * Convert attributed text to html.
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/atr2html.c,v 1.3 2006/05/21 19:47:02 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/atr2html.c,v 1.4 2007/05/05 15:23:03 tom Exp $
  */
 #include <unfilter.h>
 
@@ -26,17 +26,17 @@ markup_unfilter(FILE *dst, int attrib)
 {
     if (last_attrib != 0) {
 	if (CLOSE(ATR_COLOR))
-	    fputs("</font>", dst);
+	    vl_fputs("</font>", dst);
 	if (CLOSE(ATR_UNDERLINE | ATR_ITALIC))
-	    fputs("</em>", dst);
+	    vl_fputs("</em>", dst);
 	if (CLOSE(ATR_BOLD))
-	    fputs("</strong>", dst);
+	    vl_fputs("</strong>", dst);
     }
     if (attrib != 0) {
 	if (OPEN(ATR_BOLD))
-	    fputs("<strong>", dst);
+	    vl_fputs("<strong>", dst);
 	if (OPEN(ATR_UNDERLINE | ATR_ITALIC))
-	    fputs("<em>", dst);
+	    vl_fputs("<em>", dst);
 	if (OPEN(ATR_COLOR)) {
 	    int r = attrib & 1;
 	    int g = attrib & 2;
@@ -70,9 +70,9 @@ write_unfilter(FILE *dst, int ch, int attrib GCC_UNUSED)
 	break;
     }
     if (alias != 0) {
-	fputs(alias, dst);
+	vl_fputs(alias, dst);
     } else {
-	fputc(ch, dst);
+	vl_putc(ch, dst);
     }
 }
 

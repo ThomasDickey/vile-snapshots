@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/htmlfilt.l,v 1.38 2006/05/21 19:50:19 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/htmlfilt.l,v 1.40 2007/05/08 23:38:55 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of HTML input
  * text.
@@ -12,6 +12,7 @@
 
 #include <filters.h>
 #include <fltstack.h>
+#undef YY_NO_UNPUT
 
 DefineOptFilter("html", "j");
 
@@ -86,7 +87,27 @@ CHR_REF		&({IDENT}|{HEXNUM});
 <JS_CODE>{IDENT}	{ WriteToken(keyword_attr(yytext)); }
 <JS_CODE>{STRINGS}	{ WriteToken(String_attr); }
 <JS_CODE>{INTEGER}	{ WriteToken(Number_attr); }
-<JS_CODE>"//"[^\r\n]*	{ WriteToken(Comment_attr); }
+<JS_CODE>"<!--"[^\r\n]* { WriteToken(Comment_attr); }
+<JS_CODE>"//"[^\r\n]*	{
+			  char *last = strstr(yytext, "-->");
+			  char *next = 0;
+			  if (last != 0) {
+			      last += 3;
+			      if (*last != '\0') {
+				  next = strdup(last);
+			      }
+			  }
+			  if (next != 0) {
+			      int used = last - yytext;
+			      WriteToken3(Comment_attr, used);
+			      used = strlen(next);
+			      while (used-- > 0)
+				  unput(next[used]);
+			      free(next);
+			  } else {
+			      WriteToken(Comment_attr);
+			  }
+			}
 
 <JS_CODE>"<"{SPACE}*(\/)?{IDENT}{SPACE}*">" { may_resume_html(yytext); }
 
@@ -166,8 +187,7 @@ do_filter(FILE *inputs)
 
     next_state = INITIAL;
     begin_state(INITIAL);
-    while (yylex() > 0) {
-    }
+    yylex();
     flt_bfr_error();
     end_state();
 }

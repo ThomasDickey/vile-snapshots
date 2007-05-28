@@ -12,7 +12,7 @@
  * Note:  A great deal of the code included in this file is copied
  * (almost verbatim) from other vile modules.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/wvwrap.cpp,v 1.12 2007/04/22 23:35:12 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/wvwrap.cpp,v 1.14 2007/05/28 15:24:04 tom Exp $
  */
 
 #include "w32vile.h"
@@ -136,6 +136,7 @@ ConvertToUnicode(char *szA)
 static char *
 escape_quotes(const char *src)
 {
+    const char *must_quote = "${}";
     size_t len = 4 * strlen(src) + 1;
     char *result = typeallocn(char, len);
 
@@ -143,7 +144,7 @@ escape_quotes(const char *src)
         exit (nomem());
 
     char *dst = result;
-    bool escape = (strchr(src, '$') != 0);
+    bool escape = (strcspn(src, must_quote) != strlen(src));
     while (*src != '\0')
     {
         if (*src == SQUOTE)
@@ -152,7 +153,7 @@ escape_quotes(const char *src)
             *dst++ = SQUOTE;
             *dst++ = SQUOTE;
         }
-        else if (*src == '$')
+        else if (strchr(must_quote, *src) != 0)
         {
             *dst++ = '\\';
         }
@@ -200,7 +201,7 @@ WinMain( HINSTANCE hInstance,      // handle to current instance
     char         **argv;
     int          argc;
 
-    if (make_argv(0, lpCmdLine, &argv, &argc) < 0)
+    if (make_argv(0, lpCmdLine, &argv, &argc, NULL) < 0)
         return (nomem());
 
 #if OPT_TRACE

@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.98 2007/04/23 22:44:14 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.99 2007/05/06 21:58:19 tom Exp $
  */
 
 #ifndef FILTERS_H
@@ -212,7 +212,6 @@ extern void flt_free_symtab(void);
 extern void flt_initialize(void);
 extern void flt_make_symtab(char *classname);
 extern void flt_read_keywords(char *classname);
-extern void for_each_keyword(EachKeyword func);
 extern void insert_keyword(const char *ident, const char *attribute, int classflag);
 extern void parse_keyword(char *name, int classflag);
 

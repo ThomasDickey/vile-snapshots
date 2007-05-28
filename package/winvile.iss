@@ -1,4 +1,4 @@
-; $Header: /users/source/archives/vile.vcs/package/RCS/winvile.iss,v 1.9 2007/01/16 01:24:16 tom Exp $
+; $Header: /users/source/archives/vile.vcs/package/RCS/winvile.iss,v 1.11 2007/05/28 15:46:17 tom Exp $
 ; vile:ts=2 sw=2
 ;
 ; This installs winvile as "winvile-ole.exe", since that is the name I use when building the OLE flavor
@@ -381,7 +381,7 @@ begin
 #emit 'ExpandConstant(''' + mySendTo + '''),'
 #emit '''SendTo link for ' + myAppName + ''','
     ExpandConstant(MY_EDITOR_APP),    // program
-    '',                               // no params
+    '-i',                             // option(s) will be followed by pathname
     '',                               // no target directory
     '',                               // no icon filename
     -1,                               // no icon index

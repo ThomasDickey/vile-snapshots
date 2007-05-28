@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/fltstack.h,v 1.9 2005/01/19 22:08:11 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/fltstack.h,v 1.10 2007/05/26 15:23:46 tom Exp $
  * A simple stack for lex states
  */
 typedef struct {
@@ -43,7 +43,7 @@ pop_state(void)
 static void
 push_state(int state)
 {
-    if (++stk_level >= stk_limit) {
+    if ((++stk_level >= stk_limit) || (stk_state == 0)) {
 	unsigned have = sizeof(STACK) * stk_limit;
 	unsigned want = sizeof(STACK) * (stk_limit += (20 + stk_level));
 	stk_state = type_alloc(STACK, (void *) stk_state, want, &have);

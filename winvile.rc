@@ -1,3 +1,6 @@
+// $Id: winvile.rc,v 1.12 2007/05/26 15:43:02 tom Exp $
+// vile:rcmode
+
 #include <windows.h>
 #include "winvile.h"
 

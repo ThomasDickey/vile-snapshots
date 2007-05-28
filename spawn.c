@@ -1,7 +1,7 @@
 /*	Spawn:	various DOS access commands
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.191 2006/04/19 23:51:48 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.192 2007/05/05 15:01:45 tom Exp $
  *
  */
 
@@ -617,7 +617,7 @@ write_region_to_pipe(void *writefp)
 
     while (lp != last) {
 	fwrite((char *) lp->l_text, sizeof(char), (size_t) llength(lp), fw);
-	putc('\n', fw);
+	vl_putc('\n', fw);
 	lp = lforw(lp);
     }
 #if SYS_UNIX && ! TEST_DOS_PIPES

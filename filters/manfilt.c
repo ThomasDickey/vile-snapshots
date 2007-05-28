@@ -46,7 +46,7 @@
  * vile will choose some appropriate fallback (such as underlining) if
  * italics are not available.
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/manfilt.c,v 1.36 2004/10/27 19:18:30 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/manfilt.c,v 1.37 2007/05/05 15:00:33 tom Exp $
  *
  */
 
@@ -139,7 +139,7 @@ failed(const char *s)
 static int
 ansi_getc(FILE *fp)
 {
-    return fgetc(fp);
+    return vl_getc(fp);
 }
 
 #if OPT_LOCALE
@@ -154,7 +154,7 @@ utf8_getc(FILE *fp)
     int utf_char = 0;
 
     do {
-	int c = fgetc(fp);
+	int c = vl_getc(fp);
 	/* Combine UTF-8 into Unicode */
 	if (c < 0x80) {
 	    /* We received an ASCII character */

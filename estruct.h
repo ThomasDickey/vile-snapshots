@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.609 2007/02/11 17:34:33 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.611 2007/05/26 11:14:38 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -272,7 +272,7 @@
 #include "w32vile.h"
 #endif
 
-#include <stdio.h>
+#include <vl_stdio.h>
 
 #if SYS_VMS && (! defined(__DECC_VER))
 # include <types.h>
@@ -2748,7 +2748,7 @@ extern void _exit (int code);
 #define PERCENT(num,den) ((den) ? (int)((100.0 * (num))/(den)) : 100)
 
 /* Quiet compiler warnings on places where we're being blamed incorrectly,
- * e.g., for casting away const, or for alignment problems.  It's always
+ * e.g., for casting away const, or for alignment problems.  It's generally
  * legal in c89 to cast a pointer to long w/o loss of precision.
  *
  * FIXME: c99 may require a wider type.
@@ -2943,11 +2943,15 @@ extern void ExitProgram(int code);
 #endif
 
 #if OPT_TRACE > 1
-#define TRACE2(params) TRACE(params)
-#define return2Code(c)  returnCode(c)
+#define TRACE2(params)   TRACE(params)
+#define return2Code(c)   returnCode(c)
+#define return2String(c) returnString(c)
+#define return2Void()    returnVoid()
 #else
 #define TRACE2(params) /*nothing*/
-#define return2Code(c)  return(c)
+#define return2Code(c)   return(c)
+#define return2String(c) return(c)
+#define return2Void()    return
 #endif
 
 #if OPT_EVAL || OPT_DEBUGMACROS

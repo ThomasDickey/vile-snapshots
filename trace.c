@@ -1,7 +1,7 @@
 /*
  * debugging support -- tom dickey.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.55 2006/11/23 16:06:58 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.57 2007/05/27 19:30:56 tom Exp $
  *
  */
 
@@ -80,12 +80,12 @@ Trace(const char *fmt,...)
 	save_err = errno;
 	va_start(ap, fmt);
 
-	if (fp == NULL)
-	    fp = fopen("Trace.out", "w");
-	if (fp == NULL)
-	    abort();
-
 	if (fmt != bad_form) {
+	    if (fp == NULL)
+		fp = fopen("Trace.out", "w");
+	    if (fp == NULL)
+		abort();
+
 	    fprintf(fp, "%s", trace_indent(trace_depth, '|'));
 	    if (!strncmp(fmt, T_CALLED, T_LENGTH)) {
 		++trace_depth;
@@ -98,7 +98,7 @@ Trace(const char *fmt,...)
 	    }
 	    vfprintf(fp, fmt, ap);
 	    (void) fflush(fp);
-	} else {
+	} else if (fp != 0) {
 	    (void) fclose(fp);
 	    (void) fflush(stdout);
 	    (void) fflush(stderr);
@@ -748,8 +748,8 @@ endofDisplay(void)
 #endif
 
 #if NO_LEAKS
-void
-trace_leaks(void)
+static void
+close_me(void)
 {
 #if DOALLOC
     FreeAndNull(area);
@@ -758,5 +758,12 @@ trace_leaks(void)
     FreeAndNull(visible_indent);
     used_visible = 0;
     used_indent = 0;
+    Trace(bad_form);
+}
+
+void
+trace_leaks(void)
+{
+    atexit(close_me);
 }
 #endif

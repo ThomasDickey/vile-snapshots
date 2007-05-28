@@ -1,12 +1,12 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_REVISION($Revision: 1.228 $)
+AC_REVISION($Revision: 1.233 $)
 AC_PREREQ(2.13.20030927)
 rm -f config.cache
 
 ### Use "configure -with-screen" to override the default configuration, which is
 ### termcap-based on unix systems.
 
-dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.228 2007/01/14 21:38:06 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.233 2007/05/28 16:31:40 tom Exp $
 
 define(MAKELIST, sh $srcdir/filters/makelist.sh $srcdir/filters/genmake.mak)
 
@@ -335,6 +335,7 @@ limits.h \
 memory.h \
 poll.h \
 pwd.h \
+search.h \
 select.h \
 setjmp.h \
 sgtty.h \
@@ -559,6 +560,7 @@ CF_CHAR_DEVICE(/dev/tty)
 
 CF_CRYPT_FUNC
 CF_CHECK_FD_SET
+CF_STDIO_UNLOCKED
 
 AC_HAVE_FUNCS( \
 _nc_freeall \
@@ -594,6 +596,7 @@ strrchr \
 strtoul \
 symlink \
 tcgetattr \
+tsearch \
 ttyname \
 umask \
 utime \
@@ -685,7 +688,7 @@ AC_ARG_WITH(locale,
 AC_MSG_RESULT($cf_locale)
 if test "$cf_locale" != no ; then
 	AC_DEFINE(OPT_LOCALE)
-	EXTRAOBJS="$EXTRAOBJS charsets\$o"
+	test "$cf_extensions" = yes && EXTRAOBJS="$EXTRAOBJS charsets\$o"
 CF_FUNC_ICONV
 if test "$cf_cv_func_iconv" != no ; then
 AC_MSG_CHECKING(if you want to use iconv() for locale support)
@@ -907,7 +910,7 @@ fi
 AC_SUBST(SH_CFLAGS)
 AC_SUBST(SH_LDFLAGS)
 
-AC_CHECK_PROGS(SPELL_PROG, aspell ispell spell, [])
+AC_CHECK_PROGS(SPELL_PROG, ispell aspell spell, [])
 case .$SPELL_PROG in
 .aspell)
 	SPELL_OPTS="-x list"

@@ -2,7 +2,7 @@
  *	eval.c -- function and variable evaluation
  *	original by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.357 2006/12/14 21:10:34 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.358 2007/02/11 17:37:54 tom Exp $
  *
  */
 
@@ -422,7 +422,7 @@ show_VariableList(BUFFER *bp GCC_UNUSED)
 			vv = "";
 		    } else if (vv[t - 1] == '\n')
 			t--;	/* suppress trailing newline */
-		    v = lsprintf(v, fmt, Names[s], t, vv);
+		    v = lsprintf(v, fmt, Names[s], (int) t, vv);
 		}
 	    }
 	    rc = liststuff(VARIABLES_BufName, FALSE,

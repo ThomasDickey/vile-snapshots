@@ -4,7 +4,7 @@
  *	original by Daniel Lawrence, but
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.309 2007/01/14 20:03:23 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.310 2007/05/28 14:02:36 tom Exp $
  *
  */
 
@@ -2294,7 +2294,9 @@ perform_dobuf(BUFFER *bp, WHLOOP * whlist)
     int save_no_errs = no_errs;
     int save_quiet = quiet;
     int indent = 0;
+#if !SMALLER
     int indstate = 0;
+#endif
 
     static BUFFER *dobuferrbp = 0;
 
@@ -2683,7 +2685,6 @@ do_source(char *fname, int n, int optional)
     returnCode(status);
 }
 
-#if ! SMALLER
 /*
  * execute a series of commands in a file
  */
@@ -2701,7 +2702,6 @@ execfile(int f GCC_UNUSED, int n)
 
     return do_source(fname, n, FALSE);
 }
-#endif
 
 static L_NUM
 get_b_lineno(BUFFER *bp)

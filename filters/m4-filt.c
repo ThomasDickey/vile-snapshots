@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/m4-filt.c,v 1.28 2006/12/15 00:18:40 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/m4-filt.c,v 1.29 2007/05/26 14:22:23 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of m4
  * input text.  This is in C rather than LEX because M4's quoting delimiters
@@ -77,7 +77,8 @@ new_quote(Quote * q, const char *s)
 {
     q->used = strlen(s);
     q->text = do_alloc(q->text, q->used, &(q->have));
-    strcpy(q->text, s);
+    if (q->text != 0)
+	strcpy(q->text, s);
 }
 
 static int
@@ -271,22 +272,25 @@ extract_identifier(char *s, char ***args, int *parens)
 	s++;
     if (base != s) {
 	need = has_cpp + (s - base);
-	name = do_alloc(name, need, &have);
-	if (has_cpp) {
-	    name[0] = '#';
-	}
-	strncpy(name + has_cpp, base, s - base);
-	name[(s - base) + has_cpp] = 0;
-	if (!strcmp(name, "dnl")) {
-	    /* FIXME: GNU m4 may accept an argument list here */
-	    s += strlen(s);
-	    flt_puts(show, s - show, Comment_attr);
-	} else if ((attr = keyword_attr(name)) != 0) {
-	    flt_puts(show, s - show, attr);
+	if ((name = do_alloc(name, need, &have)) != 0) {
+	    if (has_cpp) {
+		name[0] = '#';
+	    }
+	    strncpy(name + has_cpp, base, s - base);
+	    name[(s - base) + has_cpp] = 0;
+	    if (!strcmp(name, "dnl")) {
+		/* FIXME: GNU m4 may accept an argument list here */
+		s += strlen(s);
+		flt_puts(show, s - show, Comment_attr);
+	    } else if ((attr = keyword_attr(name)) != 0) {
+		flt_puts(show, s - show, attr);
+	    } else {
+		flt_puts(show, s - show, Ident_attr);
+	    }
+	    s = parse_directive(name, s, args, parens);
 	} else {
 	    flt_puts(show, s - show, Ident_attr);
 	}
-	s = parse_directive(name, s, args, parens);
 #if NO_LEAKS
 	free(name);
 	name = 0;
@@ -375,9 +379,12 @@ write_literal(char *s, int *literal)
 	if (*literal == 0) {
 	    if (need > rightquote.used) {
 		need -= rightquote.used;
-		buffer = do_alloc(buffer, used + need + 1, &have);
-		strncpy(buffer + used, s, need);
-		used += need;
+		if ((buffer = do_alloc(buffer, used + need + 1, &have)) != 0) {
+		    strncpy(buffer + used, s, need);
+		    used += need;
+		} else {
+		    used = 0;
+		}
 	    }
 	    if (used) {
 		flt_puts(buffer, used, Literal_attr);
@@ -385,9 +392,12 @@ write_literal(char *s, int *literal)
 	    }
 	    write_quote(rightquote);
 	} else {
-	    buffer = do_alloc(buffer, used + need + 1, &have);
-	    strncpy(buffer + used, s, need);
-	    used += need;
+	    if ((buffer = do_alloc(buffer, used + need + 1, &have)) != 0) {
+		strncpy(buffer + used, s, need);
+		used += need;
+	    } else {
+		used = 0;
+	    }
 	}
 	result += c_length;
     } else if (used) {

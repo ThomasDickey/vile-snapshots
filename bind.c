@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.303 2006/12/14 00:00:58 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.304 2007/05/11 00:30:02 tom Exp $
  *
  */
 
@@ -1492,14 +1492,19 @@ cfg_locate(char *fname, UINT which)
 	if (ffaccess(fname, mode)) {
 #if SYS_UNIX
 	    int success = FALSE;
-	    char *dname = malloc(NFILEN + strlen(fname) + 10);
-	    if (dname != 0) {
-		sprintf(dname, "%s%c..", fname, vl_pathsep);
-		lengthen_path(dname);
-		if (is_our_file(dname) && is_our_file(fname)) {
-		    success = TRUE;
+
+	    if (mode & FL_EXECABLE) {
+		char *dname = malloc(NFILEN + strlen(fname) + 10);
+		if (dname != 0) {
+		    sprintf(dname, "%s%c..", fname, vl_pathsep);
+		    lengthen_path(dname);
+		    if (is_our_file(dname) && is_our_file(fname)) {
+			success = TRUE;
+		    }
+		    free(dname);
 		}
-		free(dname);
+	    } else {
+		success = TRUE;
 	    }
 	    if (success)
 #endif

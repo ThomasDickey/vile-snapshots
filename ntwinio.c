@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 screen API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.161 2007/04/21 00:25:37 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.163 2007/05/12 14:47:44 tom Exp $
  * Written by T.E.Dickey for vile (october 1997).
  * -- improvements by Clark Morgan (see w32cbrd.c, w32pipe.c).
  */
@@ -107,7 +107,6 @@ static int initialized = FALSE;	/* winvile open for business */
 static int mouse_captured = 0;
 static int nCharWidth = 8;
 static int nLineHeight = 10;
-static int vile_in_getfkey = 0;
 static int vile_resizing = FALSE;	/* rely on repaint_window if true */
 static int icursor;		/* T -> enable insertion cursor   */
 static int icursor_style;	/* 1 -> cmdmode = block,
@@ -913,13 +912,15 @@ fhide_cursor(void)
 {
     TRACE(("fhide_cursor pos %#lx,%#lx (visible:%d, exists:%d)\n", ttrow,
 	   ttcol, caret_visible, caret_exists));
-    if (caret_visible) {
-	HideCaret(cur_win->text_hwnd);
-	caret_visible = 0;
-    }
-    if (caret_exists) {
-	DestroyCaret();
-	caret_exists = 0;
+    if (!ac_active) {
+	if (caret_visible) {
+	    HideCaret(cur_win->text_hwnd);
+	    caret_visible = 0;
+	}
+	if (caret_exists) {
+	    DestroyCaret();
+	    caret_exists = 0;
+	}
     }
     return 0;
 }
@@ -930,7 +931,8 @@ fshow_cursor(void)
     int x, y, width;
     POINT z;
 
-    if (caret_disabled		/* reject display during font-dialog */
+    if (ac_active		/* reject while repainting autocolor */
+	|| caret_disabled	/* reject display during font-dialog */
 	|| ttrow > term.rows	/* reject bogus position in init */
 	|| ttcol > term.cols)
 	return;
@@ -2003,9 +2005,9 @@ AboutBoxProc(HWND hDlg, UINT iMsg, WPARAM wParam, LPARAM lParam)
 	/* talk about copyright */
 	hwnd = GetDlgItem(hDlg, IDM_ABOUT_COPYRIGHT);
 	sprintf(buf,
-		"\nCopyright \xA9 Thomas Dickey 1997-2005,2006\n\n"
+		"\nCopyright \xA9 Thomas Dickey 1997-2006,2007\n\n"
 		"%s is free software, distributed under the terms of the GNU "
-		"Public License (see COPYING).",
+		"Public License, Version 2 (see COPYING).",
 		prognam);
 	SetWindowText(hwnd, buf);
 	w32_center_window(hDlg, cur_win->main_hwnd);
@@ -2785,7 +2787,6 @@ ntgetch(void)
 #ifdef VAL_AUTOCOLOR
     orig_milli_ac = global_b_val(VAL_AUTOCOLOR);
 #endif
-    vile_in_getfkey = 1;
     if (GetFocus() == cur_win->main_hwnd) {
 	fshow_cursor();
     } else {
@@ -3161,7 +3162,6 @@ ntgetch(void)
 	}
     }
     fhide_cursor();
-    vile_in_getfkey = 0;
 
     TRACE(("...ntgetch %#x\n", result));
     return result;
@@ -3277,12 +3277,6 @@ repaint_window(HWND hWnd)
 
     TRACE(("...repaint_window\n"));
     EndPaint(hWnd, &ps);
-}
-
-static int
-we_are_at_home(void)
-{
-    return TRUE;
 }
 
 static void
@@ -3687,6 +3681,43 @@ InitInstance(HINSTANCE hInstance)
     return (TRUE);
 }
 
+/*
+ * Check for an option and remove it, returning nonzero if found.
+ */
+static int
+had_option(char **argv, int *argc, char *option)
+{
+    int passed = 0;
+    int result = 0;
+    int n;
+
+    for (n = 1; n < *argc; ++n) {
+	if (!passed && is_option(argv[n])) {
+	    if (!strcmp(argv[n], option))
+		result++;
+	} else {
+	    passed = 1;
+	}
+	if (result)
+	    argv[n] = argv[n + result];
+    }
+    *argc -= result;
+    return result;
+}
+
+/*
+ * Skip past options to find beginning of parameters.
+ */
+static int
+after_options(char **argv)
+{
+    int result = 1;
+
+    while (argv[result] != 0 && is_option(argv[result]))
+	++result;
+    return result;
+}
+
 int WINAPI
 WinMain(
 	   HINSTANCE hInstance,
@@ -3697,6 +3728,7 @@ WinMain(
     int argc;
     int n;
     char **argv = 0;
+    char *argend = 0;
     char *fontstr;
 #ifdef VILE_OLE
     int oa_invoke, oa_reg;
@@ -3707,35 +3739,33 @@ WinMain(
 
     TRACE(("Starting ntvile, CmdLine:%s\n", lpCmdLine));
 
-    if (make_argv("VILE", lpCmdLine, &argv, &argc) < 0)
+    if (make_argv("VILE", lpCmdLine, &argv, &argc, &argend) < 0)
 	ExitProgram(BADEXIT);
 
     /*
-     * If the command-line really specifies an existing file, override the argv-parser.
-     * This makes "Send To" work.
+     * Special case for "Send To".  The shortcut for winvile must have a "-i"
+     * after the name of the executable to distinguish this case from running
+     * from the command-line.
      */
-    if (argc > 1 && ffaccess(lpCmdLine, FL_READABLE)) {
-	argc = 1;
-	argv[argc++] = lpCmdLine;
+    if (argend != 0
+	&& had_option(argv, &argc, "-i")
+	&& ffaccess(argend, FL_READABLE)) {
+
+	argc = after_options(argv);
+	argv[argc++] = argend;
 	argv[argc] = 0;
+
+	cd_on_open = -1;
     }
 #if OPT_TRACE
     for (n = 0; n < argc; ++n)
 	TRACE(("argv[%d] %s\n", n, argv[n]));
 #endif
 
-    fontstr = 0;
-
     /*
-     * If our working directory is ${HOMEDRIVE}${HOME} and we're given a
-     * filename, try to set the working directory based on the last one.
-     * Drag/drop would only do this for us if we registered for each file
-     * type; otherwise it's useful when we have the window already open.
+     * Set default values for options that accept parameters.
      */
-    if (argc >= 2
-	&& we_are_at_home()
-	&& ffaccess(argv[argc - 1], FL_READABLE))
-	cd_on_open = -1;
+    fontstr = 0;
 
     SetCols(80);
     SetRows(24);

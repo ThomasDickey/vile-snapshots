@@ -1,7 +1,7 @@
 /*
  * Convert attributed text to something like nroff output.
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/atr2text.c,v 1.3 2006/05/21 19:42:45 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/atr2text.c,v 1.4 2007/05/05 15:14:56 tom Exp $
  */
 #include <unfilter.h>
 
@@ -23,14 +23,14 @@ write_unfilter(FILE *dst, int ch, int attrib)
 {
     if (isprint(ch)) {
 	if (attrib & ATR_BOLD) {
-	    fputc(ch, dst);
-	    fputc('\b', dst);
+	    vl_putc(ch, dst);
+	    vl_putc('\b', dst);
 	} else if (attrib & (ATR_UNDERLINE | ATR_ITALIC)) {
-	    fputc('_', dst);
-	    fputc('\b', dst);
+	    vl_putc('_', dst);
+	    vl_putc('\b', dst);
 	}
     }
-    fputc(ch, dst);
+    vl_putc(ch, dst);
 }
 
 void
