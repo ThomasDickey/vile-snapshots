@@ -1,21 +1,56 @@
 /*
  * makeargv.c:  parse string to argv[]
  *
- * $Header: /users/source/archives/vile.vcs/RCS/makeargv.c,v 1.2 2007/05/04 20:52:18 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/makeargv.c,v 1.3 2007/06/03 15:40:42 tom Exp $
  */
 
-#include "w32vile.h"
-
-#include <stdlib.h>
-#include <string.h>
-
-#include "vl_alloc.h"
-#include "makeargv.h"
-
-#define DQUOTE '"'
-#define SQUOTE '\''
+#include <estruct.h>
+#include <makeargv.h>
 
 //--------------------------------------------------------------
+
+int
+option_has_param(const char *option)
+{
+    static const char *table[] =
+    {
+	"-c",
+#if OPT_ENCRYPT
+	"-k",
+#endif
+#if OPT_TAGS
+#if DISP_X11			/* because -title is predefined */
+	"-T",
+#else
+	"-t",
+#endif
+#endif
+#if DISP_NTWIN
+	"-font",
+	"-fn",
+	"-geometry",
+#endif
+    };
+    unsigned n;
+    int result = 0;
+    for (n = 0; n < TABLESIZE(table); ++n) {
+	if (!strcmp(option, table[n])) {
+	    result = 1;
+	    break;
+	}
+    }
+    return result;
+}
+
+int
+after_options(int argc, char **argv)
+{
+    int result = 1;
+
+    while (result < argc && argv[result] != 0 && is_option(argv[result]))
+	result += 1 + option_has_param(argv[result]);
+    return result;
+}
 
 int
 is_option(const char *param)
@@ -58,17 +93,18 @@ make_argv(const char *program,
 	while (*ptr == ' ')
 	    ptr++;
 
-	/*
-	 * Save the beginning of non-options in *argend
-	 */
-	if (argend != 0
-	    && !is_option(ptr))
-	    *argend = ptr;
-
 	if (*ptr == SQUOTE
 	    || *ptr == DQUOTE
 	    || *ptr == ' ') {
 	    delim = *ptr++;
+	}
+
+	/*
+	 * Save the beginning of non-options in *argend
+	 */
+	if (argend != 0
+	    && !is_option(ptr)) {
+	    *argend = ptr;
 	}
 
 	argv[argc++] = dst = ptr;

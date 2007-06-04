@@ -5629,27 +5629,35 @@ Win32 specifics
 	Winvile accepts these command-line options in addition to the
 	standard ones:
 
-	-geometry <C>x<R>      Initial window dimensions in Columns and Rows
-				 (ex:  -geometry 80x30).  Be aware that the
-				 specified geometry may not exceed the
-				 bounds of the current desktop screen.
-				 Note also that $pagelen and $pagewid may
-				 be used to change winvile's dimensions.
+	-fn	  <fontspec>	Initial font (or -font).  The "Winvile Font"
+				section below describes <fontspec> syntax.
 
-	-fn       <fontspec>   Initial font (or -font).  The "Winvile Font"
-				 section below describes <fontspec> syntax.
+	-geometry <C>x<R>	Initial window dimensions in Columns and Rows
+				(for example "-geometry 80x30").  Be aware
+				that the specified geometry may not exceed the
+				bounds of the current desktop screen.  Note
+				also that $pagelen and $pagewid may be used to
+				change winvile's dimensions.
+
+	-i			Change current directory to match the first
+				file opened, i.e., the one given in the
+				command-line.  To make use with shortcuts such
+				as "Send To" work nicely, this checks if the
+				command-line (after skipping options) is a
+				readable filename which may contain embedded
+				blanks.
 
 	Console Command-Line Switches
 	-----------------------------
 	Vile accepts these additional command-line options:
 
-	-console               Start editor in a new console environment if
-				 stdin is redirected (i.e., input is taken
-				 from a redirected file or from a pipe).
-				 If this option is not set when stdin is
-				 redirected, console mouse features are
-				 unavailable (this problem is most often
-				 encountered on a Windows NT host).
+	-console		Start editor in a new console environment if
+				stdin is redirected (i.e., input is taken from
+				a redirected file or from a pipe).  If this
+				option is not set when stdin is redirected,
+				console mouse features are unavailable (this
+				problem is most often encountered on a Windows
+				NT host).
 
 	Pipes
 	-----
@@ -6332,4 +6340,4 @@ Problems
 
 Copyright 1995-2005,2006 by Paul Fox, Thomas Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.627 2007/01/15 23:25:28 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.628 2007/06/03 14:37:07 tom Exp $

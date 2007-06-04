@@ -20,7 +20,7 @@
 #
 # gnu autoconf support by kevin buettner, 5/94
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.205 2007/05/26 12:21:02 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.206 2007/06/03 23:17:15 tom Exp $
 
 SHELL		= /bin/sh
 
@@ -277,7 +277,9 @@ OBJ =	$(SCREEN)$o \
 	tbuff$o termio$o undo$o version$o \
 	watch$o window$o word$o wordmov$o @EXTRAOBJS@
 
-SRC =	$(OBJ:$o=.c)
+# This should be "$(OBJ:$o=.c)", but IRIX64's make (and some not very old
+# BSD-makes) cannot handle it.
+SRC =	$(OBJ:.o=.c)
 
 ALL =	$(TARGET)
 

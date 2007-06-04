@@ -1,7 +1,7 @@
 /*
  * Common utility functions for vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.105 2007/05/26 15:49:21 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.108 2007/06/02 15:40:09 tom Exp $
  *
  */
 
@@ -33,7 +33,9 @@
 #define HASH_LENGTH 256
 
 struct _keyword {
+#if USE_TSEARCH || !defined(HAVE_TDESTROY)
     KEYWORD *next;
+#endif
     char *kw_name;
     char *kw_attr;
     unsigned kw_size;		/* strlen(kw_name) */
@@ -48,6 +50,9 @@ struct _classes {
     char *name;
 #if USE_TSEARCH
     void *data;
+#if !defined(HAVE_TDESTROY)
+    KEYWORD *keywords;
+#endif
 #else
     KEYWORD **data;
 #endif
@@ -130,7 +135,30 @@ compare_data(const void *a, const void *b)
 
     return strcmp(p->kw_name, q->kw_name);
 }
+
+#ifdef HAVE_TDESTROY
+#define flt_tdestroy tdestroy
+#else
+static void
+flt_tdestroy(void *root, void (*pFreeNode) (void *nodep))
+{
+    CLASS *p;
+    if (root != 0) {
+	for (p = classes; p != 0; p = p->next) {
+	    if (p->data == root) {
+		while (p->keywords != 0) {
+		    KEYWORD *q = p->keywords;
+		    p->keywords = q->next;
+		    if (tdelete(q, &(p->data), compare_data) != 0)
+			pFreeNode(q);
+		}
+		break;
+	    }
+	}
+    }
+}
 #endif
+#endif /* USE_TSEARCH */
 
 static void
 CannotAllocate(const char *where)
@@ -383,16 +411,6 @@ ParseDirective(char *line)
     return 0;
 }
 
-static void
-RemoveList(KEYWORD * k)
-{
-    if (k != NULL) {
-	if (k->next != NULL)
-	    RemoveList(k->next);
-	free((char *) k);
-    }
-}
-
 static unsigned
 TrimBlanks(char *src)
 {
@@ -524,7 +542,7 @@ flt_free_keywords(char *classname)
     for (p = classes, q = 0; p != 0; q = p, p = p->next) {
 	if (!strcmp(classname, p->name)) {
 #if USE_TSEARCH
-	    tdestroy(p->data, free_node);
+	    flt_tdestroy(p->data, free_node);
 #else
 	    my_table = p->data;
 	    for (i = 0; i < HASH_LENGTH; i++) {
@@ -715,6 +733,10 @@ alloc_keyword(const char *ident, const char *attribute, int classflag)
 		} else {
 		    nxt = 0;
 		}
+#ifndef HAVE_TDESTROY
+		nxt->next = current_class->keywords;
+		current_class->keywords = nxt;
+#endif
 #else
 		nxt->next = my_table[Index];
 		my_table[Index] = nxt;
@@ -972,6 +994,7 @@ yywrap(void)
 void
 filters_leaks(void)
 {
+    flt_free_symtab();
     FreeAndNull(str_keyword_name);
     FreeAndNull(str_keyword_file);
     len_keyword_name = 0;

@@ -6,7 +6,7 @@
  *		string literal ("Literal") support --  ben stoltz
  *		factor-out hashing and file I/O - tom dickey
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/c-filt.c,v 1.75 2007/05/26 14:00:25 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/c-filt.c,v 1.76 2007/06/02 15:08:21 tom Exp $
  *
  * Usage: refer to vile.hlp and doc/filters.doc .
  *
@@ -60,7 +60,7 @@ extract_identifier(char *s)
 	if (!found) {
 	    flt_puts(base, need, Ident_attr);
 	}
-#ifdef NO_LEAKS
+#if NO_LEAKS
 	free(name);
 	name = 0;
 	have = 0;

@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 screen API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.163 2007/05/12 14:47:44 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.164 2007/06/03 15:40:42 tom Exp $
  * Written by T.E.Dickey for vile (october 1997).
  * -- improvements by Clark Morgan (see w32cbrd.c, w32pipe.c).
  */
@@ -3681,6 +3681,20 @@ InitInstance(HINSTANCE hInstance)
     return (TRUE);
 }
 
+#if OPT_TRACE
+static void
+show_argv(int argc, char **argv, const char *tag)
+{
+    int n;
+
+    TRACE(("show_argv(%s)\n", tag));
+    for (n = 0; n < argc; ++n)
+	TRACE(("argv[%d]%s\n", n, argv[n]));
+}
+#else
+#define show_argv(argc, argv, tag)	/* nothing */
+#endif
+
 /*
  * Check for an option and remove it, returning nonzero if found.
  */
@@ -3702,19 +3716,6 @@ had_option(char **argv, int *argc, char *option)
 	    argv[n] = argv[n + result];
     }
     *argc -= result;
-    return result;
-}
-
-/*
- * Skip past options to find beginning of parameters.
- */
-static int
-after_options(char **argv)
-{
-    int result = 1;
-
-    while (argv[result] != 0 && is_option(argv[result]))
-	++result;
     return result;
 }
 
@@ -3747,20 +3748,18 @@ WinMain(
      * after the name of the executable to distinguish this case from running
      * from the command-line.
      */
-    if (argend != 0
+    show_argv(argc, argv, "before parsing -i");
+    if ((argend != 0)
 	&& had_option(argv, &argc, "-i")
 	&& ffaccess(argend, FL_READABLE)) {
 
-	argc = after_options(argv);
+	argc = after_options(argc, argv);
 	argv[argc++] = argend;
 	argv[argc] = 0;
 
 	cd_on_open = -1;
     }
-#if OPT_TRACE
-    for (n = 0; n < argc; ++n)
-	TRACE(("argv[%d] %s\n", n, argv[n]));
-#endif
+    show_argv(argc, argv, "after parsing -i");
 
     /*
      * Set default values for options that accept parameters.
