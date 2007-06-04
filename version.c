@@ -1,7 +1,7 @@
 /*
  * version & usage-messages for vile
  *
- * $Header: /users/source/archives/vile.vcs/RCS/version.c,v 1.62 2007/05/28 14:04:33 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/version.c,v 1.63 2007/06/03 14:31:11 tom Exp $
  *
  */
 
@@ -62,6 +62,7 @@ print_usage(int code)
 #if DISP_NTWIN
 	"-fn fontspec   change font",
 	"-geometry CxR  set initial size to R rows and C columns",
+	"-i             set current-directory to pathname of file-parameter",
 #if defined(VILE_OLE)
 	"-Oa            invoke as an OLE Automation server",
 	"-Or            register ole automation interface and exit",

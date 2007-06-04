@@ -1,5 +1,16 @@
 Changes for vile 9.6 (released ??? ??? ?? ????)
 
+ 20070603 (r)
+	+ amend makefile.in change for $(SRC) to use a translation rule that
+	  works with IRIX64 (and some broken BSD) make programs.
+	+ correct parsing/removal of "-i" option in winvile, taking into
+	  account double-quoting of parameters and also options which have
+	  parameters.
+	+ make configure --with-no-leaks work for external filters, e.g., using
+	  valgrind.
+	+ add configure script check for tdelete(), provide a replacement if
+	  not found (report by Gary Jennejohn).
+
  20070528 (q)
 	+ change configure script to check for ispell before aspell; Fedora 5's
 	  problem with aspell was eventually fixed.

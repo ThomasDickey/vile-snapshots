@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.590 2007/01/15 21:55:06 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.591 2007/06/02 15:19:40 tom Exp $
  *
  */
 
@@ -1415,6 +1415,8 @@ extern	void	bind_leaks (void);
 extern	void	bp_leaks (void);
 extern	void	ev_leaks (void);
 extern	void	fileio_leaks (void);
+extern	void	filters_leaks (void);
+extern	void	flt_leaks (void);
 extern	void	itb_leaks (void);
 extern	void	kbs_leaks (void);
 extern	void	map_leaks (void);
@@ -1427,16 +1429,7 @@ extern	void	trace_leaks (void);
 extern	void	vars_leaks (void);
 extern	void	vt_leaks (void);
 extern	void	wp_leaks (void);
-
-#if DISP_X11
-extern	void	x11_leaks		(void);
-#endif
-
-#if OPT_FILTER
-extern	void	flt_leaks (void);
-extern	void	filters_leaks (void);
-#endif
-
+extern	void	x11_leaks (void);
 #endif /* NO_LEAKS */
 
 #if defined(HAVE_MKSTEMP) && defined(HAVE_MKDTEMP)

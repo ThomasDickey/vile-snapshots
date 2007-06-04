@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/flt_defs.h,v 1.4 2007/05/05 15:36:19 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/flt_defs.h,v 1.5 2007/06/02 15:20:47 tom Exp $
  */
 
 #ifndef FLT_DEFS_H
@@ -45,7 +45,7 @@ extern "C" {
 #endif
 
 #ifndef CAN_TRACE
-#define CAN_TRACE		1  /* (link with trace.o) */
+#define CAN_TRACE		OPT_TRACE  /* (link with trace.o) */
 #endif
 
 #include <sys/types.h>		/* sometimes needed to get size_t */
@@ -144,6 +144,11 @@ typedef struct { int dummy; } CMDFUNC;
 extern const CMDFUNC * engl2fnc(const char *fname);
 
 extern int vl_lookup_func(const char *name);
+
+#if NO_LEAKS
+extern	void	filters_leaks (void);
+extern	void	flt_leaks (void);
+#endif
 
 #endif /* OPT_FILTER */
 #endif /* _estruct_h */

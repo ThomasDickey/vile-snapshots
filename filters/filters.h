@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.99 2007/05/06 21:58:19 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.100 2007/06/02 15:09:08 tom Exp $
  */
 
 #ifndef FILTERS_H
@@ -273,15 +273,6 @@ extern char *vile_getenv(const char *name);
 			flt_bfr_append(yytext, yyleng);\
 			flt_bfr_finish();\
 			pop_state()
-
-/*
- * If we're not making built-in filters, we won't be linking with trace.o,
- * and do not implement leak-checking for that case.
- */
-#if !OPT_FILTER
-#undef  NO_LEAKS
-#define NO_LEAKS 0
-#endif
 
 #if CAN_TRACE && NO_LEAKS
 #include <trace.h>

@@ -2,7 +2,7 @@
  * This file contains the command processing functions for a number of random
  * commands. There is no functional grouping here, for sure.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.298 2007/01/08 22:09:07 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.299 2007/06/03 13:10:48 tom Exp $
  *
  */
 
@@ -1401,6 +1401,7 @@ set_directory(const char *dir)
 void
 set_directory_from_file(BUFFER *bp)
 {
+    TRACE((T_CALLED "set_directory_from_file(%s)\n", bp->b_fname));
     if (!isInternalName(bp->b_fname)) {
 	char name[NFILEN];
 	char *leaf = pathleaf(vl_strncpy(name, bp->b_fname, NFILEN));
@@ -1411,6 +1412,7 @@ set_directory_from_file(BUFFER *bp)
 	    set_directory(name);
 	}
     }
+    returnVoid();
 }
 
 #endif /* OPT_SHELL */

@@ -1,5 +1,5 @@
 /*
- * $Id: charsets.c,v 1.8 2007/01/16 00:54:02 tom Exp $
+ * $Id: charsets.c,v 1.10 2007/06/04 00:03:43 tom Exp $
  *
  * see
  http://msdn.microsoft.com/library/default.asp?url=/library/en-us/intl/unicode_42jv.asp
@@ -36,14 +36,14 @@ static BOM_TABLE bom_table[] = {
 /* *INDENT-ON* */
 
 static BOM_TABLE *
-find_mark_info(BOM_CODES code)
+find_mark_info(int code)
 {
     BOM_TABLE *result = 0;
     unsigned n;
 
     for (n = 0; n < TABLESIZE(bom_table); ++n) {
 	BOM_TABLE *mp = bom_table + n;
-	if (mp->code == code) {
+	if (mp->code == (BOM_CODES) code) {
 	    result = mp;
 	    break;
 	}

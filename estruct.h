@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.611 2007/05/26 11:14:38 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.613 2007/06/02 15:34:00 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -757,7 +757,7 @@
 #endif
 
 #ifndef CAN_TRACE
-#define CAN_TRACE		1  /* (link with trace.o) */
+#define CAN_TRACE		OPT_TRACE  /* (link with trace.o) */
 #endif
 
 #ifndef CAN_VMS_PATH
