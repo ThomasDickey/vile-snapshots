@@ -44,7 +44,7 @@
  *	tgetc_avail()     true if a key is avail from tgetc() or below.
  *	keystroke_avail() true if a key is avail from keystroke() or below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.306 2007/01/08 01:18:05 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.308 2007/08/29 00:46:51 tom Exp $
  *
  */
 
@@ -787,9 +787,9 @@ vl_ctype2tbuff(TBUFF **result, CHARTYPE inclchartype, int whole_line)
 	&& DOT.o > 0
 	&& istype(inclchartype, char_at(DOT))) {
 	while (DOT.o > 0) {
-	    DOT.o--;
+	    backchar_to_bol(TRUE, 1);
 	    if (!istype(inclchartype, char_at(DOT))) {
-		DOT.o++;
+		forwchar_to_eol(TRUE, 1);
 		break;
 	    }
 	}
@@ -829,7 +829,7 @@ vl_ctype2tbuff(TBUFF **result, CHARTYPE inclchartype, int whole_line)
 	if (inclchartype && !istype(inclchartype, last))
 	    break;
 	tb_append(result, last);
-	DOT.o++;
+	forwchar_to_eol(TRUE, 1);
 	i++;
 #if OPT_WIDE_CTYPES
 	if (inclchartype & vl_scrtch) {
@@ -881,7 +881,7 @@ vl_regex2tbuff(TBUFF **result, REGEXVAL * rexp, int whole_line)
 
     if (rexp != 0 && rexp->pat != 0 && rexp->pat[0] && rexp->reg) {
 	regexp *exp = rexp->reg;
-	char *line_text = DOT.l->l_text;
+	char *line_text = lvalue(DOT.l);
 
 	while (given >= 0) {
 	    if (lregexec(exp, DOT.l, given, llength(DOT.l))) {

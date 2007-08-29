@@ -7,15 +7,16 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.329 2007/01/14 21:05:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.345 2007/08/24 19:38:55 tom Exp $
  *
  */
 
-#include	"estruct.h"
-#include	"edef.h"
-#include	"chgdfunc.h"
+#include <estruct.h>
+#include <edef.h>
+#include <blist.h>
+#include <chgdfunc.h>
+#include <nefsms.h>
 
-#define	NonNull(s)	((s == 0) ? "" : s)
 #define	ONE_COL	(80/3)
 
 #define isLocalVal(valptr)          ((valptr)->vp == &((valptr)->v))
@@ -23,8 +24,6 @@
 
 #define NO_PREFIX	"no"
 #define noPrefix(mode)	(!strncmp(mode, NO_PREFIX, 2))
-
-#include "nefsms.h"
 
 /*--------------------------------------------------------------------------*/
 
@@ -35,7 +34,7 @@ static void relist_settings(void);
 #endif
 
 #if OPT_ENUM_MODES
-static const FSM_CHOICES *valname_to_choices(const struct VALNAMES *names);
+static FSM_BLIST *valname_to_choices(const struct VALNAMES *names);
 #endif
 
 /*--------------------------------------------------------------------------*/
@@ -57,6 +56,9 @@ typedef struct {
 } MAJORMODE_LIST;
 
 static MAJORMODE_LIST *my_majormodes;
+static MAJORMODE_LIST no_majormodes[1];
+static BLIST majormode_blist = init_blist(no_majormodes);
+
 static int *majormodes_order;	/* index, for precedence */
 static M_VALUES global_m_values;	/* dummy, for convenience */
 static struct VAL *major_g_vals;	/* on/off values of major modes */
@@ -65,8 +67,7 @@ static struct VALNAMES *major_valnames;
 
 static int did_attach_mmode;
 
-static const char **my_mode_list;	/* copy of 'all_modes[]' */
-static int sizeof_my_mode_list;	/* ...its length */
+static const char **my_mode_list = 0;	/* copy of 'all_modes[]' */
 
 #define is_bool_type(type) ((type) == VALTYPE_BOOL || (type) == VALTYPE_MAJOR)
 
@@ -95,12 +96,15 @@ static void relist_majormodes(void);
 
 #define is_str_type(type) ((type) == VALTYPE_REGEX || (type) == VALTYPE_STRING)
 
+static BLIST blist_my_mode_list = init_blist(all_modes);
+
 /*--------------------------------------------------------------------------*/
 
 #if OPT_ENUM_MODES || !SMALLER
 int
-choice_to_code(const FSM_CHOICES * choices, const char *name, size_t len)
+choice_to_code(FSM_BLIST * data, const char *name, size_t len)
 {
+    const FSM_CHOICES *choices = data->choices;
     char temp[NSTRING];
     int code = ENUM_ILLEGAL;
     int i;
@@ -113,22 +117,17 @@ choice_to_code(const FSM_CHOICES * choices, const char *name, size_t len)
 	temp[len] = EOS;
 	(void) mklower(temp);
 
-	for (i = 0; choices[i].choice_name != 0; i++) {
-	    if (!strncmp(temp, choices[i].choice_name, len)) {
-		if (choices[i].choice_name[len] == EOS
-		    || choices[i + 1].choice_name == 0
-		    || strncmp(temp, choices[i + 1].choice_name, len))
-		    code = choices[i].choice_code;
-		break;
-	    }
+	if ((i = blist_pmatch(&(data->blist), temp, len)) >= 0) {
+	    code = choices[i].choice_code;
 	}
     }
     return code;
 }
 
 const char *
-choice_to_name(const FSM_CHOICES * choices, int code)
+choice_to_name(FSM_BLIST * data, int code)
 {
+    const FSM_CHOICES *choices = data->choices;
     const char *name = 0;
     int i;
 
@@ -152,7 +151,7 @@ choice_to_name(const FSM_CHOICES * choices, int code)
  * code instead.
  */
 int
-combine_choices(const FSM_CHOICES * choices, const char *string)
+combine_choices(FSM_BLIST * choices, const char *string)
 {
     char temp[NSTRING];
     const char *s;
@@ -781,8 +780,8 @@ legal_glob_mode(const char *base)
 	    return TRUE;
     }
 #endif
-    if (!strcmp(base, "off")
-	|| !strcmp(base, "on"))
+    if (is_truem(base)
+	|| is_falsem(base))
 	return TRUE;
 
     mlforce("[Illegal value for glob: '%s']", base);
@@ -833,64 +832,69 @@ FSM_CHOICES fsm_no_choices[] =
     {s_default, 0},
     END_CHOICES			/* ends table for name-completion */
 };
+static FSM_BLIST fsm_no_blist =
+{
+    fsm_no_choices,
+    init_blist(fsm_no_choices)
+};
 #endif /* OPT_COLOR_SCHEMES */
 
-static struct FSM fsm_tbl[] =
+static const FSM_TABLE fsm_tbl[] =
 {
-    {"*bool", fsm_bool_choices},
+    {"*bool", &fsm_bool_blist},
 #if OPT_COLOR_SCHEMES
-    {s_color_scheme, fsm_no_choices},
+    {s_color_scheme, &fsm_no_blist},
 #endif
 #if OPT_COLOR_CHOICES
-    {s_fcolor, fsm_color_choices},
-    {s_bcolor, fsm_color_choices},
-    {s_ccolor, fsm_color_choices},
+    {s_fcolor, &fsm_color_blist},
+    {s_bcolor, &fsm_color_blist},
+    {s_ccolor, &fsm_color_blist},
 #endif
 #if OPT_CURTOKENS_CHOICES
-    {"cursor-tokens", fsm_curtokens_choices},
+    {"cursor-tokens", &fsm_curtokens_blist},
 #endif
 #if OPT_POPUP_CHOICES
-    {"popup-choices", fsm_popup_choices},
+    {"popup-choices", &fsm_popup_blist},
 #endif
 #if VILE_NEVER
-    {"error", fsm_error},
+    {"error", &fsm_error},
 #endif
 #if OPT_BACKUP_CHOICES
-    {"backup-style", fsm_backup_choices},
+    {"backup-style", &fsm_backup_blist},
 #endif
 #if OPT_COLOR
-    {s_video_attrs, fsm_videoattrs_choices},
+    {s_video_attrs, &fsm_videoattrs_blist},
 #endif
 #if OPT_FORBUFFERS_CHOICES
-    {"for-buffers", fsm_forbuffers_choices},
+    {"for-buffers", &fsm_forbuffers_blist},
 #endif
 #if OPT_HILITE_CHOICES
-    {"mcolor", fsm_hilite_choices},
-    {"visual-matches", fsm_hilite_choices},
-    {"mini-hilite", fsm_hilite_choices},
+    {"mcolor", &fsm_hilite_blist},
+    {"visual-matches", &fsm_hilite_blist},
+    {"mini-hilite", &fsm_hilite_blist},
 #endif
 #if OPT_MULTIBYTE
-    {"byteorder-mark", fsm_byteorder_mark_choices},
-    {"file-encoding", fsm_file_encoding_choices},
+    {"byteorder-mark", &fsm_byteorder_mark_blist},
+    {"file-encoding", &fsm_file_encoding_blist},
 #endif
 #if OPT_VTFLASHSEQ_CHOICES
-    {"vtflash", fsm_vtflashseq_choices},
+    {"vtflash", &fsm_vtflashseq_blist},
 #endif
 #if SYS_VMS
-    {"record-format", fsm_recordformat_choices},
-    {"record-attrs", fsm_recordattrs_choices},
+    {"record-format", &fsm_recordformat_blist},
+    {"record-attrs", &fsm_recordattrs_blist},
 #endif
 #if OPT_READERPOLICY_CHOICES
-    {"reader-policy", fsm_readerpolicy_choices},
+    {"reader-policy", &fsm_readerpolicy_blist},
 #endif
 #if OPT_RECORDSEP_CHOICES
-    {"recordseparator", fsm_recordsep_choices},
+    {"recordseparator", &fsm_recordsep_blist},
 #endif
 #if OPT_SHOWFORMAT_CHOICES
-    {"showformat", fsm_showformat_choices},
+    {"showformat", &fsm_showformat_blist},
 #endif
 #if OPT_MMQUALIFIERS_CHOICES
-    {"qualifiers", fsm_mmqualifiers_choices},
+    {"qualifiers", &fsm_mmqualifiers_blist},
 #endif
 };
 
@@ -905,24 +909,24 @@ fsm_size(const FSM_CHOICES * list)
     return result;
 }
 
-const FSM_CHOICES *
+FSM_BLIST *
 name_to_choices(const char *name)
 {
     int i;
-    const FSM_CHOICES *result = 0;
+    FSM_BLIST *result = 0;
 
     fsm_idx = -1;
     for (i = 1; i < (int) TABLESIZE(fsm_tbl); i++) {
 	if (strcmp(fsm_tbl[i].mode_name, name) == 0) {
 	    fsm_idx = i;
-	    result = fsm_tbl[i].choices;
+	    result = fsm_tbl[i].lists;
 	    break;
 	}
     }
     return result;
 }
 
-static const FSM_CHOICES *
+static FSM_BLIST *
 valname_to_choices(const struct VALNAMES *names)
 {
     return name_to_choices(names->name);
@@ -950,6 +954,18 @@ is_fsm(const struct VALNAMES *names)
 }
 
 /*
+ * Silently check if the string forms a number, to work with checks for FSM's
+ * that allow numbers instead of names.
+ */
+static int
+legal_number(const char *val)
+{
+    int failed;
+    (void) vl_atol(val, 0, &failed);
+    return (failed == 0);
+}
+
+/*
  * Test if we're processing an enum-valued mode.  If so, lookup the mode value.
  * We'll allow a numeric index also (e.g., for colors).  Note that we're
  * returning the table-value in that case, so we'll have to ensure that we
@@ -961,22 +977,28 @@ legal_fsm(const char *val)
     if (fsm_idx >= 0) {
 	int i;
 	int idx = fsm_idx;
-	const FSM_CHOICES *p = fsm_tbl[idx].choices;
+	FSM_BLIST *p = fsm_tbl[idx].lists;
 	const char *s;
+	int failed = FALSE;
 
-	if (isDigit(*val)) {
-	    if (!string_to_number(val, &i))
-		return 0;
-	    if ((s = choice_to_name(p, i)) != 0)
-		return s;
+	if (isDigit(*val) && legal_number(val)) {
+	    if (string_to_number(val, &i)
+		&& (s = choice_to_name(p, i)) != 0) {
+		val = s;
+	    } else {
+		failed = TRUE;
+	    }
 	} else {
-	    if (choice_to_code(p, val, strlen(val)) != ENUM_ILLEGAL)
-		return val;
+	    if (choice_to_code(p, val, strlen(val)) == ENUM_ILLEGAL) {
+		failed = TRUE;
+	    }
 	}
-	mlforce("[Illegal value for %s: '%s']",
-		fsm_tbl[idx].mode_name,
-		val);
-	return 0;
+	if (failed) {
+	    mlforce("[Illegal value for %s: '%s']",
+		    fsm_tbl[idx].mode_name,
+		    val);
+	    val = 0;
+	}
     }
     return val;
 }
@@ -988,12 +1010,15 @@ fsm_complete(DONE_ARGS)
 
     if (buf != 0) {
 	if (isDigit(*buf)) {	/* allow numbers for colors */
-	    if (c != NAMEC)	/* put it back (cf: kbd_complete) */
+	    if (c != NAMEC && c != TESTC) {
+		/* put it back (cf: kbd_complete) */
 		unkeystroke(c);
-	    result = isSpace(c);
-	} else {
+		result = isSpace(c);
+	    }
+	}
+	if (!result) {
 	    result = kbd_complete(PASS_DONE_ARGS,
-				  (const char *) (fsm_tbl[fsm_idx].choices),
+				  (const char *) (fsm_tbl[fsm_idx].lists->choices),
 				  sizeof(FSM_CHOICES));
 	}
     }
@@ -1070,8 +1095,10 @@ adjvalueset(const char *cp,	/* name of the mode we are changing */
 			regex ? "pattern" : "value");
 
 #if OPT_ENUM_MODES
-	if (is_fsm(names))
+	if (is_fsm(names)) {
 	    complete = fsm_complete;
+	    opts |= KBD_LOWERC;
+	}
 #endif
 
 	status = kbd_string(prompt, respbuf, sizeof(respbuf), eolchar,
@@ -1194,9 +1221,9 @@ set_mode_value(BUFFER *bp, const char *cp, int defining, int setting, int
 	case VALTYPE_ENUM:
 #if OPT_ENUM_MODES
 	    {
-		const FSM_CHOICES *fp = valname_to_choices(names);
+		FSM_BLIST *fp = valname_to_choices(names);
 
-		if (isDigit(*rp)) {
+		if (legal_number(rp)) {
 		    if (!string_to_number(rp, &nval))
 			return FALSE;
 		    if (choice_to_name(fp, nval) == 0)
@@ -1515,45 +1542,63 @@ find_mode(BUFFER *bp, const char *mode, int global, VALARGS * args)
 static int
 do_a_mode(int kind, int global)
 {
+    int rc = FALSE;
     VALARGS args;
     int s;
     static TBUFF *cbuf;		/* buffer to receive mode name into */
 
     /* prompt the user and get an answer */
+    /* *INDENT-OFF* */
     tb_scopy(&cbuf, "");
-    if ((s = kbd_reply(global ? "Global value: " : "Local value: ",
+    if ((s = kbd_reply((global
+			? "Global value: "
+			: "Local value: "),
 		       &cbuf,
-		       mode_eol, '=', KBD_NORMAL, mode_complete)) != TRUE)
-	  return ((s == FALSE) ? SORTOFTRUE : s);
-    if (tb_length(cbuf) == 0)
-	return FALSE;
-    if (!strcmp(tb_values(cbuf), "all")) {
-	if (!ok_local_mode()) {
-	    return FALSE;
+		       mode_eol, '=', KBD_NORMAL, mode_complete)) != TRUE) {
+	rc = ((s == FALSE) ? SORTOFTRUE : s);
+#if OPT_MODELINE
+	if (clexec && (in_modeline >= 2) && (s == ABORT)) {
+	    TRACE(("Recovering from unsupported vi-mode:%s\n",
+		   tb_values(cbuf)));
+	    if (end_string() == '=') {
+		char respbuf[NSTRING];
+		kbd_string("", respbuf, sizeof(respbuf), ' ',
+			    KBD_NORMAL, no_completion);
+	    }
+	    TRACE(("...done recovering...\n"));
+	    rc = TRUE;
 	}
-	hst_glue(' ');
-	return listmodes(FALSE, 1);
-    }
-
-    if ((s = find_mode(curbp, tb_values(cbuf), global, &args)) != TRUE) {
+#endif
+    } else if (tb_length(cbuf) == 0) {
+	rc = FALSE;
+    } else if (!strcmp(tb_values(cbuf), "all")) {
+	if (ok_local_mode()) {
+	    hst_glue(' ');
+	    rc = listmodes(FALSE, 1);
+	}
+    } else if ((s = find_mode(curbp, tb_values(cbuf), global, &args)) != TRUE) {
 #if OPT_EVAL
-	if (!global
-	    &&(s = find_mode(curbp, tb_values(cbuf), TRUE, &args)) == TRUE) {
+	if (global) {
+	    rc = set_state_variable(tb_values(cbuf), NULL);
+	} else if ((s = find_mode(curbp, tb_values(cbuf), TRUE, &args)) != TRUE) {
+	    rc = set_state_variable(tb_values(cbuf), NULL);
+	} else {
 	    mlforce("[Not a local mode: \"%s\"]", tb_values(cbuf));
-	    return FALSE;
 	}
-	return set_state_variable(tb_values(cbuf), NULL);
 #else
 	mlforce("[Not a legal set option: \"%s\"]", tb_values(cbuf));
 #endif
-    } else if ((s = adjvalueset(tb_values(cbuf), FALSE, kind, global,
-				&args)) != 0) {
-	    if (s == TRUE)
-		mlerase();	/* erase the junk */
-	    return s;
+    } else if ((s = adjvalueset(tb_values(cbuf), FALSE, kind, global, &args)) != 0) {
+	if (s == TRUE) {
+	    mlerase();	/* erase the junk */
 	}
+	rc = s;
+    } else {
+	rc = FALSE;
+    }
+    /* *INDENT-ON* */
 
-    return FALSE;
+    return rc;
 }
 
 /*
@@ -1705,7 +1750,8 @@ set_fsm_choice(const char *name, const FSM_CHOICES * choices)
 #endif
     for (n = 0; n < TABLESIZE(fsm_tbl); n++) {
 	if (!strcmp(name, fsm_tbl[n].mode_name)) {
-	    fsm_tbl[n].choices = choices;
+	    blist_reset(&(fsm_tbl[n].lists->blist),
+			fsm_tbl[n].lists->choices = choices);
 	    break;
 	}
     }
@@ -1843,38 +1889,51 @@ set_colors(int n)
 #endif /* OPT_COLOR */
 
 #if OPT_SHOW_COLORS
+
+#if OPT_COLOR_CHOICES
+static const char *
+lookup_color_code(int code)
+{
+    const char *rc = 0;
+    int j;
+    const FSM_CHOICES *the_colors = name_to_choices(s_fcolor)->choices;
+
+    for (j = 0; the_colors[j].choice_name != 0; j++) {
+	if (code == the_colors[j].choice_code) {
+	    rc = the_colors[j].choice_name;
+	    break;
+	}
+    }
+    return rc;
+}
+#endif
+
 int
 is_color_code(int n)
 {
+    int rc;
 #if OPT_COLOR_CHOICES
-    int j;
-    const FSM_CHOICES *the_colors;
-    the_colors = name_to_choices(s_fcolor);
-    for (j = 0; the_colors[j].choice_name != 0; j++) {
-	if (n == the_colors[j].choice_code)
-	    return TRUE;
-    }
-    return FALSE;
+    rc = (lookup_color_code(n) != 0);
 #else
-    return (c >= C_BLACK && n < ncolors);
+    rc = (c >= C_BLACK && n < ncolors);
 #endif
+    return rc;
 }
 
 const char *
 get_color_name(int n)
 {
     static char temp[80];
+    const char *rc = 0;
+
 #if OPT_COLOR_CHOICES
-    int j;
-    const FSM_CHOICES *the_colors;
-    the_colors = name_to_choices(s_fcolor);
-    for (j = 0; the_colors[j].choice_name != 0; j++) {
-	if (n == the_colors[j].choice_code)
-	    return the_colors[j].choice_name;
-    }
+    if ((rc = lookup_color_code(n)) == 0)
 #endif
-    lsprintf(temp, "color #%d", n);
-    return temp;
+    {
+	lsprintf(temp, "color #%d", n);
+	rc = temp;
+    }
+    return rc;
 }
 #endif
 
@@ -2319,23 +2378,11 @@ is_varmode(const char *name)
 /*
  * Returns the current number of items in the list of modes
  */
-static size_t
+static int
 count_modes(void)
 {
     init_my_mode_list();
-
-    if (sizeof_my_mode_list < 0) {
-	size_t n;
-
-	if (my_mode_list != 0) {
-	    for (n = 0; my_mode_list[n] != 0; n++)
-		continue;
-	} else {
-	    n = 0;
-	}
-	sizeof_my_mode_list = (int) n;
-    }
-    return sizeof_my_mode_list;
+    return blist_count(&blist_my_mode_list);
 }
 
 /*
@@ -2476,14 +2523,13 @@ majorname(char *dst, const char *majr, int flag)
 /*
  * Returns the current number of items in the list of modes
  */
-static size_t
+static unsigned
 count_majormodes(void)
 {
-    size_t n = 0;
+    unsigned n = 0;
 
     if (my_majormodes != 0) {
-	for (n = 0; my_majormodes[n].shortname != 0; n++)
-	    continue;
+	n = blist_count(&majormode_blist);
     }
     return n;
 }
@@ -2491,15 +2537,19 @@ count_majormodes(void)
 static int
 get_mm_number(int n, int m)
 {
-    struct VAL *mv = my_majormodes[n].data->mm.mv;
+    int result = 0;
 
-    if (mv[m].vp->i != 0) {
-	TRACE(("get_mm_number(%s) %d\n",
-	       my_majormodes[n].shortname,
-	       mv[m].vp->i));
-	return mv[m].vp->i;
+    if (my_majormodes[n].data != 0) {
+	struct VAL *mv = my_majormodes[n].data->mm.mv;
+
+	if (mv[m].vp->i != 0) {
+	    TRACE(("get_mm_number(%s) %d\n",
+		   my_majormodes[n].shortname,
+		   mv[m].vp->i));
+	    result = mv[m].vp->i;
+	}
     }
-    return 0;
+    return result;
 }
 
 /*
@@ -2509,33 +2559,41 @@ get_mm_number(int n, int m)
 static regexp *
 get_mm_rexp(int n, int m)
 {
-    struct VAL *mv = my_majormodes[n].data->mm.mv;
+    regexp *result = 0;
 
-    if (mv[m].vp != 0
-	&& mv[m].vp->r != 0
-	&& mv[m].vp->r->pat != 0
-	&& mv[m].vp->r->pat[0] != 0
-	&& mv[m].vp->r->reg != 0) {
-	TRACE(("get_mm_rexp(%s) %s\n",
-	       my_majormodes[n].shortname,
-	       mv[m].vp->r->pat));
-	return mv[m].vp->r->reg;
+    if (my_majormodes[n].data != 0) {
+	struct VAL *mv = my_majormodes[n].data->mm.mv;
+
+	if (mv[m].vp != 0
+	    && mv[m].vp->r != 0
+	    && mv[m].vp->r->pat != 0
+	    && mv[m].vp->r->pat[0] != 0
+	    && mv[m].vp->r->reg != 0) {
+	    TRACE(("get_mm_rexp(%s) %s\n",
+		   my_majormodes[n].shortname,
+		   mv[m].vp->r->pat));
+	    result = mv[m].vp->r->reg;
+	}
     }
-    return 0;
+    return result;
 }
 
 static char *
 get_mm_string(int n, int m)
 {
-    struct VAL *mv = my_majormodes[n].data->mm.mv;
+    char *result = 0;
 
-    if (mv[m].vp->p != 0) {
-	TRACE(("get_mm_string(%s) %s\n",
-	       my_majormodes[n].shortname,
-	       mv[m].vp->p));
-	return mv[m].vp->p;
+    if (my_majormodes[n].data != 0) {
+	struct VAL *mv = my_majormodes[n].data->mm.mv;
+
+	if (mv[m].vp->p != 0) {
+	    TRACE(("get_mm_string(%s) %s\n",
+		   my_majormodes[n].shortname,
+		   mv[m].vp->p));
+	    result = mv[m].vp->p;
+	}
     }
-    return 0;
+    return result;
 }
 
 static int
@@ -2811,7 +2869,7 @@ insert_per_major(size_t count, const char *name)
 		for (k = ++count; k != j; k--)
 		    my_mode_list[k] = my_mode_list[k - 1];
 		my_mode_list[j] = newname;
-		sizeof_my_mode_list++;
+		blist_my_mode_list.itemCount++;
 	    } else {
 		no_memory("insert_per_major");
 	    }
@@ -2841,7 +2899,7 @@ remove_per_major(size_t count, const char *name)
 	    count--;
 	    for (k = j; k <= count; k++)
 		my_mode_list[k] = my_mode_list[k + 1];
-	    sizeof_my_mode_list--;
+	    blist_my_mode_list.itemCount--;
 	}
     }
     return count;
@@ -2855,14 +2913,13 @@ remove_per_major(size_t count, const char *name)
 static MAJORMODE *
 lookup_mm_data(const char *name)
 {
-    size_t n;
-    if (my_majormodes != 0) {
-	for (n = 0; my_majormodes[n].shortname != 0; n++) {
-	    if (!strcmp(name, my_majormodes[n].shortname))
-		return my_majormodes[n].data;
-	}
-    }
-    return 0;
+    MAJORMODE *rc = 0;
+    MAJORMODE_LIST *p = lookup_mm_list(name);
+
+    if (p != 0)
+	rc = p->data;
+
+    return rc;
 }
 
 /*
@@ -2873,14 +2930,14 @@ lookup_mm_data(const char *name)
 static MAJORMODE_LIST *
 lookup_mm_list(const char *name)
 {
-    size_t n;
+    MAJORMODE_LIST *rc = 0;
+
     if (my_majormodes != 0) {
-	for (n = 0; my_majormodes[n].shortname != 0; n++) {
-	    if (!strcmp(name, my_majormodes[n].shortname))
-		return my_majormodes + n;
-	}
+	int n = blist_match(&majormode_blist, name);
+	if (n >= 0)
+	    rc = my_majormodes + n;
     }
-    return 0;
+    return rc;
 }
 
 /* Check if a majormode is predefined.  There are some things we don't want to
@@ -2889,18 +2946,13 @@ lookup_mm_list(const char *name)
 static int
 predef_majormode(const char *name)
 {
-    size_t n;
-    int status = FALSE;
+    int rc = FALSE;
+    MAJORMODE_LIST *p = lookup_mm_list(name);
 
-    if (my_majormodes != 0) {
-	for (n = 0; my_majormodes[n].shortname != 0; n++) {
-	    if (!strcmp(name, my_majormodes[n].shortname)) {
-		status = my_majormodes[n].init;
-		break;
-	    }
-	}
-    }
-    return status;
+    if (p != 0)
+	rc = p->init;
+
+    return rc;
 }
 
 static int
@@ -3316,6 +3368,7 @@ enable_mmode(const char *name, int flag)
 static int
 free_majormode(const char *name)
 {
+    int result = FALSE;
     MAJORMODE *ptr = lookup_mm_data(name);
     size_t j, k;
     int n;
@@ -3384,10 +3437,11 @@ free_majormode(const char *name)
 		}
 	    }
 	}
+	blist_reset(&majormode_blist, my_majormodes);
 	compute_majormodes_order();
-	return TRUE;
+	result = TRUE;
     }
-    return FALSE;
+    return result;
 }
 
 static void
@@ -3395,7 +3449,7 @@ init_my_mode_list(void)
 {
     if (my_mode_list == 0) {
 	my_mode_list = TYPECAST(const char *, all_modes);
-	sizeof_my_mode_list = -1;
+	blist_reset(&blist_my_mode_list, my_mode_list);
     }
 }
 
@@ -3418,6 +3472,7 @@ extend_mode_list(size_t increment)
 	my_mode_list = typereallocn(const char *, TYPECAST(char *,
 							   my_mode_list), k);
     }
+    blist_my_mode_list.theList = my_mode_list;
     endofDisplay();
 
     return j;
@@ -3614,6 +3669,7 @@ alloc_mode(const char *shortname, int predef)
     char temp[NSTRING];
     static struct VAL *new_vals;
 
+    TRACE((T_CALLED "alloc_mode(%s,%d)\n", shortname, predef));
     if (major_valnames == 0) {
 	beginDisplay();
 	major_valnames = typecallocn(struct VALNAMES, 2);
@@ -3636,7 +3692,7 @@ alloc_mode(const char *shortname, int predef)
     }
 
     if (major_valnames == 0)
-	return FALSE;
+	returnCode(FALSE);
 
     (void) majorname(longname, shortname, TRUE);
     major_valnames[j].name = strmalloc(longname);
@@ -3650,18 +3706,18 @@ alloc_mode(const char *shortname, int predef)
 	    major_valnames[j] = major_valnames[j + 1];
 	    ++j;
 	} while (major_valnames[j].name != 0);
-	return FALSE;
+	returnCode(FALSE);
     }
 
     memset(major_valnames + k, 0, sizeof(*major_valnames));
 
     /* build arrays needed for 'find_mode()' bookkeeping */
     if ((new_vals = extend_VAL_array(major_g_vals, j, k)) == 0)
-	return FALSE;
+	returnCode(FALSE);
     major_g_vals = new_vals;
 
     if ((new_vals = extend_VAL_array(major_l_vals, j, k)) == 0)
-	return FALSE;
+	returnCode(FALSE);
     major_l_vals = new_vals;
 
     if (my_majormodes == 0) {
@@ -3682,9 +3738,10 @@ alloc_mode(const char *shortname, int predef)
 	    }
 	}
     }
+    blist_reset(&majormode_blist, my_majormodes);
 
     if (my_majormodes == 0)
-	return FALSE;
+	returnCode(FALSE);
 
     /* allocate the names for the major mode */
     beginDisplay();
@@ -3715,7 +3772,7 @@ alloc_mode(const char *shortname, int predef)
 	    my_majormodes[j] = my_majormodes[j + 1];
 	    ++j;
 	} while (my_majormodes[j].shortname != 0);
-	return FALSE;
+	returnCode(FALSE);
     }
 
     /* copy array to get types, then overwrite the name-pointers */
@@ -3731,7 +3788,7 @@ alloc_mode(const char *shortname, int predef)
 	if (my_majormodes[j].subq[k].name == 0
 	    || my_majormodes[j].subq[k].shortname == 0) {
 	    free_majormode(shortname);
-	    return FALSE;
+	    returnCode(FALSE);
 	}
     }
 
@@ -3750,7 +3807,7 @@ alloc_mode(const char *shortname, int predef)
 	if (my_majormodes[j].qual[k].name == 0
 	    || my_majormodes[j].qual[k].shortname == 0) {
 	    free_majormode(shortname);
-	    return FALSE;
+	    returnCode(FALSE);
 	}
     }
 
@@ -3769,7 +3826,7 @@ alloc_mode(const char *shortname, int predef)
     }
 
     compute_majormodes_order();
-    return status;
+    returnCode(status);
 }
 
 /* ARGSUSED */
@@ -4259,7 +4316,7 @@ static PALETTES *my_schemes;
 static FSM_CHOICES *my_scheme_choices;
 
 static int
-set_scheme_color(const FSM_CHOICES * fp, int *d, char *s)
+set_scheme_color(FSM_BLIST * fp, int *d, char *s)
 {
 #if OPT_ENUM_MODES
     int nval;
@@ -4561,7 +4618,7 @@ prompt_scheme_value(PALETTES * p)
 	int eolchar = (code == *s_palette) ? '\n' : ' ';
 	int (*complete) (DONE_ARGS) = no_completion;
 #if OPT_ENUM_MODES
-	const FSM_CHOICES *fp = 0;
+	FSM_BLIST *fp = 0;
 	const struct VALNAMES *names;
 	for (code = 0; scheme_values[code].name; code++) {
 	    if (!strcmp(name, scheme_values[code].name)) {
@@ -4700,7 +4757,7 @@ makeschemelist(int dum1 GCC_UNUSED, void *ptr GCC_UNUSED)
 	    bprintf(fmt, s_bcolor, get_color_name(p->bcol));
 	    bprintf(fmt, s_ccolor, get_color_name(p->ccol));
 	    bprintf(fmt, s_video_attrs,
-		    choice_to_name(fsm_videoattrs_choices, p->attr));
+		    choice_to_name(&fsm_videoattrs_blist, p->attr));
 	    if (p->list != 0)
 		bprintf(fmt, s_palette, p->list);
 	}
@@ -4736,15 +4793,23 @@ chgd_scheme(BUFFER *bp GCC_UNUSED, VALARGS * args, int glob_vals, int testing)
 const char *
 vms_record_format(int code)
 {
-    return choice_to_name(fsm_recordformat_choices, code);
+    return choice_to_name(&fsm_recordformat_blist, code);
 }
 
 const char *
 vms_record_attrs(int code)
 {
-    return choice_to_name(fsm_recordattrs_choices, code);
+    return choice_to_name(&fsm_recordattrs_blist, code);
 }
 #endif
+
+/*--------------------------------------------------------------------------*/
+
+int
+vl_find_mode(const char *name)
+{
+    return blist_pmatch(&blist_my_mode_list, name, -1);
+}
 
 /*--------------------------------------------------------------------------*/
 
@@ -4752,6 +4817,8 @@ vms_record_attrs(int code)
 void
 mode_leaks(void)
 {
+    TRACE((T_CALLED "mode_leaks()\n"));
+
     beginDisplay();
 #if OPT_COLOR_SCHEMES
     if (my_schemes != 0) {
@@ -4806,5 +4873,7 @@ mode_leaks(void)
     FreeAndNull(majormodes_order);
 #endif
     endofDisplay();
+
+    returnVoid();
 }
 #endif /* NO_LEAKS */

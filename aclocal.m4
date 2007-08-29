@@ -1,6 +1,6 @@
 dnl vile's local definitions for autoconf.
 dnl
-dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.174 2007/06/03 15:57:35 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.175 2007/08/08 22:51:18 tom Exp $
 dnl
 dnl ---------------------------------------------------------------------------
 dnl ---------------------------------------------------------------------------
@@ -224,31 +224,6 @@ You have the following choices:
 	a. adjust your compiler options
 	b. get an up-to-date compiler
 	c. use a wrapper such as unproto])
-fi
-])dnl
-dnl ---------------------------------------------------------------------------
-dnl CF_ANSI_QSORT version: 4 updated: 2002/10/09 20:00:37
-dnl -------------
-dnl Test if we should use ANSI-style prototype for qsort's compare-function
-AC_DEFUN([CF_ANSI_QSORT],
-[
-AC_CACHE_CHECK(for standard qsort, cf_cv_ansi_qsort,[
-	AC_TRY_COMPILE([
-#ifdef HAVE_STDLIB_H
-#include <stdlib.h>
-#endif
-	int compare(const void *a, const void *b)
-	{ return (*(int *)a - *(int *)b); } ],
-	[ extern long *vector;
-	  qsort(vector, 1, 1, compare); ],
-	[cf_cv_ansi_qsort=yes],
-	[cf_cv_ansi_qsort=no])
-])
-
-if test $cf_cv_ansi_qsort = yes; then
-	AC_DEFINE(ANSI_QSORT,1)
-else
-	AC_DEFINE(ANSI_QSORT,0)
 fi
 ])dnl
 dnl ---------------------------------------------------------------------------

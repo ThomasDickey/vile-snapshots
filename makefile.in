@@ -20,7 +20,7 @@
 #
 # gnu autoconf support by kevin buettner, 5/94
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.206 2007/06/03 23:17:15 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.209 2007/08/26 22:49:34 tom Exp $
 
 SHELL		= /bin/sh
 
@@ -126,16 +126,22 @@ ALLTOOLS = $(MAKFILES) mktbls.c cmdtbl modetbl \
 # these are normal editable headers
 HDRS = \
 	api.h \
+	blist.h \
 	btree.h \
 	chgdfunc.h \
 	dirstuff.h \
 	edef.h \
 	estruct.h \
 	os2keys.h \
+	plugin.h \
 	proto.h \
 	pscreen.h \
 	tcap.h \
-	trace.h
+	trace.h \
+	vl_alloc.h \
+	vl_ctype.h \
+	vl_regex.h \
+	vl_stdio.h
 
 SCREENS = \
 	ansi.c \
@@ -220,7 +226,7 @@ TEXTFILES = README README.PC \
 	CHANGES.R7 CHANGES.R6 CHANGES.R5 CHANGES.R4 CHANGES.R3 \
 	buglist revlist patchlev.h COPYING
 
-VILESRC = main.c api.c basic.c bind.c btree.c buffer.c csrch.c \
+VILESRC = main.c api.c basic.c bind.c btree.c btree.c buffer.c csrch.c \
 	display.c dumbterm.c eval.c exec.c externs.c fences.c file.c \
 	filec.c fileio.c finderr.c glob.c globals.c \
 	history.c input.c insert.c isearch.c itbuff.c lckfiles.c line.c map.c \
@@ -268,7 +274,7 @@ BUILTLIBS = @BUILTLIBS@
 #	ucrypt.o
 #	xterm.o
 OBJ =	$(SCREEN)$o \
-	main$o basic$o bind$o buffer$o csrch$o \
+	main$o basic$o bind$o blist$o buffer$o csrch$o \
 	display$o dumbterm$o eval$o exec$o externs$o fences$o file$o \
 	filec$o fileio$o finderr$o glob$o globals$o \
 	input$o insert$o itbuff$o lckfiles$o line$o map$o \
@@ -620,10 +626,11 @@ perl.c: $(srcdir)/perl.xs $(srcdir)/ptypemap
 		-typemap ptypemap \
 		$(srcdir)/perl.xs > $@
 
-$(OBJ): estruct.h proto.h edef.h $(BUILTHDRS)
+$(OBJ): estruct.h proto.h edef.h $(BUILTHDRS) config.h
 
 api$o :		api.h
 bind$o :	btree.h
+blist$o :	blist.h
 btree$o :	btree.h
 curses$o :	tcap.h xtermkeys.h
 display$o :	pscreen.h

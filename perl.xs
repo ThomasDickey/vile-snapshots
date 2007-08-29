@@ -13,7 +13,7 @@
  * vile.  The file api.c (sometimes) provides a middle layer between
  * this interface and the rest of vile.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.104 2005/06/03 20:27:30 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.106 2007/08/29 00:52:32 tom Exp $
  */
 
 /*#
@@ -1413,7 +1413,7 @@ svgetline(SV **svp, VileBuf *vbp, char *rsstr GCC_UNUSED, int rslen GCC_UNUSED)
     }
 
     len = llength(DOT.l) - DOT.o;
-    text = DOT.l->l_text + DOT.o;
+    text = lvalue(DOT.l) + DOT.o;
 
     if (len > vbp->region.r_size)
 	len = vbp->region.r_size;
@@ -1490,7 +1490,7 @@ svgetregion(SV **svp, VileBuf *vbp, char *rsstr GCC_UNUSED, int rslen GCC_UNUSED
 	    clen = len;
 
 	if (clen > 0) {
-	    sv_catpvn(sv, lp->l_text + off, clen);
+	    sv_catpvn(sv, lvalue(lp) + off, clen);
 	    len -= clen;
 	    off += clen;
 	}
@@ -1586,7 +1586,7 @@ svgettors(SV **svp, VileBuf *vbp, char *rsstr, int rslen)
 	}
 	else {
 	    /* Gotta search */
-	    for (fidx = off; fidx < loff && lp->l_text[fidx] != rs1; fidx++)
+	    for (fidx = off; fidx < loff && lvalue(lp)[fidx] != rs1; fidx++)
 		;
 	    if (fidx >= loff) {
 		if (loff < llength(lp)) {
@@ -1621,7 +1621,7 @@ svgettors(SV **svp, VileBuf *vbp, char *rsstr, int rslen)
 		if (fidx < llength(lp))
 		    break;
 	    }
-	    else if (rsstr[rsidx] != lp->l_text[fidx])
+	    else if (rsstr[rsidx] != lvalue(lp)[fidx])
 		break;
 	}
 
@@ -1673,7 +1673,7 @@ have_length:
 	    clen = len;
 
 	if (clen > 0) {
-	    sv_catpvn(sv, lp->l_text + off, clen);
+	    sv_catpvn(sv, lvalue(lp) + off, clen);
 	    len -= clen;
 	    off += clen;
 	}
@@ -2828,7 +2828,7 @@ READLINE(vbp)
     VileBuf * vbp
 
     PPCODE:
-	if (vbp2bp(vbp) == bminip) {
+	if (is_delinked_bp(vbp2bp(vbp))) {
 	    int status;
 	    char buf[NLINE];
 	    char prompt[NLINE];
@@ -2839,7 +2839,7 @@ READLINE(vbp)
 		int len = llength(lp);
 		if (len > (int) sizeof(prompt)-1)
 		    len = sizeof(prompt)-1;
-		(void) memcpy(prompt, lp->l_text, len);
+		(void) memcpy(prompt, lvalue(lp), len);
 		prompt[len] = EOS;
 	    }
 	    status = mlreply_no_opts(prompt, buf, sizeof(buf));
@@ -3710,7 +3710,7 @@ PRINT(vbp, ...)
 	char *ors_str = SvPV(ors_sv, ors_len);
 
     CODE:
-	if (vbp2bp(vbp) == bminip) {
+	if (is_delinked_bp(vbp2bp(vbp))) {
 	    if (items > 0) {
 		SV *tmp = newSVsv(ST(1));
 		int i;

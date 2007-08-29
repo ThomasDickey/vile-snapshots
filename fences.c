@@ -9,7 +9,7 @@
  * Extensions for vile by Paul Fox
  * Rewrote to use regular expressions - T.Dickey
  *
- * $Header: /users/source/archives/vile.vcs/RCS/fences.c,v 1.84 2006/04/25 20:50:30 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/fences.c,v 1.85 2007/08/29 00:43:10 tom Exp $
  *
  */
 
@@ -41,8 +41,8 @@
 #define PAIRED_FENCE_CH   -2
 #define UNKNOWN_FENCE_CH  -1
 
-#define S_COL(exp) (C_NUM)(exp->startp[0] - DOT.l->l_text)
-#define E_COL(exp) (C_NUM)(exp->endp[0]   - DOT.l->l_text)
+#define S_COL(exp) (C_NUM)(exp->startp[0] - lvalue(DOT.l))
+#define E_COL(exp) (C_NUM)(exp->endp[0]   - lvalue(DOT.l))
 
 #define BlkBegin b_val_rexp(curbp, VAL_FENCE_BEGIN)->reg
 #define BlkEnd   b_val_rexp(curbp, VAL_FENCE_END)->reg

@@ -1,5 +1,34 @@
 Changes for vile 9.6 (released ??? ??? ?? ????)
 
+ 20070??? (s)
+	+ add mode percent-utf8 to set a threshold for file-encoding mode
+	  "auto" detection of UTF-16/UTF-32 files.
+	+ file-encoding mode can be set to "auto", to detect UTF-16 files,
+	  which are loaded as UTF-8.
+	+ add "&gtmotion" function for scripts.
+	+ improve handling of enumerated values by forcing all to lowercase,
+	  e.g., to eliminate the need for the special case in 9.1x to handle
+	  "TRUE" and "true".
+	+ revise lstrinsert() and associated logic which implements changes
+	  to rectangles, e.g., with c^Aq, to ensure that it pads the change
+	  with blanks rather than nulls (report by Paul van Tilburg).
+	+ improve modeline support by ignoring strict "vi" modeline options
+	  that are not recognized by vile, rather than reporting an error.
+	+ use new module blist (binary search of lists) to reduce linear
+	  searches in the places where btree is not already used.
+	+ change rename-other-buffer command to other-buffer-rename, to avoid
+	  name-completion conflict with rename-command (feedback from Steve
+	  Lembark).
+	+ remove obsolete check for ANSI qsort.
+	+ improve vilefilt.l, highlighting mode names and displaying error
+	  for unknown mode, function and state variables.
+	+ fix typo in manpage.rc which broke use of pod2man in 9.5m
+	+ add &pquote in manpage.rc, to allow it to format html output when
+	  vile-manfilt, etc., reside in directories containing spaces in their
+	  name.
+	+ add several package-related suffixes to sqlmode.
+	+ add xpmmode
+
  20070603 (r)
 	+ amend makefile.in change for $(SRC) to use a translation rule that
 	  works with IRIX64 (and some broken BSD) make programs.

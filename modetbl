@@ -11,7 +11,7 @@
 #
 # The modes are table entries in the BUFFER and WINDOW structures.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.256 2007/01/15 22:29:41 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.261 2007/08/20 16:05:00 tom Exp $
 #
 #
 # Mode-table entries.  Capitalized letters are used for abbreviations.
@@ -148,6 +148,7 @@ int							# VAL_ prefix
 	"FillCol"	FILL		0		# column for paragraph reformat, and line break
 	"ModeLineS"	MODELINES	0		OPT_MODELINE # modeline (selected :setl only) (vi-style)
 	"percent-crlf"	PERCENT_CRLF	0		# threshold for converting to DOS-mode
+	"percent-utf8"	PERCENT_UTF8	0		OPT_MULTIBYTE # threshold for detecting UTF-16 or UTF-32 converting to UTF-8
 	"record-length" RECORD_LENGTH	0		SYS_VMS	# specify record-length to use
 	"ShiftWidth"	SWIDTH		0		# shiftwidth for ^T/^D/<</>>
 	"TabStop"	TAB		chgd_win_mode	# tab spacing for most buffers
@@ -348,6 +349,7 @@ string
 "greater"	GREATER		2|NUM|BRET	# logical greater than
 "gt"		GT		2|NUM|BRET	# logical greater than (greater)
 "gtkey"		GTKEY		0		# get 1 character
+"gtmotion"	GTMOTION	1|STR|SRET	# get keyboard-sequence (characters), result is motion's name
 "gtsequence"	GTSEQ		0		# get keyboard-sequence (characters)
 "indirect"	INDIRECT	1|STR|SRET	# evaluate indirect value
 "isa"		ISA		2|STR|BRET	# test classification of an identifier
@@ -399,15 +401,13 @@ string
 "writable"	WRITABLE	1|BRET		# is a file writeable?
 
 .table backup
-"off"		0
-".bak"		1
-"tilde"		2		SYS_UNIX
-# "tilde_N_existing", */
-# "tilde_N", */
+"off"		bak_OFF
+".bak"		bak_BAK
+"tilde"		bak_TILDE	SYS_UNIX
+"tilde_n_existing" bak_TILDE_N0	VILE_SOMEDAY
+"tilde_n"	bak_TILDE_N	VILE_SOMEDAY
 
 .table bool
-"FALSE"		FALSE
-"TRUE"		TRUE
 "false"		FALSE
 "true"		TRUE
 "off"		FALSE

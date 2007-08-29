@@ -1,6 +1,6 @@
 #
 # 'vile' and 'mktbls' makefile for IBM C Set ++ 2.x (OS/2)
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.icc,v 1.16 2006/01/10 23:58:44 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.icc,v 1.17 2007/08/10 21:16:36 tom Exp $
 #
 
 #
@@ -59,6 +59,7 @@ mktbls$O: mktbls.c
 VILE_DEPS =  \
  basic$O \
  bind$O \
+ blist$O \
  btree$O \
  buffer$O \
  csrch$O \
@@ -121,6 +122,8 @@ VILE_CFG=	estruct.h nefkeys.h nemode.h edef.h proto.h
 basic$O:	$(VILE_CFG) basic.c
 
 bind$O:		$(VILE_CFG) bind.c	nefunc.h	btree.h
+
+blist$O:	$(VILE_CFG) blist.c 	blist.h
 
 btree$O:	$(VILE_CFG) btree.c 	btree.h
 

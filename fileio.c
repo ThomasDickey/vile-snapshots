@@ -2,12 +2,11 @@
  * The routines in this file read and write ASCII files from the disk. All of
  * the knowledge about files are here.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/fileio.c,v 1.182 2007/05/05 15:01:45 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/fileio.c,v 1.187 2007/08/29 00:45:21 tom Exp $
  *
  */
 
-#include "estruct.h"
-#include "edef.h"
+#include <estruct.h>
 
 #if SYS_VMS
 #include <file.h>
@@ -29,6 +28,9 @@
 #ifndef EISDIR
 #define EISDIR EACCES
 #endif
+
+#include <edef.h>
+#include <nefsms.h>
 
 /*--------------------------------------------------------------------------*/
 
@@ -185,7 +187,8 @@ make_backup(char *fname)
 	char *t = strrchr(s, '.');
 	char *gvalfileback = global_g_val_ptr(GVAL_BACKUPSTYLE);
 
-	if (strcmp(gvalfileback, ".bak") == 0) {
+	switch (choice_to_code(&fsm_backup_blist, gvalfileback, strlen(gvalfileback))) {
+	case bak_BAK:
 	    if (t == 0		/* i.e. no '.' at all */
 #if SYS_UNIX
 		|| t == s	/* i.e. leading char is '.' */
@@ -193,8 +196,10 @@ make_backup(char *fname)
 		)
 		t = skip_string(s);	/* then just append */
 	    (void) strcpy(t, ".bak");
+	    break;
+
 #if SYS_UNIX
-	} else if (strcmp(gvalfileback, "tilde") == 0) {
+	case bak_TILDE:
 	    t = skip_string(s);
 #ifndef HAVE_LONG_FILE_NAMES
 	    if (t - s >= MAX_FN_LEN) {
@@ -205,14 +210,20 @@ make_backup(char *fname)
 	    }
 #endif
 	    (void) strcpy(t, "~");
+	    break;
+
 #if VILE_SOMEDAY
-	} else if (strcmp(gvalfileback, "tilde_N_existing")) {
+	case bak_TILDE_N0:
 	    /* numbered backups if one exists, else simple */
-	} else if (strcmp(gvalfileback, "tilde_N")) {
+	    break;
+
+	case bak_TILDE_N:
 	    /* numbered backups of all files */
+	    break;
 #endif
 #endif /* SYS_UNIX */
-	} else {
+
+	default:
 	    mlforce("BUG: bad fileback value");
 	    return FALSE;
 	}
@@ -292,6 +303,8 @@ file_stat(const char *fn, struct stat *sb)
 int
 ffropen(char *fn)
 {
+    int rc = FIOSUC;
+
     fileeof = FALSE;
     ffstatus = file_is_closed;
 
@@ -308,26 +321,25 @@ ffropen(char *fn)
 #endif
 	if (ffp == 0) {
 	    mlerror("opening pipe for read");
-	    return (FIOERR);
+	    rc = FIOERR;
+	} else {
+	    ffstatus = file_is_pipe;
+	    count_fline = 0;
 	}
-
-	ffstatus = file_is_pipe;
-	count_fline = 0;
-
     } else
 #endif
     if (is_directory(fn)) {
 #if COMPLETE_FILES || COMPLETE_DIRS
 	ffstatus = file_is_internal;	/* will store directory as buffer */
-	return (FIOSUC);
+	rc = FIOSUC;
 #else
 	set_errno(EISDIR);
 	mlerror("opening directory");
-	return (FIOERR);
+	rc = FIOERR;
 #endif
     } else if (is_nonfile(fn)) {
 	mlforce("[Not a file: %s]", fn);
-	return (FIOERR);
+	rc = FIOERR;
     } else if ((ffp = fopen(SL_TO_BSL(fn), FOPEN_READ)) == NULL) {
 	if (errno != ENOENT
 #if SYS_OS2 && CC_CSETPP
@@ -336,14 +348,18 @@ ffropen(char *fn)
 #endif
 	    && errno != EINVAL) {	/* a problem with Linux to DOS-files */
 	    mlerror("opening for read");
-	    return (FIOERR);
+	    rc = FIOERR;
+	} else {
+	    rc = FIOFNF;
 	}
-	return (FIOFNF);
     } else {
 	ffstatus = file_is_external;
     }
-    TPRINTF(("** opened %s for read\n", fn));
-    return (FIOSUC);
+
+    if (rc == FIOSUC) {
+	TPRINTF(("** opened %s for read\n", fn));
+    }
+    return (rc);
 }
 
 /*
@@ -839,7 +855,7 @@ ffgetline(size_t *lenp)
 	if (llength(ffcursor) > 0) {
 	    i = llength(ffcursor);
 	    ALLOC_LINEBUF(i);
-	    memcpy(fflinebuf, ffcursor->l_text, i);
+	    memcpy(fflinebuf, lvalue(ffcursor), i);
 	}
 	ffcursor = lforw(ffcursor);
 
@@ -858,8 +874,41 @@ ffgetline(size_t *lenp)
 	    if (ffcrypting && (ffstatus != file_is_pipe))
 		c = vl_encrypt_char(c);
 #endif
-	    if (c == end_of_line)
+	    if (c == end_of_line) {
+#if OPT_MULTIBYTE
+		/*
+		 * If we are reading a UTF-16 file, we may have to read
+		 * more bytes to align properly.
+		 */
+		if (count_fline == 0) {
+		    UCHAR *buffer = (UCHAR *) fflinebuf;
+		    B_COUNT length = i;
+		    make_global_b_val(btempp, VAL_BYTEORDER_MARK);
+		    make_global_b_val(btempp, VAL_FILE_ENCODING);
+		    if (decode_bom(btempp, buffer, &length))
+			i = length;
+		    deduce_charset(btempp, buffer, &length);
+		}
+
+		if (b_val(btempp, VAL_FILE_ENCODING) > enc_UTF8) {
+		    UCHAR *buffer = (UCHAR *) fflinebuf;
+		    B_COUNT length = (i + 1);
+
+		    if (!aligned_charset(btempp, buffer, &length)) {
+			do {
+			    ALLOC_LINEBUF(i);
+			    fflinebuf[i++] = (char) c;
+			    c = vl_getc(ffp);	/* expecting a null... */
+			    length = (i + 1);
+			} while (!aligned_charset(btempp, buffer, &length));
+		    }
+
+		    cleanup_charset(btempp, buffer, &length);
+		    i = length - 1;	/* discount the newline */
+		}
+#endif
 		break;
+	    }
 	    if (interrupted()) {
 		free_fline();
 		*lenp = 0;

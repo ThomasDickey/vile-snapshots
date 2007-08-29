@@ -830,6 +830,15 @@ Functions
 	    &env    "S"		    Return the value of the user's environment
 				    variable named "S".
 	    &gtkey		    Get a single raw keystroke from the user.
+	    &gtmotion "N"	    Get a key sequence from user which must be
+				    bound to a motion.  The parameter is one
+				    of the binding names:
+					"command"
+					"default"
+					"insert"
+					"select"
+				    If successful, the name of the
+				    corresponding motion function is returned.
 	    &gtsequence		    Get a complete vile key sequence from user.
 	    &left   "S" "N"	    Extract first "N" characters from "S"
 	    &lower  "S"		    Return lowercase version of "S".
@@ -1512,6 +1521,6 @@ Example startup file
 	========================= end vile.rc =======================
 
 -----------------------------------
-  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.100 2006/12/02 12:40:20 tom Exp $
+  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.101 2007/08/16 19:31:07 tom Exp $
 -----------------------------------
 

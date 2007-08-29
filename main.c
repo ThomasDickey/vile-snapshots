@@ -22,7 +22,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.594 2007/05/28 14:07:15 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.596 2007/08/20 16:06:23 tom Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -1458,7 +1458,7 @@ init_mode_value(struct VAL *d, MODECLASS v_class, int v_which)
 	    setINT(VAL_FENCE_LIMIT, 10);	/* fences iteration timeout */
 #endif
 #ifdef VAL_FILE_ENCODING
-	    setINT(VAL_FILE_ENCODING, 0);	/* file-encoding ASCII */
+	    setINT(VAL_FILE_ENCODING, enc_DEFAULT);
 #endif
 #ifdef VAL_HILITEMATCH
 	    setINT(VAL_HILITEMATCH, 0);		/* no hilite */
@@ -1468,6 +1468,9 @@ init_mode_value(struct VAL *d, MODECLASS v_class, int v_which)
 #endif
 #ifdef VAL_MODELINES
 	    setINT(VAL_MODELINES, 5);
+#endif
+#ifdef VAL_PERCENT_UTF8
+	    setINT(VAL_PERCENT_UTF8, 90);
 #endif
 #ifdef VAL_RECORD_FORMAT
 	    setINT(VAL_RECORD_FORMAT, FAB$C_UDF);

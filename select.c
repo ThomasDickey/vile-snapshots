@@ -18,7 +18,7 @@
  * transferring the selection are not dealt with in this file.  Procedures
  * for dealing with the representation are maintained in this file.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.162 2006/11/02 21:01:24 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.163 2007/08/29 00:49:40 tom Exp $
  *
  */
 
@@ -1671,7 +1671,7 @@ attribute_cntl_a_sequences(void)
 	    return FALSE;
 	while (DOT.o < llength(DOT.l)) {
 	    if (char_at(DOT) == CONTROL_A) {
-		offset = decode_attribute(DOT.l->l_text, llength(DOT.l),
+		offset = decode_attribute(lvalue(DOT.l), llength(DOT.l),
 					  DOT.o, &count);
 		if (offset > DOT.o) {
 #if EFFICIENCY_HACK

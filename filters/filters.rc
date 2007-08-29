@@ -1,4 +1,4 @@
-; $Id: filters.rc,v 1.205 2006/03/04 05:59:42 tom Exp $
+; $Id: filters.rc,v 1.206 2007/06/16 15:05:56 tom Exp $
 ; majormodes in this file are ordered alphabetically for convenience - the
 ; precedence used by vile is strictly alphabetic, counting case.
 
@@ -105,6 +105,11 @@ define-mode vbs
 define-mode vim
 ~with define-submode vim
 	filtername	'vile-vile-filt -k vim'
+~endwith
+
+define-mode xpm
+~with define-submode xpm
+	filtername	'vile-c-filt'
 ~endwith
 
 store-procedure HighlightFilter 'Invoke syntax-highlighting filter on the current buffer'

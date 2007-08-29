@@ -1,7 +1,7 @@
 /*
  * Main program and I/O for external vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/RCS/builtflt.c,v 1.49 2007/05/08 00:39:55 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/builtflt.c,v 1.55 2007/08/29 00:42:05 tom Exp $
  *
  */
 
@@ -11,6 +11,7 @@
 #ifdef _builtflt_h
 
 #include "edef.h"
+#include "nefunc.h"
 #include "nevars.h"
 #include <stdarg.h>
 
@@ -260,7 +261,7 @@ flt_gets(char **ptr, unsigned *len)
 
     if (need >= 0
 	&& tb_init(&gets_data, 0) != 0
-	&& tb_bappend(&gets_data, mark_in.l->l_text, need) != 0
+	&& tb_bappend(&gets_data, lvalue(mark_in.l), need) != 0
 	&& tb_sappend(&gets_data, "\n") != 0
 	&& tb_append(&gets_data, EOS) != 0) {
 	*ptr = tb_values(gets_data);
@@ -564,6 +565,89 @@ var_FILTER_LIST(TBUFF **rp, const char *vp)
     } else {
 	return FALSE;
     }
+}
+
+/*
+ * Check if the command name is one of vile's set/unset variants.
+ */
+int
+vl_is_register(const char *name)
+{
+    const CMDFUNC *ptr = engl2fnc(name);
+    int result = 0;
+
+    if (ptr != 0) {
+	if (ptr == &f_usekreg
+	    || ptr == &f_execkreg) {
+	    result = 1;
+	}
+    }
+    return result;
+}
+
+/*
+ * Check if the command name is one of vile's set/unset variants.
+ */
+int
+vl_is_setting(const char *name)
+{
+    const CMDFUNC *ptr = engl2fnc(name);
+    int result = 0;
+
+    if (ptr != 0) {
+	if (ptr == &f_setglobmode
+	    || ptr == &f_delglobmode
+	    || ptr == &f_setlocmode
+	    || ptr == &f_dellocmode) {
+	    result = 1;
+	}
+    }
+    return result;
+}
+
+/*
+ * Check if the command name is one of vile's majormode set/unset variants.
+ */
+int
+vl_is_submode(const char *name)
+{
+    int result = 0;
+#if OPT_MAJORMODE
+    const CMDFUNC *ptr = engl2fnc(name);
+
+    if (ptr != 0) {
+	if (ptr == &f_define_submode) {
+	    result = 1;
+	}
+    }
+#endif
+    return result;
+}
+
+/*
+ * Lookup a symbol to see if it is one of vile's modes, majormodes or
+ * submodes).
+ */
+int
+vl_lookup_mode(const char *name)
+{
+    return vl_find_mode(name);
+}
+
+/*
+ * Lookup a symbol to see if it is one of vile's built-in symbols.
+ */
+int
+vl_lookup_var(const char *name)
+{
+    int result = 0;
+    if (*name == '$')
+	++name;
+    if (vl_lookup_statevar(name) < 0
+	&& vl_lookup_mode(name) < 0) {
+	result = -1;
+    }
+    return result;
 }
 
 #if NO_LEAKS

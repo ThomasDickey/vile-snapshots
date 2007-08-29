@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.100 2007/06/02 15:09:08 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.103 2007/08/10 23:34:44 tom Exp $
  */
 
 #ifndef FILTERS_H
@@ -239,6 +239,12 @@ extern void flt_finish(void);
 extern void flt_putc(int ch);
 extern void flt_puts(const char *string, int length, const char *attribute);
 extern void mlforce(const char *fmt, ...) VILE_PRINTF(1,2);
+extern int vl_is_register(const char *name);
+extern int vl_is_setting(const char *name);
+extern int vl_is_submode(const char *name);
+extern int vl_lookup_func(const char *name);
+extern int vl_lookup_mode(const char *name);
+extern int vl_lookup_var(const char *name);
 
 #ifndef strmalloc
 extern char *strmalloc(const char *src);

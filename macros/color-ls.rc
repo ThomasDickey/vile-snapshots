@@ -1,9 +1,9 @@
-; $Id: color-ls.rc,v 1.2 2004/06/11 11:51:23 tom Exp $
+; $Id: color-ls.rc,v 1.3 2007/08/07 00:32:16 tom Exp $
 ; Use this macro to render the output of "color ls" into a vile buffer.
 store-procedure ShowColorLS "Prompt for, and display a color-ls"
 	;~trace on
 	~local %filter %options %lsbuffer $error-buffer %report
-	set-variable %filter &lookup e+l+p &cat vile-manfilt $exec-suffix
+	set-variable %filter &pquote &lookup e+l+p &cat vile-manfilt $exec-suffix
 	~if &seq %filter ""
 		write-message "[Cannot find manpage-filter]"
 		~return

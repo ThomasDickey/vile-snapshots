@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/flt_defs.h,v 1.5 2007/06/02 15:20:47 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/flt_defs.h,v 1.6 2007/08/07 23:41:56 tom Exp $
  */
 
 #ifndef FLT_DEFS_H
@@ -142,8 +142,6 @@ extern DIRECTIVE dname_to_dirnum(char **cmdp, size_t length);
 
 typedef struct { int dummy; } CMDFUNC;
 extern const CMDFUNC * engl2fnc(const char *fname);
-
-extern int vl_lookup_func(const char *name);
 
 #if NO_LEAKS
 extern	void	filters_leaks (void);

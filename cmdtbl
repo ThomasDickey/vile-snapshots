@@ -97,7 +97,7 @@
 #		in '!' listed, then the flag does nothing, and should be
 #		viewed simply as documentation.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.247 2007/05/28 14:00:53 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.249 2007/08/10 23:30:06 tom Exp $
 #
 #
 
@@ -957,7 +957,7 @@ lineundo	NONE
 	<undo all changes made to most recently altered line>
 loadkreg	NONE
 	"load-register"
-	<load the given string into the given named register.  give CNT for full-lines.>
+	<load the given string into the currently named register.  give CNT for full-lines.>
 loadplugin	NONE			OPT_PLUGIN
 	"load-plugin"
 	<try to load a plug-in from a shared-library file>
@@ -1039,7 +1039,7 @@ namebuffer	NONE
 	"rename-buffer"
 	<give the current buffer a new name>
 name_a_buffer	NONE
-	"rename-other-buffer"
+	"other-buffer-rename"
 	<give the specified buffer a new name>
 newline		REDO|UNDO		!SMALLER
 	"newline"

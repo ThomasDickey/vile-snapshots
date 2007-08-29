@@ -1,7 +1,7 @@
 #
 # makefile for vile on WIN32 using Borland C++
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.blc,v 1.20 2006/04/21 13:38:05 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.blc,v 1.21 2007/08/10 21:15:47 tom Exp $
 #
 # Tested with
 #	Borland C++ 5.5.1
@@ -54,7 +54,8 @@ BUILTHDRS = \
 	neproto.h \
 	nevars.h
 
-SRC = 	main.c $(SCREEN).c basic.c bind.c btree.c buffer.c \
+SRC = 	main.c $(SCREEN).c \
+	basic.c bind.c blist.c btree.c buffer.c \
 	csrch.c display.c eval.c exec.c externs.c \
 	fences.c file.c filec.c \
 	fileio.c finderr.c glob.c globals.c history.c \
@@ -66,7 +67,8 @@ SRC = 	main.c $(SCREEN).c basic.c bind.c btree.c buffer.c \
 	version.c w32cmd.c w32cbrd.c w32misc.c w32oo.cpp w32pipe.c \
 	window.c word.c wordmov.c map.c
 
-OBJ = 	main.obj $(SCREEN).obj basic.obj bind.obj btree.obj buffer.obj \
+OBJ = 	main.obj $(SCREEN).obj \
+	basic.obj bind.obj blist.obj btree.obj buffer.obj \
       	csrch.obj display.obj eval.obj exec.obj externs.obj \
 	fences.obj file.obj filec.obj \
 	fileio.obj finderr.obj glob.obj globals.obj history.obj \
@@ -129,6 +131,7 @@ api.obj :	$(VILEHDRS)	api.h
 $(SCREEN).obj :	$(VILEHDRS)	winvile.h pscreen.h patchlev.h
 basic.obj :	$(VILEHDRS)
 bind.obj :	$(VILEHDRS)
+blist.obj :	$(VILEHDRS)	blist.h
 btree.obj :	$(VILEHDRS)	btree.h
 buffer.obj :	$(VILEHDRS)
 csrch.obj :	$(VILEHDRS)

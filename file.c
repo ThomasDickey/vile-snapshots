@@ -5,7 +5,7 @@
  * reading and writing of the disk are
  * in "fileio.c".
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.399 2007/01/16 00:53:26 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.407 2007/08/29 00:43:25 tom Exp $
  */
 
 #include "estruct.h"
@@ -1208,7 +1208,7 @@ void
 explicit_dosmode(BUFFER *bp, RECORD_SEP record_sep)
 {
     TRACE(("explicit_dosmode(%s)\n",
-	   choice_to_name(fsm_recordsep_choices, record_sep)));
+	   choice_to_name(&fsm_recordsep_blist, record_sep)));
 
     set_record_sep(bp, record_sep);
 }
@@ -1220,7 +1220,7 @@ static int
 modified_record_sep(RECORD_SEP record_sep)
 {
     TRACE((T_CALLED "modified_record_sep(%s)\n",
-	   choice_to_name(fsm_recordsep_choices, record_sep)));
+	   choice_to_name(&fsm_recordsep_blist, record_sep)));
 
     explicit_dosmode(curbp, record_sep);
     guess_dosmode(curbp);
@@ -1364,7 +1364,7 @@ guess_recordseparator(BUFFER *bp, UCHAR * buffer, B_COUNT length, L_NUM * lines)
     }
 
     TRACE(("...line count = %ld, format=%s\n", (long) *lines,
-	   choice_to_name(fsm_recordsep_choices, result)));
+	   choice_to_name(&fsm_recordsep_blist, result)));
     return result;
 }
 
@@ -1458,6 +1458,11 @@ quickreadf(BUFFER *bp, int *nlinep)
 	    vl_encrypt_blok((char *) buffer, (UINT) length);
 	}
 #endif
+#if OPT_MULTIBYTE
+	decode_bom(bp, buffer, &length);
+	deduce_charset(bp, buffer, &length);
+#endif
+
 	/*
 	 * Analyze the file to determine its format:
 	 */
@@ -1495,7 +1500,7 @@ quickreadf(BUFFER *bp, int *nlinep)
 		if (!b_val(bp, MDNEWLINE) && next == length)
 		    lp->l_used += 1;
 		lp->l_size = lp->l_used + 1;
-		lp->l_text = (char *) (buffer + offset);
+		lvalue(lp) = (char *) (buffer + offset);
 		set_lforw(lp, lp + 1);
 		if (lp != bp->b_LINEs)
 		    set_lback(lp, lp - 1);
@@ -1504,6 +1509,7 @@ quickreadf(BUFFER *bp, int *nlinep)
 #if OPT_LINE_ATTRS
 		lp->l_attrs = NULL;
 #endif
+		decode_charset(bp, lp);
 		offset = next;
 	    }
 	    lp--;		/* point at last line again */
@@ -1673,7 +1679,6 @@ readin(char *fname, int lockfl, BUFFER *bp, int mflg)
      * Set the majormode if the file's suffix matches.
      */
     if (s < FIOERR) {
-	decode_bom(bp);
 	infer_majormode(bp);
     }
 
@@ -1765,7 +1770,23 @@ slowreadf(BUFFER *bp, int *nlinep)
     make_local_b_val(bp, MDDOS);	/* keep it local, if not */
     bp->b_lines_on_disk = 0;
     while ((s = ffgetline(&len)) <= FIOSUC) {
-	bp->b_lines_on_disk += 1;
+#if OPT_MULTIBYTE
+	/*
+	 * ffgetline() does the checks for UTF-16, etc., since it is in the
+	 * right place to account for alignment bytes.  Copy the attributes
+	 * from its buffer to ours so the decode_charset() call will work.
+	 */
+#define COPY_B_VAL(dst,src,val) \
+	if (is_local_b_val(src, val)) { \
+	    make_local_b_val(dst, val); \
+	    set_b_val(dst, val, b_val(src, val)); \
+	}
+	if (bp->b_lines_on_disk == 0) {
+	    COPY_B_VAL(bp, btempp, VAL_BYTEORDER_MARK);
+	    COPY_B_VAL(bp, btempp, VAL_FILE_ENCODING);
+	}
+	bp->implied_BOM = btempp->implied_BOM;
+#endif
 #if OPT_DOSFILES
 	/*
 	 * Strip CR's if we are reading in DOS-mode.  Otherwise,
@@ -1785,6 +1806,8 @@ slowreadf(BUFFER *bp, int *nlinep)
 	}
 #if SYS_UNIX || SYS_MSDOS || SYS_OS2 || SYS_WINNT
 	else {
+	    decode_charset(bp, lback(buf_head(bp)));
+	    bp->b_lines_on_disk += 1;
 	    /* reading from a pipe, and internal? */
 	    if (slowtime(&last_updated)) {
 		WINDOW *wp;
@@ -2040,13 +2063,31 @@ setup_file_region(BUFFER *bp, REGION * rp)
     rp->r_end = bp->b_line;
 }
 
+#if OPT_MULTIBYTE
+static int
+write_encoded_text(BUFFER *bp, const char *buf, int nbuf, const char *ending)
+{
+    int rc;
+
+    if (b_val(bp, VAL_FILE_ENCODING) > enc_UTF8) {
+	int len = encode_charset(bp, buf, nbuf, ending);
+	rc = ffputline(bp->encode_utf_buf, len, 0);
+    } else {
+	rc = ffputline(buf, nbuf, ending);
+    }
+    return rc;
+}
+#define FFPUTLINE(bp,buf,len,end) write_encoded_text(bp,buf,len,end)
+#else
+#define FFPUTLINE(bp,buf,len,end) ffputline(buf,len,end)
+#endif
+
 static int
 actually_write(REGION * rp, char *fn, int msgf, BUFFER *bp, int forced, int encoded)
 {
     int s;
     LINE *lp;
     int nline;
-    B_COUNT i;
     B_COUNT nchar;
     const char *ending = get_record_sep(bp);
     int len_rs = len_record_sep(bp);
@@ -2112,7 +2153,7 @@ actually_write(REGION * rp, char *fn, int msgf, BUFFER *bp, int forced, int enco
     /* first (maybe partial) line and succeeding whole lines */
     while ((rp->r_size + offset) >= line_length(lp)) {
 	C_NUM len = llength(lp) - offset;
-	char *text = lp->l_text + offset;
+	char *text = lvalue(lp) + offset;
 
 	/* If this is the last line (and no fragment will be written
 	 * after the line), allow 'newline' mode to suppress the
@@ -2132,14 +2173,14 @@ actually_write(REGION * rp, char *fn, int msgf, BUFFER *bp, int forced, int enco
 		text = tb_values(temp);
 		len = (int) tb_length(temp);
 	    }
-	    if ((s = ffputline(text, len, ending)) != FIOSUC) {
+	    if ((s = FFPUTLINE(bp, text, len, ending)) != FIOSUC) {
 		tb_free(&temp);
 		goto out;
 	    }
 	    tb_free(&temp);
 	} else
 #endif
-	if ((s = ffputline(text, len, ending)) != FIOSUC)
+	if ((s = FFPUTLINE(bp, text, len, ending)) != FIOSUC)
 	    goto out;
 
 	++nline;
@@ -2150,9 +2191,8 @@ actually_write(REGION * rp, char *fn, int msgf, BUFFER *bp, int forced, int enco
 
     /* last line (fragment) */
     if (rp->r_size > 0) {
-	for (i = 0; i < rp->r_size; i++)
-	    if ((s = ffputc(lgetc(lp, i))) != FIOSUC)
-		goto out;
+	if ((s = FFPUTLINE(bp, lvalue(lp), rp->r_size, NULL)) != FIOSUC)
+	    goto out;
 	nchar += rp->r_size;
 	++nline;		/* it _looks_ like a line */
     }

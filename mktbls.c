@@ -15,7 +15,7 @@
  * by Tom Dickey, 1993.    -pgf
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/mktbls.c,v 1.137 2007/01/14 21:15:17 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/mktbls.c,v 1.146 2007/08/21 20:55:28 tom Exp $
  *
  */
 
@@ -220,7 +220,8 @@ static const char *prefname[MAX_BIND] =
     "SPEC|"
 };
 
-static char *fsm_name;
+static char *fsm_uc_name;
+static char *fsm_lc_name;
 static char *inputfile;
 static int l = 0;
 static FILE *cmdtbl;
@@ -258,6 +259,17 @@ static int
 isPrint(int c)
 {
     return c >= ' ' && c < 0x7f;
+}
+
+static char *
+lowercase(char *s)
+{
+    char *base = s;
+    while (*s != 0) {
+	*s = (char) toLower(*s);
+	++s;
+    }
+    return base;
 }
 
 /******************************************************************************/
@@ -1389,6 +1401,8 @@ start_vars_h(char **argv)
     static const char *const head[] =
     {
 	"",
+	"#include <blist.h>",
+	"",
 	"#if OPT_EVAL",
 	"",
 	"/*\tstructure to hold temp variables and their definitions\t*/",
@@ -1452,8 +1466,10 @@ dump_statevars(void)
     {
 	"\tNULL\t/* ends table for name-completion */",
 	"};",
+	"BLIST blist_statevars = init_blist(statevars);",
 	"#else",
 	"extern const char *const statevars[];",
+	"extern BLIST blist_statevars;",
 	"#endif",
 	"",
 	""
@@ -1527,28 +1543,27 @@ dump_statevars(void)
 static void
 save_fsms(char **vec)
 {
-    InsertSorted(&all_fsms, vec[1], "", vec[2], vec[3], vec[0]);
+    InsertSorted(&all_fsms, lowercase(vec[1]), "", vec[2], vec[3], vec[0]);
 }
 
 static void
 init_fsms(void)
 {
-    char name[BUFSIZ];
     int n;
 
-    if (fsm_name == 0)
+    if (fsm_uc_name == 0)
 	badfmt("Missing table name");
 
-    (void) strcpy(name, fsm_name);
-    for (n = 0; fsm_name[n] != '\0'; n++)
-	fsm_name[n] = (char) toUpper(fsm_name[n]);
+    for (n = 0; fsm_uc_name[n] != '\0'; n++)
+	fsm_uc_name[n] = (char) toUpper(fsm_uc_name[n]);
     Fprintf(nefsms, "\n");
-    Fprintf(nefsms, "#if OPT_%s_CHOICES\n", fsm_name);
+    Fprintf(nefsms, "#if OPT_%s_CHOICES\n", fsm_uc_name);
     Fprintf(nefsms, "#ifndef realdef\n");
-    Fprintf(nefsms, "extern const FSM_CHOICES fsm_%s_choices[];\n", name);
+    Fprintf(nefsms, "extern const FSM_CHOICES fsm_%s_choices[];\n", fsm_lc_name);
+    Fprintf(nefsms, "extern FSM_BLIST fsm_%s_blist;\n", fsm_lc_name);
     Fprintf(nefsms, "#else\n");
     Fprintf(nefsms, "DECL_EXTERN_CONST(FSM_CHOICES fsm_%s_choices[]) = %c\n",
-	    name, L_CURL);
+	    fsm_lc_name, L_CURL);
 }
 
 static void
@@ -1575,13 +1590,22 @@ dump_fsms(void)
 	FlushIf(nefsms);
 
 	write_lines(nefsms, middle);
+
+	Fprintf(nefsms, "FSM_BLIST fsm_%s_blist = {\n", fsm_lc_name);
+	Fprintf(nefsms, "\tfsm_%s_choices,\n", fsm_lc_name);
+	Fprintf(nefsms, "\tinit_blist(fsm_%s_choices)\n", fsm_lc_name);
+	Fprintf(nefsms, "};\n");
+
 	Fprintf(nefsms, "#endif\n");
-	Fprintf(nefsms, "#endif /* OPT_%s_CHOICES */\n", fsm_name);
+	Fprintf(nefsms, "#endif /* OPT_%s_CHOICES */\n", fsm_lc_name);
 
 	free_LIST(&all_fsms);
 
-	free(fsm_name);
-	fsm_name = 0;
+	free(fsm_uc_name);
+	fsm_uc_name = 0;
+
+	free(fsm_lc_name);
+	fsm_lc_name = 0;
     }
 }
 
@@ -1600,7 +1624,8 @@ start_fsms_h(char **argv, char *name)
 	write_lines(nefsms, head);
     }
     dump_fsms();
-    fsm_name = StrAlloc(name);
+    fsm_uc_name = StrAlloc(name);
+    fsm_lc_name = StrAlloc(name);
 }
 
 static void
@@ -1751,6 +1776,8 @@ dump_names(void)
 
     Fprintf(nename, "\n/* if you maintain this by hand, keep it in */\n");
     Fprintf(nename, "/* alphabetical order!!!! */\n\n");
+    Fprintf(nename, "#include <blist.h>\n\n");
+    Fprintf(nename, "#ifdef real_NAMETBL\n\n");
     Fprintf(nename, "EXTERN_CONST NTAB nametbl[] = {\n");
 
     BeginIf();
@@ -1760,7 +1787,11 @@ dump_names(void)
 	Fprintf(nename, "%s&f_%s },\n", PadTo(40, temp), m->Func);
     }
     FlushIf(nename);
-    Fprintf(nename, "\t{ NULL, NULL }\n};\n");
+    Fprintf(nename, "\t{ NULL, NULL }\n};\n\n");
+    Fprintf(nename, "BLIST blist_nametbl = init_blist(nametbl);\n\n");
+    Fprintf(nename, "#else\n\n");
+    Fprintf(nename, "extern BLIST blist_nametbl;\n\n");
+    Fprintf(nename, "#endif\n");
 }
 
 /******************************************************************************/
@@ -1822,9 +1853,12 @@ dump_ufuncs(void)
 {
     static const char *const middle[] =
     {
+	"\t{NULL, 0},",
 	"};",
+	"BLIST blist_ufuncs = init_blist(vl_ufuncs);",
 	"#else",
 	"extern const UFUNC vl_ufuncs[];",
+	"extern BLIST blist_ufuncs;",
 	"#endif",
 	"",
     };

@@ -1,4 +1,4 @@
-MANIFEST for vile, version v9_5r
+MANIFEST for vile, version v9_5r1
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 CHANGES                         Change-log for VILE
@@ -19,6 +19,8 @@ api.c                           nvi-like api to perl and tcl
 api.h                           interface of api.c
 basic.c                         basic cursor-movement
 bind.c                          key-bindings & low-level command-completion
+blist.c                         binary-searches for pre-sorted arrays
+blist.h                         interface of blist.c
 borland.c                       BORLAND terminal driver
 btree.c                         balanced-binary (AVL) tree functions
 btree.h                         interface of btree.c

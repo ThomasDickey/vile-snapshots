@@ -5,7 +5,7 @@
  *
  * Copyright (c) 1990-2005 by Paul Fox and Thomas Dickey
  *
- * $Header: /users/source/archives/vile.vcs/RCS/finderr.c,v 1.130 2005/05/27 22:24:25 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/finderr.c,v 1.132 2007/08/29 00:45:50 tom Exp $
  *
  */
 
@@ -252,7 +252,7 @@ convert_pattern(ERR_PATTERN * errp, LINE *lp)
     int range;
     int status = TRUE;
     size_t want = llength(lp);
-    char *first = lp->l_text;
+    char *first = lvalue(lp);
     char *last = first + want;
 
     (void) memset(errp, 0, sizeof(*errp));
@@ -745,7 +745,7 @@ finderr(int f GCC_UNUSED, int n GCC_UNUSED)
 		   && !lregexec(exp->exp_comp, dotp, 0, llength(dotp))) ;
 
 	    if (exp != 0) {
-		TRACE(("matched TEXT:%.*s\n", llength(dotp), dotp->l_text));
+		TRACE(("matched TEXT:%.*s\n", llength(dotp), lvalue(dotp)));
 		if (decode_exp(exp))
 		    return ABORT;
 
@@ -810,8 +810,8 @@ finderr(int f GCC_UNUSED, int n GCC_UNUSED)
 	mlforce("%s", errtext);
 	len = strlen(errtext);
     } else {
-	mlforce("Error: %.*s", dotp->l_used, dotp->l_text);
-	errtext = dotp->l_text;
+	mlforce("Error: %.*s", dotp->l_used, lvalue(dotp));
+	errtext = lvalue(dotp);
 	len = dotp->l_used;
     }
     if ((oerrtext = tb_init(&oerrtext, EOS)) != 0) {
@@ -834,7 +834,7 @@ finderr(int f GCC_UNUSED, int n GCC_UNUSED)
     if (status == TRUE) {
 	TBUFF *match = 0;
 	var_ERROR_EXPR((TBUFF **) 0, exp_table[count - 1].exp_text);
-	if (tb_bappend(&match, dotp->l_text, dotp->l_used)
+	if (tb_bappend(&match, lvalue(dotp), dotp->l_used)
 	    && tb_append(&match, EOS) != 0) {
 	    var_ERROR_MATCH((TBUFF **) 0, tb_values(match));
 	    tb_free(&match);
@@ -929,7 +929,7 @@ make_err_regex_list(int dum1 GCC_UNUSED, void *ptr GCC_UNUSED)
 	    if (j >= exp_count)
 		break;
 	    bprintf("\n%7d ", (int) j);
-	    bprintf("%.*s\n", llength(lp), lp->l_text);
+	    bputsn(lvalue(lp), llength(lp));
 	    bprintf("%.*s%s", ERR_PREFIX, " ", exp_table[j].exp_text);
 	    for (k = 0; k < W_LAST; k++) {
 		if (exp_table[j].words[k] != 0) {
