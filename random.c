@@ -2,7 +2,7 @@
  * This file contains the command processing functions for a number of random
  * commands. There is no functional grouping here, for sure.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.299 2007/06/03 13:10:48 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.303 2007/08/26 22:28:58 tom Exp $
  *
  */
 
@@ -229,10 +229,10 @@ showcpos(int f GCC_UNUSED, int n GCC_UNUSED)
     }
 
     /* Get real column and end-of-line column. */
-    col = mk_to_vcol(DOT, FALSE, curbp, 0, 0);
+    col = mk_to_vcol(curwp, DOT, FALSE, 0, 0);
     savepos = DOT.o;
     DOT.o = llength(DOT.l);
-    ecol = mk_to_vcol(DOT, FALSE, curbp, 0, 0);
+    ecol = mk_to_vcol(curwp, DOT, FALSE, 0, 0);
     DOT.o = savepos;
 
     ratio = PERCENT(predchars, numchars);
@@ -439,7 +439,7 @@ gotopct(int f, int n)
 int
 getcol(MARK mark, int actual)
 {
-    C_NUM c, i;
+    C_NUM i;
     C_NUM col = 0;
 
     if (mark.l != 0
@@ -451,8 +451,7 @@ getcol(MARK mark, int actual)
 	    if (len > llength(mark.l))
 		len = llength(mark.l);
 	    for (i = w_left_margin(curwp); i < len; ++i) {
-		c = lgetc(mark.l, i);
-		col = next_column(c, col);	/* assumes curbp */
+		col = next_column(mark.l, i, col);	/* assumes curbp */
 	    }
 	}
     }
@@ -498,7 +497,6 @@ gotocol(int f, int n)
 int
 getoff(C_NUM goal, C_NUM * rcolp)
 {
-    int curchar;
     C_NUM offs;
     C_NUM ccol = 0;
     C_NUM llen = llength(DOT.l);
@@ -510,8 +508,7 @@ getoff(C_NUM goal, C_NUM * rcolp)
 	    break;
 
 	/* move right */
-	curchar = lgetc(DOT.l, offs);
-	ccol = next_column(curchar, ccol);
+	ccol = next_column(DOT.l, offs, ccol);
     }
 
     if (rcolp)
@@ -2028,7 +2025,7 @@ vl_dirs_add(int f GCC_UNUSED, int n GCC_UNUSED)
  * detail of errno values in a don't-care mode.
  */
 long
-vl_atol(char *str, int base, int *failed)
+vl_atol(const char *str, int base, int *failed)
 {
     long result = 0;
 
@@ -2038,17 +2035,18 @@ vl_atol(char *str, int base, int *failed)
 #if defined(EDOM) && defined(ERANGE)
 	char *prem;
 
-	str = skip_blanks(str);
+	str = skip_cblanks(str);
 	if (!*str)
 	    *failed = TRUE;
 	else {
 	    set_errno(0);
 	    result = strtol(str, &prem, base);
-	    if (errno == EDOM || errno == ERANGE)
+	    if (errno == EDOM || errno == ERANGE) {
 		*failed = TRUE;
-	    else {
-		if (*(prem = skip_blanks(prem)) != EOS)
+	    } else {
+		if (*(prem = skip_blanks(prem)) != EOS) {
 		    *failed = TRUE;	/* trailing garbage */
+		}
 	    }
 	}
 #else
@@ -2068,7 +2066,7 @@ vl_atol(char *str, int base, int *failed)
  */
 #ifdef HAVE_STRTOUL
 ULONG
-vl_atoul(char *str, int base, int *failed)
+vl_atoul(const char *str, int base, int *failed)
 {
     *failed = FALSE;
 
@@ -2077,15 +2075,15 @@ vl_atoul(char *str, int base, int *failed)
 	char *prem;
 	ULONG rslt = 0;
 
-	str = skip_blanks(str);
-	if (!*str || *str == '+' || *str == '-')
+	str = skip_cblanks(str);
+	if (!*str || *str == '+' || *str == '-') {
 	    *failed = TRUE;
-	else {
+	} else {
 	    set_errno(0);
 	    rslt = strtoul(str, &prem, base);
-	    if (errno == EDOM || errno == ERANGE)
+	    if (errno == EDOM || errno == ERANGE) {
 		*failed = TRUE;
-	    else {
+	    } else {
 		if (*(prem = skip_blanks(prem)) != EOS)
 		    *failed = TRUE;	/* trailing garbage */
 	    }

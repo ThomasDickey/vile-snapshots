@@ -3,12 +3,12 @@
 ;;
 ;; Author: Kevin Buettner
 ;;
-;; $Header: /users/source/archives/vile.vcs/macros/RCS/manpage.rc,v 1.22 2006/11/25 00:30:15 tom Exp $
+;; $Header: /users/source/archives/vile.vcs/macros/RCS/manpage.rc,v 1.24 2007/08/07 00:44:58 tom Exp $
 ;;
 
 store-procedure ShowManpage "Prompt for, and display a manual-page"
 	~local %filter %manpage %manpagebuf $error-buffer
-	set-variable %filter &lookup e+l+p &cat vile-manfilt $exec-suffix
+	set-variable %filter &pquote &lookup e+l+p &cat vile-manfilt $exec-suffix
 	~if &seq %filter ""
 		write-message "[Cannot find manpage-filter]"
 		~return
@@ -45,7 +45,7 @@ bind-key ShowManpage ^X-m
 store-procedure ShowFormatted "Render the current buffer with nroff -man or -ms"
 	~local %type %macros %table %nroff %filter %manpagesrc %manpagebuf $error-buffer
 
-	set-variable %filter &lookup e+l+p &cat vile-manfilt $exec-suffix
+	set-variable %filter &pquote &lookup e+l+p &cat vile-manfilt $exec-suffix
 	~if &seq %filter ""
 		write-message "[Cannot find manpage-filter]"
 		~return
@@ -98,9 +98,9 @@ store-procedure ShowFormatted "Render the current buffer with nroff -man or -ms"
 			edit-file &cat "!pod2man " \
 				&cat &pquote $cfilname \
 				&cat " | " \
-				&cat &table \
+				&cat %table \
 				&cat " | " \
-				&cat &nroff \
+				&cat %nroff \
 				&cat " -man | " %filter
 		~endif
 	~else

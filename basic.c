@@ -5,7 +5,7 @@
  * functions that adjust the top line in the window and invalidate the
  * framing, are hard.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/basic.c,v 1.126 2006/11/02 01:31:36 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/basic.c,v 1.142 2007/08/29 00:41:19 tom Exp $
  *
  */
 
@@ -13,6 +13,123 @@
 #include	"edef.h"
 
 #define	RegexpLen(exp) ((exp->mlen) ? (int)(exp->mlen) : 1)
+
+/*
+ * Replace "DOT.o++".
+ */
+#if OPT_MULTIBYTE
+static int
+bytes_at0(LINE *lp, int off)
+{
+    return ((llength(lp) > off)
+	    ? vl_conv_to_utf32((UINT *) 0,
+			       lvalue(lp) + off,
+			       llength(lp) - off)
+	    : 0);
+}
+
+int
+bytes_at(LINE *lp, int off)
+{
+    int rc = bytes_at0(lp, off);
+    return rc ? rc : 1;
+}
+
+/*
+ * Replace "DOT.o--", find the number of bytes of a multibyte character before
+ * the given offset.
+ */
+int
+bytes_before(LINE *lp, int off)
+{
+    int rc = 0;
+
+    while (off-- > 0) {
+	++rc;
+	if (bytes_at0(lp, off) == rc) {
+	    break;
+	}
+    }
+    return rc;
+}
+
+/*
+ * Count the number of characters from the given offset to the end of the line.
+ */
+int
+chars_to_eol(LINE *lp, int off)
+{
+    int rc = bytes_to_eol(lp, off);
+    if (b_is_utfXX(curbp)) {
+	rc = 0;
+	while (off < llength(lp)) {
+	    off += bytes_at(lp, off);
+	    ++rc;
+	}
+    }
+    return rc;
+}
+
+/*
+ * Count the number of characters from the given offset to the beginning of the
+ * line.
+ */
+int
+chars_to_bol(LINE *lp, int off)
+{
+    int rc = bytes_to_bol(lp, off);
+    if (b_is_utfXX(curbp)) {
+	int xx = 0;
+	rc = 0;
+	while (xx < off) {
+	    xx += bytes_at(lp, xx);
+	    ++rc;
+	}
+    }
+    return rc;
+}
+
+/*
+ * Count the number of bytes in the given number of characters in the line
+ * starting from the given offset.
+ */
+int
+count_bytes(LINE *lp, int off, int chars)
+{
+    int rc = chars;
+    if (b_is_utfXX(curbp)) {
+	int xx = 0;
+	while (off < llength(lp) && chars-- > 0) {
+	    int value = bytes_at(lp, off);
+	    off += value;
+	    xx += value;
+	}
+	rc = xx;
+    }
+    return rc;
+}
+
+/*
+ * Count the number of characters in the given number of bytes in the line
+ * starting from the given offset.
+ */
+int
+count_chars(LINE *lp, int off, int bytes)
+{
+    int rc = bytes;
+    if (b_is_utfXX(curbp)) {
+	int xx = 0;
+	while (off < llength(lp) && bytes > 0) {
+	    int value = bytes_at(lp, off);
+	    off += value;
+	    bytes -= value;
+	    ++xx;
+	}
+	rc = xx;
+    }
+    return rc;
+}
+#endif /* OPT_MULTIBYTE */
 
 /* utility routine for 'forwpage()' and 'backpage()' */
 static int
@@ -95,8 +212,9 @@ backchar(int f, int n)
 	    DOT.l = lp;
 	    DOT.o = llength(lp);
 	    curwp->w_flag |= WFMOVE;
-	} else
-	    DOT.o--;
+	} else {
+	    DOT.o -= BytesBefore(DOT.l, DOT.o);
+	}
     }
     return (TRUE);
 }
@@ -109,17 +227,23 @@ backchar(int f, int n)
 int
 backchar_to_bol(int f, int n)
 {
+    int rc = TRUE;
+
     n = need_a_count(f, n, 1);
 
-    if (n < 0)
-	return forwchar_to_eol(f, -n);
-    while (n--) {
-	if (DOT.o == w_left_margin(curwp))
-	    return doingopcmd;
-	else
-	    DOT.o--;
+    if (n < 0) {
+	rc = forwchar_to_eol(f, -n);
+    } else {
+	while (n--) {
+	    if (DOT.o == w_left_margin(curwp)) {
+		rc = doingopcmd;
+		break;
+	    } else {
+		DOT.o -= BytesBefore(DOT.l, DOT.o);
+	    }
+	}
     }
-    return TRUE;
+    return rc;
 }
 
 /*
@@ -152,27 +276,33 @@ gotoeol(int f, int n)
 int
 forwchar(int f, int n)
 {
+    int rc = TRUE;
+
     n = need_a_count(f, n, 1);
 
-    if (n < 0)
-	return (backchar(f, -n));
-    while (n--) {
-	/* if an explicit arg was given, allow us to land
-	   on the newline, else skip it */
-	if (is_at_end_of_line(DOT) ||
-	    (f == FALSE && !insertmode &&
-	     llength(DOT.l) && DOT.o == llength(DOT.l) - 1)
-	    ) {
-	    if (is_header_line(DOT, curbp) ||
-		is_last_line(DOT, curbp))
-		return (FALSE);
-	    DOT.l = lforw(DOT.l);
-	    DOT.o = w_left_margin(curwp);
-	    curwp->w_flag |= WFMOVE;
-	} else
-	    DOT.o++;
+    if (n < 0) {
+	rc = backchar(f, -n);
+    } else {
+	while (n--) {
+	    /* if an explicit arg was given, allow us to land
+	       on the newline, else skip it */
+	    if (is_at_end_of_line(DOT) ||
+		(f == FALSE && !insertmode &&
+		 llength(DOT.l) && DOT.o == llength(DOT.l) - 1)) {
+		if (is_header_line(DOT, curbp) ||
+		    is_last_line(DOT, curbp)) {
+		    rc = FALSE;
+		    break;
+		}
+		DOT.l = lforw(DOT.l);
+		DOT.o = w_left_margin(curwp);
+		curwp->w_flag |= WFMOVE;
+	    } else {
+		DOT.o += BytesAt(DOT.l, DOT.o);
+	    }
+	}
     }
-    return (TRUE);
+    return (rc);
 }
 
 /*
@@ -209,7 +339,7 @@ forwchar_to_eol(int f, int n)
 		rc = (n != nwas);	/* return ok if we moved at all */
 		break;
 	    } else {
-		DOT.o++;
+		DOT.o += BytesAt(DOT.l, DOT.o);
 	    }
 	} while (--n != 0);
     }
@@ -791,7 +921,7 @@ gotoeosent(int f, int n)
     /* if we're on the end of a sentence now, don't bother scanning
        further, or we'll miss the immediately following sentence */
     if (!(lregexec(exp, DOT.l, DOT.o, llength(DOT.l)) &&
-	  exp->startp[0] - DOT.l->l_text == DOT.o)) {
+	  exp->startp[0] - lvalue(DOT.l) == DOT.o)) {
 	if (findpat(f, n, exp, FORWARD) != TRUE) {
 	    DOT = curbp->b_line;
 	} else if (empty || !is_at_end_of_line(DOT)) {
@@ -819,7 +949,6 @@ gotoeosent(int f, int n)
 int
 getgoal(LINE *dlp)
 {
-    int c;
     int col;
     int newcol;
     int dbo;
@@ -827,8 +956,7 @@ getgoal(LINE *dlp)
     col = 0;
     dbo = w_left_margin(curwp);
     while (dbo < llength(dlp)) {
-	c = lgetc(dlp, dbo);
-	newcol = next_column(c, col);
+	newcol = next_column(dlp, dbo, col);
 	if (newcol > curgoal)
 	    break;
 	col = newcol;
@@ -851,16 +979,75 @@ next_tabcol(int col)
     return (((col / t) + 1) * t);
 }
 
-/* return the next column index, given the current char and column */
+#define NonPrintingCols(c) (((c) & HIGHBIT) ? 4 : 2)
+
+/*
+ * Return the next column index, given the current char and column.
+ */
 int
-next_column(int c, int col)
+next_column(LINE *lp, int off, int col)
 {
-    if (c == '\t')
-	return next_tabcol(col);
-    else if (!isPrint(c))
-	return col + ((c & HIGHBIT) ? 4 : 2);
-    else
-	return col + 1;
+    int rc;
+    int c = lgetc(lp, off);
+
+    if (c == '\t') {
+	rc = next_tabcol(col) - col;
+    } else if (!isPrint(c)) {
+	rc = NonPrintingCols(c);
+#if OPT_MULTIBYTE
+	if (b_is_utfXX(curbp)) {
+	    if (bytes_at(lp, off) > 1)
+		rc = 6;		/* "\uXXXX" */
+	}
+#endif
+    } else {
+	rc = 1;
+    }
+    return col + rc;
+}
+
+/*
+ * Given a char to add, and the current column, return the next column index,
+ */
+int
+column_after(int c, int col, int list)
+{
+    int rc;
+
+    if (!list && (c == '\t')) {
+	rc = next_tabcol(col);
+    } else if (!isPrint(c)) {
+	rc = col + NonPrintingCols(c);
+    } else {
+	rc = col + 1;
+    }
+    return rc;
+}
+
+/*
+ * Given a pointer to a LINE's text where we have a "nonprinting" character,
+ * and the limit on remaining chars to display, return the number of columns
+ * which are needed to display it, e.g., in hex or octal.  As a side-effect,
+ * set the *used parameter to the number of chars needed for a multibyte
+ * character if we have one.
+ */
+int
+column_sizes(WINDOW *wp, const char *text, unsigned limit, int *used)
+{
+    int rc = NonPrintingCols(*text);
+
+    *used = 1;
+#if OPT_MULTIBYTE
+    if (b_is_utfXX(wp->w_bufp)) {
+	*used = vl_conv_to_utf32((UINT *) 0, text, limit);
+	if (*used > 1) {
+	    rc = 6;		/* "\uXXXX" */
+	} else if (*used < 1) {
+	    *used = 1;		/* probably a broken character... */
+	}
+    }
+#endif
+    return rc;
 }
 
 /*
@@ -1131,12 +1318,10 @@ show_mark(int count, BUFFER *bp, MARK mark, int name)
 	bprintf("\n%c     %8d %8d",
 		name,
 		line_no(bp, mark.l),
-		mk_to_vcol(mark, FALSE, bp, 0, 0) + 1);
+		mk_to_vcol(curwp, mark, FALSE, 0, 0) + 1);
 	if (llength(mark.l) > 0) {
 	    bpadc(' ', stop - DOT.o);
-	    bprintf("%.*s",
-		    llength(mark.l),
-		    mark.l->l_text);
+	    bputsn(lvalue(mark.l), llength(mark.l));
 	}
 	return 1;
     }
@@ -1520,8 +1705,9 @@ setwmark(int row, int col)
 	 * are in insert mode
 	 */
 	if (DOT.o >= llength(dlp) && DOT.o > w_left_margin(curwp) &&
-	    !insertmode)
-	    DOT.o--;
+	    !insertmode) {
+	    DOT.o -= BytesBefore(DOT.l, DOT.o);
+	}
 #endif
     }
     if (is_header_line(DOT, curwp->w_bufp)) {

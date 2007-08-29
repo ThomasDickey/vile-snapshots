@@ -6,7 +6,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.328 2006/12/15 22:47:32 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.329 2007/08/17 22:19:38 tom Exp $
  */
 
 #ifndef VILE_EDEF_H
@@ -132,6 +132,7 @@ decl_uninit( BUFFER *bheadp );		/* Head of list of buffers      */
 
 decl_uninit( WINDOW *wminip );		/* window for command-line      */
 decl_uninit( BUFFER *bminip );		/* buffer for command-line      */
+decl_uninit( BUFFER *btempp );		/* buffer for ffgetline()       */
 
 decl_uninit( TBUFF *tb_save_shell[2] );	/* last ":!" or ^X-!  command	*/
 

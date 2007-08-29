@@ -55,7 +55,7 @@
  *	not (yet) correspond to :-commands.  Before implementing, probably will
  *	have to make TESTC a settable mode.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/history.c,v 1.85 2006/11/06 00:42:29 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/history.c,v 1.86 2007/08/29 00:46:27 tom Exp $
  *
  */
 
@@ -67,7 +67,7 @@
 #define HST_QUOTES 1
 
 #define	tb_args(p)	tb_values(p), (int)tb_length(p)
-#define	lp_args(p)	p->l_text, llength(p)
+#define	lp_args(p)	lvalue(p), llength(p)
 
 typedef struct {
     TBUFF **buffer;
@@ -158,9 +158,9 @@ sameLine(LINE *lp, char *src, int srclen)
 	int dstlen = llength(lp);
 
 	if (dstlen >= srclen) {
-	    if (!memcmp(lp->l_text, src, (size_t) srclen)) {
+	    if (!memcmp(lvalue(lp), src, (size_t) srclen)) {
 		if (isRepeatable(*src)
-		    && isRepeatable(lp->l_text[0])
+		    && isRepeatable(lvalue(lp)[0])
 		    && dstlen != srclen)
 		    return -1;
 		return (dstlen - srclen);
@@ -218,7 +218,7 @@ static int
 parseArg(HST * parm, LINE *lp)
 {
     return endOfParm(parm,
-		     lp->l_text,
+		     lvalue(lp),
 		     willGlue() + (int) tb_length(MyText),
 		     llength(lp));
 }
@@ -495,7 +495,7 @@ hst_find(HST * parm, BUFFER *bp, LINE *lp, int direction)
 	    if (len > 0
 		&& (len > 1 || !isPunct(tb_values(MyText)[0]))
 		&& llength(lp) > len
-		&& lp->l_text[len] != MyGlue)
+		&& lvalue(lp)[len] != MyGlue)
 		continue;
 	}
 
@@ -503,8 +503,8 @@ hst_find(HST * parm, BUFFER *bp, LINE *lp, int direction)
 	 * in the command-name scrolling.
 	 */
 	if (tb_length(MyText) == 0) {
-	    if (lp->l_text[0] == '/'
-		|| lp->l_text[0] == '?')
+	    if (lvalue(lp)[0] == '/'
+		|| lvalue(lp)[0] == '?')
 		continue;
 	}
 
@@ -517,7 +517,7 @@ hst_find(HST * parm, BUFFER *bp, LINE *lp, int direction)
 	    if (n0 != 0
 		&& n1 != 0
 		&& n0 == n1
-		&& sameLine(lp, lp0->l_text, n0) >= 0)
+		&& sameLine(lp, lvalue(lp0), n0) >= 0)
 		continue;
 	}
 

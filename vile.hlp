@@ -1468,8 +1468,18 @@ Editor modes
 		matched as well.  See "showmatch" mode for another use of the
 		"fence-pairs" mode.  (B)
 
-	file-encoding  Is a placeholder for future work, currently gives some
-		context for the byteorder-mark.  (B)
+	file-encoding  This is the character encoding of the buffer contents,
+		which is not necessarily the same as the display's character
+		encoding.  It must be one of the following values:
+			"8bit"
+			"ascii"
+			"auto"
+			"utf-16"
+			"utf-32"
+			"utf-8"
+		The default "auto" tells vile to determine the encoding by
+		inspecting the buffer contents.  The "8bit" setting corresponds
+		to the 8-bit locale support used since 9.3i (20021223).  (B)
 
 	fillcol (fc)  Sets the value for the fill column, which is the
 		column at which autowrapping and region formatting will
@@ -1686,6 +1696,12 @@ Editor modes
 	percent-crlf Percentage of total lines which must end with CR/LF for
 		vile to automatically convert buffer's recordseparator to
 		crlf.  (B)
+
+	percent-utf8 Percentage of total characters which contain embedded
+		nulls, making them look like UTF-16 or UTF-32 encodings.
+		If file-encoding is set to "auto", and the match is
+		higher than this threshold, vile will load the buffer data
+		as UTF-8.
 
 	pin-tagstack If set, the editor does not change windows when
 		executing tag locate/pop commands.  Put another way, all
@@ -2964,6 +2980,7 @@ Programmed procedures (aka macros)
 	&greater	2	numeric greater than
 	&gt		2	numeric greater than
 	&gtkey		0	get 1 character
+	&gtmotion	1	get keycode motion sequence for the binding
 	&gtsequence	0	get keycode sequence, e.g., #1
 	&indirect	1	evaluate indirect value
 	&isa		2	check if the second param is a member of first
@@ -6340,4 +6357,4 @@ Problems
 
 Copyright 1995-2005,2006 by Paul Fox, Thomas Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.628 2007/06/03 14:37:07 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.631 2007/08/20 16:35:06 tom Exp $

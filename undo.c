@@ -3,7 +3,7 @@
  *
  * written for vile.  Copyright (c) 1990, 1995-2001 by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/undo.c,v 1.92 2007/05/26 11:31:21 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/undo.c,v 1.94 2007/08/29 00:51:03 tom Exp $
  *
  */
 
@@ -167,7 +167,7 @@ undolog(char *s, LINE *lp)
 static int
 OkUndo(void)
 {
-    if (curbp == bminip)
+    if (is_delinked_bp(curbp))
 	return FALSE;
     if (!b_val(curbp, MDUNDOABLE))
 	return FALSE;
@@ -647,8 +647,8 @@ copyline(LINE *lp)
     set_lforw(nlp, lforw(lp));
     set_lback(nlp, lback(lp));
     /* copy the rest */
-    if (lp->l_text && nlp->l_text)
-	(void) memcpy(nlp->l_text, lp->l_text, (size_t) lp->l_used);
+    if (lvalue(lp) && lvalue(nlp))
+	(void) memcpy(lvalue(nlp), lvalue(lp), (size_t) lp->l_used);
     return nlp;
 }
 
@@ -839,12 +839,12 @@ lineundo(int f GCC_UNUSED, int n GCC_UNUSED)
 
     copy_for_undo(lp);
 
-    if (ntext && lp->l_text) {
-	(void) memcpy(ntext, ulp->l_text, (size_t) llength(ulp));
+    if (ntext && lvalue(lp)) {
+	(void) memcpy(ntext, lvalue(ulp), (size_t) llength(ulp));
 	ltextfree(lp, curbp);
     }
 
-    lp->l_text = ntext;
+    lvalue(lp) = ntext;
     lp->l_used = ulp->l_used;
     lp->l_size = ulp->l_size;
 
@@ -944,7 +944,7 @@ linesmatch(LINE *lp1, LINE *lp2)
 	return FALSE;
     if (llength(lp1) == 0)
 	return TRUE;
-    return !memcmp(lp1->l_text, lp2->l_text, (size_t) llength(lp1));
+    return !memcmp(lvalue(lp1), lvalue(lp2), (size_t) llength(lp1));
 }
 
 int

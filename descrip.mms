@@ -5,7 +5,7 @@
 # estruct.h to make sure the correct one is #defined as "1", and the others
 # all as "0".
 #
-# $Header: /users/source/archives/vile.vcs/RCS/descrip.mms,v 1.48 2006/01/12 21:23:53 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/descrip.mms,v 1.49 2007/08/10 21:17:45 tom Exp $
 
 # Editor Configuration Note
 # -------------------------
@@ -55,6 +55,7 @@ SRC =	main.c \
 	$(SCREEN).c \
 	basic.c \
 	bind.c \
+	blist.c \
 	btree.c \
 	buffer.c \
 	csrch.c \
@@ -109,6 +110,7 @@ OBJ =	$(MENUS)main.obj,\
 	$(SCREEN).obj,\
 	basic.obj,\
 	bind.obj,\
+	blist.obj,\
 	btree.obj,\
 	buffer.obj,\
 	csrch.obj,\

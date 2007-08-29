@@ -3,7 +3,7 @@
  * and backward directions.
  *  heavily modified by Paul Fox, 1990
  *
- * $Header: /users/source/archives/vile.vcs/RCS/search.c,v 1.143 2006/11/23 19:35:49 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/search.c,v 1.144 2007/08/29 00:49:27 tom Exp $
  *
  * original written Aug. 1986 by John M. Gamble, but I (pgf) have since
  * replaced his regex stuff with Henry Spencer's regexp package.
@@ -369,7 +369,7 @@ revsearch(int f, int n)
 static int
 testit(LINE *lp, regexp * exp, int *end, int srchlim)
 {
-    char *txt = lp->l_text;
+    char *txt = lvalue(lp);
     C_NUM col = (C_NUM) (exp->startp[0] - txt) + 1;
 
     if (col > llength(lp))
@@ -467,7 +467,7 @@ scanner(
 	    found = lregexec(exp, curpos.l, startoff, srchlim);
 	}
 	if (found) {
-	    char *txt = curpos.l->l_text;
+	    char *txt = lvalue(curpos.l);
 	    char *got = exp->startp[0];
 	    C_NUM next;
 	    C_NUM last = curpos.o;
@@ -793,7 +793,7 @@ static void
 savematch(MARK curpos, size_t matchlen)
 {
     tb_init(&tb_matched_pat, EOS);
-    tb_bappend(&tb_matched_pat, &(curpos.l->l_text[curpos.o]), matchlen);
+    tb_bappend(&tb_matched_pat, &(lvalue(curpos.l)[curpos.o]), matchlen);
     tb_append(&tb_matched_pat, EOS);
 }
 

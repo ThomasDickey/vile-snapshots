@@ -4,7 +4,7 @@
  *	Copyright (c) 1990, 1995-1999 by Paul Fox, except for delins(), which is
  *	Copyright (c) 1986 by University of Toronto, as noted below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/oneliner.c,v 1.109 2006/04/20 00:06:27 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/oneliner.c,v 1.110 2007/08/29 00:48:42 tom Exp $
  */
 
 #include	"estruct.h"
@@ -62,7 +62,7 @@ pregion(UINT flag)
     }
 
     do {
-	if (!addline(bp, linep->l_text, llength(linep)))
+	if (!addline(bp, lvalue(linep), llength(linep)))
 	    break;		/* out of memory */
 	if (flag & (PNUMS | PGREP)) {
 	    BUFFER *savebp = curbp;

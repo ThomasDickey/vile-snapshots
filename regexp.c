@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/regexp.c,v 1.136 2006/12/13 00:25:51 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/regexp.c,v 1.137 2007/08/29 00:49:04 tom Exp $
  *
  * Copyright 2005,2006 Thomas E. Dickey and Paul G. Fox
  *
@@ -2350,8 +2350,8 @@ lregexec(
 	return 0;
 
     REGTRACE((T_CALLED "lregexec %d..%d\n", startoff, endoff));
-    if (lp->l_text) {
-	s = regexec(prog, lp->l_text, &(lp->l_text[llength(lp)]),
+    if (lvalue(lp)) {
+	s = regexec(prog, lvalue(lp), &(lvalue(lp)[llength(lp)]),
 		    startoff, endoff);
     } else {
 	/* the prog might be ^$, or something legal on a null string */

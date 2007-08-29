@@ -4,7 +4,7 @@
  *	original by Daniel Lawrence, but
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.310 2007/05/28 14:02:36 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.312 2007/08/29 00:42:46 tom Exp $
  *
  */
 
@@ -1396,7 +1396,7 @@ decode_parameter_info(TBUFF *tok, PARAM_INFO * result)
     if ((s = strchr(name, ':')) != 0)
 	*s++ = EOS;
 
-    code = choice_to_code(fsm_paramtypes_choices, name, strlen(name));
+    code = choice_to_code(&fsm_paramtypes_blist, name, strlen(name));
     /* split-up to work around gcc bug */
     result->pi_type = (PARAM_TYPES) code;
     if (result->pi_type >= 0) {
@@ -1796,7 +1796,7 @@ dname_to_dirnum(char **cmdpp, size_t length)
 	    if (!isAlnum(ptr[n]))
 		length = n;
 	}
-	code = choice_to_code(fsm_directive_choices, ptr, length);
+	code = choice_to_code(&fsm_directive_blist, ptr, length);
 	/* split-up to work around gcc bug */
 	dirnum = (DIRECTIVE) code;
 	if (dirnum < 0)
@@ -1808,7 +1808,7 @@ dname_to_dirnum(char **cmdpp, size_t length)
     return dirnum;
 }
 
-#define directive_name(code) choice_to_name(fsm_directive_choices, code)
+#define directive_name(code) choice_to_name(&fsm_directive_blist, code)
 
 static int
 unbalanced_directive(DIRECTIVE dirnum)
@@ -2078,7 +2078,7 @@ setup_dobuf(BUFFER *bp, WHLOOP ** result)
 	bp->b_dot.l = lp;
 
 	/* find the first printable character */
-	cmdp = lp->l_text;
+	cmdp = lvalue(lp);
 	i = llength(lp);
 	while (i > 0 && isBlank(*cmdp)) {
 	    cmdp++;
@@ -2326,7 +2326,7 @@ perform_dobuf(BUFFER *bp, WHLOOP * whlist)
 	    FreeIfNeeded(linebuf);
 
 #if !SMALLER
-	    compute_indent(lp->l_text, linlen, &indent, &indstate);
+	    compute_indent(lvalue(lp), linlen, &indent, &indstate);
 #endif
 	    if ((linebuf = cmdp = castalloc(char, indent + linlen + 1)) == 0) {
 		status = no_memory("during macro execution");
@@ -2344,7 +2344,7 @@ perform_dobuf(BUFFER *bp, WHLOOP * whlist)
 		cmdp = add_indent(cmdp, indent);
 	    }
 #endif
-	    (void) memcpy(cmdp, lp->l_text, linlen);
+	    (void) memcpy(cmdp, lvalue(lp), linlen);
 	    cmdp[linlen] = EOS;	/* make sure it ends */
 
 	    src = skip_space_tab(cmdp);

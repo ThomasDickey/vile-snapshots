@@ -5,7 +5,7 @@
  * Written by T.E.Dickey for vile (march 1993).
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/filec.c,v 1.125 2006/11/23 17:21:19 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/filec.c,v 1.126 2007/08/29 00:44:55 tom Exp $
  *
  */
 
@@ -130,7 +130,7 @@ pathcmp(const LINE *lp, const char *text)
     if (llength(lp) <= 0)	/* (This happens on the first insertion) */
 	return -1;
 
-    l = lp->l_text;
+    l = lvalue(lp);
     t = text;
     for_ever {
 	lc = *l++;
@@ -179,8 +179,8 @@ makeString(BUFFER *bp, LINE *lp, char *text, size_t len)
 	 */
 	text = add_backslashes(text);
 #endif
-	(void) strcpy(np->l_text, text);
-	np->l_text[len + extra - 1] = 0;	/* clear scan indicator */
+	(void) strcpy(lvalue(np), text);
+	lvalue(np)[len + extra - 1] = 0;	/* clear scan indicator */
 	llength(np) -= extra;	/* hide the null and scan indicator */
 
 	set_lforw(lback(lp), np);
@@ -247,7 +247,7 @@ bs_find(char *fname, size_t len, BUFFER *bp, LINE **lpp)
 
 	if (r == 0) {
 	    if (trailing_slash(fname)
-		&& !trailing_slash(lp->l_text)) {
+		&& !trailing_slash(lvalue(lp))) {
 		/* reinsert so it is sorted properly! */
 		lremove(bp, lp);
 		return bs_find(fname, len, bp, lpp);
@@ -319,12 +319,12 @@ already_scanned(BUFFER *bp, char *path)
 
     for_each_line(lp, bp) {
 #if OPT_CASELESS
-	if (stricmp(fname, lp->l_text) == 0)
+	if (stricmp(fname, lvalue(lp)) == 0)
 #else
-	if (strcmp(fname, lp->l_text) == 0)
+	if (strcmp(fname, lvalue(lp)) == 0)
 #endif
 	{
-	    if (lp->l_text[llength(lp) + 1])
+	    if (lvalue(lp)[llength(lp) + 1])
 		return TRUE;
 	    else
 		break;		/* name should not occur more than once */
@@ -340,7 +340,7 @@ already_scanned(BUFFER *bp, char *path)
      * returning)
      */
     lp = slp;
-    lp->l_text[llength(lp) + 1] = 1;
+    lvalue(lp)[llength(lp) + 1] = 1;
     return FALSE;
 }
 
@@ -481,7 +481,7 @@ static int
 qs_pathcmp(const void *lpp1, const void *lpp2)
 {
     const LINE *lp1 = *(const LINE *const *) lpp1;
-    int r = pathcmp(lp1, (*(const LINE *const *) lpp2)->l_text);
+    int r = pathcmp(lp1, lvalue(*(const LINE *const *) lpp2));
 
     if (r == 0) {
 	if (llength(lp1) > 0 && is_slashc(lgetc(lp1, llength(lp1) - 1)))
@@ -501,7 +501,7 @@ remove_duplicates(BUFFER *bp)
 
     while (plp != buf_head(bp)) {
 	if ((lp = lforw(plp)) != buf_head(bp)) {
-	    if (pathcmp(plp, lp->l_text) == 0) {
+	    if (pathcmp(plp, lvalue(lp)) == 0) {
 		lremove(bp, lp);
 		lfree(lp, bp);
 		continue;
@@ -723,7 +723,7 @@ fillMyBuff(BUFFER *bp, char *name)
 	 * sufficient indication that we've copied the environment.
 	 */
 	for_each_line(lp, bp) {
-	    if (is_environ(lp->l_text))
+	    if (is_environ(lvalue(lp)))
 		return 0;
 	}
 
@@ -801,10 +801,10 @@ fillMyBuff(BUFFER *bp, char *name)
 		for_each_line(lp, bp) {
 		    size_t have = llength(lp);
 		    if (have == need
-			&& !memcmp(lp->l_text, temp, need))
+			&& !memcmp(lvalue(lp), temp, need))
 			count = -1;
 		    else if (have >= want
-			     && !memcmp(lp->l_text, path, want)) {
+			     && !memcmp(lvalue(lp), path, want)) {
 			count = 1;
 			break;
 		    }
@@ -853,9 +853,9 @@ makeMyList(BUFFER *bp, char *name)
 	    /* exclude listings of subdirectories below
 	       current directory */
 	    if (llength(lp) >= len
-		&& ((slashocc = strchr(lp->l_text + len, SLASHC)) == NULL
+		&& ((slashocc = strchr(lvalue(lp) + len, SLASHC)) == NULL
 		    || slashocc[1] == EOS))
-		bp->b_index_list[n++] = lp->l_text;
+		bp->b_index_list[n++] = lvalue(lp);
 	}
 	bp->b_index_list[n] = 0;
     } else {

@@ -3,7 +3,7 @@
  * paragraph at a time.  There are all sorts of word mode commands.  If I
  * do any sentence mode commands, they are likely to be put in this file.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/word.c,v 1.81 2006/11/02 01:50:12 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/word.c,v 1.82 2007/08/29 00:52:04 tom Exp $
  *
  */
 
@@ -59,8 +59,9 @@ wrapword(int f, int n)
 		break;
 	    }
 	}
-	if (to_delete == 0)
+	if (to_delete == 0) {
 	    DOT.o++;
+	}
     } else {
 	/* Back up until we aren't in a word, make sure there is a
 	 * break in the line
@@ -375,7 +376,7 @@ comment_prefix(void)
     regexp *expP = b_val_rexp(curbp, VAL_CMT_PREFIX)->reg;
     int result = -1;
     if (lregexec(expP, DOT.l, 0, llength(DOT.l))) {
-	result = (int) (expP->endp[0] - DOT.l->l_text);
+	result = (int) (expP->endp[0] - lvalue(DOT.l));
     }
     return result;
 }
@@ -469,7 +470,7 @@ do_formatting(TBUFF **wp, TBUFF **cp)
 	if ((plength = comment_prefix()) >= 0) {
 	    is_comment = TRUE;
 	    tb_bappend(cp,
-		       DOT.l->l_text + DOT.o,
+		       lvalue(DOT.l) + DOT.o,
 		       (size_t) (plength - DOT.o));
 	} else if (cplus_comment_start(c)) {
 	    is_comment = TRUE;
@@ -507,7 +508,7 @@ do_formatting(TBUFF **wp, TBUFF **cp)
 		    if (s != (int) tb_length(*cp)
 			|| (s > 0
 			    && memcmp(tb_values(*cp),
-				      DOT.l->l_text + DOT.o,
+				      lvalue(DOT.l) + DOT.o,
 				      s))) {
 			finished = SORTOFTRUE;
 		    }
@@ -517,7 +518,7 @@ do_formatting(TBUFF **wp, TBUFF **cp)
 			tb_init(cp, EOS);
 			if (plength > 0) {
 			    tb_bappend(cp,
-				       DOT.l->l_text + DOT.o,
+				       lvalue(DOT.l) + DOT.o,
 				       (size_t) (plength));
 			}
 			if (DOT.l != pastline

@@ -1,7 +1,7 @@
 #
 # makefile for vile on WIN32 using Microsoft Visual C++
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.wnt,v 1.93 2007/04/20 22:58:33 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.wnt,v 1.94 2007/08/10 21:17:08 tom Exp $
 #
 #
 !include <ntwin32.mak>
@@ -204,7 +204,7 @@ CFLAGS	= $(CFLAGS) -DOPT_LEX_FILTER
 HDRS = estruct.h edef.h proto.h dirstuff.h
 
 SRC = 	main.c $(SCREEN).c \
-	basic.c bind.c btree.c buffer.c charsets.c \
+	basic.c bind.c blist.c btree.c buffer.c charsets.c \
 	csrch.c display.c eval.c exec.c externs.c \
 	fences.c file.c filec.c \
 	fileio.c finderr.c glob.c globals.c history.c \
@@ -218,7 +218,7 @@ SRC = 	main.c $(SCREEN).c \
 	$(OLESRCS)
 
 OBJ = 	main.obj $(SCREEN).obj \
-	basic.obj bind.obj btree.obj buffer.obj charsets.obj \
+	basic.obj bind.obj blist.obj btree.obj buffer.obj charsets.obj \
 	csrch.obj display.obj eval.obj exec.obj externs.obj \
 	fences.obj file.obj filec.obj \
 	fileio.obj finderr.obj glob.obj globals.obj history.obj \
@@ -389,6 +389,7 @@ all :: $(SCRIPTS) vile.hlp
 
 api.obj :	api.h
 bind.obj :	btree.h
+blist.obj :	blist.h
 btree.obj :	btree.h
 display.obj :	pscreen.h
 filec.obj :	dirstuff.h

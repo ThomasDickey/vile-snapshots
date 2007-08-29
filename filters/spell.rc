@@ -1,4 +1,4 @@
-; $Id: spell.rc,v 1.7 2007/05/27 16:39:10 tom Exp $
+; $Id: spell.rc,v 1.8 2007/08/08 23:26:21 tom Exp $
 
 store-procedure SpellFilter "Highlight misspelled words in the current buffer"
 	; The spell filter uses an external program to lookup misspelled words.
@@ -22,7 +22,7 @@ store-procedure SpellFilter "Highlight misspelled words in the current buffer"
 		; don't let anyone else write there, e.g., buffer-hooks
 		set nofiltermsgs
 		~if &isa buffer '[Filter Messages]'
-			~quiet rename-other-buffer '[Filter Messages]' '[Spelling Errors]'
+			~quiet other-buffer-rename '[Filter Messages]' '[Spelling Errors]'
 			~quiet error-buffer '[Spelling Errors]'
 		~endif
 	~else

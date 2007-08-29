@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.591 2007/06/02 15:19:40 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.612 2007/08/29 00:21:23 tom Exp $
  *
  */
 
@@ -99,12 +99,14 @@ extern void api_free_private(void *);
 #endif
 
 /* basic.c */
-extern int can_set_nmmark(int c);
+extern int can_set_nmmark (int c);
+extern int column_after (int c, int col, int list);
+extern int column_sizes (WINDOW *wp, const char *text, unsigned limit, int *used);
 extern int firstchar (LINE *lp);
 extern int getgoal (LINE *dlp);
 extern int gonmmark (int c);
 extern int lastchar (LINE *lp);
-extern int next_column (int c, int col);
+extern int next_column (LINE *lp, int off, int col);
 extern int next_sw (int col);
 extern int next_tabcol (int col);
 extern int nextchar (LINE *lp, int off);
@@ -118,18 +120,47 @@ extern	int setcursor (int row, int col);
 extern	int setwmark (int row, int col);
 #endif
 
+#define bytes_to_bol(lp,off) (off)
+#define bytes_to_eol(lp,off) (llength(lp) - off)
+
+#if OPT_MULTIBYTE
+
+extern int bytes_at(LINE *lp, int off);
+extern int bytes_before(LINE *lp, int off);
+extern int chars_to_eol(LINE *lp, int off);
+extern int chars_to_bol(LINE *lp, int off);
+extern int count_bytes(LINE *lp, int off, int chars);
+extern int count_chars(LINE *lp, int off, int bytes);
+
+#define BytesAt(lp,off)     (b_is_utfXX(curbp) ? bytes_at(lp,off) : 1)
+#define BytesBefore(lp,off) (b_is_utfXX(curbp) ? bytes_before(lp,off) : (off)!=0)
+
+#else
+
+#define chars_to_eol(lp,off) bytes_to_bol(lp,off)
+#define chars_to_bol(lp,off) bytes_to_eol(lp,off)
+#define count_bytes(lp, off, chars) (chars)
+#define count_chars(lp, off, bytes) (bytes)
+
+#define BytesAt(lp,off) 1
+#define BytesBefore(lp,off) ((off)!=0)
+
+#endif
+
 #if SMALLER	/* cancel 'neproto.h' */
 extern int gotobob (int f, int n);
 extern int gotoeob (int f, int n);
 #endif
 
 /* bind.c */
+extern BINDINGS * vl_get_binding (const char *name);
 extern char *cfg_locate (char *fname, UINT hflag);
 extern char *kbd_engl (const char *prompt, char *buffer);
 extern char *kcod2prc (int c, char *seq);
 extern char *kcod2pstr (int c, char *seq, int limit);
 extern const CMDFUNC *engl2fnc (const char *fname);
-extern const CMDFUNC *kcod2fnc (BINDINGS *bs, int c);
+extern const CMDFUNC *kcod2fnc (const BINDINGS *bs, int c);
+extern const char * fnc2engl(const CMDFUNC * cfp);
 extern int eol_command (EOL_ARGS);
 extern int fnc2kcod (const CMDFUNC *);
 extern int fnc2kins (const CMDFUNC *);
@@ -200,6 +231,7 @@ extern int buffer_in_use (BUFFER *bp);
 extern int buffer_is_solo (BUFFER *bp);
 extern int buffer_is_visible (BUFFER *bp);
 extern int delink_bp (BUFFER *bp);
+extern int is_delinked_bp (BUFFER *bp);
 extern int kill_that_buffer (BUFFER *bp);
 extern int popupbuff (BUFFER *bp);
 extern int renamebuffer(BUFFER *rbp, char *bufname);
@@ -237,10 +269,20 @@ extern void update_scratch (const char *name, UpBuffFunc func);
 
 /* charsets.c */
 #if OPT_MULTIBYTE
-extern int decode_bom (BUFFER *bp);
+extern int vl_conv_to_utf8 (UCHAR * target, UINT source, B_COUNT limit);
+extern int vl_conv_to_utf32 (UINT * target, const char *source, B_COUNT limit);
+extern int aligned_charset (BUFFER *bp, UCHAR *buffer, B_COUNT *length);
+extern int cleanup_charset (BUFFER *bp, UCHAR *buffer, B_COUNT *length);
+extern int decode_bom (BUFFER *bp, UCHAR *buffer, B_COUNT *length);
+extern int decode_charset (BUFFER *bp, LINE *lp);
+extern int deduce_charset (BUFFER *bp, UCHAR *buffer, B_COUNT *length);
+extern int encode_charset(BUFFER *bp, const char *buf, int nbuf, const char *ending);
 extern int write_bom (BUFFER *bp);
 #else
-#define decode_bom(bp) /* nothing */
+#define decode_bom(bp, buffer, length) /* nothing */
+#define decode_charset(bp, lp) /* nothing */
+#define deduce_charset(bp, buffer, length) /* nothing */
+#define encode_charset(bp, buf, nbuf, ending) /* nothing */
 #define write_bom(bp) /* nothing */
 #endif
 /* csrch.c */
@@ -250,10 +292,11 @@ extern LINE *b2printf (BUFFER *bp, const char *fmt, ...) VILE_PRINTF(2,3);
 extern LINE *b2vprintf (BUFFER *bp, const char *fmt, va_list ap);
 extern char *lsprintf (char *buf, const char *fmt, ...) VILE_PRINTF(2,3);
 extern int bputc (int c);
+extern int bputsn (const char *src, unsigned len);
 extern int col_limit (WINDOW *wp);
 extern int format_int (char *buf, UINT number, UINT radix);
 extern int im_waiting (int flag);
-extern int mk_to_vcol (MARK mark, int expanded, BUFFER *bp, int col, int adjust);
+extern int mk_to_vcol (WINDOW *wp, MARK mark, int expanded, int col, int adjust);
 extern int mlsavec (int c);
 extern int nu_width (WINDOW *wp);
 extern int offs2col (WINDOW *wp, LINE *lp, C_NUM offset);
@@ -359,11 +402,11 @@ extern char * render_boolean (TBUFF **rp, int i);
 extern char * render_int (TBUFF **rp, int i);
 extern char * render_long (TBUFF **rp, long i);
 extern char * skip_space_tab(char *src);
-extern const char * tokval (char *tokn);
 extern const char * skip_cblanks (const char *str);
 extern const char * skip_cnumber (const char *str);
 extern const char * skip_cstring (const char *str);
 extern const char * skip_ctext (const char *str);
+extern const char * tokval (char *tokn);
 extern int absol (int x);
 extern int is_falsem (const char *val);
 extern int is_truem (const char *val);
@@ -373,6 +416,7 @@ extern int macroize (TBUFF **p, TBUFF *src, int skip);
 extern int must_quote_token (const char * values, size_t last);
 extern int scan_bool (const char *s );
 extern int toktyp (const char *tokn);
+extern int vl_lookup_statevar(const char *vname);
 extern void append_quoted_token (TBUFF ** dst, const char * values, size_t last);
 
 #ifdef const
@@ -705,7 +749,7 @@ extern int ldelete (B_COUNT n, int kflag);
 extern int lreplc(LINE *lp, C_NUM off, int c);
 extern int linsert (int n, int c);
 extern int lnewline (void);
-extern int lstrinsert (const char *s, int len);
+extern int lstrinsert (TBUFF *tp, int len);
 extern int reg2index (int c);
 extern void end_kill (void);
 extern void kdone (void);
@@ -762,12 +806,12 @@ void purge_msgs (void);
 REGEXVAL * get_buf_fname_expr (BUFFER *bp);
 extern REGEXVAL * free_regexval (REGEXVAL *rp);
 extern REGEXVAL * new_regexval (const char *pattern, int magic);
-extern const FSM_CHOICES * name_to_choices (const char *name);
-extern const char * choice_to_name (const FSM_CHOICES *choices, int code);
+extern FSM_BLIST * name_to_choices (const char *name);
+extern const char * choice_to_name (FSM_BLIST *data, int code);
 extern const char * string_mode_val (VALARGS *args);
 extern int adjvalueset (const char *cp, int defining, int setting, int global, VALARGS *args);
-extern int choice_to_code (const FSM_CHOICES *choices, const char *name, size_t len);
-extern int combine_choices (const FSM_CHOICES *choices, const char *string);
+extern int choice_to_code (FSM_BLIST *data, const char *name, size_t len);
+extern int combine_choices (FSM_BLIST *data, const char *string);
 extern int find_mode (BUFFER *bp, const char *mode, int global, VALARGS *args);
 extern int find_mode_class (BUFFER *bp, const char *mode, int global, VALARGS * args, MODECLASS mode_class);
 extern int find_submode (BUFFER *bp, const char *mode, int global, VALARGS * args);
@@ -776,6 +820,7 @@ extern int lookup_valnames (const char *rp, const struct VALNAMES *table);
 extern int mode_eol (EOL_ARGS);
 extern int set_mode_value (BUFFER *bp, const char *cp, int defining, int setting, int global, VALARGS *args, const char *rp);
 extern int string_to_number (const char *from, int *np);
+extern int vl_find_mode (const char *name);
 extern void copy_mvals (int maximum, struct VAL *dst, struct VAL *src);
 extern void free_local_vals (const struct VALNAMES *names, struct VAL *gbl, struct VAL *val);
 extern void free_val (const struct VALNAMES *names, struct VAL *values);
@@ -933,14 +978,14 @@ extern int need_a_count (int f, int n, int need);
 extern int need_at_least (int f, int n, int need);
 extern int restore_dot (MARK saved_dot);
 extern int set_directory (const char *dir);
-extern long vl_atol (char *str, int base, int *failed);
+extern long vl_atol (const char *str, int base, int *failed);
 extern void autocolor (void);
 extern void ch_fname (BUFFER *bp, const char *fname);
 extern void set_directory_from_file (BUFFER *bp);
 extern void set_rdonly (BUFFER *bp, const char *name, int mode);
 
 #ifdef HAVE_STRTOUL
-extern ULONG vl_atoul (char *str, int base, int *failed);
+extern ULONG vl_atoul (const char *str, int base, int *failed);
 #else
 #define vl_atoul(str, base, failed) (ULONG)vl_atol(str, base, failed)
 #endif
@@ -1563,11 +1608,7 @@ extern	int	printf	(const char *fmt, ...);
 extern	int	puts	(const char *s);
 #endif
 #ifdef MISSING_EXTERN_QSORT
-#if ANSI_QSORT
 extern void qsort (void *base, size_t nmemb, size_t size, int (*compar)(const void *a, const void *b);
-#else
-extern void qsort (void *base, size_t nmemb, size_t size, int (*compar)(char **a, char **b);
-#endif
 #endif
 #ifdef MISSING_EXTERN_READ
 extern	int	read	(int fd, char *buffer, size_t size);

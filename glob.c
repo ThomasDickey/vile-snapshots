@@ -13,7 +13,7 @@
  *
  *	modify (ifdef-style) 'expand_leaf()' to allow ellipsis.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/glob.c,v 1.89 2006/06/12 23:51:51 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/glob.c,v 1.90 2007/08/08 22:50:30 tom Exp $
  *
  */
 
@@ -584,13 +584,8 @@ expand_leaf(char *path,		/* built-up pathname, top-level */
 }
 #endif /* SYS_OS2 */
 
-#if ! ANSI_QSORT
-static int
-compar(char **a, char **b)
-#else
 static int
 compar(const void *a, const void *b)
-#endif
 {
 #if OPT_CASELESS
     return stricmp(*(const char *const *) a, *(const char *const *) b);

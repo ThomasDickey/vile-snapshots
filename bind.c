@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.304 2007/05/11 00:30:02 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.310 2007/08/27 21:02:13 tom Exp $
  *
  */
 
@@ -11,6 +11,7 @@
 #include	"edef.h"
 #include	"nefunc.h"
 #include	"nefsms.h"
+#include	"nename.h"
 
 #define BI_DATA NBST_DATA
 #include	"btree.h"
@@ -99,11 +100,46 @@ BINDINGS sel_bindings =
 #endif
 };
 
+static struct {
+    const char *name;
+    BINDINGS *binding;
+} bindings_by_name[] = {
+
+    {
+	"command", &cmd_bindings
+    },
+    {
+	"default", &dft_bindings
+    },
+    {
+	"insert", &ins_bindings
+    },
+    {
+	"select", &sel_bindings
+    },
+};
+
 #if OPT_REBIND
 static BINDINGS *bindings_to_describe = &dft_bindings;
 #endif
 
 static void kbd_puts(const char *s);
+
+/*----------------------------------------------------------------------------*/
+
+BINDINGS *
+vl_get_binding(const char *name)
+{
+    BINDINGS *result = 0;
+    unsigned n;
+    for (n = 0; n < TABLESIZE(bindings_by_name); ++n) {
+	if (!strncmp(bindings_by_name[n].name, name, strlen(name))) {
+	    result = bindings_by_name[n].binding;
+	    break;
+	}
+    }
+    return result;
+}
 
 /*----------------------------------------------------------------------------*/
 
@@ -240,7 +276,7 @@ vl_help(int f GCC_UNUSED, int n GCC_UNUSED)
  * translate a 10-bit key-binding to the table-pointer
  */
 static KBIND *
-kcode2kbind(BINDINGS * bs, int code)
+kcode2kbind(const BINDINGS * bs, int code)
 {
     KBIND *kbp;
 
@@ -1109,7 +1145,7 @@ show_onlinehelp(const CMDFUNC * cmd)
 	    (void) lsprintf(outseq, "  ( $%d = %s )", i + 1,
 			    (cmd->c_args[i].pi_text != 0)
 			    ? cmd->c_args[i].pi_text
-			    : choice_to_name(fsm_paramtypes_choices,
+			    : choice_to_name(&fsm_paramtypes_blist,
 					     cmd->c_args[i].pi_type));
 	    if (!addline(curbp, outseq, -1))
 		return FALSE;
@@ -1839,7 +1875,7 @@ cmdfunc2keycode(BINDINGS * bs, const CMDFUNC * f)
 /* kcod2fnc:  translate a 10-bit keycode to a function pointer */
 /*	(look a key binding up in the binding table)		*/
 const CMDFUNC *
-kcod2fnc(BINDINGS * bs, int c)
+kcod2fnc(const BINDINGS * bs, int c)
 {
     if (isSpecial(c)) {
 	KBIND *kp = kcode2kbind(bs, c);
@@ -1901,9 +1937,9 @@ match_cmdfunc(BI_NODE * node, const void *d)
 }
 #endif
 
-/* fnc2engl: translate a function pointer to the english name for
-		that function.  prefer long names to short ones.
-*/
+/*
+ * Fill-in an NTAB with the data for the command.
+ */
 static int
 fnc2ntab(NTAB * result, const CMDFUNC * cfp)
 {
@@ -1961,7 +1997,10 @@ fnc2ntab(NTAB * result, const CMDFUNC * cfp)
     return found;
 }
 
-static char *
+/* fnc2engl: translate a function pointer to the english name for
+		that function.  prefer long names to short ones.
+*/
+const char *
 fnc2engl(const CMDFUNC * cfp)
 {
     NTAB temp;
@@ -2283,7 +2322,7 @@ kbd_erase(void)
     savemk = MK;
     MK = DOT;
     if (DOT.o > 0) {
-	DOT.o -= 1;
+	backchar_to_bol(TRUE, 1);
 	ldelete(1, FALSE);
     }
 #ifdef VILE_DEBUG
@@ -2826,15 +2865,19 @@ kbd_complete(DONE_ARGS, const char *table, size_t size_entry)
 #endif
     buf[*pos = cpos] = EOS;
     if ((flags & (KBD_MAYBEC | KBD_MAYBEC2)) != 0) {
-	return (cpos != 0);
+	status = (cpos != 0);
     } else {
 	if (clexec) {
-	    mlwarn("[No match for '%s']", buf);		/* no match */
+#if OPT_MODELINE
+	    if (in_modeline < 2)
+#endif
+		mlwarn("[No match for '%s']", buf);
 	} else {
 	    kbd_alarm();
 	}
-	return FALSE;
+	status = FALSE;
     }
+    return status;
 }
 
 /*
@@ -3170,25 +3213,24 @@ kbd_complete_bst(
 char *
 give_accelerator(char *bname)
 {
-    size_t i, n;
+    size_t i;
+    int n;
     const CMDFUNC *cmd;
     static char outseq[NLINE];
 
-    for (n = 0; nametbl[n].n_name != 0; n++) {
-	if (!strcmp(nametbl[n].n_name, bname)) {
-	    cmd = nametbl[n].n_cmd;
+    if ((n = blist_match(&blist_nametbl, bname)) >= 0) {
+	cmd = nametbl[n].n_cmd;
 
-	    outseq[0] = '\0';
-	    convert_cmdfunc(&dft_bindings, cmd, outseq);
+	outseq[0] = '\0';
+	convert_cmdfunc(&dft_bindings, cmd, outseq);
 
-	    /* Replace \t by ' ' */
-	    for (i = 0; i < strlen(outseq); i++) {
-		if (outseq[i] == '\t')
-		    outseq[i] = ' ';
-	    }
-
-	    return outseq;
+	/* Replace \t by ' ' */
+	for (i = 0; i < strlen(outseq); i++) {
+	    if (outseq[i] == '\t')
+		outseq[i] = ' ';
 	}
+
+	return outseq;
     }
 
     return NULL;

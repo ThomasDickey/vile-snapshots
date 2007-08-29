@@ -5,7 +5,7 @@
  * keys. Like everyone else, they set hints
  * for the display system.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.316 2007/05/27 16:45:05 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.323 2007/08/29 00:41:50 tom Exp $
  *
  */
 
@@ -337,12 +337,15 @@ FreeBuffer(BUFFER *bp)
     }
 #endif
     lfree(buf_head(bp), bp);	/* Release header line. */
-    if (delink_bp(bp) || bp == bminip) {
+    if (delink_bp(bp) || is_delinked_bp(bp)) {
 	if (curbp == bp)
 	    curbp = NULL;
 
 #if OPT_HILITEMATCH
 	clobber_save_curbp(bp);
+#endif
+#if OPT_MULTIBYTE
+	FreeIfNeeded(bp->decode_utf_buf);
 #endif
 #if OPT_PERL || OPT_TCL || OPT_PLUGIN
 	api_free_private(bp->b_api_private);
@@ -662,7 +665,7 @@ imply_alt(char *fname, int copy, int lockfl)
 
 		if (copy) {
 		    for_each_line(lp, savebp) {
-			if (addline(bp, lp->l_text, lp->l_used) != TRUE) {
+			if (addline(bp, lvalue(lp), lp->l_used) != TRUE) {
 			    mlforce("[Copy-buffer failed]");
 			    zotbuf(bp);
 			    bp = 0;
@@ -711,7 +714,6 @@ imply_alt(char *fname, int copy, int lockfl)
 	DisableHook(&bufhook);
 	if (bp != 0) {
 	    make_current(bp);
-	    decode_bom(bp);
 	    infer_majormode(bp);
 	}
 	make_current(savebp);
@@ -1119,6 +1121,7 @@ mls_regfree(int n)
 static int
 found_modeline(LINE *lp, int *first, int *last)
 {
+    int rc = 0;
     unsigned n;
 
     for (n = 0; n < TABLESIZE(mls_patterns); ++n) {
@@ -1127,22 +1130,31 @@ found_modeline(LINE *lp, int *first, int *last)
 	    int j = mls_patterns[n].mark;
 	    *first = prog->startp[j] - prog->startp[0];
 	    *last = prog->endp[j] - prog->startp[0];
-	    return 1;
+
+	    /*
+	     * Real vi may have modes that we do not want to set.
+	     */
+	    if (prog->endp[1] - prog->startp[1] == 2
+		&& !strncmp(prog->startp[1], "vi", 2))
+		rc = 2;
+	    else
+		rc = 1;
 	}
     }
-    return 0;
+    return rc;
 }
 
 static void
-do_one_modeline(LINE *lp, int first, int last)
+do_one_modeline(LINE *lp, int vi, int first, int last)
 {
     TBUFF *data = 0;
     if (lisreal(lp) && first >= 0 && last > first && last <= llength(lp)) {
 	tb_sappend(&data, "setl ");
-	tb_bappend(&data, lp->l_text + first, last - first);
+	tb_bappend(&data, lvalue(lp) + first, last - first);
 	tb_append(&data, EOS);
 
-	in_modeline = TRUE;
+	in_modeline = vi;
+	tprintf("modeline %s:%s\n", vi > 1 ? "vi" : PROGRAM_NAME, tb_values(data));
 	docmd(tb_values(data), TRUE, FALSE, 1);
 	in_modeline = FALSE;
 
@@ -1159,7 +1171,7 @@ do_modelines(BUFFER *bp)
 	int once = b_val(bp, VAL_MODELINES);
 	int limit = 2 * once;
 	int count;
-	int first, last;
+	int rc, first = 0, last = 0;
 
 	bsizes(bp);
 
@@ -1170,8 +1182,8 @@ do_modelines(BUFFER *bp)
 	for (lp = lforw(buf_head(bp)); count < once; lp = lforw(lp)) {
 	    --limit;
 	    ++count;
-	    if (found_modeline(lp, &first, &last)) {
-		do_one_modeline(lp, first, last);
+	    if ((rc = found_modeline(lp, &first, &last)) != 0) {
+		do_one_modeline(lp, rc, first, last);
 	    }
 	}
 
@@ -1181,8 +1193,8 @@ do_modelines(BUFFER *bp)
 	}
 	for (lp = lback(buf_head(bp)); count < once; lp = lback(lp)) {
 	    ++count;
-	    if (found_modeline(lp, &first, &last)) {
-		do_one_modeline(lp, first, last);
+	    if ((rc = found_modeline(lp, &first, &last)) != 0) {
+		do_one_modeline(lp, rc, first, last);
 	    }
 	}
 	returnVoid();
@@ -1738,6 +1750,16 @@ delink_bp(BUFFER *bp)
     return TRUE;
 }
 
+/*
+ * Check for buffers that are always delinked from the buffer list (to make
+ * them invisible).
+ */
+int
+is_delinked_bp(BUFFER *bp)
+{
+    return (bp == bminip || bp == btempp);
+}
+
 char *
 strip_brackets(char *dst, const char *src)
 {
@@ -2156,7 +2178,7 @@ makebufflist(int unused GCC_UNUSED, void *dummy GCC_UNUSED)
     if (curlp != 0) {
 	(void) bsizes(curbp);
 	(void) lsprintf(temp, "%7lu", curbp->b_bytecount);
-	(void) memcpy(curlp->l_text + 6, temp, strlen(temp));
+	(void) memcpy(lvalue(curlp) + 6, temp, strlen(temp));
     }
 }
 
@@ -2302,7 +2324,7 @@ add_line_at(BUFFER *bp, LINE *prevp, const char *text, int len)
 
     lp = newlp;
     if (ntext > 0)
-	(void) memcpy(lp->l_text, text, (size_t) ntext);
+	(void) memcpy(lvalue(lp), text, (size_t) ntext);
 
     /* try to maintain byte/line counts? */
     if (b_is_counted(bp)) {
@@ -2365,7 +2387,7 @@ next_buffer_line(const char *bname)
 
     tb_init(&lbuf, EOS);
     tb_bappend(&lbuf,
-	       bp->b_dot.l->l_text + bp->b_dot.o,
+	       lvalue(bp->b_dot.l) + bp->b_dot.o,
 	       (size_t) blen);
     tb_append(&lbuf, EOS);
 
@@ -2728,7 +2750,7 @@ chg_buff(BUFFER *bp, USHORT flag)
 {
     WINDOW *wp;
 
-    if (bp == bminip)
+    if (is_delinked_bp(bp))
 	return;
 
     b_clr_counted(bp);
@@ -2963,23 +2985,32 @@ set_editor_title(void)
 
 /* For memory-leak testing (only!), releases all buffer storage. */
 #if NO_LEAKS
+static BUFFER *
+zap_buffer(BUFFER *bp)
+{
+    TRACE(("zap_buffer(%s) %p\n", bp->b_bname, bp));
+    if (bp != 0) {
+	b_clr_changed(bp);	/* discard any changes */
+	bclear(bp);
+	FreeBuffer(bp);
+    }
+    return 0;
+}
+
 void
 bp_leaks(void)
 {
     BUFFER *bp;
 
-    if (bminip != 0) {
-	b_clr_changed(bminip);	/* discard any changes */
-	bclear(bminip);
-	FreeBuffer(bminip);
-    }
+    TRACE((T_CALLED "bp_leaks()\n"));
+    bminip = zap_buffer(bminip);
+    btempp = zap_buffer(btempp);
     while ((bp = bheadp) != 0) {
-	b_clr_changed(bp);	/* discard any changes */
-	bclear(bheadp);
-	FreeBuffer(bheadp);
+	(void) zap_buffer(bp);
     }
 #if OPT_MODELINE
     mls_regfree(-1);
 #endif
+    returnVoid();
 }
 #endif

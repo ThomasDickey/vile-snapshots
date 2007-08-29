@@ -3,7 +3,7 @@
 #
 # T.DANG (dang@cogit.ign.fr)
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.djg,v 1.35 2006/01/10 23:59:10 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.djg,v 1.36 2007/08/10 21:16:06 tom Exp $
 #
 #
 
@@ -30,7 +30,8 @@ HDRS = estruct.h edef.h proto.h dirstuff.h
 # and in modetbl
 BUILTHDRS = nebind.h neproto.h nefunc.h nemode.h nename.h nevars.h nefkeys.h nefsms.h
 
-SRC = 	main.c $(DISP_SRC) basic.c bind.c btree.c buffer.c \
+SRC = 	main.c $(DISP_SRC) \
+	basic.c bind.c blist.c btree.c buffer.c \
 	csrch.c display.c eval.c exec.c externs.c fences.c file.c filec.c \
 	fileio.c finderr.c glob.c globals.c history.c \
 	input.c insert.c itbuff.c isearch.c \

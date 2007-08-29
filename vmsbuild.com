@@ -1,4 +1,4 @@
-$! $Header: /users/source/archives/vile.vcs/RCS/vmsbuild.com,v 1.46 2006/01/14 01:44:31 tom Exp $
+$! $Header: /users/source/archives/vile.vcs/RCS/vmsbuild.com,v 1.47 2007/08/10 21:17:30 tom Exp $
 $! VMS build-script for vile.  Requires installed C compiler
 $!
 $! Screen Configurations
@@ -52,6 +52,7 @@ $ open/write optf vms_link.opt
 $ write optf "Identification=""Vile 9.5"""
 $ write optf "basic.obj"
 $ write optf "bind.obj"
+$ write optf "blist.obj"
 $ write optf "btree.obj"
 $ write optf "buffer.obj"
 $ write optf "csrch.obj"
@@ -258,6 +259,7 @@ $	call make main
 $	call make 'SCREEN
 $	call make basic
 $	call make bind
+$	call make blist
 $	call make btree
 $	call make buffer
 $	call make csrch

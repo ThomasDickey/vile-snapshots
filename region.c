@@ -3,7 +3,7 @@
  * and mark.  Some functions are commands.  Some functions are just for
  * internal use.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/region.c,v 1.133 2006/04/19 23:55:02 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/region.c,v 1.134 2007/08/14 23:21:33 tom Exp $
  *
  */
 
@@ -266,7 +266,7 @@ kill_line(void *flagp, int l, int r)
 static int
 open_hole_in_line(void *flagp, int l, int r)
 {
-    char *string = (char *) flagp;
+    TBUFF *tp = (TBUFF *) flagp;	/* see stringrect() */
     int len;
     int s;
     int saveo = DOT.o;
@@ -277,7 +277,7 @@ open_hole_in_line(void *flagp, int l, int r)
 	return s;
 
     if (llength(lp) <= l) {	/* nothing to do if no string */
-	if (!string) {
+	if (!tp) {
 	    if (b_val(curbp, MDTABINSERT))
 		s = entabline((void *) TRUE, 0, 0);
 	    DOT.o = saveo;
@@ -289,14 +289,14 @@ open_hole_in_line(void *flagp, int l, int r)
 	}
     }
     DOT.o = l;
-    if (string) {
-	len = (int) strlen(string);
+    if (tp) {
+	len = tb_length0(tp);
 	if (len < r - l)
 	    len = r - l;
     } else {
 	len = r - l;
     }
-    s = lstrinsert(string, len);
+    s = lstrinsert(tp, len);
     if (s != TRUE)
 	return s;
 
@@ -624,7 +624,7 @@ trim_region(void)
 static int
 blankline(void *flagp, int l, int r)
 {
-    char *string = (char *) flagp;
+    TBUFF *tp = (TBUFF *) flagp;	/* see stringrect() */
     int len;
     int s = TRUE;
     int saveo;
@@ -641,7 +641,7 @@ blankline(void *flagp, int l, int r)
     }
 
     if (llength(lp) <= l) {	/* nothing to do if no string */
-	if (!string) {
+	if (!tp) {
 	    if (regionshape == RECTANGLE && b_val(curbp, MDTABINSERT))
 		s = entabline((void *) TRUE, 0, 0);
 	    DOT.o = saveo;
@@ -662,8 +662,8 @@ blankline(void *flagp, int l, int r)
 
 	/* so there's nothing beyond the rect, so insert at
 	   most r-l chars of the string, or nothing */
-	if (string) {
-	    len = (int) strlen(string);
+	if (tp) {
+	    len = tb_length0(tp);
 	    if (len > r - l)
 		len = r - l;
 	} else {
@@ -677,7 +677,7 @@ blankline(void *flagp, int l, int r)
 	len = 0;
     }
 
-    s = lstrinsert(string, len);
+    s = lstrinsert(tp, len);
     if (s != TRUE)
 	return s;
 
@@ -695,9 +695,9 @@ int
 stringrect(void)
 {
     int s;
-    static char buf[NLINE];
+    static TBUFF *buf;
 
-    s = mlreply("Rectangle text: ", buf, sizeof(buf));
+    s = mlreply2("Rectangle text: ", &buf);
     if (s == TRUE) {
 /* i couldn't decide at first whether we should be inserting or
 	overwriting... this chooses. */
@@ -1263,7 +1263,7 @@ encode_region(void)
 		    regionshape = EXACT;
 		    deltoeol(TRUE, 1);
 		    DOT.o = b_left_margin(curbp);
-		    lstrinsert(tb_values(text), (int) tb_length(text));
+		    lstrinsert(text, (int) tb_length(text));
 
 		    forwbline(FALSE, 1);
 		    gotobol(FALSE, 1);

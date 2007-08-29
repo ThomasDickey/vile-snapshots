@@ -1,14 +1,10 @@
 /*
- *
- *	insert.c
- *
  * Do various types of character insertion, including most of insert mode.
  *
  * Most code probably by Dan Lawrence or Dave Conroy for MicroEMACS
  * Extensions for vile by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/insert.c,v 1.148 2006/12/14 00:01:57 tom Exp $
- *
+ * $Header: /users/source/archives/vile.vcs/RCS/insert.c,v 1.155 2007/08/29 00:31:47 tom Exp $
  */
 
 #include	"estruct.h"
@@ -19,12 +15,14 @@
 #define	BackspaceLimit() (b_val(curbp,MDBACKLIMIT) && autoindented <= 0)\
 			? DOT.o\
 			: w_left_margin(curwp)
+#define DeleteChars(chars, flag) \
+	ldelete(count_bytes(DOT.l, DOT.o, chars), flag)
 
 static int backspace(void);
 static int doindent(int ind);
 static int indented_newline(void);
 static int indented_newline_above(void);
-static int ins_anytime(int playback, int cur_count, int max_count, int *splice);
+static int ins_anytime(int playback, int cur_count, int max_count, int *splicep);
 static int insbrace(int n, int c);
 static int inspound(void);
 static int nextindent(int *bracefp);
@@ -55,13 +53,11 @@ past_wrapmargin(int c)
     if ((n = b_val(curbp, VAL_WRAPMARGIN)) > 0
 	&& (n = (term.cols - (nu_width(curwp) + n))) >= 0) {
 	int list = w_val(curwp, WMDLIST);
-	int used = getccol(list);
-	int tabs = tabstop_val(curbp);
 
 	/* compute the effective screen column after adding the
 	 * latest character
 	 */
-	return NEXT_COLUMN(used, c, list, tabs) - n;
+	return column_after(c, getccol(list), list) - n;
     }
     return -1;
 }
@@ -424,7 +420,7 @@ replacechar(int f, int n)
     else {
 	int vi_fix = (!DOT_ARGUMENT || (dotcmdrep <= 1));
 
-	(void) ldelete((B_COUNT) n, FALSE);
+	(void) DeleteChars(n, FALSE);
 	if (c == quotec) {
 	    t = s = quote_next(f, n);
 	} else {
@@ -494,7 +490,7 @@ insertion_exec(const CMDFUNC * cfp)
 static int last_insert_char;
 
 static int
-ins_anytime(int playback, int cur_count, int max_count, int *splice)
+ins_anytime(int playback, int cur_count, int max_count, int *splicep)
 {
 #if OPT_MOUSE || OPT_B_LIMITS
     WINDOW *wp0 = curwp;
@@ -511,7 +507,7 @@ ins_anytime(int playback, int cur_count, int max_count, int *splice)
      * Prevent recursion of insert-chars (it's confusing).
      */
     if (nested++
-	|| (curbp == bminip)) {
+	|| is_delinked_bp(curbp)) {
 	kbd_alarm();
 	nested--;
 	return FALSE;
@@ -545,7 +541,7 @@ ins_anytime(int playback, int cur_count, int max_count, int *splice)
 	 */
 	c = esc_c;
 	if (playback) {
-	    if (*splice && !itb_more(insbuff))
+	    if (*splicep && !itb_more(insbuff))
 		playback = FALSE;
 	    else
 		c = itb_next(insbuff);
@@ -611,11 +607,11 @@ ins_anytime(int playback, int cur_count, int max_count, int *splice)
 		    while (itb_more(dotcmd))
 			(void) mapped_keystroke();
 		}
-		*splice = TRUE;
+		*splicep = TRUE;
 		status = TRUE;
 		break;
 	    } else if (DOT_ARGUMENT) {
-		*splice = TRUE;
+		*splicep = TRUE;
 	    }
 	}
 	/*
@@ -635,7 +631,7 @@ ins_anytime(int playback, int cur_count, int max_count, int *splice)
 		autoindented = -1;
 	    }
 	    if (cur_count + 1 == max_count)
-		*splice = TRUE;
+		*splicep = TRUE;
 	    status = TRUE;
 	    break;
 	} else if ((c & HIGHBIT) && b_val(curbp, MDMETAINSBIND)) {
@@ -876,7 +872,7 @@ inschar(int c, int *backsp_limit_p)
 	&& (char_at(DOT) != '\t'
 	    || DOT.o % tabstop_val(curbp) == tabstop_val(curbp) - 1)) {
 	autoindented = -1;
-	(void) ldelete(1L, FALSE);
+	(void) DeleteChars(1, FALSE);
     }
 
     /* do the appropriate insertion */
@@ -963,7 +959,7 @@ backspace(void)
     int s;
 
     if ((s = backchar(TRUE, 1)) == TRUE && insertmode != INSMODE_OVR)
-	s = ldelete(1L, FALSE);
+	s = DeleteChars(1, FALSE);
     return (s);
 }
 
@@ -1118,10 +1114,11 @@ doindent(int ind)
     int i, j;
 
     /* first clean up existing leading whitespace */
-    if ((i = firstchar(DOT.l)) >= 0)
+    if ((i = firstchar(DOT.l)) >= 0) {
 	j = DOT.o - i;
-    else
+    } else {
 	j = 0;
+    }
     if (j < 0)
 	j = 0;
     DOT.o = w_left_margin(curwp);

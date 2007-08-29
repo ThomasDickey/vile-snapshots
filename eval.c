@@ -2,14 +2,14 @@
  *	eval.c -- function and variable evaluation
  *	original by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.358 2007/02/11 17:37:54 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.367 2007/08/29 00:42:24 tom Exp $
  *
  */
 
-#include	"estruct.h"
-#include	"edef.h"
-#include	"nevars.h"
-#include	"nefsms.h"
+#include	<estruct.h>
+#include	<edef.h>
+#include	<nevars.h>
+#include	<nefsms.h>
 
 #include	<ctype.h>
 
@@ -49,7 +49,6 @@ static char **init_vars_cmpl(void);
 static char *get_statevar_val(int vnum);
 static const char *s2offset(const char *s, const char *n);
 static int SetVarValue(VWRAP * var, const char *name, const char *value);
-static int lookup_statevar(const char *vname);
 static void FindVar(char *var, VWRAP * vd);
 static void free_vars_cmpl(void);
 #endif
@@ -87,7 +86,7 @@ makectypelist(int dum1 GCC_UNUSED, void *ptr GCC_UNUSED)
 	    bprintf("%c", (int) i);
 	bputc('\t');
 	for (j = 0; j != vl_UNUSED; j++) {
-	    if ((s = choice_to_name(fsm_charclass_choices, j)) != 0) {
+	    if ((s = choice_to_name(&fsm_charclass_blist, j)) != 0) {
 		k = (1 << j);
 		if (j != 0)
 		    bputc(' ');
@@ -152,7 +151,7 @@ get_charclass_code(void)
 		       KBD_NOEVAL | KBD_LOWERC,
 		       cclass_complete);
     return (status == TRUE)
-	? choice_to_code(fsm_charclass_choices,
+	? choice_to_code(&fsm_charclass_blist,
 			 tb_values(var),
 			 tb_length(var))
 	: -1;
@@ -296,7 +295,7 @@ show_charclass(TBUFF **result, const char *arg)
 
     for (j = 0; j != vl_UNUSED; j++) {
 	if (((1 << j) & k) != 0
-	    && (s = choice_to_name(fsm_charclass_choices, j)) != 0) {
+	    && (s = choice_to_name(&fsm_charclass_blist, j)) != 0) {
 	    if (tb_length(*result))
 		tb_sappend0(result, "+");
 	    tb_sappend0(result, s);
@@ -372,7 +371,7 @@ get_listvalue(const char *name, int showall)
     if ((s = is_mode_name(name, showall, &args)) == TRUE)
 	return string_mode_val(&args);
     else if (s == SORTOFTRUE) {
-	vnum = lookup_statevar(name);
+	vnum = vl_lookup_statevar(name);
 	if (vnum != ILLEGAL_NUM)
 	    return get_statevar_val(vnum);
     }
@@ -470,24 +469,12 @@ vl_lookup_func(const char *name)
 {
     char downcased[NSTRING];
     int fnum = ILLEGAL_NUM;
-    int n;
-    size_t m;
 
     if (name[0] == '&'
 	&& name[1] != EOS) {
 
 	mklower(vl_strncpy(downcased, name + 1, sizeof(downcased)));
-
-	m = strlen(downcased);
-	for (n = 0; n < NFUNCS; n++) {
-	    if (!strncmp(downcased, vl_ufuncs[n].f_name, m)) {
-		if ((n + 1 >= NFUNCS
-		     || m == strlen(vl_ufuncs[n].f_name)
-		     || strncmp(downcased, vl_ufuncs[n + 1].f_name, m)))
-		    fnum = n;
-		break;
-	    }
-	}
+	fnum = blist_pmatch(&blist_ufuncs, downcased, -1);
     }
     TRACE(("vl_lookup_func(%s) = %d\n", TRACE_NULL(name), fnum));
     return (fnum);
@@ -774,7 +761,7 @@ test_isa_class(const char *classname, const char *value)
 	result = (find_b_name(value) != 0);
     } else if (!strncmp(classname, COLOR_CLASSNAME, len)) {
 #if OPT_COLOR_CHOICES
-	result = (choice_to_code(fsm_color_choices, value, len) != ENUM_ILLEGAL);
+	result = (choice_to_code(&fsm_color_blist, value, len) != ENUM_ILLEGAL);
 #endif
     } else if (!strncmp(classname, MODES_CLASSNAME, len)) {
 	if (find_mode_class(curbp, value, TRUE, &args, UNI_MODE)
@@ -844,6 +831,24 @@ find_modeclass(TBUFF **result, const char *value)
 #endif
     else
 	tb_error(result);
+}
+
+/*
+ * Implements "&gtmotion".
+ */
+static int
+ufunc_get_motion(TBUFF **result, const char *name)
+{
+    int rc = FALSE;
+    int key = kbd_seq();
+    const BINDINGS *bs = vl_get_binding(name);
+    const CMDFUNC *cmd = kcod2fnc(bs, key);
+
+    if (cmd != 0 && (cmd->c_flags & MOTION)) {
+	tb_sappend0(result, fnc2engl(cmd));
+	rc = TRUE;
+    }
+    return rc;
 }
 
 #define MAXARGS 3
@@ -1050,6 +1055,10 @@ run_func(int fnum)
 	tb_append(&result, (char) keystroke_raw8());
 	tb_append(&result, EOS);
 	break;
+    case UFGTMOTION:
+	if (!ufunc_get_motion(&result, arg[0]))
+	    is_error = TRUE;
+	break;
     case UFGTSEQ:
 	(void) kcod2escape_seq(kbd_seq_nomap(), tb_values(result), result->tb_size);
 	tb_setlen(&result, -1);
@@ -1163,12 +1172,12 @@ run_func(int fnum)
 	}
 	break;
     case UFLOOKUP:
-	if ((i = combine_choices(fsm_lookup_choices, arg[0])) > 0)
+	if ((i = combine_choices(&fsm_lookup_blist, arg[0])) > 0)
 	    tb_scopy(&result, SL_TO_BSL(cfg_locate(arg[1], i)));
 	break;
     case UFPATH:
 	if (!is_error) {
-	    switch (choice_to_code(fsm_path_choices, arg[0], strlen(arg[0]))) {
+	    switch (choice_to_code(&fsm_path_blist, arg[0], strlen(arg[0]))) {
 	    case PATH_END:
 		cp = pathleaf(arg[1]);
 		if ((cp = strchr(cp, '.')) != 0)
@@ -1296,19 +1305,10 @@ lookup_tempvar(const char *name)
 }
 
 /* find a state variable */
-static int
-lookup_statevar(const char *name)
+int
+vl_lookup_statevar(const char *name)
 {
-    int vnum;			/* ordinal number of var referenced */
-    if (!*name)
-	return ILLEGAL_NUM;
-
-    /* scan the list, looking for the referenced name */
-    for (vnum = 0; statevars[vnum] != 0; vnum++)
-	if (strcmp(name, statevars[vnum]) == 0)
-	    return vnum;
-
-    return ILLEGAL_NUM;
+    return blist_match(&blist_statevars, name);
 }
 
 /*
@@ -1345,7 +1345,7 @@ get_statevar_val(int vnum)
 static void
 FindModeVar(char *var, VWRAP * vd)
 {
-    vd->v_num = lookup_statevar(var);
+    vd->v_num = vl_lookup_statevar(var);
     if (vd->v_num != ILLEGAL_NUM)
 	vd->v_type = VW_STATEVAR;
 #if !SMALLER
@@ -2208,7 +2208,7 @@ read_argument(TBUFF **paramp, const PARAM_INFO * info)
 		prompt = "Enum";
 		flags = KBD_NOEVAL | KBD_LOWERC;
 		complete = complete_enum;
-		complete_enum_ptr = info->pi_choice;
+		complete_enum_ptr = info->pi_choice->choices;
 		break;
 #endif
 	    case PT_FILE:
@@ -2551,7 +2551,7 @@ statevar_arg_eval(char *argp)
     const char *result;
 
     if ((result = get_argument(++argp)) == error_val) {
-	vnum = lookup_statevar(argp);
+	vnum = vl_lookup_statevar(argp);
 	if (vnum != ILLEGAL_NUM)
 	    result = get_statevar_val(vnum);
 #if !SMALLER
@@ -2670,7 +2670,7 @@ is_truem(const char *val)
     char temp[8];
     (void) mklower(strncpy0(temp, val, sizeof(temp)));
 #if OPT_BOOL_CHOICES
-    return choice_to_code(fsm_bool_choices, temp, strlen(temp)) == TRUE;
+    return choice_to_code(&fsm_bool_blist, temp, strlen(temp)) == TRUE;
 #else
     return !strncmp(temp, "true", strlen(temp));
 #endif
@@ -2686,7 +2686,7 @@ is_falsem(const char *val)
     char temp[8];
     (void) mklower(strncpy0(temp, val, sizeof(temp)));
 #if OPT_BOOL_CHOICES
-    return choice_to_code(fsm_bool_choices, temp, strlen(temp)) == FALSE;
+    return choice_to_code(&fsm_bool_blist, temp, strlen(temp)) == FALSE;
 #else
     return !strncmp(temp, "false", strlen(temp));
 #endif
@@ -2803,11 +2803,11 @@ label2lp(BUFFER *bp, const char *label)
 	    for_each_line(glp, bp) {
 		if (llength(glp) >= need) {
 		    for (col = 0; col < llength(glp); ++col)
-			if (!isSpace(glp->l_text[col]))
+			if (!isSpace(lvalue(glp)[col]))
 			    break;
 		    if (llength(glp) >= need + col
-			&& glp->l_text[col] == '*'
-			&& !memcmp(&glp->l_text[col + 1], label, len)) {
+			&& lvalue(glp)[col] == '*'
+			&& !memcmp(&lvalue(glp)[col + 1], label, len)) {
 			result = glp;
 			break;
 		    }

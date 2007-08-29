@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.613 2007/06/02 15:34:00 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.627 2007/08/27 23:31:40 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -1082,6 +1082,7 @@ extern void endofDisplay(void);
 #define CH_TILDE   '~'
 
 #define isEscaped(s)	((s)[-1] == BACKSLASH)
+#define isTab(c)	((c) == '\t')
 
 /* protect against losing namespaces */
 #undef	FALSE
@@ -1121,10 +1122,17 @@ typedef struct {
 	int    choice_code;
 } FSM_CHOICES;
 
-struct FSM {
+#include <blist.h>
+
+typedef struct {
+	const FSM_CHOICES *choices;
+	BLIST blist;
+} FSM_BLIST;
+
+typedef struct {
 	const char * mode_name;
-	const FSM_CHOICES * choices;
-};
+	FSM_BLIST * lists;
+} FSM_TABLE;
 
 typedef enum {
 	bom_NONE = 0
@@ -1174,13 +1182,28 @@ typedef enum {
 } FOR_BUFFERS;
 
 typedef enum {
+	bak_OFF = 0
+	, bak_BAK
+	, bak_TILDE
+	, bak_TILDE_N0
+	, bak_TILDE_N
+} BAK_CHOICES;
+
+typedef enum {
 	enc_POSIX = 0
 	, enc_LOCALE
+#if OPT_MULTIBYTE
 	, enc_UTF8
 	, enc_UTF16
 	, enc_UTF32
+#define enc_DEFAULT ENUM_UNKNOWN
+#else
+#define enc_DEFAULT enc_POSIX
+#endif
 } ENC_CHOICES;
  
+#define b_is_utfXX(bp)       (b_val(bp, VAL_FILE_ENCODING) >= enc_UTF8)
+
 typedef enum {
 	MMQ_ANY = 0
 	, MMQ_ALL
@@ -1227,7 +1250,7 @@ typedef struct {
 	PARAM_TYPES pi_type;
 	char *pi_text;		/* prompt, if customized */
 #if OPT_ENUM_MODES
-	const FSM_CHOICES *pi_choice; /* if pi_type==PT_ENUM, points to table */
+	FSM_BLIST *pi_choice;	/* if pi_type==PT_ENUM, points to table */
 #endif
 } PARAM_INFO;
 
@@ -1420,14 +1443,6 @@ typedef enum {
 #define TOK_LITSTR      9   /* unquoted string      */
 #define	MAXTOKTYPE	9
 
-
-#define NEXT_COLUMN(col, c, list, tabs) \
-		(((c) == '\t' && !(list)) \
-		 ? ((col) + (tabs) - ((col) % tabs)) \
-		 : (	(isPrint(c)) \
-			? ((col) + 1) \
-			: ((col) + (((c) & HIGHBIT) ? 4 : 2))))
-
 #if OPT_VILE_ALLOC
 #include <vl_alloc.h>
 #endif
@@ -1457,6 +1472,8 @@ typedef enum {
 #else
 #define isBackTab(c)	((c) == KEY_BackTab)
 #endif
+
+#define	NonNull(s)	((s == 0) ? "" : s)
 
 #define ESC		tocntrl('[')
 #define BEL		tocntrl('G')	/* ascii bell character		*/
@@ -2072,6 +2089,13 @@ typedef struct	BUFFER {
 #if OPT_HILITEMATCH
 	USHORT	b_highlight;
 #endif
+#if OPT_MULTIBYTE
+	BOM_CODES implied_BOM;		/* fix decode/encode if BOM missing */
+	UINT	*decode_utf_buf;	/* workspace for decode_charset() */
+	UINT	decode_utf_len;
+	char	*encode_utf_buf;	/* workspace for encode_charset() */
+	UINT	encode_utf_len;
+#endif
 #if OPT_PERL || OPT_TCL || OPT_PLUGIN
 	void *	b_api_private;		/* pointer to private perl, tcl, etc.
 					   data */
@@ -2306,6 +2330,7 @@ typedef struct	WINDOW {
 	int	w_force;		/* If non-zero, forcing row.	*/
 	USHORT	w_flag;			/* Flags.			*/
 	ULONG	w_split_hist;		/* how to recombine deleted windows */
+	int	w_tabstop;		/* vtset's latest tabstop value */
 #ifdef WMDRULER
 	int	w_ruler_line;
 	int	w_ruler_col;
@@ -2823,17 +2848,6 @@ extern void ExitProgram(int code);
 #endif
 
 /*
- * Comparison-function for 'qsort()'
- */
-#ifndef ANSI_QSORT
-#  if __STDC__ || defined(CC_TURBO) || CC_WATCOM
-#    define	ANSI_QSORT 1
-#  else
-#    define	ANSI_QSORT 0
-#  endif
-#endif
-
-/*
  * We will make the default unix globbing code use 'echo' rather than our
  * internal globber if we do not configure the 'glob' string-mode.
  */
@@ -2913,6 +2927,8 @@ extern void ExitProgram(int code);
 #  endif
 #else
 #  if CAN_TRACE && (NO_LEAKS || DOALLOC || OPT_TRACE)
+#    include "trace.h"
+#  elif !defined(show_alloc) && NO_LEAKS
 #    include "trace.h"
 #  endif
 #endif	/* USE_DBMALLOC */

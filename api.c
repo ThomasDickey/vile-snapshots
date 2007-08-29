@@ -14,6 +14,8 @@
  * do a proper job of it), some of the as now unused stuff might come
  * in handy.
  *				- kev 4/7/1998
+ *
+ * $Header: /users/source/archives/vile.vcs/RCS/api.c,v 1.39 2007/08/29 00:40:57 tom Exp $
  */
 
 #include "estruct.h"
@@ -103,7 +105,7 @@ linsert_chars(char *s, int len)
 	    for (i = 1; i < len && s[i] != '\n'; i++) ;
 	    linsert(i, *s);
 	    if (i > 1) {
-		memcpy(DOT.l->l_text + DOT.o - i + 1, s + 1, i - 1);
+		memcpy(lvalue(DOT.l) + DOT.o - i + 1, s + 1, i - 1);
 	    }
 	    len -= i;
 	    s += i;
@@ -142,9 +144,9 @@ lreplace(char *s, int len)
 	ntext = castalloc(char, nlen);
 	if (ntext == 0)
 	    return FALSE;
-	if (lp->l_text)
+	if (lvalue(lp))
 	    ltextfree(lp, curbp);
-	lp->l_text = ntext;
+	lvalue(lp) = ntext;
 	lp->l_size = nlen;
 #if OPT_LINE_ATTRS
 	FreeAndNull(lp->l_attrs);
@@ -154,7 +156,7 @@ lreplace(char *s, int len)
     lp->l_used = len;
 
     /* FIXME: Handle embedded newlines */
-    for (i = len - 1, t = lp->l_text; i >= 0; i--)
+    for (i = len - 1, t = lvalue(lp); i >= 0; i--)
 	t[i] = s[i];
 
     /* We'd normally need a call to chg_buff here, but I don't want
@@ -387,7 +389,7 @@ api_gline(VileBuf * vbp, int lno, char **linep, int *lenp)
 
     if (lno > 0 && lno <= vl_line_count(vbp->bp)) {
 	api_gotoline(vbp, lno);
-	*linep = DOT.l->l_text;
+	*linep = lvalue(DOT.l);
 	*lenp = llength(DOT.l);
 	if (*lenp == 0) {
 	    *linep = "";	/* Make sure we pass back a zero length,
@@ -429,7 +431,7 @@ api_dotgline(VileBuf * vbp, char **linep, B_COUNT * lenp, int *neednewline)
 	return FALSE;
     }
 
-    *linep = DOT.l->l_text + DOT.o;
+    *linep = lvalue(DOT.l) + DOT.o;
 
     if (llength(DOT.l) >= DOT.o) {
 	*lenp = llength(DOT.l) - DOT.o;
@@ -486,9 +488,9 @@ api_sline(VileBuf * vbp, int lno, char *line, int len)
 
     if (lno > 0 && lno <= vl_line_count(vbp->bp)) {
 	api_gotoline(vbp, lno);
-	if (DOT.l->l_text != line
+	if (lvalue(DOT.l) != line
 	    && (llength(DOT.l) != len
-		|| memcmp(line, DOT.l->l_text, len) != 0)) {
+		|| memcmp(line, lvalue(DOT.l), len) != 0)) {
 	    lreplace(line, len);
 	    vbp->changed = 1;
 	}

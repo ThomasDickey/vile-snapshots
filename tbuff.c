@@ -7,7 +7,7 @@
  *	To do:	add 'tb_ins()' and 'tb_del()' to support cursor-level command
  *		editing.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tbuff.c,v 1.66 2006/04/21 10:55:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tbuff.c,v 1.67 2007/08/14 23:11:46 tom Exp $
  *
  */
 
@@ -620,8 +620,8 @@ tb_length(TBUFF *p)
 }
 
 /*
- * returns the length of the data, assuming it is terminated by a trailing null which we
- * do not want to count.
+ * returns the length of the data, assuming it is terminated by a trailing null
+ * which we do not want to count.
  */
 int
 tb_length0(TBUFF *p)

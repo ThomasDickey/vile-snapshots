@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 screen API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.164 2007/06/03 15:40:42 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.165 2007/08/12 22:53:15 tom Exp $
  * Written by T.E.Dickey for vile (october 1997).
  * -- improvements by Clark Morgan (see w32cbrd.c, w32pipe.c).
  */
@@ -650,7 +650,7 @@ SetRGBPalette(int f, int n)
     char *next;
     char prompt[NLINE + 1];
     char tstring[NLINE + 1];	/* string to add */
-    const FSM_CHOICES *fp = name_to_choices("fcolor");
+    FSM_BLIST *fp = name_to_choices("fcolor");
     int code;
     int count = 0;
     int status;			/* status return code */

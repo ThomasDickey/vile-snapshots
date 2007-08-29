@@ -10,7 +10,7 @@
  * editing must be being displayed, which means that "b_nwnd" is non zero,
  * which means that the dot and mark values in the buffer headers are nonsense.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.178 2007/05/26 12:02:08 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.181 2007/08/29 00:48:13 tom Exp $
  *
  */
 
@@ -86,8 +86,8 @@ lalloc(int used, BUFFER *bp)
 	size = roundlenup(used);
     }
     if ((lp = alloc_LINE(bp)) != 0) {
-	lp->l_text = NULL;
-	if (size && (lp->l_text = castalloc(char, size)) == NULL) {
+	lvalue(lp) = NULL;
+	if (size && (lvalue(lp) = castalloc(char, size)) == NULL) {
 	    (void) no_memory("LINE text");
 	    poison(lp, sizeof(*lp));
 	    FreeAndNull(lp);
@@ -130,7 +130,7 @@ lfree(LINE *lp, BUFFER *bp)
 	/* catch references hard */
 	set_lback(lp, (LINE *) 1);
 	set_lforw(lp, (LINE *) 1);
-	lp->l_text = (char *) 1;
+	lvalue(lp) = (char *) 1;
 	lp->l_size = lp->l_used = LINENOTREAL;
 #endif
     }
@@ -144,9 +144,9 @@ ltextfree(LINE *lp, BUFFER *bp)
     UCHAR *ltextp;
 
     beginDisplay();
-    ltextp = (UCHAR *) lp->l_text;
+    ltextp = (UCHAR *) lvalue(lp);
     if (ltextp) {
-	lp->l_text = NULL;
+	lvalue(lp) = NULL;
 	if (bp->b_ltext) {	/* could it be in the big range? */
 	    if (ltextp < bp->b_ltext || ltextp >= bp->b_ltext_end) {
 		poison(ltextp, lp->l_size);
@@ -276,31 +276,36 @@ insspace(int f, int n)
 /*
  * Insert string forward into text.  The string may include embedded nulls.
  *
- * If 's' is null, treat as ""
+ * If 'tp' is null, treat as ""
  * If 'len' is non-zero, insert exactly this amount.  Pad if needed.
  */
 int
-lstrinsert(const char *s, int len)
+lstrinsert(TBUFF *tp, int len)
 {
-    const char *p = s;
-    int n = len;
-    int b = 0;
+    int rc = TRUE;
 
-    while (p && n > 0) {
-	b++;
-	if (!linsert(1, *p++))
-	    return FALSE;
-	n--;
+    if (len > 0) {
+	int n;
+	int limit = tb_length0(tp);
+	int save_offset = DOT.o;
+
+	if (tp != 0) {
+	    const char *string = tb_values(tp);
+	    for (n = 0; n < len; ++n) {
+		if (!linsert(1, (n < limit) ? string[n] : ' ')) {
+		    rc = FALSE;
+		    break;
+		}
+	    }
+	} else {
+	    if (!linsert(len, ' ')) {
+		rc = FALSE;
+	    }
+	}
+	DOT.o = save_offset;
     }
-    if (n > 0 && len > 0) {	/* need to pad? */
-	if (!linsert(n, ' '))
-	    return FALSE;
-	b += n;
-    }
 
-    DOT.o -= b;
-
-    return TRUE;
+    return rc;
 }
 
 /*
@@ -314,9 +319,9 @@ lreplc(LINE *lp, C_NUM off, int c)
     if (off == llength(lp))
 	return FALSE;
 
-    if (lp->l_text[off] != (char) c) {
+    if (lvalue(lp)[off] != (char) c) {
 	copy_for_undo(lp);
-	lp->l_text[off] = (char) c;
+	lvalue(lp)[off] = (char) c;
 
 	chg_buff(curbp, WFEDIT);
     }
@@ -388,7 +393,7 @@ linsert(int n, int c)
 	    set_lforw(lp2, lp1);
 	    set_lback(lp1, lp2);
 	    set_lback(lp2, lp3);
-	    (void) memset(lp2->l_text, c, (size_t) n);
+	    (void) memset(lvalue(lp2), c, (size_t) n);
 
 	    tag_for_undo(lp2);
 
@@ -409,24 +414,24 @@ linsert(int n, int c)
 	    if ((ntext = castalloc(char, nsize)) == NULL) {
 		rc = FALSE;
 	    } else {
-		if (lp1->l_text && doto)	/* possibly NULL if l_size == 0 */
-		    (void) memcpy(&ntext[0], &lp1->l_text[0], (size_t) doto);
+		if (lvalue(lp1) && doto)	/* possibly NULL if l_size == 0 */
+		    (void) memcpy(&ntext[0], &lvalue(lp1)[0], (size_t) doto);
 		(void) memset(&ntext[doto], c, (size_t) n);
-		if (lp1->l_text) {
+		if (lvalue(lp1)) {
 #if OPT_LINE_ATTRS
 		    UCHAR *l_attrs = lp1->l_attrs;
 		    lp1->l_attrs = 0;	/* momentarily detach */
 #endif
 		    if (lp1->l_used != doto)
 			(void) memcpy(&ntext[doto + n],
-				      &lp1->l_text[doto],
+				      &lvalue(lp1)[doto],
 				      (size_t) (lp1->l_used - doto));
 		    ltextfree(lp1, curbp);
 #if OPT_LINE_ATTRS
 		    lp1->l_attrs = l_attrs;	/* reattach */
 #endif
 		}
-		lp1->l_text = ntext;
+		lvalue(lp1) = ntext;
 		lp1->l_size = nsize;
 		lp1->l_used += n;
 	    }
@@ -437,13 +442,13 @@ linsert(int n, int c)
 	    /* don't use memcpy:  overlapping regions.... */
 	    llength(tmp) += n;
 	    if (tmp->l_used - n > doto) {
-		cp2 = &tmp->l_text[tmp->l_used];
+		cp2 = &lvalue(tmp)[tmp->l_used];
 		cp1 = cp2 - n;
-		while (cp1 != &tmp->l_text[doto])
+		while (cp1 != &lvalue(tmp)[doto])
 		    *--cp2 = *--cp1;
 	    }
 	    for (i = 0; i < n; ++i)	/* Add the characters       */
-		tmp->l_text[doto + i] = (char) c;
+		lvalue(tmp)[doto + i] = (char) c;
 	}
 	if (rc != FALSE) {
 	    chg_buff(curbp, WFEDIT);
@@ -532,12 +537,12 @@ lnewline(void)
 
 	copy_for_undo(lp1);
 	tmp = lp1;
-	cp1 = tmp->l_text;	/* Shuffle text around  */
-	cp2 = lp2->l_text;
-	while (cp1 < &tmp->l_text[doto])
+	cp1 = lvalue(tmp);	/* Shuffle text around  */
+	cp2 = lvalue(lp2);
+	while (cp1 < &lvalue(tmp)[doto])
 	    *cp2++ = *cp1++;
-	cp2 = tmp->l_text;
-	while (cp1 < &tmp->l_text[tmp->l_used])
+	cp2 = lvalue(tmp);
+	while (cp1 < &lvalue(tmp)[tmp->l_used])
 	    *cp2++ = *cp1++;
 	tmp->l_used -= doto;
     }
@@ -598,11 +603,12 @@ lnewline(void)
 }
 
 /*
- * This function deletes "n" bytes, starting at dot. It understands how to deal
- * with end of lines, etc. It returns TRUE if all of the characters were
- * deleted, and FALSE if they were not (because dot ran into the end of the
- * buffer. The "kflag" is TRUE if the text should be put in the kill buffer.
+ * This function deletes "n" characters, starting at dot.  It understands how
+ * to deal with end of lines, etc.  It returns TRUE if all of the characters
+ * were deleted, and FALSE if they were not (because dot ran into the end of
+ * the buffer.
  *
+ * parameters:
  * 'nchars' is # of chars to delete
  * 'kflag' is true if we put killed text in kill buffer
  */
@@ -673,7 +679,7 @@ ldelete(B_COUNT nchars, int kflag)
 	copy_for_undo(DOT.l);
 	chg_buff(curbp, WFEDIT);
 
-	cp1 = dotp->l_text + doto;	/* Scrunch text.     */
+	cp1 = lvalue(dotp) + doto;	/* Scrunch text.     */
 	cp2 = cp1 + schunk;
 	if (kflag) {		/* Kill?                */
 	    while (cp1 != cp2) {
@@ -683,9 +689,9 @@ ldelete(B_COUNT nchars, int kflag)
 	    }
 	    if (status != TRUE)
 		break;
-	    cp1 = dotp->l_text + doto;
+	    cp1 = lvalue(dotp) + doto;
 	}
-	while (cp2 != dotp->l_text + dotp->l_used)
+	while (cp2 != lvalue(dotp) + dotp->l_used)
 	    *cp1++ = *cp2++;
 	dotp->l_used -= schunk;
 #if ! WINMARK
@@ -887,14 +893,14 @@ ldelnewline(void)
 	nsize = roundlenup(len + add);
 	if ((ntext = castalloc(char, nsize)) == NULL)
 	      return (FALSE);
-	if (lp1->l_text) {	/* possibly NULL if l_size == 0 */
-	    (void) memcpy(&ntext[0], &lp1->l_text[0], len);
+	if (lvalue(lp1)) {	/* possibly NULL if l_size == 0 */
+	    (void) memcpy(&ntext[0], &lvalue(lp1)[0], len);
 	    ltextfree(lp1, curbp);
 	}
-	lp1->l_text = ntext;
+	lvalue(lp1) = ntext;
 	lp1->l_size = nsize;
     }
-    (void) memcpy(lp1->l_text + len, lp2->l_text, add);
+    (void) memcpy(lvalue(lp1) + len, lvalue(lp2), add);
 #if ! WINMARK
     if (MK.l == lp2) {
 	MK.l = lp1;
@@ -1420,7 +1426,7 @@ force_text_at_col(C_NUM goalcol, C_NUM reached)
     } else if (reached > goalcol) {
 	/* there must be a tab there. */
 	/* pad to hit column we want */
-	DOT.o--;
+	backchar_to_bol(TRUE, 1);
 	status = linsert(goalcol % tabstop_val(curbp), ' ');
     }
     return status;
@@ -1558,7 +1564,7 @@ PutChar(int n, REGIONSHAPE shape)
 			status = linsert((int) (ep - sp), ' ');
 			if (status != TRUE)
 			    break;
-			dp = DOT.l->l_text
+			dp = lvalue(DOT.l)
 			    + DOT.o - (int) (ep - sp);
 			/* Copy killbuf portion to the line */
 			while (sp < ep) {

@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.424 2007/05/28 14:03:37 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.437 2007/08/26 22:31:43 tom Exp $
  *
  */
 
@@ -29,9 +29,9 @@
 #define set_term_attrs(a)  term.rev(a)
 #endif
 
-#define	MRK_EMPTY        '~'
-#define	MRK_EXTEND_LEFT  '<'
-#define	MRK_EXTEND_RIGHT '>'
+#define	MRK_EMPTY        "~"
+#define	MRK_EXTEND_LEFT  "<"
+#define	MRK_EXTEND_RIGHT ">"
 
 VIDEO **vscreen;		/* Virtual screen. */
 VIDEO **pscreen;		/* Physical screen. */
@@ -74,7 +74,8 @@ typedef int (*OutFunc) (int c);
 
 static OutFunc dfoutfn;
 
-static void vtlistc(int c);
+static int vtlistc(WINDOW *wp, const char *src, unsigned limit);
+static void vtputsn(WINDOW *wp, const char *src, size_t n);
 
 /*--------------------------------------------------------------------------*/
 
@@ -381,22 +382,24 @@ int
 video_alloc(VIDEO ** vpp)
 {
     VIDEO *vp;
+    unsigned need = (term.maxcols - 4);
+
     /* struct VIDEO already has 4 of the bytes */
-    vp = typeallocplus(VIDEO, term.maxcols - 4);
-    if (vp == 0)
-	return FALSE;
-    (void) memset((char *) vp, 0, sizeof(VIDEO) + term.maxcols - 4);
+    if ((vp = typeallocplus(VIDEO, need)) != 0) {
+	(void) memset((char *) vp, 0, sizeof(VIDEO) + need);
 
 #if OPT_VIDEO_ATTRS
-    vp->v_attrs = typecallocn(VIDEO_ATTR, (size_t) term.maxcols);
-    if (vp->v_attrs == 0) {
-	free((char *) vp);
-	return FALSE;
-    }
+	vp->v_attrs = typecallocn(VIDEO_ATTR, (size_t) term.maxcols);
+	if (vp->v_attrs == 0) {
+	    FreeAndNull(vp);
+	}
 #endif
-    freeVIDEO(*vpp);
-    *vpp = vp;
-    return TRUE;
+	if (vp != 0) {
+	    freeVIDEO(*vpp);
+	    *vpp = vp;
+	}
+    }
+    return (vp != 0);
 }
 
 static int
@@ -499,21 +502,24 @@ vtmove(int row, int col)
     vtcol = col;
 }
 
-static int vt_tabstop;
-
 /*
  * Write a character to the virtual screen.  The virtual row and column are
  * updated.  Only print characters if they would be "visible".  If the line is
  * too long put a ">" in the last column.  This routine only puts printing
  * characters into the virtual terminal buffers.  Only column overflow is
  * checked.
+ *
+ * Returns the number of bytes eaten from the source.
  */
-static void
-vtputc(int c)
+static int
+vtputc(WINDOW *wp, const char *src, unsigned limit)
 {
     /* since we don't allow wrapping on the message line, we only need
      * to evaluate this once.  */
-    int lastcol = vtrow == term.rows - 1 ? term.cols - 1 : term.cols;
+    int lastcol = ((vtrow == term.rows - 1)
+		   ? (term.cols - 1)
+		   : term.cols);
+    int rc = 1;
     VIDEO *vp;
 
 #ifdef WMDLINEWRAP
@@ -521,82 +527,100 @@ vtputc(int c)
 	static VIDEO *fake_line;
 	static int length;
 	if (length != term.maxcols || fake_line == 0) {
-	    if (!video_alloc(&fake_line))
-		return;
-	    length = term.maxcols;
+	    if (video_alloc(&fake_line)) {
+		length = term.maxcols;
+	    } else {
+		freeVIDEO(fake_line);
+		fake_line = 0;
+	    }
 	}
 	vp = fake_line;
     } else
 #endif
 	vp = vscreen[vtrow];
 
-    if (isPrint(c) && vtcol >= 0 && vtcol < lastcol) {
-	VideoText(vp)[vtcol++] = (char) (c & (N_chars - 1));
+    if (vp != 0) {
+	if (isPrint(*src) && vtcol >= 0 && vtcol < lastcol) {
+	    VideoText(vp)[vtcol++] = (UCHAR) (*src);
 #ifdef WMDLINEWRAP
-	if ((allow_wrap != 0)
-	    && (vtcol == lastcol)
-	    && (vtrow < allow_wrap)) {
-	    vtcol = 0;
-	    if (++vtrow >= 0)
-		vscreen[vtrow]->v_flag |= VFCHG;
-	    horscroll += lastcol;
-	}
+	    if ((allow_wrap != 0)
+		&& (vtcol == lastcol)
+		&& (vtrow < allow_wrap)) {
+		vtcol = 0;
+		if (++vtrow >= 0)
+		    vscreen[vtrow]->v_flag |= VFCHG;
+		horscroll += lastcol;
+	    }
 #endif
-	return;
-    }
-
-    if (vtcol >= lastcol) {
-	VideoText(vp)[lastcol - 1] = MRK_EXTEND_RIGHT;
-    } else if (c == '\t') {
-	do {
-	    vtputc(' ');
-	} while (((vtcol + horscroll) % vt_tabstop) != 0
-		 && vtcol < lastcol);
-    } else if (c == '\n') {
-	return;
-    } else if (isPrint(c)) {
-	++vtcol;
-    } else {
-	vtlistc(c);
-    }
-}
-
-/* how should high-bit unprintable chars be shown? */
-static int vt_octal;
-
-/* shows non-printing character */
-static void
-vtlistc(int c)
-{
-    if (isPrint(c)) {
-	vtputc(c);
-	return;
-    }
-
-    if (c & HIGHBIT) {
-	vtputc(BACKSLASH);
-	if (vt_octal) {
-	    vtputc(((c >> 6) & 3) + '0');
-	    vtputc(((c >> 3) & 7) + '0');
-	    vtputc(((c) & 7) + '0');
-	} else {
-	    vtputc('x');
-	    vtputc(hexdigits[(c >> 4) & 0xf]);
-	    vtputc(hexdigits[(c) & 0xf]);
+	} else if (vtcol >= lastcol) {
+	    VideoText(vp)[lastcol - 1] = MRK_EXTEND_RIGHT[0];
+	} else if (isTab(*src)) {
+	    do {
+		vtputc(wp, " ", 1);
+	    } while (((vtcol + horscroll) % wp->w_tabstop) != 0
+		     && vtcol < lastcol);
+	} else if (*src != '\n') {
+	    if (isPrint(*src)) {
+		++vtcol;
+	    } else {
+		rc = vtlistc(wp, src, limit);
+	    }
 	}
-    } else {
-	vtputc('^');
-	vtputc(toalpha(c));
     }
+    return rc;
+}
+
+/*
+ * Shows non-printing character.  Returns the number of bytes eaten from the
+ * source, which will always be one except when decoding UTF-8.
+ */
+static int
+vtlistc(WINDOW *wp, const char *src, unsigned limit)
+{
+    int rc = 1;
+    char temp[7];
+    unsigned n = 0;
+
+    if (isPrint(*src)) {
+	temp[n++] = *src;
+    } else {
+	UINT value;
+	int need = column_sizes(wp, src, limit, &rc);
+
+	switch (need) {
+	case 6:
+	    vl_conv_to_utf32(&value, src, limit);
+	    sprintf(temp, "\\u%04X", value);
+	    n = need;
+	    break;
+	case 4:
+	    temp[n++] = BACKSLASH;
+	    if (w_val(wp, WMDNONPRINTOCTAL)) {
+		temp[n++] = ((*src >> 6) & 3) + '0';
+		temp[n++] = ((*src >> 3) & 7) + '0';
+		temp[n++] = ((*src) & 7) + '0';
+	    } else {
+		temp[n++] = 'x';
+		temp[n++] = hexdigits[(*src >> 4) & 0xf];
+		temp[n++] = hexdigits[(*src) & 0xf];
+	    }
+	    break;
+	case 2:
+	    temp[n++] = '^';
+	    temp[n++] = toalpha(*src);
+	    break;
+	}
+    }
+    vtputsn(wp, temp, n);
+    return rc;
 }
 
 static void
-vtputsn(const char *s, size_t n)
+vtputsn(WINDOW *wp, const char *src, size_t n)
 {
-    int c;
-    if (s != 0) {
-	while (n-- != 0 && (c = *s++) != EOS)
-	    vtputc(c);
+    if (src != 0) {
+	while (n != 0 && *src != EOS)
+	    vtputc(wp, src++, n--);
     }
 }
 
@@ -613,8 +637,7 @@ vtset(LINE *lp, WINDOW *wp)
     int skip = -vtcol;
     int list = w_val(wp, WMDLIST);
 
-    vt_octal = w_val(wp, WMDNONPRINTOCTAL);
-    vt_tabstop = tabstop_val(wp->w_bufp);
+    wp->w_tabstop = tabstop_val(wp->w_bufp);
 
 #ifdef WMDLINEWRAP
     /*
@@ -631,39 +654,34 @@ vtset(LINE *lp, WINDOW *wp)
     if (w_val(wp, WMDNUMBER)) {
 	int j, k, jk;
 	L_NUM line = line_no(bp, lp);
-	int fill = ' ';
 	char temp[NU_WIDTH + 2];
 
 	vtcol = 0;		/* make sure we always see line numbers */
-	vtputsn(right_num(temp, NU_WIDTH - NU_GUTTER, line),
+	vtputsn(wp, right_num(temp, NU_WIDTH - NU_GUTTER, line),
 		NU_WIDTH - NU_GUTTER);
-	vtputsn("  ", NU_GUTTER);
+	vtputsn(wp, "  ", NU_GUTTER);
 	horscroll = skip - vtcol;
 
 	/* account for leading fill; this repeats logic in vtputc so
 	 * I don't have to introduce a global variable... */
-	from = lp->l_text;
-	for (j = k = jk = 0; (j < n) && (k < skip); j++) {
+	from = lvalue(lp);
+	for (j = k = jk = 0; (j < n) && (k < skip);) {
 	    int c = from[j];
-	    if ((list || (c != '\t')) && !isPrint(c)) {
-		if (c & HIGHBIT) {
-		    k += 4;
-		    fill = BACKSLASH;	/* FIXXXX */
-		} else {
-		    k += 2;
-		    fill = toalpha(c);
-		}
+	    int used = 1;
+	    if ((list || !isTab(c)) && !isPrint(c)) {
+		k += column_sizes(wp, from + j, n - j, &used);
 	    } else {
-		if (c == '\t')
-		    k += (vt_tabstop - (k % vt_tabstop));
-		else if (isPrint(c))
+		if (isTab(c)) {
+		    k += (wp->w_tabstop - (k % wp->w_tabstop));
+		} else if (isPrint(c)) {
 		    k++;
-		fill = ' ';
+		}
 	    }
-	    jk = j + 1;
+	    j += used;
+	    jk = j;
 	}
 	while (k-- > skip)
-	    vtputc(fill);
+	    vtputc(wp, " ", 1);
 	if ((skip = jk) < 0)
 	    skip = 0;
 	n -= skip;
@@ -673,7 +691,7 @@ vtset(LINE *lp, WINDOW *wp)
 #if OPT_B_LIMITS
     horscroll -= w_left_margin(wp);
 #endif
-    from = lp->l_text + skip;
+    from = lvalue(lp) + skip;
 #ifdef WMDLINEWRAP
     allow_wrap = w_val(wp, WMDLINEWRAP) ? mode_row(wp) - 1 : 0;
 #endif
@@ -684,30 +702,31 @@ vtset(LINE *lp, WINDOW *wp)
      * terminate until the end of the line.  For very long lines, that's a
      * performance hit.
      */
-#define VTSET_PUT(ch,count) if(list) vtlistc(ch); else vtputc(ch); count
+#define VTSET_PUT() \
+	int used; \
+	if (list) { \
+	    used = vtlistc(wp, from, n); \
+	} else { \
+	    used = vtputc(wp, from, n); \
+	} \
+	from += used; n -= used
+
+#define VTSET_LOOP(condition) \
+	while ((vtcol < term.cols) && (condition)) { \
+	    VTSET_PUT(); \
+	} \
+	if ((vtcol <= term.cols) && (condition)) { \
+	    VTSET_PUT(); \
+	}
+
 #ifdef WMDLINEWRAP
     if (w_val(wp, WMDLINEWRAP)) {
-	while ((vtcol < term.cols)
-	       && ((vtrow == term.rows - 1) || (vtrow < mode_row(wp)))
-	       && (n > 0)) {
-	    VTSET_PUT(*from++, n--);
-	}
-	if ((vtcol <= term.cols)
-	    && ((vtrow == term.rows - 1) || (vtrow < mode_row(wp)))
-	    && (n > 0)) {
-	    VTSET_PUT(*from++, n--);
-	}
+	VTSET_LOOP(((vtrow == term.rows - 1) || (vtrow < mode_row(wp)))
+		   && (n > 0));
     } else
 #endif
     {
-	while ((vtcol < term.cols)
-	       && (n > 0)) {
-	    VTSET_PUT(*from++, n--);
-	}
-	if ((vtcol <= term.cols)
-	    && (n > 0)) {
-	    VTSET_PUT(*from++, n--);
-	}
+	VTSET_LOOP((n > 0));
     }
 
     /* Display a "^J" if 'list' mode is active, unless we've suppressed
@@ -720,8 +739,9 @@ vtset(LINE *lp, WINDOW *wp)
 	    /*EMPTY */ ;
 	else {
 	    const char *s = get_record_sep(bp);
-	    while (*s != EOS)
-		vtlistc(*s++);
+	    unsigned len = len_record_sep(bp);
+	    while (len != 0)
+		vtlistc(wp, s++, len--);
 	}
     }
 #ifdef WMDLINEWRAP
@@ -782,14 +802,16 @@ static UINT scrflags;
  * reading bytes whose width is added til we read the mark's offset.
  */
 int
-mk_to_vcol(MARK mark, int expanded, BUFFER *bp, int col, int adjust)
+mk_to_vcol(WINDOW *wp, MARK mark, int expanded, int col, int adjust)
 {
+    BUFFER *bp = wp->w_bufp;
     int i = b_left_margin(bp) + adjust;
     int c;
     int lim;
     int t = tabstop_val(bp);
     LINE *lp;
     int extra = ((!global_g_val(GMDALTTABPOS) && !insertmode) ? 1 : 0);
+    const char *text;
 
     TRACE2((T_CALLED "mk_to_vcol(mark.o=%d, col=%d, adjust=%d) extra %d\n",
 	    mark.o, col, adjust, extra));
@@ -803,17 +825,21 @@ mk_to_vcol(MARK mark, int expanded, BUFFER *bp, int col, int adjust)
     if (lim > llength(lp))
 	lim = llength(lp);
 
+    text = lvalue(lp);
     while (i < lim) {
-	c = lgetc(lp, i++);
-	if (c == '\t' && !expanded) {
+	int used = 1;
+
+	c = text[i];
+	if (isTab(c) && !expanded) {
 	    col += t - (col % t);
 	} else {
 	    if (!isPrint(c)) {
-		col += (c & HIGHBIT) ? 3 : 1;
+		col += column_sizes(wp, text + i, lim - i, &used);
+	    } else {
+		++col;
 	    }
-	    ++col;
 	}
-
+	i += used;
     }
     if (extra && (col != 0) && (mark.o < llength(lp)))
 	col--;
@@ -850,7 +876,7 @@ dot_to_vcol(WINDOW *wp)
 	   wt->w_left_dot.o, use_off,
 	   wt->w_left_col));
     TRACE(("%s\n", lp_visible(wp->w_dot.l)));
-    TRACE(("DOT:%s\n", visible_buff(wp->w_dot.l->l_text + wp->w_dot.o,
+    TRACE(("DOT:%s\n", visible_buff(lvalue(wp->w_dot.l) + wp->w_dot.o,
 				    llength(wp->w_dot.l) - wp->w_dot.o,
 				    FALSE)));
 #endif
@@ -955,9 +981,9 @@ dot_to_vcol(WINDOW *wp)
     if (need_col) {
 	wt->w_left_col = 0;
 	if (wt->w_left_dot.o > 0) {
-	    wt->w_left_col = mk_to_vcol(wt->w_left_dot,
+	    wt->w_left_col = mk_to_vcol(wp,
+					wt->w_left_dot,
 					w_val(wp, WMDLIST),
-					bp,
 					0,
 					0);
 	    TRACE(("...cache w_left_col %d\n", wt->w_left_col));
@@ -967,13 +993,13 @@ dot_to_vcol(WINDOW *wp)
 	if (wt->w_left_col == 0)
 	    use_off = -wt->w_left_dot.o;
     }
-    result = mk_to_vcol(wp->w_dot,
+    result = mk_to_vcol(wp,
+			wp->w_dot,
 			w_val(wp, WMDLIST),
-			bp,
 			wt->w_left_col,
 			wt->w_left_dot.o + use_off);
 #if OPT_TRACE
-    check = mk_to_vcol(wp->w_dot, w_val(wp, WMDLIST), bp, 0, 0);
+    check = mk_to_vcol(wp, wp->w_dot, w_val(wp, WMDLIST), 0, 0);
     if (check != result) {
 	TRACE(("MISMATCH result %d check %d\n", result, check));
 	kbd_alarm();
@@ -985,7 +1011,7 @@ dot_to_vcol(WINDOW *wp)
     }
 #endif
 #else
-    result = mk_to_vcol(wp->w_dot, w_val(wp, WMDLIST), bp, 0, 0);
+    result = mk_to_vcol(wp, wp->w_dot, w_val(wp, WMDLIST), 0, 0);
 #endif
     return2Code(result);
 }
@@ -1299,7 +1325,7 @@ kbd_flush(void)
 
 	ok = (wminip != 0
 	      && wminip->w_dot.l != 0
-	      && wminip->w_dot.l->l_text != 0);
+	      && lvalue(wminip->w_dot.l) != 0);
 	if (ok) {
 	    TRACE(("SHOW:%2d:%s\n",
 		   llength(wminip->w_dot.l),
@@ -1366,6 +1392,7 @@ offs2col0(WINDOW *wp,
 	w_val(wp, WVAL_SIDEWAYS);
 	C_NUM n, c;
 	C_NUM start_offset;
+	const char *text = lvalue(lp);
 
 	if (offset > length + 1)
 	    offset = length + 1;
@@ -1378,15 +1405,18 @@ offs2col0(WINDOW *wp,
 	    column = 0;
 	}
 
-	for (n = start_offset; n < offset; n++) {
-	    c = (n == length) ? '\n' : lp->l_text[n];
+	for (n = start_offset; n < offset;) {
+	    int used = 1;
+
+	    c = (n == length) ? '\n' : text[n];
 	    if (isPrint(c) || (c == last)) {
 		column++;
-	    } else if (list || (c != '\t')) {
-		column += (c & HIGHBIT) ? 4 : 2;
-	    } else if (c == '\t') {
+	    } else if (list || !isTab(c)) {
+		column += column_sizes(wp, text + n, offset - n, &used);
+	    } else if (isTab(c)) {
 		column = ((column / tabs) + 1) * tabs;
 	    }
+	    n += used;
 	}
 
 	if (cache_offset && cache_column) {
@@ -1426,24 +1456,26 @@ col2offs(WINDOW *wp, LINE *lp, C_NUM col)
     C_NUM n;
     C_NUM offset;
     C_NUM len = llength(lp);
-    char *text = lp->l_text;
+    char *text = lvalue(lp);
 
     if (lp == win_head(wp)) {
 	offset = 0;
     } else {
 	for (offset = w_left_margin(wp), n = 0;
 	     (offset < len) && (n < goal);
-	     offset++) {
+	    ) {
 	    int c = text[offset];
+	    int used = 1;
 	    if (isPrint(c)) {
 		n++;
-	    } else if (list || (c != '\t')) {
-		n += (c & HIGHBIT) ? 4 : 2;
-	    } else if (c == '\t') {
+	    } else if (list || !isTab(c)) {
+		n += column_sizes(wp, text + offset, len - offset, &used);
+	    } else if (isTab(c)) {
 		n = ((n / tabs) + 1) * tabs;
 	    }
 	    if (n > goal)
 		break;
+	    offset += used;
 	}
     }
     return offset;
@@ -1645,13 +1677,13 @@ update_screen_line(WINDOW *wp, LINE *lp, int sline)
 	vtset(lp, wp);
 	if (left && sline >= 0) {
 	    int zero = nu_width(wp);
-	    vscreen[sline]->v_text[zero] = MRK_EXTEND_LEFT;
+	    vscreen[sline]->v_text[zero] = MRK_EXTEND_LEFT[0];
 	    if (vtcol <= zero)
 		vtcol = zero + 1;
 	}
     } else {
 	vtmove(sline, 0);
-	vtputc(MRK_EMPTY);
+	vtputc(wp, MRK_EMPTY, 1);
     }
     horscroll = 0;
 #if OPT_COLOR
@@ -2025,7 +2057,7 @@ update_extended_line(int col, int excess, int use_excess)
     horscroll = 0;
 
     if (use_excess || col != rcursor) {		/* ... put a marker in column 1 */
-	vscreen[currow]->v_text[zero] = MRK_EXTEND_LEFT;
+	vscreen[currow]->v_text[zero] = MRK_EXTEND_LEFT[0];
     }
     vscreen[currow]->v_flag |= (VFEXT | VFCHG);
     return rcursor;
@@ -2510,7 +2542,7 @@ modeline_modes(BUFFER *bp, char **msptr)
 	}
 	if (show)
 	    PutModename("%c%s",
-			choice_to_name(fsm_recordsep_choices,
+			choice_to_name(&fsm_recordsep_blist,
 				       b_val(bp, VAL_RECORD_SEP)));
 #else
 	PutMode(MDDOS, "dos-style");
@@ -2948,7 +2980,7 @@ update_modeline(WINDOW *wp)
     BUFFER *bp;
     char temp[NFILEN];
     int col;
-    int lchar;
+    char lchar[2];
     int right_len;
     char left_ms[NFILEN * 2];
     char *ms;
@@ -2987,7 +3019,7 @@ update_modeline(WINDOW *wp)
 
 #if OPT_MLFORMAT
     special_formatter(&result, modeline_format, wp);
-    vtputsn(tb_values(result), tb_length(result));
+    vtputsn(wp, tb_values(result), tb_length(result));
 #else /* hard-coded format */
     bp = wp->w_bufp;
     if (bp == 0)
@@ -2995,19 +3027,19 @@ update_modeline(WINDOW *wp)
     if (bp == 0)
 	bp = bminip;
     if (wp == curwp) {		/* current buffer shows as = */
-	lchar = '=';
+	lchar[0] = '=';
     } else {
 #if OPT_REVSTA
 	if (revexist)
-	    lchar = ' ';
+	    lchar[0] = ' ';
 	else
 #endif
-	    lchar = '-';
+	    lchar[0] = '-';
     }
     left_ms[0] = right_ms[0] = EOS;
     ms = left_ms;
     ms = lsprintf(ms, "%c%c%c %s ",
-		  lchar, modeline_show(wp, lchar), lchar, bp->b_bname);
+		  lchar[0], modeline_show(wp, lchar[0]), lchar[0], bp->b_bname);
     if (modeline_modes(bp, &ms))
 	*ms++ = ' ';
     if (bp->b_fname != 0
@@ -3016,13 +3048,13 @@ update_modeline(WINDOW *wp)
 	if (is_internalname(temp)) {
 	    for (n = term.cols - (13 + strlen(temp));
 		 n > 0; n--)
-		*ms++ = lchar;
+		*ms++ = lchar[0];
 	} else {
 	    ms = lsprintf(ms, "is");
 	}
 	ms = lsprintf(ms, " %s ", temp);
     }
-    memset(lchar_pad, lchar, 3);
+    memset(lchar_pad, lchar[0], 3);
 #ifdef WMDRULER
     if (w_val(wp, WMDRULER))
 	(void) lsprintf(right_ms, " (%d,%d) %s",
@@ -3033,9 +3065,9 @@ update_modeline(WINDOW *wp)
 
     *ms++ = EOS;
     right_len = strlen(right_ms);
-    vtputsn(left_ms, term.cols);
+    vtputsn(wp, left_ms, term.cols);
     for (n = term.cols - strlen(left_ms) - right_len; n > 0; n--)
-	vtputc(lchar);
+	vtputc(wp, lchar, 1);
     vtcol = term.cols - right_len;
     if (vtcol < 0) {
 	n = -vtcol;
@@ -3043,7 +3075,7 @@ update_modeline(WINDOW *wp)
     } else
 	n = 0;
     if (term.cols > vtcol)
-	vtputsn(right_ms + n, term.cols - vtcol);
+	vtputsn(wp, right_ms + n, term.cols - vtcol);
     col = -nu_width(wp);
 #ifdef WMDLINEWRAP
     if (!w_val(wp, WMDLINEWRAP))
@@ -3054,9 +3086,9 @@ update_modeline(WINDOW *wp)
 
     if ((n > 80)
 	&& (col >= 0)
-	&& (vscreen[vtrow]->v_text[col] == lchar)) {
+	&& (vscreen[vtrow]->v_text[col] == lchar[0])) {
 	vtcol = col;
-	vtputc('|');
+	vtputc(wp, "|", 1);
     }
 #endif /* OPT_MLFORMAT */
     term.cursorvis(TRUE);
@@ -3905,6 +3937,18 @@ bputc(int c)
     return status;
 }
 
+int
+bputsn(const char *src, unsigned len)
+{
+    int rc = TRUE;
+
+    while (len-- != 0) {
+	if ((rc = bputc(*src++)) != TRUE)
+	    break;
+    }
+    return rc;
+}
+
 void
 bpadc(int c, int count)
 {
@@ -3998,7 +4042,7 @@ tprintf(const char *fmt,...)
 	line = b2vprintf(bp, fmt, ap);
 	va_end(ap);
 
-	TRACE(("tprintf {%.*s}\n", llength(line), line->l_text));
+	TRACE(("tprintf {%.*s}\n", llength(line), lvalue(line)));
 
 	nested = FALSE;
     }
@@ -4223,9 +4267,14 @@ psc_putchar(OUTC_ARGS)
 	if (psc_col > 0)
 	    psc_col--;
     } else {
+	char temp[2];
+
 	SWAP_VT_PSC;
-	vtputc(c);
+
+	temp[0] = c;
+	vtputc(wminip, temp, 1);
 	vscreen[vtrow]->v_flag |= VFCHG;
+
 	SWAP_VT_PSC;
     }
     OUTC_RET c;

@@ -1,7 +1,7 @@
 /*
  * debugging support -- tom dickey.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.57 2007/05/27 19:30:56 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.58 2007/08/29 00:50:27 tom Exp $
  *
  */
 
@@ -278,7 +278,7 @@ lp_visible(LINE *p)
 {
     if (p == 0)
 	return "";
-    return visible_buff(p->l_text, llength(p), FALSE);
+    return visible_buff(lvalue(p), llength(p), FALSE);
 }
 
 #define	SECS(tv)	(tv.tv_sec + (tv.tv_usec / 1.0e6))
