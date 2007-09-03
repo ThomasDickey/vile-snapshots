@@ -15,7 +15,7 @@
  * in handy.
  *				- kev 4/7/1998
  *
- * $Header: /users/source/archives/vile.vcs/RCS/api.c,v 1.39 2007/08/29 00:40:57 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/api.c,v 1.42 2007/08/31 23:18:27 tom Exp $
  */
 
 #include "estruct.h"
@@ -103,7 +103,7 @@ linsert_chars(char *s, int len)
 	     * can't be a newline.
 	     */
 	    for (i = 1; i < len && s[i] != '\n'; i++) ;
-	    linsert(i, *s);
+	    lins_bytes(i, *s);
 	    if (i > 1) {
 		memcpy(lvalue(DOT.l) + DOT.o - i + 1, s + 1, i - 1);
 	    }
@@ -153,7 +153,7 @@ lreplace(char *s, int len)
 #endif
     }
 
-    lp->l_used = len;
+    llength(lp) = len;
 
     /* FIXME: Handle embedded newlines */
     for (i = len - 1, t = lvalue(lp); i >= 0; i--)
@@ -204,7 +204,7 @@ api_setup_fake_win(VileBuf * vbp, int do_delete)
 	if (vbp->ndel != 0 && do_delete) {
 	    int status;
 	    /* Do lazy delete; FALSE means don't put text in kill buffer */
-	    status = ldelete(vbp->ndel, FALSE);
+	    status = ldel_chars(vbp->ndel, FALSE);
 	    vbp->ndel = 0;
 	    if (status == FALSE
 		|| (lforw(DOT.l) == buf_head(curbp) && DOT.o >= llength(DOT.l))) {
@@ -351,7 +351,7 @@ api_dotinsert(VileBuf * vbp, char *text, int len)
     linsert_chars(text, len);
     if (vbp->ndel) {
 	int status;
-	status = ldelete(vbp->ndel, FALSE);
+	status = ldel_chars(vbp->ndel, FALSE);
 	vbp->ndel = 0;
 	if (status == FALSE
 	    || (lforw(DOT.l) == buf_head(curbp) && DOT.o >= llength(DOT.l))) {
@@ -373,7 +373,7 @@ api_dline(VileBuf * vbp, int lno)
     if (lno > 0 && lno <= vl_line_count(vbp->bp)) {
 	api_gotoline(vbp, lno);
 	gotobol(TRUE, TRUE);
-	status = ldelete(llength(DOT.l) + 1, FALSE);
+	status = ldel_bytes(llength(DOT.l) + 1, FALSE);
     } else
 	status = FALSE;
 

@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.612 2007/08/29 00:21:23 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.618 2007/09/02 18:28:48 tom Exp $
  *
  */
 
@@ -269,21 +269,28 @@ extern void update_scratch (const char *name, UpBuffFunc func);
 
 /* charsets.c */
 #if OPT_MULTIBYTE
-extern int vl_conv_to_utf8 (UCHAR * target, UINT source, B_COUNT limit);
-extern int vl_conv_to_utf32 (UINT * target, const char *source, B_COUNT limit);
+
 extern int aligned_charset (BUFFER *bp, UCHAR *buffer, B_COUNT *length);
+extern int check_utf8 (UCHAR * buffer, B_COUNT length);
 extern int cleanup_charset (BUFFER *bp, UCHAR *buffer, B_COUNT *length);
+extern int vl_conv_to_utf32 (UINT * target, const char *source, B_COUNT limit);
+extern int vl_conv_to_utf8 (UCHAR * target, UINT source, B_COUNT limit);
+extern void found_utf8 (BUFFER *bp);
+
 extern int decode_bom (BUFFER *bp, UCHAR *buffer, B_COUNT *length);
 extern int decode_charset (BUFFER *bp, LINE *lp);
-extern int deduce_charset (BUFFER *bp, UCHAR *buffer, B_COUNT *length);
+extern int deduce_charset (BUFFER *bp, UCHAR *buffer, B_COUNT *length, int always);
 extern int encode_charset(BUFFER *bp, const char *buf, int nbuf, const char *ending);
 extern int write_bom (BUFFER *bp);
+
 #else
+
 #define decode_bom(bp, buffer, length) /* nothing */
 #define decode_charset(bp, lp) /* nothing */
-#define deduce_charset(bp, buffer, length) /* nothing */
+#define deduce_charset(bp, buffer, length, always) /* nothing */
 #define encode_charset(bp, buf, nbuf, ending) /* nothing */
 #define write_bom(bp) /* nothing */
+
 #endif
 /* csrch.c */
 
@@ -745,9 +752,9 @@ extern int index2reg (int c);
 extern int index2ukb (int inx);
 extern int kinsert (int c);
 extern int kinsertlater (int c);
-extern int ldelete (B_COUNT n, int kflag);
+extern int ldel_bytes (B_COUNT n, int kflag);
 extern int lreplc(LINE *lp, C_NUM off, int c);
-extern int linsert (int n, int c);
+extern int lins_bytes (int n, int c);
 extern int lnewline (void);
 extern int lstrinsert (TBUFF *tp, int len);
 extern int reg2index (int c);
@@ -762,6 +769,14 @@ extern void ltextfree (LINE *lp, BUFFER *bp);
 #if OPT_EVAL
 extern int lrepl_ctype (CHARTYPE type, const char *iline, int ilen);
 extern int lrepl_regex (REGEXVAL *expr, const char *iline, int ilen);
+#endif
+
+#if OPT_MULTIBYTE
+extern int ldel_chars (B_COUNT n, int kflag);
+extern int lins_chars (int n, int c);
+#else
+#define ldel_chars(n, kflag) ldel_bytes(n, kflag)
+#define lins_chars(n, c)     lins_bytes(n, c)
 #endif
 
 #if SMALLER	/* cancel neproto.h */
@@ -825,6 +840,7 @@ extern void copy_mvals (int maximum, struct VAL *dst, struct VAL *src);
 extern void free_local_vals (const struct VALNAMES *names, struct VAL *gbl, struct VAL *val);
 extern void free_val (const struct VALNAMES *names, struct VAL *values);
 extern void set_buf_fname_expr (BUFFER *bp);
+extern void set_bufflags (int glob_vals, USHORT flags);
 extern void set_record_sep (BUFFER *bp, RECORD_SEP value);
 extern void set_winflags (int glob_vals, USHORT flags);
 
@@ -966,6 +982,7 @@ extern TBUFF * tb_visbuf (const char *buffer, size_t len);
 extern char * current_directory (int force);
 extern char * vl_vischr (char *buffer, int ch);
 extern int catnap (int milli, int watchinput);
+extern int char_at_mark (MARK mark);
 extern int fmatchindent (int c);
 extern int getccol (int bflg);
 extern int getcol (MARK mark, int actual);

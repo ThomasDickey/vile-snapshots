@@ -2,7 +2,7 @@
  * This file contains the command processing functions for a number of random
  * commands. There is no functional grouping here, for sure.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.303 2007/08/26 22:28:58 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.308 2007/09/02 23:04:25 tom Exp $
  *
  */
 
@@ -209,10 +209,7 @@ showcpos(int f GCC_UNUSED, int n GCC_UNUSED)
 	if (lp == DOT.l) {
 	    predlines = numlines;
 	    predchars = numchars + DOT.o;
-	    if (DOT.o == llength(lp))
-		curchar = '\n';
-	    else
-		curchar = char_at(DOT);
+	    curchar = char_at_mark(DOT);
 	}
 	/* on to the next line */
 	++numlines;
@@ -430,6 +427,33 @@ gotopct(int f, int n)
 #endif
 
 /*
+ * Return the character at the given MARK, in the current buffer.
+ */
+int
+char_at_mark(MARK mark)
+{
+    int curchar;
+
+    if (mark.o == llength(mark.l)) {
+	curchar = '\n';
+    } else {
+	curchar = CharOf(char_at(mark));
+#if OPT_MULTIBYTE
+	if (b_is_utfXX(curbp)) {
+	    UINT target;
+	    int used = vl_conv_to_utf32(&target,
+					lvalue(mark.l) + mark.o,
+					llength(mark.l) - mark.o);
+	    if (used > 0) {
+		curchar = target;
+	    }
+	}
+#endif
+    }
+    return curchar;
+}
+
+/*
  * Return the screen column in any line given an offset.
  * Assume the line is in curwp/curbp.
  *
@@ -450,8 +474,15 @@ getcol(MARK mark, int actual)
 	    C_NUM len = mark.o;
 	    if (len > llength(mark.l))
 		len = llength(mark.l);
-	    for (i = w_left_margin(curwp); i < len; ++i) {
+	    for (i = w_left_margin(curwp); i < len; i += BytesAt(mark.l, i)) {
 		col = next_column(mark.l, i, col);	/* assumes curbp */
+	    }
+	    /*
+	     * If we are positioning the cursor on the right-side of a multi-
+	     * column character, update the goal to reflect that.
+	     */
+	    if (!global_g_val(GMDALTTABPOS)) {
+		col = (next_column(mark.l, i, col) - 1);
 	    }
 	}
     }
@@ -620,7 +651,7 @@ forceblank(int f, int n)
 	DOT.o = 0;
 	if (nchar) {
 	    backchar(TRUE, nchar);
-	    s = ldelete((B_COUNT) nchar, FALSE);
+	    s = ldel_chars((B_COUNT) nchar, FALSE);
 	}
     } else {			/* insert (n_arg - nld) lines */
 	n_arg = n_arg - nld;

@@ -6,7 +6,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/vilefilt.l,v 1.39 2007/08/10 23:48:36 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/vilefilt.l,v 1.40 2007/09/02 17:00:18 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of vile macros
  * - T.Dickey
@@ -194,6 +194,8 @@ is_prepro_with(int code)
     if (code == D_WITH
 	|| code == D_ELSEWITH)
 	rc = 1;
+#else
+    (void) code;
 #endif
     return rc;
 }
@@ -205,6 +207,8 @@ is_prepro_endwith(int code)
 #if !SMALLER && defined(HAVE_CONFIG_H)
     if (code == D_ENDWITH)
 	rc = 1;
+#else
+    (void) code;
 #endif
     return rc;
 }

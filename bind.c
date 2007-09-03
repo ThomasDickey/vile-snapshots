@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.310 2007/08/27 21:02:13 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.312 2007/08/31 23:18:27 tom Exp $
  *
  */
 
@@ -2279,9 +2279,9 @@ kbd_putc(int c)
 	status = kbd_erase_to_end(0);
     } else {
 	if ((kbd_expand < 0) && (c == '\t')) {
-	    status = linsert(1, ' ');
+	    status = lins_bytes(1, ' ');
 	} else {
-	    status = linsert(1, c);
+	    status = lins_bytes(1, c);
 	}
 #ifdef VILE_DEBUG
 	TRACE(("mini:%2d:%s\n", llength(DOT.l), lp_visible(DOT.l)));
@@ -2323,7 +2323,7 @@ kbd_erase(void)
     MK = DOT;
     if (DOT.o > 0) {
 	backchar_to_bol(TRUE, 1);
-	ldelete(1, FALSE);
+	ldel_chars(1, FALSE);
     }
 #ifdef VILE_DEBUG
     TRACE(("MINI:%2d:%s\n", llength(DOT.l), lp_visible(DOT.l)));
@@ -2352,7 +2352,7 @@ kbd_erase_to_end(int column)
 	if (llength(DOT.l) > 0) {
 	    DOT.o = column;
 	    if (llength(DOT.l) > DOT.o)
-		ldelete(llength(DOT.l) - DOT.o, FALSE);
+		ldel_bytes(llength(DOT.l) - DOT.o, FALSE);
 	    TRACE(("NULL:%2d:%s\n", llength(DOT.l), lp_visible(DOT.l)));
 	}
 	curbp = savebp;

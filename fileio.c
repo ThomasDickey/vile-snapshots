@@ -2,7 +2,7 @@
  * The routines in this file read and write ASCII files from the disk. All of
  * the knowledge about files are here.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/fileio.c,v 1.187 2007/08/29 00:45:21 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/fileio.c,v 1.189 2007/08/31 22:17:34 tom Exp $
  *
  */
 
@@ -823,7 +823,7 @@ alloc_linebuf(size_t needed)
 }
 
 #define ALLOC_LINEBUF(i) \
-	    if (i >= fflinelen && !alloc_linebuf(i)) \
+	    if ((i) >= fflinelen && !alloc_linebuf(i)) \
 		return (FIOMEM)
 
 /*
@@ -887,7 +887,7 @@ ffgetline(size_t *lenp)
 		    make_global_b_val(btempp, VAL_FILE_ENCODING);
 		    if (decode_bom(btempp, buffer, &length))
 			i = length;
-		    deduce_charset(btempp, buffer, &length);
+		    deduce_charset(btempp, buffer, &length, FALSE);
 		}
 
 		if (b_val(btempp, VAL_FILE_ENCODING) > enc_UTF8) {
@@ -896,11 +896,13 @@ ffgetline(size_t *lenp)
 
 		    if (!aligned_charset(btempp, buffer, &length)) {
 			do {
-			    ALLOC_LINEBUF(i);
+			    ALLOC_LINEBUF(i + 2);
 			    fflinebuf[i++] = (char) c;
 			    c = vl_getc(ffp);	/* expecting a null... */
 			    length = (i + 1);
+			    buffer = (UCHAR *) fflinebuf;
 			} while (!aligned_charset(btempp, buffer, &length));
+			fflinebuf[i] = (char) c;
 		    }
 
 		    cleanup_charset(btempp, buffer, &length);

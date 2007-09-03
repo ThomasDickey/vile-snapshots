@@ -10,7 +10,7 @@
  * editing must be being displayed, which means that "b_nwnd" is non zero,
  * which means that the dot and mark values in the buffer headers are nonsense.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.181 2007/08/29 00:48:13 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.187 2007/09/01 00:06:53 tom Exp $
  *
  */
 
@@ -96,7 +96,7 @@ lalloc(int used, BUFFER *bp)
 #if !SMALLER
 	    lp->l_number = 0;
 #endif
-	    lp->l_used = used;
+	    llength(lp) = used;
 	    lsetclear(lp);
 	    lp->l_nxtundo = 0;
 #if OPT_LINE_ATTRS
@@ -131,7 +131,7 @@ lfree(LINE *lp, BUFFER *bp)
 	set_lback(lp, (LINE *) 1);
 	set_lforw(lp, (LINE *) 1);
 	lvalue(lp) = (char *) 1;
-	lp->l_size = lp->l_used = LINENOTREAL;
+	lp->l_size = llength(lp) = LINENOTREAL;
 #endif
     }
     endofDisplay();
@@ -268,7 +268,7 @@ lremove(BUFFER *bp, LINE *lp)
 int
 insspace(int f, int n)
 {
-    if (!linsert(n, ' '))
+    if (!lins_bytes(n, ' '))
 	return FALSE;
     return backchar(f, n);
 }
@@ -292,13 +292,13 @@ lstrinsert(TBUFF *tp, int len)
 	if (tp != 0) {
 	    const char *string = tb_values(tp);
 	    for (n = 0; n < len; ++n) {
-		if (!linsert(1, (n < limit) ? string[n] : ' ')) {
+		if (!lins_bytes(1, (n < limit) ? string[n] : ' ')) {
 		    rc = FALSE;
 		    break;
 		}
 	    }
 	} else {
-	    if (!linsert(len, ' ')) {
+	    if (!lins_bytes(len, ' ')) {
 		rc = FALSE;
 	    }
 	}
@@ -361,7 +361,7 @@ after_linsert(WINDOW *wp, LINE *lp, int n, int doto)
  * well, and FALSE on errors.
  */
 int
-linsert(int n, int c)
+lins_bytes(int n, int c)
 {
     char *cp1;
     char *cp2;
@@ -383,7 +383,7 @@ linsert(int n, int c)
 	;
     } else if (lp1 == buf_head(curbp)) {	/* At the end: special  */
 	if (DOT.o != 0) {
-	    mlforce("BUG: linsert");
+	    mlforce("BUG: lins_bytes");
 	    rc = (FALSE);
 	} else if ((lp2 = lalloc(n, curbp)) == 0) {
 	    rc = (FALSE);
@@ -422,10 +422,10 @@ linsert(int n, int c)
 		    UCHAR *l_attrs = lp1->l_attrs;
 		    lp1->l_attrs = 0;	/* momentarily detach */
 #endif
-		    if (lp1->l_used != doto)
+		    if (llength(lp1) != doto)
 			(void) memcpy(&ntext[doto + n],
 				      &lvalue(lp1)[doto],
-				      (size_t) (lp1->l_used - doto));
+				      (size_t) (llength(lp1) - doto));
 		    ltextfree(lp1, curbp);
 #if OPT_LINE_ATTRS
 		    lp1->l_attrs = l_attrs;	/* reattach */
@@ -433,7 +433,7 @@ linsert(int n, int c)
 		}
 		lvalue(lp1) = ntext;
 		lp1->l_size = nsize;
-		lp1->l_used += n;
+		llength(lp1) += n;
 	    }
 	} else {		/* Easy: in place       */
 	    copy_for_undo(lp1);
@@ -441,8 +441,8 @@ linsert(int n, int c)
 	    tmp = lp1;
 	    /* don't use memcpy:  overlapping regions.... */
 	    llength(tmp) += n;
-	    if (tmp->l_used - n > doto) {
-		cp2 = &lvalue(tmp)[tmp->l_used];
+	    if (llength(tmp) - n > doto) {
+		cp2 = &lvalue(tmp)[llength(tmp)];
 		cp1 = cp2 - n;
 		while (cp1 != &lvalue(tmp)[doto])
 		    *--cp2 = *--cp1;
@@ -480,6 +480,37 @@ linsert(int n, int c)
     endofDisplay();
     return (rc);
 }
+
+#if OPT_MULTIBYTE
+/*
+ * Insert 'n' copies of (potentially) multibyte character 'c'.  We could get
+ * that by reading a \uXXXX sequence for instance, either in the minibuffer
+ * or in insert-mode.
+ */
+int
+lins_chars(int n, int c)
+{
+    int rc = FALSE;
+    UCHAR target[10];
+    int nbytes = vl_conv_to_utf8(target, c, sizeof(target));
+    int nn;
+
+    if (nbytes > 1) {
+	while (n-- > 0) {
+	    for (nn = 0; nn < nbytes; ++nn) {
+		rc = lins_bytes(1, target[nn]);
+		if (rc != TRUE)
+		    break;
+	    }
+	    if (rc != TRUE)
+		break;
+	}
+    } else {
+	rc = lins_bytes(n, c);
+    }
+    return rc;
+}
+#endif
 
 /*
  * Insert a newline into the buffer at the current location of dot in the
@@ -542,9 +573,9 @@ lnewline(void)
 	while (cp1 < &lvalue(tmp)[doto])
 	    *cp2++ = *cp1++;
 	cp2 = lvalue(tmp);
-	while (cp1 < &lvalue(tmp)[tmp->l_used])
+	while (cp1 < &lvalue(tmp)[llength(tmp)])
 	    *cp2++ = *cp1++;
-	tmp->l_used -= doto;
+	llength(tmp) -= doto;
     }
     /* put lp2 in above lp1 */
     set_lback(lp2, lback(lp1));
@@ -603,17 +634,16 @@ lnewline(void)
 }
 
 /*
- * This function deletes "n" characters, starting at dot.  It understands how
- * to deal with end of lines, etc.  It returns TRUE if all of the characters
- * were deleted, and FALSE if they were not (because dot ran into the end of
- * the buffer.
+ * This function deletes bytes, starting at dot.  It understands how to deal
+ * with end of lines, etc.  It returns TRUE if all of the bytes were deleted,
+ * and FALSE if they were not (because dot ran into the end of the buffer.
  *
  * parameters:
- * 'nchars' is # of chars to delete
+ * 'nbytes' is # of bytes (not multibyte chars!) to delete
  * 'kflag' is true if we put killed text in kill buffer
  */
 int
-ldelete(B_COUNT nchars, int kflag)
+ldel_bytes(B_COUNT nbytes, int kflag)
 {
     char *cp1;
     char *cp2;
@@ -628,16 +658,16 @@ ldelete(B_COUNT nchars, int kflag)
     B_COUNT len_rs = len_record_sep(curbp);
 
     lines_deleted = 0;
-    while (nchars != 0) {
+    while (nbytes != 0) {
 	dotp = DOT.l;
 	doto = DOT.o;
 	if (dotp == buf_head(curbp)) {	/* Hit end of buffer. */
 	    status = FALSE;
 	    break;
 	}
-	uchunk = dotp->l_used - doto;	/* Size of chunk.    */
-	if (uchunk > nchars)
-	    uchunk = nchars;
+	uchunk = llength(dotp) - doto;	/* Size of chunk.    */
+	if (uchunk > nbytes)
+	    uchunk = nbytes;
 
 	schunk = uchunk;
 	if (schunk < 0) {
@@ -649,7 +679,7 @@ ldelete(B_COUNT nchars, int kflag)
 	    /* first take out any whole lines below this one */
 	    nlp = lforw(dotp);
 	    while (nlp != buf_head(curbp)
-		   && line_length(nlp) < nchars) {
+		   && line_length(nlp) < nbytes) {
 		if (kflag) {
 		    status = kinsert('\n');
 		    for (i = 0; i < llength(nlp) &&
@@ -661,7 +691,7 @@ ldelete(B_COUNT nchars, int kflag)
 		lremove(curbp, nlp);
 		lines_deleted++;
 		toss_to_undo(nlp);
-		nchars -= line_length(nlp);
+		nbytes -= line_length(nlp);
 		nlp = lforw(dotp);
 	    }
 	    if (status != TRUE)
@@ -672,7 +702,7 @@ ldelete(B_COUNT nchars, int kflag)
 		break;
 	    if (kflag && (status = kinsert('\n')) != TRUE)
 		break;
-	    nchars = (nchars > len_rs) ? (nchars - len_rs) : 0;
+	    nbytes = (nbytes > len_rs) ? (nbytes - len_rs) : 0;
 	    lines_deleted++;
 	    continue;
 	}
@@ -691,9 +721,9 @@ ldelete(B_COUNT nchars, int kflag)
 		break;
 	    cp1 = lvalue(dotp) + doto;
 	}
-	while (cp2 != lvalue(dotp) + dotp->l_used)
+	while (cp2 != lvalue(dotp) + llength(dotp))
 	    *cp1++ = *cp2++;
-	dotp->l_used -= schunk;
+	llength(dotp) -= schunk;
 #if ! WINMARK
 	if (MK.l == dotp && MK.o > doto) {
 	    MK.o -= schunk;
@@ -737,10 +767,22 @@ ldelete(B_COUNT nchars, int kflag)
 	    break;
 	}
 #endif
-	nchars -= uchunk;
+	nbytes -= uchunk;
     }
     return (status);
 }
+
+#if OPT_MULTIBYTE
+/*
+ * Regions and many other internal calls use byte-counts.  Interactive calls
+ * use character-counts.  Use this function for deleting multiple characters.
+ */
+int
+ldel_chars(B_COUNT nchars, int kflag)
+{
+    return ldel_bytes(count_bytes(DOT.l, DOT.o, nchars), kflag);
+}
+#endif
 
 #if OPT_EVAL
 /*
@@ -1422,12 +1464,12 @@ force_text_at_col(C_NUM goalcol, C_NUM reached)
     if (reached < goalcol) {
 	/* pad out to col */
 	DOT.o = llength(DOT.l);
-	status = linsert(goalcol - reached, ' ');
+	status = lins_bytes(goalcol - reached, ' ');
     } else if (reached > goalcol) {
 	/* there must be a tab there. */
 	/* pad to hit column we want */
 	backchar_to_bol(TRUE, 1);
-	status = linsert(goalcol % tabstop_val(curbp), ' ');
+	status = lins_bytes(goalcol % tabstop_val(curbp), ' ');
     }
     return status;
 }
@@ -1497,7 +1539,7 @@ PutChar(int n, REGIONSHAPE shape)
 				break;
 			    checkpad = FALSE;
 			}
-			if (width && linsert(width, ' ')
+			if (width && lins_bytes(width, ' ')
 			    != TRUE) {
 			    status = FALSE;
 			    break;
@@ -1524,7 +1566,7 @@ PutChar(int n, REGIONSHAPE shape)
 			if (is_header_line(DOT, curbp)) {
 			    suppressnl = TRUE;
 			}
-			if (linsert(1, c) != TRUE) {
+			if (lins_bytes(1, c) != TRUE) {
 			    status = FALSE;
 			    break;
 			}
@@ -1561,7 +1603,7 @@ PutChar(int n, REGIONSHAPE shape)
 			    ep++;
 			}
 			/* Open up space in current line */
-			status = linsert((int) (ep - sp), ' ');
+			status = lins_bytes((int) (ep - sp), ' ');
 			if (status != TRUE)
 			    break;
 			dp = lvalue(DOT.l)

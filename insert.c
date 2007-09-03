@@ -4,7 +4,7 @@
  * Most code probably by Dan Lawrence or Dave Conroy for MicroEMACS
  * Extensions for vile by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/insert.c,v 1.155 2007/08/29 00:31:47 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/insert.c,v 1.158 2007/08/31 23:31:17 tom Exp $
  */
 
 #include	"estruct.h"
@@ -15,8 +15,6 @@
 #define	BackspaceLimit() (b_val(curbp,MDBACKLIMIT) && autoindented <= 0)\
 			? DOT.o\
 			: w_left_margin(curwp)
-#define DeleteChars(chars, flag) \
-	ldelete(count_bytes(DOT.l, DOT.o, chars), flag)
 
 static int backspace(void);
 static int doindent(int ind);
@@ -420,7 +418,7 @@ replacechar(int f, int n)
     else {
 	int vi_fix = (!DOT_ARGUMENT || (dotcmdrep <= 1));
 
-	(void) DeleteChars(n, FALSE);
+	(void) ldel_chars(n, FALSE);
 	if (c == quotec) {
 	    t = s = quote_next(f, n);
 	} else {
@@ -431,7 +429,7 @@ replacechar(int f, int n)
 		if (isbackspace(c)) {	/* vi beeps here */
 		    s = TRUE;	/* replaced with nothing */
 		} else {
-		    t = s = linsert(n, c);
+		    t = s = lins_bytes(n, c);
 		}
 	    }
 	}
@@ -815,7 +813,7 @@ inschar(int c, int *backsp_limit_p)
 		    col = getccol(FALSE);
 		}
 		if (col < goal)
-		    linsert(goal - col, ' ');
+		    lins_bytes(goal - col, ' ');
 	    } else if (isbackspace(c)
 		       && !b_val(curbp, MDBACKLIMIT)
 		       && (DOT.o <= *backsp_limit_p)) {
@@ -872,7 +870,7 @@ inschar(int c, int *backsp_limit_p)
 	&& (char_at(DOT) != '\t'
 	    || DOT.o % tabstop_val(curbp) == tabstop_val(curbp) - 1)) {
 	autoindented = -1;
-	(void) DeleteChars(1, FALSE);
+	(void) ldel_chars(1, FALSE);
     }
 
     /* do the appropriate insertion */
@@ -886,7 +884,7 @@ inschar(int c, int *backsp_limit_p)
     }
 
     autoindented = -1;
-    return linsert(1, c);
+    return lins_bytes(1, c);
 }
 
 #if ! SMALLER
@@ -959,7 +957,7 @@ backspace(void)
     int s;
 
     if ((s = backchar(TRUE, 1)) == TRUE && insertmode != INSMODE_OVR)
-	s = DeleteChars(1, FALSE);
+	s = ldel_chars(1, FALSE);
     return (s);
 }
 
@@ -1123,7 +1121,7 @@ doindent(int ind)
 	j = 0;
     DOT.o = w_left_margin(curwp);
     if (i > 0)
-	(void) ldelete((B_COUNT) i, FALSE);
+	(void) ldel_bytes((B_COUNT) i, FALSE);
 
     autoindented = 0;
     /* if no indent was asked for, we're done */
@@ -1139,7 +1137,7 @@ doindent(int ind)
 	}
 	if (ind > 0) {		/* only spaces now */
 	    autoindented += ind;
-	    if (linsert(ind, ' ') == FALSE)
+	    if (lins_bytes(ind, ' ') == FALSE)
 		return FALSE;
 	}
     }
@@ -1182,11 +1180,11 @@ insbrace(int n, int c)
        forward */
     /* if we are at the beginning of the line, no go */
     if (DOT.o <= w_left_margin(curwp))
-	return (linsert(n, c));
+	return (lins_bytes(n, c));
 #endif
 
     if (autoindented < 0) {
-	return linsert(n, c);
+	return lins_bytes(n, c);
     } else {
 	(void) trimline((void *) 0, 0, 0);
 	skipindent = 0;
@@ -1198,7 +1196,7 @@ insbrace(int n, int c)
 	autoindented = -1;
 
 	/* and insert the required brace(s) */
-	return (linsert(n, c));
+	return (lins_bytes(n, c));
     }
 }
 
@@ -1208,19 +1206,19 @@ inspound(void)
 {
     /* if we are at the beginning of the line, no go */
     if (DOT.o <= w_left_margin(curwp))
-	return (linsert(1, '#'));
+	return (lins_bytes(1, '#'));
 
     if (autoindented > 0) {	/* must all be whitespace before us */
 	if (autoindented > llength(DOT.l))
 	    autoindented = llength(DOT.l);
 	DOT.o = w_left_margin(curwp);
 	if (autoindented > 0)
-	    (void) ldelete((B_COUNT) autoindented, FALSE);
+	    (void) ldel_bytes((B_COUNT) autoindented, FALSE);
     }
     autoindented = -1;
 
     /* and insert the required pound */
-    return (linsert(1, '#'));
+    return (lins_bytes(1, '#'));
 }
 
 /* insert a tab into the file */
@@ -1235,11 +1233,11 @@ tab(int f, int n)
 	return FALSE;
 
     if (b_val(curbp, MDTABINSERT))
-	return linsert(n, '\t');
+	return lins_bytes(n, '\t');
 
     ccol = getccol(FALSE);
-    return linsert((next_tabcol(ccol) - ccol)
-		   + (n - 1) * tabstop_val(curbp), ' ');
+    return lins_bytes((next_tabcol(ccol) - ccol)
+		      + (n - 1) * tabstop_val(curbp), ' ');
 }
 
 /*ARGSUSED*/
@@ -1303,17 +1301,17 @@ shiftwidth(int f GCC_UNUSED, int n GCC_UNUSED)
 	((add_spaces + logical_col) % tabs == 0)) {
 	if (space_count > 0) {
 	    DOT.o -= space_count;
-	    s = ldelete((B_COUNT) space_count, FALSE);
+	    s = ldel_bytes((B_COUNT) space_count, FALSE);
 	} else {
 	    space_count = 0;
 	    s = TRUE;
 	}
 	if (s) {
 	    space_count += add_spaces;
-	    s = linsert((space_count + tabs - 1) / tabs, '\t');
+	    s = lins_bytes((space_count + tabs - 1) / tabs, '\t');
 	}
     } else {
-	s = linsert(add_spaces, ' ');
+	s = lins_bytes(add_spaces, ' ');
     }
 
     if (all_white && s) {
@@ -1352,7 +1350,7 @@ quote_next(int f, int n)
 	} while ((s == TRUE) && (--n != 0));
 	return s;
     } else {
-	return linsert(n, c);
+	return lins_chars(n, c);
     }
 }
 

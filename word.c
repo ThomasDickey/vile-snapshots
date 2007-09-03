@@ -3,7 +3,7 @@
  * paragraph at a time.  There are all sorts of word mode commands.  If I
  * do any sentence mode commands, they are likely to be put in this file.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/word.c,v 1.82 2007/08/29 00:52:04 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/word.c,v 1.84 2007/08/31 23:19:44 tom Exp $
  *
  */
 
@@ -80,7 +80,7 @@ wrapword(int f, int n)
     }
 
     /* delete the forward white space */
-    if (!ldelete(to_delete, FALSE))
+    if (!ldel_bytes(to_delete, FALSE))
 	return (FALSE);
 
     /* put in newline */
@@ -93,7 +93,7 @@ wrapword(int f, int n)
 	    return (FALSE);
     }
     if (to_append > 0)
-	linsert(to_append, ' ');
+	lins_bytes(to_append, ' ');
     return (TRUE);
 }
 
@@ -329,9 +329,9 @@ join_region(int exact)
 		}
 		/* join after parentheses */
 		else if (lgetc(DOT.l, doto - 1) == '.') {
-		    status = linsert(2, ' ');
+		    status = lins_bytes(2, ' ');
 		} else if (!isSpace(c)) {
-		    status = linsert(1, ' ');
+		    status = lins_bytes(1, ' ');
 		}
 	    }
 	}
@@ -392,7 +392,7 @@ comment_prefix(void)
 		&& lgetc(DOT.l,DOT.o+1) == '*')
 
 #define fmt_insert(count,chr) \
-		if ((s = linsert(count,chr)) != TRUE) \
+		if ((s = lins_bytes(count,chr)) != TRUE) \
 			return s; \
 		else \
 			clength += count
@@ -525,7 +525,7 @@ do_formatting(TBUFF **wp, TBUFF **cp)
 			    && !dot_at_section_break()) {
 			    B_COUNT spcs = DOT.o;
 			    DOT.o = 0;
-			    s = ldelete(spcs, FALSE);
+			    s = ldel_bytes(spcs, FALSE);
 			    if (s != TRUE)
 				return s;
 			}
@@ -544,7 +544,7 @@ do_formatting(TBUFF **wp, TBUFF **cp)
 
 	    /* and then delete it */
 	    if (finished == FALSE) {
-		s = ldelete(1L, FALSE);
+		s = ldel_bytes(1L, FALSE);
 		if (s != TRUE)
 		    return s;
 	    }

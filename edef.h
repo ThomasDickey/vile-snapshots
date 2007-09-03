@@ -6,7 +6,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.329 2007/08/17 22:19:38 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.330 2007/08/31 22:53:03 tom Exp $
  */
 
 #ifndef VILE_EDEF_H
@@ -257,7 +257,7 @@ decl_uninit( USHORT kregflag );		/* info for pending kill into reg */
 decl_uninit( C_NUM kregwidth );		/* max width of current kill */
 decl_uninit( int kchars );		/* how much did we kill? */
 decl_uninit( int klines );
-decl_uninit( int lines_deleted );	/* from 'ldelete()', for reporting */
+decl_uninit( int lines_deleted );	/* from 'ldel_bytes()', for reporting */
 decl_uninit( int warnings );		/* from 'mlwarn()', for reporting */
 
 #if !SMALLER

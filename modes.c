@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.345 2007/08/24 19:38:55 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.348 2007/08/31 21:53:07 tom Exp $
  *
  */
 
@@ -179,6 +179,28 @@ combine_choices(FSM_BLIST * choices, const char *string)
 
 /*--------------------------------------------------------------------------*/
 
+/*
+ * Update window-flags applying to the current buffer when we modify a window
+ * property, or something that requires repainting a window.
+ */
+void
+set_bufflags(int glob_vals, USHORT flags)
+{
+    if (glob_vals) {
+	set_winflags(glob_vals, flags);
+    } else {
+	WINDOW *wp;
+	for_each_visible_window(wp) {
+	    if (wp->w_bufp == curbp)
+		wp->w_flag |= flags;
+	}
+    }
+}
+
+/*
+ * Update window-flags when we modify a window property, or something that
+ * requires repainting all (or the current if local) windows.
+ */
 void
 set_winflags(int glob_vals, USHORT flags)
 {
@@ -1980,7 +2002,7 @@ chgd_major(BUFFER *bp, VALARGS * args, int glob_vals, int testing)
 		return chgd_disabled(bp, args, glob_vals, testing);
 	}
     } else {
-	set_winflags(glob_vals, WFMODE);
+	set_bufflags(glob_vals, WFMODE);
     }
     return TRUE;
 }
@@ -4157,7 +4179,9 @@ infer_majormode(BUFFER *bp)
 	       && majormodes_order != 0
 	       && !b_is_directory(bp)
 	       && bp->b_fname != 0
-	       && !is_internalname(bp->b_fname)) {
+	       && !(is_internalname(bp->b_fname)
+		    && !eql_bname(bp, STDIN_BufName)
+		    && !eql_bname(bp, OUTPUT_BufName))) {
 	int n, m;
 	int result = -1;
 	LINE *lp = get_preamble(bp);

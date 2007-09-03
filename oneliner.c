@@ -4,7 +4,7 @@
  *	Copyright (c) 1990, 1995-1999 by Paul Fox, except for delins(), which is
  *	Copyright (c) 1986 by University of Toronto, as noted below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/oneliner.c,v 1.110 2007/08/29 00:48:42 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/oneliner.c,v 1.112 2007/08/31 23:19:01 tom Exp $
  */
 
 #include	"estruct.h"
@@ -492,7 +492,7 @@ delins(regexp * exp, char *sourc, int lensrc)
     (void) memcpy(buf_delins, exp->startp[0], dlength);
     buf_delins[dlength] = EOS;
 
-    if (ldelete((L_NUM) dlength, FALSE) != TRUE) {
+    if (ldel_bytes((L_NUM) dlength, FALSE) != TRUE) {
 	mlforce("[Error while deleting]");
 	return FALSE;
     }
@@ -527,22 +527,22 @@ delins(regexp * exp, char *sourc, int lensrc)
 		    case_all = NO_CASE;
 		    break;
 		case 'b':
-		    s = linsert(1, '\b');
+		    s = lins_bytes(1, '\b');
 		    break;
 		case 'f':
-		    s = linsert(1, '\f');
+		    s = lins_bytes(1, '\f');
 		    break;
 		case 'r':
-		    s = linsert(1, '\r');
+		    s = lins_bytes(1, '\r');
 		    break;
 		case 't':
-		    s = linsert(1, '\t');
+		    s = lins_bytes(1, '\t');
 		    break;
 		case 'n':
 		    s = lnewline();
 		    break;
 		default:
-		    s = linsert(1, c);
+		    s = lins_bytes(1, c);
 		    break;
 		}
 		break;
@@ -566,7 +566,7 @@ delins(regexp * exp, char *sourc, int lensrc)
 		    if (c == '\n')
 			s = lnewline();
 		    else if (case_next == NO_CASE && case_all == NO_CASE)
-			s = linsert(1, c);
+			s = lins_bytes(1, c);
 		    else {
 			int direction = case_next != NO_CASE ? case_next : case_all;
 			case_next = NO_CASE;
@@ -578,7 +578,7 @@ delins(regexp * exp, char *sourc, int lensrc)
 			    c = toLower(c);
 			if (isLower(c) && (direction == UPPER_CASE))
 			    c = toUpper(c);
-			s = linsert(1, c);
+			s = lins_bytes(1, c);
 		    }
 		}
 	    }
@@ -602,7 +602,7 @@ delins(regexp * exp, char *sourc, int lensrc)
 		if (isLower(c) && (direction == UPPER_CASE))
 		    c = toUpper(c);
 	    }
-	    s = linsert(1, c);
+	    s = lins_bytes(1, c);
 	    break;
 	}
 	if (s != TRUE) {

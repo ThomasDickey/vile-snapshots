@@ -3,7 +3,7 @@
  *	Original interface by Otto Lind, 6/3/93
  *	Additional map and map! support by Kevin Buettner, 9/17/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/map.c,v 1.111 2006/11/23 17:01:16 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/map.c,v 1.112 2007/08/31 22:53:03 tom Exp $
  *
  */
 
@@ -971,7 +971,7 @@ abbr_check(int *backsp_limit_p)
 	    return;
 	}
 	DOT.o -= matched;
-	ldelete((B_COUNT) matched, FALSE);
+	ldel_bytes((B_COUNT) matched, FALSE);
 	while (status && itb_more(abbr_chars))
 	    status = inschar(itb_last(abbr_chars), backsp_limit_p);
     }

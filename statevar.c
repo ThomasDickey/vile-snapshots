@@ -3,7 +3,7 @@
  *	for getting and setting the values of the vile state variables,
  *	plus helper utility functions.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.112 2007/01/08 00:34:20 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.115 2007/09/02 19:16:04 tom Exp $
  */
 
 #include	"estruct.h"
@@ -624,10 +624,7 @@ var_CHAR(TBUFF **rp, const char *vp)
 
     if (rp) {
 	if (valid_buffer(curbp) && !is_empty_buf(curbp)) {
-	    if (is_at_end_of_line(DOT))
-		render_int(rp, '\n');
-	    else
-		render_int(rp, char_at(DOT));
+	    render_int(rp, char_at_mark(DOT));
 	} else {
 	    tb_scopy(rp, error_val);
 	}
@@ -636,7 +633,7 @@ var_CHAR(TBUFF **rp, const char *vp)
 	if ((status = check_editable(curbp)) == TRUE) {
 	    int c;
 	    mayneedundo();
-	    (void) ldelete(1L, FALSE);	/* delete 1 char */
+	    (void) ldel_chars(1L, FALSE);	/* delete 1 char */
 	    c = scan_int(vp);
 	    if ((status = bputc(c)) == TRUE)
 		(void) backchar(FALSE, 1);

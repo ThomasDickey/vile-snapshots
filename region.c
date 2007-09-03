@@ -3,7 +3,7 @@
  * and mark.  Some functions are commands.  Some functions are just for
  * internal use.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/region.c,v 1.134 2007/08/14 23:21:33 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/region.c,v 1.136 2007/08/31 23:19:15 tom Exp $
  *
  */
 
@@ -213,7 +213,7 @@ killregionmaybesave(int save)
 		kregflag |= KLINES;
 	}
 	DOT = region.r_orig;
-	status = ldelete(region.r_size, save);
+	status = ldel_bytes(region.r_size, save);
 	if (save) {
 	    kdone();
 	    ukb = 0;
@@ -242,7 +242,7 @@ kill_line(void *flagp, int l, int r)
 	r = llength(lp);
 
     if (r > l) {
-	s = ldelete((B_COUNT) (r - l), save);
+	s = ldel_bytes((B_COUNT) (r - l), save);
 	if (s != TRUE)
 	    return s;
     }
@@ -285,7 +285,7 @@ open_hole_in_line(void *flagp, int l, int r)
 	} else {
 	    DOT.o = llength(lp);
 	    if (l - DOT.o)
-		linsert(l - DOT.o, ' ');
+		lins_bytes(l - DOT.o, ' ');
 	}
     }
     DOT.o = l;
@@ -337,11 +337,11 @@ shift_right_line(void *flagp GCC_UNUSED, int l GCC_UNUSED, int r GCC_UNUSED)
     DOT.o = w_left_margin(curwp);
     if (s) {			/* try to just insert tabs if possible */
 	if (b_val(curbp, MDTABINSERT) && s >= t && (s % t == 0)) {
-	    linsert(s / t, '\t');
+	    lins_bytes(s / t, '\t');
 	} else {
 	    detabline((void *) TRUE, 0, 0);
 	    DOT.o = w_left_margin(curwp);
-	    linsert(s, ' ');
+	    lins_bytes(s, ' ');
 	}
 	if (b_val(curbp, MDTABINSERT))
 	    entabline((void *) TRUE, 0, 0);
@@ -393,7 +393,7 @@ shift_left_line(void *flagp GCC_UNUSED, int l GCC_UNUSED, int r GCC_UNUSED)
 
     if (i != 0) {		/* did we find space/tabs to kill? */
 	DOT.o = w_left_margin(curwp);
-	if ((s = ldelete((B_COUNT) i, FALSE)) != TRUE)
+	if ((s = ldel_bytes((B_COUNT) i, FALSE)) != TRUE)
 	    return s;
     }
 
@@ -444,7 +444,7 @@ detabline(void *flagp, int l GCC_UNUSED, int r GCC_UNUSED)
 	    break;
 	/* if we have found a tab to remove */
 	if (c == '\t') {
-	    if ((s = ldelete(1L, FALSE)) != TRUE)
+	    if ((s = ldel_bytes(1L, FALSE)) != TRUE)
 		return s;
 	    if ((s = insspace(TRUE,
 			      tabstop_val(curbp)
@@ -530,7 +530,7 @@ entabline(void *flagp, int l GCC_UNUSED, int r GCC_UNUSED)
 			(void) lreplc(lp, noff++, lgetc(lp, ooff++));
 		    DOT.o = noff;
 		    if (ooff > noff)
-			(void) ldelete(ooff - noff, FALSE);
+			(void) ldel_bytes(ooff - noff, FALSE);
 		}
 		(void) gocol(savecol);
 		return TRUE;
@@ -594,7 +594,7 @@ trimline(void *flag GCC_UNUSED, int l GCC_UNUSED, int r GCC_UNUSED)
     was_at_eol = (odoto == llength(lp));
 
     DOT.o = off + 1;
-    s = ldelete(delcnt, FALSE);
+    s = ldel_bytes(delcnt, FALSE);
 
     if (odoto > off) {		/* do we need to back up? */
 	odoto = llength(lp);
@@ -649,7 +649,7 @@ blankline(void *flagp, int l, int r)
 	} else {
 	    DOT.o = llength(lp);
 	    if (l - DOT.o)
-		linsert(l - DOT.o, ' ');
+		lins_bytes(l - DOT.o, ' ');
 	}
     }
 
@@ -658,7 +658,7 @@ blankline(void *flagp, int l, int r)
     if (llength(lp) <= r) {
 	/* then the rect doesn't extend to the end of line */
 	if (llength(lp) > l)
-	    ldelete((B_COUNT) (llength(lp) - l), FALSE);
+	    ldel_bytes((B_COUNT) (llength(lp) - l), FALSE);
 
 	/* so there's nothing beyond the rect, so insert at
 	   most r-l chars of the string, or nothing */
@@ -672,7 +672,7 @@ blankline(void *flagp, int l, int r)
     } else if (r > l) {
 	/* the line goes on, so delete and reinsert exactly */
 	len = r - l;
-	ldelete((B_COUNT) len, FALSE);
+	ldel_bytes((B_COUNT) len, FALSE);
     } else {
 	len = 0;
     }
