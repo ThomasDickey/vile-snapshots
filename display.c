@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.437 2007/08/26 22:31:43 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.446 2007/09/03 19:35:49 tom Exp $
  *
  */
 
@@ -540,6 +540,12 @@ vtputc(WINDOW *wp, const char *src, unsigned limit)
 	vp = vscreen[vtrow];
 
     if (vp != 0) {
+#if OPT_MULTIBYTE
+	if (b_is_utfXX(wp->w_bufp)
+	    && column_sizes(wp, src, limit, &rc) == COLS_UTF8) {
+	    rc = vtlistc(wp, src, limit);
+	} else
+#endif
 	if (isPrint(*src) && vtcol >= 0 && vtcol < lastcol) {
 	    VideoText(vp)[vtcol++] = (UCHAR) (*src);
 #ifdef WMDLINEWRAP
@@ -578,22 +584,45 @@ static int
 vtlistc(WINDOW *wp, const char *src, unsigned limit)
 {
     int rc = 1;
-    char temp[7];
+    char temp[10];
     unsigned n = 0;
+    UINT value;
 
-    if (isPrint(*src)) {
-	temp[n++] = *src;
-    } else {
-	UINT value;
+#if OPT_MULTIBYTE
+    if (b_is_utfXX(wp->w_bufp)) {
+	int test;
 	int need = column_sizes(wp, src, limit, &rc);
 
 	switch (need) {
-	case 6:
-	    vl_conv_to_utf32(&value, src, limit);
-	    sprintf(temp, "\\u%04X", value);
+	case COLS_UTF8:
+	    rc = vl_conv_to_utf32(&value, src, limit);
+	    /* FIXME - some of recode's UTF-8/UTF-16 gives 6-digit codes
+	     * rather than 4 - but the low 4 digits are the same.
+	     */
+	    sprintf(temp, "\\u%04X", value & ((1 << MaxCBits) - 1));
 	    n = need;
 	    break;
-	case 4:
+	case COLS_CTRL:
+	    if (isPrint(*src)) {
+		temp[n++] = *src;
+	    } else {
+		temp[n++] = '^';
+		temp[n++] = toalpha(*src);
+	    }
+	    break;
+	default:
+	    temp[n++] = *src;
+	    break;
+	}
+    } else
+#endif
+    if (isPrint(*src)) {
+	temp[n++] = *src;
+    } else {
+	int need = column_sizes(wp, src, limit, &rc);
+
+	switch (need) {
+	case COLS_8BIT:
 	    temp[n++] = BACKSLASH;
 	    if (w_val(wp, WMDNONPRINTOCTAL)) {
 		temp[n++] = ((*src >> 6) & 3) + '0';
@@ -605,9 +634,12 @@ vtlistc(WINDOW *wp, const char *src, unsigned limit)
 		temp[n++] = hexdigits[(*src) & 0xf];
 	    }
 	    break;
-	case 2:
+	case COLS_CTRL:
 	    temp[n++] = '^';
 	    temp[n++] = toalpha(*src);
+	    break;
+	default:
+	    temp[n++] = *src;
 	    break;
 	}
     }
@@ -747,7 +779,9 @@ vtset(LINE *lp, WINDOW *wp)
 #ifdef WMDLINEWRAP
     allow_wrap = 0;
 #endif
-    TRACE2(("TEXT %4d:%.*s\n", vtrow, term.cols - 1, vscreen[vtrow]->v_text));
+    TRACE2(("TEXT %4d:%.*s\n", vtrow,
+	    (vtcol > 0) ? vtcol : (term.cols - 1),
+	    vscreen[vtrow]->v_text));
 }
 
 /*
@@ -832,12 +866,16 @@ mk_to_vcol(WINDOW *wp, MARK mark, int expanded, int col, int adjust)
 	c = text[i];
 	if (isTab(c) && !expanded) {
 	    col += t - (col % t);
+	}
+#if OPT_MULTIBYTE
+	else if (b_is_utfXX(wp->w_bufp)) {
+	    col += column_sizes(wp, text + i, llength(mark.l) - i, &used);
+	}
+#endif
+	else if (!isPrint(c)) {
+	    col += column_sizes(wp, text + i, llength(mark.l) - i, &used);
 	} else {
-	    if (!isPrint(c)) {
-		col += column_sizes(wp, text + i, lim - i, &used);
-	    } else {
-		++col;
-	    }
+	    ++col;
 	}
 	i += used;
     }
@@ -1011,6 +1049,7 @@ dot_to_vcol(WINDOW *wp)
     }
 #endif
 #else
+    (void) bp;
     result = mk_to_vcol(wp, wp->w_dot, w_val(wp, WMDLIST), 0, 0);
 #endif
     return2Code(result);
@@ -1409,6 +1448,11 @@ offs2col0(WINDOW *wp,
 	    int used = 1;
 
 	    c = (n == length) ? '\n' : text[n];
+#if OPT_MULTIBYTE
+	    if (b_is_utfXX(wp->w_bufp) && !isTab(c))
+		column += column_sizes(wp, text + n, offset - n, &used);
+	    else
+#endif
 	    if (isPrint(c) || (c == last)) {
 		column++;
 	    } else if (list || !isTab(c)) {
@@ -1466,6 +1510,11 @@ col2offs(WINDOW *wp, LINE *lp, C_NUM col)
 	    ) {
 	    int c = text[offset];
 	    int used = 1;
+#if OPT_MULTIBYTE
+	    if (b_is_utfXX(wp->w_bufp) && !isTab(c))
+		n += column_sizes(wp, text + offset, len - offset, &used);
+	    else
+#endif
 	    if (isPrint(c)) {
 		n++;
 	    } else if (list || !isTab(c)) {
@@ -2827,10 +2876,7 @@ special_formatter(TBUFF **result, const char *fs, WINDOW *wp)
 #ifdef WMDSHOWCHAR
 	    case 'C':
 		if (w_val(wp, WMDSHOWCHAR) && !is_empty_buf(wp->w_bufp)) {
-		    int curchar = (is_at_end_of_line(wp->w_dot)
-				   ? '\n'
-				   : char_at(wp->w_dot));
-		    sprintf(temp, "%02X", curchar);
+		    sprintf(temp, "%02X", char_at_mark(wp->w_dot));
 		    mlfs_prefix(&fs, &ms, lchar);
 		    ms = lsprintf(ms, "%s", temp);
 		    mlfs_suffix(&fs, &ms, lchar);
@@ -3932,7 +3978,7 @@ bputc(int c)
     if (c == '\n')
 	status = lnewline();
     else
-	status = linsert(1, c);
+	status = lins_bytes(1, c);
 
     return status;
 }

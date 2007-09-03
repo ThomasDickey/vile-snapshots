@@ -5,7 +5,7 @@
  *
  * Copyright (c) 1990-2005 by Paul Fox and Thomas Dickey
  *
- * $Header: /users/source/archives/vile.vcs/RCS/finderr.c,v 1.132 2007/08/29 00:45:50 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/finderr.c,v 1.133 2007/08/29 22:03:39 tom Exp $
  *
  */
 
@@ -810,9 +810,9 @@ finderr(int f GCC_UNUSED, int n GCC_UNUSED)
 	mlforce("%s", errtext);
 	len = strlen(errtext);
     } else {
-	mlforce("Error: %.*s", dotp->l_used, lvalue(dotp));
+	mlforce("Error: %.*s", llength(dotp), lvalue(dotp));
 	errtext = lvalue(dotp);
-	len = dotp->l_used;
+	len = llength(dotp);
     }
     if ((oerrtext = tb_init(&oerrtext, EOS)) != 0) {
 	tb_bappend(&oerrtext, errtext, len);
@@ -834,7 +834,7 @@ finderr(int f GCC_UNUSED, int n GCC_UNUSED)
     if (status == TRUE) {
 	TBUFF *match = 0;
 	var_ERROR_EXPR((TBUFF **) 0, exp_table[count - 1].exp_text);
-	if (tb_bappend(&match, lvalue(dotp), dotp->l_used)
+	if (tb_bappend(&match, lvalue(dotp), llength(dotp))
 	    && tb_append(&match, EOS) != 0) {
 	    var_ERROR_MATCH((TBUFF **) 0, tb_values(match));
 	    tb_free(&match);

@@ -18,7 +18,7 @@
  * transferring the selection are not dealt with in this file.  Procedures
  * for dealing with the representation are maintained in this file.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.163 2007/08/29 00:49:40 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.164 2007/08/31 22:53:03 tom Exp $
  *
  */
 
@@ -1633,17 +1633,17 @@ set_mark_after(int count, int rslen)
 /*
  * attribute_cntl_a_sequences can take quite a while when processing a region
  * with a large number of attributes.  The reason for this is that the number
- * of marks to check for fixing (from ldelete) increases with each attribute
+ * of marks to check for fixing (from ldel_bytes) increases with each attribute
  * that is added.  It is not really necessary to check the attributes that
  * we are adding in attribute_cntl_a_sequences due to the order in which
- * they are added (i.e, none of them ever need to be fixed up when ldelete
+ * they are added (i.e, none of them ever need to be fixed up when ldel_bytes
  * is called from within attribute_cntl_a_sequences).
  *
  * It is still necessary to update those attributes which existed (if any)
  * prior to calling attribute_cntl_a_sequences.
  *
  * We define EFFICIENCY_HACK to be 1 if we want to enable the code which
- * will prevent ldelete from doing unnecessary work.  Note that we are
+ * will prevent ldel_bytes from doing unnecessary work.  Note that we are
  * depending on the fact that attach_attrib() adds new attributes to the
  * beginning of the list.  It is for this reason that I consider this
  * code to be somewhat hacky.
@@ -1677,10 +1677,10 @@ attribute_cntl_a_sequences(void)
 #if EFFICIENCY_HACK
 		    new_attribs = curbp->b_attribs;
 		    curbp->b_attribs = orig_attribs;
-		    ldelete((B_COUNT) (offset - DOT.o), FALSE);
+		    ldel_bytes((B_COUNT) (offset - DOT.o), FALSE);
 		    curbp->b_attribs = new_attribs;
 #else
-		    ldelete((B_COUNT) (offset - DOT.o), FALSE);
+		    ldel_bytes((B_COUNT) (offset - DOT.o), FALSE);
 #endif
 		}
 		set_mark_after(count, len_record_sep(curbp));

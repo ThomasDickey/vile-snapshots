@@ -5,7 +5,7 @@
  *	the cursor.
  *	written for vile.  Copyright (c) 1990, 1995-2003 by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tags.c,v 1.136 2007/08/29 00:50:15 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tags.c,v 1.137 2007/08/29 22:05:34 tom Exp $
  *
  */
 #include "estruct.h"
@@ -701,7 +701,7 @@ tag_search(char *tag, int taglen, int initial)
 #endif
 
     /* Parse the line from the tags-file */
-    lplim = &lvalue(lp)[lp->l_used];
+    lplim = &lvalue(lp)[llength(lp)];
     tfp = lvalue(lp);
     while (tfp < lplim)
 	if (*tfp++ == '\t')

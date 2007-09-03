@@ -2,7 +2,7 @@
  * w32misc:  collection of unrelated, common win32 functions used by both
  *           the console and GUI flavors of the editor.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32misc.c,v 1.48 2007/05/05 15:30:00 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32misc.c,v 1.49 2007/08/31 22:53:03 tom Exp $
  */
 
 #include "estruct.h"
@@ -1017,7 +1017,7 @@ w32_del_selection(int copy_to_cbrd)
     } else {
 	lines_deleted = 0;
 	DOT = delrp.ar_region.r_orig;
-	status = ldelete(delrp.ar_region.r_size, FALSE);
+	status = ldel_bytes(delrp.ar_region.r_size, FALSE);
 #if OPT_SELECTIONS
 	find_release_attr(curbp, &delrp.ar_region);
 #endif

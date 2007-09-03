@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.627 2007/08/27 23:31:40 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.631 2007/09/02 20:58:38 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -1048,27 +1048,34 @@ extern void endofDisplay(void);
 #define C_BLACK 0
 #define C_WHITE (ncolors-1)
 
-#define N_chars    256			/* must be a power-of-2		*/
-#define HIGHBIT    0x00080		/* the meta bit			*/
-#define CTLA       0x00100		/* ^A flag, or'ed in		*/
-#define CTLX       0x00200		/* ^X flag, or'ed in		*/
-#define SPEC       0x00400		/* special key (function keys)	*/
-#define NOREMAP    0x00800		/* unremappable */
-#define YESREMAP   0x01000		/* override noremap */
+#define MinCBits   8			/* bits in N_chars		*/
+#define MaxCBits   16			/* bits in N_chars		*/
+#define N_chars    (1 << MinCBits)	/* must be a power-of-2		*/
+#define HIGHBIT    (1 << 7)		/* the meta bit			*/
+
+#define COLS_CTRL  2			/* columns for "^X"		*/
+#define COLS_8BIT  4			/* columns for "\xXX"		*/
+#define COLS_UTF8  6			/* columns for "\uXXXX"		*/
+
+#define CTLA       iBIT(MaxCBits+0)	/* ^A flag, or'ed in		*/
+#define CTLX       iBIT(MaxCBits+1)	/* ^X flag, or'ed in		*/
+#define SPEC       iBIT(MaxCBits+2)	/* special key (function keys)	*/
+#define NOREMAP    iBIT(MaxCBits+3)	/* unremappable */
+#define YESREMAP   iBIT(MaxCBits+4)	/* override noremap */
 #define REMAPFLAGS (NOREMAP|YESREMAP)
 
 #if OPT_KEY_MODIFY
-#define mod_KEY    0x02000		/* special Win32 keys		*/
-#define mod_SHIFT  0x04000		/* shift was held down		*/
-#define mod_CTRL   0x08000		/* control was held down	*/
-#define mod_ALT    0x10000		/* alt was held down		*/
+#define mod_KEY    iBIT(MaxCBits+5)	/* special Win32 keys		*/
+#define mod_SHIFT  iBIT(MaxCBits+6)	/* shift was held down		*/
+#define mod_CTRL   iBIT(MaxCBits+7)	/* control was held down	*/
+#define mod_ALT    iBIT(MaxCBits+8)	/* alt was held down		*/
 #define mod_NOMOD  (~(mod_KEY|mod_SHIFT|mod_CTRL|mod_ALT))
 #endif
 
-#define kcod2key(c)	((c) & (UINT)(N_chars-1)) /* strip off the above prefixes */
-#define	isSpecial(c)	(((UINT)(c) & (UINT)~(N_chars-1)) != 0)
+#define kcod2key(c)	((c) & (UINT)(iBIT(MaxCBits)-1)) /* strip off the above prefixes */
+#define	isSpecial(c)	(((UINT)(c) & (UINT)~(iBIT(MaxCBits)-1)) != 0)
 
-#define	char2int(c)	((int)(c & 0xff)) /* mask off sign-extension, etc. */
+#define	char2int(c)	((int)kcod2key(c))	/* mask off sign-extension, etc. */
 
 #define	PLURAL(n)	((n) != 1 ? "s" : (char *) "")
 #define NONNULL(s)	((s) != 0 ? (s) : (char *) "")
@@ -1671,13 +1678,13 @@ typedef struct	LINE {
 #define lsetnottrimmed(lp)	((lp)->l.l_flag &= ~LTRIMMED)
 #define lsetclear(lp)		((lp)->l.l_flag = (lp)->l.l_undo_cookie = 0)
 
-#define lisreal(lp)		((lp)->l_used >= 0)
-#define lisnotreal(lp)		((lp)->l_used == LINENOTREAL)
-#define lislinepatch(lp)	((lp)->l_used == LINEUNDOPATCH)
+#define lisreal(lp)		(llength(lp) >= 0)
+#define lisnotreal(lp)		(llength(lp) == LINENOTREAL)
+#define lislinepatch(lp)	(llength(lp) == LINEUNDOPATCH)
 #define lispatch(lp)		(lislinepatch(lp))
-#define lisstacksep(lp)		((lp)->l_used == STACKSEP || \
-					(lp)->l_used == PURESTACKSEP)
-#define lispurestacksep(lp)	((lp)->l_used == PURESTACKSEP)
+#define lisstacksep(lp)		(llength(lp) == STACKSEP || \
+					llength(lp) == PURESTACKSEP)
+#define lispurestacksep(lp)	(llength(lp) == PURESTACKSEP)
 
 /* marks are a line and an offset into that line */
 typedef struct MARK {

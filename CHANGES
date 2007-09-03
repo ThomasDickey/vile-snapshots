@@ -1,10 +1,27 @@
 Changes for vile 9.6 (released ??? ??? ?? ????)
 
  20070??? (s)
-	+ add mode percent-utf8 to set a threshold for file-encoding mode
-	  "auto" detection of UTF-16/UTF-32 files.
-	+ file-encoding mode can be set to "auto", to detect UTF-16 files,
-	  which are loaded as UTF-8.
+	+ several changes to provide usable Unicode support:
+	  + add mode percent-utf8 to set a threshold for file-encoding mode
+	    "auto" detection of UTF-16/UTF-32 files.
+	  + file-encoding mode can be set to "auto", to detect UTF-16 files,
+	    which are loaded as UTF-8.
+	  + UTF-8 files are detected based on the file-encoding mode as well.
+	  + Unicode values are displayed (where no locale controls) as "\uXXXX"
+	    in 4 hexadecimal digits.
+	  + Unicode values can be inserted into buffers using ^VuXXXX form.
+	  Limitations:
+	  + registers hold byte data, will show the UTF-8 encoding for data
+	    rather than a \uXXXX (unless the file-encoding for [Registers]
+	    is changed).
+	  + some "characters" such as the report for yanked text is still
+	    really a byte-count.
+	  + inserting a \uXXXX into the minibuffer will display the UTF-8
+	    encoding.
+	  + regular expressions are not wide-character aware.
+	  + external syntax filters do not handle BOM or UTF-16, UTF32.
+	+ modify majormode inferencing to check preamble for [Standard Input]
+	  and [Output] buffers.
 	+ add "&gtmotion" function for scripts.
 	+ improve handling of enumerated values by forcing all to lowercase,
 	  e.g., to eliminate the need for the special case in 9.1x to handle
@@ -26,6 +43,7 @@ Changes for vile 9.6 (released ??? ??? ?? ????)
 	+ add &pquote in manpage.rc, to allow it to format html output when
 	  vile-manfilt, etc., reside in directories containing spaces in their
 	  name.
+	+ add ".reg" filetypes to inimode.
 	+ add several package-related suffixes to sqlmode.
 	+ add xpmmode
 

@@ -44,7 +44,7 @@
  *	tgetc_avail()     true if a key is avail from tgetc() or below.
  *	keystroke_avail() true if a key is avail from keystroke() or below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.308 2007/08/29 00:46:51 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.313 2007/09/02 17:33:18 tom Exp $
  *
  */
 
@@ -829,7 +829,8 @@ vl_ctype2tbuff(TBUFF **result, CHARTYPE inclchartype, int whole_line)
 	if (inclchartype && !istype(inclchartype, last))
 	    break;
 	tb_append(result, last);
-	forwchar_to_eol(TRUE, 1);
+	if (!forwchar_to_eol(TRUE, 1))
+	    break;
 	i++;
 #if OPT_WIDE_CTYPES
 	if (inclchartype & vl_scrtch) {
@@ -1498,7 +1499,7 @@ fakeKeyCode(const CMDFUNC * f)
 }
 
 static int
-editMinibuffer(TBUFF **buf, size_t *cpos, int c, int margin, int quoted)
+editMiniBuffer(TBUFF **buf, size_t *cpos, int c, int margin, int quoted)
 {
     int edited = FALSE;
     const CMDFUNC *cfp;
@@ -1520,123 +1521,136 @@ editMinibuffer(TBUFF **buf, size_t *cpos, int c, int margin, int quoted)
 	   *cpos, tb_visible(*buf),
 	   c, miniedit, DOT.o));
 
-    cfp = ((miniedit)
-	   ? CommandKeyBinding(c)
-	   : InsertKeyBinding(c));
+#if OPT_MULTIBYTE
+    if (char2int(c) >= iBIT(MinCBits)) {
+	UCHAR temp[10];
+	int used = vl_conv_to_utf8(temp, c, sizeof(temp));
+	int n;
 
-    /* Use editc (normally ^G) to toggle insert/command mode */
-    if (c == editc && !quoted) {
-	miniedit = !miniedit;
-    } else if ((miniedit || isSpecial(c))
-	       && (cfp != 0) && (cfp->c_flags & MINIBUF) != 0) {
-	C_NUM first = (C_NUM) * cpos + margin;
-	int old_clexec = clexec;
-	int old_named = isnamedcmd;
-	int old_margin = b_left_margin(bminip);
-	REGIONSHAPE old_shape = regionshape;
+	for (n = 0; n < used; ++n) {
+	    edited |= editMiniBuffer(buf, cpos, temp[n], margin, quoted);
+	}
+    } else
+#endif
+    {
+	cfp = ((miniedit)
+	       ? CommandKeyBinding(c)
+	       : InsertKeyBinding(c));
 
-	/*
-	 * Reset flags that might cause a recursion into the prompt/reply
-	 * code.
-	 */
-	clexec = 0;
-	isnamedcmd = 0;
+	/* Use editc (normally ^G) to toggle insert/command mode */
+	if (c == editc && !quoted) {
+	    miniedit = !miniedit;
+	} else if ((miniedit || isSpecial(c))
+		   && (cfp != 0) && (cfp->c_flags & MINIBUF) != 0) {
+	    C_NUM first = (C_NUM) * cpos + margin;
+	    int old_clexec = clexec;
+	    int old_named = isnamedcmd;
+	    int old_margin = b_left_margin(bminip);
+	    REGIONSHAPE old_shape = regionshape;
 
-	/*
-	 * Set limits so we don't edit the prompt, and allow us to move the
-	 * cursor with the arrow keys just past the end of line.
-	 */
-	b_set_left_margin(bminip, margin);
-	DOT.o = llength(DOT.l);
-	linsert(1, ' ');	/* pad the line so we can move */
+	    /*
+	     * Reset flags that might cause a recursion into the prompt/reply
+	     * code.
+	     */
+	    clexec = 0;
+	    isnamedcmd = 0;
 
-	DOT.o = first;
-	MK = DOT;
-	curwp->w_line = DOT;
-	regionshape = EXACT;	/* operdel(), etc., do not set this */
-	(void) execute(cfp, FALSE, 1);
-	insertmode = save_insertmode;
-	edited = TRUE;
-
-	llength(DOT.l) -= 1;	/* strip the padding */
-	b_set_left_margin(bminip, old_margin);
-
-	clexec = old_clexec;
-	isnamedcmd = old_named;
-	regionshape = old_shape;
-
-	/*
-	 * Cheat a little, since we may have used an alias for
-	 * '$', which can set the offset just past the end of
-	 * line.
-	 */
-	if (DOT.o > llength(DOT.l)) {
+	    /*
+	     * Set limits so we don't edit the prompt, and allow us to move the
+	     * cursor with the arrow keys just past the end of line.
+	     */
+	    b_set_left_margin(bminip, margin);
 	    DOT.o = llength(DOT.l);
-	}
-	*cpos = DOT.o - margin;
+	    lins_bytes(1, ' ');	/* pad the line so we can move */
 
-	/*
-	 * Copy the data back from the minibuffer into our working TBUFF.
-	 */
-	tb_init(buf, EOS);
-	if (llength(DOT.l) > margin)
-	    tb_bappend(buf, lvalue(DOT.l) + margin, llength(DOT.l) - margin);
+	    DOT.o = first;
+	    MK = DOT;
+	    curwp->w_line = DOT;
+	    regionshape = EXACT;	/* operdel(), etc., do not set this */
+	    (void) execute(cfp, FALSE, 1);
+	    insertmode = save_insertmode;
+	    edited = TRUE;
 
-	/*
-	 * Below are some workarounds for making it appear that we're doing the
-	 * right thing for certain non-motion commands.  They allow us to revert to
-	 * insert-mode (the default), moving the cursor first as expected.
-	 */
-    } else if (cfp == &f_insert) {
-	miniedit = !miniedit;
-    } else if (miniedit && cfp == &f_insertbol) {
-	edited = editMinibuffer(buf, cpos, fakeKeyCode(&f_firstnonwhite),
-				margin, quoted);
-	miniedit = FALSE;
-    } else if (miniedit && cfp == &f_appendeol) {
-	edited = editMinibuffer(buf, cpos, fakeKeyCode(&f_gotoeol),
-				margin, quoted);
-	miniedit = FALSE;
-    } else if (miniedit && cfp == &f_append) {
-	edited = editMinibuffer(buf, cpos, fakeKeyCode(&f_forwchar_to_eol),
-				margin, quoted);
-	miniedit = FALSE;
-    } else if (isSpecial(c) || (miniedit && (cfp != 0))) {
-	/*
-	 * Reject other non-motion commands for now.  We haven't a good way to
-	 * update the minibuffer if someone inserts a newline, so we couldn't
-	 * implement insert except as a special case (see above).
-	 */
-	kbd_alarm();
-    } else {
-	/*
-	 * If it is not a command, drop out of miniedit mode and append the
-	 * character to the buffer.
-	 */
-	LINE *lp = DOT.l;
-	miniedit = FALSE;
-	if (!vl_echo || qpasswd) {
-	    char tmp = (char) c;
-	    tb_bappend(buf, &tmp, 1);
-	    if (qpasswd)
-		show1Char(c);
-	} else if (llength(lp) >= margin) {
-	    show1Char(c);
+	    llength(DOT.l) -= 1;	/* strip the padding */
+	    b_set_left_margin(bminip, old_margin);
+
+	    clexec = old_clexec;
+	    isnamedcmd = old_named;
+	    regionshape = old_shape;
+
+	    /*
+	     * Cheat a little, since we may have used an alias for
+	     * '$', which can set the offset just past the end of
+	     * line.
+	     */
+	    if (DOT.o > llength(DOT.l)) {
+		DOT.o = llength(DOT.l);
+	    }
+	    *cpos = DOT.o - margin;
+
+	    /*
+	     * Copy the data back from the minibuffer into our working TBUFF.
+	     */
 	    tb_init(buf, EOS);
-	    tb_bappend(buf, lvalue(lp) + margin, llength(lp) - margin);
+	    if (llength(DOT.l) > margin)
+		tb_bappend(buf, lvalue(DOT.l) + margin, llength(DOT.l) - margin);
+
+	    /*
+	     * Below are some workarounds for making it appear that we're doing the
+	     * right thing for certain non-motion commands.  They allow us to revert to
+	     * insert-mode (the default), moving the cursor first as expected.
+	     */
+	} else if (cfp == &f_insert) {
+	    miniedit = !miniedit;
+	} else if (miniedit && cfp == &f_insertbol) {
+	    edited = editMiniBuffer(buf, cpos, fakeKeyCode(&f_firstnonwhite),
+				    margin, quoted);
+	    miniedit = FALSE;
+	} else if (miniedit && cfp == &f_appendeol) {
+	    edited = editMiniBuffer(buf, cpos, fakeKeyCode(&f_gotoeol),
+				    margin, quoted);
+	    miniedit = FALSE;
+	} else if (miniedit && cfp == &f_append) {
+	    edited = editMiniBuffer(buf, cpos, fakeKeyCode(&f_forwchar_to_eol),
+				    margin, quoted);
+	    miniedit = FALSE;
+	} else if (isSpecial(c) || (miniedit && (cfp != 0))) {
+	    /*
+	     * Reject other non-motion commands for now.  We haven't a good way to
+	     * update the minibuffer if someone inserts a newline, so we couldn't
+	     * implement insert except as a special case (see above).
+	     */
+	    kbd_alarm();
+	} else {
+	    /*
+	     * If it is not a command, drop out of miniedit mode and append the
+	     * character to the buffer.
+	     */
+	    LINE *lp = DOT.l;
+	    miniedit = FALSE;
+	    if (!vl_echo || qpasswd) {
+		char tmp = (char) c;
+		tb_bappend(buf, &tmp, 1);
+		if (qpasswd)
+		    show1Char(c);
+	    } else if (llength(lp) >= margin) {
+		show1Char(c);
+		tb_init(buf, EOS);
+		tb_bappend(buf, lvalue(lp) + margin, llength(lp) - margin);
+	    }
+	    *cpos += 1;
+	    edited = TRUE;
 	}
-	*cpos += 1;
-	edited = TRUE;
+
+	shiftMiniBuffer(DOT.o);
+
+	if (*cpos > tb_length(*buf))
+	    *cpos = tb_length(*buf);
+
+	TRACE(("...editMiniBuffer(%d:%s) returns %d, miniedit=%d, dot=%d\n",
+	       *cpos, tb_visible(*buf),
+	       edited, miniedit, DOT.o));
     }
-
-    shiftMiniBuffer(DOT.o);
-
-    if (*cpos > tb_length(*buf))
-	*cpos = tb_length(*buf);
-
-    TRACE(("...editMiniBuffer(%d:%s) returns %d, miniedit=%d, dot=%d\n",
-	   *cpos, tb_visible(*buf),
-	   edited, miniedit, DOT.o));
 
     --no_minimsgs;
     curbp = savebp;
@@ -1657,30 +1671,46 @@ editMinibuffer(TBUFF **buf, size_t *cpos, int c, int margin, int quoted)
 int
 read_quoted(int count, int inscreen)
 {
-    int c, digs, base, i, num, delta;
+    int c, digs, base, i, delta;
+    unsigned value = 0;
+    unsigned limit = 0xff;
     const char *str;
 
+    TRACE((T_CALLED "read_quoted(%d,%d)\n", count, inscreen));
+
     i = digs = 0;
-    num = 0;
 
     c = keystroke_raw8();
     if (count <= 0)
-	return c;
+	returnCode(c);
 
-    /* accumulate up to 3 digits */
-    if (isDigit(c) || c == 'x') {
+    /* accumulate up to 3 digits for a single byte */
+    if (isDigit(c)
+#if OPT_MULTIBYTE
+	|| (c == 'u')
+#endif
+	|| (c == 'x')) {
 	if (!inscreen) {
 	    kbd_putc(c);
 	    kbd_flush();
 	}
+#if OPT_MULTIBYTE
+	if (c == 'u') {
+	    c = '0';
+	    digs = 5;		/* 4 plus the fake '0' */
+	    base = 16;
+	    str = "unicode";
+	    limit = 0xffff;
+	} else
+#endif
 	if (c == '0') {
 	    digs = 4;		/* including the leading '0' */
 	    base = 8;
 	    str = "octal";
 	} else if (c == 'x') {
+	    c = '0';
 	    digs = 3;		/* including the leading 'x' */
 	    base = 16;
-	    c = '0';
 	    str = "hex";
 	} else {
 	    digs = 3;
@@ -1689,7 +1719,7 @@ read_quoted(int count, int inscreen)
 	}
 	do {
 	    if (isbackspace(c)) {
-		num /= base;
+		value /= base;
 		if (--i < 0)
 		    break;
 	    } else {
@@ -1702,12 +1732,12 @@ read_quoted(int count, int inscreen)
 		    delta = '0';
 		else
 		    break;
-		num = num * base + c - delta;
+		value = value * base + c - delta;
 		i++;
 	    }
 
 	    if (inscreen) {
-		mlwrite("Enter %s digits... %d", str, num);
+		mlwrite("Enter %s digits... %d", str, value);
 	    } else if (i > 1) {
 		kbd_putc(c);
 		kbd_flush();
@@ -1733,12 +1763,12 @@ read_quoted(int count, int inscreen)
 
     if (c >= 0) {
 	if (i == 0)		/* Did we start a number? */
-	    return c;
+	    returnCode(c);
 	else if (i < digs)	/* any other character will be pushed back */
 	    unkeystroke(c);
     }
 
-    return (i > 0) ? (num & 0xff) : -1;
+    returnCode((i > 0) ? ((int) (value & limit)) : -1);
 }
 
 static int
@@ -2178,7 +2208,7 @@ kbd_reply(const char *prompt,	/* put this out first */
 		    c = toUpper(c);
 	    }
 #endif
-	    if (!editMinibuffer(&buf, &cpos, c, margin, EscOrQuo))
+	    if (!editMiniBuffer(&buf, &cpos, c, margin, EscOrQuo))
 		continue;	/* keep firstch==TRUE */
 	}
 	firstch = FALSE;

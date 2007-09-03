@@ -5,7 +5,7 @@
  * reading and writing of the disk are
  * in "fileio.c".
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.407 2007/08/29 00:43:25 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.409 2007/08/31 22:40:51 tom Exp $
  */
 
 #include "estruct.h"
@@ -1460,7 +1460,7 @@ quickreadf(BUFFER *bp, int *nlinep)
 #endif
 #if OPT_MULTIBYTE
 	decode_bom(bp, buffer, &length);
-	deduce_charset(bp, buffer, &length);
+	deduce_charset(bp, buffer, &length, TRUE);
 #endif
 
 	/*
@@ -1496,10 +1496,10 @@ quickreadf(BUFFER *bp, int *nlinep)
 #if !SMALLER
 		lp->l_number = ++lineno;
 #endif
-		lp->l_used = next - offset - 1;
+		llength(lp) = next - offset - 1;
 		if (!b_val(bp, MDNEWLINE) && next == length)
-		    lp->l_used += 1;
-		lp->l_size = lp->l_used + 1;
+		    llength(lp) += 1;
+		lp->l_size = llength(lp) + 1;
 		lvalue(lp) = (char *) (buffer + offset);
 		set_lforw(lp, lp + 1);
 		if (lp != bp->b_LINEs)
@@ -1856,6 +1856,31 @@ slowreadf(BUFFER *bp, int *nlinep)
 	    break;
 	}
     }
+#if OPT_MULTIBYTE
+    /*
+     * Look for UTF-8 encoding when we have the entire buffer, since only a
+     * small part of it may be distinct from ASCII.
+     */
+    if (b_val(bp, VAL_FILE_ENCODING) == enc_DEFAULT) {
+	LINE *lp;
+	int check, found = SORTOFTRUE;
+
+	TRACE(("...try looking for UTF-8\n"));
+	for_each_line(lp, bp) {
+	    if (llength(lp) > 0) {
+		check = check_utf8((UCHAR *) lvalue(lp), llength(lp));
+		if (check == FALSE) {
+		    found = FALSE;
+		} else if (check == TRUE) {
+		    found = TRUE;
+		}
+	    }
+	}
+	if (found == TRUE) {
+	    found_utf8(bp);
+	}
+    }
+#endif
 #if OPT_DOSFILES
     if (global_b_val(MDDOS)) {
 	apply_dosmode(bp, doslines, unixlines);

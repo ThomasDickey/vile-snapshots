@@ -11,7 +11,7 @@
  *    Subsequent copies do not show this cursor.  On an NT host, this
  *    phenomenon does not occur.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32cbrd.c,v 1.26 2007/08/29 00:51:20 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32cbrd.c,v 1.28 2007/08/31 23:19:34 tom Exp $
  */
 
 #include "estruct.h"
@@ -653,7 +653,7 @@ cbrdpaste(int f, int n)
         else
         {
             nbyte++;
-            rc = linsert(1, (int) c);
+            rc = lins_bytes(1, (int) c);
         }
         data++;
     }
@@ -664,11 +664,11 @@ cbrdpaste(int f, int n)
             /*
              * Last byte inserted was a newline and DOT was originally
              * pointing at the beginning of the buffer(??).  In this
-             * situation, linsert() has added an additional newline to the
+             * situation, lins_bytes() has added an additional newline to the
              * buffer.  Remove it.
              */
 
-            (void) ldelete(1, FALSE);
+            (void) ldel_bytes(1, FALSE);
         }
     }
     GlobalUnlock(hClipMem);
@@ -709,7 +709,7 @@ map_and_insert(UINT c,       /* ANSI char to insert   */
     nmapped = map_cbrd_char(c, mapped_str);
     *nbyte += nmapped;
     for (rc = TRUE, i = 0; i < nmapped && rc; i++)
-        rc = linsert(1, mapped_str[i]);
+        rc = lins_bytes(1, mapped_str[i]);
     return (rc);
 }
 

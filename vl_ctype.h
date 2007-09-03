@@ -1,9 +1,9 @@
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/vl_ctype.h,v 1.7 2006/11/24 13:54:07 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/vl_ctype.h,v 1.8 2007/09/01 11:55:42 tom Exp $
  *
  * Character-type tests, like <ctype.h> for vile (vi-like-emacs).
  *
- * Copyright 2005,2006 Thomas E. Dickey
+ * Copyright 2005-2006,2007 Thomas E. Dickey
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
@@ -51,7 +51,9 @@
 # define UCHAR unsigned char
 #endif
 
+#ifndef N_chars
 #define N_chars    256			/* must be a power-of-2		*/
+#endif
 
 #define EOS        '\0'
 #define BQUOTE     '`'

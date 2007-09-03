@@ -1,5 +1,5 @@
 /*
- * $Id: charsets.c,v 1.28 2007/08/27 00:08:37 tom Exp $
+ * $Id: charsets.c,v 1.35 2007/09/03 16:19:22 tom Exp $
  *
  * see
  http://msdn.microsoft.com/library/default.asp?url=/library/en-us/intl/unicode_42jv.asp
@@ -82,6 +82,11 @@ vl_conv_to_utf8(UCHAR * target, UINT source, B_COUNT limit)
     else			/* (source <= 0x7fffffff) */
 	rc = 6;
 
+    if ((B_COUNT) rc > limit) {	/* whatever it is, we cannot decode it */
+	TRACE2(("limit failed %d/%ld in vl_conv_to_utf8\n", rc, limit));
+	rc = 0;
+    }
+
     if (target != 0) {
 	switch (rc) {
 	case 1:
@@ -162,6 +167,11 @@ vl_conv_to_utf32(UINT * target, const char *source, B_COUNT limit)
     } else if ((*source & 0xfe) == 0xfc) {
 	rc = 6;
 	mask = (UINT) (*source & 0x01);
+    }
+
+    if ((B_COUNT) rc > limit) {	/* whatever it is, we cannot decode it */
+	TRACE2(("limit failed %d/%ld in vl_conv_to_utf32\n", rc, limit));
+	rc = 0;
     }
 
     /*
@@ -461,41 +471,40 @@ remove_crlf_nulls(BUFFER *bp, UCHAR * buffer, B_COUNT * length)
  * (8-bits).
  */
 static int
-riddled_buffer(const BOM_TABLE * pattern, UCHAR * buffer, B_COUNT length)
+riddled_buffer(const BOM_TABLE * mp, UCHAR * buffer, B_COUNT length)
 {
     int result = 0;
     B_COUNT total = 0;
     int offset = 0;
     unsigned j, k;
 
-    if (pattern->size && !(pattern->size % 2)) {
+    if (mp->size && !(mp->size % 2)) {
 	TRACE(("checking if %s / %d-byte\n",
 	       choice_to_name(&fsm_byteorder_mark_blist,
-			      pattern->code),
-	       pattern->size));
+			      mp->code),
+	       mp->size));
 
 	/* Check the line-length.  If it is not a multiple of the pattern
 	 * size, just give up.
 	 */
-	if ((length + offset) % pattern->size) {
-	    TRACE(("length %ld vs pattern %d - give up\n",
-		   length, pattern->size));
+	if ((length + offset) % mp->size) {
+	    TRACE(("length %ld vs pattern %d - give up\n", length, mp->size));
 	} else {
 	    /*
 	     * Now walk through the line and measure the pattern against it.
 	     */
-	    for (j = offset; j < (unsigned) length; j += pattern->size) {
+	    for (j = offset; j < (unsigned) length; j += mp->size) {
 		int found = 1;
-		for (k = 0; k < pattern->size; ++k) {
+		for (k = 0; k < mp->size; ++k) {
 		    UCHAR have = buffer[j + k];
-		    UCHAR want = (UCHAR) IsNonNull(pattern->mark[k]);
+		    UCHAR want = (UCHAR) IsNonNull(mp->mark[k]);
 		    if (!have ^ !want) {
 			found = 0;
 			break;
 		    }
 		}
 		if (found) {
-		    total += pattern->size;
+		    total += mp->size;
 		}
 	    }
 	}
@@ -677,7 +686,7 @@ decode_charset(BUFFER *bp, LINE *lp)
  * makes more sense as UTF-8.
  */
 int
-deduce_charset(BUFFER *bp, UCHAR * buffer, B_COUNT * length)
+deduce_charset(BUFFER *bp, UCHAR * buffer, B_COUNT * length, int always)
 {
     int rc = FALSE;
 
@@ -708,15 +717,59 @@ deduce_charset(BUFFER *bp, UCHAR * buffer, B_COUNT * length)
 		   choice_to_name(&fsm_byteorder_mark_blist,
 				  get_bom(bp))));
 	    rc = TRUE;
-	} else {
-	    /* FIXME */
+	} else if (always) {
 	    TRACE(("...try looking for UTF-8\n"));
+	    if (check_utf8(buffer, *length) == TRUE)
+		found_utf8(bp);
 	}
     } else {
 	rc = TRUE;
     }
     remove_crlf_nulls(bp, buffer, length);
     returnCode(rc);
+}
+
+/*
+ * Check if the given buffer should be treated as UTF-8.
+ * For UTF-8, we have to have _some_ UTF-8 encoding, and _all_
+ * of the buffer has to match the pattern.
+ */
+int
+check_utf8(UCHAR * buffer, B_COUNT length)
+{
+    unsigned n;
+    int check = TRUE;
+    int skip = 0;
+    int found;
+    UINT target;
+
+    for (n = found = 0; n < length - 1; n += skip) {
+	skip = vl_conv_to_utf32(&target,
+				(char *) (buffer + n),
+				length - n);
+	if (skip == 0) {
+	    check = FALSE;
+	    break;
+	} else if (skip > 1) {
+	    found = 1;
+	}
+    }
+    return ((check && found)
+	    ? TRUE
+	    : (check
+	       ? SORTOFTRUE
+	       : FALSE));
+}
+
+/*
+ * If we found UTF-8 encoding, set the buffer to match.
+ */
+void
+found_utf8(BUFFER *bp)
+{
+    TRACE(("...found UTF-8\n"));
+    bp->implied_BOM = bom_UTF8;
+    set_encoding_from_bom(bp, bp->implied_BOM);
 }
 
 /*
@@ -775,8 +828,13 @@ chgd_fileencode(BUFFER *bp,
 		int glob_vals,
 		int testing)
 {
-    if (!testing && !glob_vals) {
-	set_bom_from_encoding(bp, args->local->vp->i);
+    if (testing) {
+	;
+    } else {
+	if (!glob_vals) {
+	    set_bom_from_encoding(bp, args->local->vp->i);
+	}
+	set_bufflags(glob_vals, WFHARD | WFMODE);
     }
     return TRUE;
 }

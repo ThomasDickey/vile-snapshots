@@ -5,7 +5,7 @@
  * keys. Like everyone else, they set hints
  * for the display system.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.323 2007/08/29 00:41:50 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.324 2007/08/29 22:02:32 tom Exp $
  *
  */
 
@@ -665,7 +665,7 @@ imply_alt(char *fname, int copy, int lockfl)
 
 		if (copy) {
 		    for_each_line(lp, savebp) {
-			if (addline(bp, lvalue(lp), lp->l_used) != TRUE) {
+			if (addline(bp, lvalue(lp), llength(lp)) != TRUE) {
 			    mlforce("[Copy-buffer failed]");
 			    zotbuf(bp);
 			    bp = 0;

@@ -5,7 +5,7 @@
  * functions that adjust the top line in the window and invalidate the
  * framing, are hard.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/basic.c,v 1.142 2007/08/29 00:41:19 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/basic.c,v 1.150 2007/09/03 15:09:27 tom Exp $
  *
  */
 
@@ -537,34 +537,41 @@ gotoeos(int f, int n)
 int
 forwline(int f, int n)
 {
+    int rc;
     LINE *dlp;
 
     n = need_a_count(f, n, 1);
 
-    if (n < 0)
-	return (backline(f, -n));
-    if (n == 0)
-	return TRUE;
+    if (n < 0) {
+	rc = backline(f, -n);
+    } else if (n == 0) {
+	rc = TRUE;
+    } else {
 
-    /* set the "goal" column if necessary */
-    if (curgoal < 0)
-	curgoal = getccol(FALSE);
+	/* set the "goal" column if necessary */
+	if (curgoal < 0)
+	    curgoal = getccol(FALSE);
 
-    /* loop downwards */
-    dlp = DOT.l;
-    do {
-	LINE *nlp = lforw(dlp);
-	if (nlp == buf_head(curbp)) {
-	    return FALSE;
+	/* loop downwards */
+	dlp = DOT.l;
+	rc = TRUE;
+	do {
+	    LINE *nlp = lforw(dlp);
+	    if (nlp == buf_head(curbp)) {
+		rc = FALSE;
+		break;
+	    }
+	    dlp = nlp;
+	} while (--n != 0);
+
+	if (rc) {
+	    /* set dot */
+	    DOT.l = dlp;
+	    DOT.o = getgoal(dlp);
+	    curwp->w_flag |= WFMOVE;
 	}
-	dlp = nlp;
-    } while (--n != 0);
-
-    /* set dot */
-    DOT.l = dlp;
-    DOT.o = getgoal(dlp);
-    curwp->w_flag |= WFMOVE;
-    return TRUE;
+    }
+    return rc;
 }
 /*
  * Implements the vi "^" command.
@@ -677,31 +684,33 @@ backbline(int f, int n)
 int
 backline(int f, int n)
 {
+    int rc;
     LINE *dlp;
 
     n = need_a_count(f, n, 1);
 
-    if (n < 0)
-	return (forwline(f, -n));
+    if (n < 0) {
+	rc = forwline(f, -n);
+    } else if (is_first_line(DOT, curbp)) {
+	/* cannot move up */
+	rc = FALSE;
+    } else {
+	/* set the "goal" column if necessary */
+	if (curgoal < 0)
+	    curgoal = getccol(FALSE);
 
-    /* can't move up? */
-    if (is_first_line(DOT, curbp))
-	return (FALSE);
+	/* loop upwards */
+	dlp = DOT.l;
+	while (n-- && lback(dlp) != buf_head(curbp))
+	    dlp = lback(dlp);
 
-    /* set the "goal" column if necessary */
-    if (curgoal < 0)
-	curgoal = getccol(FALSE);
-
-    /* loop upwards */
-    dlp = DOT.l;
-    while (n-- && lback(dlp) != buf_head(curbp))
-	dlp = lback(dlp);
-
-    /* set dot */
-    DOT.l = dlp;
-    DOT.o = getgoal(dlp);
-    curwp->w_flag |= WFMOVE;
-    return (TRUE);
+	/* set dot */
+	DOT.l = dlp;
+	DOT.o = getgoal(dlp);
+	curwp->w_flag |= WFMOVE;
+	rc = TRUE;
+    }
+    return rc;
 }
 
 /*
@@ -960,7 +969,7 @@ getgoal(LINE *dlp)
 	if (newcol > curgoal)
 	    break;
 	col = newcol;
-	++dbo;
+	dbo += BytesAt(dlp, dbo);
     }
     return (dbo);
 }
@@ -979,7 +988,7 @@ next_tabcol(int col)
     return (((col / t) + 1) * t);
 }
 
-#define NonPrintingCols(c) (((c) & HIGHBIT) ? 4 : 2)
+#define NonPrintingCols(c) (((c) & HIGHBIT) ? COLS_8BIT : COLS_CTRL)
 
 /*
  * Return the next column index, given the current char and column.
@@ -987,21 +996,20 @@ next_tabcol(int col)
 int
 next_column(LINE *lp, int off, int col)
 {
-    int rc;
+    int rc = 1;
     int c = lgetc(lp, off);
 
     if (c == '\t') {
 	rc = next_tabcol(col) - col;
-    } else if (!isPrint(c)) {
-	rc = NonPrintingCols(c);
+    }
 #if OPT_MULTIBYTE
-	if (b_is_utfXX(curbp)) {
-	    if (bytes_at(lp, off) > 1)
-		rc = 6;		/* "\uXXXX" */
-	}
+    else if (b_is_utfXX(curbp)) {
+	if (bytes_at(lp, off) > 1)
+	    rc = COLS_UTF8;	/* "\uXXXX" */
+    }
 #endif
-    } else {
-	rc = 1;
+    else if (!isPrint(c)) {
+	rc = NonPrintingCols(c);
     }
     return col + rc;
 }
@@ -1012,14 +1020,19 @@ next_column(LINE *lp, int off, int col)
 int
 column_after(int c, int col, int list)
 {
-    int rc;
+    int rc = (col + 1);
 
     if (!list && (c == '\t')) {
 	rc = next_tabcol(col);
-    } else if (!isPrint(c)) {
+    }
+#if OPT_MULTIBYTE
+    else if (b_is_utfXX(curbp)) {
+	if (vl_conv_to_utf8((UCHAR *) 0, c, 10) > 1)
+	    rc = col + COLS_UTF8;	/* "\uXXXX" */
+    }
+#endif
+    else if (!isPrint(c)) {
 	rc = col + NonPrintingCols(c);
-    } else {
-	rc = col + 1;
     }
     return rc;
 }
@@ -1041,12 +1054,20 @@ column_sizes(WINDOW *wp, const char *text, unsigned limit, int *used)
     if (b_is_utfXX(wp->w_bufp)) {
 	*used = vl_conv_to_utf32((UINT *) 0, text, limit);
 	if (*used > 1) {
-	    rc = 6;		/* "\uXXXX" */
+	    rc = COLS_UTF8;	/* "\uXXXX" */
 	} else if (*used < 1) {
 	    *used = 1;		/* probably a broken character... */
+	} else if (isPrint(*text)) {
+	    rc = 1;
 	}
-    }
+    } else
+#else
+    (void) wp;
+    (void) limit;
 #endif
+    if (isPrint(*text)) {
+	rc = 1;
+    }
     return rc;
 }
 

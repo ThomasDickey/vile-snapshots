@@ -3,7 +3,7 @@
  *
  * written for vile.  Copyright (c) 1990, 1995-2001 by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/undo.c,v 1.94 2007/08/29 00:51:03 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/undo.c,v 1.96 2007/08/31 23:19:28 tom Exp $
  *
  */
 
@@ -89,14 +89,14 @@
  * Notes on how the "copied" marks work:
  *
  * Say you do a change to a line, like you go into insertmode, and type
- * three characters.  The first character causes linsert to be called,
+ * three characters.  The first character causes lins_bytes to be called,
  * which calls copy_for_undo(), which copies the line, and marks it as
  * "copied".  Then, the second and third characters also call
  * copy_for_undo(), but since the line is marked, nothing happens.  Now you
  * hit ESC.  Now enter insertmode again.  So far, nothing has happened,
  * except that the "needundocleanup" flag has been set (by execute()s call
  * to mayneedundo()), since we're in an undo-able command.  Type a
- * character.  linsert() calls copy_for_undo() which calls preundocleanup()
+ * character.  lins_bytes() calls copy_for_undo() which calls preundocleanup()
  * (based on the "needundocleanup" flag.  In previous versions of vile,
  * this cleanup required walking the entire buffer, to reset the "copied"
  * flag.  Now, the "copied" flag is actually a word-sized "cookie", which
@@ -306,11 +306,11 @@ nounmodifiable(BUFFER *bp)
     LINE *tlp;
     for (tlp = *BACKSTK(bp); tlp != NULL; tlp = tlp->l_nxtundo) {
 	if (lispurestacksep(tlp))
-	    tlp->l_used = STACKSEP;
+	    llength(tlp) = STACKSEP;
     }
     for (tlp = *FORWSTK(bp); tlp != NULL; tlp = tlp->l_nxtundo) {
 	if (lispurestacksep(tlp))
-	    tlp->l_used = STACKSEP;
+	    llength(tlp) = STACKSEP;
     }
 }
 
@@ -637,7 +637,7 @@ copyline(LINE *lp)
 {
     LINE *nlp;
 
-    nlp = lalloc(lp->l_used, curbp);
+    nlp = lalloc(llength(lp), curbp);
     if (nlp == NULL) {
 	TRACE(("copyline: no memory\n"));
 	return 0;
@@ -648,7 +648,7 @@ copyline(LINE *lp)
     set_lback(nlp, lback(lp));
     /* copy the rest */
     if (lvalue(lp) && lvalue(nlp))
-	(void) memcpy(lvalue(nlp), lvalue(lp), (size_t) lp->l_used);
+	(void) memcpy(lvalue(nlp), lvalue(lp), (size_t) llength(lp));
     return nlp;
 }
 
@@ -845,7 +845,7 @@ lineundo(int f GCC_UNUSED, int n GCC_UNUSED)
     }
 
     lvalue(lp) = ntext;
-    lp->l_used = ulp->l_used;
+    llength(lp) = llength(ulp);
     lp->l_size = ulp->l_size;
 
 #if ! WINMARK
