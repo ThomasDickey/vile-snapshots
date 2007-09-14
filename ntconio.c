@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 console API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntconio.c,v 1.87 2006/01/15 14:03:49 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntconio.c,v 1.88 2007/09/03 20:05:59 tom Exp $
  *
  */
 
@@ -20,7 +20,6 @@
 
 #define NROW	128		/* Max Screen size.             */
 #define NCOL    256		/* Edit if you want to.         */
-#define	NPAUSE	200		/* # times thru update to pause */
 #define NOKYMAP (-1)
 
 #define ABS(x) (((x) < 0) ? -(x) : (x))
@@ -1478,7 +1477,7 @@ TERM term =
     NROW,
     NCOL,
     NCOL,
-    NPAUSE,
+    enc_DEFAULT,
     ntopen,
     ntclose,
     ntkopen,

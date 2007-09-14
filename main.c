@@ -22,7 +22,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.596 2007/08/20 16:06:23 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.597 2007/09/12 23:35:42 tom Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -1498,18 +1498,28 @@ init_mode_value(struct VAL *d, MODECLASS v_class, int v_which)
 	break;
     case WIN_MODE:
 	switch (v_which) {
-	    setINT(WMDHORSCROLL, TRUE);		/* horizontal scrolling */
 	    setINT(WMDLIST, FALSE);	/* list-mode */
+	    setINT(WMDHORSCROLL, TRUE);		/* horizontal scrolling */
 	    setINT(WMDNUMBER, FALSE);	/* number */
+	    setINT(WMDNONPRINTOCTAL, FALSE);	/* unprintable-as-octal */
 	    setINT(WVAL_SIDEWAYS, 0);	/* list-mode */
 #ifdef WMDLINEWRAP
 	    setINT(WMDLINEWRAP, FALSE);		/* line-wrap */
+#endif
+#ifdef WMDRULER
+	    setINT(WMDRULER, FALSE);	/* ruler */
+#endif
+#ifdef WMDSHOWCHAR
+	    setINT(WMDSHOWCHAR, FALSE);		/* showchar */
 #endif
 #ifdef WMDSHOWVARS
 	    setINT(WMDSHOWVARS, FALSE);		/* showvariables */
 #endif
 #ifdef WMDTERSELECT
 	    setINT(WMDTERSELECT, TRUE);		/* terse selections */
+#endif
+#ifdef WMDUNICODE_AS_HEX
+	    setINT(WMDUNICODE_AS_HEX, FALSE);	/* unicode-as-hex */
 #endif
 	default:
 	    setIntValue(d, 0);

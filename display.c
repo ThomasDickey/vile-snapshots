@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.446 2007/09/03 19:35:49 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.454 2007/09/13 23:59:33 tom Exp $
  *
  */
 
@@ -55,7 +55,7 @@ static int im_timing;
  * when setting visible attributes, to keep tabs and other nonprinting
  * characters looking 'right'.
  */
-#define MARK2COL(wp, mk)  offs2col(wp, mk.l, mk.o + 1) - 1
+#define MARK2COL(wp, mk)  offs2col(wp, mk.l, mk.o + BytesAt(mk.l, mk.o)) - 1
 #define mark2col(wp, mk)  offs2col(wp, mk.l, mk.o)
 
 #ifdef WMDLINEWRAP
@@ -540,14 +540,8 @@ vtputc(WINDOW *wp, const char *src, unsigned limit)
 	vp = vscreen[vtrow];
 
     if (vp != 0) {
-#if OPT_MULTIBYTE
-	if (b_is_utfXX(wp->w_bufp)
-	    && column_sizes(wp, src, limit, &rc) == COLS_UTF8) {
-	    rc = vtlistc(wp, src, limit);
-	} else
-#endif
 	if (isPrint(*src) && vtcol >= 0 && vtcol < lastcol) {
-	    VideoText(vp)[vtcol++] = (UCHAR) (*src);
+	    VideoText(vp)[vtcol++] = (VIDEO_TEXT) (*src);
 #ifdef WMDLINEWRAP
 	    if ((allow_wrap != 0)
 		&& (vtcol == lastcol)
@@ -590,25 +584,36 @@ vtlistc(WINDOW *wp, const char *src, unsigned limit)
 
 #if OPT_MULTIBYTE
     if (b_is_utfXX(wp->w_bufp)) {
-	int test;
 	int need = column_sizes(wp, src, limit, &rc);
 
 	switch (need) {
 	case COLS_UTF8:
 	    rc = vl_conv_to_utf32(&value, src, limit);
-	    /* FIXME - some of recode's UTF-8/UTF-16 gives 6-digit codes
-	     * rather than 4 - but the low 4 digits are the same.
-	     */
-	    sprintf(temp, "\\u%04X", value & ((1 << MaxCBits) - 1));
-	    n = need;
+	    if (!w_val(wp, WMDUNICODE_AS_HEX) && FoldTo8bits(value)) {
+		temp[n++] = (char) value;
+	    } else {
+		/* FIXME - some of recode's UTF-8/UTF-16 gives 6-digit codes
+		 * rather than 4 - but the low 4 digits are the same.
+		 */
+		sprintf(temp, "\\u%04X", value & ((1 << MaxCBits) - 1));
+		n = need;
+	    }
 	    break;
 	case COLS_CTRL:
 	    if (isPrint(*src)) {
 		temp[n++] = *src;
 	    } else {
 		temp[n++] = '^';
-		temp[n++] = toalpha(*src);
+		temp[n++] = (char) toalpha(*src);
 	    }
+	    break;
+	case COLS_8BIT:
+	    /*
+	     * Recover from illegal bytes...
+	     */
+	    TRACE2(("vtlistc illegal:%#x\n", CharOf(*src)));
+	    sprintf(temp, "\\?%02X", CharOf(*src));
+	    n = need;
 	    break;
 	default:
 	    temp[n++] = *src;
@@ -625,9 +630,9 @@ vtlistc(WINDOW *wp, const char *src, unsigned limit)
 	case COLS_8BIT:
 	    temp[n++] = BACKSLASH;
 	    if (w_val(wp, WMDNONPRINTOCTAL)) {
-		temp[n++] = ((*src >> 6) & 3) + '0';
-		temp[n++] = ((*src >> 3) & 7) + '0';
-		temp[n++] = ((*src) & 7) + '0';
+		temp[n++] = (char) (((*src >> 6) & 3) + '0');
+		temp[n++] = (char) (((*src >> 3) & 7) + '0');
+		temp[n++] = (char) (((*src) & 7) + '0');
 	    } else {
 		temp[n++] = 'x';
 		temp[n++] = hexdigits[(*src >> 4) & 0xf];
@@ -636,7 +641,7 @@ vtlistc(WINDOW *wp, const char *src, unsigned limit)
 	    break;
 	case COLS_CTRL:
 	    temp[n++] = '^';
-	    temp[n++] = toalpha(*src);
+	    temp[n++] = (char) toalpha(*src);
 	    break;
 	default:
 	    temp[n++] = *src;
@@ -656,6 +661,27 @@ vtputsn(WINDOW *wp, const char *src, size_t n)
     }
 }
 
+#if OPT_MULTIBYTE
+static int
+vtset_put(WINDOW *wp, const char *src, unsigned limit)
+{
+    int rc;
+
+    if (w_val(wp, WMDLIST)) {
+	rc = vtlistc(wp, src, limit);
+    } else if (b_is_utfXX(wp->w_bufp)
+	       && column_sizes(wp, src, limit, &rc) == COLS_UTF8) {
+	rc = vtlistc(wp, src, limit);
+    } else {
+	rc = vtputc(wp, src, limit);
+    }
+    return rc;
+}
+#else
+#define vtset_put(wp, src, n) (w_val(wp, WMDLIST) \
+				? vtlistc(wp, src, n) \
+				: vtputc(wp, src, n))
+#endif
 /*
  * Write a line to the screen at the current video coordinates, allowing for
  * line-wrap or right-shifting.
@@ -735,12 +761,7 @@ vtset(LINE *lp, WINDOW *wp)
      * performance hit.
      */
 #define VTSET_PUT() \
-	int used; \
-	if (list) { \
-	    used = vtlistc(wp, from, n); \
-	} else { \
-	    used = vtputc(wp, from, n); \
-	} \
+	int used = vtset_put(wp, from, n); \
 	from += used; n -= used
 
 #define VTSET_LOOP(condition) \
@@ -779,9 +800,8 @@ vtset(LINE *lp, WINDOW *wp)
 #ifdef WMDLINEWRAP
     allow_wrap = 0;
 #endif
-    TRACE2(("TEXT %4d:%.*s\n", vtrow,
-	    (vtcol > 0) ? vtcol : (term.cols - 1),
-	    vscreen[vtrow]->v_text));
+    TRACE2(("TEXT %4d:%s\n", vtrow,
+						       visible_video_text(vscreen[vtrow]->v_text, vtcol)));
 }
 
 /*
@@ -796,9 +816,8 @@ vteeol(void)
 #ifdef WMDLINEWRAP
 	if (vtrow >= 0)
 #endif
-	    if (n >= 0) {
-		(void) memset(&vscreen[vtrow]->v_text[n],
-			      ' ', (size_t) (term.cols - n));
+	    while (n < term.cols) {
+		vscreen[vtrow]->v_text[n++] = ' ';
 	    }
 	vtcol = term.cols;
     }
@@ -855,7 +874,7 @@ mk_to_vcol(WINDOW *wp, MARK mark, int expanded, int col, int adjust)
 	col = 0;
     }
     lp = mark.l;
-    lim = mark.o + extra;
+    lim = mark.o + (extra ? BytesAt(mark.l, mark.o) : 0);
     if (lim > llength(lp))
 	lim = llength(lp);
 
@@ -869,7 +888,17 @@ mk_to_vcol(WINDOW *wp, MARK mark, int expanded, int col, int adjust)
 	}
 #if OPT_MULTIBYTE
 	else if (b_is_utfXX(wp->w_bufp)) {
-	    col += column_sizes(wp, text + i, llength(mark.l) - i, &used);
+	    UINT value;
+	    int nxt = llength(mark.l) - i;
+	    int adj = column_sizes(wp, text + i, nxt, &used);
+
+	    if (adj == COLS_UTF8 && !w_val(wp, WMDUNICODE_AS_HEX)) {
+		vl_conv_to_utf32(&value, text + i, nxt);
+		if (FoldTo8bits(value)) {
+		    adj = 1;
+		}
+	    }
+	    col += adj;
 	}
 #endif
 	else if (!isPrint(c)) {
@@ -1072,7 +1101,7 @@ dot_to_vcol(WINDOW *wp)
 static void
 update_line(int row, int colfrom, int colto)
 {
-    char *vc, *pc, *evc;
+    VIDEO_TEXT *vc, *pc, *evc;
     VIDEO_ATTR *va, *pa, xx;
     int nchanges = 0;
 
@@ -1120,8 +1149,8 @@ update_line(int row, int colfrom, int colto)
     int xr = colto;
     int xx;
 
-    char *cp1 = VideoText(vp1);
-    char *cp2 = VideoText(vp2);
+    VIDEO_TEXT *cp1 = VideoText(vp1);
+    VIDEO_TEXT *cp2 = VideoText(vp2);
     int nbflag;			/* non-blanks to the right flag? */
 
 #if OPT_VIDEO_ATTRS
@@ -1306,34 +1335,29 @@ update_line(int row, int colfrom, int colto)
 void
 kbd_openup(void)
 {
-#if !OPT_PSCREEN
-    int i;
-#if OPT_VIDEO_ATTRS
-    size_t alen = sizeof(VIDEO_ATTR) * term.cols;
-#endif
-#endif
-
     kbd_flush();
     bottomleft();
     term.putch('\n');
     term.putch('\r');
     term.flush();
+
 #if !OPT_PSCREEN
     if (pscreen != 0) {
+	int i, j;
 	for (i = 0; i < term.rows - 1; ++i) {
-	    (void) memcpy(pscreen[i]->v_text,
-			  pscreen[i + 1]->v_text,
-			  (size_t) (term.cols));
+	    for (j = 0; j < term.cols; ++j) {
+		pscreen[i]->v_text[j] = pscreen[i + 1]->v_text[j];
 #if OPT_VIDEO_ATTRS
-	    (void) memcpy(pscreen[i]->v_attrs,
-			  pscreen[i + 1]->v_attrs,
-			  alen);
+		pscreen[i]->v_attrs[j] = pscreen[i + 1]->v_attrs[j];
+#endif
+	    }
+	}
+	for (j = 0; j < term.cols; ++j) {
+	    pscreen[i]->v_text[j] = ' ';
+#if OPT_VIDEO_ATTRS
+	    pscreen[i]->v_attrs[j] = VADIRTY;
 #endif
 	}
-	(void) memset(pscreen[i]->v_text, ' ', (size_t) (term.cols));
-#if OPT_VIDEO_ATTRS
-	(void) memset(pscreen[i]->v_attrs, VADIRTY, alen);
-#endif
     }
 #endif
 }
@@ -1380,11 +1404,11 @@ kbd_flush(void)
 				 : 0),
 		   term.cols);
 	if (my_overlay[0] != EOS) {
+	    int j;
 	    int n = term.cols - (int) strlen(my_overlay) - 1;
 	    if (n > 0) {
-		(void) memcpy(&vscreen[row]->v_text[n],
-			      my_overlay,
-			      strlen(my_overlay));
+		for (j = 0; my_overlay[j] != EOS; ++j)
+		    vscreen[row]->v_text[n + j] = my_overlay[j];
 	    }
 	}
 	vscreen[row]->v_flag |= VFCHG;
@@ -1449,9 +1473,19 @@ offs2col0(WINDOW *wp,
 
 	    c = (n == length) ? '\n' : text[n];
 #if OPT_MULTIBYTE
-	    if (b_is_utfXX(wp->w_bufp) && !isTab(c))
-		column += column_sizes(wp, text + n, offset - n, &used);
-	    else
+	    if (b_is_utfXX(wp->w_bufp) && !isTab(c)) {
+		UINT value;
+		int nxt = offset - n;
+		int adj = column_sizes(wp, text + n, nxt, &used);
+
+		if (adj == COLS_UTF8 && !w_val(wp, WMDUNICODE_AS_HEX)) {
+		    vl_conv_to_utf32(&value, text + n, nxt);
+		    if (FoldTo8bits(value)) {
+			adj = 1;
+		    }
+		}
+		column += adj;
+	    } else
 #endif
 	    if (isPrint(c) || (c == last)) {
 		column++;
@@ -1511,9 +1545,19 @@ col2offs(WINDOW *wp, LINE *lp, C_NUM col)
 	    int c = text[offset];
 	    int used = 1;
 #if OPT_MULTIBYTE
-	    if (b_is_utfXX(wp->w_bufp) && !isTab(c))
-		n += column_sizes(wp, text + offset, len - offset, &used);
-	    else
+	    if (b_is_utfXX(wp->w_bufp) && !isTab(c)) {
+		UINT value;
+		int nxt = len - offset;
+		int adj = column_sizes(wp, text + offset, nxt, &used);
+
+		if ((adj == COLS_UTF8) && !w_val(wp, WMDUNICODE_AS_HEX)) {
+		    vl_conv_to_utf32(&value, text + offset, nxt);
+		    if (FoldTo8bits(value)) {
+			adj = 1;
+		    }
+		}
+		n += adj;
+	    } else
 #endif
 	    if (isPrint(c)) {
 		n++;
@@ -2217,6 +2261,23 @@ update_cursor_position(int *screenrowp, int *screencolp)
 
 #if CAN_SCROLL
 
+static int
+same_video_text(const VIDEO_TEXT * virtual_text, const VIDEO_TEXT *
+		physical_text, int ncols)
+{
+    int rc = TRUE;
+    int j;
+
+    for (j = 0; j < ncols; ++j) {
+	if (virtual_text[j] != physical_text[j]) {
+	    rc = FALSE;
+	    break;
+	}
+    }
+
+    return rc;
+}
+
 /*
  * return TRUE on text match
  *
@@ -2224,19 +2285,18 @@ update_cursor_position(int *screenrowp, int *screencolp)
  * prow - physical row
  */
 static int
-texttest(int vrow, int prow)
+same_row_text(int vrow, int prow)
 {
-    struct VIDEO *vpv = vscreen[vrow];	/* virtual screen image */
-    struct VIDEO *vpp = pscreen[prow];	/* physical screen image */
-
-    return (!memcmp(vpv->v_text, vpp->v_text, (size_t) term.cols));
+    return same_video_text(vscreen[vrow]->v_text,
+			   pscreen[prow]->v_text,
+			   term.cols);
 }
 
 /*
  * return the index of the first trailing whitespace character
  */
 static int
-endofline(char *s, int n)
+endofline(const VIDEO_TEXT * s, int n)
 {
     int i;
     for (i = n - 1; i >= 0; i--)
@@ -2285,7 +2345,7 @@ simple_scroll(int inserts)
     /* find first line that doesn't match */
     first = -1;
     for (i = 0; i < rows; i++) {
-	if (!texttest(i, i)) {
+	if (!same_row_text(i, i)) {
 	    first = i;
 	    break;
 	}
@@ -2301,7 +2361,7 @@ simple_scroll(int inserts)
 	end = endofline(vpv->v_text, cols);
 	if (end == 0)
 	    ptarget = first;	/* newlines */
-	else if (memcmp(vpp->v_text, vpv->v_text, end) == 0)
+	else if (same_video_text(vpp->v_text, vpv->v_text, end))
 	    ptarget = first + 1;	/* broken line newlines */
 	else
 	    ptarget = first;
@@ -2315,14 +2375,14 @@ simple_scroll(int inserts)
     longcount = 0;
     longinplace = 0;
     for (i = from + 1; i < rows; i++) {
-	if (inserts ? texttest(i, from) : texttest(from, i)) {
+	if (inserts ? same_row_text(i, from) : same_row_text(from, i)) {
 	    match = i;
 	    count = 1;
-	    inplace = texttest(match, match) ? 1 : 0;
+	    inplace = same_row_text(match, match) ? 1 : 0;
 	    for (j = match + 1, k = from + 1; j < rows && k < rows; j++, k++) {
-		if (inserts ? texttest(j, k) : texttest(k, j)) {
+		if (inserts ? same_row_text(j, k) : same_row_text(k, j)) {
 		    count++;
-		    if (texttest(j, j))
+		    if (same_row_text(j, j))
 			inplace++;
 		} else
 		    break;
@@ -2339,7 +2399,7 @@ simple_scroll(int inserts)
 
     if (!inserts) {
 	/* full kill case? */
-	if (match > 0 && texttest(first, match - 1)) {
+	if (match > 0 && same_row_text(first, match - 1)) {
 	    vtarget--;
 	    match--;
 	    count++;
@@ -2395,7 +2455,8 @@ simple_scroll(int inserts)
 	for (i = 0; i < count; i++) {
 	    vpp = pscreen[to + i];
 	    vpv = vscreen[to + i];
-	    (void) memcpy(vpp->v_text, vpv->v_text, (size_t) cols);
+	    for (j = 0; j < cols; ++j)
+		vpp->v_text[j] = vpv->v_text[j];
 	}
 #if OPT_VIDEO_ATTRS
 #define SWAP_ATTR_PTR(a, b) do { VIDEO_ATTR *temp = pscreen[a]->v_attrs;  \
@@ -2427,7 +2488,7 @@ simple_scroll(int inserts)
 	    to = match + count;
 	}
 	for (i = from; i < to; i++) {
-	    char *txt;
+	    VIDEO_TEXT *txt;
 	    txt = pscreen[i]->v_text;
 	    for (j = 0; j < term.cols; ++j)
 		txt[j] = ' ';
@@ -2725,6 +2786,7 @@ special_formatter(TBUFF **result, const char *fs, WINDOW *wp)
     if (fs == 0)
 	return;
 
+    TRACE((T_CALLED "special_formatter %s\n", fs));
     tb_init(result, EOS);
 
     left_ms[0] = right_ms[0] = EOS;
@@ -3007,6 +3069,7 @@ special_formatter(TBUFF **result, const char *fs, WINDOW *wp)
 	}
     }
     tb_append(result, EOS);
+    returnVoid();
 }
 #endif
 
@@ -4345,8 +4408,8 @@ psc_eeol(void)
 {
     if (ttrow >= 0 && ttrow < term.rows && ttcol >= 0) {
 	VIDEO_ATTR *vp = &vscreen[ttrow]->v_attrs[ttcol];
-	char *cp = &vscreen[ttrow]->v_text[ttcol];
-	char *cplim = &vscreen[ttrow]->v_text[term.cols];
+	VIDEO_TEXT *cp = &vscreen[ttrow]->v_text[ttcol];
+	VIDEO_TEXT *cplim = &vscreen[ttrow]->v_text[term.cols];
 	vscreen[ttrow]->v_flag |= VFCHG;
 	while (cp < cplim) {
 	    *vp++ = 0;

@@ -18,7 +18,7 @@
  * transferring the selection are not dealt with in this file.  Procedures
  * for dealing with the representation are maintained in this file.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.164 2007/08/31 22:53:03 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.165 2007/09/10 22:06:04 tom Exp $
  *
  */
 
@@ -246,7 +246,7 @@ sel_begin(void)
 	orig_region =
 	startregion.ar_region.r_orig =
 	startregion.ar_region.r_end = DOT;
-    plus_region.o += 1;
+    plus_region.o += BytesAt(plus_region.l, plus_region.o);
     startregion.ar_vattr = 0;
     startregion.ar_shape = EXACT;
 #if OPT_HYPERTEXT
@@ -310,9 +310,9 @@ sel_extend(int wiping, int include_dot)
 	&& (selregion.ar_shape == EXACT)
 	&& dot_vs_mark() >= 0) {
 	if (samepoint(MK, orig_region)) {
-	    DOT.o += 1;
+	    DOT.o += BytesAt(DOT.l, DOT.o);
 	} else if (samepoint(MK, plus_region)) {
-	    DOT.o += 1;
+	    DOT.o += BytesAt(DOT.l, DOT.o);
 	    MK = orig_region;
 	}
     }
@@ -333,7 +333,7 @@ sel_extend(int wiping, int include_dot)
 	if (selregion.ar_shape == EXACT) {
 	    if (dot_vs_mark() <= 0) {
 		if (samepoint(MK, orig_region))
-		    MK.o += 1;
+		    MK.o += BytesAt(MK.l, MK.o);
 	    }
 	} else if (selregion.ar_shape == RECTANGLE) {
 	    if (samepoint(MK, DOT)) {	/* avoid making empty-region */
@@ -434,6 +434,7 @@ sel_yank(int reg)
     BUFFER *save_bp = curbp;
     int code = FALSE;
 
+    TRACE((T_CALLED "sel_yank(%d)\n", reg));
     if (valid_window(save_wp = push_fake_win(selbufp))) {
 	/*
 	 * We're not guaranteed that curbp and selbufp are the same.
@@ -464,7 +465,7 @@ sel_yank(int reg)
 	(void) update(FALSE);
 	code = TRUE;
     }
-    return code;
+    returnCode(code);
 }
 
 /* select all text in curbp and yank to unnamed register */
@@ -558,9 +559,9 @@ extended_region(void)
     savemark = MK;
     regionshape = selregion.ar_shape;
     MK = selregion.ar_region.r_orig;
-    DOT.o += 1;
+    DOT.o += BytesAt(DOT.l, DOT.o);
     if (getregion(&a) == TRUE) {
-	DOT.o -= 1;
+	DOT.o -= BytesBefore(DOT.l, DOT.o);
 	MK = selregion.ar_region.r_end;
 	if (regionshape == FULLLINE)
 	    MK.l = lback(MK.l);
@@ -573,7 +574,7 @@ extended_region(void)
 		rp = &b;
 	}
     } else {
-	DOT.o -= 1;
+	DOT.o -= BytesBefore(DOT.l, DOT.o);
     }
     MK = savemark;
     return rp;
@@ -1095,9 +1096,9 @@ multimotion(int f, int n)
 	   line_no(curbp, MK.l), MK.o));
     if ((regionshape != RECTANGLE) && sweephack) {
 	if (dot_vs_mark() < 0)
-	    MK.o += 1;
+	    MK.o += BytesAt(MK.l, MK.o);
 	else
-	    DOT.o += 1;
+	    DOT.o += BytesAt(DOT.l, DOT.o);
     }
     status = yankregion();
     DOT = savedot;
@@ -1612,7 +1613,7 @@ set_mark_after(int count, int rslen)
 
     MK = DOT;
     while (count > 0) {
-	MK.o += count;
+	MK.o += count;		/* FIXME? */
 	if (is_last_line(MK, curbp)) {
 	    count = 0;
 	} else if (MK.o > llength(MK.l)) {
@@ -1756,7 +1757,7 @@ attribute_from_filter(void)
 			    (void) attributeregion();
 		    }
 		} else {
-		    DOT.o += 1;
+		    DOT.o += BytesAt(DOT.l, DOT.o);
 		}
 	    }
 	    DOT.l = lforw(DOT.l);

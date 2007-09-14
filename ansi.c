@@ -4,7 +4,7 @@
  * "termio.c". It compiles into nothing if not an ANSI device.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ansi.c,v 1.48 2006/01/12 23:37:34 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ansi.c,v 1.49 2007/09/03 20:05:59 tom Exp $
  */
 
 #include	"estruct.h"
@@ -41,8 +41,6 @@
 #define MAXNROW	NROW
 #define MAXNCOL	NCOL
 #endif
-
-#define NPAUSE	100		/* # times thru update to pause */
 
 #if OPT_COLOR
 
@@ -340,7 +338,7 @@ TERM term =
     NROW,			/* current */
     MAXNCOL,			/* max */
     NCOL,			/* current */
-    NPAUSE,
+    enc_DEFAULT,
     ansiopen,
     nullterm_kopen,
     nullterm_kclose,

@@ -1,7 +1,7 @@
 /*
  * debugging support -- tom dickey.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.58 2007/08/29 00:50:27 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.62 2007/09/13 23:59:10 tom Exp $
  *
  */
 
@@ -203,6 +203,35 @@ visible_buff(const char *buffer, int length, int eos)
 	    vl_vischr(dst, c);
 	    k += strlen(dst);
 	}
+    }
+    result[k] = 0;
+    endofDisplay();
+    return result;
+}
+
+char *
+visible_video_text(const VIDEO_TEXT * buffer, int length)
+{
+    int j;
+    unsigned k = 0;
+    unsigned need = ((length > 0) ? (length * 4) : 0) + 1;
+    char *result;
+
+    beginDisplay();
+    if (buffer == 0) {
+	static const VIDEO_TEXT dummy[] =
+	{0};
+	buffer = dummy;
+	length = 0;
+    }
+
+    result = alloc_visible(need);
+
+    for (j = 0; j < length; j++) {
+	int c = buffer[j] & 0xff;
+	char *dst = result + k;
+	vl_vischr(dst, c);
+	k += strlen(dst);
     }
     result[k] = 0;
     endofDisplay();
@@ -666,20 +695,76 @@ trace_mark(char *name, MARK *mk, BUFFER *bp)
     Trace("%s %d.%d\n", name, line_no(bp, mk->l), mk->o);
 }
 
+static const char *
+visible_shape(REGIONSHAPE shape)
+{
+    return
+	(shape == EXACT
+	 ? "exact"
+	 : (shape == FULLLINE
+	    ? "full-line"
+	    : (shape == RECTANGLE
+	       ? "rectangle"
+	       : "?")));
+}
+
 void
 trace_region(REGION * rp, BUFFER *bp)
 {
-    Trace("region %d.%d .. %d.%d (%ld:%s)\n",
-	  line_no(bp, rp->r_orig.l), rp->r_orig.o,
-	  line_no(bp, rp->r_end.l), rp->r_end.o,
+    L_NUM no_1st = line_no(bp, rp->r_orig.l);
+    L_NUM no_2nd = line_no(bp, rp->r_end.l);
+
+    LINE *lp1 = (no_1st > no_2nd) ? rp->r_end.l : rp->r_orig.l;
+    LINE *lp2 = (no_1st > no_2nd) ? rp->r_orig.l : rp->r_end.l;
+
+    C_NUM c_1st = (no_1st > no_2nd) ? rp->r_end.o : rp->r_orig.o;
+    C_NUM c_2nd = (no_1st > no_2nd) ? rp->r_orig.o : rp->r_end.o;
+
+    LINE *lp = lp1;
+
+    if (lp1 == lp2) {
+	if (c_1st > c_2nd) {
+	    int n = c_1st;
+	    c_1st = c_2nd;
+	    c_2nd = n;
+	}
+    }
+
+    Trace("region %d.%d .. %d.%d cols %d..%d (%ld:%s)\n",
+	  no_1st, rp->r_orig.o,
+	  no_2nd, rp->r_end.o,
+	  rp->r_leftcol, rp->r_rightcol,
 	  (long) rp->r_size,
-	  (regionshape == EXACT
-	   ? "exact"
-	   : (regionshape == FULLLINE
-	      ? "full-line"
-	      : (regionshape == RECTANGLE
-		 ? "rectangle"
-		 : "?"))));
+	  visible_shape(regionshape));
+
+    for (;;) {
+	if (lp == lp1) {
+	    if (lp == lp2) {
+		Trace("%5d%*s%s\n",
+		      line_no(bp, lp),
+		      c_1st + 2, "->",
+		      visible_buff(lvalue(lp) + c_1st, c_2nd - c_1st, 0));
+	    } else {
+		Trace("%5d%*s%s\n",
+		      line_no(bp, lp),
+		      c_1st + 2, "->",
+		      visible_buff(lvalue(lp) + c_1st, llength(lp) - c_1st, 0));
+	    }
+	} else if (lp == lp2) {
+	    Trace("%5d%s%s\n",
+		  line_no(bp, lp),
+		  "->",
+		  visible_buff(lvalue(lp), c_2nd, 0));
+	} else {
+	    Trace("%5d%s%s\n",
+		  line_no(bp, lp),
+		  "->",
+		  lp_visible(lp));
+	}
+	if (lp == lp2)
+	    break;
+	lp = lforw(lp);
+    }
 }
 
 void

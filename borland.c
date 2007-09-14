@@ -9,7 +9,7 @@
  * Note: Visual flashes are not yet supported.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/borland.c,v 1.36 2006/01/12 23:37:34 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/borland.c,v 1.37 2007/09/03 20:05:59 tom Exp $
  *
  */
 
@@ -29,7 +29,6 @@
 
 #define NROW	50		/* Max Screen size.             */
 #define NCOL    80		/* Edit if you want to.         */
-#define	NPAUSE	200		/* # times thru update to pause */
 #define	SPACE	32		/* space character              */
 
 /* We assume that most users have a color display.  */
@@ -501,7 +500,7 @@ TERM term =
     NROW,
     NCOL,
     NCOL,
-    NPAUSE,
+    enc_DEFAULT,
     boropen,
     borclose,
     borkopen,

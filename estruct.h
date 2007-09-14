@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.631 2007/09/02 20:58:38 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.636 2007/09/14 00:34:41 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -1053,6 +1053,8 @@ extern void endofDisplay(void);
 #define N_chars    (1 << MinCBits)	/* must be a power-of-2		*/
 #define HIGHBIT    (1 << 7)		/* the meta bit			*/
 
+#define FoldTo8bits(value) (value < 256 && isPrint(value))
+
 #define COLS_CTRL  2			/* columns for "^X"		*/
 #define COLS_8BIT  4			/* columns for "\xXX"		*/
 #define COLS_UTF8  6			/* columns for "\uXXXX"		*/
@@ -1203,12 +1205,13 @@ typedef enum {
 	, enc_UTF8
 	, enc_UTF16
 	, enc_UTF32
-#define enc_DEFAULT ENUM_UNKNOWN
+#define enc_DEFAULT ((ENC_CHOICES) ENUM_UNKNOWN)
 #else
 #define enc_DEFAULT enc_POSIX
 #endif
 } ENC_CHOICES;
  
+#define b_is_enc_DEFAULT(bp) ((ENC_CHOICES) b_val(bp, VAL_FILE_ENCODING) == enc_DEFAULT)
 #define b_is_utfXX(bp)       (b_val(bp, VAL_FILE_ENCODING) >= enc_UTF8)
 
 typedef enum {
@@ -2411,7 +2414,7 @@ typedef struct	{
 	int	rows;			/* current row count		*/
 	int	maxcols;		/* max column count		*/
 	int	cols;			/* current column count		*/
-	int	pausecount;		/* # times thru update to pause */
+	ENC_CHOICES encoding;		/* tell what the display can do	*/
 	void	(*open) (void);		/* Open terminal at the start.	*/
 	void	(*close) (void);	/* Close terminal at end.	*/
 	void	(*kopen) (void);	/* keyboard open		*/
@@ -2450,6 +2453,7 @@ typedef struct	{
 	void	(*mevent) (void);	/* mouse event			*/
 }	TERM;
 
+typedef UCHAR VIDEO_TEXT;
 
 typedef struct  VIDEO {
 	UINT	v_flag;			/* Flags */
@@ -2464,7 +2468,7 @@ typedef struct  VIDEO {
 #endif
 	/* allocate 4 bytes here, and malloc 4 bytes less than we need,
 		to keep malloc from rounding up. */
-	char	v_text[4];		/* Screen data. */
+	VIDEO_TEXT v_text[4];		/* Screen data. */
 }	VIDEO;
 
 #define VideoText(vp) (vp)->v_text

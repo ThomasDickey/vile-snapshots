@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 screen API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.165 2007/08/12 22:53:15 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.168 2007/09/13 23:41:06 tom Exp $
  * Written by T.E.Dickey for vile (october 1997).
  * -- improvements by Clark Morgan (see w32cbrd.c, w32pipe.c).
  */
@@ -58,7 +58,6 @@
 
 #define NROW	128		/* Max Screen size.             */
 #define NCOL    256		/* Edit if you want to.         */
-#define	NPAUSE	200		/* # times thru update to pause */
 #define NOKYMAP (-1)
 #define KYREDIR (-2)		/* sent keystroke elsewhere.    */
 
@@ -1374,8 +1373,8 @@ scflush(void)
     if (cur_pos && !vile_resizing) {
 	HDC hdc;
 
-	TRACE(("PUTC:flush %2d (%2d,%2d) (%.*s)\n", cur_pos, crow, ccol,
-	       cur_pos, &CELL_TEXT(crow, ccol)));
+	TRACE(("PUTC:flush %2d (%2d,%2d) (%s)\n", cur_pos, crow, ccol,
+	       visible_video_text(&CELL_TEXT(crow, ccol), cur_pos)));
 
 	hdc = GetDC(cur_win->text_hwnd);
 	nt_set_colors(hdc, cur_atr);
@@ -1385,7 +1384,7 @@ scflush(void)
 		   RowToPixel(crow),
 		   0,
 		   (RECT *) 0,
-		   &CELL_TEXT(crow, ccol), cur_pos,
+		   (char *) &CELL_TEXT(crow, ccol), cur_pos,
 		   intercharacter(cur_pos));
 
 	ReleaseDC(cur_win->text_hwnd, hdc);
@@ -1562,7 +1561,7 @@ ntputc(int ch)
 {
     /* This is an optimization for the most common case. */
     if (ch >= ' ') {
-	CELL_TEXT(crow, ccol + cur_pos) = (char) ch;
+	CELL_TEXT(crow, ccol + cur_pos) = (VIDEO_TEXT) ch;
 	CELL_ATTR(crow, ccol + cur_pos) = cur_atr;
 	cur_pos++;
     } else {
@@ -1602,7 +1601,7 @@ ntputc(int ch)
 	    break;
 
 	default:
-	    CELL_TEXT(crow, ccol + cur_pos) = (char) ch;
+	    CELL_TEXT(crow, ccol + cur_pos) = (VIDEO_TEXT) ch;
 	    CELL_ATTR(crow, ccol + cur_pos) = cur_atr;
 	    cur_pos++;
 	    break;
@@ -2212,11 +2211,12 @@ AutoScroll(WINDOW *wp)
 static int
 MouseClickSetPos(POINT * result, int *onmode)
 {
+    int code = FALSE;
     WINDOW *wp;
 
     GetMousePos(result);
 
-    TRACE(("GETC:setcursor(%d, %d)\n", result->y, result->x));
+    TRACE((T_CALLED "MouseClickSetPos(%d, %d)\n", result->y, result->x));
 
     /*
      * If we're getting a button-down in a window, allow it to maybe begin
@@ -2227,11 +2227,12 @@ MouseClickSetPos(POINT * result, int *onmode)
     if ((wp = row2window(result->y)) != 0) {
 	if (result->y == mode_row(wp)) {
 	    *onmode = TRUE;
-	    return TRUE;
+	    code = TRUE;
+	} else {
+	    code = setcursor(result->y, result->x);
 	}
-	return setcursor(result->y, result->x);
     }
-    return FALSE;
+    returnCode(code);
 }
 
 /*
@@ -3244,14 +3245,14 @@ repaint_window(HWND hWnd)
 		new_atr = CELL_ATTR(row, col);
 		if (new_atr != old_atr) {
 		    nt_set_colors(ps.hdc, old_atr);
-		    TRACE2(("ExtTextOut [%3d,%3d]%.*s\n", row, old_col, col -
-			    old_col, &CELL_TEXT(row, old_col)));
+		    TRACE2(("ExtTextOut [%3d,%3d]%s\n", row, old_col, col -
+			    visible_video_text(&CELL_TEXT(row, old_col), old_col)));
 		    ExtTextOut(ps.hdc,
 			       ColToPixel(old_col),
 			       RowToPixel(row),
 			       0,
 			       (RECT *) 0,
-			       &CELL_TEXT(row, old_col),
+			       (char *) &CELL_TEXT(row, old_col),
 			       col - old_col,
 			       intercharacter(col));
 		    old_atr = new_atr;
@@ -3260,14 +3261,14 @@ repaint_window(HWND hWnd)
 	    }
 	    if (old_col < x1) {
 		nt_set_colors(ps.hdc, old_atr);
-		TRACE2(("ExtTextOut [%3d,%3d]%.*s\n", row, old_col, x1 -
-			old_col, &CELL_TEXT(row, old_col)));
+		TRACE2(("ExtTextOut [%3d,%3d]%s\n", row, old_col, x1 -
+			visible_video_text(&CELL_TEXT(row, old_col), old_col)));
 		ExtTextOut(ps.hdc,
 			   ColToPixel(old_col),
 			   RowToPixel(row),
 			   0,
 			   (RECT *) 0,
-			   &CELL_TEXT(row, old_col),
+			   (char *) &CELL_TEXT(row, old_col),
 			   x1 - old_col,
 			   intercharacter(x1));
 	    }
@@ -4202,7 +4203,7 @@ TERM term =
     NROW,
     NCOL,
     NCOL,
-    NPAUSE,
+    enc_DEFAULT,
     ntopen,
     ntclose,
     ntkopen,

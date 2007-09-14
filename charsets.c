@@ -1,5 +1,5 @@
 /*
- * $Id: charsets.c,v 1.35 2007/09/03 16:19:22 tom Exp $
+ * $Id: charsets.c,v 1.41 2007/09/14 00:35:18 tom Exp $
  *
  * see
  http://msdn.microsoft.com/library/default.asp?url=/library/en-us/intl/unicode_42jv.asp
@@ -83,7 +83,8 @@ vl_conv_to_utf8(UCHAR * target, UINT source, B_COUNT limit)
 	rc = 6;
 
     if ((B_COUNT) rc > limit) {	/* whatever it is, we cannot decode it */
-	TRACE2(("limit failed %d/%ld in vl_conv_to_utf8\n", rc, limit));
+	TRACE2(("limit failed in vl_conv_to_utf8 %d/%ld %#06x\n",
+		rc, limit, source));
 	rc = 0;
     }
 
@@ -224,7 +225,7 @@ find_mark_info(int code)
 static BOM_CODES
 get_bom(BUFFER *bp)
 {
-    BOM_CODES rc = b_val(bp, VAL_BYTEORDER_MARK);
+    BOM_CODES rc = (BOM_CODES) b_val(bp, VAL_BYTEORDER_MARK);
     if (rc == bom_NONE)
 	rc = bp->implied_BOM;
     return rc;
@@ -246,6 +247,7 @@ line_has_mark(const BOM_TABLE * mp, UCHAR * buffer, B_COUNT length)
 static int
 dump_as_utfXX(BUFFER *bp, const char *buf, int nbuf, const char *ending)
 {
+#define BYTE_OF(k,n) (char) (bp->decode_utf_buf[k] >> ((n) * 8))
     int rc = 0;
     const BOM_TABLE *mp = find_mark_info(get_bom(bp));
 
@@ -278,35 +280,37 @@ dump_as_utfXX(BUFFER *bp, const char *buf, int nbuf, const char *ending)
 		/* ignored */
 		break;
 	    case bom_UTF16LE:
-		bp->encode_utf_buf[j + 0] = bp->decode_utf_buf[k];
-		bp->encode_utf_buf[j + 1] = bp->decode_utf_buf[k] >> 8;
+		bp->encode_utf_buf[j + 0] = BYTE_OF(k, 0);
+		bp->encode_utf_buf[j + 1] = BYTE_OF(k, 1);
 		break;
 	    case bom_UTF16BE:
-		bp->encode_utf_buf[j + 1] = bp->decode_utf_buf[k];
-		bp->encode_utf_buf[j + 0] = bp->decode_utf_buf[k] >> 8;
+		bp->encode_utf_buf[j + 1] = BYTE_OF(k, 0);
+		bp->encode_utf_buf[j + 0] = BYTE_OF(k, 1);
 		break;
 	    case bom_UTF32LE:
-		bp->encode_utf_buf[j + 0] = bp->decode_utf_buf[k];
-		bp->encode_utf_buf[j + 1] = bp->decode_utf_buf[k] >> 8;
-		bp->encode_utf_buf[j + 2] = bp->decode_utf_buf[k] >> 16;
-		bp->encode_utf_buf[j + 3] = bp->decode_utf_buf[k] >> 24;
+		bp->encode_utf_buf[j + 0] = BYTE_OF(k, 0);
+		bp->encode_utf_buf[j + 1] = BYTE_OF(k, 1);
+		bp->encode_utf_buf[j + 2] = BYTE_OF(k, 2);
+		bp->encode_utf_buf[j + 3] = BYTE_OF(k, 3);
 		break;
 	    case bom_UTF32BE:
-		bp->encode_utf_buf[j + 3] = bp->decode_utf_buf[k];
-		bp->encode_utf_buf[j + 2] = bp->decode_utf_buf[k] >> 8;
-		bp->encode_utf_buf[j + 1] = bp->decode_utf_buf[k] >> 16;
-		bp->encode_utf_buf[j + 0] = bp->decode_utf_buf[k] >> 24;
+		bp->encode_utf_buf[j + 3] = BYTE_OF(k, 0);
+		bp->encode_utf_buf[j + 2] = BYTE_OF(k, 1);
+		bp->encode_utf_buf[j + 1] = BYTE_OF(k, 2);
+		bp->encode_utf_buf[j + 0] = BYTE_OF(k, 3);
 		break;
 	    }
 	}
 	rc = j;
     }
     return rc;
+#undef BYTE_OF
 }
 
 static int
 load_as_utf8(BUFFER *bp, LINE *lp)
 {
+#define CH(n) ((UCHAR)(lgetc(lp, n)))
     int rc = FALSE;
     const BOM_TABLE *mp = find_mark_info(get_bom(bp));
 
@@ -320,7 +324,7 @@ load_as_utf8(BUFFER *bp, LINE *lp)
 	if (bp->decode_utf_buf != 0) {
 	    if (need) {
 		for (j = k = 0; j < need; ++k) {
-		    UCHAR ch = (UCHAR) lgetc(lp, j);
+		    UCHAR ch = CH(j);
 		    if (ch == '\r' || ch == '\n') {
 			bp->decode_utf_buf[k] = ch;
 			++j;	/* see remove_crlf_nulls() */
@@ -333,24 +337,24 @@ load_as_utf8(BUFFER *bp, LINE *lp)
 			/* ignored */
 			break;
 		    case bom_UTF16LE:
-			bp->decode_utf_buf[k] = (lgetc(lp, j)
-						 + (lgetc(lp, j + 1) << 8));
+			bp->decode_utf_buf[k] = (CH(j)
+						 + (CH(j + 1) << 8));
 			break;
 		    case bom_UTF16BE:
-			bp->decode_utf_buf[k] = (lgetc(lp, j + 1)
-						 + (lgetc(lp, j) << 8));
+			bp->decode_utf_buf[k] = (CH(j + 1)
+						 + (CH(j) << 8));
 			break;
 		    case bom_UTF32LE:
-			bp->decode_utf_buf[k] = (lgetc(lp, j + 0)
-						 + (lgetc(lp, j + 1) << 8)
-						 + (lgetc(lp, j + 2) << 16)
-						 + (lgetc(lp, j + 3) << 24));
+			bp->decode_utf_buf[k] = (CH(j + 0)
+						 + (CH(j + 1) << 8)
+						 + (CH(j + 2) << 16)
+						 + (CH(j + 3) << 24));
 			break;
 		    case bom_UTF32BE:
-			bp->decode_utf_buf[k] = (lgetc(lp, j + 3)
-						 + (lgetc(lp, j + 2) << 8)
-						 + (lgetc(lp, j + 1) << 16)
-						 + (lgetc(lp, j + 0) << 24));
+			bp->decode_utf_buf[k] = (CH(j + 3)
+						 + (CH(j + 2) << 8)
+						 + (CH(j + 1) << 16)
+						 + (CH(j + 0) << 24));
 			break;
 		    }
 		    j += mp->size;
@@ -397,6 +401,7 @@ load_as_utf8(BUFFER *bp, LINE *lp)
 	}
     }
     return rc;
+#undef CH
 }
 
 /*
@@ -698,7 +703,7 @@ deduce_charset(BUFFER *bp, UCHAR * buffer, B_COUNT * length, int always)
 			  b_val(bp, VAL_FILE_ENCODING))));
 
     bp->implied_BOM = bom_NONE;
-    if (b_val(bp, VAL_FILE_ENCODING) == enc_DEFAULT) {
+    if (b_is_enc_DEFAULT(bp)) {
 	unsigned n;
 	int match = 0;
 	int found = -1;

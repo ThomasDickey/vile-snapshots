@@ -2,7 +2,7 @@
  *	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.287 2007/05/27 22:10:14 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.289 2007/09/13 23:59:32 tom Exp $
  *
  */
 
@@ -4147,9 +4147,11 @@ x_touch(TextWindow tw, int sc, int sr, UINT ec, UINT er)
 
     for (r = sr; r < er; r++) {
 	MARK_LINE_DIRTY(r);
-	for (c = sc; c < ec; c++)
-	    if (CELL_TEXT(r, c) != ' ' || CELL_ATTR(r, c))
+	for (c = sc; c < ec; c++) {
+	    if (CELL_TEXT(r, c) != ' ' || CELL_ATTR(r, c)) {
 		MARK_CELL_DIRTY(r, c);
+	    }
+	}
     }
 }
 
@@ -4236,7 +4238,7 @@ x_scroll(int from, int to, int count)
 #define	CLEAR_THRESH	36
 
 static void
-flush_line(char *text, int len, UINT attr, int sr, int sc)
+flush_line(VIDEO_TEXT * text, int len, UINT attr, int sr, int sc)
 {
     GC fore_gc;
     GC back_gc;
@@ -5103,7 +5105,7 @@ extend_selection(TextWindow tw GCC_UNUSED,
 static void
 multi_click(TextWindow tw, int nr, int nc)
 {
-    UCHAR *p;
+    VIDEO_TEXT *p;
     int cclass;
     int sc = nc;
     int oc = nc;
@@ -5129,7 +5131,7 @@ multi_click(TextWindow tw, int nr, int nc)
 	    }
 #endif
 	    /* find word start */
-	    p = (UCHAR *) (&CELL_TEXT(nr, sc));
+	    p = &CELL_TEXT(nr, sc);
 	    cclass = charClass[*p];
 	    do {
 		--sc;
@@ -5137,7 +5139,7 @@ multi_click(TextWindow tw, int nr, int nc)
 	    } while (sc >= 0 && charClass[*p] == cclass);
 	    sc++;
 	    /* and end */
-	    p = (UCHAR *) (&CELL_TEXT(nr, nc));
+	    p = &CELL_TEXT(nr, nc);
 	    cclass = charClass[*p];
 	    do {
 		++nc;
@@ -6125,7 +6127,7 @@ x_getc(void)
 
     x_stop_autocolor_timer();
 
-    if (c != (NOREMAP | esc_c))
+    if ((UINT) c != (NOREMAP | esc_c))
 	cur_win->last_getc = c;
     return c;
 }
@@ -6835,7 +6837,7 @@ TERM term =
     0,
     0,
     0,
-    0,
+    enc_DEFAULT,
     x_open,
     x_close,
     nullterm_kopen,

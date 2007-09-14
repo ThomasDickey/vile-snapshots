@@ -3,7 +3,7 @@
  *	for getting and setting the values of the vile state variables,
  *	plus helper utility functions.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.115 2007/09/02 19:16:04 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.116 2007/09/03 20:11:51 tom Exp $
  */
 
 #include	"estruct.h"
@@ -1509,12 +1509,6 @@ var_TITLEFORMAT(TBUFF **rp, const char *vp)
     return code;
 }
 #endif /* OPT_TITLE */
-
-int
-var_TPAUSE(TBUFF **rp, const char *vp)
-{
-    return any_rw_INT(rp, vp, &term.pausecount);
-}
 
 int
 var_VERSION(TBUFF **rp, const char *vp)

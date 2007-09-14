@@ -11,7 +11,7 @@
 #
 # The modes are table entries in the BUFFER and WINDOW structures.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.261 2007/08/20 16:05:00 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.263 2007/09/12 16:34:34 tom Exp $
 #
 #
 # Mode-table entries.  Capitalized letters are used for abbreviations.
@@ -181,13 +181,14 @@ regex							# VAL_ prefix
 .windows
 bool							# WMD prefix
 	"LIst"		LIST		chgd_window	# "list" mode -- show tabs and EOL
-	"NUmber"	NUMBER		chgd_window	# line-numbers shown
 	"HorizScroll"	HORSCROLL	0		# scroll whole screen
 	"LineWrap"	LINEWRAP	chgd_window	OPT_LINEWRAP # wrap lines wider than screen
+	"NUmber"	NUMBER		chgd_window	# line-numbers shown
 	"ruler"		RULER		chgd_status	!SMALLER # display line+col in modeline
 	"ShowChar"	SHOWCHAR	chgd_status	!SMALLER # display $char in modeline
 	"ShowVariables"	SHOWVARS	0		!SMALLER # update [Variables] with cursor-movement
 	"Unprintable-as-Octal" NONPRINTOCTAL  chgd_window # print non-printing chars in octal
+	"Unicode-as-Hex" UNICODE_AS_HEX	chgd_window	OPT_MULTIBYTE # print Unicode chars as hexadecimal even if displayable
 	"Terse-SELections" TERSELECT	0		OPT_SELECTIONS # don't display extent of selections on message line
 int							# VAL_ prefix
 	"SIDEways"	SIDEWAYS	chgd_window	# sideways offset for display
@@ -312,7 +313,6 @@ string
 "status"	STATUS			# returns the status of the last command
 "title"		TITLE		OPT_TITLE	# window title
 "title-format"	TITLEFORMAT	OPT_TITLE	# window title format
-"tpause"	TPAUSE			# length to pause for paren matching
 "version"	VERSION			# current version number
 "with-prefix"	WITHPREFIX	OPT_EVAL	# current "~with" prefix
 "wlines"	WLINES			# # of lines in current window

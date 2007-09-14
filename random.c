@@ -2,7 +2,7 @@
  * This file contains the command processing functions for a number of random
  * commands. There is no functional grouping here, for sure.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.308 2007/09/02 23:04:25 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.310 2007/09/12 23:43:42 tom Exp $
  *
  */
 
@@ -533,22 +533,23 @@ getoff(C_NUM goal, C_NUM * rcolp)
     C_NUM llen = llength(DOT.l);
 
     /* calculate column as we move across line */
-    for (offs = w_left_margin(curwp); offs < llen; ++offs) {
+    for (offs = w_left_margin(curwp); offs < llen;) {
 
 	if (ccol >= goal)
 	    break;
 
 	/* move right */
 	ccol = next_column(DOT.l, offs, ccol);
+	offs += BytesAt(DOT.l, offs);
     }
 
     if (rcolp)
 	*rcolp = ccol;
 
-    if (ccol >= goal)
-	return offs;		/* we made it */
-    else			/* else how far short (in spaces) we were */
-	return ccol - goal;
+    if (ccol < goal) {		/* we did not make it */
+	offs = ccol - goal;	/* show how far short (in columns) we were */
+    }
+    return offs;
 }
 
 /* really set column, based on counting from 0, for internal use */

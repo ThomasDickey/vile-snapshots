@@ -1,7 +1,7 @@
 /*
  * Main program and I/O for external vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/RCS/builtflt.c,v 1.55 2007/08/29 00:42:05 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/builtflt.c,v 1.57 2007/09/09 14:38:36 tom Exp $
  *
  */
 
@@ -424,7 +424,8 @@ flt_puts(const char *string, int length, const char *marker)
 	save_mark(TRUE);
 	if (marker != 0 && *marker != 0 && *marker != 'N') {
 	    vl_strncpy(bfr2, marker, sizeof(bfr1) - 10);
-	    last = lsprintf(bfr1, "%c%d%s:", CTL_A, length, bfr2);
+	    sprintf(bfr1, "%c%d%s:", CTL_A, length, bfr2);
+	    last = bfr1 + strlen(bfr1);
 	    decode_attribute(bfr1, last - bfr1, 0, &count);
 	}
 	flt_echo(string, length);

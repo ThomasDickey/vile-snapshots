@@ -3,10 +3,10 @@
  *		variously munged/massaged/relayered/slashed/burned
  *			since then. -pgf
  *
- *	term.getch()	raw 8-bit key from terminal driver.
+ *	term.getc()	raw 8-bit key from terminal driver.
  *
  *	sysmapped_c()	single "keystroke" -- may have SPEC bit, if it was
- *			a sytem-mapped function key.  calls term.getch().  these
+ *			a sytem-mapped function key.  calls term.getc().  these
  *			system-mapped keys will never map to a multi-char
  *			sequence.  the routine does have storage, to hold
  *			keystrokes gathered "in error".
@@ -39,12 +39,12 @@
  *			SPEC|c.
  *
  *
- *	term.typahead()	  true if a key is avail from term.getch().
+ *	term.typahead()	  true if a key is avail from term.getc().
  *	sysmapped_c_avail() "  if a key is avail from sysmapped_c() or below.
  *	tgetc_avail()     true if a key is avail from tgetc() or below.
  *	keystroke_avail() true if a key is avail from keystroke() or below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.313 2007/09/02 17:33:18 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.314 2007/09/09 14:31:17 tom Exp $
  *
  */
 
@@ -550,7 +550,7 @@ tgetc(int quoted)
 	     * getchar() returns will be the same as the last
 	     * character before the interrupt.  Eat it.
 	     */
-	    (void) ttgetc();
+	    (void) term.getc();
 #endif
 	} else {
 	    (void) im_waiting(TRUE);

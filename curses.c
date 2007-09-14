@@ -1,15 +1,13 @@
 /*
  * A terminal driver using the curses library
  *
- * $Header: /users/source/archives/vile.vcs/RCS/curses.c,v 1.29 2007/05/27 20:35:50 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/curses.c,v 1.30 2007/09/03 20:05:59 tom Exp $
  */
 
 #include	"estruct.h"
 #include	"edef.h"
 
 #if DISP_CURSES
-
-#define NPAUSE	10		/* # times thru update to pause */
 
 #undef WINDOW
 
@@ -419,7 +417,7 @@ TERM term =
     0,
     0,
     0,
-    NPAUSE,
+    enc_DEFAULT,
     curs_open,
     curs_close,
     curs_kopen,
