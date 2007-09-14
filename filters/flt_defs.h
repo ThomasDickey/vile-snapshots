@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/flt_defs.h,v 1.6 2007/08/07 23:41:56 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/flt_defs.h,v 1.7 2007/09/14 00:08:50 tom Exp $
  */
 
 #ifndef FLT_DEFS_H
@@ -46,6 +46,10 @@ extern "C" {
 
 #ifndef CAN_TRACE
 #define CAN_TRACE		OPT_TRACE  /* (link with trace.o) */
+#endif
+
+#ifndef SMALLER
+#define SMALLER 0
 #endif
 
 #include <sys/types.h>		/* sometimes needed to get size_t */

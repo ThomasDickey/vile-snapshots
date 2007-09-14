@@ -5,7 +5,7 @@
  * reading and writing of the disk are
  * in "fileio.c".
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.409 2007/08/31 22:40:51 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.410 2007/09/14 00:35:07 tom Exp $
  */
 
 #include "estruct.h"
@@ -1861,7 +1861,7 @@ slowreadf(BUFFER *bp, int *nlinep)
      * Look for UTF-8 encoding when we have the entire buffer, since only a
      * small part of it may be distinct from ASCII.
      */
-    if (b_val(bp, VAL_FILE_ENCODING) == enc_DEFAULT) {
+    if (b_is_enc_DEFAULT(bp)) {
 	LINE *lp;
 	int check, found = SORTOFTRUE;
 

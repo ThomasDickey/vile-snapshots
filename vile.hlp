@@ -1995,11 +1995,17 @@ Editor modes
 		knowledge of the editor may still be edited twice.  Setting
 		this mode may be a no-op on non-UNIX systems.  (U)
 
+	unicode-as-hex (uh) If displaying a buffer whose file-encoding says
+		it is one of the Unicode flavors, e.g., "utf-8", "utf-16" or
+		"utf-32", show the values that are non-ASCII in "\uXXXX"
+		format even if the display is capable of showing these as
+		regular characters.  (W)
+
 	unprintable-as-octal (uo) If an 8-bit character is non-printing, it
 		will normally be displayed in hex.  This setting will force
 		octal display.  Non-printing characters whose 8th bit is
 		not set are always displayed in control character (e.g. '^C')
-		notation.  (B)
+		notation.  (W)
 
 	video-attrs  Overlay all text with the given attribute: bold, italic,
 		reverse, underline or none.  (U)
@@ -2920,7 +2926,6 @@ Programmed procedures (aka macros)
 	$status		returns the status of the last command
 	$title		current window title (X11, win32 versions only)
 	$title-format	format of window title.  see "Mode line customization".
-	$tpause		length to pause for paren matching (PC versions)
 	$version	current version number			(read only)
 	$with-prefix	string set by "~with" directives	(read only)
 	$wlines		number of lines in current window
@@ -6357,4 +6362,4 @@ Problems
 
 Copyright 1995-2005,2006 by Paul Fox, Thomas Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.631 2007/08/20 16:35:06 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.633 2007/09/12 16:43:19 tom Exp $

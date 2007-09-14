@@ -1,7 +1,7 @@
 /*	tcap:	Unix V5, V7 and BS4.2 Termcap video driver
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.170 2006/01/12 23:37:34 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.171 2007/09/03 20:05:59 tom Exp $
  *
  */
 
@@ -9,8 +9,6 @@
 #include	"edef.h"
 
 #if DISP_TERMCAP
-
-#define NPAUSE	10		/* # times thru update to pause */
 
 #include	"tcap.h"
 
@@ -1126,7 +1124,7 @@ TERM term =
     0,
     0,
     0,
-    NPAUSE,
+    enc_DEFAULT,
     tcap_open,
     tcap_close,
     tcap_kopen,

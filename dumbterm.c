@@ -1,13 +1,11 @@
 /*	Dumb terminal driver, for I/O before we get into screen mode.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/dumbterm.c,v 1.21 2006/01/12 23:13:40 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/dumbterm.c,v 1.22 2007/09/03 20:05:59 tom Exp $
  *
  */
 
 #include	"estruct.h"
 #include	"edef.h"
-
-#define NPAUSE	10		/* # times thru update to pause */
 
 static int this_col;
 static int last_col;
@@ -123,7 +121,7 @@ TERM dumb_term =
     1,
     80,
     80,
-    NPAUSE,
+    enc_DEFAULT,
     0,				/* use this to put us into raw mode */
     0,				/* ...and this, just in case we exit */
     dumb_kopen,

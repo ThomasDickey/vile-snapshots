@@ -6,13 +6,19 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/vilefilt.l,v 1.40 2007/09/02 17:00:18 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/vilefilt.l,v 1.41 2007/09/14 00:12:04 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of vile macros
  * - T.Dickey
  */
 
 #include <filters.h>
+
+#if defined(_estruct_h) && !SMALLER && defined(HAVE_CONFIG_H)
+#define HAVE_DIRECTIVE 0
+#else
+#define HAVE_DIRECTIVE 0
+#endif
 
 DefineFilter("vile");
 
@@ -190,7 +196,7 @@ static int
 is_prepro_with(int code)
 {
     int rc = 0;
-#if !SMALLER && defined(HAVE_CONFIG_H)
+#if HAVE_DIRECTIVE
     if (code == D_WITH
 	|| code == D_ELSEWITH)
 	rc = 1;
@@ -204,7 +210,7 @@ static int
 is_prepro_endwith(int code)
 {
     int rc = 0;
-#if !SMALLER && defined(HAVE_CONFIG_H)
+#if HAVE_DIRECTIVE
     if (code == D_ENDWITH)
 	rc = 1;
 #else

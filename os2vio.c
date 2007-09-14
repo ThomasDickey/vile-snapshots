@@ -3,7 +3,7 @@
  * Modified from a really old version of "borland.c" (before the VIO
  * stuff went in there.)
  *
- * $Header: /users/source/archives/vile.vcs/RCS/os2vio.c,v 1.35 2006/01/12 23:37:34 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/os2vio.c,v 1.36 2007/09/03 20:05:59 tom Exp $
  */
 
 #include "estruct.h"
@@ -32,7 +32,6 @@
 
 #define NROW	60		/* Max Screen size.             */
 #define NCOL    80		/* Edit if you want to.         */
-#define	NPAUSE	200		/* # times thru update to pause */
 #define	SPACE	32		/* space character              */
 
 #define	AttrColor(b, f)	((((UINT)ctrans[b] & (blinking ? 7 : 15)) << 4) | ((UINT)ctrans[f] & 15))
@@ -577,7 +576,7 @@ TERM term =
     NROW - 1,
     NCOL,
     NCOL,
-    NPAUSE,
+    enc_DEFAULT,
     vio_open,
     vio_close,
     vio_kopen,

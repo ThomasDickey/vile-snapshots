@@ -698,9 +698,6 @@ State Variables
 			effect.  See "Mode line customization" in the vile
 			help file.
 
-	$tpause         On a PC, the amount of time to pause for showmatch
-			mode parenthesis matching.
-
 	$version        [READ ONLY] Contains vile's version string.
 
 	$with-prefix	[READ ONLY] String which is set by "~with" directive
@@ -1521,6 +1518,6 @@ Example startup file
 	========================= end vile.rc =======================
 
 -----------------------------------
-  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.101 2007/08/16 19:31:07 tom Exp $
+  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.102 2007/09/03 20:01:47 tom Exp $
 -----------------------------------
 

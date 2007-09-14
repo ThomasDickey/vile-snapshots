@@ -5,7 +5,7 @@
  * functions that adjust the top line in the window and invalidate the
  * framing, are hard.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/basic.c,v 1.150 2007/09/03 15:09:27 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/basic.c,v 1.152 2007/09/12 13:59:37 tom Exp $
  *
  */
 
@@ -1004,8 +1004,13 @@ next_column(LINE *lp, int off, int col)
     }
 #if OPT_MULTIBYTE
     else if (b_is_utfXX(curbp)) {
-	if (bytes_at(lp, off) > 1)
-	    rc = COLS_UTF8;	/* "\uXXXX" */
+	if (bytes_at(lp, off) > 1) {
+	    UINT value;
+
+	    vl_conv_to_utf32(&value, lvalue(lp) + off, llength(lp) - off);
+	    if (!FoldTo8bits(value))
+		rc = COLS_UTF8;	/* "\uXXXX" */
+	}
     }
 #endif
     else if (!isPrint(c)) {
@@ -1737,6 +1742,8 @@ setwmark(int row, int col)
     }
     MK = DOT;
     DOT = save;
+
+    TRACE(("setwmark -> line %d, col %d\n", line_no(curwp->w_bufp, MK.l), MK.o));
     return TRUE;
 }
 
@@ -1746,33 +1753,34 @@ setwmark(int row, int col)
 int
 setcursor(int row, int col)
 {
+    int code = FALSE;
     WINDOW *wp0 = curwp;
     WINDOW *wp1;
     MARK saveMK;
 
-    if ((wp1 = row2window(row)) == 0)
-	return FALSE;
-    if (doingsweep && curwp != wp1)
-	return FALSE;
-    saveMK = MK;
-    if (set_curwp(wp1)
-	&& setwmark(row, col)) {
-	if (insertmode != FALSE
-	    && b_val(wp1->w_bufp, MDVIEW)
-	    && b_val(wp1->w_bufp, MDSHOWMODE)) {
-	    if (b_val(wp0->w_bufp, MDSHOWMODE))
-		wp0->w_flag |= WFMODE;
-	    if (b_val(wp1->w_bufp, MDSHOWMODE))
-		wp1->w_flag |= WFMODE;
-	    insertmode = FALSE;
+    TRACE((T_CALLED "setcursor(%d,%d)\n", row, col));
+    if ((wp1 = row2window(row)) != 0) {
+	if (!(doingsweep && curwp != wp1)) {
+	    saveMK = MK;
+	    if (set_curwp(wp1)
+		&& setwmark(row, col)) {
+		if (insertmode != FALSE
+		    && b_val(wp1->w_bufp, MDVIEW)
+		    && b_val(wp1->w_bufp, MDSHOWMODE)) {
+		    if (b_val(wp0->w_bufp, MDSHOWMODE))
+			wp0->w_flag |= WFMODE;
+		    if (b_val(wp1->w_bufp, MDSHOWMODE))
+			wp1->w_flag |= WFMODE;
+		    insertmode = FALSE;
+		}
+		DOT = MK;
+		if (wp0 == wp1)
+		    MK = saveMK;
+		curwp->w_flag |= WFMOVE;
+		code = TRUE;
+	    }
 	}
-	DOT = MK;
-	if (wp0 == wp1)
-	    MK = saveMK;
-	curwp->w_flag |= WFMOVE;
-	return TRUE;
     }
-
-    return FALSE;
+    returnCode(code);
 }
 #endif
