@@ -2,7 +2,7 @@
  * w32misc:  collection of unrelated, common win32 functions used by both
  *           the console and GUI flavors of the editor.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32misc.c,v 1.49 2007/08/31 22:53:03 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32misc.c,v 1.53 2007/09/28 23:04:35 tom Exp $
  */
 
 #include "estruct.h"
@@ -26,7 +26,7 @@
 
 static int host_type = HOST_UNDEF;	/* nt or 95? */
 #if !DISP_NTWIN
-static char saved_title[256];
+static W32_CHAR saved_title[256];
 #endif
 
 /* ------------------------------------------------------------------ */
@@ -194,7 +194,7 @@ is_win95(void)
  */
 
 char *
-mk_shell_cmd_str(char *cmd, int *allocd_mem, int prepend_shc)
+mk_shell_cmd_str(const char *cmd, int *allocd_mem, int prepend_shc)
 {
     int alloc_len, bourne_shell,	/* Boolean, T if user's shell has
 					 * appearances of a Unix lookalike
@@ -240,7 +240,7 @@ mk_shell_cmd_str(char *cmd, int *allocd_mem, int prepend_shc)
 	    return (out_str);
 	} else {
 	    *allocd_mem = FALSE;
-	    return (cmd);
+	    return (char *) (cmd);
 	}
     }
 
@@ -296,9 +296,12 @@ mk_shell_cmd_str(char *cmd, int *allocd_mem, int prepend_shc)
 int
 w32_CreateProcess(char *cmd, int no_wait)
 {
-    PROCESS_INFORMATION pi;
     int rc = -1;
+    PROCESS_INFORMATION pi;
     STARTUPINFO si;
+    W32_CHAR *actual;
+
+    TRACE((T_CALLED "w32_CreateProcess(%s, %d)\n", cmd, no_wait));
 
     memset(&si, 0, sizeof(si));
     si.cb = sizeof(si);
@@ -310,30 +313,36 @@ w32_CreateProcess(char *cmd, int no_wait)
 	si.hStdOutput = GetStdHandle(STD_OUTPUT_HANDLE);
 	si.hStdError = GetStdHandle(STD_ERROR_HANDLE);
     }
-    if (CreateProcess(NULL,
-		      cmd,
-		      NULL,
-		      NULL,
-		      !no_wait,	/* Inherit handles */
-		      0,
-		      NULL,
-		      NULL,
-		      &si,
-		      &pi)) {
-	/* Success */
-	if (!no_wait) {
-	    /* wait for shell process to exit */
 
-	    (void) cwait(&rc, (CWAIT_PARAM_TYPE) pi.hProcess, 0);
+    if ((actual = w32_charstring(cmd)) != 0) {
+	if (CreateProcess(NULL,
+			  actual,
+			  NULL,
+			  NULL,
+			  !no_wait,	/* Inherit handles */
+			  0,
+			  NULL,
+			  NULL,
+			  &si,
+			  &pi)) {
+	    /* Success */
+	    if (!no_wait) {
+		/* wait for shell process to exit */
+
+		(void) cwait(&rc, (CWAIT_PARAM_TYPE) pi.hProcess, 0);
+	    }
+	    (void) CloseHandle(pi.hProcess);
+	    (void) CloseHandle(pi.hThread);
+	} else {
+	    /* Bummer */
+
+	    mlforce("[unable to create win32 process]");
 	}
-	(void) CloseHandle(pi.hProcess);
-	(void) CloseHandle(pi.hThread);
+	free (actual);
     } else {
-	/* Bummer */
-
-	mlforce("[unable to create win32 process]");
+	no_memory("w32_CreateProcess");
     }
-    return (rc);
+    returnCode(rc);
 }
 
 /*
@@ -382,13 +391,11 @@ w32_system(const char *cmd)
 	}
 	strcpy(cmdstr, cmd + W32_START_STR_LEN);
 	freestr = TRUE;
-    } else {
-	if ((cmdstr = mk_shell_cmd_str((char *) cmd, &freestr, TRUE)) == NULL) {
-	    /* heap exhausted! */
+    } else if ((cmdstr = mk_shell_cmd_str(cmd, &freestr, TRUE)) == NULL) {
+	/* heap exhausted! */
 
-	    (void) no_memory("w32_system");
-	    return (-1);
-	}
+	(void) no_memory("w32_system");
+	return (-1);
     }
     set_console_title(cmd);
     rc = w32_CreateProcess(cmdstr, no_shell);
@@ -451,7 +458,7 @@ get_console_handles(STARTUPINFO * psi, SECURITY_ATTRIBUTES * psa)
      * the spawned bash shell will hang.  No known workaround.  Does not
      * occur if winvile is launched by windows explorer.
      */
-    if ((psi->hStdInput = CreateFile("CONIN$",
+    if ((psi->hStdInput = CreateFile(W32_STRING("CONIN$"),
 				     GENERIC_READ,
 				     FILE_SHARE_READ,
 				     psa,
@@ -461,7 +468,7 @@ get_console_handles(STARTUPINFO * psi, SECURITY_ATTRIBUTES * psa)
 	mlforce("[std input handle creation failed]");
 	return (FALSE);
     }
-    if ((psi->hStdOutput = CreateFile("CONOUT$",
+    if ((psi->hStdOutput = CreateFile(W32_STRING("CONOUT$"),
 				      GENERIC_WRITE,
 				      FILE_SHARE_WRITE,
 				      psa,
@@ -529,16 +536,25 @@ w32_system_winvile(const char *cmd, int *pressret)
 
     char *cmdstr;
     HWND hwnd;
-    int no_shell, freestr, close_disabled = FALSE, rc = -1;
+    int no_shell = W32_SKIP_SHELL(cmd);
+    int freestr;
+    int close_disabled = FALSE;
+    int rc = -1;
     PROCESS_INFORMATION pi;
     SECURITY_ATTRIBUTES sa;
     STARTUPINFO si;
 
+    W32_CHAR *w32_cmd = w32_charstring(cmd);
+    W32_CHAR *w32_cmdstr = 0;
+
+    TRACE((T_CALLED "w32_system_winvile(%s)\n", cmd));
+
     memset(&si, 0, sizeof(si));
     si.cb = sizeof(si);
-    no_shell = W32_SKIP_SHELL(cmd);
+
     memset(&sa, 0, sizeof(sa));
     sa.nLength = sizeof(sa);
+
     if (no_shell) {
 	/*
 	 * Must strip off "start " prefix from command because this
@@ -547,32 +563,32 @@ w32_system_winvile(const char *cmd, int *pressret)
 
 	if ((cmdstr = typeallocn(char, strlen(cmd) + 1)) == NULL) {
 	    (void) no_memory("w32_system_winvile");
-	    return (-1);
+	    returnCode(rc);
 	}
 	strcpy(cmdstr, cmd + W32_START_STR_LEN);
 	freestr = TRUE;
 	*pressret = FALSE;	/* Not waiting for the launched cmd to exit. */
     } else {
 	sa.bInheritHandle = TRUE;
-	if ((cmdstr = mk_shell_cmd_str((char *) cmd, &freestr, TRUE)) == NULL) {
+	if ((cmdstr = mk_shell_cmd_str(cmd, &freestr, TRUE)) == NULL) {
 	    /* heap exhausted! */
 
 	    (void) no_memory("w32_system_winvile");
-	    return (rc);
+	    returnCode(rc);
 	}
 	if (!AllocConsole()) {
 	    if (freestr)
 		free(cmdstr);
 	    mlforce("[console creation failed]");
-	    return (rc);
+	    returnCode(rc);
 	}
 	if (!get_console_handles(&si, &sa)) {
 	    (void) FreeConsole();
 	    if (freestr)
 		free(cmdstr);
-	    return (rc);
+	    returnCode(rc);
 	}
-	SetConsoleTitle(cmd);
+	SetConsoleTitle(w32_cmd);
 
 	/* don't let signal in dynamic console kill winvile */
 	ignore_signals();
@@ -586,7 +602,7 @@ w32_system_winvile(const char *cmd, int *pressret)
 	 * (e.g., bash).
 	 */
 	Sleep(0);		/* yield processor so GDI can create console frame */
-	if ((hwnd = FindWindow(NULL, cmd)) != NULL) {
+	if ((hwnd = FindWindow(NULL, w32_cmd)) != NULL) {
 	    /*
 	     * Disable console close button using code borrowed from
 	     * Charles Petzold.
@@ -607,8 +623,12 @@ w32_system_winvile(const char *cmd, int *pressret)
 	    (void) SetForegroundWindow(hwnd);
 	}
     }
+    if ((w32_cmdstr = w32_charstring(cmdstr)) == 0) {
+	(void) no_memory("w32_system_winvile");
+	returnCode(rc);
+    }
     if (CreateProcess(NULL,
-		      cmdstr,
+		      w32_cmdstr,
 		      &sa,
 		      &sa,
 		      !no_shell,	/* Inherit handles */
@@ -630,7 +650,7 @@ w32_system_winvile(const char *cmd, int *pressret)
 	     * console _and_ winvile are killed.  Not good.
 	     */
 	    for (i = 0; i < 5; i++) {
-		if ((hwnd = FindWindow(NULL, cmd)) != NULL) {
+		if ((hwnd = FindWindow(NULL, w32_cmd)) != NULL) {
 		    (void) EnableMenuItem(GetSystemMenu(hwnd, FALSE),
 					  SC_CLOSE,
 					  MF_GRAYED);
@@ -678,11 +698,13 @@ w32_system_winvile(const char *cmd, int *pressret)
 
 	mlforce("[unable to create Win32 process]");
     }
+    free (w32_cmd);
+    free (w32_cmdstr);
     if (freestr)
 	free(cmdstr);
     if (!no_shell)
 	FreeConsole();
-    return (rc);
+    returnCode(rc);
 }
 #endif /* DISP_NTWIN */
 
@@ -739,6 +761,18 @@ w32_keybrd_reopen(int pressret)
 #endif
 }
 
+#if DISP_NTCONS	
+void
+w32_set_console_title(const char *title)
+{
+    W32_CHAR *actual = w32_charstring(title);
+    if (actual != 0) {
+	SetConsoleTitle(actual);
+	free (actual);
+    }
+}
+#endif
+
 /*
  * The code in ntconio.c that saves and restores console titles
  * didn't work reliably for pipe or shell operations.  It's moved here
@@ -749,7 +783,7 @@ set_console_title(const char *title)
 {
 #if !DISP_NTWIN
     GetConsoleTitle(saved_title, sizeof(saved_title));
-    SetConsoleTitle(title);
+    w32_set_console_title(title);
 #endif
 }
 
@@ -785,18 +819,50 @@ restore_console_title(void)
 char *
 fmt_win32_error(ULONG errcode, char **buf, ULONG buflen)
 {
+    W32_CHAR *buffer = 0;
     int flags = FORMAT_MESSAGE_FROM_SYSTEM;
 
-    if (!*buf)
+    if (*buf) {
+	buffer = typeallocn(W32_CHAR, buflen);
+    } else {
 	flags |= FORMAT_MESSAGE_ALLOCATE_BUFFER;
+    }
     FormatMessage(flags,
 		  NULL,
 		  errcode == W32_SYS_ERROR ? GetLastError() : errcode,
 		  MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),	/* dflt language */
-		  (*buf) ? *buf : (LPTSTR) buf,
+		  buffer,
 		  buflen,
 		  NULL);
+    if (*buf) {
+	char *formatted = asc_charstring(buffer);
+	vl_strncpy(*buf, formatted, buflen);
+	free (formatted);
+	free (buffer);
+    }
     return (*buf);
+}
+
+W32_CHAR *
+w32_prognam(void)
+{
+    static W32_CHAR *result;
+
+    if (result == 0)
+	result = w32_charstring(prognam);
+
+    return result;
+}
+
+int
+w32_message_box(HWND hwnd, const char *message, int code)
+{
+    int rc;
+    W32_CHAR *buf = w32_charstring(message);
+
+    rc = MessageBox(hwnd, buf, w32_prognam(), code);
+    free (buf);
+    return (rc);
 }
 
 /*
@@ -822,7 +888,7 @@ disp_win32_error(ULONG errcode, void *hwnd)
     char *buf = NULL;
 
     fmt_win32_error(errcode, &buf, 0);
-    MessageBox(hwnd, buf, prognam, MB_OK | MB_ICONSTOP);
+    w32_message_box(hwnd, buf, MB_OK | MB_ICONSTOP);
     LocalFree(buf);
 }
 
@@ -899,9 +965,9 @@ parse_font_str(const char *fontstr, FONTSTR_OPTIONS * results)
 		*facep++ = *cp++;
 	}
 	*facep = '\0';
-	if (results->face[0] == '\0' || *cp == '\0')
+	if (results->face[0] == '\0' || *cp == '\0') {
 	    return (FALSE);
-	else {
+	} else {
 	    /* Now pick up non-optional font size (that follows face). */
 
 	    errno = 0;
@@ -939,17 +1005,17 @@ parse_font_str(const char *fontstr, FONTSTR_OPTIONS * results)
 char *
 w32_wdw_title(void)
 {
-    static char *buf;
+    static char *buffer;
+    static W32_CHAR *buf;
     static DWORD bufsize;
-    int nchars;
+    int nchars = 0;
+    char *result = 0;
 
     if (!buf) {
 	bufsize = 128;
-	buf = castalloc(char, bufsize);
-	if (!buf)
-	    return (error_val);
+	buf = castalloc(W32_CHAR, bufsize);
     }
-    for_ever
+    while (buf != 0)
     {
 #if DISP_NTWIN
 	nchars = GetWindowText(winvile_hwnd(), buf, bufsize);
@@ -960,13 +1026,19 @@ w32_wdw_title(void)
 	    /* Enlarge buffer and try again. */
 
 	    bufsize *= 2;
-	    buf = castalloc(char, bufsize);
-	    if (!buf)
-		return (error_val);
-	} else
+	    buf = castrealloc(W32_CHAR, buf, bufsize);
+	} else {
 	    break;
+	}
     }
-    return ((nchars) ? buf : error_val);
+    if (nchars && buf) {
+	FreeIfNeeded(result);
+	buffer = asc_charstring(buf);
+	result = buffer;
+    } else {
+	result = error_val;
+    }
+    return (result);
 }
 
 /*
@@ -1130,13 +1202,14 @@ add_remove_write_acl(const char *filename, int add_acl, DWORD * prev_access_mask
 #define WRITABLE_MASK (FILE_WRITE_DATA | FILE_APPEND_DATA)
 
     BOOL bDaclPresent, bDaclDefaulted;
+    W32_CHAR *w32_bslfn = 0;
     char *bslfn, *msg = NULL;
     DWORD dwSizeNeeded;
     int i, rc = FALSE;
     PSID pAceSID, pWorldSID;
-    PACL pacl;
+    PACL pacl = NULL;
     ACCESS_ALLOWED_ACE *pAllowed;
-    BYTE *pSecDescriptorBuf;
+    BYTE *pSecDescriptorBuf = 0;
 
     SID_IDENTIFIER_AUTHORITY SIDAuthWorld = SECURITY_WORLD_SID_AUTHORITY;
 
@@ -1144,22 +1217,23 @@ add_remove_write_acl(const char *filename, int add_acl, DWORD * prev_access_mask
     bslfn = sl_to_bsl(filename);
     if (access(bslfn, 0) != 0)
 	return (rc);
+    if ((w32_bslfn = w32_charstring(bslfn)) == 0)
+	return (rc);
 
     dwSizeNeeded = 0;
-    (void) GetFileSecurity(bslfn,
+    (void) GetFileSecurity(w32_bslfn,
 			   DACL_SECURITY_INFORMATION,
 			   NULL,
 			   0,
 			   &dwSizeNeeded);
+
     if (dwSizeNeeded == 0) {
 	fmt_win32_error(W32_SYS_ERROR, &msg, 0);
 	mlforce("[GetFileSecurity: %s]", mktrimmed(msg));
 	LocalFree(msg);
-	return (rc);
-    }
-    if ((pSecDescriptorBuf = malloc(sizeof(BYTE) * dwSizeNeeded)) == NULL)
-	return (no_memory("add_remove_write_acl"));
-    if (!GetFileSecurity(bslfn,
+    } else if ((pSecDescriptorBuf = malloc(sizeof(BYTE) * dwSizeNeeded)) == NULL) {
+	rc = no_memory("add_remove_write_acl");
+    } else if (!GetFileSecurity(w32_bslfn,
 			 DACL_SECURITY_INFORMATION,
 			 pSecDescriptorBuf,
 			 dwSizeNeeded,
@@ -1167,37 +1241,30 @@ add_remove_write_acl(const char *filename, int add_acl, DWORD * prev_access_mask
 	fmt_win32_error(W32_SYS_ERROR, &msg, 0);
 	mlforce("[GetFileSecurity: %s]", mktrimmed(msg));
 	LocalFree(msg);
-	free(pSecDescriptorBuf);
-	return (rc);
     }
 
     /* Get DACL from Security Descriptor */
-    pacl = NULL;
-    if (!GetSecurityDescriptorDacl((SECURITY_DESCRIPTOR *) pSecDescriptorBuf,
+    else if (!GetSecurityDescriptorDacl((SECURITY_DESCRIPTOR *) pSecDescriptorBuf,
 				   &bDaclPresent,
 				   &pacl,
 				   &bDaclDefaulted)) {
 	fmt_win32_error(W32_SYS_ERROR, &msg, 0);
 	mlforce("[GetSecurityDescriptorDacl: %s]", mktrimmed(msg));
 	LocalFree(msg);
-	free(pSecDescriptorBuf);
-	return (rc);
     }
 
     /* Check if DACL present in security descriptor */
-    if (!bDaclPresent || pacl == NULL) {
+    else if (!bDaclPresent || pacl == NULL) {
 	/*
 	 * Nothing to manipulate, perhaps a non-NTFS file.  Regardless, a
 	 * NULL discretionary ACL implicitly allows all access to an object
 	 * (sez docu for GetSecurityDescriptorDacl).
 	 */
-
-	free(pSecDescriptorBuf);
-	return (rc);
+	;
     }
 
     /* Create a well-known SID for "Everyone/World" (code courtesy of MSDN). */
-    if (!AllocateAndInitializeSid(&SIDAuthWorld,
+    else if (!AllocateAndInitializeSid(&SIDAuthWorld,
 				  1,
 				  SECURITY_WORLD_RID,
 				  0, 0, 0, 0, 0, 0, 0,
@@ -1205,65 +1272,65 @@ add_remove_write_acl(const char *filename, int add_acl, DWORD * prev_access_mask
 	fmt_win32_error(W32_SYS_ERROR, &msg, 0);
 	mlforce("[AllocateAndInitializeSid: %s]", mktrimmed(msg));
 	LocalFree(msg);
-	free(pSecDescriptorBuf);
-	return (rc);
-    }
-    for (i = 0, pAllowed = NULL; i < pacl->AceCount; i++) {
-	ACE_HEADER *phdr;
+    } else {
+	for (i = 0, pAllowed = NULL; i < pacl->AceCount; i++) {
+	    ACE_HEADER *phdr;
 
-	if (GetAce(pacl, i, (LPVOID *) & phdr)) {
-	    if (phdr->AceType == ACCESS_ALLOWED_ACE_TYPE) {
-		pAllowed = (ACCESS_ALLOWED_ACE *) phdr;
-		pAceSID = (SID *) & (pAllowed->SidStart);
-		if (EqualSid(pWorldSID, pAceSID))
-		    break;
-	    }
-	}
-    }
-    if (i < pacl->AceCount) {
-	/* success */
-
-	int mkchange = FALSE;
-
-	if (add_acl) {
-	    if ((pAllowed->Mask & WRITABLE_MASK) != WRITABLE_MASK) {
-		/* world ACE does not have "write" permissions...add them */
-
-		*prev_access_mask = pAllowed->Mask;
-		mkchange = TRUE;
-		pAllowed->Mask |= FILE_GENERIC_WRITE;
-	    }
-	} else {
-	    /* restore previous world ACE mask for this file */
-
-	    pAllowed->Mask = *prev_access_mask;
-	    mkchange = TRUE;
-	}
-	if (mkchange) {
-	    rc = SetFileSecurity(bslfn,
-				 DACL_SECURITY_INFORMATION,
-				 pSecDescriptorBuf);
-
-	    if (!rc) {
-		DWORD err = GetLastError();
-		if (!(add_acl && err == ERROR_ACCESS_DENIED)) {
-		    fmt_win32_error(err, &msg, 0);
-		    mlforce("[SetFileSecurity: %s]", mktrimmed(msg));
-		    LocalFree(msg);
+	    if (GetAce(pacl, i, (LPVOID *) & phdr)) {
+		if (phdr->AceType == ACCESS_ALLOWED_ACE_TYPE) {
+		    pAllowed = (ACCESS_ALLOWED_ACE *) phdr;
+		    pAceSID = (SID *) & (pAllowed->SidStart);
+		    if (EqualSid(pWorldSID, pAceSID))
+			break;
 		}
-		/*
-		 * Else tried adding write permissions and privs are
-		 * insufficient.  Report no error...whatever action the
-		 * client is attempting will soon fail and an error
-		 * will be reported at that time.
-		 */
 	    }
 	}
-    }
-    /* Else no World ACE, so add it...someday...maybe...when really bored? */
+	if (i < pacl->AceCount) {
+	    /* success */
 
-    FreeSid(pWorldSID);
-    free(pSecDescriptorBuf);
+	    int mkchange = FALSE;
+
+	    if (add_acl) {
+		if ((pAllowed->Mask & WRITABLE_MASK) != WRITABLE_MASK) {
+		    /* world ACE does not have "write" permissions...add them */
+
+		    *prev_access_mask = pAllowed->Mask;
+		    mkchange = TRUE;
+		    pAllowed->Mask |= FILE_GENERIC_WRITE;
+		}
+	    } else {
+		/* restore previous world ACE mask for this file */
+
+		pAllowed->Mask = *prev_access_mask;
+		mkchange = TRUE;
+	    }
+	    if (mkchange) {
+		rc = SetFileSecurity(w32_bslfn,
+				     DACL_SECURITY_INFORMATION,
+				     pSecDescriptorBuf);
+
+		if (!rc) {
+		    DWORD err = GetLastError();
+		    if (!(add_acl && err == ERROR_ACCESS_DENIED)) {
+			fmt_win32_error(err, &msg, 0);
+			mlforce("[SetFileSecurity: %s]", mktrimmed(msg));
+			LocalFree(msg);
+		    }
+		    /*
+		     * Else tried adding write permissions and privs are
+		     * insufficient.  Report no error...whatever action the
+		     * client is attempting will soon fail and an error
+		     * will be reported at that time.
+		     */
+		}
+	    }
+	}
+	/* Else no World ACE, so add it...someday...maybe...when really bored? */
+
+	FreeSid(pWorldSID);
+    }
+    FreeIfNeeded(w32_bslfn);
+    FreeIfNeeded(pSecDescriptorBuf);
     return (rc);
 
 #undef WRITABLE_MASK
@@ -1296,4 +1363,84 @@ w32_remove_write_acl(const char *filename, ULONG orig_access_mask)
 	return (FALSE);		/* no such win9x feature */
     else
 	return (add_remove_write_acl(filename, FALSE, &orig_access_mask));
+}
+
+#ifdef UNICODE
+/*
+ * Use this via "w32_charstring()" to convert literal ASCII strings to Unicode.
+ */
+W32_CHAR *
+w32_ansi_to_ucs2(const char *source, int sourcelen)
+{
+    W32_CHAR * target = 0;
+
+    if (source != 0) {
+	ULONG len = MultiByteToWideChar(CP_ACP,
+				  MB_USEGLYPHCHARS|MB_PRECOMPOSED,
+				  source,
+				  sourcelen,
+				  0,
+				  0);
+	if (len != 0) {
+	    target = typecallocn(W32_CHAR, len + 1);
+
+	    (void) MultiByteToWideChar(CP_ACP,
+					MB_USEGLYPHCHARS|MB_PRECOMPOSED,
+					source,
+					sourcelen,
+					target,
+					len);
+	}
+    }
+
+    return target;
+}
+
+/* WINVER >= _0x0500 */
+#ifndef WC_NO_BEST_FIT_CHARS
+#define WC_NO_BEST_FIT_CHARS 0
+#endif
+
+/*
+ * Use this via "asc_charstring()" to convert Unicode to ASCII strings.
+ */
+char *
+w32_ucs2_to_ansi(const W32_CHAR *source, int sourcelen)
+{
+    char * target = 0;
+
+    if (source != 0) {
+	ULONG len = WideCharToMultiByte(CP_ACP,
+				  WC_NO_BEST_FIT_CHARS,
+				  source,
+				  sourcelen,
+				  0,
+				  0,
+				  NULL,
+				  NULL);
+	if (len) {
+	    target = typecallocn(char, len + 1);
+
+	    (void) WideCharToMultiByte(CP_ACP,
+					WC_NO_BEST_FIT_CHARS,
+					source,
+					sourcelen,
+					target,
+					len,
+					NULL,
+					NULL);
+	}
+    }
+
+    return target;
+}
+#endif
+
+void *
+binmalloc(void *source, int length)
+{
+    void *target = malloc(length);
+    if (target != 0)
+	memcpy(target, source, length);
+    return target;
 }

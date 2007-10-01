@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.618 2007/09/02 18:28:48 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.623 2007/09/27 20:25:01 tom Exp $
  *
  */
 
@@ -956,7 +956,7 @@ extern char * sl_to_bsl (const char *p);
 #endif
 
 #ifndef bsl_to_sl_inplace
-extern void bsl_to_sl_inplace (char *p);
+extern char * bsl_to_sl_inplace (char *p);
 #endif
 
 #if OPT_CASELESS && SYS_OS2
@@ -1330,7 +1330,7 @@ extern char *fmt_win32_error(ULONG errcode, char **buf, ULONG buflen);
 extern const char *get_favorites(void);
 extern int  is_win95(void);
 extern int  is_winnt(void);
-extern char *mk_shell_cmd_str(char *cmd, int *allocd_mem, int prepend_shc);
+extern char *mk_shell_cmd_str(const char *cmd, int *allocd_mem, int prepend_shc);
 extern char *ntwinio_current_font(void);
 extern int  ntwinio_font_frm_str(const char *fontstr, int use_mb);
 extern void ntwinio_oleauto_reg(void);
@@ -1361,12 +1361,44 @@ extern int  winsave_dir(const char *dir);
 extern void winvile_cleanup(void);
 extern int  winvile_cursor(int visible, int queue_change);
 extern int  winvile_cursor_state(int visible, int queue_change);
-extern void *winvile_hwnd(void);       /* winvile's main window */
 extern void winvile_start(void);
+
+#if DISP_NTCONS	
+extern void w32_set_console_title(const char *title);
+#endif
+
+#if DISP_NTWIN
+extern void *winvile_hwnd(void);       /* winvile's main window */
+#define GetVileWindow() winvile_hwnd()
+#else
+#define GetVileWindow() GetForegroundWindow()
+#endif
+
+#ifdef UNICODE
+typedef USHORT W32_CHAR;
+extern W32_CHAR * w32_ansi_to_ucs2(const char *source, int sourcelen);
+extern char * w32_ucs2_to_ansi(const W32_CHAR *source, int sourcelen);
+#define w32_charstring(source)            w32_ansi_to_ucs2(source,-1)
+#define w32_charstring2(source,sourcelen) w32_ansi_to_ucs2(source,sourcelen)
+#define asc_charstring(source)            w32_ucs2_to_ansi(source,-1)
+#define asc_charstring2(source,sourcelen) w32_ucs2_to_ansi(source,sourcelen)
+#else
+typedef char W32_CHAR;
+extern void *binmalloc(void *, int);
+#define w32_charstring(source)            strmalloc(source)
+#define w32_charstring2(source,sourcelen) (W32_CHAR *)binmalloc(source,sourcelen)
+#define asc_charstring(source)            strmalloc(source)
+#define asc_charstring2(source,sourcelen) (char *)binmalloc(source,sourcelen)
+#endif
+
+W32_CHAR * w32_prognam(void);
+
 #ifdef WINVER
 extern void w32_center_window(HWND child_hwnd, HWND parent_hwnd);
+extern int  w32_message_box(HWND hwnd, const char *message, int code);
 #endif
-#endif
+
+#endif /* SYS_WINNT */
 
 /* watchfd.c */
 extern int watchfd(int fd, WATCHTYPE type, char *callback);

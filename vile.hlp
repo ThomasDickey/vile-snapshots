@@ -1787,6 +1787,9 @@ Editor modes
 		recordseparator.  Set the recordseparator on a given buffer to
 		control how it is written.  (B)
 
+	norectangle-insert-mode (rim) Insert, rather than overstrike, change
+		changing text in a rectange.  (B)
+
 	remap   Controls whether :map or :map! sequences entered with
 		no explicit remapping control should be subject to remapping
 		(i.e. recursive mapping).  (U)
@@ -6362,4 +6365,4 @@ Problems
 
 Copyright 1995-2005,2006 by Paul Fox, Thomas Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.633 2007/09/12 16:43:19 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.634 2007/09/16 23:50:55 tom Exp $

@@ -23,6 +23,17 @@ Changes for vile 9.6 (released ??? ??? ?? ????)
 	    encoding.
 	  + regular expressions are not wide-character aware.
 	  + external syntax filters do not handle BOM or UTF-16, UTF32.
+	+ correct order of evaluation from 9.4w when setting record-separator,
+	  which was setting "crlf" ending temporarily when computing the buffer
+	  size, even when "lf" was intended.  That would cause an immediate
+	  write from winvile (without change) for a buffer to write too many
+	  characters.
+	+ add syntax filter conffilt.l, for "ordinary" config-files.
+	+ add "rectangle-insert-mode".
+	+ fill in several omitted items in init_mode_value().
+	+ add "describe-&functions" and "describe-$variables" commands.
+	  (The latter is a stub for later).
+	+ improve repainting in winvile while processing external command.
 	+ remove obsolete $tpause variable.
 	+ modify majormode inferencing to check preamble for [Standard Input]
 	  and [Output] buffers.

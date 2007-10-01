@@ -4,7 +4,7 @@
  * Most code probably by Dan Lawrence or Dave Conroy for MicroEMACS
  * Extensions for vile by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/insert.c,v 1.158 2007/08/31 23:31:17 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/insert.c,v 1.159 2007/09/16 20:43:15 tom Exp $
  */
 
 #include	"estruct.h"
@@ -714,7 +714,7 @@ blanks_on_line(void)
     int save = DOT.o;
     int list = w_val(curwp, WMDLIST);
 
-    for (DOT.o = 0; DOT.o < llength(DOT.l); DOT.o++) {
+    for (DOT.o = 0; DOT.o < llength(DOT.l); DOT.o += BytesAt(DOT.l, DOT.o)) {
 	if (isSpace(char_at(DOT))
 	    && getccol(list) >= indentwas) {
 	    code = TRUE;

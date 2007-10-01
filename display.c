@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.454 2007/09/13 23:59:33 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.455 2007/09/19 23:10:04 tom Exp $
  *
  */
 
@@ -382,9 +382,9 @@ int
 video_alloc(VIDEO ** vpp)
 {
     VIDEO *vp;
-    unsigned need = (term.maxcols - 4);
+    unsigned need = sizeof(VIDEO_TEXT) * (term.maxcols - 4);
 
-    /* struct VIDEO already has 4 of the bytes */
+    /* struct VIDEO already has 4 of the VIDEO_TEXT cells */
     if ((vp = typeallocplus(VIDEO, need)) != 0) {
 	(void) memset((char *) vp, 0, sizeof(VIDEO) + need);
 
@@ -800,8 +800,9 @@ vtset(LINE *lp, WINDOW *wp)
 #ifdef WMDLINEWRAP
     allow_wrap = 0;
 #endif
-    TRACE2(("TEXT %4d:%s\n", vtrow,
-						       visible_video_text(vscreen[vtrow]->v_text, vtcol)));
+    TRACE2(("TEXT %4d:%s\n",
+	    vtrow,
+	    visible_video_text(vscreen[vtrow]->v_text, vtcol)));
 }
 
 /*

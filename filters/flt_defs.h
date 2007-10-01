@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/flt_defs.h,v 1.7 2007/09/14 00:08:50 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/flt_defs.h,v 1.8 2007/09/28 21:19:11 tom Exp $
  */
 
 #ifndef FLT_DEFS_H
@@ -124,8 +124,6 @@ extern	int	sscanf	( const char *src, const char *fmt, ... );
 #endif
 
 #define BACKSLASH '\\'
-
-#define VILE_SUBKEY "Software\\VI Like Emacs"
 
 #define	TABLESIZE(v)	(sizeof(v)/sizeof(v[0]))
 #define NONNULL(s)	((s) != 0) ? (s) : "<null>"

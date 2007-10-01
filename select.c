@@ -18,7 +18,7 @@
  * transferring the selection are not dealt with in this file.  Procedures
  * for dealing with the representation are maintained in this file.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.165 2007/09/10 22:06:04 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.166 2007/09/16 20:05:13 tom Exp $
  *
  */
 
@@ -726,19 +726,19 @@ on_double_click(void)
     if (!is_at_end_of_line(DOT)
 	&& !isSpace(char_at(DOT))) {
 	while (DOT.o > 0) {
-	    DOT.o--;
+	    DOT.o -= BytesBefore(DOT.l, DOT.o);
 	    if (isSpace(char_at(DOT))) {
-		DOT.o++;
+		DOT.o += BytesAt(DOT.l, DOT.o);
 		break;
 	    }
 	}
 	sel_begin();
 	MK = DOT;
 	while (!is_at_end_of_line(DOT)) {
-	    DOT.o++;
+	    DOT.o += BytesAt(DOT.l, DOT.o);
 	    if (is_at_end_of_line(DOT)
 		|| isSpace(char_at(DOT))) {
-		DOT.o--;
+		DOT.o -= BytesBefore(DOT.l, DOT.o);
 		break;
 	    }
 	}
@@ -1688,7 +1688,7 @@ attribute_cntl_a_sequences(void)
 		if (apply_attribute())
 		    (void) attributeregion();
 	    } else {
-		DOT.o++;
+		DOT.o += BytesAt(DOT.l, DOT.o);
 	    }
 	}
 	DOT.l = lforw(DOT.l);

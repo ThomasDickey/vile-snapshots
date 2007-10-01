@@ -1,13 +1,15 @@
 #
 # makefile for vile on WIN32 using Microsoft Visual C++
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.wnt,v 1.94 2007/08/10 21:17:08 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.wnt,v 1.95 2007/09/16 18:25:52 tom Exp $
 #
 #
 !include <ntwin32.mak>
 
 ###############################################################################
-# These are the symbols that you may wish to set on the command line:
+# These are the symbols that you may wish to set on the command line (do not set
+# nmake symbols directly, since that disallows updating those within the makefile,
+# e.g., see how $(MY_CCOPT) is built up):
 #	CFG - primary configuration (console vs windows)
 #	DBG - nonempty for debugging
 #	FLT - nonempty for built-in filters
@@ -16,6 +18,7 @@
 #	ICON - winvile's icon
 #	TRACE - nonempty to suppress tracing when building a debug-executable.
 #	PROGNAME - vile/winvile $progname value
+#	VILEDEFS - other options, as needed
 ###############################################################################
 
 # you can override the icon to suit your taste (e.g,. vile, kitchen-sink,
@@ -97,6 +100,10 @@ MY_LDOPT = -pdb:none
 
 # options common to all configurations
 MY_CCOPT = $(MY_CCOPT) -DOPT_LOCALE -I.
+
+!IF  "$(VILEDEFS)" != ""
+MY_CCOPT = $(MY_CCOPT) $(VILEDEFS)
+!endif
 
 !IF  "$(CFG)" == "vile" || "$(CFG)" == "vile-with-perl"
 DISP_DEF = -DDISP_NTCONS

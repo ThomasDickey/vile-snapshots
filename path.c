@@ -2,7 +2,7 @@
  *		The routines in this file handle the conversion of pathname
  *		strings.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.154 2007/05/05 15:24:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.156 2007/09/23 23:43:59 tom Exp $
  *
  *
  */
@@ -911,7 +911,7 @@ resolve_directory(char *path_name, char **file_namep)
 
 #if SYS_WINNT
 
-static int
+static void
 case_correct_path(char *old_file, char *new_file)
 {
     WIN32_FIND_DATA fd;
@@ -941,7 +941,7 @@ case_correct_path(char *old_file, char *new_file)
 	new_file[len] = EOS;
 	(void) mklower(new_file);
 	if (!next)
-	    return 0;
+	    return;
 	sofar = new_file + len;
 	current = next + 1;
     } else {
@@ -971,24 +971,34 @@ case_correct_path(char *old_file, char *new_file)
      */
     end = skip_string(old_file);
     while (current < end) {
-	next = strchr(current, SLASHC);
-	if (!next)
+	W32_CHAR *lookup;
+
+	if ((next = strchr(current, SLASHC)) == 0)
 	    next = end;
 	len = (int) (next - current);
 	(void) memcpy(sofar, current, len);
 	sofar[len] = EOS;
-	h = FindFirstFile(new_file, &fd);
-	if (h != INVALID_HANDLE_VALUE) {
+
+	lookup = w32_charstring(new_file);
+	if (lookup != 0
+	    && (h = FindFirstFile(lookup, &fd)) != INVALID_HANDLE_VALUE) {
+	    char *actual = asc_charstring(fd.cFileName);
+
 	    FindClose(h);
-	    (void) strcpy(sofar, fd.cFileName);
+
+	    (void) strcpy(sofar, actual);
+	    free(actual);
+	    free(lookup);
+
 	    sofar += strlen(sofar);
-	} else
+	} else {
 	    sofar += len;
+	}
 	if (next != end)
 	    *sofar++ = SLASHC;
 	current = next + 1;
     }
-    return 0;
+    return;
 }
 
 #else /* !SYS_WINNT */
@@ -1023,7 +1033,7 @@ is_case_preserving(const char *name)
     return case_preserving;
 }
 
-static int
+static void
 case_correct_path(char *old_file, char *new_file)
 {
     FILEFINDBUF3 fb;
@@ -1042,7 +1052,7 @@ case_correct_path(char *old_file, char *new_file)
     /* If it isn't case-preserving then just down-case it. */
     if (!case_preserving) {
 	(void) mklower(strcpy(new_file, old_file));
-	return 0;
+	return;
     }
 
     /* Canonicalize a leading drive letter, if any. */
@@ -1088,17 +1098,17 @@ case_correct_path(char *old_file, char *new_file)
 	    *sofar++ = SLASHC;
 	current = next + 1;
     }
-    return 0;
+    return;
 }
 
 #else /* !SYS_OS2 */
 
-static int
+static void
 case_correct_path(char *old_file, char *new_file)
 {
     if (old_file != new_file)
 	(void) strcpy(new_file, old_file);
-    return 0;
+    return;
 }
 
 #endif /* !SYS_OS2 */
@@ -1471,10 +1481,11 @@ lengthen_path(char *path)
     char my_rsa[NAM$C_MAXRSS + 1];	/* result: sys$search */
 #endif
     int len;
-    const char *cwd;
+    const char *cwd = 0;
     char *f;
     char temp[NFILEN];
 #if OPT_MSDOS_PATH
+    int free_cwd = 0;
     char drive;
 #endif
 
@@ -1585,9 +1596,10 @@ lengthen_path(char *path)
 
 #if OPT_UNC_PATH
 	if (drive == EOS) {
-	    GetCurrentDirectory(sizeof(temp), temp);
-	    bsl_to_sl_inplace(temp);
-	    cwd = temp;
+	    W32_CHAR uncdir[NFILEN];
+	    GetCurrentDirectory(sizeof(uncdir), uncdir);
+	    cwd = bsl_to_sl_inplace(asc_charstring(uncdir));
+	    free_cwd = TRUE;
 	} else
 #endif
 	    cwd = curr_dir_on_drive(drive != EOS
@@ -1626,6 +1638,8 @@ lengthen_path(char *path)
 	    (void) strcpy(path, temp);
 	}
     }
+    if (free_cwd)
+	free((char *) cwd);
 #endif
 #endif /* SYS_UNIX || SYS_MSDOS */
 
@@ -1909,32 +1923,37 @@ parse_pathlist(const char *list, char *result)
 DIR *
 opendir(char *fname)
 {
-    char buf[MAX_PATH];
-    DIR *od;
+    DIR *od = 0;
+    char *buf = typeallocn(char, strlen(fname) + 10);
 
-    (void) vl_strncpy(buf, fname, sizeof(buf));
+    if (buf != 0) {
+	(void) strcpy(buf, fname);
 
-    if (!strcmp(buf, "."))	/* if its just a '.', replace with '*.*' */
-	(void) strcpy(buf, "*.*");
-    else {
-	/* If the name ends with a slash, append '*.*' otherwise '\*.*' */
-	if (is_slashc(buf[strlen(buf) - 1]))
-	    (void) strcat(buf, "*.*");
-	else
-	    (void) strcat(buf, "\\*.*");
+	if (!strcmp(buf, ".")) {
+	    /* if it's just a '.', replace with '*.*' */
+	    (void) strcpy(buf, "*.*");
+	} else {
+	    /* If the name ends with a slash, append '*.*' otherwise '\*.*' */
+	    if (is_slashc(buf[strlen(buf) - 1]))
+		(void) strcat(buf, "*.*");
+	    else
+		(void) strcat(buf, "\\*.*");
+	}
+
+	/* allocate the structure to maintain currency */
+	if ((od = typecalloc(DIR)) != NULL) {
+	    W32_CHAR *buf2 = w32_charstring(buf);
+
+	    /* Let's try to find a file matching the given name */
+	    if ((od->hFindFile = FindFirstFile(buf2, &od->ffd))
+		== INVALID_HANDLE_VALUE) {
+		FreeAndNull(od);
+	    } else {
+		od->first = 1;
+	    }
+	    free(buf2);
+	}
     }
-
-    /* allocate the structure to maintain currency */
-    if ((od = typealloc(DIR)) == NULL)
-	return NULL;
-
-    /* Let's try to find a file matching the given name */
-    if ((od->hFindFile = FindFirstFile(buf, &od->ffd))
-	== INVALID_HANDLE_VALUE) {
-	free(od);
-	return NULL;
-    }
-    od->first = 1;
     return od;
 }
 
@@ -1959,7 +1978,8 @@ readdir(DIR * dirp)
 	dirp->first = 0;
     else if (!FindNextFile(dirp->hFindFile, &dirp->ffd))
 	return NULL;
-    dirp->de.d_name = dirp->ffd.cFileName;
+    FreeIfNeeded(dirp->de.d_name);
+    dirp->de.d_name = asc_charstring(dirp->ffd.cFileName);
     return &dirp->de;
 }
 
@@ -2040,10 +2060,10 @@ sl_to_bsl(const char *p)
  * Use this function to tidy up and put the path-slashes into internal form.
  */
 #ifndef bsl_to_sl_inplace
-void
+char *
 bsl_to_sl_inplace(char *p)
 {
-    (void) slconv(p, p, '\\', '/');
+    return slconv(p, p, '\\', '/');
 }
 #endif
 

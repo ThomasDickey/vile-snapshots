@@ -1,4 +1,4 @@
-; $Id: modes.rc,v 1.59 2007/08/30 00:23:31 tom Exp $
+; $Id: modes.rc,v 1.62 2007/09/19 00:14:03 tom Exp $
 ; majormodes in this file are ordered alphabetically for convenience - the
 ; precedence used by vile is strictly alphabetic, counting case.  Use the
 ; before and after qualifiers to override the precedence.
@@ -121,11 +121,21 @@ define-mode bnf
 	ignoresuffix	'\.\(in\|orig\|~\)$'
 ~endwith
 
+; for Lynx lynx.cfg
 define-mode cfg
 ~with define-submode cfg
 	suffixes	'\.cfg$'
 	comment-prefix	'^\s*#'
 	comments	'^\s*#\s*$'
+~endwith
+
+define-mode conf
+~with define-submode conf
+	suffixes	'\.\(config\|dat\)$'
+	after		"yacc"
+	preamble	'^[#;]'
+	comment-prefix	'^\s*[#;]'
+	comments	'^\s*[#;]\s*$'
 ~endwith
 
 define-mode cpp
@@ -221,7 +231,7 @@ define-mode delphi
 	suffixes	'\.\(dfm\|dpr\)$'
 ~endif
 	dos
-	before pas
+	before "pas"
 	ignorecase
 ; no mistake - pascal fence-fi has no useful marker past the last else
 	fence-if   '^\$\s*if\>'
@@ -437,7 +447,7 @@ define-mode log
 ~with define-submode log
 	mode-filename	'^\(run\|\w\?make\).*\.out$'
 	suffixes	'\.\(log.*\)$'
-	before make
+	before "make"
 ~endwith
 
 define-mode lua
@@ -523,6 +533,7 @@ define-mode nmake
 	fence-else '^\s*!else\>'
 	fence-fi   '^\s*!endif\>'
 	ignorecase
+~endwith
 ~endwith
 
 define-mode nr

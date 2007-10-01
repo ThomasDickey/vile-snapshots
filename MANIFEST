@@ -1,4 +1,4 @@
-MANIFEST for vile, version v9_5r3
+MANIFEST for vile, version v9_5r4
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 CHANGES                         Change-log for VILE
@@ -190,6 +190,7 @@ filters/c-filt.c                c filter
 filters/c-filt.flx              original flex-based c-filter
 filters/c.key                   keywords for C
 filters/cfg-filt.l              syntax filter for Lynx config file.
+filters/conffilt.l              syntax-filter for config-files
 filters/cpp.key                 C++ keywords
 filters/cs.key                  keywords for C#
 filters/csh.key                 keywords for csh/tcsh syntax highlighting filter

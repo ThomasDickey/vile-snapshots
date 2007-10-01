@@ -3,7 +3,7 @@
  * and backward directions.
  *  heavily modified by Paul Fox, 1990
  *
- * $Header: /users/source/archives/vile.vcs/RCS/search.c,v 1.144 2007/08/29 00:49:27 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/search.c,v 1.145 2007/09/16 20:06:08 tom Exp $
  *
  * original written Aug. 1986 by John M. Gamble, but I (pgf) have since
  * replaced his regex stuff with Henry Spencer's regexp package.
@@ -681,7 +681,7 @@ attrib_matches(void)
 	/* provide a location for the next non-overlapping match */
 	nextdot = MK;
 	if (gregexp->mlen > 0)
-	    nextdot.o -= 1;
+	    nextdot.o -= BytesBefore(nextdot.l, nextdot.o);
 
 	/* show highlighting from DOT to MK */
 	regionshape = EXACT;

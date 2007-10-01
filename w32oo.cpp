@@ -8,7 +8,7 @@
  *   "FAILED" may not be used to test an OLE return code.  Use SUCCEEDED
  *   instead.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32oo.cpp,v 1.7 2005/02/01 00:04:20 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32oo.cpp,v 1.11 2007/09/27 21:33:59 tom Exp $
  */
 
 #include "w32vile.h"
@@ -27,6 +27,27 @@ extern "C" {
 
 #if CC_TURBO
 #include <dir.h>		/* for 'chdir()' */
+#endif
+
+#ifdef UNICODE
+static int
+vl_GetPathFromIDList(LPITEMIDLIST lp, char *bufferp)
+{
+    int rc = 0;
+    W32_CHAR buffer[FILENAME_MAX];
+    char *result;
+
+    rc = SHGetPathFromIDList(lp, buffer);
+    if (rc) {
+	if ((result = asc_charstring(buffer)) != 0) {
+	    strcpy(bufferp, result);
+	    free (result);
+	}
+    }
+    return rc;
+}
+#else
+#define vl_GetPathFromIDList(listp, bufferp) SHGetPathFromIDList(listp, bufferp)
 #endif
 
 /* ---------------------------- Favorites --------------------------------- */
@@ -65,10 +86,9 @@ get_favorites(void)
             return (NULL);
         }
 
-        if (! SHGetPathFromIDList(pidl, dir))
+        if (! vl_GetPathFromIDList(pidl, dir)) {
             disp_win32_error(W32_SYS_ERROR, NULL);
-        else
-        {
+        } else {
             bsl_to_sl_inplace(dir);  // Convert to canonical form
             path = strmalloc(dir);
             if (! path)
@@ -101,13 +121,13 @@ BrowseCallbackProc(HWND hwnd, UINT uMsg, LPARAM lp, LPARAM pData)
     ULONG         len;
     LPITEMIDLIST  pidl;
     LPSHELLFOLDER pShellFolder;
-    char          szDir[MAX_PATH];
+    W32_CHAR      szDir[MAX_PATH];
     LPWSTR        wide_path;
 
     switch(uMsg)
     {
         case BFFM_INITIALIZED:
-            // Set initial the browse folder path.  This code is a hoot.
+            // Set/initial the browse folder path.  This code is a hoot.
             len = MultiByteToWideChar(CP_ACP,
                                       MB_USEGLYPHCHARS|MB_PRECOMPOSED,
                                       initial_browse_dir,
@@ -135,10 +155,9 @@ BrowseCallbackProc(HWND hwnd, UINT uMsg, LPARAM lp, LPARAM pData)
                                                 &len,
                                                 &pidl,
                                                 0);
-            if (! SUCCEEDED(hr))
+            if (! SUCCEEDED(hr)) {
                 disp_win32_error(hr, hwnd);
-            else
-            {
+            } else {
                 SendMessage(hwnd, BFFM_SETSELECTION, FALSE, (LPARAM) pidl);
                 CoTaskMemFree(pidl);
             }
@@ -165,9 +184,11 @@ graphical_cd(const char *dir)
     int          rc = FALSE;
     char         bslbuf[FILENAME_MAX + 1], selected_folder[FILENAME_MAX + 1];
 
+    TRACE((T_CALLED "graphical_cd(%s)\n", dir));
+
     // win32 functions don't like '/' as path delimiter.
     if (! w32_glob_and_validate_dir(dir, bslbuf))
-        return (rc);
+        returnCode(rc);
 
     // pShellFolder->ParseDisplayName() will not accept local system folder
     // names that don't include a drive letter.  Yes, this is fatal brain
@@ -176,11 +197,12 @@ graphical_cd(const char *dir)
     // Unfortunately, lengthen_path() reverts to '/' as a path delimiter.
     // Oh, what tangled webs we weave.
     initial_browse_dir = sl_to_bsl(lengthen_path(bslbuf));
+    TRACE(("initial_browse_dir=%s\n", initial_browse_dir));
 
 #if DISP_NTWIN
     hwnd = (HWND) winvile_hwnd();
 #else
-    hwnd = GetForegroundWindow();
+    hwnd = GetVileWindow();
 #endif
 
 #ifndef VILE_OLE
@@ -188,7 +210,7 @@ graphical_cd(const char *dir)
     if (! SUCCEEDED(hr))
     {
         disp_win32_error(hr, hwnd);
-        return (rc);
+        returnCode(rc);
     }
 #endif
     memset(&bi, 0, sizeof(bi));
@@ -197,7 +219,7 @@ graphical_cd(const char *dir)
     bi.lpfn      = BrowseCallbackProc;
     if ((pidl = SHBrowseForFolder(&bi)) != NULL)
     {
-        if (! SHGetPathFromIDList(pidl, selected_folder))
+        if (! vl_GetPathFromIDList(pidl, selected_folder))
             disp_win32_error(NOERROR, hwnd);
         else
             rc = set_directory(selected_folder);
@@ -208,7 +230,7 @@ graphical_cd(const char *dir)
 #ifndef VILE_OLE
     OleUninitialize();
 #endif
-    return (rc);
+    returnCode(rc);
 }
 
 int
@@ -218,6 +240,7 @@ wincd(int f, int n)
     static TBUFF *last;
     int          rc;
 
+    TRACE((T_CALLED "wincd(%d,%d)\n", f, n));
     buf[0] = '\0';
     rc     = mlreply_dir("Initial Directory: ", &last, buf);
     if (rc == TRUE)
@@ -233,7 +256,7 @@ wincd(int f, int n)
         rc = graphical_cd(buf);
     }
     /* else rc == ABORT or SORTOFTRUE */
-    return (rc);
+    returnCode(rc);
 }
 
 /* explicitly specify initial directory */
@@ -242,12 +265,13 @@ wincd_dir(const char *dir)
 {
     char buf[NFILEN];
 
+    TRACE((T_CALLED "wincd_dir(%s)\n"));
     if (dir == NULL)
     {
         getcwd(buf, sizeof(buf));
         dir = buf;
     }
-    return (graphical_cd(dir));
+    returnCode(graphical_cd(dir));
 }
 
 #ifdef __cplusplus

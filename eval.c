@@ -2,7 +2,7 @@
  *	eval.c -- function and variable evaluation
  *	original by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.367 2007/08/29 00:42:24 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.369 2007/09/16 22:15:58 tom Exp $
  *
  */
 
@@ -458,6 +458,75 @@ listvars(int f, int n)
 #endif /* OPT_SHOW_EVAL */
 
 #if OPT_EVAL
+/* ARGSUSED */
+static void
+list_dlr_vars(int dum1 GCC_UNUSED, void *ptr GCC_UNUSED)
+{
+    bprintf("--- $variables ");
+    bpadc('-', term.cols - DOT.o);
+    bputc('\n');
+}
+
+int
+des_dlr_vars(int f GCC_UNUSED, int n GCC_UNUSED)
+{
+    show_vars_f = f;
+    show_vars_n = n;
+    return liststuff(DLR_VARIABLES_BufName, FALSE,
+		     list_dlr_vars, 0, (void *) 0);
+}
+#endif
+
+#define UF_PARAMS(code) \
+	     ((code & NUM) \
+	      ? "numeric" \
+	      : ((code & BOOL) \
+		 ? "boolean" \
+		 : "string"))
+
+#define UF_RETURN(code) \
+	     ((code & NRET) \
+	      ? "numeric" \
+	      : ((code & BRET) \
+		 ? "boolean" \
+		 : "string"))
+
+#if OPT_EVAL
+/* ARGSUSED */
+static void
+list_amp_funcs(int dum1 GCC_UNUSED, void *ptr GCC_UNUSED)
+{
+    int n;
+
+    bprintf("--- &functions ");
+    bpadc('-', term.cols - DOT.o);
+
+    for (n = 0; vl_ufuncs[n].f_name != 0; ++n) {
+	int nparams = (vl_ufuncs[n].f_code & NARGMASK);
+	const char *t_params = UF_PARAMS(vl_ufuncs[n].f_code);
+	const char *t_return = UF_RETURN(vl_ufuncs[n].f_code);
+
+	bputc('\n');
+	bprintf("&%s", vl_ufuncs[n].f_name);
+#if OPT_ONLINEHELP
+	bpadc(' ', 15 - DOT.o);
+	bprintf(" %s", vl_ufuncs[n].f_help);
+#endif
+	bputc('\n');
+	bprintf("\t%d %s parameter%s\n", nparams, t_params, PLURAL(nparams));
+	bprintf("\treturns %s\n", t_return);
+    }
+}
+
+int
+des_amp_funcs(int f GCC_UNUSED, int n GCC_UNUSED)
+{
+    return liststuff(AMP_FUNCTIONS_BufName, FALSE,
+		     list_amp_funcs, 0, (void *) 0);
+}
+#endif
+
+#if OPT_EVAL
 
 /*
  * Find a function in the function list.  The table is all lowercase, so we can
@@ -888,16 +957,8 @@ run_func(int fnum)
 	     vl_ufuncs[fnum].f_name,
 	     vl_ufuncs[fnum].f_code,
 	     nargs,
-	     (args_numeric
-	      ? "numeric"
-	      : (args_boolean
-		 ? "boolean"
-		 : "string")),
-	     (ret_numeric
-	      ? "numeric"
-	      : (ret_boolean
-		 ? "boolean"
-		 : "string"))));
+	     UF_PARAMS(vl_ufuncs[fnum].f_code),
+	     UF_RETURN(vl_ufuncs[fnum].f_code)));
 
     /* fetch required arguments */
     for (i = 0; i < nargs; i++) {

@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.348 2007/08/31 21:53:07 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.349 2007/09/27 00:13:29 tom Exp $
  *
  */
 
@@ -2042,16 +2042,6 @@ set_record_sep(BUFFER *bp, RECORD_SEP code)
     if (code == RS_AUTO)
 	code = RS_DEFAULT;
 
-    make_local_b_val(bp, MDDOS);
-    make_local_b_val(bp, VAL_RECORD_SEP);
-    set_b_val(bp, MDDOS, (code == RS_CRLF));
-    set_b_val(bp, VAL_RECORD_SEP, code);
-    b_clr_counted(bp);
-    (void) bsizes(bp);
-    relist_settings();
-    updatelistbuffers();
-    set_winflags(TRUE, WFMODE);
-
     switch (code) {
     case RS_AUTO:
 	/* see above */
@@ -2068,6 +2058,16 @@ set_record_sep(BUFFER *bp, RECORD_SEP code)
     }
     (bp)->b_recordsep_str = recordsep;
     (bp)->b_recordsep_len = (int) strlen(get_record_sep(bp));
+
+    make_local_b_val(bp, MDDOS);
+    make_local_b_val(bp, VAL_RECORD_SEP);
+    set_b_val(bp, MDDOS, (code == RS_CRLF));
+    set_b_val(bp, VAL_RECORD_SEP, code);
+    b_clr_counted(bp);
+    (void) bsizes(bp);
+    relist_settings();
+    updatelistbuffers();
+    set_winflags(TRUE, WFMODE);
 }
 
 	/* Change the record separator */

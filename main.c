@@ -22,7 +22,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.597 2007/09/12 23:35:42 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.603 2007/09/27 22:35:10 tom Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -206,6 +206,16 @@ setup_command(BUFFER *opts_bp, char *param)
     b2printf(opts_bp, "execute-named-command %s\n", param);
 }
 
+static int
+default_fill(void)
+{
+    /* this comes out to 70 on an 80 (or greater) column display */
+    int fill;
+    fill = (7 * term.cols) / 8;	/* must be done after vtinit() */
+    if (fill > 70)
+	fill = 70;
+    return fill;
+}
 /*--------------------------------------------------------------------------*/
 
 int
@@ -682,15 +692,7 @@ MainProgram(int argc, char *argv[])
 	tidy_exit(BADEXIT);
 
     winit(TRUE);		/* windows */
-
-    /* this comes out to 70 on an 80 (or greater) column display */
-    {
-	int fill;
-	fill = (7 * term.cols) / 8;	/* must be done after vtinit() */
-	if (fill > 70)
-	    fill = 70;
-	set_global_b_val(VAL_FILL, fill);
-    }
+    set_global_b_val(VAL_FILL, default_fill());
 
     /* Create an unnamed buffer, so that the initialization-file will have
      * something to work on.  We don't pull in any of the command-line
@@ -1028,7 +1030,7 @@ get_executable_dir(void)
     int j;
     HKEY hkey;
     DWORD dwSzBuffer;
-    char buffer[256];
+    W32_CHAR buffer[256];
 
     for (j = 0; j < TABLESIZE(rootkeys); ++j) {
 	if (RegOpenKeyEx(rootkeys[j],
@@ -1038,7 +1040,7 @@ get_executable_dir(void)
 			 &hkey) == ERROR_SUCCESS) {
 	    dwSzBuffer = sizeof(buffer);
 	    if (RegQueryValueEx(hkey,
-				"",
+				W32_STRING(""),
 				NULL,
 				NULL,
 				(LPBYTE) buffer,
@@ -1051,7 +1053,7 @@ get_executable_dir(void)
 		 * We need $exec-path to make "winvile -Or" work, since an
 		 * install is not guaranteed to put winvile.exe in %PATH%.
 		 */
-		exec_pathname = strmalloc(buffer);
+		exec_pathname = asc_charstring(buffer);
 		(void) RegCloseKey(hkey);
 		break;
 	    }
@@ -1368,10 +1370,13 @@ init_mode_value(struct VAL *d, MODECLASS v_class, int v_which)
 	switch (v_which) {
 	    setINT(MDAIND, FALSE);	/* auto-indent */
 	    setINT(MDASAVE, FALSE);	/* auto-save */
+	    setINT(MDAUTOWRITE, FALSE);		/* auto-write */
 	    setINT(MDBACKLIMIT, TRUE);	/* limit backspacing to insert point */
 	    setINT(MDCINDENT, FALSE);	/* C-style indent */
 	    setINT(MDDOS, CRLF_LINES);	/* on by default on DOS, off others */
 	    setINT(MDIGNCASE, FALSE);	/* exact matches */
+	    setINT(MDINS_RECTS, FALSE);		/* insert-mode for rectangles */
+	    setINT(MDLOADING, FALSE);	/* asynchronously loading a file */
 	    setINT(MDMAGIC, TRUE);	/* magic searches */
 	    setINT(MDMETAINSBIND, TRUE);	/* honor meta-bindings when in insert mode */
 	    setINT(MDNEWLINE, TRUE);	/* trailing-newline */
@@ -1381,6 +1386,7 @@ init_mode_value(struct VAL *d, MODECLASS v_class, int v_which)
 	    setINT(MDSWRAP, TRUE);	/* scan wrap */
 	    setINT(MDTABINSERT, TRUE);	/* allow tab insertion */
 	    setINT(MDTAGSRELTIV, FALSE);	/* path relative tag lookups */
+	    setINT(MDTAGWORD, FALSE);	/* tag entire word */
 	    setINT(MDTERSE, FALSE);	/* terse messaging */
 	    setINT(MDUNDOABLE, TRUE);	/* undo stack active */
 	    setINT(MDUNDO_DOS_TRIM, FALSE);	/* undo dos trimming */
@@ -1388,6 +1394,7 @@ init_mode_value(struct VAL *d, MODECLASS v_class, int v_which)
 	    setINT(MDWRAP, FALSE);	/* wrap */
 	    setINT(MDYANKMOTION, TRUE);		/* yank-motion */
 	    setINT(VAL_ASAVECNT, 256);	/* autosave count */
+	    setINT(VAL_FILL, default_fill());	/* column for paragraph reformat */
 	    setINT(VAL_PERCENT_CRLF, 50);	/* threshold for crlf conversion */
 	    setINT(VAL_RECORD_SEP, RS_DEFAULT);
 	    setINT(VAL_SHOW_FORMAT, SF_FOREIGN);
@@ -1395,6 +1402,7 @@ init_mode_value(struct VAL *d, MODECLASS v_class, int v_which)
 	    setINT(VAL_TAB, 8);	/* tab stop */
 	    setINT(VAL_TAGLEN, 0);	/* significant tag length */
 	    setINT(VAL_UNDOLIM, 10);	/* undo limit */
+	    setINT(VAL_WRAPMARGIN, 0);	/* wrap-margin */
 	    setPAT(VAL_CMT_PREFIX, DFT_CMT_PREFIX);
 	    setPAT(VAL_COMMENTS, DFT_COMMENTS);
 	    setPAT(VAL_FENCE_BEGIN, DFT_FENCE_BEGIN);
@@ -1439,6 +1447,9 @@ init_mode_value(struct VAL *d, MODECLASS v_class, int v_which)
 #ifdef MDMODELINE
 	    setINT(MDMODELINE, FALSE);
 #endif
+#ifdef MDTAGIGNORECASE
+	    setINT(MDTAGIGNORECASE, FALSE);	/* ignore case in tags */
+#endif
 #ifdef MDUPBUFF
 	    setINT(MDUPBUFF, TRUE);	/* animated */
 #endif
@@ -1460,6 +1471,9 @@ init_mode_value(struct VAL *d, MODECLASS v_class, int v_which)
 #ifdef VAL_FILE_ENCODING
 	    setINT(VAL_FILE_ENCODING, enc_DEFAULT);
 #endif
+#ifdef VAL_FILTERNAME
+	    setTXT(VAL_FILTERNAME, "");
+#endif
 #ifdef VAL_HILITEMATCH
 	    setINT(VAL_HILITEMATCH, 0);		/* no hilite */
 #endif
@@ -1471,6 +1485,9 @@ init_mode_value(struct VAL *d, MODECLASS v_class, int v_which)
 #endif
 #ifdef VAL_PERCENT_UTF8
 	    setINT(VAL_PERCENT_UTF8, 90);
+#endif
+#ifdef VAL_RECORD_ATTRS
+	    setINT(VAL_RECORD_ATTRS, 0);
 #endif
 #ifdef VAL_RECORD_FORMAT
 	    setINT(VAL_RECORD_FORMAT, FAB$C_UDF);
@@ -2248,7 +2265,6 @@ quit(int f, int n GCC_UNUSED)
 	tags_leaks();
 	wp_leaks();
 	bp_leaks();
-	vt_leaks();
 #if !SMALLER
 	ev_leaks();
 #endif
@@ -2296,6 +2312,8 @@ quit(int f, int n GCC_UNUSED)
 	tb_leaks();
 
 	term.close();
+	vt_leaks();
+
 	/* whatever is left over must be a leak */
 	show_alloc();
 	trace_leaks();
@@ -2842,32 +2860,38 @@ vile_getenv(const char *name)
 	int j;
 	HKEY hkey;
 	DWORD dwSzBuffer;
-	char buffer[256];
+	W32_CHAR buffer[256];
 
-	for (j = 0; j < TABLESIZE(rootkeys); ++j) {
-	    if (RegOpenKeyEx(rootkeys[j],
-			     VILE_SUBKEY "\\Environment",
-			     0,
-			     KEY_READ,
-			     &hkey) == ERROR_SUCCESS) {
-		dwSzBuffer = sizeof(buffer);
-		if (RegQueryValueEx(hkey,
-				    name,
-				    NULL,
-				    NULL,
-				    (LPBYTE) buffer,
-				    &dwSzBuffer) == ERROR_SUCCESS
-		    && dwSzBuffer != 0) {
+	W32_CHAR *env_name = w32_charstring(name);
 
-		    buffer[dwSzBuffer - 1] = 0;
-		    result = strmalloc(buffer);
+	if (env_name) {
+	    for (j = 0; j < TABLESIZE(rootkeys); ++j) {
+		if (RegOpenKeyEx(rootkeys[j],
+				 VILE_SUBKEY W32_STRING("\\Environment"),
+				 0,
+				 KEY_READ,
+				 &hkey) == ERROR_SUCCESS) {
+		    dwSzBuffer = sizeof(buffer);
+		    if (RegQueryValueEx(hkey,
+					env_name,
+					NULL,
+					NULL,
+					(LPBYTE) buffer,
+					&dwSzBuffer) == ERROR_SUCCESS
+			&& dwSzBuffer != 0) {
+
+			buffer[(dwSzBuffer / sizeof(W32_CHAR)) - 1] = 0;
+			result = asc_charstring(buffer);
+			(void) RegCloseKey(hkey);
+			break;
+		    }
+
 		    (void) RegCloseKey(hkey);
-		    break;
 		}
-
-		(void) RegCloseKey(hkey);
 	    }
 	}
+
+	FreeIfNeeded(env_name);
     }
 #endif
     return result;
