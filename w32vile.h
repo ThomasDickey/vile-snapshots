@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/w32vile.h,v 1.4 2006/04/25 22:21:20 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32vile.h,v 1.5 2007/09/28 22:50:09 tom Exp $
  *
  * Do the pragmas in a separate file to avoid contaminating portable code.
  */
@@ -26,5 +26,13 @@
 #define SETTIMER_RETVAL    UINT
 #define WINDOW_PROC_RETVAL LONG
 #endif
+
+#ifdef UNICODE
+#define W32_STRING(s) L##s
+#else
+#define W32_STRING(s) s
+#endif
+
+#define VILE_SUBKEY W32_STRING("Software\\VI Like Emacs")
 
 #endif /* W32VILE_H_incl */

@@ -5,7 +5,7 @@
  * reading and writing of the disk are
  * in "fileio.c".
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.410 2007/09/14 00:35:07 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.411 2007/09/27 00:13:46 tom Exp $
  */
 
 #include "estruct.h"
@@ -2372,7 +2372,7 @@ writeout(const char *fn, BUFFER *bp, int forced, int msgf)
 
     setup_file_region(bp, &region);
 
-    status = writereg(&region, fn, msgf, bp, forced, FALSE);
+    status = writereg(&region, fn, msgf, bp, forced, b_is_utfXX(bp));
 
 #if SYS_WINNT && DISP_NTWIN
     if (status && (!(isShellOrPipe(fn) || b_is_registered(bp)))) {

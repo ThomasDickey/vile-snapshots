@@ -11,7 +11,7 @@
 #
 # The modes are table entries in the BUFFER and WINDOW structures.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.263 2007/09/12 16:34:34 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.266 2007/09/16 23:03:35 tom Exp $
 #
 #
 # Mode-table entries.  Capitalized letters are used for abbreviations.
@@ -109,6 +109,7 @@ bool							# MD prefix
 	"FilterMsgs"	FILTERMSGS	0		OPT_MAJORMODE&&OPT_FILTER # Name of syntax-filter
 	"HighLight"	HILITE		chgd_filter	OPT_MAJORMODE # true if we enable syntax highlighting
 	"IgnoreCase"	IGNCASE		chgd_hilite	# Exact matching for searches
+	"Rectangle-Insert-Mode" INS_RECTS 0		# insert or overwrite when changing rectangles
 	"loading"	LOADING		0		# Are we asynchronously loading a file?
 	"locked"	LOCKED		chgd_disabled	OPT_LCKFILES # mode locked
 	"magic"		MAGIC		chgd_hilite	# regular expressions in search
@@ -220,185 +221,185 @@ string
 # The "environment" variables are similar to modes, but are not so neatly
 # organized into groups of universal/buffer/window.
 .environment
-"_"		_STATUS		OPT_EVAL	# function's result (external)
-"abufname"	ABUFNAME		# alternate buffer name (i.e. '#')
-"autocolor-hook" AUTOCOLORHOOK	OPT_HOOKS&&OPT_COLOR	# procedure to run for auto-coloring
-"bchars"	BCHARS			# chars in current buffer
-"bflags"	BFLAGS			# status flags for current buffer
-"blines"	BLINES			# lines in current buffer
-"brightness"	BRIGHTNESS	DISP_NTWIN	# intensity of normal, bold
-"buf-fname-expr" BUF_FNAME_EXPR	OPT_CURTOKENS	# buffer+fname expression
-"buffer-hook"	BUFHOOK		OPT_HOOKS	# procedure to run when entering buf
-"bufname"	BUFNAME		OPT_CURTOKENS	# buffer name under cursor
-"bwindows"	BWINDOWS		# windows open on current buffer
-"cbufname"	CBUFNAME		# current buffer name
-"cd-hook"	CDHOOK		OPT_HOOKS	# procedure to run when cd'ing
-"cdpath"	CDPATH		OPT_PATHLOOKUP	# runtime copy of CDPATH env var
-"cfgopts"	CFGOPTS			# "interesting" compiled options (comma-delimited)
-"cfilname"	CFNAME			# current file name
-"char"		CHAR			# current character under the cursor
-"cmd-count"	CMD_COUNT	OPT_EVAL # repeat-counter for macros
-"cryptkey"	CRYPTKEY	OPT_ENCRYPT # write-only encryption-key
-"curchar"	CURCHAR		!SMALLER # current character index in buffer
-"curcol"	CURCOL			# current column pos of cursor
-"curline"	CURLINE			# current line in file
-"cwd"		CWD		OPT_SHELL # current directory
-"cwline"	CWLINE			# current screen line in window
-"debug"		DEBUG			# macro debugging
-"directory"	DIRECTORY	OPT_SHELL # controls location of temp-files
-"discmd"	DISCMD			# display commands on command line
-"disinp"	DISINP			# display command line input characters
-"encoding"	ENCODING	OPT_LOCALE	# 8-bit encoding associated with buffer contents
-"end-of-cmd"	EOC			# true if they ended the cmd with <CR>
-"error-buffer"	ERROR_BUFFER	OPT_FINDERR	# buffer to use for find-next-error
-"error-expr"	ERROR_EXPR	OPT_FINDERR	# last matched error pattern
-"error-match"	ERROR_MATCH	OPT_FINDERR	# " " " matching text
-"error-tabstop"	ERROR_TABSTOP	OPT_FINDERR	# tabstop to use when interpreting %C
-"exec-path"	EXEC_PATH		# directory where vile's executable is found
-"exec-suffix"	EXEC_SUFFIX		# suffix to append when looking for execable programs
-"exit-hook"	EXITHOOK	OPT_HOOKS	# procedure to run when quitting
-"favorites"	FAVORITES	SYS_WINNT	# path to favorites directory
-"filename-expr"	FILENAME_EXPR	OPT_FINDERR	# regular expression for %F
-"filename-ic"	FILENAME_IC		# true if we set OPT_CASELESS
-"filter-list"	FILTER_LIST	OPT_FILTER	# list of builtin-filters
-"find-cmd"	FINDCMD		OPT_FINDPATH	# shell cmd emitted via "find" feature (debug)
-"findpath"	FINDPATH	OPT_FINDPATH	# directory(s) used with "find" feature
-"font"		FONT		DISP_X11||DISP_NTWIN	# current font
-"forward-search" FWD_SEARCH		# search-direction (true if forward)
-"goal-column"	GOAL_COLUMN	OPT_TRACE	# goal-column (debug-only)
-"helpfile"	HELPFILE		# helpfile (vile.hlp)
-"iconname"	ICONNAME	DISP_X11	# current font
-"identifier"	IDENTIFIER	OPT_CURTOKENS	# identifier under cursor
-"kbd-macro"	KBDMACRO		# keyboard-macro buffer (read only)
-"kill"		KILL			# kill buffer (read only)
-"lastkey"	LASTKEY			# last keyboard char struck
-"lcols"		LCOLS			# length of current line, in columns
-"libdir-path"	LIBDIR_PATH		# library directory(s)
-"line"		LINE			# text of current line
-"llength"	LLENGTH			# length of current line
-"locale"	LOCALE		OPT_LOCALE	# 8-bit locale associated with buffer contents
-"majormode"	MAJORMODE	OPT_MAJORMODE # current majormode, if any
-"majormode-hook" MAJORMODEHOOK	OPT_HOOKS&&OPT_MAJORMODE	# procedure to run for majormodes
-"match"		MATCH			# last matched magic pattern
-"menu-file"	MENU_FILE	OPT_MENUS # the name of the menu-file (e.g., .vilemenu)
-"mode"		MODE			# are we inserting/overwriting/command
-"modeline-format" MLFORMAT	OPT_MLFORMAT # modeline format string
-"modified"	MODIFIED		# is current buffer modified?
-"ncolors"	NCOLORS			# number of colors displayed
-"ntildes"	NTILDES			# number of tildes displayed at eob
-"ocwd"		OCWD		OPT_SHELL # previous directory
-"os"		OS			# what os are we on?
-"pagelen"	PAGELEN			# number of lines used by editor
-"pagewid"	CURWIDTH		# current screen width
-"palette"	PALETTE			# current palette string
-"patchlevel"	PATCHLEVEL		# current patch-level of vile (empty for release)
-"pathlist-separator" PATHCHR		# separator for lists of pathnames
-"pathname"	PATHNAME	OPT_CURTOKENS	# path-like word under cursor
-"pathname-separator" PATHSEP		# separator for levels of pathnames
-"pending"	PENDING			# type ahead pending flag
-"pid"		PROCESSID		# vile's process-id
-"position-format" POSFORMAT	OPT_POSFORMAT # position format string
-"progname"	PROGNAME		# returns current prog name - "vile"
-"prompt"	PROMPT			# command-prompt string - ": "
-"qidentifier"	QIDENTIFIER		# current qualified identifier
-"read-hook"	RDHOOK		OPT_HOOKS	# procedure to run when reading
-"replace"	REPLACE			# replacement pattern
-"return"	RETURN		OPT_EVAL	# function's return-result (internal)
-"search"	SEARCH			# search pattern
-"seed"		SEED			# current random number seed
-"shell"		SHELL		OPT_SHELL	# shell-environment variable
-"sres"		SRES			# current screen resolution
-"startup-file"	STARTUP_FILE		# the name of the startup-file (e.g., .vilerc)
-"startup-path"	STARTUP_PATH		# where to find the startup-file (e.g., .)
-"status"	STATUS			# returns the status of the last command
-"title"		TITLE		OPT_TITLE	# window title
-"title-format"	TITLEFORMAT	OPT_TITLE	# window title format
-"version"	VERSION			# current version number
-"with-prefix"	WITHPREFIX	OPT_EVAL	# current "~with" prefix
-"wlines"	WLINES			# # of lines in current window
-"word"		WORD			# current word
-"write-hook"	WRHOOK		OPT_HOOKS	# procedure to run when writing
-"xdisplay"	XDISPLAY	DISP_X11&&OPT_SHELL	# X Windows display, etc.
-"xshell"	XSHELL		DISP_X11&&OPT_SHELL	# xterm emulator, etc.
-"xshell-flags"	XSHELLFLAGS	DISP_X11&&OPT_SHELL	# $xshell flags, e.g., "-c"
+"_"		_STATUS		OPT_EVAL	"function's result (external)"
+"abufname"	ABUFNAME	1		"alternate buffer name (i.e. '#')"
+"autocolor-hook" AUTOCOLORHOOK	OPT_HOOKS&&OPT_COLOR	"procedure to run for auto-coloring"
+"bchars"	BCHARS		1		"chars in current buffer"
+"bflags"	BFLAGS		1		"status flags for current buffer"
+"blines"	BLINES		1		"lines in current buffer"
+"brightness"	BRIGHTNESS	DISP_NTWIN	"intensity of normal, bold"
+"buf-fname-expr" BUF_FNAME_EXPR	OPT_CURTOKENS	"buffer+fname expression"
+"buffer-hook"	BUFHOOK		OPT_HOOKS	"procedure to run when entering buf"
+"bufname"	BUFNAME		OPT_CURTOKENS	"buffer name under cursor"
+"bwindows"	BWINDOWS	1		"windows open on current buffer"
+"cbufname"	CBUFNAME	1		"current buffer name"
+"cd-hook"	CDHOOK		OPT_HOOKS	"procedure to run when cd'ing"
+"cdpath"	CDPATH		OPT_PATHLOOKUP	"runtime copy of CDPATH env var"
+"cfgopts"	CFGOPTS		1		"'interesting' compiled options (comma-delimited)"
+"cfilname"	CFNAME		1		"current file name"
+"char"		CHAR		1		"current character under the cursor"
+"cmd-count"	CMD_COUNT	OPT_EVAL	"repeat-counter for macros"
+"cryptkey"	CRYPTKEY	OPT_ENCRYPT	"write-only encryption-key"
+"curchar"	CURCHAR		!SMALLER	"current character index in buffer"
+"curcol"	CURCOL		1		"current column pos of cursor"
+"curline"	CURLINE		1		"current line in file"
+"cwd"		CWD		OPT_SHELL	"current directory"
+"cwline"	CWLINE		1		"current screen line in window"
+"debug"		DEBUG		1		"macro debugging"
+"directory"	DIRECTORY	OPT_SHELL	"controls location of temp-files"
+"discmd"	DISCMD		1		"display commands on command line"
+"disinp"	DISINP		1		"display command line input characters"
+"encoding"	ENCODING	OPT_LOCALE	"8-bit encoding associated with buffer contents"
+"end-of-cmd"	EOC		1		"true if they ended the cmd with <CR>"
+"error-buffer"	ERROR_BUFFER	OPT_FINDERR	"buffer to use for find-next-error"
+"error-expr"	ERROR_EXPR	OPT_FINDERR	"last matched error pattern"
+"error-match"	ERROR_MATCH	OPT_FINDERR	"last matching text for error-pattern"
+"error-tabstop"	ERROR_TABSTOP	OPT_FINDERR	"tabstop to use when interpreting %C"
+"exec-path"	EXEC_PATH	1		"directory where vile's executable is found"
+"exec-suffix"	EXEC_SUFFIX	1		"suffix to append when looking for execable programs"
+"exit-hook"	EXITHOOK	OPT_HOOKS	"procedure to run when quitting"
+"favorites"	FAVORITES	SYS_WINNT	"path to favorites directory"
+"filename-expr"	FILENAME_EXPR	OPT_FINDERR	"regular expression for %F"
+"filename-ic"	FILENAME_IC	1		"true if we set OPT_CASELESS"
+"filter-list"	FILTER_LIST	OPT_FILTER	"list of builtin-filters"
+"find-cmd"	FINDCMD		OPT_FINDPATH	"shell cmd emitted via 'find' feature (debug)"
+"findpath"	FINDPATH	OPT_FINDPATH	"directory(s) used with 'find' feature"
+"font"		FONT		DISP_X11||DISP_NTWIN	"current font"
+"forward-search" FWD_SEARCH	1		"search-direction (true if forward)"
+"goal-column"	GOAL_COLUMN	OPT_TRACE	"goal-column (debug-only)"
+"helpfile"	HELPFILE	1		"helpfile (vile.hlp)"
+"iconname"	ICONNAME	DISP_X11	"current font"
+"identifier"	IDENTIFIER	OPT_CURTOKENS	"identifier under cursor"
+"kbd-macro"	KBDMACRO	1		"keyboard-macro buffer (read only)"
+"kill"		KILL		1		"kill buffer (read only)"
+"lastkey"	LASTKEY		1		"last keyboard char struck"
+"lcols"		LCOLS		1		"length of current line, in columns"
+"libdir-path"	LIBDIR_PATH	1		"library directory(s)"
+"line"		LINE		1		"text of current line"
+"llength"	LLENGTH		1		"length of current line"
+"locale"	LOCALE		OPT_LOCALE	"8-bit locale associated with buffer contents"
+"majormode"	MAJORMODE	OPT_MAJORMODE "current majormode, if any"
+"majormode-hook" MAJORMODEHOOK	OPT_HOOKS&&OPT_MAJORMODE	"procedure to run for majormodes"
+"match"		MATCH		1		"last matched magic pattern"
+"menu-file"	MENU_FILE	OPT_MENUS	"the name of the menu-file (e.g., .vilemenu)"
+"mode"		MODE		1		"are we inserting/overwriting/command"
+"modeline-format" MLFORMAT	OPT_MLFORMAT	"modeline format string"
+"modified"	MODIFIED	1		"is current buffer modified?"
+"ncolors"	NCOLORS		1		"number of colors displayed"
+"ntildes"	NTILDES		1		"number of tildes displayed at eob"
+"ocwd"		OCWD		OPT_SHELL	"previous directory"
+"os"		OS		1		"what os are we on?"
+"pagelen"	PAGELEN		1		"number of lines used by editor"
+"pagewid"	CURWIDTH	1		"current screen width"
+"palette"	PALETTE		1		"current palette string"
+"patchlevel"	PATCHLEVEL	1		"current patch-level of vile (empty for release)"
+"pathlist-separator" PATHCHR	1		"separator for lists of pathnames"
+"pathname"	PATHNAME	OPT_CURTOKENS	"path-like word under cursor"
+"pathname-separator" PATHSEP	1		"separator for levels of pathnames"
+"pending"	PENDING		1		"type ahead pending flag"
+"pid"		PROCESSID	1		"vile's process-id"
+"position-format" POSFORMAT	OPT_POSFORMAT	"position format string"
+"progname"	PROGNAME	1		"returns current prog name - 'vile'"
+"prompt"	PROMPT		1		"command-prompt string - ': '"
+"qidentifier"	QIDENTIFIER	1		"current qualified identifier"
+"read-hook"	RDHOOK		OPT_HOOKS	"procedure to run when reading"
+"replace"	REPLACE		1		"replacement pattern"
+"return"	RETURN		OPT_EVAL	"function's return-result (internal)"
+"search"	SEARCH		1		"search pattern"
+"seed"		SEED		1		"current random number seed"
+"shell"		SHELL		OPT_SHELL	"shell-environment variable"
+"sres"		SRES		1		"current screen resolution"
+"startup-file"	STARTUP_FILE	1		"the name of the startup-file (e.g., .vilerc)"
+"startup-path"	STARTUP_PATH	1		"where to find the startup-file (e.g., .)"
+"status"	STATUS		1		"returns the status of the last command"
+"title"		TITLE		OPT_TITLE	"window title"
+"title-format"	TITLEFORMAT	OPT_TITLE	"window title format"
+"version"	VERSION		1		"current version number"
+"with-prefix"	WITHPREFIX	OPT_EVAL	"current '~with' prefix"
+"wlines"	WLINES		1		"# of lines in current window"
+"word"		WORD		1		"current word"
+"write-hook"	WRHOOK		OPT_HOOKS	"procedure to run when writing"
+"xdisplay"	XDISPLAY	DISP_X11&&OPT_SHELL	"X Windows display, etc."
+"xshell"	XSHELL		DISP_X11&&OPT_SHELL	"xterm emulator, etc."
+"xshell-flags"	XSHELLFLAGS	DISP_X11&&OPT_SHELL	"$xshell flags, e.g., '-c'"
 
 # function name, id, numargs
 .functions
-"abs"		ABS		1|NUM|NRET	# absolute value of a number
-"add"		ADD		2|NUM|NRET	# add two numbers together
-"and"		AND		2|BOOL|BRET	# logical and
-"ascii"		ASCII		1|NRET		# char to integer conversion
-"bind"		BIND		1|STR|SRET	# lookup what function name is bound to a key
-"cat"		CAT		2|STR|SRET	# concatenate string
-"cclass"	CCLASS		1|STR|SRET	# character-class
-"chr"		CHR		1|NUM		# integer to char conversion
-"classof"	CLASSOF		1|STR|SRET	# class of (various types)
-"cmatch"	CMATCH		2|STR|BRET	# caseless regular expression check
-"date"		DATE		2|NUM|SRET	# formatted date/timestamp
-"default"	DEFAULT		1|STR|SRET	# return initial/default value for mode or state-variable
-"divide"	DIV		2|NUM|NRET	# division
-"dquery"	DQUERY		2|STR|SRET	# query the user, given default value
-"env"		ENV		1|STR|SRET	# retrieve a system environment var
-"equal"		EQUAL		2|NUM|BRET	# logical equality check
-"error"		ERROR		1|STR|BRET	# check if parameter was the ERROR token
-"execable"	EXECABLE	1|BRET		# is a file executable?
-"filter"	FILTER		1|STR|BRET	# check if internal filter exists
-"ftime"		FTIME		1|STR|NRET	# file-timestamp (last-modified)
-"geq"		GEQ		2|NUM|BRET	# logical greater than or equal
-"global"	GLOBMODE	1|STR|SRET	# retrieve global setting
-"greater"	GREATER		2|NUM|BRET	# logical greater than
-"gt"		GT		2|NUM|BRET	# logical greater than (greater)
-"gtkey"		GTKEY		0		# get 1 character
-"gtmotion"	GTMOTION	1|STR|SRET	# get keyboard-sequence (characters), result is motion's name
-"gtsequence"	GTSEQ		0		# get keyboard-sequence (characters)
-"indirect"	INDIRECT	1|STR|SRET	# evaluate indirect value
-"isa"		ISA		2|STR|BRET	# test classification of an identifier
-"left"		LEFT		2|STR|SRET	# left string(string, len)
-"length"	LENGTH		1|NRET		# string length
-"leq"		LEQ		2|NUM|BRET	# logical less than or equal
-"lessthan"	LESS		2|NUM|BRET	# logical less than
-"local"		LOCMODE		1|STR|SRET	# retrieve local setting
-"lookup"	LOOKUP		2|STR|SRET	# lookup an external file
-"lower"		LOWER		1|STR|SRET	# lower case string
-"lt"		LT		2|NUM|BRET	# logical less than (lessthan)
-"match"		MATCH		2|STR|BRET	# regular expression check
-"mclass"	MCLASS		1|STR|SRET	# mode-class
-"middle"	MID		3|STR|SRET	# mid string(string, pos, len)
-"modulo"	MOD		2|NUM|NRET	# modulo
-"negate"	NEG		1|NUM|NRET	# negate
-"neq"		NEQ		2|NUM|BRET	# logical not equal
-"not"		NOT		1|BOOL|BRET	# logical not
-"or"		OR		2|BOOL|BRET	# logical or
-"path"		PATH		2|STR|SRET	# transform pathnames
-"pcat"		PATHCAT		2|STR|SRET	# concat directory and filename
-"pquote"	PATHQUOTE	1|STR|SRET	# quote pathname if needed
-"qpasswd"	QPASSWD		1|STR|SRET	# query user for password, echo '*'
-"query"		QUERY		1|STR|SRET	# query the user
-"random"	RANDOM		1|NUM|NRET	# get a random number
-"rd"		RD		1|BRET		# is a file readable?
-"readable"	READABLE	1|BRET		# is a file readable?
-"register"	REGISTER	1|STR|SRET	# register, e.g. "a"
-"right"		RIGHT		2|STR|SRET	# right string(string, pos)
-"rnd"		RND		1|NUM|NRET	# get a random number
-"sequal"	SEQUAL		2|STR|BRET	# string logical equality check
-"sgeq"		SGEQ		2|STR|BRET	# string greater than or equal
-"sgreater"	SGREAT		2|STR|BRET	# string logical greater than
-"sgt"		SGT		2|STR|BRET	# string logical greater than (sgreater)
-"sindex"	SINDEX		2|NRET		# find the index of one string in another
-"sleq"		SLEQ		2|STR|BRET	# string less than or equal
-"sless"		SLESS		2|STR|BRET	# string logical less than
-"slt"		SLT		2|STR|BRET	# string logical less than (sless)
-"sneq"		SNEQ		2|STR|BRET	# string not equal
-"stime"		STIME		0|NRET		# system-timestamp
-"stoken"	STOKEN		3|BRET		# find a token in a string, given delims
-"subtract"	SUB		2|NUM|NRET	# subtraction
-"times"		TIMES		2|NUM|NRET	# multiplication
-"token"		TOKEN		3|STR|SRET	# select n'th token of string, given delims
-"translate"	TRANS		3|STR|SRET	# translate string, changing chars from 2nd to 3rd param
-"trim"		TRIM		1|STR|SRET	# trims leading/trailing/repeated whitespace
-"upper"		UPPER		1|STR|SRET	# uppercase string
-"word"		WORD		2|STR|SRET	# select n'th word of string
-"writable"	WRITABLE	1|BRET		# is a file writeable?
+"abs"		ABS		1|NUM|NRET	"absolute value of a number"
+"add"		ADD		2|NUM|NRET	"add two numbers together"
+"and"		AND		2|BOOL|BRET	"logical and"
+"ascii"		ASCII		1|NRET		"char to integer conversion"
+"bind"		BIND		1|STR|SRET	"lookup what function name is bound to a key"
+"cat"		CAT		2|STR|SRET	"concatenate string"
+"cclass"	CCLASS		1|STR|SRET	"character-class"
+"chr"		CHR		1|NUM		"integer to char conversion"
+"classof"	CLASSOF		1|STR|SRET	"class of (various types)"
+"cmatch"	CMATCH		2|STR|BRET	"caseless regular expression check"
+"date"		DATE		2|NUM|SRET	"formatted date/timestamp"
+"default"	DEFAULT		1|STR|SRET	"return initial/default value for mode or state-variable"
+"divide"	DIV		2|NUM|NRET	"division"
+"dquery"	DQUERY		2|STR|SRET	"query the user, given default value"
+"env"		ENV		1|STR|SRET	"retrieve a system environment var"
+"equal"		EQUAL		2|NUM|BRET	"logical equality check"
+"error"		ERROR		1|STR|BRET	"check if parameter was the ERROR token"
+"execable"	EXECABLE	1|BRET		"is a file executable?"
+"filter"	FILTER		1|STR|BRET	"check if internal filter exists"
+"ftime"		FTIME		1|STR|NRET	"file-timestamp (last-modified)"
+"geq"		GEQ		2|NUM|BRET	"logical greater than or equal"
+"global"	GLOBMODE	1|STR|SRET	"retrieve global setting"
+"greater"	GREATER		2|NUM|BRET	"logical greater than"
+"gt"		GT		2|NUM|BRET	"logical greater than (greater)"
+"gtkey"		GTKEY		0		"get 1 character"
+"gtmotion"	GTMOTION	1|STR|SRET	"get keyboard-sequence (characters), result is motion's name"
+"gtsequence"	GTSEQ		0		"get keyboard-sequence (characters)"
+"indirect"	INDIRECT	1|STR|SRET	"evaluate indirect value"
+"isa"		ISA		2|STR|BRET	"test classification of an identifier"
+"left"		LEFT		2|STR|SRET	"left string(string, len)"
+"length"	LENGTH		1|NRET		"string length"
+"leq"		LEQ		2|NUM|BRET	"logical less than or equal"
+"lessthan"	LESS		2|NUM|BRET	"logical less than"
+"local"		LOCMODE		1|STR|SRET	"retrieve local setting"
+"lookup"	LOOKUP		2|STR|SRET	"lookup an external file"
+"lower"		LOWER		1|STR|SRET	"lower case string"
+"lt"		LT		2|NUM|BRET	"logical less than (lessthan)"
+"match"		MATCH		2|STR|BRET	"regular expression check"
+"mclass"	MCLASS		1|STR|SRET	"mode-class"
+"middle"	MID		3|STR|SRET	"mid string(string, pos, len)"
+"modulo"	MOD		2|NUM|NRET	"modulo"
+"negate"	NEG		1|NUM|NRET	"negate"
+"neq"		NEQ		2|NUM|BRET	"logical not equal"
+"not"		NOT		1|BOOL|BRET	"logical not"
+"or"		OR		2|BOOL|BRET	"logical or"
+"path"		PATH		2|STR|SRET	"transform pathnames"
+"pcat"		PATHCAT		2|STR|SRET	"concat directory and filename"
+"pquote"	PATHQUOTE	1|STR|SRET	"quote pathname if needed"
+"qpasswd"	QPASSWD		1|STR|SRET	"query user for password, echo '*'"
+"query"		QUERY		1|STR|SRET	"query the user"
+"random"	RANDOM		1|NUM|NRET	"get a random number"
+"rd"		RD		1|BRET		"is a file readable?"
+"readable"	READABLE	1|BRET		"is a file readable?"
+"register"	REGISTER	1|STR|SRET	"register, e.g. 'a'"
+"right"		RIGHT		2|STR|SRET	"right string(string, pos)"
+"rnd"		RND		1|NUM|NRET	"get a random number"
+"sequal"	SEQUAL		2|STR|BRET	"string logical equality check"
+"sgeq"		SGEQ		2|STR|BRET	"string greater than or equal"
+"sgreater"	SGREAT		2|STR|BRET	"string logical greater than"
+"sgt"		SGT		2|STR|BRET	"string logical greater than (sgreater)"
+"sindex"	SINDEX		2|NRET		"find the index of one string in another"
+"sleq"		SLEQ		2|STR|BRET	"string less than or equal"
+"sless"		SLESS		2|STR|BRET	"string logical less than"
+"slt"		SLT		2|STR|BRET	"string logical less than (sless)"
+"sneq"		SNEQ		2|STR|BRET	"string not equal"
+"stime"		STIME		0|NRET		"system-timestamp"
+"stoken"	STOKEN		3|BRET		"find a token in a string, given delims"
+"subtract"	SUB		2|NUM|NRET	"subtraction"
+"times"		TIMES		2|NUM|NRET	"multiplication"
+"token"		TOKEN		3|STR|SRET	"select n'th token of string, given delims"
+"translate"	TRANS		3|STR|SRET	"translate string, changing chars from 2nd to 3rd param"
+"trim"		TRIM		1|STR|SRET	"trims leading/trailing/repeated whitespace"
+"upper"		UPPER		1|STR|SRET	"uppercase string"
+"word"		WORD		2|STR|SRET	"select n'th word of string"
+"writable"	WRITABLE	1|BRET		"is a file writeable?"
 
 .table backup
 "off"		bak_OFF

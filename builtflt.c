@@ -1,7 +1,7 @@
 /*
  * Main program and I/O for external vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/RCS/builtflt.c,v 1.57 2007/09/09 14:38:36 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/builtflt.c,v 1.60 2007/09/19 21:45:54 tom Exp $
  *
  */
 
@@ -572,34 +572,18 @@ var_FILTER_LIST(TBUFF **rp, const char *vp)
  * Check if the command name is one of vile's set/unset variants.
  */
 int
-vl_is_register(const char *name)
+vl_is_setting(const void *cmd)
 {
-    const CMDFUNC *ptr = engl2fnc(name);
-    int result = 0;
-
-    if (ptr != 0) {
-	if (ptr == &f_usekreg
-	    || ptr == &f_execkreg) {
-	    result = 1;
-	}
-    }
-    return result;
-}
-
-/*
- * Check if the command name is one of vile's set/unset variants.
- */
-int
-vl_is_setting(const char *name)
-{
-    const CMDFUNC *ptr = engl2fnc(name);
+    const CMDFUNC *ptr = (const CMDFUNC *) cmd;
     int result = 0;
 
     if (ptr != 0) {
 	if (ptr == &f_setglobmode
 	    || ptr == &f_delglobmode
 	    || ptr == &f_setlocmode
-	    || ptr == &f_dellocmode) {
+	    || ptr == &f_dellocmode
+	    || ptr == &f_setvar
+	    || ptr == &f_unsetvar) {
 	    result = 1;
 	}
     }
@@ -607,22 +591,61 @@ vl_is_setting(const char *name)
 }
 
 /*
- * Check if the command name is one of vile's majormode set/unset variants.
+ * Check if the command name is one of vile's submode set/unset variants.
  */
 int
-vl_is_submode(const char *name)
+vl_is_majormode(const void *cmd)
 {
     int result = 0;
 #if OPT_MAJORMODE
-    const CMDFUNC *ptr = engl2fnc(name);
+    const CMDFUNC *ptr = (const CMDFUNC *) cmd;
 
     if (ptr != 0) {
-	if (ptr == &f_define_submode) {
+	if (ptr == &f_define_mode
+	    || ptr == &f_remove_mode) {
 	    result = 1;
 	}
     }
 #endif
     return result;
+}
+
+/*
+ * Check if the command name is one of vile's submode set/unset variants.
+ */
+int
+vl_is_submode(const void *cmd)
+{
+    int result = 0;
+#if OPT_MAJORMODE
+    const CMDFUNC *ptr = (const CMDFUNC *) cmd;
+
+    if (ptr != 0) {
+	if (ptr == &f_define_submode
+	    || ptr == &f_remove_submode) {
+	    result = 1;
+	}
+    }
+#endif
+    return result;
+}
+
+int
+vl_check_cmd(const void *cmd, unsigned flags)
+{
+    const CMDFUNC *actual = (const CMDFUNC *) cmd;
+    int result = 0;
+
+    if (actual != 0) {
+	result = ((actual->c_flags & flags) != 0);
+    }
+    return result;
+}
+
+const void *
+vl_lookup_cmd(const char *name)
+{
+    return (const void *) engl2fnc(name);
 }
 
 /*

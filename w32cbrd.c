@@ -11,7 +11,7 @@
  *    Subsequent copies do not show this cursor.  On an NT host, this
  *    phenomenon does not occur.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32cbrd.c,v 1.28 2007/08/31 23:19:34 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32cbrd.c,v 1.29 2007/09/16 17:52:15 tom Exp $
  */
 
 #include "estruct.h"
@@ -23,7 +23,7 @@
 #define  CLIPBOARD_BUSY      "[Clipboard currently busy]"
 #define  CLIPBOARD_COPY_MB   "[Clipboard copy from minibuffer not supported]"
 #define  CLIPBOARD_COPYING   "[Copying...]"
-#define  CLIPBOARD_COPY_FAIL "[Clipboad copy failed]"
+#define  CLIPBOARD_COPY_FAIL "[Clipboard copy failed]"
 #define  CLIPBOARD_COPY_MEM  "[Insufficient memory for copy operation]"
 
 typedef struct rgn_cpyarg_struct
@@ -504,8 +504,10 @@ static int
 paste_to_minibuffer(UCHAR *cbrddata)
 {
     int   rc = TRUE;
-    UCHAR *cp = cbrddata, *eol = NULL, map_str[MAX_MAPPED_STR + 1],
-          one_char[2];
+    UCHAR *cp = cbrddata;
+    UCHAR *eol = NULL;
+    UCHAR map_str[MAX_MAPPED_STR + 1];
+    UCHAR one_char[2];
 
     while(*cp)
     {

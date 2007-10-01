@@ -1,4 +1,4 @@
-# $Header: /users/source/archives/vile.vcs/filters/RCS/genmake.mak,v 1.32 2007/05/04 23:33:17 tom Exp $
+# $Header: /users/source/archives/vile.vcs/filters/RCS/genmake.mak,v 1.33 2007/09/16 20:17:41 tom Exp $
 # This is a list of filter root names and whether .c or .l files define the
 # filter.  Except for vile-crypt and vile-manfilt (which do not correspond to
 # majormodes), the filter names are constructed as vile-{root}-filt.
@@ -20,6 +20,7 @@ basic	bas-filt	l
 bat	bat-filt	l
 bnf	bnf-filt	l
 cfg	cfg-filt	l
+conf	conffilt	l
 css	css-filt	l
 cweb	cwebfilt	l
 dcl	dcl-filt	l

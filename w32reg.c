@@ -2,7 +2,7 @@
  * w32reg.c:  Winvile OLE registration code (currently only used for OLE
  *            automation).
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32reg.c,v 1.11 2006/12/22 20:55:40 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32reg.c,v 1.12 2007/09/28 20:31:03 tom Exp $
  */
 
 #include "estruct.h"
@@ -15,9 +15,9 @@
 #include <initguid.h>
 #include "w32reg.h"
 
-static void make_editor_name(char *name),
-            make_editor_path(char *path),
-            registration_success(char *editor_name, char *which, char *path);
+static void make_editor_name(char *name);
+static void make_editor_path(char *path);
+static void registration_success(char *editor_name, char *which, char *path);
 
 static int  report_w32_error(long w32_err_code);
 
@@ -69,6 +69,43 @@ static int  report_w32_error(long w32_err_code);
 
  */
 
+#ifdef UNICODE
+static long
+delete_key(HKEY key, const char *value)
+{
+    long rc = ERROR_NOT_ENOUGH_MEMORY;
+    W32_CHAR *actual = w32_charstring(value);
+    if (actual != 0) {
+	rc =RegDeleteKey(key, actual);
+	free (actual);
+    }
+    return rc;
+}
+
+static long
+create_key(HKEY key, const char *value, HKEY *result)
+{
+    long rc = ERROR_NOT_ENOUGH_MEMORY;
+    W32_CHAR *actual = w32_charstring(value);
+    if (actual != 0) {
+	rc = RegCreateKeyEx(key,
+                            actual,
+                            0,
+                            NULL,
+                            0,
+                            KEY_ALL_ACCESS,
+                            NULL,
+                            result,
+                            NULL);
+	free (actual);
+    }
+    return rc;
+}
+#else
+#define delete_key(key,value) RegDeleteKey(key,value)
+#define create_key(key,value,result) RegCreateKeyEx(key,value,0,NULL,0,KEY_ALL_ACCESS,NULL,result,NULL)
+#endif
+
 
 /* Pound a bunch of keys into the registry. */
 int
@@ -86,15 +123,7 @@ oleauto_register(OLEAUTO_OPTIONS *opts)
     /* -------------------------- Step 1 --------------------------- */
 
     sprintf(key, "%s.Application", name);
-    if ((rc = RegCreateKeyEx(HKEY_CLASSES_ROOT,
-                             key,
-                             0,
-                             NULL,
-                             0,
-                             KEY_ALL_ACCESS,
-                             NULL,
-                             &hk,
-                             NULL)) != ERROR_SUCCESS)
+    if ((rc = create_key(HKEY_CLASSES_ROOT, key, &hk)) != ERROR_SUCCESS)
     {
         return (report_w32_error(rc));
     }
@@ -110,15 +139,7 @@ oleauto_register(OLEAUTO_OPTIONS *opts)
         return (report_w32_error(rc));
     }
     strcat(key, "\\CLSID");
-    if ((rc = RegCreateKeyEx(HKEY_CLASSES_ROOT,
-                             key,
-                             0,
-                             NULL,
-                             0,
-                             KEY_ALL_ACCESS,
-                             NULL,
-                             &hksub,
-                             NULL)) != ERROR_SUCCESS)
+    if ((rc = create_key(HKEY_CLASSES_ROOT, key, &hksub)) != ERROR_SUCCESS)
     {
         RegCloseKey(hk);
         return (report_w32_error(rc));
@@ -136,15 +157,7 @@ oleauto_register(OLEAUTO_OPTIONS *opts)
         return (report_w32_error(rc));
     }
     sprintf(key, "%s.Application\\CURVER", name);
-    if ((rc = RegCreateKeyEx(HKEY_CLASSES_ROOT,
-                             key,
-                             0,
-                             NULL,
-                             0,
-                             KEY_ALL_ACCESS,
-                             NULL,
-                             &hksub,
-                             NULL)) != ERROR_SUCCESS)
+    if ((rc = create_key(HKEY_CLASSES_ROOT, key, &hksub)) != ERROR_SUCCESS)
     {
         RegCloseKey(hk);
         return (report_w32_error(rc));
@@ -160,15 +173,7 @@ oleauto_register(OLEAUTO_OPTIONS *opts)
 
     sprintf(key, "%s.Application.%s", name, VTL_VERSTR);
     val_len = sprintf((char *) value, "%s %s Application", name, VTL_VERSTR);
-    if ((rc = RegCreateKeyEx(HKEY_CLASSES_ROOT,
-                             key,
-                             0,
-                             NULL,
-                             0,
-                             KEY_ALL_ACCESS,
-                             NULL,
-                             &hk,
-                             NULL)) != ERROR_SUCCESS)
+    if ((rc = create_key(HKEY_CLASSES_ROOT, key, &hk)) != ERROR_SUCCESS)
     {
         return (report_w32_error(rc));
     }
@@ -183,15 +188,7 @@ oleauto_register(OLEAUTO_OPTIONS *opts)
         return (report_w32_error(rc));
     }
     strcat(key, "\\CLSID");
-    if ((rc = RegCreateKeyEx(HKEY_CLASSES_ROOT,
-                             key,
-                             0,
-                             NULL,
-                             0,
-                             KEY_ALL_ACCESS,
-                             NULL,
-                             &hksub,
-                             NULL)) != ERROR_SUCCESS)
+    if ((rc = create_key(HKEY_CLASSES_ROOT, key, &hksub)) != ERROR_SUCCESS)
     {
         RegCloseKey(hk);
         return (report_w32_error(rc));
@@ -208,15 +205,7 @@ oleauto_register(OLEAUTO_OPTIONS *opts)
         return (report_w32_error(rc));
     sprintf(key, "CLSID\\%s", CLSID_VILEAUTO_KEY);
     val_len = sprintf((char *) value, "%s %s Application", name, VTL_VERSTR);
-    if ((rc = RegCreateKeyEx(HKEY_CLASSES_ROOT,
-                             key,
-                             0,
-                             NULL,
-                             0,
-                             KEY_ALL_ACCESS,
-                             NULL,
-                             &hk,
-                             NULL)) != ERROR_SUCCESS)
+    if ((rc = create_key(HKEY_CLASSES_ROOT, key, &hk)) != ERROR_SUCCESS)
     {
         return (report_w32_error(rc));
     }
@@ -232,15 +221,7 @@ oleauto_register(OLEAUTO_OPTIONS *opts)
     }
     strcat(key, "\\ProgID");
     val_len = sprintf((char *) value, "%s.Application.%s", name, VTL_VERSTR);
-    if ((rc = RegCreateKeyEx(HKEY_CLASSES_ROOT,
-                             key,
-                             0,
-                             NULL,
-                             0,
-                             KEY_ALL_ACCESS,
-                             NULL,
-                             &hksub,
-                             NULL)) != ERROR_SUCCESS)
+    if ((rc = create_key(HKEY_CLASSES_ROOT, key, &hksub)) != ERROR_SUCCESS)
     {
         RegCloseKey(hk);
         return (report_w32_error(rc));
@@ -254,15 +235,7 @@ oleauto_register(OLEAUTO_OPTIONS *opts)
     }
     sprintf(key, "CLSID\\%s\\VersionIndependentProgID", CLSID_VILEAUTO_KEY);
     val_len = sprintf((char *) value, "%s.Application", name);
-    if ((rc = RegCreateKeyEx(HKEY_CLASSES_ROOT,
-                             key,
-                             0,
-                             NULL,
-                             0,
-                             KEY_ALL_ACCESS,
-                             NULL,
-                             &hksub,
-                             NULL)) != ERROR_SUCCESS)
+    if ((rc = create_key(HKEY_CLASSES_ROOT, key, &hksub)) != ERROR_SUCCESS)
     {
         RegCloseKey(hk);
         return (report_w32_error(rc));
@@ -294,15 +267,7 @@ oleauto_register(OLEAUTO_OPTIONS *opts)
                            " -fn '%s'",
                            opts->fontstr);
     }
-    if ((rc = RegCreateKeyEx(HKEY_CLASSES_ROOT,
-                             key,
-                             0,
-                             NULL,
-                             0,
-                             KEY_ALL_ACCESS,
-                             NULL,
-                             &hksub,
-                             NULL)) != ERROR_SUCCESS)
+    if ((rc = create_key(HKEY_CLASSES_ROOT, key, &hksub)) != ERROR_SUCCESS)
     {
         RegCloseKey(hk);
         return (report_w32_error(rc));
@@ -315,15 +280,7 @@ oleauto_register(OLEAUTO_OPTIONS *opts)
         return (report_w32_error(rc));
     }
     sprintf(key, "CLSID\\%s\\TypeLib", CLSID_VILEAUTO_KEY);
-    if ((rc = RegCreateKeyEx(HKEY_CLASSES_ROOT,
-                             key,
-                             0,
-                             NULL,
-                             0,
-                             KEY_ALL_ACCESS,
-                             NULL,
-                             &hksub,
-                             NULL)) != ERROR_SUCCESS)
+    if ((rc = create_key(HKEY_CLASSES_ROOT, key, &hksub)) != ERROR_SUCCESS)
     {
         RegCloseKey(hk);
         return (report_w32_error(rc));
@@ -341,15 +298,7 @@ oleauto_register(OLEAUTO_OPTIONS *opts)
         return (report_w32_error(rc));
     }
     sprintf(key, "CLSID\\%s\\Programmable", CLSID_VILEAUTO_KEY);
-    if ((rc = RegCreateKeyEx(HKEY_CLASSES_ROOT,
-                             key,
-                             0,
-                             NULL,
-                             0,
-                             KEY_ALL_ACCESS,
-                             NULL,
-                             &hksub,
-                             NULL)) != ERROR_SUCCESS)
+    if ((rc = create_key(HKEY_CLASSES_ROOT, key, &hksub)) != ERROR_SUCCESS)
     {
         RegCloseKey(hk);
         return (report_w32_error(rc));
@@ -361,15 +310,7 @@ oleauto_register(OLEAUTO_OPTIONS *opts)
 
     sprintf(key, "TypeLib\\%s\\%s", LIBID_VILEAUTO_KEY, VTL_VERSTR);
     val_len = sprintf((char *) value, "%s %s Type Library", name, VTL_VERSTR);
-    if ((rc = RegCreateKeyEx(HKEY_CLASSES_ROOT,
-                             key,
-                             0,
-                             NULL,
-                             0,
-                             KEY_ALL_ACCESS,
-                             NULL,
-                             &hk,
-                             NULL)) != ERROR_SUCCESS)
+    if ((rc = create_key(HKEY_CLASSES_ROOT, key, &hk)) != ERROR_SUCCESS)
     {
         return (report_w32_error(rc));
     }
@@ -388,15 +329,7 @@ oleauto_register(OLEAUTO_OPTIONS *opts)
 
     strcat(key, "\\9\\win32");
     val_len = (int) strlen(strcpy((char *) value, editor_path));
-    if ((rc = RegCreateKeyEx(HKEY_CLASSES_ROOT,
-                             key,
-                             0,
-                             NULL,
-                             0,
-                             KEY_ALL_ACCESS,
-                             NULL,
-                             &hksub,
-                             NULL)) != ERROR_SUCCESS)
+    if ((rc = create_key(HKEY_CLASSES_ROOT, key, &hksub)) != ERROR_SUCCESS)
     {
         RegCloseKey(hk);
         return (report_w32_error(rc));
@@ -410,15 +343,7 @@ oleauto_register(OLEAUTO_OPTIONS *opts)
     /* -------------------------- Step 5 --------------------------- */
 
     sprintf(key, "Interface\\%s", IID_IVILEAUTO_KEY);
-    if ((rc = RegCreateKeyEx(HKEY_CLASSES_ROOT,
-                             key,
-                             0,
-                             NULL,
-                             0,
-                             KEY_ALL_ACCESS,
-                             NULL,
-                             &hk,
-                             NULL)) != ERROR_SUCCESS)
+    if ((rc = create_key(HKEY_CLASSES_ROOT, key, &hk)) != ERROR_SUCCESS)
     {
         return (report_w32_error(rc));
     }
@@ -433,15 +358,7 @@ oleauto_register(OLEAUTO_OPTIONS *opts)
         return (report_w32_error(rc));
     }
     strcat(key, "\\TypeLib");
-    if ((rc = RegCreateKeyEx(HKEY_CLASSES_ROOT,
-                             key,
-                             0,
-                             NULL,
-                             0,
-                             KEY_ALL_ACCESS,
-                             NULL,
-                             &hksub,
-                             NULL)) != ERROR_SUCCESS)
+    if ((rc = create_key(HKEY_CLASSES_ROOT, key, &hksub)) != ERROR_SUCCESS)
     {
         RegCloseKey(hk);
         return (report_w32_error(rc));
@@ -459,15 +376,7 @@ oleauto_register(OLEAUTO_OPTIONS *opts)
         return (report_w32_error(rc));
     }
     sprintf(key, "Interface\\%s\\ProxyStubClsid32", IID_IVILEAUTO_KEY);
-    if ((rc = RegCreateKeyEx(HKEY_CLASSES_ROOT,
-                             key,
-                             0,
-                             NULL,
-                             0,
-                             KEY_ALL_ACCESS,
-                             NULL,
-                             &hksub,
-                             NULL)) != ERROR_SUCCESS)
+    if ((rc = create_key(HKEY_CLASSES_ROOT, key, &hksub)) != ERROR_SUCCESS)
     {
         RegCloseKey(hk);
         return (report_w32_error(rc));
@@ -488,8 +397,6 @@ oleauto_register(OLEAUTO_OPTIONS *opts)
     registration_success(name, "registered", editor_path);
     return (0);
 }
-
-
 
 /*
  * Undo oleauto_register().  Absence of any of the keys/values is not an
@@ -513,65 +420,65 @@ oleauto_unregister(void)
 
     sprintf(keytop, "%s.Application", name);
     sprintf(keysub, "%s\\CLSID", keytop);
-    if ((rc = RegDeleteKey(HKEY_CLASSES_ROOT, keysub)) != ERROR_SUCCESS)
+    if ((rc = delete_key(HKEY_CLASSES_ROOT, keysub)) != ERROR_SUCCESS)
     {
         if (rc ==  ERROR_ACCESS_DENIED)
             return (report_w32_error(rc));
     }
     sprintf(keysub, "%s\\CURVER", keytop);
-    (void) RegDeleteKey(HKEY_CLASSES_ROOT, keysub);
-    (void) RegDeleteKey(HKEY_CLASSES_ROOT, keytop);
+    (void) delete_key(HKEY_CLASSES_ROOT, keysub);
+    (void) delete_key(HKEY_CLASSES_ROOT, keytop);
 
     /* -------------------------- Step 2 --------------------------- */
 
     sprintf(keytop, "%s.Application.%s", name, VTL_VERSTR);
     sprintf(keysub, "%s\\CLSID", keytop);
-    if ((rc = RegDeleteKey(HKEY_CLASSES_ROOT, keysub)) != ERROR_SUCCESS)
+    if ((rc = delete_key(HKEY_CLASSES_ROOT, keysub)) != ERROR_SUCCESS)
     {
         if (rc ==  ERROR_ACCESS_DENIED)
             return (report_w32_error(rc));
     }
-    (void) RegDeleteKey(HKEY_CLASSES_ROOT, keytop);
+    (void) delete_key(HKEY_CLASSES_ROOT, keytop);
     sprintf(keytop, "CLSID\\%s", CLSID_VILEAUTO_KEY);
     sprintf(keysub, "%s\\ProgID", keytop);
-    (void) RegDeleteKey(HKEY_CLASSES_ROOT, keysub);
+    (void) delete_key(HKEY_CLASSES_ROOT, keysub);
     sprintf(keysub, "%s\\VersionIndependentProgID", keytop);
-    (void) RegDeleteKey(HKEY_CLASSES_ROOT, keysub);
+    (void) delete_key(HKEY_CLASSES_ROOT, keysub);
     sprintf(keysub, "%s\\LocalServer32", keytop);
-    (void) RegDeleteKey(HKEY_CLASSES_ROOT, keysub);
+    (void) delete_key(HKEY_CLASSES_ROOT, keysub);
     sprintf(keysub, "%s\\TypeLib", keytop);
-    (void) RegDeleteKey(HKEY_CLASSES_ROOT, keysub);
+    (void) delete_key(HKEY_CLASSES_ROOT, keysub);
     sprintf(keysub, "%s\\Programmable", keytop);
-    (void) RegDeleteKey(HKEY_CLASSES_ROOT, keysub);
-    (void) RegDeleteKey(HKEY_CLASSES_ROOT, keytop);
+    (void) delete_key(HKEY_CLASSES_ROOT, keysub);
+    (void) delete_key(HKEY_CLASSES_ROOT, keytop);
 
     /* ----------------------- Step 3 & 4 -------------------------- */
 
     sprintf(keytop, "TypeLib\\%s\\%s", LIBID_VILEAUTO_KEY, VTL_VERSTR);
     sprintf(keysub, "%s\\9\\win32", keytop);
-    if ((rc = RegDeleteKey(HKEY_CLASSES_ROOT, keysub)) != ERROR_SUCCESS)
+    if ((rc = delete_key(HKEY_CLASSES_ROOT, keysub)) != ERROR_SUCCESS)
     {
         if (rc ==  ERROR_ACCESS_DENIED)
             return (report_w32_error(rc));
     }
     sprintf(keysub, "%s\\9", keytop);
-    RegDeleteKey(HKEY_CLASSES_ROOT, keysub);
-    RegDeleteKey(HKEY_CLASSES_ROOT, keytop);
+    delete_key(HKEY_CLASSES_ROOT, keysub);
+    delete_key(HKEY_CLASSES_ROOT, keytop);
     sprintf(keytop, "TypeLib\\%s", LIBID_VILEAUTO_KEY);
-    RegDeleteKey(HKEY_CLASSES_ROOT, keytop);
+    delete_key(HKEY_CLASSES_ROOT, keytop);
 
     /* -------------------------- Step 5 --------------------------- */
 
     sprintf(keytop, "Interface\\%s", IID_IVILEAUTO_KEY);
     sprintf(keysub, "%s\\TypeLib", keytop);
-    if ((rc = RegDeleteKey(HKEY_CLASSES_ROOT, keysub)) != ERROR_SUCCESS)
+    if ((rc = delete_key(HKEY_CLASSES_ROOT, keysub)) != ERROR_SUCCESS)
     {
         if (rc ==  ERROR_ACCESS_DENIED)
             return (report_w32_error(rc));
     }
     sprintf(keysub, "%s\\ProxyStubClsid32", keytop);
-    RegDeleteKey(HKEY_CLASSES_ROOT, keysub);
-    RegDeleteKey(HKEY_CLASSES_ROOT, keytop);
+    delete_key(HKEY_CLASSES_ROOT, keysub);
+    delete_key(HKEY_CLASSES_ROOT, keytop);
 
     registration_success(name, "unregistered", NULL);
     return (0);
@@ -632,10 +539,10 @@ report_w32_error(long w32_err_code)
         /* give an error message other than "Access denied" */
 
         MessageBox(NULL,
-            "Access denied while updating the registry."
-            "\r\rRegistering/Unregistering an OLE automation server requires "
-            "administrator privilege.",
-                   prognam,
+                   W32_STRING("Access denied while updating the registry.")
+                   W32_STRING("\r\rRegistering/Unregistering an OLE automation server requires ")
+                   W32_STRING("administrator privilege."),
+                   w32_prognam(),
                    MB_OK|MB_ICONSTOP);
 
     }
@@ -651,7 +558,9 @@ report_w32_error(long w32_err_code)
 static void
 registration_success(char *editor_name, char *which, char *path)
 {
-    char status[256];
+    W32_CHAR *msg;
+    W32_CHAR *arg;
+    char status[NFILEN + 256];
     int  len;
 
     len = sprintf(status,
@@ -662,10 +571,15 @@ registration_success(char *editor_name, char *which, char *path)
     {
         /* Registered -- warn user about registering temp copy of editor. */
 
-        sprintf(status + len, "\r\rNote:  registered path is %s .\r\r"
-        "If this path is temporary or otherwise undesirable, install the "
-        "editor in its proper destination directory and re-register.",
+        sprintf(status + len,
+		"\r\rNote:  registered path is %s .\r\r"
+                "If this path is temporary or otherwise undesirable, install the "
+                "editor in its proper destination directory and re-register.",
                 path);
     }
-    MessageBox(NULL, status, editor_name, MB_ICONINFORMATION|MB_OK);
+    msg = w32_charstring(status);
+    arg = w32_charstring(editor_name);
+    MessageBox(NULL, msg, arg, MB_ICONINFORMATION|MB_OK);
+    free (msg);
+    free (arg);
 }

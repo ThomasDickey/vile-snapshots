@@ -1,7 +1,7 @@
 /*
  * debugging support -- tom dickey.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/trace.h,v 1.25 2007/09/13 18:59:34 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/trace.h,v 1.26 2007/09/26 00:12:18 tom Exp $
  *
  */
 #ifndef	_trace_h
@@ -56,6 +56,7 @@ extern	void	WalkBack (void);
 extern	char *	trace_indent(int level, int marker);
 
 extern	int	retrace_code (int);
+extern	void *	retrace_ptr (void *);
 extern	char *	retrace_string (char *);
 extern	void	retrace_void (void);
 
@@ -80,9 +81,10 @@ extern	void	trace_window (WINDOW *p);
 #undef TRACE
 #if OPT_TRACE
 #define TRACE(p) Trace p
-#define returnCode(c) return retrace_code(c)
+#define returnCode(c)   return retrace_code(c)
+#define returnPtr(c)    return retrace_ptr(c)
 #define returnString(c) return retrace_string(c)
-#define returnVoid() { retrace_void(); return; }
+#define returnVoid()    { retrace_void(); return; }
 #endif
 
 /*

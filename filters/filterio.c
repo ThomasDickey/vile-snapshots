@@ -1,7 +1,7 @@
 /*
  * Main program and I/O for external vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filterio.c,v 1.35 2007/08/10 23:34:35 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filterio.c,v 1.36 2007/09/19 22:44:15 tom Exp $
  *
  */
 
@@ -286,15 +286,8 @@ dname_to_dirnum(char **s GCC_UNUSED, size_t length GCC_UNUSED)
 }
 
 /* ARGSUSED */
-const CMDFUNC *
-engl2fnc(const char *fname GCC_UNUSED)
-{
-    return 0;
-}
-
-/* ARGSUSED */
 int
-vl_is_register(const char *mode GCC_UNUSED)
+vl_is_majormode(const void *cmd GCC_UNUSED)
 {
     /* added in 9.5s */
     return 0;
@@ -302,7 +295,7 @@ vl_is_register(const char *mode GCC_UNUSED)
 
 /* ARGSUSED */
 int
-vl_is_setting(const char *mode GCC_UNUSED)
+vl_is_setting(const void *cmd GCC_UNUSED)
 {
     /* added in 9.5s */
     return 0;
@@ -310,7 +303,14 @@ vl_is_setting(const char *mode GCC_UNUSED)
 
 /* ARGSUSED */
 int
-vl_is_submode(const char *mode GCC_UNUSED)
+vl_is_submode(const void *cmd GCC_UNUSED)
+{
+    /* added in 9.5s */
+    return 0;
+}
+
+const void *
+vl_lookup_cmd(const char *name GCC_UNUSED)
 {
     /* added in 9.5s */
     return 0;

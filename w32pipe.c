@@ -60,7 +60,7 @@
  *    situation, kill the app by typing ^C (and then please apply for a
  *    QA position with a certain Redmond company).
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32pipe.c,v 1.33 2006/04/21 11:53:40 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32pipe.c,v 1.34 2007/09/26 00:18:45 tom Exp $
  */
 
 #define HAVE_FCNTL_H 1
@@ -181,13 +181,14 @@ common_cleanup(void)
 static HANDLE
 exec_shell(char *cmd, HANDLE *handles, int hide_child)
 {
+    W32_CHAR             *w32_cmdstr = 0;
     char                 *cmdstr;
     int                  freestr;
     PROCESS_INFORMATION  pi;
     STARTUPINFO          si;
 
     proc_handle = BAD_PROC_HANDLE;  /* in case of failure */
-    TRACE(("exec_shell %s\n", cmd));
+    TRACE((T_CALLED "exec_shell %s\n", cmd));
     if ((cmdstr = mk_shell_cmd_str(cmd, &freestr, TRUE)) == NULL)
     {
         /* heap exhausted! */
@@ -196,42 +197,44 @@ exec_shell(char *cmd, HANDLE *handles, int hide_child)
 
         /* Give user a chance to read message--more will surely follow. */
         Sleep(3000);
-        return (proc_handle);
-    }
+    } else if ((w32_cmdstr = w32_charstring(cmdstr)) == 0) {
+        no_memory("exec_shell");
+    } else {
 
-    memset(&si, 0, sizeof(si));
-    si.cb          = sizeof(si);
-    si.dwFlags     = STARTF_USESTDHANDLES;
-    si.hStdInput   = handles[0];
-    si.hStdOutput  = handles[1];
-    si.hStdError   = handles[2];
+	memset(&si, 0, sizeof(si));
+	si.cb          = sizeof(si);
+	si.dwFlags     = STARTF_USESTDHANDLES;
+	si.hStdInput   = handles[0];
+	si.hStdOutput  = handles[1];
+	si.hStdError   = handles[2];
 #if DISP_NTWIN
-    if (hide_child)
-    {
-        si.dwFlags     |= STARTF_USESHOWWINDOW;
-        si.wShowWindow  = SW_HIDE;
-    }
+	if (hide_child)
+	{
+	    si.dwFlags     |= STARTF_USESHOWWINDOW;
+	    si.wShowWindow  = SW_HIDE;
+	}
 #endif
-    TRACE(("CreateProcess %s (pipe)\n", cmdstr));
-    if (CreateProcess(NULL,
-                      cmdstr,
-                      NULL,
-                      NULL,
-                      TRUE,       /* Inherit handles */
-                      0,
-                      NULL,
-                      NULL,
-                      &si,
-                      &pi))
-    {
-        /* Success */
+	TRACE(("CreateProcess %s (pipe)\n", cmdstr));
+	if (CreateProcess(NULL,
+			  w32_cmdstr,
+			  NULL,
+			  NULL,
+			  TRUE,       /* Inherit handles */
+			  0,
+			  NULL,
+			  NULL,
+			  &si,
+			  &pi))
+	{
+	    /* Success */
 
-        CloseHandle(pi.hThread);
-        proc_handle = pi.hProcess;
+	    CloseHandle(pi.hThread);
+	    proc_handle = pi.hProcess;
+	}
     }
-    if (freestr)
-        free(cmdstr);
-    return (proc_handle);
+    FreeIfNeeded(cmdstr);
+    FreeIfNeeded(w32_cmdstr);
+    returnPtr(proc_handle);
 }
 
 

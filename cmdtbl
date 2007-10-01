@@ -97,7 +97,7 @@
 #		in '!' listed, then the flag does nothing, and should be
 #		viewed simply as documentation.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.249 2007/08/10 23:30:06 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.251 2007/09/19 20:25:11 tom Exp $
 #
 #
 
@@ -538,6 +538,10 @@ dotcmdplay	UNDO
 	"repeat-last-cmd"		!FEWNAMES
 	'.'
 	<repeat the last text-changing command, CNT times>
+des_amp_funcs	NONE			OPT_EVAL
+	"describe-&functions"
+des_dlr_vars	NONE			OPT_EVAL
+	"describe-$variables"
 evaluate	NONE			OPT_EVAL
 	"eval"
 	"execute-string"		!FEWNAMES
@@ -545,10 +549,10 @@ evaluate	NONE			OPT_EVAL
 ex		BANG|FILE1
 	"ex"
 	<entry point to the \"exile\" editor.  unimplemented>
-execbuf		NONE			!SMALLER
+execbuf		EXRCOK|EXTRA		!SMALLER
 	"execute-buffer"		!FEWNAMES
 	<run the given buffer as a script, CNT times>
-execfile	NONE
+execfile	EXRCOK|EXTRA		
 	"execute-file"			!FEWNAMES
 	"source"
 	<run the given file as a script, CNT times>
@@ -558,11 +562,11 @@ exechypercmd	NONE			OPT_HYPERTEXT
 showhypercmd	NONE			OPT_HYPERTEXT
 	"show-hypertext-command"	!FEWNAMES
 	<show the hypertext command attached to the region under the cursor>
-execkreg	REDO|UNDO|VIEWOK
+execkreg	REDO|UNDO|VIEWOK|USEREG
 	"execute-register"
 	'@'
 	<execute the keystroke macro stored in the given named register CNT times>
-execproc	REDO			OPT_PROCEDURES
+execproc	REDO|EXRCOK|EXTRA	OPT_PROCEDURES
 	"execute-procedure"		!FEWNAMES
 	"run"
 	<run the given named stored-procedure as a script, CNT times>
@@ -592,7 +596,7 @@ filefind	BANG|FILE1|PLUS
 	"find-file"			!FEWNAMES
 	'^X-e'
 	<bring given (or under-cursor) file or existing buffer into window>
-fileread	NONE
+fileread	EXRCOK|FILE1		
 	"e!"
 	"replace-with-file"		!FEWNAMES
 	<replace the contents of the current buffer with the given file>
@@ -920,11 +924,11 @@ listbuffers	NONE
 	"show-buffers"			!FEWNAMES
 	'^A-*'
 	<show the current list of buffers.  give CNT to force showing all>
-vl_set_args	NONE
+vl_set_args	FILES
 	"set-buffers"			!FEWNAMES
 	"args"
 	<reset the current list of visible buffers.>
-vl_set_args2	NONE
+vl_set_args2	FILES
 	"force-set-buffers"		!FEWNAMES
 	"args!"
 	<reset the current list of visible buffers, even if some are modified.>
@@ -955,7 +959,7 @@ lineundo	NONE
 	"undo-line-changes"		!FEWNAMES
 	'U'
 	<undo all changes made to most recently altered line>
-loadkreg	NONE
+loadkreg	USEREG|EXTRA
 	"load-register"
 	<load the given string into the currently named register.  give CNT for full-lines.>
 loadplugin	NONE			OPT_PLUGIN
@@ -1612,7 +1616,7 @@ splitwind	NONE
 storemac	NONE
 	"store-macro"
 	<store script text into CNT'th macro, up to line starting with ~endm>
-storeproc	NONE			OPT_PROCEDURES
+storeproc	EXRCOK|EXTRA		OPT_PROCEDURES
 	"store-procedure"
 	<store script text into given named stored-procedure; give CNT for store-macro CNT>
 subst_again	REDO|UNDO|GLOBOK
@@ -1708,7 +1712,7 @@ popdown_buffer	NONE			!SMALLER
 	"popdown-buffer"
 	"close-windows"			!FEWNAMES
 	<close all windows for the given buffer>
-usekreg		REDO
+usekreg		REDO|USEREG
 	"use-register"			!FEWNAMES
 	'"'
 	<name a register, for use with a following command which references it>

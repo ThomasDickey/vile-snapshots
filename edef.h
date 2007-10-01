@@ -6,7 +6,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.330 2007/08/31 22:53:03 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.331 2007/09/16 21:01:45 tom Exp $
  */
 
 #ifndef VILE_EDEF_H
@@ -384,6 +384,10 @@ decl_init_const( char BINDINGLIST_BufName[],	"[Binding List]" );
 decl_init_const( char CMD_BINDINGS_BufName[],	"[Command-Bindings]" );
 decl_init_const( char INS_BINDINGS_BufName[],	"[Insert-Bindings]" );
 decl_init_const( char SEL_BINDINGS_BufName[],	"[Select-Bindings]" );
+#if OPT_EVAL
+decl_init_const( char AMP_FUNCTIONS_BufName[],	"[&functions]" );
+decl_init_const( char DLR_VARIABLES_BufName[],	"[$variables]" );
+#endif
 #if OPT_REBIND
 decl_init_const( char KEY_NAMES_BufName[],	"[Key Names]" );
 # if OPT_TERMCHRS

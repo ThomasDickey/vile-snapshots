@@ -1,7 +1,7 @@
 /*
  * debugging support -- tom dickey.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.62 2007/09/13 23:59:10 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.65 2007/09/27 22:04:59 tom Exp $
  *
  */
 
@@ -123,6 +123,13 @@ retrace_code(int code)
     return code;
 }
 
+void *
+retrace_ptr(void *code)
+{
+    Trace(T_RETURN "%p\n", TRACE_NULL(code));
+    return code;
+}
+
 char *
 retrace_string(char *code)
 {
@@ -201,7 +208,7 @@ visible_buff(const char *buffer, int length, int eos)
 	} else {
 	    char *dst = result + k;
 	    vl_vischr(dst, c);
-	    k += strlen(dst);
+	    k += (unsigned) strlen(dst);
 	}
     }
     result[k] = 0;
@@ -231,7 +238,7 @@ visible_video_text(const VIDEO_TEXT * buffer, int length)
 	int c = buffer[j] & 0xff;
 	char *dst = result + k;
 	vl_vischr(dst, c);
-	k += strlen(dst);
+	k += (unsigned) strlen(dst);
     }
     result[k] = 0;
     endofDisplay();
@@ -246,7 +253,7 @@ str_visible(char *s)
 {
     if (s == 0)
 	return "<null>";
-    return visible_buff(s, strlen(s), FALSE);
+    return visible_buff(s, (int) strlen(s), FALSE);
 }
 
 /*
@@ -257,7 +264,7 @@ str_visible0(char *s)
 {
     if (s == 0)
 	return "<null>";
-    return visible_buff(s, strlen(s), TRUE);
+    return visible_buff(s, (int) strlen(s), TRUE);
 }
 
 char *
@@ -711,6 +718,9 @@ visible_shape(REGIONSHAPE shape)
 void
 trace_region(REGION * rp, BUFFER *bp)
 {
+    B_COUNT total = 0;
+    B_COUNT len_rs = len_record_sep(bp);
+
     L_NUM no_1st = line_no(bp, rp->r_orig.l);
     L_NUM no_2nd = line_no(bp, rp->r_end.l);
 
@@ -738,33 +748,45 @@ trace_region(REGION * rp, BUFFER *bp)
 	  visible_shape(regionshape));
 
     for (;;) {
+	char *text = lvalue(lp);
+	int size = llength(lp);
+	int skip = 0;
+
 	if (lp == lp1) {
+	    text += c_1st;
+	    skip = c_1st;
 	    if (lp == lp2) {
-		Trace("%5d%*s%s\n",
-		      line_no(bp, lp),
-		      c_1st + 2, "->",
-		      visible_buff(lvalue(lp) + c_1st, c_2nd - c_1st, 0));
+		size = c_2nd - c_1st;
 	    } else {
-		Trace("%5d%*s%s\n",
-		      line_no(bp, lp),
-		      c_1st + 2, "->",
-		      visible_buff(lvalue(lp) + c_1st, llength(lp) - c_1st, 0));
+		size -= c_1st;
 	    }
 	} else if (lp == lp2) {
-	    Trace("%5d%s%s\n",
+	    size = c_2nd;
+	}
+
+	if (skip) {
+	    Trace("%5d%*s%s\n",
 		  line_no(bp, lp),
-		  "->",
-		  visible_buff(lvalue(lp), c_2nd, 0));
+		  skip + 2, "->",
+		  visible_buff(text, size, 0));
 	} else {
 	    Trace("%5d%s%s\n",
 		  line_no(bp, lp),
 		  "->",
-		  lp_visible(lp));
+		  visible_buff(text, size, 0));
 	}
+	total += (size + len_rs);
+	if (total > rp->r_size) {
+	    if (lp == lp2 && (total - len_rs) == rp->r_size) {
+		total -= len_rs;
+	    }
+	}
+
 	if (lp == lp2)
 	    break;
 	lp = lforw(lp);
     }
+    Trace("total %ld vs %ld\n", (long) total, (long) rp->r_size);
 }
 
 void

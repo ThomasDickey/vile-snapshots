@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 screen API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.168 2007/09/13 23:41:06 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.174 2007/09/27 22:06:45 tom Exp $
  * Written by T.E.Dickey for vile (october 1997).
  * -- improvements by Clark Morgan (see w32cbrd.c, w32pipe.c).
  */
@@ -25,6 +25,8 @@
 
 #define ABS(x) (((x) < 0) ? -(x) : (x))
 
+#define WM_SYSTIMER 0x118	// undocumented http://support.microsoft.com/?id=108938
+
 #define MIN_ROWS MINWLNS
 #define MIN_COLS 15
 
@@ -47,12 +49,11 @@
 #define DEF_PROC(tag,name)	/*nothing */
 #endif
 
-#define MAIN_CLASS "VileMain"
-#define TEXT_CLASS "VileText"
-#define SCRL_CLASS "SCROLLBAR"
-#define GRIP_CLASS "VileResize"
+#define MAIN_CLASS W32_STRING("VileMain")
+#define TEXT_CLASS W32_STRING("VileText")
+#define GRIP_CLASS W32_STRING("VileResize")
 
-#define MY_APPLE "Vile Application"
+#define MY_APPLE W32_STRING("Vile Application")
 
 #define MY_FONT  SYSTEM_FIXED_FONT	/* or ANSI_FIXED_FONT           */
 
@@ -107,6 +108,7 @@ static int mouse_captured = 0;
 static int nCharWidth = 8;
 static int nLineHeight = 10;
 static int vile_resizing = FALSE;	/* rely on repaint_window if true */
+static int vile_selecting = FALSE;	/* toggle between cut and paste */
 static int icursor;		/* T -> enable insertion cursor   */
 static int icursor_style;	/* 1 -> cmdmode = block,
 				 *      insmode = vertical bar
@@ -185,7 +187,7 @@ which_window(HWND hwnd)
     } else {
 	int n;
 	static char temp[20];
-	sprintf(temp, "%#lx", hwnd);
+	sprintf(temp, "h%p", hwnd);
 	for (n = 0; n < cur_win->nscrollbars; n++) {
 	    if (hwnd == cur_win->scrollbars[n].w) {
 		sprintf(temp, "sb%d", n);
@@ -208,6 +210,7 @@ message2s(unsigned code)
 	{ WM_ACTIVATEAPP,	"WM_ACTIVATEAPP" },
 	{ WM_CANCELMODE,	"WM_CANCELMODE" },
 	{ WM_CAPTURECHANGED,	"WM_CAPTURECHANGED" },
+	{ WM_CHAR,		"WM_CHAR" },
 	{ WM_CLOSE,		"WM_CLOSE" },
 	{ WM_CONTEXTMENU,	"WM_CONTEXTMENU" },
 	{ WM_CREATE,		"WM_CREATE" },
@@ -254,6 +257,9 @@ message2s(unsigned code)
 	{ WM_STYLECHANGED,	"WM_STYLECHANGED" },
 	{ WM_STYLECHANGING,	"WM_STYLECHANGING" },
 	{ WM_SYSCOMMAND,	"WM_SYSCOMMAND" },
+	{ WM_SYSTIMER,		"WM_SYSTIMER" },
+	{ WM_TIMER,		"WM_TIMER" },
+	{ WM_USER,		"WM_USER" },
 	{ WM_WINDOWPOSCHANGED,	"WM_WINDOWPOSCHANGED" },
 	{ WM_WINDOWPOSCHANGING,	"WM_WINDOWPOSCHANGING" },
 	/* custom ntwinio WINDOWS messages */
@@ -514,8 +520,9 @@ sizing_window(void)
     szy = crect.bottom / 2 - szh / 2;
     if (szx < 0 || szy < 0)
 	szx = szy = CW_USEDEFAULT;
-    return (CreateWindow("STATIC",
-			 "",
+
+    return (CreateWindow(W32_STRING("STATIC"),
+			 W32_STRING(""),
 			 WS_CHILD | WS_VISIBLE | SS_CENTER,
 			 szx,
 			 szy,
@@ -1190,6 +1197,24 @@ last_w32_error(int use_msg_box)
     return (FALSE);
 }
 
+static void
+show_ok_message(const char *msgtext)
+{
+    W32_CHAR *msg = w32_charstring(msgtext);
+    MessageBox(winvile_hwnd(), msg, w32_prognam(), MB_ICONSTOP | MB_OK);
+    free(msg);
+}
+
+static void
+show_font_message(const char *msgtext, int use_mb)
+{
+    if (use_mb) {
+	show_ok_message(msgtext);
+    } else {
+	mlforce(msgtext);
+    }
+}
+
 /*
  * Set font from string specification.  See the function parse_font_str()
  * in file w32misc.c for acceptable font string syntax.
@@ -1214,16 +1239,14 @@ ntwinio_font_frm_str(
     HFONT hfont;
     HWND hwnd;
     LOGFONT logfont;
-    char *msg, font_mapper_face[LF_FACESIZE + 1];
+    W32_CHAR font_mapper_face[LF_FACESIZE + 1];
     TEXTMETRIC metrics;
     FONTSTR_OPTIONS str_rslts;
 
+    TRACE(("ntwinio_font_frm_str(%s)\n", fontstr));
+
     if (!parse_font_str(fontstr, &str_rslts)) {
-	msg = "Font syntax invalid";
-	if (use_mb)
-	    MessageBox(winvile_hwnd(), msg, prognam, MB_ICONSTOP | MB_OK);
-	else
-	    mlforce(msg);
+	show_font_message("Font syntax invalid", use_mb);
 	return (FALSE);
     }
     hwnd = cur_win->text_hwnd;
@@ -1233,13 +1256,21 @@ ntwinio_font_frm_str(
 	return (FALSE);
     }
     if (!face_specified) {
+	W32_CHAR current_face[sizeof(str_rslts.face)];
+	char *result_face = 0;
+
 	/* user didn't specify a face name, get current name. */
 
-	if ((GetTextFace(hdc, sizeof(str_rslts.face), str_rslts.face)) == 0) {
+	if ((GetTextFace(hdc, sizeof(current_face), current_face)) == 0) {
 	    (void) last_w32_error(use_mb);
 	    ReleaseDC(hwnd, hdc);
 	    return (FALSE);
 	}
+	if ((result_face = asc_charstring(current_face)) == 0) {
+	    return (FALSE);
+	}
+	strcpy(str_rslts.face, result_face);
+	free(result_face);
     }
 
     /* Build up LOGFONT data structure. */
@@ -1252,7 +1283,7 @@ ntwinio_font_frm_str(
 	logfont.lfItalic = TRUE;
     logfont.lfCharSet = DEFAULT_CHARSET;
     logfont.lfPitchAndFamily = FIXED_PITCH | FF_MODERN;
-    vl_strncpy(logfont.lfFaceName, str_rslts.face, LF_FACESIZE);
+    memcpy(logfont.lfFaceName, str_rslts.face, sizeof(W32_CHAR) * LF_FACESIZE);
     logfont.lfFaceName[LF_FACESIZE - 1] = '\0';
     if (!((hfont = CreateFontIndirect(&logfont)) != 0 && SelectObject(hdc, hfont))) {
 	(void) last_w32_error(use_mb);
@@ -1268,6 +1299,8 @@ ntwinio_font_frm_str(
      * matches the user chosen face (if applicatble).
      */
     if (face_specified) {
+	char *mapper_face;
+
 	if ((GetTextFace(hdc, sizeof(font_mapper_face), font_mapper_face))
 	    == 0) {
 	    (void) last_w32_error(use_mb);
@@ -1275,16 +1308,17 @@ ntwinio_font_frm_str(
 	    DeleteObject(hfont);
 	    return (FALSE);
 	}
-	if (stricmp(font_mapper_face, str_rslts.face) != 0) {
-	    ReleaseDC(hwnd, hdc);
-	    DeleteObject(hfont);
-	    msg = "Font face unknown or size/style unsupported";
-	    if (use_mb)
-		MessageBox(winvile_hwnd(), msg, prognam, MB_ICONSTOP | MB_OK);
-	    else
-		mlforce(msg);
+	if ((mapper_face = asc_charstring(font_mapper_face)) == 0) {
 	    return (FALSE);
 	}
+	if (stricmp(mapper_face, str_rslts.face) != 0) {
+	    ReleaseDC(hwnd, hdc);
+	    DeleteObject(hfont);
+	    free(mapper_face);
+	    show_font_message("Font face unknown or size/style unsupported", use_mb);
+	    return (FALSE);
+	}
+	free(mapper_face);
     }
 
     /* Next, font must be fixed pitch. */
@@ -1299,11 +1333,7 @@ ntwinio_font_frm_str(
 
 	ReleaseDC(hwnd, hdc);
 	DeleteObject(hfont);
-	msg = "Font not fixed pitch";
-	if (use_mb)
-	    MessageBox(winvile_hwnd(), msg, prognam, MB_ICONSTOP | MB_OK);
-	else
-	    mlforce(msg);
+	show_font_message("Font not fixed pitch", use_mb);
 	return (FALSE);
     }
     ReleaseDC(hwnd, hdc);	/* finally done with this */
@@ -1358,20 +1388,102 @@ ntwinio_current_font(void)
     return (buf);
 }
 
+static void
+set_window_text(HWND handle, const char *text)
+{
+    W32_CHAR *actual = w32_charstring(text);
+    SetWindowText(handle, actual);
+    free(actual);
+}
+
 #if OPT_TITLE
 static void
 nttitle(const char *title)
 {				/* set the current window title */
     if (title != 0)
-	SetWindowText(winvile_hwnd(), title);
+	set_window_text(winvile_hwnd(), title);
 }
 #endif
+
+static void
+nibble_queue(MSG * msg)
+{
+    TRACE((T_CALLED "nibble_queue %s\n", message2s(msg->message)));
+    if (GetMessage(msg, (HWND) 0, 0, 0) != TRUE) {
+	PostQuitMessage(1);
+	quit(TRUE, 1);
+    } else {
+	DispatchMessage(msg);
+    }
+    returnVoid();
+}
+
+static int
+peek_at_queue(MSG * msg)
+{
+    int rc = 0;
+
+    if (PeekMessage(msg, (HWND) 0, 0, 0, PM_NOREMOVE)) {
+	if (msg->message != WM_SYSTIMER) {
+	    rc = 1;		/* A meaningful event--process it. */
+	} else {
+	    /*
+	     * This is the undocumented (as near as I can tell)
+	     * WM_SYSTIMER event that seems to occur whenever the caret
+	     * blinks.  This is a background "noise" event that can
+	     * be ignored once dispatched.
+	     */
+	    nibble_queue(msg);
+	}
+    }
+
+    return rc;
+}
+
+/*
+ * We cannot handle _all_ events in scflush(), since some must be handled,
+ * e.g., in ntgetch().  In particular, do not try to handle WM__CHAR since
+ * that interferes with the OLE server wvwrap.exe's sending characters to
+ * this process.
+ */
+static int
+is_drawing_message(MSG * msg)
+{
+    int rc = 0;
+
+    switch (msg->message) {
+    case WM_CHAR:
+	// TRACE(("NOT drawing_message:%s(%#x)\n", message2s(msg->message), msg->wParam));
+	break;
+    default:
+	rc = 1;
+	break;
+    }
+    return rc;
+}
 
 static void
 scflush(void)
 {
     if (cur_pos && !vile_resizing) {
 	HDC hdc;
+
+	MSG msg;
+
+	/*
+	 * (try to) keep up with events for repainting the screen, e.g., when
+	 * reading into [Output].
+	 */
+	if (!vile_selecting && !(cur_atr & VAREV)) {
+	    int save_caret = caret_visible;
+	    while (peek_at_queue(&msg) && is_drawing_message(&msg)) {
+		fhide_cursor();
+		nibble_queue(&msg);
+		Sleep(20);
+	    }
+	    if (save_caret && !caret_visible)
+		fshow_cursor();
+	}
 
 	TRACE(("PUTC:flush %2d (%2d,%2d) (%s)\n", cur_pos, crow, ccol,
 	       visible_video_text(&CELL_TEXT(crow, ccol), cur_pos)));
@@ -1384,7 +1496,7 @@ scflush(void)
 		   RowToPixel(crow),
 		   0,
 		   (RECT *) 0,
-		   (char *) &CELL_TEXT(crow, ccol), cur_pos,
+		   (VIDEO_CHAR *) & CELL_TEXT(crow, ccol), cur_pos,
 		   intercharacter(cur_pos));
 
 	ReleaseDC(cur_win->text_hwnd, hdc);
@@ -1900,6 +2012,7 @@ static POPUP_MENU_INFO popup_menu_tbl[] =
 static void
 invoke_popup_menu(MSG msg)
 {
+    W32_CHAR *buf2;
     char accel[NSTRING], buf[NSTRING * 2];
     AREGION ar;
     BUFFER *bp;
@@ -1911,7 +2024,7 @@ invoke_popup_menu(MSG msg)
     TRACE(("invoke_popup_menu\n"));
     if (popup_menu == NULL) {
 	popup_menu = LoadMenu(vile_hinstance,
-			      "WinvilePopMenu");
+			      W32_STRING("WinvilePopMenu"));
 	popup_menu = GetSubMenu(popup_menu, 0);
     }
     CheckMenuItem(popup_menu, IDM_MENU, MF_BYCOMMAND | MF_CHECKED);
@@ -1931,11 +2044,13 @@ invoke_popup_menu(MSG msg)
 
 		vl_strncpy(buf, ptbl->menu_name, sizeof(buf));
 	    }
+	    buf2 = w32_charstring(buf);
 	    ModifyMenu(popup_menu,
 		       ptbl->menu_id,
 		       MF_BYCOMMAND | MF_STRING,
 		       ptbl->menu_id,
-		       buf);
+		       buf2);
+	    free(buf2);
 	}
     }
 
@@ -1994,12 +2109,12 @@ AboutBoxProc(HWND hDlg, UINT iMsg, WPARAM wParam, LPARAM lParam)
     case WM_INITDIALOG:
 	/* set about box dialog title */
 	sprintf(buf, "About %s", prognam);
-	SetWindowText(hDlg, buf);
+	set_window_text(hDlg, buf);
 
 	/* announce program version */
 	hwnd = GetDlgItem(hDlg, IDM_ABOUT_PROGNAME);
 	sprintf(buf, "%s\n%s%s", prognam, version, VILE_PATCHLEVEL);
-	SetWindowText(hwnd, buf);
+	set_window_text(hwnd, buf);
 
 	/* talk about copyright */
 	hwnd = GetDlgItem(hDlg, IDM_ABOUT_COPYRIGHT);
@@ -2008,7 +2123,7 @@ AboutBoxProc(HWND hDlg, UINT iMsg, WPARAM wParam, LPARAM lParam)
 		"%s is free software, distributed under the terms of the GNU "
 		"Public License, Version 2 (see COPYING).",
 		prognam);
-	SetWindowText(hwnd, buf);
+	set_window_text(hwnd, buf);
 	w32_center_window(hDlg, cur_win->main_hwnd);
 	return (TRUE);
     case WM_COMMAND:
@@ -2031,7 +2146,7 @@ handle_builtin_menu(WPARAM code)
     TRACE(("handle_builtin_menu code=%#x\n", code));
     switch (cmd) {
     case IDM_ABOUT:
-	DialogBox(vile_hinstance, "AboutBox", cur_win->main_hwnd, AboutBoxProc);
+	DialogBox(vile_hinstance, W32_STRING("AboutBox"), cur_win->main_hwnd, AboutBoxProc);
 	break;
     case IDM_OPEN:
 	winopen_dir(NULL);
@@ -2386,18 +2501,17 @@ new_scrollbar(void)
     result.r.bottom = -1;
     result.r.right = -1;
 
-    result.w = CreateWindow(
-			       SCRL_CLASS,
-			       "scrollbar",
-			       WS_CHILD | SBS_VERT | WS_CLIPSIBLINGS,
-			       0,	/* x */
-			       0,	/* y */
-			       SbWidth,		/* width */
-			       1,	/* height */
-			       cur_win->main_hwnd,
-			       (HMENU) 0,
-			       vile_hinstance,
-			       (LPVOID) 0
+    result.w = CreateWindow(W32_STRING("SCROLLBAR"),
+			    W32_STRING("scrollbar"),
+			    WS_CHILD | SBS_VERT | WS_CLIPSIBLINGS,
+			    0,	/* x */
+			    0,	/* y */
+			    SbWidth,	/* width */
+			    1,	/* height */
+			    cur_win->main_hwnd,
+			    (HMENU) 0,
+			    vile_hinstance,
+			    (LPVOID) 0
 	);
     return result;
 }
@@ -2543,7 +2657,7 @@ update_scrollbar_sizes(void)
     if (cur_win->size_box.w == 0) {
 	cur_win->size_box.w = CreateWindow(
 					      GRIP_CLASS,
-					      "sizebox",
+					      W32_STRING("sizebox"),
 					      WS_CHILD
 					      | WS_VISIBLE
 					      | WS_CLIPSIBLINGS,
@@ -2558,8 +2672,8 @@ update_scrollbar_sizes(void)
 					      (LPVOID) 0
 	    );
 	cur_win->size_grip.w = CreateWindow(
-					       "SCROLLBAR",
-					       "sizebox",
+					       W32_STRING("SCROLLBAR"),
+					       W32_STRING("sizebox"),
 					       WS_CHILD
 					       | WS_VISIBLE
 					       | SB_CTL
@@ -2768,7 +2882,6 @@ ntgetch(void)
     MARK lmbdn_mark;		/* left mouse button down here */
     MARK last_dot = nullmark;	/* remember where dot was before selection */
     WINDOW *last_win = 0;	/* remember which window dot was in */
-    int selecting = FALSE;	/* toggle between cut and paste */
     int result = -1;
     KEY_EVENT_RECORD ker;
     MSG msg;
@@ -2780,6 +2893,7 @@ ntgetch(void)
     int milli_ac, orig_milli_ac;
 #endif
 
+    vile_selecting = FALSE;	/* toggle between cut and paste */
     if (saveCount > 0) {
 	saveCount--;
 	return savedChar;
@@ -2797,24 +2911,8 @@ ntgetch(void)
 #ifdef VAL_AUTOCOLOR
 	milli_ac = orig_milli_ac;
 	while (milli_ac > 0) {
-	    if (PeekMessage(&msg, (HWND) 0, 0, 0, PM_NOREMOVE)) {
-		if (msg.message != 0x118)
-		    break;	/* A meaningful event--process it. */
-		else {
-		    /*
-		     * This is the undocumented (as near as I can tell)
-		     * 0x118 event that seems to occur whenever the caret
-		     * blinks.  This is a background "noise" event that can
-		     * be ignored once dispatched.
-		     */
-
-		    if (GetMessage(&msg, (HWND) 0, 0, 0) != TRUE) {
-			PostQuitMessage(1);
-			quit(TRUE, 1);
-		    } else
-			DispatchMessage(&msg);
-		}
-	    }
+	    if (peek_at_queue(&msg))
+		break;		/* A meaningful event--process it. */
 	    Sleep(20);		/* sleep a bit, but be responsive to all events */
 	    milli_ac -= 20;
 	}
@@ -2902,7 +3000,7 @@ ntgetch(void)
 	    if (msg.hwnd == cur_win->text_hwnd) {
 		/* Clear current selection, a la notepad. */
 		sel_release();
-		selecting = FALSE;
+		vile_selecting = FALSE;
 		last_dot = DOT;
 		last_win = curwp;
 		/* Allow click to change window focus. */
@@ -2982,11 +3080,11 @@ ntgetch(void)
 		switch (clicks) {
 		case 1:
 		    on_double_click();
-		    selecting = TRUE;
+		    vile_selecting = TRUE;
 		    break;
 		case 2:
 		    on_triple_click();
-		    selecting = TRUE;
+		    vile_selecting = TRUE;
 		    break;
 		}
 
@@ -3012,7 +3110,7 @@ ntgetch(void)
 
 			sel_yank(0);
 		    }
-		    if (selecting) {
+		    if (vile_selecting) {
 			if (win2index(last_win) >= 0) {
 			    set_curwp(last_win);
 			    restore_dot(last_dot);
@@ -3084,10 +3182,10 @@ ntgetch(void)
 		if (enable_popup) {
 		    invoke_popup_menu(msg);
 		} else {
-		    if (selecting) {
+		    if (vile_selecting) {
 			sel_yank(0);
 			cbrdcpy_unnamed(FALSE, 1);
-			selecting = FALSE;
+			vile_selecting = FALSE;
 			sel_release();
 		    } else {
 			mayneedundo();
@@ -3140,7 +3238,7 @@ ntgetch(void)
 			      &latest,
 			      &lmbdn_mark,
 			      that_wp);
-		    selecting = !sel_pending;
+		    vile_selecting = !sel_pending;
 		} else {
 		    DispatchMessage(&msg);
 		}
@@ -3157,12 +3255,13 @@ ntgetch(void)
 	case WM_PAINT:		/* FALLTHRU */
 	case WM_NCACTIVATE:	/* FALLTHRU */
 	case WM_SETCURSOR:	/* FALLTHRU */
-	case 0x118:
+	case WM_SYSTIMER:
 	    DispatchMessage(&msg);
 	    break;
 	}
     }
     fhide_cursor();
+    vile_selecting = FALSE;
 
     TRACE(("...ntgetch %#x\n", result));
     return result;
@@ -3171,6 +3270,7 @@ ntgetch(void)
 static int
 nttypahead(void)
 {
+    int rc = 0;
     MSG msg;
 
 #ifdef VAL_AUTOCOLOR
@@ -3181,16 +3281,19 @@ nttypahead(void)
 	 * rare occasions (not reproducible).
 	 */
 
-	return (0);
-    }
+	rc = 0;
+    } else
 #endif
-    if (saveCount > 0)
-	return (1);
-    if (PeekMessage(&msg, (HWND) 0, WM_KEYDOWN, WM_KEYDOWN, PM_NOREMOVE))
-	return (1);
-    if (PeekMessage(&msg, (HWND) 0, WM_SYSKEYDOWN, WM_SYSKEYDOWN, PM_NOREMOVE))
-	return (1);
-    return (PeekMessage(&msg, (HWND) 0, WM_CHAR, WM_CHAR, PM_NOREMOVE));
+    if (saveCount > 0) {
+	rc = 1;
+    } else if (PeekMessage(&msg, (HWND) 0, WM_KEYDOWN, WM_KEYDOWN, PM_NOREMOVE)) {
+	rc = 1;
+    } else if (PeekMessage(&msg, (HWND) 0, WM_SYSKEYDOWN, WM_SYSKEYDOWN, PM_NOREMOVE)) {
+	rc = 1;
+    } else {
+	rc = PeekMessage(&msg, (HWND) 0, WM_CHAR, WM_CHAR, PM_NOREMOVE);
+    }
+    return rc;
 }
 
 static void
@@ -3252,7 +3355,7 @@ repaint_window(HWND hWnd)
 			       RowToPixel(row),
 			       0,
 			       (RECT *) 0,
-			       (char *) &CELL_TEXT(row, old_col),
+			       (VIDEO_CHAR *) & CELL_TEXT(row, old_col),
 			       col - old_col,
 			       intercharacter(col));
 		    old_atr = new_atr;
@@ -3268,7 +3371,7 @@ repaint_window(HWND hWnd)
 			   RowToPixel(row),
 			   0,
 			   (RECT *) 0,
-			   (char *) &CELL_TEXT(row, old_col),
+			   (VIDEO_CHAR *) & CELL_TEXT(row, old_col),
 			   x1 - old_col,
 			   intercharacter(x1));
 	    }
@@ -3283,19 +3386,23 @@ repaint_window(HWND hWnd)
 static void
 receive_dropped_files(HDROP hDrop)
 {
-    char name[NFILEN];
+    W32_CHAR name2[NFILEN];
     UINT inx = 0xFFFFFFFF;
-    UINT limit = DragQueryFile(hDrop, inx, name, sizeof(name));
+    UINT limit = DragQueryFile(hDrop, inx, name2, TABLESIZE(name2));
     BUFFER *bp = 0;
+    char *name = 0;
 
     TRACE((T_CALLED "receive_dropped_files(hDrop=%p) %d dropped files\n",
 	   hDrop, limit));
 
     while (++inx < limit) {
-	DragQueryFile(hDrop, inx, name, sizeof(name));
-	TRACE(("...'%s'\n", name));
-	if ((bp = getfile2bp(name, FALSE, FALSE)) != 0)
-	    bp->b_flag |= BFARGS;	/* treat this as an argument */
+	DragQueryFile(hDrop, inx, name2, TABLESIZE(name2));
+	if ((name = asc_charstring(name2)) != 0) {
+	    TRACE(("...'%s'\n", name));
+	    if ((bp = getfile2bp(name, FALSE, FALSE)) != 0)
+		bp->b_flag |= BFARGS;	/* treat this as an argument */
+	    free(name);
+	}
     }
     if (bp != 0) {
 	if (swbuffer(bp)) {	/* editor switches to 1st buffer */
@@ -3471,7 +3578,7 @@ MainWndProc(
 				   RSZ_WDW_HGHT,
 				   TRUE);
 		    }
-		    SetWindowText(resize_hwnd, buf);
+		    set_window_text(resize_hwnd, buf);
 		}
 	    }
 	}
@@ -3550,19 +3657,19 @@ InitInstance(HINSTANCE hInstance)
     wc.cbClsExtra = 0;
     wc.cbWndExtra = 0;
     wc.hInstance = hInstance;
-    wc.hIcon = LoadIcon(hInstance, "VilewIcon");
+    wc.hIcon = LoadIcon(hInstance, W32_STRING("VilewIcon"));
     wc.hCursor = arrow_cursor;
     wc.hbrBackground = (HBRUSH) (COLOR_WINDOW + 1);
-    wc.lpszMenuName = "VileMenu";
+    wc.lpszMenuName = W32_STRING("VileMenu");
     wc.lpszClassName = MAIN_CLASS;
 
     if (!RegisterClass(&wc))
 	return FALSE;
 
-    TRACE(("Registered(%s)\n", MAIN_CLASS));
+    TRACE(("Registered(%s)\n", asc_charstring(MAIN_CLASS)));
 
     vile_hinstance = hInstance;
-    hAccTable = LoadAccelerators(vile_hinstance, "VileAcc");
+    hAccTable = LoadAccelerators(vile_hinstance, W32_STRING("VileAcc"));
 
     cur_win->main_hwnd = CreateWindow(
 					 MAIN_CLASS,
@@ -3596,11 +3703,11 @@ InitInstance(HINSTANCE hInstance)
     if (!RegisterClass(&wc))
 	return FALSE;
 
-    TRACE(("Registered(%s)\n", TEXT_CLASS));
+    TRACE(("Registered(%s)\n", asc_charstring(TEXT_CLASS)));
 
     cur_win->text_hwnd = CreateWindow(
 					 TEXT_CLASS,
-					 "text",
+					 W32_STRING("text"),
 					 WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS,
 					 CW_USEDEFAULT,
 					 CW_USEDEFAULT,
@@ -3632,27 +3739,31 @@ InitInstance(HINSTANCE hInstance)
     wc.lpszClassName = GRIP_CLASS;
 
     if (!RegisterClass(&wc)) {
-	TRACE(("could not register class %s:%#x\n", GRIP_CLASS, GetLastError()));
+	TRACE(("could not register class %s:%#x\n",
+	       asc_charstring(wc.lpszClassName), GetLastError()));
 	return (FALSE);
     }
-    TRACE(("Registered(%s)\n", GRIP_CLASS));
+    TRACE(("Registered(%s)\n", asc_charstring(wc.lpszClassName)));
 #endif
 
     cur_win->nscrollbars = -1;
 
     /* Insert Winvile's menu items in the system menu. */
     vile_menu = GetSystemMenu(cur_win->main_hwnd, FALSE);
-    AppendMenu(vile_menu, MF_SEPARATOR, 0, NULL);
-    AppendMenu(vile_menu, MF_STRING, IDM_OPEN, "&Open...");
-    AppendMenu(vile_menu, MF_STRING, IDM_SAVE_AS, "&Save As...");
-    AppendMenu(vile_menu, MF_STRING, IDM_CHDIR, "C&D...");
-    AppendMenu(vile_menu, MF_STRING, IDM_FAVORITES, "Fa&vorites...");
-    AppendMenu(vile_menu, MF_STRING, IDM_FONT, "&Font...");
-    AppendMenu(vile_menu, MF_STRING, IDM_ABOUT, "&About...");
-    AppendMenu(vile_menu, MF_SEPARATOR, 0, NULL);
-    AppendMenu(vile_menu, MF_STRING, IDM_PAGE_SETUP, "Page Set&up...");
-    AppendMenu(vile_menu, MF_STRING, IDM_PRINT, "&Print...");
-    AppendMenu(vile_menu, MF_SEPARATOR, 0, NULL);
+
+#define VL_APPEND(type,code,text) AppendMenu(vile_menu, type, code, w32_charstring(text))
+
+    VL_APPEND(MF_SEPARATOR, 0, NULL);
+    VL_APPEND(MF_STRING, IDM_OPEN, "&Open...");
+    VL_APPEND(MF_STRING, IDM_SAVE_AS, "&Save As...");
+    VL_APPEND(MF_STRING, IDM_CHDIR, "C&D...");
+    VL_APPEND(MF_STRING, IDM_FAVORITES, "Fa&vorites...");
+    VL_APPEND(MF_STRING, IDM_FONT, "&Font...");
+    VL_APPEND(MF_STRING, IDM_ABOUT, "&About...");
+    VL_APPEND(MF_SEPARATOR, 0, NULL);
+    VL_APPEND(MF_STRING, IDM_PAGE_SETUP, "Page Set&up...");
+    VL_APPEND(MF_STRING, IDM_PRINT, "&Print...");
+    VL_APPEND(MF_SEPARATOR, 0, NULL);
 
     /*
      * NB -- don't change the order of the next 3 menu items!
@@ -3660,14 +3771,14 @@ InitInstance(HINSTANCE hInstance)
      * The popup menus associated with the next two menu items are created
      * as necessary.
      */
-    AppendMenu(vile_menu, MF_POPUP, 0, "Recent Fi&les");
-    AppendMenu(vile_menu, MF_POPUP, 0, "Recent Fol&ders");
-    AppendMenu(vile_menu, MF_SEPARATOR, IDM_SEP_AFTER_RCNT_FLDRS, NULL);
+    VL_APPEND(MF_POPUP, 0, "Recent Fi&les");
+    VL_APPEND(MF_POPUP, 0, "Recent Fol&ders");
+    VL_APPEND(MF_SEPARATOR, IDM_SEP_AFTER_RCNT_FLDRS, NULL);
     /*
      * NB -- don't change the order of the previous 3 menu items!
      */
 
-    AppendMenu(vile_menu, MF_STRING | MF_CHECKED, IDM_MENU, "&Menu");
+    VL_APPEND(MF_STRING | MF_CHECKED, IDM_MENU, "&Menu");
 
 #if OPT_SCROLLBARS
     if (check_scrollbar_allocs() != TRUE)
@@ -3853,10 +3964,7 @@ WinMain(
     if (oa_reg && oa_invoke) {
 	/* tsk tsk */
 
-	MessageBox(cur_win->main_hwnd,
-		   "-Oa and -Or are mutually exclusive",
-		   prognam,
-		   MB_OK | MB_ICONSTOP);
+	show_ok_message("-Oa and -Or are mutually exclusive");
 	ExitProgram(BADEXIT);
     }
     if (oa_reg) {
@@ -3939,7 +4047,7 @@ winvile_start(void)
      * beneath the Win95/NT taskbar.  If so, move the frame up out of the
      * way (hope this code works for Win98, too :-) ).
      */
-    tray_hwnd = FindWindow("Shell_TrayWnd", NULL);
+    tray_hwnd = FindWindow(W32_STRING("Shell_TrayWnd"), NULL);
     desktop_hwnd = GetDesktopWindow();
     GetWindowRect(desktop_hwnd, &desktop);
     GetWindowRect(cur_win->main_hwnd, &vile);
@@ -4147,7 +4255,7 @@ void
 gui_version(char *program)
 {
     ShowWindow(cur_win->main_hwnd, SW_HIDE);
-    MessageBox(cur_win->main_hwnd, getversion(), prognam, MB_OK | MB_ICONSTOP);
+    show_ok_message(getversion());
 }
 
 void
@@ -4188,7 +4296,8 @@ gui_usage(char *program, const char *const *options, size_t length)
 	    }
 	}
 
-	MessageBox(cur_win->main_hwnd, buf, prognam, MB_OK | MB_ICONSTOP);
+	show_ok_message(buf);
+	free(buf);
     }
 }
 

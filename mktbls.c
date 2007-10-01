@@ -15,7 +15,7 @@
  * by Tom Dickey, 1993.    -pgf
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/mktbls.c,v 1.146 2007/08/21 20:55:28 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/mktbls.c,v 1.149 2007/09/16 22:33:03 tom Exp $
  *
  */
 
@@ -592,7 +592,7 @@ WriteIf(FILE *fp, const char *cond)
 {
     if (cond == 0)
 	cond = "";
-    if (cond[0] != EOS) {
+    if (cond[0] != EOS && strcmp(cond, "1")) {
 	if (lastIfdef != 0) {
 	    if (!strcmp(lastIfdef, cond))
 		return;
@@ -1812,6 +1812,9 @@ init_ufuncs(void)
 	"typedef struct UFUNC {",
 	"\tconst char *f_name;\t/* name of function */",
 	"\tunsigned f_code;",
+	"#if OPT_ONLINEHELP",
+	"\tconst char *f_help;",
+	"#endif",
 	"} UFUNC;",
 	"",
 	"#define NARGMASK	0x000f",
@@ -1823,6 +1826,13 @@ init_ufuncs(void)
 	"#define SRET		0x0400",
 	"",
 	"#ifdef realdef",
+	"",
+	"#if OPT_ONLINEHELP",
+	"#define DATA(name,code,help) {name,(unsigned)(code),help}",
+	"#else",
+	"#define DATA(name,code,help) {name,(unsigned)(code)}",
+	"#endif",
+	"",
 	"DECL_EXTERN_CONST(UFUNC vl_ufuncs[]) = {",
     };
     static int done;
@@ -1845,7 +1855,7 @@ init_ufuncs(void)
 static void
 save_ufuncs(char **vec)
 {
-    InsertSorted(&all_ufuncs, vec[1], vec[2], vec[3], "", vec[0]);
+    InsertSorted(&all_ufuncs, vec[1], vec[2], vec[3], "", vec[4]);
 }
 
 static void
@@ -1853,8 +1863,9 @@ dump_ufuncs(void)
 {
     static const char *const middle[] =
     {
-	"\t{NULL, 0},",
+	"\tDATA(NULL, 0, \"\"),",
 	"};",
+	"#undef DATA",
 	"BLIST blist_ufuncs = init_blist(vl_ufuncs);",
 	"#else",
 	"extern const UFUNC vl_ufuncs[];",
@@ -1869,13 +1880,11 @@ dump_ufuncs(void)
     for (p = all_ufuncs, count = 0; p != 0; p = p->nst) {
 	if (!count++)
 	    init_ufuncs();
-	Sprintf(temp, "\t{\"%s\",", p->Name);
-	(void) PadTo(15, temp);
-	Sprintf(temp + strlen(temp), "(unsigned)(%s)},", p->Data);
-	if (p->Note[0]) {
-	    (void) PadTo(32, temp);
-	    Sprintf(temp + strlen(temp), "/* %s */", p->Note);
-	}
+	Sprintf(temp, "\tDATA(\"%s\",", p->Name);
+	(void) PadTo(32, temp);
+	Sprintf(temp + strlen(temp), "%s,", p->Data);
+	(void) PadTo(48, temp);
+	Sprintf(temp + strlen(temp), "\"%s\"),", p->Note);
 	Fprintf(nevars, "%s\n", temp);
     }
     write_lines(nevars, middle);
@@ -2249,13 +2258,13 @@ main(int argc, char *argv[])
 		break;
 
 	    case SECT_VARS:
-		if (r < 2 || r > 3)
+		if (r < 2 || r > 4)
 		    badfmt("looking for char *statevars[]");
 		save_statevars(vec);
 		break;
 
 	    case SECT_FUNC:
-		if (r < 2 || r > 3)
+		if (r < 2 || r > 4)
 		    badfmt("looking for UFUNC func[]");
 		save_ufuncs(vec);
 		break;

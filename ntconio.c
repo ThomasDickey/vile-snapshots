@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 console API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntconio.c,v 1.88 2007/09/03 20:05:59 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntconio.c,v 1.90 2007/09/27 23:36:11 tom Exp $
  *
  */
 
@@ -135,7 +135,7 @@ static void
 nttitle(const char *title)
 {				/* set the current window title */
     if (title != 0)
-	SetConsoleTitle(title);
+	w32_set_console_title(title);
 }
 #endif
 
@@ -145,15 +145,32 @@ scflush(void)
     if (bufpos) {
 	COORD coordCursor;
 	DWORD written;
+#ifdef UNICODE
+	W32_CHAR *actual;
+	char save_buf;
+#endif
 
 	coordCursor.X = (SHORT) ccol;
 	coordCursor.Y = (SHORT) crow;
 	TRACE2(("scflush %04x [%d,%d]%.*s\n",
 		currentAttribute, crow, ccol, bufpos, linebuf));
+#ifdef UNICODE
+	save_buf = linebuf[bufpos];
+	linebuf[bufpos] = 0;
+	if ((actual = w32_charstring(linebuf)) != 0) {
+	    WriteConsoleOutputCharacter(
+					   hConsoleOutput, actual, bufpos,
+					   coordCursor, &written
+		);
+	    free (actual);
+	}
+	linebuf[bufpos] = save_buf;
+#else
 	WriteConsoleOutputCharacter(
 				       hConsoleOutput, linebuf, bufpos,
 				       coordCursor, &written
 	    );
+#endif
 	FillConsoleOutputAttribute(
 				      hConsoleOutput, currentAttribute,
 				      bufpos, coordCursor, &written
@@ -202,11 +219,25 @@ ntmove(int row, int col)
     ccol = col;
 }
 
+static void
+erase_at(COORD coordCursor, int length)
+{
+    W32_CHAR blank = ' ';
+    DWORD written;
+
+    FillConsoleOutputCharacter(
+				  hConsoleOutput, blank, length, coordCursor, &written
+	);
+    FillConsoleOutputAttribute(
+				  hConsoleOutput, currentAttribute, length,
+				  coordCursor, &written
+	);
+}
+
 /* erase to the end of the line */
 static void
 nteeol(void)
 {
-    DWORD written;
     COORD coordCursor;
     int length;
 
@@ -215,12 +246,7 @@ nteeol(void)
     coordCursor.X = (SHORT) ccol;
     coordCursor.Y = (SHORT) crow;
     TRACE2(("nteeol [%d,%d] erase %d with %04x\n", crow, ccol, length, currentAttribute));
-    FillConsoleOutputCharacter(
-				  hConsoleOutput, ' ',
-				  length, coordCursor, &written);
-    FillConsoleOutputAttribute(
-				  hConsoleOutput, currentAttribute,
-				  length, coordCursor, &written);
+    erase_at(coordCursor, length);
 }
 
 /*
@@ -251,7 +277,11 @@ ntscroll(int from, int to, int n)
 	    from = to + 1;
     }
 #endif
+#ifdef UNICODE
+    fill.Char.UnicodeChar = ' ';
+#else
     fill.Char.AsciiChar = ' ';
+#endif
     fill.Attributes = currentAttribute;
 
     sRect.Left = 0;
@@ -279,7 +309,6 @@ ntscroll(int from, int to, int n)
 #if !OPT_PRETTIER_SCROLL
     if (ABS(from - to) > n) {
 	DWORD cnt;
-	DWORD written;
 	COORD coordCursor;
 
 	coordCursor.X = 0;
@@ -291,11 +320,7 @@ ntscroll(int from, int to, int n)
 	    cnt = from - to - n;
 	}
 	cnt *= csbi.dwMaximumWindowSize.X;
-	FillConsoleOutputCharacter(
-				      hConsoleOutput, ' ', cnt, coordCursor, &written);
-	FillConsoleOutputAttribute(
-				      hConsoleOutput, currentAttribute, cnt,
-				      coordCursor, &written);
+	erase_at(coordCursor, cnt);
     }
 #endif
 }
@@ -402,7 +427,6 @@ static void
 nteeop(void)
 {
     DWORD cnt;
-    DWORD written;
     COORD coordCursor;
 
     scflush();
@@ -412,13 +436,7 @@ nteeop(void)
 	+ (csbi.dwMaximumWindowSize.Y - crow - 1)
 	* csbi.dwMaximumWindowSize.X;
     TRACE2(("nteeop [%d,%d] erase %d with %04x\n", crow, ccol, cnt, currentAttribute));
-    FillConsoleOutputCharacter(
-				  hConsoleOutput, ' ', cnt, coordCursor, &written
-	);
-    FillConsoleOutputAttribute(
-				  hConsoleOutput, currentAttribute, cnt,
-				  coordCursor, &written
-	);
+    erase_at(coordCursor, cnt);
 }
 
 static void
@@ -805,7 +823,7 @@ GetMousePos(POINT * result)
 {
     HWND hwnd;
 
-    hwnd = GetForegroundWindow();
+    hwnd = GetVileWindow();
     GetCursorPos(result);
     ScreenToClient(hwnd, result);
     if (result->y < client_rect.top) {
@@ -1099,7 +1117,7 @@ handle_mouse_event(MOUSE_EVENT_RECORD mer)
 			buttondown = FALSE;	/* until all inits are successful */
 
 			/* Capture mouse to console vile's window handle. */
-			hwnd = GetForegroundWindow();
+			hwnd = GetVileWindow();
 			(void) SetCapture(hwnd);
 
 			/* Compute pixel height of each row on screen. */

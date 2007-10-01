@@ -3,7 +3,7 @@
  * and mark.  Some functions are commands.  Some functions are just for
  * internal use.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/region.c,v 1.138 2007/09/12 23:36:03 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/region.c,v 1.142 2007/09/26 23:09:45 tom Exp $
  *
  */
 
@@ -451,7 +451,7 @@ detabline(void *flagp, int l GCC_UNUSED, int r GCC_UNUSED)
 			      - (DOT.o % tabstop_val(curbp)))) != TRUE)
 		return s;
 	}
-	DOT.o++;
+	DOT.o += BytesAt(DOT.l, DOT.o);
     }
     (void) gocol(ocol);
     return TRUE;
@@ -699,13 +699,16 @@ stringrect(void)
 
     s = mlreply2("Rectangle text: ", &buf);
     if (s == TRUE) {
-/* i couldn't decide at first whether we should be inserting or
-	overwriting... this chooses. */
-#ifdef insert_the_string
-	s = do_lines_in_region(open_hole_in_line, (void *) buf, FALSE);
-#else /* overwrite the string */
-	s = do_lines_in_region(blankline, (void *) buf, FALSE);
-#endif
+	/* i couldn't decide at first whether we should be inserting or
+	 * overwriting... this chooses.
+	 */
+	if (b_val(curbp, MDINS_RECTS)) {
+	    /* insert_the_string */
+	    s = do_lines_in_region(open_hole_in_line, (void *) buf, FALSE);
+	} else {
+	    /* overwrite the string */
+	    s = do_lines_in_region(blankline, (void *) buf, FALSE);
+	}
     }
     return s;
 }
@@ -876,7 +879,8 @@ getregion(REGION * rp)
     B_COUNT bsize;
     int len_rs = len_record_sep(curbp);
 
-    TRACE((T_CALLED "get_region\n"));
+    TRACE((T_CALLED "getregion\n"));
+    memset(rp, 0, sizeof(*rp));
     if (haveregion) {
 	*rp = *haveregion;
 	haveregion = NULL;

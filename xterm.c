@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/xterm.c,v 1.3 2007/05/05 15:23:03 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/xterm.c,v 1.4 2007/09/16 20:07:20 tom Exp $
  *
  * xterm-specific code for vi-like-emacs.
  */
@@ -255,8 +255,9 @@ xterm_button(int c)
 		   mousey, mousex));
 	    setcursor(starty - 1, startx - 1);
 	    setwmark(endy - 1, endx - 1);
-	    if (MK.o != 0 && !is_at_end_of_line(MK))
-		MK.o += 1;
+	    if (MK.o != 0 && !is_at_end_of_line(MK)) {
+		MK.o += BytesAt(MK.l, MK.o);
+	    }
 	    yankregion();
 
 	    DOT = save_dot;

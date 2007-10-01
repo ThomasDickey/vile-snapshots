@@ -1,5 +1,5 @@
 /*
- * $Id: charsets.c,v 1.41 2007/09/14 00:35:18 tom Exp $
+ * $Id: charsets.c,v 1.42 2007/09/30 22:32:50 tom Exp $
  *
  * see
  http://msdn.microsoft.com/library/default.asp?url=/library/en-us/intl/unicode_42jv.asp
@@ -366,7 +366,7 @@ load_as_utf8(BUFFER *bp, LINE *lp)
 		    for (j = k = 0; j < used; ++j) {
 			int nn = vl_conv_to_utf8(buffer,
 						 bp->decode_utf_buf[j],
-						 used - j);
+						 used + 1 - j);
 			if (buffer != 0)
 			    buffer += nn;
 			k += nn;

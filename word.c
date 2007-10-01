@@ -3,7 +3,7 @@
  * paragraph at a time.  There are all sorts of word mode commands.  If I
  * do any sentence mode commands, they are likely to be put in this file.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/word.c,v 1.84 2007/08/31 23:19:44 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/word.c,v 1.85 2007/09/16 20:09:35 tom Exp $
  *
  */
 
@@ -42,7 +42,7 @@ wrapword(int f, int n)
 	LINE *lp = DOT.l;
 	to_delete = 0L;
 	if (DOT.o >= 0 && !n && !isSpace(lgetc(lp, DOT.o))) {
-	    for (c = DOT.o; c >= 0; c--) {
+	    for (c = DOT.o; c >= 0; c -= BytesBefore(DOT.l, c)) {
 		if (isSpace(lgetc(lp, c))) {
 		    to_append = n;
 		    cnt = (DOT.o - c);
@@ -51,7 +51,7 @@ wrapword(int f, int n)
 		}
 	    }
 	}
-	for (c = DOT.o; c >= 0; c--) {
+	for (c = DOT.o; c >= 0; c -= BytesBefore(DOT.l, c)) {
 	    if (isSpace(lgetc(lp, c))) {
 		to_delete++;
 		DOT.o = c;
@@ -60,7 +60,7 @@ wrapword(int f, int n)
 	    }
 	}
 	if (to_delete == 0) {
-	    DOT.o++;
+	    DOT.o += BytesAt(DOT.l, DOT.o);
 	}
     } else {
 	/* Back up until we aren't in a word, make sure there is a

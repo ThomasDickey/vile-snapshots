@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.636 2007/09/14 00:34:41 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.644 2007/09/27 19:56:44 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -1049,7 +1049,13 @@ extern void endofDisplay(void);
 #define C_WHITE (ncolors-1)
 
 #define MinCBits   8			/* bits in N_chars		*/
-#define MaxCBits   16			/* bits in N_chars		*/
+
+#if OPT_MULTIBYTE
+#define MaxCBits   16			/* allow UTF-16 internal	*/
+#else
+#define MaxCBits   MinCBits		/* allow 8bit internal		*/
+#endif
+
 #define N_chars    (1 << MinCBits)	/* must be a power-of-2		*/
 #define HIGHBIT    (1 << 7)		/* the meta bit			*/
 
@@ -2453,7 +2459,13 @@ typedef struct	{
 	void	(*mevent) (void);	/* mouse event			*/
 }	TERM;
 
+#if OPT_MULTIBYTE && (DISP_TERMCAP || DISP_X11 || (DISP_NTWIN && defined(UNICODE)))
+typedef USHORT VIDEO_TEXT;
+typedef USHORT VIDEO_CHAR;
+#else
 typedef UCHAR VIDEO_TEXT;
+typedef char  VIDEO_CHAR;
+#endif
 
 typedef struct  VIDEO {
 	UINT	v_flag;			/* Flags */
@@ -2647,7 +2659,7 @@ typedef struct {
  * used or honored or implemented.
  */
 #define argBIT(n) cmdBIT(n+13)	/* ...to simplify adding bits */
-/* bits 13-26 */
+/* bits 13-27 */
 #define FROM    argBIT(0)	/* allow a linespec */
 #define TO      argBIT(1)	/* allow a second linespec */
 #define BANG    argBIT(2)	/* allow a ! after the command name */
@@ -2662,6 +2674,7 @@ typedef struct {
 #define PLUS    argBIT(11)	/* allow a line number, as in ":e +32 foo" */
 #define ZERO    argBIT(12)	/* allow 0 to be given as a line number */
 #define OPTREG  argBIT(13)	/* allow optional register-name */
+#define USEREG  argBIT(14)	/* expect register-name */
 #define FILES   (XFILE | EXTRA)	/* multiple extra files allowed */
 #define WORD1   (EXTRA | NOSPC)	/* one extra word allowed */
 #define FILE1   (FILES | NOSPC)	/* 1 file allowed, defaults to current file */
@@ -2670,7 +2683,7 @@ typedef struct {
 #define RANGE   (FROM  | TO)	/* range of linespecs allowed */
 
 /* these flags determine the type of cu.* */
-#define typBIT(n) cmdBIT(n+27)	/* ...to simplify adding bits */
+#define typBIT(n) cmdBIT(n+28)	/* ...to simplify adding bits */
 /* bits 27-28 */
 #define CMD_FUNC 0L		/* this is the default (CmdFunc) */
 #define CMD_PROC typBIT(0)	/* named procedure (BUFFER *) */
@@ -2806,8 +2819,6 @@ extern void ExitProgram(int code);
 #define	ExitProgram(code)	exit(code)
 #endif
 #endif
-
-#define VILE_SUBKEY "Software\\VI Like Emacs"
 
 /*
  * We cannot define these in config.h, since they require parameters to be
@@ -2965,6 +2976,7 @@ extern void ExitProgram(int code);
 #ifndef TRACE
 #define TRACE(p) /* nothing */
 #define returnCode(c)   return(c)
+#define returnPtr(c)    return(c)
 #define returnString(c) return(c)
 #define returnVoid()    return
 #endif
@@ -2972,11 +2984,13 @@ extern void ExitProgram(int code);
 #if OPT_TRACE > 1
 #define TRACE2(params)   TRACE(params)
 #define return2Code(c)   returnCode(c)
+#define return2Ptr(c)    returnPtr(c)
 #define return2String(c) returnString(c)
 #define return2Void()    returnVoid()
 #else
 #define TRACE2(params) /*nothing*/
 #define return2Code(c)   return(c)
+#define return2Ptr(c)    return(c)
 #define return2String(c) return(c)
 #define return2Void()    return
 #endif

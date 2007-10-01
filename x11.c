@@ -2,7 +2,7 @@
  *	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.289 2007/09/13 23:59:32 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.292 2007/09/20 00:09:56 tom Exp $
  *
  */
 
@@ -4218,6 +4218,58 @@ x_scroll(int from, int to, int count)
     }
 }
 
+#define DRAW_WITH(func,buffer,offset) \
+	    func(dpy, cur_win->win, fore_gc, \
+		 (int) x_pos(cur_win, sc) + offset, fore_yy, \
+		 buffer, tlen)
+
+static void
+really_draw(GC fore_gc,
+	    VIDEO_TEXT * text,
+	    int tlen,
+	    VIDEO_ATTR attr,
+	    int sr,
+	    int sc)
+{
+    int fore_yy = text_y_pos(cur_win, sr);
+    char buffer[BUFSIZ];
+    XChar2b buffer2[sizeof(buffer)];
+
+    while (tlen > 0) {
+	Boolean wide = False;
+	Cardinal n;
+
+	for (n = 0; n < sizeof(buffer); ++n) {
+	    if (text[n] >= 256) {
+		wide = True;
+		break;
+	    }
+	    buffer[n] = text[n];
+	}
+
+	if (wide) {
+
+	    for (n = 0; n < (Cardinal) tlen; ++n) {
+		buffer2[n].byte2 = text[n];
+		buffer2[n].byte1 = (text[n] >> 8);
+	    }
+
+	    DRAW_WITH(XDrawImageString16, buffer2, 0);
+	    if (attr & VABOLD)
+		DRAW_WITH(XDrawImageString16, buffer2, 1);
+	} else {
+	    DRAW_WITH(XDrawImageString, buffer, 0);
+	    if (attr & VABOLD)
+		DRAW_WITH(XDrawImageString, buffer, 1);
+	}
+	tlen -= sizeof(buffer);
+	if (tlen > 0) {
+	    text += sizeof(buffer);
+	    sc += sizeof(buffer);
+	}
+    }
+}
+
 /*
  * The X protocol request for clearing a rectangle (PolyFillRectangle) takes
  * 20 bytes.  It will therefore be more expensive to switch from drawing text
@@ -4244,7 +4296,7 @@ flush_line(VIDEO_TEXT * text, int len, UINT attr, int sr, int sc)
     GC back_gc;
     int fore_yy = text_y_pos(cur_win, sr);
     int back_yy = y_pos(cur_win, sr);
-    char *p;
+    VIDEO_TEXT *p;
     int cc, tlen, i, startcol;
     int fontchanged = FALSE;
 
@@ -4322,7 +4374,7 @@ flush_line(VIDEO_TEXT * text, int len, UINT attr, int sr, int sc)
     }
 
     /* break line into TextStrings and FillRects */
-    p = (char *) text;
+    p = text;
     cc = 0;
     tlen = 0;
     startcol = sc;
@@ -4333,13 +4385,7 @@ flush_line(VIDEO_TEXT * text, int len, UINT attr, int sr, int sc)
 	} else {
 	    if (cc >= CLEAR_THRESH) {
 		tlen -= cc;
-		XDrawImageString(dpy, cur_win->win, fore_gc,
-				 (int) x_pos(cur_win, sc), fore_yy,
-				 p, tlen);
-		if (attr & VABOLD)
-		    XDrawString(dpy, cur_win->win, fore_gc,
-				(int) x_pos(cur_win, sc) + 1, fore_yy,
-				p, tlen);
+		really_draw(fore_gc, p, tlen, attr, sr, sc);
 		p += tlen + cc;
 		sc += tlen;
 		XFillRectangle(dpy, cur_win->win, back_gc,
@@ -4355,26 +4401,14 @@ flush_line(VIDEO_TEXT * text, int len, UINT attr, int sr, int sc)
     }
     if (cc >= CLEAR_THRESH) {
 	tlen -= cc;
-	XDrawImageString(dpy, cur_win->win, fore_gc,
-			 x_pos(cur_win, sc), fore_yy,
-			 p, tlen);
-	if (attr & VABOLD)
-	    XDrawString(dpy, cur_win->win, fore_gc,
-			(int) x_pos(cur_win, sc) + 1, fore_yy,
-			p, tlen);
+	really_draw(fore_gc, p, tlen, attr, sr, sc);
 	sc += tlen;
 	XFillRectangle(dpy, cur_win->win, back_gc,
 		       x_pos(cur_win, sc), back_yy,
 		       (UINT) (cc * cur_win->char_width),
 		       (UINT) (cur_win->char_height));
     } else if (tlen > 0) {
-	XDrawImageString(dpy, cur_win->win, fore_gc,
-			 x_pos(cur_win, sc), fore_yy,
-			 p, tlen);
-	if (attr & VABOLD)
-	    XDrawString(dpy, cur_win->win, fore_gc,
-			(int) x_pos(cur_win, sc) + 1, fore_yy,
-			p, tlen);
+	really_draw(fore_gc, p, tlen, attr, sr, sc);
     }
     if (attr & (VAUL | VAITAL)) {
 	fore_yy += cur_win->char_descent - 1;
@@ -5132,7 +5166,7 @@ multi_click(TextWindow tw, int nr, int nc)
 #endif
 	    /* find word start */
 	    p = &CELL_TEXT(nr, sc);
-	    cclass = charClass[*p];
+	    cclass = charClass[CharOf(*p)];
 	    do {
 		--sc;
 		--p;
@@ -5140,7 +5174,7 @@ multi_click(TextWindow tw, int nr, int nc)
 	    sc++;
 	    /* and end */
 	    p = &CELL_TEXT(nr, nc);
-	    cclass = charClass[*p];
+	    cclass = charClass[CharOf(*p)];
 	    do {
 		++nc;
 		++p;
@@ -6097,8 +6131,8 @@ x_getc(void)
 		&& !insertmode
 		&& !(DOT.o == 0
 		     && cur_win->last_getc == (NOREMAP | '\n'))) {
-		DOT.o++;	/* Advance DOT so that consecutive
-				   pastes come out right */
+		DOT.o += BytesAt(DOT.l, DOT.o);
+		/* Advance DOT so that consecutive pastes come out right */
 	    }
 	    cur_win->pasting = False;
 	    update(TRUE);	/* make sure ttrow & ttcol are valid */
