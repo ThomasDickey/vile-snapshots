@@ -1,5 +1,5 @@
 /*
- * $Id: charsets.c,v 1.42 2007/09/30 22:32:50 tom Exp $
+ * $Id: charsets.c,v 1.48 2007/10/14 16:22:54 tom Exp $
  *
  * see
  http://msdn.microsoft.com/library/default.asp?url=/library/en-us/intl/unicode_42jv.asp
@@ -11,6 +11,12 @@
 #include <chgdfunc.h>
 #include <edef.h>
 #include <nefsms.h>
+
+#if OPT_ICONV_FUNCS
+#include <iconv.h>
+#include <locale.h>
+#include <langinfo.h>
+#endif
 /* *INDENT-OFF* */
 static const UCHAR mark_NONE[]    = { 0x00 };
 static const UCHAR mark_UTF8[]    = { 0xef, 0xbb, 0xbf };

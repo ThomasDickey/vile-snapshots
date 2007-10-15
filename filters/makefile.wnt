@@ -1,7 +1,7 @@
 #
 # makefile for vile filters on WIN32 using Microsoft Visual C++
 #
-# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.wnt,v 1.32 2005/12/10 01:30:22 tom Exp $
+# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.wnt,v 1.33 2007/10/03 21:21:35 tom Exp $
 #
 #
 !include <ntwin32.mak>
@@ -35,6 +35,8 @@ CFLAGS   = $(CFLAGS) -DHAVE_POPEN
 !elseif "$(FLT)" == ""
 CFLAGS   = $(CFLAGS) -DHAVE_POPEN
 !endif
+
+CFLAGS   = $(CFLAGS) -DOPT_LOCALE
 
 TMPINCS	= \
 	genmake.exe \

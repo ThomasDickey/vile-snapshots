@@ -1,4 +1,4 @@
-; $Id: filters.rc,v 1.206 2007/06/16 15:05:56 tom Exp $
+; $Id: filters.rc,v 1.207 2007/10/04 20:21:39 tom Exp $
 ; majormodes in this file are ordered alphabetically for convenience - the
 ; precedence used by vile is strictly alphabetic, counting case.
 
@@ -64,7 +64,7 @@ define-mode nmake
 
 define-mode nsis
 ~with define-submode nsis
-	filtername	'vile-def-filt -k nsis'
+	filtername	'vile-conf-filt -k nsis'
 ~endwith
 
 define-mode pc

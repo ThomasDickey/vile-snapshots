@@ -2,7 +2,7 @@
  * This file contains the command processing functions for a number of random
  * commands. There is no functional grouping here, for sure.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.310 2007/09/12 23:43:42 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.311 2007/10/03 23:54:00 tom Exp $
  *
  */
 
@@ -2162,17 +2162,24 @@ vl_stricmp(const char *a, const char *b)
 char *
 vl_vischr(char *buffer, int ch)
 {
-    ch = CharOf(ch);
-    if (isPrint(ch)) {
-	buffer[0] = (char) ch;
-	buffer[1] = '\0';
-    } else {
-	if (ch >= 128)
-	    sprintf(buffer, "\\%03o", ch);
-	else if (ch == 127)
-	    strcpy(buffer, "^?");
-	else
-	    sprintf(buffer, "^%c", ch | '@');
+#if OPT_MULTIBYTE
+    if (ch > 255) {
+	sprintf(buffer, "\\u%04x", ch & 0xffff);
+    } else
+#endif
+    {
+	ch = CharOf(ch);
+	if (isPrint(ch)) {
+	    buffer[0] = (char) ch;
+	    buffer[1] = '\0';
+	} else {
+	    if (ch >= 128)
+		sprintf(buffer, "\\%03o", ch);
+	    else if (ch == 127)
+		strcpy(buffer, "^?");
+	    else
+		sprintf(buffer, "^%c", ch | '@');
+	}
     }
     return buffer;
 }

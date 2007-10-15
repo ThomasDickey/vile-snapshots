@@ -1,7 +1,7 @@
 /*
  * debugging support -- tom dickey.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.65 2007/09/27 22:04:59 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.67 2007/10/06 16:17:59 tom Exp $
  *
  */
 
@@ -190,7 +190,7 @@ visible_buff(const char *buffer, int length, int eos)
 {
     int j;
     unsigned k = 0;
-    unsigned need = ((length > 0) ? (length * 4) : 0) + 1;
+    unsigned need = ((length > 0) ? (length * 6) : 0) + 1;
     char *result;
 
     beginDisplay();
@@ -221,7 +221,7 @@ visible_video_text(const VIDEO_TEXT * buffer, int length)
 {
     int j;
     unsigned k = 0;
-    unsigned need = ((length > 0) ? (length * 4) : 0) + 1;
+    unsigned need = ((length > 0) ? (length * 6) : 0) + 1;
     char *result;
 
     beginDisplay();
@@ -235,7 +235,7 @@ visible_video_text(const VIDEO_TEXT * buffer, int length)
     result = alloc_visible(need);
 
     for (j = 0; j < length; j++) {
-	int c = buffer[j] & 0xff;
+	int c = buffer[j] & ((1 << (8 * sizeof(VIDEO_TEXT))) - 1);
 	char *dst = result + k;
 	vl_vischr(dst, c);
 	k += (unsigned) strlen(dst);

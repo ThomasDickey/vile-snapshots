@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 screen API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.174 2007/09/27 22:06:45 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.177 2007/10/12 00:44:45 tom Exp $
  * Written by T.E.Dickey for vile (october 1997).
  * -- improvements by Clark Morgan (see w32cbrd.c, w32pipe.c).
  */
@@ -876,7 +876,7 @@ get_DC_with_Font(HFONT font)
 {
     HDC hDC = GetDC(cur_win->text_hwnd);
     if (hDC != 0) {
-	if (SelectObject(hDC, font) == 0)
+	if (SelectFont(hDC, font) == 0)
 	    ReleaseDC(cur_win->text_hwnd, hDC);
     }
     return hDC;
@@ -889,7 +889,7 @@ nt_set_colors(HDC hdc, VIDEO_ATTR attr)
     int bcolor;
     int ninvert;
 
-    SelectObject(hdc, GetMyFont(attr));
+    SelectFont(hdc, GetMyFont(attr));
 #ifdef GVAL_VIDEO
     attr ^= global_g_val(GVAL_VIDEO);
 #endif
@@ -1059,13 +1059,29 @@ is_fixed_pitch(HFONT font)
     ok = GetTextMetrics(hDC, &metrics);
     ReleaseDC(cur_win->text_hwnd, hDC);
 
-    if (ok)
+    if (ok) {
 	ok = ((metrics.tmPitchAndFamily & TMPF_FIXED_PITCH) == 0);
+#ifdef UNICODE
+	/*
+	 * FIXME - find how to (simply) determine the total number of glyphs
+	 * in a font.
+	 */
+	if ((metrics.tmFirstChar == 0x20) && (metrics.tmLastChar > 10000)) {
+	    term.encoding = enc_UTF16;
+	    TRACE(("Assume font useful for UNICODE\n"));
+	} else {
+	    term.encoding = enc_POSIX;	/* how to do enc_LOCALE? */
+	}
+	// FIXME - if encoding changes, force repainting in display.c
+#endif
+    }
 
     TRACE(("is_fixed_pitch: %d\n", ok));
     TRACE(("Ave Text width: %d\n", metrics.tmAveCharWidth));
     TRACE(("Max Text width: %d\n", metrics.tmMaxCharWidth));
     TRACE(("Pitch/Family:   %#x\n", metrics.tmPitchAndFamily));
+    TRACE(("First char      %#x\n", metrics.tmFirstChar));
+    TRACE(("Last char       %#x\n", metrics.tmLastChar));
 
     return (ok);
 }
@@ -1116,6 +1132,8 @@ use_font(HFONT my_font)
     TRACE(("Ave Text width: %d\n", textmetric.tmAveCharWidth));
     TRACE(("Max Text width: %d\n", textmetric.tmMaxCharWidth));
     TRACE(("Pitch/Family:   %#x\n", textmetric.tmPitchAndFamily));
+    TRACE(("First char:     %#x\n", textmetric.tmFirstChar));
+    TRACE(("Last char:      %#x\n", textmetric.tmLastChar));
 
     /*
      * We'll use the average text-width, since some fonts (e.g., Courier
@@ -1285,7 +1303,7 @@ ntwinio_font_frm_str(
     logfont.lfPitchAndFamily = FIXED_PITCH | FF_MODERN;
     memcpy(logfont.lfFaceName, str_rslts.face, sizeof(W32_CHAR) * LF_FACESIZE);
     logfont.lfFaceName[LF_FACESIZE - 1] = '\0';
-    if (!((hfont = CreateFontIndirect(&logfont)) != 0 && SelectObject(hdc, hfont))) {
+    if (!((hfont = CreateFontIndirect(&logfont)) != 0 && SelectFont(hdc, hfont))) {
 	(void) last_w32_error(use_mb);
 	if (hfont)
 	    DeleteObject(hfont);
@@ -1467,8 +1485,8 @@ scflush(void)
 {
     if (cur_pos && !vile_resizing) {
 	HDC hdc;
-
 	MSG msg;
+	VIDEO_TEXT *cur_text;
 
 	/*
 	 * (try to) keep up with events for repainting the screen, e.g., when
@@ -1485,8 +1503,9 @@ scflush(void)
 		fshow_cursor();
 	}
 
+	cur_text = &CELL_TEXT(crow, ccol);
 	TRACE(("PUTC:flush %2d (%2d,%2d) (%s)\n", cur_pos, crow, ccol,
-	       visible_video_text(&CELL_TEXT(crow, ccol), cur_pos)));
+	       visible_video_text(cur_text, cur_pos)));
 
 	hdc = GetDC(cur_win->text_hwnd);
 	nt_set_colors(hdc, cur_atr);
@@ -1496,7 +1515,7 @@ scflush(void)
 		   RowToPixel(crow),
 		   0,
 		   (RECT *) 0,
-		   (VIDEO_CHAR *) & CELL_TEXT(crow, ccol), cur_pos,
+		   (VIDEO_CHAR *) cur_text, cur_pos,
 		   intercharacter(cur_pos));
 
 	ReleaseDC(cur_win->text_hwnd, hdc);
@@ -2146,7 +2165,8 @@ handle_builtin_menu(WPARAM code)
     TRACE(("handle_builtin_menu code=%#x\n", code));
     switch (cmd) {
     case IDM_ABOUT:
-	DialogBox(vile_hinstance, W32_STRING("AboutBox"), cur_win->main_hwnd, AboutBoxProc);
+	DialogBox(vile_hinstance, W32_STRING("AboutBox"),
+		  cur_win->main_hwnd, AboutBoxProc);
 	break;
     case IDM_OPEN:
 	winopen_dir(NULL);
@@ -2945,7 +2965,7 @@ ntgetch(void)
 	    TRACE(("GETC:CHAR:%#x\n", msg.wParam));
 	    result = (int) msg.wParam;
 	    /*
-	     * Check for modifieers on control keys such as tab.
+	     * Check for modifiers on control keys such as tab.
 	     */
 	    if ((result < 256) && isCntrl(result)) {
 		DWORD state = get_keyboard_state();

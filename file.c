@@ -5,7 +5,7 @@
  * reading and writing of the disk are
  * in "fileio.c".
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.411 2007/09/27 00:13:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.412 2007/10/14 19:46:02 tom Exp $
  */
 
 #include "estruct.h"
@@ -2122,6 +2122,7 @@ actually_write(REGION * rp, char *fn, int msgf, BUFFER *bp, int forced, int enco
     int whole_file = ((rp->r_orig.l == lforw(buf_head(bp)))
 		      && (rp->r_end.l == buf_head(bp)));
 
+    TRACE((T_CALLED " actually_write\n"));
 #if OPT_HOOKS
     if (run_a_hook(&writehook)) {
 	/*
@@ -2144,12 +2145,12 @@ actually_write(REGION * rp, char *fn, int msgf, BUFFER *bp, int forced, int enco
 
 #if OPT_ENCRYPT
     if ((s = vl_resetkey(curbp, fn)) != TRUE)
-	return s;
+	returnCode(s);
 #endif
 
     /* open writes error message, if needed */
     if ((s = ffwopen(fn, forced)) != FIOSUC)
-	return FALSE;
+	returnCode(FALSE);
 
     /* disable "working..." while we are writing - not reading - a pipe, since
      * it may be a quasi-interactive process that we don't want to modify its
@@ -2247,7 +2248,7 @@ actually_write(REGION * rp, char *fn, int msgf, BUFFER *bp, int forced, int enco
     }
 
     if (s != FIOSUC)		/* Some sort of error.      */
-	return FALSE;
+	returnCode(FALSE);
 
 #ifdef MDCHK_MODTIME
     set_modtime(bp, fn);
@@ -2267,7 +2268,7 @@ actually_write(REGION * rp, char *fn, int msgf, BUFFER *bp, int forced, int enco
     }
 
     imply_alt(fn, whole_file, FALSE);
-    return TRUE;
+    returnCode(TRUE);
 }
 
 static int
@@ -2372,7 +2373,7 @@ writeout(const char *fn, BUFFER *bp, int forced, int msgf)
 
     setup_file_region(bp, &region);
 
-    status = writereg(&region, fn, msgf, bp, forced, b_is_utfXX(bp));
+    status = writereg(&region, fn, msgf, bp, forced, FALSE);
 
 #if SYS_WINNT && DISP_NTWIN
     if (status && (!(isShellOrPipe(fn) || b_is_registered(bp)))) {

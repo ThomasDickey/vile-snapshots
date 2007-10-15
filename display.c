@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.455 2007/09/19 23:10:04 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.458 2007/10/14 14:54:44 tom Exp $
  *
  */
 
@@ -502,24 +502,9 @@ vtmove(int row, int col)
     vtcol = col;
 }
 
-/*
- * Write a character to the virtual screen.  The virtual row and column are
- * updated.  Only print characters if they would be "visible".  If the line is
- * too long put a ">" in the last column.  This routine only puts printing
- * characters into the virtual terminal buffers.  Only column overflow is
- * checked.
- *
- * Returns the number of bytes eaten from the source.
- */
-static int
-vtputc(WINDOW *wp, const char *src, unsigned limit)
+static VIDEO *
+current_video(void)
 {
-    /* since we don't allow wrapping on the message line, we only need
-     * to evaluate this once.  */
-    int lastcol = ((vtrow == term.rows - 1)
-		   ? (term.cols - 1)
-		   : term.cols);
-    int rc = 1;
     VIDEO *vp;
 
 #ifdef WMDLINEWRAP
@@ -539,9 +524,39 @@ vtputc(WINDOW *wp, const char *src, unsigned limit)
 #endif
 	vp = vscreen[vtrow];
 
+    return vp;
+}
+
+static int
+current_limit(void)
+{
+    return ((vtrow == term.rows - 1)
+	    ? (term.cols - 1)
+	    : term.cols);
+}
+
+/*
+ * Write a character to the virtual screen.  The virtual row and column are
+ * updated.  Only print characters if they would be "visible".  If the line is
+ * too long put a ">" in the last column.  This routine only puts printing
+ * characters into the virtual terminal buffers.  Only column overflow is
+ * checked.
+ *
+ * Returns the number of bytes eaten from the source.
+ */
+static int
+vtputc(WINDOW *wp, const char *src, unsigned limit)
+{
+    /* since we don't allow wrapping on the message line, we only need
+     * to evaluate this once.  */
+    int lastcol = current_limit();
+    int rc = 1;
+    UCHAR ch = (UCHAR) (*src);
+    VIDEO *vp = current_video();
+
     if (vp != 0) {
-	if (isPrint(*src) && vtcol >= 0 && vtcol < lastcol) {
-	    VideoText(vp)[vtcol++] = (VIDEO_TEXT) (*src);
+	if (isPrint(ch) && vtcol >= 0 && vtcol < lastcol) {
+	    VideoText(vp)[vtcol++] = ch;
 #ifdef WMDLINEWRAP
 	    if ((allow_wrap != 0)
 		&& (vtcol == lastcol)
@@ -554,13 +569,13 @@ vtputc(WINDOW *wp, const char *src, unsigned limit)
 #endif
 	} else if (vtcol >= lastcol) {
 	    VideoText(vp)[lastcol - 1] = MRK_EXTEND_RIGHT[0];
-	} else if (isTab(*src)) {
+	} else if (isTab(ch)) {
 	    do {
 		vtputc(wp, " ", 1);
 	    } while (((vtcol + horscroll) % wp->w_tabstop) != 0
 		     && vtcol < lastcol);
-	} else if (*src != '\n') {
-	    if (isPrint(*src)) {
+	} else if (ch != '\n') {
+	    if (isPrint(ch)) {
 		++vtcol;
 	    } else {
 		rc = vtlistc(wp, src, limit);
@@ -585,12 +600,53 @@ vtlistc(WINDOW *wp, const char *src, unsigned limit)
 #if OPT_MULTIBYTE
     if (b_is_utfXX(wp->w_bufp)) {
 	int need = column_sizes(wp, src, limit, &rc);
+	int cells;
 
 	switch (need) {
 	case COLS_UTF8:
 	    rc = vl_conv_to_utf32(&value, src, limit);
-	    if (!w_val(wp, WMDUNICODE_AS_HEX) && FoldTo8bits(value)) {
+	    cells = vl_wcwidth(value);
+
+	    if (!w_val(wp, WMDUNICODE_AS_HEX)
+		&& cells == 1
+		&& FoldTo8bits(value)) {
 		temp[n++] = (char) value;
+	    } else if (!w_val(wp, WMDUNICODE_AS_HEX)
+		       && cells > 0
+		       && (term_is_utfXX())) {
+		/*
+		 * It does not fit into the "8bit" mapping, but is printable
+		 * (since the number of cells is nonzero).  Write the Unicode
+		 * value directly to the grid (do not try to recur back here
+		 * again).
+		 */
+		VIDEO *vp = current_video();
+		int lastcol = current_limit();
+
+		if (vtcol >= 0 && vtcol + cells <= lastcol) {
+		    /* FIXME - adapt the wrapping logic and margin marker too */
+		    VideoText(vp)[vtcol++] = (VIDEO_TEXT) value;
+		    /*
+		     * Pad multicell values with 0's which the terminal driver
+		     * has to remove.  The padding lets us update 'vtcol' in a
+		     * simple way.
+		     */
+		    while (--cells > 0)
+			VideoText(vp)[vtcol++] = 0;
+#ifdef WMDLINEWRAP
+		    if ((allow_wrap != 0)
+			&& (vtcol == lastcol)
+			&& (vtrow < allow_wrap)) {
+			vtcol = 0;
+			if (++vtrow >= 0)
+			    vscreen[vtrow]->v_flag |= VFCHG;
+			horscroll += lastcol;
+		    }
+#endif
+		} else if (vtcol >= lastcol) {
+		    VideoText(vp)[lastcol - 1] = MRK_EXTEND_RIGHT[0];
+		}
+		return rc;
 	    } else {
 		/* FIXME - some of recode's UTF-8/UTF-16 gives 6-digit codes
 		 * rather than 4 - but the low 4 digits are the same.
@@ -897,6 +953,8 @@ mk_to_vcol(WINDOW *wp, MARK mark, int expanded, int col, int adjust)
 		vl_conv_to_utf32(&value, text + i, nxt);
 		if (FoldTo8bits(value)) {
 		    adj = 1;
+		} else if (term_is_utfXX()) {
+		    adj = vl_wcwidth(value);
 		}
 	    }
 	    col += adj;
@@ -1483,6 +1541,8 @@ offs2col0(WINDOW *wp,
 		    vl_conv_to_utf32(&value, text + n, nxt);
 		    if (FoldTo8bits(value)) {
 			adj = 1;
+		    } else if (term_is_utfXX()) {
+			adj = vl_wcwidth(value);
 		    }
 		}
 		column += adj;
@@ -1551,10 +1611,12 @@ col2offs(WINDOW *wp, LINE *lp, C_NUM col)
 		int nxt = len - offset;
 		int adj = column_sizes(wp, text + offset, nxt, &used);
 
-		if ((adj == COLS_UTF8) && !w_val(wp, WMDUNICODE_AS_HEX)) {
+		if (adj == COLS_UTF8 && !w_val(wp, WMDUNICODE_AS_HEX)) {
 		    vl_conv_to_utf32(&value, text + offset, nxt);
 		    if (FoldTo8bits(value)) {
 			adj = 1;
+		    } else if (term_is_utfXX()) {
+			adj = vl_wcwidth(value);
 		    }
 		}
 		n += adj;
@@ -3178,14 +3240,18 @@ update_modeline(WINDOW *wp)
     vtputsn(wp, left_ms, term.cols);
     for (n = term.cols - strlen(left_ms) - right_len; n > 0; n--)
 	vtputc(wp, lchar, 1);
+
     vtcol = term.cols - right_len;
     if (vtcol < 0) {
 	n = -vtcol;
 	vtcol = 0;
-    } else
+    } else {
 	n = 0;
+    }
+
     if (term.cols > vtcol)
 	vtputsn(wp, right_ms + n, term.cols - vtcol);
+
     col = -nu_width(wp);
 #ifdef WMDLINEWRAP
     if (!w_val(wp, WMDLINEWRAP))
