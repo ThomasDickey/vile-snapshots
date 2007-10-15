@@ -1,7 +1,7 @@
 #
 # makefile for vile on WIN32 using Microsoft Visual C++
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.wnt,v 1.95 2007/09/16 18:25:52 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.wnt,v 1.98 2007/10/14 21:09:35 tom Exp $
 #
 #
 !include <ntwin32.mak>
@@ -212,7 +212,7 @@ HDRS = estruct.h edef.h proto.h dirstuff.h
 
 SRC = 	main.c $(SCREEN).c \
 	basic.c bind.c blist.c btree.c buffer.c charsets.c \
-	csrch.c display.c eval.c exec.c externs.c \
+	csrch.c display.c eightbit.c eval.c exec.c externs.c \
 	fences.c file.c filec.c \
 	fileio.c finderr.c glob.c globals.c history.c \
 	input.c insert.c itbuff.c isearch.c \
@@ -221,12 +221,13 @@ SRC = 	main.c $(SCREEN).c \
 	region.c search.c select.c spawn.c statevar.c \
 	tags.c tbuff.c termio.c ucrypt.c undo.c \
 	version.c window.c word.c wordmov.c map.c \
-	w32cbrd.c w32cmd.c w32misc.c w32oo.cpp w32pipe.c $(PERLSRCS) \
+	w32cbrd.c w32cmd.c w32misc.c w32oo.cpp w32pipe.c \
+	wcwidth.c $(PERLSRCS) \
 	$(OLESRCS)
 
 OBJ = 	main.obj $(SCREEN).obj \
 	basic.obj bind.obj blist.obj btree.obj buffer.obj charsets.obj \
-	csrch.obj display.obj eval.obj exec.obj externs.obj \
+	csrch.obj display.obj eightbit.obj eval.obj exec.obj externs.obj \
 	fences.obj file.obj filec.obj \
 	fileio.obj finderr.obj glob.obj globals.obj history.obj \
 	input.obj insert.obj itbuff.obj isearch.obj \
@@ -235,7 +236,8 @@ OBJ = 	main.obj $(SCREEN).obj \
 	region.obj search.obj select.obj spawn.obj statevar.obj \
 	tags.obj tbuff.obj termio.obj ucrypt.obj undo.obj \
 	version.obj window.obj word.obj wordmov.obj map.obj \
-	w32cbrd.obj w32cmd.obj w32misc.obj w32oo.obj w32pipe.obj $(PERLOBJS) \
+	w32cbrd.obj w32cmd.obj w32misc.obj w32oo.obj w32pipe.obj \
+	wcwidth.obj $(PERLOBJS) \
 	$(OLEOBJS) $(DBGOBJS) $(EXTRAOBJ) $(EXTRA)
 
 .c.obj:

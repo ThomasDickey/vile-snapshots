@@ -5,7 +5,7 @@
  * functions that adjust the top line in the window and invalidate the
  * framing, are hard.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/basic.c,v 1.152 2007/09/12 13:59:37 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/basic.c,v 1.154 2007/10/14 14:48:57 tom Exp $
  *
  */
 
@@ -1007,9 +1007,14 @@ next_column(LINE *lp, int off, int col)
 	if (bytes_at(lp, off) > 1) {
 	    UINT value;
 
-	    vl_conv_to_utf32(&value, lvalue(lp) + off, llength(lp) - off);
-	    if (!FoldTo8bits(value))
-		rc = COLS_UTF8;	/* "\uXXXX" */
+	    rc = COLS_UTF8;	/* "\uXXXX" */
+	    if (!w_val(curwp, WMDUNICODE_AS_HEX)) {
+		vl_conv_to_utf32(&value, lvalue(lp) + off, llength(lp) - off);
+		if (FoldTo8bits(value))
+		    rc = 1;
+		else if (term_is_utfXX())
+		    rc = vl_wcwidth(value);
+	    }
 	}
     }
 #endif

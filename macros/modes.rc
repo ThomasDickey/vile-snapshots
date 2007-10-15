@@ -1,4 +1,4 @@
-; $Id: modes.rc,v 1.62 2007/09/19 00:14:03 tom Exp $
+; $Id: modes.rc,v 1.64 2007/10/13 15:14:06 tom Exp $
 ; majormodes in this file are ordered alphabetically for convenience - the
 ; precedence used by vile is strictly alphabetic, counting case.  Use the
 ; before and after qualifiers to override the precedence.
@@ -149,6 +149,8 @@ define-mode cpp
 	~endif
 	cindent
 	cindent-chars   &cat ':#' $fences
+	; exhuberant ctags "--extra=q" can generate fully-qualified class::name
+	identifier-expr '[~]\?\<\w\+\>\(::[~]\?\<\w\+\>\)*'
 ~endwith
 
 ; "C#", aka "C-flat" or "C-sharp".
@@ -792,6 +794,7 @@ define-mode texi
 define-mode ti
 ~with define-submode ti
 	before "sh"
+	preamble	'^#\s*Reconstructed via infocmp'
 	mode-filename	'^\<terminfo\(\.src\)\?$'
 	suffixes	'\.\(ti\|tic\|tinfo\|terminfo\)$'
 	comment-prefix	'^\s*[:#]'

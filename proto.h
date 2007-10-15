@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.623 2007/09/27 20:25:01 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.630 2007/10/14 18:50:59 tom Exp $
  *
  */
 
@@ -268,6 +268,8 @@ extern void update_scratch (const char *name, UpBuffFunc func);
 #endif
 
 /* charsets.c */
+extern int vl_wcwidth(int code);
+
 #if OPT_MULTIBYTE
 
 extern int aligned_charset (BUFFER *bp, UCHAR *buffer, B_COUNT *length);
@@ -292,6 +294,7 @@ extern int write_bom (BUFFER *bp);
 #define write_bom(bp) /* nothing */
 
 #endif
+
 /* csrch.c */
 
 /* display.c */
@@ -375,6 +378,12 @@ extern void hard_error_catch_setup (void);
 extern void hard_error_teardown (void);
 extern int did_hard_error_occur (void);
 #endif
+
+/* eightbit.c */
+extern int vl_mb_is_8bit(int value);
+extern void vl_close_mbterm (void);
+extern void vl_init_8bit (char *wide, char *narrow);
+extern void vl_open_mbterm (void);
 
 /* statevar.c */
 extern const char * safe_getenv(const char *s);
@@ -1507,6 +1516,7 @@ extern	void	gui_update_scrollbar	(WINDOW *uwp);
 #if NO_LEAKS
 extern	void	bind_leaks (void);
 extern	void	bp_leaks (void);
+extern	void	eightbit_leaks (void);
 extern	void	ev_leaks (void);
 extern	void	fileio_leaks (void);
 extern	void	filters_leaks (void);

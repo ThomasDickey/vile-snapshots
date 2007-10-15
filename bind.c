@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.312 2007/08/31 23:18:27 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.313 2007/10/01 22:13:16 tom Exp $
  *
  */
 
@@ -506,8 +506,8 @@ unbindchar(BINDINGS * bs, int c)
 
     /* if it's a simple character, it will be in the normal[] array */
     if (!isSpecial(c)) {
-	if (bs->kb_normal[c]) {
-	    bs->kb_normal[c] = 0;
+	if (bs->kb_normal[CharOf(c)]) {
+	    bs->kb_normal[CharOf(c)] = 0;
 	    return TRUE;
 	}
 	return FALSE;
@@ -667,7 +667,7 @@ install_bind(int c, const CMDFUNC * kcmd, BINDINGS * bs)
     reset_prefix(c, kcmd, bs);
 
     if (!isSpecial(c)) {
-	bs->kb_normal[c] = TYPECAST(CMDFUNC, kcmd);
+	bs->kb_normal[CharOf(c)] = TYPECAST(CMDFUNC, kcmd);
     } else if ((kbp = kcode2kbind(bs, c)) != 0) {	/* change it in place */
 	kbp->k_cmd = kcmd;
     } else {
@@ -1881,7 +1881,7 @@ kcod2fnc(const BINDINGS * bs, int c)
 	KBIND *kp = kcode2kbind(bs, c);
 	return (kp != 0) ? kp->k_cmd : 0;
     }
-    return bs->kb_normal[c];
+    return bs->kb_normal[CharOf(c)];
 }
 
 /* fnc2kcod: translate a function pointer to a keycode */

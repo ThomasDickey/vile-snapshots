@@ -17,7 +17,7 @@
  *   "FAILED" may not be used to test an OLE return code.  Use SUCCEEDED
  *   instead.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32ole.cpp,v 1.25 2006/01/15 18:16:12 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32ole.cpp,v 1.27 2007/10/03 21:01:42 tom Exp $
  */
 
 #include "w32vile.h"
@@ -76,6 +76,28 @@ static DWORD    redirect_tid, winvile_tid;   // tid == thread id
 
 extern "C"
 {
+
+#if OPT_TRACE
+#undef TRACE
+#define Trace MyTrace
+static void
+Trace(const char *fmt, ...)
+{
+    FILE *fp = fopen("c:\\temp\\w32ole.log", "a");
+    if (fp != 0)
+    {
+        va_list ap;
+        va_start(ap, fmt);
+        vfprintf(fp, fmt, ap);
+        va_end(ap);
+        fclose(fp);
+    }
+}
+#define TRACE(params) Trace params
+#else
+#define OPT_TRACE 0
+#define TRACE(params) /* nothing */
+#endif
 
 int
 oleauto_init(OLEAUTO_OPTIONS *opts)
@@ -190,6 +212,64 @@ oleauto_exit(int code)
 
 /* ----------------------- C++ Helper Functions --------------------- */
 
+#if OPT_TRACE
+static char *visible_wcs(OLECHAR *source)
+{
+    static char *result = 0;
+    static unsigned len = 0;
+    char *target;
+    unsigned need = 0;
+    unsigned n;
+    if (source != 0)
+    {
+	for (n = 0; source[n] != 0; ++n)
+	    ;
+	need = 10 * (n + 2);
+	if (need > len)
+	{
+	    len = need;
+            result = (char *) realloc(result, need * sizeof(OLECHAR));
+	}
+	for (n = 0, target = result; source[n] != 0; ++n)
+	{
+	    switch (source[n])
+	    {
+	    case ' ':
+		strcpy(target, "\\s");
+		break;
+	    case '\\':
+		strcpy(target, "\\\\");
+		break;
+	    case '\n':
+		strcpy(target, "\\n");
+		break;
+	    case '\r':
+		strcpy(target, "\\r");
+		break;
+	    case '\t':
+		strcpy(target, "\\t");
+		break;
+	    case '\f':
+		strcpy(target, "\\f");
+		break;
+	    default:
+		if (source[n] >= ' '&& source[n] < 256)
+		{
+		    sprintf(target, "%c", (char) source[n]);
+		}
+		else
+		{
+		    sprintf(target, "\\%03o", (unsigned char) source[n]);
+		}
+		break;
+	    }
+	    target += strlen(target);
+	}
+    }
+    return result;
+}
+#endif
+
 /*
  * Quick & Dirty ANSI/Unicode conversion routines.  These routines use a
  * dynamic buffer to hold the converted string so it may be any arbitrary
@@ -199,13 +279,14 @@ oleauto_exit(int code)
  *
  */
 #if (! defined(_UNICODE) || defined(UNICODE))
+
 static char *
 ConvertToAnsi(OLECHAR *szW)
 {
     size_t len;
 
     len = wcstombs(NULL, szW, 1) + 1;
-    if (len > ansibuf_len)
+    if ((len + 1) > ansibuf_len)
     {
         if (ansibuf)
             free(ansibuf);
@@ -213,7 +294,15 @@ ConvertToAnsi(OLECHAR *szW)
         if ((ansibuf = typeallocn(char, ansibuf_len)) == NULL)
             return (ansibuf);  /* We're gonna' die */
     }
-    wcstombs(ansibuf, szW, len);
+    if (len > 0)
+    {
+	wcstombs(ansibuf, szW, len);
+    }
+    else
+    {
+	*ansibuf = '\0';
+    }
+    TRACE(("ConvertToAnsi %d->%d:%s\n", len, strlen(ansibuf), ansibuf));
     return (ansibuf);
 }
 
@@ -223,6 +312,7 @@ ConvertToUnicode(char *szA)
     size_t len;
 
     len = strlen(szA) + 1;
+    TRACE(("ConvertToUnicode %d:%s\n", strlen(szA), szA));
     if (len > olebuf_len)
     {
         if (olebuf)
@@ -232,6 +322,7 @@ ConvertToUnicode(char *szA)
             return (olebuf);  /* We're gonna' die */
     }
     mbstowcs(olebuf, szA, len);
+    TRACE(("Result %s\n", visible_wcs(olebuf)));
     return (olebuf);
 }
 #endif
@@ -592,6 +683,7 @@ vile_oa::VileKeys(BSTR keys)
     HRESULT hr   = NOERROR;
     char    *msg = FROM_OLE_STRING(keys);
 
+    TRACE(("VileKeys %d bytes:\n%s\n", strlen(msg), msg));
     while (*msg)
     {
         if (! PostMessage(m_hwnd, WM_CHAR, *msg, 0))

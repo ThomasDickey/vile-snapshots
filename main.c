@@ -22,7 +22,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.603 2007/09/27 22:35:10 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.608 2007/10/14 18:53:31 tom Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -255,7 +255,7 @@ MainProgram(int argc, char *argv[])
 	 * can be found by stripping the "UTF-8" string, and also that both
 	 * locales are installed.
 	 */
-#if DISP_TERMCAP || DISP_X11
+#if DISP_TERMCAP || DISP_CURSES || DISP_X11
 	if (((env = getenv("LC_ALL")) != 0 && *env != 0) ||
 	    ((env = getenv("LC_CTYPE")) != 0 && *env != 0) ||
 	    ((env = getenv("LANG")) != 0 && *env != 0)) {
@@ -268,15 +268,21 @@ MainProgram(int argc, char *argv[])
 		 || (utf = strstr(env, ".utf8")) != 0)
 		&& (tmp = strmalloc(env)) != 0) {
 		tmp[utf - env] = EOS;
-		utf8_locale = TRUE;
-#if DISP_TERMCAP && OPT_ICONV_FUNCS
-		tcap_setup_locale(env, tmp);
-#endif
+		vl_init_8bit(env, tmp);
 		env = tmp;
+	    } else {
+		vl_init_8bit("8bit", "8bit");
 	    }
 	} else {
+	    vl_init_8bit("8bit", "8bit");
 	    env = "";
 	}
+#elif DISP_NTWIN || DISP_NTCONS
+#ifdef UNICODE
+	vl_init_8bit("utf8", "8bit");
+#else
+	vl_init_8bit("8bit", "8bit");
+#endif
 #endif
 	/* set locale according to environment vars */
 	vl_locale = setlocale(LC_ALL, env);
@@ -2312,6 +2318,9 @@ quit(int f, int n GCC_UNUSED)
 	tb_leaks();
 
 	term.close();
+#if OPT_LOCALE
+	eightbit_leaks();
+#endif
 	vt_leaks();
 
 	/* whatever is left over must be a leak */

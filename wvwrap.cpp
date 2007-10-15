@@ -12,7 +12,7 @@
  * Note:  A great deal of the code included in this file is copied
  * (almost verbatim) from other vile modules.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/wvwrap.cpp,v 1.14 2007/05/28 15:24:04 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/wvwrap.cpp,v 1.15 2007/10/03 00:09:31 tom Exp $
  */
 
 #include "w32vile.h"
@@ -36,6 +36,7 @@ static size_t   olebuf_len;    /* scaled in wchar_t */
 static OLECHAR  *olebuf;
 
 #ifdef OPT_TRACE
+#define Trace MyTrace
 static void
 Trace(const char *fmt, ...)
 {
@@ -94,7 +95,6 @@ nomem(void)
  * called a second time.  So make sure that the converted string is
  * used/copied before the conversion routine is called again.
  *
- *
  * from w32ole.cpp
  */
 static OLECHAR *
@@ -147,21 +147,34 @@ escape_quotes(const char *src)
     bool escape = (strcspn(src, must_quote) != strlen(src));
     while (*src != '\0')
     {
-        if (*src == SQUOTE)
+        UCHAR ch = (UCHAR) *src;
+        // only send ASCII, do not rely on the runtime to guess how to handle
+        // non-ASCII characters.
+        if (ch > 127)
         {
-            *dst++ = SQUOTE;
-            *dst++ = SQUOTE;
-            *dst++ = SQUOTE;
+            sprintf(dst, "\026x%02x", ch);
+            dst += 4;
+            src += 1;
+            continue;
         }
-        else if (strchr(must_quote, *src) != 0)
+        else
         {
-            *dst++ = '\\';
+            if (*src == SQUOTE)
+            {
+                *dst++ = SQUOTE;
+                *dst++ = SQUOTE;
+                *dst++ = SQUOTE;
+            }
+            else if (strchr(must_quote, *src) != 0)
+            {
+                *dst++ = '\\';
+            }
+            else if (*src == '\\' && escape)
+            {
+                *dst++ = '\\';
+            }
+            *dst++ = *src++;
         }
-        else if (*src == '\\' && escape)
-        {
-            *dst++ = '\\';
-        }
-        *dst++ = *src++;
     }
     *dst = '\0';
 

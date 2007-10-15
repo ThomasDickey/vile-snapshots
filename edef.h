@@ -6,7 +6,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.331 2007/09/16 21:01:45 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.332 2007/10/14 16:01:55 tom Exp $
  */
 
 #ifndef VILE_EDEF_H
@@ -353,6 +353,7 @@ decl_uninit( size_t fflinelen );	/* fflinebuf length */
 #if OPT_LOCALE
 decl_uninit( char *vl_encoding );
 decl_uninit( char *vl_locale );
+decl_init( const char * utf8_locale, 0 );
 #else
 #define vl_encoding "8bit"
 #define vl_locale "built-in"
@@ -496,8 +497,6 @@ extern	TERM	term;			/* Terminal information.	*/
 extern	TERM	dumb_term;
 #endif
 extern	TERM	null_term;
-
-decl_init( int utf8_locale, FALSE );
 
 #if DISP_BORLAND || DISP_VIO
 decl_init( char *current_res_name, "default" );

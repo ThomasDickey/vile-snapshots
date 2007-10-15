@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.644 2007/09/27 19:56:44 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.647 2007/10/14 21:09:05 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -1059,7 +1059,7 @@ extern void endofDisplay(void);
 #define N_chars    (1 << MinCBits)	/* must be a power-of-2		*/
 #define HIGHBIT    (1 << 7)		/* the meta bit			*/
 
-#define FoldTo8bits(value) (value < 256 && isPrint(value))
+#define FoldTo8bits(value) vl_mb_is_8bit(value)
 
 #define COLS_CTRL  2			/* columns for "^X"		*/
 #define COLS_8BIT  4			/* columns for "\xXX"		*/
@@ -2458,6 +2458,8 @@ typedef struct	{
 	void	(*mclose) (void);	/* mouse close			*/
 	void	(*mevent) (void);	/* mouse event			*/
 }	TERM;
+
+#define term_is_utfXX()         ((int) term.encoding >= enc_UTF8)
 
 #if OPT_MULTIBYTE && (DISP_TERMCAP || DISP_X11 || (DISP_NTWIN && defined(UNICODE)))
 typedef USHORT VIDEO_TEXT;

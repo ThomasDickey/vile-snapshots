@@ -1,4 +1,4 @@
-MANIFEST for vile, version v9_5r4
+MANIFEST for vile, version v9_5r5
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 CHANGES                         Change-log for VILE
@@ -33,7 +33,6 @@ cmdtbl                          used by 'mktbls' to generate VILE's command-tabl
 config.guess                    guess configuration
 config.sub                      substitute configuration
 config_h.in                     template for config.h
-configure                       Configuration script for UNIX
 configure.in                    used by 'autoconf' to generate 'configure'
 csrch.c                         current-line character-scanning commands
 curses.c                        terminal driver using curses
@@ -43,6 +42,7 @@ display.c                       message & screen formatting & display
 djhandl.c                       CTL/C & interrupt handling for DJGCC
 dumbterm.c                      DUMB terminal driver
 edef.h                          global variable definitions
+eightbit.c                      character translation for "8bit" mode
 estruct.h                       master include/struct definitions
 eval.c                          expression-evaluation
 exec.c                          command (':', macros) execution
@@ -140,6 +140,8 @@ w32reg.c                        Winvile OLE registration code
 w32reg.h                        interface of w32reg
 w32vile.h                       includes <windows.h>, but adds pragmas to stifle the -W4 warnings.
 watch.c                         watch file-descriptors & timers
+wcwidth.c                       wcwidth, from xterm
+wcwidth.h                       wcwidth, from xterm
 window.c                        window-management functions
 winvile.h                       definitions for winvile
 winvile.odl                     interface description for Winvile OLE
@@ -301,7 +303,6 @@ filters/rubyfilt.c              syntax filter for Ruby
 filters/sccs.key                keywords for SCCS syntax filter
 filters/sccsfilt.l              syntax filter for SCCS files.
 filters/sed-filt.c              highlighting filter for sed-scripts
-filters/sh-filt.l               a sh/ksh/csh syntax filter for vile
 filters/sh.key                  keywords for "sh" syntax filter
 filters/sml-filt.l              filter for Standard ML
 filters/sml.key                 keywords for Standard ML
