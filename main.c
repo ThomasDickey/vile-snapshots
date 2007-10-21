@@ -22,7 +22,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.608 2007/10/14 18:53:31 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.609 2007/10/17 00:10:06 tom Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -2325,6 +2325,7 @@ quit(int f, int n GCC_UNUSED)
 
 	/* whatever is left over must be a leak */
 	show_alloc();
+	show_elapsed();
 	trace_leaks();
     }
 #endif

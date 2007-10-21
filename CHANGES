@@ -23,6 +23,13 @@ Changes for vile 9.6 (released ??? ??? ?? ????)
 	    encoding.
 	  + regular expressions are not wide-character aware.
 	  + external syntax filters do not handle BOM or UTF-16, UTF32.
+	+ add docbookmode
+	+ improve 9.5m/9.5q check for file ownership, adding a warning message
+	  for files which are ignored (report by Chris Green).
+	+ change default for --with-locale configure option to mesh with
+	  --disable-extensions.
+	+ improve paste-performance in winvile by passing whole-line chunks
+	  to the insert-function.
 	+ improved cppmode's identifier-expr (report by Gerry Fredette).
 	+ correct order of evaluation from 9.4w when setting record-separator,
 	  which was setting "crlf" ending temporarily when computing the buffer

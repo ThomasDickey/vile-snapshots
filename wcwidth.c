@@ -1,4 +1,4 @@
-/* $Id: wcwidth.c,v 1.23 2007/10/14 16:29:12 tom Exp $ */
+/* $Id: wcwidth.c,v 1.25 2007/10/17 22:01:58 tom Exp $ */
 /* @XTermId: wcwidth.c,v 1.21 2007/06/13 00:14:29 tom Exp @ */
 
 /*
@@ -68,7 +68,9 @@
 
 #if OPT_LOCALE
 #include <locale.h>
-#include <wchar.h>
+#ifdef HAVE_WCWIDTH
+#include <wchar.h>		/* prototype for wcwidth() */
+#endif
 #endif
 
 struct interval {
@@ -354,7 +356,7 @@ vl_wcwidth(int code)
 	setlocale(LC_CTYPE, vl_locale);
     }
 #else
-    result = mk_wcwidth(code);
+    result = mk_wcwidth((wchar_t) code);
 #endif
     return result;
 }

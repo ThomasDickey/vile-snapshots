@@ -1,8 +1,8 @@
-%x HTMLNOTE HTMLCODE HTMLQUOT JS_NOTE JS_CODE JSP_MODE
+%x HTMLNOTE HTMLCODE HTMLQUO1 HTMLQUO2 JS_NOTE JS_CODE JSP_MODE
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/htmlfilt.l,v 1.40 2007/05/08 23:38:55 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/htmlfilt.l,v 1.44 2007/10/21 16:14:47 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of HTML input
  * text.
@@ -14,18 +14,20 @@
 #include <fltstack.h>
 #undef YY_NO_UNPUT
 
-DefineOptFilter("html", "j");
+DefineOptFilter("html", "jx");
 
 static char *Action_attr;
 static char *Comment_attr;
+static char *Error_attr;
 static char *Ident_attr;
 static char *Keyword_attr;
 static char *Number_attr;
 static char *String_attr;
 
+static int is_first;
 static int next_state;
 
-static void html_command(char *text);
+static void html_command(char *text, int first);
 static void may_resume_html(char *text);
 
 %}
@@ -35,7 +37,7 @@ SPACE		[ \t]
 INTEGER		[-+]?([[:digit:]]+)
 REAL		[-+]?([[:digit:]]*\.[[:digit:]]+)([eE][+-]?[[:digit:]]+)?
 HEXNUM		"#"[xX]?[[:xdigit:]]+
-IDENT		[[:alpha:]_][[:alnum:]_-]*
+IDENT		([!?])?[[:alpha:]_][[:alnum:]_-]*
 
 STRING		\"([^"])*\"
 
@@ -60,10 +62,10 @@ CHR_REF		&({IDENT}|{HEXNUM});
 <JSP_MODE>[\n]		|
 <JSP_MODE>.		{ flt_bfr_append(yytext, yyleng); }
 
-<INITIAL>"<"		{ WriteToken(Keyword_attr); new_state(HTMLCODE); }
+<INITIAL>"<"		{ WriteToken(Keyword_attr); new_state(HTMLCODE); is_first = 1; }
 <HTMLCODE>">"		{ WriteToken(Keyword_attr); new_state(next_state); }
 
-<HTMLCODE>(\/)?{IDENT}	{ html_command(yytext); }
+<HTMLCODE>(\/)?{IDENT}	{ html_command(yytext, is_first); is_first = 0; }
 
 <INITIAL>"<!--"		{ BeginQuote(HTMLNOTE, Comment_attr); }
 <HTMLNOTE>[\n]		{ flt_bfr_append(yytext, yyleng); }
@@ -74,11 +76,17 @@ CHR_REF		&({IDENT}|{HEXNUM});
 <INITIAL,HTMLCODE>{URI_REF}	|
 <INITIAL,HTMLCODE>{CHR_REF}	{ WriteToken(Number_attr); }
 
-<HTMLCODE>["]		{ BeginQuote(HTMLQUOT, String_attr); }
-<HTMLQUOT>{URI_REF}	|
-<HTMLQUOT>{CHR_REF}	{ flt_bfr_embed(yytext, yyleng, Number_attr); }
-<HTMLQUOT>[^"]		{ flt_bfr_append(yytext, yyleng); }
-<HTMLQUOT>["]		{ FinishQuote(HTMLCODE); }
+<HTMLCODE>[']		{ BeginQuote(HTMLQUO1, String_attr); }
+<HTMLQUO1>{URI_REF}	|
+<HTMLQUO1>{CHR_REF}	{ flt_bfr_embed(yytext, yyleng, Number_attr); }
+<HTMLQUO1>[^']		{ flt_bfr_append(yytext, yyleng); }
+<HTMLQUO1>[']		{ FinishQuote(HTMLCODE); }
+
+<HTMLCODE>["]		{ BeginQuote(HTMLQUO2, String_attr); }
+<HTMLQUO2>{URI_REF}	|
+<HTMLQUO2>{CHR_REF}	{ flt_bfr_embed(yytext, yyleng, Number_attr); }
+<HTMLQUO2>[^"]		{ flt_bfr_append(yytext, yyleng); }
+<HTMLQUO2>["]		{ FinishQuote(HTMLCODE); }
 
 <HTMLCODE>{REAL}	|
 <HTMLCODE>{INTEGER}	|
@@ -120,17 +128,29 @@ CHR_REF		&({IDENT}|{HEXNUM});
 %%
 
 static void
-html_command(char *text)
+html_command(char *text, int first)
 {
     int ending = (text[0] == '/');
-    char *temp = lowercase_of(ending ? text + 1 : text);
-    int change = !strcmp(temp, "server")
-	      || !strcmp(temp, "script");
+    char *temp = (ending ? text + 1 : text);
+    int change = 0;
 
-    if (change) {
-	set_symbol_table(filter_def.filter_name);
+    /*
+     * XML is generally case-sensitive.
+     */
+    if (FltOptions('x')) {
+	char *attr = keyword_attr(temp);
+	if (first && (attr == 0 || *attr == 0))
+	    attr = Error_attr;
+	flt_puts(text, strlen(text), attr);
+    } else {
+	temp = lowercase_of(temp);
+	change = !strcmp(temp, "server")
+	      || !strcmp(temp, "script");
+	if (change) {
+	    set_symbol_table(filter_def.filter_name);
+	}
+	flt_puts(text, strlen(text), ci_keyword_attr(temp));
     }
-    flt_puts(text, strlen(text), ci_keyword_attr(temp));
 
     if (change) {
      	if (ending) {
@@ -161,7 +181,7 @@ may_resume_html(char *text)
 	next++;
     save = *next;
     *next = 0;
-    html_command(left);
+    html_command(left, 1);
     *next = save;
     flt_puts(next, strlen(next), Keyword_attr);
     new_state(next_state);
@@ -180,6 +200,7 @@ do_filter(FILE *inputs)
 
     Action_attr  = class_attr(NAME_ACTION);
     Comment_attr = class_attr(NAME_COMMENT);
+    Error_attr   = class_attr(NAME_ERROR);
     Ident_attr   = class_attr(NAME_IDENT);
     Keyword_attr = class_attr(NAME_KEYWORD);
     Number_attr  = class_attr(NAME_NUMBER);

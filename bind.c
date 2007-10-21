@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.313 2007/10/01 22:13:16 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.314 2007/10/21 13:46:16 tom Exp $
  *
  */
 
@@ -1517,11 +1517,23 @@ cfg_locate(char *fname, UINT which)
     char *sp;
     UINT mode = (which & (FL_EXECABLE | FL_WRITEABLE | FL_READABLE));
 
+#define FL_BIT(name) ((which & FL_##name) ? " " #name : "")
+    TRACE((T_CALLED "cfg_locate('%s',%s%s%s%s%s%s%s%s%s)\n", NonNull(fname),
+	   FL_BIT(EXECABLE),
+	   FL_BIT(WRITEABLE),
+	   FL_BIT(READABLE),
+	   FL_BIT(CDIR),
+	   FL_BIT(HOME),
+	   FL_BIT(EXECDIR),
+	   FL_BIT(STARTPATH),
+	   FL_BIT(PATH),
+	   FL_BIT(LIBDIR)));
+
     /* take care of special cases */
     if (!fname || !fname[0] || isSpace(fname[0]))
-	return NULL;
+	returnString(NULL);
     else if (isShellOrPipe(fname))
-	return fname;
+	returnString(fname);
 
     /* look in the current directory */
     if (which & FL_CDIR) {
@@ -1529,13 +1541,15 @@ cfg_locate(char *fname, UINT which)
 #if SYS_UNIX
 	    int success = FALSE;
 
-	    if (mode & FL_EXECABLE) {
+	    if ((mode & FL_EXECABLE) || (which == LOCATE_SOURCE)) {
 		char *dname = malloc(NFILEN + strlen(fname) + 10);
 		if (dname != 0) {
 		    sprintf(dname, "%s%c..", fname, vl_pathsep);
 		    lengthen_path(dname);
 		    if (is_our_file(dname) && is_our_file(fname)) {
 			success = TRUE;
+		    } else {
+			mlforce("[Skipping '%s' (insecure permissions)]", fname);
 		    }
 		    free(dname);
 		}
@@ -1544,35 +1558,35 @@ cfg_locate(char *fname, UINT which)
 	    }
 	    if (success)
 #endif
-		return (fname);
+		returnString(fname);
 	}
     }
 
     if ((which & FL_HOME)	/* look in the home directory */
 	&&((sp = locate_fname(home_dir(), fname, mode)) != 0))
-	return sp;
+	returnString(sp);
 
     if ((which & FL_EXECDIR)	/* look in vile's bin directory */
 	&&((sp = locate_fname(exec_pathname, fname, mode)) != 0))
-	return sp;
+	returnString(sp);
 
     if ((which & FL_STARTPATH)	/* look along "VILE_STARTUP_PATH" */
 	&&(sp = locate_file_in_list(startup_path, fname, mode)) != 0)
-	return sp;
+	returnString(sp);
 
     if (which & FL_PATH) {	/* look along "PATH" */
 #if OPT_PATHLOOKUP
 	if ((sp = locate_file_in_list(PATH_value(), fname, mode)) != 0)
-	    return sp;
+	    returnString(sp);
 #endif /* OPT_PATHLOOKUP */
 
     }
 
     if ((which & FL_LIBDIR)	/* look along "VILE_LIBDIR_PATH" */
 	&&(sp = locate_file_in_list(libdir_path, fname, mode)) != 0)
-	return sp;
+	returnString(sp);
 
-    return NULL;
+    returnString(NULL);
 }
 
 #if OPT_SHOW_WHICH

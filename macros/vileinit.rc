@@ -1,4 +1,4 @@
-; $Header: /users/source/archives/vile.vcs/macros/RCS/vileinit.rc,v 1.36 2007/05/12 14:36:18 tom Exp $
+; $Header: /users/source/archives/vile.vcs/macros/RCS/vileinit.rc,v 1.37 2007/10/15 21:01:07 tom Exp $
 ; This is a sample which may be installed as .vilerc (or vile.rc for non-Unix
 ; systems), or source'd as-is to provide quick initialization of some useful
 ; macros and settings.
@@ -138,7 +138,7 @@ store-procedure ToggleTabs "Toggle tabs 4/8"
 		setl sw=4
 	~endif
 	write-message &cat "Set tabs to " $ts
-	~endif
+~endif
 ~endm
 map #3 :ToggleTabs
 

@@ -1,4 +1,4 @@
-MANIFEST for vile, version v9_5r5
+MANIFEST for vile, version v9_5r6
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 CHANGES                         Change-log for VILE
@@ -33,6 +33,7 @@ cmdtbl                          used by 'mktbls' to generate VILE's command-tabl
 config.guess                    guess configuration
 config.sub                      substitute configuration
 config_h.in                     template for config.h
+configure                       Configuration script for UNIX
 configure.in                    used by 'autoconf' to generate 'configure'
 csrch.c                         current-line character-scanning commands
 curses.c                        terminal driver using curses
@@ -206,6 +207,7 @@ filters/def-filt.l              syntax filter for Windows ".def" files
 filters/def.key                 keywords for Windows ".def" files
 filters/diff.key                keywords for 'diff' syntax filter
 filters/difffilt.l              syntax filter for 'diff' output
+filters/docbook.key             keywords for docbook
 filters/ecl-filt.l              syntax filter for ECLiPSe
 filters/ecl.key                 keywords for ecl-filt.l
 filters/ecrypt.c                uemacs-derived encryption
@@ -303,6 +305,7 @@ filters/rubyfilt.c              syntax filter for Ruby
 filters/sccs.key                keywords for SCCS syntax filter
 filters/sccsfilt.l              syntax filter for SCCS files.
 filters/sed-filt.c              highlighting filter for sed-scripts
+filters/sh-filt.l               a sh/ksh/csh syntax filter for vile
 filters/sh.key                  keywords for "sh" syntax filter
 filters/sml-filt.l              filter for Standard ML
 filters/sml.key                 keywords for Standard ML

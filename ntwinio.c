@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 screen API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.177 2007/10/12 00:44:45 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.178 2007/10/15 21:12:20 tom Exp $
  * Written by T.E.Dickey for vile (october 1997).
  * -- improvements by Clark Morgan (see w32cbrd.c, w32pipe.c).
  */
@@ -108,7 +108,7 @@ static int mouse_captured = 0;
 static int nCharWidth = 8;
 static int nLineHeight = 10;
 static int vile_resizing = FALSE;	/* rely on repaint_window if true */
-static int vile_selecting = FALSE;	/* toggle between cut and paste */
+static int vile_selecting = FALSE;	/* true when using mouse to select */
 static int icursor;		/* T -> enable insertion cursor   */
 static int icursor_style;	/* 1 -> cmdmode = block,
 				 *      insmode = vertical bar
@@ -2902,6 +2902,7 @@ ntgetch(void)
     MARK lmbdn_mark;		/* left mouse button down here */
     MARK last_dot = nullmark;	/* remember where dot was before selection */
     WINDOW *last_win = 0;	/* remember which window dot was in */
+    int selecting = FALSE;	/* toggle between cut and paste */
     int result = -1;
     KEY_EVENT_RECORD ker;
     MSG msg;
@@ -2913,7 +2914,7 @@ ntgetch(void)
     int milli_ac, orig_milli_ac;
 #endif
 
-    vile_selecting = FALSE;	/* toggle between cut and paste */
+    selecting = FALSE;		/* toggle between cut and paste */
     if (saveCount > 0) {
 	saveCount--;
 	return savedChar;
@@ -3020,7 +3021,7 @@ ntgetch(void)
 	    if (msg.hwnd == cur_win->text_hwnd) {
 		/* Clear current selection, a la notepad. */
 		sel_release();
-		vile_selecting = FALSE;
+		selecting = FALSE;
 		last_dot = DOT;
 		last_win = curwp;
 		/* Allow click to change window focus. */
@@ -3040,11 +3041,11 @@ ntgetch(void)
 		     */
 		    if (first.y >= term.rows - 1 - 1) {
 			fshow_cursor();
-			sel_pending = buttondown = FALSE;
+			vile_selecting = sel_pending = buttondown = FALSE;
 			break;
 		    }
 
-		    sel_pending = buttondown = TRUE;
+		    vile_selecting = sel_pending = buttondown = TRUE;
 		    SetCursor((onmode) ? wdwsize_cursor : selection_cursor);
 
 		    if (onmode) {
@@ -3086,7 +3087,7 @@ ntgetch(void)
 	    }
 	    if (msg.hwnd == cur_win->text_hwnd) {
 		fhide_cursor();
-		sel_pending = FALSE;
+		vile_selecting = sel_pending = FALSE;
 		thisclick = GetTickCount();
 		TRACE(("CLICK %d/%d\n", lastclick, thisclick));
 		if (thisclick - lastclick < clicktime) {
@@ -3100,11 +3101,11 @@ ntgetch(void)
 		switch (clicks) {
 		case 1:
 		    on_double_click();
-		    vile_selecting = TRUE;
+		    selecting = TRUE;
 		    break;
 		case 2:
 		    on_triple_click();
-		    vile_selecting = TRUE;
+		    selecting = TRUE;
 		    break;
 		}
 
@@ -3130,7 +3131,7 @@ ntgetch(void)
 
 			sel_yank(0);
 		    }
-		    if (vile_selecting) {
+		    if (selecting) {
 			if (win2index(last_win) >= 0) {
 			    set_curwp(last_win);
 			    restore_dot(last_dot);
@@ -3202,10 +3203,10 @@ ntgetch(void)
 		if (enable_popup) {
 		    invoke_popup_menu(msg);
 		} else {
-		    if (vile_selecting) {
+		    if (selecting) {
 			sel_yank(0);
 			cbrdcpy_unnamed(FALSE, 1);
-			vile_selecting = FALSE;
+			selecting = FALSE;
 			sel_release();
 		    } else {
 			mayneedundo();
@@ -3258,7 +3259,7 @@ ntgetch(void)
 			      &latest,
 			      &lmbdn_mark,
 			      that_wp);
-		    vile_selecting = !sel_pending;
+		    selecting = !sel_pending;
 		} else {
 		    DispatchMessage(&msg);
 		}

@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.458 2007/10/14 14:54:44 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.459 2007/10/15 20:26:15 tom Exp $
  *
  */
 
@@ -3530,6 +3530,8 @@ update(int force /* force update past type ahead? */ )
     int screenrow, screencol;
     int updated = FALSE;
 
+    TRACE((T_CALLED "update(%d)\n", force));
+
     /* Get row and column prior to doing the update in case we are
      * reading the message line.
      */
@@ -3537,7 +3539,7 @@ update(int force /* force update past type ahead? */ )
     origcol = ttcol;
 
     if (clhide || (valid_window(curwp) && !is_visible_window(curwp)))
-	return TRUE;
+	returnCode(TRUE);
 
     /*
      * If not initialized, just return.
@@ -3545,7 +3547,7 @@ update(int force /* force update past type ahead? */ )
     if (!valid_buffer(curbp)
 	|| !vscreen
 	|| !valid_window(curwp))
-	return FALSE;
+	returnCode(FALSE);
 
     /*
      * Don't try to update if we got called via a read-hook on a window
@@ -3554,13 +3556,13 @@ update(int force /* force update past type ahead? */ )
     if (!valid_buffer(curwp->w_bufp)
 	|| curwp->w_bufp->b_nwnd == 0
 	|| curwp->w_ntrows < 1)
-	return FALSE;
+	returnCode(FALSE);
     if (TypeAhead(force))
-	return SORTOFTRUE;
+	returnCode(SORTOFTRUE);
 
     /* don't display during keystroke replay */
     if (!force && kbd_replaying(TRUE) && (get_recorded_char(FALSE) != -1))
-	return SORTOFTRUE;
+	returnCode(SORTOFTRUE);
 
     beginDisplay();
 
@@ -3713,7 +3715,7 @@ update(int force /* force update past type ahead? */ )
 
     while (allow_working_msg() && (chg_width && chg_height))
 	newscreensize(chg_height, chg_width);
-    return (TRUE);
+    returnCode(TRUE);
 }
 
 /*
