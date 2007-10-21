@@ -11,7 +11,7 @@
  *    Subsequent copies do not show this cursor.  On an NT host, this
  *    phenomenon does not occur.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32cbrd.c,v 1.29 2007/09/16 17:52:15 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32cbrd.c,v 1.30 2007/10/19 23:40:56 tom Exp $
  */
 
 #include "estruct.h"
@@ -563,6 +563,7 @@ cbrdpaste(int f, int n)
     int      i, rc, suppressnl;
     UINT     nbyte, nline;
 
+    TRACE((T_CALLED "cbrdpaste\n"));
     for (rc = i = 0; i < 8 && (! rc); i++)
     {
         /* Try to open clipboard */
@@ -582,7 +583,7 @@ cbrdpaste(int f, int n)
         else
             rc = FALSE;
         mlforce(CLIPBOARD_BUSY);
-        return (rc);
+        returnCode(rc);
     }
     if ((hClipMem = GetClipboardData(CF_TEXT)) == NULL)
     {
@@ -595,7 +596,7 @@ cbrdpaste(int f, int n)
         else
             rc = FALSE;
         mlforce("[Clipboard empty or not TEXT data]");
-        return (rc);
+        returnCode(rc);
     }
     if ((data = GlobalLock(hClipMem)) == NULL)
     {
@@ -608,14 +609,14 @@ cbrdpaste(int f, int n)
         else
             rc = FALSE;
         mlforce("[Can't lock clipboard memory]");
-        return (rc);
+        returnCode(rc);
     }
     if (reading_msg_line)
     {
         rc = paste_to_minibuffer(data);
         GlobalUnlock(hClipMem);
         CloseClipboard();
-        return (rc);
+        returnCode(rc);
     }
     mlwrite(CLIPBOARD_COPYING);
     nbyte = nline = 0;
@@ -645,17 +646,29 @@ cbrdpaste(int f, int n)
         }
         else if (c == '\r' && *(data + 1) == '\n')
         {
-
             /* Clipboard end of line delimiter is crlf.  Ignore cr. */
-
             ;
         }
-        else if (c > _TILDE_)
+        else if (!b_is_utfXX(curbp) && (c > _TILDE_))
             rc = map_and_insert(c, &nbyte);
         else
         {
-            nbyte++;
-            rc = lins_bytes(1, (int) c);
+            int chunk;
+            int c2;
+            int base = DOT.o;
+
+            for (chunk = 0; data[chunk] != 0; ++chunk) {
+                if ((c2 = data[chunk]) == '\n'
+                    || (c2 == '\r' && data[chunk + 1] == '\n')
+                    || !b_is_utfXX(curbp) && (c > _TILDE_))
+                break;
+            }
+            rc = lins_bytes(chunk, (int) c);
+            if (!rc)
+                break;
+            nbyte += chunk;
+            memcpy(lvalue(DOT.l) + base, data, chunk);
+            data += (chunk - 1);
         }
         data++;
     }
@@ -691,7 +704,7 @@ cbrdpaste(int f, int n)
             DOT.l = lback(DOT.l);             /* This is a mystery. */
         report_cbrdstats(nbyte, nline, TRUE);
     }
-    return (rc);
+    returnCode(rc);
 }
 
 

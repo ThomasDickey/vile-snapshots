@@ -1,4 +1,4 @@
-; $Id: modes.rc,v 1.64 2007/10/13 15:14:06 tom Exp $
+; $Id: modes.rc,v 1.65 2007/10/21 15:16:18 tom Exp $
 ; majormodes in this file are ordered alphabetically for convenience - the
 ; precedence used by vile is strictly alphabetic, counting case.  Use the
 ; before and after qualifiers to override the precedence.
@@ -264,6 +264,16 @@ define-mode diff
 	suffixes	'\.\(patch\|dif\|diff\|diffs\|rej\)$'
 	mode-filename	'^![[:file:]]*diff.*'
 	pre '^\<diff\>'
+~endwith
+
+define-mode docbook
+~with define-submode docbook
+	before xml
+	suffixes	'\.\(docbook\)$'
+	pre		'^\s*<?xml\s.*DOCTYPE.*DocBook'
+	fence-pairs	'<>()[]{}'
+	comment-prefix	'^\s*--'
+	comments	'^\s*$'
 ~endwith
 
 ; ECLiPSe (a dialect of Prolog)

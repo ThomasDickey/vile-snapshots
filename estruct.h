@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.647 2007/10/14 21:09:05 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.650 2007/10/21 13:44:48 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -752,6 +752,10 @@
 #define	OPT_HEAPSIZE		0  /* track heap usage */
 #define OPT_DEBUGMACROS		0  /* let $debug control macro tracing */
 
+#ifndef OPT_ELAPSED
+#define OPT_ELAPSED		0  /* turn on timing of traced calls */
+#endif
+
 #ifndef OPT_TRACE
 #define OPT_TRACE		0  /* turn on debug/trace (link with trace.o) */
 #endif
@@ -1313,12 +1317,12 @@ typedef enum {
 /* These are the chief ways we use the cfg_locate options: */
 
 #if SYS_MSDOS || SYS_OS2 || SYS_WINNT
-#define LOCATE_SOURCE FL_ANYWHERE | FL_READABLE
+#define LOCATE_SOURCE (FL_READABLE | FL_ANYWHERE)
 #else
-#define LOCATE_SOURCE FL_CDIR | FL_HOME | FL_STARTPATH | FL_READABLE
+#define LOCATE_SOURCE (FL_READABLE | FL_CDIR | FL_HOME | FL_STARTPATH)
 #endif
 
-#define LOCATE_EXEC   FL_PATH | FL_LIBDIR | FL_EXECABLE
+#define LOCATE_EXEC   (FL_PATH | FL_LIBDIR | FL_EXECABLE)
 
 /* definitions for name-completion */
 #define	NAMEC		name_cmpl /* char for forcing name-completion */
@@ -2959,6 +2963,12 @@ extern void ExitProgram(int code);
 
 #ifndef init_alloc
 #define init_alloc(s,n) /* nothing */
+#endif
+
+#if OPT_ELAPSED && OPT_TRACE
+extern void show_elapsed(void);
+#else
+#define show_elapsed() /* nothing */
 #endif
 
 /* extra checking if we're tracing */

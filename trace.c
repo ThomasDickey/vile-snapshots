@@ -1,13 +1,44 @@
 /*
  * debugging support -- tom dickey.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.67 2007/10/06 16:17:59 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.74 2007/10/18 22:06:26 tom Exp $
  *
  */
 
-#include "estruct.h"
-#include "edef.h"
+#include <estruct.h>
+#include <edef.h>
+
 #include <ctype.h>
+
+#if OPT_ELAPSED
+
+#if SYS_UNIX
+typedef struct timeval ElapsedType;
+#define BI_DATA0 {0, 0}
+#elif SYS_WINNT
+typedef DWORD ElapsedType;
+#define BI_DATA0 0
+#else
+typedef time_t ElapsedType;
+#define BI_DATA0 0
+#endif
+
+typedef struct {
+    long total_calls;
+    double total_time;
+    ElapsedType this_time;	/* origin of begin_elapsed()    */
+    int nesting_time;		/* recursion-guard */
+} ELAPSED_DATA;
+
+#define BI_DATA MY_BI_DATA
+
+typedef struct {
+    char *bi_key;		/* the name of the command      */
+    ELAPSED_DATA *data;		/* actual data                  */
+} BI_DATA;
+
+#include <btree.h>
+#endif
 
 #if SYS_WINNT
 #include <io.h>
@@ -57,10 +88,183 @@ static const char *bad_form;	/* magic address for fail_alloc() */
 
 static char *visible_result;
 static char *visible_indent;
-static unsigned used_visible;
+static size_t used_visible;
 static unsigned used_indent;
 
 static int trace_depth;
+
+#if OPT_ELAPSED
+
+#if 0
+static void ETrace(const char *fmt,...) GCC_PRINTFLIKE(1,2);
+
+static void
+ETrace(const char *fmt,...)
+{
+    static const char *mode = "w";
+
+    FILE *fp = fopen("ETrace.out", mode);
+    if (fp != 0) {
+	va_list ap;
+
+	va_start(ap, fmt);
+	vfprintf(fp, fmt, ap);
+	fclose(fp);
+	mode = "a";
+    }
+}
+
+#define ETRACE(p) ETrace p
+#else
+#define ETRACE(p)		/* nothing */
+#endif
+
+static void
+old_elapsed(BI_NODE * a)
+{
+    beginDisplay();
+    if (a != 0) {
+	FreeIfNeeded(BI_KEY(a));
+	FreeIfNeeded(a->value.data);
+	free(a);
+    }
+    endofDisplay();
+}
+
+static BI_NODE *
+new_elapsed(BI_DATA * a)
+{
+    BI_NODE *p;
+
+    beginDisplay();
+    if ((p = typecalloc(BI_NODE)) != 0) {
+	BI_DATA *q = &(p->value);
+	if ((BI_KEY(p) = strmalloc(a->bi_key)) == 0
+	    || (q->data = typecalloc(ELAPSED_DATA)) == 0) {
+	    old_elapsed(p);
+	    p = 0;
+	}
+    }
+    endofDisplay();
+
+    return p;
+}
+
+/*ARGSUSED*/
+static void
+dpy_elapsed(BI_NODE * a, int level GCC_UNUSED)
+{
+    BI_DATA *p = &(a->value);
+    ELAPSED_DATA *q = p->data;
+
+    Trace("\t%-24s\t%f / %5ld = %g\n",
+	  BI_KEY(a),
+	  q->total_time,
+	  q->total_calls,
+	  q->total_time / q->total_calls);
+}
+
+#define BI_TREE0 {{0}, 0, {0, 0}}
+static BI_TREE elapsed_tree =
+{new_elapsed, old_elapsed, dpy_elapsed, 0, 0, BI_TREE0};
+
+static BI_DATA *elapsed_stack[100];
+static int elapsed_sp = 0;
+
+static double
+Elapsed(ElapsedType * first, int begin)
+{
+    double result;
+
+#if SYS_UNIX
+#define	SECS(tv)	(tv.tv_sec + (tv.tv_usec / 1.0e6))
+    ElapsedType tv1;
+    gettimeofday(&tv1, 0);
+    if (begin)
+	*first = tv1;
+    result = (SECS(tv1) - SECS((*first)));
+#elif SYS_WINNT
+    ElapsedType tv1 = GetTickCount();
+    if (begin)
+	*first = tv1;
+    result = ((tv1 - *first) / 1000.0);
+#else
+    ElapsedType tv1 = time((time_t *) 0);
+    if (begin)
+	*first = tv1;
+    result = (tv1 - *first);
+#endif
+
+    return result;
+}
+
+static BI_DATA *
+find_elapsed(const char *txt)
+{
+    BI_DATA *result = 0;
+    char temp[80];
+    char *s = strchr(mktrimmed(strcpy(temp, txt)), L_PAREN);
+    if (s != 0)
+	*s = EOS;
+    if (*temp != EOS) {
+	if ((result = btree_search(&elapsed_tree, temp)) == 0) {
+	    BI_DATA data;
+	    memset(&data, 0, sizeof(data));
+	    data.bi_key = temp;
+	    result = btree_insert(&elapsed_tree, &data);
+	}
+    }
+    return result;
+}
+
+static void
+begin_elapsed(const char *txt)
+{
+    ETRACE(("%d:%s", elapsed_sp, txt));
+    if (elapsed_sp + 1 < (int) TABLESIZE(elapsed_stack)) {
+	BI_DATA *p = find_elapsed(txt + strlen(T_CALLED));
+	if (p != 0) {
+	    ELAPSED_DATA *q = p->data;
+	    elapsed_stack[elapsed_sp] = p;
+	    if (!(q->nesting_time++)) {
+		(void) Elapsed(&(q->this_time), TRUE);
+	    }
+	}
+    }
+    ++elapsed_sp;
+}
+
+static void
+end_elapsed(void)
+{
+    if (elapsed_sp > 0) {
+	if (--elapsed_sp < (int) TABLESIZE(elapsed_stack)) {
+	    BI_DATA *p = elapsed_stack[elapsed_sp];
+	    ETRACE(("%d:%s::%s\n", elapsed_sp, T_RETURN, p->bi_key));
+	    if (p != 0) {
+		ELAPSED_DATA *q = p->data;
+		if (!(--(q->nesting_time))) {
+		    q->total_time += Elapsed(&(q->this_time), FALSE);
+		    q->total_calls += 1;
+		}
+	    }
+	}
+    }
+}
+
+void
+show_elapsed(void)
+{
+    Trace("ShowElapsed:\n");
+    btree_printf(&elapsed_tree);
+}
+
+#else
+#define begin_elapsed(txt)	/* nothing */
+#define end_elapsed()		/* nothing */
+#endif
+
+/******************************************************************************/
 
 void
 Trace(const char *fmt,...)
@@ -88,11 +292,13 @@ Trace(const char *fmt,...)
 
 	    fprintf(fp, "%s", trace_indent(trace_depth, '|'));
 	    if (!strncmp(fmt, T_CALLED, T_LENGTH)) {
+		begin_elapsed(fmt);
 		++trace_depth;
 	    } else if (!strncmp(fmt, T_RETURN, T_LENGTH)) {
 		if (trace_depth == 0) {
 		    fprintf(fp, "BUG: called/return mismatch\n");
 		} else {
+		    end_elapsed();
 		    --trace_depth;
 		}
 	    }
@@ -145,7 +351,7 @@ retrace_void(void)
 }
 
 static char *
-alloc_visible(unsigned need)
+alloc_visible(size_t need)
 {
     if (need > used_visible) {
 	used_visible = need;
@@ -270,15 +476,16 @@ str_visible0(char *s)
 char *
 tb_visible(TBUFF *p)
 {
-    return visible_buff(tb_values(p), tb_length(p), FALSE);
+    return visible_buff(tb_values(p), (int) tb_length(p), FALSE);
 }
 
 char *
 itb_visible(ITBUFF * p)
 {
     int *vec;
-    int len, n, pass;
-    unsigned used;
+    int pass;
+    size_t used;
+    size_t len, n;
     char temp[80];
     char *result = 0;
 
@@ -317,74 +524,6 @@ lp_visible(LINE *p)
     return visible_buff(lvalue(p), llength(p), FALSE);
 }
 
-#define	SECS(tv)	(tv.tv_sec + (tv.tv_usec / 1.0e6))
-
-void
-Elapsed(char *msg)
-{
-#if SYS_UNIX
-    struct timeval tv1;
-    struct timezone tz1;
-    static struct timeval tv0;
-    static int init;
-    gettimeofday(&tv1, &tz1);
-    if (!init++)
-	tv0 = tv1;
-    Trace("%10.3f %s\n", SECS(tv1) - SECS(tv0), msg);
-    tv0 = tv1;
-#endif
-#if SYS_WINNT
-    static DWORD tv0;
-    static int init;
-    DWORD tv1 = GetTickCount();
-    if (!init++)
-	tv0 = tv1;
-    Trace("%10.3f %s\n", (tv1 - tv0) / 1000.0, msg);
-    tv0 = tv1;
-#endif
-}
-
-#ifdef	apollo
-static int
-contains(char *ref, char *tst)
-{
-    size_t len = strlen(ref);
-    while (*tst) {
-	if (!strncmp(ref, tst++, len))
-	    return TRUE;
-    }
-    return FALSE;
-}
-#endif /* apollo */
-
-void
-WalkBack(void)
-{
-#ifdef	apollo
-    static char *first = "\"WalkBack\"";
-    static char *last = "\"unix_$main\"";
-    auto FILE *pp;
-    auto char bfr[BUFSIZ];
-    auto int ok = FALSE;
-    static int count;
-
-    Trace("%s %d\n", first, ++count);
-    sprintf(bfr, "/com/tb %d", getpid());
-    if (!(pp = popen(bfr, "r")))
-	perror(bfr);
-
-    while (fgets(bfr, sizeof(bfr), pp)) {
-	if (ok && contains(last, bfr))
-	    break;
-	else if (contains(first, bfr))
-	    ok = TRUE;
-	else if (ok)
-	    Trace("%s", bfr);
-    }
-    (void) fclose(pp);
-#endif /* apollo */
-}
-
 static int count_alloc;
 static int count_freed;
 
@@ -393,7 +532,6 @@ fail_alloc(char *msg, char *ptr)
 {
     Trace("%s: %p\n", msg, ptr);
     Trace("allocs %d, frees %d\n", count_alloc, count_freed);
-    WalkBack();
 #if NO_LEAKS
     show_alloc();
 #endif
@@ -865,6 +1003,9 @@ close_me(void)
     FreeAndNull(visible_indent);
     used_visible = 0;
     used_indent = 0;
+#if OPT_ELAPSED
+    btree_freeup(&elapsed_tree);
+#endif
     Trace(bad_form);
 }
 
