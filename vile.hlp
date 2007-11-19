@@ -1882,7 +1882,7 @@ Editor modes
 
 	spaces-after-sentence (sas) Insert two spaces after each sentence
 		when formatting a paragraph.  By default this option is
-		turned on.  When disabled, the format routiine will insert
+		turned on.  When disabled, the format routine will insert
 		only one space after each sentence.  (U)
 
 	suffixes (suf) A regular expression describing filename suffixes for
@@ -1985,6 +1985,12 @@ Editor modes
 		commands will be saved.  If set to 0, there is no limit,
 		and all changes are undoable.  The default value is 10. (B)
 
+	unicode-as-hex (uh) If displaying a buffer whose file-encoding says
+		it is one of the Unicode flavors, e.g., "utf-8", "utf-16" or
+		"utf-32", show the values that are non-ASCII in "\uXXXX"
+		format even if the display is capable of showing these as
+		regular characters.  (W)
+
 	unique-buffers When vile is asked to read a file into a buffer, it
 		will first check to be sure that it doesn't already have a
 		copy of that file, by the same or a different name.  This can
@@ -1997,12 +2003,6 @@ Editor modes
 		which is edited and then replaced on disk without the
 		knowledge of the editor may still be edited twice.  Setting
 		this mode may be a no-op on non-UNIX systems.  (U)
-
-	unicode-as-hex (uh) If displaying a buffer whose file-encoding says
-		it is one of the Unicode flavors, e.g., "utf-8", "utf-16" or
-		"utf-32", show the values that are non-ASCII in "\uXXXX"
-		format even if the display is capable of showing these as
-		regular characters.  (W)
 
 	unprintable-as-octal (uo) If an 8-bit character is non-printing, it
 		will normally be displayed in hex.  This setting will force
@@ -2068,7 +2068,7 @@ Editor modes
 	warn-reread  When using ":e!" to reread a buffer from the file on
 		disk, vile will normally warn you that you are about to
 		clobber a modified buffer.  Turning off "warn-reread" mode
-		will make vile assume you known what you are doing.  (U)
+		will make vile assume you know what you are doing.  (U)
 
 	warn-unread  When leaving the editor, if not all buffers have been
 		"visited", then normally vile will complain, and remind the
@@ -2927,6 +2927,7 @@ Programmed procedures (aka macros)
 	$startup-file	the name of the startup file (e.g. .vilerc)
 	$startup-path	where to find the startup file
 	$status		returns the status of the last command
+	$term-encoding	terminal's encoding support
 	$title		current window title (X11, win32 versions only)
 	$title-format	format of window title.  see "Mode line customization".
 	$version	current version number			(read only)
@@ -5216,7 +5217,7 @@ X Window System specifics
 	-fg color	Foreground color (or -foreground).
 	-bg color	Background color (or -background).
 	-bd color	Border color (or -bordercolor).
-	-name name	Name used for resource lookups.
+	-name name	Application name used for resource lookups.
 	-title name	Name to be displayed in titlebar.
 	-geometry geom	Initial window dimensions in columns and rows.
 	-iconic		Start xvile iconified.
@@ -5225,6 +5226,7 @@ X Window System specifics
 	Additional xvile command line arguments
 	---------------------------------------
 
+	-class name	Class name used for resource lookups.
 	-fork		to spawn xvile immediately on startup
 	+fork		to force xvile to not spawn on startup
 	-leftbar	Put scrollbar(s) on left.
@@ -6274,7 +6276,7 @@ Credits (last updated Jan, 2000)
 	This code has been written by a _lot_ of people, with help from a
 	lot more sending in bug reports, fixes, and suggestions.  The
 	authors of vile are Tom Dickey (dickey@invisible-island.net) and Kevin
-	Buettner (kev@primenet.com), and Paul Fox (pgf@foxharp.boston.ma.us).
+	Buettner (kevin@buettner.to) and Paul Fox (pgf@foxharp.boston.ma.us).
 
 	Names appearing within comments in the micro-Emacs source code are:
 	Dave Conroy, Daniel Lawrence, John Gamble, Roger Ove, Dana Hoggatt,
@@ -6365,4 +6367,4 @@ Problems
 
 Copyright 1995-2005,2006 by Paul Fox, Thomas Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.634 2007/09/16 23:50:55 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.639 2007/11/19 00:40:32 tom Exp $

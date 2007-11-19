@@ -12,7 +12,7 @@
  * Note:  A great deal of the code included in this file is copied
  * (almost verbatim) from other vile modules.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/wvwrap.cpp,v 1.15 2007/10/03 00:09:31 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/wvwrap.cpp,v 1.16 2007/11/01 23:53:27 tom Exp $
  */
 
 #include "w32vile.h"
@@ -58,21 +58,126 @@ Trace(const char *fmt, ...)
 
 //--------------------------------------------------------------
 
+
+/* WINVER >= _0x0500 */
+#ifndef WC_NO_BEST_FIT_CHARS
+#define WC_NO_BEST_FIT_CHARS 0
+#endif
+
+static char *
+asc_charstring(const LPTSTR source)
+{
+    char * target = 0;
+
+    if (source != 0) {
+#if (defined(_UNICODE) || defined(UNICODE))
+	ULONG len = WideCharToMultiByte(CP_ACP,
+				  WC_NO_BEST_FIT_CHARS,
+				  source,
+				  -1,
+				  0,
+				  0,
+				  NULL,
+				  NULL);
+	if (len) {
+	    target = typecallocn(char, len + 1);
+
+	    (void) WideCharToMultiByte(CP_ACP,
+					WC_NO_BEST_FIT_CHARS,
+					source,
+					-1,
+					target,
+					len,
+					NULL,
+					NULL);
+	}
+#else
+        unsigned len = strlen(source) + 1;
+        target = typecallocn(char, len + 1);
+        if (target != 0)
+            memcpy(target, source, len);
+#endif
+    }
+
+    return target;
+}
+static LPTSTR
+w32_charstring(const char *source)
+{
+    TCHAR * target = 0;
+
+    if (source != 0) {
+#if (defined(_UNICODE) || defined(UNICODE))
+	ULONG len = MultiByteToWideChar(CP_ACP,
+				  MB_USEGLYPHCHARS|MB_PRECOMPOSED,
+				  source,
+				  -1,
+				  0,
+				  0);
+	if (len != 0) {
+	    target = typecallocn(TCHAR, len + 1);
+
+	    (void) MultiByteToWideChar(CP_ACP,
+					MB_USEGLYPHCHARS|MB_PRECOMPOSED,
+					source,
+					-1,
+					target,
+					len);
+	}
+#else
+        unsigned len = strlen(source) + 1;
+        target = typecallocn(TCHAR, len + 1);
+        if (target != 0)
+            memcpy(target, source, len);
+#endif
+    }
+
+    return target;
+}
+
 /* from w32misc.c */
+static LPTSTR
+w32_prognam(void)
+{
+    return W32_STRING("wvwrap");
+}
+
+int
+w32_message_box(HWND hwnd, const char *message, int code)
+{
+    int rc;
+    LPTSTR buf = w32_charstring(message);
+
+    rc = MessageBox(hwnd, buf, w32_prognam(), code);
+    free ((void *) buf);
+    return (rc);
+}
+
 static char *
 fmt_win32_error(ULONG errcode, char **buf, ULONG buflen)
 {
     int flags = FORMAT_MESSAGE_FROM_SYSTEM;
+    LPTSTR result = 0;
 
-    if (! *buf)
+    if (*buf) {
+        result = typeallocn(TCHAR, buflen + 1);
+    } else {
         flags |= FORMAT_MESSAGE_ALLOCATE_BUFFER;
+    }
+
     FormatMessage(flags,
                   NULL,
                   errcode,
                   MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), /* dflt language */
-                  (*buf) ? *buf : (LPTSTR) buf,
+                  result,
                   buflen,
                   NULL);
+
+    if (*buf != 0) {
+        char *tmp = asc_charstring(result);
+        strcpy(*buf, tmp);
+        free(tmp);
+    }
     return (*buf);
 }
 
@@ -83,11 +188,11 @@ nomem(void)
 
     tmp = buf;
     fmt_win32_error((ULONG) E_OUTOFMEMORY, &tmp, 0);
-    MessageBox(NULL, buf, "wvwrap", MB_OK|MB_ICONSTOP);
+    w32_message_box(NULL, buf, MB_OK|MB_ICONSTOP);
     return (1);
 }
 
-#if (! defined(_UNICODE) || defined(UNICODE))
+#if !(defined(_UNICODE) || defined(UNICODE))
 /*
  * Quick & Dirty Unicode conversion routine.  Routine uses a
  * dynamic buffer to hold the converted string so it may be any arbitrary
@@ -238,7 +343,7 @@ WinMain( HINSTANCE hInstance,      // handle to current instance
                 "ERROR: CoInitialize() failed, errcode: %#lx, desc: %s",
                 hr,
                 lclbuf);
-        MessageBox(NULL, tmp, "wvwrap", MB_OK|MB_ICONSTOP);
+        w32_message_box(NULL, tmp, MB_OK|MB_ICONSTOP);
         return (1);
     }
     hr = CoCreateInstance(CLSID_VileAuto,
@@ -254,7 +359,7 @@ WinMain( HINSTANCE hInstance,      // handle to current instance
                 "Try registering winvile via its -Or switch.",
                 hr,
                 lclbuf);
-        MessageBox(NULL, tmp, "wvwrap", MB_OK|MB_ICONSTOP);
+        w32_message_box(NULL, tmp, MB_OK|MB_ICONSTOP);
         return (1);
     }
     hr = punk->QueryInterface(IID_IVileAuto, (void **) &pVileAuto);
@@ -266,7 +371,7 @@ WinMain( HINSTANCE hInstance,      // handle to current instance
                 "ERROR: QueryInterface() failed, errcode: %#lx, desc: %s\n\n",
                 hr,
                 lclbuf);
-        MessageBox(NULL, tmp, "wvwrap", MB_OK|MB_ICONSTOP);
+        w32_message_box(NULL, tmp, MB_OK|MB_ICONSTOP);
         return (1);
     }
     pVileAuto->put_Visible(VARIANT_TRUE);  // May not be necessary
@@ -317,12 +422,14 @@ WinMain( HINSTANCE hInstance,      // handle to current instance
                   * folder names.
                   */
 
-                char folder[FILENAME_MAX], *fp;
+                LPTSTR the_arg = w32_charstring(*argv);
+                TCHAR folder[FILENAME_MAX];
+                char *fp;
 
-                if (GetLongPathName(*argv, folder, sizeof(folder)) > 0)
-                    fp = folder;
+                if (GetLongPathName(the_arg, folder, sizeof(folder)) > 0)
+                    fp = asc_charstring(folder);
                 else
-                    fp = *argv;
+                    fp = asc_charstring(the_arg);
 
                 add_delim = (isalpha(fp[0]) && fp[1] == ':' && fp[2] == '\0');
 
@@ -339,6 +446,8 @@ WinMain( HINSTANCE hInstance,      // handle to current instance
                         (add_delim) ? "\\" : "");
 
                 append(dynbuf, dynbuf_len, temp);
+                free (fp);
+                free (the_arg);
             }
             * cp = '\\';
         }
@@ -353,10 +462,13 @@ WinMain( HINSTANCE hInstance,      // handle to current instance
         TRACE(("dynbuf:\n%s\n", dynbuf));
         olestr = TO_OLE_STRING(dynbuf);
         bstr   = SysAllocString(olestr);
+
         if (! (bstr && olestr))
             return (nomem());
         pVileAuto->VileKeys(bstr);
+
         SysFreeString(bstr);
+        free(olestr);
     }
 
     // Set foreground window using a method that's compatible with win2k

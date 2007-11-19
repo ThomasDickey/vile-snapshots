@@ -3,7 +3,7 @@
  *	for getting and setting the values of the vile state variables,
  *	plus helper utility functions.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.116 2007/09/03 20:11:51 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.118 2007/11/19 01:26:12 tom Exp $
  */
 
 #include	"estruct.h"
@@ -1476,6 +1476,19 @@ var_RETURN(TBUFF **rp, const char *vp)
     return any_rw_TBUFF(rp, vp, &this_macro_result);
 }
 #endif /* OPT_EVAL */
+
+#if OPT_MULTIBYTE
+int
+var_TERM_ENCODING(TBUFF **rp, const char *vp GCC_UNUSED)
+{
+    if (rp) {
+	tb_scopy(rp, encoding2s(term.encoding));
+	return TRUE;
+    } else {
+	return FALSE;
+    }
+}
+#endif
 
 #if OPT_TITLE
 int

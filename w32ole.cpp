@@ -17,7 +17,7 @@
  *   "FAILED" may not be used to test an OLE return code.  Use SUCCEEDED
  *   instead.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32ole.cpp,v 1.27 2007/10/03 21:01:42 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32ole.cpp,v 1.29 2007/11/08 01:19:28 tom Exp $
  */
 
 #include "w32vile.h"
@@ -278,7 +278,7 @@ static char *visible_wcs(OLECHAR *source)
  * used/copied before the conversion routine is called again.
  *
  */
-#if (! defined(_UNICODE) || defined(UNICODE))
+#if !(defined(_UNICODE) || defined(UNICODE))
 
 static char *
 ConvertToAnsi(OLECHAR *szW)
@@ -490,10 +490,9 @@ vile_oa::Create(vile_oa **ppvile, BOOL visible)
     hr = LoadTypeInfo(&pvile->m_ptinfo, IID_IVileAuto);
     if (! SUCCEEDED(hr))
     {
-        MessageBox(pvile->m_hwnd,
-"Cannot load type library.\r\r Register type info using winvile's '-Or' command line switch",
-                   prognam,
-                   MB_OK | MB_ICONSTOP);
+        w32_message_box(pvile->m_hwnd,
+			"Cannot load type library.\r\r Register type info using winvile's '-Or' command line switch",
+			MB_OK | MB_ICONSTOP);
         return (hr);
     }
 
@@ -616,18 +615,15 @@ vile_oa::get_FullName(BSTR *pbstr)
         char    *cp, key[NFILEN];
         HKEY    hk;
         long    rc;
-        DWORD   regtype = REG_SZ;
         OLECHAR *tmp;
-        BYTE    value[NFILEN * 2];
-        ULONG   val_len;
+        char    value[NFILEN * 2];
 
         *pbstr  = NULL;
-        val_len = sizeof(value);
 
         /* Extract server path from registry. */
         sprintf(key, "CLSID\\%s\\LocalServer32", CLSID_VILEAUTO_KEY);
         if (RegOpenKeyEx(HKEY_CLASSES_ROOT,
-                         key,
+                         w32_charstring(key),
                          0,
                          KEY_QUERY_VALUE,
                          &hk) != ERROR_SUCCESS)
@@ -635,16 +631,16 @@ vile_oa::get_FullName(BSTR *pbstr)
             disp_win32_error(W32_SYS_ERROR, m_hwnd);
             return (E_UNEXPECTED);
         }
-        rc = RegQueryValueEx(hk, NULL, NULL, &regtype, value, &val_len);
+        rc = w32_get_reg_sz(hk, NULL, value, sizeof(value));
         RegCloseKey(hk);
         if (rc != ERROR_SUCCESS)
         {
             disp_win32_error(W32_SYS_ERROR, m_hwnd);
             return (E_UNEXPECTED);
         }
-        if ((cp = strchr((char *) value, ' ')) != NULL)
+        if ((cp = strchr(value, ' ')) != NULL)
             *cp = '\0';
-        tmp = TO_OLE_STRING((char *) value);
+        tmp = TO_OLE_STRING(value);
         if (! (tmp && (m_bstrFullName = SysAllocString(tmp)) != 0))
             return (E_OUTOFMEMORY);
     }
@@ -1248,9 +1244,8 @@ invalid_keylist(void)
     ntwinio_redirect_hwnd(FALSE);
 
     /* Killed keyboard redirection, so make sure user sees error */
-    MessageBox((HWND) winvile_hwnd(),
+    w32_message_box((HWND) winvile_hwnd(),
                "invalid keylist syntax, redirection disabled",
-               prognam,
                MB_OK|MB_ICONSTOP);
     return (FALSE);
 }
@@ -1267,7 +1262,7 @@ unsupported_key(char *key)
     sprintf(msg, "VK_%s redir unsupported, redirection disabled", key);
 
     /* Killed keyboard redirection, so make sure user sees error */
-    MessageBox((HWND) winvile_hwnd(), msg, prognam, MB_OK|MB_ICONSTOP);
+    w32_message_box((HWND) winvile_hwnd(), msg, MB_OK|MB_ICONSTOP);
     return (FALSE);
 }
 
@@ -1566,7 +1561,7 @@ oleauto_redirected_key(ULONG vk, ULONG modifier)
                     redirect_tid);
 
             /* Killed keyboard redirection, so make sure user sees error */
-            MessageBox((HWND) winvile_hwnd(), msg, prognam, MB_OK|MB_ICONSTOP);
+            w32_message_box((HWND) winvile_hwnd(), msg, MB_OK|MB_ICONSTOP);
 
             /*
              * Return TRUE to signal the winvile message pump that key has
@@ -1585,7 +1580,7 @@ oleauto_redirected_key(ULONG vk, ULONG modifier)
                 redirect_hwnd);
 
         /* Killed keyboard redirection, so make sure user sees error */
-        MessageBox((HWND) winvile_hwnd(), msg, prognam, MB_OK|MB_ICONSTOP);
+        w32_message_box((HWND) winvile_hwnd(), msg, MB_OK|MB_ICONSTOP);
     }
     if (attached)
     {

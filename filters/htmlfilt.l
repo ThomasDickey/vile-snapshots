@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/htmlfilt.l,v 1.44 2007/10/21 16:14:47 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/htmlfilt.l,v 1.45 2007/10/21 19:19:02 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of HTML input
  * text.
@@ -14,20 +14,18 @@
 #include <fltstack.h>
 #undef YY_NO_UNPUT
 
-DefineOptFilter("html", "jx");
+DefineOptFilter("html", "j");
 
 static char *Action_attr;
 static char *Comment_attr;
-static char *Error_attr;
 static char *Ident_attr;
 static char *Keyword_attr;
 static char *Number_attr;
 static char *String_attr;
 
-static int is_first;
 static int next_state;
 
-static void html_command(char *text, int first);
+static void html_command(char *text);
 static void may_resume_html(char *text);
 
 %}
@@ -37,7 +35,7 @@ SPACE		[ \t]
 INTEGER		[-+]?([[:digit:]]+)
 REAL		[-+]?([[:digit:]]*\.[[:digit:]]+)([eE][+-]?[[:digit:]]+)?
 HEXNUM		"#"[xX]?[[:xdigit:]]+
-IDENT		([!?])?[[:alpha:]_][[:alnum:]_-]*
+IDENT		[[:alpha:]_][[:alnum:]_-]*
 
 STRING		\"([^"])*\"
 
@@ -62,10 +60,10 @@ CHR_REF		&({IDENT}|{HEXNUM});
 <JSP_MODE>[\n]		|
 <JSP_MODE>.		{ flt_bfr_append(yytext, yyleng); }
 
-<INITIAL>"<"		{ WriteToken(Keyword_attr); new_state(HTMLCODE); is_first = 1; }
+<INITIAL>"<"		{ WriteToken(Keyword_attr); new_state(HTMLCODE); }
 <HTMLCODE>">"		{ WriteToken(Keyword_attr); new_state(next_state); }
 
-<HTMLCODE>(\/)?{IDENT}	{ html_command(yytext, is_first); is_first = 0; }
+<HTMLCODE>(\/)?{IDENT}	{ html_command(yytext); }
 
 <INITIAL>"<!--"		{ BeginQuote(HTMLNOTE, Comment_attr); }
 <HTMLNOTE>[\n]		{ flt_bfr_append(yytext, yyleng); }
@@ -128,29 +126,17 @@ CHR_REF		&({IDENT}|{HEXNUM});
 %%
 
 static void
-html_command(char *text, int first)
+html_command(char *text)
 {
     int ending = (text[0] == '/');
-    char *temp = (ending ? text + 1 : text);
-    int change = 0;
-
-    /*
-     * XML is generally case-sensitive.
-     */
-    if (FltOptions('x')) {
-	char *attr = keyword_attr(temp);
-	if (first && (attr == 0 || *attr == 0))
-	    attr = Error_attr;
-	flt_puts(text, strlen(text), attr);
-    } else {
-	temp = lowercase_of(temp);
-	change = !strcmp(temp, "server")
+    char *temp = lowercase_of(ending ? text + 1 : text);
+    int change = !strcmp(temp, "server")
 	      || !strcmp(temp, "script");
-	if (change) {
-	    set_symbol_table(filter_def.filter_name);
-	}
-	flt_puts(text, strlen(text), ci_keyword_attr(temp));
+
+    if (change) {
+	set_symbol_table(filter_def.filter_name);
     }
+    flt_puts(text, strlen(text), ci_keyword_attr(temp));
 
     if (change) {
      	if (ending) {
@@ -181,7 +167,7 @@ may_resume_html(char *text)
 	next++;
     save = *next;
     *next = 0;
-    html_command(left, 1);
+    html_command(left);
     *next = save;
     flt_puts(next, strlen(next), Keyword_attr);
     new_state(next_state);
@@ -200,7 +186,6 @@ do_filter(FILE *inputs)
 
     Action_attr  = class_attr(NAME_ACTION);
     Comment_attr = class_attr(NAME_COMMENT);
-    Error_attr   = class_attr(NAME_ERROR);
     Ident_attr   = class_attr(NAME_IDENT);
     Keyword_attr = class_attr(NAME_KEYWORD);
     Number_attr  = class_attr(NAME_NUMBER);

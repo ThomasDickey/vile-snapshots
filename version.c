@@ -1,7 +1,7 @@
 /*
  * version & usage-messages for vile
  *
- * $Header: /users/source/archives/vile.vcs/RCS/version.c,v 1.63 2007/06/03 14:31:11 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/version.c,v 1.64 2007/10/29 23:25:13 tom Exp $
  *
  */
 
@@ -80,6 +80,7 @@ print_usage(int code)
 #if DISP_X11
 	"",
 	"X11-specific:",
+	"-class name    change class name for X resources (default XVile)",
 	"-name name     change program name for X resources",
 	"-title name    set name in title bar",
 	"-fg color      change foreground color",

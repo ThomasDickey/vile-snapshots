@@ -22,7 +22,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.609 2007/10/17 00:10:06 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.611 2007/11/08 01:28:35 tom Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -412,6 +412,12 @@ MainProgram(int argc, char *argv[])
 #endif /* screen resolution stuff */
 		switch (*param) {
 		case 'c':
+#if DISP_X11
+		    if (!strcmp(param, "class")) {
+			++carg;
+			break;
+		    }
+#endif
 #if DISP_NTCONS
 		    if (strcmp(param, "console") == 0) {
 			/*
@@ -1035,8 +1041,7 @@ get_executable_dir(void)
 
     int j;
     HKEY hkey;
-    DWORD dwSzBuffer;
-    W32_CHAR buffer[256];
+    char buffer[256];
 
     for (j = 0; j < TABLESIZE(rootkeys); ++j) {
 	if (RegOpenKeyEx(rootkeys[j],
@@ -1044,22 +1049,14 @@ get_executable_dir(void)
 			 0,
 			 KEY_READ,
 			 &hkey) == ERROR_SUCCESS) {
-	    dwSzBuffer = sizeof(buffer);
-	    if (RegQueryValueEx(hkey,
-				W32_STRING(""),
-				NULL,
-				NULL,
-				(LPBYTE) buffer,
-				&dwSzBuffer) == ERROR_SUCCESS
-		&& dwSzBuffer != 0) {
+	    if (w32_get_reg_sz(hkey, "", buffer, sizeof(buffer)) == ERROR_SUCCESS) {
 
-		buffer[dwSzBuffer - 1] = 0;
 		/*
 		 * If the (Default) key has a value, use it for $exec-path
 		 * We need $exec-path to make "winvile -Or" work, since an
 		 * install is not guaranteed to put winvile.exe in %PATH%.
 		 */
-		exec_pathname = asc_charstring(buffer);
+		exec_pathname = strmalloc(buffer);
 		(void) RegCloseKey(hkey);
 		break;
 	    }
@@ -2869,39 +2866,24 @@ vile_getenv(const char *name)
 
 	int j;
 	HKEY hkey;
-	DWORD dwSzBuffer;
-	W32_CHAR buffer[256];
+	char buffer[256];
 
-	W32_CHAR *env_name = w32_charstring(name);
+	for (j = 0; j < TABLESIZE(rootkeys); ++j) {
+	    if (RegOpenKeyEx(rootkeys[j],
+			     VILE_SUBKEY W32_STRING("\\Environment"),
+			     0,
+			     KEY_READ,
+			     &hkey) == ERROR_SUCCESS) {
+		if (w32_get_reg_sz(hkey, name, buffer, sizeof(buffer)) == ERROR_SUCCESS) {
 
-	if (env_name) {
-	    for (j = 0; j < TABLESIZE(rootkeys); ++j) {
-		if (RegOpenKeyEx(rootkeys[j],
-				 VILE_SUBKEY W32_STRING("\\Environment"),
-				 0,
-				 KEY_READ,
-				 &hkey) == ERROR_SUCCESS) {
-		    dwSzBuffer = sizeof(buffer);
-		    if (RegQueryValueEx(hkey,
-					env_name,
-					NULL,
-					NULL,
-					(LPBYTE) buffer,
-					&dwSzBuffer) == ERROR_SUCCESS
-			&& dwSzBuffer != 0) {
-
-			buffer[(dwSzBuffer / sizeof(W32_CHAR)) - 1] = 0;
-			result = asc_charstring(buffer);
-			(void) RegCloseKey(hkey);
-			break;
-		    }
-
+		    result = strmalloc(buffer);
 		    (void) RegCloseKey(hkey);
+		    break;
 		}
+
+		(void) RegCloseKey(hkey);
 	    }
 	}
-
-	FreeIfNeeded(env_name);
     }
 #endif
     return result;

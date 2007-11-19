@@ -10,15 +10,15 @@
  *
  *                samples\com\oleaut\hello\hello .
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32ole.h,v 1.6 2002/02/26 23:33:49 cmorgan Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32ole.h,v 1.7 2007/11/01 20:05:13 tom Exp $
  */
 
 #ifndef W32OLE_H
 #define W32OLE_H
 
 #if defined(_UNICODE) || defined(UNICODE)
-    #define FROM_OLE_STRING(str) str
-    #define TO_OLE_STRING(str) str
+    #define FROM_OLE_STRING(str) asc_charstring(str)
+    #define TO_OLE_STRING(str) w32_charstring(str)
 #else
     #define FROM_OLE_STRING(str) ConvertToAnsi(str)
     static char* ConvertToAnsi(OLECHAR *szW);

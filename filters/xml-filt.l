@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/xml-filt.l,v 1.15 2006/05/21 19:50:48 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/xml-filt.l,v 1.16 2007/10/21 19:30:42 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of XML input
  * text.
@@ -120,7 +120,9 @@ xml_command(char *text)
     char *name = ending ? text + 1 : text;
     char *attr = xml_attr(name);
 
-    if (!ending) {
+    if (text[0] == '?') {
+	flt_puts(text, strlen(text), attr);
+    } else if (!ending) {
 	unsigned need = sizeof(XMLTAGS) * Num_tags;
 	static unsigned have = 0;
 

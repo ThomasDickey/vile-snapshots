@@ -14,6 +14,13 @@ Changes for vile 9.6 (released ??? ??? ?? ????)
 	  + for buffers with UTF-8 encoding, show illegal bytes as "\?XX".
 	  + Unicode values can be inserted into buffers using ^VuXXXX form.
 	  Limitations:
+	  + terminal drivers support Unicode display in varying degrees:
+	    + winvile - multicolumn characters, depends on font selection
+	    + termcap/terminfo - relies on terminal emulator, knows about
+	      multicolumn characters
+	    + xvile - displays only single-column characters
+	    + curses - not yet implemented
+	    + win32 console - not yet implemented
 	  + registers hold byte data, will show the UTF-8 encoding for data
 	    rather than a \uXXXX (unless the file-encoding for [Registers]
 	    is changed).
@@ -23,6 +30,13 @@ Changes for vile 9.6 (released ??? ??? ?? ????)
 	    encoding.
 	  + regular expressions are not wide-character aware.
 	  + external syntax filters do not handle BOM or UTF-16, UTF32.
+	+ update Kevin Buettner's email address.
+	+ add -class option to xvile.
+	+ remove a redundant XtDestroyWidget() from x_close() to quiet a
+	  warning from XtRemoveGrab() when doing a ":q" from Xm-vile
+	  (report by Chris Green).
+	+ use va_copy() in dofmt() to work with Linux on powerpc 
+	  (report by Paul van Tilburg).
 	+ add docbookmode
 	+ improve 9.5m/9.5q check for file ownership, adding a warning message
 	  for files which are ignored (report by Chris Green).
@@ -42,6 +56,8 @@ Changes for vile 9.6 (released ??? ??? ?? ????)
 	+ add "describe-&functions" and "describe-$variables" commands.
 	  (The latter is a stub for later).
 	+ improve repainting in winvile while processing external command.
+	  also modify keyboard handling to provide type-ahead while processing
+	  external command.
 	+ remove obsolete $tpause variable.
 	+ modify majormode inferencing to check preamble for [Standard Input]
 	  and [Output] buffers.
