@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 screen API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.178 2007/10/15 21:12:20 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.183 2007/11/19 00:25:48 tom Exp $
  * Written by T.E.Dickey for vile (october 1997).
  * -- improvements by Clark Morgan (see w32cbrd.c, w32pipe.c).
  */
@@ -105,6 +105,7 @@ static int font_resize_in_progress;
 static int gui_resize_in_progress;
 static int initialized = FALSE;	/* winvile open for business */
 static int mouse_captured = 0;
+static int nCursorAdj = 0;
 static int nCharWidth = 8;
 static int nLineHeight = 10;
 static int vile_resizing = FALSE;	/* rely on repaint_window if true */
@@ -257,6 +258,8 @@ message2s(unsigned code)
 	{ WM_STYLECHANGED,	"WM_STYLECHANGED" },
 	{ WM_STYLECHANGING,	"WM_STYLECHANGING" },
 	{ WM_SYSCOMMAND,	"WM_SYSCOMMAND" },
+	{ WM_SYSKEYDOWN,	"WM_SYSKEYDOWN" },
+	{ WM_SYSKEYUP,		"WM_SYSKEYUP" },
 	{ WM_SYSTIMER,		"WM_SYSTIMER" },
 	{ WM_TIMER,		"WM_TIMER" },
 	{ WM_USER,		"WM_USER" },
@@ -945,7 +948,7 @@ fshow_cursor(void)
 
     TRACE(("fshow_cursor pos %#lx,%#lx (visible:%d, exists:%d)\n", ttrow,
 	   ttcol, caret_visible, caret_exists));
-    x = ColToPixel(ttcol) + 1;
+    x = ColToPixel(ttcol) + 1 - nCursorAdj;
     y = RowToPixel(ttrow) + 1;
     if (caret_exists) {
 	GetCaretPos(&z);
@@ -956,6 +959,17 @@ fshow_cursor(void)
 
     if (!caret_exists) {
 	width = nCharWidth;	/* assume block cursor */
+#ifdef UNICODE
+	/*
+	 * If the current cell that we are pointing to contains a zero, then
+	 * that is an extension of a multicolumn character.  Widen the cell to
+	 * account for it.
+	 */
+	if (CELL_TEXT(ttrow, ttcol) == 0) {
+	    width *= 2;
+	    x -= (nCharWidth + nCursorAdj);
+	}
+#endif
 #if OPT_ICURSOR
 	if (icursor) {
 	    int vertbar = FALSE;
@@ -1060,8 +1074,9 @@ is_fixed_pitch(HFONT font)
     ReleaseDC(cur_win->text_hwnd, hDC);
 
     if (ok) {
-	ok = ((metrics.tmPitchAndFamily & TMPF_FIXED_PITCH) == 0);
 #ifdef UNICODE
+	int old_encoding = term.encoding;
+
 	/*
 	 * FIXME - find how to (simply) determine the total number of glyphs
 	 * in a font.
@@ -1070,10 +1085,13 @@ is_fixed_pitch(HFONT font)
 	    term.encoding = enc_UTF16;
 	    TRACE(("Assume font useful for UNICODE\n"));
 	} else {
-	    term.encoding = enc_POSIX;	/* how to do enc_LOCALE? */
+	    term.encoding = enc_LOCALE;		/* FIXME: how to do enc_LOCALE? */
 	}
-	// FIXME - if encoding changes, force repainting in display.c
+	/* if encoding changes, force recompute in display.c */
+	if (old_encoding != term.encoding)
+	    set_winflags(TRUE, WFFORCE | WFHARD);
 #endif
+	ok = ((metrics.tmPitchAndFamily & TMPF_FIXED_PITCH) == 0);
     }
 
     TRACE(("is_fixed_pitch: %d\n", ok));
@@ -1124,23 +1142,30 @@ use_font(HFONT my_font)
     int oLineHeight = nLineHeight;
     int oCharWidth = nCharWidth;
 
+    TRACE((T_CALLED "use_font %p\n", my_font));
+
     hDC = get_DC_with_Font(my_font);
     GetTextMetrics(hDC, &textmetric);
     ReleaseDC(cur_win->text_hwnd, hDC);
 
-    TRACE(("Text height:    %d\n", textmetric.tmHeight));
-    TRACE(("Ave Text width: %d\n", textmetric.tmAveCharWidth));
-    TRACE(("Max Text width: %d\n", textmetric.tmMaxCharWidth));
-    TRACE(("Pitch/Family:   %#x\n", textmetric.tmPitchAndFamily));
-    TRACE(("First char:     %#x\n", textmetric.tmFirstChar));
-    TRACE(("Last char:      %#x\n", textmetric.tmLastChar));
+    TRACE(("Text height:      %d\n", textmetric.tmHeight));
+    TRACE(("Ave Text width:   %d\n", textmetric.tmAveCharWidth));
+    TRACE(("Max Text width:   %d\n", textmetric.tmMaxCharWidth));
+    TRACE(("Overhang:         %d\n", textmetric.tmOverhang));
+    TRACE(("Leading internal: %d\n", textmetric.tmInternalLeading));
+    TRACE(("Leading external: %d\n", textmetric.tmExternalLeading));
+    TRACE(("Pitch/Family:     %#x\n", textmetric.tmPitchAndFamily));
+    TRACE(("First char:       %#x\n", textmetric.tmFirstChar));
+    TRACE(("Last char:        %#x\n", textmetric.tmLastChar));
+    TRACE(("Default char:     %#x\n", textmetric.tmDefaultChar));
 
     /*
      * We'll use the average text-width, since some fonts (e.g., Courier
      * New) have a bogus max text-width.
      */
     nLineHeight = textmetric.tmExternalLeading + textmetric.tmHeight;
-    nCharWidth = textmetric.tmAveCharWidth;
+    nCharWidth = textmetric.tmAveCharWidth + textmetric.tmOverhang;
+    nCursorAdj = 1 + textmetric.tmOverhang;
     get_borders();
 
     font_resize_in_progress = (oLineHeight != nLineHeight)
@@ -1149,6 +1174,8 @@ use_font(HFONT my_font)
     gui_resize(term.cols, term.rows);
 
     font_resize_in_progress = FALSE;
+
+    returnVoid();
 }
 
 static void
@@ -1157,7 +1184,7 @@ set_font(void)
     HDC hDC;
     CHOOSEFONT choose;
 
-    TRACE(("set_font\n"));
+    TRACE((T_CALLED "set_font\n"));
     fhide_cursor();
     caret_disabled = TRUE;
     memset(&choose, 0, sizeof(choose));
@@ -1198,6 +1225,7 @@ set_font(void)
     caret_disabled = FALSE;
     fshow_cursor();
     TRACE(("...set_font, LOGFONT Facename:%s\n", vile_logfont.lfFaceName));
+    returnVoid();
 }
 
 static int
@@ -1261,17 +1289,17 @@ ntwinio_font_frm_str(
     TEXTMETRIC metrics;
     FONTSTR_OPTIONS str_rslts;
 
-    TRACE(("ntwinio_font_frm_str(%s)\n", fontstr));
+    TRACE((T_CALLED "ntwinio_font_frm_str(%s)\n", fontstr));
 
     if (!parse_font_str(fontstr, &str_rslts)) {
 	show_font_message("Font syntax invalid", use_mb);
-	return (FALSE);
+	returnCode(FALSE);
     }
     hwnd = cur_win->text_hwnd;
     face_specified = (str_rslts.face[0] != '\0');
     if ((hdc = get_DC_with_Font(GetMyFont(0))) == 0) {
 	(void) last_w32_error(use_mb);
-	return (FALSE);
+	returnCode(FALSE);
     }
     if (!face_specified) {
 	W32_CHAR current_face[sizeof(str_rslts.face)];
@@ -1282,10 +1310,10 @@ ntwinio_font_frm_str(
 	if ((GetTextFace(hdc, sizeof(current_face), current_face)) == 0) {
 	    (void) last_w32_error(use_mb);
 	    ReleaseDC(hwnd, hdc);
-	    return (FALSE);
+	    returnCode(FALSE);
 	}
 	if ((result_face = asc_charstring(current_face)) == 0) {
-	    return (FALSE);
+	    returnCode(FALSE);
 	}
 	strcpy(str_rslts.face, result_face);
 	free(result_face);
@@ -1308,12 +1336,12 @@ ntwinio_font_frm_str(
 	if (hfont)
 	    DeleteObject(hfont);
 	ReleaseDC(hwnd, hdc);
-	return (FALSE);
+	returnCode(FALSE);
     }
 
     /*
      * The font mapper will substitute some other font for a font request
-     * that cannot exactly be met.  Ck first to see if the face name
+     * that cannot exactly be met.  Check first to see if the face name
      * matches the user chosen face (if applicatble).
      */
     if (face_specified) {
@@ -1324,17 +1352,17 @@ ntwinio_font_frm_str(
 	    (void) last_w32_error(use_mb);
 	    ReleaseDC(hwnd, hdc);
 	    DeleteObject(hfont);
-	    return (FALSE);
+	    returnCode(FALSE);
 	}
 	if ((mapper_face = asc_charstring(font_mapper_face)) == 0) {
-	    return (FALSE);
+	    returnCode(FALSE);
 	}
 	if (stricmp(mapper_face, str_rslts.face) != 0) {
 	    ReleaseDC(hwnd, hdc);
 	    DeleteObject(hfont);
 	    free(mapper_face);
 	    show_font_message("Font face unknown or size/style unsupported", use_mb);
-	    return (FALSE);
+	    returnCode(FALSE);
 	}
 	free(mapper_face);
     }
@@ -1344,7 +1372,7 @@ ntwinio_font_frm_str(
 	(void) last_w32_error(use_mb);
 	ReleaseDC(hwnd, hdc);
 	DeleteObject(hfont);
-	return (FALSE);
+	returnCode(FALSE);
     }
     if ((metrics.tmPitchAndFamily & TMPF_FIXED_PITCH) != 0) {
 	/* Misnamed constant! */
@@ -1352,13 +1380,13 @@ ntwinio_font_frm_str(
 	ReleaseDC(hwnd, hdc);
 	DeleteObject(hfont);
 	show_font_message("Font not fixed pitch", use_mb);
-	return (FALSE);
+	returnCode(FALSE);
     }
     ReleaseDC(hwnd, hdc);	/* finally done with this */
     SetMyFont(hfont, &logfont);
     use_font(GetMyFont(0));
     vile_refresh(FALSE, 0);
-    return (TRUE);
+    returnCode(TRUE);
 }
 
 char *
@@ -1423,6 +1451,120 @@ nttitle(const char *title)
 }
 #endif
 
+static int
+get_keyboard_state(void)
+{
+    int result = 0;
+
+    if (GetKeyState(VK_CONTROL) < 0)
+	result |= (LEFT_CTRL_PRESSED | RIGHT_CTRL_PRESSED);
+    if (GetKeyState(VK_MENU) < 0)
+	result |= (LEFT_ALT_PRESSED | RIGHT_ALT_PRESSED);
+    if (GetKeyState(VK_SHIFT) < 0)
+	result |= SHIFT_PRESSED;
+    TRACE(("get_keyboard_state: %#x\n", result));
+    return result;
+}
+
+#define KEY_FIFO struct key_fifo
+typedef KEY_FIFO {
+    KEY_FIFO *link;
+    MSG data;
+    DWORD state;
+    long seqs;
+};
+
+static KEY_FIFO *key_fifo_head;
+static KEY_FIFO *key_fifo_tail;
+static long key_fifo_seqs;
+
+#if OPT_TRACE
+static int
+fifo_size(void)
+{
+    KEY_FIFO *p = key_fifo_head;
+    int result = 0;
+    while (p != 0) {
+	++result;
+	p = p->link;
+    }
+    return result;
+}
+
+static char *
+keyboard_state2s(int state)
+{
+    static char result[80];
+
+    result[0] = 0;
+    if (state & (LEFT_CTRL_PRESSED | RIGHT_CTRL_PRESSED))
+	strcat(result, " ctrl");
+    if (state & (LEFT_ALT_PRESSED | RIGHT_ALT_PRESSED))
+	strcat(result, " alt");
+    if (state & (SHIFT_PRESSED))
+	strcat(result, " shift");
+    return result;
+}
+#endif
+
+static void
+save_key_data(MSG * msg)
+{
+    KEY_FIFO *entry = typealloc(KEY_FIFO);
+
+    if (entry != 0) {
+	if (key_fifo_tail != 0)
+	    key_fifo_tail->link = entry;
+
+	entry->link = 0;
+	entry->data = *msg;
+	entry->state = get_keyboard_state();
+	entry->seqs = ++key_fifo_seqs;
+
+	if (key_fifo_head == 0)
+	    key_fifo_head = entry;
+
+	key_fifo_tail = entry;
+	TRACE(("FIFO%ld %d: save_key_data(%s) %#x %s\n",
+	       entry->seqs,
+	       fifo_size(),
+	       message2s(msg->message),
+	       msg->wParam,
+	       keyboard_state2s(entry->state)));
+    }
+}
+
+static int
+restore_key_data(MSG * msg, DWORD * state)
+{
+    int result = FALSE;
+    KEY_FIFO *entry = key_fifo_head;
+
+    if (entry != 0) {
+
+	if (msg != 0) {
+	    *msg = entry->data;
+	    *state = entry->state;
+
+	    TRACE(("FIFO%ld %d: restore_key_data(%s) %#x %s\n",
+		   entry->seqs,
+		   fifo_size(),
+		   message2s(msg->message),
+		   msg->wParam,
+		   keyboard_state2s(*state)));
+
+	    key_fifo_head = entry->link;
+	    if (key_fifo_head == 0)
+		key_fifo_tail = 0;
+
+	    free(entry);
+	}
+
+	result = TRUE;
+    }
+    return result;
+}
+
 static void
 nibble_queue(MSG * msg)
 {
@@ -1459,6 +1601,26 @@ peek_at_queue(MSG * msg)
 }
 
 /*
+ * Check if the message refers to a keyboard event.
+ */
+static int
+is_keyboard_message(MSG * msg)
+{
+    int rc = 0;
+
+    switch (msg->message) {
+    case WM_KEYDOWN:
+    case WM_KEYUP:
+    case WM_SYSKEYDOWN:
+    case WM_SYSKEYUP:
+    case WM_CHAR:
+	rc = 1;
+	break;
+    }
+    return rc;
+}
+
+/*
  * We cannot handle _all_ events in scflush(), since some must be handled,
  * e.g., in ntgetch().  In particular, do not try to handle WM__CHAR since
  * that interferes with the OLE server wvwrap.exe's sending characters to
@@ -1470,6 +1632,8 @@ is_drawing_message(MSG * msg)
     int rc = 0;
 
     switch (msg->message) {
+    case WM_KEYDOWN:
+    case WM_SYSKEYDOWN:
     case WM_CHAR:
 	// TRACE(("NOT drawing_message:%s(%#x)\n", message2s(msg->message), msg->wParam));
 	break;
@@ -1494,10 +1658,30 @@ scflush(void)
 	 */
 	if (!vile_selecting && !(cur_atr & VAREV)) {
 	    int save_caret = caret_visible;
-	    while (peek_at_queue(&msg) && is_drawing_message(&msg)) {
-		fhide_cursor();
-		nibble_queue(&msg);
-		Sleep(20);
+	    while (peek_at_queue(&msg)) {
+		if (is_keyboard_message(&msg)) {
+		    if (GetMessage(&msg, (HWND) 0, 0, 0) == TRUE) {
+			switch (msg.message) {
+			case WM_KEYDOWN:
+			case WM_KEYUP:
+			case WM_SYSKEYDOWN:
+			case WM_SYSKEYUP:
+			    if (TranslateAccelerator(cur_win->main_hwnd,
+						     hAccTable, &msg)) {
+				TRACE(("GETC:no accelerator\n"));
+				continue;
+			    }
+			    TranslateMessage(&msg);
+			    break;
+			case WM_CHAR:
+			    save_key_data(&msg);
+			    break;
+			}
+		    }
+		} else if (is_drawing_message(&msg)) {
+		    fhide_cursor();
+		    nibble_queue(&msg);
+		}
 	    }
 	    if (save_caret && !caret_visible)
 		fshow_cursor();
@@ -1904,9 +2088,6 @@ static struct keyxlate_struct {
 
 };
 
-static int savedChar;
-static int saveCount = 0;
-
 static int
 decode_key_event(KEY_EVENT_RECORD * irp)
 {
@@ -1977,20 +2158,6 @@ decode_key_event(KEY_EVENT_RECORD * irp)
     }
 
     return key;
-}
-
-static int
-get_keyboard_state(void)
-{
-    int result = 0;
-
-    if (GetKeyState(VK_CONTROL) < 0)
-	result |= (LEFT_CTRL_PRESSED | RIGHT_CTRL_PRESSED);
-    if (GetKeyState(VK_MENU) < 0)
-	result |= (LEFT_ALT_PRESSED | RIGHT_ALT_PRESSED);
-    if (GetKeyState(VK_SHIFT) < 0)
-	result |= SHIFT_PRESSED;
-    return result;
 }
 
 static void
@@ -2897,6 +3064,7 @@ ntgetch(void)
     // Save the timer ID so we can kill it.
 
     DWORD thisclick;
+    DWORD keyboard_state;
     int buttondown = FALSE;
     int sel_pending = FALSE;	/* Selection pending */
     MARK lmbdn_mark;		/* left mouse button down here */
@@ -2915,10 +3083,7 @@ ntgetch(void)
 #endif
 
     selecting = FALSE;		/* toggle between cut and paste */
-    if (saveCount > 0) {
-	saveCount--;
-	return savedChar;
-    }
+
     clicktime = GetDoubleClickTime();
 #ifdef VAL_AUTOCOLOR
     orig_milli_ac = global_b_val(VAL_AUTOCOLOR);
@@ -2929,24 +3094,28 @@ ntgetch(void)
 	fhide_cursor();
     }
     while (result < 0) {
+	if (!restore_key_data(&msg, &keyboard_state)) {
 #ifdef VAL_AUTOCOLOR
-	milli_ac = orig_milli_ac;
-	while (milli_ac > 0) {
-	    if (peek_at_queue(&msg))
-		break;		/* A meaningful event--process it. */
-	    Sleep(20);		/* sleep a bit, but be responsive to all events */
-	    milli_ac -= 20;
-	}
-	if (orig_milli_ac && milli_ac <= 0) {
-	    ac_active = TRUE;
-	    autocolor();
-	    ac_active = FALSE;
-	}
+	    milli_ac = orig_milli_ac;
+	    while (milli_ac > 0) {
+		if (peek_at_queue(&msg))
+		    break;	/* A meaningful event--process it. */
+		Sleep(20);	/* sleep a bit, but be responsive to all events */
+		milli_ac -= 20;
+	    }
+	    if (orig_milli_ac && milli_ac <= 0) {
+		ac_active = TRUE;
+		autocolor();
+		ac_active = FALSE;
+	    }
 #endif
-	if (GetMessage(&msg, (HWND) 0, 0, 0) != TRUE) {
-	    PostQuitMessage(1);
-	    TRACE(("GETC:no message\n"));
-	    quit(TRUE, 1);
+	    if (GetMessage(&msg, (HWND) 0, 0, 0) != TRUE) {
+		PostQuitMessage(1);
+		TRACE(("GETC:no message\n"));
+		quit(TRUE, 1);
+	    }
+	    if (is_keyboard_message(&msg))
+		keyboard_state = get_keyboard_state();
 	}
 
 	if (TranslateAccelerator(cur_win->main_hwnd, hAccTable, &msg)) {
@@ -2969,10 +3138,9 @@ ntgetch(void)
 	     * Check for modifiers on control keys such as tab.
 	     */
 	    if ((result < 256) && isCntrl(result)) {
-		DWORD state = get_keyboard_state();
-		state &= ~(LEFT_CTRL_PRESSED | RIGHT_CTRL_PRESSED);
-		if (isModified(state))
-		    result = modified_key(result, state);
+		keyboard_state &= ~(LEFT_CTRL_PRESSED | RIGHT_CTRL_PRESSED);
+		if (isModified(keyboard_state))
+		    result = modified_key(result, keyboard_state);
 	    }
 	    if (result == ESC) {
 		sel_release();
@@ -2984,11 +3152,13 @@ ntgetch(void)
 	case WM_SYSKEYDOWN:
 	    ker.uChar.AsciiChar = 0;
 	    ker.wVirtualKeyCode = (SHORT) msg.wParam;
-	    ker.dwControlKeyState = get_keyboard_state();
+	    ker.dwControlKeyState = keyboard_state;
 	    result = decode_key_event(&ker);
-	    TRACE(("GETC:%sKEYDOWN:%#x ->%#x\n",
+	    TRACE(("GETC:%sKEYDOWN:%#x %s ->%#x\n",
 		   (msg.message == WM_SYSKEYDOWN) ? "SYS" : "",
-		   msg.wParam, result));
+		   msg.wParam,
+		   keyboard_state2s(keyboard_state),
+		   result));
 	    if (result == NOKYMAP) {
 		DispatchMessage(&msg);
 		result = -1;
@@ -3270,12 +3440,13 @@ ntgetch(void)
 	    TRACE(("GETC:default(%s)\n", message2s(msg.message)));
 	    /* FALLTHRU */
 	case WM_KEYUP:		/* FALLTHRU */
-	case WM_NCHITTEST:	/* FALLTHRU */
-	case WM_NCMOUSEMOVE:	/* FALLTHRU */
-	case WM_NCLBUTTONDOWN:	/* FALLTHRU */
-	case WM_PAINT:		/* FALLTHRU */
 	case WM_NCACTIVATE:	/* FALLTHRU */
+	case WM_NCHITTEST:	/* FALLTHRU */
+	case WM_NCLBUTTONDOWN:	/* FALLTHRU */
+	case WM_NCMOUSEMOVE:	/* FALLTHRU */
+	case WM_PAINT:		/* FALLTHRU */
 	case WM_SETCURSOR:	/* FALLTHRU */
+	case WM_SYSKEYUP:	/* FALLTHRU */
 	case WM_SYSTIMER:
 	    DispatchMessage(&msg);
 	    break;
@@ -3305,7 +3476,7 @@ nttypahead(void)
 	rc = 0;
     } else
 #endif
-    if (saveCount > 0) {
+    if (restore_key_data((MSG *) 0, (DWORD *) 0)) {
 	rc = 1;
     } else if (PeekMessage(&msg, (HWND) 0, WM_KEYDOWN, WM_KEYDOWN, PM_NOREMOVE)) {
 	rc = 1;
@@ -3359,8 +3530,8 @@ repaint_window(HWND hWnd)
 
     for (row = y0; row < y1; row++) {
 	if (pscreen != 0
-	    && pscreen[row]->v_text != 0
-	    && pscreen[row]->v_attrs != 0) {
+	    && VideoText(pscreen[row]) != 0
+	    && VideoAttr(pscreen[row]) != 0) {
 	    int old_col = x0;
 	    VIDEO_ATTR old_atr = CELL_ATTR(row, old_col);
 	    VIDEO_ATTR new_atr;

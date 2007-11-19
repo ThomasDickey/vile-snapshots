@@ -1,4 +1,4 @@
-; $Id: filters.rc,v 1.208 2007/10/21 15:18:31 tom Exp $
+; $Id: filters.rc,v 1.210 2007/10/21 19:22:26 tom Exp $
 ; majormodes in this file are ordered alphabetically for convenience - the
 ; precedence used by vile is strictly alphabetic, counting case.
 
@@ -39,7 +39,7 @@ define-mode delphi
 
 define-mode docbook
 ~with define-submode docbook
-	filtername	'vile-html-filt -x -k docbook'
+	filtername	'vile-xml-filt -k docbook'
 ~endwith
 
 define-mode java

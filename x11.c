@@ -2,7 +2,7 @@
  *	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.292 2007/09/20 00:09:56 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.297 2007/11/05 11:15:54 tom Exp $
  *
  */
 
@@ -2674,6 +2674,7 @@ x_preparse_args(int *pargc, char ***pargv)
     int i, j;
     int status = TRUE;
     Cardinal start_cols, start_rows;
+    char *xvile_class = MY_CLASS;
     static XrmOptionDescRec options[] =
     {
 	{"-t", (char *) 0, XrmoptionSkipArg, (caddr_t) 0},
@@ -2681,6 +2682,7 @@ x_preparse_args(int *pargc, char ***pargv)
 	{"+fork", "*forkOnStartup", XrmoptionNoArg, "false"},
 	{"-leftbar", "*scrollbarOnLeft", XrmoptionNoArg, "true"},
 	{"-rightbar", "*scrollbarOnLeft", XrmoptionNoArg, "false"},
+	{"-class", NULL, XrmoptionSkipArg, (caddr_t) 0},
     };
 #if MOTIF_WIDGETS || OL_WIDGETS
     static XtActionsRec new_actions[] =
@@ -2754,6 +2756,7 @@ x_preparse_args(int *pargc, char ***pargv)
     {'\002', '\001'};
 #endif /* MOTIF_WIDGETS || OL_WIDGETS */
 
+    TRACE((T_CALLED "x_preparse_args\n"));
 #if OL_WIDGETS
     /* There is a cryptic statement in the poor documentation that I have
      * on OpenLook that OlToolkitInitialize is now preferred to the older
@@ -2766,24 +2769,29 @@ x_preparse_args(int *pargc, char ***pargv)
     (void) OlToolkitInitialize(NULL);
 #endif /* OL_WIDGETS */
 
-#if OPT_TITLE
-    /*
-     * If user sets the title explicitly, he probably will not like allowing
-     * xvile to set it automatically when visiting a new buffer.
-     */
     for (i = 1; i < (*pargc) - 1; i++) {
 	char *param = (*pargv)[i];
 	UINT len = strlen(param);
-	if (len > 1 && !strncmp(param, "-title", len)) {
-	    auto_set_title = FALSE;
-	    break;
+	if (len > 1) {
+#if OPT_TITLE
+	    /*
+	     * If user sets the title explicitly, he probably will not like
+	     * allowing xvile to set it automatically when visiting a new
+	     * buffer.
+	     */
+	    if (!strncmp(param, "-title", len))
+		auto_set_title = FALSE;
+#endif
+	    if (!strncmp(param, "-class", len))
+		xvile_class = (*pargv)[++i];
 	}
     }
-#endif
+    if (isEmpty(xvile_class))
+	xvile_class = MY_CLASS;
 
     XtSetErrorHandler(my_error_handler);
     cur_win->top_widget = XtVaAppInitialize(&cur_win->app_context,
-					    MY_CLASS,
+					    xvile_class,
 					    options, XtNumber(options),
 					    pargc, *pargv,
 					    fallback_resources,
@@ -3135,14 +3143,24 @@ x_preparse_args(int *pargc, char ***pargv)
     if ((j = gbcolor) < 0)
 	j = 0;
 
+#define COLOR_FMT " %#8lx %s"
+#define COLOR_ARG(name) name, ColorsOf(name)
+#define COLOR_ONE(name) "%-20s " COLOR_FMT "\n", #name, COLOR_ARG(cur_win->name)
+
     TRACE(("colors_fg/colors_bg pixel values:\n"));
     for (i = 0; i < NCOLORS; i++) {
 	ctrans[i] = i;
-	TRACE(("   [%2d] %#8lx %s %#8lx %s\n", i,
-	       cur_win->colors_fg[i], ColorsOf(cur_win->colors_fg[i]),
-	       cur_win->colors_bg[i], ColorsOf(cur_win->colors_bg[i])));
+	TRACE(("   [%2d] " COLOR_FMT " " COLOR_FMT "\n", i,
+	       COLOR_ARG(cur_win->colors_fg[i]),
+	       COLOR_ARG(cur_win->colors_bg[i])));
     }
     reset_color_gcs();
+
+    TRACE((COLOR_ONE(fg)));
+    TRACE((COLOR_ONE(bg)));
+
+    TRACE((COLOR_ONE(selection_fg)));
+    TRACE((COLOR_ONE(selection_bg)));
 
     /* Initialize graphics context for display of selections */
     if (cur_win->screen_depth == 1
@@ -3153,6 +3171,7 @@ x_preparse_args(int *pargc, char ***pargv)
 	    && SamePixel(cur_win->bg, cur_win->selection_fg))) {
 	cur_win->selgc = cur_win->reversegc;
 	cur_win->revselgc = cur_win->textgc;
+	TRACE(("...Forcing selection GC to reverse\n"));
     } else {
 	gcvals.foreground = cur_win->selection_fg;
 	gcvals.background = cur_win->selection_bg;
@@ -3164,7 +3183,11 @@ x_preparse_args(int *pargc, char ***pargv)
 	cur_win->revselgc = XCreateGC(dpy,
 				      DefaultRootWindow(dpy),
 				      gcmask, &gcvals);
+	TRACE(("...Created selection GC\n"));
     }
+
+    TRACE((COLOR_ONE(modeline_fg)));
+    TRACE((COLOR_ONE(modeline_bg)));
 
     /*
      * Initialize graphics context for display of normal modelines.
@@ -3178,13 +3201,18 @@ x_preparse_args(int *pargc, char ***pargv)
 	|| (SamePixel(cur_win->fg, cur_win->modeline_bg)
 	    && SamePixel(cur_win->bg, cur_win->modeline_fg))) {
 	cur_win->modeline_gc = cur_win->reversegc;
+	TRACE(("...Forcing modeline GC to reverse\n"));
     } else {
 	gcvals.foreground = cur_win->modeline_fg;
 	gcvals.background = cur_win->modeline_bg;
 	cur_win->modeline_gc = XCreateGC(dpy,
 					 DefaultRootWindow(dpy),
 					 gcmask, &gcvals);
+	TRACE(("...Created modeline GC\n"));
     }
+
+    TRACE((COLOR_ONE(modeline_focus_fg)));
+    TRACE((COLOR_ONE(modeline_focus_bg)));
 
     /*
      * Initialize graphics context for display of modelines which indicate
@@ -3197,13 +3225,18 @@ x_preparse_args(int *pargc, char ***pargv)
 	|| (SamePixel(cur_win->fg, cur_win->modeline_focus_bg)
 	    && SamePixel(cur_win->bg, cur_win->modeline_focus_fg))) {
 	cur_win->modeline_focus_gc = cur_win->reversegc;
+	TRACE(("...Forcing modeline focus GC to reverse\n"));
     } else {
 	gcvals.foreground = cur_win->modeline_focus_fg;
 	gcvals.background = cur_win->modeline_focus_bg;
 	cur_win->modeline_focus_gc = XCreateGC(dpy,
 					       DefaultRootWindow(dpy),
 					       gcmask, &gcvals);
+	TRACE(("...Created modeline focus GC\n"));
     }
+
+    TRACE((COLOR_ONE(cursor_fg)));
+    TRACE((COLOR_ONE(cursor_bg)));
 
     /* Initialize cursor graphics context and flag which indicates how to
      * display cursor.
@@ -3215,7 +3248,9 @@ x_preparse_args(int *pargc, char ***pargv)
 	|| (SamePixel(cur_win->fg, cur_win->cursor_bg)
 	    && SamePixel(cur_win->bg, cur_win->cursor_fg))) {
 	monochrome_cursor();
+	TRACE(("...Forcing monochrome cursor\n"));
     } else if (color_cursor()) {
+	TRACE(("...Created color cursor\n"));
 	x_ccol(-1);
     }
 #if OPT_KEV_SCROLLBARS || OPT_XAW_SCROLLBARS
@@ -3586,6 +3621,9 @@ x_preparse_args(int *pargc, char ***pargv)
 
 #if OPT_LOCALE
     init_xlocale();
+    if (utf8_locale) {
+	term.encoding = enc_UTF8;
+    }
 #endif
 
 #if OPT_X11_ICON
@@ -3653,7 +3691,7 @@ x_preparse_args(int *pargc, char ***pargv)
 
     set_pointer(XtWindow(cur_win->screen), cur_win->normal_pointer);
 
-    return status;
+    returnCode(status);
 }
 
 #if 0
@@ -4128,7 +4166,9 @@ x_close(void)
     /* FIXME: Free pixmaps and GCs !!! */
 
     if (cur_win->top_widget) {
+#if NO_LEAKS
 	XtDestroyWidget(cur_win->top_widget);
+#endif
 	cur_win->top_widget = 0;
 	XtCloseDisplay(dpy);	/* need this if $xshell left subprocesses */
     }

@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.650 2007/10/21 13:44:48 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.651 2007/10/28 23:47:11 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -2873,6 +2873,17 @@ extern void ExitProgram(int code);
 
 #ifdef HAVE_SYS_UTIME_H
 # include <sys/utime.h>
+#endif
+
+/*
+ * If we have va_copy(), use it. 
+ */
+#if defined(va_copy) || defined(HAVE_VA_COPY)
+#define begin_va_copy(dst,src)	va_copy(dst, src)
+#define end_va_copy(dst)	va_end(dst)
+#else
+#define begin_va_copy(dst,src) (dst) = (src)
+#define end_va_copy(dst)	/* nothing */
 #endif
 
 /*

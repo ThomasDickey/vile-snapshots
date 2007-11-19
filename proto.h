@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.630 2007/10/14 18:50:59 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.632 2007/11/18 21:30:17 tom Exp $
  *
  */
 
@@ -278,6 +278,9 @@ extern int cleanup_charset (BUFFER *bp, UCHAR *buffer, B_COUNT *length);
 extern int vl_conv_to_utf32 (UINT * target, const char *source, B_COUNT limit);
 extern int vl_conv_to_utf8 (UCHAR * target, UINT source, B_COUNT limit);
 extern void found_utf8 (BUFFER *bp);
+
+extern const char *byteorder2s(int code);
+extern const char *encoding2s(int code);
 
 extern int decode_bom (BUFFER *bp, UCHAR *buffer, B_COUNT *length);
 extern int decode_charset (BUFFER *bp, LINE *lp);
@@ -1354,6 +1357,8 @@ extern void restore_console_title(void);
 extern void set_console_title(const char *title);
 extern int  stdin_data_available(void);
 extern void store_recent_file_or_folder(const char *path, int is_file);
+extern int  w32_get_reg_sz(HKEY hkey, const char *name, char *value, unsigned length);
+extern int  w32_set_reg_sz(HKEY hkey, const char *name, const char *value);
 extern int  w32_add_write_acl(const char *filename, ULONG *old_access_mask);
 extern int  w32_CreateProcess(char *cmd, int no_wait);
 extern int  w32_del_selection(int copy_to_clipboard);

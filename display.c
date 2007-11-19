@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.459 2007/10/15 20:26:15 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.462 2007/10/28 23:40:27 tom Exp $
  *
  */
 
@@ -195,34 +195,36 @@ dfputf(OutFunc outfunc, double s)
  * appropriate width or limit.
  */
 static void
-decode_length(const char **fmt, va_list *app, int *result)
+decode_length(const char **fmt, int *result)
 {
     int c = **fmt;
     int value = 0;
     int found = FALSE;
 
-    if (c == '*') {
-	value = va_arg(*app, int);
+    while (isDigit(c)) {
+	value = (value * 10) + c - '0';
 	found = TRUE;
 	(*fmt)++;
-    } else {
-	while (isDigit(c)) {
-	    value = (value * 10) + c - '0';
-	    found = TRUE;
-	    (*fmt)++;
-	    c = **fmt;
-	}
+	c = **fmt;
     }
     if (found)
 	*result = value;
 }
+
+#define DecodeLength(fmt, app, result) \
+	if (*fmt == '*') { \
+	    result = va_arg(app, int); \
+	    ++fmt; \
+	} else { \
+	    decode_length(&fmt, &result); \
+	}
 
 /*
  * Generic string formatter.  Takes printf-like args, and calls
  * the global function (*dfoutfn)(c) for each c
  */
 static void
-dofmt(const char *fmt, va_list *app)
+dofmt(const char *fmt, va_list app2)
 {
     int c;			/* current char in format string */
     int the_width;
@@ -233,9 +235,11 @@ dofmt(const char *fmt, va_list *app)
     ULONG ulong_value;
     int int_value;
     long long_value;
+    va_list app;
     OutFunc outfunc = dfoutfn;	/* local copy, for recursion */
 
     TRACE2(("dofmt fmt='%s'\n", visible_buff(fmt, strlen(fmt), FALSE)));
+    begin_va_copy(app, app2);
     while ((c = *fmt++) != 0) {
 	if (c != '%') {
 	    (*outfunc) (c);
@@ -243,10 +247,10 @@ dofmt(const char *fmt, va_list *app)
 	}
 	the_width = -1;
 	islong = FALSE;
-	decode_length(&fmt, app, &the_width);
+	DecodeLength(fmt, app, the_width);
 	if (*fmt == '.') {
 	    ++fmt;
-	    decode_length(&fmt, app, &the_limit);
+	    DecodeLength(fmt, app, the_limit);
 	    if (the_width < 0)
 		the_width = the_limit;
 	} else {
@@ -265,13 +269,13 @@ dofmt(const char *fmt, va_list *app)
 	    n = 0;
 	    break;
 	case 'c':
-	    (*outfunc) (va_arg(*app, int));
+	    (*outfunc) (va_arg(app, int));
 	    n = 1;
 	    break;
 
 	case 'd':
 	    if (!islong) {
-		int_value = va_arg(*app, int);
+		int_value = va_arg(app, int);
 		if (int_value < 0) {
 		    if (int_value < vMAXNEG) {
 			n = dfputs(outfunc, "OVFL");
@@ -283,7 +287,7 @@ dofmt(const char *fmt, va_list *app)
 		n = dfputi(outfunc, (UINT) int_value, 10);
 		break;
 	    }
-	    long_value = va_arg(*app, long);
+	    long_value = va_arg(app, long);
 	    if (long_value < 0) {
 		long_value = -long_value;
 		(*outfunc) ('-');
@@ -293,34 +297,34 @@ dofmt(const char *fmt, va_list *app)
 
 	case 'u':
 	    if (!islong) {
-		uint_value = va_arg(*app, UINT);
+		uint_value = va_arg(app, UINT);
 		n = dfputi(outfunc, uint_value, 10);
 		break;
 	    }
-	    ulong_value = va_arg(*app, ULONG);
+	    ulong_value = va_arg(app, ULONG);
 	    n = dfputli(outfunc, ulong_value, 10);
 	    break;
 
 	case 'o':
-	    n = dfputi(outfunc, va_arg(*app, UINT), 8);
+	    n = dfputi(outfunc, va_arg(app, UINT), 8);
 	    break;
 
 	case 'x':
 	    if (!islong) {
-		n = dfputi(outfunc, va_arg(*app, UINT), 16);
+		n = dfputi(outfunc, va_arg(app, UINT), 16);
 		break;
 	    }
 	    /* FALLTHROUGH */
 	case 'X':
-	    n = dfputli(outfunc, va_arg(*app, ULONG), 16);
+	    n = dfputli(outfunc, va_arg(app, ULONG), 16);
 	    break;
 
 	case 's':
-	    n = dfputsn(outfunc, va_arg(*app, char *), the_width, the_limit);
+	    n = dfputsn(outfunc, va_arg(app, char *), the_width, the_limit);
 	    break;
 
 	case 'f':
-	    n = dfputf(outfunc, va_arg(*app, double));
+	    n = dfputf(outfunc, va_arg(app, double));
 	    break;
 
 	default:
@@ -333,6 +337,7 @@ dofmt(const char *fmt, va_list *app)
 	    (*outfunc) (' ');
 	}
     }
+    end_va_copy(app);
 }
 
 /******************************************************************************/
@@ -2146,6 +2151,8 @@ update_garbaged_screen(void)
 #endif
     int i;
 
+    TRACE((T_CALLED "update_garbaged_screen\n"));
+
     for (i = 0; i < term.rows; ++i) {
 	vscreen[i]->v_flag |= VFCHG;
 #if OPT_REVSTA
@@ -2178,6 +2185,8 @@ update_garbaged_screen(void)
     sgarbf = FALSE;		/* Erase-page clears */
     need_update = FALSE;
     kbd_flush();
+
+    returnVoid();
 }
 
 /*
@@ -2574,6 +2583,7 @@ update_physical_screen(int force GCC_UNUSED)
 {
     int i;
 
+    TRACE((T_CALLED "update_physical_screen(%d)\n", force));
 #if CAN_SCROLL
     if (scrflags & WFKILLS)
 	(void) simple_scroll(FALSE);
@@ -2592,6 +2602,7 @@ update_physical_screen(int force GCC_UNUSED)
 	    update_line(i, 0, term.cols);
 	}
     }
+    returnVoid();
 }
 
 #if OPT_MLFORMAT || OPT_POSFORMAT || OPT_TITLE
@@ -3834,9 +3845,11 @@ mlsavec(int c)
  * line" flag TRUE.
  */
 static void
-mlmsg(const char *fmt, va_list *app)
+mlmsg(const char *fmt, va_list app2)
 {
     static int recur;
+
+    va_list app;
     int end_at;
 #if DISP_NTWIN
     int cursor_state = 0;
@@ -3881,7 +3894,10 @@ mlmsg(const char *fmt, va_list *app)
 	} else
 #endif
 	    dfoutfn = mlsavec;
+
+	begin_va_copy(app, app2);
 	dofmt(fmt, app);
+	end_va_copy(app);
     } else {
 	beginDisplay();
 
@@ -3901,8 +3917,13 @@ mlmsg(const char *fmt, va_list *app)
 	    dfoutfn = kbd_putc;
 
 	if (*fmt != '\n') {
+
 	    kbd_erase_to_end(0);
+
+	    begin_va_copy(app, app2);
 	    dofmt(fmt, app);
+	    end_va_copy(app);
+
 	    kbd_expand = 0;
 
 	    /* if we can, erase to the end of screen */
@@ -3946,7 +3967,7 @@ mlwrite(const char *fmt,...)
 	    return;
 	}
 	va_start(ap, fmt);
-	mlmsg(fmt, &ap);
+	mlmsg(fmt, ap);
 	va_end(ap);
     }
 }
@@ -3961,7 +3982,7 @@ mlforce(const char *fmt,...)
     if (fmt != 0) {
 	va_list ap;
 	va_start(ap, fmt);
-	mlmsg(fmt, &ap);
+	mlmsg(fmt, ap);
 	va_end(ap);
     }
 }
@@ -3979,7 +4000,7 @@ mlprompt(const char *fmt,...)
 	}
 	sgarbf = FALSE;
 	va_start(ap, fmt);
-	mlmsg(fmt, &ap);
+	mlmsg(fmt, ap);
 	va_end(ap);
 	sgarbf = osgarbf;
     }
@@ -3995,7 +4016,7 @@ dbgwrite(const char *fmt,...)
 	va_list ap;		/* ptr to current data field */
 	va_start(ap, fmt);
 	lsprintf(temp, "[press ^G to continue] %s", fmt);
-	mlmsg(temp, &ap);
+	mlmsg(temp, ap);
 	va_end(ap);
 	beginDisplay();
 	while (term.getch() != '\007') {
@@ -4048,7 +4069,7 @@ mlwarn(const char *fmt,...)
 {
     va_list ap;
     va_start(ap, fmt);
-    mlmsg(fmt, &ap);
+    mlmsg(fmt, ap);
     va_end(ap);
     kbd_alarm();
 }
@@ -4080,7 +4101,7 @@ lsprintf(char *buf, const char *fmt,...)
 
 	dfoutfn = lspputc;
 
-	dofmt(fmt, &ap);
+	dofmt(fmt, ap);
 	va_end(ap);
 
 	*lsp = EOS;
@@ -4144,7 +4165,7 @@ bprintf(const char *fmt,...)
     dfoutfn = bputc;
 
     va_start(ap, fmt);
-    dofmt(fmt, &ap);
+    dofmt(fmt, ap);
     va_end(ap);
 }
 
@@ -4153,8 +4174,9 @@ bprintf(const char *fmt,...)
  * written.
  */
 LINE *
-b2vprintf(BUFFER *bp, const char *fmt, va_list ap)
+b2vprintf(BUFFER *bp, const char *fmt, va_list app2)
 {
+    va_list app;
     LINE *result = 0;
     WINDOW *save_wp;
     BUFFER *save_bp = curbp;
@@ -4172,7 +4194,9 @@ b2vprintf(BUFFER *bp, const char *fmt, va_list ap)
 	(void) gotoeob(FALSE, 1);
 	(void) gotoeol(FALSE, 1);
 
-	dofmt(fmt, &ap);
+	begin_va_copy(app, app2);
+	dofmt(fmt, app);
+	end_va_copy(app);
 
 	result = lback(DOT.l);
 

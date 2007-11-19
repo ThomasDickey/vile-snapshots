@@ -2,7 +2,7 @@
  * This file contains the command processing functions for a number of random
  * commands. There is no functional grouping here, for sure.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.311 2007/10/03 23:54:00 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.312 2007/10/31 00:23:22 tom Exp $
  *
  */
 
@@ -540,6 +540,8 @@ getoff(C_NUM goal, C_NUM * rcolp)
 
 	/* move right */
 	ccol = next_column(DOT.l, offs, ccol);
+	if (ccol > goal)
+	    break;
 	offs += BytesAt(DOT.l, offs);
     }
 

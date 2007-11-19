@@ -46,7 +46,7 @@ maintain a mailing list for that purpose (scroll down a bit for details).
 don't worry -- the volume won't fill your inbox.
 
 paul fox, pgf@foxharp.boston.ma.us (original author)
-kevin buettner, kev@primenet.com
+kevin buettner, kevin@buettner.to
 tom dickey, dickey@invisible-island.net (current maintainer)
 
 ------------------------------------------------------
@@ -1158,5 +1158,5 @@ July 2005,
     + modify vmsbuild.com and descrip.mms to work with IA64.
 
 -------------------------------
-$Header: /users/source/archives/vile.vcs/RCS/README,v 1.96 2006/08/13 15:42:38 tom Exp $
+$Header: /users/source/archives/vile.vcs/RCS/README,v 1.97 2007/11/19 00:40:32 tom Exp $
 -------------------------------

@@ -11,7 +11,7 @@
 #
 # The modes are table entries in the BUFFER and WINDOW structures.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.266 2007/09/16 23:03:35 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.268 2007/11/18 21:33:30 tom Exp $
 #
 #
 # Mode-table entries.  Capitalized letters are used for abbreviations.
@@ -204,8 +204,8 @@ enum
 	"qualifiers"	QUALIFIERS	0		# denotes how preamble/suffixes are combined
 regex							# MVAL_ prefix
 	"PREamble"	PREAMBLE	0		# match against file header to turn on mode
-	"mode-pathname"	MODE_PATHNAME	0		# match against pathnames to turn on mode
-	"mode-filename"	MODE_FILENAME	0		# match against filenames to turn on mode
+	"Mode-Pathname"	MODE_PATHNAME	0		# match against pathnames to turn on mode
+	"Mode-Filename"	MODE_FILENAME	0		# match against filenames to turn on mode
 	"SUFfixes"	MODE_SUFFIXES	0		# match against filename's suffix to turn on mode
 string
 	"before"	BEFORE		chgd_mm_order	# check mode before given
@@ -312,6 +312,7 @@ string
 "startup-file"	STARTUP_FILE	1		"the name of the startup-file (e.g., .vilerc)"
 "startup-path"	STARTUP_PATH	1		"where to find the startup-file (e.g., .)"
 "status"	STATUS		1		"returns the status of the last command"
+"term-encoding" TERM_ENCODING	OPT_MULTIBYTE	"terminal's encoding support"
 "title"		TITLE		OPT_TITLE	"window title"
 "title-format"	TITLEFORMAT	OPT_TITLE	"window title format"
 "version"	VERSION		1		"current version number"

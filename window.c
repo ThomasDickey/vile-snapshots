@@ -2,7 +2,7 @@
  * Window management. Some of the functions are internal, and some are
  * attached to keys that the user actually types.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/window.c,v 1.111 2007/08/20 18:04:27 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/window.c,v 1.112 2007/10/27 16:00:08 tom Exp $
  *
  */
 
@@ -145,7 +145,6 @@ reposition(int f, int n)
 int
 vile_refresh(int f, int n GCC_UNUSED)
 {
-
     if (f == FALSE) {
 	sgarbf = TRUE;
     } else {

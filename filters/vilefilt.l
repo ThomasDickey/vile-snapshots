@@ -6,7 +6,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/vilefilt.l,v 1.50 2007/09/19 22:41:39 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/vilefilt.l,v 1.51 2007/10/31 00:44:08 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of vile macros
  * - T.Dickey
@@ -209,7 +209,7 @@ handle_keyword(char *text, int len)
 static void
 handle_newline(void)
 {
-    if (vile_keywords && FltStack_WITH_ACTIVE) {
+    if (vile_keywords && (stk_level >= 0) && FltStack_WITH_ACTIVE) {
 	if (FltStack_WITH_STATE < 0) {
 	    FltStack_WITH_STATE = YYSTATE;
 	}
@@ -229,12 +229,20 @@ handle_prepro(char *text, int len)
 #if HAVE_DIRECTIVE
 	case D_WITH:
 	    push_state(WITH_DEFS);
-	    FltStack_WITH_ACTIVE = 1;
-	    FltStack_WITH_STATE = -1;
+	    if (stk_level >= 0) {
+		FltStack_WITH_ACTIVE = 1;
+		FltStack_WITH_STATE = -1;
+	    } else {
+		attr = Error_attr;
+	    }
 	    break;
 	case D_ELSEWITH:
-	    FltStack_WITH_ACTIVE = 1;
-	    FltStack_WITH_STATE = -1;
+	    if (stk_level >= 0) {
+		FltStack_WITH_ACTIVE = 1;
+		FltStack_WITH_STATE = -1;
+	    } else {
+		attr = Error_attr;
+	    }
 	    break;
 	case D_ENDWITH:
 	    pop_state();

@@ -8,7 +8,7 @@
 /************************************************************************/
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/menu.c,v 1.50 2007/05/05 15:30:54 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/menu.c,v 1.51 2007/11/05 10:58:33 tom Exp $
  */
 
 /* Vile includes */
@@ -197,10 +197,10 @@ parse_menu(const char *rc_filename)
     int cascade_token = 0;
     int nlig = 0;
 
-    TRACE(("parse_menu(%s)\n", rc_filename));
+    TRACE((T_CALLED "parse_menu(%s)\n", rc_filename));
 
     if ((fp = fopen(rc_filename, "r")) == NULL)
-	return FALSE;
+	returnCode(FALSE);
 
     Nb_Token = 0;
     while (vl_fgets(line, sizeof(line), fp) != NULL
@@ -232,7 +232,7 @@ parse_menu(const char *rc_filename)
 		Nb_Token++;
 	    } else {
 		fclose(fp);
-		return FALSE;
+		returnCode(FALSE);
 	    }
 	    break;
 
@@ -285,7 +285,7 @@ parse_menu(const char *rc_filename)
 	    }
 	    if (n != 2) {
 		fclose(fp);
-		return FALSE;
+		returnCode(FALSE);
 	    }
 	    Nb_Token++;
 	    break;
@@ -293,7 +293,7 @@ parse_menu(const char *rc_filename)
     }
     fclose(fp);
 
-    return TRUE;
+    returnCode(TRUE);
 }
 
 /************************************************************************/
@@ -362,15 +362,16 @@ do_menu(void *menub)
     void *pm_w;
     int rc;
     int fixup = 0;
-    char *menurc = menu_filename();
+    char *menurc;
 
-    if (menurc == 0) {
+    TRACE((T_CALLED "do_menu\n"));
+    if ((menurc = menu_filename()) == 0) {
 	mlforce("No menu-file found");
-	return FALSE;
+	returnCode(FALSE);
     }
     if ((rc = parse_menu(menurc)) != TRUE) {
 	mlforce("Error parsing menu-file");
-	return FALSE;
+	returnCode(FALSE);
     }
 #if OPT_TRACE
     print_token();
@@ -422,7 +423,7 @@ do_menu(void *menub)
 	    break;
 	}
     }
-    return TRUE;
+    returnCode(TRUE);
 }
 
 /************************************************************************/

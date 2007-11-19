@@ -1,5 +1,5 @@
 /*
- * $Id: charsets.c,v 1.48 2007/10/14 16:22:54 tom Exp $
+ * $Id: charsets.c,v 1.49 2007/11/18 21:30:42 tom Exp $
  *
  * see
  http://msdn.microsoft.com/library/default.asp?url=/library/en-us/intl/unicode_42jv.asp
@@ -491,8 +491,7 @@ riddled_buffer(const BOM_TABLE * mp, UCHAR * buffer, B_COUNT length)
 
     if (mp->size && !(mp->size % 2)) {
 	TRACE(("checking if %s / %d-byte\n",
-	       choice_to_name(&fsm_byteorder_mark_blist,
-			      mp->code),
+	       byteorder2s(mp->code),
 	       mp->size));
 
 	/* Check the line-length.  If it is not a multiple of the pattern
@@ -703,10 +702,8 @@ deduce_charset(BUFFER *bp, UCHAR * buffer, B_COUNT * length, int always)
 
     TRACE((T_CALLED "deduce_charset(%s) bom:%s, encoding:%s\n",
 	   bp->b_bname,
-	   choice_to_name(&fsm_byteorder_mark_blist,
-			  b_val(bp, VAL_BYTEORDER_MARK)),
-	   choice_to_name(&fsm_file_encoding_blist,
-			  b_val(bp, VAL_FILE_ENCODING))));
+	   byteorder2s(b_val(bp, VAL_BYTEORDER_MARK)),
+	   encoding2s(b_val(bp, VAL_FILE_ENCODING))));
 
     bp->implied_BOM = bom_NONE;
     if (b_is_enc_DEFAULT(bp)) {
@@ -725,8 +722,7 @@ deduce_charset(BUFFER *bp, UCHAR * buffer, B_COUNT * length, int always)
 	    bp->implied_BOM = bom_table[found].code;
 	    set_encoding_from_bom(bp, bp->implied_BOM);
 	    TRACE(("...found_charset %s\n",
-		   choice_to_name(&fsm_byteorder_mark_blist,
-				  get_bom(bp))));
+		   byteorder2s(get_bom(bp))));
 	    rc = TRUE;
 	} else if (always) {
 	    TRACE(("...try looking for UTF-8\n"));
@@ -848,4 +844,16 @@ chgd_fileencode(BUFFER *bp,
 	set_bufflags(glob_vals, WFHARD | WFMODE);
     }
     return TRUE;
+}
+
+const char *
+byteorder2s(int code)
+{
+    return choice_to_name(&fsm_byteorder_mark_blist, code);
+}
+
+const char *
+encoding2s(int code)
+{
+    return choice_to_name(&fsm_file_encoding_blist, code);
 }

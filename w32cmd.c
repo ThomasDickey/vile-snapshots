@@ -2,7 +2,7 @@
  * w32cmd:  collection of functions that add Win32-specific editor
  *          features (modulo the clipboard interface) to [win]vile.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32cmd.c,v 1.42 2007/09/27 22:03:20 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32cmd.c,v 1.43 2007/11/09 00:25:45 tom Exp $
  */
 
 #include "estruct.h"
@@ -2285,6 +2285,49 @@ purge_recent_folders(int f, int n)
     return (delete_recent_files_folder_registry_data(FALSE));
 }
 
+/*
+ * Use RegQueryValueExA() rather than RegQueryValueEx() for compatibility
+ * with non-Unicode winvile
+ */
+int
+w32_get_reg_sz(HKEY hkey, const char *name, char *value, unsigned length)
+{
+    int result;
+    DWORD dwSzBuffer = length;
+
+    TRACE2((T_CALLED "w32_get_reg_sz(%s)\n", name));
+    result = RegQueryValueExA(hkey,
+			      name,
+			      NULL,
+			      NULL,
+			      (LPBYTE) value,
+			      &dwSzBuffer);
+    if (result == ERROR_SUCCESS) {
+	value[dwSzBuffer] = 0;
+	TRACE2(("->%s\n", value));
+    }
+    return2Code(result);
+}
+
+/*
+ * Use RegSetValueExA() rather than RegSetValueEx() for compatibility
+ * with non-Unicode winvile
+ */
+int
+w32_set_reg_sz(HKEY hkey, const char *name, const char *value)
+{
+    int result;
+
+    TRACE2((T_CALLED "w32_set_reg_sz(%s, %s)\n", name, value));
+    result = RegSetValueExA(hkey,
+			    name,
+			    0,
+			    REG_SZ,
+			    (const BYTE *) value,
+			    (DWORD) strlen(value) + 1);
+    return2Code(result);
+}
+
 /* ---------------- begin winvile-specific functionality ----------------- */
 
 #if DISP_NTWIN
@@ -2313,12 +2356,11 @@ free_mru_list(char **list)
 static char **
 fetch_mru_list(int is_file, int maxpaths)
 {
-    DWORD dwSzPath;
     HKEY  hkey;
     int   i;
     char  **list;
+    char  path[FILENAME_MAX + 1];
     W32_CHAR  *subkey;
-    W32_CHAR  path[FILENAME_MAX + 1];
 
     TRACE((T_CALLED "fetch_mru_list(%d,%d)\n", is_file, maxpaths));
 
@@ -2340,17 +2382,11 @@ fetch_mru_list(int is_file, int maxpaths)
     }
 
     for (i = 0; i < maxpaths; i++) {
-	W32_CHAR *value_name = recent_regvalue(i);
-	dwSzPath = sizeof(path);
-	if (RegQueryValueEx(hkey,
-			    value_name,
-			    NULL,
-			    NULL,
-			    (LPBYTE) path,
-			    &dwSzPath) == ERROR_SUCCESS)
+	char value_name[32];
+	sprintf(value_name, RECENT_REGVALUE_FMT, i);
+	if (w32_get_reg_sz(hkey, value_name, path, sizeof(path)) == ERROR_SUCCESS)
 	{
-	    path[dwSzPath - 1] = 0;
-	    if ((list[i] = asc_charstring(path)) == NULL)
+	    if ((list[i] = strmalloc(path)) == NULL)
 	    {
 		(void) RegCloseKey(hkey);
 		free_mru_list(list);
@@ -2359,7 +2395,6 @@ fetch_mru_list(int is_file, int maxpaths)
 	    }
 	    TRACE(("list[%d]=%s\n", i, list[i]));
 	}
-	free (value_name);
     }
     (void) RegCloseKey(hkey);
 
@@ -2657,9 +2692,11 @@ store_recent_file_or_folder(const char *path, int is_file)
     HKEY hkey;
     int  i, j, maxpaths;
 
+    TRACE((T_CALLED "store_recent_file_or_folder(%s, %d)\n", path, is_file));
+
     maxpaths = global_g_val((is_file) ? GVAL_RECENT_FILES : GVAL_RECENT_FLDRS);
     if (maxpaths == 0) {
-	return;   /* feature disabled */
+	returnVoid();   /* feature disabled */
     /* read all existing MRU data into dynamic array of strings */
     } else if ((oldlist = fetch_mru_list(is_file, maxpaths)) == NULL) {
 	/* assume no MRU data -- degenerate case */
@@ -2675,18 +2712,15 @@ store_recent_file_or_folder(const char *path, int is_file)
 			   NULL) != ERROR_SUCCESS) {
 	    disp_win32_error(W32_SYS_ERROR, winvile_hwnd());
 	} else {
-	    W32_CHAR *value_name = recent_regvalue(0);
-	    if (RegSetValueEx(hkey,
-			      value_name,
-			      0,
-			      REG_SZ,
-			      (const BYTE *) path,
-			      (DWORD) strlen(path) + 1) != ERROR_SUCCESS)
+	    char value_name[32];
+	    sprintf(value_name, RECENT_REGVALUE_FMT, 0);
+	    if (w32_set_reg_sz(hkey,
+			       value_name,
+			       path) != ERROR_SUCCESS)
 	    {
 		disp_win32_error(W32_SYS_ERROR, winvile_hwnd());
 	    }
 	    (void) RegCloseKey(hkey);
-	    free (value_name);
 	}
     }
     else if (oldlist[0] && stricmp(path, oldlist[0]) == 0)
@@ -2717,23 +2751,21 @@ store_recent_file_or_folder(const char *path, int is_file)
 	    disp_win32_error(W32_SYS_ERROR, winvile_hwnd());
 	} else {
 	    for (i = 0, listp = newlist; *listp && i < maxpaths; i++, listp++) {
-		W32_CHAR *value_name = recent_regvalue(i);
-		if (RegSetValueEx(hkey,
-				  value_name,
-				  0,
-				  REG_SZ,
-				  (const BYTE *) *listp,
-				  (DWORD) strlen(*listp) + 1) != ERROR_SUCCESS) {
+		char value_name[32];
+		sprintf(value_name, RECENT_REGVALUE_FMT, i);
+		TRACE(("...store %d -> %s\n", i, *listp));
+		if (w32_set_reg_sz(hkey, value_name, *listp) != ERROR_SUCCESS)
+		{
 		    free (value_name);
 		    disp_win32_error(W32_SYS_ERROR, winvile_hwnd());
 		    break;
 		}
-		free (value_name);
 	    }
 	    (void) RegCloseKey(hkey);
 	}
 	free_mru_list(oldlist);
     }
+    returnVoid();
 }
 
 #endif /* DISP_NTWIN */
