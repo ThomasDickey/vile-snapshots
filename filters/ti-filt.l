@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/ti-filt.l,v 1.21 2006/10/03 20:57:52 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/ti-filt.l,v 1.22 2007/11/23 20:55:19 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of terminfo
  */
@@ -36,7 +36,7 @@ SPACE		[ \t]
 CAPNAME		[[:alpha:]][[:alnum:]_]*
 DOTNAME		\.{CAPNAME}
 
-ALIAS		[[:alnum:]][[:alnum:] _\.+-]*
+ALIAS		[[:alnum:]][[:alnum:]_.+-]*
 
 COMMA		[,]
 ESCNL		{COMMA}{SPACE}*\\\n\t
@@ -52,8 +52,8 @@ STRING		"="(\\.|\^.|[^,\^\\])*
 				  flt_putc(',');
 				  BEGIN(CAPS);
 				}
-^({ALIAS}"|")			{ WriteAlias(Ident_attr); BEGIN(NAME); }
-<NAME>({ALIAS}"|")		{ WriteAlias(Ident_attr); }
+^{ALIAS}"|"			{ WriteAlias(Ident_attr); BEGIN(NAME); }
+<NAME>{ALIAS}"|"		{ WriteAlias(Ident_attr); }
 <NAME>.				{ unput(yytext[0]); BEGIN(DESC); }
 <DESC>[^,\r\n]+			{ WriteToken(Comment_attr); BEGIN(GAPS); }
 <DESC>.				{ unput(yytext[0]); BEGIN(GAPS); }

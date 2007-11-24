@@ -2,7 +2,7 @@
  *	eval.c -- function and variable evaluation
  *	original by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.369 2007/09/16 22:15:58 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.370 2007/11/22 16:06:23 tom Exp $
  *
  */
 
@@ -75,13 +75,6 @@ makectypelist(int dum1 GCC_UNUSED, void *ptr GCC_UNUSED)
 	bprintf("\n%d\t", (int) i);
 	if ((i == '\n') || (i == '\t'))		/* vtlistc() may not do these */
 	    bprintf("^%c", (int) ('@' | i));
-#if OPT_LOCALE
-	else if (!isPrint(i) && i > 127 && i < 160)	/* C1 controls? */
-	    bprintf(global_w_val(WMDNONPRINTOCTAL)
-		    ? "\\%3o"
-		    : "\\x%2x",
-		    i);
-#endif
 	else
 	    bprintf("%c", (int) i);
 	bputc('\t');

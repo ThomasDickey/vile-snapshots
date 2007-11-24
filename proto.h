@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.632 2007/11/18 21:30:17 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.633 2007/11/23 21:14:47 tom Exp $
  *
  */
 
@@ -131,6 +131,7 @@ extern int chars_to_eol(LINE *lp, int off);
 extern int chars_to_bol(LINE *lp, int off);
 extern int count_bytes(LINE *lp, int off, int chars);
 extern int count_chars(LINE *lp, int off, int bytes);
+extern int mb_cellwidth(const char *text, int limit);
 
 #define BytesAt(lp,off)     (b_is_utfXX(curbp) ? bytes_at(lp,off) : 1)
 #define BytesBefore(lp,off) (b_is_utfXX(curbp) ? bytes_before(lp,off) : (off)!=0)

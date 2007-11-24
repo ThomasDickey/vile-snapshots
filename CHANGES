@@ -19,8 +19,9 @@ Changes for vile 9.6 (released ??? ??? ?? ????)
 	    + termcap/terminfo - relies on terminal emulator, knows about
 	      multicolumn characters
 	    + xvile - displays only single-column characters
-	    + curses - not yet implemented
+	    + curses - depends on the curses library, e.g., ncursesw
 	    + win32 console - not yet implemented
+	  + combining characters are not combined.
 	  + registers hold byte data, will show the UTF-8 encoding for data
 	    rather than a \uXXXX (unless the file-encoding for [Registers]
 	    is changed).
@@ -29,7 +30,11 @@ Changes for vile 9.6 (released ??? ??? ?? ????)
 	  + inserting a \uXXXX into the minibuffer will display the UTF-8
 	    encoding.
 	  + regular expressions are not wide-character aware.
-	  + external syntax filters do not handle BOM or UTF-16, UTF32.
+	  + UTF-16 and UTF-32 files are detected based on BOM and/or the
+	    contents of the first line of the file.
+	  + external syntax filters do not handle BOM or UTF-16, UTF-32.
+	+ modify spell.pm to use a temporary file to work with newer Perl's
+	  that do not handle tied variables exactly as filehandles.
 	+ update Kevin Buettner's email address.
 	+ add -class option to xvile.
 	+ remove a redundant XtDestroyWidget() from x_close() to quiet a

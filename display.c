@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.462 2007/10/28 23:40:27 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.464 2007/11/23 21:17:33 tom Exp $
  *
  */
 
@@ -950,17 +950,11 @@ mk_to_vcol(WINDOW *wp, MARK mark, int expanded, int col, int adjust)
 	}
 #if OPT_MULTIBYTE
 	else if (b_is_utfXX(wp->w_bufp)) {
-	    UINT value;
 	    int nxt = llength(mark.l) - i;
 	    int adj = column_sizes(wp, text + i, nxt, &used);
 
 	    if (adj == COLS_UTF8 && !w_val(wp, WMDUNICODE_AS_HEX)) {
-		vl_conv_to_utf32(&value, text + i, nxt);
-		if (FoldTo8bits(value)) {
-		    adj = 1;
-		} else if (term_is_utfXX()) {
-		    adj = vl_wcwidth(value);
-		}
+		adj = mb_cellwidth(text + i, nxt);
 	    }
 	    col += adj;
 	}
@@ -1538,17 +1532,11 @@ offs2col0(WINDOW *wp,
 	    c = (n == length) ? '\n' : text[n];
 #if OPT_MULTIBYTE
 	    if (b_is_utfXX(wp->w_bufp) && !isTab(c)) {
-		UINT value;
 		int nxt = offset - n;
 		int adj = column_sizes(wp, text + n, nxt, &used);
 
 		if (adj == COLS_UTF8 && !w_val(wp, WMDUNICODE_AS_HEX)) {
-		    vl_conv_to_utf32(&value, text + n, nxt);
-		    if (FoldTo8bits(value)) {
-			adj = 1;
-		    } else if (term_is_utfXX()) {
-			adj = vl_wcwidth(value);
-		    }
+		    adj = mb_cellwidth(text + n, nxt);
 		}
 		column += adj;
 	    } else
@@ -1612,17 +1600,11 @@ col2offs(WINDOW *wp, LINE *lp, C_NUM col)
 	    int used = 1;
 #if OPT_MULTIBYTE
 	    if (b_is_utfXX(wp->w_bufp) && !isTab(c)) {
-		UINT value;
 		int nxt = len - offset;
 		int adj = column_sizes(wp, text + offset, nxt, &used);
 
 		if (adj == COLS_UTF8 && !w_val(wp, WMDUNICODE_AS_HEX)) {
-		    vl_conv_to_utf32(&value, text + offset, nxt);
-		    if (FoldTo8bits(value)) {
-			adj = 1;
-		    } else if (term_is_utfXX()) {
-			adj = vl_wcwidth(value);
-		    }
+		    adj = mb_cellwidth(text + offset, nxt);
 		}
 		n += adj;
 	    } else

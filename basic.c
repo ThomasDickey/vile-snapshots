@@ -5,7 +5,7 @@
  * functions that adjust the top line in the window and invalidate the
  * framing, are hard.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/basic.c,v 1.154 2007/10/14 14:48:57 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/basic.c,v 1.156 2007/11/23 21:18:22 tom Exp $
  *
  */
 
@@ -126,6 +126,23 @@ count_chars(LINE *lp, int off, int bytes)
 	    ++xx;
 	}
 	rc = xx;
+    }
+    return rc;
+}
+
+int
+mb_cellwidth(const char *text, int limit)
+{
+    UINT value;
+    int rc = COLS_UTF8;		/* "\uXXXX" */
+
+    vl_conv_to_utf32(&value, text, limit);
+    if (FoldTo8bits(value)) {
+	rc = 1;
+    } else if (term_is_utfXX()) {
+	rc = vl_wcwidth(value);
+	if (rc <= 0)
+	    rc = COLS_UTF8;
     }
     return rc;
 }
@@ -1005,16 +1022,7 @@ next_column(LINE *lp, int off, int col)
 #if OPT_MULTIBYTE
     else if (b_is_utfXX(curbp)) {
 	if (bytes_at(lp, off) > 1) {
-	    UINT value;
-
-	    rc = COLS_UTF8;	/* "\uXXXX" */
-	    if (!w_val(curwp, WMDUNICODE_AS_HEX)) {
-		vl_conv_to_utf32(&value, lvalue(lp) + off, llength(lp) - off);
-		if (FoldTo8bits(value))
-		    rc = 1;
-		else if (term_is_utfXX())
-		    rc = vl_wcwidth(value);
-	    }
+	    rc = mb_cellwidth(lvalue(lp) + off, llength(lp) - off);
 	}
     }
 #endif

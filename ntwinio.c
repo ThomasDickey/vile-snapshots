@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 screen API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.183 2007/11/19 00:25:48 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.184 2007/11/24 15:47:21 tom Exp $
  * Written by T.E.Dickey for vile (october 1997).
  * -- improvements by Clark Morgan (see w32cbrd.c, w32pipe.c).
  */
@@ -107,6 +107,7 @@ static int initialized = FALSE;	/* winvile open for business */
 static int mouse_captured = 0;
 static int nCursorAdj = 0;
 static int nCharWidth = 8;
+static int nLineToFill = 0;
 static int nLineHeight = 10;
 static int vile_resizing = FALSE;	/* rely on repaint_window if true */
 static int vile_selecting = FALSE;	/* true when using mouse to select */
@@ -474,10 +475,10 @@ AdjustedHeight(int high)
     int rows;
     if (high > cur_win->xy_limit.bottom)
 	high = cur_win->xy_limit.bottom;
-    rows = (high - extra) / nLineHeight;
+    rows = PixelToRow(high - extra);
     if (rows < MIN_ROWS)
 	rows = MIN_ROWS;
-    return (rows * nLineHeight) + extra;
+    return RowToPixel(rows) + extra;
 }
 
 static int
@@ -487,10 +488,10 @@ AdjustedWidth(int wide)
     int cols;
     if (wide > cur_win->xy_limit.right)
 	wide = cur_win->xy_limit.right;
-    cols = (wide - extra) / nCharWidth;
+    cols = PixelToCol(wide - extra);
     if (cols < MIN_COLS)
 	cols = MIN_COLS;
-    return (cols * nCharWidth) + extra;
+    return ColToPixel(cols) + extra;
 }
 
 #if FIXME_POSCHANGING
@@ -1163,6 +1164,7 @@ use_font(HFONT my_font)
      * We'll use the average text-width, since some fonts (e.g., Courier
      * New) have a bogus max text-width.
      */
+    nLineToFill = textmetric.tmExternalLeading;
     nLineHeight = textmetric.tmExternalLeading + textmetric.tmHeight;
     nCharWidth = textmetric.tmAveCharWidth + textmetric.tmOverhang;
     nCursorAdj = 1 + textmetric.tmOverhang;
@@ -1645,12 +1647,47 @@ is_drawing_message(MSG * msg)
 }
 
 static void
+really_draw_text(HDC hdc,
+		 VIDEO_TEXT * text,
+		 VIDEO_ATTR attr,
+		 int length,
+		 int crow,
+		 int ccol)
+{
+    TRACE(("Draw [%3d,%3d]%s\n",
+	   crow, ccol, visible_video_text(text, length)));
+
+    nt_set_colors(hdc, attr);
+
+    ExtTextOut(hdc,
+	       ColToPixel(ccol),
+	       RowToPixel(crow),
+	       0,
+	       (RECT *) 0,
+	       (VIDEO_CHAR *) text, length,
+	       intercharacter(length));
+
+    if (nLineToFill > 0) {
+	HBRUSH brush;
+	RECT rect;
+
+	rect.left = ColToPixel(ccol);
+	rect.top = RowToPixel(crow + 1) - nLineToFill;
+	rect.right = ColToPixel(ccol + length);
+	rect.bottom = RowToPixel(crow + 1);
+
+	brush = Background(hdc);
+	FillRect(hdc, &rect, brush);
+	DeleteObject(brush);
+    }
+}
+
+static void
 scflush(void)
 {
     if (cur_pos && !vile_resizing) {
 	HDC hdc;
 	MSG msg;
-	VIDEO_TEXT *cur_text;
 
 	/*
 	 * (try to) keep up with events for repainting the screen, e.g., when
@@ -1687,21 +1724,15 @@ scflush(void)
 		fshow_cursor();
 	}
 
-	cur_text = &CELL_TEXT(crow, ccol);
-	TRACE(("PUTC:flush %2d (%2d,%2d) (%s)\n", cur_pos, crow, ccol,
-	       visible_video_text(cur_text, cur_pos)));
+	TRACE2(("PUTC:flush %2d\n", cur_pos));
 
 	hdc = GetDC(cur_win->text_hwnd);
-	nt_set_colors(hdc, cur_atr);
-
-	ExtTextOut(hdc,
-		   ColToPixel(ccol),
-		   RowToPixel(crow),
-		   0,
-		   (RECT *) 0,
-		   (VIDEO_CHAR *) cur_text, cur_pos,
-		   intercharacter(cur_pos));
-
+	really_draw_text(hdc,
+			 &CELL_TEXT(crow, ccol),
+			 cur_atr,
+			 cur_pos,
+			 crow,
+			 ccol);
 	ReleaseDC(cur_win->text_hwnd, hdc);
     }
     ccol = ccol + cur_pos;
@@ -3492,14 +3523,14 @@ static void
 repaint_window(HWND hWnd)
 {
     PAINTSTRUCT ps;
-    HBRUSH brush;
     int x0, y0, x1, y1;
     int row, col;
 
     BeginPaint(hWnd, &ps);
-    TRACE(("repaint_window (erase:%d) %s\n", ps.fErase, which_window(hWnd)));
+    TRACE((T_CALLED "repaint_window (erase:%d) %s\n", ps.fErase,
+	   which_window(hWnd)));
+
     nt_set_colors(ps.hdc, cur_atr);
-    brush = Background(ps.hdc);
 
     TRACE(("...painting (%d,%d) (%d,%d)\n",
 	   ps.rcPaint.top,
@@ -3507,10 +3538,10 @@ repaint_window(HWND hWnd)
 	   ps.rcPaint.bottom,
 	   ps.rcPaint.right));
 
-    y0 = (ps.rcPaint.top) / nLineHeight;
-    x0 = (ps.rcPaint.left) / nCharWidth;
-    y1 = (ps.rcPaint.bottom + nLineHeight) / nLineHeight;
-    x1 = (ps.rcPaint.right + nCharWidth) / nCharWidth;
+    y0 = PixelToRow(ps.rcPaint.top);
+    x0 = PixelToCol(ps.rcPaint.left);
+    y1 = PixelToRow(ps.rcPaint.bottom + nLineHeight);
+    x1 = PixelToCol(ps.rcPaint.right + nCharWidth);
 
     if (y0 < 0)
 	y0 = 0;
@@ -3539,40 +3570,30 @@ repaint_window(HWND hWnd)
 	    for (col = x0 + 1; col < x1; col++) {
 		new_atr = CELL_ATTR(row, col);
 		if (new_atr != old_atr) {
-		    nt_set_colors(ps.hdc, old_atr);
-		    TRACE2(("ExtTextOut [%3d,%3d]%s\n", row, old_col, col -
-			    visible_video_text(&CELL_TEXT(row, old_col), old_col)));
-		    ExtTextOut(ps.hdc,
-			       ColToPixel(old_col),
-			       RowToPixel(row),
-			       0,
-			       (RECT *) 0,
-			       (VIDEO_CHAR *) & CELL_TEXT(row, old_col),
-			       col - old_col,
-			       intercharacter(col));
+		    really_draw_text(ps.hdc,
+				     &CELL_TEXT(row, old_col),
+				     old_atr,
+				     col - old_col,
+				     row,
+				     old_col);
 		    old_atr = new_atr;
 		    old_col = col;
 		}
 	    }
 	    if (old_col < x1) {
-		nt_set_colors(ps.hdc, old_atr);
-		TRACE2(("ExtTextOut [%3d,%3d]%s\n", row, old_col, x1 -
-			visible_video_text(&CELL_TEXT(row, old_col), old_col)));
-		ExtTextOut(ps.hdc,
-			   ColToPixel(old_col),
-			   RowToPixel(row),
-			   0,
-			   (RECT *) 0,
-			   (VIDEO_CHAR *) & CELL_TEXT(row, old_col),
-			   x1 - old_col,
-			   intercharacter(x1));
+		really_draw_text(ps.hdc,
+				 &CELL_TEXT(row, old_col),
+				 old_atr,
+				 x1 - old_col,
+				 row,
+				 old_col);
 	    }
 	}
     }
-    DeleteObject(brush);
 
-    TRACE(("...repaint_window\n"));
     EndPaint(hWnd, &ps);
+
+    returnVoid();
 }
 
 static void

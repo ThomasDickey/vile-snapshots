@@ -1,5 +1,5 @@
 /*
- * $Id: charsets.c,v 1.49 2007/11/18 21:30:42 tom Exp $
+ * $Id: charsets.c,v 1.50 2007/11/23 16:26:51 tom Exp $
  *
  * see
  http://msdn.microsoft.com/library/default.asp?url=/library/en-us/intl/unicode_42jv.asp
@@ -326,6 +326,7 @@ load_as_utf8(BUFFER *bp, LINE *lp)
 	unsigned need = llength(lp);
 	unsigned used;
 
+	TRACE2(("load_as_utf8:%d:%s\n", need, lp_visible(lp)));
 	allow_decoder(bp, need);
 	if (bp->decode_utf_buf != 0) {
 	    if (need) {
@@ -471,7 +472,7 @@ remove_crlf_nulls(BUFFER *bp, UCHAR * buffer, B_COUNT * length)
 	    }
 	    src += marklen;
 	}
-	*length = dst;
+	*length = dst - 1;
     }
 }
 

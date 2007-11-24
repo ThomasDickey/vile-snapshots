@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.651 2007/10/28 23:47:11 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.653 2007/11/23 17:21:28 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -2197,6 +2197,12 @@ typedef struct	BUFFER {
 #define eql_bname(bp,name) !strcmp(bp->b_bname, name)
 #endif
 
+#define COPY_B_VAL(dst,src,val) \
+	if (is_local_b_val(src, val)) { \
+	    make_local_b_val(dst, val); \
+	    set_b_val(dst, val, b_val(src, val)); \
+	}
+
 /* values for b_flag */
 #define BFINVS     iBIT(0)	/* Internal invisible buffer	*/
 #define BFCHG      iBIT(1)	/* Changed since last write	*/
@@ -2465,7 +2471,13 @@ typedef struct	{
 
 #define term_is_utfXX()         ((int) term.encoding >= enc_UTF8)
 
-#if OPT_MULTIBYTE && (DISP_TERMCAP || DISP_X11 || (DISP_NTWIN && defined(UNICODE)))
+#if DISP_CURSES && defined(HAVE_ADDNWSTR)
+#define WIDE_CURSES 1
+#else
+#define WIDE_CURSES 0
+#endif
+
+#if OPT_MULTIBYTE && (DISP_TERMCAP || WIDE_CURSES || DISP_X11 || (DISP_NTWIN && defined(UNICODE)))
 typedef USHORT VIDEO_TEXT;
 typedef USHORT VIDEO_CHAR;
 #else

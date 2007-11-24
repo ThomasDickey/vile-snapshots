@@ -1,5 +1,5 @@
 /*
- * $Id: eightbit.c,v 1.11 2007/10/14 18:59:09 tom Exp $
+ * $Id: eightbit.c,v 1.12 2007/11/21 01:34:39 tom Exp $
  *
  * Maintain "8bit" file-encoding mode by converting incoming UTF-8 to single
  * bytes, and providing a function that tells vile whether a given Unicode
@@ -257,7 +257,7 @@ vl_mb_putch(OUTC_ARGS)
 	}
 	if (s != 0) {
 	    while (*s != 0) {
-		ttputc(*s++);
+		save_putch(*s++);
 	    }
 	}
     }

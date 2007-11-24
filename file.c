@@ -5,7 +5,7 @@
  * reading and writing of the disk are
  * in "fileio.c".
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.412 2007/10/14 19:46:02 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.413 2007/11/23 17:21:28 tom Exp $
  */
 
 #include "estruct.h"
@@ -1776,11 +1776,6 @@ slowreadf(BUFFER *bp, int *nlinep)
 	 * right place to account for alignment bytes.  Copy the attributes
 	 * from its buffer to ours so the decode_charset() call will work.
 	 */
-#define COPY_B_VAL(dst,src,val) \
-	if (is_local_b_val(src, val)) { \
-	    make_local_b_val(dst, val); \
-	    set_b_val(dst, val, b_val(src, val)); \
-	}
 	if (bp->b_lines_on_disk == 0) {
 	    COPY_B_VAL(bp, btempp, VAL_BYTEORDER_MARK);
 	    COPY_B_VAL(bp, btempp, VAL_FILE_ENCODING);
