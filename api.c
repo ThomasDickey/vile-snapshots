@@ -15,7 +15,7 @@
  * in handy.
  *				- kev 4/7/1998
  *
- * $Header: /users/source/archives/vile.vcs/RCS/api.c,v 1.42 2007/08/31 23:18:27 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/api.c,v 1.43 2007/11/22 23:12:38 tom Exp $
  */
 
 #include "estruct.h"
@@ -701,6 +701,8 @@ api_swscreen(VileBuf * oldsp, VileBuf * newsp)
 void
 api_update(void)
 {
+    TRACE((T_CALLED "api_update\n"));
+
     propagate_dot();
 
     curwp = curwp_visible ? curwp_visible : curwp;
@@ -709,6 +711,8 @@ api_update(void)
     update(TRUE);
 
     curwp_visible = curwp;
+
+    returnVoid();
 }
 
 /*

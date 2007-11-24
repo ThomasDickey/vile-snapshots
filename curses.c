@@ -1,17 +1,21 @@
 /*
  * A terminal driver using the curses library
  *
- * $Header: /users/source/archives/vile.vcs/RCS/curses.c,v 1.30 2007/09/03 20:05:59 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/curses.c,v 1.32 2007/11/22 15:34:43 tom Exp $
  */
 
-#include	"estruct.h"
-#include	"edef.h"
+#include "estruct.h"
+#include "edef.h"
+
+#if OPT_LOCALE
+#include <locale.h>
+#endif
 
 #if DISP_CURSES
 
 #undef WINDOW
 
-#include	"tcap.h"
+#include "tcap.h"
 
 #define is_default(color) (color < 0 || color == 255)
 
@@ -38,7 +42,7 @@ static int can_color = FALSE;
 #include "xtermkeys.h"
 
 static void
-initialize(void)
+curs_initialize(void)
 {
     static int already_open = 0;
 
@@ -52,12 +56,22 @@ initialize(void)
     if (already_open)
 	return;
 
+    TRACE((T_CALLED "curs_initialize\n"));
+#if OPT_LOCALE
+    TRACE(("setting locale to %s\n", utf8_locale));
+    setlocale(LC_CTYPE, utf8_locale);
+#endif
     initscr();
     raw();
     noecho();
     nonl();
     nodelay(stdscr, TRUE);
     idlok(stdscr, TRUE);
+
+    /*
+     * Note: we do not set the locale to vl_locale since that would confuse
+     * curses when it adds multibyte characters to the display.
+     */
 
 #if USE_TERMCAP
     if ((tgetent(tc_rawdata, getenv("TERM"))) != 1) {
@@ -115,6 +129,8 @@ initialize(void)
 
     ttopen();
     already_open = TRUE;
+
+    returnVoid();
 }
 
 static void
@@ -122,6 +138,9 @@ curs_open(void)
 {
     TRACE(("curs_open\n"));
     vl_save_tty();
+#if OPT_LOCALE
+    vl_open_mbterm();
+#endif
 }
 
 static void
@@ -135,6 +154,9 @@ curs_close(void)
     term.set_title(getenv("TERM"));
 
     vl_restore_tty();
+#if OPT_LOCALE
+    vl_close_mbterm();
+#endif
 }
 
 static int last_key = -1;
@@ -210,23 +232,25 @@ curs_kopen(void)
 {
     static int initialized = FALSE;
 
+    TRACE((T_CALLED "curs_kopen\n"));
     term.mopen();
     if (!initialized) {
 	initialized = TRUE;
-	initialize();
+	curs_initialize();
     }
     refresh();
     in_screen = TRUE;
-    TRACE(("curs_kopen\n"));
+    returnVoid();
 }
 
 static void
 curs_kclose(void)
 {
+    TRACE((T_CALLED "curs_kclose\n"));
     endwin();
     term.mclose();
     in_screen = FALSE;
-    TRACE(("curs_kclose\n"));
+    returnVoid();
 }
 
 static void

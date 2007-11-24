@@ -13,7 +13,7 @@
  * vile.  The file api.c (sometimes) provides a middle layer between
  * this interface and the rest of vile.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.106 2007/08/29 00:52:32 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.107 2007/11/23 01:54:06 tom Exp $
  */
 
 /*#
@@ -246,12 +246,13 @@ write_message(char *prefix, SV *sv)
 static int
 require(char *file, int optional)
 {
+    TRACE((T_CALLED "Vile::require(%s,%s)\n", file, optional ? "optional" : "required"));
     /* require the file */
     perl_require_pv(file);
 
     /* OK */
     if (!SvTRUE(GvSV(PL_errgv)))
-	return TRUE;
+	returnCode(TRUE);
 
     if (optional)
     {
@@ -268,11 +269,11 @@ require(char *file, int optional)
 	SvREFCNT_dec(tmp);
 
 	if (not_found)
-	    return SORTOFTRUE;
+	    returnCode(SORTOFTRUE);
     }
 
     write_message("perl require:", GvSV(PL_errgv));
-    return FALSE;
+    returnCode(FALSE);
 }
 
 /* When no region is specified, this will cause the entire buffer to
@@ -413,12 +414,14 @@ do_perl_cmd(SV *cmd, int inplace)
     REGION region;
     VileBuf *curvbp;
 
+    TRACE((T_CALLED "do_perl_cmd\n"));
+
     use_ml_as_prompt = 0;
 
     if (recursecount == 0) {
 	curvbp = api_bp2vbp(curbp);
 	if (curvbp == 0)
-	    return FALSE;
+	    returnCode(FALSE);
 
 	if (DOT.l == 0 || MK.l == 0 || getregion(&region) != TRUE) {
 	    /* shouldn't ever get here. But just in case... */
@@ -487,10 +490,10 @@ do_perl_cmd(SV *cmd, int inplace)
 	mlforce("BUG: curwp not set to a visible window");
 
     if (SvTRUE(GvSV(PL_errgv)) == 0)
-	return TRUE;
+	returnCode(TRUE);
 
     write_message("perl cmd:", GvSV(PL_errgv));
-    return FALSE;
+    returnCode(FALSE);
 }
 
 /*
@@ -502,7 +505,8 @@ static SV *opsv;
 static int
 perl_oper(void)
 {
-    return do_perl_cmd(opsv, FALSE);
+    TRACE((T_CALLED "perl_oper\n"));
+    returnCode(do_perl_cmd(opsv, FALSE));
 }
 
 int
@@ -513,12 +517,13 @@ perl_call_sub(void *data, int oper, int f, int n)
     SV **sub = 0;	/* a sub name or coderef to call, */
     SV **req = 0;	/* and an [optional] file to require */
 
+    TRACE((T_CALLED "perl_call_sub\n"));
     switch (av_len(av))
     {
 	case 2: /* (name, sub, require) */
 	    if ((req = av_fetch(av, 2, 0)) != 0 && SvTRUE(*req))
 		if (!require(SvPV(*req, PL_na), FALSE))
-		    return FALSE;
+		    returnCode(FALSE);
 
 	    /* FALLTHRU */
 
@@ -551,7 +556,7 @@ perl_call_sub(void *data, int oper, int f, int n)
 	    ;
     }
 
-    return f;
+    returnCode(f);
 }
 
 void
@@ -636,9 +641,11 @@ perl_prompt(void)
     char buf[NLINE];	/* buffer to receive command into */
     SV *cmd;
 
+    TRACE((T_CALLED "perl_prompt\n"));
+
     buf[0] = EOS;
     if ((status = mlreply_no_opts("Perl command: ", buf, sizeof(buf))) != TRUE)
-	    return status;
+	returnCode(status);
 
     /* Hack to workaround problem with perl5.005 in which package Dynaloader
        sometimes winds up being the current package */
@@ -652,7 +659,7 @@ perl_prompt(void)
 #endif
     status = do_perl_cmd(cmd, FALSE);
     SvREFCNT_dec(cmd);
-    return status;
+    returnCode(status);
 }
 
 #define isoctal(c) ((c) >= '0' && (c) <= '7')
@@ -835,9 +842,11 @@ perldo_prompt(void)
     int i_rs = '\n';
     int o_rs = RS_NONE;
 
+    TRACE((T_CALLED "perldo_prompt\n"));
+
     buf[0] = EOS;
     if ((status = mlreply_no_opts("Perl command: ", buf, sizeof(buf))) != TRUE)
-	return status;
+	returnCode(status);
 
 #if OPT_HISTORY
     hst_glue('\r');
@@ -845,7 +854,7 @@ perldo_prompt(void)
 
     strcpy(obuf, "-lpi");
     if ((status = mlreply_no_opts("options: ", obuf, sizeof(obuf))) != TRUE)
-	return status;
+	returnCode(status);
 
     /* skip optional leading `-' */
     if (*o == '-')
@@ -911,7 +920,7 @@ perldo_prompt(void)
 		if (*o && *o != ' ')
 		{
 		    mlforce("[no closing %c]", sep);
-		    return FALSE;
+		    returnCode(FALSE);
 		}
 	    }
 	    else if (*o)
@@ -922,7 +931,7 @@ perldo_prompt(void)
 	    else
 	    {
 		mlforce("[-F requires an argument]");
-		return FALSE;
+		returnCode(FALSE);
 	    }
 
 	    if (*o)
@@ -946,7 +955,7 @@ perldo_prompt(void)
 
 	default:
 	    mlforce("[invalid option -%s]", o);
-	    return FALSE;
+	    returnCode(FALSE);
 	}
 
     /* construct command: block with localised $/ and $\ */
@@ -1027,7 +1036,7 @@ perldo_prompt(void)
     status = do_perl_cmd(cmd, opts & OPT_i);
     SvREFCNT_dec(cmd);
 
-    return status;
+    returnCode(status);
 }
 
 static int
@@ -1057,6 +1066,7 @@ prepend_include(char *path)
     SV   *sv;
 
     if (is_directory(path)) {
+	TRACE(("prepend_include(%s)\n", path));
 	av_unshift(av = GvAVn(PL_incgv), 1);
 	sv = newSVpv(path, 0);
 	av_store(av, 0, sv);
@@ -1073,6 +1083,8 @@ perl_init(void)
     char *vile_path;
     static char svcurbuf_name[] = "Vile::current_buffer";
 
+    TRACE((T_CALLED "perl_init\n"));
+
     perl_interp = perl_alloc();
     perl_construct(perl_interp);
 
@@ -1080,7 +1092,7 @@ perl_init(void)
 	perl_destruct(perl_interp);
 	perl_free(perl_interp);
 	perl_interp = NULL;
-	return FALSE;
+	returnCode(FALSE);
     }
     perl_call_argv("Vile::bootstrap", G_DISCARD, bootargs);
 
@@ -1135,19 +1147,20 @@ perl_init(void)
 
     /* Load user or system wide initialization script */
     require("vileinit.pl", TRUE);
-    return TRUE;
+    returnCode(TRUE);
 }
 
 /* make sure END blocks and destructors get called */
 void perl_exit()
 {
-    if (!perl_interp)
-	return;
-
-    perl_run(perl_interp);	/* process END blocks */
-    perl_destruct(perl_interp);	/* global destructors */
-    perl_free(perl_interp);
-    perl_interp = 0;
+    if (perl_interp) {
+	TRACE((T_CALLED "perl_exit\n"));
+	perl_run(perl_interp);		/* process END blocks */
+	perl_destruct(perl_interp);	/* global destructors */
+	perl_free(perl_interp);
+	perl_interp = 0;
+    }
+    returnVoid();
 }
 
 /* Register any extra external extensions */
@@ -2593,6 +2606,7 @@ register(name, ...)
 	char *p;
 
     PPCODE:
+	TRACE((T_CALLED "Vile::register %s\n", name));
 #if OPT_NAMEBST
 	if (items > 4)
 	    croak("Too many arguments to %s", GvNAME(CvGV(cv)));
@@ -2714,8 +2728,9 @@ unwatchfd(fd)
     int fd
 
     PPCODE:
-	TRACE(("Vile::unwatchfd(fd=%d)\n", fd));
+	TRACE((T_CALLED "Vile::unwatchfd(fd=%d)\n", fd));
 	unwatchfd(fd);
+	returnVoid();
 
 
 MODULE = Vile	PACKAGE = Vile::Buffer
@@ -2761,8 +2776,6 @@ MODULE = Vile	PACKAGE = Vile::Buffer
   #
   # =over 4
   #
-
-
 
   #
   # =item <BUFOBJ>
@@ -3237,6 +3250,7 @@ current_buffer(...)
 	VileBuf *newbuf = 0;
 
     PPCODE:
+	TRACE((T_CALLED "Vile::current_buffer\n"));
 	if (items > 2)
 	    croak("Too many arguments to current_buffer");
 	else if (items == 2) {
@@ -3264,6 +3278,7 @@ current_buffer(...)
 	}
 
 	XPUSHs(svcurbuf);
+	returnVoid();
 
   #
   # =item delete BUFOBJ

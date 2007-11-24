@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/ini-filt.l,v 1.6 2006/05/21 19:50:19 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/ini-filt.l,v 1.7 2007/11/23 21:51:30 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of M$ ini-definition
  * input text.
@@ -28,6 +28,9 @@ my_keyword_attr(char *name)
 }
 
 %}
+
+HEX		[[:xdigit:]]+
+GUID		G"{"{HEX}("-"{HEX})+"}"
 
 INTEGER		([[:digit:]]+)|(0x[[:xdigit:]]+)
 IDENT		[[:alpha:]][[:alnum:]_.]*[%&!#$]?

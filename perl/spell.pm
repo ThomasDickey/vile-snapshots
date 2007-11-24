@@ -1,13 +1,29 @@
-# $Header: /users/source/archives/vile.vcs/perl/RCS/spell.pm,v 1.3 2002/05/06 23:27:33 tom Exp $
+# $Header: /users/source/archives/vile.vcs/perl/RCS/spell.pm,v 1.4 2007/11/23 15:27:11 tom Exp $
 package spell;
 
-use IPC::Open2;
+use strict;
+use File::Temp qw/ tempfile tempdir /;
 use Vile;
+
 require Vile::Exporter;
-@ISA = 'Vile::Exporter';
-%REGISTRY = (spell => [\&spell, 'spellcheck the current buffer (ispell)']);
+
+our @ISA = 'Vile::Exporter';
+our %REGISTRY = (spell => [\&spell, 'spellcheck the current buffer (ispell)']);
+
+sub checkline($) {
+    my @reply;
+    (my $fh, my $filename) = tempfile( );
+    print $fh $_[0];
+    close $fh;
+    open my $fh, "ispell -a < $filename |" or return @reply;
+    @reply = <$fh>;
+    close $fh;
+    unlink $filename;
+    return @reply;
+}
 
 sub spell {
+
     my $work = Vile::working(0);
     my %color = (
         "&" => ["color", "2"],
@@ -15,11 +31,11 @@ sub spell {
         "#" => ["color", "1"],
     );
     my $prompt = "[S]kip, [R]eplace, [A]ccept, [I]nsert, [U]ncap, [Q]uit? ";
+
     my $cb = $Vile::current_buffer;
     my $blines = scalar(Vile->get("\$blines"));
     $cb->setregion(1,'$')->attribute("normal");
-    my $pid = open2(\*R, \*W, "ispell -a");
-    print W "!\n";
+
     my @dot = $cb->dot;
     my ($resp, @H, @O, @cmds, %accepted, $off);
     my $i = 1;
@@ -28,8 +44,7 @@ sub spell {
         undef @cmds, %accepted;
         $cb->dot($i);
         Vile::update;
-        print W "^$_";
-        while ($resp = <R>) {
+	foreach $resp (checkline($_)) { 
             chop $resp;
             if ($resp =~ m:^(\&|\?|\#):) {
                 @H = split(" ",  (split(": ", $resp))[0]);
@@ -100,22 +115,15 @@ sub spell {
                              $i, $H[3]+$off, $i,$H[3]+length($H[1])+$off)
                            ->attribute("normal")
                            ->attribute("bold", @{$color{$H[0]}});
-                        print W "";
                         Vile::working($work);
                         return;
                     }
                 }
-            } elsif ($resp =~ m:^$:) {
-                foreach $cmd (@cmds) {
-                    print W "$cmd\n";
-                }
-                last;
             }
         }
         last if (++$i > $blines);
         $cb->setregion($i, '$');
     }
-    print W "";
     $cb->dot(@dot);
     Vile::working($work);
 }

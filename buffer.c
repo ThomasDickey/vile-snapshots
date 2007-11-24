@@ -5,7 +5,7 @@
  * keys. Like everyone else, they set hints
  * for the display system.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.324 2007/08/29 22:02:32 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.325 2007/11/23 17:22:09 tom Exp $
  *
  */
 
@@ -658,6 +658,10 @@ imply_alt(char *fname, int copy, int lockfl)
 		bp->b_active = TRUE;
 		ch_fname(bp, nfname);
 		make_local_b_val(bp, MDNEWLINE);
+#if OPT_MULTIBYTE
+		COPY_B_VAL(bp, curbp, VAL_BYTEORDER_MARK);
+		COPY_B_VAL(bp, curbp, VAL_FILE_ENCODING);
+#endif
 		if (valid_window(curwp) && curwp->w_bufp == curbp) {
 		    top = line_no(curbp, curwp->w_line.l);
 		    now = line_no(curbp, DOT.l);

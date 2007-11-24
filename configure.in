@@ -1,12 +1,12 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_REVISION($Revision: 1.238 $)
+AC_REVISION($Revision: 1.240 $)
 AC_PREREQ(2.13.20030927)
 rm -f config.cache
 
 ### Use "configure -with-screen" to override the default configuration, which is
 ### termcap-based on unix systems.
 
-dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.238 2007/10/20 14:37:35 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.240 2007/11/23 18:12:36 tom Exp $
 
 define(MAKELIST, sh $srcdir/filters/makelist.sh $srcdir/filters/genmake.mak)
 
@@ -537,6 +537,7 @@ cf_tc_funcs=""
 cf_tc_externs=""
 if test "$SCREEN" = curses ; then
 	CF_TERMCAP_LIBS
+    CF_CURSES_FUNCS(addnwstr)
 	cf_tc_funcs="use_default_colors"
 	AC_DEFINE(NEED_CURSES_H)
 fi
@@ -745,6 +746,7 @@ strerror \
 strtol \
 )
 
+CF_CURSES_TERM_H
 if test ".$cf_cv_termlib" != ".none"
 then
 CHECK_DECL_HDRS="$VILE_CHECK_HDRS
