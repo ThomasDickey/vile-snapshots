@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/fltstack.h,v 1.10 2007/05/26 15:23:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/fltstack.h,v 1.12 2007/11/25 20:19:02 tom Exp $
  * A simple stack for lex states
  */
 typedef struct {
@@ -13,6 +13,7 @@ static STACK *stk_state = 0;
 static int stk_limit = 0;
 static int stk_level = -1;
 
+#define FLTSTACK_OK   (stk_level >= 0 && stk_level < stk_limit)
 #define FLTSTACK_THIS stk_state[stk_level]
 #define FLT_STATE     FLTSTACK_THIS.state
 
@@ -22,7 +23,7 @@ static int stk_level = -1;
 static void
 new_state(int code)
 {
-    if (stk_level >= 0 && stk_state != 0)
+    if (FLTSTACK_OK && stk_state != 0)
 	FLT_STATE = code;
     BEGIN(code);
 }
@@ -35,7 +36,8 @@ pop_state(void)
 #else
     int state = 0;	/* cater to broken "new" flex */
 #endif
-    if (--stk_level >= 0 && stk_level < stk_limit)
+    --stk_level;
+    if (FLTSTACK_OK)
 	state = FLT_STATE;
     new_state(state);
 }
@@ -43,11 +45,17 @@ pop_state(void)
 static void
 push_state(int state)
 {
-    if ((++stk_level >= stk_limit) || (stk_state == 0)) {
+    ++stk_level;
+    if ((stk_level >= stk_limit) || (stk_state == 0)) {
 	unsigned have = sizeof(STACK) * stk_limit;
 	unsigned want = sizeof(STACK) * (stk_limit += (20 + stk_level));
 	stk_state = type_alloc(STACK, (void *) stk_state, want, &have);
     }
+#ifdef FLTSTACK_EXTRA_PUSH
+    if (FLTSTACK_OK) {
+	FLTSTACK_EXTRA_PUSH
+    }
+#endif
     new_state(state);
 }
 

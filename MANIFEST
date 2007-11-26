@@ -1,4 +1,4 @@
-MANIFEST for vile, version v9_5r8
+MANIFEST for vile, version v9_5s
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 CHANGES                         Change-log for VILE
@@ -33,6 +33,7 @@ cmdtbl                          used by 'mktbls' to generate VILE's command-tabl
 config.guess                    guess configuration
 config.sub                      substitute configuration
 config_h.in                     template for config.h
+configure                       Configuration script for UNIX
 configure.in                    used by 'autoconf' to generate 'configure'
 csrch.c                         current-line character-scanning commands
 curses.c                        terminal driver using curses

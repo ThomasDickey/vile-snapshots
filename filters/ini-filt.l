@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/ini-filt.l,v 1.7 2007/11/23 21:51:30 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/ini-filt.l,v 1.8 2007/11/25 20:40:08 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of M$ ini-definition
  * input text.
@@ -37,7 +37,7 @@ IDENT		[[:alpha:]][[:alnum:]_.]*[%&!#$]?
 
 STRING		\"([^"]|(""))*\"
 
-NUMBER		{INTEGER}
+NUMBER		{INTEGER}|{GUID}
 
 %%
 

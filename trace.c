@@ -1,7 +1,7 @@
 /*
  * debugging support -- tom dickey.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.74 2007/10/18 22:06:26 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.75 2007/11/25 16:06:56 tom Exp $
  *
  */
 
@@ -305,6 +305,10 @@ Trace(const char *fmt,...)
 	    vfprintf(fp, fmt, ap);
 	    (void) fflush(fp);
 	} else if (fp != 0) {
+	    while (trace_depth > 0) {
+		fprintf(fp, "%s", trace_indent(trace_depth--, '|'));
+		fprintf(fp, T_RETURN "(close)\n");
+	    }
 	    (void) fclose(fp);
 	    (void) fflush(stdout);
 	    (void) fflush(stderr);

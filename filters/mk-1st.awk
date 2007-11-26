@@ -1,8 +1,9 @@
-# $Header: /users/source/archives/vile.vcs/filters/RCS/mk-1st.awk,v 1.12 2005/06/09 23:33:50 tom Exp $
+# $Header: /users/source/archives/vile.vcs/filters/RCS/mk-1st.awk,v 1.14 2007/11/25 15:03:27 tom Exp $
 #
 # Generate makefile lists for vile's external and built-in filters.  We will
 # build each filter only one way (external _or_ built-in).  This script uses
 # these parameters:
+#	flex =  yes/no, depending on whether lex is really flex.
 #	mode =	one of 'built-in','loadable' or 'external'
 #	list =	a list of the filter root-names to use, with 'all'
 #		matching all root-names.
@@ -33,6 +34,10 @@ BEGIN	{
 	    }
 	    found = 0;
 	    if ( NF >= 2 ) {
+		if ( NF >= 4 && flex != "yes" ) {
+		    if ( $4 = flex )
+			next;
+		}
 		for (i = 1; i <= Len; i++) {
 		    if ( $1 == List[i] || List[i] == "all" ) {
 			found = 1;
@@ -40,10 +45,7 @@ BEGIN	{
 		    }
 		}
 		if (found) {
-		    if ( NF > 3 )
-			prog[count] = $4 suffix;
-		    else
-			prog[count] = "vile-" $1 "-filt" suffix;
+		    prog[count] = "vile-" $1 "-filt" suffix;
 		    file[count] = sprintf("%s.%s", $2, $3);
 		    root[count] = $2;
 		    count = count + 1;

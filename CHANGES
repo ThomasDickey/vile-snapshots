@@ -1,6 +1,6 @@
 Changes for vile 9.6 (released ??? ??? ?? ????)
 
- 20070??? (s)
+ 20071125 (s)
 	+ several changes to provide usable Unicode support:
 	  + add mode percent-utf8 to set a threshold for file-encoding mode
 	    "auto" detection of UTF-16/UTF-32 files.
@@ -33,6 +33,12 @@ Changes for vile 9.6 (released ??? ??? ?? ????)
 	  + UTF-16 and UTF-32 files are detected based on BOM and/or the
 	    contents of the first line of the file.
 	  + external syntax filters do not handle BOM or UTF-16, UTF-32.
+	+ improve name-completion by saving/restoring the original window and
+	  buffer when [Completions] closes, rather than the closest window.
+	+ add output from rcshist to diffmode.
+	+ add ".vbp" files to inimode.
+	+ modify configure script to omit lex-filt.l from build if lex is not
+	  really flex, since the tables are too large for the older program.
 	+ modify spell.pm to use a temporary file to work with newer Perl's
 	  that do not handle tied variables exactly as filehandles.
 	+ update Kevin Buettner's email address.

@@ -5,7 +5,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/conffilt.l,v 1.2 2007/09/18 19:53:43 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/conffilt.l,v 1.3 2007/11/25 19:54:54 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of config-file.
  */
@@ -88,7 +88,6 @@ do_filter(FILE *inputs)
     Number_attr  = class_attr(NAME_NUMBER);
     String_attr  = class_attr(NAME_LITERAL);
 
-    stk_level = -1;
     begin_state(NORMAL);
 
     while (yylex() > 0) {

@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.633 2007/11/23 21:14:47 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.634 2007/11/25 19:10:07 tom Exp $
  *
  */
 
@@ -176,7 +176,7 @@ extern int ourstrstr (const char *haystack, const char *needle, int anchor);
 extern void kbd_erase (void);
 extern void kbd_init (void);
 extern void kbd_unquery (void);
-extern void popdown_completions (void);
+extern void popdown_completions (const char *old_bname, WINDOW *old_wp);
 
 #if DISP_X11
 extern char *fnc2pstr (const CMDFUNC *f);

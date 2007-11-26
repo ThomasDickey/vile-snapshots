@@ -44,7 +44,7 @@
  *	tgetc_avail()     true if a key is avail from tgetc() or below.
  *	keystroke_avail() true if a key is avail from keystroke() or below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.314 2007/09/09 14:31:17 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.315 2007/11/25 19:14:45 tom Exp $
  *
  */
 
@@ -1832,6 +1832,8 @@ kbd_reply(const char *prompt,	/* put this out first */
     size_t newpos;
     TBUFF *buf = 0;
     const char *result;
+    const char *old_bname = curbp->b_bname;
+    WINDOW *old_wp = curwp;
 
     TRACE((T_CALLED "kbd_reply(prompt=%s, extbuf=%s, options=%#x)\n",
 	   TRACE_NULL(prompt),
@@ -2214,7 +2216,7 @@ kbd_reply(const char *prompt,	/* put this out first */
 	firstch = FALSE;
     }
 #if OPT_POPUPCHOICE
-    popdown_completions();
+    popdown_completions(old_bname, old_wp);
 #endif
     miniedit = FALSE;
     reading_msg_line = FALSE;

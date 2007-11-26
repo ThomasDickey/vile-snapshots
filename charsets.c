@@ -1,5 +1,5 @@
 /*
- * $Id: charsets.c,v 1.50 2007/11/23 16:26:51 tom Exp $
+ * $Id: charsets.c,v 1.52 2007/11/25 17:30:05 tom Exp $
  *
  * see
  http://msdn.microsoft.com/library/default.asp?url=/library/en-us/intl/unicode_42jv.asp
@@ -543,6 +543,10 @@ set_encoding(BUFFER *bp, int value)
 	&& value != global_b_val(VAL_FILE_ENCODING)) {
 	make_local_b_val(bp, VAL_FILE_ENCODING);
 	set_b_val(bp, VAL_FILE_ENCODING, value);
+
+	TRACE(("set_encoding for '%s' to %s\n",
+	       bp->b_bname,
+	       encoding2s(b_val(bp, VAL_FILE_ENCODING))));
     }
 }
 
@@ -571,6 +575,9 @@ set_encoding_from_bom(BUFFER *bp, int bom_value)
 	    result = ENUM_UNKNOWN;
 	    break;
 	}
+	TRACE(("set_encoding_from_bom(%s) ->%s\n",
+	       byteorder2s(mp->code),
+	       encoding2s(result)));
 	set_encoding(bp, result);
     }
 }
