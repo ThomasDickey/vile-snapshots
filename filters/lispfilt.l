@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Id: lispfilt.l,v 1.13 2006/05/21 19:50:19 tom Exp $
+ * $Id: lispfilt.l,v 1.15 2007/11/25 20:07:49 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of lisp code.
  *
@@ -17,7 +17,7 @@
 
 #include <filters.h>
 
-#define FLTSTACK_EXTRA int sibling; int quoted;
+#define FLTSTACK_EXTRA int quoted;
 #include <fltstack.h>
 
 DefineFilter("lisp");
@@ -63,13 +63,15 @@ RPAREN		\)
 <NORMAL>{COMMENT}	{ WriteToken(Comment_attr); }
 
 <NORMAL>'{LPAREN}	{ push_state(NORMAL);
-			  FLTSTACK_THIS.quoted = 1;
+			  if (FLTSTACK_OK)
+			      FLTSTACK_THIS.quoted = 1;
 			  WriteToken(paren_attr());
 			}
 
-<NORMAL>{LPAREN}	{ int save = FLTSTACK_THIS.quoted;
+<NORMAL>{LPAREN}	{ int save = FLTSTACK_OK ? FLTSTACK_THIS.quoted : 0;
 			  push_state(NORMAL);
-			  FLTSTACK_THIS.quoted = save;
+			  if (FLTSTACK_OK)
+			      FLTSTACK_THIS.quoted = save;
 			  WriteToken(paren_attr());
 			}
 
@@ -89,7 +91,7 @@ RPAREN		\)
 static const char *
 paren_attr(void)
 {
-    return (FLTSTACK_THIS.quoted ? String_attr : "");
+    return ((FLTSTACK_OK && FLTSTACK_THIS.quoted) ? String_attr : "");
 }
 
 static void

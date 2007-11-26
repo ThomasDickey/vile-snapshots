@@ -5,7 +5,7 @@
  * keys. Like everyone else, they set hints
  * for the display system.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.325 2007/11/23 17:22:09 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.327 2007/11/25 18:20:14 tom Exp $
  *
  */
 
@@ -1244,8 +1244,9 @@ swbuffer_lfl(BUFFER *bp, int lockfl, int this_window)
     int status = TRUE;
     WINDOW *wp;
 
-    TRACE((T_CALLED "swbuffer_lfl(bp=%p, lockfl=%d, this_window=%d)\n",
-	   bp, lockfl, this_window));
+    TRACE((T_CALLED
+	   "swbuffer_lfl(bp=%p, lockfl=%d, this_window=%d) bname='%s'\n",
+	   bp, lockfl, this_window, bp->b_bname));
 
     if (!bp) {
 	mlforce("BUG:  swbuffer passed null bp");
@@ -2515,8 +2516,9 @@ bfind(const char *bname, UINT bflag)
 	lastb = bp;
     }
 
-    beginDisplay();
     TRACE((T_CALLED "bfind(%s, %u)\n", bname, bflag));
+
+    beginDisplay();
 
     /* set everything to 0's unless we want nonzero */
     if ((bp = typecalloc(BUFFER)) == NULL) {
@@ -2589,9 +2591,8 @@ bfind(const char *bname, UINT bflag)
 	    set_record_sep(bp, (RECORD_SEP) global_b_val(VAL_RECORD_SEP));
 	}
     }
-    TRACE((T_RETURN "%p\n", bp));
     endofDisplay();
-    return (bp);
+    returnPtr(bp);
 }
 
 /*

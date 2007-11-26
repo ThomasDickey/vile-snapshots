@@ -1,7 +1,7 @@
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/regexp.c,v 1.137 2007/08/29 00:49:04 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/regexp.c,v 1.138 2007/11/25 22:04:28 tom Exp $
  *
- * Copyright 2005,2006 Thomas E. Dickey and Paul G. Fox
+ * Copyright 2005-2006,2007 Thomas E. Dickey and Paul G. Fox
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the

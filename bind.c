@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.314 2007/10/21 13:46:16 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.316 2007/11/25 19:13:29 tom Exp $
  *
  */
 
@@ -1543,9 +1543,12 @@ cfg_locate(char *fname, UINT which)
 
 	    if ((mode & FL_EXECABLE) || (which == LOCATE_SOURCE)) {
 		char *dname = malloc(NFILEN + strlen(fname) + 10);
+		char *leaf;
+
 		if (dname != 0) {
-		    sprintf(dname, "%s%c..", fname, vl_pathsep);
-		    lengthen_path(dname);
+		    leaf = pathleaf(lengthen_path(strcpy(dname, fname)));
+		    if ((leaf - 1) != dname)
+			*--leaf = EOS;
 		    if (is_our_file(dname) && is_our_file(fname)) {
 			success = TRUE;
 		    } else {
@@ -2627,11 +2630,19 @@ scroll_completions(
 }
 
 void
-popdown_completions(void)
+popdown_completions(const char *old_bname, WINDOW *old_wp)
 {
     BUFFER *bp;
-    if ((bp = find_b_name(COMPLETIONS_BufName)) != NULL)
+    if ((bp = find_b_name(COMPLETIONS_BufName)) != NULL) {
 	zotwp(bp);
+	if (strcmp(old_bname, curbp->b_bname)) {
+	    if (!strcmp(old_wp->w_bufp->b_bname, old_bname)) {
+		set_curwp(old_wp);
+	    } else if ((bp = find_b_name(old_bname)) != NULL) {
+		swbuffer(bp);
+	    }
+	}
+    }
 }
 #endif /* OPT_POPUPCHOICE */
 

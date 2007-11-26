@@ -13,7 +13,7 @@
  * vile.  The file api.c (sometimes) provides a middle layer between
  * this interface and the rest of vile.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.107 2007/11/23 01:54:06 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.108 2007/11/25 16:01:15 tom Exp $
  */
 
 /*#
@@ -1153,8 +1153,8 @@ perl_init(void)
 /* make sure END blocks and destructors get called */
 void perl_exit()
 {
+    TRACE((T_CALLED "perl_exit\n"));
     if (perl_interp) {
-	TRACE((T_CALLED "perl_exit\n"));
 	perl_run(perl_interp);		/* process END blocks */
 	perl_destruct(perl_interp);	/* global destructors */
 	perl_free(perl_interp);
@@ -2660,6 +2660,7 @@ register(name, ...)
 	croak("%s requires vile to be compiled with OPT_NAMBST",
 	      GvNAME(CvGV(cv)));
 #endif
+	returnVoid();
 
   #
   # =item watchfd FD, WATCHTYPE, CALLBACK

@@ -2005,8 +2005,8 @@ Editor modes
 		this mode may be a no-op on non-UNIX systems.  (U)
 
 	unprintable-as-octal (uo) If an 8-bit character is non-printing, it
-		will normally be displayed in hex.  This setting will force
-		octal display.  Non-printing characters whose 8th bit is
+		will normally be displayed in hexadecimal.  This setting will
+		force octal display.  Non-printing characters whose 8th bit is
 		not set are always displayed in control character (e.g. '^C')
 		notation.  (W)
 
@@ -2124,18 +2124,33 @@ Editor modes
 8-Bit Operation
 ---------------
 	vile allows input, manipulation, and display of all 256 possible
-	byte-wide characters.  (Double-wide characters are not supported.)
+	byte-wide characters.  Wide characters are supported, depending on
+	the device type and your locale settings.
 
 	Output
 	------
-	By default, characters with the high bit set (decimal value 128 or
-	greater) will display as hex (or octal; see "non-printing- octal"
-	above) sequences, e.g.  \xA5.  A range of characters which should
-	display as themselves (that is, characters understood by the user's
-	display terminal) may be given using the "printing-low" and
-	"printing-high" settings (see above).  Useful values for these
-	settings are 160 and 255, which correspond to the printable range
-	of the ISO-Latin-1 character set.
+	By default, 8-bit characters with the high bit set (decimal value 128
+	or greater) will display as hexadecimal (or octal; see
+	"unprintable-as-octal" above) sequences, e.g. \xA5.  A range of
+	characters which should display as themselves (that is, characters
+	understood by the user's display terminal) may be given using the
+	"printing-low" and "printing-high" settings (see above).  Useful values
+	for these settings are 160 and 255, which correspond to the printable
+	range of the ISO-Latin-1 character set.
+
+	If your locale (e.g., the LANG or LC_CTYPE environment variable on
+	a POSIX platform) is configured properly, the "printing-low" and
+	"printing-high" settings are not needed.  vile initializes its
+	character type tables based on the system.  You can make finer
+	adjustments to those tables as described in "Character Classes".
+
+	If your terminal (and locale) are setup to support UTF-8, vile can
+	display files which use that encoding.  It can also display
+	UTF-16 and UTF-32 files using UTF-8.  When the terminal/locale do
+	not support UTF-8 vile displays the wide characters as hexadecimal
+	codes, e.g., \u1234.  Even when vile can display wide characters,
+	you can force it to display the hexadecimal codes with the
+	"unicode-as-hex" mode.
 
 	Input
 	-----
@@ -2152,12 +2167,29 @@ Editor modes
 	    may take more convincing, at both ends, but use that stty
 	    command as a starting point.
 
+	    If you start vile in a locale that uses UTF-8 encoding,
+	    vile will check if there is a corresponding 8-bit encoding
+	    by stripping the UTF-8 suffix from the locale name, e.g.,
+	    "en_US.UTF-8" to "en_US".  When reading characters from the
+	    keyboard, it will map 8-bit codes to the 8-bit locale when
+	    editing a buffer whose file-encoding is "8bit" or "ascii".
+
 	As numbers -- the ^V prefix (or, more correctly, the key bound to
 	    the "quote-next-character" function), if followed by up to
 	    three digits, will insert a character whose value is that
 	    number (no greater than 255) into the buffer.  The number may
-	    be entered in decimal (^VNNN), octal with a leading '0' (^V0NNN),
-	    or hex with a leading 'x' (^VxNN).
+	    be entered in
+		    decimal (^VNNN),
+		    octal with a leading '0' (^V0NNN) or
+		    hexadecimal with a leading 'x' (^VxNN).
+
+	    Wide (Unicode) values can be entered in a similar fashion, though
+	    they are stored as more than one byte:
+		    Unicode hexadecimal with a leading 'u' (^VuNNNN).
+	    If the current buffer's "file-encoding" mode is set to one of
+	    the Unicode flavors (utf-8, utf-16 or utf-32), vile will display
+	    the value as a wide character.  Otherwise it will show the bytes
+	    of the corresponding UTF-8 encoding.
 
 	As digraphs -- Perhaps more useful to some people is using a set of
 	    ":map!" commands to aid insertion of 8-bit text.  The file
@@ -2175,8 +2207,8 @@ Editor modes
 	command mode, or in both command and insert modes.  In either case,
 	if a character is _not_ bound to a function, then it will be
 	self-inserting when in insert mode.  (To bind to a meta key in the
-	.vilerc file, one may specify it as itself, or in hex or octal, or
-	with the shorthand 'M-c' where c is the corresponding character
+	.vilerc file, one may specify it as itself, or in hexadecimal or octal,
+	or with the shorthand 'M-c' where c is the corresponding character
 	without the high bit set.
 
 	(Although it is possible to edit and view all 256 characters, it is
@@ -2317,9 +2349,9 @@ Key Rebinding
 	characters could also be entered as ^Ax, which would only be two
 	characters.
 
-	Characters can be entered in hex or octal as well, in the form
-	0xNN, where NN is exactly two hex digits.  So if you know the hex
-	value for a key, you can bind to it like:
+	Characters can be entered in hexadecimal or octal as well, in the form
+	0xNN, where NN is exactly two hexadecimal digits.  If you know the
+	hexadecimal value for a key, you can bind to it like:
 		bind-key next-window ^A-\x14
 	or
 		bind-key next-window #-\213
@@ -2550,7 +2582,7 @@ Key Rebinding
 
 	The left hand side of a map[!] definition may contain the usual
 	backslash escapes:  \n, \r, \t, \b, \f, \a (^G), \e (ESC),
-	\s (SPACE), \xNN (hex), \NNN (octal).  The right hand side is
+	\s (SPACE), \xNN (hexadecimal), \NNN (octal).  The right hand side is
 	taken exactly literally, so special characters must be expressed
 	as themselves.
 
@@ -5382,8 +5414,8 @@ X Window System specifics
 			When doing text attribution with the
 			"attribute-cntl_a-sequences-til" command (bound to
 			^A-A), the attribute may be of the form "Cn", where
-			'n' is a hex digit.  This digit picks one of the 16
-			fcolor/bcolor pairs set up in the color
+			'n' is a hexadecimal digit.  This digit picks one of
+			the 16 fcolor/bcolor pairs set up in the color
 			subresource.  For example, if the buffer contained
 			the text:
 				^A6C3:foobar
@@ -6365,6 +6397,6 @@ Problems
 	keep informed of new releases.
 
 
-Copyright 1995-2005,2006 by Paul Fox, Thomas Dickey, and Kevin Buettner
+Copyright 1995-2006,2007 by Paul Fox, Thomas Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.639 2007/11/19 00:40:32 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.641 2007/11/25 23:48:18 tom Exp $

@@ -5,7 +5,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/latexflt.l,v 1.43 2006/05/21 19:50:19 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/latexflt.l,v 1.44 2007/11/25 20:00:41 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of TeX or LaTeX
  * input text.
@@ -126,10 +126,12 @@ NUMBER		({INTEGER}|{REAL})
 <TEXT,MATH,MATHC,QUOTED>"|"	{ WriteToken(String_attr);
 			  if (braces != 0)
 			      ;
-			  else if (FLT_STATE == QUOTED)
-			      pop_state();
-			  else if (FLT_STATE != TEXT)
-			      push_state(QUOTED);
+			  else if (FLTSTACK_OK) {
+			      if (FLT_STATE == QUOTED)
+				  pop_state();
+			      else if (FLT_STATE != TEXT)
+				  push_state(QUOTED);
+			  }
 			}
 <QUOTED>[^|\r\n]*	{ WriteToken(String_attr); }
 

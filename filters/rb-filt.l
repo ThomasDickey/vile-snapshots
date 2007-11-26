@@ -5,7 +5,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/rb-filt.l,v 1.16 2007/05/26 14:42:22 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/rb-filt.l,v 1.18 2007/11/25 20:04:46 tom Exp $
  *
  * Filter to add vile "attribution" sequences to a Ruby script
  * based on the Python filter.
@@ -185,12 +185,14 @@ pop_quote(char *text, int length)
     flt_bfr_append(text, length);
     flt_bfr_finish();
     pop_state();
-    switch (stk_state[stk_level].state) {
-    case HERE:
-    case SSTRING:
-    case DSTRING:
-	attr = String_attr;
-	break;
+    if (FLTSTACK_OK) {
+	switch (FLT_STATE) {
+	case HERE:
+	case SSTRING:
+	case DSTRING:
+	    attr = String_attr;
+	    break;
+	}
     }
     if (attr != 0)
 	flt_bfr_begin(String_attr);

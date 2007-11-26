@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.349 2007/09/27 00:13:29 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.350 2007/11/25 17:40:26 tom Exp $
  *
  */
 
@@ -34,6 +34,7 @@ static void relist_settings(void);
 #endif
 
 #if OPT_ENUM_MODES
+static int fsm_idx;
 static FSM_BLIST *valname_to_choices(const struct VALNAMES *names);
 #endif
 
@@ -494,6 +495,9 @@ makemodelist(int local, void *ptr)
     static const char ww[] = "Window";
     int nflag, nflg2;
 
+#if OPT_ENUM_MODES
+    int save_fsm_idx = fsm_idx;
+#endif
     WINDOW *localwp = ptr2WINDOW(ptr);	/* alignment okay */
     BUFFER *localbp = localwp->w_bufp;
     struct VAL *local_b_vals = localbp->b_values.bv;
@@ -543,6 +547,9 @@ makemodelist(int local, void *ptr)
 	(void) listvalueset(ww, nflag, local, w_valnames,
 			    global_w_values.wv, (struct VAL *) 0);
     }
+#if OPT_ENUM_MODES
+    fsm_idx = save_fsm_idx;
+#endif
 }
 
 /*
@@ -919,8 +926,6 @@ static const FSM_TABLE fsm_tbl[] =
     {"qualifiers", &fsm_mmqualifiers_blist},
 #endif
 };
-
-static int fsm_idx;
 
 static size_t
 fsm_size(const FSM_CHOICES * list)
