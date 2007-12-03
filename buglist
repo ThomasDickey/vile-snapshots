@@ -3,7 +3,7 @@
 ------------------------
 vile bug/enhancement/wish list (mostly wishes ;-)
 ------------------------
-$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.405 2006/10/28 13:40:54 tom Exp $
+$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.406 2007/12/01 16:37:50 tom Exp $
 ----------------------
 	(E means enhancement, L,M,H are low, medium, high priority)
 
@@ -1569,3 +1569,9 @@ The screen cannot be resized while doing a multimotion command initiated by the
 mouse (because of the beginDisplay/endofDisplay in tcap.c interacting with the
 check in newscreensize).  When the command ends, vile will update the
 screensize.
+
+-- 07-11-26 (tom)
+filters using fltstack.h won't build with OSF/1 4.0D since its native flex
+declares yy_start (used in BEGIN) after the first code segment - looks like
+it's in preparation for the pattern definitions.  I cannot work around that
+(use flex 2.54a).

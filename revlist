@@ -1,6 +1,6 @@
-revlist for vile, version v9_5s
+revlist for vile, version v9_5t
 --------------------------------------------------------------------------------
-CHANGES	1.1054
+CHANGES	1.1059
 CHANGES.R3	1.1
 CHANGES.R4	1.1
 CHANGES.R5	1.1
@@ -13,7 +13,7 @@ MANIFEST	none
 README	1.97
 README.PC	1.33
 README.VMS	1.5
-aclocal.m4	1.178
+aclocal.m4	1.179
 ansi.c	1.49
 api.c	1.43
 api.h	1.13
@@ -25,7 +25,7 @@ borland.c	1.37
 btree.c	1.23
 btree.h	1.5
 buffer.c	1.327
-buglist	1.405
+buglist	1.406
 builtflt.c	1.60
 charsets.c	1.52
 chgdfunc.h	1.21
@@ -33,7 +33,7 @@ cmdtbl	1.251
 config.guess	1.7
 config.sub	1.8
 config_h.in	1.2
-configure	1.14
+configure	1.15
 configure.in	1.241
 csrch.c	1.34
 curses.c	1.32
@@ -64,7 +64,7 @@ isearch.c	1.60
 itbuff.c	1.25
 lckfiles.c	1.11
 line.c	1.188
-main.c	1.612
+main.c	1.613
 makeargv.c	1.3
 makeargv.h	1.3
 makefile.blc	1.21
@@ -89,7 +89,7 @@ opers.c	1.92
 os2keys.h	1.2
 os2pipe.c	1.5
 os2vio.c	1.36
-patchlev.h	1.356
+patchlev.h	1.357
 path.c	1.156
 perl.xs	1.108
 plugin.c	1.1
@@ -100,7 +100,7 @@ ptypemap	1.7
 random.c	1.312
 regexp.c	1.138
 region.c	1.143
-revlist	v9_5s
+revlist	v9_5t
 search.c	1.145
 select.c	1.166
 sinstall.sh	1.1
@@ -117,7 +117,7 @@ trace.h	1.28
 ucrypt.c	1.15
 undo.c	1.96
 version.c	1.64
-vile-9.5.spec	1.20
+vile-9.5.spec	1.21
 vile.1	1.37
 vile.hlp	1.641
 vile.wmconfig	1.1
@@ -248,7 +248,7 @@ filters/m4.key	1.3
 filters/mail.key	1.3
 filters/mailfilt.l	1.20
 filters/make.key	1.8
-filters/makefile.2nd	1.12
+filters/makefile.2nd	1.13
 filters/makefile.djg	1.3
 filters/makefile.emx	1.4
 filters/makefile.icc	1.3
@@ -301,7 +301,7 @@ filters/rtf-filt.l	1.3
 filters/rtf.key	1.4
 filters/rubyfilt.c	1.41
 filters/sccs.key	1.1
-filters/sccsfilt.l	1.14
+filters/sccsfilt.l	1.15
 filters/sed-filt.c	1.22
 filters/sh-filt.l	1.70
 filters/sh.key	1.4
@@ -325,12 +325,12 @@ filters/texi.key	1.1
 filters/texifilt.l	1.6
 filters/ti-filt.l	1.22
 filters/ti.key	1.2
-filters/txt-filt.l	1.30
+filters/txt-filt.l	1.31
 filters/unfilter.c	1.10
 filters/unfilter.h	1.1
 filters/vb.key	1.7
 filters/vile.key	1.8
-filters/vilefilt.l	1.52
+filters/vilefilt.l	1.53
 filters/vim.key	1.2
 filters/vl-filt.l	1.13
 filters/vlog.key	1.10

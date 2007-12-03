@@ -1,6 +1,19 @@
 Changes for vile 9.6 (released ??? ??? ?? ????)
 
+ 20071202 (t)
+	> Tom Dickey:
+	+ modify filters makefile "clean" rule to accommodate OSF/1 4.0D
+	  whose make program leaves intermediate ".c" files for each lexer.
+	+ change order of restore-flags and switch-buffer in
+	  restore_buffer_state, avoiding an unnecessary prompt to discard
+	  changes when attempting to read a buffer that cannot be read.
+	+ increase a few table sizes to work with AIX 5.1 lex.
+	+ modify check for lex version to avoid hanging on older platforms
+	  where it would try to read from standard input even if it does not
+	  recognize the option.
+
  20071125 (s)
+	> Tom Dickey:
 	+ several changes to provide usable Unicode support:
 	  + add mode percent-utf8 to set a threshold for file-encoding mode
 	    "auto" detection of UTF-16/UTF-32 files.
@@ -98,6 +111,7 @@ Changes for vile 9.6 (released ??? ??? ?? ????)
 	+ add xpmmode
 
  20070603 (r)
+	> Tom Dickey:
 	+ amend makefile.in change for $(SRC) to use a translation rule that
 	  works with IRIX64 (and some broken BSD) make programs.
 	+ correct parsing/removal of "-i" option in winvile, taking into
@@ -109,6 +123,7 @@ Changes for vile 9.6 (released ??? ??? ?? ????)
 	  not found (report by Gary Jennejohn).
 
  20070528 (q)
+	> Tom Dickey:
 	+ change configure script to check for ispell before aspell; Fedora 5's
 	  problem with aspell was eventually fixed.
 	+ make cursor-adjustment after paste in xvile dependent on whether the

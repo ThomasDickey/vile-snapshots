@@ -22,7 +22,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.612 2007/11/25 22:03:40 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.613 2007/12/01 15:59:15 tom Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -131,8 +131,8 @@ static void
 restore_buffer_state(BUFFER *save_bp, UINT save_flags)
 {
     if (save_bp) {
-	swbuffer(save_bp);
 	save_bp->b_flag = save_flags;
+	swbuffer(save_bp);
     }
 }
 

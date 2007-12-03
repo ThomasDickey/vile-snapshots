@@ -1,4 +1,4 @@
-# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.2nd,v 1.12 2006/02/15 20:23:32 tom Exp $
+# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.2nd,v 1.13 2007/12/01 17:13:14 tom Exp $
 #
 
 .SUFFIXES: .l .c .i $o
@@ -75,6 +75,7 @@ mostlyclean:
 	-$(RM) *.[oi] *$(so) o$(TARGET) $(BUILTSRCS) core *~ *.BAK $(LEX_OUTPUT_ROOT).* *.bb* *.da *.gcov @LIBBUILTFLT@
 
 clean: mostlyclean
+	-$(SHELL) -c 'for L in *.l;do C=`basename $$L .l`.c;test -f $$C && rm -f $$C; done; exit 0'
 	-$(RM) $(ALL)
 
 distclean: clean
