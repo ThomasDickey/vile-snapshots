@@ -1,9 +1,12 @@
 %s DELETE INSERT
 
+%a 10000
+%o 10000
+
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/sccsfilt.l,v 1.14 2006/05/21 19:50:19 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/sccsfilt.l,v 1.15 2007/11/26 12:00:06 tom Exp $
  *
  * Filter to add vile "attribution" sequences to SCCS files.
  */

@@ -1,12 +1,12 @@
 %s NORMAL ACTION REGISTER SETTINGS MAJORMODE_NAME SUBMODE_NAME SUBMODE_VALS WITH_DEFS LITERAL
 
-%o 6000
-%a 3000
+%o 10000
+%a 6000
 
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/vilefilt.l,v 1.52 2007/11/25 20:03:58 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/vilefilt.l,v 1.53 2007/11/26 12:15:53 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of vile macros
  * - T.Dickey

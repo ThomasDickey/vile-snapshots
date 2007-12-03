@@ -1,11 +1,12 @@
 %s TEXT NOTE QUOTED QUOTES
 
-%o 6000
+%a 10000
+%o 10000
 
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/txt-filt.l,v 1.30 2007/04/25 00:26:21 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/txt-filt.l,v 1.31 2007/11/26 12:08:36 tom Exp $
  *
  * Filter to add vile "attribution" sequences to an ordinary text file
  */
