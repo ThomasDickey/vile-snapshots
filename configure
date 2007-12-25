@@ -17178,7 +17178,7 @@ echo $ECHO_N "checking for iconv function library... $ECHO_C" >&6
 if test "${cf_cv_func_iconv+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
 else
-  cf_cv_func_iconv="$ac_cv_func_iconv"
+  cf_cv_func_iconv="$ac_cv_func_iconv"; test "$cf_cv_func_iconv" = no && cf_cv_func_iconv=$cf_cv_have_lib_iconv
 	if test "$cf_cv_func_iconv" = yes ; then
 		if test -n "$cf_libdir" ; then
 			cf_cv_func_iconv="-L$cf_libdir -liconv"

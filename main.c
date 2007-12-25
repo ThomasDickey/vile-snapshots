@@ -22,7 +22,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.613 2007/12/01 15:59:15 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.616 2007/12/24 14:17:08 tom Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -42,7 +42,14 @@
 #include	<langinfo.h>
 #endif
 
-#ifdef HAVE_WCTYPE
+/*
+ * On Linux, the normal/wide ctypes give comparable results in the range 0-255,
+ * reflecting the fact that codes 128-255 in Unicode are the "same" as
+ * Latin-1.  However, Solaris' wide ctypes give only "non-space" results for
+ * 128-255.  Since we're using these functions in vile 9.6 only for the normal
+ * ctypes (the narrow 8-bit locale), just use the normal ctype functions.
+ */
+#if 0				/* def HAVE_WCTYPE */
 #include	<wctype.h>
 #define sys_iscntrl(n)  iswcntrl(n)
 #define sys_isdigit(n)  iswdigit(n)
@@ -304,9 +311,10 @@ MainProgram(int argc, char *argv[])
 		&& strncmp(vl_encoding, "ISO-8859", 8) != 0
 		&& strncmp(vl_encoding, "ISO 8859", 8) != 0
 		&& strncmp(vl_encoding, "ISO_8859", 8) != 0
-		&& strncmp(vl_encoding, "ISO8859", 8) != 0
+		&& strncmp(vl_encoding, "ISO8859", 7) != 0
 		&& strncmp(vl_encoding, "8859", 4) != 0
 		&& strncmp(vl_encoding, "KOI8-R", 6) != 0)) {
+	    TRACE(("...reset locale to POSIX!\n"));
 	    vl_locale = setlocale(LC_ALL, "C");
 	    vl_encoding = nl_langinfo(CODESET);
 	}

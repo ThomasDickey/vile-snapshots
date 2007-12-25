@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.634 2007/11/25 19:10:07 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.636 2007/12/24 01:52:45 tom Exp $
  *
  */
 
@@ -131,7 +131,7 @@ extern int chars_to_eol(LINE *lp, int off);
 extern int chars_to_bol(LINE *lp, int off);
 extern int count_bytes(LINE *lp, int off, int chars);
 extern int count_chars(LINE *lp, int off, int bytes);
-extern int mb_cellwidth(const char *text, int limit);
+extern int mb_cellwidth(WINDOW *wp, const char *text, int limit);
 
 #define BytesAt(lp,off)     (b_is_utfXX(curbp) ? bytes_at(lp,off) : 1)
 #define BytesBefore(lp,off) (b_is_utfXX(curbp) ? bytes_before(lp,off) : (off)!=0)
@@ -365,7 +365,7 @@ extern SIGT imworking (int ACTUAL_SIG_ARGS);
 extern	int	allow_working_msg (void);
 
 #if OPT_PSCREEN
-extern	OUTC_DCL psc_putchar	(OUTC_ARGS);
+extern	OUTC_DCL psc_putchar	(int c);
 extern	void	psc_eeol	(void);
 extern	void	psc_eeop	(void);
 extern	void	psc_flush	(void);
@@ -1230,6 +1230,7 @@ extern void ttflush (void);
 extern void ttopen (void);
 extern void ttunclean (void);
 extern void ttunwatchfd (int fd, long id);
+extern OUTC_DCL vl_ttputc (int c);
 extern void vl_save_tty (void);
 extern void vl_restore_tty (void);
 

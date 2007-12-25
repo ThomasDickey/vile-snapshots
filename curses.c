@@ -1,7 +1,7 @@
 /*
  * A terminal driver using the curses library
  *
- * $Header: /users/source/archives/vile.vcs/RCS/curses.c,v 1.32 2007/11/22 15:34:43 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/curses.c,v 1.33 2007/12/24 02:01:13 tom Exp $
  */
 
 #include "estruct.h"
@@ -208,7 +208,7 @@ curs_getc(void)
 }
 
 static OUTC_DCL
-curs_putc(OUTC_ARGS)
+curs_putc(int c)
 {
     c &= (N_chars - 1);
     if (in_screen) {

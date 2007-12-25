@@ -1,5 +1,15 @@
 Changes for vile 9.6 (released ??? ??? ?? ????)
 
+ 20071224 (u)
+	> Tom Dickey:
+	+ separate vile's ttputc from termcap prototype to pass integer param
+	  rather than just a char on Solaris.
+	+ fix computation of columns needed to show UTF-8 codes in POSIX
+	  locale.
+	+ modify manfilt.c to provide UTF-8 output in a UTF-8 locale.
+	+ minor fix to CF_FUNC_ICONV to link iconv on cygwin (noting that
+	  cygwin has no useful locale support, it may someday).
+
  20071202 (t)
 	> Tom Dickey:
 	+ modify filters makefile "clean" rule to accommodate OSF/1 4.0D
@@ -59,7 +69,7 @@ Changes for vile 9.6 (released ??? ??? ?? ????)
 	+ remove a redundant XtDestroyWidget() from x_close() to quiet a
 	  warning from XtRemoveGrab() when doing a ":q" from Xm-vile
 	  (report by Chris Green).
-	+ use va_copy() in dofmt() to work with Linux on powerpc 
+	+ use va_copy() in dofmt() to work with Linux on powerpc
 	  (report by Paul van Tilburg).
 	+ add docbookmode
 	+ improve 9.5m/9.5q check for file ownership, adding a warning message
@@ -130,7 +140,7 @@ Changes for vile 9.6 (released ??? ??? ?? ????)
 	  pasted text ended with a newline (request by Eric Krohn).
 	+ cleanup the bottom line on the screen when exiting the curses driver,
 	  to match the termcap/terminfo driver (report by Chris Green).
-	+ fixes for pl-filt.c (perl highlighter):
+	+ fixes for pl-filt.c, the perl highlighter:
 	  + allow blanks before tag for here-document, e.g.,
 		cat << 'TAG'
 	  + allow '~' as a quote-delimiter (this is used by linklint).
@@ -306,11 +316,11 @@ Changes for vile 9.6 (released ??? ??? ?? ????)
 	  modes, or majormodes.
 	+ add "#" as an alias for number-lines-til
 	+ improve highlighting of comment-lines (denoted by "--") in txtmode.
-	+ fixes for termcap syntax highlighter (tcmode):
+	+ fixes for termcap syntax highlighter, i.e., tcmode:
 	  + allow description field to be empty
 	  + color the "|" between aliases.
 	  + improve string- and escape-parsing
-	+ fixes for terminfo syntax highlighter (timode):
+	+ fixes for terminfo syntax highlighter, i.e., timode:
 	  + allow description field to be empty
 	  + color the "|" between aliases.
 	  + allow aliases to contain blanks.
@@ -321,8 +331,8 @@ Changes for vile 9.6 (released ??? ??? ?? ????)
 	> Tom Dickey:
 	+ modify fileread() to ensure that the error-buffer is reset after
 	  reading (or re-reading) a shell/pipe command, e.g., using ":e!".
-	+ fix configure --disable-largefile option (from ncurses).
-	+ minor fixes for nroff filter to improve rendition of groff's macros. 
+	+ fix configure --disable-largefile option, from ncurses.
+	+ minor fixes for nroff filter to improve rendition of groff's macros.
 	+ add configure check for ncurses 5.2(sic) on FreeBSD, which was broken
 	  by an incomplete set of changes to wchar.h (report by Chris Green).
 	+ add configure check for aspell, whose attempt at a compatibility
@@ -623,7 +633,7 @@ Changes for vile 9.6 (released ??? ??? ?? ????)
 	  buffer size.
 	+ modify bat-filt.l to highlight "echo." consistently with M$ usage.
 	+ modify bat-filt.l to highlight "%*".
-	+ add syntax filters for bnf, css, midl, php and wbt (WinBatch).
+	+ add syntax filters for bnf, css, midl, php and wbt, for WinBatch.
 	+ modify syntax filters to use flex's character classes.
 
 Changes for vile 9.5 (released Mon Jul 25 2005)
@@ -1420,7 +1430,7 @@ Changes for vile 9.5 (released Mon Jul 25 2005)
 	+ modify htmlfilt.l to use caseless comparison for HTML keywords.
 	+ improve configure-script checks for dbmalloc and dmalloc.
 	+ modify preamble pattern for pymode to work with
-		#!/usr/bin/python2.3 -S
+		"#!/usr/bin/python2.3 -S"
 	+ modified [a-z] expression to [\a] in preamble for awkmode, cshmode,
 	  sedmode, shmode, tclmode to allow uppercase options.
 	+ add ".jsp" to jsmode suffixes.
@@ -1470,7 +1480,7 @@ Changes for vile 9.5 (released Mon Jul 25 2005)
 	  $filtername symbol, e.g., as used for cshmode to invoke vile-sh-filt.
 	+ corrected ifdef's in cfgopts() used to build xvile's $cfgopts values.
 	  The ifdef's used "#ifdef" rather than "#if", causing all possible
-	  values to be shown (from 9.3e).
+	  values to be shown (problem introduced in 9.3e).
 
  20031102 (b)
 	> Brendan O'Dea:
@@ -1649,7 +1659,7 @@ Changes for vile 9.4 (released Mon Aug 04 2003)
 	> Tom Dickey:
 	+ modify manpage.rc to check if the current buffer is perl, and if so,
 	  to render contents using pod2man or pod2text.
-	+ several fixes for pl-filt.c (vile-perl-filt):
+	+ several fixes for pl-filt.c, i.e., vile-perl-filt:
 	  + check for a leading POD area, i.e., the first line is "=head",
 	    with no preceding blank lines.
 	  + allow floating-point numbers without a decimal point.
@@ -1996,11 +2006,11 @@ Changes for vile 9.4 (released Mon Aug 04 2003)
 	  globbing did not work, and the environment variables did not match
 	  the Windows 2000 configuration.
 	+ modify debug traces to allow Trace() to make an indented listing,
-	  according to the function-nesting level.  This is done (from ncurses)
-	  by prefixing the format string with T_CALLED or T_RETURN strings.
-	  Used this feature to help debug changes for which.rc on win32.  Not
-	  all functions are traced this way, but all that call swbuffer() are,
-	  as well as some others that were useful.
+	  according to the function-nesting level.  This is done, originally in
+	  ncurses by prefixing the format string with T_CALLED or T_RETURN
+	  strings.  Used this feature to help debug changes for which.rc on
+	  win32.  Not all functions are traced this way, but all that call
+	  swbuffer() are, as well as some others that were useful.
 	+ adjust ifdef's so VILE_ERROR_ABORT and VILE_OLE can be defined at
 	  the same time.
 
@@ -2590,7 +2600,7 @@ Changes for vile 9.3 (released Tue Jun 25 2002)
 	  sgarbf is set.  The first shell invocation sets sgarbf, so the prompt
 	  after the second shell command never comes out.)
 	> Tom Dickey:
-	+ change warning level in makefile.wnt to -W4
+	+ change warning level in makefile.wnt to "-W4"
 	+ modify ntconio.c to use the original attributes when erasing the last
 	  line of the screen when closing the console.  This works around a bug
 	  in w95/.../win-me that would leave vile's color settings in effect
@@ -2811,7 +2821,7 @@ Changes for vile 9.3 (released Tue Jun 25 2002)
 	  mistreated, e.g., by certain mail programs that remove execute-flags
 	  from the umask.
 	+ minor updates to configure script macros, for ncurses
-	  (CF_CURSES_CPPFLAGS, CF_MAKEFLAGS, CF_NCURSES_CPPFLAGS,
+	  (i.e., macros CF_CURSES_CPPFLAGS, CF_MAKEFLAGS, CF_NCURSES_CPPFLAGS,
 	  CF_NCURSES_VERSION, CF_PROG_EXT).
 	+ modify logic of popup-msgs to keep it from popping up [Messages]
 	  before the end of initialization.  This would happen for example
@@ -2934,8 +2944,7 @@ Changes for vile 9.3 (released Tue Jun 25 2002)
 	  filename is given, as before it will show the buffer list, but if a
 	  filename is given, it will replace the list of visible buffers with
 	  those matching the expression.  Use ":args!" to discard changes
-	  pending to one or more buffers (request by
-	  Vicki.Brown@barclaysglobal.com>).
+	  pending to one or more buffers (request by Vicki Brown).
 	+ add hst_reset() function, called from main loop to reinitialize data
 	  used for gluing portions of a command together for the [History]
 	  buffer.  This addresses a problem reported by Clark Morgan where the
@@ -3093,7 +3102,7 @@ Changes for vile 9.3 (released Tue Jun 25 2002)
 
  20010224 (h)
 	> Clark Morgan:
-	+ fix some compiler warnings highlighted by change in 9.2g to use -W3
+	+ fix some compiler warnings highlighted by change in 9.2g to use "-W3"
 	  warning level in makefile.wnt (mktbls.c, ntwinio.c, w32oo.cpp,
 	  wvwrap.cpp).
 	+ fix bug introduced in getfile2bp() in 9.2g by compiler-warning
@@ -3142,9 +3151,9 @@ Changes for vile 9.3 (released Tue Jun 25 2002)
 	+ added a boolean swap-title mode (win32 only).  If set, the editor's
 	  title is displayed as "<buffer_name> - <editor_name>" instead of the
 	  usual "<editor_name> - <buffer_name>".  The former conforms with the
-	  behavior of many win32 apps and is also much more useful (from a
-	  screen real estate point of view) when many apps are resident in the
-	  task bar.
+	  behavior of many win32 apps and is also much more useful, e.g., from
+	  a screen real estate point of view, when many apps are resident in
+	  the task bar.
 	> Juan Carlos Gil Montoro <jcgil@gmv.es>
 	+ modify store_tag() function in tags.c to accept tags with qident
 	  class rather than ident, that is, including colons as part of the
@@ -3888,7 +3897,7 @@ Changes for vile 9.2 (released Tue Oct 17 2000)
 	  flt_putc() so other filters that happen to find a control/A will echo
 	  it as two characters, to work with the logic in parse_attribute().
 	+ add reset-majormode command, which tells vile to recompute the
-	  appropriate $majormode for the current buffer (suggested by a report
+	  appropriate $majormode for the current buffer (prompted by a report
 	  by Shawn Halpenny who was constructing a temporary buffer which had
 	  no majormode associated -- setting the filename temporarily would
 	  allow this command to set the majormode).
@@ -3926,8 +3935,8 @@ Changes for vile 9.2 (released Tue Oct 17 2000)
 	  used.
 
  20000617 (l)
-	+ updates to config.guess and config.sub (patch by Kevin Buettner,
-	  and resync with version from PCRE 3.2).
+	+ updates to config.guess and config.sub and resync with version from
+	  PCRE 3.2 (patch by Kevin Buettner)
 	+ update ftp and web-site pointers to reflect demise of ClarkNet
 	  (reminder by Clark Morgan).
 	+ use new function search_mode_list() to make binary search of the
@@ -4061,8 +4070,8 @@ Changes for vile 9.2 (released Tue Oct 17 2000)
 	  filenames.
 	+ make configure macros that search for header- and library-paths a
 	  little more general, e.g., searching under /usr/foo/lib or $HOME/foo,
-	  from tin updates (CF_FIND_LIBRARY, CF_HEADER_PATH, CF_LIBRARY_PATH,
-	  CF_NCURSES_LIBS).
+	  from tin updates (i.e., macros CF_FIND_LIBRARY, CF_HEADER_PATH,
+	  CF_LIBRARY_PATH, CF_NCURSES_LIBS).
 	+ update config.guess, config.sub
 	+ add a 'depend' rule to makefile.in
 	+ update ne*.h rules in makefile.blc
@@ -4332,8 +4341,8 @@ Changes for vile 9.1 (released Sat Jan 15 2000)
 	  + New command, async-capture-command, for displaying
 	    the documentation.
 	  + Use mlreply_shell in order to provide the appropriate shell
-	    completions.  [Requested by Paul Fox.]
-	  + Remember last command run.  [Also requested by Paul Fox.]
+	    completions (requested by Paul Fox)
+	  + Remember last command run (requested by Paul Fox)
 	  + Added work-around to prevent [Buffer not found] message from
 	    displaying when Vile::Buffer::edit is asked to find an internal
 	    buffer.  (Does getfile2bp really need to call mlforce() to print
@@ -4859,8 +4868,7 @@ Changes for vile 9.1 (released Sat Jan 15 2000)
 	+ modify menu.c to allow double-quote as comment-marker.
 	+ remove full-line behavior from goto-char command.
 	+ correct behavior of "Clear Highlighting (below)" menu entry in sample
-	  vilemenu.rc which did not clear the final line of a buffer (sorry - I
-	  misplaced the original report).
+	  vilemenu.rc which did not clear the final line of a buffer.
 	+ add some pointer checks to swbuffer(), getcol() and gocol(), so
 	  piping to vile works properly when trying to initialize window's
 	  traits.

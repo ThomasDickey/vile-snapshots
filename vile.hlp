@@ -1701,7 +1701,9 @@ Editor modes
 		nulls, making them look like UTF-16 or UTF-32 encodings.
 		If file-encoding is set to "auto", and the match is
 		higher than this threshold, vile will load the buffer data
-		as UTF-8.
+		as UTF-8.  The default (90) works well for text which is
+		mostly Latin-1; you should set this to a lower value to
+		work with text which does not follow that pattern.  (B)
 
 	pin-tagstack If set, the editor does not change windows when
 		executing tag locate/pop commands.  Put another way, all
@@ -2144,13 +2146,19 @@ Editor modes
 	character type tables based on the system.  You can make finer
 	adjustments to those tables as described in "Character Classes".
 
-	If your terminal (and locale) are setup to support UTF-8, vile can
+	If your terminal (and locale) are set up to support UTF-8, vile can
 	display files which use that encoding.  It can also display
 	UTF-16 and UTF-32 files using UTF-8.  When the terminal/locale do
 	not support UTF-8 vile displays the wide characters as hexadecimal
 	codes, e.g., \u1234.  Even when vile can display wide characters,
 	you can force it to display the hexadecimal codes with the
 	"unicode-as-hex" mode.
+
+	If your terminal and locale are not set up to support UTF-8, vile
+	displays UTF-8 codes that would map to Latin-1 (8-bit) values with
+	a "\?" rather than "\x" prefix, to distinguish them from ordinary
+	8-bit values.  It will also display this form for bytes found in
+	UTF-8 files that cannot be decoded as UTF-8.
 
 	Input
 	-----
@@ -6399,4 +6407,4 @@ Problems
 
 Copyright 1995-2006,2007 by Paul Fox, Thomas Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.641 2007/11/25 23:48:18 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.644 2007/12/24 13:08:25 tom Exp $

@@ -5,7 +5,7 @@
  * functions that adjust the top line in the window and invalidate the
  * framing, are hard.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/basic.c,v 1.156 2007/11/23 21:18:22 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/basic.c,v 1.157 2007/12/23 21:50:05 tom Exp $
  *
  */
 
@@ -131,7 +131,7 @@ count_chars(LINE *lp, int off, int bytes)
 }
 
 int
-mb_cellwidth(const char *text, int limit)
+mb_cellwidth(WINDOW *wp, const char *text, int limit)
 {
     UINT value;
     int rc = COLS_UTF8;		/* "\uXXXX" */
@@ -139,6 +139,11 @@ mb_cellwidth(const char *text, int limit)
     vl_conv_to_utf32(&value, text, limit);
     if (FoldTo8bits(value)) {
 	rc = 1;
+	if (w_val(wp, WMDUNICODE_AS_HEX)) {
+	    rc = COLS_UTF8;
+	} else if (!isPrint(value)) {
+	    rc = COLS_8BIT;
+	}
     } else if (term_is_utfXX()) {
 	rc = vl_wcwidth(value);
 	if (rc <= 0)
@@ -1022,7 +1027,7 @@ next_column(LINE *lp, int off, int col)
 #if OPT_MULTIBYTE
     else if (b_is_utfXX(curbp)) {
 	if (bytes_at(lp, off) > 1) {
-	    rc = mb_cellwidth(lvalue(lp) + off, llength(lp) - off);
+	    rc = mb_cellwidth(curwp, lvalue(lp) + off, llength(lp) - off);
 	}
     }
 #endif

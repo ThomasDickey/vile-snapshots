@@ -14,7 +14,7 @@
  *   -- support wide and narrow screen resolutions,
  *   -- support visual bells.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/vmsvt.c,v 1.64 2007/09/03 20:06:58 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/vmsvt.c,v 1.65 2007/12/24 02:01:13 tom Exp $
  *
  */
 
@@ -40,7 +40,7 @@
 #include	<tt2def.h>
 
 /* function prototypes needed for the dispatch table */
-static OUTC_DCL vmsvt_putc(OUTC_ARGS);
+static OUTC_DCL vmsvt_putc(int c);
 static int vmsvt_typahead(void);
 static void vmsvt_flush(void);
 static void vmsvt_scrollregion(int top, int bot);
@@ -807,7 +807,7 @@ vmsvt_getc(void)
  * we just put the characters in the big array, after checking for overflow.
  */
 static OUTC_DCL
-vmsvt_putc(OUTC_ARGS)
+vmsvt_putc(int c)
 {
     if (nobuf >= NOBUF)
 	vmsvt_flush();

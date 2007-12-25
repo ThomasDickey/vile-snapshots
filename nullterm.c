@@ -2,7 +2,7 @@
  * Define an empty terminal type for machines where we cannot use 'dumb_term',
  * so that command-line prompting will have something to talk to.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/nullterm.c,v 1.4 2007/09/03 20:05:59 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/nullterm.c,v 1.5 2007/12/24 01:54:15 tom Exp $
  */
 
 #include	<estruct.h>
@@ -26,7 +26,7 @@ nullterm_getch(void)
 
 /*ARGSUSED*/
 static OUTC_DCL
-nullterm_putch(OUTC_ARGS)
+nullterm_putch(int c)
 {
     OUTC_RET c;
 }
