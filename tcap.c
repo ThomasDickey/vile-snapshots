@@ -1,7 +1,7 @@
 /*	tcap:	Unix V5, V7 and BS4.2 Termcap video driver
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.174 2007/10/14 17:17:06 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.175 2007/12/24 01:50:37 tom Exp $
  *
  */
 
@@ -973,7 +973,7 @@ TERM term =
     ttunclean,
     nullterm_openup,
     ttgetc,
-    ttputc,
+    vl_ttputc,
     tttypahead,
     ttflush,
     tcap_move,

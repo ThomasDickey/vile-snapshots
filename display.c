@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.464 2007/11/23 21:17:33 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.466 2007/12/24 02:01:13 tom Exp $
  *
  */
 
@@ -717,8 +717,9 @@ static void
 vtputsn(WINDOW *wp, const char *src, size_t n)
 {
     if (src != 0) {
-	while (n != 0 && *src != EOS)
+	while (n != 0 && *src != EOS) {
 	    vtputc(wp, src++, n--);
+	}
     }
 }
 
@@ -954,7 +955,7 @@ mk_to_vcol(WINDOW *wp, MARK mark, int expanded, int col, int adjust)
 	    int adj = column_sizes(wp, text + i, nxt, &used);
 
 	    if (adj == COLS_UTF8 && !w_val(wp, WMDUNICODE_AS_HEX)) {
-		adj = mb_cellwidth(text + i, nxt);
+		adj = mb_cellwidth(wp, text + i, nxt);
 	    }
 	    col += adj;
 	}
@@ -1536,7 +1537,7 @@ offs2col0(WINDOW *wp,
 		int adj = column_sizes(wp, text + n, nxt, &used);
 
 		if (adj == COLS_UTF8 && !w_val(wp, WMDUNICODE_AS_HEX)) {
-		    adj = mb_cellwidth(text + n, nxt);
+		    adj = mb_cellwidth(wp, text + n, nxt);
 		}
 		column += adj;
 	    } else
@@ -1604,7 +1605,7 @@ col2offs(WINDOW *wp, LINE *lp, C_NUM col)
 		int adj = column_sizes(wp, text + offset, nxt, &used);
 
 		if (adj == COLS_UTF8 && !w_val(wp, WMDUNICODE_AS_HEX)) {
-		    adj = mb_cellwidth(text + offset, nxt);
+		    adj = mb_cellwidth(wp, text + offset, nxt);
 		}
 		n += adj;
 	    } else
@@ -4445,7 +4446,7 @@ static int psc_col;
 	do { SWAP_INT(vtcol, psc_col); SWAP_INT(vtrow, psc_row); } one_time
 
 OUTC_DCL
-psc_putchar(OUTC_ARGS)
+psc_putchar(int c)
 {
     if (c == '\b') {
 	if (psc_col > 0)

@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.653 2007/11/23 17:21:28 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.654 2007/12/24 01:50:28 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -2439,7 +2439,7 @@ typedef struct	{
 	void	(*unclean) (void);	/* cleanup after shell-out	*/
 	void	(*openup) (void);	/* open new line for prompt	*/
 	int	(*getch) (void);	/* Get character from keyboard. */
-	OUTC_DCL(*putch) (OUTC_ARGS);	/* Put character to display.	*/
+	OUTC_DCL(*putch) (int c);	/* Put character to display.	*/
 	int	(*typahead) (void);	/* character ready?		*/
 	void	(*flush) (void);	/* Flush output buffers.	*/
 	void	(*curmove) (int row, int col); /* Move the cursor, origin 0. */

@@ -3,7 +3,7 @@
  * characters, and write characters in a barely buffered fashion on the display.
  * All operating systems.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/termio.c,v 1.212 2007/05/12 15:34:33 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/termio.c,v 1.213 2007/12/24 01:52:17 tom Exp $
  *
  */
 
@@ -681,6 +681,12 @@ ttunclean(void)
 #if !DISP_X11
 OUTC_DCL
 ttputc(OUTC_ARGS)
+{
+    OUTC_RET vl_ttputc(c);
+}
+
+OUTC_DCL
+vl_ttputc(int c)
 {
     OUTC_RET putchar((char) c);
 }

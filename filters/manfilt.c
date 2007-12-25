@@ -46,7 +46,7 @@
  * vile will choose some appropriate fallback (such as underlining) if
  * italics are not available.
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/manfilt.c,v 1.37 2007/05/05 15:00:33 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/manfilt.c,v 1.41 2007/12/24 15:08:32 tom Exp $
  *
  */
 
@@ -57,6 +57,16 @@
 #if OPT_LOCALE
 #include	<locale.h>
 #include	<ctype.h>
+
+#if 0				/* def HAVE_WCTYPE - see note in ../main.c */
+#include	<wctype.h>
+#define sys_isdigit(n)  iswdigit(n)
+#define sys_isprint(n)  iswprint(n)
+#else
+#define sys_isdigit(n)  isdigit(n)
+#define sys_isprint(n)  isprint(n)
+#endif
+
 #endif
 
 #if !defined(HAVE_STDLIB_H)
@@ -106,7 +116,7 @@ typedef struct CharCell {
     int c_attrs;		/* base cell only: ATR_NORMAL, etc. */
     char c_ident;		/* CS_NORMAL/CS_ALTERNATE */
     char c_level;		/* 0=base, 1=up halfline, -1=down halfline */
-    char c_value;		/* the actual value */
+    unsigned c_value;		/* the actual value */
 } CHARCELL;
 
 typedef struct LineData {
@@ -123,11 +133,9 @@ static void flush_line(void);
 static LINEDATA *all_lines;
 static LINEDATA *cur_line;
 static long total_lines;
+static int opt_8bit = 0;
 static int (*my_getc) (FILE *);
-
-#if OPT_LOCALE
-static int utf8_locale = 0;
-#endif
+static int (*my_putc) (int);
 
 static void
 failed(const char *s)
@@ -140,6 +148,12 @@ static int
 ansi_getc(FILE *fp)
 {
     return vl_getc(fp);
+}
+
+static int
+ansi_putc(int ch)
+{
+    return vl_putc(ch, stdout);
 }
 
 #if OPT_LOCALE
@@ -211,26 +225,97 @@ utf8_getc(FILE *fp)
 	    }
 	}
     } while (utf_count > 0);
-    if (utf_char > 255) {
-	switch (utf_char) {
-	case 0x2018:
-	    utf_char = '`';
-	    break;
-	case 0x2019:
-	    utf_char = '\'';
-	    break;
-	case 0x2010:
-	case 0x2212:
-	    utf_char = '-';
-	    break;
-	default:
-	    utf_char = '?';
-	    break;
+
+    if (opt_8bit) {
+	if (utf_char > 255) {
+	    switch (utf_char) {
+	    case 0x2018:
+		utf_char = '`';
+		break;
+	    case 0x2019:
+		utf_char = '\'';
+		break;
+	    case 0x2010:
+	    case 0x2212:
+		utf_char = '-';
+		break;
+	    default:
+		utf_char = '?';
+		break;
+	    }
 	}
     }
     return utf_char;
 }
-#endif
+
+static int
+utf8_putc(int source)
+{
+    /* FIXME - this is cut/paste from vl_conv_to_utf8() */
+#define CH(n) CharOf((source) >> ((n) * 8))
+    int rc = 0;
+    char target[10];
+
+    if (source <= 0x0000007f)
+	rc = 1;
+    else if (source <= 0x000007ff)
+	rc = 2;
+    else if (source <= 0x0000ffff)
+	rc = 3;
+    else if (source <= 0x001fffff)
+	rc = 4;
+    else if (source <= 0x03ffffff)
+	rc = 5;
+    else			/* (source <= 0x7fffffff) */
+	rc = 6;
+
+    switch (rc) {
+    case 1:
+	target[0] = CH(0);
+	break;
+
+    case 2:
+	target[1] = CharOf(0x80 | (CH(0) & 0x3f));
+	target[0] = CharOf(0xc0 | (CH(0) >> 6) | ((CH(1) & 0x07) << 2));
+	break;
+
+    case 3:
+	target[2] = CharOf(0x80 | (CH(0) & 0x3f));
+	target[1] = CharOf(0x80 | (CH(0) >> 6) | ((CH(1) & 0x0f) << 2));
+	target[0] = CharOf(0xe0 | ((CH(1) & 0xf0) >> 4));
+	break;
+
+    case 4:
+	target[3] = CharOf(0x80 | (CH(0) & 0x3f));
+	target[2] = CharOf(0x80 | (CH(0) >> 6) | ((CH(1) & 0x0f) << 2));
+	target[1] = CharOf(0x80 | ((CH(1) & 0xf0) >> 4) | ((CH(2) &
+							    0x03) << 4));
+	target[0] = CharOf(0xf0 | ((CH(2) & 0x1f) >> 2));
+	break;
+
+    case 5:
+	target[4] = CharOf(0x80 | (CH(0) & 0x3f));
+	target[3] = CharOf(0x80 | (CH(0) >> 6) | ((CH(1) & 0x0f) << 2));
+	target[2] = CharOf(0x80 | ((CH(1) & 0xf0) >> 4) | ((CH(2) &
+							    0x03) << 4));
+	target[1] = CharOf(0x80 | (CH(2) >> 2));
+	target[0] = CharOf(0xf8 | (CH(3) & 0x03));
+	break;
+
+    case 6:
+	target[5] = CharOf(0x80 | (CH(0) & 0x3f));
+	target[4] = CharOf(0x80 | (CH(0) >> 6) | ((CH(1) & 0x0f) << 2));
+	target[3] = CharOf(0x80 | (CH(1) >> 4) | ((CH(2) & 0x03) << 4));
+	target[2] = CharOf(0x80 | (CH(2) >> 2));
+	target[1] = CharOf(0x80 | (CH(3) & 0x3f));
+	target[0] = CharOf(0xfc | ((CH(3) & 0x40) >> 6));
+	break;
+    }
+    target[rc] = 0;
+    return vl_fputs(target, stdout);
+#undef CH
+}
+#endif /* OPT_LOCALE */
 
 /*
  * Allocate a CHARCELL struct
@@ -356,8 +441,7 @@ ansi_escape(FILE *ifp, int last_code)
     int c;
 
     while ((c = my_getc(ifp)) != EOF) {
-	c = CharOf(c);
-	if (isdigit(c)) {
+	if (sys_isdigit(c)) {
 	    value = (value * 10) + (c - '0');
 	    digits++;
 	} else {
@@ -532,27 +616,27 @@ flush_line(void)
 		    if (ref_code != ATR_NORMAL) {
 			printf("%c%d", CNTL_A, counter);
 			if (ref_code & ATR_BOLD)
-			    putchar('B');
+			    my_putc('B');
 			if (ref_code & ATR_ITAL)
-			    putchar('I');
+			    my_putc('I');
 			if (ref_code & ATR_UNDER)
-			    putchar('U');
+			    my_putc('U');
 			if (ref_code & ATR_REVERS)
-			    putchar('R');
+			    my_putc('R');
 			if (ref_code & ATR_COLOR)
 			    printf("C%X", (ref_code >> SHL_COLOR) & 0xf);
-			putchar(':');
+			my_putc(':');
 		    }
 		}
 	    }
-	    putchar(l->l_cell[col].c_value);
+	    my_putc(l->l_cell[col].c_value);
 
 	    while ((p = l->l_cell[col].link) != 0) {
 		l->l_cell[col].link = p->link;
 		free((char *) p);
 	    }
 	}
-	putchar('\n');
+	my_putc('\n');
 
 	if (l != 0) {
 	    if (l->l_cell != 0)
@@ -574,7 +658,6 @@ ManFilter(FILE *ifp)
     int esc_mode = ATR_NORMAL;
 
     while ((c = my_getc(ifp)) != EOF) {
-	c = CharOf(c);
 	switch (c) {
 	case '\b':
 	    backspace();
@@ -635,7 +718,7 @@ ManFilter(FILE *ifp)
 	    /* FALLTHRU */
 
 	default:		/* ignore other nonprinting characters */
-	    if (isprint(c)) {
+	    if (sys_isprint(c)) {
 		put_cell(c, level, ident, esc_mode);
 		if (c != SPACE) {
 		    if (esc_mode & ATR_BOLD) {
@@ -662,8 +745,10 @@ int
 main(int argc, char **argv)
 {
     int n;
+    FILE *fp;
 
     my_getc = ansi_getc;
+    my_putc = ansi_putc;
 #if OPT_LOCALE
     {
 	char *env;
@@ -672,9 +757,12 @@ main(int argc, char **argv)
 	    ((env = getenv("LC_CTYPE")) != 0 && *env != 0) ||
 	    ((env = getenv("LANG")) != 0 && *env != 0)) {
 
-	    if (strstr(env, ".UTF-8") != 0) {
-		utf8_locale = 1;
+	    if (strstr(env, ".UTF-8") != 0
+		|| strstr(env, ".utf-8") != 0
+		|| strstr(env, ".UTF8") != 0
+		|| strstr(env, ".utf8") != 0) {
 		my_getc = utf8_getc;
+		my_putc = utf8_putc;
 	    }
 	}
 	setlocale(LC_CTYPE, "");
@@ -683,11 +771,17 @@ main(int argc, char **argv)
 
     if (argc > 1) {
 	for (n = 1; n < argc; n++) {
-	    FILE *fp = fopen(argv[n], "r");
-	    if (fp == 0)
-		failed(argv[n]);
-	    ManFilter(fp);
-	    (void) fclose(fp);
+	    char *param = argv[n];
+	    if (*param == '-') {
+		if (!strcmp(param, "-8"))
+		    opt_8bit = 1;
+	    } else {
+		fp = fopen(argv[n], "r");
+		if (fp == 0)
+		    failed(argv[n]);
+		ManFilter(fp);
+		(void) fclose(fp);
+	    }
 	}
     } else {
 	ManFilter(stdin);

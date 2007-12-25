@@ -1,5 +1,5 @@
 /*
- * $Id: eightbit.c,v 1.12 2007/11/21 01:34:39 tom Exp $
+ * $Id: eightbit.c,v 1.13 2007/12/24 01:58:12 tom Exp $
  *
  * Maintain "8bit" file-encoding mode by converting incoming UTF-8 to single
  * bytes, and providing a function that tells vile whether a given Unicode
@@ -19,7 +19,7 @@
 
 #if DISP_TERMCAP || DISP_CURSES
 static int (*save_getch) (void);
-static OUTC_DCL(*save_putch) (OUTC_ARGS);
+static OUTC_DCL(*save_putch) (int c);
 #endif
 
 /******************************************************************************/
@@ -78,6 +78,7 @@ vl_init_8bit(char *wide, char *narrow)
 {
     int n;
 
+    TRACE((T_CALLED "vb_init_8bit(%s, %s)\n", wide, narrow));
 #if OPT_ICONV_FUNCS
     if (strcmp(wide, narrow)) {
 	char *wide_enc;
@@ -142,6 +143,8 @@ vl_init_8bit(char *wide, char *narrow)
 	rindex_8bit[n].rinx = n;
     }
     qsort(rindex_8bit, N_chars, sizeof(RINDEX_8BIT), cmp_rindex);
+
+    returnVoid();
 }
 
 /*
@@ -237,7 +240,7 @@ vl_mb_getch(void)
 }
 
 static OUTC_DCL
-vl_mb_putch(OUTC_ARGS)
+vl_mb_putch(int c)
 {
     if (c > 0) {
 	int rc;
