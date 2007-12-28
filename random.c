@@ -2,7 +2,7 @@
  * This file contains the command processing functions for a number of random
  * commands. There is no functional grouping here, for sure.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.312 2007/10/31 00:23:22 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.313 2007/12/27 19:50:05 tom Exp $
  *
  */
 
@@ -938,9 +938,12 @@ catnap(int milli, int watchinput)
 #define have_slept 1
 #endif
 
-#if SYS_WINNT || (CC_NEWDOSCC && SYS_MSDOS) || (CC_WATCOM && (SYS_OS2 || SYS_MSDOS))
+#if SYS_WINNT || (CC_NEWDOSCC && SYS_MSDOS) || (CC_WATCOM && (SYS_OS2 || SYS_MSDOS)) || DISP_VIO
 #if SYS_WINNT
 #define delay(a) Sleep(a)
+#endif
+#if DISP_VIO
+#define delay(a) DosSleep(a)
 #endif
 	if (watchinput) {
 	    while (milli > 100) {

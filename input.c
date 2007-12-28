@@ -44,7 +44,7 @@
  *	tgetc_avail()     true if a key is avail from tgetc() or below.
  *	keystroke_avail() true if a key is avail from keystroke() or below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.315 2007/11/25 19:14:45 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.316 2007/12/27 19:18:51 tom Exp $
  *
  */
 
@@ -1522,7 +1522,7 @@ editMiniBuffer(TBUFF **buf, size_t *cpos, int c, int margin, int quoted)
 	   c, miniedit, DOT.o));
 
 #if OPT_MULTIBYTE
-    if (char2int(c) >= iBIT(MinCBits)) {
+    if (char2int(c) >= (int) iBIT(MinCBits)) {
 	UCHAR temp[10];
 	int used = vl_conv_to_utf8(temp, c, sizeof(temp));
 	int n;

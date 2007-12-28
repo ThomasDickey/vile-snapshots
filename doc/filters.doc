@@ -152,8 +152,8 @@ OPTIONS
 A few options are common to all filters:
 
   -d	is recognized when the filters have been compiled with "DEBUG" defined.
-	This is used in the more complicated filters such as perl and ruby to
-	show the parsing.
+	This is used in the more complicated filters such as perl, ruby and sql
+	to show the parsing.
 
   -k FILE
 
@@ -177,6 +177,9 @@ JavaScript:
   -s	for JavaScript (to support jsmode).  This controls whether to allow
 	regular expressions in certain cases.
 
+The MAN filter recognizes a "-8" option which tells it to use 8-bit
+approximations for some common UTF-8 equivalents such as hyphen.
+
 
 PROGRAMS
 --------
@@ -193,6 +196,7 @@ The following are implemented:
 	vile-bnf-filt	(BNF)
 	vile-c-filt	(C language)
 	vile-cfg-filt	(Lynx configure file)
+	vile-conf-filt	(General config-files)
 	vile-css-filt	(Cascading Style Sheets)
 	vile-cweb-filt	(CWEBx)
 	vile-dcl-filt	(VMS DCL batchfiles)
@@ -201,6 +205,7 @@ The following are implemented:
 	vile-ecl-filt	(Prolog/ECLiPSe)
 	vile-esql-filt	(embedded SQL with C/C++)
 	vile-est-filt	(Enscript syntax-descriptions)
+	vile-fdl-filt	(Forms definition language)
 	vile-html-filt	(HTML with embedded JavaScript)
 	vile-imake-filt	(imake)
 	vile-info-filt	(GNU info files)
@@ -209,10 +214,13 @@ The following are implemented:
 	vile-key-filt	(Vile keyword files)
 	vile-latex-filt	(LaTeX or TeX)
 	vile-lex-filt	(lex)
+	vile-lisp-filt	(Lisp)
+	vile-lua-filt	(Lua)
 	vile-m4-filt	(m4)
 	vile-mail-filt	(mail folders)
 	vile-make-filt	(make)
 	vile-manfilt	(manual-page)
+	vile-mcrl-filt	(mCRL(2) specification)
 	vile-midl-filt	(Microsoft Interface Definition Language)
 	vile-mms-filt	(VMS makefiles)
 	vile-nr-filt	(nroff)
@@ -223,10 +231,12 @@ The following are implemented:
 	vile-pot-filt	(gettext (.po) files)
 	vile-ps-filt	(PostScript)
 	vile-py-filt	(Python)
+	vile-rb-filt	(Ruby)
 	vile-rc-filt	(Windows resource files)
 	vile-rcs-filt	(RCS archives)
 	vile-rexx-filt	(REXX)
 	vile-rpm-filt	(RPM ".spec" files)
+	vile-rtf-filt	(Rich Text Format)
 	vile-ruby-filt	(Ruby)
 	vile-sccs-filt	(SCCS archives)
 	vile-sed-filt	(sed scripts)
@@ -270,4 +280,4 @@ NOTE
 The lex filters have been well tested only with flex, which treats newlines
 differently.  Older versions of lex may not support the %x states.
 
--- $Header: /users/source/archives/vile.vcs/doc/RCS/filters.doc,v 1.35 2005/09/05 01:00:58 tom Exp $
+-- $Header: /users/source/archives/vile.vcs/doc/RCS/filters.doc,v 1.37 2007/12/26 14:11:00 tom Exp $
