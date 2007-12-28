@@ -1,7 +1,7 @@
 #
 # makefile for vile on WIN32 using Borland C++
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.blc,v 1.21 2007/08/10 21:15:47 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.blc,v 1.22 2007/12/28 01:03:24 tom Exp $
 #
 # Tested with
 #	Borland C++ 5.5.1
@@ -26,9 +26,10 @@ SCREEN = ntwinio
 DISP_DEF = -DDISP_NTWIN=1
 LDFLAGS = -v -tWM -tW
 RESFILE = $(TARGET).res
+EXTRA = $(EXTRA) makeargv.obj
 !endif
 
-CFLAGS = -v -tWM -w-par -DWIN32_LEAN_AND_MEAN -Dscrn_chosen $(DISP_DEF) -I.
+CFLAGS = -v -tWM -w-par -DWIN32_LEAN_AND_MEAN -DOPT_LOCALE=1 -Dscrn_chosen $(DISP_DEF) -I.
 
 # Use
 #	make -Dtrace
@@ -56,7 +57,8 @@ BUILTHDRS = \
 
 SRC = 	main.c $(SCREEN).c \
 	basic.c bind.c blist.c btree.c buffer.c \
-	csrch.c display.c eval.c exec.c externs.c \
+	charsets.c csrch.c display.c eightbit.c \
+	eval.c exec.c externs.c \
 	fences.c file.c filec.c \
 	fileio.c finderr.c glob.c globals.c history.c \
 	input.c insert.c itbuff.c isearch.c \
@@ -65,11 +67,12 @@ SRC = 	main.c $(SCREEN).c \
 	region.c search.c select.c spawn.c statevar.c \
 	tags.c tbuff.c termio.c ucrypt.c undo.c \
 	version.c w32cmd.c w32cbrd.c w32misc.c w32oo.cpp w32pipe.c \
-	window.c word.c wordmov.c map.c
+	wcwidth.c window.c word.c wordmov.c map.c
 
 OBJ = 	main.obj $(SCREEN).obj \
 	basic.obj bind.obj blist.obj btree.obj buffer.obj \
-      	csrch.obj display.obj eval.obj exec.obj externs.obj \
+      	charsets.obj csrch.obj display.obj eightbit.obj \
+	eval.obj exec.obj externs.obj \
 	fences.obj file.obj filec.obj \
 	fileio.obj finderr.obj glob.obj globals.obj history.obj \
 	input.obj insert.obj itbuff.obj isearch.obj \
@@ -78,7 +81,7 @@ OBJ = 	main.obj $(SCREEN).obj \
 	region.obj search.obj select.obj spawn.obj statevar.obj \
 	tags.obj tbuff.obj termio.obj ucrypt.obj undo.obj \
 	version.obj w32cmd.obj w32cbrd.obj w32misc.obj w32oo.obj w32pipe.obj \
-	window.obj word.obj wordmov.obj map.obj $(EXTRA)
+	wcwidth.obj window.obj word.obj wordmov.obj map.obj $(EXTRA)
 
 .c.obj:
 	$(CC) $(CFLAGS) -c $<
@@ -134,8 +137,10 @@ bind.obj :	$(VILEHDRS)
 blist.obj :	$(VILEHDRS)	blist.h
 btree.obj :	$(VILEHDRS)	btree.h
 buffer.obj :	$(VILEHDRS)
+charsets.obj :	$(VILEHDRS)
 csrch.obj :	$(VILEHDRS)
 display.obj :	$(VILEHDRS)	pscreen.h
+eightbit.obj :	$(VILEHDRS)
 eval.obj :	$(VILEHDRS)
 exec.obj :	$(VILEHDRS)
 externs.obj :	$(VILEHDRS)
@@ -182,6 +187,7 @@ w32misc.obj :	$(VILEHDRS)
 w32oo.obj :	$(VILEHDRS)	dirstuff.h
 w32pipe.obj :	$(VILEHDRS)
 w32reg.obj :	$(VILEHDRS)	w32reg.h
+wcwidth.obj :	$(VILEHDRS)
 window.obj :	$(VILEHDRS)
 word.obj :	$(VILEHDRS)
 wordmov.obj :	$(VILEHDRS)

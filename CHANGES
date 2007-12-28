@@ -1,4 +1,15 @@
-Changes for vile 9.6 (released ??? ??? ?? ????)
+Changes for vile 9.6 (released Thu Dec 27 2007)
+
+	> Tom Dickey:
+	+ update makefile.blc, adding charsets.c, eightbit.c and wcwidth.c
+	+ build-fix for OS/2 IBM CSet (define a delay function for catnap).
+	+ minor build-fixes for VMS:
+	  + modify vmsbuild.com to simplify workaround for broken MMS 3.8
+	  + provide dummy variables for xvile to reflect modularization changes
+	    with respect to vmsvt.c
+	+ documentation updates.
+	+ minor fix to manfilt.c to pass-through UTF-8 codes by testing with
+	  both iswprint() and isprint().
 
  20071224 (u)
 	> Tom Dickey:
@@ -629,7 +640,7 @@ Changes for vile 9.6 (released ??? ??? ?? ????)
 	  macro).  Previously it returned true, indicating success.
 	+ improve parsing of range expressions in lex-filt.l, fixes a case
 	  exposed by css-filt.l
-	+ correct a case where slowread() in dosmode would compute a correct
+	+ correct a case where slowread() in dosmode would compute an incorrect
 	  buffer size.
 	+ modify bat-filt.l to highlight "echo." consistently with M$ usage.
 	+ modify bat-filt.l to highlight "%*".

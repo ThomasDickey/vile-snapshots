@@ -1,4 +1,4 @@
-$! $Header: /users/source/archives/vile.vcs/RCS/vmsbuild.com,v 1.47 2007/08/10 21:17:30 tom Exp $
+$! $Header: /users/source/archives/vile.vcs/RCS/vmsbuild.com,v 1.49 2007/12/27 16:47:23 tom Exp $
 $! VMS build-script for vile.  Requires installed C compiler
 $!
 $! Screen Configurations
@@ -42,6 +42,15 @@ $ exit
 $!
 $ start:
 $! -----------------------------------------------------------
+$! decide if we will use MMS, noting that MMS 3.8 is broken.
+$! if you're stuck with a broken MMS, here's where to fix this script.
+$ if f$search("SYS$SYSTEM:MMS.EXE").eqs.""
+$ then
+$	using_mms = 0
+$ else
+$	using_mms = 1
+$ endif
+$! -----------------------------------------------------------
 $! pickup user's compiler choice, if any
 $!
 $	gosub parm2_compiler
@@ -49,7 +58,7 @@ $! -----------------------------------------------------------
 $!      Build the option-file
 $!
 $ open/write optf vms_link.opt
-$ write optf "Identification=""Vile 9.5"""
+$ write optf "Identification=""Vile 9.6"""
 $ write optf "basic.obj"
 $ write optf "bind.obj"
 $ write optf "blist.obj"
@@ -223,7 +232,7 @@ $!  mms called this script to build vms_link.opt.  all done
 $			exit
 $		endif
 $!
-$	if f$search("SYS$SYSTEM:MMS.EXE").eqs.""
+$	if using_mms .eq. 0
 $	then
 $!  can also use /Debug /Listing, /Show=All
 $
@@ -510,7 +519,7 @@ $		mmstar = "__vile__=1"
 $	endif
 $!  can also use /Debug /Listing, /Show=All
 $	CFLAGS := 'CFLAGS/Diagnostics /Define=("os_chosen","''SCRDEF'''DEFS'") /Include=([])
-$	if f$search("SYS$SYSTEM:MMS.EXE").eqs.""
+$	if using_mms .eq. 0
 $	then
 $		BUILDS = "with_dcl"
 $	else
@@ -550,11 +559,23 @@ $    if f$trnlnm("SYS") .eqs. "" then define sys sys$library:
 $    return
 $!
 $ decc_config:
-$    comp   = "__decc__=1"
-$    CFLAGS = "/DECC/prefix=all"
-$    DEFS   = ",HAVE_ALARM,HAVE_STRERROR"
-$    if f$trnlnm("SYS") .eqs."" then define sys decc$library_include:
-$    return
+$	comp   = "__decc__=1"
+$	if f$getsyi("ARCH_NAME") .eqs. "Alpha"
+$	then
+$		CFLAGS = "/PREFIX_LIBRARY_ENTRIES=ALL_ENTRIES"
+$		DEFS   = ",HAVE_ALARM,HAVE_STRERROR"
+$	else
+$		if f$getsyi("ARCH_NAME") .eqs. "IA64"
+$		then
+$			CFLAGS = "/PREFIX_LIBRARY_ENTRIES=ALL_ENTRIES"
+$			DEFS   = ",HAVE_ALARM,HAVE_STRERROR,USE_IEEE_FLOAT"
+$		else
+$			CFLAGS = "/DECC/prefix=all"
+$			DEFS   = ",HAVE_ALARM,HAVE_STRERROR"
+$		endif
+$	endif
+$	if f$trnlnm("SYS") .eqs."" then define sys decc$library_include:
+$	return
 $!
 $ usage:
 $    write sys$output "usage: "

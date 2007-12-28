@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/regexp.c,v 1.138 2007/11/25 22:04:28 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/regexp.c,v 1.139 2007/12/27 19:46:26 tom Exp $
  *
  * Copyright 2005-2006,2007 Thomas E. Dickey and Paul G. Fox
  *
@@ -357,7 +357,7 @@ typedef enum {
     CHR_NPUNCT = 'Q',
     CHR_NSPACE = 'S',
     CHR_NUPPER = 'U',
-    CHR_NXDIGIT = 'X',
+    CHR_NXDIGIT = 'X'
 } REGEXP_CHR;
 
 #define chr_CLASS(name) CHR_ ## name

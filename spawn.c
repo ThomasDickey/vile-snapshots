@@ -1,7 +1,7 @@
 /*	Spawn:	various DOS access commands
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.193 2007/08/29 00:49:54 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.194 2007/12/27 19:08:17 tom Exp $
  *
  */
 
@@ -52,9 +52,15 @@ static int spawn1(int rerun, int pressret);
 #include	<descrip.h>
 #include	<iodef.h>
 
-extern int oldmode[3];		/* In "termio.c"        */
-extern int newmode[3];		/* In "termio.c"        */
-extern short iochan;		/* In "termio.c"        */
+#if DISP_X11
+#define VMSVT_DATA /* nothing */
+#else
+#define VMSVT_DATA extern
+#endif
+
+VMSVT_DATA int oldmode[3];
+VMSVT_DATA int newmode[3];
+VMSVT_DATA short iochan;
 #endif
 
 #if CC_NEWDOSCC && !CC_DJGPP	/* Typo, was NEWSDOSCC  */
