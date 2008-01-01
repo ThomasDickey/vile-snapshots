@@ -44,7 +44,7 @@
  *	tgetc_avail()     true if a key is avail from tgetc() or below.
  *	keystroke_avail() true if a key is avail from keystroke() or below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.316 2007/12/27 19:18:51 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.317 2007/12/31 19:48:15 tom Exp $
  *
  */
 
@@ -126,7 +126,7 @@ shell_complete(DONE_ARGS)
     size_t base;
     size_t first = 0;
 
-    TRACE(("shell_complete %d:'%s'\n", *pos, buf));
+    TRACE(("shell_complete %d:'%s'\n", (int) *pos, buf));
     if (buf != 0) {
 	if (isShellOrPipe(buf))
 	    first++;
@@ -1518,7 +1518,7 @@ editMiniBuffer(TBUFF **buf, size_t *cpos, int c, int margin, int quoted)
 
     TRACE((T_CALLED
 	   "editMiniBuffer(%d:%s) called with c=%#x, miniedit=%d, dot=%d\n",
-	   *cpos, tb_visible(*buf),
+	   (int) *cpos, tb_visible(*buf),
 	   c, miniedit, DOT.o));
 
 #if OPT_MULTIBYTE
@@ -1648,7 +1648,7 @@ editMiniBuffer(TBUFF **buf, size_t *cpos, int c, int margin, int quoted)
 	    *cpos = tb_length(*buf);
 
 	TRACE(("...editMiniBuffer(%d:%s) returns %d, miniedit=%d, dot=%d\n",
-	       *cpos, tb_visible(*buf),
+	       (int) *cpos, tb_visible(*buf),
 	       edited, miniedit, DOT.o));
     }
 

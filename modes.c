@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.350 2007/11/25 17:40:26 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.351 2007/12/31 19:48:53 tom Exp $
  *
  */
 
@@ -1770,7 +1770,7 @@ set_fsm_choice(const char *name, const FSM_CHOICES * choices)
     TRACE((T_CALLED "set_fsm_choices(%s)\n", name));
 #if OPT_TRACE
     for (n = 0; choices[n].choice_name != 0; n++)
-	TRACE(("   [%d] %s = %d (%#x)\n", n,
+	TRACE(("   [%d] %s = %d (%#x)\n", (int) n,
 	       choices[n].choice_name,
 	       choices[n].choice_code,
 	       choices[n].choice_code));
@@ -2765,7 +2765,7 @@ compute_majormodes_order(void)
     int jj;
     static size_t have;
 
-    TRACE((T_CALLED "compute_majormodes_order(%d)\n", need));
+    TRACE((T_CALLED "compute_majormodes_order(%d)\n", (int) need));
     if (need) {
 	want = (need + 1) * 2;
 
@@ -3490,7 +3490,7 @@ extend_mode_list(size_t increment)
     j = count_modes();
     k = increment + j + 1;
 
-    TRACE(("extend_mode_list from %d by %d\n", j, increment));
+    TRACE(("extend_mode_list from %d by %d\n", (int) j, (int) increment));
 
     if (my_mode_list == all_modes) {
 	my_mode_list = typeallocn(const char *, k);

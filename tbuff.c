@@ -7,7 +7,7 @@
  *	To do:	add 'tb_ins()' and 'tb_del()' to support cursor-level command
  *		editing.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tbuff.c,v 1.67 2007/08/14 23:11:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tbuff.c,v 1.68 2007/12/31 19:49:19 tom Exp $
  *
  */
 
@@ -97,8 +97,8 @@ ValidateTBUFF(TBUFF *p, int lineno)
 		   __FILE__, lineno,
 		   p,
 		   p->tb_errs,
-		   p->tb_size,
-		   p->tb_used,
+		   (int) p->tb_size,
+		   (int) p->tb_used,
 		   p->tb_data));
 	}
     }

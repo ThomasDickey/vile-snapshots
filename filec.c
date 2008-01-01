@@ -5,7 +5,7 @@
  * Written by T.E.Dickey for vile (march 1993).
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/filec.c,v 1.126 2007/08/29 00:44:55 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/filec.c,v 1.127 2007/12/31 19:47:41 tom Exp $
  *
  */
 
@@ -923,7 +923,7 @@ path_completion(DONE_ARGS)
 #endif
 
     TRACE(("path_completion(%#x '%c' %d:\"%s\")\n",
-	   flags, c, *pos, visible_buff(buf, (int) *pos, TRUE)));
+	   flags, c, (int) *pos, visible_buff(buf, (int) *pos, TRUE)));
     (void) flags;
 
     if (buf == 0)

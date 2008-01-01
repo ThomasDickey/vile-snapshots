@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.316 2007/11/25 19:13:29 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.317 2007/12/31 19:53:11 tom Exp $
  *
  */
 
@@ -2663,7 +2663,7 @@ fill_partial(
     const char *this_name = THIS_NAME(first);
 
     TRACE(("fill_partial(%d:%.*s) first=%s, last=%s\n",
-	   pos, (int) pos,
+	   (int) pos, (int) pos,
 	   TRACE_NULL(buf),
 	   TRACE_NULL(THIS_NAME(first)),
 	   TRACE_NULL(THIS_NAME(last))));
@@ -2692,7 +2692,7 @@ fill_partial(
     for_ever {
 	buf[n] = this_name[n];	/* add the next char in */
 	buf[n + 1] = EOS;
-	TRACE(("...added(%d:%c)\n", n, buf[n]));
+	TRACE(("...added(%d:%c)\n", (int) n, buf[n]));
 
 	/* scan through the candidates */
 	for (p = first; p != last; p = NEXT_DATA(p)) {
@@ -2709,7 +2709,7 @@ fill_partial(
 		    )
 		    kbd_alarm();
 		kbd_flush();	/* force out alarm or partial completion */
-		TRACE(("...fill_partial %d\n", n));
+		TRACE(("...fill_partial %d\n", (int) n));
 		return n;
 	    }
 	}
