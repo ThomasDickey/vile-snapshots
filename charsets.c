@@ -1,5 +1,5 @@
 /*
- * $Id: charsets.c,v 1.52 2007/11/25 17:30:05 tom Exp $
+ * $Id: charsets.c,v 1.53 2007/12/31 19:44:50 tom Exp $
  *
  * see
  http://msdn.microsoft.com/library/default.asp?url=/library/en-us/intl/unicode_42jv.asp
@@ -519,7 +519,7 @@ riddled_buffer(const BOM_TABLE * mp, UCHAR * buffer, B_COUNT length)
 		}
 	    }
 	}
-	result = (int) ((100.0 * total) / length);
+	result = (int) (length ? (((100.0 * total) / length)) : 0);
 
 	TRACE(("...%ld/%ld ->%d%%\n", total, length, result));
     }

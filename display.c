@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.466 2007/12/24 02:01:13 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.467 2007/12/31 20:14:00 tom Exp $
  *
  */
 
@@ -1500,7 +1500,7 @@ offs2col0(WINDOW *wp,
     /* this makes the how-much-to-select calculation easier above */
     if (offset < 0) {
 	column = offset;
-    } else if (lp == win_head(wp)) {
+    } else if ((lp == win_head(wp)) || !lisreal(lp)) {
 	column = 0;
     } else {
 	int length = llength(lp);

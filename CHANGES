@@ -1,3 +1,11 @@
+Changes for vile 9.7 (released ??? ??? ?? ????)
+
+ 20071231 (a)
+	> Tom Dickey:
+	+ add a null-pointer check in offs2col0().
+	+ fix an arithmetic overflow on HPUX which caused mis-encoding of
+	  files read via slowreadf(), e.g., in [Output].
+
 Changes for vile 9.6 (released Thu Dec 27 2007)
 
 	> Tom Dickey:

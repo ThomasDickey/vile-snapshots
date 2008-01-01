@@ -1,5 +1,5 @@
 /*
- * $Id: eightbit.c,v 1.13 2007/12/24 01:58:12 tom Exp $
+ * $Id: eightbit.c,v 1.14 2007/12/31 19:50:17 tom Exp $
  *
  * Maintain "8bit" file-encoding mode by converting incoming UTF-8 to single
  * bytes, and providing a function that tells vile whether a given Unicode
@@ -103,7 +103,7 @@ vl_init_8bit(char *wide, char *narrow)
 	    converted = iconv(mb_desc, &ip, &in_bytes, &op, &out_bytes);
 	    if (converted == (size_t) (-1)) {
 		TRACE(("err:%d\n", errno));
-		TRACE(("convert(%d) %d %d/%d\n", n, converted, in_bytes, out_bytes));
+		TRACE(("convert(%d) %d %d/%d\n", n, (int) converted, (int) in_bytes, (int) out_bytes));
 	    } else {
 		output[sizeof(output) - out_bytes] = 0;
 		table_8bit_utf8[n].text = strmalloc(output);
@@ -203,7 +203,7 @@ vl_mb_getch(void)
 	*output = 0;
 	converted = iconv(mb_desc, &ip, &in_bytes, &op, &out_bytes);
 	TRACE(("converted %d '%s' -> %d:%#x\n",
-	       converted, input, out_bytes, *output));
+	       (int) converted, input, (int) out_bytes, *output));
 	if (converted == (size_t) (-1)) {
 	    if (errno == EILSEQ) {
 		ch = -1;

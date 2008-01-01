@@ -55,7 +55,7 @@
  *	not (yet) correspond to :-commands.  Before implementing, probably will
  *	have to make TESTC a settable mode.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/history.c,v 1.86 2007/08/29 00:46:27 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/history.c,v 1.87 2007/12/31 19:49:33 tom Exp $
  *
  */
 
@@ -361,14 +361,14 @@ hst_append(TBUFF *cmd, int glue, int can_extend)
 	   (int) tb_length(cmd),
 	   tb_visible(cmd),
 	   glue));
-    TRACE(("...MyText        :%d:%s\n", tb_length(MyText), tb_visible(MyText)));
+    TRACE(("...MyText        :%d:%s\n", (int) tb_length(MyText), tb_visible(MyText)));
     if (can_extend && willExtend(tb_args(cmd))
 	&& tb_length(cmd) > (size_t) skip) {
 	kbd_pushback(cmd, skip);
     }
 
     glueBufferToResult(&MyText, cmd);
-    TRACE(("...MyText        :%d:%s\n", tb_length(MyText), tb_visible(MyText)));
+    TRACE(("...MyText        :%d:%s\n", (int) tb_length(MyText), tb_visible(MyText)));
     MyGlue = glue;
 }
 
