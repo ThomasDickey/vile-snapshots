@@ -5,7 +5,7 @@
  * functions that adjust the top line in the window and invalidate the
  * framing, are hard.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/basic.c,v 1.157 2007/12/23 21:50:05 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/basic.c,v 1.158 2008/01/06 18:22:01 tom Exp $
  *
  */
 
@@ -1019,20 +1019,26 @@ int
 next_column(LINE *lp, int off, int col)
 {
     int rc = 1;
-    int c = lgetc(lp, off);
+    int c;
 
-    if (c == '\t') {
-	rc = next_tabcol(col) - col;
-    }
-#if OPT_MULTIBYTE
-    else if (b_is_utfXX(curbp)) {
-	if (bytes_at(lp, off) > 1) {
-	    rc = mb_cellwidth(curwp, lvalue(lp) + off, llength(lp) - off);
+    if (off < llength(lp)) {
+	c = lgetc(lp, off);
+
+	if (c == '\t') {
+	    rc = next_tabcol(col) - col;
 	}
-    }
+#if OPT_MULTIBYTE
+	else if (b_is_utfXX(curbp)) {
+	    if (bytes_at(lp, off) > 1) {
+		rc = mb_cellwidth(curwp, lvalue(lp) + off, llength(lp) - off);
+	    }
+	}
 #endif
-    else if (!isPrint(c)) {
-	rc = NonPrintingCols(c);
+	else if (!isPrint(c)) {
+	    rc = NonPrintingCols(c);
+	}
+    } else {
+	rc = 0;
     }
     return col + rc;
 }

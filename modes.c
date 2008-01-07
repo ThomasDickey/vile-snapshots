@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.351 2007/12/31 19:48:53 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.352 2008/01/06 17:53:46 tom Exp $
  *
  */
 
@@ -2037,6 +2037,27 @@ chgd_win_mode(BUFFER *bp, VALARGS * args, int glob_vals, int testing)
 
     set_winflags(glob_vals, WFHARD | WFMODE);
     return TRUE;
+}
+
+	/* Change the DOS-mode on the buffer */
+int
+chgd_dos_mode(BUFFER *bp, VALARGS * args, int glob_vals, int testing)
+{
+    int rc = TRUE;
+
+    if (testing) {
+	rc = chgd_win_mode(bp, args, glob_vals, testing);
+    } else {
+	if (!glob_vals) {
+	    if (args->local->vp->i) {
+		rc = set_rs_crlf(FALSE, 1);
+	    } else {
+		rc = set_rs_lf(FALSE, 1);
+	    }
+	}
+	set_winflags(glob_vals, WFHARD | WFMODE);
+    }
+    return rc;
 }
 
 void
