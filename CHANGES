@@ -1,5 +1,14 @@
 Changes for vile 9.7 (released ??? ??? ?? ????)
 
+ 20080106 (b)
+	> Tom Dickey:
+	+ fix an out-of-bounds error reported by valgrind in next_column().
+	+ modify treatment of ":setl dos" to behave the same as ":set-dos".
+	  That makes it possible to put a "vile:dos" in a modeline and make
+	  vile convert the line-endings.
+	+ trim trailing blanks from text handled in modelines in case there
+	  was a ^M.
+
  20071231 (a)
 	> Tom Dickey:
 	+ add a null-pointer check in offs2col0().

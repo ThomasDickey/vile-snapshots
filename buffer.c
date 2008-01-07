@@ -5,7 +5,7 @@
  * keys. Like everyone else, they set hints
  * for the display system.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.327 2007/11/25 18:20:14 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.328 2008/01/06 17:55:02 tom Exp $
  *
  */
 
@@ -1152,8 +1152,17 @@ static void
 do_one_modeline(LINE *lp, int vi, int first, int last)
 {
     TBUFF *data = 0;
+
     if (lisreal(lp) && first >= 0 && last > first && last <= llength(lp)) {
 	tb_sappend(&data, "setl ");
+
+	/*
+	 * Trim trailing blanks, e.g., in case we are processing a "set dos"
+	 * in a file containing trailing ^M's.
+	 */
+	while (last > first && isSpace(lgetc(lp, last - 1)))
+	    --last;
+
 	tb_bappend(&data, lvalue(lp) + first, last - first);
 	tb_append(&data, EOS);
 
