@@ -1,3 +1,4 @@
+%pointer
 %s NORMAL QUOTED QUOTES QUOTE1
 
 %o 6000
@@ -5,7 +6,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/infofilt.l,v 1.8 2006/05/21 19:50:19 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/infofilt.l,v 1.10 2008/01/12 17:21:27 tom Exp $
  *
  * Filter to add vile "attribution" sequences to an info file.
  * (An extension of "text" mode).
@@ -114,3 +115,11 @@ do_filter(FILE *inputs)
     }
     flt_bfr_finish();
 }
+
+#if NO_LEAKS
+static void
+free_filter(void)
+{
+    USE_LEXFREE;
+}
+#endif

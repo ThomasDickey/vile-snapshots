@@ -1,3 +1,4 @@
+%pointer
 %x NORMAL COMMENT QUOTE1 QUOTE2
 
 %a 6000
@@ -6,7 +7,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/makefilt.l,v 1.54 2006/05/21 19:50:19 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/makefilt.l,v 1.56 2008/01/12 17:21:27 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Makefile
  *
@@ -293,3 +294,11 @@ do_filter(FILE *inputs)
     }
     flt_bfr_error();
 }
+
+#if NO_LEAKS
+static void
+free_filter(void)
+{
+    USE_LEXFREE;
+}
+#endif

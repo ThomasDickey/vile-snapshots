@@ -44,7 +44,7 @@
  *	tgetc_avail()     true if a key is avail from tgetc() or below.
  *	keystroke_avail() true if a key is avail from keystroke() or below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.317 2007/12/31 19:48:15 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.318 2008/01/13 16:00:04 tom Exp $
  *
  */
 
@@ -955,7 +955,7 @@ kbd_delimiter(void)
  * pathnames and buffer names.  Escape those by doubling them.
  */
 char *
-add_backslashes2(char *text, char *find)
+add_backslashes2(char *text, const char *find)
 {
     static TBUFF *temp = 0;
     int n;

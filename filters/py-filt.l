@@ -1,9 +1,10 @@
+%pointer
 %s NORMAL QUOTE1 QUOTE2 QUOTE3
 
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/py-filt.l,v 1.13 2006/05/21 19:50:19 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/py-filt.l,v 1.15 2008/01/12 17:21:27 tom Exp $
  *
  * Filter to add vile "attribution" sequences to a Python script
  */
@@ -80,3 +81,11 @@ do_filter(FILE *inputs)
     }
     flt_bfr_finish();
 }
+
+#if NO_LEAKS
+static void
+free_filter(void)
+{
+    USE_LEXFREE;
+}
+#endif

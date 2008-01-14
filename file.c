@@ -5,7 +5,7 @@
  * reading and writing of the disk are
  * in "fileio.c".
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.413 2007/11/23 17:21:28 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.414 2008/01/13 16:45:29 tom Exp $
  */
 
 #include "estruct.h"
@@ -2659,7 +2659,7 @@ create_save_dir(char *dirnam)
 {
     int result = FALSE;
 #if defined(HAVE_MKDIR) && !SYS_MSDOS && !SYS_OS2
-    static char *tbl[] =
+    static const char *tbl[] =
     {
 	0,			/* reserved for $TMPDIR */
 #if SYS_UNIX

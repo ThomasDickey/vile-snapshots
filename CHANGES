@@ -1,5 +1,15 @@
 Changes for vile 9.7 (released ??? ??? ?? ????)
 
+ 20080113 (c)
+	> Tom Dickey:
+	+ another fix for offs2col0(), to reduce an off-by-one limit check.
+	+ workaround for HPUX lex, whose YYSTATE variable is unusable.
+	+ cleanup/reduce g++ warnings.
+	+ improve configure check for iconv.
+	+ add workaround in eightbit.c for systems without
+	  nl_langinfo(CODESET)), e.g., OpenBSD.
+	+ make memory leak-checking work for filters.
+
  20080106 (b)
 	> Tom Dickey:
 	+ fix an out-of-bounds error reported by valgrind in next_column().

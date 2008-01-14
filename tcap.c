@@ -1,7 +1,7 @@
 /*	tcap:	Unix V5, V7 and BS4.2 Termcap video driver
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.175 2007/12/24 01:50:37 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.177 2008/01/13 18:21:27 tom Exp $
  *
  */
 
@@ -145,7 +145,7 @@ tcap_open(void)
     static int already_open = 0;
     /* *INDENT-OFF* */
     static const struct {
-	    char *name;
+	    const char *name;
 	    char **data;
     } tc_strings[] = {
      { CAPNAME("AL","il"),    &tc_AL }	/* add p1 lines above cursor */
@@ -235,8 +235,8 @@ tcap_open(void)
     /* are we probably an xterm?  */
 #if OPT_XTERM
     i_am_xterm = FALSE;
-    I_AM_XTERM(tv_stype)
-	if (i_am_xterm) {
+    I_AM_XTERM(tv_stype);
+    if (i_am_xterm) {
 	xterm_open(&term);
     }
 #endif /* OPT_XTERM */
@@ -251,8 +251,7 @@ tcap_open(void)
 	/* allow aliases */
 	if (NO_CAP(*(tc_strings[i].data))) {
 	    t = TGETSTR(tc_strings[i].name, &p);
-	    TRACE(("TGETSTR(%s) = %s\n", tc_strings[i].name,
-		   str_visible(t)));
+	    TRACE(("TGETSTR(%s) = %s\n", tc_strings[i].name, str_visible(t)));
 	    /* simplify subsequent checks */
 	    if (NO_CAP(t))
 		t = 0;
@@ -927,13 +926,13 @@ tcap_beep(void)
 	}
     }
     if (!hit) {
-	static char *seq[][2] =
+	static const char *seq[][2] =
 	{
 	    {NULL, NULL},	/* vtflash = off */
 	    {VTFLASH_NORMSEQ, VTFLASH_REVSEQ},	/* reverse */
 	    {VTFLASH_REVSEQ, VTFLASH_NORMSEQ},	/* normal  */
 	};
-	char *str1, *str2;
+	const char *str1, *str2;
 	int val;
 
 	val = global_g_val(GVAL_VTFLASH);

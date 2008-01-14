@@ -1,8 +1,9 @@
+%pointer
 %x NORMAL QUOTED COMMENT
 
 %{
 /*
- * $Id: lispfilt.l,v 1.15 2007/11/25 20:07:49 tom Exp $
+ * $Id: lispfilt.l,v 1.17 2008/01/12 17:21:27 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of lisp code.
  *
@@ -117,3 +118,11 @@ do_filter(FILE *inputs)
     flt_bfr_error();
     end_state();
 }
+
+#if NO_LEAKS
+static void
+free_filter(void)
+{
+    USE_LEXFREE;
+}
+#endif

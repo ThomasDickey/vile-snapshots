@@ -1,3 +1,4 @@
+%pointer
 %x NORMAL HEREDOC QUOTED SUBST
 
 %o 10000
@@ -5,7 +6,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/sh-filt.l,v 1.70 2007/11/25 20:24:20 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/sh-filt.l,v 1.74 2008/01/12 22:59:05 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Shell script.
  */
@@ -284,3 +285,12 @@ do_filter(FILE *inputs)
     flt_bfr_error();
     end_state();
 }
+
+#if NO_LEAKS
+static void
+free_filter(void)
+{
+    USE_LEXFREE;
+    flt_free(&here_tag, &here_len);
+}
+#endif

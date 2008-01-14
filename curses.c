@@ -1,7 +1,7 @@
 /*
  * A terminal driver using the curses library
  *
- * $Header: /users/source/archives/vile.vcs/RCS/curses.c,v 1.33 2007/12/24 02:01:13 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/curses.c,v 1.34 2008/01/13 18:00:11 tom Exp $
  */
 
 #include "estruct.h"
@@ -84,8 +84,8 @@ curs_initialize(void)
 #if OPT_XTERM
     {
 	char *t = getenv("TERM");
-	I_AM_XTERM(t)
-	    if (i_am_xterm) {
+	I_AM_XTERM(t);
+	if (i_am_xterm) {
 	    xterm_open(&term);
 	}
     }

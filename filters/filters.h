@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.104 2007/09/19 21:46:18 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.109 2008/01/12 23:02:07 tom Exp $
  */
 
 #ifndef FILTERS_H
@@ -106,7 +106,21 @@ typedef struct {
 	void (*InitFilter)(int before);
 	void (*DoFilter)(FILE *in);
 	char *options;
+#if NO_LEAKS
+	void (*FreeFilter)(void);
+#define DCL_LEXFREE static void free_filter(void);
+#define REF_LEXFREE ,free_filter
+#else
+#define DCL_LEXFREE /* nothing */
+#define REF_LEXFREE /* nothing */
+#endif
 } FILTER_DEF;
+
+#ifdef LEX_IS_FLEX
+#define USE_LEXFREE { yy_delete_buffer(yy_current_buffer); yy_current_buffer = 0; yy_init = 1; }
+#else
+#define USE_LEXFREE if (yytext) { free(yytext); yytext = 0; yytextsz = 0; }
+#endif
 
 /*
  * This is redefinable so we can make a list of all built-in filter definitions
@@ -120,7 +134,8 @@ extern FILTER_DEF filter_def;
 #define DefineOptFilter(name,options) \
 static void init_filter(int before); \
 static void do_filter(FILE *Input); \
-FILTER_DEF filter_def = { name, 1, init_filter, do_filter, options }
+DCL_LEXFREE \
+FILTER_DEF filter_def = { name, 1, init_filter, do_filter, options REF_LEXFREE }
 
 #define DefineFilter(name) DefineOptFilter(name,0)
 
@@ -207,6 +222,7 @@ extern void flt_bfr_begin(char *attr);
 extern void flt_bfr_embed(char *text, int length, char *attr);
 extern void flt_bfr_error(void);
 extern void flt_bfr_finish(void);
+extern void flt_free(char **p, unsigned *len);
 extern void flt_free_keywords(char *classname);
 extern void flt_free_symtab(void);
 extern void flt_initialize(void);

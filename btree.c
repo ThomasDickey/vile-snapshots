@@ -1,6 +1,6 @@
 /*
- * $Id: btree.c,v 1.23 2006/04/25 20:13:46 tom Exp $
- * Copyright 1997-2005 by Thomas E. Dickey
+ * $Id: btree.c,v 1.24 2008/01/13 16:13:16 tom Exp $
+ * Copyright 1997-2006,2008 by Thomas E. Dickey
  *
  * Maintains a balanced binary tree (aka AVL tree) of unspecified nodes.  The
  * algorithm is taken from "The Art of Computer Programming -- Volume 3 --
@@ -621,7 +621,7 @@ btree_printf(BI_TREE * funcs)
 BI_NODE *
 btree_pmatch(BI_NODE * n, const int mode, const char *name)
 {
-    BI_NODE *m;
+    BI_NODE *m = 0;
     size_t len = strlen(name);
 
     while (n != 0) {

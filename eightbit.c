@@ -1,5 +1,5 @@
 /*
- * $Id: eightbit.c,v 1.14 2007/12/31 19:50:17 tom Exp $
+ * $Id: eightbit.c,v 1.18 2008/01/13 19:05:45 tom Exp $
  *
  * Maintain "8bit" file-encoding mode by converting incoming UTF-8 to single
  * bytes, and providing a function that tells vile whether a given Unicode
@@ -53,12 +53,21 @@ static char *
 get_encoding(char *locale)
 {
     char *encoding;
+    char *actual = setlocale(LC_ALL, locale);
 
-    setlocale(LC_ALL, locale);
+#ifdef HAVE_LANGINFO_CODESET
+    (void) actual;
     if ((encoding = nl_langinfo(CODESET)) == 0 || *encoding == '\0') {
 	fprintf(stderr, "Cannot find encoding for %s\n", locale);
 	tidy_exit(BADEXIT);
     }
+#else
+    if (actual == 0 || !strcmp(actual, "C") || !strcmp(actual, "POSIX")) {
+	encoding = "ASCII";
+    } else {
+	encoding = "ISO-8859-1";
+    }
+#endif
     return strmalloc(encoding);
 }
 
@@ -94,8 +103,10 @@ vl_init_8bit(char *wide, char *narrow)
 
 	for (n = 0; n < N_chars; ++n) {
 	    size_t converted;
-	    char input[80], *ip = input;
-	    char output[80], *op = output;
+	    char input[80];
+	    ICONV_CONST char *ip = input;
+	    char output[80];
+	    ICONV_CONST char *op = output;
 	    size_t in_bytes = 1;
 	    size_t out_bytes = sizeof(output);
 	    input[0] = n;
@@ -103,7 +114,8 @@ vl_init_8bit(char *wide, char *narrow)
 	    converted = iconv(mb_desc, &ip, &in_bytes, &op, &out_bytes);
 	    if (converted == (size_t) (-1)) {
 		TRACE(("err:%d\n", errno));
-		TRACE(("convert(%d) %d %d/%d\n", n, (int) converted, (int) in_bytes, (int) out_bytes));
+		TRACE(("convert(%d) %d %d/%d\n", n,
+		       (int) converted, (int) in_bytes, (int) out_bytes));
 	    } else {
 		output[sizeof(output) - out_bytes] = 0;
 		table_8bit_utf8[n].text = strmalloc(output);
@@ -157,7 +169,11 @@ vl_mb_is_8bit(int code)
     RINDEX_8BIT key;
 
     key.code = code;
-    p = bsearch(&key, rindex_8bit, N_chars, sizeof(RINDEX_8BIT), cmp_rindex);
+    p = (RINDEX_8BIT *) bsearch(&key,
+				rindex_8bit,
+				N_chars,
+				sizeof(RINDEX_8BIT),
+				cmp_rindex);
     return (p != 0);
 }
 
@@ -175,7 +191,11 @@ vl_mb_to_utf8(int code)
     RINDEX_8BIT key;
 
     key.code = code;
-    p = bsearch(&key, rindex_8bit, N_chars, sizeof(RINDEX_8BIT), cmp_rindex);
+    p = (RINDEX_8BIT *) bsearch(&key,
+				rindex_8bit,
+				N_chars,
+				sizeof(RINDEX_8BIT),
+				cmp_rindex);
     if (p != 0)
 	result = table_8bit_utf8[p->rinx].text;
 

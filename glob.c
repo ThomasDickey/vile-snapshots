@@ -13,7 +13,7 @@
  *
  *	modify (ifdef-style) 'expand_leaf()' to allow ellipsis.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/glob.c,v 1.90 2007/08/08 22:50:30 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/glob.c,v 1.92 2008/01/13 16:14:06 tom Exp $
  *
  */
 
@@ -599,11 +599,12 @@ compar(const void *a, const void *b)
 static int
 glob_from_pipe(const char *pattern)
 {
+    static char only_echo[] = "!echo %s";
 #ifdef GVAL_GLOB
     char *cmd = global_g_val_ptr(GVAL_GLOB);
     int single;
 #else
-    static char cmd[] = "!echo %s";
+    char *cmd = only_echo;
     static int single = TRUE;
 #endif
     FILE *cf;
@@ -620,7 +621,7 @@ glob_from_pipe(const char *pattern)
      * and break up the output with newlines.
      */
     if (!isShellOrPipe(cmd)) {
-	cmd = "!echo %s";
+	cmd = only_echo;
 	single = TRUE;
 	d = cmd + 1;
     } else {

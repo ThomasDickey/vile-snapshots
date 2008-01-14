@@ -1,7 +1,7 @@
 /*
  * Configurable headers used by termcap/terminfo driver for vile.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tcap.h,v 1.11 2006/08/13 20:33:31 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tcap.h,v 1.14 2008/01/13 20:45:40 tom Exp $
  */
 
 #ifndef VILE_TCAP_H
@@ -80,9 +80,6 @@ extern "C" {
 
 #if USE_TERMINFO
 #  define USE_TERMCAP 0
-#  define TGETSTR(name, bufp) tigetstr(name)
-#  define TGETNUM(name)       tigetnum(name) /* may be tigetint() */
-#  define TGETFLAG(name)      tigetflag(name)
 #  define CAPNAME(a,b)        b
 #  define NO_CAP(s)           (s == 0 || s == (char *)-1)
 #  if !defined(HAVE_TIGETNUM) && defined(HAVE_TIGETINT)
@@ -90,9 +87,6 @@ extern "C" {
 #  endif
 #else /* USE_TERMCAP */
 #  define USE_TERMCAP 1
-#  define TGETSTR(name, bufp) tgetstr(name, bufp)
-#  define TGETNUM(name)       tgetnum(name)
-#  define TGETFLAG(name)      tgetflag(name)
 #  define CAPNAME(a,b)        a
 #  define NO_CAP(s)           (s == 0)
 #endif /* USE_TERMINFO */
@@ -115,18 +109,8 @@ extern char PC;			/* used in 'tputs()' */
 	i_am_xterm = FALSE; \
     }
 
-#ifdef MISSING_EXTERN_TGETENT
-extern	int	tgetent (char *buffer, char *termtype);
-#endif
-#if defined(MISSING_EXTERN_TGETFLAG) || defined(MISSING_EXTERN_TIGETFLAG)
-extern	int	TGETFLAG (char *name);
-#endif
-#if defined(MISSING_EXTERN_TGETNUM) || defined(MISSING_EXTERN_TIGETNUM)
-extern	int	TGETNUM (char *name);
-#endif
-#if defined(MISSING_EXTERN_TGETSTR) || defined(MISSING_EXTERN_TIGETSTR)
-extern	char *	TGETSTR(const char *name, char **area);
-#endif
+#if DISP_TERMCAP
+
 #ifdef MISSING_EXTERN_TGOTO
 extern	char *	tgoto (const char *cstring, int hpos, int vpos);
 #endif
@@ -139,6 +123,97 @@ extern	char *	tparm (const char *fmt, ...);
 #ifdef MISSING_EXTERN_TPUTS
 extern	int	tputs (char *string, int nlines, OUTC_DCL (*_f)(OUTC_ARGS) );
 #endif
+
+/*****************************************************************************/
+
+#if USE_TERMCAP
+
+#ifdef MISSING_EXTERN_TGETNUM
+extern	int	tgetnum (char *name);
+#endif
+
+static int
+vl_tgetnum(const char *name)
+{
+    char temp[10];
+    return tgetnum(strcpy(temp, name));
+}
+#define TGETNUM(name) vl_tgetnum(name)
+
+#else	/* !USE_TERMCAP */
+
+#ifdef MISSING_EXTERN_TIGETNUM
+extern	int	tigetnum (char *name);
+#endif
+
+static int
+vl_tgetnum(const char *name)
+{
+    char temp[10];
+    return tigetnum(strcpy(temp, name));
+}
+#define TGETNUM(name) vl_tgetnum(name)
+
+#endif	/* USE_TERMCAP */
+
+#endif /* DISP_TCAP */
+
+/*****************************************************************************/
+
+#if USE_TERMCAP
+
+#ifdef MISSING_EXTERN_TGETENT
+extern	int	tgetent (char *buffer, char *termtype);
+#endif
+#ifdef MISSING_EXTERN_TGETFLAG
+extern	int	tgetflag (char *name);
+#endif
+#ifdef MISSING_EXTERN_TGETSTR
+extern	char *	tigetstr (const char *name, char **area);
+#endif
+
+static int
+vl_tgetflag(const char *name)
+{
+    char temp[10];
+    return tgetflag(strcpy(temp, name));
+}
+#define TGETFLAG(name) vl_tgetflag(name)
+
+static char *
+vl_tgetstr(const char *name, char **area)
+{
+    char temp[10];
+    return tgetstr(strcpy(temp, name), area);
+}
+#define TGETSTR(name, bufp) vl_tgetstr(name, bufp)
+
+#else	/* !USE_TERMCAP */
+
+#ifdef MISSING_EXTERN_TIGETFLAG
+extern	int	tigetflag (char *name);
+#endif
+#ifdef MISSING_EXTERN_TIGETSTR
+extern	char *	tigetstr (const char *name);
+#endif
+
+static int
+vl_tgetflag(const char *name)
+{
+    char temp[10];
+    return tigetflag(strcpy(temp, name));
+}
+#define TGETFLAG(name) vl_tgetflag(name)
+
+static char *
+vl_tgetstr(const char *name)
+{
+    char temp[10];
+    return tigetstr(strcpy(temp, name));
+}
+#define TGETSTR(name, bufp) vl_tgetstr(name)
+
+#endif	/* USE_TERMCAP */
 
 #ifdef __cplusplus
 }

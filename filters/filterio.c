@@ -1,7 +1,7 @@
 /*
  * Main program and I/O for external vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filterio.c,v 1.36 2007/09/19 22:44:15 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filterio.c,v 1.37 2008/01/12 18:46:08 tom Exp $
  *
  */
 
@@ -413,6 +413,7 @@ main(int argc, char **argv)
 	filter_def.DoFilter(my_in);
     }
 #if NO_LEAKS
+    filter_def.FreeFilter();
     free(default_attr);
     filters_leaks();
 #endif

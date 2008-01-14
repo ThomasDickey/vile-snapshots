@@ -3,7 +3,7 @@
 ------------------------
 vile bug/enhancement/wish list (mostly wishes ;-)
 ------------------------
-$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.406 2007/12/01 16:37:50 tom Exp $
+$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.407 2008/01/13 13:53:27 tom Exp $
 ----------------------
 	(E means enhancement, L,M,H are low, medium, high priority)
 
@@ -1575,3 +1575,20 @@ filters using fltstack.h won't build with OSF/1 4.0D since its native flex
 declares yy_start (used in BEGIN) after the first code segment - looks like
 it's in preparation for the pattern definitions.  I cannot work around that
 (use flex 2.54a).
+
+-- 08-01-13 (tom)
+lex/flex (all known versions) have no real localization support, using only
+a POSIX table for the character classes.  I have in mind that this could be
+done by a new variant of flex which does the following:
+
+	a) optionally uses a localized table for character classes.  Reading
+	   flex's source, it appears that this was part of its initial design,
+	   though it does not behave that way.
+
+	b) optionally provides for reparsing the patterns, generating localized
+	   tables at runtime.  That would be doable if the lex program uses
+	   exactly the same code (a common library) for building the stubbed
+	   lexer/tables and for the runtime analysis.
+
+so-called "new flex" 2.5.34 does not accept lexers written for POSIX lex.
+(2.5.31 did accept most POSIX lexers...).

@@ -5,7 +5,7 @@
  *
  * Copyright (c) 1990-2007 by Paul Fox and Thomas Dickey
  *
- * $Header: /users/source/archives/vile.vcs/RCS/finderr.c,v 1.134 2007/11/25 22:03:29 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/finderr.c,v 1.135 2008/01/13 16:45:13 tom Exp $
  *
  */
 
@@ -178,7 +178,7 @@ get_febuff(void)
 static const char *
 get_token_name(ErrTokens n)
 {
-    char *result;
+    const char *result;
 
     switch (n) {
     case W_VERB:

@@ -1,6 +1,8 @@
+%pointer
+
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/rtf-filt.l,v 1.3 2007/05/08 00:35:15 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/rtf-filt.l,v 1.5 2008/01/12 17:21:27 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of RTF (rich text format)
  * input text.
@@ -72,3 +74,11 @@ do_filter(FILE *inputs)
 
     yylex();
 }
+
+#if NO_LEAKS
+static void
+free_filter(void)
+{
+    USE_LEXFREE;
+}
+#endif

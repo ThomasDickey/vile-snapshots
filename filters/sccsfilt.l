@@ -1,3 +1,4 @@
+%pointer
 %s DELETE INSERT
 
 %a 10000
@@ -6,7 +7,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/sccsfilt.l,v 1.15 2007/11/26 12:00:06 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/sccsfilt.l,v 1.17 2008/01/12 17:21:27 tom Exp $
  *
  * Filter to add vile "attribution" sequences to SCCS files.
  */
@@ -89,3 +90,11 @@ do_filter(FILE *inputs)
     }
     end_state();
 }
+
+#if NO_LEAKS
+static void
+free_filter(void)
+{
+    USE_LEXFREE;
+}
+#endif

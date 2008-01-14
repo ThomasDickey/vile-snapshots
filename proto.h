@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.636 2007/12/24 01:52:45 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.640 2008/01/13 17:20:39 tom Exp $
  *
  */
 
@@ -225,7 +225,7 @@ extern int add_line_at (BUFFER *bp, LINE *prevp, const char *text, int len);
 extern int addline (BUFFER *bp, const char *text, int len);
 extern int any_changed_buf (BUFFER **bpp);
 extern int any_unread_buf (BUFFER **bpp);
-extern int ask_for_bname(char *prompt, char *bufn, size_t len);
+extern int ask_for_bname(const char *prompt, char *bufn, size_t len);
 extern int bclear (BUFFER *bp);
 extern int bsizes (BUFFER *bp);
 extern int buffer_in_use (BUFFER *bp);
@@ -426,7 +426,7 @@ extern const char * skip_cblanks (const char *str);
 extern const char * skip_cnumber (const char *str);
 extern const char * skip_cstring (const char *str);
 extern const char * skip_ctext (const char *str);
-extern const char * tokval (char *tokn);
+extern const char * tokval (const char *tokn);
 extern int absol (int x);
 extern int is_falsem (const char *val);
 extern int is_truem (const char *val);
@@ -643,7 +643,7 @@ extern	void	hst_reset (void);
 
 /* input.c */
 extern char *add_backslashes (char *text);
-extern char *add_backslashes2 (char *text, char *find);
+extern char *add_backslashes2 (char *text, const char *find);
 extern char *user_reply (const char *prompt, const char *dftval);
 extern int adjust_chartype (CHARTYPE *mask);
 extern int dotcmdbegin (void);
@@ -712,7 +712,7 @@ extern int is_cindent_char (BUFFER *bp, int ch);
 extern int previndent (int *bracefp);
 
 #if OPT_EVAL
-extern char *current_modename (void);
+extern const char *current_modename (void);
 #endif
 
 #if SMALLER	/* cancel 'neproto.h' */
@@ -875,7 +875,7 @@ extern const char *const * list_of_modes (void);
 #endif
 
 #if OPT_MAJORMODE
-extern char * get_submode_name (BUFFER *bp, int n);
+extern const char * get_submode_name (BUFFER *bp, int n);
 extern int alloc_mode (const char *name, int predef);
 extern int major_complete (DONE_ARGS);
 extern struct VAL * get_submode_vals (BUFFER *bp, int n);
@@ -883,7 +883,7 @@ extern struct VAL * get_submode_valx (BUFFER *bp, int n, int *m);
 extern void infer_majormode (BUFFER *bp);
 extern void set_majormode_rexp (const char *name, int n, const char *pat);
 extern void set_submode_val (const char *name, int n, int value);
-extern void set_submode_txt (const char *name, int n, char * value);
+extern void set_submode_txt (const char *name, int n, const char * value);
 extern void set_vilemode (BUFFER *bp);
 #else
 #define infer_majormode(bp) fix_cmode(bp, (global_b_val(MDCMOD) && has_C_suffix(bp)))
@@ -944,19 +944,19 @@ extern char * home_dir (void);
 extern char * is_appendname (char *fn);
 extern char * last_slash (char *fn);
 extern char * lengthen_path (char *path);
-extern char * pathcat (char *dst, const char *path, char *leaf);
+extern char * pathcat (char *dst, const char *path, const char *leaf);
 extern char * pathleaf (char *path);
 extern char * shorten_path (char *path, int keep_cwd);
 extern const char *parse_pathlist (const char *list, char *result);
 extern int find_in_path_list (const char *path_list, char *path);
-extern int is_directory (char *path);
+extern int is_directory (const char *path);
 extern int is_file (char *path);
 extern int is_internalname (const char *fn);
 extern int is_nonfile (char *path);
 extern int is_pathname (char *path);
 extern int is_scratchname (const char *fn);
 extern int maybe_pathname (char *fn);
-extern void append_to_path_list (char **path_list, char *path);
+extern void append_to_path_list (char **path_list, const char *path);
 extern void prepend_to_path_list (char **path_list, char *path);
 extern char *path_trunc (char *path,
                         int  max_path_len,
