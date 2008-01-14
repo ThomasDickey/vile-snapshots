@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.654 2007/12/24 01:50:28 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.656 2008/01/13 16:46:30 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -1089,8 +1089,8 @@ extern void endofDisplay(void);
 
 #define	char2int(c)	((int)kcod2key(c))	/* mask off sign-extension, etc. */
 
-#define	PLURAL(n)	((n) != 1 ? "s" : (char *) "")
-#define NONNULL(s)	((s) != 0 ? (s) : (char *) "")
+#define	PLURAL(n)	((n) != 1 ? "s" : "")
+#define NONNULL(s)	((s) != 0 ? (s) : "")
 #define isEmpty(s)	((s) == 0 || *(s) == EOS)
 
 #define EOS        '\0'
@@ -2593,7 +2593,7 @@ typedef	int	(*OpsFunc) (void);
  *	and can be found in the file nename.h
  */
 typedef struct {
-	char *n_name;
+	const char *n_name;
 	const CMDFUNC *n_cmd;
 }	NTAB;
 

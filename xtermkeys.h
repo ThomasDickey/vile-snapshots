@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/xtermkeys.h,v 1.6 2005/11/23 19:17:13 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/xtermkeys.h,v 1.7 2008/01/13 16:26:29 tom Exp $
  *
  * Function-key definitions and modifiers used for xterm.  This is a header
  * file to simplify sharing between the termcap/curses drivers.
@@ -8,9 +8,9 @@
 #define DATA(tc,ti,code) { CAPNAME(tc,ti), code, 0 }
 /* *INDENT-OFF* */
 static struct {
-    char *capname;
+    const char *capname;
     int code;
-    char * result;
+    const char * result;
 } keyseqs[] = {
     /* Arrow keys */
     DATA( "ku","kcuu1",	KEY_Up ),
@@ -130,7 +130,7 @@ void
 tcap_init_fkeys(void)
 {
     /* *INDENT-OFF* */
-    static char * fallback_arrows[] = {
+    static const char * fallback_arrows[] = {
 /*	"\033",		** VT52 (type-ahead checks make this not useful) */
 	"\033O",	/* SS3 */
 	"\033[",	/* CSI */
@@ -169,7 +169,7 @@ tcap_init_fkeys(void)
 	}
 #endif
 	for (i = TABLESIZE(keyseqs); i--;) {
-	    char *seq = keyseqs[i].result;
+	    const char *seq = keyseqs[i].result;
 	    if (!NO_CAP(seq)) {
 		int len;
 		TRACE(("TGETSTR(%s) = %s\n", keyseqs[i].capname, str_visible(seq)));

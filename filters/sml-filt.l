@@ -1,8 +1,9 @@
+%pointer
 %x COMMENT STRING STRSKIP
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/sml-filt.l,v 1.6 2006/05/21 19:50:19 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/sml-filt.l,v 1.8 2008/01/12 17:21:27 tom Exp $
 
     Filter to add vile "attribution" sequences to selected bits of SML
     input text.
@@ -141,3 +142,11 @@ do_filter(FILE *inputs)
 
     flush_string();
 }
+
+#if NO_LEAKS
+static void
+free_filter(void)
+{
+    USE_LEXFREE;
+}
+#endif

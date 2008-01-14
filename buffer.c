@@ -5,7 +5,7 @@
  * keys. Like everyone else, they set hints
  * for the display system.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.328 2008/01/06 17:55:02 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.329 2008/01/13 15:25:12 tom Exp $
  *
  */
 
@@ -814,7 +814,7 @@ bname_complete(DONE_ARGS)
  * stringent requirement).
  */
 int
-ask_for_bname(char *prompt, char *bufn, size_t len)
+ask_for_bname(const char *prompt, char *bufn, size_t len)
 {
     int status;
 

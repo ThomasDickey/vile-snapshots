@@ -1,3 +1,4 @@
+%pointer
 %s NORMAL ACTION REGISTER SETTINGS MAJORMODE_NAME SUBMODE_NAME SUBMODE_VALS WITH_DEFS LITERAL
 
 %o 10000
@@ -6,7 +7,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/vilefilt.l,v 1.53 2007/11/26 12:15:53 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/vilefilt.l,v 1.56 2008/01/13 22:52:40 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of vile macros
  * - T.Dickey
@@ -158,7 +159,7 @@ handle_keyword(char *text, int len)
     if (vile_keywords) {
 	const void *cmd = vl_lookup_cmd(text);
 
-	switch (YYSTATE) {
+	switch (cur_state) {
 	case NORMAL:
 	    if (vl_is_setting(cmd)) {
 		new_state(SETTINGS);
@@ -211,7 +212,7 @@ handle_newline(void)
 {
     if (vile_keywords && FLTSTACK_OK && FltStack_WITH_ACTIVE) {
 	if (FltStack_WITH_STATE < 0) {
-	    FltStack_WITH_STATE = YYSTATE;
+	    FltStack_WITH_STATE = cur_state;
 	}
 	new_state(FltStack_WITH_STATE);
     }
@@ -303,3 +304,11 @@ do_filter(FILE *inputs)
     }
     end_state();
 }
+
+#if NO_LEAKS
+static void
+free_filter(void)
+{
+    USE_LEXFREE;
+}
+#endif

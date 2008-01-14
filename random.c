@@ -2,7 +2,7 @@
  * This file contains the command processing functions for a number of random
  * commands. There is no functional grouping here, for sure.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.313 2007/12/27 19:50:05 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.314 2008/01/13 15:35:26 tom Exp $
  *
  */
 
@@ -1515,10 +1515,10 @@ ch_fname(BUFFER *bp, const char *fname)
 }
 
 #if OPT_HOOKS
-static char *
+static const char *
 name_of_hook(HOOK * hook)
 {
-    char *result = "unknown";
+    const char *result = "unknown";
     if (hook == &cdhook)
 	result = "$cd-hook";
     else if (hook == &readhook)

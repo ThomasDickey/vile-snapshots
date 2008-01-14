@@ -1,8 +1,9 @@
+%pointer
 %x COMMENT PREP_COM
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/cwebfilt.l,v 1.17 2006/04/05 14:40:29 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/cwebfilt.l,v 1.19 2008/01/12 17:21:27 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Cwebx input
  * text.  Also useful for Cweb
@@ -148,3 +149,11 @@ do_filter(FILE *inputs)
     while (yylex() > 0) {
     }
 }
+
+#if NO_LEAKS
+static void
+free_filter(void)
+{
+    USE_LEXFREE;
+}
+#endif

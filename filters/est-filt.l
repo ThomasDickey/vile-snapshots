@@ -1,8 +1,9 @@
+%pointer
 %s CODE NOTE EXP1 EXP2
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/est-filt.l,v 1.6 2006/05/21 19:50:19 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/est-filt.l,v 1.8 2008/01/12 17:21:27 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of enscript
  * syntax-description files.
@@ -84,3 +85,11 @@ do_filter(FILE *inputs)
     }
     flt_bfr_error();
 }
+
+#if NO_LEAKS
+static void
+free_filter(void)
+{
+    USE_LEXFREE;
+}
+#endif

@@ -1,10 +1,11 @@
+%pointer
 %a 5000
 %o 6000
 
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/mms-filt.l,v 1.14 2006/05/21 19:50:19 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/mms-filt.l,v 1.16 2008/01/12 17:21:27 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of VMS mms script
  * - T.Dickey
@@ -106,3 +107,11 @@ do_filter(FILE *inputs)
     while (yylex() > 0) {
     }
 }
+
+#if NO_LEAKS
+static void
+free_filter(void)
+{
+    USE_LEXFREE;
+}
+#endif

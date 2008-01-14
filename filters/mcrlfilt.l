@@ -1,3 +1,4 @@
+%pointer
 %s NORMAL 
 
 %o 6000
@@ -5,7 +6,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/mcrlfilt.l,v 1.1 2006/08/08 21:58:57 Paul.van.Tilburg Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/mcrlfilt.l,v 1.3 2008/01/12 17:21:27 tom Exp $
  *
  * Filter to add vile "attribution" sequences to a mCRL(2) specification
  * or model, based on the text filter.
@@ -62,3 +63,11 @@ do_filter(FILE *inputs)
     }
     flt_bfr_finish();
 }
+
+#if NO_LEAKS
+static void
+free_filter(void)
+{
+    USE_LEXFREE;
+}
+#endif

@@ -22,7 +22,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.616 2007/12/24 14:17:08 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.617 2008/01/13 17:16:55 tom Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -1671,51 +1671,50 @@ default_startup_path(void)
 char *
 init_state_value(int which)
 {
+    const char *value = 0;
     char *result = 0;
-    int allocated = FALSE;
 
     switch (which) {
 #if OPT_FINDERR
     case VAR_FILENAME_EXPR:
-	result = DFT_FILENAME_EXPR;
+	value = DFT_FILENAME_EXPR;
 	break;
 #endif
     case VAR_HELPFILE:
-	result = default_help_file();
+	value = default_help_file();
 	break;
     case VAR_LIBDIR_PATH:
-	result = default_libdir_path();
+	value = default_libdir_path();
 	break;
 #if OPT_MENUS
     case VAR_MENU_FILE:
-	result = default_menu_file();
+	value = default_menu_file();
 	break;
 #endif
 #if OPT_MLFORMAT
     case VAR_MLFORMAT:
-	result = DFT_MLFORMAT;
+	value = DFT_MLFORMAT;
 	break;
 #endif
 #if OPT_POSFORMAT
     case VAR_POSFORMAT:
-	result = DFT_POSFORMAT;
+	value = DFT_POSFORMAT;
 	break;
 #endif
     case VAR_PROMPT:
-	result = ": ";
+	value = ": ";
 	break;
     case VAR_REPLACE:
-	result = "";
+	value = "";
 	break;
     case VAR_STARTUP_FILE:
-	result = default_startup_file();
+	value = default_startup_file();
 	break;
     case VAR_STARTUP_PATH:
 	result = default_startup_path();
-	allocated = TRUE;
 	break;
     }
-    return (result != 0 && !allocated) ? strmalloc(result) : result;
+    return (value != 0) ? strmalloc(value) : result;
 }
 #endif /* OPT_EVAL */
 

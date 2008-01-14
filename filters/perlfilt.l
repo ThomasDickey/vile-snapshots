@@ -1,8 +1,9 @@
+%pointer
 %x CODE HERE PATTERN POD IGNORED
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/perlfilt.l,v 1.46 2007/05/26 14:25:56 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/perlfilt.l,v 1.49 2008/01/12 22:59:55 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of PERL input
  * text.
@@ -209,3 +210,12 @@ do_filter(FILE *inputs)
     }
     flt_bfr_error();
 }
+
+#if NO_LEAKS
+static void
+free_filter(void)
+{
+    USE_LEXFREE;
+    flt_free(&here_tag, &here_len);
+}
+#endif

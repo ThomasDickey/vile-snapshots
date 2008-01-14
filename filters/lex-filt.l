@@ -1,3 +1,4 @@
+%pointer
 %s RULES RULE1 RULEX RULER STATES ACTIONS ACTION0 ACTION1 ACTION2 ACTION3 CODE CODE1 COMMENT
 
 %a 20000
@@ -7,7 +8,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/lex-filt.l,v 1.60 2006/05/21 19:50:19 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/lex-filt.l,v 1.62 2008/01/12 17:21:27 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of LEX program.
  */
@@ -434,3 +435,11 @@ do_filter(FILE *inputs)
     }
     end_state();
 }
+
+#if NO_LEAKS
+static void
+free_filter(void)
+{
+    USE_LEXFREE;
+}
+#endif

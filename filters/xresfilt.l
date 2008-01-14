@@ -1,9 +1,10 @@
+%pointer
 %s NORMAL RESNAME RESVALUE
 
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/xresfilt.l,v 1.19 2006/11/24 21:17:29 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/xresfilt.l,v 1.21 2008/01/12 17:21:27 tom Exp $
  *
  * Filter to add vile "attribution" sequences to an X resource file.
  */
@@ -143,3 +144,11 @@ do_filter(FILE *inputs)
     }
     flt_bfr_finish();
 }
+
+#if NO_LEAKS
+static void
+free_filter(void)
+{
+    USE_LEXFREE;
+}
+#endif

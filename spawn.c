@@ -1,7 +1,7 @@
 /*	Spawn:	various DOS access commands
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.194 2007/12/27 19:08:17 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.195 2008/01/13 17:09:16 tom Exp $
  *
  */
 
@@ -1178,10 +1178,10 @@ free_vector(char ***vec, size_t vec_elements)
     (void) free(*vec);
 }
 
-static char *
+static const char *
 determine_quoted_delimiter(void)
 {
-    char *qdelim;
+    const char *qdelim;
 
 #if SYS_UNIX
     qdelim = "'";
@@ -1227,7 +1227,7 @@ static int
 add_token_to_cmd(char **cmd,
 		 size_t *cmdidx,
 		 size_t *cmdlen,
-		 char *token,
+		 const char *token,
 		 const char *funcname)
 {
     int rc = TRUE;
@@ -1382,10 +1382,11 @@ find_dirs_only(char *cmd, FINDINFO * pinfo, int prepend_bang)
 {
     size_t i, outidx, outlen;
     const char *path, *fnname;
-    char *rslt, *qdelim, buf[512];
+    char *rslt, buf[NFILEN * 2];
+    const char *qdelim;
 
     fnname = "find_dirs_only";
-    outlen = 512;
+    outlen = sizeof(buf);
     outidx = 0;
     rslt = castalloc(char, outlen);
     if (!rslt) {
@@ -1520,7 +1521,8 @@ find_all_files(char *cmd, FINDINFO * pinfo, int prepend_bang)
 {
     size_t i, outidx, outlen, vecidx;
     const char *path, *fnname;
-    char *xargstr, **vec, *rslt, *qdelim, buf[512];
+    char *xargstr, **vec, *rslt, buf[NFILEN * 2];
+    const char *qdelim;
 
     fnname = "find_all_files";
     if ((xargstr = extract_wildcards(cmd, &vec, &vecidx, fnname)) == NULL)
@@ -1544,7 +1546,7 @@ find_all_files(char *cmd, FINDINFO * pinfo, int prepend_bang)
 	mlforce("[unless \"d\" option is set, shell command must include at least one wildcard]");
 	return (NULL);
     }
-    outlen = 512;
+    outlen = sizeof(buf);
     outidx = 0;
     rslt = castalloc(char, outlen);
     if (!rslt) {

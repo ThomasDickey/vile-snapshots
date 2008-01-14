@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.352 2008/01/06 17:53:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.354 2008/01/13 17:20:32 tom Exp $
  *
  */
 
@@ -2683,10 +2683,10 @@ show_majormode_order(char *tag)
 #endif
 
 static int
-put_majormode_before(unsigned j, char *s)
+put_majormode_before(unsigned j, const char *s)
 {
-    char *t;
-    char *told = "~";		/* FIXME: majormode names are 7-bit ASCII */
+    const char *t;
+    const char *told = "~";	/* FIXME: majormode names are 7-bit ASCII */
     int k;
     int kk;
     int found = -1;
@@ -2729,8 +2729,8 @@ put_majormode_before(unsigned j, char *s)
 static int
 put_majormode_after(unsigned j, char *s)
 {
-    char *t;
-    char *told = "";
+    const char *t;
+    const char *told = "";
     int k;
     int kk;
     int found = -1;
@@ -3194,10 +3194,10 @@ get_sm_vals(MAJORMODE * ptr)
 /*
  * Returns the name of the n'th submode group
  */
-char *
+const char *
 get_submode_name(BUFFER *bp, int n)
 {
-    char *result = "";
+    const char *result = "";
     MAJORMODE *data;
 
     if (n == 0) {
@@ -4262,7 +4262,7 @@ set_submode_val(const char *name, int n, int value)
 }
 
 void
-set_submode_txt(const char *name, int n, char *value)
+set_submode_txt(const char *name, int n, const char *value)
 {
     MAJORMODE *p;
 
@@ -4461,7 +4461,7 @@ update_scheme_choices(void)
 }
 
 static int
-same_string(char *p, char *q)
+same_string(const char *p, const char *q)
 {
     if (p == 0)
 	p = "";

@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/sed-filt.c,v 1.22 2006/05/21 21:01:05 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/sed-filt.c,v 1.23 2008/01/12 16:44:13 tom Exp $
  *
  * Filter to add vile "attribution" sequences to sed scripts.
  */
@@ -378,3 +378,10 @@ do_filter(FILE *input GCC_UNUSED)
 	}
     }
 }
+
+#if NO_LEAKS
+static void
+free_filter(void)
+{
+}
+#endif

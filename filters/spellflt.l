@@ -1,7 +1,9 @@
+%pointer
+
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/spellflt.l,v 1.34 2007/05/12 14:18:59 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/spellflt.l,v 1.36 2008/01/12 17:21:27 tom Exp $
  *
  * Filter to add vile "attribution" sequences to misspelled words.
  */
@@ -338,3 +340,11 @@ do_filter(FILE *inputs GCC_UNUSED)
 
 #endif /* HAVE_POPEN */
 }
+
+#if NO_LEAKS
+static void
+free_filter(void)
+{
+    USE_LEXFREE;
+}
+#endif

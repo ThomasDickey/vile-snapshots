@@ -1,3 +1,4 @@
+%pointer
 %s TEXT NOTE QUOTED QUOTES
 
 %a 10000
@@ -6,7 +7,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/txt-filt.l,v 1.31 2007/11/26 12:08:36 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/txt-filt.l,v 1.33 2008/01/12 17:21:27 tom Exp $
  *
  * Filter to add vile "attribution" sequences to an ordinary text file
  */
@@ -131,3 +132,11 @@ do_filter(FILE *inputs)
     flt_bfr_finish();
     end_state();
 }
+
+#if NO_LEAKS
+static void
+free_filter(void)
+{
+    USE_LEXFREE;
+}
+#endif

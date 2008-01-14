@@ -1,9 +1,10 @@
+%pointer
 %s NAME DESC GAPS CAPS VALS LINK
 
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/tc-filt.l,v 1.30 2006/11/06 00:57:48 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/tc-filt.l,v 1.32 2008/01/12 17:21:27 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of termcap
  */
@@ -169,3 +170,11 @@ do_filter(FILE *inputs)
     while (yylex() > 0) {
     }
 }
+
+#if NO_LEAKS
+static void
+free_filter(void)
+{
+    USE_LEXFREE;
+}
+#endif

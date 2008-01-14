@@ -1,8 +1,9 @@
+%pointer
 %x NORMAL QUOTED
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/pot-filt.l,v 1.7 2006/05/21 19:50:19 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/pot-filt.l,v 1.9 2008/01/12 17:21:27 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of gettext files.
  */
@@ -78,3 +79,11 @@ do_filter(FILE *inputs)
     }
     flt_bfr_error();
 }
+
+#if NO_LEAKS
+static void
+free_filter(void)
+{
+    USE_LEXFREE;
+}
+#endif

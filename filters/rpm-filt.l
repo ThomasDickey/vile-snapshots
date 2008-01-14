@@ -1,3 +1,4 @@
+%pointer
 %x META TEXT NORMAL HEREDOC QUOTED QUOTED2 SUBST
 
 %o 10000
@@ -5,7 +6,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/rpm-filt.l,v 1.14 2007/05/26 14:51:13 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/rpm-filt.l,v 1.17 2008/01/12 22:58:51 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of rpm spec-file.
  */
@@ -277,3 +278,12 @@ do_filter(FILE *inputs)
     flt_bfr_error();
     end_state();
 }
+
+#if NO_LEAKS
+static void
+free_filter(void)
+{
+    USE_LEXFREE;
+    flt_free(&here_tag, &here_len);
+}
+#endif

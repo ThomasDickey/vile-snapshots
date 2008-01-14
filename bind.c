@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.317 2007/12/31 19:53:11 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.318 2008/01/13 16:17:28 tom Exp $
  *
  */
 
@@ -1117,7 +1117,7 @@ show_onlinehelp(const CMDFUNC * cmd)
 	flags &= !(UNDO | REDO);
 #endif
     if (flags & (RANGE | UNDO | REDO | GLOBOK)) {
-	char *gaps = "";
+	const char *gaps = "";
 	char *next = outseq;
 
 	next = lsprintf(outseq, "  ( ");
@@ -1542,7 +1542,7 @@ cfg_locate(char *fname, UINT which)
 	    int success = FALSE;
 
 	    if ((mode & FL_EXECABLE) || (which == LOCATE_SOURCE)) {
-		char *dname = malloc(NFILEN + strlen(fname) + 10);
+		char *dname = (char *) malloc(NFILEN + strlen(fname) + 10);
 		char *leaf;
 
 		if (dname != 0) {

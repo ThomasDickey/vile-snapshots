@@ -1,8 +1,9 @@
+%pointer
 %s RULES ACTIONS CODE COMMENT
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/vl-filt.l,v 1.13 2006/05/21 19:50:48 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/vl-filt.l,v 1.15 2008/01/12 17:21:27 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of VeriLog
  * program.
@@ -113,3 +114,11 @@ do_filter(FILE *inputs)
     while (yylex() > 0) {
     }
 }
+
+#if NO_LEAKS
+static void
+free_filter(void)
+{
+    USE_LEXFREE;
+}
+#endif

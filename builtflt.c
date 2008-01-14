@@ -1,7 +1,7 @@
 /*
  * Main program and I/O for external vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/RCS/builtflt.c,v 1.60 2007/09/19 21:45:54 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/builtflt.c,v 1.62 2008/01/13 18:39:11 tom Exp $
  *
  */
 
@@ -356,7 +356,7 @@ flt_error(const char *fmt,...)
 int
 flt_input(char *buffer, int max_size)
 {
-    char *separator = "\n";
+    const char *separator = "\n";
     int need = strlen(separator);
     int used = 0;
 
@@ -507,6 +507,9 @@ flt_start(char *name)
 	set_symbol_table(current_filter->filter_name);
 	current_filter->InitFilter(0);
 	current_filter->DoFilter(stdin);
+#if NO_LEAKS
+	current_filter->FreeFilter();
+#endif
 
 	DOT = save_dot;
 	MK = save_mk;

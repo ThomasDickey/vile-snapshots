@@ -1,8 +1,9 @@
+%pointer
 %x HTMLNOTE HTMLCODE HTMLQUO1 HTMLQUO2 JS_NOTE JS_CODE JSP_MODE
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/htmlfilt.l,v 1.45 2007/10/21 19:19:02 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/htmlfilt.l,v 1.47 2008/01/12 17:21:27 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of HTML input
  * text.
@@ -197,3 +198,11 @@ do_filter(FILE *inputs)
     flt_bfr_error();
     end_state();
 }
+
+#if NO_LEAKS
+static void
+free_filter(void)
+{
+    USE_LEXFREE;
+}
+#endif

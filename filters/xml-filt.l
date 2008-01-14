@@ -1,8 +1,9 @@
+%pointer
 %x XMLTAG XMLATTR XMLCDATA COMMENT INLINE
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/xml-filt.l,v 1.16 2007/10/21 19:30:42 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/xml-filt.l,v 1.18 2008/01/12 17:21:27 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of XML input
  * text.
@@ -227,3 +228,11 @@ do_filter(FILE *inputs)
 	flt_error("expected tag:%s", Tags[Num_tags - 1].name);
     end_state();
 }
+
+#if NO_LEAKS
+static void
+free_filter(void)
+{
+    USE_LEXFREE;
+}
+#endif

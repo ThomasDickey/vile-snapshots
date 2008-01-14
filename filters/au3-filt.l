@@ -1,8 +1,9 @@
+%pointer
 %state NORMAL IFCMT COMMENT
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/au3-filt.l,v 1.6 2006/05/21 19:50:19 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/au3-filt.l,v 1.8 2008/01/12 17:21:27 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of AutoIt
  * input text.
@@ -104,3 +105,11 @@ do_filter(FILE *inputs)
     while (yylex() > 0) {
     }
 }
+
+#if NO_LEAKS
+static void
+free_filter(void)
+{
+    USE_LEXFREE;
+}
+#endif

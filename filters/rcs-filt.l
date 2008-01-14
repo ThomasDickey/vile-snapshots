@@ -1,9 +1,10 @@
+%pointer
 %s QUOTED
 
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/rcs-filt.l,v 1.12 2007/05/26 14:49:05 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/rcs-filt.l,v 1.15 2008/01/12 23:00:33 tom Exp $
  *
  * Filter to add vile "attribution" sequences to RCS archives.
  */
@@ -127,3 +128,12 @@ do_filter(FILE *inputs)
     }
     flush_quoted();
 }
+
+#if NO_LEAKS
+static void
+free_filter(void)
+{
+    USE_LEXFREE;
+    flt_free(&save_bfr, &save_max);
+}
+#endif

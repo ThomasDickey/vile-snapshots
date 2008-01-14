@@ -1,3 +1,4 @@
+%pointer
 %s CODE HERE SSTRING DSTRING RD SUBST
 
 %o 6000
@@ -5,7 +6,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/rb-filt.l,v 1.18 2007/11/25 20:04:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/rb-filt.l,v 1.21 2008/01/12 23:00:02 tom Exp $
  *
  * Filter to add vile "attribution" sequences to a Ruby script
  * based on the Python filter.
@@ -223,3 +224,12 @@ do_filter(FILE *inputs)
     flt_bfr_finish();
     end_state();
 }
+
+#if NO_LEAKS
+static void
+free_filter(void)
+{
+    USE_LEXFREE;
+    flt_free(&here_tag, &here_len);
+}
+#endif

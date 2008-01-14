@@ -2,7 +2,7 @@
  *		The routines in this file handle the conversion of pathname
  *		strings.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.156 2007/09/23 23:43:59 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.159 2008/01/13 17:19:51 tom Exp $
  *
  *
  */
@@ -79,6 +79,8 @@ curr_dir_on_drive(int d)
 #endif
 
 static int is_absolute_pathname(char *path);
+
+static char empty_string[] = "";
 
 /*
  * Fake directory-routines for system where we cannot otherwise figure out how
@@ -306,20 +308,21 @@ pathleaf(char *path)
  * must be no longer than NFILEN.
  */
 char *
-pathcat(char *dst, const char *path, char *leaf)
+pathcat(char *dst, const char *path, const char *cleaf)
 {
     char save_path[NFILEN];
     char save_leaf[NFILEN];
+    char *leaf;
     char *s;
     size_t have;
 
     if (dst == 0)
 	return 0;
 
-    if (leaf == 0)
-	leaf = "";
+    if (cleaf == 0)
+	cleaf = "";
 
-    leaf = vl_strncpy(save_leaf, leaf, NFILEN);		/* leaf may be in dst */
+    leaf = vl_strncpy(save_leaf, cleaf, NFILEN);	/* leaf may be in dst */
 
     if (isEmpty(path)) {
 	(void) strcpy(dst, leaf);
@@ -1796,7 +1799,7 @@ is_scratchname(const char *fn)
  * Test if the given path is a directory
  */
 int
-is_directory(char *path)
+is_directory(const char *path)
 {
 #if OPT_VMS_PATH
     char *s;
@@ -2163,7 +2166,7 @@ prepend_to_path_list(char **path_list, char *path)
 	if ((t = *path_list) != 0) {
 	    need += strlen(t);
 	} else {
-	    t = "";
+	    t = empty_string;
 	}
 	if ((s = typeallocn(char, need)) != 0) {
 	    lsprintf(s, "%s%c%s", find, vl_pathchr, t);
@@ -2180,7 +2183,7 @@ prepend_to_path_list(char **path_list, char *path)
  * Append the given path to a path-list
  */
 void
-append_to_path_list(char **path_list, char *path)
+append_to_path_list(char **path_list, const char *path)
 {
     char *s, *t;
     size_t need;
@@ -2199,7 +2202,7 @@ append_to_path_list(char **path_list, char *path)
 	if ((t = *path_list) != 0) {
 	    need += strlen(t);
 	} else {
-	    t = "";
+	    t = empty_string;
 	}
 	if ((s = typeallocn(char, need)) != 0) {
 	    if (*t != EOS)

@@ -1,7 +1,7 @@
 /*
  * Common utility functions for vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.108 2007/06/02 15:40:09 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.112 2008/01/13 18:27:27 tom Exp $
  *
  */
 
@@ -530,6 +530,13 @@ flt_bfr_length(void)
 }
 
 void
+flt_free(char **p, unsigned *len)
+{
+    FreeAndNull(*p);
+    *len = 0;
+}
+
+void
 flt_free_keywords(char *classname)
 {
     CLASS *p, *q;
@@ -727,7 +734,7 @@ alloc_keyword(const char *ident, const char *attribute, int classflag)
 		&& nxt->kw_attr != 0) {
 #if USE_TSEARCH
 		void **pp;
-		pp = tsearch(nxt, &(current_class->data), compare_data);
+		pp = (void **) tsearch(nxt, &(current_class->data), compare_data);
 		if (pp != 0) {
 		    nxt = *(KEYWORD **) pp;
 		} else {
@@ -849,6 +856,12 @@ lowercase_of(char *text)
     unsigned n;
     char *result;
 
+#if NO_LEAKS
+    if (text == 0) {
+	flt_free(&name, &used);
+	result = 0;
+    } else
+#endif
     if ((name = do_alloc(name, strlen(text), &used)) != 0) {
 	for (n = 0; text[n] != 0; n++) {
 	    if (isalpha(CharOf(text[n])) && isupper(CharOf(text[n])))
@@ -995,9 +1008,10 @@ void
 filters_leaks(void)
 {
     flt_free_symtab();
-    FreeAndNull(str_keyword_name);
-    FreeAndNull(str_keyword_file);
-    len_keyword_name = 0;
-    len_keyword_file = 0;
+    flt_free(&str_keyword_name, &len_keyword_name);
+    flt_free(&str_keyword_file, &len_keyword_file);
+
+    flt_free(&flt_bfr_text, &flt_bfr_size);
+    (void) lowercase_of(0);
 }
 #endif

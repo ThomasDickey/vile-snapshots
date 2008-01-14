@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/m4-filt.c,v 1.29 2007/05/26 14:22:23 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/m4-filt.c,v 1.30 2008/01/12 16:44:13 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of m4
  * input text.  This is in C rather than LEX because M4's quoting delimiters
@@ -518,3 +518,10 @@ do_filter(FILE *input GCC_UNUSED)
     free_quote(&rightcmt);
 #endif
 }
+
+#if NO_LEAKS
+static void
+free_filter(void)
+{
+}
+#endif

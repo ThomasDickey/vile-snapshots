@@ -1,3 +1,4 @@
+%pointer
 %s TEXT VERBATIM QUOTE_TT QUOTED MATH MATHC
 
 %o 6000
@@ -5,7 +6,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/latexflt.l,v 1.44 2007/11/25 20:00:41 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/latexflt.l,v 1.46 2008/01/12 17:21:27 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of TeX or LaTeX
  * input text.
@@ -234,3 +235,11 @@ do_filter(FILE *inputs)
     }
     end_state();
 }
+
+#if NO_LEAKS
+static void
+free_filter(void)
+{
+    USE_LEXFREE;
+}
+#endif

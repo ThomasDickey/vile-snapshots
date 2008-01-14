@@ -1,9 +1,10 @@
+%pointer
 %s NORMAL QUOTED QUOTE1 QUOTE2
 
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/tbl-filt.l,v 1.11 2006/05/21 19:50:48 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/tbl-filt.l,v 1.13 2008/01/12 17:21:27 tom Exp $
  *
  * Filter to add vile "attribution" sequences to a vile mktbls datafile.
  */
@@ -100,3 +101,11 @@ do_filter(FILE *inputs)
     }
     flt_bfr_finish();
 }
+
+#if NO_LEAKS
+static void
+free_filter(void)
+{
+    USE_LEXFREE;
+}
+#endif

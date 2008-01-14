@@ -20,7 +20,7 @@
 #
 # gnu autoconf support by kevin buettner, 5/94
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.209 2007/08/26 22:49:34 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.210 2008/01/13 19:12:06 tom Exp $
 
 SHELL		= /bin/sh
 
@@ -40,7 +40,7 @@ INSTALL_DATA	= @INSTALL_DATA@
 
 EXTRA_CFLAGS	= @EXTRA_CFLAGS@
 CFLAGS		= @CFLAGS@ $(EXTRA_CFLAGS)
-LIBS		= @FILTER_LIBS@ @LIBS@
+LIBS		= @FILTER_LIBS@ @LIBICONV@ @LIBS@
 LINT		= @LINT@
 
 x		= @EXEEXT@
