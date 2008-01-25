@@ -1,9 +1,9 @@
 %pointer
-%s PRETEXT NOTE TEXT
+%s PRETEXT NOTE sTEXT
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/fdl-filt.l,v 1.14 2008/01/12 17:21:27 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/fdl-filt.l,v 1.15 2008/01/22 01:46:24 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of fdl
  * input text.  This treats all of the text area as quoted, except for
@@ -32,12 +32,12 @@ KEYWORD		$[[:alpha:]_][[:alnum:]_]*
 
 %%
 
-<INITIAL,TEXT>^{BLANK}	{ ECHO; }
+<INITIAL,sTEXT>^{BLANK}	{ ECHO; }
 
-<INITIAL,TEXT>{KEYWORD}	{ handle_keyword(yytext); }
+<INITIAL,sTEXT>{KEYWORD}	{ handle_keyword(yytext); }
 <PRETEXT>{REMAINDER}	{ ECHO;
-			  if (next_state == TEXT) {
-				BEGIN(TEXT);
+			  if (next_state == sTEXT) {
+				BEGIN(sTEXT);
 			  } else {
 				BEGIN(INITIAL);
 			  }
@@ -47,8 +47,8 @@ KEYWORD		$[[:alpha:]_][[:alnum:]_]*
 <NOTE>{REMAINDER}	{ WriteToken(Comment_attr);
 			  BEGIN(INITIAL); }
 
-<TEXT>[_]+		{ WriteToken(Ident2_attr); }
-<TEXT>[^$_\r\n]+	{ WriteToken(String_attr); }
+<sTEXT>[_]+		{ WriteToken(Ident2_attr); }
+<sTEXT>[^$_\r\n]+	{ WriteToken(String_attr); }
 
 %%
 
@@ -61,7 +61,7 @@ handle_keyword(char *name)
 	BEGIN(NOTE);
     } else if (!strcmp(name, "$text")) {
 	BEGIN(PRETEXT);
-	next_state = TEXT;
+	next_state = sTEXT;
     } else {
 	BEGIN(INITIAL);
     }

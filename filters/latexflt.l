@@ -1,12 +1,12 @@
 %pointer
-%s TEXT VERBATIM QUOTE_TT QUOTED MATH MATHC
+%s sTEXT VERBATIM QUOTE_TT QUOTED MATH MATHC
 
 %o 6000
 %a 4000
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/latexflt.l,v 1.46 2008/01/12 17:21:27 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/latexflt.l,v 1.47 2008/01/22 01:47:02 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of TeX or LaTeX
  * input text.
@@ -91,24 +91,24 @@ NUMBER		({INTEGER}|{REAL})
 
 {SPACE}+		{ WriteToken(""); }
 
-<TEXT>"%".*$		{ WriteToken(Comment_attr); }
-<TEXT>"#"{INTEGER}({NAME}?)	{ write_param(); }
-<TEXT>{MIXED_ALNUM}	{ WriteToken(""); }
+<sTEXT>"%".*$		{ WriteToken(Comment_attr); }
+<sTEXT>"#"{INTEGER}({NAME}?)	{ write_param(); }
+<sTEXT>{MIXED_ALNUM}	{ WriteToken(""); }
 {NUMBER}		{ WriteToken(Number_attr); }
 
-<TEXT>\\"char"({OCTAL}|{DECIMAL}|"`".) |
-<TEXT>\\verb:[^:]+:		{ WriteToken(String_attr); }
+<sTEXT>\\"char"({OCTAL}|{DECIMAL}|"`".) |
+<sTEXT>\\verb:[^:]+:		{ WriteToken(String_attr); }
 
-<TEXT>\\"let"\\{NAME}		|
-<TEXT>\\"def"\\{NAME}		|
-<TEXT>\\"def"\\{NONNAME}	{ write_define(4); }
-<TEXT>\\"xdef"\\{NONNAME}	|
-<TEXT>\\"gdef"\\{NONNAME}	{ write_define(5); }
+<sTEXT>\\"let"\\{NAME}		|
+<sTEXT>\\"def"\\{NAME}		|
+<sTEXT>\\"def"\\{NONNAME}	{ write_define(4); }
+<sTEXT>\\"xdef"\\{NONNAME}	|
+<sTEXT>\\"gdef"\\{NONNAME}	{ write_define(5); }
 
-<TEXT>\\"let"[^[:alpha:]]	|
-<TEXT>\\"def"[^[:alpha:]]	{ write_define(4); }
+<sTEXT>\\"let"[^[:alpha:]]	|
+<sTEXT>\\"def"[^[:alpha:]]	{ write_define(4); }
 
-<TEXT>\\"begintt"{NONNAME}	{
+<sTEXT>\\"begintt"{NONNAME}	{
 			  yyless(yyleng-1);	/* reinterp {NONAME} */
 			  write_keyword();
 			  push_state(QUOTE_TT);
@@ -120,17 +120,17 @@ NUMBER		({INTEGER}|{REAL})
 			 }
 <QUOTE_TT>[^\r\n]*		{ WriteToken(String_attr); }
 
-<TEXT>\\"begin{verbatim}"	{ WriteToken(String_attr); push_state(VERBATIM); }
+<sTEXT>\\"begin{verbatim}"	{ WriteToken(String_attr); push_state(VERBATIM); }
 <VERBATIM>\\"end{verbatim}"	{ WriteToken(String_attr); pop_state(); }
 <VERBATIM>[^\r\n]*		{ WriteToken(String_attr); }
 
-<TEXT,MATH,MATHC,QUOTED>"|"	{ WriteToken(String_attr);
+<sTEXT,MATH,MATHC,QUOTED>"|"	{ WriteToken(String_attr);
 			  if (braces != 0)
 			      ;
 			  else if (FLTSTACK_OK) {
 			      if (FLT_STATE == QUOTED)
 				  pop_state();
-			      else if (FLT_STATE != TEXT)
+			      else if (FLT_STATE != sTEXT)
 				  push_state(QUOTED);
 			  }
 			}
@@ -138,11 +138,11 @@ NUMBER		({INTEGER}|{REAL})
 
 \\{NAME}		{ write_keyword(); }
 
-<TEXT>\\\\		{ WriteToken(String_attr); }
+<sTEXT>\\\\		{ WriteToken(String_attr); }
 
-<TEXT>\\{NONNAME} 	{ flt_puts(yytext, yyleng, Number_attr); }
+<sTEXT>\\{NONNAME} 	{ flt_puts(yytext, yyleng, Number_attr); }
 
-<TEXT>\$[^\$] 		{
+<sTEXT>\$[^\$] 		{
 			  yyless(1);	/* reinterpret the second char */
 			  flt_puts(yytext, 1, Action_attr);
 			  if (braces == 0)
@@ -151,7 +151,7 @@ NUMBER		({INTEGER}|{REAL})
 <MATH>[^\$\r\n]+	{ write_text(Math_attr); }
 <MATH>\$ 		{ write_text(Action_attr); pop_state(); }
 
-<TEXT>\$\$	 	{ WriteToken(Action_attr);
+<sTEXT>\$\$	 	{ WriteToken(Action_attr);
 			  if (braces == 0)
 			      push_state(MATHC);
 			}
@@ -230,7 +230,7 @@ do_filter(FILE *inputs)
 
     braces = 0;
 
-    begin_state(TEXT);
+    begin_state(sTEXT);
     while (yylex() > 0) {
     }
     end_state();

@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.656 2008/01/13 16:46:30 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.657 2008/01/22 00:13:57 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -1126,9 +1126,9 @@ extern void endofDisplay(void);
 
 /* values for regionshape */
 typedef enum {
-	EXACT,
-	FULLLINE,
-	RECTANGLE
+	rgn_EXACT,
+	rgn_FULLLINE,
+	rgn_RECTANGLE
 } REGIONSHAPE;
 
 #define ENUM_ILLEGAL   (-3)

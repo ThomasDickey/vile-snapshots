@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.354 2008/01/13 17:20:32 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.355 2008/01/22 21:55:12 tom Exp $
  *
  */
 
@@ -22,6 +22,7 @@
 #define isLocalVal(valptr)          ((valptr)->vp == &((valptr)->v))
 #define makeLocalVal(valptr)        ((valptr)->vp = &((valptr)->v))
 
+#define MAJOR_SUFFIX	"mode"
 #define NO_PREFIX	"no"
 #define noPrefix(mode)	(!strncmp(mode, NO_PREFIX, 2))
 
@@ -2564,7 +2565,7 @@ ModeName(const char *name)
 static char *
 majorname(char *dst, const char *majr, int flag)
 {
-    (void) lsprintf(dst, "%s%smode", flag ? "" : NO_PREFIX, majr);
+    (void) lsprintf(dst, "%s%s" MAJOR_SUFFIX, flag ? "" : NO_PREFIX, majr);
     return dst;
 }
 
@@ -3039,6 +3040,8 @@ static int
 prompt_majormode(char **result, int defining)
 {
     static TBUFF *cbuf;		/* buffer to receive mode name into */
+    char *s;
+    char *value;
     int status;
 
     /* prompt the user and get an answer */
@@ -3050,13 +3053,22 @@ prompt_majormode(char **result, int defining)
 			    (defining || clexec)
 			    ? no_completion
 			    : short_major_complete)) == TRUE) {
+	value = tb_values(cbuf);
 	/* check for legal name (alphanumeric) */
-	if ((status = is_identifier(tb_values(cbuf))) != TRUE) {
-	    mlwarn("[Not an identifier: %s]", tb_values(cbuf));
+	if ((status = is_identifier(value)) != TRUE) {
+	    mlwarn("[Not an identifier: %s]", value);
 	    return status;
 	}
-	if ((status = is_varmode(tb_values(cbuf))) == TRUE) {
-	    *result = tb_values(cbuf);
+	if ((s = strstr(value, MAJOR_SUFFIX)) != 0
+	    && !strcmp(s, MAJOR_SUFFIX)) {
+	    if (s == value) {
+		mlwarn("[Not a legal majormode identifier: %s]", value);
+		return ABORT;
+	    }
+	    *s = 0;
+	}
+	if ((status = is_varmode(value)) == TRUE) {
+	    *result = value;
 	    status = check_majormode_name(*result, defining);
 	    if (status != TRUE && status != SORTOFTRUE)
 		mlwarn("[No such majormode: %s]", *result);
@@ -4336,7 +4348,7 @@ reset_majormode(int f GCC_UNUSED, int n GCC_UNUSED)
 void
 set_vilemode(BUFFER *bp)
 {
-    static const char *my_mode = "vilemode";
+    static const char *my_mode = "vile" MAJOR_SUFFIX;
     VALARGS args;
 
     if (find_mode(bp, my_mode, FALSE, &args) == TRUE

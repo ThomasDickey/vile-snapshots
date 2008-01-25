@@ -9,7 +9,7 @@
  * Extensions for vile by Paul Fox
  * Rewrote to use regular expressions - T.Dickey
  *
- * $Header: /users/source/archives/vile.vcs/RCS/fences.c,v 1.85 2007/08/29 00:43:10 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/fences.c,v 1.86 2008/01/22 00:12:01 tom Exp $
  *
  */
 
@@ -370,7 +370,7 @@ complex_fence(int sdir, int key, int group, int level, int *newkey)
     if (count == 0) {
 	curwp->w_flag |= WFMOVE;
 	if (doingopcmd)
-	    regionshape = FULLLINE;
+	    regionshape = rgn_FULLLINE;
 	return TRUE;
     }
     return FALSE;

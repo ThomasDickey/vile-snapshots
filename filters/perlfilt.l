@@ -1,9 +1,9 @@
 %pointer
-%x CODE HERE PATTERN POD IGNORED
+%x CODE HERE sPATTERN POD IGNORED
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/perlfilt.l,v 1.49 2008/01/12 22:59:55 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/perlfilt.l,v 1.50 2008/01/22 01:52:35 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of PERL input
  * text.
@@ -84,9 +84,9 @@ NUMBER		{SIGN}?({DECIMAL}|{OCTAL}|{HEXADECIMAL}|{REAL}|{BINARY}|{VERSION})
 <HERE>[^\r\n]		{ flt_bfr_append(yytext, yyleng); }
 <HERE>\n		{ flt_bfr_append(yytext, yyleng); }
 
-<CODE>[!=]"~"{BLANK}	{ WriteToken(""); BEGIN(PATTERN); }
-<PATTERN>[^\r\n]	{ if (!add_to_pattern(yytext)) { end_pattern(); ECHO; } }
-<PATTERN>[\n]		{ end_pattern(); ECHO; }
+<CODE>[!=]"~"{BLANK}	{ WriteToken(""); BEGIN(sPATTERN); }
+<sPATTERN>[^\r\n]	{ if (!add_to_pattern(yytext)) { end_pattern(); ECHO; } }
+<sPATTERN>[\n]		{ end_pattern(); ECHO; }
 
 <CODE>^{BLANK}*#!.*$	{ WriteToken(Preproc_attr); }
 

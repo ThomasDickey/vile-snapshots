@@ -1,9 +1,9 @@
 %pointer
-%s TEXT NOTE
+%s sTEXT NOTE
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/texifilt.l,v 1.8 2008/01/12 17:21:27 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/texifilt.l,v 1.9 2008/01/22 01:47:24 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of texinfo input.
  */
@@ -31,12 +31,12 @@ NUMBER		({INTEGER}|{REAL})
 
 %%
 
-<TEXT>"@{C}"		|
-<TEXT>"@"{SPACE}	|
-<TEXT>[{}]		|
-<TEXT>"@"{PUNCT}	{ WriteToken(String_attr); }
+<sTEXT>"@{C}"		|
+<sTEXT>"@"{SPACE}	|
+<sTEXT>[{}]		|
+<sTEXT>"@"{PUNCT}	{ WriteToken(String_attr); }
 
-<TEXT>"@"{NAME}		{ char *attr = keyword_attr(yytext + 1);
+<sTEXT>"@"{NAME}	{ char *attr = keyword_attr(yytext + 1);
 			  char *mark = Action_attr;
 			  if (attr == Comment_attr) {
 			      BEGIN(NOTE);
@@ -49,10 +49,10 @@ NUMBER		({INTEGER}|{REAL})
 			}
 
 <NOTE>[^\r\n]*		{ WriteToken(Comment_attr); }
-<NOTE>\n		{ ECHO; BEGIN(TEXT); }
+<NOTE>\n		{ ECHO; BEGIN(sTEXT); }
 
-<TEXT>{NUMBER}		{ WriteToken(Number_attr); }
-<TEXT>.			{ ECHO; }
+<sTEXT>{NUMBER}		{ WriteToken(Number_attr); }
+<sTEXT>.		{ ECHO; }
 
 %%
 
@@ -72,7 +72,7 @@ do_filter(FILE *inputs)
     Number_attr  = class_attr(NAME_NUMBER);
     String_attr  = class_attr(NAME_LITERAL);
 
-    BEGIN(TEXT);
+    BEGIN(sTEXT);
     while (yylex() > 0) {
     }
 }

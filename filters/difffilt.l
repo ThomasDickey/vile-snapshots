@@ -1,10 +1,10 @@
 %pointer
-%s HEADER DELETE INSERT MODIFY
+%s HEADER sDELETE INSERT MODIFY
 
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/difffilt.l,v 1.9 2008/01/12 17:21:27 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/difffilt.l,v 1.10 2008/01/23 01:18:16 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of diff output
  */
@@ -38,8 +38,8 @@ MARKED		[^\n]*\n
 {INSERT}		{ ECHO; BEGIN(INSERT); }
 <INSERT>{MARKED}	{ WriteToken(Insert_attr); BEGIN(INITIAL); }
 
-{DELETE}		{ ECHO; BEGIN(DELETE); }
-<DELETE>{MARKED}	{ WriteToken(Delete_attr); BEGIN(INITIAL); }
+{DELETE}		{ ECHO; BEGIN(sDELETE); }
+<sDELETE>{MARKED}	{ WriteToken(Delete_attr); BEGIN(INITIAL); }
 
 {MODIFY}		{ ECHO; BEGIN(MODIFY); }
 <MODIFY>{MARKED}	{ WriteToken(Modify_attr); BEGIN(INITIAL); }

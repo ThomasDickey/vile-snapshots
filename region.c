@@ -3,7 +3,7 @@
  * and mark.  Some functions are commands.  Some functions are just for
  * internal use.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/region.c,v 1.143 2007/10/14 18:33:31 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/region.c,v 1.144 2008/01/22 00:13:57 tom Exp $
  *
  */
 
@@ -81,7 +81,7 @@ do_lines_in_region(int (*linefunc) (REGN_ARGS), void *argp, int convert_cols)
 	       instance */
 	    DOT.l = linep;
 	    DOT.o = w_left_margin(curwp);
-	    if (regionshape == RECTANGLE) {
+	    if (regionshape == rgn_RECTANGLE) {
 		if (convert_cols) {
 		    C_NUM reached;
 		    l = getoff(region.r_leftcol, &reached);
@@ -130,12 +130,12 @@ do_lines_in_region(int (*linefunc) (REGN_ARGS), void *argp, int convert_cols)
 	     * the end-region line, so check here also.  (Leave the above check
 	     * alone just in case the buffer is empty).
 	     */
-	    if (regionshape == FULLLINE
+	    if (regionshape == rgn_FULLLINE
 		&& linep == region.r_end.l)
 		break;
 
 	}
-	if (regionshape == FULLLINE) {
+	if (regionshape == rgn_FULLLINE) {
 	    (void) kinsertlater(-1);
 	    (void) firstnonwhite(FALSE, 1);
 	}
@@ -158,9 +158,9 @@ killrectmaybesave(int save)
     if (save) {
 	kregcirculate(TRUE);
 	ksetup();
-	if (regionshape == FULLLINE) {
+	if (regionshape == rgn_FULLLINE) {
 	    kregflag |= KLINES;
-	} else if (regionshape == RECTANGLE) {
+	} else if (regionshape == rgn_RECTANGLE) {
 	    kregflag |= KRECT;
 	}
     }
@@ -193,7 +193,7 @@ get_do_lines_rgn(void)
 int
 killregion(void)
 {
-    if (regionshape == RECTANGLE)
+    if (regionshape == rgn_RECTANGLE)
 	return killrectmaybesave(TRUE);
     else
 	return killregionmaybesave(TRUE);
@@ -209,7 +209,7 @@ killregionmaybesave(int save)
 	if (save) {
 	    kregcirculate(TRUE);
 	    ksetup();		/* command, so do magic */
-	    if (regionshape == FULLLINE)
+	    if (regionshape == rgn_FULLLINE)
 		kregflag |= KLINES;
 	}
 	DOT = region.r_orig;
@@ -356,10 +356,10 @@ shift_right_line(void *flagp GCC_UNUSED, int l GCC_UNUSED, int r GCC_UNUSED)
 int
 shiftrregion(void)
 {
-    if (regionshape == RECTANGLE)
+    if (regionshape == rgn_RECTANGLE)
 	return do_lines_in_region(open_hole_in_line, (void *) NULL, FALSE);
 
-    regionshape = FULLLINE;
+    regionshape = rgn_FULLLINE;
     return do_lines_in_region(shift_right_line, (void *) 0, FALSE);
 }
 
@@ -409,10 +409,10 @@ shift_left_line(void *flagp GCC_UNUSED, int l GCC_UNUSED, int r GCC_UNUSED)
 int
 shiftlregion(void)
 {
-    if (regionshape == RECTANGLE)
+    if (regionshape == rgn_RECTANGLE)
 	return killrectmaybesave(FALSE);
 
-    regionshape = FULLLINE;
+    regionshape = rgn_FULLLINE;
     return do_lines_in_region(shift_left_line, (void *) 0, FALSE);
 }
 
@@ -463,7 +463,7 @@ detabline(void *flagp, int l GCC_UNUSED, int r GCC_UNUSED)
 int
 detab_region(void)
 {
-    regionshape = FULLLINE;
+    regionshape = rgn_FULLLINE;
     return do_lines_in_region(detabline, (void *) FALSE, FALSE);
 }
 
@@ -473,7 +473,7 @@ detab_region(void)
 int
 l_detab_region(void)
 {
-    regionshape = FULLLINE;
+    regionshape = rgn_FULLLINE;
     return do_lines_in_region(detabline, (void *) TRUE, FALSE);
 }
 
@@ -548,7 +548,7 @@ entabline(void *flagp, int l GCC_UNUSED, int r GCC_UNUSED)
 int
 entab_region(void)
 {
-    regionshape = FULLLINE;
+    regionshape = rgn_FULLLINE;
     return do_lines_in_region(entabline, (void *) FALSE, FALSE);
 }
 
@@ -558,7 +558,7 @@ entab_region(void)
 int
 l_entab_region(void)
 {
-    regionshape = FULLLINE;
+    regionshape = rgn_FULLLINE;
     return do_lines_in_region(entabline, (void *) TRUE, FALSE);
 }
 
@@ -615,7 +615,7 @@ trimline(void *flag GCC_UNUSED, int l GCC_UNUSED, int r GCC_UNUSED)
 int
 trim_region(void)
 {
-    regionshape = FULLLINE;
+    regionshape = rgn_FULLLINE;
     return do_lines_in_region(trimline, (void *) 0, FALSE);
 }
 
@@ -634,7 +634,7 @@ blankline(void *flagp, int l, int r)
 
     /* if the shape is rectangular, then l and r are columns, not
        offsets */
-    if (regionshape == RECTANGLE) {
+    if (regionshape == rgn_RECTANGLE) {
 	s = detabline((void *) FALSE, 0, 0);
 	if (s != TRUE)
 	    return s;
@@ -642,7 +642,7 @@ blankline(void *flagp, int l, int r)
 
     if (llength(lp) <= l) {	/* nothing to do if no string */
 	if (!tp) {
-	    if (regionshape == RECTANGLE && b_val(curbp, MDTABINSERT))
+	    if (regionshape == rgn_RECTANGLE && b_val(curbp, MDTABINSERT))
 		s = entabline((void *) TRUE, 0, 0);
 	    DOT.o = saveo;
 	    return s;
@@ -681,7 +681,7 @@ blankline(void *flagp, int l, int r)
     if (s != TRUE)
 	return s;
 
-    if (regionshape == RECTANGLE && b_val(curbp, MDTABINSERT))
+    if (regionshape == rgn_RECTANGLE && b_val(curbp, MDTABINSERT))
 	s = entabline((void *) TRUE, 0, 0);
 
     return s;
@@ -734,7 +734,7 @@ yank_line(void *flagp GCC_UNUSED, int l, int r)
     charprocfunc = _yankchar;
     s = do_chars_in_line((void *) NULL, l, r);
     if (s) {
-	if (r == llength(DOT.l) || regionshape == RECTANGLE) {
+	if (r == llength(DOT.l) || regionshape == rgn_RECTANGLE) {
 	    /* we don't necessarily want to insert the last newline
 	       in a region, so we delay it */
 	    s = kinsertlater('\n');
@@ -753,9 +753,9 @@ yankregion(void)
 
     kregcirculate(TRUE);
     ksetup();
-    if (regionshape == FULLLINE) {
+    if (regionshape == rgn_FULLLINE) {
 	kregflag |= KLINES | KYANK;
-    } else if (regionshape == RECTANGLE) {
+    } else if (regionshape == rgn_RECTANGLE) {
 	kregflag |= KRECT | KYANK;
     }
     s = do_lines_in_region(yank_line, (void *) 0, TRUE);
@@ -841,7 +841,7 @@ upperregion(void)
 static void
 set_rect_columns(REGION * rp)
 {
-    if (regionshape == RECTANGLE) {
+    if (regionshape == rgn_RECTANGLE) {
 	MARK lc, rc;
 
 	lc = (rp->r_orig.o < rp->r_end.o) ? rp->r_orig : rp->r_end;
@@ -907,7 +907,7 @@ getregion(REGION * rp)
     if (sameline(DOT, MK)) {
 	rp->r_orig =
 	    rp->r_end = DOT;
-	if (regionshape == FULLLINE) {
+	if (regionshape == rgn_FULLLINE) {
 	    rp->r_orig.o =
 		rp->r_end.o = w_left_margin(curwp);
 	    rp->r_end.l = lforw(DOT.l);
@@ -943,7 +943,7 @@ getregion(REGION * rp)
 	    rp->r_end = DOT;
 	}
 	fsize = (B_COUNT) (line_length(flp) -
-			   ((regionshape == FULLLINE) ?
+			   ((regionshape == rgn_FULLLINE) ?
 			    w_left_margin(curwp) : rp->r_orig.o));
 	flp_start = flp;
 	while (flp != blp) {
@@ -956,7 +956,7 @@ getregion(REGION * rp)
 	    }
 
 	    if (flp == blp) {
-		if (regionshape == FULLLINE) {
+		if (regionshape == rgn_FULLLINE) {
 		    rp->r_orig.o =
 			rp->r_end.o = w_left_margin(curwp);
 		    rp->r_end.l = lforw(rp->r_end.l);
@@ -974,7 +974,7 @@ getregion(REGION * rp)
     {
 	blp = DOT.l;
 	flp = DOT.l;
-	if (regionshape == FULLLINE) {
+	if (regionshape == rgn_FULLLINE) {
 	    bsize = fsize =
 		(B_COUNT) (line_length(blp) - w_left_margin(curwp));
 	} else {
@@ -990,7 +990,7 @@ getregion(REGION * rp)
 		if (flp == MK.l) {
 		    rp->r_orig = DOT;
 		    rp->r_end = MK;
-		    if (regionshape == FULLLINE) {
+		    if (regionshape == rgn_FULLLINE) {
 			rp->r_orig.o =
 			    rp->r_end.o = w_left_margin(curwp);
 			rp->r_end.l = lforw(rp->r_end.l);
@@ -1008,7 +1008,7 @@ getregion(REGION * rp)
 		if (blp == MK.l) {
 		    rp->r_orig = MK;
 		    rp->r_end = DOT;
-		    if (regionshape == FULLLINE) {
+		    if (regionshape == rgn_FULLLINE) {
 			rp->r_orig.o =
 			    rp->r_end.o = w_left_margin(curwp);
 			rp->r_end.l = lforw(rp->r_end.l);
@@ -1031,9 +1031,9 @@ get_fl_region(REGION * rp)
 {
     int status;
 
-    regionshape = FULLLINE;
+    regionshape = rgn_FULLLINE;
     status = getregion(rp);
-    regionshape = EXACT;
+    regionshape = rgn_EXACT;
 
     return status;
 }
@@ -1240,7 +1240,7 @@ encode_region(void)
 
     TRACE((T_CALLED "encode_region()\n"));
 
-    regionshape = FULLLINE;
+    regionshape = rgn_FULLLINE;
     if ((status = getregion(&work.enc_region)) == TRUE
 	&& (base_line = line_no(curbp, work.enc_region.r_orig.l)) > 0
 	&& (last_line = line_no(curbp, work.enc_region.r_end.l)) > base_line) {
@@ -1268,7 +1268,7 @@ encode_region(void)
 		    TBUFF *text = work.enc_list[n];
 
 		    DOT.o = b_left_margin(curbp);
-		    regionshape = EXACT;
+		    regionshape = rgn_EXACT;
 		    deltoeol(TRUE, 1);
 		    DOT.o = b_left_margin(curbp);
 		    lstrinsert(text, (int) tb_length(text));

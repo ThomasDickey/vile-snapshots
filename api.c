@@ -15,7 +15,7 @@
  * in handy.
  *				- kev 4/7/1998
  *
- * $Header: /users/source/archives/vile.vcs/RCS/api.c,v 1.43 2007/11/22 23:12:38 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/api.c,v 1.44 2008/01/22 00:13:57 tom Exp $
  */
 
 #include "estruct.h"
@@ -425,8 +425,8 @@ api_dotgline(VileBuf * vbp, char **linep, B_COUNT * lenp, int *neednewline)
     }
 
     if ((DOT.l == vbp->region.r_end.l
-	 && (vbp->regionshape == FULLLINE
-	     || (vbp->regionshape == EXACT
+	 && (vbp->regionshape == rgn_FULLLINE
+	     || (vbp->regionshape == rgn_EXACT
 		 && DOT.o >= vbp->region.r_end.o)))) {
 	return FALSE;
     }
@@ -436,7 +436,7 @@ api_dotgline(VileBuf * vbp, char **linep, B_COUNT * lenp, int *neednewline)
     if (llength(DOT.l) >= DOT.o) {
 	*lenp = llength(DOT.l) - DOT.o;
 
-	if (vbp->regionshape == EXACT && DOT.l == vbp->region.r_end.l) {
+	if (vbp->regionshape == rgn_EXACT && DOT.l == vbp->region.r_end.l) {
 	    B_COUNT next = *lenp + vbp->region.r_end.o;
 	    if (next >= (B_COUNT) llength(DOT.l)) {
 		*lenp = next - llength(DOT.l);
@@ -458,7 +458,7 @@ api_dotgline(VileBuf * vbp, char **linep, B_COUNT * lenp, int *neednewline)
     }
 
     if (vbp->inplace_edit) {
-	if (vbp->regionshape == EXACT && DOT.l == vbp->region.r_end.l) {
+	if (vbp->regionshape == rgn_EXACT && DOT.l == vbp->region.r_end.l) {
 	    vbp->ndel = *lenp;
 	    *neednewline = 0;
 	} else {
@@ -466,7 +466,7 @@ api_dotgline(VileBuf * vbp, char **linep, B_COUNT * lenp, int *neednewline)
 	    *neednewline = 1;
 	}
     } else {
-	if (vbp->regionshape == EXACT && DOT.l == vbp->region.r_end.l) {
+	if (vbp->regionshape == rgn_EXACT && DOT.l == vbp->region.r_end.l) {
 	    DOT.o += *lenp;
 	    *neednewline = 0;
 	} else {
@@ -537,7 +537,7 @@ api_delregion(VileBuf * vbp)
     MK = vbp->region.r_end;
     regionshape = vbp->regionshape;
 
-    if (vbp->regionshape == FULLLINE) {
+    if (vbp->regionshape == rgn_FULLLINE) {
 	MK.l = lback(MK.l);
     }
 
@@ -836,7 +836,7 @@ api_bp2vbp(BUFFER *bp)
 	if (vbp != 0) {
 	    bp->b_api_private = vbp;
 	    vbp->bp = bp;
-	    vbp->regionshape = FULLLINE;
+	    vbp->regionshape = rgn_FULLLINE;
 	    vbp->region.r_orig.l =
 		vbp->region.r_end.l = buf_head(bp);
 	    vbp->region.r_orig.o =

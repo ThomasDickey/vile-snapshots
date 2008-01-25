@@ -11,7 +11,7 @@
  *    Subsequent copies do not show this cursor.  On an NT host, this
  *    phenomenon does not occur.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32cbrd.c,v 1.30 2007/10/19 23:40:56 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32cbrd.c,v 1.31 2008/01/22 00:09:37 tom Exp $
  */
 
 #include "estruct.h"
@@ -163,7 +163,7 @@ count_rgn_data(void *argp, int l, int r)
     if (r > llength(lp))
         r = llength(lp);
     cpyp = argp;
-    if (r == llength(lp) || regionshape == RECTANGLE)
+    if (r == llength(lp) || regionshape == rgn_RECTANGLE)
     {
         /* process implied newline */
 
@@ -240,7 +240,7 @@ copy_rgn_data(void *argp, int l, int r)
     cpyp = argp;
     len  = r - l;
     cbrd_copy_and_xlate(len, &cpyp->dst, lvalue(lp) + l);
-    if (r == llength(lp) || regionshape == RECTANGLE)
+    if (r == llength(lp) || regionshape == rgn_RECTANGLE)
     {
         /* process implied newline */
 

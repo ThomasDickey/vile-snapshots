@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.640 2008/01/13 17:20:39 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.642 2008/01/24 00:43:45 tom Exp $
  *
  */
 
@@ -1359,8 +1359,6 @@ extern void restore_console_title(void);
 extern void set_console_title(const char *title);
 extern int  stdin_data_available(void);
 extern void store_recent_file_or_folder(const char *path, int is_file);
-extern int  w32_get_reg_sz(HKEY hkey, const char *name, char *value, unsigned length);
-extern int  w32_set_reg_sz(HKEY hkey, const char *name, const char *value);
 extern int  w32_add_write_acl(const char *filename, ULONG *old_access_mask);
 extern int  w32_CreateProcess(char *cmd, int no_wait);
 extern int  w32_del_selection(int copy_to_clipboard);
@@ -1378,6 +1376,16 @@ extern void winvile_cleanup(void);
 extern int  winvile_cursor(int visible, int queue_change);
 extern int  winvile_cursor_state(int visible, int queue_change);
 extern void winvile_start(void);
+
+/*
+ * These depend on HKEY:
+ *	Platform SDK WinDef.h uses _WINDEF_
+ *	Platform SDK WTypes.h uses __wtypes_h__
+ */
+#if defined(__wtypes_h__) || defined(_WINDEF_)
+extern int  w32_get_reg_sz(HKEY hkey, const char *name, char *value, unsigned length);
+extern int  w32_set_reg_sz(HKEY hkey, const char *name, const char *value);
+#endif
 
 #if DISP_NTCONS	
 extern void w32_set_console_title(const char *title);

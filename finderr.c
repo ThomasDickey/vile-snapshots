@@ -3,9 +3,9 @@
  * written for vile by paul fox.
  * rewritten to use regular expressions by T.Dickey
  *
- * Copyright (c) 1990-2007 by Paul Fox and Thomas Dickey
+ * Copyright (c) 1990-2008 by Paul Fox and Thomas Dickey
  *
- * $Header: /users/source/archives/vile.vcs/RCS/finderr.c,v 1.135 2008/01/13 16:45:13 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/finderr.c,v 1.136 2008/01/25 00:35:12 tom Exp $
  *
  */
 

@@ -305,15 +305,14 @@ Limits
 
 Strings
 -------
-	Like many simple language, the macro language operates
-	exclusively on strings.  That is to say, variables are
-	always of type "string", and need not be declared in
-	advance.
+	Like many simple language, the macro language operates exclusively on
+	strings.  That is to say, variables are always of type "string", and
+	need not be declared in advance.
 
-	Strings are surrounded by double quotes.  As in C-like
-	languages, a few special characters may be represented
-	using an "escape" notation, using a backslash and another
-	character to represent the "special" character:
+	Strings may be surrounded by double quotes.  As in C-like languages, a
+	few special characters may be represented using an "escape" notation,
+	using a backslash and another character to represent the "special
+	character:"
 
 	Escape code     Actual character
 	\n              newline character      (control-J)
@@ -1524,7 +1523,7 @@ Example startup file
 
 	========================= end vile.rc =======================
 
+-- vile:fc=78
 -----------------------------------
-  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.103 2007/11/18 23:43:57 tom Exp $
+  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.104 2008/01/25 00:25:51 tom Exp $
 -----------------------------------
-

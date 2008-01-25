@@ -18,7 +18,7 @@
  * transferring the selection are not dealt with in this file.  Procedures
  * for dealing with the representation are maintained in this file.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.166 2007/09/16 20:05:13 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.167 2008/01/22 00:13:57 tom Exp $
  *
  */
 
@@ -248,7 +248,7 @@ sel_begin(void)
 	startregion.ar_region.r_end = DOT;
     plus_region.o += BytesAt(plus_region.l, plus_region.o);
     startregion.ar_vattr = 0;
-    startregion.ar_shape = EXACT;
+    startregion.ar_shape = rgn_EXACT;
 #if OPT_HYPERTEXT
     startregion.ar_hypercmd = 0;
 #endif
@@ -307,7 +307,7 @@ sel_extend(int wiping, int include_dot)
      */
     working_dot = DOT;
     if (include_dot
-	&& (selregion.ar_shape == EXACT)
+	&& (selregion.ar_shape == rgn_EXACT)
 	&& dot_vs_mark() >= 0) {
 	if (samepoint(MK, orig_region)) {
 	    DOT.o += BytesAt(DOT.l, DOT.o);
@@ -330,12 +330,12 @@ sel_extend(int wiping, int include_dot)
 	MK = selregion.ar_region.r_end;
 
     if (include_dot) {
-	if (selregion.ar_shape == EXACT) {
+	if (selregion.ar_shape == rgn_EXACT) {
 	    if (dot_vs_mark() <= 0) {
 		if (samepoint(MK, orig_region))
 		    MK.o += BytesAt(MK.l, MK.o);
 	    }
-	} else if (selregion.ar_shape == RECTANGLE) {
+	} else if (selregion.ar_shape == rgn_RECTANGLE) {
 	    if (samepoint(MK, DOT)) {	/* avoid making empty-region */
 		MK = orig_region;
 		DOT = plus_region;
@@ -351,7 +351,7 @@ sel_extend(int wiping, int include_dot)
      * special case where we've extended one to the right to include the
      * right endpoint of the region.
      *
-     * For EXACT selections, setting 'whichend' to ORIG_FIXED means that
+     * For rgn_EXACT selections, setting 'whichend' to ORIG_FIXED means that
      * we're selecting from the anchor point right/down.  Conversely,
      * setting it to END_FIXED means that we selecting left/up.
      *
@@ -368,7 +368,7 @@ sel_extend(int wiping, int include_dot)
 	whichend = ORIG_FIXED;
 	selregion.ar_region = a;
     } else {
-	if (selregion.ar_shape == RECTANGLE) {
+	if (selregion.ar_shape == rgn_RECTANGLE) {
 	    if (dot_vs_mark() < 0)
 		whichend = END_FIXED;
 	    else
@@ -480,7 +480,7 @@ sel_all(int f GCC_UNUSED, int n GCC_UNUSED)
     sel_begin();
     gotoeob(0, 0);
     gotoeol(0, 0);
-    (void) sel_setshape(EXACT);
+    (void) sel_setshape(rgn_EXACT);
     rc = sel_extend(TRUE, TRUE);
     DOT = savedot;
     if (rc)
@@ -563,7 +563,7 @@ extended_region(void)
     if (getregion(&a) == TRUE) {
 	DOT.o -= BytesBefore(DOT.l, DOT.o);
 	MK = selregion.ar_region.r_end;
-	if (regionshape == FULLLINE)
+	if (regionshape == rgn_FULLLINE)
 	    MK.l = lback(MK.l);
 	/* region b is to the end of the selection */
 	if (getregion(&b) == TRUE) {
@@ -881,7 +881,7 @@ on_mouse_click(int button, int y, int x)
 		}
 		do_sweep(SORTOFTRUE);
 		(void) sel_begin();
-		(void) sel_setshape(EXACT);
+		(void) sel_setshape(rgn_EXACT);
 		(void) setcursor(y, x);
 		status = multimotion(TRUE, 1);
 		TRACE(("MOUSE end multimotion after button%d-up\n", button));
@@ -936,11 +936,11 @@ multimotion(int f, int n)
     n = need_at_least(f, n, 1);
 
     if (n == 3)
-	regionshape = RECTANGLE;
+	regionshape = rgn_RECTANGLE;
     else if (n == 2)
-	regionshape = FULLLINE;
+	regionshape = rgn_FULLLINE;
     else
-	regionshape = EXACT;
+	regionshape = rgn_EXACT;
     shape = regionshape;
 
     sweephack = FALSE;
@@ -965,7 +965,7 @@ multimotion(int f, int n)
 	    do_sweep(TRUE);
 	}
 	sweepmsg("Begin cursor sweep...");
-	sel_extend(TRUE, (regionshape != RECTANGLE && sweephack));
+	sel_extend(TRUE, (regionshape != rgn_RECTANGLE && sweephack));
 	savedot = MK;
 	TRACE(("MOUSE BEGIN DOT: %d.%d MK %d.%d\n",
 	       line_no(curbp, DOT.l), DOT.o,
@@ -1067,7 +1067,7 @@ multimotion(int f, int n)
 		   selection (unless it's a rectangle, in
 		   which case it's taken care of elsewhere)
 		 */
-		sel_extend(TRUE, (regionshape != RECTANGLE &&
+		sel_extend(TRUE, (regionshape != rgn_RECTANGLE &&
 				  sweephack));
 		break;
 
@@ -1094,7 +1094,7 @@ multimotion(int f, int n)
     TRACE(("MOUSE SAVE DOT: %d.%d MK %d.%d\n",
 	   line_no(curbp, DOT.l), DOT.o,
 	   line_no(curbp, MK.l), MK.o));
-    if ((regionshape != RECTANGLE) && sweephack) {
+    if ((regionshape != rgn_RECTANGLE) && sweephack) {
 	if (dot_vs_mark() < 0)
 	    MK.o += BytesAt(MK.l, MK.o);
 	else
@@ -1211,7 +1211,7 @@ attributeregion(void)
 
 		/* Earlier the overlapping region check was made based only
 		 * on line numbers and so was right only for FULLINES shape
-		 * changed it to be correct for EXACT and RECTANGLE also
+		 * changed it to be correct for rgn_EXACT and rgn_RECTANGLE also
 		 * -kuntal 9/13/98
 		 */
 		/*
@@ -1222,18 +1222,18 @@ attributeregion(void)
 		if (ple < rls || pls > rle)
 		    continue;
 		/*
-		 * for EXACT 'p' region
+		 * for rgn_EXACT 'p' region
 		 */
-		if (p->ar_shape == EXACT) {
+		if (p->ar_shape == rgn_EXACT) {
 		    if (ple == rls && poe - 1 < ros)
 			continue;
 		    if (pls == rle && pos > roe)
 			continue;
 		}
 		/*
-		 * for RECTANGLE 'p' region
+		 * for rgn_RECTANGLE 'p' region
 		 */
-		if (p->ar_shape == RECTANGLE)
+		if (p->ar_shape == rgn_RECTANGLE)
 		    if (poe < ros || pos > roe)
 			continue;
 
@@ -1244,13 +1244,13 @@ attributeregion(void)
 
 		/*
 		 * we take care of this fix easily as long as neither of
-		 * 'p' or 'region' are RECTANGLE. we will need to create
+		 * 'p' or 'region' are rgn_RECTANGLE. we will need to create
 		 * at the most one new region in case 'region' is
 		 * completely contained within 'p'
 		 */
-		if (p->ar_shape != RECTANGLE && regionshape != RECTANGLE) {
+		if (p->ar_shape != rgn_RECTANGLE && regionshape != rgn_RECTANGLE) {
 		    if ((rls > pls) || (rls == pls && ros > pos)) {
-			p->ar_shape = EXACT;
+			p->ar_shape = rgn_EXACT;
 			if ((rle < ple) || (rle == ple && roe < poe)) {
 			    /* open a new region */
 			    if ((n = alloc_AREGION()) == NULL) {
@@ -1294,7 +1294,7 @@ attributeregion_in_region(REGION * rp,
     haveregion = rp;
     DOT = rp->r_orig;
     MK = rp->r_end;
-    if (shape == FULLLINE)
+    if (shape == rgn_FULLLINE)
 	MK.l = lback(MK.l);
     regionshape = shape;	/* Not that the following actually cares */
     videoattribute = vattr;
@@ -1472,7 +1472,7 @@ attribute_cntl_a_seqs_in_region(REGION * rp, REGIONSHAPE shape)
     haveregion = rp;
     DOT = rp->r_orig;
     MK = rp->r_end;
-    if (shape == FULLLINE)
+    if (shape == rgn_FULLLINE)
 	MK.l = lback(MK.l);
     regionshape = shape;	/* Not that the following actually cares */
     return attribute_cntl_a_sequences();
@@ -1497,7 +1497,7 @@ setup_region(void)
     if (pastline != win_head(curwp))
 	pastline = lforw(pastline);
     DOT.o = 0;
-    regionshape = EXACT;
+    regionshape = rgn_EXACT;
 
     return pastline;
 }
@@ -2019,7 +2019,7 @@ add_line_attrib(BUFFER *bp, REGION * rp, REGIONSHAPE rs, VIDEO_ATTR vattr,
     int last;
 
     if (rp->r_orig.l != rp->r_end.l	/* must be confined to one line */
-	|| rs != EXACT		/* must be an exact region */
+	|| rs != rgn_EXACT		/* must be an exact region */
 	|| (hypercmdp && tb_length(hypercmdp) != 0)
     /* can't be a hypertext command */
 	|| vattr == 0		/* can't be normal */
@@ -2102,10 +2102,10 @@ purge_line_attribs(BUFFER *bp, REGION * rp, REGIONSHAPE rs, int owner)
 		    break;	/* at end of attrs */
 		if (lp->l_attrs[i] == 1)
 		    continue;	/* normal, so proceed to next one */
-		if (rs != FULLLINE) {
-		    if ((rs == RECTANGLE || lp == ls) && i < os)
+		if (rs != rgn_FULLLINE) {
+		    if ((rs == rgn_RECTANGLE || lp == ls) && i < os)
 			continue;
-		    if ((rs == RECTANGLE || lp == le) && i >= oe)
+		    if ((rs == rgn_RECTANGLE || lp == le) && i >= oe)
 			break;
 		}
 		if (owner == 0

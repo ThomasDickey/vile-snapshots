@@ -10,7 +10,7 @@
  * editing must be being displayed, which means that "b_nwnd" is non zero,
  * which means that the dot and mark values in the buffer headers are nonsense.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.188 2007/10/31 23:55:39 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.189 2008/01/22 00:13:57 tom Exp $
  *
  */
 
@@ -814,14 +814,14 @@ lrepl_ctype(CHARTYPE type, const char *np, int length)
 	mayneedundo();
 
 	if (type != 0) {	/* it's an exact region */
-	    regionshape = EXACT;
+	    regionshape = rgn_EXACT;
 	    while (DOT.o < llength(DOT.l)
 		   && istype(type, char_at(DOT))) {
 		if ((status = forwdelchar(FALSE, 1)) != TRUE)
 		    break;
 	    }
 	} else {		/* it's the full line */
-	    regionshape = FULLLINE;
+	    regionshape = rgn_FULLLINE;
 	    DOT.o = w_left_margin(curwp);
 	    if ((status = deltoeol(TRUE, 1)) == TRUE)
 		DOT.o = w_left_margin(curwp);
@@ -872,7 +872,7 @@ lrepl_regex(REGEXVAL * rexp, const char *np, int length)
 	if (lregexec(exp, DOT.l, DOT.o, llength(DOT.l))) {
 	    int old = exp->endp[0] - exp->startp[0];
 	    if (old > 0) {
-		regionshape = EXACT;
+		regionshape = rgn_EXACT;
 		status = forwdelchar(TRUE, old);
 	    }
 	} else {
@@ -1371,37 +1371,37 @@ end_kill(void)
 int
 putbefore(int f, int n)
 {
-    return doput(f, n, FALSE, EXACT);
+    return doput(f, n, FALSE, rgn_EXACT);
 }
 
 int
 putafter(int f, int n)
 {
-    return doput(f, n, TRUE, EXACT);
+    return doput(f, n, TRUE, rgn_EXACT);
 }
 
 int
 lineputbefore(int f, int n)
 {
-    return doput(f, n, FALSE, FULLLINE);
+    return doput(f, n, FALSE, rgn_FULLLINE);
 }
 
 int
 lineputafter(int f, int n)
 {
-    return doput(f, n, TRUE, FULLLINE);
+    return doput(f, n, TRUE, rgn_FULLLINE);
 }
 
 int
 rectputbefore(int f, int n)
 {
-    return doput(f, n, FALSE, RECTANGLE);
+    return doput(f, n, FALSE, rgn_RECTANGLE);
 }
 
 int
 rectputafter(int f, int n)
 {
-    return doput(f, n, TRUE, RECTANGLE);
+    return doput(f, n, TRUE, rgn_RECTANGLE);
 }
 
 static int
@@ -1419,16 +1419,16 @@ doput(int f, int n, int after, REGIONSHAPE shape)
 	return (FALSE);
     }
 
-    if (shape == EXACT) {
+    if (shape == rgn_EXACT) {
 	if ((kbs[ukb].kbflag & (KLINES | KAPPEND)))
-	    shape = FULLLINE;
+	    shape = rgn_FULLLINE;
 	else if (kbs[ukb].kbflag & KRECT)
-	    shape = RECTANGLE;
+	    shape = rgn_RECTANGLE;
 	else
-	    shape = EXACT;
+	    shape = rgn_EXACT;
     }
 
-    if (shape == FULLLINE) {
+    if (shape == rgn_FULLLINE) {
 	if (after && !is_header_line(DOT, curbp))
 	    DOT.l = lforw(DOT.l);
 	DOT.o = 0;
@@ -1449,7 +1449,7 @@ doput(int f, int n, int after, REGIONSHAPE shape)
     if (is_header_line(DOT, curbp)) {
 	DOT.l = lback(DOT.l);
     }
-    if (shape == FULLLINE) {
+    if (shape == rgn_FULLLINE) {
 	(void) firstnonwhite(FALSE, 1);
     }
     ukb = 0;
@@ -1528,14 +1528,14 @@ PutChar(int n, REGIONSHAPE shape)
     /* for each time.... */
     while (n--) {
 	kp = kbs[ukb].kbufh;
-	if (shape == RECTANGLE) {
+	if (shape == rgn_RECTANGLE) {
 	    width = kbs[ukb].kbwidth;
 	    col = getcol(DOT, FALSE);
 	}
 	while (kp != NULL) {
 	    i = KbSize(ukb, kp);
 	    sp = (char *) kp->d_chunk;
-	    if (shape == RECTANGLE) {
+	    if (shape == rgn_RECTANGLE) {
 		while (i-- > 0) {
 		    c = *sp++;
 		    if (width == 0 || c == '\n') {
@@ -1637,7 +1637,7 @@ PutChar(int n, REGIONSHAPE shape)
 		}
 	    }
 	} else {
-	    if (shape == FULLLINE && !suppressnl) {
+	    if (shape == rgn_FULLLINE && !suppressnl) {
 		if (lnewline() != TRUE) {
 		    status = FALSE;
 		    break;
