@@ -2,7 +2,7 @@
  * w32misc:  collection of unrelated, common win32 functions used by both
  *           the console and GUI flavors of the editor.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32misc.c,v 1.53 2007/09/28 23:04:35 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32misc.c,v 1.54 2008/01/22 00:09:37 tom Exp $
  */
 
 #include "estruct.h"
@@ -1073,7 +1073,7 @@ w32_del_selection(int copy_to_cbrd)
      * executed by operdel().  The actual code executed depends upon
      * whether or not the region is rectangular.
      */
-    if (shape == RECTANGLE) {
+    if (shape == rgn_RECTANGLE) {
 	DORGNLINES dorgn;
 	int save;
 
@@ -1106,7 +1106,7 @@ w32_del_selection(int copy_to_cbrd)
 	    /* No data copied to clipboard, report number of lines deleted. */
 
 	    status = TRUE;
-	    if (shape == RECTANGLE) {
+	    if (shape == rgn_RECTANGLE) {
 		if (do_report(klines + (kchars != 0))) {
 		    mlwrite("[%d line%s, %d character%s killed]",
 			    klines,

@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 console API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntconio.c,v 1.90 2007/09/27 23:36:11 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntconio.c,v 1.91 2008/01/22 00:09:37 tom Exp $
  *
  */
 
@@ -162,7 +162,7 @@ scflush(void)
 					   hConsoleOutput, actual, bufpos,
 					   coordCursor, &written
 		);
-	    free (actual);
+	    free(actual);
 	}
 	linebuf[bufpos] = save_buf;
 #else
@@ -226,7 +226,8 @@ erase_at(COORD coordCursor, int length)
     DWORD written;
 
     FillConsoleOutputCharacter(
-				  hConsoleOutput, blank, length, coordCursor, &written
+				  hConsoleOutput, blank, length,
+				  coordCursor, &written
 	);
     FillConsoleOutputAttribute(
 				  hConsoleOutput, currentAttribute, length,
@@ -1037,7 +1038,7 @@ mousemove(int *sel_pending,
 	    return;
 	}
 	if (rect_rgn)
-	    (void) sel_setshape(RECTANGLE);
+	    (void) sel_setshape(rgn_RECTANGLE);
 	if (sel_extend(TRUE, TRUE))
 	    (void) update(TRUE);
 	(void) ReleaseMutex(hAsMutex);

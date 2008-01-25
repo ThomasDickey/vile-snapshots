@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 screen API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.185 2008/01/12 17:03:33 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.186 2008/01/22 00:09:37 tom Exp $
  * Written by T.E.Dickey for vile (october 1997).
  * -- improvements by Clark Morgan (see w32cbrd.c, w32pipe.c).
  */
@@ -2685,7 +2685,7 @@ mousemove(int *sel_pending,
     if (!setcursor(current.y, current.x))
 	return;
     if (get_keyboard_state() & (LEFT_CTRL_PRESSED | RIGHT_CTRL_PRESSED))
-	(void) sel_setshape(RECTANGLE);
+	(void) sel_setshape(rgn_RECTANGLE);
     if (!sel_extend(TRUE, TRUE))
 	return;
     (void) update(TRUE);

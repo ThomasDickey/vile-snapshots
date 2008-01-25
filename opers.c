@@ -3,7 +3,7 @@
  * that take motion operators.
  * written for vile.  Copyright (c) 1990, 1995-2003 by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/opers.c,v 1.92 2006/11/06 21:26:32 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/opers.c,v 1.93 2008/01/22 00:13:57 tom Exp $
  *
  */
 
@@ -92,11 +92,11 @@ vile_op(int f, int n, OpsFunc fn, const char *str)
     }
 
     /* motion is interpreted as affecting full lines */
-    if (regionshape == EXACT) {
+    if (regionshape == rgn_EXACT) {
 	if (cfp->c_flags & FL)
-	    regionshape = FULLLINE;
+	    regionshape = rgn_FULLLINE;
 	if (cfp->c_flags & VL_RECT)
-	    regionshape = RECTANGLE;
+	    regionshape = rgn_RECTANGLE;
     }
 
     /* and execute the motion */
@@ -105,7 +105,7 @@ vile_op(int f, int n, OpsFunc fn, const char *str)
 
     if (status != TRUE) {
 	doingopcmd = FALSE;
-	regionshape = EXACT;
+	regionshape = rgn_EXACT;
 	mlforce("[Motion failed]");
 	return FALSE;
     }
@@ -125,10 +125,10 @@ vile_op(int f, int n, OpsFunc fn, const char *str)
     if (ourbp == curbp)		/* in case the func switched buffers on us */
 	swapmark();
 
-    if (regionshape == FULLLINE)
+    if (regionshape == rgn_FULLLINE)
 	(void) firstnonwhite(FALSE, 1);
 
-    regionshape = EXACT;
+    regionshape = rgn_EXACT;
 
     doingopcmd = FALSE;
 
@@ -145,7 +145,7 @@ operdel(int f, int n)
     opcmd = OPDEL;
     lines_deleted = 0;
     status = vile_op(f, n, killregion,
-		     ((regionshape == FULLLINE)
+		     ((regionshape == rgn_FULLLINE)
 		      ? "Delete of full lines"
 		      : "Delete"));
     if (do_report(lines_deleted))
@@ -156,18 +156,18 @@ operdel(int f, int n)
 int
 operlinedel(int f, int n)
 {
-    regionshape = FULLLINE;
+    regionshape = rgn_FULLLINE;
     return operdel(f, n);
 }
 
 static int
 chgreg(void)
 {
-    if (regionshape == RECTANGLE) {
+    if (regionshape == rgn_RECTANGLE) {
 	return stringrect();
     } else {
 	killregion();
-	if (regionshape == FULLLINE && !is_empty_buf(curbp)) {
+	if (regionshape == rgn_FULLLINE && !is_empty_buf(curbp)) {
 	    if (backline(FALSE, 1) == TRUE)
 		/* backline returns FALSE at top of buf */
 		return opendown(TRUE, 1);
@@ -195,7 +195,7 @@ operlinechg(int f, int n)
 {
     int s;
 
-    regionshape = FULLLINE;
+    regionshape = rgn_FULLLINE;
     opcmd = OPOTHER;
     s = vile_op(f, n, chgreg, "Change of full lines");
     if (s == TRUE)
@@ -256,7 +256,7 @@ operlineyank(int f, int n)
     MARK savedot;
     int s;
     savedot = DOT;
-    regionshape = FULLLINE;
+    regionshape = rgn_FULLLINE;
     opcmd = OPOTHER;
     s = vile_op(f, n, yankregion, "Yank of full lines");
     DOT = savedot;
@@ -293,7 +293,7 @@ shift_n_times(int f, int n, OpsFunc func, const char *msg)
 {
     register int status = FALSE;
 
-    regionshape = FULLLINE;
+    regionshape = rgn_FULLLINE;
     opcmd = OPOTHER;
 
     if (havemotion != NULL) {
@@ -341,7 +341,7 @@ operwrite(int f, int n)
 int
 operformat(int f, int n)
 {
-    regionshape = FULLLINE;
+    regionshape = rgn_FULLLINE;
     opcmd = OPOTHER;
     return vile_op(f, n, formatregion, "Format");
 }
@@ -351,7 +351,7 @@ operformat(int f, int n)
 int
 operfilter(int f, int n)
 {
-    regionshape = FULLLINE;
+    regionshape = rgn_FULLLINE;
     opcmd = OPOTHER;
     return vile_op(f, n, filterregion, "Filter");
 }
@@ -360,7 +360,7 @@ operfilter(int f, int n)
 int
 operprint(int f, int n)
 {
-    regionshape = FULLLINE;
+    regionshape = rgn_FULLLINE;
     opcmd = OPOTHER;
     return vile_op(f, n, plineregion, "Line print");
 }
@@ -368,7 +368,7 @@ operprint(int f, int n)
 int
 operpprint(int f, int n)
 {
-    regionshape = FULLLINE;
+    regionshape = rgn_FULLLINE;
     opcmd = OPOTHER;
     return vile_op(f, n, pplineregion, "Line-number print");
 }
@@ -376,7 +376,7 @@ operpprint(int f, int n)
 int
 operlist(int f, int n)
 {
-    regionshape = FULLLINE;
+    regionshape = rgn_FULLLINE;
     opcmd = OPOTHER;
     return vile_op(f, n, llineregion, "Line list");
 }
@@ -384,7 +384,7 @@ operlist(int f, int n)
 int
 opernumber(int f, int n)
 {
-    regionshape = FULLLINE;
+    regionshape = rgn_FULLLINE;
     opcmd = OPOTHER;
     return vile_op(f, n, nlineregion, "Numbered list");
 }
@@ -392,7 +392,7 @@ opernumber(int f, int n)
 int
 opersubst(int f, int n)
 {
-    regionshape = FULLLINE;
+    regionshape = rgn_FULLLINE;
     opcmd = OPOTHER;
     return vile_op(f, n, substregion, "Substitute");
 }
@@ -400,7 +400,7 @@ opersubst(int f, int n)
 int
 opersubstall(int f, int n)
 {
-    regionshape = FULLLINE;
+    regionshape = rgn_FULLLINE;
     opcmd = OPOTHER;
     return vile_op(f, n, subst_all_region, "Substitute-all");
 }
@@ -408,7 +408,7 @@ opersubstall(int f, int n)
 int
 opersubstagain(int f, int n)
 {
-    regionshape = FULLLINE;
+    regionshape = rgn_FULLLINE;
     opcmd = OPOTHER;
     return vile_op(f, n, subst_again_region, "Substitute-again");
 }
@@ -416,7 +416,7 @@ opersubstagain(int f, int n)
 int
 operentab(int f, int n)
 {
-    regionshape = FULLLINE;
+    regionshape = rgn_FULLLINE;
     opcmd = OPOTHER;
     return vile_op(f, n, entab_region, "Spaces-->Tabs");
 }
@@ -424,7 +424,7 @@ operentab(int f, int n)
 int
 oper_l_entab(int f, int n)
 {
-    regionshape = FULLLINE;
+    regionshape = rgn_FULLLINE;
     opcmd = OPOTHER;
     return vile_op(f, n, l_entab_region, "Spaces-->Tabs");
 }
@@ -432,7 +432,7 @@ oper_l_entab(int f, int n)
 int
 operdetab(int f, int n)
 {
-    regionshape = FULLLINE;
+    regionshape = rgn_FULLLINE;
     opcmd = OPOTHER;
     return vile_op(f, n, detab_region, "Tabs-->Spaces");
 }
@@ -440,7 +440,7 @@ operdetab(int f, int n)
 int
 oper_l_detab(int f, int n)
 {
-    regionshape = FULLLINE;
+    regionshape = rgn_FULLLINE;
     opcmd = OPOTHER;
     return vile_op(f, n, l_detab_region, "Tabs-->Spaces");
 }
@@ -448,7 +448,7 @@ oper_l_detab(int f, int n)
 int
 opertrim(int f, int n)
 {
-    regionshape = FULLLINE;
+    regionshape = rgn_FULLLINE;
     opcmd = OPOTHER;
     return vile_op(f, n, trim_region, "Trim whitespace");
 }
@@ -464,6 +464,6 @@ int
 operopenrect(int f, int n)
 {
     opcmd = OPOTHER;
-    regionshape = RECTANGLE;
+    regionshape = rgn_RECTANGLE;
     return vile_op(f, n, openregion, "Opening");
 }

@@ -1,7 +1,7 @@
 /*
  * Main program and I/O for external vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filterio.c,v 1.37 2008/01/12 18:46:08 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filterio.c,v 1.38 2008/01/21 22:45:54 tom Exp $
  *
  */
 
@@ -283,6 +283,13 @@ DIRECTIVE
 dname_to_dirnum(char **s GCC_UNUSED, size_t length GCC_UNUSED)
 {
     return D_ENDM;
+}
+
+int
+vl_check_cmd(const void *cmd, unsigned flags)
+{
+    /* added in 9.5s */
+    return 0;
 }
 
 /* ARGSUSED */

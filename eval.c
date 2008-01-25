@@ -2,7 +2,7 @@
  *	eval.c -- function and variable evaluation
  *	original by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.373 2008/01/13 16:41:00 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.374 2008/01/22 00:12:01 tom Exp $
  *
  */
 
@@ -1932,7 +1932,7 @@ makecolorlist(int dum1 GCC_UNUSED, void *ptr GCC_UNUSED)
     DOT.o = 0;
 
     if (getregion(&region) == TRUE)
-	attribute_cntl_a_seqs_in_region(&region, FULLLINE);
+	attribute_cntl_a_seqs_in_region(&region, rgn_FULLLINE);
 }
 
 /* ARGSUSED */
@@ -2772,7 +2772,10 @@ int
 evaluate(int f, int n)
 {
     static char Expression[] = "Expression";
-    static PARAM_INFO info = {PT_STR, Expression, 0};
+    static PARAM_INFO info =
+    {
+	PT_STR, Expression, 0
+    };
     TBUFF *params = 0, *tok = 0, *cmd = 0;
     char *old, *tmp;
     int code = FALSE;

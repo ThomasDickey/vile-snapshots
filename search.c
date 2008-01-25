@@ -3,7 +3,7 @@
  * and backward directions.
  *  heavily modified by Paul Fox, 1990
  *
- * $Header: /users/source/archives/vile.vcs/RCS/search.c,v 1.145 2007/09/16 20:06:08 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/search.c,v 1.146 2008/01/22 00:13:57 tom Exp $
  *
  * original written Aug. 1986 by John M. Gamble, but I (pgf) have since
  * replaced his regex stuff with Henry Spencer's regexp package.
@@ -684,7 +684,7 @@ attrib_matches(void)
 	    nextdot.o -= BytesBefore(nextdot.l, nextdot.o);
 
 	/* show highlighting from DOT to MK */
-	regionshape = EXACT;
+	regionshape = rgn_EXACT;
 	videoattribute |= VOWN_MATCHES;
 	status = attributeregion();
     } while (status == TRUE);

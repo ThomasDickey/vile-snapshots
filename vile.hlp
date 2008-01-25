@@ -5095,6 +5095,21 @@ Debugging features
 			to popup a buffer that displays all possible paths
 			(e.g., "2:which-source mymacros.rc").
 
+	For debugging syntax highlighting, the following also are useful:
+
+	which-filter <majormode>
+			Prompt for, and display location of filter program.
+
+	which-keywords <majormode>
+			Prompt for, and display location of keyword files.
+
+	HighlightFilterMsg   ^X-q
+			Colors the current buffer if a majormode and filter
+			exist for same.
+
+	HighlightClear       ^X-Q
+			Clears the current buffer's color attributes.
+
 
 
 X Window System specifics
@@ -6405,6 +6420,6 @@ Problems
 	keep informed of new releases.
 
 
-Copyright 1995-2006,2007 by Paul Fox, Thomas Dickey, and Kevin Buettner
+Copyright 1995-2007,2008 by Paul Fox, Thomas Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.645 2007/12/26 14:26:16 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.647 2008/01/25 00:40:36 tom Exp $

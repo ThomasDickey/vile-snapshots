@@ -1,5 +1,5 @@
 %pointer
-%s DELETE INSERT
+%s sDELETE INSERT
 
 %a 10000
 %o 10000
@@ -7,7 +7,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/sccsfilt.l,v 1.17 2008/01/12 17:21:27 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/sccsfilt.l,v 1.18 2008/01/22 01:51:34 tom Exp $
  *
  * Filter to add vile "attribution" sequences to SCCS files.
  */
@@ -35,8 +35,8 @@ UNEXPANDED	"%"[[:upper:]]"%"
 
 %%
 
-<INSERT,DELETE>{UNEXPANDED}	{ WriteToken(String_attr); }
-<INSERT,DELETE>{EXPANDED}	{ flt_error("expanded keywords");
+<INSERT,sDELETE>{UNEXPANDED}	{ WriteToken(String_attr); }
+<INSERT,sDELETE>{EXPANDED}	{ flt_error("expanded keywords");
 				  WriteToken(Error_attr); }
 
 {MARKED}	{ flt_putc('\001');
@@ -49,7 +49,7 @@ UNEXPANDED	"%"[[:upper:]]"%"
 			push_state(INSERT);
 			break;
 		    case 'D':
-			push_state(DELETE);
+			push_state(sDELETE);
 			break;
 		    case 'E':
 			pop_state();
@@ -62,8 +62,8 @@ UNEXPANDED	"%"[[:upper:]]"%"
 <INSERT>.		|
 <INSERT>[^%@\r\n]*	{ WriteToken(Insert_attr); }
 
-<DELETE>.		|
-<DELETE>[^%@\r\n]*	{ WriteToken(Delete_attr); }
+<sDELETE>.		|
+<sDELETE>[^%@\r\n]*	{ WriteToken(Delete_attr); }
 
 %%
 

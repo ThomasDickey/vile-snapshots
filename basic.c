@@ -5,7 +5,7 @@
  * functions that adjust the top line in the window and invalidate the
  * framing, are hard.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/basic.c,v 1.158 2008/01/06 18:22:01 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/basic.c,v 1.159 2008/01/22 00:12:01 tom Exp $
  *
  */
 
@@ -780,7 +780,7 @@ gotobop(int f, int n)
 	if (!sameline(DOT, odot) &&
 	    (pre_op_dot.o > lastchar(pre_op_dot.l)) &&
 	    ((fc >= 0 && DOT.o <= fc) || fc < 0)) {
-	    regionshape = FULLLINE;
+	    regionshape = rgn_FULLLINE;
 	}
     }
     return TRUE;
@@ -833,7 +833,7 @@ gotoeop(int f, int n)
 	}
 	/* if we started at the start of line, eat the whole line */
 	if (!sameline(DOT, odot) && was_at_bol)
-	    regionshape = FULLLINE;
+	    regionshape = rgn_FULLLINE;
     }
     return TRUE;
 }
@@ -1613,7 +1613,7 @@ gorectnmmark(int f GCC_UNUSED, int n GCC_UNUSED)
     if (s != TRUE)
 	return s;
 
-    regionshape = RECTANGLE;
+    regionshape = rgn_RECTANGLE;
     return gonmmark(c);
 }
 

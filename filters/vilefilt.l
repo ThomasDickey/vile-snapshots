@@ -7,7 +7,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/vilefilt.l,v 1.56 2008/01/13 22:52:40 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/vilefilt.l,v 1.57 2008/01/22 00:30:22 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of vile macros
  * - T.Dickey
@@ -20,7 +20,7 @@
 #define FltStack_WITH_ACTIVE  FLTSTACK_THIS.with_state
 #include <fltstack.h>
 
-#if defined(_estruct_h) && !SMALLER && defined(HAVE_CONFIG_H)
+#if defined(_estruct_h) && !SMALLER
 #define HAVE_DIRECTIVE 1
 #else
 #define HAVE_DIRECTIVE 0

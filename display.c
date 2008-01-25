@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.468 2008/01/13 22:24:57 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.469 2008/01/22 00:09:37 tom Exp $
  *
  */
 
@@ -2072,7 +2072,7 @@ update_window_attrs(WINDOW *wp)
 	}
 	end_lnum = (end_rlnum < end_wlnum) ? end_rlnum : end_wlnum;
 	attr = ap->ar_vattr;
-	if (ap->ar_shape == RECTANGLE) {
+	if (ap->ar_shape == rgn_RECTANGLE) {
 	    int n;
 	    rect_start_col = mark2col(wp, ap->ar_region.r_orig);
 	    rect_end_col = mark2col(wp, ap->ar_region.r_end);
@@ -2089,7 +2089,7 @@ update_window_attrs(WINDOW *wp)
 	}
 	for (lnum = start_lnum; lnum <= end_lnum; lnum++, lp = lforw(lp)) {
 	    int row;
-	    if (ap->ar_shape == RECTANGLE) {
+	    if (ap->ar_shape == rgn_RECTANGLE) {
 		start_col = rect_start_col;
 	    } else if (lnum == start_rlnum) {
 		start_col = mark2col(wp, ap->ar_region.r_orig);
@@ -2102,7 +2102,7 @@ update_window_attrs(WINDOW *wp)
 		    ? w_left_margin(wp) + nu_width(wp)
 		    : w_left_margin(wp);
 
-	    if (ap->ar_shape == RECTANGLE) {
+	    if (ap->ar_shape == rgn_RECTANGLE) {
 		end_col = rect_end_col;
 	    } else if (lnum == end_rlnum) {
 		end_col = mark2col(wp, ap->ar_region.r_end) - 1;

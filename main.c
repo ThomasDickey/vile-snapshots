@@ -17,12 +17,12 @@
  * distributable status.  This version of vile is distributed under the
  * terms of the GNU Public License (see COPYING).
  *
- * Copyright (c) 1992-2007 by Paul Fox and Thomas Dickey
+ * Copyright (c) 1992-2008 by Paul Fox and Thomas Dickey
  *
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.617 2008/01/13 17:16:55 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.619 2008/01/25 00:35:58 tom Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -996,7 +996,7 @@ main_loop(void)
 	}
 
 	attrib_matches();
-	regionshape = EXACT;
+	regionshape = rgn_EXACT;
 
 	/*
 	 * Some perl scripts may not reset this flag.
@@ -2359,7 +2359,7 @@ int
 esc_func(int f GCC_UNUSED, int n GCC_UNUSED)
 {
     dotcmdactive = 0;
-    regionshape = EXACT;
+    regionshape = rgn_EXACT;
     doingopcmd = FALSE;
     do_sweep(FALSE);
     sweephack = FALSE;

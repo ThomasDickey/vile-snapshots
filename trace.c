@@ -1,7 +1,7 @@
 /*
  * debugging support -- tom dickey.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.75 2007/11/25 16:06:56 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.77 2008/01/22 00:13:57 tom Exp $
  *
  */
 
@@ -459,7 +459,7 @@ visible_video_text(const VIDEO_TEXT * buffer, int length)
  * Convert a string to visible form.
  */
 char *
-str_visible(char *s)
+str_visible(const char *s)
 {
     if (s == 0)
 	return "<null>";
@@ -470,7 +470,7 @@ str_visible(char *s)
  * Convert a string to visible form, but include the trailing null.
  */
 char *
-str_visible0(char *s)
+str_visible0(const char *s)
 {
     if (s == 0)
 	return "<null>";
@@ -848,11 +848,11 @@ static const char *
 visible_shape(REGIONSHAPE shape)
 {
     return
-	(shape == EXACT
+	(shape == rgn_EXACT
 	 ? "exact"
-	 : (shape == FULLLINE
+	 : (shape == rgn_FULLLINE
 	    ? "full-line"
-	    : (shape == RECTANGLE
+	    : (shape == rgn_RECTANGLE
 	       ? "rectangle"
 	       : "?")));
 }

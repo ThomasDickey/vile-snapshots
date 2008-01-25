@@ -1,12 +1,12 @@
 %pointer
-%x META TEXT NORMAL HEREDOC QUOTED QUOTED2 SUBST
+%x META sTEXT NORMAL HEREDOC QUOTED QUOTED2 SUBST
 
 %o 10000
 %a 10000
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/rpm-filt.l,v 1.17 2008/01/12 22:58:51 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/rpm-filt.l,v 1.18 2008/01/22 01:47:39 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of rpm spec-file.
  */
@@ -70,11 +70,11 @@ SECTION		%{IDENT}
 
 <NORMAL>{SECTION}	{ begin_section(yytext); }
 
-<TEXT>^"%"[^\r\n \t]*	{ begin_section(yytext); }
-<TEXT>{IDENT1}		|
-<TEXT>{IDENT2}		{ WriteToken(keyword_attr(yytext)); }
-<TEXT>[^%\r\n]*		{ WriteToken(String_attr); }
-<TEXT>\n		{ ECHO; }
+<sTEXT>^"%"[^\r\n \t]*	{ begin_section(yytext); }
+<sTEXT>{IDENT1}		|
+<sTEXT>{IDENT2}		{ WriteToken(keyword_attr(yytext)); }
+<sTEXT>[^%\r\n]*	{ WriteToken(String_attr); }
+<sTEXT>\n		{ ECHO; }
 
 <NORMAL>{IDENT0}	|
 <NORMAL>{FILENAME}	{ ECHO; /* exclude from other classes */ }
@@ -166,7 +166,7 @@ begin_section(char *name)
     if (!strcmp(name, "%description")
      || !strcmp(name, "%changelog")
      || !strcmp(name, "%package")) {
-	new_state(TEXT);
+	new_state(sTEXT);
     } else {
 	new_state(NORMAL);
     }

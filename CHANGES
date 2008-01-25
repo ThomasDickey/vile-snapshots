@@ -1,5 +1,23 @@
 Changes for vile 9.7 (released ??? ??? ?? ????)
 
+ 20080124 (d)
+	> Tom Dickey:
+	+ documentation improvements (suggested by Steven Lembark).
+	+ add ".t" to perlmode, using $mode-pathname, noting that while perl
+	  uses it, other programs do also (request by Steven Lembark).
+	+ strip redundant "mode" from majormode names, avoiding the potential
+	  for creating foomodemode when the script says
+		  define-majormode foomode
+	  (prompted by report by Steven Lembark).
+	+ make vile's symbol-tables accessible to vilemode in winvile.  This
+	  required some renaming to avoid symbol conflicts:
+	  + rename TEXT and PATTERN states in filters to sTEXT and sPATTERN
+	  + rename RECTANGLE to rgn_RECTANGLE, and the other region-shapes
+	    to match.
+	+ add stub for vl_check_cmd() to filterio.c, to work when the some
+	  filters are external, and the selected built-in or loadable filters
+	  did not include vilefilt.l (reports by Adam Denton, Steven Lembark).
+
  20080113 (c)
 	> Tom Dickey:
 	+ another fix for offs2col0(), to reduce an off-by-one limit check.
@@ -145,7 +163,7 @@ Changes for vile 9.6 (released Thu Dec 27 2007)
 	+ use new module blist (binary search of lists) to reduce linear
 	  searches in the places where btree is not already used.
 	+ change rename-other-buffer command to other-buffer-rename, to avoid
-	  name-completion conflict with rename-command (feedback from Steve
+	  name-completion conflict with rename-command (feedback from Steven
 	  Lembark).
 	+ remove obsolete check for ANSI qsort.
 	+ improve vilefilt.l, highlighting mode names and displaying error

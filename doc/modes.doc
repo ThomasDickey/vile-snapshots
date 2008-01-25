@@ -103,7 +103,7 @@ include the following in your .vilerc file:
 
 	define-majormode perl
 	define-submode perl preamble "^#.*perl\\>"
-	define-submode perl suffixes "\\.pl$"
+	define-submode perl suffixes '\.\(pm\|t\)$'
 	define-submode perl shiftwidth 4
 
 To avoid the tediousness of this syntax, use the ~with and ~endwidth
@@ -112,7 +112,7 @@ keywords, like so:
 	define-majormode perl
 	~with define-submode perl
 	    preamble "^#.*perl\\>"
-	    suffixes "\\.pl$"
+	    suffixes '\.\(pm\|t\)$'
 	    shiftwidth 4
 	~endwith
 
@@ -368,5 +368,5 @@ Note that the following are equivalent once you have defined the majormode "c":
 	define-submode c tabstop=8
 
 -------------------------------
-$Header: /users/source/archives/vile.vcs/doc/RCS/modes.doc,v 1.16 2004/04/11 23:30:15 tom Exp $
+$Header: /users/source/archives/vile.vcs/doc/RCS/modes.doc,v 1.17 2008/01/25 00:27:47 Steven.Lembark Exp $
 -------------------------------

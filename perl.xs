@@ -13,7 +13,7 @@
  * vile.  The file api.c (sometimes) provides a middle layer between
  * this interface and the rest of vile.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.108 2007/11/25 16:01:15 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.109 2008/01/22 00:14:29 tom Exp $
  */
 
 /*#
@@ -288,7 +288,7 @@ perl_default_region(void)
     MK.l  = lback(buf_head(curbp));
     MK.o  = 0;
 
-    regionshape = FULLLINE;
+    regionshape = rgn_FULLLINE;
     haveregion = NULL;
     if (getregion(&region)) {
 	haveregion = &region;
@@ -3851,7 +3851,7 @@ set_region(vbp, ...)
 		if (api_motion(vbp, SvPV(ST(1), PL_na))) {
 		    /* DOT is now at the other end of the motion */
 		    MK = vbp->region.r_orig;	/* Put remembered DOT in MK */
-		    regionshape = EXACT;
+		    regionshape = rgn_EXACT;
 		}
 		else {
 		    croak("set_region: Invalid motion");
@@ -3860,24 +3860,24 @@ set_region(vbp, ...)
 	    }
 	    case 3:
 		/* Set up a full line region */
-		regionshape = FULLLINE;
+		regionshape = rgn_FULLLINE;
 		api_gotoline(vbp, sv2linenum(ST(2)));
 		MK = DOT;
 		api_gotoline(vbp, sv2linenum(ST(1)));
 		break;
 	    case 5:
 		/* Set up an exact region */
-		regionshape = EXACT;
+		regionshape = rgn_EXACT;
 		goto set_region_common;
 	    case 6:
 		/* Set up any kind of region (exact, fullline, or rectangle) */
 		shapestr = SvPV(ST(5), PL_na);
 		if (strcmp(shapestr, "exact"))
-		    regionshape = EXACT;
+		    regionshape = rgn_EXACT;
 		else if (strcmp(shapestr, "rectangle"))
-		    regionshape = RECTANGLE;
+		    regionshape = rgn_RECTANGLE;
 		else if (strcmp(shapestr, "fullline"))
-		    regionshape = FULLLINE;
+		    regionshape = rgn_FULLLINE;
 		else {
 		    croak("Region shape argument not one of \"exact\", \"fullline\", or \"rectangle\"");
 		}
@@ -3912,12 +3912,12 @@ set_region(vbp, ...)
 	    XPUSHs(sv_2mortal(newSViv(line_no(curbp, vbp->region.r_orig.l))));
 	    XPUSHs(sv_2mortal(newSViv(vbp->region.r_orig.o)));
 	    XPUSHs(sv_2mortal(newSViv(line_no(curbp, vbp->region.r_end.l)
-						     - (vbp->regionshape == FULLLINE))));
+						     - (vbp->regionshape == rgn_FULLLINE))));
 	    XPUSHs(sv_2mortal(newSViv(vbp->region.r_end.o)));
 	    XPUSHs(sv_2mortal(newSVpv(
-		vbp->regionshape == FULLLINE ? "fullline" :
-		vbp->regionshape == EXACT    ? "exact"
-					     : "rectangle",  0 )));
+		vbp->regionshape == rgn_FULLLINE ? "fullline" :
+		vbp->regionshape == rgn_EXACT    ? "exact"
+						 : "rectangle",  0 )));
 	}
 
 

@@ -4,7 +4,7 @@
  *	original by Daniel Lawrence, but
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.313 2007/12/31 19:54:10 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.314 2008/01/22 00:13:57 tom Exp $
  *
  */
 
@@ -820,7 +820,7 @@ execute_named_command(int f, int n)
     /* and then execute the command */
     isnamedcmd = TRUE;
     havemotion = &f_gomark;
-    regionshape = FULLLINE;
+    regionshape = rgn_FULLLINE;
 
     /* if the command ended with a bang, let the function know
        that so it can take special action */
@@ -849,7 +849,7 @@ execute_named_command(int f, int n)
 
     havemotion = NULL;
     isnamedcmd = FALSE;
-    regionshape = EXACT;
+    regionshape = rgn_EXACT;
 
     /* don't use this if the command modifies! */
     if (flags & NOMOVE)
@@ -1750,7 +1750,7 @@ static void
 push_buffer(IFSTK * save)
 {
     static const IFSTK new_ifstk =
-    {0, 0, FALSE, EXACT, 0, 0, 0};	/* all 0's */
+    {0, 0, FALSE, rgn_EXACT, 0, 0, 0};	/* all 0's */
 
     *save = ifstk;
     save->shape = regionshape;
@@ -1759,7 +1759,7 @@ push_buffer(IFSTK * save)
 
     ifstk = new_ifstk;
     havemotion = NULL;
-    regionshape = EXACT;
+    regionshape = rgn_EXACT;
     with_prefix = 0;
 }
 

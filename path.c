@@ -2,7 +2,7 @@
  *		The routines in this file handle the conversion of pathname
  *		strings.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.159 2008/01/13 17:19:51 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.160 2008/01/21 23:58:11 tom Exp $
  *
  *
  */
@@ -1838,7 +1838,7 @@ is_directory(const char *path)
      * as a dir.
      */
     if (is_slashc(path[0]) && is_slashc(path[1])) {
-	char *end = skip_string(path);
+	const char *end = skip_cstring(path);
 	int slashes = 0;
 	if (end > path && is_slashc(end[-1]))
 	    end--;

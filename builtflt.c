@@ -1,7 +1,7 @@
 /*
  * Main program and I/O for external vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/RCS/builtflt.c,v 1.62 2008/01/13 18:39:11 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/builtflt.c,v 1.63 2008/01/22 00:13:57 tom Exp $
  *
  */
 
@@ -432,7 +432,7 @@ flt_puts(const char *string, int length, const char *marker)
 	save_mark(FALSE);
 	if (apply_attribute()) {
 	    REGIONSHAPE save_shape = regionshape;
-	    regionshape = EXACT;
+	    regionshape = rgn_EXACT;
 	    (void) attributeregion();
 	    videoattribute = 0;
 	    regionshape = save_shape;

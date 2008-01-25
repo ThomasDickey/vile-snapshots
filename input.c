@@ -44,7 +44,7 @@
  *	tgetc_avail()     true if a key is avail from tgetc() or below.
  *	keystroke_avail() true if a key is avail from keystroke() or below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.318 2008/01/13 16:00:04 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.319 2008/01/22 00:13:57 tom Exp $
  *
  */
 
@@ -1566,7 +1566,7 @@ editMiniBuffer(TBUFF **buf, size_t *cpos, int c, int margin, int quoted)
 	    DOT.o = first;
 	    MK = DOT;
 	    curwp->w_line = DOT;
-	    regionshape = EXACT;	/* operdel(), etc., do not set this */
+	    regionshape = rgn_EXACT;	/* operdel(), etc., do not set this */
 	    (void) execute(cfp, FALSE, 1);
 	    insertmode = save_insertmode;
 	    edited = TRUE;

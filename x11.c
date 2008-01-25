@@ -2,7 +2,7 @@
  *	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.297 2007/11/05 11:15:54 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.298 2008/01/22 00:09:37 tom Exp $
  *
  */
 
@@ -5452,7 +5452,7 @@ x_process_event(Widget w GCC_UNUSED,
 	    return;
 	if (do_sel) {
 	    if (ev->xbutton.state & ControlMask) {
-		(void) sel_setshape(RECTANGLE);
+		(void) sel_setshape(rgn_RECTANGLE);
 	    }
 	    if (nr != onr || nc != onc)
 		extend_selection(cur_win, nr, nc, True);
@@ -5494,7 +5494,7 @@ x_process_event(Widget w GCC_UNUSED,
 	    if (((wp = row2window(nr)) != 0) && sel_buffer() == wp->w_bufp)
 		(void) set_curwp(wp);
 	    if (ev->xbutton.state & ControlMask)
-		(void) sel_setshape(RECTANGLE);
+		(void) sel_setshape(rgn_RECTANGLE);
 	    cur_win->wipe_permitted = True;
 	    cur_win->prevDOT = DOT;
 	    extend_selection(cur_win, nr, nc, False);
