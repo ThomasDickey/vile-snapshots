@@ -1,5 +1,11 @@
 Changes for vile 9.7 (released ??? ??? ?? ????)
 
+ 200802?? (e)
+	> Tom Dickey:
+	+ fix an incorrect reference in chgd_fences() which was exposed by
+	  changing fence-pairs more than once in .vilerc, dating from 5.3l
+	  (report by Steven Lembark).
+
  20080124 (d)
 	> Tom Dickey:
 	+ documentation improvements (suggested by Steven Lembark).

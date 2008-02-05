@@ -3,7 +3,7 @@
  * and mark.  Some functions are commands.  Some functions are just for
  * internal use.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/region.c,v 1.144 2008/01/22 00:13:57 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/region.c,v 1.145 2008/02/03 23:17:09 tom Exp $
  *
  */
 
@@ -858,10 +858,10 @@ found_region(REGION * rp)
 {
     if (wantregion != 0)
 	*wantregion = *rp;
-#if OPT_TRACE
+#if OPT_TRACE > 1
     trace_region(rp, curbp);
 #endif
-    returnCode(TRUE);
+    return2Code(TRUE);
 }
 
 /*
@@ -879,7 +879,7 @@ getregion(REGION * rp)
     B_COUNT bsize;
     int len_rs = len_record_sep(curbp);
 
-    TRACE((T_CALLED "getregion\n"));
+    TRACE2((T_CALLED "getregion\n"));
     memset(rp, 0, sizeof(*rp));
     if (haveregion) {
 	*rp = *haveregion;
@@ -896,12 +896,12 @@ getregion(REGION * rp)
     if (valid_buffer(curbp) && is_empty_buf(curbp)) {
 	memset(rp, 0, sizeof(*rp));
 	rp->r_orig.l = rp->r_end.l = buf_head(curbp);
-	returnCode(TRUE);
+	return2Code(TRUE);
     }
 
     if (MK.l == NULL) {
 	mlforce("BUG: getregion: no mark set in this window");
-	returnCode(FALSE);
+	return2Code(FALSE);
     }
 
     if (sameline(DOT, MK)) {
@@ -952,7 +952,7 @@ getregion(REGION * rp)
 		fsize += line_length(flp) - w_left_margin(curwp);
 	    } else if (flp != blp) {
 		mlforce("BUG: hit buf end in getregion");
-		returnCode(FALSE);
+		return2Code(FALSE);
 	    }
 
 	    if (flp == blp) {
@@ -1023,7 +1023,7 @@ getregion(REGION * rp)
 	}
     }
     mlforce("BUG: lost mark");
-    returnCode(FALSE);
+    return2Code(FALSE);
 }
 
 int
