@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.355 2008/01/22 21:55:12 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.357 2008/02/05 01:50:59 tom Exp $
  *
  */
 
@@ -1162,8 +1162,13 @@ adjvalueset(const char *cp,	/* name of the mode we are changing */
 }
 
 int
-set_mode_value(BUFFER *bp, const char *cp, int defining, int setting, int
-	       global, VALARGS * args, const char *rp)
+set_mode_value(BUFFER *bp,
+	       const char *cp,
+	       int defining,
+	       int setting,
+	       int global,
+	       VALARGS * args,
+	       const char *rp)
 {
     const struct VALNAMES *names = args->names;
     struct VAL *values = args->local;
@@ -1312,11 +1317,11 @@ set_mode_value(BUFFER *bp, const char *cp, int defining, int setting, int
 	(void) copy_val(values, &oldvalue);
 	mlforce("[Cannot set this value]");
 	status = FALSE;
-    }
-
-    else if (isLocalVal(&oldvalue)
-	     || (values == globls))
+    } else if (values == globls) {
 	free_val(names, &oldvalue);
+    } else if (isLocalVal(&oldvalue)) {
+	free_val(names, &oldvalue);
+    }
 
     return status;
 }
@@ -1984,7 +1989,7 @@ chgd_fences(BUFFER *bp GCC_UNUSED, VALARGS * args, int glob_vals GCC_UNUSED, int
 {
     if (!testing) {
 	/* was even number of fence pairs specified? */
-	char *value = args->local->v.p;
+	char *value = args->local->vp->p;
 	size_t len = strlen(value);
 
 	if (len & 1) {
