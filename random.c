@@ -2,7 +2,7 @@
  * This file contains the command processing functions for a number of random
  * commands. There is no functional grouping here, for sure.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.314 2008/01/13 15:35:26 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.315 2008/02/05 23:03:17 tom Exp $
  *
  */
 
@@ -481,7 +481,7 @@ getcol(MARK mark, int actual)
 	     * If we are positioning the cursor on the right-side of a multi-
 	     * column character, update the goal to reflect that.
 	     */
-	    if (!global_g_val(GMDALTTABPOS)) {
+	    if (!global_g_val(GMDALTTABPOS) && i < llength(mark.l)) {
 		col = (next_column(mark.l, i, col) - 1);
 	    }
 	}
