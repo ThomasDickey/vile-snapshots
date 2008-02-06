@@ -2,6 +2,10 @@ Changes for vile 9.7 (released ??? ??? ?? ????)
 
  200802?? (e)
 	> Tom Dickey:
+	+ modify getcol() to compensate for 9.6b change to next_column().
+	  That fix prevents increasing the next-column computation past the
+	  end of the line; while getcol()'s alttabpos computation assumes it
+	  can get the column value of the next character.
 	+ fix an incorrect reference in chgd_fences() which was exposed by
 	  changing fence-pairs more than once in .vilerc, dating from 5.3l
 	  (report by Steven Lembark).
