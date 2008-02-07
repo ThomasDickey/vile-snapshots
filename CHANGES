@@ -2,6 +2,8 @@ Changes for vile 9.7 (released ??? ??? ?? ????)
 
  200802?? (e)
 	> Tom Dickey:
+	+ recompute a list of modes used for name-completion after removing
+	  a submode definition (from test data by Steven Lembark).
 	+ modify getcol() to compensate for 9.6b change to next_column().
 	  That fix prevents increasing the next-column computation past the
 	  end of the line; while getcol()'s alttabpos computation assumes it

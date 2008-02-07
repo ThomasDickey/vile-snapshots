@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.357 2008/02/05 01:50:59 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.358 2008/02/07 00:07:24 tom Exp $
  *
  */
 
@@ -2454,6 +2454,21 @@ in_all_modes(const char *name)
     return FALSE;
 }
 
+static void
+fill_my_varmodes(void)
+{
+    const char *const *s;
+    const char **d;
+
+    if (my_varmodes != 0 && my_mode_list != 0) {
+	for (s = my_mode_list, d = my_varmodes; (*d = *s) != 0; s++) {
+	    if (is_varmode(*d)) {
+		d++;
+	    }
+	}
+    }
+}
+
 /*
  * Return a list of only the modes that can be set with ":setv", ignoring
  * artifacts such as "all".
@@ -2462,21 +2477,13 @@ const char *const *
 list_of_modes(void)
 {
     if (my_varmodes == 0) {
-	const char *const *s;
-	const char **d;
 	size_t n = count_modes();
 
 	beginDisplay();
 	my_varmodes = typeallocn(const char *, n + 1);
 	endofDisplay();
 
-	if (my_varmodes != 0 && my_mode_list != 0) {
-	    for (s = my_mode_list, d = my_varmodes; (*d = *s) != 0; s++) {
-		if (is_varmode(*d)) {
-		    d++;
-		}
-	    }
-	}
+	fill_my_varmodes();
     }
     return my_varmodes;
 }
@@ -2939,6 +2946,7 @@ static size_t
 remove_per_major(size_t count, const char *name)
 {
     if (name != 0 && my_mode_list != 0) {
+	int redo = FALSE;
 	int found;
 	size_t j, k;
 
@@ -2947,6 +2955,7 @@ remove_per_major(size_t count, const char *name)
 	    if (my_mode_list != all_modes
 		&& !in_all_modes(my_mode_list[j])) {
 		beginDisplay();
+		redo = is_varmode(my_mode_list[j]);
 		free(TYPECAST(char, my_mode_list[j]));
 		endofDisplay();
 	    }
@@ -2954,6 +2963,9 @@ remove_per_major(size_t count, const char *name)
 	    for (k = j; k <= count; k++)
 		my_mode_list[k] = my_mode_list[k + 1];
 	    blist_my_mode_list.itemCount--;
+
+	    if (redo)
+		fill_my_varmodes();
 	}
     }
     return count;
