@@ -2,7 +2,7 @@
  *	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.298 2008/01/22 00:09:37 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.300 2008/02/07 20:56:40 tom Exp $
  *
  */
 
@@ -4279,7 +4279,7 @@ really_draw(GC fore_gc,
 	Boolean wide = False;
 	Cardinal n;
 
-	for (n = 0; n < sizeof(buffer); ++n) {
+	for (n = 0; ((int) n < tlen) && (n < sizeof(buffer)); ++n) {
 	    if (text[n] >= 256) {
 		wide = True;
 		break;
@@ -6124,8 +6124,9 @@ display_cursor(XtPointer client_data GCC_UNUSED, XtIntervalId * idp)
 	flush_line(&CELL_TEXT(ttrow, the_col), 1,
 		   (UINT) VATTRIB(CELL_ATTR(ttrow, the_col)), ttrow, the_col);
 	XDrawRectangle(dpy, cur_win->win,
-		       IS_REVERSED(ttrow, the_col) ? cur_win->cursgc
-		       : cur_win->revcursgc,
+		       (IS_REVERSED(ttrow, the_col)
+			? cur_win->cursgc
+			: cur_win->revcursgc),
 		       x_pos(cur_win, ttcol), y_pos(cur_win, ttrow),
 		       (UINT) (cur_win->char_width - 1),
 		       (UINT) (cur_win->char_height - 1));

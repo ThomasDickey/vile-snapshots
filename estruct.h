@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.657 2008/01/22 00:13:57 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.658 2008/02/07 20:15:44 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -2485,6 +2485,8 @@ typedef UCHAR VIDEO_TEXT;
 typedef char  VIDEO_CHAR;
 #endif
 
+#define VIDEO_MIN 4
+
 typedef struct  VIDEO {
 	UINT	v_flag;			/* Flags */
 #if	OPT_COLOR
@@ -2498,7 +2500,7 @@ typedef struct  VIDEO {
 #endif
 	/* allocate 4 bytes here, and malloc 4 bytes less than we need,
 		to keep malloc from rounding up. */
-	VIDEO_TEXT v_text[4];		/* Screen data. */
+	VIDEO_TEXT v_text[VIDEO_MIN];	/* Screen data. */
 }	VIDEO;
 
 #define VideoText(vp) (vp)->v_text
