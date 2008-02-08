@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.469 2008/01/22 00:09:37 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.470 2008/02/07 20:16:33 tom Exp $
  *
  */
 
@@ -387,7 +387,7 @@ int
 video_alloc(VIDEO ** vpp)
 {
     VIDEO *vp;
-    unsigned need = sizeof(VIDEO_TEXT) * (term.maxcols - 4);
+    unsigned need = sizeof(VIDEO_TEXT) * (term.maxcols - VIDEO_MIN);
 
     /* struct VIDEO already has 4 of the VIDEO_TEXT cells */
     if ((vp = typeallocplus(VIDEO, need)) != 0) {
@@ -3220,7 +3220,7 @@ update_modeline(WINDOW *wp)
 	}
 	ms = lsprintf(ms, " %s ", temp);
     }
-    memset(lchar_pad, lchar[0], 3);
+    memset(lchar_pad, lchar[0], sizeof(lchar_pad) - 1);
 #ifdef WMDRULER
     if (w_val(wp, WMDRULER))
 	(void) lsprintf(right_ms, " (%d,%d) %s",

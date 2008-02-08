@@ -1,7 +1,11 @@
 Changes for vile 9.7 (released ??? ??? ?? ????)
 
- 200802?? (e)
+ 20080207 (e)
 	> Tom Dickey:
+	+ reinitialize, rather than free the TBUFF result in run_func(), in
+	  case some caller reuses that value.
+	+ correct limit-check in xvile's really_draw() function (noted by
+	  valgrind).
 	+ recompute a list of modes used for name-completion after removing
 	  a submode definition (from test data by Steven Lembark).
 	+ modify getcol() to compensate for 9.6b change to next_column().
