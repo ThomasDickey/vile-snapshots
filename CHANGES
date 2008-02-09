@@ -1,5 +1,11 @@
 Changes for vile 9.7 (released ??? ??? ?? ????)
 
+ 200802?? (f)
+	> Tom Dickey:
+	+ modify perl syntax filter to color &foo as a variable.
+	+ modify perl syntax filter to color both class and member in variables
+	  such as $foo::bar (request by Steven Lembark).
+
  20080207 (e)
 	> Tom Dickey:
 	+ reinitialize, rather than free the TBUFF result in run_func(), in

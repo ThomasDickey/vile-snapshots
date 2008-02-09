@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/pl-filt.c,v 1.88 2008/01/12 16:44:13 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/pl-filt.c,v 1.90 2008/02/09 15:23:50 tom Exp $
  *
  * Filter to add vile "attribution" sequences to perl scripts.  This is a
  * translation into C of an earlier version written for LEX/FLEX.
@@ -258,7 +258,7 @@ is_QIDENT(char *s)
 }
 
 /*
- * If double-quoted, look for variables after a "$", "%" or "@".
+ * If double-quoted, look for variables after a "&", "$", "%" or "@".
  * If not double-quoted, look also for syntax such as $foo'bar
  */
 static int
@@ -273,19 +273,23 @@ is_NORMALVARS(char *s, int dquoted)
     while (MORE(s)) {
 	ch = CharOf(*s);
 	if (s == base) {
-	    if (strchr(dquoted ? "$" : "$%@", ch) == 0) {
+	    if (strchr(dquoted ? "$" : "&$%@", ch) == 0) {
 		break;
 	    }
 	} else if (squoted && !dquoted) {
-	    if (isalnum(ch))
+	    if (isalnum(ch)) {
 		part2 = 1;
-	    else
+	    } else {
 		break;
+	    }
 	} else {
 	    if (ch == SQUOTE && !dquoted) {
 		squoted = 1;
 	    } else if (isalnum(ch) || ch == '_') {
 		part1 = 1;
+	    } else if (ch == ':' && ATLEAST(s, 2) && s[1] == ':') {
+		part1 = 1;
+		s += 2;
 	    } else {
 		break;
 	    }
