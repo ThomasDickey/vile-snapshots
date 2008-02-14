@@ -6,7 +6,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/latexflt.l,v 1.47 2008/01/22 01:47:02 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/latexflt.l,v 1.48 2008/02/12 01:38:17 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of TeX or LaTeX
  * input text.
@@ -79,7 +79,7 @@ NONSPACE	[^ \t]
 
 NAME		[[:alpha:]@]+
 NONNAME		[^[:alpha:]@]
-MIXED_ALNUM	({NAME}[[:digit:].-_]+)+{NAME}?
+MIXED_ALNUM	({NAME}[[:digit:]._-]+)+{NAME}?
 
 OCTAL		\'[0-7]+
 DECIMAL		[[:digit:]]+

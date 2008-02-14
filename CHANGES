@@ -2,6 +2,11 @@ Changes for vile 9.7 (released ??? ??? ?? ????)
 
  200802?? (f)
 	> Tom Dickey:
+	+ minor improvement to vbmode's fence-if to ignore lines with
+	  continuations.
+	+ correct a pattern in latexflt.l, making it parse this pattern:
+		\foo{$\{a, b\}$}.
+	  (report by Paul van Tilburg).
 	+ modify perl syntax filter to color &foo as a variable.
 	+ modify perl syntax filter to color both class and member in variables
 	  such as $foo::bar (request by Steven Lembark).
