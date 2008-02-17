@@ -1,6 +1,6 @@
 Changes for vile 9.7 (released ??? ??? ?? ????)
 
- 200802?? (f)
+ 20080217 (f)
 	> Tom Dickey:
 	+ minor improvement to vbmode's fence-if to ignore lines with
 	  continuations.

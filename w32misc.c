@@ -2,7 +2,7 @@
  * w32misc:  collection of unrelated, common win32 functions used by both
  *           the console and GUI flavors of the editor.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32misc.c,v 1.54 2008/01/22 00:09:37 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32misc.c,v 1.55 2008/02/17 15:48:13 tom Exp $
  */
 
 #include "estruct.h"
@@ -338,7 +338,7 @@ w32_CreateProcess(char *cmd, int no_wait)
 
 	    mlforce("[unable to create win32 process]");
 	}
-	free (actual);
+	free(actual);
     } else {
 	no_memory("w32_CreateProcess");
     }
@@ -698,8 +698,8 @@ w32_system_winvile(const char *cmd, int *pressret)
 
 	mlforce("[unable to create Win32 process]");
     }
-    free (w32_cmd);
-    free (w32_cmdstr);
+    free(w32_cmd);
+    free(w32_cmdstr);
     if (freestr)
 	free(cmdstr);
     if (!no_shell)
@@ -761,14 +761,14 @@ w32_keybrd_reopen(int pressret)
 #endif
 }
 
-#if DISP_NTCONS	
+#if DISP_NTCONS
 void
 w32_set_console_title(const char *title)
 {
     W32_CHAR *actual = w32_charstring(title);
     if (actual != 0) {
 	SetConsoleTitle(actual);
-	free (actual);
+	free(actual);
     }
 }
 #endif
@@ -837,8 +837,8 @@ fmt_win32_error(ULONG errcode, char **buf, ULONG buflen)
     if (*buf) {
 	char *formatted = asc_charstring(buffer);
 	vl_strncpy(*buf, formatted, buflen);
-	free (formatted);
-	free (buffer);
+	free(formatted);
+	free(buffer);
     }
     return (*buf);
 }
@@ -861,7 +861,7 @@ w32_message_box(HWND hwnd, const char *message, int code)
     W32_CHAR *buf = w32_charstring(message);
 
     rc = MessageBox(hwnd, buf, w32_prognam(), code);
-    free (buf);
+    free(buf);
     return (rc);
 }
 
@@ -997,6 +997,11 @@ parse_font_str(const char *fontstr, FONTSTR_OPTIONS * results)
 	    return (FALSE);
     }
     results->size = size;
+    TRACE(("parse_font_str(face=\"%s\", size=%d, style=\"%s%s\")\n",
+	   results->face,
+	   results->size,
+	   results->bold ? "Bold" : "",
+	   results->italic ? "Italic" : ""));
     return (TRUE);
 }
 #endif /* DISP_NTWIN */
@@ -1015,8 +1020,7 @@ w32_wdw_title(void)
 	bufsize = 128;
 	buf = castalloc(W32_CHAR, bufsize);
     }
-    while (buf != 0)
-    {
+    while (buf != 0) {
 #if DISP_NTWIN
 	nchars = GetWindowText(winvile_hwnd(), buf, bufsize);
 #else
@@ -1234,10 +1238,10 @@ add_remove_write_acl(const char *filename, int add_acl, DWORD * prev_access_mask
     } else if ((pSecDescriptorBuf = malloc(sizeof(BYTE) * dwSizeNeeded)) == NULL) {
 	rc = no_memory("add_remove_write_acl");
     } else if (!GetFileSecurity(w32_bslfn,
-			 DACL_SECURITY_INFORMATION,
-			 pSecDescriptorBuf,
-			 dwSizeNeeded,
-			 &dwSizeNeeded)) {
+				DACL_SECURITY_INFORMATION,
+				pSecDescriptorBuf,
+				dwSizeNeeded,
+				&dwSizeNeeded)) {
 	fmt_win32_error(W32_SYS_ERROR, &msg, 0);
 	mlforce("[GetFileSecurity: %s]", mktrimmed(msg));
 	LocalFree(msg);
@@ -1245,9 +1249,9 @@ add_remove_write_acl(const char *filename, int add_acl, DWORD * prev_access_mask
 
     /* Get DACL from Security Descriptor */
     else if (!GetSecurityDescriptorDacl((SECURITY_DESCRIPTOR *) pSecDescriptorBuf,
-				   &bDaclPresent,
-				   &pacl,
-				   &bDaclDefaulted)) {
+					&bDaclPresent,
+					&pacl,
+					&bDaclDefaulted)) {
 	fmt_win32_error(W32_SYS_ERROR, &msg, 0);
 	mlforce("[GetSecurityDescriptorDacl: %s]", mktrimmed(msg));
 	LocalFree(msg);
@@ -1265,10 +1269,10 @@ add_remove_write_acl(const char *filename, int add_acl, DWORD * prev_access_mask
 
     /* Create a well-known SID for "Everyone/World" (code courtesy of MSDN). */
     else if (!AllocateAndInitializeSid(&SIDAuthWorld,
-				  1,
-				  SECURITY_WORLD_RID,
-				  0, 0, 0, 0, 0, 0, 0,
-				  &pWorldSID)) {
+				       1,
+				       SECURITY_WORLD_RID,
+				       0, 0, 0, 0, 0, 0, 0,
+				       &pWorldSID)) {
 	fmt_win32_error(W32_SYS_ERROR, &msg, 0);
 	mlforce("[AllocateAndInitializeSid: %s]", mktrimmed(msg));
 	LocalFree(msg);
@@ -1372,24 +1376,24 @@ w32_remove_write_acl(const char *filename, ULONG orig_access_mask)
 W32_CHAR *
 w32_ansi_to_ucs2(const char *source, int sourcelen)
 {
-    W32_CHAR * target = 0;
+    W32_CHAR *target = 0;
 
     if (source != 0) {
 	ULONG len = MultiByteToWideChar(CP_ACP,
-				  MB_USEGLYPHCHARS|MB_PRECOMPOSED,
-				  source,
-				  sourcelen,
-				  0,
-				  0);
+					MB_USEGLYPHCHARS | MB_PRECOMPOSED,
+					source,
+					sourcelen,
+					0,
+					0);
 	if (len != 0) {
 	    target = typecallocn(W32_CHAR, len + 1);
 
 	    (void) MultiByteToWideChar(CP_ACP,
-					MB_USEGLYPHCHARS|MB_PRECOMPOSED,
-					source,
-					sourcelen,
-					target,
-					len);
+				       MB_USEGLYPHCHARS | MB_PRECOMPOSED,
+				       source,
+				       sourcelen,
+				       target,
+				       len);
 	}
     }
 
@@ -1405,30 +1409,30 @@ w32_ansi_to_ucs2(const char *source, int sourcelen)
  * Use this via "asc_charstring()" to convert Unicode to ASCII strings.
  */
 char *
-w32_ucs2_to_ansi(const W32_CHAR *source, int sourcelen)
+w32_ucs2_to_ansi(const W32_CHAR * source, int sourcelen)
 {
-    char * target = 0;
+    char *target = 0;
 
     if (source != 0) {
 	ULONG len = WideCharToMultiByte(CP_ACP,
-				  WC_NO_BEST_FIT_CHARS,
-				  source,
-				  sourcelen,
-				  0,
-				  0,
-				  NULL,
-				  NULL);
+					WC_NO_BEST_FIT_CHARS,
+					source,
+					sourcelen,
+					0,
+					0,
+					NULL,
+					NULL);
 	if (len) {
 	    target = typecallocn(char, len + 1);
 
 	    (void) WideCharToMultiByte(CP_ACP,
-					WC_NO_BEST_FIT_CHARS,
-					source,
-					sourcelen,
-					target,
-					len,
-					NULL,
-					NULL);
+				       WC_NO_BEST_FIT_CHARS,
+				       source,
+				       sourcelen,
+				       target,
+				       len,
+				       NULL,
+				       NULL);
 	}
     }
 
