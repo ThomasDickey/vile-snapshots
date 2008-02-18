@@ -3,7 +3,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/htmlfilt.l,v 1.47 2008/01/12 17:21:27 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/htmlfilt.l,v 1.48 2008/02/17 20:12:29 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of HTML input
  * text.
@@ -105,7 +105,7 @@ CHR_REF		&({IDENT}|{HEXNUM});
 			      }
 			  }
 			  if (next != 0) {
-			      int used = last - yytext;
+			      int used = last - (char *) yytext;
 			      WriteToken3(Comment_attr, used);
 			      used = strlen(next);
 			      while (used-- > 0)
