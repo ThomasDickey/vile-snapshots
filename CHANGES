@@ -1,5 +1,10 @@
 Changes for vile 9.7 (released ??? ??? ?? ????)
 
+ 20080224 (g)
+	> Tom Dickey:
+	+ correct conversion of facename for wide-character winvile's $font
+	  symbol (report by George Eccles).
+
  20080217 (f)
 	> Tom Dickey:
 	+ minor improvement to vbmode's fence-if to ignore lines with

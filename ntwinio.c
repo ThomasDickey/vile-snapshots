@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 screen API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.186 2008/01/22 00:09:37 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.187 2008/02/22 23:52:26 tom Exp $
  * Written by T.E.Dickey for vile (october 1997).
  * -- improvements by Clark Morgan (see w32cbrd.c, w32pipe.c).
  */
@@ -1263,6 +1263,14 @@ show_font_message(const char *msgtext, int use_mb)
     }
 }
 
+static void
+w32_strcpy(W32_CHAR * dst, W32_CHAR * src)
+{
+    while (((*dst++) = (*src++)) != 0) {
+	;
+    }
+}
+
 /*
  * Set font from string specification.  See the function parse_font_str()
  * in file w32misc.c for acceptable font string syntax.
@@ -1278,117 +1286,114 @@ show_font_message(const char *msgtext, int use_mb)
  * Returns: T -> all is well, F -> failure.
  */
 int
-ntwinio_font_frm_str(
-			const char *fontstr,
-			int use_mb)
+ntwinio_font_frm_str(const char *fontstr,
+		     int use_mb)
 {
-    int face_specified;
-    HDC hdc;
-    HFONT hfont;
-    HWND hwnd;
+    int rc = TRUE;
+    int face_specified = FALSE;
+    HDC hdc = 0;
+    HFONT hfont = 0;
+    HWND hwnd = cur_win->text_hwnd;
+
     LOGFONT logfont;
-    W32_CHAR font_mapper_face[LF_FACESIZE + 1];
-    TEXTMETRIC metrics;
     FONTSTR_OPTIONS str_rslts;
+    W32_CHAR font_mapper_face[LF_FACESIZE + 1];
+    W32_CHAR current_face[sizeof(str_rslts.face)];
+    TEXTMETRIC metrics;
 
     TRACE((T_CALLED "ntwinio_font_frm_str(%s)\n", fontstr));
 
     if (!parse_font_str(fontstr, &str_rslts)) {
 	show_font_message("Font syntax invalid", use_mb);
-	returnCode(FALSE);
-    }
-    hwnd = cur_win->text_hwnd;
-    face_specified = (str_rslts.face[0] != '\0');
-    if ((hdc = get_DC_with_Font(GetMyFont(0))) == 0) {
+	rc = FALSE;
+    } else if ((hdc = get_DC_with_Font(GetMyFont(0))) == 0) {
 	(void) last_w32_error(use_mb);
-	returnCode(FALSE);
-    }
-    if (!face_specified) {
-	W32_CHAR current_face[sizeof(str_rslts.face)];
+	rc = FALSE;
+    } else if ((face_specified = (str_rslts.face[0] != '\0')) != FALSE) {
+	W32_CHAR *temp = w32_charstring(str_rslts.face);
+	w32_strcpy(current_face, temp);
+	free(temp);
+    } else {
 	char *result_face = 0;
 
 	/* user didn't specify a face name, get current name. */
 
 	if ((GetTextFace(hdc, sizeof(current_face), current_face)) == 0) {
 	    (void) last_w32_error(use_mb);
-	    ReleaseDC(hwnd, hdc);
-	    returnCode(FALSE);
+	    rc = FALSE;
+	} else if ((result_face = asc_charstring(current_face)) == 0) {
+	    rc = FALSE;
+	} else {
+	    strcpy(str_rslts.face, result_face);
+	    free(result_face);
 	}
-	if ((result_face = asc_charstring(current_face)) == 0) {
-	    returnCode(FALSE);
-	}
-	strcpy(str_rslts.face, result_face);
-	free(result_face);
     }
 
-    /* Build up LOGFONT data structure. */
-    memset(&logfont, 0, sizeof(logfont));
-    logfont.lfWeight = (str_rslts.bold) ? FW_BOLD : FW_NORMAL;
-    logfont.lfHeight = -MulDiv(str_rslts.size,
-			       GetDeviceCaps(hdc, LOGPIXELSY),
-			       72);
-    if (str_rslts.italic)
-	logfont.lfItalic = TRUE;
-    logfont.lfCharSet = DEFAULT_CHARSET;
-    logfont.lfPitchAndFamily = FIXED_PITCH | FF_MODERN;
-    memcpy(logfont.lfFaceName, str_rslts.face, sizeof(W32_CHAR) * LF_FACESIZE);
-    logfont.lfFaceName[LF_FACESIZE - 1] = '\0';
-    if (!((hfont = CreateFontIndirect(&logfont)) != 0 && SelectFont(hdc, hfont))) {
-	(void) last_w32_error(use_mb);
+    if (rc) {
+	/* Build up LOGFONT data structure. */
+	memset(&logfont, 0, sizeof(logfont));
+	logfont.lfWeight = (str_rslts.bold) ? FW_BOLD : FW_NORMAL;
+	logfont.lfHeight = -MulDiv(str_rslts.size,
+				   GetDeviceCaps(hdc, LOGPIXELSY),
+				   72);
+	if (str_rslts.italic)
+	    logfont.lfItalic = TRUE;
+	logfont.lfCharSet = DEFAULT_CHARSET;
+	logfont.lfPitchAndFamily = FIXED_PITCH | FF_MODERN;
+	w32_strcpy(logfont.lfFaceName, current_face);
+
+	if (!((hfont = CreateFontIndirect(&logfont)) != 0 && SelectFont(hdc, hfont))) {
+	    (void) last_w32_error(use_mb);
+	    rc = FALSE;
+	} else if (face_specified) {
+	    /*
+	     * The font mapper will substitute some other font for a font
+	     * request that cannot exactly be met.  Check first to see if the
+	     * face name matches the user chosen face (if applicable).
+	     */
+	    char *mapper_face = 0;
+
+	    if ((GetTextFace(hdc, sizeof(font_mapper_face), font_mapper_face))
+		== 0) {
+		(void) last_w32_error(use_mb);
+		rc = FALSE;
+	    } else if ((mapper_face = asc_charstring(font_mapper_face)) == 0) {
+		rc = FALSE;
+	    } else if (stricmp(mapper_face, str_rslts.face) != 0) {
+		show_font_message("Font face unknown or size/style unsupported", use_mb);
+		rc = FALSE;
+	    }
+
+	    if (mapper_face != 0)
+		free(mapper_face);
+	}
+    }
+
+    if (rc) {
+	/* Next, font must be fixed pitch. */
+	if (!GetTextMetrics(hdc, &metrics)) {
+	    (void) last_w32_error(use_mb);
+	    rc = FALSE;
+	} else if ((metrics.tmPitchAndFamily & TMPF_FIXED_PITCH) != 0) {
+	    /* Misnamed constant! */
+
+	    show_font_message("Font not fixed pitch", use_mb);
+	    rc = FALSE;
+	}
+    }
+
+    ReleaseDC(hwnd, hdc);	/* finally done with this */
+
+    if (rc) {
+	SetMyFont(hfont, &logfont);
+	use_font(GetMyFont(0));
+	vile_refresh(FALSE, 0);
+    } else {
 	if (hfont)
 	    DeleteObject(hfont);
-	ReleaseDC(hwnd, hdc);
-	returnCode(FALSE);
     }
 
-    /*
-     * The font mapper will substitute some other font for a font request
-     * that cannot exactly be met.  Check first to see if the face name
-     * matches the user chosen face (if applicatble).
-     */
-    if (face_specified) {
-	char *mapper_face;
-
-	if ((GetTextFace(hdc, sizeof(font_mapper_face), font_mapper_face))
-	    == 0) {
-	    (void) last_w32_error(use_mb);
-	    ReleaseDC(hwnd, hdc);
-	    DeleteObject(hfont);
-	    returnCode(FALSE);
-	}
-	if ((mapper_face = asc_charstring(font_mapper_face)) == 0) {
-	    returnCode(FALSE);
-	}
-	if (stricmp(mapper_face, str_rslts.face) != 0) {
-	    ReleaseDC(hwnd, hdc);
-	    DeleteObject(hfont);
-	    free(mapper_face);
-	    show_font_message("Font face unknown or size/style unsupported", use_mb);
-	    returnCode(FALSE);
-	}
-	free(mapper_face);
-    }
-
-    /* Next, font must be fixed pitch. */
-    if (!GetTextMetrics(hdc, &metrics)) {
-	(void) last_w32_error(use_mb);
-	ReleaseDC(hwnd, hdc);
-	DeleteObject(hfont);
-	returnCode(FALSE);
-    }
-    if ((metrics.tmPitchAndFamily & TMPF_FIXED_PITCH) != 0) {
-	/* Misnamed constant! */
-
-	ReleaseDC(hwnd, hdc);
-	DeleteObject(hfont);
-	show_font_message("Font not fixed pitch", use_mb);
-	returnCode(FALSE);
-    }
-    ReleaseDC(hwnd, hdc);	/* finally done with this */
-    SetMyFont(hfont, &logfont);
-    use_font(GetMyFont(0));
-    vile_refresh(FALSE, 0);
-    returnCode(TRUE);
+    returnCode(rc);
 }
 
 char *
@@ -1396,9 +1401,9 @@ ntwinio_current_font(void)
 {
     static char *buf;
     HDC hdc;
-    HWND hwnd;
     LONG size;
     char *style;
+    char *facename;
 
     if (!buf) {
 	buf = castalloc(char,
@@ -1406,15 +1411,15 @@ ntwinio_current_font(void)
 			LF_FACESIZE +
 			16);	/* space for delimiters and point size */
 	if (!buf)
-	    return ("out of memory");
+	    return (out_of_mem);
     }
-    hwnd = cur_win->text_hwnd;
     if ((hdc = get_DC_with_Font(GetMyFont(0))) == 0) {
 	char *msg = NULL;
 	fmt_win32_error(W32_SYS_ERROR, &msg, 0);
 	return (msg);
 	/* "msg" leaks here, but this code path should never be taken. */
     }
+
     if (vile_logfont.lfWeight == FW_BOLD && vile_logfont.lfItalic)
 	style = "bold-italic";
     else if (vile_logfont.lfWeight == FW_BOLD)
@@ -1423,16 +1428,18 @@ ntwinio_current_font(void)
 	style = "italic";
     else
 	style = NULL;
+
     size = MulDiv(labs(vile_logfont.lfHeight),
 		  72,
 		  GetDeviceCaps(hdc, LOGPIXELSY));
+    facename = asc_charstring(vile_logfont.lfFaceName);
     sprintf(buf,
 	    "%s,%ld%s%s",
-	    vile_logfont.lfFaceName,
+	    (facename) ? facename : "?",
 	    size,
 	    (style) ? "," : "",
 	    (style) ? style : "");
-    ReleaseDC(hwnd, hdc);
+    free(facename);
     return (buf);
 }
 
@@ -3547,8 +3554,12 @@ repaint_window(HWND hWnd)
 	y0 = 0;
     if (x0 < 0)
 	x0 = 0;
+    if (y1 > term.rows)
+	y1 = term.rows;
     if (y1 > term.maxrows)
 	y1 = term.maxrows;
+    if (x1 > term.cols)
+	x1 = term.cols;
     if (x1 > term.maxcols)
 	x1 = term.maxcols;
 
