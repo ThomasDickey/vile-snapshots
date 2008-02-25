@@ -1,4 +1,4 @@
-revlist for vile, version v9_6f
+revlist for vile, version v9_6g
 --------------------------------------------------------------------------------
 aclocal.m4	1.182
 ansi.c	1.49
@@ -14,7 +14,7 @@ btree.h	1.5
 buffer.c	1.329
 buglist	1.407
 builtflt.c	1.63
-CHANGES	1.1096
+CHANGES	1.1097
 CHANGES.R3	1.1
 CHANGES.R4	1.1
 CHANGES.R5	1.1
@@ -79,14 +79,14 @@ modetbl	1.269
 msgs.c	1.29
 npopen.c	1.94
 ntconio.c	1.91
-ntwinio.c	1.186
+ntwinio.c	1.187
 nullterm.c	1.5
 oneliner.c	1.112
 opers.c	1.93
 os2keys.h	1.2
 os2pipe.c	1.5
 os2vio.c	1.36
-patchlev.h	1.365
+patchlev.h	1.366
 path.c	1.160
 perl.xs	1.109
 plugin.c	1.1
@@ -100,7 +100,7 @@ README.PC	1.33
 README.VMS	1.5
 regexp.c	1.139
 region.c	1.145
-revlist	v9_6f
+revlist	v9_6g
 search.c	1.146
 select.c	1.167
 sinstall.sh	1.1
@@ -118,7 +118,7 @@ ucrypt.c	1.15
 undo.c	1.96
 version.c	1.64
 vile.1	1.37
-vile-9.6.spec	1.7
+vile-9.6.spec	1.8
 vile.hlp	1.647
 vile.wmconfig	1.1
 vl_alloc.h	1.1
