@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.470 2008/02/07 20:16:33 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.471 2008/03/06 01:10:52 tom Exp $
  *
  */
 
@@ -600,10 +600,10 @@ vtlistc(WINDOW *wp, const char *src, unsigned limit)
     int rc = 1;
     char temp[10];
     unsigned n = 0;
-    UINT value;
 
 #if OPT_MULTIBYTE
     if (b_is_utfXX(wp->w_bufp)) {
+	UINT value;
 	int need = column_sizes(wp, src, limit, &rc);
 	int cells;
 

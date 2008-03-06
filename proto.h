@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.642 2008/01/24 00:43:45 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.643 2008/03/06 01:11:33 tom Exp $
  *
  */
 
@@ -570,26 +570,23 @@ extern void init_filec(const char *buffer_name);
 #endif
 
 /* fileio.c */
-extern int ffsize (B_COUNT *have);
 extern int ffaccess (char *fn, UINT mode);
 extern int ffclose (void);
 extern int ffexists (char *p);
 extern int ffhasdata (void);
 extern int ffputc (int c);
 extern int ffputline (const char *buf, int nbuf, const char *ending);
+extern int ffread (char *buf, B_COUNT want, B_COUNT *have);
 extern int ffronly (char *fn);
 extern int ffropen (char *fn);
+extern int ffsize (B_COUNT *have);
 extern int ffwopen (char *fn, int forced);
 extern int file_stat (const char *fn, struct stat *sb);
+extern void ffrewind (void);
+extern void ffseek (B_COUNT n);
 
 #if OPT_ENCRYPT
 extern void ffdocrypt (int crypting);
-#endif
-
-#if ! SYS_MSDOS
-extern int ffread (char *buf, B_COUNT want, B_COUNT *have);
-extern void ffseek (B_COUNT n);
-extern void ffrewind (void);
 #endif
 
 /* finderr.c */

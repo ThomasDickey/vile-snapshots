@@ -1,7 +1,7 @@
 /*	npopen:  like popen, but grabs stderr, too
  *		written by John Hutchinson, heavily modified by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/npopen.c,v 1.94 2005/11/18 01:30:37 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/npopen.c,v 1.95 2008/03/06 01:12:44 tom Exp $
  *
  */
 
@@ -371,6 +371,7 @@ readPipe(const char *cmd, int in, int out)
     term.kclose();		/* close the keyboard in case of error */
 
     /* save and redirect stdin, stdout, and stderr */
+    old0 = -1;
     old1 = dup(1);
     old2 = dup(2);
 
@@ -471,7 +472,7 @@ inout_popen(FILE **fr, FILE **fw, char *cmd)
 	    myCmds = strmalloc(cmd);
 	}
     }
-    return (pp != 0);
+    return TRUE;
 }
 
 /*
