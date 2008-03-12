@@ -1,6 +1,6 @@
 Changes for vile 9.7 (released ??? ??? ?? ????)
 
- 20080309 (h)
+ 20080311 (h)
 	> Tom Dickey:
 	+ minor fix to configure --with-iconv to handle failure to find iconv.
 	+ compiler warnings for DJGPP 2.04 with gcc 4.2.3 (report by
