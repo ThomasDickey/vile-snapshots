@@ -1,4 +1,4 @@
-MANIFEST for vile, version v9_6h
+MANIFEST for vile, version v9_6i
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 CHANGES                         Change-log for VILE
@@ -304,6 +304,7 @@ filters/rtf.key                 control keywords for RTF
 filters/rubyfilt.c              syntax filter for Ruby
 filters/sccs.key                keywords for SCCS syntax filter
 filters/sccsfilt.l              syntax filter for SCCS files.
+filters/scheme.key              keywords for scheme
 filters/sed-filt.c              highlighting filter for sed-scripts
 filters/sh-filt.l               a sh/ksh/csh syntax filter for vile
 filters/sh.key                  keywords for "sh" syntax filter

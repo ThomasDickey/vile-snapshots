@@ -1,5 +1,16 @@
 Changes for vile 9.7 (released ??? ??? ?? ????)
 
+ 20080313 (i)
+	> Tom Dickey:
+	+ change class color of parentheses in lisp syntax filter to "Action"
+	  to make them easier to distinguish from "String".
+	+ improve lisp syntax filter by coloring binary, octal and hexadecimal
+	  constants, as well as parsing the "#\" patterns.
+	+ remove ".scm" from c-suffixes pattern (report by Brendan MacDonell).
+	> Brendan MacDonell
+	+ add schememode and keywords based on
+	  http://community.schemewiki.org/?scheme-keywords
+
  20080311 (h)
 	> Tom Dickey:
 	+ minor fix to configure --with-iconv to handle failure to find iconv.

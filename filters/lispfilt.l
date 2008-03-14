@@ -3,7 +3,7 @@
 
 %{
 /*
- * $Id: lispfilt.l,v 1.17 2008/01/12 17:21:27 tom Exp $
+ * $Id: lispfilt.l,v 1.20 2008/03/13 21:42:55 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of lisp code.
  *
@@ -12,8 +12,9 @@
  *
  * TODO:  implement other radix than 10 (that may require rewriting this in C)
  *
- * TODO:  rewrite this into C anyway, since flex refuses to match "#|" unless
- * I exclude "|" from {IDENT}.
+ * refs:
+ *	http://www.schemers.org/Documents/Standards/R5RS/HTML/r5rs-Z-H-5.html
+ *	http://www.lisp.org/HyperSpec/Body/sec_2-4-8.html
  */
 
 #include <filters.h>
@@ -23,11 +24,13 @@
 
 DefineFilter("lisp");
 
-static char *Keyword_attr;
+static char *Action_attr;
 static char *Comment_attr;
+static char *Error_attr;
 static char *Ident_attr;
-static char *String_attr;
+static char *Keyword_attr;
 static char *Number_attr;
+static char *String_attr;
 
 static const char *paren_attr(void);
 
@@ -49,12 +52,21 @@ FLOAT		({SIGN}?{DECIMAL}*{POINT}{DECIMAL}+{EXPONENT}?)|({SIGN}?{DECIMAL}+({POINT
 NUMBER		{INTEGER}|{RATIO}|{FLOAT}
 
 COMMENT		;[^\r\n]*
-IDENT		[^[:space:]\"\(\)|]+
+IDENT		[^[:space:]\"\(\)|#]+
 
 LPAREN		\(
 RPAREN		\)
 
 %%
+
+<NORMAL>#[Bb][01]+		{ WriteToken(Number_attr); }
+<NORMAL>#[Oo][01234567]+	{ WriteToken(Number_attr); }
+<NORMAL>#[Xx][[:xdigit:]]+	{ WriteToken(Number_attr); }
+
+<NORMAL>#\\[[:alpha:]][[:alnum:]_]+	|
+<NORMAL>#\\.  			{ WriteToken(String_attr); }
+
+<NORMAL>#[^|BbOoXx\\]		{ WriteToken(""); /* later */ }
 
 <NORMAL>#\|		{ BeginQuote(COMMENT, Comment_attr); }
 <COMMENT>\|#		{ FinishQuote(NORMAL); }
@@ -92,7 +104,7 @@ RPAREN		\)
 static const char *
 paren_attr(void)
 {
-    return ((FLTSTACK_OK && FLTSTACK_THIS.quoted) ? String_attr : "");
+    return ((FLTSTACK_OK && FLTSTACK_THIS.quoted) ? Action_attr : "");
 }
 
 static void
@@ -106,11 +118,13 @@ do_filter(FILE *inputs)
 {
     yyin = inputs;
 
-    Keyword_attr = class_attr(NAME_KEYWORD);
+    Action_attr  = class_attr(NAME_ACTION);
     Comment_attr = class_attr(NAME_COMMENT);
+    Error_attr   = class_attr(NAME_ERROR);
     Ident_attr   = class_attr(NAME_IDENT2);
-    String_attr  = class_attr(NAME_LITERAL);
+    Keyword_attr = class_attr(NAME_KEYWORD);
     Number_attr  = class_attr(NAME_NUMBER);
+    String_attr  = class_attr(NAME_LITERAL);
 
     begin_state(NORMAL);
     while (yylex() > 0) {

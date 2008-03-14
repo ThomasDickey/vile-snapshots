@@ -2,7 +2,7 @@
  *		The routines in this file handle the conversion of pathname
  *		strings.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.160 2008/01/21 23:58:11 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.161 2008/03/12 23:08:48 tom Exp $
  *
  *
  */
@@ -1817,7 +1817,7 @@ is_directory(const char *path)
     /* If the name doesn't look like a directory, there's no point in
      * wasting time doing a 'stat()' call.
      */
-    s = vms_pathleaf(path);
+    s = vms_pathleaf((char *) path);
     if ((s = strchr(s, '.')) != 0) {
 	char ftype[NFILEN];
 	(void) mkupper(strcpy(ftype, s));
