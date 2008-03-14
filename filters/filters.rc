@@ -1,4 +1,4 @@
-; $Id: filters.rc,v 1.210 2007/10/21 19:22:26 tom Exp $
+; $Id: filters.rc,v 1.211 2008/03/12 23:38:54 tom Exp $
 ; majormodes in this file are ordered alphabetically for convenience - the
 ; precedence used by vile is strictly alphabetic, counting case.
 
@@ -90,6 +90,10 @@ define-mode RCS
 define-mode SCCS
 ~with define-submode SCCS
 	filtername	'vile-sccs-filt'
+~endwith
+
+~with define-submode scheme
+	filtername	'vile-lisp-filt -k scheme'
 ~endwith
 
 define-mode tex

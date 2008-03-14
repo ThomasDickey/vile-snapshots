@@ -1,4 +1,4 @@
-revlist for vile, version v9_6h
+revlist for vile, version v9_6i
 --------------------------------------------------------------------------------
 aclocal.m4	1.182
 ansi.c	1.49
@@ -14,7 +14,7 @@ btree.h	1.5
 buffer.c	1.329
 buglist	1.408
 builtflt.c	1.63
-CHANGES	1.1100
+CHANGES	1.1103
 CHANGES.R3	1.1
 CHANGES.R4	1.1
 CHANGES.R5	1.1
@@ -60,7 +60,7 @@ isearch.c	1.60
 itbuff.c	1.25
 lckfiles.c	1.11
 line.c	1.189
-main.c	1.619
+main.c	1.620
 makeargv.c	1.3
 makeargv.h	1.3
 makefile.blc	1.22
@@ -86,8 +86,8 @@ opers.c	1.93
 os2keys.h	1.2
 os2pipe.c	1.5
 os2vio.c	1.36
-patchlev.h	1.367
-path.c	1.160
+patchlev.h	1.368
+path.c	1.161
 perl.xs	1.109
 plugin.c	1.1
 plugin.h	1.1
@@ -100,7 +100,7 @@ README.PC	1.33
 README.VMS	1.5
 regexp.c	1.139
 region.c	1.145
-revlist	v9_6h
+revlist	v9_6i
 search.c	1.146
 select.c	1.167
 sinstall.sh	1.1
@@ -118,7 +118,7 @@ ucrypt.c	1.15
 undo.c	1.96
 version.c	1.64
 vile.1	1.37
-vile-9.6.spec	1.9
+vile-9.6.spec	1.10
 vile.hlp	1.647
 vile.wmconfig	1.1
 vl_alloc.h	1.1
@@ -218,7 +218,7 @@ filters/fdl.key	1.4
 filters/filterio.c	1.38
 filters/filters.c	1.112
 filters/filters.h	1.109
-filters/filters.rc	1.210
+filters/filters.rc	1.211
 filters/flt_defs.h	1.8
 filters/fltstack.h	1.13
 filters/genmake.c	1.4
@@ -239,7 +239,7 @@ filters/latexflt.l	1.48
 filters/latex.key	1.2
 filters/lex-filt.l	1.62
 filters/lex.key	1.8
-filters/lispfilt.l	1.17
+filters/lispfilt.l	1.20
 filters/lisp.key	1.2
 filters/lua-filt.l	1.8
 filters/lua.key	1.2
@@ -302,6 +302,7 @@ filters/rtf.key	1.4
 filters/rubyfilt.c	1.42
 filters/sccsfilt.l	1.18
 filters/sccs.key	1.1
+filters/scheme.key	1.1
 filters/sed-filt.c	1.23
 filters/sh-filt.l	1.74
 filters/sh.key	1.4
@@ -359,7 +360,7 @@ macros/digraphs.rc	1.2
 macros/gnugpg.rc	1.3
 macros/loaderrs.rc	1.2
 macros/manpage.rc	1.24
-macros/modes.rc	1.72
+macros/modes.rc	1.73
 macros/palettes.rc	1.7
 macros/pictmode.rc	1.4
 macros/search.rc	1.3
