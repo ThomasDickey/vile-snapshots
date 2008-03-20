@@ -1,5 +1,13 @@
 Changes for vile 9.7 (released ??? ??? ?? ????)
 
+ 20080319
+	> Tom Dickey:
+	+ correct bytes versus characters for inserting/replacing text in
+	  utf-8 buffers (reports by Chris Green, Paul Van Tilburg).
+	+ amend fix for recomputing list of modes used for name-completion
+	  from 9.6e, to also force reallocation of an associated index.
+	+ fix a missing #define in trace.h for GCC_PRINTFLIKE.
+
  20080313 (i)
 	> Tom Dickey:
 	+ change class color of parentheses in lisp syntax filter to "Action"

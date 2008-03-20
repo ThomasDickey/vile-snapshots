@@ -1,11 +1,19 @@
 /*
  * debugging support -- tom dickey.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/trace.h,v 1.29 2008/01/21 23:15:53 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/trace.h,v 1.30 2008/03/19 19:24:25 tom Exp $
  *
  */
 #ifndef	_trace_h
 #define	_trace_h
+
+#ifndef GCC_PRINTFLIKE
+#ifdef GCC_PRINTF
+#define GCC_PRINTFLIKE(fmt,var) __attribute__((format(printf,fmt,var)))
+#else
+#define GCC_PRINTFLIKE(fmt,var) /*nothing*/
+#endif
+#endif /* GCC_PRINTFLIKE */
 
 #ifndef	NO_LEAKS
 #define NO_LEAKS 0
