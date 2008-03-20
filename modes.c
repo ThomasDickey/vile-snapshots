@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.358 2008/02/07 00:07:24 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.359 2008/03/19 21:45:30 tom Exp $
  *
  */
 
@@ -42,6 +42,7 @@ static FSM_BLIST *valname_to_choices(const struct VALNAMES *names);
 /*--------------------------------------------------------------------------*/
 
 #if OPT_EVAL || OPT_MAJORMODE
+static size_t size_my_varmodes;
 static const char **my_varmodes;	/* list for modename-completion */
 #endif
 
@@ -2469,6 +2470,32 @@ fill_my_varmodes(void)
     }
 }
 
+static size_t
+need_my_varmodes(size_t actual)
+{
+    return (actual | 31);
+}
+
+static void
+free_my_varmodes(void)
+{
+    FreeAndNull(my_varmodes);
+}
+
+/*
+ * The my_varmodes[] data is an index into my_mode_list.
+ */
+static void
+check_my_varmodes(size_t actual)
+{
+    if (my_varmodes != 0) {
+	size_t need = need_my_varmodes(actual);
+	if (need > size_my_varmodes) {
+	    free_my_varmodes();
+	}
+    }
+}
+
 /*
  * Return a list of only the modes that can be set with ":setv", ignoring
  * artifacts such as "all".
@@ -2477,10 +2504,12 @@ const char *const *
 list_of_modes(void)
 {
     if (my_varmodes == 0) {
-	size_t n = count_modes();
+	size_t n;
 
 	beginDisplay();
-	my_varmodes = typeallocn(const char *, n + 1);
+	n = need_my_varmodes(count_modes()) + 1;
+	my_varmodes = typeallocn(const char *, n);
+	size_my_varmodes = n;
 	endofDisplay();
 
 	fill_my_varmodes();
@@ -3550,6 +3579,7 @@ extend_mode_list(size_t increment)
 							   my_mode_list), k);
     }
     blist_my_mode_list.theList = my_mode_list;
+    check_my_varmodes(k);
     endofDisplay();
 
     return j;
@@ -4929,7 +4959,7 @@ mode_leaks(void)
 #endif
 
 #if OPT_EVAL || OPT_MAJORMODE
-    FreeAndNull(my_varmodes);
+    free_my_varmodes();
 #endif
 
 #if OPT_MAJORMODE
