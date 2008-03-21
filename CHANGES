@@ -1,7 +1,12 @@
 Changes for vile 9.7 (released ??? ??? ?? ????)
 
- 20080319
+ 20080320
 	> Tom Dickey:
+	+ modify behavior of ":ww!" to act like ":w!", allowing it to write
+	  all files.
+	+ modify the vl_init_8bit() to use vile's built-in UTF-8 decoder for
+	  cases where iconv() sees that the result will not fit into the narrow
+	  encoding.
 	+ correct bytes versus characters for inserting/replacing text in
 	  utf-8 buffers (reports by Chris Green, Paul Van Tilburg).
 	+ amend fix for recomputing list of modes used for name-completion

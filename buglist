@@ -3,7 +3,7 @@
 ------------------------
 vile bug/enhancement/wish list (mostly wishes ;-)
 ------------------------
-$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.408 2008/03/10 00:20:05 tom Exp $
+$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.409 2008/03/21 00:04:56 tom Exp $
 ----------------------
 	(E means enhancement, L,M,H are low, medium, high priority)
 
@@ -1597,3 +1597,7 @@ so-called "new flex" 2.5.34 does not accept lexers written for POSIX lex.
 spell.pm requires a fairly recent Perl, since it uses File::Temp
 That does not work with very old Perl, such as 5.05.002 - a workaround in
 that case would be to comment out the "use spell" in vileperl.rc
+
+-- 08-03-20 (tom)
+The "~" (flip) and related operators for changing upper/lower case do not
+yet work in UTF-8 mode.
