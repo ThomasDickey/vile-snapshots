@@ -1,5 +1,5 @@
 /*
- * $Id: eightbit.c,v 1.18 2008/01/13 19:05:45 tom Exp $
+ * $Id: eightbit.c,v 1.19 2008/03/20 20:20:34 tom Exp $
  *
  * Maintain "8bit" file-encoding mode by converting incoming UTF-8 to single
  * bytes, and providing a function that tells vile whether a given Unicode
@@ -74,6 +74,7 @@ get_encoding(char *locale)
 static void
 open_encoding(char *from, char *to)
 {
+    TRACE(("open_encoding(from=%s, to=%s)\n", from, to));
     mb_desc = iconv_open(to, from);
     if (mb_desc == (iconv_t) (-1)) {
 	fprintf(stderr, "cannot setup translation from %s to %s\n", from, to);
@@ -221,12 +222,28 @@ vl_mb_getch(void)
 	op = output;
 	out_bytes = sizeof(output);
 	*output = 0;
+	/*
+	 * First, try with iconv, assuming it does a better job.
+	 */
 	converted = iconv(mb_desc, &ip, &in_bytes, &op, &out_bytes);
 	TRACE(("converted %d '%s' -> %d:%#x\n",
 	       (int) converted, input, (int) out_bytes, *output));
 	if (converted == (size_t) (-1)) {
 	    if (errno == EILSEQ) {
-		ch = -1;
+		UINT check = 0;
+		int rc = 0;
+		/*
+		 * If iconv gave up - because a character was not representable
+		 * in the narrow encoding - just convert it from UTF-8.
+		 *
+		 * FIXME: perhaps a better solution would be to use iconv for
+		 * converting from the wide encoding to UTF-32. 
+		 */
+		rc = vl_conv_to_utf32(&check, input, used);
+		if ((rc == used) && (check != 0) && !isSpecial(check))
+		    ch = check;
+		else
+		    ch = -1;
 		break;
 	    }
 	} else {
