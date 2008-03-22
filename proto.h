@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.643 2008/03/06 01:11:33 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.645 2008/03/21 22:07:50 tom Exp $
  *
  */
 
@@ -994,6 +994,7 @@ extern char * vl_vischr (char *buffer, int ch);
 extern int catnap (int milli, int watchinput);
 extern int char_at_mark (MARK mark);
 extern int fmatchindent (int c);
+extern int get_char2 (LINE *lp, int offset);
 extern int getccol (int bflg);
 extern int getcol (MARK mark, int actual);
 extern int getoff (C_NUM goal, C_NUM *rcolp);
@@ -1008,6 +1009,7 @@ extern int set_directory (const char *dir);
 extern long vl_atol (const char *str, int base, int *failed);
 extern void autocolor (void);
 extern void ch_fname (BUFFER *bp, const char *fname);
+extern void set_char2 (LINE *lp, int offset, int ch);
 extern void set_directory_from_file (BUFFER *bp);
 extern void set_rdonly (BUFFER *bp, const char *name, int mode);
 
