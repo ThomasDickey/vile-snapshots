@@ -3,7 +3,7 @@
  * and mark.  Some functions are commands.  Some functions are just for
  * internal use.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/region.c,v 1.145 2008/02/03 23:17:09 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/region.c,v 1.148 2008/03/22 15:24:26 tom Exp $
  *
  */
 
@@ -15,9 +15,9 @@ typedef int (*CharProcFunc) (int c);
 static CharProcFunc charprocfunc;
 
 /*
- * Walk through the characters in a line, applying a function.  the line is
- * marked changed if the function returns other than -1.  if it returns other
- * than -1, then the char is replaced with that value.
+ * Walk through the characters in a line, applying a function.  The line is
+ * marked changed if the function 'charprocfunc' returns other than -1.  if it
+ * returns other than -1, then the char is replaced with that value.
  *
  * The ll and rr args are OFFSETS, so if you use this routine with
  * do_lines_in_region, tell it to CONVERT columns to offsets.
@@ -33,24 +33,25 @@ do_chars_in_line(void *flagp GCC_UNUSED, int ll, int rr)
 
     lp = DOT.l;
 
-    if (llength(lp) < ll)
-	return TRUE;
+    if (llength(lp) >= ll) {
 
-    DOT.o = ll;
-    if (rr > llength(lp))
-	rr = llength(lp);
+	DOT.o = ll;
+	if (rr > llength(lp))
+	    rr = llength(lp);
 
-    for (i = ll; i < rr; i++) {
-	c = lgetc(lp, i);
-	nc = (charprocfunc) (c);
-	if (nc != -1) {
-	    copy_for_undo(lp);
-	    lputc(lp, i, (char) nc);
-	    changed++;
+	for (i = ll; i < rr; i += BytesAt(lp, i)) {
+	    c = get_char2(lp, i);
+	    nc = (charprocfunc) (c);
+	    if (nc != -1) {
+		copy_for_undo(lp);
+		set_char2(lp, i, nc);
+		changed++;
+	    }
 	}
+	DOT.o = ll;
+	if (changed)
+	    chg_buff(curbp, WFHARD);
     }
-    if (changed)
-	chg_buff(curbp, WFHARD);
     return TRUE;
 }
 
@@ -782,29 +783,35 @@ _blankchar(int c)
 static int
 _to_lower(int c)
 {
+    int result = -1;
+
     if (isUpper(c))
-	return toLower(c);
-    return -1;
+	result = CharOf(toLower(c));
+    return result;
 }
 
 static int
 _to_upper(int c)
 {
+    int result = -1;
+
     if (isLower(c))
-	return toUpper(c);
-    return -1;
+	result = CharOf(toUpper(c));
+    return result;
 }
 
 static int
 _to_caseflip(int c)
 {
+    int result = -1;
+
     if (isAlpha(c)) {
 	if (isUpper(c))
-	    return toLower(c);
+	    result = CharOf(toLower(c));
 	else
-	    return toUpper(c);
+	    result = CharOf(toUpper(c));
     }
-    return -1;
+    return result;
 }
 
 /*
