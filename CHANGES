@@ -1,6 +1,6 @@
 Changes for vile 9.7 (released ??? ??? ?? ????)
 
- 20080322
+ 20080323
 	> Tom Dickey:
 	+ make transpose-characters work for wide-characters.
 	+ make "~" (flip-character) and related case-conversion work for
