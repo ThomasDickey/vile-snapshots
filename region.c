@@ -3,7 +3,7 @@
  * and mark.  Some functions are commands.  Some functions are just for
  * internal use.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/region.c,v 1.148 2008/03/22 15:24:26 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/region.c,v 1.149 2008/03/24 00:38:35 tom Exp $
  *
  */
 
@@ -719,9 +719,18 @@ stringrect(void)
  * at all.  This is a bit like a kill region followed by a yank.
  */
 static int
-_yankchar(int c)
+_yankchar(int ch)
 {
-    kinsert(c);
+#if OPT_MULTIBYTE
+    if (b_is_utfXX(curbp)) {
+	UCHAR buffer[10];
+	int len = vl_conv_to_utf8(buffer, ch, sizeof(buffer));
+	int n;
+	for (n = 0; n < len; ++n)
+	    kinsert(buffer[n]);
+    } else
+#endif
+	kinsert(ch);
     /* FIXME check return value, longjmp back to yank_line */
     return -1;
 }
