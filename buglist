@@ -3,7 +3,7 @@
 ------------------------
 vile bug/enhancement/wish list (mostly wishes ;-)
 ------------------------
-$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.409 2008/03/21 00:04:56 tom Exp $
+$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.410 2008/03/24 20:33:28 tom Exp $
 ----------------------
 	(E means enhancement, L,M,H are low, medium, high priority)
 
@@ -1598,6 +1598,16 @@ spell.pm requires a fairly recent Perl, since it uses File::Temp
 That does not work with very old Perl, such as 5.05.002 - a workaround in
 that case would be to comment out the "use spell" in vileperl.rc
 
--- 08-03-20 (tom)
-The "~" (flip) and related operators for changing upper/lower case do not
-yet work in UTF-8 mode.
+-- 08-03-24 (tom)
+Rendering UTF-8 with the curses driver is less reliable than using the
+terminfo/termcap driver.  That is because the curses library has its own
+sense of locale which can interfere with vile's locale translations.
+
+Taking that into account, vile will use only the current locale rather
+than setting up a narrow locale to correspond to the wide locale when
+using the curses driver.
+
+There are two types of curses library against which vile could be linked.
+Those are the "narrow" SVr4 curses and the "wide" X/Open curses.  For the
+latter, vile will assume that the curses library can actually display
+wide characters.  Not all implementations work well (ncursesw is preferred).
