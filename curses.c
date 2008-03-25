@@ -1,7 +1,7 @@
 /*
  * A terminal driver using the curses library
  *
- * $Header: /users/source/archives/vile.vcs/RCS/curses.c,v 1.34 2008/01/13 18:00:11 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/curses.c,v 1.35 2008/03/25 18:58:57 tom Exp $
  */
 
 #include "estruct.h"
@@ -36,6 +36,7 @@ static const char ANSI_palette[] =
 #endif
 
 static int i_am_xterm = 1;
+static int have_data = FALSE;
 static int in_screen = FALSE;
 static int can_color = FALSE;
 
@@ -164,11 +165,15 @@ static int last_key = -1;
 static int
 curs_typahead(void)
 {
-    if (last_key == -1) {
-	nodelay(stdscr, TRUE);
-	last_key = getch();
+    int result = FALSE;
+    if (in_screen) {
+	if (last_key == -1) {
+	    nodelay(stdscr, TRUE);
+	    last_key = getch();
+	}
+	result = (last_key >= 0);
     }
-    return (last_key >= 0);
+    return result;
 }
 
 static int
@@ -212,6 +217,7 @@ curs_putc(int c)
 {
     c &= (N_chars - 1);
     if (in_screen) {
+	have_data = TRUE;
 	OUTC_RET addch((UINT) (c));
     } else {
 	OUTC_RET putchar(c);
@@ -221,9 +227,10 @@ curs_putc(int c)
 static void
 curs_flush(void)
 {
-    if (in_screen) {
+    if (in_screen && have_data) {
 	refresh();
 	TRACE(("curs_flush\n"));
+	have_data = FALSE;
     }
 }
 
@@ -238,8 +245,8 @@ curs_kopen(void)
 	initialized = TRUE;
 	curs_initialize();
     }
-    refresh();
     in_screen = TRUE;
+    curs_flush();
     returnVoid();
 }
 
@@ -250,6 +257,7 @@ curs_kclose(void)
     endwin();
     term.mclose();
     in_screen = FALSE;
+    have_data = FALSE;
     returnVoid();
 }
 
@@ -268,11 +276,13 @@ curs_eeol(void)
 static void
 curs_eeop(void)
 {
-    if (sgarbf) {
-	erase();
-	wrefresh(curscr);
-    } else {
-	clrtobot();
+    if (in_screen) {
+	if (sgarbf) {
+	    erase();
+	    wrefresh(curscr);
+	} else {
+	    clrtobot();
+	}
     }
 }
 

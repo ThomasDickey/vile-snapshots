@@ -1,7 +1,10 @@
 Changes for vile 9.7 (released ??? ??? ?? ????)
 
- 20080323
+ 20080325
 	> Tom Dickey:
+	+ modify curses-driver to avoid a curses-refresh (repainting the
+	  whole screen) between a shell command and the "Press return to
+	  continue" message.
 	+ make transpose-characters work for wide-characters.
 	+ make "~" (flip-character) and related case-conversion work for
 	  Unicode in 0..255 range.
