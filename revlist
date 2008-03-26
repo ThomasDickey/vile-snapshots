@@ -1,4 +1,4 @@
-revlist for vile, version v9_6i
+revlist for vile, version v9_6j
 --------------------------------------------------------------------------------
 aclocal.m4	1.182
 ansi.c	1.49
@@ -11,10 +11,10 @@ blist.h	1.4
 borland.c	1.37
 btree.c	1.24
 btree.h	1.5
-buffer.c	1.329
-buglist	1.408
+buffer.c	1.330
+buglist	1.410
 builtflt.c	1.63
-CHANGES	1.1103
+CHANGES	1.1113
 CHANGES.R3	1.1
 CHANGES.R4	1.1
 CHANGES.R5	1.1
@@ -31,14 +31,14 @@ configure	1.18
 configure.in	1.244
 COPYING	1.4
 csrch.c	1.34
-curses.c	1.34
+curses.c	1.35
 descrip.mms	1.49
 dirstuff.h	1.30
 display.c	1.471
 djhandl.c	1.6
 dumbterm.c	1.23
 edef.h	1.332
-eightbit.c	1.18
+eightbit.c	1.19
 estruct.h	1.658
 eval.c	1.375
 exec.c	1.314
@@ -52,8 +52,8 @@ globals.c	1.49
 glob.c	1.92
 gppconio.c	1.2
 history.c	1.87
-input.c	1.319
-insert.c	1.160
+input.c	1.320
+insert.c	1.161
 INSTALL	1.6
 install.sh	1.7
 isearch.c	1.60
@@ -74,7 +74,7 @@ menu.c	1.51
 mkdirs.sh	1.7
 mkprlenv.wnt	1.9
 mktbls.c	1.150
-modes.c	1.358
+modes.c	1.361
 modetbl	1.269
 msgs.c	1.29
 npopen.c	1.95
@@ -86,21 +86,21 @@ opers.c	1.93
 os2keys.h	1.2
 os2pipe.c	1.5
 os2vio.c	1.36
-patchlev.h	1.368
+patchlev.h	1.369
 path.c	1.161
 perl.xs	1.109
 plugin.c	1.1
 plugin.h	1.1
-proto.h	1.643
+proto.h	1.645
 pscreen.h	1.2
 ptypemap	1.7
-random.c	1.315
+random.c	1.319
 README	1.100
 README.PC	1.33
 README.VMS	1.5
 regexp.c	1.139
-region.c	1.145
-revlist	v9_6i
+region.c	1.149
+revlist	v9_6j
 search.c	1.146
 select.c	1.167
 sinstall.sh	1.1
@@ -110,15 +110,15 @@ tags.c	1.138
 tbuff.c	1.68
 tcap.c	1.177
 tcap.h	1.14
-termio.c	1.213
+termio.c	1.214
 test_io.c	1.2
 trace.c	1.77
-trace.h	1.29
+trace.h	1.30
 ucrypt.c	1.15
 undo.c	1.96
 version.c	1.64
 vile.1	1.37
-vile-9.6.spec	1.10
+vile-9.6.spec	1.11
 vile.hlp	1.647
 vile.wmconfig	1.1
 vl_alloc.h	1.1
@@ -215,7 +215,7 @@ filters/est-filt.l	1.8
 filters/est.key	1.1
 filters/fdl-filt.l	1.15
 filters/fdl.key	1.4
-filters/filterio.c	1.38
+filters/filterio.c	1.39
 filters/filters.c	1.112
 filters/filters.h	1.109
 filters/filters.rc	1.211

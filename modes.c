@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.359 2008/03/19 21:45:30 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.361 2008/03/25 23:36:44 tom Exp $
  *
  */
 
@@ -43,7 +43,7 @@ static FSM_BLIST *valname_to_choices(const struct VALNAMES *names);
 
 #if OPT_EVAL || OPT_MAJORMODE
 static size_t size_my_varmodes;
-static const char **my_varmodes;	/* list for modename-completion */
+static char **my_varmodes;	/* list for modename-completion */
 #endif
 
 #if OPT_MAJORMODE
@@ -2462,7 +2462,8 @@ fill_my_varmodes(void)
     const char **d;
 
     if (my_varmodes != 0 && my_mode_list != 0) {
-	for (s = my_mode_list, d = my_varmodes; (*d = *s) != 0; s++) {
+	for (s = my_mode_list,
+	     d = (const char **) my_varmodes; (*d = *s) != 0; s++) {
 	    if (is_varmode(*d)) {
 		d++;
 	    }
@@ -2508,13 +2509,13 @@ list_of_modes(void)
 
 	beginDisplay();
 	n = need_my_varmodes(count_modes()) + 1;
-	my_varmodes = typeallocn(const char *, n);
+	my_varmodes = typeallocn(char *, n);
 	size_my_varmodes = n;
 	endofDisplay();
 
 	fill_my_varmodes();
     }
-    return my_varmodes;
+    return (const char **) my_varmodes;
 }
 #endif /* OPT_EVAL || OPT_MAJORMODE */
 
