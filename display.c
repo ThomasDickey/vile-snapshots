@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.471 2008/03/06 01:10:52 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.472 2008/03/26 23:06:14 tom Exp $
  *
  */
 
@@ -732,7 +732,7 @@ vtset_put(WINDOW *wp, const char *src, unsigned limit)
     if (w_val(wp, WMDLIST)) {
 	rc = vtlistc(wp, src, limit);
     } else if (b_is_utfXX(wp->w_bufp)
-	       && column_sizes(wp, src, limit, &rc) == COLS_UTF8) {
+	       && column_sizes(wp, src, limit, &rc) >= COLS_8BIT) {
 	rc = vtlistc(wp, src, limit);
     } else {
 	rc = vtputc(wp, src, limit);

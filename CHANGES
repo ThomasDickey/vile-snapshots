@@ -1,5 +1,17 @@
 Changes for vile 9.7 (released ??? ??? ?? ????)
 
+ 200803??
+	> Tom Dickey:
+	+ improve bytes_before() behavior on illegal bytes; it was returning
+	  the length of all illegal bytes adjacent to the current position
+	  rather than just one.
+	+ modify vl_conv_to_utf32() to use consistent error-return code when
+	  continuation byte of UTF-8 fails check.  This is needed in some
+	  cases to make ISO-8859-1 data display consistently in UTF-8 buffer
+	  as "\?xx".
+	+ fix display of ISO-8859-1 encoded file when file-encoding is set
+	  to utf-8 (report by Chris Green).
+
  20080325
 	> Tom Dickey:
 	+ modify curses-driver to avoid a curses-refresh (repainting the

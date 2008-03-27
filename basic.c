@@ -5,7 +5,7 @@
  * functions that adjust the top line in the window and invalidate the
  * framing, are hard.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/basic.c,v 1.159 2008/01/22 00:12:01 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/basic.c,v 1.160 2008/03/27 00:43:23 tom Exp $
  *
  */
 
@@ -43,13 +43,18 @@ int
 bytes_before(LINE *lp, int off)
 {
     int rc = 0;
+    int first = off;
+    int legal = FALSE;
 
     while (off-- > 0) {
 	++rc;
 	if (bytes_at0(lp, off) == rc) {
+	    legal = TRUE;
 	    break;
 	}
     }
+    if (!legal && first)
+	rc = 1;
     return rc;
 }
 
