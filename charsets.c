@@ -1,5 +1,5 @@
 /*
- * $Id: charsets.c,v 1.53 2007/12/31 19:44:50 tom Exp $
+ * $Id: charsets.c,v 1.54 2008/03/26 23:52:13 tom Exp $
  *
  * see
  http://msdn.microsoft.com/library/default.asp?url=/library/en-us/intl/unicode_42jv.asp
@@ -190,7 +190,8 @@ vl_conv_to_utf32(UINT * target, const char *source, B_COUNT limit)
 		break;
 	}
 	if (j != rc) {
-	    rc = 1;
+	    TRACE2(("check failed %d/%d in vl_conv_to_utf32\n", j, rc));
+	    rc = 0;
 	}
     }
 
