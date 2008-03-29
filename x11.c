@@ -2,7 +2,7 @@
  *	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.300 2008/02/07 20:56:40 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.301 2008/03/29 12:15:20 tom Exp $
  *
  */
 
@@ -2487,10 +2487,19 @@ static XtResource pointer_resources[] =
 	} one_time
 
 static void
-my_error_handler(String message)
+initial_error_handler(String message)
 {
-    fprintf(stderr, "%s: %s\n", prog_arg, message);
+    TRACE(("initial_error_handler:%s\n", NonNull(message)));
+    fprintf(stderr, "%s: %s\n", prog_arg, NonNull(message));
     print_usage(BADEXIT);
+}
+
+static void
+runtime_error_handler(String message)
+{
+    TRACE(("runtime_error_handler:%s\n", NonNull(message)));
+    fprintf(stderr, "%s: %s\n", prog_arg, NonNull(message));
+    imdying(SIGINT);		/* save files and exit, do not abort() */
 }
 
 #define MIN_UDIFF  0x1000
@@ -2789,7 +2798,7 @@ x_preparse_args(int *pargc, char ***pargv)
     if (isEmpty(xvile_class))
 	xvile_class = MY_CLASS;
 
-    XtSetErrorHandler(my_error_handler);
+    XtSetErrorHandler(initial_error_handler);
     cur_win->top_widget = XtVaAppInitialize(&cur_win->app_context,
 					    xvile_class,
 					    options, XtNumber(options),
@@ -2798,7 +2807,7 @@ x_preparse_args(int *pargc, char ***pargv)
 					    Nval(XtNgeometry, NULL),
 					    Nval(XtNinput, TRUE),
 					    NULL);
-    XtSetErrorHandler((XtErrorHandler) 0);
+    XtSetErrorHandler(runtime_error_handler);
     dpy = XtDisplay(cur_win->top_widget);
 
 #if 0
@@ -4156,8 +4165,10 @@ x_open(void)
     term.maxcols = term.cols = cur_win->cols;
     term.maxrows = term.rows = cur_win->rows;
 
-    if (check_scrollbar_allocs() != TRUE)
+    if (check_scrollbar_allocs() != TRUE) {
+	fprintf(stderr, "Cannot allocate scrollbars\n");
 	ExitProgram(BADEXIT);
+    }
 }
 
 static void

@@ -2,6 +2,15 @@ Changes for vile 9.7 (released ??? ??? ?? ????)
 
  200803??
 	> Tom Dickey:
+	+ modify replacechar(), i.e., the "r" command, to use mapped-keystrokes
+	  for consistency with other editing commands (R, i, c, s, etc)
+	  (report by Chris Green).
+	+ modify xvile to use imdying() to handle runtime X errors, which
+	  will attempt to save buffers (prompted by discussion with Steven
+	  Lembark).
+	+ flush the standard output before writing version message using the
+	  standard error, in case there was some output pending (report by
+	  Chris Green).
 	+ improve bytes_before() behavior on illegal bytes; it was returning
 	  the length of all illegal bytes adjacent to the current position
 	  rather than just one.
