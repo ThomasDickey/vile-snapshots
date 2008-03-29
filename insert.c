@@ -4,7 +4,7 @@
  * Most code probably by Dan Lawrence or Dave Conroy for MicroEMACS
  * Extensions for vile by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/insert.c,v 1.161 2008/03/19 22:57:50 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/insert.c,v 1.162 2008/03/29 12:56:50 tom Exp $
  */
 
 #include	"estruct.h"
@@ -402,7 +402,7 @@ replacechar(int f, int n)
 	set_insertmode(INSMODE_RPL);	/* need to fool SPEC prefix code */
 	if (dotcmdactive != PLAY)
 	    (void) update(FALSE);
-	c = keystroke();
+	c = mapped_keystroke();
 	if (ABORTED(c)) {
 	    set_insertmode(FALSE);
 	    return ABORT;

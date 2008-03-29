@@ -1,7 +1,7 @@
 /*
  * version & usage-messages for vile
  *
- * $Header: /users/source/archives/vile.vcs/RCS/version.c,v 1.64 2007/10/29 23:25:13 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/version.c,v 1.65 2008/03/27 23:18:35 tom Exp $
  *
  */
 
@@ -106,6 +106,7 @@ print_usage(int code)
 #if DISP_NTWIN
     gui_usage(prog_arg, options, TABLESIZE(options));
 #else
+    fflush(stdout);
     (void) fprintf(stderr, "usage: %s [-flags] [@cmdfile] files...\n",
 		   prog_arg);
     {
