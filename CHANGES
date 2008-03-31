@@ -2,9 +2,8 @@ Changes for vile 9.7 (released ??? ??? ?? ????)
 
  200803??
 	> Tom Dickey:
-	+ modify replacechar(), i.e., the "r" command, to use mapped-keystrokes
-	  for consistency with other editing commands (R, i, c, s, etc)
-	  (report by Chris Green).
+	+ force the [Printable Chars] buffer to use file-encoding=8bit,
+	  makes it display consistently legal codes in the second column.
 	+ modify xvile to use imdying() to handle runtime X errors, which
 	  will attempt to save buffers (prompted by discussion with Steven
 	  Lembark).

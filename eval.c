@@ -2,7 +2,7 @@
  *	eval.c -- function and variable evaluation
  *	original by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.375 2008/02/07 23:49:28 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.376 2008/03/31 00:36:57 tom Exp $
  *
  */
 
@@ -64,6 +64,15 @@ makectypelist(int dum1 GCC_UNUSED, void *ptr GCC_UNUSED)
     UINT i, j;
     CHARTYPE k;
     const char *s;
+
+#if OPT_MULTIBYTE
+    /*
+     * Keep the buffer encoding 8-bit to make it work with the character
+     * classes for the narrow locale.
+     */
+    make_local_b_val(curbp, VAL_FILE_ENCODING);
+    set_b_val(curbp, VAL_FILE_ENCODING, enc_LOCALE);
+#endif
 
     bprintf("--- Printable Characters for locale %s (%s) ",
 	    NONNULL(vl_locale),
