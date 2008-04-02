@@ -1,7 +1,10 @@
 Changes for vile 9.7 (released ??? ??? ?? ????)
 
- 200803??
+ 200804??
 	> Tom Dickey:
+	+ improve locale initialization, checking if there is no installed
+	  narrow locale corresponding to the given (wide) locale (report by
+	  Paul Van Tilburg).
 	+ force the [Printable Chars] buffer to use file-encoding=8bit,
 	  makes it display consistently legal codes in the second column.
 	+ modify xvile to use imdying() to handle runtime X errors, which

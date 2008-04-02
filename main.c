@@ -22,7 +22,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.620 2008/03/12 23:15:59 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.625 2008/04/02 19:48:32 tom Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -38,10 +38,6 @@
 #if OPT_LOCALE
 #include	<locale.h>
 
-#ifdef HAVE_LANGINFO_CODESET
-#include	<langinfo.h>
-#endif
-
 /*
  * On Linux, the normal/wide ctypes give comparable results in the range 0-255,
  * reflecting the fact that codes 128-255 in Unicode are the "same" as
@@ -49,7 +45,7 @@
  * 128-255.  Since we're using these functions in vile 9.6 only for the normal
  * ctypes (the narrow 8-bit locale), just use the normal ctype functions.
  */
-#if 0				/* def HAVE_WCTYPE */
+#ifdef HAVE_WCTYPE
 #include	<wctype.h>
 #define sys_iscntrl(n)  iswcntrl(n)
 #define sys_isdigit(n)  iswdigit(n)
@@ -223,6 +219,37 @@ default_fill(void)
 	fill = 70;
     return fill;
 }
+
+#ifdef HAVE_LANGINFO_CODESET
+static void
+set_posix_locale(void)
+{
+    TRACE(("...reset locale to POSIX!\n"));
+    vl_locale = setlocale(LC_ALL, "C");
+    vl_get_encoding(&vl_encoding, vl_locale);
+}
+
+static int
+is_utf8_encoding(const char *enc)
+{
+    return (strstr(enc, "UTF-8") != 0
+	    || strstr(enc, "UTF8") != 0);
+}
+
+static int
+is_8bit_encoding(const char *enc)
+{
+    return (strstr(enc, "ASCII") != 0
+	    || strstr(enc, "ANSI") != 0
+	    || strncmp(enc, "ISO-8859", 8) == 0
+	    || strncmp(enc, "ISO 8859", 8) == 0
+	    || strncmp(enc, "ISO_8859", 8) == 0
+	    || strncmp(enc, "ISO8859", 7) == 0
+	    || strncmp(enc, "8859", 4) == 0
+	    || strncmp(enc, "KOI8-R", 6) == 0);
+}
+#endif
+
 /*--------------------------------------------------------------------------*/
 
 int
@@ -255,7 +282,13 @@ MainProgram(int argc, char *argv[])
 #if OPT_LOCALE
     {
 	char *env = "";
+	char *old_locale = setlocale(LC_ALL, "");
 
+	/*
+	 * If the environment specifies a legal locale, old_locale will be
+	 * nonnull.
+	 */
+	TRACE(("old_locale:%s\n", NONNULL(old_locale)));
 	/*
 	 * Force 8-bit locale for display drivers where we only support 8-bits.
 	 * This is a special case, assumes that the name of the 8-bit locale
@@ -263,12 +296,15 @@ MainProgram(int argc, char *argv[])
 	 * locales are installed.
 	 */
 #if DISP_TERMCAP || DISP_CURSES || DISP_X11
-	if (((env = getenv("LC_ALL")) != 0 && *env != 0) ||
-	    ((env = getenv("LC_CTYPE")) != 0 && *env != 0) ||
-	    ((env = getenv("LANG")) != 0 && *env != 0)) {
+	if (old_locale != 0
+	    && is_utf8_encoding(vl_get_encoding((char **) 0, old_locale))
+	    && (((env = getenv("LC_ALL")) != 0 && *env != 0) ||
+		((env = getenv("LC_CTYPE")) != 0 && *env != 0) ||
+		((env = getenv("LANG")) != 0 && *env != 0))) {
 	    char *utf;
 	    char *tmp;
 
+	    TRACE(("Checking for UTF-8 suffix of '%s'\n", env));
 	    if (((utf = strstr(env, ".UTF-8")) != 0
 		 || (utf = strstr(env, ".utf-8")) != 0
 		 || (utf = strstr(env, ".UTF8")) != 0
@@ -297,26 +333,33 @@ MainProgram(int argc, char *argv[])
 
 #ifdef HAVE_LANGINFO_CODESET
 	/*
-	 * Check the encoding and try to decide if it looks like an 8-bit
-	 * encoding.  If it does not, fallback to POSIX locale and its
+	 * If we have a valid narrow locale, get its encoding.  If that looks
+	 * like an 8-bit encoding, we'll maintain both within vile.
+	 *
+	 * If we have no valid narrow locale, this may be because only the wide
+	 * locale is installed (or stripping the suffix did not work due to
+	 * unexpected naming convention).  Check if the wide locale's encoding
+	 * uses UTF-8 so we'll know to use UTF-8 encoding, as well as construct
+	 * character-class data for the 8bit from the wide character data.
+	 *
+	 * If neither scheme works, fallback to POSIX locale and its
 	 * corresponding encoding.
 	 */
-	vl_encoding = nl_langinfo(CODESET);
-	TRACE(("nl_langinfo(CODESET) -> %s\n", NONNULL(vl_encoding)));
+	vl_get_encoding(&vl_encoding, vl_locale);
 
-	if (vl_locale == 0
-	    || vl_encoding == 0
-	    || (strstr(vl_encoding, "ASCII") == 0
-		&& strstr(vl_encoding, "ANSI") == 0
-		&& strncmp(vl_encoding, "ISO-8859", 8) != 0
-		&& strncmp(vl_encoding, "ISO 8859", 8) != 0
-		&& strncmp(vl_encoding, "ISO_8859", 8) != 0
-		&& strncmp(vl_encoding, "ISO8859", 7) != 0
-		&& strncmp(vl_encoding, "8859", 4) != 0
-		&& strncmp(vl_encoding, "KOI8-R", 6) != 0)) {
-	    TRACE(("...reset locale to POSIX!\n"));
-	    vl_locale = setlocale(LC_ALL, "C");
-	    vl_encoding = nl_langinfo(CODESET);
+	if (isEmpty(vl_locale)
+	    || isEmpty(vl_encoding)) {
+	    char *old_encoding = 0;
+	    vl_get_encoding(&old_encoding, old_locale);
+	    if (is_utf8_encoding(old_encoding)) {
+		TRACE(("original encoding is UTF-8\n"));
+	    } else {
+		set_posix_locale();
+	    }
+	} else if (is_utf8_encoding(vl_encoding)) {
+	    TRACE(("narrow encoding is already UTF-8!\n"));
+	} else if (!is_8bit_encoding(vl_encoding)) {
+	    set_posix_locale();
 	}
 #endif
 	if (vl_locale == 0)

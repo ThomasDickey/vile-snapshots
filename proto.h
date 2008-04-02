@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.645 2008/03/21 22:07:50 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.646 2008/04/01 22:12:09 tom Exp $
  *
  */
 
@@ -384,9 +384,11 @@ extern int did_hard_error_occur (void);
 #endif
 
 /* eightbit.c */
-extern int vl_mb_is_8bit(int value);
+extern char * vl_get_encoding(char **target, const char *locale);
+extern char * vl_get_locale(char **target);
+extern int vl_mb_is_8bit (int value);
 extern void vl_close_mbterm (void);
-extern void vl_init_8bit (char *wide, char *narrow);
+extern void vl_init_8bit (const char *wide, const char *narrow);
 extern void vl_open_mbterm (void);
 
 /* statevar.c */
