@@ -1,5 +1,5 @@
 /*
- * $Id: eightbit.c,v 1.20 2008/03/27 21:30:17 tom Exp $
+ * $Id: eightbit.c,v 1.24 2008/04/02 00:05:58 tom Exp $
  *
  * Maintain "8bit" file-encoding mode by converting incoming UTF-8 to single
  * bytes, and providing a function that tells vile whether a given Unicode
@@ -49,88 +49,77 @@ cmp_rindex(const void *a, const void *b)
 #if OPT_ICONV_FUNCS
 static iconv_t mb_desc;
 
-static char *
-get_encoding(char *locale)
-{
-    char *encoding;
-    char *actual = setlocale(LC_ALL, locale);
-
-#ifdef HAVE_LANGINFO_CODESET
-    (void) actual;
-    if ((encoding = nl_langinfo(CODESET)) == 0 || *encoding == '\0') {
-	fprintf(stderr, "Cannot find encoding for %s\n", locale);
-	tidy_exit(BADEXIT);
-    }
-#else
-    if (actual == 0 || !strcmp(actual, "C") || !strcmp(actual, "POSIX")) {
-	encoding = "ASCII";
-    } else {
-	encoding = "ISO-8859-1";
-    }
-#endif
-    return strmalloc(encoding);
-}
-
 static void
 open_encoding(char *from, char *to)
 {
     TRACE(("open_encoding(from=%s, to=%s)\n", from, to));
     mb_desc = iconv_open(to, from);
     if (mb_desc == (iconv_t) (-1)) {
-	fprintf(stderr, "cannot setup translation from %s to %s\n", from, to);
+	fprintf(stderr, "Cannot setup translation from %s to %s\n", from, to);
 	tidy_exit(BADEXIT);
     }
 }
 #endif /* OPT_ICONV_FUNCS */
 
 void
-vl_init_8bit(char *wide, char *narrow)
+vl_init_8bit(const char *wide, const char *narrow)
 {
     int n;
 
     TRACE((T_CALLED "vb_init_8bit(%s, %s)\n", wide, narrow));
 #if OPT_ICONV_FUNCS
     if (strcmp(wide, narrow)) {
-	char *wide_enc;
-	char *narrow_enc;
+	char *wide_enc = 0;
+	char *narrow_enc = 0;
 
 	TRACE(("setup_locale(%s, %s)\n", wide, narrow));
 	utf8_locale = wide;
-	wide_enc = get_encoding(wide);
-	narrow_enc = get_encoding(narrow);
-	TRACE(("...setup_locale(%s, %s)\n", wide_enc, narrow_enc));
+	vl_get_encoding(&wide_enc, wide);
+	vl_get_encoding(&narrow_enc, narrow);
+	TRACE(("...setup_locale(%s, %s)\n",
+	       NONNULL(wide_enc),
+	       NONNULL(narrow_enc)));
 
-	open_encoding(narrow_enc, wide_enc);
-
-	for (n = 0; n < N_chars; ++n) {
-	    size_t converted;
-	    char input[80];
-	    ICONV_CONST char *ip = input;
-	    char output[80];
-	    char *op = output;
-	    size_t in_bytes = 1;
-	    size_t out_bytes = sizeof(output);
-	    input[0] = n;
-	    input[1] = 0;
-	    converted = iconv(mb_desc, &ip, &in_bytes, &op, &out_bytes);
-	    if (converted == (size_t) (-1)) {
-		TRACE(("err:%d\n", errno));
-		TRACE(("convert(%d) %d %d/%d\n", n,
-		       (int) converted, (int) in_bytes, (int) out_bytes));
-	    } else {
-		output[sizeof(output) - out_bytes] = 0;
-		table_8bit_utf8[n].text = strmalloc(output);
-		vl_conv_to_utf32(&(table_8bit_utf8[n].code),
-				 table_8bit_utf8[n].text,
-				 strlen(table_8bit_utf8[n].text));
-	    }
-	}
-	iconv_close(mb_desc);
 	/*
-	 * If we were able to convert in one direction, the other should
-	 * succeed in vl_mb_getch().
+	 * If the wide/narrow encodings do not differ, that is probably because
+	 * the narrow encoding is really a wide-encoding.
 	 */
-	open_encoding(wide_enc, narrow_enc);
+	if (narrow_enc != 0
+	    && wide_enc != 0
+	    && strcmp(narrow_enc, wide_enc)) {
+	    open_encoding(narrow_enc, wide_enc);
+
+	    for (n = 0; n < N_chars; ++n) {
+		size_t converted;
+		char input[80];
+		ICONV_CONST char *ip = input;
+		char output[80];
+		char *op = output;
+		size_t in_bytes = 1;
+		size_t out_bytes = sizeof(output);
+		input[0] = n;
+		input[1] = 0;
+		converted = iconv(mb_desc, &ip, &in_bytes, &op, &out_bytes);
+		if (converted == (size_t) (-1)) {
+		    TRACE(("err:%d\n", errno));
+		    TRACE(("convert(%d) %d %d/%d\n", n,
+			   (int) converted, (int) in_bytes, (int) out_bytes));
+		} else {
+		    output[sizeof(output) - out_bytes] = 0;
+		    table_8bit_utf8[n].text = strmalloc(output);
+		    vl_conv_to_utf32(&(table_8bit_utf8[n].code),
+				     table_8bit_utf8[n].text,
+				     strlen(table_8bit_utf8[n].text));
+		}
+	    }
+	    iconv_close(mb_desc);
+
+	    /*
+	     * If we were able to convert in one direction, the other should
+	     * succeed in vl_mb_getch().
+	     */
+	    open_encoding(wide_enc, narrow_enc);
+	}
     }
 #endif /* OPT_ICONV_FUNCS */
 
@@ -178,6 +167,57 @@ vl_mb_is_8bit(int code)
     return (p != 0);
 }
 
+/*
+ * Returns a string representing the current locale.
+ * If the target is nonnull, allocate a copy of it.
+ */
+char *
+vl_get_locale(char **target)
+{
+    char *result = setlocale(LC_ALL, 0);
+
+    if (target != 0) {
+	FreeIfNeeded(*target);
+	if (result != 0)
+	    result = strmalloc(result);
+	*target = result;
+    }
+    return *target;
+}
+
+/*
+ * Returns a string representing the character encoding.
+ * If the target is nonnull, allocate a copy of it.
+ */
+char *
+vl_get_encoding(char **target, const char *locale)
+{
+    char *result = 0;
+    char *actual = setlocale(LC_ALL, locale);
+
+    if (!isEmpty(actual)) {	/* nonempty means legal locale */
+#ifdef HAVE_LANGINFO_CODESET
+	result = nl_langinfo(CODESET);
+#else
+	if (isEmpty(locale)
+	    || !strcmp(locale, "C")
+	    || !strcmp(locale, "POSIX")) {
+	    result = "ASCII";
+	} else {
+	    result = "ISO-8859-1";
+	}
+#endif
+    }
+    TRACE(("vl_get_encoding(%s) -> %s\n", NONNULL(locale), NONNULL(result)));
+    if (target != 0) {
+	FreeIfNeeded(*target);
+	if (result != 0)
+	    result = strmalloc(result);
+	*target = result;
+    }
+    return result;
+}
+
 #if DISP_TERMCAP || DISP_CURSES
 /*
  * Use the lookup table created in vl_init_8bit() to convert an "8bit"
@@ -203,6 +243,32 @@ vl_mb_to_utf8(int code)
     return result;
 }
 
+/*
+ * Decode a buffer as UTF-8, returning the character value if successful.
+ * If unsuccessful, return -1.
+ */
+static int
+decode_utf8(char *input, int used)
+{
+    UINT check = 0;
+    int rc = 0;
+    int ch;
+
+    /*
+     * If iconv gave up - because a character was not representable
+     * in the narrow encoding - just convert it from UTF-8.
+     *
+     * FIXME: perhaps a better solution would be to use iconv for
+     * converting from the wide encoding to UTF-32. 
+     */
+    rc = vl_conv_to_utf32(&check, input, used);
+    if ((rc == used) && (check != 0) && !isSpecial(check))
+	ch = check;
+    else
+	ch = -1;
+    return ch;
+}
+
 static int
 vl_mb_getch(void)
 {
@@ -224,34 +290,35 @@ vl_mb_getch(void)
 	op = output;
 	out_bytes = sizeof(output);
 	*output = 0;
-	/*
-	 * First, try with iconv, assuming it does a better job.
-	 */
-	converted = iconv(mb_desc, &ip, &in_bytes, &op, &out_bytes);
-	TRACE(("converted %d '%s' -> %d:%#x\n",
-	       (int) converted, input, (int) out_bytes, *output));
-	if (converted == (size_t) (-1)) {
-	    if (errno == EILSEQ) {
-		UINT check = 0;
-		int rc = 0;
-		/*
-		 * If iconv gave up - because a character was not representable
-		 * in the narrow encoding - just convert it from UTF-8.
-		 *
-		 * FIXME: perhaps a better solution would be to use iconv for
-		 * converting from the wide encoding to UTF-32. 
-		 */
-		rc = vl_conv_to_utf32(&check, input, used);
-		if ((rc == used) && (check != 0) && !isSpecial(check))
-		    ch = check;
-		else
-		    ch = -1;
+	if (mb_desc != 0) {
+	    /*
+	     * First, try with iconv, assuming it does a better job.
+	     */
+	    converted = iconv(mb_desc, &ip, &in_bytes, &op, &out_bytes);
+	    TRACE(("converted %d '%s' -> %d:%#x\n",
+		   (int) converted, input, (int) out_bytes, *output));
+	    if (converted == (size_t) (-1)) {
+		if (errno == EILSEQ) {
+		    /*
+		     * If iconv gave up - because a character was not
+		     * representable in the narrow encoding - just convert it
+		     * from UTF-8.
+		     *
+		     * FIXME:  perhaps a better solution would be to use iconv
+		     * for converting from the wide encoding to UTF-32. 
+		     */
+		    ch = decode_utf8(input, used);
+		    break;
+		}
+	    } else {
+		/* assume it is 8-bits */
+		ch = CharOf(output[0]);
 		break;
 	    }
 	} else {
-	    /* assume it is 8-bits */
-	    ch = CharOf(output[0]);
-	    break;
+	    ch = decode_utf8(input, used);
+	    if (ch >= 0 || used > 5)
+		break;
 	}
     }
 #else
