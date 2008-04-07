@@ -1,7 +1,7 @@
 /*
  * debugging support -- tom dickey.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.77 2008/01/22 00:13:57 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.79 2008/04/04 23:44:54 tom Exp $
  *
  */
 
@@ -975,6 +975,36 @@ trace_window(WINDOW *wp)
     if (!got_dot && had_line) {
 	Trace("DOT not found!\n");
 	imdying(10);
+    }
+}
+
+#define TRACE_CTYPE(mask) if (table[n] & chrBIT(mask)) strcat(buffer, "|" #mask)
+void
+trace_ctype(CHARTYPE *table, int first, int last)
+{
+    int n;
+    char buffer[1024];
+    char temp[80];
+
+    if (first < 0)
+	first = 0;
+    if (last < 0)
+	last = N_chars;
+    for (n = first; n < last; ++n) {
+	*buffer = EOS;
+	TRACE_CTYPE(vl_UPPER);
+	TRACE_CTYPE(vl_LOWER);
+	TRACE_CTYPE(vl_DIGIT);
+	TRACE_CTYPE(vl_SPACE);
+	TRACE_CTYPE(vl_CNTRL);
+	TRACE_CTYPE(vl_PRINT);
+	TRACE_CTYPE(vl_PUNCT);
+#if OPT_WIDE_CTYPES
+	TRACE_CTYPE(vl_XDIGIT);
+#endif
+	Trace("(%s) /* %d:%s */\n",
+	      *buffer ? buffer + 1 : "0",
+	      n, vl_vischr(temp, n));
     }
 }
 
