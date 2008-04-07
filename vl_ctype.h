@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/vl_ctype.h,v 1.8 2007/09/01 11:55:42 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/vl_ctype.h,v 1.12 2008/04/06 14:13:12 tom Exp $
  *
  * Character-type tests, like <ctype.h> for vile (vi-like-emacs).
  *
@@ -105,6 +105,8 @@ typedef enum {
 	, vl_SCRTCH
 	, vl_SHPIPE
 	, vl_XDIGIT
+#else
+#define vl_XDIGIT 0
 #endif
 	, vl_UNUSED
 } VL_CTYPES;
@@ -201,5 +203,17 @@ typedef USHORT CHARTYPE;
 #define	isreturn(c)	((c == '\r') || (c == '\n'))
 
 #define nocase_eq(bc,pc) (CharOf(bc) == CharOf(pc) || (toUpper(bc) == toUpper(pc)))
+
+/*
+ * Built-in/fallback data when locale information is incomplete or missing.
+ */
+#define VL_LOC_ASCII  "ascii"
+#define VL_LOC_LATIN1 "8bit"
+
+#define VL_ENC_ASCII  "ascii"
+#define VL_ENC_LATIN1 "8bit"
+
+extern CHARTYPE vl_ctype_ascii[];
+extern CHARTYPE vl_ctype_latin1[];
 
 #endif /* VL_CTYPE_H_incl */

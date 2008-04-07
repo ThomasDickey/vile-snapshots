@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.472 2008/03/26 23:06:14 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.473 2008/04/06 18:32:13 tom Exp $
  *
  */
 
@@ -614,6 +614,7 @@ vtlistc(WINDOW *wp, const char *src, unsigned limit)
 
 	    if (!w_val(wp, WMDUNICODE_AS_HEX)
 		&& cells == 1
+		&& isPrint(value)
 		&& FoldTo8bits(value)) {
 		temp[n++] = (char) value;
 	    } else if (!w_val(wp, WMDUNICODE_AS_HEX)

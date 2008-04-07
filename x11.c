@@ -2,7 +2,7 @@
  *	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.301 2008/03/29 12:15:20 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.302 2008/04/06 14:24:18 tom Exp $
  *
  */
 
@@ -3630,7 +3630,7 @@ x_preparse_args(int *pargc, char ***pargv)
 
 #if OPT_LOCALE
     init_xlocale();
-    if (utf8_locale) {
+    if (wide_locale) {
 	term.encoding = enc_UTF8;
     }
 #endif

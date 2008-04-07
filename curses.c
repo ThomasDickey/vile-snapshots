@@ -1,7 +1,7 @@
 /*
  * A terminal driver using the curses library
  *
- * $Header: /users/source/archives/vile.vcs/RCS/curses.c,v 1.35 2008/03/25 18:58:57 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/curses.c,v 1.36 2008/04/06 14:24:18 tom Exp $
  */
 
 #include "estruct.h"
@@ -59,8 +59,8 @@ curs_initialize(void)
 
     TRACE((T_CALLED "curs_initialize\n"));
 #if OPT_LOCALE
-    TRACE(("setting locale to %s\n", utf8_locale));
-    setlocale(LC_CTYPE, utf8_locale);
+    TRACE(("setting locale to %s\n", wide_locale));
+    setlocale(LC_CTYPE, wide_locale);
 #endif
     initscr();
     raw();
