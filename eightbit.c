@@ -1,5 +1,5 @@
 /*
- * $Id: eightbit.c,v 1.36 2008/04/09 18:19:11 tom Exp $
+ * $Id: eightbit.c,v 1.37 2008/04/10 00:21:30 tom Exp $
  *
  * Maintain "8bit" file-encoding mode by converting incoming UTF-8 to single
  * bytes, and providing a function that tells vile whether a given Unicode
@@ -11,9 +11,12 @@
 #include <edef.h>
 #include <nefsms.h>
 
+#if OPT_LOCALE
+#include <locale.h>
+#endif
+
 #if OPT_ICONV_FUNCS
 #include <iconv.h>
-#include <locale.h>
 #include <langinfo.h>
 #endif
 
@@ -640,13 +643,14 @@ vl_init_8bit(const char *wide, const char *narrow)
     TRACE((T_CALLED "vl_init_8bit(%s, %s)\n", NonNull(wide), NonNull(narrow)));
 #if OPT_ICONV_FUNCS
     if (wide == 0 || narrow == 0) {
+	TRACE(("setup POSIX-locale(%s)\n"));
 	wide_locale = 0;
 	narrow_locale = 0;
 	vl_get_encoding(&narrow_enc, narrow);
     } else if (strcmp(wide, narrow)) {
 	char *wide_enc = 0;
 
-	TRACE(("setup_locale(%s, %s)\n", wide, narrow));
+	TRACE(("setup mixed-locale(%s, %s)\n", wide, narrow));
 	wide_locale = StrMalloc(wide);
 	narrow_locale = StrMalloc(narrow);
 	vl_get_encoding(&wide_enc, wide);
@@ -675,6 +679,7 @@ vl_init_8bit(const char *wide, const char *narrow)
 	FreeAndNull(wide_enc);
 	FreeAndNull(narrow_enc);
     } else {
+	TRACE(("setup narrow-locale(%s)\n", narrow));
 	wide_locale = 0;
 	narrow_locale = StrMalloc(narrow);
 	vl_get_encoding(&narrow_enc, narrow);
@@ -685,6 +690,9 @@ vl_init_8bit(const char *wide, const char *narrow)
 	FreeAndNull(narrow_enc);
     }
 #else
+    TRACE(("setup %s-locale(%s)\n", isEmpty(wide) ? "narrow" : "mixed", NonNull(narrow)));
+    wide_locale = wide ? StrMalloc(wide) : 0;
+    narrow_locale = narrow ? StrMalloc(narrow) : 0;
     vl_get_encoding(&narrow_enc, narrow);
 #endif /* OPT_ICONV_FUNCS */
 
