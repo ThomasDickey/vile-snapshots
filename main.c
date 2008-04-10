@@ -22,7 +22,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.637 2008/04/09 20:13:44 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.638 2008/04/10 00:13:31 tom Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -327,9 +327,9 @@ MainProgram(int argc, char *argv[])
 	}
 #elif DISP_NTWIN || DISP_NTCONS
 #ifdef UNICODE
-	vl_init_8bit("utf8", VL_LOC_LATIN1);
+	vl_init_8bit("utf8", old_locale);
 #else
-	vl_init_8bit(VL_LOC_LATIN1, VL_LOC_LATIN1);
+	vl_init_8bit(VL_LOC_LATIN1, old_locale);
 #endif
 #endif
 	/* update locale after stripping suffix */
