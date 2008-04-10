@@ -1,7 +1,7 @@
 /*
  * debugging support -- tom dickey.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.79 2008/04/04 23:44:54 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.80 2008/04/09 17:52:34 tom Exp $
  *
  */
 
@@ -1033,14 +1033,15 @@ close_me(void)
 #if DOALLOC
     FreeAndNull(area);
 #endif
-    FreeAndNull(visible_result);
-    FreeAndNull(visible_indent);
-    used_visible = 0;
-    used_indent = 0;
 #if OPT_ELAPSED
     btree_freeup(&elapsed_tree);
 #endif
     Trace(bad_form);
+
+    FreeAndNull(visible_result);
+    FreeAndNull(visible_indent);
+    used_visible = 0;
+    used_indent = 0;
 }
 
 void
