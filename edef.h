@@ -6,7 +6,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.334 2008/04/06 14:24:18 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.335 2008/04/09 18:19:44 tom Exp $
  */
 
 #ifndef VILE_EDEF_H
@@ -353,8 +353,8 @@ decl_uninit( size_t fflinelen );	/* fflinebuf length */
 #if OPT_LOCALE
 decl_uninit( char *vl_encoding );
 decl_uninit( char *vl_locale );
-decl_init( const char * narrow_locale, 0 );
-decl_init( const char * wide_locale, 0 );
+decl_init( char * narrow_locale, 0 );
+decl_init( char * wide_locale, 0 );
 #else
 #define vl_encoding VL_ENC_LATIN1
 #define vl_locale "built-in"

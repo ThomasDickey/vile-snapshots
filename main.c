@@ -22,7 +22,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.632 2008/04/06 22:07:56 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.637 2008/04/09 20:13:44 tom Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -157,6 +157,9 @@ run_startup_commands(BUFFER *cmds)
 
 	if (lisreal(lp) && !llength(lp)) {
 	    lremove(cmds, lp);
+	    if (b_val(cmds, MDUNDOABLE)) {
+		lfree(lp, cmds);
+	    }
 	}
 	lp = nlp;
     }
@@ -186,6 +189,15 @@ run_startup_commands(BUFFER *cmds)
     }
 
     returnCode(result);
+}
+
+static int
+run_and_discard(BUFFER **bp)
+{
+    int rc = run_startup_commands(*bp);
+    zotbuf(*bp);
+    *bp = 0;
+    return rc;
 }
 
 static void
@@ -221,36 +233,24 @@ default_fill(void)
 }
 
 #if OPT_LOCALE
+static char *
+get_set_locale(const char *value)
+{
+    char *result = setlocale(LC_ALL, value);
+    if (result != 0)
+	result = strmalloc(result);
+    return result;
+}
+
 #ifdef HAVE_LANGINFO_CODESET
 static void
 set_posix_locale(void)
 {
     TRACE(("...reset locale to POSIX!\n"));
-    vl_locale = setlocale(LC_ALL, "C");
+    vl_locale = get_set_locale("C");
     vl_get_encoding(&vl_encoding, vl_locale);
     wide_locale = 0;
     narrow_locale = 0;
-}
-
-static int
-is_utf8_encoding(const char *enc)
-{
-    return (strstr(enc, "UTF-8") != 0
-	    || strstr(enc, "UTF8") != 0
-	    || strcmp(enc, "646") == 0);
-}
-
-static int
-is_8bit_encoding(const char *enc)
-{
-    return (strstr(enc, "ASCII") != 0
-	    || strstr(enc, "ANSI") != 0
-	    || strncmp(enc, "ISO-8859", 8) == 0
-	    || strncmp(enc, "ISO 8859", 8) == 0
-	    || strncmp(enc, "ISO_8859", 8) == 0
-	    || strncmp(enc, "ISO8859", 7) == 0
-	    || strncmp(enc, "8859", 4) == 0
-	    || strncmp(enc, "KOI8-R", 6) == 0);
 }
 #endif
 #endif /* OPT_LOCALE */
@@ -287,7 +287,7 @@ MainProgram(int argc, char *argv[])
 #if OPT_LOCALE
     {
 	char *env = "";
-	char *old_locale = setlocale(LC_ALL, "");
+	char *old_locale = get_set_locale("");
 	char *old_encoding = 0;
 
 	/*
@@ -302,7 +302,7 @@ MainProgram(int argc, char *argv[])
 	 * the "UTF-8" string, and also that both locales are installed.
 	 */
 	if (old_locale != 0
-	    && is_utf8_encoding(vl_get_encoding(&old_encoding, old_locale))
+	    && vl_is_utf8_encoding(vl_get_encoding(&old_encoding, old_locale))
 	    && (((env = getenv("LC_ALL")) != 0 && *env != 0) ||
 		((env = getenv("LC_CTYPE")) != 0 && *env != 0) ||
 		((env = getenv("LANG")) != 0 && *env != 0))) {
@@ -333,7 +333,7 @@ MainProgram(int argc, char *argv[])
 #endif
 #endif
 	/* update locale after stripping suffix */
-	vl_locale = setlocale(LC_ALL, env);
+	vl_locale = get_set_locale(env);
 	TRACE(("setlocale(%s) -> '%s'\n", NONNULL(env), NONNULL(vl_locale)));
 
 #ifdef HAVE_LANGINFO_CODESET
@@ -359,27 +359,26 @@ MainProgram(int argc, char *argv[])
 	if (isEmpty(vl_locale)
 	    || isEmpty(vl_encoding)) {
 	    TRACE(("...checking original locale '%s'\n", NonNull(old_locale)));
-	    if (is_utf8_encoding(old_encoding)) {
+	    if (vl_is_utf8_encoding(old_encoding)) {
 		TRACE(("original encoding is UTF-8\n"));
 		narrow_locale = 0;
 	    } else {
 		set_posix_locale();
 	    }
-	} else if (is_utf8_encoding(vl_encoding)) {
+	} else if (vl_is_utf8_encoding(vl_encoding)) {
 	    TRACE(("narrow encoding '%s' is already UTF-8!\n", NonNull(vl_encoding)));
 	    narrow_locale = 0;
-	} else if (!is_8bit_encoding(vl_encoding)) {
+	} else if (!vl_is_8bit_encoding(vl_encoding)) {
 	    set_posix_locale();
 	}
 #endif
 	if (vl_locale == 0)
-	    vl_locale = "built-in";
+	    vl_locale = strmalloc("built-in");
 	if (vl_encoding == 0)
-	    vl_encoding = VL_LOC_LATIN1;
+	    vl_encoding = strmalloc(VL_LOC_LATIN1);
 
-	/* make our own copy of the strings */
-	vl_locale = strmalloc(vl_locale);
-	vl_encoding = strmalloc(vl_encoding);
+	FreeIfNeeded(old_locale);
+	FreeIfNeeded(old_encoding);
     }
 #endif /* OPT_LOCALE */
 
@@ -796,7 +795,7 @@ MainProgram(int argc, char *argv[])
      * If more than one startup file is named, remember the last.
      */
     if (!is_empty_buf(init_bp)) {
-	startstat = run_startup_commands(init_bp);
+	startstat = run_and_discard(&init_bp);
 	if (!startstat)
 	    goto begin;
 
@@ -813,7 +812,7 @@ MainProgram(int argc, char *argv[])
 
 		b2printf(init_bp, "%s", vileinit);
 
-		startstat = run_startup_commands(init_bp);
+		startstat = run_and_discard(&init_bp);
 		if (!startstat)
 		    goto begin;
 	    } else {
@@ -866,7 +865,7 @@ MainProgram(int argc, char *argv[])
      * That ensures that they override the init-file(s).
      */
     msg = "[Use ^A-h, ^X-h, or :help to get help]";
-    if (!run_startup_commands(opts_bp))
+    if (!run_and_discard(&opts_bp))
 	startstat = FALSE;
 
 #if OPT_POPUP_MSGS

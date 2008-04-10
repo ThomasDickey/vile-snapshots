@@ -1,5 +1,5 @@
 /*
- * $Id: eightbit.c,v 1.29 2008/04/06 16:28:02 tom Exp $
+ * $Id: eightbit.c,v 1.36 2008/04/09 18:19:11 tom Exp $
  *
  * Maintain "8bit" file-encoding mode by converting incoming UTF-8 to single
  * bytes, and providing a function that tells vile whether a given Unicode
@@ -16,6 +16,8 @@
 #include <locale.h>
 #include <langinfo.h>
 #endif
+
+#define StrMalloc(s) ((s) ? strmalloc(s) : 0)
 
 #if DISP_TERMCAP || DISP_CURSES
 static int (*save_getch) (void);
@@ -568,16 +570,63 @@ cmp_rindex(const void *a, const void *b)
 }
 
 #if OPT_ICONV_FUNCS
-static iconv_t mb_desc;
+#define NO_ICONV  (iconv_t)(-1)
+
+static iconv_t mb_desc = NO_ICONV;
+
+static int
+try_encoding(char *from, char *to)
+{
+    mb_desc = iconv_open(to, from);
+    return (mb_desc != NO_ICONV);
+}
 
 static void
 open_encoding(char *from, char *to)
 {
     TRACE(("open_encoding(from=%s, to=%s)\n", from, to));
-    mb_desc = iconv_open(to, from);
-    if (mb_desc == (iconv_t) (-1)) {
+    if (!try_encoding(from, to)) {
 	fprintf(stderr, "Cannot setup translation from %s to %s\n", from, to);
 	tidy_exit(BADEXIT);
+    }
+}
+
+static void
+close_encoding(void)
+{
+    if (mb_desc != NO_ICONV) {
+	iconv_close(mb_desc);
+	mb_desc = NO_ICONV;
+    }
+}
+
+static void
+initialize_table_8bit_utf8(void)
+{
+    int n;
+
+    for (n = 0; n < N_chars; ++n) {
+	size_t converted;
+	char input[80];
+	ICONV_CONST char *ip = input;
+	char output[80];
+	char *op = output;
+	size_t in_bytes = 1;
+	size_t out_bytes = sizeof(output);
+	input[0] = n;
+	input[1] = 0;
+	converted = iconv(mb_desc, &ip, &in_bytes, &op, &out_bytes);
+	if (converted == (size_t) (-1)) {
+	    TRACE(("err:%d\n", errno));
+	    TRACE(("convert(%d) %d %d/%d\n", n,
+		   (int) converted, (int) in_bytes, (int) out_bytes));
+	} else {
+	    output[sizeof(output) - out_bytes] = 0;
+	    table_8bit_utf8[n].text = strmalloc(output);
+	    vl_conv_to_utf32(&(table_8bit_utf8[n].code),
+			     table_8bit_utf8[n].text,
+			     strlen(table_8bit_utf8[n].text));
+	}
     }
 }
 #endif /* OPT_ICONV_FUNCS */
@@ -586,19 +635,20 @@ void
 vl_init_8bit(const char *wide, const char *narrow)
 {
     int n;
+    char *narrow_enc = 0;
 
     TRACE((T_CALLED "vl_init_8bit(%s, %s)\n", NonNull(wide), NonNull(narrow)));
 #if OPT_ICONV_FUNCS
     if (wide == 0 || narrow == 0) {
 	wide_locale = 0;
 	narrow_locale = 0;
+	vl_get_encoding(&narrow_enc, narrow);
     } else if (strcmp(wide, narrow)) {
 	char *wide_enc = 0;
-	char *narrow_enc = 0;
 
 	TRACE(("setup_locale(%s, %s)\n", wide, narrow));
-	wide_locale = wide;
-	narrow_locale = narrow;
+	wide_locale = StrMalloc(wide);
+	narrow_locale = StrMalloc(narrow);
 	vl_get_encoding(&wide_enc, wide);
 	vl_get_encoding(&narrow_enc, narrow);
 	TRACE(("...setup_locale(%s, %s)\n",
@@ -613,31 +663,8 @@ vl_init_8bit(const char *wide, const char *narrow)
 	    && wide_enc != 0
 	    && strcmp(narrow_enc, wide_enc)) {
 	    open_encoding(narrow_enc, wide_enc);
-
-	    for (n = 0; n < N_chars; ++n) {
-		size_t converted;
-		char input[80];
-		ICONV_CONST char *ip = input;
-		char output[80];
-		char *op = output;
-		size_t in_bytes = 1;
-		size_t out_bytes = sizeof(output);
-		input[0] = n;
-		input[1] = 0;
-		converted = iconv(mb_desc, &ip, &in_bytes, &op, &out_bytes);
-		if (converted == (size_t) (-1)) {
-		    TRACE(("err:%d\n", errno));
-		    TRACE(("convert(%d) %d %d/%d\n", n,
-			   (int) converted, (int) in_bytes, (int) out_bytes));
-		} else {
-		    output[sizeof(output) - out_bytes] = 0;
-		    table_8bit_utf8[n].text = strmalloc(output);
-		    vl_conv_to_utf32(&(table_8bit_utf8[n].code),
-				     table_8bit_utf8[n].text,
-				     strlen(table_8bit_utf8[n].text));
-		}
-	    }
-	    iconv_close(mb_desc);
+	    initialize_table_8bit_utf8();
+	    close_encoding();
 
 	    /*
 	     * If we were able to convert in one direction, the other should
@@ -645,20 +672,36 @@ vl_init_8bit(const char *wide, const char *narrow)
 	     */
 	    open_encoding(wide_enc, narrow_enc);
 	}
+	FreeAndNull(wide_enc);
+	FreeAndNull(narrow_enc);
     } else {
 	wide_locale = 0;
-	narrow_locale = narrow;
+	narrow_locale = StrMalloc(narrow);
+	vl_get_encoding(&narrow_enc, narrow);
+	if (try_encoding(narrow_enc, "UTF-8")) {
+	    initialize_table_8bit_utf8();
+	    close_encoding();
+	}
+	FreeAndNull(narrow_enc);
     }
+#else
+    vl_get_encoding(&narrow_enc, narrow);
 #endif /* OPT_ICONV_FUNCS */
 
-    for (n = 0; n < N_chars; ++n) {
-	if (table_8bit_utf8[n].text == 0) {
-	    char temp[10];
-	    int len = vl_conv_to_utf8((UCHAR *) temp, n, sizeof(temp));
+    /*
+     * Even if we do not have iconv, we can still convert between the narrow
+     * encoding (if it happens to be ISO-8859-1) and UTF-8.
+     */
+    if (vl_is_latin1_encoding(narrow_enc)) {
+	for (n = 0; n < N_chars; ++n) {
+	    if (table_8bit_utf8[n].text == 0) {
+		char temp[10];
+		int len = vl_conv_to_utf8((UCHAR *) temp, n, sizeof(temp));
 
-	    temp[len] = EOS;
-	    table_8bit_utf8[n].code = n;
-	    table_8bit_utf8[n].text = strmalloc(temp);
+		temp[len] = EOS;
+		table_8bit_utf8[n].code = n;
+		table_8bit_utf8[n].text = strmalloc(temp);
+	    }
 	}
     }
 
@@ -669,12 +712,45 @@ vl_init_8bit(const char *wide, const char *narrow)
 	TRACE2(("code %d is \\u%04X:%s\n", n,
 		table_8bit_utf8[n].code,
 		NonNull(table_8bit_utf8[n].text)));
-	rindex_8bit[n].code = n;
+	rindex_8bit[n].code = table_8bit_utf8[n].code;
 	rindex_8bit[n].rinx = n;
     }
     qsort(rindex_8bit, N_chars, sizeof(RINDEX_8BIT), cmp_rindex);
 
     returnVoid();
+}
+
+int
+vl_is_8bit_encoding(const char *value)
+{
+    int rc = vl_is_latin1_encoding(value);
+    if (!rc) {
+	rc = (isEmpty(value)
+	      || strstr(value, "ASCII") != 0
+	      || strstr(value, "ANSI") != 0
+	      || strncmp(value, "KOI8-R", 6) == 0);
+    }
+    return rc;
+}
+
+int
+vl_is_latin1_encoding(const char *value)
+{
+    return (!isEmpty(value)
+	    && (strncmp(value, "ISO-8859", 8) == 0
+		|| strncmp(value, "ISO 8859", 8) == 0
+		|| strncmp(value, "ISO_8859", 8) == 0
+		|| strncmp(value, "ISO8859", 7) == 0
+		|| strncmp(value, "8859", 4) == 0));
+}
+
+int
+vl_is_utf8_encoding(const char *value)
+{
+    return (!isEmpty(value)
+	    && (strstr(value, "UTF-8") != 0
+		|| strstr(value, "UTF8") != 0
+		|| strcmp(value, "646") == 0));
 }
 
 /*
@@ -818,7 +894,7 @@ vl_mb_getch(void)
 	op = output;
 	out_bytes = sizeof(output);
 	*output = 0;
-	if (mb_desc != 0) {
+	if (mb_desc != NO_ICONV) {
 	    /*
 	     * First, try with iconv, assuming it does a better job.
 	     */
@@ -946,10 +1022,7 @@ eightbit_leaks(void)
     int n;
 
 #if OPT_ICONV_FUNCS
-    if (mb_desc) {
-	iconv_close(mb_desc);
-	mb_desc = 0;
-    }
+    close_encoding();
 #endif
 
     for (n = 0; n < N_chars; ++n) {
@@ -958,5 +1031,7 @@ eightbit_leaks(void)
 	    table_8bit_utf8[n].text = 0;
 	}
     }
+    FreeIfNeeded(wide_locale);
+    FreeIfNeeded(narrow_locale);
 }
 #endif
