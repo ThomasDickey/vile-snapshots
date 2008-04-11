@@ -1,7 +1,10 @@
 Changes for vile 9.7 (released ??? ??? ?? ????)
 
- 200804??
+ 20080410 (k)
 	> Tom Dickey:
+	+ remove obsolete lex-filters for perl and ruby (only the C versions
+	  have been supported).
+	+ update list of filters in doc/config.doc
 	+ improve locale initialization, checking if there is no installed
 	  narrow locale corresponding to the given (wide) locale.  In that
 	  case, default to either ISO-8859-1 or ASCII, depending on whether
@@ -25,7 +28,7 @@ Changes for vile 9.7 (released ??? ??? ?? ????)
 	+ fix display of ISO-8859-1 encoded file when file-encoding is set
 	  to utf-8 (report by Chris Green).
 
- 20080325
+ 20080325 (j)
 	> Tom Dickey:
 	+ modify curses-driver to avoid a curses-refresh (repainting the
 	  whole screen) between a shell command and the "Press return to

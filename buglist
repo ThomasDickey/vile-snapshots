@@ -3,7 +3,7 @@
 ------------------------
 vile bug/enhancement/wish list (mostly wishes ;-)
 ------------------------
-$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.410 2008/03/24 20:33:28 tom Exp $
+$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.411 2008/04/10 21:55:46 tom Exp $
 ----------------------
 	(E means enhancement, L,M,H are low, medium, high priority)
 
@@ -1611,3 +1611,14 @@ There are two types of curses library against which vile could be linked.
 Those are the "narrow" SVr4 curses and the "wide" X/Open curses.  For the
 latter, vile will assume that the curses library can actually display
 wide characters.  Not all implementations work well (ncursesw is preferred).
+
+-- 08-04-10 (tom)
+Select/paste in winvile works transparently for 8-bit (ASCII and ISO-8859-1)
+data.  It is possible to copy UTF-8 data from a buffer which stores UTF-8 (or
+-16, -32), but the target must expect UTF-8, since winvile is not converting it
+to the CF_UNICODETEXT type.
+
+-- 08-04-10 (tom)
+Basic Unicode support so far covers file load/save, editing via UTF-8.
+However, regular expressions still know only about the "narrow" locale
+encoding, e.g., ISO-8859-1.
