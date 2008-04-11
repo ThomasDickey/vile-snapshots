@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.648 2008/04/09 10:11:24 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.649 2008/04/10 19:55:19 tom Exp $
  *
  */
 
@@ -1308,7 +1308,19 @@ extern FILE *vms_rpipe (const char *cmd, int fd, const char *input_file);
 /* w32isms */
 #if SYS_WINNT
 
+#if 0
+/*
+ * PASS_HIGH is used in filtering cut/paste; characters that do not pass are
+ * translated to hexadecimal escapes, e.g., "\x34".  Currently only ANSI
+ * (CF_TEXT) is passed, though it would be nice to pass Unicode
+ * (CF_UNICODETEXT), when the default encoding is UTF-8 (2008-04-10).
+ */
+#define  PASS_HIGH(c)        ((global_g_val(VAL_FILE_ENCODING) >= enc_UTF8) \
+			      || ((int)(c) <= print_high && (int)(c) >= print_low))
+#else
 #define  PASS_HIGH(c)        ((int)(c) <= print_high && (int)(c) >= print_low)
+#endif
+
 #define  _SPC_               ' '
 #define  _TAB_               '\t'
 #define  _TILDE_             '~'
