@@ -1,0 +1,991 @@
+dnl Process this file with autoconf to produce a configure script.
+AC_REVISION($Revision: 1.244 $)
+AC_PREREQ(2.13.20030927)
+rm -f config.cache
+
+### Use "configure -with-screen" to override the default configuration, which is
+### termcap-based on unix systems.
+
+dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.244 2008/03/10 00:04:35 tom Exp $
+
+define(MAKELIST, sh $srcdir/filters/makelist.sh $srcdir/filters/genmake.mak)
+
+dnl
+AC_INIT(mktbls.c)
+AC_CONFIG_HEADER(config.h:config_h.in)
+
+CF_CHECK_CACHE
+
+###	checks for compiler
+AC_PROG_CC
+AC_PROG_CPP
+AC_GCC_TRADITIONAL
+
+###	checks for UNIX variants that set C preprocessor variables
+AC_AIX
+AC_ISC_POSIX
+AC_MINIX
+
+###	checks for compiler characteristics
+CF_INTEL_COMPILER
+CF_PROG_EXT
+CF_ANSI_CC_REQD
+AC_CONST
+CF_CC_INIT_UNIONS
+CF_XOPEN_SOURCE
+
+case $host_os in hpux*) CPPFLAGS="-DYYCHAR_ARRAY $CPPFLAGS";; esac; AC_DECL_YYTEXT
+
+###	checks for alternative programs
+CF_MAKEFLAGS
+AC_PROG_INSTALL
+
+AC_PROG_MAKE_SET
+AC_PROG_AWK
+AC_PROG_RANLIB
+
+CF_SUBST(archiver,AR,ar)
+CF_SUBST(archiver options,AR_OPTS,rv)
+
+CF_DISABLE_ECHO
+CF_PATHSEP
+CF_LIB_PREFIX
+
+###	options to control how much we build
+BUILTHDRS="nebind.h neproto.h neexec.h nefunc.h nemode.h nename.h nevars.h nefkeys.h nefsms.h"
+BUILTLIBS=
+BUILTSRCS=
+
+AC_MSG_CHECKING(if you wish to build only core functions)
+CF_ARG_DISABLE(extensions,
+	[  --disable-extensions    test: build only core functions],
+	[DISABLE_EXTS=yes],
+	[DISABLE_EXTS=no])
+AC_MSG_RESULT($DISABLE_EXTS)
+if test "$DISABLE_EXTS" = yes ; then
+	AC_DEFINE(SMALLER)
+	AC_DEFINE(FEWNAMES)
+	cf_extensions=no
+else
+	EXTRAOBJS="$EXTRAOBJS api\$o btree\$o history\$o isearch\$o select\$o statevar\$o ucrypt\$o xterm\$o"
+	cf_extensions=yes
+fi
+
+AC_MSG_CHECKING(if you wish to disable shell/external commands)
+CF_ARG_DISABLE(shell,
+	[  --disable-shell         test: disable shell/external commands],
+	[DISABLE_SHELL=yes],
+	[DISABLE_SHELL=no])
+AC_MSG_RESULT($DISABLE_SHELL)
+if test "$DISABLE_SHELL" = yes ; then
+	AC_DEFINE(OPT_SHELL,0)
+else
+	EXTRAOBJS="$EXTRAOBJS npopen\$o spawn\$o"
+fi
+
+###	use option --with-cflags to set default CFLAGS
+AC_MSG_CHECKING(for CFLAGS options)
+AC_ARG_WITH(CFLAGS,
+	[  --with-CFLAGS=value     set default for $CFLAGS],
+	[cflags="$withval"])
+if test -z "$cflags"; then
+	AC_ARG_WITH(cflags,
+		[  --with-cflags=value     (same as --with-CFLAGS)],
+		[cflags="$withval"])
+fi
+
+# if the user specified nothing else, set -O.  user can override
+# with --with-cflags=" "
+if test -n "$cflags"; then
+	CFLAGS="$cflags"
+elif test -z "$CFLAGS" ; then
+	CFLAGS="-O"
+fi
+AC_MSG_RESULT($cflags)
+
+AC_MSG_CHECKING(if you want to compile-in plugin support)
+CF_ARG_ENABLE(plugins,
+	[  --enable-plugins        compile-in plugin support],
+	[with_plugins=yes],
+	[with_plugins=no])
+AC_MSG_RESULT($with_plugins)
+
+AC_MSG_CHECKING(if you want to build syntax filters)
+CF_ARG_DISABLE(filters,
+	[  --disable-filters       do not build syntax filters],
+	[with_filters=no],
+	[with_filters=yes])
+AC_MSG_RESULT($with_filters)
+
+MAKE_FILTERS=
+AC_SUBST(MAKE_FILTERS)
+
+if test "$with_filters" = yes ; then
+
+# allow user to preset these environment variables:
+: ${VILE_BUILT_IN_FILTERS=none}
+: ${VILE_LOADABLE_FILTERS=none}
+: ${VILE_EXTERNAL_FILTERS=all}
+
+AC_MSG_CHECKING(if you want built-in syntax filters)
+AC_ARG_WITH(builtin-filters,
+[  --with-builtin-filters=XX specify filters to compile built-in vs external.
+                          Give an option value to specify only certain filters,
+			  i.e., a comma-separated list of filter-names.
+                          The default, if no value is given is 'all'.
+                          The default if the option is not given is 'none'],
+[test "$withval" = yes && withval=all; VILE_BUILT_IN_FILTERS="$withval"],
+
+[VILE_BUILT_IN_FILTERS=none])
+test "$VILE_BUILT_IN_FILTERS" = no && VILE_BUILT_IN_FILTERS=none
+AC_MSG_RESULT($VILE_BUILT_IN_FILTERS)
+
+AC_MSG_CHECKING(if you want loadable syntax filters)
+AC_ARG_WITH(loadable-filters,
+[  --with-loadable-filters=XX specify filters to dynamically load at runtime.
+                          Give an option value to specify only certain filters,
+			  i.e., a comma-separated list of filter-names.
+                          The default, if no value is given is 'all'.
+                          The default if the option is not given is 'none'],
+[test "$withval" = yes && withval=all; VILE_LOADABLE_FILTERS="$withval"],
+
+[VILE_LOADABLE_FILTERS=none])
+test "$VILE_LOADABLE_FILTERS" = no && VILE_LOADABLE_FILTERS=none
+AC_MSG_RESULT($VILE_LOADABLE_FILTERS)
+
+# If both "--with-builtin-filters" and "--with-loadable-filters" were given,
+# the user must provide an explicit list since we cannot build both at once.
+if test "$VILE_BUILT_IN_FILTERS" != none && test "$VILE_LOADABLE_FILTERS" != none
+then
+	builtins=`MAKELIST lc "$VILE_BUILT_IN_FILTERS"`
+	test "$builtins" = "." && exit 1
+	loadable=`MAKELIST lc "$VILE_LOADABLE_FILTERS"`
+	test "$loadable" = "." && exit 1
+
+	for cf_b in $builtins
+	do
+		for cf_l in $loadable
+		do
+			if test "$cf_b" = "$cf_l"
+			then
+				AC_MSG_ERROR(Cannot overlap built-in and loadable filter lists)
+			fi
+		done
+	done
+fi
+
+# Anything that is neither a built-in or a loadable filter is an external
+# filter.  We could have 3 options, but resolving inconsistencies would be
+# a lot more work.
+if test "$VILE_BUILT_IN_FILTERS" = none && test "$VILE_LOADABLE_FILTERS" = none
+then
+	VILE_EXTERNAL_FILTERS=all
+elif test "$VILE_BUILT_IN_FILTERS" = all || test "$VILE_LOADABLE_FILTERS" = all
+then
+	VILE_EXTERNAL_FILTERS=none
+else
+	complete=`MAKELIST lc all`
+	builtins=`MAKELIST lc "$VILE_BUILT_IN_FILTERS"`
+	loadable=`MAKELIST lc "$VILE_LOADABLE_FILTERS"`
+	VILE_EXTERNAL_FILTERS=
+	for cf_a in $complete
+	do
+		found=no
+		for cf_b in $builtins $loadable
+		do
+			if test $cf_b = $cf_a ; then
+				found=yes
+				break
+			fi
+		done
+		if test $found = no ; then
+			if test -z "$VILE_EXTERNAL_FILTERS" ; then
+				VILE_EXTERNAL_FILTERS=$cf_a
+			else
+				VILE_EXTERNAL_FILTERS="$VILE_EXTERNAL_FILTERS,$cf_a"
+			fi
+		fi
+	done
+	test -z "$VILE_EXTERNAL_FILTERS" && VILE_EXTERNAL_FILTERS=none
+fi
+
+AC_MSG_CHECKING(if any filters are built-in/loadable)
+
+builtins=`MAKELIST l "$VILE_BUILT_IN_FILTERS"`
+loadable=`MAKELIST l "$VILE_LOADABLE_FILTERS"`
+
+if test -n "$builtins" ; then
+	cf_needflex=yes
+elif test -n "$loadable" ; then
+	cf_needflex=yes
+else
+	cf_needflex=no
+fi
+AC_MSG_RESULT($cf_needflex)
+
+CF_LEX_VERSION
+if test -z "$LEX_VERSION" ; then
+    LEX_IS_FLEX=no
+else
+    LEX_IS_FLEX=yes
+    AC_DEFINE(LEX_IS_FLEX)
+fi
+
+if test "$cf_needflex" = yes ; then
+	if test -z "$LEX_VERSION"
+	then
+		AC_MSG_ERROR(You need flex to compile builtin filters)
+	elif ( expr $LEX_VERSION \< 2.5 >/dev/null )
+	then
+		AC_MSG_ERROR(Sorry - your version of flex is too old: $LEX_VERSION)
+	elif ( expr $LEX_VERSION \>= 2.6 >/dev/null )
+	then
+		AC_MSG_ERROR(Sorry - your version of flex is too unstable: $LEX_VERSION)
+	else
+		LEX_SUBVERSION=`echo "$LEX_VERSION" | sed -e 's/^2.5.//'`
+		if test -z "$LEX_SUBVERSION"
+		then
+			AC_MSG_ERROR(This version of flex cannot compile builtin filters)
+		elif test $LEX_SUBVERSION = 4a
+		then
+			CF_VERBOSE(good)
+		elif ( expr $LEX_SUBVERSION \> 4 >/dev/null )
+		then
+			AC_MSG_ERROR(This version of flex cannot compile builtin filters)
+		fi
+	fi
+fi
+
+# "--disable-filters" was given.
+else
+	VILE_BUILT_IN_FILTERS=none
+	VILE_LOADABLE_FILTERS=none
+	VILE_EXTERNAL_FILTERS=none
+	MAKE_FILTERS="#"
+fi
+
+dnl These substitutions are used in makefile.in to build builtflt.h
+AC_SUBST(VILE_BUILT_IN_FILTERS)
+AC_SUBST(VILE_LOADABLE_FILTERS)
+
+AC_MSG_CHECKING(for library path)
+CF_WITH_PATHLIST(libdir-path,
+[  --with-libdir-path=LIST specify locations to search for filters, etc.],
+VILE_LIBDIR_PATH,
+"\[$](libdir)/vile",[],[define])
+AC_MSG_RESULT($VILE_LIBDIR_PATH)
+
+AC_MSG_CHECKING(for startup path)
+CF_WITH_PATHLIST(startup-path,
+[  --with-startup-path=LIST specify locations to search for vile.hlp, etc.],
+VILE_STARTUP_PATH,
+"\[$](datadir)",[],[define])
+AC_MSG_RESULT($VILE_STARTUP_PATH)
+
+CF_LEX_CHAR_CLASSES
+CF_LEX_STATES
+
+if test "$LEX_CHAR_CLASSES" = yes ; then
+	LEX_CHAR_CLASSES=
+else
+	LEX_CHAR_CLASSES='sh $(srcdir)/noclass.sh '
+fi
+
+AC_MSG_CHECKING(if you want to use perl as an extension language)
+AC_ARG_WITH(perl,
+	[  --with-perl             enable use of Perl as an extension language],
+	[with_perl="$withval"],
+	[with_perl=no])
+AC_MSG_RESULT($with_perl)
+if test "$with_perl" = yes ; then
+	CF_PROG_PERL(5.004)
+	if test "$PERL" = no; then
+	    AC_ERROR([perl not found])
+	fi
+	perl_lib_path=`$PERL -MConfig -e 'print $Config{privlib}'`
+	AC_DEFINE(OPT_PERL)
+	EXTRAOBJS="$EXTRAOBJS perl\$o"
+	BUILTSRCS="$BUILTSRCS perl.c"
+	LINK_PREFIX=`$PERL -MConfig -e 'print $Config{shrpenv}'`
+	ac_link="$LINK_PREFIX $ac_link"
+	CF_CHECK_CFLAGS(`$PERL -MExtUtils::Embed -e ccopts`)
+	LIBS="$LIBS `$PERL -MExtUtils::Embed -e ldopts`"
+	EXTRA_INSTALL_DIRS="$EXTRA_INSTALL_DIRS \$(INSTALL_PERL_DIRS)"
+	EXTRA_INSTALL_FILES="$EXTRA_INSTALL_FILES \$(INSTALL_PERL_FILES)"
+fi
+AC_SUBST(perl_lib_path)
+AC_SUBST(PERL)
+AC_SUBST(EXTRA_INSTALL_DIRS)
+AC_SUBST(EXTRA_INSTALL_FILES)
+
+# X11 checks will sometimes add to CFLAGS.  We want the state of CFLAGS
+# prior to these checks
+
+dnl: why this? AC_DYNIX_SEQ
+AC_CHECK_FUNC(getpwnam,,AC_CHECK_LIB(sun,getpwnam))
+
+# check for a lint program.
+AC_CHECK_PROGS(LINT, lint alint splint lclint, [])
+if test -n "$LINT"
+then
+	AC_DEFINE(SYSTEM_HAS_LINT_PROG)
+fi
+
+###	checks for header files
+AC_STDC_HEADERS
+AC_HEADER_DIRENT
+AM_LANGINFO_CODESET
+AC_CHECK_HEADERS( \
+fcntl.h \
+ioctl.h \
+limits.h \
+memory.h \
+poll.h \
+pwd.h \
+search.h \
+select.h \
+setjmp.h \
+sgtty.h \
+signal.h \
+stdarg.h \
+stddef.h \
+stdlib.h \
+string.h \
+sys/filio.h \
+sys/ioctl.h \
+sys/itimer.h \
+sys/param.h \
+sys/resource.h \
+sys/select.h \
+sys/socket.h \
+sys/time.h \
+sys/wait.h \
+termio.h \
+termios.h \
+unistd.h \
+utime.h \
+varargs.h \
+)
+
+###	checks for typedefs
+AC_TYPE_SIGNAL
+AC_DEFINE(SIGT,RETSIGTYPE)
+if test $ac_cv_type_signal = void; then
+	AC_DEFINE(SIGRET,[/*do nothing*/])
+else
+	AC_DEFINE(SIGRET,[return 0])
+fi
+
+AC_TYPE_SIZE_T
+AC_TYPE_UID_T
+AC_TYPE_PID_T
+AC_CHECK_TYPE(time_t, long)
+
+###	checks for library functions
+if test "$cross_compiling" = no; then
+	AC_FUNC_SETVBUF_REVERSED
+fi
+
+###	checks for structures
+AC_STAT_MACROS_BROKEN
+AC_ST_BLKSIZE
+AC_ST_BLOCKS
+AC_ST_RDEV
+AC_STRUCT_TM
+CF_HEADER_RESOURCE
+CF_SIZECHANGE
+CF_FP_ISREADY
+CF_WCTYPE
+
+###	checks for system services and user specified options
+AC_LONG_FILE_NAMES
+CF_RESTARTABLE_PIPEREAD		# is a read() of a pipe restartable?
+
+AC_SUBST(CFLAGS)
+AC_SUBST(LIBS)
+AC_SUBST(X_CFLAGS)
+AC_SUBST(X_LIBS)
+AC_SUBST(X_EXTRA_LIBS)
+AC_SUBST(SCREEN)
+AC_SUBST(TARGET)
+AC_SUBST(LINK_PREFIX)
+dnl
+dnl The killpg test and the tests for the presence of certain functions on
+dnl a particular operating system are done prior to the checks for existence
+dnl of screen libraries due to a problem with -lXt on certain SunOS systems.
+dnl The nature of this problem is described in the FAQ on X.  Look for the
+dnl following subject: ``What are these problems with "_XtInherit not found"
+dnl on the Sun? ...''  The long and the short of it is that AC_HAVE_FUNCS will
+dnl not work properly (without being rewritten) if placed after adding -lXt to
+dnl LIBS on SunOS (and perhaps some others as well).
+dnl
+AC_FUNC_SETPGRP
+AC_FUNC_GETPGRP
+CF_KILLPG
+CF_ERRNO
+CF_SYS_ERRLIST
+AC_DEFINE(SYS_UNIX)
+AC_DEFINE(scrn_chosen)
+# Try to eventually eliminate the following
+AC_DEFINE(os_chosen)
+
+AC_MSG_CHECKING(for screen type)
+AC_ARG_WITH(screen,
+[  --with-screen=value     specify terminal driver.  The default is tcap, for
+                          the termcap/terminfo driver.  Other values include
+                          curses, ncurses, ncursesw, X11, OpenLook, Motif,
+			  Athena, Xaw, Xaw3d, neXtaw and ansi.],
+[screen=$withval])
+
+if test -z "$screen"; then
+	AC_ARG_WITH(scr,
+		[  --with-scr=value        (same as --with-screen)],
+		[screen=$withval])
+fi
+test -z "$screen" && test "$with_x" = yes && screen=x11
+if test -z "$screen"; then
+	screen=termcap;
+fi
+AC_MSG_RESULT($screen)
+
+: See if this is any type of xvile configuration:
+case "$screen" in
+	[[Oo]]pen[[Ll]]ook | [[Mm]]otif* | [[xX]] | [[Aa]]thena | [[xX]][[atTmMoO]]* | [[xX]]11 | neXtaw | XawPlus )
+		EXTRA_INSTALL_FILES="$EXTRA_INSTALL_FILES \$(INSTALL_X_FILES)"
+		CF_X_TOOLKIT
+		CF_WITH_IMAKE_CFLAGS
+		X_CFLAGS="$X_CFLAGS $IMAKE_CFLAGS"
+		LDFLAGS="$LDFLAGS $X_LIBS"
+		CF_CHECK_CFLAGS($X_CFLAGS)
+		SCREEN=x11
+		TARGET=xvile
+		AC_DEFINE(DISP_X11)
+		AC_DEFINE(XTOOLKIT)
+		AC_CHECK_HEADERS(X11/IntrinsicI.h X11/Xpoll.h)
+	;;
+esac
+
+: Find the libraries that apply to the selected screen-type:
+case "$screen" in
+	[[Oo]]pen* | [[Xx]]ol )
+		AC_DEFINE(OL_WIDGETS)
+		CF_X_OPENLOOK
+	 	test "$cf_extensions" = no && EXTRAOBJS="$EXTRAOBJS select\$o"
+	;;
+	[[mM]]otif* | [[Xx]]m )
+		AC_DEFINE(MOTIF_WIDGETS)
+		CF_X_MOTIF
+	 	test "$cf_extensions" = yes && EXTRAOBJS="$EXTRAOBJS x11menu\$o menu\$o"
+	 	test "$cf_extensions" = no && EXTRAOBJS="$EXTRAOBJS select\$o"
+	;;
+	[[Aa]]thena* | [[Xx]]aw* | neXtaw | XawPlus )
+		AC_DEFINE(ATHENA_WIDGETS)
+		case $screen in #(vi
+		*aw*)
+			cf_x_athena=`echo $screen | sed -e s/x/X/`
+			;;
+		esac
+		CF_X_ATHENA
+	 	test "$cf_extensions" = yes && EXTRAOBJS="$EXTRAOBJS x11menu\$o menu\$o"
+	 	test "$cf_extensions" = no && EXTRAOBJS="$EXTRAOBJS select\$o"
+	;;
+	x | X | [[Xx]][[Tt]]* | [[Xx]]11 )
+		AC_DEFINE(NO_WIDGETS)
+	 	test "$cf_extensions" = no && EXTRAOBJS="$EXTRAOBJS select\$o"
+	;;
+	ansi)
+		SCREEN=ansi
+		TARGET=vile
+		AC_DEFINE(DISP_ANSI)
+	;;
+	curses)
+		SCREEN=curses
+		TARGET=vile
+		AC_DEFINE(DISP_CURSES)
+		CF_CURSES_CPPFLAGS
+		CF_NCURSES_VERSION
+		CF_CURSES_LIBS
+	;;
+	ncurses)
+		SCREEN=curses
+		TARGET=vile
+		AC_DEFINE(DISP_CURSES)
+		CF_NCURSES_CONFIG
+	;;
+	ncursesw)
+		SCREEN=curses
+		TARGET=vile
+		AC_DEFINE(DISP_CURSES)
+		CF_NCURSES_CONFIG(ncursesw)
+	;;
+	* )
+		SCREEN=tcap
+		TARGET=vile
+		AC_DEFINE(DISP_TERMCAP)
+		AC_MSG_CHECKING(if you want to use ncurses)
+		AC_ARG_WITH(ncurses,
+			[  --with-ncurses          use ncurses rather than termcap/terminfo],
+			[screen=ncurses],
+			[withval=no])
+		AC_MSG_RESULT($withval)
+		CF_TERMCAP_LIBS($screen)
+	;;
+esac
+
+# work around for broken FreeBSD header files (see tcap.h)
+case "$cf_cv_ncurses_version" in
+5.2.20020615)
+	AC_DEFINE(FREEBSD_BROKE_NCURSES) 	
+	;;
+esac
+
+: Check for termcap vs terminfo:
+cf_tc_funcs=""
+cf_tc_externs=""
+if test "$SCREEN" = curses ; then
+	CF_TERMCAP_LIBS
+    CF_CURSES_FUNCS(addnwstr)
+	cf_tc_funcs="use_default_colors"
+	AC_DEFINE(NEED_CURSES_H)
+fi
+if test ".$cf_cv_termlib" = .terminfo ; then
+	AC_DEFINE(USE_TERMINFO)
+	cf_tc_funcs="$cf_tc_funcs tigetint tigetnum tparam tparm"
+	cf_tc_externs="$cf_tc_funcs tgoto tigetstr tputs tigetflag"
+elif test ".$cf_cv_termlib" = .termcap ; then
+	# BSD 'tputs()' may need 'PC' to be set.
+	AC_TRY_LINK([],[extern char PC; PC = 0],
+		[AC_DEFINE(HAVE_EXTERN_TCAP_PC)])
+	cf_tc_funcs="$cf_tc_funcs tgetint tgetnum tparam tparm"
+	cf_tc_externs="$cf_tc_funcs tgoto tgetstr tputs tgetent tgetflag"
+else
+	cf_cv_termlib=none
+fi
+
+LIBS="$LIBS $X_EXTRA_LIBS"
+
+CF_CHAR_DEVICE(/dev/tty)
+
+CF_CRYPT_FUNC
+CF_CHECK_FD_SET
+CF_STDIO_UNLOCKED
+
+AC_HAVE_FUNCS( \
+_nc_freeall \
+access \
+alarm \
+crypt \
+getcwd \
+getegid \
+geteuid \
+gethostname \
+getpass \
+getwd \
+killpg \
+mkdir \
+mkdtemp \
+poll \
+popen \
+putenv \
+realpath \
+select \
+setbuffer \
+setgid \
+setitimer \
+setsid \
+setuid \
+setvbuf \
+sigaction \
+sigprocmask \
+strchr \
+strerror \
+strftime \
+strrchr \
+strtoul \
+symlink \
+tcgetattr \
+tdestroy \
+tsearch \
+ttyname \
+umask \
+utime \
+utimes \
+waitpid $cf_tc_funcs \
+)
+
+CF_MKSTEMP
+
+###	Miscellaneous options
+
+ICON_SUFFIX=.xbm
+AC_SUBST(ICON_SUFFIX)
+if test "$TARGET" = xvile ; then
+
+dnl test for Xpm library
+cf_save_cppflags="${CPPFLAGS}"
+cf_save_ldflags="${LDFLAGS}"
+
+AC_MSG_CHECKING(if you want to use the Xpm library for colored icon)
+AC_ARG_WITH(xpm,
+[  --with-xpm=DIR          use Xpm library for colored icon, may specify path],
+	[cf_Xpm_library="$withval"],
+	[cf_Xpm_library=no])
+AC_MSG_RESULT($cf_Xpm_library)
+
+if test "$cf_Xpm_library" != no ; then
+    if test "$cf_Xpm_library" != yes ; then
+	CPPFLAGS="$CPPFLAGS -I$withval/include"
+	LDFLAGS="$LDFLAGS -L$withval/lib"
+    fi
+    AC_CHECK_HEADER(X11/xpm.h,[
+	AC_CHECK_LIB(Xpm, XpmCreatePixmapFromData,[
+	    AC_DEFINE(HAVE_LIBXPM)
+	    ICON_SUFFIX=.xpm
+	    LIBS="-lXpm $LIBS"],
+	    [CPPFLAGS="${cf_save_cppflags}" LDFLAGS="${cf_save_ldflags}"],
+	    [-lX11 $X_LIBS])],
+	[CPPFLAGS="${cf_save_cppflags}" LDFLAGS="${cf_save_ldflags}"])
+fi
+
+if test -n "$cf_x_athena" ; then
+    AC_MSG_CHECKING(if you want to use Xaw scrollbars rather than our own)
+    AC_ARG_WITH(Xaw-scrollbars,
+	[  --with-Xaw-scrollbars   use Xaw scrollbars rather than our own],
+	[cf_Xaw_scrollbars="$withval"],
+	[cf_Xaw_scrollbars=no])
+    AC_MSG_RESULT($cf_Xaw_scrollbars)
+
+    if test "$cf_Xaw_scrollbars" = no ; then
+	AC_DEFINE(OPT_KEV_SCROLLBARS)
+	AC_DEFINE(OPT_KEV_DRAGGING)
+    else
+	AC_DEFINE(OPT_XAW_SCROLLBARS)
+	AC_MSG_CHECKING(if you want to use the drag/scrolling extension with Xaw)
+	AC_ARG_WITH(drag-extension,
+	    [  --with-drag-extension   use drag/scrolling extension with Xaw],
+	    [cf_drag_extension="$withval"],
+	    [cf_drag_extension=no])
+	AC_MSG_RESULT($cf_drag_extension)
+	if test "$cf_drag_extension" != "no" ; then
+	    AC_DEFINE(OPT_KEV_DRAGGING)
+	fi
+    fi
+fi
+
+fi
+
+AC_MSG_CHECKING(if you want to change the number of exec-macros)
+AC_ARG_WITH(exec-macros,
+	[  --with-exec-macros=N    specify count of numbered macros],
+	[cf_exec_macros="$withval"],
+	[cf_exec_macros=no])
+AC_MSG_RESULT($cf_exec_macros)
+test "$cf_exec_macros" != no && AC_DEFINE_UNQUOTED(OPT_EXEC_MACROS,$cf_exec_macros)
+
+CF_LARGEFILE
+
+# I don't know of a reliable test for working locale, but we can at least check
+# that it is available before offering it as an option.
+CF_LOCALE
+if test $cf_cv_locale = yes ; then
+AC_MSG_CHECKING(if you want to use i18n locale support)
+AC_ARG_WITH(locale,
+	[  --with-locale           use i18n support for character-types],
+	[cf_locale="$withval"],
+	[cf_locale="$cf_extensions"])
+AC_MSG_RESULT($cf_locale)
+if test "$cf_locale" != no ; then
+	AC_DEFINE(OPT_LOCALE)
+	EXTRAOBJS="$EXTRAOBJS charsets\$o eightbit\$o wcwidth\$o"
+AM_ICONV
+if test "$am_cv_func_iconv" = yes ; then
+AC_MSG_CHECKING(if you want to use iconv() for locale support)
+AC_ARG_WITH(iconv,
+	[  --with-iconv            use iconv() support for character-types],
+	[cf_func_iconv="$withval"],
+	[cf_func_iconv=yes])
+AC_MSG_RESULT($cf_func_iconv)
+if test "$cf_func_iconv" = yes ; then
+	AC_DEFINE(OPT_ICONV_FUNCS)
+	test "$am_cv_func_iconv" != yes && LIBS="$am_cv_func_iconv $LIBS"
+fi # test $cf_func_iconv" = yes
+fi # test $am_cv_func_iconv = yes
+fi # test $cf_locale != no
+fi # test $cf_cv_locale = yes
+
+###	Debugging/development options
+CF_WITH_NO_LEAKS
+
+AC_ARG_WITH(fakevms,
+	[  --with-fakevms          test: use fake VMS I/O module],
+	[AC_DEFINE(OPT_VMS_PATH)
+	 EXTRAOBJS="$EXTRAOBJS fakevms\$o vms2unix\$o"])
+
+AC_ARG_WITH(trace,
+	[  --with-trace            test: turn on debug-tracing],
+	[AC_DEFINE(OPT_TRACE)
+	 with_trace=yes],
+	[with_trace=])
+
+test -n "${with_trace}${with_no_leaks}" && EXTRAOBJS="$EXTRAOBJS trace\$o"
+
+CF_WITH_WARNINGS
+
+###	Do these last, since they rely on a properly constructed config.h
+
+###	Mandatory checks for missing prototypes:
+CHECK_DECL_FLAG="-I. -I$srcdir -Dscrn_chosen"
+VILE_CHECK_HDRS='
+#define CHECK_PROTOTYPES 1
+#include <estruct.h>
+'
+CHECK_DECL_HDRS="$VILE_CHECK_HDRS"
+
+CF_MISSING_EXTERN( \
+environ \
+getenv \
+getpass \
+getwd \
+malloc \
+realloc \
+rindex \
+strerror \
+strtol \
+)
+
+CF_CURSES_TERM_H
+if test ".$cf_cv_termlib" != ".none"
+then
+CHECK_DECL_HDRS="$VILE_CHECK_HDRS
+#include <tcap.h>
+"
+	CF_TYPE_OUTCHAR
+fi
+if test -n "$cf_tc_externs"
+then
+CF_MISSING_EXTERN( \
+$cf_tc_externs \
+)
+fi
+
+###	Optional checks for missing functions (enabled with --with-warnings)
+if test -n "$with_warnings"
+then
+CHECK_DECL_HDRS="$VILE_CHECK_HDRS"
+CF_MISSING_EXTERN( \
+_nc_freeall \
+access \
+alarm \
+atoi \
+chdir \
+close \
+crypt \
+dup \
+execlp \
+fclose \
+fflush \
+fileno \
+fork \
+fprintf \
+fputs \
+fread \
+free \
+fseek \
+fwrite \
+gethostname \
+getpgrp \
+getpid \
+getuid \
+isatty \
+kill \
+killpg \
+longjmp \
+lstat \
+memset \
+mkdir \
+open \
+pclose \
+perror \
+pipe \
+popen \
+printf \
+puts \
+qsort \
+read \
+readlink \
+select \
+setbuf \
+setbuffer \
+setitimer \
+setjmp \
+setpgrp \
+setsid \
+setvbuf \
+sleep \
+sscanf \
+system \
+time \
+unlink \
+utime \
+utimes \
+wait \
+write \
+)
+
+CHECK_DECL_HDRS="$VILE_CHECK_HDRS
+#if HAVE_SYS_IOCTL_H
+#include	<sys/ioctl.h>
+#endif
+"
+CF_MISSING_EXTERN( \
+ioctl \
+)
+fi
+
+if test "$VILE_BUILT_IN_FILTERS" != none ; then
+	cf_filter_libs=yes
+elif test "$VILE_LOADABLE_FILTERS" != none ; then
+	cf_filter_libs=yes
+else
+	cf_filter_libs=no
+fi
+
+if test "$cf_filter_libs" = yes ; then
+	EXTRAOBJS="$EXTRAOBJS builtflt\$o"
+	CPPFLAGS="-I\$(srcdir)/filters $CPPFLAGS"
+	FILTER_LIBS="-Lfilters -lvlflt"
+	LIBBUILTFLT="${LIB_PREFIX}vlflt.a"
+	BUILTHDRS="$BUILTHDRS builtflt.h"
+	BUILTLIBS="$BUILTLIBS filters/$LIBBUILTFLT"
+	AC_DEFINE(OPT_FILTER)
+else
+	BUILTLIBS=
+	FILTER_LIBS=
+	LIBBUILTFLT=
+fi
+
+AC_SUBST(EXTRAOBJS)
+AC_SUBST(BUILTHDRS)
+AC_SUBST(BUILTLIBS)
+AC_SUBST(BUILTSRCS)
+AC_SUBST(FILTER_LIBS)
+AC_SUBST(LIBBUILTFLT)
+
+# --- check dynamic loading capabilities
+
+cf_need_libdl=no
+
+test "$VILE_LOADABLE_FILTERS" != none && cf_need_libdl=yes
+test "$with_plugins"          != no   && cf_need_libdl=yes
+
+if test "$with_plugins" != no ; then
+	if test "$GCC" = yes ; then
+		LDFLAGS="$LDFLAGS -export-dynamic"
+	# TODO: how to do with other compilers ? can libtool help ?
+	fi
+	AC_DEFINE(OPT_PLUGIN)
+	EXTRAOBJS="$EXTRAOBJS plugin\$o"
+fi
+
+if test "$cf_need_libdl" = yes ; then
+	CF_FUNC_DLSYM
+fi
+
+if test "$VILE_LOADABLE_FILTERS" != none ; then
+	if test "$GCC" = yes ; then
+
+		# FIXME:  this doesn't work (gcc doesn't give an error
+		# on an unrecognized option).
+		cf_opt_rdynamic=no
+		cf_save_CFLAGS="$CFLAGS"
+		CFLAGS="-Wall -rdynamic $CFLAGS"
+		AC_MSG_CHECKING(if gcc has -rdynamic option)
+		AC_TRY_LINK([#include <stdio.h>],
+			    [printf("Hello");],
+			    [cf_opt_rdynamic=yes],
+			    [cf_opt_rdynamic=no])
+		AC_MSG_RESULT($cf_opt_rdynamic)
+		test "$cf_opt_rdynamic" = no && CFLAGS="$cf_save_CFLAGS"
+
+		SH_CFLAGS="-fPIC"
+		SH_LDFLAGS="-shared"
+	else
+		# this works for Solaris and IRIX64
+		SH_CFLAGS="-KPIC"
+		SH_LDFLAGS="-G"
+	fi
+fi
+
+AC_SUBST(SH_CFLAGS)
+AC_SUBST(SH_LDFLAGS)
+
+AC_CHECK_PROGS(SPELL_PROG, ispell aspell spell, [])
+case .$SPELL_PROG in
+.aspell)
+	SPELL_OPTS="-x list"
+	;;
+.ispell)
+	SPELL_OPTS="-l -x"
+	;;
+*)
+	SPELL_PROG="spell"
+	SPELL_OPTS="-l"
+	;;
+esac
+AC_DEFINE_UNQUOTED(SPELL_PROG,"$SPELL_PROG")
+AC_DEFINE_UNQUOTED(SPELL_OPTS,"$SPELL_OPTS")
+
+filters_bindir=`echo "$VILE_LIBDIR_PATH" | sed -e 's%'$PATHSEP'.*%%'`
+echo "Computing location to install filter programs: $filters_bindir"
+AC_SUBST(filters_bindir)
+
+###	output makefile and config.h
+AC_OUTPUT(makefile filters/makefile filters/makefile.tmp:filters/makefile.2nd,
+{
+test -n "$ac_top_srcdir" && top_srcdir="$ac_top_srcdir"
+if test "$top_srcdir" = ".."
+then
+	cf_srcdir=.
+else
+	cf_srcdir=`echo $top_srcdir |sed -e 's%^../%%'`
+fi
+
+echo "Checking for built-in filters: $VILE_BUILT_IN_FILTERS"
+$AWK -f $cf_srcdir/filters/mk-1st.awk <$cf_srcdir/filters/genmake.mak mode=built-in list="$VILE_BUILT_IN_FILTERS" flex=$LEX_IS_FLEX >>filters/makefile
+
+echo "Checking for external filters: $VILE_EXTERNAL_FILTERS"
+$AWK -f $cf_srcdir/filters/mk-1st.awk <$cf_srcdir/filters/genmake.mak mode=external list="$VILE_EXTERNAL_FILTERS" flex=$LEX_IS_FLEX >>filters/makefile
+
+echo "Checking for loadable filters: $VILE_LOADABLE_FILTERS"
+$AWK -f $cf_srcdir/filters/mk-1st.awk <$cf_srcdir/filters/genmake.mak mode=loadable list="$VILE_LOADABLE_FILTERS" flex=$LEX_IS_FLEX >>filters/makefile
+
+cat   filters/makefile.tmp >>filters/makefile
+rm -f filters/makefile.tmp
+
+case $cf_srcdir in #(vi
+/*|?:*[)] #(vi
+	cf_SRCDIR=$cf_srcdir
+	;;
+*[)]
+	cf_SRCDIR=../$cf_srcdir
+	;;
+esac
+
+$AWK -f $cf_srcdir/filters/mk-2nd.awk <$cf_srcdir/filters/genmake.mak from=$cf_SRCDIR/filters linking="$ECHO_LD" compiling="$RULE_CC" show="$ECHO_CC" mode=built-in list="$VILE_BUILT_IN_FILTERS" flex=$LEX_IS_FLEX >>filters/makefile
+$AWK -f $cf_srcdir/filters/mk-2nd.awk <$cf_srcdir/filters/genmake.mak from=$cf_SRCDIR/filters linking="$ECHO_LD" compiling="$RULE_CC" show="$ECHO_CC" mode=external list="$VILE_EXTERNAL_FILTERS" flex=$LEX_IS_FLEX >>filters/makefile
+$AWK -f $cf_srcdir/filters/mk-2nd.awk <$cf_srcdir/filters/genmake.mak from=$cf_SRCDIR/filters linking="$ECHO_LD" compiling="$RULE_CC" show="$ECHO_CC" mode=loadable list="$VILE_LOADABLE_FILTERS" flex=$LEX_IS_FLEX >>filters/makefile
+
+(for i in $cf_srcdir/filters/*.key;do echo $i;done) | $AWK -f $cf_srcdir/filters/mk-key.awk from=$cf_srcdir >>filters/makefile
+},
+{
+RULE_CC='$RULE_CC'
+ECHO_LD='$ECHO_LD'
+ECHO_CC='$ECHO_CC'
+LEX_IS_FLEX='$LEX_IS_FLEX'
+MAKE_LEX='$MAKE_LEX'
+AWK="$AWK"
+VILE_BUILT_IN_FILTERS='$VILE_BUILT_IN_FILTERS'
+VILE_LOADABLE_FILTERS='$VILE_LOADABLE_FILTERS'
+VILE_EXTERNAL_FILTERS='$VILE_EXTERNAL_FILTERS'
+},
+sort)

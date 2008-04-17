@@ -1,0 +1,44 @@
+; $Id: color-ls.rc,v 1.3 2007/08/07 00:32:16 tom Exp $
+; Use this macro to render the output of "color ls" into a vile buffer.
+store-procedure ShowColorLS "Prompt for, and display a color-ls"
+	;~trace on
+	~local %filter %options %lsbuffer $error-buffer %report
+	set-variable %filter &pquote &lookup e+l+p &cat vile-manfilt $exec-suffix
+	~if &seq %filter ""
+		write-message "[Cannot find manpage-filter]"
+		~return
+	~endif
+	~force set-variable %options &query "options? "
+	~if &or &error %options &seq %options ""
+		~return
+	~endif
+	set-variable %lsbuffer &cat "<ls " &cat %options ">"
+	set terse
+	setl autocolor=0
+	setv %report=$report
+	set report=0
+	~hidden ~force select-buffer %lsbuffer
+	~if $status
+		~local $curline $curcol
+		setl noview
+		~hidden goto-beginning-of-file
+		~hidden delete-til end-of-file
+		~hidden read-file &cat "!ls --color=always " &cat %options &cat " | " %filter
+	~else
+		~hidden edit-file &cat "!ls --color=always " &cat %options &cat " | " %filter
+		~force rename-buffer %lsbuffer
+	~endif
+	~hidden goto-beginning-of-file
+	~hidden attribute-cntl_a-sequences-til end-of-file
+	unmark-buffer
+	setl view
+	~hidden goto-beginning-of-file
+	~if $status
+		~hidden position-window .
+	~endif
+	~force error-buffer %lsbuffer
+	write-message "[Done formatting listing.]"
+	set report=%report
+	set noterse
+~endm
+bind-key ShowColorLS ^X-l

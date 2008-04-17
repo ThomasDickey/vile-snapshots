@@ -1,0 +1,324 @@
+.\" obligatory man page for vile
+.\" $Header: /users/source/archives/vile.vcs/RCS/vile.1,v 1.37 2007/01/08 23:29:41 tom Exp $
+.TH VILE 1
+.SH NAME
+vile, xvile \- \fBVI L\fRike \fBE\fRmacs
+.SH SYNOPSIS
+.B "vile [@\fIcmdfile\fB] [+\fIcommand\fB] [-hIiRVv] [-g\fINNN\fB] [-k\fIcryptkey\fB] [-s\fIpattern\fB] [-t\fItag\fB] [\fIfilename\fB]..."
+.SH DESCRIPTION
+.I vile
+is a text editor.  This man page is fairly terse.  More information can
+be obtained from the internal help, available with the \fB-h\fR option
+or by using the ":help" command from within
+.IR vile .
+.PP
+.I xvile
+is the same text editor, built as an X-windows application, with fully
+integrated mouse support, scrollbars, etc.
+.SH "SPIRIT"
+.I vile
+retains the "finger-feel", if you will, of
+.IR vi ,
+while adding the
+multiple buffer and multiple window features of emacs and other editors.
+It is definitely not a vi clone, in that some substantial stuff is
+missing, and the screen doesn't look quite the same.
+The things that you tend to type over and
+over probably work.  Things done less frequently, like configuring
+a startup file, are somewhat (or very, depending on how ambitious
+you are) different.
+But what
+matters most is that one's "muscle memory" does the right thing
+to the text in front of you, and that is what
+.I vile
+tries to do for vi users.
+.SH OPTIONS
+Vile accumulates most options into two temporary buffers \fI[vileinit]\fP
+and \fI[vileopts]\fP.
+The former is executed before reading the first file into a buffer.
+The latter is executed after reading the first file into a buffer.
+Each is removed after executing (unless an error is detected).
+.SS COMMON OPTIONS
+.IP "-c\fIcommand\fR"
+.I vile
+will begin the session on the first file invoking the given command.
+Legal commands include many ex-style commands, vile-commands, etc.,
+subject to shell quoting.
+This option is used most often with a line number or search pattern.
+For example
+.sp
+.RS 10
+.nf
+vile -c123 filename
+vile -c/pattern filename
+.fi
+.RE
+.IP
+They correspond to ex-style commands on the given file:
+.sp
+.RS 10
+.nf
+:123
+:/pattern
+.fi
+.RE
+.IP
+These are more verbose equivalents:
+.sp
+.RS 10
+.nf
+vile -c'123 goto-line' filename
+vile -c'search-forward /pattern/' filename
+.fi
+.RE
+.IP
+You can use more than one command, e.g.,
+.sp
+.RS 10
+vile -c'123' -c'10*goto-col' filename
+.RE
+.IP
+to put the cursor on column 10 of line 123.
+The "*" (or ":") separates the repeat count (used by \fIgoto-col\fP) from the
+line- or range-specification used by line-oriented commands.
+.IP @\fIcmdfile\fR
+.I vile
+will run the specified file as its startup
+file, and will bypass any normal startup file (i.e.
+.IR .vilerc )
+or environment variable (i.e.
+.IR $VILEINIT ).
+This is added to \fI[vileinit]\fP.
+.IP -D
+tells \fIvile\fP to trace the results of macro execution into the hidden buffer
+"[Trace]".
+.IP "-e | -E"
+Invokes
+.I vile
+in "noview" mode \- changes are permitted to any buffer while
+in this mode (see "-v").
+.IP -h
+Invokes
+.I vile
+on the helpfile.
+.IP "-i | -I"
+Tells
+.I vile
+to use
+.I vileinit.rc
+(which is installed)
+as the initialization file.
+If you do not have a .vilerc,
+.I vile
+will make a short one that sources
+.I vileinit.rc
+This is added to \fI[vileinit]\fP.
+.IP "-k \fIcryptkey\fP | -K \fIcryptkey\fP"
+Specifies an encryption/decryption key.
+See below for further discussion.
+This option applies only locally to the buffers named on the command-line,
+and is not added to \fI[vileopts]\fP, since that is executed too late.
+.IP -R
+Invokes
+.I vile
+in "readonly" mode \- no writes are permitted while
+in this mode.
+(This will also be true if
+.I vile
+is invoked as
+.IR view ,
+or if "readonly" mode is set in the startup file.)
+.IP "-s \fIpattern\fR | -S \fIpattern\fR"
+In the first file,
+.I vile
+will execute an initial search for the given pattern.
+This is not the same as "-c/\fIpattern\fP",
+since that positions the cursor to
+the line matching the pattern.
+This option positions the cursor within the line.
+.IP "-t \fItag\fR"
+.br
+.I vile
+will edit the correct file and move the cursor to the location of the tag.
+This requires a tagsfile created with the
+.IR ctags (1)
+command.  The option -T is equivalent, and can be used when X11 option
+parsing eats the -t.
+.IP -v
+Invokes
+.I vile
+in "view" mode \- no changes are permitted to any buffer while
+in this mode (see "-e").
+.IP -V
+.I vile
+will report its version number.
+.IP "-25 -43 -50 -60"
+On PC systems you may be able to set the initial screen resolution from the
+command line.
+.IP "-80 -132"
+On VMS systems you may be able to set the initial screen resolution from the
+command line.  See
+.I vile.hlp
+for details.
+.SS X11 OPTIONS
+.PP
+.IR xvile -specific
+command-line options are detailed in the help file (see "Standard X command
+line arguments").  The standard ones (e.g. -display, -fn, -geometry, -name,
+etc.) are all supported.
+.SS OBSOLETE OPTIONS
+vile recognizes some options which duplicate the functionality of the
+POSIX "-c" option:
+.IP "+\fIcommand\fR"
+This has the same effect as "-c\fIcommand\fP".
+.IP "-g \fINNN\fP | -G \fINNN\fP"
+This has the same effect as "-c\fINNN\fP".
+.I vile
+will begin the session on the first file jumping to the given line number
+\fINNN\fP.
+.SH "INVOCATION"
+vile will edit the files specified on the command line.  If no files
+are specified, and standard input is not connected to a terminal, then
+vile will bring up a buffer containing the output of the pipe it is
+connected to, and will re-open /dev/tty for commands.  Files (except for
+the first) are not actually read into buffers until "visited".  All buffers
+are kept in memory: machines with not much memory or swap space may
+have trouble with this.
+.SH "STARTUP"
+If the
+.IR @ cmdfile
+option is given, then the file given as "cmdfile"
+will be run before any files are loaded.  If no
+.I @
+option appears, startup commands will be taken from the user's
+.I VILEINIT
+variable, if it is set, from the file
+.I .vilerc
+in the current directory, if it exists, or from
+.IR $HOME/.vilerc ,
+as a last resort.
+See the help file for examples of what sorts of things might go into
+these command files.
+.SH "COMMANDS"
+Please refer to the help available within
+.I vile
+for
+.IR vile -specific
+commands.
+(That document, however, assumes familiarity with vi.)
+Short descriptions
+of each
+.I vile
+command may be obtained with the ":describe-function" and
+":describe-key" commands.  All commands may be listed with ":show-commands".
+.PP
+Additional documentation on writing macros using the internal scripting
+language can be found in the file "doc/macros.doc", distributed with the vile
+source.
+.SH "RELATED PROGRAMS"
+.I vile
+may also be built and installed as
+.IR xvile ,
+in which case it
+behaves as a native X Windows application, with scrollbars, better mouse
+support, etc.  The help file has more information on this.
+.PP
+There is a program distributed with the vile source which
+is usually installed as
+.IR vile-manfilt .
+(Two versions of the source for
+.I vile-manfilt
+are available, in C (manfilt.c) and in Perl (manfilt.pl).)
+It may be used in conjunction with
+.I vile
+or
+.I xvile
+(with the help of the macro in the file manpage.rc)
+to filter and view system manual pages.
+.I xvile
+will even
+(with your font set properly)
+display certain portions of the manual
+page text in bold or italics as appropriate.
+See the help file for details.
+.PP
+Likewise, there are several language filters, e.g.,
+.I vile-c-filt
+for C,
+which can embolden, underline, or perform coloring on program
+source code.
+Again, see the help file for more information.
+.SH "ENCRYPTION"
+The program
+.I vile-crypt
+can be used to encrypt/decrypt files using the same algorithm as
+.IR microEmac 's
+internal crypt algorithm.
+This program, which uses public domain code written by
+by Dana Hoggatt, is no longer used in vile, though it is provided for
+compatibility.
+.PP
+.I vile
+currently uses the
+.I crypt(3)
+function for encryption/decryption, which is available on most Unix systems.
+This ensures that
+.I vile
+is able to read and write files compatibly with vi
+(but not vim, which uses an different algorithm derived from info-zip).
+The editor's encryption/decryption key can be specified on the
+command line with "-k key".
+Text to be encrypted can be specified as filenames on the command
+line, or provided as the standard input.  On systems with a getpass()
+library routine, the user will be prompted for the encryption key if it is
+not given on the command line.  To accommodate systems (such as linux) where
+the getpass() library routine is not interruptible from the keyboard,
+entering a crypt-key password which ends in ^C will cause the program to
+quit.  See the help file for more information on
+.IR vile 's
+encryption support, including a discussion of a collection of macros that
+interface with GNU's gpg package.
+.SH "ENVIRONMENT VARIABLES"
+.TP
+.B VILEINIT
+Editor initialization commands in lieu of a startup file.
+These are copied into \fI[vileinit]\fP, and executed.
+.TP
+.B VILE_HELP_FILE
+Override the name of the help file, normally ``vile.hlp''.
+.TP
+.B VILE_LIBDIR_PATH
+Augment $PATH when searching for a filter program.
+.TP
+.B VILE_STARTUP_FILE
+Override the name of the startup file, normally ``.vilerc''
+(or ``vile.rc'' for non-UNIX systems).
+.TP
+.B VILE_STARTUP_PATH
+Override the search path for the startup and help files.
+.SH "SEE ALSO"
+Your favorite vi document, the file
+.IR macros.doc ,
+and the
+.I vile
+help page, available with the
+.I -h
+option or as the text file
+.IR vile.hlp .
+.SH "DEBTS and CREDITS"
+.I vile
+was originally built from a copy of microEmacs, so a large debt of gratitude
+is due to the developers of that program.  A lot of people have helped with
+code and bug reports on
+.IR vile .
+Names are named at the bottom of the help file.
+.SH "AUTHORS"
+.I vile
+was created by Paul Fox, Tom Dickey, and Kevin Buettner.
+.SH "BUGS"
+The "\fBVI L\fRike \fBE\fRmacs" joke isn't really funny.  It only
+sounds that way.  :-)   Other suspicious behavior should be reported
+via the project mailing list, or via the web-based bug reporting
+system.  Both of these are available here:
+.PP
+https://savannah.nongnu.org/projects/vile
