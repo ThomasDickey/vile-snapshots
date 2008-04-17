@@ -1,0 +1,67 @@
+# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.in,v 1.80 2005/06/09 22:53:05 tom Exp $
+#
+
+#### Start of system configuration section. ####
+
+VPATH		= @srcdir@
+
+top_srcdir	= @top_srcdir@
+srcdir		= @srcdir@
+
+CC		= @CC@
+CPP		= @CPP@
+LINK		= @LINK_PREFIX@ $(CC) $(CFLAGS)
+INSTALL		= @INSTALL@
+INSTALL_PROGRAM	= @INSTALL_PROGRAM@
+INSTALL_DATA	= @INSTALL_DATA@
+
+EXTRA_CFLAGS	= @EXTRA_CFLAGS@
+CFLAGS		= @CFLAGS@ $(EXTRA_CFLAGS)
+LDFLAGS		= @IMAKE_LOADFLAGS@ @LDFLAGS@
+LIBS		= @LIBS@
+LINT		= @LINT@
+
+AR		= @AR@
+AR_OPTS		= @AR_OPTS@
+RANLIB		= @RANLIB@
+LEX		= @LEX@
+LEXLIB		= @LEXLIB@
+LEX_OUTPUT_ROOT	= @LEX_OUTPUT_ROOT@
+
+SH_CFLAGS	= @SH_CFLAGS@
+SH_LDFLAGS	= @SH_LDFLAGS@
+
+x		= @EXEEXT@
+o		= .@OBJEXT@
+so		= .so
+
+SCREEN		= @SCREEN@
+TARGET		= @TARGET@$x
+
+prefix		= @prefix@
+exec_prefix	= @exec_prefix@
+
+libdir		= @libdir@
+bindir		= @filters_bindir@
+datadir		= @datadir@/vile
+
+#### End of system configuration section. ####
+
+SHELL		= /bin/sh
+RM              = rm -f
+
+QUOTDEFS	= -DVILE_STARTUP_PATH=\"@VILE_STARTUP_PATH@\"
+CPPFLAGS	= -I. -I.. -I$(top_srcdir)/filters -I$(top_srcdir) -DHAVE_CONFIG_H @CPPFLAGS@
+
+BINDIR		= $(DESTDIR)$(bindir)
+LIBDIR		= $(DESTDIR)$(libdir)
+DATADIR		= $(DESTDIR)$(datadir)
+
+INSTALL_DIRS    = $(BINDIR) $(DATADIR)
+
+LF_DEPS = filterio$o filters$o
+LF_ARGS = $(LF_DEPS) $(LEXLIB)
+
+CF_DEPS = filterio$o filters$o
+CF_ARGS = $(CF_DEPS)
+

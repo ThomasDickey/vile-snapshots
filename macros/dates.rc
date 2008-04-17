@@ -1,0 +1,40 @@
+; $Header: /users/source/archives/vile.vcs/macros/RCS/dates.rc,v 1.2 2001/09/24 00:24:39 tom Exp $
+
+; These macros illustrate the use of the &date function.
+
+; Insert/update a timestamp at the first place in the file with "Last updated:",
+; or similar text.  Bound this to F19 (which is shift-F9 on xterm) to show the
+; difference between an insert-binding and a regular binding.
+store-procedure InsertTimestamp
+	~local $curcol $curline $ignorecase $search
+	~local %label %stamp %length
+	setv %label='\<last \(update\|change\)[d]\?:'
+	setv %stamp=&date '%Y/%m/%d %H:%M:%S' &stime
+	setl ignorecase
+	goto-beginning-of-file
+	~force search-forward %label
+	~if &seq $match ''
+		write-message 'InsertTimestamp - fail'
+	~else
+		write-message 'InsertTimestamp - ok'
+		setv %length &sub &add $curcol &len $match 1
+		goto-bol
+		setv $line &cat &left $line %length &cat ' ' %stamp
+	~endif
+~endm
+bind-insmode-key InsertTimestamp #-(
+
+; Show the date/time when the file was last modified.
+store-procedure ShowTimestamp
+	write-message &cat 'File last modified: ' &date '%Y/%m/%d %H:%M:%S' &ftime $cbufname
+~endm
+bind-key ShowTimestamp #-9 
+
+; Make a write-hook (if the buffer is modified, the macro will change the
+; last-updated field before writing).
+store-procedure UpdateTimestamp
+	~if $modified
+		InsertTimestamp
+	~endif
+~endm
+setv $write-hook UpdateTimestamp

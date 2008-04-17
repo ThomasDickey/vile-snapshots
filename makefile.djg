@@ -1,0 +1,101 @@
+#
+# makefile for vile using DJGCC 1.09 and  GNU's MAKE 3.58
+#
+# T.DANG (dang@cogit.ign.fr)
+#
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.djg,v 1.36 2007/08/10 21:16:06 tom Exp $
+#
+#
+
+CC = gcc
+LONGARGS = gcc
+
+DEBUG = -g
+#OPTIM =
+
+#DEBUG =
+OPTIM = -O2
+
+# DEBUG	+= -DOPT_TRACE
+# TRACE_C = trace.c
+
+# Use these two lines for the Borland/CONIO display (DPMI compatible).
+CFLAGS= -Wall -I. $(DEBUG) $(OPTIM) -DDISP_BORLAND -Dscrn_chosen
+DISP_SRC = borland.c gppconio.c
+
+# these are normal editable headers
+HDRS = estruct.h edef.h proto.h dirstuff.h
+
+# these headers are built by the mktbls program from the information in cmdtbl
+# and in modetbl
+BUILTHDRS = nebind.h neproto.h nefunc.h nemode.h nename.h nevars.h nefkeys.h nefsms.h
+
+SRC = 	main.c $(DISP_SRC) \
+	basic.c bind.c blist.c btree.c buffer.c \
+	csrch.c display.c eval.c exec.c externs.c fences.c file.c filec.c \
+	fileio.c finderr.c glob.c globals.c history.c \
+	input.c insert.c itbuff.c isearch.c \
+	line.c modes.c msgs.c npopen.c nullterm.c oneliner.c opers.c \
+	path.c random.c regexp.c \
+	region.c search.c select.c spawn.c statevar.c \
+	tags.c tbuff.c termio.c ucrypt.c undo.c \
+	version.c window.c word.c wordmov.c map.c djhandl.c $(TRACE_C)
+
+OBJ =	$(SRC:.c=.o)
+
+%.o:	%.c estruct.h nemode.h edef.h proto.h
+	$(CC) $(CFLAGS) -c $< -o $@
+
+vile : 	$(BUILTHDRS) $(OBJ)
+	$(CC) $(CFLAGS) -o $@ *.o -lpc
+	coff2exe $@
+#	-stubedit vile.exe globbing=no
+
+dist :	vile
+	strip vile
+	coff2exe vile
+#	-stubedit vile.exe globbing=no
+	zip pcvile.zip readme.pc readme vile.exe vile.hlp 
+	cd macros
+	zip ..\pcvile.zip *.rc 
+	cd ..
+	zip pcvile.zip \\djgpp\\bin\\go32-v2.exe
+
+nebind.h \
+nefunc.h \
+nename.h :	cmdtbl mktbls.exe
+	mktbls.exe cmdtbl
+
+nevars.h \
+nefsms.h \
+nemode.h:	modetbl mktbls.exe
+	mktbls.exe modetbl
+
+mktbls.exe:  mktbls.c
+	$(CC) mktbls.c -o mktbls
+	coff2exe mktbls
+	rm -f mktbls
+
+clean :
+	rm -f mktbls.exe
+	rm -f *.o
+	rm -f ne*.h
+
+bind.o:		nefunc.h
+eval.o:		nevars.h
+exec.o:		nefunc.h
+externs.o:	nebind.h nename.h neproto.h nefunc.h
+filec.o:	dirstuff.h
+glob.o:		dirstuff.h
+globals.o:	nefunc.h
+main.o:		chgdfunc.h nevars.h
+modes.o:	chgdfunc.h
+opers.o:	nefunc.h
+path.o:		dirstuff.h
+random.o:	nefunc.h
+select.o:	nefunc.h
+statevar.o:	nevars.h
+spawn.o:	nefunc.h
+termio.o:	nefunc.h
+version.o:	patchlev.h
+word.o:		nefunc.h
