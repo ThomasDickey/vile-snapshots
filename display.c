@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.473 2008/04/06 18:32:13 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.474 2008/04/24 22:29:30 tom Exp $
  *
  */
 
@@ -2581,7 +2581,7 @@ update_physical_screen(int force GCC_UNUSED)
 	if ((vscreen[i]->v_flag & (VFCHG | VFCOL)) != 0) {
 #if !DISP_X11
 	    if (TypeAhead(force))
-		return;
+		returnVoid();
 #endif
 	    update_line(i, 0, term.cols);
 	}

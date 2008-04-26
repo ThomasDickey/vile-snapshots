@@ -2,6 +2,9 @@ Changes for vile 9.7 (released ??? ??? ?? ????)
 
  200804?? (l)
 	> Tom Dickey:
+	+ correct a loop expression in wrapword (report by Chris Green).
+	+ correct a byte- versus character-count in wrapword() (report by
+	  Chris Green).
 	+ add $buf-encoding symbol, to show the actual encoding used by the
 	  current buffer vs the file-encoding which is one of vile's internal
 	  names such as "8bit" or "locale".
