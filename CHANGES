@@ -1,7 +1,13 @@
 Changes for vile 9.7 (released ??? ??? ?? ????)
 
- 200804?? (l)
+ 20080426 (l)
 	> Tom Dickey:
+	+ minor fixes to perl syntax highlighter:
+	  + add double-quote to quote-delimitors.
+	  + show interpreted symbols in double-quoted regular expressions.
+	  + if "/e" modifier is set for regular expression, show interpreted
+	    symbols for that.
+	  + show regular expression modifiers in keyword-attribute, not string
 	+ correct a loop expression in wrapword (report by Chris Green).
 	+ correct a byte- versus character-count in wrapword() (report by
 	  Chris Green).
