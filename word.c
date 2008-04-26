@@ -3,13 +3,18 @@
  * paragraph at a time.  There are all sorts of word mode commands.  If I
  * do any sentence mode commands, they are likely to be put in this file.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/word.c,v 1.86 2008/01/22 00:13:57 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/word.c,v 1.90 2008/04/25 12:47:09 tom Exp $
  *
  */
 
 #include	"estruct.h"
 #include	"edef.h"
 #include	"nefunc.h"
+
+#define each_character(c) \
+	    c = DOT.o, once = TRUE; \
+		(c > 0) || once; \
+		    c -= BytesBefore(DOT.l, c), once = FALSE
 
 /* Word wrap on n-spaces. Back-over whatever precedes the point on the current
  * line and stop on the first word-break or the beginning of the line. If we
@@ -21,80 +26,102 @@
 int
 wrapword(int f, int n)
 {
+    int once;
+    int rc = FALSE;
+    int done = FALSE;
     int cnt = 0;		/* size of word wrapped to next line */
     int c;			/* character temporary */
     B_COUNT to_delete;
     C_NUM to_append = 0;
 
-    /* Back up from the <NL> 1 char */
-    if (!backchar(FALSE, 1))
-	return (FALSE);
+    TRACE((T_CALLED "wrapword(%d, %d)\n", f, n));
 
-    /* If parameter given, delete the trailing white space.  This is done
-     * to support a vi-like wrapmargin mode (see insert.c).  Unlike vi,
-     * we're deleting all of the trailing whitespace; vi deletes only the
-     * portion that was added during the current insertion.
-     *
-     * If there's no trailing whitespace, and we're not inserting blanks
-     * (n!=0), try to split the line at the last embedded whitespace.
-     */
-    if (f) {
-	LINE *lp = DOT.l;
-	to_delete = 0L;
-	if (DOT.o >= 0 && !n && !isSpace(lgetc(lp, DOT.o))) {
-	    for (c = DOT.o; c >= 0; c -= BytesBefore(DOT.l, c)) {
+    /* Back up from the <NL> 1 char */
+    if (backchar(FALSE, 1)) {
+
+	/* If parameter given, delete the trailing white space.  This is done
+	 * to support a vi-like wrapmargin mode (see insert.c).  Unlike vi,
+	 * we're deleting all of the trailing whitespace; vi deletes only the
+	 * portion that was added during the current insertion.
+	 *
+	 * If there's no trailing whitespace, and we're not inserting blanks
+	 * (n!=0), try to split the line at the last embedded whitespace.
+	 */
+	if (f) {
+	    LINE *lp = DOT.l;
+	    to_delete = 0L;
+	    if (DOT.o >= 0 && !n && !isSpace(lgetc(lp, DOT.o))) {
+		int tmp = 0;
+		for (each_character(c)) {
+		    if (isSpace(lgetc(lp, c))) {
+			to_append = n;
+			cnt = tmp;
+			DOT.o = c;
+			break;
+		    }
+		    ++tmp;
+		}
+	    }
+	    for (each_character(c)) {
 		if (isSpace(lgetc(lp, c))) {
-		    to_append = n;
-		    cnt = (DOT.o - c);
+		    to_delete++;
 		    DOT.o = c;
+		} else {
 		    break;
 		}
 	    }
-	}
-	for (c = DOT.o; c >= 0; c -= BytesBefore(DOT.l, c)) {
-	    if (isSpace(lgetc(lp, c))) {
-		to_delete++;
-		DOT.o = c;
-	    } else {
-		break;
+	    if (to_delete == 0) {
+		DOT.o += BytesAt(DOT.l, DOT.o);
+	    }
+	} else {
+	    /* Back up until we aren't in a word, make sure there is a
+	     * break in the line
+	     */
+	    while (c = char_at(DOT), !isSpace(c)) {
+		cnt++;
+		if (!backchar(FALSE, 1)) {
+		    rc = FALSE;
+		    done = TRUE;
+		    break;
+		}
+	    }
+	    if (!done) {
+		/* if we make it to the beginning, start a new line */
+		if (DOT.o == 0) {
+		    (void) gotoeol(FALSE, 0);
+		    rc = lnewline();
+		    done = TRUE;
+		} else {
+		    to_delete = 1L;
+		}
 	    }
 	}
-	if (to_delete == 0) {
-	    DOT.o += BytesAt(DOT.l, DOT.o);
-	}
-    } else {
-	/* Back up until we aren't in a word, make sure there is a
-	 * break in the line
-	 */
-	while (c = char_at(DOT), !isSpace(c)) {
-	    cnt++;
-	    if (!backchar(FALSE, 1))
-		return (FALSE);
-	    /* if we make it to the beginning, start a new line */
-	    if (DOT.o == 0) {
-		(void) gotoeol(FALSE, 0);
-		return (lnewline());
+
+	if (!done) {
+	    /* delete the forward white space */
+	    if (ldel_bytes(to_delete, FALSE)) {
+
+		/* put in newline */
+		if (newline(FALSE, 1)) {
+
+		    rc = TRUE;
+		    /* and past the first word */
+		    while (cnt-- > 0) {
+			if (forwchar(FALSE, 1) == FALSE) {
+			    rc = FALSE;
+			    break;
+			}
+		    }
+		    if (rc) {
+			if (to_append > 0) {
+			    lins_bytes(to_append, ' ');
+			}
+		    }
+		}
 	    }
 	}
-	to_delete = 1L;
     }
-
-    /* delete the forward white space */
-    if (!ldel_bytes(to_delete, FALSE))
-	return (FALSE);
-
-    /* put in newline */
-    if (!newline(FALSE, 1))
-	return FALSE;
-
-    /* and past the first word */
-    while (cnt-- > 0) {
-	if (forwchar(FALSE, 1) == FALSE)
-	    return (FALSE);
-    }
-    if (to_append > 0)
-	lins_bytes(to_append, ' ');
-    return (TRUE);
+    returnCode(rc);
 }
 
 /*
