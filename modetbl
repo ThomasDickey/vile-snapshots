@@ -11,7 +11,7 @@
 #
 # The modes are table entries in the BUFFER and WINDOW structures.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.274 2008/04/15 22:48:32 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.275 2008/05/05 20:59:46 tom Exp $
 #
 #
 # Mode-table entries.  Capitalized letters are used for abbreviations.
@@ -216,6 +216,10 @@ string
 string
 	"name"		NAME		0
 	"group"		GROUP		0
+
+# special cases for abbreviations which do not correspond to actual characters
+.abbr
+	"file-encoding"	"fk"
 
 #
 # The "environment" variables are similar to modes, but are not so neatly

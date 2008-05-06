@@ -1,5 +1,13 @@
 Changes for vile 9.7 (released ??? ??? ?? ????)
 
+ 20080505 (m)
+	> Tom Dickey:
+	+ modify prompt for new mode value to consistently show the mode's full
+	  name.
+	+ add "fk" alias for file-encoding mode.
+	+ modify mktbls to allow special-case alias for modes which have no
+	  convenient abbreviation.
+
  20080426 (l)
 	> Tom Dickey:
 	+ minor fixes to perl syntax highlighter:
