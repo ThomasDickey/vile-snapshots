@@ -1468,9 +1468,9 @@ Editor modes
 		matched as well.  See "showmatch" mode for another use of the
 		"fence-pairs" mode.  (B)
 
-	file-encoding  This is the character encoding of the buffer contents,
-		which is not necessarily the same as the display's character
-		encoding.  It must be one of the following values:
+	file-encoding (fk) This is the character encoding of the buffer
+		contents, which is not necessarily the same as the display's
+		character encoding.  It must be one of the following values:
 			"8bit"
 			"ascii"
 			"auto"
@@ -6425,4 +6425,4 @@ Problems
 
 Copyright 1995-2007,2008 by Paul Fox, Thomas Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.648 2008/04/16 00:21:32 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.649 2008/05/06 00:18:14 tom Exp $

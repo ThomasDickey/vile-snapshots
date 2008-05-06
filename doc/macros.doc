@@ -217,14 +217,20 @@ Creating, executing, storing macros
 		*bool
 		backup-style
 		bcolor
+		byteorder-mark
 		ccolor
 		color-scheme
+		cursor-tokens
 		fcolor
+		file-encoding
+		for-buffers
 		mcolor
 		mini-hilite
 		popup-choices
 		qualifiers
-		record-format
+		reader-policy
+		record-attrs (VMS only)
+		record-format (VMS only)
 		recordseparator
 		showformat
 		video-attrs
@@ -1530,5 +1536,5 @@ Example startup file
 
 -- vile:fc=78
 -----------------------------------
-  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.105 2008/04/14 23:23:28 tom Exp $
+  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.106 2008/04/27 14:09:09 tom Exp $
 -----------------------------------

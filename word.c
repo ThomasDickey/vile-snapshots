@@ -3,7 +3,7 @@
  * paragraph at a time.  There are all sorts of word mode commands.  If I
  * do any sentence mode commands, they are likely to be put in this file.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/word.c,v 1.90 2008/04/25 12:47:09 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/word.c,v 1.91 2008/04/27 13:12:13 tom Exp $
  *
  */
 
@@ -31,7 +31,7 @@ wrapword(int f, int n)
     int done = FALSE;
     int cnt = 0;		/* size of word wrapped to next line */
     int c;			/* character temporary */
-    B_COUNT to_delete;
+    B_COUNT to_delete = 0;
     C_NUM to_append = 0;
 
     TRACE((T_CALLED "wrapword(%d, %d)\n", f, n));

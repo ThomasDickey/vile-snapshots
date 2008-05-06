@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.361 2008/03/25 23:36:44 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.362 2008/05/06 00:01:25 tom Exp $
  *
  */
 
@@ -1120,7 +1120,7 @@ adjvalueset(const char *cp,	/* name of the mode we are changing */
 
 	respbuf[0] = EOS;
 	(void) lsprintf(prompt, "New %s %s: ",
-			cp,
+			names->name ? names->name : cp,
 			regex ? "pattern" : "value");
 
 #if OPT_ENUM_MODES
