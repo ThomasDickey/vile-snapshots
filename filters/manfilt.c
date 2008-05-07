@@ -46,7 +46,7 @@
  * vile will choose some appropriate fallback (such as underlining) if
  * italics are not available.
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/manfilt.c,v 1.43 2007/12/27 21:38:04 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/manfilt.c,v 1.44 2008/05/06 22:48:15 tom Exp $
  *
  */
 
@@ -286,22 +286,24 @@ utf8_putc(int source)
     case 3:
 	target[2] = CharOf(0x80 | (CH(0) & 0x3f));
 	target[1] = CharOf(0x80 | (CH(0) >> 6) | ((CH(1) & 0x0f) << 2));
-	target[0] = CharOf(0xe0 | ((CH(1) & 0xf0) >> 4));
+	target[0] = CharOf(0xe0 | ((int) (CH(1) & 0xf0) >> 4));
 	break;
 
     case 4:
 	target[3] = CharOf(0x80 | (CH(0) & 0x3f));
 	target[2] = CharOf(0x80 | (CH(0) >> 6) | ((CH(1) & 0x0f) << 2));
-	target[1] = CharOf(0x80 | ((CH(1) & 0xf0) >> 4) | ((CH(2) &
-							    0x03) << 4));
-	target[0] = CharOf(0xf0 | ((CH(2) & 0x1f) >> 2));
+	target[1] = CharOf(0x80 |
+			   ((int) (CH(1) & 0xf0) >> 4) |
+			   ((int) (CH(2) & 0x03) << 4));
+	target[0] = CharOf(0xf0 | ((int) (CH(2) & 0x1f) >> 2));
 	break;
 
     case 5:
 	target[4] = CharOf(0x80 | (CH(0) & 0x3f));
 	target[3] = CharOf(0x80 | (CH(0) >> 6) | ((CH(1) & 0x0f) << 2));
-	target[2] = CharOf(0x80 | ((CH(1) & 0xf0) >> 4) | ((CH(2) &
-							    0x03) << 4));
+	target[2] = CharOf(0x80 |
+			   ((int) (CH(1) & 0xf0) >> 4) |
+			   ((int) (CH(2) & 0x03) << 4));
 	target[1] = CharOf(0x80 | (CH(2) >> 2));
 	target[0] = CharOf(0xf8 | (CH(3) & 0x03));
 	break;
@@ -312,7 +314,7 @@ utf8_putc(int source)
 	target[3] = CharOf(0x80 | (CH(1) >> 4) | ((CH(2) & 0x03) << 4));
 	target[2] = CharOf(0x80 | (CH(2) >> 2));
 	target[1] = CharOf(0x80 | (CH(3) & 0x3f));
-	target[0] = CharOf(0xfc | ((CH(3) & 0x40) >> 6));
+	target[0] = CharOf(0xfc | ((int) (CH(3) & 0x40) >> 6));
 	break;
     }
     target[rc] = 0;

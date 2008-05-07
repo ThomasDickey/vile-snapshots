@@ -1,5 +1,5 @@
 /*
- * $Id: eightbit.c,v 1.42 2008/04/16 21:54:36 tom Exp $
+ * $Id: eightbit.c,v 1.43 2008/05/06 00:58:40 Mark.Robinson Exp $
  *
  * Maintain "8bit" file-encoding mode by converting incoming UTF-8 to single
  * bytes, and providing a function that tells vile whether a given Unicode
@@ -18,6 +18,10 @@
 #if OPT_ICONV_FUNCS
 #include <iconv.h>
 #include <langinfo.h>
+#else
+#ifdef HAVE_LANGINFO_CODESET
+#include <langinfo.h>
+#endif
 #endif
 
 #define StrMalloc(s) ((s) ? strmalloc(s) : 0)
@@ -865,6 +869,7 @@ vl_mb_to_utf8(int code)
     return result;
 }
 
+#if OPT_ICONV_FUNCS
 /*
  * Decode a buffer as UTF-8, returning the character value if successful.
  * If unsuccessful, return -1.
@@ -890,14 +895,15 @@ decode_utf8(char *input, int used)
 	ch = -1;
     return ch;
 }
+#endif
 
 static int
 vl_mb_getch(void)
 {
     int ch;
     char input[80];
-    ICONV_CONST char *ip;
 #if OPT_ICONV_FUNCS
+    ICONV_CONST char *ip;
     char output[80];
     char *op;
     int used = 0;
@@ -944,6 +950,7 @@ vl_mb_getch(void)
 	}
     }
 #else
+    char *ip;
     for (ip = input;;) {
 	UINT result;
 
