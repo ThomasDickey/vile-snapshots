@@ -1,7 +1,7 @@
 /*
  * Common utility functions for vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.112 2008/01/13 18:27:27 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.113 2008/05/06 22:21:58 tom Exp $
  *
  */
 
@@ -40,7 +40,7 @@ struct _keyword {
     char *kw_attr;
     unsigned kw_size;		/* strlen(kw_name) */
     unsigned short kw_flag;	/* nonzero for classes */
-    unsigned short kw_used;	/* nonzero for classes */
+    short kw_used;		/* nonzero for classes */
 };
 
 typedef struct _classes CLASS;

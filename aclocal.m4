@@ -1,6 +1,6 @@
 dnl vile's local definitions for autoconf.
 dnl
-dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.182 2008/01/13 15:06:01 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.183 2008/05/06 22:12:27 tom Exp $
 dnl
 dnl ---------------------------------------------------------------------------
 dnl ---------------------------------------------------------------------------
@@ -191,7 +191,7 @@ AC_SUBST(EXTRA_CPPFLAGS)
 
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_ADD_INCDIR version: 8 updated: 2007/07/30 19:22:58
+dnl CF_ADD_INCDIR version: 9 updated: 2008/02/09 13:15:34
 dnl -------------
 dnl Add an include-directory to $CPPFLAGS.  Don't add /usr/include, since it's
 dnl redundant.  We don't normally need to add -I/usr/local/include for gcc,
@@ -233,7 +233,7 @@ if test -n "$1" ; then
 		fi
 
 		if test "$cf_have_incdir" = no ; then
-		  AC_VERBOSE(adding $cf_add_incdir to include-path)
+		  CF_VERBOSE(adding $cf_add_incdir to include-path)
 		  ifelse($2,,CPPFLAGS,$2)="-I$cf_add_incdir $ifelse($2,,CPPFLAGS,[$]$2)"
 
           cf_top_incdir=`echo $cf_add_incdir | sed -e 's%/include/.*$%/include%'`
@@ -248,7 +248,7 @@ if test -n "$1" ; then
 fi
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_ADD_LIBDIR version: 5 updated: 2007/07/30 19:12:03
+dnl CF_ADD_LIBDIR version: 6 updated: 2008/02/09 13:15:34
 dnl -------------
 dnl	Adds to the library-path
 dnl
@@ -276,7 +276,7 @@ if test -n "$1" ; then
         done
       fi
       if test "$cf_have_libdir" = no ; then
-        AC_VERBOSE(adding $cf_add_libdir to library-path)
+        CF_VERBOSE(adding $cf_add_libdir to library-path)
         ifelse($2,,LDFLAGS,$2)="-L$cf_add_libdir $ifelse($2,,LDFLAGS,[$]$2)"
       fi
     fi
@@ -406,7 +406,7 @@ fi
 fi
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_ANSI_CC_REQD version: 3 updated: 1997/09/06 13:40:44
+dnl CF_ANSI_CC_REQD version: 4 updated: 2008/03/23 14:48:54
 dnl ---------------
 dnl For programs that must use an ANSI compiler, obtain compiler options that
 dnl will make it recognize prototypes.  We'll do preprocessor checks in other
@@ -415,7 +415,7 @@ dnl the preprocessor.
 AC_DEFUN([CF_ANSI_CC_REQD],
 [AC_REQUIRE([CF_ANSI_CC_CHECK])
 if test "$cf_cv_ansi_cc" = "no"; then
-	AC_ERROR(
+	AC_MSG_ERROR(
 [Your compiler does not appear to recognize prototypes.
 You have the following choices:
 	a. adjust your compiler options
@@ -492,7 +492,7 @@ if test "$cf_result" = yes ; then
 fi
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_CHECK_CACHE version: 10 updated: 2004/05/23 13:03:31
+dnl CF_CHECK_CACHE version: 11 updated: 2008/03/23 14:45:59
 dnl --------------
 dnl Check if we're accidentally using a cache from a different machine.
 dnl Derive the system name, as a check for reusing the autoconf cache.
@@ -523,7 +523,7 @@ test -n "$cf_cv_system_name" && AC_MSG_RESULT(Configuring for $cf_cv_system_name
 
 if test ".$system_name" != ".$cf_cv_system_name" ; then
 	AC_MSG_RESULT(Cached system name ($system_name) does not agree with actual ($cf_cv_system_name))
-	AC_ERROR("Please remove config.cache and try again.")
+	AC_MSG_ERROR("Please remove config.cache and try again.")
 fi
 ])dnl
 dnl ---------------------------------------------------------------------------
@@ -797,7 +797,7 @@ fi
 AC_CHECK_HEADERS($cf_cv_ncurses_header)
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_CURSES_LIBS version: 26 updated: 2007/07/29 10:32:40
+dnl CF_CURSES_LIBS version: 27 updated: 2008/03/23 14:48:54
 dnl --------------
 dnl Look for the curses libraries.  Older curses implementations may require
 dnl termcap/termlib to be linked as well.  Call CF_CURSES_CPPFLAGS first.
@@ -867,7 +867,7 @@ if test ".$ac_cv_func_initscr" != .yes ; then
     do
         AC_CHECK_LIB($cf_curs_lib,initscr,[break])
     done
-    test $cf_curs_lib = unknown && AC_ERROR(no curses library found)
+    test $cf_curs_lib = unknown && AC_MSG_ERROR(no curses library found)
 
     LIBS="-l$cf_curs_lib $cf_save_LIBS"
     if test "$cf_term_lib" = unknown ; then
@@ -877,7 +877,7 @@ if test ".$ac_cv_func_initscr" != .yes ; then
             [cf_result=yes],
             [cf_result=no])
         AC_MSG_RESULT($cf_result)
-        test $cf_result = no && AC_ERROR(Cannot link curses library)
+        test $cf_result = no && AC_MSG_ERROR(Cannot link curses library)
     elif test "$cf_curs_lib" = "$cf_term_lib" ; then
         :
     elif test "$cf_term_lib" != predefined ; then
@@ -1100,7 +1100,7 @@ AC_DEFUN([CF_ERRNO],
 CF_CHECK_ERRNO(errno)
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_FIND_LIBRARY version: 8 updated: 2004/11/23 20:14:58
+dnl CF_FIND_LIBRARY version: 9 updated: 2008/03/23 14:48:54
 dnl ---------------
 dnl Look for a non-standard library, given parameters for AC_TRY_LINK.  We
 dnl prefer a standard location, and use -L options only if we do not find the
@@ -1145,7 +1145,7 @@ AC_DEFUN([CF_FIND_LIBRARY],
 eval 'cf_found_library=[$]cf_cv_have_lib_'$1
 ifelse($6,,[
 if test $cf_found_library = no ; then
-	AC_ERROR(Cannot link $1 library)
+	AC_MSG_ERROR(Cannot link $1 library)
 fi
 ])
 ])dnl
@@ -1646,7 +1646,7 @@ AC_TRY_COMPILE([
 test $cf_cv_select_with_time = yes && AC_DEFINE(SELECT_WITH_TIME)
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_IMAKE_CFLAGS version: 29 updated: 2007/05/24 20:53:19
+dnl CF_IMAKE_CFLAGS version: 30 updated: 2008/03/23 15:04:54
 dnl ---------------
 dnl Use imake to obtain compiler flags.  We could, in principle, write tests to
 dnl get these, but if imake is properly configured there is no point in doing
@@ -1727,14 +1727,14 @@ CF_EOF
 			esac
 		done
 		if test -z "$cf_config" ; then
-			AC_WARN(Could not find imake config-directory)
+			AC_MSG_WARN(Could not find imake config-directory)
 		else
 			cf_imake_opts="$cf_imake_opts -I$cf_config"
 			if ( $IMAKE -v $cf_imake_opts 2>&AC_FD_CC)
 			then
 				CF_VERBOSE(Using $IMAKE $cf_config)
 			else
-				AC_WARN(Cannot run $IMAKE)
+				AC_MSG_WARN(Cannot run $IMAKE)
 			fi
 		fi
 	fi
@@ -1913,7 +1913,7 @@ ifdef([AC_FUNC_FSEEKO],[
 ])
 ])
 dnl ---------------------------------------------------------------------------
-dnl CF_LEX_CHAR_CLASSES version: 4 updated: 2005/09/05 09:46:13
+dnl CF_LEX_CHAR_CLASSES version: 5 updated: 2008/03/23 15:04:54
 dnl -------------------
 dnl Check if the lex/flex program accepts character-classes, i.e., [:alpha:],
 dnl which are said to be a POSIX feature.
@@ -1935,12 +1935,12 @@ fi
 AC_MSG_RESULT($LEX_CHAR_CLASSES)
 rm -f conftest.* $LEX_OUTPUT_ROOT.c
 if test "$LEX_CHAR_CLASSES" != yes ; then
-	AC_WARN(Your $LEX program does not support character classes.  Get flex.)
+	AC_MSG_WARN(Your $LEX program does not support character classes.  Get flex.)
 fi
 AC_SUBST(LEX_CHAR_CLASSES)
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_LEX_STATES version: 2 updated: 1999/05/07 22:29:23
+dnl CF_LEX_STATES version: 3 updated: 2008/03/23 15:04:54
 dnl -------------
 dnl Check if the lex/flex program accepts states, i.e., %s and %x.  Older
 dnl implementations do not support these.
@@ -1963,7 +1963,7 @@ AC_MSG_RESULT($cf_lex_states)
 rm -f conftest.* $LEX_OUTPUT_ROOT.c
 MAKE_LEX=
 if test "$cf_lex_states" != yes ; then
-	AC_WARN(Your $LEX program does not support states.  Get flex.)
+	AC_MSG_WARN(Your $LEX program does not support states.  Get flex.)
 	MAKE_LEX="#"
 fi
 AC_SUBST(MAKE_LEX)
@@ -2290,7 +2290,7 @@ AC_DEFINE(NCURSES)
 CF_NCURSES_VERSION
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_NCURSES_HEADER version: 1 updated: 2005/12/31 13:28:37
+dnl CF_NCURSES_HEADER version: 2 updated: 2008/03/23 14:48:54
 dnl -----------------
 dnl Find a "curses" header file, e.g,. "curses.h", or one of the more common
 dnl variations of ncurses' installs.
@@ -2325,7 +2325,7 @@ AC_CACHE_CHECK(for $cf_ncuhdr_root include-path, cf_cv_ncurses_h2,[
 		CPPFLAGS="$cf_save2_CPPFLAGS"
 		test "$cf_cv_ncurses_h2" != no && break
 	done
-	test "$cf_cv_ncurses_h2" = no && AC_ERROR(not found)
+	test "$cf_cv_ncurses_h2" = no && AC_MSG_ERROR(not found)
 	])
 
 	CF_DIRNAME(cf_1st_incdir,$cf_cv_ncurses_h2)
@@ -2550,7 +2550,7 @@ ifelse($1,,,[$1=$PATHSEP])
 	AC_SUBST(PATHSEP)
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_PATH_SYNTAX version: 11 updated: 2006/09/02 08:55:46
+dnl CF_PATH_SYNTAX version: 12 updated: 2008/03/23 14:45:59
 dnl --------------
 dnl Check the argument to see that it looks like a pathname.  Rewrite it if it
 dnl begins with one of the prefix/exec_prefix variables, and then again if the
@@ -2582,7 +2582,7 @@ case ".[$]$1" in #(vi
   $1=`echo [$]$1 | sed -e s%NONE%$cf_path_syntax%`
   ;;
 *)
-  ifelse($2,,[AC_ERROR([expected a pathname, not \"[$]$1\"])],$2)
+  ifelse($2,,[AC_MSG_ERROR([expected a pathname, not \"[$]$1\"])],$2)
   ;;
 esac
 ])dnl
@@ -3126,7 +3126,7 @@ ncursesw/term.h)
 esac
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_TYPE_FD_SET version: 3 updated: 1999/10/16 13:49:00
+dnl CF_TYPE_FD_SET version: 4 updated: 2008/03/25 20:56:03
 dnl --------------
 dnl Check for the declaration of fd_set.  Some platforms declare it in
 dnl <sys/types.h>, and some in <sys/select.h>, which requires <sys/types.h>.
@@ -3134,20 +3134,22 @@ dnl Finally, if we are using this for an X application, Xpoll.h may include
 dnl <sys/select.h>, so we don't want to do it twice.
 AC_DEFUN([CF_TYPE_FD_SET],
 [
+AC_CHECK_HEADERS(X11/Xpoll.h)
+
 AC_CACHE_CHECK(for declaration of fd_set,cf_cv_type_fd_set,
-	[echo "trying sys/types alone" 1>&AC_FD_CC
+	[CF_MSG_LOG(sys/types alone)
 AC_TRY_COMPILE([
 #include <sys/types.h>],
 	[fd_set x],
 	[cf_cv_type_fd_set=sys/types.h],
-	[echo "trying X11/Xpoll.h" 1>&AC_FD_CC
+	[CF_MSG_LOG(X11/Xpoll.h)
 AC_TRY_COMPILE([
 #ifdef HAVE_X11_XPOLL_H
 #include <X11/Xpoll.h>
 #endif],
 	[fd_set x],
 	[cf_cv_type_fd_set=X11/Xpoll.h],
-	[echo "trying sys/select.h" 1>&AC_FD_CC
+	[CF_MSG_LOG(sys/select.h)
 AC_TRY_COMPILE([
 #include <sys/types.h>
 #include <sys/select.h>],
@@ -3724,7 +3726,7 @@ elif test "$cf_x_athena_include" != default ; then
 fi
 ])
 dnl ---------------------------------------------------------------------------
-dnl CF_X_ATHENA_LIBS version: 6 updated: 2006/11/30 17:57:11
+dnl CF_X_ATHENA_LIBS version: 7 updated: 2008/03/23 14:46:03
 dnl ----------------
 dnl Normally invoked by CF_X_ATHENA, with $1 set to the appropriate flavor of
 dnl the Athena widgets, e.g., Xaw, Xaw3d, neXtaw.
@@ -3768,7 +3770,7 @@ do
 done
 
 if test -z "$cf_x_athena_lib" ; then
-	AC_ERROR(
+	AC_MSG_ERROR(
 [Unable to successfully link Athena library (-l$cf_x_athena_root) with test program])
 fi
 
@@ -3776,7 +3778,7 @@ CF_UPPER(cf_x_athena_LIBS,HAVE_LIB_$cf_x_athena)
 AC_DEFINE_UNQUOTED($cf_x_athena_LIBS)
 ])
 dnl ---------------------------------------------------------------------------
-dnl CF_X_MOTIF version: 2 updated: 1998/07/22 22:20:11
+dnl CF_X_MOTIF version: 3 updated: 2008/03/23 14:48:54
 dnl ----------
 dnl Check for Motif or Lesstif libraries (they should be indistinguishable)
 AC_DEFUN([CF_X_MOTIF],
@@ -3792,12 +3794,12 @@ AC_CHECK_LIB(Xpm, XpmCreatePixmapFromXpmImage,
 	[$LIBS $X_EXTRA_LIBS])
 AC_CHECK_LIB(XIM,XmbTextListToTextProperty)dnl needed for Unixware's Xm
 AC_CHECK_LIB(Xm, XmProcessTraversal, [LIBS="-lXm $LIBS"],
-	AC_ERROR(
+	AC_MSG_ERROR(
 [Unable to successfully link Motif library (-lXm) with test program]),
 	[$X_PRE_LIBS $LIBS $X_EXTRA_LIBS]) dnl
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_X_OPENLOOK version: 2 updated: 1998/07/22 22:20:11
+dnl CF_X_OPENLOOK version: 3 updated: 2008/03/23 14:48:54
 dnl -------------
 AC_DEFUN([CF_X_OPENLOOK],
 [AC_REQUIRE([CF_X_TOOLKIT])dnl
@@ -3809,11 +3811,11 @@ LDFLAGS="$LDFLAGS $X_LIBS"
 AC_CHECK_LIB(Xmu,XmuClientWindow)
 AC_CHECK_LIB(Xol, OlToolkitInitialize,
 	[LIBS="-lXol -lm $LIBS"],
-	AC_ERROR(
+	AC_MSG_ERROR(
 [Unable to successfully link OpenLook library (-lXol) with test program])) dnl
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_X_TOOLKIT version: 11 updated: 2006/11/29 19:05:14
+dnl CF_X_TOOLKIT version: 12 updated: 2008/03/23 15:04:54
 dnl ------------
 dnl Check for X Toolkit libraries
 dnl
@@ -3842,7 +3844,7 @@ AC_CHECK_LIB(Xt, XtAppInitialize,
 	[$X_PRE_LIBS $LIBS $X_EXTRA_LIBS])])
 
 if test $cf_have_X_LIBS = no ; then
-	AC_WARN(
+	AC_MSG_WARN(
 [Unable to successfully link X Toolkit library (-lXt) with
 test program.  You will have to check and add the proper libraries by hand
 to makefile.])

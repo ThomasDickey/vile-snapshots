@@ -1,5 +1,5 @@
 /*
- * $Id: charsets.c,v 1.55 2008/04/15 00:10:33 tom Exp $
+ * $Id: charsets.c,v 1.56 2008/05/06 22:46:32 tom Exp $
  *
  * see
  http://msdn.microsoft.com/library/default.asp?url=/library/en-us/intl/unicode_42jv.asp
@@ -108,22 +108,24 @@ vl_conv_to_utf8(UCHAR * target, UINT source, B_COUNT limit)
 	case 3:
 	    target[2] = (UCHAR) (0x80 | (CH(0) & 0x3f));
 	    target[1] = (UCHAR) (0x80 | (CH(0) >> 6) | ((CH(1) & 0x0f) << 2));
-	    target[0] = (UCHAR) (0xe0 | ((CH(1) & 0xf0) >> 4));
+	    target[0] = (UCHAR) (0xe0 | ((int) (CH(1) & 0xf0) >> 4));
 	    break;
 
 	case 4:
 	    target[3] = (UCHAR) (0x80 | (CH(0) & 0x3f));
 	    target[2] = (UCHAR) (0x80 | (CH(0) >> 6) | ((CH(1) & 0x0f) << 2));
-	    target[1] = (UCHAR) (0x80 | ((CH(1) & 0xf0) >> 4) | ((CH(2) &
-								  0x03) << 4));
-	    target[0] = (UCHAR) (0xf0 | ((CH(2) & 0x1f) >> 2));
+	    target[1] = (UCHAR) (0x80 |
+				 ((int) (CH(1) & 0xf0) >> 4) |
+				 ((int) (CH(2) & 0x03) << 4));
+	    target[0] = (UCHAR) (0xf0 | ((int) (CH(2) & 0x1f) >> 2));
 	    break;
 
 	case 5:
 	    target[4] = (UCHAR) (0x80 | (CH(0) & 0x3f));
 	    target[3] = (UCHAR) (0x80 | (CH(0) >> 6) | ((CH(1) & 0x0f) << 2));
-	    target[2] = (UCHAR) (0x80 | ((CH(1) & 0xf0) >> 4) | ((CH(2) &
-								  0x03) << 4));
+	    target[2] = (UCHAR) (0x80 |
+				 ((int) (CH(1) & 0xf0) >> 4) |
+				 ((int) (CH(2) & 0x03) << 4));
 	    target[1] = (UCHAR) (0x80 | (CH(2) >> 2));
 	    target[0] = (UCHAR) (0xf8 | (CH(3) & 0x03));
 	    break;
@@ -134,7 +136,7 @@ vl_conv_to_utf8(UCHAR * target, UINT source, B_COUNT limit)
 	    target[3] = (UCHAR) (0x80 | (CH(1) >> 4) | ((CH(2) & 0x03) << 4));
 	    target[2] = (UCHAR) (0x80 | (CH(2) >> 2));
 	    target[1] = (UCHAR) (0x80 | (CH(3) & 0x3f));
-	    target[0] = (UCHAR) (0xfc | ((CH(3) & 0x40) >> 6));
+	    target[0] = (UCHAR) (0xfc | ((int) (CH(3) & 0x40) >> 6));
 	    break;
 	}
 	TRACE2(("decode %#08x %02X.%02X.%02X.%02X %d:%.*s\n", source,

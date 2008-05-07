@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.661 2008/04/16 22:09:49 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.662 2008/05/06 22:38:48 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -1789,7 +1789,7 @@ typedef UCHAR VIDEO_ATTR;
 #define VACOL_E (VASPCOL|0xE000)
 #define VACOL_F (VASPCOL|0xF000)
 
-#define VCOLORNUM(attr) (((attr) & VACOLOR) >> 12)
+#define VCOLORNUM(attr) ((int) ((attr) & VACOLOR) >> 12)
 #define VCOLORATTR(num) ((VIDEO_ATTR) ((UINT)(num) << 12))
 
 /* who owns an attributed region -- so we can delete them independently */
