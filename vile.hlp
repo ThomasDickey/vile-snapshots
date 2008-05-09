@@ -5465,6 +5465,10 @@ X Window System specifics
 			respectively.
 	menuHeight	resource controlling the Athena menu-height
 
+	openIm		true if input method should be opened (default: true)
+	inputMethod	input method to use (default: "")
+	preeditType	pre-edit type (default: "OverTheSpot,Root")
+
 	wheelScrollAmount Amount to scroll for a wheel mouse, per button-press.
 
 	Sample .Xdefault entries
@@ -6425,4 +6429,4 @@ Problems
 
 Copyright 1995-2007,2008 by Paul Fox, Thomas Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.649 2008/05/06 00:18:14 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.650 2008/05/07 23:57:28 tom Exp $

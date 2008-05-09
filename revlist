@@ -1,6 +1,6 @@
-revlist for vile, version v9_6l
+revlist for vile, version v9_6m
 --------------------------------------------------------------------------------
-aclocal.m4	1.182
+aclocal.m4	1.183
 ansi.c	1.49
 api.c	1.44
 api.h	1.13
@@ -14,21 +14,21 @@ btree.h	1.5
 buffer.c	1.330
 buglist	1.411
 builtflt.c	1.63
-CHANGES	1.1132
+CHANGES	1.1137
 CHANGES.R3	1.1
 CHANGES.R4	1.1
 CHANGES.R5	1.1
 CHANGES.R6	1.1
 CHANGES.R7	1.2
 CHANGES.R8	1.1
-charsets.c	1.55
+charsets.c	1.56
 chgdfunc.h	1.22
 cmdtbl	1.251
-config.guess	1.7
+config.guess	1.8
 config_h.in	1.2
-config.sub	1.8
-configure	1.18
-configure.in	1.244
+config.sub	1.9
+configure	1.20
+configure.in	1.245
 COPYING	1.4
 csrch.c	1.34
 curses.c	1.38
@@ -38,8 +38,8 @@ display.c	1.474
 djhandl.c	1.6
 dumbterm.c	1.23
 edef.h	1.338
-eightbit.c	1.42
-estruct.h	1.661
+eightbit.c	1.43
+estruct.h	1.662
 eval.c	1.378
 exec.c	1.314
 externs.c	1.11
@@ -73,9 +73,9 @@ map.c	1.112
 menu.c	1.51
 mkdirs.sh	1.7
 mkprlenv.wnt	1.9
-mktbls.c	1.150
-modes.c	1.361
-modetbl	1.274
+mktbls.c	1.151
+modes.c	1.362
+modetbl	1.275
 msgs.c	1.29
 npopen.c	1.95
 ntconio.c	1.91
@@ -86,9 +86,9 @@ opers.c	1.93
 os2keys.h	1.2
 os2pipe.c	1.5
 os2vio.c	1.36
-patchlev.h	1.371
+patchlev.h	1.372
 path.c	1.161
-perl.xs	1.109
+perl.xs	1.110
 plugin.c	1.1
 plugin.h	1.1
 proto.h	1.649
@@ -100,7 +100,7 @@ README.PC	1.33
 README.VMS	1.5
 regexp.c	1.139
 region.c	1.149
-revlist	v9_6l
+revlist	v9_6m
 search.c	1.146
 select.c	1.167
 sinstall.sh	1.1
@@ -118,8 +118,8 @@ ucrypt.c	1.15
 undo.c	1.96
 version.c	1.65
 vile.1	1.37
-vile-9.6.spec	1.13
-vile.hlp	1.648
+vile-9.6.spec	1.14
+vile.hlp	1.650
 vile.wmconfig	1.1
 vl_alloc.h	1.1
 vl_ctype.h	1.15
@@ -147,10 +147,10 @@ window.c	1.113
 winvile.h	1.11
 winvile.odl	1.6
 winvile.rc	1.12
-word.c	1.90
+word.c	1.91
 wordmov.c	1.23
 wvwrap.cpp	1.16
-x11.c	1.304
+x11.c	1.311
 x11menu.c	1.10
 xshell.sh	1.4
 xterm.c	1.4
@@ -159,7 +159,7 @@ xvile.wmconfig	1.1
 doc/config.doc	1.15
 doc/dir.doc	1.3
 doc/filters.doc	1.37
-doc/macros.doc	1.105
+doc/macros.doc	1.106
 doc/menus.doc	1.7
 doc/modes.doc	1.17
 doc/ncu-indent	1.16
@@ -216,7 +216,7 @@ filters/est.key	1.1
 filters/fdl-filt.l	1.15
 filters/fdl.key	1.4
 filters/filterio.c	1.39
-filters/filters.c	1.112
+filters/filters.c	1.113
 filters/filters.h	1.109
 filters/filters.rc	1.211
 filters/flt_defs.h	1.8
@@ -256,7 +256,7 @@ filters/makefile.wnt	1.34
 filters/makefilt.l	1.56
 filters/make.key	1.8
 filters/makelist.sh	1.5
-filters/manfilt.c	1.43
+filters/manfilt.c	1.44
 filters/mcrlfilt.l	1.3
 filters/mcrl.key	1.1
 filters/midlfilt.l	1.6
@@ -314,7 +314,7 @@ filters/syntax.key	1.1
 filters/tagsfilt.c	1.9
 filters/tags.key	1.1
 filters/tbl-filt.l	1.13
-filters/tbl.key	1.1
+filters/tbl.key	1.2
 filters/tc-filt.l	1.32
 filters/tc.key	1.2
 filters/tcl-filt.l	1.20

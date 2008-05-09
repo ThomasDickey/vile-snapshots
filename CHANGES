@@ -1,9 +1,12 @@
 Changes for vile 9.7 (released ??? ??? ?? ????)
 
- 20080505 (m)
+ 20080508 (m)
 	> Mark Robinson:
 	+ build-fix for eightbit.c without iconv functions.
 	> Tom Dickey:
+	+ update input-method code, from xterm.
+	+ add xvile resource setting "openIm" to control whether it tries to
+	  open input-method.
 	+ change order of tests for iconv availability and configure option
 	  "--with-iconv" to avoid adding iconv library to build unnecessarily
 	  (report by Mark Robinson).
