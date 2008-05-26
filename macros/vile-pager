@@ -1,0 +1,25 @@
+#!/bin/sh
+# $Header: /users/source/archives/vile.vcs/macros/RCS/vile-pager,v 1.5 2001/08/21 18:55:46 tom Exp $
+# This is a simple script that uses the vi-clone 'vile' as a pager to show
+# highlighted text.  It's a lot easier to work with large listings than 'more'
+# or 'less'
+# - T.Dickey
+TMP=${TMPDIR-/tmp}/rc$$
+trap "rm -f $TMP" 0 1 2 5 15
+cat >$TMP <<'EOF'
+set glob=on
+~force source &pcat ~ &default '$startup-file'
+set nopopup-msgs
+store-procedure OnRead
+	setl noview
+	1 goto-line
+	filter-til end-of-file "vile-manfilt"
+	attribute-cntl_a-sequences-til end-of-file
+	unmark
+	setl view
+	1 goto-line
+	setv $buffer-hook ""
+~endm
+setv $buffer-hook "OnRead"
+EOF
+cat $* | vile @$TMP

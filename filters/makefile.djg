@@ -1,0 +1,27 @@
+#
+# makefile for vile utilities using DJGPP
+#
+# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.djg,v 1.3 2000/02/28 10:45:11 tom Exp $
+#
+
+CC = gcc
+LONGARGS = gcc
+
+DEBUG = -g
+#OPTIM =
+
+#DEBUG =
+OPTIM = -O2
+
+CFLAGS= -Wall $(DEBUG) $(OPTIM) -I.
+
+FILT_DEPS = filterio$o filters$o
+
+c-filt : c-filt.o $(FILT_DEPS)
+	$(CC) $(CFLAGS) -o $@ c-filt.o $(FILT_DEPS) -lpc
+	coff2exe $@
+	-stubedit $@.exe globbing=no
+
+clean:
+	rm -f *.exe
+	rm -f *.o

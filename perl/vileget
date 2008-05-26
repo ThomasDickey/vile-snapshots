@@ -1,0 +1,244 @@
+#!/usr/bin/perl
+#
+#   vileget (version 1.3) - Pass file edit requests to a Vile session
+#                           running Vileserv.
+#
+#   Copyright (C) 1998  J. Chris Coppick
+#
+#   This program is free software; you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation; either version 2 of the License, or
+#   (at your option) any later version.
+#
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+#
+#   You should have received a copy of the GNU General Public License
+#   along with this program; if not, write to the Free Software
+#   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+
+=head1 NAME
+
+vileget - Pass file edit requests to a Vile editor running Vileserv.
+
+=head1 SYNOPSIS
+
+vileget [B<-n>] [B<-d>] [B<-w>] [B<-s> I<socket-path>] [B<-c> I<command>] [B<-C> I<command>] [I<file> ...]
+
+=head1 DESCRIPTION
+
+Vileget can be used to load files into an already running instance
+of Vile or XVile.  The editor should have already loaded and started
+the Vileserv perl module.  (See the Vileserv documentation for more
+detail.)
+
+By default, if vileget cannot connect to a running instance of the
+editor it tries to start a new one.  This will only work
+correctly if you have configured Vile to start Vileserv automatically.
+(Vileget will try to find an XVile binary first, then look for
+a Vile binary.)
+
+Vileget looks for the Vileserv socket in the user's home directory
+(I<$HOME/.vilesock>) by default.  This can be changed by setting
+the B<VILESOCK> environment variable, or by using the B<-s> option.
+
+If vileget is handed a directory name, it trys to get the target Vile
+to load the B<directory.pm> module and popup the appropriate directory
+listing.  This only works for the first directory mentioned on the
+command line, and it only works if the target Vile is configured
+to accept remote commands (see the B<-c/-C> options).
+
+=head1 COMMAND-LINE OPTIONS
+
+=over 5
+
+=item B<-d>
+
+With this option, vileget will change the current working directory of
+the running Vile to be the directory in which vileget is being run, in
+addition to loading any requested files.
+
+=item B<-n>
+
+This tells vileget NOT to try starting a new instance of Vile if
+necessary.  If vileget cannot connect to a running Vile, it will just
+die with a connection error instead.
+
+=item B<-w>
+
+Vileget waits for given file(s) to be written by Vile before exiting.
+
+=item B<-s> I<socket-path>
+
+Tells vileget to use the socket given by I<socket-path>.  This overrides
+the default and the environment variable B<VILESOCK>.
+
+
+=item B<-c> I<command>
+
+=item B<-C> I<command>
+
+The B<-c> and B<-C> options can be used to pass arbitrary Vile commands
+to a running instance of Vile.  These can be used at the same time
+that file edits are being requested, or without giving any files at all.
+When file arguments are used, the B<-c> option can be used to execute
+a Vile command I<before> the requested files are loaded.  The B<-C> option
+is used to execute a Vile command I<after> the requested files are loaded.
+If no file arguments are given, then B<-c> and B<-C> are basically the
+same, except that B<-c> has precedence.  These options are non-repeatable,
+so you can only execute two Vile commands per invocation of vileget.  Of
+course, there are always procedures...
+
+You can have a lot of mindless fun with these two options.  For example,
+you can popup and close the buffer list by repeatedly executing:
+
+   vileget -c '*'
+
+As a nod towards security, command execution is disabled by default in
+Vileserv.  To enable it, you can use
+
+   setv %vileserv-accept-commands true
+
+in your I<.vilerc> file.  Note that running something like
+
+   vileget -c 'setv %vileserv-accept-commands false'
+
+can be used to disable remote commands dynamically.  Naturally, this
+is considered to be both a security violation *and* a feature...
+
+Passing arbitrary commands to Vile may well produce arbitrary results.  The
+author assumes no liability for edit sessions that have collapsed into
+singularities, or, as a matter of fact, for anything else.
+
+=back
+
+=head1 SEE ALSO
+
+vileserv(3), vile(1)
+
+=head1 AUTHOR
+
+S<J. Chris Coppick, 1998 (last updated: July 26, 2000)>
+
+=cut
+
+use Socket;
+use Getopt::Std;
+
+$vile1 = 'xvile';
+$vile2 = 'vile';
+$esc = '+++';
+
+getopts('ndws:c:C:') || &usage;
+#(@ARGV > 0) || &usage;
+
+$rendezvous = "$ENV{HOME}/.vilesock";
+$rendezvous = "$ENV{VILESOCK}" if (defined($ENV{VILESOCK}));
+$rendezvous = $opt_s if (defined($opt_s));
+
+socket(SOCK, PF_UNIX, SOCK_STREAM, 0) || die "$0: socket: $!";
+
+if (!connect(SOCK, sockaddr_un($rendezvous))) {
+
+   if (defined($opt_n)) {
+      die "$0: connect: $!";
+   }
+
+   my $ppid = getppid;
+   $pid = fork;
+
+   if (!defined($pid)) {
+      die "$0: fork: $!";
+   }
+
+   if (!$pid) {
+
+      open(STDIN, "<&0") || die "$0: reopening STDIN: $!";
+      open(STDOUT, ">&1") || die "$0: reopening STDOUT: $!";
+      open(STDERR, ">&2") || die "$0: reopening STDERR: $!";
+      $ENV{'VILESOCK'} = $opt_s if (defined($opt_s));
+      exec $vile1 or exec $vile2 or die "$0: exec: $!";
+
+   }
+
+   # Try 5 times to connect...
+   sleep 2;
+   for ($tries = 0;
+        !(connect(SOCK, sockaddr_un($rendezvous))) && $tries < 5;
+	$tries++) {
+      sleep 2;
+   }
+
+
+   if ($tries == 5) {
+      die "$0: connect: $!";
+   }
+
+}
+
+select(SOCK);
+$| = 1;
+
+my $cwd = `pwd`;
+chomp($cwd);
+
+if (defined($opt_d)) {
+   print $esc . " $cwd\n";
+}
+
+if (defined($opt_C)) {
+   print $esc . "do $opt_C\n";
+}
+
+while ($f = shift @ARGV) {
+   if ($f !~ /^\//) {
+      $f = "$cwd/$f";
+   }
+
+   if (-d "$f") {
+
+      print $esc . "do directory $f\n";
+      print $esc . 'do perl "use directory\n"';
+
+   } else {
+
+      if (defined($opt_w)) {
+	 print $esc . "waiton ";
+      }
+
+      print "$f\n";
+   }
+}
+
+if (defined($opt_c)) {
+   print $esc . "do $opt_c\n";
+}
+
+print "\n";
+
+if (defined($opt_w)) {
+   while ($written = <SOCK>) { 1; }
+}
+
+close SOCK;
+
+exit 0;
+
+
+sub usage {
+
+   print <<EOD;
+Usage:  vileget [-n] [-c] [-w] file [file ...]
+   -n = do NOT try to start Vile if needed
+   -d = set cwd of Vile to cwd of vileget
+   -w = wait for file(s) to be written by Vile before exiting
+   -s socket-path = rendezvous with Vile at given socket-path
+   -c command = pass command to Vile before loading any files
+   -C command = pass command to Vile after loading any files
+
+EOD
+   exit 1;
+
+}

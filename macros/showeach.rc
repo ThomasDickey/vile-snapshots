@@ -1,0 +1,78 @@
+; $Id: showeach.rc,v 1.5 2004/12/15 23:41:22 tom Exp $
+; Show each (non-scratch/invisible) buffer, if possible, in a separate window.
+
+store-procedure show-each-buffer "Show each buffer in a window"
+;~trace on
+	~local %count %maxwindows %lenwindows
+	~local %read-hook
+	~local %buffer-hook
+	~local %autobuffer %oldbuffer %topbuffer
+	; reset autobuffer, otherwise we cannot step through buffer list
+	setv %autobuffer=$autobuffer
+	set noautobuffer
+
+	; You may want to customize this by cancelling the read/buffer hooks
+	; if you have set them to something more intrusive than syntax filtering.
+	setv %read-hook=$read-hook
+	setv %buffer-hook=$buffer-hook
+	;setv $read-hook=''
+	;setv $buffer-hook=''
+
+	; determine the buffer we'll return to at the end
+	~if &or \
+		&sin $bflags 's' \
+		&sin $bflags 'i'
+		setv %oldbuffer=$abufname
+	~elseif &sin $cbufname '[unnamed]'
+		setv %oldbuffer=$abufname
+	~else
+		setv %oldbuffer=$cbufname
+	~endif
+
+	; count the number of buffers to show
+	setv %count=1
+	setv %maxwindows=&div &sub $pagelen 1 3
+	rewind
+	setv %topbuffer=$cbufname
+	~while &lt %count %maxwindows
+		;; write-message &cat 'Buffer: ' $cbufname
+		~force ~hidden ~quiet next-buffer
+		~if &not $status
+			~break
+		~endif
+		setv %count=&add %count 1
+	~endwhile
+	;; write-message &cat 'Buffer-Count: ' %count
+	setv %maxwindows=%count
+	; compute the window height, excluding the status line for each
+	setv %lenwindows=&sub &div &sub $pagelen 1 %maxwindows 1
+	;; write-message &cat 'Window-Size: ' %lenwindows
+
+	setv $read-hook=%read-hook
+	setv $buffer-hook=%buffer-hook
+
+	; create the windows
+	~if &gt %maxwindows 1
+		setv %count=1
+		rewind
+		delete-other-windows
+		~while &lt %count %maxwindows
+			1 split-current-window
+			%lenwindows resize-window
+			next-window
+			next-buffer
+			setv %count=&add %count 1
+		~endwhile
+
+		select-buffer %oldbuffer
+		write-message &cat 'Split into ' &cat %maxwindows &cat ' windows, size ' %lenwindows
+	~else
+		write-message 'Found only one non-scratch buffer'
+	~endif
+	setv $autobuffer=%autobuffer
+;~trace off
+~endm
+
+; For testing -
+; map L :source showeach.rc
+; map K :show-each-buffer

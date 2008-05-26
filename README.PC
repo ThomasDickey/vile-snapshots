@@ -1,0 +1,260 @@
+                          --------------------
+                          Running vile on a PC
+                          --------------------
+
+vile can be built for DOS, OS/2, Windows NT/2K/XP or Win9x/ME. 
+additionally, precompiled binaries are available at vile's ftp sites
+(refer to the README file for URLs).
+
+the precompiled binaries have an obvious advantage:  you don't build vile,
+which avoids the hassle of acquiring an "exotic" and/or expensive compiler.
+on the flip side, some PC environments include multiple build options that
+configure major editor features.  consequently, if you don't build vile,
+you have no control of the resultant feature set.
+
+General installation instructions
+---------------------------------
+installation of vile's PC components is the responsibility of the end user.
+put another way, _none_ of the PC makefiles include install targets and
+_none_ of the precompiled binaries include self-extracting setup programs.
+
+Installing the precompiled binaries
+-----------------------------------
+1) unpack the appropriate compressed archive obtained from an ftp site.
+2) copy all executables and the file vile.hlp to a directory in your PATH.
+
+Installing after a build
+------------------------
+1) build the editor using the hints/information supplied below.
+2) copy all resultant executables (except mktbls.exe) and the file vile.hlp
+   to a directory in your PATH.
+
+Creating a startup file
+-----------------------
+most users will configure the editor.  this is accomplished by creating a
+startup file, called "vile.rc", and adding various settings and macros as
+described in vile.hlp .  vile searches for the startup file in these
+locations (and in the order listed):
+
+	1 - current working directory
+	2 - directory specified by $HOME
+	3 - vile executable directory
+	4 - each directory specified in $VILE_STARTUP_PATH.  If
+	    this environment variable is not set, the following
+	    defaults are internally assumed:
+
+		/sys/public;/usr/bin;/bin;/
+
+	5 - each directory specified in:
+
+		$PATH
+		$VILE_LIBDIR_PATH
+
+Syntax coloring
+---------------
+syntax coloring works well on win32 hosts and everyone wants it :-) .
+configuration of this feature is described step-by-step in these vile.hlp
+topics:  "Color basics" and "Syntax coloring" .
+
+the remainder of this file describes build requirements for various PC
+environments.
+
+DOS information
+---------------
+under DOS, you're best off using a DOS extender of some kind.  either
+the Watcom or DJGPP compiler suites may be used -- DJGPP gives you a
+faster executable, but the Watcom compiler is about 10 times faster.
+you can use Turbo or Borland C as well, but neither of those support an
+extender, so you end up only being able to edit files that fit in memory.
+if you do this, be sure to '#define SMALLER 1' in estruct.h, to save as
+much code space as possible.
+
+if you build with Watcom, you'll need to have both vile.exe and dos4gw.exe
+in your path to run vile.
+
+if you build with DJGPP, you'll need to have both vile.exe and go32.exe
+in your path to run vile.  newer versions of DJGPP may rely on DPMI, and
+you might need cwsdpmi.exe instead of go32.  experiment.  have fun!
+
+let me know about bugs/oddities when you use vile on a PC -- i probably don't
+use it as much as you do.
+
+(it's quite possible that the DOS makefiles are a little out of date --
+refer to the UNIX makefile (makefile.in) for correct current list of source
+and object files.)
+
+oh -- there are three possible screen drivers in the source distribution
+that should work, with varying degrees of success:
+
+	borland.c (need #define BORLAND in estruct.h or makefile): this
+		uses the "conio" routines that come with Turbo C or Borland
+		C++.  Again, the trouble with this under DOS is that the
+		Borland compilers don't produce a dos-extender 32 bit app,
+		so you're _severely_ limited as to filesize.  but the DJGPP
+		libraries emulate the borland screen i/o routines, so this
+		screen driver is used there as well.
+
+	ansi.c (need #define ANSI in estruct.h or makefile):  uses ANSI.SYS.
+		it relies on the ansi driver for its cursor/scrolling/color
+		services.  if you can change the resolution of your screen (to
+		43 or 50 line mode) with your ansi driver, just use the
+		"screen-rows" and/or "screen-columns" vile commands to make its
+		idea of the size match your physical screen, and you'll be all
+		set.  (i've only tested it with a free/public replacement
+		program called NNANSI.  i got my copy from a simtel mirror.  i
+		can probably find you a copy if you need it.)
+
+
+OS/2 information
+----------------
+i believe vile can be built with the Borland compiler, or IBM CSET. be
+aware that vile is NOT a PM program.  the two builds use the borland.c
+or os2vio.c screen drivers, respectively.  with vile 7.3, an EMX port
+is supported (for comparison, since OS/2 VIO performs much better).
+
+we build the VIO version for the ftp downloads with IBM CSET, and the
+associate nmake utility.
+
+the makefile.emx (and associated config.emx file) are used for building
+with a minimal EMX environment.  you need gcc for this.  however, for
+best results in EMX, you should build with the autoconf version and
+ncurses.  this requires a number of tools:
+
+	+ you will have to regenerate the configure script, using
+	  autoconf 2.13, with the patches from
+
+	  http://invisible-island.net/autoconf/autoconf.html
+
+	+ you'll need ksh (build or obtain a copy of pdksh 5.2.13 or
+	  better).
+
+	+ GNU m4 (needed for autoconf), and sed.
+
+the termcap library distributed with EMX does not work well.  use ncurses:
+
+	+ ncurses 4.2 or later, with patches through September 1998, from
+
+	  http://invisible-island.net/ncurses/ncurses.faq.html
+	  ftp://invisible-island.net/ncurses/
+
+	+ use '$TERM=ansi', or start customizing from that.
+
+WIN32 information (Windows NT/2K/XP and 9x/ME)
+----------------------------------------------
+either Visual C++ (4.x or later) or the Borland compiler can be used.  use
+makefile.wnt with VC++ and makefile.blc with Borland's compiler.  with
+respect to the console-mode port (vile.exe), the screen driver is
+ntconio.c .  Both makefiles build vile.exe by default.
+
+additionally, makefile.wnt builds a handful of C-based syntax coloring
+filters.  many additional filters can be compiled and linked if lex or flex
+are available, as described below.  refer to the help file topic "Syntax
+coloring" for a description of these filters and their integration with the
+editor.
+
+as of vile 7.3, a gui called "winvile" is provided (screen driver is
+ntwinio.c), which continues to improve with successive releases of the
+editor.  currently, winvile may only be built with makefile.wnt (i.e.,
+only with VC++).
+
+as of vile 8.0, an embedded perl interpreter may be optionally included
+with the console or gui versions of the editor.  again, this feature is
+only accessible via makefile.wnt .  if perl has been installed on your
+desktop, vile's perl API documentation can be extracted from the source
+distribution with this nmake command:
+
+    nmake -f makefile.wnt vile-perl-api.doc
+
+as of vile 8.1, winvile may be built with optional OLE automation support,
+which is described in the file doc/oleauto.doc .  additionally, a DLL called
+visvile.dll can be built and installed as a Developer Studio add-in.  this
+add-in substitutes winvile as the default Developer Studio editor for
+many common editing tasks.  refer to the file doc/visvile.doc for further
+information, including build instructions.
+
+the following table summarizes the most significant makefile.wnt build
+options:
+
+component option(s)   required nmake command-line [1]
+========= =========   ===============================
+vile      <none>      nmake -f makefile.wnt
+vile      perl    [2] nmake -f makefile.wnt CFG=vile-with-perl
+winvile   <none>      nmake -f makefile.wnt CFG=winvile
+winvile   perl        nmake -f makefile.wnt CFG=winvile-with-perl
+winvile   ole         nmake -f makefile.wnt CFG=winvile OPT=ole-auto
+winvile   perl,ole[2] nmake -f makefile.wnt CFG=winvile-with-perl OPT=ole-auto
+
+[1] by default, all builds cd into the filters subdirectory and compile and
+    link a handful of C-based syntax coloring filters.  to build _all_ of
+    the editor's supported filters, acquire a copy of flex (or lex),
+    install it in a directory located in your PATH and add the following
+    command-line option:
+
+        nmake -f makefile.wnt <OPTIONS_FROM_ABOVE> FLT=1 LEX=flex  # or LEX=lex
+
+    take note that flex is a component of cygwin's GNU emulation package
+    and works quite well for this purpose.  cygwin can be obtained from
+    Redhat at http://sources.redhat.com/cygwin.  the FLT option binds
+    all syntax coloring filters into the resultant [win]vile executable.
+
+[2] this option requires prior installation of perl.  refer to the section
+    entitled "Perl preconditions" below.
+
+
+More about makefile.wnt
+-----------------------
+this makefile builds the editor from the command-line, _not_ from Developer
+Studio.  however, selected environment variables _must_ be set before
+any VC++ tool can be used (this includes nmake, cl, link, etc.).
+fortunately, microsoft supplies the file vcvars32.bat, in the Dev Studio
+bin directory, to set these variables.  you'll probably want to examine and
+edit this .bat file before using it for the first time because it usually
+modifies the PATH to include the PC's CD-ROM drive (not nice at all!).
+given all of this information, here's how to build the editor using the
+MS developer tools:
+
+a) open a dos box
+b) cd to the vile source directory
+c) run this command to initialize Dev Studio env vars:
+
+   <devstudio_root>\bin\vcvars32
+
+d) use one of the nmake command-lines shown above
+
+Perl preconditions
+------------------
+before building vile with an embedded perl interpreter:
+
+1) install a complete Win32 perl distribution[*] from this URL:
+
+       http://www.perl.com/CPAN-local/ports/win32/Standard/x86/
+
+   Included in this distribution, among many other items, is a required DLL
+   (perl.dll) and the usual perl packages.
+
+2) initialize the environment variable VILE_LIBDIR_PATH to point to a
+   writable "root" directory where vile's perl scripts will be installed.
+
+[*] Choose either a precompiled version of perl or build it yourself from
+    source.  In this context, a "complete" distribution includes the perl
+    interpreter and all "standard" packages, modules, and libraries.
+
+note 1: one of CPAN's popular perl binary releases did not export an
+important symbol.  this omission has been handled in vile's sources, but
+there is a nontrivial performance impact associated with the workaround.
+search for the symbol HAVE_BROKEN_PERL_RS in makefile.wnt to see if your
+version of perl is affected.
+
+note 2: the ActiveState port of perl is not compatible with vile's
+internal perl API--older versions won't link/compile and newer versions
+crash the editor.
+
+--------------------------------------------------------
+tom dickey, dickey@invisible-island.net
+
+--------------------------------------------------------
+paul fox, pgf@foxharp.boston.ma.us (home)
+
+------------------------
+$Header: /users/source/archives/vile.vcs/RCS/README.PC,v 1.33 2005/11/30 01:32:30 tom Exp $
+------------------------

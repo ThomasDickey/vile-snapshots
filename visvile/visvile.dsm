@@ -1,0 +1,38 @@
+'------------------------------------------------------------------------------
+'FILE DESCRIPTION: Modify various keystrokes to work in conjunction with
+'                  VisVile.
+'------------------------------------------------------------------------------
+
+Sub F5()
+    Application.ExecuteCommand("VisVileDisableCmd")
+    Application.ExecuteCommand("DebugGo")
+End Sub
+
+Sub F7()
+    ' Enable VisVile so that build errors can be propagated back to the
+    ' editor (via various VisVile options).
+    Application.ExecuteCommand("VisVileEnableCmd")
+
+    ' Close all open windows to ensure that the ensuing build is not
+    ' held up by message boxes asking if a file modified outside devstudio
+    ' should be reloaded.
+    Application.Windows.CloseAll()
+
+    ' Do the build.
+    Application.ExecuteCommand("Build")
+End Sub
+
+Sub F9()
+    Application.ExecuteCommand("VisVileDisableCmd")
+    Application.ExecuteCommand("DebugToggleBreakpoint")
+End Sub
+
+Sub F10()
+    Application.ExecuteCommand("VisVileDisableCmd")
+    Application.ExecuteCommand("DebugStepOver")
+End Sub
+
+Sub F11()
+    Application.ExecuteCommand("VisVileDisableCmd")
+    Application.ExecuteCommand("DebugStepInto")
+End Sub

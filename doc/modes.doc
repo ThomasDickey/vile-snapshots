@@ -1,0 +1,372 @@
+Major (and minor) modes in Vile
+===============================
+
+Goals
+-----
+
+This document describes the proposed implementation and use of major
+modes in vile.  My goal is to extend the notion of the C mode (cmode)
+to allow runtime definable major modes.
+
+Originally, vile supported a C mode that included a collection of modes
+useful for editing C program source:
+
+	c-suffixes
+	c-tabstop
+	c-shiftwidth
+
+as well as this builtin functionality:
+
+	autoindention of C statements taking into account curly braces
+	fence matching for /*...*/ comments and C preprocessor statements
+	comment formatting
+
+Both the modes and functionality are extensions of other features in
+vile.  It would be useful to combine modes to support other languages
+in a similar fashion.  Likewise, the autoindention, etc., could be
+parameterized and made reusable to support other languages.  For an
+initial implementation, I am focusing on the combining of modes,
+providing a structure for the parameterization.
+
+One thing that was not clear to many users was the manner in which the C
+mode was attached to a buffer.  It was set as a boolean - if active before
+a buffer was loaded, then vile checked the file suffix to see if it matched
+the c-suffixes mode, and if so, set the C mode for the buffer.  C mode
+could also be explicitly set by a ":setl cmode", and unset by ":setl
+nocmode".  In the new scheme,
+
+	+ vile will search the list of all active majormodes, first
+	  testing if any match with the majormode's suffixes, then if
+	  any preamble (first line regular expression) matches.
+
+	  The search is in normally alphabetic order, by majormode name.
+	  The first match each, of suffixes and preamble terminate the
+	  search, but a match of suffixes overrides a match of preamble.
+	  Use "after" and "before" qualifiers to handle special cases.
+
+	  In rare circumstances, both suffixes and preamble are needed to
+	  distinguish a given mode from another.  Use
+	  	qualifiers=all
+	  to specify this.  The default, "qualifiers=any", allows either
+	  suffixes or preamble to determine the majormode.
+
+	  The suffixes and preamble rules can be overridden altogether by
+	  specifying $majormode-hook to a script which sets the majormode
+	  for the current buffer.
+
+	+ majormodes can be disabled (e.g., ":set nocmode"), as before.
+	  However, there is no global sense of majormode; unsetting a
+	  buffer's local value of a majormode simply makes it not have a
+	  majormode associated with it.
+
+
+Commands
+--------
+
+These are the commands which I think are necessary:
+
+	define-majormode {majormode}
+
+	define-submode {majormode} {minormode}[={value}]
+
+	remove-majormode {majormode}
+
+	remove-submode {majormode} {minormode}
+
+	setl {majormode}
+
+	setl no{majormode}
+
+The {majormode} is a new symbol.
+
+The {minormode} can be any one of the existing buffer modes, except for
+a {majormode}.  To make name-completion simple, we use the term 'submode'.
+
+
+Example
+-------
+
+	define-majormode c
+	; Declares a mode 'c', and corresponding symbol 'cmode'
+
+	define-submode c suffixes=\\.\\(\\([Cchisyl]\\)\\|CC\\|cc|cpp\\|cxx\\|hxx\\|scm\\)$
+	; Specifies the filename suffixes which control whether a newly-loaded
+	; buffer is set to 'c' mode.
+
+	define-submode c tabstop=4
+	define-submode c shiftwidth=4
+	; Defines the 'c' tabstop and shiftwidth.  If no "define-submode"
+	; command is given, no separate symbol is defined.
+
+As an example, to define a new major mode for perl programming, you might
+include the following in your .vilerc file:
+
+	define-majormode perl
+	define-submode perl preamble "^#.*perl\\>"
+	define-submode perl suffixes '\.\(pm\|t\)$'
+	define-submode perl shiftwidth 4
+
+To avoid the tediousness of this syntax, use the ~with and ~endwidth
+keywords, like so:
+
+	define-majormode perl
+	~with define-submode perl
+	    preamble "^#.*perl\\>"
+	    suffixes '\.\(pm\|t\)$'
+	    shiftwidth 4
+	~endwith
+
+You can define several regions using ~with and (after the first) ~elsewith
+blocks.  Each block specifies a set of tokens which are substituted at the
+beginning of each line.  Each ~elsewith block should have a group identifier
+to distinguish it from the others.  The reason for providing multiple
+blocks is to implement complex fence-matching for different language features.
+
+For example, in the definition of cshmode, the symbols "fence-XXX" give
+patterns which vile can use to move the cursor from one if/elif/else/fi
+marker to the next as you press "%".  The other settings such as "suf"
+in the first block are settings that apply to the majormode itself:
+
+	define-mode csh
+	~with define-submode csh
+	    suf '\.\(csh[^/]*\|login\|logout\)$'
+	    pre '^#!\s*\/.*csh\>\(\s*-[a-z]\+\)*\s*$'
+	    filtername	'vile-sh-filt -k csh'
+	    comment-prefix	'^\s*#'
+	    comments	'^\s*#\s*$'
+	    fence-if	'^\s*\<if\>.*\<then\>'
+	    fence-elif	'^\s*\<else\s*if\>'
+	    fence-else	'^\s*\<else\>'
+	    fence-fi	'^\s*\<endif\>'
+	~elsewith define-submode csh group 'case'
+	    fence-if	'^\s*\<switch\>\s*(.*)'
+	    fence-elif	'^\s*\<case\>.*:'
+	    fence-else	'^\s*\<default\>\s*:'
+	    fence-fi	'^\s*\<endsw\>'
+	~elsewith define-submode csh group 'loop'
+	    fence-if	'^\s*\<foreach\s\+.*\|while\>\s*(.*)'
+	    fence-fi	'^\s*\<end\>'
+	~endwith
+
+
+The "define-majormode" command
+------------------------------
+
+This takes a single argument, a majormode name.  To follow existing
+convention, the string "mode" is automatically appended to the given
+name.  Associated modes are defined or modified with the define-submode
+command.  Vile maintains a list of majormodes.  Only one majormode can
+be associated with a buffer (none need be associated).  After
+definition, a majormode can be set or unset just like any other buffer
+mode:
+
+	define-majormode c
+	; defines "cmode"
+
+	setl cmode
+	; sets the mode for the current buffer
+
+	setl nocmode
+	; clear c mode (existing implementation)
+
+	unsetl cmode
+	; clear c mode
+
+The restriction to a single majormode is because mode values are
+internally represented as structures with a pointer.  The pointer
+denotes which value (currently local or global) is used.  The
+majormode implementation adds a level to this, e.g.,
+
+	value -> self (local)
+	value -> global (global)
+	value -> major (majormode)
+
+When a majormode is defined, an array of the existing minor mode values
+is allocated, all pointing to the global modes.  The define-submode
+command modifies these to make them local pointers.  When a buffer is
+associated with a majormode, all of its buffer mode values are pointed
+to the majormode's values.  (To keep the bookkeeping straight, modifying
+a global buffer mode must also modify the copies of non-local buffer
+mode values).
+
+
+The "define-submode" command
+----------------------------
+
+This command sets local values of buffer modes for the given majormode,
+e.g.,
+
+	define-submode c autoindent
+
+The majormode name is required.  The names after the majormode name are
+names of buffer modes with a corresponding value.  Any number of modes
+can be specified in a single command, e.g.,
+
+	define-submode c autoindent tabstop=4
+
+For each mode given, vile defines corresponding names by which they can
+be referenced, e.g., "c-autoindent" (from the long mode name
+"autoindent") and "cai" (from the short mode name "ai" for autoindent). 
+The long mode name is always appended with a hyphen, and the short mode
+name is appended without a hyphen.
+
+The term "submode" is used in the command rather than the more natural
+"minor mode" to simplify name-completion.
+
+The following are keywords that aren't minor modes, but are recognized
+solely by the define-submode command:
+
+	mode-pathname
+		The full pathname which is tested to trigger association with a
+		majormode, e.g., "RCS/*,v".
+
+	mode-filename
+		The filename which is tested to trigger association with a
+		majormode, e.g., "Makefile".
+
+	suffixes
+		The filename suffix which is tested to trigger
+		association with a majormode (e.g., c-suffixes)
+
+		Note that since the default value for the c-suffixes mode
+		is a regular expression that will match some other file
+		types (C++ files, for instance), if you define a new major
+		mode for one of those suffixes you may want to reset
+		c-suffixes to something less inclusive.
+
+	preamble
+		Regular expression, matched against the beginning of a
+		file (the first line) used to trigger association with
+		a majormode (e.g., "^!#.*\/perl[^a-z]").
+
+	filtername
+		A shell command telling which filter to call, and how to do
+		that.  The form of the command is limited, since it is
+		interpreted for internal calls:
+
+			{filter} {options}
+
+		where {filter} is the filename for the filter, e.g.,
+
+			vile-c-filt
+
+		and options include:
+
+			-k mode
+				The keyword filename, omitting ".keywords".
+				For instance, the C filter vile-c-filt is used
+				for C, C++, JavaScript and Java by changing the
+				keyword file.
+			-q
+				Quit after loading the keyword definitions.
+			-t tabs
+				Set the tabstops, used in the imake filter
+				to check for coincidental matches between a
+				tab and spaces that are the same number of
+				columns.
+			-v
+			-vv
+				Debug traces, mainly to show which keyword
+				files are loaded, and what information is
+				parsed from them.
+
+		Other options may be implemented that are specific to a filter
+		program.  For instance, vile-c-filt recognizes a -p option to
+		mark preprocessor lines with an error (used for Java).
+
+	before
+	after
+		A string that tells vile how to rank the majormode.
+		Normally vile checks each mode in order by name, but there
+		are special cases where you may want to check one mode
+		before another.  For example, the C++ majormode cppmode
+		would be checked after cmode, but that uses suffixes which
+		are a subset of the built-in cmode's suffixes and would not
+		be found.  So cppmode is qualified before="c".
+
+	group
+		followed by a name, defines an alternative set of submode
+		values.
+
+		Currently used only for complex fences, this could be applied
+		to simple fences, and (with new flags not yet defined) extend
+		both styles of fences for indentation and formatting.
+
+	fences
+		These are "complex" fences, which are matched one expression
+		per line.  The names are "fence-" followed by any of the
+		following keywords with a regular expression:
+
+			if, elif, else, fi
+
+		Vile searches through all groups of complex fences for a
+		match before trying simple fences.
+
+	comments
+		These are "simple" fences, which can be matched any number
+		of times per line.  The pairs need not appear on the same
+		line.  Like complex fences, they have an implied order.
+		The default values support C-style comments, with the '%' going
+		between "/*" and "*/".  The names use "fence-" followed any of
+		the following keywords with a regular expression:  begin, end.
+
+	indent	(not implemented)
+		The keyword "cstyle", or any of the following keywords
+		with a regular expression: begin, end, if, then, else,
+		elif, endif.
+
+Other features which should be controlled by majormodes include limiting
+the scope of the entab and detab commands.
+
+
+The "remove-majormode" command
+------------------------------
+
+This command has two forms:
+
+	remove-majormode {majormode}
+
+		This removes the definition of the majormode.  Buffers
+		that were associated with the mode revert to no
+		majormode.
+
+or
+	remove-majormode {majormode} {name}
+
+		This removes the value of {name} from {majormode},
+		leaving it set to the global value, if any.
+
+
+The "remove-submode" command
+----------------------------
+
+Remove the special association of a submode from a majormode.
+
+
+Example
+-------
+
+The original builtin C/C++ majormode description is equivalent to
+
+define-mode c
+~with define-submode c
+	suffix "\\.\\(\\([Cchisyl]\\)\\|CC\\|cc|cpp\\|cxx\\|hxx\\|scm\\)$"
+	comment-prefix="^\\s*\\(\\s*[#*>]\\)\\+"
+	comments="^\\s*/\\?\\(\\s*[#*>]\\)\\+/\\?\\s*$"
+	fence-begin="/\\*"
+	fence-end="\\*/"
+	fence-if="^\\s*#\\s*if"
+	fence-elif="^\\s*#\\s*elif\\>"
+	fence-else="^\\s*#\\s*else\\>"
+	fence-fi="^\\s*#\\s*endif\\>"
+	cindent
+~endwith
+
+Note that the following are equivalent once you have defined the majormode "c":
+	set cts=8
+	set c-tabstop=8
+	define-submode c tabstop=8
+
+-------------------------------
+$Header: /users/source/archives/vile.vcs/doc/RCS/modes.doc,v 1.17 2008/01/25 00:27:47 Steven.Lembark Exp $
+-------------------------------
