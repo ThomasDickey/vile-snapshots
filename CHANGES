@@ -1,5 +1,28 @@
 Changes for vile 9.7 (released ??? ??? ?? ????)
 
+ 20080525 (n)
+	> Brendan MacDonell:
+	+ improve ruby syntax filter:
+	  + match keywords containing '!' '?' and '=' depending on the context
+	    (based on my best guesses as to the most common uses, which work
+	    99% of the time - otherwise the entire ruby parser would need to be
+	    integrated to correctly mimic these syntax quirks). 
+	+ remove unmatchable characters from the list of those matched
+	  following $. 
+	+ change the instance variable matching to @@?{KEYWORD} instead of
+	  @+{KEYWORD}. 
+        + matching symbols as literals.                                         
+        + constants (keywords beginning with a capital) are highlighted with    
+          the Type attribute. 
+	> Tom Dickey:
+	+ modify ruby syntax filter to highlight binary integers (such as
+	  0b10101).
+	+ disable "*" and "?" abbreviation feature in ruby.key
+	+ modify parsing of keyword files to accept an empty parameter for
+	  "abbrev" and "brief", to disable the "*" and "?" feature.
+	+ revise 9.6c fix for offs2col0(), restores selection highlighting
+	  of newline (report by Eric Krohn).
+
  20080508 (m)
 	> Mark Robinson:
 	+ build-fix for eightbit.c without iconv functions.
