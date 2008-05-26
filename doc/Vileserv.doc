@@ -1,0 +1,30 @@
+Subject: Vileserv
+Date: Tue, 27 Oct 1998 19:15:13 -0800
+From: "J. Chris Coppick" <jchris@znet.com>
+
+Status: OR
+
+I've been on this list for a few days now and haven't
+seen any traffic.  I guess I'm the only Vile user.
+On the off chance that I'm not, I'm posting a perl
+hack I recently did that gives you the ability to send edit
+requests to a running Vile (sort of like gnuserv does
+for Emacs).  Vile is lightweight enough to run several
+at a time, but when I'm using a file manager (like TkDesk)
+sometimes I like to click on files and "add" them to a
+current Vile session.
+
+Attached are two files, Vileserv.pm and vileget.  Vileserv.pm
+is for loading into a perl-enabled Vile session, and vileget
+is a utility for sending requests to the editor.  You can
+use pod2man to get the man pages:
+
+	pod2man Vileserv.pm > vileserv.man
+	pod2man vileget > vileget.man
+
+If someone has already written something like this and never told
+me about it, color me annoyed. :-)
+
+Enjoy,
+
+	Chris

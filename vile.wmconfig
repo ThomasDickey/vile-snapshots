@@ -1,0 +1,4 @@
+vile description "VI Like Emacs" 
+vile exec "xterm -e vile &" 
+vile group "Applications/Editors" 
+ 

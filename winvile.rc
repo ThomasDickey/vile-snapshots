@@ -1,0 +1,60 @@
+// $Id: winvile.rc,v 1.12 2007/05/26 15:43:02 tom Exp $
+// vile:rcmode
+
+#include <windows.h>
+#include "winvile.h"
+
+//
+// Icon
+//
+#ifndef VILE_ICON
+#define VILE_ICON "vile.ico"
+#endif
+
+VilewIcon ICON VILE_ICON
+
+//
+// Popup Menu
+//
+WinvilePopMenu MENU
+{
+    POPUP ""
+    {
+        MENUITEM "&Open...",              IDM_OPEN
+        MENUITEM "&Save As...",           IDM_SAVE_AS
+        MENUITEM "C&D...",                IDM_CHDIR
+        MENUITEM "Fa&vorites...",         IDM_FAVORITES
+        MENUITEM "&Font...",              IDM_FONT
+        MENUITEM "&Menu",                 IDM_MENU
+        MENUITEM SEPARATOR
+        MENUITEM "&Undo",                 IDM_UNDO
+        MENUITEM "&Redo",                 IDM_REDO
+        MENUITEM SEPARATOR
+        MENUITEM "Cu&t",                  IDM_CUT
+        MENUITEM "&Copy",                 IDM_COPY
+        MENUITEM "&Paste",                IDM_PASTE
+        MENUITEM "De&lete",               IDM_DELETE
+        MENUITEM SEPARATOR
+        MENUITEM "Select &All",           IDM_SELECT_ALL
+    }
+}
+
+AboutBox DIALOG DISCARDABLE  0, 0, 187, 122
+STYLE DS_MODALFRAME | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION ""                 // set at runtime
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,132,101,50,14
+    ICON            "VilewIcon",-1,5,7,20,20
+    CTEXT           "",IDM_ABOUT_COPYRIGHT,4,36,180,51,SS_SUNKEN //set @ runtime
+    LTEXT           "",IDM_ABOUT_PROGNAME,32,8,148,18            //set @ runtime
+END
+
+PrintCancelDlg DIALOG DISCARDABLE  0, 0, 156, 60
+STYLE WS_VISIBLE | WS_POPUP | WS_CAPTION
+CAPTION "Cancel Printing"
+FONT 8, "MS Sans Serif"
+BEGIN
+    PUSHBUTTON      "Cancel",IDCANCEL,80,22,50,14
+    ICON            "VilewIcon",-1,21,19,20,20
+END

@@ -1,0 +1,38 @@
+TYPEMAP
+VileBuf	* T_VileBuf
+VileWin   T_VileWin
+
+INPUT
+T_VileBuf
+	if (sv_isa($arg, \"Vile::Buffer\")) {
+	    IV tmp = SvIV((SV*)GvSV((GV*)SvRV($arg)));
+	    $var = ($type) tmp;
+	    if (!tmp)
+		croak(\"buffer no longer exists\");
+	}
+	else
+	    croak(\"$var is not of type ${ntype}\")
+
+T_VileWin
+	if (sv_isa($arg, \"Vile::Window\")) {
+	    $var = id2win((int)SvIV((SV*)SvRV($arg)));
+	    if (!$var)
+		croak(\"window no longer exists\");
+	}
+	else
+	    croak(\"$var is not of type ${ntype}\");
+
+
+OUTPUT
+T_VileBuf
+	if ($var != 0)
+	    newVBrv($arg, $var);
+	else
+	    sv_setsv($arg, &PL_sv_undef);
+
+T_VileWin
+	if ($var != 0)
+	    newVWrv($arg, $var);
+	else
+	    sv_setsv($arg, &PL_sv_undef);
+

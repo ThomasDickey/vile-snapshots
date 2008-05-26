@@ -1,0 +1,2877 @@
+
+NOTICE: This change log is officially (sez me) closed.
+	All further changes documented (hopefully) in "CHANGES".  This
+	file was renamed from "CHANGES" to "CHANGES.R4" on Wed Jan 11, 1995. 	
+
+Changes for vile 4.13 (released Thu Dec 22, 1994)
+(pgf)
+	+ fixed typo in glob.c which caused compile failure on VMS.
+
+	+ added PATCH_AGAINST environment variable to dpatch target.
+	  (makefile.in)
+
+	+ cleaned up selection ifdefs.  no more USE_SEL_FUNCS.  use
+	  OPT_SELECTIONS to ifdef references to r_attr_id.  (select.c
+	  region.c, estruct.h)
+
+	+ the strings <sp> and <tab> conflict with the new choice for
+	  "buffer variable" indicator.  so i'm getting rid of them.  and
+	  i'm adding support for \s (and \a, while i'm at it) to the
+	  tokenizer. (exec.c, bind.c, macros.doc, vile.hlp)
+
+	+ don't depend on a possibly null abbr_map pointer to decide to
+	  reverse the lhs of a map string.  this caused the first mapping
+	  of any type (:map or :map!) to be reversed.  i missed this
+	  because my first mapping was of a single character.  (map.c)
+
+	+ wrappers provided for TTgetc and TTtypahead because at least one
+	  pcc-based compiler balks at passing them as a function pointer. 
+	  (map.c)
+
+	+ operators act from pre_op_dot to DOT.  so set pre_op_dot when done
+	  sweeping, in case some other motion set it.  fixes 'dqf(%%q'.
+	  (select.c)
+
+	+ change _IOLBF flag to _IOFBF on setvbuf call, to turn off
+	  line buffering.  we don't need it, since we flush properly
+	  anyway, and it slows down output, particularly on an xterm.
+	  (most systems used to use setbuffer() anyway, until autoconf)
+	  (termio.c)
+
+	+ correct yet _another_ typo made during the great strncpy()
+	  conversion.  sheesh.  (bind.c)
+
+	+ readability improvements and editorial corrections to the older
+	  sections of README and README.CFG.
+
+	+ moved processing of @cmdfile startup file down to where
+	  we normally run .vilerc, to make sure all conditions are the
+	  same for both.  this should make running 'vile @.vilerc' and
+	  'vile' exactly equivalent.  running a command file caused
+	  a core in 4.12 due to NULL curwp.  (main.c)
+
+	+ include text of manpage.rc in vile.hlp, for installations that
+	  discard the source directory. (vile.hlp)
+
+	+ revisions to help and man page sections on startup. (vile.hlp,
+	  vile.1)
+
+	+ install the man page as xvile.1 when installing xvile. (makefile.in)
+	 
+(tom)
+	+ pick up slash right after a drive designator to fix problem
+	  with DOS globbing in the root directory.  (glob.c)
+
+	+ corrected define, so that VMS version builds display-driver
+	  (descrip.mms, vmsbuild.com).
+
+(kev)
+	+ line.c (put):  Don't set suppressnl when only putting newlines.
+	  Note: We may want to visit ldelnewline() and fix it so that the
+	  line structure doesn't get hosed when DOT is set to the buffer
+	  header.  The circular structure is apparently maintained, but the
+	  buffer header is now bypassed.  Suppose there're three lines.  We
+	  should have something (roughly) like this:
+
+	  	bufhead -> line1 -> line2 -> line3 -> bufhead
+
+	  But I think that after ldelnewline with DOT as described above,
+	  we end up with (again assuming three lines):
+
+	  	bufhead -> line1 -> line2 -> line3 -> line1
+
+Changes for vile 4.12 (released Fri Dec 16, 1994)
+(pgf)
+	+ clear up section of man page dealing with vile-manfilt. (vile.1)
+
+	+ don't let a mouse click change the current window if we're
+	  sweeping.  serious lockup results.  (basic.c)
+
+	+ fix various places that needed to be made more or less aware of
+	  the occurence of sweeping.  quoted motions now never include
+	  their endpoint, except in a few mostly "on one line" kind of
+	  motions: e, E, f, t, and %.  (csrch.c, edef.h, exec.c, fences.c,
+	  main.c, select.c, wordmov.c, vile.hlp)
+
+(kev)
+	+ display.c (modeline): For case 'f' and 'F' in the format string,
+	  do not display the pathname if it is the empty string.  This seems
+	  to be the case for the [unnamed] buffer.
+
+Changes for vile 4.11 (released Thu Dec 15, 1994)
+(pgf)
+	+ changed order of #includes in x11.c, so that our headers come
+	  first.  since we no longer define VMS at all, we'll be okay on
+	  most systems.  i hope this doesn't break other systems.  if so,
+	  estruct.h and edef.h should be moved after the last X11 include,
+	  until we can figure something out.  (x11.c)
+
+	+ changed leading character of so-called "buffer-variables" from
+	  a '#' character to '<' character.  the '#' conflicts with
+	  the # function key prefix.  THIS MAY BREAK OLD MACROS.  i'm
+	  sorry about this, but the choice of '#' as the function key
+	  prefix is not really negotiable...  (eval.c, vile.hlp)
+
+	+ fixed buffer-reading examples in macros.doc to reflect the above
+	  change.  (macros.doc)
+
+	+ fixed "WRITEABLE" case of the non-HAVE_ACCESS case of ffaccess.
+	  the sense was inverted.  (fileio.c)
+
+	+ implemented autowrite mode.  unlike vi, will only save files when
+	  suspending or running a shell command, since saving on any buffer
+	  switch seems a little silly.  (buffer.c, cmdtbl, main.c, modetbl,
+	  proto.h, spawn.c, vile.hlp)
+
+	+ fix OPT_LCKFILES as per johan rosman's suggestion, to make
+	  multiple edits by the original locker work correctly.  also fix
+	  behavior when file is renamed.  (buffer.c, main.c, file.c)
+
+	+ put in kev's suggested change to allow xvile to grow its screen
+	  more gracefully, albeit somewhat delayed. (eval.c)
+
+	+ fixed (for the last time, i hope) the sequence of messages that
+	  appear with ":w", ":wq", ":ww", ":wwq", and 'ZZ'.  Now, the "press
+	  return to continue" only happens if you're _not_ quitting, you
+	  haven't suppressed it with an argument, and something was actually
+	  written. (buffer.c, main.c, vile.hlp)
+
+	+ the "modeline-format" setting is now a variable rather than a
+	  "setting".  so 'set modeline-format "...."'  must change to
+	  'set-variable $modeline-format "...."' in .vilerc files. (edef.h,
+	  eval.c, display.c, main.c, modetbl, vile.hlp)
+
+	+ make sure getregion() assigns a unique attr_id to regions
+	  it creates, so find_release_attr() doesn't find spurious
+	  matches.  this keeps selections from disappearing when an
+	  unrelated delete (killregion()) occurs. (region.c, select.c,
+	  proto.h)
+
+	+ fixed bug in trimline() which caused it to leave DOT at end
+	  of line, if there was trimming to do.  this caused a bug
+	  where if two newlines were inserted into a line ending with
+	  whitespace, and autoinsertion occurred, then the newlines
+	  would insert incorrectly, one correctly, and one _after_ the
+	  line that had been broken.  trimline now preserves DOT if
+	  possible.  (region.c)
+
+	+ rearrange multimotion() to ensure regionshape is set to exact
+	  when we begin a normal quoted motion. (select.c)
+
+	+ the xterm-mouse code is now a proper motion, so that you can
+	  use it to follow an operator.  that is, hit 'd', point with
+	  the mouse, and click button 1 to delete to the mouse position.
+	  x11 code now forces execution of a null motion routine, to
+	  make this to work in xvile as well.  (basic.c, cmdtbl, tcap.c,
+	  proto.h, x11.c, estruct.h, vile.hlp) [hitting '.' after doing
+	  this in the xterm version is interesting, since the motion is
+	  relative to the edges of the screen, not to the buffer.  in
+	  xvile, the motion that is repeated is null, so nothing happens]
+
+	+ mask off VAML and VAMLFOC bits when comparing attributes in
+	  tcap.c, since it doesn't know how to deal...
+
+	+ reset insertmode and set WFMODE if we abort out of replacechar().
+	  (insert.c)
+
+	+ rearranged X resource section of help file slightly, to group
+	  all resources and subresources more closely together. if we
+	  split out all the scrollbar resources into sub-resources, this
+	  presentation might make less sense.  (vile.hlp)
+
+	+ modified configure.in to support "--with-CFLAGS=", and turn -O
+	  on by default.  it can now be suppressed with '--with-CFLAGS=" "'.
+	  is it possible to give the configure script a usage message?
+	  (configure.in, configure, README.CFG)
+
+	+ eliminated usage of the return value of strncpy(), since it's
+	  broken on at least one version of AIX, and there's no big
+	  gain in using it, other than aesthetic value, which, although
+	  subjective, really is a fact. :-)  (bind.c, buffer.c, eval.c,
+	  filec.c, glob.c, spawn.c)
+
+	+ eliminated all uses of the ScratchName macro, since it getting hard
+	  to write it portably.  all vile-created buffer names are now
+	  defined as char arrays in edef.h, and they all have the suffix
+	  "_BufName", e.g. "HELP_BufName" and "OUTPUT_BufName". (bind.c,
+	  buffer.c, edef.h, estruct.h, eval.c, exec.c, filec.c, finderr.c,
+	  history.c, line.c, main.c, map.c, modes.c, msgs.c, oneliner.c,
+	  spawn.c, tags.c)
+
+	+ eliminated the CPP_xxx checks that were used to help create the
+	  ScratchName macro. ( aclocal.m4, configure, configure.in)
+
+	+ fixed bogus cut-n-paste'd help messages for Macro buffers.  (cmdtbl)
+
+	+ rearranged utime()/utimes() code so that utimes is now favored
+	  over utime if both are present.  we think that systems with bad
+	  utime() implementations are the ones that have utimes(). 
+	  (fileio.c)
+
+	+ eliminate funky structure assignment "structthing = {foo, bar}".
+	  (ntconio.c) 
+
+	+ mention -O flag on by default, and necessity of working
+	  VPATH support in make program.  (README.CFG)
+
+	+ xvile does not need to (and shouldn't) attempt to reopen /dev/tty
+	  when stdin is a pipe.  the prevented xvile from starting from
+	  anywhere but the command line.  ifdefed code on DISP_X11. (main.c)
+
+	+ change make_backup() to correctly check boolean return code from
+	  ffexists() when deciding whether to back up a file.  (fileio.c)
+
+	+ changed rcsdiff commands to use unified diff format. (makefile.in)
+
+	+ fix bug in BUG check in mapped_c() -- was not clearing NOREMAP
+	  bit before comparing to poundc.  this caused arrow keys (probably
+	  all function keys not mapped by user) to appear to fail when
+	  noremap mode was set. (map.c)
+
+	+ blankline() was incorrectly de/entabbing its region, even when it
+	  wasn't rectangular.  (region.c)
+
+	+ implemented ":abbr" command.  ( CHANGES, README, cmdtbl,
+	  insert.c, map.c, proto.h, vile.hlp)
+
+	+ added "show-system-mapped-keys" command to show the mappings
+	  for the function keys.  this replaces passing numeric arg hack in
+	  :map and :map!.  (map.c, cmdtbl)
+
+	+ added "populate" admin target to makefile.in.
+
+	+ wording changes to vile.hlp and vile.1.
+
+	+ added "show-bindings" to cmdtbl, to match claims made in
+	  vile.hlp.
+
+	+ turned region formatting back on.  lost OPT_FORMAT in final
+	  merge for 4.10. (estruct.h)
+
+	+ changed shorten_path to not return NULL unless arg was NULL.
+	  this prevents possible core dump (or ugly display) when doing
+	  "show-tagstack" after "vile -t tagname". (path.c)
+
+	+ change getfile() to return FALSE if getfile2bp() returns NULL,
+	  and prevent a core dump.  this can happen, for instance, if the
+	  bp->b_fname is the result of non_filename(), which can happen if
+	  a tag lookup is done from a listbuffer, and a subsequent tag-pop
+	  command is done which tries to return there.  (file.c)
+
+	+ change tags() to push the buffername rather than the filename
+	  if we're tag'ging from an internal buffer.  this improves our
+	  chances of getting back to it.  (if it's gone from the screen,
+	  you still won't be able to get back)  (tags.c)
+
+(kev)
+	+ x11.c (x_setfont): Call XSetFont() for all of the newly added
+	  GC's.
+
+	+ x11.c (display_cursor): Draw the little rectangle with the cursor
+	  color instead of the normal text color when the window loses focus.
+
+	+ proto.h (x_resize): Declared.
+
+	+ eval.c (SetVarValue): Call x_resize() for EVPAGELEN and EVCURWIDTH.
+
+	+ x11.c (x_resize): New function.  Call it from x_configure_window().
+
+	+ vile.hlp: Documented new color cursor and modeline capabilities.
+
+	+ estruct.h (VACURS, VAMLFOC, VAML): New attributes.
+
+	+ display.c (modeline): Set VAMLFOC and VAML attributes as
+	  appropriate.
+
+	+ x11.c (x_preparse_args, flush_line, struct _text_win): Added new
+	  code for changing the color of the cursor as well as the
+	  modelines.
+
+	+ x11.c (update_scrollbar_sizes): Make grips the same color as the
+	  background of a modeline which does not have focus.  It's too
+	  much work to make the grip color always match the color of the
+	  modeline.
+
+	+ estruct.h (OPT_FORMAT): Added back in after being lost in
+  	  the shuffle.  Also checked the other "OPT_" features occuring
+  	  in cmdtbl to make sure that no others were also lost in the
+  	  shuffle.
+
+
+(tom)
+	+ corrected a null-pointer reference in 'getfile()' (file.c).
+
+	+ modified 'pathcat()' to (on VMS) ensure that the result is a valid
+	  pathname (path.c).
+
+	+ adjusted autoconf tests for cpp substitutions (aclocal.m4, estruct.h).
+	  [but that stuff's gone.  i've preserved these changes on an RCS
+	  branch (cpp_stuff) in case we need it.  -pgf ]
+
+	+ supplied missing DISP_VMSVT setting (estruct.h).
+
+	+ added FL_EXECABLE, FL_WRITEABLE, FL_READABLE flags to 'flook()' call
+	  to use in 'access()' call (estruct.h, bind.c, eval.c, exec.c, filec.c,
+	  fileio.c, main.c, tags.c, version.c).
+
+Changes for vile 4.10 (released Mon Dec 05, 1994)
+(pgf)
+	+ changed keystroke8() and keystroke_raw8() to loop and
+	  beep until a simple 8-bit char is typed.  no SPEC prefixes
+	  allowed. (input.c)
+
+	+ tuned kev's changes to mapped_c().  new routine called
+	  mapped_keystroke_raw() which calls mapped_c in such a
+	  way that function keys will expand to #c, but no further.
+	  used when getting a :map lhs from the user. (map.c, input.c,
+	  proto.h)
+
+	+ fix lint warnings from "questionable" pointer practices,
+	  rationalized names of routines called by liststuff() (now all
+	  makeXXXlist()).  (bind.c, buffer.c, eval.c, line.c, map.c,
+	  modes.c, proto.h, random.c, region.c, tags.c)
+	  
+	+ removed no-doubt obsolete ifdefed "overlay" statements (window.c,
+	  region.c)
+
+	+ lint: removed unused assignment in desfunc().  (bind.c)
+
+	+ change the temp storage of unmatched chars in maplookup()
+	  from char to int, to prevent loss and subsequent extension
+	  of sign information. (map.c)
+
+	+ added short on-line help for all commands.  ifdefed on
+	  OPT_ONLINEHELP.  shows up in describe-bindings and apropos
+	  listings.  adds 13.5K. (bind.c, cmdtbl, mktbls.c, estruct.h)
+
+	+ added "list-motions" and "list-operators" commands, which show
+	  their respective subsets of the commands. (bind.c, proto.h,
+	  vile.hlp)
+
+	+ added "describe-function" command.  added "appendit" argument
+	  to liststuff, to let the contents of popups (like Binding List)
+	  be grown incrementally.  the "describe-key" now describes the
+	  function the key is bound to as well.  (bind.c, buffer.c, cmdtbl,
+	  eval.c, line.c, map.c, modes.c, proto.h, random.c, tags.c,
+	  vile.hlp)
+
+(kev)
+	+ map.c (mapped_c): Minor changes to make quoted spec characters
+	  generate pound sign sequences.  This is important for interactive
+	  mapping of function keys.  Example: Try ":map <F1> h" prior to
+	  this fix and afterwards.  Also try "a^V<F1>".  <F1> denotes
+	  a press of the F1 function key.
+
+	+ x11.c (kqdel): Took out call to char2int() which I had put in
+	  a few days earlier..
+
+	  (x_key_press): Don't convert function and arrow keys to a
+	  sequence of bytes via kcod2escape_seq().  Leave them in the SPEC
+	  form instead.  This was causing # sequences to be displayed
+	  in insert mode and it also broke command line history (as well
+	  as a bunch of other stuff, I suspect).
+
+	+ vile.hlp: Fixed a few typos.
+
+	+ map.c, x11.c (maplookup, kqdel): Judiciously call char2int() in
+	  order to strip off sign extension.  These fixes are in response
+	  to the use of the META key being broken.
+
+(tom)
+	+ added autoconf-test for getpgrp().  (aclocal.m4, configure.in)
+
+ 	+ reduced timeout to 30 seconds on MSDOS to avoid overflow (main.c)
+
+	+ various nits/fixes for VMS, CLIX, IRIX, TurboC (descrip.mms,
+	  estruct.h eval.c, glob.c, ibmpc.c, makefile.tbc, region.c, termio.c,
+	  vile.hlp, x11.c)
+
+Changes for vile 4.9 (released Tue Nov 29, 1994)
+(pgf)
+	+ changed all OS #defines to SYS_xxx.  like SYS_UNIX, SYS_MSDOS,
+	  etc.  changed all compiler #defines to CC_xxx.  like CC_LATTICE,
+	  CC_TURBO, etc.  changed all screen #defines to DISP_xxx.  like
+	  DISP_TERMCAP, DISP_X11, etc.  changed all feature #defines to
+	  OPT_xxx.  i think you see the pattern.  eliminated some ifdefs
+	  around things that we've never turned off, or that can't be
+	  turned off without severely breaking vi compatibility.  got rid
+	  of some old "ifdef NEVER" kind of stuff.  (this affected most
+	  source files)
+
+	+ catnap() now checks for tty input at least periodically on all
+	  platforms.  the nap is broken into .1 second increments, and
+	  typahead() is called in between each one. (random.c)
+
+	+ new mode, "maplonger", which controls whether vile favors the
+	  longer or shorter of two nested mappings.  (modetbl, map.c)
+
+	+ new mode, "remapfirst", which controls whether vile will remap the
+	  first character of a mapping.  vi doesn't, vim does.  (modetbl,
+	  map.c)
+
+	+ rationalized (?) and documented (!) the various levels of character
+	  input routine.  see top of input.c.
+
+	+ renamed typahead() to tttypahead() to match ttclose() et al, and
+	  added typahead entry to the TERM struct.  (termio.c and others)
+
+	+ all former callers of tgetc() now call one of the keystroke()
+	  variants instead.  (many files)
+
+	+ all former callers of tungetc() now call unkeystroke() instead.
+	  (many files)
+
+	+ when creating backup files, ifdef check of matching dev and inode
+	  on UNIX only.  it doesn't work under watcom (DOS), and i don't
+	  know where else it will.  (fileio.c)
+
+	+ show offending errno when it's out of bounds in mlwarn(). (display.c)
+
+	+ added itbuff.c/o/obj to the rest of the makefiles ( descrip.mms,
+	  makefile.djg, makefile.in, makefile.tbc, makefile.wat,
+	  makefile.wnt, vms_link.opt, vmsbuild.com)
+
+	+ removed mapchars.[ch] from distribution, and removed references
+	  to them.  (makefile.in, cmdtbl, main.c)
+
+	+ ifdefed out some more unused code.  also made multimotion()
+	  yank the selection as a side-effect, to be more like ^A-s.
+	  (select.c)
+
+	+ ran lint on Solaris (i think.  maybe it was SunOS).  (display.c,
+	  fileio.c, input.c, itbuff.c, map.c, select.c, tbuff.c, tcap.c,
+	  undo.c)
+
+	+ cloned and modified tbuff.c to create itbuff.c.  the routines
+	  there work on "integer tbuffs".  use these routines, and
+	  the corresponding ITBUFF data structure everywhere user keyboard
+	  input is accumulated.  this allows us to store wide keycodes,
+	  and greatly simplifies keystroke playback and :map implementation.
+	  (tbuff.c, itbuff.c, makefile, input.c, insert.c, line.c, map.c,
+	  estruct.h, edef.h, proto.h)
+
+	+ added new routines to tbuff.c/itbuff.c:  [i]tb_unnext() to undo
+	  tb_next, itb_seek() to change the itb_last pointer, itb_delete()
+	  to remove N elements from middle of an ITBUFF, itb_insert() to
+	  insert a new element in the middle.
+
+	+ changed :map implementation to support "user" and "system"
+	  timeouts, and to support controllable remapping via "set
+	  [no]remap" and vim-style ":noremap" commands.  (map.c, modetbl,
+	  main.c, vile.hlp, proto.h)
+
+	+ moved xterm-mouse functionality to tcap.c.  it's now driven
+	  by a system :map of ESC [ M, which is bound (indirectly) to the
+	  old xterm_button() routine. (input.c, tcap.c, cmdtbl, proto.h)
+
+	+ promoted '#' to be a regular peer of the ^X and ^A prefixes, and
+	  defined a set of "standard" #-key bindings, which are in turn
+	  available from system function keys (see vile.hlp).  screen
+	  driver modules may use the new header "nefkeys.h" to access this
+	  standard list.  i may have lost some of the linux-specific
+	  bindings from cmdtbl -- should they be reintroduced, they
+	  should go in tcap.c, as an ifdef'ed addtosysmap() call.  (bind.c,
+	  input.c, vile.hlp, main.c, cmdtbl, mktbls.c)
+	  
+	+ collapsed kcod2pstr() to rely on kcod2escape_seq().  (bind.c,
+	  input.c, proto.h)
+
+	+ changed names of "dummy" binding functions: cntl_a_func(), 
+	  cntl_x_func(), unarg_func(), esc_func(), poundc_func(). (main.c,
+	  input.c, proto.h)
+
+	+ added footnotes to the ":map" listing to denote whether mappings
+	  are remappable or not.  system maps (i.e. function keys) may
+	  be viewed with "1:map". (map.c)
+
+	+ moved system-specific function key mappings to tcap.c and ibmpc.c.
+	  removed them from cmdtbl.  use standard defines for the SPEC
+	  bindings. (ibmpc.c, tcap.c, x11.c, x11simp.c, cmdtbl)
+
+	+ the lhs of map sequences may now contain null characters.  the UI
+	  still doesn't support entering them.  necessary since ibmpc
+	  function keys start with a 0 character.  (map.c, ibmpc.c,
+	  proto.h)
+
+	+ changed alignment of settings in the [Settings] buffer so that
+	  the characters by which the names are sorted are vertically
+	  aligned. (modes.c)
+
+	+ changed a bunch of whitespace in modetbl for better alignment.
+
+	+ don't bother attempting to catnap for 0 time.  (random.c)
+
+	+ added '#' to the name in the short history list that
+	  corresponds to previous buffer. (noautobuffer mode only) (buffer.c)
+
+	+ improved description of buffer lists wrt autobuffer mode.
+
+	+ attempted to rationalize some of the informational commands and
+	  added text to help file.  (cmdtbl, vile.hlp)
+
+	    new command names:		synonymous with:
+		show-bindings		describe-bindings
+		show-help		help
+		show-buffers		list-buffers
+		show-mapped-chars	map
+		show-mapped!-chars	map!
+		show-tagstack		tagstack
+
+	    changed command names:	old name was:
+	       show-terminal-chars      show-terminal    
+	       list-variables           list-vars        
+	       show-variables           show-vars        
+
+	+ prevent shrinkwrap() from claiming more than 3/4 of a windows
+	  rows when popping up a new window.  (window.c)
+
+(tom)
+	+ corrected missing b_last_used values for invisible buffers which
+	  caused buffers to be delinked when toggling autobuffer mode
+	  (buffer.c).
+
+	+ modified logic of 'modeline_modes()' to make it compile on vms
+	  (display.c).
+
+	+ modified auto-config for 'utime()' for solaris, vms compiles
+	  (estruct.h, aclocal.m4, configure.in)
+
+	+ corrected ifdef for "backup-style" mode (main.c).
+
+	+ modified 'find_user()' to use $HOME if 'getpwuid()' fails (path.c).
+
+	+ improved #/% toggle so that it doesn't toggle into invisible buffers
+	  (buffer.c).
+
+	+ corrected some ifdef combinations (cmdtbl, file.c, tcap.c, wordmov.c)
+
+	+ modified ifdef for incremental searches to use symbol OPT_ISRCH
+	  (cmdtbl, isearch.c, proto.h).
+
+	+ modified ifdef for find-error to use symbol OPT_FINDERR
+	  (cmdtbl, file.c, finderr.c, main.c, spawn.c, proto.h).
+
+	+ modified ifdef for advanced-editing features to use symbol OPT_AEDIT
+	  (cmdtbl, opers.c, random.c, region.c, proto.h).
+
+	+ corrected error in globbing that caused incorrect list to be built
+	  for expressions such as "*/foo" (glob.c).
+
+	+ modified logic of 'flook()' to allow search of $PATH only, so that
+	  the lookup in version.c can find the correct executable, i.e., not
+	  necessarily the copy of vile in the current directory (bind.c,
+	  fileio.c, version.c).
+
+	+ modified logic of 'filefind()', which implements ":e" command to load
+	  only the first buffer matched in a wildcard, and to make all matches
+	  treated as command-arguments so that ":n" applies to them (buffer.c,
+	  file.c, main.c, random.c)
+
+	+ corrected 'namebuffer()', prohibiting blank buffer-names (buffer.c).
+
+	+ added function 'mktrimmed()' to support correction to 'namebuffer()',
+	  as well as new macro function "&trim" (eval.c).
+
+	+ modified "error-buffer" command to accept filenames as well as buffer
+	  names (buffer.c, finderr.c).
+
+	+ animated [Tag Stack] buffer (tags.c).
+
+	+ modified 'gettagsfile()' to check modification-times of tags files,
+	  and re-read as necessary (tags.c).
+
+	+ corrected a conflict between foreground/background colors (tcap.c).
+
+	+ fixed some errors shown by Purify (display.c, regexp.c, window.c).
+
+(kev)
+	+ insert.c (nextindent): Get the indent of the first character on
+	  the line after advancing a word when there was no first
+	  character.  This fixes a core dump which may be reproduced as
+	  follows: Get into vile, making sure that autoindent is set.  Put
+	  about five or so blank lines in the buffer.  Now go to the top of
+	  the file and type 'cc' (change line).  This will cause a core
+	  dump.  A core dump will also be produced if there are a number of
+	  blank lines and then a non blank line.  The key here is that the
+	  indentation level (indicated by fc) was determined to be -1 and
+	  was not reset to a kosher value for the code below.
+
+	+ display.c (offs2col): Declare local variable length as an int
+	  instead of as SIZE_T.  (Remember that SIZE_T is unsigned on a lot
+	  of machines.) Also adjusted test which is used for determining
+	  which character that we're on.  This fixes a bug which (prior to
+	  this fix) may be reproduced as follows: Get into vile and enter
+	  the following: "ahere is a blank line<ESC>".  Select the word
+	  "is".  Type "u" for undo.  Note that the selection highlighting
+	  remains even though the line is blank.  Then type "o" to open up
+	  a new line.  It is at this point that a core dump occurs.
+
+	  Note that this fix does nothing to solve the problem of the
+	  highlighting sticking around.  It just makes that code more
+	  robust so that it doesn't core dump when the line length is
+	  less than zero (which can happen for empty lines).
+
+	+ undo.c (repointstuff): Always repoint marks.  I've #if'd out the
+	  lines which used to check to see whether or not the suggested new
+	  pointer was valid or not.  Paul should check this stuff over and
+	  make sure that it's ok.  In any event, it seems to (with one
+	  exception) fix the other half of the problem described above.  It
+	  also seems to make the behavior of marks wrt undo work more like
+	  real vi.  Don't know whether this is an argument for or against,
+	  just an observation...
+
+	+ aclocal.m4: Added missing dnl to last line of file.
+
+	+ buffer.c (sortlistbuffers): Don't forget to keep the unused
+	  buffers when rebuilding the buffer list.
+
+
+Changes for vile 4.8 (released Mon Oct 31, 1994)
+(pgf)
+	+ changed name of SIZEOF macro to TABLESIZE, to avoid conflicts
+	  with X11 headers.  (buffer.c display.c estruct.h fences.c
+	  ibmpc.c line.c mktbls.c modes.c tcap.c version.c vmspipe.c x11.c
+	  x11simp.c)
+
+	+ incorporated patches from Johan Rosman for simple file locking
+	  protocol.  it's not rigorous, which he freely admits, but it
+	  solves their problem, so i'm including the code, though turning
+	  it off by default.  ( buffer.c display.c estruct.h file.c main.c
+	  modes.c proto.h modetbl makefile.in and new file lckfiles.c)
+
+	+ fixed code in filename() which allowed one to rename a file
+	  to the null string by backspacing out of the "Name:" prompt.
+	  (file.c)
+
+	+ added mask with XtIMXEvent to all calls to XtAppPending(), to
+	  prevent spurious returns due to non-events (timers). (x11.c)
+
+	+ massaged the distribution targets in the makefile, so i
+	  can more easily produce a tar.gz file, and not make
+	  people unpack the shar anymore. (makefile.in)
+
+	+ changed all places where we check a char against abortc
+	  to check against intrc, and check interrupted() as well.
+	  this lets us not translate intrc to abortc in tgetc(),
+	  which fixes some bugs where interrupts are treated like
+	  escapes.  this only showed up when ESC was being used for
+	  something other than aborting -- like completion.
+	  (csrch.c estruct.h eval.c exec.c history.c input.c insert.c
+	  isearch.c select.c spawn.c window.c)
+
+	+ turned off filter() for UNIX and DOS, since the filterregion()
+	  code is superior and better tested. (spawn.c)
+
+	+ added support in exec_named_command() for detecting a trailing '!'
+	  on a command name, and if the BANG flag is set for its function
+	  entry, passing a special argument so the function can know it was
+	  invoked with a "xxx!" form.  (estruct.h, exec.c, cmdtbl)
+
+	+ implemented support for ":w!" to overrided failed writes of the
+	  backup file.  detect the special argument (see above) in
+	  filesave() and filewrite(), and pass "forced" flag down through
+	  writeout(), writereg(), and ffwopen(). (fileio.c, file.c, proto.h,
+	  vile.hlp)
+
+	+ created mode to control file backups, and implemented ~-style
+	  backups in addition to the existing .bak style.  new mode is
+	  "backup-style", and takes values "off", ".bak", and "tilde". 
+	  code is ifdefed on OPT_FILEBACK, and is turned off for VMS,
+	  since i don't know what's appropriate.  also, left (minimal)
+	  hooks to someday implement emacs-style numbered backups.
+	  (estruct.h fileio.c main.c modes.c modetbl vile.hlp)
+	  
+	+ added link(), utime(), utimes() to the list of system
+	  calls to check for, and for whose declarations to check. 
+	  (configure configure.in proto.h)
+
+	+ implemented 'q' command, for doing "quoted motion", for lack
+	  of a better mnemonic.  (cmdtbl display.c proto.h region.c
+	  select.c vile.hlp wordmov.c x11.c)
+
+	+ fixed bad "set" line in vile.hlp, in the my_cd_action example.
+	  It said "set $foo=$bar" syntax; which can be either "set foo=bar"
+	  or "setv $foo=$bar".
+
+	+ changed dos-mode behavior yet again.  with global dosmode set, we
+	  were stripping carriage returns at the same time we were deciding
+	  whether a buffer was doslike or not.  this led to the deletion of
+	  CR's even if we decided the file was unixlike.  the correct
+	  behavior, which unfortunately involves another pass through the
+	  buffer, is to figure it out (i.e.  count lines ending in CR), and
+	  then, only if it _is_ doslike (more CR lines than lines without)
+	  then go through and strip them.  i discovered the bug when i had a
+	  command file containing a few :map commands that ended in ^M.  the
+	  ^M's were being silently discarded.  (file.c)
+
+	+ added double-quote as commenting character in the macro language.
+	  for vi compatibility, this should act as a comment everywhere
+	  except shell commands and map commands, but we only currently
+	  honor it at the beginning of line.  (exec.c)
+
+	+ fix behavior of commands which behave differently when not
+	  given arguments, when used in an executed file.  :map and :f
+	  were both ignoring their arguments when sourced in a file
+	  interactively. fix was in end_named_cmd() and more_named_cmd().
+	  (exec.c)
+
+	+ new routine, macliteralarg(), which returns the rest of a command
+	  line literally as a single token.  used for the <rhs> of :map.
+	  (exec.c)
+
+	+ call new macliteralarg() from map_common() when getting the <rhs>,
+	  if cline is true.  (map.c)
+
+	+ removed "if (did_tungetc()) tgetc()" from readpattern() -- it
+	  was obsolete, and only screwed things up when executing a :map.
+	  (search.c)
+
+	+ always do full update() in mlyesno() and mlquickask(), since
+	  they may be invoked from a command file, and we want the
+	  display as current as possible. (input.c)
+
+	+ use mlforce() rather than mlprompt() to force appearance of
+	  the questions in mlyesno() and mlquickask(), in case discmd is
+	  false. (input.c)
+
+	+ line length reformatting in oneliner.c
+
+(kev)
+	+ aclocal.m4, configure.in (VC_SYS_ERRLIST): Check for presence of
+	  sys_errlist[].
+
+	+ estruct.h (sys_errlist): Only declare if HAVE_EXTERN_SYS_ERRLIST
+	  is not defined.
+
+	+ manpage.rc: Set noview prior to calling
+	  attribute-cntl_a-sequences-til.  Set view afterwards.
+
+	+ display.c (vtalloc): Allocate space for rows in vscreen[] and
+	  pscreen[] when the height changes.  I was getting core dumps
+	  in xvile when resizing vertically.
+
+	+ makefile.in (manfilt): New target which should not be necessary,
+	  but is due to the lameness of certain `make' programs.
+
+	+ termio.c (ttopen): ifdef'd IUCLC which doesn't exist on all
+	  systems.
+
+	+ msgs.c (popup_msgs, msg_putc): Don't save/restore DOT unless
+	  curwp has been initialized.  Lack of this check was responsible
+	  for core dumps when executing "xvile @~/.vilerc".
+
+	+ buglist: Deleted items which have been satisfactorily dealt with.
+
+	+ display.c (PutMode, vtprintf): Deleted these functions.
+
+	  (modeline): Rewritten to use a format string for outputting the
+	  mode lines.
+
+	  (mlfs_prefix, mlfs_suffix, mlfs_skipfix): New modeline() helper
+	  functions.
+
+	+ modetbl (ModeLine-Format, MLFORMAT): New string mode.
+
+	+ main.c (global_val_init): Initialize format string for mode lines.
+
+	+ modes.c (adjustmode): Adjusted "#if OPT_WORKING ... #endif" pairs
+	  for the case where OPT_WORKING is disabled.
+
+	+ x11.c (x_open): Initialize term.t_mcol and term.t_mrow.
+
+	+ eval.c (SetVarValue): Call mayneedundo() for EVCURCHAR and EVLINE
+	  ($char and $line) variables.
+
+	+ x11.c (x_key_press): Call char2int() when putting characters
+	  in the queue as integers in order to prevent sign extension.
+
+	+ map.c (maplookup): Call char2int() when returning first unmatched
+	  character in order to prevent sign extension.
+
+	+ vile.hlp: Removed vile-manfilt compilation / installation
+	  instructions.  vile-manfilt is now built and installed as part
+	  of the default installation procedure.
+
+	  Also removed note concerning selections; this note said that the
+	  selected area includes all highlighted chars except for special
+	  case in which the last highlighted character is the first
+	  character on a line.  This is no longer true or necessary since
+	  we now permit selections to select the end-of-line character.
+
+	  Added documentation concerning scrollbar and selection
+	  subresources.  Also added some sample .Xdefaults entries.
+
+	  Reformatted paragraphs which had lines too long for an eighty
+	  column display.
+
+	+ map.c (struct maprec): Documentation.
+
+(tom)
+	+ added OPT_VMS_PATH to estruct.h, used this to ifdef the vms pathname
+	  parsing (and also some test-code) on UNIX for off-line testing of the
+	  VAX code (estruct.h, fakevms.c, file.c, filec.c, glob.c, input.c,
+	  main.c, path.c, proto.h, vms2unix.c).  Now, VMS name-completion is
+	  done internally using UNIX-style pathnames.
+
+	+ other mods to support name completion on VMS, and off-line testing
+	  (bind.c, file.c, filec.c, glob.c, path.c).
+
+	+ mods to msgs.c to avoid struct init in declaration for SunOS K&R
+	  compiler.
+
+	+ added files fakevms.c, fakevms.h and vmsbuild.com
+
+	+ added OPT_MSDOS_PATH symbol to simplify related ifdefs for parsing of
+	  pathnames for MSDOS/WIN31/NT/OS2 (estruct.h, file.c, filec.c, glob.c,
+	  main.c, path.c, proto.h).
+
+	+ corrections to VMS version of 'shorten_path()' (path.c)
+
+	+ some lint (bind.c, display.c, eval.c, input.c, insert.c, map.c,
+	  region.c, select.c)
+
+	+ fixes for SMALLER-ifdef (display.c, insert.c, map.c, window.c)
+
+	+ added ifdef-symbol OPT_MLFORMAT for modeline-format (estruct.h,
+	  display.c, main.c, modetbl)
+
+	+ corrected handling of empty-.vilerc file: was hanging, not formatting
+	  modeline correctly (display.c).
+
+	+ added ifdef-symbol OPT_ENUM_MODES for the fixed-string modes
+	  (estruct.h, bind.c, main.c, modetbl, modes.c)
+
+	+ added logic to allow termcap-driver on Linux to display colors
+	  (tcap.c, estruct.h)
+
+	+ renamed REBIND to OPT_REBIND, modified logic for kbindtbl[] so that
+	  an arbitrary number of key bindings can be stored.
+
+	+ modified the TTrev() logic in the termcap driver to display video
+	  attributes (i.e., bold, underline, reverse) when OPT_VIDEO_ATTRS
+	  is set (tcap.c, display.c, estruct.h).
+
+	+ modified flags of attribute commands so that they accept a range
+	  as well as a repeat-count (cmdtbl).
+
+	+ added binding ^A-N to allow reset of attributes on a region (cmdtbl,
+	  select.c).
+
+	+ corrected video-attribute highlighting for IBMPC driver (ibmpc.c).
+
+	+ corrected ifdef'ing for 'kbindtbl[]' (mktbls.c).
+
+	+ modified error-test in 'ffropen()' to avoid noisy error when vile
+	  cannot find .vilerc in MSDOS filesystem from Linux (fileio.c).
+
+Changes for vile 4.7 (unreleased Tue Sep 27, 1994)
+(pgf)
+	+ makefile.in: removed * chars from install complete message to
+	  keep them from being shell-expanded, and make sure rw and list
+	  use the right makefile (i.e.  makefile.in) since "makefile" may
+	  not be built yet.
+
+	+ off-by-one on strcpy() in bind.c (otto lind)
+
+	+ added code to detect and honor new-style NeXT tags file format
+	  in tags.c. (otto lind)
+
+	+ rationalized setting of dos mode (too bad i didn't call this
+	  "crlf" mode instead) so that for all internally generated, or non-
+	  existent buffers, dos mode is set based on the OS's line-style.
+	  otherwise, for existing files, empty or not, the lines vote on
+	  the style for the buffer. (file.c, main.c, random.c, vile.hlp)
+
+	+ added Home and End key support to x11.c, per user contrib. (x11.c)
+
+	+ added line-percentage indication to ruler mode display, per user
+	  contrib. (display.c)
+
+	+ new command, "beep", implemented in function userbeep(), which
+	  lets the user beep when they want to.  this intentionally does
+	  not call kbd_alarm, but rather TTbeep directly.  (random.c, cmdtbl,
+	  proto.h)
+
+	+ new mode, "working", which enables/disables the working... messages.
+	  i think i've got it set up so the signals themselves stop if
+	  noworking is set.  (modes.c, display.c, main.c, vile.hlp)
+
+	+ added shrinkwrap support for the [Help] window. (bind.c)
+
+	+ fix core dump from giving arg of 1 to prevwind().  (window.c)
+
+	+ create l_strtol, which also accepts 'c' constants.  use it
+	  in eval.c whenever parsing user input to numeric functions. (eval.c,
+	  proto.h)
+
+	+ prevent core dump if ~endm given when not in macro definition
+	  (exec.c)
+
+	+ change "BOTTOM" and "TOP" in "Search reached XXX without matching..."
+	  to "bottom" and "top". (search.c)
+
+	+ added "[Search wrapped]" message to /, ?, n, N commands.
+	  (search.c, oneliner.c, isearch.c, proto.h)
+
+	+ fixes to swbuffer() to prevent coredump when errors encounted
+	  when running the bufhook routine. (buffer.c)
+
+	+ fix to dobuf() to prevent handling of a ~endm when execlevel is
+	  non-zero.  if this is true, then the store-macro/store-procedure
+	  won't have happened (due to the early return in docmd()), and it'll
+	  look like an unmatched ~endm. (exec.c)
+
+	+ in liststuff(), don't switch to the list unless it's its first
+	  popup.  actually, switch (in popupbuff) and then switch back.
+	  this guarantees that the last call to swbuffer is for curbp.
+	  (buffer.c)  [ it would be better if popupbuff() didn't need
+	  to do the swbuffer at all ]
+
+	+ renamed CMASK to CHARTYPE to avoid name conflicts.
+	  (edef.h estruct.h input.c line.c proto.h eval.c main.c)
+
+	+ the screen is now resized dynamically, instead of having a
+	  fixed maximum.  (display.c, x11.c)
+
+	+ changed term.t_nrow and term.t_mrow to hold the actual number
+	  of screen rows, rather than the highest index.  this makes it
+	  a) symmetric with t_[nm]col and b) a whole lot easier to
+	  remember how it works.  also introduced routine bottomleft() for
+	  moving the cursor there.  (ansi.c, display,c eval.c ibmpc.c
+	  isearch.c main.c spawn.c st520.c tcap.c termio.c vmsvt.c
+	  win31drv.c window.c x11.c x11simp.c)
+
+	+ some fixes for DEBUGM ifdefs (eval.c exec.c)
+
+	+ gnu warning cleanup in vmalloc.c
+
+	+ main.c: changed initial value of popup-choices to "delayed", to
+	  match readline behavior
+
+	+ convert ^M character in replacement pattern to a newline, for
+	  vi compatibility.  (oneliner.c)
+
+(kev)
+	+ display.c (updupd): Don't permit typahead to be called for X11
+	  from this function.  This caused some core dumps since x_typahead()
+	  is basically another event loop.  When a timer event was set
+	  (to blink the cursor), core dumps would occur due to the display
+	  structures not being in an updated state.
+
+	+ x11.c (x_getc, x_typahead): The recent addition of the
+	  beginDisplay/endofDisplay pairs seems to have caused a plethora
+	  of undesirable messages from imworking().  I've removed the
+	  beginDisplay/endofDisplay pairs which I had added to both of
+	  these functions.  x_getc() had already been protected from
+	  imworking by the doing_kbd_read flag (set in tgetc() in input.c). 
+	  But x_typahead() needs the same protection.  I've added some code
+	  which sets the doing_kbd_read flag and restores its old value
+	  prior to returning from x_typahead().
+	  
+	+ random.c (catnap): Ifdef'd for X11 to call x_typahead when called
+	  with flag which indicates that the input queue should be watched
+	  for user input.  We may want to restructure this code and the code
+	  which calls catnap() somewhat to use Paul's idea for a timed read.
+
+	+ x11.c, proto.h, termio.c (x_typahead): Now takes as a parameter the
+	  time in milliseconds to wait for type-ahead to occur.
+
+	+ x11.c (kqpop): Return character popped from end of queue, not
+	  beginning.
+
+	  (x_getc, x_typahead): Protect guts of function from imworking()
+	  with beginDisplay / endofDisplay pairs.  I originally thought
+	  that this was causing some problems in the mapping code which
+	  seemed to be caused by the imworking interrupt.  Even though
+	  the problem was with kqpop(), I'm leaving the beginDisplay /
+	  endDisplay pairs in since the keyboard queue routines are
+	  probably not reentrant.
+
+	+ random.c (catnap): Changed argument to sleep call to allow
+	  for catnaps longer than one second.
+
+	+ termio.c (typahead): Call x_typahead instead of x_is_pasting.
+
+	+ x11.c, proto.h (x_is_pasting): Deleted.
+
+	+ x11.c, proto.h (x_typahead): New function.
+
+	+ termio.c (typahead): Modified first version of this function to
+	  match the second with regard to X11 code.
+
+	+ random.c (catnap): Block SIGALRM signals while in select().
+
+	+ configure.in (sigprocmask): Check for existence of this function.
+
+	+ random.c (catnap): Use both tv_sec and tv_usec in the HAVE_SELECT
+	  code.  This is necessary (on certain systems at least) in order to
+	  sleep for longer than one second.
+
+	+ input.c (tgetc): Added infinite loop detection.  Infinite loops
+	  can occur as a result of mapping.
+
+	+ map.c: Added new data structures and functions for dealing more
+	  fully with map and map!.  Removed the old structures and functions
+	  for dealing with a simple case of map.  
+
+	+ input.c, proto.h (tungetstr): New function.
+
+	+ main.c, insert.c (map_check): Removed calls to this function.
+
+	+ map.c, proto.h (map_check): Deleted.
+
+	+ map.c, proto.h, cmdtbl (map_proc): Deleted.
+
+	+ proto.h, map.c (relist_mappings): Deleted declaration from proto.h.
+	  Moved to map.c and declared static with new parameter.
+
+	+ input.c (kbd_reply): Added code for KBD_NOMAP.
+
+	+ estruct.h (KBD_NOMAP): New kbd_reply() option.
+
+	+ map.c (addtomaps, addtomap, maplookup): New functions for dealing
+	  with mapped keys and key sequences.  There is also a new data
+	  structure (struct maprec) and a couple of global variables for
+	  storing the maps.  [I discovered after I'd gotten this code
+	  working that Tom had written some similar looking stuff which is
+	  located in mapchars.h and mapchars.c.]
+
+	+ input.c (kbd_key): Added call to maplookup.  Made small change
+	  to the ANSI_SPEC stuff to avoid catnapping if we've already
+	  catnapped in maplookup().  My initial inclination was to
+	  remove the ANSI_SPEC stuff, but I've decided to leave it in
+	  place for a while.  I don't yet understand the workings of
+	  input.c well enough to muck about with it too much.
+
+	+ tcap.c (keyseqs): Table associating function key capability names
+	  (in terminfo/termcap) with the code which vile should use when
+	  one of these sequences is received.
+
+	  (tcapopen): map key sequences found in keyseqs[].
+
+	+ input.c (tungottenchars, tungetc, tgetc): Use a TBUFF instead of
+	  fixed size array for storage of ungotten characters.  tungetc()
+	  will now cause ungotten characters to be stacked.  Previously,
+	  only one keystroke (which may consist of multiple characters) could
+	  be ungotten.  Now, multiple keystrokes may be ungotten.
+
+	+ x11.c (x_key_press): Set the high bit (HIGHBIT) if one of the
+	  Mod1 (Meta) keys are held down.
+
+	+ x11.c (selgc, revselgc): New fields in struct _text_win.
+	  
+	  (x_preparse_args): Initialize selgc and revselgc.
+
+	  (x_setfont): Set font in selgc and revselgc.
+
+	  (x_scroll): Use selgc and revselgc to display selections.
+
+	  (display_cursor): Call flush_line() instead of calling
+	  XDrawImageString() directly.
+
+	+ select.c, display.c (VASEL): Use instead of / in addition to
+	  VAREV in certain places.
+
+	+ estruct.h (VASEL): New preprocessor constant used for indicating
+	  selections.
+
+	+ select.c (extended_region):  Fixed a bug which manifested itself
+	  when extending a selection with text before the selection.
+
+	  (operattrital): Fixed message passed into operator().
+
+	+ line.c (put): Rewritten somewhat to be faster for non-rectangular
+	  regions.  Tests on a SPARCstation IPC indicate that the new code
+	  is 8-16 times faster.  The old code may be reenabled by searching
+	  for SLOWPUT in line.c and changing this preprocessor constant from
+	  0 to 1.
+
+	+ vile.hlp (popup-choices): Changed documentation regarding this global
+	  value.
+
+	+ main.c (global_val_init): Initialize GVAL_POPUP_CHOICES to immediate.
+
+	+ modes.c (FSM_CHOICES, struct FSM, fsm_popup_choices, fsm_error,
+	  fsm_tbl, fsm_idx, is_fsm, legal_fsm, fsm_complete): New stuff for
+	  dealing with fixed string modes. (fsm stands for fixed string mode).
+
+	  (adjvalueset): Call the fsm stuff.
+
+	+ modetbl (POPUP_CHOICES): Made this a string mode.
+
+	+ input.c (kbd_reply):  Conditionally compile call to
+	  popdown_completions() based upon how OPT_POPUPCHOICE is defined.
+
+	+ bind.c (fill_partial): Unconditionally call TTflush() since it is
+	  needed to force the partial completion to be written out.
+
+	  (kbd_complete): Changed logic yet again regarding the use of
+	  cmplcol.  It is only used for scrolling now.  The completion
+	  list is automatically displayed if no progress was made in
+	  performing the completion.  This means that _something_ will
+	  happen visually when you press tab.  Either the completion will
+	  be wholly or partially successful, or the completion list will
+	  pop up.
+
+	+ filec.c (trailing_slash): Fixed problem (for unix systems at least)
+	  where we were unable to get completions off of "/".
+
+	+ filec.c (pathcmp): Wrote a simpler, faster, but possibly less
+	  functional version.  Tom should look this code over to make sure
+	  that I haven't broken something.  This new version seems to speed
+	  things up quite a bit.
+
+	  (makeMyList): This now takes as a parameter the name which is being
+	  searched for.  We exclude from the list constructed those pathnames
+	  which are in subdirectories below the directory in which name might
+	  be found.
+
+	  (bs_find): Took out calls which make copy of the pathname and
+	  lengthened it.  If everything is done right prior to calling
+	  bs_find, it should already be in canonical form.  I'm hoping
+	  that this will increase the speed somewhat.
+
+	  (makeString): Added length parameter in order to avoid calling
+	  strlen.  Fixed all callers.
+
+	  (makeString): Allocate an extra byte to be used as a directory
+	  scan indicator.
+
+	  (already_scanned): Use the scan indicator byte to see if directory
+	  has already been scanned.  This should avoid rescanning directories
+	  and it also fixes the problem of being unable to get completions
+	  for directories which have already had a subdirectory scanned.
+	  Scenario...	
+	  	:set dirc
+	  	:e /home/kev/GNU/<tab><tab>
+		Backspace so that just /home/ is showing.  Press <tab><tab>.
+		Type in kev/<tab><tab>.  Only completion shown is GNU/.
+
+	  (bs_init): Removed the flag parameter which indicates whether or
+	  not to clear the buffer.
+
+	  (bs_find): Removed the iflag parameter and fixed all callers.
+
+	+ proto.h (bs_find): Nuke iflag parameter in declaration.
+
+	  (bs_init): Removed flag parameter from declaration.
+
+	+ bind.c (scroll_completions): New function called from kbd_complete.
+	  
+	  (cmplcol): Changed the way in which this variable is used 
+	  for deciding whether to show or scroll a completion list.
+
+	+ window.c (newlength): Fixed the off-by-one errors which were
+	  causing xvile to exit with the X error "BadValue" for opcode
+	  X_ConfigureWindow.  What was happening was the bottom window was
+	  being left with size zero...this bug may be observed in ordinary
+	  vile (in an xterm) by starting vile, splitting the [unamed]
+	  window and resizing the bottom window to one line.  Then use the
+	  (X) window manager to resize the xterm window down in size by one
+	  line.  You will then observe that there are two mode lines at the
+	  bottom of the xterm one above the other with no buffer displayed
+	  for the bottom-most one.
+
+	+ window.c (wpopup): Don't let an error message be displayed when
+	  we can't split a window.  Also permit curwp to be used if it's
+	  the only window available.
+
+	+ proto.h, buffer.c (zotwp): Moved delcaration from latter to former.
+	  Also removed "static" from definition of zotwp in buffer.c.
+	 
+	+ input.c (kbd_reply): Call popdown_completions() to get rid of
+	  the [Completions] buffer.
+
+	+ bind.c (popdown_completions): New function for getting rid of
+	  the [Completions] buffer.
+
+	+ buffer.c (zotwp): Switch back to most recent buffer on buffer
+	  list after deleting windows for the selected buffer.
+
+	+ proto.h (shrinkwrap, popdown_completions): Declared these
+	  functions.
+
+	+ bind.c (show_completions): Call shrinkwrap() if completions buffer
+	  is already popped and gets larger (in order to see as many
+	  completions as possible).
+
+	+ random.c (liststuff): Only call shrinkwrap() if buffer not already
+	  popped up.
+
+	+ x11.c (x_open): Don't call setpgrp() on bsd compat systems.  Also
+	  added comment explaining why.
+
+	+ random.c (liststuff): Call shrinkwrap().
+
+	+ window.c (shrinkwrap): New function.
+
+	+ bind.c (makecmpllist): Fixed line of code which was causing
+	  completion list to be truncated.
+
+	+ display.c (imworking): Took out the #if 0 which I used to remove
+	  the two lines which I suspected of causing portions of the
+	  "working..." message to hang around afterwards.  Instead, I
+	  supplemented the test used to change the column to erase at.
+	  It now checks to see if the message line is being read.
+
+	+ bind.c (makecmpllist): Print completions sorted by column rather
+	  than by row.
+
+	+ bind.c (makecmpllist, show_completions): New functions.
+	  
+	  (GNU_COMPLETIONS): New feature test indicating GNU readline style
+	  completions.  Define this to be 0 to get the old vile behavior.
+
+	  (fill_partial): Don't beep when GNU_COMPLETIONS is enabled.
+
+	  (cmplcol): New static global variable.
+
+	  (kbd_unquery): Adjust cmplcol.
+
+	  (kbd_complete): Adjusted logic to handle GNU readline style
+	  completions.
+
+	+ configure.in (AC_PID_T): Call this macro to make sure that pid_t
+	  will be defined.
+
+	  (CFLAGS): Only use -Wall when the --with-warnings option is used.
+	  Otherwise, we get too many warnings due to missing extern decls.
+
+	+ x11.c (display_cursor, x_preparse_args): Added casts in calls to
+	  XtAppAddTimeOut and XtAddEventHandler which were causing warnings.
+
+	+ configure.in (setpgrp, setsid): Check to see if these are missing
+	  extern declarations.
+
+	+ proto.h (setpgrp, setsid): Added prototypes.
+
+	+ configure.in (setsid): Check for existence of this function. 
+	  Also added comment about VC_SETPGRP being called by VC_KILLPG.
+
+	+ x11.c (x_open): Call either setsid() or setpgrp() to break
+	  association with controlling terminal.  This will prevent signals
+	  from being sent back to the starting process.  I'm hoping that
+	  this will fix problems reported concerning xvile crashing the X
+	  server when control-C is pressed.  (I have never experienced this
+	  problem).
+
+	+ display.c (imworking): Removed (via #if 0) the two lines which
+	  I suspect are causing portions of the "working..." message to
+	  hang around afterwards.
+
+	+ estruct.h (signal_pg): Tightened up conditions by which we will
+	  permit getpgrp() to be called with no argument.  We still need
+	  to design an autoconf test for this.  The more permisive conditions
+	  were causing getpgrp() to be called improperly on SunOS. This
+	  in turn made it impossible to use Ctrl-C in xvile to interrupt
+	  lengthy processing.
+
+	+ x11.c (x_set_watch_cursor): New function called from x_working()
+	  and x_getc().  Also added field curs_watch to the TextWindowRec
+	  structure.
+	  
+	  (x_working): Ignore certain types of events which could cause
+	  us problem with reentrancy.  Other types of events are saved
+	  in a queue for later processing.
+
+	  (struct eventqueue, evqhead, evqtail): Declared saved event
+	  queue structure and variables pointing to front and rear of
+	  this queue.
+
+	  (evqempty, evqadd, evqdel): New procedures for manipulating the
+	  queue of events which must be processed, but not from x_working.
+
+	  Note!!!  Not all of our reentrancy problems are solved.  The new
+	  code which I wrote for saving events in a queue for later
+	  processing calls malloc().  If it should happen that the
+	  interrupt which got us into x_working() interrupted a malloc() in
+	  progress, the results could be disasterous if malloc() is
+	  non-reentrant.  So far as I know, most implementations of
+	  malloc() are not reentrant.  malloc() is not the only call which
+	  might get us into trouble.  Other library calls (particularly the
+	  X11 and X toolkit functions) may well invoke malloc() or some
+	  other non-reentrant library call.  The proper way (though not
+	  easy) to implement all of this is to split imworking() up into
+	  two parts; the signal handler and a display function.  The signal
+	  handler will do very little; it will examine the state of a few
+	  other flags (which already exist to implement the current version
+	  of imworking) and then set the flag which will be examined by the
+	  display function.  The display function is not invoked from the
+	  signal handler.  It is called from various points in vile at
+	  which it is possible to be in a lengthy process.  A good
+	  candidate would be to call it from interrupted() as it is already
+	  used for this purpose.
+
+	+ estruct.h (sys/time.h, time.h): Moved includes for these files
+	  ahead of include of sys/resource.h.  SunOS needs to have struct
+	  timeval declared prior to including resource.h.  I'm beginning
+	  to think that it might be better to nuke the include of
+	  sys/resource.h and nuke the AC_AIX line from configure.in.
+
+	+ configure.in (AC_HAVE_HEADERS): Added check for sys/resource.h,
+	  which appears to be necessary to include prior to sys/wait.h in
+	  order to keep gcc-2.6.0 from complaining on AIX.  It first appeared
+	  that sys/m_wait.h in order to get union wait, but I believe the
+	  bug to be in the "fixed" include files.
+
+	+ estruct.h (sys/resource.h): Include prior to wait.h.
+
+	+ makefile.in ($(TARGET)): Changed order of LIBS and X_EXTRA_LIBS in
+	  link line.  X_EXTRA_LIBS now comes after LIBS.
+
+	+ mktbls.c (main): Moved initialization of "section" to after the
+	  call to setjmp() in order to avoid gcc warning.
+
+	+ proto.h (fputs): Added declaration.
+
+	+ configure.in (Makefile): Test for the presence Makefile instead of
+	  makefile after calling xmkmf.  xmkmf creates Makefile, not
+	  makefile.  This was preventing X_CFLAGS from getting set properly.
+
+	  (with_warnings): Call AC_WITH to set this value.  We shouldn't
+	  assume that autoconf will create a configure script which will
+	  automatically create/set this variable.
+
+	  (VC_MISSING_EXTERN): Split checks into two parts, one which is
+	  enabled with --with-warnings (for type checking purposes), the
+	  other which is mandatory.  This should speed up the configuration
+	  process for non-developers.
+
+	+ display.c (CLEAR_PLINE): Make sure that attributes get cleared too.
+
+	+ x11.c (update_scrollbar_sizes -- NO_WIDGETS version): Created a
+	  separate loop for drawing the new scrollbars which occurs after
+	  the sizes have been changed.  Otherwise, the scrollbars don't always
+	  properly update due to a lower bar covering an upper bar up prior
+	  to being resized.
+
+	+ x11.c (exposed): New field in TextWindowRec.
+	  (x_preparse_args): Initialize cur_win->exposed.
+	  (x_process_event): Set cur_win->exposed to true when an Expose event
+	  is received.
+	  (x_flush): Return immediately if no Expose events have been
+	  received.  The reason for all of this is to prevent drawing to the
+	  window prior to the display server being ready for us to send the
+	  stuff.
+	  (x_touch): Make sure the cell has something in it before marking it
+	  as dirty.  The reason for this is that x_touch is called most of
+	  the time to refresh a region of the screen which is clear (set
+	  to the background color).   I'll handle the other cases by making
+	  sure that the required area is clear...
+	  (x_scroll): Don't call XFlush() unless visibility is partially
+	  obscured.
+	  (x_scroll): Call XClearArea() to clear area vacated by scrolling.
+	  Should be faster because we won't have to clear portions of each
+	  line individually.
+	  (x_setfont): Added call to XClearWindow() before calls to x_touch().
+	  (x_preparse_args): Use ButtonMotionMask instead of PointerMotionMask
+	  when focus_follows_mouse is false.  Otherwise, too many motion events
+	  are generated when moving the mouse through the vile window.  Folks
+	  who want focus_follows_mouse will just have to live with the extra
+	  motion events for the time being.
+
+	+ display.c (CLEAR_PLINE): Don't mark cells in cleared line as dirty.
+
+	+ select.c (pop_fake_win): fixed typo in comment.
+
+	+ buffer.c (update_on_chg): Call b_is_temporary() instead of
+	  b_is_invisible().  This matches the logic found in makebufflist().
+	  (makebufflist):  Call update_on_chg() macro in order to help prevent
+	  future inconsistencies.
+
+	+ window.c (set_curwp):  Added a check at the beginning of the
+	  function to return immediately if curwp is already set to the
+	  window pointer to change to.  Among other things, this will 
+	  avoid calling updatelistbuffers() which was responsible for
+	  preventing us from being able to select (via the mouse) from
+	  the [Buffer List] window.
+
+	+ x11.c (modeline_resources, selection_resources): New array
+	  which describes resources for modelines and selections.
+	  (x_preparse_args): Get subresources for the modelines and
+	  selections.
+	  (modeline_fg, modeline_bg, modeline_focus_fg, modeline_focus_bg,
+	  selection_fg, selection_bg): New fields in TextWindowRec.
+
+	+ x11.c (char_descent): New field in TextWindowRec.
+	  (query_font): Set char_descent field.
+	  (flush_line): Use char_descent for determining where to write out
+	  underlines.  This fixes a bug in which spurious underlines were
+	  left around on the screen when displaying certain fonts.
+
+	+ x11.c (scrollbar_resources): New array describing certain scrollbar
+	  resources.
+	  (cur_win_rec): Statically allocated TextWindowRec.  cur_win is
+	  also statically initialized to point at this structure.  Needed by
+	  scrollbar_resources in order to make the default foreground and
+	  background for the scrollbars be the same as the already determined
+	  foreground and background for the rest of the application.
+	  (x_preparse_args): Get scrollbar subresources and use these as
+	  appropriate in creating the scrollbar graphics context.
+	  (x_preparse_args): Make sure that background and foreground pixel
+	  values are different.  They can start out different in the resource
+	  file, but get mapped to the same values on monochrome displays.
+
+	+ region.c (yank_line): New code to yank the newline (if appropriate).
+	  Used when yanking mouse selections.
+
+	+ basic.c (setwmark): Don't permit dot to be set past end-of-buffer.
+	  (setcursor): Removed comment saying that position may be set past
+	  end-of-buffer.
+
+	+ vile.hlp: Corrected some minor typos.
+
+	+ display.c (hilite): Mark the vscreen row as changed when changing
+	  the attributes in the OPT_VIDEO_ATTRS portion of this code.
+
+	+ x11.c (x_preparse_args): Use 1 and 0 as the foreground and background
+	  pixel values in the call to XCreatePixmapFromBitmapData().  I think
+	  that this make sense since the depth is one.
+
+(tom)
+	+ autoconf-macro VC_SIZE_T fixes problem with size_t on CLIX and Ultrix
+	  (aclocal.m4, configure.in).
+
+	+ added autoconf tests for poll.h, setjmp.h (configure.in)
+
+	+ some lint and compiler warnings/errors for SunOS, CLIX, IRIX (eval.c,
+	  region.c, tags.c, version.c, x11.c
+
+	+ make IBMPC the default driver for MSDOS (estruct.h)
+
+	+ supplied definition for VMS to make ScratchName work (estruct.h)
+
+	+ "#error" doesn't work on SunOS; changed this to "error" (estruct.h)
+
+	+ corrected autoconf ifdef'ing of getwd/getcwd (estruct.h)
+
+	+ corrected lint rule in makefile.in
+
+	+ removed /Debug option when compiling vile on VMS (descrip.mms).
+
+	+ corrected logic of 'is_vms_pathname()' to handle the case of rooted
+	  logicals, e.g., "dev:[foo.][bar]name" (path.c).
+
+	+ corrected error on VMS which left terminal in wrong state when
+	  closing terminal (termio.c).
+
+	+ corrected 'resolve_filename()'; the call to update the status line
+	  had gotten lost somehow (file.c).
+
+	+ ifdef'd 'get_modtime()' to handle VAX C's backwards treatment of the
+	  st_mtime/st_ctime members of stat structure (file.c).
+
+	+ commented-out X-Window libraries in VMS link options file
+	  (vms_link.opt); (these should be autoconfigured :-)
+
+	+ minor cleanup of directory scanning code for NT (path.c).
+
+	+ modified kev's GNU choices to implement the "popup-choices" mode
+	  (modetbl, bind.c, main.c).
+
+	+ modified (for UNIX) the behavior of 'filter-buffer' so that filter
+	  commands with pipes work (i.e., ":filter-buffer sort|uniq") (spawn.c).
+
+	+ changed the yank-til command to use the same limits as delete-til, so
+	  that "yW" will yank trailing spaces of a word (opers.c).
+
+	+ implemented mode "popup-msgs" with new file 'msgs.c'.  This is mainly
+	  useful in debugging macros; it forces a buffer [Messages] to be
+	  popped up when multiple messages are generated by a single command. 
+	  (display.c, main.c, msgs.c, estruct.h, modetbl, also makefile.* and
+	  vms_link.opt).
+
+	+ added mode 'errorbells' to control whether vile beeps (or flashes) at
+	  all.  This relies on intercepting the TTbeep calls, which are all
+	  done within 'kbd_alarm()' (mostly via 'mlwarn()') now (bind.c,
+	  display.c, exec.c, fences.c, input.c, isearch.c, main.c, modes.c, opers.c,
+	  search.c, undo.c, window.c).
+
+Changes for vile 4.6 (unreleased Tue July 12, 1994)
+(pgf)
+	+ changed authorship in README, added credits in vile.hlp
+
+	+ applied further OS/2 patches from Charles Moschel
+
+	+ applied Windows/NT patches from Joe Greer.  don't get excited.
+	  it's just console support.  :-)
+
+	+ added admin targets to makefile.in.  these are all (?) useful
+	  directly, with "make -f makefile.in ..." since they don't depend
+	  on any of the config variables.
+
+	+ minor wording changes to README.CONFIG and INSTALL.
+
+    	+ eliminated global variable "slash", renamed macro "slashc()" to
+	  "is_slashc()", use new define SLASHC in place of "slash".
+
+	+ did a lot of hand merging of NT and WIN31 ifdefs (since they
+	  both affected most of the same lines.   this note is really just
+	  a heads-up, in case i missed/broke something.
+
+	+ re-renamed manpage.vmc to manpage.rc, to avoid introducing yet
+	  another file suffix.  changed CHANGES and vile.hlp to match.
+
+	+ eliminated makefile.sav from the distribution.
+
+	+ eliminated all "Log" keywords, added "Header" keywords everywhere.
+
+(kev)
+	+ manfilt.c (sys/types.h): Include this file so that size_t will be
+	  defined on certain systems.
+
+	+ x11.c (alternate_font): Added cast to second arg in call to
+	  castalloc to avoid conversion warning.
+
+	+ configure.in (fputs): Added this function to the missing check
+	  list.  Not needed for vile, but for manfilt.c.
+
+	+ manfilt.c: Converted from ANSI C to the style of C in which the
+	  rest of vile is written in.
+
+	+ buffer.c (makebufflist): Added cast to convert return value of
+	  strlen to SIZE_T.
+
+	+ filec.c (fillMyBuff): Added cast to second arg in call to bs_find().
+	  Some platforms declare strlen to return int instead of size_t.
+
+	+ estruct.h (realloc): Changed prototype declaration so that second
+	  arg is unsigned.
+
+	+ estruct.h, mktbls.c (malloc): Changed extern declaration so that
+	  first parameter is an unsigned int rather than just int.  This
+	  eliminates "conversion" warnings on some systems.
+
+	+ mktbls.c (free): Added extern declaration with prototype.
+
+	+ x11.c (estruct.h, edef.h): Moved includes of these files to before
+	  the X11 includes.  I was having trouble on an SVR3 system in which
+	  flock was getting declared twice.  It turns out that <X11/Xos.h>
+	  (which is included from <X11/Intrinsic.h> does a check to prevent
+	  fcntl.h (from which flock is ultimately defined) from being
+	  included twice.  In my opinion, the authors of the system include
+	  files for this SVR3 system didn't do their job very well.  Rather
+	  than propogate checks to see if a particular system include file
+	  has already been included into estruct.h, I figured that a slight
+	  reordering (in x11.c) would be better.  Let's just hope it doesn't
+	  break something else.
+
+	+ estruct.h (MISSING_EXTERN_REALLOC): Fixed my misspelling of this
+	  (lack of) feature test.
+
+	+ mktbls.c: Conditionally include config.h in order to use
+	  configuration parameters for Unix systems.  Non-unix systems
+	  should still compile as they did before (if I didn't botch
+	  something).  I was having trouble with the fprintf extern on
+	  certain systems.
+
+	+ makefile.in (MKTBLS): Use CPPFLAGS to build the mktbls program.
+	  This will cause HAVE_CONFIG_H to be defined.
+
+	+ README.CFG: New file which describes the configuration process as it
+	  relates to (x)vile.  I recommend changing the name of README to NEWS
+	  and README.CFG to README to be more consistent with FSF software. 
+	  I'll leave this up to Paul though.
+
+	+ README (impatient?):  Changed message slightly.
+
+	+ makefile.in (install, installdirs, uninstall, makefile,
+	  config.status, mostlyclean, clean, distclean, realclean, TAGS,
+	  tags, dist): These targets added or modified to conform to the
+	  GNU standards document.
+
+	+ mkdirs.sh, INSTALL, install.sh: New files copied from the GNU
+	  autoconf distribution (mkdirs.sh renamed from mkinstalldirs
+	  to simplify copying files to/from MS-DOS -- tom).
+
+	+ config_h.in:  Renamed from config.d.in.  I really wish I could
+	  use autoheader to generate config.h.in as the autoconf doc
+	  describes.  Unfortunately, it isn't powerful enough (without
+	  some rewriting) to do what I want.
+
+	+ aclocal.m4 (VC_SETPGRP): New vile configuration macro.
+
+	+ line.c (ksetup): Initialize kcharpending.  This lack of
+	  initialization was responsible for the bug in which a newline was
+	  sometimes being inserted before a yanked region when it shouldn't
+	  have been.  Also moved definition of kcharpending so that it appears
+	  prior to the definition of ksetup().  The bug may be observed as
+	  follows: Create a buffer with a single line containing the
+	  characters "foo".  Enter the command ":list-registers" in order to
+	  view the registers.  Go back to the beginning of the newly created
+	  buffer (containing "foo").  Type "yw".  "foo" will appear as the
+	  unnamed register.  Type "yw" again.  The unamed register will now
+	  (prior to this fix) have the "foo", but also a newline in front of
+	  it.
+
+	+ configure.in (tcgetattr): Test to see if this function exists.
+
+	+ termio.c (HAVE_TCGETATTR): Added this test to see whether or
+	  not to define USE_POSIX_TERMIOS.  Also added commentary describing
+	  reason for this.
+
+	+ x11.c (x_flush): Removed all explicit calls to this function.  It
+	  was being called after update() which is unnecessary since
+	  update (indirectly) calls x_flush().  Calls to update() now
+	  pass the force argument (the only argument) as TRUE to ensure
+	  that the update will not be deferred due to type-ahead.
+	  (resize_bar): Removed code for determining vertical positioning
+	  involving XQueryPointer() and/or XTranslateCoordiates.  With a
+	  little bit of care, we can get the vertical position accurately
+	  without making a round trip server request.
+
+	+ x11.c (repeat_scroll): Added call to XSync() in order to make sure
+	  that repeated scrolling (via the timer) doesn't get ahead of display
+	  of the scrolling. 
+	  (resize_bar): Ifdef'd to try out XTranslateCoordinates() in place
+	  of XQueryPointer().  This should work better since it will give
+	  us the coordinates of the pointer at the time of the event instead
+	  of the current pointer value.
+
+	+ x11.c (visibility):  New field in struct _text_win.
+	  (wait_for_scroll): Do not call x_flush().  Return only when
+	  we're sure that all contiguous GraphicsExpose events have been
+	  processed.  This code was previously returning after the first one.
+	  (x_scroll, x_flush): Return immediately if window is fully obscured.
+	  (x_scroll): Don't wait for the scroll if the window is unobscured.
+	  (x_preparse_args): Initialize visibility.  Initialize
+	  graphics_exposures field of cur_win->textgc.
+	  (x_process_event): Added new case for VisibilityNotify which note
+	  changes in the visibility of the window and modify cur_win->textgc
+	  accordingly.
+
+	+ x11.c (ISC):  Removed #undef of ISC.  Should not be necessary
+	  any longer.
+	  (X_PIXEL): Removed #define.  Not used anywhere.
+	  (NPAUSE): Nuked.  Not needed.  Replace occurrence in term structure
+	  with zero.  (This was supposedly the number of times to busy loop
+	  in the catnap routine.
+	+ x11.c (x_preparse_args):  Support for left scrollbars in OpenLook
+	  added.
+	+ basic.c, csrch.c (setnmmark, getnmmarkname, get_csrch_char): Changed
+	  name of "stat" variable to "status" in order to avoid shadowing the
+	  stat function.  This didn't actually cause any problem, it just
+	  makes gcc shut up when used with Tom's preferred set of switches.
+	+ proto.h (setvbuf): Prototype.
+	+ display.c (updateline):  In OPT_PSCREEN version, return immediately
+	  if v_flag for the row doesn't have VFCHG set.
+	  (psc_putchar, psc_eeol): Set VFCHG flag on proper row.
+	+ termio.c (ttputc, ttflush, ttgetc): Don't define these for X11.
+	  Also got rid of calls to setbuffer, etc for X11.
+	+ proto.h (getscreensize): Declare even when SIGWINCH is not
+	  defined.
+	+ estruct.h (malloc, realloc): Prototypes.
+	+ main.c, fileio.c (fcntl.h): Removed include from here.  estruct.h
+	  now includes it.
+	+ estruct.h (time.h):  Included here.  Don't include both time.h
+	  and sys/time.h if they conflict with each other.
+	+ version.c: Removed include of time.h.
+	+ proto.h: Reorganized prototypes for system calls to use the
+	  MISSING_ test to determine whether an extern declaration needs
+	  to be made.
+	+ estruct.h (libc.h): Include this file (NeXT has hundreds of
+	  prototypes declared here).
+	+ termio.c (LINUX): Nuked ifdefs surrounding calls to tcdrain().
+	+ estruct.h, random.c (sys/select.h): Moved inclusion of
+	  sys/select.h from random.c to estruct.h (so that any types
+	  declared in sys/select.h will be available for later inclusion of
+	  proto.h).
+	+ estruct.h (AUX2, AIX, OSF1, LINUX, V7, BSD386, UNIXPC): Eliminated.
+	+ eval.c (AUX2, pyr, AIX):  Replaced in #if with
+	  HAVE_LOSING_SWITCH_WITH_STRUCTURE_OFFSET.  I'm open to suggestions
+	  on a better name for this.
+	+ proto.h, estruct.h (fcntl.h, sys/wait.h):  Included from estruct.h
+	  instead of proto.h.
+	+ npopen.c (sys/wait.h): Removed include from this file.
+
+	+ x11.c (start_selection):  Yank selection prior to releasing selection
+	  when persistent_selections are disabled.
+	  (x_process_event): Check to see if multiclick time has expired prior
+	  to discarding motion event when cur_win->numclicks is greater than
+	  one.  (If it's expired, we don't want to discard the event).
+
+	+ display.c, termio.c (getscreensize): Moved from display.c to
+	  termio.c.  This is a better place for it since we are invoking
+	  ioctl.  (This also explains why it was necessary to include
+	  the termios / termio / sgtty stuff in display.c.)
+	+ estruct.h (SVR3, ODT, ISC, HPUX): Eliminated.
+	+ termio.c (ttopen): Changed preprocessor feature test for
+	  call to setvbuf.  Also added code to handle systems (old
+	  SVR3 systems) which have the second and third arguments to
+	  setvbuf reversed.
+	+ main.c (catchintr): Always reinstate the signal handler regardless
+	  of system.  The code should probably be revisited...
+	+ spawn.c (rtfrmshell): Ditto.
+	+ estruct.h (USE_BCOPY): Usage eliminated as it was never being defined
+	  anywhere.
+	  (SYSV_STRINGS): Eliminated since it was defined, but never
+	  referenced.
+	  (strings.h, memory.h): Included as per GNU recommendations.
+	  (ULTRIX): Removed references to this unix variant.
+	+ random.c (current_directory): Eliminated reference to POSIX and
+	  reorganized preprocessor tests for how to get the current directory
+	  a little bit.
+	+ fileio.c: Eliminated reference to BERK.
+	+ termio.c: Eliminated reference to BERK and other unix varieties.
+	  We now use HAVE_TERMIOS_H, and company.  I also eliminated code
+	  specific to OSF1.  If there's a problem with it, we should try
+	  to deal with it elsewhere (such as the configuration script).
+	+ dirstuff.h:  Added stuff for including obscure readdir headers.
+	  Eliminated reference to BERK.
+	+ estruct.h (SIGT): Wrapped an ifndef around the logic that defines
+	  SIGT and SIGRET since they will be determined by the configuration
+	  script.  Also removed tests for various specific varieties of UNIX
+	  from this logic. 
+	  (HAVE_SELECT, HAVE_POLL): Removed preprocessor logic for both of
+	  these.  The configuration script now determines which of these
+	  are available.  We do undef HAVE_POLL if HAVE_SELECT is defined
+	  however.
+	  (USE_INDEX, HAVE_GETHOSTNAME, signal_pg): Changed preprocessor logic.
+	  (BERK): Eliminated all occurences.
+	+ display.c (termios.h, termio.h, sys/ioctl.h, ioctl.h, sys/types.h
+	  sys/stream.h, sys/ptem.h):  Removed includes and ifdef logic
+	  connected with these header files.  They don't appear to be used
+	  anywhere in display.c (though I have no doubt that they were at
+	  one time).
+	+ makefile.in:  New file; a template for creating the makefile.  This
+	  file was created by hacking the old makefile.
+	+ configure.in:  New file for creating the configure script.
+	+ config.d:  Template file for creating config.h.
+
+(tom)
+	+ modified 'mktbls' so it can be used as a function in a Windows 3.1
+	  application (e.g., fixed memory leaks, top-level return).
+
+	+ built with kevin's autoconf script on Linux (both termcap and
+	  Xt versions), adjusted/corrected various files for autoconf and for
+	  MSDOS filename compatibility (aclocal.m4, bind.c, cmdtbl
+	  configure.in, edef.h, epath.h, estruct.h, file.c, fileio.c, glob.c,
+	  ibmpc.c main.c, makefile.in, makefile.tbc, map.c, mktbls.c, npopen.c,
+	  path.c proto.h, random.c, spawn.c, termio.c, x11.c).
+
+	+ made a driver-stub for Windows 3.1, to get a clean compile/link.
+
+	+ corrected 'ibmscroll()' function, which was broken in vile 4.4
+	  (ibmpc.c).
+
+	+ corrected reopening of stdin when a file is piped to vile; on Linux
+	  this caused vile to hang (main.c).
+
+	+ moved include of estruct.h after X Window includes in x11.c, since
+	  the definition of VMS causes the compile to break otherwise.
+
+	+ added new (some incomplete) files for Windows 3.1 port, map command
+	  and debugging: commdlg.msg mapchars.c mapchars.h trace.c trace.h
+	  win31drv.c win31drv.def win31tbl.c win31tbl.def win31tbl.h
+	  win31tbl.rc
+
+	+ modified 'gtfun()' and 'sindex()' to use single return points, to
+	  ease debugging.
+
+	+ added/used new macro 'window_b_val()' to handle the cases in which we
+	  reference a mode value for the current window, e.g., when executing a
+	  macro (estruct.h, isearch.c, oneliner.c).
+
+	+ initialize VIDEO-struct in 'vtinit()' that Purify found (display.c).
+
+	+ corrected globbing logic so that expressions such as `which script`
+	  work properly when the glob mode is "on" (glob.c).
+
+	+ added autoconf test VC_CPP_SUBS to make the ScratchName macro port.
+
+	+ corrected :-command parsing so that repeated ":" at the beginning of
+	  the line is ignored (exec.c).
+
+	+ reset mouse position when changing the screen resolution to avoid
+	  confusing users about its visibility (ibmpc.c).
+
+Changes for vile 4.5 (released Wed Apr 27, 1994)
+(pgf)
+	+ backed out change to "set all" which switched to Settings buffer.
+	  it didn't work, and was confusing in any case.  (modes.c)
+
+	+ redid the variables that identify os and vile variant.  now the
+	  $progname variable says "vile" or "xvile", and the new $os variable
+	  says "unix", "dos", "vms", or "os/2".  (modetbl, eval.c, version.c,
+	  proto.h, main.c, edef.h, vile.hlp, macros.doc)
+
+(kev)
+	+ vile.hlp: Documented manual page stuff.
+
+Changes for vile 4.4 (not released April 26, 1994)
+(pgf)
+	+ fix for ": & 1" in empty buffer.  (exec.c)
+
+	+ ensure that problems opening a file are correctly reported
+	  at startup, by giving swbuffer() a real return value.  nextbuffer()
+	  returns this, which lets main() do the right thing.  i hope
+	  letting swbuffer() return readin() errors doesn't have too large
+	  a ripple effect.  we'll see.  the return from swbuffer() is ignored
+	  in many cases anyway.  (buffer.c, main.c)
+
+	+ on file open errors in readin, continue with the routine, so the
+	  buffer gets set up correctly.  cmode was wrong before, for instance.
+	  (file.c)
+
+	+ added select operator (bound to ^S) to do selections.  it yanks
+	  by default.  (region.c, opers.c, cmdtbl, select.c)
+
+	+ implement support (via new arg to scwrite, not yet put into other
+	  "screens" that provide this routine) for OPT_VIDEO_ATTRS under DOS.
+	  (display,c, ibmpc.c, proto.h)
+
+	+ removed KBD_LOWERC from the DOS KBD_OPTIONS, as an experiment, even
+	  thought tom told me not to.  i've seen no ill effects so far. 
+	  there must be something, though...  (could this be compiler
+	  (well, libc) dependent?) (filec.c)
+
+	+ added proper dependencies to makefile.wat
+
+	+ recalc kregwidth on last call to kinsertlater, since we may
+	  never get a newline to force it.  (line.c)
+
+	+ added mode "view-on-readonly" which causes view mode to be set
+	  if file is read-only on first open. (modetbl, file.c, vile.hlp)
+
+	+ implemented sel_motion() routine, that allows referencing the
+	  selected region from an operator.  fixed various off-by-one
+	  nits in various places to mkae this work right.  (basic.c,
+	  opers.c, region.c, select.c, proto.h, cmdtbl, x11.c)
+
+	+ cleaned up beeping.  too many double beeps.  (file.c, fileio.c,
+	  basic.c)
+
+	+ now preserve DOT during yank operations, so yy and Y don't cause
+	  motion. (opers.c)
+
+	+ added "haveregion" backdoor to getregion() -- if the "haveregion"
+	  pointer is set, getregion just returns it as the region. see
+	  select.c for uses of this.  (region.c)
+
+	+ added #error statement to little/dis-used screen drivers, to
+	  find out which are really used. (at386.c, hp110.c, st520.c,
+	  z100bios.asm, z_ibmpc.c, dg10.c, hp150.c, vt52.c, z309.c)
+
+	+ function lookup is now first match, rather than exact, to match
+	  documentation.  (eval.c)
+
+	+ fix core dump from referencing empty line for macro label goto.
+	  (exec.c)
+
+	+ eliminated unimplemented "target" variable. (modetbl)
+
+	+ created doc for programmed macros, based on uemacs 3.10 doc.
+	  (macros.doc, makefile)
+
+	+ check all getregion() return values. (word.c, select.c)
+
+	+ moved operselect() to select.c from opers.c.
+
+	+ reset haveregion after use in getregion().  (region.c)
+
+	+ sel_motion and operselect, if now used together in a single
+	  command, can be used to extend a keyboard selection. (select.c)
+
+	+ giving any argument to "shell-command" or ":!" now suppresses
+	  the press-return prompt. (spawn.c, proto.h)
+
+	+ added calls to update() if screen is garbage in mlyesno and
+	  mlquickask, in case they are called after a shell-escape from
+	  a macro. (input.c)
+
+	+ fixed cursor position after ^B command (should rest at bottom
+	  of window) (basic.c)
+
+	+ fix ordering of kdone/kinsertlater stuff (kcharpending was being
+	  reset by kdone called from kinsert) to fix problem where a yank
+	  containing an initial blankline would not record that blank line.
+	  (line.c)
+
+	+ changed kcod2str, fnc2str, string2prc to deal in "p-strings", i.e.
+	  binary strings with length stored in first byte.  needed this so
+	  bindings involving null character could pass through everywhere.
+	  the :map code in map.c still has problems.  (bind.c, x11.c,
+	  x11simp.c, input.c, map.c, proto.h)
+
+	+ separate target for Sony NeWS -- for sys/ioctl.h problem (makefile,
+	  termio.c)
+
+	+ patch from Michael Finken, to allow keeping the buffer name in
+	  the window and icon names (x11.c, display.c, proto.h, vile.hlp)
+
+	+ tungetc() now pushes back 16 bit keycodes using kcod2escape_seq()
+	  to translate them to a user-typable sequence, and maintaining a
+	  stack of pushed back chars.  it should still only be used for
+	  one key's worth of pushback.  (input.c, some others?)
+
+	+ insert mode now encodes SPEC keys (when recording them) as poundc
+	  followed by poundc+1 followed by c.  real poundc chars are stored
+	  as poundc followed by poundc.  there is no more "altpoundc".
+	  (insert.c)
+
+	+ merged OS/2 patches from Charles Moschel (ccm@cais.com).  reworked
+	  them somewhat to use better ifdefs in many cases.   This touched
+	  a lot of files.
+
+	+ introduced routine strncpy0() which jams a '\0' into the last
+	  copyable byte.  changed several of the most bug possibilities
+	  to use it.  (bind.c display.c eval.c finderr.c input.c isearch.c
+	  main.c makefile proto.h tags.c)
+
+	+ eliminated #elif from x11.c, for HP users.
+
+	+ reworked Charles Moschel's os2 screen driver into a "borland"
+	  console i/o driver.  i can't test it on OS/2, but i think it's
+	  the equivalent of his.  now there are separate ifdefs to control
+		which os we want		MSDOS or OS2
+		the pc keyboard			IBM_KBD
+	  	the physical screen driver	IBMPC
+		the console i/o driver		BORLAND
+	  the Borland compiler is still represented with "TURBO", since
+	  that's still predefined in Borland C++.
+	  (borland.c edef.h estruct.h ibmpc.c main.c makefile.tbc spawn.c
+	  termio.c version.c)
+
+	+ split routine execproc() in two, to make it internally callable,
+	  given the name of the procedure to run. (exec.c, proto.h)
+
+	+ added cdhook variable, which is the name of a procedure which
+	  is run when changing current directory.  (edef.h eval.c
+	  exec.c modetbl proto.h random.c)
+
+	+ added variable $ocwd, the previous directory (modetbl, eval.c,
+	  random.c, proto.h)
+
+	+ backed out changes that implemented the "keep buffer name in window
+	  and icon title" resources.  this is better done with hooks. (x11.c,
+	  proto.h, display,c, vile.hlp)
+
+	+ apply patch from richard hussong to fix scrolling problem on some
+	  video bios'es (ati ultra pro) (ibmpc.c)
+
+	+ added more hook variables: read-hook, write-hook, buffer-hook,
+	  exit-hook.  modified help file to describe procedures, and hooks.
+
+	+ added new variable, $abufname, which is the "alternate buffer",
+	  i.e. what you'd get if you type '#'. (modetbl, eval.c, vile.hlp)
+
+	+ apply fix to map_proc from lee johnson -- :map g G followed by
+	  1g didn't work, since 1 was considered default. (map.c)
+
+	+ change macros BAD and GOOD to BADEXIT and GOODEXIT to avoid
+	  conflicts on AIX.  (display.c estruct.h file.c ibmpc.c main.c
+	  mktbls.c spawn.c tcap.c termio.c version.c window.c x11.c
+	  x11simp.c)
+
+	+ it is now possible to use forward-char-scan et al from a macro.
+	  (csrch.c)
+
+	+ "response variables", the ones that ask questions (e.g. @foo)
+	  now remember a default response.  (eval.c)
+
+	+ added support for using the ansi.c screen driver under MSDOS.
+	  (ansi.c, termio.c, estruct.h, makefile.wat)
+
+	+ added w!  and x!  as synonyms for w and x, since they are the
+	  same under vile.  (cmdtbl, vile.hlp)
+
+	+ added support for new GNU libio stdio pkg, for isready_c() macro.
+	  (fileio.c)
+
+	+ fix globber() so :g/foo/p leaves you in the p-lines buffer, which
+	  is probably where you want to be.  (globals.c)
+
+	+ fix problem in main that caused us to skip first file if noautobuffer
+	  was set.  (main.c)
+
+	+ now that there are so many modes, it's desirable to switch
+	  to the ":set all" ("show-modes") window when it pops up. (modes.c)
+
+(tom)
+	+ warning/lint cleanup (bind.c buffer.c display.c edef.h estruct.h
+	  eval.c fences.c insert.c line.c proto.h random.c region.c select.c
+	  tags.c x11.c)
+
+(kev)
+	+ select.c (EFFICIENCY_HACK, attribute_cntl_a_sequences):  New code
+	  which makes attributing regions with large numbers of attributes
+	  much more efficient.
+
+	+ x11.c (CLEAR_THRESH): Changed value and added explanation.
+	  (NONDIRTY_THRESH): New constant.
+	  (x_getc): Added inner loop for getting as many X events as possible
+	  prior to returning in order to let the typeahead check in update()
+	  do its job.
+
+	+ manfilt.c (fatal_error): New function.
+	  (INITIALSIZE): New constant.  Got rid of old constants which
+	  hardwired the buffer sizes.
+	  (line_in_size, line_out_size): New variables for keeping track
+	  of the buffer sizes.
+	  (getline): Rewritten so that input lines may be of arbitrary
+	  length.
+
+	+ display.c (update): Keep track of original row and column in
+	  case we're reading the message line.  If we are reading the
+	  message line, update the hardware cursor to the original row
+	  and column instead of the current window.  I think that this
+	  problem was evident only when the OPT_PSCREEN feature was enabled.
+
+	+ estruct.h (do_mark_iterate): Reassert ownership of selection if
+	  appropriate.
+
+	+ proto.h, select.c (sel_reassert_ownership): New function.
+	  
+	+ display.c (reframe):  Fixed an off-by-one error which was causing
+	  the cursor to be placed on the mode line after a reframe in a
+	  one line buffer.
+
+	+ input.c (kbd_reply): Fixed off by one error which was causing core
+	  dumps on the NeXT.
+
+	+ x11.c (x_get_selection, copy_paste): Added caste for third argument
+	  in calls to tb_bappend.
+	 (alternate_font): Removed debugging printf.
+
+	+ x11.c (x_configure_window): New code for unmanaging / managing
+	  the children of a motif form which will hopefully prevent the
+	  problems with huge scrollbars. 
+
+	+ random.c (line_count): Added null buffer check.  This lack of
+	  check was causing core dumps on start up in xvile when $font was
+	  being set from the .vilerc file to a value which caused a resize.
+
+	+ cmdtbl, proto.h, select.c (operattrital): New operator for italics.
+
+	+ x11.c (x_setfont, query_font): Cleaned up memory leaks, one stemming
+	  from the fact that the XFontStruct structure pointed at by
+	  the pfont field was never getting freed, the other concerning
+	  allocation of memory for font names.
+	 (starting_fontname): New field in the TextWindow structure.  This
+	  field points to the initially requested font name. The fontname
+	  field is reserved for holding the name of the font once it has
+	  been successfully loaded.
+	 (query_font): Attempt to find the fully qualified font name (rather
+	  than an alias or template).  Also, free storage associated with 
+	  new fields in struct _text_win (see below).
+	 (FSRCH_BOLD, FSRCH_ITAL, FSRCH_BOLDITAL): New flags.
+	 (fsrch_flags, pfont_bold, pfont_ital, pfont_boldital, left_ink,
+	  right_ink): New fields in struct _text_win.
+	 (alternate_font): New function.
+	 (flush_line): New code for handling bold and italics.  Old code for
+	  doing bold retained as a fallback position in the event that a
+	  bold font is unavailable.
+	 (x_get_font_atom_property): New function.
+	 (x_flush): New code for cleaning up the mess sometimes left when
+	  using monospaced fonts. [Glyphs in monospaced fonts sometimes extend
+	  outside the bounding box associated with the font.  Thus when
+	  a dirty cell adjacent to a non-dirty cell is updated, the non-dirty
+	  cell also needs to be updated in the event that the character
+	  previously written to the dirty cell extended outside of its
+	  bounding box and into the non-dirty cell.]
+
+	+ window.c (delwp):  Always set WFHARD on the receiving window
+	  (instead of just when the current window pointer is the same as
+	  the one being deleted).  This corrects a problem with the mode
+	  line attribute sometimes not getting reset. [Scenario: Edit a
+	  file.  Split the window.  Type '*'.  Move to a different window
+	  than the "*" window.  Type '*' again.  Both vile and xvile leave
+	  the line that the message line used to be on bold.]
+
+	+ macros.doc: Fixed some minor typos.
+
+	+ select.c (extended_region): Added prototype.
+
+	+ manfilt.pl: New file. Perl script for filtering backspace sequences.
+	+ cmdtbl (operattrcaseq): Replaces operattrbsseq.
+	+ proto.h, select.c  (attribute_cntl_a_sequences, operattrcaseq):
+	  Replaces attribute_backspace_sequences and operattrbsseq.
+
+	+ random.c (getcol): Now works for empty lines where offs > 0.  This
+	  is probably one of many functions which will need to be fixed now
+	  that it is possible to position the cursor on the newline character.
+	  (See Paul's changes.)
+	  
+	+ file.c (getfile2): Don't prompt user if noninteractive.  This
+	  change prevents an infinite loop when executing my manual page
+	  macro (or any macro which needs needs a buffer where there is a
+	  name conflict.  Paul and Tom should look at this to make sure that
+	  it doesn't break keyboard macros.
+
+	+ display.c (updattrs): Garbage collect attributes which should
+	  display something (i.e., have nonzero ar_vattr field), but refer
+	  to an empty region.
+
+	+ display.c (updattrs): Added a parameter to this function and
+	  changed call in update() to reflect this change.  Also moved
+	  placment of call from within update.  The result of all of this is
+	  that the attributes will only be updated only when WFHARD or
+	  WFEDIT is set for the window.  WFEDIT is needed in order to
+	  display changed boundaries of the attributed text in the event
+	  that the marks denoting the ends are moved as the result of an
+	  editing operation.
+
+	+ estruct.h (do_mark_iterate): Rewritten to be faster.  This improved
+	  performance a lot when there are a large number of attributes.
+	  A terminfo man page took roughly 14 seconds to attribute prior to
+	  this change.  Afterwards, it took about 8 seconds.  (The terminfo
+	  man page is somewhat unusual in that it has a large number of
+	  underline and bold sequences).
+
+	+ cmdtbl (operattrbsseq): New command for attributing sequences of
+	  backspaces.
+	+ select.c, proto.h (attribute_backspace_sequences, operattrbsseq):
+	  New functions.  Also moved together the prototype declarations of
+	  functions defined in select.c to one place.
+
+	+ display.c (modeline): if insertmode is defined (as a macro), display
+	  the modeline for each modeline instead of just the current window.
+
+	+ display.c (updattrs): Make sure that start_col is not less than
+	  zero.
+
+	+ exec.c (execute):  In test to see if we're not in insert mode...
+	  Short circuit the test with a test to see if curwp is NULL since
+	  we get in trouble when insertmode is not a global variable and
+	  is defined in terms of a window trait (see estruct.h).  (We were
+	  getting core dumps when starting up with xvile @manpage.rc).
+
+	+ cmdtbl, opers.c (operattrbold, operattrul): New commands for
+	  attributing regions of text.
+	+ edef.h (videoattribute): New variable for communicating with
+	  attributeregion().
+	+ select.c, proto.h (attributeregion): New function.
+	+ select.c (selectregion): Took out checks to see if startbufp and
+	  selbufp are NULL before calling detach_attrib as detach_attrib
+	  already performs these checks.
+	+ display.c (updattrs): Use logical or to set attributes other
+	  than VAREV in order to allow overlapping attributes.  Use
+	  exclusive or to set VAREV causing overlapping reversed regions
+	  to reverse themselves (this is perhaps _too_ tricky; we might
+	  consider just using logical or.  It would simplify the code
+	  and it might actually be what the user wants.)  Previously, we
+	  were just using assignment to set the attribute which cause
+	  the attribute displayed to be the last attribute processed.
+	+ x11.c (flush_line, x_flush): Modified to handle bold and underline
+	  attributes in addition to reverse video.  Some work still needs
+	  to be done on this to use a bold font for displaying bold if
+	  it exists with the present code as a fallback if there is no
+	  bold font available.
+	+ manpage.rc: New file containing vile macros for getting and
+	  attributing manual pages.
+
+	+ estruct.h (do_mark_iterate):  Fixed problem which was causing
+	  r_orig for the first attribute to not get processed.  I think
+	  that this was responsible for some core dumps.
+
+	+ x11.c, proto.h (own_selection): New externally available function.
+	  It used to be x_own_selection which was private to x11.c.  All
+	  calls to x_own_selection in x11.c eliminated.
+	+ estruct.h (OWN_SELECTION): Macro which will either call
+	  own_selection() or do nothing depending on whether or not (x)vile
+	  is compiled on a system which is prepared to share selections
+	  with other clients or not.
+	+ select.c (selectregion, sel_extend):  Call OWN_SELECTION().
+
+	+ proto.h (sel_yank):  Name changed from sel_yankmaybe since there
+	  is very little "maybe" left about its action.
+	+ select.c (sel_yank, push_fake_win, pop_fake_win): sel_yankmaybe
+	  rewritten to become sel_yank.  sel_yank now uses push_fake_win()
+	  and pop_fake_win() to allocate a fake window so that the selection
+	  in the selection buffer may be yanked no matter what (unless
+	  there is no selection).
+	+ x11.c (x_process_event, x_stash_selection): Call to sel_yankmaybe
+	  eliminated from x_process_event.  Call to sel_yank added to
+	  x_stash_selection.  This means that the selection will only be
+	  yanked when needed thus permitting modification of the selection
+	  prior to pasting.
+
+	+ basic.c (setnmmark):  Nuked old keyboard selection code.
+	+ select.c (WHICHEND, whichend): New type and variable for keeping
+	  track of which end of the selection is fixed while sweeping
+	  a selection.
+	+ select.c (sel_begin): Set whichend.
+	+ select.c (sel_extend):  Selection yanking code removed.  Usage
+	  of parameter to sel_extend modified to indicate if wiping (sweeping)
+	  with mouse.  Code added to check whichend and act accordingly.
+	  Also do the "one-off" fixup here instead of in x11.c.
+	+ select.c (output_selection_position_to_message_line): Fixed "one off"
+	  error in reporting extent of selection.
+	+ x11.c (x_preparse_args): Set foreground and background in 
+	  scrollbar graphics context.
+	+ x11.c (extend_selection): Changed call to sel_extend to reflect
+	  new interpretation of its parameter.
+	+ x11.c (multi_click): Put back decrement after end of word is
+	  found.  (Paul had previously removed it.)
+	+ x11.c (x_process_event):  Changed call to extend_selection
+	  when button 3 is pressed to indicate that we are _not_ wiping.
+	  (Wiping is permitted however and mouse motion will do the 
+	  right thing).
+
+	+ x11.c (pscreen): Added extern declaration.
+	+ x11.c (IS_DIRTY_LINE, IS_DIRTY, IS_REVERSED, MARK_LINE_DIRTY,
+	  MARK_CELL_DIRTY, CLEAR_LINE_DIRTY, CLEAR_CELL_DIRTY, CELL_TEXT,
+	  CELL_ATTR): New macros comprising the interface to pscreen.
+	  These could be moved to estruct.h or another header file for
+	  use by other screen interfaces.
+	+ x11.c (BLINK_TOGGLE): Added comment about this macro.
+	+ x11.c (cur_row, cur_col, sc, cur_row, cur_col): Removed these
+	  fields from the TextWindow structure.
+	+ x11.c (x_putc, x_move, x_eeol, x_eeop, free_win_data,
+	  x_resize_screen): Deleted these functions and changed all callers.
+	+ x11.c (term): Substituted psc_putchar, psc_flush, psc_move,
+	  psc_eeol, and psc_eeop for x_putc, x_flush, x_move, x_eeol,
+	  and x_eeop.  Also added x_flush after x_scroll which will
+	  initialize the t_pflush field in the TERM structure.
+	+ x11.c (x_touch):  Call MARK_CELL_DIRTY and MARK_LINE_DIRTY instead
+	  of using old mechanism.
+	+ x11.c (wait_for_scroll):  Nuked XXX comment since it doesn't
+	  seem to apply any longer.
+	+ x11.c (CLEAR_LINE, SWAP_LINE): Nuked these macros which I recently
+	  wrote for use in x_scroll.
+	+ x11.c (x_scroll):  Nuked code for clearing and moving lines around.
+	+ x11.c (flush_line): Minor reformatting.
+	+ x11.c (clear_line): Eliminated this dead code.
+	+ x11.c (x_flush): Rewritten.  It will now call flush_line for
+	  any change in attribute instead of just reversed video.  flush_line
+	  still needs to be rewritten to handle the other attributes.
+	  Handling of cursor should be better too.
+	+ x11.c (x_putline, x_fastpoutline, x_setrowcolors, x_cls): Removed
+	  this "notyet" code.  The need for such functions has been replaced
+	  by new attribute mechanism and interface to pscreen.
+	+ x11.c (multi_click, display_cursor):  Use CELL_TEXT instead of old
+	  data structures.
+	+ x11.c (x_process_event): Call display_cursor() on ButtonRelease
+	  event instead of in x_getc().
+
+	+ display.c (updateline): Wrote new version for OPT_PSCREEN.  I
+	  tried modifying the !MEMMAP version, but this version is difficult
+	  enough to understand without adding to the rat's nest of #if,
+	  #else, and #endif statements.
+	+ display.c (updgar, scrolls): Preprocessor statements and a little
+	  bit of code for OPT_PSCREEN.
+	+ display.c, proto.h (psc_putchar, psc_flush, psc_move, psc_eeol,
+	  psc_eeop, psc_rev): New functions and their prototypes.
+
+	+ estruct.h (t_pflush): New field in the TERM structure used
+	  by OPT_PSCREEN interface to flush the output.  TTpflush is
+	  defined to allow easy access to this field via the variable term.
+	+ estruct.h (OPT_PSCREEN): New feature test.  Used for determining
+	  if the screen interface wishes to access the pscreen structure
+	  directly.  Definitions of VADIRTY and VATTRIB in this file
+	  depend on OPT_PSCREEN.
+
+	+ x11.c (x_beep): Use GXxor instead of GXinvert as the logical
+	  function in the graphics context for flashing the screen.  GXxor
+	  will give better results on color displays.
+	+ x11.c (x_getc): Removed if'd out call to display_cursor().
+	+ x11.c (x_flush):  Add bounds check to make sure that it is ok to
+	  write out the cursor.
+
+	+ estruct.h (VIDEO):  Added new field v_attrs.
+	+ estruct.h (VIDEO_ATTR):  Accommodations for color.  Also eliminated
+	  VACOL mask.  Added VADIRTY, VAFGCOL, and VABGCOL.
+	+ display.c ([pv]scrat):  Eliminated in favor of using the v_attrs
+	  field in the VIDEO structure.  Also small modifications to ignore/set
+	  dirty bit in updateline().
+
+	+ x11.c (display_cursor):  Called from x_flush instead of x_getc to
+	  avoid flicker.  Call of display_cursor from x_getc if'd out.
+
+	+ display.c ([pv]scrat):  Replaced calls to memset with "for" loops
+	  using explicit assignment in anticipation of making VIDEO_ATTR
+	  a sixteen bit quantity when COLOR is enabled.  This code will
+	  still need to be tinkered with somewhat in order to set the
+	  foreground and background colors properly for the line whose
+	  attributes are being reset.  (I have placed FIXME's in the code
+	  to indicate where this needs to be done.)
+
+	+ display.c (scrolls): New local variables longinplace and inplace
+	  are used in determining whether or not a potential match of lines
+	  to be shifted is really better than a previously computed match. 
+	  The undesirable behavior that this corrects can be best observed
+	  in vile (I used an xterm with 50+ lines).  Edit a file with
+	  enough lines to be able to do a bit of scrolling.  Split the
+	  window and make the upper window about half the size of the lower
+	  window.  Then start scrolling through lines in the the upper
+	  window which are duplicated in the lower one.  (Try it in both
+	  directions.) You will notice that portions of the lower window
+	  will be updated along with the upper.  The problem was that
+	  longer matchs were being obtained by scrolling lines from the
+	  lower window up to the upper with the cost of having to later
+	  update a large segment of the lower window.  This new code will
+	  count the number lines which are already properly placed (e.g.,
+	  do not need to be moved at all) in a section to be potentially
+	  moved.  It will then use this count to help decide if the new
+	  potential match is better than the old one.
+
+	+ modetbl (font):  Commented out dependency on X11.
+	+ eval.c (SetVarValue, gtenv): Added code to ignore EVFONT when X11
+	  is not defined.  The reason for all of this is so that a .vilerc
+	  file which has a "set font" line in it may be shared between both
+	  vile and xvile.
+
+	+ edef.h, main.c (insert_mode_was): Eliminated.  This variable was
+	  _only_ referenced (i.e, not set anywhere) and only referenced
+	  in one place.
+
+	+ estruct.h (insertmode, insmode): insmode is a new field in the
+	  W_TRAITS structure.  Define macro insertmode in terms of the
+	  insmode field in the W_TRAITS structure when OPT_MOUSE is
+	  defined. 
+	+ edef.h (insertmode): Don't declare insertmode as a variable when
+	  it is already defined as a macro
+	+ main.c (loop): Check to see if insertmode is set after getting a
+	  character.  If it is, re-enter insert mode.  The reason for the
+	  above three changes is to prevent insert mode from "moving" to a
+	  new window when using the mouse to set focus to another vile
+	  window.  These changes allow a window to "remember" which mode it
+	  was in when the window was left so that that mode may be
+	  reentered when we return to the window.
+
+	+ select.c, proto.h (free_attrib): New function.
+	+ line.c (lremove): Traverse attribute list and fix marks
+	  indicating the beginning and ending of each attributed region. 
+	  The attributed region is freed if both beginning and end both
+	  refer to the line about to be removed.
+
+	+ vile.hlp: Documented new resources.
+
+	+ x11.c (blink_id, blink_status, blink_interval):  New fields in
+	  TermInfo structure.  Also created new resource XtNblinkInterval
+	  and XtCBlinkInterval for setting the blink_interval field.  Setting
+	  this field to zero will disable blinking entirely.  Positive
+	  values will enable blinking all the time with the blink rate
+	  being the value in milliseconds.  Negative values will enable
+	  blinking only when the cursor is positioned within a highlighted
+	  region.  Again the blink interval is in milliseconds.
+
+	+ x11.c (display_cursor):  New function called from x_getc() for
+	  displaying the cursor.  Handles blinking cursors.
+
+	+ x11.c (XtNpersistentSelections, XtCPersistentSelections): New
+	  resource instance and class name for resource
+	  persistentSelections.  This resource controls whether or not
+	  highlighting of selection (and indeed the selection itself), is
+	  released when clicking button one.  start_selection() modified to
+	  check whether this resource is set or not and to take the
+	  appropriate action.
+
+	+ x11.c (invert_display, x_beep): Eliminated invert_display(). 
+	  Rewrote OPT_FLASH stuff in x_beep() to reduce dependence on
+	  structures in x11.c which know about the attributes.  (These
+	  structures will eventually be eliminated.) The flash obtained from
+	  the new code also looks better (it was kind of choppy before).
+
+	+ x11.c (x_getc): Make sure that cur_win->show_cursor is TRUE before
+	  displaying the cursor.
+
+	+ x11.c (x_setfont): Call update_scroll_bar_sizes when a font change
+	  will change the size of the window.
+
+	+ x11.c (turnOnCursor, turnOffCursor, CELL_CURSOR): Nuked all code
+	  referencing these.  This is yet another step toward integrating
+	  use of [pv]screen and [pv]scrat into x11.c.
+
+	+ x11.c (x_getc): Display the cursor here before calling
+	  XtAppNextEvent.
+
+	+ x11.c: Slowed down initial scrolling of selections (you don't want
+	  the lines whizzing by if you only want a few more lines).  Sped up
+	  scrolling of selections that have been scrolling for a while
+	  already.
+
+	+ x11.c: Added resources for scrollRepeatInterval and
+	  scrollRepeatTimeout for xvile NO_WIDGETS version.
+
+	+ display.c (vt_leaks): free pscrat and vscrat.
+	+ display.c (updateline): consider virtual screen attributes when
+	  noting nonblanks in right match.
+
+	+ modetbl, main.c, select.c (WMDTERSELECT): New window mode for
+	  controlling whether selections are terse or verbose.
+
+	+ vile.hlp: Documentation for selections and other x11 stuff.
+
+	+ makefile (select.{c,o}): Added to the SRC and OBJ file list.
+
+	+ select.c: New file implementing selection/attribute stuff.
+
+	+ proto.h (free_attribs, sel_begin, sel_extend, sel_release,
+	  sel_yankmaybe, sel_attached, sel_buffer, sel_setshape):
+	  New prototypes.
+
+	+ estruct.h (OPT_VIDEO_ATTRS, OPT_SELECTIONS): New feature tests.
+	+ estruct.h (NKREGS): Set to 37 (rather than 36) when OPT_SELECTIONS
+	  enabled.
+	+ estruct.h (SEL_KREG): Define the selection kill reg number.
+	+ estruct.h (MAXROWS, MAXCOLS): Moved here from x11.c.
+	+ estruct.h (REGIONSHAPE): New typedef.
+	+ estruct.h (REGION): Position of typedef moved ahead of that of
+	  BUFFER (so that AREGION can use REGION and BUFFER use AREGION).
+	+ estruct.h (VIDEO_ATTR): New typedef.  New mask values for this
+	  typedef also (VACOL, VAREV, VAUL, VAITAL, and VABOLD).
+	+ estruct.h (AREGION): New typedef.
+	+ estruct.h (b_attrib): New field in struct BUFFER.
+	+ estruct.h (do_mark_iterate): New macro for iterating over named
+	  marks and region marks for the current buffer.
+
+	+ buffer.c (bfind): Initialize b_attribs field.
+	+ buffer.c (bclear): Call free_attribs to free attributes associated
+	  with buffer.
+
+	+ line.c (linsert, lnewline, ldelete, ldelnewline): Use macro
+	  do_mark_iterate to fix the marks.
+
+	+ tmp.c (dumpBuffer, AdjustPtrs): Call do_mark_iterate for adjusting
+	  marks.
+
+	+ undo.c (lineundo, repointstuff): Call do_mark_iterate for mark
+	  adjustment.
+
+	+ display.c (vscrat, pscrat): New variables representing virtual
+	  and physical screen attributes.
+	+ display.c (updattrs): New function called from update().
+	+ display.c (vtinit): Initialize vscrat and pscrat.
+	+ display.c (update): Nuked assignment of the ruler line in
+	  OPT_SCROLLBAR code (x11.c no longer needs this).
+	+ display.c (updgar): update pscrat.
+	+ display.c (hilite, modeline): use vscrat to do highlighting.
+	+ display.c (scrolls): move attributes in pscrat to account for
+	  scrolling.
+	+ display.c (updateline): Use pscrat and vscrat in updating the line.
+
+	+ edef.h (regionshape): Declare as REGIONSHAPE instead of short.
+
+	+ basic.c (setnmmark): Added code if'd by OPT_SELECTIONS which
+	  implements a mechanism for making selections from the keyboard.
+	  "m." will mark the start of a selection. "m\" extends the selection
+	  rectangularly. "m'" extends a selection by full lines. "m\" extends
+	  a selection exactly.
+	+ line.c (reg2index): Added code if'd by OPT_SELECTIONS which makes
+	  the name "." the kill reg associated with the current selection.
+
+	+ x11.c (PANE_WIDTH_DEFAULT): Changed to 15 for NO_WIDGETS.
+	+ x11.c (MAXROWS, MAXCOLS): Moved to estruct.h.
+	+ x11.c (scroll_repeat_id, wipe_permitted, sel_scroll_id): New
+	  fields in struct _text_win.
+	+ x11.c (sel_start_col, sel_start_row, sel_end_col, sel_end_row,
+	  wipe_row, wipe_col, show_selection): These fields removed from
+	  struct _text_win.
+	+ x11.c (row2line, clear_row_selection, save_selection,
+	  change_selection): These functions removed along with all references
+	  to them.
+	+ x11.c (scroll_selection, repeat_scroll): New functions.
+	+ x11.c (do_scroll): Added code so that scroll will repeat when
+	  button is held down.
+	+ x11.c (x_preparse_args): Get button release events too for the
+	  screen widget.
+	+ x11.c (x_scroll): Rewritten to move attributes (found in
+	  cur_win->attr) along with screen data.  Should be more efficient
+	  as well.
+	+ x11.c (x_flush): Changed way in which cursor is displayed in
+	  selections.
+	+ x11.c (in_selection): This macro deleted.
+	+ x11.c (x_putline): Leave cursor one past last char in line section
+	  just put unless at end of line.
+	+ x11.c (x_eeol, x_eeop): Erase to end of line/page in reverse video
+	  if in reverse video.
+	+ x11.c (x_lose_selection, x_stash_selection, x_give_selection,
+	  x_own_selection, extend_selection, multi_click, start_selection,
+	  x_process_event): Modified/rewritten to use new selection stuff.
+	  Other cosmetic improvements/modifications were made to the
+	  above functions resulting in the following user visible changes:
+	    + clicking button 1 on mode line will set focus on
+	      corresponding window without scrolling the window by
+	      one line.  Double clicking on mode line will clear the
+	      current selection.
+	    + selecting text by dragging will now scroll the window
+	      up or down when the bottom or top is reached.  It is
+	      now also possible to drag with the right mouse button.
+	      Speed at which text is scrolled while being selected  will
+	      increase with the passage of time.
+	    + rectangular regions may be selected by using the control
+	      key as a modifier.
+	    + highlighting of selection is not lost unless another
+	      selection is made either in xvile or somewhere else
+	      or unless mode line is double clicked upon.
+	    + it is now possible to start a selection in one window
+	      and extend it in another window (provided the "other"
+	      window is open to the same buffer).
+
+Changes for vile 4.3 (released March 29, 1994)
+(pgf)
+	+ make all functions called by do_lines_in_region be prepared to
+	  take empty lines. (region.c)
+
+	+ added terse addition to the README
+
+(tom)
+	+ corrected test in 'eol_command()' to allow command-names with '-'
+	  (bind.c)
+
+	+ corrected last 'mlerror()' change (display.c).
+
+	+ added 'tags' rule to override conflict with default rule (makefile).
+
+	+ corrected 'readpattern()' so that '%' can be used as delimiter in
+	  ":g" command (search.c)
+  
+(kev)	
+	+ call update_scrollbar_sizes() when changing fonts. (x11.c)
+
+Changes for vile 4.2 (briefly released March 25, 1994)
+(pgf)
+	+ fixed Register buffer animation, using static flag to limit
+	  the work done for each call to relist_registers(). (line.c)
+
+	+ use common update_scratch() routine to trigger animation of
+	  modes and maps.  (mode.c, map.c)
+
+	+ add lines to vile.hlp about ".vilerc" vs. "vile.rc"
+
+	+ fixed several bugs in rectangular operations (region.c)
+
+	+ disabled "memory" command under Watcom, since _memavl() doesn't
+	  _really_ report how much memory there is left -- just how much
+	  is left before it needs to grow the heap. (main.c)
+
+	+ npopen() should be silent on errors. (npopen.c)
+
+	+ gave mlerror() a default message if errno is out of range (display.c)
+
+	+ rationalized use of mlerror() and FIOERR.  now, the function that
+	  first generates FIOERR is guaranteed to have put out a message,
+	  probably via mlerror. (file.c, fileio.c)
+
+	+ systems without EISDIR now all generate EACCES for directory
+	  errors.  (fileio.c)
+
+(tom)
+	+ cleanup for OPT_MAP_MEMORY compilation ( display.c fileio.c
+	  insert.c line.c random.c region.c tags.c undo.c)
+
+	+ cleanup of OPT_WORKING ifdef (estruct.h)
+
+	+ changed "#elif" to old-style because HP/UX bundled compiler doesn't
+	  treat these properly. (fileio.c, should also change x11.c).
+
+	+ corrected logic for arrow-keys in xvile's history by new function
+	  'kcod2escape_seq()' (input.c, x11.c, x11simp.c).
+
+	+ corrected 'l_ptr()' function to ensure signed comparison (tmp.c).
+
+Changes for vile 4.1 (not released March 11, 1994)
+(pgf)
+
+	+ add include of stddef.h if POSIX, to pick up offsetof, so we don't
+	  get a warning when building xvile on linux (estruct.h)
+
+	+ again, fix core from is_falsem/is_truem. (eval.c)
+
+	+ fix compiler warning (bind.c)
+
+	+ removed -rows and -columns from usage message and help. (version.c
+	  vile.hlp)
+
+	+ fixed for the Watcom compiler; dense line modes now work. (ibmpc.c)
+
+	+ the 'J' (and :j) command no longer perturbs the yank/kill registers, so
+	  the sequence 'dw<move somewhere>J<move somewhere>p' puts back the word
+	  you deleted, not the newline that 'J' deleted.  (region.c, word.c, proto.h)
+
+	+ DOS now uses pressreturn() after a shell escape.
+
+	+ streamlined tb_sappend() (tbuff.c)
+
+	+ changed x11 pasting to not trim leading whitespace, and to use
+	  the xxx_no_aindent() functions for performing insertions.  this
+	  means you now paste what you cut, with indentation preserved from
+	  the original, rather than recreated (or lost) by autoindent or
+	  cmode. (x11.c, x11simp.c)
+
+	+ new routine, fnc2str(), to support above change, since the no-aindent
+	  commands are multi-char sequences.  (bind.c, proto.h)
+
+	+ implemented rectangular regions, using new "regionshape" global,
+	  new commands ("goto-named-mark-rectangular",
+	  "put-as-rectangle-after", "put-as-rectangle-before",
+	  "open-rectangle", "blank-region"), and new behavior for
+	  rectangles of the "shift-right-region" (opens up),
+	  "shift-left-region" (deletes), the delete and yank operators. 
+	  new rectangular (basic.c, cmdtbl, region.c, random.c, line.c, edef.h,
+	  estruct.h, line.c, opers.c, proto.h)
+
+	+ many changes in region.c, to make the region code rectangle-aware.
+	  new routines do_lines_in_region()/do_chars_in_line() to support
+	  simple cases of walking a region in two dimensions.  reimplemented
+	  yankregion using these, so it is now rectangle aware.  new blankline
+	  routine.  getregion() knows how to set up rectangular regions.
+	  (region.c)
+
+	+ changed getcol/getccol/gocol/gotocol to support rectangle code.
+	  (random.c)
+
+	+ changed the 'fulllineregions' boolean to a 'regionshape' descriptor.
+	  (exec.c, edef.h ibmpc.c, fences.c, insert.c, basic.c, main.c, word.c,
+	  x11.c, x11simp.c)
+
+	+ moved a bunch of region-related code from random.c to region.c
+
+	+ during undo, attempt to retain offset information for marks
+	  pointing at a line being replaced.  this makes exact marks
+	  last longer, and they're more important now with rectangles.
+	  (undo.c)
+
+	+ added extra column arguments to some of the line-processing
+	  routines, like entab/detab/trimline.  (insert.c, word.c)
+
+	+ fixed autoindent inconsistency, when breaking a brace-terminated
+	  line in half. (insert.c)
+
+	+ turned off the POISON #define.  this should have gone away a while
+	  ago (it fills memory with a bad patter when we free it). (line.c)
+
+	+ fixed old bug in the maintenance of MK.o when adjusting due
+	  to character edits. (line.c)
+
+	+ maintain record of longest line in a kill-register (line.c)
+
+	+ the histbuffer (_) command now stutters with a call to tgetc
+	  instead of kbd_seq, so that the pushback of an unused command
+	  works okay. (buffer.c)
+
+	+ anycb() now returns a pointer to the first modified buffer
+	  it encounters, so callers can treat the single buffer case
+	  specially.  changed callers as well: quit(), zzquit(), and
+	  spawn().  (buffer.c, spawn.c, main.c)
+
+	+ DOS video drivers are now selected more cleanly by name.  any
+	  driver can be selected from the command line (as long as its
+	  name starts with a digit).  drivers can have multiple entries
+	  corresponding to multiple names.  the same name can refer to
+	  two different entries, in cases where there are two resolutions
+	  for the same screen geometry. (main.c, ibmpc.c)
+
+	+ made backspacing be non-destructive in overwrite mode (insert.c)
+
+	+ eliminated the full-buffer-loop in undo.c, by using a cookie to
+	  identify the current undo operation, and using it to mark lines
+	  that have already been copied.  should be a big performance win
+	  for big files on slow machines.  (estruct.h, tmp.c, undo.c)
+
+	+ added support for setting the IBM color palette. (ibmpc.c, vile.hlp)
+	  
+(kev)
+	+ updated help text for X11 (version.c, vile.hlp)
+
+	+ added command line arguments -row, -cols, -leftbar, and -rightbar.
+	  (x11.c)
+
+	+ fix for motif resizing (x11.c)
+
+	+ updated help text for X11 (version.c, vile.hlp)
+
+	+ added command line arguments -row, -cols, -leftbar, and -rightbar.
+	  (x11.c)
+	+ Set XmNresizePolicy to XmRESIZE_NONE in x_configure_window in
+	  order to fix resize problems with the Motif widget set in
+	  which the scrollbars were getting set very big or very small.
+
+	+ Support for scrollbars on the left in motif added.  openlook
+	  still needs to be done.
+
+	+ Added an initialization of XtNgeometry to XtVaAppInitialize
+	  setting this resource to NULL.  This overrides any user
+	  specified geometry request for the top level shell.  The
+	  geometry request is still available through the geometry
+	  variable which Tom added to the TextWindow structure.  Tom's
+	  code for parsing the geometry has been preserved, but
+	  enhanced somewhat to set default values for the number of
+	  rows or columns in case if the user specified only the
+	  position.  Width and height specifications are considered to
+	  be in character widths or heights instead of in pixels.  We
+	  let the initialization of the screen and pane widgets
+	  determine the size of the outer widgets.  (Much of this is
+	  as it was before...the only thing really new here is one
+	  line added in the call to XtVaAppInitialize).
+
+	+ Added code to set XtNgeometry on the top level widget if the
+	  user's geometry request specified the initial window
+	  position.  Only the positional information is set; the width
+	  and height are left out in order so that the sizes of the
+	  children will correctly influence the initial size of the
+	  top level shell widget.
+
+	+ Added scrollbar support for NO_WIDGETS by using core widgets
+	  for both the scrollbars and the resize grips.  Geometry
+	  management is handled with a simple homebrew widget
+	  subclassed from Composite.  I believe that the scrollbar
+	  resize mechanism is superior to that found in xvile
+	  implemented with the other widget sets (particularly
+	  OpenLook).  We might consider either totally getting rid of
+	  OpenLook support (how many people are going to use it?) or
+	  at the very least reimplement scrollbar resize with the same
+	  mechanisms used by the NO_WIDGETS version.  We might also
+	  consider dropping the Athena widget set since it seems to be
+	  buggy on some platforms.  The code will be easier to
+	  maintain though and users will not be so confused by the
+	  number of configuration options if we manage to drop a
+	  couple of the widget sets.  (A middle ground might be to use
+	  only the scrollbar widgets from various widget sets.  Much
+	  of the complexity comes from the differences in the Form and
+	  Pane widgets.  This way we could still use other widgets
+	  from the other widgets sets in the future.  This won't make
+	  the configuration any easier, but it might make the code
+	  easier to maintain.)
+	
+	+ Modified manner in which the top of the scrollbar is set for
+	  all widget sets.  Rather than forcing dot to be in the
+	  middle of the screen, we attempt to leave dot where it is. 
+	  The top of the scrollbar is set based upon the top line of
+	  the window rather than dot.  This gives consistent scrolling
+	  behavior.  Tom's concerns that the "thumb" or slider remain
+	  visible even at the end of the buffer are also addressed
+	  with this approach.  When at the very end of the buffer (so
+	  that the screen has a large number of tildes on it),
+	  xt-vile and xaw-vile will still display a sliver indicating
+	  the portion of the buffer actually shown.  If this is
+	  undesirable, ntildes should be set to something small (like
+	  zero).  Once this is done, the thumb will maintain a uniform
+	  size from the top of the buffer to the bottom.  I've tested
+	  these versions with small buffers (buffers containing zero
+	  thru 2*curwp->w_ntrows lines) and the appearance seems to be
+	  consistent throughout.  Large buffers (> 4000 lines) seem to
+	  still have a slight problem at the end of the buffer in
+	  xaw-vile).
+
+	+ Made the insertion bar the mouse cursor (for the xvile
+	  screen only) in all versions.
+
+	+ fixed x_working so that xvile may once again be interrupted.
+
+	+ added missing assignment so that insertion bar is now really
+	  used when the cursor enters window corresponding to the xvile
+	  screen widget.
+
+	+ implemented scrollbarOnLeft resource for NO_WIDGETS version.
+
+	+ nuked ATHENA_WIDGETS code.  This code was eliminated because
+	  it was observed that the NO_WIDGETS version functions as
+	  well if not better than the ATHENA_WIDGETS version and it
+	  runs on machines which have a buggy (Athena) widget library. 
+	  On the down side, it will be somewhat harder to add new
+	  widgets in the future if this is desired.
+
+(tom)
+	+ modified kevin's resources in x11.c to use "geometry" rather than
+	  "rows" and "columns".  Adjusted logic so that geometry resource means
+	  chars, not pixels.
+
+Changes for vile 4.0 (not released Tue Feb 22, 1994)
+(pgf)
+	+ fix core from one-too-many chars to strncpy(). (eval.c)
+
+	+ change #elif constructs in version.c to oldstyle #else/#if
+
+	+ applied contributed patch for implementing 0^D in insert mode,
+	  and expanded it to implement ^^D. (insert.c)
+
+	+ insert mode now parses function key #c pairs returned from
+	  kbd_key(), so arrow keys work.  (input.c insert.c)
+
+	+ no longer turn off dot recording for non-redoable commands if
+	  we're in insert mode. (exec.c)
+
+	+ display high-bit keyboard input on message line in either octal
+	  or hex, depending on global value of unprintable-as-octal. (bind.c)
+
+	+ implemented "alt-function-prefix" to make function-key parsing
+	  in insert mode less ambiguous.  (edef.h, insert.c, input.c, cmdtbl,
+	  main.c)
+
+	+ new help for arrow keys, and cd/pwd commands.  also some more
+	  pcvile differences.  (vile.hlp)
+
+	+ fixed djgpp implementation of get_vga_bios_info, by packing
+	  the structs int 10/1b deals with.  this makes 43 and 50 line modes
+	  work.  (still don't work with watcom, though) (ibmpc.c)
+
+	+ made :memory work under DJGPP	(main.c)
+	
+	+ made catnap() work under DJGPP, so flash mode works now. (random.c)
+
+	+ added more dependencies to makefile.djg
+
+	+ apply patch for honoring the trailing $ in a tag lookup patterns.
+	  (tags.c, eric krohn)
+
+	+ make animation of buffer list take into account whether it contains
+	  an apropos list or a full "decribe bindings" (bind.c)
+
+	+ some makefile cleanup, for mips and NeXT, and compulsion's sake.
+
+	+ modified heuristic for setting dos-mode on an ambiguous (usually
+	  empty) buffer -- only set it if the global mode is set, and if
+	  we're actually running on DOS. (main.c, random.c, file.c, estruct.h)
+
+
+(tom)
+	+ added new function 'parse_pathlist()' to encapsulate the logic used
+	  in lookup of vile.hlp (PATHLOOK) and the CDPATH environment variable
+	  (fixes buffer overflow in the latter).
+
+	+ corrected treatment of arrow-keys (in history.c) broken in 3.65
+	  using new function 'kbd_escape_seq()' (input.c, history.c).
+
+	+ modified ifdef's in 'interrupted()' to test type-ahead only
+	  for DJGPP configuration (main.c).
+
+	+ restored code that translated CDSENSE to driver type, because it did
+	  not set screen defaults to maximum size (ibmpc.c)
+
+(kev)
+	+ I have added scrollbars to xvile.  I made a copy of x11.c,
+	modified it (heavily) and called it xt.c.  [ I've renamed it x11.c,
+	and moved the old x11.c to x11simp.c.  We can merge later. ] Minor
+	modifications were necessary to several other of the source files. 
+	(display.c, estruct.h, main.c, makefile, and window.c.)
+	xt.c uses the X toolkit and the Athena widget set to provide the
+	following new functionality:
+
+	    A scrollbar for each vile window.  The standard translations
+	    provided by Athena scrollbars control movement of text in the
+	    vile window.
+
+	    Resize of vile windows by moving the border between
+	    corresponding scrollbars (with the mouse).
+
+	    Splitting and deleting of windows may now be done with the
+	    mouse.  Ctrl<Btn1Down> on a scrollbar will cause the scrollbar
+	    and the corresponding vile window to be split with the new
+	    border at or near the mouse cursor.  Ctrl<Btn2Down> will delete
+	    the window.  Ctrl<Btn3Down> will make the corresponding window
+	    the only window.
+
+	    Problems with getting the input focus set properly have been
+	    fixed.
+
+	    Quitting via the window manager works better.  It basically
+	    works the same as if you had typed :q.  vile will display a
+	    message if there are any unwritten buffers.  We may eventually
+	    want to pop up an alert box when attempting to quit with
+	    modified buffers from the window manager.
+
+	+ added "ntildes" variable, which controls max number of tildes
+	  displayed at the end of a buffer, expressed as a percentage of
+	  window size.  [pgf made it a percentage] (edef.h eval.c display.c
+	  modetbl vile.hlp)
+
+	+ added support for the Motif and OpenLook widget sets.  
+
+	+ fixed bug where focusFollowsMouse would take us out of the message
+	  line when we should remain there.
+
+
+This change log started on Tue Feb 22, 1994.
+

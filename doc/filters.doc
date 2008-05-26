@@ -1,0 +1,285 @@
+FILTERS.DOC
+-----------
+
+There are several highlighting filters in the filters subdirectory.  These all
+are programs that read a file, usually from the standard input, and write to
+the standard output.  Vile invokes these, uses the marked-up text to display
+highlighting.
+
+Except for the manpage filter (a special case) all of these can be (and most
+are) implemented using lex.
+
+
+KEYWORDS
+--------
+
+Each filter reads one or more keyword files, which list specific keywords
+and their highlighting attributes, as well as classes of keywords.
+
+The filters search for these files in the current, $HOME, $HOME/vile and
+startup directories.  On Unix, the keyword files in the current and $HOME
+directories are hidden using a "." prefix.  Except for MS-DOS, the suffix is
+".keywords"; on that platform it is ".key".  In the source distribution, these
+files are ".key", to keep them compatible with MS-DOS 8.3 filename lengths.
+
+You can specify the root name to search, otherwise they search for "vile" and
+the compiled-in filter name.  For example, on a Unix host, the C filter
+(vile-c-filt) searches first here:
+
+	./.vile.keywords
+	$HOME/.vile.keywords
+	$HOME/.vile/vile.keywords
+	$VILE_STARTUP_PATH/vile.keywords
+
+	[ If $VILE_STARTUP_PATH is not defined, the filter checks the
+	"prefix" directory specified when all filters were compiled
+	(default path is /usr/local/share/vile/vile.keywords). ]
+
+and then here:
+
+	./.c.keywords
+	$HOME/.c.keywords
+	$HOME/.vile/c.keywords
+	$VILE_STARTUP_PATH/c.keywords
+
+	[ Again, if $VILE_STARTUP_PATH is not defined, the filter checks
+	the "prefix" directory specified when all filters were compiled
+	(default path is /usr/local/share/vile/c.keyords). ]
+
+In each case, vile-c-filt stops as soon as it finds the desired file.  On a
+non-Unix host, the search looks like this:
+
+	./vile.keywords
+	$HOME/vile.keywords
+	$HOME/vile/vile.keywords
+	$VILE_STARTUP_PATH/vile.keywords
+
+	./c.keywords
+	$HOME/c.keywords
+	$HOME/vile/c.keywords
+	$VILE_STARTUP_PATH/c.keywords
+
+
+The vile.keywords file contains color information for the most common classes. 
+The c.keywords file contains the actual keywords to be highlighted, referenced
+to the classes which are in turn colored.  You can see the search for keyword
+files by running the filter with a -v option, repeating the option (-vv) to
+obtain more verbose traces.  Note that filters may be compiled-into vile.  In
+that case (vile calls the filter using the attribute-directly command), you can
+still get a trace by adding the -v option to the filtername line of the
+majormode.  The trace will go to the message line, but also if you have
+	set popup-msgs
+specified, to the [Messages] buffer.
+
+Predefined keyword classes include (but may not necessarily be used in specific
+filters):
+
+	Action
+	Comment
+	Ident
+	Ident2
+	Keyword
+	Keyword2
+	Literal
+	Number
+	Preproc
+	Type
+
+A few filters, e.g., cweb, latex, diff, use additional classes.  The predefined
+classes are a guideline, to implement a common style across the different
+filters.
+
+Each line in the keyword file consists of two strings separated by a colon (:).
+If the first string is empty, the line is treated as a comment.  The second
+string is interpreted as follows:
+
+	+ if quoted with single quotes, any value is permitted.  Use a doubled
+	  quote to insert a quote character.  Literal values of this type are
+	  used to override internal parameters of the filter programs.  See
+	  m4-filt.c for an example.
+
+	+ otherwise (the usual case), the string is an identifier, which
+	  happens to include the characters used in vile's control/A
+	  highlighting attributes (digits plus the characters ABCDEFIRU).
+
+	  If the second string matches a keyword class (or in fact, any other
+	  keyword), the highlighting attributes of that keyword are used.  An
+	  empty attribute string implies the default class, which usually
+	  is "Keyword".
+
+	  If the second string does not match a keyword, it must be a set of
+	  highlighting attributes, which will be used for the first string.
+	  A special case is made for a string beginning "N", which is treated
+	  as no-attributes.
+
+	  See "Writing your own filters" in vile.hlp for additional details
+	  about attribute strings.
+
+The keyword file reader supports a limited include facility.  If a line begins
+with ".include", it reads from the given keyword file.  A few filters (such as
+html) require multiple symbol tables; these include using ".merge".  In either
+case, the parameter of the include is the root name of the keyword file, e.g.,
+"c" for "c.key".  Use the ".table" directive to simply switch to a different
+symbol table in the same file with the same effect as ".merge".
+
+Specify abbreviations using a '*' character, e.g.,
+	vi*le
+to match any of vi, vil, vile.  You can change the '*' character using the
+".abbrev" directive.  A special case is provided for languages such as SQL*PLUS,
+using the '?' character, e.g.,
+	rem?ark
+Use ".brief" to alter the special character '?'.
+
+For either ".abbrev" or ".brief", omitting the parameter disables the feature.
+
+Use the ".default" directive to change the default class.  The parameter must
+be the name of a class which has already been defined.  Omit the parameter to
+reset the default back to "Keyword".
+
+You can change the characters assigned to ':' and '.' using ".equals" and
+".meta" directives, respectively.
+
+Some of the filters match case-independent keywords (e.g., the DOS batchfiles). 
+The keywords file must give these names in lowercase, since the filtered text
+is converted to lowercase when matching.
+
+You can modify the behavior slightly, by giving an absolute pathname with the
+-k option, but otherwise the filters search for both "vile" and the specific
+language keywords, if any.
+
+
+OPTIONS
+-------
+
+A few options are common to all filters:
+
+  -d	is recognized when the filters have been compiled with "DEBUG" defined.
+	This is used in the more complicated filters such as perl, ruby and sql
+	to show the parsing.
+
+  -k FILE
+
+  -q	exits the filter before writing the marked-up output.  This happens
+	after processing the class definitions, so it is useful in combination
+	with the -v option to simply obtain the class information.
+
+  -t	holds the tabstop setting, which can be used in a filter for column
+	computations.
+
+  -v	verbose, turns on extra output which can be used for troubleshooting
+	configuration problems.
+
+The C syntax filter recognizes additional options to customize it for Java and
+JavaScript:
+
+  -j	Extend name- and literal-syntax to include Java.
+
+  -p	Disallow preprocessor lines.
+
+  -s	for JavaScript (to support jsmode).  This controls whether to allow
+	regular expressions in certain cases.
+
+The MAN filter recognizes a "-8" option which tells it to use 8-bit
+approximations for some common UTF-8 equivalents such as hyphen.
+
+
+PROGRAMS
+--------
+
+The following are implemented:
+
+	vile-ada-filt	(Ada95)
+	vile-as-filt	(GNU assembler (x86))
+	vile-asm-filt	(Microsoft ASM (x86))
+	vile-au3-filt	(AutoIt 3)
+	vile-awk-filt	(awk)
+	vile-basic-filt	(BASIC)
+	vile-bat-filt	(DOS batchfiles)
+	vile-bnf-filt	(BNF)
+	vile-c-filt	(C language)
+	vile-cfg-filt	(Lynx configure file)
+	vile-conf-filt	(General config-files)
+	vile-css-filt	(Cascading Style Sheets)
+	vile-cweb-filt	(CWEBx)
+	vile-dcl-filt	(VMS DCL batchfiles)
+	vile-def-filt	(Windows linker definition files)
+	vile-diff-filt	(diff/patch files)
+	vile-ecl-filt	(Prolog/ECLiPSe)
+	vile-esql-filt	(embedded SQL with C/C++)
+	vile-est-filt	(Enscript syntax-descriptions)
+	vile-fdl-filt	(Forms definition language)
+	vile-html-filt	(HTML with embedded JavaScript)
+	vile-imake-filt	(imake)
+	vile-info-filt	(GNU info files)
+	vile-ini-filt	(ini)
+	vile-iss-filt	(Inno Setup)
+	vile-key-filt	(Vile keyword files)
+	vile-latex-filt	(LaTeX or TeX)
+	vile-lex-filt	(lex)
+	vile-lisp-filt	(Lisp)
+	vile-lua-filt	(Lua)
+	vile-m4-filt	(m4)
+	vile-mail-filt	(mail folders)
+	vile-make-filt	(make)
+	vile-manfilt	(manual-page)
+	vile-mcrl-filt	(mCRL(2) specification)
+	vile-midl-filt	(Microsoft Interface Definition Language)
+	vile-mms-filt	(VMS makefiles)
+	vile-nr-filt	(nroff)
+	vile-pas-filt	(Pascal)
+	vile-perl-filt	(Perl, in C)
+	vile-php-filt	(PHP)
+	vile-pl-filt	(Perl, in lex)
+	vile-pot-filt	(gettext (.po) files)
+	vile-ps-filt	(PostScript)
+	vile-py-filt	(Python)
+	vile-rb-filt	(Ruby)
+	vile-rc-filt	(Windows resource files)
+	vile-rcs-filt	(RCS archives)
+	vile-rexx-filt	(REXX)
+	vile-rpm-filt	(RPM ".spec" files)
+	vile-rtf-filt	(Rich Text Format)
+	vile-ruby-filt	(Ruby)
+	vile-sccs-filt	(SCCS archives)
+	vile-sed-filt	(sed scripts)
+	vile-sh-filt	(sh/ksh/csh)
+	vile-sml-filt	(Standard ML)
+	vile-spell-filt	(ispell highlights misspelled words)
+	vile-sql-filt	(SQL scripts)
+	vile-tags-filt	(ctags tags files)
+	vile-tbl-filt	(Vile's mktbl format)
+	vile-tc-filt	(termcap)
+	vile-tcl-filt	(TCL/TK)
+	vile-texi-filt	(texinfo)
+	vile-ti-filt	(terminfo)
+	vile-txt-filt	(plain text files, such as vile.hlp)
+	vile-vile-filt	(Vile's macros)
+	vile-vlog-filt	(Verilog)
+	vile-wbt-filt	(WinBatch)
+	vile-xml-filt	(XML)
+	vile-xres-filt	(X Window resources)
+	vile-xs-filt	(Perl extension)
+	vile-yacc-filt	(yacc)
+
+Not all majormodes require a special filter for highlighting, since they
+use the same syntax as other majormodes:
+
+	cppmode		C++ uses C filter
+	cshmode		C-shell uses shell filter
+	imakemode	Imake uses C filter
+	javamode	Java uses C filter
+	jsmode		JavaScript uses C filter
+	nmakemode	nmake uses C filter
+	nsismode	nsis uses def filter
+	pcmode		printcap uses termcap filter
+	texmode		TeX uses latex filter
+	vbmode		Visual Basic uses basic filter
+
+
+NOTE
+----
+
+The lex filters have been well tested only with flex, which treats newlines
+differently.  Older versions of lex may not support the %x states.
+
+-- $Header: /users/source/archives/vile.vcs/doc/RCS/filters.doc,v 1.38 2008/05/26 09:34:16 tom Exp $

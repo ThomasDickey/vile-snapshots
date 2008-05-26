@@ -1,0 +1,472 @@
+config.doc
+----------
+
+This file describes the steps which are needed to configure and make either
+vile or xvile.  See the file README for a blurb on what (x)vile is and how
+great it is :-).  The file INSTALL contains generic information on the
+process of configuring and building programs which (more or less) conform
+to the GNU coding standards.  You might want to consult that document for
+more information.
+
+
+Building vile
+-------------
+
+To build vile, enter the following command from your shell:
+
+	./configure; make
+
+If you'd like to examine makefile and config.h prior to making, split these
+steps up as follows:
+
+	./configure
+	make
+
+If you are unfortunate enough to be running on a platform in which some
+part of the above process does not work perfectly, you might well want to
+modify makefile to add references to obscure libraries or non-standard
+library locations.
+
+    [ At least one version of bash running on Linux (and perhaps other)
+    systems will cause the configure script to produce invalid results.
+    Specifically, if you're running version 1.14.3 of bash consider
+    upgrading to a newer one.  ]
+
+Modifying makefile is not recommended because your changes will be lost
+should you run configure again.  Many configuration options can be
+set externally to the configure script or the makefile.  For instance,
+if you'd like to change some of the flags passed to the C compiler, try
+doing it like this:
+
+	make CFLAGS=-O2
+
+Or, this can be done when running the configure script instead -- try:
+	CFLAGS=-O2 ./configure			(sh, ksh, bash)
+or:
+	(setenv CFLAGS -O2 ; ./configure)	(csh)
+
+Then again, a configure script argument is shell-agnostic:
+
+	./configure --with-cflags=-O2
+
+If you need to suppress your optimizer (which is invoked as -O by default),
+because it's known to be buggy, use CFLAGS=" ".  [ One combination
+thought to be buggy is AIX 3.2.5 with gcc 2.6.0.  ]
+
+The configure script will favor using gcc on your system if available.  This
+is usually fine, but if gcc was not installed correctly (or your environment
+isn't quite right), it can be disastrous.  You can override the choice
+of compiler with:
+	CC=cc ./configure		(sh, ksh, bash)
+or:
+	(setenv CC cc ; ./configure)	(csh)
+
+Likewise, extra link libraries can be added by setting them in LIBS before
+running configure.
+
+
+Screen Types
+------------
+
+Vile is configured and built with a terminal driver.  At this time, only
+one driver is built with vile at a time.  Some other editors attempt to
+combine more than one driver in the default configuration, making the
+resulting program much larger and slower.  We will ultimately modify vile
+to support multiple drivers, but the default configuration will be the
+smallest and fastest.
+
+Use the configure script's "--with-screen" option to specify the driver
+type, e.g.,
+
+	./configure --with-screen=tcap
+
+The default configuration for vile uses termcap (or terminfo, depending
+what your system has available).  The configuration script tests several
+possibilities.  Your system may have more than one library to link against,
+e.g., on Linux you may have both termcap and ncurses (a terminfo-based
+system).  If you wish to use color, you are generally better off using
+terminfo, since termcap descriptions usually are limited to a fixed size,
+and some features are omitted.
+
+A curses interface is provided as well:
+
+	./configure --with-screen=curses
+
+To tell the configure script to link against the ncurses library (using the
+curses.c driver), type
+
+	./configure --with-screen=ncurses
+
+A much less capable driver uses builtin ANSI escape sequences:
+
+	./configure --with-screen=ansi
+
+
+Syntax coloring options
+-----------------------
+
+Adding syntax coloring to the editor can be simple or not.
+
+Fast, simple syntax coloring
+============================
+Maximally efficient syntax coloring can be selected by specifying
+this configure command line:
+
+	--with-builtin-filters
+
+An ensuing build binds _all_ of the editor's syntax coloring filters into
+the resultant executable.  On the plus side, the build options are simple
+and since no filters are invoked externally (via a pipe), syntax coloring
+is executed with minimal overhead.  On the minus side, this configure
+option generates a much larger executable.
+
+Slower, simple syntax coloring
+==============================
+Omitting any variant of the --with-builtin-filters option or specifying
+"--with-builtin-filters=none" ensures that all of the editor's syntax
+coloring filters are created as separate, external executables.  On the
+plus side, this choice minimizes the editor's footprint.  However, external
+filters are invoked via a pipe, which is substantially slower than the
+direct execution model.
+
+Complex syntax coloring
+=======================
+vile also supports a mix of both internal and external filters, which
+facilitates configuration of the editor with as few or as many internal
+filters as desired.  But before describing how this is achieved, note the
+breadth of the following table of editor filter names and language
+mappings:
+
+    Builtin      External
+    Filter Name  Filter Name      Colors These Language(s)/Files
+    ===========  ===========      ==============================
+    ada          vile-ada-filt    ada
+    as           vile-as-filt     GNU assembler (x86)
+    asm          vile-asm-filt    Microsoft ASM (x86)
+    au3          vile-au3-filt    au3
+    awk          vile-awk-filt    awk
+    basic        vile-basic-filt  basic and visual basic (vb, vbs)
+    bat          vile-bat-filt    Windows .bat files
+    bnf          vile-bnf-filt    BNF files
+    c            vile-c-filt      c, cpp, java, and javascript (js)
+    cfg          vile-cfg-filt    lynx config files
+    conf         vile-conf-filt   ordinary config files
+    css          vile-css-filt    cascading style-sheets
+    cweb         vile-cweb-filt   cweb and cwebx
+    dcl          vile-dcl-filt    VMS DCL scripts
+    def          vile-def-filt    Windows .def files
+    diff         vile-diff-filt   output of diff command
+    ecl          vile-ecl-filt    Prolog/ECLiPSe
+    esql         vile-esql-filt   embedded SQL with C/C++.
+    est          vile-est-filt    Enscript syntax-descriptions
+    fdl          vile-fdl-filt    forms definition language
+    html         vile-html-filt   HTML, JSP
+    imake        vile-imake-filt  imake files
+    info         vile-info-filt   GNU info files
+    ini          vile-ini-filt    Windows .ini, .reg, .vbp files
+    iss          vile-iss-filt    InnoSetup
+    key          vile-key-filt    vile .keyword files
+    latex        vile-latex-filt  LaTeX
+    lex          vile-lex-filt    flex and lex
+    lisp         vile-lisp-filt   lisp, scheme
+    lua          vile-lua-filt    Lua
+    m4           vile-m4-filt     autoconf and m4
+    mail         vile-mail-filt   messages
+    make         vile-make-filt   make and nmake files
+    mcrl         vile-mcrl-filt   mCRL/mCRL2 modeling language.
+    midl         vile-midl-filt   Microsoft IDL
+    mms          vile-mms-filt    VMS make files
+    nr           vile-nr-filt     nroff/troff files
+    pas          vile-pas-filt    Pascal, Delphi
+    php          vile-php-filt    PHP
+    pl           vile-pl-filt     Perl
+    pot          vile-pot-filt    gettext (.po) files
+    ps           vile-ps-filt     PostScript
+    py           vile-py-filt     python
+    rc           vile-rc-filt     Windows resource (.rc) files
+    rcs          vile-rcs-filt    RCS archives
+    rexx         vile-rexx-filt   REXX
+    rpm          vile-rpm-filt    RPM .spec files
+    rtf          vile-rtf-filt    Rich Text Format
+    rb           vile-ruby-filt   Ruby
+    sccs         vile-sccs-filt   SCCS files
+    sed          vile-sed-filt    sed scripts
+    sh           vile-sh-filt     csh, sh, PCLI
+    sml          vile-sml-filt    SML input text
+    spell        vile-spell-filt  highlight misspelled words using ispell
+                                    or spell (see filters/spell.rc)
+    sql          vile-sql-filt    SQL
+    tags         vile-tags-filt   tags files (see ctags(1)).
+    tbl          vile-tbl-filt    vile's modetbl and cmdtbl files
+    tc           vile-tc-filt     termcap and printcap files
+    tcl          vile-tcl-filt    tcl/tk scripts
+    tex          vile-latex-filt  TeX
+    texi         vile-texi-filt   texinfo
+    ti           vile-ti-filt     terminfo files
+    txt          vile-txt-filt    various flavors of text files
+    vile         vile-vile-filt   vile and vim macros
+    vlog         vile-vlog-filt   verilog
+    wbt          vile-wbt-filt    WinBatch
+    xml          vile-html-filt   XML, DocBook
+    xpm          vile-xpm-filt    X resource files
+    xres         vile-xres-filt   X resource files
+    xs           vile-xs-filt     Perl extension source files
+    yacc         vile-yacc-filt   yacc and bison
+
+As you might expect, when the "--with-builtin-filters" option is selected,
+all of the internal filters listed above are bound into the editor.  "Hey,
+wait a minute", you say, "I'll never use some of those filters--not in a
+hundred years." In that case, use this configure syntax:
+
+	--with-builtin-filters="<filter_list>"
+
+For example:
+
+	./configure --with-cflags=-O2 \
+		    --with-builtin-filters="awk c key lex m4 perl sed tags
+		    diff html mail make pl rcs sh sql tbl tcl txt vile yacc"
+	make
+	make install
+
+The above commands:
+
+    + compile vile [1],
+    + compile and link 21 filters into the final editor image,
+    + create the remaining, non-builtin filters as external executable
+      images, and
+    + copy the editor and external filters to an to an install tree [2].
+
+Assuming the editor's startup file initiates syntax coloring [3], then at
+vile run time, the macro file filters/filters.rc preferentially selects and
+executes internal filters when coloring a supported language or file
+format.  If a required internal filter is not available, filters.rc
+starts a pipe and applies color attributes via the corresponsing external
+filter listed in the table above.
+
+[1] Or xvile if you prefer.  See next topic.
+[2] Described below in the topic "Installing x(vile)".
+[3] Refer to the topics "Color basics" and "Syntax coloring" in vile.hlp
+
+
+Building xvile
+--------------
+
+You must decide which version of xvile you want to build.  To a certain
+degree this decision may be forced upon you by which libraries you have
+on your machine.  There are three different versions you can build.
+
+1) X toolkit version: This version uses only the X toolkit to implement
+scrollbars and the window resize grips (meaning _vile_ windows, not X
+windows).  As a consequence, it should only require the X toolkit library
+(-lXt) and the Xlib library (-lX11).  (Don't worry if you don't know what
+these are or where these are; the configuration script will probably be
+able to find them.)  The scrollbars in this version look much like those
+found in a standard xterm.  We recommend that you try this version out
+first as it is superior in some respects to the other versions which use
+fancy widget sets.  To configure this version, enter the following command:
+
+	./configure --with-screen=x11
+
+A minor variation using the Athena widgets supports menus:
+
+	./configure --with-screen=Xaw
+
+Two other variations on the Athena widgets are provided:
+
+	./configure --with-Xaw3d
+
+to link with Xaw 3d library
+
+	./configure --with-neXtaw
+
+to link with neXT Athena library.  There's little functional difference
+between the three versions of Athena libraries, they provide different
+appearance.  You can also configure with the corresponding scrollbars from
+the Athena library (though we are not as satisfied with their performance,
+particularly with resizing):
+
+	./configure --with-Xaw-scrollbars
+
+to use Xaw scrollbars rather than our own (applies to all variations of
+Athena library).  You can also use Kevin's dragging/scrolling logic with
+the Athena library:
+
+	./configure --with-drag-extension
+
+2) Motif version:  This version uses the Motif widget set to implement
+the scrollbars and (vile) window resize pane.  To configure the Motif
+version, enter one of the following commands (several variations are
+recognized for each screen value to simplify integration with other
+scripts):
+
+	./configure --with-screen=motif
+	./configure --with-screen=Xm
+
+3) OpenLook version:  Uses the OpenLook widgets to implement scrollbars. Since
+OpenLook lacks a pane widget, resizing (vile) windows is pretty cheesy.  Still,
+if you are running olwm or olvwm, you might well want to run this version
+so that xvile will look the same as your other applications.
+
+	./configure --with-screen=openlook
+	./configure --with-screen=Xol
+
+After configuration, you may look at the makefile or config.h if you wish. You
+can finish making xvile by entering the following command:
+
+	make
+
+On some systems it seems to be sometimes necessary (?) to have X_LIBS set
+to -static prior running configure, i.e, use either:
+
+	X_LIBS=-static ./configure --with-screen=openlook
+
+for sh, ksh, and bash.  Or:
+
+	(setenv X_LIBS -static ; ./configure --with-screen=openlook)
+
+for csh and tcsh.
+
+
+Installing (x)vile
+------------------
+
+Installation of (x)vile is simple.  Obtain the appropriate privileges (become
+superuser if necessary), and enter the following command:
+
+	make install
+
+If you have ever installed an older version of vile, you should probably
+check to be sure the old help files are gone.  They used to go to a
+different place (by default) than they do now.  It can be most confusing
+to use an older version of the help file with a newer version of the
+program, and unfortunately, older help files didn't have version numbers.
+
+By default, (x)vile and the script "vile-pager" are installed in
+/usr/local/bin.  Other editor components are stored in these directories:
+
+    component                 install dir
+    ---------                 -----------
+    vile.hlp                  /usr/local/share/vile
+    vile.1 (man page)         /usr/local/man/man1
+    syntax coloring filters   [note 1]
+    coloring keyword files    /usr/local/share/vile
+    various macro files       /usr/local/share/vile
+
+    Note 1:  the value of the environment variable VILE_LIBDIR_PATH
+             specifies where configure installs external coloring filters.
+             If unset, configure defaults to /usr/local/lib/vile.
+
+We realize that not everyone has superuser privileges on the machines on
+which they wish to build (x)vile.  If you lack superuser access or write
+access to /usr/local, you will want to change the installation location.
+You may do so by using the --prefix option to "configure".  Suppose you
+wish to have xvile installed in $HOME/bin (your home bin directory).  You
+would issue the following commands:
+
+    ./configure --with-screen=x11 --prefix=$HOME
+    make install
+
+The file INSTALL has more information on installation and on configure's
+--prefix option.  If you don't feel like rebuilding (likely), you can
+also edit the makefile and change the "prefix", "bindir", or "libdir"
+definitions--but remember that your changes will be lost the next time
+configure is run.
+
+
+Building in a separate directory
+--------------------------------
+
+If you are building (x)vile for several machines or want to perhaps
+simultaneously build and try out the various versions of xvile, you will
+probably want to configure (x)vile to build in a directory different from
+where the source resides.  This requires that you have make program which
+correctly uses the VPATH variable.  GNU make does this well, others may
+or may not.
+
+Suppose that the source resides in vile-src.  At the same level as
+vile-src, you might perhaps create a directory called vile-x11-sunos to
+indicate that you are building xvile on a platform running sunos.  You
+would then cd into this directory and issue the following configuration
+command:
+
+	../vile-src/configure --with-screen=x11
+
+Another directory at the same level as vile-src might be named vile-sunos
+to indicate that you are building vile on a platform running sunos. After
+you cd into this directory, you'd then issue the following command to
+configure ordinary vile.
+
+	../vile-src/configure
+
+The "make" step in each case is the same as described above; you simply
+issue the command:
+
+	make
+
+to finish making (x)vile.
+
+This process is described in more formally in the INSTALL document.  As
+described there, you will need to use a version of "make" which supports
+the VPATH variable.  And it must support it _correctly_.  Again, GNU make
+does this.  A lot of older "make"s don't.
+
+
+Other Compile-Time Options
+--------------------------
+
+Aside from the screen type, most functionality in vile is controlled by the
+"OPT_" #ifdef's in the estruct.h file.  Some of the more useful ones (or
+those that require manipulating the makefile) are also provided as configure
+options:
+
+  --with-exec-macros=N    specify count of numbered macros  (anachronism)
+  --with-perl             enable use of Perl as an extension language
+
+
+Testing/Development Options
+---------------------------
+
+Several other options appear in the configure script's "--help" message.
+They are used to support testing and development, by building various
+debug versions of vile.  These include:
+
+  --disable-echo          test: display "compiling" commands (default: on)
+  --disable-extensions    test: build only core functions (default: on)
+  --disable-shell         test: disable shell/external commands (default: on)
+  --with-dbmalloc         test: use Conor Cahill's dbmalloc library
+  --with-dmalloc          test: use Gray Watson's dmalloc library
+  --with-no-leaks         test: free permanent memory, analyze leaks
+  --with-trace            test: turn on debug-tracing
+  --with-warnings         test: turn on GCC compiler warnings
+
+The dbmalloc and dmalloc libraries are similar, checking for memory leaks
+and related malloc/free problems.  Both have limitations, so we use both,
+as well as other tools such as Purify and ElectricFence, according to the
+problem.
+
+The --with-no-leaks option compiles in code that frees all of the
+permanently allocated memory on exit.  This greatly simplifies the task of
+analyzing memory leaks.
+
+The --with-trace option turns on debug traces that go to the Trace.out
+file.  Since vile is a fullscreen program, it is not useful to write
+messages to the screen.  (The OPT_HEAPSIZE option is an exception; you may
+be amused by it).
+
+The --with-warnings option applies mostly to compiles with GCC, since it is
+available across several platforms.  We build with all available compilers, but
+their warnings options are not consistent.
+
+Because the echoed commands in the makefile are long, the
+--disable-echo option is provided to shorten the commands, making it easy to
+see the warnings.
+
+The --disable-extensions and --disable-shell options are for testing.
+Disabling extensions produces a smaller program, essentially the core of
+vile (no macros), which is a workable editor.  You may wish to build vile
+without shell support, but perhaps not (ymmv).
+
+
+------------------------
+$Header: /users/source/archives/vile.vcs/doc/RCS/config.doc,v 1.15 2008/04/10 23:56:39 tom Exp $
+------------------------
