@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.474 2008/04/24 22:29:30 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.475 2008/05/25 16:12:28 tom Exp $
  *
  */
 
@@ -1517,8 +1517,8 @@ offs2col0(WINDOW *wp,
 	C_NUM start_offset;
 	const char *text = lvalue(lp);
 
-	if (offset > length + 0)
-	    offset = length + 0;
+	if (offset > length + 1)
+	    offset = length + 1;
 
 	if (cache_offset && cache_column && *cache_offset < offset) {
 	    start_offset = *cache_offset;
@@ -1533,7 +1533,7 @@ offs2col0(WINDOW *wp,
 
 	    c = (n == length) ? '\n' : text[n];
 #if OPT_MULTIBYTE
-	    if (b_is_utfXX(wp->w_bufp) && !isTab(c)) {
+	    if ((n < length) && b_is_utfXX(wp->w_bufp) && !isTab(c)) {
 		int nxt = offset - n;
 		int adj = column_sizes(wp, text + n, nxt, &used);
 
