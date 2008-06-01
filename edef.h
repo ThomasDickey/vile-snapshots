@@ -6,7 +6,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.338 2008/04/16 20:55:01 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.339 2008/05/30 18:59:53 tom Exp $
  */
 
 #ifndef VILE_EDEF_H
@@ -139,6 +139,8 @@ decl_uninit( BUFFER *btempp );		/* buffer for ffgetline()       */
 decl_uninit( TBUFF *tb_save_shell[2] );	/* last ":!" or ^X-!  command	*/
 
 decl_uninit( char screen_desc[NBUFN] );	/* rough description of screen  */
+
+decl_init( USHORT vl_glob_opts, vl_GLOB_ALL);
 
 decl_init( TBUFF *mlsave, 0 );		/* last message, if postponed	*/
 decl_init( TBUFF *searchpat, 0 );	/* Search pattern		*/

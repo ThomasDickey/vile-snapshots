@@ -13,7 +13,7 @@
  *
  *	modify (ifdef-style) 'expand_leaf()' to allow ellipsis.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/glob.c,v 1.92 2008/01/13 16:14:06 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/glob.c,v 1.93 2008/05/31 00:28:38 tom Exp $
  *
  */
 
@@ -121,13 +121,17 @@ string_has_globs(const char *item)
 	if (*item == GLOB_SINGLE || *item == GLOB_MULTI)
 	    return TRUE;
 #if OPT_GLOB_ELLIPSIS || SYS_VMS
-	if (!strncmp(item, GLOB_ELLIPSIS, sizeof(GLOB_ELLIPSIS) - 1))
-	    return TRUE;
+	if (vl_glob_opts & vl_GLOB_ELLIPSIS) {
+	    if (!strncmp(item, GLOB_ELLIPSIS, sizeof(GLOB_ELLIPSIS) - 1))
+		return TRUE;
+	}
 #endif
 #if !OPT_VMS_PATH
 #if OPT_GLOB_RANGE
-	if (*item == GLOB_RANGE[0])
-	    return TRUE;
+	if (vl_glob_opts & vl_GLOB_RANGE) {
+	    if (*item == GLOB_RANGE[0])
+		return TRUE;
+	}
 #endif
 #endif
 	item++;
@@ -157,10 +161,12 @@ string_has_wildcards(const char *item)
 #endif
 #if !OPT_VMS_PATH
 #if OPT_GLOB_ENVIRON
-	if (*item == '$'
+	if ((vl_glob_opts & vl_GLOB_ENVIRON)
+	    && (*item == GLOB_ENVIRON[0])
 	    && (item == base || !isEscaped(item))
-	    && (isname(item[1]) || isdelim(item[1])))
+	    && (isname(item[1]) || isdelim(item[1]))) {
 	    return TRUE;
+	}
 #endif
 #endif
 	item++;
@@ -251,7 +257,8 @@ glob_match_leaf(char *leaf, char *pattern)
 	    if (!multi && *leaf != EOS)
 		return FALSE;
 #if OPT_GLOB_RANGE
-	} else if (*pattern == GLOB_RANGE[0]) {
+	} else if ((vl_glob_opts & vl_GLOB_RANGE)
+		   && (*pattern == GLOB_RANGE[0])) {
 	    int found = FALSE;
 	    char *first = ++pattern;
 	    int negate = 0;
@@ -698,54 +705,56 @@ expand_environ(char *pattern)
     const char *s;
     char save[NFILEN];
 
-    for (j = 0; pattern[j] != EOS; j++) {
-	if (j != 0 && isEscaped(pattern + j))
-	    continue;
-
-	k = j + 1;
-	if (pattern[j] == '$' && pattern[k] != EOS) {
-	    if (pattern[k] == '(')
-		delim = ')';
-	    else if (pattern[k] == '{')
-		delim = '}';
-	    else if (isAlnum(pattern[k]))
-		delim = EOS;
-	    else
+    if (vl_glob_opts & vl_GLOB_ENVIRON) {
+	for (j = 0; pattern[j] != EOS; j++) {
+	    if (j != 0 && isEscaped(pattern + j))
 		continue;
 
-	    if (delim != EOS)
-		k++;
-	    left =
-		right = k;
+	    k = j + 1;
+	    if (pattern[j] == GLOB_ENVIRON[0] && pattern[k] != EOS) {
+		if (pattern[k] == '(')
+		    delim = ')';
+		else if (pattern[k] == '{')
+		    delim = '}';
+		else if (isAlnum(pattern[k]))
+		    delim = EOS;
+		else
+		    continue;
 
-	    while (pattern[k] != EOS) {
-		right = k;
-		if (delim != EOS) {
-		    if (pattern[k++] == delim)
-			break;
-		} else if (isname(pattern[k])) {
+		if (delim != EOS)
 		    k++;
-		} else {
-		    break;
+		left =
+		    right = k;
+
+		while (pattern[k] != EOS) {
+		    right = k;
+		    if (delim != EOS) {
+			if (pattern[k++] == delim)
+			    break;
+		    } else if (isname(pattern[k])) {
+			k++;
+		    } else {
+			break;
+		    }
 		}
-	    }
-	    if (delim == EOS)
-		right = k;
+		if (delim == EOS)
+		    right = k;
 
-	    (void) strcpy(save, pattern + k);
-	    if (right != left) {
-		pattern[right] = EOS;
+		(void) strcpy(save, pattern + k);
+		if (right != left) {
+		    pattern[right] = EOS;
 #if SYS_MSDOS || SYS_OS2
-		mkupper(pattern + left);
+		    mkupper(pattern + left);
 #endif
-		if ((s = getenv(pattern + left)) == 0)
+		    if ((s = getenv(pattern + left)) == 0)
+			s = "";
+		} else
 		    s = "";
-	    } else
-		s = "";
 
-	    (void) strcpy(pattern + j, s);
-	    (void) strcat(pattern, save);
-	    j += (int) strlen(s) - 1;
+		(void) strcpy(pattern + j, s);
+		(void) strcat(pattern, save);
+		j += (int) strlen(s) - 1;
+	    }
 	}
     }
 }
@@ -848,6 +857,10 @@ expand_pattern(char *item)
 #endif
 	expand_environ(pattern);
 	if (string_has_globs(pattern)) {
+	    /*
+	     * FIXME - stripping escapes is done too early, in case we have
+	     * mixed [pattern] and \[xxx\] token.
+	     */
 	    strip_escapes(pattern);
 	    if ((result = expand_leaf(builtup, pattern)) != FALSE
 		&& (myLen - first > 1)) {
