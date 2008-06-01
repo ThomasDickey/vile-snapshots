@@ -22,7 +22,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.640 2008/04/16 20:06:09 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.641 2008/05/30 19:01:28 tom Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -389,8 +389,10 @@ MainProgram(int argc, char *argv[])
     global_val_init();		/* global buffer values */
     winit(FALSE);		/* command-line */
 #if !SYS_UNIX
+    vl_glob_opts = vl_GLOB_MIN;
     expand_wild_args(&argc, &argv);
 #endif
+    vl_glob_opts = vl_GLOB_ALL;
     prog_arg = argv[0];		/* this contains our only clue to exec-path */
 #if SYS_MSDOS || SYS_OS2 || SYS_OS2_EMX || SYS_WINNT
     if (strchr(pathleaf(prog_arg), '.') == 0) {

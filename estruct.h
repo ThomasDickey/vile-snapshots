@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.662 2008/05/06 22:38:48 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.663 2008/05/30 19:09:19 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -736,9 +736,24 @@
  */
 #define	GLOB_MULTI	'*'
 #define	GLOB_SINGLE	'?'
-#define	GLOB_ELLIPSIS	"..."
+#define	GLOB_ELLIPSIS	"..."	/* implemented on VMS-only */
 #define	GLOB_RANGE	"[]"
+#define GLOB_ENVIRON	"$"	/* unimplemented */
 #define	GLOB_NEGATE	"^!"
+
+/*
+ * Enumeration used for selecting globbing features
+ */
+typedef enum {
+	vl_GLOB_MULTI      = 1
+	, vl_GLOB_SINGLE   = 2
+	, vl_GLOB_ELLIPSIS = 4
+	, vl_GLOB_RANGE    = 8
+	, vl_GLOB_ENVIRON  = 16
+} vl_GLOB_OPTS;
+
+#define vl_GLOB_MIN (vl_GLOB_MULTI | vl_GLOB_SINGLE)
+#define vl_GLOB_ALL (vl_GLOB_MIN | vl_GLOB_ELLIPSIS | vl_GLOB_RANGE | vl_GLOB_ENVIRON)
 
 /*
  * Configuration options for globbing

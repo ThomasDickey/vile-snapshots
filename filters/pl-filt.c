@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/pl-filt.c,v 1.96 2008/05/26 13:32:03 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/pl-filt.c,v 1.97 2008/06/01 14:23:52 tom Exp $
  *
  * Filter to add vile "attribution" sequences to perl scripts.  This is a
  * translation into C of an earlier version written for LEX/FLEX.
@@ -1515,7 +1515,7 @@ do_filter(FILE *input GCC_UNUSED)
 		break;
 
 	    case eIGNORED:
-		s = put_remainder(s, Comment_attr, 1);
+		s = put_document(s);
 		break;
 
 	    case ePATTERN:

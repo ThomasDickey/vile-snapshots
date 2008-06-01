@@ -2,12 +2,15 @@ Changes for vile 9.7 (released ??? ??? ?? ????)
 
  200805?? (o)
 	> Tom Dickey:
+	+ suppress part of wildcard expansion in call to expand_wild_args(),
+	  e.g., for command-line of winvile, since that interferes with
+	  reading file whose names contain square brackets.
 	+ modify wrapmargin mode to use negative values as a count from the
 	  left of the screen (discussion by Chris Green, Paul Fox).
 	+ make perlpod sections more readable by highlighting the control
 	  lines (request by Steven Lembark).
-	+ improve here-document parsing in sh-filt.l to work with "words" which
-	  contain blanks.
+	+ improve here-document parsing in sh-filt.l to work with "words"
+	  which contain blanks.
 	+ expand description of command-line history in vile.hlp
 	+ document change to ".abbrev" and ".brief" in doc/filters.doc
 
