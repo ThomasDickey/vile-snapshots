@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.362 2008/05/06 00:01:25 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.363 2008/06/01 17:38:38 tom Exp $
  *
  */
 
@@ -1046,6 +1046,7 @@ fsm_complete(DONE_ARGS)
 	    }
 	}
 	if (!result) {
+	    (void) mklower(buf);
 	    result = kbd_complete(PASS_DONE_ARGS,
 				  (const char *) (fsm_tbl[fsm_idx].lists->choices),
 				  sizeof(FSM_CHOICES));
@@ -1555,19 +1556,19 @@ find_mode(BUFFER *bp, const char *mode, int global, VALARGS * args)
 {
     int mode_class;
 
-    TRACE2(("find_mode(%s) %s\n", mode, global ? "global" : "local"));
+    TRACE((T_CALLED "find_mode(%s) %s\n", mode, global ? "global" : "local"));
 
     for (mode_class = 0; mode_class < END_MODE; mode_class++) {
 	if (find_mode_class(bp, mode, global, args, (MODECLASS) mode_class))
-	      return TRUE;
+	      returnCode(TRUE);
     }
 #if OPT_MAJORMODE
     if (find_submode(bp, mode, global, args)) {
-	return TRUE;
+	returnCode(TRUE);
     }
 #endif
-    TRACE2(("...not found\n"));
-    return FALSE;
+    TRACE(("...not found\n"));
+    returnCode(FALSE);
 }
 
 /*

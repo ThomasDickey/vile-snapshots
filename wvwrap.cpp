@@ -12,7 +12,7 @@
  * Note:  A great deal of the code included in this file is copied
  * (almost verbatim) from other vile modules.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/wvwrap.cpp,v 1.16 2007/11/01 23:53:27 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/wvwrap.cpp,v 1.17 2008/06/01 20:08:37 tom Exp $
  */
 
 #include "w32vile.h"
@@ -232,16 +232,14 @@ ConvertToUnicode(char *szA)
  * of the whole line.  That uses an extra level of interpretation, so we have
  * to double each single quote _twice_ to enter single quotes in the filename.
  *
- * Dollar-signs introduce another twist: vile attempts to expand the associated
- * variables unless the $'s are escaped.  In the globbing, all of the backslashes
- * count as escapes.
+ * We turn off globbing to prevent vile from expanding dollar-signs and square
+ * brackets.
  *
  * Obscure, but it works.
  */
 static char *
 escape_quotes(const char *src)
 {
-    const char *must_quote = "${}";
     size_t len = 4 * strlen(src) + 1;
     char *result = typeallocn(char, len);
 
@@ -249,7 +247,6 @@ escape_quotes(const char *src)
         exit (nomem());
 
     char *dst = result;
-    bool escape = (strcspn(src, must_quote) != strlen(src));
     while (*src != '\0')
     {
         UCHAR ch = (UCHAR) *src;
@@ -269,14 +266,6 @@ escape_quotes(const char *src)
                 *dst++ = SQUOTE;
                 *dst++ = SQUOTE;
                 *dst++ = SQUOTE;
-            }
-            else if (strchr(must_quote, *src) != 0)
-            {
-                *dst++ = '\\';
-            }
-            else if (*src == '\\' && escape)
-            {
-                *dst++ = '\\';
             }
             *dst++ = *src++;
         }
@@ -311,7 +300,7 @@ WinMain( HINSTANCE hInstance,      // handle to current instance
     size_t       dynbuf_len;
     HRESULT      hr;
     HWND         hwnd;
-    VARIANT_BOOL insert_mode, minimized;
+    VARIANT_BOOL insert_mode, glob_mode, minimized;
     char         *lclbuf = NULL, tmp[512], *dynbuf;
     OLECHAR      *olestr;
     LPUNKNOWN    punk;
@@ -323,9 +312,9 @@ WinMain( HINSTANCE hInstance,      // handle to current instance
         return (nomem());
 
 #if OPT_TRACE
-    Trace("cmdline:%s\n", lpCmdLine);
+    Trace("; cmdline:%s\n", lpCmdLine);
     for (int n = 0; n < argc; ++n)
-        Trace("argv%d:%s\n", n, argv[n]);
+        Trace("; argv%d:%s\n", n, argv[n]);
 #endif
 
     olebuf_len = 4096;
@@ -376,11 +365,26 @@ WinMain( HINSTANCE hInstance,      // handle to current instance
     }
     pVileAuto->put_Visible(VARIANT_TRUE);  // May not be necessary
     pVileAuto->get_InsertMode(&insert_mode);
+    pVileAuto->get_GlobMode(&glob_mode);
     if (argc > 0)
     {
         char *cp;
 
         *dynbuf = '\0';
+
+        if (insert_mode)
+            append(dynbuf, dynbuf_len, "\033");
+
+#if OPT_TRACE
+        /*
+         * Turn on tracing in the server, for debugging.
+         */
+        append(dynbuf, dynbuf_len, ":setv $debug=true\n");
+#endif
+        /*
+         * Disable globbing to simplify quoting.
+         */
+        append(dynbuf, dynbuf_len, ":set noglob\n");
 
         /*
          * When wvwrap starts up (and subsequently launches winvile), the
@@ -392,16 +396,6 @@ WinMain( HINSTANCE hInstance,      // handle to current instance
         if (cp)
         {
             int add_delim;
-
-            if (insert_mode)
-                append(dynbuf, dynbuf_len, "\033");
-
-#if OPT_TRACE
-            /*
-             * Turn on tracing in the server, for debugging.
-             */
-            append(dynbuf, dynbuf_len, ":setv $debug=true\n");
-#endif
 
             *cp = '\0';
             if (cp == *argv)
@@ -458,8 +452,10 @@ WinMain( HINSTANCE hInstance,      // handle to current instance
             sprintf(temp, ":eval e '%s'\n", escape_quotes(*argv++));
             append(dynbuf, dynbuf_len, temp);
         }
+        if (glob_mode)
+            append(dynbuf, dynbuf_len, ":set glob\n");
 
-        TRACE(("dynbuf:\n%s\n", dynbuf));
+        TRACE(("; dynbuf:\n%s\n", dynbuf));
         olestr = TO_OLE_STRING(dynbuf);
         bstr   = SysAllocString(olestr);
 
