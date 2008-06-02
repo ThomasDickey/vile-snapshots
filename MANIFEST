@@ -1,4 +1,4 @@
-MANIFEST for vile, version v9_6n4
+MANIFEST for vile, version v9_6o
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 CHANGES                         Change-log for VILE
@@ -59,6 +59,7 @@ gppconio.c                      patched console I/O support for DJGCC
 history.c                       command-history
 input.c                         various input-routines
 insert.c                        functions for character-insertion
+install.sh                      install-script, needed for configure
 isearch.c                       incremental-search commands
 itbuff.c                        support functions for wide-character strings
 lckfiles.c                      locked-files support
@@ -73,6 +74,7 @@ makefile.in                     used by 'configure' to generate a makefile
 makefile.wnt                    makefile for Win32 with Microsoft Visual C++
 map.c                           map and map! commands
 menu.c                          menu-support for xvile
+mkdirs.sh                       script to make directory-hierarchy
 mkprlenv.wnt                    vile-7.4h
 mktbls.c                        utility for constructing VILE's command & mode tables
 modes.c                         mode-command support
@@ -115,6 +117,7 @@ trace.h                         development: trace to logfile
 ucrypt.c                        interface to Unix crypt(1)
 undo.c                          support for "undo"
 version.c                       version & usage messages
+vile-9.6.spec                   sample RPM spec file for vile 9.6
 vile.1                          man-page for VILE
 vile.hlp                        help-file
 vile.wmconfig                   windowmaker config file for vile
@@ -161,6 +164,7 @@ doc/filters.doc                 overview of syntax filter programs
 doc/macros.doc                  documentation for VILE macros
 doc/menus.doc                   description of xvile (Xm and Xaw) menus
 doc/modes.doc                   overview of modes/majormodes
+doc/ncu-indent                  copy of ncu-indent
 doc/oleauto.doc                 document Winvile OLE
 doc/perl.doc                    notes about perl interface to vile
 doc/visvile.doc                 document visvile.dll

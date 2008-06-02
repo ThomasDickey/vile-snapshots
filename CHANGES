@@ -1,6 +1,6 @@
 Changes for vile 9.7 (released ??? ??? ?? ????)
 
- 200805?? (o)
+ 20080601 (o)
 	> Tom Dickey:
 	+ simplify wvlwrap.exe by disabling globbing temporarily.  This allows
 	  opening files whose names contain square brackets. 
