@@ -17,7 +17,7 @@
  *   "FAILED" may not be used to test an OLE return code.  Use SUCCEEDED
  *   instead.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32ole.cpp,v 1.29 2007/11/08 01:19:28 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32ole.cpp,v 1.30 2008/06/01 20:07:04 tom Exp $
  */
 
 #include "w32vile.h"
@@ -737,6 +737,13 @@ STDMETHODIMP
 vile_oa::get_InsertMode(VARIANT_BOOL *pbool)
 {
     *pbool = (insertmode) ? VARIANT_TRUE : VARIANT_FALSE;
+    return NOERROR;
+}
+
+STDMETHODIMP
+vile_oa::get_GlobMode(VARIANT_BOOL *pbool)
+{
+    *pbool = (global_g_val(GMDGLOB)) ? VARIANT_TRUE : VARIANT_FALSE;
     return NOERROR;
 }
 

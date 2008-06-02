@@ -2,6 +2,14 @@ Changes for vile 9.7 (released ??? ??? ?? ????)
 
  200805?? (o)
 	> Tom Dickey:
+	+ simplify wvlwrap.exe by disabling globbing temporarily.  This allows
+	  opening files whose names contain square brackets. 
+	+ improve checks in SetVarValue() and PromptAndSet() to ensure that a
+	  mode is actually found, and checking whether a '$' prefix is used.
+	+ modify fsm_complete() to lowercase the test-string, making it
+	  simpler to save a boolean mode-value in a variable and restore it by
+	  assignment.  This works because all of the enumerations use
+	  lowercase names.
 	+ suppress part of wildcard expansion in call to expand_wild_args(),
 	  e.g., for command-line of winvile, since that interferes with
 	  reading file whose names contain square brackets.
