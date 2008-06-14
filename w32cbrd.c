@@ -11,7 +11,7 @@
  *    Subsequent copies do not show this cursor.  On an NT host, this
  *    phenomenon does not occur.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32cbrd.c,v 1.31 2008/01/22 00:09:37 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32cbrd.c,v 1.32 2008/04/10 19:38:31 tom Exp $
  */
 
 #include "estruct.h"
@@ -83,6 +83,8 @@ setclipboard(HGLOBAL hClipMem, UINT nbyte, UINT nline)
 {
     int rc, i;
 
+    TRACE((T_CALLED "setclipboard(%p, %d, %d)\n", hClipMem, nbyte, nline));
+
     for (rc = i = 0; i < 8 && (! rc); i++)
     {
         /* Try to open clipboard */
@@ -96,7 +98,7 @@ setclipboard(HGLOBAL hClipMem, UINT nbyte, UINT nline)
     {
         mlforce(CLIPBOARD_BUSY);
         GlobalFree(hClipMem);
-        return (FALSE);
+        returnCode(FALSE);
     }
     EmptyClipboard();
     rc = (SetClipboardData(CF_TEXT, hClipMem) != NULL);
@@ -114,7 +116,7 @@ setclipboard(HGLOBAL hClipMem, UINT nbyte, UINT nline)
                          nline,
                          FALSE);
     }
-    return (rc);
+    returnCode(rc);
 }
 
 
@@ -266,11 +268,12 @@ cbrd_reg_copy(void)
     UINT                    nline;
     UCHAR                  *dst;
 
+    TRACE((T_CALLED "cbrd_reg_copy()\n"));
     /* make sure there is something to put */
     if (kbs[ukb].kbufh == NULL)
     {
         mlforce("[Nothing to copy]");
-        return (FALSE);     /* not an error, just nothing */
+        returnCode(FALSE);     /* not an error, just nothing */
     }
 
     print_high = global_g_val(GVAL_PRINT_HIGH);
@@ -301,14 +304,14 @@ cbrd_reg_copy(void)
     if ((hClipMem = GlobalAlloc(GMEM_MOVEABLE|GMEM_DDESHARE, nbyte)) == NULL)
     {
         mlforce(CLIPBOARD_COPY_MEM);
-        return (FALSE);
+        returnCode(FALSE);
     }
     dst = GlobalLock(hClipMem);
     for (kp = kbs[ukb].kbufh; kp; kp = kp->d_next)
         cbrd_copy_and_xlate((int) KbSize(ukb, kp), &dst, (char *) kp->d_chunk);
     *dst = '\0';
     GlobalUnlock(hClipMem);
-    return (setclipboard(hClipMem, nbyte, nline));
+    returnCode(setclipboard(hClipMem, nbyte, nline));
 }
 
 
@@ -351,6 +354,7 @@ cbrdcpy_region(void)
     MARK                    odot;
     int                     rc;
 
+    TRACE((T_CALLED "cbrdcpy_region()\n"));
     mlwrite(CLIPBOARD_COPYING);
     print_high   = global_g_val(GVAL_PRINT_HIGH);
     print_low    = global_g_val(GVAL_PRINT_LOW);
@@ -369,7 +373,7 @@ cbrdcpy_region(void)
     rc  = dorgn(count_rgn_data, &cpyarg, TRUE);
     DOT = odot;
     if (!rc)
-        return (FALSE);
+        returnCode(FALSE);
     cpyarg.nbyte++;        /* Terminating nul */
 
     /* 2nd pass -- alloc storage for data and copy to clipboard. */
@@ -377,7 +381,7 @@ cbrdcpy_region(void)
                                 cpyarg.nbyte)) == NULL)
     {
         mlforce(CLIPBOARD_COPY_MEM);
-        return (FALSE);
+        returnCode(FALSE);
     }
     cpyarg.dst = GlobalLock(hClipMem);
 
@@ -390,10 +394,10 @@ cbrdcpy_region(void)
     if (! rc)
     {
         GlobalFree(hClipMem);
-        return (FALSE);
+        returnCode(FALSE);
     }
     *cpyarg.dst = '\0';
-    return (setclipboard(hClipMem, cpyarg.nbyte, cpyarg.nline));
+    returnCode(setclipboard(hClipMem, cpyarg.nbyte, cpyarg.nline));
 }
 
 

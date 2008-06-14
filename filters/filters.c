@@ -1,7 +1,7 @@
 /*
  * Common utility functions for vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.112 2008/01/13 18:27:27 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.115 2008/05/25 23:06:02 tom Exp $
  *
  */
 
@@ -40,7 +40,7 @@ struct _keyword {
     char *kw_attr;
     unsigned kw_size;		/* strlen(kw_name) */
     unsigned short kw_flag;	/* nonzero for classes */
-    unsigned short kw_used;	/* nonzero for classes */
+    short kw_used;		/* nonzero for classes */
 };
 
 typedef struct _classes CLASS;
@@ -177,12 +177,14 @@ static void
 ExecAbbrev(char *param)
 {
     zero_or_more = *param;
+    VERBOSE(1, ("set abbrev '%c'\n", zero_or_more));
 }
 
 static void
 ExecBrief(char *param)
 {
     zero_or_all = *param;
+    VERBOSE(1, ("set brief '%c'\n", zero_or_all));
 }
 
 static void
@@ -769,7 +771,8 @@ insert_keyword(const char *ident, const char *attribute, int classflag)
 		attribute,
 		classflag));
 
-    if ((mark = strchr(ident, zero_or_more)) != 0
+    if (zero_or_more
+	&& (mark = strchr(ident, zero_or_more)) != 0
 	&& (mark != ident)) {
 	if ((temp = strmalloc(ident)) != 0) {
 
@@ -785,7 +788,8 @@ insert_keyword(const char *ident, const char *attribute, int classflag)
 	} else {
 	    CannotAllocate("insert_keyword");
 	}
-    } else if ((mark = strchr(ident, zero_or_all)) != 0
+    } else if (zero_or_all
+	       && (mark = strchr(ident, zero_or_all)) != 0
 	       && (mark != ident)) {
 	if ((temp = strmalloc(ident)) != 0) {
 

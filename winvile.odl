@@ -1,3 +1,5 @@
+// $Id: winvile.odl,v 1.8 2008/06/01 21:52:44 tom Exp $
+// vile:nodos
 [
     uuid(664D8543-2FDD-11d2-B8E4-0020AF0F4354),         // LIBID_VileAuto
     helpstring("Winvile Automation 1.0 Type Library"),
@@ -31,6 +33,9 @@ library Winvile
 
         [propget, helpstring("True if editor in insert mode.")]
         HRESULT InsertMode([out, retval] VARIANT_BOOL* retval);
+
+        [propget, helpstring("True if editor in glob mode.")]
+        HRESULT GlobMode([out, retval] VARIANT_BOOL* retval);
 
         [propget, helpstring("True if editor minimized.")]
         HRESULT IsMinimized([out, retval] VARIANT_BOOL* retval);

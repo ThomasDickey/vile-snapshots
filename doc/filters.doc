@@ -130,6 +130,8 @@ using the '?' character, e.g.,
 	rem?ark
 Use ".brief" to alter the special character '?'.
 
+For either ".abbrev" or ".brief", omitting the parameter disables the feature.
+
 Use the ".default" directive to change the default class.  The parameter must
 be the name of a class which has already been defined.  Omit the parameter to
 reset the default back to "Keyword".
@@ -280,4 +282,4 @@ NOTE
 The lex filters have been well tested only with flex, which treats newlines
 differently.  Older versions of lex may not support the %x states.
 
--- $Header: /users/source/archives/vile.vcs/doc/RCS/filters.doc,v 1.37 2007/12/26 14:11:00 tom Exp $
+-- $Header: /users/source/archives/vile.vcs/doc/RCS/filters.doc,v 1.38 2008/05/26 09:34:16 tom Exp $

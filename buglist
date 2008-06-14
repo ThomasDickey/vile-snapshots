@@ -3,7 +3,7 @@
 ------------------------
 vile bug/enhancement/wish list (mostly wishes ;-)
 ------------------------
-$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.408 2008/03/10 00:20:05 tom Exp $
+$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.411 2008/04/10 21:55:46 tom Exp $
 ----------------------
 	(E means enhancement, L,M,H are low, medium, high priority)
 
@@ -1597,3 +1597,28 @@ so-called "new flex" 2.5.34 does not accept lexers written for POSIX lex.
 spell.pm requires a fairly recent Perl, since it uses File::Temp
 That does not work with very old Perl, such as 5.05.002 - a workaround in
 that case would be to comment out the "use spell" in vileperl.rc
+
+-- 08-03-24 (tom)
+Rendering UTF-8 with the curses driver is less reliable than using the
+terminfo/termcap driver.  That is because the curses library has its own
+sense of locale which can interfere with vile's locale translations.
+
+Taking that into account, vile will use only the current locale rather
+than setting up a narrow locale to correspond to the wide locale when
+using the curses driver.
+
+There are two types of curses library against which vile could be linked.
+Those are the "narrow" SVr4 curses and the "wide" X/Open curses.  For the
+latter, vile will assume that the curses library can actually display
+wide characters.  Not all implementations work well (ncursesw is preferred).
+
+-- 08-04-10 (tom)
+Select/paste in winvile works transparently for 8-bit (ASCII and ISO-8859-1)
+data.  It is possible to copy UTF-8 data from a buffer which stores UTF-8 (or
+-16, -32), but the target must expect UTF-8, since winvile is not converting it
+to the CF_UNICODETEXT type.
+
+-- 08-04-10 (tom)
+Basic Unicode support so far covers file load/save, editing via UTF-8.
+However, regular expressions still know only about the "narrow" locale
+encoding, e.g., ISO-8859-1.

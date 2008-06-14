@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.658 2008/02/07 20:15:44 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.663 2008/05/30 19:09:19 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -736,9 +736,24 @@
  */
 #define	GLOB_MULTI	'*'
 #define	GLOB_SINGLE	'?'
-#define	GLOB_ELLIPSIS	"..."
+#define	GLOB_ELLIPSIS	"..."	/* implemented on VMS-only */
 #define	GLOB_RANGE	"[]"
+#define GLOB_ENVIRON	"$"	/* unimplemented */
 #define	GLOB_NEGATE	"^!"
+
+/*
+ * Enumeration used for selecting globbing features
+ */
+typedef enum {
+	vl_GLOB_MULTI      = 1
+	, vl_GLOB_SINGLE   = 2
+	, vl_GLOB_ELLIPSIS = 4
+	, vl_GLOB_RANGE    = 8
+	, vl_GLOB_ENVIRON  = 16
+} vl_GLOB_OPTS;
+
+#define vl_GLOB_MIN (vl_GLOB_MULTI | vl_GLOB_SINGLE)
+#define vl_GLOB_ALL (vl_GLOB_MIN | vl_GLOB_ELLIPSIS | vl_GLOB_RANGE | vl_GLOB_ENVIRON)
 
 /*
  * Configuration options for globbing
@@ -1209,20 +1224,39 @@ typedef enum {
 } BAK_CHOICES;
 
 typedef enum {
-	enc_POSIX = 0
-	, enc_LOCALE
+	enc_LOCALE = ENUM_UNKNOWN - 1
+	, enc_AUTO = ENUM_UNKNOWN
+	, enc_POSIX = 0
+	, enc_8BIT
 #if OPT_MULTIBYTE
 	, enc_UTF8
 	, enc_UTF16
 	, enc_UTF32
-#define enc_DEFAULT ((ENC_CHOICES) ENUM_UNKNOWN)
+#define enc_DEFAULT enc_LOCALE
 #else
 #define enc_DEFAULT enc_POSIX
 #endif
 } ENC_CHOICES;
- 
-#define b_is_enc_DEFAULT(bp) ((ENC_CHOICES) b_val(bp, VAL_FILE_ENCODING) == enc_DEFAULT)
-#define b_is_utfXX(bp)       (b_val(bp, VAL_FILE_ENCODING) >= enc_UTF8)
+
+#define b_is_enc_AUTO(bp)    ((ENC_CHOICES) b_val(bp, VAL_FILE_ENCODING) == enc_AUTO)
+#define b_is_enc_LOCALE(bp)  ((ENC_CHOICES) b_val(bp, VAL_FILE_ENCODING) == enc_LOCALE)
+
+/*
+ * True if the buffer contents are in UTF-8 (or -16, -32).
+ */
+#define b_is_utfXX(bp)       ((b_val(bp, VAL_FILE_ENCODING) >= enc_UTF8) \
+			   || (b_val(bp, VAL_FILE_ENCODING) == enc_LOCALE \
+			    && vl_encoding >= enc_UTF8))
+
+/*
+ * Resolve file-encoding and the special symbols "auto" and "locale" to
+ * map to one of the "real" file-encoding values.
+ */
+#define buf_encoding(bp)     ((b_val(bp, VAL_FILE_ENCODING) == enc_LOCALE) \
+			      ? vl_encoding \
+			      : ((b_val(bp, VAL_FILE_ENCODING) == enc_AUTO) \
+			          ? enc_8BIT \
+			          : b_val(bp, VAL_FILE_ENCODING)))
 
 typedef enum {
 	MMQ_ANY = 0
@@ -1770,7 +1804,7 @@ typedef UCHAR VIDEO_ATTR;
 #define VACOL_E (VASPCOL|0xE000)
 #define VACOL_F (VASPCOL|0xF000)
 
-#define VCOLORNUM(attr) (((attr) & VACOLOR) >> 12)
+#define VCOLORNUM(attr) ((int) ((attr) & VACOLOR) >> 12)
 #define VCOLORATTR(num) ((VIDEO_ATTR) ((UINT)(num) << 12))
 
 /* who owns an attributed region -- so we can delete them independently */
@@ -2890,7 +2924,7 @@ extern void ExitProgram(int code);
 #endif
 
 /*
- * If we have va_copy(), use it. 
+ * If we have va_copy(), use it.
  */
 #if defined(va_copy) || defined(HAVE_VA_COPY)
 #define begin_va_copy(dst,src)	va_copy(dst, src)
