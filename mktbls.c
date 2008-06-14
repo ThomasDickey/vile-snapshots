@@ -15,7 +15,7 @@
  * by Tom Dickey, 1993.    -pgf
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/mktbls.c,v 1.151 2008/05/06 00:07:14 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/mktbls.c,v 1.150 2007/11/25 22:03:51 tom Exp $
  *
  */
 
@@ -193,7 +193,6 @@ typedef enum {
     ,SECT_BUFF
     ,SECT_WIND
     ,SECT_FSMS
-    ,SECT_ABBR
 } SECTIONS;
 
 	/* definitions for indices to 'asciitbl[]' vs 'kbindtbl[]' */
@@ -683,22 +682,13 @@ CheckModes(char *name)
 	badfmt("illegal mode-name");
 }
 
-static char *
-AllocKey(char *normal, int type, char *abbrev)
-{
-    char *tmp = Alloc((unsigned) (4 + strlen(normal) + strlen(abbrev)));
-    Sprintf(tmp, "%s\n%c\n%s", normal, type, abbrev);
-    return tmp;
-}
-
 /* make a sort-key for mode-name */
 static char *
 Mode2Key(char *type, char *name, char *cond, int submode)
 {
     int c;
-    char *abbrev = AbbrevMode(name);
-    char *normal = NormalMode(name);
-    char *tmp;
+    char *abbrev = AbbrevMode(name), *normal = NormalMode(name), *tmp =
+    Alloc((unsigned) (4 + strlen(normal) + strlen(abbrev)));
 
     CheckModes(normal);
     CheckModes(abbrev);
@@ -717,7 +707,7 @@ Mode2Key(char *type, char *name, char *cond, int submode)
     if (submode)
 	save_all_submodes(type, normal, abbrev, cond);
 
-    tmp = AllocKey(normal, c, abbrev);
+    Sprintf(tmp, "%s\n%c\n%s", normal, c, abbrev);
 #if NO_LEAKS
     free(normal);
     free(abbrev);
@@ -901,9 +891,7 @@ WriteModeSymbols(LIST * p)
 	s = 0;
 
 	Sprintf(temp + strlen(temp), "%s,",
-		(*vec[3]
-		 ? (s = Name2Address(vec[3], vec[2]))
-		 : "\"X\""));
+		*vec[3] ? (s = Name2Address(vec[3], vec[2])) : "\"X\"");
 	(void) PadTo(48, temp);
 	if (s != 0)
 	    free(s);
@@ -1204,55 +1192,6 @@ dump_mmodes(void)
     write_lines(nemode, middle);
     WriteModeSymbols(all_mmodes);
     write_lines(nemode, bottom);
-}
-
-/******************************************************************************/
-static void
-save_abbr_in(LIST ** q, LIST * p, char **vec)
-{
-    char fullname[LEN_BUFFER];
-    char partname[LEN_BUFFER];
-    char typename[LEN_BUFFER];
-    int count;
-
-    for (; p; p = p->nst) {
-	*fullname = EOS;
-	*typename = EOS;
-	*partname = EOS;
-	count = sscanf(p->Name, "%s\n%s\n%s", fullname, typename, partname);
-	if (count == 2 || (count == 3 && *partname == EOS)) {
-	    if (!strcmp(fullname, vec[1])) {
-		free(p->Name);
-		p->Name = AllocKey(fullname, *typename, vec[2]);
-		*q = p;
-	    }
-	} else if (count == 3) {
-	    if (!strcmp(fullname, vec[1])) {
-		fprintf(stderr, "\"%s\" already has alias \"%s\"\n",
-			fullname,
-			vec[2]);
-		badfmt("naming conflict");
-	    }
-	}
-    }
-}
-
-static void
-save_abbrs(char **vec)
-{
-    LIST *p = 0;
-
-    save_abbr_in(&p, all_gmodes, vec);
-    save_abbr_in(&p, all_qmodes, vec);
-    save_abbr_in(&p, all_bmodes, vec);
-    save_abbr_in(&p, all_wmodes, vec);
-    save_abbr_in(&p, all_mmodes, vec);
-    if (p) {
-	InsertSorted(&all_modes, vec[2], p->Data, "", p->Cond, "");
-    } else {
-	fprintf(stderr, "Did not find \"%s\"\n", vec[1]);
-	longjmp(my_top, 1);
-    }
 }
 
 /******************************************************************************/
@@ -2183,9 +2122,6 @@ main(int argc, char *argv[])
 
 	case '.':		/* a new section */
 	    switch (col1) {
-	    case 'a':
-		section = SECT_ABBR;
-		break;
 	    case 'c':
 		section = SECT_CMDS;
 		break;
@@ -2224,11 +2160,6 @@ main(int argc, char *argv[])
 
 	case '\t':		/* a new function */
 	    switch (section) {
-	    case SECT_ABBR:
-		if (r != 2)
-		    badfmt("looking for ABBR assignments");
-		save_abbrs(vec);
-		break;
 	    case SECT_CMDS:
 		switch (col1) {
 		case '"':	/* then it's an english name */

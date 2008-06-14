@@ -22,7 +22,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.641 2008/05/30 19:01:28 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.620 2008/03/12 23:15:59 tom Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -37,6 +37,10 @@
 
 #if OPT_LOCALE
 #include	<locale.h>
+
+#ifdef HAVE_LANGINFO_CODESET
+#include	<langinfo.h>
+#endif
 
 /*
  * On Linux, the normal/wide ctypes give comparable results in the range 0-255,
@@ -157,9 +161,6 @@ run_startup_commands(BUFFER *cmds)
 
 	if (lisreal(lp) && !llength(lp)) {
 	    lremove(cmds, lp);
-	    if (b_val(cmds, MDUNDOABLE)) {
-		lfree(lp, cmds);
-	    }
 	}
 	lp = nlp;
     }
@@ -189,15 +190,6 @@ run_startup_commands(BUFFER *cmds)
     }
 
     returnCode(result);
-}
-
-static int
-run_and_discard(BUFFER **bp)
-{
-    int rc = run_startup_commands(*bp);
-    zotbuf(*bp);
-    *bp = 0;
-    return rc;
 }
 
 static void
@@ -231,30 +223,6 @@ default_fill(void)
 	fill = 70;
     return fill;
 }
-
-#if OPT_LOCALE
-static char *
-get_set_locale(const char *value)
-{
-    char *result = setlocale(LC_ALL, value);
-    if (result != 0)
-	result = strmalloc(result);
-    return result;
-}
-
-#ifdef HAVE_LANGINFO_CODESET
-static void
-set_posix_locale(void)
-{
-    TRACE(("...reset locale to POSIX!\n"));
-    vl_real_enc.locale = get_set_locale("C");
-    vl_get_encoding(&vl_real_enc.encoding, vl_real_enc.locale);
-    vl_wide_enc.locale = 0;
-    vl_narrow_enc.locale = 0;
-}
-#endif
-#endif /* OPT_LOCALE */
-
 /*--------------------------------------------------------------------------*/
 
 int
@@ -287,29 +255,20 @@ MainProgram(int argc, char *argv[])
 #if OPT_LOCALE
     {
 	char *env = "";
-	char *old_locale = get_set_locale("");
-	char *old_encoding = 0;
 
 	/*
-	 * If the environment specifies a legal locale, old_locale will be
-	 * nonnull.
+	 * Force 8-bit locale for display drivers where we only support 8-bits.
+	 * This is a special case, assumes that the name of the 8-bit locale
+	 * can be found by stripping the "UTF-8" string, and also that both
+	 * locales are installed.
 	 */
-	TRACE(("old_locale '%s'\n", NONNULL(old_locale)));
 #if DISP_TERMCAP || DISP_CURSES || DISP_X11
-	/*
-	 * Infer a narrow 8-bit locale, if we can.  This is a special case,
-	 * assumes that the name of the 8-bit locale can be found by stripping
-	 * the "UTF-8" string, and also that both locales are installed.
-	 */
-	if (old_locale != 0
-	    && vl_is_utf8_encoding(vl_get_encoding(&old_encoding, old_locale))
-	    && (((env = getenv("LC_ALL")) != 0 && *env != 0) ||
-		((env = getenv("LC_CTYPE")) != 0 && *env != 0) ||
-		((env = getenv("LANG")) != 0 && *env != 0))) {
+	if (((env = getenv("LC_ALL")) != 0 && *env != 0) ||
+	    ((env = getenv("LC_CTYPE")) != 0 && *env != 0) ||
+	    ((env = getenv("LANG")) != 0 && *env != 0)) {
 	    char *utf;
 	    char *tmp;
 
-	    TRACE(("Checking for UTF-8 suffix of '%s'\n", env));
 	    if (((utf = strstr(env, ".UTF-8")) != 0
 		 || (utf = strstr(env, ".utf-8")) != 0
 		 || (utf = strstr(env, ".UTF8")) != 0
@@ -319,66 +278,55 @@ MainProgram(int argc, char *argv[])
 		vl_init_8bit(env, tmp);
 		env = tmp;
 	    } else {
-		vl_init_8bit(env, env);
+		vl_init_8bit("8bit", "8bit");
 	    }
 	} else {
-	    env = old_locale;
-	    vl_init_8bit(env, env);
+	    vl_init_8bit("8bit", "8bit");
+	    env = "";
 	}
 #elif DISP_NTWIN || DISP_NTCONS
 #ifdef UNICODE
-	vl_init_8bit("utf8", old_locale);
+	vl_init_8bit("utf8", "8bit");
 #else
-	vl_init_8bit(VL_LOC_LATIN1, old_locale);
+	vl_init_8bit("8bit", "8bit");
 #endif
 #endif
-	/* update locale after stripping suffix */
-	vl_real_enc.locale = get_set_locale(env);
-	TRACE(("setlocale(%s) -> '%s'\n", NONNULL(env), NONNULL(vl_real_enc.locale)));
+	/* set locale according to environment vars */
+	vl_locale = setlocale(LC_ALL, env);
+	TRACE(("setlocale(%s) -> %s\n", NONNULL(env), NONNULL(vl_locale)));
 
 #ifdef HAVE_LANGINFO_CODESET
 	/*
-	 * If we have a valid narrow locale, get its encoding.  If that looks
-	 * like an 8-bit encoding, we'll maintain both within vile.
-	 *
-	 * If we have no valid narrow locale, this may be because only the wide
-	 * locale is installed (or stripping the suffix did not work due to
-	 * unexpected naming convention).  Check if the wide locale's encoding
-	 * uses UTF-8 so we'll know to use UTF-8 encoding, as well as construct
-	 * character-class data for the 8bit from the wide character data.
-	 *
-	 * If neither scheme works, fallback to POSIX locale and its
+	 * Check the encoding and try to decide if it looks like an 8-bit
+	 * encoding.  If it does not, fallback to POSIX locale and its
 	 * corresponding encoding.
 	 */
-	if (!okCTYPE2(vl_real_enc)) {
-	    vl_real_enc.encoding = 0;
-	} else {
-	    vl_get_encoding(&vl_real_enc.encoding, vl_real_enc.locale);
-	}
+	vl_encoding = nl_langinfo(CODESET);
+	TRACE(("nl_langinfo(CODESET) -> %s\n", NONNULL(vl_encoding)));
 
-	if (!okCTYPE2(vl_real_enc)
-	    || isEmpty(vl_real_enc.encoding)) {
-	    TRACE(("...checking original locale '%s'\n", NonNull(old_locale)));
-	    if (vl_is_utf8_encoding(old_encoding)) {
-		TRACE(("original encoding is UTF-8\n"));
-		vl_narrow_enc.locale = 0;
-	    } else {
-		set_posix_locale();
-	    }
-	} else if (vl_is_utf8_encoding(vl_real_enc.encoding)) {
-	    TRACE(("narrow encoding '%s' is already UTF-8!\n", NonNull(vl_real_enc.encoding)));
-	    vl_narrow_enc.locale = 0;
-	} else if (!vl_is_8bit_encoding(vl_real_enc.encoding)) {
-	    set_posix_locale();
+	if (vl_locale == 0
+	    || vl_encoding == 0
+	    || (strstr(vl_encoding, "ASCII") == 0
+		&& strstr(vl_encoding, "ANSI") == 0
+		&& strncmp(vl_encoding, "ISO-8859", 8) != 0
+		&& strncmp(vl_encoding, "ISO 8859", 8) != 0
+		&& strncmp(vl_encoding, "ISO_8859", 8) != 0
+		&& strncmp(vl_encoding, "ISO8859", 7) != 0
+		&& strncmp(vl_encoding, "8859", 4) != 0
+		&& strncmp(vl_encoding, "KOI8-R", 6) != 0)) {
+	    TRACE(("...reset locale to POSIX!\n"));
+	    vl_locale = setlocale(LC_ALL, "C");
+	    vl_encoding = nl_langinfo(CODESET);
 	}
 #endif
-	if (vl_real_enc.locale == 0)
-	    vl_real_enc.locale = strmalloc("built-in");
-	if (vl_real_enc.encoding == 0)
-	    vl_real_enc.encoding = strmalloc(VL_LOC_LATIN1);
+	if (vl_locale == 0)
+	    vl_locale = "built-in";
+	if (vl_encoding == 0)
+	    vl_encoding = "8bit";	/* meaningless, but we need a value */
 
-	FreeIfNeeded(old_locale);
-	FreeIfNeeded(old_encoding);
+	/* make our own copy of the strings */
+	vl_locale = strmalloc(vl_locale);
+	vl_encoding = strmalloc(vl_encoding);
     }
 #endif /* OPT_LOCALE */
 
@@ -389,10 +337,8 @@ MainProgram(int argc, char *argv[])
     global_val_init();		/* global buffer values */
     winit(FALSE);		/* command-line */
 #if !SYS_UNIX
-    vl_glob_opts = vl_GLOB_MIN;
     expand_wild_args(&argc, &argv);
 #endif
-    vl_glob_opts = vl_GLOB_ALL;
     prog_arg = argv[0];		/* this contains our only clue to exec-path */
 #if SYS_MSDOS || SYS_OS2 || SYS_OS2_EMX || SYS_WINNT
     if (strchr(pathleaf(prog_arg), '.') == 0) {
@@ -797,7 +743,7 @@ MainProgram(int argc, char *argv[])
      * If more than one startup file is named, remember the last.
      */
     if (!is_empty_buf(init_bp)) {
-	startstat = run_and_discard(&init_bp);
+	startstat = run_startup_commands(init_bp);
 	if (!startstat)
 	    goto begin;
 
@@ -814,7 +760,7 @@ MainProgram(int argc, char *argv[])
 
 		b2printf(init_bp, "%s", vileinit);
 
-		startstat = run_and_discard(&init_bp);
+		startstat = run_startup_commands(init_bp);
 		if (!startstat)
 		    goto begin;
 	    } else {
@@ -867,7 +813,7 @@ MainProgram(int argc, char *argv[])
      * That ensures that they override the init-file(s).
      */
     msg = "[Use ^A-h, ^X-h, or :help to get help]";
-    if (!run_and_discard(&opts_bp))
+    if (!run_startup_commands(opts_bp))
 	startstat = FALSE;
 
 #if OPT_POPUP_MSGS
@@ -2348,8 +2294,8 @@ quit(int f, int n GCC_UNUSED)
 	FreeAndNull(gregexp);
 	tb_free(&tb_matched_pat);
 #if OPT_LOCALE
-	FreeAndNull(vl_real_enc.locale);
-	FreeAndNull(vl_real_enc.encoding);
+	FreeAndNull(vl_locale);
+	FreeAndNull(vl_encoding);
 #endif /* OPT_LOCALE */
 #if OPT_MLFORMAT
 	FreeAndNull(modeline_format);
@@ -2547,48 +2493,28 @@ charinit(void)
      * Ignore that (the former fixes it in Solaris9).
      */
 #if OPT_LOCALE
-    TRACE(("wide_locale:%s\n", NonNull(vl_wide_enc.locale)));
-    TRACE(("narrow_locale:%s\n", NonNull(vl_narrow_enc.locale)));
     for (c = 0; c < N_chars; c++) {
-	if (okCTYPE2(vl_narrow_enc)) {
-	    vlCTYPE(c) = 0;
-	    if (sys_iscntrl(c))
-		vlCTYPE(c) |= vl_cntrl;
-	    if (sys_isdigit(c))
-		vlCTYPE(c) |= vl_digit;
-	    if (sys_islower(c))
-		vlCTYPE(c) |= vl_lower;
-	    if (sys_isprint(c) && c != '\t')
-		vlCTYPE(c) |= vl_print;
-	    if (sys_ispunct(c))
-		vlCTYPE(c) |= vl_punct;
-	    if (sys_isspace(c))
-		vlCTYPE(c) |= vl_space;
-	    if (sys_isupper(c))
-		vlCTYPE(c) |= vl_upper;
+	vlCTYPE(c) = 0;
+	if (sys_iscntrl(c))
+	    vlCTYPE(c) |= vl_cntrl;
+	if (sys_isdigit(c))
+	    vlCTYPE(c) |= vl_digit;
+	if (sys_islower(c))
+	    vlCTYPE(c) |= vl_lower;
+	if (sys_isprint(c) && c != '\t')
+	    vlCTYPE(c) |= vl_print;
+	if (sys_ispunct(c))
+	    vlCTYPE(c) |= vl_punct;
+	if (sys_isspace(c))
+	    vlCTYPE(c) |= vl_space;
+	if (sys_isupper(c))
+	    vlCTYPE(c) |= vl_upper;
 #ifdef vl_xdigit
-	    if (sys_isxdigit(c))
-		vlCTYPE(c) |= vl_xdigit;
+	if (sys_isxdigit(c))
+	    vlCTYPE(c) |= vl_xdigit;
 #endif
-	    vl_uppercase[c] = (char) toupper(c);
-	    vl_lowercase[c] = (char) tolower(c);
-	} else {
-	    /* fallback to built-in character tables */
-	    if (okCTYPE2(vl_wide_enc)) {
-		vlCTYPE(c) = vl_ctype_latin1[c];
-	    } else {
-		vlCTYPE(c) = vl_ctype_ascii[c];
-	    }
-	    vl_uppercase[c] = (char) c;
-	    vl_lowercase[c] = (char) c;
-	    if (isAlpha(c)) {
-		if (isUpper(c)) {
-		    vl_lowercase[c] = (char) (c ^ DIFCASE);
-		} else {
-		    vl_uppercase[c] = (char) (c ^ DIFCASE);
-		}
-	    }
-	}
+	vl_uppercase[c] = (char) toupper(c);
+	vl_lowercase[c] = (char) tolower(c);
     }
 #else /* ! OPT_LOCALE */
     (void) memset((char *) vl_chartypes_, 0, sizeof(vl_chartypes_));
@@ -2701,8 +2627,6 @@ charinit(void)
 
     if (c < HIGHBIT)
 	c = HIGHBIT;
-    TRACE(("Forcing printable for [%d..min(%d,%d)]\n",
-	   c, global_g_val(GVAL_PRINT_HIGH) - 1, N_chars - 1));
     while (c <= global_g_val(GVAL_PRINT_HIGH) && c < N_chars)
 	vlCTYPE(c++) |= vl_print;
 

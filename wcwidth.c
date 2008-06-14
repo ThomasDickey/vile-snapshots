@@ -1,4 +1,4 @@
-/* $Id: wcwidth.c,v 1.29 2008/04/16 20:02:59 tom Exp $ */
+/* $Id: wcwidth.c,v 1.26 2007/11/22 15:24:06 tom Exp $ */
 /* @XTermId: wcwidth.c,v 1.21 2007/06/13 00:14:29 tom Exp @ */
 
 /*
@@ -350,8 +350,8 @@ vl_wcwidth(int code)
 {
     int result = 1;
 #ifdef HAVE_WCWIDTH
-    if (okCTYPE2(vl_wide_enc) && code > 255) {
-	char *save = setlocale(LC_CTYPE, vl_wide_enc.locale);
+    if (utf8_locale && code > 255) {
+	char *save = setlocale(LC_CTYPE, utf8_locale);
 	result = wcwidth(code);
 	setlocale(LC_CTYPE, save);
     }

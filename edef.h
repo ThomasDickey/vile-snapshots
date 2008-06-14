@@ -6,7 +6,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.339 2008/05/30 18:59:53 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.332 2007/10/14 16:01:55 tom Exp $
  */
 
 #ifndef VILE_EDEF_H
@@ -25,12 +25,10 @@ extern "C" {
 #ifdef realdef
 # define decl_init_const(thing,value) DECL_EXTERN_CONST(thing) = value
 # define decl_init(thing,value) DECL_EXTERN(thing) = value
-# define decl_init2(thing,p1,p2) DECL_EXTERN(thing) = { p1, p2 }
 # define decl_uninit(thing) DECL_EXTERN(thing)
 #else
 # define decl_init_const(thing,value) extern const thing
 # define decl_init(thing,value) extern thing
-# define decl_init2(thing,p1,p2) extern thing
 # define decl_uninit(thing) extern thing
 #endif
 
@@ -140,8 +138,6 @@ decl_uninit( TBUFF *tb_save_shell[2] );	/* last ":!" or ^X-!  command	*/
 
 decl_uninit( char screen_desc[NBUFN] );	/* rough description of screen  */
 
-decl_init( USHORT vl_glob_opts, vl_GLOB_ALL);
-
 decl_init( TBUFF *mlsave, 0 );		/* last message, if postponed	*/
 decl_init( TBUFF *searchpat, 0 );	/* Search pattern		*/
 decl_init( TBUFF *replacepat, 0 );	/* replacement pattern		*/
@@ -176,7 +172,11 @@ decl_uninit( char *position_format );	/* position formatting string */
 decl_init( int eolexist, TRUE );	/* does clear to EOL exist	*/
 decl_uninit( int revexist );		/* does reverse video exist?	*/
 
-decl_init2( MARK nullmark, NULL, 0 );
+#ifdef realdef
+DECL_EXTERN( MARK nullmark) = { NULL, 0 };
+#else
+extern	MARK	nullmark;
+#endif
 
 #if ! WINMARK
 decl_uninit( MARK Mark );		/* the worker mark */
@@ -351,12 +351,12 @@ decl_uninit( size_t fflinelen );	/* fflinebuf length */
 /*--------------------------------------------------------------------------*/
 
 #if OPT_LOCALE
-decl_init (ENC_CHOICES vl_encoding, enc_DEFAULT );
-decl_init2( VL_CTYPE2 vl_real_enc, 0, 0 );
-decl_init2( VL_CTYPE2 vl_wide_enc, 0, 0 );
-decl_init2( VL_CTYPE2 vl_narrow_enc, 0, 0 );
+decl_uninit( char *vl_encoding );
+decl_uninit( char *vl_locale );
+decl_init( const char * utf8_locale, 0 );
 #else
-decl_init2( VL_CTYPE2 vl_real_enc, "built-in", VL_ENC_LATIN1 );
+#define vl_encoding "8bit"
+#define vl_locale "built-in"
 #endif
 
 decl_init( L_NUM help_at, -1 );		/* position in help-file */

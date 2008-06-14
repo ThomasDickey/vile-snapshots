@@ -3,7 +3,7 @@
  *	for getting and setting the values of the vile state variables,
  *	plus helper utility functions.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.121 2008/04/15 22:49:06 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.118 2007/11/19 01:26:12 tom Exp $
  */
 
 #include	"estruct.h"
@@ -785,7 +785,7 @@ var_GOAL_COLUMN(TBUFF **rp, const char *vp)
 int
 var_ENCODING(TBUFF **rp, const char *vp)
 {
-    return any_ro_STR(rp, vp, vl_real_enc.encoding);
+    return any_ro_STR(rp, vp, vl_encoding);
 }
 #endif
 
@@ -1059,7 +1059,7 @@ var_LLENGTH(TBUFF **rp, const char *vp)
 int
 var_LOCALE(TBUFF **rp, const char *vp)
 {
-    return any_ro_STR(rp, vp, vl_real_enc.locale);
+    return any_ro_STR(rp, vp, vl_locale);
 }
 #endif
 
@@ -1478,50 +1478,6 @@ var_RETURN(TBUFF **rp, const char *vp)
 #endif /* OPT_EVAL */
 
 #if OPT_MULTIBYTE
-int
-var_BUF_ENCODING(TBUFF **rp, const char *vp GCC_UNUSED)
-{
-    if (rp) {
-	int code = b_val(curbp, VAL_FILE_ENCODING);
-	char *value = 0;
-
-	switch ((ENC_CHOICES) (code)) {
-	case enc_POSIX:
-	    value = "US-ASCII";
-	    break;
-	case enc_AUTO:
-	    /* FALLTHRU */
-	case enc_8BIT:
-	    if (okCTYPE2(vl_narrow_enc)) {
-		value = vl_narrow_enc.encoding;
-	    } else {
-		value = vl_real_enc.encoding;
-	    }
-	    break;
-	case enc_LOCALE:
-	    if (okCTYPE2(vl_wide_enc)) {
-		value = vl_wide_enc.encoding;
-	    } else {
-		value = vl_real_enc.encoding;
-	    }
-	    break;
-	case enc_UTF8:
-	    value = "UTF-8";
-	    break;
-	case enc_UTF16:
-	    value = "UTF-16";
-	    break;
-	case enc_UTF32:
-	    value = "UTF-32";
-	    break;
-	}
-	tb_scopy(rp, value);
-	return TRUE;
-    } else {
-	return FALSE;
-    }
-}
-
 int
 var_TERM_ENCODING(TBUFF **rp, const char *vp GCC_UNUSED)
 {

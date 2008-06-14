@@ -13,7 +13,7 @@
  * vile.  The file api.c (sometimes) provides a middle layer between
  * this interface and the rest of vile.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.110 2008/05/06 23:00:00 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.109 2008/01/22 00:14:29 tom Exp $
  */
 
 /*#
@@ -2606,7 +2606,7 @@ register(name, ...)
 	char *p;
 
     PPCODE:
-	TRACE(("Vile::register %s\n", name));
+	TRACE((T_CALLED "Vile::register %s\n", name));
 #if OPT_NAMEBST
 	if (items > 4)
 	    croak("Too many arguments to %s", GvNAME(CvGV(cv)));
@@ -2660,6 +2660,7 @@ register(name, ...)
 	croak("%s requires vile to be compiled with OPT_NAMBST",
 	      GvNAME(CvGV(cv)));
 #endif
+	returnVoid();
 
   #
   # =item watchfd FD, WATCHTYPE, CALLBACK
@@ -2728,8 +2729,9 @@ unwatchfd(fd)
     int fd
 
     PPCODE:
-	TRACE(("Vile::unwatchfd(fd=%d)\n", fd));
+	TRACE((T_CALLED "Vile::unwatchfd(fd=%d)\n", fd));
 	unwatchfd(fd);
+	returnVoid();
 
 
 MODULE = Vile	PACKAGE = Vile::Buffer
@@ -3249,7 +3251,7 @@ current_buffer(...)
 	VileBuf *newbuf = 0;
 
     PPCODE:
-	TRACE(("Vile::current_buffer\n"));
+	TRACE((T_CALLED "Vile::current_buffer\n"));
 	if (items > 2)
 	    croak("Too many arguments to current_buffer");
 	else if (items == 2) {
@@ -3277,6 +3279,7 @@ current_buffer(...)
 	}
 
 	XPUSHs(svcurbuf);
+	returnVoid();
 
   #
   # =item delete BUFOBJ

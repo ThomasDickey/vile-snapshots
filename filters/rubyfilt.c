@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/rubyfilt.c,v 1.45 2008/05/26 00:53:35 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/rubyfilt.c,v 1.42 2008/01/12 16:44:13 tom Exp $
  *
  * Filter to add vile "attribution" sequences to ruby scripts.  This is a
  * translation into C of an earlier version written for LEX/FLEX.
@@ -62,7 +62,6 @@ static char *Ident2_attr;
 static char *Keyword_attr;
 static char *String_attr;
 static char *Number_attr;
-static char *Type_attr;
 
 static int var_embedded(char *);
 
@@ -267,29 +266,7 @@ is_KEYWORD(char *s)
 }
 
 /*
- * Context-specific keyword: Match a method-style keyword,
- * ie. a KEYWORD with a possible suffix of !, ?, or =.
- * pattern: {KEYWORD}[!?=]?
- * returns: length of the token
- */
-static int
-is_MKEYWORD(char *s, int use_eql)
-{
-    int found = 0;
-
-    if ((found = is_KEYWORD(s)) != 0) {
-	if (ATLEAST(s, found)
-	    && (s[found] == '!'
-		|| s[found] == '?'	/* FIXME - should look for '.' */
-		|| (use_eql == 0 && s[found] == '='))) {
-	    ++found;
-	}
-    }
-    return found;
-}
-
-/*
- * pattern: [$]([-_.\/,"\\=~\$?&`'+*;!@<>:]|{CONST}|{VAR})
+ * pattern: [$]([-_.\/,"\\#%=~|\$?&`'+*\[\];!@<>():]|{CONST}|{VAR})
  * returns: length of the token, or zero.
  */
 static int
@@ -298,7 +275,7 @@ is_GLOBAL(char *s)
     int found = 0;
 
     if (*s == '$' && MORE(++s)) {
-	if (*s != '\0' && strchr("-_./,\"\\=~$?&`'+*;!@<>:", *s)) {
+	if (*s != '\0' && strchr("-_./,\"\\#%=~|$?&`'+*[];!@<>():", *s)) {
 	    found = 1;
 	} else if (isdigit(CharOf(*s))) {
 	    while (ATLEAST(s, found)
@@ -314,7 +291,7 @@ is_GLOBAL(char *s)
 }
 
 /*
- * pattern: [@][@]?{KEYWORD}
+ * pattern: [@]+{KEYWORD}
  * returns: length of the token, or zero.
  */
 static int
@@ -323,9 +300,10 @@ is_INSTANCE(char *s)
     char *base = s;
     int found = 0;
 
-    if (*s == '@' && MORE(++s)) {
-	if (*s == '@')
-	    s++;
+    if (*s == '@') {
+	while ((*s++ == '@') && MORE(s)) {
+	    ;
+	}
 	if ((found = is_KEYWORD(s)) != 0)
 	    found += (s - base);
     }
@@ -431,9 +409,6 @@ is_NUMBER(char *s, int *err)
 	    if (ch == '0') {
 		if (!ATLEAST(s, 1)) {
 		    radix = 10;
-		} else if (s[1] == 'b') {
-		    radix = 2;
-		    s++;
 		} else if (s[1] == 'x') {
 		    radix = 16;
 		    s++;
@@ -780,37 +755,6 @@ is_Regexp(char *s, int *delim)
 }
 
 /*
- * Parse both the unquoted and quoted symbol types.
- * This gets treated as a string literal anyway, so
- * we only call it from is_String.
- */
-static int
-is_Symbol(char *s, int *delim, int *err)
-{
-    int found = 0;
-
-    if (*s++ == ':') {
-	switch (*s) {
-	case SQUOTE:
-	    if ((found = is_STRINGS(s, err, *s, *s, 1)) != 0)
-		*delim = SQUOTE;
-	    break;
-	case DQUOTE:
-	    if ((found = is_STRINGS(s, err, *s, *s, 0)) != 0)
-		*delim = DQUOTE;
-	    break;
-	default:
-	    found = is_MKEYWORD(s, 0);
-	}
-    }
-
-    if (found != 0)
-	found += 1;
-
-    return found;
-}
-
-/*
  * Parse the various types of quoted strings.
  */
 static int
@@ -819,7 +763,7 @@ is_String(char *s, int *delim, int *err)
     int found = 0;
 
     *delim = 0;
-    if (ATLEAST(s, 2) && (found = is_Symbol(s, delim, err)) == 0) {
+    if (ATLEAST(s, 2)) {
 	switch (*s) {
 	case '%':
 	    if (ATLEAST(s, 4)) {
@@ -983,8 +927,6 @@ put_KEYWORD(char *s, int ok, int *had_op)
     s[ok] = '\0';
     attr = keyword_attr(s);
     s[ok] = save;
-    if ((attr == 0 || *attr == '\0') && isupper(CharOf(s[0])))
-	attr = Type_attr;
     flt_puts(s, ok, attr);
     *had_op = (attr == Keyword_attr);
     return s + ok;
@@ -1098,7 +1040,6 @@ do_filter(FILE *input GCC_UNUSED)
     Keyword_attr = class_attr(NAME_KEYWORD);
     Number_attr = class_attr(NAME_NUMBER);
     String_attr = class_attr(NAME_LITERAL);
-    Type_attr = class_attr(NAME_TYPES);
 
     /*
      * Read the whole file into a single string, in-memory.  Rather than
@@ -1148,7 +1089,7 @@ do_filter(FILE *input GCC_UNUSED)
 		    Parsed(this_tok, tBLANK);
 		    flt_puts(s, ok, "");
 		    s += ok;
-		} else if ((ok = is_MKEYWORD(s, 0)) != 0) {
+		} else if ((ok = is_KEYWORD(s)) != 0) {
 		    Parsed(this_tok, tKEYWORD);
 		    s = put_KEYWORD(s, ok, &had_op);
 		    state = eCODE;
@@ -1235,7 +1176,7 @@ do_filter(FILE *input GCC_UNUSED)
 			flt_puts(s, ok, Number_attr);
 		    }
 		    s += ok;
-		} else if ((ok = is_MKEYWORD(s, 1)) != 0) {
+		} else if ((ok = is_KEYWORD(s)) != 0) {
 		    Parsed(this_tok, tKEYWORD);
 		    if (ok == 5 && !strncmp(s, "alias", ok))
 			state = eALIAS;

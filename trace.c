@@ -1,7 +1,7 @@
 /*
  * debugging support -- tom dickey.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.80 2008/04/09 17:52:34 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.77 2008/01/22 00:13:57 tom Exp $
  *
  */
 
@@ -978,36 +978,6 @@ trace_window(WINDOW *wp)
     }
 }
 
-#define TRACE_CTYPE(mask) if (table[n] & chrBIT(mask)) strcat(buffer, "|" #mask)
-void
-trace_ctype(CHARTYPE *table, int first, int last)
-{
-    int n;
-    char buffer[1024];
-    char temp[80];
-
-    if (first < 0)
-	first = 0;
-    if (last < 0)
-	last = N_chars;
-    for (n = first; n < last; ++n) {
-	*buffer = EOS;
-	TRACE_CTYPE(vl_UPPER);
-	TRACE_CTYPE(vl_LOWER);
-	TRACE_CTYPE(vl_DIGIT);
-	TRACE_CTYPE(vl_SPACE);
-	TRACE_CTYPE(vl_CNTRL);
-	TRACE_CTYPE(vl_PRINT);
-	TRACE_CTYPE(vl_PUNCT);
-#if OPT_WIDE_CTYPES
-	TRACE_CTYPE(vl_XDIGIT);
-#endif
-	Trace("(%s) /* %d:%s */\n",
-	      *buffer ? buffer + 1 : "0",
-	      n, vl_vischr(temp, n));
-    }
-}
-
 #if OPT_WORKING && (OPT_TRACE > 2)
 #undef beginDisplay
 void
@@ -1033,15 +1003,14 @@ close_me(void)
 #if DOALLOC
     FreeAndNull(area);
 #endif
-#if OPT_ELAPSED
-    btree_freeup(&elapsed_tree);
-#endif
-    Trace(bad_form);
-
     FreeAndNull(visible_result);
     FreeAndNull(visible_indent);
     used_visible = 0;
     used_indent = 0;
+#if OPT_ELAPSED
+    btree_freeup(&elapsed_tree);
+#endif
+    Trace(bad_form);
 }
 
 void
