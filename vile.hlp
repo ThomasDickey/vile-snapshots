@@ -1468,9 +1468,9 @@ Editor modes
 		matched as well.  See "showmatch" mode for another use of the
 		"fence-pairs" mode.  (B)
 
-	file-encoding (fk) This is the character encoding of the buffer
-		contents, which is not necessarily the same as the display's
-		character encoding.  It must be one of the following values:
+	file-encoding  This is the character encoding of the buffer contents,
+		which is not necessarily the same as the display's character
+		encoding.  It must be one of the following values:
 			"8bit"
 			"ascii"
 			"auto"
@@ -2084,31 +2084,25 @@ Editor modes
 		indicator ("working..."/"...working") which appears during
 		long-running operations.  (U)
 
-	wrapmargin (wm) Implements vi's auto-wrap mode.  vile computes the
-		effective margin from the mode's value:
-
-		if positive, the wrapmargin specifies the number of columns on
-		   the screen's right margin to reserve before breaking the
-		   input lines on a preceding space.
-
-		if negative, vile counts from the left margin.
-
-		if zero (default), this mode is inactive.
-
-		A value of 5 and an 80 column screen will result in 75
-		character lines.  This mode is different from the "wrapwords"
-		mode (below) which uses the "fillcol" setting as its target
-		column.  The two modes probably should not both be used at
-		once.  (B)
+	wrapmargin (wm)  Implements vi's auto-wrap mode.  If nonzero, the
+		wrapmargin specifies the number of columns on the
+		screen's right margin to reserve before breaking the input
+		lines on a preceding space.  Thus a value of 5 and an
+		80 column screen will result in 75 character lines.  This
+		mode is different from the "wrapwords" mode (below) which
+		uses the "fillcol" setting as its target column.  The two
+		modes probably shouldn't both be used at once.
+		(B)
 
 	wrapscan (ws) Text searches will continue from past the bottom of
 		the file to the top, and vice-versa.  (B)
 
-	wrapwords (ww) Similar to, but different from, vi's auto-wrap mode
-		(i.e.  "wrapmargin").  While inserting, words are moved to the
-		next line if the current line gets too long.  Wrapping is only
-		attempted when a space is typed.  The target maximum width of
-		lines is changed with the "fillcol" setting.  (B)
+	wrapwords (ww) [deprecated] Similar to, but different from, vi's
+		auto-wrap mode (i.e. "wrapmargin").  While inserting,
+		words are moved to the next line if the current line gets
+		too long.  Wrapping is only attempted when a space is
+		typed.  The target maximum width of lines is changed with
+		the "fillcol" setting.  (B)
 
 	xterm-fkeys Support xterm's modified function keys by generating
 		system bindings for the shift-, control-, alt-modifiers
@@ -2240,30 +2234,6 @@ Command History
 	You may scroll through the list of previous replies to the :-prompt
 	by using the up- or down-arrow special keys on your keyboard (if
 	your configuration supports it).
-
-	Vile prompts for commands in parts, and stores a copy of the complete
-	command in the [History] buffer.  For example, you may type
-
-		:g/help/p
-
-	and vile will prompt for the parts after each delimiter, e.g.,
-
-		global pattern: help
-		action to perform on each matching line: p
-
-	The [History] buffer, shown with "show-history" will store
-
-		g/help/p
-
-	At each prompt, using the up/down arrows will tell vile to display
-	the corresponding result for the "same" command.  If [History]
-	contains
-
-		g/take/g
-		g/help/p
-
-	then the up/down arrows will show "take" or "help", skipping commands
-	which do not begin with "g/".
 
 
 
@@ -3482,7 +3452,7 @@ Regular Expressions
 
 	Vile recognizes the X/Open regular expression character classes (and
 	additional character classes), as well as shorthand expressions for
-	them.  You can use the shorthand expressions in a range or as an atom.
+	them.  You can use the shorthand expressions in a range or as an atom. 
 	Each shorthand expression has a complement, e.g., \w and \W.
 
  \i \I	[:alnum:]
@@ -5495,10 +5465,6 @@ X Window System specifics
 			respectively.
 	menuHeight	resource controlling the Athena menu-height
 
-	openIm		true if input method should be opened (default: true)
-	inputMethod	input method to use (default: "")
-	preeditType	pre-edit type (default: "OverTheSpot,Root")
-
 	wheelScrollAmount Amount to scroll for a wheel mouse, per button-press.
 
 	Sample .Xdefault entries
@@ -6459,4 +6425,4 @@ Problems
 
 Copyright 1995-2007,2008 by Paul Fox, Thomas Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.652 2008/05/26 14:50:03 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.648 2008/04/16 00:21:32 tom Exp $

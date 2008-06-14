@@ -1,7 +1,7 @@
 /*
  * A terminal driver using the curses library
  *
- * $Header: /users/source/archives/vile.vcs/RCS/curses.c,v 1.38 2008/04/16 20:03:36 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/curses.c,v 1.34 2008/01/13 18:00:11 tom Exp $
  */
 
 #include "estruct.h"
@@ -36,7 +36,6 @@ static const char ANSI_palette[] =
 #endif
 
 static int i_am_xterm = 1;
-static int have_data = FALSE;
 static int in_screen = FALSE;
 static int can_color = FALSE;
 
@@ -59,13 +58,8 @@ curs_initialize(void)
 
     TRACE((T_CALLED "curs_initialize\n"));
 #if OPT_LOCALE
-    if (okCTYPE2(vl_wide_enc)) {
-	TRACE(("setting locale to %s\n", vl_wide_enc.locale));
-	setlocale(LC_CTYPE, vl_wide_enc.locale);
-    } else {
-	TRACE(("setting locale to %s\n", vl_real_enc.locale));
-	setlocale(LC_CTYPE, vl_real_enc.locale);
-    }
+    TRACE(("setting locale to %s\n", utf8_locale));
+    setlocale(LC_CTYPE, utf8_locale);
 #endif
     initscr();
     raw();
@@ -75,7 +69,7 @@ curs_initialize(void)
     idlok(stdscr, TRUE);
 
     /*
-     * Note: we do not set the locale to vl_real_enc since that would confuse
+     * Note: we do not set the locale to vl_locale since that would confuse
      * curses when it adds multibyte characters to the display.
      */
 
@@ -170,15 +164,11 @@ static int last_key = -1;
 static int
 curs_typahead(void)
 {
-    int result = FALSE;
-    if (in_screen) {
-	if (last_key == -1) {
-	    nodelay(stdscr, TRUE);
-	    last_key = getch();
-	}
-	result = (last_key >= 0);
+    if (last_key == -1) {
+	nodelay(stdscr, TRUE);
+	last_key = getch();
     }
-    return result;
+    return (last_key >= 0);
 }
 
 static int
@@ -222,7 +212,6 @@ curs_putc(int c)
 {
     c &= (N_chars - 1);
     if (in_screen) {
-	have_data = TRUE;
 	OUTC_RET addch((UINT) (c));
     } else {
 	OUTC_RET putchar(c);
@@ -232,10 +221,9 @@ curs_putc(int c)
 static void
 curs_flush(void)
 {
-    if (in_screen && have_data) {
+    if (in_screen) {
 	refresh();
 	TRACE(("curs_flush\n"));
-	have_data = FALSE;
     }
 }
 
@@ -250,8 +238,8 @@ curs_kopen(void)
 	initialized = TRUE;
 	curs_initialize();
     }
+    refresh();
     in_screen = TRUE;
-    curs_flush();
     returnVoid();
 }
 
@@ -262,7 +250,6 @@ curs_kclose(void)
     endwin();
     term.mclose();
     in_screen = FALSE;
-    have_data = FALSE;
     returnVoid();
 }
 
@@ -281,13 +268,11 @@ curs_eeol(void)
 static void
 curs_eeop(void)
 {
-    if (in_screen) {
-	if (sgarbf) {
-	    erase();
-	    wrefresh(curscr);
-	} else {
-	    clrtobot();
-	}
+    if (sgarbf) {
+	erase();
+	wrefresh(curscr);
+    } else {
+	clrtobot();
     }
 }
 

@@ -1,4 +1,4 @@
-MANIFEST for vile, version v9_6o
+MANIFEST for vile, version v9_6i2
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 CHANGES                         Change-log for VILE
@@ -117,7 +117,7 @@ trace.h                         development: trace to logfile
 ucrypt.c                        interface to Unix crypt(1)
 undo.c                          support for "undo"
 version.c                       version & usage messages
-vile-9.6.spec                   sample RPM spec file for vile 9.6
+vile-9.7.spec                   sample RPM spec file for vile 9.7
 vile.1                          man-page for VILE
 vile.hlp                        help-file
 vile.wmconfig                   windowmaker config file for vile
@@ -279,6 +279,7 @@ filters/pas-filt.l              Pascal syntax filter for vile
 filters/pas.key                 keywords for pascal highlighting filter
 filters/pc.key                  keywords for printcap syntax highlighting
 filters/perl.key                keywords for perl syntax filter
+filters/perlfilt.l              Perl syntax filter for vile
 filters/php-filt.l              syntax filter for php
 filters/php.key                 keywords for phpmode
 filters/pl-filt.c               syntax highlighter for perl
@@ -288,6 +289,7 @@ filters/ps-filt.l               syntax filter for PostScript files
 filters/ps.key                  keywords for PostScript syntax filter
 filters/py-filt.l               syntax filter for Python
 filters/py.key                  keywords for Python syntax filter
+filters/rb-filt.l               syntax filter for Ruby
 filters/rb.key                  keywords for Ruby syntax filter
 filters/rc-filt.l               syntax filter for Windows ".rc" files
 filters/rc.key                  keywords for Windows ".rc" files

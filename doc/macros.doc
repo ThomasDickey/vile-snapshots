@@ -217,20 +217,14 @@ Creating, executing, storing macros
 		*bool
 		backup-style
 		bcolor
-		byteorder-mark
 		ccolor
 		color-scheme
-		cursor-tokens
 		fcolor
-		file-encoding
-		for-buffers
 		mcolor
 		mini-hilite
 		popup-choices
 		qualifiers
-		reader-policy
-		record-attrs (VMS only)
-		record-format (VMS only)
+		record-format
 		recordseparator
 		showformat
 		video-attrs
@@ -415,11 +409,6 @@ State Variables
 
 	$brightness	RGB levels for gray, normal, bright in the 0-255 range
 			(winvile version only).
-
-	$buf-encoding	[READ ONLY]  Shows the character encoding for the
-			current buffer.  The values are the same as for the
-			file-encoding mode, but are always resolved, i.e., no
-			"auto" or "locale".
 
 	$buf-fname-expr	[READ ONLY] Combines bufname-expr and pathname-expr
 			modes for the current buffer.
@@ -1536,5 +1525,5 @@ Example startup file
 
 -- vile:fc=78
 -----------------------------------
-  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.106 2008/04/27 14:09:09 tom Exp $
+  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.104 2008/01/25 00:25:51 tom Exp $
 -----------------------------------

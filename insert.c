@@ -4,7 +4,7 @@
  * Most code probably by Dan Lawrence or Dave Conroy for MicroEMACS
  * Extensions for vile by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/insert.c,v 1.166 2008/05/26 15:17:59 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/insert.c,v 1.160 2008/01/13 15:59:30 tom Exp $
  */
 
 #include	"estruct.h"
@@ -46,18 +46,10 @@ static int skipindent;
 static int
 past_wrapmargin(int c)
 {
-    int n = b_val(curbp, VAL_WRAPMARGIN);
+    int n;
 
-    if (n > 0) {		/* positive, count from the right */
-	n = (term.cols - (nu_width(curwp) + n));
-    } else if (n == 0) {	/* zero, inactive */
-	n = -1;
-    } else {			/* negative, count from the left */
-	n = -n;
-    }
-
-    /* now 'n' is the effective wrapmargin's column */
-    if (n >= 0) {
+    if ((n = b_val(curbp, VAL_WRAPMARGIN)) > 0
+	&& (n = (term.cols - (nu_width(curwp) + n))) >= 0) {
 	int list = w_val(curwp, WMDLIST);
 
 	/* compute the effective screen column after adding the
@@ -437,7 +429,7 @@ replacechar(int f, int n)
 		if (isbackspace(c)) {	/* vi beeps here */
 		    s = TRUE;	/* replaced with nothing */
 		} else {
-		    t = s = lins_chars(n, c);
+		    t = s = lins_bytes(n, c);
 		}
 	    }
 	}
@@ -892,7 +884,7 @@ inschar(int c, int *backsp_limit_p)
     }
 
     autoindented = -1;
-    return lins_chars(1, c);
+    return lins_bytes(1, c);
 }
 
 #if ! SMALLER

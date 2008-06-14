@@ -10,7 +10,7 @@
  *
  *                samples\com\oleaut\hello\hello .
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32ole.h,v 1.8 2008/06/01 20:05:31 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32ole.h,v 1.7 2007/11/01 20:05:13 tom Exp $
  */
 
 #ifndef W32OLE_H
@@ -64,7 +64,6 @@ public:
     STDMETHOD(get_Application)(IVileAuto **ppvile);
     STDMETHOD(get_FullName)(BSTR *pbstr);
     STDMETHOD(get_InsertMode)(VARIANT_BOOL *pbool);
-    STDMETHOD(get_GlobMode)(VARIANT_BOOL *pbool);
     STDMETHOD(get_IsMinimized)(VARIANT_BOOL *pbool);
     STDMETHOD(get_MainHwnd)(LONG *phwnd);
     STDMETHOD(get_Name)(BSTR *pbstr);

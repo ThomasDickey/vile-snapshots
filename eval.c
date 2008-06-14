@@ -2,7 +2,7 @@
  *	eval.c -- function and variable evaluation
  *	original by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.379 2008/06/01 17:41:02 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.375 2008/02/07 23:49:28 tom Exp $
  *
  */
 
@@ -48,7 +48,7 @@ static size_t s2size(const char *s);
 static char **init_vars_cmpl(void);
 static char *get_statevar_val(int vnum);
 static const char *s2offset(const char *s, const char *n);
-static int SetVarValue(VWRAP * var, char *name, const char *value);
+static int SetVarValue(VWRAP * var, const char *name, const char *value);
 static void FindVar(char *var, VWRAP * vd);
 static void free_vars_cmpl(void);
 #endif
@@ -65,18 +65,9 @@ makectypelist(int dum1 GCC_UNUSED, void *ptr GCC_UNUSED)
     CHARTYPE k;
     const char *s;
 
-#if OPT_MULTIBYTE
-    /*
-     * Keep the buffer encoding 8-bit to make it work with the character
-     * classes for the narrow locale.
-     */
-    make_local_b_val(curbp, VAL_FILE_ENCODING);
-    set_b_val(curbp, VAL_FILE_ENCODING, enc_8BIT);
-#endif
-
     bprintf("--- Printable Characters for locale %s (%s) ",
-	    NONNULL(vl_real_enc.locale),
-	    NONNULL(vl_real_enc.encoding));
+	    NONNULL(vl_locale),
+	    NONNULL(vl_encoding));
     bpadc('-', term.cols - DOT.o);
     bputc('\n');
 
@@ -1421,28 +1412,6 @@ FindModeVar(char *var, VWRAP * vd)
 #endif
 }
 
-static char *
-VarName(char *var)
-{
-    char *result;
-
-    if (var && var[0] && var[1]) {
-	switch (*var) {
-	case '$':
-	case '%':
-	case '&':
-	    result = var + 1;
-	    break;
-	default:
-	    result = var;
-	    break;
-	}
-    } else {
-	result = var;
-    }
-    return result;
-}
-
 /*
  * Find a variable's type and name
  */
@@ -1462,18 +1431,18 @@ FindVar(char *var, VWRAP * vd)
 
     switch (var[0]) {
     case '$':			/* check for legal state var */
-	FindModeVar(VarName(var), vd);
+	FindModeVar(var + 1, vd);
 	break;
 
     case '%':			/* check for legal temp variable */
-	vd->v_ptr = lookup_tempvar(VarName(var));
+	vd->v_ptr = lookup_tempvar(var + 1);
 	if (vd->v_ptr) {	/* existing */
 	    vd->v_type = VW_TEMPVAR;
 	} else {		/* new */
 	    beginDisplay();
 	    p = typealloc(UVAR);
 	    if (p &&
-		(p->u_name = strmalloc(VarName(var))) != 0) {
+		(p->u_name = strmalloc(var + 1)) != 0) {
 		p->next = temp_vars;
 		p->u_value = 0;
 		temp_vars = vd->v_ptr = p;
@@ -1564,13 +1533,9 @@ PromptAndSet(const char *name, int f, int n)
 	status = FALSE;
     } else if (vd.v_type == VW_MODE) {
 	VALARGS args;
-	if (find_mode(curbp, VarName(var), -TRUE, &args)) {
-	    set_end_string('=');
-	    status = adjvalueset(VarName(var), FALSE, TRUE, -TRUE, &args);
-	} else {
-	    mlforce("[Can't find mode '%s']", VarName(var));
-	    status = FALSE;
-	}
+	(void) find_mode(curbp, var + 1, -TRUE, &args);
+	set_end_string('=');
+	status = adjvalueset(var + 1, FALSE, TRUE, -TRUE, &args);
     } else {
 	static TBUFF *tmp;
 
@@ -1728,7 +1693,7 @@ set_statevar_val(int vnum, const char *value)
 
 /* figure out what type of variable we're setting, and do so */
 static int
-SetVarValue(VWRAP * var, char *name, const char *value)
+SetVarValue(VWRAP * var, const char *name, const char *value)
 {
     int status;
     int savecmd;
@@ -1748,12 +1713,9 @@ SetVarValue(VWRAP * var, char *name, const char *value)
 	savecmd = clexec;
 	execstr = TYPECAST(char, value);
 	clexec = TRUE;
-	if (find_mode(curbp, VarName(name), -TRUE, &args)) {
-	    set_end_string('=');
-	    status = adjvalueset(VarName(name), FALSE, TRUE, -TRUE, &args);
-	} else {
-	    status = FALSE;
-	}
+	(void) find_mode(curbp, name + 1, -TRUE, &args);
+	set_end_string('=');
+	status = adjvalueset(name + 1, FALSE, TRUE, -TRUE, &args);
 	execstr = savestr;
 	clexec = savecmd;
 	break;

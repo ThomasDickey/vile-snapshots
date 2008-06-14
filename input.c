@@ -44,7 +44,7 @@
  *	tgetc_avail()     true if a key is avail from tgetc() or below.
  *	keystroke_avail() true if a key is avail from keystroke() or below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.320 2008/03/20 21:12:07 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.319 2008/01/22 00:13:57 tom Exp $
  *
  */
 
@@ -1499,22 +1499,8 @@ fakeKeyCode(const CMDFUNC * f)
 }
 
 static int
-reallyEditMiniBuffer(TBUFF **buf,
-		     size_t *cpos,
-		     int c,
-#if OPT_MULTIBYTE
-		     int recur,
-#endif
-		     int margin,
-		     int quoted)
+editMiniBuffer(TBUFF **buf, size_t *cpos, int c, int margin, int quoted)
 {
-#if OPT_MULTIBYTE
-#define editMiniBuffer(buf,cpos,c,margin,quoted) \
-  reallyEditMiniBuffer(buf,cpos,c,FALSE,margin,quoted)
-#else
-#define editMiniBuffer(buf,cpos,c,margin,quoted) \
-  reallyEditMiniBuffer(buf,cpos,c,margin,quoted)
-#endif
     int edited = FALSE;
     const CMDFUNC *cfp;
     int save_insertmode = insertmode;
@@ -1536,24 +1522,13 @@ reallyEditMiniBuffer(TBUFF **buf,
 	   c, miniedit, DOT.o));
 
 #if OPT_MULTIBYTE
-    /*
-     * Anything that does not fit into 8 bits has to be chopped up to pass it
-     * into the command-interpreting and data-insertion.  Do this by converting
-     * to UTF-8 and recurring.
-     *
-     * As a special case, codes in 128..255 have to be converted to UTF-8, but
-     * we want to do this only for the case where input is assumed to be in
-     * UTF-8.  That makes it still usable for ASCII and Latin-1 editing.
-     */
-    if (!recur
-	&& ((char2int(c) >= (int) iBIT(MinCBits))
-	    || (char2int(c) >= 128 && b_is_utfXX(bminip)))) {
+    if (char2int(c) >= (int) iBIT(MinCBits)) {
 	UCHAR temp[10];
 	int used = vl_conv_to_utf8(temp, c, sizeof(temp));
 	int n;
 
 	for (n = 0; n < used; ++n) {
-	    edited |= reallyEditMiniBuffer(buf, cpos, temp[n], TRUE, margin, quoted);
+	    edited |= editMiniBuffer(buf, cpos, temp[n], margin, quoted);
 	}
     } else
 #endif

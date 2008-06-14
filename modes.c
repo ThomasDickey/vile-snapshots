@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.363 2008/06/01 17:38:38 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.358 2008/02/07 00:07:24 tom Exp $
  *
  */
 
@@ -42,8 +42,7 @@ static FSM_BLIST *valname_to_choices(const struct VALNAMES *names);
 /*--------------------------------------------------------------------------*/
 
 #if OPT_EVAL || OPT_MAJORMODE
-static size_t size_my_varmodes;
-static char **my_varmodes;	/* list for modename-completion */
+static const char **my_varmodes;	/* list for modename-completion */
 #endif
 
 #if OPT_MAJORMODE
@@ -1046,7 +1045,6 @@ fsm_complete(DONE_ARGS)
 	    }
 	}
 	if (!result) {
-	    (void) mklower(buf);
 	    result = kbd_complete(PASS_DONE_ARGS,
 				  (const char *) (fsm_tbl[fsm_idx].lists->choices),
 				  sizeof(FSM_CHOICES));
@@ -1121,7 +1119,7 @@ adjvalueset(const char *cp,	/* name of the mode we are changing */
 
 	respbuf[0] = EOS;
 	(void) lsprintf(prompt, "New %s %s: ",
-			names->name ? names->name : cp,
+			cp,
 			regex ? "pattern" : "value");
 
 #if OPT_ENUM_MODES
@@ -1556,19 +1554,19 @@ find_mode(BUFFER *bp, const char *mode, int global, VALARGS * args)
 {
     int mode_class;
 
-    TRACE((T_CALLED "find_mode(%s) %s\n", mode, global ? "global" : "local"));
+    TRACE2(("find_mode(%s) %s\n", mode, global ? "global" : "local"));
 
     for (mode_class = 0; mode_class < END_MODE; mode_class++) {
 	if (find_mode_class(bp, mode, global, args, (MODECLASS) mode_class))
-	      returnCode(TRUE);
+	      return TRUE;
     }
 #if OPT_MAJORMODE
     if (find_submode(bp, mode, global, args)) {
-	returnCode(TRUE);
+	return TRUE;
     }
 #endif
-    TRACE(("...not found\n"));
-    returnCode(FALSE);
+    TRACE2(("...not found\n"));
+    return FALSE;
 }
 
 /*
@@ -2463,37 +2461,10 @@ fill_my_varmodes(void)
     const char **d;
 
     if (my_varmodes != 0 && my_mode_list != 0) {
-	for (s = my_mode_list,
-	     d = (const char **) my_varmodes; (*d = *s) != 0; s++) {
+	for (s = my_mode_list, d = my_varmodes; (*d = *s) != 0; s++) {
 	    if (is_varmode(*d)) {
 		d++;
 	    }
-	}
-    }
-}
-
-static size_t
-need_my_varmodes(size_t actual)
-{
-    return (actual | 31);
-}
-
-static void
-free_my_varmodes(void)
-{
-    FreeAndNull(my_varmodes);
-}
-
-/*
- * The my_varmodes[] data is an index into my_mode_list.
- */
-static void
-check_my_varmodes(size_t actual)
-{
-    if (my_varmodes != 0) {
-	size_t need = need_my_varmodes(actual);
-	if (need > size_my_varmodes) {
-	    free_my_varmodes();
 	}
     }
 }
@@ -2506,17 +2477,15 @@ const char *const *
 list_of_modes(void)
 {
     if (my_varmodes == 0) {
-	size_t n;
+	size_t n = count_modes();
 
 	beginDisplay();
-	n = need_my_varmodes(count_modes()) + 1;
-	my_varmodes = typeallocn(char *, n);
-	size_my_varmodes = n;
+	my_varmodes = typeallocn(const char *, n + 1);
 	endofDisplay();
 
 	fill_my_varmodes();
     }
-    return (const char **) my_varmodes;
+    return my_varmodes;
 }
 #endif /* OPT_EVAL || OPT_MAJORMODE */
 
@@ -3581,7 +3550,6 @@ extend_mode_list(size_t increment)
 							   my_mode_list), k);
     }
     blist_my_mode_list.theList = my_mode_list;
-    check_my_varmodes(k);
     endofDisplay();
 
     return j;
@@ -4961,7 +4929,7 @@ mode_leaks(void)
 #endif
 
 #if OPT_EVAL || OPT_MAJORMODE
-    free_my_varmodes();
+    FreeAndNull(my_varmodes);
 #endif
 
 #if OPT_MAJORMODE

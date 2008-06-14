@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 screen API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.188 2008/04/15 00:05:08 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.187 2008/02/22 23:52:26 tom Exp $
  * Written by T.E.Dickey for vile (october 1997).
  * -- improvements by Clark Morgan (see w32cbrd.c, w32pipe.c).
  */
@@ -1086,7 +1086,7 @@ is_fixed_pitch(HFONT font)
 	    term.encoding = enc_UTF16;
 	    TRACE(("Assume font useful for UNICODE\n"));
 	} else {
-	    term.encoding = enc_8BIT;	/* FIXME: how to do enc_LOCALE? */
+	    term.encoding = enc_LOCALE;		/* FIXME: how to do enc_LOCALE? */
 	}
 	/* if encoding changes, force recompute in display.c */
 	if (old_encoding != term.encoding)

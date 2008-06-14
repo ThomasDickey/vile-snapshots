@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.475 2008/05/25 16:12:28 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.471 2008/03/06 01:10:52 tom Exp $
  *
  */
 
@@ -614,7 +614,6 @@ vtlistc(WINDOW *wp, const char *src, unsigned limit)
 
 	    if (!w_val(wp, WMDUNICODE_AS_HEX)
 		&& cells == 1
-		&& isPrint(value)
 		&& FoldTo8bits(value)) {
 		temp[n++] = (char) value;
 	    } else if (!w_val(wp, WMDUNICODE_AS_HEX)
@@ -733,7 +732,7 @@ vtset_put(WINDOW *wp, const char *src, unsigned limit)
     if (w_val(wp, WMDLIST)) {
 	rc = vtlistc(wp, src, limit);
     } else if (b_is_utfXX(wp->w_bufp)
-	       && column_sizes(wp, src, limit, &rc) >= COLS_8BIT) {
+	       && column_sizes(wp, src, limit, &rc) == COLS_UTF8) {
 	rc = vtlistc(wp, src, limit);
     } else {
 	rc = vtputc(wp, src, limit);
@@ -1517,8 +1516,8 @@ offs2col0(WINDOW *wp,
 	C_NUM start_offset;
 	const char *text = lvalue(lp);
 
-	if (offset > length + 1)
-	    offset = length + 1;
+	if (offset > length + 0)
+	    offset = length + 0;
 
 	if (cache_offset && cache_column && *cache_offset < offset) {
 	    start_offset = *cache_offset;
@@ -1533,7 +1532,7 @@ offs2col0(WINDOW *wp,
 
 	    c = (n == length) ? '\n' : text[n];
 #if OPT_MULTIBYTE
-	    if ((n < length) && b_is_utfXX(wp->w_bufp) && !isTab(c)) {
+	    if (b_is_utfXX(wp->w_bufp) && !isTab(c)) {
 		int nxt = offset - n;
 		int adj = column_sizes(wp, text + n, nxt, &used);
 
@@ -2581,7 +2580,7 @@ update_physical_screen(int force GCC_UNUSED)
 	if ((vscreen[i]->v_flag & (VFCHG | VFCOL)) != 0) {
 #if !DISP_X11
 	    if (TypeAhead(force))
-		returnVoid();
+		return;
 #endif
 	    update_line(i, 0, term.cols);
 	}

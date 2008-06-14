@@ -11,7 +11,7 @@
 #
 # The modes are table entries in the BUFFER and WINDOW structures.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.275 2008/05/05 20:59:46 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.269 2008/01/06 17:44:25 tom Exp $
 #
 #
 # Mode-table entries.  Capitalized letters are used for abbreviations.
@@ -217,10 +217,6 @@ string
 	"name"		NAME		0
 	"group"		GROUP		0
 
-# special cases for abbreviations which do not correspond to actual characters
-.abbr
-	"file-encoding"	"fk"
-
 #
 # The "environment" variables are similar to modes, but are not so neatly
 # organized into groups of universal/buffer/window.
@@ -232,7 +228,6 @@ string
 "bflags"	BFLAGS		1		"status flags for current buffer"
 "blines"	BLINES		1		"lines in current buffer"
 "brightness"	BRIGHTNESS	DISP_NTWIN	"intensity of normal, bold"
-"buf-encoding"	BUF_ENCODING	OPT_MULTIBYTE	"buffer's encoding, derived from file-encoding, buffer content and locale"
 "buf-fname-expr" BUF_FNAME_EXPR	OPT_CURTOKENS	"buffer+fname expression"
 "buffer-hook"	BUFHOOK		OPT_HOOKS	"procedure to run when entering buf"
 "bufname"	BUFNAME		OPT_CURTOKENS	"buffer name under cursor"
@@ -499,10 +494,9 @@ string
 
 # FIXME: this table should be generated from runtime locale
 .table file_encoding				# see byteorder_mark
-"locale"	enc_LOCALE
 "auto"		ENUM_UNKNOWN
 "ascii"		enc_POSIX
-"8bit"		enc_8BIT
+"8bit"		enc_LOCALE
 "utf-8"		enc_UTF8
 "utf-16"	enc_UTF16
 "utf-32"	enc_UTF32

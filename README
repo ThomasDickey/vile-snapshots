@@ -1,5 +1,5 @@
 
-README for vile, version 9.6
+README for vile, version 9.7
 ----------------------------
 
 vile is a text editor which is extremely compatible with vi in terms
@@ -1553,6 +1553,9 @@ December 2007,
     + add configure check for getc_unlocked(), putc_unlocked() and
       tsearch() to use in performance improvements for syntax filters.
 
+June 2008,
+    vile 9.7 is released.  Highlights since 9.6 (aside from bug fixes):
+
 -------------------------------
-$Header: /users/source/archives/vile.vcs/RCS/README,v 1.100 2007/12/28 03:22:22 tom Exp $
+$Header: /users/source/archives/vile.vcs/RCS/README,v 1.101 2008/06/14 12:07:13 tom Exp $
 -------------------------------
