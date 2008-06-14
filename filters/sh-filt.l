@@ -1,12 +1,12 @@
 %pointer
-%x NORMAL HEREDOC QUOTED SUBST
+%x NORMAL HEREDOC HEREDOC2 QUOTED SUBST
 
 %o 10000
 %a 5000
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/sh-filt.l,v 1.74 2008/01/12 22:59:05 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/sh-filt.l,v 1.75 2008/05/26 12:31:30 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Shell script.
  */
@@ -17,7 +17,17 @@
 #define FLTSTACK_EXTRA_PUSH FLTSTACK_THIS.backtic = 0;
 #include <fltstack.h>
 
+#ifdef DEBUG
+DefineOptFilter("sh", "d");
+#else
 DefineFilter("sh");
+#endif
+
+#ifdef DEBUG
+#define DPRINTF(params) if(FltOptions('d'))printf params
+#else
+#define DPRINTF(params)		/*nothing */
+#endif
 
 #define isQuote(ch) (ch != 0 && strchr("\\'\"", ch) != 0)
 
@@ -94,6 +104,7 @@ IDENTX		\$[\*@#\?\$!-]
 <NORMAL>{ACTION}	{ WriteToken(Action_attr); }
 
 <NORMAL>\<\<[-]?{SPACE}*{QIDENT} {
+			    int state;
 			    int n;
 			    strip_tabs = 0;
 			    for (n = 0; n < yyleng; n++) {
@@ -104,23 +115,20 @@ IDENTX		\$[\*@#\?\$!-]
 				}
 			    }
 			    save_here(yytext, yyleng);
-			    push_state(HEREDOC);
+			    state = here_exp ? HEREDOC : HEREDOC2;
+			    push_state(state);
 			    if (strchr(yytext, '\n') != 0) {
 				flt_error("unexpected end of line");
-				BeginQuote(HEREDOC, Error_attr);
+				BeginQuote(state, Error_attr);
 			    } else {
-				BeginQuote(HEREDOC, String_attr);
+				BeginQuote(state, String_attr);
 			    }
 			    flt_bfr_begin(String_attr);
 			}
 <NORMAL>[\n]		{ ECHO; }
 
 <HEREDOC>{BACKTIC}	{
-			    if (here_exp) {
-				handle_backtic(yytext, yyleng);
-			    } else {
-				flt_bfr_append(yytext, yyleng);
-			    }
+			    handle_backtic(yytext, yyleng);
 			}
 <HEREDOC>\\\$		{ flt_bfr_append(yytext, yyleng); }
 <HEREDOC>{IDENT1}	|
@@ -144,6 +152,23 @@ IDENTX		\$[\*@#\?\$!-]
 <HEREDOC>[^\r\n\$]+	{ flt_bfr_append(yytext, yyleng); }
 <HEREDOC>\n		{ flt_bfr_append(yytext, yyleng); }
 <HEREDOC>.		{ flt_bfr_append(yytext, yyleng); }
+
+<HEREDOC2>^[^\r\n]+ {
+			    int used = 0;
+			    if (strip_tabs) {
+				used = skip_blanks(yytext) - (char *) yytext;
+				if (used != 0)
+				    flt_bfr_append(yytext, used);
+			    }
+			    if (got_here(yytext + used, yyleng - used)) {
+				flt_bfr_finish();
+				pop_state();
+				strip_tabs = 0;
+			    } else {
+				flt_bfr_append(yytext, yyleng);
+			    }
+			}
+<HEREDOC2>[\r\n]+	{ flt_bfr_append(yytext, yyleng); }
 
 <QUOTED>{BACKTIC}	{ handle_backtic(yytext, yyleng); }
 <QUOTED>\\[\n]		|
@@ -189,28 +214,46 @@ static void
 save_here(char *text, int length)
 {
     char *s;
+    int delim = 0;
 
     here_exp = 1;
+    DPRINTF(("save_here '%.*s' ", length, text));
     if ((here_tag = do_alloc(here_tag, length, &here_len)) != 0) {
 	s = here_tag;
+	/* skip leading "<<" or "<<-", and blanks */
+	while (length > 0
+	       && (strchr("<->", *text) != 0
+		   || isspace(CharOf(*text)))) {
+	    --length;
+	    ++text;
+	}
 	while (length--) {
-	    if (isQuote(*text)) {
+	    if ((delim != 0) && (*text == delim)) {
+		break;
+	    } else if (isQuote(*text)) {
 		here_exp = 0;
-	    } else if (strchr(" \t", *text) != 0) {
+		if (delim == 0) {
+		    delim = *text;
+		}
+	    } else if ((delim == '"') && (*text == '\\')) {
+		;
+	    } else if ((delim == 0) && (strchr(" \t", *text) != 0)) {
 		if (s != here_tag)
 		    break;
-	    } else if (!here_exp || strchr("<->", *text) == 0) {
+	    } else {
 		*s++ = *text;
 	    }
 	    text++;
 	}
 	*s = 0;
     }
+    DPRINTF(("-> '%s'(%d)\n", here_tag, here_exp));
 }
 
 static int
 embed_or_append(char *text, int length)
 {
+    /* FIXME: here_exp should always be true - verify that */
     if (here_exp) {
 	flt_bfr_embed(text, length, Ident_attr);
     } else {
@@ -223,23 +266,21 @@ static int
 got_here(char *text, int length)
 {
     int pass, j, k;
+    int rc = 0;
 
-    for (pass = 0; pass < 2; pass++) {
-	for (j = k = 0; j < length; j++) {
-	    if (isQuote(text[j])) {
-		if (pass) {
-		    flt_error("unexpected quote");
-		    flt_bfr_embed(text + j, 1, Error_attr);
-		}
-	    } else {
-		if (here_tag != 0 && (text[j] != here_tag[k++]))
+    if (here_tag != 0) {
+	for (pass = 0; pass < 2; pass++) {
+	    for (j = k = 0; j < length; j++) {
+		if (text[j] != here_tag[k++]) {
 		    return 0;
+		}
 		if (pass)
 		    flt_bfr_append(text + j, 1);
 	    }
 	}
+	rc = 1;
     }
-    return 1;
+    return rc;
 }
 
 static void

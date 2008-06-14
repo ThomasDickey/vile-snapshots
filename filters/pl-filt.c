@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/pl-filt.c,v 1.90 2008/02/09 15:23:50 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/pl-filt.c,v 1.97 2008/06/01 14:23:52 tom Exp $
  *
  * Filter to add vile "attribution" sequences to perl scripts.  This is a
  * translation into C of an earlier version written for LEX/FLEX.
@@ -18,7 +18,7 @@ DefineFilter("perl");
  * should consider '$' and '&', but reading the parser hints that might work
  * too).
  */
-#define QUOTE_DELIMS "#:/?|!:%',{}[]()@;=~"
+#define QUOTE_DELIMS "#:/?|!:%',{}[]()@;=~\""
 /* from Perl's S_scan_str() */
 #define LOOKUP_TERM "([{< )]}> )]}>"
 
@@ -47,6 +47,8 @@ typedef struct {
     int may_have_pattern;
     int has_no_pattern;
 } AfterKey;
+
+static char *put_embedded(char *, int, char *);
 
 static char *Action_attr;
 static char *Comment_attr;
@@ -867,6 +869,9 @@ write_PATTERN(char *s, int len)
     int comment = 0;
     int escaped = 0;
     int range = 0;
+    int interp = 0;
+    int len_flags = 0;
+    int e_modifier = 0;
 
     DPRINTF(("\n*write_PATTERN(%.*s)\n", len, s));
     if (skip) {
@@ -882,14 +887,43 @@ write_PATTERN(char *s, int len)
     }
     delimiter = *s;
 
+    for (len_flags = 0; len_flags < (len - 2); ++len_flags) {
+	int ch = CharOf(s[len - len_flags - 1]);
+	if (ch == 'e') {
+	    e_modifier = 1;
+	} else if (!isalpha(ch))
+	    break;
+    }
+    interp = (delimiter == '"');
+
     for (n = first = 0; n < len; n++) {
+	if (!escaped
+	    && !interp
+	    && e_modifier
+	    && (n > 0)
+	    && (s[n] == delimiter)) {
+	    if (comment) {
+		flt_puts(s + first, (n - first + 1), Comment_attr);
+		comment = 0;
+	    } else {
+		flt_puts(s + first, (n - first + 1), String_attr);
+	    }
+	    first = n + 1;
+	    interp = 1;
+	    continue;
+	}
+
 	if (escaped) {
 	    escaped = 0;
 	} else if (s[n] == BACKSLASH) {
 	    escaped = 1;
 	} else if (isBlank(s[n]) && !escaped && !comment &&
 		   (leading || char_after_blanks(s + n) == '#')) {
-	    flt_puts(s + first, (n - first - 0), String_attr);
+	    if (interp) {
+		put_embedded(s + first, (n - first - 0), String_attr);
+	    } else {
+		flt_puts(s + first, (n - first - 0), String_attr);
+	    }
 	    flt_putc(s[n]);
 	    first = n + 1;
 	} else if (s[n] == '\n') {
@@ -909,7 +943,11 @@ write_PATTERN(char *s, int len)
 		       && (delimiter == L_CURLY || (n > 0 && isBlank(s[n - 1])))
 		       && !range) {
 		if (!comment) {
-		    flt_puts(s + first, (n - first - 1), String_attr);
+		    if (interp) {
+			put_embedded(s + first, (n - first - 1), String_attr);
+		    } else {
+			flt_puts(s + first, (n - first - 1), String_attr);
+		    }
 		    comment = 1;
 		    first = n + 0;
 		}
@@ -918,7 +956,16 @@ write_PATTERN(char *s, int len)
     }
     if (comment)
 	first += (skip_BLANKS(s) - s);
-    flt_puts(s + first, (len - first), comment ? Comment_attr : String_attr);
+    if (comment) {
+	flt_puts(s + first, (len - first), Comment_attr);
+    } else {
+	if (interp) {
+	    put_embedded(s + first, (len - first - len_flags), String_attr);
+	} else {
+	    flt_puts(s + first, (len - first - len_flags), String_attr);
+	}
+	flt_puts(s + len - len_flags, len_flags, Keyword_attr);
+    }
     s += len;
     return s;
 }
@@ -1031,6 +1078,31 @@ put_remainder(char *s, char *attr, int quoted)
 	s = put_embedded(s, ok, attr);
     }
     return put_newline(s);
+}
+
+/*
+ * Write the line for perldoc (see perlpodspec).
+ */
+static char *
+put_document(char *s)
+{
+    char *attr = Comment_attr;
+    int ok = line_size(s);
+    int j, k;
+
+    j = 0;
+    if (s[j] == '=') {
+	flt_puts(s, j, attr);
+	for (k = j; k < ok; ++k) {
+	    if (isspace(CharOf(s[k])))
+		break;
+	}
+	flt_puts(s + j, k - j, Preproc_attr);
+	flt_puts(s + k, ok - k, String_attr);
+	j = ok;
+    }
+    flt_puts(s + j, ok - j, attr);
+    return put_newline(s + ok);
 }
 
 /*
@@ -1310,7 +1382,7 @@ do_filter(FILE *input GCC_UNUSED)
 		} else if (in_line < 0
 			   && (ok = begin_POD(s))) {
 		    state = ePOD;
-		    s = put_remainder(s + ok - 1, Comment_attr, 1);
+		    s = put_document(s + ok - 1);
 		} else if (in_line == 0
 			   && (ok = is_PREPROC(s)) != 0) {
 		    flt_puts(s, ok, Preproc_attr);
@@ -1443,7 +1515,7 @@ do_filter(FILE *input GCC_UNUSED)
 		break;
 
 	    case eIGNORED:
-		s = put_remainder(s, Comment_attr, 1);
+		s = put_document(s);
 		break;
 
 	    case ePATTERN:
@@ -1468,7 +1540,7 @@ do_filter(FILE *input GCC_UNUSED)
 	    case ePOD:
 		if (end_POD(s))
 		    state = eCODE;
-		s = put_remainder(s, Comment_attr, 1);
+		s = put_document(s);
 		break;
 	    }
 	}

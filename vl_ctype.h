@@ -1,9 +1,9 @@
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/vl_ctype.h,v 1.8 2007/09/01 11:55:42 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/vl_ctype.h,v 1.15 2008/04/15 21:33:40 tom Exp $
  *
  * Character-type tests, like <ctype.h> for vile (vi-like-emacs).
  *
- * Copyright 2005-2006,2007 Thomas E. Dickey
+ * Copyright 2005-2007,2008 Thomas E. Dickey
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
@@ -105,6 +105,8 @@ typedef enum {
 	, vl_SCRTCH
 	, vl_SHPIPE
 	, vl_XDIGIT
+#else
+#define vl_XDIGIT 0
 #endif
 	, vl_UNUSED
 } VL_CTYPES;
@@ -135,6 +137,13 @@ typedef	unsigned long CHARTYPE;
 #else
 typedef USHORT CHARTYPE;
 #endif
+
+typedef struct {
+    char *locale;		/* "en_US" */
+    char *encoding;		/* "ISO-8859-1" */
+} VL_CTYPE2;
+
+#define okCTYPE2(ct)	((ct).locale != 0)
 
 /* these parallel the ctypes.h definitions, except that
 	they force the char to valid range first */
@@ -201,5 +210,17 @@ typedef USHORT CHARTYPE;
 #define	isreturn(c)	((c == '\r') || (c == '\n'))
 
 #define nocase_eq(bc,pc) (CharOf(bc) == CharOf(pc) || (toUpper(bc) == toUpper(pc)))
+
+/*
+ * Built-in/fallback data when locale information is incomplete or missing.
+ */
+#define VL_LOC_ASCII  "ascii"
+#define VL_LOC_LATIN1 "8bit"
+
+#define VL_ENC_ASCII  "ascii"
+#define VL_ENC_LATIN1 "8bit"
+
+extern CHARTYPE vl_ctype_ascii[];
+extern CHARTYPE vl_ctype_latin1[];
 
 #endif /* VL_CTYPE_H_incl */

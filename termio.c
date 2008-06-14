@@ -3,7 +3,7 @@
  * characters, and write characters in a barely buffered fashion on the display.
  * All operating systems.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/termio.c,v 1.213 2007/12/24 01:52:17 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/termio.c,v 1.214 2008/03/19 22:46:18 tom Exp $
  *
  */
 
@@ -816,7 +816,7 @@ vl_getchar(void)
 	    return -1;
 	imdying(SIGINT);
     }
-    return char2int(c);
+    return (c & 0xff);
 }
 #endif
 

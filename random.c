@@ -2,7 +2,7 @@
  * This file contains the command processing functions for a number of random
  * commands. There is no functional grouping here, for sure.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.315 2008/02/05 23:03:17 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.319 2008/03/22 14:49:15 tom Exp $
  *
  */
 
@@ -427,6 +427,60 @@ gotopct(int f, int n)
 #endif
 
 /*
+ * Get the (possibly wide) character at the given line and offset.
+ *
+ * If this is a wide character and the buffer is encoded for UTF-8,
+ * replace the whole character at that offset, possibly changing the
+ * length of the line.
+ */
+void
+set_char2(LINE *lp, int offset, int ch)
+{
+#if OPT_MULTIBYTE
+    if (b_is_utfXX(curbp)) {
+	UCHAR buffer[10];
+	int old_len = bytes_at(lp, offset);
+	int new_len = vl_conv_to_utf8(buffer, ch, sizeof(buffer));
+	int n;
+
+	if (new_len > old_len) {
+	    lins_bytes(new_len - old_len, ' ');
+	} else if (new_len < old_len) {
+	    ldel_bytes(old_len - new_len, FALSE);
+	}
+	for (n = 0; n < new_len; ++n)
+	    lputc(lp, offset + n, buffer[n]);
+    } else
+#endif
+	lputc(lp, offset, (char) ch);
+}
+
+/*
+ * Get the (possibly wide) character at the given line and offset.
+ */
+int
+get_char2(LINE *lp, int offset)
+{
+    int result = -1;
+
+    if (offset >= 0 && offset < llength(lp)) {
+	result = CharOf(lgetc(lp, offset));
+#if OPT_MULTIBYTE
+	if (b_is_utfXX(curbp)) {
+	    UINT target;
+	    int used = vl_conv_to_utf32(&target,
+					lvalue(lp) + offset,
+					llength(lp) - offset);
+	    if (used > 0) {
+		result = target;
+	    }
+	}
+#endif
+    }
+    return result;
+}
+
+/*
  * Return the character at the given MARK, in the current buffer.
  */
 int
@@ -437,18 +491,7 @@ char_at_mark(MARK mark)
     if (mark.o == llength(mark.l)) {
 	curchar = '\n';
     } else {
-	curchar = CharOf(char_at(mark));
-#if OPT_MULTIBYTE
-	if (b_is_utfXX(curbp)) {
-	    UINT target;
-	    int used = vl_conv_to_utf32(&target,
-					lvalue(mark.l) + mark.o,
-					llength(mark.l) - mark.o);
-	    if (used > 0) {
-		curchar = target;
-	    }
-	}
-#endif
+	curchar = get_char2(mark.l, mark.o);
     }
     return curchar;
 }
@@ -593,16 +636,17 @@ twiddle(int f GCC_UNUSED, int n GCC_UNUSED)
     if (llength(dot.l) <= 1)
 	return FALSE;
     if (is_at_end_of_line(dot))
-	--dot.o;
+	dot.o -= BytesBefore(dot.l, dot.o);
     if (dot.o == 0)
-	dot.o = 1;
-    cr = char_at(dot);
-    --dot.o;
-    cl = char_at(dot);
+	dot.o = BytesAt(dot.l, 0);
+    cr = get_char2(dot.l, dot.o);
+    dot.o -= BytesBefore(dot.l, dot.o);
+    cl = get_char2(dot.l, dot.o);
     copy_for_undo(dot.l);
-    put_char_at(dot, cr);
-    ++dot.o;
-    put_char_at(dot, cl);
+    set_char2(dot.l, dot.o, cr);
+    dot.o += BytesAt(dot.l, dot.o);
+    set_char2(dot.l, dot.o, cl);
+    DOT.o = dot.o;
     chg_buff(curbp, WFEDIT);
     return (TRUE);
 }

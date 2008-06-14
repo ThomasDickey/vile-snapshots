@@ -1,9 +1,131 @@
-Changes for vile 9.7 (released ??? ??? ?? ????)
+Changes for vile 9.7 (released Sat Jun 14 2008)
 
- 20080319
+ 20080601 (o)
 	> Tom Dickey:
+	+ simplify wvlwrap.exe by disabling globbing temporarily.  This allows
+	  opening files whose names contain square brackets.
+	+ improve checks in SetVarValue() and PromptAndSet() to ensure that a
+	  mode is actually found, and checking whether a '$' prefix is used.
+	+ modify fsm_complete() to lowercase the test-string, making it
+	  simpler to save a boolean mode-value in a variable and restore it by
+	  assignment.  This works because all of the enumerations use
+	  lowercase names.
+	+ suppress part of wildcard expansion in call to expand_wild_args(),
+	  e.g., for command-line of winvile, since that interferes with
+	  reading file whose names contain square brackets.
+	+ modify wrapmargin mode to use negative values as a count from the
+	  left of the screen (discussion by Chris Green, Paul Fox).
+	+ make perlpod sections more readable by highlighting the control
+	  lines (request by Steven Lembark).
+	+ improve here-document parsing in sh-filt.l to work with "words"
+	  which contain blanks.
+	+ expand description of command-line history in vile.hlp
+	+ document change to ".abbrev" and ".brief" in doc/filters.doc
+
+ 20080525 (n)
+	> Brendan MacDonell:
+	+ improve ruby syntax filter:
+	  + match keywords containing '!' '?' and '=' depending on the context
+	    (based on my best guesses as to the most common uses, which work
+	    99% of the time - otherwise the entire ruby parser would need to be
+	    integrated to correctly mimic these syntax quirks).
+	  + remove unmatchable characters from the list of those matched
+	    following $.
+	  + change the instance variable matching to @@?{KEYWORD} instead of
+	    @+{KEYWORD}.
+	  + matching symbols as literals.
+	  + constants (keywords beginning with a capital) are highlighted with
+            the Type attribute.
+	> Tom Dickey:
+	+ modify ruby syntax filter to highlight binary integers (such as
+	  0b10101).
+	+ disable "*" and "?" abbreviation feature in ruby.key
+	+ modify parsing of keyword files to accept an empty parameter for
+	  "abbrev" and "brief", to disable the "*" and "?" feature.
+	  Note: this syntax breaks earlier versions of vile.
+	+ revise 9.6c fix for offs2col0(), restores selection highlighting
+	  of newline (report by Eric Krohn).
+
+ 20080508 (m)
+	> Mark Robinson:
+	+ build-fix for eightbit.c without iconv functions.
+	> Tom Dickey:
+	+ update input-method code, from xterm.
+	+ add xvile resource setting "openIm" to control whether it tries to
+	  open input-method.
+	+ change order of tests for iconv availability and configure option
+	  "--with-iconv" to avoid adding iconv library to build unnecessarily
+	  (report by Mark Robinson).
+	+ modify prompt for new mode value to consistently show the mode's full
+	  name.
+	+ add "fk" alias for file-encoding mode.
+	+ modify mktbls to allow special-case alias for modes which have no
+	  convenient abbreviation.
+	+ update config.guess, config.sub
+
+ 20080426 (l)
+	> Tom Dickey:
+	+ minor fixes to perl syntax highlighter:
+	  + add double-quote to quote-delimitors.
+	  + show interpreted symbols in double-quoted regular expressions.
+	  + if "/e" modifier is set for regular expression, show interpreted
+	    symbols for that.
+	  + show regular expression modifiers in keyword-attribute, not string
+	+ correct a loop expression in wrapword (report by Chris Green).
+	+ correct a byte- versus character-count in wrapword() (report by
+	  Chris Green).
+	+ add $buf-encoding symbol, to show the actual encoding used by the
+	  current buffer vs the file-encoding which is one of vile's internal
+	  names such as "8bit" or "locale".
+	+ add a "locale" value for file-encoding, use that as the default
+	  (discussion with Paul Van Tilburg and Chris Green).
+
+ 20080410 (k)
+	> Tom Dickey:
+	+ remove obsolete lex-filters for perl and ruby (only the C versions
+	  have been supported).
+	+ update list of filters in doc/config.doc
+	+ improve locale initialization, checking if there is no installed
+	  narrow locale corresponding to the given (wide) locale.  In that
+	  case, default to either ISO-8859-1 or ASCII, depending on whether
+	  there was actually a wide locale whose encoding is UTF-8 or
+	  ISO-8859-1, or neither (report by Paul Van Tilburg).
+	+ force the [Printable Chars] buffer to use file-encoding=8bit,
+	  makes it display consistently legal codes in the second column.
+	+ modify xvile to use imdying() to handle runtime X errors, which
+	  will attempt to save buffers (prompted by discussion with Steven
+	  Lembark).
+	+ flush the standard output before writing version message using the
+	  standard error, in case there was some output pending (report by
+	  Chris Green).
+	+ improve bytes_before() behavior on illegal bytes; it was returning
+	  the length of all illegal bytes adjacent to the current position
+	  rather than just one.
+	+ modify vl_conv_to_utf32() to use consistent error-return code when
+	  continuation byte of UTF-8 fails check.  This is needed in some
+	  cases to make ISO-8859-1 data display consistently in UTF-8 buffer
+	  as "\?xx".
+	+ fix display of ISO-8859-1 encoded file when file-encoding is set
+	  to utf-8 (report by Chris Green).
+
+ 20080325 (j)
+	> Tom Dickey:
+	+ modify curses-driver to avoid a curses-refresh (repainting the
+	  whole screen) between a shell command and the "Press return to
+	  continue" message.
+	+ make transpose-characters work for wide-characters.
+	+ make "~" (flip-character) and related case-conversion work for
+	  Unicode in 0..255 range.
+	+ modify behavior of ":ww!" to act like ":w!", allowing it to write
+	  all files.
+	+ modify the vl_init_8bit() to use vile's built-in UTF-8 decoder for
+	  cases where iconv() sees that the result will not fit into the narrow
+	  encoding.
+	+ correct bytes versus characters for inserting/replacing text in
+	  utf-8 buffers (reports by Chris Green, Paul Van Tilburg).
 	+ amend fix for recomputing list of modes used for name-completion
 	  from 9.6e, to also force reallocation of an associated index.
+	+ fix a missing #define in trace.h for GCC_PRINTFLIKE.
 
  20080313 (i)
 	> Tom Dickey:
