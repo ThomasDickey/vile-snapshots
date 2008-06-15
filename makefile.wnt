@@ -1,7 +1,7 @@
 #
 # makefile for vile on WIN32 using Microsoft Visual C++
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.wnt,v 1.98 2007/10/14 21:09:35 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.wnt,v 1.99 2008/06/14 14:29:16 tom Exp $
 #
 #
 !include <ntwin32.mak>
@@ -356,6 +356,7 @@ dist : $(EXEFILE)
 	cd macros
 	zip ..\$(ZIPFILE) *.rc
 	cd ..\filters
+	zip ..\$(ZIPFILE) *.rc
 	$(MAKE) -f makefile.wnt $@ $(MAKE_FLT)
 	cd ..
 
