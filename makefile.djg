@@ -3,7 +3,7 @@
 #
 # T.DANG (dang@cogit.ign.fr)
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.djg,v 1.36 2007/08/10 21:16:06 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.djg,v 1.37 2008/06/14 14:26:39 tom Exp $
 #
 #
 
@@ -56,7 +56,9 @@ dist :	vile
 	coff2exe vile
 #	-stubedit vile.exe globbing=no
 	zip pcvile.zip readme.pc readme vile.exe vile.hlp 
-	cd macros
+	cd filters
+	zip ..\pcvile.zip *.rc 
+	cd ..\macros
 	zip ..\pcvile.zip *.rc 
 	cd ..
 	zip pcvile.zip \\djgpp\\bin\\go32-v2.exe
