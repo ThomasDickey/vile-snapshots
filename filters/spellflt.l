@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/spellflt.l,v 1.36 2008/01/12 17:21:27 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/spellflt.l,v 1.38 2008/06/22 17:46:12 tom Exp $
  *
  * Filter to add vile "attribution" sequences to misspelled words.
  */
@@ -117,20 +117,40 @@ pipe_close(FILE *s)
 #endif				/* HAVE_POPEN */
 
 static FILE *
-open_tempfile(char *fname)
+open_tempfile(char **fname)
 {
     FILE *fp = 0;
 #ifdef HAVE_MKSTEMP
-    int fd = mkstemp(strcpy(fname, "vileXXXXXX"));
-    if (fd >= 0)
-	fp = fdopen(fd, "w");
+    const char fmt[] = "%s/vileXXXXXX";
+    char *tmpdir = getenv("TMPDIR");
+    int fd;
+
+    if (tmpdir == NULL)
+        tmpdir = "/tmp";
+    if ((*fname = malloc(strlen(tmpdir) + sizeof(fmt))) != 0) {
+	sprintf(*fname, fmt, tmpdir);
+	fd = mkstemp(*fname);
+	if (fd >= 0)
+	    fp = fdopen(fd, "w");
+    }
 #else
     int oldmask = umask(0077);
-    strcpy(fname, tmpnam((char *)0));
-    fp = fopen(fname, "w");
+    char *result = tmpnam((char *)0);
+    if (result != 0 && (*fname = malloc(strlen(result) + 1)) != 0) {
+	strcpy(*fname, tmpnam((char *)0));
+	fp = fopen(*fname, "w");
+    }
     umask(oldmask);
 #endif
     return fp;
+}
+
+static void
+zap_tempfile(char **fname)
+{
+    remove(*fname);
+    free(*fname);
+    *fname = 0;
 }
 
 %}
@@ -246,10 +266,10 @@ do_filter(FILE *inputs GCC_UNUSED)
     LINE *lp;
 #else
     FILE *FromFP;
-    char from[256];
+    char *from;
     int ch;
 #endif
-    char chop[256];
+    char *chop;
     FILE *fp;
     char buffer[BUFFER_SIZE + 2];
     char *attr = class_attr(NAME_ERROR);
@@ -260,7 +280,7 @@ do_filter(FILE *inputs GCC_UNUSED)
     /*
      * Create a temporary file which will hold the words to check spelling.
      */
-    if ((ChopFP = open_tempfile(chop)) == 0)
+    if ((ChopFP = open_tempfile(&chop)) == 0)
 	return;
 
 #ifdef filter_def		/* built-in filter? */
@@ -273,9 +293,10 @@ do_filter(FILE *inputs GCC_UNUSED)
     }
     yylex();
 #else				/* external filter */
-    if ((FromFP = open_tempfile(from)) == 0) {
+    if ((FromFP = open_tempfile(&from)) == 0) {
 	fclose(ChopFP);
-	remove(chop);
+	zap_tempfile(&from);
+	zap_tempfile(&chop);
 	return;
     }
     while ((ch = fgetc(inputs)) != EOF)
@@ -322,7 +343,7 @@ do_filter(FILE *inputs GCC_UNUSED)
 	}
 	pipe_close(fp);
     }
-    remove(chop);
+    zap_tempfile(&chop);
 
     /*
      * Reparse the buffer, marking the misspelled words.
@@ -335,7 +356,7 @@ do_filter(FILE *inputs GCC_UNUSED)
 
 #ifndef filter_def		/* external filter? */
     fclose(yyin);		/* yylex() may not close */
-    remove(from);
+    zap_tempfile(&from);
 #endif
 
 #endif /* HAVE_POPEN */
