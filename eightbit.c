@@ -1,5 +1,5 @@
 /*
- * $Id: eightbit.c,v 1.43 2008/05/06 00:58:40 Mark.Robinson Exp $
+ * $Id: eightbit.c,v 1.44 2008/06/22 16:29:12 tom Exp $
  *
  * Maintain "8bit" file-encoding mode by converting incoming UTF-8 to single
  * bytes, and providing a function that tells vile whether a given Unicode
@@ -647,10 +647,10 @@ initialize_table_8bit_utf8(void)
 void
 vl_init_8bit(const char *wide, const char *narrow)
 {
+    int fixup, fixed_up;
     int n;
 
     TRACE((T_CALLED "vl_init_8bit(%s, %s)\n", NonNull(wide), NonNull(narrow)));
-#if OPT_ICONV_FUNCS
     if (wide == 0 || narrow == 0) {
 	TRACE(("setup POSIX-locale\n"));
 	vl_encoding = enc_POSIX;
@@ -677,6 +677,7 @@ vl_init_8bit(const char *wide, const char *narrow)
 	 * If the wide/narrow encodings do not differ, that is probably because
 	 * the narrow encoding is really a wide-encoding.
 	 */
+#if OPT_ICONV_FUNCS
 	if (vl_narrow_enc.encoding != 0
 	    && vl_wide_enc.encoding != 0
 	    && strcmp(vl_narrow_enc.encoding, vl_wide_enc.encoding)) {
@@ -690,42 +691,44 @@ vl_init_8bit(const char *wide, const char *narrow)
 	     */
 	    open_encoding(vl_wide_enc.encoding, vl_narrow_enc.encoding);
 	}
+#endif
     } else {
 	TRACE(("setup narrow-locale(%s)\n", narrow));
 	vl_encoding = enc_8BIT;
 	vl_wide_enc.locale = 0;
 	vl_narrow_enc.locale = StrMalloc(narrow);
 	vl_get_encoding(&vl_narrow_enc.encoding, narrow);
+#if OPT_ICONV_FUNCS
 	if (try_encoding(vl_narrow_enc.encoding, "UTF-8")) {
 	    initialize_table_8bit_utf8();
 	    close_encoding();
 	}
+#endif
     }
-#else
-    TRACE(("setup %s-locale(%s)\n",
-	   isEmpty(wide) ? "narrow" : "mixed",
-	   NonNull(narrow)));
-    vl_wide_enc.locale = wide ? StrMalloc(wide) : 0;
-    vl_narrow_enc.locale = narrow ? StrMalloc(narrow) : 0;
-    vl_get_encoding(&vl_narrow_enc.encoding, narrow);
-#endif /* OPT_ICONV_FUNCS */
 
     /*
      * Even if we do not have iconv, we can still convert between the narrow
      * encoding (if it happens to be ISO-8859-1) and UTF-8.
      */
     if (vl_is_latin1_encoding(vl_narrow_enc.encoding)) {
-	for (n = 0; n < N_chars; ++n) {
-	    if (table_8bit_utf8[n].text == 0) {
-		char temp[10];
-		int len = vl_conv_to_utf8((UCHAR *) temp, n, sizeof(temp));
+	fixup = N_chars;
+    } else {
+	/* if nothing else, still accept POSIX characters */
+	fixup = 128;
+    }
+    for (n = 0, fixed_up = 0; n < fixup; ++n) {
+	if (table_8bit_utf8[n].text == 0) {
+	    char temp[10];
+	    int len = vl_conv_to_utf8((UCHAR *) temp, n, sizeof(temp));
 
-		temp[len] = EOS;
-		table_8bit_utf8[n].code = n;
-		table_8bit_utf8[n].text = strmalloc(temp);
-	    }
+	    temp[len] = EOS;
+	    table_8bit_utf8[n].code = n;
+	    table_8bit_utf8[n].text = strmalloc(temp);
+	    if (len)
+		++fixed_up;
 	}
     }
+    TRACE(("fixed-up %d of %d 8bit/utf8 mappings\n", fixed_up, fixup));
 
     /*
      * Build reverse-index.
@@ -957,6 +960,7 @@ vl_mb_getch(void)
 	if ((ch = save_getch()) < 0)
 	    break;
 	*ip++ = ch;
+	*ip = EOS;
 	ch = vl_conv_to_utf32(&result, input, ip - input);
 	if (ch == 0) {
 	    ch = -1;

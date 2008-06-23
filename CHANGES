@@ -1,3 +1,23 @@
+Changes for vile 9.7 (released ??? ??? ?? ????)
+
+ 20080622 (a)
+	> Decklin Foster:
+	+ modify spell filter to use $TMPDIR rather putting its temporary
+	  files in the current directory.
+	> Tom Dickey:
+	+ improved php highlighting:
+	  + identifiers may begin with "_".
+	  + color heredocs and nowdocs
+	  + color comments beginning with "#".
+	  + add preamble pattern for phpmode.
+	+ improve locale initialization in vl_init_8bit() by merging the
+	  with/without iconv chunks, except for the parts that explicitly
+	  rely on iconv.  That fixes an unintended call to vl_mb_getch()
+	  for some non-UTF-8 locales.
+	+ correct initialization of table_8bit_utf8[] when iconv is not used.
+	  If the locale did not use ISO-8859-1, the table was not initialized,
+	  causing input to be ignored (report by Gary Jennejohn).
+
 Changes for vile 9.7 (released Sat Jun 14 2008)
 
  20080601 (o)
