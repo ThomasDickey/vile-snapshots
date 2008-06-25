@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/sql-filt.l,v 1.33 2008/01/12 17:21:27 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/sql-filt.l,v 1.38 2008/06/24 23:49:05 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of SQL script
  * - T.Dickey
@@ -33,13 +33,30 @@ static int next_line;		/* state after one-line SQL*Plus */
 static int began_state;
 static int saved_state;
 
+static void
+begin_oneliner(void)
+{
+    new_state(ONE_LINE);
+    next_line = LEAD;
+    flt_bfr_begin(String_attr);
+}
+
+static void
+finish_oneliner(void)
+{
+    flt_bfr_finish();
+    new_state(next_line);
+    next_line = LEAD;
+}
+
 /******************************************************************************/
 
 %}
 
 SPACE		[ \t]+
 
-ACTION		[@!$]
+SHELL		[$!]
+ACTION		[@][@]?
 
 UNITS		[kKmM]
 INTEGER		[[:digit:]]+
@@ -47,8 +64,8 @@ SIGN		[+-]
 REAL		{INTEGER}?(\.{INTEGER}([eE]{SIGN}?{INTEGER})?)
 NUMBER		{SIGN}?({INTEGER}|{REAL})({UNITS})?
 
-SSTRING		\'([^\'\n]|\'\')*\'
-DSTRING		\"([^"\n])*\"
+SSTRING		\'([^\']|\'\')*\'
+DSTRING		\"([^"])*\"
 STRING		({SSTRING}|{DSTRING})
 
 IDENT		[%]?[[:alpha:]][[:alnum:]_$#]*
@@ -67,8 +84,7 @@ HOSTVAR		":"{IDENT}
 				new_state(BODY);
 				if (set_symbol_table("sqlplus")) {
 				    if ((attr = ci_keyword_attr(text)) != 0) {
-					new_state(ONE_LINE);
-					next_line = LEAD;
+					begin_oneliner();
 					/* FIXME:  a few commands have keywords,
 					 * such as "set".
 					 */
@@ -89,11 +105,16 @@ HOSTVAR		":"{IDENT}
 				new_state(INLINE_CMT);
 			    } else {
 				WriteToken(attr);
-				new_state(BODY);
+				if (!strcmp(yytext, "then")
+				 || !strcmp(yytext, "else")) {
+				    new_state(LEAD);
+				} else {
+				    new_state(BODY);
+				}
 			    }
 			}
 
-<MORE,BODY>{HOSTVAR}	{ flt_puts(yytext, 1, Action_attr);
+<LEAD,MORE,BODY>{HOSTVAR}	{ flt_puts(yytext, 1, Action_attr);
 			  WriteToken2(Ident_attr,1);
 			  new_state(BODY);
 			}
@@ -104,9 +125,9 @@ HOSTVAR		":"{IDENT}
 <SERVER>[\n]		|
 <SERVER>.		{ unput(yytext[0]); old_state(); }
 
-<MORE,BODY>{NUMBER}	{ WriteToken(Number_attr); new_state(BODY); }
+<LEAD,MORE,BODY>{NUMBER}	{ WriteToken(Number_attr); new_state(BODY); }
 
-<MORE,BODY>{STRING}	{ WriteToken(String_attr); new_state(BODY); }
+<LEAD,MORE,BODY>{STRING}	{ WriteToken(String_attr); new_state(BODY); }
 
 <SERVER,MORE,BODY>"&"	{ ECHO; }
 <MORE,BODY>"<>"		{ ECHO; }
@@ -167,24 +188,32 @@ HOSTVAR		":"{IDENT}
 
 <LEAD,MORE>{LABEL}	{ WriteToken(Action_attr); }
 
-<LEAD,MORE>{ACTION}[^=][^\r\n]* {
+<LEAD,MORE>{SHELL}[^=][^\r\n]* {
 			    WriteToken(Action_attr);
-			    new_state(ONE_LINE);
-			    next_line = LEAD;
+			    begin_oneliner();
 			}
+<LEAD,MORE>{ACTION}[^=][^[:space:]]* {
+			    WriteToken(Action_attr);
+			    begin_oneliner();
+			}
+<BODY>{SHELL}		|
 <BODY>{ACTION}		{
 			    WriteToken(Action_attr);
 			    new_state(SERVER);
 			}
-<ONE_LINE>[^\r\n]*	{ WriteToken(String_attr);
+<ONE_LINE>[^\r\n]*	{ flt_bfr_append(yytext, yyleng);
 			  if (yyleng != 0 && yytext[yyleng - 1] == '-')
 			  	next_line = ONE_LINE;
 			    else
 			  	next_line = LEAD;
 			}
-<ONE_LINE>\n		{ ECHO;
-			  new_state(next_line);
-			  next_line = LEAD;
+<ONE_LINE>[\r\n]	{
+			  if (next_line == LEAD) {
+			      finish_oneliner();
+			      ECHO;
+			  } else {
+			      flt_bfr_append(yytext, yyleng);
+			  }
 			}
 
 <LEAD,MORE,BODY>.	{ ECHO; }
@@ -215,6 +244,7 @@ do_filter(FILE *inputs)
     set_state(LEAD);
     while (yylex() > 0) {
     }
+    finish_oneliner();
 }
 
 #if NO_LEAKS

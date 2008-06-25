@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/key-filt.c,v 1.21 2008/01/12 16:44:13 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/key-filt.c,v 1.22 2008/06/23 21:00:40 tom Exp $
  *
  * Filter to add vile "attribution" sequences to a vile keyword file.  It's
  * done best in C because the delimiters may change as a result of processing
@@ -19,6 +19,28 @@ static char *Ident_attr;
 static char *Ident2_attr;
 static char *Literal_attr;
 
+static int
+color_code(char *s, char **t)
+{
+    int result = 0;
+    char *base = s;
+
+    if (*s != 0) {
+	if (strchr("RUBI", *s) != 0)
+	    ++s;
+	if (*s++ == 'C') {
+	    if (isxdigit(CharOf(*s))) {
+		if (*(++s) == 0) {
+		    if (FltOptions('c'))
+			*t = base;
+		    result = 1;
+		}
+	    }
+	}
+    }
+    return result;
+}
+
 static char *
 color_of(char *s)
 {
@@ -35,6 +57,7 @@ color_of(char *s)
     if (is_class(s)) {
 	result = Ident2_attr;
     } else if (*s != 0) {
+	char *base = s;
 	result = Action_attr;
 	while (*s != 0) {
 	    if (quoted) {
@@ -43,12 +66,8 @@ color_of(char *s)
 	    } else if (*s == QUOTE) {
 		quoted = 1;
 		result = Literal_attr;
-	    } else if (strchr("RUBI", *s) == 0) {
-		if (*s++ != 'C' || !isxdigit(CharOf(*s))) {
-		    flt_error("unexpected color code");
-		    result = Error_attr;
-		    break;
-		}
+	    } else if ((s == base) && color_code(s, &result)) {
+		break;
 	    }
 	    s++;
 	}

@@ -179,6 +179,9 @@ JavaScript:
   -s	for JavaScript (to support jsmode).  This controls whether to allow
 	regular expressions in certain cases.
 
+The keyword filter recognizes a "-c" option to tell it to highlight color
+codes with the corresponding color rather than the "Action" color.
+
 The MAN filter recognizes a "-8" option which tells it to use 8-bit
 approximations for some common UTF-8 equivalents such as hyphen.
 
@@ -282,4 +285,4 @@ NOTE
 The lex filters have been well tested only with flex, which treats newlines
 differently.  Older versions of lex may not support the %x states.
 
--- $Header: /users/source/archives/vile.vcs/doc/RCS/filters.doc,v 1.38 2008/05/26 09:34:16 tom Exp $
+-- $Header: /users/source/archives/vile.vcs/doc/RCS/filters.doc,v 1.39 2008/06/23 21:00:35 tom Exp $

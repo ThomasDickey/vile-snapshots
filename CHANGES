@@ -1,10 +1,17 @@
 Changes for vile 9.7 (released ??? ??? ?? ????)
 
- 20080622 (a)
+ 20080624 (a)
 	> Decklin Foster:
 	+ modify spell filter to use $TMPDIR rather putting its temporary
 	  files in the current directory.
 	> Tom Dickey:
+	+ improved sql highlighting:
+	  + allow host variables in LEAD state.
+	  + reset state to LEAD after "then" or "else".
+	  + improve parsing of "@" character.
+	  + fix a couple of state-transitions for numbers and strings.
+	  + correct a misspelled color class "ident2" to "Ident2".
+	  + allow newlines inside quoted strings.
 	+ improved php highlighting:
 	  + identifiers may begin with "_".
 	  + color heredocs and nowdocs
