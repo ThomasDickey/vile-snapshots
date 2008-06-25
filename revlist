@@ -1,4 +1,4 @@
-revlist for vile, version v9_7
+revlist for vile, version v9_7a
 --------------------------------------------------------------------------------
 aclocal.m4	1.183
 ansi.c	1.49
@@ -14,7 +14,7 @@ btree.h	1.5
 buffer.c	1.330
 buglist	1.411
 builtflt.c	1.63
-CHANGES	1.1150
+CHANGES	1.1158
 CHANGES.R3	1.1
 CHANGES.R4	1.1
 CHANGES.R5	1.1
@@ -38,7 +38,7 @@ display.c	1.475
 djhandl.c	1.6
 dumbterm.c	1.23
 edef.h	1.339
-eightbit.c	1.43
+eightbit.c	1.44
 estruct.h	1.663
 eval.c	1.379
 exec.c	1.314
@@ -86,7 +86,7 @@ opers.c	1.93
 os2keys.h	1.2
 os2pipe.c	1.5
 os2vio.c	1.36
-patchlev.h	1.375
+patchlev.h	1.376
 path.c	1.161
 perl.xs	1.110
 plugin.c	1.1
@@ -100,7 +100,7 @@ README.PC	1.33
 README.VMS	1.5
 regexp.c	1.139
 region.c	1.149
-revlist	v9_7
+revlist	v9_7a
 search.c	1.146
 select.c	1.167
 sinstall.sh	1.1
@@ -118,7 +118,7 @@ ucrypt.c	1.15
 undo.c	1.96
 version.c	1.65
 vile.1	1.37
-vile-9.7.spec	1.2
+vile-9.7.spec	1.3
 vile.hlp	1.653
 vile.wmconfig	1.1
 vl_alloc.h	1.1
@@ -158,7 +158,7 @@ xtermkeys.h	1.7
 xvile.wmconfig	1.1
 doc/config.doc	1.15
 doc/dir.doc	1.3
-doc/filters.doc	1.38
+doc/filters.doc	1.39
 doc/macros.doc	1.106
 doc/menus.doc	1.7
 doc/modes.doc	1.17
@@ -234,7 +234,7 @@ filters/iss-filt.l	1.10
 filters/iss.key	1.5
 filters/java.key	1.3
 filters/js.key	1.4
-filters/key-filt.c	1.21
+filters/key-filt.c	1.22
 filters/latexflt.l	1.48
 filters/latex.key	1.2
 filters/lex-filt.l	1.62
@@ -277,7 +277,7 @@ filters/pas-filt.l	1.7
 filters/pas.key	1.4
 filters/pc.key	1.1
 filters/perl.key	1.8
-filters/php-filt.l	1.8
+filters/php-filt.l	1.18
 filters/php.key	1.3
 filters/pl-filt.c	1.97
 filters/pot-filt.l	1.9
@@ -306,10 +306,10 @@ filters/sh-filt.l	1.75
 filters/sh.key	1.4
 filters/sml-filt.l	1.8
 filters/sml.key	1.1
-filters/spellflt.l	1.36
+filters/spellflt.l	1.38
 filters/spell.rc	1.8
-filters/sql-filt.l	1.33
-filters/sql.key	1.9
+filters/sql-filt.l	1.38
+filters/sql.key	1.10
 filters/syntax.key	1.1
 filters/tagsfilt.c	1.9
 filters/tags.key	1.1
@@ -358,7 +358,7 @@ macros/digraphs.rc	1.2
 macros/gnugpg.rc	1.3
 macros/loaderrs.rc	1.2
 macros/manpage.rc	1.24
-macros/modes.rc	1.73
+macros/modes.rc	1.74
 macros/palettes.rc	1.7
 macros/pictmode.rc	1.4
 macros/search.rc	1.3
