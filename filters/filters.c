@@ -1,7 +1,7 @@
 /*
  * Common utility functions for vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.115 2008/05/25 23:06:02 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.117 2008/06/27 23:31:37 tom Exp $
  *
  */
 
@@ -203,6 +203,7 @@ ExecDefault(char *param)
     if (!*param)
 	param = NAME_KEYWORD;
     if (is_class(param)) {
+	*s = save;
 	free(default_attr);
 	default_attr = strmalloc(param);
 	VERBOSE(1, ("set default_attr '%s' %p\n", default_attr, default_attr));
@@ -929,7 +930,8 @@ parse_keyword(char *name, int classflag)
 	    args = default_attr;
 	    VERBOSE(2, ("using attr \"%s\"", args));
 	}
-	if ((data = FindIdentifier(args)) != 0) {
+	if (strcmp(name, args)
+	    && (data = FindIdentifier(args)) != 0) {
 	    /*
 	     * Insert the classname rather than the data->kw_attr value,
 	     * since insert_keyword makes a copy of the string we pass to it.

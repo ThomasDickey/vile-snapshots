@@ -269,14 +269,22 @@ use the same syntax as other majormodes:
 
 	cppmode		C++ uses C filter
 	cshmode		C-shell uses shell filter
+	csmode		C# uses C filter
+	csvmode		CSV uses text filter
+	delphimode	Delphi uses Pascal filter
+	docbookmode	Docbook uses XML filter
 	imakemode	Imake uses C filter
 	javamode	Java uses C filter
 	jsmode		JavaScript uses C filter
-	nmakemode	nmake uses C filter
+	jspmode		JSP uses HTML filter
+	nmakemode	nmake uses make filter
 	nsismode	nsis uses def filter
 	pcmode		printcap uses termcap filter
+	schememode	Scheme uses Lisp filter
 	texmode		TeX uses latex filter
 	vbmode		Visual Basic uses basic filter
+	vbsmode		Visual Basic Scripting uses basic filter
+	xpmmode		XPM uses C filter
 
 
 NOTE
@@ -285,4 +293,4 @@ NOTE
 The lex filters have been well tested only with flex, which treats newlines
 differently.  Older versions of lex may not support the %x states.
 
--- $Header: /users/source/archives/vile.vcs/doc/RCS/filters.doc,v 1.39 2008/06/23 21:00:35 tom Exp $
+-- $Header: /users/source/archives/vile.vcs/doc/RCS/filters.doc,v 1.40 2008/06/29 15:18:35 tom Exp $

@@ -1,5 +1,12 @@
 Changes for vile 9.7 (released ??? ??? ?? ????)
 
+ 20080??? (b)
+	> Tom Dickey:
+	+ add "-c" option to vile-key-filt, which tells it to display tokens
+	  in their final color rather than based on syntax.
+	+ extend syntax keyword parsing to allow flags to be set for each
+	  keyword, e.g., to mark keywords that are used to delimit comments.
+
  20080624 (a)
 	> Decklin Foster:
 	+ modify spell filter to use $TMPDIR rather putting its temporary
