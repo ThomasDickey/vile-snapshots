@@ -1,4 +1,4 @@
-; $Id: modes.rc,v 1.74 2008/06/22 18:18:26 tom Exp $
+; $Id: modes.rc,v 1.75 2008/07/04 00:01:48 tom Exp $
 ; majormodes in this file are ordered alphabetically for convenience - the
 ; precedence used by vile is strictly alphabetic, counting case.  Use the
 ; before and after qualifiers to override the precedence.
@@ -495,6 +495,12 @@ define-mode mail
 	pre '^\(From \|To: \)'
 ~endwith
 
+define-mode mailcap
+~with define-submode mailcap
+	mode-filename	'^[.]\?mailcap'
+	before	'conf'
+~endwith
+
 define-mode make
 ~with define-submode make
 	mode-filename	'^\([Mm]akefile.*\|make\..*\|.*\.mak\|.*\.mk\|Jamdefs.*\|Jamfile\)$'
@@ -837,6 +843,44 @@ setv %vb-access '^\(\(Public\|Private\|Protected\|Friend\)\s\+\)*'
 define-mode vb
 ~with define-submode vb
 	before		"basic"
+	suffixes	'\.\(vb\)$'
+	qualifiers=all
+	comment-prefix	"^\\s*'"
+	comments	"^\\s*'\\s\\+\\s*$"
+	dos
+	ignorecase
+	notabinsert
+	tabstop=4
+	shiftwidth=4
+	; disallow continuation lines, or if-then-statement lines
+	fence-if	"^\\s*if\\>.*\\<then\\>\\(\\s*\'.*\\)\\?$"
+	fence-elif	'^\s*elseif\>'
+	fence-else	'^\s*else\>'
+	fence-fi	'^\s*end\s\+if\>'
+	sections	&cat %vb-access '\(Sub\|Function\|Property\)'
+~elsewith define-submode vb group 'for-loop'
+	fence-if	'^\s*for\>'
+	fence-fi	'^\s*next\>'
+~elsewith define-submode vb group 'while-loop'
+	fence-if	'^\s*while\>'
+	fence-fi	'^\s*wend\>'
+~elsewith define-submode vb group 'sub'
+	fence-if	&cat %vb-access 'sub\>'
+	fence-fi	'^\s*end\s\+sub\>'
+~elsewith define-submode vb group 'function'
+	fence-if	&cat %vb-access 'function\>'
+	fence-fi	'^\s*end\s\+function\>'
+~elsewith define-submode vb group 'property'
+	fence-if	&cat %vb-access 'property\>'
+	fence-fi	'^\s*end\s\+property\>'
+~elsewith define-submode vb group 'region'
+	fence-if	'^\s*#region\>'
+	fence-fi	'^\s*#end region\>'
+~endwith
+
+define-mode vb6
+~with define-submode vb
+	before		"basic"
 	suffixes	'\.\(bas\|cls\|ctl\|frm\|dsr\)$'
 	pre		'\(^VERSION\|VB_Name\)'
 	qualifiers=all
@@ -877,7 +921,7 @@ define-mode vb
 define-mode vbs
 ~with define-submode vbs
 	before		"basic"
-	suffixes	'\.\(vb\|vbs\)$'
+	suffixes	'\.\(vbs\)$'
 	comment-prefix	"^\\s*'"
 	comments	"^\\s*'\\s\\+\\s*$"
 	dos

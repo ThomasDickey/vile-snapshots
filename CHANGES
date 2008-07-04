@@ -2,6 +2,11 @@ Changes for vile 9.7 (released ??? ??? ?? ????)
 
  20080??? (b)
 	> Tom Dickey:
+	+ add a brief mode format "%M" for modeline-format
+	+ split-out vb6 majormode from vbmode, leaving the latter for .Net
+	+ modify vile-conf-filt to disallow quoted strings to extend to
+	  multiple lines without escaping the newline.
+	+ add mailcap mode.
 	+ add "-c" option to vile-key-filt, which tells it to display tokens
 	  in their final color rather than based on syntax.
 	+ extend syntax keyword parsing to allow flags to be set for each

@@ -1,4 +1,4 @@
-MANIFEST for vile, version v9_7a2
+MANIFEST for vile, version v9_7a3
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 CHANGES                         Change-log for VILE
@@ -248,6 +248,7 @@ filters/lua.key                 lua keywords
 filters/m4-filt.c               syntax filter for M4
 filters/m4.key                  keywords for M4 syntax filter
 filters/mail.key                keywords for mail-filter
+filters/mailcap.key             keywords for mailcap mode
 filters/mailfilt.l              mail syntax highlighting filter for vile
 filters/make.key                keywords for makefile syntax highlighter
 filters/makefile.2nd            rules for filters/makefile
@@ -259,6 +260,7 @@ filters/makefile.wnt            makefile for filters with Visual C++
 filters/makefilt.l              makefile syntax filter for vile
 filters/makelist.sh             script to construct a list of filter names
 filters/manfilt.c               manpage-filter
+filters/mc-filt.l               mailcap syntax filter
 filters/mcrl.key                filters for mCRL/mCRL2
 filters/mcrlfilt.l              filters for mCRL/mCRL2
 filters/midl.key                keywords for MIDL
@@ -330,6 +332,7 @@ filters/txt-filt.l              syntax filter for ordinary text
 filters/unfilter.c              main program, parsing for un-filters
 filters/unfilter.h              common definitions for un-filters
 filters/vb.key                  keywords for Visual Basic .Net
+filters/vb6.key                 keywords for Visual Basic 6
 filters/vile.key                fallback template for highlighting colors
 filters/vilefilt.l              syntax filter for vile macros
 filters/vim.key                 keywords for vim syntax files
