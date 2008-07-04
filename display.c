@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.475 2008/05/25 16:12:28 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.476 2008/07/04 14:13:54 tom Exp $
  *
  */
 
@@ -2665,13 +2665,18 @@ mlfs_skipfix(const char **fsp)
 	if (b_val(bp, mode)) PutModename("%c%s", name)
 
 #if OPT_MAJORMODE
-#define PutMajormode(bp) if (bp->majr != 0) PutModename("%c%s", bp->majr->longname)
+#define PutMajormode(bp) \
+	if (bp->majr != 0) \
+	    PutModename("%c%s", \
+		brief \
+		? bp->majr->shortname \
+		: bp->majr->longname)
 #else
 #define PutMajormode(bp)	/*nothing */
 #endif
 
 static int
-modeline_modes(BUFFER *bp, char **msptr)
+modeline_modes(BUFFER *bp, char **msptr, int brief)
 {
     char *ms = msptr ? *msptr : 0;
     size_t mcnt = 0;
@@ -2679,7 +2684,7 @@ modeline_modes(BUFFER *bp, char **msptr)
     PutMajormode(bp);
 #if COMPLETE_FILES || COMPLETE_DIRS
     if (b_is_directory(bp))
-	PutModename("%c%s", "directory");
+	PutModename("%c%s", brief ? "dir" : "directory");
 #endif
 #if !OPT_MAJORMODE
     PutMode(MDCMOD, "cmode");
@@ -2713,11 +2718,11 @@ modeline_modes(BUFFER *bp, char **msptr)
 			choice_to_name(&fsm_recordsep_blist,
 				       b_val(bp, VAL_RECORD_SEP)));
 #else
-	PutMode(MDDOS, "dos-style");
+	PutMode(MDDOS, brief ? "dos" : "dos-style");
 #endif
     }
-    PutMode(MDREADONLY, "read-only");
-    PutMode(MDVIEW, "view-only");
+    PutMode(MDREADONLY, brief ? "ro" : "read-only");
+    PutMode(MDVIEW, brief ? "view" : "view-only");
     PutMode(MDLOADING, "loading");
 #if OPT_LCKFILES
     PutMode(MDLOCKED, "locked by");
@@ -2892,10 +2897,11 @@ special_formatter(TBUFF **result, const char *fs, WINDOW *wp)
 	    case 'b':
 		ms = lsprintf(ms, "%s", bp ? bp->b_bname : UNNAMED_BufName);
 		break;
+	    case 'M':
 	    case 'm':
-		if (bp != 0 && modeline_modes(bp, (char **) 0)) {
+		if (bp != 0 && modeline_modes(bp, (char **) 0, (fc == 'M'))) {
 		    mlfs_prefix(&fs, &ms, lchar);
-		    (void) modeline_modes(bp, &ms);
+		    (void) modeline_modes(bp, &ms, (fc == 'M'));
 		    mlfs_suffix(&fs, &ms, lchar);
 		} else
 		    mlfs_skipfix(&fs);
@@ -3207,7 +3213,7 @@ update_modeline(WINDOW *wp)
     ms = left_ms;
     ms = lsprintf(ms, "%c%c%c %s ",
 		  lchar[0], modeline_show(wp, lchar[0]), lchar[0], bp->b_bname);
-    if (modeline_modes(bp, &ms))
+    if (modeline_modes(bp, &ms, FALSE))
 	*ms++ = ' ';
     if (bp->b_fname != 0
 	&& (shorten_path(vl_strncpy(temp, bp->b_fname, sizeof(temp)), FALSE))

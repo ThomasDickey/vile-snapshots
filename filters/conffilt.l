@@ -6,7 +6,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/conffilt.l,v 1.5 2008/01/12 17:21:27 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/conffilt.l,v 1.6 2008/07/04 13:51:56 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of config-file.
  */
@@ -24,7 +24,7 @@ static char *String_attr;
 
 %}
 
-SSTRING		\'([^']|\n)*\'
+SSTRING		\'([^'\n]|(\\[\n]))*\'
 
 NAME		[[:alnum:]_]
 
@@ -55,10 +55,10 @@ IDENTX		\$[\*@#\?\$!-]
 <NORMAL>{IDENT2}	|
 <NORMAL>{IDENTX}	{ WriteToken(Ident_attr); }
 
-<NORMAL>\\[n]		{ flt_bfr_embed(yytext, 1, Action_attr); flt_bfr_append(yytext + 1, yyleng - 1); } 
+<NORMAL>\\[n]		{ WriteToken3(Action_attr, 1); WriteToken2("", 1); } 
 <NORMAL>\\.		|
 <NORMAL>{SSTRING}	{ WriteToken(String_attr); }
-<NORMAL>\"		{ push_state(QUOTED); BeginQuote(QUOTED, String_attr); }
+<NORMAL>\"		{ PushQuote(QUOTED, String_attr); }
 
 <NORMAL>[\n]		{ ECHO; }
 
@@ -68,7 +68,7 @@ IDENTX		\$[\*@#\?\$!-]
 <QUOTED>{IDENT2}	{ flt_bfr_embed(yytext, yyleng, Ident_attr); }
 <QUOTED>[^`\r\n\\\"]+	{ flt_bfr_append(yytext, yyleng); }
 <QUOTED>[\n]		|
-<QUOTED>\"		{ FinishQuote(NORMAL); pop_state(); }
+<QUOTED>\"		{ PopQuote(); }
 
 %%
 

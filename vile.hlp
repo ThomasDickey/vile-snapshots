@@ -3817,6 +3817,7 @@ Mode line customization
 		%L	number of lines in buffer, if ruler is set
 		%m	major mode(s), e.g., cmode, view-only, etc.  Displayed
 			in square brackets.
+		%M	brief version of "%m", omitting "mode", etc.
 		%n	file leaf name when not internal buffer name,
 			otherwise the buffer name.
 		%N	absolute file path when not internal buffer name,
@@ -6459,4 +6460,4 @@ Problems
 
 Copyright 1995-2007,2008 by Paul Fox, Thomas Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.653 2008/06/14 12:07:27 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.654 2008/07/04 14:18:20 tom Exp $
