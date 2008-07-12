@@ -1,11 +1,16 @@
+# makefile header for vile utilities using DJGPP.
+# From the top-makefile.djg, do
+#	make -f makefile.djg flt=y
 #
-# makefile for vile utilities using DJGPP
-#
-# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.djg,v 1.3 2000/02/28 10:45:11 tom Exp $
-#
+# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.djg,v 1.4 2008/07/12 18:34:00 tom Exp $
 
 CC = gcc
-LONGARGS = gcc
+LINK = gcc
+LEX = flex
+x = .exe
+o = .o
+
+AR_OPTS = crv
 
 DEBUG = -g
 #OPTIM =
@@ -13,15 +18,7 @@ DEBUG = -g
 #DEBUG =
 OPTIM = -O2
 
-CFLAGS= -Wall $(DEBUG) $(OPTIM) -I.
+CFLAGS= -Wall $(DEBUG) $(OPTIM) -I. -I..
 
-FILT_DEPS = filterio$o filters$o
-
-c-filt : c-filt.o $(FILT_DEPS)
-	$(CC) $(CFLAGS) -o $@ c-filt.o $(FILT_DEPS) -lpc
-	coff2exe $@
-	-stubedit $@.exe globbing=no
-
-clean:
-	rm -f *.exe
-	rm -f *.o
+LIB_PREFIX=
+LIBBUILTFLT=${LIB_PREFIX}vlflt.a

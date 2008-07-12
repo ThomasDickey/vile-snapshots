@@ -1,5 +1,5 @@
 /*
- * $Id: eightbit.c,v 1.44 2008/06/22 16:29:12 tom Exp $
+ * $Id: eightbit.c,v 1.45 2008/07/11 04:26:50 tom Exp $
  *
  * Maintain "8bit" file-encoding mode by converting incoming UTF-8 to single
  * bytes, and providing a function that tells vile whether a given Unicode
@@ -26,9 +26,12 @@
 
 #define StrMalloc(s) ((s) ? strmalloc(s) : 0)
 
-#if DISP_TERMCAP || DISP_CURSES
+#if DISP_TERMCAP || DISP_CURSES || DISP_BORLAND
+#define USE_MBTERM 1
 static int (*save_getch) (void);
 static OUTC_DCL(*save_putch) (int c);
+#else
+#define USE_MBTERM 0
 #endif
 
 /******************************************************************************/
@@ -847,7 +850,7 @@ vl_get_encoding(char **target, const char *locale)
     return result;
 }
 
-#if DISP_TERMCAP || DISP_CURSES
+#if USE_MBTERM
 /*
  * Use the lookup table created in vl_init_8bit() to convert an "8bit"
  * value to the corresponding UTF-8 string.  If the current locale
@@ -1042,7 +1045,7 @@ vl_close_mbterm(void)
 	}
     }
 }
-#endif /* DISP_TERMCAP || DISP_CURSES */
+#endif /* USE_MBTERM */
 
 #if NO_LEAKS
 void

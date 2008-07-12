@@ -1,26 +1,23 @@
+# makefile for vile using DJGCC 2.x and  GNU's MAKE
 #
-# makefile for vile using DJGCC 1.09 and  GNU's MAKE 3.58
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.djg,v 1.38 2008/07/12 18:32:26 tom Exp $
 #
-# T.DANG (dang@cogit.ign.fr)
-#
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.djg,v 1.37 2008/06/14 14:26:39 tom Exp $
-#
-#
+# Options (set to "yes" to enable):
+#	dbg	- debugging, e.g., for gdb
+#	flt	- syntax filters (requires flex)
+#	i18n	- locale support (minimal - DJGPP only supports C/POSIX)
+#	trace	- debugging traces
 
 CC = gcc
-LONGARGS = gcc
+AWK = gawk
+x = .exe
+o = o
 
-DEBUG = -g
 #OPTIM =
-
-#DEBUG =
 OPTIM = -O2
 
-# DEBUG	+= -DOPT_TRACE
-# TRACE_C = trace.c
-
 # Use these two lines for the Borland/CONIO display (DPMI compatible).
-CFLAGS= -Wall -I. $(DEBUG) $(OPTIM) -DDISP_BORLAND -Dscrn_chosen
+CFLAGS= -Wall -I. $(OPTIM) -DDISP_BORLAND -Dscrn_chosen
 DISP_SRC = borland.c gppconio.c
 
 # these are normal editable headers
@@ -39,23 +36,35 @@ SRC = 	main.c $(DISP_SRC) \
 	path.c random.c regexp.c \
 	region.c search.c select.c spawn.c statevar.c \
 	tags.c tbuff.c termio.c ucrypt.c undo.c \
-	version.c window.c word.c wordmov.c map.c djhandl.c $(TRACE_C)
+	version.c window.c word.c wordmov.c map.c djhandl.c
+
+ifdef dbg
+CFLAGS	+= -g
+endif
+
+ifdef trace
+CFLAGS	+= -DOPT_TRACE
+SRC	+= trace.c
+endif
+
+ifdef i18n
+CFLAGS	+= -DOPT_LOCALE
+SRC	+= charsets.c eightbit.c wcwidth.c
+endif
 
 OBJ =	$(SRC:.c=.o)
 
 %.o:	%.c estruct.h nemode.h edef.h proto.h
 	$(CC) $(CFLAGS) -c $< -o $@
 
-vile : 	$(BUILTHDRS) $(OBJ)
-	$(CC) $(CFLAGS) -o $@ *.o -lpc
-	coff2exe $@
-#	-stubedit vile.exe globbing=no
+DJ_LIBS = # -lpc
 
-dist :	vile
-	strip vile
-	coff2exe vile
-#	-stubedit vile.exe globbing=no
-	zip pcvile.zip readme.pc readme vile.exe vile.hlp 
+vile$x : 	$(BUILTHDRS) $(OBJ)
+	$(CC) $(CFLAGS) -o $@ *.o $(DJ_LIBS)
+
+dist :	vile$x
+	strip vile$x
+	zip pcvile.zip readme.pc readme vile$x vile.hlp 
 	cd filters
 	zip ..\pcvile.zip *.rc 
 	cd ..\macros
@@ -65,23 +74,39 @@ dist :	vile
 
 nebind.h \
 nefunc.h \
-nename.h :	cmdtbl mktbls.exe
-	mktbls.exe cmdtbl
+nefkeys.h \
+nename.h \
+neproto.h :	cmdtbl mktbls$x
+	mktbls$x cmdtbl
 
 nevars.h \
 nefsms.h \
-nemode.h:	modetbl mktbls.exe
-	mktbls.exe modetbl
+nemode.h :	modetbl mktbls$x
+	mktbls$x modetbl
 
-mktbls.exe:  mktbls.c
-	$(CC) mktbls.c -o mktbls
-	coff2exe mktbls
-	rm -f mktbls
+mktbls$x :  mktbls.c
+	$(CC) mktbls.c -o $@
 
 clean :
-	rm -f mktbls.exe
+	rm -f mktbls$x vile$x vile
 	rm -f *.o
 	rm -f ne*.h
+	rm -f filters/makefile filters-sed
+
+filters/makefile : filters-sed filters/makefile.djg
+	cat filters/makefile.djg >$@
+	sed -f filters-sed filters/makefile.2nd >>$@
+	$(AWK) -f filters/mk-1st.awk <filters/genmake.mak mode=built-in list=all flex=yes >>filters/makefile
+	$(AWK) -f filters/mk-2nd.awk <filters/genmake.mak from="./" linking="@echo linking" compiling="@echo compiling" show="@" mode=built-in list=all flex=yes >>filters/makefile
+
+filters-sed : makefile.djg
+	rm -f $@
+	sh -c "echo 's/@LIB_PREFIX@//' >>$@"
+	sh -c "echo 's/@LIBBUILTFLT@/vlflt.a/' >>$@"
+	sh -c "echo 's/@MAKE_LEX@//' >>$@"
+	sh -c "echo 's/@LEX_CHAR_CLASSES@//' >>$@"
+	sh -c "echo 's/@ECHO_CC@/@/' >>$@"
+	sh -c "echo 's/@RULE_CC@/	@echo compiling $$</' >>$@"
 
 bind.o:		nefunc.h
 eval.o:		nevars.h
