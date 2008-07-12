@@ -9,7 +9,7 @@
  * Note: Visual flashes are not yet supported.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/borland.c,v 1.37 2007/09/03 20:05:59 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/borland.c,v 1.38 2008/07/12 17:14:02 tom Exp $
  *
  */
 
@@ -57,14 +57,50 @@ static struct {
     {"\0\120",     KEY_Down},
     {"\0\115",     KEY_Right},
     {"\0\113",     KEY_Left},
+#if 0
+    {"\0\110",     KEY_S_Up},	/* shift (unchanged) */
+    {"\0\120",     KEY_S_Down},
+    {"\0\115",     KEY_S_Right},
+    {"\0\113",     KEY_S_Left},
+    {"\0\215",     KEY_C_Up},	/* control */
+    {"\0\221",     KEY_C_Down},
+    {"\0\164",     KEY_C_Right},
+    {"\0\163",     KEY_C_Left},
+    {"\0\230",     KEY_A_Up},	/* left-alt */
+    {"\0\240",     KEY_A_Down},
+    {"\0\235",     KEY_A_Right},
+    {"\0\233",     KEY_A_Left},
+#endif
     /* page scroll */
     {"\0\121",     KEY_Next},
     {"\0\111",     KEY_Prior},
     {"\0\107",     KEY_Home},
     {"\0\117",     KEY_End},
+#if 0
+    {"\0\121",     KEY_S_Next},	/* shift (unchanged) */
+    {"\0\111",     KEY_S_Prior},
+    {"\0\107",     KEY_S_Home},
+    {"\0\117",     KEY_S_End},
+    {"\0\166",     KEY_C_Next},	/* control */
+    {"\0\204",     KEY_C_Prior},
+    {"\0\167",     KEY_C_Home},
+    {"\0\165",     KEY_C_End},
+    {"\0\241",     KEY_A_Next},	/* left-alt */
+    {"\0\231",     KEY_A_Prior},
+    {"\0\227",     KEY_A_Home},
+    {"\0\237",     KEY_A_End},
+#endif
     /* editing */
-    {"\0R",        KEY_Insert},
+    {"\0\122",     KEY_Insert},
     {"\0\123",     KEY_Delete},
+#if 0
+    {"\0\122",     KEY_S_Insert},	/* shift (unchanged) */
+    {"\0\123",     KEY_S_Delete},
+    {"\0\222",     KEY_C_Insert},	/* control */
+    {"\0\223",     KEY_C_Delete},
+    {"\0\242",     KEY_A_Insert},	/* left-alt */
+    {"\0\243",     KEY_A_Delete},
+#endif
     /* function keys */
     {"\0;",        KEY_F1},
     {"\0<",        KEY_F2},
@@ -76,6 +112,52 @@ static struct {
     {"\0B",        KEY_F8},
     {"\0C",        KEY_F9},
     {"\0D",        KEY_F10},
+    {"\0\205",     KEY_F11},
+    {"\0\206",     KEY_F12},
+
+    /* shift + F1-F12 */
+    {"\0T",        KEY_F13},
+    {"\0U",        KEY_F14},
+    {"\0V",        KEY_F15},
+    {"\0W",        KEY_F16},
+    {"\0X",        KEY_F17},
+    {"\0Y",        KEY_F18},
+    {"\0Z",        KEY_F19},
+    {"\0[",        KEY_F20},
+    {"\0\\",       KEY_F21},
+    {"\0]",        KEY_F22},
+    {"\0\207",     KEY_F23},
+    {"\0\210",     KEY_F24},
+
+    /* control + F1-F12 */
+    {"\0^",        KEY_F25},
+    {"\0_",        KEY_F26},
+    {"\0`",        KEY_F27},
+    {"\0a",        KEY_F28},
+    {"\0b",        KEY_F29},
+    {"\0c",        KEY_F30},
+    {"\0d",        KEY_F31},
+    {"\0e",        KEY_F32},
+    {"\0f",        KEY_F33},
+    {"\0g",        KEY_F34},
+    {"\0\211",     KEY_F35},
+    {"\0\212",     KEY_F36},
+
+    /* left-alt + F1-F12 */
+    {"\0h",        KEY_F37},
+    {"\0i",        KEY_F38},
+    {"\0j",        KEY_F39},
+    {"\0k",        KEY_F40},
+    {"\0l",        KEY_F41},
+    {"\0m",        KEY_F42},
+    {"\0n",        KEY_F43},
+    {"\0o",        KEY_F44},
+    {"\0p",        KEY_F45},
+    {"\0q",        KEY_F46},
+    {"\0\213",     KEY_F47},
+    {"\0\214",     KEY_F48},
+
+    {"\0\017",     KEY_BackTab },
 };
 /* *INDENT-ON* */
 
@@ -268,6 +350,10 @@ boropen(void)
 {
     int i;
 
+#if OPT_LOCALE
+    vl_open_mbterm();
+#endif
+
     set_palette(initpalettestr);
     setup_colors();
 
@@ -292,6 +378,9 @@ borclose(void)
     reset_colors();
     kbd_erase_to_end(0);
     kbd_flush();
+#if OPT_LOCALE
+    vl_close_mbterm();
+#endif
 }
 
 static void

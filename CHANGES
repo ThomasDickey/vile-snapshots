@@ -2,6 +2,10 @@ Changes for vile 9.7 (released ??? ??? ?? ????)
 
  20080??? (b)
 	> Tom Dickey:
+	+ tabulate in borland.c the shift/control/alt flavors of cursor- and
+	  function-keys, defining function keys up to 48 to reflect this.
+	+ modify makefile.djg to make it simpler to build locale configuration.
+	+ fill in some DTD-related keywords in xml.key
 	+ add a brief mode format "%M" for modeline-format
 	+ split-out vb6 majormode from vbmode, leaving the latter for .Net
 	+ modify vile-conf-filt to disallow quoted strings to extend to

@@ -97,7 +97,7 @@
 #		in '!' listed, then the flag does nothing, and should be
 #		viewed simply as documentation.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.251 2007/09/19 20:25:11 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.252 2008/07/12 17:20:00 tom Exp $
 #
 #
 
@@ -424,19 +424,56 @@ cbuf35		REDO			OPT_EXEC_MACROS>34
 	<execute [Macro 35] CNT times>
 cbuf36		REDO			OPT_EXEC_MACROS>35
 	"execute-macro-36"		!FEWNAMES
+	'FN-\260'			KEY_F36
 	<execute [Macro 36] CNT times>
 cbuf37		REDO			OPT_EXEC_MACROS>36
 	"execute-macro-37"		!FEWNAMES
+	'FN-\261'			KEY_F37
 	<execute [Macro 37] CNT times>
 cbuf38		REDO			OPT_EXEC_MACROS>37
 	"execute-macro-38"		!FEWNAMES
+	'FN-\262'			KEY_F38
 	<execute [Macro 38] CNT times>
 cbuf39		REDO			OPT_EXEC_MACROS>38
 	"execute-macro-39"		!FEWNAMES
+	'FN-\263'			KEY_F39
 	<execute [Macro 39] CNT times>
 cbuf40		REDO			OPT_EXEC_MACROS>39
 	"execute-macro-40"		!FEWNAMES
+	'FN-\264'			KEY_F40
 	<execute [Macro 40] CNT times>
+cbuf41		REDO			OPT_EXEC_MACROS>40
+	"execute-macro-41"		!FEWNAMES
+	'FN-\265'			KEY_F41
+	<execute [Macro 41] CNT times>
+cbuf42		REDO			OPT_EXEC_MACROS>41
+	"execute-macro-42"		!FEWNAMES
+	'FN-\266'			KEY_F42
+	<execute [Macro 42] CNT times>
+cbuf43		REDO			OPT_EXEC_MACROS>42
+	"execute-macro-43"		!FEWNAMES
+	'FN-\267'			KEY_F43
+	<execute [Macro 43] CNT times>
+cbuf44		REDO			OPT_EXEC_MACROS>43
+	"execute-macro-44"		!FEWNAMES
+	'FN-\270'			KEY_F44
+	<execute [Macro 44] CNT times>
+cbuf45		REDO			OPT_EXEC_MACROS>44
+	"execute-macro-45"		!FEWNAMES
+	'FN-\271'			KEY_F45
+	<execute [Macro 45] CNT times>
+cbuf46		REDO			OPT_EXEC_MACROS>45
+	"execute-macro-46"		!FEWNAMES
+	'FN-\272'			KEY_F46
+	<execute [Macro 46] CNT times>
+cbuf47		REDO			OPT_EXEC_MACROS>46
+	"execute-macro-47"		!FEWNAMES
+	'FN-\273'			KEY_F47
+	<execute [Macro 47] CNT times>
+cbuf48		REDO			OPT_EXEC_MACROS>47
+	"execute-macro-48"		!FEWNAMES
+	'FN-\274'			KEY_F48
+	<execute [Macro 48] CNT times>
 define_mode	NONE			OPT_MAJORMODE
 	"define-majormode"
 	"define-mode"

@@ -3,7 +3,7 @@
 ------------------------
 vile bug/enhancement/wish list (mostly wishes ;-)
 ------------------------
-$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.411 2008/04/10 21:55:46 tom Exp $
+$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.412 2008/07/12 15:16:33 tom Exp $
 ----------------------
 	(E means enhancement, L,M,H are low, medium, high priority)
 
@@ -1622,3 +1622,13 @@ to the CF_UNICODETEXT type.
 Basic Unicode support so far covers file load/save, editing via UTF-8.
 However, regular expressions still know only about the "narrow" locale
 encoding, e.g., ISO-8859-1.
+
+-- 08-07-12 (tom)
+'@'command-line option with DJGPP (in a plain W2K cmd.exe shell) is interpreted
+by cmd.exe to source the file into the command-line.  Use vile.rc or use
+environment variables.
+
+-- 08-07-12 (tom)
+The non-ASCII function key bindings in DJGPP do not work with the locale
+configuration since the codes above 127 are filtered out, e.g., "\0\215"
+becomes "\0".
