@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.109 2008/01/12 23:02:07 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.111 2008/07/13 21:57:55 tom Exp $
  */
 
 #ifndef FILTERS_H
@@ -206,10 +206,13 @@ extern int flt_options[256];
 
 extern KEYWORD *is_class(char *name);
 extern KEYWORD *is_keyword(char *name);
+extern KEYWORD *keyword_data(char *name);
 extern char *ci_keyword_attr(char *name);
+extern char *ci_keyword_flag(char *name);
 extern char *class_attr(char *name);
 extern char *get_symbol_table(void);
 extern char *keyword_attr(char *name);
+extern char *keyword_flag(char *name);
 extern char *lowercase_of(char *name);
 extern char *readline(FILE *fp, char **ptr, unsigned *len);
 extern char *skip_ident(char *src);

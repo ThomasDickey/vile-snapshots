@@ -6,7 +6,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/sh-filt.l,v 1.75 2008/05/26 12:31:30 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/sh-filt.l,v 1.78 2008/07/14 19:21:33 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Shell script.
  */
@@ -56,32 +56,38 @@ SPACE		[ \t]
 SSTRING		\'([^']|\n)*\'
 DSTRING		\"([^"]|\n)*\"
 
+NAME0		[[:alpha:]_]
 NAME		[[:alnum:]_]
+NAME2		({NAME}|"-")
 
 WILDCARD	(\?|\*)
 WILDNAME	({NAME}|{WILDCARD})
-FILENAME	(([./]{WILDNAME}+)|({WILDNAME}+[./]{WILDNAME}*)|({NAME}*{WILDCARD})|\.+\/+)+
+FILENAME	(([./]+{WILDNAME}+)|({WILDNAME}+[./]+{WILDNAME}*)|({NAME}*{WILDCARD})|\.+\/+)+
 
 INTEGER		[-+]?([[:digit:]]+)
 
 BACKTIC		`
 ACTION		[\.{}]
-IDENT		[[:alpha:]_]{NAME}*
+
+IDENT		{NAME0}{NAME}*
 QIDENT		({SSTRING}|{DSTRING}|[^ \"'$\t\r\n])+
-IDENT0		[-]+[[:digit:]]*[[:alpha:]_-]+[[:alnum:]_-]*
+IDENT0		[-]+[[:digit:]]*{NAME0}+{NAME2}*
+
 IDENT1		\${NAME}+
 IDENT2		\$\{[#]?{IDENT}\}
 IDENT2L		\$\{([#]?{IDENT}|{INTEGER})
 IDENT2R		\}
-IDENTEQLS	[[:alpha:]_]{NAME}*=
+IDENTEQLS	{NAME0}{NAME}*=
 IDENTX		\$[\*@#\?\$!-]
+
+DASHIDENT	{NAME0}{NAME}*("-"{NAME}{NAME2}*)*
 
 %%
 
 <NORMAL>{IDENT0}	|
 <NORMAL>{FILENAME}	{ ECHO; /* exclude from other classes */ }
 
-<NORMAL>{IDENT}		{ WriteToken(keyword_attr(yytext)); }
+<NORMAL>{DASHIDENT}	{ WriteToken(keyword_attr(yytext)); }
 
 <NORMAL>"#"[^\r\n]*	{ WriteToken(Comment_attr); }
 

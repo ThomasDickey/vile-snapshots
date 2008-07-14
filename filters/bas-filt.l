@@ -3,7 +3,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/bas-filt.l,v 1.16 2008/01/12 17:21:27 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/bas-filt.l,v 1.17 2008/07/13 16:19:00 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Basic
  * input text.
@@ -42,7 +42,7 @@ HEX		[[:xdigit:]]+
 UUID		"{"{HEX}(-{HEX})*"}"
 INTEGER		[-+]?([[:digit:]]+)
 REAL		[-+]?([[:digit:]]*\.[[:digit:]]+)([eE][+-]?[[:digit:]]+)?
-IDENT		[[:alpha:]][[:alnum:]_]*{TYPES}
+IDENT		[.]?[[:alpha:]][[:alnum:]_]*{TYPES}
 
 DATE		"#"[ [:alnum:]\,:./]+"#"
 STRING		\"([^"]|(""))*\"

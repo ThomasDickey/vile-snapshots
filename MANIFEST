@@ -1,4 +1,4 @@
-MANIFEST for vile, version v9_7a4
+MANIFEST for vile, version v9_7a5
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 CHANGES                         Change-log for VILE
@@ -39,6 +39,7 @@ csrch.c                         current-line character-scanning commands
 curses.c                        terminal driver using curses
 descrip.mms                     VAX/VMS MMS build-script
 dirstuff.h                      interfaces for UNIX-like directory functions
+display.c                       message & screen formatting & display
 djhandl.c                       CTL/C & interrupt handling for DJGCC
 dumbterm.c                      DUMB terminal driver
 edef.h                          global variable definitions
@@ -192,6 +193,7 @@ filters/c-filt.c                c filter
 filters/c-filt.flx              original flex-based c-filter
 filters/c.key                   keywords for C
 filters/cfg-filt.l              syntax filter for Lynx config file.
+filters/conffilt.l              syntax-filter for config-files
 filters/cpp.key                 C++ keywords
 filters/cs.key                  keywords for C#
 filters/csh.key                 keywords for csh/tcsh syntax highlighting filter
@@ -205,6 +207,7 @@ filters/def-filt.l              syntax filter for Windows ".def" files
 filters/def.key                 keywords for Windows ".def" files
 filters/diff.key                keywords for 'diff' syntax filter
 filters/difffilt.l              syntax filter for 'diff' output
+filters/docbook.key             keywords for docbook
 filters/ecl-filt.l              syntax filter for ECLiPSe
 filters/ecl.key                 keywords for ecl-filt.l
 filters/ecrypt.c                uemacs-derived encryption
@@ -215,11 +218,13 @@ filters/est.key                 keywords for enscript syntax-descriptions
 filters/fdl-filt.l              syntax filter for forms-definition
 filters/fdl.key                 keywords for forms-definition
 filters/filterio.c              main program and I/O for external filters
+filters/filters.c               common utilities for filtering
 filters/filters.h               interface/definitions for filtering utilities
 filters/filters.rc              sample majormodes, and corresponding filters
 filters/flt_defs.h              split-out the include stuff from filters.h
 filters/fltstack.h              simple state-stack for lex filters
 filters/genmake.c               parse/substitute from genmake.mak
+filters/genmake.mak             makefile template-data for genmake.awk
 filters/html.key                keywords for vile-html-filt
 filters/htmlfilt.l              HTML syntax filter for vile
 filters/imake.key               keywords for imake-filter
@@ -328,6 +333,7 @@ filters/unfilter.c              main program, parsing for un-filters
 filters/unfilter.h              common definitions for un-filters
 filters/vb.key                  keywords for Visual Basic .Net
 filters/vb6.key                 keywords for Visual Basic 6
+filters/vbs.key                 keywords for vbsmode
 filters/vile.key                fallback template for highlighting colors
 filters/vilefilt.l              syntax filter for vile macros
 filters/vim.key                 keywords for vim syntax files
@@ -336,6 +342,7 @@ filters/vlog.key                verilog keywords, from vgrind definition
 filters/wbt-filt.l              syntax highlighter for winbatch
 filters/wbt.key                 WinBatch keywords
 filters/xml-filt.l              syntax filter for xml
+filters/xml.key                 keywords for xml syntax highlighter
 filters/xres.key                keywords for X resource filter
 filters/xresfilt.l              syntax filter for X resource files
 filters/xs-filt.l               syntax filter for Perl extensions

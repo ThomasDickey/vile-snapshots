@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/sql-filt.l,v 1.38 2008/06/24 23:49:05 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/sql-filt.l,v 1.39 2008/07/13 22:01:34 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of SQL script
  * - T.Dickey
@@ -49,6 +49,16 @@ finish_oneliner(void)
     next_line = LEAD;
 }
 
+static int
+is_oneliner(char *name)
+{
+    char *flags = ci_keyword_flag(name);
+    int result = 0;
+    if (flags != 0)
+	result = (strchr(flags, '1') != 0);
+    return result;
+}
+
 /******************************************************************************/
 
 %}
@@ -83,7 +93,8 @@ HOSTVAR		":"{IDENT}
 			    } else if (attr == 0) {
 				new_state(BODY);
 				if (set_symbol_table("sqlplus")) {
-				    if ((attr = ci_keyword_attr(text)) != 0) {
+				    if ((attr = ci_keyword_attr(text)) != 0
+					&& is_oneliner(text)) {
 					begin_oneliner();
 					/* FIXME:  a few commands have keywords,
 					 * such as "set".
