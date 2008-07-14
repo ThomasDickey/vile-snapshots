@@ -2,11 +2,14 @@ Changes for vile 9.7 (released ??? ??? ?? ????)
 
  20080??? (b)
 	> Tom Dickey:
+	+ minor fix for vile-sh-filt to allow filenames with embedded "-"'s.
 	+ tabulate in borland.c the shift/control/alt flavors of cursor- and
 	  function-keys, defining function keys up to 48 to reflect this.
 	+ modify makefile.djg to make it simpler to build locale configuration.
 	+ fill in some DTD-related keywords in xml.key
 	+ add a brief mode format "%M" for modeline-format
+	+ improve basic syntax filter by accepting a "." at the beginning of
+	  identifiers to distinguish methods and properties from other names.
 	+ split-out vb6 majormode from vbmode, leaving the latter for .Net
 	+ modify vile-conf-filt to disallow quoted strings to extend to
 	  multiple lines without escaping the newline.
@@ -15,6 +18,8 @@ Changes for vile 9.7 (released ??? ??? ?? ????)
 	  in their final color rather than based on syntax.
 	+ extend syntax keyword parsing to allow flags to be set for each
 	  keyword, e.g., to mark keywords that are used to delimit comments.
+	  Use this in vile-sql-filt to treat "prompt" and similar keywords
+	  specially.
 
  20080624 (a)
 	> Decklin Foster:
