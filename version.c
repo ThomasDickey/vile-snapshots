@@ -1,7 +1,7 @@
 /*
  * version & usage-messages for vile
  *
- * $Header: /users/source/archives/vile.vcs/RCS/version.c,v 1.65 2008/03/27 23:18:35 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/version.c,v 1.66 2008/07/14 22:07:42 Mark.Robinson Exp $
  *
  */
 
@@ -185,6 +185,12 @@ getversion(void)
 #   endif
 #   if CC_MSVC
 		    "Visual C++"
+#   endif
+#   if __CYGWIN32__
+		    "Cygwin gcc"
+#   endif
+#   if __MINGW32__
+		    "MinGW gcc"
 #   endif
 	);
 #  endif

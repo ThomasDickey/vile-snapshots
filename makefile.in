@@ -20,7 +20,7 @@
 #
 # gnu autoconf support by kevin buettner, 5/94
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.210 2008/01/13 19:12:06 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.211 2008/07/14 22:07:42 Mark.Robinson Exp $
 
 SHELL		= /bin/sh
 
@@ -76,6 +76,7 @@ MAKE_RECUR	= @cf_cv_makeflags@ prefix=$(prefix) DESTDIR=$(DESTDIR)
 ICON		= vile
 ICON_SUFFIX	= @ICON_SUFFIX@
 QUOTDEFS	= \
+		-DPROGRAM_NAME=\"@TARGET@\" \
 		-DVILE_ICON=\"icons/$(ICON)$(ICON_SUFFIX)\" \
 		-DVILE_LIBDIR_PATH=\"'@VILE_LIBDIR_PATH@'\" \
 		-DVILE_STARTUP_PATH=\"'@VILE_STARTUP_PATH@'\"
@@ -92,15 +93,17 @@ MANDIR		= $(DESTDIR)$(mandir)
 
 INSTALL_DIRS    = $(BINDIR) $(DATADIR) $(DOCDIR) $(MANDIR) @EXTRA_INSTALL_DIRS@
 
-.SUFFIXES: .c .i $o
+.SUFFIXES: .c .i .cpp .rc $o
 
 .c.i:
 @RULE_CC@
 	@ECHO_CC@$(CPP) -C $(CPPFLAGS) $(QUOTDEFS) $< >$@
-.c$o:
+.c$o .cpp$o:
 @RULE_CC@
 	@ECHO_CC@$(CC) -c $(CPPFLAGS) $(QUOTDEFS) $(CFLAGS) -DHELP_LOC=\"$(datadir)\" $<
 
+.rc.o:
+	windres $(QUOTDEFS) $< $@
 # All of the makefiles which should be preserved and distributed
 UNIXMAKIN = makefile.in				# for use with configure
 VMSMAK = descrip.mms vmsbuild.com		# on VMS
@@ -734,9 +737,7 @@ $(DATADIR)/vilemenu.rc:		$(srcdir)/macros/vilemenu.rc
 $(DATADIR)/vile.hlp:		$(srcdir)/vile.hlp
 	$(INSTALL_DATA)		$(srcdir)/vile.hlp $@
 
-$(MANDIR)/vile.$(manext):	$(srcdir)/vile.1
-	$(INSTALL_DATA)		$(srcdir)/vile.1 $@
-$(MANDIR)/xvile.$(manext):	$(srcdir)/vile.1
+$(MANDIR)/@TARGET@.$(manext):	$(srcdir)/vile.1
 	$(INSTALL_DATA)		$(srcdir)/vile.1 $@
 
 $(PERLDIR)/Breadcrumbs.pm:	$(srcdir)/perl/Breadcrumbs.pm

@@ -1,7 +1,7 @@
 /*
  * Common utility functions for vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.123 2008/07/13 21:57:43 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.124 2008/07/14 22:06:11 tom Exp $
  *
  */
 
@@ -830,7 +830,7 @@ insert_keyword2(const char *ident, const char *attribute, int classflag, char *f
 void
 insert_keyword(const char *ident, const char *attribute, int classflag)
 {
-    return insert_keyword2(ident, attribute, classflag, 0);
+    insert_keyword2(ident, attribute, classflag, 0);
 }
 
 KEYWORD *

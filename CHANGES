@@ -1,7 +1,12 @@
 Changes for vile 9.7 (released ??? ??? ?? ????)
 
- 20080??? (b)
+ 20080714 (b)
+	> Mark Robinson
+	+ modify configure script, etc., to build "minvile" and "convile"
+	  flavors using MinGW.
 	> Tom Dickey:
+	+ add dtd majormode.
+	+ move most of the ".XXXrc" files to confmode, except ".XXXshrc".
 	+ minor fix for vile-sh-filt to allow filenames with embedded "-"'s.
 	+ tabulate in borland.c the shift/control/alt flavors of cursor- and
 	  function-keys, defining function keys up to 48 to reflect this.
