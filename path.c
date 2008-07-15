@@ -2,7 +2,7 @@
  *		The routines in this file handle the conversion of pathname
  *		strings.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.161 2008/03/12 23:08:48 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.162 2008/07/14 22:07:42 Mark.Robinson Exp $
  *
  *
  */
@@ -1907,7 +1907,7 @@ parse_pathlist(const char *list, char *result)
     return list;
 }
 
-#if SYS_WINNT && !CC_TURBO
+#if SYS_WINNT && !CC_TURBO && !CC_MINGW
 /********                                               \\  opendir  //
  *                                                        ===========
  * opendir

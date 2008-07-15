@@ -22,7 +22,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.641 2008/05/30 19:01:28 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.642 2008/07/14 22:07:42 Mark.Robinson Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -1811,7 +1811,7 @@ copy_kbindtbl(BINDINGS * dst)
 }
 #endif
 
-#if OPT_FILTER && defined(WIN32)
+#if OPT_FILTER && defined(WIN32) && !CC_MINGW
 extern void flt_array(void);
 #endif
 
@@ -1821,7 +1821,7 @@ global_val_init(void)
     int i;
 
     TRACE((T_CALLED "global_val_init()\n"));
-#if OPT_FILTER && defined(WIN32)
+#if OPT_FILTER && defined(WIN32) && !CC_MINGW
     flt_array();
 #endif
     /* set up so the global value pointers point at the global

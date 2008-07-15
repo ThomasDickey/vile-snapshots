@@ -1,4 +1,4 @@
-; $Id: modes.rc,v 1.76 2008/07/13 14:47:29 tom Exp $
+; $Id: modes.rc,v 1.78 2008/07/14 23:08:46 tom Exp $
 ; majormodes in this file are ordered alphabetically for convenience - the
 ; precedence used by vile is strictly alphabetic, counting case.  Use the
 ; before and after qualifiers to override the precedence.
@@ -131,7 +131,7 @@ define-mode cfg
 
 define-mode conf
 ~with define-submode conf
-	suffixes	'\.\(config\|dat\)$'
+	suffixes	'\.\(config\|dat\|.*rc\)$'
 	after		"yacc"
 	preamble	'^[#;]'
 	comment-prefix	'^\s*[#;]'
@@ -272,6 +272,15 @@ define-mode docbook
 	before xml
 	suffixes	'\.\(docbook\|sgm\|sgml\)$'
 	pre		'^\s*<?xml\s.*!DOCTYPE.*DTD DocBook'
+	fence-pairs	'<>()[]{}'
+	comment-prefix	'^\s*--'
+	comments	'^\s*$'
+~endwith
+
+define-mode dtd
+~with define-submode dtd
+	before xml
+	suffixes	'\.\(dtd\|ent\)$'
 	fence-pairs	'<>()[]{}'
 	comment-prefix	'^\s*--'
 	comments	'^\s*$'
@@ -725,7 +734,7 @@ define-mode sed
 define-mode sh
 ~with define-submode sh
 	mode-filename	'^\(\([a-z.-]*profile\)\|Jamrules\)$'
-	suffixes	'\(\.\(sh\|ksh\|shar\|.*rc\|bash_[a-z]\+\|ebuild\)$\)'
+	suffixes	'\(\.\(sh\|ksh\|shar\|.*shrc\|bash_[a-z]\+\|ebuild\)$\)'
 	pre '^\(\(#!\s*\(\/.*\)\?sh\>\(\s*[-]\+[\a]*\s*\)\?\)\|:\)\s*$'
 	comment-prefix	'^\s*[:#]'
 	comments	'^\s*[:#]\s*$'
@@ -992,7 +1001,7 @@ define-mode vlog
 
 define-mode vim
 ~with define-submode vim
-	suffixes	'\.\(vim\)$'
+	suffixes	'\.\(vim\|vimrc\)$'
 	comment-prefix	'^\s*"'
 	before "make"
 	comments	'^\s*"\s*$'
