@@ -1,5 +1,12 @@
 Changes for vile 9.7 (released ??? ??? ?? ????)
 
+ 20080??? (c)
+	> Tom Dickey:
+	+ parse preprocessor-style directives for basic syntax highlighter.
+	+ add complex fences to vbmode for try-blocks, with-blocks and classes.
+	+ correct pattern for vbmode used for sub- and function-blocks to
+	  ignore leading blanks.
+
  20080714 (b)
 	> Mark Robinson
 	+ modify configure script, etc., to build "minvile" and "convile"
