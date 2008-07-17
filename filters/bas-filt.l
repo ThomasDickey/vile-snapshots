@@ -1,9 +1,9 @@
 %pointer
-%state NORMAL COMMENT
+%state NORMAL COMMENT PREPRO
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/bas-filt.l,v 1.17 2008/07/13 16:19:00 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/bas-filt.l,v 1.18 2008/07/16 22:51:33 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Basic
  * input text.
@@ -26,6 +26,7 @@ DefineFilter("basic");
 static char *Action_attr;
 static char *Comment_attr;
 static char *Number_attr;
+static char *Prepro_attr;
 static char *String_attr;
 static char *LineNo_attr;
 
@@ -51,6 +52,16 @@ NUMBER		{INTEGER}|{REAL}|{UUID}|({INTEGER}{HEX}|("&"[Hh]|\$){HEX}){TYPES}
 
 %%
 
+<NORMAL>^"#"			{ WriteToken(Prepro_attr);
+				  BEGIN(PREPRO);
+				  set_symbol_table("basic_prepro");
+				}
+<PREPRO>{IDENT}			{ WriteToken(ci_keyword_attr(yytext)); }
+<PREPRO>[\r\n]			{ ECHO;
+				  BEGIN(NORMAL);
+				  set_symbol_table(filter_def.filter_name);
+				}
+
 <NORMAL>^{INTEGER}		{ WriteToken(LineNo_attr); }
 <NORMAL>{IDENT}			{ char *attr = is_hex(yytext)
 						? Number_attr
@@ -74,11 +85,11 @@ NUMBER		{INTEGER}|{REAL}|{UUID}|({INTEGER}{HEX}|("&"[Hh]|\$){HEX}){TYPES}
 				  WriteToken(attr);
 				  first_token = 0;
 				}
-<NORMAL>"_"$			{ WriteToken(Action_attr); }
-<NORMAL>{DATE}			|
-<NORMAL>{STRING}		{ WriteToken(String_attr); }
-<NORMAL>{NUMBER}		{ WriteToken(Number_attr); }
-<NORMAL>"'"[^\r\n]*		{ WriteToken(Comment_attr); }
+<NORMAL,PREPRO>"_"$		{ WriteToken(Action_attr); }
+<NORMAL,PREPRO>{DATE}		|
+<NORMAL,PREPRO>{STRING}		{ WriteToken(String_attr); }
+<NORMAL,PREPRO>{NUMBER}		{ WriteToken(Number_attr); }
+<NORMAL,PREPRO>"'"[^\r\n]*	{ WriteToken(Comment_attr); }
 
 <COMMENT>[^\r\n]*		{ WriteToken(Comment_attr); }
 <COMMENT>[\n]			{ ECHO; BEGIN(NORMAL); }
@@ -119,6 +130,7 @@ do_filter(FILE *inputs)
     Action_attr  = class_attr(NAME_ACTION);
     Comment_attr = class_attr(NAME_COMMENT);
     Number_attr  = class_attr(NAME_NUMBER);
+    Prepro_attr  = class_attr(NAME_PREPROC);
     String_attr  = class_attr(NAME_LITERAL);
     LineNo_attr  = class_attr("LineNumber");
 
