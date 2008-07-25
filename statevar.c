@@ -3,7 +3,7 @@
  *	for getting and setting the values of the vile state variables,
  *	plus helper utility functions.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.121 2008/04/15 22:49:06 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.122 2008/07/24 23:37:56 tom Exp $
  */
 
 #include	"estruct.h"
@@ -395,6 +395,9 @@ cfgopts(void)
 #endif
 #if SYS_WINNT && defined(VILE_OLE)
 	"oleauto",
+#endif
+#if OPT_HYPERTEXT
+	"hypertext",
 #endif
 #if OPT_LOCALE
 	"locale",
