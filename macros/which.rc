@@ -1,4 +1,4 @@
-;; $Header: /users/source/archives/vile.vcs/macros/RCS/which.rc,v 1.15 2006/10/25 22:37:36 tom Exp $
+;; $Header: /users/source/archives/vile.vcs/macros/RCS/which.rc,v 1.16 2008/07/25 00:29:45 tom Exp $
 ;;
 ;; Show where vile looks for keyword file, and where it finds it.  If we
 ;; always implemented built-in filters, the natural place for this would be
@@ -7,11 +7,16 @@
 ;; similar C code, this is implemented as a macro (as an exercise ;-.
 
 store-procedure WhichFilename f='Filename'
-	~local %flag
+	~local %flag %attr %len %fjh
 	newline
 	~if &rd $1
 		insert-string '* '
 		setv %found="yes"
+		~if &stoken 'hypertext' ',' $cfgopts
+			setv %len=&len $1
+			setv %attr=&cat '' &cat %len 'R:'
+			insert-string %attr
+		~endif
 	~else
 		insert-string '  '
 	~endif
@@ -95,6 +100,10 @@ store-procedure which-filter major="MajorMode" "Prompt for, and display location
 		setv %index=&add %index 1
 	~endwhile
 	;
+	~if &stoken 'hypertext' ',' $cfgopts
+		1 goto-line
+		attribute-cntl_a-sequences-til end-of-file
+	~endif
 	unmark-buffer
 	setl readonly view
 	goto-beginning-of-file
@@ -172,6 +181,10 @@ store-procedure which-keywords major="MajorMode" "Prompt for, and display locati
 		setv %index=&add %index 1
 	~endwhile
 	;
+	~if &stoken 'hypertext' ',' $cfgopts
+		1 goto-line
+		attribute-cntl_a-sequences-til end-of-file
+	~endif
 	unmark-buffer
 	setl readonly view
 	goto-beginning-of-file
@@ -247,6 +260,10 @@ store-procedure which-menu "Display location of menu file"
 		setv %index=&add %index 1
 	~endwhile
 	;
+	~if &stoken 'hypertext' ',' $cfgopts
+		1 goto-line
+		attribute-cntl_a-sequences-til end-of-file
+	~endif
 	unmark-buffer
 	setl readonly view
 	goto-beginning-of-file

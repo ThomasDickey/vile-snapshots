@@ -2,7 +2,7 @@
  *	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.311 2008/05/09 00:21:34 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.312 2008/07/24 23:13:51 tom Exp $
  *
  */
 
@@ -3686,8 +3686,7 @@ x_preparse_args(int *pargc, char ***pargv)
     cur_win->win = XtWindow(cur_win->screen);
 
 #if OPT_INPUT_METHOD
-    if (cur_win->open_im)
-	init_xlocale();
+    init_xlocale();
     if (okCTYPE2(vl_wide_enc)) {
 	term.encoding = enc_UTF8;
     }
@@ -6462,7 +6461,7 @@ x_key_press(Widget w GCC_UNUSED,
 	{ XK_KP_Insert, KEY_Insert },
 	{ XK_KP_Delete, KEY_Delete },
 #endif
-#ifdef  XK_ISO_Left_Tab					
+#ifdef  XK_ISO_Left_Tab
 	{ XK_ISO_Left_Tab, KEY_Tab },	/* with shift, becomes back-tab */
 #endif
     };
