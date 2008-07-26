@@ -2,7 +2,7 @@
  *	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.312 2008/07/24 23:13:51 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.313 2008/07/25 18:44:38 tom Exp $
  *
  */
 
@@ -112,7 +112,7 @@
 #undef strchr
 #undef strrchr
 
-#define OPT_INPUT_METHOD (OPT_LOCALE && ATHENA_WIDGETS)
+#define OPT_INPUT_METHOD OPT_LOCALE
 
 #if ATHENA_WIDGETS
 #include	<X11/IntrinsicP.h>
@@ -165,6 +165,21 @@
 #include	<Xm/XmP.h>
 #endif
 #endif /* MOTIF_WIDGETS */
+
+#ifndef XtNinputMethod
+#define XtNinputMethod		"inputMethod"
+#define XtCInputMethod		"InputMethod"
+#endif
+
+#ifndef XtNpreeditType
+#define XtNpreeditType		"preeditType"
+#define XtCPreeditType		"PreeditType"
+#endif
+
+#ifndef XtNopenIm
+#define XtNopenIm		"openIm"
+#define XtCOpenIm		"OpenIm"
+#endif
 
 #if OPT_X11_ICON
 #ifdef HAVE_LIBXPM

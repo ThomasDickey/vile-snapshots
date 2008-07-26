@@ -2,8 +2,13 @@ Changes for vile 9.7 (released ??? ??? ?? ????)
 
  20080??? (c)
 	> Tom Dickey:
-	+ highlight matches in which-keywords, etc.
-	+ fix initialization of XIM in xvile; compose sequences did not work
+	+ add append-number, insert-number, overwrite-number commands to
+	  work with character-numbers.
+	+ highlight matches in which-keywords, etc., and put a hyperlink on
+	  the highlighted text to view the corresponding file.
+	+ fix initialization of XIM in xvile; compose sequences did not work.
+	  Also make xvile build XIM code for configurations other than Athena,
+	  by supplying fallback for resource definitions.
 	  (report by Fabien Coutant).
 	+ parse preprocessor-style directives for basic syntax highlighter.
 	+ add complex fences to vbmode for try-blocks, with-blocks and classes.

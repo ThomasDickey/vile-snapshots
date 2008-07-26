@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.318 2008/01/13 16:17:28 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.319 2008/07/26 01:00:28 tom Exp $
  *
  */
 
@@ -1605,7 +1605,37 @@ ask_which_file(char *fname)
 static void
 list_one_fname(char *fname, UINT mode)
 {
-    bprintf("\n%s\t%s", ffaccess(fname, mode) ? "*" : "", fname);
+    int tag = ffaccess(fname, mode);
+
+    bprintf("\n%s\t", tag ? "*" : "");
+
+#if OPT_HYPERTEXT
+    if (tag) {
+	REGION myRegion;
+	MARK myDot;
+	TBUFF *myBuff = 0;
+	TBUFF *myFile = 0;
+
+	memset(&myRegion, 0, sizeof(myRegion));
+	myRegion.r_orig = DOT;
+	bprintf("%s", fname);
+	myRegion.r_end = DOT;
+
+	tb_scopy(&myBuff, "view ");
+	path_quote(&myFile, fname);
+	tb_sappend0(&myBuff, tb_values(myFile));
+
+	myDot = DOT;
+	attributeregion_in_region(&myRegion,
+				  rgn_EXACT,
+				  VAREV,
+				  tb_values(myBuff));
+	tb_free(&myBuff);
+	tb_free(&myFile);
+	DOT = myDot;
+    } else
+#endif
+	bprintf("%s", fname);
 }
 
 static void

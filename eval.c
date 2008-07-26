@@ -2,7 +2,7 @@
  *	eval.c -- function and variable evaluation
  *	original by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.379 2008/06/01 17:41:02 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.383 2008/07/26 00:56:39 tom Exp $
  *
  */
 
@@ -654,7 +654,7 @@ path_head(TBUFF **result, const char *path)
  * If the given argument contains non-path characters, quote it.  Otherwise
  * simply copy it.
  */
-static void
+void
 path_quote(TBUFF **result, const char *path)
 {
 #if SYS_VMS
@@ -757,6 +757,7 @@ default_mode_value(TBUFF **result, char *name)
 static char *
 dequoted_parameter(TBUFF **tok)
 {
+    char *result = 0;
     char *previous;
     const char *newvalue;
     int strip;
@@ -787,22 +788,25 @@ dequoted_parameter(TBUFF **tok)
 	}
 
 	if (newvalue == (const char *) error_val) {
-	    return error_val;
-	} else if (strip) {
-	    if (((const char *) previous) != newvalue) {
-		TBUFF *fix = 0;
-		tb_scopy(&fix, newvalue);
-		tb_free(tok);
-		*tok = fix;
+	    result = error_val;
+	} else {
+	    if (strip) {
+		if (((const char *) previous) != newvalue) {
+		    TBUFF *fix = 0;
+		    tb_scopy(&fix, newvalue);
+		    tb_free(tok);
+		    *tok = fix;
+		}
+		tb_dequote(tok);
+	    } else if (((const char *) previous) != newvalue) {
+		tb_scopy(tok, newvalue);
 	    }
-	    tb_dequote(tok);
-	} else if (((const char *) previous) != newvalue) {
-	    tb_scopy(tok, newvalue);
+	    result = tb_values(*tok);
 	}
-	return (tb_values(*tok));
+    } else {
+	tb_free(tok);
     }
-    tb_free(tok);
-    return (0);
+    return (result);
 }
 
 #define UNI_CLASSNAME "universal"
@@ -1335,22 +1339,27 @@ run_func(int fnum)
 	break;
     }
 
-    if (ret_numeric)
-	render_long(&result, value);
-    else if (ret_boolean)
-	render_boolean(&result, value);
-    else
-	tb_enquote(&result);
+    if (is_error) {
+	tb_error(&result);
+    } else {
+	if (ret_numeric)
+	    render_long(&result, value);
+	else if (ret_boolean)
+	    render_boolean(&result, value);
+	else
+	    tb_enquote(&result);
+    }
 
+    TRACE2(("actual:%d:%s\n", tb_length(result), tb_visible(result)));
     TPRINTF(("-> %s%s\n",
 	     is_error ? "*" : "",
-	     is_error ? error_val : NONNULL(tb_values(result))));
+	     NONNULL(tb_values(result))));
 
     tb_free(&juggle);
     for (i = 0; i < nargs; i++) {
 	tb_free(&args[i]);
     }
-    returnString(is_error ? error_val : tb_values(result));
+    returnString(tb_values(result));
 }
 
 /* find a temp variable */

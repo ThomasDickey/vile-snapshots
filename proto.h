@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.649 2008/04/10 19:55:19 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.650 2008/07/26 00:56:00 tom Exp $
  *
  */
 
@@ -443,6 +443,7 @@ extern int scan_bool (const char *s );
 extern int toktyp (const char *tokn);
 extern int vl_lookup_statevar(const char *vname);
 extern void append_quoted_token (TBUFF ** dst, const char * values, size_t last);
+extern void path_quote (TBUFF **result, const char *path);
 
 #ifdef const
 #define skip_blanks(s) skip_cblanks(s)

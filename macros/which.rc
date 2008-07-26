@@ -1,21 +1,26 @@
-;; $Header: /users/source/archives/vile.vcs/macros/RCS/which.rc,v 1.16 2008/07/25 00:29:45 tom Exp $
+;; $Header: /users/source/archives/vile.vcs/macros/RCS/which.rc,v 1.17 2008/07/25 23:00:53 tom Exp $
 ;;
 ;; Show where vile looks for keyword file, and where it finds it.  If we
 ;; always implemented built-in filters, the natural place for this would be
 ;; within filters/filters.c - and no need for a macro.  But we may have
 ;; configured with external filters.  Rather than maintain two chunks of
-;; similar C code, this is implemented as a macro (as an exercise ;-.
+;; similar C code, this is implemented as a macro (as an exercise ;-).
 
 store-procedure WhichFilename f='Filename'
-	~local %flag %attr %len %fjh
+	~local %flag %attr %len %full %view
 	newline
 	~if &rd $1
 		insert-string '* '
 		setv %found="yes"
 		~if &stoken 'hypertext' ',' $cfgopts
+			setv %full=&path full $1
 			setv %len=&len $1
-			setv %attr=&cat '' &cat %len 'R:'
+			setv %view=&cat 'Hview ' %full
+			setv %attr=&cat &chr 1 %len
 			insert-string %attr
+			insert-string %view
+			insert-number 0
+			insert-string 'R:'
 		~endif
 	~else
 		insert-string '  '

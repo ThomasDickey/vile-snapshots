@@ -5,7 +5,7 @@
  * keys. Like everyone else, they set hints
  * for the display system.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.330 2008/03/20 23:56:35 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.331 2008/07/25 22:48:07 tom Exp $
  *
  */
 
@@ -1106,6 +1106,7 @@ mls_regcomp(int n)
     return prog;
 }
 
+#if NO_LEAKS
 static void
 mls_regfree(int n)
 {
@@ -1121,6 +1122,7 @@ mls_regfree(int n)
 	    mls_regfree(n);
     }
 }
+#endif
 
 static int
 found_modeline(LINE *lp, int *first, int *last)

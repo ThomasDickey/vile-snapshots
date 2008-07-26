@@ -10,7 +10,7 @@
  * editing must be being displayed, which means that "b_nwnd" is non zero,
  * which means that the dot and mark values in the buffer headers are nonsense.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.192 2008/04/16 20:01:25 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.193 2008/07/25 22:24:23 tom Exp $
  *
  */
 
@@ -1318,18 +1318,6 @@ static struct {
     USHORT kregflg;
     KILLREG killreg;
 } undo_kill;
-
-static int
-kb_size(int ii, KILL * kp)
-{
-    int size = 0;
-    if (kp != 0) {
-	if (kp->d_next != 0)
-	    size = kb_size(ii, kp->d_next);
-	size += KbSize(ii, kp);
-    }
-    return size;
-}
 
 /*
  * Kill a region, saving it into the kill-buffer.  If the buffer that we're

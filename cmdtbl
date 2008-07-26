@@ -97,7 +97,7 @@
 #		in '!' listed, then the flag does nothing, and should be
 #		viewed simply as documentation.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.252 2008/07/12 17:20:00 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.253 2008/07/25 22:21:03 tom Exp $
 #
 #
 
@@ -121,6 +121,9 @@ append_i	REDO|UNDO
 appstring	REDO|UNDO		!SMALLER
 	"append-string"
 	<append (CNT copies of) the given string after the cursor>
+appnumber	REDO|UNDO		!SMALLER
+	"append-number"
+	<append (CNT copies of) the given character-number after the cursor>
 appendeol	REDO|UNDO
 	"append-chars-at-eol"		!FEWNAMES
 	'A'
@@ -934,6 +937,9 @@ insspace	REDO|UNDO|MINIBUF	!SMALLER
 insstring	REDO|UNDO		!SMALLER
 	"insert-string"
 	<insert (CNT copies of) the given string at the cursor>
+insnumber	REDO|UNDO		!SMALLER
+	"insert-number"
+	<insert (CNT copies of) the given character-number at the cursor>
 joinlines	REDO|UNDO
 	"join-lines"			!FEWNAMES
 	'J'
@@ -1348,6 +1354,9 @@ overwritechars	REDO|UNDO
 overwstring	REDO|UNDO		!SMALLER
 	"overwrite-string"
 	<replace text at the cursor by the given string>
+overwnumber	REDO|UNDO		!SMALLER
+	"overwrite-number"
+	<replace text at the cursor by the given character-number>
 onlywind	NONE
 	"delete-other-windows"		!FEWNAMES
 	'^O'
