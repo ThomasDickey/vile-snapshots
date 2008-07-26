@@ -2909,6 +2909,7 @@ Programmed procedures (aka macros)
 
 			athena      -> xvile built with Athena widgets
 			curses      -> editor uses curses terminal driver
+			hypertext   -> editor supports highlighting and links
 			locale      -> editor uses system's LC_CTYPE locale
 			motif       -> xvile built with Motif libraries
 			nextaw      -> xvile built with Athena widgets (NeXtaw)
@@ -6460,4 +6461,4 @@ Problems
 
 Copyright 1995-2007,2008 by Paul Fox, Thomas Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.654 2008/07/04 14:18:20 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.655 2008/07/25 23:13:16 tom Exp $

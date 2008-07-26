@@ -4,7 +4,7 @@
  * Most code probably by Dan Lawrence or Dave Conroy for MicroEMACS
  * Extensions for vile by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/insert.c,v 1.166 2008/05/26 15:17:59 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/insert.c,v 1.167 2008/07/25 22:44:29 tom Exp $
  */
 
 #include	"estruct.h"
@@ -29,6 +29,7 @@ static int shiftwidth(int f, int n);
 static int tab(int f, int n);
 #if !SMALLER
 static int istring(int f, int n, int mode);
+static int inumber(int f, int n, int mode);
 #endif
 
 /* value of insertmode maintained through subfuncs */
@@ -929,33 +930,89 @@ istring(int f, int n, int mode)
     static char tstring[NPAT + 1];	/* string to add */
 
     /* ask for string to insert */
-    status = mlreply("String to insert: ", tstring, NPAT);
-    if (status != TRUE)
-	return (status);
+    if ((status = mlreply("String to insert: ", tstring, NPAT)) == TRUE) {
+	n = need_a_count(f, n, 1);
 
-    n = need_a_count(f, n, 1);
+	if (n < 0)
+	    n = -n;
 
-    if (n < 0)
-	n = -n;
+	set_insertmode(mode);
 
-    set_insertmode(mode);
+	backsp_limit = BackspaceLimit();
 
-    backsp_limit = BackspaceLimit();
-
-    /* insert it */
-    while (n--) {
-	tp = tstring;
-	while (*tp) {
-	    status = inschar(*tp++, &backsp_limit);
-	    if (status != TRUE) {
-		set_insertmode(FALSE);
-		return (status);
+	/* insert it */
+	while (n--) {
+	    tp = tstring;
+	    while (*tp) {
+		if ((status = inschar(*tp++, &backsp_limit)) != TRUE) {
+		    n = 0;
+		    break;
+		}
 	    }
 	}
-    }
 
-    set_insertmode(FALSE);
-    return (TRUE);
+	set_insertmode(FALSE);
+    }
+    return (status);
+}
+#endif
+
+#if ! SMALLER
+int
+appnumber(int f, int n)
+{
+    TRACE((T_CALLED "appnumber(f=%d, n=%d)\n", f, n));
+    advance_one_char();
+    returnCode(inumber(f, n, INSMODE_INS));
+}
+
+int
+insnumber(int f, int n)
+{
+    TRACE((T_CALLED "insnumber(f=%d, n=%d)\n", f, n));
+    returnCode(inumber(f, n, INSMODE_INS));
+}
+
+int
+overwnumber(int f, int n)
+{
+    TRACE((T_CALLED "overwnumber(f=%d, n=%d)\n", f, n));
+    returnCode(inumber(f, n, INSMODE_OVR));
+}
+
+/* ask for and insert or overwrite a character-number into the current */
+/* buffer at the current point */
+static int
+inumber(int f, int n, int mode)
+{
+    int status;			/* status return code */
+    int backsp_limit;
+    int value;
+    static char tnumber[NPAT + 1];	/* number to add */
+
+    /* ask for number to insert */
+    if ((status = mlreply("Number to insert: ", tnumber, NPAT)) == TRUE) {
+	if ((status = string_to_number(tnumber, &value)) == TRUE) {
+
+	    n = need_a_count(f, n, 1);
+
+	    if (n < 0)
+		n = -n;
+
+	    set_insertmode(mode);
+
+	    backsp_limit = BackspaceLimit();
+
+	    /* insert it */
+	    while (n--) {
+		if ((status = inschar(value, &backsp_limit)) != TRUE)
+		    break;
+	    }
+
+	    set_insertmode(FALSE);
+	}
+    }
+    return (status);
 }
 #endif
 
