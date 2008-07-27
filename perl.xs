@@ -13,7 +13,7 @@
  * vile.  The file api.c (sometimes) provides a middle layer between
  * this interface and the rest of vile.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.110 2008/05/06 23:00:00 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.111 2008/07/26 22:55:45 tom Exp $
  */
 
 /*#
@@ -537,7 +537,7 @@ perl_call_sub(void *data, int oper, int f, int n)
 	    break;
 
 	default:
-	    croak("BUG: array contains %d elements", av_len(av) + 1);
+	    croak("BUG: array contains %d elements", (int) av_len(av) + 1);
     }
 
     /* call the subroutine */
@@ -1040,7 +1040,7 @@ perldo_prompt(void)
 }
 
 static int
-svcurbuf_set(pTHX_ SV *sv, MAGIC *mg)
+svcurbuf_set(pTHX_ SV *sv, MAGIC *mg GCC_UNUSED)
 {
     VileBuf *vbp;
     if (sv_isa(sv, "Vile::Buffer")

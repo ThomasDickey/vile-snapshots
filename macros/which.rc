@@ -1,4 +1,4 @@
-;; $Header: /users/source/archives/vile.vcs/macros/RCS/which.rc,v 1.17 2008/07/25 23:00:53 tom Exp $
+;; $Header: /users/source/archives/vile.vcs/macros/RCS/which.rc,v 1.18 2008/07/26 16:14:46 tom Exp $
 ;;
 ;; Show where vile looks for keyword file, and where it finds it.  If we
 ;; always implemented built-in filters, the natural place for this would be
@@ -13,7 +13,10 @@ store-procedure WhichFilename f='Filename'
 		insert-string '* '
 		setv %found="yes"
 		~if &stoken 'hypertext' ',' $cfgopts
-			setv %full=&path full $1
+			setv %full=&pquote &path full $1
+			~if &seq $os "win32"
+				setv %full=&translate '\' '/' %full
+			~endif
 			setv %len=&len $1
 			setv %view=&cat 'Hview ' %full
 			setv %attr=&cat &chr 1 %len

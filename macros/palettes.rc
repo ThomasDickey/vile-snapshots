@@ -1,4 +1,4 @@
-; $Header: /users/source/archives/vile.vcs/macros/RCS/palettes.rc,v 1.7 2001/04/07 15:02:22 tom Exp $
+; $Header: /users/source/archives/vile.vcs/macros/RCS/palettes.rc,v 1.8 2008/07/26 17:51:46 tom Exp $
 ; Sample color schemes.
 
 ~if &not &error $ncolors
@@ -28,26 +28,22 @@ setv %palette 0
 	setv %palette &add %palette 1
 ~endwhile
 
-; Note: if we are using the default, or system colors, it is generally not possible
-; to determine what their values are.  The "light" and "dark" schemes use default
-; colors.
+; Note:  if we are using the default, or system colors, it is generally not
+; possible to determine what their values are.  The "light" and "dark" schemes
+; use default colors.
+~with define-color-scheme
 
-; on a light background, we don't like to use yellow - map it to blue
-define-color-scheme light use=default palette=%light-palette
+	; on a light background, we don't like to use yellow - map it to blue
+	light use=default palette=%light-palette
 
-; on a dark background, we don't like to use blue - map it to yellow
-define-color-scheme dark  use=default palette=%dark-palette
+	; on a dark background, we don't like to use blue - map it to yellow
+	dark  use=default palette=%dark-palette
 
-; FIXME - implement "&isa"
-;~if &isa color default
-;	define-color-scheme light fcolor=default bcolor=default
-;	define-color-scheme dark  fcolor=default bcolor=default
-;~endif
+	reverse video-attr=rev
 
-define-color-scheme reverse video-attr=rev
+	white use=dark fcolor=white bcolor=black
 
-define-color-scheme white use=dark fcolor=white bcolor=black
+	black use=light bcolor=white fcolor=black
 
-define-color-scheme black use=light bcolor=white fcolor=black
-
+~endwith
 ~endif

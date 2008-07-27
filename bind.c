@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.319 2008/07/26 01:00:28 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.320 2008/07/27 12:52:41 tom Exp $
  *
  */
 
@@ -1623,6 +1623,7 @@ list_one_fname(char *fname, UINT mode)
 
 	tb_scopy(&myBuff, "view ");
 	path_quote(&myFile, fname);
+	bsl_to_sl_inplace(tb_values(myFile));
 	tb_sappend0(&myBuff, tb_values(myFile));
 
 	myDot = DOT;

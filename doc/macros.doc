@@ -1007,7 +1007,10 @@ Functions
 				    delimiters "D".
 
 	    &translate  "F" "T" "S" Translate from "F" to "T" each character
-				    of string "S".
+				    of string "S".   The "F" and "T" are
+				    strings of equal length; characters from
+				    "S" found in "F" are translated to the
+				    character in "T" at the same index.
 
 	    &word   "N" "S"	    Select N'th word of string "S", blank
 				    separated.
@@ -1536,5 +1539,5 @@ Example startup file
 
 -- vile:fc=78
 -----------------------------------
-  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.106 2008/04/27 14:09:09 tom Exp $
+  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.107 2008/07/27 13:04:15 tom Exp $
 -----------------------------------
