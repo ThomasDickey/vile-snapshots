@@ -1,4 +1,4 @@
-; $Header: /users/source/archives/vile.vcs/package/RCS/winvile.iss,v 1.11 2007/05/28 15:46:17 tom Exp $
+; $Header: /users/source/archives/vile.vcs/package/RCS/winvile.iss,v 1.12 2008/07/26 15:58:01 tom Exp $
 ; vile:ts=2 sw=2
 ;
 ; This installs winvile as "winvile-ole.exe", since that is the name I use when building the OLE flavor
@@ -31,7 +31,16 @@
 #include "..\patchlev.h"
 
 #define myVer VILE_RELEASE + '.' + VILE_VERSION + VILE_PATCHLEVEL
+
 #define myAppName 'WinVile'
+
+; something like "winvile", for filename
+
+#define myFullName myAppName
+
+; something like "winvile-ole", for filename
+#define myRootName myFullName + '-ole'
+
 #define myAppVer myAppName + ' ' + myVer
 #define mySendTo '{sendto}\' + myAppName + '.lnk'
 
@@ -44,13 +53,13 @@ VersionInfoDescription=Setup for "WinVile - VI Like Emacs"
 #emit 'AppVersion=' + myVer
 #emit 'AppVerName=' + myAppVer
 AppPublisher=Thomas E. Dickey
-AppCopyright=© 1997-2006,2007, Thomas E. Dickey
+AppCopyright=© 1997-2007,2008, Thomas E. Dickey
 AppPublisherURL=http://invisible-island.net/vile/
 AppSupportURL=http://invisible-island.net/vile/
 AppUpdatesURL=http://invisible-island.net/vile/
 DefaultDirName={pf}\VI Like Emacs
 OutputDir=iss-output
-#emit 'OutputBaseFilename=WinVile-setup-' + VILE_RELEASE + '_' + VILE_VERSION + VILE_PATCHLEVEL
+#emit 'OutputBaseFilename=' + myFullName + '-setup-' + VILE_RELEASE + '_' + VILE_VERSION + VILE_PATCHLEVEL
 DefaultGroupName=WinVile
 AllowNoIcons=yes
 LicenseFile=..\COPYING
@@ -69,6 +78,7 @@ Name: filters; Description: External filter executables (WinVile has most of the
 [Tasks]
 Name: for_all_users; Description: Install for all users on this machine; GroupDescription: Configuration Settings; Components: explorer filters macros; Check: isGuru; Flags: unchecked
 Name: register_vars; Description: Use registry for environment variables; GroupDescription: Configuration Settings; Components: filters macros; Flags: unchecked
+Name: first_in_path; Description: Put install-location first in path; GroupDescription: Configuration Settings; Components: filters macros; Flags: unchecked
 Name: use_wvwrap; Description: Add Context Menu Entry; GroupDescription: Windows Explorer; Components: explorer; Flags: unchecked
 Name: use_sendto; Description: Add Send To Entry; GroupDescription: Windows Explorer; Components: explorer; Flags: unchecked
 Name: desktopicon; Description: {cm:CreateDesktopIcon}; GroupDescription: {cm:AdditionalIcons}; Components: main; Flags: unchecked
@@ -81,7 +91,7 @@ Name: {app}\macros; Components: macros
 Name: {app}\filters; Components: filters
 
 [Files]
-Source: ..\bin\winvile-ole.exe; DestDir: {app}\bin; DestName: winvile-ole.exe; Components: main; AfterInstall: myPostExecutable; Flags: ignoreversion
+#emit 'Source: ..\bin\' + myRootName + '.exe; DestDir: {app}\bin; DestName: ' + myRootName + '.exe; Components: main; AfterInstall: myPostExecutable; Flags: ignoreversion'
 Source: ..\bin\wvwrap.exe; DestDir: {app}\bin; DestName: wvwrap.exe; Components: explorer; AfterInstall: myPostExplorer; Flags: ignoreversion
 Source: ..\vile.hlp; DestDir: {app}\bin; Components: docs help; AfterInstall: myPostHelpfile; Flags: ignoreversion
 Source: ..\README; DestDir: {app}; DestName: README.txt; Components: docs main; Flags: isreadme
@@ -93,13 +103,13 @@ Source: c:\vile\*.exe; DestDir: {app}\filters; Components: filters; AfterInstall
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]
-Name: {group}\WinVile; Filename: {app}\bin\winvile-ole.exe; Components: main; Flags: createonlyiffileexists
+#emit 'Name: {group}\WinVile; Filename: {app}\bin\' + myRootName + '.exe; Components: main; Flags: createonlyiffileexists'
 Name: {group}\{cm:UninstallProgram,WinVile}; Filename: {uninstallexe}
-Name: {userdesktop}\WinVile; Filename: {app}\bin\winvile-ole.exe; Components: main; Tasks: desktopicon; Flags: createonlyiffileexists
-Name: {userappdata}\Microsoft\Internet Explorer\Quick Launch\WinVile; Filename: {app}\bin\winvile-ole.exe; Components: main; Tasks: quicklaunchicon; Flags: createonlyiffileexists
+#emit 'Name: {userdesktop}\WinVile; Filename: {app}\bin\' + myRootName + '.exe; Components: main; Tasks: desktopicon; Flags: createonlyiffileexists'
+#emit 'Name: {userappdata}\Microsoft\Internet Explorer\Quick Launch\WinVile; Filename: {app}\bin\' + myRootName + '.exe; Components: main; Tasks: quicklaunchicon; Flags: createonlyiffileexists'
 
 [Run]
-Filename: {app}\bin\winvile-ole.exe; Description: {cm:LaunchProgram,WinVile}; Flags: nowait postinstall skipifsilent skipifdoesntexist
+#emit 'Filename: {app}\bin\' + myRootName + '.exe; Description: {cm:LaunchProgram,WinVile}; Flags: nowait postinstall skipifsilent skipifdoesntexist'
 
 [UninstallDelete]
 Type: files; Name: {app}\macros\vile.rc
@@ -109,7 +119,7 @@ Type: dirifempty; Name: {app}
 
 [Code]
 #emit 'const MY_CONTEXT_MENU = ''Edit with ' + myAppName + ''';'
-const MY_EDITOR_APP = '{app}\bin\winvile-ole.exe';
+#emit 'const MY_EDITOR_APP = ''{app}\bin\' + myRootName + '.exe'';'
 const MY_REGISTER_OLE = 'Register OLE Server';
 const MY_UNREGISTER_OLE = 'Unregister OLE Server';
 
@@ -169,14 +179,55 @@ begin
 	end;
 end;
 
+// Find a directory in a semicolon-separated list.
+// Returns the index in the list, or -1 if not found.
+function findDirInText(const InText, toFind: String): Integer;
+var
+  first, last, count : Integer;
+  OnLeft, OnRight : String;
+  found : Boolean;
+begin
+  first := 1;
+  count := 0;
+  found := False;
+  Log('findDirInText{' + InText + '} {' + toFind + '}');
+  OnRight := Copy(InText, first, Length(InText));
+  while Not found And (first <= Length(OnRight)) do
+    begin
+    count := count + 1;
+    last := Pos(';', OnRight);
+
+    if last <= 0 then
+      last := Length(OnRight) + 1;
+
+    if first < last then
+      begin
+      OnLeft := copy(OnRight, first, last - first);
+      Log('...compare {' + OnLeft + '}');
+      if CompareText(ToFind, OnLeft) = 0 then
+        found := True;
+        result := count;
+      end;
+
+    first := last + 1;
+    if first <= Length(OnRight) then
+      begin
+      OnRight := copy(OnRight, first, Length(OnRight) + 1 - first);
+      first := 1;
+      end;
+
+    end;
+  	Log('->' + IntToStr(result));
+end;
+
 // Add the given string to the front of the environment variable ValueName,
 // unless it is already there.
 procedure addDirToEnv(const RootKey: Integer; const SubKeyName, ValueName, toAdd: String);
 var
 	Current : string;
-	Testing : string;
 	Updated : string;
 	Actual  : string;
+	Lookup  : integer;
 begin
 	Updated := ExpandConstant(toAdd);
 	if RegQueryStringValue(RootKey, SubKeyName, ValueName, Current) then
@@ -185,8 +236,16 @@ begin
 		Actual := Updated;
 		if Length(Current) >= Length(Actual) then
 			begin
-			Testing := Copy(Current, 1, Length(Actual));
-			if CompareStr(Testing, Actual) = 0 then
+			Lookup := findDirInText(Current, Actual);
+
+			if isTaskSelected('first_in_path') then
+  			if Lookup > 1 then
+    			begin
+    			Log('Overriding to put first in path, found index ' + IntToStr(Lookup));
+	 		    Lookup := 0;
+          end;
+
+			if Lookup > 0 then
 				begin
 				Log('Directory ' + toAdd + ' is already in ' + ValueName)
 				Updated := '';

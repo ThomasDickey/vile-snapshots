@@ -1,7 +1,12 @@
 Changes for vile 9.7 (released ??? ??? ?? ????)
 
- 20080??? (c)
+ 20080727 (c)
 	> Tom Dickey:
+	+ modify winvile installer to optionally refrain from putting the
+	  newly installed directories first in $VILE_STARTUP_PATH, etc.,
+	  if they already exist in the given path.  That allows one to
+	  have vile.rc in the first path, e.g.,
+	  	c:\vile;c:\program files\vi like emacs
 	+ add append-number, insert-number, overwrite-number commands to
 	  work with character-numbers.
 	+ highlight matches in which-keywords, etc., and put a hyperlink on
@@ -9,7 +14,7 @@ Changes for vile 9.7 (released ??? ??? ?? ????)
 	+ fix initialization of XIM in xvile; compose sequences did not work.
 	  Also make xvile build XIM code for configurations other than Athena,
 	  by supplying fallback for resource definitions.
-	  (report by Fabien Coutant).
+	  (report/analysis by Fabien Coutant).
 	+ parse preprocessor-style directives for basic syntax highlighter.
 	+ add complex fences to vbmode for try-blocks, with-blocks and classes.
 	+ correct pattern for vbmode used for sub- and function-blocks to
