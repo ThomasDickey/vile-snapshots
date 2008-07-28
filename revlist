@@ -1,20 +1,20 @@
-revlist for vile, version v9_7b
+revlist for vile-9.7c, version v9_7c
 --------------------------------------------------------------------------------
 aclocal.m4	1.183
 ansi.c	1.49
 api.c	1.44
 api.h	1.13
 basic.c	1.161
-bind.c	1.318
+bind.c	1.320
 blist.c	1.11
 blist.h	1.4
 borland.c	1.38
 btree.c	1.24
 btree.h	1.5
-buffer.c	1.330
+buffer.c	1.331
 buglist	1.412
 builtflt.c	1.63
-CHANGES	1.1169
+CHANGES	1.1177
 CHANGES.R3	1.1
 CHANGES.R4	1.1
 CHANGES.R5	1.1
@@ -23,7 +23,7 @@ CHANGES.R7	1.2
 CHANGES.R8	1.1
 charsets.c	1.56
 chgdfunc.h	1.22
-cmdtbl	1.252
+cmdtbl	1.253
 config.guess	1.8
 config_h.in	1.2
 config.sub	1.9
@@ -40,7 +40,7 @@ dumbterm.c	1.23
 edef.h	1.339
 eightbit.c	1.45
 estruct.h	1.663
-eval.c	1.379
+eval.c	1.383
 exec.c	1.314
 externs.c	1.11
 fences.c	1.86
@@ -53,13 +53,13 @@ glob.c	1.93
 gppconio.c	1.2
 history.c	1.87
 input.c	1.320
-insert.c	1.166
+insert.c	1.167
 INSTALL	1.6
 install.sh	1.7
 isearch.c	1.60
 itbuff.c	1.25
 lckfiles.c	1.11
-line.c	1.192
+line.c	1.193
 main.c	1.642
 makeargv.c	1.3
 makeargv.h	1.3
@@ -86,12 +86,12 @@ opers.c	1.93
 os2keys.h	1.2
 os2pipe.c	1.5
 os2vio.c	1.36
-patchlev.h	1.377
+patchlev.h	1.378
 path.c	1.162
-perl.xs	1.110
+perl.xs	1.111
 plugin.c	1.1
 plugin.h	1.1
-proto.h	1.649
+proto.h	1.650
 pscreen.h	1.2
 ptypemap	1.7
 random.c	1.319
@@ -100,12 +100,12 @@ README.PC	1.33
 README.VMS	1.5
 regexp.c	1.139
 region.c	1.149
-revlist	v9_7b
+revlist	v9_7c
 search.c	1.146
 select.c	1.167
 sinstall.sh	1.1
 spawn.c	1.195
-statevar.c	1.121
+statevar.c	1.122
 tags.c	1.138
 tbuff.c	1.68
 tcap.c	1.177
@@ -118,8 +118,8 @@ ucrypt.c	1.15
 undo.c	1.96
 version.c	1.66
 vile.1	1.37
-vile-9.7.spec	1.4
-vile.hlp	1.654
+vile-9.7.spec	1.5
+vile.hlp	1.655
 vile.wmconfig	1.1
 vl_alloc.h	1.1
 vl_ctype.h	1.15
@@ -150,7 +150,7 @@ winvile.rc	1.12
 word.c	1.91
 wordmov.c	1.23
 wvwrap.cpp	1.17
-x11.c	1.311
+x11.c	1.313
 x11menu.c	1.10
 xshell.sh	1.4
 xterm.c	1.4
@@ -159,7 +159,7 @@ xvile.wmconfig	1.1
 doc/config.doc	1.15
 doc/dir.doc	1.3
 doc/filters.doc	1.40
-doc/macros.doc	1.106
+doc/macros.doc	1.107
 doc/menus.doc	1.7
 doc/modes.doc	1.17
 doc/ncu-indent	1.16
@@ -181,7 +181,7 @@ filters/au3-filt.l	1.8
 filters/au3.key	1.4
 filters/awk-filt.l	1.19
 filters/awk.key	1.2
-filters/bas-filt.l	1.17
+filters/bas-filt.l	1.18
 filters/basic.key	1.4
 filters/bat-filt.l	1.26
 filters/bat.key	1.4
@@ -329,8 +329,8 @@ filters/ti.key	1.2
 filters/txt-filt.l	1.34
 filters/unfilter.c	1.10
 filters/unfilter.h	1.1
-filters/vb6.key	1.4
-filters/vb.key	1.12
+filters/vb6.key	1.5
+filters/vb.key	1.15
 filters/vbs.key	1.4
 filters/vilefilt.l	1.57
 filters/vile.key	1.8
@@ -362,8 +362,8 @@ macros/digraphs.rc	1.2
 macros/gnugpg.rc	1.3
 macros/loaderrs.rc	1.2
 macros/manpage.rc	1.24
-macros/modes.rc	1.78
-macros/palettes.rc	1.7
+macros/modes.rc	1.79
+macros/palettes.rc	1.8
 macros/pictmode.rc	1.4
 macros/search.rc	1.3
 macros/shifts.rc	1.4
@@ -372,9 +372,9 @@ macros/vileinit.rc	1.37
 macros/vilemenu.rc	1.3
 macros/vile-pager	1.5
 macros/vileperl.rc	1.7
-macros/which.rc	1.15
+macros/which.rc	1.18
 macros/XVile.ad	1.1
-package/winvile.iss	1.11
+package/winvile.iss	1.12
 package/winvile.nsi	1.5
 perl/Breadcrumbs.pm	1.4
 perl/CaptHook.pm	1.1
