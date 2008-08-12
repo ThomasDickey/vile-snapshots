@@ -11,7 +11,7 @@
 #
 # The modes are table entries in the BUFFER and WINDOW structures.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.275 2008/05/05 20:59:46 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.276 2008/08/11 23:45:17 tom Exp $
 #
 #
 # Mode-table entries.  Capitalized letters are used for abbreviations.
@@ -244,6 +244,7 @@ string
 "cfilname"	CFNAME		1		"current file name"
 "char"		CHAR		1		"current character under the cursor"
 "cmd-count"	CMD_COUNT	OPT_EVAL	"repeat-counter for macros"
+"cmd-motion"	CMD_MOTION	OPT_EVAL&&OPT_PROCEDURES  "motion for operator"
 "cryptkey"	CRYPTKEY	OPT_ENCRYPT	"write-only encryption-key"
 "curchar"	CURCHAR		!SMALLER	"current character index in buffer"
 "curcol"	CURCOL		1		"current column pos of cursor"

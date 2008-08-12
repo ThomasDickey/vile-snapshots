@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.320 2008/07/27 12:52:41 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.321 2008/08/11 20:11:05 tom Exp $
  *
  */
 
@@ -1925,11 +1925,17 @@ cmdfunc2keycode(BINDINGS * bs, const CMDFUNC * f)
 const CMDFUNC *
 kcod2fnc(const BINDINGS * bs, int c)
 {
-    if (isSpecial(c)) {
-	KBIND *kp = kcode2kbind(bs, c);
-	return (kp != 0) ? kp->k_cmd : 0;
+    const CMDFUNC *result = 0;
+
+    if (bs != 0) {
+	if (isSpecial(c)) {
+	    KBIND *kp = kcode2kbind(bs, c);
+	    result = (kp != 0) ? kp->k_cmd : 0;
+	} else {
+	    result = bs->kb_normal[CharOf(c)];
+	}
     }
-    return bs->kb_normal[CharOf(c)];
+    return result;
 }
 
 /* fnc2kcod: translate a function pointer to a keycode */

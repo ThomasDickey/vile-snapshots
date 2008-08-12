@@ -1,6 +1,6 @@
 dnl vile's local definitions for autoconf.
 dnl
-dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.183 2008/05/06 22:12:27 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.185 2008/08/11 14:51:21 tom Exp $
 dnl
 dnl ---------------------------------------------------------------------------
 dnl ---------------------------------------------------------------------------
@@ -1427,7 +1427,7 @@ if test "$GCC" = yes ; then
 fi
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_GCC_WARNINGS version: 22 updated: 2007/07/29 09:55:12
+dnl CF_GCC_WARNINGS version: 23 updated: 2008/07/26 17:54:02
 dnl ---------------
 dnl Check if the compiler supports useful warning options.  There's a few that
 dnl we don't use, simply because they're too noisy:
@@ -1522,7 +1522,7 @@ then
 				;;
 			Winline) #(vi
 				case $GCC_VERSION in
-				3.3*)
+				[[34]].*)
 					CF_VERBOSE(feature is broken in gcc $GCC_VERSION)
 					continue;;
 				esac
@@ -3469,6 +3469,52 @@ AC_SUBST($3)dnl
 
 ])dnl
 dnl ---------------------------------------------------------------------------
+dnl CF_WITH_PERL version: 2 updated: 2008/08/11 10:36:36
+dnl ------------
+dnl Check if perl-extension (using embedded perl interpreter) is wanted, and
+dnl update symbols.
+AC_DEFUN([CF_WITH_PERL],[
+AC_MSG_CHECKING(if you want to use perl as an extension language)
+AC_ARG_WITH(perl,
+	[  --with-perl             enable use of Perl as an extension language],
+	[with_perl="$withval"],
+	[with_perl=no])
+AC_MSG_RESULT($with_perl)
+
+if test "$with_perl" = yes ; then
+	CF_PROG_PERL(5.004)
+	if test "$PERL" = no; then
+	    AC_ERROR([perl not found])
+	fi
+	PERLLIB=`$PERL -MConfig -e 'print $Config{privlib}'`
+	AC_DEFINE(OPT_PERL)
+	EXTRAOBJS="$EXTRAOBJS perl\$o"
+	BUILTSRCS="$BUILTSRCS perl.c"
+	cf_prefix=`$PERL -MConfig -e 'print $Config{shrpenv}'`
+	ac_link="$cf_prefix $ac_link"
+	CF_CHECK_CFLAGS(`$PERL -MExtUtils::Embed -e ccopts`)
+	LIBS="$LIBS `$PERL -MExtUtils::Embed -e ldopts`"
+	EXTRA_INSTALL_DIRS="$EXTRA_INSTALL_DIRS \$(INSTALL_PERL_DIRS)"
+	EXTRA_INSTALL_FILES="$EXTRA_INSTALL_FILES \$(INSTALL_PERL_FILES)"
+
+    AC_TRY_LINK([
+#include <EXTERN.h>
+#include <perl.h>
+#include <XSUB.h>
+    ],[
+    PerlInterpreter* interp = perl_alloc();
+    perl_construct(interp);
+    perl_parse(interp, (XSINIT_t)0, 0, (char **)0, (char **)0);
+    Perl_croak(aTHX_ "Why:%s\n", "Bye!");
+],,[AC_MSG_ERROR(Cannot link with Perl interpreter)])
+
+fi
+AC_SUBST(PERLLIB)
+AC_SUBST(PERL)
+AC_SUBST(EXTRA_INSTALL_DIRS)
+AC_SUBST(EXTRA_INSTALL_FILES)
+])
+dnl ---------------------------------------------------------------------------
 dnl CF_WITH_PURIFY version: 2 updated: 2006/12/14 18:43:43
 dnl --------------
 AC_DEFUN([CF_WITH_PURIFY],[
@@ -3540,7 +3586,7 @@ AC_TRY_LINK([
 test $cf_cv_need_xopen_extension = yes && CPPFLAGS="$CPPFLAGS -D_XOPEN_SOURCE_EXTENDED"
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_XOPEN_SOURCE version: 25 updated: 2007/01/29 18:36:38
+dnl CF_XOPEN_SOURCE version: 26 updated: 2008/07/27 11:26:57
 dnl ---------------
 dnl Try to get _XOPEN_SOURCE defined properly that we can use POSIX functions,
 dnl or adapt to the vendor's definitions to get equivalent functionality,
@@ -3560,7 +3606,7 @@ case $host_os in #(vi
 aix[[45]]*) #(vi
 	CPPFLAGS="$CPPFLAGS -D_ALL_SOURCE"
 	;;
-freebsd*) #(vi
+freebsd*|dragonfly*) #(vi
 	# 5.x headers associate
 	#	_XOPEN_SOURCE=600 with _POSIX_C_SOURCE=200112L
 	#	_XOPEN_SOURCE=500 with _POSIX_C_SOURCE=199506L

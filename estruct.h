@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.663 2008/05/30 19:09:19 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.665 2008/08/11 21:05:02 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -2738,11 +2738,12 @@ typedef struct {
 
 /* these flags determine the type of cu.* */
 #define typBIT(n) cmdBIT(n+28)	/* ...to simplify adding bits */
-/* bits 27-28 */
+/* bits 27-29 */
 #define CMD_FUNC 0L		/* this is the default (CmdFunc) */
 #define CMD_PROC typBIT(0)	/* named procedure (BUFFER *) */
-#define CMD_PERL typBIT(1)	/* perl subroutine (AV *) */
-#define CMD_TYPE (CMD_PROC | CMD_PERL) /* type mask */
+#define CMD_OPER typBIT(1)	/* user-defined operator */
+#define CMD_PERL typBIT(2)	/* perl subroutine (AV *) */
+#define CMD_TYPE (CMD_PROC | CMD_OPER | CMD_PERL) /* type mask */
 
 #define SPECIAL_BANG_ARG -42	/* arg passed as 'n' to functions which
 					were invoked by their "xxx!" name */
@@ -2870,7 +2871,7 @@ extern void ExitProgram(int code);
 #define ExitProgram(code)   oleauto_exit(code)
 #else
 #if !defined(VILE_ERROR_ABORT)
-#define	ExitProgram(code)	exit(code)
+#define	ExitProgram(code)	exit_program(code)
 #endif
 #endif
 
