@@ -1,12 +1,12 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_REVISION($Revision: 1.246 $)
+AC_REVISION($Revision: 1.247 $)
 AC_PREREQ(2.13.20030927)
 rm -f config.cache
 
 ### Use "configure -with-screen" to override the default configuration, which is
 ### termcap-based on unix systems.
 
-dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.246 2008/07/14 22:07:42 Mark.Robinson Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.247 2008/08/11 13:40:16 tom Exp $
 
 define(MAKELIST, sh $srcdir/filters/makelist.sh $srcdir/filters/genmake.mak)
 
@@ -291,32 +291,7 @@ else
 	LEX_CHAR_CLASSES='sh $(srcdir)/noclass.sh '
 fi
 
-AC_MSG_CHECKING(if you want to use perl as an extension language)
-AC_ARG_WITH(perl,
-	[  --with-perl             enable use of Perl as an extension language],
-	[with_perl="$withval"],
-	[with_perl=no])
-AC_MSG_RESULT($with_perl)
-if test "$with_perl" = yes ; then
-	CF_PROG_PERL(5.004)
-	if test "$PERL" = no; then
-	    AC_ERROR([perl not found])
-	fi
-	perl_lib_path=`$PERL -MConfig -e 'print $Config{privlib}'`
-	AC_DEFINE(OPT_PERL)
-	EXTRAOBJS="$EXTRAOBJS perl\$o"
-	BUILTSRCS="$BUILTSRCS perl.c"
-	LINK_PREFIX=`$PERL -MConfig -e 'print $Config{shrpenv}'`
-	ac_link="$LINK_PREFIX $ac_link"
-	CF_CHECK_CFLAGS(`$PERL -MExtUtils::Embed -e ccopts`)
-	LIBS="$LIBS `$PERL -MExtUtils::Embed -e ldopts`"
-	EXTRA_INSTALL_DIRS="$EXTRA_INSTALL_DIRS \$(INSTALL_PERL_DIRS)"
-	EXTRA_INSTALL_FILES="$EXTRA_INSTALL_FILES \$(INSTALL_PERL_FILES)"
-fi
-AC_SUBST(perl_lib_path)
-AC_SUBST(PERL)
-AC_SUBST(EXTRA_INSTALL_DIRS)
-AC_SUBST(EXTRA_INSTALL_FILES)
+CF_WITH_PERL
 
 # X11 checks will sometimes add to CFLAGS.  We want the state of CFLAGS
 # prior to these checks

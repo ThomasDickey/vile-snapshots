@@ -22,7 +22,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.642 2008/07/14 22:07:42 Mark.Robinson Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.646 2008/08/11 20:09:33 tom Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -393,11 +393,12 @@ MainProgram(int argc, char *argv[])
     expand_wild_args(&argc, &argv);
 #endif
     vl_glob_opts = vl_GLOB_ALL;
-    prog_arg = argv[0];		/* this contains our only clue to exec-path */
+    prog_arg = strmalloc(argv[0]);	/* our only clue to exec-path */
 #if SYS_MSDOS || SYS_OS2 || SYS_OS2_EMX || SYS_WINNT
     if (strchr(pathleaf(prog_arg), '.') == 0) {
 	char *t = typeallocn(char, strlen(prog_arg) + 5);
 	lsprintf(t, "%s.exe", prog_arg);
+	free(prog_arg);
 	prog_arg = t;
     }
 #endif
@@ -1092,6 +1093,7 @@ get_executable_dir(void)
 	 * 't' points to first char after the last ':' or ']' in
 	 * the exe's path.
 	 */
+	free(prog_arg);
 	prog_arg = strmalloc(t);
 	*t = EOS;
 	exec_pathname = strmalloc(lengthen_path(strcpy(temp, s)));
@@ -1144,11 +1146,6 @@ tidy_exit(int code)
     term.clean(TRUE);
 #if SYS_UNIX
     setup_handler(SIGHUP, SIG_IGN);
-#endif
-#if NO_LEAKS
-#ifdef HAVE__NC_FREEALL
-    _nc_freeall();
-#endif
 #endif
     ExitProgram(code);
 }
@@ -2316,77 +2313,6 @@ quit(int f, int n GCC_UNUSED)
 #if OPT_WORKING
     setup_handler(SIGALRM, SIG_IGN);
 #endif
-#if NO_LEAKS
-    {
-	beginDisplay();		/* ...this may take a while... */
-
-	/* free all of the global data structures */
-	onel_leaks();
-	path_leaks();
-	kbs_leaks();
-	bind_leaks();
-	map_leaks();
-	tags_leaks();
-	wp_leaks();
-	bp_leaks();
-#if !SMALLER
-	ev_leaks();
-#endif
-	mode_leaks();
-	vars_leaks();
-	fileio_leaks();
-#if DISP_X11
-	x11_leaks();
-#endif
-
-	free_local_vals(g_valnames, global_g_values.gv, global_g_values.gv);
-	free_local_vals(b_valnames, global_b_values.bv, global_b_values.bv);
-	free_local_vals(w_valnames, global_w_values.wv, global_w_values.wv);
-
-	FreeAndNull(libdir_path);
-	FreeAndNull(startup_path);
-	FreeAndNull(gregexp);
-	tb_free(&tb_matched_pat);
-#if OPT_LOCALE
-	FreeAndNull(vl_real_enc.locale);
-	FreeAndNull(vl_real_enc.encoding);
-#endif /* OPT_LOCALE */
-#if OPT_MLFORMAT
-	FreeAndNull(modeline_format);
-#endif
-#if OPT_POSFORMAT
-	FreeAndNull(position_format);
-#endif
-	FreeAndNull(helpfile);
-	FreeAndNull(startup_file);
-#if SYS_UNIX
-	if (exec_pathname != 0
-	    && strcmp(exec_pathname, "."))
-	    FreeAndNull(exec_pathname);
-#endif
-#if OPT_CURTOKENS
-	free_regexval(buf_fname_expr.v.r);
-#endif
-#if OPT_FILTER
-	flt_leaks();
-	filters_leaks();
-#endif
-	/* do these last, e.g., for tb_matched_pat */
-	itb_leaks();
-	tb_leaks();
-
-	term.close();
-#if OPT_LOCALE
-	eightbit_leaks();
-#endif
-	vt_leaks();
-
-	/* whatever is left over must be a leak */
-	show_alloc();
-	show_elapsed();
-	trace_leaks();
-    }
-#endif
     tidy_exit(GOODEXIT);
     /* NOTREACHED */
     return FALSE;
@@ -3172,6 +3098,13 @@ valid_line_wp(LINE *test, WINDOW *wp)
 }
 #endif
 
+void
+exit_program(int code)
+{
+    free_all_leaks();
+    exit(code);
+}
+
 #ifdef VILE_ERROR_ABORT
 #undef ExitProgram		/* in case it is oleauto_exit() */
 
@@ -3185,6 +3118,86 @@ ExitProgram(int code)
 	siginit(FALSE);
 	abort();
     }
-    exit(code);
+    exit_program(code);
 }
 #endif
+
+#if NO_LEAKS
+void
+free_all_leaks(void)
+{
+    beginDisplay();		/* ...this may take a while... */
+
+    TRACE((T_CALLED "free_all_leaks\n"));
+
+    /* free all of the global data structures */
+    onel_leaks();
+    path_leaks();
+    kbs_leaks();
+    bind_leaks();
+    map_leaks();
+    tags_leaks();
+    wp_leaks();
+    bp_leaks();
+#if !SMALLER
+    ev_leaks();
+#endif
+    mode_leaks();
+    vars_leaks();
+    fileio_leaks();
+#if DISP_X11
+    x11_leaks();
+#endif
+
+    free_local_vals(g_valnames, global_g_values.gv, global_g_values.gv);
+    free_local_vals(b_valnames, global_b_values.bv, global_b_values.bv);
+    free_local_vals(w_valnames, global_w_values.wv, global_w_values.wv);
+
+    FreeAndNull(prog_arg);
+    FreeAndNull(libdir_path);
+    FreeAndNull(startup_path);
+    FreeAndNull(gregexp);
+    tb_free(&tb_matched_pat);
+#if OPT_LOCALE
+    FreeAndNull(vl_real_enc.locale);
+    FreeAndNull(vl_real_enc.encoding);
+#endif /* OPT_LOCALE */
+#if OPT_MLFORMAT
+    FreeAndNull(modeline_format);
+#endif
+#if OPT_POSFORMAT
+    FreeAndNull(position_format);
+#endif
+    FreeAndNull(helpfile);
+    FreeAndNull(startup_file);
+#if SYS_UNIX
+    if (exec_pathname != 0
+	&& strcmp(exec_pathname, "."))
+	FreeAndNull(exec_pathname);
+#endif
+#if OPT_CURTOKENS
+    free_regexval(buf_fname_expr.v.r);
+#endif
+#if OPT_FILTER
+    flt_leaks();
+    filters_leaks();
+#endif
+    /* do these last, e.g., for tb_matched_pat */
+    itb_leaks();
+    tb_leaks();
+
+    term.close();
+#if OPT_LOCALE
+    eightbit_leaks();
+#endif
+    vt_leaks();
+
+    /* whatever is left over must be a leak */
+    show_alloc();
+    show_elapsed();
+    trace_leaks();
+#ifdef HAVE__NC_FREEALL
+    _nc_freeall();
+#endif
+}
+#endif /* NO_LEAKS */

@@ -6,7 +6,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.339 2008/05/30 18:59:53 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.340 2008/08/11 23:59:48 tom Exp $
  */
 
 #ifndef VILE_EDEF_H
@@ -282,6 +282,7 @@ decl_init( int seed, 123 );		/* random number seed		*/
 #endif
 
 decl_init( int cmd_count, 0 );		/* 1..n for procedure execution	*/
+decl_init( const CMDFUNC *cmd_motion, 0 ); /* current operator's motion	*/
 
 #if OPT_EVAL || OPT_DEBUGMACROS
 decl_init( int tracemacros, FALSE );	/* macro tracing flag		*/

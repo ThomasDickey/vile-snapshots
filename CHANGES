@@ -1,5 +1,21 @@
 Changes for vile 9.7 (released ??? ??? ?? ????)
 
+ 200807?? (d)
+	> Tom Dickey:
+	+ implement user-definable operators (prompted by discussion with Janis
+	  Rucis):
+	  + store-operator command
+	  + $cmd-motion variable
+	+ add a null-pointer check to kcod2fnc(), to handle case where parameter
+	  of &gtmotion is incorrect (report by Janis Rucis).
+	+ modify leak-checking to include forked processes, e.g., for npopen.
+	+ add link-test to the configure --with-perl option, in case Perl is
+	  only partly installed (report by Janis Rucis).
+	+ add case for dragonfly to CF_XOPEN_SOURCE configure macro.
+	+ extend vile-lex-filt to handle some of flex's scanner skeleton:
+	  + treat lines beginning with "%%" as a comment if they contain text.
+	  + recognize copy-directives "%+", "%-" and "%*".
+
  20080727 (c)
 	> Tom Dickey:
 	+ modify winvile installer to optionally refrain from putting the

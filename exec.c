@@ -4,7 +4,7 @@
  *	original by Daniel Lawrence, but
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.314 2008/01/22 00:13:57 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.316 2008/08/11 23:14:48 tom Exp $
  *
  */
 
@@ -970,6 +970,9 @@ call_cmdfunc(const CMDFUNC * p, int f, int n)
 #if OPT_PROCEDURES
     case CMD_PROC:		/* named procedure */
 	return dobuf(CMD_U_BUFF(p), f ? n : 1);
+    case CMD_OPER:		/* user-defined operator */
+	regionshape = rgn_EXACT;	/* FIXME */
+	return vile_op(f, n, user_operator, CMD_U_BUFF(p)->b_bname);
 #endif
 
 #if OPT_PERL
@@ -1414,7 +1417,7 @@ decode_parameter_info(TBUFF *tok, PARAM_INFO * result)
 #endif
 
 static int
-setup_macro_buffer(TBUFF *name, int flag)
+setup_macro_buffer(TBUFF *name, int bufnum, UINT flags)
 {
 #if OPT_MACRO_ARGS || OPT_ONLINEHELP
     static TBUFF *temp;
@@ -1428,10 +1431,10 @@ setup_macro_buffer(TBUFF *name, int flag)
     BUFFER *bp;
 
     /* construct the buffer name for the macro */
-    if (flag < 0)
+    if (bufnum < 0)
 	(void) add_brackets(bname, tb_values(name));
     else
-	(void) lsprintf(bname, MACRO_N_BufName, flag);
+	(void) lsprintf(bname, MACRO_N_BufName, bufnum);
 
     /* set up the buffer for the new macro */
     if ((bp = bfind(bname, BFINVS)) == NULL) {
@@ -1450,7 +1453,7 @@ setup_macro_buffer(TBUFF *name, int flag)
 
     /* save this into the list of : names */
 #if OPT_NAMEBST
-    if (flag < 0) {
+    if (bufnum < 0) {
 	CMDFUNC *cf = typecalloc(CMDFUNC);
 
 	if (!cf)
@@ -1461,7 +1464,7 @@ setup_macro_buffer(TBUFF *name, int flag)
 #else
 	cf->cu.c_buff = bp;
 #endif
-	cf->c_flags = UNDO | REDO | CMD_PROC | VIEWOK;
+	cf->c_flags = UNDO | REDO | VIEWOK | flags;
 
 #if OPT_MACRO_ARGS || OPT_ONLINEHELP
 	if (limit != 0) {
@@ -1515,32 +1518,41 @@ setup_macro_buffer(TBUFF *name, int flag)
     return TRUE;
 }
 
+/* can't store macros interactively */
+static int
+can_store_macro(const char *name)
+{
+    int status = (clexec != 0);
+
+    if (!status) {
+	mlforce("[Cannot store %s interactively]", name);
+    }
+    return status;
+}
+
 /*
  * Set up a macro buffer and flag to store all executed command lines there. 
  * 'n' is the macro number to use.
  */
 int
-storemac(int f, int n)
+store_macro(int f, int n)
 {
-    /* can't store macros interactively */
-    if (!clexec) {
-	mlforce("[Cannot store macros interactively]");
-	return FALSE;
-    }
+    int status;
 
-    /* the numeric arg is our only way of distinguishing macros */
-    if (!f) {
+    if (!can_store_macro("macros")) {
+	status = FALSE;
+    } else if (!f) {
+	/* the numeric arg is our only way of distinguishing macros */
 	mlforce("[No macro specified]");
-	return FALSE;
-    }
-
-    /* range check the macro number */
-    if (n < 1 || n > OPT_EXEC_MACROS) {
+	status = FALSE;
+    } else if (n < 1 || n > OPT_EXEC_MACROS) {
+	/* range check the macro number */
 	mlforce("[Macro number out of range]");
-	return FALSE;
+	status = FALSE;
+    } else {
+	status = setup_macro_buffer((TBUFF *) 0, n, CMD_PROC);
     }
-
-    return setup_macro_buffer((TBUFF *) 0, n);
+    return status;
 }
 
 #if OPT_PROCEDURES
@@ -1549,28 +1561,51 @@ storemac(int f, int n)
  * there.  'n' is the macro number to use.
  */
 int
-storeproc(int f, int n)
+store_proc(int f, int n)
 {
     static TBUFF *name;		/* procedure name */
     int status;			/* return status */
 
-    /* if a number was given, then they must mean macro N */
-    if (f)
-	return storemac(f, n);
+    if (f) {
+	/* if a number was given, then they must mean macro N */
+	status = store_macro(f, n);
+    } else if (!can_store_macro("procedures")) {
+	status = FALSE;
+    } else {
 
-    /* can't store procedures interactively */
-    if (!clexec) {
-	mlforce("[Cannot store procedures interactively]");
-	return FALSE;
+	/* get the name of the procedure */
+	tb_scopy(&name, "");
+	if ((status = kbd_reply("Procedure name: ", &name,
+				eol_command, ' ',
+				KBD_NORMAL, no_completion)) == TRUE) {
+	    status = setup_macro_buffer(name, -1, CMD_PROC);
+	}
     }
+    return status;
+}
 
-    /* get the name of the procedure */
-    tb_scopy(&name, "");
-    if ((status = kbd_reply("Procedure name: ", &name,
-			    eol_command, ' ', KBD_NORMAL, no_completion)) != TRUE)
-	return status;
+int
+store_op(int f, int n)
+{
+    static TBUFF *name;		/* procedure name */
+    int status;			/* return status */
 
-    return setup_macro_buffer(name, -1);
+    (void) f;
+    (void) n;
+
+    if (!can_store_macro("operators")) {
+	status = FALSE;
+    } else {
+
+	/* get the name of the procedure */
+	tb_scopy(&name, "");
+	if ((status = kbd_reply("Operator name: ", &name,
+				eol_command, ' ',
+				KBD_NORMAL, no_completion)) == TRUE) {
+	    status = setup_macro_buffer(name, -1, CMD_OPER);
+	}
+    }
+    return status;
 }
 
 /*
@@ -2654,6 +2689,16 @@ dobuf(BUFFER *bp, int limit)
     endofDisplay();
 
     returnCode(status);
+}
+
+/*
+ * Dummy function used to tell vile_op() that we are passing a user-defined
+ * operator's name in the last parameter.
+ */
+int
+user_operator(void)
+{
+    return TRUE;
 }
 
 /*

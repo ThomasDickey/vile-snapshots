@@ -3,7 +3,7 @@
  *	for getting and setting the values of the vile state variables,
  *	plus helper utility functions.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.122 2008/07/24 23:37:56 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.123 2008/08/12 00:09:34 tom Exp $
  */
 
 #include	"estruct.h"
@@ -763,6 +763,14 @@ var_CMD_COUNT(TBUFF **rp, const char *vp)
 {
     return any_ro_INT(rp, vp, cmd_count);
 }
+
+#if OPT_PROCEDURES
+int
+var_CMD_MOTION(TBUFF **rp, const char *vp)
+{
+    return any_ro_STR(rp, vp, fnc2engl(cmd_motion));
+}
+#endif
 
 int
 var_DISCMD(TBUFF **rp, const char *vp)

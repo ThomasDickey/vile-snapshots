@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.650 2008/07/26 00:56:00 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.653 2008/08/11 20:54:30 tom Exp $
  *
  */
 
@@ -20,22 +20,23 @@ extern "C" {
 #endif
 
 extern SIGT catchintr (int ACTUAL_SIG_ARGS);
-extern char *init_state_value(int n);
+extern char *init_state_value (int n);
 extern char *strncpy0 (char *t, const char *f, size_t l);
-extern char *vl_strncpy (char *dest, const char *src, size_t destlen);
 extern char *vile_getenv (const char *name);
+extern char *vl_strncpy (char *dest, const char *src, size_t destlen);
 extern int call_cmdfunc (const CMDFUNC *p, int f, int n);
 extern int no_memory (const char *s);
 extern int rdonly (void);
 extern int writeall (int f, int n, int promptuser, int leaving, int autowriting, int all);
 extern void charinit (void);
 extern void do_repeats (int *cp, int *fp, int *np);
-extern void init_mode_value(struct VAL *, MODECLASS c, int n);
+extern void exit_program (int code);
+extern void init_mode_value (struct VAL *, MODECLASS c, int n);
 extern void not_interrupted (void);
 extern void setup_handler (int sig, void (*disp) (int ACTUAL_SIG_ARGS));
+extern void tcap_init_fkeys (void);
+extern void tcap_setup_locale (char *real_locale, char *fake_locale);
 extern void tidy_exit (int code);
-extern void tcap_init_fkeys(void);
-extern void tcap_setup_locale(char *real_locale, char *fake_locale);
 
 #ifndef interrupted
 extern int interrupted (void);
@@ -519,6 +520,7 @@ extern int dofile (char *fname);
 extern int end_named_cmd (void);
 extern int execute (const CMDFUNC *execfunc, int f, int n);
 extern int more_named_cmd (void);
+extern int user_operator (void);
 
 /* file.c */
 extern SIGT imdying (int ACTUAL_SIG_ARGS);
@@ -1553,6 +1555,7 @@ extern	void	ev_leaks (void);
 extern	void	fileio_leaks (void);
 extern	void	filters_leaks (void);
 extern	void	flt_leaks (void);
+extern	void	free_all_leaks(void);
 extern	void	itb_leaks (void);
 extern	void	kbs_leaks (void);
 extern	void	map_leaks (void);
@@ -1566,6 +1569,8 @@ extern	void	vars_leaks (void);
 extern	void	vt_leaks (void);
 extern	void	wp_leaks (void);
 extern	void	x11_leaks (void);
+#else
+#define free_all_leaks() /* nothing */
 #endif /* NO_LEAKS */
 
 #if defined(HAVE_MKSTEMP) && defined(HAVE_MKDTEMP)

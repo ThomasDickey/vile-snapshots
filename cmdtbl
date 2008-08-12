@@ -97,7 +97,7 @@
 #		in '!' listed, then the flag does nothing, and should be
 #		viewed simply as documentation.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.253 2008/07/25 22:21:03 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.254 2008/08/11 21:13:06 tom Exp $
 #
 #
 
@@ -1659,12 +1659,15 @@ splitwind	NONE
 	"split-current-window"		!FEWNAMES
 	'^X-2'
 	<split the window in half; CNT of 1 or 2 chooses which becomes current>
-storemac	NONE
+store_macro	NONE
 	"store-macro"
 	<store script text into CNT'th macro, up to line starting with ~endm>
-storeproc	EXRCOK|EXTRA		OPT_PROCEDURES
+store_proc	EXRCOK|EXTRA		OPT_PROCEDURES
 	"store-procedure"
 	<store script text into given named stored-procedure; give CNT for store-macro CNT>
+store_op	EXRCOK|EXTRA		OPT_PROCEDURES
+	"store-operator"
+	<store script text into given named user-operator>
 subst_again	REDO|UNDO|GLOBOK
 	"substitute-again"		!FEWNAMES
 	'&'

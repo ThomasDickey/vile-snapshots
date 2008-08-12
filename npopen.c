@@ -1,7 +1,7 @@
 /*	npopen:  like popen, but grabs stderr, too
  *		written by John Hutchinson, heavily modified by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/npopen.c,v 1.95 2008/03/06 01:12:44 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/npopen.c,v 1.96 2008/08/11 19:11:45 tom Exp $
  *
  */
 
@@ -148,27 +148,28 @@ void
 npclose(FILE *fp)
 {
     int child;
-    (void) fflush(fp);
-    (void) fclose(fp);
 
-    if (pipe_pid == pipe_pid2)
-	pipe_pid2 = -1;
+    if (fp != 0) {
+	(void) fclose(fp);
 
-    while (pipe_pid >= 0 || pipe_pid2 >= 0) {
-	child = wait((int *) 0);
-	if (child < 0 && errno == EINTR) {
-	    if (pipe_pid >= 0)
-		(void) kill(SIGKILL, pipe_pid);
-	    if (pipe_pid2 >= 0)
-		(void) kill(SIGKILL, pipe_pid2);
-	} else {
-	    if (pipe_pid == child)
-		pipe_pid = -1;
-	    if (pipe_pid2 == child)
-		pipe_pid2 = -1;
+	if (pipe_pid == pipe_pid2)
+	    pipe_pid2 = -1;
+
+	while (pipe_pid >= 0 || pipe_pid2 >= 0) {
+	    child = wait((int *) 0);
+	    if (child < 0 && errno == EINTR) {
+		if (pipe_pid >= 0)
+		    (void) kill(SIGKILL, pipe_pid);
+		if (pipe_pid2 >= 0)
+		    (void) kill(SIGKILL, pipe_pid2);
+	    } else {
+		if (pipe_pid == child)
+		    pipe_pid = -1;
+		if (pipe_pid2 == child)
+		    pipe_pid2 = -1;
+	    }
 	}
     }
-
 }
 
 static void

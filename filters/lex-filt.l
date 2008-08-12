@@ -8,13 +8,14 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/lex-filt.l,v 1.62 2008/01/12 17:21:27 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/lex-filt.l,v 1.66 2008/07/30 00:08:49 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of LEX program.
  */
 
 #include <filters.h>
 #include <fltstack.h>
+#undef YY_NO_UNPUT
 
 DefineFilter("lex");
 
@@ -51,7 +52,7 @@ SPACE		[[:blank:]]
 
 IDENT		[[:alpha:]_][[:alnum:]_]*
 
-DIRECTIVE	^%([{}%]|{IDENT})
+DIRECTIVE	^%([{}+*-]|{IDENT})
 
 INTEGER		[-+]?([[:digit:]]+)
 
@@ -84,7 +85,19 @@ STATES		("<"("*"|({IDENT}|\,)+)">")
 
 %%
 
+<INITIAL>^{SPACE}+	{
+    			ECHO;
+			new_state(CODE);
+		}
+
+<INITIAL,RULES,ACTIONS,CODE>^"%%"{SPACE}*[^[:space:]]+[^\r\n]*	{
+			WriteToken(Comment_attr);
+		}
+
+<INITIAL,RULES,ACTIONS,CODE>^"%%"{SPACE}*	|
 <INITIAL,RULES,ACTIONS,CODE>{DIRECTIVE}	{
+		    int keep_state = 0;
+
 		    WriteToken(Section_attr);
 		    switch(yytext[1]) {
 		    case '%':
@@ -103,9 +116,16 @@ STATES		("<"("*"|({IDENT}|\,)+)">")
 		    case 'x':
 			new_state(STATES);
 			break;
+		    case '+':
+		    case '-':
+		    case '*':
+			keep_state = 1;
+			break;
 		    default:
 			break;
 		    }
+		    if (!keep_state && (FLT_STATE == INITIAL))
+			new_state(RULES);
 		}
 
 <STATES>{IDENT}		{
@@ -143,7 +163,7 @@ STATES		("<"("*"|({IDENT}|\,)+)">")
 			  new_state(RULE1);
 			}
 <RULES>"//"[^\r\n]*	{ WriteToken(Comment_attr); }
-<RULES>"/*"		{ PushQuote(COMMENT, Comment_attr); }
+<INITIAL,RULES>"/*"	{ PushQuote(COMMENT, Comment_attr); }
 
 <RULE1>{SPACE}+		{ ECHO; new_state(RULEX); }
 <RULEX>{PATTERNS}	{ write_patterns(yytext, yyleng); new_state(RULER); }
@@ -191,7 +211,11 @@ STATES		("<"("*"|({IDENT}|\,)+)">")
 <COMMENT>"*"+[^*/]*	{ flt_bfr_append(yytext, yyleng); }
 <COMMENT>"*"+"/"	{ PopQuote(); }
 
-<CODE>^{SPACE}*#{SPACE}*{IDENT}({SPACE}+(\<[^>]+\>|\"[^"]+\"))? { WriteToken(Preproc_attr); }
+<INITIAL,CODE>^{SPACE}*#{SPACE}*{IDENT}({SPACE}+(\<[^>]+\>|\"[^"]+\"))? {
+			  WriteToken(Preproc_attr);
+			  if (FLT_STATE == INITIAL)
+			      new_state(CODE);
+			}
 
 %%
 
@@ -430,7 +454,7 @@ do_filter(FILE *inputs)
 
     set_symbol_table(filter_def.filter_name);
 
-    begin_state(RULES);
+    begin_state(INITIAL);
     while (yylex() > 0) {
     }
     end_state();

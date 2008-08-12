@@ -8,7 +8,7 @@
 /************************************************************************/
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/menu.c,v 1.51 2007/11/05 10:58:33 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/menu.c,v 1.52 2008/08/11 16:16:58 tom Exp $
  */
 
 /* Vile includes */
@@ -100,6 +100,7 @@ common_action(char *action)
 		/* */ ;
 	} else if (pid == 0) {
 	    if ((pid = fork()) > 0) {
+		free_all_leaks();
 		_exit(0);	/* abandon exec'ing process */
 	    } else if (pid == 0) {
 		newprocessgroup(FALSE, 1);

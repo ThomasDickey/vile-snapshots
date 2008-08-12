@@ -2925,6 +2925,7 @@ Programmed procedures (aka macros)
 	$cfilname	current file name
 	$char		character under the cursor
 	$cmd-count	repeat-counter for the current macro	(read only)
+	$cmd-motion	motion for the current operator		(read only)
 	$cryptkey	encryption key				(write only)
 	$curchar	character offset in file
 	$curcol		current column position of cursor
@@ -6461,4 +6462,4 @@ Problems
 
 Copyright 1995-2007,2008 by Paul Fox, Thomas Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.655 2008/07/25 23:13:16 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.656 2008/08/11 23:47:53 tom Exp $
