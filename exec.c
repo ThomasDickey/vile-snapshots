@@ -4,7 +4,7 @@
  *	original by Daniel Lawrence, but
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.316 2008/08/11 23:14:48 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.318 2008/08/14 00:52:32 tom Exp $
  *
  */
 
@@ -962,28 +962,38 @@ docmd(char *cline, int execflag, int f, int n)
 int
 call_cmdfunc(const CMDFUNC * p, int f, int n)
 {
+    int status = FALSE;
+
     switch (p->c_flags & CMD_TYPE) {
     case CMD_FUNC:		/* normal CmdFunc */
-	return (CMD_U_FUNC(p)) (f, n);
+	status = (CMD_U_FUNC(p)) (f, n);
+	break;
 
 #if OPT_NAMEBST
 #if OPT_PROCEDURES
     case CMD_PROC:		/* named procedure */
-	return dobuf(CMD_U_BUFF(p), f ? n : 1);
+	status = dobuf(CMD_U_BUFF(p), f ? n : 1, -1);
+	break;
+
     case CMD_OPER:		/* user-defined operator */
 	regionshape = rgn_EXACT;	/* FIXME */
-	return vile_op(f, n, user_operator, CMD_U_BUFF(p)->b_bname);
+	opcmd = OPOTHER;
+	status = vile_op(f, n, user_operator, CMD_U_BUFF(p)->b_bname);
+	break;
 #endif
 
 #if OPT_PERL
     case CMD_PERL:		/* perl subroutine */
-	return perl_call_sub(CMD_U_PERL(p), p->c_flags & OPER, f, n);
+	status = perl_call_sub(CMD_U_PERL(p), p->c_flags & OPER, f, n);
+	break;
 #endif
 #endif /* OPT_NAMEBST */
+    default:
+	mlforce("BUG: invalid CMDFUNC type");
+	status = FALSE;
+	break;
     }
-
-    mlforce("BUG: invalid CMDFUNC type");
-    return FALSE;
+    return status;
 }
 
 /*
@@ -1632,7 +1642,7 @@ execproc(int f, int n)
     if ((bp = find_b_name(bufn)) == NULL) {
 	return FALSE;
     }
-    return dobuf(bp, need_a_count(f, n, 1));
+    return dobuf(bp, need_a_count(f, n, 1), -1);
 
 }
 
@@ -1659,7 +1669,7 @@ execbuf(int f, int n)
 	return FALSE;
     }
 
-    return dobuf(bp, need_a_count(f, n, 1));
+    return dobuf(bp, need_a_count(f, n, 1), -1);
 }
 #endif
 
@@ -2590,7 +2600,7 @@ perform_dobuf(BUFFER *bp, WHLOOP * whlist)
  * execute the contents of a buffer
  */
 int
-dobuf(BUFFER *bp, int limit)
+dobuf(BUFFER *bp, int limit, int real_cmd_count)
 {
     TBUFF *macro_result = 0;
     int status = FALSE;
@@ -2614,7 +2624,9 @@ dobuf(BUFFER *bp, int limit)
 
 	    for (counter = 1; counter <= limit; counter++) {
 		if (dobufnesting == 1)
-		    cmd_count = counter;
+		    cmd_count = ((real_cmd_count >= 0)
+				 ? real_cmd_count
+				 : counter);
 
 #if ! SMALLER
 		if (setup_dobuf(bp, &whlist) != TRUE) {
@@ -2822,7 +2834,7 @@ dofile(char *fname)
 
 	/* go execute it! */
 	bp->b_refcount += 1;
-	status = dobuf(bp, 1);
+	status = dobuf(bp, 1, -1);
 	bp->b_refcount -= 1;
 
 	/*
@@ -2861,7 +2873,7 @@ cbuf(int f, int n, int bufnum)
 	return FALSE;
     }
 
-    return dobuf(bp, need_a_count(f, n, 1));
+    return dobuf(bp, need_a_count(f, n, 1), -1);
 }
 
 #include "neexec.h"

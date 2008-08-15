@@ -2,7 +2,7 @@
  *	eval.c -- function and variable evaluation
  *	original by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.383 2008/07/26 00:56:39 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.384 2008/08/12 21:29:13 tom Exp $
  *
  */
 
@@ -949,6 +949,7 @@ run_func(int fnum)
     int is_error = FALSE;
     long value = 0;
     long nums[MAXARGS];
+    int old_reading = read_msgline(TRUE);
 
     TRACE((T_CALLED "run_func(%d:%s)\n", fnum, vl_ufuncs[fnum].f_name));
 
@@ -1359,6 +1360,7 @@ run_func(int fnum)
     for (i = 0; i < nargs; i++) {
 	tb_free(&args[i]);
     }
+    read_msgline(old_reading);
     returnString(tb_values(result));
 }
 

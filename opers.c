@@ -3,7 +3,7 @@
  * that take motion operators.
  * written for vile.  Copyright (c) 1990, 1995-2003 by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/opers.c,v 1.95 2008/08/12 00:08:49 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/opers.c,v 1.96 2008/08/14 22:33:03 tom Exp $
  *
  */
 
@@ -20,11 +20,14 @@ vile_op(int f, int n, OpsFunc fn, const char *str)
     int c = 0;
     int thiskey;
     int status;
+    const CMDFUNC *cfp;		/* function to execute */
     const CMDFUNC *save_cmd_motion = cmd_motion;
     BUFFER *ourbp;
 #if OPT_MOUSE
     WINDOW *wp0 = curwp;
 #endif
+
+    TRACE((T_CALLED "vile_op(%s)\n", str));
 
     doingopcmd = TRUE;
 
@@ -32,7 +35,7 @@ vile_op(int f, int n, OpsFunc fn, const char *str)
     ourbp = curbp;
 
     if (havemotion != NULL) {
-	cmd_motion = havemotion;
+	cfp = havemotion;
 	havemotion = NULL;
     } else {
 	TBUFF *tok = 0;
@@ -45,9 +48,9 @@ vile_op(int f, int n, OpsFunc fn, const char *str)
 	if (clexec) {
 	    char *value = mac_tokval(&tok);	/* get the next token */
 	    if (value != 0 && strcmp(value, "lines"))
-		cmd_motion = engl2fnc(value);
+		cfp = engl2fnc(value);
 	    else
-		cmd_motion = &f_godotplus;
+		cfp = &f_godotplus;
 	} else {
 	    thiskey = lastkey;
 	    c = kbd_seq();
@@ -56,19 +59,19 @@ vile_op(int f, int n, OpsFunc fn, const char *str)
 	    if (curwp != wp0) {
 		unkeystroke(c);
 		doingopcmd = FALSE;
-		return FALSE;
+		returnCode(FALSE);
 	    }
 #endif
 	    /* allow second chance for entering counts */
 	    do_repeats(&c, &f, &n);
 
 	    if (thiskey == lastkey)
-		cmd_motion = &f_godotplus;
+		cfp = &f_godotplus;
 	    else
-		cmd_motion = DefaultKeyBinding(c);
+		cfp = DefaultKeyBinding(c);
 
 	}
-	if (cmd_motion != 0) {
+	if (cfp != 0) {
 	    mlerase();
 	} else {
 	    if (!clexec) {
@@ -81,25 +84,24 @@ vile_op(int f, int n, OpsFunc fn, const char *str)
 	tb_free(&tok);
     }
 
-    if (!cmd_motion) {
+    if (!cfp) {
 	status = FALSE;
-    } else if ((cmd_motion->c_flags & MOTION) == 0) {
+    } else if ((cfp->c_flags & MOTION) == 0) {
 	kbd_alarm();
 	status = ABORT;
     } else {
 	/* motion is interpreted as affecting full lines */
 	if (regionshape == rgn_EXACT) {
-	    if (cmd_motion->c_flags & FL)
+	    if (cfp->c_flags & FL)
 		regionshape = rgn_FULLLINE;
-	    if (cmd_motion->c_flags & VL_RECT)
+	    if (cfp->c_flags & VL_RECT)
 		regionshape = rgn_RECTANGLE;
 	}
 
 	/* and execute the motion */
-	status = execute(cmd_motion, f, n);
-	post_op_dot = DOT;
-
-	if (status != TRUE) {
+	if ((status = execute(cfp, f, n)) == TRUE) {
+	    post_op_dot = DOT;
+	} else {
 	    mlforce("[Motion failed]");
 	    status = FALSE;
 	}
@@ -115,7 +117,9 @@ vile_op(int f, int n, OpsFunc fn, const char *str)
 	    mlforce("BUG -- null func pointer in operator");
 	    status = FALSE;
 	} else if (fn == user_operator) {
-	    status = dobuf(find_b_name(str), 1);
+	    swapmark();
+	    cmd_motion = cfp;
+	    status = dobuf(find_b_name(str), 1, f ? n : 1);
 	} else {
 	    status = (fn) ();
 	}
@@ -132,7 +136,7 @@ vile_op(int f, int n, OpsFunc fn, const char *str)
     haveregion = FALSE;
     cmd_motion = save_cmd_motion;
 
-    return status;
+    returnCode(status);
 }
 
 int

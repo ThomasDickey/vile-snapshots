@@ -44,7 +44,7 @@
  *	tgetc_avail()     true if a key is avail from tgetc() or below.
  *	keystroke_avail() true if a key is avail from keystroke() or below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.320 2008/03/20 21:12:07 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.321 2008/08/12 21:26:26 tom Exp $
  *
  */
 
@@ -151,6 +151,14 @@ shell_complete(DONE_ARGS)
 }
 #endif /* COMPLETE_FILES */
 
+int
+read_msgline(int flag)
+{
+    int old_value = reading_msg_line;
+    reading_msg_line = flag;
+    return old_value;
+}
+
 /*
  * Ask a yes or no question in the message line. Return either TRUE, FALSE, or
  * ABORT. The ABORT status is returned if the user bumps out of the question
@@ -164,7 +172,7 @@ mlyesno(const char *prompt)
 
     /* in case this is right after a shell escape */
     if (update(TRUE)) {
-	reading_msg_line = TRUE;
+	int old_reading = read_msgline(TRUE);
 	for_ever {
 	    mlforce("%s [y/n]? ", prompt);
 	    c = (char) keystroke();	/* get the response */
@@ -183,7 +191,7 @@ mlyesno(const char *prompt)
 		break;
 	    }
 	}
-	reading_msg_line = FALSE;
+	read_msgline(old_reading);
     }
     return result;
 }
@@ -198,7 +206,7 @@ mlquickask(const char *prompt, const char *respchars, int *cp)
     int result = ABORT;
 
     if (update(TRUE)) {
-	reading_msg_line = TRUE;
+	int old_reading = read_msgline(TRUE);
 	for_ever {
 	    mlforce("%s ", prompt);
 	    *cp = keystroke();	/* get the response */
@@ -214,7 +222,7 @@ mlquickask(const char *prompt, const char *respchars, int *cp)
 
 	    kbd_alarm();
 	}
-	reading_msg_line = FALSE;
+	read_msgline(old_reading);
     }
     return result;
 }
@@ -1859,6 +1867,7 @@ kbd_reply(const char *prompt,	/* put this out first */
     const char *result;
     const char *old_bname = curbp->b_bname;
     WINDOW *old_wp = curwp;
+    int old_reading;
 
     TRACE((T_CALLED "kbd_reply(prompt=%s, extbuf=%s, options=%#x)\n",
 	   TRACE_NULL(prompt),
@@ -1989,7 +1998,7 @@ kbd_reply(const char *prompt,	/* put this out first */
     }
 
     quotef = FALSE;
-    reading_msg_line = TRUE;
+    old_reading = read_msgline(TRUE);
 
     /* ask for the input string with the prompt */
     if (prompt != 0)
@@ -2244,7 +2253,7 @@ kbd_reply(const char *prompt,	/* put this out first */
     popdown_completions(old_bname, old_wp);
 #endif
     miniedit = FALSE;
-    reading_msg_line = FALSE;
+    read_msgline(old_reading);
     tb_free(&buf);
     shiftMiniBuffer(0);
 
