@@ -470,6 +470,14 @@ State Variables
 			from 1 up to the given repeat count.  If not in a
 			macro, this is zero.
 
+	$cmd-motion	[READ ONLY] Returns the motion (keyword) associated
+			with the current macro if it was defined using
+			store-operator.  Use with $cmd-count to compose the
+			complete motion, e.g.,
+				store-operator fmt
+				$cmd-count filter-til $cmd-motion 'fmt -'
+				~endm
+
 	$cryptkey       [WRITE ONLY] encryption key.
 
 	$curchar        The index of the cursor in the buffer, in characters
@@ -1539,5 +1547,5 @@ Example startup file
 
 -- vile:fc=78
 -----------------------------------
-  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.107 2008/07/27 13:04:15 tom Exp $
+  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.109 2008/08/14 23:03:13 tom Exp $
 -----------------------------------

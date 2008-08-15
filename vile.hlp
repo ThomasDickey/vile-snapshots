@@ -2869,6 +2869,20 @@ Programmed procedures (aka macros)
 	Note that named macros may also include parameters and a help
 	string, each of which are described in doc/macros.doc.
 
+	User-defined Operators
+	----------------------
+	These are defined using the store-operator command, and accept no
+	arguments.  Otherwise they are much like other named macros.  These
+	macros setup parameters and perform special processing wrapped around
+	one of vile's built-in operators.  Here is an example:
+
+		store-operator fmt
+			$cmd-count filter-til $cmd-motion 'fmt -w50 -'
+		~endm
+
+	In the example, the combination of $cmd-count and $cmd-motion (passed
+	into the macro) act as the "real" operator's associated motion.
+
 	Macro Language Elements
 	-----------------------
 	Macros may incorporate any of the editor's built-in commands,
@@ -6462,4 +6476,4 @@ Problems
 
 Copyright 1995-2007,2008 by Paul Fox, Thomas Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.656 2008/08/11 23:47:53 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.657 2008/08/14 23:03:07 tom Exp $

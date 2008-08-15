@@ -1,11 +1,15 @@
 Changes for vile 9.7 (released ??? ??? ?? ????)
 
- 200807?? (d)
+ 200808?? (d)
 	> Tom Dickey:
+	+ disable autocolor while processing any &function (report by Janis
+	  Rucis).
 	+ implement user-definable operators (prompted by discussion with Janis
 	  Rucis):
 	  + store-operator command
 	  + $cmd-motion variable
+	  Caveat: the "undo" applies to individual commands within the macro,
+	  rather than to the whole macro.
 	+ add a null-pointer check to kcod2fnc(), to handle case where parameter
 	  of &gtmotion is incorrect (report by Janis Rucis).
 	+ modify leak-checking to include forked processes, e.g., for npopen.

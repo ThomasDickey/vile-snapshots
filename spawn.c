@@ -1,7 +1,7 @@
 /*	Spawn:	various DOS access commands
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.199 2008/08/11 18:16:41 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.200 2008/08/12 21:27:21 tom Exp $
  *
  */
 
@@ -275,13 +275,14 @@ pressreturn(void)
 {
     int c;
     int osgarbf;
+    int old_reading;
 
     osgarbf = sgarbf;
     sgarbf = FALSE;
     mlforce("[Press return to continue]");
     sgarbf = osgarbf;
     /* loop for a CR, a space, or a : to do another named command */
-    reading_msg_line = TRUE;
+    old_reading = read_msgline(TRUE);
     while ((c = keystroke()) != '\r' &&
 	   c != '\n' &&
 	   c != ' ' &&
@@ -292,7 +293,7 @@ pressreturn(void)
 	}
     }
     kbd_erase_to_end(0);
-    reading_msg_line = FALSE;
+    read_msgline(old_reading);
 }
 
 /* ARGSUSED */

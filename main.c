@@ -22,7 +22,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.646 2008/08/11 20:09:33 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.647 2008/08/14 00:45:52 tom Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -169,7 +169,7 @@ run_startup_commands(BUFFER *cmds)
     set_rdonly(cmds, cmds->b_fname, MDVIEW);
 
     /* go execute it! */
-    if (dobuf(cmds, 1) != TRUE) {
+    if (dobuf(cmds, 1, -1) != TRUE) {
 	result = FALSE;
     }
     /* if we managed to load a buffer, don't go back to the unnamed buffer */

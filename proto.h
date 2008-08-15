@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.653 2008/08/11 20:54:30 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.655 2008/08/14 00:45:39 tom Exp $
  *
  */
 
@@ -514,7 +514,7 @@ extern char *render_hex(TBUFF **rp, UINT i);
 extern DIRECTIVE dname_to_dirnum (char **cmdp, size_t length);
 extern const char *skip_linespecs (const char *buffer, int cpos, int *done);
 extern int do_source (char *fname, int n, int optional);
-extern int dobuf (BUFFER *bp, int n);
+extern int dobuf (BUFFER *bp, int limit, int real_cmd_count);
 extern int docmd (char *cline, int execflag, int f, int n);
 extern int dofile (char *fname);
 extern int end_named_cmd (void);
@@ -683,6 +683,7 @@ extern int mlreply_reg (const char *prompt, char *cbuf, int *retp, int at_dft);
 extern int mlreply_reg_count (int state, int *retp, int *next);
 extern int mlyesno (const char *prompt);
 extern int no_completion (DONE_ARGS);
+extern int read_msgline (int flag);
 extern int read_quoted (int count, int verbose);
 extern int screen_to_bname (char *buf, size_t bufn);
 extern int screen_to_fname (char *buf, size_t bufn);
