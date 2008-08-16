@@ -342,7 +342,8 @@ Strings
 
 	You may also use strings surrounded by single quotes.  The single
 	quotes override double quotes and backslashes, making it simpler
-	to enter regular expressions.
+	to enter regular expressions.  Double a single quote to insert
+	one into a string.
 
 
 Variables
@@ -1547,5 +1548,5 @@ Example startup file
 
 -- vile:fc=78
 -----------------------------------
-  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.109 2008/08/14 23:03:13 tom Exp $
+  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.110 2008/08/15 23:32:57 tom Exp $
 -----------------------------------

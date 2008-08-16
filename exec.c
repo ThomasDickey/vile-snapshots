@@ -4,7 +4,7 @@
  *	original by Daniel Lawrence, but
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.318 2008/08/14 00:52:32 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.320 2008/08/16 00:20:09 tom Exp $
  *
  */
 
@@ -1109,6 +1109,7 @@ char *
 get_token2(char *src, TBUFF **tok, int (*endfunc) (EOL_ARGS), int eolchar, int *actual)
 {
     int quotef = EOS;		/* nonzero iff the current string quoted */
+    int quotes = FALSE;
     int c, i, d, chr;
     int shell = tb_length(*tok) && isShellOrPipe(tb_values(*tok));
     int first = TRUE;
@@ -1127,7 +1128,7 @@ get_token2(char *src, TBUFF **tok, int (*endfunc) (EOL_ARGS), int eolchar, int *
 	if (quotef == SQUOTE) {
 	    if (c == SQUOTE) {
 		if (*++src == SQUOTE) {
-		    /* double a quote to insert one */
+		    /* double a single-quote to insert one */
 		    chr = *src++;
 		} else {
 		    quotef = EOS;
@@ -1138,11 +1139,17 @@ get_token2(char *src, TBUFF **tok, int (*endfunc) (EOL_ARGS), int eolchar, int *
 	    }
 	} else if (quotef == EOS && c == SQUOTE) {
 	    quotef = SQUOTE;
+	    quotes = TRUE;
 	    chr = *src++;
 	} else if (c == BACKSLASH) {	/* process special characters */
+	    /*
+	     * FIXME - if quotef is EOS, we should implicitly double-quote.
+	     */
 	    src++;
-	    if (*src == EOS)
+	    if (*src == EOS) {
+		/* FIXME - if leading but no trailing quote, is error */
 		break;
+	    }
 	    switch (c = *src++) {
 	    case 'r':
 		chr = '\r';
@@ -1234,8 +1241,11 @@ get_token2(char *src, TBUFF **tok, int (*endfunc) (EOL_ARGS), int eolchar, int *
 		    break;
 		} else if (c == DQUOTE) {
 		    quotef = c;
-		    /* note that leading quote
-		       is included */
+		    quotes = TRUE;
+		    /*
+		     * Note that a leading quote is included in the result from
+		     * this function.
+		     */
 		} else if (isBlank(c)) {
 		    if (actual != 0)
 			*actual = *src;
@@ -1259,6 +1269,28 @@ get_token2(char *src, TBUFF **tok, int (*endfunc) (EOL_ARGS), int eolchar, int *
     token_ended_line = isreturn(*src) || *src == EOS;
 
     tb_append(tok, EOS);
+    /*
+     * Check for case where the input may have had a leading backslash to
+     * introduce a quote.
+     *
+     * FIXME: we could have several adjacent strings such as
+     *   \'xx\"yy\'
+     * It may be better to process those in chunks.
+     */
+    if (tb_length(*tok) && !quotes) {
+	if (*tb_values(*tok) == DQUOTE || *tb_values(*tok) == SQUOTE) {
+	    tb_append(tok, EOS);
+	    {
+		unsigned len = tb_length(*tok);
+		char *value = tb_values(*tok);
+
+		do {
+		    value[len] = value[len - 1];
+		} while (--len != 0);
+		value[0] = SQUOTE;
+	    }
+	}
+    }
     /* both double and single-quote strings are reduced to a single-quote
      * string with no trailing quote, to simplify use in the caller.
      */
@@ -1349,9 +1381,11 @@ mac_tokval(TBUFF **tok)
     if (mac_token(tok) != 0) {
 	char *previous = tb_values(*tok);
 	const char *newvalue = tokval(previous);
+	int old_type = toktyp(previous);
 	/* evaluate the token */
 	if (previous != 0
 	    && newvalue != 0
+	    && old_type != TOK_QUOTSTR
 	    && (const char *) previous != newvalue) {
 	    /*
 	     * Check for the special case where we're just shifting the result
