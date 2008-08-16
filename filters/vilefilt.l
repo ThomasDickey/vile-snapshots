@@ -7,7 +7,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/vilefilt.l,v 1.57 2008/01/22 00:30:22 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/vilefilt.l,v 1.59 2008/08/15 20:29:36 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of vile macros
  * - T.Dickey
@@ -75,7 +75,7 @@ CONTROL		([\001-\007\013\016-\037])({CTRLV}.|\\.|[^ \t\n])*
 VISIBLE		.|^.
 BINDING		(M-)?((^[AX]-(^)?{VISIBLE})|((#|FN)-?{VISIBLE})|^.)
 
-SSTRING		(\'(\\.|[^'\n])*\')
+SSTRING		(\'(\\[^']|[^'\n])*\')
 DSTRING		\"(\\.|[^\\"\n])*\"
 
 FUNCTION	&[[:alpha:]]+
@@ -165,6 +165,8 @@ handle_keyword(char *text, int len)
 		new_state(SETTINGS);
 	    } else if (vl_check_cmd(cmd, USEREG)) {
 		new_state(REGISTER);
+	    } else if (vl_check_cmd(cmd, OPER)) {
+		;	/* operators are followed by motion */
 	    } else if (vl_check_cmd(cmd, EXTRA)) {
 		new_state(LITERAL);
 	    }

@@ -2,6 +2,14 @@ Changes for vile 9.7 (released ??? ??? ?? ????)
 
  200808?? (d)
 	> Tom Dickey:
+	+ fixes for passing macro parameters which contain a leading quote,
+	  to avoid reinterpreting that as a string to de-quote (report by Janis
+	  Rucis).
+	+ improve vilefilt.l:
+	  + remain in NORMAL state when an operator is found, since a motion
+	    should follow.
+	  + correct SSTRING pattern, which should not allow escaped
+	    single-quotes.
 	+ disable autocolor while processing any &function (report by Janis
 	  Rucis).
 	+ implement user-definable operators (prompted by discussion with Janis
