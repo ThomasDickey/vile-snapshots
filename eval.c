@@ -2,7 +2,7 @@
  *	eval.c -- function and variable evaluation
  *	original by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.384 2008/08/12 21:29:13 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.386 2008/08/17 18:18:06 tom Exp $
  *
  */
 
@@ -2389,6 +2389,8 @@ read_argument(TBUFF **paramp, const PARAM_INFO * info)
 			       '\n',	/* expect a newline or return */
 			       flags,	/* no expansion, etc. */
 			       complete);
+	    if (status == TRUE)
+		tb_prequote(paramp);
 	}
 	clexec = save_clexec;
 	execstr = save_execstr;
@@ -2836,7 +2838,7 @@ evaluate(int f, int n)
 	    TRACE(("EVAL %s\n", execstr));
 	    for (;;) {
 		if (can_evaluate()) {
-		    if ((tmp = mac_tokval(&tok)) != 0) {
+		    if ((tmp = mac_unquotedarg(&tok)) != 0) {
 			if (tb_length(cmd))
 			    tb_sappend0(&cmd, " ");
 			tb_sappend0(&cmd, tmp);

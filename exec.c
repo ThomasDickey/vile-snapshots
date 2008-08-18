@@ -4,7 +4,7 @@
  *	original by Daniel Lawrence, but
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.320 2008/08/16 00:20:09 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.325 2008/08/17 18:16:42 tom Exp $
  *
  */
 
@@ -907,7 +907,7 @@ docmd(char *cline, int execflag, int f, int n)
     execstr = cline;		/* and change execstr to the new one */
 
     do {
-	if ((token = mac_tokval(&tok)) == 0) {	/* grab first token */
+	if ((token = mac_unquotedarg(&tok)) == 0) {	/* grab first token */
 	    execstr = oldestr;
 	    returnCode(FALSE);
 	}
@@ -927,7 +927,7 @@ docmd(char *cline, int execflag, int f, int n)
 	n = strtol(tokval(token), 0, 0);
 
 	/* and now get the command to execute */
-	if ((token = mac_tokval(&tok)) == 0) {
+	if ((token = mac_unquotedarg(&tok)) == 0) {
 	    execstr = oldestr;
 	    returnCode(FALSE);
 	}
@@ -1139,7 +1139,8 @@ get_token2(char *src, TBUFF **tok, int (*endfunc) (EOL_ARGS), int eolchar, int *
 	    }
 	} else if (quotef == EOS && c == SQUOTE) {
 	    quotef = SQUOTE;
-	    quotes = TRUE;
+	    if (first)
+		quotes = TRUE;
 	    chr = *src++;
 	} else if (c == BACKSLASH) {	/* process special characters */
 	    /*
@@ -1241,7 +1242,8 @@ get_token2(char *src, TBUFF **tok, int (*endfunc) (EOL_ARGS), int eolchar, int *
 		    break;
 		} else if (c == DQUOTE) {
 		    quotef = c;
-		    quotes = TRUE;
+		    if (first)
+			quotes = TRUE;
 		    /*
 		     * Note that a leading quote is included in the result from
 		     * this function.
@@ -1277,20 +1279,9 @@ get_token2(char *src, TBUFF **tok, int (*endfunc) (EOL_ARGS), int eolchar, int *
      *   \'xx\"yy\'
      * It may be better to process those in chunks.
      */
-    if (tb_length(*tok) && !quotes) {
-	if (*tb_values(*tok) == DQUOTE || *tb_values(*tok) == SQUOTE) {
-	    tb_append(tok, EOS);
-	    {
-		unsigned len = tb_length(*tok);
-		char *value = tb_values(*tok);
+    if (tb_length(*tok) && !quotes)
+	tb_prequote(tok);
 
-		do {
-		    value[len] = value[len - 1];
-		} while (--len != 0);
-		value[0] = SQUOTE;
-	    }
-	}
-    }
     /* both double and single-quote strings are reduced to a single-quote
      * string with no trailing quote, to simplify use in the caller.
      */
@@ -1407,6 +1398,21 @@ mac_tokval(TBUFF **tok)
     }
     tb_free(tok);
     return (0);
+}
+
+/*
+ * The result of mac_tokval() could be a literal string with quotes.
+ * Dequote that level.
+ */
+char *
+mac_unquotedarg(TBUFF **tok)
+{
+    char *result = mac_tokval(tok);
+    if (toktyp(result) == TOK_QUOTSTR) {
+	tb_dequote(tok);
+	result = tb_values(*tok);
+    }
+    return result;
 }
 
 /*
@@ -1950,7 +1956,7 @@ begin_directive(char **const cmdpp,
 
     case D_WHILE:
 	if (!ifstk.disabled) {
-	    if ((value = mac_tokval(&argtkn)) == 0) {
+	    if ((value = mac_unquotedarg(&argtkn)) == 0) {
 		status = DDIR_INCOMPLETE;
 		break;
 	    } else if (scan_bool(value) != TRUE) {
@@ -1981,7 +1987,7 @@ begin_directive(char **const cmdpp,
 	if (!ifstk.disabled) {
 	    ifstk.fired = FALSE;
 	    ifstk.disabled = ifstk.level;
-	    if ((value = mac_tokval(&argtkn)) == 0)
+	    if ((value = mac_unquotedarg(&argtkn)) == 0)
 		status = DDIR_INCOMPLETE;
 	    else if (scan_bool(value) == TRUE) {
 		ifstk.disabled = 0;
@@ -1997,7 +2003,7 @@ begin_directive(char **const cmdpp,
 	    if (ifstk.fired) {
 		if (!ifstk.disabled)
 		    ifstk.disabled = ifstk.level;
-	    } else if ((value = mac_tokval(&argtkn)) == 0) {
+	    } else if ((value = mac_unquotedarg(&argtkn)) == 0) {
 		status = DDIR_INCOMPLETE;
 	    } else if (!ifstk.fired
 		       && ifstk.disabled == ifstk.level
@@ -2108,7 +2114,7 @@ begin_directive(char **const cmdpp,
 
     case D_TRACE:
 	if (!ifstk.disabled) {
-	    if ((value = mac_tokval(&argtkn)) == 0) {
+	    if ((value = mac_unquotedarg(&argtkn)) == 0) {
 		mlforce("[Trace is %s]", tracemacros ? "on" : "off");
 	    } else {
 		tracemacros = scan_bool(value);

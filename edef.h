@@ -6,7 +6,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.340 2008/08/11 23:59:48 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.341 2008/08/17 18:51:16 tom Exp $
  */
 
 #ifndef VILE_EDEF_H
@@ -474,6 +474,9 @@ decl_init_const( char TAGFILE_BufName[],	"[Tags %d]" );
 #endif
 #ifdef MDFILTERMSGS
 decl_init_const( char FLTMSGS_BufName[],	"[Filter Messages]" );
+#endif
+#if !SMALLER
+decl_init_const( char UNDOSTK_BufName[],	"[Undo Stack]" );
 #endif
 
 /*--------------------------------------------------------------------------*/

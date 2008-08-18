@@ -3,7 +3,7 @@
  *
  * written for vile.  Copyright (c) 1990, 1995-2001 by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/undo.c,v 1.96 2007/08/31 23:19:28 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/undo.c,v 1.99 2008/08/17 23:06:10 tom Exp $
  *
  */
 
@@ -962,3 +962,68 @@ redo_ok(void)
 
     return (*lp != NULL);
 }
+
+#if !SMALLER
+static void
+list_undos(LINE *lp)
+{
+    int limit = 1000;
+
+    for (; lp != 0; lp = lp->l_nxtundo) {
+	int len = llength(lp);
+
+	bputc('\n');
+	switch (len) {
+	case LINENOTREAL:
+	    bprintf("*LINENOTREAL");
+	    break;
+	case LINEUNDOPATCH:
+	    bprintf("*LINEUNDOPATCH");
+	    break;
+	case STACKSEP:
+	    bprintf("*STACKSEP");
+	    break;
+	case PURESTACKSEP:
+	    bprintf("*PURESTACKSEP");
+	    break;
+	default:
+	    if (len > 0) {
+		bputsn(lvalue(lp), llength(lp));
+	    }
+	    break;
+	}
+	if (--limit < 0)
+	    break;
+    }
+    bputc('\n');
+}
+
+static void
+make_undostk(int unused GCC_UNUSED, void *dummy)
+{
+    BUFFER *bp = (BUFFER *) dummy;
+
+    bprintf("Undo-stack for %s\n", bp->b_bname);
+    bprintf("current stack:%s\n", bp->b_udstkindx ? "FORW" : "BACK");
+
+    bputc('\n');
+    bprintf("BACKSTK:");
+    list_undos(*BACKSTK(bp));
+
+    bputc('\n');
+    bprintf("FORWSTK:");
+    list_undos(*FORWSTK(bp));
+
+    bputc('\n');
+    bprintf("BACKDOT = %d.%d", line_no(bp, BACKDOT(bp).l), BACKDOT(bp).o);
+
+    bputc('\n');
+    bprintf("FORWDOT = %d.%d", line_no(bp, FORWDOT(bp).l), FORWDOT(bp).o);
+}
+
+int
+show_undostk(int f GCC_UNUSED, int n GCC_UNUSED)
+{
+    return liststuff(UNDOSTK_BufName, FALSE, make_undostk, 0, (void *) curbp);
+}
+#endif

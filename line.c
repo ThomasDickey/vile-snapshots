@@ -10,7 +10,7 @@
  * editing must be being displayed, which means that "b_nwnd" is non zero,
  * which means that the dot and mark values in the buffer headers are nonsense.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.193 2008/07/25 22:24:23 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.194 2008/08/17 16:32:48 tom Exp $
  *
  */
 
@@ -1238,7 +1238,7 @@ usekreg(int f, int n)
 
     if (clexec) {
 	TBUFF *tok = 0;
-	char *name = mac_tokval(&tok);	/* get the next token */
+	char *name = mac_unquotedarg(&tok);	/* get the next token */
 	if (name != 0) {
 	    status = execute(engl2fnc(name), f, n);
 	    tb_free(&tok);

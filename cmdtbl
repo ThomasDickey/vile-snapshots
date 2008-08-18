@@ -97,7 +97,7 @@
 #		in '!' listed, then the flag does nothing, and should be
 #		viewed simply as documentation.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.254 2008/08/11 21:13:06 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.255 2008/08/17 18:44:07 tom Exp $
 #
 #
 
@@ -1537,6 +1537,9 @@ set_window	NONE			!SMALLER
 show_termchrs	NONE			OPT_REBIND&&OPT_TERMCHRS
 	"show-terminal-chars"
 	<show the values of the terminal special characters>
+show_undostk	NONE			!SMALLER
+	"show-undo-stack"
+	<show the contents of the undo-stack>
 spawncli	NONE			OPT_SHELL
 	"sh"
 	"shell"

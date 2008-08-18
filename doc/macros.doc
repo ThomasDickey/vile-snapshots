@@ -504,6 +504,13 @@ State Variables
 
 	$discmd         Boolean value which will prevent vile from
 			printing some status messages.
+			
+			It is automatically set to FALSE while sourcing a
+			file, or while executing a macro (after prompting for
+			missing parameters).
+
+			Set it to TRUE to allow nested macros to show a
+			prompt-string for missing parameters.
 
 	$disinp         Boolean value which will prevent vile from
 			echoing ??????
@@ -1548,5 +1555,5 @@ Example startup file
 
 -- vile:fc=78
 -----------------------------------
-  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.110 2008/08/15 23:32:57 tom Exp $
+  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.111 2008/08/17 17:45:47 tom Exp $
 -----------------------------------

@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.655 2008/08/14 00:45:39 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.657 2008/08/17 18:11:47 tom Exp $
  *
  */
 
@@ -422,6 +422,7 @@ extern char * get_directory (void);
 extern char * get_token (char *src, TBUFF **tok, int (*endfunc) (EOL_ARGS), int eolchar, int *actual);
 extern char * get_token2 (char *src, TBUFF **tok, int (*endfunc) (EOL_ARGS), int eolchar, int *actual);
 extern char * mac_tokval (TBUFF **tok);
+extern char * mac_unquotedarg (TBUFF **tok);
 extern char * mklower (char *str);
 extern char * mktrimmed (char *str);
 extern char * render_boolean (TBUFF **rp, int i);
@@ -1221,6 +1222,7 @@ size_t	tb_length (TBUFF *p);
 int	tb_length0 (TBUFF *p);
 void	tb_first (TBUFF *p);
 void	tb_free (TBUFF **p);
+void	tb_prequote (TBUFF **tok);
 void	tb_setlen (TBUFF **p, int n);
 void	tb_stuff (TBUFF *p, int c);
 void	tb_unnext (TBUFF *p);

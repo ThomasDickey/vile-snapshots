@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.321 2008/08/11 20:11:05 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.322 2008/08/17 16:26:25 tom Exp $
  *
  */
 
@@ -438,7 +438,7 @@ mac_token2kcod(int check)
     char *value;
     int c;
 
-    if ((value = mac_tokval(&tok)) == 0) {
+    if ((value = mac_unquotedarg(&tok)) == 0) {
 	c = -1;
     } else {
 	c = prc2kcod(value);
