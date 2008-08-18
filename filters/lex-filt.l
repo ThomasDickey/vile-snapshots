@@ -8,14 +8,13 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/lex-filt.l,v 1.66 2008/07/30 00:08:49 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/lex-filt.l,v 1.67 2008/08/16 13:08:13 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of LEX program.
  */
 
 #include <filters.h>
 #include <fltstack.h>
-#undef YY_NO_UNPUT
 
 DefineFilter("lex");
 

@@ -18,7 +18,7 @@
  * transferring the selection are not dealt with in this file.  Procedures
  * for dealing with the representation are maintained in this file.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.167 2008/01/22 00:13:57 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.168 2008/08/17 16:26:04 tom Exp $
  *
  */
 
@@ -1807,7 +1807,7 @@ attribute_directly(void)
 	    TBUFF *token = 0;
 
 	    if (clexec || isnamedcmd)
-		filtername = mac_tokval(&token);
+		filtername = mac_unquotedarg(&token);
 
 	    if (filtername == 0
 		&& curbp->majr != 0)

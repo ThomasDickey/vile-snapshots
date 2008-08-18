@@ -1,7 +1,8 @@
 Changes for vile 9.7 (released ??? ??? ?? ????)
 
- 200808?? (d)
+ 20080817 (d)
 	> Tom Dickey:
+	+ add "show-undo-stack" command.
 	+ fixes for passing macro parameters which contain a leading quote,
 	  to avoid reinterpreting that as a string to de-quote (report by Janis
 	  Rucis).

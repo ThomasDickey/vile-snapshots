@@ -1,4 +1,4 @@
-; $Id: modes.rc,v 1.79 2008/07/16 22:21:38 tom Exp $
+; $Id: modes.rc,v 1.80 2008/08/18 00:46:05 tom Exp $
 ; majormodes in this file are ordered alphabetically for convenience - the
 ; precedence used by vile is strictly alphabetic, counting case.  Use the
 ; before and after qualifiers to override the precedence.
@@ -988,7 +988,7 @@ define-mode vlog
 	fence-elif	'^\s*~elseif\>'
 	fence-else	'^\s*~else\>'
 	fence-fi	'^\s*~endif\>'
-	sections	'^\s*\(define-mode\|\(\d\+\s*\)\?\(store-\(macro\|procedure\)\)\)'
+	sections	'^\s*\(define-mode\|\(\d\+\s*\)\?\(store-\(macro\|procedure\|operator\)\)\)'
 ~elsewith define-submode vile group 'while'
 	fence-if	'^\s*~while\>'
 	fence-fi	'^\s*~endwhile\>'
@@ -997,7 +997,7 @@ define-mode vlog
 	fence-elif	'^\s*~elsewith\>'
 	fence-fi	'^\s*~endwith\>'
 ~elsewith define-submode vile group 'macro'
-	fence-if	'^\s*\(\d\+\s*\)\?store-\(macro\|procedure\)'
+	fence-if	'^\s*\(\d\+\s*\)\?store-\(macro\|procedure\|operator\)'
 	fence-fi	'^\s*~endm\>'
 ~endwith
 
