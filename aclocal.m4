@@ -1,6 +1,6 @@
 dnl vile's local definitions for autoconf.
 dnl
-dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.185 2008/08/11 14:51:21 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.186 2008/08/22 20:35:07 tom Exp $
 dnl
 dnl ---------------------------------------------------------------------------
 dnl ---------------------------------------------------------------------------
@@ -549,24 +549,22 @@ AC_TRY_LINK([#include <stdio.h>],[printf("Hello world");],,
 fi
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_CHECK_ERRNO version: 9 updated: 2001/12/30 18:03:23
-dnl --------------
-dnl Check for data that is usually declared in <stdio.h> or <errno.h>, e.g.,
-dnl the 'errno' variable.  Define a DECL_xxx symbol if we must declare it
-dnl ourselves.
+dnl CF_CHECK_ENVIRON version: 2 updated: 2008/08/22 16:34:45
+dnl ----------------
+dnl Check for data that is usually declared in <unistd.h>, e.g., the 'environ'
+dnl variable.  Define a DECL_xxx symbol if we must declare it ourselves.
 dnl
 dnl $1 = the name to check
-AC_DEFUN([CF_CHECK_ERRNO],
+dnl $2 = the assumed type
+AC_DEFUN([CF_CHECK_ENVIRON],
 [
 AC_CACHE_CHECK(if external $1 is declared, cf_cv_dcl_$1,[
     AC_TRY_COMPILE([
 #ifdef HAVE_STDLIB_H
 #include <stdlib.h>
 #endif
-#include <stdio.h>
-#include <sys/types.h>
-#include <errno.h> ],
-    [long x = (long) $1],
+#include <unistd.h> ],
+    ifelse($2,,int,$2) x = (ifelse($2,,int,$2)) $1,
     [cf_cv_dcl_$1=yes],
     [cf_cv_dcl_$1=no])
 ])
@@ -577,7 +575,39 @@ if test "$cf_cv_dcl_$1" = no ; then
 fi
 
 # It's possible (for near-UNIX clones) that the data doesn't exist
-CF_CHECK_EXTERN_DATA($1,int)
+CF_CHECK_EXTERN_DATA($1,ifelse($2,,int,$2))
+])dnl
+dnl ---------------------------------------------------------------------------
+dnl CF_CHECK_ERRNO version: 10 updated: 2008/08/22 16:33:22
+dnl --------------
+dnl Check for data that is usually declared in <stdio.h> or <errno.h>, e.g.,
+dnl the 'errno' variable.  Define a DECL_xxx symbol if we must declare it
+dnl ourselves.
+dnl
+dnl $1 = the name to check
+dnl $2 = the assumed type
+AC_DEFUN([CF_CHECK_ERRNO],
+[
+AC_CACHE_CHECK(if external $1 is declared, cf_cv_dcl_$1,[
+    AC_TRY_COMPILE([
+#ifdef HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
+#include <stdio.h>
+#include <sys/types.h>
+#include <errno.h> ],
+    ifelse($2,,int,$2) x = (ifelse($2,,int,$2)) $1,
+    [cf_cv_dcl_$1=yes],
+    [cf_cv_dcl_$1=no])
+])
+
+if test "$cf_cv_dcl_$1" = no ; then
+    CF_UPPER(cf_result,decl_$1)
+    AC_DEFINE_UNQUOTED($cf_result)
+fi
+
+# It's possible (for near-UNIX clones) that the data doesn't exist
+CF_CHECK_EXTERN_DATA($1,ifelse($2,,int,$2))
 ])dnl
 dnl ---------------------------------------------------------------------------
 dnl CF_CHECK_EXTERN_DATA version: 3 updated: 2001/12/30 18:03:23
