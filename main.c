@@ -22,7 +22,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.647 2008/08/14 00:45:52 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.649 2008/08/22 20:42:04 tom Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -78,6 +78,11 @@
 
 #if SYS_VMS
 #include <processes.h>
+#endif
+
+#ifndef DECL_ENVIRON
+static char **my_environ = 0;
+#define environ my_environ
 #endif
 
 extern char *exec_pathname;
@@ -381,6 +386,10 @@ MainProgram(int argc, char *argv[])
 	FreeIfNeeded(old_encoding);
     }
 #endif /* OPT_LOCALE */
+
+#if OPT_PERL
+    perl_init(&argc, &argv, &environ);
+#endif
 
 #if OPT_NAMEBST
     build_namebst(nametbl, 0, nametblsize - 1);

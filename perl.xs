@@ -13,7 +13,7 @@
  * vile.  The file api.c (sometimes) provides a middle layer between
  * this interface and the rest of vile.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.111 2008/07/26 22:55:45 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.112 2008/08/21 14:11:08 tom Exp $
  */
 
 /*#
@@ -189,7 +189,7 @@ static MGVTBL svcurbuf_accessors = {
 static SV *ofs_sv;
 static SV *ors_sv;
 
-static int perl_init(void);
+static int real_perl_init(void);
 static void xs_init(pTHX);
 static int  perl_prompt(void);
 static int  perldo_prompt(void);
@@ -623,7 +623,7 @@ perl(int f GCC_UNUSED, int n GCC_UNUSED)
 	hst_init(EOS);
 #endif
 
-    if (perl_interp || perl_init())
+    if (perl_interp || real_perl_init())
 	status = perl_prompt();
 
 #if OPT_HISTORY
@@ -810,7 +810,7 @@ perldo(int f GCC_UNUSED, int n GCC_UNUSED)
     hst_init(EOS);
 #endif
 
-    if (perl_interp || perl_init())
+    if (perl_interp || real_perl_init())
 	status = perldo_prompt();
 
 #if OPT_HISTORY
@@ -1074,7 +1074,7 @@ prepend_include(char *path)
 }
 
 static int
-perl_init(void)
+real_perl_init(void)
 {
     char *embedding[] = { "", "-e", "0" };
     char *bootargs[]  = { "Vile", NULL };
@@ -1150,6 +1150,11 @@ perl_init(void)
     returnCode(TRUE);
 }
 
+void perl_init(int *argc, char ***argv, char ***envp)
+{
+    PERL_SYS_INIT3(argc, argv, envp);
+}
+
 /* make sure END blocks and destructors get called */
 void perl_exit()
 {
@@ -1159,6 +1164,7 @@ void perl_exit()
 	perl_destruct(perl_interp);	/* global destructors */
 	perl_free(perl_interp);
 	perl_interp = 0;
+	PERL_SYS_TERM();
     }
     returnVoid();
 }

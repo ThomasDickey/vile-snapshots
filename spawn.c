@@ -1,7 +1,7 @@
 /*	Spawn:	various DOS access commands
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.200 2008/08/12 21:27:21 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.201 2008/08/19 20:17:58 tom Exp $
  *
  */
 
@@ -154,6 +154,8 @@ spawncli(int f GCC_UNUSED, int n GCC_UNUSED)
 #endif
     term.openup();
     term.unclean();
+
+    term.open();
     term.kopen();
     sgarbf = TRUE;
     return AfterShell();
@@ -258,6 +260,7 @@ rtfrmshell(int ACTUAL_SIG_ARGS GCC_UNUSED)
     TRACE(("entering rtfrmshell...\n"));
     endofDisplay();
     term.openup();
+    term.open();
     term.kopen();
     term.unclean();
     sgarbf = TRUE;
@@ -441,6 +444,7 @@ spawn1(int rerun, int pressret)
     w32_keybrd_reopen(pressret);
 #else
     system(line);
+    term.open();
     term.kopen();
     /* wait for return here if we are interactive */
     if (pressret) {

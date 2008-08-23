@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.657 2008/08/17 18:11:47 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.658 2008/08/22 20:52:00 tom Exp $
  *
  */
 
@@ -86,6 +86,7 @@ extern	void	perl_default_region(void);
 extern	void	perl_free_handle(void *);
 extern	int	perl_free_callback(char *);
 extern  void	perl_free_deferred(void);
+extern	void	perl_init(int *, char ***, char ***);
 extern	void	perl_exit(void);
 #if OPT_NAMEBST
 extern	int	perl_call_sub(void *, int, int, int);
