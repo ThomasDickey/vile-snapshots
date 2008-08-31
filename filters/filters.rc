@@ -1,4 +1,4 @@
-; $Id: filters.rc,v 1.213 2008/07/14 23:09:23 tom Exp $
+; $Id: filters.rc,v 1.216 2008/08/31 13:47:45 tom Exp $
 ; majormodes in this file are ordered alphabetically for convenience - the
 ; precedence used by vile is strictly alphabetic, counting case.
 
@@ -47,6 +47,11 @@ define-mode dtd
 	filtername	'vile-xml-filt'
 ~endwith
 
+define-mode haskell
+~with define-submode haskell
+	filtername	'vile-hs-filt -k hs'
+~endwith
+
 define-mode java
 ~with define-submode java
 	filtername	'vile-c-filt -j -p -k java'
@@ -65,6 +70,11 @@ define-mode jsp
 define-mode latex
 ~with define-submode latex
 	filtername	'vile-latex-filt -a'
+~endwith
+
+define-mode objc
+~with define-submode objc
+	filtername	'vile-c-filt -o -k objc'
 ~endwith
 
 define-mode nmake

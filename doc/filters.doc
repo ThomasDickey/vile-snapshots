@@ -169,10 +169,12 @@ A few options are common to all filters:
   -v	verbose, turns on extra output which can be used for troubleshooting
 	configuration problems.
 
-The C syntax filter recognizes additional options to customize it for Java and
-JavaScript:
+The C syntax filter recognizes additional options to customize it for Java,
+JavaScript and Objective-C:
 
   -j	Extend name- and literal-syntax to include Java.
+
+  -o	Allow '@' in names, for directives.
 
   -p	Disallow preprocessor lines.
 
@@ -293,4 +295,4 @@ NOTE
 The lex filters have been well tested only with flex, which treats newlines
 differently.  Older versions of lex may not support the %x states.
 
--- $Header: /users/source/archives/vile.vcs/doc/RCS/filters.doc,v 1.40 2008/06/29 15:18:35 tom Exp $
+-- $Header: /users/source/archives/vile.vcs/doc/RCS/filters.doc,v 1.41 2008/08/28 21:37:22 tom Exp $

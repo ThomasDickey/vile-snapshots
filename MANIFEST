@@ -1,4 +1,4 @@
-MANIFEST for vile, version v9_7d2
+MANIFEST for vile, version v9_7d3
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 CHANGES                         Change-log for VILE
@@ -225,6 +225,8 @@ filters/flt_defs.h              split-out the include stuff from filters.h
 filters/fltstack.h              simple state-stack for lex filters
 filters/genmake.c               parse/substitute from genmake.mak
 filters/genmake.mak             makefile template-data for genmake.awk
+filters/hs-filt.l               syntax filter for Haskell
+filters/hs.key                  Haskell keywords
 filters/html.key                keywords for vile-html-filt
 filters/htmlfilt.l              HTML syntax filter for vile
 filters/imake.key               keywords for imake-filter
@@ -277,6 +279,7 @@ filters/noclass.sh              script to support lex's w/o character-classes
 filters/nr-filt.l               nroff syntax highlighting filter for vile
 filters/nr.key                  keywords for nroff filter
 filters/nsis.key                keywords for NullSoft installer
+filters/objc.key                keywords for objective-c (objc) mode
 filters/pas-filt.l              Pascal syntax filter for vile
 filters/pas.key                 keywords for pascal highlighting filter
 filters/pc.key                  keywords for printcap syntax highlighting
