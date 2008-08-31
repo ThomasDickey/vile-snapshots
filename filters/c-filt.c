@@ -6,12 +6,13 @@
  *		string literal ("Literal") support --  ben stoltz
  *		factor-out hashing and file I/O - tom dickey
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/c-filt.c,v 1.77 2008/01/12 16:41:02 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/c-filt.c,v 1.78 2008/08/28 20:03:11 tom Exp $
  *
  * Usage: refer to vile.hlp and doc/filters.doc .
  *
  * Options:
  *	-j	java special cases
+ *	-o	objc has '@' directives
  *	-p	suppress preprocessor suppoer
  *	-s	javascript special cases
  */
@@ -22,7 +23,10 @@ DefineOptFilter("c", "jps");
 
 #define UPPER(c) isalpha(CharOf(c)) ? toupper(CharOf(c)) : c
 
-#define isIdent(c)  (isalpha(CharOf(c)) || (c) == '_' || (FltOptions('j') && (c) == '$'))
+#define isIdent(c)  (isalpha(CharOf(c)) \
+		     || (c) == '_' \
+		     || (FltOptions('j') && (c) == '$') \
+		     || (FltOptions('o') && (c) == '@'))
 #define isNamex(c)  (isIdent(c) || isdigit(CharOf(c)))
 
 #define isQuote(c)  ((c) == DQUOTE || (c) == SQUOTE)

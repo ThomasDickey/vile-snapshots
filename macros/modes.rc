@@ -1,4 +1,4 @@
-; $Id: modes.rc,v 1.80 2008/08/18 00:46:05 tom Exp $
+; $Id: modes.rc,v 1.82 2008/08/31 13:47:10 tom Exp $
 ; majormodes in this file are ordered alphabetically for convenience - the
 ; precedence used by vile is strictly alphabetic, counting case.  Use the
 ; before and after qualifiers to override the precedence.
@@ -345,6 +345,11 @@ define-mode fdl
 	fence-fi   '^\$endtext\s*$'
 ~endwith
 
+define-mode haskell
+~with define-submode haskell
+	suffixes	'\.\(hs\|lhs\|hsc\)$'
+~endwith
+
 ; Inherit the C-style fences for JavaScript, but add new ones for HTML
 define-mode html
 ~with define-submode html
@@ -578,6 +583,18 @@ define-mode nsis
 	suffixes	'\.\(nsi\)$'
 	ignorecase
 	dos
+~endwith
+
+define-mode objc
+~with define-submode objc
+	suffixes	'\.\(m\)$'
+~elsewith define-submode objc group 'classes'
+	fence-if       '^\s*@\(interface\|implementation\|protocol\).*$'
+	fence-fi       '^\s*@end\s*$'
+~elsewith define-submode objc group 'try'
+	fence-if       '^\s*@try\>.*'
+	fence-elif     '^\s*@catch\>.*'
+	fence-fi       '^\s*@finally\>.*'
 ~endwith
 
 define-mode pas

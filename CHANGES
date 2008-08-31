@@ -2,6 +2,8 @@ Changes for vile 9.7 (released ??? ??? ?? ????)
 
  200808?? (e)
 	> Tom Dickey:
+	+ add Haskell (haskell) mode.
+	+ add objective-c (objc) mode.
 	+ use PERL_SYS_INIT3() and PERL_SYS_TERM() in perl.xs (Debian #495068).
 	+ fixes to resume UTF-8 after suspend (^Z) or subshell (report by Janis
 	  Rucis).
