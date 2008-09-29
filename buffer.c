@@ -5,7 +5,7 @@
  * keys. Like everyone else, they set hints
  * for the display system.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.331 2008/07/25 22:48:07 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.332 2008/09/28 21:51:11 tom Exp $
  *
  */
 
@@ -1417,8 +1417,11 @@ undispbuff(BUFFER *bp, WINDOW *wp)
 	if (eql_bname(bp, HELP_BufName))
 	    help_at = line_no(bp, wp->w_dot.l);
 	(void) zotbuf(bp);
-    } else if (global_g_val(GMDABUFF) && !b_is_changed(bp) &&
-	       is_empty_buf(bp) && !ffexists(bp->b_fname)) {
+    } else if (global_g_val(GMDABUFF) &&
+	       !b_is_argument(bp) &&
+	       !b_is_changed(bp) &&
+	       is_empty_buf(bp)
+	       && !ffexists(bp->b_fname)) {
 	(void) zotbuf(bp);
     } else {			/* otherwise just adjust it off the screen */
 	copy_traits(&(bp->b_wtraits), &(wp->w_traits));

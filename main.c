@@ -22,7 +22,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.649 2008/08/22 20:42:04 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.650 2008/09/22 19:50:18 tom Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -80,9 +80,11 @@
 #include <processes.h>
 #endif
 
+#if OPT_PERL
 #ifndef DECL_ENVIRON
 static char **my_environ = 0;
 #define environ my_environ
+#endif
 #endif
 
 extern char *exec_pathname;

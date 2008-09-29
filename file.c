@@ -5,7 +5,7 @@
  * reading and writing of the disk are
  * in "fileio.c".
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.415 2008/04/15 00:10:33 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.416 2008/09/28 21:43:52 tom Exp $
  */
 
 #include "estruct.h"
@@ -1011,8 +1011,9 @@ getfile2bp(const char *fname,	/* file name to find */
 	    if (have_fuid) {
 		for_each_buffer(bp) {
 		    /* is the same unique file */
-		    if (fileuid_same(bp, &fuid))
+		    if (fileuid_same(bp, &fuid)) {
 			return bp;
+		    }
 		}
 	    }
 	}
@@ -1028,7 +1029,9 @@ getfile2bp(const char *fname,	/* file name to find */
 	makename(bname, nfname);	/* New buffer name.     */
 	/* make sure the buffer name doesn't exist */
 	while ((bp = find_b_name(bname)) != NULL) {
-	    if (!b_is_changed(bp) && is_empty_buf(bp) &&
+	    if (!b_is_argument(bp) &&
+		!b_is_changed(bp) &&
+		is_empty_buf(bp) &&
 		!ffexists(bp->b_fname)) {
 		/* empty, unmodified, and non-existent --
 		   then it's okay to re-use this buffer */
