@@ -1,7 +1,14 @@
 Changes for vile 9.7 (released ??? ??? ?? ????)
 
- 200808?? (e)
+ 20080928 (e)
 	> Tom Dickey:
+	+ add checks to two places where a empty buffer would be reused when
+	  loading a new buffer, to disallow that if the first buffer was one
+	  specified on the command-line. This case is addressed:
+		mkdir foo bar
+		vile foo/file bar/file
+	  as well as toggling the current/alternate buffers with "_" (report
+	  by Decklin Foster).
 	+ add Haskell (haskell) mode.
 	+ add objective-c (objc) mode.
 	+ use PERL_SYS_INIT3() and PERL_SYS_TERM() in perl.xs (Debian #495068).
