@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.363 2008/06/01 17:38:38 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.365 2008/09/29 22:29:12 tom Exp $
  *
  */
 
@@ -1922,6 +1922,137 @@ set_colors(int n)
     returnCode(TRUE);
 }
 #endif /* OPT_COLOR */
+
+#if OPT_EXTRA_COLOR
+static int *
+lookup_extra_color(XCOLOR_CODES code)
+{
+    int *result = 0;
+
+    switch (code) {
+    case XCOLOR_NONE:
+	break;
+    case XCOLOR_CURSOR:
+	break;
+    case XCOLOR_HYPERTEXT:
+	break;
+    case XCOLOR_MODELINE:
+	break;
+    case XCOLOR_NUMBER:
+	break;
+    case XCOLOR_REGEX:
+	break;
+    case XCOLOR_STRING:
+	break;
+    }
+    return result;
+}
+
+static int
+xcolor_name_complete(DONE_ARGS)
+{
+    return kbd_complete(PASS_DONE_ARGS,
+			(const char *) &fsm_xcolors_choices[0],
+			sizeof(fsm_xcolors_choices[0]));
+}
+
+static int
+xcolor_full_complete(DONE_ARGS)
+{
+    return kbd_complete(PASS_DONE_ARGS,
+			(const char *) &fsm_hilite_choices[0],
+			sizeof(fsm_hilite_choices[0]));
+}
+
+/*
+ * Prompt for an extended color name,
+ * and zero or one color
+ * added to zero or more video attributes.
+ *
+ * Examples:
+ *	set-extra-color modeline reverse
+ *	set-extra-color regex underline+red
+ *
+ * FIXME - make this work with command-history.
+ * FIXME - want to be able to undo levels of the edit, back over '+'.
+ */
+int
+set_extra_colors(int f GCC_UNUSED, int n GCC_UNUSED)
+{
+    int status = FALSE;
+    char prompt[NSTRING];
+    char reply[NSTRING];
+    XCOLOR_CODES code, code2;
+    int *valuep;
+    int value;
+    int count = 0;
+
+    /* prompt for the extended color name */
+    *reply = EOS;
+    status = kbd_string("Extended color name: ",
+			reply, sizeof(reply), '=',
+			KBD_NORMAL, xcolor_name_complete);
+    if (status == TRUE) {
+	code = choice_to_code(&fsm_xcolors_blist, reply, strlen(reply));
+	valuep = lookup_extra_color(code);
+	value = 0;
+	sprintf(prompt, "Color+attributes(%s) ", reply);
+	/* prompt for the color+attributes */
+	for (;;) {
+	    *reply = EOS;
+	    status = kbd_string(prompt,
+				reply, sizeof(reply), '+',
+				KBD_NORMAL, xcolor_full_complete);
+	    if (status == TRUE) {
+		code2 = choice_to_code(&fsm_hilite_blist, reply, strlen(reply));
+
+		/*
+		 * FIXME:  We could be fancier and only prompt for attributes
+		 * once a color is given, but it may be friendlier to just use
+		 * the last color given.
+		 */
+		++count;
+		if (code2 & VACOLOR)
+		    value &= ~VACOLOR;
+		value |= code2;
+
+		strcat(prompt, reply);
+		if (end_string() == '+') {
+		    strcat(prompt, "+");
+		} else {
+		    break;
+		}
+	    } else {
+		break;
+	    }
+	}
+
+	if (!status || !count) {
+	    ;			/* no value set */
+	} else if (valuep != 0) {
+	    *valuep = value;
+	} else {
+	    switch (code) {
+#if OPT_HILITEMATCH
+		/*
+		 * FIXME - for now, implement global modeline as xcolor, but
+		 * later split out xcolor typing so modeline per-buffer can be
+		 * set.
+		 */
+	    case XCOLOR_MODELINE:
+		set_global_g_val(GVAL_MCOLOR, value);
+		chgd_hilite(curbp, (VALARGS *) 0, TRUE, FALSE);
+		break;
+#endif
+	    default:
+		mlforce("BUG: unimplemented %s", prompt);
+		break;
+	    }
+	}
+    }
+    return status;
+}
+#endif
 
 #if OPT_SHOW_COLORS
 

@@ -97,7 +97,7 @@
 #		in '!' listed, then the flag does nothing, and should be
 #		viewed simply as documentation.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.255 2008/08/17 18:44:07 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.256 2008/09/29 19:14:54 tom Exp $
 #
 #
 
@@ -1564,6 +1564,10 @@ set_envvar	NONE			OPT_SHELL&&defined(HAVE_PUTENV)
 	"setenv"
 	"set-environment-variable"
 	<set and export a process environment variable>
+set_extra_colors	NONE		OPT_EXTRA_COLOR
+	"setxcolors"
+	"set-extra-colors"
+	<set extra colors, e.g., for modeline>
 multimotion	MOTION			OPT_SELECTIONS
 	"quoted-motion"			!FEWNAMES
 	'q'

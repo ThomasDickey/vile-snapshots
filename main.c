@@ -22,7 +22,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.650 2008/09/22 19:50:18 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.651 2008/09/29 18:51:18 tom Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -81,7 +81,9 @@
 #endif
 
 #if OPT_PERL
-#ifndef DECL_ENVIRON
+#if defined(DECL_ENVIRON)
+extern char **environ;
+#elif !defined(HAVE_ENVIRON)
 static char **my_environ = 0;
 #define environ my_environ
 #endif

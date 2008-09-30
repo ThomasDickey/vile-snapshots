@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.665 2008/08/11 21:05:02 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.666 2008/09/29 19:57:42 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -607,6 +607,7 @@
 #define OPT_CURTOKENS   !SMALLER		/* cursor-tokens mode */
 #define OPT_ENUM_MODES  !SMALLER		/* fixed-string modes */
 #define OPT_EVAL        !SMALLER		/* expression-evaluation */
+#define OPT_EXTRA_COLOR (!SMALLER && OPT_COLOR)	/* modeline, etc */
 #define OPT_FILEBACK    (!SMALLER && !SYS_VMS)	/* file backup style */
 #define OPT_FINDERR     !SMALLER		/* finderr support. */
 #define OPT_FLASH       !SMALLER		/* visible-bell */
@@ -730,6 +731,7 @@
 #define OPT_SHOWFORMAT_CHOICES     !SMALLER
 #define OPT_VIDEOATTRS_CHOICES     (OPT_ENUM_MODES && OPT_COLOR_SCHEMES)
 #define OPT_VTFLASHSEQ_CHOICES     (OPT_ENUM_MODES && VTFLASH_HOST && OPT_FLASH)
+#define OPT_XCOLORS_CHOICES        (OPT_ENUM_MODES && OPT_EXTRA_COLOR)
 
 /*
  * Special characters used in globbing
@@ -1182,6 +1184,16 @@ typedef enum {
 	, CT_CCLASS
 	, CT_REGEX
 } CURTOKENS;
+
+typedef enum {
+	XCOLOR_NONE = 0
+	, XCOLOR_CURSOR
+	, XCOLOR_HYPERTEXT
+	, XCOLOR_MODELINE
+	, XCOLOR_NUMBER
+	, XCOLOR_REGEX
+	, XCOLOR_STRING
+} XCOLOR_CODES;
 
 /*	Directive definitions	*/
 
