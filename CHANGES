@@ -1,5 +1,14 @@
 Changes for vile 9.7 (released ??? ??? ?? ????)
 
+ 2008???? (f)
+	> Tom Dickey:
+	+ new "set-extended-color modeline" provides better color+attributes
+	  combinations than the mcolor mode.
+	+ add set-extended-color command, which will allow setting extra
+	  colors for special buffers such as [Settings].
+	+ correct ifdef in main.c for platforms which have 'environ', but do
+	  not declare it.
+
  20080928 (e)
 	> Tom Dickey:
 	+ add checks to two places where a empty buffer would be reused when

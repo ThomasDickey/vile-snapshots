@@ -11,7 +11,7 @@
 #
 # The modes are table entries in the BUFFER and WINDOW structures.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.276 2008/08/11 23:45:17 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.277 2008/09/29 19:51:26 tom Exp $
 #
 #
 # Mode-table entries.  Capitalized letters are used for abbreviations.
@@ -623,6 +623,14 @@ string
 "foreign"	SF_FOREIGN
 "local"		SF_LOCAL
 "never"		SF_NEVER
+
+.table xcolors			OPT_EXTRA_COLOR
+"cursor"	XCOLOR_CURSOR
+"hypertext"	XCOLOR_HYPERTEXT
+"modeline"	XCOLOR_MODELINE
+"number"	XCOLOR_NUMBER
+"regex"		XCOLOR_REGEX
+"string"	XCOLOR_STRING
 
 .table videoattrs		OPT_COLOR
 "bold"		VABOLD
