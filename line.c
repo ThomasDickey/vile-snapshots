@@ -10,7 +10,7 @@
  * editing must be being displayed, which means that "b_nwnd" is non zero,
  * which means that the dot and mark values in the buffer headers are nonsense.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.194 2008/08/17 16:32:48 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.197 2008/10/07 22:53:38 tom Exp $
  *
  */
 
@@ -530,6 +530,7 @@ lins_chars(int n, int c)
 int
 lnewline(void)
 {
+    int rc = FALSE;
     char *cp1;
     char *cp2;
     LINE *lp1;
@@ -544,100 +545,116 @@ lnewline(void)
 	&& lforw(lp1) == lp1) {
 	/* empty buffer -- just  create empty line */
 	lp2 = lalloc(doto, curbp);
-	if (lp2 == 0)
-	    return (FALSE);
-	/* put lp2 in below lp1 */
-	set_lforw(lp2, lforw(lp1));
-	set_lforw(lp1, lp2);
-	set_lback(lforw(lp2), lp2);
-	set_lback(lp2, lp1);
+	if (lp2 != 0) {
+	    /* put lp2 in below lp1 */
+	    set_lforw(lp2, lforw(lp1));
+	    set_lforw(lp1, lp2);
+	    set_lback(lforw(lp2), lp2);
+	    set_lback(lp2, lp1);
 
-	tag_for_undo(lp2);
+	    tag_for_undo(lp2);
 
-	for_each_window(wp) {
-	    if (wp->w_line.l == lp1)
-		wp->w_line.l = lp2;
-	    if (wp->w_dot.l == lp1)
-		wp->w_dot.l = lp2;
+	    for_each_window(wp) {
+		if (wp->w_line.l == lp1)
+		    wp->w_line.l = lp2;
+		if (wp->w_dot.l == lp1)
+		    wp->w_dot.l = lp2;
+	    }
+
+	    chg_buff(curbp, WFHARD | WFINS);
+
+	    rc = lnewline();	/* vi really makes _2_ lines */
 	}
+    } else {
+	lp2 = lalloc(doto, curbp);	/* New first half line */
+	if (lp2 != 0) {
+	    if (doto > 0) {
+		copy_for_undo(lp1);
+#if OPT_LINE_ATTRS
+		if (lp1->l_attrs != 0) {
+		    if (doto == llength(lp1)) {
+			lp2->l_attrs = lp1->l_attrs;
+			lp1->l_attrs = 0;
+		    } else {
+			UCHAR *newattr = typeallocn(UCHAR, llength(lp1) + 1);
+			int n;
 
-	chg_buff(curbp, WFHARD | WFINS);
+			if (newattr != 0) {
+			    lp2->l_attrs = newattr;
+			    lp2->l_attrs[doto] = EOS;
+			    for (n = 0; (lp1->l_attrs[n] =
+					 lp1->l_attrs[doto + n]) != EOS; ++n) {
+				;
+			    }
+			} else {
+			    FreeAndNull(lp1->l_attrs);
+			}
+		    }
+		}
+#endif
+		cp1 = lvalue(lp1);	/* Shuffle text around  */
+		cp2 = lvalue(lp2);
+		while (cp1 < &lvalue(lp1)[doto])
+		    *cp2++ = *cp1++;
+		cp2 = lvalue(lp1);
+		while (cp1 < &lvalue(lp1)[llength(lp1)])
+		    *cp2++ = *cp1++;
+		llength(lp1) -= doto;
+	    }
+	    /* put lp2 in above lp1 */
+	    set_lback(lp2, lback(lp1));
+	    set_lback(lp1, lp2);
+	    set_lforw(lback(lp2), lp2);
+	    set_lforw(lp2, lp1);
 
-	return lnewline();	/* vi really makes _2_ lines */
-    }
-
-    lp2 = lalloc(doto, curbp);	/* New first half line */
-    if (lp2 == 0)
-	return (FALSE);
-
-    if (doto > 0) {
-	LINE *tmp;
-
-	copy_for_undo(lp1);
-	tmp = lp1;
-	cp1 = lvalue(tmp);	/* Shuffle text around  */
-	cp2 = lvalue(lp2);
-	while (cp1 < &lvalue(tmp)[doto])
-	    *cp2++ = *cp1++;
-	cp2 = lvalue(tmp);
-	while (cp1 < &lvalue(tmp)[llength(tmp)])
-	    *cp2++ = *cp1++;
-	llength(tmp) -= doto;
-    }
-    /* put lp2 in above lp1 */
-    set_lback(lp2, lback(lp1));
-    set_lback(lp1, lp2);
-    set_lforw(lback(lp2), lp2);
-    set_lforw(lp2, lp1);
-
-    tag_for_undo(lp2);
-    dumpuline(lp1);
+	    tag_for_undo(lp2);
+	    dumpuline(lp1);
 
 #if ! WINMARK
-    if (MK.l == lp1) {
-	if (MK.o < doto)
-	    MK.l = lp2;
-	else
-	    MK.o -= doto;
-    }
+	    if (MK.l == lp1) {
+		if (MK.o < doto)
+		    MK.l = lp2;
+		else
+		    MK.o -= doto;
+	    }
 #endif
-    for_each_window(wp) {
-	if (wp->w_line.l == lp1)
-	    wp->w_line.l = lp2;
-	if (wp->w_dot.l == lp1) {
-	    if (wp->w_dot.o < doto)
-		wp->w_dot.l = lp2;
-	    else
-		wp->w_dot.o -= doto;
-	}
+	    for_each_window(wp) {
+		if (wp->w_line.l == lp1)
+		    wp->w_line.l = lp2;
+		if (wp->w_dot.l == lp1) {
+		    if (wp->w_dot.o < doto)
+			wp->w_dot.l = lp2;
+		    else
+			wp->w_dot.o -= doto;
+		}
 #if WINMARK
-	if (wp->w_mark.l == lp1) {
-	    if (wp->w_mark.o < doto)
-		wp->w_mark.l = lp2;
-	    else
-		wp->w_mark.o -= doto;
-	}
+		if (wp->w_mark.l == lp1) {
+		    if (wp->w_mark.o < doto)
+			wp->w_mark.l = lp2;
+		    else
+			wp->w_mark.o -= doto;
+		}
 #endif
-	if (wp->w_lastdot.l == lp1) {
-	    if (wp->w_lastdot.o < doto)
-		wp->w_lastdot.l = lp2;
-	    else
-		wp->w_lastdot.o -= doto;
+		if (wp->w_lastdot.l == lp1) {
+		    if (wp->w_lastdot.o < doto)
+			wp->w_lastdot.l = lp2;
+		    else
+			wp->w_lastdot.o -= doto;
+		}
+	    }
+	    do_mark_iterate(mp, {
+		if (mp->l == lp1) {
+		    if (mp->o < doto)
+			mp->l = lp2;
+		    else
+			mp->o -= doto;
+		}
+	    });
+	    chg_buff(curbp, WFHARD | WFINS);
+	    rc = TRUE;
 	}
     }
-    do_mark_iterate(mp, {
-	if (mp->l == lp1) {
-	    if (mp->o < doto)
-		mp->l = lp2;
-	    else
-		mp->o -= doto;
-	}
-    });
-#if OPT_LINE_ATTRS
-    FreeAndNull(lp1->l_attrs);
-#endif
-    chg_buff(curbp, WFHARD | WFINS);
-    return (TRUE);
+    return rc;
 }
 
 /*

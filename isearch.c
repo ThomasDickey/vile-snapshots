@@ -7,7 +7,7 @@
  *
  * original author: D. R. Banks 9-May-86
  *
- * $Header: /users/source/archives/vile.vcs/RCS/isearch.c,v 1.60 2004/06/09 01:04:27 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/isearch.c,v 1.61 2008/10/06 20:25:37 tom Exp $
  *
  */
 
@@ -81,8 +81,9 @@ static void
 unget_char(void)
 {
     if (cmd_buff != 0
-	&& cmd_buff->itb_used >= 2)
+	&& cmd_buff->itb_used >= 2) {
 	cmd_buff->itb_used -= 2;	/* remove Rubout and last char */
+    }
 }
 
 /*
@@ -99,7 +100,7 @@ get_char(void)
     /* See if we're re-executing: */
 
     if (cmd_reexecute >= 0
-	&& (cmd_reexecute + 1) < (int) itb_length(cmd_buff)) {
+	&& (cmd_reexecute + 1) <= (int) itb_length(cmd_buff)) {
 	c = itb_values(cmd_buff)[cmd_reexecute++];
     } else {
 	/* We're not re-executing (or aren't any more).  Try for a real char */

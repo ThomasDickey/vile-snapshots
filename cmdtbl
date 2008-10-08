@@ -97,12 +97,13 @@
 #		in '!' listed, then the flag does nothing, and should be
 #		viewed simply as documentation.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.256 2008/09/29 19:14:54 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.258 2008/10/06 21:58:58 tom Exp $
 #
 #
 
 abbrev		EXRCOK|EXTRA
 	"abbreviate"
+	"list-abbreviations"		!FEWNAMES
 	"show-abbreviations"
 	<establish shorthand for another string, or show all abbreviations>
 altbuff		NONE
@@ -257,6 +258,7 @@ comp_err_exps	NONE			OPT_FINDERR
 	"compile-error-expressions"
 	<(re)compile the [Error Expressions] buffer>
 show_err_regex	NONE			OPT_FINDERR
+	"list-error-expressions"	!FEWNAMES
 	"show-error-expressions"
 	<display error meta-expressions and resulting regular expressions>
 consearch	ABSM|MOTION
@@ -514,41 +516,47 @@ deltoeol	REDO|UNDO|MINIBUF
 	'D'
 	<delete text from cursor to the end of line>
 desbind		NONE			OPT_REBIND
-	"list-commands"
 	"describe-bindings"
-	"show-commands"
+	"list-bindings"			!FEWNAMES
+	"list-commands"			!FEWNAMES
 	"show-bindings"
+	"show-commands"
 	<show a list of all commands>
 des_i_bind	NONE			OPT_REBIND
 	"describe-insmode-bindings"
+	"list-insmode-bindings"		!FEWNAMES
 	"show-insmode-bindings"
 	<show a list of all commands that may be executed in insert-mode>
 des_c_bind	NONE			OPT_REBIND
 	"describe-cmdmode-bindings"
+	"list-cmdmode-bindings"		!FEWNAMES
 	"show-cmdmode-bindings"
 	<show a list of all commands that may be executed in command-editing mode>
 des_s_bind	NONE			OPT_REBIND
 	"describe-selmode-bindings"
+	"list-selmode-bindings"		!FEWNAMES
 	"show-selmode-bindings"
 	<show a list of all commands that may be executed in selection mode>
 des_keynames	NONE			OPT_REBIND
+	"list-key-names"		!FEWNAMES
 	"show-key-names"
 	<show a list of all function-key that may be bound with #-syntax>
 descolors	NONE			OPT_SHOW_COLORS
-	"list-colors"
+	"list-colors"			!FEWNAMES
 	"show-colors"
 	<show a list of all colors, as mapped by $palette>
 desmotions	NONE			OPT_REBIND
-	"list-motions"
+	"list-motions"			!FEWNAMES
 	"describe-motions"
 	"show-motions"
 	<show a list of all motion commands>
 desopers	NONE			OPT_REBIND
-	"list-operators"
+	"list-operators"		!FEWNAMES
 	"describe-operators"
 	"show-operators"
 	<show a list of all operator commands>
 desschemes	NONE			OPT_COLOR_SCHEMES
+	"list-color-schemes"		!FEWNAMES
 	"show-color-schemes"
 	<show the color scheme parameters>
 desprint	NONE			OPT_SHOW_CTYPE
@@ -1535,9 +1543,11 @@ set_window	NONE			!SMALLER
 	"set-window"
 	<set the current window to a specific buffer>
 show_termchrs	NONE			OPT_REBIND&&OPT_TERMCHRS
+	"list-terminal-chars"		!FEWNAMES
 	"show-terminal-chars"
 	<show the values of the terminal special characters>
 show_undostk	NONE			!SMALLER
+	"list-undo-stack"		!FEWNAMES
 	"show-undo-stack"
 	<show the contents of the undo-stack>
 spawncli	NONE			OPT_SHELL
@@ -1564,6 +1574,10 @@ set_envvar	NONE			OPT_SHELL&&defined(HAVE_PUTENV)
 	"setenv"
 	"set-environment-variable"
 	<set and export a process environment variable>
+show_extra_colors	NONE		OPT_EXTRA_COLOR
+	"list-extra-colors"		!FEWNAMES
+	"show-extra-colors"
+	<show extra colors, e.g., for modeline>
 set_extra_colors	NONE		OPT_EXTRA_COLOR
 	"setxcolors"
 	"set-extra-colors"
@@ -1616,7 +1630,7 @@ showcpos	NONE
 listmodes	NONE
 	"modes"
 	"show-modes"
-	"list-modes"
+	"list-modes"			!FEWNAMES
 	"setall"
 	"setgall"
 	"gmodes"
@@ -1638,6 +1652,7 @@ showversion	EXRCOK
 	<report version information for the editor>
 showmarks	NONE			OPT_SHOW_MARKS
 	"marks"
+	"list-marks"			!FEWNAMES
 	"show-marks"
 	<show named marks for the current buffer>
 showmemory	NONE			SYS_MSDOS&&(CC_TURBO||CC_WATCOM||CC_DJGPP)
@@ -1646,6 +1661,7 @@ showmemory	NONE			SYS_MSDOS&&(CC_TURBO||CC_WATCOM||CC_DJGPP)
 showtagstack	NONE			OPT_SHOW_TAGS
 	"tags"				!FEWNAMES
 	"tagstack"
+	"list-tagstack"			!FEWNAMES
 	"show-tagstack"
 	<show the stack of successive tag references>
 shrinkwind	GOAL

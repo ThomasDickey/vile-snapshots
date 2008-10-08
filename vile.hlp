@@ -1231,6 +1231,7 @@ Editor modes
 			[Command-Bindings]
 			[Error Expressions]
 			[Error Patterns]
+			[Extra Colors]
 			[Insert-Bindings]
 			[Major Modes]
 			[Map Sequences]
@@ -6476,4 +6477,4 @@ Problems
 
 Copyright 1995-2007,2008 by Paul Fox, Thomas Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.657 2008/08/14 23:03:07 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.658 2008/10/06 23:12:37 tom Exp $
