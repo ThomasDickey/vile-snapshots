@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.666 2008/09/29 19:57:42 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.667 2008/10/06 19:05:13 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -1189,6 +1189,7 @@ typedef enum {
 	XCOLOR_NONE = 0
 	, XCOLOR_CURSOR
 	, XCOLOR_HYPERTEXT
+	, XCOLOR_ISEARCH
 	, XCOLOR_MODELINE
 	, XCOLOR_NUMBER
 	, XCOLOR_REGEX

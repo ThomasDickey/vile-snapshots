@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.365 2008/09/29 22:29:12 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.370 2008/10/07 22:59:00 tom Exp $
  *
  */
 
@@ -1936,6 +1936,8 @@ lookup_extra_color(XCOLOR_CODES code)
 	break;
     case XCOLOR_HYPERTEXT:
 	break;
+    case XCOLOR_ISEARCH:
+	break;
     case XCOLOR_MODELINE:
 	break;
     case XCOLOR_NUMBER:
@@ -1946,6 +1948,90 @@ lookup_extra_color(XCOLOR_CODES code)
 	break;
     }
     return result;
+}
+
+/*
+ * This will show the foreground colors, which we can display with attributes.
+ */
+/* ARGSUSED */
+static void
+make_xcolor_list(int dum1 GCC_UNUSED, void *ptr GCC_UNUSED)
+{
+    unsigned n;
+    XCOLOR_CODES code;
+    int *valuep;
+    int value;
+
+    bprintf("--- Extra Colors ");
+    bpadc('-', term.cols - DOT.o);
+    bputc('\n');
+
+    for (n = 0; fsm_xcolors_choices[n].choice_name != 0; ++n) {
+	bprintf("\n   %s", fsm_xcolors_choices[n].choice_name);
+	bpadc(' ', 20 - DOT.o);
+	code = fsm_xcolors_choices[n].choice_code;
+	valuep = lookup_extra_color(code);
+	if (valuep == 0) {
+	    switch (code) {
+#if OPT_HILITEMATCH
+		/*
+		 * FIXME - for now, implement global modeline as xcolor, but
+		 * later split out xcolor typing so modeline per-buffer can be
+		 * set.
+		 */
+	    case XCOLOR_MODELINE:
+		valuep = &(global_g_val(GVAL_MCOLOR));
+		break;
+#endif
+	    default:
+		break;
+	    }
+	}
+	if (valuep != 0 && (value = *valuep) != 0) {
+	    int save_attr = value;
+	    const char *name;
+	    int bit = 1;
+	    int gap = 0;
+
+	    MK = DOT;
+	    if (value & VACOLOR) {
+		name = choice_to_name(&fsm_color_blist, VCOLORNUM(value));
+		bprintf("%s", name ? name : "color?");
+		value &= ~VACOLOR;
+		gap = (value != 0);
+	    }
+	    while (bit < VACOLOR) {
+		if (bit & value) {
+		    name = choice_to_name(&fsm_videoattrs_blist, bit & value);
+		    if (!isEmpty(name)) {
+			if (gap)
+			    bputc('+');
+			bprintf("%s", name);
+			gap = 1;
+		    }
+		}
+		bit <<= 1;
+	    }
+
+	    videoattribute = save_attr;
+	    if (videoattribute != 0) {
+		REGIONSHAPE save_shape = regionshape;
+		regionshape = rgn_EXACT;
+		(void) attributeregion();
+		videoattribute = 0;
+		regionshape = save_shape;
+	    }
+	} else {
+	    bprintf("default");
+	}
+    }
+}
+
+int
+show_extra_colors(int f GCC_UNUSED, int n GCC_UNUSED)
+{
+    return liststuff(EXTRA_COLORS_BufName,
+		     FALSE, make_xcolor_list, 0, (void *) 0);
 }
 
 static int
@@ -1963,6 +2049,21 @@ xcolor_full_complete(DONE_ARGS)
 			(const char *) &fsm_hilite_choices[0],
 			sizeof(fsm_hilite_choices[0]));
 }
+
+#if OPT_UPBUFF
+/* ARGSUSED */
+static int
+update_xcolor_list(BUFFER *bp GCC_UNUSED)
+{
+    return show_extra_colors(FALSE, 1);
+}
+
+static void
+relist_xcolors(void)
+{
+    update_scratch(EXTRA_COLORS_BufName, update_xcolor_list);
+}
+#endif /* OPT_UPBUFF */
 
 /*
  * Prompt for an extended color name,
@@ -2050,6 +2151,10 @@ set_extra_colors(int f GCC_UNUSED, int n GCC_UNUSED)
 	    }
 	}
     }
+
+    if (status == TRUE)
+	relist_xcolors();
+
     return status;
 }
 #endif

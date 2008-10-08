@@ -18,7 +18,7 @@
  * transferring the selection are not dealt with in this file.  Procedures
  * for dealing with the representation are maintained in this file.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.168 2008/08/17 16:26:04 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.169 2008/10/07 22:59:20 tom Exp $
  *
  */
 
@@ -1162,8 +1162,9 @@ attributeregion(void)
 #else
 				0
 #endif
-		))
+		)) {
 		return TRUE;
+	    }
 
 	    /* add new attribute-region */
 	    if ((arp = alloc_AREGION()) == NULL) {
@@ -2019,12 +2020,14 @@ add_line_attrib(BUFFER *bp, REGION * rp, REGIONSHAPE rs, VIDEO_ATTR vattr,
     int last;
 
     if (rp->r_orig.l != rp->r_end.l	/* must be confined to one line */
-	|| rs != rgn_EXACT		/* must be an exact region */
+	|| rs != rgn_EXACT	/* must be an exact region */
 	|| (hypercmdp && tb_length(hypercmdp) != 0)
     /* can't be a hypertext command */
 	|| vattr == 0		/* can't be normal */
-	|| (vattr & VASEL) != 0)	/* can't be a selection */
+	|| ((UCHAR) vattr) != vattr
+	|| (vattr & VASEL) != 0) {	/* can't be a selection */
 	return FALSE;
+    }
 
     beginDisplay();
 

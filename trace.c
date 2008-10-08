@@ -1,7 +1,7 @@
 /*
  * debugging support -- tom dickey.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.82 2008/09/28 21:06:06 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.83 2008/10/07 20:40:33 tom Exp $
  *
  */
 
@@ -832,6 +832,11 @@ trace_line(LINE *lp, BUFFER *bp)
 	      lforw(lp), a,
 	      lback(lp), b,
 	      lp_visible(lp));
+#if OPT_LINE_ATTRS
+	if (lp->l_attrs != NULL) {
+	    Trace("l_attrs{%s}\n", lp->l_attrs);
+	}
+#endif
 	if (*a || *b)
 	    oops++;
     }
