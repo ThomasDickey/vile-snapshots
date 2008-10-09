@@ -4,7 +4,7 @@
  *	original by Daniel Lawrence, but
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.325 2008/08/17 18:16:42 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.327 2008/10/08 19:38:43 tom Exp $
  *
  */
 
@@ -1017,7 +1017,7 @@ execute(const CMDFUNC * execfunc, int f, int n)
     }
 
     TRACE((T_CALLED "execute(execfunc=%p(%s:%s), f=%d, n=%d)\n",
-	   execfunc,
+	   (const void *) execfunc,
 	   TRACE_CMDFUNC(execfunc),
 	   f, n));
 
@@ -2386,7 +2386,7 @@ perform_dobuf(BUFFER *bp, WHLOOP * whlist)
     static BUFFER *dobuferrbp = 0;
 
     TRACE((T_CALLED "perform_dobuf(bp=%p, whlist=%p) buffer '%s'\n",
-	   bp, whlist, bp->b_bname));
+	   (void *) bp, (void *) whlist, bp->b_bname));
 
     bp->b_inuse++;
 

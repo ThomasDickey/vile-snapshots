@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.667 2008/10/06 19:05:13 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.669 2008/10/08 19:47:02 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -1101,7 +1101,7 @@ extern void endofDisplay(void);
 #define mod_NOMOD  (~(mod_KEY|mod_SHIFT|mod_CTRL|mod_ALT))
 #endif
 
-#define kcod2key(c)	((c) & (UINT)(iBIT(MaxCBits)-1)) /* strip off the above prefixes */
+#define kcod2key(c)	(int)((c) & (UINT)(iBIT(MaxCBits)-1)) /* strip off the above prefixes */
 #define	isSpecial(c)	(((UINT)(c) & (UINT)~(iBIT(MaxCBits)-1)) != 0)
 
 #define	char2int(c)	((int)kcod2key(c))	/* mask off sign-extension, etc. */
@@ -1194,6 +1194,7 @@ typedef enum {
 	, XCOLOR_NUMBER
 	, XCOLOR_REGEX
 	, XCOLOR_STRING
+	, XCOLOR_MAX
 } XCOLOR_CODES;
 
 /*	Directive definitions	*/

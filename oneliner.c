@@ -4,7 +4,7 @@
  *	Copyright (c) 1990, 1995-1999 by Paul Fox, except for delins(), which is
  *	Copyright (c) 1986 by University of Toronto, as noted below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/oneliner.c,v 1.112 2007/08/31 23:19:01 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/oneliner.c,v 1.113 2008/10/08 18:59:09 tom Exp $
  */
 
 #include	"estruct.h"
@@ -320,7 +320,7 @@ substline(regexp * exp, int nth_occur, int printit, int globally, int *confirmp)
 
     TRACE((T_CALLED
 	   "substline(exp=%p, nth_occur=%d, printit=%d, globally=%d, confirmp=%p)\n",
-	   exp, nth_occur, printit, globally, confirmp));
+	   (void *) exp, nth_occur, printit, globally, (void *) confirmp));
 
     /* if the "magic number" hasn't been set yet... */
     if (!exp || UCHAR_AT(exp->program) != REGEXP_MAGIC) {

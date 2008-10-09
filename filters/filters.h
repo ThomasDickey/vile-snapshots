@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.111 2008/07/13 21:57:55 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.112 2008/10/08 23:16:59 tom Exp $
  */
 
 #ifndef FILTERS_H
@@ -244,7 +244,7 @@ extern char *flt_gets(char **ptr, unsigned *len);
 extern char *flt_put_blanks(char *string);
 extern char *skip_blanks(char *src);
 extern const char *flt_name(void);
-extern const void * vl_lookup_cmd(const char *name);
+extern const void *vl_lookup_cmd(const char *name);
 extern int chop_newline(char *s);
 extern int flt_get_col(void);
 extern int flt_get_line(void);
@@ -256,9 +256,12 @@ extern int vl_check_cmd(const void *cmd, unsigned flags);
 extern int vl_is_majormode(const void *cmd);
 extern int vl_is_setting(const void *cmd);
 extern int vl_is_submode(const void *cmd);
+extern int vl_is_xcolor(const void *cmd);
+extern int vl_lookup_color(const char *name);
 extern int vl_lookup_func(const char *name);
 extern int vl_lookup_mode(const char *name);
 extern int vl_lookup_var(const char *name);
+extern int vl_lookup_xcolor(const char *name);
 extern void flt_echo(const char *string, int length);
 extern void flt_error(const char *fmt, ...) VILE_PRINTF(1,2);
 extern void flt_failed(const char *msg);

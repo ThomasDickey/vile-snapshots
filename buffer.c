@@ -5,7 +5,7 @@
  * keys. Like everyone else, they set hints
  * for the display system.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.332 2008/09/28 21:51:11 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.333 2008/10/08 18:59:09 tom Exp $
  *
  */
 
@@ -1071,7 +1071,7 @@ make_current(BUFFER *nbp)
 int
 swbuffer(BUFFER *bp)
 {
-    TRACE((T_CALLED "swbuffer(bp=%p)\n", bp));
+    TRACE((T_CALLED "swbuffer(bp=%p)\n", (void *) bp));
     returnCode(swbuffer_lfl(bp, TRUE, FALSE));
 }
 
@@ -1257,7 +1257,7 @@ swbuffer_lfl(BUFFER *bp, int lockfl, int this_window)
 
     TRACE((T_CALLED
 	   "swbuffer_lfl(bp=%p, lockfl=%d, this_window=%d) bname='%s'\n",
-	   bp, lockfl, this_window, bp->b_bname));
+	   (void *) bp, lockfl, this_window, bp->b_bname));
 
     if (!bp) {
 	mlforce("BUG:  swbuffer passed null bp");
@@ -1815,7 +1815,7 @@ zotbuf(BUFFER *bp)
     int status;
     int didswitch = FALSE;
 
-    TRACE((T_CALLED "zotbuf(bp=%p)\n", bp));
+    TRACE((T_CALLED "zotbuf(bp=%p)\n", (void *) bp));
 
     if (find_bp(bp) == 0)	/* delwp may have zotted us, pointer obsolete */
 	returnCode(TRUE);

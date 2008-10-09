@@ -1,7 +1,7 @@
 /*
  * Main program and I/O for external vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/RCS/builtflt.c,v 1.63 2008/01/22 00:13:57 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/builtflt.c,v 1.64 2008/10/08 23:09:01 tom Exp $
  *
  */
 
@@ -592,6 +592,22 @@ vl_is_setting(const void *cmd)
     }
     return result;
 }
+
+#if OPT_EXTRA_COLOR
+int
+vl_is_xcolor(const void *cmd)
+{
+    const CMDFUNC *ptr = (const CMDFUNC *) cmd;
+    int result = 0;
+
+    if (ptr != 0) {
+	if (ptr == &f_set_extra_colors) {
+	    result = 1;
+	}
+    }
+    return result;
+}
+#endif
 
 /*
  * Check if the command name is one of vile's submode set/unset variants.

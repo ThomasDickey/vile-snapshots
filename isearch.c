@@ -7,7 +7,7 @@
  *
  * original author: D. R. Banks 9-May-86
  *
- * $Header: /users/source/archives/vile.vcs/RCS/isearch.c,v 1.61 2008/10/06 20:25:37 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/isearch.c,v 1.62 2008/10/08 21:01:56 tom Exp $
  *
  */
 
@@ -38,19 +38,39 @@ scanmore(			/* search forward or back for a pattern */
 	    TBUFF *patrn,	/* string to scan for */
 	    int dir)		/* direction to search */
 {
-    int sts;			/* current search status */
+    int sts = FALSE;		/* current search status */
 
     FreeIfNeeded(gregexp);
     gregexp = regcomp(tb_values(patrn), tb_length(patrn), b_val(curbp, MDMAGIC));
-    if (!gregexp)
-	return FALSE;
+    if (gregexp != 0) {
+	ignorecase = window_b_val(curwp, MDIGNCASE);
 
-    ignorecase = window_b_val(curwp, MDIGNCASE);
-
-    sts = scanner(gregexp, (dir < 0) ? REVERSE : FORWARD, FALSE, (int *) 0);
-
-    if (!sts)
-	kbd_alarm();		/* beep the terminal if we fail */
+	sts = scanner(gregexp, (dir < 0) ? REVERSE : FORWARD, FALSE, (int *) 0);
+	if (!sts) {
+	    kbd_alarm();	/* beep the terminal if we fail */
+	}
+#if OPT_EXTRA_COLOR
+	else {
+	    MARK save_MK;
+	    int *attrp = lookup_extra_color(XCOLOR_ISEARCH);
+	    if (!isEmpty(attrp)) {
+		/* clear any existing search-match */
+		clear_match_attrs(TRUE, 1);
+		/* draw the new search-match */
+		regionshape = rgn_EXACT;
+		save_MK = MK;
+		MK.l = DOT.l;
+		MK.o = DOT.o + tb_length(patrn);
+		videoattribute = *attrp;
+		videoattribute |= VOWN_MATCHES;
+		(void) attributeregion();
+		/* fix for clear_match_attrs */
+		curbp->b_highlight |= HILITE_ON;
+		MK = save_MK;
+	    }
+	}
+#endif
+    }
     return (sts);		/* else, don't even try */
 }
 

@@ -1,5 +1,5 @@
 %pointer
-%s NORMAL ACTION REGISTER SETTINGS MAJORMODE_NAME SUBMODE_NAME SUBMODE_VALS WITH_DEFS LITERAL
+%s NORMAL ACTION REGISTER SETTINGS MAJORMODE_NAME SUBMODE_NAME SUBMODE_VALS WITH_DEFS LITERAL XCOLOR XCOLOR2
 
 %o 10000
 %a 6000
@@ -7,7 +7,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/vilefilt.l,v 1.59 2008/08/15 20:29:36 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/vilefilt.l,v 1.60 2008/10/08 23:19:27 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of vile macros
  * - T.Dickey
@@ -163,6 +163,8 @@ handle_keyword(char *text, int len)
 	case NORMAL:
 	    if (vl_is_setting(cmd)) {
 		new_state(SETTINGS);
+	    } else if (vl_is_xcolor(cmd)) {
+		new_state(XCOLOR);
 	    } else if (vl_check_cmd(cmd, USEREG)) {
 		new_state(REGISTER);
 	    } else if (vl_check_cmd(cmd, OPER)) {
@@ -196,6 +198,21 @@ handle_keyword(char *text, int len)
 		 * special-syntax.  Just ignore them.
 		 */
 		attr = "";
+	    }
+	    break;
+	case XCOLOR:
+	    if (vl_lookup_xcolor(text) >= 0) {
+		attr = Keyword_attr;
+	    } else {
+		attr = Error_attr;
+	    }
+	    new_state(XCOLOR2);
+	    break;
+	case XCOLOR2:
+	    if (vl_lookup_color(text) >= 0) {
+		attr = Keyword_attr;
+	    } else {
+		attr = Error_attr;
 	    }
 	    break;
 	}

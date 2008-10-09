@@ -3,7 +3,7 @@
  *
  * written for vile.  Copyright (c) 1990, 1995-2001 by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/undo.c,v 1.99 2008/08/17 23:06:10 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/undo.c,v 1.100 2008/10/08 18:59:09 tom Exp $
  *
  */
 
@@ -321,7 +321,7 @@ freeundostacks(BUFFER *bp, int both)
 {
     LINE *lp;
 
-    TRACE((T_CALLED "freeundostacks(%p,%d)\n", bp, both));
+    TRACE((T_CALLED "freeundostacks(%p,%d)\n", (void *) bp, both));
     while ((lp = popline(FORWSTK(bp), TRUE)) != NULL) {
 	lfree(lp, bp);
     }

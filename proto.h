@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.658 2008/08/22 20:52:00 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.660 2008/10/08 23:16:35 tom Exp $
  *
  */
 
@@ -880,6 +880,12 @@ extern int set_colors (int ncolors);
 #if OPT_EVAL || OPT_MAJORMODE
 extern int is_varmode ( const char *name );
 extern const char *const * list_of_modes (void);
+#endif
+
+#if OPT_EXTRA_COLOR
+extern int * lookup_extra_color(XCOLOR_CODES code);
+extern int vl_lookup_color(const char *name);
+extern int vl_lookup_xcolor(const char *name);
 #endif
 
 #if OPT_MAJORMODE
