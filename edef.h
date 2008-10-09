@@ -6,7 +6,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.342 2008/10/06 22:36:54 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.343 2008/10/08 19:47:54 tom Exp $
  */
 
 #ifndef VILE_EDEF_H
@@ -333,6 +333,9 @@ decl_uninit( TBUFF *tb_curpalette );	/* current colormap palete	*/
 #endif
 #if OPT_COLOR
 decl_uninit( int ctrans[NCOLORS] );	/* color translation table	*/
+#if OPT_EXTRA_COLOR
+decl_uninit( int extra_colors[XCOLOR_MAX] );
+#endif
 #endif
 decl_uninit( int kbd_expand );		/* -1 kbd_putc shows tab as space */
 					/* +1 kbd_putc shows cr as ^M */

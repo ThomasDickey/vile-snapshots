@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.370 2008/10/07 22:59:00 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.377 2008/10/09 00:23:58 tom Exp $
  *
  */
 
@@ -1924,28 +1924,30 @@ set_colors(int n)
 #endif /* OPT_COLOR */
 
 #if OPT_EXTRA_COLOR
-static int *
+int *
 lookup_extra_color(XCOLOR_CODES code)
 {
     int *result = 0;
 
     switch (code) {
     case XCOLOR_NONE:
+    case XCOLOR_MAX:
 	break;
     case XCOLOR_CURSOR:
-	break;
     case XCOLOR_HYPERTEXT:
-	break;
     case XCOLOR_ISEARCH:
+    case XCOLOR_NUMBER:
+    case XCOLOR_REGEX:
+    case XCOLOR_STRING:
+#if !OPT_HILITEMATCH
+    case XCOLOR_MODELINE:
+#endif
+	result = extra_colors + code;
 	break;
+#if OPT_HILITEMATCH
     case XCOLOR_MODELINE:
 	break;
-    case XCOLOR_NUMBER:
-	break;
-    case XCOLOR_REGEX:
-	break;
-    case XCOLOR_STRING:
-	break;
+#endif
     }
     return result;
 }
@@ -1988,16 +1990,16 @@ make_xcolor_list(int dum1 GCC_UNUSED, void *ptr GCC_UNUSED)
 	    }
 	}
 	if (valuep != 0 && (value = *valuep) != 0) {
-	    int save_attr = value;
+	    VIDEO_ATTR save_attr = (VIDEO_ATTR) value;
 	    const char *name;
 	    int bit = 1;
 	    int gap = 0;
 
 	    MK = DOT;
 	    if (value & VACOLOR) {
-		name = choice_to_name(&fsm_color_blist, VCOLORNUM(value));
+		name = choice_to_name(&fsm_hilite_blist, VASPCOL | (value & VACOLOR));
 		bprintf("%s", name ? name : "color?");
-		value &= ~VACOLOR;
+		value &= ~(VACOLOR | VASPCOL);
 		gap = (value != 0);
 	    }
 	    while (bit < VACOLOR) {
@@ -2066,6 +2068,24 @@ relist_xcolors(void)
 #endif /* OPT_UPBUFF */
 
 /*
+ * Lookup a symbol to see if it is one of vile's color/attribute names.
+ */
+int
+vl_lookup_color(const char *name)
+{
+    return choice_to_code(&fsm_hilite_blist, name, strlen(name));
+}
+
+/*
+ * Lookup a symbol to see if it is one of vile's extended color names.
+ */
+int
+vl_lookup_xcolor(const char *name)
+{
+    return choice_to_code(&fsm_xcolors_blist, name, strlen(name));
+}
+
+/*
  * Prompt for an extended color name,
  * and zero or one color
  * added to zero or more video attributes.
@@ -2094,7 +2114,7 @@ set_extra_colors(int f GCC_UNUSED, int n GCC_UNUSED)
 			reply, sizeof(reply), '=',
 			KBD_NORMAL, xcolor_name_complete);
     if (status == TRUE) {
-	code = choice_to_code(&fsm_xcolors_blist, reply, strlen(reply));
+	code = vl_lookup_xcolor(reply);
 	valuep = lookup_extra_color(code);
 	value = 0;
 	sprintf(prompt, "Color+attributes(%s) ", reply);
@@ -2115,7 +2135,7 @@ set_extra_colors(int f GCC_UNUSED, int n GCC_UNUSED)
 		++count;
 		if (code2 & VACOLOR)
 		    value &= ~VACOLOR;
-		value |= code2;
+		value |= (code2 & ~VASPCOL);
 
 		strcat(prompt, reply);
 		if (end_string() == '+') {
@@ -3062,7 +3082,7 @@ compute_majormodes_order(void)
     char *s;
     size_t need = count_majormodes();
     size_t want;
-    unsigned j;
+    UINT j;
     int jj;
     static size_t have;
 
@@ -3097,7 +3117,7 @@ compute_majormodes_order(void)
 		    jj = put_majormode_before(j, s);
 		    TRACE(("JUMP %d to %d\n", j, jj));
 		    if (jj < (int) j)
-			j = jj;
+			j = (UINT) jj;
 		}
 	    }
 	    for (j = 0; j < need; j++) {
@@ -3107,7 +3127,7 @@ compute_majormodes_order(void)
 		    jj = put_majormode_after(j, s);
 		    TRACE(("JUMP %d to %d\n", j, jj));
 		    if (jj < (int) j)
-			j = jj;
+			j = (UINT) jj;
 		}
 	    }
 	    show_majormode_order("final:");
@@ -3193,7 +3213,7 @@ insert_per_major(size_t count, const char *name)
 	    char *newname = strmalloc(name);
 
 	    if (newname != 0) {
-		j = found;
+		j = (size_t) found;
 		for (k = ++count; k != j; k--)
 		    my_mode_list[k] = my_mode_list[k - 1];
 		my_mode_list[j] = newname;
@@ -3218,7 +3238,7 @@ remove_per_major(size_t count, const char *name)
 	size_t j, k;
 
 	if ((found = search_mode_list(name, (int) count, FALSE)) >= 0) {
-	    j = found;
+	    j = (size_t) found;
 	    if (my_mode_list != all_modes
 		&& !in_all_modes(my_mode_list[j])) {
 		beginDisplay();
@@ -3828,7 +3848,8 @@ extend_VAL_array(struct VAL *ptr, size_t item, size_t len)
 {
     size_t j, k;
 
-    TRACE(("extend_VAL_array %p item %ld of %ld\n", ptr, (long) item, (long) len));
+    TRACE(("extend_VAL_array %p item %ld of %ld\n",
+	   (void *) ptr, (long) item, (long) len));
 
     if (ptr == 0) {
 	beginDisplay();
@@ -4265,7 +4286,7 @@ do_a_submode(int defining)
 				    per_submode(temp, name, j, FALSE));
 	} else {
 	    TRACE(("destroy submode names for %d\n", j));
-	    k = count_modes();
+	    k = (size_t) count_modes();
 	    k = remove_per_major(k,
 				 per_submode(temp, name, j, TRUE));
 	    (void) remove_per_major(k,
@@ -4750,7 +4771,7 @@ update_scheme_choices(void)
 	if (my_scheme_choices != 0) {
 	    for (n = 0; n < (int) num_schemes; n++) {
 		my_scheme_choices[n].choice_name = my_schemes[n].name;
-		my_scheme_choices[n].choice_code = my_schemes[n].code;
+		my_scheme_choices[n].choice_code = (int) my_schemes[n].code;
 	    }
 	    set_fsm_choice(s_color_scheme, my_scheme_choices);
 	}
@@ -4851,14 +4872,14 @@ alloc_scheme(const char *name)
     PALETTES *result;
 
     if ((result = find_scheme(name)) == 0) {
-	int len = ++num_schemes;
+	int len = (int) (++num_schemes);
 
 	beginDisplay();
 	if (len == 1) {
-	    len = ++num_schemes;
-	    my_schemes = typecallocn(PALETTES, len);
+	    len = (int) (++num_schemes);
+	    my_schemes = typecallocn(PALETTES, (unsigned) len);
 	} else {
-	    my_schemes = typereallocn(PALETTES, my_schemes, len);
+	    my_schemes = typereallocn(PALETTES, my_schemes, (unsigned) len);
 	}
 	endofDisplay();
 
@@ -5092,7 +5113,7 @@ makeschemelist(int dum1 GCC_UNUSED, void *ptr GCC_UNUSED)
 {
     static const char fmt[] = "\n   %s=%s";
     PALETTES *p;
-    int num = (num_schemes > 1) ? (num_schemes - 1) : 0;
+    int num = (int) ((num_schemes > 1) ? (num_schemes - 1) : 0);
 
     if (my_schemes != 0) {
 	bprintf("There %s %d color scheme%s defined",
@@ -5123,7 +5144,7 @@ int
 chgd_scheme(BUFFER *bp GCC_UNUSED, VALARGS * args, int glob_vals, int testing)
 {
     if (!testing) {
-	PALETTES *p = find_scheme_by_code(args->local->vp->i);
+	PALETTES *p = find_scheme_by_code((UINT) (args->local->vp->i));
 	if (p == 0) {
 	    return FALSE;
 	} else if (set_current_scheme(p)) {

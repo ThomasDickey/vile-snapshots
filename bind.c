@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.322 2008/08/17 16:26:25 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.323 2008/10/08 18:59:09 tom Exp $
  *
  */
 
@@ -197,7 +197,7 @@ dpy_namebst(BI_NODE * a GCC_UNUSED, int level GCC_UNUSED)
 {
 #if OPT_TRACE
     TRACE(("%s%p -> %s (%d)\n",
-	   trace_indent(level, '.'), a, BI_KEY(a), a->balance));
+	   trace_indent(level, '.'), (void *) a, BI_KEY(a), a->balance));
 #endif
 }
 

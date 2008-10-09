@@ -1,7 +1,7 @@
 /*
  * debugging support -- tom dickey.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.83 2008/10/07 20:40:33 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.84 2008/10/08 19:00:16 tom Exp $
  *
  */
 
@@ -828,9 +828,11 @@ trace_line(LINE *lp, BUFFER *bp)
 	const char *a = check_forw(lp) ? "" : "?";
 	const char *b = check_back(lp) ? "" : "?";
 	Trace("%4d%s:{%p, f %p%s, b %p%s}:%s\n",
-	      line_no(bp, lp), check_line(lp, bp) ? "" : "?", lp,
-	      lforw(lp), a,
-	      lback(lp), b,
+	      line_no(bp, lp),
+	      check_line(lp, bp) ? "" : "?",
+	      (void *) lp,
+	      (void *) lforw(lp), a,
+	      (void *) lback(lp), b,
 	      lp_visible(lp));
 #if OPT_LINE_ATTRS
 	if (lp->l_attrs != NULL) {
@@ -941,7 +943,7 @@ trace_buffer(BUFFER *bp)
     LINE *lp;
     Trace("trace_buffer(%s) dot=%p%s fn=%s\n",
 	  bp->b_bname,
-	  bp->b_dot.l,
+	  (void *) bp->b_dot.l,
 	  bp == curbp ? " (curbp)" : "",
 	  bp->b_fname);
     for_each_line(lp, bp) {
@@ -974,9 +976,9 @@ trace_window(WINDOW *wp)
 	  wp->w_bufp->b_bname,
 	  wp->w_toprow,
 	  wp->w_ntrows,
-	  win_head(wp),
-	  wp->w_line.l,
-	  wp->w_dot.l,
+	  (void *) win_head(wp),
+	  (void *) wp->w_line.l,
+	  (void *) wp->w_dot.l,
 	  wp == curwp ? " (curwp)" : "");
 
     for (lp = wp->w_line.l; lp != win_head(wp); lp = lforw(lp)) {
