@@ -2,7 +2,7 @@
  *	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.313 2008/07/25 18:44:38 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.314 2008/10/13 00:38:53 tom Exp $
  *
  */
 
@@ -2659,14 +2659,14 @@ color_cursor(void)
 static GC
 get_color_gc(int n, Boolean normal)
 {
-    ColorGC *data = normal
-    ? &(cur_win->fore_color[n])
-    : &(cur_win->back_color[n]);
+    ColorGC *data = (normal
+		     ? &(cur_win->fore_color[n])
+		     : &(cur_win->back_color[n]));
 
     if (cur_win->screen_depth == 1) {
-	data->gc = normal
-	    ? cur_win->textgc
-	    : cur_win->reversegc;
+	data->gc = (normal
+		    ? cur_win->textgc
+		    : cur_win->reversegc);
     } else if (data->reset) {
 	XGCValues gcvals;
 	ULONG gcmask;
@@ -4448,11 +4448,11 @@ flush_line(VIDEO_TEXT * text, int len, UINT attr, int sr, int sc)
     } else if (attr & VASEL) {
 	fore_gc = cur_win->selgc;
 	back_gc = cur_win->revselgc;
-    } else if (attr & VAMLFOC)
+    } else if (attr & VAMLFOC) {
 	fore_gc = back_gc = cur_win->modeline_focus_gc;
-    else if (attr & VAML)
+    } else if (attr & VAML) {
 	fore_gc = back_gc = cur_win->modeline_gc;
-    else if (attr & (VACOLOR)) {
+    } else if (attr & (VACOLOR)) {
 	int fg = ctrans[VCOLORNUM(attr)];
 	int bg = (gbcolor == ENUM_FCOLOR) ? fg : ctrans[gbcolor];
 	fore_gc = get_color_gc(fg, True);

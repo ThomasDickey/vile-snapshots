@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.660 2008/10/08 23:16:35 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.661 2008/10/10 00:07:47 tom Exp $
  *
  */
 
@@ -308,7 +308,7 @@ extern LINE *b2printf (BUFFER *bp, const char *fmt, ...) VILE_PRINTF(2,3);
 extern LINE *b2vprintf (BUFFER *bp, const char *fmt, va_list ap);
 extern char *lsprintf (char *buf, const char *fmt, ...) VILE_PRINTF(2,3);
 extern int bputc (int c);
-extern int bputsn (const char *src, unsigned len);
+extern int bputsn (const char *src, int len);
 extern int col_limit (WINDOW *wp);
 extern int format_int (char *buf, UINT number, UINT radix);
 extern int im_waiting (int flag);
@@ -354,6 +354,14 @@ extern int line_height (WINDOW *wp, LINE *lp);
 #if defined(WMDLINEWRAP) || OPT_MOUSE
 extern WINDOW *row2window (int row);
 extern int col2offs (WINDOW *wp, LINE *lp, C_NUM col);
+#endif
+
+#if OPT_EXTRA_COLOR
+extern int bputsn_attr(const char *src, int len, int attr);
+extern int bputsn_xcolor(const char *src, int len, XCOLOR_CODES code);
+#else
+#define bputsn_attr(src, len, attr) bputsn(src, len)
+#define bputsn_xcolor(src, len, code) bputsn(src, len)
 #endif
 
 #if OPT_MLFORMAT || OPT_POSFORMAT || OPT_TITLE

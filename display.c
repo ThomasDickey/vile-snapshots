@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.476 2008/07/04 14:13:54 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.479 2008/10/11 18:18:38 tom Exp $
  *
  */
 
@@ -1406,16 +1406,16 @@ kbd_openup(void)
 	int i, j;
 	for (i = 0; i < term.rows - 1; ++i) {
 	    for (j = 0; j < term.cols; ++j) {
-		pscreen[i]->v_text[j] = pscreen[i + 1]->v_text[j];
+		CELL_TEXT(i, j) = CELL_TEXT(i + 1, j);
 #if OPT_VIDEO_ATTRS
-		pscreen[i]->v_attrs[j] = pscreen[i + 1]->v_attrs[j];
+		CELL_ATTR(i, j) = CELL_ATTR(i + 1, j);
 #endif
 	    }
 	}
 	for (j = 0; j < term.cols; ++j) {
-	    pscreen[i]->v_text[j] = ' ';
+	    CELL_TEXT(i, j) = ' ';
 #if OPT_VIDEO_ATTRS
-	    pscreen[i]->v_attrs[j] = VADIRTY;
+	    CELL_ATTR(i, j) = VADIRTY;
 #endif
 	}
     }
@@ -4127,16 +4127,72 @@ bputc(int c)
 }
 
 int
-bputsn(const char *src, unsigned len)
+bputsn(const char *src, int len)
 {
     int rc = TRUE;
 
-    while (len-- != 0) {
-	if ((rc = bputc(*src++)) != TRUE)
-	    break;
+    if (len < 0) {
+	rc = bputsn(src, (int) strlen(src));
+    } else {
+	while (len-- != 0) {
+	    if ((rc = bputc(*src++)) != TRUE)
+		break;
+	}
     }
     return rc;
 }
+
+#if OPT_EXTRA_COLOR
+int
+bputsn_attr(const char *src, int len, int attr)
+{
+    int rc;
+
+    if (attr) {
+	REGIONSHAPE save_regn = regionshape;
+	VIDEO_ATTR save_attr = videoattribute;
+
+	regionshape = rgn_EXACT;
+	videoattribute = attr;
+
+	if (len < 0)
+	    len = strlen(src);
+	rc = bputsn(src, len);
+
+	/*
+	 * We cannot simply save MK before writing, since writing to an empty
+	 * buffer for instance may split the original line, leaving MK pointing
+	 * to the fragment _after_ the newline.  But limiting this call to
+	 * strings without embedded newlines, we can reliably compute MK based
+	 * on the string length.
+	 */
+	MK = DOT;
+	MK.o -= len;
+	(void) attributeregion();
+
+	regionshape = save_regn;
+	videoattribute = save_attr;
+	MK = DOT;
+    } else {
+	rc = bputsn(src, len);
+    }
+    return rc;
+}
+
+int
+bputsn_xcolor(const char *src, int len, XCOLOR_CODES code)
+{
+    int rc;
+    int *valuep = lookup_extra_color(code);
+
+    if (isEmpty(valuep)) {
+	rc = bputsn(src, len);
+    } else {
+	rc = bputsn_attr(src, len, *valuep);
+    }
+    return rc;
+}
+#endif /* OPT_EXTRA_COLOR */
 
 void
 bpadc(int c, int count)
