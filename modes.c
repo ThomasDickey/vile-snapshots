@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.377 2008/10/09 00:23:58 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.378 2008/10/11 13:45:23 tom Exp $
  *
  */
 
@@ -2151,7 +2151,10 @@ set_extra_colors(int f GCC_UNUSED, int n GCC_UNUSED)
 	if (!status || !count) {
 	    ;			/* no value set */
 	} else if (valuep != 0) {
-	    *valuep = value;
+	    if (value != *valuep) {
+		set_winflags(TRUE, WFHARD | WFCOLR);
+		*valuep = value;
+	    }
 	} else {
 	    switch (code) {
 #if OPT_HILITEMATCH

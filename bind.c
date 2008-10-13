@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.323 2008/10/08 18:59:09 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.328 2008/10/11 13:51:20 tom Exp $
  *
  */
 
@@ -1018,7 +1018,14 @@ des_s_key(int f GCC_UNUSED, int n GCC_UNUSED)
 static char *
 quoted(char *dst, const char *src)
 {
-    return strcat(strcat(strcpy(dst, "\""), src), "\"");
+    char *result = 0;
+    if (dst != 0) {
+	result = strcat(strcat(strcpy(dst, "\""), src), "\"");
+    } else {
+	char temp[NLINE];
+	bputsn_xcolor(quoted(temp, src), -1, XCOLOR_STRING);
+    }
+    return result;
 }
 
 /* returns the number of columns used by the given string */
@@ -1038,11 +1045,17 @@ static void
 quote_and_pad(char *dst, const char *src)
 {
     quoted(dst, src);
-    if (converted_len(dst) >= 32)
-	strcat(dst, "\t");
-    else
-	while (converted_len(dst) < 32)
+    if (dst != 0) {
+	if (converted_len(dst) >= 32)
 	    strcat(dst, "\t");
+	else
+	    while (converted_len(dst) < 32)
+		strcat(dst, "\t");
+    } else {
+	do {
+	    bputc('\t');
+	} while (getccol(FALSE) < 32);
+    }
 }
 
 #if OPT_MENUS || OPT_NAMEBST
@@ -1061,7 +1074,17 @@ to_tabstop(char *buffer)
 static void
 convert_kcode(int c, char *buffer)
 {
-    (void) kcod2prc(c, to_tabstop(buffer));
+    if (buffer != 0) {
+	(void) kcod2prc(c, to_tabstop(buffer));
+    } else {
+	char temp[NLINE];
+	if (llength(DOT.l) > 0
+	    && !isBlank(lvalue(DOT.l)[llength(DOT.l) - 1])) {
+	    bputc('\t');
+	}
+	(void) kcod2prc(c, temp);
+	bputsn_xcolor(temp, -1, XCOLOR_STRING);
+    }
 }
 
 static void
@@ -1088,6 +1111,24 @@ convert_cmdfunc(BINDINGS * bs, const CMDFUNC * cmd, char *outseq)
 }
 #endif /* OPT_MENUS || OPT_NAMEBST */
 
+static int
+add_newline(void)
+{
+    int rc = TRUE;
+    if (buf_head(curbp) != DOT.l)
+	rc = bputc('\n');
+    return rc;
+}
+
+static int
+add_line(const char *text)
+{
+    int rc = add_newline();
+    if (rc)
+	rc = bputsn(text, -1);
+    return rc;
+}
+
 #if OPT_ONLINEHELP
 static int
 show_onlinehelp(const CMDFUNC * cmd)
@@ -1106,7 +1147,7 @@ show_onlinehelp(const CMDFUNC * cmd)
     } else {
 	(void) lsprintf(outseq, "  ( no help for this command )");
     }
-    if (!addline(curbp, outseq, -1))
+    if (!add_line(outseq))
 	return FALSE;
 #if OPT_PROCEDURES
     if ((cmd->c_flags & CMD_TYPE) == CMD_PROC)
@@ -1135,7 +1176,7 @@ show_onlinehelp(const CMDFUNC * cmd)
 	    next = lsprintf(next, "%smay follow global command", gaps);
 	}
 	(void) lsprintf(next, " )");
-	if (!addline(curbp, outseq, -1))
+	if (!add_line(outseq))
 	    return FALSE;
     }
 #if OPT_MACRO_ARGS
@@ -1147,7 +1188,7 @@ show_onlinehelp(const CMDFUNC * cmd)
 			    ? cmd->c_args[i].pi_text
 			    : choice_to_name(&fsm_paramtypes_blist,
 					     cmd->c_args[i].pi_type));
-	    if (!addline(curbp, outseq, -1))
+	    if (!add_line(outseq))
 		return FALSE;
 	}
     }
@@ -1193,14 +1234,14 @@ static int
 addsynonym_func(BI_NODE * node, const void *d)
 {
     const CMDFUNC *func = (const CMDFUNC *) d;
-    char outseq[NLINE];		/* output buffer for text */
 
     if (node->value.n_cmd == func &&
 	!(node->value.n_flags & NBST_DONE)) {
-	strcpy(outseq, "  or\t");
-	quoted(outseq + 5, BI_KEY(node));
-	if (!addline(curbp, outseq, -1))
+	if (!add_newline())
 	    return 1;
+	if (!bputsn("  or\t", -1))
+	    return 1;
+	quoted(0, BI_KEY(node));
     }
 
     return 0;
@@ -1210,7 +1251,6 @@ static int
 makebind_func(BI_NODE * node, const void *d)
 {
     const struct bindlist_data *data = (const struct bindlist_data *) d;
-    char outseq[NLINE];		/* output buffer for keystroke sequence */
     const CMDFUNC *cmd = node->value.n_cmd;
 
     /* has this been listed? */
@@ -1230,12 +1270,8 @@ makebind_func(BI_NODE * node, const void *d)
 	return 0;
 
     /* add in the command name */
-    quote_and_pad(outseq, BI_KEY(node));
-    convert_cmdfunc(data->bs, cmd, outseq);
-
-    /* dump the line */
-    if (!addline(curbp, outseq, -1))
-	return 1;
+    quote_and_pad(0, BI_KEY(node));
+    convert_cmdfunc(data->bs, cmd, 0);
 
     node->value.n_flags |= NBST_DONE;
 
@@ -1247,7 +1283,7 @@ makebind_func(BI_NODE * node, const void *d)
 	return FALSE;
 #endif
     /* blank separator */
-    if (!addline(curbp, "", -1))
+    if (!add_line(""))
 	return 1;
 
     return 0;
@@ -1296,7 +1332,7 @@ makefuncdesc(int j, char *listed)
     quote_and_pad(outseq, nametbl[j].n_name);
 
     /* dump the line */
-    if (!addline(curbp, outseq, -1))
+    if (!add_line(outseq))
 	return FALSE;
 
     /* then look for synonyms */
@@ -1312,7 +1348,7 @@ makefuncdesc(int j, char *listed)
 	if (nametbl[i].n_cmd != cmd)
 	    continue;
 	(void) quoted(outseq + 5, nametbl[i].n_name);
-	if (!addline(curbp, outseq, -1))
+	if (!add_line(outseq))
 	    return FALSE;
     }
 
@@ -1321,7 +1357,7 @@ makefuncdesc(int j, char *listed)
 	return FALSE;
 #endif
     /* blank separator */
-    if (!addline(curbp, "", -1))
+    if (!add_line(""))
 	return FALSE;
 
     return TRUE;
@@ -1891,7 +1927,7 @@ kcod2prc(int c, char *seq)
     } else
 #endif
 	(void) bytes2prc(seq, temp + 1, length);
-    TRACE(("kcod2prc(%#x) ->%s\n", c, seq));
+    TRACE2(("kcod2prc(%#x) ->%s\n", c, seq));
     return seq;
 }
 #endif
