@@ -5,7 +5,7 @@
  *
  * Copyright (c) 1990-2008 by Paul Fox and Thomas Dickey
  *
- * $Header: /users/source/archives/vile.vcs/RCS/finderr.c,v 1.136 2008/01/25 00:35:12 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/finderr.c,v 1.137 2008/10/14 22:23:41 tom Exp $
  *
  */
 
@@ -913,6 +913,7 @@ make_err_regex_list(int dum1 GCC_UNUSED, void *ptr GCC_UNUSED)
 {
     BUFFER *bp;
     LINE *lp;
+    char temp[NSTRING];
 
     bprintf("--- Error Meta-Expressions and Resulting Regular Expressions ");
     bpadc('-', term.cols - DOT.o);
@@ -929,8 +930,10 @@ make_err_regex_list(int dum1 GCC_UNUSED, void *ptr GCC_UNUSED)
 	    if (j >= exp_count)
 		break;
 	    bprintf("\n%7d ", (int) j);
-	    bputsn(lvalue(lp), llength(lp));
-	    bprintf("%.*s%s", ERR_PREFIX, " ", exp_table[j].exp_text);
+	    bputsn_xcolor(lvalue(lp), llength(lp), XCOLOR_STRING);
+	    bputc('\n');
+	    bprintf("%.*s", ERR_PREFIX, " ");
+	    bputsn_xcolor(exp_table[j].exp_text, -1, XCOLOR_REGEX);
 	    for (k = 0; k < W_LAST; k++) {
 		if (exp_table[j].words[k] != 0) {
 		    if (first) {
@@ -939,8 +942,10 @@ make_err_regex_list(int dum1 GCC_UNUSED, void *ptr GCC_UNUSED)
 		    } else {
 			bprintf(", ");
 		    }
-		    bprintf("%s=\\%d", get_token_name((ErrTokens) k),
-			    exp_table[j].words[k]);
+		    bputsn_xcolor(get_token_name((ErrTokens) k), -1, XCOLOR_ENUM);
+		    bputc('=');
+		    sprintf(temp, "\\%d", exp_table[j].words[k]);
+		    bputsn_xcolor(temp, -1, XCOLOR_REGEX);
 		}
 	    }
 	    ++j;

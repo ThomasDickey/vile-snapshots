@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.378 2008/10/11 13:45:23 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.380 2008/10/14 21:54:59 tom Exp $
  *
  */
 
@@ -97,6 +97,7 @@ static void relist_majormodes(void);
 
 #endif /* OPT_MAJORMODE */
 
+#define is_int_type(type) ((type) == VALTYPE_INT)
 #define is_str_type(type) ((type) == VALTYPE_REGEX || (type) == VALTYPE_STRING)
 
 static BLIST blist_my_mode_list = init_blist(all_modes);
@@ -451,13 +452,21 @@ listvalueset(const char *which,
 			values[j].vp->i ? "  " : NO_PREFIX,
 			ModeName(names[j].name));
 	    } else {
-		VALARGS args;	/* FIXME */
+		VALARGS args;
 		args.names = names + j;
 		args.local = values + j;
 		args.global = 0;
-		bprintf("  %s=%s",
-			ModeName(names[j].name),
-			string_mode_val(&args));
+		bprintf("  %s=", ModeName(names[j].name));
+		bputsn_xcolor(string_mode_val(&args), -1,
+			      (names[j].type == VALTYPE_ENUM)
+			      ? XCOLOR_ENUM
+			      : ((names[j].type == VALTYPE_REGEX)
+				 ? XCOLOR_REGEX
+				 : (is_str_type(names[j].type)
+				    ? XCOLOR_STRING
+				    : (is_int_type(names[j].type)
+				       ? XCOLOR_NUMBER
+				       : XCOLOR_NONE))));
 	    }
 	    bpadc(' ', padded - DOT.o);
 	    any++;
@@ -1933,7 +1942,7 @@ lookup_extra_color(XCOLOR_CODES code)
     case XCOLOR_NONE:
     case XCOLOR_MAX:
 	break;
-    case XCOLOR_CURSOR:
+    case XCOLOR_ENUM:
     case XCOLOR_HYPERTEXT:
     case XCOLOR_ISEARCH:
     case XCOLOR_NUMBER:
