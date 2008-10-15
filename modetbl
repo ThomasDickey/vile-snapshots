@@ -11,7 +11,7 @@
 #
 # The modes are table entries in the BUFFER and WINDOW structures.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.278 2008/10/06 19:05:04 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.279 2008/10/14 20:53:45 tom Exp $
 #
 #
 # Mode-table entries.  Capitalized letters are used for abbreviations.
@@ -625,7 +625,7 @@ string
 "never"		SF_NEVER
 
 .table xcolors			OPT_EXTRA_COLOR
-"cursor"	XCOLOR_CURSOR
+"enum"		XCOLOR_ENUM
 "hypertext"	XCOLOR_HYPERTEXT
 "isearch"	XCOLOR_ISEARCH
 "modeline"	XCOLOR_MODELINE

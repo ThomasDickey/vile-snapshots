@@ -1,7 +1,7 @@
 /*
  * A terminal driver using the curses library
  *
- * $Header: /users/source/archives/vile.vcs/RCS/curses.c,v 1.38 2008/04/16 20:03:36 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/curses.c,v 1.39 2008/10/13 21:02:28 tom Exp $
  */
 
 #include "estruct.h"
@@ -384,7 +384,7 @@ curs_attr(UINT attr)
 	int pair = PAIR_NUMBER(getattrs(stdscr));
 	short fg, bg;
 	if (attr & VACOLOR) {
-	    fg = VCOLORNUM(attr);
+	    fg = VCOLORNUM(attr) % ncolors;
 	    bg = gbcolor;
 #ifdef HAVE_USE_DEFAULT_COLORS
 	    if (is_default(bg)) {

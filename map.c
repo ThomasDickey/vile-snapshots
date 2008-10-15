@@ -3,7 +3,7 @@
  *	Original interface by Otto Lind, 6/3/93
  *	Additional map and map! support by Kevin Buettner, 9/17/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/map.c,v 1.112 2007/08/31 22:53:03 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/map.c,v 1.113 2008/10/14 22:29:19 tom Exp $
  *
  */
 
@@ -160,10 +160,11 @@ makemaplist(int dummy GCC_UNUSED, void *mapp)
 			remapnote = "   ";
 		    }
 		    bprintf("%s ", remapnote);
-		    for (i = 0; i < depth; i++)
-			bputc(the_lhs_string[i]);
+		    bputsn_xcolor(the_lhs_string, depth, XCOLOR_STRING);
 		}
-		bprintf("\t%s\n", mapstr);
+		bputc('\t');
+		bputsn_xcolor(mapstr, -1, XCOLOR_STRING);
+		bputc('\n');
 	    }
 	    mp = mp->dlink;
 	} else if (depth != 0)

@@ -5,7 +5,7 @@
  * keys. Like everyone else, they set hints
  * for the display system.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.333 2008/10/08 18:59:09 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.334 2008/10/14 22:07:33 tom Exp $
  *
  */
 
@@ -2169,10 +2169,14 @@ makebufflist(int unused GCC_UNUSED, void *dummy GCC_UNUSED)
 	    ? EXPC_THAT
 	    : ' ';
 
-	if (b_is_temporary(bp))
+	if (b_is_temporary(bp)) {
 	    bprintf("   %c ", this_or_that);
-	else
-	    bprintf(" %2d%c ", nbuf++, this_or_that);
+	} else {
+	    char bufnum[NSTRING];
+	    sprintf(bufnum, "%3d", nbuf++);
+	    bputsn_xcolor(bufnum, -1, XCOLOR_NUMBER);
+	    bprintf("%c ", this_or_that);
+	}
 
 	(void) bsizes(bp);
 	bprintf("%7lu %.*s ", bp->b_bytecount, NBUFN - 1, bp->b_bname);

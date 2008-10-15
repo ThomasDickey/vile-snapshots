@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.479 2008/10/11 18:18:38 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.480 2008/10/15 00:13:03 tom Exp $
  *
  */
 
@@ -1546,7 +1546,9 @@ offs2col0(WINDOW *wp,
 	    if (isPrint(c) || (c == last)) {
 		column++;
 	    } else if (list || !isTab(c)) {
-		column += column_sizes(wp, text + n, offset - n, &used);
+		column += column_sizes(wp,
+				       (n >= length) ? "" : (text + n),
+				       offset - n, &used);
 	    } else if (isTab(c)) {
 		column = ((column / tabs) + 1) * tabs;
 	    }

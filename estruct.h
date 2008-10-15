@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.669 2008/10/08 19:47:02 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.670 2008/10/14 20:54:30 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -1185,16 +1185,19 @@ typedef enum {
 	, CT_REGEX
 } CURTOKENS;
 
+/*
+ * Enumerated type for extra-colors.
+ */
 typedef enum {
 	XCOLOR_NONE = 0
-	, XCOLOR_CURSOR
+	, XCOLOR_ENUM
 	, XCOLOR_HYPERTEXT
 	, XCOLOR_ISEARCH
 	, XCOLOR_MODELINE
 	, XCOLOR_NUMBER
 	, XCOLOR_REGEX
 	, XCOLOR_STRING
-	, XCOLOR_MAX
+	, XCOLOR_MAX		/* last entry, for array-size */
 } XCOLOR_CODES;
 
 /*	Directive definitions	*/

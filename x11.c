@@ -2,7 +2,7 @@
  *	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.314 2008/10/13 00:38:53 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.315 2008/10/14 20:09:05 tom Exp $
  *
  */
 
@@ -4455,8 +4455,15 @@ flush_line(VIDEO_TEXT * text, int len, UINT attr, int sr, int sc)
     } else if (attr & (VACOLOR)) {
 	int fg = ctrans[VCOLORNUM(attr)];
 	int bg = (gbcolor == ENUM_FCOLOR) ? fg : ctrans[gbcolor];
-	fore_gc = get_color_gc(fg, True);
-	back_gc = get_color_gc(bg, False);
+
+	if (attr & (VAREV)) {
+	    fore_gc = get_color_gc(fg, False);
+	    back_gc = get_color_gc(bg, True);
+	    attr &= ~(VAREV);
+	} else {
+	    fore_gc = get_color_gc(fg, True);
+	    back_gc = get_color_gc(bg, False);
+	}
     } else {
 	fore_gc = cur_win->textgc;
 	back_gc = cur_win->reversegc;
