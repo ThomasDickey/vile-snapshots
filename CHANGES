@@ -2,6 +2,8 @@ Changes for vile 9.7 (released ??? ??? ?? ????)
 
  2008???? (f)
 	> Tom Dickey:
+	+ catch invalid-handle exception for winvile to fix problem with
+	  spell-check.
 	+ improve incremental search by highlighting match if the extra-color
 	  isearch is set.
 	+ improve manipulation of line-attributes in lnewline(), needed for

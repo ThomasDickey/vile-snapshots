@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.480 2008/10/15 00:13:03 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.481 2008/10/15 18:43:09 tom Exp $
  *
  */
 
@@ -4155,7 +4155,7 @@ bputsn_attr(const char *src, int len, int attr)
 	VIDEO_ATTR save_attr = videoattribute;
 
 	regionshape = rgn_EXACT;
-	videoattribute = attr;
+	videoattribute = (VIDEO_ATTR) attr;
 
 	if (len < 0)
 	    len = strlen(src);

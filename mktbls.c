@@ -15,7 +15,7 @@
  * by Tom Dickey, 1993.    -pgf
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/mktbls.c,v 1.151 2008/05/06 00:07:14 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/mktbls.c,v 1.152 2008/10/15 20:47:30 tom Exp $
  *
  */
 
@@ -759,7 +759,7 @@ Name2Address(char *name, char *type)
     char *temp;
 
     temp = Name2Symbol(name);
-    if (strlen(temp) + 1 + (isboolean(*type) ? 4 : 0) > len)
+    if (strlen(temp) + 1 + (size_t) (isboolean(*type) ? 4 : 0) > len)
 	badfmt("bug: buffer overflow in Name2Address");
 
     (void) strcpy(base, temp);

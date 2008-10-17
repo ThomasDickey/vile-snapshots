@@ -60,7 +60,7 @@
  *    situation, kill the app by typing ^C (and then please apply for a
  *    QA position with a certain Redmond company).
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32pipe.c,v 1.34 2007/09/26 00:18:45 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32pipe.c,v 1.35 2008/10/17 00:45:47 tom Exp $
  */
 
 #define HAVE_FCNTL_H 1
@@ -162,8 +162,6 @@ lastditch_msg(char *msg)
 #endif
 }
 
-
-
 static void
 common_cleanup(void)
 {
@@ -176,7 +174,15 @@ common_cleanup(void)
     restore_console_title();
 }
 
+#define close_fd(fd) if (fd != BAD_FD) { close(fd); fd = BAD_FD; }
 
+static void
+close_proc_handle(void)
+{
+    TRACE(("close_proc_handle %#x\n", proc_handle));
+    (void) w32_close_handle(proc_handle);
+    proc_handle = BAD_PROC_HANDLE;
+}
 
 static HANDLE
 exec_shell(char *cmd, HANDLE *handles, int hide_child)
@@ -228,16 +234,15 @@ exec_shell(char *cmd, HANDLE *handles, int hide_child)
 	{
 	    /* Success */
 
-	    CloseHandle(pi.hThread);
+	    w32_close_handle(pi.hThread);
 	    proc_handle = pi.hProcess;
+	    TRACE(("...created proc_handle %#x\n", proc_handle));
 	}
     }
     FreeIfNeeded(cmdstr);
     FreeIfNeeded(w32_cmdstr);
     returnPtr(proc_handle);
 }
-
-
 
 static int
 native_inout_popen(FILE **fr, FILE **fw, char *cmd)
@@ -246,7 +251,7 @@ native_inout_popen(FILE **fr, FILE **fw, char *cmd)
     HANDLE handles[3];
     int    i, rc, rp[3], tmpin_fd, wp[3];
 
-    TRACE(("native_inout_popen cmd=%s\n", cmd));
+    TRACE((T_CALLED "native_inout_popen cmd=%s\n", cmd));
     proc_handle   = BAD_PROC_HANDLE;
     rp[0] = rp[1] = rp[2] = wp[0] = wp[1] = wp[2] = BAD_FD;
     handles[0]    = handles[1] = handles[2] = INVALID_HANDLE_VALUE;
@@ -357,7 +362,7 @@ native_inout_popen(FILE **fr, FILE **fw, char *cmd)
                 sprintf(buf, SHELL_ERR_MSG, get_shell());
                 lastditch_msg(buf);
             }
-            CloseHandle(handles[0]);
+            w32_close_handle(handles[0]);
         }
         if (fr)
         {
@@ -375,40 +380,30 @@ native_inout_popen(FILE **fr, FILE **fw, char *cmd)
                 (void) write(rp[2], buf, len);
                 (void) close(rp[2]);   /* in weird state; why not? */
             }
-            CloseHandle(handles[1]);
-            if (tmpin_fd != BAD_FD)
-                close(tmpin_fd);
+            w32_close_handle(handles[1]);
+	    close_fd(tmpin_fd);
         }
-        return (rc);
+        returnCode(rc);
     }
     while (FALSE);
 
     /* If we get here -- some operation has failed.  Clean up. */
 
-    if (wp[0] != BAD_FD)
-        close(wp[0]);
-    if (wp[1] != BAD_FD)
-        close(wp[1]);
-    if (wp[2] != BAD_FD)
-        close(wp[2]);
-    if (rp[0] != BAD_FD)
-        close(rp[0]);
-    if (rp[1] != BAD_FD)
-        close(rp[1]);
-    if (rp[2] != BAD_FD)
-        close(rp[2]);
-    if (tmpin_fd != BAD_FD)
-        close(tmpin_fd);
+    close_fd(wp[0]);
+    close_fd(wp[1]);
+    close_fd(wp[2]);
+    close_fd(rp[0]);
+    close_fd(rp[1]);
+    close_fd(rp[2]);
+    close_fd(tmpin_fd);
     for (i = 0; i < 3; i++)
     {
         if (handles[i] != INVALID_HANDLE_VALUE)
-            CloseHandle(handles[i]);
+            w32_close_handle(handles[i]);
     }
     common_cleanup();
-    return (FALSE);
+    returnCode(FALSE);
 }
-
-
 
 static void
 native_npclose(FILE *fp)
@@ -421,8 +416,7 @@ native_npclose(FILE *fp)
     {
         (void) cwait(&term_status, (CWAIT_PARAM_TYPE) proc_handle, 0);
 	TRACE(("...CreateProcess finished waiting in native_npclose\n"));
-        (void) CloseHandle(proc_handle);
-        proc_handle = BAD_PROC_HANDLE;
+        close_proc_handle();
     }
     common_cleanup();
 }
@@ -443,16 +437,9 @@ static char   *stdin_name, *stdout_name, *shcmd;
 static void
 tmp_cleanup(void)
 {
-    if (stdin_fd != BAD_FD)
-    {
-        close(stdin_fd);
-        stdin_fd = BAD_FD;
-    }
-    if (stdout_fd != BAD_FD)
-    {
-        close(stdout_fd);
-        stdout_fd = BAD_FD;
-    }
+    close_fd(stdin_fd);
+    close_fd(stdout_fd);
+
     if (stdin_name)
     {
         (void) remove(stdin_name);
@@ -467,8 +454,6 @@ tmp_cleanup(void)
     }
     common_cleanup();
 }
-
-
 
 static int
 tmp_inout_popen(FILE **fr, FILE **fw, char *cmd)
@@ -580,8 +565,7 @@ tmp_inout_popen(FILE **fr, FILE **fw, char *cmd)
 
             (void) cwait(&term_status, (CWAIT_PARAM_TYPE) proc_handle, 0);
 	    TRACE(("...CreateProcess finished waiting in tmp_inout_popen\n"));
-            (void) CloseHandle(proc_handle);
-            proc_handle = BAD_PROC_HANDLE;
+            close_proc_handle();
         }
 
         /*
@@ -590,8 +574,7 @@ tmp_inout_popen(FILE **fr, FILE **fw, char *cmd)
          * situation, the descriptors can't be closed until the exec'd
          * process exits (I kid you not).
          */
-        (void) close(stdin_fd);
-        stdin_fd = BAD_FD;
+        close_fd(stdin_fd);
         (void) close(tmpin_fd);
 
         /* let the editor consume the output of the read pipe */
@@ -617,8 +600,6 @@ tmp_inout_popen(FILE **fr, FILE **fw, char *cmd)
     tmp_cleanup();
     return (FALSE);
 }
-
-
 
 /* npflush is called for filter ops effected with temp files */
 void
@@ -663,8 +644,7 @@ npflush(void)
 
             (void) cwait(&term_status, (CWAIT_PARAM_TYPE) proc_handle, 0);
 	    TRACE(("...CreateProcess finished waiting in npflush\n"));
-            (void) CloseHandle(proc_handle);
-            proc_handle = BAD_PROC_HANDLE;
+            close_proc_handle();
         }
 
         /*
@@ -673,12 +653,9 @@ npflush(void)
          * situation, the descriptors can't be closed until the exec'd
          * process exits.
          */
-        (void) close(stdout_fd);
-        stdout_fd = BAD_FD;
+        close_fd(stdout_fd);
     }
 }
-
-
 
 static void
 tmp_npclose(FILE *fp)
@@ -735,8 +712,7 @@ tmp_npclose(FILE *fp)
 
                 (void) cwait(&term_status, (CWAIT_PARAM_TYPE) proc_handle, 0);
 		TRACE(("...CreateProcess finished waiting in tmp_npclose\n"));
-                (void) CloseHandle(proc_handle);
-                proc_handle = BAD_PROC_HANDLE;
+                close_proc_handle();
             }
 
             /*
@@ -745,8 +721,7 @@ tmp_npclose(FILE *fp)
              * this situation, the descriptors can't be closed until the
              * exec'd process exits.
              */
-            (void) close(stdout_fd);
-            stdout_fd = BAD_FD;
+            close_fd(stdout_fd);
         }
         pressreturn();  /* cough */
         sgarbf = TRUE;

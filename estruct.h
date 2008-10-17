@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.670 2008/10/14 20:54:30 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.672 2008/10/15 22:37:23 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -206,6 +206,7 @@
 #endif
 
 #if SYS_WINNT
+# define HAVE_ENVIRON		1
 # define HAVE_PUTENV		1
 #endif
 
@@ -1851,7 +1852,7 @@ typedef UCHAR VIDEO_ATTR;
  */
 #define GROW(ptr, type, oldsize, newsize) \
 { \
-	int tmpold = oldsize; \
+	unsigned tmpold = oldsize; \
 	type *tmpp; \
 	tmpp = typeallocn(type, newsize); \
 	if (tmpp == NULL) \
@@ -2413,7 +2414,7 @@ typedef struct	WINDOW {
 	int	w_ruler_col;
 #endif
 #if OPT_PERL || OPT_TCL
-	ULONG	w_id;			/* Unique window id */
+	int	w_id;			/* Unique window id */
 #endif
 }	WINDOW;
 

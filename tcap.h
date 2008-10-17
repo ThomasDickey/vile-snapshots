@@ -1,7 +1,7 @@
 /*
  * Configurable headers used by termcap/terminfo driver for vile.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tcap.h,v 1.14 2008/01/13 20:45:40 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tcap.h,v 1.15 2008/10/15 23:35:48 tom Exp $
  */
 
 #ifndef VILE_TCAP_H
@@ -32,6 +32,16 @@ extern "C" {
 #if DISP_CURSES && defined(__FreeBSD__) && defined(FREEBSD_BROKE_NCURSES)
 #define __wint_t
 #define __wchar_t
+#endif
+
+/*
+ * Similar breakage on OpenBSD (updates to stddef.h were not reflected in
+ * updates to ncurses.h).
+ */
+#if DISP_CURSES && defined(__OpenBSD__)
+#if defined(_XOPEN_SOURCE_EXTENDED) && !defined(_WCHAR_T)
+#define _WCHAR_T
+#endif
 #endif
 
 #ifdef NEED_CURSES_H
