@@ -8,7 +8,7 @@
  *   "FAILED" may not be used to test an OLE return code.  Use SUCCEEDED
  *   instead.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32oo.cpp,v 1.11 2007/09/27 21:33:59 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32oo.cpp,v 1.12 2008/10/17 00:44:06 tom Exp $
  */
 
 #include "w32vile.h"
@@ -272,6 +272,33 @@ wincd_dir(const char *dir)
         dir = buf;
     }
     returnCode(graphical_cd(dir));
+}
+
+static int
+filterExceptions(unsigned int code, struct _EXCEPTION_POINTERS *ep)
+{
+    if (code == EXCEPTION_INVALID_HANDLE)
+    {
+	return EXCEPTION_EXECUTE_HANDLER;
+    }
+    else
+    {
+	return EXCEPTION_CONTINUE_SEARCH;
+    }
+}
+
+// filter out STATUS_INVALID_HANDLE aka EXCEPTION_INVALID_HANDLE
+void
+w32_close_handle(HANDLE handle)
+{
+    __try
+    {
+	(void) CloseHandle(handle);
+    }
+    __except(filterExceptions(GetExceptionCode(), GetExceptionInformation()))
+    {
+	TRACE(("error closing handle %#x\n", handle));
+    }
 }
 
 #ifdef __cplusplus

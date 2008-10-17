@@ -2,7 +2,7 @@
  * This file contains the command processing functions for a number of random
  * commands. There is no functional grouping here, for sure.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.320 2008/10/08 19:01:06 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.321 2008/10/15 20:40:00 tom Exp $
  *
  */
 
@@ -117,7 +117,7 @@ liststuff(const char *name,
 
     TRACE((T_CALLED
 	   "liststuff(name=%s, appendit=%d, func=%p, iarg=%d, vargp=%p)\n",
-	   TRACE_NULL(name), appendit, TYPECAST(void, func), iarg, (void *) vargp));
+	   TRACE_NULL(name), appendit, func, iarg, (void *) vargp));
 
     /* create the buffer list buffer   */
     bp = bfind(name, BFSCRTCH);

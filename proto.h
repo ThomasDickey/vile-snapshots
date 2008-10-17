@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.661 2008/10/10 00:07:47 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.663 2008/10/17 00:10:02 tom Exp $
  *
  */
 
@@ -1398,6 +1398,7 @@ extern int  stdin_data_available(void);
 extern void store_recent_file_or_folder(const char *path, int is_file);
 extern int  w32_add_write_acl(const char *filename, ULONG *old_access_mask);
 extern int  w32_CreateProcess(char *cmd, int no_wait);
+extern void w32_close_handle(HANDLE handle);
 extern int  w32_del_selection(int copy_to_clipboard);
 extern int  w32_glob_and_validate_dir(const char *inputdir, char *outputdir);
 extern void w32_keybrd_reopen(int pressret);

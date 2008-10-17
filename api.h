@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/api.h,v 1.13 2005/07/13 22:37:45 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/api.h,v 1.14 2008/10/15 21:01:34 tom Exp $
  */
 
 /*
@@ -30,7 +30,7 @@ typedef struct {
 	int         dot_changed;	/* DOT explicitly changed --
 					   implies that DOT should
 					   be propogated */
-	int	    ndel;		/* number of characters to delete upon
+	B_COUNT	    ndel;		/* number of characters to delete upon
 					   setup; related to the inplace_edit
 					   stuff */
 #if OPT_PERL
