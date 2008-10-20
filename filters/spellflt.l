@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/spellflt.l,v 1.38 2008/06/22 17:46:12 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/spellflt.l,v 1.39 2008/10/18 00:24:48 tom Exp $
  *
  * Filter to add vile "attribution" sequences to misspelled words.
  */
@@ -48,7 +48,7 @@ static void ChopWords(FILE *fp, char *text, int len);
 #ifdef filter_def		/* built-in filter? */
 #define HAVE_POPEN		/* we can fake it */
 static char lastdata[BUFFER_SIZE];
-static int lastsize;
+static B_COUNT lastsize;
 
 static FILE *
 pipe_open(const char *command)
@@ -68,13 +68,13 @@ static char *
 pipe_read(char *buffer, FILE *s)
 {
     char *result = buffer;
-    int len;
+    B_COUNT len;
     int done = 0;
 
     (void) s;
     do {
 	if (lastsize != 0) {
-	    int used = 0;
+	    B_COUNT used = 0;
 	    for (len = 0; len < lastsize; ++len) {
 		if (done) {
 		    lastdata[len - used] = lastdata[len];
@@ -171,13 +171,13 @@ ChopWords(FILE *fp, char *text, int len)
     char *base = text;
     char *attr;
     int next = len;
-    int save;
+    char save;
 
     /*
      * Write the whole "word", just in case the chopped flavor is not needed.
      */
     if (fp != 0) {
-	fwrite(text, sizeof(*text), len, fp);
+	fwrite(text, sizeof(*text), (size_t) len, fp);
 	fputc('\n', fp);
     } else {
 	attr = keyword_attr(text);
@@ -231,7 +231,7 @@ ChopWords(FILE *fp, char *text, int len)
 
 	if (fp != 0) {
 	    if (text != base || next != len) {
-		fwrite(text, sizeof(*text), next, fp);
+		fwrite(text, sizeof(*text), (size_t) next, fp);
 		fputc('\n', fp);
 	    }
 	} else {

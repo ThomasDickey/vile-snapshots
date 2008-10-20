@@ -1,7 +1,10 @@
 Changes for vile 9.7 (released ??? ??? ?? ????)
 
- 2008???? (f)
+ 20081019 (f)
 	> Tom Dickey:
+	+ add ".aspx" suffix to htmlmode.
+	+ improve keyword parsing by switching back to the original table if
+	  no parameter is given for ".table" directive.
 	+ catch invalid-handle exception for winvile to fix problem with
 	  spell-check.
 	+ improve incremental search by highlighting match if the extra-color
@@ -19,6 +22,9 @@ Changes for vile 9.7 (released ??? ??? ?? ????)
 	  colors for special buffers such as [Settings].
 	+ correct ifdef in main.c for platforms which have 'environ', but do
 	  not declare it.
+	+ add configure check for utf8 library, needed for some platforms to
+	  use iconv library.
+	+ update config.guess, config.sub
 
  20080928 (e)
 	> Tom Dickey:

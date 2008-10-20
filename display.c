@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.481 2008/10/15 18:43:09 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.482 2008/10/19 20:41:54 tom Exp $
  *
  */
 
@@ -377,7 +377,7 @@ freeVIDEO(VIDEO * vp)
 {
     if (vp != 0) {
 #if OPT_VIDEO_ATTRS
-	FreeIfNeeded(vp->v_attrs);
+	FreeIfNeeded(VideoAttr(vp));
 #endif
 	free((char *) vp);
     }
@@ -394,8 +394,8 @@ video_alloc(VIDEO ** vpp)
 	(void) memset((char *) vp, 0, sizeof(VIDEO) + need);
 
 #if OPT_VIDEO_ATTRS
-	vp->v_attrs = typecallocn(VIDEO_ATTR, (size_t) term.maxcols);
-	if (vp->v_attrs == 0) {
+	VideoAttr(vp) = typecallocn(VIDEO_ATTR, (size_t) term.maxcols);
+	if (VideoAttr(vp) == 0) {
 	    FreeAndNull(vp);
 	}
 #endif
@@ -4120,10 +4120,11 @@ bputc(int c)
 {
     int status;
 
-    if (c == '\n')
+    if (c == '\n') {
 	status = lnewline();
-    else
+    } else {
 	status = lins_bytes(1, c);
+    }
 
     return status;
 }

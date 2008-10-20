@@ -1,7 +1,7 @@
 /*
  * Main program and I/O for external vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filterio.c,v 1.40 2008/10/08 23:16:51 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filterio.c,v 1.41 2008/10/19 15:11:03 tom Exp $
  *
  */
 
@@ -388,15 +388,13 @@ main(int argc, char **argv)
     my_col = 0;
     my_line = 1;
 
+    flt_initialize(filter_def.filter_name);
+
     memset(flt_options, 0, sizeof(flt_options));
 
     /* get verbose option */
     (void) ProcessArgs(argc, argv, 0);
     verbose = FltOptions('v');
-
-    flt_make_symtab(filter_def.filter_name);
-
-    default_attr = strmalloc(NAME_KEYWORD);
 
     filter_def.InitFilter(1);
 

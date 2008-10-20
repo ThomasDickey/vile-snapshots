@@ -1,7 +1,7 @@
 /*
  * debugging support -- tom dickey.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.84 2008/10/08 19:00:16 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.85 2008/10/19 20:40:13 tom Exp $
  *
  */
 
@@ -934,7 +934,19 @@ trace_region(REGION * rp, BUFFER *bp)
 	    break;
 	lp = lforw(lp);
     }
-    Trace("total %ld vs %ld\n", (long) total, (long) rp->r_size);
+    Trace("total %ld vs %ld%s\n",
+	  (long) total, (long) rp->r_size,
+	  total != rp->r_size ? " - OOPS" : "");
+}
+
+void
+trace_attribs(BUFFER *bp, char *fn, int ln)
+{
+    AREGION *arp;
+    for (arp = bp->b_attribs; arp != 0; arp = arp->ar_next) {
+	Trace("%s@%d r_attr_id %d\n", fn, ln, arp->ar_region.r_attr_id);
+	trace_region(&(arp->ar_region), bp);
+    }
 }
 
 void

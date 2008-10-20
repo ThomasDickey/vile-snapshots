@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.112 2008/10/08 23:16:59 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.113 2008/10/19 15:06:41 tom Exp $
  */
 
 #ifndef FILTERS_H
@@ -195,6 +195,7 @@ extern void yyset_out (FILE * out_str);
 typedef struct _keyword KEYWORD;
 
 extern char *default_attr;
+extern char *default_table;
 extern int zero_or_more;
 extern int zero_or_all;
 extern int eqls_ch;
@@ -228,7 +229,7 @@ extern void flt_bfr_finish(void);
 extern void flt_free(char **p, unsigned *len);
 extern void flt_free_keywords(char *classname);
 extern void flt_free_symtab(void);
-extern void flt_initialize(void);
+extern void flt_initialize(char *classname);
 extern void flt_make_symtab(char *classname);
 extern void flt_read_keywords(char *classname);
 extern void insert_keyword(const char *ident, const char *attribute, int classflag);

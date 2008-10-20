@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.663 2008/10/17 00:10:02 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.665 2008/10/20 00:06:22 tom Exp $
  *
  */
 
@@ -1398,7 +1398,6 @@ extern int  stdin_data_available(void);
 extern void store_recent_file_or_folder(const char *path, int is_file);
 extern int  w32_add_write_acl(const char *filename, ULONG *old_access_mask);
 extern int  w32_CreateProcess(char *cmd, int no_wait);
-extern void w32_close_handle(HANDLE handle);
 extern int  w32_del_selection(int copy_to_clipboard);
 extern int  w32_glob_and_validate_dir(const char *inputdir, char *outputdir);
 extern void w32_keybrd_reopen(int pressret);
@@ -1414,6 +1413,13 @@ extern void winvile_cleanup(void);
 extern int  winvile_cursor(int visible, int queue_change);
 extern int  winvile_cursor_state(int visible, int queue_change);
 extern void winvile_start(void);
+
+/*
+ * DECLARE_HANDLE is defined in WinNT.h, where HANDLE is typedef'd.
+ */
+#ifdef DECLARE_HANDLE
+extern void w32_close_handle(HANDLE handle);
+#endif
 
 /*
  * These depend on HKEY:
@@ -1494,8 +1500,8 @@ extern BUFFER * pop_fake_win(WINDOW *oldwp, BUFFER *oldbp);
 #endif
 
 #if OPT_PERL
-extern ULONG win2id (WINDOW *wp);
-extern WINDOW * id2win (ULONG id);
+extern int win2id (WINDOW *wp);
+extern WINDOW * id2win (int id);
 extern WINDOW * index2win (int idx);
 #endif
 

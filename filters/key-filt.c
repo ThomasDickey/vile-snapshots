@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/key-filt.c,v 1.41 2008/06/29 17:39:14 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/key-filt.c,v 1.42 2008/10/19 15:14:21 tom Exp $
  *
  * Filter to add vile "attribution" sequences to a vile keyword file.  It's
  * done best in C because the delimiters may change as a result of processing
@@ -11,6 +11,8 @@
 #define QUOTE '\''
 
 DefineOptFilter("key", "c");
+
+#define VERBOSE(level,params)	if (FltOptions('v') >= level) mlforce params
 
 static char *Action_attr;
 static char *Comment_attr;
@@ -237,6 +239,7 @@ ExecDefault(char *param)
     char *attr = Literal_attr;
     int save = *s;
 
+    VERBOSE(1, ("ExecDefault(%s)\n", param));
     *s = 0;
     if (!*t)
 	t = NAME_KEYWORD;
@@ -244,8 +247,10 @@ ExecDefault(char *param)
 	free(default_attr);
 	default_attr = strmalloc(t);
     }
-    if (FltOptions('c'))
+    if (FltOptions('c')) {
 	attr = actual_color(t, -1, 1);
+	VERBOSE(2, ("actual_color(%s) = %s\n", t, attr));
+    }
     *s = save;
     flt_puts(param, strlen(param), attr);
 }
@@ -296,14 +301,19 @@ ExecTable(char *param)
 {
     char *t;
 
+    VERBOSE(1, ("ExecTable(%s)\n", param));
     if (FltOptions('c')) {
 	t = skip_ident(param);
 	if (*skip_blanks(t) == '\0') {
 	    int save = *t;
 
 	    *t = 0;
-	    flt_make_symtab(param);
-	    flt_read_keywords(MY_NAME);
+	    if (*param) {
+		flt_make_symtab(param);
+		flt_read_keywords(MY_NAME);
+	    } else {
+		set_symbol_table(default_table);
+	    }
 	    *t = save;
 	}
     }
@@ -342,6 +352,7 @@ parse_directive(char *line)
     unsigned n, len;
     char *s;
 
+    VERBOSE(1, ("parse_directive(%s)\n", line));
     if (*(s = skip_blanks(line)) == meta_ch) {
 	s = skip_blanks(s + 1);
 	if ((len = (skip_ident(s) - s)) != 0) {

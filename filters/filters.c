@@ -1,7 +1,7 @@
 /*
  * Common utility functions for vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.124 2008/07/14 22:06:11 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.125 2008/10/19 15:13:33 tom Exp $
  *
  */
 
@@ -59,6 +59,7 @@ struct _classes {
 #endif
 };
 
+char *default_table;
 char *default_attr;
 int zero_or_more = '*';		/* zero or more of the following */
 int zero_or_all = '?';		/* zero or all of the following */
@@ -255,8 +256,12 @@ ExecSource(char *param)
 static void
 ExecTable(char *param)
 {
-    flt_make_symtab(param);
-    flt_read_keywords(MY_NAME);	/* provide default values for this table */
+    if (*param) {
+	flt_make_symtab(param);
+	flt_read_keywords(MY_NAME);	/* provide default values for this table */
+    } else {
+	set_symbol_table(default_table);
+    }
 }
 
 static KEYWORD *
@@ -308,7 +313,7 @@ Free(char *ptr)
  * hides them.
  */
 static FILE *
-OpenKeywords(char *classname)
+OpenKeywords(char *table_name)
 {
 #define OPEN_IT(p) if ((fp = fopen(p, "r")) != 0) { \
 			VERBOSE(1,("Opened %s", p)); return fp; } else { \
@@ -322,13 +327,13 @@ OpenKeywords(char *classname)
     unsigned need;
     char myLeaf[20];
 
-    need = sizeof(suffix) + strlen(classname) + 2;
+    need = sizeof(suffix) + strlen(table_name) + 2;
     str_keyword_file = do_alloc(str_keyword_file, need, &len_keyword_file);
     if (str_keyword_file == 0) {
 	CannotAllocate("OpenKeywords");
 	return 0;
     }
-    sprintf(str_keyword_file, "%s%s", classname, suffix);
+    sprintf(str_keyword_file, "%s%s", table_name, suffix);
 
     if (strchr(str_keyword_file, PATHSEP) != 0) {
 	OPEN_IT(str_keyword_file);
@@ -551,7 +556,7 @@ flt_free(char **p, unsigned *len)
 }
 
 void
-flt_free_keywords(char *classname)
+flt_free_keywords(char *table_name)
 {
     CLASS *p, *q;
 #if !USE_TSEARCH
@@ -559,9 +564,9 @@ flt_free_keywords(char *classname)
     int i;
 #endif
 
-    VERBOSE(1, ("flt_free_keywords(%s)", classname));
+    VERBOSE(1, ("flt_free_keywords(%s)", table_name));
     for (p = classes, q = 0; p != 0; q = p, p = p->next) {
-	if (!strcmp(classname, p->name)) {
+	if (!strcmp(table_name, p->name)) {
 #if USE_TSEARCH
 	    flt_tdestroy(p->data, free_node);
 #else
@@ -601,8 +606,12 @@ flt_free_symtab(void)
  * as m4 to be able to restart to a known state.
  */
 void
-flt_initialize(void)
+flt_initialize(char *table_name)
 {
+    if (default_table != 0)
+	free(default_table);
+    default_table = strmalloc(table_name);
+
     if (default_attr != 0)
 	free(default_attr);
     default_attr = strmalloc(NAME_KEYWORD);
@@ -614,12 +623,16 @@ flt_initialize(void)
     FltOptions('v') = 0;
 
     flt_free_symtab();
+    flt_make_symtab(table_name);
 }
 
 void
-flt_make_symtab(char *classname)
+flt_make_symtab(char *table_name)
 {
-    if (!set_symbol_table(classname)) {
+    if (*table_name == '\0')
+	table_name = default_table;
+
+    if (!set_symbol_table(table_name)) {
 	CLASS *p;
 
 	if ((p = typecallocn(CLASS, 1)) == 0) {
@@ -627,7 +640,7 @@ flt_make_symtab(char *classname)
 	    return;
 	}
 
-	p->name = strmalloc(classname);
+	p->name = strmalloc(table_name);
 	if (p->name == 0) {
 	    free(p);
 	    CannotAllocate("flt_make_symtab");
@@ -648,7 +661,7 @@ flt_make_symtab(char *classname)
 	my_table = p->data;
 	current_class = p;
 
-	VERBOSE(1, ("flt_make_symtab(%s)", classname));
+	VERBOSE(1, ("flt_make_symtab(%s)", table_name));
 
 	/*
 	 * Mark all of the standard predefined classes when we first create a
@@ -671,15 +684,15 @@ flt_make_symtab(char *classname)
 }
 
 void
-flt_read_keywords(char *classname)
+flt_read_keywords(char *table_name)
 {
     FILE *kwfile;
     char *line = 0;
     char *name;
     unsigned line_len = 0;
 
-    VERBOSE(1, ("flt_read_keywords(%s)", classname));
-    if ((kwfile = OpenKeywords(classname)) != NULL) {
+    VERBOSE(1, ("flt_read_keywords(%s)", table_name));
+    if ((kwfile = OpenKeywords(table_name)) != NULL) {
 	int linenum = 0;
 	while (readline(kwfile, &line, &line_len) != 0) {
 
@@ -1038,14 +1051,14 @@ readline(FILE *fp, char **ptr, unsigned *len)
 }
 
 int
-set_symbol_table(const char *classname)
+set_symbol_table(const char *table_name)
 {
     CLASS *p;
     for (p = classes; p != 0; p = p->next) {
-	if (!strcmp(classname, p->name)) {
+	if (!strcmp(table_name, p->name)) {
 	    my_table = p->data;
 	    current_class = p;
-	    VERBOSE(3, ("set_symbol_table:%s", classname));
+	    VERBOSE(3, ("set_symbol_table:%s", table_name));
 	    return 1;
 	}
     }

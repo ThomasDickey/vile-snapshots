@@ -1,7 +1,7 @@
 /*
  * Main program and I/O for external vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/RCS/builtflt.c,v 1.64 2008/10/08 23:09:01 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/builtflt.c,v 1.65 2008/10/19 15:09:57 tom Exp $
  *
  */
 
@@ -493,8 +493,7 @@ flt_start(char *name)
 	tb_init(&gets_data, 0);
 
 	init_flt_error();
-	flt_initialize();
-	flt_make_symtab(current_filter->filter_name);
+	flt_initialize(current_filter->filter_name);
 
 	current_filter->InitFilter(1);
 

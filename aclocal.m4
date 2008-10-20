@@ -1,6 +1,6 @@
 dnl vile's local definitions for autoconf.
 dnl
-dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.186 2008/08/22 20:35:07 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.187 2008/10/17 23:39:27 tom Exp $
 dnl
 dnl ---------------------------------------------------------------------------
 dnl ---------------------------------------------------------------------------
@@ -2026,16 +2026,18 @@ dnl Construct a search-list for a nonstandard library-file
 AC_DEFUN([CF_LIBRARY_PATH],
 [CF_SUBDIR_PATH($1,$2,lib)])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_LIB_PREFIX version: 7 updated: 2001/01/12 01:23:48
+dnl CF_LIB_PREFIX version: 8 updated: 2008/09/13 11:34:16
 dnl -------------
 dnl Compute the library-prefix for the given host system
 dnl $1 = variable to set
 AC_DEFUN([CF_LIB_PREFIX],
 [
-	case $cf_cv_system_name in
-	OS/2*)	LIB_PREFIX=''     ;;
-	os2*)	LIB_PREFIX=''     ;;
-	*)	LIB_PREFIX='lib'  ;;
+	case $cf_cv_system_name in #(vi
+	OS/2*|os2*) #(vi
+        LIB_PREFIX=''
+        ;;
+	*)	LIB_PREFIX='lib'
+        ;;
 	esac
 ifelse($1,,,[$1=$LIB_PREFIX])
 	AC_SUBST(LIB_PREFIX)
@@ -3275,6 +3277,32 @@ dnl $1=uppercase($2)
 AC_DEFUN([CF_UPPER],
 [
 $1=`echo "$2" | sed y%abcdefghijklmnopqrstuvwxyz./-%ABCDEFGHIJKLMNOPQRSTUVWXYZ___%`
+])dnl
+dnl ---------------------------------------------------------------------------
+dnl CF_UTF8_LIB version: 5 updated: 2008/10/17 19:37:52
+dnl -----------
+dnl Check for multibyte support, and if not found, utf8 compatibility library
+AC_DEFUN([CF_UTF8_LIB],
+[
+AC_CACHE_CHECK(for multibyte character support,cf_cv_utf8_lib,[
+	cf_save_LIBS="$LIBS"
+	AC_TRY_LINK([
+#include <stdlib.h>],[putwc(0,0);],
+	[cf_cv_utf8_lib=yes],
+	[CF_FIND_LINKAGE([
+#include <libutf8.h>],[putwc(0,0);],utf8,
+		[cf_cv_utf8_lib=add-on],
+		[cf_cv_utf8_lib=no])
+])])
+
+# HAVE_LIBUTF8_H is used by ncurses if curses.h is shared between
+# ncurses/ncursesw:
+if test "$cf_cv_utf8_lib" = "add-on" ; then
+	AC_DEFINE(HAVE_LIBUTF8_H)
+	CF_ADD_INCDIR($cf_cv_header_path_utf8)
+	CF_ADD_LIBDIR($cf_cv_library_path_utf8)
+	LIBS="-lutf8 $LIBS"
+fi
 ])dnl
 dnl ---------------------------------------------------------------------------
 dnl CF_VERBOSE version: 3 updated: 2007/07/29 09:55:12

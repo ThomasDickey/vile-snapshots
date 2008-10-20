@@ -1592,7 +1592,7 @@ Editor modes
 		detail.  (B)
 
 	mcolor	Specify the color of the modelines, normally in reverse
-		video. (U)
+		video.  See also "Setting Extra Colors". (U)
 
 	meta-insert-bindings (mib)  Controls behavior of 8-bit characters
 		during insert.  Normally, key-bindings are only operational
@@ -4493,6 +4493,38 @@ Syntax coloring
 
 
 
+Setting Extra Colors
+--------------------
+	Syntax highlighting applies to buffers which are loaded from files.
+	vile can also generate buffers to show its internal state.  Those
+	can be colored using the "extra colors" feature.  The feature is
+	called "extra colors" both because these are colors not set via
+	syntax filters, but also because it allows color and attribute
+	combinations not available via the normal mode setting mechanism.
+
+	The show-extra-colors command shows the types of things that can
+	be colored, along with their current state, e.g.,
+
+	   enum             default
+	   hypertext        default
+	   isearch          default
+	   modeline         reverse
+	   number           default
+	   regex            default
+	   string           default
+
+	The set-extra-color command sets the colors.   It prompts for the
+	name of a type, followed by a combination of color and attributes.
+	Use '+' to join the color and attributes.  These are possible commands
+	for setting isearch (the highlighting used for incremental search):
+
+		set-extra-color isearch reverse
+		set-extra-color isearch reverse+blue
+		set-extra-color isearch blue+reverse
+		set-extra-color isearch blue+reverse+underline
+		set-extra-color isearch red
+
+
 Majormodes
 ----------
 	Prior to studying majormodes, it helps to be familiar with the
@@ -6477,4 +6509,4 @@ Problems
 
 Copyright 1995-2007,2008 by Paul Fox, Thomas Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.658 2008/10/06 23:12:37 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.659 2008/10/19 21:53:35 tom Exp $

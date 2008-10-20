@@ -1,7 +1,7 @@
 /*
  * debugging support -- tom dickey.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/trace.h,v 1.32 2008/09/28 21:44:49 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/trace.h,v 1.33 2008/10/19 18:36:07 tom Exp $
  *
  */
 #ifndef	_trace_h
@@ -77,6 +77,7 @@ extern	char *	str_visible0 (const char *p);
 extern	char *	tb_visible (TBUFF *p);
 extern	char *	visible_buff (const char *p, int length, int eos);
 extern	char *	visible_video_text (const VIDEO_TEXT *p, int length);
+extern	void	trace_attribs (BUFFER *p, char *fn, int ln);
 extern	void	trace_buffer (BUFFER *p);
 extern	void	trace_ctype (CHARTYPE *table, int first, int last);
 extern	void	trace_line (LINE *p, BUFFER *q);
