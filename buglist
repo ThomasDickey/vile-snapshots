@@ -3,7 +3,7 @@
 ------------------------
 vile bug/enhancement/wish list (mostly wishes ;-)
 ------------------------
-$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.412 2008/07/12 15:16:33 tom Exp $
+$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.413 2008/10/19 21:43:00 tom Exp $
 ----------------------
 	(E means enhancement, L,M,H are low, medium, high priority)
 
@@ -1632,3 +1632,9 @@ environment variables.
 The non-ASCII function key bindings in DJGPP do not work with the locale
 configuration since the codes above 127 are filtered out, e.g., "\0\215"
 becomes "\0".
+
+-- 08-10-19 (tom)
+mcolor shows only one part of the modeline extended-colors, due to limitations
+of the normal color enumeration.
+
+xvile doesn't allow modeline to be colored using extended-colors.

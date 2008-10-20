@@ -10,7 +10,7 @@
  * editing must be being displayed, which means that "b_nwnd" is non zero,
  * which means that the dot and mark values in the buffer headers are nonsense.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.197 2008/10/07 22:53:38 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.198 2008/10/19 20:36:10 tom Exp $
  *
  */
 
@@ -234,21 +234,20 @@ lremove(BUFFER *bp, LINE *lp)
     {
 	AREGION *ap = bp->b_attribs;
 	while (ap != NULL) {
+	    AREGION *next = ap->ar_next;
 	    int samestart = (ap->ar_region.r_orig.l == lp);
 	    int sameend = (ap->ar_region.r_end.l == lp);
+
 	    if (samestart && sameend) {
 		AREGION *tofree = ap;
-		ap = ap->ar_next;
 		free_attrib(bp, tofree);
 	    } else if (samestart) {
 		ap->ar_region.r_orig = mark_after;
-		ap = ap->ar_next;
 	    } else if (sameend) {
 		ap->ar_region.r_end.l = lback(lp);
 		ap->ar_region.r_end.o = llength(ap->ar_region.r_end.l);
-		ap = ap->ar_next;
-	    } else
-		ap = ap->ar_next;
+	    }
+	    ap = next;
 	}
     }
 #endif /* OPT_VIDEO_ATTRS */
@@ -644,10 +643,12 @@ lnewline(void)
 	    }
 	    do_mark_iterate(mp, {
 		if (mp->l == lp1) {
-		    if (mp->o < doto)
+		    if ((mp->o < doto) ||
+			(doto == llength(lp2) && llength(lp1) == 0)) {
 			mp->l = lp2;
-		    else
+		    } else {
 			mp->o -= doto;
+		    }
 		}
 	    });
 	    chg_buff(curbp, WFHARD | WFINS);

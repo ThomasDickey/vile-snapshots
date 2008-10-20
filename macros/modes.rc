@@ -1,4 +1,4 @@
-; $Id: modes.rc,v 1.82 2008/08/31 13:47:10 tom Exp $
+; $Id: modes.rc,v 1.83 2008/10/19 21:40:04 tom Exp $
 ; majormodes in this file are ordered alphabetically for convenience - the
 ; precedence used by vile is strictly alphabetic, counting case.  Use the
 ; before and after qualifiers to override the precedence.
@@ -353,7 +353,7 @@ define-mode haskell
 ; Inherit the C-style fences for JavaScript, but add new ones for HTML
 define-mode html
 ~with define-submode html
-	suffixes	'\.\(html\|htm\)$'
+	suffixes	'\.\(html\|htm\|aspx\)$'
 	pre		'^\s*\(<html>\|<script>\|<!doctype\|<!--\)'
 	fence-pairs	'<>()[]{}'
 	ignorecase

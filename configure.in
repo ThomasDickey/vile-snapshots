@@ -1,12 +1,12 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_REVISION($Revision: 1.248 $)
+AC_REVISION($Revision: 1.249 $)
 AC_PREREQ(2.13.20030927)
 rm -f config.cache
 
 ### Use "configure -with-screen" to override the default configuration, which is
 ### termcap-based on unix systems.
 
-dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.248 2008/08/22 20:26:13 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.249 2008/10/17 20:59:43 tom Exp $
 
 define(MAKELIST, sh $srcdir/filters/makelist.sh $srcdir/filters/genmake.mak)
 
@@ -491,6 +491,7 @@ case "$screen" in
 		SCREEN=curses
 		TARGET=vile
 		AC_DEFINE(DISP_CURSES)
+		CF_UTF8_LIB
 		CF_NCURSES_CONFIG(ncursesw)
 	;;
 	[[Dd]][[Oo]][[Ss]])
