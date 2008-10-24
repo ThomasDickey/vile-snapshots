@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.672 2008/10/15 22:37:23 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.673 2008/10/22 20:24:39 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -1174,6 +1174,8 @@ typedef struct {
 typedef enum {
 	bom_NONE = 0
 	, bom_UTF8
+	, bom_LE_ASSUMED
+	, bom_BE_ASSUMED
 	, bom_UTF16LE
 	, bom_UTF16BE
 	, bom_UTF32LE
