@@ -11,7 +11,7 @@
 #
 # The modes are table entries in the BUFFER and WINDOW structures.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.279 2008/10/14 20:53:45 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.280 2008/10/22 20:24:16 tom Exp $
 #
 #
 # Mode-table entries.  Capitalized letters are used for abbreviations.
@@ -425,6 +425,8 @@ string
 "auto"		ENUM_UNKNOWN
 "none"		bom_NONE
 "utf-8"		bom_UTF8
+"le-assumed"	bom_LE_ASSUMED
+"be-assumed"	bom_BE_ASSUMED
 "utf-16le"	bom_UTF16LE
 "utf-16be"	bom_UTF16BE
 "utf-32le"	bom_UTF32LE

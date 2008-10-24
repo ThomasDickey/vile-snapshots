@@ -5,7 +5,7 @@
  * reading and writing of the disk are
  * in "fileio.c".
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.417 2008/10/08 18:59:09 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.418 2008/10/22 19:49:48 tom Exp $
  */
 
 #include "estruct.h"
@@ -2094,7 +2094,16 @@ write_encoded_text(BUFFER *bp, const char *buf, int nbuf, const char *ending)
 
     if (b_val(bp, VAL_FILE_ENCODING) > enc_UTF8) {
 	int len = encode_charset(bp, buf, nbuf, ending);
-	rc = ffputline(bp->encode_utf_buf, len, 0);
+	/*
+	 * UTF-16 and UTF-32 buffers are generally bigger than UTF-8.
+	 */
+	if (nbuf > (2 * len)) {
+	    rc = FIOABRT;
+	    mlforce("Error writing buffer as %s (encoding error)!",
+		    encoding2s(b_val(bp, VAL_FILE_ENCODING)));
+	} else {
+	    rc = ffputline(bp->encode_utf_buf, len, 0);
+	}
     } else {
 	rc = ffputline(buf, nbuf, ending);
     }
@@ -2120,7 +2129,8 @@ actually_write(REGION * rp, char *fn, int msgf, BUFFER *bp, int forced, int enco
     int whole_file = ((rp->r_orig.l == lforw(buf_head(bp)))
 		      && (rp->r_end.l == buf_head(bp)));
 
-    TRACE((T_CALLED " actually_write\n"));
+    TRACE((T_CALLED " actually_write %s\n",
+	   encoded ? "encoded" : "not encoded"));
 #if OPT_HOOKS
     if (run_a_hook(&writehook)) {
 	/*

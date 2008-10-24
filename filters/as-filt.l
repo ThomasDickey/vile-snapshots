@@ -3,7 +3,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/as-filt.l,v 1.8 2008/01/12 17:21:27 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/as-filt.l,v 1.9 2008/10/21 21:28:26 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of assembler files.
  */
@@ -24,7 +24,7 @@ static char * expect_attr(char *name);
 
 %}
 
-SSTRING		\'([^']|\n)*\'
+SSTRING		\'[^'\r\n]*\'
 
 NAME		[[:alnum:]_.$]
 
@@ -47,11 +47,11 @@ FORMAT		"%"[.*[:digit:]l#+-]*[cdeEfFgGisuxX]
 
 <NORMAL>"^#.*"		{ WriteToken(Prepro_attr); }
 
-<NORMAL>\\.		|
+<NORMAL>\\[^\r\n]	|
 <NORMAL>{SSTRING}	{ WriteToken(String_attr); }
 <NORMAL>\"		{ BeginQuote(QUOTED, String_attr); }
 
-<QUOTED>\\.		{ flt_bfr_embed(yytext, yyleng, Action_attr); }
+<QUOTED>\\[^\r\n]	{ flt_bfr_embed(yytext, yyleng, Action_attr); }
 <QUOTED>{FORMAT}	{ flt_bfr_embed(yytext, yyleng, Number_attr); }
 <QUOTED>[^%\r\n"\\]+	{ flt_bfr_append(yytext, yyleng); }
 <QUOTED>"%%"		{ flt_bfr_append(yytext, yyleng); }

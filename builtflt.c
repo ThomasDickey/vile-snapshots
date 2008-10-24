@@ -1,7 +1,7 @@
 /*
  * Main program and I/O for external vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/RCS/builtflt.c,v 1.65 2008/10/19 15:09:57 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/builtflt.c,v 1.66 2008/10/21 21:08:46 tom Exp $
  *
  */
 
@@ -420,16 +420,18 @@ flt_puts(const char *string, int length, const char *marker)
     char *last;
     int count;
 
-    if (length > 0) {
+    if (length > 0 && marker != 0 && *marker != EOS && *marker != 'N') {
+
 	save_mark(TRUE);
-	if (marker != 0 && *marker != 0 && *marker != 'N') {
-	    vl_strncpy(bfr2, marker, sizeof(bfr1) - 10);
-	    sprintf(bfr1, "%c%d%s:", CTL_A, length, bfr2);
-	    last = bfr1 + strlen(bfr1);
-	    decode_attribute(bfr1, last - bfr1, 0, &count);
-	}
+
+	vl_strncpy(bfr2, marker, sizeof(bfr1) - 10);
+	sprintf(bfr1, "%c%d%s:", CTL_A, length, bfr2);
+	last = bfr1 + strlen(bfr1);
+	decode_attribute(bfr1, last - bfr1, 0, &count);
+
 	flt_echo(string, length);
 	save_mark(FALSE);
+
 	if (apply_attribute()) {
 	    REGIONSHAPE save_shape = regionshape;
 	    regionshape = rgn_EXACT;
@@ -437,6 +439,8 @@ flt_puts(const char *string, int length, const char *marker)
 	    videoattribute = 0;
 	    regionshape = save_shape;
 	}
+    } else {
+	flt_echo(string, length);
     }
 }
 

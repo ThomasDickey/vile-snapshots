@@ -1305,7 +1305,31 @@ Editor modes
 		below, under DOS specifics.  (U)
 
 	byteorder-mark (bom)  is a prefix used to distinguish different types
-		of UTF-encoding.  (B)
+		of UTF-encoding.  It must be one of the following values:
+			"auto"
+			"none" (default)
+			"utf-8"
+			"le-assumed"
+			"be-assumed"
+			"utf-16le"
+			"utf-16be"
+			"utf-32le"
+			"utf-32be"
+
+		The "auto" setting tells vile to set the buffer's
+		byteorder-mark value based on whatever the file-encoding
+		happens to be.
+
+		The default value is "none", which is slightly different,
+		telling it to accept byteorder-mark values as in "auto", but
+		not to write them for buffers which have no explicit byteorder
+		mark set.
+		
+		The "utf-XXX" values are explicit settings, which override
+		the auto/none logic.  Use "le-assumed" or "be-assumed" for
+		cases where the platform's preferred byteorder is known,
+		and where byteorder marks may be absent from files, e.g.,
+		with Windows.  (B)
 
 	bufname-expr Regular expression used for parsing of $bufname, subject
 		to the cursor-tokens mode.  If the expression is inactive, use
@@ -6509,4 +6533,4 @@ Problems
 
 Copyright 1995-2007,2008 by Paul Fox, Thomas Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.659 2008/10/19 21:53:35 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.660 2008/10/23 00:08:52 tom Exp $

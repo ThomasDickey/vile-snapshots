@@ -1,5 +1,5 @@
 /*
- * $Id: charsets.c,v 1.56 2008/05/06 22:46:32 tom Exp $
+ * $Id: charsets.c,v 1.60 2008/10/23 23:31:20 tom Exp $
  *
  * see
  http://msdn.microsoft.com/library/default.asp?url=/library/en-us/intl/unicode_42jv.asp
@@ -240,6 +240,66 @@ get_bom(BUFFER *bp)
     return rc;
 }
 
+/*
+ * If we read a file without a byteorder-mark, it is using one of the
+ * le-assumed or be-assumed values for the corresponding mode.  See what the
+ * file-encoding is, and choose a specific byteorder-mark, needed when we
+ * write the data to a file.
+ */
+static BOM_CODES
+inferred_bom(BUFFER *bp, const BOM_TABLE * mp)
+{
+    BOM_CODES result = mp->code;
+
+    switch (result) {
+    case bom_LE_ASSUMED:
+	switch (b_val(bp, VAL_FILE_ENCODING)) {
+	case enc_UTF16:
+	    result = bom_UTF16LE;
+	    break;
+	case enc_UTF32:
+	    result = bom_UTF32LE;
+	    break;
+	default:
+	    result = bom_NONE;
+	    break;
+	}
+	break;
+    case bom_BE_ASSUMED:
+	switch (b_val(bp, VAL_FILE_ENCODING)) {
+	case enc_UTF16:
+	    result = bom_UTF16BE;
+	    break;
+	case enc_UTF32:
+	    result = bom_UTF32BE;
+	    break;
+	default:
+	    result = bom_NONE;
+	    break;
+	}
+	break;
+    case bom_NONE:
+	switch (b_val(bp, VAL_FILE_ENCODING)) {
+	case enc_UTF16:
+	    result = bom_UTF16LE;
+	    break;
+	case enc_UTF32:
+	    result = bom_UTF32LE;
+	    break;
+	}
+	break;
+    default:
+	break;
+    }
+#if OPT_TRACE > 1
+    if (result != mp->code)
+	TRACE2(("inferred_bom(%s) %s\n",
+		byteorder2s(mp->code),
+		byteorder2s(result)));
+#endif
+    return result;
+}
+
 static int
 line_has_mark(const BOM_TABLE * mp, UCHAR * buffer, B_COUNT length)
 {
@@ -260,6 +320,11 @@ dump_as_utfXX(BUFFER *bp, const char *buf, int nbuf, const char *ending)
     int rc = 0;
     const BOM_TABLE *mp = find_mark_info(get_bom(bp));
 
+    if (mp->size == 0 && b_val(bp, VAL_FILE_ENCODING) > enc_UTF8) {
+	BOM_CODES check = inferred_bom(bp, mp);
+	mp = find_mark_info(check);
+    }
+
     if (mp != 0 && mp->size > 1) {
 	unsigned j = 0;
 	unsigned k = 0;
@@ -272,12 +337,16 @@ dump_as_utfXX(BUFFER *bp, const char *buf, int nbuf, const char *ending)
 	    int skip = vl_conv_to_utf32(bp->decode_utf_buf + k++,
 					buf + j,
 					nbuf - j);
+	    if (skip == 0)
+		goto finish;
 	    j += skip;
 	}
 	while (*ending != 0) {
-	    (void) vl_conv_to_utf32(bp->decode_utf_buf + k++,
-				    ending++,
-				    lend--);
+	    int skip = vl_conv_to_utf32(bp->decode_utf_buf + k++,
+					ending++,
+					lend--);
+	    if (skip == 0)
+		goto finish;
 	}
 	need = k;
 
@@ -286,6 +355,10 @@ dump_as_utfXX(BUFFER *bp, const char *buf, int nbuf, const char *ending)
 	    case bom_NONE:
 		/* FALLTHRU */
 	    case bom_UTF8:
+		/* FALLTHRU */
+	    case bom_LE_ASSUMED:
+		/* FALLTHRU */
+	    case bom_BE_ASSUMED:
 		/* ignored */
 		break;
 	    case bom_UTF16LE:
@@ -312,8 +385,33 @@ dump_as_utfXX(BUFFER *bp, const char *buf, int nbuf, const char *ending)
 	}
 	rc = j;
     }
+  finish:
     return rc;
 #undef BYTE_OF
+}
+
+static void
+set_byteorder_mark(BUFFER *bp, int value)
+{
+    if (value != ENUM_UNKNOWN
+	&& value != global_b_val(VAL_BYTEORDER_MARK)) {
+	make_local_b_val(bp, VAL_BYTEORDER_MARK);
+	set_b_val(bp, VAL_BYTEORDER_MARK, value);
+    }
+}
+
+static void
+set_encoding(BUFFER *bp, int value)
+{
+    if (value != ENUM_UNKNOWN
+	&& value != global_b_val(VAL_FILE_ENCODING)) {
+	make_local_b_val(bp, VAL_FILE_ENCODING);
+	set_b_val(bp, VAL_FILE_ENCODING, value);
+
+	TRACE(("set_encoding for '%s' to %s\n",
+	       bp->b_bname,
+	       encoding2s(b_val(bp, VAL_FILE_ENCODING))));
+    }
 }
 
 static int
@@ -323,6 +421,11 @@ load_as_utf8(BUFFER *bp, LINE *lp)
     int rc = FALSE;
     const BOM_TABLE *mp = find_mark_info(get_bom(bp));
 
+    if (mp->size == 0 && b_val(bp, VAL_FILE_ENCODING) > enc_UTF8) {
+	BOM_CODES check = inferred_bom(bp, mp);
+	if ((mp = find_mark_info(check)) != 0)
+	    set_byteorder_mark(bp, mp->code);
+    }
     if (mp != 0 && mp->size > 1) {
 	int pass;
 	unsigned j, k;
@@ -340,10 +443,14 @@ load_as_utf8(BUFFER *bp, LINE *lp)
 			++j;	/* see remove_crlf_nulls() */
 			continue;
 		    }
-		    switch (mp->code) {
+		    switch (inferred_bom(bp, mp)) {
 		    case bom_NONE:
 			/* FALLTHRU */
 		    case bom_UTF8:
+			/* FALLTHRU */
+		    case bom_LE_ASSUMED:
+			/* FALLTHRU */
+		    case bom_BE_ASSUMED:
 			/* ignored */
 			break;
 		    case bom_UTF16LE:
@@ -430,10 +537,14 @@ remove_crlf_nulls(BUFFER *bp, UCHAR * buffer, B_COUNT * length)
     memset(mark_cr, 0, sizeof(mark_cr));
     memset(mark_lf, 0, sizeof(mark_lf));
 
-    switch (mp->code) {
+    switch (inferred_bom(bp, mp)) {
     case bom_NONE:
 	/* FALLTHRU */
     case bom_UTF8:
+	/* FALLTHRU */
+    case bom_LE_ASSUMED:
+	/* FALLTHRU */
+    case bom_BE_ASSUMED:
 	/* ignored */
 	break;
     case bom_UTF16LE:
@@ -475,7 +586,7 @@ remove_crlf_nulls(BUFFER *bp, UCHAR * buffer, B_COUNT * length)
 	    }
 	    src += marklen;
 	}
-	*length = dst - 1;
+	*length = dst;
     }
 }
 
@@ -527,30 +638,6 @@ riddled_buffer(const BOM_TABLE * mp, UCHAR * buffer, B_COUNT length)
 	TRACE(("...%ld/%ld ->%d%%\n", total, length, result));
     }
     return result;
-}
-
-static void
-set_byteorder_mark(BUFFER *bp, int value)
-{
-    if (value != ENUM_UNKNOWN
-	&& value != global_b_val(VAL_BYTEORDER_MARK)) {
-	make_local_b_val(bp, VAL_BYTEORDER_MARK);
-	set_b_val(bp, VAL_BYTEORDER_MARK, value);
-    }
-}
-
-static void
-set_encoding(BUFFER *bp, int value)
-{
-    if (value != ENUM_UNKNOWN
-	&& value != global_b_val(VAL_FILE_ENCODING)) {
-	make_local_b_val(bp, VAL_FILE_ENCODING);
-	set_b_val(bp, VAL_FILE_ENCODING, value);
-
-	TRACE(("set_encoding for '%s' to %s\n",
-	       bp->b_bname,
-	       encoding2s(b_val(bp, VAL_FILE_ENCODING))));
-    }
 }
 
 static void
