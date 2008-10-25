@@ -1,7 +1,24 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/fltstack.h,v 1.13 2008/01/13 22:51:56 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/fltstack.h,v 1.14 2008/10/25 00:30:29 tom Exp $
  * A simple stack for lex states
  */
+
+/*
+ * Redefine since filters.h uses BEGIN(), which confuses our notion of current
+ * state.
+ */
+#undef BeginQuote
+#define BeginQuote(state, attr) \
+			new_state(state); \
+			flt_bfr_begin(attr); \
+			flt_bfr_append(yytext, yyleng)
+
+#undef FinishQuote
+#define FinishQuote(state) \
+			flt_bfr_append(yytext, yyleng);\
+			flt_bfr_finish();\
+			new_state(state)
+
 typedef struct {
     int state;
 #ifdef FLTSTACK_EXTRA

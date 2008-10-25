@@ -2,6 +2,8 @@ Changes for vile 9.7 (released ??? ??? ?? ????)
 
  200810?? (g)
 	> Tom Dickey:
+	+ improve parsing of "<%" "%>" markers in htmlfilt.l, which must be
+	  recognized anywhere - not just outside tags.
 	+ implement extra-colors for hypertext commands, e.g., as used in the
 	  which-keywords macro.
 	+ improve loading of UTF-16 and UTF-32 when no byteorder-mark is

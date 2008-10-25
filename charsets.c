@@ -1,5 +1,5 @@
 /*
- * $Id: charsets.c,v 1.60 2008/10/23 23:31:20 tom Exp $
+ * $Id: charsets.c,v 1.61 2008/10/24 21:43:15 tom Exp $
  *
  * see
  http://msdn.microsoft.com/library/default.asp?url=/library/en-us/intl/unicode_42jv.asp
@@ -247,9 +247,9 @@ get_bom(BUFFER *bp)
  * write the data to a file.
  */
 static BOM_CODES
-inferred_bom(BUFFER *bp, const BOM_TABLE * mp)
+inferred_bom2(BUFFER *bp, BOM_CODES code)
 {
-    BOM_CODES result = mp->code;
+    BOM_CODES result = code;
 
     switch (result) {
     case bom_LE_ASSUMED:
@@ -292,12 +292,44 @@ inferred_bom(BUFFER *bp, const BOM_TABLE * mp)
 	break;
     }
 #if OPT_TRACE > 1
-    if (result != mp->code)
+    if (result != code)
 	TRACE2(("inferred_bom(%s) %s\n",
-		byteorder2s(mp->code),
+		byteorder2s(code),
 		byteorder2s(result)));
 #endif
     return result;
+}
+
+static BOM_CODES
+inferred_bom(BUFFER *bp, const BOM_TABLE * mp)
+{
+    return inferred_bom2(bp, mp->code);
+}
+
+/*
+ * If the buffer has no explicit byteorder-mark, but the encoding is UTF-16
+ * or UTF-32, we still need to know the assumed or implicit byteorder-mark.
+ *
+ * When reading the buffer, and no byteorder-mark is found for UTF-16/-32,
+ * we store an implied BOM in the buffer attributes, and set an assumed
+ * byteorder-mark that the user can see/modify.  If the assumed BOM is reset,
+ * e.g., to auto or none, we can still use the implied BOM, e.g., for writing
+ * the file.
+ */
+static const BOM_TABLE *
+find_mark_info2(BUFFER *bp)
+{
+    const BOM_TABLE *mp = find_mark_info(get_bom(bp));
+
+    if ((mp != 0) &&
+	(mp->size == 0) &&
+	(b_val(bp, VAL_FILE_ENCODING) > enc_UTF8)) {
+	mp = find_mark_info(inferred_bom(bp, mp));
+    } else if (mp == 0 &&
+	       (b_val(bp, VAL_FILE_ENCODING) > enc_UTF8)) {
+	mp = find_mark_info(inferred_bom2(bp, b_val(bp, VAL_BYTEORDER_MARK)));
+    }
+    return mp;
 }
 
 static int
@@ -318,12 +350,7 @@ dump_as_utfXX(BUFFER *bp, const char *buf, int nbuf, const char *ending)
 {
 #define BYTE_OF(k,n) (char) (bp->decode_utf_buf[k] >> ((n) * 8))
     int rc = 0;
-    const BOM_TABLE *mp = find_mark_info(get_bom(bp));
-
-    if (mp->size == 0 && b_val(bp, VAL_FILE_ENCODING) > enc_UTF8) {
-	BOM_CODES check = inferred_bom(bp, mp);
-	mp = find_mark_info(check);
-    }
+    const BOM_TABLE *mp = find_mark_info2(bp);
 
     if (mp != 0 && mp->size > 1) {
 	unsigned j = 0;
@@ -397,6 +424,10 @@ set_byteorder_mark(BUFFER *bp, int value)
 	&& value != global_b_val(VAL_BYTEORDER_MARK)) {
 	make_local_b_val(bp, VAL_BYTEORDER_MARK);
 	set_b_val(bp, VAL_BYTEORDER_MARK, value);
+
+	TRACE(("set_byteorder_mark for '%s' to %s\n",
+	       bp->b_bname,
+	       byteorder2s(b_val(bp, VAL_BYTEORDER_MARK))));
     }
 }
 
@@ -419,13 +450,8 @@ load_as_utf8(BUFFER *bp, LINE *lp)
 {
 #define CH(n) ((UCHAR)(lgetc(lp, n)))
     int rc = FALSE;
-    const BOM_TABLE *mp = find_mark_info(get_bom(bp));
+    const BOM_TABLE *mp = find_mark_info2(bp);
 
-    if (mp->size == 0 && b_val(bp, VAL_FILE_ENCODING) > enc_UTF8) {
-	BOM_CODES check = inferred_bom(bp, mp);
-	if ((mp = find_mark_info(check)) != 0)
-	    set_byteorder_mark(bp, mp->code);
-    }
     if (mp != 0 && mp->size > 1) {
 	int pass;
 	unsigned j, k;
@@ -529,64 +555,66 @@ load_as_utf8(BUFFER *bp, LINE *lp)
 static void
 remove_crlf_nulls(BUFFER *bp, UCHAR * buffer, B_COUNT * length)
 {
-    const BOM_TABLE *mp = find_mark_info(get_bom(bp));
+    const BOM_TABLE *mp = find_mark_info2(bp);
     UCHAR mark_cr[4];
     UCHAR mark_lf[4];
     unsigned marklen = 0;
 
-    memset(mark_cr, 0, sizeof(mark_cr));
-    memset(mark_lf, 0, sizeof(mark_lf));
+    if (mp != 0) {
+	memset(mark_cr, 0, sizeof(mark_cr));
+	memset(mark_lf, 0, sizeof(mark_lf));
 
-    switch (inferred_bom(bp, mp)) {
-    case bom_NONE:
-	/* FALLTHRU */
-    case bom_UTF8:
-	/* FALLTHRU */
-    case bom_LE_ASSUMED:
-	/* FALLTHRU */
-    case bom_BE_ASSUMED:
-	/* ignored */
-	break;
-    case bom_UTF16LE:
-	marklen = 2;
-	mark_cr[0] = '\r';
-	mark_lf[0] = '\n';
-	break;
-    case bom_UTF16BE:
-	marklen = 2;
-	mark_cr[1] = '\r';
-	mark_lf[1] = '\n';
-	break;
-    case bom_UTF32LE:
-	marklen = 4;
-	mark_cr[0] = '\r';
-	mark_lf[0] = '\n';
-	break;
-    case bom_UTF32BE:
-	marklen = 4;
-	mark_cr[3] = '\r';
-	mark_lf[3] = '\n';
-	break;
-    }
-    if (marklen != 0) {
-	B_COUNT dst = 0;
-	B_COUNT src = 0;
-	char skip = 0;
-	while (src < *length) {
-	    if (!memcmp(mark_cr, buffer + src, marklen))
-		skip = '\r';
-	    else if (!memcmp(mark_lf, buffer + src, marklen))
-		skip = '\n';
-	    if (skip) {
-		buffer[dst++] = skip;
-		skip = 0;
-	    } else {
-		memcpy(buffer + dst, buffer + src, marklen);
-		dst += marklen;
-	    }
-	    src += marklen;
+	switch (mp->code) {
+	case bom_NONE:
+	    /* FALLTHRU */
+	case bom_UTF8:
+	    /* FALLTHRU */
+	case bom_LE_ASSUMED:
+	    /* FALLTHRU */
+	case bom_BE_ASSUMED:
+	    /* ignored */
+	    break;
+	case bom_UTF16LE:
+	    marklen = 2;
+	    mark_cr[0] = '\r';
+	    mark_lf[0] = '\n';
+	    break;
+	case bom_UTF16BE:
+	    marklen = 2;
+	    mark_cr[1] = '\r';
+	    mark_lf[1] = '\n';
+	    break;
+	case bom_UTF32LE:
+	    marklen = 4;
+	    mark_cr[0] = '\r';
+	    mark_lf[0] = '\n';
+	    break;
+	case bom_UTF32BE:
+	    marklen = 4;
+	    mark_cr[3] = '\r';
+	    mark_lf[3] = '\n';
+	    break;
 	}
-	*length = dst;
+	if (marklen != 0) {
+	    B_COUNT dst = 0;
+	    B_COUNT src = 0;
+	    char skip = 0;
+	    while (src < *length) {
+		if (!memcmp(mark_cr, buffer + src, marklen))
+		    skip = '\r';
+		else if (!memcmp(mark_lf, buffer + src, marklen))
+		    skip = '\n';
+		if (skip) {
+		    buffer[dst++] = skip;
+		    skip = 0;
+		} else {
+		    memcpy(buffer + dst, buffer + src, marklen);
+		    dst += marklen;
+		}
+		src += marklen;
+	    }
+	    *length = dst;
+	}
     }
 }
 
@@ -820,7 +848,20 @@ deduce_charset(BUFFER *bp, UCHAR * buffer, B_COUNT * length, int always)
 	    bp->implied_BOM = bom_table[found].code;
 	    set_encoding_from_bom(bp, bp->implied_BOM);
 	    TRACE(("...found_charset %s\n",
-		   byteorder2s(get_bom(bp))));
+		   byteorder2s(bp->implied_BOM)));
+
+	    switch (bp->implied_BOM) {
+	    case bom_UTF16BE:
+	    case bom_UTF32BE:
+		set_byteorder_mark(bp, bom_BE_ASSUMED);
+		break;
+	    case bom_UTF16LE:
+	    case bom_UTF32LE:
+		set_byteorder_mark(bp, bom_LE_ASSUMED);
+		break;
+	    default:
+		break;
+	    }
 	    rc = TRUE;
 	} else if (always) {
 	    TRACE(("...try looking for UTF-8\n"));
