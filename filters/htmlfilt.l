@@ -1,9 +1,9 @@
 %pointer
-%x HTMLNOTE HTMLCODE HTMLQUO1 HTMLQUO2 JS_NOTE JS_CODE JSP_MODE
+%x HTMLNOTE HTMLCODE HTMLQUO1 HTMLQUO2 VB_NOTE VB_CODE ASP_MODE JS_NOTE JS_CODE JSP_MODE
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/htmlfilt.l,v 1.48 2008/02/17 20:12:29 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/htmlfilt.l,v 1.49 2008/10/24 23:38:15 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of HTML input
  * text.
@@ -15,7 +15,7 @@
 #include <fltstack.h>
 #undef YY_NO_UNPUT
 
-DefineOptFilter("html", "j");
+DefineOptFilter("html", "aj");
 
 static char *Action_attr;
 static char *Comment_attr;
@@ -49,7 +49,8 @@ CHR_REF		&({IDENT}|{HEXNUM});
 
 %%
 
-<INITIAL>"<%"		{ WriteToken(Action_attr);
+<INITIAL,HTMLCODE,HTMLNOTE,HTMLQUO1,HTMLQUO2>"<%" {
+			  WriteToken(Action_attr);
 			  push_state(JSP_MODE);
 			  flt_bfr_begin(String_attr);
 			}
