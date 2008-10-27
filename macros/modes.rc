@@ -1,4 +1,4 @@
-; $Id: modes.rc,v 1.83 2008/10/19 21:40:04 tom Exp $
+; $Id: modes.rc,v 1.86 2008/10/26 17:53:52 tom Exp $
 ; majormodes in this file are ordered alphabetically for convenience - the
 ; precedence used by vile is strictly alphabetic, counting case.  Use the
 ; before and after qualifiers to override the precedence.
@@ -48,6 +48,14 @@ define-mode asm
 	fence-elif '^\s*\<elseif\>'
 	fence-else '^\s*\<else\>'
 	fence-fi   '^\s*\<endif\>'
+~endwith
+
+define-mode asp
+~with define-submode asp
+	before		"html"
+	suffixes	'\.\(asp\|aspx\|asa\|asax\)$'
+	;dos
+	;percent-crlf 100
 ~endwith
 
 ; AutoIt version 3
@@ -353,7 +361,7 @@ define-mode haskell
 ; Inherit the C-style fences for JavaScript, but add new ones for HTML
 define-mode html
 ~with define-submode html
-	suffixes	'\.\(html\|htm\|aspx\)$'
+	suffixes	'\.\(html\|htm\)$'
 	pre		'^\s*\(<html>\|<script>\|<!doctype\|<!--\)'
 	fence-pairs	'<>()[]{}'
 	ignorecase
@@ -434,9 +442,12 @@ define-mode js
 
 define-mode jsp
 ~with define-submode jsp
-	suffixes	'\.\(asp\|jsp\)$'
+	before		"html"
+	suffixes	'\.\(jsp\)$'
 	cindent
 	cindent-chars &cat ':' $fences
+	;dos
+	;percent-crlf 100
 ~endwith
 
 define-mode key

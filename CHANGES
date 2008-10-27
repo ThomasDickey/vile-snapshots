@@ -1,7 +1,11 @@
 Changes for vile 9.7 (released ??? ??? ?? ????)
 
- 200810?? (g)
+ 20081026 (g)
 	> Tom Dickey:
+	+ fix special case of killing buffers from [Buffer List], broken in
+	  9.7f by increasing the number of digits available for buffer number.
+	+ extend vile-html-filter to support asp/jsp files.
+	+ add aspmode
 	+ improve parsing of "<%" "%>" markers in htmlfilt.l, which must be
 	  recognized anywhere - not just outside tags.
 	+ implement extra-colors for hypertext commands, e.g., as used in the
