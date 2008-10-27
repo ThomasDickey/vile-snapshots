@@ -5,7 +5,7 @@
  * keys. Like everyone else, they set hints
  * for the display system.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.334 2008/10/14 22:07:33 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.335 2008/10/26 23:00:05 tom Exp $
  *
  */
 
@@ -19,6 +19,11 @@ static BUFFER *this_bp;		/* '%' buffer */
 static BUFFER *that_bp;		/* '#' buffer */
 static int show_all;		/* true iff we show all buffers */
 static int updating_list;
+
+static int bfl_num_1st;
+static int bfl_num_end;
+static int bfl_buf_1st;
+static int bfl_buf_end;
 
 /*--------------------------------------------------------------------------*/
 
@@ -1683,7 +1688,14 @@ killbuffer(int f, int n)
 		    && valid_window(curwp)
 		    && valid_buffer(curbp)
 		    && (curbp == find_BufferList()));
-    int special = animated && (DOT.o == 2);
+    /*
+     * Handle special case if we're pointing in the buffer list to either the
+     * column containing current buffer number, or buffer names.  Since we'll
+     * remove the line containing that information as the buffer-list is
+     * updated, we don't want to move down a line at the same time.
+     */
+    int special = animated && ((DOT.o >= bfl_num_1st && DOT.o < bfl_num_end) ||
+			       (DOT.o >= bfl_buf_1st && DOT.o < bfl_buf_end));
 
     if (animated && !special) {
 	save_COL = getccol(FALSE);
@@ -2131,6 +2143,10 @@ makebufflist(int unused GCC_UNUSED, void *dummy GCC_UNUSED)
     char temp[NFILEN];
 
     curlp = 0;
+    bfl_num_1st = -1;
+    bfl_num_end = -1;
+    bfl_buf_1st = -1;
+    bfl_buf_end = -1;
 
     if (this_bp == 0)
 	this_bp = curbp;
@@ -2173,13 +2189,20 @@ makebufflist(int unused GCC_UNUSED, void *dummy GCC_UNUSED)
 	    bprintf("   %c ", this_or_that);
 	} else {
 	    char bufnum[NSTRING];
+
+	    bfl_num_1st = DOT.o;
 	    sprintf(bufnum, "%3d", nbuf++);
 	    bputsn_xcolor(bufnum, -1, XCOLOR_NUMBER);
+	    bfl_num_end = DOT.o;
 	    bprintf("%c ", this_or_that);
 	}
 
 	(void) bsizes(bp);
-	bprintf("%7lu %.*s ", bp->b_bytecount, NBUFN - 1, bp->b_bname);
+	bprintf("%7lu ", bp->b_bytecount);
+
+	bfl_buf_1st = DOT.o;
+	bprintf("%.*s ", NBUFN - 1, bp->b_bname);
+	bfl_buf_end = DOT.o;
 	{
 	    char *p;
 
