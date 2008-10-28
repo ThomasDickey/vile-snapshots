@@ -1,10 +1,15 @@
 Changes for vile 9.7 (released ??? ??? ?? ????)
 
- 20081026 (g)
+ 20081027 (g)
 	> Tom Dickey:
+	+ extend vile-html-filt to use language value in script tag, e.g., to
+	  handle C# scripts.
+	+ modify mac_tokval() to set end-string value when processing the last
+	  token on a line in script mode.  This lets a "set" command work by
+	  itself in a ".vilerc".
 	+ fix special case of killing buffers from [Buffer List], broken in
 	  9.7f by increasing the number of digits available for buffer number.
-	+ extend vile-html-filter to support asp/jsp files.
+	+ extend vile-html-filt to support asp/jsp files.
 	+ add aspmode
 	+ improve parsing of "<%" "%>" markers in htmlfilt.l, which must be
 	  recognized anywhere - not just outside tags.
