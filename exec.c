@@ -4,7 +4,7 @@
  *	original by Daniel Lawrence, but
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.327 2008/10/08 19:38:43 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.328 2008/10/27 20:28:35 tom Exp $
  *
  */
 
@@ -1352,6 +1352,7 @@ mac_tokens(void)
 int
 mac_token(TBUFF **tok)
 {
+    int result;
     int savcle;
     const char *oldstr = execstr;
 
@@ -1360,9 +1361,15 @@ mac_token(TBUFF **tok)
 
     /* get and advance past token */
     execstr = get_token(execstr, tok, eol_null, EOS, (int *) 0);
+    result = (execstr != oldstr);
+
+    if (clexec && result) {
+	if (execstr == 0 || *skip_blanks(execstr) == EOS)
+	    set_end_string('\n');
+    }
 
     clexec = savcle;
-    return (execstr != oldstr);
+    return result;
 }
 
 /* fetch and isolate and evaluate the next token from execstr */
