@@ -3,7 +3,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/htmlfilt.l,v 1.67 2008/10/27 23:59:21 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/htmlfilt.l,v 1.70 2008/10/28 21:16:16 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of HTML input
  * text.
@@ -52,7 +52,6 @@
  * Like JSP, these are recognized:
  * <%= expression %>
  * <%-- comments --%>
- * <%-- comments --%>
  *
  * Data binding: http://msdn.microsoft.com/en-us/library/ms178366.aspx
  * <%# Bind code %>
@@ -100,6 +99,7 @@ static char *use_language;	/* vbscript, javascript, C#, Java, etc */
 
 static int got_language;	/* parse-state for language=string */
 static int got_language2;
+static int got_equals;		/* parse state to detect unquoted values */
 
 static int next_state;
 
@@ -130,7 +130,7 @@ CHR_REF		&({IDENT}|{HEXNUM});
 
 %%
 
-<INITIAL,HTMLCODE,HTMLNOTE,HTMLQUO1,HTMLQUO2>"<%"("@"|"!"|"="|"--")? {
+<INITIAL,HTMLCODE,HTMLNOTE,HTMLQUO1,HTMLQUO2>"<%"([@!=#]|"--")? {
 			  flt_bfr_finish();
 			  if (dft_language != 0) {
 			      WriteToken3(Action_attr, 2);
@@ -142,9 +142,11 @@ CHR_REF		&({IDENT}|{HEXNUM});
 				  flt_bfr_begin(Comment_attr);
 				  break;
 			      case '@':
+				  WriteToken2(Action_attr, 2);
 				  push_state(AT_CMDS);
 				  break;
 			      default:
+				  WriteToken2(Action_attr, 2);
 				  push_state(language_code());
 				  using_language();
 				  break;
@@ -226,15 +228,26 @@ CHR_REF		&({IDENT}|{HEXNUM});
 <ASP_CMT0>[\r\n]	{ flt_bfr_finish(); ECHO; new_state(ASP_CODE); }
 <ASP_CMT0>.		{ flt_bfr_append(yytext, yyleng); }
 
-<INITIAL>"<"		{ WriteToken(Keyword_attr); new_state(HTMLCODE); }
+<INITIAL>"<"		{
+			  WriteToken(Keyword_attr);
+			  new_state(HTMLCODE);
+			  got_equals = 0;
+			}
 <HTMLCODE>"<"		{
 			  WriteToken(Error_attr);
 			  flt_error("Missing \">\"");
+			  got_equals = 0;
 			}
-<HTMLCODE>"="		{ ECHO; if (got_language2) ++got_language2; }
+<HTMLCODE>"="		{ ECHO;
+			  if (got_language2) ++got_language2;
+			  ++got_equals;
+			}
 <HTMLCODE>(\/)?">"	{ WriteToken(Keyword_attr); new_state(next_state); }
 
-<HTMLCODE>(\/)?{IDENT}	{ html_command(yytext); }
+<HTMLCODE>(\/)?{IDENT}	{
+    			  html_command(yytext);
+			  got_equals = 0;
+			}
 
 <INITIAL>"<!--"		{ BeginQuote(HTMLNOTE, Comment_attr); }
 <HTMLNOTE>[\r\n]	{ flt_bfr_append(yytext, yyleng); }
@@ -286,7 +299,10 @@ CHR_REF		&({IDENT}|{HEXNUM});
 			  }
 			}
 
-<JS_CODE>"<"{SPACE}*(\/)?{IDENT}{SPACE}*">" { may_resume_html(yytext); }
+<JS_CODE>"<"{SPACE}*(\/)?{IDENT}{SPACE}*">" {
+			  got_equals = 0;
+    			  may_resume_html(yytext);
+			}
 
 <JS_CODE>"/*"		{ BeginQuote(JS_NOTE, Comment_attr); }
 <JS_NOTE>\n		{ flt_bfr_append(yytext, yyleng); }
@@ -301,8 +317,9 @@ html_command(char *text)
 {
     int ending = (text[0] == '/');
     char *temp = lowercase_of(ending ? text + 1 : text);
-    int change = !strcmp(temp, "server")
-	      || !strcmp(temp, "script");
+    int change = !got_equals
+		 && (!strcmp(temp, "server")
+		  || !strcmp(temp, "script"));
 
     got_language2 = 0;
     if (change) {
@@ -485,6 +502,7 @@ do_filter(FILE *inputs)
     got_language = 0;
     use_language = 0;
 
+    got_equals = 0;
     got_language2 = 0;
 
     if (FltOptions('a')) {
