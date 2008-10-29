@@ -3,7 +3,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/htmlfilt.l,v 1.70 2008/10/28 21:16:16 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/htmlfilt.l,v 1.71 2008/10/28 22:25:43 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of HTML input
  * text.
@@ -107,6 +107,7 @@ static int language_code(void);
 static void html_command(char *text);
 static void html_quotes(char *text, int len, int state, int which);
 static void may_resume_html(char *text);
+static void resume_attr(void);
 static void setup_language(char *name);
 static void using_language(void);
 
@@ -162,6 +163,7 @@ CHR_REF		&({IDENT}|{HEXNUM});
 			  flt_bfr_finish();
 			  WriteToken(Action_attr);
 			  pop_state();
+			  resume_attr();
 			  set_symbol_table(filter_def.filter_name);
 			}
 <AT_CMDS>{IDENT}	{
@@ -182,6 +184,7 @@ CHR_REF		&({IDENT}|{HEXNUM});
 			  flt_bfr_finish();
 			  WriteToken(Action_attr);
 			  pop_state();
+			  resume_attr();
 			  set_symbol_table(filter_def.filter_name);
 			}
 <ANY_MODE>[\r\n] 	|
@@ -191,6 +194,7 @@ CHR_REF		&({IDENT}|{HEXNUM});
 			  flt_bfr_finish();
 			  WriteToken(Action_attr);
 			  pop_state();
+			  resume_attr();
 			  set_symbol_table(filter_def.filter_name);
 			}
 <JSP_CODE>{IDENT}	{ WriteToken(keyword_attr(yytext)); }
@@ -214,6 +218,7 @@ CHR_REF		&({IDENT}|{HEXNUM});
 			  flt_bfr_finish();
 			  WriteToken(Action_attr);
 			  pop_state();
+			  resume_attr();
 			  set_symbol_table(filter_def.filter_name);
 			}
 <ASP_CODE>{IDENT}	{ WriteToken(ci_keyword_attr(yytext)); }
@@ -384,6 +389,21 @@ html_quotes(char *text, int len, int state, int which)
 		}
 	    }
 	}
+    }
+}
+
+static void
+resume_attr(void)
+{
+    switch (FLT_STATE) {
+    case HTMLNOTE:
+    case JS_NOTE:
+	flt_bfr_begin(Comment_attr);
+	break;
+    case HTMLQUO1:
+    case HTMLQUO2:
+	flt_bfr_begin(String_attr);
+	break;
     }
 }
 
