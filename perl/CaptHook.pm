@@ -1,5 +1,5 @@
 
-#   CaptHook.pm (version 0.1) - Provides useful wrappers for Vile's "hook"
+#   CaptHook.pm (version 0.2) - Provides useful wrappers for Vile's "hook"
 #				variables
 #
 #   Copyright (C) 2001  J. Chris Coppick
@@ -22,7 +22,7 @@ package CaptHook;
 
 =head1 NAME
 
-CaptHook
+CaptHook 
 
 =over 5
 
@@ -36,17 +36,25 @@ various built-in hooks.
    :perl "use CaptHook"
 
    :autocolor-hook <command> <label> <priority>
+   :autocolor-hook-targets <label> <buffers>
    :autocolor-unhook <label>
    :buffer-hook <command> <label> <priority>
+   :buffer-hook-targets <label> <buffers>
    :buffer-unhook <label>
    :cd-hook <command> <label> <priority>
+   :cd-hook-targets <label> <dirs>
    :cd-unhook <label>
    :exit-hook <command> <label> <priority>
    :exit-unhook <label>
    :read-hook <command> <label> <priority>
+   :read-hook-targets <label> <files>
    :read-unhook <label>
    :write-hook <command> <label> <priority>
+   :write-hook-targets <label> <buffers>
    :write-unhook <label>
+   :majormode-hook <command> <label> <priority>
+   :majormode-hook-targets <label> <buffers>
+   :majormode-unhook <label>
 
    :do-autocolor-hooks
    :do-buffer-hooks
@@ -54,6 +62,7 @@ various built-in hooks.
    :do-exit-hooks
    :do-read-hooks
    :do-write-hooks
+   :do-majormode-hooks
 
    :capthook-help
 
@@ -68,9 +77,9 @@ help text (available from within Vile, as B<:help>).
 
 First, let's be clear about what this package, affectionately known
 as the "Captain", does B<NOT> allow you to do.  There are, currently,
-six supported hooks in Vile:  autocolor, buffer, cd, exit, read, and
-write.  The Captain does B<NOT> allow you to extend this set.  You get
-those six hooks and that's it (as far as I know).
+seven supported hooks in Vile:  autocolor, buffer, cd, exit, read, write
+and majormode.  The Captain does B<NOT> allow you to extend this set.  You
+get those seven hooks and that's it (as far as I know).
 
 So what does the Captain do for you?  Normally you can only assign one
 command to any one of Vile's hooks.  If, for example, you wanted to
@@ -94,11 +103,12 @@ Here's a simple example:
 
    perl "use CaptHook"
 
-   autocolor-hook 'HighlightFilterMsg' 'filter' 10
+   autocolor-hook 'HighlightFilter' 'filter' 10
    buffer-hook 'set-variable $iconname $cbufname' 'icon' 10
    buffer-hook 'perl Vile::beep' 'beep' 20
    read-hook 'search-forward \\\S' 'skipws' 20
-   cd-hook 'write-message &cat "New directory: " $cwd' 'dirmsg' 100
+   perl "use directory"
+   cd-hook 'directory $cwd' 'dir-list' 100
 
 In this example we have 1) setup the autocolor-hook in a more-or-less
 standard fashion, 2) fixed it so that every time we change buffers we
@@ -108,6 +118,23 @@ we edit a new file, Vile moves the cursor over any initial whitespace,
 and 4) whenever we change Vile's current directory, the new directory
 name is displayed in the message buffer.  Wasn't that easy?  No
 scurvy, no large deceased sea birds around your neck, no problems.
+
+Another nifty feature is the use of targets.  The Captain allows you
+to limit the activation of certain hooks to certain targets.  Targets
+can be buffers, files, or directories, depending on the type of hook
+in question.  In a nutshell, first you create a hook, then using the
+hook label, you specify for which targets it should be used.  For example,
+suppose you have created a read hook, called I<myuid>, that searches
+for your UID.  You could set it up so that the I<myuid> hook is
+only activated for certain files:
+
+   read-hook-targets 'myuid' '/etc/passwd, /etc/group, /etc/aliases'
+
+As another example, you could turn autocolor off for certain buffers,
+e.g. Help, like this:
+
+   buffer-hook 'setl autocolor 0' 'color-off' 100
+   buffer-hook-targets 'color-off' '[Help]'
 
 Something to note:  When the Captain is initially loaded, he assigns
 to each of Vile's hook variables one of his own activation functions.
@@ -182,6 +209,8 @@ Invite the Captain on board...
 
 =item write-hook <command> <label> <priority>
 
+=item majormode-hook <command> <label> <priority>
+
 Add a command to be invoked during a particular hook (obviously
 which hook depends on which variation you use).  Note that these
 are cumulative.  Running B<:buffer-hook ...> twice with two
@@ -191,6 +220,24 @@ priorities given (see PRIORITIES).  Reusing a label will result
 in the replacement of any command already assigned to that label,
 for a given hook.  I.E. You can have a cd-hook and a buffer-hook
 with the same label, but you cannot have two cd-hooks with the same label.
+
+=item autocolor-hook-targets <label> <buffers>
+
+=item buffer-hook-targets <label> <buffers>
+
+=item cd-hook-targets <label> <dirs>
+
+=item read-hook-targets <label> <files>
+
+=item write-hook-targets <label> <buffers>
+
+=item majormode-hook-targets <label> <buffers>
+
+It is possible to limit certain hooks so that they only take
+effect for certain targets.  I<Autocolor>, I<buffer>, and I<write>
+hooks can be targeted for certain buffers.  I<Cd> hooks can be
+targeted for certain directories. I<Read> and I<majormode> hooks can
+be targeted for certain files.  Targets are delimited by commas.
 
 =item autocolor-unhook <label>
 
@@ -203,6 +250,8 @@ with the same label, but you cannot have two cd-hooks with the same label.
 =item read-unhook <label>
 
 =item write-unhook <label>
+
+=item majormode-unhook <label>
 
 Delete a command assigned to a particular hook (which hook depends on
 which variation you use).  The label given should match the label
@@ -219,6 +268,8 @@ used when the no-longer-needed command was originally "hooked".
 =item do-read-hooks
 
 =item do-write-hooks
+
+=item do-majormode-hooks
 
 Invoke the set of commands assigned to a particular hook.  Each of
 the B<do-*-hooks> commands is assigned to an appropriate one of
@@ -257,7 +308,7 @@ Drat.  No one to blame but myself...
 
 =head1 AUTHOR
 
-S<J. Chris Coppick, 2001 (last updated: Sept. 27, 2001)>
+S<J. Chris Coppick, 2001 (last updated: June. 26, 2002)>
 
 Ahoy, Maties!
 
@@ -273,22 +324,40 @@ require Vile::Exporter;
 %REGISTRY = (
     'autocolor-hook'  => ['CaptHook::addHook("autocolor")', 'add a new autocolor hook' ],
     'autocolor-unhook'  => ['CaptHook::delHook("autocolor")', 'remove an autocolor hook' ],
+    'autocolor-hook-targets'  => ['CaptHook::targetHook("autocolor")', 'associate an autocolor-hook with one or more buffers' ],
+
     'buffer-hook'  => ['CaptHook::addHook("buffer")', 'add a new buffer hook' ],
     'buffer-unhook'  => ['CaptHook::delHook("buffer")', 'remove a buffer hook' ],
+    'buffer-hook-targets'  => ['CaptHook::targetHook("buffer")', 'associate a buffer-hook with one or more buffers' ],
+
     'cd-hook'  => ['CaptHook::addHook("cd")', 'add a new cd hook' ],
     'cd-unhook'  => ['CaptHook::delHook("cd")', 'remove a cd hook' ],
+    'cd-hook-targets'  => ['CaptHook::targetHook("cd")', 'associate a cd-hook with one or more directories' ],
+
     'exit-hook'  => ['CaptHook::addHook("exit")', 'add a new exit hook' ],
     'exit-unhook'  => ['CaptHook::delHook("exit")', 'remove an exit hook' ],
+    'exit-hook-targets'  => ['CaptHook::targetHook("exit")', 'associate an exit-hook with one or more buffers' ],
+
     'read-hook'  => ['CaptHook::addHook("read")', 'add a new read hook' ],
     'read-unhook'  => ['CaptHook::delHook("read")', 'remove a read hook' ],
+    'read-hook-targets'  => ['CaptHook::targetHook("read")', 'associate a read-hook with one or more files' ],
+
     'write-hook'  => ['CaptHook::addHook("write")', 'add a new write hook' ],
     'write-unhook'  => ['CaptHook::delHook("write")', 'remove a write hook' ],
+    'write-hook-targets'  => ['CaptHook::targetHook("write")', 'associate a write-hook with one or more buffers' ],
+
+    'majormode-hook'  => ['CaptHook::addHook("majormode")', 'add a new majormode hook' ],
+    'majormode-unhook'  => ['CaptHook::delHook("majormode")', 'remove a majormode hook' ],
+    'majormode-hook-targets'  => ['CaptHook::targetHook("majormode")', 'associate a majormode-hook with one or more buffers' ],
+
     'do-autocolor-hooks'  => ['CaptHook::_do_hook("autocolor")', 'Execute autocolor hooks' ],
     'do-buffer-hooks'  => ['CaptHook::_do_hook("buffer")', 'Execute buffer hooks' ],
     'do-cd-hooks'  => ['CaptHook::_do_hook("cd")', 'Execute cd hooks' ],
     'do-exit-hooks'  => ['CaptHook::_do_hook("exit")', 'Execute exit hooks' ],
     'do-read-hooks'  => ['CaptHook::_do_hook("read")', 'Execute read hooks' ],
     'do-write-hooks'  => ['CaptHook::_do_hook("write")', 'Execute write hooks' ],
+    'do-majormode-hooks'  => ['CaptHook::_do_hook("majormode")', 'Execute majormode hooks' ],
+
     'capthook-help' => [sub {&manual}, 'manual page for CaptHook.pm' ]
 );
 
@@ -305,6 +374,7 @@ my %_cd_hooks;
 my %_exit_hooks;
 my %_read_hooks;
 my %_write_hooks;
+my %_majormode_hooks;
 
 my @_autocolor_index;
 my @_buffer_index;
@@ -312,14 +382,21 @@ my @_cd_index;
 my @_exit_index;
 my @_read_index;
 my @_write_index;
+my @_majormode_index;
 
+my %_autocolor_targets;
+my %_buffer_targets;
+my %_exit_targets;
+my %_cd_targets;
+my %_read_targets;
+my %_write_targets;
+my %_majormode_targets;
 
 # I shall fear no eval...
 
 sub addHook {
 
    my ($hook) = @_;
-
    my ($label, $rank, $action);
 
    $action = Vile::mlreply_no_opts("${hook}-hook command?: ");
@@ -363,28 +440,94 @@ sub delHook {
 
 }
 
-sub _do_hook {
+sub targetHook {
 
    my ($hook) = @_;
-   my $label = 1;
+
+   my $label;
+   my $targets = '';
+
+   $label = Vile::mlreply_no_opts("${hook}-hook label?: ");
+   return 0 if (!defined($label) || $label eq '' || $label =~ /^\s*$/);
+   chomp($label);
+
+   $targets = Vile::mlreply_no_opts("${hook}-hook targets?: ");
+   return 0 if (!defined($targets) || $targets eq '' || $targets =~ /^\s*$/);
+   chomp($targets);
+
+   if (_target_hook($hook, $label, (split(/ *\, */, $targets)))) {
+
+      print "Failed adding hook target: is ${hook}-hook supported?";
+      return 1;
+   }
+
+   return 0;
+}
+
+sub _do_hook {
+ 
+   my ($hook) = @_;
    my ($action, $i, $max);
+   my $targets;
+   my $label;
 
    return 1 if (_not_supported($hook));
 
    $max = eval("scalar(\@_${hook}_index)");
 
    for ($i = 0; $i < $max; $i++) {
-      $action = eval("\$_${hook}_hooks{\$_${hook}_index[\$i][\$label]}");
-      if (defined($action) && $action ne '') {
-	 package main;
-	 eval { Vile::command $action }; warn $@ if $@;
-	 Vile::update();
-	 package CaptHook;
+      $label = eval("\$_${hook}_index[\$i][1]");
+      $targets = eval("\$_${hook}_targets{\$label}");
+
+      if (!$targets || !scalar(@$targets) || _on_target($hook, @$targets)) {
+
+	 $action = eval("\$_${hook}_hooks{\$label}");
+	 if (defined($action) && $action ne '') {
+	    package main;
+	    eval { Vile::command $action }; warn $@ if $@;
+	    package CaptHook;
+	 }
+      }
+
+      # window update lameness...
+      if ($hook ne 'autocolor') {
+	 $Vile::current_buffer->dot($Vile::current_buffer->dot);
       }
    }
+   Vile::update();
 
    return 0;
 }
+
+sub _on_target {
+
+   my ($hook, @targets) = @_;
+   my $bufname;
+   my $cwd;
+   my $filename;
+   my $on_target = 0;
+
+   if ($hook eq 'autocolor' || $hook eq 'buffer' ||
+       $hook eq 'write' || $hook eq 'exit') {
+
+      $bufname = $Vile::current_buffer->buffername();
+      $on_target = 1 if (grep($bufname =~ /$_/, @targets));
+
+   } elsif ($hook eq 'cd') {
+
+      $cwd = Vile::get('$cwd');
+      $on_target = 1 if (grep($cwd =~ /$_/, @targets));
+
+   } elsif ($hook eq 'read' || $hook eq 'majormode') {
+
+      $filename = $Vile::current_buffer->filename();
+      $on_target = 1 if (grep($filename =~ /$_/, @targets));
+
+   }
+
+   return $on_target;
+}
+
 
 sub _add_hook {
 
@@ -400,6 +543,19 @@ sub _add_hook {
    eval("\@_${hook}_index = sort { \$a->[0] <=> \$b->[0] } \@_${hook}_index");
 
    eval("\$_${hook}_hooks{\$label} = \$action");
+
+   return 0;
+}
+
+sub _target_hook {
+
+   my ($hook, $label, @targets) = @_;
+   my $max;
+   my $target;
+
+   return 1 if (_not_supported($hook));
+
+   eval("\$_${hook}_targets{\$label} = \\\@targets");
 
    return 0;
 }
@@ -424,6 +580,10 @@ sub _del_hook {
       eval("delete \$_${hook}_hooks{\$label}");
    }
 
+   if (eval("defined(\$_${hook}_targets{\$label})")) {
+      eval("delete \$_${hook}_targets{\$label}");
+   }
+
    return 0;
 }
 
@@ -433,59 +593,68 @@ sub _setup {
    my $cb = $Vile::current_buffer;
 
    $oldhook = $cb->get('$autocolor-hook');
-   Vile::command 'setv $autocolor-hook do-autocolor-hooks';
+   Vile::command 'setv $autocolor-hook do-autocolor-hooks';   
    if ($oldhook ne 'ERROR' && $oldhook ne '' &&
        $oldhook ne 'do-autocolor-hooks') {
-      _add_hook("autocolor", "original", 1542, $oldhook);
+      _add_hook("autocolor", "$oldhook", 1542, "$oldhook", '');
    }
 
    $oldhook = $cb->get('$buffer-hook');
-   Vile::command 'setv $buffer-hook do-buffer-hooks';
+   Vile::command 'setv $buffer-hook do-buffer-hooks';   
    if ($oldhook ne 'ERROR' && $oldhook ne '' &&
        $oldhook ne 'do-buffer-hooks') {
-      _add_hook("buffer", "original", 1542, $oldhook);
+      _add_hook("buffer", "$oldhook", 1542, "$oldhook", '');
    }
 
    $oldhook = $cb->get('$cd-hook');
-   Vile::command 'setv $cd-hook do-cd-hooks';
+   Vile::command 'setv $cd-hook do-cd-hooks';   
    if ($oldhook ne 'ERROR' && $oldhook ne '' &&
        $oldhook ne 'do-cd-hooks') {
-      _add_hook("cd", "original", 1542, $oldhook);
+      _add_hook("cd", "$oldhook", 1542, "$oldhook", '');
    }
 
    $oldhook = $cb->get('$exit-hook');
-   Vile::command 'setv $exit-hook do-exit-hooks';
+   Vile::command 'setv $exit-hook do-exit-hooks';   
    if ($oldhook ne 'ERROR' && $oldhook ne '' &&
        $oldhook ne 'do-exit-hooks') {
-      _add_hook("exit", "original", 1542, $oldhook);
+      _add_hook("exit", "$oldhook", 1542, "$oldhook", '');
    }
 
    $oldhook = $cb->get('$read-hook');
-   Vile::command 'setv $read-hook do-read-hooks';
+   Vile::command 'setv $read-hook do-read-hooks';   
    if ($oldhook ne 'ERROR' && $oldhook ne '' &&
        $oldhook ne 'do-read-hooks') {
-      _add_hook("read", "original", 1542, $oldhook);
+      _add_hook("read", "$oldhook", 1542, "$oldhook", '');
    }
 
    $oldhook = $cb->get('$write-hook');
-   Vile::command 'setv $write-hook do-write-hooks';
+   Vile::command 'setv $write-hook do-write-hooks';   
    if ($oldhook ne 'ERROR' && $oldhook ne '' &&
        $oldhook ne 'do-write-hooks') {
-      _add_hook("write", "original", 1542, $oldhook);
+      _add_hook("write", "$oldhook", 1542, "$oldhook", '');
    }
 
+   $oldhook = $cb->get('$majormode-hook');
+   Vile::command 'setv $majormode-hook do-majormode-hooks';   
+   if ($oldhook ne 'ERROR' && $oldhook ne '' &&
+       $oldhook ne 'do-majormode-hooks') {
+      _add_hook("majormode", "$oldhook", 1542, "$oldhook", '');
+   }
+
+   print "Ahoy, Maties!";
    return 0;
 }
 
 sub _teardown {
 
-   Vile::command 'unsetv $autocolor-hook';
-   Vile::command 'unsetv $buffer-hook';
-   Vile::command 'unsetv $cd-hook';
-   Vile::command 'unsetv $exit-hook';
-   Vile::command 'unsetv $read-hook';
-   Vile::command 'unsetv $write-hook';
-
+   Vile::command 'unsetv $autocolor-hook';   
+   Vile::command 'unsetv $buffer-hook';   
+   Vile::command 'unsetv $cd-hook';   
+   Vile::command 'unsetv $exit-hook';   
+   Vile::command 'unsetv $read-hook';   
+   Vile::command 'unsetv $write-hook';   
+   Vile::command 'unsetv $majormode-hook';   
+   
    return 0;
 }
 
@@ -498,7 +667,8 @@ sub _not_supported {
                 $hook ne 'cd' &&
                 $hook ne 'exit' &&
                 $hook ne 'read' &&
-                $hook ne 'write');
+                $hook ne 'write' &&
+		$hook ne 'majormode');
 
    return 0;
 }

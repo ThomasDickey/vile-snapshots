@@ -8,7 +8,7 @@
  *   "FAILED" may not be used to test an OLE return code.  Use SUCCEEDED
  *   instead.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32oo.cpp,v 1.12 2008/10/17 00:44:06 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32oo.cpp,v 1.13 2008/11/07 00:28:08 Mark.Robinson Exp $
  */
 
 #include "w32vile.h"
@@ -291,6 +291,7 @@ filterExceptions(unsigned int code, struct _EXCEPTION_POINTERS *ep)
 void
 w32_close_handle(HANDLE handle)
 {
+#if !CC_MINGW
     __try
     {
 	(void) CloseHandle(handle);
@@ -299,6 +300,9 @@ w32_close_handle(HANDLE handle)
     {
 	TRACE(("error closing handle %#x\n", handle));
     }
+#else
+    (void) CloseHandle(handle);
+#endif
 }
 
 #ifdef __cplusplus
