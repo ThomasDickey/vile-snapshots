@@ -3,7 +3,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/htmlfilt.l,v 1.71 2008/10/28 22:25:43 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/htmlfilt.l,v 1.72 2008/11/06 23:04:13 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of HTML input
  * text.
@@ -467,7 +467,7 @@ language2keys(char *name)
 	    result = "cs";
 	else if (!strcmp(lowered, "java"))
 	    result = "java";
-	else if (!strcmp(lowered, "javascript"))
+	else if (!strncmp(lowered, "javascript", 10))
 	    result = "js";
 	else if (!strcmp(lowered, "vbscript"))
 	    result = "vbs";

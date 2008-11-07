@@ -1,10 +1,10 @@
 %pointer
-%s LEAD BODY MORE COMMENT0 COMMENT INLINE_CMT SERVER ONE_LINE
+%s LEAD BODY MORE COMMENT INLINE_CMT SERVER ONE_LINE
 
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/sql-filt.l,v 1.39 2008/07/13 22:01:34 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/sql-filt.l,v 1.42 2008/11/06 22:47:54 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of SQL script
  * - T.Dickey
@@ -16,7 +16,7 @@
 DefineOptFilter("sql", "d");
 
 #define DPRINTF(params) if(FltOptions('d'))printf params
-#define set_state(name) DPRINTF(("{" #name ":%d}", name)); BEGIN(name); began_state = name
+#define set_state(name) DPRINTF(("{@%d:" #name ":%d}", __LINE__, name)); BEGIN(name); began_state = name
 #define new_state(state) saved_state = began_state; set_state(state)
 #define old_state()      set_state(saved_state);
 
@@ -69,6 +69,7 @@ SHELL		[$!]
 ACTION		[@][@]?
 
 UNITS		[kKmM]
+HEX		0[xX][[:xdigit:]]+
 INTEGER		[[:digit:]]+
 SIGN		[+-]
 REAL		{INTEGER}?(\.{INTEGER}([eE]{SIGN}?{INTEGER})?)
@@ -136,6 +137,7 @@ HOSTVAR		":"{IDENT}
 <SERVER>[\n]		|
 <SERVER>.		{ unput(yytext[0]); old_state(); }
 
+<LEAD,MORE,BODY>{HEX}	|
 <LEAD,MORE,BODY>{NUMBER}	{ WriteToken(Number_attr); new_state(BODY); }
 
 <LEAD,MORE,BODY>{STRING}	{ WriteToken(String_attr); new_state(BODY); }
@@ -177,25 +179,18 @@ HOSTVAR		":"{IDENT}
 <INLINE_CMT>[^\r\n]*	{ WriteToken(Comment_attr); }
 <INLINE_CMT>\n		{ ECHO; old_state(); }
 
-<LEAD,MORE,BODY>"/*"	{ WriteToken(Comment_attr);
-			  new_state(COMMENT0);
+<LEAD,MORE,BODY>"/*"	{ new_state(COMMENT);
+			  flt_bfr_begin(Comment_attr);
+			  flt_bfr_append(yytext, yyleng);
 			}
-
-<COMMENT0>"*/"		{ 
-			  WriteToken(Comment_attr);
+<COMMENT>[*]+"/"	{ flt_bfr_append(yytext, yyleng);
+			  flt_bfr_finish();
 			  old_state();
 			}
-<COMMENT0>[^\r\n]	{ WriteToken(Comment_attr); }
-<COMMENT0>\n		{
-			  ECHO;
-			  set_state(COMMENT);
-			}
-
-<COMMENT>^[^\r\n]*"*/"	{ WriteToken(Comment_attr);
-			  old_state();
-			}
-<COMMENT>^[^\r\n]*	{ WriteToken(Comment_attr); }
-<COMMENT>\n		{ ECHO; }
+<COMMENT>[*]$		|
+<COMMENT>[*][^/]	|
+<COMMENT>[^\r\n*]*	|
+<COMMENT>[\r\n]		{ flt_bfr_append(yytext, yyleng); }
 
 <LEAD,MORE>{LABEL}	{ WriteToken(Action_attr); }
 

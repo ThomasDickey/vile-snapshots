@@ -1,4 +1,4 @@
-;; $Header: /users/source/archives/vile.vcs/macros/RCS/which.rc,v 1.18 2008/07/26 16:14:46 tom Exp $
+;; $Header: /users/source/archives/vile.vcs/macros/RCS/which.rc,v 1.19 2008/11/07 00:21:28 tom Exp $
 ;;
 ;; Show where vile looks for keyword file, and where it finds it.  If we
 ;; always implemented built-in filters, the natural place for this would be
@@ -51,6 +51,7 @@ store-procedure which-filter major="MajorMode" "Prompt for, and display location
 		~endif
 	~else
 		edit-buffer %mybuffer
+		setl noreadonly noview
 	~endif
 	setl noai
 
@@ -146,6 +147,7 @@ store-procedure which-keywords major="MajorMode" "Prompt for, and display locati
 		~endif
 	~else
 		edit-buffer %mybuffer
+		setl noreadonly noview
 	~endif
 	setl noai
 	;
@@ -216,6 +218,7 @@ store-procedure which-menu "Display location of menu file"
 		~endif
 	~else
 		edit-buffer %mybuffer
+		setl noreadonly noview
 	~endif
 	setl noai
 	;

@@ -1,5 +1,20 @@
 Changes for vile 9.7 (released ??? ??? ?? ????)
 
+ 20081??? (h)
+	> J Chris Coppic:
+	+ updated CaptHook.pm
+	> Mark Robinson
+	+ fix compiler-name for MinGW in version.c
+	+ build-fix for MinGW
+	> Tom Dickey:
+	+ fixes for which.rc in case vile is running in view or readonly mode.
+	+ modify check for language value in html filter to accept anything
+	  beginning "javascript", e.g., "javascript1.1".
+	+ modify sql filter to highlight hexadecimal constants, which may be
+	  used in T-SQL.
+	+ correct parsing of C-style comments in sql filter, which did not
+	  handle trailing blanks after the "*/" marker.
+
  20081027 (g)
 	> Tom Dickey:
 	+ extend vile-html-filt to use language value in script tag, e.g., to
