@@ -7,6 +7,11 @@ Changes for vile 9.7 (released ??? ??? ?? ????)
 	+ fix compiler-name for MinGW in version.c
 	+ build-fix for MinGW
 	> Tom Dickey:
+	+ modify makefile.djg and borland.c to allow building
+	  syntax-highlighting version for DJGPP, using builtin-filters.
+	+ modify $startup-path for DOS/Windows where VILE_STARTUP_PATH is not
+	  #define'd to add $exec-path to allow vile to find startup scripts in
+	  the same directory as the executable (request by Rugxulo).
 	+ fixes for which.rc in case vile is running in view or readonly mode.
 	+ modify check for language value in html filter to accept anything
 	  beginning "javascript", e.g., "javascript1.1".

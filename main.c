@@ -22,7 +22,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.651 2008/09/29 18:51:18 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.652 2008/11/08 00:33:32 tom Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -1081,7 +1081,7 @@ main_loop(void)
 static void
 get_executable_dir(void)
 {
-#if SYS_UNIX || SYS_VMS
+#if SYS_UNIX || SYS_VMS || SYS_MSDOS || SYS_OS2
     char temp[NFILEN];
     char *s, *t;
 
@@ -1110,6 +1110,10 @@ get_executable_dir(void)
 	prog_arg = strmalloc(t);
 	*t = EOS;
 	exec_pathname = strmalloc(lengthen_path(strcpy(temp, s)));
+#ifndef VILE_STARTUP_PATH
+	/* workaround for DJGPP, to add executable's directory to startup path */
+	append_to_path_list(&startup_path, exec_pathname);
+#endif
     }
     free(s);
 #elif SYS_WINNT
@@ -1705,20 +1709,16 @@ default_startup_path(void)
 	append_to_path_list(&result, "/usr/bin");
 	append_to_path_list(&result, "/bin");
 	append_to_path_list(&result, "/");
-#else
-#if SYS_VMS
+#elif SYS_VMS
 	append_to_path_list(&result, "sys$login");
 	append_to_path_list(&result, "sys$sysdevice:[vmstools]");
 	append_to_path_list(&result, "sys$library");
-#else /* SYS_UNIX */
-#if defined(VILE_STARTUP_PATH)
+#elif defined(VILE_STARTUP_PATH)
 	append_to_path_list(&result, VILE_STARTUP_PATH);
 #else
 	append_to_path_list(&result, "/usr/local/lib");
 	append_to_path_list(&result, "/usr/local");
 	append_to_path_list(&result, "/usr/lib");
-#endif /* VILE_STARTUP_PATH */
-#endif /* SYS_VMS... */
 #endif /* SYS_MSDOS... */
     }
 #ifdef HELP_LOC

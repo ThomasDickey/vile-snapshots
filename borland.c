@@ -9,7 +9,7 @@
  * Note: Visual flashes are not yet supported.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/borland.c,v 1.38 2008/07/12 17:14:02 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/borland.c,v 1.39 2008/11/08 00:29:04 tom Exp $
  *
  */
 
@@ -34,6 +34,19 @@
 /* We assume that most users have a color display.  */
 
 #include <conio.h>
+
+#if 0 //def GVAL_VIDEO
+#define REVERSED (global_g_val(GVAL_VIDEO) & VAREV)
+static void
+set_reverse(void)
+{
+    //if (REVERSED)
+	//begin_reverse();
+}
+#else
+#define REVERSED 0
+#define set_reverse()		/* nothing */
+#endif
 
 static void borflush(void);
 
@@ -280,8 +293,51 @@ boreeop(void)
     gotoxy(x, y);
 }
 
+#if OPT_VIDEO_ATTRS
 static void
-borrev(UINT reverse)		/* change reverse video state */
+bor_attr(UINT attr)		/* change video attributes */
+{
+    static UINT last;
+    UINT next;
+    int colored = FALSE;
+
+    if (attr != last) {
+	last = attr;
+	borflush();
+
+	attr = VATTRIB(attr);
+#if 0 //def GVAL_VIDEO
+	if (REVERSED) {
+	    if (attr & VASEL)
+		attr ^= VASEL;
+	    else
+		attr ^= VAREV;
+	}
+#endif
+	if (attr & VASPCOL) {
+	    colored = TRUE;
+	    attr = VCOLORATTR((VCOLORNUM(attr) & (ncolors - 1)));
+	} else {
+	    if (attr & VACOLOR) {
+		attr &= (VCOLORATTR(ncolors - 1) | ~VACOLOR);
+		colored = TRUE;
+	    }
+	    attr &= ~(VAML | VAMLFOC);
+	}
+
+	next = ctrans[VCOLORNUM(attr)];
+	if (attr & (VASEL|VAREV)) {
+	    textcolor((colored ? next : cbcolor) & 15);
+	    textbackground(cfcolor & 7);
+	} else {
+	    textcolor((colored ? next : cfcolor) & 15);
+	    textbackground(cbcolor & 7);
+	}
+    }
+}
+#else
+static void
+bor_rev(UINT reverse)		/* change reverse video state */
 {
     borflush();
     if (reverse) {
@@ -292,6 +348,7 @@ borrev(UINT reverse)		/* change reverse video state */
 	textcolor(cfcolor & 15);
     }
 }
+#endif
 
 static int
 borcres(const char *res)	/* change screen resolution */
@@ -605,7 +662,11 @@ TERM term =
     boreeol,
     boreeop,
     borbeep,
-    borrev,
+#if OPT_VIDEO_ATTRS
+    bor_attr,
+#else
+    bor_rev,
+#endif
     borcres,
 #if OPT_COLOR
     borfcol,
