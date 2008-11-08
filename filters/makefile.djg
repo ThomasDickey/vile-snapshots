@@ -2,7 +2,7 @@
 # From the top-makefile.djg, do
 #	make -f makefile.djg flt=y
 #
-# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.djg,v 1.4 2008/07/12 18:34:00 tom Exp $
+# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.djg,v 1.5 2008/11/08 01:09:14 tom Exp $
 
 CC = gcc
 LINK = gcc
@@ -10,7 +10,9 @@ LEX = flex
 x = .exe
 o = .o
 
+AR = ar
 AR_OPTS = crv
+RANLIB = ranlib
 
 DEBUG = -g
 #OPTIM =
