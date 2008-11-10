@@ -2,7 +2,7 @@
  * This file contains the command processing functions for a number of random
  * commands. There is no functional grouping here, for sure.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.321 2008/10/15 20:40:00 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.323 2008/11/10 00:09:07 tom Exp $
  *
  */
 
@@ -1625,37 +1625,178 @@ run_readhook(void)
 }
 #endif
 
+#if OPT_AUTOCOLOR || OPT_ELAPSED
+/*
+ * Returns elapsed time in milliseconds.
+ */
+double
+vl_elapsed(ElapsedType * first, int begin)
+{
+    double result;
+
+#if SYS_UNIX
+#define	SECS(tv)	(tv.tv_sec + (tv.tv_usec / 1.0e6))
+    ElapsedType tv1;
+    gettimeofday(&tv1, 0);
+    if (begin)
+	*first = tv1;
+    result = 1000.0 * (SECS(tv1) - SECS((*first)));
+#elif SYS_WINNT
+    ElapsedType tv1 = GetTickCount();
+    if (begin)
+	*first = tv1;
+    result = (tv1 - *first);
+#else
+    ElapsedType tv1 = time((time_t *) 0);
+    if (begin)
+	*first = tv1;
+    result = 1000.0 * (tv1 - *first);
+#endif
+
+    return result;
+}
+#endif
+
+#if OPT_AUTOCOLOR
+static int
+can_autocolor(BUFFER *bp)
+{
+    int rc = FALSE;
+    if (b_val(bp, VAL_AUTOCOLOR) > 0
+#if OPT_MAJORMODE
+	&& (bp->majr != 0 || !b_is_temporary(bp))
+	&& b_val(bp, MDHILITE)
+#endif
+	) {
+	rc = TRUE;
+    }
+    return rc;
+}
+#endif
+
 void
 autocolor(void)
 {
-#if OPT_COLOR&&!SMALLER
+#if OPT_AUTOCOLOR
+    if (!(reading_msg_line || vile_is_busy || doingsweep)) {
+	BUFFER *bp;
+	WINDOW *wp;
+	ElapsedType begin_time;
+	double elapsed_time;
+	int goal_time;
 
-    WINDOW *wp;
-    int do_update = FALSE;
-    if (reading_msg_line || vile_is_busy || doingsweep)
-	return;
-    for_each_visible_window(wp) {
-	BUFFER *bp = wp->w_bufp;
-	if (b_is_recentlychanged(bp)
-#if OPT_MAJORMODE
-	    && (bp->majr != 0 || !b_is_temporary(bp))
-	    && b_val(bp, MDHILITE)
-#endif
-	    && b_val(bp, VAL_AUTOCOLOR) > 0) {
-	    BUFFER *oldbp = curbp;
-	    WINDOW *oldwp = push_fake_win(bp);
-	    in_autocolor = TRUE;
-	    if (run_a_hook(&autocolorhook)) {
-		b_clr_recentlychanged(bp);
-		do_update = TRUE;
+	int do_update = 0;
+
+	(void) vl_elapsed(&begin_time, TRUE);
+
+	TRACE((T_CALLED "autocolor\n"));
+	for_each_visible_window(wp) {
+	    bp = wp->w_bufp;
+	    if (can_autocolor(bp)
+		&& b_is_recentlychanged(bp)) {
+		/*
+		 * Check if we're skipping autocolor (see below) because the
+		 * buffer is large enough to interfere with the autocolor
+		 * interval.
+		 */
+		if (bp->next_autocolor_time > 0) {
+		    bp->next_autocolor_time--;
+		}
+		if (bp->next_autocolor_time == 0) {
+		    BUFFER *oldbp = curbp;
+		    WINDOW *oldwp = push_fake_win(bp);
+
+		    in_autocolor = TRUE;
+		    if (run_a_hook(&autocolorhook)) {
+			b_clr_recentlychanged(bp);
+			++do_update;
+			bp->next_autocolor_time--;
+		    }
+		    in_autocolor = FALSE;
+		    pop_fake_win(oldwp, oldbp);
+		}
 	    }
-	    in_autocolor = FALSE;
-	    pop_fake_win(oldwp, oldbp);
 	}
-    }
-    if (do_update)
-	update(FALSE);
 
+	/*
+	 * If do_update is set, we colored at least one buffer.
+	 *
+	 * Now check to see if the process took longer than we would like.  If
+	 * the process lasts longer than the fraction of the autocolor interval
+	 * given by the percent-autocolor mode, we will set values to reduce
+	 * the number of times that we'll recolor the buffers that took a long
+	 * time.
+	 */
+	if (do_update) {
+	    elapsed_time = vl_elapsed(&begin_time, FALSE);
+
+	    goal_time = global_b_val(VAL_AUTOCOLOR);
+	    if (global_b_val(VAL_PERCENT_AUTOCOLOR) > 0) {
+		goal_time *= global_b_val(VAL_PERCENT_AUTOCOLOR);
+		if (goal_time <= 0)
+		    goal_time = 1;
+	    }
+	    if (elapsed_time > goal_time) {
+		for_each_visible_window(wp) {
+		    bp = wp->w_bufp;
+
+		    /*
+		     * Check if we have just autocolored the buffer.
+		     */
+		    if (can_autocolor(bp)
+			&& bp->next_autocolor_time < 0) {
+			/*
+			 * Compute the desired autocolor interval for the
+			 * buffer.  This might be different from the global
+			 * value, since each buffer can have its own
+			 * percent-autocolor value.
+			 *
+			 * Ignore the buffer's local autocolor value, since we
+			 * use that only for displaying results.
+			 */
+			goal_time = ((global_b_val(VAL_AUTOCOLOR)
+				      + do_update - 1)
+				     / do_update);
+			if (b_val(bp, VAL_PERCENT_AUTOCOLOR) > 0) {
+			    goal_time *= b_val(bp, VAL_PERCENT_AUTOCOLOR);
+			    goal_time /= 100;
+			    if (goal_time <= 0)
+				goal_time = 1;
+			}
+			if (bp->last_autocolor_time > goal_time) {
+			    int next_time = bp->last_autocolor_time;
+			    int next_skip = ((next_time + goal_time - 1)
+					     / goal_time);
+
+			    /*
+			     * Make a local autocolor mode to show the user
+			     * what the actual interval is.
+			     */
+			    make_local_b_val(bp, VAL_AUTOCOLOR);
+			    set_b_val(bp, VAL_AUTOCOLOR, next_time);
+			    /*
+			     * Set counter to skip autocolor intervals.
+			     */
+			    bp->next_autocolor_time = next_skip;
+			}
+		    }
+		}
+	    }
+
+	    /*
+	     * Reset the state of buffers that were updated during this
+	     * interval.
+	     */
+	    for_each_visible_window(wp) {
+		bp = wp->w_bufp;
+		if (bp->next_autocolor_time < 0)
+		    bp->next_autocolor_time = 0;
+	    }
+
+	    update(FALSE);
+	}
+	TRACE((T_RETURN "\n"));
+    }
 #endif
 }
 

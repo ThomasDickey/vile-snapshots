@@ -1725,6 +1725,17 @@ Editor modes
 			\<[[:file:]]\+\>
 		This is a buffer mode.  (B)
 
+	percent-autocolor Maximum percentage of time during the autocolor
+		interval that is desired to use for coloring the buffers.  This
+		helps with very large files, which take more time.  If vile
+		uses more time, then it will skip subsequent updates for the
+		buffer, to keep up.  When it does this, it sets a local copy of
+		the autocolor buffer mode with the effective interval which is
+		used.
+		
+		If this mode is zero, it is ignored, and vile can use 100% of
+		the interval for autocoloring.  (B)
+
 	percent-crlf Percentage of total lines which must end with CR/LF for
 		vile to automatically convert buffer's recordseparator to
 		crlf, if dos mode is set.  (B)
@@ -6537,4 +6548,4 @@ Problems
 
 Copyright 1995-2007,2008 by Paul Fox, Thomas Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.661 2008/10/25 16:16:35 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.662 2008/11/10 00:26:50 tom Exp $

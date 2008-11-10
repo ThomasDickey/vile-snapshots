@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.665 2008/10/20 00:06:22 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.666 2008/11/09 18:11:38 tom Exp $
  *
  */
 
@@ -1046,6 +1046,10 @@ extern ULONG vl_atoul (const char *str, int base, int *failed);
 
 #ifndef vl_stricmp
 extern int vl_stricmp (const char *a, const char *b);
+#endif
+
+#if OPT_AUTOCOLOR || OPT_ELAPSED
+extern double vl_elapsed(ElapsedType * first, int begin);
 #endif
 
 #if OPT_EVAL

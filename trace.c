@@ -1,7 +1,7 @@
 /*
  * debugging support -- tom dickey.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.85 2008/10/19 20:40:13 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.86 2008/11/09 18:10:54 tom Exp $
  *
  */
 
@@ -12,25 +12,12 @@
 
 #if OPT_ELAPSED
 
-#if SYS_UNIX
-typedef struct timeval ElapsedType;
-#define BI_DATA0 {0, 0}
-#elif SYS_WINNT
-typedef DWORD ElapsedType;
-#define BI_DATA0 0
-#else
-typedef time_t ElapsedType;
-#define BI_DATA0 0
-#endif
-
 typedef struct {
     long total_calls;
     double total_time;
     ElapsedType this_time;	/* origin of begin_elapsed()    */
     int nesting_time;		/* recursion-guard */
 } ELAPSED_DATA;
-
-#define BI_DATA MY_BI_DATA
 
 typedef struct {
     char *bi_key;		/* the name of the command      */
@@ -171,33 +158,6 @@ static BI_TREE elapsed_tree =
 static BI_DATA *elapsed_stack[100];
 static int elapsed_sp = 0;
 
-static double
-Elapsed(ElapsedType * first, int begin)
-{
-    double result;
-
-#if SYS_UNIX
-#define	SECS(tv)	(tv.tv_sec + (tv.tv_usec / 1.0e6))
-    ElapsedType tv1;
-    gettimeofday(&tv1, 0);
-    if (begin)
-	*first = tv1;
-    result = (SECS(tv1) - SECS((*first)));
-#elif SYS_WINNT
-    ElapsedType tv1 = GetTickCount();
-    if (begin)
-	*first = tv1;
-    result = ((tv1 - *first) / 1000.0);
-#else
-    ElapsedType tv1 = time((time_t *) 0);
-    if (begin)
-	*first = tv1;
-    result = (tv1 - *first);
-#endif
-
-    return result;
-}
-
 static BI_DATA *
 find_elapsed(const char *txt)
 {
@@ -227,7 +187,7 @@ begin_elapsed(const char *txt)
 	    ELAPSED_DATA *q = p->data;
 	    elapsed_stack[elapsed_sp] = p;
 	    if (!(q->nesting_time++)) {
-		(void) Elapsed(&(q->this_time), TRUE);
+		(void) vl_elapsed(&(q->this_time), TRUE);
 	    }
 	}
     }
@@ -244,7 +204,7 @@ end_elapsed(void)
 	    if (p != 0) {
 		ELAPSED_DATA *q = p->data;
 		if (!(--(q->nesting_time))) {
-		    q->total_time += Elapsed(&(q->this_time), FALSE);
+		    q->total_time += vl_elapsed(&(q->this_time), FALSE);
 		    q->total_calls += 1;
 		}
 	    }

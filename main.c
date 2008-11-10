@@ -22,7 +22,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.652 2008/11/08 00:33:32 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.656 2008/11/10 00:25:25 tom Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -1112,7 +1112,9 @@ get_executable_dir(void)
 	exec_pathname = strmalloc(lengthen_path(strcpy(temp, s)));
 #ifndef VILE_STARTUP_PATH
 	/* workaround for DJGPP, to add executable's directory to startup path */
-	append_to_path_list(&startup_path, exec_pathname);
+	if ((s = vile_getenv("VILE_STARTUP_PATH")) == 0) {
+	    append_to_path_list(&startup_path, exec_pathname);
+	}
 #endif
     }
     free(s);
@@ -1306,12 +1308,18 @@ init_mode_value(struct VAL *d, MODECLASS v_class, int v_which)
 	    setINT(GMDERRORBELLS, TRUE);	/* alarms are noticeable */
 	    setINT(GMDEXPAND_PATH, FALSE);
 	    setINT(GMDIMPLYBUFF, FALSE);	/* imply-buffer */
+	    setINT(GMDINSEXEC, FALSE);	/* allow ^F/^B, etc., to be interpreted during insert mode */
+	    setINT(GMDMAPLONGER, FALSE);	/* favor longer maps */
 	    setINT(GMDMULTIBEEP, TRUE);		/* multiple beeps for multiple motion failures */
+	    setINT(GMDPIN_TAGSTACK, FALSE);	/* tagstack push/pop ops are pinned to curwin */
 	    setINT(GMDREMAP, TRUE);	/* allow remapping by default */
+	    setINT(GMDREMAPFIRST, FALSE);	/* should 1st char of a map be remapped? */
 	    setINT(GMDRONLYRONLY, FALSE);	/* Set readonly-on-readonly */
 	    setINT(GMDRONLYVIEW, FALSE);	/* Set view-on-readonly */
+	    setINT(GMDSAMEBANGS, FALSE);	/* use same "!!" data for ^X-! */
 	    setINT(GMDSMOOTH_SCROLL, FALSE);
 	    setINT(GMDSPACESENT, TRUE);		/* add two spaces after each sentence */
+	    setINT(GMDUNIQ_BUFS, FALSE);	/* only one buffer per file */
 	    setINT(GMDWARNRENAME, TRUE);	/* warn before renaming a buffer */
 	    setINT(GMDWARNREREAD, TRUE);	/* warn before rereading a buffer */
 	    setINT(GMDWARNUNREAD, TRUE);	/* warn if quitting without looking at all buffers */
@@ -1352,6 +1360,9 @@ init_mode_value(struct VAL *d, MODECLASS v_class, int v_which)
 #ifdef GMDHISTORY
 	    setINT(GMDHISTORY, TRUE);
 #endif
+#ifdef GMDMOUSE
+	    setINT(GMDMOUSE, FALSE);
+#endif
 #ifdef GMDPOPUP_CHOICES
 	    setINT(GMDPOPUP_CHOICES, TRUE);
 #endif
@@ -1360,9 +1371,6 @@ init_mode_value(struct VAL *d, MODECLASS v_class, int v_which)
 #endif
 #ifdef GMDPOPUP_MSGS
 	    setINT(GMDPOPUP_MSGS, -TRUE);	/* popup-msgs */
-#endif
-#ifdef GVAL_READER_POLICY
-	    setINT(GVAL_READER_POLICY, RP_BOTH);
 #endif
 #ifdef GMDRESOLVE_LINKS
 	    setINT(GMDRESOLVE_LINKS, FALSE);	/* set noresolve-links by default in case we've got NFS problems */
@@ -1400,6 +1408,9 @@ init_mode_value(struct VAL *d, MODECLASS v_class, int v_which)
 #ifdef GVAL_CCOLOR
 	    setINT(GVAL_CCOLOR, ENUM_UNKNOWN);	/* cursor color */
 #endif
+#ifdef GVAL_COLOR_SCHEME
+	    setPAT(GVAL_COLOR_SCHEME, 0);	/* default scheme is 0 */
+#endif
 #ifdef GVAL_CSUFFIXES
 	    setPAT(GVAL_CSUFFIXES, DFT_CSUFFIX);
 #endif
@@ -1424,6 +1435,9 @@ init_mode_value(struct VAL *d, MODECLASS v_class, int v_which)
 #ifdef GVAL_POPUP_CHOICES
 	    setINT(GVAL_POPUP_CHOICES, POPUP_CHOICES_DELAYED);
 #endif
+#ifdef GVAL_READER_POLICY
+	    setINT(GVAL_READER_POLICY, RP_BOTH);
+#endif
 #ifdef GVAL_REDIRECT_KEYS
 	    setTXT(GVAL_REDIRECT_KEYS,
 		   "F5::S,F10::S,F11::S,F7::F,F5:C:,F9::Y");
@@ -1431,11 +1445,14 @@ init_mode_value(struct VAL *d, MODECLASS v_class, int v_which)
 #ifdef GVAL_RECENT_FILES
 	    setINT(GVAL_RECENT_FILES, 0);
 #endif
-#ifdef GVAL_RECENT_FOLDERS
-	    setINT(GVAL_RECENT_FOLDERS, 0);
+#ifdef GVAL_RECENT_FLDRS
+	    setINT(GVAL_RECENT_FLDRS, 0);
 #endif
 #ifdef GVAL_SCROLLPAUSE
 	    setINT(GVAL_SCROLLPAUSE, 0);
+#endif
+#ifdef GVAL_VIDEO
+	    setINT(GVAL_VIDEO, 0);
 #endif
 #ifdef GVAL_VTFLASH
 	    setINT(GVAL_VTFLASH, VTFLASH_OFF);	/* hardwired flash off */
@@ -1561,6 +1578,9 @@ init_mode_value(struct VAL *d, MODECLASS v_class, int v_which)
 #endif
 #ifdef VAL_MODELINES
 	    setINT(VAL_MODELINES, 5);
+#endif
+#ifdef VAL_PERCENT_AUTOCOLOR
+	    setINT(VAL_PERCENT_AUTOCOLOR, 50);
 #endif
 #ifdef VAL_PERCENT_UTF8
 	    setINT(VAL_PERCENT_UTF8, 90);
