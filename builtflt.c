@@ -1,7 +1,7 @@
 /*
  * Main program and I/O for external vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/RCS/builtflt.c,v 1.66 2008/10/21 21:08:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/builtflt.c,v 1.67 2008/11/09 18:54:39 tom Exp $
  *
  */
 
@@ -478,7 +478,9 @@ flt_lookup(char *name)
 int
 flt_start(char *name)
 {
-    TRACE(("flt_start(%s)\n", name));
+    int rc = FALSE;
+
+    TRACE((T_CALLED "flt_start(%s)\n", name));
     if (flt_lookup(name)
 #ifdef HAVE_LIBDL
 	&& (current_filter->loaded || load_filter(current_filter->filter_name))
@@ -486,6 +488,11 @@ flt_start(char *name)
 	) {
 	MARK save_dot;
 	MARK save_mk;
+
+#if OPT_AUTOCOLOR
+	ElapsedType begin_time;
+	(void) vl_elapsed(&begin_time, TRUE);
+#endif
 
 	save_dot = DOT;
 	save_mk = MK;
@@ -517,9 +524,14 @@ flt_start(char *name)
 	DOT = save_dot;
 	MK = save_mk;
 
-	return TRUE;
+#if OPT_AUTOCOLOR
+	curbp->last_autocolor_time = vl_elapsed(&begin_time, FALSE);
+	curbp->next_autocolor_time = 0;
+#endif
+
+	rc = TRUE;
     }
-    return FALSE;
+    returnCode(rc);
 }
 
 /*

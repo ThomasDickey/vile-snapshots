@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.673 2008/10/22 20:24:39 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.675 2008/11/09 21:07:21 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -603,6 +603,7 @@
 #define OPT_UNC_PATH	(SYS_WINNT)
 
 /* individual features that are (normally) controlled by SMALLER */
+#define OPT_AUTOCOLOR	(!SMALLER && OPT_COLOR)	/* autocolor support */
 #define OPT_BNAME_CMPL  !SMALLER		/* name-completion for buffers */
 #define OPT_B_LIMITS    !SMALLER		/* left-margin */
 #define OPT_CURTOKENS   !SMALLER		/* cursor-tokens mode */
@@ -2078,6 +2079,16 @@ typedef struct {
 typedef int FUID;
 #endif
 
+#if OPT_AUTOCOLOR || OPT_ELAPSED
+#if HAVE_GETTIMEOFDAY
+typedef struct timeval ElapsedType;
+#elif SYS_WINNT
+typedef DWORD ElapsedType;
+#else
+typedef time_t ElapsedType;
+#endif
+#endif
+
 /*
  * Text is kept in buffers.  A buffer header, described below, exists
  * for every buffer in the system.  The buffers are kept in a big
@@ -2133,6 +2144,10 @@ typedef struct	BUFFER {
 	char	*b_fname;		/* File name			*/
 	int	b_fnlen;		/* length of filename		*/
 	char	b_bname[NBUFN];		/* Buffer name			*/
+#if OPT_AUTOCOLOR
+	double	last_autocolor_time;	/* millisecond for last autocolor */
+	long	next_autocolor_time;	/* count for skipping autocolor */
+#endif
 #if OPT_CURTOKENS
 	struct VAL buf_fname_expr;	/* $buf-fname-expr		*/
 #endif

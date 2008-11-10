@@ -11,7 +11,7 @@
 #
 # The modes are table entries in the BUFFER and WINDOW structures.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.280 2008/10/22 20:24:16 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.281 2008/11/08 13:38:15 tom Exp $
 #
 #
 # Mode-table entries.  Capitalized letters are used for abbreviations.
@@ -148,9 +148,10 @@ int							# VAL_ prefix
 	"fence-limit"	FENCE_LIMIT	0		OPT_MAJORMODE # fence iteration-limit
 	"FillCol"	FILL		0		# column for paragraph reformat, and line break
 	"ModeLineS"	MODELINES	0		OPT_MODELINE # modeline (selected :setl only) (vi-style)
-	"percent-crlf"	PERCENT_CRLF	0		# threshold for converting to DOS-mode
-	"percent-utf8"	PERCENT_UTF8	0		OPT_MULTIBYTE # threshold for detecting UTF-16 or UTF-32 converting to UTF-8
-	"record-length" RECORD_LENGTH	0		SYS_VMS	# specify record-length to use
+	"percent-autocolor" PERCENT_AUTOCOLOR 0		OPT_COLOR&&!SMALLER # threshold for converting to DOS-mode
+	"percent-crlf"	PERCENT_CRLF	chgd_percent	# threshold for converting to DOS-mode
+	"percent-utf8"	PERCENT_UTF8	chgd_percent	OPT_MULTIBYTE # threshold for detecting UTF-16 or UTF-32 converting to UTF-8
+	"record-length" RECORD_LENGTH	chgd_percent	SYS_VMS	# specify record-length to use
 	"ShiftWidth"	SWIDTH		0		# shiftwidth for ^T/^D/<</>>
 	"TabStop"	TAB		chgd_win_mode	# tab spacing for most buffers
 	"TagLength"	TAGLEN		0		# required significant length for tag lookups

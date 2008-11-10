@@ -7,6 +7,9 @@ Changes for vile 9.7 (released ??? ??? ?? ????)
 	+ fix compiler-name for MinGW in version.c
 	+ build-fix for MinGW
 	> Tom Dickey:
+	+ add a few overlooked mode initializations in init_mode_value().
+	+ add percent-autocolor mode, which can be used to override the
+	  autocolor mode for very large files.
 	+ modify makefile.djg and borland.c to allow building
 	  syntax-highlighting version for DJGPP, using builtin-filters.
 	+ modify $startup-path for DOS/Windows where VILE_STARTUP_PATH is not
