@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.675 2008/11/09 21:07:21 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.676 2008/11/10 20:57:28 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -1330,7 +1330,8 @@ typedef struct {
 } PARAM_INFO;
 
 typedef enum {
-	RS_AUTO = 0
+	RS_AUTO = -1
+	, RS_DEFAULT = 0
 	, RS_LF			/* unix */
 	, RS_CR			/* mac */
 	, RS_CRLF		/* dos */
@@ -1343,9 +1344,9 @@ typedef enum {
 } READERPOLICY_CHOICES;
 
 #if CRLF_LINES
-#define RS_DEFAULT RS_CRLF
+#define RS_SYS_DEFAULT RS_CRLF
 #else
-#define RS_DEFAULT RS_LF
+#define RS_SYS_DEFAULT RS_LF
 #endif
 
 typedef enum {

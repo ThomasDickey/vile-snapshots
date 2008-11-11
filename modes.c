@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.382 2008/11/10 00:24:12 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.383 2008/11/10 21:33:49 tom Exp $
  *
  */
 
@@ -2352,11 +2352,12 @@ set_record_sep(BUFFER *bp, RECORD_SEP code)
 {
     const char *recordsep = "\n";
 
-    if (code == RS_AUTO)
-	code = RS_DEFAULT;
+    if (code == RS_DEFAULT)
+	code = RS_SYS_DEFAULT;
 
     switch (code) {
     case RS_AUTO:
+    case RS_DEFAULT:
 	/* see above */
 	break;
     case RS_LF:
@@ -2390,8 +2391,9 @@ chgd_rs(BUFFER *bp, VALARGS * args, int glob_vals, int testing)
     if (!testing) {
 	if (bp == 0)
 	    return FALSE;
-	if (args->local->vp->i == RS_AUTO)
+	if (args->local->vp->i == RS_AUTO && !glob_vals) {
 	    args->local->vp->i = RS_DEFAULT;
+	}
 	set_record_sep(bp, (RECORD_SEP) args->local->vp->i);
     }
 
