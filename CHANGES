@@ -1,12 +1,16 @@
 Changes for vile 9.7 (released ??? ??? ?? ????)
 
- 20081??? (h)
+ 20081110 (h)
 	> J Chris Coppic:
 	+ updated CaptHook.pm
 	> Mark Robinson
 	+ fix compiler-name for MinGW in version.c
 	+ build-fix for MinGW
 	> Tom Dickey:
+	+ add "auto" value for recordseparator mode, which tells vile that if
+	  all of the line-endings are CR/LF to use "crlf", and if all are
+	  LF, to use "lf".  This overrides the dos mode which provides a
+	  platform bias of the recordseparator mode.
 	+ add a few overlooked mode initializations in init_mode_value().
 	+ add percent-autocolor mode, which can be used to override the
 	  autocolor mode for very large files.

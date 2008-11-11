@@ -1,7 +1,7 @@
 /*
  * Main program and I/O for external vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/RCS/builtflt.c,v 1.67 2008/11/09 18:54:39 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/builtflt.c,v 1.68 2008/11/10 20:25:42 tom Exp $
  *
  */
 
@@ -489,11 +489,6 @@ flt_start(char *name)
 	MARK save_dot;
 	MARK save_mk;
 
-#if OPT_AUTOCOLOR
-	ElapsedType begin_time;
-	(void) vl_elapsed(&begin_time, TRUE);
-#endif
-
 	save_dot = DOT;
 	save_mk = MK;
 
@@ -523,11 +518,6 @@ flt_start(char *name)
 
 	DOT = save_dot;
 	MK = save_mk;
-
-#if OPT_AUTOCOLOR
-	curbp->last_autocolor_time = vl_elapsed(&begin_time, FALSE);
-	curbp->next_autocolor_time = 0;
-#endif
 
 	rc = TRUE;
     }

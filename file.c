@@ -5,7 +5,7 @@
  * reading and writing of the disk are
  * in "fileio.c".
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.418 2008/10/22 19:49:48 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.419 2008/11/10 21:20:14 tom Exp $
  */
 
 #include "estruct.h"
@@ -1346,7 +1346,10 @@ guess_recordseparator(BUFFER *bp, UCHAR * buffer, B_COUNT length, L_NUM * lines)
 
     if (count_lf != 0) {
 	result = RS_LF;
-	if (global_b_val(MDDOS)) {
+	if (global_b_val(VAL_RECORD_SEP) == RS_AUTO
+	    && (count_dos == 0 || count_dos == count_lf)) {
+	    result = count_dos ? RS_CRLF : RS_LF;
+	} else if (global_b_val(MDDOS)) {
 	    if ((bp->b_flag & BFEXEC) != 0) {
 		result = (count_dos && !count_unix) ? RS_CRLF : RS_LF;
 	    } else if (check_percent_crlf(bp, count_dos, count_unix)) {
@@ -1363,7 +1366,7 @@ guess_recordseparator(BUFFER *bp, UCHAR * buffer, B_COUNT length, L_NUM * lines)
 	*lines = count_cr;
     } else {
 	*lines = 1;		/* we still need a line, to allocate data */
-	result = RS_DEFAULT;
+	result = RS_SYS_DEFAULT;
     }
 
     TRACE(("...line count = %ld, format=%s\n", (long) *lines,

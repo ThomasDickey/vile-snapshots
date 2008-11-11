@@ -18,7 +18,7 @@
  * transferring the selection are not dealt with in this file.  Procedures
  * for dealing with the representation are maintained in this file.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.170 2008/10/23 23:39:43 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.171 2008/11/10 20:25:09 tom Exp $
  *
  */
 
@@ -1807,6 +1807,10 @@ attribute_directly(void)
 
 #if OPT_MAJORMODE
     if (valid_buffer(curbp)) {
+#if OPT_AUTOCOLOR
+	ElapsedType begin_time;
+	(void) vl_elapsed(&begin_time, TRUE);
+#endif
 	discard_syntax_highlighting();
 	if (b_val(curbp, MDHILITE)) {
 	    char *filtername = 0;
@@ -1836,6 +1840,10 @@ attribute_directly(void)
 	    curbp->b_highlight |= HILITE_DIRTY;
 	    attrib_matches();
 	}
+#endif
+#if OPT_AUTOCOLOR
+	curbp->last_autocolor_time = vl_elapsed(&begin_time, FALSE);
+	curbp->next_autocolor_time = 0;
 #endif
     }
 #endif

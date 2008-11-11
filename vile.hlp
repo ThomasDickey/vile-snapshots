@@ -1817,8 +1817,12 @@ Editor modes
 		behavior.  (U)
 
 	recordseparator (rs) Specify format of files that vile reads and
-		writes.  Formats are lf (for Unix), crlf (for DOS), cr (for
-		Macintosh) and default (lf or crlf, depending on the platform).
+		writes.  Formats are
+			auto (to choose between lf and crlf, override dos mode)
+			lf (for Unix),
+			crlf (for DOS),
+			cr (for Macintosh)
+			and default (lf or crlf, depending on the platform).
 		When reading from a file, vile determines the file format
 		automatically, and sets a local value for this mode.  When
 		reading from a pipe, it uses the global value of
@@ -6548,4 +6552,4 @@ Problems
 
 Copyright 1995-2007,2008 by Paul Fox, Thomas Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.662 2008/11/10 00:26:50 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.663 2008/11/10 21:43:39 tom Exp $
