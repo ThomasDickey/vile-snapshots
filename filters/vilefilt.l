@@ -7,7 +7,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/vilefilt.l,v 1.60 2008/10/08 23:19:27 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/vilefilt.l,v 1.61 2008/11/17 00:59:02 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of vile macros
  * - T.Dickey
@@ -42,6 +42,7 @@ static int is_funckey(const char *text);
 static void handle_keyword(char *text, int len);
 static void handle_newline(void);
 static void handle_prepro(char *text, int len);
+static void write_literal(char *text, int len);
 
 /*
  * With regard to the comment macros defined below, note that QUOTECMT1
@@ -140,7 +141,7 @@ SPACE		;
 
 {QUOTECMT2}	{ WriteToken(Comment_attr); }
 
-<LITERAL>[^\n]*	{ WriteToken(String_attr); }
+<LITERAL>[^\n]*	{ write_literal(yytext, yyleng); }
 
 <SUBMODE_VALS,SETTINGS>[=]	{ WriteToken(Action_attr); }
 
@@ -294,6 +295,111 @@ static int
 is_funckey(const char *text)
 {
     return (!strncmp(text, "FN-", 3));
+}
+
+#if HAVE_DIRECTIVE
+static int
+check_ctl_v(char *text, int len)
+{
+    int result = 0;
+    int base, digits, skip;
+
+    if (len > 0) {
+	switch (text[0]) {
+	case '0':
+	    skip = 0;
+	    base = 8;
+	    digits = 3;
+	case 'x':
+	    skip = 1;
+	    base = 16;
+	    digits = 2;
+	    break;
+	case 'u':
+	    skip = 1;
+	    base = 16;
+	    digits = 4;
+	    break;
+	default:
+	    if (isdigit(CharOf(text[0]))) {
+		skip = 0;
+		base = 10;
+		digits = 3;
+	    } else {
+		base = 0;
+	    }
+	    break;
+	}
+	if (base > 0) {
+	    if (len >= (skip + digits)) {
+		int ok = 1;
+		result = skip;
+		text += skip;
+		while (ok && (digits > 0)) {
+		    unsigned ch = CharOf(*text++);
+		    switch (base) {
+		    case 8:
+			ok = isdigit(ch) && (ch < '8');
+			break;
+		    case 10:
+			ok = isdigit(ch);
+			break;
+		    case 16:
+			ok = isxdigit(ch);
+			break;
+		    }
+		    if (ok) {
+			--digits;
+			++result;
+		    }
+		}
+		if (digits > 0) {
+		    result = -result;
+		}
+	    } else {
+		result = -len;
+	    }
+	}
+    }
+    return result;
+}
+#endif
+
+/*
+ * Write a literal, but highlight ^V'd numeric codes as numbers if they have
+ * the expected number of digits, and as errors otherwise.  Technically,
+ * those are legal, but may be ambiguous.
+ */
+static void
+write_literal(char *text, int len)
+{
+#if HAVE_DIRECTIVE
+    int j, k, last = 0;
+
+    for (j = 0; j < len; ++j) {
+	if (text[j] == CTL_V) {
+	    int next = j + 1;
+
+	    k = check_ctl_v(text + next, len - next);
+	    if (k != 0) {
+		char *attr = Number_attr;
+
+		flt_puts(text + last, next - last, String_attr);
+		if (k < 0) {	/* error */
+		    attr = Error_attr;
+		    k = -k;
+		}
+		flt_puts(text + next, k, attr);
+		last = next + k;
+		j = last - 1;
+	    }
+	}
+    }
+    flt_puts(text + last, len - last, String_attr);
+#else
+    (void) text;
+    (void) len;
+#endif
 }
 
 static void

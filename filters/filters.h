@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.113 2008/10/19 15:06:41 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.114 2008/11/17 00:23:37 tom Exp $
  */
 
 #ifndef FILTERS_H
@@ -50,9 +50,10 @@ extern "C" {
 #define NAME_TYPES   "Type"
 
 /*
- * Our magic character.
+ * Our magic characters.
  */
 #define CTL_A	'\001'
+#define CTL_V	'\026'
 
 /*
  * Useful character definitions
@@ -172,7 +173,6 @@ extern int yywrap(void);
  * perhaps by the time "new" flex merits the term "beta", they'll fix this:
  */
 #if defined(FLEX_BETA)
-#define YY_NO_INPUT 1		/* get rid of 'input()' function */
 extern FILE *yyget_in (void);
 extern FILE *yyget_out (void);
 extern char *yyget_text (void);
@@ -187,6 +187,8 @@ extern void yyset_out (FILE * out_str);
 /* there's also warnings for unused 'yyunput()', but I don't see a fix */
 /* flex's skeleton includes <unistd.h> - no particular reason apparent */
 #endif
+
+#define YY_NO_INPUT 1		/* get rid of 'input()' function */
 
 /*
  * Declared in the filters.c file.

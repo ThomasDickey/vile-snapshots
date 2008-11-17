@@ -1,5 +1,16 @@
 Changes for vile 9.7 (released ??? ??? ?? ????)
 
+ 200811?? (i)
+	> Tom Dickey:
+	+ improve highlighting of vile macros by displaying numeric codes
+	  following a control/V as in a map-command as numbers or errors if
+	  fewer digits were found than expected (prompted by report by
+	  Christopher Illies).
+	+ modify make-filter to show tokens marked with @'s as preprocessor,
+	  e.g., as used for autoconf.
+	+ set file-encoding in digraph.rc to make comments (which are
+	  in ISO-8859-1) display properly in UTF-8.
+
  20081110 (h)
 	> J Chris Coppic:
 	+ updated CaptHook.pm

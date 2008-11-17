@@ -1,5 +1,6 @@
 ;; digraphs.rc for use with vile
-;; $Header: /users/source/archives/vile.vcs/macros/RCS/digraphs.rc,v 1.2 1999/12/03 01:50:52 tom Exp $
+;; vile:fk=8bit
+;; $Header: /users/source/archives/vile.vcs/macros/RCS/digraphs.rc,v 1.3 2008/11/17 01:13:35 tom Exp $
 
 ;; if you wish to insert digraph characters, you can use this file (or
 ;; something similar) as a set of ":map" commands.  simply put the line
@@ -238,3 +239,8 @@ map! i^ 238
 map! o~ 245
 ;; 'ü'
 map! u\" 252
+;;
+;; The above mappings work in ISO-8859-1, as well as in UTF-8 - the latter
+;; because vile translates those to internal Unicode values from 128-255.
+;; Here is an example of setting a code outside the 0-255 range:
+map! s, u0219

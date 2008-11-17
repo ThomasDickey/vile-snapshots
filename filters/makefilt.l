@@ -7,7 +7,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/makefilt.l,v 1.56 2008/01/12 17:21:27 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/makefilt.l,v 1.57 2008/11/17 00:09:56 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Makefile
  *
@@ -39,6 +39,7 @@ SPACE		[ \t]
 ID		[[:alpha:]_][[:alnum:]_]+
 NAME		[[:alpha:]_][[:alnum:]_.-]+
 
+SUBST		"@"{NAME}"@"
 MACRO		([$]?\$\{{ID}\}|[$]?\${ID}|[$]?\$[[:alpha:]@!%^&*?<]|\${SPACE}*\([^\)]+\))
 
 OPER		[+:?]?=
@@ -62,6 +63,7 @@ OPER		[+:?]?=
 				  write_delimited(yytext, yyleng, oper, Ident2_attr);
 				}
 
+<NORMAL>{SUBST}			{ WriteToken(Preproc_attr); }
 <NORMAL>{MACRO}			{ WriteToken(Ident2_attr); }
 
 <NORMAL>^{SPACE}\@		{ if (yyleng)

@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.482 2008/10/19 20:41:54 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.483 2008/11/17 00:06:08 tom Exp $
  *
  */
 
@@ -2709,7 +2709,7 @@ modeline_modes(BUFFER *bp, char **msptr, int brief)
 	    show = b_val(bp, VAL_RECORD_SEP) != global_b_val(VAL_RECORD_SEP);
 	    break;
 	case SF_FOREIGN:
-	    show = b_val(bp, VAL_RECORD_SEP) != RS_DEFAULT;
+	    show = b_val(bp, VAL_RECORD_SEP) != RS_SYS_DEFAULT;
 	    break;
 	case SF_LOCAL:
 	    show = is_local_b_val(bp, VAL_RECORD_SEP);
