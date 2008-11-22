@@ -15,7 +15,7 @@
  * by Tom Dickey, 1993.    -pgf
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/mktbls.c,v 1.152 2008/10/15 20:47:30 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/mktbls.c,v 1.153 2008/11/18 01:19:54 tom Exp $
  *
  */
 
@@ -157,7 +157,8 @@ typedef struct stringl {
     struct stringl *nst;
 } LIST;
 
-static char *Blank = "";
+static char Blank[] =
+{0};
 
 static LIST *all_names;
 static LIST *all_kbind;		/* data for kbindtbl[] */
@@ -178,7 +179,7 @@ static LIST *all_bmodes;	/* data for BUFFER modes */
 static LIST *all_wmodes;	/* data for WINDOW modes */
 
 static void save_all_modes(const char *type, char *normal, const char
-			   *abbrev, char *cond);
+			   *abbrev, const char *cond);
 static void save_all_submodes(const char *type, char *normal, const char
 			      *abbrev, char *cond);
 
@@ -533,7 +534,7 @@ Parse(char *input, char **vec)
     int expecting = TRUE, count = 0, quote = 0, n, c;
 
     for (c = 0; c < MAX_PARSE; c++)
-	vec[c] = "";
+	vec[c] = Blank;
     for (c = (int) strlen(input); c > 0 && isSpace(input[c - 1]); c--)
 	input[c - 1] = EOS;
 
@@ -927,7 +928,7 @@ save_all_modes(
 		  const char *type,
 		  char *normal,
 		  const char *abbrev,
-		  char *cond)
+		  const char *cond)
 {
     if (isboolean(*type)) {
 	char t_normal[LEN_BUFFER], t_abbrev[LEN_BUFFER];
@@ -1137,7 +1138,7 @@ dump_majors(void)
     LIST *p, *q;
     char norm[LEN_BUFFER], abbr[LEN_BUFFER], type[LEN_BUFFER];
     char normal[LEN_BUFFER], abbrev[LEN_BUFFER];
-    char *my_cond = "OPT_MAJORMODE";
+    const char *my_cond = "OPT_MAJORMODE";
 
     for (q = all_majors; q; q = q->nst) {
 	Sprintf(normal, "%smode", q->Name);	/* FIXME */
@@ -1210,26 +1211,26 @@ dump_mmodes(void)
 static void
 save_abbr_in(LIST ** q, LIST * p, char **vec)
 {
-    char fullname[LEN_BUFFER];
-    char partname[LEN_BUFFER];
-    char typename[LEN_BUFFER];
+    char full_name[LEN_BUFFER];
+    char part_name[LEN_BUFFER];
+    char type_name[LEN_BUFFER];
     int count;
 
     for (; p; p = p->nst) {
-	*fullname = EOS;
-	*typename = EOS;
-	*partname = EOS;
-	count = sscanf(p->Name, "%s\n%s\n%s", fullname, typename, partname);
-	if (count == 2 || (count == 3 && *partname == EOS)) {
-	    if (!strcmp(fullname, vec[1])) {
+	*full_name = EOS;
+	*type_name = EOS;
+	*part_name = EOS;
+	count = sscanf(p->Name, "%s\n%s\n%s", full_name, type_name, part_name);
+	if (count == 2 || (count == 3 && *part_name == EOS)) {
+	    if (!strcmp(full_name, vec[1])) {
 		free(p->Name);
-		p->Name = AllocKey(fullname, *typename, vec[2]);
+		p->Name = AllocKey(full_name, *type_name, vec[2]);
 		*q = p;
 	    }
 	} else if (count == 3) {
-	    if (!strcmp(fullname, vec[1])) {
+	    if (!strcmp(full_name, vec[1])) {
 		fprintf(stderr, "\"%s\" already has alias \"%s\"\n",
-			fullname,
+			full_name,
 			vec[2]);
 		badfmt("naming conflict");
 	    }

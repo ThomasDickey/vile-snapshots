@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/dcl-filt.l,v 1.20 2008/01/12 17:21:27 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/dcl-filt.l,v 1.21 2008/11/19 23:11:46 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of DCL files.
  *
@@ -152,7 +152,7 @@ init_filter(int before GCC_UNUSED)
 static void
 do_filter(FILE *inputs)
 {
-    yyin = inputs;
+    InitLEX(inputs);
 
     Action_attr  = class_attr(NAME_ACTION);
     Comment_attr = class_attr(NAME_COMMENT);
@@ -163,8 +163,7 @@ do_filter(FILE *inputs)
 
     look_for = 0;
     BEGIN(NORMAL);
-    while (yylex() > 0) {
-    }
+    RunLEX();
 }
 
 #if NO_LEAKS

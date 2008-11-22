@@ -3,7 +3,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/sml-filt.l,v 1.8 2008/01/12 17:21:27 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/sml-filt.l,v 1.9 2008/11/19 23:11:46 tom Exp $
 
     Filter to add vile "attribution" sequences to selected bits of SML
     input text.
@@ -126,7 +126,7 @@ init_filter(int before GCC_UNUSED)
 static void
 do_filter(FILE *inputs)
 {
-    yyin = inputs;
+    InitLEX(inputs);
 
     strpos = 0;
 
@@ -137,8 +137,7 @@ do_filter(FILE *inputs)
     String_attr  = class_attr(NAME_LITERAL);
 
     BEGIN(INITIAL);
-    while (yylex() > 0) {
-    }
+    RunLEX();
 
     flush_string();
 }

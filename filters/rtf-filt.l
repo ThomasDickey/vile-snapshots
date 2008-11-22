@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/rtf-filt.l,v 1.5 2008/01/12 17:21:27 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/rtf-filt.l,v 1.6 2008/11/19 23:11:46 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of RTF (rich text format)
  * input text.
@@ -65,14 +65,14 @@ init_filter(int before GCC_UNUSED)
 static void
 do_filter(FILE *inputs)
 {
-    yyin = inputs;
+    InitLEX(inputs);
 
     Error_attr   = class_attr(NAME_ERROR);
     Comment_attr = class_attr(NAME_COMMENT);
     Number_attr  = class_attr(NAME_NUMBER);
     String_attr  = class_attr(NAME_LITERAL);
 
-    yylex();
+    RunLEX();
 }
 
 #if NO_LEAKS

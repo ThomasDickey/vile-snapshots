@@ -6,7 +6,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/conffilt.l,v 1.6 2008/07/04 13:51:56 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/conffilt.l,v 1.7 2008/11/19 23:11:46 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of config-file.
  */
@@ -81,7 +81,7 @@ init_filter(int before GCC_UNUSED)
 static void
 do_filter(FILE *inputs)
 {
-    yyin = inputs;
+    InitLEX(inputs);
 
     Action_attr  = class_attr(NAME_ACTION);
     Comment_attr = class_attr(NAME_COMMENT);
@@ -91,8 +91,7 @@ do_filter(FILE *inputs)
 
     begin_state(NORMAL);
 
-    while (yylex() > 0) {
-    }
+    RunLEX();
     flt_bfr_error();
     end_state();
 }

@@ -6,7 +6,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/latexflt.l,v 1.48 2008/02/12 01:38:17 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/latexflt.l,v 1.49 2008/11/19 23:11:46 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of TeX or LaTeX
  * input text.
@@ -212,7 +212,7 @@ init_filter(int before GCC_UNUSED)
 static void
 do_filter(FILE *inputs)
 {
-    yyin = inputs;
+    InitLEX(inputs);
 
     Action_attr  = class_attr(NAME_ACTION);
 
@@ -231,8 +231,7 @@ do_filter(FILE *inputs)
     braces = 0;
 
     begin_state(sTEXT);
-    while (yylex() > 0) {
-    }
+    RunLEX();
     end_state();
 }
 

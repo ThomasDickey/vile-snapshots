@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/spellflt.l,v 1.39 2008/10/18 00:24:48 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/spellflt.l,v 1.41 2008/11/19 23:09:47 tom Exp $
  *
  * Filter to add vile "attribution" sequences to misspelled words.
  */
@@ -127,7 +127,7 @@ open_tempfile(char **fname)
 
     if (tmpdir == NULL)
         tmpdir = "/tmp";
-    if ((*fname = malloc(strlen(tmpdir) + sizeof(fmt))) != 0) {
+    if ((*fname = (char *) malloc(strlen(tmpdir) + sizeof(fmt))) != 0) {
 	sprintf(*fname, fmt, tmpdir);
 	fd = mkstemp(*fname);
 	if (fd >= 0)
@@ -291,7 +291,7 @@ do_filter(FILE *inputs GCC_UNUSED)
     for_each_line(lp, curbp) {
 	ffputline(lp->l_text, llength(lp), "\n");
     }
-    yylex();
+    RunLEX();
 #else				/* external filter */
     if ((FromFP = open_tempfile(&from)) == 0) {
 	fclose(ChopFP);
@@ -304,7 +304,7 @@ do_filter(FILE *inputs GCC_UNUSED)
     fclose(FromFP);
 
     yyin = fopen(from, "r");
-    yylex();
+    RunLEX();
     fclose(yyin);
 
     yyin = fopen(from, "r");
@@ -352,7 +352,7 @@ do_filter(FILE *inputs GCC_UNUSED)
     flt_restart(filter_def.filter_name);
 #endif
     BEGIN(INITIAL);
-    yylex();
+    RunLEX();
 
 #ifndef filter_def		/* external filter? */
     fclose(yyin);		/* yylex() may not close */

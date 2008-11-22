@@ -3,7 +3,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/htmlfilt.l,v 1.72 2008/11/06 23:04:13 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/htmlfilt.l,v 1.73 2008/11/19 23:11:46 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of HTML input
  * text.
@@ -516,7 +516,7 @@ using_language(void)
 static void
 do_filter(FILE *inputs)
 {
-    yyin = inputs;
+    InitLEX(inputs);
 
     dft_language = 0;
     got_language = 0;
@@ -543,7 +543,7 @@ do_filter(FILE *inputs)
 
     next_state = INITIAL;
     begin_state(INITIAL);
-    yylex();
+    RunLEX();
     flt_bfr_error();
     end_state();
 }

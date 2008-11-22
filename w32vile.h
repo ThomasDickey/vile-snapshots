@@ -1,19 +1,25 @@
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/w32vile.h,v 1.5 2007/09/28 22:50:09 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32vile.h,v 1.6 2008/11/22 16:59:49 tom Exp $
  *
  * Do the pragmas in a separate file to avoid contaminating portable code.
  */
 #ifndef W32VILE_H_incl
 #define W32VILE_H_incl 1
 
+#ifndef __GNUC__
 #pragma warning (disable : 4100) /* unreferenced formal parameter */
 #pragma warning (disable : 4127) /* conditional expression is constant */
 #pragma warning (disable : 4201) /* nameless struct/union */
 #pragma warning (disable : 4214) /* bit field types other than int */
 #pragma warning (disable : 4310) /* cast truncates constant value */
 #pragma warning (disable : 4514) /* unreferenced inline function has been removed */
+#endif
 
 #include <windows.h>
+
+#ifndef _MSC_VER
+#define _MSC_VER 0		/* could be MinGW */
+#endif
 
 #if (_MSC_VER >= 1300) && (_MSC_VER < 1400)
 #define CWAIT_PARAM_TYPE   intptr_t

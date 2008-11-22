@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/bat-filt.l,v 1.26 2008/01/12 17:21:27 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/bat-filt.l,v 1.27 2008/11/19 23:11:46 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of DOS (and
  * similar, such as W95, NT) batch file.
@@ -136,7 +136,7 @@ init_filter(int before GCC_UNUSED)
 static void
 do_filter(FILE *inputs)
 {
-    yyin = inputs;
+    InitLEX(inputs);
 
     setting = 0;
     Action_attr  = class_attr(NAME_ACTION);
@@ -146,8 +146,7 @@ do_filter(FILE *inputs)
     String_attr  = class_attr(NAME_LITERAL);
 
     BEGIN(INITIAL);
-    while (yylex() > 0) {
-    }
+    RunLEX();
     flt_bfr_finish();
 }
 

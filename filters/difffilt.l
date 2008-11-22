@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/difffilt.l,v 1.10 2008/01/23 01:18:16 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/difffilt.l,v 1.11 2008/11/19 23:11:46 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of diff output
  */
@@ -55,7 +55,7 @@ init_filter(int before GCC_UNUSED)
 static void
 do_filter(FILE *inputs)
 {
-    yyin = inputs;
+    InitLEX(inputs);
 
     Marker_attr = class_attr("Marker");
     Header_attr = class_attr("Header");
@@ -64,8 +64,7 @@ do_filter(FILE *inputs)
     Modify_attr = class_attr("Modify");
 
     BEGIN(INITIAL);
-    while (yylex() > 0) {
-    }
+    RunLEX();
 }
 
 #if NO_LEAKS

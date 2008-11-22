@@ -8,7 +8,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/lex-filt.l,v 1.67 2008/08/16 13:08:13 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/lex-filt.l,v 1.68 2008/11/19 23:11:46 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of LEX program.
  */
@@ -426,7 +426,7 @@ init_filter(int before GCC_UNUSED)
 static void
 do_filter(FILE *inputs)
 {
-    yyin = inputs;
+    InitLEX(inputs);
 
     section = 0;
     nesting = 0;
@@ -454,8 +454,7 @@ do_filter(FILE *inputs)
     set_symbol_table(filter_def.filter_name);
 
     begin_state(INITIAL);
-    while (yylex() > 0) {
-    }
+    RunLEX();
     end_state();
 }
 

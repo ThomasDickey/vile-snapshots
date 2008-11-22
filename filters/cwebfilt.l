@@ -3,7 +3,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/cwebfilt.l,v 1.19 2008/01/12 17:21:27 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/cwebfilt.l,v 1.20 2008/11/19 23:11:46 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Cwebx input
  * text.  Also useful for Cweb
@@ -129,7 +129,7 @@ init_filter(int before)
 static void
 do_filter(FILE *inputs)
 {
-    yyin = inputs;
+    InitLEX(inputs);
 
     in_code = 0;
     Comment_attr = class_attr(NAME_COMMENT);
@@ -146,8 +146,7 @@ do_filter(FILE *inputs)
     Cweb_code_autre = class_attr(NAME_Cweb_other);
 
     BEGIN(INITIAL);
-    while (yylex() > 0) {
-    }
+    RunLEX();
 }
 
 #if NO_LEAKS

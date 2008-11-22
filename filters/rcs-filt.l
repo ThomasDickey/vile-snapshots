@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/rcs-filt.l,v 1.15 2008/01/12 23:00:33 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/rcs-filt.l,v 1.16 2008/11/19 23:11:46 tom Exp $
  *
  * Filter to add vile "attribution" sequences to RCS archives.
  */
@@ -117,15 +117,14 @@ init_filter(int before GCC_UNUSED)
 static void
 do_filter(FILE *inputs)
 {
-    yyin = inputs;
+    InitLEX(inputs);
 
     Ident2_attr = class_attr(NAME_IDENT2);
     Number_attr = class_attr(NAME_NUMBER);
     String_attr = class_attr(NAME_LITERAL);
 
     BEGIN(INITIAL);
-    while (yylex() > 0) {
-    }
+    RunLEX();
     flush_quoted();
 }
 

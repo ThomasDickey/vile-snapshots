@@ -7,7 +7,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/txt-filt.l,v 1.34 2008/01/22 01:48:11 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/txt-filt.l,v 1.36 2008/11/19 23:11:46 tom Exp $
  *
  * Filter to add vile "attribution" sequences to an ordinary text file
  */
@@ -53,7 +53,7 @@ URL		[[:alpha:]]+"://"[[:alnum:]#%&+\,.\/?;@_=~-]+
 <sTEXT>^[[:blank:]]*"--"[[:blank:]]	{ PushQuote(NOTE, Comment_attr); }
 <sTEXT>^[-]+$		|
 <sTEXT>{DASHES}		{ WriteToken(Comment_attr); }
-<sTEXT>{KEYWORD}	{ char *attr = keyword_attr(yytext);
+<sTEXT>{KEYWORD}	{ const char *attr = keyword_attr(yytext);
 			  if (attr == 0) attr = (mixedcase(yytext) ? "" : Keyword_attr);
 			  WriteToken(attr);
 			}
@@ -118,7 +118,7 @@ init_filter(int before GCC_UNUSED)
 static void
 do_filter(FILE *inputs)
 {
-    yyin = inputs;
+    InitLEX(inputs);
 
     Comment_attr = class_attr(NAME_COMMENT);
     Ident2_attr  = class_attr(NAME_IDENT2);
@@ -127,8 +127,7 @@ do_filter(FILE *inputs)
     String_attr  = class_attr(NAME_LITERAL);
 
     begin_state(sTEXT);
-    while (yylex() > 0) {
-    }
+    RunLEX();
     flt_bfr_finish();
     end_state();
 }

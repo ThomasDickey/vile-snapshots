@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.114 2008/11/17 00:23:37 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.116 2008/11/19 23:06:26 tom Exp $
  */
 
 #ifndef FILTERS_H
@@ -158,7 +158,23 @@ FILTER_DEF filter_def = { name, 1, init_filter, do_filter, options REF_LEXFREE }
 /*
  * lex should declare these:
  */
+#ifndef FLEX_SCANNER
 extern FILE *yyin;
+#endif
+
+/*
+ * flex "-+" option provides a C++ class for the lexer, which has a different
+ * interface.  Allow this to compile (FIXME - the streams do not connect, so
+ * it does not run yet - 2008/11/19).
+ */
+#ifdef __FLEX_LEXER_H
+#define InitLEX(theInput) \
+	yyFlexLexer lexer
+#define RunLEX() while (lexer.yylex() > 0)
+#else
+#define InitLEX(theInput) yyin = theInput
+#define RunLEX() while (yylex() > 0)
+#endif
 
 #if defined(__GNUC__) || defined(__INTEL_COMPILER)
 extern int yylex(void);
