@@ -11,7 +11,7 @@
  *    Subsequent copies do not show this cursor.  On an NT host, this
  *    phenomenon does not occur.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32cbrd.c,v 1.32 2008/04/10 19:38:31 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32cbrd.c,v 1.33 2008/11/22 16:51:57 tom Exp $
  */
 
 #include "estruct.h"
@@ -664,7 +664,7 @@ cbrdpaste(int f, int n)
             for (chunk = 0; data[chunk] != 0; ++chunk) {
                 if ((c2 = data[chunk]) == '\n'
                     || (c2 == '\r' && data[chunk + 1] == '\n')
-                    || !b_is_utfXX(curbp) && (c > _TILDE_))
+                    || (!b_is_utfXX(curbp) && (c > _TILDE_)))
                 break;
             }
             rc = lins_bytes(chunk, (int) c);

@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.666 2008/11/09 18:11:38 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.667 2008/11/22 17:11:24 tom Exp $
  *
  */
 
@@ -1399,7 +1399,7 @@ extern int  parse_font_str(const char *fontstr, FONTSTR_OPTIONS *results);
 extern void restore_console_title(void);
 extern void set_console_title(const char *title);
 extern int  stdin_data_available(void);
-extern void store_recent_file_or_folder(const char *path, int is_file);
+extern void store_recent_file_or_folder(const char *path, int is_file_flag);
 extern int  w32_add_write_acl(const char *filename, ULONG *old_access_mask);
 extern int  w32_CreateProcess(char *cmd, int no_wait);
 extern int  w32_del_selection(int copy_to_clipboard);
@@ -1430,7 +1430,7 @@ extern void w32_close_handle(HANDLE handle);
  *	Platform SDK WinDef.h uses _WINDEF_
  *	Platform SDK WTypes.h uses __wtypes_h__
  */
-#if defined(__wtypes_h__) || defined(_WINDEF_)
+#if defined(__wtypes_h__) || defined(_WINDEF_) || (defined(__MINGW32__) && defined(_WINDEF_H))
 extern int  w32_get_reg_sz(HKEY hkey, const char *name, char *value, unsigned length);
 extern int  w32_set_reg_sz(HKEY hkey, const char *name, const char *value);
 #endif

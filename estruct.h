@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.676 2008/11/10 20:57:28 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.677 2008/11/22 16:51:19 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -1265,9 +1265,13 @@ typedef enum {
 /*
  * True if the buffer contents are in UTF-8 (or -16, -32).
  */
+#if OPT_MULTIBYTE
 #define b_is_utfXX(bp)       ((b_val(bp, VAL_FILE_ENCODING) >= enc_UTF8) \
 			   || (b_val(bp, VAL_FILE_ENCODING) == enc_LOCALE \
 			    && vl_encoding >= enc_UTF8))
+#else
+#define b_is_utfXX(bp)       0
+#endif
 
 /*
  * Resolve file-encoding and the special symbols "auto" and "locale" to
@@ -2081,7 +2085,7 @@ typedef int FUID;
 #endif
 
 #if OPT_AUTOCOLOR || OPT_ELAPSED
-#if HAVE_GETTIMEOFDAY
+#ifdef HAVE_GETTIMEOFDAY
 typedef struct timeval ElapsedType;
 #elif SYS_WINNT
 typedef DWORD ElapsedType;

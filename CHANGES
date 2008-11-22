@@ -2,6 +2,10 @@ Changes for vile 9.7 (released ??? ??? ?? ????)
 
  200811?? (i)
 	> Tom Dickey:
+	+ build-fixes for MinGW.
+	+ experimented with flex's "-+" C++ option (but decided that cannot be
+	  used in vile, since it changes the scope of yy_start).
+	+ mods to compile with g++
 	+ improve highlighting of vile macros by displaying numeric codes
 	  following a control/V as in a map-command as numbers or errors if
 	  fewer digits were found than expected (prompted by report by

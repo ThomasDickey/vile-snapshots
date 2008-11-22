@@ -7,7 +7,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/vilefilt.l,v 1.61 2008/11/17 00:59:02 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/vilefilt.l,v 1.62 2008/11/19 23:11:46 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of vile macros
  * - T.Dickey
@@ -411,7 +411,7 @@ init_filter(int before GCC_UNUSED)
 static void
 do_filter(FILE *inputs)
 {
-    yyin = inputs;
+    InitLEX(inputs);
 
     Action_attr  = class_attr(NAME_ACTION);
     Comment_attr = class_attr(NAME_COMMENT);
@@ -425,8 +425,7 @@ do_filter(FILE *inputs)
     begin_state(NORMAL);
     FltStack_WITH_ACTIVE = 0;
     FltStack_WITH_STATE = NORMAL;
-    while (yylex() > 0) {
-    }
+    RunLEX();
     end_state();
 }
 

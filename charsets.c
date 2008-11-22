@@ -1,5 +1,5 @@
 /*
- * $Id: charsets.c,v 1.61 2008/10/24 21:43:15 tom Exp $
+ * $Id: charsets.c,v 1.62 2008/11/18 23:41:49 tom Exp $
  *
  * see
  http://msdn.microsoft.com/library/default.asp?url=/library/en-us/intl/unicode_42jv.asp
@@ -327,7 +327,7 @@ find_mark_info2(BUFFER *bp)
 	mp = find_mark_info(inferred_bom(bp, mp));
     } else if (mp == 0 &&
 	       (b_val(bp, VAL_FILE_ENCODING) > enc_UTF8)) {
-	mp = find_mark_info(inferred_bom2(bp, b_val(bp, VAL_BYTEORDER_MARK)));
+	mp = find_mark_info(inferred_bom2(bp, (BOM_CODES) b_val(bp, VAL_BYTEORDER_MARK)));
     }
     return mp;
 }

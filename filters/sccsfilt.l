@@ -7,7 +7,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/sccsfilt.l,v 1.18 2008/01/22 01:51:34 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/sccsfilt.l,v 1.19 2008/11/19 23:11:46 tom Exp $
  *
  * Filter to add vile "attribution" sequences to SCCS files.
  */
@@ -76,7 +76,7 @@ init_filter(int before GCC_UNUSED)
 static void
 do_filter(FILE *inputs)
 {
-    yyin = inputs;
+    InitLEX(inputs);
 
     Marker_attr  = class_attr("Marker");
     Insert_attr  = class_attr("Insert");
@@ -86,8 +86,7 @@ do_filter(FILE *inputs)
     String_attr  = class_attr(NAME_LITERAL);
 
     begin_state(INITIAL);
-    while (yylex() > 0) {
-    }
+    RunLEX();
     end_state();
 }
 

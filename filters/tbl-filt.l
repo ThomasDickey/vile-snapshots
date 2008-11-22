@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/tbl-filt.l,v 1.13 2008/01/12 17:21:27 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/tbl-filt.l,v 1.14 2008/11/19 23:11:46 tom Exp $
  *
  * Filter to add vile "attribution" sequences to a vile mktbls datafile.
  */
@@ -87,7 +87,7 @@ init_filter(int before GCC_UNUSED)
 static void
 do_filter(FILE *inputs)
 {
-    yyin = inputs;
+    InitLEX(inputs);
 
     Comment_attr = class_attr(NAME_COMMENT);
     Ident2_attr  = class_attr(NAME_IDENT2);
@@ -97,8 +97,7 @@ do_filter(FILE *inputs)
     String_attr  = class_attr(NAME_LITERAL);
 
     BEGIN(NORMAL);
-    while (yylex() > 0) {
-    }
+    RunLEX();
     flt_bfr_finish();
 }
 

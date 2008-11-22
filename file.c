@@ -5,7 +5,7 @@
  * reading and writing of the disk are
  * in "fileio.c".
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.419 2008/11/10 21:20:14 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.420 2008/11/22 17:08:31 tom Exp $
  */
 
 #include "estruct.h"
@@ -496,6 +496,8 @@ fileuid_compare(FUID * fuid1, FUID * fuid2)
 	    fuid1->ino == fuid2->ino &&
 	    fuid1->dev == fuid2->dev);
 #else
+    (void) fuid1;
+    (void) fuid2;
     return (FALSE);		/* Doesn't really matter */
 #endif
 }
@@ -506,6 +508,8 @@ fileuid_same(BUFFER *bp, FUID * fuid)
 #ifdef CAN_CHECK_INO
     return fileuid_compare(&bp->b_fileuid, fuid);
 #else
+    (void) bp;
+    (void) fuid;
     return (FALSE);		/* Doesn't really matter */
 #endif
 }

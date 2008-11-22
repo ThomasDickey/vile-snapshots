@@ -20,7 +20,7 @@
 #
 # gnu autoconf support by kevin buettner, 5/94
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.212 2008/08/11 13:39:23 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.213 2008/11/22 17:45:20 tom Exp $
 
 SHELL		= /bin/sh
 
@@ -285,6 +285,7 @@ OBJ =	$(SCREEN)$o \
 	regexp$o region$o search$o tags$o \
 	tbuff$o termio$o undo$o version$o \
 	watch$o window$o word$o wordmov$o @EXTRAOBJS@
+OBJ2 =	@EXTRAOBJS2@
 
 # This should be "$(OBJ:$o=.c)", but IRIX64's make (and some not very old
 # BSD-makes) cannot handle it.
@@ -303,9 +304,9 @@ sources : $(BUILTHDRS)
 filters/@LIB_PREFIX@vlflt.a : $(BUILTHDRS)
 	cd filters && $(MAKE) $(MAKE_RECUR) @LIB_PREFIX@vlflt.a
 
-$(TARGET): $(BUILTHDRS) $(OBJ) $(BUILTLIBS)
+$(TARGET): $(BUILTHDRS) $(OBJ) $(OBJ2) $(BUILTLIBS)
 	- mv $(TARGET) o$(TARGET)
-	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ $(OBJ) $(X_LIBS) $(LIBS)
+	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ $(OBJ) $(OBJ2) $(X_LIBS) $(LIBS)
 
 vile.man: vile.1
 	nroff -man vile.1 | col -b >vile.man

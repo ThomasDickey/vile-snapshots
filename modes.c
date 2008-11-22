@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.383 2008/11/10 21:33:49 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.385 2008/11/19 00:18:14 tom Exp $
  *
  */
 
@@ -1980,7 +1980,7 @@ make_xcolor_list(int dum1 GCC_UNUSED, void *ptr GCC_UNUSED)
     for (n = 0; fsm_xcolors_choices[n].choice_name != 0; ++n) {
 	bprintf("\n   %s", fsm_xcolors_choices[n].choice_name);
 	bpadc(' ', 20 - DOT.o);
-	code = fsm_xcolors_choices[n].choice_code;
+	code = (XCOLOR_CODES) fsm_xcolors_choices[n].choice_code;
 	valuep = lookup_extra_color(code);
 	if (valuep == 0) {
 	    switch (code) {
@@ -2095,6 +2095,19 @@ vl_lookup_xcolor(const char *name)
 }
 
 /*
+ * C and C++ really differ for handling of enums.
+ */
+#ifdef __cplusplus
+static inline XCOLOR_CODES
+XColorOf(int value)
+{
+    return (XCOLOR_CODES) value;
+}
+#else
+#define XColorOf(value) value
+#endif
+
+/*
  * Prompt for an extended color name,
  * and zero or one color
  * added to zero or more video attributes.
@@ -2123,7 +2136,7 @@ set_extra_colors(int f GCC_UNUSED, int n GCC_UNUSED)
 			reply, sizeof(reply), '=',
 			KBD_NORMAL, xcolor_name_complete);
     if (status == TRUE) {
-	code = vl_lookup_xcolor(reply);
+	code = XColorOf(vl_lookup_xcolor(reply));
 	valuep = lookup_extra_color(code);
 	value = 0;
 	sprintf(prompt, "Color+attributes(%s) ", reply);
@@ -2134,7 +2147,8 @@ set_extra_colors(int f GCC_UNUSED, int n GCC_UNUSED)
 				reply, sizeof(reply), '+',
 				KBD_NORMAL, xcolor_full_complete);
 	    if (status == TRUE) {
-		code2 = choice_to_code(&fsm_hilite_blist, reply, strlen(reply));
+		code2 = XColorOf(choice_to_code(&fsm_hilite_blist,
+						reply, strlen(reply)));
 
 		/*
 		 * FIXME:  We could be fancier and only prompt for attributes

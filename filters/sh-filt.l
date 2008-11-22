@@ -6,7 +6,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/sh-filt.l,v 1.78 2008/07/14 19:21:33 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/sh-filt.l,v 1.79 2008/11/19 23:11:46 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Shell script.
  */
@@ -315,7 +315,7 @@ color_delimiter(char *text, int size, char *attr)
 static void
 do_filter(FILE *inputs)
 {
-    yyin = inputs;
+    InitLEX(inputs);
 
     Action_attr  = class_attr(NAME_ACTION);
     Comment_attr = class_attr(NAME_COMMENT);
@@ -327,8 +327,7 @@ do_filter(FILE *inputs)
     here_exp = 0;
     begin_state(NORMAL);
 
-    while (yylex() > 0) {
-    }
+    RunLEX();
     flt_bfr_error();
     end_state();
 }
