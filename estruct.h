@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.677 2008/11/22 16:51:19 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.678 2008/11/23 19:32:40 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -94,6 +94,10 @@
 # define SYS_CYGWIN 1
 #endif
 
+#ifdef __MINGW32__
+#define SYS_MINGW 1
+#endif
+
 #ifdef __EMX__
 # define SYS_OS2_EMX 1		/* makefile.emx, or configure-script */
 #endif
@@ -137,6 +141,10 @@
 
 #ifndef SYS_CYGWIN
 #define SYS_CYGWIN		0	/* Unix'ed Win32		*/
+#endif
+
+#ifndef SYS_MINGW
+#define SYS_MINGW		0	/* MINGW32			*/
 #endif
 
 #ifndef SYS_MSDOS

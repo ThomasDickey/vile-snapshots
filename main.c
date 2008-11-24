@@ -22,7 +22,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.657 2008/11/10 20:59:03 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.658 2008/11/23 18:25:20 tom Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -1163,7 +1163,7 @@ tidy_exit(int code)
     term.close();		/* need this if $xshell left subprocesses */
 #endif
     term.clean(TRUE);
-#if SYS_UNIX
+#ifdef SIGHUP
     setup_handler(SIGHUP, SIG_IGN);
 #endif
     ExitProgram(code);
@@ -1841,7 +1841,7 @@ copy_kbindtbl(BINDINGS * dst)
 }
 #endif
 
-#if OPT_FILTER && defined(WIN32) && !CC_MINGW
+#if OPT_FILTER && defined(WIN32) && !SYS_MINGW 
 extern void flt_array(void);
 #endif
 
@@ -1851,7 +1851,7 @@ global_val_init(void)
     int i;
 
     TRACE((T_CALLED "global_val_init()\n"));
-#if OPT_FILTER && defined(WIN32) && !CC_MINGW
+#if OPT_FILTER && defined(WIN32) && !SYS_MINGW 
     flt_array();
 #endif
     /* set up so the global value pointers point at the global
@@ -2059,12 +2059,16 @@ siginit(int enabled)
 #endif
 	{ SIGSEGV, imdying },
 	{ SIGTERM, imdying },
+#ifdef SIGQUIT
 #ifdef VILE_DEBUG
 	{ SIGQUIT, imdying },
 #else
 	{ SIGQUIT, SIG_IGN },
 #endif
+#endif
+#ifdef SIGPIPE
 	{ SIGPIPE, SIG_IGN },
+#endif
 #if defined(SIGWINCH) && ! DISP_X11
 	{ SIGWINCH, sizesignal },
 #endif

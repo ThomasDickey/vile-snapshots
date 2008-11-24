@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.667 2008/11/22 17:11:24 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.668 2008/11/23 18:25:20 tom Exp $
  *
  */
 
@@ -1430,7 +1430,7 @@ extern void w32_close_handle(HANDLE handle);
  *	Platform SDK WinDef.h uses _WINDEF_
  *	Platform SDK WTypes.h uses __wtypes_h__
  */
-#if defined(__wtypes_h__) || defined(_WINDEF_) || (defined(__MINGW32__) && defined(_WINDEF_H))
+#if defined(__wtypes_h__) || defined(_WINDEF_) || (SYS_MINGW && defined(_WINDEF_H))
 extern int  w32_get_reg_sz(HKEY hkey, const char *name, char *value, unsigned length);
 extern int  w32_set_reg_sz(HKEY hkey, const char *name, const char *value);
 #endif
@@ -1686,7 +1686,7 @@ extern	int	getuid	(void);
 extern	char *	getwd	(char *buffer);
 #endif
 #ifdef MISSING_EXTERN_IOCTL
-extern	int	ioctl	(int fd, ULONG mask, caddr_t ptr);
+extern	int	ioctl	(int fd, ULONG mask, void * ptr);
 #endif
 #ifdef MISSING_EXTERN_ISATTY
 extern	int	isatty	(int fd);

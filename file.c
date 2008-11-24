@@ -5,14 +5,14 @@
  * reading and writing of the disk are
  * in "fileio.c".
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.420 2008/11/22 17:08:31 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.421 2008/11/23 18:25:20 tom Exp $
  */
 
 #include "estruct.h"
 #include "edef.h"
 #include "nefsms.h"
 
-#if SYS_WINNT
+#if SYS_WINNT || SYS_MINGW
 #include <io.h>			/* for mktemp */
 #include <direct.h>		/* for mkdir */
 #define vl_mkdir(path,mode) mkdir(path)
@@ -2870,7 +2870,11 @@ imdying(int ACTUAL_SIG_ARGS)
 	}
     }
     term.cursorvis(TRUE);	/* ( this might work ;-) */
-    if (signo != SIGHUP && signo != SIGINT) {
+    if (
+#ifdef SIGHUP
+	signo != SIGHUP &&
+#endif
+	    signo != SIGINT) {
 	term.clean(FALSE);
 #ifdef VILE_ERROR_ABORT
 	ExitProgram(signo);

@@ -3,7 +3,7 @@
  * characters, and write characters in a barely buffered fashion on the display.
  * All operating systems.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/termio.c,v 1.214 2008/03/19 22:46:18 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/termio.c,v 1.215 2008/11/23 18:30:02 tom Exp $
  *
  */
 
@@ -42,6 +42,7 @@ static void ttmiscinit(void);
 # define USE_POSIX_TERMIOS 1
 # define USE_FCNTL 1
 #else
+# define USE_POSIX_TERMIOS 0
 # ifdef HAVE_TERMIO_H
 #  define USE_TERMIO 1
 #  define USE_FCNTL 1
@@ -977,7 +978,7 @@ tttypahead(void)
 #  if	USE_FIONREAD
     {
 	long x;
-	return ((ioctl(0, FIONREAD, (caddr_t) & x) < 0) ? 0 : (int) x);
+	return ((ioctl(0, FIONREAD, (void *) & x) < 0) ? 0 : (int) x);
     }
 #  else
 #   if	USE_FCNTL
@@ -1166,7 +1167,7 @@ getscreensize(int *widthp, int *heightp)
     *widthp = 0;
     *heightp = 0;
 #ifdef TIOCGWINSZ
-    if (ioctl(0, TIOCGWINSZ, (caddr_t) & size) == 0) {
+    if (ioctl(0, TIOCGWINSZ, (void *) & size) == 0) {
 	if ((int) (size.ws_row) > 0)
 	    *heightp = size.ws_row;
 	if ((int) (size.ws_col) > 0)

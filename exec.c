@@ -4,7 +4,7 @@
  *	original by Daniel Lawrence, but
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.328 2008/10/27 20:28:35 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.329 2008/11/24 00:18:09 tom Exp $
  *
  */
 
@@ -455,13 +455,14 @@ end_of_cmd(void)
 int
 end_named_cmd(void)
 {
-    if (isnamedcmd) {
-	if (clexec)
-	    return token_ended_line;
-	else
-	    return end_of_cmd();
+    int result = FALSE;
+
+    if (clexec) {
+	result = token_ended_line;
+    } else if (isnamedcmd) {
+	result = end_of_cmd();
     }
-    return FALSE;
+    return result;
 }
 
 /* returns true iff we are in a named-command and if the user did not end the
@@ -470,13 +471,14 @@ end_named_cmd(void)
 int
 more_named_cmd(void)
 {
-    if (isnamedcmd) {
-	if (clexec)
-	    return !token_ended_line;
-	else
-	    return !end_of_cmd();
+    int result = FALSE;
+
+    if (clexec) {
+	result = !token_ended_line;
+    } else if (isnamedcmd) {
+	result = !end_of_cmd();
     }
-    return FALSE;
+    return result;
 }
 
 /*

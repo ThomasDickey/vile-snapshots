@@ -1,12 +1,12 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_REVISION($Revision: 1.251 $)
+AC_REVISION($Revision: 1.252 $)
 AC_PREREQ(2.13.20030927)
 rm -f config.cache
 
 ### Use "configure -with-screen" to override the default configuration, which is
 ### termcap-based on unix systems.
 
-dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.251 2008/11/22 17:47:00 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.252 2008/11/23 16:46:07 tom Exp $
 
 define(MAKELIST, sh $srcdir/filters/makelist.sh $srcdir/filters/genmake.mak)
 
@@ -625,7 +625,7 @@ case "$TARGET" in
 		LIBS="$LIBS -lws2_32 -lmswsock -lgdi32 -lcomdlg32 -lwinspool -lole32 -lstdc++"
 		ICON_SUFFIX=.ico
 		LDFLAGS="$LDFLAGS -s -mwindows"
-		EXTRAOBJS="$EXTRAOBJS winvile\$o w32misc\$o w32cmd\$o w32cbrd\$o w32pipe\$o makeargv\$o"
+		EXTRAOBJS="$EXTRAOBJS w32misc\$o w32cmd\$o w32cbrd\$o w32pipe\$o makeargv\$o"
 		EXTRAOBJS2="$EXTRAOBJS2 w32oo\$o"
 		EXEEXT=.exe
 	
