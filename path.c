@@ -2,7 +2,7 @@
  *		The routines in this file handle the conversion of pathname
  *		strings.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.162 2008/07/14 22:07:42 Mark.Robinson Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.163 2008/11/23 18:27:49 tom Exp $
  *
  *
  */
@@ -12,7 +12,9 @@
 
 #if SYS_UNIX
 #include <sys/types.h>
+#if !SYS_MINGW
 #include <pwd.h>
+#endif
 #endif
 
 #if SYS_VMS
@@ -440,7 +442,7 @@ find_user(const char *name)
 		return q->path;
 	    }
 	}
-#if SYS_UNIX
+#if SYS_UNIX && !SYS_MINGW
 	/* not-found, do a lookup.
 	 * First try getpwnam with the specified name,
 	 * which will use ~ or whatever was passed

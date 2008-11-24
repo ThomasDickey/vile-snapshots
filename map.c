@@ -3,7 +3,7 @@
  *	Original interface by Otto Lind, 6/3/93
  *	Additional map and map! support by Kevin Buettner, 9/17/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/map.c,v 1.113 2008/10/14 22:29:19 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/map.c,v 1.114 2008/11/24 01:25:14 tom Exp $
  *
  */
 
@@ -228,6 +228,7 @@ addtomap(struct maprec **mpp,
 
     if (ks != 0 && kslen != 0) {
 
+	TRACE2(("addtomap %s\n", visible_buff(ks, kslen, FALSE)));
 	while (*mpp && kslen) {
 	    mp = *mpp;
 	    mp->flags |= flags;
@@ -247,7 +248,8 @@ addtomap(struct maprec **mpp,
 	    }
 	    *mpp = mp;
 	    mp->dlink = mp->flink = NULL;
-	    mp->ch = char2int(*ks++);
+	    TRACE2(("...adding %#x\n", CharOf(*ks)));
+	    mp->ch = CharOf(*ks++);
 	    mp->srv = NULL;
 	    mp->flags = flags;
 	    mp->irv = -1;
@@ -369,8 +371,10 @@ maplookup(int c,
     itb_append(&unmatched, c);
     count++;
 
+    TRACE2(("maplookup unmatched:%s\n", itb_visible(unmatched)));
     matchedcnt = 0;
     while (mp != 0) {
+	TRACE2(("... c=%#x, mp->ch=%#x\n", c, mp->ch));
 	if (c == mp->ch) {
 	    if (mp->irv != -1 || mp->srv != NULL) {
 		rmp = mp;
@@ -452,8 +456,10 @@ maplookup(int c,
 	no_memory("maplookup");
     } else if (had_start && (rmp != 0)) {
 	/* unget the unmatched suffix */
-	while (suffix && (count > 0))
+	while (suffix && (count > 0)) {
 	    (void) itb_append(outp, itb_values(unmatched)[--count]);
+	    TRACE2(("...1 ungetting %#x\n", itb_values(unmatched)[count]));
+	}
 	/* unget the mapping and elide correct number of recorded chars */
 	if (rmp->srv) {
 	    UINT remapflag;
@@ -464,17 +470,23 @@ maplookup(int c,
 		remapflag = NOREMAP;
 	    else
 		remapflag = 0;
-	    while (cp > rmp->srv)
-		(void) itb_append(outp, char2int(*--cp) | remapflag);
+	    while (cp > rmp->srv) {
+		(void) itb_append(outp, CharOf(*--cp) | remapflag);
+		TRACE2(("...2 ungetting %#x|%#x\n", CharOf(*cp), remapflag));
+	    }
 	} else {
 	    (void) itb_append(outp, rmp->irv);
+	    TRACE2(("...3 ungetting %#x\n", rmp->irv));
 	}
     } else {			/* didn't find a match */
-	while (count > 0)
+	while (count > 0) {
 	    (void) itb_append(outp, itb_values(unmatched)[--count]);
+	    TRACE2(("...4 ungetting %#x\n", itb_values(unmatched)[count]));
+	}
 	matchedcnt = 0;
     }
     itb_free(&unmatched);
+    TRACE2(("...maplookup %d:%s\n", matchedcnt, itb_visible(*outp)));
     return matchedcnt;
 }
 
@@ -768,6 +780,7 @@ sysmapped_c_avail(void)
 void
 mapungetc(int c)
 {
+    TRACE2(("mapungetc %#x\n", c));
     if (tgetc_avail()) {
 	tungetc(c);
     } else {
@@ -884,8 +897,9 @@ mapped_c(int remap, int raw)
 			    mapped_c_start,
 			    TRUE);
 
-	while (itb_more(mappedchars))
+	while (itb_more(mappedchars)) {
 	    mapungetc(itb_next(mappedchars));
+	}
 
 	/* if the user has not mapped '#c', we return the wide code we got
 	   in the first place.  unless they wanted it quoted.  then we

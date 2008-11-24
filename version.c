@@ -1,7 +1,7 @@
 /*
  * version & usage-messages for vile
  *
- * $Header: /users/source/archives/vile.vcs/RCS/version.c,v 1.68 2008/11/22 17:16:37 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/version.c,v 1.69 2008/11/23 18:25:20 tom Exp $
  *
  */
 
@@ -189,7 +189,7 @@ getversion(void)
 #   if __GNUC__
 #    if defined(__CYGWIN32__)
 		    "Cygwin gcc"
-#    elif defined(__MINGW32__)
+#    elif SYS_MINGW
 		    "MinGW gcc"
 #    else
 		    "gcc"

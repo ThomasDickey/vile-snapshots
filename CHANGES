@@ -1,7 +1,15 @@
 Changes for vile 9.7 (released ??? ??? ?? ????)
 
- 200811?? (i)
+ 20081123 (i)
 	> Tom Dickey:
+	+ fix sign-extension in map.c, which caused a command like this
+		:map! ^Ks, ^Vu0219
+	  corresponding to UTF8 0xc8,0x99 to insert 0xffc8,0xffc9 (report by
+	  Christopher Illies).
+	+ modify end_named_cmd() and more_named_cmd() to check clexec
+	  independently of isnamedcmd, since the latter is for interactive use,
+	  and the former is for scripts.  This allows a .vilerc file to contain
+	  a "map!" line which will be shown at startup.
 	+ build-fixes for MinGW.
 	+ experimented with flex's "-+" C++ option (but decided that cannot be
 	  used in vile, since it changes the scope of yy_start).

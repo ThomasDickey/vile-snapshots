@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.116 2008/11/19 23:06:26 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.117 2008/11/23 16:20:17 tom Exp $
  */
 
 #ifndef FILTERS_H
@@ -74,22 +74,29 @@ extern "C" {
 /*
  * Pathname definitions
  */
+#ifndef PATHCHR			/* may be defined in estruct.h */
 #if defined(VMS) || defined(__VMS) /* predefined by DEC's VMS compilers */
 # define PATHCHR ','
 # define PATHSEP '/'		/* this will work only with Unix-style names */
+#elif defined(_WIN32) || defined(__GO32__) || defined(__EMX__)
+# define PATHCHR ';'
+# define PATHSEP '\\'
+#else
+# define PATHCHR ':'
+# define PATHSEP '/'
+#endif
+#endif
+
+#if defined(VMS) || defined(__VMS) /* predefined by DEC's VMS compilers */
 # define PATHDOT "[]"
 # define DOT_HIDES_FILE 0
 #else
+# define PATHDOT "."
 # if defined(_WIN32) || defined(__GO32__) || defined(__EMX__)
-#  define PATHCHR ';'
-#  define PATHSEP '\\'
 #  define DOT_HIDES_FILE 0
 # else
-#  define PATHCHR ':'
-#  define PATHSEP '/'
 #  define DOT_HIDES_FILE 1
 # endif
-# define PATHDOT "."
 #endif
 
 #if defined(_WIN32)

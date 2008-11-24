@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.385 2008/11/19 00:18:14 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.386 2008/11/23 23:42:43 tom Exp $
  *
  */
 
@@ -2097,7 +2097,7 @@ vl_lookup_xcolor(const char *name)
 /*
  * C and C++ really differ for handling of enums.
  */
-#ifdef __cplusplus
+#if defined(__cplusplus) || defined(__INTEL_COMPILER)
 static inline XCOLOR_CODES
 XColorOf(int value)
 {
