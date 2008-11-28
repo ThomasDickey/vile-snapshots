@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/xtermkeys.h,v 1.7 2008/01/13 16:26:29 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/xtermkeys.h,v 1.8 2008/11/25 23:43:42 tom Exp $
  *
  * Function-key definitions and modifiers used for xterm.  This is a header
  * file to simplify sharing between the termcap/curses drivers.
@@ -194,12 +194,12 @@ tcap_init_fkeys(void)
 		 * nulls, check here, and add a mapping for the strings with
 		 * explicit nulls.
 		 */
-#define TCAP_NULL '\200'
+#define TCAP_NULL 0200
 		if (strchr(seq, TCAP_NULL) != 0) {
 		    char temp[BUFSIZ];
 		    (void) strcpy(temp, seq);
 		    for (j = 0; j < len; j++)
-			if (char2int(temp[j]) == TCAP_NULL)
+			if (CharOf(temp[j]) == TCAP_NULL)
 			    temp[j] = '\0';
 		    add_fkey(temp, len, keyseqs[i].code, pass);
 		}

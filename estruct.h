@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.678 2008/11/23 19:32:40 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.679 2008/11/25 23:41:44 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -1739,7 +1739,7 @@ typedef struct	LINE {
 	/*
 	 * Macros for referencing fields in the LINE struct.
 	 */
-#define lgetc(lp, n)		char2int(lvalue(lp)[(n)])
+#define lgetc(lp, n)		CharOf(lvalue(lp)[(n)])
 #define lputc(lp, n, c)		(lvalue(lp)[(n)]=(char)(c))
 #define lvalue(lp)		((lp)->l_text)
 #define llength(lp)		((lp)->l_used)

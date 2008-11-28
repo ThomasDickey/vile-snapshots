@@ -3,7 +3,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/yaccfilt.l,v 1.27 2008/11/19 23:11:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/yaccfilt.l,v 1.35 2008/11/28 02:00:04 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of YACC program.
  */
@@ -18,6 +18,7 @@ typedef enum {
     ,CodeSection
 } SECTIONS;
 
+static char *Action_attr;
 static char *Comment_attr;
 static char *Error_attr;
 static char *Ident_attr;
@@ -26,22 +27,29 @@ static char *Keyword_attr;
 static char *Number_attr;
 static char *Preproc_attr;
 static char *String_attr;
+static char *Terminal_attr;
 
 static char *save_attr = "";
 
 static SECTIONS section = RuleSection;
 static int brace_level = 0;
+static int nested_section = 0;
 
 #include <fltstack.h>
 
 static SECTIONS NextSection(SECTIONS);
+static char *merged_attr(char *);
+static int DeclareTerminal(const char *);
+static void DefineTerminal(char *);
+static void PopCode(void);
+static void PushCode(void);
 static void set_state(void);
 
 %}
 
 SPACE		[ \t]
 
-DIRECTIVE	^%[^ \t\r\n]+
+DIRECTIVE	^%[^[:space:]]+
 
 IDENT		[[:alpha:]_][[:alnum:]_]*
 QIDENT		\$([[:digit:]$]|\<{IDENT}\>)
@@ -52,51 +60,58 @@ SSTRING		\'(\\.|[^'\\])*\'
 DSTRING		\"(\\.|[^"\\])*\"
 STRINGS		({SSTRING}|{DSTRING})
 
-PATTERN		(\\.|\[(\\.|.)*\]|[^ \t\r\n])+
+PATTERN		(\\.|\[(\\.|.)*\]|[^[:space:]])+
 
 %%
 
-<INITIAL,RULES,ACTIONS,CODE>{DIRECTIVE}	{
+<RULES,ACTIONS,CODE>{DIRECTIVE}	{
 		    save_attr = "";
-		    WriteToken(keyword_attr(yytext));
+		    WriteToken(merged_attr(yytext));
 		    switch(yytext[1]) {
 		    case '%':
 		    	section = NextSection(section);
 			set_state();
 			break;
 		    case '{':
-		    	push_state(CODE);
+			++nested_section;
+		    	PushCode();
 			break;
 		    case '}':
-		    	pop_state();
+			--nested_section;
+		    	PopCode();
 			break;
 		    default:
-			if (!strcmp(yytext+1, "token")) {
-			    save_attr = Ident2_attr;
-			} else if (!strcmp(yytext+1, "type")) {
-			    save_attr = Ident_attr;
+			if (DeclareTerminal(yytext+1)) {
+			    save_attr = Terminal_attr;
 			}
 			break;
 		    }
 		}
 
-<RULES>{IDENT}		{ WriteToken(save_attr); insert_keyword(yytext, save_attr, 0); }
-<RULES>\<{IDENT}\>	{ WriteToken(Ident2_attr); }
-<RULES>\{		{ ECHO; push_state(CODE); }
+<RULES>{IDENT}		{ WriteToken(save_attr);
+			  if (*save_attr)
+			      DefineTerminal(yytext);
+			}
+<RULES>"<"{IDENT}">"	{ WriteToken(Action_attr); }
+<RULES>\{		{ ECHO; PushCode(); }
 <RULES>;		{ WriteToken(String_attr); }
 
-<ACTIONS>{IDENT}	{ WriteToken(keyword_attr(yytext)); }
-<ACTIONS>\{		{ ECHO; brace_level = 1; push_state(CODE); }
+<ACTIONS>{IDENT}	{ DefineTerminal(yytext);
+			  WriteToken(Terminal_attr);
+			}
+<ACTIONS>\{		{ ECHO; brace_level = 1; PushCode(); }
 <ACTIONS>;		{ WriteToken(String_attr); }
 
-<CODE>{IDENT}		{ WriteToken(keyword_attr(yytext)); }
-<CODE>{INTEGER}		{ WriteToken(Number_attr); }
+<CODE>{IDENT}		{ WriteToken(merged_attr(yytext)); }
+<RULES,CODE>{INTEGER}	{ WriteToken(Number_attr); }
+<CODE>"//".*$		{ WriteToken(Comment_attr); }
 <CODE>\{		{ ECHO; brace_level++; }
 <CODE>\}		{ ECHO;
 			  if (--brace_level <= 0) {
 			      brace_level = 0;
-			      if (section == ActionSection)
-				  pop_state();
+			      if (section <= ActionSection && !nested_section) {
+				  PopCode();
+			      }
 			  }
 		        }
 
@@ -110,6 +125,62 @@ PATTERN		(\\.|\[(\\.|.)*\]|[^ \t\r\n])+
 {STRINGS}		{ WriteToken(String_attr); }
 
 %%
+
+static void
+DefineTerminal(char *text)
+{
+    if (!is_class(text))
+	insert_keyword(text, Terminal_attr, 0);
+}
+
+static char *
+merged_attr(char *text)
+{
+    char *attr = keyword_attr(text);
+    if ((cur_state == CODE) && (attr == 0 || *attr == 0)) {
+	set_symbol_table(filter_def.filter_name);
+	attr = keyword_attr(text);
+	set_symbol_table("c");
+    }
+    return attr;
+}
+
+static void
+PushCode(void)
+{
+    push_state(CODE);
+    set_symbol_table("c");
+}
+
+static void
+PopCode(void)
+{
+    pop_state();
+    set_symbol_table(filter_def.filter_name);
+}
+
+static int
+DeclareTerminal(const char *text)
+{
+    static const char *table[] = {
+	"left",
+	"nonassoc",
+	"right",
+	"start",
+	"token",
+	"term",
+	"type",
+    };
+    unsigned n;
+    int result = 0;
+    for (n = 0; n < TABLESIZE(table); ++n) {
+	if (!strcmp(text, table[n])) {
+	    result = 1;
+	    break;
+	}
+    }
+    return result;
+}
 
 static SECTIONS
 NextSection(SECTIONS next)
@@ -149,6 +220,7 @@ static void
 do_filter(FILE *inputs)
 {
     InitLEX(inputs);
+    Action_attr  = class_attr(NAME_ACTION);
     Comment_attr = class_attr(NAME_COMMENT);
     Error_attr   = class_attr(NAME_ERROR);
     Ident_attr   = class_attr(NAME_IDENT);
@@ -158,7 +230,13 @@ do_filter(FILE *inputs)
     Preproc_attr = class_attr(NAME_PREPROC);
     String_attr  = class_attr(NAME_LITERAL);
 
+    /* this is defined in yacc.key */
+    Terminal_attr = class_attr("Terminal");
+    if (Terminal_attr == 0 || *Terminal_attr == '\0')
+	Terminal_attr = Ident2_attr;
+
     section = RuleSection;
+    nested_section = 0;
     brace_level = 0;
     save_attr = Error_attr;
 

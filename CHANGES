@@ -1,7 +1,20 @@
 Changes for vile 9.7 (released ??? ??? ?? ????)
 
- 20081123 (i)
+ 20081127 (i)
 	> Tom Dickey:
+	+ modify keyword ".merge" directive to make it distinct from ".source".
+	  The former reads without modifying the table name, the latter builds
+	  a new table.  Use this feature in the yacc syntax filter to keep the
+	  terminal names and C keywords separate.
+	+ improve yacc syntax filter, highlighting all of the terminal symbols
+	  with "Terminal" class.
+	+ improve lex keywords, from flex manpage.
+	+ improve lex syntax filter to work with files having no "%{" section.
+	+ correct treatment of "R" command for quoted characters, e.g,. ^V^G;
+	  it was not deleting the characters which were replaced.
+	+ correct one place where inserted bytes were interpreted as
+	  characters, which caused the map-command to insert UTF-8 bytes as
+	  characters (report by Christopher Illies).
 	+ fix sign-extension in map.c, which caused a command like this
 		:map! ^Ks, ^Vu0219
 	  corresponding to UTF8 0xc8,0x99 to insert 0xffc8,0xffc9 (report by

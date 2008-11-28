@@ -115,12 +115,21 @@ string is interpreted as follows:
 	  See "Writing your own filters" in vile.hlp for additional details
 	  about attribute strings.
 
-The keyword file reader supports a limited include facility.  If a line begins
-with ".include", it reads from the given keyword file.  A few filters (such as
-html) require multiple symbol tables; these include using ".merge".  In either
-case, the parameter of the include is the root name of the keyword file, e.g.,
-"c" for "c.key".  Use the ".table" directive to simply switch to a different
-symbol table in the same file with the same effect as ".merge".
+The keyword file reader supports a limited include facility.  In each case, the
+parameter of the include is the root name of the keyword file, e.g., "c" for
+"c.key".
+
+	- If a line begins with ".include", it reads from the given keyword
+	  file.
+	  
+	- A few filters (such as html) require multiple symbol tables; these
+	  include using ".source".
+
+	- Use the ".table" directive to simply switch to a different
+	  symbol table in the same file with the same effect as ".source".
+
+	- Use the ".merge" directive to read into the current symbol table
+	  from another file.
 
 Specify abbreviations using a '*' character, e.g.,
 	vi*le
@@ -295,4 +304,4 @@ NOTE
 The lex filters have been well tested only with flex, which treats newlines
 differently.  Older versions of lex may not support the %x states.
 
--- $Header: /users/source/archives/vile.vcs/doc/RCS/filters.doc,v 1.41 2008/08/28 21:37:22 tom Exp $
+-- $Header: /users/source/archives/vile.vcs/doc/RCS/filters.doc,v 1.42 2008/11/28 01:45:05 tom Exp $

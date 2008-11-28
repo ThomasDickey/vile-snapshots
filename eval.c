@@ -2,7 +2,7 @@
  *	eval.c -- function and variable evaluation
  *	original by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.386 2008/08/17 18:18:06 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.387 2008/11/25 23:40:10 tom Exp $
  *
  */
 
@@ -274,10 +274,10 @@ charclass_of(const char *arg)
     if (arg == error_val) {
 	k = 0;
     } else {
-	k = vl_chartypes_[char2int(*arg)];
+	k = vl_chartypes_[CharOf(*arg)];
 	if (*arg) {
 	    while (*++arg) {
-		k &= vl_chartypes_[char2int(*arg)];
+		k &= vl_chartypes_[CharOf(*arg)];
 	    }
 	}
     }

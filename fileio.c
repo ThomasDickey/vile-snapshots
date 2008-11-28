@@ -2,7 +2,7 @@
  * The routines in this file read and write ASCII files from the disk. All of
  * the knowledge about files are here.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/fileio.c,v 1.191 2008/11/23 18:19:51 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/fileio.c,v 1.192 2008/11/25 23:40:31 tom Exp $
  *
  */
 
@@ -748,7 +748,7 @@ ffputline(const char *buf, int nbuf, const char *ending)
 
     if (buf != 0) {
 	for (i = 0; i < nbuf; ++i)
-	    if (ffputc(char2int(buf[i])) == FIOERR)
+	    if (ffputc(CharOf(buf[i])) == FIOERR)
 		return FIOERR;
     }
 
