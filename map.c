@@ -3,7 +3,7 @@
  *	Original interface by Otto Lind, 6/3/93
  *	Additional map and map! support by Kevin Buettner, 9/17/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/map.c,v 1.114 2008/11/24 01:25:14 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/map.c,v 1.116 2008/11/27 14:03:17 tom Exp $
  *
  */
 
@@ -232,7 +232,7 @@ addtomap(struct maprec **mpp,
 	while (*mpp && kslen) {
 	    mp = *mpp;
 	    mp->flags |= flags;
-	    if (char2int(*ks) == mp->ch) {
+	    if (CharOf(*ks) == mp->ch) {
 		mpp = &mp->dlink;
 		ks++;
 		kslen--;
@@ -264,6 +264,7 @@ addtomap(struct maprec **mpp,
 		if (mp->srv)
 		    free(mp->srv);
 		mp->srv = strmalloc(srv);
+		TRACE2(("...addtomap %s\n", visible_buff(srv, strlen(srv), FALSE)));
 	    }
 	    mp->flags = flags;
 	}
@@ -290,7 +291,7 @@ delfrommap(struct maprec **mpp, const char *ks, int length)
 	while (*mpp && n < length) {
 	    if (pass)
 		mstk[depth] = mpp;
-	    if ((*mpp)->ch == char2int(ks[n])) {
+	    if ((*mpp)->ch == CharOf(ks[n])) {
 		mpp = &(*mpp)->dlink;
 		n++;
 		depth++;

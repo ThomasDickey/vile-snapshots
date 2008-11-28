@@ -8,7 +8,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/lex-filt.l,v 1.68 2008/11/19 23:11:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/lex-filt.l,v 1.69 2008/11/27 18:11:43 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of LEX program.
  */
@@ -84,17 +84,17 @@ STATES		("<"("*"|({IDENT}|\,)+)">")
 
 %%
 
-<INITIAL>^{SPACE}+	{
+<RULES>^[\t]+	{
     			ECHO;
-			new_state(CODE);
+			new_state(CODE1);
 		}
 
-<INITIAL,RULES,ACTIONS,CODE>^"%%"{SPACE}*[^[:space:]]+[^\r\n]*	{
+<RULES,ACTIONS,CODE>^"%%"{SPACE}*[^[:space:]]+[^\r\n]*	{
 			WriteToken(Comment_attr);
 		}
 
-<INITIAL,RULES,ACTIONS,CODE>^"%%"{SPACE}*	|
-<INITIAL,RULES,ACTIONS,CODE>{DIRECTIVE}	{
+<RULES,ACTIONS,CODE>^"%%"{SPACE}*	|
+<RULES,ACTIONS,CODE>{DIRECTIVE}	{
 		    int keep_state = 0;
 
 		    WriteToken(Section_attr);
@@ -123,8 +123,6 @@ STATES		("<"("*"|({IDENT}|\,)+)">")
 		    default:
 			break;
 		    }
-		    if (!keep_state && (FLT_STATE == INITIAL))
-			new_state(RULES);
 		}
 
 <STATES>{IDENT}		{
@@ -162,7 +160,7 @@ STATES		("<"("*"|({IDENT}|\,)+)">")
 			  new_state(RULE1);
 			}
 <RULES>"//"[^\r\n]*	{ WriteToken(Comment_attr); }
-<INITIAL,RULES>"/*"	{ PushQuote(COMMENT, Comment_attr); }
+<RULES>"/*"		{ PushQuote(COMMENT, Comment_attr); }
 
 <RULE1>{SPACE}+		{ ECHO; new_state(RULEX); }
 <RULEX>{PATTERNS}	{ write_patterns(yytext, yyleng); new_state(RULER); }
@@ -210,9 +208,9 @@ STATES		("<"("*"|({IDENT}|\,)+)">")
 <COMMENT>"*"+[^*/]*	{ flt_bfr_append(yytext, yyleng); }
 <COMMENT>"*"+"/"	{ PopQuote(); }
 
-<INITIAL,CODE>^{SPACE}*#{SPACE}*{IDENT}({SPACE}+(\<[^>]+\>|\"[^"]+\"))? {
+<RULES,CODE>^{SPACE}*#{SPACE}*{IDENT}({SPACE}+(\<[^>]+\>|\"[^"]+\"))? {
 			  WriteToken(Preproc_attr);
-			  if (FLT_STATE == INITIAL)
+			  if (FLT_STATE == RULES)
 			      new_state(CODE);
 			}
 
@@ -453,7 +451,7 @@ do_filter(FILE *inputs)
 
     set_symbol_table(filter_def.filter_name);
 
-    begin_state(INITIAL);
+    begin_state(RULES);
     RunLEX();
     end_state();
 }

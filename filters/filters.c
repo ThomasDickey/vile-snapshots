@@ -1,7 +1,7 @@
 /*
  * Common utility functions for vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.125 2008/10/19 15:13:33 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.126 2008/11/28 01:10:17 tom Exp $
  *
  */
 
@@ -232,7 +232,24 @@ ExecMeta(char *param)
 }
 
 /*
- * Include a symbol table from another key-file.
+ * Include a symbol table from another key-file, merging it into the current
+ * table.
+ */
+static void
+ExecMerge(char *param)
+{
+    int save_meta = meta_ch;
+    int save_eqls = eqls_ch;
+
+    flt_read_keywords(param);
+
+    meta_ch = save_meta;
+    eqls_ch = save_eqls;
+}
+
+/*
+ * Include a symbol table from another key-file, creating it in a table named
+ * according to the parameter.
  */
 static void
 ExecSource(char *param)
@@ -400,7 +417,7 @@ ParseDirective(char *line)
 	{ "default", ExecDefault  },
 	{ "equals",  ExecEquals   },
 	{ "include", flt_read_keywords },
-	{ "merge",   ExecSource   },
+	{ "merge",   ExecMerge    },
 	{ "meta",    ExecMeta     },
 	{ "source",  ExecSource   },
 	{ "table",   ExecTable    },

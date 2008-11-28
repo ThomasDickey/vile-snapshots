@@ -10,7 +10,7 @@
  * editing must be being displayed, which means that "b_nwnd" is non zero,
  * which means that the dot and mark values in the buffer headers are nonsense.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.198 2008/10/19 20:36:10 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.199 2008/11/27 13:21:43 tom Exp $
  *
  */
 
@@ -351,7 +351,7 @@ after_linsert(WINDOW *wp, LINE *lp, int n, int doto)
 }
 
 /*
- * Insert "n" copies of the character "c" at the current location of dot. In
+ * Insert "n" copies of the byte "c" at the current location of dot. In
  * the easy case all that happens is the text is stored in the line. In the
  * hard case, the line has to be reallocated. When the window list is updated,
  * take special care; I screwed it up once. You always update dot in the

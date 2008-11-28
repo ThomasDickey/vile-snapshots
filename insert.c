@@ -4,7 +4,7 @@
  * Most code probably by Dan Lawrence or Dave Conroy for MicroEMACS
  * Extensions for vile by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/insert.c,v 1.167 2008/07/25 22:44:29 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/insert.c,v 1.170 2008/11/27 17:47:49 tom Exp $
  */
 
 #include	"estruct.h"
@@ -427,10 +427,11 @@ replacechar(int f, int n)
     else {
 	int vi_fix = (!DOT_ARGUMENT || (dotcmdrep <= 1));
 
-	(void) ldel_chars(n, FALSE);
+	set_insertmode(INSMODE_OVR);
 	if (c == quotec) {
 	    t = s = quote_next(f, n);
 	} else {
+	    (void) ldel_chars(n, FALSE);
 	    if (isreturn(c)) {
 		if (vi_fix)
 		    s = lnewline();
@@ -746,6 +747,26 @@ is_cindent_char(BUFFER *bp, int ch)
 	&& (strchr(b_val_ptr(bp, VAL_CINDENT_CHARS), ch) != 0);
 }
 
+/*
+ * Check if we're replacing text in a UTF-8 buffer.  We'll want to only delete
+ * the old characters at the beginning of each UTF-8 sequence.
+ */
+#if OPT_MULTIBYTE
+static int
+is_utf8_continuation(BUFFER *bp, int ch)
+{
+    int result = FALSE;
+    if (b_is_utfXX(bp)) {
+	if ((ch & 0xc0) != 0x80) {
+	    result = TRUE;
+	}
+    }
+    return result;
+}
+#else
+#define is_utf8_continuation(bp, ch) FALSE
+#endif
+
 int
 inschar(int c, int *backsp_limit_p)
 {
@@ -874,6 +895,7 @@ inschar(int c, int *backsp_limit_p)
        and next char is not a tab or we are at a tab stop,
        delete a char forword                        */
     if ((insertmode == INSMODE_OVR)
+	&& !is_utf8_continuation(curbp, c)
 	&& (!DOT_ARGUMENT || (dotcmdrep <= 1))
 	&& (DOT.o < llength(DOT.l))
 	&& (char_at(DOT) != '\t'
@@ -893,7 +915,7 @@ inschar(int c, int *backsp_limit_p)
     }
 
     autoindented = -1;
-    return lins_chars(1, c);
+    return lins_bytes(1, c);
 }
 
 #if ! SMALLER
@@ -1408,15 +1430,19 @@ quote_next(int f, int n)
     c = read_quoted(n, TRUE);
 
     if (c < 0) {
-	return ABORT;
-    } else if (c == '\n') {
-	do {
-	    s = lnewline();
-	} while ((s == TRUE) && (--n != 0));
-	return s;
+	s = ABORT;
     } else {
-	return lins_chars(n, c);
+	if (insertmode == INSMODE_OVR)
+	    (void) ldel_chars(n, FALSE);
+	if (c == '\n') {
+	    do {
+		s = lnewline();
+	    } while ((s == TRUE) && (--n != 0));
+	} else {
+	    s = lins_chars(n, c);
+	}
     }
+    return s;
 }
 
 #if OPT_EVAL
