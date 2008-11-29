@@ -8,7 +8,7 @@
 /************************************************************************/
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/x11menu.c,v 1.10 2006/06/12 23:50:33 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11menu.c,v 1.11 2008/11/28 20:47:29 tom Exp $
  */
 
 #define NEED_X_INCLUDES 1
@@ -370,7 +370,7 @@ gui_add_list_callback(void *pm)
 }
 
 /*
- * Hide/show menus, useful for avoiding thrashing while regenering menus
+ * Hide/show menus, useful for avoiding thrashing while regenerating menus
  */
 int
 gui_hide_menus(int f GCC_UNUSED, int n GCC_UNUSED)
@@ -411,7 +411,7 @@ gui_remove_menus(int f GCC_UNUSED, int n GCC_UNUSED)
 	free(my_menus);
 	my_menus = next;
     }
-    return FALSE;
+    return TRUE;
 }
 
 /*

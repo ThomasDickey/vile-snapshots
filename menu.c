@@ -8,7 +8,7 @@
 /************************************************************************/
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/menu.c,v 1.52 2008/08/11 16:16:58 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/menu.c,v 1.64 2008/11/29 01:22:44 tom Exp $
  */
 
 /* Vile includes */
@@ -18,19 +18,24 @@
 #if SYS_VMS
 #include <processes.h>
 #define fork vfork
-#define Token MenuTokens
 #endif
 
 /* Tokens of the rc file */
-#define MAX_TOKEN   200
-static struct _tok_ {
+typedef struct _tok_ {
+    struct _tok_ *next;
     char type;
-    int idx_cascade;
     char label[NSTRING];
     char action[NSTRING];
     int macro;
-} Token[MAX_TOKEN];
-static int Nb_Token = 0;
+} MenuToken;
+
+/*
+ * state, from successive define-menu-entry calls.
+ */
+static int count_entries = 0;
+static void *my_menu_bar = 0;
+static void *parent_menu = 0;
+static MenuToken *all_tokens = 0;
 
 /* Actions of the rc file */
 
@@ -49,7 +54,48 @@ static TAct Actions[] =
     {"edit_rc", common_action},
     {"parse_rc", common_action},
     {"edit_mrc", common_action},
+    {"parse_mrc", common_action},
 };
+
+/*
+ * MenuTokens have to be allocated so their contents will be available later in
+ * a callback.
+ */
+static MenuToken *
+newToken(void)
+{
+    MenuToken *result = 0;
+
+    beginDisplay();
+    result = typecalloc(MenuToken);
+    if (result != 0) {
+	result->next = all_tokens;
+	all_tokens = result;
+    }
+    endofDisplay();
+    return result;
+}
+
+static void
+free_all_tokens(void)
+{
+    beginDisplay();
+    while (all_tokens != 0) {
+	MenuToken *next = all_tokens->next;
+	free(all_tokens);
+	all_tokens = next;
+    }
+    endofDisplay();
+}
+
+static void
+init_menus(void)
+{
+    free_all_tokens();
+
+    count_entries = 0;
+    parent_menu = 0;
+}
 
 static char *
 menu_filename(void)
@@ -78,6 +124,19 @@ edit_file(char *fname)
 	getfile(fname, TRUE);
     } else
 	no_file_found();
+}
+
+/*
+ * Reload/parse the menu-file.
+ */
+static void
+parse_menus(char *fname)
+{
+    gui_remove_menus(FALSE, 1);
+    init_menus();
+    if (dofile(fname)) {
+	gui_show_menus(FALSE, 1);
+    }
 }
 
 /************************************************************************/
@@ -118,6 +177,8 @@ common_action(char *action)
 	dofile(startup_filename());
     } else if (!strcmp(action, "edit_mrc")) {
 	edit_file(menu_filename());
+    } else if (!strcmp(action, "parse_mrc")) {
+	parse_menus(menu_filename());
     }
 }
 
@@ -185,99 +246,84 @@ vlmenu_is_cmd(char *action)
     return 0;
 }
 
-/************************************************************************/
-/* Main function to parse the rc file                                   */
-/************************************************************************/
-int
-parse_menu(const char *rc_filename)
+/*
+ * Parse a menu-entry string, filling in the token if an entry was found.
+ * If an error occurs, return false.
+ * If only a comment-line was found, return sort-of-true.
+ */
+static int
+parse_menu_entry(MenuToken * token, const char *source)
 {
-    FILE *fp;
-    char line[1000];
     char *ptr_tok;
     int n, tmp;
-    int cascade_token = 0;
-    int nlig = 0;
+    int result = TRUE;
+    unsigned len = strlen(source);
+    char buffer[sizeof(MenuToken) + NLINE];
 
-    TRACE((T_CALLED "parse_menu(%s)\n", rc_filename));
+    /* make a copy of the source, since strtok modifies it */
+    if (len > sizeof(buffer) - 1)
+	len = sizeof(buffer) - 1;
+    strncpy(buffer, source, len)[len] = EOS;
 
-    if ((fp = fopen(rc_filename, "r")) == NULL)
-	returnCode(FALSE);
+    /* Let a tab begin inline comment */
+    if ((ptr_tok = strchr(buffer, '\t')) != 0)
+	*ptr_tok = EOS;
 
-    Nb_Token = 0;
-    while (vl_fgets(line, sizeof(line), fp) != NULL
-	   && Nb_Token < MAX_TOKEN - 2) {
-	nlig++;
-
-	/* Let a tab begin inline comment */
-	if ((ptr_tok = strchr(line, '\t')) != 0)
-	    *ptr_tok = EOS;
-
-	ptr_tok = strtok(line, ":");
-	if (ptr_tok == NULL)
-	    continue;
-
+    ptr_tok = strtok(buffer, ":");
+    memset(token, 0, sizeof(*token));
+    if (ptr_tok != NULL) {
 	switch (*ptr_tok) {
 	case ';':		/* FALLTHRU */
+	case '~':
 	case '"':
 	case '#':
-	    continue;
+	    result = SORTOFTRUE;
+	    break;
 
 	case 'C':
-	    Token[Nb_Token].type = *ptr_tok;
+	    token->type = *ptr_tok;
 	    if ((ptr_tok = strtok(NULL, ":\n")) != NULL) {
-		strcpy(Token[Nb_Token].label, ptr_tok);
-		cascade_token = Nb_Token;
+		strcpy(token->label, ptr_tok);
 		if ((ptr_tok = strtok(NULL, ":\n")) != NULL) {
-		    Token[Nb_Token].type = 'H';
+		    token->type = 'H';
 		}
-		Nb_Token++;
 	    } else {
-		fclose(fp);
-		returnCode(FALSE);
+		result = FALSE;
 	    }
 	    break;
 
 	case 'S':
-	    Token[Nb_Token].type = *ptr_tok;
-	    Token[Nb_Token].idx_cascade = cascade_token;
-	    Nb_Token++;
+	    token->type = *ptr_tok;
 	    break;
 
 	case 'L':
-	    Token[Nb_Token].type = 'S';
-	    Token[Nb_Token].idx_cascade = cascade_token;
-	    Nb_Token++;
-	    Token[Nb_Token].type = *ptr_tok;
-	    Token[Nb_Token].idx_cascade = cascade_token;
+	    token->type = *ptr_tok;
 	    if ((ptr_tok = strtok(NULL, ":\n")) != NULL) {
-		strcpy(Token[Nb_Token].action, ptr_tok);
-		cascade_token = Nb_Token;
+		strcpy(token->action, ptr_tok);
 	    }
-	    Nb_Token++;
 	    break;
 
 	case 'B':
-	    Token[Nb_Token].type = *ptr_tok;
-	    Token[Nb_Token].idx_cascade = cascade_token;
+	    token->type = *ptr_tok;
 	    n = 0;
 	    while ((ptr_tok = strtok(NULL, ":\n")) != NULL) {
 		switch (n) {
 		case 0:
-		    strcpy(Token[Nb_Token].label, ptr_tok);
+		    strcpy(token->label, ptr_tok);
 		    break;
 		case 1:
 		    if (isDigit((int) *ptr_tok)) {
 			tmp = (int) atoi(ptr_tok);
-			Token[Nb_Token].macro = tmp;
+			token->macro = tmp;
 		    } else {
 			if (is_action(ptr_tok)
 			    || vlmenu_is_bind(ptr_tok)
 			    || vlmenu_is_cmd(ptr_tok)) {
-			    strcpy(Token[Nb_Token].action, ptr_tok);
+			    strcpy(token->action, ptr_tok);
 			} else {
-			    printf("Error in line %d : '%s' is not an action\n",
-				   nlig, ptr_tok);
-			    strcpy(Token[Nb_Token].action, "beep");
+			    mlwarn("'%s' is not an action", ptr_tok);
+			    strcpy(token->action, "beep");
+			    result = FALSE;
 			}
 		    }
 		    break;
@@ -285,16 +331,12 @@ parse_menu(const char *rc_filename)
 		n++;
 	    }
 	    if (n != 2) {
-		fclose(fp);
-		returnCode(FALSE);
+		result = FALSE;
 	    }
-	    Nb_Token++;
 	    break;
 	}
     }
-    fclose(fp);
-
-    returnCode(TRUE);
+    return result;
 }
 
 /************************************************************************/
@@ -302,42 +344,36 @@ parse_menu(const char *rc_filename)
 /************************************************************************/
 #if OPT_TRACE
 static void
-print_token(void)
+print_token(MenuToken * token)
 {
-    int i;
-
-    for (i = 0; i < Nb_Token; i++) {
-	switch (Token[i].type) {
-	case 'C':
-	case 'H':
-	    Trace("%c %s\n",
-		  Token[i].type,
-		  Token[i].label);
-	    break;
-	case 'S':
-	    Trace("\t%c (%s)\n",
-		  Token[i].type,
-		  Token[Token[i].idx_cascade].label);
-	    break;
-	case 'L':
-	    Trace("\t%c %s\n",
-		  Token[i].type,
-		  Token[i].action);
-	    break;
-	case 'B':
-	    if (Token[i].macro > 0)
-		Trace("\t%c %s(%s) -> Macro-%d\n",
-		      Token[i].type,
-		      Token[i].label,
-		      Token[Token[i].idx_cascade].label,
-		      Token[i].macro);
-	    else
-		Trace("\t%c %s(%s) -> Action-%s\n",
-		      Token[i].type,
-		      Token[i].label,
-		      Token[Token[i].idx_cascade].label,
-		      Token[i].action);
-	}
+    switch (token->type) {
+    case 'C':
+    case 'H':
+	Trace("%c %s\n",
+	      token->type,
+	      token->label);
+	break;
+    case 'S':
+	Trace("\t%c\n",
+	      token->type);
+	break;
+    case 'L':
+	Trace("\t%c %s\n",
+	      token->type,
+	      token->action);
+	break;
+    case 'B':
+	if (token->macro > 0)
+	    Trace("\t%c %s -> Macro-%d\n",
+		  token->type,
+		  token->label,
+		  token->macro);
+	else
+	    Trace("\t%c %s -> Action-%s\n",
+		  token->type,
+		  token->label,
+		  token->action);
+	break;
     }
 }
 #endif
@@ -350,6 +386,90 @@ make_header(void *menub, int count)
     return gui_make_menu(menub, label, 'C');
 }
 
+static void
+define_menu_entry(MenuToken * token)
+{
+    char *accel, *macro_text;
+    void *pm_w;
+
+#if OPT_TRACE
+    print_token(token);
+#endif
+    switch (token->type) {
+	/* HELP CASCADE */
+    case 'C':
+    case 'H':
+	parent_menu = gui_make_menu(my_menu_bar, token->label, token->type);
+	break;
+
+	/* SEPARATOR WIDGET */
+    case 'S':
+	if (parent_menu == 0)
+	    parent_menu = make_header(my_menu_bar, ++count_entries);
+	gui_add_menu_item(parent_menu, "sep", NULL, token->type);
+	break;
+
+	/* LIST (BUFFER LIST) */
+    case 'L':
+	if (!strcmp(token->action, "list_buff")) {
+	    if (parent_menu == 0)
+		parent_menu = make_header(my_menu_bar, ++count_entries);
+	    gui_add_list_callback(parent_menu);
+	}
+	break;
+
+	/* BUTTON WIDGET */
+    case 'B':
+	if (parent_menu == 0)
+	    parent_menu = make_header(my_menu_bar, ++count_entries);
+	if (token->macro > 0) {
+	    if ((macro_text = castalloc(char, 50)) != 0) {
+		sprintf(macro_text, "execute-macro-%d", token->macro);
+		accel = give_accelerator(macro_text);
+		pm_w = gui_add_menu_item(parent_menu, token->label, accel, token->type);
+
+		gui_add_func_callback(pm_w, macro_text);
+	    }
+	} else {
+	    accel = give_accelerator(token->action);
+	    pm_w = gui_add_menu_item(parent_menu, token->label, accel, token->type);
+	    gui_add_func_callback(pm_w, token->action);
+	}
+	break;
+    }
+}
+
+static void
+add_menu_separator(void)
+{
+    MenuToken *myToken = newToken();
+    if (myToken != 0) {
+	myToken->type = 'S';
+	define_menu_entry(myToken);
+    }
+}
+
+static int
+add_menu_entry(char *text)
+{
+    int result;
+    MenuToken myToken;
+    MenuToken *hisToken;
+
+    result = parse_menu_entry(&myToken, text);
+    if (result == FALSE) {
+	result = FALSE;
+    } else if (result == TRUE) {
+	if (myToken.type == 'L') {
+	    add_menu_separator();
+	}
+	hisToken = newToken();
+	*hisToken = myToken;
+	define_menu_entry(hisToken);
+    }
+    return result;
+}
+
 /************************************************************************/
 /* Main function : Take the menu-bar as argument and create all the     */
 /* Cascades, PullDowns Menus and Buttons read from the rc file          */
@@ -357,81 +477,64 @@ make_header(void *menub, int count)
 int
 do_menu(void *menub)
 {
-    int i;
-    char *accel, *macro;
-    void *pm = 0;
-    void *pm_w;
-    int rc;
-    int fixup = 0;
+    FILE *fp;
+    char line[1000];
+    int result = TRUE;
     char *menurc;
+    int rc = FALSE;
 
     TRACE((T_CALLED "do_menu\n"));
+    my_menu_bar = menub;
+
+    init_menus();
+
+#if 1
     if ((menurc = menu_filename()) == 0) {
 	mlforce("No menu-file found");
-	returnCode(FALSE);
-    }
-    if ((rc = parse_menu(menurc)) != TRUE) {
-	mlforce("Error parsing menu-file");
-	returnCode(FALSE);
-    }
-#if OPT_TRACE
-    print_token();
-#endif
+    } else if ((fp = fopen(menurc, "r")) != NULL) {
 
-    for (i = 0; i < Nb_Token; i++) {
-	switch (Token[i].type) {
-	    /* HELP CASCADE */
-	case 'C':
-	case 'H':
-	    pm = gui_make_menu(menub, Token[i].label, Token[i].type);
-	    break;
-
-	    /* SEPARATOR WIDGET */
-	case 'S':
-	    if (pm == 0)
-		pm = make_header(menub, ++fixup);
-	    gui_add_menu_item(pm, "sep", NULL, Token[i].type);
-	    break;
-
-	    /* LIST (BUFFER LIST) */
-	case 'L':
-	    if (!strcmp(Token[i].action, "list_buff")) {
-		if (pm == 0)
-		    pm = make_header(menub, ++fixup);
-		gui_add_list_callback(pm);
-	    }
-	    break;
-
-	    /* BUTTON WIDGET */
-	case 'B':
-	    if (pm == 0)
-		pm = make_header(menub, ++fixup);
-	    if (Token[i].macro > 0) {
-		if ((macro = castalloc(char, 50)) != 0) {
-		    sprintf(macro, "execute-macro-%d", Token[i].macro);
-		    accel = give_accelerator(macro);
-		    pm_w = gui_add_menu_item(pm, Token[i].label, accel,
-					     Token[i].type);
-
-		    gui_add_func_callback(pm_w, macro);
-		}
-	    } else {
-		accel = give_accelerator(Token[i].action);
-		pm_w = gui_add_menu_item(pm, Token[i].label, accel,
-					 Token[i].type);
-		gui_add_func_callback(pm_w, Token[i].action);
-	    }
-	    break;
+	while (vl_fgets(line, sizeof(line), fp) != NULL) {
+	    if ((result = add_menu_entry(line)) == FALSE)
+		break;
 	}
+	fclose(fp);
+
+	rc = (result != FALSE);
     }
-    returnCode(TRUE);
+#else
+    rc = dofile(menu_filename());
+#endif
+    returnCode(rc);
 }
 
 /************************************************************************/
 
+/*
+ * Define a menu-entry for the current menu-bar.
+ */
+int
+vlmenu_entry(int f, int n)
+{
+    int result;
+    char buffer[NLINE];
+
+    if (clexec) {
+	result = add_menu_entry(execstr);
+    } else {
+	*buffer = EOS;
+	result = mlreply("Menu entry:", buffer, sizeof(buffer));
+	if (result == TRUE)
+	    result = add_menu_entry(buffer);
+	if (result == TRUE)
+	    result = gui_show_menus(f, n);
+    }
+    return result;
+}
+
 int
 vlmenu_load(int f, int n)
 {
+    gui_remove_menus(f, n);
     if (gui_create_menus()) {
 	return gui_show_menus(f, n);
     }

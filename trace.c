@@ -1,7 +1,7 @@
 /*
  * debugging support -- tom dickey.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.86 2008/11/09 18:10:54 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.87 2008/11/28 19:59:29 tom Exp $
  *
  */
 
@@ -940,7 +940,8 @@ trace_window(WINDOW *wp)
     int got_dot = FALSE;
     int had_line = FALSE;
 
-    if (wp->w_bufp == 0
+    if (wp == 0
+	|| wp->w_bufp == 0
 	|| wp->w_bufp->b_bname == 0)
 	return;
 
