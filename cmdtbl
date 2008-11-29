@@ -97,7 +97,7 @@
 #		in '!' listed, then the flag does nothing, and should be
 #		viewed simply as documentation.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.258 2008/10/06 21:58:58 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.259 2008/11/28 20:54:44 tom Exp $
 #
 #
 
@@ -1044,6 +1044,9 @@ gui_show_menus	NONE			OPT_MENUS
 vlmenu_load	NONE			OPT_MENUS
 	"load-menus"
 	<load menus from external file>
+vlmenu_entry	NONE			OPT_MENUS
+	"define-menu-entry"
+	<define a menu-entry>
 nexttag		NONE			OPT_TAGS
 	"next-tag"			!FEWNAMES
 	'^A-^]'

@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.668 2008/11/23 18:25:20 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.669 2008/11/28 22:29:26 tom Exp $
  *
  */
 
@@ -829,7 +829,6 @@ extern void mapungetc (int c);
 extern ActionFunc vlmenu_action_func(char *action);
 extern char * vlmenu_is_cmd (char *action);
 extern int do_menu (void * menubar);
-extern int parse_menu (const char *rc_filename);
 extern int vlmenu_is_bind (char *action);
 	/* driver-specific interface */
 extern int gui_create_menus (void);

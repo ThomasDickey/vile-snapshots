@@ -2,6 +2,10 @@ Changes for vile 9.7 (released ??? ??? ?? ????)
 
  20081127 (i)
 	> Tom Dickey:
+	+ add "define-menu-entry" command.
+	+ eliminate fixed limit of xvile's menu size.
+	+ modify vileinit.rc to work with --disable-shell configuration.
+	+ modify assert() in main.c to allow assert-checking with xvile.
 	+ modify keyword ".merge" directive to make it distinct from ".source".
 	  The former reads without modifying the table name, the latter builds
 	  a new table.  Use this feature in the yacc syntax filter to keep the

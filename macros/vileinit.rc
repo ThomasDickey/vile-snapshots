@@ -1,4 +1,4 @@
-; $Header: /users/source/archives/vile.vcs/macros/RCS/vileinit.rc,v 1.37 2007/10/15 21:01:07 tom Exp $
+; $Header: /users/source/archives/vile.vcs/macros/RCS/vileinit.rc,v 1.38 2008/11/28 20:09:19 tom Exp $
 ; This is a sample which may be installed as .vilerc (or vile.rc for non-Unix
 ; systems), or source'd as-is to provide quick initialization of some useful
 ; macros and settings.
@@ -34,6 +34,7 @@ bind-cmdmode-key goto-eol FN-E
 ; that there is no special symbol denoting "UNIX", so we infer it from
 ; the $pathlist-separator variable.
 
+~if &not &sin $cfgopts "noshell"
 ~if &seq $pathlist-separator ":"
 	; Though you probably prefer an interactive shell that
 	; supports history, command-line editing, etc., there are good
@@ -53,7 +54,11 @@ bind-cmdmode-key goto-eol FN-E
 ~if &seq $progname xvile
 	setv $xshell="xterm -e xshell.sh"
 	setv $xshell-flags=""
-~elseif &sin $progname winvile
+~endif
+
+~endif
+
+~if &sin $progname winvile
 	bind-key backward-row Shift+#A
 	bind-key forward-row  Shift+#B
 	bind-key right-arrow  Shift+#C

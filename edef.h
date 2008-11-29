@@ -6,7 +6,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.343 2008/10/08 19:47:54 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.344 2008/11/28 23:15:56 tom Exp $
  */
 
 #ifndef VILE_EDEF_H
@@ -438,6 +438,9 @@ decl_init_const( char ERR_REGEX_BufName[],	"[Error Patterns]" );
 #endif
 #if OPT_HISTORY
 decl_init_const( char HISTORY_BufName[],	"[History]" );
+#endif
+#if OPT_MENUS
+decl_init_const( char VILEMENU_BufName[],	"[vilemenu]" );
 #endif
 #if OPT_SHOW_REGS
 decl_init_const( char REGISTERS_BufName[],	"[Registers]" );

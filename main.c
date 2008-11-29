@@ -22,7 +22,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.658 2008/11/23 18:25:20 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.659 2008/11/28 19:54:24 tom Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -956,7 +956,7 @@ main_loop(void)
 
     for_ever {
 
-#if OPT_WORKING && DOALLOC
+#if OPT_WORKING && DOALLOC && (DISP_TERMCAP || DISP_CURSES)
 	assert(allow_working_msg());
 #endif
 	hst_reset();

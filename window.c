@@ -2,7 +2,7 @@
  * Window management. Some of the functions are internal, and some are
  * attached to keys that the user actually types.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/window.c,v 1.114 2008/10/15 22:36:45 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/window.c,v 1.116 2008/11/28 22:25:21 tom Exp $
  *
  */
 
@@ -51,9 +51,13 @@ alloc_WINDOW(void)
 static void
 free_WINDOW(WINDOW *wp)
 {
-    beginDisplay();
-    free(wp);
-    endofDisplay();
+    if (wp != 0) {
+	beginDisplay();
+	if (wp == wminip)
+	    wminip = 0;
+	free(wp);
+	endofDisplay();
+    }
 }
 
 /*
@@ -1310,11 +1314,16 @@ wp_leaks(void)
 {
     WINDOW *wp;
 
+    beginDisplay();
     while ((wp = wheadp) != 0) {
 	wp = wp->w_wndp;
 	free_WINDOW(wheadp);
-	wheadp = wp;
+	if (wp != wheadp)
+	    wheadp = wp;
+	else
+	    break;
     }
     free_WINDOW(wminip);
+    endofDisplay();
 }
 #endif

@@ -5,7 +5,7 @@
  * reading and writing of the disk are
  * in "fileio.c".
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.421 2008/11/23 18:25:20 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.422 2008/11/29 01:00:31 tom Exp $
  */
 
 #include "estruct.h"
@@ -1442,7 +1442,7 @@ quickreadf(BUFFER *bp, int *nlinep)
 	rc = FIOMEM;
     }
 #if OPT_ENCRYPT
-    else if ((rc = vl_resetkey(curbp, (const char *) buffer)) != TRUE) {
+    else if ((rc = vl_resetkey(bp, (const char *) buffer)) != TRUE) {
 	free(buffer);
     }
 #endif
