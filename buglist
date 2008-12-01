@@ -3,7 +3,7 @@
 ------------------------
 vile bug/enhancement/wish list (mostly wishes ;-)
 ------------------------
-$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.413 2008/10/19 21:43:00 tom Exp $
+$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.414 2008/12/01 00:38:40 tom Exp $
 ----------------------
 	(E means enhancement, L,M,H are low, medium, high priority)
 
@@ -1638,3 +1638,13 @@ mcolor shows only one part of the modeline extended-colors, due to limitations
 of the normal color enumeration.
 
 xvile doesn't allow modeline to be colored using extended-colors.
+
+-- 08-11-30 (tom)
+The scriptable vilemenu.rc relies on vile's scripting, which is not fully
+available when xvile sets up the display.  To work around this limitation,
+xvile creates a fallback menu with just the About/Version entry initially, and
+then fills in the complete menu - after the screen is first displayed.
+
+It does this when it sees that the menu file contains directive lines, e.g.,
+"~with".  If no directives are found, xvile assumes the file is (as originally)
+unscripted, and will initialize the menus before the screen is displayed.
