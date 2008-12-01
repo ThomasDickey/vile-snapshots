@@ -22,7 +22,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.659 2008/11/28 19:54:24 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.661 2008/11/30 20:06:29 tom Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -780,6 +780,12 @@ MainProgram(int argc, char *argv[])
 	tidy_exit(BADEXIT);
 
     winit(TRUE);		/* windows */
+
+#if OPT_MENUS
+    if (delay_menus)
+	vlmenu_load(FALSE, 1);
+#endif
+
     set_global_b_val(VAL_FILL, default_fill());
 
     /* Create an unnamed buffer, so that the initialization-file will have
@@ -1841,7 +1847,7 @@ copy_kbindtbl(BINDINGS * dst)
 }
 #endif
 
-#if OPT_FILTER && defined(WIN32) && !SYS_MINGW 
+#if OPT_FILTER && defined(WIN32) && !SYS_MINGW
 extern void flt_array(void);
 #endif
 
@@ -1851,7 +1857,7 @@ global_val_init(void)
     int i;
 
     TRACE((T_CALLED "global_val_init()\n"));
-#if OPT_FILTER && defined(WIN32) && !SYS_MINGW 
+#if OPT_FILTER && defined(WIN32) && !SYS_MINGW
     flt_array();
 #endif
     /* set up so the global value pointers point at the global
@@ -3223,7 +3229,11 @@ free_all_leaks(void)
     itb_leaks();
     tb_leaks();
 
+    /* only do this for drivers which run inside a terminal */
+#if DISP_TERMCAP || DISP_CURSES
     term.close();
+#endif
+
 #if OPT_LOCALE
     eightbit_leaks();
 #endif

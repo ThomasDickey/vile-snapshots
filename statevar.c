@@ -3,7 +3,7 @@
  *	for getting and setting the values of the vile state variables,
  *	plus helper utility functions.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.123 2008/08/12 00:09:34 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.124 2008/11/30 20:13:57 tom Exp $
  */
 
 #include	"estruct.h"
@@ -1671,11 +1671,13 @@ ev_leaks(void)
     while ((p = temp_vars) != 0)
 	rmv_tempvar(p->u_name);
 
+#if OPT_EVAL && OPT_SHELL
     FreeAndNull(shell);
     FreeAndNull(directory);
 #if DISP_X11
     FreeAndNull(x_display);
     FreeAndNull(x_shell);
+#endif
 #endif
 #endif
 }
