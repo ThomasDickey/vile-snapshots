@@ -8,7 +8,7 @@
 /************************************************************************/
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/x11menu.c,v 1.11 2008/11/28 20:47:29 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11menu.c,v 1.12 2008/11/30 22:16:25 tom Exp $
  */
 
 #define NEED_X_INCLUDES 1
@@ -375,25 +375,29 @@ gui_add_list_callback(void *pm)
 int
 gui_hide_menus(int f GCC_UNUSED, int n GCC_UNUSED)
 {
+    int rc = FALSE;
     Widget w = x_menu_widget();
 
     if (w != 0) {
 	XtUnmapWidget(w);
-	return TRUE;
+	rc = TRUE;
     }
-    return FALSE;
+    TRACE(("gui_hide_menus %d\n", rc));
+    return rc;
 }
 
 int
 gui_show_menus(int f GCC_UNUSED, int n GCC_UNUSED)
 {
+    int rc = FALSE;
     Widget w = x_menu_widget();
 
     if (w != 0) {
 	XtMapWidget(w);
-	return TRUE;
+	rc = TRUE;
     }
-    return FALSE;
+    TRACE(("gui_show_menus %d\n", rc));
+    return rc;
 }
 
 /*
@@ -402,16 +406,23 @@ gui_show_menus(int f GCC_UNUSED, int n GCC_UNUSED)
 int
 gui_remove_menus(int f GCC_UNUSED, int n GCC_UNUSED)
 {
+    int rc = TRUE;
+    int count = 0;
+
     gui_hide_menus(f, n);
     while (my_menus != 0) {
 	MY_MENUS *next = my_menus->next;
+
 	XtUnmanageChild(my_menus->parent);
 	XtDestroyWidget(my_menus->parent);
 	XtDestroyWidget(my_menus->child);
+
 	free(my_menus);
 	my_menus = next;
+	++count;
     }
-    return TRUE;
+    TRACE(("gui_remove_menus %d\n", count));
+    return rc;
 }
 
 /*
@@ -420,7 +431,9 @@ gui_remove_menus(int f GCC_UNUSED, int n GCC_UNUSED)
 int
 gui_create_menus(void)
 {
-    return do_menu(x_menu_widget());
+    int rc = do_menu(x_menu_widget());
+    TRACE(("gui_create_menus %d\n", rc));
+    return rc;
 }
 
 #endif /* DISP_X11 */

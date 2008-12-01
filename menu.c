@@ -8,7 +8,7 @@
 /************************************************************************/
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/menu.c,v 1.64 2008/11/29 01:22:44 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/menu.c,v 1.73 2008/11/30 22:19:55 tom Exp $
  */
 
 /* Vile includes */
@@ -252,18 +252,18 @@ vlmenu_is_cmd(char *action)
  * If only a comment-line was found, return sort-of-true.
  */
 static int
-parse_menu_entry(MenuToken * token, const char *source)
+parse_menu_entry(MenuToken * token, const char *source, unsigned slen)
 {
     char *ptr_tok;
     int n, tmp;
     int result = TRUE;
-    unsigned len = strlen(source);
     char buffer[sizeof(MenuToken) + NLINE];
 
     /* make a copy of the source, since strtok modifies it */
-    if (len > sizeof(buffer) - 1)
-	len = sizeof(buffer) - 1;
-    strncpy(buffer, source, len)[len] = EOS;
+    if (slen > sizeof(buffer) - 1)
+	slen = sizeof(buffer) - 1;
+    memcpy(buffer, source, slen);
+    buffer[slen] = EOS;
 
     /* Let a tab begin inline comment */
     if ((ptr_tok = strchr(buffer, '\t')) != 0)
@@ -450,13 +450,13 @@ add_menu_separator(void)
 }
 
 static int
-add_menu_entry(char *text)
+add_menu_entry(const char *text, unsigned slen)
 {
     int result;
     MenuToken myToken;
     MenuToken *hisToken;
 
-    result = parse_menu_entry(&myToken, text);
+    result = parse_menu_entry(&myToken, text, slen);
     if (result == FALSE) {
 	result = FALSE;
     } else if (result == TRUE) {
@@ -470,6 +470,90 @@ add_menu_entry(char *text)
     return result;
 }
 
+/* FIXME - merge this with chunk from gettagsfile() */
+static BUFFER *
+re_read_in(char *fname, BUFFER *bp, int *did_read)
+{
+#ifdef MDCHK_MODTIME
+    time_t current = 0;
+#endif
+
+    *did_read = FALSE;
+#ifdef MDCHK_MODTIME
+    if (strcmp(fname, NonNull(bp->b_fname))) {
+	bp->b_modtime = 0;
+    }
+    if ((global_b_val(MDCHK_MODTIME)
+	 && get_modtime(bp, &current)
+	 && bp->b_modtime != current)) {
+	if (readin(fname, FALSE, bp, FALSE) != TRUE) {
+	    zotbuf(bp);
+	    bp = NULL;
+	} else {
+	    set_modtime(bp, bp->b_fname);
+	    *did_read = TRUE;
+	}
+    } else if (!bp->b_active || strcmp(fname, NonNull(bp->b_fname)))
+#endif
+    {
+	if (readin(fname, FALSE, bp, FALSE) != TRUE) {
+	    zotbuf(bp);
+	    bp = NULL;
+	} else {
+	    set_modtime(bp, bp->b_fname);
+	    *did_read = TRUE;
+	}
+    }
+    TRACE(("re_read_in(%s) %s\n", fname, *did_read ? "read" : "skipped"));
+    return bp;
+}
+
+/*
+ * Get a pointer to the menu-buffer.  If the external file is newer, read that
+ * into memory.
+ */
+static BUFFER *
+get_menu_buffer(void)
+{
+    int did_read;
+    char *menurc;
+    BUFFER *bp = 0;
+
+    if ((menurc = menu_filename()) == 0) {
+	mlforce("No menu-file found");
+    } else if ((bp = bfind(VILEMENU_BufName, BFEXEC | BFINVS)) != 0) {
+	if ((bp = re_read_in(menurc, bp, &did_read)) != 0) {
+	    b_set_invisible(bp);
+	    set_vilemode(bp);
+	}
+    }
+
+    TRACE(("get_menu_buffer(%s) %s\n",
+	   menurc,
+	   (bp != 0) ? "success" : "fail"));
+
+    return bp;
+}
+
+static int
+has_expression(LINE *lp)
+{
+    int rc = FALSE;
+    int len = llength(lp);
+    int n;
+
+    if (len > 0) {
+	for (n = 0; n < len; ++n) {
+	    int ch = lgetc(lp, n);
+	    if (!isSpace(ch)) {
+		rc = (ch == '~');
+		break;
+	    }
+	}
+    }
+    return rc;
+}
+
 /************************************************************************/
 /* Main function : Take the menu-bar as argument and create all the     */
 /* Cascades, PullDowns Menus and Buttons read from the rc file          */
@@ -477,33 +561,60 @@ add_menu_entry(char *text)
 int
 do_menu(void *menub)
 {
-    FILE *fp;
-    char line[1000];
-    int result = TRUE;
-    char *menurc;
-    int rc = FALSE;
+    static int first = TRUE;
+
+    BUFFER *bp;
+    LINE *lp;
+    int rc = TRUE;
 
     TRACE((T_CALLED "do_menu\n"));
     my_menu_bar = menub;
 
     init_menus();
 
-#if 1
-    if ((menurc = menu_filename()) == 0) {
-	mlforce("No menu-file found");
-    } else if ((fp = fopen(menurc, "r")) != NULL) {
+    /*
+     * As called from xvile's initialization, this would be too soon to do
+     * expression-evaluation.  Check if there are any expressions - if so, we
+     * will delay loading the menus.  Otherwise (the old scheme), do it right
+     * away.
+     */
+    if ((bp = get_menu_buffer()) != 0) {
+	delay_menus = FALSE;
+	for_each_line(lp, bp) {
+	    if (has_expression(lp)) {
+		static const char *fallback[] =
+		{
+		    "C:Help:help",
+		    "B:About:version"
+		};
+		unsigned n;
 
-	while (vl_fgets(line, sizeof(line), fp) != NULL) {
-	    if ((result = add_menu_entry(line)) == FALSE)
+		/*
+		 * Provide a fallback to simplify making the menubar the
+		 * right height during initialization.
+		 */
+		for (n = 0; n < TABLESIZE(fallback); ++n) {
+		    if ((rc = add_menu_entry(fallback[n],
+					     strlen(fallback[n]))) == FALSE) {
+			break;
+		    }
+		}
+		delay_menus = TRUE;
 		break;
+	    }
 	}
-	fclose(fp);
 
-	rc = (result != FALSE);
+	if (delay_menus && !first) {
+	    gui_remove_menus(FALSE, 1);
+	    dobuf(bp, 1, -1);
+	} else if (!delay_menus) {
+	    for_each_line(lp, bp) {
+		if ((rc = add_menu_entry(lvalue(lp), llength(lp))) == FALSE)
+		    break;
+	    }
+	}
+	first = FALSE;
     }
-#else
-    rc = dofile(menu_filename());
-#endif
     returnCode(rc);
 }
 
@@ -519,12 +630,12 @@ vlmenu_entry(int f, int n)
     char buffer[NLINE];
 
     if (clexec) {
-	result = add_menu_entry(execstr);
+	result = add_menu_entry(execstr, strlen(execstr));
     } else {
 	*buffer = EOS;
 	result = mlreply("Menu entry:", buffer, sizeof(buffer));
 	if (result == TRUE)
-	    result = add_menu_entry(buffer);
+	    result = add_menu_entry(buffer, strlen(buffer));
 	if (result == TRUE)
 	    result = gui_show_menus(f, n);
     }
@@ -534,9 +645,11 @@ vlmenu_entry(int f, int n)
 int
 vlmenu_load(int f, int n)
 {
+    int result = FALSE;
+
     gui_remove_menus(f, n);
     if (gui_create_menus()) {
-	return gui_show_menus(f, n);
+	result = gui_show_menus(f, n);
     }
-    return FALSE;
+    return result;
 }

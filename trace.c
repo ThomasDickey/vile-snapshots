@@ -1,7 +1,7 @@
 /*
  * debugging support -- tom dickey.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.87 2008/11/28 19:59:29 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.88 2008/11/30 17:33:02 tom Exp $
  *
  */
 
@@ -917,7 +917,7 @@ trace_buffer(BUFFER *bp)
 	  bp->b_bname,
 	  (void *) bp->b_dot.l,
 	  bp == curbp ? " (curbp)" : "",
-	  bp->b_fname);
+	  NonNull(bp->b_fname));
     for_each_line(lp, bp) {
 	trace_line(lp, bp);
     }

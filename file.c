@@ -5,7 +5,7 @@
  * reading and writing of the disk are
  * in "fileio.c".
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.422 2008/11/29 01:00:31 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.423 2008/11/30 18:46:38 tom Exp $
  */
 
 #include "estruct.h"
@@ -1772,7 +1772,7 @@ slowreadf(BUFFER *bp, int *nlinep)
     TRACE((T_CALLED "slowreadf(buffer=%s, file=%s)\n", bp->b_bname, bp->b_fname));
 
 #if OPT_ENCRYPT
-    if ((s = vl_resetkey(curbp, curbp->b_fname)) != TRUE)
+    if ((s = vl_resetkey(bp, bp->b_fname)) != TRUE)
 	returnCode(s);
 #endif
     b_set_counted(bp);		/* make 'addline()' do the counting */
@@ -2872,9 +2872,9 @@ imdying(int ACTUAL_SIG_ARGS)
     term.cursorvis(TRUE);	/* ( this might work ;-) */
     if (
 #ifdef SIGHUP
-	signo != SIGHUP &&
+	   signo != SIGHUP &&
 #endif
-	    signo != SIGINT) {
+	   signo != SIGINT) {
 	term.clean(FALSE);
 #ifdef VILE_ERROR_ABORT
 	ExitProgram(signo);

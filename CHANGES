@@ -1,7 +1,10 @@
 Changes for vile 9.7 (released ??? ??? ?? ????)
 
- 20081127 (i)
+ 20081130 (i)
 	> Tom Dickey:
+	+ modify vilemenu.rc to work with --disable-shell configuration, by
+	  making it scriptable, and using the scripting feature to omit menu
+	  entries which use shell features.
 	+ add "define-menu-entry" command.
 	+ eliminate fixed limit of xvile's menu size.
 	+ modify vileinit.rc to work with --disable-shell configuration.
