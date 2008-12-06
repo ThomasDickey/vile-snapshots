@@ -2965,18 +2965,26 @@ Programmed procedures (aka macros)
 	$cfgopts	comma-delimited list of "interesting" compiled options
 	                (read only).  Currently tracked options include:
 
+			ansi        -> vile built with ANSI terminal driver
 			athena      -> xvile built with Athena widgets
+			borland     -> vile built with Borland/DJGPP driver
 			curses      -> editor uses curses terminal driver
 			hypertext   -> editor supports highlighting and links
+			iconv       -> editor has iconv locale support
 			locale      -> editor uses system's LC_CTYPE locale
 			motif       -> xvile built with Motif libraries
+			multibyte   -> vile built with multibyte locales
 			nextaw      -> xvile built with Athena widgets (NeXtaw)
+			ntcons      -> vile built for Win32 console
+			ntwin       -> vile built for Win32 GUI
 			noshell     -> shell commands are disabled
 			oleauto     -> editor supports OLE automation.
 			openlook    -> xvile built with OpenLook libraries
+			os2vio      -> vile built for OS/2 VIO console
 			perl        -> editor includes perl interpreter
 			termcap     -> editor reads TERMCAP db for screen info.
 			terminfo    -> editor reads TERMINFO db for screen info.
+			vmsvt       -> vile built for VMS terminal
 			xaw         -> xvile built with Athena widgets (Xaw)
 			xaw3d       -> xvile built with Athena widgets (Xaw3D)
 
@@ -6552,4 +6560,4 @@ Problems
 
 Copyright 1995-2007,2008 by Paul Fox, Thomas Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.663 2008/11/10 21:43:39 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.664 2008/12/04 23:51:17 tom Exp $

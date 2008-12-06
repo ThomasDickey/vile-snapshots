@@ -3,7 +3,7 @@
  *	for getting and setting the values of the vile state variables,
  *	plus helper utility functions.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.124 2008/11/30 20:13:57 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.126 2008/12/04 23:50:55 tom Exp $
  */
 
 #include	"estruct.h"
@@ -402,11 +402,29 @@ cfgopts(void)
 #if OPT_LOCALE
 	"locale",
 #endif
+#if OPT_ICONV_FUNCS
+	"iconv",
+#endif
+#if OPT_MULTIBYTE
+	"multibyte",
+#endif
 #if OPT_PERL
 	"perl",
 #endif
+#if DISP_ANSI
+	"ansi",
+#endif
+#if DISP_BORLAND
+	"borland",
+#endif
 #if DISP_CURSES
 	"curses",
+#endif
+#if DISP_NTCONS
+	"ntcons",
+#endif
+#if DISP_NTWIN
+	"ntwin",
 #endif
 #if DISP_TERMCAP
 # if USE_TERMINFO
@@ -414,6 +432,12 @@ cfgopts(void)
 # else
 	"termcap",
 # endif
+#endif
+#if DISP_VIO
+	"os2vio",
+#endif
+#if DISP_VMSVT
+	"vmsvt",
 #endif
 #if DISP_X11
 # if OL_WIDGETS

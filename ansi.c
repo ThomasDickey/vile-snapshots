@@ -4,7 +4,7 @@
  * "termio.c". It compiles into nothing if not an ANSI device.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ansi.c,v 1.49 2007/09/03 20:05:59 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ansi.c,v 1.51 2008/12/04 23:52:42 tom Exp $
  */
 
 #include	"estruct.h"
@@ -47,7 +47,11 @@
 static int cfcolor = -1;	/* current forground color */
 static int cbcolor = -1;	/* current background color */
 
-#endif
+	/* ANSI: black, red, green, yellow, blue, magenta, cyan, white   */
+static const char ANSI_palette[] =
+{"0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15"};
+
+#endif /* OPT_COLOR */
 
 static void
 csi(void)
@@ -57,7 +61,7 @@ csi(void)
 }
 
 static void
-ansiparm(register int n)
+ansi_parm(register int n)
 {
     register int q, r;
 
@@ -79,72 +83,124 @@ ansiparm(register int n)
 
 #if OPT_COLOR
 static void
-ansifcol(int color)		/* set the current output color */
+textcolor(int color)
+{
+    csi();
+    ansi_parm(color >= 0 ? (color + 30) : 39);
+    ttputc('m');
+}
+
+static void
+textbackground(int color)
+{
+    csi();
+    ansi_parm(color >= 0 ? (color + 40) : 49);
+    ttputc('m');
+}
+
+static void
+ansi_fcol(int color)		/* set the current output color */
 {
     if (color < 0)
 	color = C_WHITE;
     if (color == cfcolor)
 	return;
-    csi();
-    ansiparm(color + 30);
-    ttputc('m');
+    textcolor(color);
     cfcolor = color;
 }
 
 static void
-ansibcol(int color)		/* set the current background color */
+ansi_bcol(int color)		/* set the current background color */
 {
     if (color < 0)
 	color = C_BLACK;
     if (color == cbcolor)
 	return;
-    csi();
-    ansiparm(color + 40);
-    ttputc('m');
+    textbackground(color);
     cbcolor = color;
+}
+
+static void
+ansi_spal(const char *thePalette)
+{				/* reset the palette registers */
+    set_ctrans(thePalette);
 }
 #endif
 
 static void
-ansimove(int row, int col)
+ansi_move(int row, int col)
 {
     csi();
-    ansiparm(row + 1);
+    ansi_parm(row + 1);
     ttputc(';');
-    ansiparm(col + 1);
+    ansi_parm(col + 1);
     ttputc('H');
 }
 
 static void
-ansieeol(void)
+ansi_eeol(void)
 {
     csi();
     ttputc('K');
 }
 
 static void
-ansieeop(void)
+ansi_eeop(void)
 {
 #if OPT_COLOR
-    ansifcol(gfcolor);
-    ansibcol(gbcolor);
+    ansi_fcol(gfcolor);
+    ansi_bcol(gbcolor);
 #endif
     csi();
     ttputc('2');
     ttputc('J');
 }
 
-#if OPT_COLOR
+#if OPT_COLOR && !OPT_VIDEO_ATTRS
 static void
 force_colors(int fc, int bc)
 {
     cfcolor =
 	cbcolor = -1;
-    ansifcol(fc);
-    ansibcol(bc);
+    ansi_fcol(fc);
+    ansi_bcol(bc);
 }
 #endif
 
+#if OPT_VIDEO_ATTRS
+static void
+ansi_attr(UINT attr)		/* change video attributes */
+{
+    static UINT last;
+    UINT next;
+    int colored = FALSE;
+
+    if (attr != last) {
+	last = attr;
+
+	attr = VATTRIB(attr);
+	if (attr & VASPCOL) {
+	    colored = TRUE;
+	    attr = VCOLORATTR((VCOLORNUM(attr) & (ncolors - 1)));
+	} else {
+	    if (attr & VACOLOR) {
+		attr &= (VCOLORATTR(ncolors - 1) | ~VACOLOR);
+		colored = TRUE;
+	    }
+	    attr &= ~(VAML | VAMLFOC);
+	}
+
+	next = ctrans[VCOLORNUM(attr)];
+	if (attr & (VASEL | VAREV)) {
+	    textcolor((colored ? next : cbcolor));
+	    textbackground(cfcolor);
+	} else {
+	    textcolor((colored ? next : cfcolor));
+	    textbackground(cbcolor);
+	}
+    }
+}
+#else /* ! OPT_VIDEO_ATTRS */
 #ifdef BROKEN_REVERSE_VIDEO
 /* there was something wrong with this "fix".  the "else" of
 		the ifdef just uses "ESC [ 7 m" to set reverse
@@ -152,8 +208,8 @@ force_colors(int fc, int bc)
 		use an "after-market" ansi driver -- nnansi593.zip, from
 		oak.oakland.edu, or any simtel mirror. */
 static void
-ansirev(			/* change reverse video state */
-	   UINT state)		/* TRUE = reverse, FALSE = normal */
+ansi_rev(			/* change reverse video state */
+	    UINT state)		/* TRUE = reverse, FALSE = normal */
 {
 #if !OPT_COLOR
     static UINT revstate = SORTOFTRUE;
@@ -171,7 +227,7 @@ ansirev(			/* change reverse video state */
 #endif
     ttputc('m');
 
-#if OPT_COLOR
+#if OPT_COLOR && !OPT_VIDEO_ATTRS
 #if SYS_MSDOS
     /*
      * Setting reverse-video with ANSI.SYS seems to reset the colors to
@@ -193,8 +249,8 @@ ansirev(			/* change reverse video state */
 #else
 
 static void
-ansirev(			/* change reverse video state */
-	   UINT state)		/* TRUE = reverse, FALSE = normal */
+ansi_rev(			/* change reverse video state */
+	    UINT state)		/* TRUE = reverse, FALSE = normal */
 {
     static UINT revstate = SORTOFTRUE;
     if (state == revstate)
@@ -211,9 +267,10 @@ ansirev(			/* change reverse video state */
 }
 
 #endif
+#endif /* ! OPT_VIDEO_ATTRS */
 
 static void
-ansibeep(void)
+ansi_beep(void)
 {
     ttputc(BEL);
     ttflush();
@@ -221,13 +278,13 @@ ansibeep(void)
 
 #if SCROLL_REG
 static void
-ansiscrollregion(int top, int bot)
+ansi_scrollregion(int top, int bot)
 {
     csi();
-    ansiparm(top + 1);
+    ansi_parm(top + 1);
     ttputc(';');
     if (bot != term.rows - 1)
-	ansiparm(bot + 1);
+	ansi_parm(bot + 1);
     ttputc('r');
 }
 #endif
@@ -240,31 +297,31 @@ ansiscrollregion(int top, int bot)
 
 /* move howmany lines starting at from to to */
 static void
-ansiscroll(int from, int to, int n)
+ansi_scroll(int from, int to, int n)
 {
     int i;
     if (to == from)
 	return;
 #if SCROLL_REG
     if (to < from) {
-	ansiscrollregion(to, from + n - 1);
-	ansimove(from + n - 1, 0);
+	ansi_scrollregion(to, from + n - 1);
+	ansi_move(from + n - 1, 0);
 	for (i = from - to; i > 0; i--)
 	    ttputc('\n');
     } else {			/* from < to */
-	ansiscrollregion(from, to + n - 1);
-	ansimove(from, 0);
+	ansi_scrollregion(from, to + n - 1);
+	ansi_move(from, 0);
 	for (i = to - from; i > 0; i--) {
 	    ttputc(ESC);
 	    ttputc('M');
 	}
     }
-    ansiscrollregion(0, term.maxrows - 1);
+    ansi_scrollregion(0, term.maxrows - 1);
 
 #else /* use insert and delete line */
 #if OPT_PRETTIER_SCROLL
     if (absol(from - to) > 1) {
-	ansiscroll(from, (from < to) ? to - 1 : to + 1, n);
+	ansi_scroll(from, (from < to) ? to - 1 : to + 1, n);
 	if (from < to)
 	    from = to - 1;
 	else
@@ -272,29 +329,29 @@ ansiscroll(int from, int to, int n)
     }
 #endif
     if (to < from) {
-	ansimove(to, 0);
+	ansi_move(to, 0);
 	csi();
-	ansiparm(from - to);
+	ansi_parm(from - to);
 	ttputc('M');		/* delete */
-	ansimove(to + n, 0);
+	ansi_move(to + n, 0);
 	csi();
-	ansiparm(from - to);
+	ansi_parm(from - to);
 	ttputc('L');		/* insert */
     } else {
-	ansimove(from + n, 0);
+	ansi_move(from + n, 0);
 	csi();
-	ansiparm(to - from);
+	ansi_parm(to - from);
 	ttputc('M');		/* delete */
-	ansimove(from, 0);
+	ansi_move(from, 0);
 	csi();
-	ansiparm(to - from);
+	ansi_parm(to - from);
 	ttputc('L');		/* insert */
     }
 #endif
 }
 
 static void
-ansiopen(void)
+ansi_open(void)
 {
     static int already_open = FALSE;
     if (!already_open) {
@@ -313,18 +370,21 @@ ansiopen(void)
 	term.maxrows = term.rows;
 	term.maxcols = term.cols;
 #endif
+#if OPT_COLOR
+	set_palette(ANSI_palette);
+#endif
 	ttopen();
     }
 }
 
 static void
-ansiclose(void)
+ansi_close(void)
 {
     term.curmove(term.rows - 1, 0);	/* cf: dumbterm.c */
-    ansieeol();
+    ansi_eeol();
 #if OPT_COLOR
-    ansifcol(C_WHITE);
-    ansibcol(C_BLACK);
+    ansi_fcol(C_WHITE);
+    ansi_bcol(C_BLACK);
 #endif
 }
 
@@ -339,10 +399,10 @@ TERM term =
     MAXNCOL,			/* max */
     NCOL,			/* current */
     enc_DEFAULT,
-    ansiopen,
+    ansi_open,
     nullterm_kopen,
     nullterm_kclose,
-    ansiclose,
+    ansi_close,
     ttclean,
     ttunclean,
     nullterm_openup,
@@ -350,22 +410,27 @@ TERM term =
     ttputc,
     tttypahead,
     ttflush,
-    ansimove,
-    ansieeol,
-    ansieeop,
-    ansibeep,
-    ansirev,
+    ansi_move,
+    ansi_eeol,
+    ansi_eeop,
+    ansi_beep,
+#if OPT_VIDEO_ATTRS
+    ansi_attr,
+#else
+    ansi_rev,
+#endif
     nullterm_setdescrip,
 #if OPT_COLOR
-    ansifcol,
-    ansibcol,
+    ansi_fcol,
+    ansi_bcol,
+    ansi_spal,
 #else
     nullterm_setfore,
     nullterm_setback,
+    nullterm_setpal,
 #endif
-    nullterm_setpal,		/* no palette */
     nullterm_setccol,
-    ansiscroll,
+    ansi_scroll,
     nullterm_pflush,
     nullterm_icursor,
     nullterm_settitle,
