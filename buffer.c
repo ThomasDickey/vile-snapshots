@@ -5,7 +5,7 @@
  * keys. Like everyone else, they set hints
  * for the display system.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.335 2008/10/26 23:00:05 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.336 2008/12/05 01:33:30 tom Exp $
  *
  */
 
@@ -1788,7 +1788,11 @@ delink_bp(BUFFER *bp)
 int
 is_delinked_bp(BUFFER *bp)
 {
-    return (bp == bminip || bp == btempp);
+    return (bp == bminip
+#if OPT_MULTIBYTE
+	    || bp == btempp
+#endif
+	);
 }
 
 char *

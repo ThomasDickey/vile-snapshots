@@ -20,7 +20,7 @@
 #
 # gnu autoconf support by kevin buettner, 5/94
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.213 2008/11/22 17:45:20 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.214 2008/12/04 23:59:18 tom Exp $
 
 SHELL		= /bin/sh
 
@@ -677,7 +677,7 @@ $(BINDIR)/vileget:		$(srcdir)/perl/vileget
 	$(INSTALL_SCRIPT)	$(srcdir)/perl/vileget $@
 
 $(BINDIR)/@TARGET@-pager:	$(srcdir)/macros/vile-pager
-	sed -e 's/ vile / @TARGET@ /' $(srcdir)/macros/vile-pager >$@
+	sed -e 's/=vile$$/=@TARGET@/' $(srcdir)/macros/vile-pager >$@
 	chmod 755 $@
 
 $(DOCDIR)/Vileserv.doc:		$(srcdir)/doc/Vileserv.doc

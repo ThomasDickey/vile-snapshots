@@ -1,5 +1,17 @@
 Changes for vile 9.7 (released ??? ??? ?? ????)
 
+ 20081204 (j)
+	> Tom Dickey:
+	+ add to $cfgopts some drivers (ansi, borland, ntcons, ntwin, os2vio,
+	  vmsvt) and useful settings (iconv, multibyte).
+	+ make ansi driver support color syntax highlighting.
+	+ make xvile-pager work by adding a "+fork" option to ensure inputs
+	  are captured before the script exits.
+	+ fix a regression in "R" command from 9.7i; the check for quoting now
+	  checks for UTF-8 continuation bytes but did not ensure that only
+	  UTF-8 codes were tested before deciding whether to delete old bytes
+	  during a replace.
+
  20081130 (i)
 	> Tom Dickey:
 	+ modify vilemenu.rc to work with --disable-shell configuration, by

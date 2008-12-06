@@ -1,9 +1,11 @@
 #!/bin/sh
-# $Header: /users/source/archives/vile.vcs/macros/RCS/vile-pager,v 1.5 2001/08/21 18:55:46 tom Exp $
+# $Header: /users/source/archives/vile.vcs/macros/RCS/vile-pager,v 1.6 2008/12/05 00:03:03 tom Exp $
 # This is a simple script that uses the vi-clone 'vile' as a pager to show
 # highlighted text.  It's a lot easier to work with large listings than 'more'
 # or 'less'
 # - T.Dickey
+PROG=vile
+OPTS=
 TMP=${TMPDIR-/tmp}/rc$$
 trap "rm -f $TMP" 0 1 2 5 15
 cat >$TMP <<'EOF'
@@ -22,4 +24,9 @@ store-procedure OnRead
 ~endm
 setv $buffer-hook "OnRead"
 EOF
-cat $* | vile @$TMP
+case $PROG in
+x*)
+	OPTS="+fork"
+	;;
+esac
+cat $* | $PROG $OPTS @$TMP

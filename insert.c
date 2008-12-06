@@ -4,7 +4,7 @@
  * Most code probably by Dan Lawrence or Dave Conroy for MicroEMACS
  * Extensions for vile by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/insert.c,v 1.170 2008/11/27 17:47:49 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/insert.c,v 1.171 2008/12/03 20:17:29 tom Exp $
  */
 
 #include	"estruct.h"
@@ -756,7 +756,7 @@ static int
 is_utf8_continuation(BUFFER *bp, int ch)
 {
     int result = FALSE;
-    if (b_is_utfXX(bp)) {
+    if (b_is_utfXX(bp) && (ch >= 0x80)) {
 	if ((ch & 0xc0) != 0x80) {
 	    result = TRUE;
 	}
