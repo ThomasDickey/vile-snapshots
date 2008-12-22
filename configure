@@ -19398,7 +19398,7 @@ echo "$as_me: checking for $CC warning options..." >&6;}
 		Wpointer-arith \
 		Wshadow \
 		Wstrict-prototypes \
-		Wundef $cf_warn_CONST
+		Wundef $cf_warn_CONST Wno-unknown-pragmas
 	do
 		CFLAGS="$cf_save_CFLAGS $EXTRA_CFLAGS -$cf_opt"
 		if { (eval echo "$as_me:19404: \"$ac_compile\"") >&5

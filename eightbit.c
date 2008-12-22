@@ -1,5 +1,5 @@
 /*
- * $Id: eightbit.c,v 1.45 2008/07/11 04:26:50 tom Exp $
+ * $Id: eightbit.c,v 1.47 2008/12/21 22:40:06 tom Exp $
  *
  * Maintain "8bit" file-encoding mode by converting incoming UTF-8 to single
  * bytes, and providing a function that tells vile whether a given Unicode
@@ -850,13 +850,12 @@ vl_get_encoding(char **target, const char *locale)
     return result;
 }
 
-#if USE_MBTERM
 /*
  * Use the lookup table created in vl_init_8bit() to convert an "8bit"
  * value to the corresponding UTF-8 string.  If the current locale
  * encoding is ISO-8859-1 (the default), this is a 1-1 mapping.
  */
-static const char *
+const char *
 vl_mb_to_utf8(int code)
 {
     const char *result = 0;
@@ -875,6 +874,7 @@ vl_mb_to_utf8(int code)
     return result;
 }
 
+#if USE_MBTERM
 #if OPT_ICONV_FUNCS
 /*
  * Decode a buffer as UTF-8, returning the character value if successful.

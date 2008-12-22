@@ -2,7 +2,7 @@
  *	eval.c -- function and variable evaluation
  *	original by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.387 2008/11/25 23:40:10 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.388 2008/12/21 21:06:51 tom Exp $
  *
  */
 
@@ -185,7 +185,7 @@ match_charclass_regexp(int ch, REGEXVAL * exp)
     char temp[2];
     temp[0] = (char) ch;
 
-    return regexec(exp->reg, temp, temp + 1, 0, 0);
+    return nregexec(exp->reg, temp, temp + 1, 0, 0);
 }
 
 static int
@@ -1135,13 +1135,13 @@ run_func(int fnum)
 	if ((exp = new_regexval(arg[0], TRUE)) != 0) {
 	    int save_flag = ignorecase;
 	    ignorecase = TRUE;
-	    value = regexec(exp->reg, arg[1], (char *) 0, 0, -1);
+	    value = nregexec(exp->reg, arg[1], (char *) 0, 0, -1);
 	    ignorecase = save_flag;
 	}
 	break;
     case UFMATCH:
 	if ((exp = new_regexval(arg[0], TRUE)) != 0)
-	    value = regexec(exp->reg, arg[1], (char *) 0, 0, -1);
+	    value = nregexec(exp->reg, arg[1], (char *) 0, 0, -1);
 	break;
     case UFRANDOM:		/* FALLTHRU */
     case UFRND:
