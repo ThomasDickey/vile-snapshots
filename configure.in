@@ -1,12 +1,12 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_REVISION($Revision: 1.252 $)
+AC_REVISION($Revision: 1.253 $)
 AC_PREREQ(2.13.20030927)
 rm -f config.cache
 
 ### Use "configure -with-screen" to override the default configuration, which is
 ### termcap-based on unix systems.
 
-dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.252 2008/11/23 16:46:07 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.253 2008/12/21 15:35:30 tom Exp $
 
 define(MAKELIST, sh $srcdir/filters/makelist.sh $srcdir/filters/genmake.mak)
 
@@ -753,7 +753,7 @@ AC_ARG_WITH(trace,
 
 test -n "${with_trace}${with_no_leaks}" && EXTRAOBJS="$EXTRAOBJS trace\$o"
 
-CF_WITH_WARNINGS
+CF_WITH_WARNINGS(Wno-unknown-pragmas)
 
 ###	Do these last, since they rely on a properly constructed config.h
 

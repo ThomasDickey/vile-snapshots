@@ -1,7 +1,7 @@
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/regexp.c,v 1.139 2007/12/27 19:46:26 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/regexp.c,v 1.145 2008/12/21 21:51:06 tom Exp $
  *
- * Copyright 2005-2006,2007 Thomas E. Dickey and Paul G. Fox
+ * Copyright 2005-2007,2008 Thomas E. Dickey and Paul G. Fox
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
@@ -403,7 +403,46 @@ typedef enum {
 #define is_XDIGIT(c) (isDigit(c) || (isLower(c) && (c) - 'a' < 6) || (isUpper(c) && (c) - 'A' < 6))
 #endif
 
-#define is_CLASS(name) is_ ## name
+/*
+ * Multibyte character classes are checked on the UTF-8 strings.  We could
+ * alternatively convert the data to be scanned into an array of integers
+ * holding Unicode codes (which might be faster).
+ */
+#if OPT_MULTIBYTE
+
+#ifdef HAVE_WCTYPE
+#include	<wctype.h>
+#define sys_isalpha(n)  iswalpha(n)
+#define sys_isalnum(n)  iswalnum(n)
+#define sys_isblank(n)  iswblank(n)
+#define sys_iscntrl(n)  iswcntrl(n)
+#define sys_isdigit(n)  iswdigit(n)
+#define sys_isgraph(n)  iswgraph(n)
+#define sys_islower(n)  iswlower(n)
+#define sys_isprint(n)  iswprint(n)
+#define sys_ispunct(n)  iswpunct(n)
+#define sys_isspace(n)  iswspace(n)
+#define sys_isupper(n)  iswupper(n)
+#define sys_isxdigit(n) iswxdigit(n)
+#else
+#define sys_isalpha(n)  isalpha(n)
+#define sys_isalnum(n)  isalnum(n)
+#define sys_isblank(n)  isblank(n)
+#define sys_iscntrl(n)  iscntrl(n)
+#define sys_isdigit(n)  isdigit(n)
+#define sys_isgraph(n)  isgraph(n)
+#define sys_islower(n)  islower(n)
+#define sys_isprint(n)  isprint(n)
+#define sys_ispunct(n)  ispunct(n)
+#define sys_isspace(n)  isspace(n)
+#define sys_isupper(n)  isupper(n)
+#define sys_isxdigit(n) isxdigit(n)
+#endif
+
+#define is_CLASS(name,ptr) reg_ctype_ ## name(ptr)
+#else
+#define is_CLASS(name,ptr) is_ ## name(*ptr)
+#endif
 
 /*
  * Opcode notes:
@@ -510,6 +549,75 @@ static long regsize;		/* Code size. */
 static char *op_pointer;	/* cached from regnode() */
 static int op_length;		/* ...corresponding operand-length */
 
+/*
+ * Global work variables for regexec().
+ */
+static char *reginput;		/* String-input pointer. */
+static char *regnomore;		/* String-input end pointer. */
+static char *regbol;		/* Beginning of input, for ^ check. */
+static char **regstartp;	/* Pointer to startp array. */
+static char **regendp;		/* Ditto for endp. */
+static int reg_cnts[NSUBEXP];	/* count closure of \(...\) groups */
+
+#if OPT_MULTIBYTE
+static int reg_utf8flag = 0;
+#endif
+
+#if OPT_MULTIBYTE
+static int
+reg_bytes_at(const char *source)
+{
+    int result = 1;
+    if (reg_utf8flag) {
+	result = vl_conv_to_utf32((UINT *) 0, source, regnomore - source);
+	if (result <= 0)
+	    result = 1;
+    }
+    return result;
+}
+
+/*
+ * The "ctype" functions all use a pointer, so we can do the conversion from
+ * UTF-8 directly.  vile's feature for overriding ctype only applies to an
+ * 8-bit table; outside of that, we'll use the system's ctype functions.
+ */
+#define reg_CTYPE(name,expr) \
+static int reg_ctype_##name(const char *source) \
+{ \
+    int result = -1; \
+    if (reg_utf8flag) { \
+	UINT target; \
+	int rc = vl_conv_to_utf32(&target, source, regnomore - source); \
+	if (rc > 0 && vl_mb_to_utf8(target) == 0) { \
+	    result = expr; \
+	    TRACE2(("reg_ctype_" #name ": %#X ->%d\n", target, result)); \
+	} \
+    } \
+    if (result < 0) { \
+	result = is_##name(CharOf(*source)); \
+	TRACE2(("reg_ctype_" #name ": %#x ->%d\n", CharOf(*source), result)); \
+    } \
+    return result; \
+}
+
+reg_CTYPE(ALPHA, sys_isalpha(target))
+reg_CTYPE(ALNUM, sys_isalnum(target))
+reg_CTYPE(BLANK, sys_isblank(target))
+reg_CTYPE(CNTRL, sys_iscntrl(target))
+reg_CTYPE(DIGIT, sys_isdigit(target))
+reg_CTYPE(GRAPH, sys_isgraph(target))
+reg_CTYPE(IDENT, sys_isalnum(target))
+reg_CTYPE(LOWER, sys_isalpha(target) && sys_islower(target))
+reg_CTYPE(OCTAL, (target >= '0') && (target <= '7'))
+reg_CTYPE(PATHN, sys_isgraph(target))
+reg_CTYPE(PRINT, sys_isprint(target))
+reg_CTYPE(PUNCT, sys_ispunct(target))
+reg_CTYPE(SPACE, sys_isspace(target))
+reg_CTYPE(UPPER, sys_isalpha(target) && sys_isupper(target))
+reg_CTYPE(XDIGIT, sys_isxdigit(target))
+#else
+#define reg_bytes_at(source) 1
+#endif
 /*
  *				regexp		in magic	in nomagic
  *				char		enter as	enter as
@@ -745,9 +853,8 @@ regcomp(const char *exp_text, size_t exp_len, int magic)
  * follows makes it hard to avoid.
  */
 static char *
-reg(
-       int paren,		/* Parenthesized? */
-       int *flagp)
+reg(int paren,			/* Parenthesized? */
+    int *flagp)
 {
     char *ret;
     char *br;
@@ -1478,16 +1585,6 @@ regoptail(char *p, char *val)
  * regexec and friends
  */
 
-/*
- * Global work variables for regexec().
- */
-static char *reginput;		/* String-input pointer. */
-static char *regnomore;		/* String-input end pointer. */
-static char *regbol;		/* Beginning of input, for ^ check. */
-static char **regstartp;	/* Pointer to startp array. */
-static char **regendp;		/* Ditto for endp. */
-static int reg_cnts[NSUBEXP];	/* count closure of \(...\) groups */
-
 /* this very special copy of strncmp allows for caseless operation,
  * and also for non-null terminated strings:
  * txt_a arg ends at position end_a, or txt_a + lenb, whichever is first.
@@ -1531,7 +1628,7 @@ regstrchr(char *s, int c, const char *e)
  * escaped.  The 's' argument is always null-terminated.
  */
 static int
-RegStrChr2(const char *s, unsigned length, int c)
+RegStrChr2(const char *s, unsigned length, const char *cs)
 {
     int matched = 0;
     const char *last = s + length;
@@ -1541,15 +1638,15 @@ RegStrChr2(const char *s, unsigned length, int c)
 	    /* this matches ANY_ESC */
 	    switch (*++s) {
 	    default:
-		matched = (CharOf(c) == CharOf(*s));
+		matched = (CharOf(*cs) == CharOf(*s));
 		break;
 
 #define case_CLASSES(with,without) \
 	    case chr_CLASS(with): \
-		matched = is_CLASS(with)(c); \
+		matched = is_CLASS(with,cs); \
 		break; \
 	    case chr_CLASS(without): \
-		matched = !is_CLASS(with)(c); \
+		matched = !is_CLASS(with,cs); \
 		break
 
 		expand_case_CLASSES();
@@ -1557,7 +1654,7 @@ RegStrChr2(const char *s, unsigned length, int c)
 #undef case_CLASSES
 	    }
 	} else {
-	    matched = SAME(*s, c);
+	    matched = SAME(*s, *cs);
 	}
 	s++;
     }
@@ -1571,12 +1668,11 @@ RegStrChr2(const char *s, unsigned length, int c)
 	startoff, but must end before endoff
  */
 int
-regexec(
-	   regexp * prog,
-	   char *string,
-	   char *stringend,	/* pointer to the null, if there were one */
-	   int startoff,
-	   int endoff)
+regexec(regexp * prog,
+	char *string,
+	char *stringend,	/* pointer to the null, if there were one */
+	int startoff,
+	int endoff)
 {
     char *s, *endsrch;
 
@@ -1658,11 +1754,10 @@ regexec(
  - regtry - try match at specific point
  */
 static int			/* 0 failure, 1 success */
-regtry(
-	  regexp * prog,
-	  char *string,
-	  char *stringend,
-	  int plevel)
+regtry(regexp * prog,
+       char *string,
+       char *stringend,
+       int plevel)
 {
     int i;
     char **sp;
@@ -1814,7 +1909,7 @@ regmatch(char *prog, int plevel)
 	case BEGWORD:
 	    /* Match if current char isident
 	     * and previous char BOL or !ident */
-	    if ((reginput == regnomore || !isident(*reginput))
+	    if ((reginput >= regnomore || !isident(*reginput))
 		|| (reginput != regbol
 		    && isident(reginput[-1])))
 		returnReg(0);
@@ -1830,14 +1925,14 @@ regmatch(char *prog, int plevel)
 
 #define case_CLASSES(with,without) \
 	case with: \
-	    if (reginput == regnomore || !is_CLASS(with)(*reginput)) \
+	    if (reginput >= regnomore || !is_CLASS(with,reginput)) \
 		returnReg(0); \
-	    reginput++; \
+	    reginput += reg_bytes_at(reginput); \
 	    break; \
 	case without: \
-	    if (reginput == regnomore || is_CLASS(with)(*reginput)) \
+	    if (reginput >= regnomore || is_CLASS(with,reginput)) \
 		returnReg(0); \
-	    reginput++; \
+	    reginput += reg_bytes_at(reginput); \
 	    break
 
 	    expand_case_CLASSES();
@@ -1845,7 +1940,7 @@ regmatch(char *prog, int plevel)
 #undef case_CLASSES
 
 	case ANY:
-	    if (reginput == regnomore)
+	    if (reginput >= regnomore)
 		returnReg(0);
 	    reginput++;
 	    break;
@@ -1853,7 +1948,7 @@ regmatch(char *prog, int plevel)
 		unsigned len;
 		char *opnd;
 
-		if (reginput == regnomore)
+		if (reginput >= regnomore)
 		    returnReg(0);
 
 		opnd = OPERAND(scan);
@@ -1869,16 +1964,16 @@ regmatch(char *prog, int plevel)
 	    }
 	    break;
 	case ANYOF:
-	    if (reginput == regnomore
-		|| RegStrChr2(OPERAND(scan), OPSIZE(scan), *reginput) == 0)
+	    if (reginput >= regnomore
+		|| RegStrChr2(OPERAND(scan), OPSIZE(scan), reginput) == 0)
 		returnReg(0);
-	    reginput++;
+	    reginput += reg_bytes_at(reginput);
 	    break;
 	case ANYBUT:
-	    if (reginput == regnomore
-		|| RegStrChr2(OPERAND(scan), OPSIZE(scan), *reginput) != 0)
+	    if (reginput >= regnomore
+		|| RegStrChr2(OPERAND(scan), OPSIZE(scan), reginput) != 0)
 		returnReg(0);
-	    reginput++;
+	    reginput += reg_bytes_at(reginput);
 	    break;
 	case NEVER:
 	    break;
@@ -2127,29 +2222,29 @@ regrepeat(const char *p)
 	}
 	break;
     case ANYOF:
-	while (scan < regnomore && RegStrChr2(opnd, size, *scan) != 0) {
+	while (scan < regnomore && RegStrChr2(opnd, size, scan) != 0) {
 	    count++;
-	    scan++;
+	    scan += reg_bytes_at(scan);
 	}
 	break;
     case ANYBUT:
-	while (scan < regnomore && RegStrChr2(opnd, size, *scan) == 0) {
+	while (scan < regnomore && RegStrChr2(opnd, size, scan) == 0) {
 	    count++;
-	    scan++;
+	    scan += reg_bytes_at(scan);
 	}
 	break;
 
 #define case_CLASSES(with,without) \
     case with: \
-	while (scan < regnomore && is_CLASS(with)(*scan)) { \
+	while (scan < regnomore && is_CLASS(with,scan)) { \
 	    count++; \
-	    scan++; \
+	    scan += reg_bytes_at(scan); \
 	} \
 	break; \
     case without: \
-	while (scan < regnomore && !is_CLASS(with)(*scan)) { \
+	while (scan < regnomore && !is_CLASS(with,scan)) { \
 	    count++; \
-	    scan++; \
+	    scan += reg_bytes_at(scan); \
 	} \
 	break
 
@@ -2338,40 +2433,60 @@ regprop(char *op)
  * like regexec, but takes LINE * as input instead of char *
  */
 int
-lregexec(
-	    regexp * prog,
-	    LINE *lp,
-	    int startoff,
-	    int endoff)
+lregexec(regexp * prog,
+	 LINE *lp,
+	 int startoff,
+	 int endoff)
 {
-    int s;
-
-    if (endoff < startoff)
-	return 0;
+    int s = 0;
 
     REGTRACE((T_CALLED "lregexec %d..%d\n", startoff, endoff));
-    if (lvalue(lp)) {
-	s = regexec(prog, lvalue(lp), &(lvalue(lp)[llength(lp)]),
-		    startoff, endoff);
-    } else {
-	/* the prog might be ^$, or something legal on a null string */
 
-	char *nullstr = "";
-
-	if (startoff > 0) {
-	    s = 0;
+#ifdef VAL_FILE_ENCODING
+    reg_utf8flag = b_val(curbp, VAL_FILE_ENCODING);
+#endif
+    if (endoff >= startoff) {
+	if (lvalue(lp)) {
+	    s = regexec(prog, lvalue(lp), &(lvalue(lp)[llength(lp)]),
+			startoff, endoff);
 	} else {
-	    s = regexec(prog, nullstr, nullstr, 0, 0);
-	}
-	if (s) {
-	    if (prog->mlen > 0) {
-		mlforce("BUG: non-zero match on null string");
+	    /* the prog might be ^$, or something legal on a null string */
+
+	    char *nullstr = "";
+
+	    if (startoff > 0) {
 		s = 0;
 	    } else {
-		prog->startp[0] = prog->endp[0] = NULL;
+		s = regexec(prog, nullstr, nullstr, 0, 0);
+	    }
+	    if (s) {
+		if (prog->mlen > 0) {
+		    mlforce("BUG: non-zero match on null string");
+		    s = 0;
+		} else {
+		    prog->startp[0] = prog->endp[0] = NULL;
+		}
 	    }
 	}
     }
+    returnReg(s);
+}
+
+/* non-LINE regexec calls for vile */
+int
+nregexec(regexp * prog,
+	 char *string,
+	 char *stringend,	/* pointer to the null, if there were one */
+	 int startoff,
+	 int endoff)
+{
+    int s;
+
+    REGTRACE((T_CALLED "nregexec %d..%d\n", startoff, endoff));
+#ifdef VAL_FILE_ENCODING
+    reg_utf8flag = global_b_val(VAL_FILE_ENCODING);
+#endif
+    s = regexec(prog, string, stringend, startoff, endoff);
     returnReg(s);
 }
 #endif /* VILE LINE */

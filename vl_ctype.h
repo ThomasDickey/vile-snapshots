@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/vl_ctype.h,v 1.15 2008/04/15 21:33:40 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/vl_ctype.h,v 1.16 2008/12/21 19:07:28 tom Exp $
  *
  * Character-type tests, like <ctype.h> for vile (vi-like-emacs).
  *
@@ -78,6 +78,8 @@
 # undef  isXDigit
 
 #define CharOf(c)	((unsigned char)(c))
+
+#include <ctype.h>
 
 #if OPT_VILE_CTYPE
 
@@ -184,8 +186,6 @@ typedef struct {
 #define toalpha(c)	(((unsigned)(c)) ^ DIFCNTRL)
 
 #else
-
-# include <ctype.h>
 
 # define isAlnum(c)	isalnum(c)
 # define isAlpha(c)	isalpha(c)

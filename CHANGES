@@ -1,5 +1,12 @@
 Changes for vile 9.7 (released ??? ??? ?? ????)
 
+ 200812?? (k)
+	> Tom Dickey:
+	+ implement on-the-fly character classes for regular expressions in
+	  UTF-8 buffers.
+	+ add configure check for -Wno-unknown-pragmas, to help older versions
+	  of gcc not warn about the pragmas in perl.xs
+
  20081204 (j)
 	> Tom Dickey:
 	+ add to $cfgopts some drivers (ansi, borland, ntcons, ntwin, os2vio,

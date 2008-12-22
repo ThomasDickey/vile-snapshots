@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.669 2008/11/28 22:29:26 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.670 2008/12/21 21:03:17 tom Exp $
  *
  */
 
@@ -396,6 +396,7 @@ extern int did_hard_error_occur (void);
 /* eightbit.c */
 extern char * vl_get_encoding (char **target, const char *locale);
 extern char * vl_get_locale (char **target);
+extern const char * vl_mb_to_utf8 (int code);
 extern int vl_is_8bit_encoding (const char * value);
 extern int vl_is_latin1_encoding (const char * value);
 extern int vl_is_utf8_encoding (const char * value);
@@ -1091,6 +1092,7 @@ extern void update_dos_drv_dir (char * cwd);
 /* regexp.c */
 #define lregexec vl_lregexec
 extern int lregexec (regexp *prog, LINE *lp, int startoff, int endoff);
+extern int nregexec (regexp *prog, char *string, char *stringend, int startoff, int endoff);
 
 /* region.c */
 typedef int (*DORGNLINES)(int (*)(REGN_ARGS), void *, int);

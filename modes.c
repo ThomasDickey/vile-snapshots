@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.386 2008/11/23 23:42:43 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.387 2008/12/21 21:06:51 tom Exp $
  *
  */
 
@@ -4446,7 +4446,7 @@ test_by_suffix(int n, BUFFER *bp)
 
 	if (((exp = get_sm_rexp(n, VAL_STRIPSUFFIX)) != 0
 	     || (exp = b_val_rexp(bp, VAL_STRIPSUFFIX)->reg) != 0)
-	    && regexec(exp, pathname, (char *) 0, 0, -1)) {
+	    && nregexec(exp, pathname, (char *) 0, 0, -1)) {
 	    if (tb_scopy(&savename, pathname) != 0) {
 		strcpy(tb_values(savename) + (exp->startp[0] - pathname),
 		       exp->endp[0]);
@@ -4463,13 +4463,13 @@ test_by_suffix(int n, BUFFER *bp)
 #endif
 
 	if ((exp = get_mm_rexp(n, MVAL_MODE_PATHNAME)) != 0
-	    && regexec(exp, pathname, (char *) 0, 0, -1)) {
+	    && nregexec(exp, pathname, (char *) 0, 0, -1)) {
 	    TRACE(("test_by_pathname(%s) %s\n",
 		   pathname,
 		   my_majormodes[n].shortname));
 	    result = n;
 	} else if ((exp = get_mm_rexp(n, MVAL_MODE_FILENAME)) != 0
-		   && regexec(exp, filename, (char *) 0, 0, -1)) {
+		   && nregexec(exp, filename, (char *) 0, 0, -1)) {
 	    TRACE(("test_by_filename(%s) %s %s\n",
 		   pathname,
 		   filename,
@@ -4478,7 +4478,7 @@ test_by_suffix(int n, BUFFER *bp)
 	} else if (!isShellOrPipe(pathname)
 		   && suffix != 0
 		   && (exp = get_mm_rexp(n, MVAL_MODE_SUFFIXES)) != 0
-		   && regexec(exp, suffix, (char *) 0, 0, -1)) {
+		   && nregexec(exp, suffix, (char *) 0, 0, -1)) {
 	    TRACE(("test_by_suffixes(%s) %s %s\n",
 		   pathname,
 		   suffix,

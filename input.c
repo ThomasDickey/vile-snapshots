@@ -44,7 +44,7 @@
  *	tgetc_avail()     true if a key is avail from tgetc() or below.
  *	keystroke_avail() true if a key is avail from keystroke() or below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.321 2008/08/12 21:26:26 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.322 2008/12/21 15:49:02 tom Exp $
  *
  */
 
@@ -570,7 +570,7 @@ tgetc(int quoted)
 	    } while (c == -1);
 	}
 	(void) im_waiting(FALSE);
-	if (quoted || ((UINT) c != kcod2key(intrc)))
+	if (quoted || (c != kcod2key(intrc)))
 	    record_char(c);
     }
 
