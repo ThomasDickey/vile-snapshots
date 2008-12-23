@@ -2,7 +2,7 @@
  * This file contains the command processing functions for a number of random
  * commands. There is no functional grouping here, for sure.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.324 2008/11/23 18:28:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.325 2008/12/22 01:11:47 tom Exp $
  *
  */
 
@@ -1764,7 +1764,7 @@ autocolor(void)
 				goal_time = 1;
 			}
 			if (bp->last_autocolor_time > goal_time) {
-			    int next_time = bp->last_autocolor_time;
+			    int next_time = (int) bp->last_autocolor_time;
 			    int next_skip = ((next_time + goal_time - 1)
 					     / goal_time);
 
