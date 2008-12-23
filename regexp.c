@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/regexp.c,v 1.145 2008/12/21 21:51:06 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/regexp.c,v 1.146 2008/12/23 01:20:19 tom Exp $
  *
  * Copyright 2005-2007,2008 Thomas E. Dickey and Paul G. Fox
  *
@@ -412,6 +412,17 @@ typedef enum {
 
 #ifdef HAVE_WCTYPE
 #include	<wctype.h>
+#define USE_WIDE_CTYPE 1
+#elif (defined(WIN32) && defined(_WCTYPE_DEFINED))
+#define USE_WIDE_CTYPE 1
+#else
+#define USE_WIDE_CTYPE 0
+#endif
+
+#if USE_WIDE_CTYPE
+#if !(defined(iswblank) || defined(HAVE_ISWBLANK))
+#define iswblank(c) ((c) == ' ' || (c) == '\t')
+#endif
 #define sys_isalpha(n)  iswalpha(n)
 #define sys_isalnum(n)  iswalnum(n)
 #define sys_isblank(n)  iswblank(n)
@@ -424,7 +435,12 @@ typedef enum {
 #define sys_isspace(n)  iswspace(n)
 #define sys_isupper(n)  iswupper(n)
 #define sys_isxdigit(n) iswxdigit(n)
+#define sys_CTYPE_SIZE	((unsigned) 0xffff)
+#define sys_WINT_T	wint_t
 #else
+#if !(defined(isblank) || defined(HAVE_ISBLANK))
+#define isblank(c) ((c) == ' ' || (c) == '\t')
+#endif
 #define sys_isalpha(n)  isalpha(n)
 #define sys_isalnum(n)  isalnum(n)
 #define sys_isblank(n)  isblank(n)
@@ -437,6 +453,8 @@ typedef enum {
 #define sys_isspace(n)  isspace(n)
 #define sys_isupper(n)  isupper(n)
 #define sys_isxdigit(n) isxdigit(n)
+#define sys_CTYPE_SIZE	((unsigned) 0xff)
+#define sys_WINT_T	int
 #endif
 
 #define is_CLASS(name,ptr) reg_ctype_ ## name(ptr)
@@ -587,34 +605,38 @@ static int reg_ctype_##name(const char *source) \
     int result = -1; \
     if (reg_utf8flag) { \
 	UINT target; \
-	int rc = vl_conv_to_utf32(&target, source, regnomore - source); \
-	if (rc > 0 && vl_mb_to_utf8(target) == 0) { \
+	int rc = vl_conv_to_utf32(&target, source, (B_COUNT) (regnomore - source)); \
+	if ((rc > 0) \
+	    && (target <= sys_CTYPE_SIZE) \
+	    && (vl_mb_to_utf8((int) target) == 0)) { \
 	    result = expr; \
-	    TRACE2(("reg_ctype_" #name ": %#X ->%d\n", target, result)); \
+	    REGTRACE(("reg_ctype_" #name ": %#X ->%d\n", target, result)); \
 	} \
     } \
     if (result < 0) { \
 	result = is_##name(CharOf(*source)); \
-	TRACE2(("reg_ctype_" #name ": %#x ->%d\n", CharOf(*source), result)); \
+	REGTRACE(("reg_ctype_" #name ": %#x ->%d\n", CharOf(*source), result)); \
     } \
     return result; \
 }
 
-reg_CTYPE(ALPHA, sys_isalpha(target))
-reg_CTYPE(ALNUM, sys_isalnum(target))
-reg_CTYPE(BLANK, sys_isblank(target))
-reg_CTYPE(CNTRL, sys_iscntrl(target))
-reg_CTYPE(DIGIT, sys_isdigit(target))
-reg_CTYPE(GRAPH, sys_isgraph(target))
-reg_CTYPE(IDENT, sys_isalnum(target))
-reg_CTYPE(LOWER, sys_isalpha(target) && sys_islower(target))
+reg_CTYPE(ALPHA, sys_isalpha((sys_WINT_T) target))
+reg_CTYPE(ALNUM, sys_isalnum((sys_WINT_T) target))
+reg_CTYPE(BLANK, sys_isblank((sys_WINT_T) target))
+reg_CTYPE(CNTRL, sys_iscntrl((sys_WINT_T) target))
+reg_CTYPE(DIGIT, sys_isdigit((sys_WINT_T) target))
+reg_CTYPE(GRAPH, sys_isgraph((sys_WINT_T) target))
+reg_CTYPE(IDENT, sys_isalnum((sys_WINT_T) target))
+reg_CTYPE(LOWER, (sys_isalpha((sys_WINT_T) target) &&
+		  sys_islower((sys_WINT_T) target)))
 reg_CTYPE(OCTAL, (target >= '0') && (target <= '7'))
-reg_CTYPE(PATHN, sys_isgraph(target))
-reg_CTYPE(PRINT, sys_isprint(target))
-reg_CTYPE(PUNCT, sys_ispunct(target))
-reg_CTYPE(SPACE, sys_isspace(target))
-reg_CTYPE(UPPER, sys_isalpha(target) && sys_isupper(target))
-reg_CTYPE(XDIGIT, sys_isxdigit(target))
+reg_CTYPE(PATHN, sys_isgraph((sys_WINT_T) target))
+reg_CTYPE(PRINT, sys_isprint((sys_WINT_T) target))
+reg_CTYPE(PUNCT, sys_ispunct((sys_WINT_T) target))
+reg_CTYPE(SPACE, sys_isspace((sys_WINT_T) target))
+reg_CTYPE(UPPER, (sys_isalpha((sys_WINT_T) target) &&
+		  sys_isupper((sys_WINT_T) target)))
+reg_CTYPE(XDIGIT, sys_isxdigit((sys_WINT_T) target))
 #else
 #define reg_bytes_at(source) 1
 #endif
