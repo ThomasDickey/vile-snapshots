@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/vl_regex.h,v 1.4 2006/04/20 00:00:49 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/vl_regex.h,v 1.5 2009/01/18 01:49:34 tom Exp $
  *
  * Copyright 2005, Thomas E. Dickey and Paul G. Fox
  *
@@ -63,7 +63,7 @@ typedef struct regexp {
 #define	REGEXP_MAGIC	0234
 
 #ifndef CHARBITS
-#define	UCHAR_AT(p)	((int)*(unsigned char *)(p))
+#define	UCHAR_AT(p)	((int)*(unsigned const char *)(p))
 #else
 #define	UCHAR_AT(p)	((int)*(p)&CHARBITS)
 #endif

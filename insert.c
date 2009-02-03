@@ -4,7 +4,7 @@
  * Most code probably by Dan Lawrence or Dave Conroy for MicroEMACS
  * Extensions for vile by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/insert.c,v 1.171 2008/12/03 20:17:29 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/insert.c,v 1.172 2009/01/17 11:39:38 tom Exp $
  */
 
 #include	"estruct.h"
@@ -915,7 +915,7 @@ inschar(int c, int *backsp_limit_p)
     }
 
     autoindented = -1;
-    return lins_bytes(1, c);
+    return lins_chars(1, c);
 }
 
 #if ! SMALLER

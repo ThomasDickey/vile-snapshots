@@ -1,7 +1,7 @@
 /*
  * debugging support -- tom dickey.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.88 2008/11/30 17:33:02 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.89 2009/02/02 20:52:32 tom Exp $
  *
  */
 
@@ -330,6 +330,23 @@ alloc_visible(size_t need)
     return visible_result;
 }
 
+static char *
+my_vischr(char *buffer, int ch)
+{
+    ch = CharOf(ch);
+    if (ch == 127) {
+	strcpy(buffer, "^?");
+    } else if (ch < 32) {
+	sprintf(buffer, "^%c", ch | '@');
+    } else if (ch >= 128) {
+	sprintf(buffer, "\\%03o", ch);
+    } else {
+	buffer[0] = (char) ch;
+	buffer[1] = '\0';
+    }
+    return buffer;
+}
+
 char *
 trace_indent(int level, int marker)
 {
@@ -376,7 +393,7 @@ visible_buff(const char *buffer, int length, int eos)
 	    break;
 	} else {
 	    char *dst = result + k;
-	    vl_vischr(dst, c);
+	    my_vischr(dst, c);
 	    k += (unsigned) strlen(dst);
 	}
     }
@@ -406,7 +423,7 @@ visible_video_text(const VIDEO_TEXT * buffer, int length)
     for (j = 0; j < length; j++) {
 	int c = buffer[j] & ((1 << (8 * sizeof(VIDEO_TEXT))) - 1);
 	char *dst = result + k;
-	vl_vischr(dst, c);
+	my_vischr(dst, c);
 	k += (unsigned) strlen(dst);
     }
     result[k] = 0;
@@ -994,7 +1011,7 @@ trace_ctype(CHARTYPE *table, int first, int last)
 #endif
 	Trace("(%s) /* %d:%s */\n",
 	      *buffer ? buffer + 1 : "0",
-	      n, vl_vischr(temp, n));
+	      n, my_vischr(temp, n));
     }
 }
 
