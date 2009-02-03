@@ -1,12 +1,12 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_REVISION($Revision: 1.254 $)
+AC_REVISION($Revision: 1.256 $)
 AC_PREREQ(2.13.20030927)
 rm -f config.cache
 
 ### Use "configure -with-screen" to override the default configuration, which is
 ### termcap-based on unix systems.
 
-dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.254 2008/12/23 01:21:50 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.256 2009/01/14 22:07:00 tom Exp $
 
 define(MAKELIST, sh $srcdir/filters/makelist.sh $srcdir/filters/genmake.mak)
 
@@ -33,6 +33,7 @@ CF_ANSI_CC_REQD
 AC_CONST
 CF_CC_INIT_UNIONS
 CF_XOPEN_SOURCE
+CF_SIGWINCH
 
 case $host_os in hpux*) CPPFLAGS="-DYYCHAR_ARRAY $CPPFLAGS";; esac; AC_DECL_YYTEXT
 

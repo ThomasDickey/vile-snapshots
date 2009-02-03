@@ -1,7 +1,11 @@
 Changes for vile 9.7 (released ??? ??? ?? ????)
 
- 200812?? (k)
+ 200901?? (k)
 	> Tom Dickey:
+	+ amend change to insertion from 9.7i, which broke compose sequences
+	  (report by Paul Van Tilburg).
+	+ add configure check for SIGWINCH, to fix resizing on OS X (report by
+	  Daniel L Ashbrook)
 	+ implement on-the-fly character classes for regular expressions in
 	  UTF-8 buffers.
 	+ add configure check for -Wno-unknown-pragmas, to help older versions

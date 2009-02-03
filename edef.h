@@ -6,7 +6,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.346 2008/11/30 20:02:40 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.347 2009/02/02 23:09:58 tom Exp $
  */
 
 #ifndef VILE_EDEF_H
@@ -147,7 +147,7 @@ decl_init( USHORT vl_glob_opts, vl_GLOB_ALL);
 decl_init( TBUFF *mlsave, 0 );		/* last message, if postponed	*/
 decl_init( TBUFF *searchpat, 0 );	/* Search pattern		*/
 decl_init( TBUFF *replacepat, 0 );	/* replacement pattern		*/
-decl_uninit( int  last_srch_direc );	/* Direction of last search */
+decl_init( int last_srch_direc, FORWARD ); /* Direction of last search */
 decl_uninit( regexp *gregexp );		/* compiled version of searchpat */
 decl_init( TBUFF *tb_matched_pat, 0 );	/* text that scan found */
 decl_init( TBUFF *lastfileedited, 0 );
