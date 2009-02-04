@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/regexp.c,v 1.159 2009/02/03 01:53:00 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/regexp.c,v 1.163 2009/02/04 01:27:22 tom Exp $
  *
  * Copyright 2005-2008,2009 Thomas E. Dickey and Paul G. Fox
  *
@@ -298,7 +298,6 @@ typedef enum {
     ,CLOSE1, CLOSE2, CLOSE3, CLOSE4, CLOSE5, CLOSE6, CLOSE7, CLOSE8, CLOSE9
 } REGEXP_OP;
 
-/* FIXME: should be OPEN1? */
 #define is_OPENn(n) ((n) >= OPEN && (n) <= OPEN9)
 
 #define OPENn  OPEN1: \
@@ -617,7 +616,7 @@ put_reg_char(int ch)
 {
     if (reg_utf8flag) {
 	UCHAR target[10];
-	int len = vl_conv_to_utf8(target, CharOf(ch), sizeof(target));
+	int len = vl_conv_to_utf8(target, ch, sizeof(target));
 	int n;
 
 	for (n = 0; n < len; ++n) {
@@ -640,9 +639,9 @@ use_system_ctype(UINT * target, const char *source)
 
     *target = 0;
     if (reg_utf8flag
-	&& ((rc = vl_conv_to_utf32(target,
-				   source,
-				   (B_COUNT) (regnomore - source))) > 0)
+	&& (vl_conv_to_utf32(target,
+			     source,
+			     (B_COUNT) (regnomore - source)) > 0)
 	&& (*target <= sys_CTYPE_SIZE)
 	&& (vl_mb_to_utf8((int) *target) == 0)) {
 	rc = TRUE;
@@ -1360,6 +1359,8 @@ regatom(int *flagp, int at_bop)
     char *ret;
     int flags;
     int len = 1;
+    int chop = 1;
+    int data;
 
     *flagp = WORST;		/* Tentatively. */
 
@@ -1511,21 +1512,26 @@ regatom(int *flagp, int at_bop)
 
 	    regparse--;
 	    len = reg_strcspn(regparse, META);
+	    chop = reg_bytes_at(regparse, regparse + len);
 	    if (len <= 0) {
 		regerror("internal disaster");
 		return NULL;
 	    }
 	    ender = *(regparse + len);
-	    if (len > 1 && ISMULT(ender))
+	    if (len > chop && ISMULT(ender)) {
 		len--;		/* Back off clear of ?+* operand. */
+	    }
 	  defchar:
 	    *flagp |= HASWIDTH;
-	    if (len == 1)
+	    if (len == chop)
 		*flagp |= SIMPLE;
 	    ret = regnode(EXACTLY);
 	    while (len > 0) {
-		regc(*regparse++);
-		len--;
+		chop = reg_bytes_at(regparse, regparse + len);
+		data = reg_char_at(regparse, regparse + len);
+		put_reg_char(data);
+		regparse += chop;
+		len -= chop;
 	    }
 	    set_opsize();
 	}
@@ -1709,6 +1715,9 @@ regoptail(char *p, char *val)
  * txt_a arg ends at position end_a, or txt_a + lenb, whichever is first.
  * txt_b begins a string of at most len_b characters, against which txt_a
  *	is compared.
+ *
+ * txt_b holds data from the regular expression.
+ * txt_a holds the data within which we're searching.
  */
 static int
 regstrncmp(const char *txt_a,
@@ -1717,24 +1726,33 @@ regstrncmp(const char *txt_a,
 	   const char *end_a)
 {
     int chr_a = 0, chr_b = 0;
+    int rc;
+    int diff = FALSE;
+    size_t have;
 
     if (end_a == NULL
 	|| (end_a < txt_a)
 	|| (unsigned) (end_a - txt_a) > len_b) {
 	end_a = txt_a + len_b;
     }
+    have = (end_a - txt_a);
     while (txt_a < end_a) {
 	chr_a = reg_char_at(txt_a, end_a);
 	chr_b = reg_char_at(txt_b, txt_b + len_b);
 	if (!same_char(chr_a, chr_b)) {
+	    diff = TRUE;
 	    break;
 	}
 	txt_a += reg_bytes_at(txt_a, end_a);
 	txt_b += reg_bytes_at(txt_b, txt_b + len_b);
-	chr_b = 0;
     }
 
-    return (txt_a == end_a) ? (-chr_b) : (chr_a - chr_b);
+    if (diff || (have < len_b)) {
+	rc = (txt_a >= end_a) ? (-chr_b) : (chr_a - chr_b);
+    } else {
+	rc = 0;
+    }
+    return rc;
 }
 
 static char *
@@ -2262,8 +2280,9 @@ regmatch(char *prog, int plevel)
 		 * when we know what character comes next.
 		 */
 		nxtch = -1;
-		if (OP(next) == EXACTLY)
-		    nxtch = *OPERAND(next);
+		if (OP(next) == EXACTLY) {
+		    nxtch = reg_char_at(OPERAND(next), regnext(next));
+		}
 
 		switch (OP(scan)) {
 		case STAR:
@@ -2288,6 +2307,7 @@ regmatch(char *prog, int plevel)
 
 		if (max > 0 && no > max) {
 		    no = max;
+		    /* FIXME - won't work with widechars */
 		    reginput = save_input + no;
 		}
 
@@ -2295,7 +2315,7 @@ regmatch(char *prog, int plevel)
 		    /* If it could work, try it. */
 		    if ((nxtch == -1
 			 || reginput >= regnomore
-			 || SAME(*reginput, nxtch))) {
+			 || same_char(reg_char_at(reginput, regnomore), nxtch))) {
 			if (regmatch(next, plevel)) {
 			    returnReg(1);
 			}
@@ -2303,6 +2323,7 @@ regmatch(char *prog, int plevel)
 
 		    /* Couldn't or didn't -- back up. */
 		    no--;
+		    /* FIXME - won't work with widechars */
 		    reginput = save_input + no;
 		}
 		restore_state();
@@ -2338,6 +2359,7 @@ regrepeat(const char *p)
     char *scan = reginput;
     unsigned size = OPSIZE(p);
     const char *opnd = OPERAND(p);
+    int data = reg_char_at(opnd, opnd + size);
 
     switch (OP(p)) {
     case ANY:
@@ -2346,7 +2368,7 @@ regrepeat(const char *p)
 	break;
     case EXACTLY:
 	while (scan < regnomore) {
-	    if (!SAME(*opnd, *scan))
+	    if (!same_char(data, reg_char_at(scan, regnomore)))
 		break;
 	    count++;
 	    scan += reg_bytes_at(scan, regnomore);
