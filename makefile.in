@@ -20,7 +20,7 @@
 #
 # gnu autoconf support by kevin buettner, 5/94
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.214 2008/12/04 23:59:18 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.217 2009/02/06 01:04:40 tom Exp $
 
 SHELL		= /bin/sh
 
@@ -235,7 +235,7 @@ VILESRC = main.c api.c basic.c bind.c btree.c btree.c buffer.c csrch.c \
 	history.c input.c insert.c isearch.c itbuff.c lckfiles.c line.c map.c \
 	modes.c msgs.c npopen.c nullterm.c oneliner.c opers.c path.c random.c \
 	regexp.c region.c search.c select.c spawn.c statevar.c tags.c \
-	tbuff.c termio.c ucrypt.c undo.c version.c \
+	tbuff.c termio.c ucrypt.c undo.c vl_ctype.c version.c \
 	watch.c window.c word.c wordmov.c xterm.c
 
 ALLSRC = $(VILESRC) $(SCREENS) $(OTHERSRC) $(HDRS)
@@ -283,7 +283,7 @@ OBJ =	$(SCREEN)$o \
 	input$o insert$o itbuff$o lckfiles$o line$o map$o \
 	modes$o msgs$o nullterm$o oneliner$o opers$o path$o random$o \
 	regexp$o region$o search$o tags$o \
-	tbuff$o termio$o undo$o version$o \
+	tbuff$o termio$o undo$o version$o vl_ctype$o \
 	watch$o window$o word$o wordmov$o @EXTRAOBJS@
 OBJ2 =	@EXTRAOBJS2@
 
@@ -656,8 +656,17 @@ x11$o :		pscreen.h
 test_btree$x:	btree.c
 	$(CC) -o $@ -DDEBUG_BTREE $(CPPFLAGS) $(CFLAGS) btree.c $(LDFLAGS)
 
-test_regexp$x:	regexp.c
-	$(CC) -o $@ -DDEBUG_REGEXP $(CPPFLAGS) $(CFLAGS) regexp.c $(LDFLAGS)
+DEFS_REGEXP = -DDEBUG_REGEXP -DOPT_MULTIBYTE=0 $(CPPFLAGS) 
+TEST_REGEXP = regexp.c #charsets$o
+
+#DEFS_REGEXP = -DDEBUG_REGEXP -DTEST_MULTIBYTE_REGEX $(CPPFLAGS) 
+#TEST_REGEXP = regexp.c charsets$o eightbit$o wcwidth$o tbuff$o vl_ctype$o #trace$o
+
+test_regexp$x:	$(TEST_REGEXP)
+	$(CC) -o $@ $(DEFS_REGEXP) $(CFLAGS) $(TEST_REGEXP) $(LDFLAGS)
+
+test_regexp.i:	$(TEST_REGEXP)
+	$(CC) -C -E $(DEFS_REGEXP) $(CFLAGS) $(TEST_REGEXP) >$@
 
 TEST_IO_OBJS	= \
 	$(SCREEN)$o \

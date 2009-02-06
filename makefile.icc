@@ -1,6 +1,6 @@
 #
 # 'vile' and 'mktbls' makefile for IBM C Set ++ 2.x (OS/2)
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.icc,v 1.17 2007/08/10 21:16:36 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.icc,v 1.18 2009/02/06 00:41:33 tom Exp $
 #
 
 #
@@ -103,6 +103,7 @@ VILE_DEPS =  \
  ucrypt$O \
  undo$O \
  version$O \
+ vl_ctype$O \
  window$O \
  word$O \
  wordmov$O \
@@ -208,6 +209,8 @@ ucrypt$O:	$(VILE_CFG) ucrypt.c
 undo$O:		$(VILE_CFG) undo.c
 
 version$O:	$(VILE_CFG) version.c 	patchlev.h
+
+vl_ctype$O:	$(VILE_CFG) version.c 	vl_ctype.h
 
 window$O:	$(VILE_CFG) window.c
 

@@ -5,7 +5,7 @@
 # estruct.h to make sure the correct one is #defined as "1", and the others
 # all as "0".
 #
-# $Header: /users/source/archives/vile.vcs/RCS/descrip.mms,v 1.49 2007/08/10 21:17:45 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/descrip.mms,v 1.50 2009/02/06 00:50:28 tom Exp $
 
 # Editor Configuration Note
 # -------------------------
@@ -74,8 +74,8 @@ SRC =	main.c \
 	history.c \
 	input.c \
 	insert.c \
-	itbuff.c \
 	isearch.c \
+	itbuff.c \
 	line.c \
 	map.c \
 	menu.c \
@@ -99,6 +99,7 @@ SRC =	main.c \
 	ucrypt.c \
 	undo.c \
 	version.c \
+	vl_ctype.c \
 	vms2unix.c \
 	vmspipe.c \
 	watch.c \
@@ -129,8 +130,8 @@ OBJ =	$(MENUS)main.obj,\
 	history.obj,\
 	input.obj,\
 	insert.obj,\
-	itbuff.obj,\
 	isearch.obj,\
+	itbuff.obj,\
 	line.obj,\
 	map.obj, \
 	modes.obj,\
@@ -153,6 +154,7 @@ OBJ =	$(MENUS)main.obj,\
 	ucrypt.obj,\
 	undo.obj,\
 	version.obj, \
+	vl_ctype.obj, \
 	vms2unix.obj,\
 	vmspipe.obj,\
 	watch.obj,\
@@ -245,6 +247,7 @@ select.obj :	nefunc.h
 spawn.obj :	nefunc.h
 termio.obj :	nefunc.h
 version.obj :	patchlev.h
+vl_ctype.obj :	vl_ctype.h
 vms2unix.obj :	dirstuff.h
 word.obj :	nefunc.h
 
