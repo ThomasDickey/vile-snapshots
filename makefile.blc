@@ -1,7 +1,7 @@
 #
 # makefile for vile on WIN32 using Borland C++
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.blc,v 1.22 2007/12/28 01:03:24 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.blc,v 1.23 2009/02/06 00:42:50 tom Exp $
 #
 # Tested with
 #	Borland C++ 5.5.1
@@ -65,7 +65,7 @@ SRC = 	main.c $(SCREEN).c \
 	line.c modes.c msgs.c nullterm.c oneliner.c opers.c \
 	path.c random.c regexp.c \
 	region.c search.c select.c spawn.c statevar.c \
-	tags.c tbuff.c termio.c ucrypt.c undo.c \
+	tags.c tbuff.c termio.c ucrypt.c undo.c vl_ctype.c \
 	version.c w32cmd.c w32cbrd.c w32misc.c w32oo.cpp w32pipe.c \
 	wcwidth.c window.c word.c wordmov.c map.c
 
@@ -79,7 +79,7 @@ OBJ = 	main.obj $(SCREEN).obj \
 	line.obj modes.obj msgs.obj nullterm.obj oneliner.obj opers.obj \
 	path.obj random.obj regexp.obj \
 	region.obj search.obj select.obj spawn.obj statevar.obj \
-	tags.obj tbuff.obj termio.obj ucrypt.obj undo.obj \
+	tags.obj tbuff.obj termio.obj ucrypt.obj undo.obj vl_ctype.obj \
 	version.obj w32cmd.obj w32cbrd.obj w32misc.obj w32oo.obj w32pipe.obj \
 	wcwidth.obj window.obj word.obj wordmov.obj map.obj $(EXTRA)
 
@@ -180,6 +180,7 @@ trace.obj :	$(VILEHDRS)
 ucrypt.obj :	$(VILEHDRS)
 undo.obj :	$(VILEHDRS)
 version.obj :	$(VILEHDRS)	patchlev.h
+vl_ctype.obj :	$(VILEHDRS)	vl_ctype.h
 w32cbrd.obj :	$(VILEHDRS)
 w32cmd.obj :	$(VILEHDRS)	winvile.h
 w32ole.obj :	$(VILEHDRS)	w32ole.h winviletlb.h w32reg.h

@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/regexp.c,v 1.163 2009/02/04 01:27:22 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/regexp.c,v 1.169 2009/02/06 00:45:13 tom Exp $
  *
  * Copyright 2005-2008,2009 Thomas E. Dickey and Paul G. Fox
  *
@@ -86,6 +86,15 @@
 
 #ifdef UNBUNDLED_VILE_REGEX
 
+#ifdef TEST_MULTIBYTE_REGEX
+
+#include <estruct.h>
+
+#define realdef			/* after estruct.h to omit mode stuff... */
+#include <edef.h>
+
+#else /* !OPT_MULTIBYTE */
+
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
@@ -94,17 +103,27 @@
 #include <stdlib.h>
 #include <string.h>
 
+#ifndef WIN32
+#define UINT unsigned int
+#define ULONG unsigned long
+#endif
+
+typedef ULONG B_COUNT;		/* byte-count */
+
 #define OPT_VILE_CTYPE 0	/* use macros but not data */
+#define OPT_MULTIBYTE 0
 
 #include <vl_regex.h>
 #include <vl_alloc.h>
 #include <vl_ctype.h>
 
+#endif /* OPT_MULTIBYTE */
+
 #else
 
 #include <estruct.h>
 
-#endif
+#endif /* UNBUNDLED_VILE_REGEX */
 
 #if OPT_VILE_CTYPE
 #include <edef.h>		/* use global data from vile */
@@ -143,18 +162,6 @@
 
 #ifndef returnCode
 #define returnCode(n) return n
-#endif
-
-#ifdef DEBUG_REGEXP
-
-/* #define OPT_TRACE 1 */
-/* #define REGDEBUG  1 */
-
-# define visible_buff(s,n,e) s
-# if OPT_TRACE
-#  undef  TRACE
-#  define TRACE(p)		/* nothing */
-# endif
 #endif
 
 #if OPT_TRACE
@@ -459,7 +466,11 @@ typedef enum {
 #endif
 
 #define is_CLASS(name,ptr) reg_ctype_ ## name(ptr)
+
 #else
+
+#define sys_CTYPE_SIZE	((unsigned) 0xff)
+
 #define is_CLASS(name,ptr) is_ ## name(*ptr)
 #endif
 
@@ -1823,6 +1834,7 @@ regexec(regexp * prog,
 	int endoff)
 {
     char *s, *endsrch;
+    int skip;
 
     /* Be paranoid... */
     if (prog == NULL || string == NULL) {
@@ -1880,18 +1892,23 @@ regexec(regexp * prog,
     s = &string[startoff];
     if (prog->regstart >= 0) {
 	/* We know what char it must start with. */
-	while ((s = regstrchr(s, prog->regstart, stringend)) != NULL &&
+	skip = 1;
+	while (skip &&
+	       (s = regstrchr(s, prog->regstart, stringend)) != NULL &&
 	       s < endsrch) {
 	    if (regtry(prog, s, stringend, 0))
 		return (1);
-	    s += reg_bytes_at(s, regnomore);
+	    skip = reg_bytes_at(s, regnomore);
+	    s += skip;
 	}
     } else {
 	/* We don't -- general case. */
+	skip = 0;
 	do {
 	    if (regtry(prog, s, stringend, 0))
 		return (1);
-	} while ((s += reg_bytes_at(s, regnomore)) != stringend && s < endsrch);
+	    skip = reg_bytes_at(s, regnomore);
+	} while (skip && (s < stringend) && (s += skip) < endsrch);
     }
 
     /* Failure. */
@@ -2645,6 +2662,99 @@ nregexec(regexp * prog,
 #endif /* VILE LINE */
 
 #ifdef DEBUG_REGEXP
+
+#ifdef TEST_MULTIBYTE_REGEX
+#define NotImpl(name) fprintf(stderr, "Not implemented: " #name "\n")
+
+TERM term;
+FSM_BLIST fsm_file_encoding_blist;
+FSM_BLIST fsm_byteorder_mark_blist;
+
+extern char *strmalloc(const char *);
+extern void tidy_exit(int);
+
+int
+ffputline(const char *buf GCC_UNUSED, int nbuf GCC_UNUSED, const char
+	  *ending GCC_UNUSED)
+{
+    NotImpl(ltextfree);
+    return 0;
+}
+
+void
+ltextfree(LINE *lp GCC_UNUSED, BUFFER *bp GCC_UNUSED)
+{
+    NotImpl(ltextfree);
+}
+
+void
+set_bufflags(int glob_vals GCC_UNUSED, USHORT flags GCC_UNUSED)
+{
+    NotImpl(set_bufflags);
+}
+
+const char *
+choice_to_name(FSM_BLIST * data GCC_UNUSED, int code GCC_UNUSED)
+{
+    NotImpl(choice_to_name);
+    return 0;
+}
+
+char *
+strmalloc(const char *src)
+{
+    char *dst = 0;
+    if (src != 0) {
+	dst = castalloc(char, strlen(src) + 1);
+	if (dst != 0)
+	    (void) strcpy(dst, src);
+    }
+    return dst;
+}
+
+void
+tidy_exit(int code)
+{
+    exit(code);
+}
+#endif
+
+#if OPT_TRACE
+L_NUM
+line_no(BUFFER *the_buffer GCC_UNUSED, LINE *the_line GCC_UNUSED)
+{
+    NotImpl(line_no);
+    return 0;
+}
+
+int *
+itb_values(ITBUFF * p GCC_UNUSED)
+{
+    NotImpl(itb_values);
+    return 0;
+}
+
+size_t
+itb_length(ITBUFF * p GCC_UNUSED)
+{
+    NotImpl(itb_length);
+    return 0;
+}
+
+int
+kcod2escape_seq(int c GCC_UNUSED, char *ptr GCC_UNUSED, size_t limit GCC_UNUSED)
+{
+    NotImpl(kcod2escape_seq);
+    return 0;
+}
+
+SIGT
+imdying(int ACTUAL_SIG_ARGS GCC_UNUSED)
+{
+    tidy_exit(BADEXIT);
+}
+#endif
+
 void
 mlforce(const char *dummy,...)
 {
@@ -2903,6 +3013,10 @@ main(int argc, char *argv[])
 {
     int n;
 
+#if OPT_MULTIBYTE
+    vl_init_8bit(0, 0);
+    vl_ctype_init(0, 0);
+#endif
 #if 0
     for (n = 0; n < 256; ++n) {
 	printf("%3d [%2X] %c%c%c%c%c%c%c%c%c%c%c%c%c\n",

@@ -1,6 +1,6 @@
 # makefile for vile using DJGCC 2.x and  GNU's MAKE
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.djg,v 1.39 2008/11/08 01:19:04 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.djg,v 1.40 2009/02/06 00:41:09 tom Exp $
 #
 # Options (set to "yes" to enable):
 #	dbg	- debugging, e.g., for gdb
@@ -35,7 +35,7 @@ SRC = 	main.c $(DISP_SRC) \
 	line.c modes.c msgs.c npopen.c nullterm.c oneliner.c opers.c \
 	path.c random.c regexp.c \
 	region.c search.c select.c spawn.c statevar.c \
-	tags.c tbuff.c termio.c ucrypt.c undo.c \
+	tags.c tbuff.c termio.c ucrypt.c undo.c vl_ctype.c \
 	version.c window.c word.c wordmov.c map.c djhandl.c
 
 ALL	= vile$x

@@ -1,9 +1,9 @@
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/vl_ctype.h,v 1.16 2008/12/21 19:07:28 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/vl_ctype.h,v 1.18 2009/02/06 00:49:24 tom Exp $
  *
  * Character-type tests, like <ctype.h> for vile (vi-like-emacs).
  *
- * Copyright 2005-2007,2008 Thomas E. Dickey
+ * Copyright 2005-2008,2009 Thomas E. Dickey
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
@@ -39,6 +39,10 @@
 
 #ifndef OPT_VILE_CTYPE
 #define OPT_VILE_CTYPE 1
+#endif
+
+#ifndef OPT_MULTIBYTE
+#define OPT_MULTIBYTE !SMALLER		/* multibyte characters */
 #endif
 
 #ifndef OPT_WIDE_CTYPES
@@ -185,6 +189,11 @@ typedef struct {
 #define tocntrl(c)	(((unsigned)(c)) ^ DIFCNTRL)
 #define toalpha(c)	(((unsigned)(c)) ^ DIFCNTRL)
 
+extern CHARTYPE vl_ctype_ascii[];
+extern CHARTYPE vl_ctype_latin1[];
+
+extern void vl_ctype_init(int print_lo, int print_hi);
+
 #else
 
 # define isAlnum(c)	isalnum(c)
@@ -219,8 +228,5 @@ typedef struct {
 
 #define VL_ENC_ASCII  "ascii"
 #define VL_ENC_LATIN1 "8bit"
-
-extern CHARTYPE vl_ctype_ascii[];
-extern CHARTYPE vl_ctype_latin1[];
 
 #endif /* VL_CTYPE_H_incl */

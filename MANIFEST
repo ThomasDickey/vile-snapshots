@@ -1,4 +1,4 @@
-MANIFEST for vile, version v9_7j6
+MANIFEST for vile, version v9_7j7
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 CHANGES                         Change-log for VILE
@@ -122,6 +122,7 @@ vile.1                          man-page for VILE
 vile.hlp                        help-file
 vile.wmconfig                   windowmaker config file for vile
 vl_alloc.h                      malloc-macros for vile
+vl_ctype.c                      vile's ctype functions
 vl_ctype.h                      character-set tests for vile
 vl_regex.h                      interface for vile's regexp.c
 vl_stdio.h                      customized stdio.h definitions for vile.

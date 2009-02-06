@@ -2,7 +2,7 @@
  *	eval.c -- function and variable evaluation
  *	original by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.388 2008/12/21 21:06:51 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.389 2009/02/06 00:52:37 tom Exp $
  *
  */
 
@@ -256,7 +256,8 @@ unset_charclass(int f GCC_UNUSED, int n GCC_UNUSED)
 int
 reset_charclasses(int f GCC_UNUSED, int n GCC_UNUSED)
 {
-    charinit();
+    vl_ctype_init(global_g_val(GVAL_PRINT_LOW),
+		  global_g_val(GVAL_PRINT_HIGH));
     update_char_classes();
     return TRUE;
 }

@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.670 2008/12/21 21:03:17 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.671 2009/02/06 00:32:54 tom Exp $
  *
  */
 
@@ -28,7 +28,6 @@ extern int call_cmdfunc (const CMDFUNC *p, int f, int n);
 extern int no_memory (const char *s);
 extern int rdonly (void);
 extern int writeall (int f, int n, int promptuser, int leaving, int autowriting, int all);
-extern void charinit (void);
 extern void do_repeats (int *cp, int *fp, int *np);
 extern void exit_program (int code);
 extern void init_mode_value (struct VAL *, MODECLASS c, int n);
