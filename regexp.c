@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/regexp.c,v 1.169 2009/02/06 00:45:13 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/regexp.c,v 1.176 2009/02/07 00:37:18 tom Exp $
  *
  * Copyright 2005-2008,2009 Thomas E. Dickey and Paul G. Fox
  *
@@ -1769,12 +1769,16 @@ regstrncmp(const char *txt_a,
 static char *
 regstrchr(char *s, int c, const char *e)
 {
+    char *result = 0;
+
     while (s < e) {
-	if (same_char(reg_char_at(s, e), c))
-	    return s;
+	if (same_char(reg_char_at(s, e), c)) {
+	    result = s;
+	    break;
+	}
 	s += reg_bytes_at(s, e);
     }
-    return 0;
+    return result;
 }
 
 /*
@@ -1868,25 +1872,27 @@ regexec(regexp * prog,
 
     /* If there is a "must appear" string, look for it. */
     if (prog->regmust != -1) {
+	char *prog_must = &(prog->program[prog->regmust]);
+	int char_must = reg_char_at(prog_must, regnomore);
 	s = &string[startoff];
-	while ((s = regstrchr(s, prog->program[prog->regmust],
-			      stringend))
+	while ((s = regstrchr(s, char_must, stringend))
 	       != NULL && s < endsrch) {
-	    if (regstrncmp(s, &prog->program[prog->regmust],
-			   prog->regmlen, stringend) == 0)
+	    if (regstrncmp(s, prog_must, prog->regmlen, stringend) == 0)
 		break;		/* Found it. */
-	    s += reg_bytes_at(s, regnomore);
+	    s += reg_bytes_at(s, stringend);
 	}
-	if (s >= endsrch || s == NULL)	/* Not present. */
+	if (s >= endsrch || s == NULL) {	/* Not present. */
 	    return (0);
+	}
     }
 
     /* Mark beginning of line for ^ . */
     regbol = string;
 
     /* Simplest case:  anchored match need be tried only once. */
-    if (startoff == 0 && prog->reganch)
+    if (startoff == 0 && prog->reganch) {
 	return (regtry(prog, string, stringend, 0));
+    }
 
     /* Messy cases:  unanchored match. */
     s = &string[startoff];
@@ -2717,7 +2723,6 @@ tidy_exit(int code)
 {
     exit(code);
 }
-#endif
 
 #if OPT_TRACE
 L_NUM
@@ -2754,6 +2759,7 @@ imdying(int ACTUAL_SIG_ARGS GCC_UNUSED)
     tidy_exit(BADEXIT);
 }
 #endif
+#endif /* TEST_MULTIBYTE_REGEX */
 
 void
 mlforce(const char *dummy,...)
@@ -2767,6 +2773,18 @@ regerror(const char *msg)
     printf("? %s\n", msg);
 }
 
+static void
+alloc_string(char **result, unsigned *have, unsigned need)
+{
+    if (*result == 0) {
+	*have = BUFSIZ;
+	*result = typeallocn(char, *have);
+    } else if (need >= *have) {
+	*have *= 2;
+	*result = typereallocn(char, *result, *have);
+    }
+}
+
 static char *
 get_string(FILE *fp, unsigned *length, int linenum)
 {
@@ -2778,10 +2796,7 @@ get_string(FILE *fp, unsigned *length, int linenum)
     int value = 0;
     int literal = -1;
 
-    if (result == 0) {
-	have = BUFSIZ;
-	result = typeallocn(char, have);
-    }
+    alloc_string(&result, &have, BUFSIZ);
     *length = 0;
     for (;;) {
 	ch = fgetc(fp);
@@ -2813,6 +2828,14 @@ get_string(FILE *fp, unsigned *length, int linenum)
 		case 't':
 		    value = '\t';
 		    break;
+#if OPT_MULTIBYTE
+		case 'Z':
+		    alloc_string(&result, &have, *length + 2);
+		    result[*length] = 0xc2;
+		    *length += 1;
+		    value = 0xa0;
+		    break;
+#endif
 		default:
 		    if (isdigit(ch)) {
 			value = ch - '0';
@@ -2838,10 +2861,7 @@ get_string(FILE *fp, unsigned *length, int linenum)
 	    value = ch;
 	}
 	if (!escaped) {
-	    if (*length + 2 >= have) {
-		have *= 2;
-		result = typereallocn(char, result, have);
-	    }
+	    alloc_string(&result, &have, *length + 2);
 	    result[*length] = (char) value;
 	    *length += 1;
 	    if (literal < 0)
@@ -2879,6 +2899,23 @@ put_string(char *s, unsigned length, int literal)
 		fputs("\\t", stdout);
 		break;
 	    default:
+#if OPT_MULTIBYTE
+		if (reg_utf8flag && CharOf(s[n]) >= 128) {
+		    int need = reg_bytes_at(s + n, s + length);
+		    int data = reg_char_at(s + n, s + length);
+		    if (data == 0xa0) {
+			printf("\\Z");
+			n += (need - 1);
+			break;
+		    } else if (need > 1) {
+			while (need-- > 0) {
+			    putchar(CharOf(s[n++]));
+			}
+			n--;
+			break;
+		    }
+		}
+#endif
 		if (CharOf(s[n]) < ' ' || CharOf(s[n]) > '~') {
 		    printf("\\%03o", CharOf(s[n]));
 		} else {
@@ -2920,6 +2957,7 @@ test_regexp(FILE *fp)
 
     while ((s = get_string(fp, &length, ++linenum)) != 0) {
 	literal = 0;
+	REGTRACE(("-------------->%s\n", s));
 	switch (*s) {
 	case 'N':
 	    magic = -1;
@@ -3014,7 +3052,12 @@ main(int argc, char *argv[])
     int n;
 
 #if OPT_MULTIBYTE
-    vl_init_8bit(0, 0);
+    if (argc > 1 && strstr(argv[1], "utf8")) {
+	vl_init_8bit("en_US.UTF-8", "en_US");
+	reg_utf8flag = (vl_encoding >= enc_UTF8);
+    } else {
+	vl_init_8bit(0, 0);
+    }
     vl_ctype_init(0, 0);
 #endif
 #if 0
