@@ -20,7 +20,7 @@
 #
 # gnu autoconf support by kevin buettner, 5/94
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.217 2009/02/06 01:04:40 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.218 2009/02/06 01:33:06 tom Exp $
 
 SHELL		= /bin/sh
 
@@ -657,7 +657,7 @@ test_btree$x:	btree.c
 	$(CC) -o $@ -DDEBUG_BTREE $(CPPFLAGS) $(CFLAGS) btree.c $(LDFLAGS)
 
 DEFS_REGEXP = -DDEBUG_REGEXP -DOPT_MULTIBYTE=0 $(CPPFLAGS) 
-TEST_REGEXP = regexp.c #charsets$o
+TEST_REGEXP = regexp.c #trace$o
 
 #DEFS_REGEXP = -DDEBUG_REGEXP -DTEST_MULTIBYTE_REGEX $(CPPFLAGS) 
 #TEST_REGEXP = regexp.c charsets$o eightbit$o wcwidth$o tbuff$o vl_ctype$o #trace$o
