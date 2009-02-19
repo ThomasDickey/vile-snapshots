@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.388 2009/02/06 00:52:15 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.389 2009/02/16 21:12:07 tom Exp $
  *
  */
 
@@ -1756,8 +1756,8 @@ int
 chgd_charset(BUFFER *bp, VALARGS * args, int glob_vals, int testing)
 {
     if (!testing) {
-	vl_ctype_init(global_g_val(GVAL_PRINT_LOW),
-		      global_g_val(GVAL_PRINT_HIGH));
+	rebuild_charclasses(global_g_val(GVAL_PRINT_LOW),
+			    global_g_val(GVAL_PRINT_HIGH));
     }
     return chgd_window(bp, args, glob_vals, testing);
 }

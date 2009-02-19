@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.671 2009/02/06 00:32:54 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.673 2009/02/16 21:13:20 tom Exp $
  *
  */
 
@@ -504,6 +504,12 @@ extern int save_arguments(BUFFER *bp);
 #define save_arguments(cfp) 1
 #endif
 
+#if OPT_SHOW_CTYPE
+extern void rebuild_charclasses(int print_lo, int print_hi);
+#else
+#define rebuild_charclasses(print_lo, print_hi) /* nothing */
+#endif
+
 #if OPT_SHOW_COLORS && OPT_UPBUFF
 extern void relist_descolor(void);
 #else
@@ -512,8 +518,10 @@ extern void relist_descolor(void);
 
 #if OPT_UPBUFF
 extern void updatelistvariables(void);
+extern void update_char_classes(void);
 #else
 #define updatelistvariables()	/*nothing */
+#define update_char_classes()	/*nothing */
 #endif
 
 #if (SYS_WINNT||SYS_VMS)

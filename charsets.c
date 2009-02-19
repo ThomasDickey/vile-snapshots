@@ -1,5 +1,5 @@
 /*
- * $Id: charsets.c,v 1.62 2008/11/18 23:41:49 tom Exp $
+ * $Id: charsets.c,v 1.64 2009/02/16 21:11:34 tom Exp $
  *
  * see
  http://msdn.microsoft.com/library/default.asp?url=/library/en-us/intl/unicode_42jv.asp
@@ -977,8 +977,16 @@ chgd_fileencode(BUFFER *bp,
     if (testing) {
 	;
     } else {
-	if (!glob_vals) {
-	    set_bom_from_encoding(bp, args->local->vp->i);
+	int new_encoding = args->local->vp->i;
+	if (glob_vals) {
+	    if (new_encoding == enc_POSIX) {
+		rebuild_charclasses(0, 127);
+	    } else {
+		rebuild_charclasses(global_g_val(GVAL_PRINT_LOW),
+				    global_g_val(GVAL_PRINT_HIGH));
+	    }
+	} else {
+	    set_bom_from_encoding(bp, new_encoding);
 	}
 	set_bufflags(glob_vals, WFHARD | WFMODE);
     }

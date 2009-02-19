@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/vl_ctype.h,v 1.18 2009/02/06 00:49:24 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/vl_ctype.h,v 1.19 2009/02/16 20:02:25 tom Exp $
  *
  * Character-type tests, like <ctype.h> for vile (vi-like-emacs).
  *
@@ -193,6 +193,10 @@ extern CHARTYPE vl_ctype_ascii[];
 extern CHARTYPE vl_ctype_latin1[];
 
 extern void vl_ctype_init(int print_lo, int print_hi);
+extern void vl_ctype_apply(void);
+extern void vl_ctype_discard(void);
+extern void vl_ctype_set(int ch, CHARTYPE cclass);
+extern void vl_ctype_clr(int ch, CHARTYPE cclass);
 
 #else
 

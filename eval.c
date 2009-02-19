@@ -2,7 +2,7 @@
  *	eval.c -- function and variable evaluation
  *	original by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.389 2009/02/06 00:52:37 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.393 2009/02/16 22:08:54 tom Exp $
  *
  */
 
@@ -111,14 +111,11 @@ show_CharClasses(BUFFER *bp GCC_UNUSED)
 }
 
 #if OPT_UPBUFF
-static void
+void
 update_char_classes(void)
 {
     update_scratch(PRINTABLECHARS_BufName, show_CharClasses);
 }
-
-#else
-#define update_char_classes()	/*nothing */
 #endif
 
 /* ARGSUSED */
@@ -204,52 +201,62 @@ update_charclasses(const char *tag, int count)
 int
 set_charclass(int f GCC_UNUSED, int n GCC_UNUSED)
 {
+    int rc = FALSE;
     int ch;
     int code;
     int count;
     REGEXVAL *exp;
 
-    if ((code = get_charclass_code()) > 0) {
+    if ((code = get_charclass_code()) >= 0) {
 	code = (1 << code);
 	if ((exp = get_charclass_regexp()) != 0) {
 	    for (count = 0, ch = 0; ch < N_chars; ch++) {
 		if (!istype(code, ch)
 		    && match_charclass_regexp(ch, exp)) {
-		    vl_chartypes_[ch] |= code;
+		    vl_ctype_set(ch, code);
 		    count++;
 		}
 	    }
 	    free_regexval(exp);
-	    return update_charclasses("Set", count);
+	    rc = update_charclasses("Set", count);
 	}
     }
-    return FALSE;
+    return rc;
 }
 
 /* ARGSUSED */
 int
 unset_charclass(int f GCC_UNUSED, int n GCC_UNUSED)
 {
+    int rc = FALSE;
     int ch;
     int code;
     int count;
     REGEXVAL *exp;
 
-    if ((code = get_charclass_code()) > 0) {
+    if ((code = get_charclass_code()) >= 0) {
 	code = (1 << code);
 	if ((exp = get_charclass_regexp()) != 0) {
 	    for (count = 0, ch = 0; ch < N_chars; ch++) {
 		if (istype(code, ch)
 		    && match_charclass_regexp(ch, exp)) {
-		    vl_chartypes_[ch] &= ~code;
+		    vl_ctype_clr(ch, code);
 		    count++;
 		}
 	    }
 	    free_regexval(exp);
-	    return update_charclasses("Unset", count);
+	    rc = update_charclasses("Unset", count);
 	}
     }
-    return FALSE;
+    return rc;
+}
+
+void
+rebuild_charclasses(int print_lo, int print_hi)
+{
+    vl_ctype_init(print_lo, print_hi);
+    vl_ctype_apply();
+    update_char_classes();
 }
 
 /* ARGSUSED */

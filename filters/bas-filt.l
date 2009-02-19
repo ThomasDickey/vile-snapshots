@@ -1,9 +1,9 @@
 %pointer
-%state NORMAL COMMENT PREPRO
+%state NORMAL COMMENT NOTE2 PREPRO
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/bas-filt.l,v 1.19 2008/11/19 23:11:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/bas-filt.l,v 1.20 2009/02/18 23:57:25 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Basic
  * input text.
@@ -22,6 +22,8 @@
 #include <filters.h>
 
 DefineFilter("basic");
+
+#define more_comment() (yyleng > 2 && strncmp(yytext + yyleng - 2, "_", 2))
 
 static char *Action_attr;
 static char *Comment_attr;
@@ -89,10 +91,20 @@ NUMBER		{INTEGER}|{REAL}|{UUID}|({INTEGER}{HEX}|("&"[Hh]|\$){HEX}){TYPES}
 <NORMAL,PREPRO>{DATE}		|
 <NORMAL,PREPRO>{STRING}		{ WriteToken(String_attr); }
 <NORMAL,PREPRO>{NUMBER}		{ WriteToken(Number_attr); }
-<NORMAL,PREPRO>"'"[^\r\n]*	{ WriteToken(Comment_attr); }
+<NORMAL,PREPRO>"'"[^\r\n]*	{ WriteToken(Comment_attr);
+				  if (more_comment()) {
+				      BEGIN(NOTE2);
+				  }
+				}
+
+<NOTE2>[^\r\n]*			{ WriteToken(Comment_attr);
+				  if (!more_comment())
+				      BEGIN(NORMAL);
+				}
+<NOTE2>[\r\n]			{ ECHO; }
 
 <COMMENT>[^\r\n]*		{ WriteToken(Comment_attr); }
-<COMMENT>[\n]			{ ECHO; BEGIN(NORMAL); }
+<COMMENT>[\r\n]			{ ECHO; BEGIN(NORMAL); }
 
 %%
 

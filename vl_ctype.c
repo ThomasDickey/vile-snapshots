@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/vl_ctype.c,v 1.1 2009/02/06 00:44:39 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/vl_ctype.c,v 1.4 2009/02/16 20:17:24 tom Exp $
  */
 #include <estruct.h>
 #include <edef.h>
@@ -37,6 +37,9 @@
 
 #endif /* OPT_LOCALE */
 
+static CHARTYPE *ctype_sets;
+static CHARTYPE *ctype_clrs;
+
 /* initialize our version of the "chartypes" stuff normally in ctypes.h */
 /* also called later, if charset-affecting modes change, for instance */
 void
@@ -60,7 +63,9 @@ vl_ctype_init(int print_lo, int print_hi)
     TRACE(("wide_locale:%s\n", NonNull(vl_wide_enc.locale)));
     TRACE(("narrow_locale:%s\n", NonNull(vl_narrow_enc.locale)));
     for (c = 0; c < N_chars; c++) {
-	if (okCTYPE2(vl_narrow_enc)) {
+	if (print_hi > 0 && c > print_hi) {
+	    vlCTYPE(c) = 0;
+	} else if (okCTYPE2(vl_narrow_enc)) {
 	    vlCTYPE(c) = 0;
 	    if (sys_iscntrl(c))
 		vlCTYPE(c) |= vl_cntrl;
@@ -297,4 +302,68 @@ vl_ctype_init(int print_lo, int print_hi)
 #endif
     }
     returnVoid();
+}
+
+/*
+ * Reapply set/clr customizations to the character class data, e.g., after
+ * calling vl_ctype_init().
+ */
+void
+vl_ctype_apply(void)
+{
+    unsigned n;
+
+    if (ctype_sets) {
+	for (n = 0; n < N_chars; n++) {
+	    vlCTYPE(n) |= ctype_sets[n];
+	}
+    }
+    if (ctype_clrs) {
+	for (n = 0; n < N_chars; n++) {
+	    vlCTYPE(n) &= ~ctype_clrs[n];
+	}
+    }
+}
+
+/*
+ * Discard all set/clr customizations.
+ */
+void
+vl_ctype_discard(void)
+{
+    FreeAndNull(ctype_sets);
+    FreeAndNull(ctype_clrs);
+}
+
+/*
+ * Set the given character class for the given character.
+ */
+void
+vl_ctype_set(int ch, CHARTYPE cclass)
+{
+    if (ctype_sets == 0) {
+	ctype_sets = typecallocn(CHARTYPE, N_chars);
+    }
+    if (ctype_sets != 0) {
+	ctype_sets[ch] |= cclass;
+	vlCTYPE(ch) |= cclass;
+    }
+    if (ctype_clrs != 0) {
+	ctype_clrs[ch] &= ~cclass;
+    }
+}
+
+void
+vl_ctype_clr(int ch, CHARTYPE cclass)
+{
+    if (ctype_clrs == 0) {
+	ctype_clrs = typecallocn(CHARTYPE, N_chars);
+    }
+    if (ctype_clrs != 0) {
+	ctype_clrs[ch] |= cclass;
+	vlCTYPE(ch) &= ~cclass;
+    }
+    if (ctype_sets != 0) {
+	ctype_sets[ch] &= ~cclass;
+    }
 }

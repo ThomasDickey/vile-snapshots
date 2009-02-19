@@ -3,7 +3,7 @@
  *	for getting and setting the values of the vile state variables,
  *	plus helper utility functions.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.126 2008/12/04 23:50:55 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.127 2009/02/17 23:13:57 tom Exp $
  */
 
 #include	"estruct.h"
@@ -1568,6 +1568,31 @@ var_TERM_ENCODING(TBUFF **rp, const char *vp GCC_UNUSED)
     }
 }
 #endif
+
+int
+var_TERM_COLS(TBUFF **rp, const char *vp GCC_UNUSED)
+{
+    return any_ro_INT(rp, vp, term.cols);
+}
+
+int
+var_TERM_LINES(TBUFF **rp, const char *vp GCC_UNUSED)
+{
+    return any_ro_INT(rp, vp, term.rows);
+}
+
+int
+var_TERM_RESIZES(TBUFF **rp, const char *vp GCC_UNUSED)
+{
+    int result = FALSE;
+#if DISP_X11 || DISP_NTWIN || DISP_NTCONS
+    result = TRUE;
+#elif (DISP_TERMCAP || DISP_CURSES) && defined(SIGWINCH)
+    result = TRUE;
+#endif
+
+    return any_ro_BOOL(rp, vp, result);
+}
 
 #if OPT_TITLE
 int

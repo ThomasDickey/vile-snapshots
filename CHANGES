@@ -1,7 +1,17 @@
 Changes for vile 9.7 (released ??? ??? ?? ????)
 
- 200901?? (k)
+ 20090218 (k)
 	> Tom Dickey:
+	+ allow for continuation marker in vbmode comments.
+	+ add static/shared/enum keywords to vbmode fences.
+	+ add ".r" files to rexxmode
+	+ add $term-cols, $term-lines and $term-resizes variables.
+	+ correct comparison in set-char-class and unset-char-class that
+	  prevented setting "upr" class.
+	+ modify side-effects of setting global file-encoding to reset the
+	  locale-based character set tables so that "ascii" will display 8-bit
+	  characters in printable form, and setting to "8bit", "utf-8", etc.,
+	  will restore the default character set tables.
 	+ amend change to insertion from 9.7i, which broke compose sequences
 	  (report by Paul Van Tilburg).
 	+ add configure check for SIGWINCH, to fix resizing on OS X (report by

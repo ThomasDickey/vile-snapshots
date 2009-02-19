@@ -1,4 +1,4 @@
-; $Id: modes.rc,v 1.86 2008/10/26 17:53:52 tom Exp $
+; $Id: modes.rc,v 1.87 2009/02/18 22:18:32 tom Exp $
 ; majormodes in this file are ordered alphabetically for convenience - the
 ; precedence used by vile is strictly alphabetic, counting case.  Use the
 ; before and after qualifiers to override the precedence.
@@ -696,7 +696,7 @@ define-mode rc
 
 define-mode rexx
 ~with define-submode rexx
-	pre '^#!\s*\(\/.*\)\?\(rexx\|regina\|rxcurses\)\>'
+	pre '^#!\s*\(\/.*\)\?\(rexx\|regina\|rxcurses\|r\)\>'
 	suffixes	'\.\(cmd\|rexx\)$'
 	~if &not &seq $os "win32"
 		before "bat"
@@ -875,7 +875,7 @@ define-mode txt
 ~endwith
 
 ~local %vb-access
-setv %vb-access '^\s*\(\(Public\|Private\|Protected\|Friend\)\s\+\)*'
+setv %vb-access '^\s*\(\(Public\|Private\|Protected\|Friend\|Overrides\|Static\|Shared\)\s\+\)*'
 
 define-mode vb
 ~with define-submode vb
@@ -894,7 +894,7 @@ define-mode vb
 	fence-elif	'^\s*elseif\>'
 	fence-else	'^\s*else\>'
 	fence-fi	'^\s*end\s\+if\>'
-	sections	&cat %vb-access '\(Sub\|Function\|Property\)'
+	sections	&cat %vb-access '\(Sub\|Function\|Property\|Enum\)'
 ~elsewith define-submode vb group 'for-loop'
 	fence-if	'^\s*for\>'
 	fence-fi	'^\s*next\>'
