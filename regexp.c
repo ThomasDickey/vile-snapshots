@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/regexp.c,v 1.176 2009/02/07 00:37:18 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/regexp.c,v 1.187 2009/02/18 21:54:40 tom Exp $
  *
  * Copyright 2005-2008,2009 Thomas E. Dickey and Paul G. Fox
  *
@@ -594,6 +594,18 @@ static int reg_utf8flag = 0;
 #endif
 
 #if OPT_MULTIBYTE
+static void
+set_utf8flag(BUFFER *bp)
+{
+#ifdef DEBUG_REGEXP
+    (void) bp;			/* test-driver sets flag once, in main program */
+#else
+    reg_utf8flag = (bp
+		    ? b_val(bp, VAL_FILE_ENCODING)
+		    : global_b_val(VAL_FILE_ENCODING));
+#endif
+}
+
 static int
 reg_bytes_at(const char *source, const char *last)
 {
@@ -605,6 +617,7 @@ reg_bytes_at(const char *source, const char *last)
     }
     return result;
 }
+#define BYTES_AT(source, last) (reg_utf8flag ? reg_bytes_at(source, last) : 1)
 
 static int
 reg_char_at(const char *source, const char *last)
@@ -618,6 +631,7 @@ reg_char_at(const char *source, const char *last)
     }
     return result;
 }
+#define WCHAR_AT(source, last) (reg_utf8flag ? reg_char_at(source, last) : UCHAR_AT(source))
 
 /*
  * Put a whole multibyte character in the output if we're in UTF-8 mode.
@@ -637,6 +651,7 @@ put_reg_char(int ch)
 	regc(ch);
     }
 }
+#define PUT_REGC(ch) (reg_utf8flag ? put_reg_char(ch) : regc(ch))
 
 /*
  * The "ctype" functions all use a pointer, so we can do the conversion from
@@ -735,10 +750,11 @@ reg_CTYPE(UPPER, (sys_isalpha((sys_WINT_T) target) &&
 		  sys_isupper((sys_WINT_T) target)))
 reg_CTYPE(XDIGIT, sys_isxdigit((sys_WINT_T) target))
 #else
-#define reg_bytes_at(source, last) 1
-#define reg_char_at(source, last) UCHAR_AT(source)
-#define put_reg_char(c) regc(c)
+#define BYTES_AT(source, last) 1
+#define WCHAR_AT(source, last) UCHAR_AT(source)
+#define PUT_REGC(c) regc(c)
 #define same_char(p,q) SAME(p,q)
+#define set_utf8flag(bp)	/* nothing */
 #endif
 /*
  *				regexp		in magic	in nomagic
@@ -843,6 +859,8 @@ regcomp(const char *exp_text, size_t exp_len, int magic)
     static char *exp;
     static size_t explen;
 
+    set_utf8flag(curbp);
+
     if (exp_text == NULL) {
 	regerror("NULL argument");
 	return NULL;
@@ -922,10 +940,10 @@ regcomp(const char *exp_text, size_t exp_len, int magic)
 
 	/* Starting-point info. */
 	if (OP(scan) == EXACTLY) {
-	    r->regstart = reg_char_at(OPERAND(scan), regnext(scan));
+	    r->regstart = WCHAR_AT(OPERAND(scan), regnext(scan));
 	} else if (OP(scan) == BEGWORD && OP(regnext(scan)) == EXACTLY) {
-	    r->regstart = reg_char_at(OPERAND(regnext(scan)),
-				      regnext(regnext(scan)));
+	    r->regstart = WCHAR_AT(OPERAND(regnext(scan)),
+				   regnext(regnext(scan)));
 	} else if (OP(scan) == BOL) {
 	    r->reganch++;
 	}
@@ -1415,7 +1433,7 @@ regatom(int *flagp, int at_bop)
 		    if (*regparse == ']' || regparse >= reglimit) {
 			regc('-');
 		    } else {
-			classend = reg_char_at(regparse, reglimit);
+			classend = WCHAR_AT(regparse, reglimit);
 			if (classbgn > classend + 1) {
 			    regerror("invalid [] range");
 			    return NULL;
@@ -1423,9 +1441,9 @@ regatom(int *flagp, int at_bop)
 			for (; classbgn <= classend; classbgn++) {
 			    if (classbgn == BACKSLASH)
 				regc(classbgn);
-			    put_reg_char(classbgn);
+			    PUT_REGC(classbgn);
 			}
-			regparse += reg_bytes_at(regparse, reglimit);
+			regparse += BYTES_AT(regparse, reglimit);
 		    }
 		} else if (parse_unsupported(regparse)) {
 		    return NULL;
@@ -1433,11 +1451,11 @@ regatom(int *flagp, int at_bop)
 		    regc(BACKSLASH);
 		    regc(classbgn);
 		} else {
-		    ch = reg_char_at(regparse, reglimit);
+		    ch = WCHAR_AT(regparse, reglimit);
 		    if (ch == BACKSLASH) {
 			regc(ch);
 			++regparse;
-			ch = reg_char_at(regparse, reglimit);
+			ch = WCHAR_AT(regparse, reglimit);
 			if (ch == EOS
 			    || (strchr(ANY_ESC, ch) == 0
 				&& isAlpha(ch))) {
@@ -1445,8 +1463,8 @@ regatom(int *flagp, int at_bop)
 			    return NULL;
 			}
 		    }
-		    put_reg_char(ch);
-		    regparse += reg_bytes_at(regparse, reglimit);
+		    PUT_REGC(ch);
+		    regparse += BYTES_AT(regparse, reglimit);
 		    classbgn = ch + 1;
 		}
 	    }
@@ -1523,7 +1541,7 @@ regatom(int *flagp, int at_bop)
 
 	    regparse--;
 	    len = reg_strcspn(regparse, META);
-	    chop = reg_bytes_at(regparse, regparse + len);
+	    chop = BYTES_AT(regparse, regparse + len);
 	    if (len <= 0) {
 		regerror("internal disaster");
 		return NULL;
@@ -1538,9 +1556,9 @@ regatom(int *flagp, int at_bop)
 		*flagp |= SIMPLE;
 	    ret = regnode(EXACTLY);
 	    while (len > 0) {
-		chop = reg_bytes_at(regparse, regparse + len);
-		data = reg_char_at(regparse, regparse + len);
-		put_reg_char(data);
+		chop = BYTES_AT(regparse, regparse + len);
+		data = WCHAR_AT(regparse, regparse + len);
+		PUT_REGC(data);
 		regparse += chop;
 		len -= chop;
 	    }
@@ -1748,14 +1766,14 @@ regstrncmp(const char *txt_a,
     }
     have = (end_a - txt_a);
     while (txt_a < end_a) {
-	chr_a = reg_char_at(txt_a, end_a);
-	chr_b = reg_char_at(txt_b, txt_b + len_b);
+	chr_a = WCHAR_AT(txt_a, end_a);
+	chr_b = WCHAR_AT(txt_b, txt_b + len_b);
 	if (!same_char(chr_a, chr_b)) {
 	    diff = TRUE;
 	    break;
 	}
-	txt_a += reg_bytes_at(txt_a, end_a);
-	txt_b += reg_bytes_at(txt_b, txt_b + len_b);
+	txt_a += BYTES_AT(txt_a, end_a);
+	txt_b += BYTES_AT(txt_b, txt_b + len_b);
     }
 
     if (diff || (have < len_b)) {
@@ -1772,11 +1790,11 @@ regstrchr(char *s, int c, const char *e)
     char *result = 0;
 
     while (s < e) {
-	if (same_char(reg_char_at(s, e), c)) {
+	if (same_char(WCHAR_AT(s, e), c)) {
 	    result = s;
 	    break;
 	}
-	s += reg_bytes_at(s, e);
+	s += BYTES_AT(s, e);
     }
     return result;
 }
@@ -1789,14 +1807,14 @@ static int
 RegStrChr2(const char *s, unsigned length, const char *cs)
 {
     int matched = 0;
-    int compare = reg_char_at(cs, regnomore);
+    int compare = WCHAR_AT(cs, regnomore);
     int pattern;
     const char *last = s + length;
 
     while ((s < last) && !matched) {
 	if (*s == BACKSLASH) {
 	    ++s;
-	    pattern = reg_char_at(s, reglimit);
+	    pattern = WCHAR_AT(s, reglimit);
 	    /* this matches ANY_ESC */
 	    switch (*s) {
 	    default:
@@ -1816,10 +1834,10 @@ RegStrChr2(const char *s, unsigned length, const char *cs)
 #undef case_CLASSES
 	    }
 	} else {
-	    pattern = reg_char_at(s, reglimit);
+	    pattern = WCHAR_AT(s, reglimit);
 	    matched = same_char(pattern, compare);
 	}
-	s += reg_bytes_at(s, regnomore);
+	s += BYTES_AT(s, regnomore);
     }
     return matched;
 }
@@ -1873,13 +1891,13 @@ regexec(regexp * prog,
     /* If there is a "must appear" string, look for it. */
     if (prog->regmust != -1) {
 	char *prog_must = &(prog->program[prog->regmust]);
-	int char_must = reg_char_at(prog_must, regnomore);
+	int char_must = WCHAR_AT(prog_must, regnomore);
 	s = &string[startoff];
 	while ((s = regstrchr(s, char_must, stringend))
 	       != NULL && s < endsrch) {
 	    if (regstrncmp(s, prog_must, prog->regmlen, stringend) == 0)
 		break;		/* Found it. */
-	    s += reg_bytes_at(s, stringend);
+	    s += BYTES_AT(s, stringend);
 	}
 	if (s >= endsrch || s == NULL) {	/* Not present. */
 	    return (0);
@@ -1904,7 +1922,7 @@ regexec(regexp * prog,
 	       s < endsrch) {
 	    if (regtry(prog, s, stringend, 0))
 		return (1);
-	    skip = reg_bytes_at(s, regnomore);
+	    skip = BYTES_AT(s, regnomore);
 	    s += skip;
 	}
     } else {
@@ -1913,7 +1931,7 @@ regexec(regexp * prog,
 	do {
 	    if (regtry(prog, s, stringend, 0))
 		return (1);
-	    skip = reg_bytes_at(s, regnomore);
+	    skip = BYTES_AT(s, regnomore);
 	} while (skip && (s < stringend) && (s += skip) < endsrch);
     }
 
@@ -2098,12 +2116,12 @@ regmatch(char *prog, int plevel)
 	case with: \
 	    if (reginput >= regnomore || !is_CLASS(with,reginput)) \
 		returnReg(0); \
-	    reginput += reg_bytes_at(reginput, regnomore); \
+	    reginput += BYTES_AT(reginput, regnomore); \
 	    break; \
 	case without: \
 	    if (reginput >= regnomore || is_CLASS(with,reginput)) \
 		returnReg(0); \
-	    reginput += reg_bytes_at(reginput, regnomore); \
+	    reginput += BYTES_AT(reginput, regnomore); \
 	    break
 
 	    expand_case_CLASSES();
@@ -2113,7 +2131,7 @@ regmatch(char *prog, int plevel)
 	case ANY:
 	    if (reginput >= regnomore)
 		returnReg(0);
-	    reginput += reg_bytes_at(reginput, regnomore);
+	    reginput += BYTES_AT(reginput, regnomore);
 	    break;
 	case EXACTLY:{
 		unsigned len;
@@ -2124,8 +2142,8 @@ regmatch(char *prog, int plevel)
 
 		opnd = OPERAND(scan);
 		/* Inline the first character, for speed. */
-		if (!same_char(reg_char_at(opnd, regnext(scan)),
-			       reg_char_at(reginput, regnomore))) {
+		if (!same_char(WCHAR_AT(opnd, regnext(scan)),
+			       WCHAR_AT(reginput, regnomore))) {
 		    returnReg(0);
 		}
 		len = OPSIZE(scan);
@@ -2139,13 +2157,13 @@ regmatch(char *prog, int plevel)
 	    if (reginput >= regnomore
 		|| RegStrChr2(OPERAND(scan), OPSIZE(scan), reginput) == 0)
 		returnReg(0);
-	    reginput += reg_bytes_at(reginput, regnomore);
+	    reginput += BYTES_AT(reginput, regnomore);
 	    break;
 	case ANYBUT:
 	    if (reginput >= regnomore
 		|| RegStrChr2(OPERAND(scan), OPSIZE(scan), reginput) != 0)
 		returnReg(0);
-	    reginput += reg_bytes_at(reginput, regnomore);
+	    reginput += BYTES_AT(reginput, regnomore);
 	    break;
 	case NEVER:
 	    break;
@@ -2296,6 +2314,11 @@ regmatch(char *prog, int plevel)
 		int min;
 		int max;
 		char *rpt;
+#if OPT_MULTIBYTE
+#define LOCAL_RPTS 100
+		char *repeats[LOCAL_RPTS];
+		char **rpts = 0;
+#endif
 		decl_state();
 
 		/*
@@ -2304,7 +2327,7 @@ regmatch(char *prog, int plevel)
 		 */
 		nxtch = -1;
 		if (OP(next) == EXACTLY) {
-		    nxtch = reg_char_at(OPERAND(next), regnext(next));
+		    nxtch = WCHAR_AT(OPERAND(next), regnext(next));
 		}
 
 		switch (OP(scan)) {
@@ -2330,26 +2353,63 @@ regmatch(char *prog, int plevel)
 
 		if (max > 0 && no > max) {
 		    no = max;
-		    /* FIXME - won't work with widechars */
 		    reginput = save_input + no;
 		}
+#if OPT_MULTIBYTE
+		if (reg_utf8flag) {
+		    int j;
+
+		    if (no >= LOCAL_RPTS) {
+			rpts = typeallocn(char *, no + 1);
+			if (rpts == 0)
+			    returnReg(0);
+		    } else {
+			rpts = repeats;
+		    }
+		    rpts[0] = save_input;
+		    for (j = 1; j <= no; ++j) {
+			int skip = BYTES_AT(rpts[j - 1], regnomore);
+			if (skip <= 0 || rpts[j - 1] >= regnomore) {
+			    no = (j - 1);
+			    break;
+			}
+			rpts[j] = rpts[j - 1] + skip;
+		    }
+		    reginput = rpts[no];
+		}
+#endif
 
 		while (no >= min) {
 		    /* If it could work, try it. */
 		    if ((nxtch == -1
 			 || reginput >= regnomore
-			 || same_char(reg_char_at(reginput, regnomore), nxtch))) {
+			 || same_char(WCHAR_AT(reginput, regnomore), nxtch))) {
 			if (regmatch(next, plevel)) {
+#if OPT_MULTIBYTE
+			    if (rpts && (rpts != repeats))
+				free(rpts);
+#endif
 			    returnReg(1);
 			}
 		    }
 
 		    /* Couldn't or didn't -- back up. */
 		    no--;
-		    /* FIXME - won't work with widechars */
-		    reginput = save_input + no;
+#if OPT_MULTIBYTE
+		    if (reg_utf8flag) {
+			if (no < 0) {
+			    break;
+			}
+			reginput = rpts[no];
+		    } else
+#endif
+			reginput = save_input + no;
 		}
 		restore_state();
+#if OPT_MULTIBYTE
+		if (rpts && (rpts != repeats))
+		    free(rpts);
+#endif
 		returnReg(0);
 	    }
 	    /* NOTREACHED */
@@ -2382,7 +2442,7 @@ regrepeat(const char *p)
     char *scan = reginput;
     unsigned size = OPSIZE(p);
     const char *opnd = OPERAND(p);
-    int data = reg_char_at(opnd, opnd + size);
+    int data = WCHAR_AT(opnd, opnd + size);
 
     switch (OP(p)) {
     case ANY:
@@ -2391,22 +2451,22 @@ regrepeat(const char *p)
 	break;
     case EXACTLY:
 	while (scan < regnomore) {
-	    if (!same_char(data, reg_char_at(scan, regnomore)))
+	    if (!same_char(data, WCHAR_AT(scan, regnomore)))
 		break;
 	    count++;
-	    scan += reg_bytes_at(scan, regnomore);
+	    scan += BYTES_AT(scan, regnomore);
 	}
 	break;
     case ANYOF:
 	while (scan < regnomore && RegStrChr2(opnd, size, scan) != 0) {
 	    count++;
-	    scan += reg_bytes_at(scan, regnomore);
+	    scan += BYTES_AT(scan, regnomore);
 	}
 	break;
     case ANYBUT:
 	while (scan < regnomore && RegStrChr2(opnd, size, scan) == 0) {
 	    count++;
-	    scan += reg_bytes_at(scan, regnomore);
+	    scan += BYTES_AT(scan, regnomore);
 	}
 	break;
 
@@ -2414,13 +2474,13 @@ regrepeat(const char *p)
     case with: \
 	while (scan < regnomore && is_CLASS(with,scan)) { \
 	    count++; \
-	    scan += reg_bytes_at(scan, regnomore); \
+	    scan += BYTES_AT(scan, regnomore); \
 	} \
 	break; \
     case without: \
 	while (scan < regnomore && !is_CLASS(with,scan)) { \
 	    count++; \
-	    scan += reg_bytes_at(scan, regnomore); \
+	    scan += BYTES_AT(scan, regnomore); \
 	} \
 	break
 
@@ -2618,9 +2678,7 @@ lregexec(regexp * prog,
 
     REGTRACE((T_CALLED "lregexec %d..%d\n", startoff, endoff));
 
-#ifdef VAL_FILE_ENCODING
-    reg_utf8flag = b_val(curbp, VAL_FILE_ENCODING);
-#endif
+    set_utf8flag(curbp);
     if (endoff >= startoff) {
 	if (lvalue(lp)) {
 	    s = regexec(prog, lvalue(lp), &(lvalue(lp)[llength(lp)]),
@@ -2659,9 +2717,7 @@ nregexec(regexp * prog,
     int s;
 
     REGTRACE((T_CALLED "nregexec %d..%d\n", startoff, endoff));
-#ifdef VAL_FILE_ENCODING
-    reg_utf8flag = global_b_val(VAL_FILE_ENCODING);
-#endif
+    set_utf8flag(0);
     s = regexec(prog, string, stringend, startoff, endoff);
     returnReg(s);
 }
@@ -2678,6 +2734,12 @@ FSM_BLIST fsm_byteorder_mark_blist;
 
 extern char *strmalloc(const char *);
 extern void tidy_exit(int);
+
+void
+rebuild_charclasses(int print_lo GCC_UNUSED, int print_hi GCC_UNUSED)
+{
+    NotImpl(rebuild_charclasses);
+}
 
 int
 ffputline(const char *buf GCC_UNUSED, int nbuf GCC_UNUSED, const char
@@ -2901,8 +2963,8 @@ put_string(char *s, unsigned length, int literal)
 	    default:
 #if OPT_MULTIBYTE
 		if (reg_utf8flag && CharOf(s[n]) >= 128) {
-		    int need = reg_bytes_at(s + n, s + length);
-		    int data = reg_char_at(s + n, s + length);
+		    int need = BYTES_AT(s + n, s + length);
+		    int data = WCHAR_AT(s + n, s + length);
 		    if (data == 0xa0) {
 			printf("\\Z");
 			n += (need - 1);
@@ -3094,6 +3156,19 @@ main(int argc, char *argv[])
     } else {
 	test_regexp(stdin);
     }
+#if NO_LEAKS
+
+    vl_ctype_discard();
+#if OPT_LOCALE
+    eightbit_leaks();
+#endif
+    tb_leaks();
+
+    /* whatever is left over must be a leak */
+    show_alloc();
+    show_elapsed();
+    trace_leaks();
+#endif /* NO_LEAKS */
     return EXIT_SUCCESS;
 }
 #endif

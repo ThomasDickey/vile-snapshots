@@ -11,7 +11,7 @@
 #
 # The modes are table entries in the BUFFER and WINDOW structures.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.282 2008/11/10 20:56:19 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.283 2009/02/17 23:02:56 tom Exp $
 #
 #
 # Mode-table entries.  Capitalized letters are used for abbreviations.
@@ -319,7 +319,10 @@ string
 "startup-file"	STARTUP_FILE	1		"the name of the startup-file (e.g., .vilerc)"
 "startup-path"	STARTUP_PATH	1		"where to find the startup-file (e.g., .)"
 "status"	STATUS		1		"returns the status of the last command"
+"term-cols"	TERM_COLS	1		"# of columns in terminal window"
 "term-encoding" TERM_ENCODING	OPT_MULTIBYTE	"terminal's encoding support"
+"term-lines"	TERM_LINES	1		"# of lines in terminal window"
+"term-resizes"	TERM_RESIZES	1		"true if terminal can be resized"
 "title"		TITLE		OPT_TITLE	"window title"
 "title-format"	TITLEFORMAT	OPT_TITLE	"window title format"
 "version"	VERSION		1		"current version number"
