@@ -2,6 +2,9 @@ Changes for vile 9.7 (released ??? ??? ?? ????)
 
  200902?? (l)
 	> Tom Dickey:
+	+ ensure that <sys/ioctl.h> is included in termio.c if it is needed for
+	  SIGWINCH handling, e.g., with Mac OS X (finishes bug report by Daniel
+	  L Ashbrook).
 	+ update configure script macros:
 	  + consistently append rather than prepend to $CFLAGS
 	  + use $PATH_SEPARATOR variable rather than $PATHSEP
