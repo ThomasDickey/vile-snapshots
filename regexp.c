@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/regexp.c,v 1.187 2009/02/18 21:54:40 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/regexp.c,v 1.190 2009/02/20 20:25:26 tom Exp $
  *
  * Copyright 2005-2008,2009 Thomas E. Dickey and Paul G. Fox
  *
@@ -144,6 +144,12 @@ typedef ULONG B_COUNT;		/* byte-count */
 #define TRUE 1
 #endif
 
+#ifndef inline
+#ifdef NO_INLINE
+#define inline			/* nothing */
+#endif
+#endif
+
 #ifndef NO_LEAKS
 #define NO_LEAKS 0
 #endif
@@ -187,9 +193,9 @@ int ignorecase = FALSE;
 static char *reg(int paren, int *flagp);
 static char *regatom(int *flagp, int at_bop);
 static char *regbranch(int *flagp);
-static char *regnext(char *p);
 static char *regnode(int op);
 static char *regpiece(int *flagp, int at_bop);
+static inline char *regnext(char *p);
 static int regmatch(char *prog, int plevel);
 static int regrepeat(const char *p);
 static int regtry(regexp * prog, char *string, char *stringend, int plevel);
@@ -606,32 +612,29 @@ set_utf8flag(BUFFER *bp)
 #endif
 }
 
+#define doUTF8(value) (reg_utf8flag && ((value) >= 128))
+
 static int
 reg_bytes_at(const char *source, const char *last)
 {
-    int result = 1;
-    if (reg_utf8flag) {
-	result = vl_conv_to_utf32((UINT *) 0, source, last - source);
-	if (result <= 0)
-	    result = 1;
-    }
+    int result = vl_conv_to_utf32((UINT *) 0, source, last - source);
+    if (result <= 0)
+	result = 1;
     return result;
 }
-#define BYTES_AT(source, last) (reg_utf8flag ? reg_bytes_at(source, last) : 1)
+#define BYTES_AT(source, last) (doUTF8(UCHAR_AT(source)) ? reg_bytes_at(source, last) : 1)
 
 static int
 reg_char_at(const char *source, const char *last)
 {
     int result = UCHAR_AT(source);
+    UINT target;
 
-    if (reg_utf8flag) {
-	UINT target;
-	if (vl_conv_to_utf32(&target, source, last - source) > 0)
-	    result = target;
-    }
+    if (vl_conv_to_utf32(&target, source, last - source) > 0)
+	result = target;
     return result;
 }
-#define WCHAR_AT(source, last) (reg_utf8flag ? reg_char_at(source, last) : UCHAR_AT(source))
+#define WCHAR_AT(source, last) (doUTF8(UCHAR_AT(source)) ? reg_char_at(source, last) : UCHAR_AT(source))
 
 /*
  * Put a whole multibyte character in the output if we're in UTF-8 mode.
@@ -639,16 +642,12 @@ reg_char_at(const char *source, const char *last)
 static void
 put_reg_char(int ch)
 {
-    if (reg_utf8flag) {
-	UCHAR target[10];
-	int len = vl_conv_to_utf8(target, ch, sizeof(target));
-	int n;
+    UCHAR target[10];
+    int len = vl_conv_to_utf8(target, ch, sizeof(target));
+    int n;
 
-	for (n = 0; n < len; ++n) {
-	    regc(target[n]);
-	}
-    } else {
-	regc(ch);
+    for (n = 0; n < len; ++n) {
+	regc(target[n]);
     }
 }
 #define PUT_REGC(ch) (reg_utf8flag ? put_reg_char(ch) : regc(ch))
@@ -692,7 +691,7 @@ vl_toupper(int ch)
  * Check if 'p' (from pattern) and 'q' (from actual data) are the "same".
  * This is where ignorecase is evaluated.
  */
-static int
+static inline int
 same_char(int p, int q)
 {
     int rc;
@@ -709,6 +708,7 @@ same_char(int p, int q)
     }
     return rc;
 }
+#define EQ_CHARS(p,q) (reg_utf8flag ? same_char(p, q) : SAME(p,q))
 
 /*
  * Evaluate a character-class expression, using vile's ctype (if possible),
@@ -753,7 +753,7 @@ reg_CTYPE(XDIGIT, sys_isxdigit((sys_WINT_T) target))
 #define BYTES_AT(source, last) 1
 #define WCHAR_AT(source, last) UCHAR_AT(source)
 #define PUT_REGC(c) regc(c)
-#define same_char(p,q) SAME(p,q)
+#define EQ_CHARS(p,q) SAME(p,q)
 #define set_utf8flag(bp)	/* nothing */
 #endif
 /*
@@ -1768,7 +1768,7 @@ regstrncmp(const char *txt_a,
     while (txt_a < end_a) {
 	chr_a = WCHAR_AT(txt_a, end_a);
 	chr_b = WCHAR_AT(txt_b, txt_b + len_b);
-	if (!same_char(chr_a, chr_b)) {
+	if (!EQ_CHARS(chr_a, chr_b)) {
 	    diff = TRUE;
 	    break;
 	}
@@ -1790,7 +1790,7 @@ regstrchr(char *s, int c, const char *e)
     char *result = 0;
 
     while (s < e) {
-	if (same_char(WCHAR_AT(s, e), c)) {
+	if (EQ_CHARS(WCHAR_AT(s, e), c)) {
 	    result = s;
 	    break;
 	}
@@ -1835,7 +1835,7 @@ RegStrChr2(const char *s, unsigned length, const char *cs)
 	    }
 	} else {
 	    pattern = WCHAR_AT(s, reglimit);
-	    matched = same_char(pattern, compare);
+	    matched = EQ_CHARS(pattern, compare);
 	}
 	s += BYTES_AT(s, regnomore);
     }
@@ -2142,8 +2142,8 @@ regmatch(char *prog, int plevel)
 
 		opnd = OPERAND(scan);
 		/* Inline the first character, for speed. */
-		if (!same_char(WCHAR_AT(opnd, regnext(scan)),
-			       WCHAR_AT(reginput, regnomore))) {
+		if (!EQ_CHARS(WCHAR_AT(opnd, regnext(scan)),
+			      WCHAR_AT(reginput, regnomore))) {
 		    returnReg(0);
 		}
 		len = OPSIZE(scan);
@@ -2383,7 +2383,7 @@ regmatch(char *prog, int plevel)
 		    /* If it could work, try it. */
 		    if ((nxtch == -1
 			 || reginput >= regnomore
-			 || same_char(WCHAR_AT(reginput, regnomore), nxtch))) {
+			 || EQ_CHARS(WCHAR_AT(reginput, regnomore), nxtch))) {
 			if (regmatch(next, plevel)) {
 #if OPT_MULTIBYTE
 			    if (rpts && (rpts != repeats))
@@ -2451,7 +2451,7 @@ regrepeat(const char *p)
 	break;
     case EXACTLY:
 	while (scan < regnomore) {
-	    if (!same_char(data, WCHAR_AT(scan, regnomore)))
+	    if (!EQ_CHARS(data, WCHAR_AT(scan, regnomore)))
 		break;
 	    count++;
 	    scan += BYTES_AT(scan, regnomore);
@@ -2501,7 +2501,7 @@ regrepeat(const char *p)
 /*
  - regnext - dig the "next" pointer out of a node
  */
-static char *
+static inline char *
 regnext(char *p)
 {
     int offset;
