@@ -1,4 +1,4 @@
-; $Id: modes.rc,v 1.87 2009/02/18 22:18:32 tom Exp $
+; $Id: modes.rc,v 1.88 2009/02/20 23:55:45 tom Exp $
 ; majormodes in this file are ordered alphabetically for convenience - the
 ; precedence used by vile is strictly alphabetic, counting case.  Use the
 ; before and after qualifiers to override the precedence.
@@ -904,6 +904,11 @@ define-mode vb
 ~elsewith define-submode vb group 'with'
 	fence-if	'^\s*with\>'
 	fence-fi	'^\s*end\s\+with\>'
+~elsewith define-submode vb group 'case'
+	fence-if	'^\s*\<select\s\+case\>'
+	fence-elif	'^\s*\<case\>'
+	fence-else	'^\s*\<case\s\+else\>'
+	fence-fi	'^\s*\<end\s\+select\>'
 ~elsewith define-submode vb group 'sub'
 	fence-if	&cat %vb-access 'sub\>'
 	fence-fi	'^\s*end\s\+sub\>'
@@ -963,6 +968,14 @@ define-mode vb6
 ~elsewith define-submode vb6 group 'property'
 	fence-if	&cat %vb6-access 'property\>'
 	fence-fi	'^\s*end\s\+property\>'
+~elsewith define-submode vb6 group 'with'
+	fence-if	'^\s*with\>'
+	fence-fi	'^\s*end\s\+with\>'
+~elsewith define-submode vb6 group 'case'
+	fence-if	'^\s*\<select\s\+case\>'
+	fence-elif	'^\s*\<case\>'
+	fence-else	'^\s*\<case\s\+else\>'
+	fence-fi	'^\s*\<end\s\+select\>'
 ~endwith
 
 ; FIXME this should be the same as vb6mode except for the preamble and keywords

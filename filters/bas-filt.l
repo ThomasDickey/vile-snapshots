@@ -3,7 +3,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/bas-filt.l,v 1.20 2009/02/18 23:57:25 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/bas-filt.l,v 1.21 2009/02/20 23:30:42 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Basic
  * input text.
@@ -23,7 +23,7 @@
 
 DefineFilter("basic");
 
-#define more_comment() (yyleng > 2 && strncmp(yytext + yyleng - 2, "_", 2))
+#define more_comment() (yyleng > 2 && !strncmp(yytext + yyleng - 2, "_", 2))
 
 static char *Action_attr;
 static char *Comment_attr;
