@@ -2,6 +2,8 @@ Changes for vile 9.7 (released ??? ??? ?? ????)
 
  200902?? (l)
 	> Tom Dickey:
+	+ add "with" and "select" complex fences to vbmode and vb6mode.
+	+ correct comparison used for continuation marker in vbmode comments.
 	+ ensure that <sys/ioctl.h> is included in termio.c if it is needed for
 	  SIGWINCH handling, e.g., with Mac OS X (finishes bug report by Daniel
 	  L Ashbrook).
