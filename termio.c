@@ -3,7 +3,7 @@
  * characters, and write characters in a barely buffered fashion on the display.
  * All operating systems.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/termio.c,v 1.215 2008/11/23 18:30:02 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/termio.c,v 1.216 2009/02/20 21:34:48 tom Exp $
  *
  */
 
@@ -64,21 +64,48 @@ error "No termios or sgtty"
 #if !defined(FIONREAD)
 /* try harder to get it */
 # ifdef HAVE_SYS_FILIO_H
-#  include "sys/filio.h"
+#  include <sys/filio.h>
 # else				/* if you have trouble including ioctl.h, try "sys/ioctl.h" instead */
 #  ifdef HAVE_IOCTL_H
 #   include <ioctl.h>
 #  else
 #   ifdef HAVE_SYS_IOCTL_H
 #    include <sys/ioctl.h>
+#    define VL_sys_ioctl
 #   endif
 #  endif
 # endif
 #endif
 
-#if !defined(FIONREAD) && defined(HAVE_SYS_SOCKET_H)	/* SCO OpenServer v5 */
-# include <sys/socket.h>
+#ifdef HAVE_SIZECHANGE
+
+#if !defined(VL_sys_ioctl)
+#if !defined(sun) || !defined(HAVE_TERMIOS_H)
+#include <sys/ioctl.h>
 #endif
+#endif
+
+/*
+ * SCO defines TIOCGSIZE and the corresponding struct.  Other systems (SunOS,
+ * Solaris, IRIX) define TIOCGWINSZ and struct winsize.
+ */
+#ifdef TIOCGSIZE
+# define IOCTL_GET_WINSIZE TIOCGSIZE
+# define IOCTL_SET_WINSIZE TIOCSSIZE
+# define STRUCT_WINSIZE struct ttysize
+# define WINSIZE_ROWS(n) n.ts_lines
+# define WINSIZE_COLS(n) n.ts_cols
+#else
+# ifdef TIOCGWINSZ
+#  define IOCTL_GET_WINSIZE TIOCGWINSZ
+#  define IOCTL_SET_WINSIZE TIOCSWINSZ
+#  define STRUCT_WINSIZE struct winsize
+#  define WINSIZE_ROWS(n) n.ws_row
+#  define WINSIZE_COLS(n) n.ws_col
+# endif
+#endif
+
+#endif /* HAVE_SIZECHANGE */
 
 #if DISP_X11			/* don't use either one */
 # undef USE_FCNTL
@@ -978,7 +1005,7 @@ tttypahead(void)
 #  if	USE_FIONREAD
     {
 	long x;
-	return ((ioctl(0, FIONREAD, (void *) & x) < 0) ? 0 : (int) x);
+	return ((ioctl(0, FIONREAD, (void *) &x) < 0) ? 0 : (int) x);
     }
 #  else
 #   if	USE_FCNTL
@@ -1161,17 +1188,17 @@ void
 getscreensize(int *widthp, int *heightp)
 {
     char *e;
-#ifdef TIOCGWINSZ
-    struct winsize size;
+#ifdef HAVE_SIZECHANGE
+    STRUCT_WINSIZE size;
 #endif
     *widthp = 0;
     *heightp = 0;
-#ifdef TIOCGWINSZ
-    if (ioctl(0, TIOCGWINSZ, (void *) & size) == 0) {
-	if ((int) (size.ws_row) > 0)
-	    *heightp = size.ws_row;
-	if ((int) (size.ws_col) > 0)
-	    *widthp = size.ws_col;
+#ifdef HAVE_SIZECHANGE
+    if (ioctl(0, IOCTL_GET_WINSIZE, (void *) &size) == 0) {
+	if ((int) (WINSIZE_ROWS(size)) > 0)
+	    *heightp = WINSIZE_ROWS(size);
+	if ((int) (WINSIZE_COLS(size)) > 0)
+	    *widthp = WINSIZE_COLS(size);
     }
     if (*widthp <= 0) {
 	e = getenv("COLUMNS");
