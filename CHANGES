@@ -1,5 +1,16 @@
 Changes for vile 9.7 (released ??? ??? ?? ????)
 
+ 200902?? (l)
+	> Tom Dickey:
+	+ update configure script macros:
+	  + consistently append rather than prepend to $CFLAGS
+	  + use $PATH_SEPARATOR variable rather than $PATHSEP
+	  + minor fixes for Intel compiler warnings
+	  + add case for "mint" to CF_XOPEN_SOURCE
+	+ improve performance of on-the-fly UTF-8 regular expressions by
+	  inlining and making checks to see if a byte is ASCII before doing
+	  conversions.
+
  20090218 (k)
 	> Tom Dickey:
 	+ allow for continuation marker in vbmode comments.
