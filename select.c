@@ -18,7 +18,7 @@
  * transferring the selection are not dealt with in this file.  Procedures
  * for dealing with the representation are maintained in this file.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.171 2008/11/10 20:25:09 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.172 2009/02/23 00:26:40 tom Exp $
  *
  */
 
@@ -28,6 +28,11 @@
 
 #if OPT_FILTER
 #include	<filters.h>
+#endif
+
+#ifdef WIN32
+#include	"w32vile.h"	/* for VL_ELAPSED */
+#undef WIN32_LEAN_AND_MEAN
 #endif
 
 #define BTN_BEGIN   1
@@ -1808,7 +1813,7 @@ attribute_directly(void)
 #if OPT_MAJORMODE
     if (valid_buffer(curbp)) {
 #if OPT_AUTOCOLOR
-	ElapsedType begin_time;
+	VL_ELAPSED begin_time;
 	(void) vl_elapsed(&begin_time, TRUE);
 #endif
 	discard_syntax_highlighting();

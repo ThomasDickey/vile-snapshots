@@ -21,6 +21,7 @@ Changes for vile 9.7 (released ??? ??? ?? ????)
 	    ..abbrev declarations.  This also allows some forgotten let*-style
 	    keywords to be properly recognized.
 	> Tom Dickey:
+	+ build-fixes for win32 (Visual C++ 7) and MinGW.
 	+ renamed define_scheme to define_color_scm, rename rnrs filter to
 	  "scheme".
 	+ increase lex tables in htmlfilt.l and mc-filt.l for AIX.

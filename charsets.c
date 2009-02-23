@@ -1,5 +1,5 @@
 /*
- * $Id: charsets.c,v 1.64 2009/02/16 21:11:34 tom Exp $
+ * $Id: charsets.c,v 1.65 2009/02/23 01:31:11 tom Exp $
  *
  * see
  http://msdn.microsoft.com/library/default.asp?url=/library/en-us/intl/unicode_42jv.asp
@@ -15,7 +15,6 @@
 #if OPT_ICONV_FUNCS
 #include <iconv.h>
 #include <locale.h>
-#include <langinfo.h>
 #endif
 /* *INDENT-OFF* */
 static const UCHAR mark_NONE[]    = { 0x00 };

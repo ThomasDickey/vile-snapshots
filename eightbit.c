@@ -1,5 +1,5 @@
 /*
- * $Id: eightbit.c,v 1.47 2008/12/21 22:40:06 tom Exp $
+ * $Id: eightbit.c,v 1.48 2009/02/23 01:28:35 tom Exp $
  *
  * Maintain "8bit" file-encoding mode by converting incoming UTF-8 to single
  * bytes, and providing a function that tells vile whether a given Unicode
@@ -17,11 +17,10 @@
 
 #if OPT_ICONV_FUNCS
 #include <iconv.h>
-#include <langinfo.h>
-#else
+#endif
+
 #ifdef HAVE_LANGINFO_CODESET
 #include <langinfo.h>
-#endif
 #endif
 
 #define StrMalloc(s) ((s) ? strmalloc(s) : 0)
