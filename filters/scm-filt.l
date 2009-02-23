@@ -3,18 +3,14 @@
 
 %{
 /*
- * $Id: lispfilt.l,v 1.22 2009/02/22 20:27:05 Brendan.MacDonell Exp $
+ * $Id: scm-filt.l,v 1.2 2009/02/22 21:07:35 tom Exp $
  *
- * Filter to add vile "attribution" sequences to selected bits of lisp code.
- *
- * TODO:  implement readtable case directives :upcase, :downcase, :preserve
- * and :invert
+ * Filter to add vile "attribution" sequences to selected bits of scheme code.
  *
  * TODO:  implement other radix than 10 (that may require rewriting this in C)
  *
  * refs:
  *	http://www.schemers.org/Documents/Standards/R5RS/HTML/r5rs-Z-H-5.html
- *	http://www.lisp.org/HyperSpec/Body/sec_2-4-8.html
  */
 
 #include <filters.h>
@@ -23,7 +19,7 @@
 #define FLTSTACK_EXTRA_PUSH FLTSTACK_THIS.quoted = 0;
 #include <fltstack.h>
 
-DefineFilter("lisp");
+DefineFilter("scheme");
 
 static char *Action_attr;
 static char *Comment_attr;
@@ -67,6 +63,13 @@ RPAREN		\)
 <NORMAL>#\\[[:alpha:]][[:alnum:]_]+	|
 <NORMAL>#\\.  			{ WriteToken(Literal_attr); }
 
+<NORMAL>#{LPAREN}	{ int save = FLTSTACK_OK ? FLTSTACK_THIS.quoted : 0;
+			  push_state(NORMAL);
+			  if (FLTSTACK_OK)
+			      FLTSTACK_THIS.quoted = save;
+			  WriteToken(save ? paren_attr() : Error_attr);
+			}
+
 <NORMAL>#[^|BbOoXx\\]		{ WriteToken(""); /* later */ }
 
 <NORMAL>#\|		{ BeginQuote(COMMENT, Comment_attr); }
@@ -76,7 +79,7 @@ RPAREN		\)
 
 <NORMAL>{COMMENT}	{ WriteToken(Comment_attr); }
 
-<NORMAL>['`]{LPAREN}	{ push_state(NORMAL);
+<NORMAL>['`]#?{LPAREN}	{ push_state(NORMAL);
 			  if (FLTSTACK_OK)
 			      FLTSTACK_THIS.quoted = (yytext[0] == '`' ? 2 : 1);
 			  WriteToken(paren_attr());

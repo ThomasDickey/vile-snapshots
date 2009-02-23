@@ -3,7 +3,7 @@
  * characters, and write characters in a barely buffered fashion on the display.
  * All operating systems.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/termio.c,v 1.216 2009/02/20 21:34:48 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/termio.c,v 1.217 2009/02/21 02:30:24 tom Exp $
  *
  */
 
@@ -76,36 +76,6 @@ error "No termios or sgtty"
 #  endif
 # endif
 #endif
-
-#ifdef HAVE_SIZECHANGE
-
-#if !defined(VL_sys_ioctl)
-#if !defined(sun) || !defined(HAVE_TERMIOS_H)
-#include <sys/ioctl.h>
-#endif
-#endif
-
-/*
- * SCO defines TIOCGSIZE and the corresponding struct.  Other systems (SunOS,
- * Solaris, IRIX) define TIOCGWINSZ and struct winsize.
- */
-#ifdef TIOCGSIZE
-# define IOCTL_GET_WINSIZE TIOCGSIZE
-# define IOCTL_SET_WINSIZE TIOCSSIZE
-# define STRUCT_WINSIZE struct ttysize
-# define WINSIZE_ROWS(n) n.ts_lines
-# define WINSIZE_COLS(n) n.ts_cols
-#else
-# ifdef TIOCGWINSZ
-#  define IOCTL_GET_WINSIZE TIOCGWINSZ
-#  define IOCTL_SET_WINSIZE TIOCSWINSZ
-#  define STRUCT_WINSIZE struct winsize
-#  define WINSIZE_ROWS(n) n.ws_row
-#  define WINSIZE_COLS(n) n.ws_col
-# endif
-#endif
-
-#endif /* HAVE_SIZECHANGE */
 
 #if DISP_X11			/* don't use either one */
 # undef USE_FCNTL
@@ -1177,6 +1147,35 @@ tttypahead(void)
 
 #endif /* not SYS_UNIX */
 
+#ifdef HAVE_SIZECHANGE
+
+#if !defined(VL_sys_ioctl)
+#if !defined(sun) || !defined(HAVE_TERMIOS_H)
+#include <sys/ioctl.h>
+#endif
+#endif
+
+/*
+ * SCO defines TIOCGSIZE and the corresponding struct.  Other systems (SunOS,
+ * Solaris, IRIX) define TIOCGWINSZ and struct winsize.
+ */
+#ifdef TIOCGSIZE
+# define IOCTL_GET_WINSIZE TIOCGSIZE
+# define IOCTL_SET_WINSIZE TIOCSSIZE
+# define STRUCT_WINSIZE struct ttysize
+# define WINSIZE_ROWS(n) n.ts_lines
+# define WINSIZE_COLS(n) n.ts_cols
+#else
+# ifdef TIOCGWINSZ
+#  define IOCTL_GET_WINSIZE TIOCGWINSZ
+#  define IOCTL_SET_WINSIZE TIOCSWINSZ
+#  define STRUCT_WINSIZE struct winsize
+#  define WINSIZE_ROWS(n) n.ws_row
+#  define WINSIZE_COLS(n) n.ws_col
+# endif
+#endif
+
+#endif /* HAVE_SIZECHANGE */
 /* Get terminal size from system, first trying the driver, and then
  * the environment.  Store number of lines into *heightp and width
  * into *widthp.  If zero or a negative number is stored, the value
