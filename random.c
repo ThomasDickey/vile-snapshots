@@ -2,7 +2,7 @@
  * This file contains the command processing functions for a number of random
  * commands. There is no functional grouping here, for sure.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.325 2008/12/22 01:11:47 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.326 2009/02/23 00:26:00 tom Exp $
  *
  */
 
@@ -37,6 +37,11 @@
 #if SYS_VMS
 #include <starlet.h>
 #include <lib$routines.h>
+#endif
+
+#ifdef WIN32
+#include "w32vile.h"		/* for VL_ELAPSED */
+#undef WIN32_LEAN_AND_MEAN
 #endif
 
 #define DIRS_FORCE    0		/* force DirStack buffer on screen if dirs_idx > 0.
@@ -1630,24 +1635,24 @@ run_readhook(void)
  * Returns elapsed time in milliseconds.
  */
 double
-vl_elapsed(ElapsedType * first, int begin)
+vl_elapsed(VL_ELAPSED * first, int begin)
 {
     double result;
 
 #if SYS_UNIX && !SYS_MINGW
 #define	SECS(tv)	(tv.tv_sec + (tv.tv_usec / 1.0e6))
-    ElapsedType tv1;
+    VL_ELAPSED tv1;
     gettimeofday(&tv1, 0);
     if (begin)
 	*first = tv1;
     result = 1000.0 * (SECS(tv1) - SECS((*first)));
 #elif SYS_WINNT || SYS_MINGW
-    ElapsedType tv1 = GetTickCount();
+    VL_ELAPSED tv1 = GetTickCount();
     if (begin)
 	*first = tv1;
     result = (tv1 - *first);
 #else
-    ElapsedType tv1 = time((time_t *) 0);
+    VL_ELAPSED tv1 = time((time_t *) 0);
     if (begin)
 	*first = tv1;
     result = 1000.0 * (tv1 - *first);
@@ -1681,7 +1686,7 @@ autocolor(void)
     if (!(reading_msg_line || vile_is_busy || doingsweep)) {
 	BUFFER *bp;
 	WINDOW *wp;
-	ElapsedType begin_time;
+	VL_ELAPSED begin_time;
 	double elapsed_time;
 	int goal_time;
 

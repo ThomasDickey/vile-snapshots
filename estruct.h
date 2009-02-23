@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.679 2008/11/25 23:41:44 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.680 2009/02/23 00:27:59 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -2094,11 +2094,11 @@ typedef int FUID;
 
 #if OPT_AUTOCOLOR || OPT_ELAPSED
 #ifdef HAVE_GETTIMEOFDAY
-typedef struct timeval ElapsedType;
+#define VL_ELAPSED struct timeval
 #elif SYS_WINNT
-typedef DWORD ElapsedType;
+/* this is in w32vile.h */
 #else
-typedef time_t ElapsedType;
+#define VL_ELAPSED time_t
 #endif
 #endif
 

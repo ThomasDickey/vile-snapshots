@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/w32vile.h,v 1.6 2008/11/22 16:59:49 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32vile.h,v 1.7 2009/02/23 00:27:44 tom Exp $
  *
  * Do the pragmas in a separate file to avoid contaminating portable code.
  */
@@ -38,6 +38,8 @@
 #else
 #define W32_STRING(s) s
 #endif
+
+#define VL_ELAPSED DWORD
 
 #define VILE_SUBKEY W32_STRING("Software\\VI Like Emacs")
 
