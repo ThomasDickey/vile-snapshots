@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.389 2009/02/16 21:12:07 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.390 2009/02/22 20:34:03 tom Exp $
  *
  */
 
@@ -5114,7 +5114,7 @@ init_scheme(void)
  */
 /*ARGSUSED*/
 int
-define_scheme(int f GCC_UNUSED, int n GCC_UNUSED)
+define_color_scm(int f GCC_UNUSED, int n GCC_UNUSED)
 {
     char *name;
     int status;

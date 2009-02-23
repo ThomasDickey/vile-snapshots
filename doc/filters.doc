@@ -291,7 +291,6 @@ use the same syntax as other majormodes:
 	nmakemode	nmake uses make filter
 	nsismode	nsis uses def filter
 	pcmode		printcap uses termcap filter
-	schememode	Scheme uses Lisp filter
 	texmode		TeX uses latex filter
 	vbmode		Visual Basic uses basic filter
 	vbsmode		Visual Basic Scripting uses basic filter
@@ -304,4 +303,4 @@ NOTE
 The lex filters have been well tested only with flex, which treats newlines
 differently.  Older versions of lex may not support the %x states.
 
--- $Header: /users/source/archives/vile.vcs/doc/RCS/filters.doc,v 1.42 2008/11/28 01:45:05 tom Exp $
+-- $Header: /users/source/archives/vile.vcs/doc/RCS/filters.doc,v 1.43 2009/02/22 20:53:37 tom Exp $

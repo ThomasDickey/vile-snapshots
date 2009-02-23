@@ -1,7 +1,29 @@
 Changes for vile 9.7 (released ??? ??? ?? ????)
 
  200902?? (l)
+	> Brendan MacDonell
+	+ improve lisp and scheme modes:
+	  + adds highlighting support for quasiquote/backtick (`), quote ('),
+	    unquote (,) and unquote-splice (,@), including unquoted
+	    sub-expressions.
+	  + highlights the parentheses of quoted expressions in a different
+	    color (glancing at the code, this appears to have been the initial
+	    intent, except the 'quoted' stack variable was never initialized to
+	    zero).
+	+ improve scheme mode:
+	  + uses a derived filter, 'rnrs' (I tried naming the filter 'scheme',
+	    but apparently define_scheme is already defined by vile itself).
+	  + highlights vector literals '#( ..  )' properly depending on their
+	    context.
+	  + removes the tokens from scheme.key which are now handled by the
+	    filter.
+	  + cleans up the keywords file by disabling the unnecessary .brief and
+	    ..abbrev declarations.  This also allows some forgotten let*-style
+	    keywords to be properly recognized.
 	> Tom Dickey:
+	+ renamed define_scheme to define_color_scm, rename rnrs filter to
+	  "scheme".
+	+ increase lex tables in htmlfilt.l and mc-filt.l for AIX.
 	+ add "with" and "select" complex fences to vbmode and vb6mode.
 	+ correct comparison used for continuation marker in vbmode comments.
 	+ ensure that <sys/ioctl.h> is included in termio.c if it is needed for

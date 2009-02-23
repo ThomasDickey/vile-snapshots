@@ -2,11 +2,11 @@
 %x NORMAL NEXTCMD COMMAND FIELD NEXTARG PARAMS SSTRING DSTRING
 
 %o 10000
-%a 5000
+%a 10000
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/mc-filt.l,v 1.7 2008/11/19 23:11:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/mc-filt.l,v 1.8 2009/02/21 02:20:56 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of mailcap-file.
  */
