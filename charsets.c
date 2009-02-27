@@ -1,5 +1,5 @@
 /*
- * $Id: charsets.c,v 1.65 2009/02/23 01:31:11 tom Exp $
+ * $Id: charsets.c,v 1.66 2009/02/27 00:32:38 tom Exp $
  *
  * see
  http://msdn.microsoft.com/library/default.asp?url=/library/en-us/intl/unicode_42jv.asp
@@ -782,6 +782,9 @@ decode_bom(BUFFER *bp, UCHAR * buffer, B_COUNT * length)
 	&& line_has_mark(mp, buffer, *length)) {
 	for (n = 0; n < *length - mp->size; ++n) {
 	    buffer[n] = buffer[n + mp->size];
+	}
+	while (n < *length) {
+	    buffer[n++] = 0;
 	}
 	*length -= mp->size;
 

@@ -1,6 +1,6 @@
 dnl vile's local definitions for autoconf.
 dnl
-dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.189 2009/02/20 20:30:33 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.190 2009/02/24 21:53:47 tom Exp $
 dnl
 dnl ---------------------------------------------------------------------------
 dnl ---------------------------------------------------------------------------
@@ -3629,10 +3629,10 @@ AC_SUBST($3)dnl
 
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_WITH_PERL version: 2 updated: 2008/08/11 10:36:36
+dnl CF_WITH_PERL version: 3 updated: 2009/02/24 16:51:36
 dnl ------------
 dnl Check if perl-extension (using embedded perl interpreter) is wanted, and
-dnl update symbols.
+dnl update symbols if we are able to use the extension.
 AC_DEFUN([CF_WITH_PERL],[
 AC_MSG_CHECKING(if you want to use perl as an extension language)
 AC_ARG_WITH(perl,
@@ -3641,33 +3641,58 @@ AC_ARG_WITH(perl,
 	[with_perl=no])
 AC_MSG_RESULT($with_perl)
 
+PERLLIB=
+
 if test "$with_perl" = yes ; then
 	CF_PROG_PERL(5.004)
 	if test "$PERL" = no; then
-	    AC_ERROR([perl not found])
-	fi
-	PERLLIB=`$PERL -MConfig -e 'print $Config{privlib}'`
-	AC_DEFINE(OPT_PERL)
-	EXTRAOBJS="$EXTRAOBJS perl\$o"
-	BUILTSRCS="$BUILTSRCS perl.c"
-	cf_prefix=`$PERL -MConfig -e 'print $Config{shrpenv}'`
-	ac_link="$cf_prefix $ac_link"
-	CF_CHECK_CFLAGS(`$PERL -MExtUtils::Embed -e ccopts`)
-	LIBS="$LIBS `$PERL -MExtUtils::Embed -e ldopts`"
-	EXTRA_INSTALL_DIRS="$EXTRA_INSTALL_DIRS \$(INSTALL_PERL_DIRS)"
-	EXTRA_INSTALL_FILES="$EXTRA_INSTALL_FILES \$(INSTALL_PERL_FILES)"
+		AC_WARN([perl not found])
+	else
+		cf_perl_CFLAGS="$CFLAGS"
+		cf_perl_CPPFLAGS="$CPPFLAGS"
+		cf_perl_link="$ac_link"
+		cf_perl_LIBS="$LIBS"
 
-    AC_TRY_LINK([
+		cf_perl_prefix=`$PERL -MConfig -e 'print $Config{shrpenv}'`
+		cf_perl_ccopts=`$PERL -MExtUtils::Embed -e ccopts`
+		cf_perl_ldopts=`$PERL -MExtUtils::Embed -e ldopts`
+
+		ac_link="$cf_perl_prefix $ac_link"
+		CF_CHECK_CFLAGS($cf_perl_ccopts)
+		LIBS="$LIBS $cf_perl_ldopts"
+
+		AC_TRY_LINK([
 #include <EXTERN.h>
 #include <perl.h>
 #include <XSUB.h>
-    ],[
-    PerlInterpreter* interp = perl_alloc();
-    perl_construct(interp);
-    perl_parse(interp, (XSINIT_t)0, 0, (char **)0, (char **)0);
-    Perl_croak(aTHX_ "Why:%s\n", "Bye!");
-],,[AC_MSG_ERROR(Cannot link with Perl interpreter)])
+		],[
+		PerlInterpreter* interp = perl_alloc();
+		perl_construct(interp);
+		perl_parse(interp, (XSINIT_t)0, 0, (char **)0, (char **)0);
+		Perl_croak(aTHX_ "Why:%s\n", "Bye!");
+],[
+		PERLLIB=`$PERL -MConfig -e 'print $Config{privlib}'`
 
+		CF_VERBOSE(adding perl library $PERLLIB)
+
+		AC_DEFINE(OPT_PERL)
+
+		EXTRAOBJS="$EXTRAOBJS perl\$o"
+		BUILTSRCS="$BUILTSRCS perl.c"
+
+		EXTRA_INSTALL_DIRS="$EXTRA_INSTALL_DIRS \$(INSTALL_PERL_DIRS)"
+		EXTRA_INSTALL_FILES="$EXTRA_INSTALL_FILES \$(INSTALL_PERL_FILES)"
+],[
+		AC_MSG_WARN(Cannot link with Perl interpreter)
+
+		CF_VERBOSE([undoing changes to CFLAGS, etc])
+
+		CFLAGS="$cf_perl_CFLAGS"
+		CPPFLAGS="$cf_perl_CPPFLAGS"
+		ac_link="$cf_perl_link"
+		LIBS="$cf_perl_LIBS"
+])
+	fi
 fi
 AC_SUBST(PERLLIB)
 AC_SUBST(PERL)
