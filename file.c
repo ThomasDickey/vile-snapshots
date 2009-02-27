@@ -5,7 +5,7 @@
  * reading and writing of the disk are
  * in "fileio.c".
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.423 2008/11/30 18:46:38 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.425 2009/02/27 00:56:13 tom Exp $
  */
 
 #include "estruct.h"
@@ -1438,7 +1438,7 @@ quickreadf(BUFFER *bp, int *nlinep)
     } else if (request == 0) {
 	/* avoid malloc(0) problems down below; let slowreadf() do the work */
 	rc = FIONUL;
-    } else if ((buffer = castalloc(UCHAR, request)) == NULL) {
+    } else if ((buffer = castalloc(UCHAR, request + 1)) == NULL) {
 	rc = FIOMEM;
     }
 #if OPT_ENCRYPT
@@ -1481,7 +1481,8 @@ quickreadf(BUFFER *bp, int *nlinep)
 	/*
 	 * Modify readin()'s setting for newline mode if needed:
 	 */
-	if (buffer[length - 1] != (UCHAR) (rscode == RS_CR ? '\r' : '\n')) {
+	if (length == 0
+	    || (buffer[length - 1] != (UCHAR) (rscode == RS_CR ? '\r' : '\n'))) {
 	    set_b_val(bp, MDNEWLINE, FALSE);
 	}
 
@@ -1499,10 +1500,12 @@ quickreadf(BUFFER *bp, int *nlinep)
 
 	    /* loop through the buffer again, creating
 	       line data structure for each line */
+	    memset(bp->b_LINEs, 0, sizeof(LINE));
 	    for (lp = bp->b_LINEs, offset = 0; lp != bp->b_LINEs_end; ++lp) {
 		B_COUNT next = next_recordseparator(buffer, length, rscode, offset);
-		if (next == offset)
+		if (next == offset) {
 		    break;
+		}
 #if !SMALLER
 		lp->l_number = ++lineno;
 #endif
@@ -1522,7 +1525,8 @@ quickreadf(BUFFER *bp, int *nlinep)
 		decode_charset(bp, lp);
 		offset = next;
 	    }
-	    lp--;		/* point at last line again */
+	    if (lp != bp->b_LINEs)
+		lp--;		/* point at last line again */
 
 	    /* connect the end of the list */
 	    set_lforw(lp, buf_head(bp));

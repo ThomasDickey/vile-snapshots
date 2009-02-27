@@ -3,7 +3,7 @@
 
 %{
 /*
- * $Id: lispfilt.l,v 1.22 2009/02/22 20:27:05 Brendan.MacDonell Exp $
+ * $Id: lispfilt.l,v 1.23 2009/02/23 23:53:26 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of lisp code.
  *
@@ -53,7 +53,7 @@ FLOAT		({SIGN}?{DECIMAL}*{POINT}{DECIMAL}+{EXPONENT}?)|({SIGN}?{DECIMAL}+({POINT
 NUMBER		{INTEGER}|{RATIO}|{FLOAT}
 
 COMMENT		;[^\r\n]*
-IDENT		[^[:space:]\",'`\(\)|#]+
+IDENT		[^[:space:]\"\,'`\(\)|#]+
 
 LPAREN		\(
 RPAREN		\)
@@ -84,7 +84,7 @@ RPAREN		\)
 
 <NORMAL>['`]		{ WriteToken(Literal_attr); }
 
-<NORMAL>,@?{LPAREN}	{ int save = FLTSTACK_OK ? FLTSTACK_THIS.quoted : 0;
+<NORMAL>","[@]?{LPAREN}	{ int save = FLTSTACK_OK ? FLTSTACK_THIS.quoted : 0;
 			  push_state(NORMAL);
 			  if (save != 2 && FLTSTACK_OK)
 			      FLTSTACK_THIS.quoted = save;
@@ -92,7 +92,7 @@ RPAREN		\)
 			  WriteToken2(paren_attr(),(yytext[1] == '@' ? 2 : 1));
 			}
 
-<NORMAL>,@?		{
+<NORMAL>","[@]?		{
 			  WriteToken((FLTSTACK_OK && FLTSTACK_THIS.quoted) ? Ident_attr : Error_attr);
 			}
 

@@ -2,7 +2,7 @@
  *	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.315 2008/10/14 20:09:05 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.316 2009/02/24 21:35:33 tom Exp $
  *
  */
 
@@ -5673,15 +5673,17 @@ x_configure_window(Widget w GCC_UNUSED,
 		  XtNheight, &new_height,
 		  XtNwidth, &new_width,
 		  NULL);
-    new_height = ((new_height - cur_win->base_height) / cur_win->char_height)
-	* cur_win->char_height;
-    new_width = ((new_width - cur_win->base_width) /
-		 cur_win->char_width) * cur_win->char_width;
+    new_height = (((int) (new_height - cur_win->base_height)
+		   / cur_win->char_height)
+		  * cur_win->char_height);
+    new_width = (((int) (new_width - cur_win->base_width)
+		  / cur_win->char_width)
+		 * cur_win->char_width);
 
     /* Check to make sure the dimensions are sane both here and below
        to avoid BadMatch errors */
-    nr = (int) (new_height / cur_win->char_height);
-    nc = (int) (new_width / cur_win->char_width);
+    nr = ((int) new_height / cur_win->char_height);
+    nc = ((int) new_width / cur_win->char_width);
 
     if (nr < MINROWS || nc < MINCOLS) {
 	gui_resize(nc, nr);
