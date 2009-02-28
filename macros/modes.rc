@@ -1,4 +1,4 @@
-; $Id: modes.rc,v 1.89 2009/02/27 23:38:14 tom Exp $
+; $Id: modes.rc,v 1.90 2009/02/28 15:40:27 tom Exp $
 ; majormodes in this file are ordered alphabetically for convenience - the
 ; precedence used by vile is strictly alphabetic, counting case.  Use the
 ; before and after qualifiers to override the precedence.
@@ -311,6 +311,7 @@ define-mode est
 ; Embedded SQL in C/C++
 define-mode esql
 ~with define-submode esql
+	after		make
 	suffixes	'\.\(ec\|p[ch]\|pp[ch]\)$'
 	cindent
 	cindent-chars &cat ':#' $fences
@@ -528,7 +529,6 @@ define-mode mailcap
 
 define-mode make
 ~with define-submode make
-	before esql
 	mode-pathname	'^/[^/]\+/lib/pkgconfig/[[:graph:]]\+\.pc$'
 	mode-filename	'^\([Mm]akefile.*\|make\..*\|.*\.mak\|.*\.mk\|Jamdefs.*\|Jamfile\)$'
 	comment-prefix	'^\s*[!#]'
