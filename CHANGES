@@ -1,6 +1,6 @@
 Changes for vile 9.7 (released ??? ??? ?? ????)
 
- 200902?? (l)
+ 20090228 (l)
 	> Brendan MacDonell
 	+ improve lisp and scheme modes:
 	  + adds highlighting support for quasiquote/backtick (`), quote ('),
