@@ -1,4 +1,4 @@
-; $Id: modes.rc,v 1.88 2009/02/20 23:55:45 tom Exp $
+; $Id: modes.rc,v 1.89 2009/02/27 23:38:14 tom Exp $
 ; majormodes in this file are ordered alphabetically for convenience - the
 ; precedence used by vile is strictly alphabetic, counting case.  Use the
 ; before and after qualifiers to override the precedence.
@@ -528,6 +528,8 @@ define-mode mailcap
 
 define-mode make
 ~with define-submode make
+	before esql
+	mode-pathname	'^/[^/]\+/lib/pkgconfig/[[:graph:]]\+\.pc$'
 	mode-filename	'^\([Mm]akefile.*\|make\..*\|.*\.mak\|.*\.mk\|Jamdefs.*\|Jamfile\)$'
 	comment-prefix	'^\s*[!#]'
 	comments	'^\s*[!#]\s*$'

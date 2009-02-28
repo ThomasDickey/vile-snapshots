@@ -18,7 +18,7 @@
  * transferring the selection are not dealt with in this file.  Procedures
  * for dealing with the representation are maintained in this file.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.172 2009/02/23 00:26:40 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.173 2009/02/28 01:27:15 tom Exp $
  *
  */
 
@@ -1180,11 +1180,15 @@ attributeregion(void)
 	    arp->ar_shape = regionshape;
 #if OPT_HYPERTEXT
 	    arp->ar_hypercmd = 0;
-	    if (tb_length(hypercmd)) {
+	    if (tb_length(hypercmd) && *tb_values(hypercmd)) {
 #if OPT_EXTRA_COLOR
-		int *newVideo = lookup_extra_color(XCOLOR_HYPERTEXT);
-		if (!isEmpty(newVideo))
-		    arp->ar_vattr = (VIDEO_ATTR) * newVideo;
+		if (tb_length(hypercmd) > 4
+		    && !memcmp(tb_values(hypercmd), "view ", 4)) {
+		    int *newVideo = lookup_extra_color(XCOLOR_HYPERTEXT);
+		    if (!isEmpty(newVideo)) {
+			arp->ar_vattr = (VIDEO_ATTR) * newVideo;
+		    }
+		}
 #endif
 		arp->ar_hypercmd = strmalloc(tb_values(hypercmd));
 		tb_init(&hypercmd, 0);
