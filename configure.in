@@ -1,12 +1,12 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_REVISION($Revision: 1.257 $)
+AC_REVISION($Revision: 1.258 $)
 AC_PREREQ(2.13.20030927)
 rm -f config.cache
 
 ### Use "configure -with-screen" to override the default configuration, which is
 ### termcap-based on unix systems.
 
-dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.257 2009/02/20 20:24:09 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.258 2009/02/27 23:23:52 Mark.Robinson Exp $
 
 define(MAKELIST, sh $srcdir/filters/makelist.sh $srcdir/filters/genmake.mak)
 
@@ -447,13 +447,13 @@ case "$screen" in
 	[[Oo]]pen* | [[Xx]]ol )
 		AC_DEFINE(OL_WIDGETS)
 		CF_X_OPENLOOK
-	 	test "$cf_extensions" = no && EXTRAOBJS="$EXTRAOBJS select\$o"
+		test "$cf_extensions" = no && EXTRAOBJS="$EXTRAOBJS select\$o"
 	;;
 	[[mM]]otif* | [[Xx]]m )
 		AC_DEFINE(MOTIF_WIDGETS)
 		CF_X_MOTIF
-	 	test "$cf_extensions" = yes && EXTRAOBJS="$EXTRAOBJS x11menu\$o menu\$o"
-	 	test "$cf_extensions" = no && EXTRAOBJS="$EXTRAOBJS select\$o"
+		test "$cf_extensions" = yes && EXTRAOBJS="$EXTRAOBJS x11menu\$o menu\$o"
+		test "$cf_extensions" = no && EXTRAOBJS="$EXTRAOBJS select\$o"
 	;;
 	[[Aa]]thena* | [[Xx]]aw* | neXtaw | XawPlus )
 		AC_DEFINE(ATHENA_WIDGETS)
@@ -463,12 +463,12 @@ case "$screen" in
 			;;
 		esac
 		CF_X_ATHENA
-	 	test "$cf_extensions" = yes && EXTRAOBJS="$EXTRAOBJS x11menu\$o menu\$o"
-	 	test "$cf_extensions" = no && EXTRAOBJS="$EXTRAOBJS select\$o"
+		test "$cf_extensions" = yes && EXTRAOBJS="$EXTRAOBJS x11menu\$o menu\$o"
+		test "$cf_extensions" = no && EXTRAOBJS="$EXTRAOBJS select\$o"
 	;;
 	x | X | [[Xx]][[Tt]]* | [[Xx]]11 )
 		AC_DEFINE(NO_WIDGETS)
-	 	test "$cf_extensions" = no && EXTRAOBJS="$EXTRAOBJS select\$o"
+		test "$cf_extensions" = no && EXTRAOBJS="$EXTRAOBJS select\$o"
 	;;
 	ansi)
 		SCREEN=ansi
@@ -523,7 +523,7 @@ esac
 # work around for broken FreeBSD header files (see tcap.h)
 case "$cf_cv_ncurses_version" in
 5.2.20020615)
-	AC_DEFINE(FREEBSD_BROKE_NCURSES) 	
+	AC_DEFINE(FREEBSD_BROKE_NCURSES)
 	;;
 esac
 
@@ -619,9 +619,9 @@ case "$TARGET" in
 		EXTRAOBJS="$EXTRAOBJS w32misc\$o w32cmd\$o w32cbrd\$o w32pipe\$o makeargv\$o"
 		EXTRAOBJS2="$EXTRAOBJS2 w32oo\$o"
 		EXEEXT=.exe
-	
+
 	;;
-	
+
 	minvile)
 		AC_DEFINE(SYS_WINNT)
 		AC_DEFINE(CC_MINGW)
@@ -629,12 +629,12 @@ case "$TARGET" in
 		LIBS="$LIBS -lws2_32 -lmswsock -lgdi32 -lcomdlg32 -lwinspool -lole32 -lstdc++"
 		ICON_SUFFIX=.ico
 		LDFLAGS="$LDFLAGS -s -mwindows"
-		EXTRAOBJS="$EXTRAOBJS w32misc\$o w32cmd\$o w32cbrd\$o w32pipe\$o makeargv\$o"
+		EXTRAOBJS="$EXTRAOBJS winvile\$o w32misc\$o w32cmd\$o w32cbrd\$o w32pipe\$o makeargv\$o"
 		EXTRAOBJS2="$EXTRAOBJS2 w32oo\$o"
 		EXEEXT=.exe
-	
+
 	;;
-	
+
 	xvile)
 		AC_DEFINE(SYS_UNIX)
 

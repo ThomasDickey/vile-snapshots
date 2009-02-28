@@ -20,7 +20,15 @@ Changes for vile 9.7 (released ??? ??? ?? ????)
 	  + cleans up the keywords file by disabling the unnecessary .brief and
 	    ..abbrev declarations.  This also allows some forgotten let*-style
 	    keywords to be properly recognized.
+	> Mark Robinson:
+	+ fix configure.in to add icon for minvile target.
 	> Tom Dickey:
+	+ amend 9.7g change to use extra-colors for hyperlinks, to do this only
+	  when the link starts with "view ", which is used in which-source
+	  and similar macros.
+	+ highlight pkg-config ".pc" files as "make" syntax.
+	+ fix winvile "-i" option, which did not save the original command
+	  string, so filenames with embedded blanks required quotes.
 	+ fix read of file containing only a UTF-8 BOM; that confused the
 	  empty-file logic.
 	+ modify configure --with-perl to give a warning but not exit if the
