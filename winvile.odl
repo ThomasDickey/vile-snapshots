@@ -1,0 +1,78 @@
+// $Id: winvile.odl,v 1.8 2008/06/01 21:52:44 tom Exp $
+// vile:nodos
+[
+    uuid(664D8543-2FDD-11d2-B8E4-0020AF0F4354),         // LIBID_VileAuto
+    helpstring("Winvile Automation 1.0 Type Library"),
+    version(1.0)
+]
+library Winvile
+{
+    importlib("stdole2.tlb");
+    [
+        uuid(664D8544-2FDD-11d2-B8E4-0020AF0F4354),     // IID_IVileAuto
+        helpstring("Automation application object for the Vile gui editor."),
+        oleautomation,
+        dual
+    ]
+    interface IVileAuto : IDispatch
+    {
+        [propget, helpstring("Returns the application of the object.")]
+        HRESULT Application([out, retval] IVileAuto** retval);
+
+        [helpstring("Makes the editor the foreground window.")]
+        HRESULT ForegroundWindow();
+
+        [propget, helpstring("Returns the full name of the application.")]
+        HRESULT FullName([out, retval] BSTR* retval);
+
+        [helpstring("Minimizes the editor.")]
+        HRESULT Minimize();
+
+        [propget, id(0), helpstring("Returns the name of the application.")]
+        HRESULT Name([out, retval] BSTR* retval);
+
+        [propget, helpstring("True if editor in insert mode.")]
+        HRESULT InsertMode([out, retval] VARIANT_BOOL* retval);
+
+        [propget, helpstring("True if editor in glob mode.")]
+        HRESULT GlobMode([out, retval] VARIANT_BOOL* retval);
+
+        [propget, helpstring("True if editor minimized.")]
+        HRESULT IsMinimized([out, retval] VARIANT_BOOL* retval);
+
+        [propget, helpstring("Returns winvile's main hwnd")]
+        HRESULT MainHwnd([out, retval] LONG* retval);
+
+        [propget, helpstring("Returns the parent of the object.")]
+        HRESULT Parent([out, retval] IVileAuto** retval);
+
+        [helpstring("Exits the editor.")]
+        HRESULT Quit();
+
+        [helpstring("Restores the editor's window.")]
+        HRESULT Restore();
+
+        [helpstring("Sends keystrokes to the editor")]
+        HRESULT VileKeys([in] BSTR keys);
+
+        [propput]
+        HRESULT Visible([in] VARIANT_BOOL VisibleFlag);
+        [propget, helpstring("Sets or returns whether the editor is visible.")]
+        HRESULT Visible([out, retval] VARIANT_BOOL* retval);
+
+        [helpstring("Redirect selected keystrokes to specified window if non-NULL hwnd.")]
+        HRESULT WindowRedirect([in] DWORD hwnd);
+    }
+
+
+    [
+        uuid(664D8545-2FDD-11d2-B8E4-0020AF0F4354),     // CLSID_VileAuto
+        helpstring("Winvile Automation Class"),
+        appobject
+    ]
+    coclass Application
+    {
+        [default]          interface IVileAuto;
+                           interface IDispatch;
+    }
+}

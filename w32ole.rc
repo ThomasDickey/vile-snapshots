@@ -1,0 +1,5 @@
+// $Id: w32ole.rc,v 1.3 2007/05/26 15:41:52 tom Exp $
+// vile:rcmode
+1 typelib winvile.tlb
+
+#include "winvile.rc"

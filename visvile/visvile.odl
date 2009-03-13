@@ -1,0 +1,60 @@
+// VisVile.odl : type library source for VisVile.dll
+
+// This file will be processed by the Make Type Library (mktyplib) tool to
+// produce the type library (VisVile.tlb).
+
+[	uuid(E4C5E2E8-36FF-11D2-B8E4-0020AF0F4354), version(1.0),
+	helpstring ("VISVILE Developer Studio Add-in") ]
+library VisVile
+{
+	importlib("stdole32.tlb");
+	importlib("devshl.dll");
+	importlib("ide\devdbg.pkg");
+	
+
+	//  Dual interface for CCommands
+	//
+	//  All commands that your add-in adds to DevStudio
+	//   must appear in this interface.  You may use the
+	//   ClassView to add methods to this interface, which
+	//   will cause stub implementations of those methods to
+	//   appear in your CCommands class.
+	
+	[	uuid(E4C5E2E4-36FF-11D2-B8E4-0020AF0F4354),
+		oleautomation,
+		dual
+	]
+
+	interface ICommands : IDispatch
+	{
+		// methods
+		[id(1)]
+		HRESULT VisVileConfig();
+		HRESULT VisVileEnable();
+		HRESULT VisVileDisable();
+		HRESULT VisVileOpenDoc();
+	};
+
+	//  Class information for CCommands
+
+	[ uuid(E4C5E2E5-36FF-11D2-B8E4-0020AF0F4354) ]
+	coclass Commands
+	{
+		[default] interface ICommands;
+	};
+
+	[ hidden, uuid(E4C5E2E6-36FF-11D2-B8E4-0020AF0F4354) ]
+	coclass ApplicationEvents
+	{
+		[default] interface IApplicationEvents;
+	}
+
+	[ hidden, uuid(E4C5E2E7-36FF-11D2-B8E4-0020AF0F4354) ]
+	coclass DebuggerEvents
+	{
+		[default] interface IDebuggerEvents;
+	}
+
+	//{{AFX_APPEND_ODL}}
+	//}}AFX_APPEND_ODL}}
+};
