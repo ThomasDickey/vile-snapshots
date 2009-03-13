@@ -1,0 +1,277 @@
+; $Id: shifts.rc,v 1.4 2000/05/19 09:54:12 tom Exp $
+; These macros are reimplementations for vile of scripts which I wrote for
+; xedit in 1981-1983.  Editing with xedit or ispf on IBM 3270 terminals has the
+; odd quirk that when you put the terminal into insert-mode, it is possible
+; (easy) to shift characters off the end of the line and lose them.  So I wrote
+; macros to make it simple to shift text left or right.
+;
+; The IBM terminals did not use tabs; these macros detab/entab the line.
+
+; Shifts the current line left or right so the first nonblank character aligns
+; with the cursor.  Unlike ShiftRite and ShiftLeft, does not squeeze out blanks.
+store-procedure AlignToCol int="Column"
+	~local $curcol $curline
+	~local %col %row %original %detabbed %entabbed %replacer %n %n1
+	setv %col=$1
+	~if &greater $cmd-count 1
+		setv %n &subtract $cmd-count 1
+		~hidden %n next-line
+	~endif
+	setv %row $curline
+	; read the original line contents, for reference
+        setv $curcol 1
+	setv %original $line
+	; convert the tabs in the line to spaces
+	setv $curline=%row $curcol=%col
+	detab-lines-til
+	; ...and read its contents
+	setv $curcol 1
+	setv %detabbed $line
+	; restore the contents of the line
+	~if &not &seq %detabbed %original
+		undo-changes-backward
+	~endif
+	; See if there are nonblanks to the left or right of the cursor
+	~if &sequal &trim %detabbed ''
+		write-message "Line is empty"
+	~else
+		setv %n 1
+		setv %n1 $1
+		~while &not &greater %n &length %detabbed
+			~if &not &sequal &middle %detabbed %n 1 ' '
+				setv %n1 %n
+				~break
+			~endif
+			setv %n &add %n 1
+		~endwhile
+		~if &equal %n1 $1
+			write-message "No change"
+		~else
+			~if &greater %n1 $1
+				setv %n1 &add %n1 1
+				setv %replacer &right %detabbed &subtract %n1 $1
+			~else
+				setv %replacer %detabbed
+				~while &not &equal %n1 $1
+					setv %replacer &cat ' ' %replacer
+					setv %n1 &add %n1 1
+				~endwhile
+			~endif
+			setv $line %replacer
+			; if the original line had tabs, entab the line.
+			; juggle a little to make this a single-undo
+			~if &not &seq %detabbed %original
+				entab-lines-til
+				setv $curcol 1
+				setv %entabbed $line
+				~if &not &seq %entabbed %replacer
+					undo-changes-backward
+					undo-changes-backward
+					setv $line %entabbed
+				~endif
+			~endif
+		~endif
+	~endif
+~endm
+
+; Shifts the current line left or right so the first nonblank character aligns
+; with the cursor.  Unlike ShiftRite and ShiftLeft, does not squeeze out blanks.
+store-procedure AlignToCursor
+	AlignToCol $curcol
+~endm
+bind-key AlignToCursor #0
+
+; Drags the word beginning to the left of the cursor to the cursor's column.
+; Compresses extra blanks between that word and the following ones on the
+; current line.
+;
+; FIXME:  If the line is then longer than the fillcolumn, split the line
+; accordingly.
+store-procedure ShiftRite
+	~local $curcol $curline
+	~local %row %col
+	~local %detabbed %diff %entabbed %n %n1 %n2
+	~local %original %pad %replacer %s1 %s2
+	setv %col $curcol
+	setv %row $curline
+	; read the original line contents, for reference
+        setv $curcol 1
+	setv %original $line
+	; convert the tabs in the line to spaces
+	setv $curline=%row $curcol=%col
+	detab-lines-til
+	; ...and read its contents
+	setv $curcol 1
+	setv %detabbed $line
+	; restore the contents of the line
+	~if &not &seq %detabbed %original
+		undo-changes-backward
+	~endif
+	setv %n %col
+	; if we are on a nonblank, check if the previous character is a
+	; blank.  if so, we'll skip over _those_ blanks.
+	~if &not &seq ' ' &middle %detabbed %n 1
+		setv %n1 &subtract %n 1
+		~if &and &greater %n1 0 &seq ' ' &middle %detabbed %n1 1
+			setv %n %n1
+		~endif
+	~endif
+	; if not on a non-blank, find one
+	~while &seq ' ' &middle %detabbed %n 1
+		setv %n &subtract %n 1
+		~if &less %n 1
+			write-message "No change"
+			~return
+		~endif
+	~endwhile
+	; find the last blank immediately to the left of the non-blanks
+	~while &greater %n 0
+		setv %n &subtract %n 1
+		~if &seq ' ' &middle %detabbed %n 1
+			~break
+		~endif
+	~endwhile
+	~if &or &equal %n 0 &seq ' ' &middle %detabbed %n 1
+		setv %diff &subtract %col %n
+		~if &greater %diff 1
+			setv %pad ''
+			~if &greater %n 0
+				setv %n1 &subtract %n 1
+			~else
+				setv %n1 %n
+				setv %n &add %n 1
+			~endif
+			setv %s1 &left %detabbed %n1
+			setv %s2 &right %detabbed %n
+			~while &greater %diff 1
+				setv %diff &subtract %diff 1
+				setv %pad &cat %pad ' '
+				setv %n2 &sindex %s2 '  '
+				~if &greater %n2 0
+					setv %s2 &cat \
+						&left %s2 %n2 \
+						&right %s2 &add %n2 2
+				~endif
+			~endwhile
+			setv $curline %row
+			setv %replacer &cat %s1 &cat %pad %s2
+			setv $line %replacer
+			; if the original line had tabs, entab the line.
+			; juggle a little to make this a single-undo
+			~if &not &seq %detabbed %original
+				entab-lines-til
+				setv $curcol 1
+				setv %entabbed $line
+				~if &not &seq %entabbed %replacer
+					undo-changes-backward
+					undo-changes-backward
+					setv $line %entabbed
+				~endif
+			~endif
+			~return
+		~endif
+	~endif
+	write-message "No change"
+~endm
+bind-key ShiftRite #!
+
+; Drags the word beginning to the right of the cursor to the cursor's column.
+; If needed, compresses extra blanks on the left, but does not split the line.
+store-procedure ShiftLeft
+	~local $curcol $curline
+	~local %col %row
+	~local %detabbed %diff %entabbed %len %n %n1 %n2 %original %replacer
+	setv %col $curcol
+	setv %row $curline
+	; read the original line contents, for reference
+        setv $curcol 1
+	setv %original $line
+	; convert the tabs in the line to spaces
+	setv $curline=%row $curcol=%col
+	detab-lines-til
+	; ...and read its contents
+	setv $curcol 1
+	setv %detabbed $line
+	; restore the contents of the line
+	~if &not &seq %detabbed %original
+		undo-changes-backward
+	~endif
+	setv %len &length %detabbed
+	setv %n %col
+	; if we're on a nonblank, skip to the end of that.
+	~while &not &seq ' ' &middle %detabbed %n 1
+		setv %n &add %n 1
+		~if &greater %n %len
+			write-message "No change"
+			~return
+		~endif
+	~endwhile
+	; skip blanks to the first nonblank
+	~while &seq ' ' &middle %detabbed %n 1
+		setv %n &add %n 1
+		~if &greater %n %len
+			write-message "No change"
+			~return
+		~endif
+	~endwhile
+	setv %diff &subtract %n %col
+	~if &greater %diff 1
+		; trim blanks to move the word left to the cursor position.
+		; we prefer to take blanks from the right, between the cursor
+		; and the word, but will trim blanks from the right end of the
+		; segment to the left of the cursor.
+		setv %replacer %detabbed
+		~while &not &equal %n %col
+			setv %n1 %n
+			setv %n2 0
+			~while &not &greater %n1 %n
+				~if &seq '  ' &middle %replacer %n1 2
+					setv %n2 %n1
+					~break
+				~endif
+				setv %n1 &add %n1 1
+			~endwhile
+			~if &equal %n2 0
+				setv %n1 %n
+				~while &greater %n1 1
+					~if &seq '  ' &middle %replacer %n1 2
+						setv %n2 %n1
+						~break
+					~endif
+					setv %n1 &subtract %n1 1
+				~endwhile
+			~endif
+			~if &equal %n2 0
+				~if &and \
+					&equal %n1 1 \
+					&seq ' ' &middle %replacer %n1 1
+					setv %n2 1
+				~else
+					~break
+				~endif
+			~endif
+			setv %replacer &cat \
+				&left %replacer &subtract %n2 1 \
+				&right %replacer &add %n2 1
+			setv %n &subtract %n 1
+		~endwhile
+		~if &not &seq %replacer %detabbed
+			setv $line %replacer
+			; if the original line had tabs, entab the line.
+			; juggle a little to make this a single-undo
+			~if &not &seq %detabbed %original
+				entab-lines-til
+				setv $curcol 1
+				setv %entabbed $line
+				~if &not &seq %entabbed %replacer
+					undo-changes-backward
+					undo-changes-backward
+					setv $line %entabbed
+				~endif
+			~endif
+			~return
+		~endif
+	~endif
+	write-message "No change"
+~endm
+bind-key ShiftLeft #@

@@ -1,0 +1,54 @@
+! $Header: /users/source/archives/vile.vcs/macros/RCS/XVile.ad,v 1.1 1999/11/06 21:13:05 tom Exp $
+
+XVile*font: -adobe-courier-medium-r-normal--14-0-0-0-m-0-iso8859-1
+
+XVile*geometry:  80x24
+!XVile.background:  darkslategrey
+XVile.background:  black
+XVile.foreground:  honeydew
+XVile.scrollbar.foreground:  firebrick2
+XVile.scrollbar.sliderIsSolid:  true
+XVile.selection.background:  aquamarine4
+XVile.selection.foreground:  honeydew
+XVile.cursor.background:  yellow
+XVile.cursor.foreground:  darkslategrey
+XVile.modeline.Background:  steelblue
+XVile.modeline.foreground:  darkslategrey
+XVile.modeline.focusForeground:  yellow
+
+XVile*multiClickTime:  1000
+
+XVile*blinkInterval:  -200
+XVile*forkOnStartup:  true
+
+XVile*popupButton.foreground:  yellow
+XVile*menuEntry*foreground:  pink
+XVile*menuHeader*background:  gray
+XVile*menuEntry*background:  gray
+XVile*menuHeight:  20
+
+XVile*focusFollowsMouse:  true
+XVile*background:  blue
+XVile.foreground:  honeydew
+XVile.scrollbar.sliderIsSolid:  true
+XVile.scrollbar.foreground:  indianRed3
+XVile.selection.background:  indianRed3
+XVile.selection.foreground:  honeydew
+XVile.pointer.normalShape:  spider
+;
+XVile.color.fcolor0:  black
+XVile.color.fcolor1:  red3
+XVile.color.fcolor2:  green3
+XVile.color.fcolor3:  yellow3
+XVile.color.fcolor4:  blue3
+XVile.color.fcolor5:  magenta3
+XVile.color.fcolor6:  cyan3
+XVile.color.fcolor7:  gray90
+XVile.color.fcolor8:  gray30
+XVile.color.fcolor9:  red
+XVile.color.fcolor10:  green
+XVile.color.fcolor11:  yellow
+XVile.color.fcolor12:  blue
+XVile.color.fcolor13:  magenta
+XVile.color.fcolor14:  cyan
+XVile.color.fcolor15:  white

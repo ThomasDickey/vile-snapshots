@@ -1,0 +1,74 @@
+; $Header: /users/source/archives/vile.vcs/macros/RCS/vilemenu.rc,v 1.4 2008/11/29 00:07:55 tom Exp $
+; A sample .vilemenu file:
+~with define-menu-entry
+C:Xvile
+B:New:new_xvile
+B:Edit .vilerc:edit_rc
+B:Parse .vilerc:parse_rc
+B:Edit .vilemenu:edit_mrc
+B:Parse .vilemenu:parse_mrc
+B:Quit:quit
+;
+C:Editing
+B:Apply Highlighting:cmd HighlightFilter
+B:Clear Highlighting (above):clear-attributes-til beginning-of-file
+B:Clear Highlighting (below):clear-attributes-til goto-char
+S
+B:Search Forward...:cmd search-forward
+B:Search Backward...:cmd search-reverse
+S
+B:Reload File:cmd e!
+B:Rename Buffer:cmd rename-buffer
+B:Edit:cmd edit-file
+B:Rename File:cmd filename
+~if &not &sin $cfgopts "noshell"
+S
+B:Manual for...:cmd ShowManpage
+S
+B:Files:capture-command "ls -l"
+B:Processes:capture-command "ps"
+B:Users:capture-command "w"
+~endif
+;
+C:Buffers
+B:Show Current Only:delete-other-windows
+B:Toggle Show:toggle-buffer
+L:list_buff
+;
+C:Fixed Fonts
+B:5x8:setv $font 5x8
+B:7x14:setv $font 7x14
+B:8x13:setv $font 8x13
+B:8x16:setv $font 8x16
+B:9x15:setv $font 9x15
+B:10x20:setv $font 10x20
+B:12x24:setv $font 12x24
+;
+C:Nice Fonts
+B:10pt:setv $font "-*-lucidatypewriter-medium-r-normal-sans-10-*-*-*-*-*-iso8859-1"
+B:12pt:setv $font "-*-lucidatypewriter-medium-r-normal-sans-12-*-*-*-*-*-iso8859-1"
+B:14pt:setv $font "-*-lucidatypewriter-medium-r-normal-sans-14-*-*-*-*-*-iso8859-1"
+B:17pt:setv $font "-*-lucidatypewriter-medium-r-normal-sans-17-*-*-*-*-*-iso8859-1"
+B:18pt:setv $font "-*-lucidatypewriter-medium-r-normal-sans-18-*-*-*-*-*-iso8859-1"
+B:20pt:setv $font "-*-lucidatypewriter-medium-r-normal-sans-20-*-*-*-*-*-iso8859-1"
+;
+C:Help:help
+B:About:version
+S
+B:General:help
+B:Bindings:describe-bindings
+B:Motions:describe-motions
+B:Operators:describe-operators
+S
+B:Apropos...:cmd apropos
+B:On Function...:cmd describe-function
+B:On Key...:describe-key &gts
+S
+B:Settings:setall
+B:Variables:show-variables
+B:Registers:show-registers
+S
+B:Majormodes:show-majormodes
+B:Colors:show-colors
+B:Color Schemes:show-color-schemes
+~endwith

@@ -1,0 +1,4 @@
+xvile description "VI Like Emacs for X" 
+xvile exec "xvile&" 
+xvile group "Applications/Editors" 
+ 

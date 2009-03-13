@@ -1,0 +1,152 @@
+;;
+;; Macros for obtaining manual pages and then attributing them.
+;;
+;; Author: Kevin Buettner
+;;
+;; $Header: /users/source/archives/vile.vcs/macros/RCS/manpage.rc,v 1.24 2007/08/07 00:44:58 tom Exp $
+;;
+
+store-procedure ShowManpage "Prompt for, and display a manual-page"
+	~local %filter %manpage %manpagebuf $error-buffer
+	set-variable %filter &pquote &lookup e+l+p &cat vile-manfilt $exec-suffix
+	~if &seq %filter ""
+		write-message "[Cannot find manpage-filter]"
+		~return
+	~endif
+	~force set-variable %manpage &query "man page? "
+	~if &or &error %manpage &seq %manpage ""
+		~return
+	~endif
+	set-variable %manpagebuf &cat "<" &cat %manpage ">"
+	set terse
+	~force select-buffer %manpagebuf
+	~if &not $status
+		edit-file &cat "!man " &cat %manpage &cat " | " %filter
+		~if &isa Majormode txt
+			setl txtmode
+		~endif
+		setl autocolor=0
+		~force rename-buffer %manpagebuf
+		~force error-buffer %manpagebuf
+		write-message "[Attaching bold and underline attributes...]"
+		goto-beginning-of-file
+		setl noview
+		attribute-cntl_a-sequences-til end-of-file
+		unmark-buffer
+		setl view
+		goto-beginning-of-file
+		unsetv $cfilname
+		write-message "[Done formatting manual page.]"
+	~endif
+	set noterse
+~endm
+bind-key ShowManpage ^X-m
+
+store-procedure ShowFormatted "Render the current buffer with nroff -man or -ms"
+	~local %type %macros %table %nroff %filter %manpagesrc %manpagebuf $error-buffer
+
+	set-variable %filter &pquote &lookup e+l+p &cat vile-manfilt $exec-suffix
+	~if &seq %filter ""
+		write-message "[Cannot find manpage-filter]"
+		~return
+	~endif
+
+	~if &sin $cbufname "<"
+		set-variable %manpagebuf $cbufname
+		set-variable %manpagesrc &mid $cbufname 2 &sub &len $cbufname 2
+		~force select-buffer %manpagesrc
+		~if &not $status
+			write-message &cat "Buffer not found: " %manpagesrc
+			~return
+		~endif
+	~else
+		set-variable %manpagebuf &cat "<" &cat $cbufname ">"
+	~endif
+
+	setv %table &env 'VILE_TABLE_FILT'
+	~if &seq %table ''
+		~if &seq $pathlist-separator ":"
+			setv %table 'tbl'
+		~endif
+	~endif
+
+	setv %nroff &env 'VILE_NROFF_FILT'
+	~if &seq %nroff ''
+		~if &seq $pathlist-separator ":"
+			setv %nroff 'nroff'
+		~else
+			setv %nroff 'cawf'
+		~endif
+	~endif
+
+	set terse
+	~force kill-buffer %manpagebuf
+	setv %type &path end $cfilname
+	~if &or &seq $majormode "html" \
+		&seq $majormode "xml"
+		edit-file &cat "!lynx -force_html -with_backspaces -dump -width=" \
+			&cat $pagewid \
+			&cat " " \
+			&cat &pquote $cfilname \
+			&cat " | " %filter
+	~elseif &seq $majormode "perl"
+		~if &seq %table ''
+			edit-file &cat "!pod2text " \
+				&cat &pquote $cfilname \
+				&cat " | " %filter
+		~else
+			edit-file &cat "!pod2man " \
+				&cat &pquote $cfilname \
+				&cat " | " \
+				&cat %table \
+				&cat " | " \
+				&cat %nroff \
+				&cat " -man | " %filter
+		~endif
+	~else
+		~if &seq %type ".ms"
+			setv %macros="-ms"
+		~elseif &seq %type ".mm"
+			setv %macros="-mm"
+		~else
+			setv %macros="-man"
+		~endif
+		~if &seq %table ''
+			edit-file &cat "!" \
+				&cat %nroff \
+				&cat " " \
+				&cat %macros \
+				&cat " " \
+				&cat &pquote $cfilname \
+				&cat " | " %filter
+		~else
+			edit-file &cat "!" \
+				&cat %table \
+				&cat " " \
+				&cat &pquote $cfilname \
+				&cat " | " \
+				&cat %nroff \
+				&cat " " \
+				&cat %macros \
+				&cat " | " %filter
+		~endif
+	~endif
+
+	~if &isa Majormode txt
+		setl txtmode
+	~endif
+	setl autocolor=0
+	~force rename-buffer %manpagebuf
+	~force error-buffer %manpagebuf
+	write-message "[Attaching bold and underline attributes...]"
+	goto-beginning-of-file
+	setl noview
+	attribute-cntl_a-sequences-til end-of-file
+	unmark-buffer
+	setl view
+	goto-beginning-of-file
+	unsetv $cfilname
+	write-message "[Done formatting manual page.]"
+	set noterse
+~endm
+bind-key ShowFormatted ^X-n
