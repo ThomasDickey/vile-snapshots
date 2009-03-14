@@ -11,7 +11,7 @@
 #
 # The modes are table entries in the BUFFER and WINDOW structures.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.286 2009/03/13 00:31:42 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.288 2009/03/14 00:52:52 tom Exp $
 #
 #
 # Mode-table entries.  Capitalized letters are used for abbreviations.
@@ -242,12 +242,17 @@ int
 	"bchars"	BCHARS		1		"chars in current buffer"
 	"blines"	BLINES		1		"lines in current buffer"
 	"bwindows"	BWINDOWS	1		"windows open on current buffer"
+	"char"		CHAR		1		"current character under the cursor"
 	"cmd-count"	CMD_COUNT	OPT_EVAL	"repeat-counter for macros"
+	"curchar"	CURCHAR		!SMALLER	"current character index in buffer"
 	"curcol"	CURCOL		1		"current column pos of cursor"
 	"curline"	CURLINE		1		"current line in file"
 	"cwline"	CWLINE		1		"current screen line in window"
 	"error-tabstop"	ERROR_TABSTOP	OPT_FINDERR	"tabstop to use when interpreting %C"
 	"goal-column"	GOAL_COLUMN	OPT_TRACE	"goal-column (debug-only)"
+	"lastkey"	LASTKEY		1		"last keyboard char struck"
+	"kill-limit"	KILL_LIMIT	1		"maximum number of bytes to return in $kill"
+	"kill-size"	KILL_SIZE	1		"number of bytes in kill buffer (read only)"
 	"lcols"		LCOLS		1		"length of current line, in columns"
 	"llength"	LLENGTH		1		"length of current line"
 	"ncolors"	NCOLORS		1		"number of colors displayed"
@@ -277,10 +282,8 @@ string
 	"cdpath"	CDPATH		OPT_PATHLOOKUP	"runtime copy of CDPATH env var"
 	"cfgopts"	CFGOPTS		1		"'interesting' compiled options (comma-delimited)"
 	"cfilname"	CFNAME		1		"current file name"
-	"char"		CHAR		1		"current character under the cursor"
 	"cmd-motion"	CMD_MOTION	OPT_EVAL&&OPT_PROCEDURES  "motion for operator"
 	"cryptkey"	CRYPTKEY	OPT_ENCRYPT	"write-only encryption-key"
-	"curchar"	CURCHAR		!SMALLER	"current character index in buffer"
 	"cwd"		CWD		OPT_SHELL	"current directory"
 	"directory"	DIRECTORY	OPT_SHELL	"controls location of temp-files"
 	"encoding"	ENCODING	OPT_LOCALE	"8-bit encoding associated with buffer contents"
@@ -300,7 +303,6 @@ string
 	"identifier"	IDENTIFIER	OPT_CURTOKENS	"identifier under cursor"
 	"kbd-macro"	KBDMACRO	1		"keyboard-macro buffer (read only)"
 	"kill"		KILL		1		"kill buffer (read only)"
-	"lastkey"	LASTKEY		1		"last keyboard char struck"
 	"libdir-path"	LIBDIR_PATH	1		"library directory(s)"
 	"line"		LINE		1		"text of current line"
 	"locale"	LOCALE		OPT_LOCALE	"8-bit locale associated with buffer contents"

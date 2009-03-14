@@ -2,6 +2,8 @@ Changes for vile 9.7 (released ??? ??? ?? ????)
 
  200903?? (m)
 	> Tom Dickey:
+	+ add $kill-size and $kill-limit variables to improve scripting with
+	  the $kill variable.
 	+ apply extra-colors to show-variables command.
 	+ add new functions &bchanged, &fchanged and state variables $bchanged
 	  (same as $modified) and $fchanged to make it simpler for scripts to

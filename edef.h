@@ -6,7 +6,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.347 2009/02/02 23:09:58 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.348 2009/03/14 00:54:22 tom Exp $
  */
 
 #ifndef VILE_EDEF_H
@@ -280,6 +280,7 @@ decl_uninit( int dotcmdcnt );		/* down-counter for dot-commands */
 decl_uninit( int dotcmdrep );		/* original dot-command repeat-count */
 
 #if OPT_EVAL
+decl_init( int kill_limit, KBLOCK );	/* $kill-limit			*/
 decl_init( int seed, 123 );		/* random number seed		*/
 #endif
 

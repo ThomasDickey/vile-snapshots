@@ -3,7 +3,7 @@
  *	for getting and setting the values of the vile state variables,
  *	plus helper utility functions.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.128 2009/03/11 23:15:08 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.131 2009/03/14 00:58:49 tom Exp $
  */
 
 #include	"estruct.h"
@@ -347,16 +347,15 @@ get_directory(void)
 }
 #endif
 
-/* access the default kill buffer */
-static void
-getkill(TBUFF **rp)
+static KILLREG *
+default_kill(void)
 {
-    tb_init(rp, EOS);
+    KILLREG *result = 0;
     if (kbs[0].kbufh != 0) {
 	int n = index2ukb(0);
-	tb_bappend(rp, (char *) (kbs[n].kbufh->d_chunk), kbs[n].kused);
+	result = kbs + n;
     }
-    tb_append(rp, EOS);
+    return result;
 }
 
 #if OPT_PATHLOOKUP
@@ -1059,13 +1058,64 @@ int
 var_KILL(TBUFF **rp, const char *vp)
 {
     if (rp) {
-	getkill(rp);
+	KILLREG *kr = default_kill();
+	KILL *kb;
+	int limit = kill_limit;
+	int used;
+
+	tb_init(rp, EOS);
+	if ((kr != 0) && (kb = kr->kbufh) != 0) {
+	    while (kb->d_next != 0) {
+		if ((used = KBLOCK) > limit)
+		    used = limit;
+		tb_bappend(rp, (char *) (kb->d_chunk), used);
+		if ((limit -= used) <= 0)
+		    break;
+		kb = kb->d_next;
+	    }
+	    if (limit > 0) {
+		if ((used = kr->kused) > limit)
+		    used = limit;
+		tb_bappend(rp, (char *) (kb->d_chunk), used);
+	    }
+	}
+	tb_append(rp, EOS);
 	return TRUE;
     } else if (vp) {
 	return ABORT;		/* read-only */
     } else {
 	return FALSE;
     }
+}
+
+int
+var_KILL_SIZE(TBUFF **rp, const char *vp)
+{
+    if (rp) {
+	KILLREG *kr = default_kill();
+	KILL *kb;
+	int result = 0;
+	if ((kr != 0) && (kb = kr->kbufh) != 0) {
+	    while (kb->d_next != 0) {
+		result += KBLOCK;
+		kb = kb->d_next;
+	    }
+	    result += kr->kused;
+	    return any_ro_INT(rp, vp, result);
+	} else {
+	    return FALSE;
+	}
+    } else if (vp) {
+	return ABORT;		/* read-only */
+    } else {
+	return FALSE;
+    }
+}
+
+int
+var_KILL_LIMIT(TBUFF **rp, const char *vp)
+{
+    return any_rw_INT(rp, vp, &kill_limit);
 }
 
 int
