@@ -3,7 +3,7 @@
 ------------------------
 vile bug/enhancement/wish list (mostly wishes ;-)
 ------------------------
-$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.414 2008/12/01 00:38:40 tom Exp $
+$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.415 2009/03/16 00:23:44 tom Exp $
 ----------------------
 	(E means enhancement, L,M,H are low, medium, high priority)
 
@@ -1617,11 +1617,6 @@ Select/paste in winvile works transparently for 8-bit (ASCII and ISO-8859-1)
 data.  It is possible to copy UTF-8 data from a buffer which stores UTF-8 (or
 -16, -32), but the target must expect UTF-8, since winvile is not converting it
 to the CF_UNICODETEXT type.
-
--- 08-04-10 (tom)
-Basic Unicode support so far covers file load/save, editing via UTF-8.
-However, regular expressions still know only about the "narrow" locale
-encoding, e.g., ISO-8859-1.
 
 -- 08-07-12 (tom)
 '@'command-line option with DJGPP (in a plain W2K cmd.exe shell) is interpreted
