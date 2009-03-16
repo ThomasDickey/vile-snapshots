@@ -10,7 +10,7 @@
  * editing must be being displayed, which means that "b_nwnd" is non zero,
  * which means that the dot and mark values in the buffer headers are nonsense.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.199 2008/11/27 13:21:43 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.200 2009/03/16 00:12:51 tom Exp $
  *
  */
 
@@ -1695,6 +1695,8 @@ execkreg(int f, int n)
     /* make sure there is something to execute */
     do {
 	jj = index2ukb(j);
+	if (jj < 0 || jj >= NKREGS)
+	    return FALSE;
 	kp = kbs[jj].kbufh;
 	if (kp == NULL)
 	    return TRUE;	/* not an error, just nothing */

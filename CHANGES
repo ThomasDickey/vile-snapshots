@@ -2,6 +2,8 @@ Changes for vile 9.7 (released ??? ??? ?? ????)
 
  200903?? (m)
 	> Tom Dickey:
+	+ add limit-check in execkreg() in case a wide-character is passed as
+	  the mark-identifier.
 	+ add $kill-size and $kill-limit variables to improve scripting with
 	  the $kill variable.
 	+ apply extra-colors to show-variables command.

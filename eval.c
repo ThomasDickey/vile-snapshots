@@ -2,7 +2,7 @@
  *	eval.c -- function and variable evaluation
  *	original by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.398 2009/03/13 00:45:06 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.399 2009/03/16 00:13:59 tom Exp $
  *
  */
 
@@ -467,7 +467,7 @@ show_VariableList(BUFFER *bp GCC_UNUSED)
 		    t = strlen(v);
 		    v += (t + 1);
 		    if ((t != 0) && (vv[t - 1] == '\n')) {
-			v[-2] = EOS;		/* suppress trailing newline */
+			v[-2] = EOS;	/* suppress trailing newline */
 		    }
 		} else {
 		    list[s].u_value = "";
@@ -1369,7 +1369,8 @@ run_func(int fnum)
 	if (!is_error) {
 	    i = reg2index(*arg[0]);
 	    if ((i = index2ukb(i)) < NKREGS
-		&& i >= 0) {
+		&& i >= 0
+		&& i < NKREGS) {
 		KILL *kp = kbs[i].kbufh;
 		while (kp != 0) {
 		    tb_bappend(&result,
