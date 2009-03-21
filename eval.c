@@ -2,7 +2,7 @@
  *	eval.c -- function and variable evaluation
  *	original by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.399 2009/03/16 00:13:59 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.402 2009/03/20 22:25:31 tom Exp $
  *
  */
 
@@ -279,7 +279,7 @@ static CHARTYPE
 charclass_of(const char *arg)
 {
     CHARTYPE k;
-    if (arg == error_val) {
+    if (isErrorVal(arg)) {
 	k = 0;
     } else {
 	k = vl_chartypes_[CharOf(*arg)];
@@ -346,7 +346,9 @@ makevarslist(int dum1 GCC_UNUSED, void *ptr)
 			     ? XCOLOR_STRING
 			     : (p->u_type == VALTYPE_INT
 				? XCOLOR_NUMBER
-				: XCOLOR_NONE)))));
+				: (p->u_type == VALTYPE_UNKNOWN
+				   ? XCOLOR_WARNING
+				   : XCOLOR_NONE))))));
     }
 
     if (arg_stack != 0 && ((k = arg_stack->num_args) != 0)) {
@@ -464,6 +466,8 @@ show_VariableList(BUFFER *bp GCC_UNUSED)
 		if ((vv = get_listvalue(Names[s], showall, &type)) != 0) {
 		    strcpy(list[s].u_value = v, vv);
 		    list[s].u_type = type;
+		    if (isErrorVal(vv))
+			list[s].u_type = VALTYPE_UNKNOWN;
 		    t = strlen(v);
 		    v += (t + 1);
 		    if ((t != 0) && (vv[t - 1] == '\n')) {
@@ -691,7 +695,7 @@ static char *
 path_head(TBUFF **result, const char *path)
 {
     char *temp = tb_values(tb_scopy(result, path));
-    if (temp != error_val && temp != 0) {
+    if (isLegalVal(temp)) {
 	*pathleaf(temp) = EOS;
 	path_trim(temp);
     }
@@ -974,6 +978,21 @@ ufunc_get_motion(TBUFF **result, const char *name)
     return rc;
 }
 
+int
+eval_fchanged(BUFFER *bp)
+{
+    time_t current;
+    int changed;
+
+    if (valid_buffer(bp)) {
+	get_modtime(bp, &current);
+	changed = (current != bp->b_modtime);
+    } else {
+	changed = FALSE;
+    }
+    return changed;
+}
+
 #define MAXARGS 3
 
 /*
@@ -1019,7 +1038,7 @@ run_func(int fnum)
     for (i = 0; i < nargs; i++) {
 	args[i] = 0;
 	if ((arg[i] = dequoted_parameter(&args[i])) == 0
-	    || (arg[i] == error_val)
+	    || isErrorVal(arg[i])
 	    || isTB_ERRS(args[i])) {
 	    arg[i] = error_val;
 	    is_error = TRUE;
@@ -1097,7 +1116,7 @@ run_func(int fnum)
 	break;
     case UFERROR:
 	is_error = FALSE;
-	value = (arg[0] == error_val);
+	value = isErrorVal(arg[0]);
 	break;
     case UFLT:			/* FALLTHRU */
     case UFLESS:
@@ -1137,7 +1156,7 @@ run_func(int fnum)
 	value = (strcmp(arg[0], arg[1]) >= 0);
 	break;
     case UFINDIRECT:
-	if ((sp = tokval(arg[0])) != error_val)
+	if (isLegalExp(sp, tokval(arg[0])))
 	    tb_scopy(&result, sp);
 	else
 	    is_error = TRUE;
@@ -1209,7 +1228,7 @@ run_func(int fnum)
 	break;
     case UFBIND:
 	if (!is_error) {
-	    if ((sp = prc2engl(arg[0])) == error_val)
+	    if (isErrorVal(sp = prc2engl(arg[0])))
 		is_error = TRUE;
 	    else
 		tb_scopy(&result, sp);
@@ -1260,8 +1279,7 @@ run_func(int fnum)
 	break;
     case UFDQUERY:
 	if (!is_error) {
-	    if ((cp = user_reply(arg[0], arg[1])) != 0
-		&& (cp != error_val))
+	    if (isLegalExp(cp, user_reply(arg[0], arg[1])))
 		tb_scopy(&result, cp);
 	    else
 		is_error = TRUE;
@@ -1270,8 +1288,7 @@ run_func(int fnum)
     case UFQPASSWD:
 	if (!is_error) {
 	    qpasswd = TRUE;
-	    if ((cp = user_reply(arg[0], NULL)) != 0
-		&& (cp != error_val))
+	    if (isLegalExp(cp, user_reply(arg[0], NULL)))
 		tb_scopy(&result, cp);
 	    else
 		is_error = TRUE;
@@ -1280,8 +1297,7 @@ run_func(int fnum)
 	break;
     case UFQUERY:
 	if (!is_error) {
-	    if ((cp = user_reply(arg[0], error_val)) != 0
-		&& (cp != error_val))
+	    if (isLegalExp(cp, user_reply(arg[0], error_val)))
 		tb_scopy(&result, cp);
 	    else
 		is_error = TRUE;
@@ -1383,7 +1399,21 @@ run_func(int fnum)
 	    }
 	}
     case UFBCHANGED:
+	if (!is_error
+	    && (bp = find_any_buffer(arg[0])) != 0) {
+	    value = b_is_changed(bp);
+	} else {
+	    is_error = TRUE;
+	}
+	break;
     case UFFCHANGED:
+	if (!is_error
+	    && (bp = find_any_buffer(arg[0])) != 0) {
+	    value = eval_fchanged(bp);
+	} else {
+	    is_error = TRUE;
+	}
+	break;
 	/* FALLTHRU */
     case NFUNCS:
 	TRACE(("unknown function #%d\n", fnum));
@@ -1670,8 +1700,7 @@ PromptAndSet(const char *name, int f, int n)
 static void
 free_UVAR_value(UVAR * p)
 {
-    if (p->u_value != error_val
-	&& p->u_value != 0) {
+    if (isLegalVal(p->u_value)) {
 	beginDisplay();
 	free(p->u_value);
 	endofDisplay();
@@ -1823,7 +1852,7 @@ SetVarValue(VWRAP * var, char *name, const char *value)
     case VW_TEMPVAR:
 	beginDisplay();
 	free_UVAR_value(var->v_ptr);
-	if (value == error_val) {
+	if (isErrorVal(value)) {
 	    var->v_ptr->u_value = error_val;
 	} else if ((var->v_ptr->u_value = strmalloc(value)) == 0) {
 	    status = FALSE;
@@ -2524,7 +2553,7 @@ save_arguments(BUFFER *bp)
 
 		if (ok) {
 		    cp = tokval(tb_values(p->all_args[num_args]));
-		    if (cp != error_val) {
+		    if (isLegalVal(cp)) {
 			tb_scopy(&(p->all_args[num_args]), cp);
 			copied = TRUE;
 		    } else {
@@ -2706,7 +2735,7 @@ statevar_arg_eval(const char *argp)
     int vnum;
     const char *result;
 
-    if ((result = get_argument(++argp)) == error_val) {
+    if (isErrorVal(result = get_argument(++argp))) {
 	vnum = vl_lookup_statevar(argp);
 	if (vnum != ILLEGAL_NUM)
 	    result = get_statevar_val(vnum);
@@ -2883,7 +2912,7 @@ evaluate(int f, int n)
     int code = FALSE;
 
     if (read_argument(&params, &info) == TRUE) {
-	if ((tmp = tb_values(params)) != error_val && tmp != 0) {
+	if (isLegalExp(tmp, tb_values(params))) {
 	    old = execstr;
 	    execstr = tmp;
 	    TRACE(("EVAL %s\n", execstr));
@@ -2984,7 +3013,7 @@ label2lp(BUFFER *bp, const char *label)
 char *
 mkupper(char *s)
 {
-    if (s != error_val && s != 0) {
+    if (isLegalVal(s)) {
 	char *sp;
 
 	for (sp = s; *sp; sp++)
@@ -2999,7 +3028,7 @@ mkupper(char *s)
 char *
 mklower(char *s)
 {
-    if (s != error_val && s != 0) {
+    if (isLegalVal(s)) {
 	char *sp;
 
 	for (sp = s; *sp; sp++)
@@ -3016,7 +3045,7 @@ mktrimmed(char *str)
     char *base = str;
     char *dst = str;
 
-    if (str != error_val && str != 0) {
+    if (isLegalVal(str)) {
 	while (*str != EOS) {
 	    if (isSpace(*str)) {
 		if (dst != base)

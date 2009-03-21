@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.680 2009/02/23 00:27:59 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.683 2009/03/20 20:36:03 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -1130,6 +1130,10 @@ extern void endofDisplay(void);
 #define isEscaped(s)	((s)[-1] == BACKSLASH)
 #define isTab(c)	((c) == '\t')
 
+#define isErrorVal(s)	((s) == error_val)
+#define isLegalVal(s)	((s) != 0 && !isErrorVal(s))
+#define isLegalExp(s,x) ((s = (x)) != 0 && !isErrorVal(s))
+
 /* protect against losing namespaces */
 #undef	FALSE
 #undef	TRUE
@@ -1209,6 +1213,7 @@ typedef enum {
 	, XCOLOR_NUMBER
 	, XCOLOR_REGEX
 	, XCOLOR_STRING
+	, XCOLOR_WARNING
 	, XCOLOR_MAX		/* last entry, for array-size */
 } XCOLOR_CODES;
 
@@ -1944,6 +1949,7 @@ struct VALNAMES {
 		ChgdFunc side_effect;
 };
 /* the values of VALNAMES->type */
+#define VALTYPE_UNKNOWN  -1
 #define VALTYPE_INT    0
 #define VALTYPE_STRING 1
 #define VALTYPE_BOOL   2

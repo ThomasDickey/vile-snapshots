@@ -1,7 +1,7 @@
 /*
  * debugging support -- tom dickey.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.89 2009/02/02 20:52:32 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.90 2009/03/20 19:38:09 tom Exp $
  *
  */
 
@@ -303,7 +303,7 @@ char *
 retrace_string(char *code)
 {
     Trace(T_RETURN "%s%s\n", TRACE_NULL(code),
-	  (code == error_val) ? " (ERROR)" : "");
+	  isErrorVal(code) ? " (ERROR)" : "");
     return code;
 }
 

@@ -3,7 +3,7 @@
  *	for getting and setting the values of the vile state variables,
  *	plus helper utility functions.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.131 2009/03/14 00:58:49 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.132 2009/03/20 22:26:01 tom Exp $
  */
 
 #include	"estruct.h"
@@ -511,16 +511,7 @@ var_BCHANGED(TBUFF **rp, const char *vp)
 int
 var_FCHANGED(TBUFF **rp, const char *vp)
 {
-    time_t current;
-    int changed;
-
-    if (valid_buffer(curbp)) {
-	get_modtime(curbp, &current);
-	changed = (current != curbp->b_modtime);
-    } else {
-	changed = FALSE;
-    }
-    return any_ro_BOOL(rp, vp, changed);
+    return any_ro_BOOL(rp, vp, eval_fchanged(curbp));
 }
 
 int

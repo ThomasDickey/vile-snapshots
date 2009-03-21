@@ -1,4 +1,4 @@
-; $Id: modes.rc,v 1.91 2009/03/11 19:46:16 tom Exp $
+; $Id: modes.rc,v 1.92 2009/03/19 00:02:17 tom Exp $
 ; majormodes in this file are ordered alphabetically for convenience - the
 ; precedence used by vile is strictly alphabetic, counting case.  Use the
 ; before and after qualifiers to override the precedence.
@@ -139,7 +139,7 @@ define-mode cfg
 
 define-mode conf
 ~with define-submode conf
-	suffixes	'\.\(config\|dat\|.*rc\)$'
+	suffixes	'\.\(config\|dat\|.*rc\|dsw\)$'
 	after		"yacc"
 	preamble	'^[#;]'
 	comment-prefix	'^\s*[#;]'
@@ -396,7 +396,7 @@ define-mode mcrl
 
 define-mode ini
 ~with define-submode ini
-	suffixes	'\.\(ini\|reg\|vbp\)$'
+	suffixes	'\.\(ini\|reg\|vbp\|clw\)$'
 	ignorecase
 	dos
 ~endwith

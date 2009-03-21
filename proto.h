@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.674 2009/02/23 00:20:52 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.675 2009/03/20 22:26:54 tom Exp $
  *
  */
 
@@ -444,6 +444,7 @@ extern const char * skip_cstring (const char *str);
 extern const char * skip_ctext (const char *str);
 extern const char * tokval (const char *tokn);
 extern int absol (int x);
+extern int eval_fchanged (BUFFER *bp);
 extern int is_falsem (const char *val);
 extern int is_truem (const char *val);
 extern int mac_literalarg (TBUFF **tok);

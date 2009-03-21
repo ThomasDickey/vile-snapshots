@@ -13,7 +13,7 @@
  * vile.  The file api.c (sometimes) provides a middle layer between
  * this interface and the rest of vile.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.116 2008/10/15 23:03:09 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.117 2009/03/20 19:47:52 tom Exp $
  */
 
 #ifdef __GNUC__
@@ -1779,7 +1779,7 @@ FindMode(char *mode, int isglobal, VALARGS *args)
 	}
     }
 
-    if (value == error_val) {
+    if (isErrorVal(value)) {
 	result = error_val;
     } else if (value != 0) {
 	if ((result = strmalloc(value)) == 0)
@@ -1796,7 +1796,7 @@ static void
 FreeMode(char *value)
 {
     /* we made a copy to avoid possibly writing on const (perl 5.005_03) */
-    if (value != 0 && value != error_val)
+    if (isLegalVal(value))
 	free(value);
 }
 

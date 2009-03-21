@@ -2947,6 +2947,7 @@ Programmed procedures (aka macros)
 	$abufname	alternate buffer name (i.e. last visited) (read only)
 	$autocolor-hook	name of the hook that runs when autocolor is enabled
 	$bchars		number of characters in current buffer	(read only)
+	$bchanged	true if current buffer is modified (boolean)
 	$bflags		status flags for current buffer (read only)
 			a	autobuffer caused this to be created
 			d	directory listing
@@ -3014,6 +3015,7 @@ Programmed procedures (aka macros)
 	$exec-suffix	suffix, if any, for execable programs	(read only)
 	$exit-hook	name of procedure to run when quitting
 	$favorites	path to favorites folder (win32 only)	(read only)
+	$fchanged	true if file for current buffer is modified (boolean)
 	$fence-limit	iteration limit for complex fences
 	$filename-expr	actual pattern for %F in [Error Expressions]
 	$filename-ic	ignore case in filename completion	(read only)
@@ -3116,6 +3118,7 @@ Programmed procedures (aka macros)
 	&add		2	add two numbers together
 	&and		2	logical and
 	&ascii		1	char to integer conversion
+	&bchanged	1	true if given buffer is modified
 	&bind		1	lookup what function name is bound to key
 	&cat		2	concatenate string
 	&cclass		1	character class (see "show-printable")
@@ -3129,7 +3132,8 @@ Programmed procedures (aka macros)
 	&env		1	retrieve a system environment variable
 	&equal		2	numeric equality
 	&error		1	true if the parameter was ERROR
-	&execable	1	is a file exec'able
+	&execable	1	true if file is exec'able
+	&fchanged	1	true if file for given buffer is modified
 	&filter		1	true if the given majormode's filter is builtin
 	&ftime		1	modification-time of the given file, as a number
 	&geq		2	numeric greater than or equal
@@ -6567,4 +6571,4 @@ Problems
 
 Copyright 1995-2008,2009 by Paul Fox, Thomas Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.667 2009/03/14 01:02:12 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.669 2009/03/20 22:14:05 tom Exp $

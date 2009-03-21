@@ -4,7 +4,7 @@
  *	original by Daniel Lawrence, but
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.329 2008/11/24 00:18:09 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.330 2009/03/20 19:38:09 tom Exp $
  *
  */
 
@@ -1786,7 +1786,7 @@ push_variable(char *name)
     p->name = strmalloc(name);
     p->m_value = 0;
     p->p_value = tokval(name);
-    if (p->p_value == error_val) {
+    if (isErrorVal(p->p_value)) {
 	/* special case: so we can delete vars */
 	if (toktyp(name) != TOK_TEMPVAR) {
 	    free(p->name);
