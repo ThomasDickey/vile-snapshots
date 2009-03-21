@@ -6,10 +6,12 @@ Changes for vile 9.7 (released ??? ??? ?? ????)
 	  the mark-identifier.
 	+ add $kill-size and $kill-limit variables to improve scripting with
 	  the $kill variable.
+	+ add extra-colors "warning", for show-variables command.
 	+ apply extra-colors to show-variables command.
 	+ add new functions &bchanged, &fchanged and state variables $bchanged
 	  (same as $modified) and $fchanged to make it simpler for scripts to
 	  check if buffer/file timestamps differ (prompted by Paul Van Tilburg).
+	+ add ".clw" and ".dsw" files to inimode and confmode, respectively.
 	+ modify preamble settings for majormodes of the form "#!path" to make
 	  them more distinct.
 

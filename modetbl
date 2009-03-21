@@ -11,7 +11,7 @@
 #
 # The modes are table entries in the BUFFER and WINDOW structures.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.288 2009/03/14 00:52:52 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.290 2009/03/20 20:25:39 tom Exp $
 #
 #
 # Mode-table entries.  Capitalized letters are used for abbreviations.
@@ -260,6 +260,7 @@ int
 	"pagelen"	PAGELEN		1		"number of lines used by editor"
 	"pagewid"	CURWIDTH	1		"current screen width"
 	"pid"		PROCESSID	1		"vile's process-id"
+	"seed"		SEED		1		"current random number seed"
 	"status"	STATUS		1		"returns the status of the last command"
 	"term-cols"	TERM_COLS	1		"# of columns in terminal window"
 	"term-lines"	TERM_LINES	1		"# of lines in terminal window"
@@ -326,7 +327,6 @@ string
 	"read-hook"	RDHOOK		OPT_HOOKS	"procedure to run when reading"
 	"replace"	REPLACE		1		"replacement pattern"
 	"return"	RETURN		OPT_EVAL	"function's return-result (internal)"
-	"seed"		SEED		1		"current random number seed"
 	"shell"		SHELL		OPT_SHELL	"shell-environment variable"
 	"sres"		SRES		1		"current screen resolution"
 	"startup-file"	STARTUP_FILE	1		"the name of the startup-file (e.g., .vilerc)"
@@ -649,6 +649,7 @@ string
 "number"	XCOLOR_NUMBER
 "regex"		XCOLOR_REGEX
 "string"	XCOLOR_STRING
+"warning"	XCOLOR_WARNING
 
 .table videoattrs		OPT_COLOR
 "bold"		VABOLD

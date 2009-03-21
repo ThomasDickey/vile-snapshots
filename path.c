@@ -2,7 +2,7 @@
  *		The routines in this file handle the conversion of pathname
  *		strings.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.163 2008/11/23 18:27:49 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.164 2009/03/20 19:38:09 tom Exp $
  *
  *
  */
@@ -1498,7 +1498,7 @@ lengthen_path(char *path)
 	return (lengthen_path(f) != 0) ? path : 0;
 
     if ((f = path) == 0
-	|| (f == error_val))
+	|| isErrorVal(f))
 	return path;
 
     if (*path != EOS && isInternalName(path)) {

@@ -44,7 +44,7 @@
  *	tgetc_avail()     true if a key is avail from tgetc() or below.
  *	keystroke_avail() true if a key is avail from keystroke() or below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.322 2008/12/21 15:49:02 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.323 2009/03/20 19:47:52 tom Exp $
  *
  */
 
@@ -1426,7 +1426,7 @@ user_reply(const char *prompt, const char *dft_val)
 	ptb = &passwdbuf;
     }
 
-    if (dft_val != error_val) {
+    if (isLegalVal(dft_val)) {
 	TRACE(("user_reply, given default value %s\n", dft_val));
 	tb_scopy(ptb, dft_val);
     }
@@ -1885,7 +1885,7 @@ kbd_reply(const char *prompt,	/* put this out first */
      * would be confusing and is not really necessary.
      */
     if ((extbuf != 0 && *extbuf != 0)
-	&& (tb_values(*extbuf) == error_val
+	&& (isErrorVal(tb_values(*extbuf))
 	    || isTB_ERRS(*extbuf))) {
 	tb_init(extbuf, EOS);
     }
@@ -1940,7 +1940,7 @@ kbd_reply(const char *prompt,	/* put this out first */
 		 * contents.  Dequote it if we started with a function and got
 		 * a quoted string.
 		 */
-		if (result == error_val) {
+		if (isErrorVal(result)) {
 		    status = ABORT;
 		    (void) tb_scopy(extbuf, "");
 		} else if (toktyp(tb_values(buf)) == TOK_FUNCTION &&

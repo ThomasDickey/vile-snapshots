@@ -402,6 +402,8 @@ State Variables
 
 	$bchars         [READ ONLY] Number of characters in current buffer.
 
+	$bchanged       [READ ONLY] Number of characters in current buffer.
+
 	$bflags		[READ ONLY] Status flags for current buffer, as shown
 			in [Buffer List].
 
@@ -513,7 +515,7 @@ State Variables
 			prompt-string for missing parameters.
 
 	$disinp         Boolean value which will prevent vile from
-			echoing ??????
+			displaying command line input characters.
 
 	$encoding	[READ ONLY] The character encoding, e.g., ISO-8859-1.
 
@@ -549,6 +551,8 @@ State Variables
 	$exit-hook      Name of procedure to run when quitting.
 
 	$favorites      [READ ONLY] Path to favorites folder (win32 only)
+
+	$fchanged	Boolean, true if file for current buffer is modified.
 
 	$fence-limit	iteration limit for complex fences, in seconds.
 
@@ -912,6 +916,9 @@ Functions
 	    &rd	    "S"		    Is the named file "S" readable?
 	    &writable "S"	    Is the named file "S" writable?
 	    &execable "S"	    Is the named file "S" exec'able?
+ 
+	    &bchanged "S"	    Is given buffer "S" modified?
+	    &fchanged "S"	    Is file for given buffer "S" modified?
 
 	    &cmatch "R" "V"	    Does the given regular expression "R"
 				    match the value "V" (ignoring case)?
@@ -1555,5 +1562,5 @@ Example startup file
 
 -- vile:fc=78
 -----------------------------------
-  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.111 2008/08/17 17:45:47 tom Exp $
+  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.112 2009/03/20 21:24:41 tom Exp $
 -----------------------------------

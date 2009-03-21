@@ -7,7 +7,7 @@
  *	To do:	add 'tb_ins()' and 'tb_del()' to support cursor-level command
  *		editing.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tbuff.c,v 1.71 2008/11/25 23:41:18 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tbuff.c,v 1.72 2009/03/20 19:47:52 tom Exp $
  *
  */
 
@@ -309,7 +309,7 @@ tb_bappend(TBUFF **p, const char *s, size_t len)
     if (!isTB_ERRS(*p)) {
 	size_t n = (q != 0) ? q->tb_used : 0;
 
-	if (s == error_val) {
+	if (isErrorVal(s)) {
 	    tb_error(&q);
 	} else if ((q = tb_alloc(p, n + len)) != 0) {
 	    if (len != 0) {
@@ -481,7 +481,7 @@ tb_dequote(TBUFF **p)
     TRACE2(("tb_dequote %s\n", tb_visible(*p)));
     if (value == 0) {
 	TRACE2(("...empty\n"));
-    } else if (value != error_val) {
+    } else if (!isErrorVal(value)) {
 	int escaped = FALSE;
 	UINT delim = CharOf(value[0]);
 	UINT j, k, ch;
@@ -535,7 +535,7 @@ tb_enquote(TBUFF **p)
     TRACE2(("tb_enquote %s\n", tb_visible(*p)));
     if (value == 0) {
 	TRACE2(("...empty\n"));
-    } else if (value != error_val && tb_length(*p)) {
+    } else if (!isErrorVal(value) && tb_length(*p)) {
 	UINT j;
 	size_t have = tb_length(*p) - 1;
 	size_t need = 2 + have;

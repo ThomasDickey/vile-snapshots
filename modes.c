@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.392 2009/03/12 22:39:12 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.393 2009/03/20 20:31:58 tom Exp $
  *
  */
 
@@ -1949,6 +1949,7 @@ lookup_extra_color(XCOLOR_CODES code)
     case XCOLOR_NUMBER:
     case XCOLOR_REGEX:
     case XCOLOR_STRING:
+    case XCOLOR_WARNING:
 #if !OPT_HILITEMATCH
     case XCOLOR_MODELINE:
 #endif
