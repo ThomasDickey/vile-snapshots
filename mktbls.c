@@ -15,7 +15,7 @@
  * by Tom Dickey, 1993.    -pgf
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/mktbls.c,v 1.157 2009/03/12 23:12:26 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/mktbls.c,v 1.161 2009/03/22 17:23:10 tom Exp $
  *
  */
 
@@ -113,7 +113,7 @@ extern void free(char *ptr);
 
 #define MAX_BIND        4	/* maximum # of key-binding types */
 #define	MAX_PARSE	5	/* maximum # of tokens on line */
-#define	LEN_BUFFER	60	/* nominal buffer-length */
+#define	LEN_BUFFER	120	/* nominal buffer-length */
 #define	MAX_BUFFER	(LEN_BUFFER*10)
 #define	LEN_CHRSET	256	/* total # of chars in set (ascii) */
 
@@ -161,6 +161,7 @@ static char Blank[] =
 {0};
 
 static LIST *all_names;
+static LIST *all_aliases;
 static LIST *all_kbind;		/* data for kbindtbl[] */
 static LIST *all_w32bind;	/* w32 data for kbindtbl[] */
 static LIST *all_funcs;		/* data for extern-lines in neproto.h */
@@ -332,6 +333,7 @@ free_LIST(LIST ** p)
 	    FreeIfNeeded(q->Note);
 	free((char *) q);
     }
+    *p = 0;
 }
 
 /******************************************************************************/
@@ -1781,6 +1783,7 @@ save_funcs(
 {
     char temp[MAX_BUFFER];
     char *s;
+    LIST *p;
 
     if (strcmp(cond, old_cond)) {
 	if (*old_cond) {
@@ -1799,27 +1802,51 @@ save_funcs(
     Sprintf(temp, "extern int %s ( int f, int n );", func);
     InsertOnEnd(&all_funcs, temp);
 
-    s = strcpy(temp, "\t");
+    s = strcpy(temp, "\n");
+
+    s = append(s, "static const char *syn_");
+    s = append(s, func);
+    s = append(s, "[] = \n{\n");
+    for (p = all_aliases; p != 0; p = p->nst) {
+	if (p->Cond[0]) {
+	    s = append(s, "#if ");
+	    s = append(s, p->Cond);
+	    s = append(s, "\n");
+	}
+	s = append(s, "\t\"");
+	s = append(s, p->Name);
+	s = append(s, "\",\n");
+	if (p->Cond[0]) {
+	    s = append(s, "#endif\n");
+	}
+    }
+    s = append(s, "\t0\n};\n");
+    s = append(s, "\n");
+
     s = append(s, "DECL_EXTERN_CONST(CMDFUNC f_");
     s = append(s, func);
     s = append(s, ")");
     (void) PadTo(32, temp);
-    s = append(s, "= {\n\tINIT_UNION(");
+    s = append(s, "=\n{\n\tINIT_UNION(");
     s = append(s, func);
     s = append(s, "),\n\t");
     s = append(s, flags);
-    s = append(s, "\n#if OPT_MACRO_ARGS\n\t\t,0\n#endif");
-    s = append(s, "\n#if OPT_TRACE\n\t\t,\"");
+    s = append(s, "\n\t,syn_");
+    s = append(s, func);
+    s = append(s, "\n#if OPT_MACRO_ARGS\n\t,0\n#endif");
+    s = append(s, "\n#if OPT_TRACE\n\t,\"");
     s = append(s, func);
     s = append(s, "\"\n#endif");
-    s = append(s, "\n#if OPT_ONLINEHELP\n\t\t,\"");
+    s = append(s, "\n#if OPT_ONLINEHELP\n\t,\"");
     s = append(s, help);
-    (void) append(s, "\"\n#endif\n };");
+    (void) append(s, "\"\n#endif\n};");
     InsertOnEnd(&all__FUNCs, temp);
 
     s = append(strcpy(temp, "extern const CMDFUNC f_"), func);
     (void) append(s, ";");
     InsertOnEnd(&all__CMDFs, temp);
+
+    free_LIST(&all_aliases);
 }
 
 static void
@@ -1885,6 +1912,12 @@ static void
 save_names(char *name, char *func, char *cond)
 {
     InsertSorted(&all_names, name, func, "", cond, "");
+}
+
+static void
+save_aliases(char *name, char *func, char *cond)
+{
+    InsertSorted(&all_aliases, name, func, "", cond, "");
 }
 
 static void
@@ -2149,6 +2182,7 @@ free_mktbls(void)
     int k;
 
     free_LIST(&all_names);
+    free_LIST(&all_aliases);
     free_LIST(&all_funcs);
     free_LIST(&all__FUNCs);
     free_LIST(&all__CMDFs);
@@ -2294,6 +2328,7 @@ main(int argc, char *argv[])
 			badfmt("looking for english name");
 
 		    save_names(vec[1], func, formcond(fcond, vec[2]));
+		    save_aliases(vec[1], func, formcond(fcond, vec[2]));
 		    break;
 
 		case '\'':	/* then it's a key */

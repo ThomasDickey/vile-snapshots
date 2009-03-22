@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.683 2009/03/20 20:36:03 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.685 2009/03/22 16:40:56 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -2457,6 +2457,12 @@ typedef struct	WINDOW {
 #define is_visible_window(wp) ((wp)->w_toprow >= 0)
 #define is_fake_window(wp) (!(is_visible_window(wp)))
 
+#if OPT_MULTIBYTE
+#define is_delinked_bp(bp) ((bp) == bminip || (bp) == btempp)
+#else
+#define is_delinked_bp(bp) ((bp) == bminip)
+#endif
+
 #define	for_each_window(wp) for (wp = wheadp; wp; wp = wp->w_wndp)
 #define for_each_visible_window(wp) \
 		for_each_window(wp) if (is_visible_window(wp))
@@ -2650,11 +2656,12 @@ typedef	struct {
 #define INIT_UNION(n) {n}
 #endif /* CC_CANNOT_INIT_UNIONS */
 	CMDFLAGS c_flags;	/* what sort of command is it? */
+	const char **c_alias;	/* all names by which this is known */
 #if OPT_MACRO_ARGS
 	PARAM_INFO *c_args;	/* if nonnull, lists types of parameters */
 #endif
 #if OPT_TRACE
-	const char *c_name;
+	const char *c_name;	/* preferred name, for tracing */
 #endif
 #if OPT_ONLINEHELP
 	const char *c_help;	/* short help message for the command */

@@ -15,7 +15,7 @@
  * in handy.
  *				- kev 4/7/1998
  *
- * $Header: /users/source/archives/vile.vcs/RCS/api.c,v 1.44 2008/01/22 00:13:57 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/api.c,v 1.45 2009/03/22 01:06:34 tom Exp $
  */
 
 #include "estruct.h"
@@ -130,7 +130,7 @@ lreplace(char *s, int len)
     char *t;
     WINDOW *wp;
 
-    copy_for_undo(lp);
+    CopyForUndo(lp);
 
     DOT.o = 0;
 

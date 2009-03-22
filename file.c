@@ -5,7 +5,7 @@
  * reading and writing of the disk are
  * in "fileio.c".
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.425 2009/02/27 00:56:13 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.426 2009/03/22 01:08:46 tom Exp $
  */
 
 #include "estruct.h"
@@ -1165,7 +1165,7 @@ strip_if_dosmode(BUFFER *bp)
 		if ((chr == '\r')
 		    || (len == 1 && chr == '\032')) {
 		    if (b_val(bp, MDUNDO_DOS_TRIM)) {
-			copy_for_undo(lp);
+			CopyForUndo(lp);
 		    }
 		    llength(lp)--;
 		    flag = TRUE;
@@ -2624,14 +2624,16 @@ ifile(char *fname, int belowthisline, FILE *haveffp)
 	    newlp = 0;
 	} else {
 	    newlp = lforw(prevp);
-	    if ((tag_for_undo(newlp)) == ABORT) {
-		status = FIOMEM;
-		/*
-		 * De-link the line added for which we cannot undo.
-		 * If we don't do this, undoworker() won't find a match
-		 * against the buffer, and will be deadlocked.
-		 */
-		lremove(curbp, prevp);
+	    if (OkUndo(curbp)) {
+		if ((tag_for_undo(newlp)) == ABORT) {
+		    status = FIOMEM;
+		    /*
+		     * De-link the line added for which we cannot undo.
+		     * If we don't do this, undoworker() won't find a match
+		     * against the buffer, and will be deadlocked.
+		     */
+		    lremove(curbp, prevp);
+		}
 	    }
 	}
 	endofDisplay();

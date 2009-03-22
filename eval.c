@@ -2,7 +2,7 @@
  *	eval.c -- function and variable evaluation
  *	original by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.402 2009/03/20 22:25:31 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.404 2009/03/22 16:09:51 tom Exp $
  *
  */
 
@@ -436,7 +436,6 @@ show_VariableList(BUFFER *bp GCC_UNUSED)
     int type;
     int rc = FALSE;
     UVAR *list = 0;
-    char *values = 0;
 
     TRACE((T_CALLED "show_VariableList()\n"));
 
@@ -451,39 +450,36 @@ show_VariableList(BUFFER *bp GCC_UNUSED)
 	}
 	++t;			/* guarantee a null entry on the end */
 
-	/* collect data for state-variables, since some depend on window */
-	for (s = 0, t = 0; Names[s] != 0; s++) {
-	    if ((vv = get_listvalue(Names[s], showall, &type)) != 0)
-		t += strlen(Names[s]) + strlen(vv) + 3;
-	}
-
-	if ((list = typecallocn(UVAR, t)) != 0
-	    && (values = typeallocn(char, t)) != 0) {
-	    for (s = 0, v = values; Names[s] != 0; s++) {
-		strcpy(list[s].u_name = v, Names[s]);
-		v += (strlen(v) + 1);
+	if ((list = typecallocn(UVAR, t)) != 0) {
+	    /* collect data for state-variables, since some depend on window */
+	    for (s = 0, t = 0; Names[s] != 0; s++) {
+		list[s].u_name = Names[s];
 		list[s].u_type = VALTYPE_STRING;
 		if ((vv = get_listvalue(Names[s], showall, &type)) != 0) {
-		    strcpy(list[s].u_value = v, vv);
-		    list[s].u_type = type;
+		    list[s].u_type = (char) type;
 		    if (isErrorVal(vv))
 			list[s].u_type = VALTYPE_UNKNOWN;
-		    t = strlen(v);
-		    v += (t + 1);
-		    if ((t != 0) && (vv[t - 1] == '\n')) {
-			v[-2] = EOS;	/* suppress trailing newline */
-		    }
 		} else {
-		    list[s].u_value = "";
+		    vv = "";
+		}
+		list[s].u_value = v = strmalloc(vv);
+		t = strlen(v);
+		v += (t + 1);
+		if ((t != 0) && (vv[t - 1] == '\n')) {
+		    v[-2] = EOS;	/* suppress trailing newline */
 		}
 	    }
+
 	    rc = liststuff(VARIABLES_BufName, FALSE,
 			   makevarslist, 0, (void *) list);
 	    /* back to the buffer whose modes we just listed */
 	    swbuffer(wp->w_bufp);
+
+	    for (s = 0; Names[s] != 0; s++) {
+		free(list[s].u_value);
+	    }
+	    FreeIfNeeded(list);
 	}
-	FreeIfNeeded(values);
-	FreeIfNeeded(list);
 
 	endofDisplay();
     }

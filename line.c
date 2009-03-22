@@ -10,7 +10,7 @@
  * editing must be being displayed, which means that "b_nwnd" is non zero,
  * which means that the dot and mark values in the buffer headers are nonsense.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.200 2009/03/16 00:12:51 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.203 2009/03/22 15:04:09 tom Exp $
  *
  */
 
@@ -319,7 +319,7 @@ lreplc(LINE *lp, C_NUM off, int c)
 	return FALSE;
 
     if (lvalue(lp)[off] != (char) c) {
-	copy_for_undo(lp);
+	CopyForUndo(lp);
 	lvalue(lp)[off] = (char) c;
 
 	chg_buff(curbp, WFEDIT);
@@ -328,27 +328,37 @@ lreplc(LINE *lp, C_NUM off, int c)
     return TRUE;
 }
 
+#define BumpOff(name, lp, n, doto) if (name.l == lp && name.o > doto) name.o += n
+
 /*
  * Adjust DOT and MK in the given window, which may be the minibuffer.
  */
-static void
-after_linsert(WINDOW *wp, LINE *lp, int n, int doto)
-{
-    if (wp->w_dot.l == lp) {
-	if (wp == curwp || wp->w_dot.o > doto)
-	    wp->w_dot.o += n;
-    }
 #if WINMARK
-    if (wp->w_mark.l == lp) {
-	if (wp->w_mark.o > doto)
-	    wp->w_mark.o += n;
-    }
-#endif
-    if (wp->w_lastdot.l == lp) {
-	if (wp->w_lastdot.o > doto)
-	    wp->w_lastdot.o += n;
-    }
+#define after_linsert(wp, lp, n, doto) \
+{ \
+    if (wp == curwp) { \
+	if (wp->w_dot.l == lp) { \
+	    wp->w_dot.o += n; \
+	} \
+    } else { \
+	BumpOff (wp->w_dot, lp, n, doto); \
+    } \
+    BumpOff(wp->w_mark, lp, n, doto); \
+    BumpOff(wp->w_lastdot, lp, n, doto); \
 }
+#else
+#define after_linsert(wp, lp, n, doto) \
+{ \
+    if (wp == curwp) { \
+	if (wp->w_dot.l == lp) { \
+	    wp->w_dot.o += n; \
+	} \
+    } else { \
+	BumpOff (wp->w_dot, lp, n, doto); \
+    } \
+    BumpOff(wp->w_lastdot, lp, n, doto); \
+}
+#endif
 
 /*
  * Insert "n" copies of the byte "c" at the current location of dot. In
@@ -374,6 +384,7 @@ lins_bytes(int n, int c)
     char *ntext;
     size_t nsize;
     int rc = TRUE;
+    USHORT changed = 0;
 
     beginDisplay();
 
@@ -394,13 +405,13 @@ lins_bytes(int n, int c)
 	    set_lback(lp2, lp3);
 	    (void) memset(lvalue(lp2), c, (size_t) n);
 
-	    tag_for_undo(lp2);
+	    TagForUndo(lp2);
 
 	    /* don't move DOT until after tagging for undo */
 	    /*  (it's important in an empty buffer) */
 	    DOT.l = lp2;
 	    DOT.o = n;
-	    chg_buff(curbp, WFINS | WFEDIT);
+	    changed = (WFINS | WFEDIT);
 	}
     } else {
 	doto = DOT.o;		/* Save for later.      */
@@ -409,7 +420,7 @@ lins_bytes(int n, int c)
 	if (nsize > tmp->l_size) {	/* Hard: reallocate     */
 	    /* first, create the new image */
 	    nsize = roundlenup((int) nsize);
-	    copy_for_undo(lp1);
+	    CopyForUndo(lp1);
 	    if ((ntext = castalloc(char, nsize)) == NULL) {
 		rc = FALSE;
 	    } else {
@@ -435,8 +446,8 @@ lins_bytes(int n, int c)
 		llength(lp1) += n;
 	    }
 	} else {		/* Easy: in place       */
-	    copy_for_undo(lp1);
-	    chg_buff(curbp, WFEDIT);
+	    CopyForUndo(lp1);
+	    changed = (WFEDIT);
 	    tmp = lp1;
 	    /* don't use memcpy:  overlapping regions.... */
 	    llength(tmp) += n;
@@ -450,7 +461,7 @@ lins_bytes(int n, int c)
 		lvalue(tmp)[doto + i] = (char) c;
 	}
 	if (rc != FALSE) {
-	    chg_buff(curbp, WFEDIT);
+	    changed = (WFEDIT);
 #if ! WINMARK
 	    if (MK.l == lp1) {
 		if (MK.o > doto)
@@ -476,6 +487,10 @@ lins_bytes(int n, int c)
 #endif
 	}
     }
+
+    if (changed)
+	chg_buff(curbp, changed);
+
     endofDisplay();
     return (rc);
 }
@@ -536,6 +551,7 @@ lnewline(void)
     LINE *lp2;
     int doto;
     WINDOW *wp;
+    USHORT changed = 0;
 
     lp1 = DOT.l;		/* Get the address and  */
     doto = DOT.o;		/* offset of "."        */
@@ -551,7 +567,7 @@ lnewline(void)
 	    set_lback(lforw(lp2), lp2);
 	    set_lback(lp2, lp1);
 
-	    tag_for_undo(lp2);
+	    TagForUndo(lp2);
 
 	    for_each_window(wp) {
 		if (wp->w_line.l == lp1)
@@ -560,7 +576,7 @@ lnewline(void)
 		    wp->w_dot.l = lp2;
 	    }
 
-	    chg_buff(curbp, WFHARD | WFINS);
+	    changed = (WFHARD | WFINS);
 
 	    rc = lnewline();	/* vi really makes _2_ lines */
 	}
@@ -568,7 +584,7 @@ lnewline(void)
 	lp2 = lalloc(doto, curbp);	/* New first half line */
 	if (lp2 != 0) {
 	    if (doto > 0) {
-		copy_for_undo(lp1);
+		CopyForUndo(lp1);
 #if OPT_LINE_ATTRS
 		if (lp1->l_attrs != 0) {
 		    if (doto == llength(lp1)) {
@@ -606,7 +622,7 @@ lnewline(void)
 	    set_lforw(lback(lp2), lp2);
 	    set_lforw(lp2, lp1);
 
-	    tag_for_undo(lp2);
+	    TagForUndo(lp2);
 	    dumpuline(lp1);
 
 #if ! WINMARK
@@ -651,10 +667,15 @@ lnewline(void)
 		    }
 		}
 	    });
-	    chg_buff(curbp, WFHARD | WFINS);
+	    changed = (WFHARD | WFINS);
 	    rc = TRUE;
 	}
     }
+
+    if (changed) {
+	chg_buff(curbp, changed);
+    }
+
     return rc;
 }
 
@@ -715,7 +736,7 @@ ldel_bytes(B_COUNT nbytes, int kflag)
 		    break;
 		lremove(curbp, nlp);
 		lines_deleted++;
-		toss_to_undo(nlp);
+		TossToUndo(nlp);
 		nbytes -= line_length(nlp);
 		nlp = lforw(dotp);
 	    }
@@ -731,7 +752,7 @@ ldel_bytes(B_COUNT nbytes, int kflag)
 	    lines_deleted++;
 	    continue;
 	}
-	copy_for_undo(DOT.l);
+	CopyForUndo(DOT.l);
 	chg_buff(curbp, WFEDIT);
 
 	cp1 = lvalue(dotp) + doto;	/* Scrunch text.     */
@@ -932,7 +953,7 @@ ldelnewline(void)
     len = llength(lp1);
     /* if the current line is empty, remove it */
     if (len == 0) {		/* Blank line.          */
-	toss_to_undo(lp1);
+	TossToUndo(lp1);
 	lremove(curbp, lp1);
 	return (TRUE);
     }
@@ -944,13 +965,13 @@ ldelnewline(void)
 	return (TRUE);
     else if ((add = llength(lp2)) == 0) {
 	/* next line blank? */
-	toss_to_undo(lp2);
+	TossToUndo(lp2);
 	lremove(curbp, lp2);
 	return (TRUE);
     }
 
     beginDisplay();
-    copy_for_undo(DOT.l);
+    CopyForUndo(DOT.l);
 
     /* no room in line above, make room */
     if (add > (C_NUM) lp1->l_size - len) {
@@ -1006,7 +1027,7 @@ ldelnewline(void)
     set_lforw(lp1, lforw(lp2));
     set_lback(lforw(lp2), lp1);
     dumpuline(lp1);
-    toss_to_undo(lp2);
+    TossToUndo(lp2);
     endofDisplay();
 
     return (TRUE);

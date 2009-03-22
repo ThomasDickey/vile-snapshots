@@ -3,7 +3,7 @@
  * and mark.  Some functions are commands.  Some functions are just for
  * internal use.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/region.c,v 1.149 2008/03/24 00:38:35 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/region.c,v 1.150 2009/03/22 01:06:34 tom Exp $
  *
  */
 
@@ -43,7 +43,7 @@ do_chars_in_line(void *flagp GCC_UNUSED, int ll, int rr)
 	    c = get_char2(lp, i);
 	    nc = (charprocfunc) (c);
 	    if (nc != -1) {
-		copy_for_undo(lp);
+		CopyForUndo(lp);
 		set_char2(lp, i, nc);
 		changed++;
 	    }

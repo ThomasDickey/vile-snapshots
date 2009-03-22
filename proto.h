@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.675 2009/03/20 22:26:54 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.677 2009/03/22 01:09:35 tom Exp $
  *
  */
 
@@ -233,7 +233,6 @@ extern int buffer_in_use (BUFFER *bp);
 extern int buffer_is_solo (BUFFER *bp);
 extern int buffer_is_visible (BUFFER *bp);
 extern int delink_bp (BUFFER *bp);
-extern int is_delinked_bp (BUFFER *bp);
 extern int kill_that_buffer (BUFFER *bp);
 extern int popupbuff (BUFFER *bp);
 extern int renamebuffer(BUFFER *rbp, char *bufname);
@@ -1313,6 +1312,15 @@ extern void freeundostacks (BUFFER *bp, int both);
 extern void mayneedundo (void);
 extern void nounmodifiable (BUFFER *bp);
 extern void toss_to_undo (LINE *lp);
+
+#define OkUndo(bp) \
+    (!is_delinked_bp(bp) \
+     &&  b_val(bp, MDUNDOABLE) \
+     && !b_is_scratch(bp))
+
+#define CopyForUndo(lp) if (OkUndo(curbp)) copy_for_undo (lp)
+#define TagForUndo(lp)  if (OkUndo(curbp)) tag_for_undo (lp)
+#define TossToUndo(lp)  if (OkUndo(curbp)) toss_to_undo (lp)
 
 /* version.c */
 extern const char * getversion (void);

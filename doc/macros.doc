@@ -205,6 +205,22 @@ Creating, executing, storing macros
 	to begin a macro 'Filter' with two parameters, Input and Output,
 	internally referenced by $1 and $2.
 
+	Here is a simple macro which accepts two parameters and uses them to
+	position the cursor on a given line and zero-based character offset.
+
+		; macro for wingrep and similar applications that can pass
+		; both line- and column-number to external tools.
+		; usage: "winvile +WinGrep $L $C $F"
+		store-procedure WinGrep i="Line" i="Offset"
+			~local %col
+			setv %col &sub $2 1
+			$1 goto-line
+			beginning-of-line
+			~if &ge %col 1
+				%col forward-character-to-eol
+			~endif
+		~endm
+
 	The 'enum' parameter type is special; it requires a second keyword
 	which denotes the symbol table which is used for name-completion.
 	The table name (which cannot be abbreviated) follows the 'enum'
@@ -1562,5 +1578,5 @@ Example startup file
 
 -- vile:fc=78
 -----------------------------------
-  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.112 2009/03/20 21:24:41 tom Exp $
+  $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.113 2009/03/21 00:50:47 root Exp $
 -----------------------------------
