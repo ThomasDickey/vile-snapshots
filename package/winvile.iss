@@ -1,4 +1,4 @@
-; $Header: /users/source/archives/vile.vcs/package/RCS/winvile.iss,v 1.12 2008/07/26 15:58:01 tom Exp $
+; $Header: /users/source/archives/vile.vcs/package/RCS/winvile.iss,v 1.13 2009/03/21 15:52:13 root Exp $
 ; vile:ts=2 sw=2
 ;
 ; This installs winvile as "winvile-ole.exe", since that is the name I use when building the OLE flavor
@@ -32,17 +32,24 @@
 
 #define myVer VILE_RELEASE + '.' + VILE_VERSION + VILE_PATCHLEVEL
 
+#ifndef myAppName 
 #define myAppName 'WinVile'
+#endif
 
 ; something like "winvile", for filename
 
+#ifndef myFullName 
 #define myFullName myAppName
+#endif
 
 ; something like "winvile-ole", for filename
+#ifndef myRootName 
 #define myRootName myFullName + '-ole'
+#endif
 
 #define myAppVer myAppName + ' ' + myVer
 #define mySendTo '{sendto}\' + myAppName + '.lnk'
+#define MyQuickLaunch '{userappdata}\Microsoft\Internet Explorer\Quick Launch\' + myAppName + '.lnk'
 
 #define NUM_PATCHLEVEL Pos(VILE_PATCHLEVEL, "@abcdefghijklmnopqrstuvwxyz")
 
@@ -53,7 +60,7 @@ VersionInfoDescription=Setup for "WinVile - VI Like Emacs"
 #emit 'AppVersion=' + myVer
 #emit 'AppVerName=' + myAppVer
 AppPublisher=Thomas E. Dickey
-AppCopyright=© 1997-2007,2008, Thomas E. Dickey
+AppCopyright=© 1997-2008,2009, Thomas E. Dickey
 AppPublisherURL=http://invisible-island.net/vile/
 AppSupportURL=http://invisible-island.net/vile/
 AppUpdatesURL=http://invisible-island.net/vile/
@@ -116,6 +123,7 @@ Type: files; Name: {app}\macros\vile.rc
 Type: dirifempty; Name: {app}\macros
 Type: dirifempty; Name: {app}
 #emit 'Type: files; Name: ' + mySendTo
+#emit 'Type: files; Name: ' + myQuickLaunch
 
 [Code]
 #emit 'const MY_CONTEXT_MENU = ''Edit with ' + myAppName + ''';'
@@ -447,6 +455,19 @@ begin
     SW_SHOWNORMAL);
 end;
 
+procedure AddQuickLaunch();
+begin
+  CreateShellLink(
+#emit 'ExpandConstant(''' + MyQuickLaunch + '''),'
+#emit '''Quick Launch link for ' + myAppName + ''','
+    ExpandConstant(MY_EDITOR_APP),    // program
+    '-i',                             // option(s) will be followed by pathname
+    '',                               // no target directory
+    '',                               // no icon filename
+    -1,                               // no icon index
+    SW_SHOWNORMAL);
+end;
+
 function myToolsDir(): String;
 begin
   Result := ExpandConstant('{group}\Tools');
@@ -561,9 +582,16 @@ begin
     RegisterMyOLE();
     AddContextMenu();
     end;
+
   if isTaskSelected('use_sendto') then
     begin
     AddSendTo();
+    end;
+
+  if isTaskSelected('quicklaunchicon') then
+    begin
+    AddQuickLaunch();
+    Log('** added Quick-launch link');
     end;
 end;
 

@@ -5,7 +5,7 @@
  * keys. Like everyone else, they set hints
  * for the display system.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.338 2009/03/11 20:42:19 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.339 2009/03/21 23:44:20 tom Exp $
  *
  */
 
@@ -1779,20 +1779,6 @@ delink_bp(BUFFER *bp)
     if (bp == last_bp)
 	last_bp = 0;
     return TRUE;
-}
-
-/*
- * Check for buffers that are always delinked from the buffer list (to make
- * them invisible).
- */
-int
-is_delinked_bp(BUFFER *bp)
-{
-    return (bp == bminip
-#if OPT_MULTIBYTE
-	    || bp == btempp
-#endif
-	);
 }
 
 char *

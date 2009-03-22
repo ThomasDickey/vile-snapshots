@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.328 2008/10/11 13:51:20 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.332 2009/03/22 19:08:24 tom Exp $
  *
  */
 
@@ -1230,28 +1230,14 @@ clearflag_func(BI_NODE * n, const void *d GCC_UNUSED)
     return 0;
 }
 
-static int
-addsynonym_func(BI_NODE * node, const void *d)
-{
-    const CMDFUNC *func = (const CMDFUNC *) d;
-
-    if (node->value.n_cmd == func &&
-	!(node->value.n_flags & NBST_DONE)) {
-	if (!add_newline())
-	    return 1;
-	if (!bputsn("  or\t", -1))
-	    return 1;
-	quoted(0, BI_KEY(node));
-    }
-
-    return 0;
-}
+#define isShortCmd(s) ((int) strlen(s) <= SHORT_CMD_LEN)
 
 static int
 makebind_func(BI_NODE * node, const void *d)
 {
     const struct bindlist_data *data = (const struct bindlist_data *) d;
     const CMDFUNC *cmd = node->value.n_cmd;
+    int n;
 
     /* has this been listed? */
     if (node->value.n_flags & NBST_DONE)
@@ -1262,7 +1248,7 @@ makebind_func(BI_NODE * node, const void *d)
 	return 0;
 
     /* try to avoid alphabetizing by the real short names */
-    if (data->min && (int) strlen(BI_KEY(node)) <= data->min)
+    if (data->min && isShortCmd(BI_KEY(node)))
 	return 0;
 
     /* failed lookup by substring? */
@@ -1275,9 +1261,29 @@ makebind_func(BI_NODE * node, const void *d)
 
     node->value.n_flags |= NBST_DONE;
 
-    /* add synonyms */
-    btree_walk(&namebst.head, addsynonym_func, cmd);
-
+    if (cmd->c_alias != 0) {
+	const char *top = BI_KEY(node);
+	const char *name;
+	for (n = 0; (name = cmd->c_alias[n]) != 0; ++n) {
+	    if (data->min) {
+		if ((isShortCmd(name)
+		     || ((strcmp(name, top) > 0)
+			 && !isShortCmd(top)))
+		    && add_newline()
+		    && bputsn("  or\t", -1)) {
+		    quoted(0, name);
+		}
+	    } else {
+		if ((isShortCmd(name)
+		     && isShortCmd(top)
+		     && strcmp(name, top) > 0)
+		    && add_newline()
+		    && bputsn("  or\t", -1)) {
+		    quoted(0, name);
+		}
+	    }
+	}
+    }
 #if OPT_ONLINEHELP
     if (!show_onlinehelp(cmd))
 	return FALSE;

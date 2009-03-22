@@ -3,7 +3,7 @@
  *
  * written for vile.  Copyright (c) 1990, 1995-2001 by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/undo.c,v 1.100 2008/10/08 18:59:09 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/undo.c,v 1.101 2009/03/22 01:09:55 tom Exp $
  *
  */
 
@@ -161,21 +161,6 @@ undolog(char *s, LINE *lp)
 # define undolog(s,l)
 #endif
 
-/*
- * Test if the buffer is modifiable
- */
-static int
-OkUndo(void)
-{
-    if (is_delinked_bp(curbp))
-	return FALSE;
-    if (!b_val(curbp, MDUNDOABLE))
-	return FALSE;
-    if (b_is_scratch(curbp))
-	return FALSE;
-    return TRUE;
-}
-
 /* push a deleted line onto the undo stack. */
 void
 toss_to_undo(LINE *lp)
@@ -185,36 +170,33 @@ toss_to_undo(LINE *lp)
     int fc;
 
     TRACE2((T_CALLED "toss_to_undo(%p)\n", lp));
-    if (OkUndo()) {
+    if (needundocleanup)
+	preundocleanup();
 
-	if (needundocleanup)
-	    preundocleanup();
+    pushline(lp, BACKSTK(curbp));
 
-	pushline(lp, BACKSTK(curbp));
+    next = lforw(lp);
 
-	next = lforw(lp);
-
-	/* need to save a dot -- either the next line or
-	   the previous one */
-	if (next == buf_head(curbp)) {
-	    prev = lback(lp);
-	    FORWDOT(curbp).l = prev;
-	    fc = firstchar(prev);
-	    if (fc < 0)		/* all white */
-		FORWDOT(curbp).o = llength(prev) - 1;
-	    else
-		FORWDOT(curbp).o = fc;
-	} else {
-	    FORWDOT(curbp).l = next;
-	    fc = firstchar(next);
-	    if (fc < 0)		/* all white */
-		FORWDOT(curbp).o = b_left_margin(curbp);
-	    else
-		FORWDOT(curbp).o = fc;
-	}
-
-	dumpuline(lp);
+    /* need to save a dot -- either the next line or
+       the previous one */
+    if (next == buf_head(curbp)) {
+	prev = lback(lp);
+	FORWDOT(curbp).l = prev;
+	fc = firstchar(prev);
+	if (fc < 0)		/* all white */
+	    FORWDOT(curbp).o = llength(prev) - 1;
+	else
+	    FORWDOT(curbp).o = fc;
+    } else {
+	FORWDOT(curbp).l = next;
+	fc = firstchar(next);
+	if (fc < 0)		/* all white */
+	    FORWDOT(curbp).o = b_left_margin(curbp);
+	else
+	    FORWDOT(curbp).o = fc;
     }
+
+    dumpuline(lp);
     return2Void();
 }
 
@@ -233,29 +215,27 @@ copy_for_undo(LINE *lp)
     LINE *nlp;
 
     TRACE2((T_CALLED "copy_for_undo(%p)\n", lp));
-    if (OkUndo()) {
-	if (needundocleanup)
-	    preundocleanup();
+    if (needundocleanup)
+	preundocleanup();
 
-	if (liscopied(lp)) {
-	    status = TRUE;
-	} else if ((nlp = copyline(lp)) == 0) {
-	    status = ABORT;
-	} else {
-	    /* take care of the normal undo stack */
-	    pushline(nlp, BACKSTK(curbp));
+    if (liscopied(lp)) {
+	status = TRUE;
+    } else if ((nlp = copyline(lp)) == 0) {
+	status = ABORT;
+    } else {
+	/* take care of the normal undo stack */
+	pushline(nlp, BACKSTK(curbp));
 
-	    make_undo_patch(lp, nlp);
+	make_undo_patch(lp, nlp);
 
-	    lsetcopied(lp);
+	lsetcopied(lp);
 
-	    setupuline(lp);
+	setupuline(lp);
 
-	    FORWDOT(curbp).l = lp;
-	    FORWDOT(curbp).o = DOT.o;
+	FORWDOT(curbp).l = lp;
+	FORWDOT(curbp).o = DOT.o;
 
-	    status = TRUE;
-	}
+	status = TRUE;
     }
     return2Code(status);
 }
@@ -271,27 +251,25 @@ tag_for_undo(LINE *lp)
     LINE *nlp;
 
     TRACE2((T_CALLED "tag_for_undo(%p)\n", lp));
-    if (OkUndo()) {
-	if (needundocleanup)
-	    preundocleanup();
+    if (needundocleanup)
+	preundocleanup();
 
-	if (liscopied(lp)) {
-	    status = TRUE;
-	} else if ((nlp = lalloc(LINENOTREAL, curbp)) == 0) {
-	    TRACE(("tag_for_undo: no memory\n"));
-	    status = ABORT;
-	} else {
-	    set_lforw(nlp, lforw(lp));
-	    set_lback(nlp, lback(lp));
+    if (liscopied(lp)) {
+	status = TRUE;
+    } else if ((nlp = lalloc(LINENOTREAL, curbp)) == 0) {
+	TRACE(("tag_for_undo: no memory\n"));
+	status = ABORT;
+    } else {
+	set_lforw(nlp, lforw(lp));
+	set_lback(nlp, lback(lp));
 
-	    pushline(nlp, BACKSTK(curbp));
+	pushline(nlp, BACKSTK(curbp));
 
-	    lsetcopied(lp);
-	    FORWDOT(curbp).l = lp;
-	    FORWDOT(curbp).o = DOT.o;
+	lsetcopied(lp);
+	FORWDOT(curbp).l = lp;
+	FORWDOT(curbp).o = DOT.o;
 
-	    status = TRUE;
-	}
+	status = TRUE;
     }
     return2Code(status);
 }
@@ -837,7 +815,7 @@ lineundo(int f GCC_UNUSED, int n GCC_UNUSED)
     if (ulp->l_size && (ntext = typeallocn(char, ulp->l_size)) == NULL)
 	  return (FALSE);
 
-    copy_for_undo(lp);
+    CopyForUndo(lp);
 
     if (ntext && lvalue(lp)) {
 	(void) memcpy(ntext, lvalue(ulp), (size_t) llength(ulp));

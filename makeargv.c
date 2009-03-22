@@ -1,7 +1,7 @@
 /*
  * makeargv.c:  parse string to argv[]
  *
- * $Header: /users/source/archives/vile.vcs/RCS/makeargv.c,v 1.4 2009/02/27 23:28:55 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/makeargv.c,v 1.5 2009/02/28 11:42:40 root Exp $
  */
 
 #include <estruct.h>
@@ -82,6 +82,9 @@ make_argv(const char *program,
 	return -1;
     }
 
+    if (argend != 0)
+	*argend = 0;
+
     strcpy(blob, cmdline);
     if (program != 0)
 	argv[argc++] = (char *) program;
@@ -103,8 +106,9 @@ make_argv(const char *program,
 	 * Save the beginning of non-options in *argend
 	 */
 	if (argend != 0
+	    && *argend == 0
 	    && !is_option(ptr)) {
-	    *argend = strmalloc(ptr);
+	    *argend = strdup(ptr);
 	}
 
 	argv[argc++] = dst = ptr;

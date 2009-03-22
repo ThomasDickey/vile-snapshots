@@ -1,7 +1,7 @@
 #
 # makefile for vile filters on WIN32 using Microsoft Visual C++
 #
-# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.wnt,v 1.34 2008/01/22 01:41:09 tom Exp $
+# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.wnt,v 1.35 2009/03/21 16:09:16 root Exp $
 #
 #
 !include <ntwin32.mak>
@@ -21,6 +21,9 @@ o	= .obj
 CON_LDFLAGS  = $(LD_DEBUG) $(conlflags) $(conlibsmt) user32.lib comdlg32.lib ole32.lib shell32.lib -nologo -pdb:none
 
 UTILS	= \
+	atr2ansi$x \
+	atr2html$x \
+	atr2text$x \
 	vile-crypt$x \
 	vile-manfilt$x
 
@@ -172,6 +175,15 @@ CF_DEPS	= filterio$o filters$o
 CF_ARGS	= $(CF_DEPS)
 
 !include mk-2nd.tmp
+
+atr2ansi$x : atr2ansi$o unfilter$o
+	$(link) -out:$@ $(CON_LDFLAGS) atr2ansi$o unfilter$o
+
+atr2html$x : atr2html$o unfilter$o
+	$(link) -out:$@ $(CON_LDFLAGS) atr2html$o unfilter$o
+
+atr2text$x : atr2text$o unfilter$o
+	$(link) -out:$@ $(CON_LDFLAGS) atr2text$o unfilter$o
 
 vile-crypt$x : ecrypt$o
 	$(link) -out:$@ $(CON_LDFLAGS) ecrypt$o

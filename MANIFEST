@@ -1,4 +1,4 @@
-MANIFEST for vile, version v9_7l5
+MANIFEST for vile, version v9_7l6
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 CHANGES                         Change-log for VILE
@@ -384,6 +384,7 @@ macros/vilemenu.rc              sample menu for xvile
 macros/vileperl.rc              sample initialization for perl scripts
 macros/which.rc                 script to show which keyword file is found by filters
 package                         subdirectory
+package/winvile-wide.iss        Inno Setup script for winvile-wide
 package/winvile.iss             Inno Setup script for winvile
 package/winvile.nsi             NSIS package for winvile
 perl                            subdirectory

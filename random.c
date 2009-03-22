@@ -2,7 +2,7 @@
  * This file contains the command processing functions for a number of random
  * commands. There is no functional grouping here, for sure.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.326 2009/02/23 00:26:00 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.327 2009/03/22 01:06:34 tom Exp $
  *
  */
 
@@ -647,7 +647,7 @@ twiddle(int f GCC_UNUSED, int n GCC_UNUSED)
     cr = get_char2(dot.l, dot.o);
     dot.o -= BytesBefore(dot.l, dot.o);
     cl = get_char2(dot.l, dot.o);
-    copy_for_undo(dot.l);
+    CopyForUndo(dot.l);
     set_char2(dot.l, dot.o, cr);
     dot.o += BytesAt(dot.l, dot.o);
     set_char2(dot.l, dot.o, cl);

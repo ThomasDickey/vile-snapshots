@@ -2,6 +2,11 @@ Changes for vile 9.7 (released ??? ??? ?? ????)
 
  200903?? (m)
 	> Tom Dickey:
+	+ improve performance for show-variables and describe-bindings.
+	+ add un-filter (atr2ansi, atr2html and atr2text) executables to win32
+	  makefile.
+	+ implement quick-launch rule in winvile.iss script.
+	+ add winvile-wide.iss installer script
 	+ add limit-check in execkreg() in case a wide-character is passed as
 	  the mark-identifier.
 	+ add $kill-size and $kill-limit variables to improve scripting with

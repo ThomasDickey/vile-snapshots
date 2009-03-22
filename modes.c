@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.393 2009/03/20 20:31:58 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.394 2009/03/22 15:32:43 tom Exp $
  *
  */
 
@@ -1392,11 +1392,7 @@ lookup_valnames(const char *rp, const struct VALNAMES *table)
     return -1;
 }
 
-static const char *
-strip_no(const char *mode)
-{
-    return noPrefix(mode) ? (mode + 2) : mode;
-}
+#define strip_no(mode) (noPrefix(mode) ? (mode + 2) : mode)
 
 #if OPT_MAJORMODE
 /*

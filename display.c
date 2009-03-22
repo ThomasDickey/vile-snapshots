@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.483 2008/11/17 00:06:08 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.485 2009/03/22 14:09:52 tom Exp $
  *
  */
 
@@ -4137,9 +4137,28 @@ bputsn(const char *src, int len)
     if (len < 0) {
 	rc = bputsn(src, (int) strlen(src));
     } else {
-	while (len-- != 0) {
-	    if ((rc = bputc(*src++)) != TRUE)
-		break;
+	while ((len > 0) && (rc == TRUE)) {
+	    int n;
+	    int chunk;
+
+	    if (*src == '\n') {
+		rc = lnewline();
+		chunk = 1;
+	    } else {
+		for (chunk = 0; chunk < len; ++chunk) {
+		    if (src[chunk] == '\n')
+			break;
+		}
+		if ((rc = lins_bytes(chunk, ' ')) == TRUE) {
+		    LINE *lp = DOT.l;
+		    int offs = DOT.o - chunk;
+		    for (n = 0; n < chunk; ++n) {
+			lvalue(lp)[n + offs] = src[n];
+		    }
+		}
+	    }
+	    len -= chunk;
+	    src += chunk;
 	}
     }
     return rc;
