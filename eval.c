@@ -2,7 +2,7 @@
  *	eval.c -- function and variable evaluation
  *	original by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.404 2009/03/22 16:09:51 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.405 2009/03/22 20:43:37 tom Exp $
  *
  */
 
@@ -453,7 +453,7 @@ show_VariableList(BUFFER *bp GCC_UNUSED)
 	if ((list = typecallocn(UVAR, t)) != 0) {
 	    /* collect data for state-variables, since some depend on window */
 	    for (s = 0, t = 0; Names[s] != 0; s++) {
-		list[s].u_name = Names[s];
+		list[s].u_name = (char *) Names[s];
 		list[s].u_type = VALTYPE_STRING;
 		if ((vv = get_listvalue(Names[s], showall, &type)) != 0) {
 		    list[s].u_type = (char) type;
