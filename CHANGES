@@ -1,6 +1,6 @@
 Changes for vile 9.7 (released ??? ??? ?? ????)
 
- 200903?? (m)
+ 20090322 (m)
 	> Tom Dickey:
 	+ improve performance for show-variables and describe-bindings.
 	+ add un-filter (atr2ansi, atr2html and atr2text) executables to win32
