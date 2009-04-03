@@ -5,7 +5,7 @@
  * keys. Like everyone else, they set hints
  * for the display system.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.339 2009/03/21 23:44:20 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.340 2009/04/02 23:58:18 tom Exp $
  *
  */
 
@@ -1134,10 +1134,14 @@ found_modeline(LINE *lp, int *first, int *last)
 {
     int rc = 0;
     unsigned n;
+    int limit = llength(lp);
+
+    if (limit > modeline_limit)
+	limit = modeline_limit;
 
     for (n = 0; n < TABLESIZE(mls_patterns); ++n) {
 	regexp *prog = mls_regcomp(n);
-	if (lregexec(prog, lp, 0, llength(lp))) {
+	if (lregexec(prog, lp, 0, limit)) {
 	    int j = mls_patterns[n].mark;
 	    *first = prog->startp[j] - prog->startp[0];
 	    *last = prog->endp[j] - prog->startp[0];

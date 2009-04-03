@@ -4,7 +4,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/htmlfilt.l,v 1.74 2009/02/21 02:20:34 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/htmlfilt.l,v 1.76 2009/04/02 22:43:03 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of HTML input
  * text.
@@ -87,6 +87,12 @@
 
 DefineOptFilter("html", "aj");
 
+#ifdef FLEX_DEBUG
+#define DBG_HTML(msg) if (yy_flex_debug) fprintf(stderr, "%s\n", msg)
+#else
+#define DBG_HTML(msg) /* nothing */
+#endif
+
 static char *Action_attr;
 static char *Comment_attr;
 static char *Error_attr;
@@ -98,6 +104,7 @@ static char *String_attr;
 static char *dft_language;	/* asp or jsp or nothing */
 static char *use_language;	/* vbscript, javascript, C#, Java, etc */
 
+static int got_tag;		/* parse state for <tag> vs <tag name=value> */
 static int got_language;	/* parse-state for language=string */
 static int got_language2;
 static int got_equals;		/* parse state to detect unquoted values */
@@ -238,6 +245,7 @@ CHR_REF		&({IDENT}|{HEXNUM});
 			  WriteToken(Keyword_attr);
 			  new_state(HTMLCODE);
 			  got_equals = 0;
+			  got_tag = 0;
 			}
 <HTMLCODE>"<"		{
 			  WriteToken(Error_attr);
@@ -323,7 +331,8 @@ html_command(char *text)
 {
     int ending = (text[0] == '/');
     char *temp = lowercase_of(ending ? text + 1 : text);
-    int change = !got_equals
+    int change = !got_tag
+		 && !got_equals
 		 && (!strcmp(temp, "server")
 		  || !strcmp(temp, "script"));
 
@@ -338,12 +347,15 @@ html_command(char *text)
     if (change) {
      	if (ending) {
 	    next_state = INITIAL;
+	    DBG_HTML("start INITIAL");
 	    set_symbol_table(filter_def.filter_name);
 	} else {
 	    next_state = JS_CODE;
+	    DBG_HTML("start JS_CODE");
 	    set_symbol_table("js");
 	}
     }
+    got_tag++;
 }
 
 static void

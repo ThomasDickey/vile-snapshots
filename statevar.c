@@ -3,7 +3,7 @@
  *	for getting and setting the values of the vile state variables,
  *	plus helper utility functions.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.132 2009/03/20 22:26:01 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.133 2009/04/02 23:55:26 tom Exp $
  */
 
 #include	"estruct.h"
@@ -1179,6 +1179,14 @@ int
 var_MAJORMODEHOOK(TBUFF **rp, const char *vp)
 {
     return any_HOOK(rp, vp, &majormodehook);
+}
+#endif
+
+#if OPT_MODELINE
+int
+var_MODELINE_LIMIT(TBUFF **rp, const char *vp)
+{
+    return any_rw_INT(rp, vp, &modeline_limit);
 }
 #endif
 
