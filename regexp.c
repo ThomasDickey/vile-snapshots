@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/regexp.c,v 1.190 2009/02/20 20:25:26 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/regexp.c,v 1.191 2009/04/03 00:22:50 tom Exp $
  *
  * Copyright 2005-2008,2009 Thomas E. Dickey and Paul G. Fox
  *
@@ -674,18 +674,12 @@ use_system_ctype(UINT * target, const char *source)
     return rc;
 }
 
-static int
-vl_toupper(int ch)
-{
-    int rc;
-    if ((ch <= (int) sys_CTYPE_SIZE)
-	&& (vl_mb_to_utf8(ch) == 0)) {
-	rc = sys_toupper(ch);
-    } else {
-	rc = toUpper(ch);
-    }
-    return rc;
-}
+#define vl_toupper(ch) \
+    ((reg_utf8flag \
+	&& ((ch) <= (int) sys_CTYPE_SIZE) \
+	&& (vl_mb_to_utf8(ch) == 0)) \
+	? (int) sys_toupper(ch) \
+	: (int) toUpper(ch))
 
 /*
  * Check if 'p' (from pattern) and 'q' (from actual data) are the "same".
@@ -2681,7 +2675,10 @@ lregexec(regexp * prog,
     set_utf8flag(curbp);
     if (endoff >= startoff) {
 	if (lvalue(lp)) {
-	    s = regexec(prog, lvalue(lp), &(lvalue(lp)[llength(lp)]),
+	    int limit = llength(lp);
+	    if (limit > endoff)
+		limit = endoff;
+	    s = regexec(prog, lvalue(lp), &(lvalue(lp)[limit]),
 			startoff, endoff);
 	} else {
 	    /* the prog might be ^$, or something legal on a null string */

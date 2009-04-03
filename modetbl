@@ -11,7 +11,7 @@
 #
 # The modes are table entries in the BUFFER and WINDOW structures.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.290 2009/03/20 20:25:39 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.291 2009/04/02 23:52:40 tom Exp $
 #
 #
 # Mode-table entries.  Capitalized letters are used for abbreviations.
@@ -255,6 +255,7 @@ int
 	"kill-size"	KILL_SIZE	1		"number of bytes in kill buffer (read only)"
 	"lcols"		LCOLS		1		"length of current line, in columns"
 	"llength"	LLENGTH		1		"length of current line"
+	"modeline-limit" MODELINE_LIMIT	OPT_MODELINE	"maximum inline offset to scan for modelines"
 	"ncolors"	NCOLORS		1		"number of colors displayed"
 	"ntildes"	NTILDES		1		"number of tildes displayed at eob"
 	"pagelen"	PAGELEN		1		"number of lines used by editor"

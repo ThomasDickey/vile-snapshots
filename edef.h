@@ -6,7 +6,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.348 2009/03/14 00:54:22 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.349 2009/04/02 23:54:14 tom Exp $
  */
 
 #ifndef VILE_EDEF_H
@@ -300,6 +300,7 @@ decl_init( int error_tabstop, 8 );
 
 #if OPT_MODELINE
 decl_init( int in_modeline, FALSE );	/* set during vi-style modeline */
+decl_init( int modeline_limit, 256 );	/* $modeline-limit		*/
 #endif
 
 decl_init( int im_displaying, 0 );	/* flag set during screen updates */

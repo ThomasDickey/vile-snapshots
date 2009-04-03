@@ -1,5 +1,21 @@
 Changes for vile 9.7 (released ??? ??? ?? ????)
 
+ 200904?? (n)
+	> Tom Dickey:
+	+ add variable $modeline-limit to limit the offset into each line that
+	  vile scans for modelines.  Use default 256.
+	+ fixes/improvements for regexp.c:
+	  + make vl_toupper() a macro, also use the buffer encoding to decide
+	    whether to use system ctypes.
+	  + change one of the limits for calling regexec from lregexec to
+	    ensure that the string-end is not past the end-offset.
+	+ improve performance for displaying syntax highlighting of very long
+	  lines by using a fast check on the left/right limits of single-line
+	  regions that could be displayed, and ignoring attributed regions past
+	  those bounds.
+	+ improve html filter by ensuring that "server" is the tag, not one
+	  of the named values, e.g., "<server>" vs "<foo server=bar>".
+
  20090322 (m)
 	> Tom Dickey:
 	+ improve performance for show-variables and describe-bindings.
