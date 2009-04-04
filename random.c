@@ -2,7 +2,7 @@
  * This file contains the command processing functions for a number of random
  * commands. There is no functional grouping here, for sure.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.327 2009/03/22 01:06:34 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.328 2009/04/03 21:51:15 Mark.Robinson Exp $
  *
  */
 
@@ -1630,7 +1630,7 @@ run_readhook(void)
 }
 #endif
 
-#if OPT_AUTOCOLOR || OPT_ELAPSED
+#if (OPT_AUTOCOLOR || OPT_ELAPSED) && defined(VL_ELAPSED)
 /*
  * Returns elapsed time in milliseconds.
  */
