@@ -5,7 +5,7 @@
  * reading and writing of the disk are
  * in "fileio.c".
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.426 2009/03/22 01:08:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.427 2009/04/03 23:28:23 tom Exp $
  */
 
 #include "estruct.h"
@@ -1344,8 +1344,9 @@ guess_recordseparator(BUFFER *bp, UCHAR * buffer, B_COUNT length, L_NUM * lines)
 	}
     }
 
-    TRACE(("guess_recordseparator assume %s CR:%ld, LF:%ld, CRLF:%ld\n",
+    TRACE(("guess_recordseparator assume %s, rs=%s CR:%ld, LF:%ld, CRLF:%ld\n",
 	   global_b_val(MDDOS) ? "dos" : "unix",
+	   choice_to_name(&fsm_recordsep_blist, global_b_val(VAL_RECORD_SEP)),
 	   (long) (count_cr - count_dos), (long) count_unix, (long) count_dos));
 
     if (count_lf != 0) {
@@ -1359,10 +1360,13 @@ guess_recordseparator(BUFFER *bp, UCHAR * buffer, B_COUNT length, L_NUM * lines)
 	    } else if (check_percent_crlf(bp, count_dos, count_unix)) {
 		result = RS_CRLF;
 	    }
+	} else if (global_b_val(VAL_RECORD_SEP) == RS_CR
+		   && (count_cr || !count_unix)) {
+	    result = RS_CR;
 	}
 	if (buffer[length - 1] != '\n')
 	    ++count_lf;
-	*lines = count_lf;
+	*lines = (result == RS_CR) ? count_cr : count_lf;
     } else if (count_cr != 0) {
 	result = RS_CR;
 	if (buffer[length - 1] != '\r')

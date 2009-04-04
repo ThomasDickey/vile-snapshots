@@ -1,7 +1,13 @@
 Changes for vile 9.7 (released ??? ??? ?? ????)
 
  200904?? (n)
+	> Ingmar Ellenberger:
+	+ reorder part of sql-filt.l to work with a non-flex parser.
+	> Mark Robinson:
+	+ build-fixes for mingw configuration when built using cygwin.
 	> Tom Dickey:
+	+ modify handling of recordseparator mode to let explicit rs=cr work
+	  to read cr-delimited files, provided that dos mode is not set.
 	+ add variable $modeline-limit to limit the offset into each line that
 	  vile scans for modelines.  Use default 256.
 	+ fixes/improvements for regexp.c:

@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/sql-filt.l,v 1.43 2008/11/19 23:11:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/sql-filt.l,v 1.44 2009/04/03 21:20:15 Ingmar.Ellenberger Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of SQL script
  * - T.Dickey
@@ -20,7 +20,6 @@ DefineOptFilter("sql", "d");
 #define new_state(state) saved_state = began_state; set_state(state)
 #define old_state()      set_state(saved_state);
 
-
 static char *Action_attr;
 static char *Comment_attr;
 static char *Error_attr;
@@ -33,31 +32,15 @@ static int next_line;		/* state after one-line SQL*Plus */
 static int began_state;
 static int saved_state;
 
-static void
-begin_oneliner(void)
-{
-    new_state(ONE_LINE);
-    next_line = LEAD;
-    flt_bfr_begin(String_attr);
-}
+static void begin_oneliner(void);
+static void finish_oneliner(void);
+static int is_oneliner(char *name);
+static void init_filter(int before GCC_UNUSED);
+static void do_filter(FILE *inputs);
 
-static void
-finish_oneliner(void)
-{
-    flt_bfr_finish();
-    new_state(next_line);
-    next_line = LEAD;
-}
-
-static int
-is_oneliner(char *name)
-{
-    char *flags = ci_keyword_flag(name);
-    int result = 0;
-    if (flags != 0)
-	result = (strchr(flags, '1') != 0);
-    return result;
-}
+#if NO_LEAKS
+static void free_filter(void);
+#endif
 
 /******************************************************************************/
 
@@ -225,6 +208,32 @@ HOSTVAR		":"{IDENT}
 <LEAD,MORE,BODY>.	{ ECHO; }
 
 %%
+
+static void
+begin_oneliner(void)
+{
+    new_state(ONE_LINE);
+    next_line = LEAD;
+    flt_bfr_begin(String_attr);
+}
+
+static void
+finish_oneliner(void)
+{
+    flt_bfr_finish();
+    new_state(next_line);
+    next_line = LEAD;
+}
+
+static int
+is_oneliner(char *name)
+{
+    char *flags = ci_keyword_flag(name);
+    int result = 0;
+    if (flags != 0)
+	result = (strchr(flags, '1') != 0);
+    return result;
+}
 
 static void
 init_filter(int before GCC_UNUSED)

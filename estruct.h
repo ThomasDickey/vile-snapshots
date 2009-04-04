@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.685 2009/03/22 16:40:56 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.687 2009/04/03 23:56:05 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -2098,7 +2098,7 @@ typedef struct {
 typedef int FUID;
 #endif
 
-#if OPT_AUTOCOLOR || OPT_ELAPSED
+#if (OPT_AUTOCOLOR || OPT_ELAPSED) && !defined(VL_ELAPSED)
 #ifdef HAVE_GETTIMEOFDAY
 #define VL_ELAPSED struct timeval
 #elif SYS_WINNT
@@ -2366,8 +2366,13 @@ typedef struct	BUFFER {
 #define HILITE_DIRTY	2
 #endif
 
+/* macros related to external record separator */
 #define len_record_sep(bp)	((bp)->b_recordsep_len)
 #define get_record_sep(bp)	((bp)->b_recordsep_str)
+
+/* macros related to internal record separator */
+#define use_record_sep(bp)	((b_val(bp, VAL_RECORD_SEP) == RS_CR) ? '\r' : '\n')
+#define is_record_sep(bp,c)	((c) == use_record_sep(bp))
 
 /* macro for iterating over the marks associated with the current buffer */
 

@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.492 2009/04/02 22:38:33 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.493 2009/04/03 23:59:28 tom Exp $
  *
  */
 
@@ -586,7 +586,7 @@ vtputc(WINDOW *wp, const char *src, unsigned limit)
 		vtputc(wp, " ", 1);
 	    } while (((vtcol + horscroll) % wp->w_tabstop) != 0
 		     && vtcol < lastcol);
-	} else if (ch != '\n') {
+	} else if (!is_record_sep(wp->w_bufp, ch)) {
 	    if (isPrint(ch)) {
 		++vtcol;
 	    } else {
@@ -1511,10 +1511,12 @@ offs2col0(WINDOW *wp,
     } else if ((lp == win_head(wp)) || !lisreal(lp)) {
 	column = 0;
     } else {
+	BUFFER *bp = wp->w_bufp;
+	int rs = use_record_sep(bp);
 	int length = llength(lp);
 	int tabs = tabstop_val(wp->w_bufp);
 	int list = w_val(wp, WMDLIST);
-	int last = (list ? (N_chars * 2) : '\n');
+	int last = (list ? (N_chars * 2) : rs);
 	int left =
 #ifdef WMDLINEWRAP		/* overrides left/right scrolling */
 	w_val(wp, WMDLINEWRAP) ? 0 :
@@ -1538,9 +1540,9 @@ offs2col0(WINDOW *wp,
 	for (n = start_offset; n < offset;) {
 	    int used = 1;
 
-	    c = (n == length) ? '\n' : text[n];
+	    c = (n == length) ? rs : text[n];
 #if OPT_MULTIBYTE
-	    if ((n < length) && b_is_utfXX(wp->w_bufp) && !isTab(c)) {
+	    if ((n < length) && b_is_utfXX(bp) && !isTab(c)) {
 		int nxt = offset - n;
 		int adj = column_sizes(wp, text + n, nxt, &used);
 
@@ -4220,7 +4222,7 @@ bputc(int c)
 {
     int status;
 
-    if (c == '\n') {
+    if (is_record_sep(curbp, c)) {
 	status = lnewline();
     } else {
 	status = lins_bytes(1, c);
@@ -4240,13 +4242,14 @@ bputsn(const char *src, int len)
 	while ((len > 0) && (rc == TRUE)) {
 	    int n;
 	    int chunk;
+	    int rs = use_record_sep(curbp);
 
-	    if (*src == '\n') {
+	    if (*src == rs) {
 		rc = lnewline();
 		chunk = 1;
 	    } else {
 		for (chunk = 0; chunk < len; ++chunk) {
-		    if (src[chunk] == '\n')
+		    if (src[chunk] == rs)
 			break;
 		}
 		if ((rc = lins_bytes(chunk, ' ')) == TRUE) {
