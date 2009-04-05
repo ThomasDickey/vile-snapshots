@@ -1,6 +1,6 @@
 dnl vile's local definitions for autoconf.
 dnl
-dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.190 2009/02/24 21:53:47 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.191 2009/04/04 17:09:34 tom Exp $
 dnl
 dnl ---------------------------------------------------------------------------
 dnl ---------------------------------------------------------------------------
@@ -1964,10 +1964,10 @@ ifdef([AC_FUNC_FSEEKO],[
 ])
 ])
 dnl ---------------------------------------------------------------------------
-dnl CF_LEX_CHAR_CLASSES version: 5 updated: 2008/03/23 15:04:54
+dnl CF_LEX_CHAR_CLASSES version: 6 updated: 2009/04/04 13:08:05
 dnl -------------------
 dnl Check if the lex/flex program accepts character-classes, i.e., [:alpha:],
-dnl which are said to be a POSIX feature.
+dnl which are a POSIX feature.
 AC_DEFUN([CF_LEX_CHAR_CLASSES],[
 AC_MSG_CHECKING(if $LEX supports character classes)
 cat >conftest.l <<CF_EOF
@@ -1986,12 +1986,62 @@ fi
 AC_MSG_RESULT($LEX_CHAR_CLASSES)
 rm -f conftest.* $LEX_OUTPUT_ROOT.c
 if test "$LEX_CHAR_CLASSES" != yes ; then
-	AC_MSG_WARN(Your $LEX program does not support character classes.  Get flex.)
+	AC_MSG_WARN(Your $LEX program does not support POSIX character classes.  Get flex.)
 fi
 AC_SUBST(LEX_CHAR_CLASSES)
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_LEX_STATES version: 3 updated: 2008/03/23 15:04:54
+dnl CF_LEX_OPTIONS version: 1 updated: 2009/04/04 13:08:05
+dnl --------------
+dnl Check if the lex/flex program accepts options, i.e., %o.  This is for
+dnl standard (POSIX) lex; there are some implementations that are nonstandard,
+dnl or simply too buggy to consider.
+AC_DEFUN([CF_LEX_OPTIONS],[
+AC_MSG_CHECKING(if $LEX supports options)
+cat >conftest.l <<CF_EOF
+%o 1000
+%%
+%%
+nothing	ECHO;
+CF_EOF
+cf_lex_options="$LEX conftest.l 1>&AC_FD_CC"
+if AC_TRY_EVAL(cf_lex_options); then
+cf_lex_options=yes
+else
+cf_lex_options=no
+fi
+AC_MSG_RESULT($cf_lex_options)
+rm -f conftest.* $LEX_OUTPUT_ROOT.c
+if test "$cf_lex_options" != yes ; then
+	AC_MSG_WARN(Your $LEX program does not support POSIX options.  Get flex.)
+fi
+])dnl
+dnl ---------------------------------------------------------------------------
+dnl CF_LEX_POINTER version: 1 updated: 2009/04/04 13:08:05
+dnl --------------
+dnl Check if the lex/flex program accepts %pointer, for standard (POSIX) lex.
+AC_DEFUN([CF_LEX_POINTER],[
+AC_MSG_CHECKING(if $LEX supports %pointer)
+cat >conftest.l <<CF_EOF
+%pointer
+%%
+%%
+nothing	ECHO;
+CF_EOF
+cf_lex_pointer="$LEX conftest.l 1>&AC_FD_CC"
+if AC_TRY_EVAL(cf_lex_pointer); then
+cf_lex_pointer=yes
+else
+cf_lex_pointer=no
+fi
+AC_MSG_RESULT($cf_lex_pointer)
+rm -f conftest.* $LEX_OUTPUT_ROOT.c
+if test "$cf_lex_pointer" != yes ; then
+	AC_MSG_WARN(Your $LEX program does not support POSIX %pointer.  Get flex.)
+fi
+])dnl
+dnl ---------------------------------------------------------------------------
+dnl CF_LEX_STATES version: 4 updated: 2009/04/04 13:08:05
 dnl -------------
 dnl Check if the lex/flex program accepts states, i.e., %s and %x.  Older
 dnl implementations do not support these.
@@ -2012,12 +2062,9 @@ cf_lex_states=no
 fi
 AC_MSG_RESULT($cf_lex_states)
 rm -f conftest.* $LEX_OUTPUT_ROOT.c
-MAKE_LEX=
 if test "$cf_lex_states" != yes ; then
-	AC_MSG_WARN(Your $LEX program does not support states.  Get flex.)
-	MAKE_LEX="#"
+	AC_MSG_WARN(Your $LEX program does not support POSIX states.  Get flex.)
 fi
-AC_SUBST(MAKE_LEX)
 ])dnl
 dnl ---------------------------------------------------------------------------
 dnl CF_LEX_VERSION version: 2 updated: 2007/11/26 06:57:56

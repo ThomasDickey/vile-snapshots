@@ -3,7 +3,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/pas-filt.l,v 1.8 2008/11/19 23:11:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/pas-filt.l,v 1.9 2009/04/04 00:48:24 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Pascal
  * input text.  A few TurboC and Delphi extensions are recognized:
@@ -56,6 +56,8 @@ NUMBER		{HEXADECIMAL}|{INTEGER}|{REAL}
 <NORMAL>.		{ ECHO; }
 
 %%
+
+#include <fltstack.h>
 
 static void
 init_filter(int before GCC_UNUSED)

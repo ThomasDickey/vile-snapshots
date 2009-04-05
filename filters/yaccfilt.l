@@ -3,7 +3,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/yaccfilt.l,v 1.35 2008/11/28 02:00:04 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/yaccfilt.l,v 1.36 2009/04/04 13:48:57 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of YACC program.
  */
@@ -125,6 +125,8 @@ PATTERN		(\\.|\[(\\.|.)*\]|[^[:space:]])+
 {STRINGS}		{ WriteToken(String_attr); }
 
 %%
+
+#include <fltstack.h>
 
 static void
 DefineTerminal(char *text)

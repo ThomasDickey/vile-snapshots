@@ -1,7 +1,7 @@
 /*
  * Main program and I/O for external vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/RCS/builtflt.c,v 1.68 2008/11/10 20:25:42 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/builtflt.c,v 1.69 2009/04/04 18:42:37 tom Exp $
  *
  */
 
@@ -251,6 +251,29 @@ flt_finish(void)
     tb_free(&gets_data);
 }
 
+#define MustFixupCrLf() \
+    (   (b_val(curbp, VAL_RECORD_SEP) == RS_CR) \
+     || (b_val(curbp, VAL_RECORD_SEP) == RS_LF)  )
+
+/*
+ * Syntax filters expect text to be separated by newlines, and don't
+ * expect embedded carriage returns.  Try to meet that expectation.
+ */
+static char
+fixup_cr_lf(char ch)
+{
+    if (b_val(curbp, VAL_RECORD_SEP) == RS_CR) {
+	if (ch == '\n')
+	    ch = ' ';
+	else if (ch == '\r')
+	    ch = '\n';
+    } else if (b_val(curbp, VAL_RECORD_SEP) == RS_LF) {
+	if (ch == '\r')
+	    ch = ' ';
+    }
+    return ch;
+}
+
 char *
 flt_gets(char **ptr, unsigned *len)
 {
@@ -262,7 +285,7 @@ flt_gets(char **ptr, unsigned *len)
     if (need >= 0
 	&& tb_init(&gets_data, 0) != 0
 	&& tb_bappend(&gets_data, lvalue(mark_in.l), need) != 0
-	&& tb_sappend(&gets_data, "\n") != 0
+	&& tb_append(&gets_data, use_record_sep(curbp)) != 0
 	&& tb_append(&gets_data, EOS) != 0) {
 	*ptr = tb_values(gets_data);
 	*len = need + len_record_sep(curbp);
@@ -273,6 +296,22 @@ flt_gets(char **ptr, unsigned *len)
 	       NONNULL(*ptr)));
 
 	mark_in.l = lforw(mark_in.l);
+
+	/*
+	 * Syntax filters expect text to be separated by newlines, and don't
+	 * expect embedded carriage returns.  Try to meet that expectation.
+	 */
+	if (MustFixupCrLf()) {
+	    size_t len2 = tb_length(gets_data);
+	    if (len2 != 0) {
+		size_t n;
+		char *values = tb_values(gets_data);
+
+		for (n = 0; n < len2; ++n) {
+		    values[n] = fixup_cr_lf(values[n]);
+		}
+	    }
+	}
     } else {
 	TRACE(("flt_gets - EOF\n"));
     }
@@ -368,7 +407,7 @@ flt_input(char *buffer, int max_size)
     if (!is_header_line(mark_in, curbp)) {
 	while (used < max_size) {
 	    if (mark_in.o < llength(mark_in.l)) {
-		buffer[used++] = (char) lgetc(mark_in.l, mark_in.o++);
+		buffer[used++] = fixup_cr_lf(lgetc(mark_in.l, mark_in.o++));
 	    } else {
 		mark_in.l = lforw(mark_in.l);
 		mark_in.o = w_left_margin(curwp);

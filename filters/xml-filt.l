@@ -3,7 +3,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/xml-filt.l,v 1.19 2008/11/19 23:11:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/xml-filt.l,v 1.20 2009/04/04 13:26:21 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of XML input
  * text.
@@ -103,6 +103,8 @@ VALUE		#{IDENT}
 <XMLATTR>{NUMBER}	{ WriteToken(Number_attr); }
 
 %%
+
+#include <fltstack.h>
 
 static char *
 xml_attr(char *name)

@@ -3,7 +3,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/hs-filt.l,v 1.20 2008/11/19 23:11:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/hs-filt.l,v 1.21 2009/04/04 00:42:33 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Haskell
  * input text.
@@ -89,6 +89,8 @@ NUMBER		{OCTAL}|{HEXADECIMAL}|{INTEGER}|{REAL}
 <PREPNOTE>"*"+"/"	{ PopQuote(); flt_bfr_begin(""); }
 
 %%
+
+#include <fltstack.h>
 
 static void
 init_filter(int before GCC_UNUSED)

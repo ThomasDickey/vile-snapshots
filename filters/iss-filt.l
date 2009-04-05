@@ -3,7 +3,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/iss-filt.l,v 1.11 2008/11/19 23:11:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/iss-filt.l,v 1.12 2009/04/04 00:44:04 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Inno Setup
  * input text.
@@ -106,6 +106,8 @@ NUMBER		{HEXADECIMAL}|{INTEGER}|{REAL}
 <CODE>.			{ ECHO; }
 
 %%
+
+#include <fltstack.h>
 
 static void
 init_filter(int before GCC_UNUSED)

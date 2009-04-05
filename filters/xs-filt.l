@@ -3,7 +3,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/xs-filt.l,v 1.15 2008/11/19 23:11:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/xs-filt.l,v 1.16 2009/04/04 13:34:57 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Perl/C
  * extension source
@@ -31,7 +31,7 @@ SSTRING		\'(\\.|[^'\\])*\'
 DSTRING		\"(\\.|[^"\\])*\"
 STRINGS		({SSTRING}|{DSTRING})
 
-INCLUDE		(<[^>]+>|\"[^"]+\")
+INCLUDE		([<][^>]+[>]|\"[^"]+\")
 
 KEYWORD		[[:alpha:]_][[:alnum:]_]*
 
@@ -39,13 +39,13 @@ SIGN		[-+]
 DECIMAL		[[:digit:]_]+
 OCTAL		0[0-7_]+
 HEXADECIMAL	0x[[:xdigit:]_]+
-REAL		[-+]?([[:digit:]_]*\.[[:digit:]][[:digit:]_]*)([eE][+-]?[[:digit:]_]+)?
+REAL		([[:digit:]_]*\.[[:digit:]][[:digit:]_]*)([eE]{SIGN}?[[:digit:]_]+)?
 NUMBER		{SIGN}?({DECIMAL}|{OCTAL}|{HEXADECIMAL}|{REAL})
 
 %%
 
-<CODE>^{BLANK}#include{BLANK}{INCLUDE} |
-<CODE>^{BLANK}#{KEYWORD} { WriteToken(Preproc_attr); }
+<CODE>^{BLANK}[#]include{BLANK}{INCLUDE} |
+<CODE>^{BLANK}[#]{KEYWORD} { WriteToken(Preproc_attr); }
 
 <CODE,PERLXS>{KEYWORD}	{ WriteToken(keyword_attr(yytext));
 			  if (!strcmp(yytext, "MODULE")) {

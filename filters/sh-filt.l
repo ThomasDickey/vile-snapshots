@@ -6,7 +6,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/sh-filt.l,v 1.79 2008/11/19 23:11:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/sh-filt.l,v 1.80 2009/04/04 00:51:21 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Shell script.
  */
@@ -194,6 +194,8 @@ DASHIDENT	{NAME0}{NAME}*("-"{NAME}{NAME2}*)*
 <SUBST>[^"}\\]		{ flt_bfr_embed(yytext, yyleng, ""); }
 
 %%
+
+#include <fltstack.h>
 
 static void
 handle_backtic(char *text, int len)

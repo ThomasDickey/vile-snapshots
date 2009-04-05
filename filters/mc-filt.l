@@ -6,7 +6,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/mc-filt.l,v 1.8 2009/02/21 02:20:56 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/mc-filt.l,v 1.9 2009/04/04 00:47:46 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of mailcap-file.
  */
@@ -108,6 +108,8 @@ MIMENAME	{MIMELEAF}("/"{MIMELEAF})?
 <SSTRING>\'		{ PopQuote(); }
 
 %%
+
+#include <fltstack.h>
 
 static void
 init_filter(int before GCC_UNUSED)

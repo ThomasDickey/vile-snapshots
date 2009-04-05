@@ -3,7 +3,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/php-filt.l,v 1.19 2008/11/19 23:11:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/php-filt.l,v 1.20 2009/04/04 00:49:03 tom Exp $
  *
  * Filter to add vile "attribution" sequences to PHP scripts.
  * - T.Dickey
@@ -113,6 +113,8 @@ NUMBER		{SIGN}?({DECIMAL}|{OCTAL}|{HEXADECIMAL}|{REAL})
 <NOWDOC>.		{ flt_bfr_append(yytext, yyleng); }
 
 %%
+
+#include <fltstack.h>
 
 static int
 got_here(char *text, int length)

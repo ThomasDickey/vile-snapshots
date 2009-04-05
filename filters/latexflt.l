@@ -6,7 +6,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/latexflt.l,v 1.49 2008/11/19 23:11:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/latexflt.l,v 1.50 2009/04/04 00:44:39 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of TeX or LaTeX
  * input text.
@@ -167,6 +167,8 @@ NUMBER		({INTEGER}|{REAL})
 \} 			{ WriteToken(Action_attr); if (braces) --braces; }
 
 %%
+
+#include <fltstack.h>
 
 static void
 write_keyword(void)

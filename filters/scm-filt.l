@@ -3,7 +3,7 @@
 
 %{
 /*
- * $Id: scm-filt.l,v 1.3 2009/02/23 23:53:22 tom Exp $
+ * $Id: scm-filt.l,v 1.4 2009/04/04 00:50:51 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of scheme code.
  *
@@ -118,6 +118,8 @@ RPAREN		\)
 <QUOTED>\"		{ FinishQuote(NORMAL); }
 
 %%
+
+#include <fltstack.h>
 
 static const char *
 paren_attr(void)

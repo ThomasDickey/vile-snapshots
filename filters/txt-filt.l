@@ -7,7 +7,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/txt-filt.l,v 1.36 2008/11/19 23:11:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/txt-filt.l,v 1.37 2009/04/04 13:25:34 tom Exp $
  *
  * Filter to add vile "attribution" sequences to an ordinary text file
  */
@@ -95,6 +95,8 @@ URL		[[:alpha:]]+"://"[[:alnum:]#%&+\,.\/?;@_=~-]+
 <NOTE>.			{ flt_puts(yytext, yyleng, Comment_attr); }
 
 %%
+
+#include <fltstack.h>
 
 static int
 mixedcase(const char *name)

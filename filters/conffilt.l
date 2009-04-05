@@ -6,7 +6,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/conffilt.l,v 1.7 2008/11/19 23:11:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/conffilt.l,v 1.8 2009/04/04 00:40:46 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of config-file.
  */
@@ -71,6 +71,8 @@ IDENTX		\$[\*@#\?\$!-]
 <QUOTED>\"		{ PopQuote(); }
 
 %%
+
+#include <fltstack.h>
 
 static void
 init_filter(int before GCC_UNUSED)

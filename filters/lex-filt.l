@@ -8,7 +8,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/lex-filt.l,v 1.69 2008/11/27 18:11:43 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/lex-filt.l,v 1.70 2009/04/04 16:00:57 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of LEX program.
  */
@@ -215,6 +215,8 @@ STATES		("<"("*"|({IDENT}|\,)+)">")
 			}
 
 %%
+
+#include <fltstack.h>
 
 static void
 end_action(void)

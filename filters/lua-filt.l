@@ -3,7 +3,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/lua-filt.l,v 1.9 2008/11/19 23:11:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/lua-filt.l,v 1.10 2009/04/04 00:47:09 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of lua
  * input text.
@@ -54,6 +54,8 @@ LONG_R		"]"[=]*"]"
 <LONG_STR>.		{ WriteToken(String_attr); }
 
 %%
+
+#include <fltstack.h>
 
 static void
 init_filter(int before GCC_UNUSED)
