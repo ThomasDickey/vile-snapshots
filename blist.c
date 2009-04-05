@@ -1,5 +1,5 @@
 /*
- * $Id: blist.c,v 1.11 2008/01/13 16:15:22 tom Exp $
+ * $Id: blist.c,v 1.12 2009/04/04 20:41:42 tom Exp $
  * Copyright 2007,2008 by Thomas E. Dickey
  *
  * Provide binary-search lookup of arrays of sorted structs.  The beginning of
@@ -13,10 +13,10 @@
 #include	<blist.h>
 
 #define	ILLEGAL_NUM	-1
-#define ItemOf(data,inx) *(const char * const*)((const char *)(data->theList) + ((inx) * data->itemSize))
+#define ItemOf(data,inx) *(const char * const*)((const char *)(data->theList) + ((UINT) (inx) * data->itemSize))
 
 #define ItemToInx(data, item) \
-	(((const char *) item - (const char *) (data->theList)) \
+	((UINT) ((const char *) item - (const char *) (data->theList)) \
 	  / data->itemSize)
 
 typedef struct {
@@ -71,9 +71,9 @@ blist_match(BLIST * data, const char *name)
     ToFind dummy;
 
     dummy.name = name;
-    check = bsearch(&dummy, data->theList, last, data->itemSize, exact_match);
+    check = bsearch(&dummy, data->theList, (size_t) last, data->itemSize, exact_match);
     if (check != 0) {
-	rc = ItemToInx(data, check);
+	rc = (int) ItemToInx(data, check);
     }
     COUNTER(total_linear, rc + 1);
     COUNTER(total_limits, last);
@@ -89,7 +89,7 @@ blist_match(BLIST * data, const char *name)
 int
 blist_pmatch(BLIST * data, const char *name, int len)
 {
-    int actual = strlen(name);
+    int actual = (int) strlen(name);
     int rc = -1;
     int hi, lo, x0, x1, cmp;
     int last = blist_count(data);
@@ -111,7 +111,7 @@ blist_pmatch(BLIST * data, const char *name, int len)
 		break;
 	}
 	item = ItemOf(data, x1);
-	cmp = strncmp(item, name, len);
+	cmp = strncmp(item, name, (size_t) len);
 	if (cmp < 0) {
 	    lo = (x1 == lo) ? (x1 + 1) : x1;
 	} else if (cmp > 0) {
@@ -130,12 +130,12 @@ blist_pmatch(BLIST * data, const char *name, int len)
 		    dummy.name = name;
 		    test = (const char *) bsearch(&dummy,
 						  &ItemOf(data, lo),
-						  x1 + 1 - lo,
+						  (size_t) (x1 + 1 - lo),
 						  data->itemSize,
 						  exact_match);
 		    if (test) {
 			exact = 1;
-			rc = ItemToInx(data, test);
+			rc = (int) ItemToInx(data, test);
 			break;
 		    }
 		}
@@ -150,7 +150,7 @@ blist_pmatch(BLIST * data, const char *name, int len)
 		} else if (x1 < last - 1) {
 		    COUNTER(total_compares, 2);
 		    if (strcmp(item, name)
-			&& !strncmp(ItemOf(data, x1 + 1), name, len)) {
+			&& !strncmp(ItemOf(data, x1 + 1), name, (size_t) len)) {
 			rc = -1;
 		    }
 		}

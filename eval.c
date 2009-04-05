@@ -2,7 +2,7 @@
  *	eval.c -- function and variable evaluation
  *	original by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.405 2009/03/22 20:43:37 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.406 2009/04/04 20:11:24 tom Exp $
  *
  */
 
@@ -88,8 +88,8 @@ makectypelist(int dum1 GCC_UNUSED, void *ptr GCC_UNUSED)
 	    bprintf("%c", (int) i);
 	bputc('\t');
 	for (j = 0; j != vl_UNUSED; j++) {
-	    if ((s = choice_to_name(&fsm_charclass_blist, j)) != 0) {
-		k = (1 << j);
+	    if ((s = choice_to_name(&fsm_charclass_blist, (int) j)) != 0) {
+		k = (CHARTYPE) (1 << j);
 		if (j != 0)
 		    bputc(' ');
 		bprintf("%*s",
@@ -205,15 +205,16 @@ set_charclass(int f GCC_UNUSED, int n GCC_UNUSED)
     int ch;
     int code;
     int count;
+    CHARTYPE ctype;
     REGEXVAL *exp;
 
     if ((code = get_charclass_code()) >= 0) {
-	code = (1 << code);
+	ctype = (CHARTYPE) (1 << code);
 	if ((exp = get_charclass_regexp()) != 0) {
 	    for (count = 0, ch = 0; ch < N_chars; ch++) {
-		if (!istype(code, ch)
+		if (!istype(ctype, ch)
 		    && match_charclass_regexp(ch, exp)) {
-		    vl_ctype_set(ch, code);
+		    vl_ctype_set(ch, ctype);
 		    count++;
 		}
 	    }
@@ -232,15 +233,16 @@ unset_charclass(int f GCC_UNUSED, int n GCC_UNUSED)
     int ch;
     int code;
     int count;
+    CHARTYPE ctype;
     REGEXVAL *exp;
 
     if ((code = get_charclass_code()) >= 0) {
-	code = (1 << code);
+	ctype = (CHARTYPE) (1 << code);
 	if ((exp = get_charclass_regexp()) != 0) {
 	    for (count = 0, ch = 0; ch < N_chars; ch++) {
-		if (istype(code, ch)
+		if (istype(ctype, ch)
 		    && match_charclass_regexp(ch, exp)) {
-		    vl_ctype_clr(ch, code);
+		    vl_ctype_clr(ch, ctype);
 		    count++;
 		}
 	    }
@@ -305,7 +307,7 @@ show_charclass(TBUFF **result, const char *arg)
 
     for (j = 0; j != vl_UNUSED; j++) {
 	if (((1 << j) & k) != 0
-	    && (s = choice_to_name(&fsm_charclass_blist, j)) != 0) {
+	    && (s = choice_to_name(&fsm_charclass_blist, (int) j)) != 0) {
 	    if (tb_length(*result))
 		tb_sappend0(result, "+");
 	    tb_sappend0(result, s);
@@ -335,7 +337,7 @@ makevarslist(int dum1 GCC_UNUSED, void *ptr)
     for (p = (UVAR *) ptr; p->u_name != 0; ++p) {
 	bprintf("\n$%s = ", p->u_name);
 	bputsn_xcolor(p->u_value,
-		      strlen(p->u_value),
+		      (int) strlen(p->u_value),
 		      ((p->u_type == VALTYPE_ENUM ||
 			p->u_type == VALTYPE_BOOL ||
 			p->u_type == VALTYPE_MAJOR)
@@ -358,7 +360,7 @@ makevarslist(int dum1 GCC_UNUSED, void *ptr)
 	for (j = 1; j <= k; j++) {
 	    bprintf("\n$%d = ", j);
 	    bputsn_xcolor(tb_values(arg_stack->all_args[j]),
-			  tb_length(arg_stack->all_args[j]),
+			  (int) tb_length(arg_stack->all_args[j]),
 			  XCOLOR_STRING);
 	}
     }
@@ -371,7 +373,7 @@ makevarslist(int dum1 GCC_UNUSED, void *ptr)
 	}
 	bprintf("\n%%%s = ", p->u_name);
 	bputsn_xcolor(p->u_value,
-		      strlen(p->u_value),
+		      (int) strlen(p->u_value),
 		      XCOLOR_STRING);
     }
 }
@@ -552,7 +554,7 @@ list_amp_funcs(int dum1 GCC_UNUSED, void *ptr GCC_UNUSED)
     bpadc('-', term.cols - DOT.o);
 
     for (n = 0; vl_ufuncs[n].f_name != 0; ++n) {
-	int nparams = (vl_ufuncs[n].f_code & NARGMASK);
+	int nparams = (int) (vl_ufuncs[n].f_code & NARGMASK);
 	const char *t_params = UF_PARAMS(vl_ufuncs[n].f_code);
 	const char *t_return = UF_RETURN(vl_ufuncs[n].f_code);
 
@@ -1016,12 +1018,12 @@ run_func(int fnum)
 
     TRACE((T_CALLED "run_func(%d:%s)\n", fnum, vl_ufuncs[fnum].f_name));
 
-    nargs = vl_ufuncs[fnum].f_code & NARGMASK;
-    args_numeric = vl_ufuncs[fnum].f_code & NUM;
-    args_boolean = vl_ufuncs[fnum].f_code & BOOL;
+    nargs = (int) (vl_ufuncs[fnum].f_code & NARGMASK);
+    args_numeric = (int) (vl_ufuncs[fnum].f_code & NUM);
+    args_boolean = (int) (vl_ufuncs[fnum].f_code & BOOL);
 
-    ret_numeric = vl_ufuncs[fnum].f_code & NRET;
-    ret_boolean = vl_ufuncs[fnum].f_code & BRET;
+    ret_numeric = (int) (vl_ufuncs[fnum].f_code & NRET);
+    ret_boolean = (int) (vl_ufuncs[fnum].f_code & BRET);
 
     TPRINTF(("** evaluate '%s' (0x%x), %d %s args returning %s\n",
 	     vl_ufuncs[fnum].f_name,
@@ -1301,7 +1303,7 @@ run_func(int fnum)
 	break;
     case UFLOOKUP:
 	if ((i = combine_choices(&fsm_lookup_blist, arg[0])) > 0)
-	    tb_scopy(&result, SL_TO_BSL(cfg_locate(arg[1], i)));
+	    tb_scopy(&result, SL_TO_BSL(cfg_locate(arg[1], (UINT) i)));
 	break;
     case UFPATH:
 	if (!is_error) {
@@ -2114,7 +2116,7 @@ render_int(TBUFF **rp, int i)
     p = tb_values(tb_alloc(rp, 32));
     q = lsprintf(p, "%d", i);
     if (rp != 0 && q != 0 && p != 0)
-	(*rp)->tb_used = (q - p + 1);
+	(*rp)->tb_used = (size_t) (q - p + 1);
     return p;
 }
 
@@ -2127,7 +2129,7 @@ render_long(TBUFF **rp, long i)
     p = tb_values(tb_alloc(rp, 32));
     q = lsprintf(p, "%ld", i);
     if (rp != 0 && q != 0 && p != 0)
-	(*rp)->tb_used = (q - p + 1);
+	(*rp)->tb_used = (size_t) (q - p + 1);
     return p;
 }
 
@@ -2510,7 +2512,7 @@ save_arguments(BUFFER *bp)
     beginDisplay();
     if ((p = typealloc(PROC_ARGS)) == 0) {
 	status = no_memory("save_arguments");
-    } else if ((all_args = tb_allocn(max_args + 1)) == 0) {
+    } else if ((all_args = tb_allocn((size_t) (max_args + 1))) == 0) {
 	status = no_memory("save_arguments");
 	free(p);
     } else {
@@ -2951,7 +2953,7 @@ s2size(const char *s)
     int n = strtol(s, 0, 0);
     if (n < 0)
 	n = 0;
-    return n;
+    return (size_t) n;
 }
 
 /* use this to return a pointer to the string after the n-1 first characters */

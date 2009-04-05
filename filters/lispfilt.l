@@ -3,7 +3,7 @@
 
 %{
 /*
- * $Id: lispfilt.l,v 1.23 2009/02/23 23:53:26 tom Exp $
+ * $Id: lispfilt.l,v 1.24 2009/04/04 00:45:57 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of lisp code.
  *
@@ -115,6 +115,8 @@ RPAREN		\)
 <QUOTED>\"		{ FinishQuote(NORMAL); }
 
 %%
+
+#include <fltstack.h>
 
 static const char *
 paren_attr(void)

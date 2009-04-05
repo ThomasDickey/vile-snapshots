@@ -7,7 +7,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/vilefilt.l,v 1.62 2008/11/19 23:11:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/vilefilt.l,v 1.63 2009/04/04 13:25:55 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of vile macros
  * - T.Dickey
@@ -148,6 +148,8 @@ SPACE		;
 "!"[^\n]*	{ WriteToken(Action_attr); }
 
 %%
+
+#include <fltstack.h>
 
 static void
 handle_keyword(char *text, int len)

@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/xresfilt.l,v 1.22 2008/11/19 23:11:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/xresfilt.l,v 1.23 2009/04/04 13:28:09 tom Exp $
  *
  * Filter to add vile "attribution" sequences to an X resource file.
  */
@@ -44,13 +44,13 @@ NUMBER		{SIGN}?({DECIMAL}|{OCTAL}|{HEXADECIMAL}|{REAL}|{COLOR})
 ESCAPED		(\\[0-7][0-7][0-7]|\\.)
 
 NAME		[[:alnum:]_-]+
-KEYWORD		({NAME}|<{NAME}>)
+KEYWORD		({NAME}|[<]{NAME}[>])
 
 %%
 
 <NORMAL>[?*.]		{ BEGIN(RESNAME); ECHO; }
 <NORMAL,RESNAME>{NAME}	{ WriteToken(isClass(yytext) ? Keyword_attr : Ident2_attr); }
-<RESNAME>:		{ BEGIN(RESVALUE); ECHO; flt_bfr_begin(String_attr); }
+<RESNAME>[:]		{ BEGIN(RESVALUE); ECHO; flt_bfr_begin(String_attr); }
 
 <RESVALUE>{NUMBER}	{ flt_bfr_embed(yytext, yyleng, Number_attr); }
 <RESVALUE>{KEYWORD}	{ quoted_name(yytext, yyleng); }

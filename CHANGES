@@ -6,6 +6,23 @@ Changes for vile 9.7 (released ??? ??? ?? ????)
 	> Mark Robinson:
 	+ build-fixes for mingw configuration when built using cygwin.
 	> Tom Dickey:
+	+ more fixes for lex-based filters:
+	  + make builtin/loadable syntax highlighters work better with files
+	    using recordseparator=cr by sending blanks instead of unexpected
+	    line-feeds, as well as changing the used recordseparator to
+	    newlines.  Make a similar workaround for recordseparator=lf by
+	    filtering unexpected carriage returns.
+	  + (jfg) change the error-exit when building with "new" flex to
+	    warnings.  Report problems to "new" flex's "maintainer".
+	  + add configure check for lex "%o" options.
+	  + fix typo in noclass.sh for [[:blank:]].
+	  + modify noclass.sh string for [[:print:]] to ensure there's no
+	    embedded '-'.
+	  + filter out "%pointer" options in noclass.sh (this could be a
+	    separate configure check from character classes).
+	  + modify fltstack.h to use it included twice - once in the declares,
+	    and once in the code section, e.g., for the non-flex parser
+	    encountered by Ellenberger.
 	+ modify handling of recordseparator mode to let explicit rs=cr work
 	  to read cr-delimited files, provided that dos mode is not set.
 	+ add variable $modeline-limit to limit the offset into each line that

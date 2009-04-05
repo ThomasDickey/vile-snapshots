@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: noclass.sh,v 1.6 2005/09/05 13:39:18 tom Exp $
+# $Id: noclass.sh,v 1.7 2009/04/04 13:24:27 tom Exp $
 # support older versions of flex/lex which do not support character classes
 # by expanding them into POSIX equivalents.
 #
@@ -26,12 +26,13 @@ do
 done
 tmp=noclass$$.l
 if test -n "$SRC" ; then
-	blank=' \t'
+	blank=' \\t'
 	lower='abcdefghijklmnopqrstuvwxyz'
 	upper='ABCDEFGHIJKLMNOPQRSTUVWXYZ'
 	digit='0123456789'
 	punct='~!@#\$%\^\\\&*()_+\`{}|:\"<>?\\\[\\\]\\;'\'',.\/\-'
 	sed	\
+		-e '/^%pointer/d' \
 		-e 's/\[:alpha:\]/'${lower}${upper}'/g' \
 		-e 's/\[:upper:\]/'${upper}'/g' \
 		-e 's/\[:lower:\]/'${lower}'/g' \
@@ -42,7 +43,7 @@ if test -n "$SRC" ; then
 		-e 's/\[:digit:\]/'${digit}'/g' \
 		-e 's/\[:punct:\]/'"${punct}"'/g' \
 		-e 's/\[:graph:\]/'"${lower}${upper}${digit}${punct}"'/g' \
-		-e 's/\[:print:\]/'"${lower}${upper}${digit}${punct}${blank}"'/g' \
+		-e 's/\[:print:\]/'"${lower}${upper}${digit}${blank}${punct}"'/g' \
 		$SRC >$tmp
 	$LEX $OPT $tmp
 	code=$?

@@ -4,7 +4,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/htmlfilt.l,v 1.76 2009/04/02 22:43:03 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/htmlfilt.l,v 1.77 2009/04/04 00:43:12 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of HTML input
  * text.
@@ -325,6 +325,8 @@ CHR_REF		&({IDENT}|{HEXNUM});
 <JS_NOTE>[*]+"/"	{ FinishQuote(JS_CODE); }
 
 %%
+
+#include <fltstack.h>
 
 static void
 html_command(char *text)

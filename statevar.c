@@ -3,7 +3,7 @@
  *	for getting and setting the values of the vile state variables,
  *	plus helper utility functions.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.133 2009/04/02 23:55:26 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.134 2009/04/04 20:30:14 tom Exp $
  */
 
 #include	"estruct.h"
@@ -622,7 +622,7 @@ int
 var_BWINDOWS(TBUFF **rp, const char *vp)
 {
     return (valid_buffer(curbp)
-	    ? any_ro_INT(rp, vp, curbp->b_nwnd)
+	    ? any_ro_INT(rp, vp, (int) curbp->b_nwnd)
 	    : FALSE);
 }
 
@@ -711,7 +711,7 @@ int
 var_CURCHAR(TBUFF **rp, const char *vp)
 {
     if (rp) {
-	render_int(rp, vl_getcchar() + 1);
+	render_long(rp, vl_getcchar() + 1);
 	return TRUE;
     } else if (vp && valid_buffer(curbp)) {
 	return gotochr(TRUE, strtol(vp, 0, 0));
@@ -1059,15 +1059,15 @@ var_KILL(TBUFF **rp, const char *vp)
 	    while (kb->d_next != 0) {
 		if ((used = KBLOCK) > limit)
 		    used = limit;
-		tb_bappend(rp, (char *) (kb->d_chunk), used);
+		tb_bappend(rp, (char *) (kb->d_chunk), (size_t) used);
 		if ((limit -= used) <= 0)
 		    break;
 		kb = kb->d_next;
 	    }
 	    if (limit > 0) {
-		if ((used = kr->kused) > limit)
+		if ((used = (int) kr->kused) > limit)
 		    used = limit;
-		tb_bappend(rp, (char *) (kb->d_chunk), used);
+		tb_bappend(rp, (char *) (kb->d_chunk), (size_t) used);
 	    }
 	}
 	tb_append(rp, EOS);
@@ -1091,7 +1091,7 @@ var_KILL_SIZE(TBUFF **rp, const char *vp)
 		result += KBLOCK;
 		kb = kb->d_next;
 	    }
-	    result += kr->kused;
+	    result += (int) kr->kused;
 	    return any_ro_INT(rp, vp, result);
 	} else {
 	    return FALSE;
@@ -1514,7 +1514,7 @@ var_SEED(TBUFF **rp, const char *vp)
 	return TRUE;
     } else if (vp) {
 	seed = strtol(vp, 0, 0);
-	srand(seed);
+	srand((UINT) seed);
 	return TRUE;
     } else {
 	return FALSE;

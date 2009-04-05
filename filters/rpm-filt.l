@@ -6,7 +6,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/rpm-filt.l,v 1.19 2008/11/19 23:11:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/rpm-filt.l,v 1.20 2009/04/04 00:49:53 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of rpm spec-file.
  */
@@ -158,6 +158,8 @@ SECTION		%{IDENT}
 <SUBST>[^"}]+		{ flt_bfr_embed(yytext, yyleng, ""); }
 
 %%
+
+#include <fltstack.h>
 
 static void
 begin_section(char *name)
