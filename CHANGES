@@ -1,6 +1,6 @@
 Changes for vile 9.7 (released ??? ??? ?? ????)
 
- 200904?? (n)
+ 20090405 (n)
 	> Ingmar Ellenberger:
 	+ reorder part of sql-filt.l to work with a non-flex parser.
 	> Mark Robinson:

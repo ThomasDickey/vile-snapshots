@@ -1,4 +1,4 @@
-# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.2nd,v 1.13 2007/12/01 17:13:14 tom Exp $
+# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.2nd,v 1.14 2009/04/05 21:34:11 tom Exp $
 #
 
 .SUFFIXES: .l .c .i $o
@@ -103,11 +103,11 @@ dotags:
 	$(AR) $(AR_OPTS) $@ $(LOBJS)
 	$(RANLIB) $@
 
-atr2ansi$x : atr2ansi$o	unfilter$o ; $(LINK) -o $@ atr2ansi$o unfilter$o $(LDFLAGS)
-atr2html$x : atr2html$o	unfilter$o ; $(LINK) -o $@ atr2html$o unfilter$o $(LDFLAGS)
-atr2text$x : atr2text$o	unfilter$o ; $(LINK) -o $@ atr2text$o unfilter$o $(LDFLAGS)
-vile-crypt$x :	ecrypt$o	; $(LINK) -o $@ ecrypt$o $(LDFLAGS)
-vile-manfilt$x : manfilt$o	; $(LINK) -o $@ manfilt$o $(LDFLAGS)
+atr2ansi$x : atr2ansi$o	unfilter$o ; $(LINK) -o $@ atr2ansi$o unfilter$o $(LDFLAGS) $(LIBS)
+atr2html$x : atr2html$o	unfilter$o ; $(LINK) -o $@ atr2html$o unfilter$o $(LDFLAGS) $(LIBS)
+atr2text$x : atr2text$o	unfilter$o ; $(LINK) -o $@ atr2text$o unfilter$o $(LDFLAGS) $(LIBS)
+vile-crypt$x :	ecrypt$o	; $(LINK) -o $@ ecrypt$o $(LDFLAGS) $(LIBS)
+vile-manfilt$x : manfilt$o	; $(LINK) -o $@ manfilt$o $(LDFLAGS) $(LIBS)
 
 $(BINDIR)/atr2ansi$x :		atr2ansi$x		; $(INSTALL) $? $@
 $(BINDIR)/atr2html$x :		atr2html$x		; $(INSTALL) $? $@

@@ -2,7 +2,7 @@
  *	eval.c -- function and variable evaluation
  *	original by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.406 2009/04/04 20:11:24 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.408 2009/04/05 17:54:26 tom Exp $
  *
  */
 
@@ -348,7 +348,7 @@ makevarslist(int dum1 GCC_UNUSED, void *ptr)
 			     ? XCOLOR_STRING
 			     : (p->u_type == VALTYPE_INT
 				? XCOLOR_NUMBER
-				: (p->u_type == VALTYPE_UNKNOWN
+				: (p->u_type == (char) VALTYPE_UNKNOWN
 				   ? XCOLOR_WARNING
 				   : XCOLOR_NONE))))));
     }
