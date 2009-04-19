@@ -3,7 +3,7 @@
  *	for getting and setting the values of the vile state variables,
  *	plus helper utility functions.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.134 2009/04/04 20:30:14 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.135 2009/04/19 19:51:47 tom Exp $
  */
 
 #include	"estruct.h"
@@ -312,19 +312,25 @@ get_findpath(void)
 #endif
 
 #if OPT_EVAL && DISP_X11 && OPT_SHELL
+#ifndef DEFAULT_XSHELL
+#define DEFAULT_XSHELL "xterm"
+#endif
 char *
 get_xshell(void)
 {
     if (x_shell == 0)
-	SetEnv(&x_shell, DftEnv("XSHELL", "xterm"));
+	SetEnv(&x_shell, DftEnv("XSHELL", DEFAULT_XSHELL));
     return x_shell;
 }
 
+#ifndef DEFAULT_XSHELLFLAGS
+#define DEFAULT_XSHELLFLAGS "-e"
+#endif
 char *
 get_xshellflags(void)
 {
     if (x_shellflags == 0)
-	SetEnv(&x_shellflags, DftEnv("XSHELLFLAGS", "-e"));
+	SetEnv(&x_shellflags, DftEnv("XSHELLFLAGS", DEFAULT_XSHELLFLAGS));
     return x_shellflags;
 }
 

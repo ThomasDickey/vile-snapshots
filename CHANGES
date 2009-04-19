@@ -1,5 +1,16 @@
 Changes for vile 9.7 (released ??? ??? ?? ????)
 
+ 200904?? (o)
+	> Tom Dickey:
+	+ add DEFAULT_XSHELL, DEFAULT_XSHELLFLAGS symbols to statevar.c which
+	  can be overridden by compiler flags to select something other than
+	  "xterm" for $xshell variable, etc. (request by Brendan O'Dea).
+	+ improve html syntax filter:
+	  + check for "src" property in script tag before deciding whether to
+	    use JavaScript keywords.
+	  + create separate table "htmlprop" for HTML properties.
+	  + highlight CSS embedded in HTML.
+
  20090405 (n)
 	> Ingmar Ellenberger:
 	+ reorder part of sql-filt.l to work with a non-flex parser.

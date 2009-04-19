@@ -1,10 +1,10 @@
 %pointer
-%x HTMLNOTE HTMLCODE HTMLQUO1 HTMLQUO2 AT_CMDS JS_NOTE JS_CODE ANY_MODE ASP_CODE ASP_CMT0 JSP_CODE JSP_CMT0 JSP_CMT1
+%x HTMLNOTE HTMLCODE HTMLINCL HTMLQUO1 HTMLQUO2 AT_CMDS JS_NOTE JS_CODE ANY_MODE ASP_CODE ASP_CMT0 JSP_CODE JSP_CMT0 JSP_CMT1 CSS_CODE
 %o 10000
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/htmlfilt.l,v 1.77 2009/04/04 00:43:12 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/htmlfilt.l,v 1.85 2009/04/19 19:59:52 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of HTML input
  * text.
@@ -87,6 +87,10 @@
 
 DefineOptFilter("html", "aj");
 
+#define SYMS_JS        "js"
+#define SYMS_CSS       "css"
+#define SYMS_CSS_UNITS "cssUnits"
+
 #ifdef FLEX_DEBUG
 #define DBG_HTML(msg) if (yy_flex_debug) fprintf(stderr, "%s\n", msg)
 #else
@@ -112,6 +116,9 @@ static int got_equals;		/* parse state to detect unquoted values */
 static int next_state;
 
 static int language_code(void);
+static void begin_htmlcode(void);
+static void css_units(char *text, int length);
+static void finish_htmlcode(void);
 static void html_command(char *text);
 static void html_quotes(char *text, int len, int state, int which);
 static void may_resume_html(char *text);
@@ -126,7 +133,7 @@ SPACE		[ \t]
 INTEGER		[-+]?([[:digit:]]+)
 REAL		[-+]?([[:digit:]]*\.[[:digit:]]+)([eE][+-]?[[:digit:]]+)?
 HEXNUM		"#"[xX]?[[:xdigit:]]+
-IDENT		[[:alpha:]_][[:alnum:]_-]*
+IDENT		[.]?[[:alpha:]_][[:alnum:]_-]*
 
 STRING		\"([^"])*\"
 
@@ -172,7 +179,6 @@ CHR_REF		&({IDENT}|{HEXNUM});
 			  WriteToken(Action_attr);
 			  pop_state();
 			  resume_attr();
-			  set_symbol_table(filter_def.filter_name);
 			}
 <AT_CMDS>{IDENT}	{
 			  got_language = !strcmp("language", lowercase_of(yytext));
@@ -193,7 +199,6 @@ CHR_REF		&({IDENT}|{HEXNUM});
 			  WriteToken(Action_attr);
 			  pop_state();
 			  resume_attr();
-			  set_symbol_table(filter_def.filter_name);
 			}
 <ANY_MODE>[\r\n] 	|
 <ANY_MODE>.		{ flt_bfr_append(yytext, yyleng); }
@@ -203,7 +208,6 @@ CHR_REF		&({IDENT}|{HEXNUM});
 			  WriteToken(Action_attr);
 			  pop_state();
 			  resume_attr();
-			  set_symbol_table(filter_def.filter_name);
 			}
 <JSP_CODE>{IDENT}	{ WriteToken(keyword_attr(yytext)); }
 <JSP_CODE>{STRINGS}	{ WriteToken(String_attr); }
@@ -227,7 +231,6 @@ CHR_REF		&({IDENT}|{HEXNUM});
 			  WriteToken(Action_attr);
 			  pop_state();
 			  resume_attr();
-			  set_symbol_table(filter_def.filter_name);
 			}
 <ASP_CODE>{IDENT}	{ WriteToken(ci_keyword_attr(yytext)); }
 <ASP_CODE>{STRING}	{ WriteToken(String_attr); }
@@ -243,9 +246,7 @@ CHR_REF		&({IDENT}|{HEXNUM});
 
 <INITIAL>"<"		{
 			  WriteToken(Keyword_attr);
-			  new_state(HTMLCODE);
-			  got_equals = 0;
-			  got_tag = 0;
+			  begin_htmlcode();
 			}
 <HTMLCODE>"<"		{
 			  WriteToken(Error_attr);
@@ -256,7 +257,9 @@ CHR_REF		&({IDENT}|{HEXNUM});
 			  if (got_language2) ++got_language2;
 			  ++got_equals;
 			}
-<HTMLCODE>(\/)?">"	{ WriteToken(Keyword_attr); new_state(next_state); }
+<HTMLCODE>(\/)?">"	{ WriteToken(Keyword_attr);
+			  finish_htmlcode();
+			}
 
 <HTMLCODE>(\/)?{IDENT}	{
     			  html_command(yytext);
@@ -287,6 +290,15 @@ CHR_REF		&({IDENT}|{HEXNUM});
 <HTMLCODE>{REAL}	|
 <HTMLCODE>{INTEGER}	|
 <HTMLCODE>{HEXNUM}	{ WriteToken(Number_attr); }
+
+<CSS_CODE>{IDENT}	{ WriteToken(keyword_attr(yytext)); }
+<CSS_CODE>{INTEGER}{IDENT}	{ css_units(yytext, yyleng); }
+<CSS_CODE>{HEXNUM}	{ WriteToken(Number_attr); }
+<CSS_CODE>"<!--"[^\r\n]* { WriteToken(Comment_attr); }
+<CSS_CODE>"-->"		{ WriteToken(Comment_attr);
+			  next_state = INITIAL;
+			  finish_htmlcode();
+			}
 
 <JS_CODE>{IDENT}	{ WriteToken(keyword_attr(yytext)); }
 <JS_CODE>{STRINGS}	{ WriteToken(String_attr); }
@@ -328,36 +340,75 @@ CHR_REF		&({IDENT}|{HEXNUM});
 
 #include <fltstack.h>
 
+/*
+ * Check if the given symbol table has been loaded.  If not, load it.
+ * That leaves the newly loaded symbol table as the current one.
+ */
+static void
+setup_symbols(char *name)
+{
+    if (!set_symbol_table(name)) {
+	flt_make_symtab(name);
+	flt_read_keywords(MY_NAME);
+	flt_read_keywords(name);
+    }
+}
+
 static void
 html_command(char *text)
 {
     int ending = (text[0] == '/');
     char *temp = lowercase_of(ending ? text + 1 : text);
-    int change = !got_tag
-		 && !got_equals
-		 && (!strcmp(temp, "server")
-		  || !strcmp(temp, "script"));
+    char *attr = 0;
+    int change = 0;
 
+    if (!got_tag && !got_equals) {
+	if (!strcmp(temp, "server")
+	    || !strcmp(temp, "script")) {
+	    change = JS_CODE;
+	} else if (!strcmp(temp, "style")) {
+	    change = CSS_CODE;
+	}
+    }
     got_language2 = 0;
     if (change) {
 	set_symbol_table(filter_def.filter_name);
     } else if (!strcmp(temp,"language")) {
 	got_language2 = 1;
     }
-    flt_puts(text, strlen(text), ci_keyword_attr(temp));
+    attr = ci_keyword_attr(temp);
+    if (!attr || !*attr)
+	flt_error("Unknown keyword: %s", temp);
+    flt_puts(text, strlen(text), attr);
 
-    if (change) {
-     	if (ending) {
-	    next_state = INITIAL;
-	    DBG_HTML("start INITIAL");
-	    set_symbol_table(filter_def.filter_name);
-	} else {
-	    next_state = JS_CODE;
-	    DBG_HTML("start JS_CODE");
-	    set_symbol_table("js");
+    if (got_tag && !strcmp(temp, "src")) {
+	next_state = HTMLINCL;
+	DBG_HTML("next_state HTMLINCL");
+    } else {
+	switch (change) {
+	case JS_CODE:
+	    if (ending) {
+		next_state = INITIAL;
+		DBG_HTML("next_state INITIAL");
+	    } else if (next_state != HTMLINCL) {
+		next_state = JS_CODE;
+		DBG_HTML("next_state JS_CODE");
+	    }
+	    break;
+	case CSS_CODE:
+	    if (ending) {
+		next_state = INITIAL;
+		DBG_HTML("next_state INITIAL");
+	    } else {
+		next_state = CSS_CODE;
+		DBG_HTML("next_state CSS_CODE");
+	    }
+	    break;
 	}
     }
-    got_tag++;
+    if (!got_tag++) {
+	setup_symbols("htmlprop");
+    }
 }
 
 static void
@@ -420,6 +471,38 @@ resume_attr(void)
 	flt_bfr_begin(String_attr);
 	break;
     }
+    set_symbol_table(filter_def.filter_name);
+}
+
+static void
+begin_htmlcode(void)
+{
+    new_state(HTMLCODE);
+    got_equals = 0;
+    got_tag = 0;
+}
+
+static void
+finish_htmlcode(void)
+{
+    if (next_state == HTMLINCL)
+	next_state = INITIAL;
+    new_state(next_state);
+
+    switch (next_state) {
+    case CSS_CODE:
+	setup_symbols(SYMS_CSS);
+	break;
+    case JS_CODE:
+	setup_symbols(SYMS_JS);
+	break;
+    default:
+    case INITIAL:
+    case HTMLINCL:
+	set_symbol_table(filter_def.filter_name);
+	break;
+    }
+    got_tag = 0;
 }
 
 static void
@@ -443,7 +526,31 @@ may_resume_html(char *text)
     html_command(left);
     *next = save;
     flt_puts(next, strlen(next), Keyword_attr);
-    new_state(next_state);
+    finish_htmlcode();
+}
+
+static void
+css_units(char *text, int length)
+{
+    int digits = length;
+    char *attr;
+
+    while (digits > 0) {
+	if (isdigit(CharOf(text[digits - 1])))
+	    break;
+	--digits;
+    }
+
+    flt_puts(text, digits, Number_attr);
+    if (digits != length) {
+	setup_symbols(SYMS_CSS);
+	/* units are normally loaded as part of css.key */
+	setup_symbols(SYMS_CSS_UNITS);
+	if ((attr = ci_keyword_attr(text + digits)) == 0)
+	    attr = Error_attr;
+	flt_puts(text + digits, length - digits, attr);
+	set_symbol_table(SYMS_CSS);
+    }
 }
 
 static void
@@ -496,11 +603,9 @@ setup_language(char *name)
 {
     char *keys = language2keys(name);
 
-    if (keys != 0 && !set_symbol_table(name)) {
+    if (keys != 0 && !set_symbol_table(keys)) {
 	use_language = keys;
-	flt_make_symtab(keys);
-	flt_read_keywords(MY_NAME);
-	flt_read_keywords(keys);
+	setup_symbols(keys);
 	set_symbol_table(filter_def.filter_name);
     }
 }
