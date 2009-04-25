@@ -8,7 +8,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/lex-filt.l,v 1.70 2009/04/04 16:00:57 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/lex-filt.l,v 1.71 2009/04/25 16:18:30 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of LEX program.
  */
@@ -126,7 +126,7 @@ STATES		("<"("*"|({IDENT}|\,)+)">")
 		}
 
 <STATES>{IDENT}		{
-			  char *attr = class_attr(yytext);
+			  const char *attr = class_attr(yytext);
 			  if (attr == 0) {
 			    insert_keyword(yytext, States_attr, 0);
 			    attr = keyword_attr(yytext);
@@ -144,7 +144,7 @@ STATES		("<"("*"|({IDENT}|\,)+)">")
 
 <RULES>^{IDENT}		{
 			  if (set_symbol_table(NAME_LEX_PATTERN)) {
-			      char *attr = class_attr(yytext);
+			      const char *attr = class_attr(yytext);
 			      if (attr == 0) {
 				  insert_keyword(yytext, Pattern_attr, 0);
 				  attr = keyword_attr(yytext);
@@ -249,7 +249,7 @@ set_rules(void)
 static void
 write_1state(char *text, int len)
 {
-    char *attr = keyword_attr(text);
+    const char *attr = keyword_attr(text);
     if (attr == 0) {
 	if (len == 1 && *text == '*') {
 	    attr = Keyword_attr;
@@ -355,7 +355,7 @@ parse_limits(char *text, int first, int last)
 static void
 write_patterns(char *text, int len)
 {
-    char *attr;
+    const char *attr;
     int quoted = 0;
     int escape = 0;
     int ranges = 0;

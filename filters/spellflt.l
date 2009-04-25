@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/spellflt.l,v 1.41 2008/11/19 23:09:47 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/spellflt.l,v 1.42 2009/04/25 16:18:58 tom Exp $
  *
  * Filter to add vile "attribution" sequences to misspelled words.
  */
@@ -169,7 +169,7 @@ static void
 ChopWords(FILE *fp, char *text, int len)
 {
     char *base = text;
-    char *attr;
+    const char *attr;
     int next = len;
     char save;
 

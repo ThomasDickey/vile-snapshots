@@ -3,7 +3,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/au3-filt.l,v 1.9 2008/11/19 23:11:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/au3-filt.l,v 1.10 2009/04/25 16:12:30 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of AutoIt
  * input text.
@@ -40,7 +40,7 @@ NUMBER		{HEX}|{INTEGER}|{REAL}
 
 %%
 
-<NORMAL,IFCMT>^#[^\r\n]*$	{ char *text = lowercase_of(yytext);
+<NORMAL,IFCMT>^#[^\r\n]*$	{ const char *text = lowercase_of(yytext);
 				  WriteToken(Prepro_attr);
 				  if (!strncmp(text, "#comments-start", 15)
 				   || !strncmp(text, "#cs", 3)) {
@@ -62,7 +62,7 @@ NUMBER		{HEX}|{INTEGER}|{REAL}
 
 <NORMAL>;			{ WriteToken(Comment_attr); BEGIN(COMMENT); }
 <NORMAL>{IDENT}			{
-				  char *attr = ci_keyword_attr(yytext);
+				  const char *attr = ci_keyword_attr(yytext);
 				  if (attr == 0) {
 				      if (yytext[0] == '$') {
 					  attr = Ident2_attr;

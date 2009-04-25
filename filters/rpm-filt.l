@@ -6,7 +6,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/rpm-filt.l,v 1.20 2009/04/04 00:49:53 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/rpm-filt.l,v 1.21 2009/04/25 16:28:10 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of rpm spec-file.
  */
@@ -31,7 +31,7 @@ static int here_exp;
 
 #include <fltstack.h>
 
-static char * meta_variable(char *name);
+static const char * meta_variable(char *name);
 static int embed_or_append(char *text, int length);
 static int got_here(char *text, int length);
 static void begin_section(char *name);
@@ -174,10 +174,10 @@ begin_section(char *name)
     }
 }
 
-static char *
+static const char *
 meta_variable(char *name)
 {
-    char *attr = keyword_attr(name);
+    const char *attr = keyword_attr(name);
     return (attr != 0) ? attr : Ident_attr;
 }
 

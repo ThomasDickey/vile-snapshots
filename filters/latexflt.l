@@ -6,7 +6,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/latexflt.l,v 1.50 2009/04/04 00:44:39 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/latexflt.l,v 1.51 2009/04/25 16:18:12 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of TeX or LaTeX
  * input text.
@@ -173,7 +173,7 @@ NUMBER		({INTEGER}|{REAL})
 static void
 write_keyword(void)
 {
-    char *attr;
+    const char *attr;
     if (FltOptions('a'))
 	attr = Keyword_attr;
     else

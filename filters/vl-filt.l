@@ -3,7 +3,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/vl-filt.l,v 1.16 2008/11/19 23:11:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/vl-filt.l,v 1.17 2009/04/25 16:20:07 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of VeriLog
  * program.
@@ -44,7 +44,7 @@ DSTRING		\"(\\.|[^"\\])*\"
 %%
 
 <CODE>{ESCNAME}		{ WriteToken(keyword_attr(yytext)); }
-<CODE>{SYSNAME}		{ char *attr = keyword_attr(yytext);
+<CODE>{SYSNAME}		{ const char *attr = keyword_attr(yytext);
 			  if (attr != 0) {
 			      WriteToken(attr);
 			  } else {
@@ -55,7 +55,7 @@ DSTRING		\"(\\.|[^"\\])*\"
 <CODE>{IDENT}		{ WriteToken(keyword_attr(yytext)); }
 
 <CODE>`define{SPACE}+{IDENT} { do_define(yytext); }
-<CODE>{DIRECTIVE}	{ char *attr = keyword_attr(yytext);
+<CODE>{DIRECTIVE}	{ const char *attr = keyword_attr(yytext);
 			  if (attr != 0) {
 			      WriteToken(attr);
 			  } else {

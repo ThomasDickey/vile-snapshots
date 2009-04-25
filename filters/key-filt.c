@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/key-filt.c,v 1.42 2008/10/19 15:14:21 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/key-filt.c,v 1.43 2009/04/25 16:21:03 tom Exp $
  *
  * Filter to add vile "attribution" sequences to a vile keyword file.  It's
  * done best in C because the delimiters may change as a result of processing
@@ -22,10 +22,10 @@ static char *Ident2_attr;
 static char *Literal_attr;
 
 static int
-color_code(char *s, char **t)
+color_code(const char *s, const char **t)
 {
     int result = 0;
-    char *base = s;
+    const char *base = s;
 
     if (*s != 0) {
 	for (;;) {
@@ -52,16 +52,16 @@ color_code(char *s, char **t)
 }
 
 static int
-is_color(char *s)
+is_color(const char *s)
 {
-    char *t = 0;
+    const char *t = 0;
     return color_code(s, &t);
 }
 
-static char *
+static const char *
 color_of(char *s, int arg)
 {
-    char *result = "";
+    const char *result = "";
     char *t;
     int quoted = 0;
     int save;
@@ -155,10 +155,10 @@ abbr_len(char *s)
     return (s - base);
 }
 
-static char *
+static const char *
 actual_color(char *s, int len, int arg)
 {
-    char *result;
+    const char *result;
     char save = 0;
 
     if (len > 0) {		/* if not null-terminated, set it now */
@@ -199,7 +199,7 @@ ExecClass(char *param)
 {
     char *t = strmalloc(param);
     char *s;
-    char *attr = "";
+    const char *attr = "";
 
     parse_keyword(t, 1);
     free(t);
@@ -236,7 +236,7 @@ ExecDefault(char *param)
 {
     char *s = skip_ident(param);
     char *t = param;
-    char *attr = Literal_attr;
+    const char *attr = Literal_attr;
     int save = *s;
 
     VERBOSE(1, ("ExecDefault(%s)\n", param));
@@ -376,8 +376,8 @@ parse_nondirective(char *s)
 {
     char *base = s;
     char *t;
-    char *attr0 = Ident_attr;
-    char *attr1 = Ident2_attr;
+    const char *attr0 = Ident_attr;
+    const char *attr1 = Ident2_attr;
     char *attr2 = Literal_attr;
 
     if (FltOptions('c')) {

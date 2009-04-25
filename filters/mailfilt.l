@@ -6,7 +6,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/mailfilt.l,v 1.23 2008/11/19 23:11:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/mailfilt.l,v 1.24 2009/04/25 16:41:57 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of mail
  */
@@ -51,10 +51,21 @@ URL		[[:alpha:]]+"://"[[:alnum:]#%&+\,.\/?;@_=~-]+
 static void
 write_label(char *text, int size)
 {
-    char *lname = lowercase_of(text);
-    lname[--size] = 0;
-    flt_puts(text, size, keyword_attr(lname));
+    const char *lname = lowercase_of(text);
+    char temp[1024];
+    char *buffer;
+
+    if ((size + 1) >= (int) sizeof(temp)) {
+	buffer = strdup(lname);
+    } else {
+	buffer = strcpy(temp, lname);
+    }
+    buffer[--size] = 0;
+    flt_puts(text, size, keyword_attr(buffer));
     flt_putc(':');
+
+    if (buffer != temp)
+	free(buffer);
 }
 
 static void

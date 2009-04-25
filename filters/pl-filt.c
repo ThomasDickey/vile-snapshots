@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/pl-filt.c,v 1.97 2008/06/01 14:23:52 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/pl-filt.c,v 1.98 2009/04/25 16:12:05 tom Exp $
  *
  * Filter to add vile "attribution" sequences to perl scripts.  This is a
  * translation into C of an earlier version written for LEX/FLEX.
@@ -1153,7 +1153,7 @@ check_keyword(char *s, int ok, AfterKey * state)
 static char *
 put_IDENT(char *s, int ok, AfterKey * if_wrd)
 {
-    char *attr = 0;
+    const char *attr = 0;
     char save = s[ok];
 
     s[ok] = '\0';
@@ -1170,7 +1170,7 @@ put_IDENT(char *s, int ok, AfterKey * if_wrd)
 static char *
 put_NOKEYWORD(char *s, int ok, AfterKey * if_wrd)
 {
-    char *attr = 0;
+    const char *attr = 0;
     char save = s[ok];
 
     s[ok] = '\0';

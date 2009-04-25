@@ -1,7 +1,7 @@
 /*
  * Common utility functions for vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.126 2008/11/28 01:10:17 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.127 2009/04/25 16:16:12 tom Exp $
  *
  */
 
@@ -81,7 +81,7 @@ static CLASS *current_class;
  * flt_bfr_*() function data
  */
 static char *flt_bfr_text = 0;
-static char *flt_bfr_attr = "";
+static const char *flt_bfr_attr = "";
 static unsigned flt_bfr_used = 0;
 static unsigned flt_bfr_size = 0;
 
@@ -456,14 +456,14 @@ TrimBlanks(char *src)
  * Public functions                                                           *
  ******************************************************************************/
 
-char *
-ci_keyword_attr(char *text)
+const char *
+ci_keyword_attr(const char *text)
 {
     return keyword_attr(lowercase_of(text));
 }
 
-char *
-ci_keyword_flag(char *text)
+const char *
+ci_keyword_flag(const char *text)
 {
     return keyword_flag(lowercase_of(text));
 }
@@ -515,16 +515,16 @@ flt_bfr_append(char *text, int length)
 }
 
 void
-flt_bfr_begin(char *attr)
+flt_bfr_begin(const char *attr)
 {
     flt_bfr_finish();
     flt_bfr_attr = attr;
 }
 
 void
-flt_bfr_embed(char *text, int length, char *attr)
+flt_bfr_embed(char *text, int length, const char *attr)
 {
-    char *save = flt_bfr_attr;
+    const char *save = flt_bfr_attr;
 
     if ((save == 0 && attr == 0) ||
 	(save != 0 && attr != 0 && !strcmp(save, attr))) {
@@ -864,7 +864,7 @@ insert_keyword(const char *ident, const char *attribute, int classflag)
 }
 
 KEYWORD *
-is_class(char *name)
+is_class(const char *name)
 {
     KEYWORD *result = FindIdentifier(name);
     if (result != 0) {
@@ -876,7 +876,7 @@ is_class(char *name)
 }
 
 KEYWORD *
-is_keyword(char *name)
+is_keyword(const char *name)
 {
     KEYWORD *result;
     if ((result = FindIdentifier(name)) != 0
@@ -886,11 +886,11 @@ is_keyword(char *name)
     return 0;
 }
 
-char *
-keyword_attr(char *name)
+const char *
+keyword_attr(const char *name)
 {
     KEYWORD *data = keyword_data(name);
-    char *result = 0;
+    const char *result = 0;
 
     if (data != 0) {
 	result = data->kw_attr;
@@ -900,7 +900,7 @@ keyword_attr(char *name)
 }
 
 KEYWORD *
-keyword_data(char *name)
+keyword_data(const char *name)
 {
     KEYWORD *data = is_keyword(name);
     KEYWORD *result = 0;
@@ -916,11 +916,11 @@ keyword_data(char *name)
     return result;
 }
 
-char *
-keyword_flag(char *name)
+const char *
+keyword_flag(const char *name)
 {
     KEYWORD *data = keyword_data(name);
-    char *result = 0;
+    const char *result = 0;
 
     if (data != 0) {
 	result = data->kw_flag;
@@ -929,13 +929,13 @@ keyword_flag(char *name)
     return result;
 }
 
-char *
-lowercase_of(char *text)
+const char *
+lowercase_of(const char *text)
 {
     static char *name;
     static unsigned used;
     unsigned n;
-    char *result;
+    const char *result;
 
 #if NO_LEAKS
     if (text == 0) {

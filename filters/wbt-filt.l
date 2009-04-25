@@ -3,7 +3,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/wbt-filt.l,v 1.8 2008/11/19 23:11:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/wbt-filt.l,v 1.9 2009/04/25 16:20:07 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of WinBatch script.
  */
@@ -12,7 +12,7 @@
 
 DefineFilter("wbt");
 
-static char *want_attr(char *want, char *name);
+static const char *want_attr(char *want, char *name);
 
 static char *Comment_attr;
 static char *Error_attr;
@@ -52,10 +52,10 @@ NUMBER		({REAL}|{DECIMAL})
 
 %%
 
-static char *
+static const char *
 want_attr(char *want, char *name)
 {
-    char *have = ci_keyword_attr(name);
+    const char *have = ci_keyword_attr(name);
     if (have != want)
 	have = Error_attr;
     return have;

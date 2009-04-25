@@ -3,7 +3,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/esqlfilt.l,v 1.19 2008/11/19 23:11:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/esqlfilt.l,v 1.20 2009/04/25 16:13:54 tom Exp $
  *
  * Filter to add vile "attribution" sequences to embedded SQL with C/C++.
  * - T.Dickey
@@ -106,8 +106,8 @@ reset_symbol_table(void)
 static void
 process_keyword(char *text, int len)
 {
-    char *temp = "";
-    char *attr = 0;
+    const char *temp = "";
+    const char *attr = 0;
 
     switch (exec_sql) {
     case 0:

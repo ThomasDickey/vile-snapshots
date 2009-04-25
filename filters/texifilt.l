@@ -3,7 +3,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/texifilt.l,v 1.10 2008/11/19 23:11:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/texifilt.l,v 1.11 2009/04/25 16:28:48 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of texinfo input.
  */
@@ -36,8 +36,8 @@ NUMBER		({INTEGER}|{REAL})
 <sTEXT>[{}]		|
 <sTEXT>"@"{PUNCT}	{ WriteToken(String_attr); }
 
-<sTEXT>"@"{NAME}	{ char *attr = keyword_attr(yytext + 1);
-			  char *mark = Action_attr;
+<sTEXT>"@"{NAME}	{ const char *attr = keyword_attr(yytext + 1);
+			  const char *mark = Action_attr;
 			  if (attr == Comment_attr) {
 			      BEGIN(NOTE);
 			      mark = attr;

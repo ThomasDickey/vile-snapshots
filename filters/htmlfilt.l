@@ -1,10 +1,10 @@
 %pointer
-%x HTMLNOTE HTMLCODE HTMLINCL HTMLQUO1 HTMLQUO2 AT_CMDS JS_NOTE JS_CODE ANY_MODE ASP_CODE ASP_CMT0 JSP_CODE JSP_CMT0 JSP_CMT1 CSS_CODE
+%x HTMLNOTE HTMLCODE HTMLINCL HTMLQUO1 HTMLQUO2 AT_CMDS JS_NOTE JS_CODE ANY_MODE ASP_CODE ASP_CMT0 JSP_CODE JSP_CMT0 JSP_CMT1 CSS_CODE CSS_NOTE
 %o 10000
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/htmlfilt.l,v 1.85 2009/04/19 19:59:52 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/htmlfilt.l,v 1.93 2009/04/25 17:21:16 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of HTML input
  * text.
@@ -87,9 +87,13 @@
 
 DefineOptFilter("html", "aj");
 
-#define SYMS_JS        "js"
+#define SYMS_CS        "cs"
 #define SYMS_CSS       "css"
 #define SYMS_CSS_UNITS "cssUnits"
+#define SYMS_HTMLPROP  "htmlprop"
+#define SYMS_JAVA      "java"
+#define SYMS_JS        "js"
+#define SYMS_VBS       "vbs"
 
 #ifdef FLEX_DEBUG
 #define DBG_HTML(msg) if (yy_flex_debug) fprintf(stderr, "%s\n", msg)
@@ -114,12 +118,15 @@ static int got_language2;
 static int got_equals;		/* parse state to detect unquoted values */
 
 static int next_state;
+static int css_state;
 
 static int language_code(void);
 static void begin_htmlcode(void);
+static void css_hash(char *text, int length);
+static void css_string_escapes(char *text, int length);
 static void css_units(char *text, int length);
 static void finish_htmlcode(void);
-static void html_command(char *text);
+static void html_command(const char *text);
 static void html_quotes(char *text, int len, int state, int which);
 static void may_resume_html(char *text);
 static void resume_attr(void);
@@ -128,12 +135,16 @@ static void using_language(void);
 
 %}
 
+NL		\n|\r\n|\r|\f
 SPACE		[ \t]
+NONASCII	[^\001-\126]
 
 INTEGER		[-+]?([[:digit:]]+)
 REAL		[-+]?([[:digit:]]*\.[[:digit:]]+)([eE][+-]?[[:digit:]]+)?
 HEXNUM		"#"[xX]?[[:xdigit:]]+
-IDENT		[.]?[[:alpha:]_][[:alnum:]_-]*
+IDENT		[[:alpha:]_][[:alnum:]_.-]*
+
+HTML_IDENT	[.!?]?[[:alpha:]_][[:alnum:]_.-]*
 
 STRING		\"([^"])*\"
 
@@ -143,6 +154,26 @@ STRINGS		({SSTRING}|{DSTRING})
 
 URI_REF		"%"[[:xdigit:]][[:xdigit:]]
 CHR_REF		&({IDENT}|{HEXNUM});
+
+CSS_UNICODE	\\([[:xdigit:]]{1,6})
+CSS_ESCAPE	{CSS_UNICODE}|(\\[^\n\r\f[:xdigit:]])
+
+CSS_NMSTART	[[:alpha:]_]|{NONASCII}|{CSS_ESCAPE}
+CSS_NMCHAR	[[:alnum:]_-]|{NONASCII}|{CSS_ESCAPE}
+CSS_IDENT	[-]?[[:alpha:]_-][[:alnum:]_-]*
+CSS_NAME	{CSS_NMCHAR}+
+
+CSS_HASH	#{CSS_NAME}
+
+CSS_UNITS	("%"|[[:alpha:]]+)
+
+CSS_STRING1	\'({CSS_ESCAPE}|\\{NL}|[^\n\r\f\\'])*\'
+CSS_STRING2	\"({CSS_ESCAPE}|\\{NL}|[^\n\r\f\\"])*\"
+CSS_STRING	({CSS_STRING1}|{CSS_STRING2})
+
+CSS_INVALID1	\'({CSS_ESCAPE}|\\{NL}|[^\n\r\f\\'])*
+CSS_INVALID2	\"({CSS_ESCAPE}|\\{NL}|[^\n\r\f\\"])*
+CSS_INVALID	({CSS_INVALID1}|{CSS_INVALID2})
 
 %%
 
@@ -244,7 +275,7 @@ CHR_REF		&({IDENT}|{HEXNUM});
 <ASP_CMT0>[\r\n]	{ flt_bfr_finish(); ECHO; new_state(ASP_CODE); }
 <ASP_CMT0>.		{ flt_bfr_append(yytext, yyleng); }
 
-<INITIAL>"<"		{
+<INITIAL,CSS_CODE>"<"	{
 			  WriteToken(Keyword_attr);
 			  begin_htmlcode();
 			}
@@ -253,24 +284,26 @@ CHR_REF		&({IDENT}|{HEXNUM});
 			  flt_error("Missing \">\"");
 			  got_equals = 0;
 			}
-<HTMLCODE>"="		{ ECHO;
+<HTMLCODE>"="		{
+			  ECHO;
 			  if (got_language2) ++got_language2;
 			  ++got_equals;
 			}
-<HTMLCODE>(\/)?">"	{ WriteToken(Keyword_attr);
+<HTMLCODE>(\/)?">" 	{
+			  WriteToken(Keyword_attr);
 			  finish_htmlcode();
 			}
 
-<HTMLCODE>(\/)?{IDENT}	{
+<HTMLCODE>(\/)?{HTML_IDENT} {
     			  html_command(yytext);
 			  got_equals = 0;
 			}
 
-<INITIAL>"<!--"		{ BeginQuote(HTMLNOTE, Comment_attr); }
+<INITIAL>"<!--"		{ PushQuote(HTMLNOTE, Comment_attr); }
 <HTMLNOTE>[\r\n]	{ flt_bfr_append(yytext, yyleng); }
 <HTMLNOTE>[^\r\n-]+	{ flt_bfr_append(yytext, yyleng); }
 <HTMLNOTE>[-]+[^-\>\r\n]*	{ flt_bfr_append(yytext, yyleng); }
-<HTMLNOTE>[-]+"->"	{ FinishQuote(INITIAL); }
+<HTMLNOTE>[-]+"->"	{ PopQuote(); }
 
 <INITIAL,HTMLCODE>{URI_REF}	|
 <INITIAL,HTMLCODE>{CHR_REF}	{ WriteToken(Number_attr); }
@@ -291,14 +324,26 @@ CHR_REF		&({IDENT}|{HEXNUM});
 <HTMLCODE>{INTEGER}	|
 <HTMLCODE>{HEXNUM}	{ WriteToken(Number_attr); }
 
-<CSS_CODE>{IDENT}	{ WriteToken(keyword_attr(yytext)); }
-<CSS_CODE>{INTEGER}{IDENT}	{ css_units(yytext, yyleng); }
-<CSS_CODE>{HEXNUM}	{ WriteToken(Number_attr); }
-<CSS_CODE>"<!--"[^\r\n]* { WriteToken(Comment_attr); }
-<CSS_CODE>"-->"		{ WriteToken(Comment_attr);
-			  next_state = INITIAL;
-			  finish_htmlcode();
+<CSS_CODE>[;:(){}\[\]]	{ ECHO; css_state = yytext[0]; }
+<CSS_CODE>@{CSS_IDENT}	|
+<CSS_CODE>{CSS_IDENT}	{ WriteToken(ci_keyword_attr(yytext)); }
+<CSS_CODE>{INTEGER}{CSS_UNITS}	{ css_units(yytext, yyleng); }
+<CSS_CODE>{CSS_STRING}	{ css_string_escapes(yytext, yyleng); }
+<CSS_CODE>{CSS_HASH}	{ css_hash(yytext, yyleng); }
+<CSS_CODE>{REAL}	{ WriteToken(Number_attr); }
+<CSS_CODE>{CSS_INVALID}	{ WriteToken(Error_attr); }
+<CSS_CODE>"<!--"[^\r\n]* { WriteToken(Comment_attr);
+			  push_state(CSS_CODE);
 			}
+<CSS_CODE>"-->"		{ WriteToken(Comment_attr);
+			  pop_state();
+			}
+
+<CSS_CODE>"/*"		{ WriteToken(Comment_attr); BEGIN(CSS_NOTE); }
+<CSS_NOTE>[^*]*		{ WriteToken(Comment_attr); }
+<CSS_NOTE>"*"+[^*/]*	{ WriteToken(Comment_attr); }
+<CSS_NOTE>"*"+"/"	{ WriteToken(Comment_attr); BEGIN(CSS_CODE); }
+
 
 <JS_CODE>{IDENT}	{ WriteToken(keyword_attr(yytext)); }
 <JS_CODE>{STRINGS}	{ WriteToken(String_attr); }
@@ -351,15 +396,21 @@ setup_symbols(char *name)
 	flt_make_symtab(name);
 	flt_read_keywords(MY_NAME);
 	flt_read_keywords(name);
+	/* set back to the name we asked for, in case reader switched */
+	set_symbol_table(name);
     }
 }
 
 static void
-html_command(char *text)
+html_command(const char *text)
 {
     int ending = (text[0] == '/');
-    char *temp = lowercase_of(ending ? text + 1 : text);
-    char *attr = 0;
+    const char *theText = (ending ? text + 1 : text);
+    int exact = ispunct(CharOf(*theText));
+    const char *temp = exact
+		       ? theText
+		       : lowercase_of(theText);
+    const char *attr = 0;
     int change = 0;
 
     if (!got_tag && !got_equals) {
@@ -376,7 +427,9 @@ html_command(char *text)
     } else if (!strcmp(temp,"language")) {
 	got_language2 = 1;
     }
-    attr = ci_keyword_attr(temp);
+    attr = exact
+	   ? keyword_attr(temp)
+	   : ci_keyword_attr(temp);
     if (!attr || !*attr)
 	flt_error("Unknown keyword: %s", temp);
     flt_puts(text, strlen(text), attr);
@@ -407,7 +460,7 @@ html_command(char *text)
 	}
     }
     if (!got_tag++) {
-	setup_symbols("htmlprop");
+	setup_symbols(SYMS_HTMLPROP);
     }
 }
 
@@ -491,14 +544,17 @@ finish_htmlcode(void)
 
     switch (next_state) {
     case CSS_CODE:
+	DBG_HTML("setting symbols for CSS");
 	setup_symbols(SYMS_CSS);
 	break;
     case JS_CODE:
+	DBG_HTML("setting symbols for JS");
 	setup_symbols(SYMS_JS);
 	break;
     default:
     case INITIAL:
     case HTMLINCL:
+	DBG_HTML("setting symbols for HTML");
 	set_symbol_table(filter_def.filter_name);
 	break;
     }
@@ -530,10 +586,62 @@ may_resume_html(char *text)
 }
 
 static void
+css_hash(char *text, int length)
+{
+    if (css_state == ':') {
+	char *attr = (length == 4 || length == 7) ? Number_attr : Error_attr;
+	flt_puts(text, length, attr);
+    } else {
+	flt_puts(text, length, ci_keyword_attr(text + 1));
+    }
+}
+
+static void
+css_string_escapes(char *text, int length)
+{
+    while (length > 0) {
+	int n;
+	int found;
+	for (n = 0, found = -1; n < length; ++n) {
+	    if (text[n] == '\\') {
+		found = n;
+		break;
+	    }
+	}
+	if (found >= 0) {
+	    if (length > 1) {
+		flt_puts(text, found, String_attr);
+		text += found;
+		length -= found;
+		if (isxdigit(CharOf(text[1]))) {
+		    for (n = 2, found = 2; n < length; ++n) {
+			if (isxdigit(CharOf(text[n]))) {
+			    found = n + 1;
+			} else {
+			    break;
+			}
+		    }
+		} else {
+		    found = 2;
+		}
+		flt_puts(text, found, Number_attr);
+		text += found;
+		length -= found;
+	    } else {
+		break;
+	    }
+	} else {
+	    break;
+	}
+    }
+    flt_puts(text, length, String_attr);
+}
+
+static void
 css_units(char *text, int length)
 {
     int digits = length;
-    char *attr;
+    const char *attr;
 
     while (digits > 0) {
 	if (isdigit(CharOf(text[digits - 1])))
@@ -543,13 +651,17 @@ css_units(char *text, int length)
 
     flt_puts(text, digits, Number_attr);
     if (digits != length) {
-	setup_symbols(SYMS_CSS);
-	/* units are normally loaded as part of css.key */
-	setup_symbols(SYMS_CSS_UNITS);
-	if ((attr = ci_keyword_attr(text + digits)) == 0)
-	    attr = Error_attr;
-	flt_puts(text + digits, length - digits, attr);
-	set_symbol_table(SYMS_CSS);
+	if (text[digits] == '%') {
+	    flt_puts(text + digits, length - digits, "");
+	} else {
+	    setup_symbols(SYMS_CSS);
+	    /* units are normally loaded as part of css.key */
+	    setup_symbols(SYMS_CSS_UNITS);
+	    if ((attr = ci_keyword_attr(text + digits)) == 0)
+		attr = Error_attr;
+	    flt_puts(text + digits, length - digits, attr);
+	    set_symbol_table(SYMS_CSS);
+	}
     }
 }
 
@@ -579,20 +691,26 @@ language2keys(char *name)
     char *result = 0;
 
     if (name != 0) {
-	char *lowered = lowercase_of(name);
+	const char *lowered = lowercase_of(name);
+	unsigned len = strlen(lowered);
+	char temp[80];
 
-	if (*lowered == '"' || *lowered == '\'') {
-	    dequote(lowered);
+	if ((len + 1) >= sizeof(temp))
+	    len = (sizeof(temp) - 1);
+
+	strncpy(temp, lowered, len);
+	if (*temp == '"' || *temp == '\'') {
+	    dequote(temp);
 	}
 
 	if (!strcmp(lowered, "c#"))
-	    result = "cs";
+	    result = SYMS_CS;
 	else if (!strcmp(lowered, "java"))
-	    result = "java";
+	    result = SYMS_JAVA;
 	else if (!strncmp(lowered, "javascript", 10))
-	    result = "js";
+	    result = SYMS_JS;
 	else if (!strcmp(lowered, "vbscript"))
-	    result = "vbs";
+	    result = SYMS_VBS;
     }
 
     return result;
@@ -663,6 +781,7 @@ do_filter(FILE *inputs)
 
     next_state = INITIAL;
     begin_state(INITIAL);
+    css_state = -1;
     RunLEX();
     flt_bfr_error();
     end_state();

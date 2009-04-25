@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/dcl-filt.l,v 1.21 2008/11/19 23:11:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/dcl-filt.l,v 1.22 2009/04/25 16:13:43 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of DCL files.
  *
@@ -92,8 +92,8 @@ STRING		\"([^"\r\n]|(""))*\"
 static void
 handle_ident(char *text, int length)
 {
-    char *attr = ci_keyword_attr(text);
-    char *temp = lowercase_of(text);
+    const char *attr = ci_keyword_attr(text);
+    const char *temp = lowercase_of(text);
     flt_puts(text, length, attr);
     if (!strcmp(temp, "deck")) {
 	/* FIXME: "DECK" can also have an option /dollars whose value would
@@ -129,10 +129,10 @@ handle_literal(char *text, int length)
 	--length;
     }
     if (length > 0) {
-	char *attr = String_attr;
+	const char *attr = String_attr;
 
 	if (dollars) {
-	    char *temp = lowercase_of(text);
+	    const char *temp = lowercase_of(text);
 	    if (!strcmp(temp, look_for)) {
 		look_for = 0;
 		attr = ci_keyword_attr(temp);

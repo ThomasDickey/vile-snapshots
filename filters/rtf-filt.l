@@ -2,7 +2,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/rtf-filt.l,v 1.6 2008/11/19 23:11:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/rtf-filt.l,v 1.7 2009/04/25 16:28:25 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of RTF (rich text format)
  * input text.
@@ -17,7 +17,7 @@ static char *Error_attr;
 static char *Number_attr;
 static char *String_attr;
 
-static char *control_attr(char *, int);
+static const char *control_attr(char *, int);
 
 %}
 
@@ -35,9 +35,10 @@ NUMBER		{INTEGER}
 
 %%
 
-static char *control_attr(char *text, int length)
+static const char *
+control_attr(char *text, int length)
 {
-    char *attr = 0;
+    const char *attr = 0;
 
     if (length > 1) {
 	char save = 0;

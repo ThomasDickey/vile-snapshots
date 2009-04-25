@@ -7,7 +7,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/imakeflt.l,v 1.19 2008/11/19 23:11:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/imakeflt.l,v 1.20 2009/04/25 16:17:58 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Imakefile
  *
@@ -111,7 +111,7 @@ preprocessor(char *text, int size)
 {
     char *s = skip_blanks(text);
     char *t;
-    char *attr = 0;
+    const char *attr = 0;
     int save;
 
     if (set_symbol_table("cpre")) {
@@ -174,7 +174,7 @@ write_keyword(char *text, int size, int prepro, int caseless)
     int notabs = 0;
     int tabs = 0;
     char *base = text;
-    char *attr = "";
+    const char *attr = "";
 
     while (size > 1 && text[size - 1] == ':') {
 	text[--size] = 0;

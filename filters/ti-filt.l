@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/ti-filt.l,v 1.25 2008/11/19 23:11:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/ti-filt.l,v 1.26 2009/04/25 16:31:09 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of terminfo
  */
@@ -27,7 +27,7 @@ static char *String_attr;
 
 static int commented;
 
-static char * check_name(char *name);
+static const char * check_name(const char *name);
 static void echo_vals(char *text, int size, char *attr);
 
 %}
@@ -80,10 +80,10 @@ echo_vals(char *text, int size, char *attr)
     flt_puts(text, size, attr);
 }
 
-static char *
-check_name(char *name)
+static const char *
+check_name(const char *name)
 {
-    char *attr = keyword_attr(name);
+    const char *attr = keyword_attr(name);
     if (attr == 0)
 	attr = "";
     if (strcmp(attr, Keyword_attr))

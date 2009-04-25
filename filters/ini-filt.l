@@ -3,7 +3,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/ini-filt.l,v 1.11 2008/11/19 23:11:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/ini-filt.l,v 1.12 2009/04/25 16:18:07 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of M$ ini-definition
  * input text.
@@ -19,10 +19,10 @@ static char *Ident2_attr;
 static char *Number_attr;
 static char *String_attr;
 
-static char *
+static const char *
 my_keyword_attr(char *name)
 {
-    char *result = ci_keyword_attr(name);
+    const char *result = ci_keyword_attr(name);
     if (result == 0 || *result == 0)
 	result = Ident2_attr;
     return result;
