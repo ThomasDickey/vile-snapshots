@@ -3,7 +3,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/asm-filt.l,v 1.9 2008/11/19 23:11:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/asm-filt.l,v 1.10 2009/04/25 16:12:23 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of M$ assembler files.
  */
@@ -44,7 +44,7 @@ FORMAT		"%"[.*[:digit:]l#+-]*[cdeEfFgGisuxX]
 
 %%
 
-<NORMAL>{IDENT}		{ char *attr = ci_keyword_attr(yytext);
+<NORMAL>{IDENT}		{ const char *attr = ci_keyword_attr(yytext);
 			  WriteToken(attr);
 			  if (attr == Quoted_attr) {
 			      BEGIN(QUOTE1);

@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/rubyfilt.c,v 1.45 2008/05/26 00:53:35 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/rubyfilt.c,v 1.46 2009/04/25 16:12:14 tom Exp $
  *
  * Filter to add vile "attribution" sequences to ruby scripts.  This is a
  * translation into C of an earlier version written for LEX/FLEX.
@@ -977,7 +977,7 @@ put_COMMENT(char *s, int ok)
 static char *
 put_KEYWORD(char *s, int ok, int *had_op)
 {
-    char *attr = 0;
+    const char *attr = 0;
     char save = s[ok];
 
     s[ok] = '\0';
@@ -1002,7 +1002,7 @@ put_OPERATOR(char *s, int ok, int *had_op)
 static char *
 put_VARIABLE(char *s, int ok)
 {
-    char *attr = 0;
+    const char *attr = 0;
     char save = s[ok];
 
     s[ok] = '\0';

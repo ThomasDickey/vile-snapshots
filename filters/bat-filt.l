@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/bat-filt.l,v 1.27 2008/11/19 23:11:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/bat-filt.l,v 1.28 2009/04/25 16:13:08 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of DOS (and
  * similar, such as W95, NT) batch file.
@@ -22,7 +22,7 @@ static char *String_attr;
 
 static int setting;
 
-static char * variable_attr(char *text);
+static const char * variable_attr(char *text);
 static void write_label(char *text, int length);
 
 %}
@@ -52,9 +52,9 @@ IDENT2		({PARAM}|{VARIABLE})
 
 <INITIAL>^{BLANK}*:{BLANK}*{IDENT} { write_label(yytext, yyleng); }
 
-<INITIAL>{IDENT}		{ char *temp = lowercase_of(yytext);
+<INITIAL>{IDENT}		{ const char *temp = lowercase_of(yytext);
 				  char *type = strrchr(temp, '.');
-				  char *attr;
+				  const char *attr;
 				  int echoing = 0;
 
 				  /* "echo." is a legal "echo", and the "."
@@ -96,10 +96,10 @@ IDENT2		({PARAM}|{VARIABLE})
 				  BEGIN(INITIAL);
 				}
 %%
-static char *
+static const char *
 variable_attr(char *text)
 {
-    char *attr = ci_keyword_attr(text);
+    const char *attr = ci_keyword_attr(text);
     int isvar = (setting || *text == '%');
 
     if ((attr == 0 || *attr == 0) && isvar) {

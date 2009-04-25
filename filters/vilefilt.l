@@ -7,7 +7,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/vilefilt.l,v 1.63 2009/04/04 13:25:55 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/vilefilt.l,v 1.64 2009/04/25 16:29:18 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of vile macros
  * - T.Dickey
@@ -37,7 +37,7 @@ static char *Number_attr;
 static char *Preproc_attr;
 static char *String_attr;
 
-static char * command_attr(char *text);
+static const char * command_attr(char *text);
 static int is_funckey(const char *text);
 static void handle_keyword(char *text, int len);
 static void handle_newline(void);
@@ -154,9 +154,9 @@ SPACE		;
 static void
 handle_keyword(char *text, int len)
 {
-    char *attr = is_funckey(text)
-		 ? String_attr
-		 : command_attr(text);
+    const char *attr = is_funckey(text)
+		       ? String_attr
+		       : command_attr(text);
 
 #if HAVE_DIRECTIVE
     if (vile_keywords) {
@@ -283,7 +283,7 @@ handle_prepro(char *text, int len)
     flt_puts(text, len, attr);
 }
 
-static char *
+static const char *
 command_attr(char *text)
 {
     if (vile_keywords) {

@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/sql-filt.l,v 1.44 2009/04/03 21:20:15 Ingmar.Ellenberger Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/sql-filt.l,v 1.45 2009/04/25 16:28:40 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of SQL script
  * - T.Dickey
@@ -34,7 +34,7 @@ static int saved_state;
 
 static void begin_oneliner(void);
 static void finish_oneliner(void);
-static int is_oneliner(char *name);
+static int is_oneliner(const char *name);
 static void init_filter(int before GCC_UNUSED);
 static void do_filter(FILE *inputs);
 
@@ -68,8 +68,8 @@ HOSTVAR		":"{IDENT}
 
 %%
 
-<LEAD>{IDENT}		{   char *text = lowercase_of(yytext);
-			    char *attr = ci_keyword_attr(text);
+<LEAD>{IDENT}		{   const char *text = lowercase_of(yytext);
+			    const char *attr = ci_keyword_attr(text);
 			    DPRINTF(("{%s->%s}", text, NONNULL(attr)));
 			    if (attr == Comment_attr) {
 				WriteToken(attr);
@@ -93,8 +93,8 @@ HOSTVAR		":"{IDENT}
 			    }
 			}
 
-<MORE,BODY>{IDENT}	{   char *text = lowercase_of(yytext);
-			    char *attr = ci_keyword_attr(text);
+<MORE,BODY>{IDENT}	{   const char *text = lowercase_of(yytext);
+			    const char *attr = ci_keyword_attr(text);
 			    DPRINTF(("{%s->%s}", text, NONNULL(attr)));
 			    if (attr == Comment_attr) {
 				new_state(INLINE_CMT);
@@ -226,9 +226,9 @@ finish_oneliner(void)
 }
 
 static int
-is_oneliner(char *name)
+is_oneliner(const char *name)
 {
-    char *flags = ci_keyword_flag(name);
+    const char *flags = ci_keyword_flag(name);
     int result = 0;
     if (flags != 0)
 	result = (strchr(flags, '1') != 0);

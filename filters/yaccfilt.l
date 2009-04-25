@@ -3,7 +3,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/yaccfilt.l,v 1.36 2009/04/04 13:48:57 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/yaccfilt.l,v 1.37 2009/04/25 16:20:23 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of YACC program.
  */
@@ -38,7 +38,7 @@ static int nested_section = 0;
 #include <fltstack.h>
 
 static SECTIONS NextSection(SECTIONS);
-static char *merged_attr(char *);
+static const char *merged_attr(char *);
 static int DeclareTerminal(const char *);
 static void DefineTerminal(char *);
 static void PopCode(void);
@@ -135,10 +135,10 @@ DefineTerminal(char *text)
 	insert_keyword(text, Terminal_attr, 0);
 }
 
-static char *
+static const char *
 merged_attr(char *text)
 {
-    char *attr = keyword_attr(text);
+    const char *attr = keyword_attr(text);
     if ((cur_state == CODE) && (attr == 0 || *attr == 0)) {
 	set_symbol_table(filter_def.filter_name);
 	attr = keyword_attr(text);

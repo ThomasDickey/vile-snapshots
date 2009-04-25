@@ -3,7 +3,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/as-filt.l,v 1.10 2008/11/19 23:11:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/as-filt.l,v 1.11 2009/04/25 16:20:48 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of assembler files.
  */
@@ -20,7 +20,7 @@ static char *Number_attr;
 static char *Prepro_attr;
 static char *String_attr;
 
-static char * expect_attr(char *name);
+static const char * expect_attr(char *name);
 
 %}
 
@@ -66,10 +66,10 @@ FORMAT		"%"[.*[:digit:]l#+-]*[cdeEfFgGisuxX]
 
 %%
 
-static char *
+static const char *
 expect_attr(char *name)
 {
-    char *attr = ci_keyword_attr(name);
+    const char *attr = ci_keyword_attr(name);
     if (attr == 0) {
 	attr = Error_attr;
 	flt_error("unexpected token");

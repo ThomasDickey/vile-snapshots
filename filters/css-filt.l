@@ -1,20 +1,23 @@
 %pointer
-%x COMMENT CODE
+%x CSS_CODE CSS_NOTE
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/css-filt.l,v 1.16 2008/11/19 23:11:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/css-filt.l,v 1.20 2009/04/25 17:19:29 tom Exp $
  *
  * Filter to add vile "attribution" sequences to Cascading Style Sheets.
+ *
+ * http://www.w3.org/TR/REC-CSS1/
+ * http://www.w3.org/TR/CSS2/
  */
 
 #include <filters.h>
 
 DefineFilter("css");
 
-static void hash_color(char *, int);
-static void number_units(char *, int);
-static void string_escapes(char *, int);
+static void css_hash(char *, int);
+static void css_number_units(char *, int);
+static void css_string_escapes(char *, int);
 
 static char *Comment_attr;
 static char *Error_attr;
@@ -22,29 +25,33 @@ static char *Ident2_attr;
 static char *Number_attr;
 static char *String_attr;
 
-static int state;
+static int css_state;
 
 %}
 
 NL		\n|\r\n|\r|\f
 BLANK		[[:blank:]]*
+NONASCII	[^\001-\126]
 
-UNICODE		\\[[:alnum:]]+
-ESCAPE		{UNICODE}|(\\[^\n\r\f[:alnum:]])
+CSS_UNICODE	\\([[:xdigit:]]{1,6})
+CSS_ESCAPE	{CSS_UNICODE}|(\\[^\n\r\f[:xdigit:]])
 
-STRING1		\'({ESCAPE}|\\{NL}|[^\n\r\f\\'])*\'
-STRING2		\"({ESCAPE}|\\{NL}|[^\n\r\f\\"])*\"
-STRING		({STRING1}|{STRING2})
+CSS_STRING1	\'({CSS_ESCAPE}|\\{NL}|[^\n\r\f\\'])*\'
+CSS_STRING2	\"({CSS_ESCAPE}|\\{NL}|[^\n\r\f\\"])*\"
+CSS_STRING	({CSS_STRING1}|{CSS_STRING2})
 
-INVALID1	\'({ESCAPE}|\\{NL}|[^\n\r\f\\'])*
-INVALID2	\"({ESCAPE}|\\{NL}|[^\n\r\f\\"])*
-INVALID		({INVALID1}|{INVALID2})
+CSS_INVALID1	\'({CSS_ESCAPE}|\\{NL}|[^\n\r\f\\'])*
+CSS_INVALID2	\"({CSS_ESCAPE}|\\{NL}|[^\n\r\f\\"])*
+CSS_INVALID	({CSS_INVALID1}|{CSS_INVALID2})
 
-IDENT		[[:alpha:]_-][[:alnum:]_-]*
-UNITS		[[:alpha:]]+
+CSS_NMSTART	[[:alpha:]_]|{NONASCII}|{CSS_ESCAPE}
+CSS_NMCHAR	[[:alnum:]_-]|{NONASCII}|{CSS_ESCAPE}
+CSS_IDENT	[-]?{CSS_NMSTART}{CSS_NMCHAR}*
+CSS_NAME	{CSS_NMCHAR}+
 
-HEX		[[:xdigit:]]
-HASH_COLOR	#({HEX})+
+CSS_UNITS	("%"|[[:alpha:]]+)
+
+CSS_HASH	#{CSS_NAME}
 
 DECIMAL		[[:digit:]]+
 REAL		([[:digit:]]*\.[[:digit:]]+)
@@ -54,30 +61,30 @@ URL		[[:alpha:]]+"://"[[:alnum:]#%&+\,.\/?;@_=~-]+
 
 %%
 
-<CODE>"!"{IDENT}	|
-<CODE>@{IDENT}		|
-<CODE>{IDENT}		{ WriteToken(ci_keyword_attr(yytext)); }
-<CODE>[;:(){}\[\]]	{ ECHO; state = yytext[0]; }
+<CSS_CODE>"!"{CSS_IDENT}	|
+<CSS_CODE>@{CSS_IDENT}	|
+<CSS_CODE>{CSS_IDENT}	{ WriteToken(ci_keyword_attr(yytext)); }
+<CSS_CODE>[;:(){}\[\]]	{ ECHO; css_state = yytext[0]; }
 
-<CODE>"/*"		{ WriteToken(Comment_attr); BEGIN(COMMENT); }
-<COMMENT>[^*]*		{ WriteToken(Comment_attr); }
-<COMMENT>"*"+[^*/]*	{ WriteToken(Comment_attr); }
-<COMMENT>"*"+"/"	{ WriteToken(Comment_attr); BEGIN(CODE); }
+<CSS_CODE>"/*"		{ WriteToken(Comment_attr); BEGIN(CSS_NOTE); }
+<CSS_NOTE>[^*]*		{ WriteToken(Comment_attr); }
+<CSS_NOTE>"*"+[^*/]*	{ WriteToken(Comment_attr); }
+<CSS_NOTE>"*"+"/"	{ WriteToken(Comment_attr); BEGIN(CSS_CODE); }
 
-<CODE>{URL}		{ WriteToken(String_attr); }
-<CODE>{STRING}		{ string_escapes(yytext, yyleng); }
-<CODE>{INVALID}		{ WriteToken(Error_attr); }
+<CSS_CODE>{URL}		{ WriteToken(String_attr); }
+<CSS_CODE>{CSS_STRING}	{ css_string_escapes(yytext, yyleng); }
+<CSS_CODE>{CSS_INVALID}	{ WriteToken(Error_attr); }
 
-<CODE>{NUMBER}{UNITS}	{ number_units(yytext, yyleng); }
-<CODE>{HASH_COLOR}	{ hash_color(yytext, yyleng); }
-<CODE>{NUMBER}		{ WriteToken(Number_attr); }
+<CSS_CODE>{NUMBER}{CSS_UNITS}	{ css_number_units(yytext, yyleng); }
+<CSS_CODE>{CSS_HASH}	{ css_hash(yytext, yyleng); }
+<CSS_CODE>{NUMBER}	{ WriteToken(Number_attr); }
 
 %%
 
 static void
-hash_color(char *text, int length)
+css_hash(char *text, int length)
 {
-    if (state == ':') {
+    if (css_state == ':') {
 	char *attr = (length == 4 || length == 7) ? Number_attr : Error_attr;
 	flt_puts(text, length, attr);
     } else {
@@ -86,10 +93,10 @@ hash_color(char *text, int length)
 }
 
 static void
-number_units(char *text, int length)
+css_number_units(char *text, int length)
 {
     int digits = length;
-    char *attr;
+    const char *attr;
 
     while (digits > 0) {
 	if (isdigit(CharOf(text[digits - 1])))
@@ -99,16 +106,20 @@ number_units(char *text, int length)
 
     flt_puts(text, digits, Number_attr);
     if (digits != length) {
-	set_symbol_table("cssUnits");
-	if ((attr = ci_keyword_attr(text + digits)) == 0)
-	    attr = Error_attr;
-	flt_puts(text + digits, length - digits, attr);
-	set_symbol_table(filter_def.filter_name);
+	if (text[digits] == '%') {
+	    flt_puts(text + digits, length - digits, "");
+	} else {
+	    set_symbol_table("cssUnits");
+	    if ((attr = ci_keyword_attr(text + digits)) == 0)
+		attr = Error_attr;
+	    flt_puts(text + digits, length - digits, attr);
+	    set_symbol_table(filter_def.filter_name);
+	}
     }
 }
 
 static void
-string_escapes(char *text, int length)
+css_string_escapes(char *text, int length)
 {
     while (length > 0) {
 	int n;
@@ -165,8 +176,8 @@ do_filter(FILE *inputs)
     Number_attr  = class_attr(NAME_NUMBER);
     String_attr  = class_attr(NAME_LITERAL);
 
-    state = -1;
-    BEGIN(CODE);
+    css_state = -1;
+    BEGIN(CSS_CODE);
     RunLEX();
 }
 

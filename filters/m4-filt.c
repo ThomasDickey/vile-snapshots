@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/m4-filt.c,v 1.30 2008/01/12 16:44:13 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/m4-filt.c,v 1.31 2009/04/25 16:11:49 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of m4
  * input text.  This is in C rather than LEX because M4's quoting delimiters
@@ -258,7 +258,7 @@ extract_identifier(char *s, char ***args, int *parens)
 
     unsigned has_cpp = 0;
     unsigned need;
-    char *attr;
+    const char *attr;
     char *base;
     char *show = s;
 

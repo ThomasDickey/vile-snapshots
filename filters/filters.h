@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.117 2008/11/23 16:20:17 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.118 2009/04/25 16:14:37 tom Exp $
  */
 
 #ifndef FILTERS_H
@@ -230,16 +230,16 @@ extern int flt_options[256];
 
 #define FltOptions(c) flt_options[CharOf(c)]
 
-extern KEYWORD *is_class(char *name);
-extern KEYWORD *is_keyword(char *name);
-extern KEYWORD *keyword_data(char *name);
-extern char *ci_keyword_attr(char *name);
-extern char *ci_keyword_flag(char *name);
+extern KEYWORD *is_class(const char *name);
+extern KEYWORD *is_keyword(const char *name);
+extern KEYWORD *keyword_data(const char *name);
+extern const char *ci_keyword_attr(const char *name);
+extern const char *ci_keyword_flag(const char *name);
 extern char *class_attr(char *name);
 extern char *get_symbol_table(void);
-extern char *keyword_attr(char *name);
-extern char *keyword_flag(char *name);
-extern char *lowercase_of(char *name);
+extern const char *keyword_attr(const char *name);
+extern const char *keyword_flag(const char *name);
+extern const char *lowercase_of(const char *name);
 extern char *readline(FILE *fp, char **ptr, unsigned *len);
 extern char *skip_ident(char *src);
 extern int flt_bfr_length(void);
@@ -247,8 +247,8 @@ extern int set_symbol_table(const char *classname);
 extern long hash_function(const char *id);
 extern void *flt_alloc(void *ptr, unsigned need, unsigned *have, unsigned size);
 extern void flt_bfr_append(char *text, int length);
-extern void flt_bfr_begin(char *attr);
-extern void flt_bfr_embed(char *text, int length, char *attr);
+extern void flt_bfr_begin(const char *attr);
+extern void flt_bfr_embed(char *text, int length, const char *attr);
 extern void flt_bfr_error(void);
 extern void flt_bfr_finish(void);
 extern void flt_free(char **p, unsigned *len);

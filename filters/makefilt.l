@@ -7,7 +7,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/makefilt.l,v 1.58 2008/11/19 23:11:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/makefilt.l,v 1.59 2009/04/25 16:18:40 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Makefile
  *
@@ -140,7 +140,7 @@ write_keyword(char *text, int size, int prepro, int caseless)
     int notabs = 0;
     int tabs = 0;
     char *base = text;
-    char *attr = "";
+    const char *attr = "";
 
     while (size > 1 && text[size - 1] == ':') {
 	text[--size] = 0;

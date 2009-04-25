@@ -3,7 +3,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/xml-filt.l,v 1.20 2009/04/04 13:26:21 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/xml-filt.l,v 1.21 2009/04/25 16:32:50 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of XML input
  * text.
@@ -39,7 +39,7 @@ static int In_error = 0;
 
 #include <fltstack.h>
 
-static char * xml_attr(char *name);
+static const char * xml_attr(const char *name);
 static void xml_close(char *text);
 static void xml_command(char *text);
 
@@ -106,10 +106,10 @@ VALUE		#{IDENT}
 
 #include <fltstack.h>
 
-static char *
-xml_attr(char *name)
+static const char *
+xml_attr(const char *name)
 {
-    char *attr = keyword_attr(name);
+    const char *attr = keyword_attr(name);
 
     if (attr == 0)
 	attr = Ident_attr;
@@ -121,7 +121,7 @@ xml_command(char *text)
 {
     int ending = (text[0] == '/');
     char *name = ending ? text + 1 : text;
-    char *attr = xml_attr(name);
+    const char *attr = xml_attr(name);
 
     if (text[0] == '?') {
 	flt_puts(text, strlen(text), attr);

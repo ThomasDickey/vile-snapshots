@@ -6,7 +6,7 @@
  *		string literal ("Literal") support --  ben stoltz
  *		factor-out hashing and file I/O - tom dickey
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/c-filt.c,v 1.78 2008/08/28 20:03:11 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/c-filt.c,v 1.79 2009/04/25 16:11:17 tom Exp $
  *
  * Usage: refer to vile.hlp and doc/filters.doc .
  *
@@ -45,7 +45,7 @@ extract_identifier(char *s)
     static unsigned have;
 
     unsigned need;
-    char *attr;
+    const char *attr;
     char *base = s;
     int found = 0;
 
@@ -380,7 +380,7 @@ write_regexp(char *s)
 static char *
 parse_prepro(char *s, int *literal)
 {
-    char *attr;
+    const char *attr;
     char *ss = s + 1;
     char *tt;
     int isinclude = 0;
