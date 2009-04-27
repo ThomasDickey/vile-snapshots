@@ -1,6 +1,6 @@
 Changes for vile 9.7 (released ??? ??? ?? ????)
 
- 200904?? (o)
+ 20090426 (o)
 	> Tom Dickey:
 	+ add DEFAULT_XSHELL, DEFAULT_XSHELLFLAGS symbols to statevar.c which
 	  can be overridden by compiler flags to select something other than
