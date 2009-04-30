@@ -1,5 +1,17 @@
 Changes for vile 9.7 (released ??? ??? ?? ????)
 
+ 20090??? (p)
+	> Brendan MacDonell:
+	+ improve scheme mode:
+	  + fix/hack to properly handle combinations of quotation literals.
+	  + highlight the unquote/unquote-splicing keywords.
+	  + handle the optional scheme parentheses extension ('[' and ']').
+	> Tom Dickey:
+	+ minor tweak to vbmode fences.
+	+ correct some limit-checks in vl_regexec().
+	+ correct a reallocation in html syntax filter html_quotes() function
+	  that grew too rapidly.
+
  20090426 (o)
 	> Tom Dickey:
 	+ add DEFAULT_XSHELL, DEFAULT_XSHELLFLAGS symbols to statevar.c which

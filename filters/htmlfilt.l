@@ -4,7 +4,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/htmlfilt.l,v 1.93 2009/04/25 17:21:16 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/htmlfilt.l,v 1.94 2009/04/29 22:02:28 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of HTML input
  * text.
@@ -492,7 +492,7 @@ html_quotes(char *text, int len, int state, int which)
     if (got_language2) {
 	static char *temp;
 	static unsigned used = 0;
-	unsigned need = used + len + 1;
+	unsigned need = (temp ? strlen(temp) : 0) + len + 1;
 
 	temp = do_alloc(temp, need, &used);
 	if (temp != 0) {
