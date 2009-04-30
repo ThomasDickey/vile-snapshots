@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/regexp.c,v 1.191 2009/04/03 00:22:50 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/regexp.c,v 1.192 2009/04/29 23:01:20 tom Exp $
  *
  * Copyright 2005-2008,2009 Thomas E. Dickey and Paul G. Fox
  *
@@ -1911,12 +1911,12 @@ regexec(regexp * prog,
     if (prog->regstart >= 0) {
 	/* We know what char it must start with. */
 	skip = 1;
-	while (skip &&
+	while (skip > 0 &&
 	       (s = regstrchr(s, prog->regstart, stringend)) != NULL &&
 	       s < endsrch) {
 	    if (regtry(prog, s, stringend, 0))
 		return (1);
-	    skip = BYTES_AT(s, regnomore);
+	    skip = BYTES_AT(s, stringend);
 	    s += skip;
 	}
     } else {
@@ -1925,8 +1925,10 @@ regexec(regexp * prog,
 	do {
 	    if (regtry(prog, s, stringend, 0))
 		return (1);
-	    skip = BYTES_AT(s, regnomore);
-	} while (skip && (s < stringend) && (s += skip) < endsrch);
+	    skip = ((s < stringend)
+		    ? BYTES_AT(s, stringend)
+		    : 0);
+	} while (skip > 0 && (s += skip) < endsrch);
     }
 
     /* Failure. */
