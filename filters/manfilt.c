@@ -46,7 +46,7 @@
  * vile will choose some appropriate fallback (such as underlining) if
  * italics are not available.
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/manfilt.c,v 1.44 2008/05/06 22:48:15 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/manfilt.c,v 1.45 2009/04/30 23:17:07 tom Exp $
  *
  */
 
@@ -421,8 +421,7 @@ put_cell(int c, int level, int ident, int attrs)
 		q = allocate_cell();
 		*q = *p;
 		p->link = q;
-	    } else if (c == SPACE)
-		return;
+	    }
 	}
     }
 
