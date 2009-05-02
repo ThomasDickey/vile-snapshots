@@ -1,5 +1,10 @@
 Changes for vile 9.7 (released ??? ??? ?? ????)
 
+ 200905?? (p)
+	> Tom Dickey:
+	+ correct allocation of temporary filename in spellflt.l for tmpnam(),
+	  from 9.7f changes.
+
  20090430 (p)
 	> Brendan MacDonell:
 	+ improve scheme mode:

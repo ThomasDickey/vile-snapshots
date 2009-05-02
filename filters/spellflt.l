@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/spellflt.l,v 1.42 2009/04/25 16:18:58 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/spellflt.l,v 1.43 2009/05/01 20:38:57 tom Exp $
  *
  * Filter to add vile "attribution" sequences to misspelled words.
  */
@@ -136,8 +136,8 @@ open_tempfile(char **fname)
 #else
     int oldmask = umask(0077);
     char *result = tmpnam((char *)0);
-    if (result != 0 && (*fname = malloc(strlen(result) + 1)) != 0) {
-	strcpy(*fname, tmpnam((char *)0));
+    if (result != 0 && (*fname = malloc(2 * strlen(result) + 1)) != 0) {
+	strcpy(*fname, result);
 	fp = fopen(*fname, "w");
     }
     umask(oldmask);
