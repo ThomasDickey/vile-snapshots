@@ -1,4 +1,4 @@
-; $Id: modes.rc,v 1.94 2009/04/29 23:15:01 Brendan.MacDonell Exp $
+; $Id: modes.rc,v 1.96 2009/05/13 00:53:08 tom Exp $
 ; majormodes in this file are ordered alphabetically for convenience - the
 ; precedence used by vile is strictly alphabetic, counting case.  Use the
 ; before and after qualifiers to override the precedence.
@@ -1070,7 +1070,7 @@ define-mode wbt
 
 define-mode xml
 ~with define-submode xml
-	suffixes	'\.\(xml\|xsl\|xsd\)$'
+	suffixes	'\.\(xml\|xsd\)$'
 	pre		'^\s*<?xml\s'
 	fence-pairs	'<>()[]{}'
 	comment-prefix	'^\s*--'
@@ -1101,6 +1101,17 @@ define-mode xs
 	suffixes	'\.xs$'
 	cindent
 	cindent-chars &cat ':' $fences
+~endwith
+
+define-mode xsl
+~with define-submode xsl
+;	qualifiers=all
+	before		xml
+	suffixes	'\.\(xsl\|xslt\)$'
+;	pre		'^\s*<?xml\s'
+	fence-pairs	'<>()[]{}'
+	comment-prefix	'^\s*--'
+	comments	'^\s*$'
 ~endwith
 
 define-mode yacc

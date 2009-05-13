@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/sql-filt.l,v 1.45 2009/04/25 16:28:40 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/sql-filt.l,v 1.46 2009/05/12 22:47:25 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of SQL script
  * - T.Dickey
@@ -85,7 +85,7 @@ HOSTVAR		":"{IDENT}
 					 */
 				    }
 				    WriteToken(attr);
-				    set_symbol_table(filter_def.filter_name);
+				    set_symbol_table(default_table);
 				}
 			    } else {
 				WriteToken(attr);

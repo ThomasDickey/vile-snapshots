@@ -1,7 +1,9 @@
 Changes for vile 9.7 (released ??? ??? ?? ????)
 
- 200905?? (p)
+ 200905?? (q)
 	> Tom Dickey:
+	+ make format-til, lower-til, upper-til and flip-til work for UTF-8
+	  (anon report on Savannah).
 	+ correct allocation of temporary filename in spellflt.l for tmpnam(),
 	  from 9.7f changes.
 

@@ -4,7 +4,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/htmlfilt.l,v 1.94 2009/04/29 22:02:28 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/htmlfilt.l,v 1.95 2009/05/12 20:37:54 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of HTML input
  * text.
@@ -385,22 +385,6 @@ CSS_INVALID	({CSS_INVALID1}|{CSS_INVALID2})
 
 #include <fltstack.h>
 
-/*
- * Check if the given symbol table has been loaded.  If not, load it.
- * That leaves the newly loaded symbol table as the current one.
- */
-static void
-setup_symbols(char *name)
-{
-    if (!set_symbol_table(name)) {
-	flt_make_symtab(name);
-	flt_read_keywords(MY_NAME);
-	flt_read_keywords(name);
-	/* set back to the name we asked for, in case reader switched */
-	set_symbol_table(name);
-    }
-}
-
 static void
 html_command(const char *text)
 {
@@ -423,7 +407,7 @@ html_command(const char *text)
     }
     got_language2 = 0;
     if (change) {
-	set_symbol_table(filter_def.filter_name);
+	set_symbol_table(default_table);
     } else if (!strcmp(temp,"language")) {
 	got_language2 = 1;
     }
@@ -460,7 +444,7 @@ html_command(const char *text)
 	}
     }
     if (!got_tag++) {
-	setup_symbols(SYMS_HTMLPROP);
+	flt_setup_symbols(SYMS_HTMLPROP);
     }
 }
 
@@ -524,7 +508,7 @@ resume_attr(void)
 	flt_bfr_begin(String_attr);
 	break;
     }
-    set_symbol_table(filter_def.filter_name);
+    set_symbol_table(default_table);
 }
 
 static void
@@ -545,17 +529,17 @@ finish_htmlcode(void)
     switch (next_state) {
     case CSS_CODE:
 	DBG_HTML("setting symbols for CSS");
-	setup_symbols(SYMS_CSS);
+	flt_setup_symbols(SYMS_CSS);
 	break;
     case JS_CODE:
 	DBG_HTML("setting symbols for JS");
-	setup_symbols(SYMS_JS);
+	flt_setup_symbols(SYMS_JS);
 	break;
     default:
     case INITIAL:
     case HTMLINCL:
 	DBG_HTML("setting symbols for HTML");
-	set_symbol_table(filter_def.filter_name);
+	set_symbol_table(default_table);
 	break;
     }
     got_tag = 0;
@@ -654,9 +638,9 @@ css_units(char *text, int length)
 	if (text[digits] == '%') {
 	    flt_puts(text + digits, length - digits, "");
 	} else {
-	    setup_symbols(SYMS_CSS);
+	    flt_setup_symbols(SYMS_CSS);
 	    /* units are normally loaded as part of css.key */
-	    setup_symbols(SYMS_CSS_UNITS);
+	    flt_setup_symbols(SYMS_CSS_UNITS);
 	    if ((attr = ci_keyword_attr(text + digits)) == 0)
 		attr = Error_attr;
 	    flt_puts(text + digits, length - digits, attr);
@@ -723,8 +707,8 @@ setup_language(char *name)
 
     if (keys != 0 && !set_symbol_table(keys)) {
 	use_language = keys;
-	setup_symbols(keys);
-	set_symbol_table(filter_def.filter_name);
+	flt_setup_symbols(keys);
+	set_symbol_table(default_table);
     }
 }
 

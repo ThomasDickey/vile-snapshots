@@ -7,7 +7,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/imakeflt.l,v 1.20 2009/04/25 16:17:58 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/imakeflt.l,v 1.21 2009/05/12 22:47:25 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Imakefile
  *
@@ -121,7 +121,7 @@ preprocessor(char *text, int size)
 	*t = 0;
 	attr = keyword_attr(s);
 	*t = save;
-	set_symbol_table(filter_def.filter_name);
+	set_symbol_table(default_table);
     }
     if (attr != 0) {
 	flt_puts(text, size, Preproc_attr);

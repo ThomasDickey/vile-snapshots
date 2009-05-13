@@ -3,7 +3,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/hs-filt.l,v 1.22 2009/04/25 16:14:02 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/hs-filt.l,v 1.23 2009/05/12 22:47:25 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Haskell
  * input text.
@@ -71,7 +71,7 @@ NUMBER		{OCTAL}|{HEXADECIMAL}|{INTEGER}|{REAL}
 			  if (attr == 0)
 			      attr = Error_attr;
 			  flt_bfr_embed(yytext, yyleng, attr);
-			  set_symbol_table(filter_def.filter_name);
+			  set_symbol_table(default_table);
 			  new_state(PREPMORE);
 			 }
 <PREPMORE>[\r\n]	{

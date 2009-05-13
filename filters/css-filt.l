@@ -3,7 +3,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/css-filt.l,v 1.20 2009/04/25 17:19:29 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/css-filt.l,v 1.21 2009/05/12 22:47:25 tom Exp $
  *
  * Filter to add vile "attribution" sequences to Cascading Style Sheets.
  *
@@ -113,7 +113,7 @@ css_number_units(char *text, int length)
 	    if ((attr = ci_keyword_attr(text + digits)) == 0)
 		attr = Error_attr;
 	    flt_puts(text + digits, length - digits, attr);
-	    set_symbol_table(filter_def.filter_name);
+	    set_symbol_table(default_table);
 	}
     }
 }

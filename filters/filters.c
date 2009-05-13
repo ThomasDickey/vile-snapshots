@@ -1,7 +1,7 @@
 /*
  * Common utility functions for vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.127 2009/04/25 16:16:12 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.129 2009/05/12 22:45:36 tom Exp $
  *
  */
 
@@ -617,6 +617,22 @@ flt_free_symtab(void)
 	flt_free_keywords(classes->name);
 }
 
+void
+flt_init_table(char *table_name)
+{
+    if (default_table != 0)
+	free(default_table);
+    default_table = strmalloc(table_name);
+}
+
+void
+flt_init_attr(char *attr_name)
+{
+    if (default_attr != 0)
+	free(default_attr);
+    default_attr = strmalloc(attr_name);
+}
+
 /*
  * We drop the old symbol table each time we read the data, to allow keywords
  * to be removed from the table.  Also, it is necessary for some filters such
@@ -625,19 +641,13 @@ flt_free_symtab(void)
 void
 flt_initialize(char *table_name)
 {
-    if (default_table != 0)
-	free(default_table);
-    default_table = strmalloc(table_name);
-
-    if (default_attr != 0)
-	free(default_attr);
-    default_attr = strmalloc(NAME_KEYWORD);
+    flt_init_table(table_name);
+    flt_init_attr(NAME_KEYWORD);
 
     zero_or_more = '*';
     zero_or_all = '?';
     meta_ch = '.';
     eqls_ch = ':';
-    FltOptions('v') = 0;
 
     flt_free_symtab();
     flt_make_symtab(table_name);
@@ -646,8 +656,9 @@ flt_initialize(char *table_name)
 void
 flt_make_symtab(char *table_name)
 {
-    if (*table_name == '\0')
+    if (*table_name == '\0') {
 	table_name = default_table;
+    }
 
     if (!set_symbol_table(table_name)) {
 	CLASS *p;
@@ -697,6 +708,18 @@ flt_make_symtab(char *table_name)
 	insert_keyword(NAME_NUMBER, ATTR_NUMBER, 1);
 	insert_keyword(NAME_PREPROC, ATTR_PREPROC, 1);
 	insert_keyword(NAME_TYPES, ATTR_TYPES, 1);
+    }
+}
+
+void
+flt_setup_symbols(char *table_name)
+{
+    if (!set_symbol_table(table_name)) {
+	flt_make_symtab(table_name);
+	flt_read_keywords(MY_NAME);
+	flt_read_keywords(table_name);
+	/* set back to the name we asked for, in case reader switched */
+	set_symbol_table(table_name);
     }
 }
 

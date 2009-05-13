@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.118 2009/04/25 16:14:37 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.119 2009/05/12 20:35:49 tom Exp $
  */
 
 #ifndef FILTERS_H
@@ -254,9 +254,12 @@ extern void flt_bfr_finish(void);
 extern void flt_free(char **p, unsigned *len);
 extern void flt_free_keywords(char *classname);
 extern void flt_free_symtab(void);
+extern void flt_init_attr(char *attr_name);
+extern void flt_init_table(char *table_name);
 extern void flt_initialize(char *classname);
 extern void flt_make_symtab(char *classname);
 extern void flt_read_keywords(char *classname);
+extern void flt_setup_symbols(char *table_name);
 extern void insert_keyword(const char *ident, const char *attribute, int classflag);
 extern void parse_keyword(char *name, int classflag);
 

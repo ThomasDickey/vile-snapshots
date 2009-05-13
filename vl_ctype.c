@@ -1,11 +1,6 @@
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/vl_ctype.c,v 1.4 2009/02/16 20:17:24 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/vl_ctype.c,v 1.5 2009/05/11 00:26:52 tom Exp $
  */
-#include <estruct.h>
-#include <edef.h>
-
-#if OPT_LOCALE
-#include	<locale.h>
 
 /*
  * On Linux, the normal/wide ctypes give comparable results in the range 0-255,
@@ -14,27 +9,13 @@
  * 128-255.  Since we're using these functions in vile 9.6 only for the normal
  * ctypes (the narrow 8-bit locale), just use the normal ctype functions.
  */
-#if 0				/* def HAVE_WCTYPE */
-#include	<wctype.h>
-#define sys_iscntrl(n)  iswcntrl(n)
-#define sys_isdigit(n)  iswdigit(n)
-#define sys_islower(n)  iswlower(n)
-#define sys_isprint(n)  iswprint(n)
-#define sys_ispunct(n)  iswpunct(n)
-#define sys_isspace(n)  iswspace(n)
-#define sys_isupper(n)  iswupper(n)
-#define sys_isxdigit(n) iswxdigit(n)
-#else
-#define sys_iscntrl(n)  iscntrl(n)
-#define sys_isdigit(n)  isdigit(n)
-#define sys_islower(n)  islower(n)
-#define sys_isprint(n)  isprint(n)
-#define sys_ispunct(n)  ispunct(n)
-#define sys_isspace(n)  isspace(n)
-#define sys_isupper(n)  isupper(n)
-#define sys_isxdigit(n) isxdigit(n)
-#endif
+#define USE_WIDE_CTYPE 0
 
+#include <estruct.h>
+#include <edef.h>
+
+#if OPT_LOCALE
+#include <locale.h>
 #endif /* OPT_LOCALE */
 
 static CHARTYPE *ctype_sets;

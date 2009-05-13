@@ -1,7 +1,7 @@
 /*
  * Main program and I/O for external vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/RCS/builtflt.c,v 1.69 2009/04/04 18:42:37 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/builtflt.c,v 1.70 2009/05/12 22:49:36 tom Exp $
  *
  */
 
@@ -121,7 +121,8 @@ process_params(void)
 		switch (*s) {
 		case 'k':
 		    if ((value = param_value(&s)) != 0) {
-			flt_read_keywords(value);
+			flt_init_table(value);
+			flt_setup_symbols(value);
 			free(value);
 		    }
 		    break;

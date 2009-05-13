@@ -8,7 +8,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/lex-filt.l,v 1.71 2009/04/25 16:18:30 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/lex-filt.l,v 1.72 2009/05/12 22:47:25 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of LEX program.
  */
@@ -153,7 +153,7 @@ STATES		("<"("*"|({IDENT}|\,)+)">")
 				  flt_error("Keyword \"%s\" is already a classname", yytext);
 			      }
 			      WriteToken(attr);
-			      set_symbol_table(filter_def.filter_name);
+			      set_symbol_table(default_table);
 			  } else {
 			      WriteToken(Ident_attr);
 			  }
@@ -414,7 +414,7 @@ write_patterns(char *text, int len)
     flt_bfr_append(text + first, len - first);
     flt_bfr_finish();
 
-    set_symbol_table(filter_def.filter_name);
+    set_symbol_table(default_table);
 }
 
 static void
@@ -451,7 +451,7 @@ do_filter(FILE *inputs)
     if ((Pattern_attr = class_attr(NAME_LEX_PATTERN)) == 0)
 	Pattern_attr = String_attr;
 
-    set_symbol_table(filter_def.filter_name);
+    set_symbol_table(default_table);
 
     begin_state(RULES);
     RunLEX();

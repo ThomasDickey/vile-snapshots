@@ -46,7 +46,7 @@
  * vile will choose some appropriate fallback (such as underlining) if
  * italics are not available.
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/manfilt.c,v 1.45 2009/04/30 23:17:07 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/manfilt.c,v 1.46 2009/05/11 00:35:21 tom Exp $
  *
  */
 
@@ -57,6 +57,9 @@
 #if OPT_LOCALE
 #include	<locale.h>
 #include	<ctype.h>
+
+#undef sys_isdigit
+#undef sys_isprint
 
 #ifdef HAVE_WCTYPE
 #include	<wctype.h>

@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/xresfilt.l,v 1.24 2009/04/25 16:20:23 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/xresfilt.l,v 1.25 2009/05/12 22:47:25 tom Exp $
  *
  * Filter to add vile "attribution" sequences to an X resource file.
  */
@@ -92,7 +92,7 @@ preprocessor(char *text, int size)
 	*t = 0;
 	attr = keyword_attr(s);
 	*t = save;
-	set_symbol_table(filter_def.filter_name);
+	set_symbol_table(default_table);
     }
     if (attr != 0) {
 	flt_puts(text, size, Preproc_attr);
