@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/spellflt.l,v 1.43 2009/05/01 20:38:57 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/spellflt.l,v 1.44 2009/05/12 22:47:25 tom Exp $
  *
  * Filter to add vile "attribution" sequences to misspelled words.
  */
@@ -349,7 +349,7 @@ do_filter(FILE *inputs GCC_UNUSED)
      * Reparse the buffer, marking the misspelled words.
      */
 #ifdef filter_def		/* built-in filter? */
-    flt_restart(filter_def.filter_name);
+    flt_restart(default_table);
 #endif
     BEGIN(INITIAL);
     RunLEX();

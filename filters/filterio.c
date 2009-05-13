@@ -1,7 +1,7 @@
 /*
  * Main program and I/O for external vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filterio.c,v 1.41 2008/10/19 15:11:03 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filterio.c,v 1.43 2009/05/12 22:49:08 tom Exp $
  *
  */
 
@@ -55,7 +55,8 @@ ProcessArgs(int argc, char *argv[], int flag)
 		case 'k':
 		    value = ParamValue(&s, &n, argc, argv);
 		    if (flag) {
-			flt_read_keywords(value);
+			flt_init_table(value);
+			flt_setup_symbols(value);
 		    }
 		    break;
 		case 't':
@@ -109,7 +110,7 @@ flt_gets(char **ptr, unsigned *len)
 const char *
 flt_name(void)
 {
-    return filter_def.filter_name;
+    return default_table;
 }
 
 char *
@@ -388,9 +389,9 @@ main(int argc, char **argv)
     my_col = 0;
     my_line = 1;
 
-    flt_initialize(filter_def.filter_name);
-
     memset(flt_options, 0, sizeof(flt_options));
+
+    flt_initialize(filter_def.filter_name);
 
     /* get verbose option */
     (void) ProcessArgs(argc, argv, 0);
@@ -402,12 +403,12 @@ main(int argc, char **argv)
     n = ProcessArgs(argc, argv, 1);
     FltOptions('v') = verbose;
 
-    if ((vile_keywords = !FltOptions('k')) != 0) {
-	if (strcmp(MY_NAME, filter_def.filter_name)) {
-	    flt_read_keywords(filter_def.filter_name);
+    if ((vile_keywords = !FltOptions('k')) == 0) {
+	if (strcmp(MY_NAME, default_table)) {
+	    flt_read_keywords(default_table);
 	}
     }
-    set_symbol_table(filter_def.filter_name);
+    set_symbol_table(default_table);
 
     filter_def.InitFilter(0);
 

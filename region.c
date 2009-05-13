@@ -3,7 +3,7 @@
  * and mark.  Some functions are commands.  Some functions are just for
  * internal use.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/region.c,v 1.150 2009/03/22 01:06:34 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/region.c,v 1.152 2009/05/11 20:36:29 tom Exp $
  *
  */
 
@@ -794,6 +794,13 @@ _to_lower(int c)
 {
     int result = -1;
 
+#if OPT_MULTIBYTE
+    if (b_is_utfXX(curbp)) {
+	if (sys_isupper(c)) {
+	    result = sys_tolower(c);
+	}
+    } else
+#endif
     if (isUpper(c))
 	result = CharOf(toLower(c));
     return result;
@@ -804,6 +811,13 @@ _to_upper(int c)
 {
     int result = -1;
 
+#if OPT_MULTIBYTE
+    if (b_is_utfXX(curbp)) {
+	if (sys_islower(c)) {
+	    result = sys_toupper(c);
+	}
+    } else
+#endif
     if (isLower(c))
 	result = CharOf(toUpper(c));
     return result;
@@ -814,6 +828,16 @@ _to_caseflip(int c)
 {
     int result = -1;
 
+#if OPT_MULTIBYTE
+    if (b_is_utfXX(curbp)) {
+	if (sys_isalpha(c)) {
+	    if (sys_isupper(c))
+		result = sys_tolower(c);
+	    else
+		result = sys_toupper(c);
+	}
+    } else
+#endif
     if (isAlpha(c)) {
 	if (isUpper(c))
 	    result = CharOf(toLower(c));

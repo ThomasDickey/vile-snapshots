@@ -3,7 +3,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/iss-filt.l,v 1.12 2009/04/04 00:44:04 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/iss-filt.l,v 1.13 2009/05/12 22:47:25 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Inno Setup
  * input text.
@@ -69,7 +69,7 @@ NUMBER		{HEXADECIMAL}|{INTEGER}|{REAL}
 			    } else {
 				begin_state(FLAGS);
 			    }
-			    set_symbol_table(filter_def.filter_name);
+			    set_symbol_table(default_table);
 			  }
 			}
 <SETUP,FLAGS,CODE>{IDENT} { WriteToken(ci_keyword_attr(yytext)); }

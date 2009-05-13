@@ -3,7 +3,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/yaccfilt.l,v 1.37 2009/04/25 16:20:23 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/yaccfilt.l,v 1.38 2009/05/12 22:47:25 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of YACC program.
  */
@@ -140,7 +140,7 @@ merged_attr(char *text)
 {
     const char *attr = keyword_attr(text);
     if ((cur_state == CODE) && (attr == 0 || *attr == 0)) {
-	set_symbol_table(filter_def.filter_name);
+	set_symbol_table(default_table);
 	attr = keyword_attr(text);
 	set_symbol_table("c");
     }
@@ -158,7 +158,7 @@ static void
 PopCode(void)
 {
     pop_state();
-    set_symbol_table(filter_def.filter_name);
+    set_symbol_table(default_table);
 }
 
 static int

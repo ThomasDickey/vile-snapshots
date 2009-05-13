@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/vl_ctype.h,v 1.19 2009/02/16 20:02:25 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/vl_ctype.h,v 1.21 2009/05/11 00:38:36 tom Exp $
  *
  * Character-type tests, like <ctype.h> for vile (vi-like-emacs).
  *
@@ -218,6 +218,63 @@ extern void vl_ctype_clr(int ch, CHARTYPE cclass);
 # define ispath(c)      (isalnum(c) || (c) == '/' || (c) == '\\' || (c) == '~')
 
 #endif
+
+#ifndef USE_WIDE_CTYPE
+
+#if OPT_MULTIBYTE
+
+#ifdef HAVE_WCTYPE
+#include	<wctype.h>
+#define USE_WIDE_CTYPE 1
+#elif (defined(WIN32) && defined(_WCTYPE_DEFINED))
+#define USE_WIDE_CTYPE 1
+#else
+#define USE_WIDE_CTYPE 0
+#endif
+
+#endif
+#endif /* ndef USE_WIDE_CTYPE */
+
+#if USE_WIDE_CTYPE
+
+#if !(defined(iswblank) || defined(HAVE_ISWBLANK))
+#define iswblank(c) ((c) == ' ' || (c) == '\t')
+#endif
+#define sys_isalpha(n)  iswalpha(n)
+#define sys_isalnum(n)  iswalnum(n)
+#define sys_isblank(n)  iswblank(n)
+#define sys_iscntrl(n)  iswcntrl(n)
+#define sys_isdigit(n)  iswdigit(n)
+#define sys_isgraph(n)  iswgraph(n)
+#define sys_islower(n)  iswlower(n)
+#define sys_isprint(n)  iswprint(n)
+#define sys_ispunct(n)  iswpunct(n)
+#define sys_isspace(n)  iswspace(n)
+#define sys_isupper(n)  iswupper(n)
+#define sys_isxdigit(n) iswxdigit(n)
+#define sys_tolower(n)  towlower(n)
+#define sys_toupper(n)  towupper(n)
+
+#else /* ! USE_WIDE_CTYPE */
+
+#if !(defined(isblank) || defined(HAVE_ISBLANK))
+#define isblank(c) ((c) == ' ' || (c) == '\t')
+#endif
+#define sys_isalpha(n)  isalpha(n)
+#define sys_isalnum(n)  isalnum(n)
+#define sys_isblank(n)  isblank(n)
+#define sys_iscntrl(n)  iscntrl(n)
+#define sys_isdigit(n)  isdigit(n)
+#define sys_isgraph(n)  isgraph(n)
+#define sys_islower(n)  islower(n)
+#define sys_isprint(n)  isprint(n)
+#define sys_ispunct(n)  ispunct(n)
+#define sys_isspace(n)  isspace(n)
+#define sys_isupper(n)  isupper(n)
+#define sys_isxdigit(n) isxdigit(n)
+#define sys_toupper(n)  toUpper(n)
+
+#endif /* USE_WIDE_CTYPE */
 
 /* macro for cases where return & newline are equivalent */
 #define	isreturn(c)	((c == '\r') || (c == '\n'))

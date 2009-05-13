@@ -3,7 +3,7 @@
  * paragraph at a time.  There are all sorts of word mode commands.  If I
  * do any sentence mode commands, they are likely to be put in this file.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/word.c,v 1.91 2008/04/27 13:12:13 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/word.c,v 1.92 2009/05/11 22:48:24 tom Exp $
  *
  */
 
@@ -408,6 +408,50 @@ comment_prefix(void)
     return result;
 }
 
+#if OPT_MULTIBYTE
+static int
+byte_to_columns(char text, int size)
+{
+    int result = 0;
+
+    if (b_is_utfXX(curbp)) {
+	result = (mb_cellwidth(curwp, &text, 1) * size);
+    } else {
+	result = size;
+    }
+    return result;
+}
+
+static int
+string_to_columns(TBUFF *text)
+{
+    int bytes = tb_length(text);
+    int result = 0;
+
+    if (b_is_utfXX(curbp)) {
+	char *value = tb_values(text);
+
+	while (bytes > 0) {
+	    int step = vl_conv_to_utf32((UINT *) 0, value, bytes);
+	    if (step <= 0)
+		break;
+	    result += mb_cellwidth(curwp, value, step);
+	    value += step;
+	    bytes -= step;
+	}
+    } else {
+	result = bytes;
+    }
+
+    return result;
+}
+#define Byte2Column(s,n) byte_to_columns(s, n)
+#define String2Columns(s) string_to_columns(s)
+#else
+#define Byte2Column(s,n) n
+#define String2Columns(s) tb_length(s)
+#endif
+
 #define cplus_comment_start(c) \
 		((c == '/') \
 		&& DOT.o+1 < llength(DOT.l) \
@@ -418,11 +462,18 @@ comment_prefix(void)
 		&& DOT.o+1 < llength(DOT.l) \
 		&& lgetc(DOT.l,DOT.o+1) == '*')
 
-#define fmt_insert(count,chr) \
+#define fmt_insert_chr(count,chr) \
 		if ((s = lins_bytes(count,chr)) != TRUE) \
 			return s; \
 		else \
-			clength += count
+			clength += Byte2Column(chr, count)
+
+#define fmt_insert_str(str) \
+		for (i = 0; i < tb_length(str); ++i) { \
+		    if ((s = lins_bytes(1, tb_values(str)[i])) != TRUE) \
+			return s; \
+		} \
+		clength += String2Columns(str)
 
 #define fmt_c_preprocessor(cp) \
 		(tb_length(*cp) == 1 \
@@ -606,11 +657,11 @@ do_formatting(TBUFF **wp, TBUFF **cp)
 		/* at a word break with a word waiting */
 		/* calculate tentative new length
 		   with word added */
-		newlen = (int) (clength + 1 + tb_length(*wp));
+		newlen = (int) (clength + 1 + String2Columns(*wp));
 		if (newlen <= fillcolumn) {
 		    /* add word to current line */
 		    if (!firstflag) {
-			fmt_insert(1, ' ');
+			fmt_insert_chr(1, ' ');
 		    }
 		} else {
 		    /* fix the leading indent now, if
@@ -620,28 +671,24 @@ do_formatting(TBUFF **wp, TBUFF **cp)
 		    if (lnewline() == FALSE)
 			return FALSE;
 		    clength = 0;
-		    fmt_insert(secondindent, ' ');
+		    fmt_insert_chr(secondindent, ' ');
 		    firstflag = TRUE;
 		}
 
 		if (firstflag
 		    && is_comment
 		    && !word_finishes_c_comment(wp)) {
-		    for (i = 0; i < tb_length(*cp); i++) {
-			fmt_insert(1, tb_values(*cp)[i]);
-		    }
+		    fmt_insert_str(*cp);
 		    if (!fmt_c_preprocessor(cp)) {
-			fmt_insert(1, ' ');
+			fmt_insert_chr(1, ' ');
 		    }
 		}
 		firstflag = FALSE;
 
 		/* and add the word in in either case */
-		for (i = 0; i < tb_length(*wp); i++) {
-		    fmt_insert(1, tb_values(*wp)[i]);
-		}
+		fmt_insert_str(*wp);
 		if (finished == FALSE && sentence) {
-		    fmt_insert(1, ' ');
+		    fmt_insert_chr(1, ' ');
 		}
 		tb_init(wp, EOS);
 	    }

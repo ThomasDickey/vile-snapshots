@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/regexp.c,v 1.192 2009/04/29 23:01:20 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/regexp.c,v 1.193 2009/05/11 00:30:57 tom Exp $
  *
  * Copyright 2005-2008,2009 Thomas E. Dickey and Paul G. Fox
  *
@@ -421,62 +421,18 @@ typedef enum {
  * holding Unicode codes (which might be faster).
  */
 #if OPT_MULTIBYTE
-
-#ifdef HAVE_WCTYPE
-#include	<wctype.h>
-#define USE_WIDE_CTYPE 1
-#elif (defined(WIN32) && defined(_WCTYPE_DEFINED))
-#define USE_WIDE_CTYPE 1
-#else
-#define USE_WIDE_CTYPE 0
-#endif
-
-#if USE_WIDE_CTYPE
-#if !(defined(iswblank) || defined(HAVE_ISWBLANK))
-#define iswblank(c) ((c) == ' ' || (c) == '\t')
-#endif
-#define sys_isalpha(n)  iswalpha(n)
-#define sys_isalnum(n)  iswalnum(n)
-#define sys_isblank(n)  iswblank(n)
-#define sys_iscntrl(n)  iswcntrl(n)
-#define sys_isdigit(n)  iswdigit(n)
-#define sys_isgraph(n)  iswgraph(n)
-#define sys_islower(n)  iswlower(n)
-#define sys_isprint(n)  iswprint(n)
-#define sys_ispunct(n)  iswpunct(n)
-#define sys_isspace(n)  iswspace(n)
-#define sys_isupper(n)  iswupper(n)
-#define sys_isxdigit(n) iswxdigit(n)
-#define sys_toupper(n)  towupper(n)
-#define sys_CTYPE_SIZE	((unsigned) 0xffff)
-#define sys_WINT_T	wint_t
-#else
-#if !(defined(isblank) || defined(HAVE_ISBLANK))
-#define isblank(c) ((c) == ' ' || (c) == '\t')
-#endif
-#define sys_isalpha(n)  isalpha(n)
-#define sys_isalnum(n)  isalnum(n)
-#define sys_isblank(n)  isblank(n)
-#define sys_iscntrl(n)  iscntrl(n)
-#define sys_isdigit(n)  isdigit(n)
-#define sys_isgraph(n)  isgraph(n)
-#define sys_islower(n)  islower(n)
-#define sys_isprint(n)  isprint(n)
-#define sys_ispunct(n)  ispunct(n)
-#define sys_isspace(n)  isspace(n)
-#define sys_isupper(n)  isupper(n)
-#define sys_isxdigit(n) isxdigit(n)
-#define sys_toupper(n)  toUpper(n)
-#define sys_CTYPE_SIZE	((unsigned) 0xff)
-#define sys_WINT_T	int
-#endif
-
 #define is_CLASS(name,ptr) reg_ctype_ ## name(ptr)
 
+#if USE_WIDE_CTYPE
+#define sys_WINT_T	wint_t
+#define sys_CTYPE_SIZE	((unsigned) 0xffff)
 #else
-
+#define sys_WINT_T	int
 #define sys_CTYPE_SIZE	((unsigned) 0xff)
+#endif
 
+#else
+#define sys_CTYPE_SIZE	((unsigned) 0xff)
 #define is_CLASS(name,ptr) is_ ## name(*ptr)
 #endif
 

@@ -3,7 +3,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/xml-filt.l,v 1.21 2009/04/25 16:32:50 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/xml-filt.l,v 1.23 2009/05/12 20:35:26 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of XML input
  * text.
@@ -39,9 +39,10 @@ static int In_error = 0;
 
 #include <fltstack.h>
 
-static const char * xml_attr(const char *name);
+static const char * xml_keyword_attr(const char *name);
 static void xml_close(char *text);
 static void xml_command(char *text);
+static void xml_property(char *text);
 
 %}
 
@@ -53,6 +54,8 @@ HEXNUM		"#"[[:xdigit:]]+
 NUMBER		{INTEGER}|{REAL}|{HEXNUM}
 
 IDENT		[[:alpha:]_!?][[:alnum:]_.-]*
+
+XMLTAG		{IDENT}(":"{IDENT})?
 
 HSTRING		\"[^"]*\"
 QSTRING		\\["]([^"]|\\["])*\\["]
@@ -74,7 +77,12 @@ VALUE		#{IDENT}
 <XMLTAG>(\/)?">"	|
 <XMLATTR>(\/)?">"	{ xml_close(yytext); pop_state(); }
 
-<XMLTAG>(\/)?{IDENT}	{ xml_command(yytext); new_state(XMLATTR); }
+<XMLTAG>(\/)?{XMLTAG}	{ char tablename[80];
+			  xml_command(yytext);
+			  sprintf(tablename, "%sprop", default_table);
+			  flt_setup_symbols(tablename);
+			  new_state(XMLATTR);
+			}
 
 <XMLCDATA>"]]"		{ flt_bfr_finish(); WriteToken(Keyword_attr); pop_state(); }
 <XMLCDATA>[\n]		|
@@ -90,7 +98,7 @@ VALUE		#{IDENT}
 <INLINE>"]"		{ WriteToken(Action_attr); pop_state(); }
 
 <INLINE>{IDENT}		|
-<XMLATTR>{IDENT}	{ WriteToken(xml_attr(yytext)); }
+<XMLATTR>{IDENT}	{ xml_property(yytext); }
 
 <INLINE>{VALUE}		|
 <XMLTAG>{VALUE}		|
@@ -107,7 +115,7 @@ VALUE		#{IDENT}
 #include <fltstack.h>
 
 static const char *
-xml_attr(const char *name)
+xml_keyword_attr(const char *name)
 {
     const char *attr = keyword_attr(name);
 
@@ -117,11 +125,19 @@ xml_attr(const char *name)
 }
 
 static void
+xml_property(char *text)
+{
+    const char *attr = xml_keyword_attr(text);
+
+    flt_puts(text, strlen(text), attr);
+}
+
+static void
 xml_command(char *text)
 {
     int ending = (text[0] == '/');
     char *name = ending ? text + 1 : text;
-    const char *attr = xml_attr(name);
+    const char *attr = xml_keyword_attr(name);
 
     if (text[0] == '?') {
 	flt_puts(text, strlen(text), attr);
@@ -192,6 +208,8 @@ xml_close(char *text)
     }
 
     flt_puts(text, strlen(text), Action_attr);
+
+    flt_setup_symbols(default_table);
 }
 
 static void
