@@ -1,7 +1,7 @@
 /*
  * Main program and I/O for external vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filterio.c,v 1.43 2009/05/12 22:49:08 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filterio.c,v 1.44 2009/05/13 22:48:56 tom Exp $
  *
  */
 
@@ -403,7 +403,7 @@ main(int argc, char **argv)
     n = ProcessArgs(argc, argv, 1);
     FltOptions('v') = verbose;
 
-    if ((vile_keywords = !FltOptions('k')) == 0) {
+    if ((vile_keywords = !FltOptions('k')) != 0) {
 	if (strcmp(MY_NAME, default_table)) {
 	    flt_read_keywords(default_table);
 	}

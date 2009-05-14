@@ -8,7 +8,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/lex-filt.l,v 1.72 2009/05/12 22:47:25 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/lex-filt.l,v 1.73 2009/05/13 22:50:31 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of LEX program.
  */
@@ -128,7 +128,7 @@ STATES		("<"("*"|({IDENT}|\,)+)">")
 <STATES>{IDENT}		{
 			  const char *attr = class_attr(yytext);
 			  if (attr == 0) {
-			    insert_keyword(yytext, States_attr, 0);
+			    insert_keyword(yytext, NAME_LEX_STATES, 0);
 			    attr = keyword_attr(yytext);
 			  } else {
 			    attr = Error_attr;
@@ -444,7 +444,7 @@ do_filter(FILE *inputs)
 	Section_attr = Keyword_attr;
 
     if ((States_attr = class_attr(NAME_LEX_STATES)) == 0)
-	States_attr = Keyword_attr;
+	insert_keyword(NAME_LEX_STATES, Keyword_attr, 0);
 
     flt_make_symtab(NAME_LEX_PATTERN);
     set_symbol_table(NAME_LEX_PATTERN);
