@@ -3,12 +3,13 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/xml-filt.l,v 1.23 2009/05/12 20:35:26 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/xml-filt.l,v 1.25 2009/05/14 00:27:58 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of XML input
  * text.
  *
  * By Adam S. Denton (adenton@yahoo.com)
+ * and Thomas E. Dickey
  *
  * Strongly based on the HTML filter program
  * based on a version written by Pierre Dittgen (dittgen@univ-mlv.fr)
@@ -17,6 +18,12 @@
 #include <filters.h>
 
 DefineFilter("xml");
+
+#define SYMS_XMLNS	"xmlns"
+
+#define LEN_TABLENAME	80
+#define FMT_XMLNS	"xmlns_%.70s"
+#define FMT_PROP	"%.70sprop"
 
 static char *Action_attr;
 static char *Comment_attr;
@@ -42,7 +49,8 @@ static int In_error = 0;
 static const char * xml_keyword_attr(const char *name);
 static void xml_close(char *text);
 static void xml_command(char *text);
-static void xml_property(char *text);
+static void xml_prefixed_property(char *text, int len);
+static void xml_property(char *text, int len);
 
 %}
 
@@ -77,9 +85,9 @@ VALUE		#{IDENT}
 <XMLTAG>(\/)?">"	|
 <XMLATTR>(\/)?">"	{ xml_close(yytext); pop_state(); }
 
-<XMLTAG>(\/)?{XMLTAG}	{ char tablename[80];
+<XMLTAG>(\/)?{XMLTAG}	{ char tablename[LEN_TABLENAME];
 			  xml_command(yytext);
-			  sprintf(tablename, "%sprop", default_table);
+			  sprintf(tablename, FMT_PROP, default_table);
 			  flt_setup_symbols(tablename);
 			  new_state(XMLATTR);
 			}
@@ -98,7 +106,8 @@ VALUE		#{IDENT}
 <INLINE>"]"		{ WriteToken(Action_attr); pop_state(); }
 
 <INLINE>{IDENT}		|
-<XMLATTR>{IDENT}	{ xml_property(yytext); }
+<XMLATTR>{IDENT}	{ xml_property(yytext, yyleng); }
+<XMLATTR>{XMLTAG}	{ xml_prefixed_property(yytext, yyleng); }
 
 <INLINE>{VALUE}		|
 <XMLTAG>{VALUE}		|
@@ -125,11 +134,33 @@ xml_keyword_attr(const char *name)
 }
 
 static void
-xml_property(char *text)
+xml_prefixed_property(char *text, int len)
 {
-    const char *attr = xml_keyword_attr(text);
+#define STR_XMLNS "xmlns:"
+#define LEN_XMLNS 6
 
-    flt_puts(text, strlen(text), attr);
+    if (len > LEN_XMLNS && !strncmp(text, STR_XMLNS, LEN_XMLNS)) {
+	char *old_table = get_symbol_table();
+	char *marker = (text + LEN_XMLNS - 1);
+
+	set_symbol_table(SYMS_XMLNS);
+	insert_keyword(text + LEN_XMLNS, Action_attr, 0);
+	set_symbol_table(old_table);
+
+	*marker = '\0';
+	flt_puts(text, LEN_XMLNS - 1, xml_keyword_attr(text));
+	*marker = ':';
+	flt_putc(*marker++);
+	flt_puts(marker, len - LEN_XMLNS, Action_attr);
+    } else {
+	flt_puts(text, strlen(text), xml_keyword_attr(text));
+    }
+}
+
+static void
+xml_property(char *text, int len)
+{
+    flt_puts(text, len, xml_keyword_attr(text));
 }
 
 static void
@@ -140,7 +171,7 @@ xml_command(char *text)
     const char *attr = xml_keyword_attr(name);
 
     if (text[0] == '?') {
-	flt_puts(text, strlen(text), attr);
+	;
     } else if (!ending) {
 	unsigned need = sizeof(XMLTAGS) * Num_tags;
 	static unsigned have = 0;
@@ -151,7 +182,6 @@ xml_command(char *text)
 	Tags[Num_tags].col = flt_get_col();
 	++Num_tags;
 
-	flt_puts(text, strlen(text), attr);
     } else {
 	int bad = 0;
 
@@ -194,9 +224,31 @@ xml_command(char *text)
 
 	if (Num_tags > 0)
 	    free(Tags[--Num_tags].name);
-
-	flt_puts(text, strlen(text), attr);
     }
+    if (attr == 0 || *attr == '\0') {
+	char *marker = strchr(text, ':');
+	if (marker != 0 && marker[1] != '\0') {
+	    char *old_table = get_symbol_table();
+	    char new_table[LEN_TABLENAME];
+
+	    *marker = '\0';
+	    set_symbol_table(SYMS_XMLNS);
+	    flt_puts(text, strlen(text), keyword_attr(name));
+	    set_symbol_table(old_table);
+
+	    sprintf(new_table, FMT_XMLNS, name);
+
+	    flt_putc(':');
+
+	    text = marker + 1;
+	    set_symbol_table(new_table);
+	    attr = keyword_attr(text);
+	    *marker = ':';
+
+	    set_symbol_table(old_table);
+	}
+    }
+    flt_puts(text, strlen(text), attr);
 }
 
 static void
@@ -209,7 +261,7 @@ xml_close(char *text)
 
     flt_puts(text, strlen(text), Action_attr);
 
-    flt_setup_symbols(default_table);
+    set_symbol_table(default_table);
 }
 
 static void
@@ -230,6 +282,8 @@ do_filter(FILE *inputs)
     Number_attr  = class_attr(NAME_NUMBER);
     String_attr  = class_attr(NAME_LITERAL);
     Error_attr   = class_attr(NAME_ERROR);
+
+    set_symbol_table(default_table);
 
     begin_state(INITIAL);
     RunLEX();
