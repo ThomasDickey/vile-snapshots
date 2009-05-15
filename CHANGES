@@ -2,6 +2,8 @@ Changes for vile 9.7 (released ??? ??? ?? ????)
 
  200905?? (q)
 	> Tom Dickey:
+	+ improve xml filter (used for xsl mode) by using the prefixes defined
+	  by xmlns properties to select different symbol tables.
 	+ add xsl mode
 	+ make format-til, lower-til, upper-til and flip-til work for UTF-8
 	  (anon report on Savannah).

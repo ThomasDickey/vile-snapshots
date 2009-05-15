@@ -1,9 +1,9 @@
 %pointer
-%x XMLTAG XMLATTR XMLCDATA COMMENT INLINE
+%x XMLTAG XMLATTR XMLCDATA XMLPI COMMENT INLINE
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/xml-filt.l,v 1.25 2009/05/14 00:27:58 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/xml-filt.l,v 1.28 2009/05/15 10:43:46 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of XML input
  * text.
@@ -23,7 +23,13 @@ DefineFilter("xml");
 
 #define LEN_TABLENAME	80
 #define FMT_XMLNS	"xmlns_%.70s"
-#define FMT_PROP	"%.70sprop"
+#define FMT_PROP	"%.70s_prop"
+
+#ifdef FLEX_DEBUG
+#define DBG_HTML(params) if (yy_flex_debug) fprintf params
+#else
+#define DBG_HTML(params) /* nothing */
+#endif
 
 static char *Action_attr;
 static char *Comment_attr;
@@ -79,16 +85,22 @@ VALUE		#{IDENT}
 %%
 
 <INITIAL,INLINE>"<"	{ WriteToken(Action_attr); push_state(XMLTAG); }
+<INITIAL,INLINE>"<?"	{ WriteToken(Action_attr); push_state(XMLPI); }
 
 <XMLTAG>"![CDATA["	{ WriteToken(Keyword_attr); push_state(XMLCDATA); flt_bfr_begin(String_attr); }
 
 <XMLTAG>(\/)?">"	|
+<XMLPI>"?>"		|
 <XMLATTR>(\/)?">"	{ xml_close(yytext); pop_state(); }
 
 <XMLTAG>(\/)?{XMLTAG}	{ char tablename[LEN_TABLENAME];
+
+			  flt_setup_symbols(default_table);
 			  xml_command(yytext);
+
 			  sprintf(tablename, FMT_PROP, default_table);
 			  flt_setup_symbols(tablename);
+
 			  new_state(XMLATTR);
 			}
 
@@ -106,6 +118,7 @@ VALUE		#{IDENT}
 <INLINE>"]"		{ WriteToken(Action_attr); pop_state(); }
 
 <INLINE>{IDENT}		|
+<XMLPI>{IDENT}		|
 <XMLATTR>{IDENT}	{ xml_property(yytext, yyleng); }
 <XMLATTR>{XMLTAG}	{ xml_prefixed_property(yytext, yyleng); }
 
@@ -113,10 +126,12 @@ VALUE		#{IDENT}
 <XMLTAG>{VALUE}		|
 <XMLATTR>{VALUE}	|
 <XMLTAG>{STRING}	|
+<XMLPI>{STRING}		|
 <XMLATTR>{STRING}	{ WriteToken(String_attr); }
 
 <INITIAL,INLINE>{ENTITY} |
 <XMLTAG>{NUMBER}	|
+<XMLPI>{NUMBER}		|
 <XMLATTR>{NUMBER}	{ WriteToken(Number_attr); }
 
 %%
@@ -170,9 +185,7 @@ xml_command(char *text)
     char *name = ending ? text + 1 : text;
     const char *attr = xml_keyword_attr(name);
 
-    if (text[0] == '?') {
-	;
-    } else if (!ending) {
+    if (!ending) {
 	unsigned need = sizeof(XMLTAGS) * Num_tags;
 	static unsigned have = 0;
 
