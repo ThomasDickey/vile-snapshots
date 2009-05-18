@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.687 2009/04/03 23:56:05 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.688 2009/05/17 18:50:41 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -719,6 +719,7 @@
  */
 #define OPT_COLOR_SCHEMES          (OPT_ENUM_MODES && !SMALLER && OPT_COLOR)
 
+#define OPT_ACCESS_CHOICES         !SMALLER
 #define OPT_BACKUP_CHOICES	   (OPT_ENUM_MODES && OPT_FILEBACK)
 #define OPT_BOOL_CHOICES	   !SMALLER
 #define OPT_BYTEORDER_MARK_CHOICES OPT_MULTIBYTE

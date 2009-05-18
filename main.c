@@ -22,7 +22,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.662 2009/02/06 00:55:03 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.663 2009/05/17 18:47:30 tom Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -1385,6 +1385,9 @@ init_mode_value(struct VAL *d, MODECLASS v_class, int v_which)
 #endif
 #ifdef GVAL_CCOLOR
 	    setINT(GVAL_CCOLOR, ENUM_UNKNOWN);	/* cursor color */
+#endif
+#ifdef GVAL_CHK_ACCESS
+	    setINT(GVAL_CHK_ACCESS, FL_CDIR);	/* access-check */
 #endif
 #ifdef GVAL_COLOR_SCHEME
 	    setPAT(GVAL_COLOR_SCHEME, 0);	/* default scheme is 0 */

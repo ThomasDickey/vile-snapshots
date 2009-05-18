@@ -1,7 +1,7 @@
 /*
  * Main program and I/O for external vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/RCS/builtflt.c,v 1.70 2009/05/12 22:49:36 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/builtflt.c,v 1.71 2009/05/17 16:36:48 tom Exp $
  *
  */
 
@@ -373,16 +373,26 @@ flt_error(const char *fmt,...)
 	va_list ap;
 
 	if ((bp = make_ro_bp(FLTMSGS_BufName, BFINVS)) != 0) {
-	    (void) b2printf(bp, "%s: %d:%d: ",
-			    filename,
-			    flt_get_line(),
-			    flt_get_col());
+	    /*
+	     * The "-Q" option emits a ".keyword" listing, which would not
+	     * be helped by showing the filename and line-number.
+	     */
+	    if (FltOptions('Q')) {
+		va_start(ap, fmt);
+		(void) b2vprintf(bp, fmt, ap);
+		va_end(ap);
+	    } else {
+		(void) b2printf(bp, "%s: %d:%d: ",
+				filename,
+				flt_get_line(),
+				flt_get_col());
 
-	    va_start(ap, fmt);
-	    (void) b2vprintf(bp, fmt, ap);
-	    va_end(ap);
+		va_start(ap, fmt);
+		(void) b2vprintf(bp, fmt, ap);
+		va_end(ap);
 
-	    (void) b2printf(bp, "\n");
+		(void) b2printf(bp, "\n");
+	    }
 	}
     }
 #endif
@@ -550,8 +560,12 @@ flt_start(char *name)
 	    }
 	}
 	set_symbol_table(current_filter->filter_name);
-	current_filter->InitFilter(0);
-	current_filter->DoFilter(stdin);
+	if (FltOptions('Q')) {
+	    flt_dump_symtab(NULL);
+	} else {
+	    current_filter->InitFilter(0);
+	    current_filter->DoFilter(stdin);
+	}
 #if NO_LEAKS
 	current_filter->FreeFilter();
 #endif
