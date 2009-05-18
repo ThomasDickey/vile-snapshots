@@ -2,7 +2,7 @@
  * This file contains the command processing functions for a number of random
  * commands. There is no functional grouping here, for sure.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.328 2009/04/03 21:51:15 Mark.Robinson Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.329 2009/05/18 00:05:03 tom Exp $
  *
  */
 
@@ -351,14 +351,14 @@ char_no(BUFFER *the_buffer, MARK the_mark)
 {
     LINE *lp;
     B_COUNT curchar = 0;
-    int rslen = len_record_sep(curbp);
+    int len_rs = len_record_sep(curbp);
 
     for_each_line(lp, the_buffer) {
 	if (lp == the_mark.l) {
-	    curchar += the_mark.o;
+	    curchar += (B_COUNT) the_mark.o;
 	    break;
 	}
-	curchar += llength(lp) + rslen;
+	curchar += line_length(lp);
     }
 
     return curchar;
@@ -387,19 +387,19 @@ gotochr(int f, int n)
 {
     LINE *lp;
     B_COUNT len;
-    B_COUNT len_rs = len_record_sep(curbp);
+    int len_rs = len_record_sep(curbp);
 
     if (!f) {
 	DOT.l = lback(buf_head(curbp));
 	DOT.o = llength(DOT.l);
     } else {
-	B_COUNT goal = n;
+	B_COUNT goal = (B_COUNT) n;
 	for_each_line(lp, curbp) {
 	    len = line_length(lp);
 	    if (goal <= len) {
 		DOT.l = lp;
 		/* we cannot move into the middle of the line-separator */
-		if ((DOT.o = goal - 1) >= llength(lp))
+		if ((DOT.o = (C_NUM) (goal - 1)) >= llength(lp))
 		    DOT.o = llength(lp) - 1;
 		goal = 0;
 		break;
@@ -445,13 +445,13 @@ set_char2(LINE *lp, int offset, int ch)
     if (b_is_utfXX(curbp)) {
 	UCHAR buffer[10];
 	int old_len = bytes_at(lp, offset);
-	int new_len = vl_conv_to_utf8(buffer, ch, sizeof(buffer));
+	int new_len = vl_conv_to_utf8(buffer, (UINT) ch, sizeof(buffer));
 	int n;
 
 	if (new_len > old_len) {
 	    lins_bytes(new_len - old_len, ' ');
 	} else if (new_len < old_len) {
-	    ldel_bytes(old_len - new_len, FALSE);
+	    ldel_bytes((B_COUNT) (old_len - new_len), FALSE);
 	}
 	for (n = 0; n < new_len; ++n)
 	    lputc(lp, offset + n, buffer[n]);
@@ -475,9 +475,9 @@ get_char2(LINE *lp, int offset)
 	    UINT target;
 	    int used = vl_conv_to_utf32(&target,
 					lvalue(lp) + offset,
-					llength(lp) - offset);
+					(B_COUNT) (llength(lp) - offset));
 	    if (used > 0) {
-		result = target;
+		result = (int) target;
 	    }
 	}
 #endif
@@ -671,9 +671,9 @@ forceblank(int f, int n)
     B_COUNT n_arg;
     C_NUM nchar;
     int s = TRUE;
-    B_COUNT len_rs = len_record_sep(curbp);
+    int len_rs = len_record_sep(curbp);
 
-    n_arg = need_at_least(f, n, 0);
+    n_arg = (B_COUNT) need_at_least(f, n, 0);
 
     lp1 = DOT.l;
     /* scan backward */
@@ -690,7 +690,7 @@ forceblank(int f, int n)
 	   firstchar(lp2) < 0) {
 	++nld;
 	if (nld > n_arg && lisreal(lp2))
-	    nchar += line_length(lp2);
+	    nchar += (C_NUM) line_length(lp2);
     }
 
     DOT.l = lforw(lp1);
@@ -1474,7 +1474,7 @@ set_directory(const char *dir)
     current_directory(TRUE);
 #endif
 
-    outlen = (term.cols - 1) - (sizeof(CHANGE_FAILED) - 3);
+    outlen = (int) ((unsigned) (term.cols - 1) - (sizeof(CHANGE_FAILED) - 3));
     mlforce(CHANGE_FAILED, path_trunc(exdir, outlen, tmp, sizeof(tmp)));
     return FALSE;
 
@@ -1833,12 +1833,13 @@ dirstack_extend(const char *dir, const char *fnname)
     if (dirs_idx >= dirs_len) {
 	if (dirs_len == 0) {
 	    dirs_len = 16;
-	    dirstack = castalloc(char *, dirs_len * sizeof(dirstack[0]));
+	    dirstack = castalloc(char *,
+				   ((unsigned) dirs_len * sizeof(dirstack[0])));
 	} else {
 	    dirs_len *= 2;
 	    dirstack = castrealloc(char *,
 				   dirstack,
-				   dirs_len * sizeof(dirstack[0]));
+				     ((unsigned) dirs_len * sizeof(dirstack[0])));
 	}
 	if (!dirstack)
 	    return (no_memory(fnname));

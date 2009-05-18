@@ -3,7 +3,7 @@
  * and mark.  Some functions are commands.  Some functions are just for
  * internal use.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/region.c,v 1.152 2009/05/11 20:36:29 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/region.c,v 1.153 2009/05/17 23:48:39 tom Exp $
  *
  */
 
@@ -531,7 +531,7 @@ entabline(void *flagp, int l GCC_UNUSED, int r GCC_UNUSED)
 			(void) lreplc(lp, noff++, lgetc(lp, ooff++));
 		    DOT.o = noff;
 		    if (ooff > noff)
-			(void) ldel_bytes(ooff - noff, FALSE);
+			(void) ldel_bytes((B_COUNT) (ooff - noff), FALSE);
 		}
 		(void) gocol(savecol);
 		return TRUE;
@@ -589,7 +589,7 @@ trimline(void *flag GCC_UNUSED, int l GCC_UNUSED, int r GCC_UNUSED)
     if (llength(lp) <= (off + 1))
 	return TRUE;
 
-    delcnt = llength(lp) - (off + 1);
+    delcnt = (B_COUNT) (llength(lp) - (off + 1));
 
     odoto = DOT.o;
     was_at_eol = (odoto == llength(lp));
@@ -724,7 +724,7 @@ _yankchar(int ch)
 #if OPT_MULTIBYTE
     if (b_is_utfXX(curbp)) {
 	UCHAR buffer[10];
-	int len = vl_conv_to_utf8(buffer, ch, sizeof(buffer));
+	int len = vl_conv_to_utf8(buffer, (UINT) ch, sizeof(buffer));
 	int n;
 	for (n = 0; n < len; ++n)
 	    kinsert(buffer[n]);
@@ -796,8 +796,8 @@ _to_lower(int c)
 
 #if OPT_MULTIBYTE
     if (b_is_utfXX(curbp)) {
-	if (sys_isupper(c)) {
-	    result = sys_tolower(c);
+	if (sys_isupper((wint_t) c)) {
+	    result = (int) sys_tolower((wint_t) c);
 	}
     } else
 #endif
@@ -813,8 +813,8 @@ _to_upper(int c)
 
 #if OPT_MULTIBYTE
     if (b_is_utfXX(curbp)) {
-	if (sys_islower(c)) {
-	    result = sys_toupper(c);
+	if (sys_islower((wint_t) c)) {
+	    result = (int) sys_toupper((wint_t) c);
 	}
     } else
 #endif
@@ -830,11 +830,11 @@ _to_caseflip(int c)
 
 #if OPT_MULTIBYTE
     if (b_is_utfXX(curbp)) {
-	if (sys_isalpha(c)) {
-	    if (sys_isupper(c))
-		result = sys_tolower(c);
+	if (sys_isalpha((wint_t) c)) {
+	    if (sys_isupper((wint_t) c))
+		result = (int) sys_tolower((wint_t) c);
 	    else
-		result = sys_toupper(c);
+		result = (int) sys_toupper((wint_t) c);
 	}
     } else
 #endif
@@ -951,7 +951,7 @@ getregion(REGION * rp)
 	    rp->r_orig.o =
 		rp->r_end.o = w_left_margin(curwp);
 	    rp->r_end.l = lforw(DOT.l);
-	    rp->r_size = (B_COUNT) (line_length(DOT.l) - w_left_margin(curwp));
+	    rp->r_size = (line_length(DOT.l) - (B_COUNT) w_left_margin(curwp));
 	} else {
 	    if (DOT.o < MK.o) {
 		rp->r_orig.o = rp->r_leftcol = DOT.o;
@@ -960,7 +960,7 @@ getregion(REGION * rp)
 		rp->r_orig.o = rp->r_leftcol = MK.o;
 		rp->r_end.o = rp->r_rightcol = DOT.o;
 	    }
-	    rp->r_size = rp->r_end.o - rp->r_orig.o;
+	    rp->r_size = (B_COUNT) (rp->r_end.o - rp->r_orig.o);
 	    set_rect_columns(rp);
 	}
 	return found_region(rp);
@@ -982,14 +982,15 @@ getregion(REGION * rp)
 	    rp->r_orig = MK;
 	    rp->r_end = DOT;
 	}
-	fsize = (B_COUNT) (line_length(flp) -
-			   ((regionshape == rgn_FULLLINE) ?
-			    w_left_margin(curwp) : rp->r_orig.o));
+	fsize = (line_length(flp) -
+		 (B_COUNT) ((regionshape == rgn_FULLLINE)
+			    ? w_left_margin(curwp)
+			    : rp->r_orig.o));
 	flp_start = flp;
 	while (flp != blp) {
 	    flp = lforw(flp);
 	    if (flp != buf_head(curbp) && flp != flp_start) {
-		fsize += line_length(flp) - w_left_margin(curwp);
+		fsize += line_length(flp) - (B_COUNT) w_left_margin(curwp);
 	    } else if (flp != blp) {
 		mlforce("BUG: hit buf end in getregion");
 		return2Code(FALSE);
@@ -1002,7 +1003,7 @@ getregion(REGION * rp)
 		    rp->r_end.l = lforw(rp->r_end.l);
 		} else {
 		    fsize -=
-			(line_length(flp) - rp->r_end.o);
+			(line_length(flp) - (B_COUNT) rp->r_end.o);
 		    set_rect_columns(rp);
 		}
 		rp->r_size = fsize;
@@ -1016,17 +1017,17 @@ getregion(REGION * rp)
 	flp = DOT.l;
 	if (regionshape == rgn_FULLLINE) {
 	    bsize = fsize =
-		(B_COUNT) (line_length(blp) - w_left_margin(curwp));
+		(line_length(blp) - (B_COUNT) w_left_margin(curwp));
 	} else {
 	    bsize = (B_COUNT) (DOT.o - w_left_margin(curwp));
-	    fsize = (B_COUNT) (line_length(flp) - DOT.o);
+	    fsize = (line_length(flp) - (B_COUNT) DOT.o);
 	}
 	while ((flp != buf_head(curbp)) ||
 	       (lback(blp) != buf_head(curbp))) {
 	    if (flp != buf_head(curbp)) {
 		flp = lforw(flp);
 		if (flp != buf_head(curbp))
-		    fsize += line_length(flp) - w_left_margin(curwp);
+		    fsize += (line_length(flp) - (B_COUNT) w_left_margin(curwp));
 		if (flp == MK.l) {
 		    rp->r_orig = DOT;
 		    rp->r_end = MK;
@@ -1035,7 +1036,7 @@ getregion(REGION * rp)
 			    rp->r_end.o = w_left_margin(curwp);
 			rp->r_end.l = lforw(rp->r_end.l);
 		    } else {
-			fsize -= (line_length(flp) - MK.o);
+			fsize -= (line_length(flp) - (B_COUNT) MK.o);
 			set_rect_columns(rp);
 		    }
 		    rp->r_size = fsize;
@@ -1044,7 +1045,7 @@ getregion(REGION * rp)
 	    }
 	    if (lback(blp) != buf_head(curbp)) {
 		blp = lback(blp);
-		bsize += line_length(blp) - w_left_margin(curwp);
+		bsize += (line_length(blp) - (B_COUNT) w_left_margin(curwp));
 		if (blp == MK.l) {
 		    rp->r_orig = MK;
 		    rp->r_end = DOT;
@@ -1053,7 +1054,7 @@ getregion(REGION * rp)
 			    rp->r_end.o = w_left_margin(curwp);
 			rp->r_end.l = lforw(rp->r_end.l);
 		    } else {
-			bsize -= (MK.o - w_left_margin(curwp));
+			bsize -= (B_COUNT) (MK.o - w_left_margin(curwp));
 			set_rect_columns(rp);
 		    }
 		    rp->r_size = bsize;
@@ -1086,12 +1087,12 @@ typedef struct {
 } ENCODEREG;
 
 static void
-encode_one_attribute(TBUFF **result, int count, char *hypercmd, VIDEO_ATTR attr)
+encode_one_attribute(TBUFF **result, long count, char *hypercmd, VIDEO_ATTR attr)
 {
     char temp[80];
 
     tb_append(result, CONTROL_A);
-    sprintf(temp, "%d", count);
+    sprintf(temp, "%ld", count);
     tb_sappend(result, temp);
 
     if (attr & VAUL)
@@ -1145,8 +1146,8 @@ encode_attributes(LINE *lp, BUFFER *bp, REGION * top_region)
 	AREGION *ap;
 	AREGION *my_list = 0;
 	AREGION ar_temp;
-	int my_used = 0;
-	int my_size = 0;
+	unsigned my_used = 0;
+	unsigned my_size = 0;
 	L_NUM top_rsl = line_no(bp, top_region->r_orig.l);
 	L_NUM top_rel = line_no(bp, top_region->r_end.l);
 	L_NUM tst_rsl, tst_rel;
@@ -1208,10 +1209,10 @@ encode_attributes(LINE *lp, BUFFER *bp, REGION * top_region)
 	 */
 	for (j = 0; j < len; ++j) {
 	    /* get the buffer attributes for this line, by column */
-	    for (k = 0; k < my_used; ++k) {
+	    for (k = 0; (unsigned) k < my_used; ++k) {
 		if (j == my_list[k].ar_region.r_orig.o) {
 		    encode_one_attribute(&result,
-					 my_list[k].ar_region.r_size,
+					 (long) my_list[k].ar_region.r_size,
 #if OPT_HYPERTEXT
 					 my_list[k].ar_hypercmd,
 #else
@@ -1285,7 +1286,7 @@ encode_region(void)
 	&& (base_line = line_no(curbp, work.enc_region.r_orig.l)) > 0
 	&& (last_line = line_no(curbp, work.enc_region.r_end.l)) > base_line) {
 	total = (last_line - base_line);
-	if ((work.enc_list = typeallocn(TBUFF *, total)) == 0) {
+	if ((work.enc_list = typeallocn(TBUFF *, (size_t) total)) == 0) {
 	    status = no_memory("encode_region");
 	} else {
 	    status = do_lines_in_region(encode_line, (void *) &work, FALSE);

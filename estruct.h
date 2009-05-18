@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.688 2009/05/17 18:50:41 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.689 2009/05/17 23:39:11 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -1749,7 +1749,7 @@ typedef struct	LINE {
 #define lputc(lp, n, c)		(lvalue(lp)[(n)]=(char)(c))
 #define lvalue(lp)		((lp)->l_text)
 #define llength(lp)		((lp)->l_used)
-#define line_length(lp)		((B_COUNT)(llength(lp))+len_rs) /* counting recordsep */
+#define line_length(lp)		((B_COUNT)(llength(lp)+len_rs)) /* counting recordsep */
 
 #define liscopied(lp)		((lp)->l.l_undo_cookie == current_undo_cookie)
 #define lsetcopied(lp)		((lp)->l.l_undo_cookie = current_undo_cookie)

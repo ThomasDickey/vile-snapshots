@@ -10,7 +10,7 @@
  * editing must be being displayed, which means that "b_nwnd" is non zero,
  * which means that the dot and mark values in the buffer headers are nonsense.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.203 2009/03/22 15:04:09 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.204 2009/05/18 00:13:12 tom Exp $
  *
  */
 
@@ -416,7 +416,7 @@ lins_bytes(int n, int c)
     } else {
 	doto = DOT.o;		/* Save for later.      */
 	tmp = lp1;
-	nsize = llength(tmp) + n;
+	nsize = (size_t) (llength(tmp) + n);
 	if (nsize > tmp->l_size) {	/* Hard: reallocate     */
 	    /* first, create the new image */
 	    nsize = roundlenup((int) nsize);
@@ -510,9 +510,9 @@ lins_chars(int n, int c)
     int nn;
 
     if ((c > 127) && b_is_utfXX(curbp)) {
-	nbytes = vl_conv_to_utf8(target, c, sizeof(target));
+	nbytes = vl_conv_to_utf8(target, (UINT) c, sizeof(target));
     } else if (okCTYPE2(vl_wide_enc) && !vl_mb_is_8bit(c)) {
-	nbytes = vl_conv_to_utf8(target, c, sizeof(target));
+	nbytes = vl_conv_to_utf8(target, (UINT) c, sizeof(target));
     } else {
 	nbytes = 1;
     }
@@ -591,7 +591,8 @@ lnewline(void)
 			lp2->l_attrs = lp1->l_attrs;
 			lp1->l_attrs = 0;
 		    } else {
-			UCHAR *newattr = typeallocn(UCHAR, llength(lp1) + 1);
+			UCHAR *newattr
+			= typeallocn(UCHAR, (unsigned) (llength(lp1) + 1));
 			int n;
 
 			if (newattr != 0) {
@@ -697,11 +698,11 @@ ldel_bytes(B_COUNT nbytes, int kflag)
     LINE *nlp;
     int doto;
     B_COUNT uchunk;
-    int schunk;
+    long schunk;
     WINDOW *wp;
     int i;
     int status = TRUE;
-    B_COUNT len_rs = len_record_sep(curbp);
+    B_COUNT len_rs = (B_COUNT) len_record_sep(curbp);
 
     lines_deleted = 0;
     while (nbytes != 0) {
@@ -711,11 +712,11 @@ ldel_bytes(B_COUNT nbytes, int kflag)
 	    status = FALSE;
 	    break;
 	}
-	uchunk = llength(dotp) - doto;	/* Size of chunk.    */
+	uchunk = (B_COUNT) (llength(dotp) - doto);	/* Size of chunk.  */
 	if (uchunk > nbytes)
 	    uchunk = nbytes;
 
-	schunk = uchunk;
+	schunk = (long) uchunk;
 	if (schunk < 0) {
 	    status = FALSE;
 	    break;		/* oops: sign-extension */
@@ -725,7 +726,7 @@ ldel_bytes(B_COUNT nbytes, int kflag)
 	    /* first take out any whole lines below this one */
 	    nlp = lforw(dotp);
 	    while (nlp != buf_head(curbp)
-		   && line_length(nlp) < nbytes) {
+		   && (line_length(nlp) < nbytes)) {
 		if (kflag) {
 		    status = kinsert('\n');
 		    for (i = 0; i < llength(nlp) &&
@@ -826,7 +827,7 @@ ldel_bytes(B_COUNT nbytes, int kflag)
 int
 ldel_chars(B_COUNT nchars, int kflag)
 {
-    return ldel_bytes(count_bytes(DOT.l, DOT.o, nchars), kflag);
+    return ldel_bytes((B_COUNT) count_bytes(DOT.l, DOT.o, (int) nchars), kflag);
 }
 #endif
 
@@ -982,13 +983,13 @@ ldelnewline(void)
 	if ((ntext = castalloc(char, nsize)) == NULL)
 	      return (FALSE);
 	if (lvalue(lp1)) {	/* possibly NULL if l_size == 0 */
-	    (void) memcpy(&ntext[0], &lvalue(lp1)[0], len);
+	    (void) memcpy(&ntext[0], &lvalue(lp1)[0], (size_t) len);
 	    ltextfree(lp1, curbp);
 	}
 	lvalue(lp1) = ntext;
 	lp1->l_size = nsize;
     }
-    (void) memcpy(lvalue(lp1) + len, lvalue(lp2), add);
+    (void) memcpy(lvalue(lp1) + len, lvalue(lp2), (size_t) add);
 #if ! WINMARK
     if (MK.l == lp2) {
 	MK.l = lp1;
@@ -1150,7 +1151,7 @@ kinsert(int c)
 
     if (rc != FALSE) {
 	/* and now insert the character */
-	kbp->kbufp->d_chunk[kbp->kused++] = (char) c;
+	kbp->kbufp->d_chunk[kbp->kused++] = (UCHAR) c;
 	kchars++;
 	if (c == '\n') {
 	    klines++;
@@ -1560,7 +1561,7 @@ PutChar(int n, REGIONSHAPE shape)
 	    col = getcol(DOT, FALSE);
 	}
 	while (kp != NULL) {
-	    i = KbSize(ukb, kp);
+	    i = (int) KbSize(ukb, kp);
 	    sp = (char *) kp->d_chunk;
 	    if (shape == rgn_RECTANGLE) {
 		while (i-- > 0) {
@@ -1735,10 +1736,10 @@ execkreg(int f, int n)
 	    tkp = kp;
 	    while (--whichkb != 0)
 		tkp = tkp->d_next;
-	    i = KbSize(jj, tkp);
+	    i = (int) KbSize(jj, tkp);
 	    sp = (char *) tkp->d_chunk + i - 1;
 	    while (i--) {
-		mapungetc((*sp--) | YESREMAP);
+		mapungetc((int) ((*sp--) | YESREMAP));
 	    }
 	    kbcount--;
 	}
@@ -1815,7 +1816,7 @@ makereglist(
 	    }
 	    bpadc(' ', REGS_PREFIX - DOT.o);
 	    do {
-		j = KbSize(ii, kp);
+		j = (int) KbSize(ii, kp);
 		p = kp->d_chunk;
 
 		while (j-- > 0) {
@@ -1828,7 +1829,7 @@ makereglist(
 			bputc(c);
 		    } else if (c != '\n') {
 			bputc('^');
-			bputc(toalpha(c));
+			bputc((int) toalpha(c));
 		    }
 		    if (c == '\n') {
 			first = TRUE;
