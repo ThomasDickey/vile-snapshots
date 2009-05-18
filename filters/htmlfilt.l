@@ -4,7 +4,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/htmlfilt.l,v 1.95 2009/05/12 20:37:54 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/htmlfilt.l,v 1.96 2009/05/17 20:20:56 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of HTML input
  * text.
@@ -332,7 +332,7 @@ CSS_INVALID	({CSS_INVALID1}|{CSS_INVALID2})
 <CSS_CODE>{CSS_HASH}	{ css_hash(yytext, yyleng); }
 <CSS_CODE>{REAL}	{ WriteToken(Number_attr); }
 <CSS_CODE>{CSS_INVALID}	{ WriteToken(Error_attr); }
-<CSS_CODE>"<!--"[^\r\n]* { WriteToken(Comment_attr);
+<CSS_CODE>"<!--"	{ WriteToken(Comment_attr);
 			  push_state(CSS_CODE);
 			}
 <CSS_CODE>"-->"		{ WriteToken(Comment_attr);

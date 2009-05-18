@@ -2,6 +2,20 @@ Changes for vile 9.7 (released ??? ??? ?? ????)
 
  200905?? (q)
 	> Tom Dickey:
+	+ improve which-source and which-exec commands (prompted by Paul Fox):
+	  + use the same check for file-ownership as was done in 9.5m, showing
+	    files which fail this check with "?" rather than "*".
+	  + add a trace message showing filenames which fail the check.
+	  + add check-access mode, to make this configurable.
+	+ add show-filtercolors macro, using the "-Q" option of syntax filters.
+	+ add "-Q" option to syntax filters, which makes the filter write a
+	  ".keyword" table to stderr to show the effect of the "-k" option.
+	+ as part of improvements for xml filter, modify the way keyword tables
+	  are loaded.  Before, symbols were implicitly loaded into the default
+	  tablename defined by the filter.  Now, they are loaded into the
+	  table named by the "k" option to the filter.  Adjusted ".key" files
+	  to use ".merge" rather than ".include" for the case where they used
+	  the old behavior.
 	+ improve xml filter (used for xsl mode) by using the prefixes defined
 	  by xmlns properties to select different symbol tables.
 	+ add xsl mode

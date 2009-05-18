@@ -4,7 +4,7 @@
  *	Definitions to interface to unix-like DIRECTORY(3) procedures.
  *	Include this after "estruct.h"
  *
- * $Header: /users/source/archives/vile.vcs/RCS/dirstuff.h,v 1.31 2008/07/14 22:07:42 Mark.Robinson Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/dirstuff.h,v 1.32 2009/05/15 21:35:30 tom Exp $
  *
  */
 
@@ -136,6 +136,27 @@ extern	DIRENT *readdir ( DIR *dp );
 
 #ifndef USE_D_NAMLEN
 #define USE_D_NAMLEN 0
+#endif
+
+/* C Set did not define S_IFMT */
+#if !defined(S_IFMT)
+#define S_IFMT (S_IFDIR|S_IFREG)
+#endif
+
+#if !defined(S_ISDIR)
+# define S_ISDIR(m)  (((m) & S_IFMT) == S_IFDIR)
+#endif
+
+#if !defined(S_ISREG)
+# define S_ISREG(m)  (((m) & S_IFMT) == S_IFREG)
+#endif
+
+#ifndef S_IFIFO
+#define S_IFIFO S_IFREG
+#endif
+
+#if !defined(S_ISFIFO)
+# define S_ISFIFO(m)  (((m) & S_IFMT) == S_IFIFO)
 #endif
 
 #endif /* DIRSTUFF_H */

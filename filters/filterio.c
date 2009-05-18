@@ -1,7 +1,7 @@
 /*
  * Main program and I/O for external vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filterio.c,v 1.44 2009/05/13 22:48:56 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filterio.c,v 1.46 2009/05/17 14:41:10 tom Exp $
  *
  */
 
@@ -68,7 +68,7 @@ ProcessArgs(int argc, char *argv[], int flag)
 		    if (((filter_def.options != 0
 			  && strchr(filter_def.options, *s) == 0)
 			 || filter_def.options == 0)
-			&& strchr("vq", *s) == 0) {
+			&& strchr("vqQ", *s) == 0) {
 			fprintf(stderr, "unknown option %c\n", *s);
 			exit(BADEXIT);
 		    }
@@ -174,7 +174,13 @@ flt_get_col(void)
 void
 flt_error(const char *fmt,...)
 {
-    (void) fmt;
+    if (FltOptions('v') || FltOptions('Q')) {
+	va_list ap;
+
+	va_start(ap, fmt);
+	(void) vfprintf(stderr, fmt, ap);
+	va_end(ap);
+    }
 }
 
 char *
@@ -412,7 +418,7 @@ main(int argc, char **argv)
 
     filter_def.InitFilter(0);
 
-    if (FltOptions('q')) {
+    if (FltOptions('q') || FltOptions('Q')) {
 	/*
 	 * When the filter is called, we want to force it to print out its
 	 * class info and then immediately exit.  Easiest way to do this
@@ -433,6 +439,8 @@ main(int argc, char **argv)
 	    filter_def.DoFilter(my_in);
 	    fclose(my_in);
 	}
+	if (FltOptions('Q'))
+	    flt_dump_symtab(NULL);
     } else if (n < argc) {
 	char *name = argv[n++];
 	if ((my_in = fopen(name, "r")) != 0) {

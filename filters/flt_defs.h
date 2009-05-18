@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/flt_defs.h,v 1.8 2007/09/28 21:19:11 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/flt_defs.h,v 1.9 2009/05/16 11:16:03 tom Exp $
  */
 
 #ifndef FLT_DEFS_H
@@ -26,6 +26,8 @@ extern "C" {
 #ifndef OPT_LOCALE
 #define OPT_LOCALE 0
 #endif
+
+#define	NonNull(s)	((s == 0) ? "" : s)
 
 /* If we are using built-in filters, we can use many definitions from estruct.h
  * that may resolve to functions in ../vile

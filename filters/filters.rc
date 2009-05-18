@@ -1,4 +1,4 @@
-; $Id: filters.rc,v 1.220 2009/05/15 10:24:35 tom Exp $
+; $Id: filters.rc,v 1.223 2009/05/17 17:10:31 tom Exp $
 ; majormodes in this file are ordered alphabetically for convenience - the
 ; precedence used by vile is strictly alphabetic, counting case.
 
@@ -166,7 +166,7 @@ store-procedure HighlightFilter 'Invoke syntax-highlighting filter on the curren
 	~local %filtername %filterpath %filteropts
 	~hidden goto-beginning-of-file
 	~if &seq $filtername ''
-		set-variable %filtername &cat &cat 'vile-' $majormode '-filt'
+		set-variable %filtername &cat 'vile-' &cat $majormode '-filt'
 	~else
 		set-variable %filtername $filtername
 	~endif
@@ -176,7 +176,10 @@ store-procedure HighlightFilter 'Invoke syntax-highlighting filter on the curren
 		set-variable %filterpath &lookup e+l &cat %filterpath $exec-suffix
 	~endif
 	~if &not &seq %filterpath ''
-		~hidden attribute-from-filter end-of-file &cat &pquote %filterpath &cat %filteropts &cat ' -t' $tabstop
+		~hidden attribute-from-filter end-of-file \
+			&cat &pquote %filterpath \
+			&cat %filteropts \
+			&cat ' -t' $tabstop
 	~endif
     ~endif
 ~endm
@@ -203,8 +206,13 @@ store-procedure set-highlighting ma 'Set a majormode and invoke highlighting'
 ; Normally filtermsgs is off since it would slow down autocolor.  This macro
 ; turns it on temporarily to create an error-buffer which can be used to walk
 ; through the syntax errors.
+;
+; It is implemented only for built-in filters since vile's pipes would merge
+; the error messages with the marked-up file.
 store-procedure show-filtermsgs 'Show syntax-filter error messages for current buffer'
 	~local $filtermsgs $highlight
+	~local %myBuffer
+	setv %myBuffer='[Filter Messages]'
 	set highlight
 	~if &not $highlight
 		write-message 'Cannot setup highlighting'
@@ -213,17 +221,57 @@ store-procedure show-filtermsgs 'Show syntax-filter error messages for current b
 	~elseif &filter $majormode
 		set filtermsgs
 		; make sure there are no prior results to confuse us
-		~if &isa buffer '[Filter Messages]'
-			~quiet ~hidden kill-buffer '[Filter Messages]'
+		~if &isa buffer %myBuffer
+			~quiet ~hidden kill-buffer %myBuffer
 		~endif
 		HighlightFilter
-		~if &isa buffer '[Filter Messages]'
-			popup-buffer '[Filter Messages]'
+		~if &isa buffer %myBuffer
+			popup-buffer %myBuffer
 			goto-beginning-of-file
-			error-buffer '[Filter Messages]'
+			error-buffer %myBuffer
 		~else
 			write-message 'No messages found'
 		~endif
+	~else
+		write-message 'This only works for built-in filters'
+	~endif
+~endm
+
+; Show the keywords which can be highlighted, in the [Filter Messages] buffer.
+store-procedure show-filtercolors 'Show syntax-filter colors for current buffer'
+	~local $filtermsgs $highlight $filtername
+	~local %myBuffer %myFiltername %hisBuffer
+	setv %myBuffer='[Filter Messages]'
+	set highlight
+	~if &not $highlight
+		write-message 'Cannot setup highlighting'
+	~elseif &seq $majormode ''
+		write-message 'No majormode is associated with this buffer'
+	~elseif &filter $majormode
+		setv %hisBuffer=$cbufname
+		setv %myFiltername=$filtername
+		~if &seq $filtername ''
+			setv $filtername &cat 'vile-' &cat $majormode '-filt -Q'
+		~else
+			setv $filtername &cat $filtername ' -Q'
+		~endif
+		set filtermsgs
+		; make sure there are no prior results to confuse us
+		~if &isa buffer %myBuffer
+			~quiet ~hidden kill-buffer %myBuffer
+		~endif
+		HighlightFilter
+		unset filtermsgs
+		setv $filtername=%myFiltername
+		~if &isa buffer %myBuffer
+			popup-buffer %myBuffer
+			goto-beginning-of-file
+			set-highlighting 'keymode'
+		~else
+			write-message 'No messages found'
+		~endif
+		buffer %hisBuffer
+		HighlightFilter
 	~else
 		write-message 'This only works for built-in filters'
 	~endif

@@ -1344,6 +1344,20 @@ Editor modes
 		or via .Xdefaults.  See notes about the color palette down
 		below, under DOS specifics.  (U)
 
+	check-access  Check file permissions before source'ing it in a script.
+		This tells vile to ensure that it uses only files that you own
+		(or root owns), which are not writable by other users.  Values
+		include:
+
+		none	disables the check
+		current	checks files in the current directory.
+		home	check files in the home directory in addition those
+			checked for "current".
+		startup	check files in the startup path, as well as those
+			checked for "home".
+		
+		The default value is "current".  (U)
+
 	check-modtime  Check modification-time.  If a file has changed since
 		it was last read or written, vile will issue a "file newer
 		than buffer" warning and prompt appropriately for
@@ -6571,4 +6585,4 @@ Problems
 
 Copyright 1995-2008,2009 by Paul Fox, Thomas Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.672 2009/04/04 00:07:32 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.673 2009/05/17 19:23:03 tom Exp $

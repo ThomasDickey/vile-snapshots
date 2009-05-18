@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.332 2009/03/22 19:08:24 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.334 2009/05/17 19:03:09 tom Exp $
  *
  */
 
@@ -1456,13 +1456,74 @@ ourstrstr(const char *haystack, const char *needle, int anchor)
 }
 #endif /* OPT_REBIND || OPT_EVAL */
 
+#if SYS_UNIX
+/*
+ * Only source a startup file on Unix if it (and the directory in which it
+ * resides) happens to be in a directory owned by the current user (or root),
+ * and neither is writable by other users.
+ */
+static int
+is_our_file(char *fname)
+{
+    int status = FALSE;
+    struct stat sb;
+
+    if (stat(fname, &sb) == 0) {
+	if ((sb.st_mode & 0022) == 0
+	    && (sb.st_uid == getuid() || sb.st_uid == 0)) {
+	    status = TRUE;
+	} else {
+	    TPRINTF(("\"%s\" is not our %s\n",
+		     fname, S_ISDIR(sb.st_mode) ? "directory" : "file"));
+	}
+    }
+    return status;
+}
+#endif
+
+static int
+check_file_access(char *fname, UINT mode)
+{
+    int result = ffaccess(fname, mode);
+#if SYS_UNIX
+    if (result) {
+	int doit = FALSE;
+	int check;
+
+	if (mode & FL_EXECABLE) {
+	    doit = TRUE;
+	} else if ((check = global_g_val(GVAL_CHK_ACCESS)) != 0) {
+	    if (mode & (check * 2 - 1))
+		doit = TRUE;
+	}
+	if (doit) {
+	    char *dname = (char *) malloc(NFILEN + strlen(fname) + 10);
+	    char *leaf;
+
+	    if (dname != 0) {
+		leaf = pathleaf(lengthen_path(strcpy(dname, fname)));
+		if ((leaf - 1) != dname)
+		    *--leaf = EOS;
+		if (!is_our_file(dname) || !is_our_file(fname)) {
+		    mlforce("[Skipping '%s' (insecure permissions)]", fname);
+		    result = ABORT;
+		}
+		free(dname);
+	    }
+	}
+    }
+#endif
+
+    return result;
+}
+
 static char *
 locate_fname(char *dir_name, char *fname, UINT mode)
 {
     static char fullpath[NFILEN];	/* expanded path */
 
     if (!isEmpty(dir_name)
-	&& ffaccess(pathcat(fullpath, dir_name, fname), mode))
+	&& check_file_access(pathcat(fullpath, dir_name, fname), mode) == TRUE)
 	return (fullpath);
 
     return 0;
@@ -1520,28 +1581,6 @@ PATH_value(void)
 #endif
 #endif /* OPT_PATHLOOKUP */
 
-#if SYS_UNIX
-/*
- * Only source a startup file on Unix if it (and the directory in which it
- * resides) happens to be in a directory owned by the current user, and neither
- * is writable by other users.
- */
-static int
-is_our_file(char *fname)
-{
-    int status = FALSE;
-    struct stat sb;
-
-    if (stat(fname, &sb) == 0) {
-	if ((sb.st_mode & 0022) == 0
-	    && sb.st_uid == getuid()) {
-	    status = TRUE;
-	}
-    }
-    return status;
-}
-#endif
-
 /* config files that vile is interested in may live in various places,
  * and which may be constrained to various r/w/x modes.  the files may
  * be
@@ -1579,56 +1618,39 @@ cfg_locate(char *fname, UINT which)
 
     /* look in the current directory */
     if (which & FL_CDIR) {
-	if (ffaccess(fname, mode)) {
-#if SYS_UNIX
-	    int success = FALSE;
-
-	    if ((mode & FL_EXECABLE) || (which == LOCATE_SOURCE)) {
-		char *dname = (char *) malloc(NFILEN + strlen(fname) + 10);
-		char *leaf;
-
-		if (dname != 0) {
-		    leaf = pathleaf(lengthen_path(strcpy(dname, fname)));
-		    if ((leaf - 1) != dname)
-			*--leaf = EOS;
-		    if (is_our_file(dname) && is_our_file(fname)) {
-			success = TRUE;
-		    } else {
-			mlforce("[Skipping '%s' (insecure permissions)]", fname);
-		    }
-		    free(dname);
-		}
-	    } else {
-		success = TRUE;
-	    }
-	    if (success)
-#endif
-		returnString(fname);
+	if (check_file_access(fname, FL_CDIR | mode) == TRUE) {
+	    returnString(fname);
 	}
     }
 
     if ((which & FL_HOME)	/* look in the home directory */
-	&&((sp = locate_fname(home_dir(), fname, mode)) != 0))
+	&&((sp = locate_fname(home_dir(), fname, FL_HOME | mode)) != 0))
 	returnString(sp);
 
     if ((which & FL_EXECDIR)	/* look in vile's bin directory */
-	&&((sp = locate_fname(exec_pathname, fname, mode)) != 0))
+	&&((sp = locate_fname(exec_pathname, fname, FL_EXECDIR | mode)) != 0))
 	returnString(sp);
 
     if ((which & FL_STARTPATH)	/* look along "VILE_STARTUP_PATH" */
-	&&(sp = locate_file_in_list(startup_path, fname, mode)) != 0)
+	&&(sp = locate_file_in_list(startup_path,
+				    fname,
+				    FL_STARTPATH | mode)) != 0)
 	returnString(sp);
 
     if (which & FL_PATH) {	/* look along "PATH" */
 #if OPT_PATHLOOKUP
-	if ((sp = locate_file_in_list(PATH_value(), fname, mode)) != 0)
+	if ((sp = locate_file_in_list(PATH_value(),
+				      fname,
+				      FL_PATH | mode)) != 0)
 	    returnString(sp);
 #endif /* OPT_PATHLOOKUP */
 
     }
 
     if ((which & FL_LIBDIR)	/* look along "VILE_LIBDIR_PATH" */
-	&&(sp = locate_file_in_list(libdir_path, fname, mode)) != 0)
+	&&(sp = locate_file_in_list(libdir_path,
+				    fname,
+				    FL_LIBDIR | mode)) != 0)
 	returnString(sp);
 
     returnString(NULL);
@@ -1647,12 +1669,16 @@ ask_which_file(char *fname)
 static void
 list_one_fname(char *fname, UINT mode)
 {
-    int tag = ffaccess(fname, mode);
+    int tag = check_file_access(fname, mode);
 
-    bprintf("\n%s\t", tag ? "*" : "");
+    bprintf("\n%s\t", ((tag == ABORT)
+		       ? "?"
+		       : ((tag == TRUE)
+			  ? "*"
+			  : "")));
 
 #if OPT_HYPERTEXT
-    if (tag) {
+    if (tag == TRUE) {
 	REGION myRegion;
 	MARK myDot;
 	TBUFF *myBuff = 0;
@@ -1723,35 +1749,35 @@ list_which(LIST_ARGS)
     /* look in the current directory */
     if (flag & FL_CDIR) {
 	bprintf("\n$cwd");
-	list_one_fname(fname, mode);
+	list_one_fname(fname, FL_CDIR | mode);
     }
 
     if (flag & FL_HOME) {	/* look in the home directory */
 	bprintf("\n$HOME");
-	list_which_fname(home_dir(), fname, mode);
+	list_which_fname(home_dir(), fname, FL_HOME | mode);
     }
 
     if (flag & FL_EXECDIR) {	/* look in vile's bin directory */
 	bprintf("\n$exec-path");
-	list_which_fname(exec_pathname, fname, mode);
+	list_which_fname(exec_pathname, fname, FL_EXECDIR | mode);
     }
 
     if (flag & FL_STARTPATH) {	/* look along "VILE_STARTUP_PATH" */
 	bprintf("\n$startup-path");
-	list_which_file_in_list(startup_path, fname, mode);
+	list_which_file_in_list(startup_path, fname, FL_STARTPATH | mode);
     }
 
     if (flag & FL_PATH) {	/* look along "PATH" */
 #if OPT_PATHLOOKUP
 	bprintf("\n$PATH");
-	list_which_file_in_list(PATH_value(), fname, mode);
+	list_which_file_in_list(PATH_value(), fname, FL_PATH | mode);
 #endif /* OPT_PATHLOOKUP */
 
     }
 
     if (flag & FL_LIBDIR) {	/* look along "VILE_LIBDIR_PATH" */
 	bprintf("\n$libdir-path");
-	list_which_file_in_list(libdir_path, fname, mode);
+	list_which_file_in_list(libdir_path, fname, FL_LIBDIR | mode);
     }
 }
 

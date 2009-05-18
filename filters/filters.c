@@ -1,7 +1,7 @@
 /*
  * Common utility functions for vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.129 2009/05/12 22:45:36 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.137 2009/05/17 17:59:07 tom Exp $
  *
  */
 
@@ -33,9 +33,7 @@
 #define HASH_LENGTH 256
 
 struct _keyword {
-#if USE_TSEARCH || !defined(HAVE_TDESTROY)
-    KEYWORD *next;
-#endif
+    KEYWORD *kw_next;
     char *kw_name;		/* the keyword name */
     char *kw_attr;		/* its color attributes, if any */
     char *kw_flag;		/* optional flags for the syntax parser */
@@ -51,13 +49,18 @@ struct _classes {
     char *name;
 #if USE_TSEARCH
     void *data;
-#if !defined(HAVE_TDESTROY)
     KEYWORD *keywords;
-#endif
 #else
     KEYWORD **data;
 #endif
 };
+
+typedef struct {
+    int zero_or_more;
+    int zero_or_all;
+    int meta_ch;
+    int eqls_ch;
+} FLTCHARS;
 
 char *default_table;
 char *default_attr;
@@ -99,10 +102,48 @@ static unsigned len_keyword_file = 0;
 
 #define KW_FLAG(p) ((p) ? ((p)->kw_type ? "class" : "keyword") : "?")
 
+#define COPYIT(name) save->name = name
+
+static void
+flt_save_chars(FLTCHARS * save)
+{
+    COPYIT(zero_or_more);
+    COPYIT(zero_or_all);
+    COPYIT(meta_ch);
+    COPYIT(eqls_ch);
+}
+
+#undef COPYIT
+
+static void
+flt_init_chars(void)
+{
+    zero_or_more = '*';
+    zero_or_all = '?';
+    meta_ch = '.';
+    eqls_ch = ':';
+}
+
+#define COPYIT(name) name = save->name
+
+static void
+flt_restore_chars(FLTCHARS * save)
+{
+    COPYIT(zero_or_more);
+    COPYIT(zero_or_all);
+    COPYIT(meta_ch);
+    COPYIT(eqls_ch);
+}
+
+#undef COPYIT
+
 /* FIXME */
 static void
-init_data(KEYWORD * data, const char *name, const char *attribute, int
-	  classflag, char *flag)
+init_data(KEYWORD * data,
+	  const char *name,
+	  const char *attribute,
+	  int classflag,
+	  char *flag)
 {
     data->kw_name = strmalloc(name);
     data->kw_size = strlen(data->kw_name);
@@ -142,9 +183,6 @@ compare_data(const void *a, const void *b)
     return strcmp(p->kw_name, q->kw_name);
 }
 
-#ifdef HAVE_TDESTROY
-#define flt_tdestroy tdestroy
-#else
 static void
 flt_tdestroy(void *root, void (*pFreeNode) (void *nodep))
 {
@@ -152,18 +190,22 @@ flt_tdestroy(void *root, void (*pFreeNode) (void *nodep))
     if (root != 0) {
 	for (p = classes; p != 0; p = p->next) {
 	    if (p->data == root) {
+#ifdef HAVE_TDESTROY
+		tdestroy(root, pFreeNode);
+		p->keywords = 0;
+#else
 		while (p->keywords != 0) {
 		    KEYWORD *q = p->keywords;
-		    p->keywords = q->next;
+		    p->keywords = q->kw_next;
 		    if (tdelete(q, &(p->data), compare_data) != 0)
 			pFreeNode(q);
 		}
+#endif
 		break;
 	    }
 	}
     }
 }
-#endif
 #endif /* USE_TSEARCH */
 
 static void
@@ -305,7 +347,7 @@ FindIdentifier(const char *name)
 		&& strcmp(result->kw_name, name) == 0) {
 		break;
 	    }
-	    result = result->next;
+	    result = result->kw_next;
 	}
 #endif /* TSEARCH */
     }
@@ -565,6 +607,157 @@ flt_bfr_length(void)
     return flt_bfr_used;
 }
 
+static CLASS *
+find_symtab(char *table_name)
+{
+    CLASS *p;
+    for (p = classes; p != 0; p = p->next) {
+	if (!strcmp(p->name, table_name)) {
+	    break;
+	}
+    }
+    return p;
+}
+
+/*----------------------------------------------------------------------------*/
+
+static int dump_meta_ch;
+static int dump_eqls_ch;
+
+static void
+dump_init(void)
+{
+    dump_meta_ch = meta_ch;
+    dump_eqls_ch = eqls_ch;
+
+    if (dump_meta_ch != '.')
+	flt_error(".meta %c\n", dump_meta_ch);
+    if (dump_eqls_ch != ':')
+	flt_error("%cequals %c\n", dump_meta_ch, dump_eqls_ch);
+}
+
+static int
+dump_update2(const char *name, int keep)
+{
+    int result;
+
+    for (result = 32; result < 127; ++result) {
+	if (result != keep && ispunct(result) && strchr(name, result) == 0) {
+	    break;
+	}
+    }
+
+    return result;
+}
+
+/*
+ * emit "meta" and "equals" directives if the name contains the current meta or
+ * equals characters.
+ */
+static void
+dump_update(const char *name)
+{
+    int newc;
+
+    if (strchr(name, dump_meta_ch) != 0) {
+	newc = dump_update2(name, dump_eqls_ch);
+	flt_error("%cmeta %c\n", dump_meta_ch, newc);
+	dump_meta_ch = newc;
+    }
+    if (strchr(name, dump_eqls_ch) != 0) {
+	dump_eqls_ch = dump_update2(name, dump_meta_ch);
+	flt_error("%cequals %c\n", dump_meta_ch, dump_eqls_ch);
+    }
+}
+
+static void
+dump_class(const KEYWORD * const q)
+{
+    if (q->kw_type) {
+	dump_update(q->kw_name);
+	flt_error("%cclass %s%c%s",
+		  dump_meta_ch,
+		  q->kw_name,
+		  dump_eqls_ch,
+		  NonNull(q->kw_attr));
+	if (q->kw_flag)
+	    flt_error("%c%s",
+		      dump_eqls_ch,
+		      q->kw_flag);
+	flt_error("\n");
+    }
+}
+
+static void
+dump_keyword(const KEYWORD * const q)
+{
+    if (!q->kw_type) {
+	dump_update(q->kw_name);
+	flt_error("%s%c%s",
+		  q->kw_name,
+		  dump_eqls_ch,
+		  NonNull(q->kw_attr));
+	if (q->kw_flag)
+	    flt_error("%c%s",
+		      dump_eqls_ch,
+		      q->kw_flag);
+	flt_error("\n");
+    }
+}
+
+typedef void DumpFunc(const KEYWORD * const);
+
+#if USE_TSEARCH
+static DumpFunc *dump_func;
+
+static void
+dump_walker(const void *nodep, const VISIT which, const int depth)
+{
+    const KEYWORD *const p = *(KEYWORD * const *) nodep;
+    (void) depth;
+    if (which == postorder || which == leaf)
+	dump_func(p);
+}
+#endif
+
+static void
+dump_symtab(CLASS * p, DumpFunc dumpFunc)
+{
+#if USE_TSEARCH
+    dump_func = dumpFunc;
+    twalk(p->data, dump_walker);
+#else
+    int i;
+    KEYWORD *q;
+
+    for (i = 0; i < HASH_LENGTH; i++) {
+	for (q = p->data[i]; q != 0; q = q->kw_next) {
+	    dumpFunc(fp, q);
+	}
+    }
+#endif
+}
+
+void
+flt_dump_symtab(char *table_name)
+{
+    CLASS *p;
+
+    if (table_name == 0) {
+	dump_init();
+	for (p = classes; p != 0; p = p->next) {
+	    flt_dump_symtab(p->name);
+	}
+    } else if ((p = find_symtab(table_name)) != 0) {
+	dump_update(p->name);
+	flt_error("%ctable %s\n", dump_meta_ch, p->name);
+	dump_symtab(p, dump_class);
+	dump_symtab(p, dump_keyword);
+    }
+}
+
+/*----------------------------------------------------------------------------*/
+
 void
 flt_free(char **p, unsigned *len)
 {
@@ -590,7 +783,7 @@ flt_free_keywords(char *table_name)
 	    my_table = p->data;
 	    for (i = 0; i < HASH_LENGTH; i++) {
 		while ((ptr = my_table[i]) != 0) {
-		    my_table[i] = ptr->next;
+		    my_table[i] = ptr->kw_next;
 		    free_data(ptr);
 		}
 	    }
@@ -623,6 +816,8 @@ flt_init_table(char *table_name)
     if (default_table != 0)
 	free(default_table);
     default_table = strmalloc(table_name);
+
+    VERBOSE(3, ("flt_init_table:%s", table_name));
 }
 
 void
@@ -643,11 +838,7 @@ flt_initialize(char *table_name)
 {
     flt_init_table(table_name);
     flt_init_attr(NAME_KEYWORD);
-
-    zero_or_more = '*';
-    zero_or_all = '?';
-    meta_ch = '.';
-    eqls_ch = ':';
+    flt_init_chars();
 
     flt_free_symtab();
     flt_make_symtab(table_name);
@@ -730,8 +921,13 @@ flt_read_keywords(char *table_name)
     char *line = 0;
     char *name;
     unsigned line_len = 0;
+    FLTCHARS fltchars;
 
     VERBOSE(1, ("flt_read_keywords(%s)", table_name));
+
+    flt_save_chars(&fltchars);
+    flt_init_chars();
+
     if ((kwfile = OpenKeywords(table_name)) != NULL) {
 	int linenum = 0;
 	while (readline(kwfile, &line, &line_len) != 0) {
@@ -748,6 +944,8 @@ flt_read_keywords(char *table_name)
 	fclose(kwfile);
     }
     Free(line);
+
+    flt_restore_chars(&fltchars);
 }
 
 char *
@@ -807,12 +1005,12 @@ alloc_keyword(const char *ident, const char *attribute, int classflag, char *fla
 		} else {
 		    nxt = 0;
 		}
-#ifndef HAVE_TDESTROY
-		nxt->next = current_class->keywords;
-		current_class->keywords = nxt;
-#endif
+		if (nxt != 0) {
+		    nxt->kw_next = current_class->keywords;
+		    current_class->keywords = nxt;
+		}
 #else
-		nxt->next = my_table[Index];
+		nxt->kw_next = my_table[Index];
 		my_table[Index] = nxt;
 #endif
 	    } else {

@@ -2,7 +2,7 @@
  *		The routines in this file handle the conversion of pathname
  *		strings.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.164 2009/03/20 19:38:09 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.165 2009/05/15 21:35:52 tom Exp $
  *
  *
  */
@@ -29,27 +29,6 @@
 #endif
 
 #include "dirstuff.h"
-
-/* C Set did not define S_IFMT */
-#if !defined(S_IFMT)
-#define S_IFMT (S_IFDIR|S_IFREG)
-#endif
-
-#if !defined(S_ISDIR)
-# define S_ISDIR(m)  (((m) & S_IFMT) == S_IFDIR)
-#endif
-
-#if !defined(S_ISREG)
-# define S_ISREG(m)  (((m) & S_IFMT) == S_IFREG)
-#endif
-
-#ifndef S_IFIFO
-#define S_IFIFO S_IFREG
-#endif
-
-#if !defined(S_ISFIFO)
-# define S_ISFIFO(m)  (((m) & S_IFMT) == S_IFIFO)
-#endif
 
 #if SYS_WINNT
 # include <direct.h>

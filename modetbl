@@ -11,7 +11,7 @@
 #
 # The modes are table entries in the BUFFER and WINDOW structures.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.291 2009/04/02 23:52:40 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.292 2009/05/17 18:58:16 tom Exp $
 #
 #
 # Mode-table entries.  Capitalized letters are used for abbreviations.
@@ -63,6 +63,7 @@ bool							# GMD prefix
 	"SmoothScroll"	SMOOTH_SCROLL	0		# should we update even if there is typeahead?
 	"Spaces-After-Sentence" SPACESENT	0	# add two spaces after a
 enum
+	"check-access"	CHK_ACCESS	0		!SMALLER # check file-access before source/exec
 	"Color-Scheme"	COLOR_SCHEME	chgd_scheme	OPT_COLOR_SCHEMES # color palette combination
 	"ccolor"	CCOLOR		chgd_color	OPT_COLOR	# cursor color
 	"fcolor"	FCOLOR		chgd_color	OPT_COLOR	# foreground color
@@ -555,6 +556,15 @@ string
 "brightmagenta"	VACOL_D		OPT_COLOR&&OPT_16_COLOR
 "brightcyan"	VACOL_E		OPT_COLOR&&OPT_16_COLOR
 "white"		VACOL_F		OPT_COLOR&&OPT_16_COLOR
+
+.table access
+"none"		0
+"current"	FL_CDIR
+"home"		FL_HOME
+"bin"		FL_EXECDIR
+"startup"	FL_STARTPATH
+"path"		FL_PATH
+"libdir"	FL_LIBDIR
 
 .table lookup
 "readable"	FL_READABLE

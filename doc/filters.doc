@@ -122,7 +122,7 @@ parameter of the include is the root name of the keyword file, e.g., "c" for
 	- If a line begins with ".include", it reads from the given keyword
 	  file.
 	  
-	- A few filters (such as html) require multiple symbol tables; these
+	- A few filters (such as yacc) require multiple symbol tables; these
 	  include using ".source".
 
 	- Use the ".table" directive to simply switch to a different
@@ -171,6 +171,9 @@ A few options are common to all filters:
   -q	exits the filter before writing the marked-up output.  This happens
 	after processing the class definitions, so it is useful in combination
 	with the -v option to simply obtain the class information.
+
+  -Q	is like "-q", but also writes to stderr (or [Filter Messages]) the
+	resulting keyword information.
 
   -t	holds the tabstop setting, which can be used in a filter for column
 	computations.
@@ -303,4 +306,4 @@ NOTE
 The lex filters have been well tested only with flex, which treats newlines
 differently.  Older versions of lex may not support the %x states.
 
--- $Header: /users/source/archives/vile.vcs/doc/RCS/filters.doc,v 1.43 2009/02/22 20:53:37 tom Exp $
+-- $Header: /users/source/archives/vile.vcs/doc/RCS/filters.doc,v 1.44 2009/05/17 20:22:20 tom Exp $
