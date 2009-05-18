@@ -1,7 +1,7 @@
 /*
  * Common utility functions for vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.137 2009/05/17 17:59:07 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.138 2009/05/17 22:56:39 tom Exp $
  *
  */
 
@@ -732,7 +732,7 @@ dump_symtab(CLASS * p, DumpFunc dumpFunc)
 
     for (i = 0; i < HASH_LENGTH; i++) {
 	for (q = p->data[i]; q != 0; q = q->kw_next) {
-	    dumpFunc(fp, q);
+	    dumpFunc(q);
 	}
     }
 #endif

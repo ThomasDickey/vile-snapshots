@@ -3,7 +3,7 @@
  * paragraph at a time.  There are all sorts of word mode commands.  If I
  * do any sentence mode commands, they are likely to be put in this file.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/word.c,v 1.92 2009/05/11 22:48:24 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/word.c,v 1.93 2009/05/17 23:33:39 tom Exp $
  *
  */
 
@@ -425,14 +425,14 @@ byte_to_columns(char text, int size)
 static int
 string_to_columns(TBUFF *text)
 {
-    int bytes = tb_length(text);
+    long bytes = (long) tb_length(text);
     int result = 0;
 
     if (b_is_utfXX(curbp)) {
 	char *value = tb_values(text);
 
 	while (bytes > 0) {
-	    int step = vl_conv_to_utf32((UINT *) 0, value, bytes);
+	    int step = vl_conv_to_utf32((UINT *) 0, value, (B_COUNT) bytes);
 	    if (step <= 0)
 		break;
 	    result += mb_cellwidth(curwp, value, step);
@@ -587,7 +587,7 @@ do_formatting(TBUFF **wp, TBUFF **cp)
 			|| (s > 0
 			    && memcmp(tb_values(*cp),
 				      lvalue(DOT.l) + DOT.o,
-				      s))) {
+				      (size_t) s))) {
 			finished = SORTOFTRUE;
 		    }
 
@@ -601,7 +601,7 @@ do_formatting(TBUFF **wp, TBUFF **cp)
 			}
 			if (DOT.l != pastline
 			    && !dot_at_section_break()) {
-			    B_COUNT spcs = DOT.o;
+			    B_COUNT spcs = (B_COUNT) DOT.o;
 			    DOT.o = 0;
 			    s = ldel_bytes(spcs, FALSE);
 			    if (s != TRUE)
@@ -730,7 +730,7 @@ wordcount(int f GCC_UNUSED, int n GCC_UNUSED)
 {
     LINE *lp;			/* current line to scan */
     int offset;			/* current char to scan */
-    long size;			/* size of region left to count */
+    ULONG size;			/* size of region left to count */
     int ch;			/* current character to scan */
     int wordflag;		/* are we in a word now? */
     int lastflag;		/* were we just in a word? */
@@ -768,7 +768,7 @@ wordcount(int f GCC_UNUSED, int n GCC_UNUSED)
 	    ++nlines;
 	    if (len_rs > 1) {
 		nwhite += (len_rs - 1);
-		size -= (len_rs - 1);
+		size -= (ULONG) (len_rs - 1);
 	    }
 	} else {
 	    ch = lgetc(lp, offset);
