@@ -1,7 +1,7 @@
 /*
  * debugging support -- tom dickey.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.90 2009/03/20 19:38:09 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.91 2009/05/18 22:55:21 tom Exp $
  *
  */
 
@@ -15,7 +15,7 @@
 typedef struct {
     long total_calls;
     double total_time;
-    ElapsedType this_time;	/* origin of begin_elapsed()    */
+    VL_ELAPSED this_time;	/* origin of begin_elapsed()    */
     int nesting_time;		/* recursion-guard */
 } ELAPSED_DATA;
 
