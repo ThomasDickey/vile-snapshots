@@ -1,6 +1,6 @@
 Changes for vile 9.7 (released ??? ??? ?? ????)
 
- 200905?? (q)
+ 20090518 (q)
 	> Tom Dickey:
 	+ improve which-source and which-exec commands (prompted by Paul Fox):
 	  + use the same check for file-ownership as was done in 9.5m, showing
