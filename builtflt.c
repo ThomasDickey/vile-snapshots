@@ -1,7 +1,7 @@
 /*
  * Main program and I/O for external vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/RCS/builtflt.c,v 1.71 2009/05/17 16:36:48 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/builtflt.c,v 1.73 2009/05/20 00:53:45 tom Exp $
  *
  */
 
@@ -555,11 +555,11 @@ flt_start(char *name)
 
 	flt_read_keywords(MY_NAME);
 	if (!process_params()) {
-	    if (strcmp(MY_NAME, current_filter->filter_name)) {
-		flt_read_keywords(current_filter->filter_name);
+	    if (strcmp(MY_NAME, default_table)) {
+		flt_read_keywords(default_table);
 	    }
 	}
-	set_symbol_table(current_filter->filter_name);
+	set_symbol_table(default_table);
 	if (FltOptions('Q')) {
 	    flt_dump_symtab(NULL);
 	} else {
@@ -599,7 +599,7 @@ flt_restart(char *name)
 	tb_init(&gets_data, 0);
 
 	init_flt_error();
-	set_symbol_table(current_filter->filter_name);
+	set_symbol_table(default_table);
 
 	return TRUE;
     }

@@ -1,5 +1,13 @@
 Changes for vile 9.7 (released ??? ??? ?? ????)
 
+ 200905?? (r)
+	> Tom Dickey:
+	+ fix overlooked change from filter_name to default_table in buildflt.c,
+	  needed to show proper colors with builtin filters from 9.7q for some
+	  of the modes which override the default table, e.g,.  "csh".
+	+ improve error-checking in show-filtermsgs and show-filtercolors
+	  macros.
+
  20090518 (q)
 	> Tom Dickey:
 	+ improve which-source and which-exec commands (prompted by Paul Fox):

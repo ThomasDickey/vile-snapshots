@@ -1,4 +1,4 @@
-; $Id: filters.rc,v 1.223 2009/05/17 17:10:31 tom Exp $
+; $Id: filters.rc,v 1.224 2009/05/20 00:20:48 tom Exp $
 ; majormodes in this file are ordered alphabetically for convenience - the
 ; precedence used by vile is strictly alphabetic, counting case.
 
@@ -210,15 +210,17 @@ store-procedure set-highlighting ma 'Set a majormode and invoke highlighting'
 ; It is implemented only for built-in filters since vile's pipes would merge
 ; the error messages with the marked-up file.
 store-procedure show-filtermsgs 'Show syntax-filter error messages for current buffer'
-	~local $filtermsgs $highlight
-	~local %myBuffer
-	setv %myBuffer='[Filter Messages]'
-	set highlight
-	~if &not $highlight
+	~if &error &classof filtermsgs
+		write-message 'This only works for built-in filters'
+	~elseif &error &classof highlight
 		write-message 'Cannot setup highlighting'
 	~elseif &seq $majormode ''
 		write-message 'No majormode is associated with this buffer'
 	~elseif &filter $majormode
+		~local $filtermsgs $highlight
+		~local %myBuffer
+		setv %myBuffer='[Filter Messages]'
+		set highlight
 		set filtermsgs
 		; make sure there are no prior results to confuse us
 		~if &isa buffer %myBuffer
@@ -239,17 +241,19 @@ store-procedure show-filtermsgs 'Show syntax-filter error messages for current b
 
 ; Show the keywords which can be highlighted, in the [Filter Messages] buffer.
 store-procedure show-filtercolors 'Show syntax-filter colors for current buffer'
-	~local $filtermsgs $highlight $filtername
-	~local %myBuffer %myFiltername %hisBuffer
-	setv %myBuffer='[Filter Messages]'
-	set highlight
-	~if &not $highlight
+	~if &error &classof filtermsgs
+		write-message 'This only works for built-in filters'
+	~elseif &error &classof highlight
 		write-message 'Cannot setup highlighting'
 	~elseif &seq $majormode ''
 		write-message 'No majormode is associated with this buffer'
 	~elseif &filter $majormode
+		~local $filtermsgs $highlight $filtername
+		~local %myBuffer %myFiltername %hisBuffer
+		setv %myBuffer='[Filter Messages]'
 		setv %hisBuffer=$cbufname
 		setv %myFiltername=$filtername
+		set highlight
 		~if &seq $filtername ''
 			setv $filtername &cat 'vile-' &cat $majormode '-filt -Q'
 		~else
