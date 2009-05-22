@@ -6,7 +6,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/sh-filt.l,v 1.80 2009/04/04 00:51:21 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/sh-filt.l,v 1.81 2009/05/21 22:18:26 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Shell script.
  */
@@ -62,7 +62,8 @@ NAME2		({NAME}|"-")
 
 WILDCARD	(\?|\*)
 WILDNAME	({NAME}|{WILDCARD})
-FILENAME	(([./]+{WILDNAME}+)|({WILDNAME}+[./]+{WILDNAME}*)|({NAME}*{WILDCARD})|\.+\/+)+
+WILDGLUE	({WILDCARD}[#]?)
+FILENAME	(([./]+{WILDNAME}+)|({WILDNAME}+[./]+{WILDNAME}*)|({NAME}*{WILDCARD})|{WILDGLUE}|\.+\/+)+
 
 INTEGER		[-+]?([[:digit:]]+)
 
@@ -85,7 +86,7 @@ DASHIDENT	{NAME0}{NAME}*("-"{NAME}{NAME2}*)*
 %%
 
 <NORMAL>{IDENT0}	|
-<NORMAL>{FILENAME}	{ ECHO; /* exclude from other classes */ }
+<NORMAL>{FILENAME}	{ WriteToken(""); /* exclude from other classes */ }
 
 <NORMAL>{DASHIDENT}	{ WriteToken(keyword_attr(yytext)); }
 

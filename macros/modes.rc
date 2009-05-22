@@ -1,4 +1,4 @@
-; $Id: modes.rc,v 1.97 2009/05/15 00:09:55 tom Exp $
+; $Id: modes.rc,v 1.98 2009/05/21 20:45:51 tom Exp $
 ; majormodes in this file are ordered alphabetically for convenience - the
 ; precedence used by vile is strictly alphabetic, counting case.  Use the
 ; before and after qualifiers to override the precedence.
@@ -32,6 +32,17 @@ define-mode ada
 ;	fence-if   '^\s*\<begin\>'
 ;	fence-else '^\s*\<exception\>'
 ;	fence-fi   '^\s*\<end\>'
+~endwith
+
+define-mode ant
+~with define-submode ant
+	before xml
+	qualifiers=all
+	mode-filename	'build.xml'
+	pre		'^\s*<?xml\s.*'
+	fence-pairs	'<>()[]{}'
+	comment-prefix	'^\s*--'
+	comments	'^\s*$'
 ~endwith
 
 ; GNU assembler (a Byzantine elaboration of AT&T)
@@ -392,6 +403,17 @@ define-mode mcrl
 	comment-prefix  '^\s*%'
 	comments        '^\s*%.*$'
 	comments	'^\s*%\s+*$'
+~endwith
+
+define-mode mvn
+~with define-submode mvn
+	before xml
+	qualifiers=all
+	suffixes	'\.\(pom\|\)$'
+	pre		'^\s*<?xml\s.*'
+	fence-pairs	'<>()[]{}'
+	comment-prefix	'^\s*--'
+	comments	'^\s*$'
 ~endwith
 
 define-mode ini

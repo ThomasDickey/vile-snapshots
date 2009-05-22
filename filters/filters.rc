@@ -1,4 +1,4 @@
-; $Id: filters.rc,v 1.224 2009/05/20 00:20:48 tom Exp $
+; $Id: filters.rc,v 1.225 2009/05/21 20:47:08 tom Exp $
 ; majormodes in this file are ordered alphabetically for convenience - the
 ; precedence used by vile is strictly alphabetic, counting case.
 
@@ -10,6 +10,11 @@
 	source modes.rc
 ~endif
 unsetv %filters-modes
+
+define-mode ant
+~with define-submode ant
+	filtername	'vile-xml-filt -k ant'
+~endwith
 
 define-mode asp
 ~with define-submode asp
@@ -77,9 +82,9 @@ define-mode latex
 	filtername	'vile-latex-filt -a'
 ~endwith
 
-define-mode objc
-~with define-submode objc
-	filtername	'vile-c-filt -o -k objc'
+define-mode mvn
+~with define-submode mvn
+	filtername	'vile-xml-filt -k mvn'
 ~endwith
 
 define-mode nmake
@@ -90,6 +95,11 @@ define-mode nmake
 define-mode nsis
 ~with define-submode nsis
 	filtername	'vile-conf-filt -k nsis'
+~endwith
+
+define-mode objc
+~with define-submode objc
+	filtername	'vile-c-filt -o -k objc'
 ~endwith
 
 define-mode pc
@@ -110,10 +120,6 @@ define-mode RCS
 define-mode SCCS
 ~with define-submode SCCS
 	filtername	'vile-sccs-filt'
-~endwith
-
-~with define-submode scheme
-	filtername	'vile-scheme-filt -k scheme'
 ~endwith
 
 define-mode tex
