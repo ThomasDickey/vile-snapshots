@@ -1,4 +1,4 @@
-MANIFEST for vile, version v9_7q2
+MANIFEST for vile, version v9_7q3
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 CHANGES                         Change-log for VILE
@@ -172,6 +172,7 @@ doc/visvile.doc                 document visvile.dll
 filters                         subdirectory
 filters/ada-filt.l              ada syntax highlighter for vile
 filters/ada.key                 Ada95 keywords
+filters/ant.key                 keywords for "ant" mode
 filters/as-filt.l               syntax filter for (GNU) assembler
 filters/as.key                  keywords for assembler-filter
 filters/as386.key               assembler keywords for i386
@@ -276,6 +277,7 @@ filters/mk-2nd.awk              script to generate rules for building filters
 filters/mk-2nd.bat              generate rules for makefile.wnt
 filters/mk-key.awk              generate install/uninstall rules for keyword files
 filters/mms-filt.l              mms syntax filter for vile
+filters/mvn.key                 keywords for mvn (maven) mode
 filters/noclass.sh              script to support lex's w/o character-classes
 filters/nr-filt.l               nroff syntax highlighting filter for vile
 filters/nr.key                  keywords for nroff filter

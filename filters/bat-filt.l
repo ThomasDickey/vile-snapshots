@@ -1,10 +1,10 @@
 %pointer
-%s ECHOING QUOTED COMMENT
+%s LABEL ECHOING QUOTED COMMENT
 
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/bat-filt.l,v 1.28 2009/04/25 16:13:08 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/bat-filt.l,v 1.30 2009/05/21 23:05:03 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of DOS (and
  * similar, such as W95, NT) batch file.
@@ -50,7 +50,11 @@ IDENT2		({PARAM}|{VARIABLE})
 				  flt_bfr_append(yytext, yyleng);
 				}
 
-<INITIAL>^{BLANK}*:{BLANK}*{IDENT} { write_label(yytext, yyleng); }
+<INITIAL>^{BLANK}*:		{ WriteToken(Action_attr); BEGIN(LABEL); }
+<LABEL>{BLANK}+			{ ECHO; }
+<LABEL>{IDENT}			{ write_label(yytext, yyleng); BEGIN(INITIAL); }
+<LABEL>[\r\n]			{ ECHO; BEGIN(INITIAL); }
+<LABEL>.			{ WriteToken("U"); BEGIN(INITIAL); }
 
 <INITIAL>{IDENT}		{ const char *temp = lowercase_of(yytext);
 				  char *type = strrchr(temp, '.');
@@ -67,6 +71,8 @@ IDENT2		({PARAM}|{VARIABLE})
 				  if (!strcmp(temp, "echo")) {
 					BEGIN(ECHOING);
 					echoing = 1;
+				  } else if (!strcmp(temp, "goto")) {
+					BEGIN(LABEL);
 				  } else if (attr != 0 && Comment_attr == attr) {
 					BEGIN(COMMENT);
 				  } else if (!strcmp(temp, "set")) {
@@ -111,19 +117,19 @@ variable_attr(char *text)
     return attr;
 }
 
-#define LABEL 8	/* labels are unique to only 8 chars */
+#define MAX_LABEL 8	/* labels are unique to only 8 chars */
 
 static void
 write_label(char *text, int length)
 {
-    char *next = skip_blanks(skip_blanks(text)+1);
+    char *next = skip_blanks(skip_blanks(text));
     unsigned len = strlen(next);
-    unsigned limit = (len <= LABEL) ? length : (LABEL + next - text);
+    unsigned limit = (len <= MAX_LABEL) ? length : (MAX_LABEL + next - text);
 
     flt_puts(text, limit, Ident2_attr);
-    if (len > LABEL) {
+    if (len > MAX_LABEL) {
 	flt_error("label too long");
-	flt_puts(next + LABEL, strlen(next + LABEL), Error_attr);
+	flt_puts(next + MAX_LABEL, strlen(next + MAX_LABEL), Error_attr);
     }
 }
 
