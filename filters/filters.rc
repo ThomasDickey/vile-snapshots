@@ -1,4 +1,4 @@
-; $Id: filters.rc,v 1.225 2009/05/21 20:47:08 tom Exp $
+; $Id: filters.rc,v 1.227 2009/05/23 10:46:50 tom Exp $
 ; majormodes in this file are ordered alphabetically for convenience - the
 ; precedence used by vile is strictly alphabetic, counting case.
 
@@ -59,7 +59,7 @@ define-mode dtd
 
 define-mode haskell
 ~with define-submode haskell
-	filtername	'vile-hs-filt -k hs'
+	filtername	'vile-hs-filt'
 ~endwith
 
 define-mode java
@@ -247,16 +247,36 @@ store-procedure show-filtermsgs 'Show syntax-filter error messages for current b
 
 ; Show the keywords which can be highlighted, in the [Filter Messages] buffer.
 store-procedure show-filtercolors 'Show syntax-filter colors for current buffer'
-	~if &error &classof filtermsgs
-		write-message 'This only works for built-in filters'
-	~elseif &error &classof highlight
+	; ~local %myBuffer %myFiltername %hisBuffer
+	setv %myBuffer='[Filter Messages]'
+	~if &error &classof highlight
 		write-message 'Cannot setup highlighting'
 	~elseif &seq $majormode ''
 		write-message 'No majormode is associated with this buffer'
+	~elseif &error &classof filtermsgs
+		setv %hisBuffer=$cbufname
+		~if &seq $filtername ''
+			setv %myFiltername &cat "!" &cat 'vile-' &cat $majormode '-filt -Q'
+		~else
+			setv %myFiltername &cat "!" &cat $filtername ' -Q'
+		~endif
+		; make sure there are no prior results to confuse us
+		~if &isa buffer %myBuffer
+			~quiet ~hidden kill-buffer %myBuffer
+		~endif
+		edit-file %myFiltername
+		rename-buffer %myBuffer
+		buffer %hisBuffer
+		~if &isa buffer %myBuffer
+			popup-buffer %myBuffer
+			goto-beginning-of-file
+			set-highlighting 'keymode'
+		~else
+			write-message 'No keywords found'
+		~endif
+		buffer %hisBuffer
 	~elseif &filter $majormode
 		~local $filtermsgs $highlight $filtername
-		~local %myBuffer %myFiltername %hisBuffer
-		setv %myBuffer='[Filter Messages]'
 		setv %hisBuffer=$cbufname
 		setv %myFiltername=$filtername
 		set highlight
@@ -278,12 +298,12 @@ store-procedure show-filtercolors 'Show syntax-filter colors for current buffer'
 			goto-beginning-of-file
 			set-highlighting 'keymode'
 		~else
-			write-message 'No messages found'
+			write-message 'No keywords found'
 		~endif
 		buffer %hisBuffer
 		HighlightFilter
 	~else
-		write-message 'This only works for built-in filters'
+		write-message 'This ONLY works for built-in filters'
 	~endif
 ~endm
 

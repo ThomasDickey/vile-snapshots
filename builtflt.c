@@ -1,7 +1,7 @@
 /*
  * Main program and I/O for external vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/RCS/builtflt.c,v 1.73 2009/05/20 00:53:45 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/builtflt.c,v 1.74 2009/05/23 16:32:03 tom Exp $
  *
  */
 
@@ -104,6 +104,7 @@ param_value(const char **ptr)
 
 /*
  * All we're really interested in are the -k and -t options.  Ignore -v and -q.
+ * Return true if we had a "-k" option.
  */
 static int
 process_params(void)
@@ -551,11 +552,17 @@ flt_start(char *name)
 	init_flt_error();
 	flt_initialize(current_filter->filter_name);
 
+	/* setup colors for the filter's default-table */
+	flt_read_keywords(MY_NAME);
+	if (strcmp(MY_NAME, current_filter->filter_name)) {
+	    flt_read_keywords(current_filter->filter_name);
+	}
+
 	current_filter->InitFilter(1);
 
-	flt_read_keywords(MY_NAME);
 	if (!process_params()) {
-	    if (strcmp(MY_NAME, default_table)) {
+	    if (strcmp(MY_NAME, default_table)
+		&& strcmp(current_filter->filter_name, default_table)) {
 		flt_read_keywords(default_table);
 	    }
 	}
