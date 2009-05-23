@@ -1,4 +1,4 @@
-MANIFEST for vile, version v9_7q3
+MANIFEST for vile, version v9_7q4
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 CHANGES                         Change-log for VILE
@@ -227,6 +227,7 @@ filters/flt_defs.h              split-out the include stuff from filters.h
 filters/fltstack.h              simple state-stack for lex filters
 filters/genmake.c               parse/substitute from genmake.mak
 filters/genmake.mak             makefile template-data for genmake.awk
+filters/genmake.sh              script to generate genmake.mak
 filters/hs-filt.l               syntax filter for Haskell
 filters/hs.key                  Haskell keywords
 filters/html.key                keywords for vile-html-filt

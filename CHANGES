@@ -2,6 +2,13 @@ Changes for vile 9.7 (released ??? ??? ?? ????)
 
  200905?? (r)
 	> Tom Dickey:
+	+ correct color-initialization for filters which happen to use a "-k"
+	  option to load the same symbol table as the filter's default table.
+	+ make filters/genmake.mak auto-generated on Unix platforms, to ensure
+	  that builtin/loadable/external filters all use the same filter-names.
+	+ modify hs-filt.l to use the same filter-name "hs" as genmake.mak
+	  (report by Brendan MacDonell).
+	+ modify show-filtercolors to work with external filters.
 	+ improve bat-filt.l, highlighting labels after a "goto" keyword.
 	+ minor fix to sh-filt.l to show a pattern in a case statement which
 	  includes a "#" mark.

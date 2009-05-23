@@ -3,7 +3,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/hs-filt.l,v 1.23 2009/05/12 22:47:25 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/hs-filt.l,v 1.24 2009/05/23 01:08:03 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Haskell
  * input text.
@@ -15,7 +15,7 @@
 #include <filters.h>
 #include <fltstack.h>
 
-DefineFilter("haskell");
+DefineFilter("hs");
 
 static char *Action_attr;
 static char *Comment_attr;
