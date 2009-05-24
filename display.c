@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.493 2009/04/03 23:59:28 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.494 2009/05/24 13:13:35 tom Exp $
  *
  */
 
@@ -2146,11 +2146,11 @@ update_window_attrs(WINDOW *wp)
 			col += term.cols;
 			lmap[i].right = col2offs(wp, lmap[i].lp, col);
 		    }
-		    TRACE(("...update_window_attrs row %d [%d..%d] (%d)\n",
-			   lmap[i].map,
-			   lmap[i].left,
-			   lmap[i].right,
-			   lmap[i].right - lmap[i].left));
+		    TRACE2(("...update_window_attrs row %d [%d..%d] (%d)\n",
+			    lmap[i].map,
+			    lmap[i].left,
+			    lmap[i].right,
+			    lmap[i].right - lmap[i].left));
 		}
 
 		if (ap->ar_region.r_orig.o >= lmap[i].right) {
@@ -2221,9 +2221,9 @@ update_window_attrs(WINDOW *wp)
 	}
 	ap = ap->ar_next;
     }
-    TRACE(("update_window_attrs visible %d / %d\n",
-	   visible_regions,
-	   total_regions));
+    TRACE2(("update_window_attrs visible %d / %d\n",
+	    visible_regions,
+	    total_regions));
 }
 #endif /* OPT_VIDEO_ATTRS */
 
