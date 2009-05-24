@@ -4,7 +4,7 @@
  *	original by Daniel Lawrence, but
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.330 2009/03/20 19:38:09 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.331 2009/05/24 11:00:39 tom Exp $
  *
  */
 
@@ -1389,9 +1389,7 @@ mac_tokval(TBUFF **tok)
 	    && (const char *) previous != newvalue) {
 	    /*
 	     * Check for the special case where we're just shifting the result
-	     * down by one since we're stripping a leading quote.  I don't want
-	     * to use memmove() in tb_buff.c just for this instance since it's
-	     * less portable -TD
+	     * down by one since we're stripping a leading quote.
 	     */
 	    if (((const char *) previous) + 1 == newvalue) {
 		TBUFF *fix = 0;

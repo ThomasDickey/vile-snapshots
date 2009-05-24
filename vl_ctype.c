@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/vl_ctype.c,v 1.5 2009/05/11 00:26:52 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/vl_ctype.c,v 1.6 2009/05/24 12:51:02 tom Exp $
  */
 
 /*
@@ -348,3 +348,12 @@ vl_ctype_clr(int ch, CHARTYPE cclass)
 	ctype_sets[ch] &= ~cclass;
     }
 }
+
+#if NO_LEAKS
+void
+vl_ctype_leaks(void)
+{
+    FreeAndNull(ctype_sets);
+    FreeAndNull(ctype_clrs);
+}
+#endif

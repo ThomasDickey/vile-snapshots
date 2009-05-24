@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/key-filt.c,v 1.43 2009/04/25 16:21:03 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/key-filt.c,v 1.44 2009/05/24 11:09:11 tom Exp $
  *
  * Filter to add vile "attribution" sequences to a vile keyword file.  It's
  * done best in C because the delimiters may change as a result of processing
@@ -480,5 +480,11 @@ do_filter(FILE *input GCC_UNUSED)
 static void
 free_filter(void)
 {
+    FreeAndNull(Action_attr);
+    FreeAndNull(Comment_attr);
+    FreeAndNull(Error_attr);
+    FreeAndNull(Ident_attr);
+    FreeAndNull(Ident2_attr);
+    FreeAndNull(Literal_attr);
 }
 #endif

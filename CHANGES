@@ -2,6 +2,8 @@ Changes for vile 9.7 (released ??? ??? ?? ????)
 
  200905?? (r)
 	> Tom Dickey:
+	+ fix an old bug which prevented show-filtercolors from working more
+	  than once on a buffer unless the buffer was re-read.
 	+ correct color-initialization for filters which happen to use a "-k"
 	  option to load the same symbol table as the filter's default table.
 	+ make filters/genmake.mak auto-generated on Unix platforms, to ensure

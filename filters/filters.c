@@ -1,7 +1,7 @@
 /*
  * Common utility functions for vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.138 2009/05/17 22:56:39 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.139 2009/05/24 12:47:00 tom Exp $
  *
  */
 
@@ -1332,5 +1332,7 @@ filters_leaks(void)
 
     flt_free(&flt_bfr_text, &flt_bfr_size);
     (void) lowercase_of(0);
+    FreeAndNull(default_table);
+    FreeAndNull(default_attr);
 }
 #endif

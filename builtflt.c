@@ -1,7 +1,7 @@
 /*
  * Main program and I/O for external vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/RCS/builtflt.c,v 1.74 2009/05/23 16:32:03 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/builtflt.c,v 1.76 2009/05/24 14:54:35 tom Exp $
  *
  */
 
@@ -340,6 +340,21 @@ flt_get_col(void)
 
 #ifdef MDFILTERMSGS
 /*
+ * Get the pointer to filter-messages buffer.  Ensure that its "filtermsgs"
+ * mode is off, so we don't get caught by trying to use it as input/output.
+ */
+static BUFFER *
+find_filtermsgs(void)
+{
+    BUFFER *bp = make_ro_bp(FLTMSGS_BufName, BFINVS);
+    if (bp != 0) {
+	make_local_b_val(bp, MDFILTERMSGS);
+	b_val(bp, MDFILTERMSGS) = FALSE;
+    }
+    return bp;
+}
+
+/*
  * Clear the text from [Filter Messages].
  */
 static void
@@ -347,7 +362,7 @@ init_flt_error(void)
 {
     BUFFER *bp;
     if (b_val(curbp, MDFILTERMSGS)) {
-	if ((bp = find_b_name(FLTMSGS_BufName)) != 0) {
+	if ((bp = find_filtermsgs()) != 0) {
 	    b_clr_changed(bp);	/* so bclear does not prompt */
 	    bclear(bp);
 	}
@@ -373,7 +388,7 @@ flt_error(const char *fmt,...)
 	BUFFER *bp;
 	va_list ap;
 
-	if ((bp = make_ro_bp(FLTMSGS_BufName, BFINVS)) != 0) {
+	if ((bp = find_filtermsgs()) != 0) {
 	    /*
 	     * The "-Q" option emits a ".keyword" listing, which would not
 	     * be helped by showing the filename and line-number.
@@ -764,7 +779,8 @@ void
 flt_leaks(void)
 {
     flt_free_symtab();
-    FreeIfNeeded(default_attr);
+    FreeAndNull(default_table);
+    FreeAndNull(default_attr);
     tb_free(&filter_list);
 }
 #endif

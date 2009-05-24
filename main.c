@@ -22,7 +22,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.663 2009/05/17 18:47:30 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.664 2009/05/24 12:48:26 tom Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -2938,6 +2938,7 @@ free_all_leaks(void)
     flt_leaks();
     filters_leaks();
 #endif
+    vl_ctype_leaks();
     /* do these last, e.g., for tb_matched_pat */
     itb_leaks();
     tb_leaks();

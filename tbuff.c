@@ -7,7 +7,7 @@
  *	To do:	add 'tb_ins()' and 'tb_del()' to support cursor-level command
  *		editing.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tbuff.c,v 1.72 2009/03/20 19:47:52 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tbuff.c,v 1.73 2009/05/24 11:00:16 tom Exp $
  *
  */
 
@@ -314,7 +314,7 @@ tb_bappend(TBUFF **p, const char *s, size_t len)
 	} else if ((q = tb_alloc(p, n + len)) != 0) {
 	    if (len != 0) {
 		if (q->tb_data + n != s)
-		    memcpy(q->tb_data + n, s, len);
+		    memmove(q->tb_data + n, s, len);
 		q->tb_used = n + len;
 	    }
 	}
