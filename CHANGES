@@ -1,6 +1,6 @@
 Changes for vile 9.7 (released ??? ??? ?? ????)
 
- 200905?? (r)
+ 20090525 (r)
 	> Tom Dickey:
 	+ fix an old bug which prevented show-filtercolors from working more
 	  than once on a buffer unless the buffer was re-read.
