@@ -1,4 +1,4 @@
-revlist for vile, version v9_7q
+revlist for vile, version v9_7r
 --------------------------------------------------------------------------------
 aclocal.m4	1.191
 ansi.c	1.51
@@ -13,8 +13,8 @@ btree.c	1.24
 btree.h	1.5
 buffer.c	1.340
 buglist	1.415
-builtflt.c	1.71
-CHANGES	1.1301
+builtflt.c	1.76
+CHANGES	1.1311
 CHANGES.R3	1.1
 CHANGES.R4	1.1
 CHANGES.R5	1.1
@@ -27,21 +27,21 @@ cmdtbl	1.260
 config.guess	1.10
 config_h.in	1.2
 config.sub	1.11
-configure	1.36
-configure.in	1.263
+configure	1.37
+configure.in	1.264
 COPYING	1.4
 csrch.c	1.34
 curses.c	1.39
 descrip.mms	1.50
 dirstuff.h	1.32
-display.c	1.493
+display.c	1.494
 djhandl.c	1.6
 dumbterm.c	1.23
 edef.h	1.349
 eightbit.c	1.48
 estruct.h	1.689
 eval.c	1.408
-exec.c	1.330
+exec.c	1.331
 externs.c	1.11
 fences.c	1.86
 file.c	1.427
@@ -60,7 +60,7 @@ isearch.c	1.63
 itbuff.c	1.25
 lckfiles.c	1.11
 line.c	1.204
-main.c	1.663
+main.c	1.664
 makeargv.c	1.5
 makeargv.h	1.3
 makefile.blc	1.23
@@ -74,7 +74,7 @@ menu.c	1.73
 mkdirs.sh	1.7
 mkprlenv.wnt	1.9
 mktbls.c	1.161
-modes.c	1.395
+modes.c	1.397
 modetbl	1.292
 msgs.c	1.29
 npopen.c	1.96
@@ -86,12 +86,12 @@ opers.c	1.97
 os2keys.h	1.2
 os2pipe.c	1.5
 os2vio.c	1.36
-patchlev.h	1.392
+patchlev.h	1.393
 path.c	1.165
 perl.xs	1.117
 plugin.c	1.1
 plugin.h	1.1
-proto.h	1.677
+proto.h	1.678
 pscreen.h	1.2
 ptypemap	1.7
 random.c	1.329
@@ -100,14 +100,14 @@ README.PC	1.33
 README.VMS	1.5
 regexp.c	1.193
 region.c	1.153
-revlist	v9_7q
+revlist	v9_7r
 search.c	1.148
 select.c	1.173
 sinstall.sh	1.1
 spawn.c	1.201
 statevar.c	1.135
 tags.c	1.138
-tbuff.c	1.72
+tbuff.c	1.73
 tcap.c	1.178
 tcap.h	1.15
 termio.c	1.217
@@ -118,11 +118,11 @@ ucrypt.c	1.15
 undo.c	1.101
 version.c	1.69
 vile.1	1.37
-vile-9.7.spec	1.19
+vile-9.7.spec	1.20
 vile.hlp	1.673
 vile.wmconfig	1.1
 vl_alloc.h	1.1
-vl_ctype.c	1.5
+vl_ctype.c	1.6
 vl_ctype.h	1.21
 vl_regex.h	1.5
 vl_stdio.h	1.4
@@ -170,6 +170,7 @@ doc/Vileserv.doc	1.1
 doc/visvile.doc	1.9
 filters/ada-filt.l	1.17
 filters/ada.key	1.1
+filters/ant.key	1.1
 filters/as386.key	1.2
 filters/as-filt.l	1.11
 filters/as.key	1.3
@@ -184,8 +185,8 @@ filters/awk-filt.l	1.20
 filters/awk.key	1.2
 filters/bas-filt.l	1.23
 filters/basic.key	1.4
-filters/bat-filt.l	1.28
-filters/bat.key	1.4
+filters/bat-filt.l	1.30
+filters/bat.key	1.5
 filters/bnf-filt.l	1.12
 filters/bnf.key	1.1
 filters/cfg-filt.l	1.17
@@ -216,15 +217,16 @@ filters/est-filt.l	1.9
 filters/est.key	1.1
 filters/fdl-filt.l	1.16
 filters/fdl.key	1.4
-filters/filterio.c	1.46
-filters/filters.c	1.138
+filters/filterio.c	1.48
+filters/filters.c	1.139
 filters/filters.h	1.121
-filters/filters.rc	1.223
+filters/filters.rc	1.227
 filters/flt_defs.h	1.9
 filters/fltstack.h	1.16
 filters/genmake.c	1.4
 filters/genmake.mak	1.38
-filters/hs-filt.l	1.23
+filters/genmake.sh	1.7
+filters/hs-filt.l	1.24
 filters/hs.key	1.2
 filters/htmlfilt.l	1.96
 filters/html.key	1.19
@@ -237,7 +239,7 @@ filters/iss-filt.l	1.13
 filters/iss.key	1.6
 filters/java.key	1.3
 filters/js.key	1.5
-filters/key-filt.c	1.43
+filters/key-filt.c	1.44
 filters/latexflt.l	1.51
 filters/latex.key	1.2
 filters/lex-filt.l	1.73
@@ -274,6 +276,7 @@ filters/mk-2nd.awk	1.19
 filters/mk-2nd.bat	1.7
 filters/mk-key.awk	1.2
 filters/mms-filt.l	1.17
+filters/mvn.key	1.1
 filters/noclass.sh	1.7
 filters/nr-filt.l	1.27
 filters/nr.key	1.1
@@ -309,7 +312,7 @@ filters/sccs.key	1.1
 filters/scheme.key	1.3
 filters/scm-filt.l	1.5
 filters/sed-filt.c	1.23
-filters/sh-filt.l	1.80
+filters/sh-filt.l	1.81
 filters/sh.key	1.4
 filters/sml-filt.l	1.9
 filters/sml.key	1.1
@@ -350,7 +353,7 @@ filters/xresfilt.l	1.25
 filters/xres.key	1.3
 filters/xs-filt.l	1.16
 filters/xs.key	1.1
-filters/xsl.key	1.12
+filters/xsl.key	1.13
 filters/yaccfilt.l	1.38
 filters/yacc.key	1.8
 icons/pumpkin.ico	1.3
@@ -368,7 +371,7 @@ macros/digraphs.rc	1.3
 macros/gnugpg.rc	1.3
 macros/loaderrs.rc	1.2
 macros/manpage.rc	1.24
-macros/modes.rc	1.97
+macros/modes.rc	1.99
 macros/palettes.rc	1.8
 macros/pictmode.rc	1.4
 macros/search.rc	1.3
