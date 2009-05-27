@@ -2,7 +2,7 @@
  *		The routines in this file handle the conversion of pathname
  *		strings.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.165 2009/05/15 21:35:52 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.166 2009/05/26 21:25:37 tom Exp $
  *
  *
  */
@@ -58,8 +58,6 @@ curr_dir_on_drive(int d)
 #include <sys/itimer.h>
 #endif
 #endif
-
-static int is_absolute_pathname(char *path);
 
 static char empty_string[] = "";
 
@@ -323,7 +321,7 @@ pathcat(char *dst, const char *path, const char *cleaf)
 	    }
 	} else
 #endif
-	if (is_absolute_pathname(leaf)) {
+	if (is_abs_pathname(leaf)) {
 	    (void) strcpy(dst, leaf);
 	} else {
 	    have = strlen(strcpy(dst, path));
@@ -1634,8 +1632,8 @@ lengthen_path(char *path)
  * Returns true if the argument looks like an absolute pathname (e.g., on
  * unix, begins with a '/').
  */
-static int
-is_absolute_pathname(char *path)
+int
+is_abs_pathname(char *path)
 {
     char *f;
     if ((f = is_appendname(path)) != 0)
@@ -1650,7 +1648,7 @@ is_absolute_pathname(char *path)
 
 #if OPT_MSDOS_PATH
     if ((f = is_msdos_drive(path)) != 0)
-	return is_absolute_pathname(f);
+	return is_abs_pathname(f);
 #endif
 
 #if SYS_UNIX || OPT_MSDOS_PATH || SYS_VMS
@@ -1702,7 +1700,7 @@ int
 is_pathname(char *path)
 {
     return is_relative_pathname(path)
-	|| is_absolute_pathname(path);
+	|| is_abs_pathname(path);
 }
 
 /*

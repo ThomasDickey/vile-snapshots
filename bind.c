@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.334 2009/05/17 19:03:09 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.336 2009/05/26 21:36:17 tom Exp $
  *
  */
 
@@ -1463,19 +1463,25 @@ ourstrstr(const char *haystack, const char *needle, int anchor)
  * and neither is writable by other users.
  */
 static int
-is_our_file(char *fname)
+is_our_file(char *fname, int check_owner)
 {
     int status = FALSE;
     struct stat sb;
 
     if (stat(fname, &sb) == 0) {
-	if ((sb.st_mode & 0022) == 0
-	    && (sb.st_uid == getuid() || sb.st_uid == 0)) {
-	    status = TRUE;
-	} else {
+	if ((sb.st_mode & 002) != 0) {
+	    TPRINTF(("Ignoring world-writable \"%s\"\n", fname));
+	} else if ((sb.st_mode & 020) != 0) {
+	    TPRINTF(("Ignoring group-writable \"%s\"\n", fname));
+	} else if (check_owner
+		   && (sb.st_uid != getuid() && sb.st_uid != 0)) {
 	    TPRINTF(("\"%s\" is not our %s\n",
 		     fname, S_ISDIR(sb.st_mode) ? "directory" : "file"));
+	} else {
+	    status = TRUE;
 	}
+    } else {
+	TPRINTF(("\"%s\": %s\n", fname, strerror(errno)));
     }
     return status;
 }
@@ -1486,14 +1492,34 @@ check_file_access(char *fname, UINT mode)
 {
     int result = ffaccess(fname, mode);
 #if SYS_UNIX
+#define CHK_OWNER (FL_HOME | FL_CDIR)
     if (result) {
 	int doit = FALSE;
 	int check;
+	int owner;
+
+	/*
+	 * Suppress ownership check for absolute pathnames.
+	 */
+	if (is_abs_pathname(fname))
+	    mode &= ~CHK_OWNER;
+
+	/*
+	 * Check ownership for current- and home-directories.
+	 */
+	owner = (mode < (CHK_OWNER * 2));
 
 	if (mode & FL_EXECABLE) {
 	    doit = TRUE;
 	} else if ((check = global_g_val(GVAL_CHK_ACCESS)) != 0) {
-	    if (mode & (check * 2 - 1))
+	    /*
+	     * The values for check-access mode are single bits.  But we treat
+	     * those as an ordered list.  Hence, setting "home" implies we
+	     * also check "current", since that is the first item in the list.
+	     */
+	    if ((mode
+		 & (check * 2 - 1)
+		 & ~(FL_EXECABLE | FL_WRITEABLE | FL_READABLE)) != 0)
 		doit = TRUE;
 	}
 	if (doit) {
@@ -1504,7 +1530,7 @@ check_file_access(char *fname, UINT mode)
 		leaf = pathleaf(lengthen_path(strcpy(dname, fname)));
 		if ((leaf - 1) != dname)
 		    *--leaf = EOS;
-		if (!is_our_file(dname) || !is_our_file(fname)) {
+		if (!is_our_file(dname, owner) || !is_our_file(fname, owner)) {
 		    mlforce("[Skipping '%s' (insecure permissions)]", fname);
 		    result = ABORT;
 		}

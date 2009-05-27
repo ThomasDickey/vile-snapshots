@@ -1,4 +1,18 @@
-Changes for vile 9.7 (released ??? ??? ?? ????)
+Changes for vile 9.8 (released ??? ??? ?? ????)
+
+ 200905?? (s)
+	> Tom Dickey:
+	+ revert change to mode-setting related to show-filtercolors.
+	+ suppress "Press return to continue" when running a shell command
+	  which is modified by "~hidden" or "~quiet".
+	+ improve checks for insecure file permissions (adapted from Steven
+	  Lembark):
+	  + modify check for insecure file permissions to exclude absolute
+	    paths which are given by the user in scripts.
+	  + write details on the reason why permissions failed to [Trace].
+	  + only check ownership of files in current or home directory.
+	+ change default color for Ident2 class to C3.  It was C6, which was
+	  the same as Number.
 
  20090525 (r)
 	> Tom Dickey:

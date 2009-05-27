@@ -2,7 +2,7 @@
  * This file contains the command processing functions for a number of random
  * commands. There is no functional grouping here, for sure.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.329 2009/05/18 00:05:03 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.330 2009/05/26 21:25:37 tom Exp $
  *
  */
 
@@ -1393,7 +1393,7 @@ set_directory(const char *dir)
 	/*
 	 * chdir() failed.  Attempt to match dir using $CDPATH on a VMS
 	 * host.  Note that we can't test using is_pathname() because the
-	 * indirectly referenced is_absolute_pathname() code sez that any
+	 * indirectly referenced is_abs_pathname() code sez that any
 	 * filespec with an embedded '[' or ':' is absolute--not what we
 	 * want here.
 	 */
