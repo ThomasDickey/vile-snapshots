@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.397 2009/05/24 17:39:55 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.398 2009/05/27 00:23:01 tom Exp $
  *
  */
 
@@ -1244,7 +1244,7 @@ set_mode_value(BUFFER *bp,
 #endif
     } else {
 	/* make sure we point to result! */
-	if (global) {
+	if (0 && global) {
 	    make_global_val(values, globls, 0);
 	} else {
 	    makeLocalVal(values);

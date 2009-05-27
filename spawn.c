@@ -1,7 +1,7 @@
 /*	Spawn:	various DOS access commands
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.201 2008/08/19 20:17:58 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.202 2009/05/26 23:46:03 tom Exp $
  *
  */
 
@@ -280,23 +280,25 @@ pressreturn(void)
     int osgarbf;
     int old_reading;
 
-    osgarbf = sgarbf;
-    sgarbf = FALSE;
-    mlforce("[Press return to continue]");
-    sgarbf = osgarbf;
-    /* loop for a CR, a space, or a : to do another named command */
-    old_reading = read_msgline(TRUE);
-    while ((c = keystroke()) != '\r' &&
-	   c != '\n' &&
-	   c != ' ' &&
-	   !ABORTED(c)) {
-	if (DefaultKeyBinding(c) == &f_namedcmd) {
-	    unkeystroke(c);
-	    break;
+    if (!(quiet || clhide)) {
+	osgarbf = sgarbf;
+	sgarbf = FALSE;
+	mlforce("[Press return to continue]");
+	sgarbf = osgarbf;
+	/* loop for a CR, a space, or a : to do another named command */
+	old_reading = read_msgline(TRUE);
+	while ((c = keystroke()) != '\r' &&
+	       c != '\n' &&
+	       c != ' ' &&
+	       !ABORTED(c)) {
+	    if (DefaultKeyBinding(c) == &f_namedcmd) {
+		unkeystroke(c);
+		break;
+	    }
 	}
+	kbd_erase_to_end(0);
+	read_msgline(old_reading);
     }
-    kbd_erase_to_end(0);
-    read_msgline(old_reading);
 }
 
 /* ARGSUSED */

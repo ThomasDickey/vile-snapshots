@@ -1,4 +1,4 @@
-; $Id: filters.rc,v 1.227 2009/05/23 10:46:50 tom Exp $
+; $Id: filters.rc,v 1.228 2009/05/26 22:01:58 tom Exp $
 ; majormodes in this file are ordered alphabetically for convenience - the
 ; precedence used by vile is strictly alphabetic, counting case.
 
@@ -247,7 +247,7 @@ store-procedure show-filtermsgs 'Show syntax-filter error messages for current b
 
 ; Show the keywords which can be highlighted, in the [Filter Messages] buffer.
 store-procedure show-filtercolors 'Show syntax-filter colors for current buffer'
-	; ~local %myBuffer %myFiltername %hisBuffer
+	~local %myBuffer %myFiltername %hisBuffer
 	setv %myBuffer='[Filter Messages]'
 	~if &error &classof highlight
 		write-message 'Cannot setup highlighting'

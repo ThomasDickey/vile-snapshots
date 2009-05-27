@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.678 2009/05/24 12:48:48 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.679 2009/05/26 21:25:37 tom Exp $
  *
  */
 
@@ -978,6 +978,7 @@ extern char * pathleaf (char *path);
 extern char * shorten_path (char *path, int keep_cwd);
 extern const char *parse_pathlist (const char *list, char *result);
 extern int find_in_path_list (const char *path_list, char *path);
+extern int is_abs_pathname(char *path);
 extern int is_directory (const char *path);
 extern int is_file (char *path);
 extern int is_internalname (const char *fn);
