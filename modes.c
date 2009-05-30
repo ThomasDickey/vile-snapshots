@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.398 2009/05/27 00:23:01 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.400 2009/05/29 20:10:42 tom Exp $
  *
  */
 
@@ -370,8 +370,10 @@ listvalueset(const char *which,
 	if (local) {
 	    ok = is_local_val(values, j);
 	} else {
-	    ok = (same_val(names + j, values + j, globvalues ? globvalues +
-			   j : 0) != TRUE);
+	    ok = (same_val(names + j, values + j,
+			   globvalues
+			   ? globvalues + j
+			   : 0) != TRUE);
 	}
 	if (ok) {
 	    switch (names[j].type) {
@@ -1244,7 +1246,7 @@ set_mode_value(BUFFER *bp,
 #endif
     } else {
 	/* make sure we point to result! */
-	if (0 && global) {
+	if (global) {
 	    make_global_val(values, globls, 0);
 	} else {
 	    makeLocalVal(values);
@@ -1345,6 +1347,9 @@ set_mode_value(BUFFER *bp,
     return status;
 }
 
+static int last_listmodes_f;
+static int last_listmodes_n;
+
 /* ARGSUSED */
 int
 listmodes(int f, int n GCC_UNUSED)
@@ -1353,12 +1358,24 @@ listmodes(int f, int n GCC_UNUSED)
     int s;
 
     TRACE((T_CALLED "listmodes(f=%d)\n", f));
+    TPRINTF(("listmodes(f=%d)\n", f));
+
+    last_listmodes_f = f;
+    last_listmodes_n = n;
 
     s = liststuff(SETTINGS_BufName, FALSE, makemodelist, f, (void *) wp);
     /* back to the buffer whose modes we just listed */
     if (swbuffer(wp->w_bufp))
 	curwp = wp;
     returnCode(s);
+}
+
+/* ARGSUSED */
+int
+list_lmodes(int f GCC_UNUSED, int n GCC_UNUSED)
+{
+    /* the repeat-count is obscure - provide explicit list of local modes */
+    return listmodes(TRUE, 1);
 }
 
 /*
@@ -1622,7 +1639,7 @@ do_a_mode(int kind, int global)
     } else if (!strcmp(tb_values(cbuf), "all")) {
 	if (ok_local_mode()) {
 	    hst_glue(' ');
-	    rc = listmodes(FALSE, 1);
+	    rc = listmodes(last_listmodes_f, last_listmodes_n);
 	}
     } else if ((s = find_mode(curbp, tb_values(cbuf), global, &args)) != TRUE) {
 #if OPT_EVAL
@@ -1660,7 +1677,7 @@ adjustmode(int kind, int global)
     int anything = 0;
 
     if (kind && global &&isreturn(end_string()))
-	return listmodes(TRUE, 1);
+	return listmodes(last_listmodes_f, last_listmodes_n);
 
     while (((s = do_a_mode(kind, global)) == TRUE) && (end_string() == ' '))
 	  anything++;
@@ -1682,7 +1699,7 @@ static int
 show_Settings(BUFFER *bp)
 {
     b_clr_obsolete(bp);
-    return listmodes(FALSE, 1);
+    return listmodes(last_listmodes_f, last_listmodes_n);
 }
 
 static void

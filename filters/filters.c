@@ -1,7 +1,7 @@
 /*
  * Common utility functions for vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.139 2009/05/24 12:47:00 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.141 2009/05/29 20:25:36 tom Exp $
  *
  */
 
@@ -60,6 +60,8 @@ typedef struct {
     int zero_or_all;
     int meta_ch;
     int eqls_ch;
+    char *default_table;
+    char *default_attr;
 } FLTCHARS;
 
 char *default_table;
@@ -103,6 +105,7 @@ static unsigned len_keyword_file = 0;
 #define KW_FLAG(p) ((p) ? ((p)->kw_type ? "class" : "keyword") : "?")
 
 #define COPYIT(name) save->name = name
+#define SAVEIT(name) if (name) save->name = strmalloc(name); else save->name = 0
 
 static void
 flt_save_chars(FLTCHARS * save)
@@ -111,9 +114,13 @@ flt_save_chars(FLTCHARS * save)
     COPYIT(zero_or_all);
     COPYIT(meta_ch);
     COPYIT(eqls_ch);
+
+    SAVEIT(default_table);
+    SAVEIT(default_attr);
 }
 
 #undef COPYIT
+#undef SAVEIT
 
 static void
 flt_init_chars(void)
@@ -125,6 +132,7 @@ flt_init_chars(void)
 }
 
 #define COPYIT(name) name = save->name
+#define SAVEIT(name) if (save->name) { FreeIfNeeded(name); name = save->name; }
 
 static void
 flt_restore_chars(FLTCHARS * save)
@@ -133,9 +141,13 @@ flt_restore_chars(FLTCHARS * save)
     COPYIT(zero_or_all);
     COPYIT(meta_ch);
     COPYIT(eqls_ch);
+
+    SAVEIT(default_table);
+    SAVEIT(default_attr);
 }
 
 #undef COPYIT
+#undef SAVEIT
 
 /* FIXME */
 static void
@@ -252,8 +264,7 @@ ExecDefault(char *param)
 	param = NAME_KEYWORD;
     if (is_class(param)) {
 	*s = save;
-	free(default_attr);
-	default_attr = strmalloc(param);
+	flt_init_attr(param);
 	VERBOSE(1, ("set default_attr '%s' %p\n", default_attr, default_attr));
     } else {
 	*s = save;
@@ -631,9 +642,9 @@ dump_init(void)
     dump_eqls_ch = eqls_ch;
 
     if (dump_meta_ch != '.')
-	flt_error(".meta %c\n", dump_meta_ch);
+	flt_message(".meta %c\n", dump_meta_ch);
     if (dump_eqls_ch != ':')
-	flt_error("%cequals %c\n", dump_meta_ch, dump_eqls_ch);
+	flt_message("%cequals %c\n", dump_meta_ch, dump_eqls_ch);
 }
 
 static int
@@ -661,12 +672,12 @@ dump_update(const char *name)
 
     if (strchr(name, dump_meta_ch) != 0) {
 	newc = dump_update2(name, dump_eqls_ch);
-	flt_error("%cmeta %c\n", dump_meta_ch, newc);
+	flt_message("%cmeta %c\n", dump_meta_ch, newc);
 	dump_meta_ch = newc;
     }
     if (strchr(name, dump_eqls_ch) != 0) {
 	dump_eqls_ch = dump_update2(name, dump_meta_ch);
-	flt_error("%cequals %c\n", dump_meta_ch, dump_eqls_ch);
+	flt_message("%cequals %c\n", dump_meta_ch, dump_eqls_ch);
     }
 }
 
@@ -675,16 +686,16 @@ dump_class(const KEYWORD * const q)
 {
     if (q->kw_type) {
 	dump_update(q->kw_name);
-	flt_error("%cclass %s%c%s",
-		  dump_meta_ch,
-		  q->kw_name,
-		  dump_eqls_ch,
-		  NonNull(q->kw_attr));
+	flt_message("%cclass %s%c%s",
+		    dump_meta_ch,
+		    q->kw_name,
+		    dump_eqls_ch,
+		    NonNull(q->kw_attr));
 	if (q->kw_flag)
-	    flt_error("%c%s",
-		      dump_eqls_ch,
-		      q->kw_flag);
-	flt_error("\n");
+	    flt_message("%c%s",
+			dump_eqls_ch,
+			q->kw_flag);
+	flt_message("\n");
     }
 }
 
@@ -693,15 +704,15 @@ dump_keyword(const KEYWORD * const q)
 {
     if (!q->kw_type) {
 	dump_update(q->kw_name);
-	flt_error("%s%c%s",
-		  q->kw_name,
-		  dump_eqls_ch,
-		  NonNull(q->kw_attr));
+	flt_message("%s%c%s",
+		    q->kw_name,
+		    dump_eqls_ch,
+		    NonNull(q->kw_attr));
 	if (q->kw_flag)
-	    flt_error("%c%s",
-		      dump_eqls_ch,
-		      q->kw_flag);
-	flt_error("\n");
+	    flt_message("%c%s",
+			dump_eqls_ch,
+			q->kw_flag);
+	flt_message("\n");
     }
 }
 
@@ -750,7 +761,7 @@ flt_dump_symtab(char *table_name)
 	}
     } else if ((p = find_symtab(table_name)) != 0) {
 	dump_update(p->name);
-	flt_error("%ctable %s\n", dump_meta_ch, p->name);
+	flt_message("%ctable %s\n", dump_meta_ch, p->name);
 	dump_symtab(p, dump_class);
 	dump_symtab(p, dump_keyword);
     }
@@ -826,6 +837,8 @@ flt_init_attr(char *attr_name)
     if (default_attr != 0)
 	free(default_attr);
     default_attr = strmalloc(attr_name);
+
+    VERBOSE(3, ("flt_init_attr:%s", attr_name));
 }
 
 /*

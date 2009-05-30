@@ -1,7 +1,7 @@
 /*
  * Main program and I/O for external vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filterio.c,v 1.48 2009/05/23 16:26:42 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filterio.c,v 1.53 2009/05/29 20:21:02 tom Exp $
  *
  */
 
@@ -46,6 +46,7 @@ ProcessArgs(int argc, char *argv[], int flag)
     int n;
     char *s, *value;
 
+    memset(flt_options, 0, sizeof(flt_options));
     for (n = 1; n < argc; n++) {
 	s = argv[n];
 	if (*s == '-') {
@@ -177,9 +178,30 @@ flt_error(const char *fmt,...)
     if (FltOptions('v') || FltOptions('Q')) {
 	va_list ap;
 
+	fflush(stdout);
+
 	va_start(ap, fmt);
 	(void) vfprintf(stderr, fmt, ap);
 	va_end(ap);
+	fputc('\n', stderr);
+
+	fflush(stderr);
+    }
+}
+
+void
+flt_message(const char *fmt,...)
+{
+    if (FltOptions('v') || FltOptions('Q')) {
+	va_list ap;
+
+	fflush(stdout);
+
+	va_start(ap, fmt);
+	(void) vfprintf(stderr, fmt, ap);
+	va_end(ap);
+
+	fflush(stderr);
     }
 }
 
@@ -210,10 +232,15 @@ void
 mlforce(const char *fmt,...)
 {
     va_list ap;
+
+    fflush(stderr);
+
     va_start(ap, fmt);
     vprintf(fmt, ap);
     va_end(ap);
     putchar('\n');
+
+    fflush(stdout);
 }
 
 char *
@@ -384,7 +411,6 @@ int
 main(int argc, char **argv)
 {
     int n;
-    int verbose;
 
 #if OPT_LOCALE
     setlocale(LC_CTYPE, "");
@@ -395,23 +421,19 @@ main(int argc, char **argv)
     my_col = 0;
     my_line = 1;
 
-    memset(flt_options, 0, sizeof(flt_options));
+    /* get verbose option */
+    (void) ProcessArgs(argc, argv, 0);
 
     flt_initialize(filter_def.filter_name);
 
+    flt_read_keywords(MY_NAME);
     if (strcmp(MY_NAME, filter_def.filter_name)) {
 	flt_read_keywords(filter_def.filter_name);
     }
 
-    /* get verbose option */
-    (void) ProcessArgs(argc, argv, 0);
-    verbose = FltOptions('v');
-
     filter_def.InitFilter(1);
 
-    flt_read_keywords(MY_NAME);
     n = ProcessArgs(argc, argv, 1);
-    FltOptions('v') = verbose;
 
     if ((vile_keywords = !FltOptions('k')) != 0) {
 	if (strcmp(MY_NAME, default_table)
