@@ -97,7 +97,7 @@
 #		in '!' listed, then the flag does nothing, and should be
 #		viewed simply as documentation.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.260 2009/02/22 20:33:54 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.261 2009/05/27 23:33:45 tom Exp $
 #
 #
 
@@ -1641,6 +1641,13 @@ listmodes	NONE
 	"showmodes"
 	"showgmodes"
 	<report values of all mode settings>
+list_lmodes	NONE
+	"list-local-modes"		!FEWNAMES
+	"setlall"
+	"lmodes"
+	"show-local-modes"
+	"showlmodes"
+	<report values of local mode settings>
 list_majormodes	NONE			OPT_MAJORMODE
 	"list-majormodes"		!FEWNAMES
 	"show-majormodes"

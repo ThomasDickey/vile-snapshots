@@ -2,7 +2,15 @@ Changes for vile 9.8 (released ??? ??? ?? ????)
 
  200905?? (s)
 	> Tom Dickey:
-	+ revert change to mode-setting related to show-filtercolors.
+	+ fixes to make -v option for internal/external filters work from the
+	  beginning of loading keyword files.
+	+ add show-local-modes, as an easier-to-remember variation for the
+	  count+show-modes flavor implemented in 970619 7.1f
+	+ modify listmodes() to save its last parameters, so callers such as
+	  for the animated feature can redisplay local-mode displays.
+	+ modify filter keyword-processing to save/restore the default settings
+	  for table- and attribute-values so that merging one keyword file into
+	  another will not override the parent file's settings.
 	+ suppress "Press return to continue" when running a shell command
 	  which is modified by "~hidden" or "~quiet".
 	+ improve checks for insecure file permissions (adapted from Steven

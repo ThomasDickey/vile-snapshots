@@ -1,7 +1,7 @@
 /*
  * Main program and I/O for external vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/RCS/builtflt.c,v 1.76 2009/05/24 14:54:35 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/builtflt.c,v 1.78 2009/05/29 20:25:01 tom Exp $
  *
  */
 
@@ -107,7 +107,7 @@ param_value(const char **ptr)
  * Return true if we had a "-k" option.
  */
 static int
-process_params(void)
+ProcessArgs(int flag)
 {
     const char *s = current_params;
     char *value;
@@ -122,8 +122,10 @@ process_params(void)
 		switch (*s) {
 		case 'k':
 		    if ((value = param_value(&s)) != 0) {
-			flt_init_table(value);
-			flt_setup_symbols(value);
+			if (flag) {
+			    flt_init_table(value);
+			    flt_setup_symbols(value);
+			}
 			free(value);
 		    }
 		    break;
@@ -389,26 +391,36 @@ flt_error(const char *fmt,...)
 	va_list ap;
 
 	if ((bp = find_filtermsgs()) != 0) {
-	    /*
-	     * The "-Q" option emits a ".keyword" listing, which would not
-	     * be helped by showing the filename and line-number.
-	     */
-	    if (FltOptions('Q')) {
-		va_start(ap, fmt);
-		(void) b2vprintf(bp, fmt, ap);
-		va_end(ap);
-	    } else {
-		(void) b2printf(bp, "%s: %d:%d: ",
-				filename,
-				flt_get_line(),
-				flt_get_col());
+	    (void) b2printf(bp, "%s: %d:%d: ",
+			    filename,
+			    flt_get_line(),
+			    flt_get_col());
 
-		va_start(ap, fmt);
-		(void) b2vprintf(bp, fmt, ap);
-		va_end(ap);
+	    va_start(ap, fmt);
+	    (void) b2vprintf(bp, fmt, ap);
+	    va_end(ap);
 
-		(void) b2printf(bp, "\n");
-	    }
+	    (void) b2printf(bp, "\n");
+	}
+    }
+#endif
+}
+
+/*
+ * Log an message from the syntax filter.
+ */
+void
+flt_message(const char *fmt,...)
+{
+#ifdef MDFILTERMSGS
+    if (b_val(curbp, MDFILTERMSGS)) {
+	BUFFER *bp;
+	va_list ap;
+
+	if ((bp = find_filtermsgs()) != 0) {
+	    va_start(ap, fmt);
+	    (void) b2vprintf(bp, fmt, ap);
+	    va_end(ap);
 	}
     }
 #endif
@@ -554,6 +566,7 @@ flt_start(char *name)
 	) {
 	MARK save_dot;
 	MARK save_mk;
+	int nextarg;
 
 	save_dot = DOT;
 	save_mk = MK;
@@ -565,6 +578,9 @@ flt_start(char *name)
 	tb_init(&gets_data, 0);
 
 	init_flt_error();
+
+	(void) ProcessArgs(0);
+
 	flt_initialize(current_filter->filter_name);
 
 	/* setup colors for the filter's default-table */
@@ -575,7 +591,8 @@ flt_start(char *name)
 
 	current_filter->InitFilter(1);
 
-	if (!process_params()) {
+	nextarg = ProcessArgs(1);
+	if (nextarg == 0) {
 	    if (strcmp(MY_NAME, default_table)
 		&& strcmp(current_filter->filter_name, default_table)) {
 		flt_read_keywords(default_table);

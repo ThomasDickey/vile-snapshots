@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/flt_defs.h,v 1.9 2009/05/16 11:16:03 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/flt_defs.h,v 1.10 2009/05/27 23:05:10 tom Exp $
  */
 
 #ifndef FLT_DEFS_H
@@ -138,6 +138,7 @@ extern	int	sscanf	( const char *src, const char *fmt, ... );
 							(ntypes)*sizeof(cast))
 
 #define	FreeAndNull(p)	if ((p) != 0)	{ free(p); p = 0; }
+#define	FreeIfNeeded(p)	if ((p) != 0)	free(p)
 
 extern	char *home_dir(void);
 
