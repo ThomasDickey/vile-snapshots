@@ -1,7 +1,7 @@
 /*
  * debugging support -- tom dickey.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.91 2009/05/18 22:55:21 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.92 2009/06/02 20:47:07 tom Exp $
  *
  */
 
@@ -350,7 +350,7 @@ my_vischr(char *buffer, int ch)
 char *
 trace_indent(int level, int marker)
 {
-    unsigned need = 1 + (level * 3);
+    unsigned need = (unsigned) (1 + (level * 3));
     int n;
 
     if (need > used_indent) {
@@ -376,7 +376,7 @@ visible_buff(const char *buffer, int length, int eos)
 {
     int j;
     unsigned k = 0;
-    unsigned need = ((length > 0) ? (length * 6) : 0) + 1;
+    unsigned need = (unsigned) (((length > 0) ? (length * 6) : 0) + 1);
     char *result;
 
     beginDisplay();
@@ -407,7 +407,7 @@ visible_video_text(const VIDEO_TEXT * buffer, int length)
 {
     int j;
     unsigned k = 0;
-    unsigned need = ((length > 0) ? (length * 6) : 0) + 1;
+    unsigned need = (unsigned) (((length > 0) ? (length * 6) : 0) + 1);
     char *result;
 
     beginDisplay();
@@ -844,7 +844,7 @@ void
 trace_region(REGION * rp, BUFFER *bp)
 {
     B_COUNT total = 0;
-    B_COUNT len_rs = len_record_sep(bp);
+    B_COUNT len_rs = (B_COUNT) len_record_sep(bp);
 
     L_NUM no_1st = line_no(bp, rp->r_orig.l);
     L_NUM no_2nd = line_no(bp, rp->r_end.l);
@@ -900,7 +900,7 @@ trace_region(REGION * rp, BUFFER *bp)
 		  "->",
 		  visible_buff(text, size, 0));
 	}
-	total += (size + len_rs);
+	total += ((B_COUNT) size + len_rs);
 	if (total > rp->r_size) {
 	    if (lp == lp2 && (total - len_rs) == rp->r_size) {
 		total -= len_rs;

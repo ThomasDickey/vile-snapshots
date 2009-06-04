@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/regexp.c,v 1.193 2009/05/11 00:30:57 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/regexp.c,v 1.195 2009/06/02 21:01:21 tom Exp $
  *
  * Copyright 2005-2008,2009 Thomas E. Dickey and Paul G. Fox
  *
@@ -481,11 +481,14 @@ typedef enum {
 #define	OPSIZE(p)	((unsigned)((CharOf((p)[3]) << 8) + CharOf((p)[4])))
 #define	OPERAND(p)	((p) + OP_HDR)
 
-#define SET_NEXT(p, n)	(p)[1] = CharOf(n >> 8),\
- 			(p)[2] = CharOf(n)
+#define HI_BYTE(n)	(char)((n) >> 8)
+#define LO_BYTE(n)	(char)(n)
 
-#define SET_SIZE(p, n)	(p)[3] = CharOf(n >> 8),\
- 			(p)[4] = CharOf(n)
+#define SET_NEXT(p, n)	(p)[1] = HI_BYTE(n),\
+ 			(p)[2] = LO_BYTE(n)
+
+#define SET_SIZE(p, n)	(p)[3] = HI_BYTE(n),\
+ 			(p)[4] = LO_BYTE(n)
 
 /*
  * RSIMPLE/RCOMPLX operations have a different layout:  OP(), NEXT(), and
@@ -573,7 +576,7 @@ set_utf8flag(BUFFER *bp)
 static int
 reg_bytes_at(const char *source, const char *last)
 {
-    int result = vl_conv_to_utf32((UINT *) 0, source, last - source);
+    int result = vl_conv_to_utf32((UINT *) 0, source, (B_COUNT) (last - source));
     if (result <= 0)
 	result = 1;
     return result;
@@ -586,8 +589,8 @@ reg_char_at(const char *source, const char *last)
     int result = UCHAR_AT(source);
     UINT target;
 
-    if (vl_conv_to_utf32(&target, source, last - source) > 0)
-	result = target;
+    if (vl_conv_to_utf32(&target, source, (B_COUNT) (last - source)) > 0)
+	result = (int) target;
     return result;
 }
 #define WCHAR_AT(source, last) (doUTF8(UCHAR_AT(source)) ? reg_char_at(source, last) : UCHAR_AT(source))
@@ -599,7 +602,7 @@ static void
 put_reg_char(int ch)
 {
     UCHAR target[10];
-    int len = vl_conv_to_utf8(target, ch, sizeof(target));
+    int len = vl_conv_to_utf8(target, (UINT) ch, sizeof(target));
     int n;
 
     for (n = 0; n < len; ++n) {
@@ -777,7 +780,7 @@ regmassage(const char *in_text,
 	*nxt++ = in_text[n];	/* the char */
     }
     *nxt = EOS;
-    *out_size = (nxt - out_text);
+    *out_size = (size_t) (nxt - out_text);
     return TRUE;
 }
 
@@ -817,7 +820,7 @@ regcomp(const char *exp_text, size_t exp_len, int magic)
     }
 
     TRACE(("regcomp(\"%s\", %smagic)\n",
-	   visible_buff(exp_text, exp_len, 0),
+	   visible_buff(exp_text, (int) exp_len, 0),
 	   magic ? "" : "no"));
 
     len = exp_len + 1;
@@ -838,7 +841,7 @@ regcomp(const char *exp_text, size_t exp_len, int magic)
 
     if (!regmassage(exp_text, exp_len, exp, &parsed_len, magic))
 	return NULL;
-    TRACE(("after regmassage: '%s'\n", visible_buff(exp, strlen(exp), 0)));
+    TRACE(("after regmassage: '%s'\n", visible_buff(exp, (int) strlen(exp), 0)));
 
     /* First pass: determine size, legality. */
     REGTRACE(("First pass: determine size, legality.\n"));
@@ -859,7 +862,7 @@ regcomp(const char *exp_text, size_t exp_len, int magic)
 
     /* Allocate space. */
     beginDisplay();
-    r = typeallocplus(regexp, regsize);
+    r = typeallocplus(regexp, (size_t) regsize);
     endofDisplay();
     if (r == NULL) {
 	regerror("out of space");
@@ -867,7 +870,7 @@ regcomp(const char *exp_text, size_t exp_len, int magic)
     }
 
     /* how big is it?  (vile addition) */
-    r->size = sizeof(regexp) + regsize;
+    r->size = sizeof(regexp) + (size_t) regsize;
 
     /* Second pass: emit code. */
     REGTRACE(("Second pass: emit code\n"));
@@ -1528,7 +1531,7 @@ regnode(int op)
 {
     char *ret;
     char *ptr;
-    int length = (op == RSIMPLE || op == RCOMPLX) ? RR_LEN : OP_HDR;
+    int length = (int) ((op == RSIMPLE || op == RCOMPLX) ? RR_LEN : OP_HDR);
 
     ret = regcode;
     if (ret == &regdummy) {
@@ -1714,7 +1717,7 @@ regstrncmp(const char *txt_a,
 	|| (unsigned) (end_a - txt_a) > len_b) {
 	end_a = txt_a + len_b;
     }
-    have = (end_a - txt_a);
+    have = (size_t) (end_a - txt_a);
     while (txt_a < end_a) {
 	chr_a = WCHAR_AT(txt_a, end_a);
 	chr_b = WCHAR_AT(txt_b, txt_b + len_b);
@@ -1922,7 +1925,7 @@ regtry(regexp * prog,
     if (regmatch(prog->program + 1, plevel)) {
 	prog->startp[0] = string;
 	prog->endp[0] = reginput;
-	prog->mlen = reginput - string;
+	prog->mlen = (size_t) (reginput - string);
 	return (1);
     } else {
 	prog->mlen = 0;		/* not indicative of anything */
@@ -2312,7 +2315,7 @@ regmatch(char *prog, int plevel)
 		    int j;
 
 		    if (no >= LOCAL_RPTS) {
-			rpts = typeallocn(char *, no + 1);
+			rpts = typeallocn(char *, (unsigned) (no + 1));
 			if (rpts == 0)
 			    returnReg(0);
 		    } else {
@@ -2461,7 +2464,7 @@ regnext(char *p)
     if (p == &regdummy)
 	return (NULL);
 
-    offset = NEXT(p);
+    offset = (int) NEXT(p);
     if (offset == 0)
 	return (NULL);
 
@@ -2633,10 +2636,7 @@ lregexec(regexp * prog,
     set_utf8flag(curbp);
     if (endoff >= startoff) {
 	if (lvalue(lp)) {
-	    int limit = llength(lp);
-	    if (limit > endoff)
-		limit = endoff;
-	    s = regexec(prog, lvalue(lp), &(lvalue(lp)[limit]),
+	    s = regexec(prog, lvalue(lp), &(lvalue(lp)[llength(lp)]),
 			startoff, endoff);
 	} else {
 	    /* the prog might be ^$, or something legal on a null string */

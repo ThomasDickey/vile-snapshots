@@ -1,7 +1,11 @@
 Changes for vile 9.8 (released ??? ??? ?? ????)
 
- 200905?? (s)
+ 20090603 (s)
 	> Tom Dickey:
+	+ check for majormodes which have a "before" property referring to each
+	  other, and exit from resulting infinite loop.
+	+ revert a performance fix from 9.7o in regexp.c to search-limits,
+	  which broke the report of "Only one occurrence of pattern".
 	+ fixes to make -v option for internal/external filters work from the
 	  beginning of loading keyword files.
 	+ add show-local-modes, as an easier-to-remember variation for the

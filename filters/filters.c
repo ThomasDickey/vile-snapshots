@@ -1,7 +1,7 @@
 /*
  * Common utility functions for vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.141 2009/05/29 20:25:36 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.142 2009/06/02 21:22:16 tom Exp $
  *
  */
 
@@ -161,7 +161,7 @@ init_data(KEYWORD * data,
     data->kw_size = strlen(data->kw_name);
     data->kw_attr = strmalloc(attribute);
     data->kw_flag = (flag != 0) ? strmalloc(flag) : 0;
-    data->kw_type = classflag;
+    data->kw_type = (unsigned short) classflag;
     data->kw_used = 2;
 }
 
@@ -263,11 +263,11 @@ ExecDefault(char *param)
     if (!*param)
 	param = NAME_KEYWORD;
     if (is_class(param)) {
-	*s = save;
+	*s = (char) save;
 	flt_init_attr(param);
 	VERBOSE(1, ("set default_attr '%s' %p\n", default_attr, default_attr));
     } else {
-	*s = save;
+	*s = (char) save;
 	VERBOSE(1, ("not a class:%s", param));
     }
 }
@@ -481,7 +481,7 @@ ParseDirective(char *line)
 
     if (*(line = skip_blanks(line)) == meta_ch) {
 	line = skip_blanks(line + 1);
-	if ((len = (skip_ident(line) - line)) != 0) {
+	if ((len = (unsigned) (skip_ident(line) - line)) != 0) {
 	    for (n = 0; n < sizeof(table) / sizeof(table[0]); n++) {
 		if (!strncmp(line, table[n].name, len)) {
 		    (*table[n].func) (skip_blanks(line + len));
@@ -558,10 +558,10 @@ flt_alloc(void *ptr, unsigned need, unsigned *have, unsigned size)
 void
 flt_bfr_append(char *text, int length)
 {
-    flt_bfr_text = do_alloc(flt_bfr_text, flt_bfr_used + length, &flt_bfr_size);
+    flt_bfr_text = do_alloc(flt_bfr_text, flt_bfr_used + (unsigned) length, &flt_bfr_size);
     if (flt_bfr_text != 0) {
-	strncpy(flt_bfr_text + flt_bfr_used, text, length);
-	flt_bfr_used += length;
+	strncpy(flt_bfr_text + flt_bfr_used, text, (unsigned) length);
+	flt_bfr_used += (unsigned) length;
     } else {
 	CannotAllocate("flt_bfr_append");
     }
@@ -603,7 +603,7 @@ void
 flt_bfr_finish(void)
 {
     if (flt_bfr_used) {
-	flt_puts(flt_bfr_text, flt_bfr_used,
+	flt_puts(flt_bfr_text, (int) flt_bfr_used,
 		 (flt_bfr_attr
 		  ? flt_bfr_attr
 		  : ""));
@@ -615,7 +615,7 @@ flt_bfr_finish(void)
 int
 flt_bfr_length(void)
 {
-    return flt_bfr_used;
+    return (int) flt_bfr_used;
 }
 
 static CLASS *
@@ -1058,7 +1058,7 @@ insert_keyword2(const char *ident, const char *attribute, int classflag, char *f
 		*mark = 0;
 		insert_keyword2(temp, attribute, classflag, flag);
 		if ((mark[0] = mark[1]) != 0) {
-		    *(++mark) = zero_or_more;
+		    *(++mark) = (char) zero_or_more;
 		}
 	    }
 	    free(temp);
@@ -1180,7 +1180,7 @@ lowercase_of(const char *text)
     if ((name = do_alloc(name, strlen(text), &used)) != 0) {
 	for (n = 0; text[n] != 0; n++) {
 	    if (isalpha(CharOf(text[n])) && isupper(CharOf(text[n])))
-		name[n] = tolower(CharOf(text[n]));
+		name[n] = (char) tolower(CharOf(text[n]));
 	    else
 		name[n] = text[n];
 	}
@@ -1292,7 +1292,7 @@ readline(FILE *fp, char **ptr, unsigned *len)
 	    if (buf == 0)
 		return 0;
 	}
-	buf[used++] = ch;
+	buf[used++] = (char) ch;
 	if (ch == '\n')
 	    break;
     }

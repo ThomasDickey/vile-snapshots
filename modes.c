@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.400 2009/05/29 20:10:42 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.403 2009/06/04 00:00:21 tom Exp $
  *
  */
 
@@ -47,6 +47,9 @@ static char **my_varmodes;	/* list for modename-completion */
 #endif
 
 #if OPT_MAJORMODE
+
+#define mmShortName(n) my_majormodes[majormodes_order[n]].shortname
+
 typedef struct {
     char *shortname;		/* copy of MAJORMODE.shortname */
     char *longname;		/* copy of MAJORMODE.longname */
@@ -121,7 +124,7 @@ choice_to_code(FSM_BLIST * data, const char *name, size_t len)
 	temp[len] = EOS;
 	(void) mklower(temp);
 
-	if ((i = blist_pmatch(&(data->blist), temp, len)) >= 0) {
+	if ((i = blist_pmatch(&(data->blist), temp, (int) len)) >= 0) {
 	    code = choices[i].choice_code;
 	}
     }
@@ -2827,7 +2830,7 @@ list_of_modes(void)
 	size_t n;
 
 	beginDisplay();
-	n = need_my_varmodes(count_modes()) + 1;
+	n = need_my_varmodes((size_t) count_modes()) + 1;
 	my_varmodes = typeallocn(char *, n);
 	size_my_varmodes = n;
 	endofDisplay();
@@ -2939,7 +2942,7 @@ count_majormodes(void)
     unsigned n = 0;
 
     if (my_majormodes != 0) {
-	n = blist_count(&majormode_blist);
+	n = (unsigned) blist_count(&majormode_blist);
     }
     return n;
 }
@@ -2996,7 +2999,7 @@ get_mm_string(int n, int m)
     if (my_majormodes[n].data != 0) {
 	struct VAL *mv = my_majormodes[n].data->mm.mv;
 
-	if (mv[m].vp->p != 0) {
+	if (!isEmpty(mv[m].vp->p)) {
 	    TRACE(("get_mm_string(%s) %s\n",
 		   my_majormodes[n].shortname,
 		   mv[m].vp->p));
@@ -3005,6 +3008,8 @@ get_mm_string(int n, int m)
     }
     return result;
 }
+
+#define GetMmString(n, mode) get_mm_string(majormodes_order[n], mode)
 
 static int
 find_majormode_order(int mm)
@@ -3035,7 +3040,7 @@ show_majormode_order(char *tag)
 	tb_sappend0(&order, tag);
 	for (n = 0; majormodes_order[n] >= 0; n++) {
 	    tb_sappend0(&order, " ");
-	    tb_sappend0(&order, my_majormodes[majormodes_order[n]].shortname);
+	    tb_sappend0(&order, mmShortName(n));
 	}
 	TRACE(("%s\n", tb_values(order)));
     }
@@ -3056,7 +3061,7 @@ put_majormode_before(unsigned j, const char *s)
     if (majormodes_order != 0) {
 	TRACE(("put_majormode_before(%d:%s, %s)\n",
 	       j,
-	       my_majormodes[majormodes_order[j]].shortname,
+	       mmShortName(j),
 	       s));
 
 	for (k = 0; (kk = majormodes_order[k]) >= 0; k++) {
@@ -3079,13 +3084,13 @@ put_majormode_before(unsigned j, const char *s)
 	    show_majormode_order("after:");
 	} else if (found < 0) {
 	    TPRINTF(("cannot put %s before %s (not found)\n",
-		     my_majormodes[majormodes_order[j]].shortname,
+		     mmShortName(j),
 		     s));
 	    TRACE(("...did not find %s\n", s));
 	}
 	TRACE(("->%d\n", j));
     }
-    return j;
+    return (int) j;
 }
 
 static int
@@ -3100,7 +3105,7 @@ put_majormode_after(unsigned j, char *s)
     if (majormodes_order != 0) {
 	TRACE(("put_majormode_after(%d:%s, %s)\n",
 	       j,
-	       my_majormodes[majormodes_order[j]].shortname,
+	       mmShortName(j),
 	       s));
 
 	for (k = (int) count_majormodes() - 1;
@@ -3125,13 +3130,44 @@ put_majormode_after(unsigned j, char *s)
 	    show_majormode_order("after:");
 	} else if (found < 0) {
 	    TPRINTF(("cannot put %s after %s (not found)\n",
-		     my_majormodes[majormodes_order[j]].shortname,
+		     mmShortName(j),
 		     s));
 	    TRACE(("...did not find %s\n", s));
 	}
 	TRACE(("->%d\n", j));
     }
-    return j;
+    return (int) j;
+}
+
+/*
+ * Check for infinite loops which could occur if two majormodes listed each
+ * other as "before".
+ */
+static int
+avoid_loop_before(int from, int to)
+{
+    char *first = mmShortName(from);
+    char *find;
+    char *test;
+    int j, k;
+    int mode = MVAL_BEFORE;
+
+    for (j = from; j <= to; ++j) {
+	find = GetMmString(j, mode);
+	if (find != 0) {
+	    for (k = j + 1; k <= to; ++k) {
+		test = GetMmString(k, mode);
+		if (test != 0
+		    && !strcmp(test, first)) {
+		    TPRINTF(("Avoid order-loop between \"%s\" and \"%s\"\n",
+			     first, mmShortName(k)));
+		    from = k + 1;
+		    j = from;
+		}
+	    }
+	}
+    }
+    return from;
 }
 
 /*
@@ -3167,25 +3203,23 @@ compute_majormodes_order(void)
 	if (majormodes_order != 0) {
 	    /* set the default order */
 	    for (j = 0; j < need; j++) {
-		majormodes_order[j] = j;
+		majormodes_order[j] = (int) j;
 	    }
 	    majormodes_order[need] = -1;
 
 	    /* handle special cases */
 	    for (j = 0; j < need; j++) {
-		jj = majormodes_order[j];
-		if ((s = get_mm_string(jj, MVAL_BEFORE)) != 0
-		    && *s != EOS) {
+		if ((s = GetMmString(j, MVAL_BEFORE)) != 0) {
 		    jj = put_majormode_before(j, s);
 		    TRACE(("JUMP %d to %d\n", j, jj));
+		    if (jj < (int) j)
+			jj = avoid_loop_before(jj, (int) j);
 		    if (jj < (int) j)
 			j = (UINT) jj;
 		}
 	    }
 	    for (j = 0; j < need; j++) {
-		jj = majormodes_order[j];
-		if ((s = get_mm_string(jj, MVAL_AFTER)) != 0
-		    && *s != EOS) {
+		if ((s = GetMmString(j, MVAL_AFTER)) != 0) {
 		    jj = put_majormode_after(j, s);
 		    TRACE(("JUMP %d to %d\n", j, jj));
 		    if (jj < (int) j)
@@ -3838,14 +3872,14 @@ free_majormode(const char *name)
 	    }
 	}
 	if (my_mode_list != all_modes && !init) {
-	    j = count_modes();
+	    j = (size_t) count_modes();
 	    j = remove_per_major(j, majorname(temp, name, FALSE));
 	    j = remove_per_major(j, majorname(temp, name, TRUE));
 	    for (n = 0; n < MAX_M_VALUES; n++) {
 		j = remove_per_major(j,
-				     per_major(temp, name, n, TRUE));
+				     per_major(temp, name, (size_t) n, TRUE));
 		j = remove_per_major(j,
-				     per_major(temp, name, n, FALSE));
+				     per_major(temp, name, (size_t) n, FALSE));
 	    }
 	}
 	if (major_valnames != 0) {
@@ -3886,7 +3920,7 @@ extend_mode_list(size_t increment)
 
     beginDisplay();
 
-    j = count_modes();
+    j = (size_t) count_modes();
     k = increment + j + 1;
 
     TRACE(("extend_mode_list from %d by %d\n", (int) j, (int) increment));
@@ -4248,8 +4282,8 @@ alloc_mode(const char *shortname, int predef)
 	j = insert_per_major(j, majorname(longname, shortname, FALSE));
 	j = insert_per_major(j, majorname(longname, shortname, TRUE));
 	for (n = 0; n < MAX_M_VALUES; n++) {
-	    j = insert_per_major(j, per_major(temp, shortname, n, TRUE));
-	    j = insert_per_major(j, per_major(temp, shortname, n, FALSE));
+	    j = insert_per_major(j, per_major(temp, shortname, (size_t) n, TRUE));
+	    j = insert_per_major(j, per_major(temp, shortname, (size_t) n, FALSE));
 	}
     }
 
@@ -5296,7 +5330,7 @@ mode_leaks(void)
 	&& my_mode_list != 0) {
 	int j = count_modes();
 	while (j > 0)
-	    remove_per_major(j--, my_mode_list[0]);
+	    remove_per_major((size_t) j--, my_mode_list[0]);
 	FreeAndNull(my_mode_list);
     }
     FreeAndNull(major_valnames);
