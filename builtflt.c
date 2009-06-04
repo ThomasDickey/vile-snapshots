@@ -1,7 +1,7 @@
 /*
  * Main program and I/O for external vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/RCS/builtflt.c,v 1.78 2009/05/29 20:25:01 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/builtflt.c,v 1.79 2009/06/02 20:42:33 tom Exp $
  *
  */
 
@@ -65,7 +65,7 @@ parse_filtername(const char *major_name, const char **params)
 		if (!strncmp(next, suffix, sizeof(suffix) - 1)
 		    && (isSpace(next[sizeof(suffix) - 1])
 			|| (next[sizeof(suffix) - 1] == EOS))) {
-		    size_t len = next - base;
+		    size_t len = (size_t) (next - base);
 		    for (n = 0; builtflt[n] != 0; n++) {
 			char *name = builtflt[n]->filter_name;
 			if (strlen(name) == len
@@ -288,11 +288,11 @@ flt_gets(char **ptr, unsigned *len)
 
     if (need >= 0
 	&& tb_init(&gets_data, 0) != 0
-	&& tb_bappend(&gets_data, lvalue(mark_in.l), need) != 0
+	&& tb_bappend(&gets_data, lvalue(mark_in.l), (size_t) need) != 0
 	&& tb_append(&gets_data, use_record_sep(curbp)) != 0
 	&& tb_append(&gets_data, EOS) != 0) {
 	*ptr = tb_values(gets_data);
-	*len = need + len_record_sep(curbp);
+	*len = (unsigned) (need + len_record_sep(curbp));
 
 	TRACE(("flt_gets %6d:%.*s\n",
 	       line_no(curbp, mark_in.l),
@@ -435,7 +435,7 @@ int
 flt_input(char *buffer, int max_size)
 {
     const char *separator = "\n";
-    int need = strlen(separator);
+    int need = (int) strlen(separator);
     int used = 0;
 
     if (need_separator) {
@@ -446,7 +446,8 @@ flt_input(char *buffer, int max_size)
     if (!is_header_line(mark_in, curbp)) {
 	while (used < max_size) {
 	    if (mark_in.o < llength(mark_in.l)) {
-		buffer[used++] = fixup_cr_lf(lgetc(mark_in.l, mark_in.o++));
+		buffer[used++] = fixup_cr_lf((char) lgetc(mark_in.l,
+							  mark_in.o++));
 	    } else {
 		mark_in.l = lforw(mark_in.l);
 		mark_in.o = w_left_margin(curwp);
@@ -505,7 +506,7 @@ flt_puts(const char *string, int length, const char *marker)
 	vl_strncpy(bfr2, marker, sizeof(bfr1) - 10);
 	sprintf(bfr1, "%c%d%s:", CTL_A, length, bfr2);
 	last = bfr1 + strlen(bfr1);
-	decode_attribute(bfr1, last - bfr1, 0, &count);
+	decode_attribute(bfr1, (size_t) (last - bfr1), 0, &count);
 
 	flt_echo(string, length);
 	save_mark(FALSE);

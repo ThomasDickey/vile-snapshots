@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/xtermkeys.h,v 1.8 2008/11/25 23:43:42 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/xtermkeys.h,v 1.9 2009/06/02 20:48:59 tom Exp $
  *
  * Function-key definitions and modifiers used for xterm.  This is a header
  * file to simplify sharing between the termcap/curses drivers.
@@ -110,9 +110,9 @@ add_fkey(const char *string, int length, int code, int modify)
 		    sprintf(buffer, "%.2s1;%d%s",
 			    string, table[n].code, string + 2);
 		if (modify < 0)
-		    delfromsysmap(buffer, strlen(buffer));
+		    delfromsysmap(buffer, (int) strlen(buffer));
 		else
-		    addtosysmap(buffer, strlen(buffer), code | table[n].mask);
+		    addtosysmap(buffer, (int) strlen(buffer), code | table[n].mask);
 	    }
 	}
     } else {
@@ -159,7 +159,7 @@ tcap_init_fkeys(void)
 	    for (j = 'A'; j <= 'D'; j++) {
 		char temp[80];
 		lsprintf(temp, "%s%c", fallback_arrows[i], j);
-		add_fkey(temp, strlen(temp), SPEC | j, pass);
+		add_fkey(temp, (int) strlen(temp), (int) (SPEC | j), pass);
 	    }
 	}
 
@@ -187,7 +187,7 @@ tcap_init_fkeys(void)
 		if (strcmp(seq, "\177") == 0)
 		    continue;
 #endif
-		add_fkey(seq, len = strlen(seq), keyseqs[i].code, pass);
+		add_fkey(seq, len = (int) strlen(seq), keyseqs[i].code, pass);
 		/*
 		 * Termcap represents nulls as octal 200, which is ambiguous
 		 * (ugh).  To avoid losing escape sequences that may contain
