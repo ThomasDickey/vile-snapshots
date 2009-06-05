@@ -3,7 +3,7 @@
 
 %{
 /*
- * $Id: scm-filt.l,v 1.5 2009/04/29 23:23:32 Brendan.MacDonell Exp $
+ * $Id: scm-filt.l,v 1.6 2009/06/04 22:53:35 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of scheme code.
  *
@@ -63,8 +63,8 @@ FLOAT		({SIGN}?{DECIMAL}*{POINT}{DECIMAL}+{EXPONENT}?)|({SIGN}?{DECIMAL}+({POINT
 NUMBER		{INTEGER}|{RATIO}|{FLOAT}
 
 COMMENT		;[^\r\n]*
-SPACING		[[:space:]\",'`\(\)\[\]|#]
-IDENT		[^[:space:]\",'`\(\)\[\]|#]+
+SPACING		[[:space:]\"\,'`\(\)\[\]|#]
+IDENT		[^[:space:]\"\,'`\(\)\[\]|#]+
 
 LPAREN		[\(\[]
 RPAREN		[\)\]]
@@ -114,7 +114,7 @@ RPAREN		[\)\]]
 			  flt_puts(yytext+1+skip, yyleng-1-skip, ci_keyword_attr(yytext+1+skip));
 			}
 
-<NORMAL>['`],@?	{
+<NORMAL>['`]\,@?	{
 			  yyless(1);
 			  if (FLTSTACK_OK && FLTSTACK_THIS.quoted == 0)
 			    S_QUOTED((yytext[0] == '`') ? 2 : 1);
@@ -123,7 +123,7 @@ RPAREN		[\)\]]
 
 <NORMAL>['`]		{ WriteToken(Literal_attr); }
 
-<NORMAL>,@?[[:space:]]*{LPAREN}	{
+<NORMAL>\,@?[[:space:]]*{LPAREN}	{
 			  int skip = (yytext[1] == '@' ? 2 : 1);
 			  int save = (next_quoted ? G_QUOTED() :
 			             (FLTSTACK_OK ? FLTSTACK_THIS.quoted : 0));
@@ -149,7 +149,7 @@ RPAREN		[\)\]]
 			  next_quoted = 0;
 			}
 
-<NORMAL>,@?		{
+<NORMAL>\,@?		{
 			  WriteToken(((next_quoted && G_QUOTED()) ||
 			             (FLTSTACK_OK && FLTSTACK_THIS.quoted)) ?
 			             Ident_attr : Error_attr);

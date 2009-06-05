@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/regexp.c,v 1.195 2009/06/02 21:01:21 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/regexp.c,v 1.196 2009/06/05 00:12:23 tom Exp $
  *
  * Copyright 2005-2008,2009 Thomas E. Dickey and Paul G. Fox
  *
@@ -424,10 +424,8 @@ typedef enum {
 #define is_CLASS(name,ptr) reg_ctype_ ## name(ptr)
 
 #if USE_WIDE_CTYPE
-#define sys_WINT_T	wint_t
 #define sys_CTYPE_SIZE	((unsigned) 0xffff)
 #else
-#define sys_WINT_T	int
 #define sys_CTYPE_SIZE	((unsigned) 0xff)
 #endif
 

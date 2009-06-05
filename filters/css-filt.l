@@ -1,9 +1,12 @@
 %pointer
 %x CSS_CODE CSS_NOTE
 
+%e 2000
+%k 2000
+
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/css-filt.l,v 1.21 2009/05/12 22:47:25 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/css-filt.l,v 1.23 2009/06/04 23:16:55 tom Exp $
  *
  * Filter to add vile "attribution" sequences to Cascading Style Sheets.
  *
