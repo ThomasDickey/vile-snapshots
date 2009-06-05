@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Header: /users/source/archives/vile.vcs/filters/RCS/genmake.sh,v 1.7 2009/05/23 14:40:54 tom Exp $
+# $Header: /users/source/archives/vile.vcs/filters/RCS/genmake.sh,v 1.8 2009/06/04 23:04:01 tom Exp $
 # Scan the source-files in the "filters" directory to obtain the names which
 # are used for the default symbol table for each filter.  Update genmake.mak
 # if the lists differ.
@@ -112,7 +112,7 @@ fi
 umask $oldmask
 
 if test -f $TARGET ; then
-	diff -u $TEMP $DATA >$SORT
+	diff $TEMP $DATA >$SORT
 	if test -s $SORT ; then
 		cat $SORT
 		chmod u+w $TARGET

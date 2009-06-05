@@ -2,6 +2,7 @@ Changes for vile 9.8 (released ??? ??? ?? ????)
 
  20090603 (s)
 	> Tom Dickey:
+	+ fixes for building filters with lex (not flex).
 	+ check for majormodes which have a "before" property referring to each
 	  other, and exit from resulting infinite loop.
 	+ revert a performance fix from 9.7o in regexp.c to search-limits,

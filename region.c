@@ -3,7 +3,7 @@
  * and mark.  Some functions are commands.  Some functions are just for
  * internal use.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/region.c,v 1.153 2009/05/17 23:48:39 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/region.c,v 1.154 2009/06/05 00:13:20 tom Exp $
  *
  */
 
@@ -796,8 +796,8 @@ _to_lower(int c)
 
 #if OPT_MULTIBYTE
     if (b_is_utfXX(curbp)) {
-	if (sys_isupper((wint_t) c)) {
-	    result = (int) sys_tolower((wint_t) c);
+	if (sys_isupper((sys_WINT_T) c)) {
+	    result = (int) sys_tolower((sys_WINT_T) c);
 	}
     } else
 #endif
@@ -813,8 +813,8 @@ _to_upper(int c)
 
 #if OPT_MULTIBYTE
     if (b_is_utfXX(curbp)) {
-	if (sys_islower((wint_t) c)) {
-	    result = (int) sys_toupper((wint_t) c);
+	if (sys_islower((sys_WINT_T) c)) {
+	    result = (int) sys_toupper((sys_WINT_T) c);
 	}
     } else
 #endif
@@ -830,11 +830,11 @@ _to_caseflip(int c)
 
 #if OPT_MULTIBYTE
     if (b_is_utfXX(curbp)) {
-	if (sys_isalpha((wint_t) c)) {
-	    if (sys_isupper((wint_t) c))
-		result = (int) sys_tolower((wint_t) c);
+	if (sys_isalpha((sys_WINT_T) c)) {
+	    if (sys_isupper((sys_WINT_T) c))
+		result = (int) sys_tolower((sys_WINT_T) c);
 	    else
-		result = (int) sys_toupper((wint_t) c);
+		result = (int) sys_toupper((sys_WINT_T) c);
 	}
     } else
 #endif

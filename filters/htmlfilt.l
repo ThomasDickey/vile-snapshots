@@ -1,10 +1,14 @@
 %pointer
 %x HTMLNOTE HTMLCODE HTMLINCL HTMLQUO1 HTMLQUO2 AT_CMDS JS_NOTE JS_CODE ANY_MODE ASP_CODE ASP_CMT0 JSP_CODE JSP_CMT0 JSP_CMT1 CSS_CODE CSS_NOTE
 %o 10000
+%e 2000
+%a 4000
+%p 3000
+%k 2000
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/htmlfilt.l,v 1.96 2009/05/17 20:20:56 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/htmlfilt.l,v 1.99 2009/06/05 00:04:02 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of HTML input
  * text.
