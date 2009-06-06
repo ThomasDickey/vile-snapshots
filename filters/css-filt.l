@@ -6,7 +6,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/css-filt.l,v 1.23 2009/06/04 23:16:55 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/css-filt.l,v 1.25 2009/06/05 20:33:35 tom Exp $
  *
  * Filter to add vile "attribution" sequences to Cascading Style Sheets.
  *
@@ -18,12 +18,14 @@
 
 DefineFilter("css");
 
+static const char *css_keyword_attr(char *);
 static void css_hash(char *, int);
 static void css_number_units(char *, int);
 static void css_string_escapes(char *, int);
 
 static char *Comment_attr;
 static char *Error_attr;
+static char *Ident_attr;
 static char *Ident2_attr;
 static char *Number_attr;
 static char *String_attr;
@@ -34,7 +36,6 @@ static int css_state;
 
 NL		\n|\r\n|\r|\f
 BLANK		[[:blank:]]*
-NONASCII	[^\001-\126]
 
 CSS_UNICODE	\\([[:xdigit:]]{1,6})
 CSS_ESCAPE	{CSS_UNICODE}|(\\[^\n\r\f[:xdigit:]])
@@ -47,8 +48,8 @@ CSS_INVALID1	\'({CSS_ESCAPE}|\\{NL}|[^\n\r\f\\'])*
 CSS_INVALID2	\"({CSS_ESCAPE}|\\{NL}|[^\n\r\f\\"])*
 CSS_INVALID	({CSS_INVALID1}|{CSS_INVALID2})
 
-CSS_NMSTART	[[:alpha:]_]|{NONASCII}|{CSS_ESCAPE}
-CSS_NMCHAR	[[:alnum:]_-]|{NONASCII}|{CSS_ESCAPE}
+CSS_NMSTART	[[:alpha:]_]|{CSS_ESCAPE}
+CSS_NMCHAR	[[:alnum:]_-]|{CSS_ESCAPE}
 CSS_IDENT	[-]?{CSS_NMSTART}{CSS_NMCHAR}*
 CSS_NAME	{CSS_NMCHAR}+
 
@@ -66,8 +67,8 @@ URL		[[:alpha:]]+"://"[[:alnum:]#%&+\,.\/?;@_=~-]+
 
 <CSS_CODE>"!"{CSS_IDENT}	|
 <CSS_CODE>@{CSS_IDENT}	|
-<CSS_CODE>{CSS_IDENT}	{ WriteToken(ci_keyword_attr(yytext)); }
-<CSS_CODE>[;:(){}\[\]]	{ ECHO; css_state = yytext[0]; }
+<CSS_CODE>{CSS_IDENT}	{ WriteToken(css_keyword_attr(yytext)); }
+<CSS_CODE>[,;:(){}\[\]]	{ ECHO; css_state = yytext[0]; }
 
 <CSS_CODE>"/*"		{ WriteToken(Comment_attr); BEGIN(CSS_NOTE); }
 <CSS_NOTE>[^*]*		{ WriteToken(Comment_attr); }
@@ -84,6 +85,15 @@ URL		[[:alpha:]]+"://"[[:alnum:]#%&+\,.\/?;@_=~-]+
 
 %%
 
+static const char *
+css_keyword_attr(char *text)
+{
+    const char *attr = ci_keyword_attr(text);
+    if (attr == 0 || *attr == '\0')
+	attr = Ident_attr;
+    return attr;
+}
+
 static void
 css_hash(char *text, int length)
 {
@@ -91,7 +101,7 @@ css_hash(char *text, int length)
 	char *attr = (length == 4 || length == 7) ? Number_attr : Error_attr;
 	flt_puts(text, length, attr);
     } else {
-	flt_puts(text, length, ci_keyword_attr(text + 1));
+	flt_puts(text, length, css_keyword_attr(text + 1));
     }
 }
 
@@ -175,6 +185,7 @@ do_filter(FILE *inputs)
 
     Comment_attr = class_attr(NAME_COMMENT);
     Error_attr   = class_attr(NAME_ERROR);
+    Ident_attr   = class_attr(NAME_IDENT);
     Ident2_attr  = class_attr(NAME_IDENT2);
     Number_attr  = class_attr(NAME_NUMBER);
     String_attr  = class_attr(NAME_LITERAL);

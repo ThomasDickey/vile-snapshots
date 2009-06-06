@@ -1,7 +1,11 @@
 Changes for vile 9.8 (released ??? ??? ?? ????)
 
- 20090603 (s)
+ 20090605 (s)
 	> Tom Dickey:
+	+ improve css syntax filter (and matching filter embedded in html
+	  syntax filter):
+	  + recognize comma for state transitions
+	  + color non-keyword identifiers with Ident class.
 	+ fixes for building filters with lex (not flex).
 	+ check for majormodes which have a "before" property referring to each
 	  other, and exit from resulting infinite loop.
