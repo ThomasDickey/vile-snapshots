@@ -3,7 +3,7 @@
 ------------------------
 vile bug/enhancement/wish list (mostly wishes ;-)
 ------------------------
-$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.415 2009/03/16 00:23:44 tom Exp $
+$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.416 2009/06/05 18:53:45 tom Exp $
 ----------------------
 	(E means enhancement, L,M,H are low, medium, high priority)
 
@@ -1643,3 +1643,10 @@ then fills in the complete menu - after the screen is first displayed.
 It does this when it sees that the menu file contains directive lines, e.g.,
 "~with".  If no directives are found, xvile assumes the file is (as originally)
 unscripted, and will initialize the menus before the screen is displayed.
+
+-- 09-06-05 (tom)
+The HTML syntax filter uses more start conditions than are supported in some
+very old lex programs such as that bundled with HPUX.  That refers to the list
+on lines beginning with "%x", which is not adjustable in most lex
+implementations (though the HPUX lex program suggests using the "-Xs" option
+without actually accepting it).  Use flex for those cases.

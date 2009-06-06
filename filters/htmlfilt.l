@@ -8,7 +8,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/htmlfilt.l,v 1.99 2009/06/05 00:04:02 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/htmlfilt.l,v 1.101 2009/06/05 20:35:58 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of HTML input
  * text.
@@ -141,7 +141,6 @@ static void using_language(void);
 
 NL		\n|\r\n|\r|\f
 SPACE		[ \t]
-NONASCII	[^\001-\126]
 
 INTEGER		[-+]?([[:digit:]]+)
 REAL		[-+]?([[:digit:]]*\.[[:digit:]]+)([eE][+-]?[[:digit:]]+)?
@@ -162,8 +161,8 @@ CHR_REF		&({IDENT}|{HEXNUM});
 CSS_UNICODE	\\([[:xdigit:]]{1,6})
 CSS_ESCAPE	{CSS_UNICODE}|(\\[^\n\r\f[:xdigit:]])
 
-CSS_NMSTART	[[:alpha:]_]|{NONASCII}|{CSS_ESCAPE}
-CSS_NMCHAR	[[:alnum:]_-]|{NONASCII}|{CSS_ESCAPE}
+CSS_NMSTART	[[:alpha:]_]|{CSS_ESCAPE}
+CSS_NMCHAR	[[:alnum:]_-]|{CSS_ESCAPE}
 CSS_IDENT	[-]?[[:alpha:]_-][[:alnum:]_-]*
 CSS_NAME	{CSS_NMCHAR}+
 
@@ -328,7 +327,7 @@ CSS_INVALID	({CSS_INVALID1}|{CSS_INVALID2})
 <HTMLCODE>{INTEGER}	|
 <HTMLCODE>{HEXNUM}	{ WriteToken(Number_attr); }
 
-<CSS_CODE>[;:(){}\[\]]	{ ECHO; css_state = yytext[0]; }
+<CSS_CODE>[,;:(){}\[\]]	{ ECHO; css_state = yytext[0]; }
 <CSS_CODE>@{CSS_IDENT}	|
 <CSS_CODE>{CSS_IDENT}	{ WriteToken(ci_keyword_attr(yytext)); }
 <CSS_CODE>{INTEGER}{CSS_UNITS}	{ css_units(yytext, yyleng); }
