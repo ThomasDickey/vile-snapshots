@@ -1,5 +1,13 @@
 Changes for vile 9.8 (released ??? ??? ?? ????)
 
+ 200906?? (t)
+	> Joachim Schimpf
+	+ fix typo in STARTQUERY pattern in ecl-filt.l (ECLiPSe/Prolog)
+	+ improve ecl-filt.l parsing of based-numbers.
+	> Tom Dickey:
+	+ various improvements to ecl-filt.l, to highlight strings and numbers.
+	+ add prolog majormode.
+
  20090605 (s)
 	> Tom Dickey:
 	+ improve css syntax filter (and matching filter embedded in html

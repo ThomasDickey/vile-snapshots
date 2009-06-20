@@ -1,4 +1,4 @@
-; $Id: filters.rc,v 1.228 2009/05/26 22:01:58 tom Exp $
+; $Id: filters.rc,v 1.229 2009/06/20 12:10:32 tom Exp $
 ; majormodes in this file are ordered alphabetically for convenience - the
 ; precedence used by vile is strictly alphabetic, counting case.
 
@@ -105,6 +105,11 @@ define-mode objc
 define-mode pc
 ~with define-submode pc
 	filtername	'vile-tc-filt -k pc'
+~endwith
+
+define-mode prolog
+~with define-submode prolog
+	filtername	'vile-ecl-filt -k prolog'
 ~endwith
 
 define-mode rb

@@ -1,4 +1,4 @@
-MANIFEST for vile, version v9_7s
+MANIFEST for vile, version v9_7s2
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 CHANGES                         Change-log for VILE
@@ -293,6 +293,7 @@ filters/php.key                 keywords for phpmode
 filters/pl-filt.c               syntax highlighter for perl
 filters/pot-filt.l              syntax filter for gettext ".po" files
 filters/pot.key                 keywords for pot (gettext) mode
+filters/prolog.key              keywords for prolog
 filters/ps-filt.l               syntax filter for PostScript files
 filters/ps.key                  keywords for PostScript syntax filter
 filters/py-filt.l               syntax filter for Python
