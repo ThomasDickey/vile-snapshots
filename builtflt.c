@@ -1,7 +1,7 @@
 /*
  * Main program and I/O for external vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/RCS/builtflt.c,v 1.79 2009/06/02 20:42:33 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/builtflt.c,v 1.80 2009/06/28 22:45:40 tom Exp $
  *
  */
 
@@ -584,13 +584,13 @@ flt_start(char *name)
 
 	flt_initialize(current_filter->filter_name);
 
+	current_filter->InitFilter(1);
+
 	/* setup colors for the filter's default-table */
 	flt_read_keywords(MY_NAME);
 	if (strcmp(MY_NAME, current_filter->filter_name)) {
 	    flt_read_keywords(current_filter->filter_name);
 	}
-
-	current_filter->InitFilter(1);
 
 	nextarg = ProcessArgs(1);
 	if (nextarg == 0) {
