@@ -1,10 +1,12 @@
 Changes for vile 9.8 (released ??? ??? ?? ????)
 
- 200906?? (t)
+ 20090628 (t)
 	> Joachim Schimpf
 	+ fix typo in STARTQUERY pattern in ecl-filt.l (ECLiPSe/Prolog)
 	+ improve ecl-filt.l parsing of based-numbers.
 	> Tom Dickey:
+	+ correct initialization ordering in filterio.c and builtflt.c, which
+	  broke m4- and cweb-filters in 9.7r.
 	+ various improvements to ecl-filt.l, to highlight strings and numbers.
 	+ add prolog majormode.
 

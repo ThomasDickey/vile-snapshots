@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/m4-filt.c,v 1.31 2009/04/25 16:11:49 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/m4-filt.c,v 1.32 2009/06/28 22:47:39 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of m4
  * input text.  This is in C rather than LEX because M4's quoting delimiters
@@ -8,7 +8,17 @@
 
 #include <filters.h>
 
+#ifdef DEBUG
+DefineOptFilter("m4", "d");
+#else
 DefineFilter("m4");
+#endif
+
+#ifdef DEBUG
+#define DPRINTF(params) if(FltOptions('d'))printf params
+#else
+#define DPRINTF(params)		/*nothing */
+#endif
 
 #define NAME_L_QUOTE "LeftQuote"
 #define NAME_R_QUOTE "RightQuote"
@@ -52,6 +62,27 @@ typedef struct {
 static Quote leftquote, rightquote;
 static Quote leftcmt, rightcmt;
 
+#ifdef DEBUG
+static const char *
+whichQuote(Quote *p)
+{
+    const char *result;
+
+    if (p == &leftquote)
+	result = "leftquote";
+    else if (p == &rightquote)
+	result = "rightquote";
+    else if (p == &leftcmt)
+	result = "leftcmt";
+    else if (p == &rightcmt)
+	result = "rightcmt";
+    else
+	result = "?";
+
+    return result;
+}
+#endif
+
 static char *
 SkipBlanks(char *src)
 {
@@ -75,6 +106,8 @@ free_quote(Quote * q)
 static void
 new_quote(Quote * q, const char *s)
 {
+    DPRINTF(("new_quote(%s=\"%s\")\n", whichQuote(q), s));
+
     q->used = strlen(s);
     q->text = do_alloc(q->text, q->used, &(q->have));
     if (q->text != 0)

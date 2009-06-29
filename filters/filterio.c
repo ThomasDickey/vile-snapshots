@@ -1,7 +1,7 @@
 /*
  * Main program and I/O for external vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filterio.c,v 1.53 2009/05/29 20:21:02 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filterio.c,v 1.54 2009/06/28 21:58:33 tom Exp $
  *
  */
 
@@ -426,12 +426,12 @@ main(int argc, char **argv)
 
     flt_initialize(filter_def.filter_name);
 
+    filter_def.InitFilter(1);
+
     flt_read_keywords(MY_NAME);
     if (strcmp(MY_NAME, filter_def.filter_name)) {
 	flt_read_keywords(filter_def.filter_name);
     }
-
-    filter_def.InitFilter(1);
 
     n = ProcessArgs(argc, argv, 1);
 
