@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Header: /users/source/archives/vile.vcs/filters/RCS/genmake.sh,v 1.8 2009/06/04 23:04:01 tom Exp $
+# $Header: /users/source/archives/vile.vcs/filters/RCS/genmake.sh,v 1.9 2009/07/03 23:20:59 tom Exp $
 # Scan the source-files in the "filters" directory to obtain the names which
 # are used for the default symbol table for each filter.  Update genmake.mak
 # if the lists differ.
@@ -31,9 +31,10 @@ oldmask=`umask`
 umask 077
 
 PID=$$
-DATA=${TMPDIR-.}/data.gen$PID
-TEMP=${TMPDIR-.}/temp.gen$PID
-SORT=${TMPDIR-.}/sort.gen$PID
+DATA=${TMPDIR-.}/data$PID.gen
+TEMP=${TMPDIR-.}/temp$PID.gen
+SORT=${TMPDIR-.}/sort$PID.gen
+DIFF=${TMPDIR-.}/diff$PID.gen
 fgrep 'DefineOptFilter("' $SOURCE/*.[cl] | \
 	sed	-e 's,^.*/,,' \
 		-e 's/",.*//' \
@@ -58,14 +59,16 @@ sed -e 's/@/$/g' >$DATA <<EOF
 
 EOF
 
-fgrep ' c ' $TEMP >$SORT
+fgrep ' c ' $TEMP | \
 while true
 do
 	read filter suffix filename
 	test -z "$filter" && break
+	test -z "$filename" && continue
 
 	TEXT="$filter	$filename"
-	case `echo $filename | sed -e 's/././g'` in #(vi
+	CASE=`echo $filename | sed -e 's/././g'`
+	case $CASE in #(vi
 	........) #(vi
 		;;
 	*)
@@ -74,18 +77,20 @@ do
 	esac
 
 	echo "$TEXT	$suffix" >>$DATA
-done < $SORT
+done
 
 echo >>$DATA
 
-fgrep ' l ' $TEMP >$SORT
+fgrep ' l ' $TEMP | \
 while true
 do
 	read filter suffix filename
 	test -z "$filter" && break
+	test -z "$filename" && continue
 
 	TEXT="$filter	$filename"
-	case `echo $filename | sed -e 's/././g'` in #(vi
+	CASE=`echo $filename | sed -e 's/././g'`
+	case $CASE in #(vi
 	........) #(vi
 		;;
 	*)
@@ -103,7 +108,7 @@ do
 	esac
 
 	echo "$TEXT	$suffix$FLEX" >>$DATA
-done < $SORT
+done
 
 if test -f $TARGET ; then
 	sed -e 's/: .*\$/$/' $TARGET >$TEMP
@@ -112,9 +117,9 @@ fi
 umask $oldmask
 
 if test -f $TARGET ; then
-	diff $TEMP $DATA >$SORT
-	if test -s $SORT ; then
-		cat $SORT
+	diff $TEMP $DATA >$DIFF
+	if test -s $DIFF ; then
+		cat $DIFF
 		chmod u+w $TARGET
 		mv $DATA $TARGET
 		echo "** updated $TARGET"
@@ -126,4 +131,4 @@ else
 	mv $DATA $TARGET
 fi
 
-rm -f $TEMP $SORT $DATA
+rm -f $TEMP $SORT $DIFF $DATA
