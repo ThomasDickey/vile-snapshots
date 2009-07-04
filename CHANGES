@@ -1,5 +1,10 @@
 Changes for vile 9.8 (released ??? ??? ?? ????)
 
+ 200907?? (u)
+	> Tom Dickey:
+	+ build-fix for OS/2 EMX; the ksh implementation did not handle the
+	  genmake.sh script.
+
  20090628 (t)
 	> Joachim Schimpf
 	+ fix typo in STARTQUERY pattern in ecl-filt.l (ECLiPSe/Prolog)
