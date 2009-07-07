@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.336 2009/05/26 21:36:17 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.337 2009/07/07 08:15:38 tom Exp $
  *
  */
 
@@ -1495,8 +1495,10 @@ check_file_access(char *fname, UINT mode)
 #define CHK_OWNER (FL_HOME | FL_CDIR)
     if (result) {
 	int doit = FALSE;
-	int check;
 	int owner;
+#ifdef GVAL_CHK_ACCESS
+	int check;
+#endif
 
 	/*
 	 * Suppress ownership check for absolute pathnames.
@@ -1511,7 +1513,9 @@ check_file_access(char *fname, UINT mode)
 
 	if (mode & FL_EXECABLE) {
 	    doit = TRUE;
-	} else if ((check = global_g_val(GVAL_CHK_ACCESS)) != 0) {
+	}
+#ifdef GVAL_CHK_ACCESS
+	else if ((check = global_g_val(GVAL_CHK_ACCESS)) != 0) {
 	    /*
 	     * The values for check-access mode are single bits.  But we treat
 	     * those as an ordered list.  Hence, setting "home" implies we
@@ -1522,6 +1526,7 @@ check_file_access(char *fname, UINT mode)
 		 & ~(FL_EXECABLE | FL_WRITEABLE | FL_READABLE)) != 0)
 		doit = TRUE;
 	}
+#endif
 	if (doit) {
 	    char *dname = (char *) malloc(NFILEN + strlen(fname) + 10);
 	    char *leaf;
