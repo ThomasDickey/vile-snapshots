@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/vl_ctype.h,v 1.24 2009/06/05 00:12:13 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/vl_ctype.h,v 1.25 2009/07/07 08:14:49 tom Exp $
  *
  * Character-type tests, like <ctype.h> for vile (vi-like-emacs).
  *
@@ -235,7 +235,7 @@ extern void vl_ctype_clr(int ch, CHARTYPE cclass);
 #endif
 #endif /* ndef USE_WIDE_CTYPE */
 
-#if USE_WIDE_CTYPE
+#if defined(USE_WIDE_CTYPE) && (USE_WIDE_CTYPE != 0)
 
 #define sys_WINT_T	wint_t
 
