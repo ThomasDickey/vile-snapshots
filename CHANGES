@@ -2,6 +2,9 @@ Changes for vile 9.8 (released ??? ??? ?? ????)
 
  200907?? (u)
 	> Tom Dickey:
+	+ fix mark/column translation for multibyte characters in a case where
+	  the working column value was decremented past a multibyte character
+	  boundary.
 	+ build-fix for configure --disable-extensions
 	+ build-fix for OS/2 EMX; the ksh implementation did not handle the
 	  genmake.sh script.
