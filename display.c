@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.494 2009/05/24 13:13:35 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.495 2009/07/20 08:57:07 tom Exp $
  *
  */
 
@@ -936,6 +936,7 @@ mk_to_vcol(WINDOW *wp, MARK mark, int expanded, int col, int adjust)
     LINE *lp;
     int extra = ((!global_g_val(GMDALTTABPOS) && !insertmode) ? 1 : 0);
     const char *text;
+    int prev_col = col;
 
     TRACE2((T_CALLED "mk_to_vcol(mark.o=%d, col=%d, adjust=%d) extra %d\n",
 	    mark.o, col, adjust, extra));
@@ -953,6 +954,7 @@ mk_to_vcol(WINDOW *wp, MARK mark, int expanded, int col, int adjust)
     while (i < lim) {
 	int used = 1;
 
+	prev_col = col;
 	c = text[i];
 	if (isTab(c) && !expanded) {
 	    col += t - (col % t);
@@ -975,8 +977,9 @@ mk_to_vcol(WINDOW *wp, MARK mark, int expanded, int col, int adjust)
 	}
 	i += used;
     }
-    if (extra && (col != 0) && (mark.o < llength(lp)))
-	col--;
+    if (extra && (col != 0) && (mark.o < llength(lp))) {
+	col = prev_col;
+    }
     return2Code(col);
 }
 
