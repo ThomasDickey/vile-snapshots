@@ -5,7 +5,7 @@
  * reading and writing of the disk are
  * in "fileio.c".
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.427 2009/04/03 23:28:23 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.430 2009/08/17 09:33:00 tom Exp $
  */
 
 #include "estruct.h"
@@ -186,7 +186,7 @@ check_file_changed(BUFFER *bp, char *fn)
 #if OPT_LCKFILES
 	/* release own lock before read the file again */
 	if (global_g_val(GMDUSEFILELOCK)) {
-	    if (!b_val(curbp, MDLOCKED) && !b_val(curbp, MDVIEW))
+	    if (!b_val(bp, MDLOCKED) && !b_val(bp, MDVIEW))
 		release_lock(fn);
 	}
 #endif
@@ -580,6 +580,7 @@ reset_to_unnamed(BUFFER *bp)
 int
 fileread(int f GCC_UNUSED, int n GCC_UNUSED)
 {
+    BUFFER *bp = curbp;
     int status;
     char fname[NFILEN];
     W_VALUES *save_wvals;
@@ -590,18 +591,18 @@ fileread(int f GCC_UNUSED, int n GCC_UNUSED)
 	if ((status = mlreply_file("Replace with file: ", (TBUFF **) 0,
 				   FILEC_REREAD, fname)) != TRUE)
 	    returnCode(status);
-    } else if (b_is_temporary(curbp)) {
+    } else if (b_is_temporary(bp)) {
 	returnCode(cannot_reread());
-    } else if (!(global_g_val(GMDWARNREREAD) || curbp->b_fname[0] == EOS)
+    } else if (!(global_g_val(GMDWARNREREAD) || bp->b_fname[0] == EOS)
 	       || ((status = mlyesno("Reread current buffer")) == TRUE)) {
-	(void) vl_strncpy(fname, curbp->b_fname, sizeof(fname));
+	(void) vl_strncpy(fname, bp->b_fname, sizeof(fname));
 	/* Check if we are rereading an unnamed-buffer if it is not
 	 * associated with a file.
 	 */
-	if (is_internalname(curbp->b_fname)) {
-	    if (eql_bname(curbp, STDIN_BufName)
-		|| eql_bname(curbp, UNNAMED_BufName)) {
-		status = bclear(curbp);
+	if (is_internalname(bp->b_fname)) {
+	    if (eql_bname(bp, STDIN_BufName)
+		|| eql_bname(bp, UNNAMED_BufName)) {
+		status = bclear(bp);
 		if (status == TRUE)
 		    mlerase();
 		curwp->w_flag |= (WFMODE | WFHARD);
@@ -616,31 +617,31 @@ fileread(int f GCC_UNUSED, int n GCC_UNUSED)
 #if OPT_LCKFILES
     /* release own lock before read the replaced file */
     if (global_g_val(GMDUSEFILELOCK)) {
-	if (!b_val(curbp, MDLOCKED) && !b_val(curbp, MDVIEW))
-	    release_lock(curbp->b_fname);
+	if (!b_val(bp, MDLOCKED) && !b_val(bp, MDVIEW))
+	    release_lock(bp->b_fname);
     }
 #endif
 
     /* we want no errors or complaints, so mark it unchanged */
-    b_clr_changed(curbp);
+    b_clr_changed(bp);
 
-    save_wvals = save_window_modes(curbp);
-    status = readin(fname, TRUE, curbp, TRUE);
+    save_wvals = save_window_modes(bp);
+    status = readin(fname, TRUE, bp, TRUE);
     if (status == ABORT) {
-	reset_to_unnamed(curbp);
+	reset_to_unnamed(bp);
     } else {
-	set_buffer_name(curbp);
+	set_buffer_name(bp);
 #if OPT_FINDERR
 	/*
 	 * Doing ":e!" on [Output] will reset the buffer name to match the
 	 * command.  Even if it was not [Output], it is still useful to make
 	 * the error-buffer match the last-read shell/pipe output.
 	 */
-	if (isShellOrPipe(curbp->b_fname))
-	    set_febuff(curbp->b_bname);
+	if (isShellOrPipe(bp->b_fname))
+	    set_febuff(bp->b_bname);
 #endif
     }
-    restore_window_modes(curbp, save_wvals);
+    restore_window_modes(bp, save_wvals);
 
     returnCode(status);
 }
@@ -902,6 +903,7 @@ ff_load_directory(char *fname)
 static int
 kifile(char *fname)
 {
+    BUFFER *bp = curbp;
     int s;
     int nline;
     size_t i;
@@ -922,7 +924,7 @@ kifile(char *fname)
 
 	nline = 0;
 #if OPT_ENCRYPT
-	if ((s = vl_resetkey(curbp, fname)) == TRUE)
+	if ((s = vl_resetkey(bp, fname)) == TRUE)
 #endif
 	{
 	    mlwrite("[Reading...]");
@@ -1224,17 +1226,17 @@ explicit_dosmode(BUFFER *bp, RECORD_SEP record_sep)
  * Recompute the buffer size, redisplay the [Settings] buffer.
  */
 static int
-modified_record_sep(RECORD_SEP record_sep)
+modified_record_sep(BUFFER *bp, RECORD_SEP record_sep)
 {
     TRACE((T_CALLED "modified_record_sep(%s)\n",
 	   choice_to_name(&fsm_recordsep_blist, record_sep)));
 
-    explicit_dosmode(curbp, record_sep);
-    guess_dosmode(curbp);
-    explicit_dosmode(curbp, record_sep);	/* ignore the guess - only want to strip CR's */
+    explicit_dosmode(bp, record_sep);
+    guess_dosmode(bp);
+    explicit_dosmode(bp, record_sep);	/* ignore the guess - only want to strip CR's */
 
-    b_clr_counted(curbp);
-    bsizes(curbp);
+    b_clr_counted(bp);
+    bsizes(bp);
 
     returnCode(TRUE);
 }
@@ -1246,7 +1248,7 @@ modified_record_sep(RECORD_SEP record_sep)
 int
 set_rs_crlf(int f GCC_UNUSED, int n GCC_UNUSED)
 {
-    return modified_record_sep(RS_CRLF);
+    return modified_record_sep(curbp, RS_CRLF);
 }
 
 /* as above, but forces unix-mode instead */
@@ -1254,7 +1256,7 @@ set_rs_crlf(int f GCC_UNUSED, int n GCC_UNUSED)
 int
 set_rs_lf(int f GCC_UNUSED, int n GCC_UNUSED)
 {
-    return modified_record_sep(RS_LF);
+    return modified_record_sep(curbp, RS_LF);
 }
 
 /* as above, but forces macintosh-mode instead */
@@ -1262,7 +1264,7 @@ set_rs_lf(int f GCC_UNUSED, int n GCC_UNUSED)
 int
 set_rs_cr(int f GCC_UNUSED, int n GCC_UNUSED)
 {
-    return modified_record_sep(RS_CR);
+    return modified_record_sep(curbp, RS_CR);
 }
 #endif /* OPT_DOSFILES */
 
@@ -2055,6 +2057,7 @@ filewrite(int f, int n)
     int s;
     char fname[NFILEN];
     int forced = (f && n == SPECIAL_BANG_ARG);
+    BUFFER *bp = curbp;
 
     if (more_named_cmd()) {
 	if ((s = mlreply_file("Write to file: ", (TBUFF **) 0,
@@ -2062,10 +2065,10 @@ filewrite(int f, int n)
 			      : FILEC_WRITE, fname)) != TRUE)
 	    return s;
     } else
-	(void) vl_strncpy(fname, curbp->b_fname, sizeof(fname));
+	(void) vl_strncpy(fname, bp->b_fname, sizeof(fname));
 
-    if ((s = writeout(fname, curbp, forced, TRUE)) == TRUE)
-	unchg_buff(curbp, 0);
+    if ((s = writeout(fname, bp, forced, TRUE)) == TRUE)
+	unchg_buff(bp, 0);
     return s;
 }
 
@@ -2081,12 +2084,13 @@ filesave(int f, int n)
 {
     int s;
     int forced = (f && n == SPECIAL_BANG_ARG);	/* then it was :w! */
+    BUFFER *bp = curbp;
 
-    if (no_file_name(curbp->b_fname))
+    if (no_file_name(bp->b_fname))
 	return FALSE;
 
-    if ((s = writeout(curbp->b_fname, curbp, forced, TRUE)) == TRUE)
-	unchg_buff(curbp, 0);
+    if ((s = writeout(bp->b_fname, bp, forced, TRUE)) == TRUE)
+	unchg_buff(bp, 0);
     return s;
 }
 
@@ -2144,7 +2148,7 @@ actually_write(REGION * rp, char *fn, int msgf, BUFFER *bp, int forced, int enco
     int whole_file = ((rp->r_orig.l == lforw(buf_head(bp)))
 		      && (rp->r_end.l == buf_head(bp)));
 
-    TRACE((T_CALLED " actually_write %s\n",
+    TRACE((T_CALLED "actually_write %s\n",
 	   encoded ? "encoded" : "not encoded"));
 #if OPT_HOOKS
     if (run_a_hook(&writehook)) {
@@ -2160,14 +2164,14 @@ actually_write(REGION * rp, char *fn, int msgf, BUFFER *bp, int forced, int enco
 	} else {
 	    DOT = rp->r_orig;
 	    MK = rp->r_end;
-	    (void) getregion(rp);
+	    (void) getregion(bp, rp);
 	}
 	offset = rp->r_orig.o;
     }
 #endif
 
 #if OPT_ENCRYPT
-    if ((s = vl_resetkey(curbp, fn)) != TRUE)
+    if ((s = vl_resetkey(bp, fn)) != TRUE)
 	returnCode(s);
 #endif
 
@@ -2417,6 +2421,7 @@ writeout(const char *fn, BUFFER *bp, int forced, int msgf)
 static int
 prompt_and_write_region(int encoded)
 {
+    BUFFER *bp = curbp;
     REGION region;
     int status;
     char fname[NFILEN];
@@ -2426,15 +2431,15 @@ prompt_and_write_region(int encoded)
 	    mlwrite("Range not written");
 	    return FALSE;
 	}
-	(void) vl_strncpy(fname, curbp->b_fname, sizeof(fname));
+	(void) vl_strncpy(fname, bp->b_fname, sizeof(fname));
     } else {
 	if ((status = mlreply_file("Write region to file: ",
 				   (TBUFF **) 0, FILEC_WRITE | FILEC_PROMPT,
 				   fname)) != TRUE)
 	    return status;
     }
-    if ((status = getregion(&region)) == TRUE)
-	status = writereg(&region, fname, TRUE, curbp, FALSE, encoded);
+    if ((status = getregion(bp, &region)) == TRUE)
+	status = writereg(&region, fname, TRUE, bp, FALSE, encoded);
     return status;
 }
 
@@ -2462,6 +2467,7 @@ write_enc_region(void)
 int
 kwrite(char *fn, int msgf)
 {
+    BUFFER *bp = curbp;
     KILL *kp;			/* pointer into kill register */
     int nline;
     B_COUNT nchar;
@@ -2477,7 +2483,7 @@ kwrite(char *fn, int msgf)
 	return FALSE;		/* not an error, just nothing */
     }
 #if OPT_ENCRYPT
-    if ((s = vl_resetkey(curbp, fn)) != TRUE)
+    if ((s = vl_resetkey(bp, fn)) != TRUE)
 	return s;
 #endif
     if ((s = ffwopen(fn, FALSE)) != FIOSUC) {	/* Open writes message. */
@@ -2528,6 +2534,7 @@ kwrite(char *fn, int msgf)
 int
 vl_filename(int f GCC_UNUSED, int n GCC_UNUSED)
 {
+    BUFFER *bp = curbp;
     int s;
     char fname[NFILEN];
 
@@ -2543,19 +2550,19 @@ vl_filename(int f GCC_UNUSED, int n GCC_UNUSED)
 
 #if OPT_LCKFILES
     if (global_g_val(GMDUSEFILELOCK)) {
-	if (!b_val(curbp, MDLOCKED) && !b_val(curbp, MDVIEW))
-	    release_lock(curbp->b_fname);
-	ch_fname(curbp, fname);
-	make_global_b_val(curbp, MDLOCKED);
-	make_global_b_val(curbp, VAL_LOCKER);
-	grab_lck_file(curbp, fname);
+	if (!b_val(bp, MDLOCKED) && !b_val(bp, MDVIEW))
+	    release_lock(bp->b_fname);
+	ch_fname(bp, fname);
+	make_global_b_val(bp, MDLOCKED);
+	make_global_b_val(bp, VAL_LOCKER);
+	grab_lck_file(bp, fname);
     } else
 #endif
-	ch_fname(curbp, fname);
+	ch_fname(bp, fname);
 
 #if SYS_WINNT && DISP_NTWIN
     /* remember new filename if later written out to disk */
-    b_clr_registered(curbp);
+    b_clr_registered(bp);
 #endif
 
     curwp->w_flag |= WFMODE;
@@ -2570,6 +2577,7 @@ vl_filename(int f GCC_UNUSED, int n GCC_UNUSED)
 int
 ifile(char *fname, int belowthisline, FILE *haveffp)
 {
+    BUFFER *bp = curbp;
     LINE *prevp;
     LINE *newlp;
     LINE *nextp;
@@ -2580,7 +2588,7 @@ ifile(char *fname, int belowthisline, FILE *haveffp)
     TRACE((T_CALLED "ifile(fname=%s, belowthisline=%d, haveffp=%p)\n",
 	   NONNULL(fname), belowthisline, (void *) haveffp));
 
-    b_clr_invisible(curbp);	/* we are not temporary */
+    b_clr_invisible(bp);	/* we are not temporary */
     if (haveffp == 0) {
 	if ((status = ffropen(fname)) == FIOERR)	/* Hard file open */
 	    goto out;
@@ -2589,13 +2597,13 @@ ifile(char *fname, int belowthisline, FILE *haveffp)
 #if COMPLETE_FILES || COMPLETE_DIRS
 	else if ((status = ff_load_directory(fname)) == FIOERR)
 	    goto out;
-	if (b_is_directory(curbp)) {
+	if (b_is_directory(bp)) {
 	    /* special case: contents are already added */
 	    goto out;
 	}
 #endif
 #if OPT_ENCRYPT
-	if ((status = vl_resetkey(curbp, fname)) != TRUE)
+	if ((status = vl_resetkey(bp, fname)) != TRUE)
 	    returnCode(status);
 #endif
 	mlwrite("[Inserting...]");
@@ -2612,7 +2620,7 @@ ifile(char *fname, int belowthisline, FILE *haveffp)
     nextp = 0;
     while ((status = ffgetline(&nbytes)) <= FIOSUC) {
 #if OPT_DOSFILES
-	if (b_val(curbp, MDDOS)
+	if (b_val(bp, MDDOS)
 	    && (nbytes != 0)
 	    && fflinebuf[nbytes - 1] == '\r')
 	    nbytes--;
@@ -2623,12 +2631,12 @@ ifile(char *fname, int belowthisline, FILE *haveffp)
 	}
 
 	beginDisplay();
-	if (add_line_at(curbp, prevp, fflinebuf, (int) nbytes) != TRUE) {
+	if (add_line_at(bp, prevp, fflinebuf, (int) nbytes) != TRUE) {
 	    status = FIOMEM;
 	    newlp = 0;
 	} else {
 	    newlp = lforw(prevp);
-	    if (OkUndo(curbp)) {
+	    if (OkUndo(bp)) {
 		if ((tag_for_undo(newlp)) == ABORT) {
 		    status = FIOMEM;
 		    /*
@@ -2636,7 +2644,7 @@ ifile(char *fname, int belowthisline, FILE *haveffp)
 		     * If we don't do this, undoworker() won't find a match
 		     * against the buffer, and will be deadlocked.
 		     */
-		    lremove(curbp, prevp);
+		    lremove(bp, prevp);
 		}
 	    }
 	}
@@ -2659,17 +2667,17 @@ ifile(char *fname, int belowthisline, FILE *haveffp)
     /* mark the window for changes.  could this be moved up to
      * where we actually insert a line? */
     if (nline)
-	chg_buff(curbp, WFHARD);
+	chg_buff(bp, WFHARD);
 
   out:
     /* copy window parameters back to the buffer structure */
-    copy_traits(&(curbp->b_wtraits), &(curwp->w_traits));
+    copy_traits(&(bp->b_wtraits), &(curwp->w_traits));
 
     if (status < FIOERR)
 	imply_alt(fname, FALSE, FALSE);
 
 #if COMPLETE_FILES || COMPLETE_DIRS
-    if (b_is_directory(curbp)) {
+    if (b_is_directory(bp)) {
 	DOT.l = lback(DOT.l);
     } else
 #endif

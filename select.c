@@ -18,7 +18,7 @@
  * transferring the selection are not dealt with in this file.  Procedures
  * for dealing with the representation are maintained in this file.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.173 2009/02/28 01:27:15 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.174 2009/08/17 09:40:03 tom Exp $
  *
  */
 
@@ -276,6 +276,7 @@ dot_vs_mark(void)
 int
 sel_extend(int wiping, int include_dot)
 {
+    BUFFER *bp = curbp;
     REGIONSHAPE save_shape = regionshape;
     REGION a, b;
     WINDOW *wp;
@@ -321,7 +322,7 @@ sel_extend(int wiping, int include_dot)
 	    MK = orig_region;
 	}
     }
-    if (getregion(&a) == FALSE) {
+    if (getregion(bp, &a) == FALSE) {
 	return FALSE;
     }
     DOT = working_dot;
@@ -347,7 +348,7 @@ sel_extend(int wiping, int include_dot)
 	    }
 	}
     }
-    if (getregion(&b) == FALSE) {
+    if (getregion(bp, &b) == FALSE) {
 	return FALSE;
     }
 
@@ -557,6 +558,7 @@ sel_setshape(REGIONSHAPE shape)
 static REGION *
 extended_region(void)
 {
+    BUFFER *bp = curbp;
     REGION *rp = NULL;
     static REGION a, b;
     MARK savemark;
@@ -565,13 +567,13 @@ extended_region(void)
     regionshape = selregion.ar_shape;
     MK = selregion.ar_region.r_orig;
     DOT.o += BytesAt(DOT.l, DOT.o);
-    if (getregion(&a) == TRUE) {
+    if (getregion(bp, &a) == TRUE) {
 	DOT.o -= BytesBefore(DOT.l, DOT.o);
 	MK = selregion.ar_region.r_end;
 	if (regionshape == rgn_FULLLINE)
 	    MK.l = lback(MK.l);
 	/* region b is to the end of the selection */
-	if (getregion(&b) == TRUE) {
+	if (getregion(bp, &b) == TRUE) {
 	    /* if a is bigger, it's the one we want */
 	    if (a.r_size > b.r_size)
 		rp = &a;
@@ -635,6 +637,7 @@ sel_motion(int f GCC_UNUSED, int n GCC_UNUSED)
 static int
 selectregion(void)
 {
+    BUFFER *bp = curbp;
     int status;
     REGION region;
     MARK savedot;
@@ -654,7 +657,7 @@ selectregion(void)
     MK = savemark;
     if (status != TRUE)
 	return status;
-    if (hadregion || ((status = getregion(&region)) == TRUE)) {
+    if (hadregion || ((status = getregion(bp, &region)) == TRUE)) {
 	detach_attrib(startbufp, &startregion);
 	detach_attrib(selbufp, &selregion);
 	selbufp = curbp;
@@ -1155,13 +1158,14 @@ apply_attribute(void)
 int
 attributeregion(void)
 {
+    BUFFER *bp = curbp;
     int status;
     REGION region;
     AREGION *arp;
 
-    if ((status = getregion(&region)) == TRUE) {
+    if ((status = getregion(bp, &region)) == TRUE) {
 	if (apply_attribute()) {
-	    if (add_line_attrib(curbp, &region, regionshape, videoattribute,
+	    if (add_line_attrib(bp, &region, regionshape, videoattribute,
 #if OPT_HYPERTEXT
 				hypercmd
 #else
@@ -1194,10 +1198,10 @@ attributeregion(void)
 		tb_init(&hypercmd, 0);
 	    }
 #endif
-	    attach_attrib(curbp, arp);
+	    attach_attrib(bp, arp);
 	} else {		/* purge attributes in this region */
-	    L_NUM rls = line_no(curbp, region.r_orig.l);
-	    L_NUM rle = line_no(curbp, region.r_end.l);
+	    L_NUM rls = line_no(bp, region.r_orig.l);
+	    L_NUM rle = line_no(bp, region.r_end.l);
 	    C_NUM ros = region.r_orig.o;
 	    C_NUM roe = region.r_end.o;
 	    AREGION *p, *q, *n;
@@ -1205,9 +1209,9 @@ attributeregion(void)
 
 	    owner = VOWNER(videoattribute);
 
-	    purge_line_attribs(curbp, &region, regionshape, owner);
+	    purge_line_attribs(bp, &region, regionshape, owner);
 
-	    for (p = curbp->b_attribs; p != 0; p = q) {
+	    for (p = bp->b_attribs; p != 0; p = q) {
 		L_NUM pls, ple;
 		C_NUM pos, poe;
 
@@ -1219,8 +1223,8 @@ attributeregion(void)
 		if (owner != 0 && owner != VOWNER(p->ar_vattr))
 		    continue;
 
-		pls = line_no(curbp, p->ar_region.r_orig.l);
-		ple = line_no(curbp, p->ar_region.r_end.l);
+		pls = line_no(bp, p->ar_region.r_orig.l);
+		ple = line_no(bp, p->ar_region.r_end.l);
 		pos = p->ar_region.r_orig.o;
 		poe = p->ar_region.r_end.o;
 
@@ -1279,7 +1283,7 @@ attributeregion(void)
 #endif
 			    n->ar_region.r_orig.l = (region.r_end.l);
 			    n->ar_region.r_orig.o = (region.r_end.o);
-			    attach_attrib(curbp, n);
+			    attach_attrib(bp, n);
 			}
 			p->ar_region.r_end.l = (region.r_orig.l);
 			p->ar_region.r_end.o = (region.r_orig.o);
@@ -1293,7 +1297,7 @@ attributeregion(void)
 		    }
 		}
 
-		free_attrib(curbp, p);
+		free_attrib(bp, p);
 	    }
 	}
     }
@@ -1499,11 +1503,12 @@ attribute_cntl_a_seqs_in_region(REGION * rp, REGIONSHAPE shape)
 LINE *
 setup_region(void)
 {
+    BUFFER *bp = curbp;
     LINE *pastline;		/* pointer to line just past EOP */
 
     if (!sameline(MK, DOT)) {
 	REGION region;
-	if (getregion(&region) != TRUE)
+	if (getregion(bp, &region) != TRUE)
 	    return 0;
 	if (sameline(region.r_orig, MK))
 	    swapmark();
@@ -1669,6 +1674,7 @@ set_mark_after(int count, int rslen)
 static int
 attribute_cntl_a_sequences(void)
 {
+    BUFFER *bp = curbp;
     LINE *pastline;
     C_NUM offset;		/* offset in cur line of place to attribute */
     int count;
@@ -1676,7 +1682,7 @@ attribute_cntl_a_sequences(void)
 #if EFFICIENCY_HACK
     AREGION *orig_attribs;
     AREGION *new_attribs;
-    orig_attribs = new_attribs = curbp->b_attribs;
+    orig_attribs = new_attribs = bp->b_attribs;
 #endif
 
     if ((pastline = setup_region()) == 0)
@@ -1691,15 +1697,15 @@ attribute_cntl_a_sequences(void)
 					  DOT.o, &count);
 		if (offset > DOT.o) {
 #if EFFICIENCY_HACK
-		    new_attribs = curbp->b_attribs;
-		    curbp->b_attribs = orig_attribs;
+		    new_attribs = bp->b_attribs;
+		    bp->b_attribs = orig_attribs;
 		    ldel_bytes((B_COUNT) (offset - DOT.o), FALSE);
-		    curbp->b_attribs = new_attribs;
+		    bp->b_attribs = new_attribs;
 #else
 		    ldel_bytes((B_COUNT) (offset - DOT.o), FALSE);
 #endif
 		}
-		set_mark_after(count, len_record_sep(curbp));
+		set_mark_after(count, len_record_sep(bp));
 		if (apply_attribute())
 		    (void) attributeregion();
 	    } else {
@@ -1730,6 +1736,7 @@ discard_syntax_highlighting(void)
 static int
 attribute_from_filter(void)
 {
+    BUFFER *bp = curbp;
     LINE *pastline;
     int skip;
     size_t nbytes;
@@ -1742,7 +1749,7 @@ attribute_from_filter(void)
 	result = FALSE;
 
 #ifdef MDHILITE
-    } else if (!b_val(curbp, MDHILITE)) {
+    } else if (!b_val(bp, MDHILITE)) {
 	discard_syntax_highlighting();
 #endif
 
@@ -1789,8 +1796,8 @@ attribute_from_filter(void)
 	attach_attrib(selbufp, &selregion);
 	attach_attrib(startbufp, &startregion);
 #if OPT_HILITEMATCH
-	if (curbp->b_highlight & HILITE_ON) {
-	    curbp->b_highlight |= HILITE_DIRTY;
+	if (bp->b_highlight & HILITE_ON) {
+	    bp->b_highlight |= HILITE_DIRTY;
 	    attrib_matches();
 	}
 #endif
@@ -1812,16 +1819,17 @@ operattrfilter(int f, int n)
 static int
 attribute_directly(void)
 {
+    BUFFER *bp = curbp;
     int code = FALSE;
 
 #if OPT_MAJORMODE
-    if (valid_buffer(curbp)) {
+    if (valid_buffer(bp)) {
 #if OPT_AUTOCOLOR
 	VL_ELAPSED begin_time;
 	(void) vl_elapsed(&begin_time, TRUE);
 #endif
 	discard_syntax_highlighting();
-	if (b_val(curbp, MDHILITE)) {
+	if (b_val(bp, MDHILITE)) {
 	    char *filtername = 0;
 	    TBUFF *token = 0;
 
@@ -1829,13 +1837,13 @@ attribute_directly(void)
 		filtername = mac_unquotedarg(&token);
 
 	    if (filtername == 0
-		&& curbp->majr != 0)
-		filtername = curbp->majr->shortname;
+		&& bp->majr != 0)
+		filtername = bp->majr->shortname;
 
 	    if (filtername != 0
 		&& flt_start(filtername)) {
 		TRACE(("attribute_directly(%s) using %s\n",
-		       curbp->b_bname,
+		       bp->b_bname,
 		       filtername));
 		flt_finish();
 		code = TRUE;
@@ -1845,14 +1853,14 @@ attribute_directly(void)
 	attach_attrib(selbufp, &selregion);
 	attach_attrib(startbufp, &startregion);
 #if OPT_HILITEMATCH
-	if (curbp->b_highlight & HILITE_ON) {
-	    curbp->b_highlight |= HILITE_DIRTY;
+	if (bp->b_highlight & HILITE_ON) {
+	    bp->b_highlight |= HILITE_DIRTY;
 	    attrib_matches();
 	}
 #endif
 #if OPT_AUTOCOLOR
-	curbp->last_autocolor_time = vl_elapsed(&begin_time, FALSE);
-	curbp->next_autocolor_time = 0;
+	bp->last_autocolor_time = vl_elapsed(&begin_time, FALSE);
+	bp->next_autocolor_time = 0;
 #endif
     }
 #endif

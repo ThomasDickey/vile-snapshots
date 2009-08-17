@@ -3,7 +3,7 @@
  * paragraph at a time.  There are all sorts of word mode commands.  If I
  * do any sentence mode commands, they are likely to be put in this file.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/word.c,v 1.93 2009/05/17 23:33:39 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/word.c,v 1.94 2009/08/17 09:36:33 tom Exp $
  *
  */
 
@@ -309,14 +309,15 @@ backword(int f, int n)
 static int
 join_region(int exact)
 {
+    BUFFER *bp = curbp;
     int status;
     int doto, c;
     LINE *end;
     REGION region;
     int done = FALSE;
 
-    if ((status = getregion(&region)) == TRUE
-	&& (status = !is_last_line(region.r_orig, curbp)) == TRUE) {
+    if ((status = getregion(bp, &region)) == TRUE
+	&& (status = !is_last_line(region.r_orig, bp)) == TRUE) {
 
 	DOT = region.r_orig;
 	end = region.r_end.l;
@@ -487,6 +488,7 @@ string_to_columns(TBUFF *text)
 static int
 do_formatting(TBUFF **wp, TBUFF **cp)
 {
+    BUFFER *bp = curbp;
     int c;			/* current char during scan     */
     int clength;		/* position on line during fill */
     int plength;		/* prefix to ignore during fill */
@@ -500,18 +502,18 @@ do_formatting(TBUFF **wp, TBUFF **cp)
     int sentence;		/* was the last char a period?  */
     int secondindent;
     int s;
-    int fillcolumn = getfillcol(curbp);
+    int fillcolumn = getfillcol(bp);
 
     if (!sameline(MK, DOT)) {
 	REGION region;
 
-	if (getregion(&region) != TRUE)
+	if (getregion(bp, &region) != TRUE)
 	    return FALSE;
 	if (sameline(region.r_orig, MK))
 	    swapmark();
     }
     pastline = MK.l;
-    if (pastline != buf_head(curbp))
+    if (pastline != buf_head(bp))
 	pastline = lforw(pastline);
 
     finished = FALSE;
@@ -666,7 +668,7 @@ do_formatting(TBUFF **wp, TBUFF **cp)
 		} else {
 		    /* fix the leading indent now, if
 		       some spaces should be tabs */
-		    if (b_val(curbp, MDTABINSERT))
+		    if (b_val(bp, MDTABINSERT))
 			entabline((void *) TRUE, 0, 0);
 		    if (lnewline() == FALSE)
 			return FALSE;
@@ -696,7 +698,7 @@ do_formatting(TBUFF **wp, TBUFF **cp)
 	/* catch the case where we're done with a line not because
 	   there's no more room, but because we're done processing a
 	   section or the region */
-	if (b_val(curbp, MDTABINSERT))
+	if (b_val(bp, MDTABINSERT))
 	    entabline((void *) TRUE, 0, 0);
 	DOT.l = lforw(DOT.l);
     }
@@ -728,6 +730,7 @@ formatregion(void)
 int
 wordcount(int f GCC_UNUSED, int n GCC_UNUSED)
 {
+    BUFFER *bp = curbp;
     LINE *lp;			/* current line to scan */
     int offset;			/* current char to scan */
     ULONG size;			/* size of region left to count */
@@ -741,11 +744,11 @@ wordcount(int f GCC_UNUSED, int n GCC_UNUSED)
     double avgch;		/* average number of chars/word */
     int status;			/* status return code */
     REGION region;		/* region to look at */
-    const char *ending = get_record_sep(curbp);
-    int len_rs = len_record_sep(curbp);
+    const char *ending = get_record_sep(bp);
+    int len_rs = len_record_sep(bp);
 
     /* make sure we have a region to count */
-    if ((status = getregion(&region)) != TRUE) {
+    if ((status = getregion(bp, &region)) != TRUE) {
 	return (status);
     }
     lp = region.r_orig.l;
