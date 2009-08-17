@@ -2,7 +2,7 @@
  *	eval.c -- function and variable evaluation
  *	original by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.408 2009/04/05 17:54:26 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.409 2009/08/17 09:31:32 tom Exp $
  *
  */
 
@@ -2058,7 +2058,7 @@ makecolorlist(int dum1 GCC_UNUSED, void *ptr GCC_UNUSED)
     DOT.l = lforw(buf_head(curbp));
     DOT.o = 0;
 
-    if (getregion(&region) == TRUE)
+    if (getregion(curbp, &region) == TRUE)
 	attribute_cntl_a_seqs_in_region(&region, rgn_FULLLINE);
 }
 

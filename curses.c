@@ -1,7 +1,7 @@
 /*
  * A terminal driver using the curses library
  *
- * $Header: /users/source/archives/vile.vcs/RCS/curses.c,v 1.39 2008/10/13 21:02:28 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/curses.c,v 1.40 2009/08/17 10:49:12 tom Exp $
  */
 
 #include "estruct.h"
@@ -36,6 +36,7 @@ static const char ANSI_palette[] =
 #endif
 
 static int i_am_xterm = 1;
+static int i_was_closed = FALSE;
 static int have_data = FALSE;
 static int in_screen = FALSE;
 static int can_color = FALSE;
@@ -54,8 +55,17 @@ curs_initialize(void)
     unsigned i;
     int j;
 
-    if (already_open)
-	return;
+    TRACE((T_CALLED "curs_open()\n"));
+
+    if (already_open) {
+	if (i_was_closed) {
+	    i_was_closed = FALSE;
+	    if (auto_set_title) {
+		term.set_title(tb_values(current_title));
+	    }
+	}
+	returnVoid;
+    }
 
     TRACE((T_CALLED "curs_initialize\n"));
 #if OPT_LOCALE
@@ -163,6 +173,7 @@ curs_close(void)
 #if OPT_LOCALE
     vl_close_mbterm();
 #endif
+    i_was_closed = TRUE;
 }
 
 static int last_key = -1;

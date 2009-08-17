@@ -1,7 +1,15 @@
 Changes for vile 9.8 (released ??? ??? ?? ????)
 
- 200907?? (u)
+ 200908?? (u)
+	> Mike Mackovitch:
+	+ use temporary bp variable in calls to writeout() to ensure that the
+	  buffer marked as unchanged will be the same.  This works around the
+	  Perl api's use of fake windows, setting curbp to match the current
+	  window, e.g., when redisplaying [Buffer List].
 	> Tom Dickey:
+	+ restore xterm title string after running subprocess (report by Paul
+	  Van Tilburg).
+	+ reduce scope of curbp in file.c and region.c, prompted by Perl fix.
 	+ fix mark/column translation for multibyte characters in a case where
 	  the working column value was decremented past a multibyte character
 	  boundary.

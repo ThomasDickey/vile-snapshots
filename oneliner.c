@@ -4,7 +4,7 @@
  *	Copyright (c) 1990, 1995-1999 by Paul Fox, except for delins(), which is
  *	Copyright (c) 1986 by University of Toronto, as noted below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/oneliner.c,v 1.113 2008/10/08 18:59:09 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/oneliner.c,v 1.114 2009/08/17 09:32:39 tom Exp $
  */
 
 #include	"estruct.h"
@@ -34,7 +34,7 @@ pregion(UINT flag)
     LINE *linep;
     BUFFER *oldbp = curbp;
 
-    if ((status = get_fl_region(&region)) != TRUE) {
+    if ((status = get_fl_region(oldbp, &region)) != TRUE) {
 	return (status);
     }
 
@@ -178,7 +178,7 @@ substreg1(int needpats, int use_opts, int is_globalsub)
     int getopts = FALSE;
     TBUFF *newpattern;
 
-    if ((status = get_fl_region(&region)) != TRUE) {
+    if ((status = get_fl_region(curbp, &region)) != TRUE) {
 	return (status);
     }
 

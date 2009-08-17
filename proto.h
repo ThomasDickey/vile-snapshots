@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.679 2009/05/26 21:25:37 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.680 2009/08/17 09:29:48 tom Exp $
  *
  */
 
@@ -1112,8 +1112,8 @@ extern int        detabline (void *flagp, int l, int r);
 extern int        entab_region (void);
 extern int        entabline (void *flagp, int l, int r);
 extern int        flipregion (void);
-extern int        get_fl_region (REGION *rp);
-extern int        getregion (REGION *rp);
+extern int        get_fl_region (BUFFER *bp, REGION *rp);
+extern int        getregion (BUFFER *bp, REGION *rp);
 extern int        kill_line (void *flagp, int l, int r);
 extern int        killregion (void);
 extern int        killregionmaybesave (int save);

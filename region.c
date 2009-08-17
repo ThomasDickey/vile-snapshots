@@ -3,7 +3,7 @@
  * and mark.  Some functions are commands.  Some functions are just for
  * internal use.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/region.c,v 1.154 2009/06/05 00:13:20 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/region.c,v 1.155 2009/08/17 09:34:40 tom Exp $
  *
  */
 
@@ -65,12 +65,13 @@ do_chars_in_line(void *flagp GCC_UNUSED, int ll, int rr)
 static int
 do_lines_in_region(int (*linefunc) (REGN_ARGS), void *argp, int convert_cols)
 {
+    BUFFER *bp = curbp;
     LINE *linep;
     int status;
     REGION region;
     C_NUM l, r;
 
-    if ((status = getregion(&region)) == TRUE) {
+    if ((status = getregion(bp, &region)) == TRUE) {
 
 	/* for each line in the region, ... */
 	linep = region.r_orig.l;
@@ -203,10 +204,11 @@ killregion(void)
 int
 killregionmaybesave(int save)
 {
+    BUFFER *bp = curbp;
     int status;
     REGION region;
 
-    if ((status = getregion(&region)) == TRUE) {
+    if ((status = getregion(bp, &region)) == TRUE) {
 	if (save) {
 	    kregcirculate(TRUE);
 	    ksetup();		/* command, so do magic */
@@ -221,7 +223,7 @@ killregionmaybesave(int save)
 	}
     }
 #if OPT_SELECTIONS
-    find_release_attr(curbp, &region);
+    find_release_attr(bp, &region);
 #endif
     return status;
 }
@@ -911,13 +913,13 @@ found_region(REGION * rp)
  * looking for mark.  This should save time.  Return a standard code.
  */
 int
-getregion(REGION * rp)
+getregion(BUFFER *bp, REGION * rp)
 {
     LINE *flp;
     LINE *blp;
     B_COUNT fsize;
     B_COUNT bsize;
-    int len_rs = len_record_sep(curbp);
+    int len_rs = len_record_sep(bp);
 
     TRACE2((T_CALLED "getregion\n"));
     memset(rp, 0, sizeof(*rp));
@@ -933,9 +935,9 @@ getregion(REGION * rp)
     /*
      * If the buffer is completely empty, the region has to match.
      */
-    if (valid_buffer(curbp) && is_empty_buf(curbp)) {
+    if (valid_buffer(bp) && is_empty_buf(bp)) {
 	memset(rp, 0, sizeof(*rp));
-	rp->r_orig.l = rp->r_end.l = buf_head(curbp);
+	rp->r_orig.l = rp->r_end.l = buf_head(bp);
 	return2Code(TRUE);
     }
 
@@ -966,11 +968,11 @@ getregion(REGION * rp)
 	return found_region(rp);
     }
 #if !SMALLER
-    if (b_is_counted(curbp)) {	/* we have valid line numbers */
+    if (b_is_counted(bp)) {	/* we have valid line numbers */
 	LINE *flp_start;
 	L_NUM dno, mno;
-	dno = line_no(curbp, DOT.l);
-	mno = line_no(curbp, MK.l);
+	dno = line_no(bp, DOT.l);
+	mno = line_no(bp, MK.l);
 	if (mno > dno) {
 	    flp = DOT.l;
 	    blp = MK.l;
@@ -989,7 +991,7 @@ getregion(REGION * rp)
 	flp_start = flp;
 	while (flp != blp) {
 	    flp = lforw(flp);
-	    if (flp != buf_head(curbp) && flp != flp_start) {
+	    if (flp != buf_head(bp) && flp != flp_start) {
 		fsize += line_length(flp) - (B_COUNT) w_left_margin(curwp);
 	    } else if (flp != blp) {
 		mlforce("BUG: hit buf end in getregion");
@@ -1022,11 +1024,11 @@ getregion(REGION * rp)
 	    bsize = (B_COUNT) (DOT.o - w_left_margin(curwp));
 	    fsize = (line_length(flp) - (B_COUNT) DOT.o);
 	}
-	while ((flp != buf_head(curbp)) ||
-	       (lback(blp) != buf_head(curbp))) {
-	    if (flp != buf_head(curbp)) {
+	while ((flp != buf_head(bp)) ||
+	       (lback(blp) != buf_head(bp))) {
+	    if (flp != buf_head(bp)) {
 		flp = lforw(flp);
-		if (flp != buf_head(curbp))
+		if (flp != buf_head(bp))
 		    fsize += (line_length(flp) - (B_COUNT) w_left_margin(curwp));
 		if (flp == MK.l) {
 		    rp->r_orig = DOT;
@@ -1043,7 +1045,7 @@ getregion(REGION * rp)
 		    return found_region(rp);
 		}
 	    }
-	    if (lback(blp) != buf_head(curbp)) {
+	    if (lback(blp) != buf_head(bp)) {
 		blp = lback(blp);
 		bsize += (line_length(blp) - (B_COUNT) w_left_margin(curwp));
 		if (blp == MK.l) {
@@ -1068,12 +1070,12 @@ getregion(REGION * rp)
 }
 
 int
-get_fl_region(REGION * rp)
+get_fl_region(BUFFER *bp, REGION * rp)
 {
     int status;
 
     regionshape = rgn_FULLLINE;
-    status = getregion(rp);
+    status = getregion(bp, rp);
     regionshape = rgn_EXACT;
 
     return status;
@@ -1127,7 +1129,7 @@ recompute_regionsize(REGION * region)
     save_MK = MK;
     DOT = region->r_orig;
     MK = region->r_end;
-    getregion(region);
+    getregion(curbp, region);
     DOT = save_DOT;
     MK = save_MK;
 }
@@ -1273,6 +1275,7 @@ encode_line(void *flagp GCC_UNUSED, int l GCC_UNUSED, int r GCC_UNUSED)
 static int
 encode_region(void)
 {
+    BUFFER *bp = curbp;
     ENCODEREG work;
     int status;
     L_NUM base_line;
@@ -1282,9 +1285,9 @@ encode_region(void)
     TRACE((T_CALLED "encode_region()\n"));
 
     regionshape = rgn_FULLLINE;
-    if ((status = getregion(&work.enc_region)) == TRUE
-	&& (base_line = line_no(curbp, work.enc_region.r_orig.l)) > 0
-	&& (last_line = line_no(curbp, work.enc_region.r_end.l)) > base_line) {
+    if ((status = getregion(bp, &work.enc_region)) == TRUE
+	&& (base_line = line_no(bp, work.enc_region.r_orig.l)) > 0
+	&& (last_line = line_no(bp, work.enc_region.r_end.l)) > base_line) {
 	total = (last_line - base_line);
 	if ((work.enc_list = typeallocn(TBUFF *, (size_t) total)) == 0) {
 	    status = no_memory("encode_region");
@@ -1300,18 +1303,18 @@ encode_region(void)
 		videoattribute = 0;
 		attributeregion();
 #if OPT_MAJORMODE
-		make_local_b_val(curbp, MDHILITE);
-		set_b_val(curbp, MDHILITE, FALSE);
+		make_local_b_val(bp, MDHILITE);
+		set_b_val(bp, MDHILITE, FALSE);
 #endif
 
 		DOT = work.enc_region.r_orig;
 		for (n = 0; n < total; ++n) {
 		    TBUFF *text = work.enc_list[n];
 
-		    DOT.o = b_left_margin(curbp);
+		    DOT.o = b_left_margin(bp);
 		    regionshape = rgn_EXACT;
 		    deltoeol(TRUE, 1);
-		    DOT.o = b_left_margin(curbp);
+		    DOT.o = b_left_margin(bp);
 		    lstrinsert(text, (int) tb_length(text));
 
 		    forwbline(FALSE, 1);

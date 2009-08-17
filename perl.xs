@@ -13,7 +13,7 @@
  * vile.  The file api.c (sometimes) provides a middle layer between
  * this interface and the rest of vile.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.117 2009/03/20 19:47:52 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.118 2009/08/17 09:41:04 tom Exp $
  */
 
 #ifdef __GNUC__
@@ -298,7 +298,7 @@ perl_default_region(void)
 
     regionshape = rgn_FULLLINE;
     haveregion = NULL;
-    if (getregion(&region)) {
+    if (getregion(curbp, &region)) {
 	haveregion = &region;
 	/* This should really go in getregion(), but other parts of
 	   vile break when we do this. */
@@ -431,10 +431,10 @@ do_perl_cmd(SV *cmd, int inplace)
 	if (curvbp == 0)
 	    returnCode(FALSE);
 
-	if (DOT.l == 0 || MK.l == 0 || getregion(&region) != TRUE) {
+	if (DOT.l == 0 || MK.l == 0 || getregion(curbp, &region) != TRUE) {
 	    /* shouldn't ever get here. But just in case... */
 	    perl_default_region();
-	    if (getregion(&region) != TRUE) {
+	    if (getregion(curbp, &region) != TRUE) {
 		mlforce("BUG: getregion won't return TRUE in perl.xs.");
 	    }
 	}
@@ -3911,7 +3911,7 @@ set_region(vbp, ...)
 		break;
 	}
 	haveregion = NULL;
-	if (getregion(&vbp->region) != TRUE) {
+	if (getregion(curbp, &vbp->region) != TRUE) {
 	    croak("set_region: Unable to set the region");
 	}
 	if (is_header_line(vbp->region.r_end, curbp)

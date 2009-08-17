@@ -1,7 +1,7 @@
 /*	tcap:	Unix V5, V7 and BS4.2 Termcap video driver
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.178 2008/10/09 23:36:35 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.179 2009/08/17 10:47:40 tom Exp $
  *
  */
 
@@ -122,6 +122,7 @@ static void tcap_rev(UINT state);
 #endif
 
 static int i_am_xterm;
+static int i_was_closed;
 
 #include "xtermkeys.h"
 
@@ -196,8 +197,15 @@ tcap_open(void)
     vl_open_mbterm();
 #endif
 
-    if (already_open)
+    if (already_open) {
+	if (i_was_closed) {
+	    i_was_closed = FALSE;
+	    if (auto_set_title) {
+		term.set_title(tb_values(current_title));
+	    }
+	}
 	returnVoid();
+    }
 
     if ((tv_stype = getenv("TERM")) == NULL) {
 	puts("Environment variable TERM not defined!");
@@ -388,6 +396,7 @@ tcap_close(void)
 #if OPT_LOCALE
     vl_close_mbterm();
 #endif
+    i_was_closed = TRUE;
     returnVoid();
 }
 
