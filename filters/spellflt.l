@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/spellflt.l,v 1.44 2009/05/12 22:47:25 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/spellflt.l,v 1.45 2009/08/19 09:02:41 tom Exp $
  *
  * Filter to add vile "attribution" sequences to misspelled words.
  */
@@ -181,7 +181,7 @@ ChopWords(FILE *fp, char *text, int len)
 	fputc('\n', fp);
     } else {
 	attr = keyword_attr(text);
-	if (attr == 0 || *attr == '\0') {
+	if (isEmpty(attr)) {
 	    flt_puts(text, next, attr);
 	    return;
 	}

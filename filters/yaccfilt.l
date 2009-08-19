@@ -3,7 +3,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/yaccfilt.l,v 1.38 2009/05/12 22:47:25 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/yaccfilt.l,v 1.39 2009/08/19 09:02:54 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of YACC program.
  */
@@ -139,7 +139,7 @@ static const char *
 merged_attr(char *text)
 {
     const char *attr = keyword_attr(text);
-    if ((cur_state == CODE) && (attr == 0 || *attr == 0)) {
+    if ((cur_state == CODE) && isEmpty(attr)) {
 	set_symbol_table(default_table);
 	attr = keyword_attr(text);
 	set_symbol_table("c");
@@ -234,7 +234,7 @@ do_filter(FILE *inputs)
 
     /* this is defined in yacc.key */
     Terminal_attr = class_attr("Terminal");
-    if (Terminal_attr == 0 || *Terminal_attr == '\0')
+    if (isEmpty(Terminal_attr))
 	Terminal_attr = Ident2_attr;
 
     section = RuleSection;

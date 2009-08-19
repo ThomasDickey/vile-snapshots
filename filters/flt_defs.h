@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/flt_defs.h,v 1.10 2009/05/27 23:05:10 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/flt_defs.h,v 1.12 2009/08/19 09:07:47 tom Exp $
  */
 
 #ifndef FLT_DEFS_H
@@ -28,6 +28,9 @@ extern "C" {
 #endif
 
 #define	NonNull(s)	((s == 0) ? "" : s)
+#define isEmpty(s)	((s) == 0 || *(s) == EOS)
+
+#define EOS        '\0'
 
 /* If we are using built-in filters, we can use many definitions from estruct.h
  * that may resolve to functions in ../vile
