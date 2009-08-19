@@ -1,23 +1,29 @@
 %pointer
-%x XMLTAG XMLATTR XMLCDATA XMLPI COMMENT INLINE
+%x XMLTAG XMLATTR XMLCDATA XMLPI COMMENT INLINE XQ_NOTE
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/xml-filt.l,v 1.29 2009/08/19 09:02:41 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/xq-filt.l,v 1.12 2009/08/19 08:57:51 tom Exp $
  *
- * Filter to add vile "attribution" sequences to selected bits of XML input
- * text.
+ * XQuery is case-sensitive
+ * XQuery elements, attributes, and variables must be valid XML names
+ * An XQuery string value can be in single or double quotes
+ * An XQuery variable is defined with a $ followed by a name, e.g. $bookstore
+ * XQuery comments are delimited by (: and :), e.g. (: XQuery Comment :)
+ * 
+ * The URI of the XQuery function namespace is:
+ *    http://www.w3.org/2005/02/xpath-functions
  *
- * By Adam S. Denton (adenton@yahoo.com)
- * and Thomas E. Dickey
+ *  The default prefix for the function namespace is fn:.
  *
- * Strongly based on the HTML filter program
- * based on a version written by Pierre Dittgen (dittgen@univ-mlv.fr)
+ *  Tip:  Functions are often called with the fn:  prefix, such as fn:string(). 
+ *  However, since fn:  is the default prefix of the namespace, the function
+ *  names do not need to be prefixed when called.
  */
 
 #include <filters.h>
 
-DefineFilter("xml");
+DefineFilter("xq");
 
 #define SYMS_XMLNS	"xmlns"
 
@@ -34,6 +40,7 @@ DefineFilter("xml");
 static char *Action_attr;
 static char *Comment_attr;
 static char *Ident_attr;
+static char *Ident2_attr;
 static char *Keyword_attr;
 static char *Number_attr;
 static char *String_attr;
@@ -49,9 +56,12 @@ XMLTAGS;
 static XMLTAGS *Tags;
 static unsigned Num_tags = 0;
 static int In_error = 0;
+static unsigned curly_braces;
 
 #include <fltstack.h>
 
+static const char * prefixed_attr(char *, char **);
+static const char * unprefixed_attr(char *);
 static const char * xml_keyword_attr(const char *name);
 static void xml_close(char *text);
 static void xml_command(char *text);
@@ -108,6 +118,39 @@ VALUE		#{IDENT}
 <XMLCDATA>[\n]		|
 <XMLCDATA>.		{ flt_bfr_append(yytext, yyleng); }
 
+<INITIAL,INLINE>{XMLTAG}	{ 
+			  char *text = yytext;
+			  const char *attr = "";
+			  if (Num_tags <= 0 || curly_braces > Num_tags) {
+			      attr = keyword_attr(yytext);
+			      if (isEmpty(attr)) {
+				  attr = prefixed_attr(yytext, &text);
+				  if (isEmpty(attr)) {
+				      attr = unprefixed_attr(yytext);
+				      if (isEmpty(attr)) {
+					  attr = Ident_attr;
+				      }
+				  }
+			      }
+			  }
+			  flt_puts(text, strlen(text), attr);
+			}
+<INITIAL,INLINE>"$"{IDENT}	{
+			  char *attr = "";
+			  if (Num_tags <= 0 || curly_braces > Num_tags) {
+			      attr = Ident2_attr;
+			  }
+			  WriteToken(attr);
+			}
+<INITIAL,INLINE>"{"	{ curly_braces = Num_tags + 1; WriteToken(Action_attr); }
+<INITIAL,INLINE>"}"	{ curly_braces = Num_tags; WriteToken(Action_attr); }
+
+<INITIAL,INLINE>"(:"	{ PushQuote(XQ_NOTE, Comment_attr); }
+<XQ_NOTE>[\n]		|
+<XQ_NOTE>[^\r\n:]+	|
+<XQ_NOTE>[:]+[^)]	{ flt_bfr_append(yytext, yyleng); }
+<XQ_NOTE>":)"		{ PopQuote(); }
+
 <INITIAL,INLINE>"<!--"	{ PushQuote(COMMENT, Comment_attr); }
 <COMMENT>[\n]		|
 <COMMENT>[^\r\n-]+	|
@@ -117,11 +160,17 @@ VALUE		#{IDENT}
 <XMLATTR>"["		{ WriteToken(Action_attr); push_state(INLINE); }
 <INLINE>"]"		{ WriteToken(Action_attr); pop_state(); }
 
-<INLINE>{IDENT}		|
 <XMLPI>{IDENT}		|
 <XMLATTR>{IDENT}	{ xml_property(yytext, yyleng); }
 <XMLATTR>{XMLTAG}	{ xml_prefixed_property(yytext, yyleng); }
 
+<INITIAL,INLINE>{STRINGS}	{
+			  const char *attr = "";
+			  if (Num_tags <= 0 || curly_braces > Num_tags) {
+			      attr = String_attr;
+			  }
+			  WriteToken(attr);
+			}
 <INLINE>{VALUE}		|
 <XMLTAG>{VALUE}		|
 <XMLATTR>{VALUE}	|
@@ -129,6 +178,13 @@ VALUE		#{IDENT}
 <XMLPI>{STRING}		|
 <XMLATTR>{STRING}	{ WriteToken(String_attr); }
 
+<INITIAL,INLINE>{NUMBER}	{
+			  const char *attr = "";
+			  if (Num_tags <= 0 || curly_braces > Num_tags) {
+			      attr = Number_attr;
+			  }
+			  WriteToken(attr);
+			}
 <INITIAL,INLINE>{ENTITY} |
 <XMLTAG>{NUMBER}	|
 <XMLPI>{NUMBER}		|
@@ -143,7 +199,7 @@ xml_keyword_attr(const char *name)
 {
     const char *attr = keyword_attr(name);
 
-    if (attr == 0)
+    if (isEmpty(attr))
 	attr = Ident_attr;
     return attr;
 }
@@ -176,6 +232,56 @@ static void
 xml_property(char *text, int len)
 {
     flt_puts(text, len, xml_keyword_attr(text));
+}
+
+static const char *
+prefixed_attr(char *name, char **text)
+{
+    const char *attr = "";
+    char *marker = strchr(name, ':');
+
+    if (marker != 0 && marker[1] != '\0') {
+	char *old_table = get_symbol_table();
+	char new_table[LEN_TABLENAME];
+
+	*marker = '\0';
+	set_symbol_table(SYMS_XMLNS);
+	attr = keyword_attr(name);
+	if (isEmpty(attr))
+	    attr = Ident_attr;
+	flt_puts(name, strlen(name), attr);
+	set_symbol_table(old_table);
+
+	sprintf(new_table, FMT_XMLNS, name);
+
+	flt_putc(':');
+
+	*text = marker + 1;
+	set_symbol_table(new_table);
+	attr = keyword_attr(*text);
+	*marker = ':';
+
+	set_symbol_table(old_table);
+    }
+    return attr;
+}
+
+static const char *
+unprefixed_attr(char *name)
+{
+    const char *attr = "";
+
+    char *old_table = get_symbol_table();
+    char new_table[LEN_TABLENAME];
+
+    sprintf(new_table, FMT_XMLNS, "fn");
+
+    set_symbol_table(new_table);
+    attr = keyword_attr(name);
+
+    set_symbol_table(old_table);
+
+    return attr;
 }
 
 static void
@@ -239,27 +345,7 @@ xml_command(char *text)
 	    free(Tags[--Num_tags].name);
     }
     if (isEmpty(attr)) {
-	char *marker = strchr(text, ':');
-	if (marker != 0 && marker[1] != '\0') {
-	    char *old_table = get_symbol_table();
-	    char new_table[LEN_TABLENAME];
-
-	    *marker = '\0';
-	    set_symbol_table(SYMS_XMLNS);
-	    flt_puts(text, strlen(text), keyword_attr(name));
-	    set_symbol_table(old_table);
-
-	    sprintf(new_table, FMT_XMLNS, name);
-
-	    flt_putc(':');
-
-	    text = marker + 1;
-	    set_symbol_table(new_table);
-	    attr = keyword_attr(text);
-	    *marker = ':';
-
-	    set_symbol_table(old_table);
-	}
+	attr = prefixed_attr(name, &text);
     }
     flt_puts(text, strlen(text), attr);
 }
@@ -291,12 +377,15 @@ do_filter(FILE *inputs)
     Action_attr  = class_attr(NAME_ACTION);
     Comment_attr = class_attr(NAME_COMMENT);
     Ident_attr   = class_attr(NAME_IDENT);
+    Ident2_attr  = class_attr(NAME_IDENT2);
     Keyword_attr = class_attr(NAME_KEYWORD);
     Number_attr  = class_attr(NAME_NUMBER);
     String_attr  = class_attr(NAME_LITERAL);
     Error_attr   = class_attr(NAME_ERROR);
 
     set_symbol_table(default_table);
+    curly_braces = 0;
+    In_error = 0;
 
     begin_state(INITIAL);
     RunLEX();

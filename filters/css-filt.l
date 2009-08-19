@@ -6,7 +6,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/css-filt.l,v 1.25 2009/06/05 20:33:35 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/css-filt.l,v 1.26 2009/08/19 09:02:41 tom Exp $
  *
  * Filter to add vile "attribution" sequences to Cascading Style Sheets.
  *
@@ -89,7 +89,7 @@ static const char *
 css_keyword_attr(char *text)
 {
     const char *attr = ci_keyword_attr(text);
-    if (attr == 0 || *attr == '\0')
+    if (isEmpty(attr))
 	attr = Ident_attr;
     return attr;
 }

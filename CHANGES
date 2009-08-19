@@ -7,6 +7,7 @@ Changes for vile 9.8 (released ??? ??? ?? ????)
 	  Perl api's use of fake windows, setting curbp to match the current
 	  window, e.g., when redisplaying [Buffer List].
 	> Tom Dickey:
+	+ add xq (XQuery) majormode and syntax filter.
 	+ restore xterm title string after running subprocess (report by Paul
 	  Van Tilburg).
 	+ reduce scope of curbp in file.c and region.c, prompted by Perl fix.

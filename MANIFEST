@@ -1,4 +1,4 @@
-MANIFEST for vile, version v9_7t5
+MANIFEST for vile, version v9_7t6
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 CHANGES                         Change-log for VILE
@@ -352,6 +352,7 @@ filters/wbt-filt.l              syntax highlighter for winbatch
 filters/wbt.key                 WinBatch keywords
 filters/xml-filt.l              syntax filter for xml
 filters/xml.key                 keywords for xml syntax highlighter
+filters/xq-filt.l               syntax filter for XQuery
 filters/xq.key                  keywords for XQuery
 filters/xres.key                keywords for X resource filter
 filters/xresfilt.l              syntax filter for X resource files
