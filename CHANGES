@@ -7,6 +7,12 @@ Changes for vile 9.8 (released ??? ??? ?? ????)
 	  Perl api's use of fake windows, setting curbp to match the current
 	  window, e.g., when redisplaying [Buffer List].
 	> Tom Dickey:
+	+ modify logic for complex fences to avoid setting pre_op_dot, which
+	  would result in selecting only the innermost level of complex fences
+	  on a reverse-direction, rather than the outermost level.
+	+ prevent run_a_hook() from running while an operator command is
+	  running, to lessen the chance of autocolor modifying variables used
+	  in the interactive operations, e.g., "d%" (report by Paul Fox).
 	+ add xq (XQuery) majormode and syntax filter.
 	+ restore xterm title string after running subprocess (report by Paul
 	  Van Tilburg).

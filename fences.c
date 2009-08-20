@@ -9,7 +9,7 @@
  * Extensions for vile by Paul Fox
  * Rewrote to use regular expressions - T.Dickey
  *
- * $Header: /users/source/archives/vile.vcs/RCS/fences.c,v 1.86 2008/01/22 00:12:01 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/fences.c,v 1.87 2009/08/20 10:45:36 tom Exp $
  *
  */
 
@@ -62,13 +62,22 @@
 #endif
 
 	/*
-	 * ops are inclusive of the endpoint; account for this when saving
-	 * pre_op_dot
+	 * Start (or recur) a complex fence.
+	 */
+#define start_fence_op2(sdir, oldpos, oldpre) \
+	TRACE(("...start_fence_op2 %s@%d\n", __FILE__, __LINE__)); \
+	oldpos = DOT; \
+	oldpre = pre_op_dot
+
+	/*
+	 * Start a simple fence.
+	 *
+	 * This adds a special case, which is handled differently for complex
+	 * fences: ops are inclusive of the endpoint; account for this when
+	 * saving pre_op_dot
 	 */
 #define start_fence_op(sdir, oldpos, oldpre) \
-	TRACE(("...start_fence_op\n")); \
-	oldpos = DOT; \
-	oldpre = pre_op_dot; \
+	start_fence_op2(sdir, oldpos, oldpre); \
 	if (doingopcmd && sdir == REVERSE) { \
 		forwchar(TRUE,1); \
 		pre_op_dot = DOT; \
@@ -76,7 +85,7 @@
 	}
 
 #define test_fence_op(st, oldpos, oldpre) \
-	TRACE(("...test_fence_op, status=%d\n", st)); \
+	TRACE(("...test_fence_op, status=%d %s@%d\n", st, __FILE__, __LINE__)); \
 	if (st != TRUE) { \
 		DOT = oldpos; \
 		pre_op_dot = oldpre; \
@@ -398,7 +407,7 @@ find_complex(int sdir, int *newkey)
     for_each_modegroup(curbp, group, 0, vals) {
 	ignorecase = any_mode(vals, MDIGNCASE);
 	if ((key = match_complex(TRACEARG(group) DOT.l, vals)) != CPP_UNKNOWN) {
-	    start_fence_op(sdir, oldpos, oldpre);
+	    start_fence_op2(sdir, oldpos, oldpre);
 	    sdir = ((key == CPP_ENDIF)
 		    ? REVERSE
 		    : FORWARD);
@@ -438,7 +447,7 @@ find_one_complex(int sdir, int level, int group, int *newkey)
      */
     TRACE(("find_one_complex %4d:%s\n", line_no(curbp, DOT.l), lp_visible(DOT.l)));
     if ((key = match_complex(TRACEARG(group) DOT.l, vals)) != CPP_UNKNOWN) {
-	start_fence_op(sdir, oldpos, oldpre);
+	start_fence_op2(sdir, oldpos, oldpre);
 	if (level == 0)
 	    sdir = ((key == CPP_ENDIF)
 		    ? REVERSE

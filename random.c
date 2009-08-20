@@ -2,7 +2,7 @@
  * This file contains the command processing functions for a number of random
  * commands. There is no functional grouping here, for sure.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.330 2009/05/26 21:25:37 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.331 2009/08/19 23:40:27 tom Exp $
  *
  */
 
@@ -1594,7 +1594,7 @@ run_a_hook(HOOK * hook)
 {
     int status = FALSE;
 
-    if (!hook->latch && hook->proc[0]) {
+    if (!hook->latch && hook->proc[0] && !doingopcmd) {
 	MARK save_pre_op_dot;	/* ugly hack */
 	int save_dotcmdactive;	/* another ugly hack */
 
