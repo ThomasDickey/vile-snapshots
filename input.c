@@ -44,7 +44,7 @@
  *	tgetc_avail()     true if a key is avail from tgetc() or below.
  *	keystroke_avail() true if a key is avail from keystroke() or below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.323 2009/03/20 19:47:52 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.324 2009/08/20 20:54:00 tom Exp $
  *
  */
 
@@ -1732,7 +1732,13 @@ read_quoted(int count, int inscreen)
 	    c = '0';
 	    digs = 5;		/* 4 plus the fake '0' */
 	    base = 16;
-	    str = "unicode";
+	    str = "unicode (hex)";
+	    limit = 0xffff;
+	} else if (c == 'U') {
+	    c = '0';
+	    digs = 6;		/* 5 plus the fake '0' */
+	    base = 10;
+	    str = "unicode (dec)";
 	    limit = 0xffff;
 	} else
 #endif

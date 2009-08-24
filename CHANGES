@@ -7,6 +7,14 @@ Changes for vile 9.8 (released ??? ??? ?? ????)
 	  Perl api's use of fake windows, setting curbp to match the current
 	  window, e.g., when redisplaying [Buffer List].
 	> Tom Dickey:
+	+ improve awk syntax highlighter:
+	  + highlight inline comments.
+	  + highlight regular expression used as parameter, e.g., in sub().
+	  + change $0, etc., to Ident2 class for consistency with other filters.
+	  + highlight some cases of unbalanced right-parenthesis or
+	    curly-braces.
+	+ handle XA_COMPOUND_TEXT and XA_UTF8_STRING selection types in xvile.
+	+ allow ^VUddddd input for Unicode in decimal (base ten).
 	+ modify logic for complex fences to avoid setting pre_op_dot, which
 	  would result in selecting only the innermost level of complex fences
 	  on a reverse-direction, rather than the outermost level.

@@ -2,7 +2,7 @@
  *	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.316 2009/02/24 21:35:33 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.329 2009/08/23 18:50:06 tom Exp $
  *
  */
 
@@ -155,6 +155,7 @@
 #include	<X11/Shell.h>
 #include	<X11/keysym.h>
 #include	<X11/Xatom.h>
+#include	<X11/Xmu/Atoms.h>
 
 #if MOTIF_WIDGETS
 #include	<Xm/Form.h>
@@ -186,6 +187,8 @@
 #include <X11/xpm.h>
 #endif
 #endif
+
+#define IsPrimary(s)    ((s) == XA_PRIMARY)
 
 #define	absol(x)	((x) > 0 ? (x) : -(x))
 #define	CEIL(a,b)	((a + b - 1) / (b))
@@ -463,11 +466,7 @@ static Atom atom_SPACING;
 static Atom atom_AVERAGE_WIDTH;
 static Atom atom_CHARSET_REGISTRY;
 static Atom atom_CHARSET_ENCODING;
-static Atom atom_TARGETS;
 static Atom atom_MULTIPLE;
-static Atom atom_TIMESTAMP;
-static Atom atom_TEXT;
-static Atom atom_CLIPBOARD;
 
 #if OPT_KEV_SCROLLBARS || OPT_XAW_SCROLLBARS
 static Cursor curs_sb_v_double_arrow;
@@ -2741,6 +2740,35 @@ ColorsOf(Pixel pixel)
     sprintf(result, "%4X/%4X/%4X", color.red, color.green, color.blue);
     return result;
 }
+
+static const char *
+visibleAtoms(Atom value)
+{
+    const char *result = 0;
+    if (value == XA_ATOM)
+	result = "XA_ATOM";
+    else if (value == XA_CLIPBOARD(dpy))
+	result = "XA_CLIPBOARD";
+    else if (value == XA_COMPOUND_TEXT(dpy))
+	result = "XA_COMPOUND_TEXT";
+    else if (value == XA_PRIMARY)
+	result = "XA_PRIMARY";
+    else if (value == XA_STRING)
+	result = "XA_STRING";
+    else if (value == XA_TARGETS(dpy))
+	result = "XA_TARGETS";
+    else if (value == XA_TEXT(dpy))
+	result = "XA_TEXT";
+    else if (value == XA_TIMESTAMP(dpy))
+	result = "XA_TIMESTAMP";
+#ifdef XA_UTF8_STRING
+    else if (value == XA_UTF8_STRING(dpy))
+	result = "XA_UTF8_STRING";
+#endif
+    else
+	result = "unknown";
+    return result;
+}
 #endif
 
 /* ARGSUSED */
@@ -3704,6 +3732,7 @@ x_preparse_args(int *pargc, char ***pargv)
     init_xlocale();
     if (okCTYPE2(vl_wide_enc)) {
 	term.encoding = enc_UTF8;
+	TRACE(("initialized term.encoding to enc_UTF8\n"));
     }
 #endif
 
@@ -3764,11 +3793,7 @@ x_preparse_args(int *pargc, char ***pargv)
 		      (XtPointer) 0);
 
     /* Atoms needed for selections */
-    atom_TARGETS = XInternAtom(dpy, "TARGETS", False);
     atom_MULTIPLE = XInternAtom(dpy, "MULTIPLE", False);
-    atom_TIMESTAMP = XInternAtom(dpy, "TIMESTAMP", False);
-    atom_TEXT = XInternAtom(dpy, "TEXT", False);
-    atom_CLIPBOARD = XInternAtom(dpy, "CLIPBOARD", False);
 
     set_pointer(XtWindow(cur_win->screen), cur_win->normal_pointer);
 
@@ -4222,6 +4247,8 @@ x_open(void)
     set_ctrans(initpalettestr);	/* should be set_palette() */
 #endif
 
+    TRACE((T_CALLED "x_open\n"));
+
     kqinit(cur_win);
     cur_win->scrollbars = NULL;
     cur_win->maxscrollbars = 0;
@@ -4241,6 +4268,7 @@ x_open(void)
 	fprintf(stderr, "Cannot allocate scrollbars\n");
 	ExitProgram(BADEXIT);
     }
+    returnVoid();
 }
 
 #if OPT_INPUT_METHOD
@@ -4863,17 +4891,53 @@ set_character_class(char *s)
     return (0);
 }
 
+#if OPT_MULTIBYTE
+static int
+pasting_utf8(TBUFF *p, int c)
+{
+    int result = FALSE;
+    if (b_is_utfXX(curbp)) {
+	char temp[2];
+	int n, limit;
+
+	temp[0] = (char) c;
+	if (vl_conv_to_utf32((UINT *) 0, temp, 6) > 0) {
+	    result = TRUE;
+	} else if ((limit = tb_length(p)) > 0) {
+	    for (n = limit - 1; n > 0; --n) {
+		if (vl_conv_to_utf32((UINT *) 0, tb_values(p) + n, 6) > 0) {
+		    result = TRUE;
+		    break;
+		}
+	    }
+	}
+    }
+    return result;
+}
+#define PastingUTF8(p,c) pasting_utf8(p,c)
+#else
+#define PastingUTF8(p,c) FALSE
+#endif
+
 /*
  * Copy a single character into the paste-buffer, quoting it if necessary
  */
 static int
 add2paste(TBUFF **p, int c)
 {
-    if (c == '\n' || isBlank(c))
+    int result;
+
+    TRACE2(("add2paste '%04o'\n", c));
+    if (c == '\n' || isBlank(c)) {
 	/*EMPTY */ ;
-    else if (isSpecial(c) || (c == '\r') || !isPrint(c))
+    } else if (isSpecial(c) ||
+	       isreturn(c) ||
+	       !(isPrint(c) || PastingUTF8(*p, c))) {
 	(void) tb_append(p, quotec);
-    return (tb_append(p, c) != 0);
+    }
+    result = (tb_append(p, c) != 0);
+    TRACE2(("...added %d:%s\n", tb_length(*p), tb_visible(*p)));
+    return result;
 }
 
 /*
@@ -4942,7 +5006,7 @@ copy_paste(TBUFF **p, char *value, size_t length)
     }
 
     while (length-- > 0) {
-	if (!add2paste(p, *value++)) {
+	if (!add2paste(p, CharOf(*value++))) {
 	    status = FALSE;
 	    break;
 	}
@@ -4951,66 +5015,141 @@ copy_paste(TBUFF **p, char *value, size_t length)
     return status;
 }
 
+static Atom *
+GetSelectionTargets(void)
+{
+    static Atom result[10];
+    if (result[0] == 0) {
+	Atom *tp = result;
+#if OPT_MULTIBYTE
+#ifdef XA_UTF8_STRING
+	*tp++ = XA_UTF8_STRING(dpy);
+#endif
+	*tp++ = XA_COMPOUND_TEXT(dpy);
+#endif
+	*tp++ = XA_TEXT(dpy);
+	*tp++ = XA_STRING;
+	*tp = None;
+#if OPT_TRACE
+	TRACE(("SelectionTargets:\n"));
+	for (tp = result; *tp != None; ++tp) {
+	    TRACE((">%s\n", visibleAtoms(*tp)));
+	}
+#endif
+    }
+    return result;
+}
+
+static void
+insert_selection(Atom * selection, char *value, size_t length)
+{
+    int do_ins;
+    char *s = NULL;		/* stifle warning */
+
+    /* should be impossible to hit this with existing paste */
+    /* XXX massive hack -- leave out 'i' if in prompt line */
+    do_ins = !insertmode
+	&& (!onMsgRow(cur_win) || *selection == XA_CLIPBOARD(dpy))
+	&& ((s = fnc2pstr(&f_insert_no_aindent)) != NULL);
+
+    if (tb_init(&PasteBuf, esc_c)) {
+	if ((do_ins && !tb_bappend(&PasteBuf, s + 1, (size_t) CharOf(*s)))
+	    || !copy_paste(&PasteBuf, value, length)
+	    || (do_ins && !tb_append(&PasteBuf, esc_c)))
+	    tb_free(&PasteBuf);
+    }
+}
+
 /* ARGSUSED */
 static void
 x_get_selection(Widget w GCC_UNUSED,
 		XtPointer cldat GCC_UNUSED,
 		Atom * selection,
-		Atom * type,
+		Atom * target,
 		XtPointer value,
 		ULONG * length,
 		int *format)
 {
-    int do_ins;
-
-    if (*format != 8 || *type != XA_STRING) {
-	x_beep();		/* can't handle incoming data */
-	return;
-    }
+    TRACE(("x_get_selection(selection %s, target %s, format %d, length %lu)\n",
+	   visibleAtoms(*selection),
+	   visibleAtoms(*target),
+	   *format,
+	   *length));
 
     if (length != 0 && value != NULL) {
-	char *s = NULL;		/* stifle warning */
-	/* should be impossible to hit this with existing paste */
-	/* XXX massive hack -- leave out 'i' if in prompt line */
-	do_ins = !insertmode
-	    && (!onMsgRow(cur_win) || *selection == atom_CLIPBOARD)
-	    && ((s = fnc2pstr(&f_insert_no_aindent)) != NULL);
+	if (*format != 8) {
+	    kbd_alarm();	/* can't handle incoming data */
+	} else if (*target == XA_STRING) {
+	    insert_selection(selection, (char *) value, (size_t) *length);
+	    XtFree((char *) value);
+	} else
+#if OPT_MULTIBYTE
+	    if ((*target == XA_COMPOUND_TEXT(dpy))
+#ifdef XA_UTF8_STRING
+		|| (*target == XA_UTF8_STRING(dpy))
+#endif
+	    ) {
+	    XTextProperty text_prop;
+	    char **text_list = NULL;
+	    int text_list_count, n;
 
-	if (tb_init(&PasteBuf, esc_c)) {
-	    if ((do_ins && !tb_bappend(&PasteBuf, s + 1, (size_t) CharOf(*s)))
-		|| !copy_paste(&PasteBuf, (char *) value, (size_t) *length)
-		|| (do_ins && !tb_append(&PasteBuf, esc_c)))
-		tb_free(&PasteBuf);
+	    text_prop.value = (unsigned char *) value;
+	    text_prop.encoding = *target;
+	    text_prop.format = *format;
+	    text_prop.nitems = *length;
+
+	    if (Xutf8TextPropertyToTextList(dpy, &text_prop,
+					    &text_list,
+					    &text_list_count) < 0) {
+		TRACE(("Conversion failed\n"));
+		text_list = NULL;
+	    }
+	    if (text_list != NULL) {
+		for (n = 0; n < text_list_count; ++n) {
+		    TRACE(("Inserting:%s\n", text_list[n]));
+		    insert_selection(selection,
+				     text_list[n],
+				     strlen(text_list[n]));
+		}
+		XFreeStringList(text_list);
+		XtFree((char *) value);
+	    } else {
+		kbd_alarm();	/* can't handle incoming data */
+	    }
+	} else
+#endif
+	{
+	    kbd_alarm();	/* can't handle incoming data */
 	}
-	XtFree((char *) value);
     }
 }
 
 static void
 x_paste_selection(Atom selection)
 {
-    if (cur_win->have_selection && selection == XA_PRIMARY) {
+    if (cur_win->have_selection && IsPrimary(selection)) {
 	/* local transfer */
 	UCHAR *data = 0;
 	size_t len_st = 0;
 	ULONG len_ul;
 
-	Atom type = XA_STRING;
+	Atom target = XA_STRING;
 	int format = 8;
 
 	if (!x_get_selected_text(&data, &len_st)) {
-	    x_beep();
+	    kbd_alarm();
 	    return;
 	}
 	len_ul = (ULONG) len_st;	/* Ugh. */
-	x_get_selection(cur_win->top_widget, NULL, &selection, &type,
+	x_get_selection(cur_win->top_widget, NULL, &selection, &target,
 			(XtPointer) data, &len_ul, &format);
     } else {
+	Atom *targets = GetSelectionTargets();
 	XtGetSelectionValue(cur_win->top_widget,
 			    selection,
-			    XA_STRING,
+			    targets[0],
 			    x_get_selection,
-			    (XtPointer) 0,	/* client data */
+			    (XtPointer) (targets + 1),	/* client data */
 			    XtLastTimestampProcessed(dpy));
     }
 }
@@ -5085,49 +5224,79 @@ x_convert_selection(Widget w GCC_UNUSED,
 		    ULONG * length,
 		    int *format)
 {
-    if (!cur_win->have_selection && *selection == XA_PRIMARY)
-	return False;
+    Boolean result = False;
+
+    TRACE((T_CALLED
+	   "x_convert_selection(selection %s, target %s, length %ld)\n",
+	   visibleAtoms(*selection),
+	   visibleAtoms(*target),
+	   *length));
+
+    if (!cur_win->have_selection && IsPrimary(*selection))
+	returnCode(False);
 
     /*
-     * The ICCCM requires us to handle the following targets: TARGETS,
-     * MULTIPLE, and TIMESTAMP.  MULTIPLE and TIMESTAMP are handled by
-     * the Xt intrinsics.  Below, we handle TARGETS, STRING, and TEXT.
-     * The STRING and TEXT targets are what xvile uses to transfer
-     * selected text to another client.  TARGETS is simply a list of
-     * the targets we support (including the ones handled by the Xt
-     * intrinsics).
+     * The ICCCM requires us to handle the following targets:  TARGETS,
+     * MULTIPLE, and TIMESTAMP.  MULTIPLE and TIMESTAMP are handled by the Xt
+     * intrinsics.  Below, we handle TARGETS, STRING, and TEXT.
+     *
+     * The STRING and TEXT targets are what xvile uses to transfer selected
+     * text to another client.
+     *
+     * TARGETS is simply a list of the targets we support (including the ones
+     * handled by the Xt intrinsics).
      */
 
-    if (*target == atom_TARGETS) {
+    if (*target == XA_TARGETS(dpy)) {
 	Atom *tp;
+	Atom *sp;
 
-#define NTARGS 5
+#define NTARGS 6
 
 	*(Atom **) value = tp = (Atom *) XtMalloc(NTARGS * sizeof(Atom));
 
-	if (tp == NULL)
-	    return False;	/* should not happen (even if out of memory) */
+	if (tp != NULL) {
+	    *tp++ = XA_TARGETS(dpy);
+	    *tp++ = atom_MULTIPLE;
+	    *tp++ = XA_TIMESTAMP(dpy);
+	    for (sp = GetSelectionTargets(); *sp != None; ++sp)
+		*tp++ = *sp;
 
-	*tp++ = atom_TARGETS;
-	*tp++ = atom_MULTIPLE;
-	*tp++ = atom_TIMESTAMP;
-	*tp++ = XA_STRING;
-	*tp++ = atom_TEXT;
-
-	*type = XA_ATOM;
-	*length = tp - *(Atom **) value;
-	*format = 32;		/* width of the data being transfered */
-	return True;
-    } else if (*target == XA_STRING || *target == atom_TEXT) {
+	    *type = XA_ATOM;
+	    *length = tp - *(Atom **) value;
+	    *format = 32;	/* width of the data being transfered */
+	    result = True;
+	}
+    } else if (*target == XA_STRING || *target == XA_TEXT(dpy)) {
 	*type = XA_STRING;
 	*format = 8;
-	if (*selection == XA_PRIMARY)
-	    return x_get_selected_text((UCHAR **) value, (size_t *) length);
+	if (IsPrimary(*selection))
+	    result = x_get_selected_text((UCHAR **) value, (size_t *) length);
 	else			/* CLIPBOARD */
-	    return x_get_clipboard_text((UCHAR **) value, (size_t *) length);
+	    result = x_get_clipboard_text((UCHAR **) value, (size_t *) length);
     }
+#if OPT_MULTIBYTE
+#ifdef XA_UTF8_STRING
+    else if (*target == XA_UTF8_STRING(dpy)) {
+	*type = *target;
+	*format = 8;
+	if (IsPrimary(*selection))
+	    result = x_get_selected_text((UCHAR **) value, (size_t *) length);
+	else			/* CLIPBOARD */
+	    result = x_get_clipboard_text((UCHAR **) value, (size_t *) length);
+    }
+#endif
+    else if (*target == XA_COMPOUND_TEXT(dpy)) {
+	*type = *target;
+	*format = 8;
+	if (IsPrimary(*selection))
+	    result = x_get_selected_text((UCHAR **) value, (size_t *) length);
+	else			/* CLIPBOARD */
+	    result = x_get_clipboard_text((UCHAR **) value, (size_t *) length);
+    }
+#endif
 
-    return False;
+    returnCode(result);
 }
 
 /* ARGSUSED */
@@ -5135,7 +5304,7 @@ static void
 x_lose_selection(Widget w GCC_UNUSED,
 		 Atom * selection)
 {
-    if (*selection == XA_PRIMARY) {
+    if (IsPrimary(*selection)) {
 	cur_win->have_selection = False;
 	cur_win->was_on_msgline = False;
 	sel_release();
@@ -5170,7 +5339,9 @@ x_own_selection(Atom selection)
      * which asserts ownership of the clipboard if a certain amount of
      * time has gone by with no activity.
      */
-    if (!cur_win->have_selection || selection != XA_PRIMARY)
+    if (!cur_win->have_selection || !IsPrimary(selection)) {
+	TRACE(("x_own_selection\n"));
+
 	cur_win->have_selection =
 	    XtOwnSelection(cur_win->top_widget,
 			   selection,
@@ -5178,6 +5349,7 @@ x_own_selection(Atom selection)
 			   x_convert_selection,
 			   x_lose_selection,
 			   (XtSelectionDoneProc) 0);
+    }
 }
 
 static void
@@ -5277,8 +5449,9 @@ extend_selection(TextWindow tw GCC_UNUSED,
 				scroll_selection,
 				(XtPointer) rowcol);
 	}
-    } else
-	x_beep();
+    } else {
+	kbd_alarm();
+    }
 }
 
 static void
@@ -5442,12 +5615,12 @@ int
 copy_to_clipboard(int f GCC_UNUSED, int n GCC_UNUSED)
 {
     if (!cur_win->have_selection) {
-	x_beep();
+	kbd_alarm();
 	return FALSE;
     }
 
     sel_yank(CLIP_KREG);
-    x_own_selection(atom_CLIPBOARD);
+    x_own_selection(XA_CLIPBOARD(dpy));
 
     return TRUE;
 }
@@ -5456,7 +5629,7 @@ copy_to_clipboard(int f GCC_UNUSED, int n GCC_UNUSED)
 int
 paste_from_clipboard(int f GCC_UNUSED, int n GCC_UNUSED)
 {
-    x_paste_selection(atom_CLIPBOARD);
+    x_paste_selection(XA_CLIPBOARD(dpy));
     return TRUE;
 }
 
@@ -5849,7 +6022,7 @@ configure_bar(Widget w,
 		delwind(TRUE, 0);
 	    } else if (strcmp(params[0], "Split") == 0) {
 		if (wp->w_ntrows < 3) {
-		    x_beep();
+		    kbd_alarm();
 		    break;
 		} else {
 		    int newsize;
@@ -6262,7 +6435,20 @@ x_getc(void)
     for_ever {
 
 	if (tb_more(PasteBuf)) {	/* handle any queued pasted text */
-	    c = tb_next(PasteBuf);
+#if OPT_MULTIBYTE
+	    UINT result;
+	    int check;
+	    int limit = tb_length(PasteBuf);
+	    int offset = PasteBuf->tb_last;
+	    char *data = tb_values(PasteBuf) + offset;
+
+	    check = vl_conv_to_utf32(&result, data, (limit - offset));
+	    if (check > 0) {
+		c = result;
+		PasteBuf->tb_last += check;
+	    } else
+#endif
+		c = tb_next(PasteBuf);
 	    c |= NOREMAP;	/* pasted chars are not subject to mapping */
 	    cur_win->pasting = True;
 	    break;
