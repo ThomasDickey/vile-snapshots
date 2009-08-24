@@ -2263,6 +2263,8 @@ Editor modes
 	    Wide (Unicode) values can be entered in a similar fashion, though
 	    they are stored as more than one byte:
 		    Unicode hexadecimal with a leading 'u' (^VuNNNN).
+		    Unicode decimal with a leading 'U' (^VuNNNN).
+
 	    If the current buffer's "file-encoding" mode is set to one of
 	    the Unicode flavors (utf-8, utf-16 or utf-32), vile will display
 	    the value as a wide character.  Otherwise it will show the bytes
@@ -6585,4 +6587,4 @@ Problems
 
 Copyright 1995-2008,2009 by Paul Fox, Thomas Dickey, and Kevin Buettner
 --------------------------------------------------------------------
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.673 2009/05/17 19:23:03 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.674 2009/08/20 20:45:54 tom Exp $
