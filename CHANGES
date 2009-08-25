@@ -1,6 +1,6 @@
 Changes for vile 9.8 (released ??? ??? ?? ????)
 
- 20090823 (u)
+ 20090824 (u)
 	> Mike Mackovitch:
 	+ use temporary bp variable in calls to writeout() to ensure that the
 	  buffer marked as unchanged will be the same.  This works around the
