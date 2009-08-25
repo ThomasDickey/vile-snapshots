@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Header: /users/source/archives/vile.vcs/filters/RCS/genmake.sh,v 1.9 2009/07/03 23:20:59 tom Exp $
+# $Header: /users/source/archives/vile.vcs/filters/RCS/genmake.sh,v 1.10 2009/08/24 20:36:21 tom Exp $
 # Scan the source-files in the "filters" directory to obtain the names which
 # are used for the default symbol table for each filter.  Update genmake.mak
 # if the lists differ.
@@ -99,7 +99,7 @@ do
 	esac
 
 	case $filename in #(vi
-	lex-filt)
+	lex-filt|htmlfilt)
 		FLEX="	flex"
 		;;
 	*)

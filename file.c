@@ -5,7 +5,7 @@
  * reading and writing of the disk are
  * in "fileio.c".
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.430 2009/08/17 09:33:00 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.431 2009/08/23 22:44:19 tom Exp $
  */
 
 #include "estruct.h"
@@ -903,7 +903,9 @@ ff_load_directory(char *fname)
 static int
 kifile(char *fname)
 {
+#if OPT_ENCRYPT
     BUFFER *bp = curbp;
+#endif
     int s;
     int nline;
     size_t i;
@@ -2467,7 +2469,9 @@ write_enc_region(void)
 int
 kwrite(char *fn, int msgf)
 {
+#if OPT_ENCRYPT
     BUFFER *bp = curbp;
+#endif
     KILL *kp;			/* pointer into kill register */
     int nline;
     B_COUNT nchar;
