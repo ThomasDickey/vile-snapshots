@@ -1,6 +1,6 @@
 dnl vile's local definitions for autoconf.
 dnl
-dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.191 2009/04/04 17:09:34 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.192 2009/08/24 10:43:59 tom Exp $
 dnl
 dnl ---------------------------------------------------------------------------
 dnl ---------------------------------------------------------------------------
@@ -745,7 +745,7 @@ CF_CURSES_HEADER
 CF_TERM_HEADER
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_CURSES_FUNCS version: 13 updated: 2007/04/28 09:15:55
+dnl CF_CURSES_FUNCS version: 14 updated: 2009/07/16 19:34:55
 dnl ---------------
 dnl Curses-functions are a little complicated, since a lot of them are macros.
 AC_DEFUN([CF_CURSES_FUNCS],
@@ -761,24 +761,7 @@ do
 	AC_CACHE_VAL(cf_cv_func_$cf_func,[
 		eval cf_result='$ac_cv_func_'$cf_func
 		if test ".$cf_result" != ".no"; then
-			AC_TRY_LINK([
-#ifdef HAVE_XCURSES
-#include <xcurses.h>
-char * XCursesProgramName = "test";
-#else
-#include <${cf_cv_ncurses_header-curses.h}>
-#if defined(NCURSES_VERSION) && defined(HAVE_NCURSESW_TERM_H)
-#include <ncursesw/term.h>
-#else
-#if defined(NCURSES_VERSION) && defined(HAVE_NCURSES_TERM_H)
-#include <ncurses/term.h>
-#else
-#ifdef HAVE_TERM_H
-#include <term.h>
-#endif
-#endif
-#endif
-#endif],
+			AC_TRY_LINK(CF__CURSES_HEAD,
 			[
 #ifndef ${cf_func}
 long foo = (long)(&${cf_func});
@@ -1370,7 +1353,7 @@ else
 fi
 ])
 dnl ---------------------------------------------------------------------------
-dnl CF_GCC_ATTRIBUTES version: 11 updated: 2007/07/29 09:55:12
+dnl CF_GCC_ATTRIBUTES version: 13 updated: 2009/08/11 20:19:56
 dnl -----------------
 dnl Test for availability of useful gcc __attribute__ directives to quiet
 dnl compiler warnings.  Though useful, not all are supported -- and contrary
@@ -1416,26 +1399,61 @@ extern void oops(char *,...) GCC_PRINTFLIKE(1,2) GCC_NORETURN;
 extern void foo(void) GCC_NORETURN;
 int main(int argc GCC_UNUSED, char *argv[[]] GCC_UNUSED) { return 0; }
 EOF
+	cf_printf_attribute=no
+	cf_scanf_attribute=no
 	for cf_attribute in scanf printf unused noreturn
 	do
 		CF_UPPER(cf_ATTRIBUTE,$cf_attribute)
 		cf_directive="__attribute__(($cf_attribute))"
 		echo "checking for $CC $cf_directive" 1>&AC_FD_CC
-		case $cf_attribute in
-		scanf|printf)
-		cat >conftest.h <<EOF
+
+		case $cf_attribute in #(vi
+		printf) #(vi
+			cf_printf_attribute=yes
+			cat >conftest.h <<EOF
 #define GCC_$cf_ATTRIBUTE 1
 EOF
 			;;
-		*)
-		cat >conftest.h <<EOF
+		scanf) #(vi
+			cf_scanf_attribute=yes
+			cat >conftest.h <<EOF
+#define GCC_$cf_ATTRIBUTE 1
+EOF
+			;;
+		*) #(vi
+			cat >conftest.h <<EOF
 #define GCC_$cf_ATTRIBUTE $cf_directive
 EOF
 			;;
 		esac
+
 		if AC_TRY_EVAL(ac_compile); then
 			test -n "$verbose" && AC_MSG_RESULT(... $cf_attribute)
 			cat conftest.h >>confdefs.h
+			case $cf_attribute in #(vi
+			printf) #(vi
+				if test "$cf_printf_attribute" = no ; then
+					cat >>confdefs.h <<EOF
+#define GCC_PRINTFLIKE(fmt,var) /* nothing */
+EOF
+				else
+					cat >>confdefs.h <<EOF
+#define GCC_PRINTFLIKE(fmt,var) __attribute__((format(printf,fmt,var)))
+EOF
+				fi
+				;;
+			scanf) #(vi
+				if test "$cf_scanf_attribute" = no ; then
+					cat >>confdefs.h <<EOF
+#define GCC_SCANFLIKE(fmt,var) /* nothing */
+EOF
+				else
+					cat >>confdefs.h <<EOF
+#define GCC_SCANFLIKE(fmt,var)  __attribute__((format(scanf,fmt,var)))
+EOF
+				fi
+				;;
+			esac
 		fi
 	done
 else
@@ -2041,28 +2059,48 @@ if test "$cf_lex_pointer" != yes ; then
 fi
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_LEX_STATES version: 4 updated: 2009/04/04 13:08:05
+dnl CF_LEX_STATES version: 5 updated: 2009/08/24 06:40:08
 dnl -------------
 dnl Check if the lex/flex program accepts states, i.e., %s and %x.  Older
 dnl implementations do not support these.
+dnl
+dnl $1 = optional parameter for number of states needed
 AC_DEFUN([CF_LEX_STATES],[
 AC_MSG_CHECKING(if $LEX supports states)
+
+cf_lex_statemax=ifelse($1,,32,$1)
+cf_lex_statenum=0
+cf_lex_states_s=
+cf_lex_states_x=
+
+cf_lex_states=no
+while test 0 != `expr $cf_lex_statenum \< $cf_lex_statemax`
+do
+cf_lex_statenum=`expr $cf_lex_statenum + 1`
+cf_lex_states_s="$cf_lex_states_s S$cf_lex_statenum"
+cf_lex_states_x="$cf_lex_states_x X$cf_lex_statenum"
 cat >conftest.l <<CF_EOF
-%s X Y Z
-%x A B C
+%s $cf_lex_states_s
+%x $cf_lex_states_x
 %%
 %%
 nothing	ECHO;
 CF_EOF
-cf_lex_states="$LEX conftest.l 1>&AC_FD_CC"
-if AC_TRY_EVAL(cf_lex_states); then
-cf_lex_states=yes
-else
-cf_lex_states=no
-fi
+	cf_lex_states="$LEX conftest.l 1>&AC_FD_CC"
+	if AC_TRY_EVAL(cf_lex_states); then
+		if test $cf_lex_statenum = $cf_lex_statemax; then
+			cf_lex_states=yes
+			break
+		else
+			cf_lex_states=$cf_lex_statenum
+		fi
+	else
+		break
+	fi
+done
 AC_MSG_RESULT($cf_lex_states)
 rm -f conftest.* $LEX_OUTPUT_ROOT.c
-if test "$cf_lex_states" != yes ; then
+if test "$cf_lex_states" = no ; then
 	AC_MSG_WARN(Your $LEX program does not support POSIX states.  Get flex.)
 fi
 ])dnl
@@ -3818,7 +3856,7 @@ AC_TRY_LINK([
 test $cf_cv_need_xopen_extension = yes && CPPFLAGS="$CPPFLAGS -D_XOPEN_SOURCE_EXTENDED"
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_XOPEN_SOURCE version: 28 updated: 2008/12/27 12:30:03
+dnl CF_XOPEN_SOURCE version: 29 updated: 2009/07/16 21:07:04
 dnl ---------------
 dnl Try to get _XOPEN_SOURCE defined properly that we can use POSIX functions,
 dnl or adapt to the vendor's definitions to get equivalent functionality,
@@ -3845,6 +3883,9 @@ freebsd*|dragonfly*) #(vi
 	cf_POSIX_C_SOURCE=200112L
 	cf_XOPEN_SOURCE=600
 	CPPFLAGS="$CPPFLAGS -D_BSD_TYPES -D__BSD_VISIBLE -D_POSIX_C_SOURCE=$cf_POSIX_C_SOURCE -D_XOPEN_SOURCE=$cf_XOPEN_SOURCE"
+	;;
+hpux11*) #(vi
+	CPPFLAGS="$CPPFLAGS -D_HPUX_SOURCE -D_XOPEN_SOURCE=500"
 	;;
 hpux*) #(vi
 	CPPFLAGS="$CPPFLAGS -D_HPUX_SOURCE"
@@ -4128,6 +4169,26 @@ test program.  You will have to check and add the proper libraries by hand
 to makefile.])
 fi
 ])dnl
+dnl ---------------------------------------------------------------------------
+dnl CF__CURSES_HEAD version: 1 updated: 2009/07/16 19:32:31
+dnl ---------------
+dnl Define a reusable chunk which includes <curses.h> and <term.h> when they
+dnl are both available.
+define([CF__CURSES_HEAD],[
+#ifdef HAVE_XCURSES
+#include <xcurses.h>
+char * XCursesProgramName = "test";
+#else
+#include <${cf_cv_ncurses_header-curses.h}>
+#if defined(NCURSES_VERSION) && defined(HAVE_NCURSESW_TERM_H)
+#include <ncursesw/term.h>
+#elif defined(NCURSES_VERSION) && defined(HAVE_NCURSES_TERM_H)
+#include <ncurses/term.h>
+#elif defined(HAVE_TERM_H)
+#include <term.h>
+#endif
+#endif
+])
 dnl ---------------------------------------------------------------------------
 dnl CF__ICONV_BODY version: 2 updated: 2007/07/26 17:35:47
 dnl --------------

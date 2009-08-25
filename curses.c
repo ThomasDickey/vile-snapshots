@@ -1,7 +1,7 @@
 /*
  * A terminal driver using the curses library
  *
- * $Header: /users/source/archives/vile.vcs/RCS/curses.c,v 1.40 2009/08/17 10:49:12 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/curses.c,v 1.41 2009/08/24 00:54:37 tom Exp $
  */
 
 #include "estruct.h"
@@ -64,7 +64,7 @@ curs_initialize(void)
 		term.set_title(tb_values(current_title));
 	    }
 	}
-	returnVoid;
+	returnVoid();
     }
 
     TRACE((T_CALLED "curs_initialize\n"));

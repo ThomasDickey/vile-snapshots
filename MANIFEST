@@ -1,4 +1,4 @@
-MANIFEST for vile, version v9_7t8
+MANIFEST for vile, version v9_7tB
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 CHANGES                         Change-log for VILE
@@ -59,7 +59,7 @@ gppconio.c                      patched console I/O support for DJGCC
 history.c                       command-history
 input.c                         various input-routines
 insert.c                        functions for character-insertion
-install.sh                      install-script, needed for configure
+install-sh                      install-script, needed for configure
 isearch.c                       incremental-search commands
 itbuff.c                        support functions for wide-character strings
 lckfiles.c                      locked-files support

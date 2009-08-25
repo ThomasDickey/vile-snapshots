@@ -1,12 +1,20 @@
 Changes for vile 9.8 (released ??? ??? ?? ????)
 
- 200908?? (u)
+ 20090823 (u)
 	> Mike Mackovitch:
 	+ use temporary bp variable in calls to writeout() to ensure that the
 	  buffer marked as unchanged will be the same.  This works around the
 	  Perl api's use of fake windows, setting curbp to match the current
 	  window, e.g., when redisplaying [Buffer List].
 	> Tom Dickey:
+	+ rename install.sh to install-sh, to avoid suffix-rules
+	+ move definitions for GCC_PRINTFLIKE and GCC_SCANFLIKE into configure
+	  macro.
+	+ add configure check for HPUX 11 _XOPEN_SOURCE definition.
+	+ modify configure check for lex states to show the number of states
+	  the lex implementation supports.  The html filter currently uses 16.
+	+ modify genmake.mak to require flex for html syntax filter; some less
+	  capable lex's have a too-low limit on states.
 	+ improve awk syntax highlighter:
 	  + highlight inline comments.
 	  + highlight regular expression used as parameter, e.g., in sub().
