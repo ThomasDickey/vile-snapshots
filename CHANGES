@@ -1,5 +1,15 @@
 Changes for vile 9.8 (released ??? ??? ?? ????)
 
+ 200909?? (v)
+	> Tom Dickey:
+	+ update configure check for lex version to work with reflex 20090902's
+	  inclusion of patch-date.
+	+ fix objc.key to reset symbol table (from "cpre" to "objc") before
+	  merging in "c" keywords (overlooked in 9.7q).
+	+ correct list of options for c-filter, to make objcmode work with
+	  external syntax filter.
+	+ update config.guess, config.sub
+	
  20090824 (u)
 	> Mike Mackovitch:
 	+ use temporary bp variable in calls to writeout() to ensure that the

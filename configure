@@ -4185,7 +4185,7 @@ then
 echo "${ECHO_T}yes" >&6
 	echo "$as_me:4186: checking version of $LEX" >&5
 echo $ECHO_N "checking version of $LEX... $ECHO_C" >&6
-	LEX_VERSION=`$LEX --version </dev/null 2>&1 | sed -e 's/^.* //;s/^[^0-9]*//'`
+	LEX_VERSION=`$LEX --version </dev/null 2>&1 | sed -e 's/^.* \([0-9]\)/\\1/;s/ .*$//;s/^[^0-9]*//'`
 	echo "$as_me:4189: result: $LEX_VERSION" >&5
 echo "${ECHO_T}$LEX_VERSION" >&6
 else
