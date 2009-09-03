@@ -6,20 +6,20 @@
  *		string literal ("Literal") support --  ben stoltz
  *		factor-out hashing and file I/O - tom dickey
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/c-filt.c,v 1.80 2009/05/12 22:47:25 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/c-filt.c,v 1.81 2009/09/03 00:11:06 tom Exp $
  *
  * Usage: refer to vile.hlp and doc/filters.doc .
  *
  * Options:
  *	-j	java special cases
  *	-o	objc has '@' directives
- *	-p	suppress preprocessor suppoer
+ *	-p	suppress preprocessor support
  *	-s	javascript special cases
  */
 
 #include <filters.h>
 
-DefineOptFilter("c", "jps");
+DefineOptFilter("c", "jops");
 
 #define UPPER(c) isalpha(CharOf(c)) ? toupper(CharOf(c)) : c
 
