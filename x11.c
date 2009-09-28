@@ -2,7 +2,7 @@
  *	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.333 2009/08/24 10:18:42 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.337 2009/09/27 22:11:02 tom Exp $
  *
  */
 
@@ -449,6 +449,11 @@ typedef struct _text_win {
 
 } TextWindowRec, *TextWindow;
 
+typedef struct {
+    Atom *targets;
+    Time time;
+} SelectionList;
+
 static Display *dpy;
 
 static TextWindowRec cur_win_rec;
@@ -474,6 +479,8 @@ static Atom atom_MULTIPLE;
 static Atom atom_TIMESTAMP;
 static Atom atom_TEXT;
 static Atom atom_CLIPBOARD;
+static Atom atom_COMPOUND_TEXT;
+static Atom atom_UTF8_STRING;
 
 #if OPT_KEV_SCROLLBARS || OPT_XAW_SCROLLBARS
 static Cursor curs_sb_v_double_arrow;
@@ -2758,10 +2765,8 @@ visibleAtoms(Atom value)
 	result = "XA_ATOM";
     else if (value == atom_CLIPBOARD)
 	result = "XA_CLIPBOARD";
-#ifdef XA_COMPOUND_TEXT
-    else if (value == XA_COMPOUND_TEXT(dpy))
+    else if (value == atom_COMPOUND_TEXT)
 	result = "XA_COMPOUND_TEXT";
-#endif
     else if (value == atom_MULTIPLE)
 	result = "MULTIPLE";
     else if (value == XA_PRIMARY)
@@ -2774,10 +2779,8 @@ visibleAtoms(Atom value)
 	result = "XA_TEXT";
     else if (value == atom_TIMESTAMP)
 	result = "XA_TIMESTAMP";
-#ifdef XA_UTF8_STRING
-    else if (value == XA_UTF8_STRING(dpy))
+    else if (value == atom_UTF8_STRING)
 	result = "XA_UTF8_STRING";
-#endif
     else
 	result = "unknown";
     return result;
@@ -3811,6 +3814,8 @@ x_preparse_args(int *pargc, char ***pargv)
     atom_TIMESTAMP = XInternAtom(dpy, "TIMESTAMP", False);
     atom_TEXT = XInternAtom(dpy, "TEXT", False);
     atom_CLIPBOARD = XInternAtom(dpy, "CLIPBOARD", False);
+    atom_COMPOUND_TEXT = XInternAtom(dpy, "COMPOUND_TEXT", False);
+    atom_UTF8_STRING = XInternAtom(dpy, "UTF8_STRING", False);
 
     set_pointer(XtWindow(cur_win->screen), cur_win->normal_pointer);
 
@@ -4312,8 +4317,8 @@ x_close(void)
 	XtDestroyWidget(cur_win->top_widget);
 #endif
 	cur_win->top_widget = 0;
-	XtCloseDisplay(dpy);	/* need this if $xshell left subprocesses */
 	CloseInputMethod();
+	XtCloseDisplay(dpy);	/* need this if $xshell left subprocesses */
     }
 }
 
@@ -5039,12 +5044,8 @@ GetSelectionTargets(void)
     if (result[0] == 0) {
 	Atom *tp = result;
 #if OPT_MULTIBYTE
-#ifdef XA_UTF8_STRING
-	*tp++ = XA_UTF8_STRING(dpy);
-#endif
-#ifdef XA_COMPOUND_TEXT
-	*tp++ = XA_COMPOUND_TEXT(dpy);
-#endif
+	*tp++ = atom_UTF8_STRING;
+	*tp++ = atom_COMPOUND_TEXT;
 #endif
 	*tp++ = atom_TEXT;
 	*tp++ = XA_STRING;
@@ -5082,13 +5083,15 @@ insert_selection(Atom * selection, char *value, size_t length)
 /* ARGSUSED */
 static void
 x_get_selection(Widget w GCC_UNUSED,
-		XtPointer cldat GCC_UNUSED,
+		XtPointer cldat,
 		Atom * selection,
 		Atom * target,
 		XtPointer value,
 		ULONG * length,
 		int *format)
 {
+    SelectionList *list = (SelectionList *) cldat;
+
     TRACE(("x_get_selection(selection %s, target %s, format %d, length %lu)\n",
 	   visibleAtoms(*selection),
 	   visibleAtoms(*target),
@@ -5098,19 +5101,13 @@ x_get_selection(Widget w GCC_UNUSED,
     if (length != 0 && value != NULL) {
 	if (*format != 8) {
 	    kbd_alarm();	/* can't handle incoming data */
-	} else if (*target == XA_STRING) {
+	} else if (*target == XA_STRING || *target == atom_TEXT) {
 	    insert_selection(selection, (char *) value, (size_t) *length);
 	    XtFree((char *) value);
 	} else
 #if OPT_MULTIBYTE
-	    if (0
-#ifdef XA_COMPOUND_TEXT
-		|| (*target == XA_COMPOUND_TEXT(dpy))
-#endif
-#ifdef XA_UTF8_STRING
-		|| (*target == XA_UTF8_STRING(dpy))
-#endif
-	    ) {
+	    if ((*target == atom_COMPOUND_TEXT)
+		|| (*target == atom_UTF8_STRING)) {
 	    XTextProperty text_prop;
 	    char **text_list = NULL;
 	    int text_list_count, n;
@@ -5152,6 +5149,21 @@ x_get_selection(Widget w GCC_UNUSED,
 	{
 	    kbd_alarm();	/* can't handle incoming data */
 	}
+	XtFree((char *) list);
+    } else if (cldat != 0) {
+	if (list->targets[0] != None) {
+	    Atom newTarget = list->targets[0];
+
+	    list->targets++;
+	    XtGetSelectionValue(cur_win->top_widget,
+				*selection,
+				newTarget,
+				x_get_selection,
+				(XtPointer) (list),	/* client data */
+				list->time);
+	} else {
+	    XtFree((char *) list);
+	}
     }
 }
 
@@ -5176,12 +5188,17 @@ x_paste_selection(Atom selection)
 			(XtPointer) data, &len_ul, &format);
     } else {
 	Atom *targets = GetSelectionTargets();
+	SelectionList *list = XtNew(SelectionList);
+	Time ev_time = XtLastTimestampProcessed(dpy);
+
+	list->targets = targets + 1;
+	list->time = ev_time;
 	XtGetSelectionValue(cur_win->top_widget,
 			    selection,
 			    targets[0],
 			    x_get_selection,
-			    (XtPointer) (targets + 1),	/* client data */
-			    XtLastTimestampProcessed(dpy));
+			    (XtPointer) (list),		/* client data */
+			    ev_time);
     }
 }
 
@@ -5258,10 +5275,9 @@ x_convert_selection(Widget w GCC_UNUSED,
     Boolean result = False;
 
     TRACE((T_CALLED
-	   "x_convert_selection(selection %s, target %s, length %ld)\n",
+	   "x_convert_selection(selection %s, target %s)\n",
 	   visibleAtoms(*selection),
-	   visibleAtoms(*target),
-	   *length));
+	   visibleAtoms(*target)));
 
     if (!cur_win->have_selection && IsPrimary(*selection))
 	returnCode(False);
@@ -5307,8 +5323,14 @@ x_convert_selection(Widget w GCC_UNUSED,
 	    result = x_get_clipboard_text((UCHAR **) value, (size_t *) length);
     }
 #if OPT_MULTIBYTE
-#ifdef XA_UTF8_STRING
-    else if (*target == XA_UTF8_STRING(dpy)) {
+    else if (*target == atom_UTF8_STRING) {
+	*type = *target;
+	*format = 8;
+	if (IsPrimary(*selection))
+	    result = x_get_selected_text((UCHAR **) value, (size_t *) length);
+	else			/* CLIPBOARD */
+	    result = x_get_clipboard_text((UCHAR **) value, (size_t *) length);
+    } else if (*target == atom_COMPOUND_TEXT) {
 	*type = *target;
 	*format = 8;
 	if (IsPrimary(*selection))
@@ -5316,17 +5338,6 @@ x_convert_selection(Widget w GCC_UNUSED,
 	else			/* CLIPBOARD */
 	    result = x_get_clipboard_text((UCHAR **) value, (size_t *) length);
     }
-#endif
-#ifdef XA_COMPOUND_TEXT
-    else if (*target == XA_COMPOUND_TEXT(dpy)) {
-	*type = *target;
-	*format = 8;
-	if (IsPrimary(*selection))
-	    result = x_get_selected_text((UCHAR **) value, (size_t *) length);
-	else			/* CLIPBOARD */
-	    result = x_get_clipboard_text((UCHAR **) value, (size_t *) length);
-    }
-#endif
 #endif /* OPT_MULTIBYTE */
 
     returnCode(result);
