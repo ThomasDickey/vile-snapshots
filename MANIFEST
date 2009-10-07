@@ -1,6 +1,7 @@
-MANIFEST for vile, version v9_7u4
+MANIFEST for vile, version v9_7u3
 --------------------------------------------------------------------------------
 MANIFEST                        this file
+AUTHORS                         list of authors, with nicknames in CHANGES
 CHANGES                         Change-log for VILE
 CHANGES.R3                      Vile 3.0 change-log
 CHANGES.R4                      Vile 4.0 change-log
@@ -372,6 +373,7 @@ icons/vile.ico                  Windows icon, for vile
 icons/vile.xbm                  sample icon, for X bitmap
 icons/vile.xpm                  sample icon, for xpm library
 macros                          subdirectory
+macros/UXVile.ad                X resources for uxvile
 macros/XVile.ad                 sample X resource file for vile
 macros/color-ls.rc              sample macro: read output of "color ls"
 macros/dates.rc                 demo of &date function
@@ -385,11 +387,14 @@ macros/pictmode.rc              macros to support "picture-mode" editing
 macros/search.rc                find a file in one of several locations
 macros/shifts.rc                macros to shift words left/right
 macros/showeach.rc              show-each-buffer
+macros/uxvile                   wrapper script to run xvile in UTF-8 locale
+macros/uxvile.desktop           desktop file for uxvile
 macros/vile-pager               use vile as a pager
 macros/vileinit.rc              sample initialization file
 macros/vilemenu.rc              sample menu for xvile
 macros/vileperl.rc              sample initialization for perl scripts
 macros/which.rc                 script to show which keyword file is found by filters
+macros/xvile.desktop            desktop-file for xvile
 package                         subdirectory
 package/winvile-wide.iss        Inno Setup script for winvile-wide
 package/winvile.iss             Inno Setup script for winvile
