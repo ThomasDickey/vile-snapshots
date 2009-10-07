@@ -1,0 +1,5 @@
+! $Header: /users/source/archives/vile.vcs/macros/RCS/UXVile.ad,v 1.1 2009/10/07 10:53:26 tom Exp $
+
+*font:	-misc-fixed-medium-r-normal--18-120-100-100-c-90-iso10646-1
+
+#include "XVile"

@@ -2,9 +2,6 @@ Changes for vile 9.8 (released ??? ??? ?? ????)
 
  200909?? (v)
 	> Tom Dickey:
-	+ bypass symbols for XA_COMPOUND_TEXT() and XA_UTF8_STRING() in xvile,
-	  to resolve portability issues with older X headers/libraries (report
-	  by David Rolfe).
 	+ correct handling of retries for different selection types in xvile
 	  broken in 9.7u (report by Steven Lembark).
 	+ update configure check for lex version to work with reflex 20090902's
