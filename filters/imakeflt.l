@@ -7,7 +7,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/imakeflt.l,v 1.21 2009/05/12 22:47:25 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/imakeflt.l,v 1.22 2009/10/07 09:37:45 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Imakefile
  *
@@ -120,7 +120,7 @@ preprocessor(char *text, int size)
 	save = *t;
 	*t = 0;
 	attr = keyword_attr(s);
-	*t = save;
+	*t = (char) save;
 	set_symbol_table(default_table);
     }
     if (attr != 0) {
@@ -215,7 +215,7 @@ write_keyword(char *text, int size, int prepro, int caseless)
     } else {
 	nospcs = want_tabs(base, before);
     }
-    text[size] = save;
+    text[size] = (char) save;
 
     if (before) {
 	if ((tabs && notabs) || nospcs) {
@@ -247,7 +247,7 @@ write_keyword(char *text, int size, int prepro, int caseless)
  *    [<white>]<token>[<white>]
  */
 static char *
-write_delimited_unit(char *text, char **attr, char **gaps)
+write_delimited_unit(char *text, char **attr, const char **gaps)
 {
     char *pwhite, *ptoken, *panchor, *pnxt_unit;
 
@@ -283,7 +283,7 @@ static void
 write_delimited(char *text, int size, char *attr, int first)
 {
     char *cp, delim[2];
-    char *gaps = "";
+    const char *gaps = "";
 
     /*
      * Workaround for special case of XCOMM line containing a colon.
@@ -296,7 +296,7 @@ write_delimited(char *text, int size, char *attr, int first)
 
 	*test = '\0';
 	same = (keyword_attr(temp) == Comment_attr);
-	*test = save;
+	*test = (char) save;
 
 	if ((test - temp == 5) && same) {
 	    BEGIN(COMMENT);	/* BeginQuote(COMMENT) */

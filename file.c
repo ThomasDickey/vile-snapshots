@@ -5,7 +5,7 @@
  * reading and writing of the disk are
  * in "fileio.c".
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.431 2009/08/23 22:44:19 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.432 2009/10/06 01:02:14 tom Exp $
  */
 
 #include "estruct.h"
@@ -2888,7 +2888,7 @@ imdying(int ACTUAL_SIG_ARGS)
 
 	    cp = lsprintf(cp, ") | %s %s", *mailcmdp, np);
 
-	    (void) system(cmd);
+	    IGNORE_RC( system(cmd));
 	}
     }
     term.cursorvis(TRUE);	/* ( this might work ;-) */

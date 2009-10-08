@@ -1,7 +1,7 @@
 /*
  * Convert attributed text to html.
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/atr2html.c,v 1.4 2007/05/05 15:23:03 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/atr2html.c,v 1.5 2009/10/07 09:23:07 tom Exp $
  */
 #include <unfilter.h>
 
@@ -54,7 +54,7 @@ markup_unfilter(FILE *dst, int attrib)
 void
 write_unfilter(FILE *dst, int ch, int attrib GCC_UNUSED)
 {
-    char *alias = 0;
+    const char *alias = 0;
 
     (void) attrib;
 

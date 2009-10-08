@@ -3,7 +3,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/vl-filt.l,v 1.17 2009/04/25 16:20:07 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/vl-filt.l,v 1.18 2009/10/07 09:41:30 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of VeriLog
  * program.
@@ -79,7 +79,7 @@ DSTRING		\"(\\.|[^"\\])*\"
 static void
 do_define(char *string)
 {
-    char *keydef = "`define";
+    const char *keydef = "`define";
     int lendef = 7;
 
     flt_puts(string, lendef, keyword_attr(keydef));

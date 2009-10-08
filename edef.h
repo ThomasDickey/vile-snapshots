@@ -6,7 +6,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.349 2009/04/02 23:54:14 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.351 2009/10/06 00:59:08 tom Exp $
  */
 
 #ifndef VILE_EDEF_H
@@ -49,26 +49,26 @@ decl_init( char *exec_pathname, "." );	/* replaced at runtime with path-head of 
 # endif
 #endif /* PROGRAM_NAME */
 
-decl_init( char prognam[], PROGRAM_NAME );
-decl_init( char version[], "version " VILE_RELEASE "." VILE_VERSION );
+decl_init_const ( char prognam[], PROGRAM_NAME );
+decl_init_const ( char version[], "version " VILE_RELEASE "." VILE_VERSION );
 
 #ifdef SYSTEM_NAME
-decl_init( char opersys[], SYSTEM_NAME );
+decl_init_const ( char opersys[], SYSTEM_NAME );
 #else
 #if SYS_UNIX
-decl_init( char opersys[], "unix" );
+decl_init_const ( char opersys[], "unix" );
 #endif
 #if SYS_VMS
-decl_init( char opersys[], "vms" );
+decl_init_const ( char opersys[], "vms" );
 #endif
 #if SYS_MSDOS
-decl_init( char opersys[], "dos" );
+decl_init_const ( char opersys[], "dos" );
 #endif
 #if SYS_OS2
-decl_init( char opersys[], "os/2" );
+decl_init_const ( char opersys[], "os/2" );
 #endif
 #if SYS_WINNT
-decl_init( char opersys[], "win32" );
+decl_init_const ( char opersys[], "win32" );
 #endif
 #endif
 
@@ -160,6 +160,10 @@ decl_uninit( HOOK bufhook );		/* proc to run when change buf */
 decl_uninit( HOOK exithook );		/* proc to run when exiting */
 decl_uninit( HOOK autocolorhook );	/* proc to run for autocoloring */
 decl_uninit( HOOK majormodehook );	/* proc to run for majormodes */
+#endif
+
+#if defined(__GNUC__) && defined(_FORTIFY_SOURCE)
+decl_uninit( int ignore_unused );
 #endif
 
 decl_uninit( int ignorecase );
@@ -296,6 +300,10 @@ decl_init( TBUFF *filename_expr, 0 );
 decl_init( TBUFF *error_expr, 0 );
 decl_init( TBUFF *error_match, 0 );
 decl_init( int error_tabstop, 8 );
+#endif
+
+#if OPT_FONT
+decl_uninit( char *default_font );
 #endif
 
 #if OPT_MODELINE

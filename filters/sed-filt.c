@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/sed-filt.c,v 1.23 2008/01/12 16:44:13 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/sed-filt.c,v 1.24 2009/10/07 09:03:10 tom Exp $
  *
  * Filter to add vile "attribution" sequences to sed scripts.
  */
@@ -26,13 +26,13 @@ typedef enum {
     ,AfterCommandChar
 } States;
 
-static char *Action_attr;
-static char *Comment_attr;
-static char *Error_attr;
-static char *Ident_attr;
-static char *Ident2_attr;
-static char *Literal_attr;
-static char *Number_attr;
+static const char *Action_attr;
+static const char *Comment_attr;
+static const char *Error_attr;
+static const char *Ident_attr;
+static const char *Ident2_attr;
+static const char *Literal_attr;
+static const char *Number_attr;
 
 static char *
 SkipBlanks(char *s)
@@ -52,12 +52,12 @@ SkipError(char *s)
 
     while (len > 0 && isspace(CharOf(s[len - 1])))
 	len--;
-    flt_puts(base, len, Error_attr);
+    flt_puts(base, (int) len, Error_attr);
     return SkipBlanks(base + len);
 }
 
 static char *
-SkipRemaining(char *s, char *attr)
+SkipRemaining(char *s, const char *attr)
 {
     char *base = s;
     size_t len = strlen(s);

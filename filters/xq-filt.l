@@ -3,7 +3,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/xq-filt.l,v 1.12 2009/08/19 08:57:51 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/xq-filt.l,v 1.13 2009/10/07 09:34:01 tom Exp $
  *
  * XQuery is case-sensitive
  * XQuery elements, attributes, and variables must be valid XML names
@@ -133,10 +133,10 @@ VALUE		#{IDENT}
 				  }
 			      }
 			  }
-			  flt_puts(text, strlen(text), attr);
+			  flt_puts(text, (int) strlen(text), attr);
 			}
 <INITIAL,INLINE>"$"{IDENT}	{
-			  char *attr = "";
+			  const char *attr = "";
 			  if (Num_tags <= 0 || curly_braces > Num_tags) {
 			      attr = Ident2_attr;
 			  }
@@ -211,7 +211,7 @@ xml_prefixed_property(char *text, int len)
 #define LEN_XMLNS 6
 
     if (len > LEN_XMLNS && !strncmp(text, STR_XMLNS, LEN_XMLNS)) {
-	char *old_table = get_symbol_table();
+	const char *old_table = get_symbol_table();
 	char *marker = (text + LEN_XMLNS - 1);
 
 	set_symbol_table(SYMS_XMLNS);
@@ -224,7 +224,7 @@ xml_prefixed_property(char *text, int len)
 	flt_putc(*marker++);
 	flt_puts(marker, len - LEN_XMLNS, Action_attr);
     } else {
-	flt_puts(text, strlen(text), xml_keyword_attr(text));
+	flt_puts(text, (int) strlen(text), xml_keyword_attr(text));
     }
 }
 
@@ -241,7 +241,7 @@ prefixed_attr(char *name, char **text)
     char *marker = strchr(name, ':');
 
     if (marker != 0 && marker[1] != '\0') {
-	char *old_table = get_symbol_table();
+	const char *old_table = get_symbol_table();
 	char new_table[LEN_TABLENAME];
 
 	*marker = '\0';
@@ -249,7 +249,7 @@ prefixed_attr(char *name, char **text)
 	attr = keyword_attr(name);
 	if (isEmpty(attr))
 	    attr = Ident_attr;
-	flt_puts(name, strlen(name), attr);
+	flt_puts(name, (int) strlen(name), attr);
 	set_symbol_table(old_table);
 
 	sprintf(new_table, FMT_XMLNS, name);
@@ -271,7 +271,7 @@ unprefixed_attr(char *name)
 {
     const char *attr = "";
 
-    char *old_table = get_symbol_table();
+    const char *old_table = get_symbol_table();
     char new_table[LEN_TABLENAME];
 
     sprintf(new_table, FMT_XMLNS, "fn");
@@ -347,7 +347,7 @@ xml_command(char *text)
     if (isEmpty(attr)) {
 	attr = prefixed_attr(name, &text);
     }
-    flt_puts(text, strlen(text), attr);
+    flt_puts(text, (int) strlen(text), attr);
 }
 
 static void
@@ -358,7 +358,7 @@ xml_close(char *text)
 	    free(Tags[--Num_tags].name);
     }
 
-    flt_puts(text, strlen(text), Action_attr);
+    flt_puts(text, (int) strlen(text), Action_attr);
 
     set_symbol_table(default_table);
 }

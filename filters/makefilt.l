@@ -7,7 +7,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/makefilt.l,v 1.59 2009/04/25 16:18:40 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/makefilt.l,v 1.60 2009/10/07 09:40:11 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Makefile
  *
@@ -181,7 +181,7 @@ write_keyword(char *text, int size, int prepro, int caseless)
     } else {
 	nospcs = want_tabs(base, before);
     }
-    text[size] = save;
+    text[size] = (char) save;
 
     if (before) {
 	if ((tabs && notabs) || nospcs) {
@@ -207,7 +207,7 @@ write_keyword(char *text, int size, int prepro, int caseless)
  *    [<white>]<token>[<white>]
  */
 static char *
-write_delimited_unit(char *text, char **attr, char **gaps)
+write_delimited_unit(char *text, char **attr, const char **gaps)
 {
     char *pwhite, *ptoken, *panchor, *pnxt_unit;
 
@@ -242,7 +242,7 @@ static void
 write_delimited(char *text, int size, int less, char *attr)
 {
     char *cp;
-    char *gaps = "";
+    const char *gaps = "";
     int save = text[size - less];
 
     text[size - less] = '\0';
@@ -255,7 +255,7 @@ write_delimited(char *text, int size, int less, char *attr)
 	    cp = write_delimited_unit(cp, &attr, &gaps);
     } while (*cp);
 
-    text[size - less] = save;
+    text[size - less] = (char) save;
     flt_puts(text + size - less, less, gaps);
 }
 

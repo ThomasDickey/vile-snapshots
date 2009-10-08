@@ -1,6 +1,6 @@
 dnl vile's local definitions for autoconf.
 dnl
-dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.193 2009/09/03 09:15:41 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.195 2009/10/07 08:44:51 tom Exp $
 dnl
 dnl ---------------------------------------------------------------------------
 dnl ---------------------------------------------------------------------------
@@ -3129,16 +3129,38 @@ if test "$cf_cv_sizechange" != no ; then
 fi
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_STDIO_UNLOCKED version: 1 updated: 2007/05/05 11:11:12
+dnl CF_STDIO_UNLOCKED version: 3 updated: 2009/10/06 19:54:39
 dnl -----------------
 dnl The four functions getc_unlocked(), getchar_unlocked(), putc_unlocked(),
 dnl putchar_unlocked() are in POSIX.1-2001.
-AC_DEFUN([CF_STDIO_UNLOCKED],[
-AC_HAVE_FUNCS( \
-getc_unlocked \
-putc_unlocked \
-)
-])dnl
+dnl
+dnl Test for one or more of the "unlocked" stdio getc/putc functions, and (if
+dnl the system requires it to declare the prototype) define _REENTRANT
+dnl
+dnl $1 = one or more stdio functions to check for existence and prototype.
+AC_DEFUN([CF_STDIO_UNLOCKED],
+[
+cf_stdio_unlocked=no
+AC_CHECK_FUNCS(ifelse([$1],,[getc_unlocked putc_unlocked],[$1]),
+	[cf_stdio_unlocked=$ac_func])
+if test "$cf_stdio_unlocked" != no ; then
+	case "$CPPFLAGS" in #(vi
+	*-D_REENTRANT*) #(vi
+		;;
+	*)
+	AC_CACHE_CHECK(if we should define _REENTRANT,cf_cv_stdio_unlocked,[
+	AC_TRY_COMPILE([#include <stdio.h>],[
+		extern void *$cf_stdio_unlocked(void *);
+		void *dummy = $cf_stdio_unlocked(0)],
+			[cf_cv_stdio_unlocked=yes],
+			[cf_cv_stdio_unlocked=no])])
+		if test "$cf_cv_stdio_unlocked" = yes ; then
+			AC_DEFINE(_REENTRANT)
+		fi
+		;;
+	esac
+fi
+])
 dnl ---------------------------------------------------------------------------
 dnl CF_STRUCT_TERMIOS version: 5 updated: 2000/11/04 12:22:46
 dnl -----------------
@@ -3670,6 +3692,27 @@ AC_ARG_WITH(no-leaks,
 	 with_no_leaks=yes],
 	[with_no_leaks=])
 AC_MSG_RESULT($with_no_leaks)
+])dnl
+dnl ---------------------------------------------------------------------------
+dnl CF_WITH_PATH version: 8 updated: 2007/05/13 13:16:35
+dnl ------------
+dnl Wrapper for AC_ARG_WITH to ensure that user supplies a pathname, not just
+dnl defaulting to yes/no.
+dnl
+dnl $1 = option name
+dnl $2 = help-text
+dnl $3 = environment variable to set
+dnl $4 = default value, shown in the help-message, must be a constant
+dnl $5 = default value, if it's an expression & cannot be in the help-message
+dnl
+AC_DEFUN([CF_WITH_PATH],
+[AC_ARG_WITH($1,[$2 ](default: ifelse($4,,empty,$4)),,
+ifelse($4,,[withval="${$3}"],[withval="${$3-ifelse($5,,$4,$5)}"]))dnl
+if ifelse($5,,true,[test -n "$5"]) ; then
+CF_PATH_SYNTAX(withval)
+fi
+$3="$withval"
+AC_SUBST($3)dnl
 ])dnl
 dnl ---------------------------------------------------------------------------
 dnl CF_WITH_PATHLIST version: 6 updated: 2009/01/11 20:30:23

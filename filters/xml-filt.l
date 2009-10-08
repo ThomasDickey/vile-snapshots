@@ -3,7 +3,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/xml-filt.l,v 1.29 2009/08/19 09:02:41 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/xml-filt.l,v 1.30 2009/10/07 09:41:44 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of XML input
  * text.
@@ -155,7 +155,7 @@ xml_prefixed_property(char *text, int len)
 #define LEN_XMLNS 6
 
     if (len > LEN_XMLNS && !strncmp(text, STR_XMLNS, LEN_XMLNS)) {
-	char *old_table = get_symbol_table();
+	const char *old_table = get_symbol_table();
 	char *marker = (text + LEN_XMLNS - 1);
 
 	set_symbol_table(SYMS_XMLNS);
@@ -241,7 +241,7 @@ xml_command(char *text)
     if (isEmpty(attr)) {
 	char *marker = strchr(text, ':');
 	if (marker != 0 && marker[1] != '\0') {
-	    char *old_table = get_symbol_table();
+	    const char *old_table = get_symbol_table();
 	    char new_table[LEN_TABLENAME];
 
 	    *marker = '\0';

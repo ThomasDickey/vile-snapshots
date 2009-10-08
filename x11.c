@@ -2,7 +2,7 @@
  *	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.335 2009/09/22 00:40:09 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.339 2009/10/05 01:00:13 tom Exp $
  *
  */
 
@@ -479,6 +479,8 @@ static Atom atom_MULTIPLE;
 static Atom atom_TIMESTAMP;
 static Atom atom_TEXT;
 static Atom atom_CLIPBOARD;
+static Atom atom_COMPOUND_TEXT;
+static Atom atom_UTF8_STRING;
 
 #if OPT_KEV_SCROLLBARS || OPT_XAW_SCROLLBARS
 static Cursor curs_sb_v_double_arrow;
@@ -1870,7 +1872,7 @@ static XtResource resources[] =
 	sizeof(String *),
 	XtOffset(TextWindow, starting_fontname),
 	XtRImmediate,
-	(XtPointer) XtDefaultFont	/* used to be FONTNAME */
+	(XtPointer) "fixed"	/* used to be FONTNAME */
     },
     {
 	XtNforeground,
@@ -2763,10 +2765,8 @@ visibleAtoms(Atom value)
 	result = "XA_ATOM";
     else if (value == atom_CLIPBOARD)
 	result = "XA_CLIPBOARD";
-#ifdef XA_COMPOUND_TEXT
-    else if (value == XA_COMPOUND_TEXT(dpy))
+    else if (value == atom_COMPOUND_TEXT)
 	result = "XA_COMPOUND_TEXT";
-#endif
     else if (value == atom_MULTIPLE)
 	result = "MULTIPLE";
     else if (value == XA_PRIMARY)
@@ -2779,10 +2779,8 @@ visibleAtoms(Atom value)
 	result = "XA_TEXT";
     else if (value == atom_TIMESTAMP)
 	result = "XA_TIMESTAMP";
-#ifdef XA_UTF8_STRING
-    else if (value == XA_UTF8_STRING(dpy))
+    else if (value == atom_UTF8_STRING)
 	result = "XA_UTF8_STRING";
-#endif
     else
 	result = "unknown";
     return result;
@@ -3054,6 +3052,7 @@ x_preparse_args(int *pargc, char ***pargv)
 	    ExitProgram(BADEXIT);
 	}
     }
+    default_font = strmalloc(cur_win->starting_fontname);
     (void) set_character_class(cur_win->multi_click_char_class);
 
     /*
@@ -3816,6 +3815,8 @@ x_preparse_args(int *pargc, char ***pargv)
     atom_TIMESTAMP = XInternAtom(dpy, "TIMESTAMP", False);
     atom_TEXT = XInternAtom(dpy, "TEXT", False);
     atom_CLIPBOARD = XInternAtom(dpy, "CLIPBOARD", False);
+    atom_COMPOUND_TEXT = XInternAtom(dpy, "COMPOUND_TEXT", False);
+    atom_UTF8_STRING = XInternAtom(dpy, "UTF8_STRING", False);
 
     set_pointer(XtWindow(cur_win->screen), cur_win->normal_pointer);
 
@@ -5044,12 +5045,8 @@ GetSelectionTargets(void)
     if (result[0] == 0) {
 	Atom *tp = result;
 #if OPT_MULTIBYTE
-#ifdef XA_UTF8_STRING
-	*tp++ = XA_UTF8_STRING(dpy);
-#endif
-#ifdef XA_COMPOUND_TEXT
-	*tp++ = XA_COMPOUND_TEXT(dpy);
-#endif
+	*tp++ = atom_UTF8_STRING;
+	*tp++ = atom_COMPOUND_TEXT;
 #endif
 	*tp++ = atom_TEXT;
 	*tp++ = XA_STRING;
@@ -5110,14 +5107,8 @@ x_get_selection(Widget w GCC_UNUSED,
 	    XtFree((char *) value);
 	} else
 #if OPT_MULTIBYTE
-	    if (0
-#ifdef XA_COMPOUND_TEXT
-		|| (*target == XA_COMPOUND_TEXT(dpy))
-#endif
-#ifdef XA_UTF8_STRING
-		|| (*target == XA_UTF8_STRING(dpy))
-#endif
-	    ) {
+	    if ((*target == atom_COMPOUND_TEXT)
+		|| (*target == atom_UTF8_STRING)) {
 	    XTextProperty text_prop;
 	    char **text_list = NULL;
 	    int text_list_count, n;
@@ -5333,8 +5324,14 @@ x_convert_selection(Widget w GCC_UNUSED,
 	    result = x_get_clipboard_text((UCHAR **) value, (size_t *) length);
     }
 #if OPT_MULTIBYTE
-#ifdef XA_UTF8_STRING
-    else if (*target == XA_UTF8_STRING(dpy)) {
+    else if (*target == atom_UTF8_STRING) {
+	*type = *target;
+	*format = 8;
+	if (IsPrimary(*selection))
+	    result = x_get_selected_text((UCHAR **) value, (size_t *) length);
+	else			/* CLIPBOARD */
+	    result = x_get_clipboard_text((UCHAR **) value, (size_t *) length);
+    } else if (*target == atom_COMPOUND_TEXT) {
 	*type = *target;
 	*format = 8;
 	if (IsPrimary(*selection))
@@ -5342,17 +5339,6 @@ x_convert_selection(Widget w GCC_UNUSED,
 	else			/* CLIPBOARD */
 	    result = x_get_clipboard_text((UCHAR **) value, (size_t *) length);
     }
-#endif
-#ifdef XA_COMPOUND_TEXT
-    else if (*target == XA_COMPOUND_TEXT(dpy)) {
-	*type = *target;
-	*format = 8;
-	if (IsPrimary(*selection))
-	    result = x_get_selected_text((UCHAR **) value, (size_t *) length);
-	else			/* CLIPBOARD */
-	    result = x_get_clipboard_text((UCHAR **) value, (size_t *) length);
-    }
-#endif
 #endif /* OPT_MULTIBYTE */
 
     returnCode(result);

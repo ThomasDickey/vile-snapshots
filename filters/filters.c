@@ -1,7 +1,7 @@
 /*
  * Common utility functions for vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.142 2009/06/02 21:22:16 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.144 2009/10/07 23:10:10 tom Exp $
  *
  */
 
@@ -234,52 +234,62 @@ AttrsOnce(KEYWORD * entry)
 }
 
 static void
-ExecAbbrev(char *param)
+ExecAbbrev(const char *param)
 {
     zero_or_more = *param;
     VERBOSE(1, ("set abbrev '%c'\n", zero_or_more));
 }
 
 static void
-ExecBrief(char *param)
+ExecBrief(const char *param)
 {
     zero_or_all = *param;
     VERBOSE(1, ("set brief '%c'\n", zero_or_all));
 }
 
 static void
-ExecClass(char *param)
+ExecClass(const char *param)
 {
-    parse_keyword(param, 1);
+    char *temp = strmalloc(param);
+    parse_keyword(temp, 1);
+    free(temp);
 }
 
 static void
-ExecDefault(char *param)
+ExecDefault(const char *param)
 {
-    char *s = skip_ident(param);
+    char *temp = strmalloc(param);
+    char *s = skip_ident(temp);
     int save = *s;
+    int fixup = 1;
 
     *s = 0;
-    if (!*param)
-	param = NAME_KEYWORD;
-    if (is_class(param)) {
-	*s = (char) save;
-	flt_init_attr(param);
+    if (!*temp) {
+	fixup = 0;
+	free(temp);
+	temp = strmalloc(NAME_KEYWORD);
+    }
+    if (is_class(temp)) {
+	if (fixup)
+	    *s = (char) save;
+	flt_init_attr(temp);
 	VERBOSE(1, ("set default_attr '%s' %p\n", default_attr, default_attr));
     } else {
-	*s = (char) save;
-	VERBOSE(1, ("not a class:%s", param));
+	if (fixup)
+	    *s = (char) save;
+	VERBOSE(1, ("not a class:%s", temp));
     }
+    free(temp);
 }
 
 static void
-ExecEquals(char *param)
+ExecEquals(const char *param)
 {
     eqls_ch = *param;
 }
 
 static void
-ExecMeta(char *param)
+ExecMeta(const char *param)
 {
     meta_ch = *param;
 }
@@ -289,7 +299,7 @@ ExecMeta(char *param)
  * table.
  */
 static void
-ExecMerge(char *param)
+ExecMerge(const char *param)
 {
     int save_meta = meta_ch;
     int save_eqls = eqls_ch;
@@ -305,7 +315,7 @@ ExecMerge(char *param)
  * according to the parameter.
  */
 static void
-ExecSource(char *param)
+ExecSource(const char *param)
 {
     int save_meta = meta_ch;
     int save_eqls = eqls_ch;
@@ -324,7 +334,7 @@ ExecSource(char *param)
  * performance.
  */
 static void
-ExecTable(char *param)
+ExecTable(const char *param)
 {
     if (*param) {
 	flt_make_symtab(param);
@@ -383,7 +393,7 @@ Free(char *ptr)
  * hides them.
  */
 static FILE *
-OpenKeywords(char *table_name)
+OpenKeywords(const char *table_name)
 {
 #define OPEN_IT(p) if ((fp = fopen(p, "r")) != 0) { \
 			VERBOSE(1,("Opened %s", p)); return fp; } else { \
@@ -393,7 +403,7 @@ OpenKeywords(char *table_name)
     static char suffix[] = KEYFILE_SUFFIX;
 
     FILE *fp;
-    char *path;
+    const char *path;
     unsigned need;
     char myLeaf[20];
 
@@ -461,7 +471,7 @@ ParseDirective(char *line)
 {
     static struct {
 	const char *name;
-	void (*func) (char *param);
+	void (*func) (const char *param);
     } table[] = {
 	/* *INDENT-OFF* */
 	{ "abbrev",  ExecAbbrev   },
@@ -522,7 +532,7 @@ ci_keyword_flag(const char *text)
 }
 
 char *
-class_attr(char *name)
+class_attr(const char *name)
 {
     KEYWORD *data;
     char *result = 0;
@@ -822,7 +832,7 @@ flt_free_symtab(void)
 }
 
 void
-flt_init_table(char *table_name)
+flt_init_table(const char *table_name)
 {
     if (default_table != 0)
 	free(default_table);
@@ -832,7 +842,7 @@ flt_init_table(char *table_name)
 }
 
 void
-flt_init_attr(char *attr_name)
+flt_init_attr(const char *attr_name)
 {
     if (default_attr != 0)
 	free(default_attr);
@@ -847,7 +857,7 @@ flt_init_attr(char *attr_name)
  * as m4 to be able to restart to a known state.
  */
 void
-flt_initialize(char *table_name)
+flt_initialize(const char *table_name)
 {
     flt_init_table(table_name);
     flt_init_attr(NAME_KEYWORD);
@@ -858,7 +868,7 @@ flt_initialize(char *table_name)
 }
 
 void
-flt_make_symtab(char *table_name)
+flt_make_symtab(const char *table_name)
 {
     if (*table_name == '\0') {
 	table_name = default_table;
@@ -916,7 +926,7 @@ flt_make_symtab(char *table_name)
 }
 
 void
-flt_setup_symbols(char *table_name)
+flt_setup_symbols(const char *table_name)
 {
     if (!set_symbol_table(table_name)) {
 	flt_make_symtab(table_name);
@@ -928,7 +938,7 @@ flt_setup_symbols(char *table_name)
 }
 
 void
-flt_read_keywords(char *table_name)
+flt_read_keywords(const char *table_name)
 {
     FILE *kwfile;
     char *line = 0;
@@ -961,7 +971,7 @@ flt_read_keywords(char *table_name)
     flt_restore_chars(&fltchars);
 }
 
-char *
+const char *
 get_symbol_table(void)
 {
 #if USE_TSEARCH

@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/spellflt.l,v 1.45 2009/08/19 09:02:41 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/spellflt.l,v 1.46 2009/10/07 09:40:44 tom Exp $
  *
  * Filter to add vile "attribution" sequences to misspelled words.
  */
@@ -122,7 +122,7 @@ open_tempfile(char **fname)
     FILE *fp = 0;
 #ifdef HAVE_MKSTEMP
     const char fmt[] = "%s/vileXXXXXX";
-    char *tmpdir = getenv("TMPDIR");
+    const char *tmpdir = getenv("TMPDIR");
     int fd;
 
     if (tmpdir == NULL)
@@ -177,7 +177,7 @@ ChopWords(FILE *fp, char *text, int len)
      * Write the whole "word", just in case the chopped flavor is not needed.
      */
     if (fp != 0) {
-	fwrite(text, sizeof(*text), (size_t) len, fp);
+	IGNORE_RC(fwrite(text, sizeof(*text), (size_t) len, fp));
 	fputc('\n', fp);
     } else {
 	attr = keyword_attr(text);
@@ -231,8 +231,8 @@ ChopWords(FILE *fp, char *text, int len)
 
 	if (fp != 0) {
 	    if (text != base || next != len) {
-		fwrite(text, sizeof(*text), (size_t) next, fp);
-		fputc('\n', fp);
+		IGNORE_RC(fwrite(text, sizeof(*text), (size_t) next, fp));
+		IGNORE_RC(fputc('\n', fp));
 	    }
 	} else {
 	    if (next > 1) {
@@ -272,8 +272,8 @@ do_filter(FILE *inputs GCC_UNUSED)
     char *chop;
     FILE *fp;
     char buffer[BUFFER_SIZE + 2];
-    char *attr = class_attr(NAME_ERROR);
-    char *prog;
+    const char *attr = class_attr(NAME_ERROR);
+    const char *prog;
 
     (void) inputs;
 

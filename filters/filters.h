@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.122 2009/05/29 20:23:52 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.123 2009/10/07 09:16:52 tom Exp $
  */
 
 #ifndef FILTERS_H
@@ -109,11 +109,11 @@ typedef void (*EachKeyword)(const char *name, int size, const char *attr);
  * Declared in the language-specific lex file
  */
 typedef struct {
-	char *filter_name;
+	const char *filter_name;
 	int loaded;
 	void (*InitFilter)(int before);
 	void (*DoFilter)(FILE *in);
-	char *options;
+	const char *options;
 #if NO_LEAKS
 	void (*FreeFilter)(void);
 #define DCL_LEXFREE static void free_filter(void);
@@ -235,8 +235,8 @@ extern KEYWORD *is_keyword(const char *name);
 extern KEYWORD *keyword_data(const char *name);
 extern const char *ci_keyword_attr(const char *name);
 extern const char *ci_keyword_flag(const char *name);
-extern char *class_attr(char *name);
-extern char *get_symbol_table(void);
+extern char *class_attr(const char *name);
+extern const char *get_symbol_table(void);
 extern const char *keyword_attr(const char *name);
 extern const char *keyword_flag(const char *name);
 extern const char *lowercase_of(const char *name);
@@ -255,12 +255,12 @@ extern void flt_dump_symtab(char *table_name);
 extern void flt_free(char **p, unsigned *len);
 extern void flt_free_keywords(char *classname);
 extern void flt_free_symtab(void);
-extern void flt_init_attr(char *attr_name);
-extern void flt_init_table(char *table_name);
-extern void flt_initialize(char *classname);
-extern void flt_make_symtab(char *classname);
-extern void flt_read_keywords(char *classname);
-extern void flt_setup_symbols(char *table_name);
+extern void flt_init_attr(const char *attr_name);
+extern void flt_init_table(const char *table_name);
+extern void flt_initialize(const char *classname);
+extern void flt_make_symtab(const char *classname);
+extern void flt_read_keywords(const char *classname);
+extern void flt_setup_symbols(const char *table_name);
 extern void insert_keyword(const char *ident, const char *attribute, int classflag);
 extern void parse_keyword(char *name, int classflag);
 

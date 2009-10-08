@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/tc-filt.l,v 1.34 2009/04/25 16:19:27 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/tc-filt.l,v 1.35 2009/10/07 09:51:50 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of termcap
  */
@@ -18,19 +18,19 @@ DefineFilter("tc");
 	WriteToken3(attr, yyleng - 1); \
 	WriteToken2(String_attr, yyleng - 1)
 
-static char *Action_attr;
-static char *Comment_attr;
-static char *Error_attr;
-static char *Number_attr;
-static char *Keyword_attr;
-static char *Ident_attr;
-static char *String_attr;
+static const char *Action_attr;
+static const char *Comment_attr;
+static const char *Error_attr;
+static const char *Number_attr;
+static const char *Keyword_attr;
+static const char *Ident_attr;
+static const char *String_attr;
 
 static int commented;
 
-static void begin_value(char *name);
-static void write_capname(char *name, int len);
-static void write_value(char *name, int len, char *attr);
+static void begin_value(const char *name);
+static void write_capname(const char *name, int len);
+static void write_value(const char *name, int len, const char *attr);
 
 %}
 
@@ -76,7 +76,7 @@ STRINGER	({CNTRL}|{ESCAPE})({CNTRL}|{ESCAPE}|[^:^\\\r\n]|{GAPS})*
 %%
 
 static const char *
-check_name(char *name)
+check_name(const char *name)
 {
     char temp[3];
     const char *attr;
@@ -92,7 +92,7 @@ check_name(char *name)
 }
 
 static int
-ok_number(char *string)
+ok_number(const char *string)
 {
     int result = 0;
     while (*string != 0) {
@@ -108,11 +108,11 @@ ok_number(char *string)
 }
 
 static void
-write_capname(char *name, int len)
+write_capname(const char *name, int len)
 {
     flt_puts(name, (len >= 2) ? 2 : len, check_name(name));
     if (len > 2) {
-	char *attr = Error_attr;
+	const char *attr = Error_attr;
 	if (len == 3 && name[2] == '@') {
 	    attr = "";
 	} else if (len > 3 && name[2] == '#' && ok_number(name + 3)) {
@@ -125,7 +125,7 @@ write_capname(char *name, int len)
 }
 
 static void
-write_value(char *name, int len, char *attr)
+write_value(const char *name, int len, const char *attr)
 {
     if (commented) {
 	flt_puts(name, len, Comment_attr);
@@ -137,7 +137,7 @@ write_value(char *name, int len, char *attr)
 }
 
 static void
-begin_value(char *name)
+begin_value(const char *name)
 {
     if (!strcmp(name, "tc"))
 	BEGIN(LINK);

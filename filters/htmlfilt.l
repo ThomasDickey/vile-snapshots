@@ -8,7 +8,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/htmlfilt.l,v 1.101 2009/06/05 20:35:58 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/htmlfilt.l,v 1.102 2009/10/07 09:47:57 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of HTML input
  * text.
@@ -113,8 +113,8 @@ static char *Keyword_attr;
 static char *Number_attr;
 static char *String_attr;
 
-static char *dft_language;	/* asp or jsp or nothing */
-static char *use_language;	/* vbscript, javascript, C#, Java, etc */
+static const char *dft_language; /* asp or jsp or nothing */
+static const char *use_language; /* vbscript, javascript, C#, Java, etc */
 
 static int got_tag;		/* parse state for <tag> vs <tag name=value> */
 static int got_language;	/* parse-state for language=string */
@@ -134,7 +134,7 @@ static void html_command(const char *text);
 static void html_quotes(char *text, int len, int state, int which);
 static void may_resume_html(char *text);
 static void resume_attr(void);
-static void setup_language(char *name);
+static void setup_language(const char *name);
 static void using_language(void);
 
 %}
@@ -364,7 +364,7 @@ CSS_INVALID	({CSS_INVALID1}|{CSS_INVALID2})
 			  if (next != 0) {
 			      int used = last - (char *) yytext;
 			      WriteToken3(Comment_attr, used);
-			      used = strlen(next);
+			      used = (int) strlen(next);
 			      while (used-- > 0)
 				  unput(next[used]);
 			      free(next);
@@ -567,7 +567,7 @@ may_resume_html(char *text)
     save = *next;
     *next = 0;
     html_command(left);
-    *next = save;
+    *next = (char) save;
     flt_puts(next, strlen(next), Keyword_attr);
     finish_htmlcode();
 }
@@ -672,13 +672,14 @@ dequote(char *buffer)
     buffer[n] = '\0';
 }
 
-static char *
-language2keys(char *name)
+static const char *
+language2keys(const char *name)
 {
-    char *result = 0;
+    const char *result = 0;
 
     if (name != 0) {
-	const char *lowered = lowercase_of(name);
+	char *name2 = strmalloc(name);
+	const char *lowered = lowercase_of(name2);
 	unsigned len = strlen(lowered);
 	char temp[80];
 
@@ -698,15 +699,17 @@ language2keys(char *name)
 	    result = SYMS_JS;
 	else if (!strcmp(lowered, "vbscript"))
 	    result = SYMS_VBS;
+
+	free(name2);
     }
 
     return result;
 }
 
 static void
-setup_language(char *name)
+setup_language(const char *name)
 {
-    char *keys = language2keys(name);
+    const char *keys = language2keys(name);
 
     if (keys != 0 && !set_symbol_table(keys)) {
 	use_language = keys;

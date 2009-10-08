@@ -3,7 +3,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/yaccfilt.l,v 1.39 2009/08/19 09:02:54 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/yaccfilt.l,v 1.40 2009/10/07 09:33:33 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of YACC program.
  */
@@ -29,7 +29,7 @@ static char *Preproc_attr;
 static char *String_attr;
 static char *Terminal_attr;
 
-static char *save_attr = "";
+static const char *save_attr = "";
 
 static SECTIONS section = RuleSection;
 static int brace_level = 0;

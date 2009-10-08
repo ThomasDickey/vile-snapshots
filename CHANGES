@@ -1,17 +1,33 @@
 Changes for vile 9.8 (released ??? ??? ?? ????)
 
- 200909?? (v)
+ 20091005 (v)
 	> Tom Dickey:
+	+ work around defective gcc implementation of warn_unused_result
+	  attribute with new IGNORE_RC() macro.
+	+ add configure-script and makefile rules for app-defaults, icons and
+	  desktop files for xvile, adapted from xterm.
+	+ use "fixed" rather than XtDefaultFont as default font for xvile.
+	+ improve TYPECAST macro using intptr_t type.
+	+ document VILE_MENU environment variable in vile.hlp
+	+ modify vilemenu.rc to implement a default-font entry, to restore
+	  the font to whatever was given in a -fn option, or resource setting.
+	+ add $font to the state variables that &default can work with.
+	+ add uxvile script, based on uxterm.
+	+ modify vilemenu.rc to provide fonts used in uxterm for the set of
+	  ordinary fonts if the $term-encoding is utf-8.
+	+ bypass symbols for XA_COMPOUND_TEXT() and XA_UTF8_STRING() in xvile,
+	  to resolve portability issues with older X headers/libraries (report
+	  by David Rolfe).
 	+ correct handling of retries for different selection types in xvile
 	  broken in 9.7u (report by Steven Lembark).
 	+ update configure check for lex version to work with reflex 20090902's
 	  inclusion of patch-date.
-	+ fix objc.key to reset symbol table (from "cpre" to "objc") before
-	  merging in "c" keywords (overlooked in 9.7q).
+	+ fix objc.key to reset symbol table (i.e., from "cpre" to "objc")
+	  before merging in "c" keywords (overlooked in 9.7q).
 	+ correct list of options for c-filter, to make objcmode work with
 	  external syntax filter.
 	+ update config.guess, config.sub
-	
+
  20090824 (u)
 	> Mike Mackovitch:
 	+ use temporary bp variable in calls to writeout() to ensure that the
@@ -352,7 +368,7 @@ Changes for vile 9.8 (released ??? ??? ?? ????)
 	  in ISO-8859-1) display properly in UTF-8.
 
  20081110 (h)
-	> J Chris Coppic:
+	> J Chris Coppick:
 	+ updated CaptHook.pm
 	> Mark Robinson
 	+ fix compiler-name for MinGW in version.c
@@ -950,7 +966,7 @@ Changes for vile 9.6 (released Thu Dec 27 2007)
 	  for read/write too.
 	+ correct syntax highlighting for end of JavaScript embedded in HTML,
 	  which did not allow for the marker in an inline comment.
- 	+ modify "filename" shown in :show-filtermsgs to use the buffer name
+	+ modify "filename" shown in :show-filtermsgs to use the buffer name
 	  if no filename is available.
 	+ modify preamble patterns for shell modes such as awk, etc., to allow
 	  for programs without an absolute pathname, e.g., "#! awk".
@@ -1146,7 +1162,7 @@ Changes for vile 9.6 (released Thu Dec 27 2007)
 	+ add echo-to-clipboard mode for Win32 hosts:
 	  all text selected with the mouse is automatically
 	  copied to the Windows clipboard. (U)
- 	> Paul Fox:
+	> Paul Fox:
 	+ updated contact information in README, vile.1 and vile.hlp
 	> Tom Dickey:
 	+ allow a version number in rbmode (ruby) preamble.
@@ -1317,7 +1333,7 @@ Changes for vile 9.6 (released Thu Dec 27 2007)
 	> Clark Morgan:
 	+ remove an obsolete comment in macros.doc regarding underscore in
 	  macro names.
- 	> Paul Fox:
+	> Paul Fox:
 	+ correct logic for check_percent_crlf(), ensuring that empty buffers
 	  are not counted as having CRLF endings.
 	> Tom Dickey:
@@ -1762,7 +1778,7 @@ Changes for vile 9.5 (released Mon Jul 25 2005)
 	+ amend oleauto.doc to tell how to make wvwrap work with XP service
 	  pack 2.
 	+ update vile.hlp to describe new modes.rc file.
- 	> Tom Dickey:
+	> Tom Dickey:
 	+ review/correct places where result of malloc is not checked for null.
 	  Test using small memory limit (addresses report by Emil Rojas for
 	  processing very large tags files, and earlier report by George
@@ -1782,7 +1798,7 @@ Changes for vile 9.5 (released Mon Jul 25 2005)
 	  many filenames.
 
  20041215 (m)
- 	> Tom Dickey:
+	> Tom Dickey:
 	+ modify x11.c, ntconio.c and ntwinio.c to make modifiers work with tab
 	  key, e.g., to add shift-key as a back-tab key.
 	+ add macro show-each-buffer (file showeach.rc), which splits up the
@@ -1849,7 +1865,7 @@ Changes for vile 9.5 (released Mon Jul 25 2005)
 	  much about that.  So, now, it's once again possible to:
 		$ vile somefile
 		/<shift+insert>     <- search for string sitting on clipboard
- 	> Tom Dickey:
+	> Tom Dickey:
 	+ correct computation for 0-based versus 1-based column/line values in
 	  the error-finder; the values were computed but not saved in the
 	  compiled error expression's state.
@@ -1905,7 +1921,7 @@ Changes for vile 9.5 (released Mon Jul 25 2005)
 	+ add check for setlocale() returning null.
 
  20041107 (k)
- 	> Tom Dickey:
+	> Tom Dickey:
 	+ modify glob_match_leaf() to work with 8-bit characters.
 	+ correct loop in glob_match_leaf(), which did not handle strings such
 	  as "[!strings xyz-]".
@@ -1927,7 +1943,7 @@ Changes for vile 9.5 (released Mon Jul 25 2005)
 	+ correct parameter lists for chgd_icursor() and chgd_popupmenu()
 	  in ntconio.c and ntwinio.c which were not updated in 9.4b, which
 	  added a BUFFER* parameter.
- 	> Tom Dickey:
+	> Tom Dickey:
 	+ add parameter to hst_append() to control logic which is used to build
 	  up shell commands for replay.  Use this parameter to suppress shell
 	  command construction when prompting for regular expressions and other
@@ -1941,7 +1957,7 @@ Changes for vile 9.5 (released Mon Jul 25 2005)
 	  value to store an ERROR token, which can be tested in scripts with
 	  &error (request by Clark Morgan).
 	+ modify filters.rc, modes.rc and vileinit.rc as follows (reports by
-	  Clark Morgan and J Chris Coppic):
+	  Clark Morgan and J Chris Coppick):
 	  + filters.rc turns on automatic syntax highlighting only if both
 	    builtin-filters and colors are available.  Before 9.4i, vileinit.rc
 	    turned on automatic syntax highlighting.
@@ -2003,7 +2019,7 @@ Changes for vile 9.5 (released Mon Jul 25 2005)
 	> Mark Robinson:
 	+ split-out modes.rc from filters.rc to make configuration more
 	  flexible, e.g., for --disable-filters.
- 	> Tom Dickey:
+	> Tom Dickey:
 	+ add named operators (eq, ge, gt, le, lt, ne, or, and, cmp, not, xor)
 	  to perl syntax highlighter check for tokens that may precede a
 	  pattern (report by Daniel L Ashbrook).
@@ -2013,7 +2029,7 @@ Changes for vile 9.5 (released Mon Jul 25 2005)
 	+ add ".tic" as a suffix for timode.
 
  20040620 (h)
- 	> Tom Dickey:
+	> Tom Dickey:
 	+ correct which-keywords to work with 9.4e change that appends "mode"
 	  to majormode parameters of procedures.
 	+ rename utility macro which-filename to WhichFilename, to avoid
@@ -2037,7 +2053,7 @@ Changes for vile 9.5 (released Mon Jul 25 2005)
 	  + add notes about optimizing suffixes for C versus C++ editing.
 	> Fabien Coutant:
 	+ add experimental plugin support and example.
- 	> Tom Dickey:
+	> Tom Dickey:
 	+ indent'd ansi.c
 	+ configure-script fixes:
 	  + change prerequisite to autoconf 2.13.20030927 patch, mainly for
@@ -2133,7 +2149,7 @@ Changes for vile 9.5 (released Mon Jul 25 2005)
 	    default local mode values.
 	  + added a "Majormodes" section. Added a subsection entitled
 	    "cmode: the original vile builtin majormode"
- 	> Tom Dickey:
+	> Tom Dickey:
 	+ indent'd csrch.c, globals.c, map.c, wordmov.c
 	+ modify logic for RS_AUTO to treat it consistently as the "default"
 	  keyword for record separator (report by Clark Morgan).
@@ -2174,7 +2190,7 @@ Changes for vile 9.5 (released Mon Jul 25 2005)
 	  + update the history of majormodes to reflect the way things were in
 	    the past, but not now.  This is done primarily by changing the
 	    grammatical tense of various sentences.
- 	> Tom Dickey:
+	> Tom Dickey:
 	+ add mode "ignoresuffix", which tells vile to strip the given pattern
 	  from a filename before matching majormode suffixes against it.
 	+ add mode "showchar", which turns on a field in the modeline that
@@ -2222,7 +2238,7 @@ Changes for vile 9.5 (released Mon Jul 25 2005)
 	  (report by Clark Morgan).
 
  20031220 (d)
- 	> Tom Dickey:
+	> Tom Dickey:
 	+ modify pl-filt.c to handle
 		sub y { }
 	  i.e., not treat the "y" as the beginning of a pattern.
@@ -2244,7 +2260,7 @@ Changes for vile 9.5 (released Mon Jul 25 2005)
 	  zip-file based on the executable.  Add a ".map" file to the zip file.
 
  20031105 (c)
- 	> Tom Dickey:
+	> Tom Dickey:
 	+ improved check for dlsym to make loadable filters work on Solaris and
 	  IRIX64 (tested with gcc).
 	+ make "--disable-echo" apply to making the loadable filters.
@@ -2259,7 +2275,7 @@ Changes for vile 9.5 (released Mon Jul 25 2005)
 	> Brendan O'Dea:
 	+ add code to support dynamic loading of syntax filters which are
 	  compiled as a shared object.
- 	> Tom Dickey:
+	> Tom Dickey:
 	+ modify is_ESCAPED() in pl-filt.c to not treat backslash before
 	  double-quote specially.  This fixes man2html, which contains a line
 		  *bs = \"\b";
@@ -2288,7 +2304,7 @@ Changes for vile 9.5 (released Mon Jul 25 2005)
 	+ add cygwin to OPT_CASELESS
 	+ modify xvile's wheelScrollAmount resource to scroll by pages if the
 	  resource value is negative.
- 	> Tom Dickey:
+	> Tom Dickey:
 	+ correct suffix pattern for xresmode, which did not match ".Xdefaults"
 	  (see 9.2p).
 	+ add macro "which-menu" to which.rc, which shows the locations that
@@ -2320,7 +2336,7 @@ Changes for vile 9.5 (released Mon Jul 25 2005)
 Changes for vile 9.4 (released Mon Aug 04 2003)
 
  20030727 (v)
- 	> Kevin Buettner, Paul Fox:
+	> Kevin Buettner, Paul Fox:
 	+ fix include-path in filters/makefile.in to allow compiling with
 	  separate src/build trees.
 	> Tom Dickey:
@@ -2652,7 +2668,7 @@ Changes for vile 9.4 (released Mon Aug 04 2003)
 	  http://people.freenet.de/kra/XawPlus/)
 
  20021223 (i)
- 	> Adam Denton:
+	> Adam Denton:
 	+ implement xml-filter based on html-filter.
 	> Clark Morgan:
 	+ fix: if winvile is in insert mode when wvwrap opens a new file, the
@@ -4568,7 +4584,7 @@ Changes for vile 9.2 (released Tue Oct 17 2000)
 	  app-defaults directory, to avoid matching things such as MD5sums.
 
  20000809 (q)
-	> J. Chris Coppick, with some advice from Brendan O'Dea:
+	> J. Chris Coppick (with some advice from Brendan O'Dea):
 	+ cleanup of Vileserv.pm and vileget (version 1.2)
 	+ Vileserv now uses the registry, so 'perl "use Vileserv"' in
 	  your .vilerc automagically adds the commands startserv, stopserv,
@@ -4681,7 +4697,9 @@ Changes for vile 9.2 (released Tue Oct 17 2000)
 	  define YYSTATE (on FreeBSD 2.1.5).
 
  20000627 (m)
-	+ small fix for doc/macros.doc (Clark Morgan).
+	> Clark Morgan:
+	+ small fix for doc/macros.doc
+	> Tom Dickey:
 	+ initialize $xshell-flags to empty string since xshell.sh does not
 	  accept a "-c" parameter.
 	+ modify manpage.rc to unset the filename associated with the buffer so
@@ -4708,8 +4726,10 @@ Changes for vile 9.2 (released Tue Oct 17 2000)
 	  used.
 
  20000617 (l)
+	> Kevin Buettner:
 	+ updates to config.guess and config.sub and resync with version from
-	  PCRE 3.2 (patch by Kevin Buettner)
+	  PCRE 3.2
+	> Tom Dickey:
 	+ update ftp and web-site pointers to reflect demise of ClarkNet
 	  (reminder by Clark Morgan).
 	+ use new function search_mode_list() to make binary search of the
@@ -4860,7 +4880,7 @@ Changes for vile 9.2 (released Tue Oct 17 2000)
 	  changes for 9.1d (reported by Clark Morgan).
 
  20000314 (d)
-	+ Brendan O'Dea:
+	> Brendan O'Dea:
 	+ modify perl.xs to allow perl operators to be used with a range.  Also
 	  clears the VIEWOK flag for operators.
 	> Clark Morgan:
@@ -5095,7 +5115,7 @@ Changes for vile 9.2 (released Tue Oct 17 2000)
 Changes for vile 9.1 (released Sat Jan 15 2000)
 
  20000115 (t)
-	+ Clark Morgan:
+	> Clark Morgan:
 	+ fix a file-descriptor leak in win32 pipes.
 	> Tom Dickey:
 	+ small compiler warnings (using 'antic' and SGI's lint)

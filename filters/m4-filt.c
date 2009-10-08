@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/m4-filt.c,v 1.32 2009/06/28 22:47:39 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/m4-filt.c,v 1.33 2009/10/07 09:24:15 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of m4
  * input text.  This is in C rather than LEX because M4's quoting delimiters
@@ -50,7 +50,7 @@ typedef struct {
 } Quote;
 
 typedef struct {
-    char *name;
+    const char *name;
     void (*func) (char **);
 } Funcs;
 

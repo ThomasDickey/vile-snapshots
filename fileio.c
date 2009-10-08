@@ -2,7 +2,7 @@
  * The routines in this file read and write ASCII files from the disk. All of
  * the knowledge about files are here.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/fileio.c,v 1.192 2008/11/25 23:40:31 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/fileio.c,v 1.193 2009/10/06 01:02:15 tom Exp $
  *
  */
 
@@ -699,7 +699,7 @@ ffclose(void)
 
     if (ffstatus == file_is_unbuffered) {
 	if (fflinelen) {
-	    write(ffd, fflinebuf, fflinelen);
+	    IGNORE_RC(write(ffd, fflinebuf, fflinelen));
 	    fflinelen = 0;
 	}
 	close(ffd);
@@ -784,7 +784,7 @@ ffputc(int c)
     if (i_am_dead) {
 	fflinebuf[fflinelen++] = d;
 	if (fflinelen >= NSTRING) {
-	    write(ffd, fflinebuf, fflinelen);
+	    IGNORE_RC(write(ffd, fflinebuf, fflinelen));
 	    fflinelen = 0;
 	}
     } else {
