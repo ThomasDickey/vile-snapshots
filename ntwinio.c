@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 screen API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.189 2009/03/21 00:56:04 root Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.190 2009/10/04 14:27:14 tom Exp $
  * Written by T.E.Dickey for vile (october 1997).
  * -- improvements by Clark Morgan (see w32cbrd.c, w32pipe.c).
  */
@@ -4230,6 +4230,7 @@ WinMain(
 	}
 #else
 	(void) success;
+	default_font = strmalloc(fontstr);
 #endif
 	/* Regardless of success or failure, continue with new/default font. */
     }

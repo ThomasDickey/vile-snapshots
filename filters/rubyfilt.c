@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/rubyfilt.c,v 1.47 2009/08/19 09:02:41 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/rubyfilt.c,v 1.48 2009/10/07 09:35:47 tom Exp $
  *
  * Filter to add vile "attribution" sequences to ruby scripts.  This is a
  * translation into C of an earlier version written for LEX/FLEX.
@@ -510,7 +510,7 @@ is_COMMENT(char *s)
  * after the keyword.
  */
 static int
-end_marker(char *s, char *marker, int only)
+end_marker(char *s, const char *marker, int only)
 {
     int len = strlen(marker);
 

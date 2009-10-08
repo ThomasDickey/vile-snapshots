@@ -2,7 +2,7 @@
  *	eval.c -- function and variable evaluation
  *	original by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.409 2009/08/17 09:31:32 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.410 2009/10/06 01:02:09 tom Exp $
  *
  */
 
@@ -2246,7 +2246,7 @@ complete_integer(DONE_ARGS)
 
     (void) flags;
     (void) pos;
-    (void) strtol(buf, &tmp, 0);
+    IGNORE_RC( strtol(buf, &tmp, 0));
     if ((tmp != 0) && (tmp != buf) && (*tmp == 0) && isSpace(c)) {
 	if (c != NAMEC)		/* put it back (cf: kbd_complete) */
 	    unkeystroke(c);

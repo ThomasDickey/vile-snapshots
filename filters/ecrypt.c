@@ -1,7 +1,7 @@
 /*	Crypt:	Encryption routines for MicroEMACS
  *		written by Dana Hoggatt and Paul Fox.
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/ecrypt.c,v 1.9 2007/05/05 15:24:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/ecrypt.c,v 1.10 2009/10/07 10:44:18 tom Exp $
  *
  */
 
@@ -203,7 +203,7 @@ ue_crypt(register char *bptr,	/* buffer of characters to be encrypted */
 
 	    key = key + key + cc + *bptr + salt;
 	}
-	*bptr++ = cc;		/* put character back into buffer */
+	*bptr++ = (char) cc;	/* put character back into buffer */
     }
     return;
 }

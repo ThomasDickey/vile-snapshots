@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/flt_defs.h,v 1.12 2009/08/19 09:07:47 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/flt_defs.h,v 1.13 2009/10/07 08:53:47 tom Exp $
  */
 
 #ifndef FLT_DEFS_H
@@ -142,6 +142,12 @@ extern	int	sscanf	( const char *src, const char *fmt, ... );
 
 #define	FreeAndNull(p)	if ((p) != 0)	{ free(p); p = 0; }
 #define	FreeIfNeeded(p)	if ((p) != 0)	free(p)
+
+#if defined(__GNUC__) && defined(_FORTIFY_SOURCE)
+#define IGNORE_RC(func) ignore_unused = func
+#else
+#define IGNORE_RC(func) (void) func
+#endif /* gcc workarounds */
 
 extern	char *home_dir(void);
 

@@ -46,7 +46,7 @@
  * vile will choose some appropriate fallback (such as underlining) if
  * italics are not available.
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/manfilt.c,v 1.46 2009/05/11 00:35:21 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/manfilt.c,v 1.47 2009/10/07 09:20:02 tom Exp $
  *
  */
 
@@ -429,8 +429,8 @@ put_cell(int c, int level, int ident, int attrs)
     }
 
     p->c_value = c;
-    p->c_level = level;
-    p->c_ident = ident;
+    p->c_level = (char) level;
+    p->c_ident = (char) ident;
 
     if (cur_line->l_used < cur_line->l_this)
 	cur_line->l_used = cur_line->l_this;

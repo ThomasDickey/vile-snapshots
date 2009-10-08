@@ -1,7 +1,7 @@
 /*	Spawn:	various DOS access commands
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.202 2009/05/26 23:46:03 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.204 2009/10/07 08:51:35 tom Exp $
  *
  */
 
@@ -118,7 +118,7 @@ x_window_SHELL(const char *cmd)
 	    if (tmp != 0) {
 		char *result = tb_values(tmp);
 		TRACE(("executing '%s'\n", result));
-		(void) system(result);
+		IGNORE_RC( system(result));
 		tb_free(&tmp);
 	    }
 #ifdef HAVE_WAITPID
@@ -591,7 +591,7 @@ write_kreg_to_pipe(void *writefp)
     kregcirculate(FALSE);
     kp = kbs[ukb].kbufh;
     while (kp != NULL) {
-	fwrite((char *) kp->d_chunk, 1, (size_t) KbSize(ukb, kp), fw);
+	IGNORE_RC(fwrite((char *) kp->d_chunk, 1, (size_t) KbSize(ukb, kp), fw));
 	kp = kp->d_next;
     }
 #if SYS_UNIX && ! TEST_DOS_PIPES
@@ -630,7 +630,7 @@ write_region_to_pipe(void *writefp)
     LINE *lp = DOT.l;
 
     while (lp != last) {
-	fwrite((char *) lvalue(lp), sizeof(char), (size_t) llength(lp), fw);
+	IGNORE_RC(fwrite((char *) lvalue(lp), sizeof(char), (size_t) llength(lp), fw));
 	vl_putc('\n', fw);
 	lp = lforw(lp);
     }

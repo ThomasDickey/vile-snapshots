@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/pl-filt.c,v 1.98 2009/04/25 16:12:05 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/pl-filt.c,v 1.99 2009/10/07 09:29:03 tom Exp $
  *
  * Filter to add vile "attribution" sequences to perl scripts.  This is a
  * translation into C of an earlier version written for LEX/FLEX.
@@ -48,7 +48,7 @@ typedef struct {
     int has_no_pattern;
 } AfterKey;
 
-static char *put_embedded(char *, int, char *);
+static char *put_embedded(char *, int, const char *);
 
 static char *Action_attr;
 static char *Comment_attr;
@@ -192,9 +192,9 @@ is_STRINGS(char *s, int *err, int delim)
 }
 
 static int
-is_KEYWORD(char *s)
+is_KEYWORD(const char *s)
 {
-    char *base = s;
+    const char *base = s;
     int ch;
     int quote = 0;
 
@@ -264,9 +264,9 @@ is_QIDENT(char *s)
  * If not double-quoted, look also for syntax such as $foo'bar
  */
 static int
-is_NORMALVARS(char *s, int dquoted)
+is_NORMALVARS(const char *s, int dquoted)
 {
-    char *base = s;
+    const char *base = s;
     int ch;
     int squoted = 0;
     int part1 = 0;
@@ -302,9 +302,9 @@ is_NORMALVARS(char *s, int dquoted)
 }
 
 static int
-is_OTHERVARS(char *s)
+is_OTHERVARS(const char *s)
 {
-    char *base = s;
+    const char *base = s;
     int ch;
     int part1 = 0;
     int part2 = 0;
@@ -460,7 +460,7 @@ is_ELLIPSIS(char *s)
 }
 
 static int
-is_IDENT(char *s, int quoted)
+is_IDENT(const char *s, int quoted)
 {
     int found;
 
@@ -537,11 +537,11 @@ is_PREPROC(char *s)
  ******************************************************************************/
 
 static int
-end_marker(char *s, char *marker, int only)
+end_marker(char *s, const char *marker, int only)
 {
-    int len = strlen(marker);
+    size_t len = strlen(marker);
 
-    return (ATLEAST(s, len)
+    return (ATLEAST(s, (int) len)
 	    && !strncmp(s, marker, len)
 	    && (!only || (s[len] == '\n')));
 }
@@ -602,7 +602,7 @@ begin_HERE(char *s, int *quoted)
 	base = s;
 	if ((ok = is_QIDENT(s)) != 0) {
 	    unsigned temp = 0;
-	    char *marker = do_alloc((char *) 0, ok + 1, &temp);
+	    char *marker = do_alloc((char *) 0, (unsigned) (ok + 1), &temp);
 	    char *d = marker;
 
 	    s += ok;
@@ -697,7 +697,7 @@ is_QUOTE(char *s, int *delims)
     while (MORE(s) && isIdent(*s)) {
 	++s;
     }
-    if ((len = (s - base)) != 0) {
+    if ((len = (size_t) (s - base)) != 0) {
 	switch (len) {
 	case 1:
 	    if (*base == 'm' || *base == 'q') {
@@ -1025,7 +1025,7 @@ put_newline(char *s)
 }
 
 static int
-var_embedded(char *s)
+var_embedded(const char *s)
 {
     if (*s == '$') {
 	if (s[1] == L_PAREN
@@ -1038,7 +1038,7 @@ var_embedded(char *s)
 }
 
 static char *
-put_embedded(char *s, int len, char *attr)
+put_embedded(char *s, int len, const char *attr)
 {
     int id;
     int j, k;
@@ -1110,7 +1110,7 @@ put_document(char *s)
  * that does not have to be inside parentheses.
  */
 static void
-check_keyword(char *s, int ok, AfterKey * state)
+check_keyword(char *s, size_t ok, AfterKey * state)
 {
     state->may_have_pattern = 0;
     state->has_no_pattern = 0;
@@ -1235,7 +1235,7 @@ is_GLOB(char *s)
 static int
 is_FORMAT(char *s, int len)
 {
-    if (len == 6 && !strncmp(s, "format", len)) {
+    if (len == 6 && !strncmp(s, "format", (size_t) len)) {
 	s += len;
 	s += is_BLANK(s);
 	s += is_NAME(s);
@@ -1457,7 +1457,7 @@ do_filter(FILE *input GCC_UNUSED)
 			clearOp();
 			flt_puts(s, ok, keyword_attr(s));
 			check_keyword(s, ok, &if_wrd);
-			s[ok] = save;
+			s[ok] = (char) save;
 			s += ok;
 		    }
 		} else if ((ok = is_Option(s)) != 0) {

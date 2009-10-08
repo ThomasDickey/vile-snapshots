@@ -8,7 +8,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/lex-filt.l,v 1.73 2009/05/13 22:50:31 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/lex-filt.l,v 1.74 2009/10/07 09:20:02 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of LEX program.
  */
@@ -400,7 +400,7 @@ write_patterns(char *text, int len)
 			attr = Error_attr;
 			flt_error("Undefined name \"%s\"", text + last + 1);
 		    }
-		    text[next - 1] = save;
+		    text[next - 1] = (char) save;
 		    flt_bfr_embed(text + last, next - last, attr);
 		    first = next;
 		} else if ((next = parse_limits(text, last + 1, len)) >= 0) {

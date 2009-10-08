@@ -3,7 +3,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/iss-filt.l,v 1.13 2009/05/12 22:47:25 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/iss-filt.l,v 1.14 2009/10/07 09:39:52 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Inno Setup
  * input text.
@@ -14,14 +14,14 @@
 
 DefineFilter("iss");
 
-static char *Action_attr;
-static char *Comment_attr;
-static char *Ident2_attr;
-static char *Number_attr;
-static char *Prepro_attr;
-static char *String_attr;
+static const char *Action_attr;
+static const char *Comment_attr;
+static const char *Ident2_attr;
+static const char *Number_attr;
+static const char *Prepro_attr;
+static const char *String_attr;
 
-static char *save_table;
+static const char *save_table;
 
 %}
 

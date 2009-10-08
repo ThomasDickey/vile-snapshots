@@ -7,7 +7,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/vilefilt.l,v 1.64 2009/04/25 16:29:18 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/vilefilt.l,v 1.65 2009/10/07 09:43:57 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of vile macros
  * - T.Dickey
@@ -28,14 +28,14 @@
 
 DefineFilter("vile");
 
-static char *Action_attr;
-static char *Comment_attr;
-static char *Error_attr;
-static char *Ident2_attr;
-static char *Keyword_attr;
-static char *Number_attr;
-static char *Preproc_attr;
-static char *String_attr;
+static const char *Action_attr;
+static const char *Comment_attr;
+static const char *Error_attr;
+static const char *Ident2_attr;
+static const char *Keyword_attr;
+static const char *Number_attr;
+static const char *Preproc_attr;
+static const char *String_attr;
 
 static const char * command_attr(char *text);
 static int is_funckey(const char *text);
@@ -104,7 +104,7 @@ SPACE		;
 
 {NAME}		{ handle_keyword(yytext, yyleng); }
 
-{FUNCTION}	{ char *attr = "";
+{FUNCTION}	{ const char *attr = "";
 		  if (vile_keywords) {
 		      if (vl_lookup_func(yytext) >= 0) {
 			  attr = Ident2_attr;
@@ -116,7 +116,7 @@ SPACE		;
 		  WriteToken(attr);
 		}
 {PARAMETER}	{ WriteToken(Ident2_attr); }
-{VARIABLE}	{ char *attr = Ident2_attr;
+{VARIABLE}	{ const char *attr = Ident2_attr;
 		  if (vile_keywords) {
 		      if (yytext[0] == '$') {
 			  if (vl_lookup_var(yytext) < 0) {
@@ -243,7 +243,7 @@ handle_newline(void)
 static void
 handle_prepro(char *text, int len)
 {
-    char *attr = "";
+    const char *attr = "";
     if (vile_keywords) {
 	char *next = skip_blanks(text);
 
@@ -384,7 +384,7 @@ write_literal(char *text, int len)
 
 	    k = check_ctl_v(text + next, len - next);
 	    if (k != 0) {
-		char *attr = Number_attr;
+		const char *attr = Number_attr;
 
 		flt_puts(text + last, next - last, String_attr);
 		if (k < 0) {	/* error */

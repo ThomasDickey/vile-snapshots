@@ -20,7 +20,7 @@
 #
 # gnu autoconf support by kevin buettner, 5/94
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.218 2009/02/06 01:33:06 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.222 2009/10/05 10:44:09 tom Exp $
 
 SHELL		= /bin/sh
 
@@ -67,12 +67,15 @@ datadir		= @datadir@/vile
 docdir		= $(datadir)/doc
 perldir		= $(datadir)/perl
 mandir		= @mandir@/man$(manext)
+appsdir		= @appsdir@
+icondir		= @icondir@
 
 #### End of system configuration section. ####
 
 RM		= rm -f
 MAKE_RECUR	= @cf_cv_makeflags@ prefix=$(prefix) DESTDIR=$(DESTDIR)
 
+CLASS		= XVile
 ICON		= vile
 ICON_SUFFIX	= @ICON_SUFFIX@
 QUOTDEFS	= \
@@ -90,6 +93,8 @@ DATADIR		= $(DESTDIR)$(datadir)
 DOCDIR		= $(DESTDIR)$(docdir)
 PERLDIR		= $(DESTDIR)$(perldir)
 MANDIR		= $(DESTDIR)$(mandir)
+APPSDIR		= $(DESTDIR)$(appsdir)
+ICONDIR		= $(DESTDIR)$(icondir)
 
 INSTALL_DIRS    = $(BINDIR) $(DATADIR) $(DOCDIR) $(MANDIR) @EXTRA_INSTALL_DIRS@
 
@@ -409,6 +414,7 @@ INSTALL_PERL_FILES = \
 
 INSTALL_X_FILES = \
 	$(BINDIR)/xshell.sh \
+	$(BINDIR)/uxvile \
 	$(DATADIR)/vilemenu.rc
 
 INSTALL_FILES = \
@@ -443,6 +449,44 @@ uninstall-macros :
 
 uninstall-perl :
 	- $(RM) $(INSTALL_PERL_FILES)
+
+################################################################################
+@no_appsdir@install \
+@no_appsdir@install-app \
+@no_appsdir@install-full :: $(APPSDIR)
+@no_appsdir@	@echo installing $(APPSDIR)/$(CLASS)
+@no_appsdir@	@sed -e s/XVile/$(CLASS)/ $(srcdir)/macros/XVile.ad >XVile.tmp
+@no_appsdir@	@$(INSTALL_DATA) XVile.tmp $(APPSDIR)/$(CLASS)
+@no_appsdir@	@echo installing $(APPSDIR)/UXVile
+@no_appsdir@	@sed -e s/XVile/$(CLASS)/ $(srcdir)/macros/UXVile.ad >XVile.tmp
+@no_appsdir@	@$(INSTALL_DATA) XVile.tmp $(APPSDIR)/UXVile
+@no_appsdir@	@rm -f XVile.tmp
+@no_icondir@	@echo "... installed app-defaults"
+
+@no_icondir@install \
+@no_icondir@install-icon \
+@no_icondir@install-full :: $(ICONDIR)
+@no_icondir@	@$(INSTALL_DATA) $(srcdir)/icons/$(ICON)$(ICON_SUFFIX) $(ICONDIR)
+@no_icondir@	@echo "... installed icons"
+################################################################################
+@no_appsdir@uninstall \
+@no_appsdir@uninstall-app \
+@no_appsdir@uninstall-full ::
+@no_appsdir@	-$(RM) $(APPSDIR)/$(CLASS)
+@no_appsdir@	-$(RM) $(APPSDIR)/UXVile
+
+@no_icondir@uninstall \
+@no_icondir@uninstall-icon \
+@no_icondir@uninstall-full ::
+@no_icondir@	-$(RM) $(ICONDIR)/$(ICON)$(ICON_SUFFIX)
+################################################################################
+# Desktop-utils does not provide an uninstall, and is not uniformly available.
+@desktop_utils@DESKTOP_FLAGS = @DESKTOP_FLAGS@
+@desktop_utils@install-desktop \
+@desktop_utils@install-full ::
+@desktop_utils@	desktop-file-install $(DESKTOP_FLAGS) xterm.desktop
+@desktop_utils@	desktop-file-install $(DESKTOP_FLAGS) uxterm.desktop
+################################################################################
 
 # The makefile is technically dependent upon the config.status file, but
 # gmake gets overly ambitious and remakes the makefile too often.
@@ -681,7 +725,9 @@ $(BINDIR)/$(TARGET):		$(TARGET)
 	$(INSTALL_PROGRAM)	$(TARGET) $@
 
 $(BINDIR)/xshell.sh:		$(srcdir)/xshell.sh
-	$(INSTALL_PROGRAM)	$(srcdir)/xshell.sh $@
+	$(INSTALL_SCRIPT)	$(srcdir)/xshell.sh $@
+$(BINDIR)/uxvile:		$(srcdir)/macros/uxvile
+	$(INSTALL_SCRIPT)	$(srcdir)/macros/uxvile $@
 $(BINDIR)/vileget:		$(srcdir)/perl/vileget
 	$(INSTALL_SCRIPT)	$(srcdir)/perl/vileget $@
 

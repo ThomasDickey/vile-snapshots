@@ -1,4 +1,4 @@
-; $Header: /users/source/archives/vile.vcs/macros/RCS/vilemenu.rc,v 1.4 2008/11/29 00:07:55 tom Exp $
+; $Header: /users/source/archives/vile.vcs/macros/RCS/vilemenu.rc,v 1.6 2009/10/04 15:24:37 tom Exp $
 ; A sample .vilemenu file:
 ~with define-menu-entry
 C:Xvile
@@ -36,6 +36,16 @@ B:Toggle Show:toggle-buffer
 L:list_buff
 ;
 C:Fixed Fonts
+B:default:setv $font &default font
+; fonts used in uxterm
+~if &seq $term-encoding 'utf-8'
+B:8px:setv $font -misc-fixed-medium-r-normal--8-80-75-75-c-50-iso10646-1
+B:13px:setv $font -misc-fixed-medium-r-semicondensed--13-120-75-75-c-60-iso10646-1
+B:14px:setv $font -misc-fixed-medium-r-normal--14-130-75-75-c-70-iso10646-1
+B:13px:setv $font -misc-fixed-medium-r-normal--13-120-75-75-c-80-iso10646-1
+B:18px:setv $font -misc-fixed-medium-r-normal--18-120-100-100-c-90-iso10646-1
+B:20px:setv $font -misc-fixed-medium-r-normal--20-200-75-75-c-100-iso10646-1
+~else
 B:5x8:setv $font 5x8
 B:7x14:setv $font 7x14
 B:8x13:setv $font 8x13
@@ -43,6 +53,7 @@ B:8x16:setv $font 8x16
 B:9x15:setv $font 9x15
 B:10x20:setv $font 10x20
 B:12x24:setv $font 12x24
+~endif
 ;
 C:Nice Fonts
 B:10pt:setv $font "-*-lucidatypewriter-medium-r-normal-sans-10-*-*-*-*-*-iso8859-1"

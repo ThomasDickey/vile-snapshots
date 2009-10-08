@@ -3,7 +3,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/esqlfilt.l,v 1.21 2009/05/12 22:47:25 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/esqlfilt.l,v 1.22 2009/10/07 09:36:17 tom Exp $
  *
  * Filter to add vile "attribution" sequences to embedded SQL with C/C++.
  * - T.Dickey
@@ -13,7 +13,7 @@
 
 DefineFilter("esql");
 
-static char *other_symbols = "cpp";	/* FIXME: assumes ".merge cpp" */
+static const char *other_symbols = "cpp";	/* FIXME: assumes ".merge cpp" */
 
 static char *Action_attr;
 static char *Comment_attr;

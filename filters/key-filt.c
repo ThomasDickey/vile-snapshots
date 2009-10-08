@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/key-filt.c,v 1.44 2009/05/24 11:09:11 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/key-filt.c,v 1.45 2009/10/07 10:43:14 tom Exp $
  *
  * Filter to add vile "attribution" sequences to a vile keyword file.  It's
  * done best in C because the delimiters may change as a result of processing
@@ -100,7 +100,7 @@ color_of(char *s, int arg)
 	}
     }
     if (save)
-	*t = save;
+	*t = (char) save;
     return result;
 }
 
@@ -156,13 +156,12 @@ abbr_len(char *s)
 }
 
 static const char *
-actual_color(char *s, int len, int arg)
+actual_color(const char *param, int len, int arg)
 {
     const char *result;
-    char save = 0;
+    char *s = strmalloc(param);
 
     if (len > 0) {		/* if not null-terminated, set it now */
-	save = s[len];
 	s[len] = '\0';
     }
 
@@ -174,9 +173,7 @@ actual_color(char *s, int len, int arg)
 	result = Literal_attr;
     }
 
-    if (len > 0)
-	s[len] = save;
-
+    free(s);
     return result;
 }
 
@@ -184,14 +181,14 @@ static void
 ExecAbbrev(char *param)
 {
     zero_or_more = *param;
-    flt_puts(param, strlen(param), Literal_attr);
+    flt_puts(param, (int) strlen(param), Literal_attr);
 }
 
 static void
 ExecBrief(char *param)
 {
     zero_or_all = *param;
-    flt_puts(param, strlen(param), Literal_attr);
+    flt_puts(param, (int) strlen(param), Literal_attr);
 }
 
 static void
@@ -222,12 +219,12 @@ ExecClass(char *param)
 	}
 	flt_puts(t, s - t, attr);
 	if (parse_eqls_ch(&s)) {
-	    flt_puts(s, strlen(s), Literal_attr);
+	    flt_puts(s, (int) strlen(s), Literal_attr);
 	} else if (*s) {
-	    flt_puts(s, strlen(s), Error_attr);
+	    flt_puts(s, (int) strlen(s), Error_attr);
 	}
     } else if (*s) {
-	flt_puts(s, strlen(s), Error_attr);
+	flt_puts(s, (int) strlen(s), Error_attr);
     }
 }
 
@@ -235,7 +232,7 @@ static void
 ExecDefault(char *param)
 {
     char *s = skip_ident(param);
-    char *t = param;
+    const char *t = param;
     const char *attr = Literal_attr;
     int save = *s;
 
@@ -251,29 +248,29 @@ ExecDefault(char *param)
 	attr = actual_color(t, -1, 1);
 	VERBOSE(2, ("actual_color(%s) = %s\n", t, attr));
     }
-    *s = save;
-    flt_puts(param, strlen(param), attr);
+    *s = (char) save;
+    flt_puts(param, (int) strlen(param), attr);
 }
 
 static void
 ExecEquals(char *param)
 {
     eqls_ch = *param;
-    flt_puts(param, strlen(param), Literal_attr);
+    flt_puts(param, (int) strlen(param), Literal_attr);
 }
 
 static void
 ExecInclude(char *param)
 {
     flt_read_keywords(param);
-    flt_puts(param, strlen(param), Literal_attr);
+    flt_puts(param, (int) strlen(param), Literal_attr);
 }
 
 static void
 ExecMeta(char *param)
 {
     meta_ch = *param;
-    flt_puts(param, strlen(param), Literal_attr);
+    flt_puts(param, (int) strlen(param), Literal_attr);
 }
 
 /*
@@ -293,7 +290,7 @@ ExecSource(char *param)
     meta_ch = save_meta;
     eqls_ch = save_eqls;
 
-    flt_puts(param, strlen(param), Literal_attr);
+    flt_puts(param, (int) strlen(param), Literal_attr);
 }
 
 static void
@@ -314,17 +311,17 @@ ExecTable(char *param)
 	    } else {
 		set_symbol_table(default_table);
 	    }
-	    *t = save;
+	    *t = (char) save;
 	}
     }
 
     t = skip_ident(param);
     flt_puts(param, t - param, Literal_attr);
     if (*skip_blanks(t) == '\0') {
-	flt_puts(t, strlen(t), "");
+	flt_puts(t, (int) strlen(t), "");
     } else {
 	flt_error("unexpected tokens");
-	flt_puts(t, strlen(t), Error_attr);
+	flt_puts(t, (int) strlen(t), Error_attr);
     }
 }
 
@@ -355,7 +352,7 @@ parse_directive(char *line)
     VERBOSE(1, ("parse_directive(%s)\n", line));
     if (*(s = skip_blanks(line)) == meta_ch) {
 	s = skip_blanks(s + 1);
-	if ((len = (skip_ident(s) - s)) != 0) {
+	if ((len = (unsigned) (skip_ident(s) - s)) != 0) {
 	    for (n = 0; n < sizeof(table) / sizeof(table[0]); n++) {
 		if (!strncmp(s, table[n].name, len)) {
 		    flt_puts(line, s + len - line, Ident_attr);
@@ -366,7 +363,7 @@ parse_directive(char *line)
 	    }
 	}
 	flt_error("unknown directive");
-	flt_puts(line, strlen(line), Error_attr);
+	flt_puts(line, (int) strlen(line), Error_attr);
     }
     return 0;
 }
@@ -394,7 +391,7 @@ parse_nondirective(char *s)
 
 	    *t = 0;
 	    attr0 = actual_color(s, abbr_len(s), 0);
-	    *t = save;
+	    *t = (char) save;
 	}
 	if (skip_eqls_ch(&t)) {
 	    s = skip_ident(t);
@@ -415,16 +412,16 @@ parse_nondirective(char *s)
 		if (*(attr1 = color_of(t, 0)) == '\0')
 		    attr1 = Action_attr;
 	    }
-	    flt_puts(t, strlen(t), attr1);
-	    *s = save;
+	    flt_puts(t, (int) strlen(t), attr1);
+	    *s = (char) save;
 	}
 	if (parse_eqls_ch(&s)) {
-	    flt_puts(s, strlen(s), attr2);
+	    flt_puts(s, (int) strlen(s), attr2);
 	} else if (*s) {
-	    flt_puts(s, strlen(s), Error_attr);
+	    flt_puts(s, (int) strlen(s), Error_attr);
 	}
     } else if (*t) {
-	flt_puts(t, strlen(t), Error_attr);
+	flt_puts(t, (int) strlen(t), Error_attr);
     }
 }
 
@@ -467,7 +464,7 @@ do_filter(FILE *input GCC_UNUSED)
 	if (*s == '\0') {
 	    ;
 	} else if (*s == eqls_ch) {
-	    flt_puts(s, strlen(s), Comment_attr);
+	    flt_puts(s, (int) strlen(s), Comment_attr);
 	} else if (!parse_directive(s)) {
 	    parse_nondirective(s);
 	}

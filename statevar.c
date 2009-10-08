@@ -3,7 +3,7 @@
  *	for getting and setting the values of the vile state variables,
  *	plus helper utility functions.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.135 2009/04/19 19:51:47 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.136 2009/10/04 13:44:30 tom Exp $
  */
 
 #include	"estruct.h"
@@ -973,7 +973,7 @@ var_FINDCMD(TBUFF **rp, const char *vp)
 }
 #endif
 
-#if DISP_X11||DISP_NTWIN
+#if OPT_FONT
 int
 var_FONT(TBUFF **rp, const char *vp)
 {

@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.689 2009/05/17 23:39:11 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.692 2009/10/06 01:04:02 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -683,6 +683,9 @@
 
 	/* combine select/yank (for mouse support) */
 #define OPT_SEL_YANK    ((DISP_X11 && XTOOLKIT) || SYS_WINNT || SYS_OS2)
+
+	/* any font capability */
+#define OPT_FONT        (DISP_X11||DISP_NTWIN)
 
 	/* any mouse capability */
 #define OPT_MOUSE       (OPT_SEL_YANK || OPT_XTERM)
@@ -2925,7 +2928,7 @@ extern void _exit (int code);
  * FIXME: c99 may require a wider type.
  */
 #ifdef __GNUC__
-#define TYPECAST(type,ptr) (type*)((long)(ptr))
+#define TYPECAST(type,ptr) (type*)((intptr_t)(ptr))
 #else
 #define TYPECAST(type,ptr) (type*)(ptr)
 #endif
@@ -3153,6 +3156,12 @@ extern void show_elapsed(void);
 #if (__GNUC__ == 3 && __GNUC_MINOR__ == 3)
 #define exp vl_exp	/* gcc 3.3 */
 #endif
+#endif /* gcc workarounds */
+
+#if defined(__GNUC__) && defined(_FORTIFY_SOURCE)
+#define IGNORE_RC(func) ignore_unused = func
+#else
+#define IGNORE_RC(func) (void) func
 #endif /* gcc workarounds */
 
 /*
