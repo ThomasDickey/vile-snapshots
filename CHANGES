@@ -1,7 +1,9 @@
 Changes for vile 9.8 (released ??? ??? ?? ????)
 
- 20091005 (v)
+ 20091009 (v)
 	> Tom Dickey:
+	+ update XVile.ad to match Debian package.
+	+ some code-cleanup for x11.c and filters.
 	+ work around defective gcc implementation of warn_unused_result
 	  attribute with new IGNORE_RC() macro.
 	+ add configure-script and makefile rules for app-defaults, icons and

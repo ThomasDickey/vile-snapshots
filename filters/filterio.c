@@ -1,7 +1,7 @@
 /*
  * Main program and I/O for external vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filterio.c,v 1.54 2009/06/28 21:58:33 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filterio.c,v 1.55 2009/10/07 23:30:13 tom Exp $
  *
  */
 
@@ -10,6 +10,10 @@
 
 #if defined(_WIN32)
 #include "w32vile.h"
+#endif
+
+#if defined(__GNUC__) && defined(_FORTIFY_SOURCE)
+int ignore_unused;
 #endif
 
 static FILE *my_out;

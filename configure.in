@@ -1,12 +1,12 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_REVISION($Revision: 1.272 $)
+AC_REVISION($Revision: 1.274 $)
 AC_PREREQ(2.13.20030927)
 rm -f config.cache
 
 ### Use "configure -with-screen" to override the default configuration, which is
 ### termcap-based on unix systems.
 
-dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.272 2009/10/05 23:26:29 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.274 2009/10/08 09:14:41 tom Exp $
 
 define(MAKELIST, sh $srcdir/filters/makelist.sh $srcdir/filters/genmake.mak)
 
@@ -1008,61 +1008,9 @@ AC_MSG_WARN([You should get a working version of flex, for instance:
 fi
 
 if test "$TARGET" = xvile; then
-	AC_MSG_CHECKING(for directory to install resource files)
-	CF_WITH_PATH(app-defaults,
-		[  --with-app-defaults=DIR directory in which to install resource files],
-		[appsdir],[EPREFIX/lib/X11/app-defaults],
-		['\$(exec_prefix)/lib/X11/app-defaults'])
-	AC_MSG_RESULT($appsdir)
-	AC_SUBST(appsdir)
-
-	AC_MSG_CHECKING(for directory to install resource files)
-	CF_WITH_PATH(app-defaults,
-		[  --with-app-defaults=DIR directory in which to install resource files],
-		[appsdir],[EPREFIX/lib/X11/app-defaults],
-		['\$(exec_prefix)/lib/X11/app-defaults'])
-	AC_MSG_RESULT($appsdir)
-	AC_SUBST(appsdir)
-
-	no_appsdir=
-	if test "$appsdir" = no ; then
-		no_appsdir="#"
-	else
-		EXTRA_INSTALL_DIRS="$EXTRA_INSTALL_DIRS \$(APPSDIR)"
-	fi
-	AC_SUBST(no_appsdir)
-
-	AC_MSG_CHECKING(for directory to install icons)
-	CF_WITH_PATH(icondir,
-		[  --with-icondir=DIR      directory in which to install icons],
-		[icondir],[EPREFIX/share/pixmaps],
-		['\$(exec_prefix)/share/pixmaps'])
-	AC_MSG_RESULT($icondir)
-	AC_SUBST(icondir)
-
-	no_icondir=
-	if test "$icondir" = no ; then
-		no_icondir="#"
-	else
-		EXTRA_INSTALL_DIRS="$EXTRA_INSTALL_DIRS \$(ICONDIR)"
-	fi
-	AC_SUBST(no_icondir)
-
-	# Comment-out the install-desktop rule if the desktop-utils are not found.
-	AC_MSG_CHECKING(if you want to install desktop files)
-	CF_ARG_OPTION(desktop,
-		[  --disable-desktop       disable install of xterm desktop files],
-		[enable_desktop=$enableval],
-		[enable_desktop=$enableval],yes)
-	AC_MSG_RESULT($enable_desktop)
-
-	desktop_utils=
-	if test "$enable_desktop" = yes ; then
-	AC_CHECK_PROG(desktop_utils,desktop-file-install,yes,no)
-	fi
-
-	test "$desktop_utils" = yes && desktop_utils= || desktop_utils="#"
-	AC_SUBST(DESKTOP_FLAGS)
+	CF_WITH_X_APP_DEFAULTS
+	CF_WITH_X_ICONDIR
+	CF_WITH_X_DESKTOP_UTILS
 else
 	no_appsdir="#"
 	no_icondir="#"

@@ -1,54 +1,55 @@
-! $Header: /users/source/archives/vile.vcs/macros/RCS/XVile.ad,v 1.2 2009/10/07 10:52:20 tom Exp $
+! $Header: /users/source/archives/vile.vcs/macros/RCS/XVile.ad,v 1.4 2009/10/09 09:18:40 tom Exp $
 
-*font: -adobe-courier-medium-r-normal--14-0-0-0-m-0-iso8859-1
+! "white" on "black" main window
+*background: grey5
+*foreground: grey95
+*font: 8x13
+*cursor.background: yellow
+*cursor.foreground: grey5
 
-*geometry:  80x24
-!.background:  darkslategrey
-.background:  black
-.foreground:  honeydew
-.scrollbar.foreground:  firebrick2
-.scrollbar.sliderIsSolid:  true
-.selection.background:  aquamarine4
-.selection.foreground:  honeydew
-.cursor.background:  yellow
-.cursor.foreground:  darkslategrey
-.modeline.Background:  steelblue
-.modeline.foreground:  darkslategrey
-.modeline.focusForeground:  yellow
+! Note: xvile uses the main window's foreground/background as default values
+! for the colors in the subresoures for highlighting, menu, modeline and
+! scrollbar.
 
-*multiClickTime:  1000
+! white on blue modeline
+*modeline.focusBackground: medium blue
+*modeline.focusForeground: white
+*modeline.background: darkblue
+*modeline.foreground: grey
 
-*blinkInterval:  -200
-*forkOnStartup:  true
+! scrollbar
+*scrollbar.background: grey67
+*scrollbar.foreground: grey75
+*scrollbar.sliderIsSolid: true
+*scrollbarWidth: 10
 
-*popupButton.foreground:  yellow
-*menuEntry*foreground:  pink
-*menuHeader*background:  gray
-*menuEntry*background:  gray
-*menuHeight:  20
+! menu
+*menubar*font: lucidasans-10
+*menubar*background: grey
+*menubar*borderColor: grey
+*menubar*foreground: black
+*menubar.vSpace: 1
+*menubar.hSpace: 1
+*menuHeader.highlightThickness: 1
 
-*focusFollowsMouse:  true
-*background:  blue
-.foreground:  honeydew
-.scrollbar.sliderIsSolid:  true
-.scrollbar.foreground:  indianRed3
-.selection.background:  indianRed3
-.selection.foreground:  honeydew
-.pointer.normalShape:  spider
+! options
+*focusFollowsMouse: true
+*forkOnStartup: true
 
-.color.fcolor0:  black
-.color.fcolor1:  red3
-.color.fcolor2:  green3
-.color.fcolor3:  yellow3
-.color.fcolor4:  blue3
-.color.fcolor5:  magenta3
-.color.fcolor6:  cyan3
-.color.fcolor7:  gray90
-.color.fcolor8:  gray30
-.color.fcolor9:  red
-.color.fcolor10:  green
-.color.fcolor11:  yellow
-.color.fcolor12:  blue
-.color.fcolor13:  magenta
-.color.fcolor14:  cyan
-.color.fcolor15:  white
+! highlighting colours
+*color.fcolor0: black
+*color.fcolor1: red3
+*color.fcolor2: green3
+*color.fcolor3: yellow3
+*color.fcolor4: blue3
+*color.fcolor5: magenta3
+*color.fcolor6: cyan3
+*color.fcolor7: gray90
+*color.fcolor8: gray30
+*color.fcolor9: red
+*color.fcolor10: green
+*color.fcolor11: yellow
+*color.fcolor12: blue
+*color.fcolor13: magenta
+*color.fcolor14: cyan
+*color.fcolor15: white
