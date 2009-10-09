@@ -2,7 +2,7 @@
  *	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.339 2009/10/05 01:00:13 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.348 2009/10/09 09:57:13 tom Exp $
  *
  */
 
@@ -190,6 +190,12 @@
 #include <X11/xpm.h>
 #endif
 #endif
+
+#define RES_I(res,val) TRACE(("\t%s: %d\n", res, cur_win->val));
+#define TRACE_RES_L(res,val) TRACE(("\t%s: %lu\n", res, cur_win->val));
+#define TRACE_RES_B(res,val) TRACE(("\t%s: %s\n", res, cur_win->val ? "true" : "false"));
+#define TRACE_RES_P(res,val) TRACE(("\t%s: %#lx\n", res, cur_win->val));
+#define TRACE_RES_S(res,val) TRACE(("\t%s: %s\n", res, cur_win->val));
 
 #define IsPrimary(s)    ((s) == XA_PRIMARY)
 
@@ -1706,8 +1712,6 @@ gui_update_scrollbar(WINDOW *uwp)
 #endif /* MOTIF_WIDGETS */
 }
 
-#define OLD_RESOURCES 1		/* New stuff not ready for prime time */
-
 #define XtNnormalShape		"normalShape"
 #define XtCNormalShape		"NormalShape"
 #define XtNwatchShape		"watchShape"
@@ -1825,7 +1829,78 @@ gui_update_scrollbar(WINDOW *uwp)
 #define XtNbcolorF		"bcolor15"
 #define XtCBcolorF		"Bcolor15"
 
-static XtResource resources[] =
+/*
+ * xvile has two categories of color resources: (a) those which depend only
+ * on the X default colors, and (b) those which may depend on fixups to the
+ * foreground/background colors within xvile.  In the latter case, we cannot
+ * simply evaluate all of the resources at once; they are fetched via a
+ * sub-resource call.
+ */
+#define XRES_TOP_COLOR(name, class, value, dft) \
+    { \
+	name, \
+	class, \
+	XtRPixel, \
+	sizeof(Pixel), \
+	XtOffset(TextWindow, value), \
+	XtRString, \
+	(XtPointer) dft \
+    }
+
+#define XRES_SUB_COLOR(name, class, value, dft) \
+    { \
+	name, \
+	class, \
+	XtRPixel, \
+	sizeof(Pixel), \
+	XtOffset(TextWindow, value), \
+	XtRPixel, \
+	(XtPointer) dft \
+    }
+
+#define XRES_FG(name, class, value) \
+    XRES_TOP_COLOR(name, class, value, XtDefaultForeground)
+
+#define XRES_BG(name, class, value) \
+    XRES_TOP_COLOR(name, class, value, XtDefaultBackground)
+
+/*
+ * Other resources, for readability.
+ */
+#define XRES_BOOL(name, class, value, dft) \
+    { \
+	name, \
+	class, \
+	XtRBool, \
+	sizeof(Bool), \
+	XtOffset(TextWindow, value), \
+	XtRImmediate, \
+	(XtPointer) dft \
+    }
+
+#define XRES_INTEGER(name, class, value, dft) \
+    { \
+	name, \
+	class, \
+	XtRInt, \
+	sizeof(Int), \
+	XtOffset(TextWindow, value), \
+	XtRImmediate, \
+	(XtPointer) dft \
+    }
+
+#define XRES_STRING(name, class, value, dft) \
+    { \
+	name, \
+	class, \
+	XtRString, \
+	sizeof(String *), \
+	XtOffset(TextWindow, value), \
+	XtRImmediate, \
+	(XtPointer) dft \
+    }
+
+static XtResource app_resources[] =
 {
 #if OPT_KEV_DRAGGING
     {
@@ -1847,77 +1922,14 @@ static XtResource resources[] =
 	XtRImmediate,
 	(XtPointer) 60		/* 60 milliseconds */
     },
-    {
-	XtNreverseVideo,
-	XtCReverseVideo,
-	XtRBool,
-	sizeof(Bool),
-	XtOffset(TextWindow, reverse_video),
-	XtRImmediate,
-	(XtPointer) False
-    },
-    {
-	XtNgeometry,
-	XtCGeometry,
-	XtRString,
-	sizeof(String *),
-	XtOffset(TextWindow, geometry),
-	XtRImmediate,
-	(XtPointer) "80x36"
-    },
-    {
-	XtNfont,
-	XtCFont,
-	XtRString,
-	sizeof(String *),
-	XtOffset(TextWindow, starting_fontname),
-	XtRImmediate,
-	(XtPointer) "fixed"	/* used to be FONTNAME */
-    },
-    {
-	XtNforeground,
-	XtCForeground,
-	XtRPixel,
-	sizeof(Pixel),
-	XtOffset(TextWindow, fg),
-	XtRString,
-#if OLD_RESOURCES
-	(XtPointer) XtDefaultForeground
-#else
-	(XtPointer) "#c71bc30bc71b"
-#endif				/* OLD_RESOURCES */
-    },
-    {
-	XtNbackground,
-	XtCBackground,
-	XtRPixel,
-	sizeof(Pixel),
-	XtOffset(TextWindow, bg),
-	XtRString,
-#if OLD_RESOURCES
-	(XtPointer) XtDefaultBackground
-#else
-	(XtPointer) "#c71bc30bc71b"
-#endif
-    },
-    {
-	XtNforkOnStartup,
-	XtCForkOnStartup,
-	XtRBool,
-	sizeof(Bool),
-	XtOffset(TextWindow, fork_on_startup),
-	XtRImmediate,
-	(XtPointer) False
-    },
-    {
-	XtNfocusFollowsMouse,
-	XtCFocusFollowsMouse,
-	XtRBool,
-	sizeof(Bool),
-	XtOffset(TextWindow, focus_follows_mouse),
-	XtRImmediate,
-	(XtPointer) False
-    },
+    XRES_BOOL(XtNreverseVideo, XtCReverseVideo, reverse_video, False),
+    XRES_STRING(XtNgeometry, XtCGeometry, geometry, "80x36"),
+    XRES_STRING(XtNfont, XtCFont, starting_fontname, "fixed"),
+    XRES_FG(XtNforeground, XtCForeground, fg),
+    XRES_BG(XtNbackground, XtCBackground, bg),
+    XRES_BOOL(XtNforkOnStartup, XtCForkOnStartup, fork_on_startup, False),
+    XRES_BOOL(XtNfocusFollowsMouse, XtCFocusFollowsMouse,
+	      focus_follows_mouse, False),
     {
 	XtNmultiClickTime,
 	XtCMultiClickTime,
@@ -1927,24 +1939,8 @@ static XtResource resources[] =
 	XtRImmediate,
 	(XtPointer) 600
     },
-    {
-	XtNcharClass,
-	XtCCharClass,
-	XtRString,
-	sizeof(String *),
-	XtOffset(TextWindow, multi_click_char_class),
-	XtRImmediate,
-	(XtPointer) NULL
-    },
-    {
-	XtNscrollbarOnLeft,
-	XtCScrollbarOnLeft,
-	XtRBool,
-	sizeof(Bool),
-	XtOffset(TextWindow, scrollbar_on_left),
-	XtRImmediate,
-	(XtPointer) False
-    },
+    XRES_STRING(XtNcharClass, XtCCharClass, multi_click_char_class, NULL),
+    XRES_BOOL(XtNscrollbarOnLeft, XtCScrollbarOnLeft, scrollbar_on_left, False),
     {
 	XtNscrollbarWidth,
 	XtCScrollbarWidth,
@@ -1975,43 +1971,12 @@ static XtResource resources[] =
     },
 #endif
 #if OPT_MENUS_COLORED
-    {
-	XtNmenuForeground,
-	XtCMenuForeground,
-	XtRPixel,
-	sizeof(Pixel),
-	XtOffset(TextWindow, menubar_fg),
-	XtRString,
-	(XtPointer) XtDefaultForeground
-    },
-    {
-	XtNmenuBackground,
-	XtCMenuBackground,
-	XtRPixel,
-	sizeof(Pixel),
-	XtOffset(TextWindow, menubar_bg),
-	XtRString,
-	(XtPointer) XtDefaultBackground
-    },
+    XRES_FG(XtNmenuForeground, XtCMenuForeground, menubar_fg),
+    XRES_BG(XtNmenuBackground, XtCMenuBackground, menubar_bg),
 #endif
-    {
-	XtNpersistentSelections,
-	XtCPersistentSelections,
-	XtRBool,
-	sizeof(Bool),
-	XtOffset(TextWindow, persistent_selections),
-	XtRImmediate,
-	(XtPointer) True
-    },
-    {
-	XtNselectionSetsDOT,
-	XtCSelectionSetsDOT,
-	XtRBool,
-	sizeof(Bool),
-	XtOffset(TextWindow, selection_sets_DOT),
-	XtRImmediate,
-	(XtPointer) False
-    },
+    XRES_BOOL(XtNpersistentSelections, XtCPersistentSelections,
+	      persistent_selections, True),
+    XRES_BOOL(XtNselectionSetsDOT, XtCSelectionSetsDOT, selection_sets_DOT, False),
     {
 	XtNblinkInterval,
 	XtCBlinkInterval,
@@ -2022,470 +1987,86 @@ static XtResource resources[] =
 	(XtPointer) -666	/* 2/3 second; only when highlighted */
     },
 #if OPT_INPUT_METHOD
-    {
-	XtNopenIm,
-	XtCOpenIm,
-	XtRBool,
-	sizeof(Bool),
-	XtOffset(TextWindow, open_im),
-	XtRImmediate,
-	(XtPointer) True
-    },
-    {
-	XtNinputMethod,
-	XtCInputMethod,
-	XtRString,
-	sizeof(char *),
-	XtOffset(TextWindow, rs_inputMethod),
-	XtRImmediate,
-	(XtPointer) ""
-    },
-    {
-	XtNpreeditType,
-	XtCPreeditType,
-	XtRString,
-	sizeof(char *),
-	XtOffset(TextWindow, rs_preeditType),
-	XtRImmediate,
-	(XtPointer) "OverTheSpot,Root"
-    },
+    XRES_BOOL(XtNopenIm, XtCOpenIm, open_im, True),
+    XRES_STRING(XtNinputMethod, XtCInputMethod, rs_inputMethod, ""),
+    XRES_STRING(XtNpreeditType, XtCPreeditType, rs_preeditType,
+		"OverTheSpot,Root"),
 #ifndef DEFXIMFONT
 #define DEFXIMFONT		"*"
 #endif
 #define XtNximFont		"ximFont"
 #define XtCXimFont		"XimFont"
-    {
-	XtNximFont,
-	XtCXimFont,
-	XtRString,
-	sizeof(XtRString),
-	XtOffset(TextWindow, rs_imFont),
-	XtRImmediate,
-	(XtPointer) DEFXIMFONT
-    }
+    XRES_STRING(XtNximFont, XtCXimFont, rs_imFont, DEFXIMFONT)
 #endif				/* OPT_INPUT_METHOD */
 };
 
+/*
+ * The reason for the sub-resource tables is to allow xvile to use the main
+ * window's foreground/background color as the default value for other color
+ * resources.  That makes setting up color resources simpler, but complicates
+ * the program.
+ *
+ * The call that retrieves the subresources initializes _all_ of the resources
+ * for the given name/class.  So there are additional resources in these tables
+ * which cannot be moved to the app_resources table.
+ */
 static XtResource color_resources[] =
 {
-    {
-	XtNfcolor0,
-	XtCFcolor0,
-	XtRPixel,
-	sizeof(Pixel),
-	XtOffset(TextWindow, colors_fg[0]),
-	XtRPixel,
-	(XtPointer) &cur_win_rec.fg
-    },
-    {
-	XtNbcolor0,
-	XtCBcolor0,
-	XtRPixel,
-	sizeof(Pixel),
-	XtOffset(TextWindow, colors_bg[0]),
-	XtRPixel,
-	(XtPointer) &cur_win_rec.bg
-    },
-    {
-	XtNfcolor1,
-	XtCFcolor1,
-	XtRPixel,
-	sizeof(Pixel),
-	XtOffset(TextWindow, colors_fg[1]),
-	XtRString,
-	(XtPointer) "rgb:ff/0/0"
-    },
-    {
-	XtNbcolor1,
-	XtCBcolor1,
-	XtRPixel,
-	sizeof(Pixel),
-	XtOffset(TextWindow, colors_bg[1]),
-	XtRPixel,
-	(XtPointer) &cur_win_rec.bg
-    },
-    {
-	XtNfcolor2,
-	XtCFcolor2,
-	XtRPixel,
-	sizeof(Pixel),
-	XtOffset(TextWindow, colors_fg[2]),
-	XtRString,
-	(XtPointer) "rgb:0/ff/0"
-    },
-    {
-	XtNbcolor2,
-	XtCBcolor2,
-	XtRPixel,
-	sizeof(Pixel),
-	XtOffset(TextWindow, colors_bg[2]),
-	XtRPixel,
-	(XtPointer) &cur_win_rec.bg
-    },
-    {
-	XtNfcolor3,
-	XtCFcolor3,
-	XtRPixel,
-	sizeof(Pixel),
-	XtOffset(TextWindow, colors_fg[3]),
-	XtRString,
-	(XtPointer) "rgb:a5/2a/2a"
-    },
-    {
-	XtNbcolor3,
-	XtCBcolor3,
-	XtRPixel,
-	sizeof(Pixel),
-	XtOffset(TextWindow, colors_bg[3]),
-	XtRPixel,
-	(XtPointer) &cur_win_rec.bg
-    },
-    {
-	XtNfcolor4,
-	XtCFcolor4,
-	XtRPixel,
-	sizeof(Pixel),
-	XtOffset(TextWindow, colors_fg[4]),
-	XtRString,
-	(XtPointer) "rgb:0/0/ff"
-    },
-    {
-	XtNbcolor4,
-	XtCBcolor4,
-	XtRPixel,
-	sizeof(Pixel),
-	XtOffset(TextWindow, colors_bg[4]),
-	XtRPixel,
-	(XtPointer) &cur_win_rec.bg
-    },
-    {
-	XtNfcolor5,
-	XtCFcolor5,
-	XtRPixel,
-	sizeof(Pixel),
-	XtOffset(TextWindow, colors_fg[5]),
-	XtRString,
-	(XtPointer) "rgb:ff/0/ff"
-    },
-    {
-	XtNbcolor5,
-	XtCBcolor5,
-	XtRPixel,
-	sizeof(Pixel),
-	XtOffset(TextWindow, colors_bg[5]),
-	XtRPixel,
-	(XtPointer) &cur_win_rec.bg
-    },
-    {
-	XtNfcolor6,
-	XtCFcolor6,
-	XtRPixel,
-	sizeof(Pixel),
-	XtOffset(TextWindow, colors_fg[6]),
-	XtRString,
-	(XtPointer) "rgb:0/ff/ff"
-    },
-    {
-	XtNbcolor6,
-	XtCBcolor6,
-	XtRPixel,
-	sizeof(Pixel),
-	XtOffset(TextWindow, colors_bg[6]),
-	XtRPixel,
-	(XtPointer) &cur_win_rec.bg
-    },
-    {
-	XtNfcolor7,
-	XtCFcolor7,
-	XtRPixel,
-	sizeof(Pixel),
-	XtOffset(TextWindow, colors_fg[7]),
-	XtRString,
-	(XtPointer) "rgb:e6/e6/e6"
-    },
-    {
-	XtNbcolor7,
-	XtCBcolor7,
-	XtRPixel,
-	sizeof(Pixel),
-	XtOffset(TextWindow, colors_bg[7]),
-	XtRPixel,
-	(XtPointer) &cur_win_rec.bg
-    },
-    {
-	XtNfcolor8,
-	XtCFcolor8,
-	XtRPixel,
-	sizeof(Pixel),
-	XtOffset(TextWindow, colors_fg[8]),
-	XtRString,
-	(XtPointer) "rgb:be/be/be"
-    },
-    {
-	XtNbcolor8,
-	XtCBcolor8,
-	XtRPixel,
-	sizeof(Pixel),
-	XtOffset(TextWindow, colors_bg[8]),
-	XtRPixel,
-	(XtPointer) &cur_win_rec.bg
-    },
-    {
-	XtNfcolor9,
-	XtCFcolor9,
-	XtRPixel,
-	sizeof(Pixel),
-	XtOffset(TextWindow, colors_fg[9]),
-	XtRString,
-	(XtPointer) "rgb:ff/7f/7f"
-    },
-    {
-	XtNbcolor9,
-	XtCBcolor9,
-	XtRPixel,
-	sizeof(Pixel),
-	XtOffset(TextWindow, colors_bg[9]),
-	XtRPixel,
-	(XtPointer) &cur_win_rec.bg
-    },
-    {
-	XtNfcolorA,
-	XtCFcolorA,
-	XtRPixel,
-	sizeof(Pixel),
-	XtOffset(TextWindow, colors_fg[10]),
-	XtRString,
-	(XtPointer) "rgb:7f/ff/7f"
-    },
-    {
-	XtNbcolorA,
-	XtCBcolorA,
-	XtRPixel,
-	sizeof(Pixel),
-	XtOffset(TextWindow, colors_bg[10]),
-	XtRPixel,
-	(XtPointer) &cur_win_rec.bg
-    },
-    {
-	XtNfcolorB,
-	XtCFcolorB,
-	XtRPixel,
-	sizeof(Pixel),
-	XtOffset(TextWindow, colors_fg[11]),
-	XtRString,
-	(XtPointer) "rgb:ff/ff/0"
-    },
-    {
-	XtNbcolorB,
-	XtCBcolorB,
-	XtRPixel,
-	sizeof(Pixel),
-	XtOffset(TextWindow, colors_bg[11]),
-	XtRPixel,
-	(XtPointer) &cur_win_rec.bg
-    },
-    {
-	XtNfcolorC,
-	XtCFcolorC,
-	XtRPixel,
-	sizeof(Pixel),
-	XtOffset(TextWindow, colors_fg[12]),
-	XtRString,
-	(XtPointer) "rgb:7f/7f/ff"
-    },
-    {
-	XtNbcolorC,
-	XtCBcolorC,
-	XtRPixel,
-	sizeof(Pixel),
-	XtOffset(TextWindow, colors_bg[12]),
-	XtRPixel,
-	(XtPointer) &cur_win_rec.bg
-    },
-    {
-	XtNfcolorD,
-	XtCFcolorD,
-	XtRPixel,
-	sizeof(Pixel),
-	XtOffset(TextWindow, colors_fg[13]),
-	XtRString,
-	(XtPointer) "rgb:ff/7f/ff"
-    },
-    {
-	XtNbcolorD,
-	XtCBcolorD,
-	XtRPixel,
-	sizeof(Pixel),
-	XtOffset(TextWindow, colors_bg[13]),
-	XtRPixel,
-	(XtPointer) &cur_win_rec.bg
-    },
-    {
-	XtNfcolorE,
-	XtCFcolorE,
-	XtRPixel,
-	sizeof(Pixel),
-	XtOffset(TextWindow, colors_fg[14]),
-	XtRString,
-	(XtPointer) "rgb:7f/ff/ff"
-    },
-    {
-	XtNbcolorE,
-	XtCBcolorE,
-	XtRPixel,
-	sizeof(Pixel),
-	XtOffset(TextWindow, colors_bg[14]),
-	XtRPixel,
-	(XtPointer) &cur_win_rec.bg
-    },
-    {
-	XtNfcolorF,
-	XtCFcolorF,
-	XtRPixel,
-	sizeof(Pixel),
-	XtOffset(TextWindow, colors_fg[15]),
-	XtRString,
-	(XtPointer) "rgb:ff/ff/ff"
-    },
-    {
-	XtNbcolorF,
-	XtCBcolorF,
-	XtRPixel,
-	sizeof(Pixel),
-	XtOffset(TextWindow, colors_bg[15]),
-	XtRPixel,
-	(XtPointer) &cur_win_rec.bg
-    },
+    XRES_SUB_COLOR(XtNbcolor0, XtCBcolor0, colors_bg[0], &cur_win_rec.bg),
+    XRES_SUB_COLOR(XtNbcolor1, XtCBcolor1, colors_bg[1], &cur_win_rec.bg),
+    XRES_SUB_COLOR(XtNbcolor2, XtCBcolor2, colors_bg[2], &cur_win_rec.bg),
+    XRES_SUB_COLOR(XtNbcolor3, XtCBcolor3, colors_bg[3], &cur_win_rec.bg),
+    XRES_SUB_COLOR(XtNbcolor4, XtCBcolor4, colors_bg[4], &cur_win_rec.bg),
+    XRES_SUB_COLOR(XtNbcolor5, XtCBcolor5, colors_bg[5], &cur_win_rec.bg),
+    XRES_SUB_COLOR(XtNbcolor6, XtCBcolor6, colors_bg[6], &cur_win_rec.bg),
+    XRES_SUB_COLOR(XtNbcolor7, XtCBcolor7, colors_bg[7], &cur_win_rec.bg),
+    XRES_SUB_COLOR(XtNbcolor8, XtCBcolor8, colors_bg[8], &cur_win_rec.bg),
+    XRES_SUB_COLOR(XtNbcolor9, XtCBcolor9, colors_bg[9], &cur_win_rec.bg),
+    XRES_SUB_COLOR(XtNbcolorA, XtCBcolorA, colors_bg[10], &cur_win_rec.bg),
+    XRES_SUB_COLOR(XtNbcolorB, XtCBcolorB, colors_bg[11], &cur_win_rec.bg),
+    XRES_SUB_COLOR(XtNbcolorC, XtCBcolorC, colors_bg[12], &cur_win_rec.bg),
+    XRES_SUB_COLOR(XtNbcolorD, XtCBcolorD, colors_bg[13], &cur_win_rec.bg),
+    XRES_SUB_COLOR(XtNbcolorE, XtCBcolorE, colors_bg[14], &cur_win_rec.bg),
+    XRES_SUB_COLOR(XtNbcolorF, XtCBcolorF, colors_bg[15], &cur_win_rec.bg),
+    XRES_SUB_COLOR(XtNfcolor0, XtCFcolor0, colors_fg[0], &cur_win_rec.fg),
+    XRES_TOP_COLOR(XtNfcolor1, XtCFcolor1, colors_fg[1], "rgb:ff/0/0"),
+    XRES_TOP_COLOR(XtNfcolor2, XtCFcolor2, colors_fg[2], "rgb:0/ff/0"),
+    XRES_TOP_COLOR(XtNfcolor3, XtCFcolor3, colors_fg[3], "rgb:a5/2a/2a"),
+    XRES_TOP_COLOR(XtNfcolor4, XtCFcolor4, colors_fg[4], "rgb:0/0/ff"),
+    XRES_TOP_COLOR(XtNfcolor5, XtCFcolor5, colors_fg[5], "rgb:ff/0/ff"),
+    XRES_TOP_COLOR(XtNfcolor6, XtCFcolor6, colors_fg[6], "rgb:0/ff/ff"),
+    XRES_TOP_COLOR(XtNfcolor7, XtCFcolor7, colors_fg[7], "rgb:e6/e6/e6"),
+    XRES_TOP_COLOR(XtNfcolor8, XtCFcolor8, colors_fg[8], "rgb:be/be/be"),
+    XRES_TOP_COLOR(XtNfcolor9, XtCFcolor9, colors_fg[9], "rgb:ff/7f/7f"),
+    XRES_TOP_COLOR(XtNfcolorA, XtCFcolorA, colors_fg[10], "rgb:7f/ff/7f"),
+    XRES_TOP_COLOR(XtNfcolorB, XtCFcolorB, colors_fg[11], "rgb:ff/ff/0"),
+    XRES_TOP_COLOR(XtNfcolorC, XtCFcolorC, colors_fg[12], "rgb:7f/7f/ff"),
+    XRES_TOP_COLOR(XtNfcolorD, XtCFcolorD, colors_fg[13], "rgb:ff/7f/ff"),
+    XRES_TOP_COLOR(XtNfcolorE, XtCFcolorE, colors_fg[14], "rgb:7f/ff/ff"),
+    XRES_TOP_COLOR(XtNfcolorF, XtCFcolorF, colors_fg[15], "rgb:ff/ff/ff"),
 };
 
 #if OPT_KEV_SCROLLBARS || OPT_XAW_SCROLLBARS
 static XtResource scrollbar_resources[] =
 {
-    {
-	XtNforeground,
-	XtCForeground,
-	XtRPixel,
-	sizeof(Pixel),
-	XtOffset(TextWindow, scrollbar_fg),
-#if OLD_RESOURCES
-	XtRPixel,
-	(XtPointer) &cur_win_rec.fg
-#else
-	XtRString,
-	"#b6dab2cab6da"
-#endif
-    },
-    {
-	XtNbackground,
-	XtCBackground,
-	XtRPixel,
-	sizeof(Pixel),
-	XtOffset(TextWindow, scrollbar_bg),
-#if OLD_RESOURCES
-	XtRPixel,
-	(XtPointer) &cur_win_rec.bg
-#else
-	XtRString,
-	"#9e7996589e79"
-#endif				/* OLD_RESOURCES */
-    },
-    {
-	XtNsliderIsSolid,
-	XtCSliderIsSolid,
-	XtRBool,
-	sizeof(Bool),
-	XtOffset(TextWindow, slider_is_solid),
-#if OLD_RESOURCES
-	XtRImmediate,
-	(XtPointer) False
-#else
-	XtRBool,
-	(XtPointer) &cur_win_rec.slider_is_solid
-#endif				/* OLD_RESOURCES */
-    },
+    XRES_SUB_COLOR(XtNforeground, XtCForeground, scrollbar_fg, &cur_win_rec.fg),
+    XRES_SUB_COLOR(XtNbackground, XtCBackground, scrollbar_bg, &cur_win_rec.bg),
+    XRES_BOOL(XtNsliderIsSolid, XtCSliderIsSolid, slider_is_solid, False),
 };
 #endif
 
 static XtResource modeline_resources[] =
 {
-    {
-	XtNforeground,
-	XtCForeground,
-	XtRPixel,
-	sizeof(Pixel),
-	XtOffset(TextWindow, modeline_fg),
-#if OLD_RESOURCES
-	XtRPixel,
-	(XtPointer) &cur_win_rec.bg
-#else
-	XtRString,
-	"#ffffffffffff"
-#endif				/* OLD_RESOURCES */
-    },
-    {
-	XtNbackground,
-	XtCBackground,
-	XtRPixel,
-	sizeof(Pixel),
-	XtOffset(TextWindow, modeline_bg),
-#if OLD_RESOURCES
-	XtRPixel,
-	(XtPointer) &cur_win_rec.fg
-#else
-	XtRString,
-	"#70006ca37000"
-#endif				/* OLD_RESOURCES */
-    },
-    {
-	XtNfocusForeground,
-	XtCForeground,
-	XtRPixel,
-	sizeof(Pixel),
-	XtOffset(TextWindow, modeline_focus_fg),
-#if OLD_RESOURCES
-	XtRPixel,
-	(XtPointer) &cur_win_rec.bg
-#else
-	XtRString,
-	"#ffffffffffff"
-#endif				/* OLD_RESOURCES */
-    },
-    {
-	XtNfocusBackground,
-	XtCBackground,
-	XtRPixel,
-	sizeof(Pixel),
-	XtOffset(TextWindow, modeline_focus_bg),
-#if OLD_RESOURCES
-	XtRPixel,
-	(XtPointer) &cur_win_rec.fg
-#else
-	XtRString,
-	"#70006ca37000"
-#endif				/* OLD_RESOURCES */
-    },
+    XRES_SUB_COLOR(XtNforeground, XtCForeground, modeline_fg, &cur_win_rec.bg),
+    XRES_SUB_COLOR(XtNbackground, XtCBackground, modeline_bg, &cur_win_rec.fg),
+    XRES_SUB_COLOR(XtNfocusForeground, XtCForeground, modeline_focus_fg, &cur_win_rec.bg),
+    XRES_SUB_COLOR(XtNfocusBackground, XtCBackground, modeline_focus_bg, &cur_win_rec.fg),
 };
 
 static XtResource selection_resources[] =
 {
-    {
-	XtNforeground,
-	XtCBackground,		/* weird, huh? */
-	XtRPixel,
-	sizeof(Pixel),
-	XtOffset(TextWindow, selection_fg),
-	XtRPixel,
-	(XtPointer) &cur_win_rec.bg
-    },
-    {
-	XtNbackground,
-	XtCForeground,
-	XtRPixel,
-	sizeof(Pixel),
-	XtOffset(TextWindow, selection_bg),
-	XtRPixel,
-	(XtPointer) &cur_win_rec.fg
-    },
+    XRES_SUB_COLOR(XtNforeground, XtCBackground, selection_fg, &cur_win_rec.bg),
+    XRES_SUB_COLOR(XtNbackground, XtCForeground, selection_bg, &cur_win_rec.fg),
 };
 
 /*
@@ -2500,46 +2081,14 @@ static XtResource selection_resources[] =
 
 static XtResource cursor_resources[] =
 {
-    {
-	XtNforeground,
-	XtCForeground,
-	XtRPixel,
-	sizeof(Pixel),
-	XtOffset(TextWindow, cursor_fg),
-	XtRPixel,
-	(XtPointer) &cur_win_rec.fg
-    },
-    {
-	XtNbackground,
-	XtCBackground,
-	XtRPixel,
-	sizeof(Pixel),
-	XtOffset(TextWindow, cursor_bg),
-	XtRPixel,
-	(XtPointer) &cur_win_rec.bg
-    },
+    XRES_SUB_COLOR(XtNforeground, XtCForeground, cursor_fg, &cur_win_rec.fg),
+    XRES_SUB_COLOR(XtNbackground, XtCBackground, cursor_bg, &cur_win_rec.bg),
 };
 
 static XtResource pointer_resources[] =
 {
-    {
-	XtNforeground,
-	XtCForeground,
-	XtRPixel,
-	sizeof(Pixel),
-	XtOffset(TextWindow, pointer_fg),
-	XtRPixel,
-	(XtPointer) &cur_win_rec.fg
-    },
-    {
-	XtNbackground,
-	XtCBackground,
-	XtRPixel,
-	sizeof(Pixel),
-	XtOffset(TextWindow, pointer_bg),
-	XtRPixel,
-	(XtPointer) &cur_win_rec.bg
-    },
+    XRES_SUB_COLOR(XtNforeground, XtCForeground, pointer_fg, &cur_win_rec.fg),
+    XRES_SUB_COLOR(XtNbackground, XtCBackground, pointer_bg, &cur_win_rec.bg),
     {
 	XtNnormalShape,
 	XtCNormalShape,
@@ -2934,16 +2483,47 @@ x_preparse_args(int *pargc, char ***pargv)
 		  XtNdepth, &cur_win->screen_depth,
 		  NULL);
 
-#if !OLD_RESOURCES
-    cur_win->slider_is_solid = (cur_win->screen_depth >= 6);
-#endif
-
     XtGetApplicationResources(cur_win->top_widget,
 			      (XtPointer) cur_win,
-			      resources,
-			      XtNumber(resources),
+			      app_resources,
+			      XtNumber(app_resources),
 			      (ArgList) 0,
 			      0);
+
+    TRACE(("** ApplicationResources:\n"));
+
+#if OPT_KEV_DRAGGING
+    TRACE_RES_L(XtNscrollRepeatTimeout, scroll_repeat_timeout);
+#endif
+    TRACE_RES_L(XtNscrollRepeatInterval, scroll_repeat_interval);
+    TRACE_RES_B(XtNreverseVideo, reverse_video);
+    TRACE_RES_S(XtNfont, starting_fontname);
+    TRACE_RES_S(XtNgeometry, geometry);
+    TRACE_RES_P(XtNforeground, fg);
+    TRACE_RES_P(XtNbackground, bg);
+    TRACE_RES_B(XtNforkOnStartup, fork_on_startup);
+    TRACE_RES_B(XtNfocusFollowsMouse, focus_follows_mouse);
+    TRACE_RES_L(XtNmultiClickTime, click_timeout);
+    TRACE_RES_S(XtNcharClass, multi_click_char_class);
+    TRACE_RES_B(XtNscrollbarOnLeft, scrollbar_on_left);
+    RES_I(XtNscrollbarWidth, pane_width);
+    RES_I(XtNwheelScrollAmount, wheel_scroll_amount);
+#if OPT_MENUS
+    RES_I(XtNmenuHeight, menu_height);
+#endif
+#if OPT_MENUS_COLORED
+    TRACE_RES_P(XtNmenuForeground, menubar_fg);
+    TRACE_RES_P(XtNmenuBackground, menubar_bg);
+#endif
+    TRACE_RES_B(XtNpersistentSelections, persistent_selections);
+    TRACE_RES_B(XtNselectionSetsDOT, selection_sets_DOT);
+    TRACE_RES_B(XtNblinkInterval, blink_interval);
+#if OPT_INPUT_METHOD
+    TRACE_RES_B(XtNopenIm, open_im);
+    TRACE_RES_B(XtNinputMethod, rs_inputMethod);
+    TRACE_RES_B(XtNpreeditType, rs_preeditType);
+    TRACE_RES_B(XtNximFont, rs_imFont);
+#endif
 
     if (cur_win->fork_on_startup)
 	(void) newprocessgroup(TRUE, 1);
@@ -2970,6 +2550,10 @@ x_preparse_args(int *pargc, char ***pargv)
 		      XtNumber(scrollbar_resources),
 		      (ArgList) 0,
 		      0);
+    TRACE(("SubResources:scrollbar\n"));
+    TRACE_RES_P(XtNforeground, scrollbar_fg);
+    TRACE_RES_P(XtNbackground, scrollbar_bg);
+    TRACE_RES_B(XtNsliderIsSolid, slider_is_solid);
 #endif /* OPT_KEV_SCROLLBARS */
 
     XtGetSubresources(cur_win->top_widget,
@@ -2980,6 +2564,11 @@ x_preparse_args(int *pargc, char ***pargv)
 		      XtNumber(modeline_resources),
 		      (ArgList) 0,
 		      0);
+    TRACE(("SubResources:modeline\n"));
+    TRACE_RES_P(XtNforeground, modeline_fg);
+    TRACE_RES_P(XtNbackground, modeline_bg);
+    TRACE_RES_P(XtNfocusForeground, modeline_focus_fg);
+    TRACE_RES_P(XtNfocusBackground, modeline_focus_bg);
 
     XtGetSubresources(cur_win->top_widget,
 		      (XtPointer) cur_win,
@@ -2989,6 +2578,9 @@ x_preparse_args(int *pargc, char ***pargv)
 		      XtNumber(selection_resources),
 		      (ArgList) 0,
 		      0);
+    TRACE(("SubResources:selection\n"));
+    TRACE_RES_P(XtNforeground, selection_fg);
+    TRACE_RES_P(XtNbackground, selection_bg);
 
     XtGetSubresources(cur_win->top_widget,
 		      (XtPointer) cur_win,
@@ -2998,6 +2590,9 @@ x_preparse_args(int *pargc, char ***pargv)
 		      XtNumber(cursor_resources),
 		      (ArgList) 0,
 		      0);
+    TRACE(("SubResources:cursor\n"));
+    TRACE_RES_P(XtNforeground, cursor_fg);
+    TRACE_RES_P(XtNbackground, cursor_bg);
 
     XtGetSubresources(cur_win->top_widget,
 		      (XtPointer) cur_win,
@@ -3007,6 +2602,13 @@ x_preparse_args(int *pargc, char ***pargv)
 		      XtNumber(pointer_resources),
 		      (ArgList) 0,
 		      0);
+    TRACE(("SubResources:pointer\n"));
+    TRACE_RES_P(XtNforeground, pointer_fg);
+    TRACE_RES_P(XtNbackground, pointer_bg);
+    TRACE_RES_L(XtNnormalShape, normal_pointer);
+#if OPT_WORKING
+    TRACE_RES_L(XtNwatchShape, watch_pointer);
+#endif
 
     /*
      * Try to keep the default for fcolor0 looking like something other than
@@ -3027,6 +2629,39 @@ x_preparse_args(int *pargc, char ***pargv)
 		      XtNumber(color_resources),
 		      (ArgList) 0,
 		      0);
+    TRACE(("SubResources:color\n"));
+    TRACE_RES_P(XtNfcolor0, colors_fg[0]);
+    TRACE_RES_P(XtNbcolor0, colors_bg[0]);
+    TRACE_RES_P(XtNfcolor1, colors_fg[1]);
+    TRACE_RES_P(XtNbcolor1, colors_bg[1]);
+    TRACE_RES_P(XtNfcolor2, colors_fg[2]);
+    TRACE_RES_P(XtNbcolor2, colors_bg[2]);
+    TRACE_RES_P(XtNfcolor3, colors_fg[3]);
+    TRACE_RES_P(XtNbcolor3, colors_bg[3]);
+    TRACE_RES_P(XtNfcolor4, colors_fg[4]);
+    TRACE_RES_P(XtNbcolor4, colors_bg[4]);
+    TRACE_RES_P(XtNfcolor5, colors_fg[5]);
+    TRACE_RES_P(XtNbcolor5, colors_bg[5]);
+    TRACE_RES_P(XtNfcolor6, colors_fg[6]);
+    TRACE_RES_P(XtNbcolor6, colors_bg[6]);
+    TRACE_RES_P(XtNfcolor7, colors_fg[7]);
+    TRACE_RES_P(XtNbcolor7, colors_bg[7]);
+    TRACE_RES_P(XtNfcolor8, colors_fg[8]);
+    TRACE_RES_P(XtNbcolor8, colors_bg[8]);
+    TRACE_RES_P(XtNfcolor9, colors_fg[9]);
+    TRACE_RES_P(XtNbcolor9, colors_bg[9]);
+    TRACE_RES_P(XtNfcolorA, colors_fg[10]);
+    TRACE_RES_P(XtNbcolorA, colors_bg[10]);
+    TRACE_RES_P(XtNfcolorB, colors_fg[11]);
+    TRACE_RES_P(XtNbcolorB, colors_bg[11]);
+    TRACE_RES_P(XtNfcolorC, colors_fg[12]);
+    TRACE_RES_P(XtNbcolorC, colors_bg[12]);
+    TRACE_RES_P(XtNfcolorD, colors_fg[13]);
+    TRACE_RES_P(XtNbcolorD, colors_bg[13]);
+    TRACE_RES_P(XtNfcolorE, colors_fg[14]);
+    TRACE_RES_P(XtNbcolorE, colors_bg[14]);
+    TRACE_RES_P(XtNfcolorF, colors_fg[15]);
+    TRACE_RES_P(XtNbcolorF, colors_bg[15]);
 
     /* Initialize atoms needed for getting a fully specified font name */
     atom_FONT = XInternAtom(dpy, "FONT", False);

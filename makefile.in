@@ -20,7 +20,7 @@
 #
 # gnu autoconf support by kevin buettner, 5/94
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.222 2009/10/05 10:44:09 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.224 2009/10/08 00:42:58 tom Exp $
 
 SHELL		= /bin/sh
 
@@ -299,6 +299,7 @@ SRC =	$(OBJ:.o=.c)
 ALL =	$(TARGET)
 
 @MAKE_FILTERS@all \
+@MAKE_FILTERS@install-full \
 @MAKE_FILTERS@install :: $(BUILTHDRS)
 @MAKE_FILTERS@	cd filters && $(MAKE) $(MAKE_RECUR) $@
 
@@ -425,6 +426,7 @@ INSTALL_FILES = \
 	$(DATADIR)/vile.hlp @EXTRA_INSTALL_FILES@
 
 install-$(TARGET) \
+install-full \
 install :: $(INSTALL_DIRS) \
 	$(INSTALL_FILES)
 	@echo 'Completed installation.'
@@ -481,11 +483,11 @@ uninstall-perl :
 @no_icondir@	-$(RM) $(ICONDIR)/$(ICON)$(ICON_SUFFIX)
 ################################################################################
 # Desktop-utils does not provide an uninstall, and is not uniformly available.
-@desktop_utils@DESKTOP_FLAGS = @DESKTOP_FLAGS@
+@desktop_utils@DESKTOP_FLAGS = --vendor=dickey @DESKTOP_FLAGS@
 @desktop_utils@install-desktop \
 @desktop_utils@install-full ::
-@desktop_utils@	desktop-file-install $(DESKTOP_FLAGS) xterm.desktop
-@desktop_utils@	desktop-file-install $(DESKTOP_FLAGS) uxterm.desktop
+@desktop_utils@	desktop-file-install $(DESKTOP_FLAGS) macros/xvile.desktop
+@desktop_utils@	desktop-file-install $(DESKTOP_FLAGS) macros/uxvile.desktop
 ################################################################################
 
 # The makefile is technically dependent upon the config.status file, but

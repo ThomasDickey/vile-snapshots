@@ -1,7 +1,7 @@
 /*
  * Main program and I/O for external vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/RCS/builtflt.c,v 1.80 2009/06/28 22:45:40 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/builtflt.c,v 1.82 2009/10/09 10:48:48 tom Exp $
  *
  */
 
@@ -67,7 +67,7 @@ parse_filtername(const char *major_name, const char **params)
 			|| (next[sizeof(suffix) - 1] == EOS))) {
 		    size_t len = (size_t) (next - base);
 		    for (n = 0; builtflt[n] != 0; n++) {
-			char *name = builtflt[n]->filter_name;
+			const char *name = builtflt[n]->filter_name;
 			if (strlen(name) == len
 			    && !strncmp(base, name, len)) {
 			    *params = skip_cblanks(next + sizeof(suffix) - 1);

@@ -1,6 +1,6 @@
 dnl vile's local definitions for autoconf.
 dnl
-dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.195 2009/10/07 08:44:51 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.196 2009/10/08 09:21:34 tom Exp $
 dnl
 dnl ---------------------------------------------------------------------------
 dnl ---------------------------------------------------------------------------
@@ -3868,6 +3868,78 @@ if test "$cf_opt_with_warnings" != no ; then
 fi
 fi
 ])dnl
+dnl ---------------------------------------------------------------------------
+dnl CF_WITH_X_APP_DEFAULTS version: 1 updated: 2009/10/08 05:20:04
+dnl ----------------------
+dnl Option for specifying the location of the X app-defaults directory.
+dnl
+dnl The entire feature can be suppressed by --without-app-defaults, 
+dnl which makes $no_appsdir become a comment-marker.
+AC_DEFUN([CF_WITH_X_APP_DEFAULTS],
+[
+	AC_MSG_CHECKING(for directory to install resource files)
+	CF_WITH_PATH(app-defaults,
+		[  --with-app-defaults=DIR directory in which to install resource files],
+		[appsdir],[EPREFIX/lib/X11/app-defaults],
+		['\${exec_prefix}/lib/X11/app-defaults'])
+	AC_MSG_RESULT($appsdir)
+	AC_SUBST(appsdir)
+
+	no_appsdir=
+	if test "$appsdir" = no ; then
+		no_appsdir="#"
+	else
+		EXTRA_INSTALL_DIRS="$EXTRA_INSTALL_DIRS \$(APPSDIR)"
+	fi
+	AC_SUBST(no_appsdir)
+])
+dnl ---------------------------------------------------------------------------
+dnl CF_WITH_X_DESKTOP_UTILS version: 1 updated: 2009/10/08 05:20:04
+dnl -----------------------
+dnl Option for specifying desktop-utils program and flags.
+AC_DEFUN([CF_WITH_X_DESKTOP_UTILS],
+[
+	# Comment-out the install-desktop rule if the desktop-utils are not found.
+	AC_MSG_CHECKING(if you want to install desktop files)
+	CF_ARG_OPTION(desktop,
+		[  --disable-desktop       disable install of xterm desktop files],
+		[enable_desktop=$enableval],
+		[enable_desktop=$enableval],yes)
+	AC_MSG_RESULT($enable_desktop)
+
+	desktop_utils=
+	if test "$enable_desktop" = yes ; then
+	AC_CHECK_PROG(desktop_utils,desktop-file-install,yes,no)
+	fi
+
+	test "$desktop_utils" = yes && desktop_utils= || desktop_utils="#"
+	AC_SUBST(DESKTOP_FLAGS)
+])
+dnl ---------------------------------------------------------------------------
+dnl CF_WITH_X_ICONDIR version: 1 updated: 2009/10/08 05:20:04
+dnl -----------------
+dnl Option for specifying the location of the X icon directory.
+dnl
+dnl The entire feature can be suppressed by --without-icondir 
+dnl which makes $no_icondir become a comment-marker.
+AC_DEFUN([CF_WITH_X_ICONDIR],
+[
+	AC_MSG_CHECKING(for directory to install icons)
+	CF_WITH_PATH(icondir,
+		[  --with-icondir=DIR      directory in which to install icons],
+		[icondir],[EPREFIX/share/pixmaps],
+		['\${exec_prefix}/share/pixmaps'])
+	AC_MSG_RESULT($icondir)
+	AC_SUBST(icondir)
+
+	no_icondir=
+	if test "$icondir" = no ; then
+		no_icondir="#"
+	else
+		EXTRA_INSTALL_DIRS="$EXTRA_INSTALL_DIRS \$(ICONDIR)"
+	fi
+	AC_SUBST(no_icondir)
+])
 dnl ---------------------------------------------------------------------------
 dnl CF_XOPEN_CURSES version: 8 updated: 2003/11/07 19:47:46
 dnl ---------------

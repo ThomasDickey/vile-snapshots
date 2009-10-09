@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/flt_defs.h,v 1.13 2009/10/07 08:53:47 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/flt_defs.h,v 1.14 2009/10/07 23:30:31 tom Exp $
  */
 
 #ifndef FLT_DEFS_H
@@ -144,6 +144,7 @@ extern	int	sscanf	( const char *src, const char *fmt, ... );
 #define	FreeIfNeeded(p)	if ((p) != 0)	free(p)
 
 #if defined(__GNUC__) && defined(_FORTIFY_SOURCE)
+extern int ignore_unused;
 #define IGNORE_RC(func) ignore_unused = func
 #else
 #define IGNORE_RC(func) (void) func
