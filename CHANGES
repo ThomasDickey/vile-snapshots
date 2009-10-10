@@ -1,7 +1,9 @@
 Changes for vile 9.8 (released ??? ??? ?? ????)
 
- 20091009 (v)
+ 20091010 (v)
 	> Tom Dickey:
+	+ override highlightThickness resource in xvile to eliminate screen
+	  trash (report by Jim Crigler).
 	+ update XVile.ad to match Debian package.
 	+ some code-cleanup for x11.c and filters.
 	+ work around defective gcc implementation of warn_unused_result

@@ -1,4 +1,4 @@
-# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.2nd,v 1.14 2009/04/05 21:34:11 tom Exp $
+# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.2nd,v 1.15 2009/10/10 00:46:05 tom Exp $
 #
 
 .SUFFIXES: .l .c .i $o
@@ -56,10 +56,12 @@ INSTALL_FILES = \
 	$(DATADIR)/filters.rc \
 	$(DATADIR)/spell.rc $(INSTALL_C) $(INSTALL_DYN_C) @MAKE_LEX@ $(INSTALL_LEX) $(INSTALL_DYN_LEX) 
 
+install-full \
 install :: $(INSTALL_DIRS) $(INSTALL_FILES)
 
 installdirs: $(INSTALL_DIRS)
 
+uninstall-full \
 uninstall ::
 	-$(RM) $(INSTALL_FILES)
 
