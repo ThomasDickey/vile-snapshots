@@ -2,7 +2,7 @@
  *	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.348 2009/10/09 09:57:13 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.352 2009/10/10 00:29:00 tom Exp $
  *
  */
 
@@ -191,8 +191,7 @@
 #endif
 #endif
 
-#define RES_I(res,val) TRACE(("\t%s: %d\n", res, cur_win->val));
-#define TRACE_RES_L(res,val) TRACE(("\t%s: %lu\n", res, cur_win->val));
+#define TRACE_RES_I(res,val) TRACE(("\t%s: %d\n", res, cur_win->val));
 #define TRACE_RES_B(res,val) TRACE(("\t%s: %s\n", res, cur_win->val ? "true" : "false"));
 #define TRACE_RES_P(res,val) TRACE(("\t%s: %#lx\n", res, cur_win->val));
 #define TRACE_RES_S(res,val) TRACE(("\t%s: %s\n", res, cur_win->val));
@@ -330,12 +329,12 @@ typedef struct _text_win {
     ScrollInfo *scrollinfo;
     Widget *grips;		/* grips for resizing scrollbars */
     XtIntervalId scroll_repeat_id;
-    ULONG scroll_repeat_timeout;
+    int scroll_repeat_timeout;
 #endif				/* OPT_KEV_SCROLLBARS */
 #if OPT_XAW_SCROLLBARS
     Pixmap thumb_bm;		/* bitmap for scrollbar thumb */
 #endif
-    ULONG scroll_repeat_interval;
+    int scroll_repeat_interval;
     Bool reverse_video;
     XtIntervalId blink_id;
     int blink_status;
@@ -420,7 +419,7 @@ typedef struct _text_win {
     /* selection stuff */
     String multi_click_char_class;	/* ?? */
     Time lasttime;		/* for multi-click */
-    Time click_timeout;
+    unsigned click_timeout;
     int numclicks;
     int last_getc;
     Bool have_selection;
@@ -1878,12 +1877,23 @@ gui_update_scrollbar(WINDOW *uwp)
 	(XtPointer) dft \
     }
 
+#define XRES_DIMENSION(name, class, value, dft) \
+    { \
+	name, \
+	class, \
+	XtRDimension, \
+	sizeof(cur_win->value), \
+	XtOffset(TextWindow, value), \
+	XtRImmediate, \
+	(XtPointer) dft \
+    }
+
 #define XRES_INTEGER(name, class, value, dft) \
     { \
 	name, \
 	class, \
 	XtRInt, \
-	sizeof(Int), \
+	sizeof(cur_win->value), \
 	XtOffset(TextWindow, value), \
 	XtRImmediate, \
 	(XtPointer) dft \
@@ -1903,25 +1913,11 @@ gui_update_scrollbar(WINDOW *uwp)
 static XtResource app_resources[] =
 {
 #if OPT_KEV_DRAGGING
-    {
-	XtNscrollRepeatTimeout,
-	XtCScrollRepeatTimeout,
-	XtRInt,
-	sizeof(int),
-	XtOffset(TextWindow, scroll_repeat_timeout),
-	XtRImmediate,
-	(XtPointer) 500		/* 1/2 second */
-    },
+    XRES_INTEGER(XtNscrollRepeatTimeout, XtCScrollRepeatTimeout,
+		 scroll_repeat_timeout, 500),	/* 1/2 second */
 #endif				/* OPT_KEV_DRAGGING */
-    {
-	XtNscrollRepeatInterval,
-	XtCScrollRepeatInterval,
-	XtRInt,
-	sizeof(int),
-	XtOffset(TextWindow, scroll_repeat_interval),
-	XtRImmediate,
-	(XtPointer) 60		/* 60 milliseconds */
-    },
+    XRES_INTEGER(XtNscrollRepeatInterval, XtCScrollRepeatInterval,
+		 scroll_repeat_interval, 60),	/* 60 milliseconds */
     XRES_BOOL(XtNreverseVideo, XtCReverseVideo, reverse_video, False),
     XRES_STRING(XtNgeometry, XtCGeometry, geometry, "80x36"),
     XRES_STRING(XtNfont, XtCFont, starting_fontname, "fixed"),
@@ -1930,45 +1926,14 @@ static XtResource app_resources[] =
     XRES_BOOL(XtNforkOnStartup, XtCForkOnStartup, fork_on_startup, False),
     XRES_BOOL(XtNfocusFollowsMouse, XtCFocusFollowsMouse,
 	      focus_follows_mouse, False),
-    {
-	XtNmultiClickTime,
-	XtCMultiClickTime,
-	XtRInt,
-	sizeof(Time),
-	XtOffset(TextWindow, click_timeout),
-	XtRImmediate,
-	(XtPointer) 600
-    },
+    XRES_INTEGER(XtNmultiClickTime, XtCMultiClickTime, click_timeout, 600),
     XRES_STRING(XtNcharClass, XtCCharClass, multi_click_char_class, NULL),
     XRES_BOOL(XtNscrollbarOnLeft, XtCScrollbarOnLeft, scrollbar_on_left, False),
-    {
-	XtNscrollbarWidth,
-	XtCScrollbarWidth,
-	XtRInt,
-	sizeof(int),
-	XtOffset(TextWindow, pane_width),
-	XtRImmediate,
-	(XtPointer) PANE_WIDTH_DEFAULT
-    },
-    {
-	XtNwheelScrollAmount,
-	XtCWheelScrollAmount,
-	XtRInt,
-	sizeof(int),
-	XtOffset(TextWindow, wheel_scroll_amount),
-	XtRImmediate,
-	(XtPointer) 3
-    },
+    XRES_INTEGER(XtNscrollbarWidth, XtCScrollbarWidth, pane_width, PANE_WIDTH_DEFAULT),
+    XRES_INTEGER(XtNwheelScrollAmount, XtCWheelScrollAmount,
+		 wheel_scroll_amount, 3),
 #if OPT_MENUS
-    {
-	XtNmenuHeight,
-	XtCMenuHeight,
-	XtRInt,
-	sizeof(int),
-	XtOffset(TextWindow, menu_height),
-	XtRImmediate,
-	(XtPointer) MENU_HEIGHT_DEFAULT
-    },
+    XRES_DIMENSION(XtNmenuHeight, XtCMenuHeight, menu_height, MENU_HEIGHT_DEFAULT),
 #endif
 #if OPT_MENUS_COLORED
     XRES_FG(XtNmenuForeground, XtCMenuForeground, menubar_fg),
@@ -1977,20 +1942,13 @@ static XtResource app_resources[] =
     XRES_BOOL(XtNpersistentSelections, XtCPersistentSelections,
 	      persistent_selections, True),
     XRES_BOOL(XtNselectionSetsDOT, XtCSelectionSetsDOT, selection_sets_DOT, False),
-    {
-	XtNblinkInterval,
-	XtCBlinkInterval,
-	XtRInt,
-	sizeof(int),
-	XtOffset(TextWindow, blink_interval),
-	XtRImmediate,
-	(XtPointer) -666	/* 2/3 second; only when highlighted */
-    },
+    XRES_INTEGER(XtNblinkInterval, XtCBlinkInterval,
+		 blink_interval, -666),		/* 2/3 second; only when highlighted */
 #if OPT_INPUT_METHOD
     XRES_BOOL(XtNopenIm, XtCOpenIm, open_im, True),
     XRES_STRING(XtNinputMethod, XtCInputMethod, rs_inputMethod, ""),
-    XRES_STRING(XtNpreeditType, XtCPreeditType, rs_preeditType,
-		"OverTheSpot,Root"),
+    XRES_STRING(XtNpreeditType, XtCPreeditType,
+		rs_preeditType, "OverTheSpot,Root"),
 #ifndef DEFXIMFONT
 #define DEFXIMFONT		"*"
 #endif
@@ -2493,9 +2451,9 @@ x_preparse_args(int *pargc, char ***pargv)
     TRACE(("** ApplicationResources:\n"));
 
 #if OPT_KEV_DRAGGING
-    TRACE_RES_L(XtNscrollRepeatTimeout, scroll_repeat_timeout);
+    TRACE_RES_I(XtNscrollRepeatTimeout, scroll_repeat_timeout);
 #endif
-    TRACE_RES_L(XtNscrollRepeatInterval, scroll_repeat_interval);
+    TRACE_RES_I(XtNscrollRepeatInterval, scroll_repeat_interval);
     TRACE_RES_B(XtNreverseVideo, reverse_video);
     TRACE_RES_S(XtNfont, starting_fontname);
     TRACE_RES_S(XtNgeometry, geometry);
@@ -2503,13 +2461,13 @@ x_preparse_args(int *pargc, char ***pargv)
     TRACE_RES_P(XtNbackground, bg);
     TRACE_RES_B(XtNforkOnStartup, fork_on_startup);
     TRACE_RES_B(XtNfocusFollowsMouse, focus_follows_mouse);
-    TRACE_RES_L(XtNmultiClickTime, click_timeout);
+    TRACE_RES_I(XtNmultiClickTime, click_timeout);
     TRACE_RES_S(XtNcharClass, multi_click_char_class);
     TRACE_RES_B(XtNscrollbarOnLeft, scrollbar_on_left);
-    RES_I(XtNscrollbarWidth, pane_width);
-    RES_I(XtNwheelScrollAmount, wheel_scroll_amount);
+    TRACE_RES_I(XtNscrollbarWidth, pane_width);
+    TRACE_RES_I(XtNwheelScrollAmount, wheel_scroll_amount);
 #if OPT_MENUS
-    RES_I(XtNmenuHeight, menu_height);
+    TRACE_RES_I(XtNmenuHeight, menu_height);
 #endif
 #if OPT_MENUS_COLORED
     TRACE_RES_P(XtNmenuForeground, menubar_fg);
@@ -2517,7 +2475,7 @@ x_preparse_args(int *pargc, char ***pargv)
 #endif
     TRACE_RES_B(XtNpersistentSelections, persistent_selections);
     TRACE_RES_B(XtNselectionSetsDOT, selection_sets_DOT);
-    TRACE_RES_B(XtNblinkInterval, blink_interval);
+    TRACE_RES_I(XtNblinkInterval, blink_interval);
 #if OPT_INPUT_METHOD
     TRACE_RES_B(XtNopenIm, open_im);
     TRACE_RES_B(XtNinputMethod, rs_inputMethod);
@@ -2605,9 +2563,9 @@ x_preparse_args(int *pargc, char ***pargv)
     TRACE(("SubResources:pointer\n"));
     TRACE_RES_P(XtNforeground, pointer_fg);
     TRACE_RES_P(XtNbackground, pointer_bg);
-    TRACE_RES_L(XtNnormalShape, normal_pointer);
+    TRACE_RES_P(XtNnormalShape, normal_pointer);
 #if OPT_WORKING
-    TRACE_RES_L(XtNwatchShape, watch_pointer);
+    TRACE_RES_P(XtNwatchShape, watch_pointer);
 #endif
 
     /*
@@ -2832,6 +2790,7 @@ x_preparse_args(int *pargc, char ***pargv)
 				Nval(XtNborderWidth, 0),
 				Nval(XtNbackground, cur_win->bg),
 #if MOTIF_WIDGETS
+				Nval(XmNhighlightThickness, 0),
 				Nval(XmNresizable, TRUE),
 				Nval(XmNbottomAttachment, XmATTACH_FORM),
 #if OPT_MENUS
