@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.692 2009/10/06 01:04:02 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.693 2009/10/12 09:14:57 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -2915,6 +2915,10 @@ typedef struct KILLREG {
 extern void exit (int code);
 extern void _exit (int code);
 #endif	/* HAVE_STDLIB_H */
+
+#ifdef HAVE_STDINT_H
+#include <stdint.h>
+#endif
 
 /* array/table size */
 #define	TABLESIZE(v)	(sizeof(v)/sizeof(v[0]))
