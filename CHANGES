@@ -1,6 +1,6 @@
 Changes for vile 9.8 (released ??? ??? ?? ????)
 
- 20091010 (v)
+ 20091013 (v)
 	> Tom Dickey:
 	+ override highlightThickness resource in xvile to eliminate screen
 	  trash (report by Jim Crigler).
