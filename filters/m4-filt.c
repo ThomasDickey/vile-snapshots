@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/m4-filt.c,v 1.33 2009/10/07 09:24:15 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/m4-filt.c,v 1.34 2009/10/15 09:07:09 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of m4
  * input text.  This is in C rather than LEX because M4's quoting delimiters
@@ -64,7 +64,7 @@ static Quote leftcmt, rightcmt;
 
 #ifdef DEBUG
 static const char *
-whichQuote(Quote *p)
+whichQuote(Quote * p)
 {
     const char *result;
 
@@ -230,10 +230,10 @@ free_arglist(char **args)
     }
 }
 
-static Funcs *
+static const Funcs *
 our_directive(char *name)
 {
-    static Funcs table[] =
+    static const Funcs table[] =
     {
 	{
 	    "changequote", ChangeQuote
@@ -242,7 +242,7 @@ our_directive(char *name)
 	    "changecom", ChangeComment
 	},
     };
-    Funcs *result = 0;
+    const Funcs *result = 0;
     size_t n;
 
     for (n = 0; n < sizeof(table) / sizeof(table[0]); n++) {
@@ -257,7 +257,7 @@ our_directive(char *name)
 static void
 handle_directive(char ***args, int *parens)
 {
-    Funcs *ptr;
+    const Funcs *ptr;
 
     if (*args != 0 && *parens == 0) {
 	if ((ptr = our_directive((*args)[0])) != 0) {
@@ -544,6 +544,8 @@ do_filter(FILE *input GCC_UNUSED)
 	flt_error("missing right-quote");
 	(void) write_literal(0, &literal);
     }
+    FreeAndNull(line);
+    used = 0;
 #if NO_LEAKS
     free_quote(&leftquote);
     free_quote(&rightquote);

@@ -1,6 +1,6 @@
 dnl vile's local definitions for autoconf.
 dnl
-dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.196 2009/10/08 09:21:34 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.197 2009/10/15 00:10:30 tom Exp $
 dnl
 dnl ---------------------------------------------------------------------------
 dnl ---------------------------------------------------------------------------
@@ -3869,7 +3869,7 @@ fi
 fi
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_WITH_X_APP_DEFAULTS version: 1 updated: 2009/10/08 05:20:04
+dnl CF_WITH_X_APP_DEFAULTS version: 2 updated: 2009/10/14 20:08:12
 dnl ----------------------
 dnl Option for specifying the location of the X app-defaults directory.
 dnl
@@ -3881,7 +3881,7 @@ AC_DEFUN([CF_WITH_X_APP_DEFAULTS],
 	CF_WITH_PATH(app-defaults,
 		[  --with-app-defaults=DIR directory in which to install resource files],
 		[appsdir],[EPREFIX/lib/X11/app-defaults],
-		['\${exec_prefix}/lib/X11/app-defaults'])
+		[\$(exec_prefix)/lib/X11/app-defaults])
 	AC_MSG_RESULT($appsdir)
 	AC_SUBST(appsdir)
 
@@ -3916,7 +3916,7 @@ AC_DEFUN([CF_WITH_X_DESKTOP_UTILS],
 	AC_SUBST(DESKTOP_FLAGS)
 ])
 dnl ---------------------------------------------------------------------------
-dnl CF_WITH_X_ICONDIR version: 1 updated: 2009/10/08 05:20:04
+dnl CF_WITH_X_ICONDIR version: 2 updated: 2009/10/14 20:08:12
 dnl -----------------
 dnl Option for specifying the location of the X icon directory.
 dnl
@@ -3928,7 +3928,7 @@ AC_DEFUN([CF_WITH_X_ICONDIR],
 	CF_WITH_PATH(icondir,
 		[  --with-icondir=DIR      directory in which to install icons],
 		[icondir],[EPREFIX/share/pixmaps],
-		['\${exec_prefix}/share/pixmaps'])
+		[\$(exec_prefix)/share/pixmaps])
 	AC_MSG_RESULT($icondir)
 	AC_SUBST(icondir)
 
