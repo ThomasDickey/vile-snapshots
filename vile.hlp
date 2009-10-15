@@ -1948,7 +1948,7 @@ Editor modes
 	spaces-after-sentence (sas) Insert two spaces after each sentence
 		when formatting a paragraph.  By default this option is
 		turned on.  When disabled, the format routine will insert
-		only one space after each sentence.  (U)
+		only one space after each sentence.  (B)
 
 	suffixes (suf) A regular expression describing filename suffixes for
 		which the corresponding majormode will be set.  The expression
@@ -4616,6 +4616,22 @@ Setting Extra Colors
 		set-extra-color isearch blue+reverse+underline
 		set-extra-color isearch red
 
+	Here is an example of how the various extra colors might be used:
+
+	~if &sge &cat $version $patchlevel 'version 9.7f'
+	~with set-extra-colors
+		isearch blue+underline
+		hypertext underline+red
+		modeline reverse+green
+		string magenta
+		regex underline+magenta
+		number cyan
+		enum green
+	~if &sge &cat $version $patchlevel 'version 9.7m'
+		warning reverse+bold+red
+	~endif
+	~endwith
+
 
 Majormodes
 ----------
@@ -5205,10 +5221,17 @@ Hypertext
 	    ~endm
 	    bind-key execute-macro-22 ' '
 
-	[ Note to Paul and Tom:  Maybe we should just add a little
+	[ TODO:  Maybe we should just add a little
 	  bit of code to make this the default binding for space bar?
 	  Or is some other key binding preferable?  In any event,
 	  it'll only take 7 or 8 lines to do the job... ]
+
+	Here is another example, which gives a choice between following
+	a hyperlink, e.g., as embedded in which-source, or showing its
+	content:
+
+		bind-key execute-hypertext-command ^X-z 
+		bind-key show-hypertext-command ^X-Z 
 
 	When using xvile, double clicking on a hypertext link will
 	cause the hypertext command to be executed.  If no hypertext
@@ -6601,4 +6624,4 @@ Problems
 Copyright 1995-2008,2009 by Paul Fox, Thomas Dickey, and Kevin Buettner
 --------------------------------------------------------------------
 -- vile:txtmode fillcol=78
- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.675 2009/10/04 14:45:13 tom Exp $
+ $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.677 2009/10/15 11:38:56 tom Exp $

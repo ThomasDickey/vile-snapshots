@@ -22,7 +22,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.665 2009/10/04 13:46:21 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.666 2009/10/15 11:31:56 tom Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -1296,7 +1296,6 @@ init_mode_value(struct VAL *d, MODECLASS v_class, int v_which)
 	    setINT(GMDRONLYVIEW, FALSE);	/* Set view-on-readonly */
 	    setINT(GMDSAMEBANGS, FALSE);	/* use same "!!" data for ^X-! */
 	    setINT(GMDSMOOTH_SCROLL, FALSE);
-	    setINT(GMDSPACESENT, TRUE);		/* add two spaces after each sentence */
 	    setINT(GMDUNIQ_BUFS, FALSE);	/* only one buffer per file */
 	    setINT(GMDWARNRENAME, TRUE);	/* warn before renaming a buffer */
 	    setINT(GMDWARNREREAD, TRUE);	/* warn before rereading a buffer */
@@ -1460,6 +1459,7 @@ init_mode_value(struct VAL *d, MODECLASS v_class, int v_which)
 	    setINT(MDREADONLY, FALSE);	/* readonly */
 	    setINT(MDSHOWMAT, FALSE);	/* show-match */
 	    setINT(MDSHOWMODE, TRUE);	/* show-mode */
+	    setINT(MDSPACESENT, TRUE);	/* add two spaces after each sentence */
 	    setINT(MDSWRAP, TRUE);	/* scan wrap */
 	    setINT(MDTABINSERT, TRUE);	/* allow tab insertion */
 	    setINT(MDTAGSRELTIV, FALSE);	/* path relative tag lookups */

@@ -11,7 +11,7 @@
 #
 # The modes are table entries in the BUFFER and WINDOW structures.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.294 2009/10/04 13:44:39 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.296 2009/10/15 11:43:43 tom Exp $
 #
 #
 # Mode-table entries.  Capitalized letters are used for abbreviations.
@@ -61,7 +61,6 @@ bool							# GMD prefix
 	"xterm-mouse"	XTERM_MOUSE	chgd_xterm	# mode to control whether we allow mouse-clicking
 	"xterm-title"	XTERM_TITLE	chgd_swaptitle	OPT_TITLE	# mode to control whether we allow xterm title updates
 	"SmoothScroll"	SMOOTH_SCROLL	0		# should we update even if there is typeahead?
-	"Spaces-After-Sentence" SPACESENT	0	# add two spaces after a
 enum
 	"check-access"	CHK_ACCESS	0		!SMALLER # check file-access before source/exec
 	"Color-Scheme"	COLOR_SCHEME	chgd_scheme	OPT_COLOR_SCHEMES # color palette combination
@@ -120,6 +119,7 @@ bool							# MD prefix
 	"ReadOnly"	READONLY	chgd_major	# allow writing the buffer
 	"ShowMatch"	SHOWMAT		0		# show matching braces during insert
 	"ShowMoDe"	SHOWMODE	chgd_status	# show insert/replace/command mode
+	"Spaces-After-Sentence" SPACESENT	0	# add two spaces after a
 	"TabInsert"	TABINSERT	0		# okay to insert tab chars
 	"TagignoreCase"	TAGIGNORECASE	0		!SMALLER # ignore upper/lower case in tags
 	"TagRelative"	TAGSRELTIV	0		# tags are relative to tagsfile path

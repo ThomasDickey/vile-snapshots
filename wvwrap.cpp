@@ -12,7 +12,7 @@
  * Note:  A great deal of the code included in this file is copied
  * (almost verbatim) from other vile modules.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/wvwrap.cpp,v 1.17 2008/06/01 20:08:37 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/wvwrap.cpp,v 1.18 2009/10/15 10:38:37 tom Exp $
  */
 
 #include "w32vile.h"
@@ -203,7 +203,7 @@ nomem(void)
  * from w32ole.cpp
  */
 static OLECHAR *
-ConvertToUnicode(char *szA)
+ConvertToUnicode(const char *szA)
 {
     size_t len;
 
