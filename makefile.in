@@ -20,7 +20,7 @@
 #
 # gnu autoconf support by kevin buettner, 5/94
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.224 2009/10/08 00:42:58 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.226 2009/10/14 23:00:29 tom Exp $
 
 SHELL		= /bin/sh
 
@@ -36,6 +36,7 @@ CPP		= @CPP@
 LINK		= @LINK_PREFIX@ $(CC) $(CFLAGS)
 INSTALL		= @INSTALL@
 INSTALL_PROGRAM	= @INSTALL_PROGRAM@
+INSTALL_SCRIPT	= @INSTALL_SCRIPT@
 INSTALL_DATA	= @INSTALL_DATA@
 
 EXTRA_CFLAGS	= @EXTRA_CFLAGS@
@@ -54,7 +55,7 @@ TARGET		= @TARGET@$x
 AWK		= @AWK@
 PERL		= @PERL@
 PERLLIB		= @PERLLIB@
-INSTALL_SCRIPT	= $(SHELL) $(srcdir)/sinstall.sh $(PERL) $(INSTALL_PROGRAM)
+INSTALL_PL_EXE	= $(SHELL) $(srcdir)/sinstall.sh $(PERL) $(INSTALL_PROGRAM)
 INSTALL_MODULE	= $(SHELL) $(srcdir)/sinstall.sh $(PERL) $(INSTALL_DATA)
 
 prefix		= @prefix@
@@ -128,7 +129,7 @@ MAKFILES = \
 
 ALLTOOLS = $(MAKFILES) mktbls.c cmdtbl modetbl \
 	configure config_h.in \
-	install.sh mkdirs.sh \
+	install-sh mkdirs.sh \
 	configure.in aclocal.m4
 
 # these are normal editable headers
@@ -731,7 +732,7 @@ $(BINDIR)/xshell.sh:		$(srcdir)/xshell.sh
 $(BINDIR)/uxvile:		$(srcdir)/macros/uxvile
 	$(INSTALL_SCRIPT)	$(srcdir)/macros/uxvile $@
 $(BINDIR)/vileget:		$(srcdir)/perl/vileget
-	$(INSTALL_SCRIPT)	$(srcdir)/perl/vileget $@
+	$(INSTALL_PL_EXE)	$(srcdir)/perl/vileget $@
 
 $(BINDIR)/@TARGET@-pager:	$(srcdir)/macros/vile-pager
 	sed -e 's/=vile$$/=@TARGET@/' $(srcdir)/macros/vile-pager >$@

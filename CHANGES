@@ -1,5 +1,11 @@
 Changes for vile 9.8 (released ??? ??? ?? ????)
 
+ 200910?? (w)
+	> Tom Dickey:
+	+ correct inconsistent use of INSTALL_SCRIPT symbol in makefile, which
+	  caused app-defaults and uxvile scripts to not install unless vile
+	  was configured with perl (report by David Rolfe).
+
  20091013 (v)
 	> Tom Dickey:
 	+ override highlightThickness resource in xvile to eliminate screen
