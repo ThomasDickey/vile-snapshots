@@ -1,7 +1,7 @@
 /*
  * Common utility functions for vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.144 2009/10/07 23:10:10 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.145 2009/10/15 09:29:23 tom Exp $
  *
  */
 
@@ -1222,11 +1222,14 @@ parse_keyword(char *name, int classflag)
 		    if (*s == QUOTE) {
 			if (*++s != QUOTE)
 			    quoted = 0;
+			if (*s == 0)
+			    continue;
 		    }
 		} else {
 		    if (*s == QUOTE) {
 			quoted = 1;
 			s++;
+			continue;
 		    } else if (!isalnum(CharOf(*s))) {
 			if (!*name) {
 			    args = 0;	/* comment: ignore */

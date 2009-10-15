@@ -2,6 +2,15 @@ Changes for vile 9.8 (released ??? ??? ?? ????)
 
  200910?? (w)
 	> Tom Dickey:
+	+ correct logic in filter's parse_keyword() function, which could
+	  index past string limits when handling quotes.  This is an old
+	  bug exposed by gcc warnings fixes in 9.7v
+	+ modify default values for --with-app-defaults and --with-icondir to
+	  use the make-specific $(name) form rather than the sh/make compatible
+	  ${name} form, since the shell construct used for filling in the
+	  default value by autoconf does not work with some shells, e.g.,
+	  Tru64, which may be confused by nested curly-braces in that
+	  expression.
 	+ correct inconsistent use of INSTALL_SCRIPT symbol in makefile, which
 	  caused app-defaults and uxvile scripts to not install unless vile
 	  was configured with perl (report by David Rolfe).
