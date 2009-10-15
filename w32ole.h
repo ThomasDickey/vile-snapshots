@@ -10,7 +10,7 @@
  *
  *                samples\com\oleaut\hello\hello .
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32ole.h,v 1.8 2008/06/01 20:05:31 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32ole.h,v 1.9 2009/10/15 10:38:47 tom Exp $
  */
 
 #ifndef W32OLE_H
@@ -23,7 +23,7 @@
     #define FROM_OLE_STRING(str) ConvertToAnsi(str)
     static char* ConvertToAnsi(OLECHAR *szW);
     #define TO_OLE_STRING(str) ConvertToUnicode(str)
-    static OLECHAR* ConvertToUnicode(char *szA);
+    static OLECHAR* ConvertToUnicode(const char *szA);
 #endif
 
 #include "winviletlb.h"

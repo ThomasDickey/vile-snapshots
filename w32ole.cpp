@@ -17,7 +17,7 @@
  *   "FAILED" may not be used to test an OLE return code.  Use SUCCEEDED
  *   instead.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32ole.cpp,v 1.30 2008/06/01 20:07:04 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32ole.cpp,v 1.31 2009/10/15 10:41:22 tom Exp $
  */
 
 #include "w32vile.h"
@@ -307,7 +307,7 @@ ConvertToAnsi(OLECHAR *szW)
 }
 
 static OLECHAR *
-ConvertToUnicode(char *szA)
+ConvertToUnicode(const char *szA)
 {
     size_t len;
 
@@ -350,6 +350,7 @@ LoadTypeInfo(ITypeInfo **pptinfo, REFCLSID clsid)
     return NOERROR;
 }
 
+#if VC6_ADDIN
 static int
 ole_err_to_msgline(HRESULT hr, char *msg)
 {
@@ -385,6 +386,7 @@ ole_err_to_msgline(HRESULT hr, char *msg)
     LocalFree(lclbuf);
     return (FALSE);
 }
+#endif
 
 /* ------------------------ Class Factory -------------------------- */
 

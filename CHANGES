@@ -2,6 +2,9 @@ Changes for vile 9.8 (released ??? ??? ?? ????)
 
  200910?? (w)
 	> Tom Dickey:
+	+ add detailed example of extra-colors to vile.hlp
+	+ change spaces-after-sentence to a buffer mode, to allow it to be part
+	  of a majormode.
 	+ correct logic in filter's parse_keyword() function, which could
 	  index past string limits when handling quotes.  This is an old
 	  bug exposed by gcc warnings fixes in 9.7v
