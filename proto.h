@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.680 2009/08/17 09:29:48 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.681 2009/10/23 23:09:28 tom Exp $
  *
  */
 
@@ -1423,7 +1423,6 @@ extern int  w32_CreateProcess(char *cmd, int no_wait);
 extern int  w32_del_selection(int copy_to_clipboard);
 extern int  w32_glob_and_validate_dir(const char *inputdir, char *outputdir);
 extern void w32_keybrd_reopen(int pressret);
-extern int  w32_keybrd_write(char *data);
 extern int  w32_remove_write_acl(const char *filename, ULONG orig_access_mask);
 extern int  w32_system(const char *cmd);
 extern int  w32_system_winvile(const char *cmd, int *pressret);
@@ -1481,7 +1480,8 @@ extern void *binmalloc(void *, int);
 #define asc_charstring2(source,sourcelen) (char *)binmalloc(source,sourcelen)
 #endif
 
-W32_CHAR * w32_prognam(void);
+extern W32_CHAR * w32_prognam(void);
+extern int  w32_keybrd_write(W32_CHAR *data);
 
 #ifdef WINVER
 extern void w32_center_window(HWND child_hwnd, HWND parent_hwnd);

@@ -15,7 +15,7 @@
  * by Tom Dickey, 1993.    -pgf
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/mktbls.c,v 1.161 2009/03/22 17:23:10 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/mktbls.c,v 1.162 2009/10/23 00:54:32 tom Exp $
  *
  */
 
@@ -970,16 +970,18 @@ save_all_modes(
 {
     if (isboolean(*type)) {
 	char t_normal[LEN_BUFFER], t_abbrev[LEN_BUFFER];
-	save_all_modes("Bool",
-		       strcat(strcpy(t_normal, "no"), normal),
-		       *abbrev
-		       ? strcat(strcpy(t_abbrev, "no"), abbrev)
-		       : "",
-		       cond);
+	strcat(strcpy(t_normal, "no"), normal);
+	if (*abbrev) {
+	    strcat(strcpy(t_abbrev, "no"), abbrev);
+	} else {
+	    strcpy(t_abbrev, "");
+	}
+	save_all_modes("Bool", t_normal, t_abbrev, cond);
     }
     InsertSorted(&all_modes, normal, type, "", cond, "");
-    if (*abbrev)
+    if (*abbrev && strcmp(normal, abbrev)) {
 	InsertSorted(&all_modes, abbrev, type, "", cond, "");
+    }
 }
 
 static void
@@ -1304,16 +1306,18 @@ save_all_submodes(
 {
     if (isboolean(*type)) {
 	char t_normal[LEN_BUFFER], t_abbrev[LEN_BUFFER];
-	save_all_submodes("Bool",
-			  strcat(strcpy(t_normal, "no"), normal),
-			  *abbrev
-			  ? strcat(strcpy(t_abbrev, "no"), abbrev)
-			  : "",
-			  cond);
+	strcat(strcpy(t_normal, "no"), normal);
+	if (*abbrev) {
+	    strcat(strcpy(t_abbrev, "no"), abbrev);
+	} else {
+	    strcpy(t_abbrev, "");
+	}
+	save_all_submodes("Bool", t_normal, t_abbrev, cond);
     }
     InsertSorted(&all_submodes, normal, type, "", cond, "");
-    if (*abbrev)
+    if (*abbrev && strcmp(normal, abbrev)) {
 	InsertSorted(&all_submodes, abbrev, type, "", cond, "");
+    }
 }
 
 static void
@@ -1366,8 +1370,9 @@ predefine_submodes(char **vec, int len)
 		break;
 	    }
 	}
-	if (!found)
+	if (!found) {
 	    InsertSorted(&all_majors, vec[2], "", "", "", "");
+	}
 	if (len > 2) {
 	    for (p = all_bmodes, found = FALSE; p; p = p->nst) {
 		if (sscanf(p->Name, "%s\n%s\n%s",

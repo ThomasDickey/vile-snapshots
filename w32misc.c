@@ -2,7 +2,7 @@
  * w32misc:  collection of unrelated, common win32 functions used by both
  *           the console and GUI flavors of the editor.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32misc.c,v 1.55 2008/02/17 15:48:13 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32misc.c,v 1.57 2009/10/24 00:05:16 tom Exp $
  */
 
 #include "estruct.h"
@@ -1127,9 +1127,13 @@ w32_del_selection(int copy_to_cbrd)
     return (status);
 }
 
+#ifdef UNICODE
+#define PASS_WCHAR 1
+#endif
+
 /* slam a string into the editor's input buffer */
 int
-w32_keybrd_write(char *data)
+w32_keybrd_write(W32_CHAR * data)
 {
 #if DISP_NTCONS
     HANDLE hstdin;
@@ -1139,6 +1143,10 @@ w32_keybrd_write(char *data)
     HANDLE hwvile;
 #endif
     int rc;
+#ifndef PASS_WCHAR
+    int n, nbytes;
+    UCHAR buffer[8];
+#endif
 
     rc = TRUE;
 #if DISP_NTCONS
@@ -1149,13 +1157,31 @@ w32_keybrd_write(char *data)
 #else
     hwvile = winvile_hwnd();
 #endif
+
     while (*data && rc) {
+#ifdef PASS_WCHAR
 #if DISP_NTCONS
-	ir.Event.KeyEvent.uChar.AsciiChar = *data;
+	ir.Event.KeyEvent.uChar.UnicodeChar = *data;
 	rc = WriteConsoleInput(hstdin, &ir, 1, &unused);
 #else
 	rc = PostMessage(hwvile, WM_CHAR, *data, 0);
 #endif
+#else /* !PASS_WCHAR */
+#ifdef UNICODE
+	nbytes = vl_conv_to_utf8(buffer, *data, 8);
+#else
+	buffer[0] = *data;
+	nbytes = 1;
+#endif
+	for (n = 0; n < nbytes; ++n) {
+#if DISP_NTCONS
+	    ir.Event.KeyEvent.uChar.AsciiChar = buffer[n];
+	    rc = WriteConsoleInput(hstdin, &ir, 1, &unused);
+#else
+	    rc = PostMessage(hwvile, WM_CHAR, buffer[n], 0);
+#endif
+	}
+#endif /* PASS_WCHAR */
 	data++;
     }
     return (rc);
@@ -1168,8 +1194,8 @@ void
 w32_center_window(HWND child_hwnd, HWND parent_hwnd)
 {
     int w, h;
-    RECT crect,			/* child rect */
-      prect;			/* parent rect */
+    RECT crect;			/* child rect */
+    RECT prect;			/* parent rect */
 
     GetWindowRect(parent_hwnd, &prect);
     GetWindowRect(child_hwnd, &crect);

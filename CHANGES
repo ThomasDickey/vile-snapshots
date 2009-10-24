@@ -2,6 +2,9 @@ Changes for vile 9.8 (released ??? ??? ?? ????)
 
  200910?? (w)
 	> Tom Dickey:
+	+ implement Unicode select/paste in winvile.
+	+ build-fix in mktbls.c for Visual Studio.Net 2003, apparent compiler
+	  bug. 
 	+ add detailed example of extra-colors to vile.hlp
 	+ change spaces-after-sentence to a buffer mode, to allow it to be part
 	  of a majormode.
