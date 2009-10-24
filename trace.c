@@ -1,7 +1,7 @@
 /*
  * debugging support -- tom dickey.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.92 2009/06/02 20:47:07 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.93 2009/10/22 23:51:10 tom Exp $
  *
  */
 
@@ -80,7 +80,7 @@ static unsigned used_indent;
 
 static int trace_depth;
 
-#if OPT_ELAPSED
+#if OPT_ELAPSED && !defined(show_elapsed)
 
 #if 0
 static void ETrace(const char *fmt,...) GCC_PRINTFLIKE(1,2);
@@ -944,7 +944,7 @@ void
 trace_all_buffers(const char *fn, int ln)
 {
     BUFFER *bp;
-    TRACE((T_CALLED "trace_all_buffers %s@%d\n", fn, ln));
+    Trace(T_CALLED "trace_all_buffers %s@%d\n", fn, ln);
     for_each_buffer(bp)
 	trace_buffer(bp);
     returnVoid();

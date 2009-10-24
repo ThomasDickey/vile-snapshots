@@ -11,7 +11,7 @@
  *    Subsequent copies do not show this cursor.  On an NT host, this
  *    phenomenon does not occur.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32cbrd.c,v 1.33 2008/11/22 16:51:57 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32cbrd.c,v 1.35 2009/10/24 00:06:45 tom Exp $
  */
 
 #include "estruct.h"
@@ -20,16 +20,27 @@
 #include <stdlib.h>
 #include <search.h>
 
+#if defined(UNICODE) && defined(CF_UNICODETEXT)
+#define USE_UNICODE 1
+#else
+#define USE_UNICODE 0
+#endif
+
+#if USE_UNICODE
+#define myTextFormat CF_UNICODETEXT
+#else
+#define myTextFormat CF_TEXT
+#endif
+
 #define  CLIPBOARD_BUSY      "[Clipboard currently busy]"
 #define  CLIPBOARD_COPY_MB   "[Clipboard copy from minibuffer not supported]"
 #define  CLIPBOARD_COPYING   "[Copying...]"
 #define  CLIPBOARD_COPY_FAIL "[Clipboard copy failed]"
 #define  CLIPBOARD_COPY_MEM  "[Insufficient memory for copy operation]"
 
-typedef struct rgn_cpyarg_struct
-{
+typedef struct rgn_cpyarg_struct {
     UINT nbyte, nline;
-    UCHAR *dst;
+    W32_CHAR *dst;
 } RGN_CPYARG;
 
 static int print_low, print_high;
@@ -39,7 +50,7 @@ static int print_low, print_high;
 static void
 minibuffer_abort(void)
 {
-    char str[3];
+    W32_CHAR str[3];
 
     /*
      * Aborting out of the minibuffer is not easy.  When in doubt, use a
@@ -52,30 +63,23 @@ minibuffer_abort(void)
     update(TRUE);
 }
 
-
-
-
 static void
 report_cbrdstats(UINT nbyte, UINT nline, int pasted)
 {
     char buf[128];
 
-    if (! global_b_val(MDTERSE))
-    {
-        lsprintf(buf,
-                 "[%s %d line%s, %d bytes %s clipboard]",
-                 (pasted) ? "Pasted" : "Copied",
-                 nline,
-                 PLURAL(nline),
-                 nbyte,
-                 (pasted) ? "from" : "to");
-        mlwrite(buf);
-    }
-    else
-        mlforce("[%d lines]", nline);
+    if (!global_b_val(MDTERSE)) {
+	lsprintf(buf,
+		 "[%s %d line%s, %d bytes %s clipboard]",
+		 (pasted) ? "Pasted" : "Copied",
+		 nline,
+		 PLURAL(nline),
+		 nbyte,
+		 (pasted) ? "from" : "to");
+	mlwrite(buf);
+    } else
+	mlforce("[%d lines]", nline);
 }
-
-
 
 /* The memory block handle _must_ be unlocked before calling this fn. */
 static int
@@ -85,66 +89,54 @@ setclipboard(HGLOBAL hClipMem, UINT nbyte, UINT nline)
 
     TRACE((T_CALLED "setclipboard(%p, %d, %d)\n", hClipMem, nbyte, nline));
 
-    for (rc = i = 0; i < 8 && (! rc); i++)
-    {
-        /* Try to open clipboard */
+    for (rc = i = 0; i < 8 && (!rc); i++) {
+	/* Try to open clipboard */
 
-        if (! OpenClipboard(NULL))
-            Sleep(500);
-        else
-            rc = 1;
+	if (!OpenClipboard(NULL))
+	    Sleep(500);
+	else
+	    rc = 1;
     }
-    if (! rc)
-    {
-        mlforce(CLIPBOARD_BUSY);
-        GlobalFree(hClipMem);
-        returnCode(FALSE);
+    if (!rc) {
+	mlforce(CLIPBOARD_BUSY);
+	GlobalFree(hClipMem);
+	returnCode(FALSE);
     }
     EmptyClipboard();
-    rc = (SetClipboardData(CF_TEXT, hClipMem) != NULL);
+    rc = (SetClipboardData(myTextFormat, hClipMem) != NULL);
     CloseClipboard();
-    if (! rc)
-    {
-        mlforce(CLIPBOARD_COPY_FAIL);
-        GlobalFree(hClipMem);
-    }
-    else
-    {
-        /* success */
+    if (!rc) {
+	mlforce(CLIPBOARD_COPY_FAIL);
+	GlobalFree(hClipMem);
+    } else {
+	/* success */
 
-        report_cbrdstats(nbyte - 1,  /* subtract terminating NUL */
-                         nline,
-                         FALSE);
+	report_cbrdstats(nbyte - 1,	/* subtract terminating NUL */
+			 nline,
+			 FALSE);
     }
     returnCode(rc);
 }
 
-
-
 /* Count lines and nonbuffer data added during "copy to clipboard" operation. */
 static void
-cbrd_count_meta_data(int        len,
-                     UINT      *nbyte,
-                     UINT      *nline,
-                     char      *src)
+cbrd_count_meta_data(int len,
+		     UINT * nbyte,
+		     UINT * nline,
+		     char *src)
 {
     register UINT c;
 
-    while (len--)
-    {
-        if ((c = (UCHAR) *src++) == '\n')
-        {
-            (*nline)++;
-            (*nbyte)++;                    /* API requires CR/LF terminator */
-        }
-        else if (c < _SPC_ && c != _TAB_)  /* assumes ASCII char set        */
-            (*nbyte)++;                    /* account for '^' meta char     */
-        else if (c > _TILDE_ && (! PASS_HIGH(c))) /* assumes ASCII char set */
-            (*nbyte) += 3;                 /* account for '\xdd' meta chars */
+    while (len--) {
+	if ((c = (UCHAR) * src++) == '\n') {
+	    (*nline)++;
+	    (*nbyte)++;		/* API requires CR/LF terminator */
+	} else if (c < _SPC_ && c != _TAB_)	/* assumes ASCII char set        */
+	    (*nbyte)++;		/* account for '^' meta char     */
+	else if (c > _TILDE_ && (!PASS_HIGH(c)))	/* assumes ASCII char set */
+	    (*nbyte) += 3;	/* account for '\xdd' meta chars */
     }
 }
-
-
 
 /*
  * This function is called to process each logical line of data in a
@@ -154,71 +146,71 @@ static int
 count_rgn_data(void *argp, int l, int r)
 {
     RGN_CPYARG *cpyp;
-    int        len;
-    LINE       *lp;
+    int len;
+    LINE *lp;
 
     lp = DOT.l;
 
     /* Rationalize offsets */
     if (llength(lp) < l)
-        return (TRUE);
+	return (TRUE);
     if (r > llength(lp))
-        r = llength(lp);
+	r = llength(lp);
     cpyp = argp;
-    if (r == llength(lp) || regionshape == rgn_RECTANGLE)
-    {
-        /* process implied newline */
+    if (r == llength(lp) || regionshape == rgn_RECTANGLE) {
+	/* process implied newline */
 
-        cpyp->nline++;
-        cpyp->nbyte += 2;   /* CBRD API maps NL -> CR/LF */
+	cpyp->nline++;
+	cpyp->nbyte += 2;	/* CBRD API maps NL -> CR/LF */
     }
-    len          = r - l;
+    len = r - l;
     cpyp->nbyte += len;
     cbrd_count_meta_data(len, &cpyp->nbyte, &cpyp->nline, lvalue(lp) + l);
     return (TRUE);
 }
 
-
-
 static void
-cbrd_copy_and_xlate(int len, UCHAR **cbrd_ptr, char *src)
+cbrd_copy_and_xlate(int len, W32_CHAR ** cbrd_ptr, UCHAR * src)
 {
     register UINT c;
-    UCHAR     *dst = *cbrd_ptr;
+    W32_CHAR *dst = *cbrd_ptr;
+    UCHAR *last = (len + src);
 
-    while (len--)
-    {
-        if ((c = (UCHAR) *src++) == '\n')
-        {
-            *dst++ = '\r';
-            *dst++ = '\n';
-        }
-        else if ((c >= _SPC_ && c <= _TILDE_) || (c == _TAB_))
-            *dst++ = (UCHAR) c;
-        else if (c < _SPC_)
-        {
-            *dst++ = '^';
-            *dst++ = ctrldigits[c];
-        }
-        else
-        {
-            /* c > _TILDE_ */
+    while (src < last) {
+	if ((c = *src) == '\n') {
+	    *dst++ = '\r';
+	    *dst++ = '\n';
+	}
+#if USE_UNICODE
+	else {
+	    UINT target;
+	    int rc = vl_conv_to_utf32(&target, (const char *) src, len);
 
-            if (! PASS_HIGH(c))
-            {
-                *dst++ = '\\';
-                *dst++ = 'x';
-                *dst++ = hexdigits[(c & 0xf0) >> 4];
-                *dst++ = hexdigits[c & 0xf];
-            }
-            else
-                *dst++ = (UCHAR) c;
-        }
+	    *dst++ = (W32_CHAR) target;
+	    src += (rc - 1);
+	}
+#else
+	else if ((c >= _SPC_ && c <= _TILDE_) || (c == _TAB_))
+	    *dst++ = (UCHAR) c;
+	else if (c < _SPC_) {
+	    *dst++ = '^';
+	    *dst++ = ctrldigits[c];
+	} else {
+	    /* c > _TILDE_ */
+
+	    if (!PASS_HIGH(c)) {
+		*dst++ = '\\';
+		*dst++ = 'x';
+		*dst++ = hexdigits[(c & 0xf0) >> 4];
+		*dst++ = hexdigits[c & 0xf];
+	    } else
+		*dst++ = (W32_CHAR) c;
+	}
+#endif
+	++src;
     }
     *cbrd_ptr = dst;
 }
-
-
 
 /*
  * This function is called to process each logical line of data in a
@@ -229,30 +221,27 @@ static int
 copy_rgn_data(void *argp, int l, int r)
 {
     RGN_CPYARG *cpyp;
-    int        len;
-    LINE       *lp;
+    int len;
+    LINE *lp;
 
     lp = DOT.l;
 
     /* Rationalize offsets */
     if (llength(lp) < l)
-        return (TRUE);
+	return (TRUE);
     if (r > llength(lp))
-        r = llength(lp);
+	r = llength(lp);
     cpyp = argp;
-    len  = r - l;
-    cbrd_copy_and_xlate(len, &cpyp->dst, lvalue(lp) + l);
-    if (r == llength(lp) || regionshape == rgn_RECTANGLE)
-    {
-        /* process implied newline */
+    len = r - l;
+    cbrd_copy_and_xlate(len, &cpyp->dst, (UCHAR *) (lvalue(lp) + l));
+    if (r == llength(lp) || regionshape == rgn_RECTANGLE) {
+	/* process implied newline */
 
-        *cpyp->dst++ = '\r';
-        *cpyp->dst++ = '\n';
+	*cpyp->dst++ = '\r';
+	*cpyp->dst++ = '\n';
     }
     return (TRUE);
 }
-
-
 
 /*
  * Copy contents of [un]named register to Windows clipboard.  The control
@@ -261,23 +250,22 @@ copy_rgn_data(void *argp, int l, int r)
 static int
 cbrd_reg_copy(void)
 {
-    HGLOBAL                 hClipMem;
-    register int            i;
-    KILL                    *kp;      /* pointer into [un]named register */
-    UINT                    nbyte;
-    UINT                    nline;
-    UCHAR                  *dst;
+    HGLOBAL hClipMem;
+    register int i;
+    KILL *kp;			/* pointer into [un]named register */
+    UINT nbyte;
+    UINT nline;
+    W32_CHAR *dst;
 
     TRACE((T_CALLED "cbrd_reg_copy()\n"));
     /* make sure there is something to put */
-    if (kbs[ukb].kbufh == NULL)
-    {
-        mlforce("[Nothing to copy]");
-        returnCode(FALSE);     /* not an error, just nothing */
+    if (kbs[ukb].kbufh == NULL) {
+	mlforce("[Nothing to copy]");
+	returnCode(FALSE);	/* not an error, just nothing */
     }
 
     print_high = global_g_val(GVAL_PRINT_HIGH);
-    print_low  = global_g_val(GVAL_PRINT_LOW);
+    print_low = global_g_val(GVAL_PRINT_LOW);
 
     /* tell us we're writing */
     mlwrite(CLIPBOARD_COPYING);
@@ -292,29 +280,27 @@ cbrd_reg_copy(void)
      * 2) unprintable data (modulo tabs) must be warped to a printable
      *    equivalent.
      */
-    for (kp = kbs[ukb].kbufh; kp; kp = kp->d_next)
-    {
-        i      = KbSize(ukb, kp);
-        nbyte += i;
-        cbrd_count_meta_data(i, &nbyte, &nline, (char *) kp->d_chunk);
+    for (kp = kbs[ukb].kbufh; kp; kp = kp->d_next) {
+	i = KbSize(ukb, kp);
+	nbyte += i;
+	cbrd_count_meta_data(i, &nbyte, &nline, (char *) kp->d_chunk);
     }
-    nbyte++;   /* Add room for terminating null */
+    nbyte++;			/* Add room for terminating null */
 
     /* 2nd pass -- alloc storage for data and copy to clipboard. */
-    if ((hClipMem = GlobalAlloc(GMEM_MOVEABLE|GMEM_DDESHARE, nbyte)) == NULL)
-    {
-        mlforce(CLIPBOARD_COPY_MEM);
-        returnCode(FALSE);
+    TRACE(("copying %u bytes to clipboard\n", nbyte));
+    hClipMem = GlobalAlloc(GMEM_MOVEABLE | GMEM_DDESHARE, nbyte * sizeof(W32_CHAR));
+    if (hClipMem == NULL) {
+	mlforce(CLIPBOARD_COPY_MEM);
+	returnCode(FALSE);
     }
     dst = GlobalLock(hClipMem);
     for (kp = kbs[ukb].kbufh; kp; kp = kp->d_next)
-        cbrd_copy_and_xlate((int) KbSize(ukb, kp), &dst, (char *) kp->d_chunk);
+	cbrd_copy_and_xlate((int) KbSize(ukb, kp), &dst, kp->d_chunk);
     *dst = '\0';
     GlobalUnlock(hClipMem);
     returnCode(setclipboard(hClipMem, nbyte, nline));
 }
-
-
 
 /*
  * Copy contents of unnamed register to Windows clipboard.
@@ -326,19 +312,17 @@ cbrdcpy_unnamed(int unused1, int unused2)
 {
     int rc;
 
-    if (reading_msg_line)
-    {
-        minibuffer_abort();   /* FIXME -- goes away some day? */
-        mlerase();
-        mlforce(CLIPBOARD_COPY_MB);
-        return (ABORT);
+    if (reading_msg_line) {
+	minibuffer_abort();	/* FIXME -- goes away some day? */
+	mlerase();
+	mlforce(CLIPBOARD_COPY_MB);
+	return (ABORT);
     }
     kregcirculate(FALSE);
-    rc  = cbrd_reg_copy();
+    rc = cbrd_reg_copy();
     ukb = 0;
     return (rc);
 }
-
 
 /*
  * Copy the currently-selected region (i.e., the range of lines from DOT to
@@ -348,19 +332,19 @@ cbrdcpy_unnamed(int unused1, int unused2)
 static int
 cbrdcpy_region(void)
 {
-    RGN_CPYARG              cpyarg;
-    DORGNLINES              dorgn;
-    HGLOBAL                 hClipMem;
-    MARK                    odot;
-    int                     rc;
+    RGN_CPYARG cpyarg;
+    DORGNLINES dorgn;
+    HGLOBAL hClipMem;
+    MARK odot;
+    int rc;
 
     TRACE((T_CALLED "cbrdcpy_region()\n"));
     mlwrite(CLIPBOARD_COPYING);
-    print_high   = global_g_val(GVAL_PRINT_HIGH);
-    print_low    = global_g_val(GVAL_PRINT_LOW);
-    odot         = DOT;          /* do_lines_in_region() moves DOT. */
+    print_high = global_g_val(GVAL_PRINT_HIGH);
+    print_low = global_g_val(GVAL_PRINT_LOW);
+    odot = DOT;			/* do_lines_in_region() moves DOT. */
     cpyarg.nbyte = cpyarg.nline = 0;
-    dorgn        = get_do_lines_rgn();
+    dorgn = get_do_lines_rgn();
 
     /*
      * Make 2 passes over the data.  1st pass counts the data and
@@ -370,18 +354,17 @@ cbrdcpy_region(void)
      * 2) unprintable data (modulo tabs) must be warped to a printable
      *    equivalent.
      */
-    rc  = dorgn(count_rgn_data, &cpyarg, TRUE);
+    rc = dorgn(count_rgn_data, &cpyarg, TRUE);
     DOT = odot;
     if (!rc)
-        returnCode(FALSE);
-    cpyarg.nbyte++;        /* Terminating nul */
+	returnCode(FALSE);
+    cpyarg.nbyte++;		/* Terminating nul */
 
     /* 2nd pass -- alloc storage for data and copy to clipboard. */
-    if ((hClipMem = GlobalAlloc(GMEM_MOVEABLE|GMEM_DDESHARE,
-                                cpyarg.nbyte)) == NULL)
-    {
-        mlforce(CLIPBOARD_COPY_MEM);
-        returnCode(FALSE);
+    if ((hClipMem = GlobalAlloc(GMEM_MOVEABLE | GMEM_DDESHARE,
+				cpyarg.nbyte)) == NULL) {
+	mlforce(CLIPBOARD_COPY_MEM);
+	returnCode(FALSE);
     }
     cpyarg.dst = GlobalLock(hClipMem);
 
@@ -391,20 +374,17 @@ cbrdcpy_region(void)
      */
     rc = dorgn(copy_rgn_data, &cpyarg, TRUE);
     GlobalUnlock(hClipMem);
-    if (! rc)
-    {
-        GlobalFree(hClipMem);
-        returnCode(FALSE);
+    if (!rc) {
+	GlobalFree(hClipMem);
+	returnCode(FALSE);
     }
     *cpyarg.dst = '\0';
     returnCode(setclipboard(hClipMem, cpyarg.nbyte, cpyarg.nline));
 }
 
-
-
 /*
  * Copy contents of specified region or register to Windows clipboard.
- * This command is an operaor and mimics the functionality of ^W, but
+ * This command is an operator and mimics the functionality of ^W, but
  * mimics operyank()'s implemenation.
  *
  * Bound to Ctrl+Insert.
@@ -412,37 +392,39 @@ cbrdcpy_region(void)
 int
 opercbrdcpy(int f, int n)
 {
-    if (reading_msg_line)
-    {
-        minibuffer_abort();   /* FIXME -- goes away some day? */
-        mlerase();
-        mlforce(CLIPBOARD_COPY_MB);
-        return (ABORT);
+    if (reading_msg_line) {
+	minibuffer_abort();	/* FIXME -- goes away some day? */
+	mlerase();
+	mlforce(CLIPBOARD_COPY_MB);
+	return (ABORT);
     }
     if (ukb != 0)
-        return (cbrd_reg_copy());
-    else
-    {
-        MARK odot;
-        int  rc;
+	return (cbrd_reg_copy());
+    else {
+	MARK odot;
+	int rc;
 
-        odot  = DOT;
-        opcmd = OPDEL;
-        rc    = vile_op(f, n, cbrdcpy_region, "Clipboard copy");
-        DOT   = odot;   /* cursor does not move */
-        return (rc);
+	odot = DOT;
+	opcmd = OPDEL;
+	rc = vile_op(f, n, cbrdcpy_region, "Clipboard copy");
+	DOT = odot;		/* cursor does not move */
+	return (rc);
     }
 }
 
 /* ------------------- Paste Functionality ----------------------- */
 
-#define MAX_MAPPED_STR 16     /* fairly conservative :-) */
+#define MAX_MAPPED_STR 16	/* fairly conservative :-) */
 
-static int  map_and_insert(UINT, UINT *);
+static int map_and_insert(UINT, UINT *);
 
-typedef struct { UINT val; char *str; } MAP;
+typedef struct {
+    UINT val;
+    char *str;
+} MAP;
 
 /* Keep this table sorted by "val" . */
+/* *INDENT-OFF* */
 static MAP cbrdmap[] =
 {
     { 0x85, "..."  },
@@ -466,6 +448,7 @@ static MAP cbrdmap[] =
     { 0xBD, "1/2"  },
     { 0xBE, "3/4"  },
 };
+/* *INDENT-ON* */
 
 /* --------------------------------------------------------------- */
 
@@ -475,84 +458,79 @@ map_compare(const void *elem1, const void *elem2)
     return (((MAP *) elem1)->val - ((MAP *) elem2)->val);
 }
 
-
-
 static int
 map_cbrd_char(UINT c, UCHAR mapped_rslt[MAX_MAPPED_STR])
 {
-    MAP  key, *rslt_p;
-    int  nmapped = 0;
+    MAP key, *rslt_p;
+    int nmapped = 0;
     char *str;
 
     key.val = c;
-    rslt_p  = bsearch(&key,
-                      cbrdmap,
-                      sizeof(cbrdmap) / sizeof(cbrdmap[0]),
-                      sizeof(cbrdmap[0]),
-                      map_compare);
-    if (! rslt_p)
-        mapped_rslt[nmapped++] = (UCHAR) c;
-    else
-    {
-        for (str = rslt_p->str; *str; str++)
-            mapped_rslt[nmapped++] = *str;
+    rslt_p = bsearch(&key,
+		     cbrdmap,
+		     sizeof(cbrdmap) / sizeof(cbrdmap[0]),
+		     sizeof(cbrdmap[0]),
+		     map_compare);
+    if (!rslt_p)
+	mapped_rslt[nmapped++] = (UCHAR) c;
+    else {
+	for (str = rslt_p->str; *str; str++)
+	    mapped_rslt[nmapped++] = *str;
     }
     mapped_rslt[nmapped] = '\0';
     return (nmapped);
 }
 
-
-
 /* paste a single line from the clipboard to the minibuffer. */
 static int
-paste_to_minibuffer(UCHAR *cbrddata)
+paste_to_minibuffer(W32_CHAR * cbrddata)
 {
-    int   rc = TRUE;
-    UCHAR *cp = cbrddata;
-    UCHAR *eol = NULL;
-    UCHAR map_str[MAX_MAPPED_STR + 1];
-    UCHAR one_char[2];
+    int rc = TRUE;
+    W32_CHAR *cp = cbrddata;
+    W32_CHAR *eol = NULL;
+#if !USE_UNICODE
+    W32_CHAR one_char[2];
+    W32_CHAR map_str[MAX_MAPPED_STR + 1];
+#endif
 
-    while(*cp)
-    {
-        if (*cp == '\r' && *(cp + 1) == '\n')
-        {
-            eol = cp;
+    while (*cp) {
+	if (*cp == '\r' && *(cp + 1) == '\n') {
+	    eol = cp;
 
-            /*
-             * Don't allow more than one line of data to be pasted into the
-             * minibuffer (to protect the user from seriously bad side
-             * effects when s/he pastes in the wrong buffer).  We don't
-             * report an error here in an effort to retain compatibility
-             * with a couple of "significant" win32 apps (e.g., IE and
-             * Outlook) that simply truncate a paste at one line when it
-             * only makes sense to take a single line of input.
-             */
-            break;
-        }
-        cp++;
+	    /*
+	     * Don't allow more than one line of data to be pasted into the
+	     * minibuffer (to protect the user from seriously bad side
+	     * effects when s/he pastes in the wrong buffer).  We don't
+	     * report an error here in an effort to retain compatibility
+	     * with a couple of "significant" win32 apps (e.g., IE and
+	     * Outlook) that simply truncate a paste at one line when it
+	     * only makes sense to take a single line of input.
+	     */
+	    break;
+	}
+	cp++;
     }
     if (eol)
-        *eol = '\0';  /* chop delimiter */
+	*eol = '\0';		/* chop delimiter */
+#if USE_UNICODE
+    rc = w32_keybrd_write(cbrddata);
+#else
     one_char[1] = '\0';
-    while (*cbrddata && rc)
-    {
-        if (*cbrddata > _TILDE_)
-        {
-            (void) map_cbrd_char(*cbrddata, map_str);
-            rc = w32_keybrd_write((char *) map_str);
-        }
-        else
-        {
-            one_char[0] = *cbrddata;
-            rc = w32_keybrd_write((char *) one_char);
-        }
-        cbrddata++;
+    while (*cbrddata && rc) {
+	if (*cbrddata > _TILDE_) {
+	    (void) map_cbrd_char(*cbrddata, map_str);
+	    rc = w32_keybrd_write(map_str);
+	} else {
+	    one_char[0] = *cbrddata;
+	    rc = w32_keybrd_write(one_char);
+	}
+	cbrddata++;
     }
+#endif
     return (rc);
 }
 
-
+#define MAX_UTF8 8		/* buffer-size big enough for any UTF-8 conversion */
 
 /*
  * Paste contents of windows clipboard (if TEXT) to current buffer.
@@ -561,70 +539,59 @@ paste_to_minibuffer(UCHAR *cbrddata)
 int
 cbrdpaste(int f, int n)
 {
-    register UINT      c;
-    register UCHAR *data;
-    HANDLE   hClipMem;
-    int      i, rc, suppressnl;
-    UINT     nbyte, nline;
+    UINT c;
+    W32_CHAR *data;
+    HANDLE hClipMem;
+    int i, rc, suppressnl;
+    UINT nbyte, nline;
 
     TRACE((T_CALLED "cbrdpaste\n"));
-    for (rc = i = 0; i < 8 && (! rc); i++)
-    {
-        /* Try to open clipboard */
+    for (rc = i = 0; i < 8 && (!rc); i++) {
+	/* Try to open clipboard */
 
-        if (! OpenClipboard(NULL))
-            Sleep(500);
-        else
-            rc = 1;
+	if (!OpenClipboard(NULL))
+	    Sleep(500);
+	else
+	    rc = 1;
     }
-    if (! rc)
-    {
-        if (reading_msg_line)
-        {
-            minibuffer_abort();   /* FIXME -- goes away some day? */
-            rc = ABORT;
-        }
-        else
-            rc = FALSE;
-        mlforce(CLIPBOARD_BUSY);
-        returnCode(rc);
+    if (!rc) {
+	if (reading_msg_line) {
+	    minibuffer_abort();	/* FIXME -- goes away some day? */
+	    rc = ABORT;
+	} else
+	    rc = FALSE;
+	mlforce(CLIPBOARD_BUSY);
+	returnCode(rc);
     }
-    if ((hClipMem = GetClipboardData(CF_TEXT)) == NULL)
-    {
-        CloseClipboard();
-        if (reading_msg_line)
-        {
-            minibuffer_abort();   /* FIXME -- goes away some day? */
-            rc = ABORT;
-        }
-        else
-            rc = FALSE;
-        mlforce("[Clipboard empty or not TEXT data]");
-        returnCode(rc);
+    if ((hClipMem = GetClipboardData(myTextFormat)) == NULL) {
+	CloseClipboard();
+	if (reading_msg_line) {
+	    minibuffer_abort();	/* FIXME -- goes away some day? */
+	    rc = ABORT;
+	} else
+	    rc = FALSE;
+	mlforce("[Clipboard empty or not TEXT data]");
+	returnCode(rc);
     }
-    if ((data = GlobalLock(hClipMem)) == NULL)
-    {
-        CloseClipboard();
-        if (reading_msg_line)
-        {
-            minibuffer_abort();   /* FIXME -- goes away some day? */
-            rc = ABORT;
-        }
-        else
-            rc = FALSE;
-        mlforce("[Can't lock clipboard memory]");
-        returnCode(rc);
+    if ((data = GlobalLock(hClipMem)) == NULL) {
+	CloseClipboard();
+	if (reading_msg_line) {
+	    minibuffer_abort();	/* FIXME -- goes away some day? */
+	    rc = ABORT;
+	} else
+	    rc = FALSE;
+	mlforce("[Can't lock clipboard memory]");
+	returnCode(rc);
     }
-    if (reading_msg_line)
-    {
-        rc = paste_to_minibuffer(data);
-        GlobalUnlock(hClipMem);
-        CloseClipboard();
-        returnCode(rc);
+    if (reading_msg_line) {
+	rc = paste_to_minibuffer(data);
+	GlobalUnlock(hClipMem);
+	CloseClipboard();
+	returnCode(rc);
     }
     mlwrite(CLIPBOARD_COPYING);
     nbyte = nline = 0;
-    rc    = TRUE;
+    rc = TRUE;
 
     /*
      * Before stuffing data in the current buffer, save info regarding dot
@@ -635,100 +602,121 @@ cbrdpaste(int f, int n)
      * the clipboard (I hope).
      */
     suppressnl = is_header_line(DOT, curbp);
-    /* this pastes after DOT instead of at DOT - very annoying
-    if (! is_at_end_of_line(DOT))
-        forwchar(TRUE,1);
-    */
     (void) setmark();
-    while(*data && rc)
-    {
-        if ((c = *data) == '\n')
-        {
-            nbyte++;
-            nline++;
-            rc = lnewline();
-        }
-        else if (c == '\r' && *(data + 1) == '\n')
-        {
-            /* Clipboard end of line delimiter is crlf.  Ignore cr. */
-            ;
-        }
-        else if (!b_is_utfXX(curbp) && (c > _TILDE_))
-            rc = map_and_insert(c, &nbyte);
-        else
-        {
-            int chunk;
-            int c2;
-            int base = DOT.o;
+    while (*data && rc) {
+	c = *data;
 
-            for (chunk = 0; data[chunk] != 0; ++chunk) {
-                if ((c2 = data[chunk]) == '\n'
-                    || (c2 == '\r' && data[chunk + 1] == '\n')
-                    || (!b_is_utfXX(curbp) && (c > _TILDE_)))
-                break;
-            }
-            rc = lins_bytes(chunk, (int) c);
-            if (!rc)
-                break;
-            nbyte += chunk;
-            memcpy(lvalue(DOT.l) + base, data, chunk);
-            data += (chunk - 1);
-        }
-        data++;
+	if (c == '\n') {
+	    nbyte++;
+	    nline++;
+	    rc = lnewline();
+	} else if (c == '\r' && *(data + 1) == '\n') {
+	    /* Clipboard end of line delimiter is crlf.  Ignore cr. */
+	    ;
+	} else if (!b_is_utfXX(curbp) && (c > _TILDE_)) {
+	    rc = map_and_insert(c, &nbyte);
+	} else {
+	    int chunk;
+	    int c2;
+	    int base = DOT.o;
+#ifdef UNICODE
+	    int in_chunk;
+	    int chunk_bytes = 0;
+	    char *dst;
+#endif
+
+	    for (chunk = 0; data[chunk] != 0; ++chunk) {
+		if ((c2 = data[chunk]) == '\n'
+		    || (c2 == '\r' && data[chunk + 1] == '\n')
+		    || (!b_is_utfXX(curbp) && (c > _TILDE_)))
+		    break;
+	    }
+
+#ifdef UNICODE
+	    /* sizeof(W32_CHAR) > 1 */
+
+	    /* compute 'chunk_bytes' here based on actual bytes */
+	    for (in_chunk = 0; in_chunk < chunk; ++in_chunk) {
+		chunk_bytes += vl_conv_to_utf8((UCHAR *) 0, data[in_chunk], MAX_UTF8);
+	    }
+
+	    rc = lins_bytes(chunk_bytes, (int) c);
+	    if (!rc)
+		break;
+
+	    nbyte += chunk_bytes;
+	    for (in_chunk = 0, dst = lvalue(DOT.l) + base;
+		 in_chunk < chunk;
+		 ++in_chunk) {
+		UCHAR target[MAX_UTF8];
+		int len = vl_conv_to_utf8(target, data[in_chunk], MAX_UTF8);
+		memcpy(dst, target, len);
+		dst += len;
+	    }
+	    data += (chunk - 1);
+#else
+	    /* sizeof(W32_CHAR) == 1 */
+
+	    rc = lins_bytes(chunk, (int) c);
+	    if (!rc)
+		break;
+
+	    nbyte += chunk;
+	    memcpy(lvalue(DOT.l) + base, data, chunk);
+	    data += (chunk - 1);
+#endif
+	}
+	data++;
     }
-    if (rc)
-    {
-        if (nbyte > 0 && (data[-1] == '\n') && suppressnl)
-        {
-            /*
-             * Last byte inserted was a newline and DOT was originally
-             * pointing at the beginning of the buffer(??).  In this
-             * situation, lins_bytes() has added an additional newline to the
-             * buffer.  Remove it.
-             */
+    if (rc) {
+	if (nbyte > 0 && (data[-1] == '\n') && suppressnl) {
+	    /*
+	     * Last byte inserted was a newline and DOT was originally
+	     * pointing at the beginning of the buffer(??).  In this
+	     * situation, lins_bytes() has added an additional newline to the
+	     * buffer.  Remove it.
+	     */
 
-            (void) ldel_bytes(1, FALSE);
-        }
+	    (void) ldel_bytes(1, FALSE);
+	}
     }
     GlobalUnlock(hClipMem);
     CloseClipboard();
-    if (! rc)
-        (void) no_memory("cbrdpaste()");
-    else
-    {
-        /*
-         * Success.  Fiddle with dot and mark again (another chunk of doput()
-         * code).  "Tha' boy shore makes keen use of cut and paste."
-         * Don't swap if inserting - this allows you to continue typing
-         * after a paste operation without additional futzing with DOT.
-         */
+    if (!rc)
+	(void) no_memory("cbrdpaste()");
+    else {
+	/*
+	 * Success.  Fiddle with dot and mark again (another chunk of doput()
+	 * code).  "Tha' boy shore makes keen use of cut and paste."
+	 * Don't swap if inserting - this allows you to continue typing
+	 * after a paste operation without additional futzing with DOT.
+	 */
 
-        if (!insertmode) swapmark();          /* I understand this. */
-        if (is_header_line(DOT, curbp))
-            DOT.l = lback(DOT.l);             /* This is a mystery. */
-        report_cbrdstats(nbyte, nline, TRUE);
+	if (!insertmode)
+	    swapmark();		/* I understand this. */
+	if (is_header_line(DOT, curbp))
+	    DOT.l = lback(DOT.l);	/* This is a mystery. */
+	report_cbrdstats(nbyte, nline, TRUE);
     }
     returnCode(rc);
 }
-
-
 
 /*
  * Map selected characters from the ANSI character set to their ASCII
  * equivalents and insert same in the current buffer.
  */
 static int
-map_and_insert(UINT c,       /* ANSI char to insert   */
-               UINT *nbyte   /* total #chars inserted */
-               )
+map_and_insert(UINT c,		/* ANSI char to insert   */
+	       UINT * nbyte	/* total #chars inserted */
+)
 {
     UCHAR mapped_str[MAX_MAPPED_STR];
-    int           i, nmapped, rc;
+    int i, nmapped, rc;
 
     nmapped = map_cbrd_char(c, mapped_str);
     *nbyte += nmapped;
     for (rc = TRUE, i = 0; i < nmapped && rc; i++)
-        rc = lins_bytes(1, mapped_str[i]);
+	rc = lins_bytes(1, mapped_str[i]);
     return (rc);
 }
 
