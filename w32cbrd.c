@@ -11,7 +11,7 @@
  *    Subsequent copies do not show this cursor.  On an NT host, this
  *    phenomenon does not occur.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32cbrd.c,v 1.35 2009/10/24 00:06:45 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32cbrd.c,v 1.36 2009/10/24 13:29:07 tom Exp $
  */
 
 #include "estruct.h"
@@ -459,7 +459,7 @@ map_compare(const void *elem1, const void *elem2)
 }
 
 static int
-map_cbrd_char(UINT c, UCHAR mapped_rslt[MAX_MAPPED_STR])
+map_cbrd_char(UINT c, W32_CHAR mapped_rslt[MAX_MAPPED_STR])
 {
     MAP key, *rslt_p;
     int nmapped = 0;
@@ -628,8 +628,9 @@ cbrdpaste(int f, int n)
 	    for (chunk = 0; data[chunk] != 0; ++chunk) {
 		if ((c2 = data[chunk]) == '\n'
 		    || (c2 == '\r' && data[chunk + 1] == '\n')
-		    || (!b_is_utfXX(curbp) && (c > _TILDE_)))
+		    || (!b_is_utfXX(curbp) && (c > _TILDE_))) {
 		    break;
+		}
 	    }
 
 #ifdef UNICODE
@@ -710,7 +711,7 @@ map_and_insert(UINT c,		/* ANSI char to insert   */
 	       UINT * nbyte	/* total #chars inserted */
 )
 {
-    UCHAR mapped_str[MAX_MAPPED_STR];
+    W32_CHAR mapped_str[MAX_MAPPED_STR];
     int i, nmapped, rc;
 
     nmapped = map_cbrd_char(c, mapped_str);
