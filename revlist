@@ -1,6 +1,6 @@
-revlist for vile, version v9_7v
+revlist for vile, version v9_7w
 --------------------------------------------------------------------------------
-aclocal.m4	1.196
+aclocal.m4	1.197
 ansi.c	1.51
 api.c	1.45
 api.h	1.14
@@ -15,7 +15,7 @@ btree.h	1.5
 buffer.c	1.340
 buglist	1.416
 builtflt.c	1.82
-CHANGES	1.1372
+CHANGES	1.1381
 CHANGES.R3	1.1
 CHANGES.R4	1.1
 CHANGES.R5	1.1
@@ -28,8 +28,8 @@ cmdtbl	1.261
 config.guess	1.11
 config_h.in	1.2
 config.sub	1.12
-configure	1.45
-configure.in	1.274
+configure	1.48
+configure.in	1.276
 COPYING	1.4
 csrch.c	1.34
 curses.c	1.41
@@ -38,9 +38,9 @@ dirstuff.h	1.32
 display.c	1.495
 djhandl.c	1.6
 dumbterm.c	1.23
-edef.h	1.352
+edef.h	1.353
 eightbit.c	1.48
-estruct.h	1.693
+estruct.h	1.694
 eval.c	1.410
 exec.c	1.331
 externs.c	1.11
@@ -61,22 +61,22 @@ isearch.c	1.63
 itbuff.c	1.25
 lckfiles.c	1.11
 line.c	1.204
-main.c	1.665
+main.c	1.666
 makeargv.c	1.5
 makeargv.h	1.3
 makefile.blc	1.23
 makefile.djg	1.40
 makefile.icc	1.18
-makefile.in	1.224
+makefile.in	1.226
 makefile.wnt	1.101
 MANIFEST	none
 map.c	1.116
 menu.c	1.73
 mkdirs.sh	1.7
 mkprlenv.wnt	1.9
-mktbls.c	1.161
+mktbls.c	1.162
 modes.c	1.403
-modetbl	1.294
+modetbl	1.296
 msgs.c	1.29
 npopen.c	1.97
 ntconio.c	1.91
@@ -87,12 +87,12 @@ opers.c	1.97
 os2keys.h	1.2
 os2pipe.c	1.5
 os2vio.c	1.36
-patchlev.h	1.397
+patchlev.h	1.398
 path.c	1.166
 perl.xs	1.118
 plugin.c	1.1
 plugin.h	1.1
-proto.h	1.680
+proto.h	1.681
 pscreen.h	1.2
 ptypemap	1.7
 random.c	1.331
@@ -101,7 +101,7 @@ README.PC	1.33
 README.VMS	1.5
 regexp.c	1.196
 region.c	1.155
-revlist	v9_7v
+revlist	v9_7w
 search.c	1.148
 select.c	1.174
 sinstall.sh	1.1
@@ -113,14 +113,14 @@ tcap.c	1.179
 tcap.h	1.15
 termio.c	1.217
 test_io.c	1.2
-trace.c	1.92
+trace.c	1.93
 trace.h	1.33
 ucrypt.c	1.15
 undo.c	1.101
 version.c	1.69
 vile.1	1.37
-vile-9.7.spec	1.24
-vile.hlp	1.675
+vile-9.7.spec	1.25
+vile.hlp	1.677
 vile.wmconfig	1.1
 vl_alloc.h	1.1
 vl_ctype.c	1.6
@@ -131,11 +131,11 @@ vms2unix.c	1.42
 vmsbuild.com	1.50
 vmspipe.c	1.14
 vmsvt.c	1.65
-w32cbrd.c	1.33
+w32cbrd.c	1.36
 w32cmd.c	1.43
-w32misc.c	1.55
-w32ole.cpp	1.30
-w32ole.h	1.8
+w32misc.c	1.57
+w32ole.cpp	1.31
+w32ole.h	1.9
 w32ole.rc	1.3
 w32oo.cpp	1.14
 w32pipe.c	1.35
@@ -149,9 +149,9 @@ window.c	1.118
 winvile.h	1.11
 winvile.odl	1.8
 winvile.rc	1.12
-word.c	1.94
+word.c	1.95
 wordmov.c	1.23
-wvwrap.cpp	1.17
+wvwrap.cpp	1.18
 x11.c	1.352
 x11menu.c	1.12
 xshell.sh	1.4
@@ -219,7 +219,7 @@ filters/est.key	1.1
 filters/fdl-filt.l	1.16
 filters/fdl.key	1.4
 filters/filterio.c	1.55
-filters/filters.c	1.144
+filters/filters.c	1.145
 filters/filters.h	1.123
 filters/filters.rc	1.229
 filters/flt_defs.h	1.14
@@ -249,7 +249,7 @@ filters/lispfilt.l	1.24
 filters/lisp.key	1.2
 filters/lua-filt.l	1.10
 filters/lua.key	1.2
-filters/m4-filt.c	1.33
+filters/m4-filt.c	1.34
 filters/m4.key	1.5
 filters/mailcap.key	1.3
 filters/mailfilt.l	1.24
@@ -383,7 +383,7 @@ macros/shifts.rc	1.4
 macros/showeach.rc	1.5
 macros/uxvile	1.1
 macros/UXVile.ad	1.1
-macros/uxvile.desktop	1.1
+macros/uxvile.desktop	1.2
 macros/vileinit.rc	1.38
 macros/vilemenu.rc	1.6
 macros/vile-pager	1.6
