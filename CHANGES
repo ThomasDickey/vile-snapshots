@@ -1,7 +1,9 @@
 Changes for vile 9.8 (released ??? ??? ?? ????)
 
- 20091026 (w)
+ 20091027 (w)
 	> Tom Dickey:
+	+ fix makefile substitution so AIX make program does not attempt to
+	  use desktop-utils when it is not available.
 	+ add configure check to suppress IRIX64 compiler warning about the
 	  conversion of pointers to same-sized integers, which is used in
 	  vile's mode structure definitions.
