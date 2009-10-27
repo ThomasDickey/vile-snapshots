@@ -1,12 +1,12 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_REVISION($Revision: 1.274 $)
+AC_REVISION($Revision: 1.275 $)
 AC_PREREQ(2.13.20030927)
 rm -f config.cache
 
 ### Use "configure -with-screen" to override the default configuration, which is
 ### termcap-based on unix systems.
 
-dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.274 2009/10/08 09:14:41 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.275 2009/10/26 22:56:13 tom Exp $
 
 define(MAKELIST, sh $srcdir/filters/makelist.sh $srcdir/filters/genmake.mak)
 
@@ -36,7 +36,24 @@ CF_CC_INIT_UNIONS
 CF_XOPEN_SOURCE
 CF_SIGWINCH
 
-case $host_os in hpux*) CPPFLAGS="-DYYCHAR_ARRAY $CPPFLAGS";; esac; AC_DECL_YYTEXT
+# force HPUX lex to use %pointer for $LEX
+case $host_os in hpux*)
+	CPPFLAGS="-DYYCHAR_ARRAY $CPPFLAGS"
+	;;
+esac
+AC_DECL_YYTEXT
+
+TRY_CFLAGS=
+case $host_os in
+irix6.*) #(vi
+	TRY_CFLAGS="$TRY_CFLAGS -woff 3970"
+	;;
+esac
+
+dnl Collect tests for compiler options into one place
+if test -n "$TRY_CFLAGS" ; then
+	CF_CHECK_CFLAGS($TRY_CFLAGS)
+fi
 
 ###	checks for alternative programs
 CF_MAKEFLAGS
@@ -225,6 +242,7 @@ else
 fi
 AC_MSG_RESULT($cf_needflex)
 
+# check for $LEX and see if it is "flex"
 CF_LEX_VERSION
 if test -z "$LEX_VERSION" ; then
     LEX_IS_FLEX=no

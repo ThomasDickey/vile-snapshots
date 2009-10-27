@@ -1,7 +1,12 @@
 Changes for vile 9.8 (released ??? ??? ?? ????)
 
- 200910?? (w)
+ 20091026 (w)
 	> Tom Dickey:
+	+ add configure check to suppress IRIX64 compiler warning about the
+	  conversion of pointers to same-sized integers, which is used in
+	  vile's mode structure definitions.
+	+ prefer include of inttypes.h, since stdint.h is c99, and on some
+	  platforms such as IRIX64, including it generates an error.
 	+ implement Unicode select/paste in winvile.
 	+ build-fix in mktbls.c for Visual Studio.Net 2003, apparent compiler
 	  bug. 

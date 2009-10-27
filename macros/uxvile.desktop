@@ -1,6 +1,6 @@
-# $XTermId: uxvile.desktop,v 1.1 2009/10/07 10:51:42 tom Exp $
+# $XTermId: uxvile.desktop,v 1.2 2009/10/25 00:19:36 tom Exp $
 [Desktop Entry]
-Name=XVile
+Name=UXVile
 Comment=VI Like Emacs
 Exec=uxvile
 Terminal=false
