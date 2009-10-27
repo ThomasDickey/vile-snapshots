@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.693 2009/10/12 09:14:57 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.694 2009/10/26 09:35:15 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -2916,8 +2916,13 @@ extern void exit (int code);
 extern void _exit (int code);
 #endif	/* HAVE_STDLIB_H */
 
+/* get intptr_t */
+#ifdef HAVE_INTTYPES_H
+#include <inttypes.h>
+#else
 #ifdef HAVE_STDINT_H
 #include <stdint.h>
+#endif
 #endif
 
 /* array/table size */
