@@ -2,7 +2,7 @@
  * This file contains the command processing functions for a number of random
  * commands. There is no functional grouping here, for sure.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.331 2009/08/19 23:40:27 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.332 2009/10/31 13:44:55 tom Exp $
  *
  */
 
@@ -351,7 +351,7 @@ char_no(BUFFER *the_buffer, MARK the_mark)
 {
     LINE *lp;
     B_COUNT curchar = 0;
-    int len_rs = len_record_sep(curbp);
+    B_COUNT len_rs = (B_COUNT) len_record_sep(curbp);
 
     for_each_line(lp, the_buffer) {
 	if (lp == the_mark.l) {
@@ -387,7 +387,7 @@ gotochr(int f, int n)
 {
     LINE *lp;
     B_COUNT len;
-    int len_rs = len_record_sep(curbp);
+    B_COUNT len_rs = (B_COUNT) len_record_sep(curbp);
 
     if (!f) {
 	DOT.l = lback(buf_head(curbp));
@@ -671,7 +671,7 @@ forceblank(int f, int n)
     B_COUNT n_arg;
     C_NUM nchar;
     int s = TRUE;
-    int len_rs = len_record_sep(curbp);
+    B_COUNT len_rs = (B_COUNT) len_record_sep(curbp);
 
     n_arg = (B_COUNT) need_at_least(f, n, 0);
 

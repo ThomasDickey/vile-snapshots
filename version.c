@@ -1,7 +1,7 @@
 /*
  * version & usage-messages for vile
  *
- * $Header: /users/source/archives/vile.vcs/RCS/version.c,v 1.69 2008/11/23 18:25:20 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/version.c,v 1.70 2009/10/31 14:47:40 tom Exp $
  *
  */
 
@@ -207,9 +207,9 @@ static void
 personals(int n)
 {
 #if !SMALLER
-    char **cmdp = NULL;
+    const char **cmdp = NULL;
 
-    static char *pgfcmds[] =
+    static const char *pgfcmds[] =
     {
 	"bind-key split-current-window ^T",
 	"bind-key next-window ^N",
@@ -228,7 +228,9 @@ personals(int n)
 	return;
 
     while (*cmdp) {
-	(void) docmd(*cmdp, TRUE, FALSE, 1);
+	char *line = strmalloc(*cmdp);
+	(void) docmd(line, TRUE, FALSE, 1);
+	free(line);
 	cmdp++;
     }
 #else

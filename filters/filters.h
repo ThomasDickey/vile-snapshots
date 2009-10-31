@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.123 2009/10/07 09:16:52 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.124 2009/10/29 23:20:26 tom Exp $
  */
 
 #ifndef FILTERS_H
@@ -270,9 +270,23 @@ extern void parse_keyword(char *name, int classflag);
 /*
  * Declared in filterio.c and/or builtflt.c
  */
+#ifndef VILE_PROTO_H
+
+extern char *skip_blanks(char *src);
+extern char *vile_getenv(const char *name);
+extern int vl_lookup_color(const char *name);
+extern int vl_lookup_func(const char *name);
+extern int vl_lookup_xcolor(const char *name);
+extern void mlforce(const char *fmt, ...) VILE_PRINTF(1,2);
+
+#ifndef strmalloc
+extern char *strmalloc(const char *src);
+#endif
+
+#endif
+
 extern char *flt_gets(char **ptr, unsigned *len);
 extern char *flt_put_blanks(char *string);
-extern char *skip_blanks(char *src);
 extern const char *flt_name(void);
 extern const void *vl_lookup_cmd(const char *name);
 extern int chop_newline(char *s);
@@ -287,11 +301,8 @@ extern int vl_is_majormode(const void *cmd);
 extern int vl_is_setting(const void *cmd);
 extern int vl_is_submode(const void *cmd);
 extern int vl_is_xcolor(const void *cmd);
-extern int vl_lookup_color(const char *name);
-extern int vl_lookup_func(const char *name);
 extern int vl_lookup_mode(const char *name);
 extern int vl_lookup_var(const char *name);
-extern int vl_lookup_xcolor(const char *name);
 extern void flt_echo(const char *string, int length);
 extern void flt_error(const char *fmt, ...) VILE_PRINTF(1,2);
 extern void flt_failed(const char *msg);
@@ -299,16 +310,10 @@ extern void flt_finish(void);
 extern void flt_message(const char *fmt, ...) VILE_PRINTF(1,2);
 extern void flt_putc(int ch);
 extern void flt_puts(const char *string, int length, const char *attribute);
-extern void mlforce(const char *fmt, ...) VILE_PRINTF(1,2);
-
-#ifndef strmalloc
-extern char *strmalloc(const char *src);
-#endif
 
 /*
  * declared in main.c or filters.c
  */
-extern char *vile_getenv(const char *name);
 
 #define WriteToken(attr) flt_puts(yytext, yyleng, attr)
 #define WriteToken2(attr,len) flt_puts(yytext + (len), yyleng - (len), attr)

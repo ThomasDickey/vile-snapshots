@@ -3,7 +3,7 @@
  * and mark.  Some functions are commands.  Some functions are just for
  * internal use.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/region.c,v 1.155 2009/08/17 09:34:40 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/region.c,v 1.156 2009/10/31 13:36:59 tom Exp $
  *
  */
 
@@ -919,7 +919,7 @@ getregion(BUFFER *bp, REGION * rp)
     LINE *blp;
     B_COUNT fsize;
     B_COUNT bsize;
-    int len_rs = len_record_sep(bp);
+    B_COUNT len_rs = (B_COUNT) len_record_sep(bp);
 
     TRACE2((T_CALLED "getregion\n"));
     memset(rp, 0, sizeof(*rp));

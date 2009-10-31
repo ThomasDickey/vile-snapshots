@@ -1,7 +1,7 @@
 /*	tcap:	Unix V5, V7 and BS4.2 Termcap video driver
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.179 2009/08/17 10:47:40 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.180 2009/10/29 23:38:30 tom Exp $
  *
  */
 
@@ -127,7 +127,7 @@ static int i_was_closed;
 #include "xtermkeys.h"
 
 #ifdef HAVE_TPARM		/* usually terminfo */
-#define CALL_TPARM(cap,code) tparm(cap, code,0,0,0,0,0,0,0,0)
+#define CALL_TPARM(cap,code) tparm(cap, (long) code, 0L,0L,0L,0L,0L,0L,0L,0L)
 #else
 #define CALL_TPARM(cap,code) tgoto(cap, 0, code)
 #endif
