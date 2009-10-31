@@ -3,7 +3,7 @@
  * paragraph at a time.  There are all sorts of word mode commands.  If I
  * do any sentence mode commands, they are likely to be put in this file.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/word.c,v 1.95 2009/10/15 11:32:11 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/word.c,v 1.96 2009/10/31 13:38:30 tom Exp $
  *
  */
 
@@ -737,15 +737,15 @@ wordcount(int f GCC_UNUSED, int n GCC_UNUSED)
     int ch;			/* current character to scan */
     int wordflag;		/* are we in a word now? */
     int lastflag;		/* were we just in a word? */
-    long nwhite;		/* total # of blanks */
+    B_COUNT nwhite;		/* total # of blanks */
     long nwords;		/* total # of words */
-    long nchars;		/* total number of chars */
+    B_COUNT nchars;		/* total number of chars */
     int nlines;			/* total number of lines in region */
     double avgch;		/* average number of chars/word */
     int status;			/* status return code */
     REGION region;		/* region to look at */
     const char *ending = get_record_sep(bp);
-    int len_rs = len_record_sep(bp);
+    B_COUNT len_rs = (B_COUNT) len_record_sep(bp);
 
     /* make sure we have a region to count */
     if ((status = getregion(bp, &region)) != TRUE) {
@@ -794,7 +794,7 @@ wordcount(int f GCC_UNUSED, int n GCC_UNUSED)
     else
 	avgch = 0.0;
 
-    mlforce("lines %d, words %ld, chars %ld, avg chars/word %f",
+    mlforce("lines %d, words %ld, chars %lu, avg chars/word %f",
 	    nlines, nwords, nchars + nwhite, avgch);
 
     return (TRUE);

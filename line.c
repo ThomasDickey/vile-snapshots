@@ -10,7 +10,7 @@
  * editing must be being displayed, which means that "b_nwnd" is non zero,
  * which means that the dot and mark values in the buffer headers are nonsense.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.204 2009/05/18 00:13:12 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.206 2009/10/31 13:16:23 tom Exp $
  *
  */
 
@@ -21,8 +21,10 @@
 #define poison(p,s)
 #endif
 
-#include	"estruct.h"
-#include	"edef.h"
+#include "estruct.h"
+#include "edef.h"
+
+#include <assert.h>
 
 #define roundlenup(n) ((n+NBLOCK-1) & (UINT)~(NBLOCK-1))
 
@@ -696,11 +698,11 @@ ldel_bytes(B_COUNT nbytes, int kflag)
     char *cp2;
     LINE *dotp;
     LINE *nlp;
-    int doto;
+    C_NUM doto;
     B_COUNT uchunk;
     long schunk;
     WINDOW *wp;
-    int i;
+    C_NUM i;
     int status = TRUE;
     B_COUNT len_rs = (B_COUNT) len_record_sep(curbp);
 
@@ -712,7 +714,10 @@ ldel_bytes(B_COUNT nbytes, int kflag)
 	    status = FALSE;
 	    break;
 	}
-	uchunk = (B_COUNT) (llength(dotp) - doto);	/* Size of chunk.  */
+	if (doto > llength(dotp))
+	    uchunk = 0;
+	else
+	    uchunk = (B_COUNT) (llength(dotp) - doto);	/* Size of chunk.  */
 	if (uchunk > nbytes)
 	    uchunk = nbytes;
 
@@ -738,7 +743,11 @@ ldel_bytes(B_COUNT nbytes, int kflag)
 		lremove(curbp, nlp);
 		lines_deleted++;
 		TossToUndo(nlp);
-		nbytes -= line_length(nlp);
+		assert((B_COUNT) line_length(nlp) <= nbytes);
+		if (line_length(nlp) > nbytes)
+		    nbytes = 0;
+		else
+		    nbytes -= line_length(nlp);
 		nlp = lforw(dotp);
 	    }
 	    if (status != TRUE)
@@ -814,6 +823,8 @@ ldel_bytes(B_COUNT nbytes, int kflag)
 	    break;
 	}
 #endif
+	assert(uchunk != 0);
+	assert(uchunk <= nbytes);
 	nbytes -= uchunk;
     }
     return (status);

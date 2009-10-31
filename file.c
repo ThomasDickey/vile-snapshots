@@ -5,7 +5,7 @@
  * reading and writing of the disk are
  * in "fileio.c".
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.432 2009/10/06 01:02:14 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.433 2009/10/31 13:57:08 tom Exp $
  */
 
 #include "estruct.h"
@@ -823,12 +823,12 @@ writelinesmsg(char *fn, int nline, B_COUNT nchar)
 	chars_len = (int) strlen(strchars);
 	outlen = (term.cols - 1) -
 	    (
-		(sizeof(WRITE_FILE_FMT) - 13) +
-		strlen(action) +
+		(int) (sizeof(WRITE_FILE_FMT) - 13) +
+		(int) strlen(action) +
 		lines_len +
 		chars_len +
-		strlen(PLURAL(nline)) +
-		strlen(PLURAL(nchar))
+		(int) strlen(PLURAL(nline)) +
+		(int) strlen(PLURAL(nchar))
 	    );
 	mlforce(WRITE_FILE_FMT,
 		action,
@@ -1361,7 +1361,7 @@ guess_recordseparator(BUFFER *bp, UCHAR * buffer, B_COUNT length, L_NUM * lines)
 	} else if (global_b_val(MDDOS)) {
 	    if ((bp->b_flag & BFEXEC) != 0) {
 		result = (count_dos && !count_unix) ? RS_CRLF : RS_LF;
-	    } else if (check_percent_crlf(bp, count_dos, count_unix)) {
+	    } else if (check_percent_crlf(bp, (int) count_dos, (int) count_unix)) {
 		result = RS_CRLF;
 	    }
 	} else if (global_b_val(VAL_RECORD_SEP) == RS_CR
@@ -1370,12 +1370,12 @@ guess_recordseparator(BUFFER *bp, UCHAR * buffer, B_COUNT length, L_NUM * lines)
 	}
 	if (buffer[length - 1] != '\n')
 	    ++count_lf;
-	*lines = (result == RS_CR) ? count_cr : count_lf;
+	*lines = (L_NUM) ((result == RS_CR) ? count_cr : count_lf);
     } else if (count_cr != 0) {
 	result = RS_CR;
 	if (buffer[length - 1] != '\r')
 	    ++count_cr;
-	*lines = count_cr;
+	*lines = (L_NUM) count_cr;
     } else {
 	*lines = 1;		/* we still need a line, to allocate data */
 	result = RS_SYS_DEFAULT;
@@ -1495,7 +1495,7 @@ quickreadf(BUFFER *bp, int *nlinep)
 	}
 
 	/* allocate all of the line structs we'll need */
-	if ((bp->b_LINEs = typeallocn(LINE, nlines)) == NULL) {
+	if ((bp->b_LINEs = typeallocn(LINE, (unsigned) nlines)) == NULL) {
 	    free(buffer);
 	    ffrewind();
 	    rc = FIOMEM;
@@ -1517,10 +1517,10 @@ quickreadf(BUFFER *bp, int *nlinep)
 #if !SMALLER
 		lp->l_number = ++lineno;
 #endif
-		llength(lp) = next - offset - 1;
+		llength(lp) = (C_NUM) (next - offset - 1);
 		if (!b_val(bp, MDNEWLINE) && next == length)
 		    llength(lp) += 1;
-		lp->l_size = llength(lp) + 1;
+		lp->l_size = (size_t) (llength(lp) + 1);
 		lvalue(lp) = (char *) (buffer + offset);
 		set_lforw(lp, lp + 1);
 		if (lp != bp->b_LINEs)
@@ -1642,8 +1642,8 @@ readin(char *fname, int lockfl, BUFFER *bp, int mflg)
 	    int outlen;
 	    char tmp[NFILEN];
 
-	    outlen = (term.cols - 1) -
-		(sizeof(READING_FILE_FMT) - 3);
+	    outlen = ((term.cols - 1) -
+		      (int) (sizeof(READING_FILE_FMT) - 3));
 	    mlforce(READING_FILE_FMT,
 		    path_trunc(fname, outlen, tmp, sizeof(tmp)));
 #undef READING_FILE_FMT
@@ -1885,7 +1885,7 @@ slowreadf(BUFFER *bp, int *nlinep)
 	TRACE(("...try looking for UTF-8\n"));
 	for_each_line(lp, bp) {
 	    if (llength(lp) > 0) {
-		check = check_utf8((UCHAR *) lvalue(lp), llength(lp));
+		check = check_utf8((UCHAR *) lvalue(lp), (B_COUNT) llength(lp));
 		if (check == FALSE) {
 		    found = FALSE;
 		} else if (check == TRUE) {
@@ -2035,8 +2035,11 @@ unqname(char *name)
 	/* that is, put suffix at end if it fits, or else
 	   overwrite some of the name to make it fit */
 	/* the suffix is in "base 36" */
-	suffixlen = format_int(suffixbuf + 1, ++i, 36) + 1;
-	k = NBUFN - 1 - suffixlen;
+	suffixlen = format_int(suffixbuf + 1, (UINT)++ i, 36) + 1;
+	if ((suffixlen + 2) >= NBUFN)
+	    break;
+
+	k = (size_t) (NBUFN - 1 - suffixlen);
 	if (j < k)
 	    k = j;
 	if (adjust) {
@@ -2063,8 +2066,10 @@ filewrite(int f, int n)
 
     if (more_named_cmd()) {
 	if ((s = mlreply_file("Write to file: ", (TBUFF **) 0,
-			      forced ? FILEC_WRITE2
-			      : FILEC_WRITE, fname)) != TRUE)
+			      (UINT) (forced
+				      ? FILEC_WRITE2
+				      : FILEC_WRITE),
+			      fname)) != TRUE)
 	    return s;
     } else
 	(void) vl_strncpy(fname, bp->b_fname, sizeof(fname));
@@ -2143,7 +2148,7 @@ actually_write(REGION * rp, char *fn, int msgf, BUFFER *bp, int forced, int enco
     int nline;
     B_COUNT nchar;
     const char *ending = get_record_sep(bp);
-    int len_rs = len_record_sep(bp);
+    B_COUNT len_rs = (B_COUNT) len_record_sep(bp);
     C_NUM offset = rp->r_orig.o;
 
     /* this is adequate as long as we cannot write parts of lines */
@@ -2206,7 +2211,7 @@ actually_write(REGION * rp, char *fn, int msgf, BUFFER *bp, int forced, int enco
 #endif
 
     /* first (maybe partial) line and succeeding whole lines */
-    while ((rp->r_size + offset) >= line_length(lp)) {
+    while ((rp->r_size + (B_COUNT) offset) >= (B_COUNT) line_length(lp)) {
 	C_NUM len = llength(lp) - offset;
 	char *text = lvalue(lp) + offset;
 
@@ -2246,7 +2251,7 @@ actually_write(REGION * rp, char *fn, int msgf, BUFFER *bp, int forced, int enco
 
     /* last line (fragment) */
     if (rp->r_size > 0) {
-	if ((s = FFPUTLINE(bp, lvalue(lp), rp->r_size, NULL)) != FIOSUC)
+	if ((s = FFPUTLINE(bp, lvalue(lp), (int) rp->r_size, NULL)) != FIOSUC)
 	    goto out;
 	nchar += rp->r_size;
 	++nline;		/* it _looks_ like a line */
@@ -2309,7 +2314,7 @@ file_protection(char *fn)
     if (!isShellOrPipe(fn)) {
 	if (file_stat(fn, &sb) == 0) {
 	    if (isFileMode(sb.st_mode))
-		result = sb.st_mode & 0777;
+		result = (int) (sb.st_mode & 0777);
 	}
     }
     return result;
@@ -2373,12 +2378,12 @@ writereg(REGION * rp,
 #endif
 			if (!ffaccess(fn, FL_WRITEABLE)
 			    && (protection = file_protection(fn)) >= 0) {
-			    chmod(SL_TO_BSL(fn), protection | 0600);
+			    chmod(SL_TO_BSL(fn), (mode_t) (protection | 0600));
 			}
 		    }
 		    status = actually_write(rp, fn, msgf, bp, forced, encoded);
 		    if (protection > 0)
-			chmod(SL_TO_BSL(fn), protection);
+			chmod(SL_TO_BSL(fn), (mode_t) protection);
 #if SYS_WINNT
 		    if (write_acl_added)
 			(void) w32_remove_write_acl(fn, prev_access_mask);
@@ -2477,7 +2482,7 @@ kwrite(char *fn, int msgf)
     B_COUNT nchar;
     int s;
     int c;
-    int i;
+    unsigned i;
     char *sp;			/* pointer into string to insert */
 
     /* make sure there is something to put */
@@ -2726,7 +2731,7 @@ create_save_dir(char *dirnam)
 
     for (; n < TABLESIZE(tbl); n++) {
 	if (is_directory(tbl[n])) {
-	    int omask = vl_umask(0077);
+	    mode_t omask = vl_umask(0077);
 	    (void) pathcat(dirnam, tbl[n], "vileDXXXXXX");
 
 	    /* on failure, keep going */
@@ -2888,7 +2893,7 @@ imdying(int ACTUAL_SIG_ARGS)
 
 	    cp = lsprintf(cp, ") | %s %s", *mailcmdp, np);
 
-	    IGNORE_RC( system(cmd));
+	    IGNORE_RC(system(cmd));
 	}
     }
     term.cursorvis(TRUE);	/* ( this might work ;-) */
