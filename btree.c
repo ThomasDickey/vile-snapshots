@@ -1,5 +1,5 @@
 /*
- * $Id: btree.c,v 1.24 2008/01/13 16:13:16 tom Exp $
+ * $Id: btree.c,v 1.25 2009/10/31 17:02:34 tom Exp $
  * Copyright 1997-2006,2008 by Thomas E. Dickey
  *
  * Maintains a balanced binary tree (aka AVL tree) of unspecified nodes.  The
@@ -699,7 +699,7 @@ btree_parray(BI_TREE * tree, char *name, size_t len)
 
     if (top != 0) {
 	int i = 0;
-	size_t cnt = btree_pcount(top, name, len);
+	size_t cnt = (size_t) btree_pcount(top, name, len);
 	beginDisplay();
 	nptr = castalloc(const char *, sizeof(const char *) * (cnt + 1));
 	endofDisplay();

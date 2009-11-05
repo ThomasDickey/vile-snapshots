@@ -13,7 +13,7 @@
  * vile.  The file api.c (sometimes) provides a middle layer between
  * this interface and the rest of vile.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.118 2009/08/17 09:41:04 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.119 2009/10/31 17:12:03 tom Exp $
  */
 
 #ifdef __GNUC__
@@ -402,7 +402,7 @@ getVW(SV *sv, char **croakmessage_ptr)
 {
     VileWin vw = 0;
     if (sv_isa(sv, "Vile::Window")) {
-	vw = id2win((int)SvIV((SV*)SvRV(sv)));
+	vw = id2win((ULONG)SvIV((SV*)SvRV(sv)));
 	if (!vw) {
 	    *croakmessage_ptr = "window no longer exists";
 	}

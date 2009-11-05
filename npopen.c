@@ -1,7 +1,7 @@
 /*	npopen:  like popen, but grabs stderr, too
  *		written by John Hutchinson, heavily modified by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/npopen.c,v 1.97 2009/10/06 01:02:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/npopen.c,v 1.98 2009/10/31 17:03:26 tom Exp $
  *
  */
 
@@ -283,7 +283,7 @@ softfork(void)
     /* Try & fork 5 times, backing off 1, 2, 4 .. seconds each try */
     int fpid;
     int tries = 5;
-    unsigned slp = 1;
+    int slp = 1;
 
     while ((fpid = fork()) < 0) {
 	if (--tries == 0)

@@ -1,7 +1,7 @@
 /*
  * debugging support -- tom dickey.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.93 2009/10/22 23:51:10 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.94 2009/11/04 23:46:49 tom Exp $
  *
  */
 
@@ -333,13 +333,18 @@ alloc_visible(size_t need)
 static char *
 my_vischr(char *buffer, int ch)
 {
-    ch = CharOf(ch);
     if (ch == 127) {
 	strcpy(buffer, "^?");
     } else if (ch < 32) {
 	sprintf(buffer, "^%c", ch | '@');
+#if OPT_MULTIBYTE
+    } else if (ch >= 256) {
+	sprintf(buffer, "\\u%04x", ch);
+#endif
     } else if (ch >= 128) {
-	sprintf(buffer, "\\%03o", ch);
+	sprintf(buffer, "\\x%02x", ch);
+    } else if (ch == '\\') {
+	sprintf(buffer, "\\\\");
     } else {
 	buffer[0] = (char) ch;
 	buffer[1] = '\0';
@@ -388,7 +393,7 @@ visible_buff(const char *buffer, int length, int eos)
     result = alloc_visible(need);
 
     for (j = 0; j < length; j++) {
-	int c = buffer[j] & 0xff;
+	int c = CharOf(buffer[j]);
 	if (eos && !c) {
 	    break;
 	} else {

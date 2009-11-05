@@ -46,7 +46,7 @@
  * vile will choose some appropriate fallback (such as underlining) if
  * italics are not available.
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/manfilt.c,v 1.47 2009/10/07 09:20:02 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/manfilt.c,v 1.50 2009/11/03 00:08:22 tom Exp $
  *
  */
 
@@ -261,7 +261,7 @@ utf8_putc(int source)
     /* FIXME - this is cut/paste from vl_conv_to_utf8() */
 #define CH(n) CharOf((source) >> ((n) * 8))
     int rc = 0;
-    char target[10];
+    unsigned char target[10];
 
     if (source <= 0x0000007f)
 	rc = 1;
@@ -321,7 +321,7 @@ utf8_putc(int source)
 	break;
     }
     target[rc] = 0;
-    return vl_fputs(target, stdout);
+    return vl_fputs((char *) target, stdout);
 #undef CH
 }
 #endif /* OPT_LOCALE */
@@ -397,8 +397,8 @@ extend_line(void)
 static void
 put_cell(int c, int level, int ident, int attrs)
 {
-    int col;
-    int len;
+    size_t col;
+    size_t len;
     CHARCELL *p, *q;
 
     if (cur_line == 0)
@@ -428,7 +428,7 @@ put_cell(int c, int level, int ident, int attrs)
 	}
     }
 
-    p->c_value = c;
+    p->c_value = (unsigned) c;
     p->c_level = (char) level;
     p->c_ident = (char) ident;
 
@@ -598,6 +598,7 @@ static void
 flush_line(void)
 {
     size_t col;
+    size_t ccol;
     int ref_code;
     int tst_code;
     int counter;
@@ -616,13 +617,13 @@ flush_line(void)
 		tst_code = cell_code(l, col);
 		if (tst_code != ref_code) {
 		    ref_code = tst_code;
-		    for (counter = 1; counter + col < l->l_used; counter++) {
-			tst_code = cell_code(l, col + counter);
+		    for (ccol = col + 1; ccol < l->l_used; ccol++) {
+			tst_code = cell_code(l, ccol);
 			if (tst_code != ref_code)
 			    break;
 		    }
 		    if (ref_code != ATR_NORMAL) {
-			printf("%c%d", CNTL_A, counter);
+			printf("%c%u", CNTL_A, ccol - col);
 			if (ref_code & ATR_BOLD)
 			    my_putc('B');
 			if (ref_code & ATR_ITAL)
@@ -637,7 +638,7 @@ flush_line(void)
 		    }
 		}
 	    }
-	    my_putc(l->l_cell[col].c_value);
+	    my_putc((int) l->l_cell[col].c_value);
 
 	    while ((p = l->l_cell[col].link) != 0) {
 		l->l_cell[col].link = p->link;

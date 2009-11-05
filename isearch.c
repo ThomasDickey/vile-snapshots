@@ -7,7 +7,7 @@
  *
  * original author: D. R. Banks 9-May-86
  *
- * $Header: /users/source/archives/vile.vcs/RCS/isearch.c,v 1.63 2008/10/15 20:08:34 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/isearch.c,v 1.64 2009/10/31 17:01:47 tom Exp $
  *
  */
 
@@ -60,7 +60,7 @@ scanmore(			/* search forward or back for a pattern */
 		regionshape = rgn_EXACT;
 		save_MK = MK;
 		MK.l = DOT.l;
-		MK.o = DOT.o + tb_length(patrn);
+		MK.o = DOT.o + (C_NUM) tb_length(patrn);
 		videoattribute = (VIDEO_ATTR) * attrp;
 		videoattribute |= VOWN_MATCHES;
 		(void) attributeregion();

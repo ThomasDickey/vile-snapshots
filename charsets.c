@@ -1,5 +1,5 @@
 /*
- * $Id: charsets.c,v 1.66 2009/02/27 00:32:38 tom Exp $
+ * $Id: charsets.c,v 1.67 2009/10/31 15:50:17 tom Exp $
  *
  * see
  http://msdn.microsoft.com/library/default.asp?url=/library/en-us/intl/unicode_42jv.asp
@@ -354,7 +354,7 @@ dump_as_utfXX(BUFFER *bp, const char *buf, int nbuf, const char *ending)
     if (mp != 0 && mp->size > 1) {
 	unsigned j = 0;
 	unsigned k = 0;
-	unsigned need = nbuf + strlen(ending);
+	unsigned need = (UINT) nbuf + strlen(ending);
 	unsigned lend = strlen(ending);
 
 	allow_encoder(bp, need * mp->size);
@@ -362,10 +362,10 @@ dump_as_utfXX(BUFFER *bp, const char *buf, int nbuf, const char *ending)
 	while (j < (unsigned) nbuf) {
 	    int skip = vl_conv_to_utf32(bp->decode_utf_buf + k++,
 					buf + j,
-					nbuf - j);
+					(UINT) nbuf - j);
 	    if (skip == 0)
 		goto finish;
-	    j += skip;
+	    j += (UINT) skip;
 	}
 	while (*ending != 0) {
 	    int skip = vl_conv_to_utf32(bp->decode_utf_buf + k++,
@@ -409,7 +409,7 @@ dump_as_utfXX(BUFFER *bp, const char *buf, int nbuf, const char *ending)
 		break;
 	    }
 	}
-	rc = j;
+	rc = (int) j;
     }
   finish:
     return rc;
@@ -454,7 +454,7 @@ load_as_utf8(BUFFER *bp, LINE *lp)
     if (mp != 0 && mp->size > 1) {
 	int pass;
 	unsigned j, k;
-	unsigned need = llength(lp);
+	unsigned need = (UINT) llength(lp);
 	unsigned used;
 
 	TRACE2(("load_as_utf8:%d:%s\n", need, lp_visible(lp)));
@@ -480,23 +480,23 @@ load_as_utf8(BUFFER *bp, LINE *lp)
 			break;
 		    case bom_UTF16LE:
 			bp->decode_utf_buf[k] = (CH(j)
-						 + (CH(j + 1) << 8));
+						 + (UINT) (CH(j + 1) << 8));
 			break;
 		    case bom_UTF16BE:
 			bp->decode_utf_buf[k] = (CH(j + 1)
-						 + (CH(j) << 8));
+						 + (UINT) (CH(j) << 8));
 			break;
 		    case bom_UTF32LE:
 			bp->decode_utf_buf[k] = (CH(j + 0)
-						 + (CH(j + 1) << 8)
-						 + (CH(j + 2) << 16)
-						 + (CH(j + 3) << 24));
+						 + (UINT) (CH(j + 1) << 8)
+						 + (UINT) (CH(j + 2) << 16)
+						 + (UINT) (CH(j + 3) << 24));
 			break;
 		    case bom_UTF32BE:
 			bp->decode_utf_buf[k] = (CH(j + 3)
-						 + (CH(j + 2) << 8)
-						 + (CH(j + 1) << 16)
-						 + (CH(j + 0) << 24));
+						 + (UINT) (CH(j + 2) << 8)
+						 + (UINT) (CH(j + 1) << 16)
+						 + (UINT) (CH(j + 0) << 24));
 			break;
 		    }
 		    j += mp->size;
@@ -511,7 +511,7 @@ load_as_utf8(BUFFER *bp, LINE *lp)
 						 used + 1 - j);
 			if (buffer != 0)
 			    buffer += nn;
-			k += nn;
+			k += (UINT) nn;
 		    }
 		    if (pass == 1) {
 			TRACE2(("need %d, have %d\n", k, lp->l_size));
@@ -530,9 +530,9 @@ load_as_utf8(BUFFER *bp, LINE *lp)
 			    ltextfree(lp, bp);
 			    lvalue(lp) = ntext;
 			    lp->l_size = k;
-			    llength(lp) = k;
+			    llength(lp) = (int) k;
 			} else {
-			    llength(lp) = k;
+			    llength(lp) = (int) k;
 			}
 		    }
 		}
@@ -604,7 +604,7 @@ remove_crlf_nulls(BUFFER *bp, UCHAR * buffer, B_COUNT * length)
 		else if (!memcmp(mark_lf, buffer + src, marklen))
 		    skip = '\n';
 		if (skip) {
-		    buffer[dst++] = skip;
+		    buffer[dst++] = (UCHAR) skip;
 		    skip = 0;
 		} else {
 		    memcpy(buffer + dst, buffer + src, marklen);
@@ -628,7 +628,7 @@ riddled_buffer(const BOM_TABLE * mp, UCHAR * buffer, B_COUNT length)
 {
     int result = 0;
     B_COUNT total = 0;
-    int offset = 0;
+    unsigned offset = 0;
     unsigned j, k;
 
     if (mp->size && !(mp->size % 2)) {
@@ -843,7 +843,7 @@ deduce_charset(BUFFER *bp, UCHAR * buffer, B_COUNT * length, int always)
 	    int check = riddled_buffer(&bom_table[n], buffer, *length);
 	    if (check > match) {
 		match = check;
-		found = n;
+		found = (int) n;
 	    }
 	}
 	if (found > 0 && match >= b_val(bp, VAL_PERCENT_UTF8)) {
@@ -885,13 +885,13 @@ deduce_charset(BUFFER *bp, UCHAR * buffer, B_COUNT * length, int always)
 int
 check_utf8(UCHAR * buffer, B_COUNT length)
 {
-    unsigned n;
+    B_COUNT n;
     int check = TRUE;
     int skip = 0;
     int found;
     UINT target;
 
-    for (n = found = 0; n < length - 1; n += skip) {
+    for (n = 0, found = 0; n < length - 1; n += (B_COUNT) skip) {
 	skip = vl_conv_to_utf32(&target,
 				(char *) (buffer + n),
 				length - n);
@@ -930,7 +930,7 @@ write_bom(BUFFER *bp)
     int status = FIOSUC;
 
     if ((mp = find_mark_info(b_val(bp, VAL_BYTEORDER_MARK))) != 0) {
-	status = ffputline((const char *) mp->mark, mp->size, NULL);
+	status = ffputline((const char *) mp->mark, (int) mp->size, NULL);
     }
     return status;
 }

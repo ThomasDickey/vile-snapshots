@@ -1,4 +1,4 @@
-MANIFEST for vile, version v9_7w2
+MANIFEST for vile, version v9_7w3
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 AUTHORS                         list of authors, with nicknames in CHANGES
@@ -169,6 +169,7 @@ doc/modes.doc                   overview of modes/majormodes
 doc/ncu-indent                  copy of ncu-indent
 doc/oleauto.doc                 document Winvile OLE
 doc/perl.doc                    notes about perl interface to vile
+doc/vile-hlp.html               html version of help-file
 doc/visvile.doc                 document visvile.dll
 filters                         subdirectory
 filters/ada-filt.l              ada syntax highlighter for vile

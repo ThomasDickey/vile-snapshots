@@ -1,7 +1,7 @@
 /*	tcap:	Unix V5, V7 and BS4.2 Termcap video driver
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.180 2009/10/29 23:38:30 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.181 2009/10/31 21:52:06 tom Exp $
  *
  */
 
@@ -200,9 +200,11 @@ tcap_open(void)
     if (already_open) {
 	if (i_was_closed) {
 	    i_was_closed = FALSE;
+#if OPT_TITLE
 	    if (auto_set_title) {
 		term.set_title(tb_values(current_title));
 	    }
+#endif
 	}
 	returnVoid();
     }

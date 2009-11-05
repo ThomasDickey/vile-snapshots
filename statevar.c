@@ -3,7 +3,7 @@
  *	for getting and setting the values of the vile state variables,
  *	plus helper utility functions.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.136 2009/10/04 13:44:30 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.137 2009/10/31 16:59:44 tom Exp $
  */
 
 #include	"estruct.h"
@@ -96,6 +96,19 @@ any_ro_INT(TBUFF **rp, const char *vp, int value)
 {
     if (rp) {
 	render_int(rp, value);
+	return TRUE;
+    } else if (vp) {
+	return ABORT;		/* read-only */
+    } else {
+	return FALSE;
+    }
+}
+
+static int
+any_ro_ULONG(TBUFF **rp, const char *vp, ULONG value)
+{
+    if (rp) {
+	render_ulong(rp, value);
 	return TRUE;
     } else if (vp) {
 	return ABORT;		/* read-only */
@@ -504,7 +517,7 @@ var_BCHARS(TBUFF **rp, const char *vp)
 {
     bsizes(curbp);
     return (valid_buffer(curbp)
-	    ? any_ro_INT(rp, vp, curbp->b_bytecount)
+	    ? any_ro_ULONG(rp, vp, curbp->b_bytecount)
 	    : FALSE);
 }
 
@@ -717,7 +730,7 @@ int
 var_CURCHAR(TBUFF **rp, const char *vp)
 {
     if (rp) {
-	render_long(rp, vl_getcchar() + 1);
+	render_ulong(rp, vl_getcchar() + 1);
 	return TRUE;
     } else if (vp && valid_buffer(curbp)) {
 	return gotochr(TRUE, strtol(vp, 0, 0));
@@ -1604,7 +1617,7 @@ var_BUF_ENCODING(TBUFF **rp, const char *vp GCC_UNUSED)
 	int code = (valid_buffer(curbp)
 		    ? b_val(curbp, VAL_FILE_ENCODING)
 		    : enc_AUTO);
-	char *value = 0;
+	const char *value = 0;
 
 	switch ((ENC_CHOICES) (code)) {
 	case enc_POSIX:

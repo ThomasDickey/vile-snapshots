@@ -2,7 +2,7 @@
  *	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.352 2009/10/10 00:29:00 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.353 2009/10/31 16:52:01 tom Exp $
  *
  */
 
@@ -1301,7 +1301,7 @@ update_scrollbar_sizes(void)
 static void
 draw_thumb(Widget w, int top, int bot, int dofill)
 {
-    UINT length = bot - top;
+    UINT length = (UINT) (bot - top);
     if (bot < 0 || top < 0 || bot <= top)
 	return;
 
@@ -3702,7 +3702,7 @@ query_font(TextWindow tw, const char *fname)
 }
 
 static XFontStruct *
-alternate_font(char *weight, char *slant)
+alternate_font(const char *weight, const char *slant)
 {
     char *newname, *np, *op;
     int cnt;
@@ -3727,7 +3727,7 @@ alternate_font(char *weight, char *slant)
 #define SUBST_FIELD(field)				\
     do {						\
 	if ((field) != NULL) {				\
-	    char *fp = (field);				\
+	    const char *fp = (field);			\
 	    if (nocase_eq(*fp, *op))			\
 		goto done;				\
 	    while ((*np++ = *fp++))			\
@@ -6384,7 +6384,7 @@ x_key_press(Widget w GCC_UNUSED,
 	TRACE(("modifier %#x\n", modifier));
 
 	if (num == 1 && (ev->xkey.state & Mod1Mask))
-	    buffer[0] |= HIGHBIT;
+	    buffer[0] |= (char) HIGHBIT;
 
 	/* FIXME: Should do something about queue full conditions */
 	for (i = 0; i < num && !kqfull(cur_win); i++) {
@@ -6795,7 +6795,7 @@ xim_real_init(void)
     XIMStyles *xim_styles = NULL;
     Bool found;
     static struct {
-	char *name;
+	const char *name;
 	unsigned long code;
     } known_style[] = {
 	{
