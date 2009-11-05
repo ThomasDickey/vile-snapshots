@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.495 2009/07/20 08:57:07 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.496 2009/11/05 09:21:41 tom Exp $
  *
  */
 
@@ -658,6 +658,13 @@ vtlistc(WINDOW *wp, const char *src, unsigned limit)
 #endif
 		} else if (vtcol >= lastcol) {
 		    VideoText(vp)[lastcol - 1] = MRK_EXTEND_RIGHT[0];
+		} else if (vtcol < 0) {
+		    /* have to account for split-characters... */
+		    while (cells-- > 0 && vtcol <= lastcol) {
+			if (vtcol >= 0)
+			    VideoText(vp)[vtcol] = ' ';
+			++vtcol;
+		    }
 		}
 		return rc;
 	    } else {

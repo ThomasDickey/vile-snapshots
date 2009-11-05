@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.681 2009/10/23 23:09:28 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.683 2009/10/31 17:12:50 tom Exp $
  *
  */
 
@@ -436,6 +436,7 @@ extern char * mktrimmed (char *str);
 extern char * render_boolean (TBUFF **rp, int i);
 extern char * render_int (TBUFF **rp, int i);
 extern char * render_long (TBUFF **rp, long i);
+extern char * render_ulong (TBUFF **rp, ULONG i);
 extern char * skip_space_tab(char *src);
 extern const char * skip_cblanks (const char *str);
 extern const char * skip_cnumber (const char *str);
@@ -1522,8 +1523,8 @@ extern BUFFER * pop_fake_win(WINDOW *oldwp, BUFFER *oldbp);
 #endif
 
 #if OPT_PERL
-extern int win2id (WINDOW *wp);
-extern WINDOW * id2win (int id);
+extern ULONG win2id (WINDOW *wp);
+extern WINDOW * id2win (ULONG id);
 extern WINDOW * index2win (int idx);
 #endif
 

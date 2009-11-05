@@ -1,5 +1,5 @@
 /*
- * $Id: eightbit.c,v 1.48 2009/02/23 01:28:35 tom Exp $
+ * $Id: eightbit.c,v 1.49 2009/10/31 15:43:08 tom Exp $
  *
  * Maintain "8bit" file-encoding mode by converting incoming UTF-8 to single
  * bytes, and providing a function that tells vile whether a given Unicode
@@ -575,7 +575,7 @@ cmp_rindex(const void *a, const void *b)
 {
     const RINDEX_8BIT *p = (const RINDEX_8BIT *) a;
     const RINDEX_8BIT *q = (const RINDEX_8BIT *) b;
-    return p->code - q->code;
+    return (int) p->code - (int) q->code;
 }
 
 #if OPT_ICONV_FUNCS
@@ -584,7 +584,7 @@ cmp_rindex(const void *a, const void *b)
 static iconv_t mb_desc = NO_ICONV;
 
 static int
-try_encoding(char *from, char *to)
+try_encoding(const char *from, const char *to)
 {
     mb_desc = iconv_open(to, from);
     return (mb_desc != NO_ICONV);
@@ -622,7 +622,7 @@ initialize_table_8bit_utf8(void)
 	char *op = output;
 	size_t in_bytes = 1;
 	size_t out_bytes = sizeof(output);
-	input[0] = n;
+	input[0] = (char) n;
 	input[1] = 0;
 	converted = iconv(mb_desc, &ip, &in_bytes, &op, &out_bytes);
 	if (converted == (size_t) (-1)) {
@@ -721,10 +721,10 @@ vl_init_8bit(const char *wide, const char *narrow)
     for (n = 0, fixed_up = 0; n < fixup; ++n) {
 	if (table_8bit_utf8[n].text == 0) {
 	    char temp[10];
-	    int len = vl_conv_to_utf8((UCHAR *) temp, n, sizeof(temp));
+	    int len = vl_conv_to_utf8((UCHAR *) temp, (UINT) n, sizeof(temp));
 
 	    temp[len] = EOS;
-	    table_8bit_utf8[n].code = n;
+	    table_8bit_utf8[n].code = (UINT) n;
 	    table_8bit_utf8[n].text = strmalloc(temp);
 	    if (len)
 		++fixed_up;
@@ -789,7 +789,7 @@ vl_mb_is_8bit(int code)
     RINDEX_8BIT *p;
     RINDEX_8BIT key;
 
-    key.code = code;
+    key.code = (UINT) code;
     p = (RINDEX_8BIT *) bsearch(&key,
 				rindex_8bit,
 				N_chars,
@@ -861,7 +861,7 @@ vl_mb_to_utf8(int code)
     RINDEX_8BIT *p;
     RINDEX_8BIT key;
 
-    key.code = code;
+    key.code = (UINT) code;
     p = (RINDEX_8BIT *) bsearch(&key,
 				rindex_8bit,
 				N_chars,

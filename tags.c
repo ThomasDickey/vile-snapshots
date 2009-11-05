@@ -7,7 +7,7 @@
  *
  * Copyright (c) 1990, 1995-2007 by Paul Fox and Thomas E. Dickey
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tags.c,v 1.138 2007/11/25 22:05:07 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tags.c,v 1.139 2009/10/31 17:09:31 tom Exp $
  *
  */
 #include "estruct.h"
@@ -197,7 +197,7 @@ store_tag(LINE *lp)
     int c;
 
     if (llength(lp) > 0) {
-	len = llength(lp);
+	len = (size_t) llength(lp);
 	for (got = 0; got < len; got++) {
 	    if (got >= sizeof(tagname) - 2) {
 		return;		/* ignore super-long identifiers */
@@ -507,7 +507,7 @@ finish_pop(char *fname, L_NUM lineno, C_NUM colno)
 	if (s == TRUE) {
 	    gocol(colno);
 	    if (!sameline(DOT, odot))
-		curwp->w_flag &= ~WFMOVE;
+		curwp->w_flag = (USHORT) (curwp->w_flag & ~WFMOVE);
 	    else
 		curwp->w_lastdot = odot;
 	}

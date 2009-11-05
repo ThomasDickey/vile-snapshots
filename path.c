@@ -2,7 +2,7 @@
  *		The routines in this file handle the conversion of pathname
  *		strings.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.166 2009/05/26 21:25:37 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.167 2009/10/31 15:52:27 tom Exp $
  *
  *
  */
@@ -431,7 +431,7 @@ find_user(const char *name)
 	     * so lookup the current uid, and then lookup
 	     * the name based on that.
 	     */
-	    p = getpwuid((int) getuid());
+	    p = getpwuid((uid_t) getuid());
 	}
 
 	/* if either of the above lookups worked
@@ -1607,7 +1607,7 @@ lengthen_path(char *path)
 #endif
 	len = (int) strlen(temp);
 	temp[len++] = SLASHC;
-	(void) vl_strncpy(temp + len, f, sizeof(temp) - len);
+	(void) vl_strncpy(temp + len, f, sizeof(temp) - (size_t) len);
 	(void) strcpy(path, temp);
     }
 #if OPT_MSDOS_PATH
@@ -2240,7 +2240,7 @@ path_trunc(char *path, int max_path_len, char *trunc_buf, int trunc_buf_len)
 	max_len -= sizeof(">>>") - 1;
 #else
 	strcpy(trunc_buf, "...");
-	max_len -= sizeof("...") - 1;
+	max_len -= (int) sizeof("...") - 1;
 #endif
 	strcat(trunc_buf, path + path_len - max_len);
     }

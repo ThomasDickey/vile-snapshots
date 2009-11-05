@@ -2,7 +2,7 @@
  *	eval.c -- function and variable evaluation
  *	original by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.410 2009/10/06 01:02:09 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.411 2009/10/31 17:00:33 tom Exp $
  *
  */
 
@@ -2144,6 +2144,19 @@ render_boolean(TBUFF **rp, int val)
     return tb_values(tb_scopy(rp, bools[val ? 1 : 0]));
 }
 
+/* represent long integer as string */
+char *
+render_ulong(TBUFF **rp, ULONG i)
+{
+    char *p, *q;
+
+    p = tb_values(tb_alloc(rp, 32));
+    q = lsprintf(p, "%lu", i);
+    if (rp != 0 && q != 0 && p != 0)
+	(*rp)->tb_used = (size_t) (q - p + 1);
+    return p;
+}
+
 #if (SYS_WINNT||SYS_VMS)
 /* unsigned to hex */
 char *
@@ -2246,7 +2259,7 @@ complete_integer(DONE_ARGS)
 
     (void) flags;
     (void) pos;
-    IGNORE_RC( strtol(buf, &tmp, 0));
+    IGNORE_RC(strtol(buf, &tmp, 0));
     if ((tmp != 0) && (tmp != buf) && (*tmp == 0) && isSpace(c)) {
 	if (c != NAMEC)		/* put it back (cf: kbd_complete) */
 	    unkeystroke(c);

@@ -1,5 +1,18 @@
 Changes for vile 9.8 (released ??? ??? ?? ????)
 
+ 20091105 (x)
+	> Tom Dickey:
+	+ add doc/vile-hlp.html, which is a marked-up version of vile.hlp
+	+ change atr2html to not use <pre>, since <font> inside <pre> is
+	  nonstandard.
+	+ add logic for case in vtlistc() when vtcol is negative because the
+	  screen is shifted-right, but the text is nonprinting or
+	  wide-characters.  vtcol was not updated, and the region should be
+	  filled with blanks.
+	+ minor fixes/improvements to ldel_bytes(), based on reports of an
+	  infinite loop for amd64 platforms (FIXME...).
+	+ strict compiler-warning fixes.
+
  20091027 (w)
 	> Tom Dickey:
 	+ fix makefile substitution so AIX make program does not attempt to

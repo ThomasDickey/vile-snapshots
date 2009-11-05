@@ -2,7 +2,7 @@
  * Unix crypt(1)-style interface.
  * Written by T.E.Dickey for vile (March 1999).
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ucrypt.c,v 1.15 2001/02/14 01:39:50 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ucrypt.c,v 1.16 2009/10/31 15:23:16 tom Exp $
  *
  */
 
@@ -11,7 +11,7 @@
 
 #if	OPT_ENCRYPT
 
-#define MASKED(n) ((n)&(N_chars-1))
+#define MASKED(n) ((n) & (N_chars - 1))
 
 #define LEN_CLEAR 8
 #define LEN_CRYPT 13
@@ -55,13 +55,13 @@ vl_encrypt_blok(char *buf, UINT len)
     unsigned c1, c2;
 
     for (c2 = 0; c2 < len; c2++) {
-	c1 = buf[c2];
-	buf[c2] = table2[
-		MASKED(table3[
-		    MASKED(table1[
+	c1 = (UCHAR) buf[c2];
+	buf[c2] = (char) ((UCHAR) table2[
+		MASKED((UCHAR) table3[
+		    MASKED((UCHAR) table1[
 			MASKED(c1+index_1)] + index_2)
 			    ] - index_2)
-			] - index_1;
+			] - index_1);
 	if (++index_1 >= N_chars) {
 	    index_1 = 0;
 	    if(++index_2 >= N_chars)
@@ -179,7 +179,9 @@ int n GCC_UNUSED)
 void
 vl_setup_encrypt(char *encrypted_password)
 {
-    int j, c1, c2, temp;
+    int j;
+    unsigned c1, c2;
+    char temp;
     unsigned mixs;
     long myseed = seed;	/* this isn't a random number, it's a parameter */
 
@@ -194,8 +196,8 @@ vl_setup_encrypt(char *encrypted_password)
 
     for (j = 0; j < N_chars; j++) {
 	myseed = 5 * myseed + encrypted_password[j % LEN_CRYPT];
-	mixs = myseed % 65521;
-	c2   = N_chars-1 - j;
+	mixs = (unsigned) (myseed % 65521);
+	c2   = (unsigned) (N_chars-1 - j);
 	c1   = MASKED(mixs) % (c2+1);
 	mixs >>= 8;
 	temp = table1[c2];
@@ -205,13 +207,13 @@ vl_setup_encrypt(char *encrypted_password)
 	    c1 = MASKED(mixs) % c2;
 	    while (table3[c1] != 0)
 		c1 = (c1+1) % c2;
-	    table3[c2] = c1;
-	    table3[c1] = c2;
+	    table3[c2] = (char) c1;
+	    table3[c1] = (char) c2;
 	}
     }
 
     for(j = 0; j < N_chars; j++)
-	table2[MASKED(table1[j])] = j;
+	table2[MASKED(table1[j])] = (char) j;
 
     index_1 = 0;
     index_2 = 0;

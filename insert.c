@@ -4,7 +4,7 @@
  * Most code probably by Dan Lawrence or Dave Conroy for MicroEMACS
  * Extensions for vile by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/insert.c,v 1.172 2009/01/17 11:39:38 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/insert.c,v 1.173 2009/11/05 10:54:49 tom Exp $
  */
 
 #include	"estruct.h"
@@ -431,7 +431,7 @@ replacechar(int f, int n)
 	if (c == quotec) {
 	    t = s = quote_next(f, n);
 	} else {
-	    (void) ldel_chars(n, FALSE);
+	    (void) ldel_chars((B_COUNT) n, FALSE);
 	    if (isreturn(c)) {
 		if (vi_fix)
 		    s = lnewline();
@@ -567,9 +567,9 @@ ins_anytime(int playback, int cur_count, int max_count, int *splicep)
 	     */
 	    if (global_g_val(GMDINSEXEC)) {
 		if (c == cntl_a) {
-		    c = CTLA | keystroke();
+		    c = (int) (CTLA | keystroke());
 		} else if (c == cntl_x) {
-		    c = CTLX | keystroke();
+		    c = (int) (CTLX | keystroke());
 		}
 	    }
 #if OPT_MOUSE
@@ -1433,7 +1433,7 @@ quote_next(int f, int n)
 	s = ABORT;
     } else {
 	if (insertmode == INSMODE_OVR)
-	    (void) ldel_chars(n, FALSE);
+	    (void) ldel_chars((B_COUNT) n, FALSE);
 	if (c == '\n') {
 	    do {
 		s = lnewline();

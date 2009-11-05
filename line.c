@@ -10,7 +10,7 @@
  * editing must be being displayed, which means that "b_nwnd" is non zero,
  * which means that the dot and mark values in the buffer headers are nonsense.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.206 2009/10/31 13:16:23 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.207 2009/10/31 17:04:56 tom Exp $
  *
  */
 
@@ -1101,7 +1101,7 @@ kdone(void)
 	kregwidth = 0;
 	kcharpending = -1;
     }
-    kregflag &= ~KNEEDCLEAN;
+    kregflag = (USHORT) (kregflag & ~KNEEDCLEAN);
     kbs[ukb].kbflag = kregflag;
     relist_registers();
 }

@@ -3,7 +3,7 @@
  *	Original interface by Otto Lind, 6/3/93
  *	Additional map and map! support by Kevin Buettner, 9/17/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/map.c,v 1.116 2008/11/27 14:03:17 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/map.c,v 1.117 2009/10/31 16:23:47 tom Exp $
  *
  */
 
@@ -71,6 +71,8 @@ MAPREC {
      * by.
      */
 };
+
+#define STRIP_REMAPFLAGS(c) ((c) & (int) ~REMAPFLAGS)
 
 #define MAPF_SYSTIMER	0x01
 #define MAPF_USERTIMER	0x02
@@ -160,7 +162,7 @@ makemaplist(int dummy GCC_UNUSED, void *mapp)
 			remapnote = "   ";
 		    }
 		    bprintf("%s ", remapnote);
-		    bputsn_xcolor(the_lhs_string, depth, XCOLOR_STRING);
+		    bputsn_xcolor(the_lhs_string, (int) depth, XCOLOR_STRING);
 		}
 		bputc('\t');
 		bputsn_xcolor(mapstr, -1, XCOLOR_STRING);
@@ -302,7 +304,7 @@ delfrommap(struct maprec **mpp, const char *ks, int length)
 	if (n < length)
 	    return FALSE;	/* not in map */
 	if (!pass) {
-	    mstk = typecallocn(struct maprec **, depth + 1);
+	    mstk = typecallocn(struct maprec **, (size_t) depth + 1);
 	    if (mstk == 0)
 		return no_memory("delfrommap");
 	}
@@ -445,7 +447,7 @@ maplookup(int c,
 	    if ((c = (*get) ()) < 0)
 		break;
 
-	    itb_append(&unmatched, c & ~REMAPFLAGS);
+	    itb_append(&unmatched, STRIP_REMAPFLAGS(c));
 	    count++;
 
 	} else
@@ -472,7 +474,7 @@ maplookup(int c,
 	    else
 		remapflag = 0;
 	    while (cp > rmp->srv) {
-		(void) itb_append(outp, CharOf(*--cp) | remapflag);
+		(void) itb_append(outp, CharOf(*--cp) | (int) remapflag);
 		TRACE2(("...2 ungetting %#x|%#x\n", CharOf(*cp), remapflag));
 	    }
 	} else {
@@ -811,10 +813,10 @@ mapgetc(void)
 	    mlforce("[Infinite loop detected in %s sequence]",
 		    (insertmode) ? "map!" : "map");
 	    catnap(1000, FALSE);	/* FIXME: be sure message gets out */
-	    return esc_c | NOREMAP;
+	    return esc_c | (int) NOREMAP;
 	}
 	mapgetc_ungotcnt--;
-	return itb_last(mapgetc_ungottenchars) | remapflag;
+	return itb_last(mapgetc_ungottenchars) | (int) remapflag;
     }
     infloopcount = 0;
     return tgetc(mapgetc_raw_flag);
@@ -864,9 +866,9 @@ mapped_c(int remap, int raw)
     c = mapgetc();
 
     if ((c & YESREMAP) == 0 && (!remap || (c & NOREMAP)))
-	return (c & ~REMAPFLAGS);
+	return STRIP_REMAPFLAGS(c);
 
-    c &= ~REMAPFLAGS;
+    c = STRIP_REMAPFLAGS(c);
 
     if (reading_msg_line)
 	mp = 0;
@@ -906,10 +908,10 @@ mapped_c(int remap, int raw)
 	   in the first place.  unless they wanted it quoted.  then we
 	   leave it as is */
 	if (!raw && speckey && !matched) {
-	    c = mapgetc() & ~REMAPFLAGS;
+	    c = STRIP_REMAPFLAGS(mapgetc());
 	    if (c != poundc)
 		dbgwrite("BUG: # problem in mapped_c");
-	    return (mapgetc() & ~REMAPFLAGS) | SPEC;
+	    return (STRIP_REMAPFLAGS(mapgetc()) | (int) SPEC);
 	}
 
 	c = mapgetc();
@@ -922,7 +924,7 @@ mapped_c(int remap, int raw)
     } while (matched &&
 	     ((remap && !(c & NOREMAP)) || (c & YESREMAP)));
 
-    return c & ~REMAPFLAGS;
+    return STRIP_REMAPFLAGS(c);
 
 }
 

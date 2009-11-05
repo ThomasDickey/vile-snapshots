@@ -1,7 +1,7 @@
 /*
  * A terminal driver using the curses library
  *
- * $Header: /users/source/archives/vile.vcs/RCS/curses.c,v 1.41 2009/08/24 00:54:37 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/curses.c,v 1.42 2009/10/31 21:56:56 tom Exp $
  */
 
 #include "estruct.h"
@@ -60,9 +60,11 @@ curs_initialize(void)
     if (already_open) {
 	if (i_was_closed) {
 	    i_was_closed = FALSE;
+#if OPT_TITLE
 	    if (auto_set_title) {
 		term.set_title(tb_values(current_title));
 	    }
+#endif
 	}
 	returnVoid();
     }

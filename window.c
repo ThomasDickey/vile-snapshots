@@ -2,7 +2,7 @@
  * Window management. Some of the functions are internal, and some are
  * attached to keys that the user actually types.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/window.c,v 1.118 2008/12/05 01:33:09 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/window.c,v 1.119 2009/10/31 17:12:50 tom Exp $
  *
  */
 
@@ -1258,7 +1258,7 @@ pop_fake_win(WINDOW *oldwp, BUFFER *oldbp)
 /* Find and return the window with the given window id.  Return NULL
    if not found */
 WINDOW *
-id2win(int id)
+id2win(ULONG id)
 {
     WINDOW *wp;
     for_each_visible_window(wp) {
@@ -1269,7 +1269,7 @@ id2win(int id)
 }
 
 /* Return the window id associated with the given window */
-int
+ULONG
 win2id(WINDOW *wp)
 {
     return wp->w_id;

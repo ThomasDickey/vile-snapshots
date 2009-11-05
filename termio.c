@@ -3,7 +3,7 @@
  * characters, and write characters in a barely buffered fashion on the display.
  * All operating systems.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/termio.c,v 1.217 2009/02/21 02:30:24 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/termio.c,v 1.218 2009/10/31 15:24:23 tom Exp $
  *
  */
 
@@ -324,7 +324,7 @@ ttopen(void)
 */
 /* ARGSUSED */
 int
-flow_control_enable(int f, int n GCC_UNUSED)
+flow_control_enable(int f GCC_UNUSED, int n GCC_UNUSED)
 {
 #if !DISP_X11
     if (!f) {
@@ -353,7 +353,7 @@ ttclose(void)
  */
 /*ARGSUSED*/
 void
-ttclean(int f)
+ttclean(int f GCC_UNUSED)
 {
 #if !DISP_X11
     if (f)

@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.695 2009/10/31 13:19:58 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.696 2009/10/31 17:12:11 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -2459,7 +2459,7 @@ typedef struct	WINDOW {
 	int	w_ruler_col;
 #endif
 #if OPT_PERL || OPT_TCL
-	int	w_id;			/* Unique window id */
+	ULONG	w_id;			/* Unique window id */
 #endif
 }	WINDOW;
 
