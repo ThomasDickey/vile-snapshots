@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/xterm.c,v 1.4 2007/09/16 20:07:20 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/xterm.c,v 1.5 2009/11/11 09:04:52 tom Exp $
  *
  * xterm-specific code for vi-like-emacs.
  */
@@ -32,17 +32,30 @@ xterm_open(TERM * tp)
 {
     x_origin = 0;
     y_origin = 0;
-    tp->set_title = xterm_settitle;
-    tp->mopen = xterm_mopen;
-    tp->mclose = xterm_mclose;
+
+    /* use xterm #251 feature to save title */
+    putpad("\033[22t");
+
+    if (tp != 0) {
+	tp->set_title = xterm_settitle;
+	tp->mopen = xterm_mopen;
+	tp->mclose = xterm_mclose;
 
 #if OPT_XTERM
-    addtosysmap("\033[M", 3, KEY_Mouse);
+	addtosysmap("\033[M", 3, KEY_Mouse);
 #if OPT_XTERM >= 3
-    addtosysmap("\033[t", 3, KEY_text);
-    addtosysmap("\033[T", 3, KEY_textInvalid);
+	addtosysmap("\033[t", 3, KEY_text);
+	addtosysmap("\033[T", 3, KEY_textInvalid);
 #endif
 #endif
+    }
+}
+
+void
+xterm_close()
+{
+    /* use xterm #251 feature to restore title */
+    putpad("\033[23t");
 }
 
 void
@@ -277,6 +290,7 @@ void
 xterm_settitle(const char *string)
 {
     if (global_g_val(GMDXTERM_TITLE) && string != 0) {
+	TRACE(("xterm_settitle(%s)\n", string));
 	putpad("\033]0;");
 	putpad(string);
 	putpad("\007");

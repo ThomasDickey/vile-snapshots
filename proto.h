@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.683 2009/10/31 17:12:50 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.684 2009/11/10 23:28:42 tom Exp $
  *
  */
 
@@ -70,6 +70,7 @@ extern int valid_window(WINDOW *wp);
 /* screen-drivers */
 #if OPT_XTERM
 extern void xterm_open (TERM *);
+extern void xterm_close (void);
 extern void xterm_mopen (void);
 extern void xterm_mclose (void);
 extern void xterm_settitle (const char *t);

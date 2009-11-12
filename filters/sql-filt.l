@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/sql-filt.l,v 1.46 2009/05/12 22:47:25 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/sql-filt.l,v 1.47 2009/11/12 09:34:29 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of SQL script
  * - T.Dickey
@@ -77,14 +77,15 @@ HOSTVAR		":"{IDENT}
 			    } else if (attr == 0) {
 				new_state(BODY);
 				if (set_symbol_table("sqlplus")) {
-				    if ((attr = ci_keyword_attr(text)) != 0
+				    attr = ci_keyword_attr(text);
+				    WriteToken(attr);
+				    if (attr != 0
 					&& is_oneliner(text)) {
 					begin_oneliner();
 					/* FIXME:  a few commands have keywords,
 					 * such as "set".
 					 */
 				    }
-				    WriteToken(attr);
 				    set_symbol_table(default_table);
 				}
 			    } else {
@@ -230,8 +231,9 @@ is_oneliner(const char *name)
 {
     const char *flags = ci_keyword_flag(name);
     int result = 0;
-    if (flags != 0)
+    if (flags != 0) {
 	result = (strchr(flags, '1') != 0);
+    }
     return result;
 }
 

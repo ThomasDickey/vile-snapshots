@@ -1,7 +1,7 @@
 /*
  * Common utility functions for vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.145 2009/10/15 09:29:23 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.147 2009/11/12 09:34:07 tom Exp $
  *
  */
 
@@ -1163,7 +1163,7 @@ keyword_data(const char *name)
 const char *
 keyword_flag(const char *name)
 {
-    KEYWORD *data = keyword_data(name);
+    KEYWORD *data = is_keyword(name);
     const char *result = 0;
 
     if (data != 0) {
@@ -1256,9 +1256,10 @@ parse_keyword(char *name, int classflag)
 	TrimBlanks(name);
     }
 
-    VERBOSE(2, ("parsed\tname \"%s\"\tattr \"%s\"%s",
+    VERBOSE(2, ("parsed\tname \"%s\"\tattr \"%s\" flag \"%s\"%s",
 		name,
 		NONNULL(args),
+		NONNULL(flag),
 		(classflag || is_class(name)) ? " - class" : ""));
 
     if (*name && args) {
