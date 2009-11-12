@@ -1,7 +1,11 @@
 Changes for vile 9.8 (released ??? ??? ?? ????)
 
- 20091105 (x)
+ 20091112 (x)
 	> Tom Dickey:
+	+ correct check for flags on sql keywords from 9.7b, which was using
+	  the class definition rather than the instance.
+	+ use xterm patch #251 feature for saving/restoring title in termcap
+	  and curses drivers.
 	+ add doc/vile-hlp.html, which is a marked-up version of vile.hlp
 	+ change atr2html to not use <pre>, since <font> inside <pre> is
 	  nonstandard.

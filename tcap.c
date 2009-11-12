@@ -1,7 +1,7 @@
 /*	tcap:	Unix V5, V7 and BS4.2 Termcap video driver
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.181 2009/10/31 21:52:06 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.183 2009/11/11 09:07:46 tom Exp $
  *
  */
 
@@ -200,6 +200,11 @@ tcap_open(void)
     if (already_open) {
 	if (i_was_closed) {
 	    i_was_closed = FALSE;
+#if OPT_XTERM
+	    if (i_am_xterm) {
+		xterm_open(0);
+	    }
+#endif /* OPT_XTERM */
 #if OPT_TITLE
 	    if (auto_set_title) {
 		term.set_title(tb_values(current_title));
@@ -395,6 +400,11 @@ tcap_close(void)
      * 90% of the users.
      */
     term.set_title(getenv("TERM"));
+#if OPT_XTERM
+    if (i_am_xterm) {
+	xterm_close();
+    }
+#endif
 #if OPT_LOCALE
     vl_close_mbterm();
 #endif

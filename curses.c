@@ -1,7 +1,7 @@
 /*
  * A terminal driver using the curses library
  *
- * $Header: /users/source/archives/vile.vcs/RCS/curses.c,v 1.42 2009/10/31 21:56:56 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/curses.c,v 1.43 2009/11/11 09:08:00 tom Exp $
  */
 
 #include "estruct.h"
@@ -60,6 +60,11 @@ curs_initialize(void)
     if (already_open) {
 	if (i_was_closed) {
 	    i_was_closed = FALSE;
+#if OPT_XTERM
+	    if (i_am_xterm) {
+		xterm_open(0);
+	    }
+#endif /* OPT_XTERM */
 #if OPT_TITLE
 	    if (auto_set_title) {
 		term.set_title(tb_values(current_title));
@@ -172,6 +177,11 @@ curs_close(void)
     term.set_title(getenv("TERM"));
 
     vl_restore_tty();
+#if OPT_XTERM
+    if (i_am_xterm) {
+	xterm_close();
+    }
+#endif
 #if OPT_LOCALE
     vl_close_mbterm();
 #endif
