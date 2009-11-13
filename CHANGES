@@ -2,6 +2,8 @@ Changes for vile 9.8 (released ??? ??? ?? ????)
 
  20091112 (x)
 	> Tom Dickey:
+	+ add doc/vile-toc.html, a table of contents for vile-hlp.html
+	+ generate vile.hlp from doc/vile-hlp.html
 	+ correct check for flags on sql keywords from 9.7b, which was using
 	  the class definition rather than the instance.
 	+ use xterm patch #251 feature for saving/restoring title in termcap
@@ -14,7 +16,8 @@ Changes for vile 9.8 (released ??? ??? ?? ????)
 	  wide-characters.  vtcol was not updated, and the region should be
 	  filled with blanks.
 	+ minor fixes/improvements to ldel_bytes(), based on reports of an
-	  infinite loop for amd64 platforms (FIXME...).
+	  infinite loop for amd64 platforms (reports by Gary Jennejohn, Joran
+	  Ahlback, Ramil Farkhshatov, Clem Taylor, Joachim Schimpf)
 	+ strict compiler-warning fixes.
 
  20091027 (w)
