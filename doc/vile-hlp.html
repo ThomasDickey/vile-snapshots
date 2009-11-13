@@ -1,6 +1,6 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
-  $Id: vile-hlp.html,v 1.6 2009/11/05 10:42:12 tom Exp $
+  $Id: vile-hlp.html,v 1.9 2009/11/13 11:03:39 tom Exp $
 -->
 <HTML>
 <HEAD>
@@ -87,10 +87,11 @@ Getting along with vile						(version 9.7)
 	hit TAB to perform command completion.  Hitting a second TAB will
 	pop up a window containing the list of possible completions.
 <p>
-	If your screen hops around a lot when you scroll, see the "Note on
-	Scrolling" section near the bottom of this file.
+	If your screen hops around a lot when you scroll, see the
+	<a href="term-scrolling">"Note on Scrolling"</a>
+	section near the bottom of this file.
 
-<h2>General Remarks</h2>
+<h2 id="general2"><a href="general">General Remarks</a></h2>
 <p>
 	vile holds text in "buffers".  Usually, these correspond to a file
 	that you are editing, but not always.  For instance, a buffer
@@ -120,10 +121,11 @@ Getting along with vile						(version 9.7)
 	concept is fully described.  It's a chicken and egg problem....
 <p>
 	vile is 8-bit clean, allowing it to be used more easily at non-
-	English speaking sites.  See the section on "8-Bit Operation" for
-	more information.
+	English speaking sites.  See the section on
+	<a href="eightbit-ops">"8-Bit Operation"</a>
+	for more information.
 
-<h2>Command Prefixes</h2>
+<h2 id="cmd-prefixes2"><a href="cmd-prefixes">Command Prefixes</a></h2>
 <p>
 	To extend the vi command set in vile, two (or three, depending on
 	how you count them) command "prefixes" exist.  These keystrokes,
@@ -152,7 +154,9 @@ Getting along with vile						(version 9.7)
 	If you find any of these keys hard to type, or would prefer that
 	they are all control characters (or all non-control), they can
 	be changed by binding a new key to the function listed above.  See
-	the section on "Key Rebinding" below.  If you do change the values
+	the section on
+	<a href="key-rebinding">"Key Rebinding"</a>
+	below.  If you do change the values
 	of these keys, most of vile's informational displays (the Binding
 	List, for instance) will reflect these changes.  This documentation,
 	of course, will not change.
@@ -162,7 +166,7 @@ Getting along with vile						(version 9.7)
 	is bound to '#2', then it is also probably available with key F2
 	on your keyboard.)
 
-<h2>Buffer manipulation commands</h2>
+<h2 id="buffer-manipulation"><a href="buffer-manipulation">Buffer manipulation commands</a></h2>
 <p>
 	vile stores buffers in a sorted list.  Depending on the
 	setting of the "autobuffer" mode, this list is either sorted
@@ -220,7 +224,9 @@ Getting along with vile						(version 9.7)
 		listed buffer; the 1-9 digits also work as expected when the
 		list is scrolled.
 <p>
-		[ See the note under "Differences", below, for comments on
+		[ See the note under
+		  <a href="not-vi">"Differences"</a>,
+		  below, for comments on
 		vi's use of '_'.]
 </dd>
 <dt>
@@ -367,7 +373,8 @@ Getting along with vile						(version 9.7)
 		the '_' command must be used, since '_' will only accept a
 		single following digit.)  The order of the list is either
 		most-recently-used, or fixed, depending on the setting
-		of "autobuffer" mode (see below).  vile attempts to keep
+		of "autobuffer" mode (see <a href="mode-autobuffer">below</a>).
+		vile attempts to keep
 		the contents of the buffer list window up to date if it
 		is left up on the screen while other buffer manipulation
 		commands are given.
@@ -386,7 +393,7 @@ Getting along with vile						(version 9.7)
 </dd>
 </dl>
 
-<h2>Window manipulation commands</h2>
+<h2 id="window-manipulation"><a href="window-manipulation">Window manipulation commands</a></h2>
 <dl>
 <dt>
 	^X-2
@@ -511,7 +518,7 @@ Getting along with vile						(version 9.7)
 	(These would be the default, but ^N, ^P, and ^T have other meanings
 	in real vi (all of which have alternate bindings in vile.) ]
 
-<h2>File manipulation commands:</h2>
+<h2 id="file-manipulation"><a href="file-manipulation">File manipulation commands</a>:</h2>
 <p>
 	The usual ":e", ":r", ":f", ":w" commands are available, though
 	only ":e!" and ":w!" are available of the "!" options.  The command
@@ -566,7 +573,7 @@ Getting along with vile						(version 9.7)
 </dd>
 </dl>
 
-<h2>Shell Access</h2>
+<h2 id="shell-access"><a href="shell-access">Shell Access</a></h2>
 <p>
 	Anywhere a filename is valid, a command name is also
 	valid, entered in the form "!shell-command".  The whole line is
@@ -631,7 +638,7 @@ Getting along with vile						(version 9.7)
 	Additional shell-related features are described in the section of
 	this help file entitled "Working in a project hierarchy".
 
-<h2>Text manipulation command:</h2>
+<h2 id="text-manipulation"><a href="text-manipulation">Text manipulation command</a>:</h2>
 <p>
 	Remember, these are only the new or different commands.  The
 	standard vi set should still work.
@@ -671,15 +678,16 @@ Getting along with vile						(version 9.7)
 <p>
 	The ":&amp;" and '&amp;' commands work much as they do in vi, and repeat
 	the last substitution.  The '^A-&amp;' command is a new operator (see
-	below), so it can work on regions: for example use '^A-&amp;}' to
+	<a href="operators2">below</a>), so it can work on regions: for example use '^A-&amp;}' to
 	"repeat the previous substitution over the rest of this paragraph".
 <p>
 	The named marks such as "'a" work as they do in vi.  vile allows
 	a decimal digit as a mark.  It also recognizes special marks for
 	the beginning and end of a selection: '&lt; for the beginning and
-	'&gt; for the end (see the discussion of the quoted motion command).
+	'&gt; for the end (see the discussion of the
+	<a href="quoted-motion">quoted motion command</a>).
 
-<h3>Infinite Undo</h3>
+<h3 id="infinite-undo2"><a name="infinite-undo">Infinite Undo</a></h3>
 	The regular undo ('u') and line-undo ('U') are available for all
 	commands.  They are a little more predictable than their vi
 	counterparts, since they do not share the default yank register for
@@ -722,7 +730,7 @@ Getting along with vile						(version 9.7)
 	The cursor position after an undo may not always be the same as it
 	would be in vi.
 
-<h3>Operators</h3>
+<h3 id="operators2"><a name="operators">Operators</a></h3>
 	vi has a class of commands known as "operators".  Operator commands
 	are always immediately followed by a motion command.  The region of
 	text affected by an operator is bounded on one end by the initial
@@ -762,7 +770,8 @@ Getting along with vile						(version 9.7)
 	the concept of rectangular regions, whose boundaries are
 	delimited by the rectangle whose opposite corners are at the
 	cursor and at the other end of the motion, respectively.  See
-	the section "Rectangular regions" below.
+	the section
+	<a href="rectangular-regions">"Rectangular regions"</a> below.
 <p>
 	The "show-operators" command will show all available operators.
 	The "show-motions" command will show all available motions.
@@ -891,7 +900,7 @@ Getting along with vile						(version 9.7)
 </dt>
 <dd>
 		Sweep out a rectangle with multiple motion commands.  See
-		description of 'q', below.
+		<a href="quoted-motion">description of 'q'</a>, below.
 </dd>
 <dt>
 	^A-s
@@ -904,11 +913,11 @@ Getting along with vile						(version 9.7)
 		lets one reference the selected region with other operators.
 		(If you use this command much, it is recommended that you
 		bind it to and easier to type sequence, such as 'S'.)
-		See also the q (quoted motion) command.
+		See also the <a href="quoted-motion">q (quoted motion)</a> command.
 </dd>
 </dl>
 
-<h3>Text insertion</h3>
+<h3 id="insertion2"><a name="insertion">Text insertion</a></h3>
 <dl>
 <dt>
 	^X-p
@@ -962,7 +971,7 @@ Getting along with vile						(version 9.7)
 </dd>
 </dl>
 
-<h3>Searching</h3>
+<h3 id="searching2"><a name="searching">Searching</a></h3>
 <dl>
 <dt>
 	^X-/
@@ -1008,7 +1017,7 @@ Getting along with vile						(version 9.7)
 </dd>
 </dl>
 
-<h3>Tags</h3>
+<h3 id="vi-tags2"><a name="vi-tags">Tags</a></h3>
 <p>	
 	vile supports vi-style "tags" files.
 <dl>
@@ -1068,7 +1077,8 @@ Getting along with vile						(version 9.7)
 	actions to the current window, set pin-tagstack mode.
 <p>
 	The name of the default tags file may be changed with "set tags"
-	(see "tags" under "Editor modes", below).  If multiple filenames
+	(see <a href="mode-tags">"tags"</a>
+	under "Editor modes", below).  If multiple filenames
 	are given in the "tags" setting (separated by whitespace), they are
 	searched in order, and placed in buffers named "[Tags 1]", "[Tags 2]",
 	"[Tags 3]", etc.
@@ -1107,7 +1117,7 @@ Getting along with vile						(version 9.7)
 	For further tags usage examples, refer to the section of this help
 	file entitled "Working in a project hierarchy".
 
-<h2>Miscellaneous commands</h2>
+<h2 id="misc-commands"><a href="misc-commands">Miscellaneous commands</a></h2>
 <dl>
 <dt>
 	^A-d
@@ -1220,7 +1230,8 @@ Getting along with vile						(version 9.7)
 	^X-X   
 </dt>
 <dd>
-		Set current encryption key for this buffer.  See "Encryption"
+		Set current encryption key for this buffer.
+		See <a href="encryption">"Encryption"</a>
 		below for more information.
 </dd>
 <dt>
@@ -1243,7 +1254,9 @@ Getting along with vile						(version 9.7)
 		and on "#endif" it will go back up to the "#ifdef"/"#if".
 		If the cursor is on any part of a "/*" or "*/" sequence, it
 		will find the appropriate corresponding C comment endpoint.
-		(See fence-if, fence-pairs to customize this behavior).
+		(See <a href="mode-fence-if">fence-if</a>,
+		<a href="mode-fence-pairs">fence-pairs</a>
+		to customize this behavior).
 </dd>
 <dt>
 	\
@@ -1257,7 +1270,7 @@ Getting along with vile						(version 9.7)
 		mark, and causes regions to become "full line" regions.
 </dd>
 <dt>
-	q
+	<a name="quoted-motion">q</a>
 </dt>
 <dd>
 		A "quoted motion" command.  After entering 'q', more motion
@@ -1371,7 +1384,7 @@ Getting along with vile						(version 9.7)
 </table>
 </dd>
 </dl>
-<h3>Internal State</h3>
+<h3 id="internal-state2"><a name="internal-state">Internal State</a></h3>
 	vile can display more of its internal "state" than traditional vi.
 	Portions of the internal "state" may be viewed using various
 	"show-xxx" commands:
@@ -1452,7 +1465,7 @@ Getting along with vile						(version 9.7)
 		with ":map!".  (synonymous with ":map!&lt;cr&gt;")
 </dd>
 <dt>
-	show-printable
+	<a name="command-show-printable">show-printable</a>
 </dt>
 <dd>
 		displays a table of the printable characters,
@@ -1502,7 +1515,7 @@ Getting along with vile						(version 9.7)
 </dd>
 </dl>
 
-<h2>New Registers</h2>
+<h2 id="new-registers"><a href="new-registers">New Registers</a></h2>
 <p>
 	In addition to the usual "a through "z, and "1 through "9, vile
 	has additional registers.
@@ -1521,7 +1534,7 @@ Getting along with vile						(version 9.7)
 	The register name '"' (" is double-quote) is a synonym for the default
 	unnamed register, which is also sometimes referred to as register 0.
 
-<h2>Completion</h2>
+<h2 id="command-completion"><a href="command-completion">Completion</a></h2>
 <p>
 	Many responses to vile prompts need not be typed in their entirety.
 	vile can complete the response for you.  This applies to command
@@ -1551,7 +1564,7 @@ Getting along with vile						(version 9.7)
 	    brackets around characters that you must type to make the
 	    command unique.
 
-<h2>Arrow keys</h2>
+<h2 id="arrow-keys"><a href="arrow-keys">Arrow keys</a></h2>
 <p>
 	vile will understand your terminal's arrow keys, as long as they
 	are described correctly in the termcap/terminfo database.
@@ -1559,7 +1572,7 @@ Getting along with vile						(version 9.7)
 	to the up, down, left, and right screen motions.  These bindings
 	are honored in insert mode as well as command mode.
 
-<h2>Rectangular regions</h2>
+<h2 id="rectangular-regions"><a href="rectangular-regions">Rectangular regions</a></h2>
 <p>
 	Just as the regions defined by vi's commands and motions can either
 	be "exact", or encompass "full lines", regions in vile can in
@@ -1665,7 +1678,7 @@ Getting along with vile						(version 9.7)
 	arguably a bug, and may be fixed.  In the meantime, you've been
 	warned. ]
 
-<h2>Editor modes</h2>
+<h2 id="editor-modes"><a href="editor-modes">Editor modes</a></h2>
 <p>
 	Modes come in various flavors and types and constitute the editor's
 	primary configuration mechanism.  vile supports these mode types:
@@ -1715,7 +1728,7 @@ Getting along with vile						(version 9.7)
 </tr>
 </table>
 
-<h3>Flavor: universal modes</h3>
+<h3 id="flavor-universal-modes2"><a name="flavor-universal-modes">Flavor: universal modes</a></h3>
 	These modes are not directly associated with buffers, windows, or
 	languages.  Consequently, a universal mode affects the editor under
 	all relevant operating conditions.
@@ -1745,7 +1758,7 @@ Getting along with vile						(version 9.7)
 	set/unset commands ("setl"/"unsetl") do not make sense (and elicit
 	no effect) when used with universal modes.
 
-<h3>Flavor: buffer modes</h3>
+<h3 id="flavor-buffer-modes2"><a name="flavor-buffer-modes">Flavor: buffer modes</a></h3>
 	These modes are inherited from a set of "global" buffer modes, but
 	bound to a specific buffer once a "local" value is independently
 	established.  To set and reset local modes, use "setl", "unsetl",
@@ -1776,23 +1789,23 @@ Getting along with vile						(version 9.7)
 	modify any other buffers.  The second approach affects only the
 	targeted file.
 
-<h3>Flavor: window modes</h3>
+<h3 id="flavor-window-modes2"><a name="flavor-window-modes">Flavor: window modes</a></h3>
 	Similar to buffer modes, window modes are bound to a specific
 	window once a local value is independently established.  These
 	modes are set/cleared with the same commands as buffer modes.
 
-<h3>Flavor: majormodes (later)</h3>
+<h3 id="flavor-majormodes2"><a name="flavor-majormodes">Flavor: majormodes (later)</a></h3>
 	Until the subject of syntax coloring is described, it's not very
 	useful to discuss majormodes.  So, in the listing of modes below,
 	skip over anything tagged with (M).  But don't fret, these modes
 	are described separately in the topic entitled "Majormodes".
 
-<h3>Current mode settings</h3>
+<h3 id="current-modes2"><a name="current-modes">Current mode settings</a></h3>
 	To display modes, use "setall", "modes", or "set all".  Local
 	mode values are only shown if they differ from the global values,
 	whether they have been independently set or not.
 
-<h3>Modes in detail</h3>
+<h3 id="mode-details2"><a name="mode-details">Modes in detail</a></h3>
 	Shown next is a listing of vile's various modes.  Synonyms, if they
 	exist, are shown in parentheses and a trailing U, B, W, or M
 	indicates whether the mode is universal, buffer, window or major.
@@ -1843,7 +1856,7 @@ Getting along with vile						(version 9.7)
 		is present mostly as a debugging aid.  (B)
 </dd>
 <dt>
-	autobuffer (ab)
+	<a name="mode-autobuffer">autobuffer (ab)</a>
 </dt>
 <dd>
 		Controls whether vile uses "most-recently-used"
@@ -1932,7 +1945,9 @@ Getting along with vile						(version 9.7)
 		On systems supporting this, will set the background color.
 		On most systems, the choice of colors is fixed, although the
 		X11 version (xvile) can be given customized colors at startup
-		or via .Xdefaults.  See notes about the color palette down
+		or via .Xdefaults.
+		See notes about the
+		<a href="color-palette">color palette</a> down
 		below, under DOS specifics.  (U)
 </dd>
 <dt>
@@ -1984,7 +1999,9 @@ Getting along with vile						(version 9.7)
 		On systems supporting this, will set the cursor color.
 		On most systems, the choice of colors is fixed, although the
 		X11 version (xvile) can be given customized colors at startup
-		or via .Xdefaults.  See notes about the color palette down
+		or via .Xdefaults.
+		See notes about
+		the <a href="color-palette">color palette</a> down
 		below, under DOS specifics.  (U)
 </dd>
 <dt>
@@ -2057,12 +2074,13 @@ Getting along with vile						(version 9.7)
 <dd>
 		C-style indentation.  Helps maintain current indentation
 		level automatically during insert, like autoindent, above.
-		See cindent-chars for additional information.  Note that
+		See <a href="mode-cindent-chars">cindent-chars</a>
+		for additional information.  Note that
 		when the majormode cmode is in effect, cindent assumes a
 		local buffer mode value of true.  (B)
 </dd>
 <dt>
-	cindent-chars (cic)
+	<a name="mode-cindent-chars">cindent-chars (cic)</a>
 </dt>
 <dd>
 		The list of characters interpreted by the cindent
@@ -2107,7 +2125,8 @@ Getting along with vile						(version 9.7)
 		Causes buffer(s) to be decrypted when read, and encrypted
 		when written.  This is compatible with the UNIX crypt(1)
 		routines used by vi, and is only available on platforms which
-		have this feature enabled.  See the section on "Encryption"
+		have this feature enabled.
+		See the section on <a href="encryption">"Encryption"</a>
 		for more information.  (B)
 </dd>
 <dt>
@@ -2136,7 +2155,8 @@ Getting along with vile						(version 9.7)
 <dd>
 		A regular expression defining commented paragraph
 		delimiters.  This is used in addition to the "paragraphs"
-		expression (see below) when reformatting a region.  The net
+		expression (see <a href="mode-paragraphs">below</a>)
+		when reformatting a region.  The net
 		effect is that paragraphs inside of these comments are
 		preserved when doing text reformatting, but are not
 		reachable with the '}' and '{' motions.  A pattern that
@@ -2233,7 +2253,9 @@ Getting along with vile						(version 9.7)
 		On systems supporting this, will set the foreground color.
 		On most systems, the choice of colors is fixed, although the
 		X11 version (xvile) can be given customized colors at startup
-		or via .Xdefaults.  See notes about the color palette down
+		or via .Xdefaults.
+		See notes about
+		the <a href="color-palette">color palette</a> down
 		below, under DOS specifics.  (U)
 </dd>
 <dt>
@@ -2247,7 +2269,7 @@ Getting along with vile						(version 9.7)
 		(character-oriented, non-nestable) fences.  (B)
 </dd>
 <dt>
-	fence-if
+	<a name="mode-fence-if">fence-if</a>
 </dt>
 <dt>
 	fence-elif
@@ -2271,7 +2293,7 @@ Getting along with vile						(version 9.7)
 		cases, e.g., with Perl's ambiguous block syntax.  (B)
 </dd>
 <dt>
-	fence-pairs (fences)
+	<a name="mode-fence-pairs">fence-pairs (fences)</a>
 </dt>
 <dd>
 		Each pair of characters in this string is taken to
@@ -2279,7 +2301,9 @@ Getting along with vile						(version 9.7)
 		command.  The default value is "{}()[]", which produces normal
 		vi behavior.  This can, for instance, be augmented with the '&lt;'
 		and '&gt;' characters ("{}()[]&lt;&gt;>") to cause angle brackets to be
-		matched as well.  See "showmatch" mode for another use of the
+		matched as well.
+		See <a href="mode-showmatch">"showmatch"</a> mode
+		for another use of the
 		"fence-pairs" mode.  (B)
 </dd>
 <dt>
@@ -2349,7 +2373,8 @@ Getting along with vile						(version 9.7)
 		If your terminal can, will flash the screen rather than
 		beeping on errors.  No audible or visible indication will
 		occur at all if "errorbells" mode is not set on.  See also
-		the vtflash mode (described below).  (U)
+		the <a href="mode-vtflash">vtflash</a> mode
+		(described below).  (U)
 </dd>
 <dt>
 	for-buffers (fb)
@@ -2501,8 +2526,10 @@ Getting along with vile						(version 9.7)
 </dt>
 <dd>
 		Honor unescaped regular expression metacharacters in search
-		strings.  See the section "Regular Expressions" for more
-		detail.  (B)
+		strings.
+		See the section
+		<a href="regular-expressions">"Regular Expressions"</a>
+		for more detail.  (B)
 </dd>
 <dt>
 	maplength
@@ -2521,7 +2548,8 @@ Getting along with vile						(version 9.7)
 		map strings will be favored by the editor.  When set, vile
 		will match the longest available mapped string.  When reset,
 		(the default) vile will match the shortest available map.
-		For more information, see the section describing the ":map"
+		For more information, see the section describing the
+		<a href="map-commands">":map"</a>
 		command, below.  (U)
 </dd>
 <dt>
@@ -2529,7 +2557,8 @@ Getting along with vile						(version 9.7)
 </dt>
 <dd>
 		Specify the color of the modelines, normally in reverse
-		video.  See also "Setting Extra Colors". (U)
+		video.
+		See also <a href="extra-colors">"Setting Extra Colors"</a>. (U)
 </dd>
 <dt>
 	meta-insert-bindings (mib)
@@ -2657,7 +2686,7 @@ Getting along with vile						(version 9.7)
 		irregular effect.  (B)
 </dd>
 <dt>
-	paragraphs
+	<a name="mode-paragraphs">paragraphs</a>
 </dt>
 <dd>
 		A regular expression defining where the "next-paragraph"
@@ -2760,7 +2789,7 @@ Getting along with vile						(version 9.7)
 		lines "# ! /bin/sh", "#!/bin/csh -f", etc.  (M)
 </dd>
 <dt>
-	printing-low
+	<a name="mode-printing-low">printing-low</a>
 </dt>
 <dd>
 		The integer value representing the first of the
@@ -2771,7 +2800,7 @@ Getting along with vile						(version 9.7)
 		control characters in the ISO scheme (e.g., ISO 8859-1).  (U)
 </dd>
 <dt>
-	printing-high
+	<a name="mode-printing-high">printing-high</a>
 </dt>
 <dd>
 		The integer value representing the last character of
@@ -2801,7 +2830,8 @@ Getting along with vile						(version 9.7)
 </dt>
 <dd>
 		Prevent writing a buffer to its associated file.  Unlike
-		"view" mode (see below) which prevents any modifications to
+		<a href="mode-view">"view"</a> mode (see below)
+		which prevents any modifications to
 		a buffer, this mode allows changes, but prevents updates.
 		This is set automatically for the output of shell commands
 		and pipes. (B)
@@ -2817,7 +2847,7 @@ Getting along with vile						(version 9.7)
 		behavior.  (U)
 </dd>
 <dt>
-	recordseparator (rs)
+	<a name="mode-recordseparator">recordseparator (rs)</a>
 </dt>
 <dd>
 		Specify format of files that vile reads and
@@ -2886,7 +2916,8 @@ Getting along with vile						(version 9.7)
 		always represented in vile by their "true" names.  (This
 		can prevent multiple unintentional edits of the same
 		physical file via different pathnames &ndash; but see also
-		"unique-buffers", below.)  It may trigger long timeouts on
+		<a href="mode-unique-buffers">"unique-buffers"</a>, below.)
+		It may trigger long timeouts on
 		systems where symbolic links are used in conjunction with
 		NFS automounted directories.  (Note that this does not
 		detect or prevent multiple edits caused by hard file
@@ -2955,7 +2986,7 @@ Getting along with vile						(version 9.7)
 		is carriage-return/line-feed.  (B)
 </dd>
 <dt>
-	showmatch (sm)
+	<a name="mode-showmatch">showmatch (sm)</a>
 </dt>
 <dd>
 		During insert, if a closing "fence" character
@@ -3095,7 +3126,7 @@ Getting along with vile						(version 9.7)
 		hierarchy from either the parent or a child directory.  (B)
 </dd>
 <dt>
-	tags
+	<a name="mode-tags">tags</a>
 </dt>
 <dd>
 		Gives a path of names of file(s) in which to look up
@@ -3195,7 +3226,7 @@ Getting along with vile						(version 9.7)
 		regular characters.  (W)
 </dd>
 <dt>
-	unique-buffers
+	<a name="mode-unique-buffers">unique-buffers</a>
 </dt>
 <dd>
 		When vile is asked to read a file into a buffer, it
@@ -3212,7 +3243,7 @@ Getting along with vile						(version 9.7)
 		this mode may be a no-op on non-UNIX systems.  (U)
 </dd>
 <dt>
-	unprintable-as-octal (uo)
+	<a name="mode-unprintable-as-octal ">unprintable-as-octal (uo)</a>
 </dt>
 <dd>
 		If an 8-bit character is non-printing, it
@@ -3229,7 +3260,7 @@ Getting along with vile						(version 9.7)
 		reverse, underline or none.  (U)
 </dd>
 <dt>
-	view
+	<a name="mode-view">view</a>
 </dt>
 <dd>
 		View the file only.  No changes are permitted.  (B)
@@ -3262,7 +3293,7 @@ Getting along with vile						(version 9.7)
 		(B)
 </dd>
 <dt>
-	vtflash
+	<a name="mode-vtflash">vtflash</a>
 </dt>
 <dd>
 		If your terminal does not support a visual flash feature,
@@ -3417,19 +3448,22 @@ Getting along with vile						(version 9.7)
 </dd>
 </dl>
 
-<h2>8-Bit Operation</h2>
+<h2 id="eightbit-ops"><a href="eightbit-ops">8-Bit Operation</a></h2>
 <p>
 	vile allows input, manipulation, and display of all 256 possible
 	byte-wide characters.  Wide characters are supported, depending on
 	the device type and your locale settings.
 
-<h3>Output</h3>
+<h3 id="eightbit-output2"><a name="eightbit-output">Output</a></h3>
 	By default, 8-bit characters with the high bit set (decimal value 128
 	or greater) will display as hexadecimal (or octal; see
-	"unprintable-as-octal" above) sequences, e.g. \xA5.  A range of
+	<a href="mode-unprintable-as-octal">"unprintable-as-octal"</a> above)
+	sequences, e.g. \xA5.  A range of
 	characters which should display as themselves (that is, characters
 	understood by the user's display terminal) may be given using the
-	"printing-low" and "printing-high" settings (see above).  Useful values
+	<a href="mode-printing-low">"printing-low"</a> and
+	<a href="mode-printing-high">"printing-high"</a> settings (see above).
+	Useful values
 	for these settings are 160 and 255, which correspond to the printable
 	range of the ISO-Latin-1 character set.
 <p>
@@ -3453,7 +3487,7 @@ Getting along with vile						(version 9.7)
 	8-bit values.  It will also display this form for bytes found in
 	UTF-8 files that cannot be decoded as UTF-8.
 
-<h3>Input</h3>
+<h3 id="eightbit-input2"><a name="eightbit-input">Input</a></h3>
 <p>
 	There are basically three ways of getting 8-bit characters into
 	a vile buffer:
@@ -3535,7 +3569,7 @@ Getting along with vile						(version 9.7)
 	character, since this is used internally to terminate the search
 	string.)
 
-<h2>Command History</h2>
+<h2 id="command-history"><a href="command-history">Command History</a></h2>
 <p>
 	You may scroll through the list of previous replies to the :-prompt
 	by using the up- or down-arrow special keys on your keyboard (if
@@ -3565,7 +3599,7 @@ Getting along with vile						(version 9.7)
 	then the up/down arrows will show "take" or "help", skipping commands
 	which do not begin with "g/".
 
-<h2>Editing the Minibuffer</h2>
+<h2 id="editing-minibuffer"><a href="editing-minibuffer">Editing the Minibuffer</a></h2>
 <p>
 	The minibuffer (i.e., the last line on the screen, aka the :-prompt)
 	can be edited using arrow keys, the delete character, or by toggling to
@@ -3579,7 +3613,7 @@ Getting along with vile						(version 9.7)
 	entered, e.g., a :set command will display the variables entered for
 	preceding :set commands.
 
-<h2>Special Character Expansion</h2>
+<h2 id="special-expansion"><a href="special-expansion">Special Character Expansion</a></h2>
 <p>
 	As in vi, the % and # characters typed while responding to a prompt
 	will expand to the current or "alternate" filename.
@@ -3596,7 +3630,7 @@ Getting along with vile						(version 9.7)
 <p>
 	Any of these expansions can be suppressed by prefixing with a '\'.
 
-<h2>Character Classes</h2>
+<h2 id="char-classes"><a href="char-classes">Character Classes</a></h2>
 <p>
 	The "show-printable" command shows a table of the characters and their
 	classes, e.g., printable, punctuation, etc.  You may modify this table
@@ -3668,7 +3702,7 @@ Getting along with vile						(version 9.7)
 	You can also reset the table to its initial state using
 	"reset-char-classes".
 
-<h2>Key Rebinding</h2>
+<h2 id="key-rebinding"><a href="key-rebinding">Key Rebinding</a></h2>
 <p>
 	There is a key rebinding facility (if vile is built to include it),
 	which is invoked as follows.  One must know the "english" name for the
@@ -3843,7 +3877,7 @@ Getting along with vile						(version 9.7)
 	setting is not on (or if the meta-key is not bound to any function)
 	then the key's value will simply be inserted into the buffer.
 
-<h3>Syntax for key-sequences:</h3>
+<h3 id="key-syntax2"><a name="key-syntax">Syntax for key-sequences:</a></h3>
 	To summarize, a key-sequence being bound to is specified with:
 <ol>
 		<li>an optional prefix, like this:
@@ -3877,7 +3911,7 @@ Getting along with vile						(version 9.7)
 	represented in this help file as two printable characters, to
 	ensure they are not deleted by mailers or file transfer programs.)
 
-<h3>Function Keys</h3>
+<h3 id="function-keys2"><a name="function-keys">Function Keys</a></h3>
 	When you bind to a function key, you will see its value printed
 	as a 'poundsign' sequence.  And, if you wish to :map a function
 	key, you will need to use its poundsign sequence.  This is
@@ -3957,7 +3991,7 @@ Getting along with vile						(version 9.7)
 	    between a "system-defined" function key and the poundsign
 	    sequence it produces, use ":unmap-system-chars".
 
-<h3>:map, :map!, :noremap, :noremap!</h3>
+<h3 id="map-commands2">:<a name="map-commands">map, :map!, :noremap, :noremap!</a></h3>
 	The vi "map" and "map!" commands are implemented in vile.  As in
 	vi, mapping works best if the character sequence being bound
 	corresponds to pressing a single key.  Multiple key sequences will
@@ -3986,7 +4020,7 @@ Getting along with vile						(version 9.7)
 	in the .vilerc file, and have the user-sequence executed when the
 	system F1 key is pressed.  (Otherwise the terminal-specific
 	sequence would have to appear in the .vilerc.)  See the section
-	on "Function Keys" above for a full list.
+	on <a href="function-keys">"Function Keys"</a> above for a full list.
 <p>
 	The "remap" option controls whether the successfully mapped result
 	of a map is reevaluated for more mapping matches.  The "noremap" (and
@@ -4050,7 +4084,7 @@ Getting along with vile						(version 9.7)
 <p>
 	To undo a mapping, use "unmap", "unmap!", or "unmap-system-chars".
 
-<h3>:abbr</h3>
+<h3 id="abbr-commands2">:<a name="abbr-commands">abbr</a></h3>
 	The "abbr" command is also present in vile.  It is similar to, but
 	slightly different than, "map!".  Whereas "map!" examines
 	characters as they are typed, continuously looking for a match
@@ -4084,7 +4118,7 @@ Getting along with vile						(version 9.7)
 <p>
 	To undo an abbreviation, use "unabbreviate".
 
-<h2>Special "Terminal" Key Rebinding</h2>
+<h2 id="special-rebinding"><a href="special-rebinding">Special "Terminal" Key Rebinding</a></h2>
 <p>
 	In addition to the above binding mechanism for vile commands, other
 	keystrokes to the editor are rebindable using the "set-terminal"
@@ -4134,7 +4168,7 @@ Getting along with vile						(version 9.7)
 </tr>
 </table>
 
-<h2>Flow-control</h2>
+<h2 id="flow-control"><a href="flow-control">Flow-control</a></h2>
 <p>
 	Historically, the flow of data between the computing host and the
 	user's terminal was throttled through the use of special characters
@@ -4162,7 +4196,7 @@ Getting along with vile						(version 9.7)
 	The action of the "flow-control-enable" command will be reversed
 	if it is given any argument.
 
-<h2>Recorded macros</h2>
+<h2 id="recorded-macros"><a href="recorded-macros">Recorded macros</a></h2>
 <p>
 	The first type of macro in vile is for temporary, quick macro
 	usage, and lets you record a set of keystrokes as you execute
@@ -4170,7 +4204,7 @@ Getting along with vile						(version 9.7)
 	single key.
 <dl>
 <dt>
-	^X-(
+	<a name="begin-keyboard-macro">^X-(</a>
 </dt>
 <dt>
 	^X-)
@@ -4216,7 +4250,7 @@ Getting along with vile						(version 9.7)
 	which makes the current file writable and writes it.  (Again, use
 	^V to get the CR characters into the .vilerc file.)
 
-<h2>Programmed procedures (aka macros)</h2>
+<h2 id="programmed"><a href="programmed">Programmed procedures (aka macros</a>)</h2>
 <p>
 	[
 	  Note 1:  the information presented in this section of the help file
@@ -4254,7 +4288,7 @@ Getting along with vile						(version 9.7)
 	Macros come in two flavors:  named and numbered.  The syntax and
 	advantages of each format are discussed next.
 
-<h3>Numbered macros</h3>
+<h3 id="numbered-macros2"><a name="numbered-macros">Numbered macros</a></h3>
 	The numbered macro syntax looks like so:
 <pre>
 	&lt;number&gt; store-macro
@@ -4282,7 +4316,7 @@ Getting along with vile						(version 9.7)
 	their strictly numeric "names" don't facilitate easy recall,
 	numbered macros are not used that much anymore.
 
-<h3>Named macros</h3>
+<h3 id="named-macros2"><a name="named-macros">Named macros</a></h3>
 	A named macro, aka "stored procedure", uses this syntax:
 <pre>
 	store-procedure &lt;unique-name&gt;
@@ -4331,7 +4365,7 @@ Getting along with vile						(version 9.7)
 	Note that named macros may also include parameters and a help
 	string, each of which are described in doc/macros.doc.
 
-<h3>User-defined Operators</h3>
+<h3 id="user-defined-ops2"><a name="user-defined-ops">User-defined Operators</a></h3>
 	These are defined using the store-operator command, and accept no
 	arguments.  Otherwise they are much like other named macros.  These
 	macros setup parameters and perform special processing wrapped around
@@ -4344,12 +4378,12 @@ Getting along with vile						(version 9.7)
 	In the example, the combination of $cmd-count and $cmd-motion (passed
 	into the macro) act as the "real" operator's associated motion.
 
-<h3>Macro Language Elements</h3>
+<h3 id="macro-elements2"><a name="macro-elements">Macro Language Elements</a></h3>
 	Macros may incorporate any of the editor's built-in commands,
 	directives (e.g., ~if, ~else), any previously defined named
 	or numbered macro, functions (e.g., &amp;error, &amp;sequal), and variables.
 
-<h3>Variables</h3>
+<h3 id="macro-variables2"><a name="macro-variables">Variables</a></h3>
 	There are some built-in variables that can be used in macros to gain
 	access to parts of vile status, and parts of the current buffer.
 	Built-in variables are accessed by name, prefixed with the '$'
@@ -4554,7 +4588,7 @@ Getting along with vile						(version 9.7)
 	<td>$identifier</td><td>current "identifier-like" word under the cursor.</td>
 </tr>
 <tr>
-	<td>$kbd-macro</td><td>the keyboard macro, see ^X-( ^X-)	(read only)</td>
+	<td>$kbd-macro</td><td>the keyboard macro, see <a href="begin-keyboard-macro">^X-( ^X-)</a>	(read only)</td>
 </tr>
 <tr>
 	<td>$kill</td><td>some of the kill register		(read only)</td>
@@ -4599,7 +4633,7 @@ Getting along with vile						(version 9.7)
 	<td>$mode</td><td>current mode ("command","insert","overwrite") (rd. o.)</td>
 </tr>
 <tr>
-	<td>$modeline-format</td><td>format of mode lines.  see "Mode line customization".</td>
+	<td>$modeline-format</td><td>format of mode lines.  see <a href="statusline">"Mode line customization"</a>.</td>
 </tr>
 <tr>
 	<td>$modeline-limit</td><td>maximum inline offset to scan for mode lines</td>
@@ -4650,7 +4684,7 @@ Getting along with vile						(version 9.7)
 	<td>$pid</td><td>returns vile's process-id		(read only)</td>
 </tr>
 <tr>
-	<td>$position-format</td><td>format of ^G command.  see "Mode line customization".</td>
+	<td>$position-format</td><td>format of ^G command.  see <a href="statusline">"Mode line customization"</a>.</td>
 </tr>
 <tr>
 	<td>$progname</td><td>returns "vile" or "xvile" or "winvile".	(read only)</td>
@@ -4707,7 +4741,7 @@ Getting along with vile						(version 9.7)
 	<td>$title</td><td>current window title (X11, win32 versions only)</td>
 </tr>
 <tr>
-	<td>$title-format</td><td>format of window title.  see "Mode line customization".</td>
+	<td>$title-format</td><td>format of window title.  see <a href="statusline">"Mode line customization"</a>.</td>
 </tr>
 <tr>
 	<td>$version</td><td>current version number			(read only)</td>
@@ -4750,7 +4784,7 @@ Getting along with vile						(version 9.7)
 	line of the specified buffer, automatically setting the position to the
 	next line.
 
-<h3>Functions</h3>
+<h3 id="macro-functions2"><a name="macro-functions">Functions</a></h3>
 	There are also functions available, which can act on those variables,
 	or on hard-coded values.  Operations are expressed in prefix notation,
 	so to add to numbers you would say "&amp;add 3 5".  You may use any
@@ -4764,7 +4798,7 @@ Getting along with vile						(version 9.7)
 <tr><td>&amp;bchanged</td><td>1</td><td>true if given buffer is modified</td></tr>
 <tr><td>&amp;bind</td><td>1</td><td>lookup what function name is bound to key</td></tr>
 <tr><td>&amp;cat</td><td>2</td><td>concatenate string</td></tr>
-<tr><td>&amp;cclass</td><td>1</td><td>character class (see "show-printable")</td></tr>
+<tr><td>&amp;cclass</td><td>1</td><td>character class (see <a href="command-show-printable">"show-printable"</a>)</td></tr>
 <tr><td>&amp;chr</td><td>1</td><td>integer to char conversion</td></tr>
 <tr><td>&amp;classof</td><td>1</td><td>inverse of &amp;isa, returns classes for param</td></tr>
 <tr><td>&amp;cmatch</td><td>2</td><td>caseless match regular-expression value</td></tr>
@@ -4793,7 +4827,7 @@ Getting along with vile						(version 9.7)
 <tr><td>&amp;leq</td><td>2</td><td>numeric less than or equal</td></tr>
 <tr><td>&amp;lessthan</td><td>2</td><td>numeric less than</td></tr>
 <tr><td>&amp;local</td><td>1</td><td>retrieves local mode setting</td></tr>
-<tr><td>&amp;lookup</td><td>2</td><td>look for filename (see below for arguments)</td></tr>
+<tr><td>&amp;lookup</td><td>2</td><td>look for filename (see <a href="lookup-parrams">below</a> for arguments)</td></tr>
 <tr><td>&amp;lower</td><td>1</td><td>lower case string</td></tr>
 <tr><td>&amp;lt</td><td>2</td><td>numeric less than</td></tr>
 <tr><td>&amp;match</td><td>2</td><td>match regular-expression value</td></tr>
@@ -4804,7 +4838,7 @@ Getting along with vile						(version 9.7)
 <tr><td>&amp;neq</td><td>2</td><td>numeric inequality</td></tr>
 <tr><td>&amp;not</td><td>1</td><td>logical not</td></tr>
 <tr><td>&amp;or</td><td>2</td><td>logical or</td></tr>
-<tr><td>&amp;path</td><td>2</td><td>extract/translate pathname (see below for args)</td></tr>
+<tr><td>&amp;path</td><td>2</td><td>extract/translate pathname (see <a href="path-params">below</a> for args)</td></tr>
 <tr><td>&amp;pcat</td><td>2</td><td>concatenate directory and filename</td></tr>
 <tr><td>&amp;pquote</td><td>1</td><td>quote pathname if needed, e.g., embedded spaces</td></tr>
 <tr><td>&amp;qpasswd</td><td>1</td><td>prompt user for password string</td></tr>
@@ -4836,7 +4870,8 @@ Getting along with vile						(version 9.7)
 <tr><td>&amp;writable</td><td>1</td><td>is a file writable</td></tr>
 </table>
 <p>
-	The &amp;lookup function takes two arguments.  The first is a keyword and
+	<a name="lookup-params">The &amp;lookup function takes two arguments.</a>
+	The first is a keyword and
 	the second is a filename.  Keywords may be combined with '+', e.g.,
 	r+bin to find a readable file in the directory where vile's executable
 	is.  The keywords are for location:
@@ -4858,12 +4893,13 @@ Getting along with vile						(version 9.7)
 </table>
 	Search order is fixed: current, home, bin, startup, path, libdir
 <p>
-	The &amp;path function takes two arguments.  The first is a keyword and
+	<a name="path-params">The &amp;path function takes two arguments.</a>
+	The first is a keyword and
 	the second is a pathname.  Keywords are:  end (suffix of the filename),
 	full (absolute path), head (directory), root (filename without suffix),
 	short (relative path), tail (filename).
 
-<h3>Directives</h3>
+<h3 id="macro-directives2"><a name="macro-directives">Directives</a></h3>
 	Primitive flow-of-control within a macro may be obtained with
 	certain directives.  Macro directives start with a "~" and include
 	the following:  (see the file macros.doc for more detail)
@@ -4897,7 +4933,7 @@ Getting along with vile						(version 9.7)
 <p>
 	Lines ending with '\' are joined before interpreting them.
 
-<h3>Hooks</h3>
+<h3 id="macro-hooks2"><a name="macro-hooks">Hooks</a></h3>
 	There are a few places within vile where a user-specifiable
 	procedure will be executed if desired.  These points are referred
 	to as "hooks".  Hooks are specified by special variables which
@@ -4941,7 +4977,7 @@ Getting along with vile						(version 9.7)
 	prevent recursion, but the code surrounding the call to it may not
 	be safe either.)
 
-<h3>Macro examples</h3>
+<h3 id="macro-examples2"><a name="macro-examples">Macro examples</a></h3>
 	To prevent vile from thinking that a failed command is an error in
 	the macro, you can put "~force" in front of it.  So, to write a
 	macro which will run the "man" command on the identifier under the
@@ -5158,7 +5194,7 @@ Getting along with vile						(version 9.7)
 </pre>
 	(Of course you need to replace the ^M's with real carriage-returns.)
 
-<h3>Picture Mode</h3>
+<h3 id="picture-mode2"><a name="picture-mode">Picture Mode</a></h3>
 	Another example of a fairly complex vile procedure can be found
 	in the file "pictmode.rc".  The code there implements a primitive
 	means of drawing "ASCII art".
@@ -5167,7 +5203,7 @@ Getting along with vile						(version 9.7)
 	at the top of pictmode.rc for more     
 	information...                         
 
-<h2>Regular Expressions</h2>
+<h2 id="regular-expressions"><a href="regular-expressions">Regular Expressions</a></h2>
 <p>
 	Searches use regular expressions, which, as in vi, may be magic
 	by default or not.
@@ -5204,7 +5240,8 @@ $<br>
 \<em>c</em><br>
 <em>c</em></code></td><td>
 	"An atom is a regular expression in backslashed parentheses
-	(matching a match for the regular expression), a range (see below),
+	(matching a match for the regular expression), a range
+	(see <a href="regex-range">below</a>),
 	(matching any single character), `^' (matching the null string
 	at the beginning of the input string), `$' (matching the null
 	string at the end of the input string), a `\' followed by a single
@@ -5252,7 +5289,8 @@ $<br>
 </td></tr>
 <tr><td><code>
  [ ]</code></td><td>
-	"A range is a sequence of characters enclosed in `[]'.  It normally
+	<a name="regex-range">"A range is a sequence of characters enclosed in `[]'.</a>
+	It normally
 	matches any single character from the sequence.  If the sequence
 	begins with `^', it matches any single character not from the
 	rest of the sequence.  If two characters in the sequence are
@@ -5308,12 +5346,13 @@ $<br>
 	capitalizing words.</td></tr>
 </table>
 
-<h2>Command files</h2>
+<h2 id="command-files"><a href="command-files">Command files</a></h2>
 <p>
 	On startup, in the absence of '@' arguments, vile attempts to read
 	the file ".vilerc" ("vile.rc" on non-Unix hosts) in the current
 	directory, then in $HOME, and then in several host-specific
-	locations (see the "Invocation" topic below for complete details).
+	locations (see the <a href="Invocation">"Invocation"</a>
+	topic below for complete details).
 	If found, vile executes the startup file's commands.  It is
 	possible to nest such executions.  For example, you might keep your
 	general default settings in your home directory, and put the
@@ -5339,7 +5378,7 @@ $<br>
 	files, but not necessarily on the same line as valid commands.  Put
 	your comments on separate lines to be safe.
 
-<h2>Invocation</h2>
+<h2 id="invocation"><a href="invocation">Invocation</a></h2>
 <p>
 	vile searches for a startup or command file in these locations (and
 	in the order listed):
@@ -5427,7 +5466,7 @@ $<br>
 		renamed xmvile, etc).
 </dd>
 <dt>
-	VILE_NROFF_FILT
+	<a name="env-VILE_NROFF_FILT">VILE_NROFF_FILT</a>
 </dt>
 <dd>
 		if set, overrides the choice between "nroff" and "cawf"
@@ -5471,7 +5510,8 @@ $<br>
 <dd>
 		if set, indicates that "tbl" is available.
 		Set this to "cat" if you do not want to use "tbl",
-		but do want to use "nroff", etc (see VILE_NROFF_FILT).
+		but do want to use "nroff", etc
+		(see <a href="env-VILE_NROFF_FILT">VILE_NROFF_FILT</a>).
 		It is used in the ShowFormatted macro (^X-n).
 </dl>
 <p>
@@ -5484,7 +5524,7 @@ $<br>
 	Then vile's modification of $PATH affects the filter process and
 	also runs faster.
 
-<h3>Command line options</h3>
+<h3 id="commmandline-options2"><a name="commmandline-options">Command line options</a></h3>
 	The command line options are fairly straightforward.  vile supports
 	running just _any_ command after a '+', as does vi.  It also has some
 	shortcut options to support the commonly used '+400' to go to line 400
@@ -5555,7 +5595,7 @@ $<br>
 		.vilerc) or environment variable (i.e. $VILEINIT).
 </dl>
 
-<h2>Encryption</h2>
+<h2 id="encryption"><a href="encryption">Encryption</a></h2>
 <p>
 	vile implements an interface to the UNIX crypt function, like
 	standard vi, and can apply this to your buffers either
@@ -5582,7 +5622,7 @@ $<br>
 	file macros/gnugpg.rc facilitates use of GNU's gpg encryption
 	package.  gpg and gnugpg.rc work well on both Unix and win32 hosts.
 
-<h2>Crash Recovery</h2>
+<h2 id="crash-recovery"><a href="crash-recovery">Crash Recovery</a></h2>
 <p>
 	The "vi -r" option, used to recover an edited buffer after a system
 	crash, is not present in vile.  If vile itself crashes (usually
@@ -5592,17 +5632,17 @@ $<br>
 	the user to that affect.  The selection of the temporary directory
 	is host-specific, as follows:
 
-	    <h3>Unix (in priority order)</h3>
+	    <h3 id="unix-recovery2"><a name="unix-recovery">Unix (in priority order)</a></h3>
 	    $TMPDIR/vileD<em>XXXXXX</em><br>
 	    /var/tmp/vileD<em>XXXXX</em><br>
 	    /usr/tmp/vile<em>DXXXXX</em><br>
 	    /tmp/vileD<em>XXXXXX</em><br>
 	    ./vileD<em>XXXXXX</em>
 
-	    <h3>DOS and OS/2</h3>
+	    <h3 id="dos-recovery2"><a name="dos-recovery">DOS and OS/2</a></h3>
 	    Saved buffers are written to disk using the path ./V&lt;buffername&gt; .
 
-	    <h3>All other hosts (in priority order)</h3>
+	    <h3 id="other-recovery2"><a name="other-recovery">All other hosts (in priority order)</a></h3>
 	    $TMPDIR/vileD<em>XXXXXX</em><br>
 	    ./vileD<em>XXXXXX</em>
 <p>
@@ -5612,7 +5652,7 @@ $<br>
 	using it.  You might also consider the "autosave" and "autowrite"
 	options, which will cause more frequent saves of your work.
 
-<h2>Mode line customization</h2>
+<h2 id="statusline"><a href="statusline">Mode line customization</a></h2>
 <p>
 	At the bottom of each window is a mode (or "status") line which
 	is used for displaying certain characteristics of the window and
@@ -5700,7 +5740,7 @@ $<br>
 	"%-%i%- %b %m:: :%f:is : :%=%F: : %-%-%-%-:%l:(:,:%c::):%S::%-%-:%|"
 </pre>
 
-<h2>Color basics</h2>
+<h2 id="color-basics"><a href="color-basics">Color basics</a></h2>
 <p>
 	The editor's support of color varies from host to host.  On some
 	hosts, such as VMS and DOS, limited capability exists.  On other
@@ -5709,7 +5749,7 @@ $<br>
 	syntax coloring, it helps to first describe several key color
 	features and concepts.
 
-<h3>Console/standard vile versus GUI vile</h3>
+<h3 id="console-vs-gui2"><a name="console-vs-gui">Console/standard vile versus GUI vile</a></h3>
 	Depending on the host, vile comes in two flavors:
 <ul>
 	<li>console (or "standard") vile, which displays text with block
@@ -5721,7 +5761,7 @@ $<br>
 	In general, GUI vile supports a richer set of color features and
 	capabilities than console vile.
 
-<h3>Color palette</h3>
+<h3 id="color-palette2"><a name="color-palette">Color palette</a></h3>
 	Depending on the capabilities of the host operating system and the
 	underlying display hardware, vile supports a palette of up to 16
 	colors.  The editor's color names are fixed, as shown in this list:
@@ -5749,7 +5789,7 @@ $<br>
 	arbitrary RBG values to the above color names, thus permitting the
 	creation of a customized color palette.
 
-<h3>xvile custom colors</h3>
+<h3 id="xvile-colors2"><a name="xvile-colors">xvile custom colors</a></h3>
 	When a color X server and color display are available, xvile's
 	default colors are modified by changing the editor's color
 	resources (refer to the topic "X Resources" in this help file).
@@ -5763,25 +5803,25 @@ $<br>
 	    XVile.color.fcolor8: red
 </pre>
 
-<h3>winvile custom colors</h3>
+<h3 id="winvile-colors2"><a name="winvile-colors">winvile custom colors</a></h3>
 	winvile's default colors are changed via the editor's set-rgb-palette
 	command.  Mirroring the example above, map "gray" to red like so:
 <pre>
 	    set-rgb-palette gray 255 0 0
 </pre>
 
-<h3>Display attributes</h3>
+<h3 id="display-attrs2"><a name="display-attrs">Display attributes</a></h3>
 	vile supports bold, italic, underline, and reverse display
 	attributes.  These attributes may be used to modify/enhance any of
 	the existing colors (e.g., bold blue), or render text as a "color"
 	in its own right (e.g., configure the editor to highlight all
 	matched search strings in the reverse attribute).
 
-<h3>Show-colors command</h3>
+<h3 id="show-colors2"><a name="show-colors">Show-colors command</a></h3>
 	The show-colors command (i.e., ":show-colors") displays the
 	editor's current color and attribute mappings.
 
-<h3>Xterms, terminfo, and termcap (Unix hosts only)</h3>
+<h3 id="color-xterm2"><a name="color-xterm">Xterms, terminfo, and termcap (Unix hosts only)</a></h3>
 	Note that on some unix hosts it's possible to run standard vile in
 	a color xterm and thereby gain access to an expanded color palette
 	(albeit often limited to 8 colors).  However, this is only possible
@@ -5811,7 +5851,7 @@ $<br>
 	    <a href="http://invisible-island.net/xterm/xterm.faq.html#no_color">http://invisible-island.net/xterm/xterm.faq.html#no_color</a>
 </pre>
 
-<h3>Visual matching (VM)</h3>
+<h3 id="visual-matching2"><a name="visual-matching">Visual matching (VM)</a></h3>
 	All hosts support visual-matches mode, which highlights search text
 	with either a simple color (no modifiers) or a display attribute.
 	To see the list of supported colors and attributes, type:
@@ -5821,7 +5861,7 @@ $<br>
 	To learn more about this mode, search for "visual-matches"
 	elsewhere in this help file.
 
-<h3>Foreground color (FC)</h3>
+<h3 id="foreground-color2"><a name="foreground-color">Foreground color (FC)</a></h3>
 	On hosts and display hardware that support it, the editor's
 	foreground color may be set to a simple color value (no attribute
 	modifiers allowed).  Type:
@@ -5830,12 +5870,12 @@ $<br>
 </pre>
 	for a list of supported colors.
 
-<h3>Background color (BC)</h3>
+<h3 id="background-color2"><a name="background-color">Background color (BC)</a></h3>
 	On hosts and display hardware that support it, bcolor mode sets the
 	editor's background color.  Bcolor utilizes the same color list
 	as fcolor.
 
-<h3>Attribute control sequences (ACS)</h3>
+<h3 id="attr-controls2"><a name="attr-controls">Attribute control sequences (ACS)</a></h3>
 	A buffer may be manually or programmatically encoded with strings
 	that cause the editor to render text in arbitrary color/attribute
 	sequences.  For example, consider the following data:
@@ -5858,7 +5898,7 @@ $<br>
 	more detailed discussion of attribute control sequences, refer to
 	the topic "Writing your own filters" in this help file.
 
-<h3>Syntax coloring (SC)</h3>
+<h3 id="syntax-coloring2"><a name="syntax-coloring">Syntax coloring (SC)</a></h3>
 	vile colors a buffer via these steps:
 <ol>
 	<li>an external filter (e.g., vile-c-filt) is run and
@@ -5877,7 +5917,7 @@ $<br>
 	   the information embedded in the filter's output.
 </ol>
 
-<h3>Host capability matrix</h3>
+<h3 id="host-capabilities2"><a name="host-capabilities">Host capability matrix</a></h3>
 <table border="1" summary="Host capabilities">
 <tr>
 <th>Color Feature</th>
@@ -5908,7 +5948,7 @@ $<br>
 		 "coloring" is limited to the use of attributes like bold,
 		 underline, etc.
 
-<h2>Syntax coloring</h2>
+<h2 id="syntax-filters"><a href="syntax-filters">Syntax coloring</a></h2>
 <p>
 	vile's source distribution includes an extensive set of filters
 	that color many languages and text file formats, including (but not
@@ -5966,7 +6006,7 @@ $<br>
 	step-by-step description of syntax coloring configuration, as well
 	as pointers to related features.
 
-<h3>Prerequisites</h3>
+<h3 id="color-prereqs2"><a name="color-prereqs">Prerequisites</a></h3>
 <ul>
 	<li>be familiar with the help topic entitled "Color basics".
 	<li>ensure the target host supports syntax coloring.
@@ -5978,11 +6018,11 @@ $<br>
 	   to compilation.
 </ul>
 
-<h3>Configuration</h3>
+<h3 id="color-recipes2"><a name="color-recipes">Configuration</a></h3>
 	There are three configuration recipes, each dependent on the target
 	host and/or the user's privilege level.
 
-<h3>Unix install recipe &ndash; root privileges available</h3>
+<h3 id="root-recipe2"><a name="root-recipe">Unix install recipe &ndash; root privileges available</a></h3>
 	The simplest install copies the editor to a directory in the system
 	PATH (we'll assume /usr/local/bin), and copies all syntax coloring
 	data and macro files to /usr/local/share/vile.  The following
@@ -6009,7 +6049,7 @@ $<br>
 	discussion, the term "COLORDIR" refers collectively to the
 	directories $HOME/.vile or /usr/local/share/vile as appropriate.
 
-<h3>Unix install recipe &ndash; no privileges</h3>
+<h3 id="user-recipe2"><a name="user-recipe">Unix install recipe &ndash; no privileges</a></h3>
 	The simplest install copies the editor and all data and macros file
 	to a writable directory tree (we'll assume $HOME/local).  This
 	syntax does the job:
@@ -6039,9 +6079,11 @@ $<br>
 	discussion, the term "COLORDIR" refers collectively to the
 	directories $HOME/.vile or $HOME/local/share/vile as appropriate.
 
-<h3>Manual Recipe &ndash; Win32 host</h3>
-	There is no Win32 install/setup program.  Consequently, all Win32
-	users must resort to manual configuration.  For the purposes of
+<h3 id="manual-recipe2"><a name="manual-recipe">Manual Recipe &ndash; Win32 host</a></h3>
+	You may choose to not use the winvile install/setup program,
+	or else you may be installing console Win32 vile.
+	In either case, you can always manually configure vile for Win32.
+	For the purposes of
 	this discussion, it is assumed that the editor is not built from
 	sources, but instead obtained from precompiled binaries, as
 	described next.
@@ -6084,7 +6126,7 @@ $<br>
 	   On a Win/NT/2K host, env vars are initialized via a control
 	   panel applet.  WinXP uses a different mechanism.
 
-<h3>Testing the configuration</h3>
+<h3 id="testing-filters2"><a name="testing-filters">Testing the configuration</a></h3>
 	Basic configuration is now complete.  Filters.rc installs several
 	stored procedures, including:
 <table border="1" summary="Highlighting macros">
@@ -6110,7 +6152,7 @@ $<br>
 	attributes chosen, but that's configurable (keep reading :-) ).
 	If nothing happened, skip down to the troubleshooting section.
 
-<h3>Read-hook</h3>
+<h3 id="read-hook2"><a name="read-hook">Read-hook</a></h3>
 	Typing ^X-q each time a new file is opened gets old after awhile.
 	To force the editor to take over this task, add this line to your
 	startup file:
@@ -6124,7 +6166,7 @@ $<br>
 	HighlightFilter, which adds a message saying that it is updating
 	attributes.  If you prefer no messages, use HighlightFilter.
 
-<h3>Autocolor</h3>
+<h3 id="autocolor2"><a name="autocolor">Autocolor</a></h3>
 	It's possible to automatically initiate syntax coloring when the
 	editor detects no active input during a user-configurable interval.
 	If this sounds appealing, add the following to your startup file:
@@ -6160,7 +6202,7 @@ $<br>
 	:set nohl
 </pre>
 
-<h3>Changing color/attribute mappings</h3>
+<h3 id="changing-filters2"><a name="changing-filters">Changing color/attribute mappings</a></h3>
 	Filters will color text based on the contents of the file
 	COLORDIR/vile.keywords .  This file's configuration syntax is
 	described in detail in doc/filters.doc .  We'll hit the high points
@@ -6219,7 +6261,7 @@ $<br>
 	"flex".  It is not expected that users will need or want to edit
 	these files.
 
-<h3>Caution: vile.keywords is a precious file</h3>
+<h3 id="caution-keywords2"><a name="caution-keywords">Caution: vile.keywords is a precious file</a></h3>
 	From time to time, users upgrade to the latest release of vile.  If
 	the above syntax coloring configuration and installation
 	instructions are blindly repeated during an upgrade, your copy of
@@ -6231,7 +6273,7 @@ $<br>
 	    Once vile.keywords is edited to your satisfaction, make a
 	    backup copy and/or save it under version control!
 
-<h3>Troubleshooting</h3>
+<h3 id="filter-debugging2"><a name="filter-debugging">Troubleshooting</a></h3>
 	Try this checklist when syntax coloring doesn't work:
 <ul>
 	<li>Does your display hardware and/or host support color?  Type
@@ -6255,7 +6297,7 @@ $<br>
 	  a filter via the filtername mode.  Don't do that.
 </ul>
 
-<h3>Attaching/Forcing a buffer's majormode</h3>
+<h3 id="force-majormode2"><a name="force-majormode">Attaching/Forcing a buffer's majormode</a></h3>
 	For the most part, when vile visits a file, the correct majormode
 	is attached to the file's buffer and appropriate syntax coloring
 	ensues.  But there are times when vile may choose the wrong
@@ -6275,12 +6317,12 @@ $<br>
 	:set-highlighting cpp
 </pre>
 
-<h3>Man pages</h3>
+<h3 id="coloring-manpages2"><a name="coloring-manpages">Man pages</a></h3>
 	It's also possible to syntax color Unix man pages, although the
 	procedure is not tied to a majormode.  Refer to the help topic
 	entitled 'Filtering "man" pages' for further information.
 
-<h3>Spell checking (Unix hosts only)</h3>
+<h3 id="spell-checking2"><a name="spell-checking">Spell checking (Unix hosts only)</a></h3>
 	The editor is capable of spell checking the current buffer (with
 	ispell) and subsequently highlighting all misspelled words in the
 	Keyword class color (as specified in vile.keywords).  If this
@@ -6291,11 +6333,11 @@ $<br>
 	Spell.rc installs ^X-i as the keybinding that initiates spell
 	checking.
 
-<h3>Further reading</h3>
+<h3 id="more-filters2"><a name="more-filters">Further reading</a></h3>
 	More information on syntax coloring can be found in the file
 	doc/filters.doc, in the vile source directory.
 
-<h2>Setting Extra Colors</h2>
+<h2 id="extra-colors"><a href="extra-colors">Setting Extra Colors</a></h2>
 <p>
 	Syntax highlighting applies to buffers which are loaded from files.
 	vile can also generate buffers to show its internal state.  Those
@@ -6343,7 +6385,7 @@ $<br>
 	~endwith
 </pre>
 
-<h2>Majormodes</h2>
+<h2 id="majormodes"><a href="majormodes">Majormodes</a></h2>
 <p>
 	Prior to studying majormodes, it helps to be familiar with the
 	"Editor modes" and "Syntax coloring" topics.
@@ -6464,7 +6506,7 @@ $<br>
 	unset/unsetl hlp-tabinsert
 </pre>
 
-<h3>Notes</h3>
+<h3 id="filter-notes2"><a name="filter-notes">Notes</a></h3>
 	1) Use the command "show-majormodes" to display the list of majormodes
 	   and their associated submodes.
 <p>
@@ -6477,7 +6519,7 @@ $<br>
 	setl cppmode     ; &lt;-- force cppmode for current buffer
 </pre>
 
-<h3>Distinguishing between C/C++ include files</h3>
+<h3 id="cpp-headers2"><a name="cpp-headers">Distinguishing between C/C++ include files</a></h3>
 	Both C and C++ use ".h" as an include file suffix.  vile's current
 	majormode definitions favor "*.h" for inclusion in cmode (not
 	cppmode), which is not desirable for C++ programmers and/or a C++
@@ -6510,7 +6552,7 @@ $<br>
 	   tests cppmode before cmode, all "*.h" files will now be edited in
 	   cppmode.
 
-<h3>cmode:  the original vile builtin majormode</h3>
+<h3 id="builtin-majormodes2"><a name="builtin-majormodes">cmode:  the original vile builtin majormode</a></h3>
 	Long before Tom Dickey added majormodes to vile, there existed
 	"cmode", a feature that included its own builtin tab settings and
 	indentation style (still available today as "cindent").	 This older
@@ -6547,7 +6589,7 @@ $<br>
 	~endwith
 </pre>
 
-<h2>Filtering "man" pages</h2>
+<h2 id="filtering-manpages"><a href="filtering-manpages">Filtering "man" pages</a></h2>
 <p>
 	When used in conjunction with the vile-manfilt program (supplied as
 	source file filters/manfilt.c), either vile or xvile may be used
@@ -6593,12 +6635,12 @@ $<br>
 	Note that macros/manpage.rc also provides a macro that attaches
 	attributes to any man page displayed in the editor's current buffer.
 
-<h2>Working in a project hierarchy</h2>
+<h2 id="project-hierarchy"><a href="project-hierarchy">Working in a project hierarchy</a></h2>
 <p>
 	vile includes several features that enable quick access to many
 	files spread over a directory hierarchy, as described below.
 
-<h3>Directory navigation</h3>
+<h3 id="directory-nav2"><a name="directory-nav">Directory navigation</a></h3>
 	vile provides several commands that manipulate an internal
 	directory stack:
 <pre>
@@ -6677,7 +6719,7 @@ $<br>
 <p>
 	If pushd or popd is successful, a "dirs" is performed as well.
 
-<h3>Hierarchical tags</h3>
+<h3 id="tag-path2"><a name="tag-path">Hierarchical tags</a></h3>
 	Assume the following directory hierarchy:
 <pre>
 	       root
@@ -6698,7 +6740,7 @@ $<br>
 	"src"?  The answer is an emphatic "Yes".  This can be done using at
 	least two different mechanisms.
 
-<h3>Exuberant ctags</h3>
+<h3 id="ex-ctags2"><a name="ex-ctags">Exuberant ctags</a></h3>
 	Assuming the Exuberant Ctags program is available (written by Darren
 	Hiebert), the simplest method is as follows:
 <p>
@@ -6725,7 +6767,7 @@ $<br>
 	It's important to note that Exuberant Ctags has been ported to many
 	hosts (including VMS) and supports many languages other than C.
 
-<h3>Standard ctags</h3>
+<h3 id="std-ctags2"><a name="std-ctags">Standard ctags</a></h3>
 	Use this recipe when working with the standard ctags program
 	(available on virtually all Unix hosts):
 <p>
@@ -6747,7 +6789,7 @@ $<br>
 	This method achieves the same one-keystroke symbol access as
 	described for Exuberant Ctags.
 
-<h3>File/Directory traversal (win32/Unix hosts only)</h3>
+<h3 id="findpath2"><a name="findpath">File/Directory traversal (win32/Unix hosts only)</a></h3>
 	vile's capture-command (bound to ^X-!) includes an interface to the
 	Unix find command (or equivalent clone) that permits the user to
 	access a large number of files or directories spread across an
@@ -6793,7 +6835,7 @@ $<br>
 	Note 3:  Most versions of find do _not_ support nonrecursive
 	operations.  The one known exception is GNU's find.
 
-<h3>Examples (file traversal)</h3>
+<h3 id="findpath-example2"><a name="findpath-example">Examples (file traversal)</a></h3>
 	Assume the same project hierarchy as was used in the description of
 	"Hierarchical tags" above.  Assume also that the path to the
 	project root is /local/proj/root and that the vile startup
@@ -6855,7 +6897,7 @@ $<br>
 	option, this feature won't work.  The workaround is simple&ndash;upgrade to
 	the GNU version of find.
 
-<h3>Examples (directory traversal)</h3>
+<h3 id="find-cfg-example2"><a name="find-cfg-example">Examples (directory traversal)</a></h3>
 	Suppose all you really desire is access to the names of the
 	directories embedded within a project hierarchy.  This might be
 	useful for Perl hackers who want to manipulate a directory's
@@ -6872,7 +6914,7 @@ $<br>
 		xargs ls -ld
 </pre>
 
-<h3>File/directory traversal notes</h3>
+<h3 id="findpath-notes2"><a name="findpath-notes">File/directory traversal notes</a></h3>
 <ul>
 	<li>An astute win32 user will note that the above traversal examples
 	  rely on utilities (find, egrep, and xargs) that aren't available
@@ -6887,7 +6929,7 @@ $<br>
 	  from the VILE_FINDPATH environment variable.
 </ul>
 
-<h2>Writing your own filters</h2>
+<h2 id="custom-filters"><a href="custom-filters">Writing your own filters</a></h2>
 <p>
 	Filters may be written as either an external program or with
 	the Perl interface.  Both the manual page filter and the C
@@ -6905,7 +6947,8 @@ $<br>
 <pre>
 	attribute-from-filter-til
 </pre>
-	(See above for examples of how to use this command.)
+	(See <a href="changing-majormode">above</a>
+	for examples of how to use this command.)
 <p>
 	The control sequences take the following form:
 <pre>
@@ -6938,7 +6981,7 @@ $<br>
 	^A15IB:Bold and italic
 </pre>
 
-<h2>Hypertext</h2>
+<h2 id="hypertext"><a href="hypertext">Hypertext</a></h2>
 <p>
 	Vile does not currently supply a builtin key binding for
 	executing hypertext commands.  The following macro and
@@ -6974,7 +7017,7 @@ $<br>
 	default action of selecting the word under the cursor will
 	occur instead.
 
-<h2>Debugging features</h2>
+<h2 id="debugging"><a href="debugging">Debugging features</a></h2>
 <dl>
 <dt>
 	popup-msgs
@@ -7078,12 +7121,12 @@ $<br>
 </dd>
 </dl>
 
-<h2>X Window System specifics</h2>
+<h2 id="xwindows"><a href="xwindows">X Window System specifics</a></h2>
 <p>
 	If you are using xvile under X11, the following additions are
 	available:
 
-<h3>Mouse Buttons</h3>
+<h3 id="xvile-buttons2"><a name="xvile-buttons">Mouse Buttons</a></h3>
 <dl>
 <dt>
 	1 &ndash;
@@ -7146,7 +7189,7 @@ $<br>
 	shell-filtering operator, '!') are only capable of working on full
 	lines of text.
 
-<h3>Clipboard</h3>
+<h3 id="xvile-clipboard2"><a name="xvile-clipboard">Clipboard</a></h3>
 <p>
 	Data may be exchanged between many X applications via the
 	PRIMARY selection.  This selection is set and manipulated as
@@ -7180,7 +7223,7 @@ $<br>
 	bind-key paste-from-clipboard #-*
 </pre>
 
-<h3>Scrollbars</h3>
+<h3 id="xvile-scrollbars2"><a name="xvile-scrollbars">Scrollbars</a></h3>
 <p>
 	The X toolkit version of xvile provides default translations
 	similar to the translations for scrollbars found in the Athena
@@ -7238,7 +7281,7 @@ $<br>
 	scrollbar and corresponding window.  Button three (with control
 	key) will make the corresponding window the only window.
 
-<h3>Standard X command line arguments</h3>
+<h3 id="xwindow-options2"><a name="xwindow-options">Standard X command line arguments</a></h3>
 <table border="1" summary="X options">
 <tr><td><code>-fn <em>fontname</em></code></td><td>Font to use (or -font).</td></tr>
 <tr><td><code>-rv</code></td><td>Use reverse video (also -reverse).</td></tr>
@@ -7254,7 +7297,7 @@ $<br>
 <tr><td><code>-xrm <em>Resource</em></code></td><td>Specify or change an X resource internal to xvile.</td></tr>
 </table>
 
-<h3>Additional xvile command line arguments</h3>
+<h3 id="xvile-options2"><a name="xvile-options">Additional xvile command line arguments</a></h3>
 <table border="1" summary="xvile options">
 <tr><td><code>-class <em>name</em></code></td><td>Class name used for resource lookups.</td></tr>
 <tr><td><code>-fork</code></td><td>to spawn xvile immediately on startup</td></tr>
@@ -7263,7 +7306,7 @@ $<br>
 <tr><td><code>-rightbar</code></td><td>Put scrollbar(s) on right (default)</td></tr>
 </table>
 
-<h3>Setting a new process group</h3>
+<h3 id="process-group2"><a name="process-group">Setting a new process group</a></h3>
 	Some systems and/or some shells and display managers seem to want
 	xvile to run in its own process group, to help isolate its signals
 	and actions from the signals and actions of the parent process
@@ -7284,7 +7327,7 @@ $<br>
 	The "new-process-group" command has no effect in non-X11 versions
 	of vile.
 
-<h3>X Resources</h3>
+<h3 id="xvile-resources2"><a name="xvile-resources">X Resources</a></h3>
 <table border="1" summary="xvile resources">
 <tr><th>Name</th><th>Description</th></tr>
 <tr><td>font</td><td>Font to use.</td></tr>
@@ -7368,7 +7411,7 @@ $<br>
 			If true, the cursor will be positioned at the location
 			of the mouse at the end of making a selection (usually
 			at either the start or end of a selection).</td></tr>
-<tr><td>blinkInterval</td><td>An integer indicating the time in milliseconds to wait
+<tr><td><a name="xvile-blinkInterval">blinkInterval</a></td><td>An integer indicating the time in milliseconds to wait
 			before blinking the cursor.  A positive value will
 			cause the cursor to always blink.  Setting
 			blinkInterval to zero will cause the cursor to never
@@ -7418,13 +7461,14 @@ color.bcolor15<br>
 <tr><td>wheelScrollAmount</td><td>Amount to scroll for a wheel mouse, per button-press.</td></tr>
 </table>
 
-<h3>Sample .Xdefault entries</h3>
+<h3 id="sample-xresources2"><a name="sample-xresources">Sample .Xdefault entries</a></h3>
 <p>
 	You may or may not want to use the following as a starting point
 	for the "XVile" section of your .Xdefaults or .Xresources file.  If
 	you have a monochrome display server, you will probably not want
 	to use any of the color specifications.  You may, however, wish
-	to set up a blinking cursor, using "blinkInterval"  (see above).
+	to set up a blinking cursor, using
+	<a href="xvile-blinkInterval">"blinkInterval"</a> (see above).
 <pre>
 	XVile*font: -*-courier-medium-r-normal-*-*-*-75-75-m-70-iso8859-*
 	XVile*geometry:	80x54
@@ -7441,7 +7485,7 @@ color.bcolor15<br>
 	XVile.modeline.focusForeground: yellow
 </pre>
 
-<h3>Fonts</h3>
+<h3 id="xvile-fonts2"><a name="xvile-fonts">Fonts</a></h3>
 <p>
 	To change the font on the fly, use the ':setv' command to set the
 	$font variable, with ":setv $font &lt;fontname&gt;".
@@ -7509,7 +7553,7 @@ color.bcolor15<br>
 	font from the command line or resource file.  It may also cause the
 	xvile window to be unnecessarily resized during initialization.
 
-<h2>DOS specifics</h2>
+<h2 id="dos-stuff"><a href="dos-stuff">DOS specifics</a></h2>
 <p>
 	The .vilerc file is called vile.rc under DOS.
 <p>
@@ -7556,9 +7600,9 @@ color.bcolor15<br>
 	returns, and forces "nodos" mode, so that they don't come back when
 	you write the file.  In both cases, "dos" mode becomes a so-called
 	"local" mode, so that the rest of your buffers will be unaffected.
-	See also the discussion of "recordseparator" mode.
+	See also the discussion of <a href="mode-recordseparator">"recordseparator"</a> mode.
 
-<h2>VMS specifics</h2>
+<h2 id="vms-stuff"><a href="vms-stuff">VMS specifics</a></h2>
 <p>
 	The .vilerc file is called vile.rc under VMS
 <p>
@@ -7568,7 +7612,7 @@ color.bcolor15<br>
 	is not supported due to conflicts with filename syntax delimiters.
 	Use '&amp;' instead.
 
-<h3>Paths</h3>
+<h3 id="cdpath2"><a name="cdpath">Paths</a></h3>
 	vile recognizes either VMS- or UNIX-style pathnames and '~' is
 	supported as a shortcut for SYS$LOGIN (e.g., :e ~/login.com).
 	However, filename completion only works for UNIX-style pathnames,
@@ -7587,7 +7631,7 @@ color.bcolor15<br>
 	$ CDPATH :== dev$diska:[home],rooted$build_dir:
 </pre>
 
-<h3>Command-Line Switches</h3>
+<h3 id="vmsvile-options2"><a name="vmsvile-options">Command-Line Switches</a></h3>
 	vile accepts these command-line options in addition to the
 	standard ones:
 <table border="1" summary="vmsvile options">
@@ -7597,7 +7641,7 @@ color.bcolor15<br>
 <tr><td>-132</td><td>force 132-column mode (N/A for VT52 terminals)</td></tr>
 </table>
 
-<h3>Modes</h3>
+<h3 id="vmsvile-modes2"><a name="vmsvile-modes">Modes</a></h3>
 <table border="1" summary="vmsvile modes">
 <colgroup><col width="80px"><col width="500px"></colgroup>
 <tr><th>Name</th><th>Description</th></tr>
@@ -7619,7 +7663,7 @@ color.bcolor15<br>
 			or "vfc".  (B)</td></tr>
 </table>
 
-<h3>Variables</h3>
+<h3 id="vmsvile-variables2"><a name="vmsvile-variables">Variables</a></h3>
 <table border="1" summary="vmsvile variables">
 <colgroup><col width="80px"><col width="500px"></colgroup>
 <tr><th>Name</th><th>Description</th></tr>
@@ -7628,7 +7672,7 @@ color.bcolor15<br>
 			(e.g., :setv $sres=wide).</td></tr>
 </table>
 
-<h3>Default key maps</h3>
+<h3 id="vmsvile-keys2"><a name="vmsvile-keys">Default key maps</a></h3>
 	With respect to VT100 and later terminal types, the editor assumes
 	a vt220 keyboard and maps special keys to their closest vile
 	counterpart (e.g., "Remove" mapped to vile's "Delete").  Some vt220
@@ -7640,7 +7684,7 @@ color.bcolor15<br>
 		DO       =>  F16.
 </pre>
 
-<h2>Win32 specifics</h2>
+<h2 id="win32-stuff"><a href="win32-stuff">Win32 specifics</a></h2>
 <p>
 	The editor may be invoked/built as a console or GUI application.
 	The former is known as vile.exe and the latter as winvile.exe .
@@ -7648,14 +7692,14 @@ color.bcolor15<br>
 	reference to "vile" refers to both the console and GUI editor,
 	unless otherwise stated.
 
-<h3>Heritage</h3>
+<h3 id="winvile-vs-vile2"><a name="winvile-vs-vile">Heritage</a></h3>
 	The Win32 version of vile supports almost all of the features and
 	changes listed directly above in the section entitled "DOS
 	specifics", with the exception that the editor's screen resolution
 	cannot be changed using explicit -43, -50, etc. command-line
 	switches or via the sres command.
 
-<h3>GUI Command-Line Switches</h3>
+<h3 id="winvile-options2"><a name="winvile-options">GUI Command-Line Switches</a></h3>
 	Winvile accepts these command-line options in addition to the
 	standard ones:
 <table border="1" summary="winvile options">
@@ -7677,7 +7721,7 @@ color.bcolor15<br>
 				as "Send To" work nicely.</td></tr>
 </table>
 
-<h3>Console Command-Line Switches</h3>
+<h3 id="win32-options2"><a name="win32-options">Console Command-Line Switches</a></h3>
 	Vile accepts these additional command-line options:
 <table border="1" summary="w32vile options">
 <colgroup><col width="160px"><col width="420px"></colgroup>
@@ -7691,7 +7735,7 @@ color.bcolor15<br>
 				NT host).</td></tr>
 </table>
 
-<h3>Pipes</h3>
+<h3 id="w32pipes2"><a name="w32pipes">Pipes</a></h3>
 	Internally, vile uses two radically different mechanisms for piping
 	data to and from the shell.  One mechanism uses temporary files and
 	the other simply calls native Win32 services.  This dichotomy
@@ -7712,18 +7756,19 @@ color.bcolor15<br>
 <tr><td>
 	    If w32pipes is enabled and command.com initiates a pipe I/O
 	    transaction on behalf of the editor, vile will almost certainly
-	    hang.  See the "Shell" topic below to learn how to specify
+	    hang.  See the <a href="w32shell">"Shell"</a>
+	    topic below to learn how to specify
 	    the editor's default shell.
 </td></tr>
 </table>
 
-<h3>Paths</h3>
+<h3 id="w32cdpath2"><a name="w32cdpath">Paths</a></h3>
 	vile recognizes either DOS- or UNIX-style pathnames and '~' is
 	supported as a shortcut for $HOME (e.g., :e ~/vile.rc).
 <p>
 	CDPATH directory lists are delimited with a semicolon.
 
-<h3>Shell</h3>
+<h3 id="w32shell2"><a name="w32shell">Shell</a></h3>
 	When a filter, pipe, or explicit shell command requires execution
 	of an external process, vile invokes an instance of the shell
 	specified in the $COMSPEC environment variable.  This default may
@@ -7756,7 +7801,7 @@ color.bcolor15<br>
 	~endm
 </pre>
 
-<h3>Cygwin's Bash Versus Console vile</h3>
+<h3 id="win32-bash2"><a name="win32-bash">Cygwin's Bash Versus Console vile</a></h3>
 	Using Cygwin's bash as vile's shell works well, with one exception.
 	When console vile is invoked from a bash command line, typing ^C or
 	Control+Break within the editor causes an immediate exit (no data
@@ -7781,7 +7826,7 @@ color.bcolor15<br>
 	that $@ splits filenames containing embedded spaces.
 </ol>
 
-<h3>Mouse (GUI and Console)</h3>
+<h3 id="win32-mouse2"><a name="win32-mouse">Mouse (GUI and Console)</a></h3>
 	Selecting and dragging with the left mouse button yanks text to the
 	unnamed register.  Press a control key during the selection to
 	sweep out a rectangular region.  Paste the selected text using the
@@ -7802,7 +7847,7 @@ color.bcolor15<br>
 	system menu->Properties->Options Tab
 </pre>
 
-<h3>Winvile Mouse</h3>
+<h3 id="winvile-mouse2"><a name="winvile-mouse">Winvile Mouse</a></h3>
 	Pressing the right mouse button pops up a menu of editor commands.
 	These are predefined:
 <table border="1" summary="winvile right-mouse menu">
@@ -7858,7 +7903,7 @@ color.bcolor15<br>
 	  popup menu.
 </ul>
 
-<h3>Clipboard</h3>
+<h3 id="winvile-clipboard2"><a name="winvile-clipboard">Clipboard</a></h3>
 <p>
 There are several ways to copy to/from the clipboard:
 <ul>
@@ -7885,7 +7930,7 @@ There are several ways to copy to/from the clipboard:
 	The swap-clipboard-keys command swaps the commands bound to
 	Ctrl+Insert and Alt+Insert.
 
-<h3>OLE Automation</h3>
+<h3 id="winvile-ole2"><a name="winvile-ole">OLE Automation</a></h3>
 	Winvile may be invoked as an OLE automation server and thereafter
 	controlled by an OLE client.  Refer to the file doc/oleauto.doc for
 	further details.  Additionally, the OLE client "visvile.dll"
@@ -7893,7 +7938,7 @@ There are several ways to copy to/from the clipboard:
 	Developer Studio editor.  Refer to the file doc/visvile.doc for
 	detailed information.
 
-<h3>Winvile Font</h3>
+<h3 id="ole-font2"><a name="ole-font">Winvile Font</a></h3>
 	Winvile's font may be set via a command-line switch or from within
 	the editor by modifying the built-in $font state variable.  In either
 	case, a &lt;fontspec&gt; string describes the desired font, where:
@@ -7930,7 +7975,7 @@ There are several ways to copy to/from the clipboard:
 		set-variable $font "courier new,8"
 	~endif
 </pre>
-<h3>Perl with Winvile</h3>
+<h3 id="winvile-perl2"><a name="winvile-perl">Perl with Winvile</a></h3>
 <p>
 	At the user's discretion, vile may be built with an embedded perl
 	interpreter.  To date, only the perl distribution at the following
@@ -7961,7 +8006,7 @@ There are several ways to copy to/from the clipboard:
 	    distribution includes the perl interpreter and all "standard"
 	    modules and libraries.
 
-<h3>Winvile Commands</h3>
+<h3 id="winvile-commands2"><a name="winvile-commands">Winvile Commands</a></h3>
 <dl>
 <dt>
 	delete-text-selection
@@ -8006,7 +8051,7 @@ There are several ways to copy to/from the clipboard:
 	swap-clipboard-keys
 </dt>
 <dd>
-			See discussion of clipboard above.
+			See discussion of <a href="winvile-clipboard">clipboard</a> above.
 </dd>
 <dt>
 	wincd [dir]
@@ -8076,7 +8121,7 @@ There are several ways to copy to/from the clipboard:
 			unchanged.
 </dl>
 
-<h3>Modes</h3>
+<h3 id="winvile-modes2"><a name="winvile-modes">Modes</a></h3>
 <dl>
 <dt>
 	echo-to-clipboard
@@ -8157,11 +8202,11 @@ There are several ways to copy to/from the clipboard:
 	w32pipes
 </dt>
 <dd>
-			See discussion of pipes above.  (U)
+			See discussion of <a href="w32pipes">pipes</a> above.  (U)
 </dd>
 </dl>
 
-<h3>Configuring both editors</h3>
+<h3 id="winvile-and-vile2"><a name="winvile-and-vile">Configuring both editors</a></h3>
 	Some vile commands and modes apply only to winvile and some only to
 	console vile.  If you plan to run both winvile and console vile in
 	the context of a single startup file, you'll need to include code
@@ -8178,7 +8223,7 @@ There are several ways to copy to/from the clipboard:
 	~endif
 </pre>
 
-<h2>Differences from vi</h2>
+<h2 id="not-vi"><a href="not-vi">Differences from vi</a></h2>
 <p>
 	Of course, this really isn't vi.  Some of the following differences
 	deserve changing, others do not.
@@ -8232,7 +8277,7 @@ There are several ways to copy to/from the clipboard:
 	bind-key whole-lines _
 </pre>
 
-<h2>Sample .vilerc</h2>
+<h2 id="sample-vilerc"><a href="sample-vilerc">Sample .vilerc</a></h2>
 <p>
 	Here's a sample .vilerc, to help get you started with the
 	syntax and style of vile macros:
@@ -8295,7 +8340,7 @@ There are several ways to copy to/from the clipboard:
 	bind-key execute-macro-4 ^A-M
 </pre>
 
-<h2>Notes on TERM types and Scrolling</h2>
+<h2 id="term-scrolling"><a href="term-scrolling">Notes on TERM types and Scrolling</a></h2>
 <p>
 	vile will determine the window size in one of three ways: first it
 	will ask the tty driver (using a TIOCGWINSZ ioctl call under UNIX).
@@ -8358,7 +8403,7 @@ vt102<font color="#800080">|</font>vt-102<font color="#800080">|</font><font col
 <!--atr2html}}--></p>
 
 
-<h2>Credits (last updated Jan, 2000)</h2>
+<h2 id="credits"><a href="credits">Credits (last updated Jan, 2000)</a></h2>
 <p>
 	Since version 6.1, Tom Dickey has been maintaining the "official"
 	source tree, and release responsibilities.  Paul Fox maintains the
@@ -8425,7 +8470,7 @@ vt102<font color="#800080">|</font>vt-102<font color="#800080">|</font><font col
 <p>
             &ndash; Paul Fox
 
-<h2>Where to Get It</h2>
+<h2 id="getting-vile"><a href="getting-vile">Where to Get It</a></h2>
 <p>
 	Up-to-date copies of vile, including executables for DOS, Win32 and
 	OS/2 are found at<br>
@@ -8448,7 +8493,7 @@ vt102<font color="#800080">|</font>vt-102<font color="#800080">|</font><font col
 	metalabs.unc.edu (Linux), hobbes.nmsu.edu (OS/2) and the VMS Freeware
 	CDROM's.
 
-<h2>Problems</h2>
+<h2 id="problems"><a href="problems">Problems</a></h2>
 <p>
 	Submit bug reports via the project mailing list, or via
 	the web-based bug reporting system.  Both of these are
@@ -8458,5 +8503,5 @@ vt102<font color="#800080">|</font>vt-102<font color="#800080">|</font><font col
 	Subscribing to the mailing list is also the best way to
 	keep informed of new releases.
 
-<h2>Copyright 1995-2008,2009 by Paul Fox, Thomas Dickey, and Kevin Buettner</h2>
+<h2 id="copying2"><a name="copying">Copyright 1995-2008,2009 by Paul Fox, Thomas Dickey, and Kevin Buettner</a></h2>
 </BODY>
