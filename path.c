@@ -2,7 +2,7 @@
  *		The routines in this file handle the conversion of pathname
  *		strings.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.167 2009/10/31 15:52:27 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.168 2009/11/14 00:25:42 tom Exp $
  *
  *
  */
@@ -1194,6 +1194,12 @@ canonpath(char *ss)
 
 	    p++;
 	    pp++;		/* leave the leading slash */
+#if OPT_UNC_PATH
+	    if (is_slashc(*pp)) {
+		p++;
+		pp++;
+	    }
+#endif
 	    while (*pp) {
 		if (is_slashc(*pp)) {
 		    pp++;

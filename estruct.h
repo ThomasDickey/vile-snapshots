@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.696 2009/10/31 17:12:11 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.697 2009/11/14 00:26:03 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -608,7 +608,7 @@
 /* systems with MSDOS-like filename syntax */
 #define OPT_MSDOS_PATH  (SYS_MSDOS || SYS_OS2 || SYS_WINNT || SYS_OS2_EMX)
 #define OPT_CASELESS	(SYS_MSDOS || SYS_OS2 || SYS_WINNT || SYS_OS2_EMX || SYS_CYGWIN || SYS_VMS)
-#define OPT_UNC_PATH	(SYS_WINNT)
+#define OPT_UNC_PATH	(SYS_WINNT || SYS_CYGWIN)
 
 /* individual features that are (normally) controlled by SMALLER */
 #define OPT_AUTOCOLOR	(!SMALLER && OPT_COLOR)	/* autocolor support */
