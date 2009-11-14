@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.697 2009/11/14 00:26:03 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.698 2009/11/14 15:08:01 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -273,6 +273,15 @@
 # if DISP_X11 && defined(NEED_X_INCLUDES)
 #  define XTSTRINGDEFINES
 # endif
+#endif
+
+#ifndef mode_t
+#ifdef OPT_PERL
+typedef unsigned short	mode_t;
+/* perl's win32.h typedef's mode_t */
+#else
+#define mode_t int
+#endif
 #endif
 
 #endif /* HAVE_CONFIG_H */
