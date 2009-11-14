@@ -1,7 +1,9 @@
 Changes for vile 9.8 (released ??? ??? ?? ????)
 
- 20091112 (x)
+ 20091114 (x)
 	> Tom Dickey:
+	+ add a special case in canonpath(), and add SYS_CYGWIN to OPT_UNC_PATH
+	  definition so that UNC-paths are recognized with Cygwin.
 	+ add doc/vile-toc.html, a table of contents for vile-hlp.html
 	+ generate vile.hlp from doc/vile-hlp.html
 	+ correct check for flags on sql keywords from 9.7b, which was using
