@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.698 2009/11/14 15:08:01 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.699 2009/11/14 23:13:17 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -275,7 +275,7 @@
 # endif
 #endif
 
-#ifndef mode_t
+#if SYS_MSDOS || SYS_OS2 || SYS_VMS || SYS_WINNT
 #ifdef OPT_PERL
 typedef unsigned short	mode_t;
 /* perl's win32.h typedef's mode_t */
