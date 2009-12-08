@@ -1,8 +1,8 @@
 .\" obligatory man page for vile
-.\" $Header: /users/source/archives/vile.vcs/RCS/vile.1,v 1.37 2007/01/08 23:29:41 tom Exp $
+.\" $Header: /users/source/archives/vile.vcs/RCS/vile.1,v 1.38 2009/12/08 10:08:55 bod Exp $
 .TH VILE 1
 .SH NAME
-vile, xvile \- \fBVI L\fRike \fBE\fRmacs
+vile, xvile, uxvile \- \fBVI L\fRike \fBE\fRmacs
 .SH SYNOPSIS
 .B "vile [@\fIcmdfile\fB] [+\fIcommand\fB] [-hIiRVv] [-g\fINNN\fB] [-k\fIcryptkey\fB] [-s\fIpattern\fB] [-t\fItag\fB] [\fIfilename\fB]..."
 .SH DESCRIPTION
@@ -15,6 +15,13 @@ or by using the ":help" command from within
 .I xvile
 is the same text editor, built as an X-windows application, with fully
 integrated mouse support, scrollbars, etc.
+.PP
+.I uxvile
+is a wrapper around
+.I xvile
+which invokes the latter program with the correct locale environment
+required to use a unicode character set and the "UXVile" X resource
+class set.
 .SH "SPIRIT"
 .I vile
 retains the "finger-feel", if you will, of

@@ -1,6 +1,6 @@
 dnl vile's local definitions for autoconf.
 dnl
-dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.197 2009/10/15 00:10:30 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.198 2009/12/08 10:36:04 bod Exp $
 dnl
 dnl ---------------------------------------------------------------------------
 dnl ---------------------------------------------------------------------------
@@ -2105,7 +2105,7 @@ if test "$cf_lex_states" = no ; then
 fi
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_LEX_VERSION version: 3 updated: 2009/09/03 05:12:44
+dnl CF_LEX_VERSION version: 4 updated: 2009/12/08 05:09:06
 dnl --------------
 dnl Check if "lex" is really "flex", and if so, set $LEX_VERSION to show its
 dnl version.
@@ -2113,6 +2113,7 @@ AC_DEFUN([CF_LEX_VERSION],[
 AC_REQUIRE([AC_PROG_LEX])
 
 test -z "$LEX" && LEX=lex
+test "x$LEX" = "x:" && LEX=lex  # : is not a usable default
 AC_MSG_CHECKING(if $LEX is really flex)
 if ( $LEX '-?' </dev/null 2>&1 |fgrep flex >/dev/null )
 then
