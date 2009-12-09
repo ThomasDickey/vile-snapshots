@@ -4,7 +4,7 @@
  * "termio.c". It compiles into nothing if not an ANSI device.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ansi.c,v 1.51 2008/12/04 23:52:42 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ansi.c,v 1.52 2009/12/09 01:14:49 tom Exp $
  */
 
 #include	"estruct.h"
@@ -398,7 +398,8 @@ TERM term =
     NROW,			/* current */
     MAXNCOL,			/* max */
     NCOL,			/* current */
-    enc_DEFAULT,
+    dumb_set_encoding,
+    dumb_get_encoding,
     ansi_open,
     nullterm_kopen,
     nullterm_kclose,

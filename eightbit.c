@@ -1,5 +1,5 @@
 /*
- * $Id: eightbit.c,v 1.49 2009/10/31 15:43:08 tom Exp $
+ * $Id: eightbit.c,v 1.51 2009/12/09 00:42:29 tom Exp $
  *
  * Maintain "8bit" file-encoding mode by converting incoming UTF-8 to single
  * bytes, and providing a function that tells vile whether a given Unicode
@@ -895,7 +895,7 @@ decode_utf8(char *input, int used)
      */
     rc = vl_conv_to_utf32(&check, input, used);
     if ((rc == used) && (check != 0) && !isSpecial(check))
-	ch = check;
+	ch = (int) check;
     else
 	ch = -1;
     return ch;
@@ -916,7 +916,7 @@ vl_mb_getch(void)
 
     for (;;) {
 	ch = save_getch();
-	input[used++] = ch;
+	input[used++] = (char) ch;
 	input[used] = 0;
 	ip = input;
 	in_bytes = used;
@@ -993,7 +993,7 @@ vl_mb_putch(int c)
 	 * But we can still convert it to UTF-8.
 	 */
 	if (s == 0) {
-	    rc = vl_conv_to_utf8(temp, c, sizeof(temp));
+	    rc = vl_conv_to_utf8(temp, (UINT) c, sizeof(temp));
 	    if (rc > 0) {
 		temp[rc] = EOS;
 		s = (const char *) temp;
@@ -1024,7 +1024,7 @@ vl_open_mbterm(void)
 	term.putch = vl_mb_putch;
 	term.getch = vl_mb_getch;
 
-	term.encoding = enc_UTF8;
+	term.set_enc(enc_UTF8);
     }
 }
 
@@ -1037,7 +1037,7 @@ vl_close_mbterm(void)
 	    term.putch = save_putch;
 	    term.getch = save_getch;
 
-	    term.encoding = enc_POSIX;
+	    term.set_enc(enc_POSIX);
 
 	    save_putch = 0;
 	    save_getch = 0;

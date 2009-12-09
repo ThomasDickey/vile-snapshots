@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 screen API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.190 2009/10/04 14:27:14 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.192 2009/12/09 01:41:02 tom Exp $
  * Written by T.E.Dickey for vile (october 1997).
  * -- improvements by Clark Morgan (see w32cbrd.c, w32pipe.c).
  */
@@ -85,6 +85,7 @@
 
 static DWORD default_bcolor;
 static DWORD default_fcolor;
+static ENC_CHOICES my_encoding = enc_DEFAULT;
 static HANDLE hAccTable;	/* handle to accelerator table */
 static HANDLE vile_hinstance;
 static HCURSOR arrow_cursor;
@@ -1001,7 +1002,7 @@ fshow_cursor(void)
 
 #if OPT_ICURSOR
 static void
-nticursor(int unused)
+ntwinio_icursor(int unused)
 {
     if (icursor && caret_visible) {
 	fhide_cursor();		/* Kill the old caret        */
@@ -1076,20 +1077,20 @@ is_fixed_pitch(HFONT font)
 
     if (ok) {
 #ifdef UNICODE
-	int old_encoding = term.encoding;
+	int old_encoding = term.get_enc();
 
 	/*
 	 * FIXME - find how to (simply) determine the total number of glyphs
 	 * in a font.
 	 */
 	if ((metrics.tmFirstChar == 0x20) && (metrics.tmLastChar > 10000)) {
-	    term.encoding = enc_UTF16;
+	    term.set_enc(enc_UTF16);
 	    TRACE(("Assume font useful for UNICODE\n"));
 	} else {
-	    term.encoding = enc_8BIT;	/* FIXME: how to do enc_LOCALE? */
+	    term.set_enc(enc_8BIT);	/* FIXME: how to do enc_LOCALE? */
 	}
 	/* if encoding changes, force recompute in display.c */
-	if (old_encoding != term.encoding)
+	if (old_encoding != term.get_enc())
 	    set_winflags(TRUE, WFFORCE | WFHARD);
 #endif
 	ok = ((metrics.tmPitchAndFamily & TMPF_FIXED_PITCH) == 0);
@@ -1453,7 +1454,7 @@ set_window_text(HWND handle, const char *text)
 
 #if OPT_TITLE
 static void
-nttitle(const char *title)
+ntwinio_title(const char *title)
 {				/* set the current window title */
     if (title != 0)
 	set_window_text(winvile_hwnd(), title);
@@ -1631,8 +1632,8 @@ is_keyboard_message(MSG * msg)
 
 /*
  * We cannot handle _all_ events in scflush(), since some must be handled,
- * e.g., in ntgetch().  In particular, do not try to handle WM__CHAR since
- * that interferes with the OLE server wvwrap.exe's sending characters to
+ * e.g., in ntwinio_getch().  In particular, do not try to handle WM__CHAR
+ * since that interferes with the OLE server wvwrap.exe's sending characters to
  * this process.
  */
 static int
@@ -1748,14 +1749,14 @@ scflush(void)
 
 #if OPT_COLOR
 static void
-ntfcol(int color)
+ntwinio_fcol(int color)
 {				/* set the current output color */
     scflush();
     nfcolor = color;
 }
 
 static void
-ntbcol(int color)
+ntwinio_bcol(int color)
 {				/* set the current background color */
     scflush();
     nbcolor = color;
@@ -1763,14 +1764,14 @@ ntbcol(int color)
 #endif
 
 static void
-ntflush(void)
+ntwinio_flush(void)
 {
     scflush();
     SetCaretPos(ColToPixel(ccol), RowToPixel(crow));
 }
 
 static void
-ntmove(int row, int col)
+ntwinio_move(int row, int col)
 {
     scflush();
     crow = (short) row;
@@ -1779,7 +1780,7 @@ ntmove(int row, int col)
 
 /* erase to the end of the line */
 static void
-nteeol(void)
+ntwinio_eeol(void)
 {
     HDC hDC;
     HBRUSH brush;
@@ -1818,7 +1819,7 @@ flash_display(void)
 #endif
 
 static void
-ntbeep(void)
+ntwinio_beep(void)
 {
 #if	OPT_FLASH
     if (global_g_val(GMDFLASH)) {
@@ -1838,7 +1839,7 @@ ntbeep(void)
 
 /* move howmany lines starting at from to to */
 static void
-ntscroll(int from, int to, int n)
+ntwinio_scroll(int from, int to, int n)
 {
     HDC hDC;
     HBRUSH brush;
@@ -1850,7 +1851,7 @@ ntscroll(int from, int to, int n)
 	return;
 #if OPT_PRETTIER_SCROLL
     if (ABS(from - to) > 1) {
-	ntscroll(from, (from < to) ? to - 1 : to + 1, n);
+	ntwinio_scroll(from, (from < to) ? to - 1 : to + 1, n);
 	if (from < to)
 	    from = to - 1;
 	else
@@ -1886,7 +1887,7 @@ ntscroll(int from, int to, int n)
 	);
 
     /* Erase invalidated rectangle */
-    TRACE(("ntscroll tofill: (%d,%d)/(%d,%d)\n",
+    TRACE(("ntwinio_scroll tofill: (%d,%d)/(%d,%d)\n",
 	   tofill.left, tofill.top,
 	   tofill.right, tofill.bottom));
     hDC = GetDC(cur_win->text_hwnd);
@@ -1910,7 +1911,7 @@ ntscroll(int from, int to, int n)
 
 /* put a character at the current position in the current colors */
 static void
-ntputc(int ch)
+ntwinio_putc(int ch)
 {
     /* This is an optimization for the most common case. */
     if (ch >= ' ') {
@@ -1928,7 +1929,7 @@ ntputc(int ch)
 	    break;
 
 	case '\a':
-	    ntbeep();
+	    ntwinio_beep();
 	    break;
 
 	case '\t':
@@ -1950,7 +1951,7 @@ ntputc(int ch)
 	    if (crow < term.rows - 1)
 		crow++;
 	    else
-		ntscroll(1, 0, term.rows - 1);
+		ntwinio_scroll(1, 0, term.rows - 1);
 	    break;
 
 	default:
@@ -1963,7 +1964,7 @@ ntputc(int ch)
 }
 
 static void
-nteeop(void)
+ntwinio_eeop(void)
 {
     HDC hDC;
     HBRUSH brush;
@@ -1996,23 +1997,35 @@ nteeop(void)
 }
 
 static void
-ntrev(UINT reverse)
+ntwinio_rev(UINT reverse)
 {				/* change reverse video state */
     scflush();
     cur_atr = (VIDEO_ATTR) reverse;
 }
 
 static int
-ntcres(const char *res)
+ntwinio_cres(const char *res)
 {				/* change screen resolution */
     scflush();
     return 0;
 }
 
 static void
-ntopen(void)
+ntwinio_set_encoding(ENC_CHOICES code)
 {
-    TRACE(("ntopen\n"));
+    my_encoding = code;
+}
+
+static ENC_CHOICES
+ntwinio_get_encoding(void)
+{
+    return my_encoding;
+}
+
+static void
+ntwinio_open(void)
+{
+    TRACE(("ntwinio_open\n"));
 
     set_colors(NCOLORS);
     set_palette(initpalettestr);
@@ -2025,23 +2038,23 @@ static int orig_title_set = 0;
 static char orig_title[256];
 
 static void
-ntclose(void)
+ntwinio_close(void)
 {
-    TRACE(("ntclose\n"));
+    TRACE(("ntwinio_close\n"));
 
     scflush();
-    ntmove(term.rows - 1, 0);
-    nteeol();
-    ntflush();
+    ntwinio_move(term.rows - 1, 0);
+    ntwinio_eeol();
+    ntwinio_flush();
 }
 
 static void
-ntkopen(void)
+ntwinio_kopen(void)
 {				/* open the keyboard */
 }
 
 static void
-ntkclose(void)
+ntwinio_kclose(void)
 {				/* close the keyboard */
 }
 
@@ -3095,7 +3108,7 @@ handle_scrollbar(HWND hWnd, int msg, int nPos)
 #endif /* OPT_SCROLLBARS */
 
 static int
-ntgetch(void)
+ntwinio_getch(void)
 {
     static DWORD lastclick = 0;
     static int clicks = 0, onmode;
@@ -3493,12 +3506,12 @@ ntgetch(void)
     fhide_cursor();
     vile_selecting = FALSE;
 
-    TRACE(("...ntgetch %#x\n", result));
+    TRACE(("...ntwinio_getch %#x\n", result));
     return result;
 }
 
 static int
-nttypahead(void)
+ntwinio_typahead(void)
 {
     int rc = 0;
     MSG msg;
@@ -4538,27 +4551,28 @@ TERM term =
     NROW,
     NCOL,
     NCOL,
-    enc_DEFAULT,
-    ntopen,
-    ntclose,
-    ntkopen,
-    ntkclose,
+    ntwinio_set_encoding,
+    ntwinio_get_encoding,
+    ntwinio_open,
+    ntwinio_close,
+    ntwinio_kopen,
+    ntwinio_kclose,
     nullterm_clean,
     nullterm_unclean,
     nullterm_openup,
-    ntgetch,
-    ntputc,
-    nttypahead,
-    ntflush,
-    ntmove,
-    nteeol,
-    nteeop,
-    ntbeep,
-    ntrev,
-    ntcres,
+    ntwinio_getch,
+    ntwinio_putc,
+    ntwinio_typahead,
+    ntwinio_flush,
+    ntwinio_move,
+    ntwinio_eeol,
+    ntwinio_eeop,
+    ntwinio_beep,
+    ntwinio_rev,
+    ntwinio_cres,
 #if OPT_COLOR
-    ntfcol,
-    ntbcol,
+    ntwinio_fcol,
+    ntwinio_bcol,
     set_ctrans,
 #else
     nullterm_setfore,
@@ -4566,15 +4580,15 @@ TERM term =
     nullterm_setpal,
 #endif
     nullterm_setccol,
-    ntscroll,
+    ntwinio_scroll,
     nullterm_pflush,
 #if OPT_ICURSOR
-    nticursor,
+    ntwinio_icursor,
 #else
     nullterm_icursor,
 #endif
 #if OPT_TITLE
-    nttitle,
+    ntwinio_title,
 #else
     nullterm_settitle,
 #endif

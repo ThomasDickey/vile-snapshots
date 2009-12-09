@@ -2,11 +2,22 @@
  * Define an empty terminal type for machines where we cannot use 'dumb_term',
  * so that command-line prompting will have something to talk to.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/nullterm.c,v 1.5 2007/12/24 01:54:15 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/nullterm.c,v 1.6 2009/12/09 00:41:50 tom Exp $
  */
 
 #include	<estruct.h>
 #include	<edef.h>
+
+static void
+nullterm_set_encoding(ENC_CHOICES code GCC_UNUSED)
+{
+}
+
+static ENC_CHOICES
+nullterm_get_encoding(void)
+{
+    return enc_POSIX;
+}
 
 static void
 nullterm_open(void)
@@ -208,7 +219,8 @@ TERM null_term =
     1,
     80,
     80,
-    enc_DEFAULT,
+    nullterm_set_encoding,
+    nullterm_get_encoding,
     nullterm_open,
     nullterm_close,
     nullterm_kopen,

@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 console API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntconio.c,v 1.91 2008/01/22 00:09:37 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntconio.c,v 1.92 2009/12/09 01:43:48 tom Exp $
  *
  */
 
@@ -132,7 +132,7 @@ nticursor(int cmode)
 
 #if OPT_TITLE
 static void
-nttitle(const char *title)
+ntconio_title(const char *title)
 {				/* set the current window title */
     if (title != 0)
 	w32_set_console_title(title);
@@ -182,18 +182,18 @@ scflush(void)
 
 #if OPT_COLOR
 static void
-ntfcol(int color)
+ntconio_fcol(int color)
 {				/* set the current output color */
-    TRACE2(("ntfcol(%d)\n", color));
+    TRACE2(("ntconio_fcol(%d)\n", color));
     scflush();
     nfcolor = cfcolor = color;
     set_current_attr();
 }
 
 static void
-ntbcol(int color)
+ntconio_bcol(int color)
 {				/* set the current background color */
-    TRACE2(("ntbcol(%d)\n", color));
+    TRACE2(("ntconio_bcol(%d)\n", color));
     scflush();
     nbcolor = cbcolor = color;
     set_current_attr();
@@ -201,7 +201,7 @@ ntbcol(int color)
 #endif
 
 static void
-ntflush(void)
+ntconio_flush(void)
 {
     COORD coordCursor;
 
@@ -212,7 +212,7 @@ ntflush(void)
 }
 
 static void
-ntmove(int row, int col)
+ntconio_move(int row, int col)
 {
     scflush();
     crow = row;
@@ -237,7 +237,7 @@ erase_at(COORD coordCursor, int length)
 
 /* erase to the end of the line */
 static void
-nteeol(void)
+ntconio_eeol(void)
 {
     COORD coordCursor;
     int length;
@@ -246,7 +246,7 @@ nteeol(void)
     length = csbi.dwMaximumWindowSize.X - ccol;
     coordCursor.X = (SHORT) ccol;
     coordCursor.Y = (SHORT) crow;
-    TRACE2(("nteeol [%d,%d] erase %d with %04x\n", crow, ccol, length, currentAttribute));
+    TRACE2(("ntconio_eeol [%d,%d] erase %d with %04x\n", crow, ccol, length, currentAttribute));
     erase_at(coordCursor, length);
 }
 
@@ -259,7 +259,7 @@ nteeol(void)
 
 /* move howmany lines starting at from to to */
 static void
-ntscroll(int from, int to, int n)
+ntconio_scroll(int from, int to, int n)
 {
     SMALL_RECT sRect;
     COORD dest;
@@ -271,7 +271,7 @@ ntscroll(int from, int to, int n)
 	return;
 #if OPT_PRETTIER_SCROLL
     if (ABS(from - to) > 1) {
-	ntscroll(from, (from < to) ? to - 1 : to + 1, n);
+	ntconio_scroll(from, (from < to) ? to - 1 : to + 1, n);
 	if (from < to)
 	    from = to - 1;
 	else
@@ -354,7 +354,7 @@ flash_display(void)
 #endif
 
 static void
-ntbeep(void)
+ntconio_beep(void)
 {
 #if	OPT_FLASH
     if (global_g_val(GMDFLASH)) {
@@ -372,7 +372,7 @@ ntbeep(void)
 
 /* put a character at the current position in the current colors */
 static void
-ntputc(int ch)
+ntconio_putc(int ch)
 {
     if (ch >= ' ') {
 
@@ -390,7 +390,7 @@ ntputc(int ch)
 	    break;
 
 	case '\a':
-	    ntbeep();
+	    ntconio_beep();
 	    break;
 
 	case '\t':
@@ -412,7 +412,7 @@ ntputc(int ch)
 	    if (crow < csbi.dwMaximumWindowSize.Y - 1)
 		crow++;
 	    else
-		ntscroll(1, 0, csbi.dwMaximumWindowSize.Y - 1);
+		ntconio_scroll(1, 0, csbi.dwMaximumWindowSize.Y - 1);
 	    break;
 
 	default:
@@ -425,7 +425,7 @@ ntputc(int ch)
 }
 
 static void
-nteeop(void)
+ntconio_eeop(void)
 {
     DWORD cnt;
     COORD coordCursor;
@@ -436,12 +436,12 @@ nteeop(void)
     cnt = csbi.dwMaximumWindowSize.X - ccol
 	+ (csbi.dwMaximumWindowSize.Y - crow - 1)
 	* csbi.dwMaximumWindowSize.X;
-    TRACE2(("nteeop [%d,%d] erase %d with %04x\n", crow, ccol, cnt, currentAttribute));
+    TRACE2(("ntconio_eeop [%d,%d] erase %d with %04x\n", crow, ccol, cnt, currentAttribute));
     erase_at(coordCursor, cnt);
 }
 
 static void
-ntrev(UINT attr)
+ntconio_rev(UINT attr)
 {				/* change video state */
     scflush();
     cbcolor = nbcolor;
@@ -449,7 +449,7 @@ ntrev(UINT attr)
     rvcolor = (global_g_val(GVAL_VIDEO) & VAREV) ? 1 : 0;
     attr &= (VASPCOL | VACOLOR | VABOLD | VAITAL | VASEL | VAREV);
 
-    TRACE2(("ntrev(%04x) f=%d, b=%d\n", attr, cfcolor, cbcolor));
+    TRACE2(("ntconio_rev(%04x) f=%d, b=%d\n", attr, cfcolor, cbcolor));
 
     if (attr) {
 	if (attr & VASPCOL)
@@ -473,13 +473,13 @@ ntrev(UINT attr)
 	    rvcolor ^= 1;
 	}
 
-	TRACE2(("...ntrev(%04x) f=%d, b=%d\n", attr, cfcolor, cbcolor));
+	TRACE2(("...ntconio_rev(%04x) f=%d, b=%d\n", attr, cfcolor, cbcolor));
     }
     set_current_attr();
 }
 
 static int
-ntcres(const char *res)
+ntconio_cres(const char *res)
 {				/* change screen resolution */
     scflush();
     return 0;
@@ -499,12 +499,12 @@ nthandler(DWORD ctrl_type)
 }
 
 static void
-ntopen(void)
+ntconio_open(void)
 {
     CONSOLE_CURSOR_INFO newcci;
     BOOL newcci_ok;
 
-    TRACE(("ntopen\n"));
+    TRACE(("ntconio_open\n"));
 
     set_colors(NCOLORS);
     set_palette(initpalettestr);
@@ -549,18 +549,18 @@ ntopen(void)
 }
 
 static void
-ntclose(void)
+ntconio_close(void)
 {
-    TRACE(("ntclose\n"));
+    TRACE(("ntconio_close\n"));
     if (chgd_cursor) {
 	/* restore cursor */
 	show_cursor(TRUE, origcci.dwSize);
     }
     scflush();
-    ntmove(term.rows - 1, 0);
+    ntconio_move(term.rows - 1, 0);
     currentAttribute = originalAttribute;
-    nteeol();
-    ntflush();
+    ntconio_eeol();
+    ntconio_flush();
     set_current_attr();
 
     SetConsoleTextAttribute(hConsoleOutput, originalAttribute);
@@ -575,9 +575,9 @@ ntclose(void)
 }
 
 static void
-ntkopen(void)
+ntconio_kopen(void)
 {				/* open the keyboard */
-    TRACE(("ntkopen (open:%d, was-closed:%d)\n", keyboard_open, keyboard_was_closed));
+    TRACE(("ntconio_kopen (open:%d, was-closed:%d)\n", keyboard_open, keyboard_was_closed));
     if (keyboard_open)
 	return;
     if (hConsoleOutput) {
@@ -591,9 +591,9 @@ ntkopen(void)
 }
 
 static void
-ntkclose(void)
+ntconio_kclose(void)
 {				/* close the keyboard */
-    TRACE(("ntkclose\n"));
+    TRACE(("ntconio_kclose\n"));
     if (!keyboard_open)
 	return;
     keyboard_open = FALSE;
@@ -1237,7 +1237,7 @@ handle_mouse_event(MOUSE_EVENT_RECORD mer)
 }
 
 static int
-ntgetch(void)
+ntconio_getch(void)
 {
     INPUT_RECORD ir;
     DWORD nr;
@@ -1304,12 +1304,12 @@ ntgetch(void)
  * The function `kbhit' returns true if there are *any* input records
  * available.  We need to define our own type ahead routine because
  * otherwise events which we will discard (like pressing or releasing
- * the Shift key) can block screen updates because `ntgetch' won't
+ * the Shift key) can block screen updates because `ntconio_getch' won't
  * return until a ordinary key event occurs.
  */
 
 static int
-nttypahead(void)
+ntconio_typahead(void)
 {
     INPUT_RECORD ir;
     DWORD nr;
@@ -1473,7 +1473,7 @@ chgd_icursor(BUFFER *bp, VALARGS * args, int glob_vals, int testing)
 	    if (chgd_cursor) {
 		/*
 		 * NB -- don't reset "chgd_cursor" here.  special cleanup
-		 * is required in ntclose().
+		 * is required in ntconio_close().
 		 */
 
 		if (origcci_ok)
@@ -1496,27 +1496,28 @@ TERM term =
     NROW,
     NCOL,
     NCOL,
-    enc_DEFAULT,
-    ntopen,
-    ntclose,
-    ntkopen,
-    ntkclose,
+    dumb_set_encoding,
+    dumb_get_encoding,
+    ntconio_open,
+    ntconio_close,
+    ntconio_kopen,
+    ntconio_kclose,
     nullterm_clean,
     nullterm_unclean,
     nullterm_openup,
-    ntgetch,
-    ntputc,
-    nttypahead,
-    ntflush,
-    ntmove,
-    nteeol,
-    nteeop,
-    ntbeep,
-    ntrev,
-    ntcres,
+    ntconio_getch,
+    ntconio_putc,
+    ntconio_typahead,
+    ntconio_flush,
+    ntconio_move,
+    ntconio_eeol,
+    ntconio_eeop,
+    ntconio_beep,
+    ntconio_rev,
+    ntconio_cres,
 #if OPT_COLOR
-    ntfcol,
-    ntbcol,
+    ntconio_fcol,
+    ntconio_bcol,
     set_ctrans,
 #else
     nullterm_setfore,
@@ -1524,7 +1525,7 @@ TERM term =
     nullterm_setpal,
 #endif
     nullterm_setccol,
-    ntscroll,
+    ntconio_scroll,
     nullterm_pflush,
 #if OPT_ICURSOR
     nticursor,
@@ -1532,7 +1533,7 @@ TERM term =
     nullterm_icursor,
 #endif
 #if OPT_TITLE
-    nttitle,
+    ntconio_title,
 #else
     nullterm_settitle,
 #endif

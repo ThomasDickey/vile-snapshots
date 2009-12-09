@@ -2,7 +2,7 @@
  *	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.353 2009/10/31 16:52:01 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.354 2009/12/09 01:47:36 tom Exp $
  *
  */
 
@@ -460,6 +460,7 @@ typedef struct {
 } SelectionList;
 
 static Display *dpy;
+static ENC_CHOICES my_encoding = enc_DEFAULT;
 
 static TextWindowRec cur_win_rec;
 static TextWindow cur_win = &cur_win_rec;
@@ -3342,8 +3343,8 @@ x_preparse_args(int *pargc, char ***pargv)
 #if OPT_INPUT_METHOD
     init_xlocale();
     if (okCTYPE2(vl_wide_enc)) {
-	term.encoding = enc_UTF8;
-	TRACE(("initialized term.encoding to enc_UTF8\n"));
+	term.set_enc(enc_UTF8);
+	TRACE(("initialized $term-encoding to enc_UTF8\n"));
     }
 #endif
 
@@ -3852,6 +3853,18 @@ x_setfont(const char *fname)
 	return 0;
     }
     return 1;
+}
+
+static void
+x_set_encoding(ENC_CHOICES code)
+{
+    my_encoding = code;
+}
+
+static ENC_CHOICES
+x_get_encoding(void)
+{
+    return my_encoding;
 }
 
 static void
@@ -7046,7 +7059,8 @@ TERM term =
     0,
     0,
     0,
-    enc_DEFAULT,
+    x_set_encoding,
+    x_get_encoding,
     x_open,
     x_close,
     nullterm_kopen,

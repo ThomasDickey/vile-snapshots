@@ -1,11 +1,17 @@
 /*
  * A terminal driver using the curses library
  *
- * $Header: /users/source/archives/vile.vcs/RCS/curses.c,v 1.43 2009/11/11 09:08:00 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/curses.c,v 1.45 2009/12/09 00:57:59 tom Exp $
  */
 
 #include "estruct.h"
 #include "edef.h"
+
+#if OPT_LOCALE && defined(NCURSES_VERSION) && defined(HAVE_ADDNWSTR)
+#define USE_MULTIBYTE 1
+#else
+#define USE_MULTIBYTE 0
+#endif
 
 #if OPT_LOCALE
 #include <locale.h>
@@ -35,6 +41,7 @@ static const char ANSI_palette[] =
 #include "os2keys.h"
 #endif
 
+static ENC_CHOICES my_encoding = enc_DEFAULT;
 static int i_am_xterm = 1;
 static int i_was_closed = FALSE;
 static int have_data = FALSE;
@@ -42,6 +49,34 @@ static int in_screen = FALSE;
 static int can_color = FALSE;
 
 #include "xtermkeys.h"
+
+static void
+curs_set_encoding(ENC_CHOICES code)
+{
+    /*
+     * Check if we're able to display UTF-8, and if not, decline attempts to
+     * use that in the display.
+     *
+     * ncurses differs slightly from X/Open (following the SVr4 pattern which
+     * appears to have been lost in committee) by allowing addch() to
+     * accumulate multibyte characters and display those.  At the moment, this
+     * driver only uses addch(), rather than add_wch() or addnwstr(), which
+     * both would require us to accumulate and convert.  So the ifdef checks
+     * for wide-character ncurses rather than just wide-character curses.
+     */
+#if !USE_MULTIBYTE
+    if (code > enc_LOCALE) {
+	code = enc_LOCALE;
+    }
+#endif
+    my_encoding = code;
+}
+
+static ENC_CHOICES
+curs_get_encoding(void)
+{
+    return my_encoding;
+}
 
 static void
 curs_initialize(void)
@@ -126,7 +161,7 @@ curs_initialize(void)
 #endif
 	set_colors(COLORS);
 	for (j = 1; j < COLOR_PAIRS; j++) {
-	    init_pair(j, j / COLORS, j % COLORS);
+	    init_pair((short) j, (short) (j / COLORS), (short) (j % COLORS));
 	}
     } else {
 	set_colors(2);		/* white/black */
@@ -355,19 +390,19 @@ set_bkgd_colors(int fg, int bg)
 	    pair = fg * COLORS + bg;
 	}
     }
-    if (init_pair(pair, fg, bg) == ERR)
+    if (init_pair((short) pair, (short) fg, (short) bg) == ERR)
 	return;
 #else
     pair = fg * COLORS + bg;
 #endif
-    bkgdset(COLOR_PAIR(pair) | ' ');
+    bkgdset((chtype) (COLOR_PAIR(pair) | ' '));
 }
 
 static void
 curs_fcol(int color)
 {
     short fg, bg;
-    int pair = PAIR_NUMBER(getattrs(stdscr));
+    short pair = (short) PAIR_NUMBER(getattrs(stdscr));
 
     pair_content(pair, &fg, &bg);
     set_bkgd_colors(color, bg);
@@ -377,7 +412,7 @@ static void
 curs_bcol(int color)
 {
     short fg, bg;
-    int pair = PAIR_NUMBER(getattrs(stdscr));
+    short pair = (short) PAIR_NUMBER(getattrs(stdscr));
 
     pair_content(pair, &fg, &bg);
     set_bkgd_colors(fg, color);
@@ -407,12 +442,12 @@ curs_attr(UINT attr)
 	int pair = PAIR_NUMBER(getattrs(stdscr));
 	short fg, bg;
 	if (attr & VACOLOR) {
-	    fg = VCOLORNUM(attr) % ncolors;
-	    bg = gbcolor;
+	    fg = (short) (VCOLORNUM(attr) % ncolors);
+	    bg = (short) (gbcolor);
 #ifdef HAVE_USE_DEFAULT_COLORS
 	    if (is_default(bg)) {
 		pair = fg * COLORS;
-		init_pair(pair, fg, -1);
+		init_pair((short) pair, fg, -1);
 	    } else {
 		pair = fg * COLORS + bg;
 	    }
@@ -479,7 +514,8 @@ TERM term =
     0,
     0,
     0,
-    enc_DEFAULT,
+    curs_set_encoding,
+    curs_get_encoding,
     curs_open,
     curs_close,
     curs_kopen,

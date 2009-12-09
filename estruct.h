@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.699 2009/11/14 23:13:17 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.700 2009/12/09 00:37:50 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -2542,7 +2542,8 @@ typedef struct	{
 	int	rows;			/* current row count		*/
 	int	maxcols;		/* max column count		*/
 	int	cols;			/* current column count		*/
-	ENC_CHOICES encoding;		/* tell what the display can do	*/
+	void	(*set_enc)(ENC_CHOICES); /* tell what the display can do */
+	ENC_CHOICES (*get_enc)(void);	/* tell what the display can do	*/
 	void	(*open) (void);		/* Open terminal at the start.	*/
 	void	(*close) (void);	/* Close terminal at end.	*/
 	void	(*kopen) (void);	/* keyboard open		*/
@@ -2581,7 +2582,7 @@ typedef struct	{
 	void	(*mevent) (void);	/* mouse event			*/
 }	TERM;
 
-#define term_is_utfXX()         ((int) term.encoding >= enc_UTF8)
+#define term_is_utfXX()         ((int) term.get_enc() >= enc_UTF8)
 
 #if DISP_CURSES && defined(HAVE_ADDNWSTR)
 #define WIDE_CURSES 1

@@ -8,6 +8,10 @@ Changes for vile 9.8 (released ??? ??? ?? ????)
 	+ modify configure check for lex/flex to ensure it does not use ":",
 	  if the program is not found since that would cause an unexpected
 	  build-failure.
+	> Tom Dickey:
+	+ improve configuration/initialization of curses-driver to ensure that
+	  no attempt is made to display UTF-8 using 8-bit curses (report by
+	  Chris Green).
 
  20091114 (x)
 	> Tom Dickey:
