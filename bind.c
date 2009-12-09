@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.337 2009/07/07 08:15:38 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.338 2009/12/08 23:23:39 tom Exp $
  *
  */
 
@@ -2393,7 +2393,7 @@ kbd_engl(const char *prompt, char *buffer)
 /* sound the alarm! */
 #if OPT_TRACE
 void
-trace_alarm(char *file, int line)
+trace_alarm(const char *file, int line)
 #else
 void
 kbd_alarm(void)

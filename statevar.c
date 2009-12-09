@@ -3,7 +3,7 @@
  *	for getting and setting the values of the vile state variables,
  *	plus helper utility functions.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.137 2009/10/31 16:59:44 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.138 2009/12/09 00:39:00 tom Exp $
  */
 
 #include	"estruct.h"
@@ -1660,7 +1660,7 @@ int
 var_TERM_ENCODING(TBUFF **rp, const char *vp GCC_UNUSED)
 {
     if (rp) {
-	tb_scopy(rp, encoding2s(term.encoding));
+	tb_scopy(rp, encoding2s(term.get_enc()));
 	return TRUE;
     } else {
 	return FALSE;

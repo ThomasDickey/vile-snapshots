@@ -1,6 +1,6 @@
 /*	Dumb terminal driver, for I/O before we get into screen mode.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/dumbterm.c,v 1.23 2007/12/24 01:52:26 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/dumbterm.c,v 1.26 2009/12/09 01:28:19 tom Exp $
  *
  */
 
@@ -9,6 +9,18 @@
 
 static int this_col;
 static int last_col;
+
+/*
+ * If this is an ordinary dumb terminal, then it can have C1-controls, etc.,
+ * and we'll assume it can only handle POSIX.
+ */
+#if DISP_TERMCAP || DISP_CURSES
+#define enc_MAX enc_POSIX
+#else
+#define enc_MAX enc_8BIT
+#endif
+
+static ENC_CHOICES my_encoding = enc_DEFAULT;
 
 static void
 flush_blanks(void)
@@ -19,6 +31,20 @@ flush_blanks(void)
 	last_col = 0;
     }
     term.flush();
+}
+
+void
+dumb_set_encoding(ENC_CHOICES code)
+{
+    if (code > enc_MAX)
+	code = enc_MAX;
+    my_encoding = code;
+}
+
+ENC_CHOICES
+dumb_get_encoding(void)
+{
+    return my_encoding;
 }
 
 static void
@@ -121,7 +147,8 @@ TERM dumb_term =
     1,
     80,
     80,
-    enc_DEFAULT,
+    dumb_set_encoding,
+    dumb_get_encoding,
     0,				/* use this to put us into raw mode */
     0,				/* ...and this, just in case we exit */
     dumb_kopen,

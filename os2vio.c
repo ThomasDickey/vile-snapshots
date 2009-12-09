@@ -3,7 +3,7 @@
  * Modified from a really old version of "borland.c" (before the VIO
  * stuff went in there.)
  *
- * $Header: /users/source/archives/vile.vcs/RCS/os2vio.c,v 1.36 2007/09/03 20:05:59 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/os2vio.c,v 1.37 2009/12/09 01:15:39 tom Exp $
  */
 
 #include "estruct.h"
@@ -576,7 +576,8 @@ TERM term =
     NROW - 1,
     NCOL,
     NCOL,
-    enc_DEFAULT,
+    dumb_set_encoding,
+    dumb_get_encoding,
     vio_open,
     vio_close,
     vio_kopen,

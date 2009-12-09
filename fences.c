@@ -9,7 +9,7 @@
  * Extensions for vile by Paul Fox
  * Rewrote to use regular expressions - T.Dickey
  *
- * $Header: /users/source/archives/vile.vcs/RCS/fences.c,v 1.87 2009/08/20 10:45:36 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/fences.c,v 1.88 2009/12/09 01:18:04 tom Exp $
  *
  */
 
@@ -121,10 +121,10 @@ next_line(int sdir)
 }
 
 #if OPT_TRACE
-static char *
+static const char *
 typeof_complex(int code)
 {
-    char *s;
+    const char *s;
     switch (code) {
     case CPP_IF:
 	s = "CPP_IF";

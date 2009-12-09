@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.684 2009/11/10 23:28:42 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.686 2009/12/09 01:13:45 tom Exp $
  *
  */
 
@@ -201,7 +201,7 @@ extern void build_namebst(const NTAB *nametbl, int lo, int hi);
 #endif
 
 #if OPT_TRACE
-extern void trace_alarm (char *file, int lineno);
+extern void trace_alarm (const char *file, int lineno);
 #define kbd_alarm() trace_alarm(__FILE__, __LINE__)
 #else
 extern void kbd_alarm (void);
@@ -1273,6 +1273,9 @@ extern void ttunwatchfd (int fd, long id);
 extern OUTC_DCL vl_ttputc (int c);
 extern void vl_save_tty (void);
 extern void vl_restore_tty (void);
+
+extern void dumb_set_encoding(ENC_CHOICES);
+extern ENC_CHOICES dumb_get_encoding(void);
 
 extern int  nullterm_setdescrip (const char *res);
 extern int  nullterm_watchfd (int fd, WATCHTYPE type, long *idp);

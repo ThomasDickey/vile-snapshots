@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.404 2009/10/31 16:14:52 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.405 2009/12/08 23:27:35 tom Exp $
  *
  */
 
@@ -3030,7 +3030,7 @@ find_majormode_order(int mm)
 
 #if OPT_TRACE
 static void
-show_majormode_order(char *tag)
+show_majormode_order(const char *tag)
 {
     static TBUFF *order;
 

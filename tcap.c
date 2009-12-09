@@ -1,7 +1,7 @@
 /*	tcap:	Unix V5, V7 and BS4.2 Termcap video driver
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.183 2009/11/11 09:07:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.184 2009/12/09 01:45:35 tom Exp $
  *
  */
 
@@ -131,6 +131,20 @@ static int i_was_closed;
 #else
 #define CALL_TPARM(cap,code) tgoto(cap, 0, code)
 #endif
+
+static ENC_CHOICES my_encoding = enc_DEFAULT;
+
+static void
+tcap_set_encoding(ENC_CHOICES code)
+{
+    my_encoding = code;
+}
+
+static ENC_CHOICES
+tcap_get_encoding(void)
+{
+    return my_encoding;
+}
 
 static void
 tcap_open(void)
@@ -987,7 +1001,8 @@ TERM term =
     0,
     0,
     0,
-    enc_DEFAULT,
+    tcap_set_encoding,
+    tcap_get_encoding,
     tcap_open,
     tcap_close,
     tcap_kopen,

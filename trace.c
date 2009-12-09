@@ -1,7 +1,7 @@
 /*
  * debugging support -- tom dickey.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.94 2009/11/04 23:46:49 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.95 2009/12/08 23:29:48 tom Exp $
  *
  */
 
@@ -79,6 +79,9 @@ static size_t used_visible;
 static unsigned used_indent;
 
 static int trace_depth;
+
+static char null_string[] = "<null>";
+static char empty_string[] = "";
 
 #if OPT_ELAPSED && !defined(show_elapsed)
 
@@ -443,7 +446,7 @@ char *
 str_visible(const char *s)
 {
     if (s == 0)
-	return "<null>";
+	return null_string;
     return visible_buff(s, (int) strlen(s), FALSE);
 }
 
@@ -454,7 +457,7 @@ char *
 str_visible0(const char *s)
 {
     if (s == 0)
-	return "<null>";
+	return null_string;
     return visible_buff(s, (int) strlen(s), TRUE);
 }
 
@@ -505,7 +508,7 @@ char *
 lp_visible(LINE *p)
 {
     if (p == 0)
-	return "";
+	return empty_string;
     return visible_buff(lvalue(p), llength(p), FALSE);
 }
 
@@ -827,7 +830,7 @@ trace_line(LINE *lp, BUFFER *bp)
 }
 
 void
-trace_mark(char *name, MARK *mk, BUFFER *bp)
+trace_mark(const char *name, MARK *mk, BUFFER *bp)
 {
     Trace("%s %d.%d\n", name, line_no(bp, mk->l), mk->o);
 }

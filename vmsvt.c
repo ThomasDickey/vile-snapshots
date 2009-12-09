@@ -14,7 +14,7 @@
  *   -- support wide and narrow screen resolutions,
  *   -- support visual bells.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/vmsvt.c,v 1.65 2007/12/24 02:01:13 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/vmsvt.c,v 1.66 2009/12/09 01:15:39 tom Exp $
  *
  */
 
@@ -866,7 +866,8 @@ TERM term =
     132,			/* Max number of columns        */
 				/* Filled in */ 0,
 				/* Current number of columns    */
-    enc_DEFAULT,
+    dumb_set_encoding,
+    dumb_get_encoding,
     vmsvt_open,			/* Open terminal at the start   */
     vmsvt_close,		/* Close terminal at end        */
     nullterm_kopen,		/* Open keyboard                */

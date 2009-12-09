@@ -9,7 +9,7 @@
  * Note: Visual flashes are not yet supported.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/borland.c,v 1.39 2008/11/08 00:29:04 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/borland.c,v 1.40 2009/12/09 01:19:12 tom Exp $
  *
  */
 
@@ -35,14 +35,15 @@
 
 #include <conio.h>
 
-#if 0 //def GVAL_VIDEO
+#if 0				//def GVAL_VIDEO
 #define REVERSED (global_g_val(GVAL_VIDEO) & VAREV)
 static void
 set_reverse(void)
 {
     //if (REVERSED)
-	//begin_reverse();
+    //begin_reverse();
 }
+
 #else
 #define REVERSED 0
 #define set_reverse()		/* nothing */
@@ -306,7 +307,7 @@ bor_attr(UINT attr)		/* change video attributes */
 	borflush();
 
 	attr = VATTRIB(attr);
-#if 0 //def GVAL_VIDEO
+#if 0				//def GVAL_VIDEO
 	if (REVERSED) {
 	    if (attr & VASEL)
 		attr ^= VASEL;
@@ -326,7 +327,7 @@ bor_attr(UINT attr)		/* change video attributes */
 	}
 
 	next = ctrans[VCOLORNUM(attr)];
-	if (attr & (VASEL|VAREV)) {
+	if (attr & (VASEL | VAREV)) {
 	    textcolor((colored ? next : cbcolor) & 15);
 	    textbackground(cfcolor & 7);
 	} else {
@@ -646,7 +647,8 @@ TERM term =
     NROW,
     NCOL,
     NCOL,
-    enc_DEFAULT,
+    dumb_set_encoding,
+    dumb_get_encoding,
     boropen,
     borclose,
     borkopen,
