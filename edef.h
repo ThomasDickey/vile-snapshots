@@ -6,7 +6,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.353 2009/10/15 10:13:24 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.354 2009/12/11 01:32:22 tom Exp $
  */
 
 #ifndef VILE_EDEF_H
@@ -209,6 +209,7 @@ decl_init( int no_errs, FALSE );	/* suppress bells/alarms?	*/
 decl_init( int vl_echo, TRUE );		/* echo user input 		*/
 decl_init( int qpasswd, FALSE );	/* querying for password	*/
 decl_init( int in_autocolor, FALSE );	/* Autocoloring			*/
+decl_init( int filter_only, FALSE );	/* command-line -F option	*/
 
 decl_uninit( int vtrow );		/* Row location of SW cursor	*/
 decl_uninit( int vtcol );		/* Column location of SW cursor */

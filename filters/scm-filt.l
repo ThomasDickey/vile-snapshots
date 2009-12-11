@@ -3,7 +3,7 @@
 
 %{
 /*
- * $Id: scm-filt.l,v 1.6 2009/06/04 22:53:35 tom Exp $
+ * $Id: scm-filt.l,v 1.7 2009/12/10 00:33:18 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of scheme code.
  *
@@ -30,7 +30,7 @@ static char *Number_attr;
 static char *Literal_attr;
 
 static const char *paren_attr(void);
-static unsigned int count_spaces(const char *text, unsigned int len);
+static int count_spaces(const char *text, int len);
 
 /* This is an ugly state variable which specifies whether the next element,  *
  * regardless of state, is subject to a modifier which overrides the quoting *
@@ -104,7 +104,7 @@ RPAREN		[\)\]]
 
 <NORMAL>{LPAREN}[[:space:]]*(quasi)?quote{SPACING}	{
 			  int save = FLTSTACK_OK ? FLTSTACK_THIS.quoted : 0;
-			  unsigned int skip = count_spaces(yytext+1, yyleng-1);
+			  int skip = count_spaces(yytext+1, yyleng-1);
 			  yyless(yyleng-1);
 			  push_state(NORMAL);
 			  if (FLTSTACK_OK)
@@ -137,15 +137,17 @@ RPAREN		[\)\]]
 <NORMAL>{LPAREN}[[:space:]]*unquote(-splicing)?{SPACING}	{
 			  int save = (next_quoted ? G_QUOTED() :
 			             (FLTSTACK_OK ? FLTSTACK_THIS.quoted : 0));
-			  unsigned int skip = count_spaces(yytext+1, yyleng-1);
+			  int skip = count_spaces(yytext+1, yyleng-1);
 			  yyless(yyleng-1);
 			  push_state(NORMAL);
 			  if (save != 2 && FLTSTACK_OK)
 			    FLTSTACK_THIS.quoted = save;
 			  WriteToken3(paren_attr(),1);
 			  flt_puts(yytext+1, skip, "");
-			  flt_puts(yytext+1+skip, yyleng-1-skip, save == 0 ? Error_attr :
-			                                         ci_keyword_attr(yytext+1+skip));
+			  flt_puts(yytext+1+skip, yyleng-1-skip,
+				   save == 0
+				   ? Error_attr
+				   : ci_keyword_attr(yytext+1+skip));
 			  next_quoted = 0;
 			}
 
@@ -185,12 +187,14 @@ paren_attr(void)
     return ((FLTSTACK_OK && FLTSTACK_THIS.quoted) ? Literal_attr : Action_attr);
 }
 
-static unsigned int
-count_spaces(const char *text, unsigned int len)
+static int
+count_spaces(const char *text, int len)
 {
-    unsigned int i;
+    int i;
 
-    for(i = 0; i < len && isspace(text[i]); i++) ;
+    for (i = 0; (i < len) && isspace(CharOf(text[i])); i++) {
+	;
+    }
     return i;
 }
 

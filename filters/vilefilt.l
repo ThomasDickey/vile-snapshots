@@ -7,7 +7,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/vilefilt.l,v 1.65 2009/10/07 09:43:57 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/vilefilt.l,v 1.66 2009/12/10 00:36:15 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of vile macros
  * - T.Dickey
@@ -248,7 +248,7 @@ handle_prepro(char *text, int len)
 	char *next = skip_blanks(text);
 
 	attr = Preproc_attr;
-	switch (dname_to_dirnum(&next, (len - (next - text)))) {
+	switch (dname_to_dirnum(&next, (size_t) (len - (next - text)))) {
 #if HAVE_DIRECTIVE
 	case D_WITH:
 	    push_state(WITH_DEFS);

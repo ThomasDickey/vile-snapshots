@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/m4-filt.c,v 1.34 2009/10/15 09:07:09 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/m4-filt.c,v 1.35 2009/12/10 00:09:34 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of m4
  * input text.  This is in C rather than LEX because M4's quoting delimiters
@@ -56,8 +56,8 @@ typedef struct {
 
 #define isQuote(s,n) (n.used && !strncmp(s, n.text, n.used))
 
-#define write_quote(n) flt_puts(n.text, n.used, "")
-#define wrong_quote(n) flt_puts(n.text, n.used, Error_attr)
+#define write_quote(n) flt_puts(n.text, (int) n.used, "")
+#define wrong_quote(n) flt_puts(n.text, (int) n.used, Error_attr)
 
 static Quote leftquote, rightquote;
 static Quote leftcmt, rightcmt;
@@ -114,10 +114,10 @@ new_quote(Quote * q, const char *s)
 	strcpy(q->text, s);
 }
 
-static int
+static unsigned
 count_of(char **args)
 {
-    int count = 0;
+    unsigned count = 0;
     if (args != 0) {
 	while (*args != 0) {
 	    args++;
@@ -186,9 +186,11 @@ parse_arglist(char *name, char *s, char ***args, int *parens)
 	    while ((*t != ',') && (*t != R_PAREN) && *t)
 		t++;
 	    if (*t == ',' || *t == R_PAREN) {
-		v = typeallocn(char, 1 + t - r);
+		size_t need = (size_t) (t - r);
+
+		v = typeallocn(char, 1 + need);
 		if (t != r)
-		    strncpy(v, r, t - r);
+		    strncpy(v, r, need);
 		v[t - r] = 0;
 		*args = type_alloc(char *, (char *) (*args), sizeof(*args) *
 				     (count + 2), &used);
@@ -290,7 +292,8 @@ extract_identifier(char *s, char ***args, int *parens)
     static unsigned have;
 
     unsigned has_cpp = 0;
-    unsigned need;
+    unsigned extra;
+    size_t need;
     const char *attr;
     char *base;
     char *show = s;
@@ -304,13 +307,14 @@ extract_identifier(char *s, char ***args, int *parens)
     while (isNamex(*s))
 	s++;
     if (base != s) {
-	need = has_cpp + (s - base);
+	extra = (unsigned) (s - base);
+	need = has_cpp + extra;
 	if ((name = do_alloc(name, need, &have)) != 0) {
 	    if (has_cpp) {
 		name[0] = '#';
 	    }
-	    strncpy(name + has_cpp, base, s - base);
-	    name[(s - base) + has_cpp] = 0;
+	    strncpy(name + has_cpp, base, extra);
+	    name[extra + has_cpp] = 0;
 	    if (!strcmp(name, "dnl")) {
 		/* FIXME: GNU m4 may accept an argument list here */
 		s += strlen(s);
@@ -406,7 +410,7 @@ write_literal(char *s, int *literal)
     char *result = s;
 
     if (s != 0) {
-	unsigned c_length = has_endofliteral(s, literal);
+	unsigned c_length = (unsigned) has_endofliteral(s, literal);
 	unsigned need = c_length;
 
 	if (*literal == 0) {
@@ -420,7 +424,7 @@ write_literal(char *s, int *literal)
 		}
 	    }
 	    if (used) {
-		flt_puts(buffer, used, Literal_attr);
+		flt_puts(buffer, (int) used, Literal_attr);
 		used = 0;
 	    }
 	    write_quote(rightquote);
@@ -434,7 +438,7 @@ write_literal(char *s, int *literal)
 	}
 	result += c_length;
     } else if (used) {
-	flt_puts(buffer, used, Error_attr);
+	flt_puts(buffer, (int) used, Error_attr);
 	used = 0;
     }
 #if NO_LEAKS
@@ -524,11 +528,11 @@ do_filter(FILE *input GCC_UNUSED)
 		s = write_comment(s, &comment);
 		comment = 0;
 	    } else if (isQuote(s, leftcmt)) {
-		flt_puts(s, leftcmt.used, Comment_attr);
+		flt_puts(s, (int) leftcmt.used, Comment_attr);
 		s += leftcmt.used;
 		comment = 1;
 	    } else if (isQuote(s, rightcmt)) {
-		flt_puts(s, rightcmt.used, Comment_attr);
+		flt_puts(s, (int) rightcmt.used, Comment_attr);
 		s += rightcmt.used;
 		comment = 0;
 	    } else if (isIdent(*s)) {

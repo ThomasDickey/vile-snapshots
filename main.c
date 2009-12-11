@@ -22,7 +22,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.666 2009/10/15 11:31:56 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.668 2009/12/11 01:57:42 tom Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -418,7 +418,8 @@ MainProgram(int argc, char *argv[])
      */
     siginit(TRUE);
 #if OPT_DUMBTERM
-    if (isatty(fileno(stdin))
+    if (!filter_only
+	&& isatty(fileno(stdin))
 	&& isatty(fileno(stdout))) {
 	tt_opened = open_terminal(&dumb_term);
     } else
@@ -490,6 +491,9 @@ MainProgram(int argc, char *argv[])
 		case 'e':	/* -e for Edit file */
 		case 'E':
 		    b2printf(opts_bp, "set noview\n");
+		    break;
+		case 'F':
+		    filter_only = -TRUE;
 		    break;
 		case 'g':	/* -g for initial goto */
 		case 'G':
@@ -593,7 +597,7 @@ MainProgram(int argc, char *argv[])
      * in this case).
      */
 #if DISP_TERMCAP || DISP_CURSES || DISP_ANSI
-    if (!isatty(fileno(stdout))) {
+    if (!filter_only && !isatty(fileno(stdout))) {
 	fprintf(stderr, "vile: ex mode is not implemented\n");
 	ExitProgram(BADEXIT);
     }
@@ -733,30 +737,36 @@ MainProgram(int argc, char *argv[])
     }
 #endif
 
-    if (!tt_opened)
-	siginit(TRUE);
-    (void) open_terminal((TERM *) 0);
-    term.kopen();		/* open the keyboard */
-    term.rev(FALSE);
-
-    /*
-     * The terminal driver sets default colors and $palette during the
-     * open_terminal function.  Save that information as the 'default'
-     * color scheme.  We have to do this before reading .vilerc
-     */
+    if (filter_only) {
 #if OPT_COLOR_SCHEMES
-    init_scheme();
+	init_scheme();
+#endif
+    } else {
+	if (!tt_opened)
+	    siginit(TRUE);
+	(void) open_terminal((TERM *) 0);
+	term.kopen();		/* open the keyboard */
+	term.rev(FALSE);
+
+	/*
+	 * The terminal driver sets default colors and $palette during the
+	 * open_terminal function.  Save that information as the 'default'
+	 * color scheme.  We have to do this before reading .vilerc
+	 */
+#if OPT_COLOR_SCHEMES
+	init_scheme();
 #endif
 
-    if (vtinit() != TRUE)	/* allocate display memory */
-	tidy_exit(BADEXIT);
+	if (vtinit() != TRUE)	/* allocate display memory */
+	    tidy_exit(BADEXIT);
 
-    winit(TRUE);		/* windows */
+	winit(TRUE);		/* windows */
 
 #if OPT_MENUS
-    if (delay_menus)
-	vlmenu_load(FALSE, 1);
+	if (delay_menus)
+	    vlmenu_load(FALSE, 1);
 #endif
+    }
 
     set_global_b_val(VAL_FILL, default_fill());
 
@@ -878,48 +888,70 @@ MainProgram(int argc, char *argv[])
 	(void) term.setdescrip(init_descrip);
     }
 #endif
-    (void) update(FALSE);
+    if (filter_only) {
+#if OPT_SELECTIONS&&OPT_FILTER
+#if OPT_FILTER
+	const CMDFUNC *cmd = &f_operattrdirect;
+#else
+	const CMDFUNC *cmd = &f_operattrfilter;
+#endif
+	TRACE(("SyntaxFilter-only:\n"));
+	TRACE(("\tcurfname:%s\n", curbp->b_fname));
+	TRACE(("\thavename:%s\n", NonNull(havename)));
+
+	filter_only = TRUE;
+	gotobob(FALSE, 0);
+	havemotion = &f_gotoeob;
+	CMD_U_FUNC(cmd) (FALSE, 0);
+#else
+	fprintf(stderr,
+		"The -F option is not supported in this configuration\n");
+#endif
+
+    } else {
+	(void) update(FALSE);
 
 #if DISP_NTWIN
-    /* Draw winvile's main window, for the very first time. */
-    winvile_start();
+	/* Draw winvile's main window, for the very first time. */
+	winvile_start();
 #endif
 
 #if OPT_POPUP_MSGS
-    if (global_g_val(GMDPOPUP_MSGS) && (startstat != TRUE)) {
-	bp = bfind(MESSAGES_BufName, BFINVS);
-	bsizes(bp);
-	TRACE(("Checking size of popup messages: %d\n", bp->b_linecount));
-	if (bp->b_linecount > 1) {
-	    int save = global_g_val(GMDPOPUP_MSGS);
-	    set_global_g_val(GMDPOPUP_MSGS, TRUE);
-	    popup_msgs();
-	    tb_init(&mlsave, EOS);
-	    set_global_g_val(GMDPOPUP_MSGS, save);
+	if (global_g_val(GMDPOPUP_MSGS) && (startstat != TRUE)) {
+	    bp = bfind(MESSAGES_BufName, BFINVS);
+	    bsizes(bp);
+	    TRACE(("Checking size of popup messages: %d\n", bp->b_linecount));
+	    if (bp->b_linecount > 1) {
+		int save = global_g_val(GMDPOPUP_MSGS);
+		set_global_g_val(GMDPOPUP_MSGS, TRUE);
+		popup_msgs();
+		tb_init(&mlsave, EOS);
+		set_global_g_val(GMDPOPUP_MSGS, save);
+	    }
 	}
-    }
-    if (global_g_val(GMDPOPUP_MSGS) == -TRUE)
-	set_global_g_val(GMDPOPUP_MSGS, FALSE);
+	if (global_g_val(GMDPOPUP_MSGS) == -TRUE)
+	    set_global_g_val(GMDPOPUP_MSGS, FALSE);
 #endif
 
 #ifdef GMDCD_ON_OPEN
-    /* reset a one-shot, e.g., for winvile's drag/drop code */
-    if (global_g_val(GMDCD_ON_OPEN) < 0) {
-	set_directory_from_file(curbp);
-	set_global_g_val(GMDCD_ON_OPEN, FALSE);
-    }
+	/* reset a one-shot, e.g., for winvile's drag/drop code */
+	if (global_g_val(GMDCD_ON_OPEN) < 0) {
+	    set_directory_from_file(curbp);
+	    set_global_g_val(GMDCD_ON_OPEN, FALSE);
+	}
 #endif
 
-    /* We won't always be able to show messages before the screen is
-     * initialized.  Give it one last chance.
-     */
-    if ((startstat != TRUE) && tb_length(mlsave))
-	mlforce("%.*s", (int) tb_length(mlsave), tb_values(mlsave));
+	/* We won't always be able to show messages before the screen is
+	 * initialized.  Give it one last chance.
+	 */
+	if ((startstat != TRUE) && tb_length(mlsave))
+	    mlforce("%.*s", (int) tb_length(mlsave), tb_values(mlsave));
 
-    /* process commands */
-    main_loop();
+	/* process commands */
+	main_loop();
 
-    /* NOTREACHED */
+	/* NOTREACHED */
+    }
     return BADEXIT;
 }
 

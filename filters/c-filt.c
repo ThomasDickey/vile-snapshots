@@ -6,7 +6,7 @@
  *		string literal ("Literal") support --  ben stoltz
  *		factor-out hashing and file I/O - tom dickey
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/c-filt.c,v 1.82 2009/10/07 09:23:18 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/c-filt.c,v 1.83 2009/12/09 23:49:16 tom Exp $
  *
  * Usage: refer to vile.hlp and doc/filters.doc .
  *
@@ -44,7 +44,7 @@ extract_identifier(char *s)
     static char *name;
     static unsigned have;
 
-    unsigned need;
+    size_t need;
     const char *attr;
     char *base = s;
     int found = 0;
@@ -52,17 +52,17 @@ extract_identifier(char *s)
     while (isNamex(*s))
 	s++;
     if (base != s) {
-	need = s - base;
+	need = (size_t) (s - base);
 	if ((name = do_alloc(name, need, &have)) != 0) {
 	    strncpy(name, base, need);
 	    name[need] = 0;
 	    if ((attr = keyword_attr(name)) != 0) {
-		flt_puts(base, need, attr);
+		flt_puts(base, (int) need, attr);
 		found = 1;
 	    }
 	}
 	if (!found) {
-	    flt_puts(base, need, Ident_attr);
+	    flt_puts(base, (int) need, Ident_attr);
 	}
 #if NO_LEAKS
 	free(name);
@@ -311,7 +311,7 @@ write_literal(char *s, int *literal, int escaped)
 {
     int c_length = has_endofliteral(s, *literal);
     if (c_length < 0)
-	c_length = strlen(s);
+	c_length = (int) strlen(s);
     else
 	*literal = 0;
     if (escaped) {
@@ -489,7 +489,7 @@ do_filter(FILE *input GCC_UNUSED)
 	    if (!comment && *s == '/' && *(s + 1) == '*') {
 		c_length = has_endofcomment(s + 2);
 		if (c_length == 0) {	/* Comment continues to the next line */
-		    c_length = strlen(s);
+		    c_length = (int) strlen(s);
 		    comment += 1;
 		} else {
 		    c_length += 2;
@@ -499,7 +499,7 @@ do_filter(FILE *input GCC_UNUSED)
 		continue;
 	    } else if (!comment && *s == '/' && *(s + 1) == '/') {
 		/* C++ comments */
-		c_length = strlen(s);
+		c_length = (int) strlen(s);
 		write_comment(s, c_length, 1);
 		break;
 	    } else if (!escaped && !comment && *s == '#' && firstnonblank(s, line)
@@ -515,7 +515,7 @@ do_filter(FILE *input GCC_UNUSED)
 		    if (comment < 0)
 			comment = 0;
 		} else {	/* Whole line belongs to comment */
-		    c_length = strlen(s);
+		    c_length = (int) strlen(s);
 		    write_comment(s, c_length, 0);
 		    s = s + c_length;
 		}
@@ -572,7 +572,7 @@ do_filter(FILE *input GCC_UNUSED)
 		flt_putc(*s++);
 	    }
 	}
-	len = s - line;
+	len = (unsigned) (s - line);
 	if (len > 2 && !strcmp(line + len - 2, "\\\n"))
 	    was_esc = 1;
     }

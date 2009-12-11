@@ -6,7 +6,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/sh-filt.l,v 1.81 2009/05/21 22:18:26 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/sh-filt.l,v 1.82 2009/12/10 00:34:45 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Shell script.
  */
@@ -227,7 +227,7 @@ save_here(char *text, int length)
 
     here_exp = 1;
     DPRINTF(("save_here '%.*s' ", length, text));
-    if ((here_tag = do_alloc(here_tag, length, &here_len)) != 0) {
+    if ((here_tag = do_alloc(here_tag, (size_t) length, &here_len)) != 0) {
 	s = here_tag;
 	/* skip leading "<<" or "<<-", and blanks */
 	while (length > 0

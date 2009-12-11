@@ -3,7 +3,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/xml-filt.l,v 1.30 2009/10/07 09:41:44 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/xml-filt.l,v 1.31 2009/12/10 00:37:58 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of XML input
  * text.
@@ -168,7 +168,7 @@ xml_prefixed_property(char *text, int len)
 	flt_putc(*marker++);
 	flt_puts(marker, len - LEN_XMLNS, Action_attr);
     } else {
-	flt_puts(text, strlen(text), xml_keyword_attr(text));
+	flt_puts(text, (int) strlen(text), xml_keyword_attr(text));
     }
 }
 
@@ -246,7 +246,7 @@ xml_command(char *text)
 
 	    *marker = '\0';
 	    set_symbol_table(SYMS_XMLNS);
-	    flt_puts(text, strlen(text), keyword_attr(name));
+	    flt_puts(text, (int) strlen(text), keyword_attr(name));
 	    set_symbol_table(old_table);
 
 	    sprintf(new_table, FMT_XMLNS, name);
@@ -261,7 +261,7 @@ xml_command(char *text)
 	    set_symbol_table(old_table);
 	}
     }
-    flt_puts(text, strlen(text), attr);
+    flt_puts(text, (int) strlen(text), attr);
 }
 
 static void
@@ -272,7 +272,7 @@ xml_close(char *text)
 	    free(Tags[--Num_tags].name);
     }
 
-    flt_puts(text, strlen(text), Action_attr);
+    flt_puts(text, (int) strlen(text), Action_attr);
 
     set_symbol_table(default_table);
 }

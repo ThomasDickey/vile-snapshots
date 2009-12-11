@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/rcs-filt.l,v 1.16 2008/11/19 23:11:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/rcs-filt.l,v 1.17 2009/12/10 00:28:47 tom Exp $
  *
  * Filter to add vile "attribution" sequences to RCS archives.
  */
@@ -70,16 +70,18 @@ find_ident(char *first)
  * Buffer text for quoted-strings, so we can highlight the embedded RCS
  * keywords.
  */
-static char    *save_bfr;
-static unsigned save_max;
-static unsigned save_len;
+static char  *save_bfr;
+static size_t save_max;
+static size_t save_len;
 
 static void
 add_to_quoted(char *text, int length)
 {
-    if ((save_bfr = do_alloc(save_bfr, save_len + length + 1, &save_max)) != 0) {
-	strncpy(save_bfr + save_len, text, length + 1);
-	save_len += length;
+    size_t extra = (size_t) (length + 1);
+
+    if ((save_bfr = do_alloc(save_bfr, save_len + extra + 1, &save_max)) != 0) {
+	strncpy(save_bfr + save_len, text, extra + 1);
+	save_len += extra;
     } else {
 	save_len = 0;
     }

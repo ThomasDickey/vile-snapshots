@@ -1,10 +1,10 @@
 .\" obligatory man page for vile
-.\" $Header: /users/source/archives/vile.vcs/RCS/vile.1,v 1.38 2009/12/08 10:08:55 bod Exp $
+.\" $Header: /users/source/archives/vile.vcs/RCS/vile.1,v 1.40 2009/12/11 02:02:20 tom Exp $
 .TH VILE 1
 .SH NAME
 vile, xvile, uxvile \- \fBVI L\fRike \fBE\fRmacs
 .SH SYNOPSIS
-.B "vile [@\fIcmdfile\fB] [+\fIcommand\fB] [-hIiRVv] [-g\fINNN\fB] [-k\fIcryptkey\fB] [-s\fIpattern\fB] [-t\fItag\fB] [\fIfilename\fB]..."
+.B "vile [@\fIcmdfile\fB] [+\fIcommand\fB] [-FhIiRVv] [-g\fINNN\fB] [-k\fIcryptkey\fB] [-s\fIpattern\fB] [-t\fItag\fB] [\fIfilename\fB]..."
 .SH DESCRIPTION
 .I vile
 is a text editor.  This man page is fairly terse.  More information can
@@ -104,6 +104,9 @@ Invokes
 .I vile
 in "noview" mode \- changes are permitted to any buffer while
 in this mode (see "-v").
+.IP -F
+will run the syntax filter that applies to each filename on the command-line,
+and write the attributed text to the standard output.
 .IP -h
 Invokes
 .I vile

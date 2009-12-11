@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.700 2009/12/09 00:37:50 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.701 2009/12/09 09:38:17 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -2582,7 +2582,7 @@ typedef struct	{
 	void	(*mevent) (void);	/* mouse event			*/
 }	TERM;
 
-#define term_is_utfXX()         ((int) term.get_enc() >= enc_UTF8)
+#define term_is_utfXX()         (term.get_enc() >= enc_UTF8)
 
 #if DISP_CURSES && defined(HAVE_ADDNWSTR)
 #define WIDE_CURSES 1
