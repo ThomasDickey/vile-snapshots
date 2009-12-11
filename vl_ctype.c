@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/vl_ctype.c,v 1.6 2009/05/24 12:51:02 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/vl_ctype.c,v 1.7 2009/12/10 23:57:58 tom Exp $
  */
 
 /*
@@ -26,9 +26,12 @@ static CHARTYPE *ctype_clrs;
 void
 vl_ctype_init(int print_lo, int print_hi)
 {
+#if OPT_LOCALE
+    char *save_ctype = setlocale(LC_CTYPE, NULL);
+#endif
     int c;
 
-    TRACE((T_CALLED "vl_charinit() lo=%d, hi=%d\n",
+    TRACE((T_CALLED "vl_ctype_init() lo=%d, hi=%d\n",
 	   print_lo,
 	   print_hi));
 
@@ -43,6 +46,13 @@ vl_ctype_init(int print_lo, int print_hi)
 #if OPT_LOCALE
     TRACE(("wide_locale:%s\n", NonNull(vl_wide_enc.locale)));
     TRACE(("narrow_locale:%s\n", NonNull(vl_narrow_enc.locale)));
+    TRACE(("current_locale:%s\n", NonNull(save_ctype)));
+
+    if (vl_narrow_enc.locale)
+	setlocale(LC_CTYPE, vl_narrow_enc.locale);
+    else if (vl_wide_enc.locale)
+	setlocale(LC_CTYPE, vl_wide_enc.locale);
+
     for (c = 0; c < N_chars; c++) {
 	if (print_hi > 0 && c > print_hi) {
 	    vlCTYPE(c) = 0;
@@ -282,6 +292,12 @@ vl_ctype_init(int print_lo, int print_hi)
 	    vlCTYPE(c) |= vl_scrtch;
 #endif
     }
+
+#if OPT_LOCALE
+    if (save_ctype != 0)
+	(void) setlocale(LC_CTYPE, save_ctype);
+#endif
+
     returnVoid();
 }
 
@@ -294,14 +310,17 @@ vl_ctype_apply(void)
 {
     unsigned n;
 
+    TRACE(("vl_ctype_apply\n"));
     if (ctype_sets) {
 	for (n = 0; n < N_chars; n++) {
 	    vlCTYPE(n) |= ctype_sets[n];
+	    TRACE(("...set %d:%#lx\n", n, (ULONG) vlCTYPE(n)));
 	}
     }
     if (ctype_clrs) {
 	for (n = 0; n < N_chars; n++) {
 	    vlCTYPE(n) &= ~ctype_clrs[n];
+	    TRACE(("...clr %d:%#lx\n", n, (ULONG) vlCTYPE(n)));
 	}
     }
 }
@@ -322,6 +341,8 @@ vl_ctype_discard(void)
 void
 vl_ctype_set(int ch, CHARTYPE cclass)
 {
+    TRACE(("vl_ctype_set %d:%#lx\n", ch, (ULONG) cclass));
+
     if (ctype_sets == 0) {
 	ctype_sets = typecallocn(CHARTYPE, N_chars);
     }
@@ -337,6 +358,8 @@ vl_ctype_set(int ch, CHARTYPE cclass)
 void
 vl_ctype_clr(int ch, CHARTYPE cclass)
 {
+    TRACE(("vl_ctype_clr %d:%#lx\n", ch, (ULONG) cclass));
+
     if (ctype_clrs == 0) {
 	ctype_clrs = typecallocn(CHARTYPE, N_chars);
     }

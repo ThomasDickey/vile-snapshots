@@ -6,7 +6,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/rpm-filt.l,v 1.21 2009/04/25 16:28:10 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/rpm-filt.l,v 1.22 2009/12/10 00:30:56 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of rpm spec-file.
  */
@@ -187,7 +187,7 @@ save_here(char *text, int length)
     char *s;
 
     here_exp = 1;
-    if ((here_tag = do_alloc(here_tag, length, &here_len)) != 0) {
+    if ((here_tag = do_alloc(here_tag, (size_t) length, &here_len)) != 0) {
 	s = here_tag;
 	while (length--) {
 	    if (isQuote(*text)) {

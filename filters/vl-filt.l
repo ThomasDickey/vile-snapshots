@@ -3,7 +3,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/vl-filt.l,v 1.18 2009/10/07 09:41:30 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/vl-filt.l,v 1.19 2009/12/10 00:37:58 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of VeriLog
  * program.
@@ -88,7 +88,7 @@ do_define(char *string)
     string--;
     *string = *keydef;
     insert_keyword(string++, Ident2_attr, 0);
-    flt_puts(string, strlen(string), Ident2_attr);
+    flt_puts(string, (int) strlen(string), Ident2_attr);
 }
 
 static void

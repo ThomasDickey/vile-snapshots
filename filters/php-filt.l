@@ -3,7 +3,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/php-filt.l,v 1.20 2009/04/04 00:49:03 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/php-filt.l,v 1.21 2009/12/10 00:26:43 tom Exp $
  *
  * Filter to add vile "attribution" sequences to PHP scripts.
  * - T.Dickey
@@ -148,7 +148,7 @@ save_here(char *text, int length)
     char *s;
 
     here_exp = 1;
-    if ((here_tag = do_alloc(here_tag, length, &here_len)) != 0) {
+    if ((here_tag = do_alloc(here_tag, (size_t) length, &here_len)) != 0) {
 	s = here_tag;
 	while (length--) {
 	    if (isQuote(*text)) {

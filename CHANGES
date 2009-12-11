@@ -9,6 +9,12 @@ Changes for vile 9.8 (released ??? ??? ?? ????)
 	  if the program is not found since that would cause an unexpected
 	  build-failure.
 	> Tom Dickey:
+	+ add -F command-line option, to only run the syntax filters for the
+	  given files, writing the attributed text to the standard output.
+	+ modify vl_ctype_init() to save/restore LC_CTYPE setting, in case
+	  some library, such as vile's perl binding, has reset the locale based
+	  on environment settings, etc.
+	+ add built sources/headers to makefile tags-rule.
 	+ improve configuration/initialization of curses-driver to ensure that
 	  no attempt is made to display UTF-8 using 8-bit curses (report by
 	  Chris Green).

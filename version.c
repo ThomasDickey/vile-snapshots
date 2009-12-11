@@ -1,7 +1,7 @@
 /*
  * version & usage-messages for vile
  *
- * $Header: /users/source/archives/vile.vcs/RCS/version.c,v 1.70 2009/10/31 14:47:40 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/version.c,v 1.73 2009/12/11 02:01:06 tom Exp $
  *
  */
 
@@ -18,9 +18,12 @@ print_usage(int code)
     {
 	"-h             display [Help] on startup",
 	"-c command     execute the given ex-style command",
-	"-e             edit in \"noview\" mode -- changes permitted",
 #if OPT_EVAL || OPT_DEBUGMACROS
 	"-D             trace macros into [Trace] buffer",
+#endif
+	"-e             edit in \"noview\" mode -- changes permitted",
+#if OPT_SELECTIONS&&OPT_FILTER
+	"-F             run syntax filter only, write to stdout",
 #endif
 	"-I             use vileinit.rc to initialize",
 #if OPT_ENCRYPT

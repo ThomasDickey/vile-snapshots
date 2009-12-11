@@ -20,7 +20,7 @@
 #
 # gnu autoconf support by kevin buettner, 5/94
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.226 2009/10/14 23:00:29 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.227 2009/12/10 01:26:57 tom Exp $
 
 SHELL		= /bin/sh
 
@@ -530,11 +530,13 @@ lint: $(BUILTHDRS)
 	$(LINT) $(CPPFLAGS) $(SRC) $(LIBS)
 	$(LINT) $(CPPFLAGS) mktbls.c
 
-tags:	$(SRC) $(HDRS)
-	ctags $(SRC) $(HDRS)
+TAG_SRC = $(SRC) $(HDRS) $(BUILTSRC) $(BUILTHDRS)
 
-TAGS:	$(SRC) $(HDRS)
-	etags $(SRC) $(HDRS)
+tags:	$(TAG_SRC)
+	ctags $(TAG_SRC)
+
+TAGS:	$(TAG_SRC)
+	etags $(TAG_SRC)
 
 #	 this builds vile-N.Ndev.tar.gz, including all development files
 devtarball:	$(DEV_DISTFILES) /tmp/vilevers release_warnings

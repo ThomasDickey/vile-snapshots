@@ -1,7 +1,7 @@
 /*
  * Main program and I/O for external vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/RCS/builtflt.c,v 1.82 2009/10/09 10:48:48 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/builtflt.c,v 1.83 2009/12/11 01:40:52 tom Exp $
  *
  */
 
@@ -482,44 +482,55 @@ flt_put_blanks(char *string)
 void
 flt_putc(int ch)
 {
-    if (ch == '\n') {
-	if (mark_out.l != buf_head(curbp))
-	    mark_out.l = lforw(mark_out.l);
-	mark_out.o = w_left_margin(curwp);
+    if (filter_only > 0) {
+	putchar(ch);
     } else {
-	mark_out.o++;
+	if (ch == '\n') {
+	    if (mark_out.l != buf_head(curbp))
+		mark_out.l = lforw(mark_out.l);
+	    mark_out.o = w_left_margin(curwp);
+	} else {
+	    mark_out.o++;
+	}
     }
 }
 
 void
 flt_puts(const char *string, int length, const char *marker)
 {
-    char bfr1[NSTRING];
-    char bfr2[NSTRING];
-    char *last;
-    int count;
-
-    if (length > 0 && marker != 0 && *marker != EOS && *marker != 'N') {
-
-	save_mark(TRUE);
-
-	vl_strncpy(bfr2, marker, sizeof(bfr1) - 10);
-	sprintf(bfr1, "%c%d%s:", CTL_A, length, bfr2);
-	last = bfr1 + strlen(bfr1);
-	decode_attribute(bfr1, (size_t) (last - bfr1), 0, &count);
-
-	flt_echo(string, length);
-	save_mark(FALSE);
-
-	if (apply_attribute()) {
-	    REGIONSHAPE save_shape = regionshape;
-	    regionshape = rgn_EXACT;
-	    (void) attributeregion();
-	    videoattribute = 0;
-	    regionshape = save_shape;
+    if (filter_only > 0) {
+	if (marker != 0 && *marker != EOS && *marker != 'N') {
+	    printf("%c%d%s:", CTL_A, length, marker);
 	}
-    } else {
 	flt_echo(string, length);
+    } else {
+	char bfr1[NSTRING];
+	char bfr2[NSTRING];
+	char *last;
+	int count;
+
+	if (length > 0 && marker != 0 && *marker != EOS && *marker != 'N') {
+
+	    save_mark(TRUE);
+
+	    vl_strncpy(bfr2, marker, sizeof(bfr1) - 10);
+	    sprintf(bfr1, "%c%d%s:", CTL_A, length, bfr2);
+	    last = bfr1 + strlen(bfr1);
+	    decode_attribute(bfr1, (size_t) (last - bfr1), 0, &count);
+
+	    flt_echo(string, length);
+	    save_mark(FALSE);
+
+	    if (apply_attribute()) {
+		REGIONSHAPE save_shape = regionshape;
+		regionshape = rgn_EXACT;
+		(void) attributeregion();
+		videoattribute = 0;
+		regionshape = save_shape;
+	    }
+	} else {
+	    flt_echo(string, length);
+	}
     }
 }
 

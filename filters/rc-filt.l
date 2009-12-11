@@ -3,7 +3,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/rc-filt.l,v 1.12 2009/05/12 22:47:25 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/rc-filt.l,v 1.13 2009/12/10 00:26:55 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Windows
  * resource files.
@@ -28,7 +28,7 @@ show_prepro(char *text)
     s = skip_blanks(text = ++s);
     flt_puts(text, s - text, "");
     set_symbol_table("cpre");
-    flt_puts(text, strlen(text), keyword_attr(text));
+    flt_puts(text, (int) strlen(text), keyword_attr(text));
     set_symbol_table(default_table);
 }
 

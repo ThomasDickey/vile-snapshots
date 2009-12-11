@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/rubyfilt.c,v 1.48 2009/10/07 09:35:47 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/rubyfilt.c,v 1.49 2009/12/10 00:22:04 tom Exp $
  *
  * Filter to add vile "attribution" sequences to ruby scripts.  This is a
  * translation into C of an earlier version written for LEX/FLEX.
@@ -21,7 +21,7 @@ DefineFilter("ruby");
 #define isIdent0(c)  (isalpha(CharOf(c)) || c == '_')
 
 #define MORE(s)	     ((s) < the_last)
-#define ATLEAST(s,n) (the_last - (s) > (n))
+#define ATLEAST(s,n) ((the_last - (s)) > (n))
 
 #ifdef DEBUG
 #define DPRINTF(params) if(FltOptions('d'))printf params
@@ -512,10 +512,10 @@ is_COMMENT(char *s)
 static int
 end_marker(char *s, const char *marker, int only)
 {
-    int len = strlen(marker);
+    int len = (int) strlen(marker);
 
     return (ATLEAST(s, len)
-	    && !strncmp(s, marker, len)
+	    && !strncmp(s, marker, (size_t) len)
 	    && isspace(CharOf(s[len]))
 	    && (!only || (s[len] == '\n')));
 }
@@ -567,7 +567,7 @@ begin_HERE(char *s, int *quoted, int *strip_here)
 	    *quoted = 0;
 	    *strip_here = 1;
 
-	    if ((marker = do_alloc((char *) 0, ok + 1, &temp)) != 0) {
+	    if ((marker = do_alloc((char *) 0, (size_t) (ok + 1), &temp)) != 0) {
 		char *d = marker;
 		while (base != s) {
 		    if (isIdent(*base))
@@ -672,7 +672,7 @@ is_OPERATOR(char *s)
 	for (n = 0; n < TABLESIZE(table); ++n) {
 	    if (ATLEAST(s, table[n].len)
 		&& table[n].ops[0] == *s
-		&& !memcmp(s, table[n].ops, table[n].len)) {
+		&& !memcmp(s, table[n].ops, (size_t) table[n].len)) {
 		found = table[n].len;
 		break;
 	    }
@@ -1237,18 +1237,19 @@ do_filter(FILE *input GCC_UNUSED)
 		    s += ok;
 		} else if ((ok = is_MKEYWORD(s, 1)) != 0) {
 		    Parsed(this_tok, tKEYWORD);
-		    if (ok == 5 && !strncmp(s, "alias", ok))
+		    if (ok == 5 && !strncmp(s, "alias", (size_t) ok))
 			state = eALIAS;
-		    else if (ok == 5 && !strncmp(s, "class", ok))
+		    else if (ok == 5 && !strncmp(s, "class", (size_t) ok))
 			state = eCLASS;
-		    else if (ok == 3 && !strncmp(s, "def", ok))
+		    else if (ok == 3 && !strncmp(s, "def", (size_t) ok))
 			state = eDEF;
 		    s = put_KEYWORD(s, ok, &had_op);
 		} else if ((ok = is_VARIABLE(s)) != 0) {
 		    Parsed(this_tok, tVARIABLE);
 		    s = put_VARIABLE(s, ok);
 		    had_op = 0;
-		} else if (ATLEAST(s, (ok = 2)) && !strncmp(s, "?\"", ok)) {
+		} else if (ATLEAST(s, (ok = 2))
+			   && !strncmp(s, "?\"", (size_t) ok)) {
 		    Parsed(this_tok, tVARIABLE);
 		    s = put_VARIABLE(s, ok);	/* csv.rb uses it, undocumented */
 		    had_op = 0;

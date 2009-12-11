@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/pl-filt.c,v 1.99 2009/10/07 09:29:03 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/pl-filt.c,v 1.100 2009/12/10 00:13:12 tom Exp $
  *
  * Filter to add vile "attribution" sequences to perl scripts.  This is a
  * translation into C of an earlier version written for LEX/FLEX.
@@ -1110,39 +1110,41 @@ put_document(char *s)
  * that does not have to be inside parentheses.
  */
 static void
-check_keyword(char *s, size_t ok, AfterKey * state)
+check_keyword(char *s, int ok, AfterKey * state)
 {
+    size_t len = (size_t) ok;
+
     state->may_have_pattern = 0;
     state->has_no_pattern = 0;
 
     switch (ok) {
     case 2:
-	state->may_have_pattern = (!strncmp(s, "if", ok)
-				   || !strncmp(s, "eq", ok)
-				   || !strncmp(s, "ge", ok)
-				   || !strncmp(s, "gt", ok)
-				   || !strncmp(s, "le", ok)
-				   || !strncmp(s, "lt", ok)
-				   || !strncmp(s, "ne", ok)
-				   || !strncmp(s, "or", ok));
+	state->may_have_pattern = (!strncmp(s, "if", len)
+				   || !strncmp(s, "eq", len)
+				   || !strncmp(s, "ge", len)
+				   || !strncmp(s, "gt", len)
+				   || !strncmp(s, "le", len)
+				   || !strncmp(s, "lt", len)
+				   || !strncmp(s, "ne", len)
+				   || !strncmp(s, "or", len));
 	break;
     case 3:
-	state->has_no_pattern = !strncmp(s, "sub", ok);
-	state->may_have_pattern = (!strncmp(s, "and", ok)
-				   || !strncmp(s, "cmp", ok)
-				   || !strncmp(s, "not", ok)
-				   || !strncmp(s, "xor", ok));
+	state->has_no_pattern = !strncmp(s, "sub", len);
+	state->may_have_pattern = (!strncmp(s, "and", len)
+				   || !strncmp(s, "cmp", len)
+				   || !strncmp(s, "not", len)
+				   || !strncmp(s, "xor", len));
 	break;
     case 4:
-	state->may_have_pattern = !strncmp(s, "grep", ok);
+	state->may_have_pattern = !strncmp(s, "grep", len);
 	break;
     case 5:
-	state->may_have_pattern = (!strncmp(s, "split", ok)
-				   || !strncmp(s, "until", ok)
-				   || !strncmp(s, "while", ok));
+	state->may_have_pattern = (!strncmp(s, "split", len)
+				   || !strncmp(s, "until", len)
+				   || !strncmp(s, "while", len));
 	break;
     case 6:
-	state->may_have_pattern = !strncmp(s, "unless", ok);
+	state->may_have_pattern = !strncmp(s, "unless", len);
 	break;
     }
 }

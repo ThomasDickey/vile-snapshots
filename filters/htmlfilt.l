@@ -8,7 +8,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/htmlfilt.l,v 1.102 2009/10/07 09:47:57 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/htmlfilt.l,v 1.103 2009/12/10 00:23:36 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of HTML input
  * text.
@@ -419,7 +419,7 @@ html_command(const char *text)
 	   : ci_keyword_attr(temp);
     if (!attr || !*attr)
 	flt_error("Unknown keyword: %s", temp);
-    flt_puts(text, strlen(text), attr);
+    flt_puts(text, (int) strlen(text), attr);
 
     if (got_tag && !strcmp(temp, "src")) {
 	next_state = HTMLINCL;
@@ -479,7 +479,7 @@ html_quotes(char *text, int len, int state, int which)
     if (got_language2) {
 	static char *temp;
 	static unsigned used = 0;
-	unsigned need = (temp ? strlen(temp) : 0) + len + 1;
+	size_t need = (temp ? strlen(temp) : 0) + (size_t) (len + 1);
 
 	temp = do_alloc(temp, need, &used);
 	if (temp != 0) {
@@ -568,7 +568,7 @@ may_resume_html(char *text)
     *next = 0;
     html_command(left);
     *next = (char) save;
-    flt_puts(next, strlen(next), Keyword_attr);
+    flt_puts(next, (int) strlen(next), Keyword_attr);
     finish_htmlcode();
 }
 
