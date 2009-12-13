@@ -2,7 +2,7 @@
  * Window management. Some of the functions are internal, and some are
  * attached to keys that the user actually types.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/window.c,v 1.119 2009/10/31 17:12:50 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/window.c,v 1.120 2009/12/13 15:14:19 tom Exp $
  *
  */
 
@@ -1113,6 +1113,22 @@ clone_window(WINDOW *dst, WINDOW *src)
     dst->w_flag |= WFMODE | WFHARD;	/* Quite nasty.         */
 }
 
+static WINDOW *
+new_WINDOW(int screen)
+{
+    WINDOW *wp = typecalloc(WINDOW);
+
+    if (wp == NULL) {
+	fprintf(stderr, "Cannot allocate windows\n");
+	ExitProgram(BADEXIT);
+    }
+    init_window(wp, (BUFFER *) 0);
+    wp->w_ntrows = (screen
+		    ? (term.rows - 2)	/* "-1" for mode line.  */
+		    : 1);	/* command-line         */
+    return wp;
+}
+
 /*
  * Initialize all of the windows.
  */
@@ -1123,22 +1139,9 @@ winit(int screen)
 
     TRACE((T_CALLED "winit(%d)\n", screen));
 
-    wp = typecalloc(WINDOW);	/* First window         */
-    if (wp == NULL) {
-	fprintf(stderr, "Cannot allocate windows\n");
-	ExitProgram(BADEXIT);
-    }
+    wp = new_WINDOW(screen);	/* First window         */
     wheadp = wp;
     curwp = wp;
-
-    init_window(wp, (BUFFER *) 0);
-    wp->w_wndp = NULL;		/* Initialize window    */
-    wp->w_toprow = 0;
-    wp->w_ntrows = (screen
-		    ? (term.rows - 2)	/* "-1" for mode line.  */
-		    : 1);	/* command-line         */
-    wp->w_force = 0;
-    wp->w_bufp = NULL;
 
 #if OPT_PERL || OPT_TCL
     wp->w_id = w_id_next;
@@ -1155,6 +1158,9 @@ winit(int screen)
 	(void) delink_bp(btempp);
 #endif
     } else {
+	/* create a dummy window, to hold buffers before display is active */
+	wnullp = new_WINDOW(1);
+
 	/* create the command-buffer */
 	TRACE(("winit creating bminip & wminip\n"));
 	wminip = wp;

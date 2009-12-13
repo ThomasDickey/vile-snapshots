@@ -1,7 +1,7 @@
 /*	Spawn:	various DOS access commands
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.204 2009/10/07 08:51:35 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.205 2009/12/11 09:58:49 tom Exp $
  *
  */
 
@@ -53,7 +53,7 @@ static int spawn1(int rerun, int pressret);
 #include	<iodef.h>
 
 #if DISP_X11
-#define VMSVT_DATA /* nothing */
+#define VMSVT_DATA		/* nothing */
 #else
 #define VMSVT_DATA extern
 #endif
@@ -118,7 +118,7 @@ x_window_SHELL(const char *cmd)
 	    if (tmp != 0) {
 		char *result = tb_values(tmp);
 		TRACE(("executing '%s'\n", result));
-		IGNORE_RC( system(result));
+		IGNORE_RC(system(result));
 		tb_free(&tmp);
 	    }
 #ifdef HAVE_WAITPID
@@ -630,7 +630,10 @@ write_region_to_pipe(void *writefp)
     LINE *lp = DOT.l;
 
     while (lp != last) {
-	IGNORE_RC(fwrite((char *) lvalue(lp), sizeof(char), (size_t) llength(lp), fw));
+	IGNORE_RC(fwrite((char *) lvalue(lp),
+			 sizeof(char),
+			   (size_t) llength(lp),
+			 fw));
 	vl_putc('\n', fw);
 	lp = lforw(lp);
     }
@@ -800,52 +803,61 @@ open_region_filter(void)
     static char oline[NLINE];	/* command line send to shell */
     char line[NLINE];		/* command line send to shell */
     FILE *fr, *fw;
+#endif
     int s;
 
-    /* get the filter name and its args */
-    if ((s = mlreply_no_bs("!", oline, NLINE)) != TRUE)
-	return (s);
-    (void) strcpy(line, oline);
-    if ((s = inout_popen(&fr, &fw, line)) != TRUE) {
-	mlforce("[Couldn't open pipe or command]");
-	return s;
-    }
+    TRACE((T_CALLED "open_region_filter\n"));
 
-    if (!softfork()) {
+#if SYS_UNIX || SYS_MSDOS || (SYS_OS2 && CC_CSETPP) || SYS_WINNT
+    /* get the filter name and its args */
+    if ((s = mlreply_no_bs("!", oline, NLINE)) == TRUE) {
+	(void) strcpy(line, oline);
+	if ((s = inout_popen(&fr, &fw, line)) == TRUE) {
+	    if (!softfork()) {
 #if !(SYS_WINNT && defined(GMDW32PIPES))
-	write_region_to_pipe(fw);
+		write_region_to_pipe(fw);
 #else
-	/* This is a Win32 environment with compiled Win32 pipe support. */
-	if (global_g_val(GMDW32PIPES)) {
-	    /*
-	     * w32pipes mode enabled -- create child thread to blast
-	     * region to write pipe.
-	     */
-	    if (_beginthread(write_region_to_pipe, 0, fw) == (unsigned long) -1) {
-		mlforce("[Can't create Win32 write pipe]");
+		/* This is a Win32 environment with compiled Win32 pipe
+		 * support.
+		 */
+		if (global_g_val(GMDW32PIPES)) {
+		    ULONG code = _beginthread(write_region_to_pipe, 0, fw);
+
+		    /*
+		     * w32pipes mode enabled -- create child thread to blast
+		     * region to write pipe.
+		     */
+		    if (code == (ULONG) (-1)) {
+			mlforce("[Can't create Win32 write pipe]");
+			(void) fclose(fw);
+			(void) npclose(fr);
+			s = FALSE;
+		    }
+		} else {
+		    /*
+		     * Single-threaded parent process writes region to pseudo
+		     * write pipe (temp file).
+		     */
+		    write_region_to_pipe(fw);
+		}
+#endif
+	    }
+	    if (s == TRUE) {
+#if ! ((SYS_OS2 && CC_CSETPP) || SYS_WINNT)
 		(void) fclose(fw);
-		(void) npclose(fr);
-		return (FALSE);
+#endif
+		ffp = fr;
+		count_fline = 0;
 	    }
 	} else {
-	    /*
-	     * Single-threaded parent process writes region to pseudo
-	     * write pipe (temp file).
-	     */
-	    write_region_to_pipe(fw);
+	    mlforce("[Couldn't open pipe or command]");
 	}
-#endif
     }
-#if ! ((SYS_OS2 && CC_CSETPP) || SYS_WINNT)
-    (void) fclose(fw);
-#endif
-    ffp = fr;
-    count_fline = 0;
-    return s;
 #else
     mlforce("[Region filtering not available -- try buffer filtering]");
-    return FALSE;
+    s = FALSE;
 #endif
+    returnCode(s);
 }
 #endif /* OPT_SELECTIONS */
 
@@ -993,18 +1005,20 @@ set_envvar(int f GCC_UNUSED, int n GCC_UNUSED)
     char *both;
     int rc;
 
-    if ((rc = mlreply2("Environment variable: ", &var)) == ABORT) {
-	/* EMPTY */ ;
-    } else if ((rc = mlreply2("Value: ", &val)) == ABORT) {
-	/* EMPTY */ ;
-    } else if (tb_length(var) == 0
-	       || tb_length(val) == 0
-	       || (both = typeallocn(char,
-				     tb_length(var) + tb_length(val))) == 0) {
-	rc = no_memory("set_envvar");
-    } else {
-	lsprintf(both, "%s=%s", tb_values(var), tb_values(val));
-	putenv(both);	/* this will leak.  i think it has to. */
+    if ((rc = mlreply2("Environment variable: ", &var)) != ABORT) {
+	if ((rc = mlreply2("Value: ", &val)) != ABORT) {
+	    size_t len_var = tb_length(var);
+	    size_t len_val = tb_length(val);
+
+	    if (len_var != 0
+		&& len_val != 0
+		&& (both = typeallocn(char, len_var + len_val + 1)) != 0) {
+		lsprintf(both, "%s=%s", tb_values(var), tb_values(val));
+		putenv(both);	/* this will leak.  i think it has to. */
+	    } else {
+		rc = no_memory("set_envvar");
+	    }
+	}
     }
 
     return rc;

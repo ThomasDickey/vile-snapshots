@@ -5,7 +5,7 @@
  * reading and writing of the disk are
  * in "fileio.c".
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.433 2009/10/31 13:57:08 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.435 2009/12/12 00:30:10 tom Exp $
  */
 
 #include "estruct.h"
@@ -2140,15 +2140,99 @@ write_encoded_text(BUFFER *bp, const char *buf, int nbuf, const char *ending)
 #define FFPUTLINE(bp,buf,len,end) ffputline(buf,len,end)
 #endif
 
+int
+write_region(BUFFER *bp, REGION * rp, int encoded, int *nline, B_COUNT * nchar)
+{
+    int s;
+    LINE *lp;
+    const char *ending = get_record_sep(bp);
+    B_COUNT len_rs = (B_COUNT) len_record_sep(bp);
+    C_NUM offset = rp->r_orig.o;
+
+    lp = rp->r_orig.l;
+    *nline = 0;			/* Number of lines     */
+    *nchar = 0;			/* Number of chars     */
+
+#if OPT_MULTIBYTE
+    if ((s = write_bom(bp)) != FIOSUC) {
+	goto out;
+    }
+#endif
+
+    /* first (maybe partial) line and succeeding whole lines */
+    while ((rp->r_size + (B_COUNT) offset) >= (B_COUNT) line_length(lp)) {
+	C_NUM len = llength(lp) - offset;
+	char *text = lvalue(lp) + offset;
+
+	/* If this is the last line (and no fragment will be written
+	 * after the line), allow 'newline' mode to suppress the
+	 * trailing newline.
+	 */
+	if (rp->r_size <= line_length(lp)) {
+	    rp->r_size = 0;
+	    if (!b_val(bp, MDNEWLINE))
+		ending = "";
+	} else {
+	    rp->r_size -= line_length(lp);
+	}
+#if OPT_SELECTIONS
+	if (encoded) {
+	    TBUFF *temp;
+	    if ((temp = encode_attributes(lp, bp, rp)) != 0) {
+		text = tb_values(temp);
+		len = (int) tb_length(temp);
+	    }
+	    if ((s = FFPUTLINE(bp, text, len, ending)) != FIOSUC) {
+		tb_free(&temp);
+		goto out;
+	    }
+	    tb_free(&temp);
+	} else
+#endif
+	if ((s = FFPUTLINE(bp, text, len, ending)) != FIOSUC)
+	    goto out;
+
+	*nline += 1;
+	*nchar += line_length(lp);
+	offset = 0;
+	lp = lforw(lp);
+    }
+
+    /* last line (fragment) */
+    if (rp->r_size > 0) {
+	C_NUM len = llength(lp);
+	char *text = lvalue(lp);
+
+#if OPT_SELECTIONS
+	if (encoded) {
+	    TBUFF *temp;
+	    if ((temp = encode_attributes(lp, bp, rp)) != 0) {
+		text = tb_values(temp);
+		len = (int) tb_length(temp);
+	    }
+	    if ((s = FFPUTLINE(bp, text, len, NULL)) != FIOSUC) {
+		tb_free(&temp);
+		goto out;
+	    }
+	    tb_free(&temp);
+	} else
+#endif
+	if ((s = FFPUTLINE(bp, lvalue(lp), (int) rp->r_size, NULL)) != FIOSUC)
+	    goto out;
+	*nchar += rp->r_size;
+	*nline += 1;		/* it _looks_ like a line */
+    }
+
+  out:
+    return s;
+}
+
 static int
 actually_write(REGION * rp, char *fn, int msgf, BUFFER *bp, int forced, int encoded)
 {
     int s;
-    LINE *lp;
     int nline;
     B_COUNT nchar;
-    const char *ending = get_record_sep(bp);
-    B_COUNT len_rs = (B_COUNT) len_record_sep(bp);
     C_NUM offset = rp->r_orig.o;
 
     /* this is adequate as long as we cannot write parts of lines */
@@ -2200,64 +2284,7 @@ actually_write(REGION * rp, char *fn, int msgf, BUFFER *bp, int forced, int enco
 
     CleanToPipe(TRUE);
 
-    lp = rp->r_orig.l;
-    nline = 0;			/* Number of lines     */
-    nchar = 0;			/* Number of chars     */
-
-#if OPT_MULTIBYTE
-    if ((s = write_bom(bp)) != FIOSUC) {
-	goto out;
-    }
-#endif
-
-    /* first (maybe partial) line and succeeding whole lines */
-    while ((rp->r_size + (B_COUNT) offset) >= (B_COUNT) line_length(lp)) {
-	C_NUM len = llength(lp) - offset;
-	char *text = lvalue(lp) + offset;
-
-	/* If this is the last line (and no fragment will be written
-	 * after the line), allow 'newline' mode to suppress the
-	 * trailing newline.
-	 */
-	if (rp->r_size <= line_length(lp)) {
-	    rp->r_size = 0;
-	    if (!b_val(bp, MDNEWLINE))
-		ending = "";
-	} else {
-	    rp->r_size -= line_length(lp);
-	}
-#if OPT_SELECTIONS
-	if (encoded) {
-	    TBUFF *temp;
-	    if ((temp = encode_attributes(lp, bp, rp)) != 0) {
-		text = tb_values(temp);
-		len = (int) tb_length(temp);
-	    }
-	    if ((s = FFPUTLINE(bp, text, len, ending)) != FIOSUC) {
-		tb_free(&temp);
-		goto out;
-	    }
-	    tb_free(&temp);
-	} else
-#endif
-	if ((s = FFPUTLINE(bp, text, len, ending)) != FIOSUC)
-	    goto out;
-
-	++nline;
-	nchar += line_length(lp);
-	offset = 0;
-	lp = lforw(lp);
-    }
-
-    /* last line (fragment) */
-    if (rp->r_size > 0) {
-	if ((s = FFPUTLINE(bp, lvalue(lp), (int) rp->r_size, NULL)) != FIOSUC)
-	    goto out;
-	nchar += rp->r_size;
-	++nline;		/* it _looks_ like a line */
-    }
-
-  out:
+    s = write_region(bp, rp, encoded, &nline, &nchar);
     if (s == FIOSUC) {		/* No write error.      */
 #if OPT_VMS_PATH
 	if (same_fname(fn, bp, FALSE))

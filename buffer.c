@@ -5,7 +5,7 @@
  * keys. Like everyone else, they set hints
  * for the display system.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.340 2009/04/02 23:58:18 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.341 2009/12/13 16:10:32 tom Exp $
  *
  */
 
@@ -468,6 +468,12 @@ bp2any_wp(BUFFER *bp)
 	if (wp->w_bufp == bp)
 	    break;
     }
+    /*
+     * Check for special case where we're running scripts before the screen is
+     * initialized, and want to ensure we do not put buffers into wminip.
+     */
+    if (wp == 0 && !is_vtinit() && wnullp != 0 && wnullp->w_bufp == bp)
+	wp = wnullp;
     return wp;
 }
 
@@ -1280,8 +1286,9 @@ swbuffer_lfl(BUFFER *bp, int lockfl, int this_window)
 	&& curwp->w_bufp == bp) {	/* no switching to be done */
 
 	if (!b_is_reading(bp) &&
-	    !bp->b_active)	/* on second thought, yes there is */
+	    !bp->b_active) {	/* on second thought, yes there is */
 	    status = suckitin(bp, TRUE, lockfl);
+	}
     } else {
 #if !WINMARK
 	/* Whatever else we do, make sure MK isn't bogus when we leave */
@@ -1388,6 +1395,9 @@ swbuffer_lfl(BUFFER *bp, int lockfl, int this_window)
 	} else if (curwp == 0) {
 	    status = FALSE;	/* we haven't started displaying yet */
 	} else {
+	    if (!is_vtinit()) {
+		curwp = wnullp;
+	    }
 	    /* oh well, suck it into this window */
 	    curwp->w_bufp = bp;
 	    status = suckitin(bp, (bp->b_nwnd++ == 0), lockfl);

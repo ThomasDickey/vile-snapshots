@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.496 2009/11/05 09:21:41 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.497 2009/12/13 16:06:44 tom Exp $
  *
  */
 
@@ -471,6 +471,16 @@ vtfree(void)
 #endif
 
 /*
+ * Returns true if the virtual screen has been allocated and initialized,
+ * so we're able to create/update windows.
+ */
+int
+is_vtinit(void)
+{
+    return (vscreen != 0);
+}
+
+/*
  * Initialize the data structures used by the display code. The edge vectors
  * used to access the screens are set up.
  */
@@ -484,7 +494,7 @@ vtinit(void)
     beginDisplay();
     /* allocate new display memory */
     if (vtalloc() == FALSE) {	/* if we fail, only serious if not a realloc */
-	rc = (vscreen != NULL);
+	rc = is_vtinit();
     } else {
 	for (i = 0; i < term.maxrows; ++i) {
 	    vp = vscreen[i];
@@ -1458,7 +1468,7 @@ kbd_flush(void)
     int ok;
 
     beginDisplay();
-    if (vscreen != 0) {
+    if (is_vtinit()) {
 	int row = term.rows - 1;
 
 	vtmove(row, -w_val(wminip, WVAL_SIDEWAYS));
@@ -3275,114 +3285,116 @@ update_modeline(WINDOW *wp)
 #endif
     int n;
 
-    term.cursorvis(FALSE);
+    if (is_vtinit()) {
+	term.cursorvis(FALSE);
 
-    n = mode_row(wp);		/* Location. */
+	n = mode_row(wp);	/* Location. */
 #if OPT_VIDEO_ATTRS
-    {
-	VIDEO_ATTR attr;
-	if (wp == curwp)
-	    attr = VAMLFOC;
-	else
-	    attr = VAML;
+	{
+	    VIDEO_ATTR attr;
+	    if (wp == curwp)
+		attr = VAMLFOC;
+	    else
+		attr = VAML;
 #if OPT_REVSTA
 #ifdef	GVAL_MCOLOR
-	attr |= (global_g_val(GVAL_MCOLOR) & ~VASPCOL);
+	    attr |= (global_g_val(GVAL_MCOLOR) & ~VASPCOL);
 #else
-	attr |= VAREV;
+	    attr |= VAREV;
 #endif
 #endif
-	vscreen[n]->v_flag |= VFCHG;
-	set_vattrs(n, 0, attr, term.cols);
-    }
+	    vscreen[n]->v_flag |= VFCHG;
+	    set_vattrs(n, 0, attr, term.cols);
+	}
 #else
-    vscreen[n]->v_flag |= VFCHG | VFREQ | VFCOL;	/* Redraw next time. */
+	vscreen[n]->v_flag |= VFCHG | VFREQ | VFCOL;	/* Redraw next time. */
 #endif
 #if OPT_COLOR
-    ReqFcolor(vscreen[n]) = gfcolor;
-    ReqBcolor(vscreen[n]) = gbcolor;
+	ReqFcolor(vscreen[n]) = gfcolor;
+	ReqBcolor(vscreen[n]) = gbcolor;
 #endif
-    vtmove(n, 0);		/* Seek to right line. */
+	vtmove(n, 0);		/* Seek to right line. */
 
 #if OPT_MLFORMAT
-    special_formatter(&result, modeline_format, wp);
-    vtputsn(wp, tb_values(result), tb_length(result));
+	special_formatter(&result, modeline_format, wp);
+	vtputsn(wp, tb_values(result), tb_length(result));
 #else /* hard-coded format */
-    bp = wp->w_bufp;
-    if (bp == 0)
-	bp = curbp;
-    if (bp == 0)
-	bp = bminip;
-    if (wp == curwp) {		/* current buffer shows as = */
-	lchar[0] = '=';
-    } else {
+	bp = wp->w_bufp;
+	if (bp == 0)
+	    bp = curbp;
+	if (bp == 0)
+	    bp = bminip;
+	if (wp == curwp) {	/* current buffer shows as = */
+	    lchar[0] = '=';
+	} else {
 #if OPT_REVSTA
-	if (revexist)
-	    lchar[0] = ' ';
+	    if (revexist)
+		lchar[0] = ' ';
+	    else
+#endif
+		lchar[0] = '-';
+	}
+	left_ms[0] = right_ms[0] = EOS;
+	ms = left_ms;
+	ms = lsprintf(ms, "%c%c%c %s ",
+		      lchar[0], modeline_show(wp, lchar[0]), lchar[0], bp->b_bname);
+	if (modeline_modes(bp, &ms, FALSE))
+	    *ms++ = ' ';
+	if (bp->b_fname != 0
+	    && (shorten_path(vl_strncpy(temp, bp->b_fname, sizeof(temp)), FALSE))
+	    && !eql_bname(bp, temp)) {
+	    if (is_internalname(temp)) {
+		for (n = term.cols - (13 + strlen(temp));
+		     n > 0; n--)
+		    *ms++ = lchar[0];
+	    } else {
+		ms = lsprintf(ms, "is");
+	    }
+	    ms = lsprintf(ms, " %s ", temp);
+	}
+	memset(lchar_pad, lchar[0], sizeof(lchar_pad) - 1);
+#ifdef WMDRULER
+	if (w_val(wp, WMDRULER))
+	    (void) lsprintf(right_ms, " (%d,%d) %s",
+			    wp->w_ruler_line, wp->w_ruler_col, lchar_pad);
 	else
 #endif
-	    lchar[0] = '-';
-    }
-    left_ms[0] = right_ms[0] = EOS;
-    ms = left_ms;
-    ms = lsprintf(ms, "%c%c%c %s ",
-		  lchar[0], modeline_show(wp, lchar[0]), lchar[0], bp->b_bname);
-    if (modeline_modes(bp, &ms, FALSE))
-	*ms++ = ' ';
-    if (bp->b_fname != 0
-	&& (shorten_path(vl_strncpy(temp, bp->b_fname, sizeof(temp)), FALSE))
-	&& !eql_bname(bp, temp)) {
-	if (is_internalname(temp)) {
-	    for (n = term.cols - (13 + strlen(temp));
-		 n > 0; n--)
-		*ms++ = lchar[0];
+	    (void) lsprintf(right_ms, " %s %s", rough_position(wp), lchar_pad);
+
+	*ms++ = EOS;
+	right_len = strlen(right_ms);
+	vtputsn(wp, left_ms, term.cols);
+	for (n = term.cols - strlen(left_ms) - right_len; n > 0; n--)
+	    vtputc(wp, lchar, 1);
+
+	vtcol = term.cols - right_len;
+	if (vtcol < 0) {
+	    n = -vtcol;
+	    vtcol = 0;
 	} else {
-	    ms = lsprintf(ms, "is");
+	    n = 0;
 	}
-	ms = lsprintf(ms, " %s ", temp);
-    }
-    memset(lchar_pad, lchar[0], sizeof(lchar_pad) - 1);
-#ifdef WMDRULER
-    if (w_val(wp, WMDRULER))
-	(void) lsprintf(right_ms, " (%d,%d) %s",
-			wp->w_ruler_line, wp->w_ruler_col, lchar_pad);
-    else
-#endif
-	(void) lsprintf(right_ms, " %s %s", rough_position(wp), lchar_pad);
 
-    *ms++ = EOS;
-    right_len = strlen(right_ms);
-    vtputsn(wp, left_ms, term.cols);
-    for (n = term.cols - strlen(left_ms) - right_len; n > 0; n--)
-	vtputc(wp, lchar, 1);
+	if (term.cols > vtcol)
+	    vtputsn(wp, right_ms + n, term.cols - vtcol);
 
-    vtcol = term.cols - right_len;
-    if (vtcol < 0) {
-	n = -vtcol;
-	vtcol = 0;
-    } else {
-	n = 0;
-    }
-
-    if (term.cols > vtcol)
-	vtputsn(wp, right_ms + n, term.cols - vtcol);
-
-    col = -nu_width(wp);
+	col = -nu_width(wp);
 #ifdef WMDLINEWRAP
-    if (!w_val(wp, WMDLINEWRAP))
+	if (!w_val(wp, WMDLINEWRAP))
 #endif
-	col += w_val(wp, WVAL_SIDEWAYS);
-    n = term.cols + col;
-    col = 80 - col;
+	    col += w_val(wp, WVAL_SIDEWAYS);
+	n = term.cols + col;
+	col = 80 - col;
 
-    if ((n > 80)
-	&& (col >= 0)
-	&& (vscreen[vtrow]->v_text[col] == lchar[0])) {
-	vtcol = col;
-	vtputc(wp, "|", 1);
-    }
+	if ((n > 80)
+	    && (col >= 0)
+	    && (vscreen[vtrow]->v_text[col] == lchar[0])) {
+	    vtcol = col;
+	    vtputc(wp, "|", 1);
+	}
 #endif /* OPT_MLFORMAT */
-    term.cursorvis(TRUE);
+	term.cursorvis(TRUE);
+    }
 }
 
 /*

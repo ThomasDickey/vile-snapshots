@@ -1,7 +1,7 @@
 /*
  * debugging support -- tom dickey.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.95 2009/12/08 23:29:48 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.98 2009/12/13 15:27:50 tom Exp $
  *
  */
 
@@ -970,8 +970,13 @@ trace_window(WINDOW *wp)
 	|| wp->w_bufp->b_bname == 0)
 	return;
 
-    Trace("trace_window(%s) top=%d, rows=%d, head=%p, line=%p dot=%p%s\n",
+    Trace("trace_window(%s)%s top=%d, rows=%d, head=%p, line=%p dot=%p%s\n",
 	  wp->w_bufp->b_bname,
+	  ((wp == wminip)
+	   ? " MINI"
+	   : ((wp == wnullp)
+	      ? " NULL"
+	      : "")),
 	  wp->w_toprow,
 	  wp->w_ntrows,
 	  (void *) win_head(wp),
@@ -991,6 +996,16 @@ trace_window(WINDOW *wp)
 	Trace("DOT not found!\n");
 	imdying(10);
     }
+}
+
+void
+trace_all_windows(const char *fn, int ln)
+{
+    WINDOW *wp;
+    Trace(T_CALLED "trace_all_windows %s@%d\n", fn, ln);
+    for_each_window(wp)
+	trace_window(wp);
+    returnVoid();
 }
 
 #define TRACE_CTYPE(mask) if (table[n] & chrBIT(mask)) strcat(buffer, "|" #mask)

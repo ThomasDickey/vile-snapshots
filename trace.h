@@ -1,7 +1,7 @@
 /*
  * debugging support -- tom dickey.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/trace.h,v 1.34 2009/12/08 23:27:02 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/trace.h,v 1.35 2009/12/13 15:03:52 tom Exp $
  *
  */
 #ifndef	_trace_h
@@ -87,6 +87,7 @@ extern	void	trace_window (WINDOW *p);
 #endif
 
 extern void trace_all_buffers(const char *fn, int ln);
+extern void trace_all_windows(const char *fn, int ln);
 
 #undef TRACE
 #if OPT_TRACE
