@@ -22,7 +22,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.668 2009/12/11 01:57:42 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.674 2009/12/13 16:20:25 tom Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -234,6 +234,56 @@ set_posix_locale(void)
 }
 #endif
 #endif /* OPT_LOCALE */
+
+/*
+ * For command-line use, run the appropriate syntax filter on the current
+ * buffer, writing the attributed text to the standard output.  This assumes
+ * that if filters are built-in, that the appropriate one is available.
+ */
+static void
+filter_to_stdio(FILE *fp GCC_UNUSED)
+{
+#if OPT_FILTER
+    const CMDFUNC *cmd = &f_operattrdirect;
+#else
+    const CMDFUNC *cmd = &f_operattrfilter;
+#endif
+    int s;
+
+    TRACE(("SyntaxFilter-only:\n"));
+    TRACE(("\tcurfname:%s\n", curbp->b_fname));
+
+    clexec = TRUE;
+    filter_only = TRUE;
+    gotobob(FALSE, 0);
+    havemotion = &f_gotoeob;
+    s = CMD_U_FUNC(cmd) (FALSE, 0);
+
+    /*
+     * If we used a built-in filter, its output is written as a side effect
+     * of calling flt_putc, etc.  Otherwise we have to write it ourselves
+     * now.
+     */
+#if !OPT_FILTER
+    if (s == TRUE) {
+	int nlines;
+	B_COUNT nchars;
+	REGION region;
+
+	gotoeob(FALSE, 1);
+	swapmark();
+	gotobob(FALSE, 1);
+
+	regionshape = rgn_FULLLINE;
+	(void) getregion(curbp, &region);
+
+	ffp = fp;
+	ffstatus = file_is_pipe;
+
+	write_region(curbp, &region, TRUE, &nlines, &nchars);
+    }
+#endif
+}
 
 /*--------------------------------------------------------------------------*/
 
@@ -889,20 +939,18 @@ MainProgram(int argc, char *argv[])
     }
 #endif
     if (filter_only) {
-#if OPT_SELECTIONS&&OPT_FILTER
-#if OPT_FILTER
-	const CMDFUNC *cmd = &f_operattrdirect;
-#else
-	const CMDFUNC *cmd = &f_operattrfilter;
-#endif
-	TRACE(("SyntaxFilter-only:\n"));
-	TRACE(("\tcurfname:%s\n", curbp->b_fname));
-	TRACE(("\thavename:%s\n", NonNull(havename)));
+#ifndef filter_to_stdio
 
-	filter_only = TRUE;
-	gotobob(FALSE, 0);
-	havemotion = &f_gotoeob;
-	CMD_U_FUNC(cmd) (FALSE, 0);
+	/*
+	 * Process files in the order they appear on the command-line.
+	 */
+	set_global_g_val(GMDABUFF, FALSE);
+
+	do {
+	    filter_to_stdio(stdout);
+	    fflush(stdout);
+	} while (nextbuffer(FALSE, 0) == TRUE);
+	ExitProgram(GOODEXIT);
 #else
 	fprintf(stderr,
 		"The -F option is not supported in this configuration\n");
@@ -2833,7 +2881,7 @@ int
 valid_window(WINDOW *test)
 {
     beginDisplay();
-    if (test != NULL && test != wminip) {
+    if (test != NULL && test != wminip && test != wnullp) {
 	WINDOW *wp;
 	int valid = FALSE;
 

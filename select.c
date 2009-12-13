@@ -18,7 +18,7 @@
  * transferring the selection are not dealt with in this file.  Procedures
  * for dealing with the representation are maintained in this file.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.174 2009/08/17 09:40:03 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.175 2009/12/11 10:02:44 tom Exp $
  *
  */
 
@@ -1745,6 +1745,7 @@ attribute_from_filter(void)
     int result = TRUE;
     int drained = FALSE;
 
+    TRACE((T_CALLED "attribute_from_filter\n"));
     if ((pastline = setup_region()) == 0) {
 	result = FALSE;
 
@@ -1802,7 +1803,7 @@ attribute_from_filter(void)
 	}
 #endif
     }
-    return result;
+    returnCode(result);
 }
 
 int

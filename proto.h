@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.686 2009/12/09 01:13:45 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.688 2009/12/13 16:01:53 tom Exp $
  *
  */
 
@@ -311,6 +311,7 @@ extern int bputsn (const char *src, int len);
 extern int col_limit (WINDOW *wp);
 extern int format_int (char *buf, UINT number, UINT radix);
 extern int im_waiting (int flag);
+extern int is_vtinit (void);
 extern int mk_to_vcol (WINDOW *wp, MARK mark, int expanded, int col, int adjust);
 extern int mlsavec (int c);
 extern int nu_width (WINDOW *wp);
@@ -560,6 +561,7 @@ extern int set_files_to_edit(const char *prompt, int appflag);
 extern int slowreadf (BUFFER *bp, int *nlinep);
 extern int write_enc_region (void);
 extern int writeout (const char *fn, BUFFER *bp, int forced, int msgf);
+extern int write_region(BUFFER *bp, REGION *rp, int encoded, int *nlines, B_COUNT *nchars);
 extern int writeregion (void);
 extern time_t file_modified (char *path);
 extern void explicit_dosmode(BUFFER *bp, RECORD_SEP record_sep);
