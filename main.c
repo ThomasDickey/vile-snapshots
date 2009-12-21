@@ -22,7 +22,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.674 2009/12/13 16:20:25 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.675 2009/12/20 21:56:25 tom Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -945,9 +945,13 @@ MainProgram(int argc, char *argv[])
 	 * Process files in the order they appear on the command-line.
 	 */
 	set_global_g_val(GMDABUFF, FALSE);
+	sortlistbuffers();
+	firstbuffer(FALSE, 0);
 
 	do {
+	    filter_only = TRUE;
 	    filter_to_stdio(stdout);
+	    filter_only = FALSE;	/* ...so nextbuffer doesn't write stdout */
 	    fflush(stdout);
 	} while (nextbuffer(FALSE, 0) == TRUE);
 	ExitProgram(GOODEXIT);
