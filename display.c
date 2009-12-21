@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.497 2009/12/13 16:06:44 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.498 2009/12/21 01:26:43 tom Exp $
  *
  */
 
@@ -2971,6 +2971,9 @@ special_formatter(TBUFF **result, const char *fs, WINDOW *wp)
     int skip = TRUE;
 
     if (fs == 0)
+	return;
+
+    if (wp == wnullp)
 	return;
 
     TRACE((T_CALLED "special_formatter %s\n", fs));

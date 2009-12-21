@@ -10,7 +10,7 @@
  * editing must be being displayed, which means that "b_nwnd" is non zero,
  * which means that the dot and mark values in the buffer headers are nonsense.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.207 2009/10/31 17:04:56 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.208 2009/12/21 10:33:39 tom Exp $
  *
  */
 
@@ -376,7 +376,6 @@ lins_bytes(int n, int c)
 {
     char *cp1;
     char *cp2;
-    LINE *tmp;
     LINE *lp1;
     LINE *lp2;
     LINE *lp3;
@@ -389,6 +388,8 @@ lins_bytes(int n, int c)
     USHORT changed = 0;
 
     beginDisplay();
+
+    assert(n >= 0);
 
     lp1 = DOT.l;		/* Current line         */
     if (n == 0) {
@@ -417,27 +418,30 @@ lins_bytes(int n, int c)
 	}
     } else {
 	doto = DOT.o;		/* Save for later.      */
-	tmp = lp1;
-	nsize = (size_t) (llength(tmp) + n);
-	if (nsize > tmp->l_size) {	/* Hard: reallocate     */
+	lp1 = lp1;
+	nsize = (size_t) (llength(lp1) + 1 + doto + n);
+	if (nsize > lp1->l_size) {	/* Hard: reallocate     */
 	    /* first, create the new image */
 	    nsize = roundlenup((int) nsize);
 	    CopyForUndo(lp1);
 	    if ((ntext = castalloc(char, nsize)) == NULL) {
 		rc = FALSE;
 	    } else {
-		if (lvalue(lp1) && doto)	/* possibly NULL if l_size == 0 */
+		if (lvalue(lp1) && doto) {	/* possibly NULL if l_size == 0 */
+		    assert((size_t) doto < nsize);
 		    (void) memcpy(&ntext[0], &lvalue(lp1)[0], (size_t) doto);
+		}
 		(void) memset(&ntext[doto], c, (size_t) n);
 		if (lvalue(lp1)) {
 #if OPT_LINE_ATTRS
 		    UCHAR *l_attrs = lp1->l_attrs;
 		    lp1->l_attrs = 0;	/* momentarily detach */
 #endif
-		    if (llength(lp1) != doto)
+		    if (llength(lp1) > doto) {
 			(void) memcpy(&ntext[doto + n],
 				      &lvalue(lp1)[doto],
 				      (size_t) (llength(lp1) - doto));
+		    }
 		    ltextfree(lp1, curbp);
 #if OPT_LINE_ATTRS
 		    lp1->l_attrs = l_attrs;	/* reattach */
@@ -446,23 +450,28 @@ lins_bytes(int n, int c)
 		lvalue(lp1) = ntext;
 		lp1->l_size = nsize;
 		llength(lp1) += n;
+		assert((size_t) llength(lp1) <= lp1->l_size);
 	    }
 	} else {		/* Easy: in place       */
 	    CopyForUndo(lp1);
 	    changed = (WFEDIT);
-	    tmp = lp1;
 	    /* don't use memcpy:  overlapping regions.... */
-	    llength(tmp) += n;
-	    if (llength(tmp) - n > doto) {
-		cp2 = &lvalue(tmp)[llength(tmp)];
+	    llength(lp1) += n;
+	    assert((size_t) llength(lp1) <= lp1->l_size);
+	    if (llength(lp1) > (n + doto)) {
+		cp2 = &lvalue(lp1)[llength(lp1)];
 		cp1 = cp2 - n;
-		while (cp1 != &lvalue(tmp)[doto])
+		while (cp1 != &lvalue(lp1)[doto])
 		    *--cp2 = *--cp1;
 	    }
-	    for (i = 0; i < n; ++i)	/* Add the characters       */
-		lvalue(tmp)[doto + i] = (char) c;
+	    assert(llength(lp1) >= (n + doto));
+	    for (i = 0; i < n; ++i) {	/* Add the characters       */
+		lvalue(lp1)[doto + i] = (char) c;
+	    }
 	}
 	if (rc != FALSE) {
+	    int did_wminip = FALSE;
+
 	    changed = (WFEDIT);
 #if ! WINMARK
 	    if (MK.l == lp1) {
@@ -472,8 +481,12 @@ lins_bytes(int n, int c)
 #endif
 	    for_each_window(wp) {	/* Update windows       */
 		after_linsert(wp, lp1, n, doto);
+		if (wp == wminip)
+		    did_wminip = TRUE;
 	    }
-	    after_linsert(wminip, lp1, n, doto);
+	    if (!did_wminip) {
+		after_linsert(wminip, lp1, n, doto);
+	    }
 	    do_mark_iterate(mp, {
 		if (mp->l == lp1) {
 		    if (mp->o > doto)
@@ -1036,6 +1049,7 @@ ldelnewline(void)
     FreeAndNull(lp2->l_attrs);
 #endif
     llength(lp1) += add;
+    assert((size_t) llength(lp1) <= lp1->l_size);
     set_lforw(lp1, lforw(lp2));
     set_lback(lforw(lp2), lp1);
     dumpuline(lp1);
