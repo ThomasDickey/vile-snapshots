@@ -3169,7 +3169,7 @@ Programmed procedures (aka macros)
        another macro, from a startup/configuration file, or from vile's
        command line, like so:
 
-         :write-msg-tst
+             :write-msg-tst
 
    Note that named macros may also include parameters and a help string, each
    of which are described in doc/macros.doc.
@@ -3817,11 +3817,11 @@ Programmed procedures (aka macros)
    a vile startup file:
 
          store-procedure my-cd-action
-                 write-message &cat &cat &cat "moved from " $ocwd " to " $cwd
-                 ~if &seq $progname "xvile"
-                         set-variable $title $cwd
-                 ~endif
-                 ~endm
+                write-message &cat &cat &cat "moved from " $ocwd " to " $cwd
+                ~if &seq $progname "xvile"
+                        set-variable $title $cwd
+                ~endif
+         ~endm
          set cd-hook my-cd-action
 
    Whenever the current directory is changed within the editor (via the "cd"
@@ -3888,14 +3888,19 @@ Programmed procedures (aka macros)
          bind-key execute-macro-11 ^A-/
 
    A variation, which will not find the identifier if it is a substring of
-   another word, is: 12 store-macro ~force search-forward &cat "\\<" &cat
-   $identifier "\\>" ~endm This works by surrounding the string with the \<
-   and \> regular expression metacharacters.
+   another word, is:
+
+         12 store-macro
+                 ~force search-forward &cat "\\<" &cat $identifier "\\>"
+         ~endm
+
+   This works by surrounding the string with the \< and \> regular expression
+   metacharacters.
 
    Here's another example, which finds C++ qualified identifiers, and uses
    them for a tag lookup:
 
-         * Implement  ^A-^] for qualified-name tag lookup
+         ; Implement  ^A-^] for qualified-name tag lookup
          24 store-macro
                  backward-character
                  ~local $search
@@ -4387,11 +4392,11 @@ Crash Recovery
 
   Unix (in priority order)
 
-   $TMPDIR/vileDXXXXXX
-   /var/tmp/vileDXXXXX
-   /usr/tmp/vileDXXXXX
-   /tmp/vileDXXXXXX
-   ./vileDXXXXXX
+         $TMPDIR/vileDXXXXXX
+         /var/tmp/vileDXXXXX
+         /usr/tmp/vileDXXXXX
+         /tmp/vileDXXXXXX
+         ./vileDXXXXXX
 
   DOS and OS/2
 
@@ -4399,8 +4404,8 @@ Crash Recovery
 
   All other hosts (in priority order)
 
-   $TMPDIR/vileDXXXXXX
-   ./vileDXXXXXX
+         $TMPDIR/vileDXXXXXX
+         ./vileDXXXXXX
 
    where "XXXXXX" is a unique suffix created by mktemp().
 
@@ -4586,18 +4591,18 @@ Color basics
    topic "X Resources" in this help file). So, for example, the following
    line in an .Xdefaults or .Xresources file maps "gray" above to red:
 
-             XVile.color.fcolor8: rgb:ff/0/0
+         XVile.color.fcolor8: rgb:ff/0/0
 
    or
 
-             XVile.color.fcolor8: red
+         XVile.color.fcolor8: red
 
   winvile custom colors
 
    winvile's default colors are changed via the editor's set-rgb-palette
    command. Mirroring the example above, map "gray" to red like so:
 
-             set-rgb-palette gray 255 0 0
+         set-rgb-palette gray 255 0 0
 
   Display attributes
 
@@ -4632,11 +4637,11 @@ Color basics
    color). Assuming your host supports terminfo, the following build commands
    force the editor to use that library:
 
-             $ make clean; ./configure --with-ncurses; make
+         $ make clean; ./configure --with-ncurses; make
 
    For additional hints and help, try this URL:
 
-             http://invisible-island.net/xterm/xterm.faq.html#no_color
+         http://invisible-island.net/xterm/xterm.faq.html#no_color
 
   Visual matching (VM)
 
@@ -4644,7 +4649,7 @@ Color basics
    either a simple color (no modifiers) or a display attribute. To see the
    list of supported colors and attributes, type:
 
-             :set visual-matches=<tab><tab>
+         :set visual-matches=<tab><tab>
 
    To learn more about this mode, search for "visual-matches" elsewhere in
    this help file.
@@ -4655,7 +4660,7 @@ Color basics
    color may be set to a simple color value (no attribute modifiers allowed).
    Type:
 
-             :set fcolor=<tab><tab>
+         :set fcolor=<tab><tab>
 
    for a list of supported colors.
 
@@ -5003,27 +5008,27 @@ Syntax coloring
 
    where:
 
-             <name>      ::= an arbitrary alphanumeric string.
-             <ACS>       ::= { C<hexdigit> | U | I | B | R }
-             C<hexdigit> ::= internal vile color name
-               U         ::= underline attribute
-               I         ::= italic attribute
-               B         ::= bold attribute
-               R         ::= reverse attribute
+         <name>      ::= an arbitrary alphanumeric string.
+         <ACS>       ::= { C<hexdigit> | U | I | B | R }
+         C<hexdigit> ::= internal vile color name
+           U         ::= underline attribute
+           I         ::= italic attribute
+           B         ::= bold attribute
+           R         ::= reverse attribute
 
    An example keyword file might contain:
 
-             .class Action:BC2
-             .class Comment:BC1
-             .class Error:CA
-             :.class Ident:R
-             .class Ident2:C6
-             .class Keyword:C3
-             .class Keyword2:BC1
-             .class Literal:UC5
-             .class Number:C6
-             .class Preproc:C2
-             .class Type:CD
+         .class Action:BC2
+         .class Comment:BC1
+         .class Error:CA
+         :.class Ident:R
+         .class Ident2:C6
+         .class Keyword:C3
+         .class Keyword2:BC1
+         .class Literal:UC5
+         .class Number:C6
+         .class Preproc:C2
+         .class Type:CD
 
    The "Comment" class defines the color attribute applied to a language's
    comments, which will be rendered in "B"old "C"olor "1". "Literal" applies
@@ -5071,10 +5076,10 @@ Syntax coloring
 
      * Your startup file should include these lines:
 
-         source "filters.rc"      ; quotes matter on win32 hosts
-         setv $autocolor-hook HighlightFilterMsg
-         setv $read-hook HighlightFilterMsg
-         set autocolor=2000
+             source "filters.rc"      ; quotes matter on win32 hosts
+             setv $autocolor-hook HighlightFilterMsg
+             setv $read-hook HighlightFilterMsg
+             set autocolor=2000
 
      * Some users have made the mistake of explicitly specifying a filter via
        the filtername mode. Don't do that.
@@ -5779,19 +5784,19 @@ Debugging features
            executed, the local variables saved/restored and intermediate
            states of expression evaluation. To activate tracing, use:
 
-         ~trace on
+                 ~trace on
 
            or
 
-         setv $debug true
+                 setv $debug true
 
            To disable tracing, use:
 
-         ~trace off
+                 ~trace off
 
            or
 
-         setv $debug false
+                 setv $debug false
 
    which-exec <file>
            displays the full path that the editor's shell will use to exec
@@ -6538,12 +6543,12 @@ Win32 specifics
        distribution. Note that ash is installed as sh.exe .
     2. edit .bashrc (or equivalent config file) and add this function:
 
-         function vile
-         {
-                 sh << ENDIT
-                 vile $@
-                 ENDIT
-         }
+              function vile
+              {
+                       sh <<- ENDIT-
+                       vile $@
+              ENDIT
+              }
 
        When console vile is subsequently invoked from a bash command line,
        the editor will be started by sh, which does not suffer from the
@@ -6699,6 +6704,7 @@ Win32 specifics
 
          Vile.rc Example
          ***************
+
          ~if &sequal $progname "winvile"
                  set-variable $font "courier new,8"
          ~endif
@@ -6853,15 +6859,15 @@ Win32 specifics
    context of a single startup file, you'll need to include code similar to
    this in vile.rc:
 
-         ~if &sequal $progname "winvile"
-                 set-variable $font "r_ansi,8"
-                 setv $pagelen=39
-                 set icursor="1"
-                 ; etc
-         ~else
-                 set icursor="35,100"
-                 ; etc
-         ~endif
+           ~if &sequal $progname "winvile"
+                   set-variable $font "r_ansi,8"
+                   setv $pagelen=39
+                   set icursor="1"
+                   ; etc
+           ~else
+                   set icursor="35,100"
+                   ; etc
+           ~endif
 
 
 Differences from vi
@@ -6887,9 +6893,9 @@ Differences from vi
    complex, to support the traditional nroff and troff boundaries. If you are
    just editing code, you may want to replace them:
 
-         ; set paragraph and section r.e.s for speed on C/C++/perl code.
-         set paragraphs=^$
-         set sections=^[{^L]
+           ; set paragraph and section r.e.s for speed on C/C++/perl code.
+           set paragraphs=^$
+           set sections=^[{^L]
 
    There is no special lisp support. But then, when was the last time you
    heard of a lisp programmer that used vi?
@@ -6911,7 +6917,7 @@ Differences from vi
    the '_' command is used by default for buffer history. If the regular vi
    behavior is desired, put the following in the .vilerc file:
 
-         bind-key whole-lines _
+           bind-key whole-lines _
 
 
 Sample .vilerc
@@ -6919,62 +6925,62 @@ Sample .vilerc
    Here's a sample .vilerc, to help get you started with the syntax and style
    of vile macros:
 
-         source vileinit.rc
-         set autoindent
-         set fillcol 75
+           source vileinit.rc
+           set autoindent
+           set fillcol 75
 
-         ; sitting on a brace, run the C code block through indent
-         1 store-macro
-                 write-file
-                 filter-til goto-matching-fence "indent -st"
-         ~endm
+           ; sitting on a brace, run the C code block through indent
+           1 store-macro
+                   write-file
+                   filter-til goto-matching-fence "indent -st"
+           ~endm
 
-         ; format the current paragraph
-         2 store-macro
-                 previous-paragraph
-                 filter-til next-paragraph "/usr/ucb/fmt"
-         ~endm
+           ; format the current paragraph
+           2 store-macro
+                   previous-paragraph
+                   filter-til next-paragraph "/usr/ucb/fmt"
+           ~endm
 
-         ; put 'fprintf(stderr,"\n");' into the file, and
-         ; position the cursor to add to the string
-         3 store-macro
-                 ~force next-line
-                 beginning-of-line
-                 insert-string "fprintf(stderr, \"\\n\");\n"
-                 ; six back, because it counts the newline
-                 6 backward-character
-                 insert-chars
-         ~endm
+           ; put 'fprintf(stderr,"\n");' into the file, and
+           ; position the cursor to add to the string
+           3 store-macro
+                   ~force next-line
+                   beginning-of-line
+                   insert-string "fprintf(stderr, \"\\n\");\n"
+                   ; six back, because it counts the newline
+                   6 backward-character
+                   insert-chars
+           ~endm
 
-         ; insert '> ' in front of every line from here til the end
-         ; (this works because without argument, the default action
-         ; for "goto-line" is to go to the end of file.
-         4 store-macro
-                 substitute-til goto-line "^" "> "
-         ~endm
+           ; insert '> ' in front of every line from here til the end
+           ; (this works because without argument, the default action
+           ; for "goto-line" is to go to the end of file.
+           4 store-macro
+                   substitute-til goto-line "^" "> "
+           ~endm
 
-         ; spelling keystroke: write the buffer, invoke ispell, and force
-         ;       it to be read back in.
-         2 store-macro
-                 ~local $warn-reread
-                 write-file
-                 ; suppress "press return" with "1" argument to shell-command
-                 1 shell-command &cat "ispell " $cfilname
-                 ; suppress reread warning
-                 set nowarn-reread
-                 replace-with-file $cfilname
-         ~endm
-         bind-key execute-macro-2 #I
+           ; spelling keystroke: write the buffer, invoke ispell, and force
+           ;       it to be read back in.
+           2 store-macro
+                   ~local $warn-reread
+                   write-file
+                   ; suppress "press return" with "1" argument to shell-command
+                   1 shell-command &cat "ispell " $cfilname
+                   ; suppress reread warning
+                   set nowarn-reread
+                   replace-with-file $cfilname
+           ~endm
+           bind-key execute-macro-2 #I
 
-         ; the next three give more mnemonic window commands
-         bind-key next-window ^N
-         bind-key previous-window ^P
-         bind-key split-current-window ^T
+           ; the next three give more mnemonic window commands
+           bind-key next-window ^N
+           bind-key previous-window ^P
+           bind-key split-current-window ^T
 
-         bind-key execute-macro-1 ^A-C
-         bind-key execute-macro-2 ^A-F
-         bind-key execute-macro-3 ^A-K
-         bind-key execute-macro-4 ^A-M
+           bind-key execute-macro-1 ^A-C
+           bind-key execute-macro-2 ^A-F
+           bind-key execute-macro-3 ^A-K
+           bind-key execute-macro-4 ^A-M
 
 
 Notes on TERM types and Scrolling
@@ -6999,14 +7005,14 @@ Notes on TERM types and Scrolling
    In any case, here's a termcap entry that should work:
 
    dy|vt102|vt-102|dec vt102:\
-           :do=^J:co#80:li#24:cl=50\E[;H\E[2J:\
-           :le=^H:bs:cm=5\E[%i%d;%dH:nd=2\E[C:up=2\E[A:\
-           :ce=3\E[K:cd=50\E[J:so=2\E[7m:se=2\E[m:us=2\E[4m:ue=2\E[m:\
-           :md=2\E[1m:mr=2\E[7m:mb=2\E[5m:me=2\E[m:is=\E[1;24r\E[24;1H:\
-           :rs=\E>\E[?3l\E[?4l\E[?5l\E[?7h\E[?8h:ks=\E[?1h\E=:ke=\E[?1l\E>:\
-           :ku=\EOA:kd=\EOB:kr=\EOC:kl=\EOD:kb=^H:\
-           :ho=\E[H:k1=\EOP:k2=\EOQ:k3=\EOR:k4=\EOS:pt:sr=5\EM:vt#3:\
-           :sc=\E7:rc=\E8:cs=\E[%i%d;%dr:vs=\E[?7l:ve=\E[?7h:
+          :do=^J:co#80:li#24:cl=50\E[;H\E[2J:\
+          :le=^H:bs:cm=5\E[%i%d;%dH:nd=2\E[C:up=2\E[A:\
+          :ce=3\E[K:cd=50\E[J:so=2\E[7m:se=2\E[m:us=2\E[4m:ue=2\E[m:\
+          :md=2\E[1m:mr=2\E[7m:mb=2\E[5m:me=2\E[m:is=\E[1;24r\E[24;1H:\
+          :rs=\E>\E[?3l\E[?4l\E[?5l\E[?7h\E[?8h:ks=\E[?1h\E=:ke=\E[?1l\E>:\
+          :ku=\EOA:kd=\EOB:kr=\EOC:kl=\EOD:kb=^H:\
+          :ho=\E[H:k1=\EOP:k2=\EOQ:k3=\EOR:k4=\EOS:pt:sr=5\EM:vt#3:\
+          :sc=\E7:rc=\E8:cs=\E[%i%d;%dr:vs=\E[?7l:ve=\E[?7h:
 
    The crucial entries are cs and sr - without both of them, vile will
    attempt to use dl and al, and will scroll by deleting and inserting a
@@ -7018,21 +7024,21 @@ Notes on TERM types and Scrolling
    Here is the terminfo entry equivalent to the above termcap entry:
 
    vt102|vt-102|dec vt102,
-           xon,
-           cols#80, lines#24, vt#3,
-           bel=^G, blink=\E[5m$<2>, bold=\E[1m$<2>,
-           clear=\E[;H\E[2J$<50>, cnorm=\E[?7h, cr=\r,
-           csr=\E[%i%p1%d;%p2%dr, cub1=\b, cud1=\n,
-           cuf1=\E[C$<2>, cup=\E[%i%p1%d;%p2%dH$<5>,
-           cuu1=\E[A$<2>, cvvis=\E[?7l, ed=\E[J$<50>,
-           el=\E[K$<3>, home=\E[H, ht=\t, ind=\n,
-           is2=\E[1;24r\E[24;1H, kbs=\b, kcub1=\EOD, kcud1=\EOB,
-           kcuf1=\EOC, kcuu1=\EOA, kf1=\EOP, kf2=\EOQ, kf3=\EOR,
-           kf4=\EOS, rc=\E8, rev=\E[7m$<2>, ri=\EM$<5>,
-           rmkx=\E[?1l\E>, rmso=\E[m$<2>, rmul=\E[m$<2>,
-           rs2=\E>\E[?3l\E[?4l\E[?5l\E[?7h\E[?8h, sc=\E7,
-           sgr0=\E[m$<2>, smkx=\E[?1h\E=, smso=\E[7m$<2>,
-           smul=\E[4m$<2>,
+          xon,
+          cols#80, lines#24, vt#3,
+          bel=^G, blink=\E[5m$<2>, bold=\E[1m$<2>,
+          clear=\E[;H\E[2J$<50>, cnorm=\E[?7h, cr=\r,
+          csr=\E[%i%p1%d;%p2%dr, cub1=\b, cud1=\n,
+          cuf1=\E[C$<2>, cup=\E[%i%p1%d;%p2%dH$<5>,
+          cuu1=\E[A$<2>, cvvis=\E[?7l, ed=\E[J$<50>,
+          el=\E[K$<3>, home=\E[H, ht=\t, ind=\n,
+          is2=\E[1;24r\E[24;1H, kbs=\b, kcub1=\EOD, kcud1=\EOB,
+          kcuf1=\EOC, kcuu1=\EOA, kf1=\EOP, kf2=\EOQ, kf3=\EOR,
+          kf4=\EOS, rc=\E8, rev=\E[7m$<2>, ri=\EM$<5>,
+          rmkx=\E[?1l\E>, rmso=\E[m$<2>, rmul=\E[m$<2>,
+          rs2=\E>\E[?3l\E[?4l\E[?5l\E[?7h\E[?8h, sc=\E7,
+          sgr0=\E[m$<2>, smkx=\E[?1h\E=, smso=\E[7m$<2>,
+          smul=\E[4m$<2>,
 
 
 Credits (last updated Jan, 2000)
@@ -7138,4 +7144,4 @@ Copyright 1995-2008,2009 by Paul Fox, Thomas Dickey, and Kevin Buettner
 
 -- (generated by make-hlp.pl)
 -- vile:txtmode fillcol=78
-$Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.679 2009/12/09 01:31:22 tom Exp $
+$Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.682 2009/12/23 10:35:26 tom Exp $

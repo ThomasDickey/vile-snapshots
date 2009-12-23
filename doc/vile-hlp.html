@@ -1,6 +1,6 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
-  $Id: vile-hlp.html,v 1.11 2009/12/09 01:30:45 tom Exp $
+  $Id: vile-hlp.html,v 1.18 2009/12/23 11:27:49 tom Exp $
 -->
 <HTML>
 <HEAD>
@@ -3708,9 +3708,9 @@ Getting along with vile						(version 9.7)
 	which is invoked as follows.  One must know the "english" name for the
 	command being rebound.  Use ":show-commands" or ":apropos string"
 	to find english names containing "string".  Then use the command:
-<pre>
-	":bind-key englishname keyseq"
-</pre>
+<!--{{atr2html--><p style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:<strong><font color="#000080">bind-key</font></strong>&nbsp;&lt;englishname&gt;&nbsp;&lt;keyseq&gt;<br>
+<!--atr2html}}--></p>
 	where keyseq is the exact keyboard sequence (i.e. single character,
 	or '^X', '^A', or '#' followed by a single character) to which the
 	command should be bound.  In a .vilerc file, keyseq can be either
@@ -3743,21 +3743,21 @@ Getting along with vile						(version 9.7)
 	Examples:
 	 To cause the / and ? commands to perform incremental
 	  searches, use:
-<pre>
-	bind-key incremental-search /
-	bind-key reverse-incremental-search ?
-</pre>
+<!--{{atr2html--><p style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">bind-key</font></strong>&nbsp;<strong><font color="#000080">incremental-search</font></strong>&nbsp;/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">bind-key</font></strong>&nbsp;<strong><font color="#000080">reverse-incremental-search</font></strong>&nbsp;?<br>
+<!--atr2html}}--></p>
 	 To make ^N and ^P switch windows instead of cause motion by lines,
 	  try:
-<pre>
-	bind-key next-window ^N
-	bind-key previous-window ^P
-</pre>
+<!--{{atr2html--><p style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">bind-key</font></strong>&nbsp;<strong><font color="#000080">next-window</font></strong>&nbsp;<font color="#800080">^N</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">bind-key</font></strong>&nbsp;<strong><font color="#000080">previous-window</font></strong>&nbsp;<font color="#800080">^P</font><br>
+<!--atr2html}}--></p>
 	 To cause the space bar to move forward by pages, as in the "more"
 	  command, use:
-<pre>
-	bind-key next-page \s
-</pre>
+<!--{{atr2html--><p style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">bind-key</font></strong>&nbsp;<strong><font color="#000080">next-page</font></strong>&nbsp;<font color="#800080">\s</font><br>
+<!--atr2html}}--></p>
 <p>
 	(Space and tab can be represented with: "\s" and "\t".)
 <p>
@@ -3771,13 +3771,13 @@ Getting along with vile						(version 9.7)
 	Characters can be entered in hexadecimal or octal as well, in the form
 	0xNN, where NN is exactly two hexadecimal digits.  If you know the
 	hexadecimal value for a key, you can bind to it like:
-<pre>
-	bind-key next-window ^A-\x14
-</pre>
+<!--{{atr2html--><p style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">bind-key</font></strong>&nbsp;<strong><font color="#000080">next-window</font></strong>&nbsp;<font color="#800080">^A-\</font>x14<br>
+<!--atr2html}}--></p>
 	or
-<pre>
-	bind-key next-window #-\213
-</pre>
+<!--{{atr2html--><p style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">bind-key</font></strong>&nbsp;<strong><font color="#000080">next-window</font></strong>&nbsp;<font color="#800080">#-\</font><strong><font color="#008080">213</font></strong><br>
+<!--atr2html}}--></p>
 <p>
 	The sequence 'M-', represents a "meta-key", or a "meta" character.
 	It is equivalent to setting the high bit of the following
@@ -3854,24 +3854,24 @@ Getting along with vile						(version 9.7)
 	separately; default bindings are not inherited automatically because
 	they may conflict with the bindings used for exiting or modifying
 	text within insert mode.
-<pre>
-	store-procedure begin-errtext
-		insert-string "fprintf(stderr, \""
-		set-named-mark z
-		insert-string "\\n\");\n"
-		goto-named-mark-exact z
-		; enter insert mode if we weren't already there
-		~if &amp;seq $mode "command"
-			insert-chars
-		~endif
-	~endm
-	; bind to function key 5
-	bind-key begin-errtext FN-5
-	bind-insmode-key begin-errtext FN-5
-	; also bind to meta-A
-	bind-key begin-errtext M-A
-	bind-insmode-key begin-errtext M-A
-</pre>
+<!--{{atr2html--><p style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">store-procedure</font></strong><font color="#800080">&nbsp;begin-errtext</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">insert-string</font></strong>&nbsp;<font color="#800080">"fprintf(stderr,&nbsp;\""</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">set-named-mark</font></strong><font color="#800080">&nbsp;z</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">insert-string</font></strong>&nbsp;<font color="#800080">"\\n\");\n"</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">goto-named-mark-exact</font></strong>&nbsp;z<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#800000">;&nbsp;enter&nbsp;insert&nbsp;mode&nbsp;if&nbsp;we&nbsp;weren't&nbsp;already&nbsp;there</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~if</font>&nbsp;<font color="#008080">&amp;seq</font>&nbsp;<font color="#008080">$mode</font>&nbsp;<font color="#800080">"command"</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">insert-chars</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~endif</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~endm</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#800000">;&nbsp;bind&nbsp;to&nbsp;function&nbsp;key&nbsp;5</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">bind-key</font></strong>&nbsp;begin-errtext&nbsp;<font color="#800080">FN-5</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">bind-insmode-key</font></strong>&nbsp;begin-errtext&nbsp;<font color="#800080">FN-5</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#800000">;&nbsp;also&nbsp;bind&nbsp;to&nbsp;meta-A</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">bind-key</font></strong>&nbsp;begin-errtext&nbsp;M-A<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">bind-insmode-key</font></strong>&nbsp;begin-errtext&nbsp;M-A<br>
+<!--atr2html}}--></p>
 	Actually the "meta-insert-bindings" setting controls whether meta-
 	keys will have their bound effect when in insert mode.  If this
 	setting is not on (or if the meta-key is not bound to any function)
@@ -4014,9 +4014,9 @@ Getting along with vile						(version 9.7)
 	defined map.  System function keys are mapped to "poundsign"
 	sequences, like '#1' for function key 1, and '#B' for the down-arrow
 	key.  The remapping allows one to put
-<pre>
-	map #1 &lt;some-user-map-sequence&gt;
-</pre>
+<!--{{atr2html--><p style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">map</font></strong><font color="#800080">&nbsp;#1&nbsp;&lt;some-user-map-sequence&gt;</font><br>
+<!--atr2html}}--></p>
 	in the .vilerc file, and have the user-sequence executed when the
 	system F1 key is pressed.  (Otherwise the terminal-specific
 	sequence would have to appear in the .vilerc.)  See the section
@@ -4032,9 +4032,9 @@ Getting along with vile						(version 9.7)
 	are normally expected to act as a unit, no remapping is done on
 	characters that follow such prefixes.  For instance, this keeps a
 	map like:
-<pre>
-	:map h ihello&lt;ESC&gt;
-</pre>
+<!--{{atr2html--><p style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:<strong><font color="#000080">map</font></strong><font color="#800080">&nbsp;h&nbsp;ihello&lt;ESC&gt;</font><br>
+<!--atr2html}}--></p>
 	from breaking the '^X-h' command.
 <p>
 	Long running loops caused by recursive :map definitions are
@@ -4060,10 +4060,10 @@ Getting along with vile						(version 9.7)
 	always expand "foo" immediately, and this is the default behavior.
 	Though not particularly recommended, the "maplonger" mechanism even
 	permits the following types of mappings:
-<pre>
-	:map z j
-	:map zz k
-</pre>
+<!--{{atr2html--><p style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:<strong><font color="#000080">map</font></strong><font color="#800080">&nbsp;z&nbsp;j</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:<strong><font color="#000080">map</font></strong><font color="#800080">&nbsp;zz&nbsp;k</font><br>
+<!--atr2html}}--></p>
 	When 'z' is pressed by itself it will cause vile to move down one
 	line (assuming j has not been rebound or remapped).  But if 'z' is
 	pressed twice rapidly (enough) in succession, vile will move to the
@@ -4238,15 +4238,15 @@ Getting along with vile						(version 9.7)
 	keyboard.  To make this more useful, the "load-register" command
 	will allow preloading a named register, from .vilerc file.  For
 	example:
-<pre>
-	use-register a load-register ihello^[
-</pre>
+<!--{{atr2html--><p style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">use-register</font></strong>&nbsp;<font color="#800080">a</font>&nbsp;<strong><font color="#000080">load-register</font></strong>&nbsp;<font color="#800000">ihello</font><font color="#800080">^[</font><br>
+<!--atr2html}}--></p>
 	will load register 'a' with a command to insert the word "hello".
 	(The ^[ should be a real ESC character, entered by preceding it
 	with ^V.)  A better example, is this:
-<pre>
-	use-register w load-register ":!chmod +w %^M:w^M"
-</pre>
+<!--{{atr2html--><p style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">use-register</font></strong>&nbsp;<font color="#800080">w</font>&nbsp;<strong><font color="#000080">load-register</font></strong>&nbsp;<font color="#800080">":!chmod&nbsp;+w&nbsp;%^M:w^M"</font><br>
+<!--atr2html}}--></p>
 	which makes the current file writable and writes it.  (Again, use
 	^V to get the CR characters into the .vilerc file.)
 
@@ -4267,20 +4267,20 @@ Getting along with vile						(version 9.7)
 	vile can also be extended by defining macros and optionally binding
 	the execution of those macros to key sequences.  For instance, if
 	the following lines appear in a .vilerc file:
-<pre>
-	1 store-macro
-		5 delete-til next-word
-	~endm
-	bind-key execute-macro-1 ^A-1
-</pre>
+<!--{{atr2html--><p style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#008080">1</font></strong>&nbsp;<strong><font color="#000080">store-macro</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#008080">5</font></strong>&nbsp;<strong><font color="#000080">delete-til</font></strong>&nbsp;<strong><font color="#000080">next-word</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~endm</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">bind-key</font></strong>&nbsp;<strong><font color="#000080">execute-macro-1</font></strong>&nbsp;<font color="#800080">^A-1</font><br>
+<!--atr2html}}--></p>
 	then when ^A-1 is executed, 5 words will be deleted.  The "-til"
 	suffix on an englishname denotes that it is a vi operator style
 	command, and expects to be followed by a motion command.  Also,
-<pre>
-	1 store-macro
-		5 delete-til lines
-	~endm
-</pre>
+<!--{{atr2html--><p style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#008080">1</font></strong>&nbsp;<strong><font color="#000080">store-macro</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#008080">5</font></strong>&nbsp;<strong><font color="#000080">delete-til</font></strong>&nbsp;lines<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~endm</font><br>
+<!--atr2html}}--></p>
 	would be the equivalent of "5dd" since the word "lines" represents
 	the stuttered 'dd' style of operation.  More examples are given
 	throughout this help file.
@@ -4290,21 +4290,21 @@ Getting along with vile						(version 9.7)
 
 <h3 id="numbered-macros2"><a name="numbered-macros">Numbered macros</a></h3>
 	The numbered macro syntax looks like so:
-<pre>
-	&lt;number&gt; store-macro
-		&lt;language element&gt;
-		...
-		&lt;language element&gt;
-	~endm
-</pre>
+<!--{{atr2html--><p style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;<strong><font color="#000080">number</font></strong>&gt;&nbsp;<strong><font color="#000080">store-macro</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;language&nbsp;element&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;...<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;language&nbsp;element&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~endm</font><br>
+<!--atr2html}}--></p>
 	A numbered macro is executed using this command:
-<pre>
-	execute-macro-&lt;number&gt;
-</pre>
+<!--{{atr2html--><p style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">execute-macro</font></strong>-&lt;<strong><font color="#000080">number</font></strong>&gt;<br>
+<!--atr2html}}--></p>
 	To bind a keystroke to this macro, use this command:
-<pre>
-	bind-key execute-macro-&lt;number&gt; &lt;keystroke&gt;
-</pre>
+<!--{{atr2html--><p style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">bind-key</font></strong>&nbsp;<strong><font color="#000080">execute-macro</font></strong>-&lt;<strong><font color="#000080">number</font></strong>&gt;&nbsp;&lt;keystroke&gt;<br>
+<!--atr2html}}--></p>
 	The only advantage of numbered macros over named macros is that the
 	former do not share the same namespace as vile's commands.  This
 	attribute can be advantageous when creating macros recalled solely
@@ -4318,13 +4318,13 @@ Getting along with vile						(version 9.7)
 
 <h3 id="named-macros2"><a name="named-macros">Named macros</a></h3>
 	A named macro, aka "stored procedure", uses this syntax:
-<pre>
-	store-procedure &lt;unique-name&gt;
-		&lt;language element&gt;
-		...
-		&lt;language element&gt;
-	~endm
-</pre>
+<!--{{atr2html--><p style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">store-procedure</font></strong><font color="#800080">&nbsp;&lt;unique-name&gt;</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;language&nbsp;element&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;...<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;language&nbsp;element&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~endm</font><br>
+<!--atr2html}}--></p>
 	where:
 <dl>
 <dt>
@@ -4340,16 +4340,16 @@ Getting along with vile						(version 9.7)
 <p>
 	A stored procedure is executed by simply referencing its name.  To
 	bind a keystroke to this macro, use this command:
-<pre>
-	bind-key &lt;unique-name&gt; &lt;keystroke&gt;
-</pre>
+<!--{{atr2html--><p style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">bind-key</font></strong>&nbsp;&lt;unique-name&gt;&nbsp;&lt;keystroke&gt;<br>
+<!--atr2html}}--></p>
 	Here's a trivial example:
-<pre>
-	store-procedure write-msg-tst
-		write-message "this is a test macro"
-	~endm
-	bind-key write-msg-tst #h
-</pre>
+<!--{{atr2html--><p style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">store-procedure</font></strong><font color="#800080">&nbsp;write-msg-tst</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">write-message</font></strong>&nbsp;<font color="#800080">"this&nbsp;is&nbsp;a&nbsp;test&nbsp;macro"</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~endm</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">bind-key</font></strong>&nbsp;write-msg-tst&nbsp;<font color="#800080">#h</font><br>
+<!--atr2html}}--></p>
 	Two mechanisms now exist for executing this macro:
 <ul>
 	<li>press "#h" within the editor, or
@@ -4357,9 +4357,9 @@ Getting along with vile						(version 9.7)
 	  built-in editor command.  This means that "write-msg-tst" can be
 	  invoked from another macro, from a startup/configuration file, or
 	  from vile's command line, like so:
-<pre>
-	:write-msg-tst
-</pre>
+<!--{{atr2html--><p style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:write-msg-tst<br>
+<!--atr2html}}--></p>
 </ul>
 <p>
 	Note that named macros may also include parameters and a help
@@ -4370,11 +4370,11 @@ Getting along with vile						(version 9.7)
 	arguments.  Otherwise they are much like other named macros.  These
 	macros setup parameters and perform special processing wrapped around
 	one of vile's built-in operators.  Here is an example:
-<pre>
-	store-operator fmt
-		$cmd-count filter-til $cmd-motion 'fmt -w50 -'
-	~endm
-</pre>
+<!--{{atr2html--><p style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">store-operator</font></strong><font color="#800080">&nbsp;fmt</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008080">$cmd-count</font>&nbsp;<strong><font color="#000080">filter-til</font></strong>&nbsp;<font color="#008080">$cmd-motion</font>&nbsp;<font color="#800080">'fmt&nbsp;-w50&nbsp;-'</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~endm</font><br>
+<!--atr2html}}--></p>
 	In the example, the combination of $cmd-count and $cmd-motion (passed
 	into the macro) act as the "real" operator's associated motion.
 
@@ -4927,10 +4927,13 @@ Getting along with vile						(version 9.7)
 </table>
 <p>
 	Line labels begin with a "*" as the first nonblank char, like:
-<pre><code>	*LBL01</code></pre>
+<!--{{atr2html--><p style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*LBL01<br>
+<!--atr2html}}--></p>
 	You would jump to this with:
-<pre><code>	~goto LBL01</code></pre>
-<p>
+<!--{{atr2html--><p style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~goto</font>&nbsp;LBL01<br>
+<!--atr2html}}--></p>
 	Lines ending with '\' are joined before interpreting them.
 
 <h3 id="macro-hooks2"><a name="macro-hooks">Hooks</a></h3>
@@ -4941,15 +4944,15 @@ Getting along with vile						(version 9.7)
 	For instance, there is a "cd-hook", which is run when you changej
 	directories.  Assume the following are included within a vile
 	startup file:
-<pre><code>
-	store-procedure my-cd-action
-		write-message &amp;cat &amp;cat &amp;cat "moved from " $ocwd " to " $cwd
-		~if &amp;seq $progname "xvile"
-			set-variable $title $cwd
-		~endif
-		~endm
-	set cd-hook my-cd-action
-</code></pre>
+<!--{{atr2html--><p style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">store-procedure</font></strong><font color="#800080">&nbsp;my-cd-action</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">write-message</font></strong>&nbsp;<font color="#008080">&amp;cat</font>&nbsp;<font color="#008080">&amp;cat</font>&nbsp;<font color="#008080">&amp;cat</font>&nbsp;<font color="#800080">"moved&nbsp;from&nbsp;"</font>&nbsp;<font color="#008080">$ocwd</font>&nbsp;<font color="#800080">"&nbsp;to&nbsp;"</font>&nbsp;<font color="#008080">$cwd</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~if</font>&nbsp;<font color="#008080">&amp;seq</font>&nbsp;<font color="#008080">$progname</font>&nbsp;<font color="#800080">"xvile"</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">set-variable</font></strong>&nbsp;<font color="#008080">$title</font>&nbsp;<font color="#008080">$cwd</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~endif</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~endm</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">set</font></strong>&nbsp;<strong><font color="#000080">cd-hook</font></strong>&nbsp;my-cd-action<br>
+<!--atr2html}}--></p>
 	Whenever the current directory is changed within the editor (via
 	the "cd" command), my-cd-action will print a message and, under
 	xvile, change the window title.
@@ -4983,53 +4986,55 @@ Getting along with vile						(version 9.7)
 	macro which will run the "man" command on the identifier under the
 	cursor, where you don't really consider it an error if the command
 	fails, you might use:
-<pre>
-	9 store-macro
-		~force 1 shell-command &amp;cat "man " $identifier
-	~endm
-	bind-key execute-macro-9 ^X-m
-</pre>
+<!--{{atr2html--><p style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#008080">9</font></strong>&nbsp;<strong><font color="#000080">store-macro</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~force</font>&nbsp;<strong><font color="#008080">1</font></strong>&nbsp;<strong><font color="#000080">shell-command</font></strong>&nbsp;<font color="#008080">&amp;cat</font>&nbsp;<font color="#800080">"man&nbsp;"</font>&nbsp;<font color="#008080">$identifier</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~endm</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">bind-key</font></strong>&nbsp;<strong><font color="#000080">execute-macro-9</font></strong>&nbsp;<font color="#800080">^X-m</font><br>
+<!--atr2html}}--></p>
 	(The argument '1' suppresses the "press return" prompt which
 	normally appears after a command runs, since man runs a pager
 	which does this anyway.)
 <p>
 	The "screen-search-forward" command could be re-implemented as:
-<pre>
-	10 store-macro
-		~force search-forward $identifier
-	~endm
-	bind-key execute-macro-10 ^X-/
-</pre>
+<!--{{atr2html--><p style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#008080">10</font></strong>&nbsp;<strong><font color="#000080">store-macro</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~force</font>&nbsp;<strong><font color="#000080">search-forward</font></strong>&nbsp;<font color="#008080">$identifier</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~endm</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">bind-key</font></strong>&nbsp;<strong><font color="#000080">execute-macro-10</font></strong>&nbsp;<font color="#800080">^X-/</font><br>
+<!--atr2html}}--></p>
 	And the "screen-search-pattern-grab" command, normally bound to
 	^A-/, could be implemented with:
-<pre>
-	11 store-macro
-	    set-variable $search $identifier
-	    write-message &amp;cat "Search pattern is now " $search
-	~endm
-	bind-key execute-macro-11 ^A-/
-</pre>
+<!--{{atr2html--><p style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#008080">11</font></strong>&nbsp;<strong><font color="#000080">store-macro</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">set-variable</font></strong>&nbsp;<font color="#008080">$search</font>&nbsp;<font color="#008080">$identifier</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">write-message</font></strong>&nbsp;<font color="#008080">&amp;cat</font>&nbsp;<font color="#800080">"Search&nbsp;pattern&nbsp;is&nbsp;now&nbsp;"</font>&nbsp;<font color="#008080">$search</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~endm</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">bind-key</font></strong>&nbsp;<strong><font color="#000080">execute-macro-11</font></strong>&nbsp;<font color="#800080">^A-/</font><br>
+<!--atr2html}}--></p>
 	A variation, which will not find the identifier if it is a substring
 	of another word, is:
-		12 store-macro
-			~force search-forward &amp;cat "\\&lt;" &amp;cat $identifier "\\>"
-		~endm
+<!--{{atr2html--><p style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#008080">12</font></strong>&nbsp;<strong><font color="#000080">store-macro</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~force</font>&nbsp;<strong><font color="#000080">search-forward</font></strong>&nbsp;<font color="#008080">&amp;cat</font>&nbsp;<font color="#800080">"\\&lt;"</font>&nbsp;<font color="#008080">&amp;cat</font>&nbsp;<font color="#008080">$identifier</font>&nbsp;<font color="#800080">"\\&gt;"</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~endm</font><br>
+<!--atr2html}}--></p>
 	This works by surrounding the string with the \&lt; and \&gt; regular
 	expression metacharacters.
 <p>
 	Here's another example, which finds C++ qualified identifiers, and
 	uses them for a tag lookup:
-<pre>
-	* Implement  ^A-^] for qualified-name tag lookup
-	24 store-macro
-		backward-character
-		~local $search
-		search-forward "^[a-zA-Z_][a-zA-Z0-9_:]*"
-		write-message &amp;cat "Tag pattern is now " $match
-		~force find-tag $match
-	~endm
-	bind-key execute-macro-24 ^A-^]
-</pre>
+<!--{{atr2html--><p style="font-family: monospace;">
+<font color="#800000">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;&nbsp;Implement&nbsp;&nbsp;^A-^]&nbsp;for&nbsp;qualified-name&nbsp;tag&nbsp;lookup</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#008080">24</font></strong>&nbsp;<strong><font color="#000080">store-macro</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">backward-character</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~local</font>&nbsp;<font color="#008080">$search</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">search-forward</font></strong>&nbsp;<font color="#800080">"^[a-zA-Z_][a-zA-Z0-9_:]*"</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">write-message</font></strong>&nbsp;<font color="#008080">&amp;cat</font>&nbsp;<font color="#800080">"Tag&nbsp;pattern&nbsp;is&nbsp;now&nbsp;"</font>&nbsp;<font color="#008080">$match</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~force</font>&nbsp;<strong><font color="#000080">find-tag</font></strong>&nbsp;<font color="#008080">$match</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~endm</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">bind-key</font></strong>&nbsp;<strong><font color="#000080">execute-macro-24</font></strong>&nbsp;<font color="#800080">^A-^]</font><br>
+<!--atr2html}}--></p>
 	(The "backward-character" is needed because "search-forward" will
 	always skip the cursor position when scanning, so as to always find
 	the next occurrence.  The directive ~local is used to avoid
@@ -5039,159 +5044,159 @@ Getting along with vile						(version 9.7)
 	to creating a macro.  Some people prefer using lower-case 'g' to
 	as an equivalent to 'G', to goto a specific line.  If done as a
 	macro, like this:
-<pre>
-	3 store-macro
-		goto-line
-	~endm
-	bind-key execute-macro-3 g
-</pre>
+<!--{{atr2html--><p style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#008080">3</font></strong>&nbsp;<strong><font color="#000080">store-macro</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">goto-line</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~endm</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">bind-key</font></strong>&nbsp;<strong><font color="#000080">execute-macro-3</font></strong>&nbsp;<strong><font color="#000080">g</font></strong><br>
+<!--atr2html}}--></p>
 	then both g and G go to the end of the file, but whereas 1000G goes
 	to line 1000, 1000g goes to the end of the file 1000 times.  It is
 	easier (and more correct) to do:
-<pre>
-	bind-key goto-line g
-</pre>
+<!--{{atr2html--><p style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">bind-key</font></strong>&nbsp;<strong><font color="#000080">goto-line</font></strong>&nbsp;<strong><font color="#000080">g</font></strong><br>
+<!--atr2html}}--></p>
 	A couple more examples of slightly more complex macros:
 	They cause a jump to the next (or previous) line of the same (or
 	lesser) indent, skipping over empty lines.  (Thanks to MIURA Masahiro)
-<pre>
-	; macro 1 - back to the line of same indent
-	;
-	1 store-macro
-		first-nonwhite
-		set-variable %indlev $curcol
-		~force back-line-at-bol
-		~if &amp;seq &amp;trim $line ""
-			~goto L1
-		~endif
-		~while &amp;les %indlev $curcol
-			*L1
-			~force back-line-at-bol
-			~if &amp;seq $status "FALSE"
-				~return
-			~endif
-			~if &amp;seq &amp;trim $line ""
-				~goto L1
-			~endif
-		~endwhile
-	~endm
-	bind-key execute-macro-1 ^X-[
-
-	; macro 2 - forward to the line of same indent
-	;
-	2 store-macro
-		first-nonwhite
-		set-variable %indlev $curcol
-		~force down-line-at-bol
-		~if &amp;seq &amp;trim $line ""
-			~goto L2
-		~endif
-		~while &amp;les %indlev $curcol
-			*L2
-			~force down-line-at-bol
-			~if &amp;seq $status "FALSE"
-				~return
-			~endif
-			~if &amp;seq &amp;trim $line ""
-				~goto L2
-			~endif
-		~endwhile
-	~endm
-	bind-key execute-macro-2 ^X-]
-
-	; Use "@d" to change cwd to the dir containing the current file
-	; (contributed by Richard Hussong).  Keep in mind that "^M" is an
-	; explict CR and that ":cd -" reverts cwd to its previous value.
-	store-procedure cdcur
-		cd &amp;path head $cfilname
-	~endm
-	use-register d load-register ":cdcur^M"
-
-	;; Underline current line with user-specified char.  Ex:
-	;;        blah blah blah blah   &lt;-- curr line
-	;;        +++++++++++++++++++   &lt;-- underline with +
-	;; from Daniel L. Ashbrook .
-	store-procedure underline-currline
-		write-message "enter underline char now..."
-		set-variable %linechar &amp;gtkey
-		write-message ""
-		; don't underline trailing whitespace (trivial)
-		trim-lines-til end-of-line
-		; don't underline leading whitespace (nontrivial)
-		goto-bol
-		setv %ldspace=&amp;equ $char &amp;ascii ' '
-		setv %ldtab=&amp;equ $char &amp;ascii "\t"
-		setv %ldwhite=&amp;or %ldspace %ldtab
-		~if %ldwhite
-		~force substitute-til next-punctuated-word '^\b\b*' ''
-		~endif
-		; compute length sans lead/trail whitespace
-		set-variable %linelength $llength
-		~if %ldwhite
-			; put leading whitespace back
-			undo-change
-			; it's not possible to disable the screen clutter of
-			; visual-matches mode (following a substitution)
-			; for all buffers from within a macro. so substitute
-			; for an improbable char (which achieves desired effect)
-			~force substitute-til next-punctuated-word &amp;chr \xff &amp;chr \xff
-			~force clear-visual-matches
-		~endif
-		unset-variable %ustring
-		set-variable %i 0
-		; build underline string in memory and insert with a
-		; single operation (optimizes undo)
-		~while &amp;less %i %linelength
-			set-variable %ustring &amp;cat %ustring %linechar
-			set-variable %i &amp;add %i 1
-		~endwhile
-		; force ustring to align with prev line
-		~local $autoindent
-		setv $autoindent=true
-		goto-eol
-		append-string &amp;chr 13  ; 13 -> CR
-		insert-string %ustring
-		~force next-line
-		goto-bol
-	~endm
-	bind-key underline-currline #-
-
-	; macro 14 - grep for the word under the cursor, and put the result
-	;	in a buffer named after that word.  set the error-buffer,
-	;	so that ^X-^X may be used to visit the lines found by grep.
-	;	(we have to set error-buffer explicitly, since we renamed
-	;	the buffer -- otherwise it tracks the last pipe read by vile)
-	14 store-macro
-		set-variable %grepfor $identifier
-		edit-file &amp;cat "!egrep -n " &amp;cat %grepfor " *.[chs]"
-		rename-buffer %grepfor
-		error-buffer %grepfor
-	~endm
-	bind-key execute-macro-14 ^A-g
-</pre>
+<!--{{atr2html--><p style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#800000">;&nbsp;macro&nbsp;1&nbsp;-&nbsp;back&nbsp;to&nbsp;the&nbsp;line&nbsp;of&nbsp;same&nbsp;indent</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#800000">;</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#008080">1</font></strong>&nbsp;<strong><font color="#000080">store-macro</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">first-nonwhite</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">set-variable</font></strong>&nbsp;<font color="#008080">%indlev</font>&nbsp;<font color="#008080">$curcol</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~force</font>&nbsp;<strong><font color="#000080">back-line-at-bol</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~if</font>&nbsp;<font color="#008080">&amp;seq</font>&nbsp;<font color="#008080">&amp;trim</font>&nbsp;<font color="#008080">$line</font>&nbsp;<font color="#800080">""</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~goto</font>&nbsp;L1<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~endif</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~while</font>&nbsp;<font color="#008080">&amp;les</font>&nbsp;<font color="#008080">%indlev</font>&nbsp;<font color="#008080">$curcol</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*L1<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~force</font>&nbsp;<strong><font color="#000080">back-line-at-bol</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~if</font>&nbsp;<font color="#008080">&amp;seq</font>&nbsp;<font color="#008080">$status</font>&nbsp;<font color="#800080">"FALSE"</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~return</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~endif</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~if</font>&nbsp;<font color="#008080">&amp;seq</font>&nbsp;<font color="#008080">&amp;trim</font>&nbsp;<font color="#008080">$line</font>&nbsp;<font color="#800080">""</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~goto</font>&nbsp;L1<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~endif</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~endwhile</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~endm</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">bind-key</font></strong>&nbsp;<strong><font color="#000080">execute-macro-1</font></strong>&nbsp;<font color="#800080">^X-[</font><br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#800000">;&nbsp;macro&nbsp;2&nbsp;-&nbsp;forward&nbsp;to&nbsp;the&nbsp;line&nbsp;of&nbsp;same&nbsp;indent</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#800000">;</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#008080">2</font></strong>&nbsp;<strong><font color="#000080">store-macro</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">first-nonwhite</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">set-variable</font></strong>&nbsp;<font color="#008080">%indlev</font>&nbsp;<font color="#008080">$curcol</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~force</font>&nbsp;<strong><font color="#000080">down-line-at-bol</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~if</font>&nbsp;<font color="#008080">&amp;seq</font>&nbsp;<font color="#008080">&amp;trim</font>&nbsp;<font color="#008080">$line</font>&nbsp;<font color="#800080">""</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~goto</font>&nbsp;L2<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~endif</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~while</font>&nbsp;<font color="#008080">&amp;les</font>&nbsp;<font color="#008080">%indlev</font>&nbsp;<font color="#008080">$curcol</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*L2<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~force</font>&nbsp;<strong><font color="#000080">down-line-at-bol</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~if</font>&nbsp;<font color="#008080">&amp;seq</font>&nbsp;<font color="#008080">$status</font>&nbsp;<font color="#800080">"FALSE"</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~return</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~endif</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~if</font>&nbsp;<font color="#008080">&amp;seq</font>&nbsp;<font color="#008080">&amp;trim</font>&nbsp;<font color="#008080">$line</font>&nbsp;<font color="#800080">""</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~goto</font>&nbsp;L2<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~endif</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~endwhile</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~endm</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">bind-key</font></strong>&nbsp;<strong><font color="#000080">execute-macro-2</font></strong>&nbsp;<font color="#800080">^X-]</font><br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#800000">;&nbsp;Use&nbsp;"@d"&nbsp;to&nbsp;change&nbsp;cwd&nbsp;to&nbsp;the&nbsp;dir&nbsp;containing&nbsp;the&nbsp;current&nbsp;file</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#800000">;&nbsp;(contributed&nbsp;by&nbsp;Richard&nbsp;Hussong).&nbsp;&nbsp;Keep&nbsp;in&nbsp;mind&nbsp;that&nbsp;"^M"&nbsp;is&nbsp;an</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#800000">;&nbsp;explict&nbsp;CR&nbsp;and&nbsp;that&nbsp;":cd&nbsp;-"&nbsp;reverts&nbsp;cwd&nbsp;to&nbsp;its&nbsp;previous&nbsp;value.</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">store-procedure</font></strong><font color="#800080">&nbsp;cdcur</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">cd</font></strong>&nbsp;<font color="#008080">&amp;path</font>&nbsp;head&nbsp;<font color="#008080">$cfilname</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~endm</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">use-register</font></strong>&nbsp;<font color="#800080">d</font>&nbsp;<strong><font color="#000080">load-register</font></strong>&nbsp;<font color="#800080">":cdcur^M"</font><br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#800000">;;&nbsp;Underline&nbsp;current&nbsp;line&nbsp;with&nbsp;user-specified&nbsp;char.&nbsp;&nbsp;Ex:</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#800000">;;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;blah&nbsp;blah&nbsp;blah&nbsp;blah&nbsp;&nbsp;&nbsp;&lt;--&nbsp;curr&nbsp;line</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#800000">;;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+++++++++++++++++++&nbsp;&nbsp;&nbsp;&lt;--&nbsp;underline&nbsp;with&nbsp;+</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#800000">;;&nbsp;from&nbsp;Daniel&nbsp;L.&nbsp;Ashbrook&nbsp;.</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">store-procedure</font></strong><font color="#800080">&nbsp;underline-currline</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">write-message</font></strong>&nbsp;<font color="#800080">"enter&nbsp;underline&nbsp;char&nbsp;now..."</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">set-variable</font></strong>&nbsp;<font color="#008080">%linechar</font>&nbsp;<font color="#008080">&amp;gtkey</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">write-message</font></strong>&nbsp;<font color="#800080">""</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#800000">;&nbsp;don't&nbsp;underline&nbsp;trailing&nbsp;whitespace&nbsp;(trivial)</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">trim-lines-til</font></strong>&nbsp;<strong><font color="#000080">end-of-line</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#800000">;&nbsp;don't&nbsp;underline&nbsp;leading&nbsp;whitespace&nbsp;(nontrivial)</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">goto-bol</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">setv</font></strong>&nbsp;<font color="#008080">%ldspace</font><strong><font color="#800000">=</font></strong><font color="#008080">&amp;equ</font>&nbsp;<font color="#008080">$char</font>&nbsp;<font color="#008080">&amp;ascii</font>&nbsp;<font color="#800080">'&nbsp;'</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">setv</font></strong>&nbsp;<font color="#008080">%ldtab</font><strong><font color="#800000">=</font></strong><font color="#008080">&amp;equ</font>&nbsp;<font color="#008080">$char</font>&nbsp;<font color="#008080">&amp;ascii</font>&nbsp;<font color="#800080">"\t"</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">setv</font></strong>&nbsp;<font color="#008080">%ldwhite</font><strong><font color="#800000">=</font></strong><font color="#008080">&amp;or</font>&nbsp;<font color="#008080">%ldspace</font>&nbsp;<font color="#008080">%ldtab</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~if</font>&nbsp;<font color="#008080">%ldwhite</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~force</font>&nbsp;<strong><font color="#000080">substitute-til</font></strong>&nbsp;<strong><font color="#000080">next-punctuated-word</font></strong>&nbsp;<font color="#800080">'^\b\b*'</font>&nbsp;<font color="#800080">''</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~endif</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#800000">;&nbsp;compute&nbsp;length&nbsp;sans&nbsp;lead/trail&nbsp;whitespace</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">set-variable</font></strong>&nbsp;<font color="#008080">%linelength</font>&nbsp;<font color="#008080">$llength</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~if</font>&nbsp;<font color="#008080">%ldwhite</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#800000">;&nbsp;put&nbsp;leading&nbsp;whitespace&nbsp;back</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">undo-change</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#800000">;&nbsp;it's&nbsp;not&nbsp;possible&nbsp;to&nbsp;disable&nbsp;the&nbsp;screen&nbsp;clutter&nbsp;of</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#800000">;&nbsp;visual-matches&nbsp;mode&nbsp;(following&nbsp;a&nbsp;substitution)</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#800000">;&nbsp;for&nbsp;all&nbsp;buffers&nbsp;from&nbsp;within&nbsp;a&nbsp;macro.&nbsp;so&nbsp;substitute</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#800000">;&nbsp;for&nbsp;an&nbsp;improbable&nbsp;char&nbsp;(which&nbsp;achieves&nbsp;desired&nbsp;effect)</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~force</font>&nbsp;<strong><font color="#000080">substitute-til</font></strong>&nbsp;<strong><font color="#000080">next-punctuated-word</font></strong>&nbsp;<font color="#008080">&amp;chr</font>&nbsp;<font color="#800080">\x</font>ff&nbsp;<font color="#008080">&amp;chr</font>&nbsp;<font color="#800080">\x</font>ff<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~force</font>&nbsp;<strong><font color="#000080">clear-visual-matches</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~endif</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">unset-variable</font></strong>&nbsp;<font color="#008080">%ustring</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">set-variable</font></strong>&nbsp;<font color="#008080">%i</font>&nbsp;<strong><font color="#008080">0</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#800000">;&nbsp;build&nbsp;underline&nbsp;string&nbsp;in&nbsp;memory&nbsp;and&nbsp;insert&nbsp;with&nbsp;a</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#800000">;&nbsp;single&nbsp;operation&nbsp;(optimizes&nbsp;undo)</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~while</font>&nbsp;<font color="#008080">&amp;less</font>&nbsp;<font color="#008080">%i</font>&nbsp;<font color="#008080">%linelength</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">set-variable</font></strong>&nbsp;<font color="#008080">%ustring</font>&nbsp;<font color="#008080">&amp;cat</font>&nbsp;<font color="#008080">%ustring</font>&nbsp;<font color="#008080">%linechar</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">set-variable</font></strong>&nbsp;<font color="#008080">%i</font>&nbsp;<font color="#008080">&amp;add</font>&nbsp;<font color="#008080">%i</font>&nbsp;<strong><font color="#008080">1</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~endwhile</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#800000">;&nbsp;force&nbsp;ustring&nbsp;to&nbsp;align&nbsp;with&nbsp;prev&nbsp;line</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~local</font>&nbsp;<font color="#008080">$autoindent</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">setv</font></strong>&nbsp;<font color="#008080">$autoindent</font><strong><font color="#800000">=</font></strong>true<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">goto-eol</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">append-string</font></strong>&nbsp;<font color="#008080">&amp;chr</font>&nbsp;<strong><font color="#008080">13</font></strong>&nbsp;&nbsp;<font color="#800000">;&nbsp;13&nbsp;-&gt;&nbsp;CR</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">insert-string</font></strong>&nbsp;<font color="#008080">%ustring</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~force</font>&nbsp;<strong><font color="#000080">next-line</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">goto-bol</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~endm</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">bind-key</font></strong>&nbsp;<strong><font color="#000080">underline-currline</font></strong>&nbsp;<font color="#800080">#-</font><br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#800000">;&nbsp;macro&nbsp;14&nbsp;-&nbsp;grep&nbsp;for&nbsp;the&nbsp;word&nbsp;under&nbsp;the&nbsp;cursor,&nbsp;and&nbsp;put&nbsp;the&nbsp;result</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#800000">;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;in&nbsp;a&nbsp;buffer&nbsp;named&nbsp;after&nbsp;that&nbsp;word.&nbsp;&nbsp;set&nbsp;the&nbsp;error-buffer,</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#800000">;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;so&nbsp;that&nbsp;^X-^X&nbsp;may&nbsp;be&nbsp;used&nbsp;to&nbsp;visit&nbsp;the&nbsp;lines&nbsp;found&nbsp;by&nbsp;grep.</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#800000">;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(we&nbsp;have&nbsp;to&nbsp;set&nbsp;error-buffer&nbsp;explicitly,&nbsp;since&nbsp;we&nbsp;renamed</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#800000">;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;the&nbsp;buffer&nbsp;--&nbsp;otherwise&nbsp;it&nbsp;tracks&nbsp;the&nbsp;last&nbsp;pipe&nbsp;read&nbsp;by&nbsp;vile)</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#008080">14</font></strong>&nbsp;<strong><font color="#000080">store-macro</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">set-variable</font></strong>&nbsp;<font color="#008080">%grepfor</font>&nbsp;<font color="#008080">$identifier</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">edit-file</font></strong><font color="#800080">&nbsp;&amp;cat&nbsp;"!egrep&nbsp;-n&nbsp;"&nbsp;&amp;cat&nbsp;%grepfor&nbsp;"&nbsp;*.[chs]"</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">rename-buffer</font></strong>&nbsp;<font color="#008080">%grepfor</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">error-buffer</font></strong>&nbsp;<font color="#008080">%grepfor</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~endm</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">bind-key</font></strong>&nbsp;<strong><font color="#000080">execute-macro-14</font></strong>&nbsp;<font color="#800080">^A-g</font><br>
+<!--atr2html}}--></p>
 	As a hint, it is (almost?) never correct to write a ':' command
 	when creating a programmed macro.  For instance, if you find
 	yourself writing something like:
-<pre>
-	&amp;cat ":!chmod +w " $cfilname
-	&amp;cat ":e! " $cfilname
-</pre>
+<!--{{atr2html--><p style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008080">&amp;cat</font>&nbsp;<font color="#800080">":!chmod&nbsp;+w&nbsp;"</font>&nbsp;<font color="#008080">$cfilname</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008080">&amp;cat</font>&nbsp;<font color="#800080">":e!&nbsp;"</font>&nbsp;<font color="#008080">$cfilname</font><br>
+<!--atr2html}}--></p>
 	(in an attempt to make a buffer writable before editing it), then
 	what you really want is:
-<pre>
-	shell-command &amp;cat "chmod +w " $cfilname
-	replace-with-file $cfilname
-</pre>
+<!--{{atr2html--><p style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">shell-command</font></strong>&nbsp;<font color="#008080">&amp;cat</font>&nbsp;<font color="#800080">"chmod&nbsp;+w&nbsp;"</font>&nbsp;<font color="#008080">$cfilname</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">replace-with-file</font></strong><font color="#800080">&nbsp;$cfilname</font><br>
+<!--atr2html}}--></p>
 	Furthermore, some things are just as easy if done with a
 	"keystroke" macro rather than a programmed macro:
-<pre>
-	; use this as '@w'
-	use-register w load-register ":!chmod +w %^M:setl noview^M:w^M"
-</pre>
+<!--{{atr2html--><p style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#800000">;&nbsp;use&nbsp;this&nbsp;as&nbsp;'@w'</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">use-register</font></strong>&nbsp;<font color="#800080">w</font>&nbsp;<strong><font color="#000080">load-register</font></strong>&nbsp;<font color="#800080">":!chmod&nbsp;+w&nbsp;%^M:setl&nbsp;noview^M:w^M"</font><br>
+<!--atr2html}}--></p>
 	or
-<pre>
-	map ^A-w ":!chmod +w %^M:setl noview^M:w^M"
-</pre>
+<!--{{atr2html--><p style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">map</font></strong><font color="#800080">&nbsp;^A-w&nbsp;":!chmod&nbsp;+w&nbsp;%^M:setl&nbsp;noview^M:w^M"</font><br>
+<!--atr2html}}--></p>
 	(Of course you need to replace the ^M's with real carriage-returns.)
 
 <h3 id="picture-mode2"><a name="picture-mode">Picture Mode</a></h3>
@@ -5358,10 +5363,10 @@ $<br>
 	general default settings in your home directory, and put the
 	following lines in a .vilerc in a directory in which you prefer
 	tabs be set to 4 spaces:
-<pre>
-	source "$HOME/.vilerc"
-	set tabstop 4
-</pre>
+<!--{{atr2html--><p style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">source</font></strong><font color="#800080">&nbsp;"$HOME/.vilerc"</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">set</font></strong>&nbsp;<strong><font color="#000080">tabstop</font></strong>&nbsp;<strong><font color="#008080">4</font></strong><br>
+<!--atr2html}}--></p>
 	The quotes surrounding the filename are necessary to protect the
 	name from interpretation as a vile variable, since it starts with
 	the '$' character.
@@ -5415,17 +5420,17 @@ $<br>
 	set of vile commands to initialize the editor.  As a
 	not-very-useful example of a VILEINIT sequence, the following
 	setting recreates portions of the default initialization behavior:
-<pre>
-	export VILEINIT
-	VILEINIT="
-	~if &amp;rd \"./.vilerc\"
-		source \"./.vilerc\"
-	~else
-		~if &amp;rd \"$HOME/.vilerc\"
-			source \"$HOME/.vilerc\"
-		~endif
-	~endif"
-</pre>
+<!--{{atr2html--><p style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;export&nbsp;VILEINIT<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;VILEINIT=<font color="#800000">"</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~if</font>&nbsp;<font color="#008080">&amp;rd</font>&nbsp;<font color="#800080">\"</font>./.vilerc<font color="#800080">\"</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">source</font></strong><font color="#800080">&nbsp;\"./.vilerc\"</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~else</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~if</font>&nbsp;<font color="#008080">&amp;rd</font>&nbsp;<font color="#800080">\"</font><font color="#800000">$HOME</font>/.vilerc<font color="#800080">\"</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">source</font></strong><font color="#800080">&nbsp;\"$HOME/.vilerc\"</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~endif</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~endif</font><font color="#800000">"</font><br>
+<!--atr2html}}--></p>
 	Other environment variables:
 <dl>
 <dt>
@@ -5633,18 +5638,22 @@ $<br>
 	is host-specific, as follows:
 
 	    <h3 id="unix-recovery2"><a name="unix-recovery">Unix (in priority order)</a></h3>
-	    $TMPDIR/vileD<em>XXXXXX</em><br>
-	    /var/tmp/vileD<em>XXXXX</em><br>
-	    /usr/tmp/vile<em>DXXXXX</em><br>
-	    /tmp/vileD<em>XXXXXX</em><br>
-	    ./vileD<em>XXXXXX</em>
+<!--{{atr2html--><p style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008080">$TMPDIR</font>/vileDXXXXXX<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/var/tmp/vileDXXXXX<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/usr/tmp/vileDXXXXX<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;/tmp/vileDXXXXXX<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;./vileDXXXXXX<br>
+<!--atr2html}}--></p>
 
 	    <h3 id="dos-recovery2"><a name="dos-recovery">DOS and OS/2</a></h3>
 	    Saved buffers are written to disk using the path ./V&lt;buffername&gt; .
 
 	    <h3 id="other-recovery2"><a name="other-recovery">All other hosts (in priority order)</a></h3>
-	    $TMPDIR/vileD<em>XXXXXX</em><br>
-	    ./vileD<em>XXXXXX</em>
+<!--{{atr2html--><p style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008080">$TMPDIR</font>/vileDXXXXXX<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;./vileDXXXXXX<br>
+<!--atr2html}}--></p>
 <p>
 	where "<em>XXXXXX</em>" is a unique suffix created by mktemp().
 <p>
@@ -5729,16 +5738,16 @@ $<br>
 	are output verbatim.
 <p>
 	The default format control string is as follows:
-<pre>
-	"%-%i%- %b %m:: :%f:is : :%=%F: : :%l:(:,:%c::) :%p::% :%C:char ::%S%-%-%|"
-</pre>
+<!--{{atr2html--><p style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#800080">"%-%i%-&nbsp;%b&nbsp;%m::&nbsp;:%f:is&nbsp;:&nbsp;:%=%F:&nbsp;:&nbsp;:%l:(:,:%c::)&nbsp;:%p::%&nbsp;:%C:char&nbsp;::%S%-%-%|"</font><br>
+<!--atr2html}}--></p>
 	Mode lines for some versions of vile previous to version 4.7 can be
 	obtained with the following format string.  This will remove the
 	percentage indication from the mode line when in ruler mode and
 	also shift the ruler indicator to the far right in the mode line.
-<pre>
-	"%-%i%- %b %m:: :%f:is : :%=%F: : %-%-%-%-:%l:(:,:%c::):%S::%-%-:%|"
-</pre>
+<!--{{atr2html--><p style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#800080">"%-%i%-&nbsp;%b&nbsp;%m::&nbsp;:%f:is&nbsp;:&nbsp;:%=%F:&nbsp;:&nbsp;%-%-%-%-:%l:(:,:%c::):%S::%-%-:%|"</font><br>
+<!--atr2html}}--></p>
 
 <h2 id="color-basics2"><a name="color-basics">Color basics</a></h2>
 <p>
@@ -5795,20 +5804,20 @@ $<br>
 	resources (refer to the topic "X Resources" in this help file).
 	So, for example, the following line in an .Xdefaults or .Xresources
 	file maps "gray" above to red:
-<pre>
-	    XVile.color.fcolor8: rgb:ff/0/0
-</pre>
+<!--{{atr2html--><p style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">XVile</font></strong>.<font color="#008080">color</font>.<font color="#008080">fcolor8</font>:<font color="#800080">&nbsp;</font><strong><font color="#008080">rgb:ff/0/0</font></strong><br>
+<!--atr2html}}--></p>
 	or
-<pre>
-	    XVile.color.fcolor8: red
-</pre>
+<!--{{atr2html--><p style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">XVile</font></strong>.<font color="#008080">color</font>.<font color="#008080">fcolor8</font>:<font color="#800080">&nbsp;red</font><br>
+<!--atr2html}}--></p>
 
 <h3 id="winvile-colors2"><a name="winvile-colors">winvile custom colors</a></h3>
 	winvile's default colors are changed via the editor's set-rgb-palette
 	command.  Mirroring the example above, map "gray" to red like so:
-<pre>
-	    set-rgb-palette gray 255 0 0
-</pre>
+<!--{{atr2html--><p style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;set-rgb-palette&nbsp;gray&nbsp;<strong><font color="#008080">255</font></strong>&nbsp;<strong><font color="#008080">0</font></strong>&nbsp;<strong><font color="#008080">0</font></strong><br>
+<!--atr2html}}--></p>
 
 <h3 id="display-attrs2"><a name="display-attrs">Display attributes</a></h3>
 	vile supports bold, italic, underline, and reverse display
@@ -5843,21 +5852,21 @@ $<br>
 	black and white (i.e., no color).  Assuming your host supports
 	terminfo, the following build commands force the editor to use that
 	library:
-<pre>
-	    $ make clean; ./configure --with-ncurses; make
-</pre>
+<!--{{atr2html--><p style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;$&nbsp;make&nbsp;clean;&nbsp;./configure&nbsp;--with-ncurses;&nbsp;make<br>
+<!--atr2html}}--></p>
 	For additional hints and help, try this URL:
 <pre>
-	    <a href="http://invisible-island.net/xterm/xterm.faq.html#no_color">http://invisible-island.net/xterm/xterm.faq.html#no_color</a>
+	<a href="http://invisible-island.net/xterm/xterm.faq.html#no_color">http://invisible-island.net/xterm/xterm.faq.html#no_color</a>
 </pre>
 
 <h3 id="visual-matching2"><a name="visual-matching">Visual matching (VM)</a></h3>
 	All hosts support visual-matches mode, which highlights search text
 	with either a simple color (no modifiers) or a display attribute.
 	To see the list of supported colors and attributes, type:
-<pre>
-	    :set visual-matches=&lt;tab&gt;&lt;tab&gt;
-</pre>
+<!--{{atr2html--><p style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:<strong><font color="#000080">set</font></strong>&nbsp;<strong><font color="#000080">visual-matches</font></strong><strong><font color="#800000">=</font></strong>&lt;tab&gt;&lt;tab&gt;<br>
+<!--atr2html}}--></p>
 	To learn more about this mode, search for "visual-matches"
 	elsewhere in this help file.
 
@@ -5865,9 +5874,9 @@ $<br>
 	On hosts and display hardware that support it, the editor's
 	foreground color may be set to a simple color value (no attribute
 	modifiers allowed).  Type:
-<pre>
-	    :set fcolor=&lt;tab&gt;&lt;tab&gt;
-</pre>
+<!--{{atr2html--><p style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:<strong><font color="#000080">set</font></strong>&nbsp;<strong><font color="#000080">fcolor</font></strong><strong><font color="#800000">=</font></strong>&lt;tab&gt;&lt;tab&gt;<br>
+<!--atr2html}}--></p>
 	for a list of supported colors.
 
 <h3 id="background-color2"><a name="background-color">Background color (BC)</a></h3>
@@ -6027,22 +6036,22 @@ $<br>
 	PATH (we'll assume /usr/local/bin), and copies all syntax coloring
 	data and macro files to /usr/local/share/vile.  The following
 	commands accomplish that task:
-<pre>
-	unset VILE_STARTUP_PATH VILE_LIBDIR_PATH
-	make clean; ./configure --with-builtin-filters; make
-	make install
-</pre>
+<!--{{atr2html--><p style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">unset</font></strong>&nbsp;VILE_STARTUP_PATH&nbsp;VILE_LIBDIR_PATH<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;make&nbsp;clean;&nbsp;./configure&nbsp;--with-builtin-filters;&nbsp;make<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;make&nbsp;install<br>
+<!--atr2html}}--></p>
 	Users should take these additional steps:
 <p>
 	1) add the following to their $HOME/.vilerc startup files:
-<pre>
-	source "filters.rc"
-</pre>
+<!--{{atr2html--><p style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">source</font></strong><font color="#800080">&nbsp;"filters.rc"</font><br>
+<!--atr2html}}--></p>
 	2) execute these shell commands (as necessary):
-<pre>
-	mkdir $HOME/.vile
-	cp /usr/local/share/vile/vile.keywords $HOME/.vile
-</pre>
+<!--{{atr2html--><p style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mkdir&nbsp;<font color="#008080">$HOME</font>/.vile<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cp&nbsp;/usr/local/share/vile/vile.keywords&nbsp;<font color="#008080">$HOME</font>/.vile<br>
+<!--atr2html}}--></p>
 	That's it.  Now skim through the "Manual recipe" topic below and
 	then pay attention again when you hit the topic entitled "Testing
 	the configuration".  With regard to the remainder of this
@@ -6053,24 +6062,24 @@ $<br>
 	The simplest install copies the editor and all data and macros file
 	to a writable directory tree (we'll assume $HOME/local).  This
 	syntax does the job:
-<pre>
-	unset VILE_STARTUP_PATH VILE_LIBDIR_PATH
-	make clean
-	./configure --prefix=$HOME/local --with-builtin-filters
-	make
-	make install
-</pre>
+<!--{{atr2html--><p style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">unset</font></strong>&nbsp;VILE_STARTUP_PATH&nbsp;VILE_LIBDIR_PATH<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;make&nbsp;clean<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;./configure&nbsp;--prefix=<font color="#008080">$HOME</font>/local&nbsp;--with-builtin-filters<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;make<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;make&nbsp;install<br>
+<!--atr2html}}--></p>
 	These additional steps are required:
 <p>
 	1) add the following to the $HOME/.vilerc startup file:
-<pre>
-	source "filters.rc"
-</pre>
+<!--{{atr2html--><p style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">source</font></strong><font color="#800080">&nbsp;"filters.rc"</font><br>
+<!--atr2html}}--></p>
 	2) execute these shell commands (as necessary):
-<pre>
-	mkdir $HOME/.vile
-	cp $HOME/local/share/vile/vile.keywords $HOME/.vile
-</pre>
+<!--{{atr2html--><p style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;mkdir&nbsp;<font color="#008080">$HOME</font>/.vile<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;cp&nbsp;<font color="#008080">$HOME</font>/local/share/vile/vile.keywords&nbsp;<font color="#008080">$HOME</font>/.vile<br>
+<!--atr2html}}--></p>
 	3) add $HOME/local/bin to $PATH (if not already specified)
 <p>
 	That's it.  Now skim through the "Manual recipe" topic below and
@@ -6110,19 +6119,19 @@ $<br>
 	      both bound with _all_ of the editor's builtin filters.
 <p>
 	5) edit your startup file (vile.rc) and add this line:
-<pre>
-	source "filters.rc"
-</pre>
+<!--{{atr2html--><p style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">source</font></strong><font color="#800080">&nbsp;"filters.rc"</font><br>
+<!--atr2html}}--></p>
 	6) export these environment variable settings:
 <pre>
 	VILE_STARTUP_PATH=COLORDIR
 	VILE_LIBDIR_PATH=COLORDIR
 </pre>
 	   Example entries in Win9x/ME's autoexec.bat:
-<pre>
-	SET VILE_LIBDIR_PATH=c:\util\vcolor
-	SET VILE_STARTUP_PATH=c:\util\vcolor
-</pre>
+<!--{{atr2html--><p style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">SET</font></strong>&nbsp;VILE_LIBDIR_PATH=c:\util\vcolor<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">SET</font></strong>&nbsp;VILE_STARTUP_PATH=c:\util\vcolor<br>
+<!--atr2html}}--></p>
 	   On a Win/NT/2K host, env vars are initialized via a control
 	   panel applet.  WinXP uses a different mechanism.
 
@@ -6156,9 +6165,9 @@ $<br>
 	Typing ^X-q each time a new file is opened gets old after awhile.
 	To force the editor to take over this task, add this line to your
 	startup file:
-<pre>
-	setv $read-hook HighlightFilterMsg
-</pre>
+<!--{{atr2html--><p style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">setv</font></strong>&nbsp;<font color="#008080">$read-hook</font>&nbsp;HighlightFilterMsg<br>
+<!--atr2html}}--></p>
 	This setting initiates syntax coloring whenever a new file is
 	edited.  However, note that the read-hook won't initiate syntax
 	coloring when a buffer's contents change, which brings us to the
@@ -6170,11 +6179,11 @@ $<br>
 	It's possible to automatically initiate syntax coloring when the
 	editor detects no active input during a user-configurable interval.
 	If this sounds appealing, add the following to your startup file:
-<pre>
-	; change autocolor mode value to suit individual tastes
-	set autocolor=2000
-	setv $autocolor-hook HighlightFilterMsg
-</pre>
+<!--{{atr2html--><p style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#800000">;&nbsp;change&nbsp;autocolor&nbsp;mode&nbsp;value&nbsp;to&nbsp;suit&nbsp;individual&nbsp;tastes</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">set</font></strong>&nbsp;<strong><font color="#000080">autocolor</font></strong><strong><font color="#800000">=</font></strong><strong><font color="#008080">2000</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">setv</font></strong>&nbsp;<font color="#008080">$autocolor-hook</font>&nbsp;HighlightFilterMsg<br>
+<!--atr2html}}--></p>
 	These settings initiate an automatic syntax coloring check whenever
 	2 seconds of idle time elapses (autocolor's argument is scaled in
 	milliseconds).  Note that autocolor won't actually invoke a syntax
@@ -6198,9 +6207,9 @@ $<br>
 <p>
 	If autocolor is too slow, you can temporarily disable it by turning
 	the highlighting mode off:
-<pre>
-	:set nohl
-</pre>
+<!--{{atr2html--><p style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:<strong><font color="#000080">set</font></strong>&nbsp;<strong><font color="#000080">nohl</font></strong><br>
+<!--atr2html}}--></p>
 
 <h3 id="changing-filters2"><a name="changing-filters">Changing color/attribute mappings</a></h3>
 	Filters will color text based on the contents of the file
@@ -6215,30 +6224,30 @@ $<br>
 <pre>
 	.class <em>&lt;name&gt;</em>:<em>&lt;ACS&gt;</em>
 </pre>
-	  where:
+	where:
 <pre>
-	    <em>&lt;name&gt;</em>      ::= an arbitrary alphanumeric string.
-	    <em>&lt;ACS&gt;</em>       ::= { C<em>&lt;hexdigit&gt;</em> | U | I | B | R }
-	    C<em>&lt;hexdigit&gt;</em> ::= internal vile color name
-	      U         ::= underline attribute
-	      I         ::= italic attribute
-	      B         ::= bold attribute
-	      R         ::= reverse attribute
+	<em>&lt;name&gt;</em>      ::= an arbitrary alphanumeric string.
+	<em>&lt;ACS&gt;</em>       ::= { C<em>&lt;hexdigit&gt;</em> | U | I | B | R }
+	C<em>&lt;hexdigit&gt;</em> ::= internal vile color name
+	  U         ::= underline attribute
+	  I         ::= italic attribute
+	  B         ::= bold attribute
+	  R         ::= reverse attribute
 </pre>
 	An example keyword file might contain:
-<pre>
-	    .class Action:BC2
-	    .class Comment:BC1
-	    .class Error:CA
-	    :.class Ident:R
-	    .class Ident2:C6
-	    .class Keyword:C3
-	    .class Keyword2:BC1
-	    .class Literal:UC5
-	    .class Number:C6
-	    .class Preproc:C2
-	    .class Type:CD
-</pre>
+<!--{{atr2html--><p style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;.class&nbsp;<strong><font color="#008000">Action</font></strong>:BC2<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;.class&nbsp;<strong><font color="#800000">Comment</font></strong>:BC1<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;.class&nbsp;<font color="#00FF00">Error</font>:CA<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#800000">:.class&nbsp;Ident:R</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;.class&nbsp;<font color="#008080">Ident2</font>:C6<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;.class&nbsp;<font color="#000080">Keyword</font>:C3<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;.class&nbsp;<strong><font color="#800000">Keyword2</font></strong>:BC1<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;.class&nbsp;<em><font color="#800080">Literal</font></em>:UC5<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;.class&nbsp;<font color="#008080">Number</font>:C6<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;.class&nbsp;<font color="#008000">Preproc</font>:C2<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;.class&nbsp;<font color="#FF00FF">Type</font>:CD<br>
+<!--atr2html}}--></p>
 	The "Comment" class defines the color attribute applied to a
 	language's comments, which will be rendered in "B"old "C"olor "1".
 	"Literal" applies to string literals, which will be shown as
@@ -6287,12 +6296,12 @@ $<br>
 	VILE_LIBDIR_PATH
 </pre>
 	<li>Your startup file should include these lines:
-<pre>
-	source "filters.rc"      ; quotes matter on win32 hosts
-	setv $autocolor-hook HighlightFilterMsg
-	setv $read-hook HighlightFilterMsg
-	set autocolor=2000
-</pre>
+<!--{{atr2html--><p style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">source</font></strong><font color="#800080">&nbsp;"filters.rc"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;&nbsp;quotes&nbsp;matter&nbsp;on&nbsp;win32&nbsp;hosts</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">setv</font></strong>&nbsp;<font color="#008080">$autocolor-hook</font>&nbsp;HighlightFilterMsg<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">setv</font></strong>&nbsp;<font color="#008080">$read-hook</font>&nbsp;HighlightFilterMsg<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">set</font></strong>&nbsp;<strong><font color="#000080">autocolor</font></strong><strong><font color="#800000">=</font></strong><strong><font color="#008080">2000</font></strong><br>
+<!--atr2html}}--></p>
 	<li>Some users have made the mistake of explicitly specifying
 	  a filter via the filtername mode.  Don't do that.
 </ul>
@@ -6313,9 +6322,9 @@ $<br>
 	scenario, vile will not attach a majormode to main.cpp.old's
 	buffer and consequently will not color the buffer.  To set the
 	proper majormode and force syntax coloring, simply type:
-<pre>
-	:set-highlighting cpp
-</pre>
+<!--{{atr2html--><p style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:<strong><font color="#000080">set-highlighting</font></strong>&nbsp;cpp<br>
+<!--atr2html}}--></p>
 
 <h3 id="coloring-manpages2"><a name="coloring-manpages">Man pages</a></h3>
 	It's also possible to syntax color Unix man pages, although the
@@ -6327,9 +6336,9 @@ $<br>
 	ispell) and subsequently highlighting all misspelled words in the
 	Keyword class color (as specified in vile.keywords).  If this
 	feature sounds useful, then add this line to your startup file:
-<pre>
-	source "spell.rc"
-</pre>
+<!--{{atr2html--><p style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">source</font></strong><font color="#800080">&nbsp;"spell.rc"</font><br>
+<!--atr2html}}--></p>
 	Spell.rc installs ^X-i as the keybinding that initiates spell
 	checking.
 
@@ -6361,29 +6370,29 @@ $<br>
 	name of a type, followed by a combination of color and attributes.
 	Use '+' to join the color and attributes.  These are possible commands
 	for setting isearch (the highlighting used for incremental search):
-<pre>
-	set-extra-color isearch reverse
-	set-extra-color isearch reverse+blue
-	set-extra-color isearch blue+reverse
-	set-extra-color isearch blue+reverse+underline
-	set-extra-color isearch red
-</pre>
+<!--{{atr2html--><p style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">set-extra-color</font></strong>&nbsp;<strong><font color="#000080">isearch</font></strong>&nbsp;<strong><font color="#000080">reverse</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">set-extra-color</font></strong>&nbsp;<strong><font color="#000080">isearch</font></strong>&nbsp;<strong><font color="#000080">reverse</font></strong>+<strong><font color="#000080">blue</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">set-extra-color</font></strong>&nbsp;<strong><font color="#000080">isearch</font></strong>&nbsp;<strong><font color="#000080">blue</font></strong>+<strong><font color="#000080">reverse</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">set-extra-color</font></strong>&nbsp;<strong><font color="#000080">isearch</font></strong>&nbsp;<strong><font color="#000080">blue</font></strong>+<strong><font color="#000080">reverse</font></strong>+<strong><font color="#000080">underline</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">set-extra-color</font></strong>&nbsp;<strong><font color="#000080">isearch</font></strong>&nbsp;<strong><font color="#000080">red</font></strong><br>
+<!--atr2html}}--></p>
 	Here is an example of how the various extra colors might be used:
-<pre>
-	~if &amp;sge &amp;cat $version $patchlevel 'version 9.7f'
-	~with set-extra-colors
-		isearch blue+underline
-		hypertext underline+red
-		modeline reverse+green
-		string magenta
-		regex underline+magenta
-		number cyan
-		enum green
-	~if &amp;sge &amp;cat $version $patchlevel 'version 9.7m'
-		warning reverse+bold+red
-	~endif
-	~endwith
-</pre>
+<!--{{atr2html--><p style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~if</font>&nbsp;<font color="#008080">&amp;sge</font>&nbsp;<font color="#008080">&amp;cat</font>&nbsp;<font color="#008080">$version</font>&nbsp;<font color="#008080">$patchlevel</font>&nbsp;<font color="#800080">'version&nbsp;9.7f'</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~with</font>&nbsp;<strong><font color="#000080">set-extra-colors</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">isearch</font></strong>&nbsp;<strong><font color="#000080">blue</font></strong>+<strong><font color="#000080">underline</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">hypertext</font></strong>&nbsp;<strong><font color="#000080">underline</font></strong>+<strong><font color="#000080">red</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">modeline</font></strong>&nbsp;<strong><font color="#000080">reverse</font></strong>+<strong><font color="#000080">green</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">string</font></strong>&nbsp;<strong><font color="#000080">magenta</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">regex</font></strong>&nbsp;<strong><font color="#000080">underline</font></strong>+<strong><font color="#000080">magenta</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">number</font></strong>&nbsp;<strong><font color="#000080">cyan</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">enum</font></strong>&nbsp;<strong><font color="#000080">green</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~if</font>&nbsp;<font color="#008080">&amp;sge</font>&nbsp;<font color="#008080">&amp;cat</font>&nbsp;<font color="#008080">$version</font>&nbsp;<font color="#008080">$patchlevel</font>&nbsp;<font color="#800080">'version&nbsp;9.7m'</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">warning</font></strong>&nbsp;<strong><font color="#000080">reverse</font></strong>+<strong><font color="#000080">bold</font></strong>+<strong><font color="#000080">red</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~endif</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~endwith</font><br>
+<!--atr2html}}--></p>
 
 <h2 id="majormodes2"><a name="majormodes">Majormodes</a></h2>
 <p>
@@ -6414,20 +6423,20 @@ $<br>
 	file here, we'll hit the high points with a couple of examples.
 <p>
 	To define a new majormode, add this in your vile startup file:
-<pre>
-	define-mode &lt;new_majormode_name&gt;
-	~with define-submode &lt;new_majormode_name&gt;
-		mode-pathname  "&lt;regexp_pattern&gt;"	; see next para
-		mode-filename  "&lt;regexp_pattern&gt;"	; see next para
-		suffixes       "&lt;regexp_pattern&gt;"	; see next para
-		preamble       "&lt;regexp_pattern&gt;"	; see next para
-		before         "&lt;if necessary&gt;"
-		filtername     "&lt;syntax-coloring-filter&gt;"
-		buffer mode setting#1
-		buffer mode setting#2
-	; etc.
-	~endwith
-</pre>
+<!--{{atr2html--><p style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">define-mode</font></strong>&nbsp;&lt;<em>new_majormode_name</em>&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~with</font>&nbsp;<strong><font color="#000080">define-submode</font></strong>&nbsp;&lt;<em>new_majormode_name</em>&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">mode-pathname</font></strong>&nbsp;&nbsp;<font color="#800080">"&lt;regexp_pattern&gt;"</font>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#800000">;&nbsp;see&nbsp;next&nbsp;para</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">mode-filename</font></strong>&nbsp;&nbsp;<font color="#800080">"&lt;regexp_pattern&gt;"</font>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#800000">;&nbsp;see&nbsp;next&nbsp;para</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">suffixes</font></strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#800080">"&lt;regexp_pattern&gt;"</font>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#800000">;&nbsp;see&nbsp;next&nbsp;para</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">preamble</font></strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#800080">"&lt;regexp_pattern&gt;"</font>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#800000">;&nbsp;see&nbsp;next&nbsp;para</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">before</font></strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#800080">"&lt;if&nbsp;necessary&gt;"</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">filtername</font></strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#800080">"&lt;syntax-coloring-filter&gt;"</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">buffer</font></strong>&nbsp;<strong><font color="#000080">mode</font></strong>&nbsp;setting<font color="#800080">#1</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">buffer</font></strong>&nbsp;<strong><font color="#000080">mode</font></strong>&nbsp;setting<font color="#800080">#2</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#800000">;&nbsp;etc.</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~endwith</font><br>
+<!--atr2html}}--></p>
 	Selecting file(s) for inclusion within a majormode is a matter of
 	specifying an appropriate regular expression, like so:
 <table border="1" summary="Selecting majormode">
@@ -6451,60 +6460,60 @@ $<br>
 	apparently set at intervals of 8.  Also, it appears that the right
 	margin is set fairly close to 80.  To mirror this policy, create this
 	new majormode:
-<pre>
-	define-mode hlp
-	~with define-submode hlp
-		suf '\.hlp$'
-		ts=8
-		fillcol=77
-		tabinsert
-		filtername 'vile-txt-filt'
-	~endwith
-</pre>
+<!--{{atr2html--><p style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">define-mode</font></strong>&nbsp;<em>hlp</em><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~with</font>&nbsp;<strong><font color="#000080">define-submode</font></strong>&nbsp;<em>hlp</em><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">suf</font></strong>&nbsp;<font color="#800080">'\.hlp$'</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">ts</font></strong><strong><font color="#800000">=</font></strong><strong><font color="#008080">8</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">fillcol</font></strong><strong><font color="#800000">=</font></strong><strong><font color="#008080">77</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">tabinsert</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">filtername</font></strong>&nbsp;<font color="#800080">'vile-txt-filt'</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~endwith</font><br>
+<!--atr2html}}--></p>
 	Now, whenever a file with suffix ".hlp" is edited, it will be colored
 	with vile-txt-filt and physical tabs inserted at multiples of 8.
 <p>
 	To override or augment the buffer mode settings of an existing
 	majormode, do this in your startup file:
-<pre>
-	source "filters.rc"
-	; ...
-	define-mode &lt;existing_majormode_name&gt;
-	~with define-submode &lt;existing_majormode_name&gt;
-		changed buffer mode setting#1
-		changed buffer mode setting#2
-		; etc.
-	~endwith
-</pre>
+<!--{{atr2html--><p style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">source</font></strong><font color="#800080">&nbsp;"filters.rc"</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#800000">;&nbsp;...</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">define-mode</font></strong>&nbsp;&lt;<em>existing_majormode_name</em>&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~with</font>&nbsp;<strong><font color="#000080">define-submode</font></strong>&nbsp;&lt;<em>existing_majormode_name</em>&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;changed&nbsp;<strong><font color="#000080">buffer</font></strong>&nbsp;<strong><font color="#000080">mode</font></strong>&nbsp;setting<font color="#800080">#1</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;changed&nbsp;<strong><font color="#000080">buffer</font></strong>&nbsp;<strong><font color="#000080">mode</font></strong>&nbsp;setting<font color="#800080">#2</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#800000">;&nbsp;etc.</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~endwith</font><br>
+<!--atr2html}}--></p>
 	For example, suppose it was desirable to edit all text files with
 	ignorecase disabled.  This startup file snippet will suffice:
-<pre>
-	source "filters.rc"
-	; ...
-	define-mode txt
-	~with define-submode txt
-		ignorecase
-	~endwith
-</pre>
+<!--{{atr2html--><p style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">source</font></strong><font color="#800080">&nbsp;"filters.rc"</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#800000">;&nbsp;...</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">define-mode</font></strong>&nbsp;<em>txt</em><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~with</font>&nbsp;<strong><font color="#000080">define-submode</font></strong>&nbsp;<em>txt</em><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">ignorecase</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~endwith</font><br>
+<!--atr2html}}--></p>
 	Once associated, majormode submodes can be setl/unsetl just like
 	regular local buffer modes.  But note well that set/unset have no
 	effect on submodes.  So, when hlpmode is in effect, this command
 	works:
-<pre>
-	setl notabinsert
-</pre>
+<!--{{atr2html--><p style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">setl</font></strong>&nbsp;<strong><font color="#000080">notabinsert</font></strong><br>
+<!--atr2html}}--></p>
 	but this command has no effect:
-<pre>
-	set notabinsert
-</pre>
+<!--{{atr2html--><p style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">set</font></strong>&nbsp;<strong><font color="#000080">notabinsert</font></strong><br>
+<!--atr2html}}--></p>
 	As added syntactic sugar, majormode submodes may be prefixed with
 	the majormode name and changed like so:
-<pre>
-	set/setl     txt-ignorecase
-	set/setl     hlp-fillcol=60
-	unset/unsetl txt-ignorecase
-	unset/unsetl hlp-tabinsert
-</pre>
+<!--{{atr2html--><p style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">set</font></strong>/setl&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;txt-ignorecase<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">set</font></strong>/setl&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;hlp-fillcol<strong><font color="#800000">=</font></strong><strong><font color="#008080">60</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">unset</font></strong>/unsetl&nbsp;txt-ignorecase<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">unset</font></strong>/unsetl&nbsp;hlp-tabinsert<br>
+<!--atr2html}}--></p>
 
 <h3 id="filter-notes2"><a name="filter-notes">Notes</a></h3>
 	1) Use the command "show-majormodes" to display the list of majormodes
@@ -6515,9 +6524,9 @@ $<br>
 	3) To override the majormode that vile assigns to a buffer, use
 	   either the set-highlighting macro (defined in filters.rc) or the
 	   "setl &lt;majormode_name&gt;" command.  Example:
-<pre>
-	setl cppmode     ; &lt;-- force cppmode for current buffer
-</pre>
+<!--{{atr2html--><p style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">setl</font></strong>&nbsp;<strong><font color="#000080">cppmode</font></strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#800000">;&nbsp;&lt;--&nbsp;force&nbsp;cppmode&nbsp;for&nbsp;current&nbsp;buffer</font><br>
+<!--atr2html}}--></p>
 
 <h3 id="cpp-headers2"><a name="cpp-headers">Distinguishing between C/C++ include files</a></h3>
 	Both C and C++ use ".h" as an include file suffix.  vile's current
@@ -6528,26 +6537,26 @@ $<br>
 	1) On a project-by-project basis (i.e., developer does not devote all
 	   of his/her time to C++ coding), simply add something like this to
 	   the vile startup file:
-<pre>
-	source "filters.rc"
-	; ...
-	define-mode cpp
-	~with define-submode cpp
-		mode-pathname 'project_root_directory_name/.*\.h$'
-	~endwith
-</pre>
+<!--{{atr2html--><p style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">source</font></strong><font color="#800080">&nbsp;"filters.rc"</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#800000">;&nbsp;...</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">define-mode</font></strong>&nbsp;<em>cpp</em><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~with</font>&nbsp;<strong><font color="#000080">define-submode</font></strong>&nbsp;<em>cpp</em><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">mode-pathname</font></strong>&nbsp;<font color="#800080">'project_root_directory_name/.*\.h$'</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~endwith</font><br>
+<!--atr2html}}--></p>
 	   This change specifies that all "*.h" files beneath a root
 	   directory name are presumed to be C++ files.
 <p>
 	2) If coding C++ more than C, then make these changes:
-<pre>
-	source "filters.rc"
-	; ...
-	define-mode cpp
-	~with define-submode cpp
-		suffixes	'\.\(C\|CC\|cc\|cpp\|cxx\|hxx\|h\|hh\)$'
-	~endwith
-</pre>
+<!--{{atr2html--><p style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">source</font></strong><font color="#800080">&nbsp;"filters.rc"</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#800000">;&nbsp;...</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">define-mode</font></strong>&nbsp;<em>cpp</em><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~with</font>&nbsp;<strong><font color="#000080">define-submode</font></strong>&nbsp;<em>cpp</em><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">suffixes</font></strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#800080">'\.\(C\|CC\|cc\|cpp\|cxx\|hxx\|h\|hh\)$'</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~endwith</font><br>
+<!--atr2html}}--></p>
 	   This change adds ".h" to the list of C++ files and since vile
 	   tests cppmode before cmode, all "*.h" files will now be edited in
 	   cppmode.
@@ -6561,33 +6570,33 @@ $<br>
 <p>
 	Today, even if filters.rc is not sourced at runtime, vile includes a
 	builtin majormode called cmode that is defined internally like so:
-<pre>
-	define-mode c
-	~with define-submode c
-		ts=8
-		sw=8
-		cindent
-		cindent-chars ":#"
-		suffix "&lt;complex_regexp_for_c_c++_file_suffixes&gt;"
-		filtername 'vile-c-filt'
-	~endwith
-</pre>
+<!--{{atr2html--><p style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">define-mode</font></strong>&nbsp;<strong><font color="#000080">c</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~with</font>&nbsp;<strong><font color="#000080">define-submode</font></strong>&nbsp;<strong><font color="#000080">c</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">ts</font></strong><strong><font color="#800000">=</font></strong><strong><font color="#008080">8</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">sw</font></strong><strong><font color="#800000">=</font></strong><strong><font color="#008080">8</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">cindent</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">cindent-chars</font></strong>&nbsp;<font color="#800080">":#"</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">suffix</font></strong>&nbsp;<font color="#800080">"&lt;complex_regexp_for_c_c++_file_suffixes&gt;"</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">filtername</font></strong>&nbsp;<font color="#800080">'vile-c-filt'</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~endwith</font><br>
+<!--atr2html}}--></p>
 	This buitin majormode can produce some surprising results when
 	editing C source files.	 In particular:
-<pre>
-	set ts=&lt;val&gt;   ; &lt;-- has no effect, use "setl" instead
-</pre>
+<!--{{atr2html--><p style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">set</font></strong>&nbsp;<strong><font color="#000080">ts</font></strong><strong><font color="#800000">=</font></strong>&lt;val&gt;&nbsp;&nbsp;&nbsp;<font color="#800000">;&nbsp;&lt;--&nbsp;has&nbsp;no&nbsp;effect,&nbsp;use&nbsp;"setl"&nbsp;instead</font><br>
+<!--atr2html}}--></p>
 	What's more these settings may be anathema for the coding style
 	in effect for a given software project.	 Override these settings
 	in the vile startup file to suit your needs/taste, like so:
-<pre>
-	define-mode c
-	~with define-submode c
-		ts=4
-		sw=4
-		nocindent
-	~endwith
-</pre>
+<!--{{atr2html--><p style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">define-mode</font></strong>&nbsp;<strong><font color="#000080">c</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~with</font>&nbsp;<strong><font color="#000080">define-submode</font></strong>&nbsp;<strong><font color="#000080">c</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">ts</font></strong><strong><font color="#800000">=</font></strong><strong><font color="#008080">4</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">sw</font></strong><strong><font color="#800000">=</font></strong><strong><font color="#008080">4</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">nocindent</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~endwith</font><br>
+<!--atr2html}}--></p>
 
 <h2 id="filtering-manpages2"><a name="filtering-manpages">Filtering "man" pages</a></h2>
 <p>
@@ -6603,9 +6612,9 @@ $<br>
 	attributes and display it in the current window.  The text of
 	manpage.rc may be either incorporated verbatim into your .vilerc
 	file or may be read from your .vilerc as follows:
-<pre>
-	source "manpage.rc"
-</pre>
+<!--{{atr2html--><p style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">source</font></strong><font color="#800080">&nbsp;"manpage.rc"</font><br>
+<!--atr2html}}--></p>
 	This assumes that you have moved the manpage.rc file to a directory
 	known to vile (automatically handled by "make install" on Unix or,
 	alternatively, by pointing the VILE_STARTUP_PATH env var to the
@@ -6617,9 +6626,9 @@ $<br>
 	text formatted with nroff.  From the vile source directory, for
 	example, the following command will format and filter the vile
 	manual page (which is nroff source).
-<pre>
-	:e !nroff -man vile.1 | vile-manfilt
-</pre>
+<!--{{atr2html--><p style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:<strong><font color="#000080">e</font></strong><font color="#800080">&nbsp;!nroff&nbsp;-man&nbsp;vile.1&nbsp;|&nbsp;vile-manfilt</font><br>
+<!--atr2html}}--></p>
 	Once loaded, it will look rather funny.  There will be Cntl-A
 	characters scattered throughout the text followed by a sequence of
 	digits followed by one or more uppercase letters followed by a
@@ -6745,9 +6754,9 @@ $<br>
 	Hiebert), the simplest method is as follows:
 <p>
 	1) cd to the project root dir and issue this ctags command:
-<pre>
-	ctags -R . '*.[ch]' '*.cpp'
-</pre>
+<!--{{atr2html--><p style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ctags&nbsp;-R&nbsp;<strong><font color="#800000">.</font></strong>&nbsp;<font color="#800080">'*.[ch]'</font>&nbsp;<font color="#800080">'*.cpp'</font><br>
+<!--atr2html}}--></p>
 	   This command drops out a tags file in the root directory that
 	   includes tags for all three subordinate directories.
 	   Repeat this step as necessary whenever significant changes are
@@ -6755,10 +6764,10 @@ $<br>
 <p>
 	2) modify the vile startup file (vile.rc or .vilerc) to
 	   include this setting:
-<pre>
-	set tagrelative
-	set tags="../tags"
-</pre>
+<!--{{atr2html--><p style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">set</font></strong>&nbsp;<strong><font color="#000080">tagrelative</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">set</font></strong>&nbsp;<strong><font color="#000080">tags</font></strong><strong><font color="#800000">=</font></strong><font color="#800080">"../tags"</font><br>
+<!--atr2html}}--></p>
 	vile's tags lookup features now provide one-keystroke access
 	to symbols in _all_ project source files, provided that the
 	editor's current working directory is set as either src, include,
@@ -6772,9 +6781,9 @@ $<br>
 	(available on virtually all Unix hosts):
 <p>
 	1) cd to the project root dir and issue this ctags command:
-<pre>
-	ctags src/*.[ch] src/*.cpp lib/*.[ch] lib/*.cpp include/*.h
-</pre>
+<!--{{atr2html--><p style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ctags&nbsp;src/*.[ch]&nbsp;src/*.cpp&nbsp;lib/*.[ch]&nbsp;lib/*.cpp&nbsp;include/*.h<br>
+<!--atr2html}}--></p>
 	   this command drops out a tags file in the root directory that
 	   includes tags for all three subordinate directories.  Repeat
 	   this step as necessary whenever the lib or include directory
@@ -6782,10 +6791,10 @@ $<br>
 <p>
 	2) modify the vile startup file (vile.rc or .vilerc) to
 	   include this setting:
-<pre>
-	set tagrelative
-	set tags="../tags"
-</pre>
+<!--{{atr2html--><p style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">set</font></strong>&nbsp;<strong><font color="#000080">tagrelative</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">set</font></strong>&nbsp;<strong><font color="#000080">tags</font></strong><strong><font color="#800000">=</font></strong><font color="#800080">"../tags"</font><br>
+<!--atr2html}}--></p>
 	This method achieves the same one-keystroke symbol access as
 	described for Exuberant Ctags.
 
@@ -6798,9 +6807,9 @@ $<br>
 <p>
 	To begin with, specify a directory hierarchy via the $findpath
 	state variable using this syntax:
-<pre>
-	setv $findpath="&lt;dir&gt;[&lt;delim&gt;&lt;dir&gt;]..."
-</pre>
+<!--{{atr2html--><p style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">setv</font></strong>&nbsp;<font color="#008080">$findpath</font><strong><font color="#800000">=</font></strong><font color="#800080">"&lt;dir&gt;[&lt;delim&gt;&lt;dir&gt;]..."</font><br>
+<!--atr2html}}--></p>
 	where &lt;delim&gt; is ':' on a Unix host and ';' on a win32 host.
 	If this state var is not set, "." is assumed.
 <p>
@@ -6840,26 +6849,26 @@ $<br>
 	"Hierarchical tags" above.  Assume also that the path to the
 	project root is /local/proj/root and that the vile startup
 	file contains these settings:
-<pre>
-	setv $findpath="/local/proj/root"
-	set find-cfg="$,@"
-</pre>
+<!--{{atr2html--><p style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">setv</font></strong>&nbsp;<font color="#008080">$findpath</font><strong><font color="#800000">=</font></strong><font color="#800080">"/local/proj/root"</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">set</font></strong>&nbsp;<strong><font color="#000080">find-cfg</font></strong><strong><font color="#800000">=</font></strong><font color="#800080">"$,@"</font><br>
+<!--atr2html}}--></p>
 	Then consider this command:
-<pre>
-	^X-!$egrep -n FIXME *.[ch] *.cpp
-</pre>
+<!--{{atr2html--><p style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#800080">^X-!</font><font color="#800000">$egrep</font>&nbsp;-<strong><font color="#000080">n</font></strong><font color="#800080">&nbsp;FIXME&nbsp;*.[ch]&nbsp;*.cpp</font><br>
+<!--atr2html}}--></p>
 	which spawns this Unix shell command:
-<pre>
-	find /local/proj/root '(' -name '*.[ch]' -o -name '*.cpp' ')' \
-		-print | egrep -v '((RCS|CVS)/|/[Tt][Aa][Gg][Ss]$)' | \
-		xargs egrep -n FIXME
-</pre>
+<!--{{atr2html--><p style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;find&nbsp;/local/proj/root&nbsp;<font color="#800080">'('</font>&nbsp;-name&nbsp;<font color="#800080">'*.[ch]'</font>&nbsp;-o&nbsp;-name&nbsp;<font color="#800080">'*.cpp'</font>&nbsp;<font color="#800080">')'</font>&nbsp;\<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-print&nbsp;|&nbsp;egrep&nbsp;-v&nbsp;<font color="#800080">'((RCS|CVS)/|/[Tt][Aa][Gg][Ss]$)'</font>&nbsp;|&nbsp;\<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;xargs&nbsp;egrep&nbsp;-n&nbsp;FIXME<br>
+<!--atr2html}}--></p>
 	and this win32 shell command:
-<pre>
-	find /local/proj/root '(' -iname '*.[ch]' -o -iname '*.cpp' ')' \
-		-print | egrep -vi '((RCS|CVS)/|/tags$)' | \
-		xargs egrep -n FIXME
-</pre>
+<!--{{atr2html--><p style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;find&nbsp;/local/proj/root&nbsp;<font color="#800080">'('</font>&nbsp;-iname&nbsp;<font color="#800080">'*.[ch]'</font>&nbsp;-o&nbsp;-iname&nbsp;<font color="#800080">'*.cpp'</font>&nbsp;<font color="#800080">')'</font>&nbsp;\<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-print&nbsp;|&nbsp;egrep&nbsp;-vi&nbsp;<font color="#800080">'((RCS|CVS)/|/tags$)'</font>&nbsp;|&nbsp;\<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;xargs&nbsp;egrep&nbsp;-n&nbsp;FIXME<br>
+<!--atr2html}}--></p>
 	The net result is that capture-command has been used to find the
 	string FIXME in all C/C++ source files located in the project
 	hierarchy.  The results of this search are placed in the editor's
@@ -6871,28 +6880,28 @@ $<br>
 	If it's preferable to use a nonrecursive find operation and the GNU
 	find utility is available on your host, you might try this on a
 	Unix host:
-<pre>
-	setv $findpath="/dir1:/dir2:/dir3"
-	set find-cfg="$,@"
-	^X-!@egrep -ni copyright *.txt
-</pre>
+<!--{{atr2html--><p style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">setv</font></strong>&nbsp;<font color="#008080">$findpath</font><strong><font color="#800000">=</font></strong><font color="#800080">"/dir1:/dir2:/dir3"</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">set</font></strong>&nbsp;<strong><font color="#000080">find-cfg</font></strong><strong><font color="#800000">=</font></strong><font color="#800080">"$,@"</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#800080">^X-!</font>@egrep&nbsp;-ni&nbsp;copyright&nbsp;*.txt<br>
+<!--atr2html}}--></p>
 	which spawns this Unix shell command:
-<pre>
-	find /dir1 /dir2 /dir3 -maxdepth 1 -name '*.txt' -print | \
-		egrep -v '((RCS|CVS)/|/[Tt][Aa][Gg][Ss]$)' | \
-		xargs egrep -ni copyright
-</pre>
+<!--{{atr2html--><p style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;find&nbsp;/dir1&nbsp;/dir2&nbsp;/dir3&nbsp;-maxdepth&nbsp;<strong><font color="#008080">1</font></strong>&nbsp;-name&nbsp;<font color="#800080">'*.txt'</font>&nbsp;-print&nbsp;|&nbsp;\<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;egrep&nbsp;-v&nbsp;<font color="#800080">'((RCS|CVS)/|/[Tt][Aa][Gg][Ss]$)'</font>&nbsp;|&nbsp;\<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;xargs&nbsp;egrep&nbsp;-ni&nbsp;copyright<br>
+<!--atr2html}}--></p>
 	Or, correspondingly, on a win32 host:
-<pre>
-	setv $findpath="/dir1;/dir2;/dir3"
-	set find-cfg="$,@"
-	^X-!@egrep -ni copyright *.txt
-</pre>
+<!--{{atr2html--><p style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">setv</font></strong>&nbsp;<font color="#008080">$findpath</font><strong><font color="#800000">=</font></strong><font color="#800080">"/dir1;/dir2;/dir3"</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">set</font></strong>&nbsp;<strong><font color="#000080">find-cfg</font></strong><strong><font color="#800000">=</font></strong><font color="#800080">"$,@"</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#800080">^X-!</font>@egrep&nbsp;-ni&nbsp;copyright&nbsp;*.txt<br>
+<!--atr2html}}--></p>
 	which spawns this win32 shell command:
-<pre>
-	find /dir1 /dir2 /dir3 -maxdepth 1 -iname '*.txt' -print | \
-		egrep -vi '((RCS|CVS)/|/tags$)' | xargs egrep -ni copyright
-</pre>
+<!--{{atr2html--><p style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;find&nbsp;/dir1&nbsp;/dir2&nbsp;/dir3&nbsp;-maxdepth&nbsp;<strong><font color="#008080">1</font></strong>&nbsp;-iname&nbsp;<font color="#800080">'*.txt'</font>&nbsp;-print&nbsp;|&nbsp;\<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;egrep&nbsp;-vi&nbsp;<font color="#800080">'((RCS|CVS)/|/tags$)'</font>&nbsp;|&nbsp;xargs&nbsp;egrep&nbsp;-ni&nbsp;copyright<br>
+<!--atr2html}}--></p>
 	Of course, if your version of find doesn't support the "-maxdepth"
 	option, this feature won't work.  The workaround is simple&ndash;upgrade to
 	the GNU version of find.
@@ -6903,16 +6912,16 @@ $<br>
 	useful for Perl hackers who want to manipulate a directory's
 	contents with specialized scripts.  To obtain this functionality,
 	specify find-cfg's "d" option.  As a contrived example:
-<pre>
-	setv $findpath="/local/proj/root"
-	set find-cfg="$,@,d"
-	^X-!$ls -ld
-</pre>
+<!--{{atr2html--><p style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">setv</font></strong>&nbsp;<font color="#008080">$findpath</font><strong><font color="#800000">=</font></strong><font color="#800080">"/local/proj/root"</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">set</font></strong>&nbsp;<strong><font color="#000080">find-cfg</font></strong><strong><font color="#800000">=</font></strong><font color="#800080">"$,@,d"</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#800080">^X-!</font><font color="#800000">$ls</font>&nbsp;-ld<br>
+<!--atr2html}}--></p>
 	yields this shell command (on a Unix host):
-<pre>
-	find /local/proj/root -type d -print | egrep -v '(RCS|CVS)/' | \
-		xargs ls -ld
-</pre>
+<!--{{atr2html--><p style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;find&nbsp;/local/proj/root&nbsp;-type&nbsp;d&nbsp;-print&nbsp;|&nbsp;egrep&nbsp;-v&nbsp;<font color="#800080">'(RCS|CVS)/'</font>&nbsp;|&nbsp;\<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;xargs&nbsp;ls&nbsp;-ld<br>
+<!--atr2html}}--></p>
 
 <h3 id="findpath-notes2"><a name="findpath-notes">File/directory traversal notes</a></h3>
 <ul>
@@ -6990,15 +6999,15 @@ $<br>
 	on top of it.  If no hypertext link is present, then the
 	normal default action of advancing one character to the
 	right is taken:
-<pre>
-	22 store-macro
-		~force execute-hypertext-command
-		~if  &amp;not $status
-		~force forward-character-to-eol
-		~endif
-	~endm
-	bind-key execute-macro-22 ' '
-</pre>
+<!--{{atr2html--><p style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#008080">22</font></strong>&nbsp;<strong><font color="#000080">store-macro</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~force</font>&nbsp;<strong><font color="#000080">execute-hypertext-command</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~if</font>&nbsp;&nbsp;<font color="#008080">&amp;not</font>&nbsp;<font color="#008080">$status</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~force</font>&nbsp;<strong><font color="#000080">forward-character-to-eol</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~endif</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~endm</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">bind-key</font></strong>&nbsp;<strong><font color="#000080">execute-macro-22</font></strong>&nbsp;<font color="#800080">'&nbsp;'</font><br>
+<!--atr2html}}--></p>
 	[ TODO:  Maybe we should just add a little
 	  bit of code to make this the default binding for space bar?
 	  Or is some other key binding preferable?  In any event,
@@ -7007,10 +7016,10 @@ $<br>
 	Here is another example, which gives a choice between following
 	a hyperlink, e.g., as embedded in which-source, or showing its
 	content:
-<pre>
-	bind-key execute-hypertext-command ^X-z 
-	bind-key show-hypertext-command ^X-Z 
-</pre>
+<!--{{atr2html--><p style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">bind-key</font></strong>&nbsp;<strong><font color="#000080">execute-hypertext-command</font></strong>&nbsp;<font color="#800080">^X-z</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">bind-key</font></strong>&nbsp;<strong><font color="#000080">show-hypertext-command</font></strong>&nbsp;<font color="#800080">^X-Z</font><br>
+<!--atr2html}}--></p>
 	When using xvile, double clicking on a hypertext link will
 	cause the hypertext command to be executed.  If no hypertext
 	command is associated with the text under the cursor, the
@@ -7041,21 +7050,21 @@ $<br>
 			executed, the local variables saved/restored and
 			intermediate states of expression evaluation.  To
 			activate tracing, use:
-<pre>
-	~trace on
-</pre>
-			or
-<pre>
-	setv $debug true
-</pre>
-			To disable tracing, use:
-<pre>
-	~trace off
-</pre>
-			or
-<pre>
-	setv $debug false
-</pre>
+<!--{{atr2html--><p style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~trace</font>&nbsp;on<br>
+<!--atr2html}}--></p>
+or
+<!--{{atr2html--><p style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">setv</font></strong>&nbsp;<font color="#008080">$debug</font>&nbsp;true<br>
+<!--atr2html}}--></p>
+To&nbsp;disable&nbsp;tracing,&nbsp;use:<br>
+<!--{{atr2html--><p style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~trace</font>&nbsp;off<br>
+<!--atr2html}}--></p>
+or
+<!--{{atr2html--><p style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">setv</font></strong>&nbsp;<font color="#008080">$debug</font>&nbsp;false<br>
+<!--atr2html}}--></p>
 </dd>
 <dt>
 	which-exec <em>&lt;file&gt;</em>
@@ -7218,10 +7227,10 @@ $<br>
 	Users of Sun systems may want to put the following key
 	bindings in their .vilerc file in order to make use of the
 	Copy and Paste keys found on their keyboards:
-<pre>
-	bind-key copy-to-clipboard #-^
-	bind-key paste-from-clipboard #-*
-</pre>
+<!--{{atr2html--><p style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">bind-key</font></strong>&nbsp;copy-to-clipboard&nbsp;<font color="#800080">#-^</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">bind-key</font></strong>&nbsp;paste-from-clipboard&nbsp;<font color="#800080">#-*</font><br>
+<!--atr2html}}--></p>
 
 <h3 id="xvile-scrollbars2"><a name="xvile-scrollbars">Scrollbars</a></h3>
 <p>
@@ -7469,21 +7478,21 @@ color.bcolor15<br>
 	to use any of the color specifications.  You may, however, wish
 	to set up a blinking cursor, using
 	<a href="xvile-blinkInterval">"blinkInterval"</a> (see above).
-<pre>
-	XVile*font: -*-courier-medium-r-normal-*-*-*-75-75-m-70-iso8859-*
-	XVile*geometry:	80x54
-	XVile.background: darkslategrey
-	XVile.foreground: honeydew
-	XVile.scrollbar.foreground: firebrick2
-	XVile.scrollbar.sliderIsSolid: true
-	XVile.selection.background: aquamarine4
-	XVile.selection.foreground: honeydew
-	XVile.cursor.background: yellow
-	XVile.cursor.foreground: darkslategrey
-	XVile.modeline.Background: steelblue
-	XVile.modeline.foreground: darkslategrey
-	XVile.modeline.focusForeground: yellow
-</pre>
+<!--{{atr2html--><p style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">XVile</font></strong>*<font color="#008080">font</font>:<font color="#800080">&nbsp;-*-courier-medium-r-normal-*-*-*-75-75-m-70-iso8859-*</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">XVile</font></strong>*<font color="#008080">geometry</font>:<font color="#800080">&nbsp;80x54</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">XVile</font></strong>.<font color="#008080">background</font>:<font color="#800080">&nbsp;darkslategrey</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">XVile</font></strong>.<font color="#008080">foreground</font>:<font color="#800080">&nbsp;honeydew</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">XVile</font></strong>.<font color="#008080">scrollbar</font>.<font color="#008080">foreground</font>:<font color="#800080">&nbsp;firebrick2</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">XVile</font></strong>.<font color="#008080">scrollbar</font>.<font color="#008080">sliderIsSolid</font>:<font color="#800080">&nbsp;</font><strong><font color="#000080">true</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">XVile</font></strong>.<font color="#008080">selection</font>.<font color="#008080">background</font>:<font color="#800080">&nbsp;aquamarine4</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">XVile</font></strong>.<font color="#008080">selection</font>.<font color="#008080">foreground</font>:<font color="#800080">&nbsp;honeydew</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">XVile</font></strong>.<font color="#008080">cursor</font>.<font color="#008080">background</font>:<font color="#800080">&nbsp;yellow</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">XVile</font></strong>.<font color="#008080">cursor</font>.<font color="#008080">foreground</font>:<font color="#800080">&nbsp;darkslategrey</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">XVile</font></strong>.<font color="#008080">modeline</font>.<strong><font color="#000080">Background</font></strong>:<font color="#800080">&nbsp;steelblue</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">XVile</font></strong>.<font color="#008080">modeline</font>.<font color="#008080">foreground</font>:<font color="#800080">&nbsp;darkslategrey</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">XVile</font></strong>.<font color="#008080">modeline</font>.<font color="#008080">focusForeground</font>:<font color="#800080">&nbsp;yellow</font><br>
+<!--atr2html}}--></p>
 
 <h3 id="xvile-fonts2"><a name="xvile-fonts">Fonts</a></h3>
 <p>
@@ -7545,9 +7554,9 @@ color.bcolor15<br>
 	You can try it out by issuing the appropriate "set font" command
 	from xvile.  For longer term use, you will probably want to put it
 	in your .Xdefaults file.  It will look something like this:
-<pre>
-	XVile*font: -*-courier-medium-r-*-*-*-*-*-*-*-70-*-*
-</pre>
+<!--{{atr2html--><p style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">XVile</font></strong>*<font color="#008080">font</font>:<font color="#800080">&nbsp;-*-courier-medium-r-*-*-*-*-*-*-*-70-*-*</font><br>
+<!--atr2html}}--></p>
 	You may also set the font from your .vilerc file.  This is not
 	recommended, however, as you lose the ability to choose a different
 	font from the command line or resource file.  It may also cause the
@@ -7773,33 +7782,33 @@ color.bcolor15<br>
 	of an external process, vile invokes an instance of the shell
 	specified in the $COMSPEC environment variable.  This default may
 	be overridden by setting $shell from within vile.rc .  Example:
-<pre>
-	set-variable $shell 'c:\usr\binw\sh.exe'
-</pre>
+<!--{{atr2html--><p style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">set-variable</font></strong>&nbsp;<font color="#008080">$shell</font>&nbsp;<font color="#800080">'c:\usr\binw\sh.exe'</font><br>
+<!--atr2html}}--></p>
 	As is true on other hosts, external processes are normally started
 	under the control of a shell.  To forego the shell entirely, prefix
 	the command string with "start ".  Example:
-<pre>
-	:!start calc           # start the windows calculator
-</pre>
+<!--{{atr2html--><p style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:<strong><font color="#800000">!start&nbsp;calc&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;#&nbsp;start&nbsp;the&nbsp;windows&nbsp;calculator</font></strong><br>
+<!--atr2html}}--></p>
 	Finally, it may be necessary to pass one or more flags to the shell
 	invoked via the :sh command (e.g., force execution of a special
 	login script).  Passing such flag(s) via $shell is not a workable
 	solution.  Instead, use a macro similar to the following that
 	supercedes the builtin :sh command:
-<pre>
-	store-procedure sh
-		; pass -L (login) flag to MKS shell, assumes sh is
-		; reachable from $PATH
-		~local %sh
-		setv %sh="sh -L"
-		~if &amp;seq $progname "winvile"
-			1 shell-command &amp;cat "start " %sh
-		~else
-			1 shell-command %sh
-		~endif
-	~endm
-</pre>
+<!--{{atr2html--><p style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">store-procedure</font></strong><font color="#800080">&nbsp;sh</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#800000">;&nbsp;pass&nbsp;-L&nbsp;(login)&nbsp;flag&nbsp;to&nbsp;MKS&nbsp;shell,&nbsp;assumes&nbsp;sh&nbsp;is</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#800000">;&nbsp;reachable&nbsp;from&nbsp;$PATH</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~local</font>&nbsp;<font color="#008080">%sh</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">setv</font></strong>&nbsp;<font color="#008080">%sh</font><strong><font color="#800000">=</font></strong><font color="#800080">"sh&nbsp;-L"</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~if</font>&nbsp;<font color="#008080">&amp;seq</font>&nbsp;<font color="#008080">$progname</font>&nbsp;<font color="#800080">"winvile"</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#008080">1</font></strong>&nbsp;<strong><font color="#000080">shell-command</font></strong>&nbsp;<font color="#008080">&amp;cat</font>&nbsp;<font color="#800080">"start&nbsp;"</font>&nbsp;<font color="#008080">%sh</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~else</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#008080">1</font></strong>&nbsp;<strong><font color="#000080">shell-command</font></strong>&nbsp;<font color="#008080">%sh</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~endif</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~endm</font><br>
+<!--atr2html}}--></p>
 
 <h3 id="win32-bash2"><a name="win32-bash">Cygwin's Bash Versus Console vile</a></h3>
 	Using Cygwin's bash as vile's shell works well, with one exception.
@@ -7812,14 +7821,14 @@ color.bcolor15<br>
 	<li>obtain and install the ash shell, which is included with the
 	   Cygwin distribution.  Note that ash is installed as sh.exe .
 	<li>edit .bashrc (or equivalent config file) and add this function:
-<pre>
-	function vile
-	{
-		sh &lt;&lt; ENDIT
-		vile $@
-		ENDIT
-	}
-</pre>
+<!--{{atr2html--><p style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">function</font></strong>&nbsp;vile<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#800000">{</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;sh&nbsp;<font color="#800080">&lt;&lt;-&nbsp;ENDIT-</font><font color="#800080"><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;vile&nbsp;$@<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ENDIT</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#800000">}</font></strong><br>
+<!--atr2html}}--></p>
 	When console vile is subsequently invoked from a bash command line,
 	the editor will be started by sh, which does not suffer from the
 	problem described above.  The only drawback with this solution is
@@ -7971,10 +7980,13 @@ There are several ways to copy to/from the clipboard:
 
 	Vile.rc Example
 	***************
-	~if &amp;sequal $progname "winvile"
-		set-variable $font "courier new,8"
-	~endif
 </pre>
+<!--{{atr2html--><p style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~if</font>&nbsp;<font color="#008080">&amp;sequal</font>&nbsp;<font color="#008080">$progname</font>&nbsp;<font color="#800080">"winvile"</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">set-variable</font></strong>&nbsp;<font color="#008080">$font</font>&nbsp;<font color="#800080">"courier&nbsp;new,8"</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~endif</font><br>
+<!--atr2html}}--></p>
+
 <h3 id="winvile-perl2"><a name="winvile-perl">Perl with Winvile</a></h3>
 <p>
 	At the user's discretion, vile may be built with an embedded perl
@@ -8211,17 +8223,17 @@ There are several ways to copy to/from the clipboard:
 	console vile.  If you plan to run both winvile and console vile in
 	the context of a single startup file, you'll need to include code
 	similar to this in vile.rc:
-<pre>
-	~if &amp;sequal $progname "winvile"
-		set-variable $font "r_ansi,8"
-		setv $pagelen=39
-		set icursor="1"
-		; etc
-	~else
-		set icursor="35,100"
-		; etc
-	~endif
-</pre>
+<!--{{atr2html--><p style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~if</font>&nbsp;<font color="#008080">&amp;sequal</font>&nbsp;<font color="#008080">$progname</font>&nbsp;<font color="#800080">"winvile"</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">set-variable</font></strong>&nbsp;<font color="#008080">$font</font>&nbsp;<font color="#800080">"r_ansi,8"</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">setv</font></strong>&nbsp;<font color="#008080">$pagelen</font><strong><font color="#800000">=</font></strong><strong><font color="#008080">39</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">set</font></strong>&nbsp;icursor<strong><font color="#800000">=</font></strong><font color="#800080">"1"</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#800000">;&nbsp;etc</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~else</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">set</font></strong>&nbsp;icursor<strong><font color="#800000">=</font></strong><font color="#800080">"35,100"</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#800000">;&nbsp;etc</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~endif</font><br>
+<!--atr2html}}--></p>
 
 <h2 id="not-vi2"><a name="not-vi">Differences from vi</a></h2>
 <p>
@@ -8248,11 +8260,11 @@ There are several ways to copy to/from the clipboard:
 	are quite complex, to support the traditional nroff and troff
 	boundaries.  If you are just editing code, you may want to replace
 	them:
-<pre>
-	; set paragraph and section r.e.s for speed on C/C++/perl code.
-	set paragraphs=^$
-	set sections=^[{^L]
-</pre>
+<!--{{atr2html--><p style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#800000">;&nbsp;set&nbsp;paragraph&nbsp;and&nbsp;section&nbsp;r.e.s&nbsp;for&nbsp;speed&nbsp;on&nbsp;C/C++/perl&nbsp;code.</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">set</font></strong>&nbsp;<strong><font color="#000080">paragraphs</font></strong><strong><font color="#800000">=</font></strong><font color="#800080">^$</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">set</font></strong>&nbsp;<strong><font color="#000080">sections</font></strong><strong><font color="#800000">=</font></strong><font color="#800080">^[</font>{<font color="#800080">^L</font>]<br>
+<!--atr2html}}--></p>
 	There is no special lisp support.  But then, when was the last time
 	you heard of a lisp programmer that used vi?
 <p>
@@ -8273,72 +8285,72 @@ There are several ways to copy to/from the clipboard:
 	use the stuttered form, so in vile, the '_' command is used by
 	default for buffer history.  If the regular vi behavior is desired,
 	put the following in the .vilerc file:
-<pre>
-	bind-key whole-lines _
-</pre>
+<!--{{atr2html--><p style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">bind-key</font></strong>&nbsp;<strong><font color="#000080">whole-lines</font></strong>&nbsp;<strong><font color="#000080">_</font></strong><br>
+<!--atr2html}}--></p>
 
 <h2 id="sample-vilerc2"><a name="sample-vilerc">Sample .vilerc</a></h2>
 <p>
 	Here's a sample .vilerc, to help get you started with the
 	syntax and style of vile macros:
-<pre>
-	source vileinit.rc
-	set autoindent
-	set fillcol 75
-
-	; sitting on a brace, run the C code block through indent
-	1 store-macro
-		write-file
-		filter-til goto-matching-fence "indent -st"
-	~endm
-
-	; format the current paragraph
-	2 store-macro
-		previous-paragraph
-		filter-til next-paragraph "/usr/ucb/fmt"
-	~endm
-
-	; put 'fprintf(stderr,"\n");' into the file, and
-	; position the cursor to add to the string
-	3 store-macro
-		~force next-line
-		beginning-of-line
-		insert-string "fprintf(stderr, \"\\n\");\n"
-		; six back, because it counts the newline
-		6 backward-character
-		insert-chars
-	~endm
-
-	; insert '> ' in front of every line from here til the end
-	; (this works because without argument, the default action
-	; for "goto-line" is to go to the end of file.
-	4 store-macro
-		substitute-til goto-line "^" "> "
-	~endm
-
-	; spelling keystroke: write the buffer, invoke ispell, and force
-	;	it to be read back in.
-	2 store-macro
-		~local $warn-reread
-		write-file
-		; suppress "press return" with "1" argument to shell-command
-		1 shell-command &amp;cat "ispell " $cfilname
-		; suppress reread warning
-		set nowarn-reread
-		replace-with-file $cfilname
-	~endm
-	bind-key execute-macro-2 #I
-
-	; the next three give more mnemonic window commands
-	bind-key next-window ^N
-	bind-key previous-window ^P
-	bind-key split-current-window ^T
-
-	bind-key execute-macro-1 ^A-C
-	bind-key execute-macro-2 ^A-F
-	bind-key execute-macro-3 ^A-K
-	bind-key execute-macro-4 ^A-M
-</pre>
+<!--{{atr2html--><p style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">source</font></strong><font color="#800080">&nbsp;vileinit.rc</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">set</font></strong>&nbsp;<strong><font color="#000080">autoindent</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">set</font></strong>&nbsp;<strong><font color="#000080">fillcol</font></strong>&nbsp;<strong><font color="#008080">75</font></strong><br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#800000">;&nbsp;sitting&nbsp;on&nbsp;a&nbsp;brace,&nbsp;run&nbsp;the&nbsp;C&nbsp;code&nbsp;block&nbsp;through&nbsp;indent</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#008080">1</font></strong>&nbsp;<strong><font color="#000080">store-macro</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">write-file</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">filter-til</font></strong>&nbsp;<strong><font color="#000080">goto-matching-fence</font></strong>&nbsp;<font color="#800080">"indent&nbsp;-st"</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~endm</font><br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#800000">;&nbsp;format&nbsp;the&nbsp;current&nbsp;paragraph</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#008080">2</font></strong>&nbsp;<strong><font color="#000080">store-macro</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">previous-paragraph</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">filter-til</font></strong>&nbsp;<strong><font color="#000080">next-paragraph</font></strong>&nbsp;<font color="#800080">"/usr/ucb/fmt"</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~endm</font><br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#800000">;&nbsp;put&nbsp;'fprintf(stderr,"\n");'&nbsp;into&nbsp;the&nbsp;file,&nbsp;and</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#800000">;&nbsp;position&nbsp;the&nbsp;cursor&nbsp;to&nbsp;add&nbsp;to&nbsp;the&nbsp;string</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#008080">3</font></strong>&nbsp;<strong><font color="#000080">store-macro</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~force</font>&nbsp;<strong><font color="#000080">next-line</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">beginning-of-line</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">insert-string</font></strong>&nbsp;<font color="#800080">"fprintf(stderr,&nbsp;\"\\n\");\n"</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#800000">;&nbsp;six&nbsp;back,&nbsp;because&nbsp;it&nbsp;counts&nbsp;the&nbsp;newline</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#008080">6</font></strong>&nbsp;<strong><font color="#000080">backward-character</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">insert-chars</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~endm</font><br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#800000">;&nbsp;insert&nbsp;'&gt;&nbsp;'&nbsp;in&nbsp;front&nbsp;of&nbsp;every&nbsp;line&nbsp;from&nbsp;here&nbsp;til&nbsp;the&nbsp;end</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#800000">;&nbsp;(this&nbsp;works&nbsp;because&nbsp;without&nbsp;argument,&nbsp;the&nbsp;default&nbsp;action</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#800000">;&nbsp;for&nbsp;"goto-line"&nbsp;is&nbsp;to&nbsp;go&nbsp;to&nbsp;the&nbsp;end&nbsp;of&nbsp;file.</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#008080">4</font></strong>&nbsp;<strong><font color="#000080">store-macro</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">substitute-til</font></strong>&nbsp;<strong><font color="#000080">goto-line</font></strong>&nbsp;<font color="#800080">"^"</font>&nbsp;<font color="#800080">"&gt;&nbsp;"</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~endm</font><br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#800000">;&nbsp;spelling&nbsp;keystroke:&nbsp;write&nbsp;the&nbsp;buffer,&nbsp;invoke&nbsp;ispell,&nbsp;and&nbsp;force</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#800000">;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;it&nbsp;to&nbsp;be&nbsp;read&nbsp;back&nbsp;in.</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#008080">2</font></strong>&nbsp;<strong><font color="#000080">store-macro</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~local</font>&nbsp;<font color="#008080">$warn-reread</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">write-file</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#800000">;&nbsp;suppress&nbsp;"press&nbsp;return"&nbsp;with&nbsp;"1"&nbsp;argument&nbsp;to&nbsp;shell-command</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#008080">1</font></strong>&nbsp;<strong><font color="#000080">shell-command</font></strong>&nbsp;<font color="#008080">&amp;cat</font>&nbsp;<font color="#800080">"ispell&nbsp;"</font>&nbsp;<font color="#008080">$cfilname</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#800000">;&nbsp;suppress&nbsp;reread&nbsp;warning</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">set</font></strong>&nbsp;<strong><font color="#000080">nowarn-reread</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">replace-with-file</font></strong><font color="#800080">&nbsp;$cfilname</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~endm</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">bind-key</font></strong>&nbsp;<strong><font color="#000080">execute-macro-2</font></strong>&nbsp;<font color="#800080">#I</font><br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#800000">;&nbsp;the&nbsp;next&nbsp;three&nbsp;give&nbsp;more&nbsp;mnemonic&nbsp;window&nbsp;commands</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">bind-key</font></strong>&nbsp;<strong><font color="#000080">next-window</font></strong>&nbsp;<font color="#800080">^N</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">bind-key</font></strong>&nbsp;<strong><font color="#000080">previous-window</font></strong>&nbsp;<font color="#800080">^P</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">bind-key</font></strong>&nbsp;<strong><font color="#000080">split-current-window</font></strong>&nbsp;<font color="#800080">^T</font><br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">bind-key</font></strong>&nbsp;<strong><font color="#000080">execute-macro-1</font></strong>&nbsp;<font color="#800080">^A-C</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">bind-key</font></strong>&nbsp;<strong><font color="#000080">execute-macro-2</font></strong>&nbsp;<font color="#800080">^A-F</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">bind-key</font></strong>&nbsp;<strong><font color="#000080">execute-macro-3</font></strong>&nbsp;<font color="#800080">^A-K</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">bind-key</font></strong>&nbsp;<strong><font color="#000080">execute-macro-4</font></strong>&nbsp;<font color="#800080">^A-M</font><br>
+<!--atr2html}}--></p>
 
 <h2 id="term-scrolling2"><a name="term-scrolling">Notes on TERM types and Scrolling</a></h2>
 <p>
@@ -8364,14 +8376,14 @@ There are several ways to copy to/from the clipboard:
 
 <!--{{atr2html--><p style="font-family: monospace;">
 dy<font color="#800080">|</font>vt102<font color="#800080">|</font>vt-102<font color="#800080">|</font><font color="#800000">dec&nbsp;vt102</font>:\<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:<strong><font color="#808000">do</font></strong>=<font color="#800080">^J</font>:<strong><font color="#808000">co</font></strong>#<strong><font color="#008080">80</font></strong>:<strong><font color="#808000">li</font></strong>#<strong><font color="#008080">24</font></strong>:<strong><font color="#808000">cl</font></strong>=<font color="#800080">50\E[;H\E[2J</font>:\<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:<strong><font color="#808000">le</font></strong>=<font color="#800080">^H</font>:<strong><font color="#800000">bs</font></strong>:<strong><font color="#808000">cm</font></strong>=<font color="#800080">5\E[%i%d;%dH</font>:<strong><font color="#808000">nd</font></strong>=<font color="#800080">2\E[C</font>:<strong><font color="#808000">up</font></strong>=<font color="#800080">2\E[A</font>:\<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:<strong><font color="#808000">ce</font></strong>=<font color="#800080">3\E[K</font>:<strong><font color="#808000">cd</font></strong>=<font color="#800080">50\E[J</font>:<strong><font color="#808000">so</font></strong>=<font color="#800080">2\E[7m</font>:<strong><font color="#808000">se</font></strong>=<font color="#800080">2\E[m</font>:<strong><font color="#808000">us</font></strong>=<font color="#800080">2\E[4m</font>:<strong><font color="#808000">ue</font></strong>=<font color="#800080">2\E[m</font>:\<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:<strong><font color="#808000">md</font></strong>=<font color="#800080">2\E[1m</font>:<strong><font color="#808000">mr</font></strong>=<font color="#800080">2\E[7m</font>:<strong><font color="#808000">mb</font></strong>=<font color="#800080">2\E[5m</font>:<strong><font color="#808000">me</font></strong>=<font color="#800080">2\E[m</font>:<strong><font color="#808000">is</font></strong>=<font color="#800080">\E[1;24r\E[24;1H</font>:\<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:<strong><font color="#800000">rs</font></strong>=<font color="#800080">\E&gt;\E[?3l\E[?4l\E[?5l\E[?7h\E[?8h</font>:<strong><font color="#808000">ks</font></strong>=<font color="#800080">\E[?1h\E=</font>:<strong><font color="#808000">ke</font></strong>=<font color="#800080">\E[?1l\E&gt;</font>:\<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:<strong><font color="#808000">ku</font></strong>=<font color="#800080">\EOA</font>:<strong><font color="#808000">kd</font></strong>=<font color="#800080">\EOB</font>:<strong><font color="#808000">kr</font></strong>=<font color="#800080">\EOC</font>:<strong><font color="#808000">kl</font></strong>=<font color="#800080">\EOD</font>:<strong><font color="#808000">kb</font></strong>=<font color="#800080">^H</font>:\<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:<strong><font color="#808000">ho</font></strong>=<font color="#800080">\E[H</font>:<strong><font color="#808000">k1</font></strong>=<font color="#800080">\EOP</font>:<strong><font color="#808000">k2</font></strong>=<font color="#800080">\EOQ</font>:<strong><font color="#808000">k3</font></strong>=<font color="#800080">\EOR</font>:<strong><font color="#808000">k4</font></strong>=<font color="#800080">\EOS</font>:<strong><font color="#800000">pt</font></strong>:<strong><font color="#808000">sr</font></strong>=<font color="#800080">5\EM</font>:<strong><font color="#808000">vt</font></strong>#<strong><font color="#008080">3</font></strong>:\<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:<strong><font color="#808000">sc</font></strong>=<font color="#800080">\E7</font>:<strong><font color="#808000">rc</font></strong>=<font color="#800080">\E8</font>:<strong><font color="#808000">cs</font></strong>=<font color="#800080">\E[%i%d;%dr</font>:<strong><font color="#808000">vs</font></strong>=<font color="#800080">\E[?7l</font>:<strong><font color="#808000">ve</font></strong>=<font color="#800080">\E[?7h</font>:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:<strong><font color="#000080">do</font></strong>=<font color="#800080">^J</font>:<strong><font color="#000080">co</font></strong>#<strong><font color="#008080">80</font></strong>:<strong><font color="#000080">li</font></strong>#<strong><font color="#008080">24</font></strong>:<strong><font color="#000080">cl</font></strong>=<font color="#800080">50\E[;H\E[2J</font>:\<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:<strong><font color="#000080">le</font></strong>=<font color="#800080">^H</font>:<strong><font color="#800000">bs</font></strong>:<strong><font color="#000080">cm</font></strong>=<font color="#800080">5\E[%i%d;%dH</font>:<strong><font color="#000080">nd</font></strong>=<font color="#800080">2\E[C</font>:<strong><font color="#000080">up</font></strong>=<font color="#800080">2\E[A</font>:\<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:<strong><font color="#000080">ce</font></strong>=<font color="#800080">3\E[K</font>:<strong><font color="#000080">cd</font></strong>=<font color="#800080">50\E[J</font>:<strong><font color="#000080">so</font></strong>=<font color="#800080">2\E[7m</font>:<strong><font color="#000080">se</font></strong>=<font color="#800080">2\E[m</font>:<strong><font color="#000080">us</font></strong>=<font color="#800080">2\E[4m</font>:<strong><font color="#000080">ue</font></strong>=<font color="#800080">2\E[m</font>:\<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:<strong><font color="#000080">md</font></strong>=<font color="#800080">2\E[1m</font>:<strong><font color="#000080">mr</font></strong>=<font color="#800080">2\E[7m</font>:<strong><font color="#000080">mb</font></strong>=<font color="#800080">2\E[5m</font>:<strong><font color="#000080">me</font></strong>=<font color="#800080">2\E[m</font>:<strong><font color="#000080">is</font></strong>=<font color="#800080">\E[1;24r\E[24;1H</font>:\<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:<strong><font color="#800000">rs</font></strong>=<font color="#800080">\E&gt;\E[?3l\E[?4l\E[?5l\E[?7h\E[?8h</font>:<strong><font color="#000080">ks</font></strong>=<font color="#800080">\E[?1h\E=</font>:<strong><font color="#000080">ke</font></strong>=<font color="#800080">\E[?1l\E&gt;</font>:\<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:<strong><font color="#000080">ku</font></strong>=<font color="#800080">\EOA</font>:<strong><font color="#000080">kd</font></strong>=<font color="#800080">\EOB</font>:<strong><font color="#000080">kr</font></strong>=<font color="#800080">\EOC</font>:<strong><font color="#000080">kl</font></strong>=<font color="#800080">\EOD</font>:<strong><font color="#000080">kb</font></strong>=<font color="#800080">^H</font>:\<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:<strong><font color="#000080">ho</font></strong>=<font color="#800080">\E[H</font>:<strong><font color="#000080">k1</font></strong>=<font color="#800080">\EOP</font>:<strong><font color="#000080">k2</font></strong>=<font color="#800080">\EOQ</font>:<strong><font color="#000080">k3</font></strong>=<font color="#800080">\EOR</font>:<strong><font color="#000080">k4</font></strong>=<font color="#800080">\EOS</font>:<strong><font color="#800000">pt</font></strong>:<strong><font color="#000080">sr</font></strong>=<font color="#800080">5\EM</font>:<strong><font color="#000080">vt</font></strong>#<strong><font color="#008080">3</font></strong>:\<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:<strong><font color="#000080">sc</font></strong>=<font color="#800080">\E7</font>:<strong><font color="#000080">rc</font></strong>=<font color="#800080">\E8</font>:<strong><font color="#000080">cs</font></strong>=<font color="#800080">\E[%i%d;%dr</font>:<strong><font color="#000080">vs</font></strong>=<font color="#800080">\E[?7l</font>:<strong><font color="#000080">ve</font></strong>=<font color="#800080">\E[?7h</font>:<br>
 <!--atr2html}}--></p>
 <p>
 	The crucial entries are cs and sr &ndash; without both of them,
@@ -8385,23 +8397,22 @@ dy<font color="#800080">|</font>vt102<font color="#800080">|</font>vt-102<font c
 	Here is the terminfo entry equivalent to the above termcap entry:
 <!--{{atr2html--><p style="font-family: monospace;">
 vt102<font color="#800080">|</font>vt-102<font color="#800080">|</font><font color="#800000">dec&nbsp;vt102</font>,<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#808000">xon</font></strong>,<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#808000">cols</font></strong>#<strong><font color="#008080">80</font></strong>,&nbsp;<strong><font color="#808000">lines</font></strong>#<strong><font color="#008080">24</font></strong>,&nbsp;<strong><font color="#808000">vt</font></strong>#<strong><font color="#008080">3</font></strong>,<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#808000">bel</font></strong>=<font color="#800080">^G</font>,&nbsp;<strong><font color="#808000">blink</font></strong>=<font color="#800080">\E[5m$&lt;2&gt;</font>,&nbsp;<strong><font color="#808000">bold</font></strong>=<font color="#800080">\E[1m$&lt;2&gt;</font>,<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#808000">clear</font></strong>=<font color="#800080">\E[;H\E[2J$&lt;50&gt;</font>,&nbsp;<strong><font color="#808000">cnorm</font></strong>=<font color="#800080">\E[?7h</font>,&nbsp;<strong><font color="#808000">cr</font></strong>=<font color="#800080">\r</font>,<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#808000">csr</font></strong>=<font color="#800080">\E[%i%p1%d;%p2%dr</font>,&nbsp;<strong><font color="#808000">cub1</font></strong>=<font color="#800080">\b</font>,&nbsp;<strong><font color="#808000">cud1</font></strong>=<font color="#800080">\n</font>,<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#808000">cuf1</font></strong>=<font color="#800080">\E[C$&lt;2&gt;</font>,&nbsp;<strong><font color="#808000">cup</font></strong>=<font color="#800080">\E[%i%p1%d;%p2%dH$&lt;5&gt;</font>,<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#808000">cuu1</font></strong>=<font color="#800080">\E[A$&lt;2&gt;</font>,&nbsp;<strong><font color="#808000">cvvis</font></strong>=<font color="#800080">\E[?7l</font>,&nbsp;<strong><font color="#808000">ed</font></strong>=<font color="#800080">\E[J$&lt;50&gt;</font>,<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#808000">el</font></strong>=<font color="#800080">\E[K$&lt;3&gt;</font>,&nbsp;<strong><font color="#808000">home</font></strong>=<font color="#800080">\E[H</font>,&nbsp;<strong><font color="#808000">ht</font></strong>=<font color="#800080">\t</font>,&nbsp;<strong><font color="#808000">ind</font></strong>=<font color="#800080">\n</font>,<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#808000">is2</font></strong>=<font color="#800080">\E[1;24r\E[24;1H</font>,&nbsp;<strong><font color="#808000">kbs</font></strong>=<font color="#800080">\b</font>,&nbsp;<strong><font color="#808000">kcub1</font></strong>=<font color="#800080">\EOD</font>,&nbsp;<strong><font color="#808000">kcud1</font></strong>=<font color="#800080">\EOB</font>,<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#808000">kcuf1</font></strong>=<font color="#800080">\EOC</font>,&nbsp;<strong><font color="#808000">kcuu1</font></strong>=<font color="#800080">\EOA</font>,&nbsp;<strong><font color="#808000">kf1</font></strong>=<font color="#800080">\EOP</font>,&nbsp;<strong><font color="#808000">kf2</font></strong>=<font color="#800080">\EOQ</font>,&nbsp;<strong><font color="#808000">kf3</font></strong>=<font color="#800080">\EOR</font>,<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#808000">kf4</font></strong>=<font color="#800080">\EOS</font>,&nbsp;<strong><font color="#808000">rc</font></strong>=<font color="#800080">\E8</font>,&nbsp;<strong><font color="#808000">rev</font></strong>=<font color="#800080">\E[7m$&lt;2&gt;</font>,&nbsp;<strong><font color="#808000">ri</font></strong>=<font color="#800080">\EM$&lt;5&gt;</font>,<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#808000">rmkx</font></strong>=<font color="#800080">\E[?1l\E&gt;</font>,&nbsp;<strong><font color="#808000">rmso</font></strong>=<font color="#800080">\E[m$&lt;2&gt;</font>,&nbsp;<strong><font color="#808000">rmul</font></strong>=<font color="#800080">\E[m$&lt;2&gt;</font>,<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#808000">rs2</font></strong>=<font color="#800080">\E&gt;\E[?3l\E[?4l\E[?5l\E[?7h\E[?8h</font>,&nbsp;<strong><font color="#808000">sc</font></strong>=<font color="#800080">\E7</font>,<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#808000">sgr0</font></strong>=<font color="#800080">\E[m$&lt;2&gt;</font>,&nbsp;<strong><font color="#808000">smkx</font></strong>=<font color="#800080">\E[?1h\E=</font>,&nbsp;<strong><font color="#808000">smso</font></strong>=<font color="#800080">\E[7m$&lt;2&gt;</font>,<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#808000">smul</font></strong>=<font color="#800080">\E[4m$&lt;2&gt;</font>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">xon</font></strong>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">cols</font></strong>#<strong><font color="#008080">80</font></strong>,&nbsp;<strong><font color="#000080">lines</font></strong>#<strong><font color="#008080">24</font></strong>,&nbsp;<strong><font color="#000080">vt</font></strong>#<strong><font color="#008080">3</font></strong>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">bel</font></strong>=<font color="#800080">^G</font>,&nbsp;<strong><font color="#000080">blink</font></strong>=<font color="#800080">\E[5m$&lt;2&gt;</font>,&nbsp;<strong><font color="#000080">bold</font></strong>=<font color="#800080">\E[1m$&lt;2&gt;</font>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">clear</font></strong>=<font color="#800080">\E[;H\E[2J$&lt;50&gt;</font>,&nbsp;<strong><font color="#000080">cnorm</font></strong>=<font color="#800080">\E[?7h</font>,&nbsp;<strong><font color="#000080">cr</font></strong>=<font color="#800080">\r</font>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">csr</font></strong>=<font color="#800080">\E[%i%p1%d;%p2%dr</font>,&nbsp;<strong><font color="#000080">cub1</font></strong>=<font color="#800080">\b</font>,&nbsp;<strong><font color="#000080">cud1</font></strong>=<font color="#800080">\n</font>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">cuf1</font></strong>=<font color="#800080">\E[C$&lt;2&gt;</font>,&nbsp;<strong><font color="#000080">cup</font></strong>=<font color="#800080">\E[%i%p1%d;%p2%dH$&lt;5&gt;</font>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">cuu1</font></strong>=<font color="#800080">\E[A$&lt;2&gt;</font>,&nbsp;<strong><font color="#000080">cvvis</font></strong>=<font color="#800080">\E[?7l</font>,&nbsp;<strong><font color="#000080">ed</font></strong>=<font color="#800080">\E[J$&lt;50&gt;</font>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">el</font></strong>=<font color="#800080">\E[K$&lt;3&gt;</font>,&nbsp;<strong><font color="#000080">home</font></strong>=<font color="#800080">\E[H</font>,&nbsp;<strong><font color="#000080">ht</font></strong>=<font color="#800080">\t</font>,&nbsp;<strong><font color="#000080">ind</font></strong>=<font color="#800080">\n</font>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">is2</font></strong>=<font color="#800080">\E[1;24r\E[24;1H</font>,&nbsp;<strong><font color="#000080">kbs</font></strong>=<font color="#800080">\b</font>,&nbsp;<strong><font color="#000080">kcub1</font></strong>=<font color="#800080">\EOD</font>,&nbsp;<strong><font color="#000080">kcud1</font></strong>=<font color="#800080">\EOB</font>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">kcuf1</font></strong>=<font color="#800080">\EOC</font>,&nbsp;<strong><font color="#000080">kcuu1</font></strong>=<font color="#800080">\EOA</font>,&nbsp;<strong><font color="#000080">kf1</font></strong>=<font color="#800080">\EOP</font>,&nbsp;<strong><font color="#000080">kf2</font></strong>=<font color="#800080">\EOQ</font>,&nbsp;<strong><font color="#000080">kf3</font></strong>=<font color="#800080">\EOR</font>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">kf4</font></strong>=<font color="#800080">\EOS</font>,&nbsp;<strong><font color="#000080">rc</font></strong>=<font color="#800080">\E8</font>,&nbsp;<strong><font color="#000080">rev</font></strong>=<font color="#800080">\E[7m$&lt;2&gt;</font>,&nbsp;<strong><font color="#000080">ri</font></strong>=<font color="#800080">\EM$&lt;5&gt;</font>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">rmkx</font></strong>=<font color="#800080">\E[?1l\E&gt;</font>,&nbsp;<strong><font color="#000080">rmso</font></strong>=<font color="#800080">\E[m$&lt;2&gt;</font>,&nbsp;<strong><font color="#000080">rmul</font></strong>=<font color="#800080">\E[m$&lt;2&gt;</font>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">rs2</font></strong>=<font color="#800080">\E&gt;\E[?3l\E[?4l\E[?5l\E[?7h\E[?8h</font>,&nbsp;<strong><font color="#000080">sc</font></strong>=<font color="#800080">\E7</font>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">sgr0</font></strong>=<font color="#800080">\E[m$&lt;2&gt;</font>,&nbsp;<strong><font color="#000080">smkx</font></strong>=<font color="#800080">\E[?1h\E=</font>,&nbsp;<strong><font color="#000080">smso</font></strong>=<font color="#800080">\E[7m$&lt;2&gt;</font>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">smul</font></strong>=<font color="#800080">\E[4m$&lt;2&gt;</font>,<br>
 <!--atr2html}}--></p>
-
 
 <h2 id="credits2"><a name="credits">Credits (last updated Jan, 2000)</a></h2>
 <p>

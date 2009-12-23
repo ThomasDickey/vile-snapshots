@@ -9,6 +9,8 @@ Changes for vile 9.8 (released ??? ??? ?? ????)
 	  if the program is not found since that would cause an unexpected
 	  build-failure.
 	> Tom Dickey:
+	+ make $font always available, but readonly for non-GUI configurations.
+	+ use -F option to highlight the code-examples in vile's help-file.
 	+ add -F command-line option, to only run the syntax filters for the
 	  given files, writing the attributed text to the standard output.
 	+ modify vl_ctype_init() to save/restore LC_CTYPE setting, in case

@@ -6,7 +6,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.355 2009/12/13 15:05:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.356 2009/12/23 00:21:59 tom Exp $
  */
 
 #ifndef VILE_EDEF_H
@@ -304,9 +304,7 @@ decl_init( TBUFF *error_match, 0 );
 decl_init( int error_tabstop, 8 );
 #endif
 
-#if OPT_FONT
 decl_uninit( char *default_font );
-#endif
 
 #if OPT_MODELINE
 decl_init( int in_modeline, FALSE );	/* set during vi-style modeline */
