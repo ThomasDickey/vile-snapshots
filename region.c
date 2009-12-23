@@ -3,7 +3,7 @@
  * and mark.  Some functions are commands.  Some functions are just for
  * internal use.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/region.c,v 1.156 2009/10/31 13:36:59 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/region.c,v 1.157 2009/12/22 09:57:24 tom Exp $
  *
  */
 
@@ -1107,7 +1107,10 @@ encode_one_attribute(TBUFF **result, long count, char *hypercmd, VIDEO_ATTR attr
 	tb_append(result, 'I');
 
     if (attr & VACOLOR) {
-	sprintf(temp, "C%X", VCOLORNUM(attr));
+	int color = VCOLORNUM(attr);
+	if (filter_only)
+	    color = ctrans[color % NCOLORS];
+	sprintf(temp, "C%X", color);
 	tb_sappend(result, temp);
     }
 #if OPT_HYPERTEXT

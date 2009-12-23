@@ -2,7 +2,7 @@
  * Define an empty terminal type for machines where we cannot use 'dumb_term',
  * so that command-line prompting will have something to talk to.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/nullterm.c,v 1.7 2009/12/21 10:42:08 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/nullterm.c,v 1.9 2009/12/22 01:49:47 tom Exp $
  */
 
 #include	<estruct.h>
@@ -22,6 +22,37 @@ nullterm_get_encoding(void)
 static void
 nullterm_open(void)
 {
+#if OPT_COLOR
+    int pass;
+    int nc;
+    char *value = 0;
+    char temp[80];
+    size_t need = 3;
+
+    /*
+     * The -F option needs a palette, in case we want to apply a color-scheme.
+     */
+    for (pass = 0; pass < 2; ++pass) {
+	for (nc = 0; nc < ncolors; ++nc) {
+	    sprintf(temp, (nc ? " %d" : "%d"), nc);
+	    if (pass) {
+		strcat(value, temp);
+	    } else {
+		need += strlen(temp);
+	    }
+	}
+	if (pass) {
+	    set_palette(value);
+	    set_ctrans(value);
+	    free(value);
+	} else {
+	    value = malloc(need);
+	    if (value == 0)
+		break;
+	    *value = EOS;
+	}
+    }
+#endif
 }
 
 static void

@@ -4,7 +4,7 @@
  *	original by Daniel Lawrence, but
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.331 2009/05/24 11:00:39 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.332 2009/12/22 00:53:25 tom Exp $
  *
  */
 
@@ -181,6 +181,7 @@ parse_signed_number(const char *s, int *number)
 static const char *
 parse_linespec(const char *s, LINE **markptr)
 {
+    const char *base = s;
     int num;
     LINE *lp;			/* where the linespec takes us */
     int status;
@@ -260,9 +261,7 @@ parse_linespec(const char *s, LINE **markptr)
 
 	/* if linespec was faulty, quit now */
 	if (!lp) {
-	    *markptr = lp;
-	    swapmark();
-	    return s;
+	    break;
 	}
 
 	/* maybe add an offset */
@@ -274,7 +273,17 @@ parse_linespec(const char *s, LINE **markptr)
     } while (*s == ';' || isSign(*s));
 
     *markptr = lp;
-    swapmark();
+
+    /*
+     * If we're processing a script (for example), which has no line-specifiers,
+     * we'll get a null pointer here.  But there's no reason to flag a bug in
+     * swapmark().
+     */
+    if (lp == 0 && (s == base)) {
+	DOT = MK;
+    } else {
+	swapmark();
+    }
     return s;
 }
 

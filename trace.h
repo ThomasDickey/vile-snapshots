@@ -1,7 +1,7 @@
 /*
  * debugging support -- tom dickey.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/trace.h,v 1.35 2009/12/13 15:03:52 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/trace.h,v 1.36 2009/12/22 00:41:10 tom Exp $
  *
  */
 #ifndef	_trace_h
@@ -61,10 +61,11 @@ extern	void	Trace ( const char *fmt, ... ) GCC_PRINTFLIKE(1,2);
 
 extern	char *	trace_indent(int level, int marker);
 
-extern	int	retrace_code (int);
-extern	void *	retrace_ptr (void *);
-extern	char *	retrace_string (char *);
-extern	void	retrace_void (void);
+extern char *   retrace_string (char *);
+extern const char * retrace_cstring (const char *);
+extern int      retrace_code (int);
+extern void *   retrace_ptr (void *);
+extern void     retrace_void (void);
 
 /*
  * Functions that require types from estruct.h:
@@ -92,10 +93,11 @@ extern void trace_all_windows(const char *fn, int ln);
 #undef TRACE
 #if OPT_TRACE
 #define TRACE(p) Trace p
-#define returnCode(c)   return retrace_code(c)
-#define returnPtr(c)    return retrace_ptr(c)
-#define returnString(c) return retrace_string(c)
-#define returnVoid()    { retrace_void(); return; }
+#define returnCode(c)    return retrace_code(c)
+#define returnCString(c) return retrace_cstring(c)
+#define returnPtr(c)     return retrace_ptr(c)
+#define returnString(c)  return retrace_string(c)
+#define returnVoid()     { retrace_void(); return; }
 #endif
 
 /*

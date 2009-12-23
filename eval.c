@@ -2,7 +2,7 @@
  *	eval.c -- function and variable evaluation
  *	original by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.411 2009/10/31 17:00:33 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.412 2009/12/22 09:39:22 tom Exp $
  *
  */
 
@@ -2096,9 +2096,6 @@ set_palette(const char *value)
 {
     tb_curpalette = tb_scopy(&tb_curpalette, value);
 #if OPT_COLOR
-    if (term.setpal == nullterm_setpal)
-	return FALSE;
-
     relist_descolor();
     term.setpal(tb_values(tb_curpalette));
     vile_refresh(FALSE, 0);

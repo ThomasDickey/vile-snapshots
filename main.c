@@ -22,7 +22,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.675 2009/12/20 21:56:25 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.678 2009/12/22 23:47:04 tom Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -49,6 +49,10 @@
 
 #if SYS_VMS
 #include <processes.h>
+#endif
+
+#if OPT_FILTER
+#include <filters.h>
 #endif
 
 #if OPT_PERL
@@ -243,46 +247,53 @@ set_posix_locale(void)
 static void
 filter_to_stdio(FILE *fp GCC_UNUSED)
 {
-#if OPT_FILTER
-    const CMDFUNC *cmd = &f_operattrdirect;
-#else
-    const CMDFUNC *cmd = &f_operattrfilter;
-#endif
+    static char *my_macro;
     int s;
 
     TRACE(("SyntaxFilter-only:\n"));
     TRACE(("\tcurfname:%s\n", curbp->b_fname));
 
-    clexec = TRUE;
-    filter_only = TRUE;
-    gotobob(FALSE, 0);
-    havemotion = &f_gotoeob;
-    s = CMD_U_FUNC(cmd) (FALSE, 0);
-
-    /*
-     * If we used a built-in filter, its output is written as a side effect
-     * of calling flt_putc, etc.  Otherwise we have to write it ourselves
-     * now.
-     */
-#if !OPT_FILTER
-    if (s == TRUE) {
-	int nlines;
-	B_COUNT nchars;
-	REGION region;
-
-	gotoeob(FALSE, 1);
-	swapmark();
-	gotobob(FALSE, 1);
-
-	regionshape = rgn_FULLLINE;
-	(void) getregion(curbp, &region);
-
-	ffp = fp;
-	ffstatus = file_is_pipe;
-
-	write_region(curbp, &region, TRUE, &nlines, &nchars);
-    }
+#if OPT_FILTER
+    if (curbp->majr != 0 && flt_lookup(curbp->majr->shortname)) {
+	const CMDFUNC *cmd = &f_operattrdirect;
+	clexec = TRUE;
+	filter_only = TRUE;
+	gotobob(FALSE, 0);
+	havemotion = &f_gotoeob;
+	s = CMD_U_FUNC(cmd) (FALSE, 0);
+    } else
 #endif
+    {
+	/*
+	 * Rely upon the macro to construct the proper filter path.
+	 */
+	if (my_macro == 0)
+	    my_macro = strmalloc("HighlightFilter");
+
+	/*
+	 * If we used a built-in filter, its output is written as a side effect
+	 * of calling flt_putc, etc.  Otherwise we have to write it ourselves
+	 * now.
+	 */
+	s = docmd(my_macro, TRUE, FALSE, 0);
+	if (s == TRUE) {
+	    int nlines;
+	    B_COUNT nchars;
+	    REGION region;
+
+	    gotoeob(FALSE, 1);
+	    swapmark();
+	    gotobob(FALSE, 1);
+
+	    regionshape = rgn_FULLLINE;
+	    (void) getregion(curbp, &region);
+
+	    ffp = fp;
+	    ffstatus = file_is_pipe;
+
+	    write_region(curbp, &region, TRUE, &nlines, &nchars);
+	}
+    }
 }
 
 /*--------------------------------------------------------------------------*/
