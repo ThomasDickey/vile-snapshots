@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.702 2009/12/22 00:39:59 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.703 2009/12/23 00:22:07 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -692,9 +692,6 @@ typedef unsigned short	mode_t;
 
 	/* combine select/yank (for mouse support) */
 #define OPT_SEL_YANK    ((DISP_X11 && XTOOLKIT) || SYS_WINNT || SYS_OS2)
-
-	/* any font capability */
-#define OPT_FONT        (DISP_X11||DISP_NTWIN)
 
 	/* any mouse capability */
 #define OPT_MOUSE       (OPT_SEL_YANK || OPT_XTERM)

@@ -22,7 +22,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.678 2009/12/22 23:47:04 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.679 2009/12/23 00:22:12 tom Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -1840,11 +1840,9 @@ init_state_value(int which)
 	value = DFT_FILENAME_EXPR;
 	break;
 #endif
-#if OPT_FONT
     case VAR_FONT:
 	value = default_font;
 	break;
-#endif
     case VAR_HELPFILE:
 	value = default_help_file();
 	break;
