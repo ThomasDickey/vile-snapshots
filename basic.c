@@ -5,7 +5,7 @@
  * functions that adjust the top line in the window and invalidate the
  * framing, are hard.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/basic.c,v 1.161 2008/04/06 20:01:15 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/basic.c,v 1.162 2009/12/22 00:33:08 tom Exp $
  *
  */
 
@@ -1703,12 +1703,12 @@ swapmark(void)
 
     if (samepoint(MK, nullmark)) {
 	mlforce("BUG: No mark ");
-	return;
+    } else {
+	odot = DOT;
+	DOT = MK;
+	MK = odot;
+	curwp->w_flag |= WFMOVE;
     }
-    odot = DOT;
-    DOT = MK;
-    MK = odot;
-    curwp->w_flag |= WFMOVE;
     return;
 }
 

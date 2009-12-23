@@ -1,7 +1,7 @@
 /*
  * debugging support -- tom dickey.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.99 2009/12/14 01:27:18 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.100 2009/12/22 00:41:31 tom Exp $
  *
  */
 
@@ -304,6 +304,14 @@ retrace_ptr(void *code)
 
 char *
 retrace_string(char *code)
+{
+    Trace(T_RETURN "%s%s\n", TRACE_NULL(code),
+	  isErrorVal(code) ? " (ERROR)" : "");
+    return code;
+}
+
+const char *
+retrace_cstring(const char *code)
 {
     Trace(T_RETURN "%s%s\n", TRACE_NULL(code),
 	  isErrorVal(code) ? " (ERROR)" : "");

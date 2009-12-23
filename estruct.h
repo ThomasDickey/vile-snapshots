@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.701 2009/12/09 09:38:17 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.702 2009/12/22 00:39:59 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -3136,24 +3136,27 @@ extern void show_elapsed(void);
 /* Normally defined in "trace.h" */
 #ifndef TRACE
 #define TRACE(p) /* nothing */
-#define returnCode(c)   return(c)
-#define returnPtr(c)    return(c)
-#define returnString(c) return(c)
-#define returnVoid()    return
+#define returnCString(c) return(c)
+#define returnCode(c)    return(c)
+#define returnPtr(c)     return(c)
+#define returnString(c)  return(c)
+#define returnVoid()     return
 #endif
 
 #if OPT_TRACE > 1
-#define TRACE2(params)   TRACE(params)
-#define return2Code(c)   returnCode(c)
-#define return2Ptr(c)    returnPtr(c)
-#define return2String(c) returnString(c)
-#define return2Void()    returnVoid()
+#define TRACE2(params)    TRACE(params)
+#define return2CString(c) returnCString(c)
+#define return2Code(c)    returnCode(c)
+#define return2Ptr(c)     returnPtr(c)
+#define return2String(c)  returnString(c)
+#define return2Void()     returnVoid()
 #else
 #define TRACE2(params) /*nothing*/
-#define return2Code(c)   return(c)
-#define return2Ptr(c)    return(c)
-#define return2String(c) return(c)
-#define return2Void()    return
+#define return2CString(c) return(c)
+#define return2Code(c)    return(c)
+#define return2Ptr(c)     return(c)
+#define return2String(c)  return(c)
+#define return2Void()     return
 #endif
 
 #if OPT_EVAL || OPT_DEBUGMACROS

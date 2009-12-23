@@ -1,7 +1,7 @@
 /*
  * Main program and I/O for external vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/RCS/builtflt.c,v 1.83 2009/12/11 01:40:52 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/builtflt.c,v 1.84 2009/12/22 09:30:40 tom Exp $
  *
  */
 
@@ -495,20 +495,68 @@ flt_putc(int ch)
     }
 }
 
+static int
+hex2int(int ch)
+{
+    int value;
+
+    if (ch >= '0' && ch <= '9')
+	value = (ch - '0');
+    else if (ch >= 'A' && ch <= 'Z')
+	value = (ch - 'A') + 10;
+    else if (ch >= 'a' && ch <= 'z')
+	value = (ch - 'a') + 10;
+    else
+	value = 0;
+
+    return value;
+}
+
+static int
+int2hex(int value)
+{
+    int ch;
+
+    if (value >= 0 && value <= 9)
+	ch = value + '0';
+    else if (value >= 10 && value <= 15)
+	ch = (value - 10) + 'A';
+    else
+	ch = '?';
+
+    return ch;
+}
+
+static int
+lookup_ctrans(int ch)
+{
+    int value = hex2int(ch);
+    return int2hex(ctrans[value % NCOLORS]);
+}
+
 void
 flt_puts(const char *string, int length, const char *marker)
 {
+    char bfr1[NSTRING];
+    char bfr2[NSTRING];
+    char *last;
+    int count;
+
     if (filter_only > 0) {
 	if (marker != 0 && *marker != EOS && *marker != 'N') {
-	    printf("%c%d%s:", CTL_A, length, marker);
+	    size_t limit = sizeof(bfr1) - 2;
+
+	    strncpy(bfr1, marker, limit)[limit] = EOS;
+	    for (last = bfr1; *last; ++last) {
+		if (*last == 'C' && isXDigit(CharOf(last[1]))) {
+		    ++last;
+		    *last = (char) lookup_ctrans(CharOf(*last));
+		}
+	    }
+	    printf("%c%d%s:", CTL_A, length, bfr1);
 	}
 	flt_echo(string, length);
     } else {
-	char bfr1[NSTRING];
-	char bfr2[NSTRING];
-	char *last;
-	int count;
-
 	if (length > 0 && marker != 0 && *marker != EOS && *marker != 'N') {
 
 	    save_mark(TRUE);
