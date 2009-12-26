@@ -1,6 +1,6 @@
 # makefile for vile using DJGCC 2.x and  GNU's MAKE
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.djg,v 1.40 2009/02/06 00:41:09 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.djg,v 1.41 2009/12/24 09:35:11 tom Exp $
 #
 # Options (set to "yes" to enable):
 #	dbg	- debugging, e.g., for gdb
@@ -29,7 +29,7 @@ BUILTHDRS = nebind.h neproto.h nefunc.h nemode.h nename.h nevars.h nefkeys.h nef
 
 SRC = 	main.c $(DISP_SRC) \
 	basic.c bind.c blist.c btree.c buffer.c \
-	csrch.c display.c eval.c exec.c externs.c fences.c file.c filec.c \
+	csrch.c display.c dumbterm.c eval.c exec.c externs.c fences.c file.c filec.c \
 	fileio.c finderr.c glob.c globals.c history.c \
 	input.c insert.c itbuff.c isearch.c \
 	line.c modes.c msgs.c npopen.c nullterm.c oneliner.c opers.c \

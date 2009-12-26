@@ -1,7 +1,7 @@
 /*
  * Common utility functions for vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.147 2009/11/12 09:34:07 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.149 2009/12/25 23:39:55 tom Exp $
  *
  */
 
@@ -566,7 +566,7 @@ flt_alloc(void *ptr, unsigned need, unsigned *have, unsigned size)
  * that will be written as one attributed region.
  */
 void
-flt_bfr_append(char *text, int length)
+flt_bfr_append(const char *text, int length)
 {
     flt_bfr_text = do_alloc(flt_bfr_text, flt_bfr_used + (unsigned) length, &flt_bfr_size);
     if (flt_bfr_text != 0) {
@@ -585,7 +585,7 @@ flt_bfr_begin(const char *attr)
 }
 
 void
-flt_bfr_embed(char *text, int length, const char *attr)
+flt_bfr_embed(const char *text, int length, const char *attr)
 {
     const char *save = flt_bfr_attr;
 
@@ -629,7 +629,7 @@ flt_bfr_length(void)
 }
 
 static CLASS *
-find_symtab(char *table_name)
+find_symtab(const char *table_name)
 {
     CLASS *p;
     for (p = classes; p != 0; p = p->next) {
@@ -760,7 +760,7 @@ dump_symtab(CLASS * p, DumpFunc dumpFunc)
 }
 
 void
-flt_dump_symtab(char *table_name)
+flt_dump_symtab(const char *table_name)
 {
     CLASS *p;
 
@@ -787,7 +787,7 @@ flt_free(char **p, unsigned *len)
 }
 
 void
-flt_free_keywords(char *table_name)
+flt_free_keywords(const char *table_name)
 {
     CLASS *p, *q;
 #if !USE_TSEARCH

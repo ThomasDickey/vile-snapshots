@@ -1,6 +1,6 @@
 #
 # 'vile' and 'mktbls' makefile for IBM C Set ++ 2.x (OS/2)
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.icc,v 1.18 2009/02/06 00:41:33 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.icc,v 1.19 2009/12/24 09:18:58 tom Exp $
 #
 
 #
@@ -64,6 +64,7 @@ VILE_DEPS =  \
  buffer$O \
  csrch$O \
  display$O \
+ dumbterm$O \
  eval$O \
  exec$O \
  externs$O \
@@ -133,6 +134,8 @@ buffer$O:	$(VILE_CFG) buffer.c
 csrch$O:	$(VILE_CFG) csrch.c
 
 display$O:	$(VILE_CFG) display.c
+
+dumbterm$O:	$(VILE_CFG) dumbterm.c
 
 eval$O:		$(VILE_CFG) eval.c	nevars.h
 

@@ -1,7 +1,7 @@
 #
 # makefile for vile on WIN32 using Microsoft Visual C++
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.wnt,v 1.101 2009/02/22 23:13:47 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.wnt,v 1.102 2009/12/24 00:54:21 tom Exp $
 #
 #
 !include <ntwin32.mak>
@@ -114,6 +114,7 @@ LDFLAGS  = -nologo $(MY_LDOPT)
 SCREEN   = ntconio
 LIBS     = $(LD_DEBUG) $(conlflags) $(conlibsmt) user32.lib comdlg32.lib \
            ole32.lib shell32.lib $(VILE_PERL_LIB)
+EXTRAOBJ = dumbterm.obj
 !endif
 
 !IF  "$(CFG)" == "winvile" || "$(CFG)" == "winvile-with-perl"

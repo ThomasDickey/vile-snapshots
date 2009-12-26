@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.124 2009/10/29 23:20:26 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.126 2009/12/25 23:41:06 tom Exp $
  */
 
 #ifndef FILTERS_H
@@ -246,14 +246,14 @@ extern int flt_bfr_length(void);
 extern int set_symbol_table(const char *classname);
 extern long hash_function(const char *id);
 extern void *flt_alloc(void *ptr, unsigned need, unsigned *have, unsigned size);
-extern void flt_bfr_append(char *text, int length);
+extern void flt_bfr_append(const char *text, int length);
 extern void flt_bfr_begin(const char *attr);
-extern void flt_bfr_embed(char *text, int length, const char *attr);
+extern void flt_bfr_embed(const char *text, int length, const char *attr);
 extern void flt_bfr_error(void);
 extern void flt_bfr_finish(void);
-extern void flt_dump_symtab(char *table_name);
+extern void flt_dump_symtab(const char *table_name);
 extern void flt_free(char **p, unsigned *len);
-extern void flt_free_keywords(char *classname);
+extern void flt_free_keywords(const char *classname);
 extern void flt_free_symtab(void);
 extern void flt_init_attr(const char *attr_name);
 extern void flt_init_table(const char *table_name);
