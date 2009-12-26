@@ -9,6 +9,16 @@ Changes for vile 9.8 (released ??? ??? ?? ????)
 	  if the program is not found since that would cause an unexpected
 	  build-failure.
 	> Tom Dickey:
+	+ improve xterm-fkeys implementation:
+	  + check for existence of shifted cursor- and editing-keys when the
+	    unshifted keys do not use CSI format.
+	  + recognize either form of CSI
+	+ modify xresmode to include shell-output from appres, e.g.,
+		^X!appres XTerm
+	+ improve vile-sh-filt for these cases:
+	  + "${number}"
+	  + "$(commands)"
+	  + "$((expression))"
 	+ make $font always available, but readonly for non-GUI configurations.
 	+ use -F option to highlight the code-examples in vile's help-file.
 	+ add -F command-line option, to only run the syntax filters for the

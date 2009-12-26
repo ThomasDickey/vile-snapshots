@@ -22,7 +22,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.679 2009/12/23 00:22:12 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.680 2009/12/24 10:02:10 tom Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -479,6 +479,13 @@ MainProgram(int argc, char *argv[])
      */
     siginit(TRUE);
 #if OPT_DUMBTERM
+    /* try to avoid staircasing if -F option goes directly to terminal */
+    for (carg = 1; carg < argc; ++carg) {
+	if (!strcmp(argv[carg], "-F")) {
+	    filter_only = -TRUE;
+	    break;
+	}
+    }
     if (!filter_only
 	&& isatty(fileno(stdin))
 	&& isatty(fileno(stdout))) {

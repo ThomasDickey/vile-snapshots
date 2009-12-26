@@ -1,7 +1,7 @@
 #
 # makefile for vile on WIN32 using Borland C++
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.blc,v 1.23 2009/02/06 00:42:50 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.blc,v 1.24 2009/12/24 09:17:59 tom Exp $
 #
 # Tested with
 #	Borland C++ 5.5.1
@@ -15,7 +15,7 @@ TARGET = vile
 SCREEN = ntconio
 DISP_DEF = -DDISP_NTCONS=1
 LDFLAGS = -v -tWM -tWC
-EXTRA =
+EXTRA = $(EXTRA) dumbterm.obj
 RESFILE =
 
 # Use

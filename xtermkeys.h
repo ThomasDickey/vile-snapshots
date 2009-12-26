@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/xtermkeys.h,v 1.9 2009/06/02 20:48:59 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/xtermkeys.h,v 1.14 2009/12/26 02:13:36 tom Exp $
  *
  * Function-key definitions and modifiers used for xterm.  This is a header
  * file to simplify sharing between the termcap/curses drivers.
@@ -67,52 +67,146 @@ static struct {
     DATA( "FM","kf32",	KEY_F32 ),
     DATA( "FN","kf33",	KEY_F33 ),
     DATA( "FO","kf34",	KEY_F34 ),
-    DATA( "FP","kf35",	KEY_F35 )
+    DATA( "FP","kf35",	KEY_F35 ),
+    /* shifted keys */
+    DATA( "#1","kHLP", 0 ),
+    DATA( "*0","kFND", 0 ),
+    DATA( "*7","kEND", 0 ),
+    DATA( "*4","kDC",  0 ),
+    DATA( "#3","kIC",  0 ),
+    DATA( "%c","kNXT", 0 ),
+    DATA( "%e","kPRV", 0 ),
+    DATA( "kF","kind", 0 ),
+    DATA( "#2","kHOM", 0 ),
+    DATA( "#4","kLFT", 0 ),
+    DATA( "%i","kRIT", 0 ),
+    DATA( "kR","kri",  0 ),
 };
 #undef DATA
 /* *INDENT-ON* */
 
 #if OPT_KEY_MODIFY
+/* *INDENT-OFF* */
+static const struct {
+    int code;
+    int mask;
+} xterm_mods[] = {
+    { 2, mod_KEY | mod_SHIFT },
+    { 3, mod_KEY | mod_ALT },
+    { 4, mod_KEY | mod_ALT | mod_SHIFT },
+    { 5, mod_KEY | mod_CTRL },
+    { 6, mod_KEY | mod_CTRL | mod_SHIFT },
+    { 7, mod_KEY | mod_CTRL | mod_ALT },
+    { 8, mod_KEY | mod_CTRL | mod_ALT | mod_SHIFT }
+};
+
+/*
+ * Shifted cursor- and editing-keypad keys may be supported in termcap or
+ * terminfo.  There are a few ambiguities, e.g., the relationship of kcud1
+ * and kind, which depend on a particular convention.
+ */
+static const struct {
+    const char *normal;
+    const char *shifted;
+} shifted_keys[] = {
+    { CAPNAME("%1", "khlp"),  CAPNAME("#1", "kHLP") },
+    { CAPNAME("@0", "kfnd"),  CAPNAME("*0", "kFND") },
+    { CAPNAME("@7", "kend"),  CAPNAME("*7", "kEND") },
+    { CAPNAME("kD", "kdch1"), CAPNAME("*4", "kDC") },
+    { CAPNAME("kI", "kich1"), CAPNAME("#3", "kIC") },
+    { CAPNAME("kN", "knp"),   CAPNAME("%c", "kNXT") },
+    { CAPNAME("kP", "kpp"),   CAPNAME("%e", "kPRV") },
+    { CAPNAME("kd", "kcud1"), CAPNAME("kF", "kind") },
+    { CAPNAME("kh", "khome"), CAPNAME("#2", "kHOM") },
+    { CAPNAME("kl", "kcub1"), CAPNAME("#4", "kLFT") },
+    { CAPNAME("kr", "kcuf1"), CAPNAME("%i", "kRIT") },
+    { CAPNAME("ku", "kcuu1"), CAPNAME("kR", "kri") },
+};
+
+#if 0
+static const struct {
+    const char *normal;
+    const char *extbase;
+} extended_keys[] = {
+};
+#endif
+/* *INDENT-ON* */
+
+static const char *
+skip_csi(const char *string)
+{
+    const char *result = string;
+
+    if (!strncmp(string, "\033[", 2))
+	result = string + 2;
+    else if (!strncmp(string, "\233", 1))
+	result = string + 1;
+
+    return result;
+}
+
+static int
+is_csi(const char *string)
+{
+    return (skip_csi(string) != string);
+}
+
+static int
+has_param(const char *string)
+{
+    return (strchr(string, ';') != 0);
+}
+
+static int
+format_modified(char *target, const char *source, int length, int which)
+{
+    int result = length + 2 + (xterm_mods[which].code > 9);
+    const char *params = skip_csi(source);
+
+    if (isDigit(*params)) {
+	sprintf(target, "%.*s;%d%s",
+		length - 1,
+		source,
+		xterm_mods[which].code,
+		source + length - 1);
+    } else {
+	++result;
+	sprintf(target, "%.*s1;%d%s",
+		(params - source),
+		source,
+		xterm_mods[which].code,
+		params);
+    }
+    return result;
+}
+
+static void
+add_modified_key(const char *source, int len, int code, int modify)
+{
+    if (source != 0 && len > 0) {
+	if (modify < 0) {
+	    delfromsysmap(source, len);
+	} else {
+	    addtosysmap(source, len, code);
+	}
+    }
+}
+
 static void
 add_fkey(const char *string, int length, int code, int modify)
 {
     char buffer[80];
-    /* *INDENT-OFF* */
-    static struct {
-	int code;
-	int mask;
-    } table[] = {
-	{ 2, mod_KEY | mod_SHIFT },
-	{ 3, mod_KEY | mod_ALT },
-	{ 4, mod_KEY | mod_ALT | mod_SHIFT },
-	{ 5, mod_KEY | mod_CTRL },
-	{ 6, mod_KEY | mod_CTRL | mod_SHIFT },
-	{ 7, mod_KEY | mod_CTRL | mod_ALT },
-	{ 8, mod_KEY | mod_CTRL | mod_ALT | mod_SHIFT }
-    };
-    /* *INDENT-ON* */
+    unsigned n;
 
     if (modify) {
 	if (length >= 3
-	    && length < (int) sizeof(buffer)
+	    && (length + 2) < (int) sizeof(buffer)
 	    && length == (int) strlen(string)
-	    && !strncmp(string, "\033[", 2)
-	    && strchr(string, ';') == 0) {
-	    static unsigned n;
-	    for (n = 0; n < TABLESIZE(table); ++n) {
-		if (isDigit(string[2]))
-		    sprintf(buffer, "%.*s;%d%s",
-			    length - 1,
-			    string,
-			    table[n].code,
-			    string + length - 1);
-		else
-		    sprintf(buffer, "%.2s1;%d%s",
-			    string, table[n].code, string + 2);
-		if (modify < 0)
-		    delfromsysmap(buffer, (int) strlen(buffer));
-		else
-		    addtosysmap(buffer, (int) strlen(buffer), code | table[n].mask);
+	    && is_csi(string)
+	    && !has_param(string)) {
+	    for (n = 0; n < TABLESIZE(xterm_mods); ++n) {
+		int lenn = format_modified(buffer, string, length, n);
+		add_modified_key(buffer, lenn, code | xterm_mods[n].mask, modify);
 	    }
 	}
     } else {
@@ -122,6 +216,54 @@ add_fkey(const char *string, int length, int code, int modify)
 #else
 #define add_fkey(string, length, code, modify) addtosysmap(string, length, code)
 #endif
+
+/*
+ * Termcap represents nulls as octal 200, which is ambiguous (ugh).  We only
+ * want the exact value, i.e., an explicit null.  Fix it here.
+ */
+static int
+replace_nulls(char *target, const char *source)
+{
+    int len = (int) strlen(source);
+    int j;
+
+    (void) strcpy(target, source);
+#define TCAP_NULL 0200
+    if (strchr(source, TCAP_NULL) != 0) {
+	for (j = 0; j < len; j++)
+	    if (CharOf(target[j]) == TCAP_NULL)
+		target[j] = '\0';
+    }
+    return len;
+}
+
+/*
+ * Lookup the name, to see if we know about its shifted key.
+ */
+static void
+add_shifted_key(unsigned i, int modify)
+{
+    char temp[BUFSIZ];
+    unsigned j, k;
+    int len;
+
+    for (j = 0; j < TABLESIZE(shifted_keys); j++) {
+	if (!strcmp(keyseqs[i].capname, shifted_keys[j].normal)) {
+	    for (k = 0; k < TABLESIZE(keyseqs); k++) {
+		if (!strcmp(keyseqs[k].capname, shifted_keys[j].shifted)) {
+		    if (keyseqs[k].result != 0) {
+			len = replace_nulls(temp, keyseqs[k].result);
+			add_modified_key(temp, len,
+					 keyseqs[i].code |
+					 xterm_mods[0].mask, modify);
+		    }
+		    break;
+		}
+	    }
+	    break;
+	}
+    }
+}
 
 /*
  * (re)initialize the function key definitions from the termcap database.
@@ -139,8 +281,7 @@ tcap_init_fkeys(void)
     };
     /* *INDENT-ON* */
 
-    unsigned i;
-    int j;
+    unsigned i, j;
     int pass1, pass2, pass;
 
     if (i_am_xterm) {
@@ -170,7 +311,9 @@ tcap_init_fkeys(void)
 #endif
 	for (i = TABLESIZE(keyseqs); i--;) {
 	    const char *seq = keyseqs[i].result;
-	    if (!NO_CAP(seq)) {
+	    char temp[BUFSIZ];
+
+	    if (keyseqs[i].code != 0 && !NO_CAP(seq)) {
 		int len;
 		TRACE(("TGETSTR(%s) = %s\n", keyseqs[i].capname, str_visible(seq)));
 #define DONT_MAP_DEL 1
@@ -187,20 +330,10 @@ tcap_init_fkeys(void)
 		if (strcmp(seq, "\177") == 0)
 		    continue;
 #endif
-		add_fkey(seq, len = (int) strlen(seq), keyseqs[i].code, pass);
-		/*
-		 * Termcap represents nulls as octal 200, which is ambiguous
-		 * (ugh).  To avoid losing escape sequences that may contain
-		 * nulls, check here, and add a mapping for the strings with
-		 * explicit nulls.
-		 */
-#define TCAP_NULL 0200
-		if (strchr(seq, TCAP_NULL) != 0) {
-		    char temp[BUFSIZ];
-		    (void) strcpy(temp, seq);
-		    for (j = 0; j < len; j++)
-			if (CharOf(temp[j]) == TCAP_NULL)
-			    temp[j] = '\0';
+		len = replace_nulls(temp, seq);
+		if (pass && !is_csi(temp)) {
+		    add_shifted_key(i, pass);
+		} else {
 		    add_fkey(temp, len, keyseqs[i].code, pass);
 		}
 	    }
