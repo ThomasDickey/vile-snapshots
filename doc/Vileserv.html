@@ -1,0 +1,33 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+  $Id: Vileserv.html,v 1.2 2009/12/28 16:52:09 tom Exp $
+-->
+<HTML>
+<HEAD>
+<TITLE>
+Vile Server and Session Perl Extension
+</TITLE>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link rev="made" href="mailto:dickey@invisible-island.net">
+<link rel="SHORTCUT ICON" href="/img/icons/vile.ico" type="image/x-icon">
+</HEAD>
+<BODY>
+<h1 id="toplevel-id"><a name="toplevel">Vile Server and Session Perl Extension</a></h1>
+This Perl extension to vile gives you the ability to send edit
+requests to a running Vile (sort of like gnuserv does
+for Emacs).  Vile is lightweight enough to run several
+at a time, but when using a file manager (like TkDesk)
+it is convenient to click on files and "add" them to a
+current Vile session.
+<p>
+Attached are two files, Vileserv.pm and vileget.  Vileserv.pm
+is for loading into a perl-enabled Vile session, and vileget
+is a utility for sending requests to the editor.  You can
+use pod2man to get the man pages:
+<pre>
+	pod2man Vileserv.pm > vileserv.man
+	pod2man vileget > vileget.man
+</pre>
+<h2 id="credits-id"><a name="credits">Credits</a></h2>
+Vileserv was written by J Chris Coppick in 1998.
+</body>

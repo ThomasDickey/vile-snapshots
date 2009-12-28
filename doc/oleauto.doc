@@ -1,233 +1,226 @@
-                           OLE Automation Support
-                           ======================
-Winvile can be built and configured to execute as an OLE Automation server.
-The following steps are required:
+OLE Automation Support                                             version 9.7
+----------------------                                             -----------
 
-   1) build a version of winvile that supports OLE,
-   2) configure winvile as a server, and
-   3) use an OLE automation client to invoke and manipulate winvile.
+                             OLE Automation Support
+
+   Winvile can be built and configured to execute as an OLE Automation
+   server. The following steps are required:
+    1. build a version of winvile that supports OLE,
+    2. configure winvile as a server, and
+    3. use an OLE automation client to invoke and manipulate winvile.
 
 
 Build Syntax
-============
-By default, winvile is _not_ built with OLE Automation enabled, but this
-command adds that feature:
+------------
+   By default, winvile is _not_ built with OLE Automation enabled, but this
+   command adds that feature:
 
-    nmake -f makefile.wnt CFG=winvile OPT=ole-auto
+     nmake -f makefile.wnt CFG=winvile OPT=ole-auto
 
-Or, if an embedded perl support is desired, use this syntax:
+   Or, if an embedded perl support is desired, use this syntax:
 
-    nmake -f makefile.wnt CFG=winvile-with-perl OPT=ole-auto
+     nmake -f makefile.wnt CFG=winvile-with-perl OPT=ole-auto
 
 
 Minimal Configuration
-=====================
-OLE Automation support is not available until the Windows registry has been
-updated with various configuration information.  The simplest method of
-registration is to:
+---------------------
+   OLE Automation support is not available until the Windows registry has
+   been updated with various configuration information. The simplest method
+   of registration is to:
+    1. copy winvile.exe to some directory in your PATH, and then
+    2. execute this command:
 
-    a) copy winvile.exe to some directory in your PATH, and then
-    b) execute this command:
+         winvile -Or
 
-            winvile -Or
+   The second step registers winvile as an OLE automation server that will be
+   launched (by a client) with _no_ command line options, which implies these
+   server attributes:
+     * editor geometry is 24 rows by 80 columns
+     * default font is "system fixed", 12-point (crayola-sized :-) )
+     * editor visible
+     * a single server instance (i.e., no matter how many clients create a
+       winvile server object, there will be at most one server instance).
 
-Step b) registers winvile as an OLE automation server that will be launched
-(by a client) with _no_ command line options, which implies these server
-attributes:
-
-    - editor geometry is 24 rows by 80 columns
-    - default font is "system fixed", 12-point (crayola-sized :-) )
-    - editor visible
-    - a single server instance (i.e., no matter how many clients create a
-      winvile server object, there will be at most one server instance).
-
-There are, however, a number of command line options that can be specified
-during registration and which subsequently affect the launched winvile
-server.
+   There are, however, a number of command line options that can be specified
+   during registration and which subsequently affect the launched winvile
+   server.
 
 
 Registration Options
-====================
-The complete registration syntax is:
+--------------------
+   The complete registration syntax is:
 
-    winvile -Or [-geometry <cols>x<rows>] [-multiple] [-invisible]
-                [{-font|-fn} <font_spec>]
+     winvile -Or [-geometry <cols>x<rows>] [-multiple] [-invisible]
+                 [{-font|-fn} <font_spec>]
 
+   where:
 
-where:
+   -geometry <cols>x<rows> specifies the editor's window geometry.
+   -invisible              launched server(s) are invisible and must be made
+                           visible via the application's Visible property.
+   -multiple               each client creates a new, unique server instance.
+   -font <font_spec>       specifies the editor's font
 
-    -geometry <cols>x<rows>   specifies the editor's window geometry.
-    -invisible                launched server(s) are invisible and must be
-                                  made visible via the application's Visible
-                                  property.
-    -multiple                 each client creates a new, unique server
-                                  instance.
-    -font <font_spec>         specifies the editor's font
+   where:
 
-where:
+     <font_spec>  :== [<face>,]<size>[,<style>]
+     <face>       :== font-name
+     <size>       :== point size (as an integer)
+     <style>      :== { bold | italic | bold-italic }
 
-    <font_spec>  :== [<face>,]<size>[,<style>]
-    <face>       :== font-name
-    <size>       :== point size (as an integer)
-    <style>      :== { bold | italic | bold-italic }
+   Note 1: if <style> is unspecified, "normal" is assumed.
+   Note 2: if <face> contains a comma escape it with '\'.
+   Note 3: if <face> is omitted, the current font is modified.
+   Note 4: if <face> contains spaces, delimit <font_spec> as appropriate for
+           the current shell/desktop environment.
+           <face> must be fixed pitch. To obtain a list of all fixed pitch
+   Note 5: fonts on the current win32 host, invoke winvile and browse the
+           "Font" dialog box accessible from the System menu (accelerator key
+           is ALT+<space bar>+F).
 
-    Note 1:  if <style> is unspecified, "normal" is assumed.
-    Note 2:  if <face> contains a comma escape it with '\'.
-    Note 3:  if <face> is omitted, the current font is modified.
-    Note 4:  if <face> contains spaces, delimit <font_spec> as appropriate
-             for the current shell/desktop environment.
-    Note 5:  <face> must be fixed pitch.  To obtain a list of all fixed
-             pitch fonts on the current win32 host, invoke winvile and
-             browse the "Font" dialog box accessible from the System menu
-             (accelerator key is ALT+<space bar>+F).
+     Example:       -font 'Letter Gothic,8'
+     Example:       -fn r_ansi,8,bold
 
-    Example:       -font 'Letter Gothic,8'
-    Example:       -fn r_ansi,8,bold
+   Note that it's generally not necessary to specify the font or geometry
+   when registering winvile because those parameters may be set in the vile
+   startup file (vile.rc). See the vile help topic "Win32 specifics" for
+   further information.
 
-Note that it's generally not necessary to specify the font or geometry when
-registering winvile because those parameters may be set in the vile startup
-file (vile.rc).  See the vile help topic "Win32 specifics" for further
-information.
 
 Example Automation Client Access
-================================
-Perl Access
-    use Win32::OLE;
-    $vile = new Win32::OLE 'Winvile.Application';
-    $vile->VileKeys(":show-bindings\n");
-    $vile->{Visible} = 1;           # may not be necessary
-    print "sleeping for 3 seconds\n";
-    sleep(3);
-    $vile->VileKeys(":buffer [unnamed]\n");
-    $vile->VileKeys(":r c:/config.sys\n");
-    sleep(3);
-    print "killing vile\n";
-    $vile->Quit();
-    exit
+--------------------------------
+   Perl Access
 
-VB Access
-    Private VileObj As Winvile.Application
+         use Win32::OLE;
+         $vile = new Win32::OLE 'Winvile.Application';
+         $vile->VileKeys(":show-bindings\n");
+         $vile->{Visible} = 1;           # may not be necessary
+         print "sleeping for 3 seconds\n";
+         sleep(3);
+         $vile->VileKeys(":buffer [unnamed]\n");
+         $vile->VileKeys(":r c:/config.sys\n");
+         sleep(3);
+         print "killing vile\n";
+         $vile->Quit();
+         exit
 
-    Private Sub Form_Load()
-    Set VileObj = New Winvile.Application
-    VileObj.Visible = True           ' may not be necessary
-    VileObj.VileKeys (":help" + vbLf)
-    End Sub
+   VB Access
 
-    Private Sub Quit_Click()
-    VileObj.Quit                     ' Kill the server (winvile)
-    End
-    End Sub
+         Private VileObj As Winvile.Application
 
+         Private Sub Form_Load()
+         Set VileObj = New Winvile.Application
+         VileObj.Visible = True           ' may not be necessary
+         VileObj.VileKeys (":help" + vbLf)
+         End Sub
+
+         Private Sub Quit_Click()
+         VileObj.Quit                     ' Kill the server (winvile)
+         End
+         End Sub
 
 wvwrap.exe -- WinVile WRAPper
-=============================
 
-[ Note: Ed Henderson discovered this novel use of automation and
-  wrote the original version of wvwrap.exe .  Thanks, Ed! ]
+   [ Note: Ed Henderson discovered this novel use of automation and wrote the
+   original version of wvwrap.exe . Thanks, Ed! ]
+
 
 Background
 ----------
-It's possible to modify the Windows registry such that any arbitrary
-utility appears on the Windows Explorer right mouse popup menu.  To do so,
-use regedit to create the following entry in the registry:
+   It's possible to modify the Windows registry such that any arbitrary
+   utility appears on the Windows Explorer right mouse popup menu. To do so,
+   use regedit to create the following entry in the registry:
 
-    HKEY_CLASSES_ROOT\*\shell\<utility_name>\command
+         HKEY_CLASSES_ROOT\*\shell\<utility_name>\command
 
-Example:
+   Example:
 
-    HKEY_CLASSES_ROOT\*\shell\winvile\command
+         HKEY_CLASSES_ROOT\*\shell\winvile\command
 
-Next, give the "command" key the following (Default) value:
+   Next, give the "command" key the following (Default) value:
 
-    <utility_name> "%1"
+         <utility_name> "%1"
 
-An actual example:
+   An actual example:
 
-    HKEY_CLASSES_ROOT\*\shell\winvile\command\winvile "%1"
+         HKEY_CLASSES_ROOT\*\shell\winvile\command\winvile "%1"
 
-Once this registry entry is installed, then anytime the right mouse button
-is clicked on a file in Windows Explorer, "winvile" appears as a selection
-at the top of the popup menu.  Choosing winvile from this menu launches the
-editor, which then opens the selected file.  So far, so good.  However,
-when multiple files are selected and winvile is launched via a right mouse
-click, Windows Explorer opens one instance of the editor per selected file.
-Most vile-aholics will find this behavior rather repugnant.  However, if
-winvile is configured as a single server instance (the default), a
-workaround exists.  Read on.
+   Once this registry entry is installed, then anytime the right mouse button
+   is clicked on a file in Windows Explorer, "winvile" appears as a selection
+   at the top of the popup menu. Choosing winvile from this menu launches the
+   editor, which then opens the selected file. So far, so good. However, when
+   multiple files are selected and winvile is launched via a right mouse
+   click, Windows Explorer opens one instance of the editor per selected
+   file. Most vile-aholics will find this behavior rather repugnant. However,
+   if winvile is configured as a single server instance (the default), a
+   workaround exists. Read on.
 
-When the Ole Automation version of winvile is built as described above, a
-utility called wvwrap.exe is also created.  Copy wvwrap to a directory in
-your PATH and create the following registry entry:
+   When the Ole Automation version of winvile is built as described above, a
+   utility called wvwrap.exe is also created. Copy wvwrap to a directory in
+   your PATH and create the following registry entry:
 
-    HKEY_CLASSES_ROOT\*\shell\wvwrap\command\wvwrap "%1"
+         HKEY_CLASSES_ROOT\*\shell\wvwrap\command\wvwrap "%1"
 
-If using Windows XP, it's necessary to specify the full path to wvwrap,
-as shown here:
+   If using Windows XP, it's necessary to specify the full path to wvwrap, as
+   shown here:
 
-    HKEY_CLASSES_ROOT\*\shell\wvwrap\command\<full_path_to>wvwrap.exe "%1"
+         HKEY_CLASSES_ROOT\*\shell\wvwrap\command\<full_path_to>wvwrap.exe "%1"
 
-Now, as a test, select multiple files within Window Explorers, right click
-the mouse, and launch wvwrap.  Notice that all files are read into a
-single instance of winvile, one buffer per file.
+   Now, as a test, select multiple files within Window Explorers, right click
+   the mouse, and launch wvwrap. Notice that all files are read into a single
+   instance of winvile, one buffer per file.
 
 
 Server Properties And Methods
-=============================
-Application         -- [out] Returns the application object.
+-----------------------------
+   Application          - [out] Returns the application object.
+                          Makes the editor the foreground window. Note that
+   ForegroundWindow()   - Windows 2000 and XP essentially emasculated this
+                          method. See MainHwnd() for an alternative approach.
+   FullName             - [out] Returns the path of the application.
+   InsertMode           - [out] True if editor window with keyboard focus is
+                          in insert mode.
+   IsMinimized          - [out] True if editor minimized.
+                          [out] Returns the editor's main window handle.
+   MainHwnd             - Useful if the client wishes to, say, call
+                          SetForegroundWindow() on behalf of the editor.
+   Minimize()           - Minimizes the editor.
+   Name()               - [out] Returns the name of the application.
+   Parent()             - Returns the parent of the application object.
+   Quit()               - Exits the editor.
+   Restore()            - Restores the editor's window.
+                          Sends keystrokes to the editor. Note that this
+                          method is implemented by using PostMessage() to
+   VileKeys([in] keys)  - send a WM_CHAR message for _each_ character in the
+                          "keys" string. In other words, this is not an
+                          efficient method and should not be used to create
+                          large files.
+   Visible              - [in, out] Sets or returns the editor's visibility.
+                          Specifies a window handle to which user-specified
+                          keystrokes are redirected. Redirected keystrokes
+                          are specified via winvile's "redirect-keys" mode.
+   WindowRedirect([in]  - Refer to the file visvile.doc for a detailed
+   hwnd)                  discussion of this method and its associated mode.
 
-ForegroundWindow()  -- Makes the editor the foreground window.  Note that
-                       Windows 2000 and XP essentially emasculated this
-                       method.  See MainHwnd() for an alternative approach.
+                          To disable redirection once enabled, pass this
+                          method a NULL window handle.
 
-FullName            -- [out] Returns the path of the application.
-
-InsertMode          -- [out] True if editor window with keyboard focus is
-                       in insert mode.
-
-IsMinimized         -- [out] True if editor minimized.
-
-MainHwnd            -- [out] Returns the editor's main window handle.
-                       Useful if the client wishes to, say, call
-                       SetForegroundWindow() on behalf of the editor.
-
-Minimize()          -- Minimizes the editor.
-
-Name()              -- [out] Returns the name of the application.
-
-Parent()            -- Returns the parent of the application object.
-
-Quit()              -- Exits the editor.
-
-Restore()           -- Restores the editor's window.
-
-VileKeys([in] keys) -- Sends keystrokes to the editor.  Note that this method
-                       is implemented by using PostMessage() to send a
-                       WM_CHAR message for _each_ character in the "keys"
-                       string.  In other words, this is not an efficient
-                       method and should not be used to create large files.
-
-Visible             -- [in, out] Sets or returns the editor's visibility.
-
-WindowRedirect([in] hwnd) -- Specifies a window handle to which
-                       user-specified keystrokes are redirected.
-                       Redirected keystrokes are specified via winvile's
-                       "redirect-keys" mode.  Refer to the file visvile.doc
-                       for a detailed discussion of this method and its
-                       associated mode.
-
-                       To disable redirection once enabled, pass this method a
-                       NULL window handle.
-
-
-Note:  ForegroundWindow(), Minimize(), and Restore() implicitly force an
-       Invisible server to the Visible state.
+   Note: ForegroundWindow(), Minimize(), and Restore() implicitly force an
+   Invisible server to the Visible state.
 
 
 Unregistering The Server
-========================
-To unregister winvile as an OLE automation server, execute this command:
+------------------------
+   To unregister winvile as an OLE automation server, execute this command:
 
-    winvile -Ou
+     winvile -Ou
 
--- $Header: /users/source/archives/vile.vcs/doc/RCS/oleauto.doc,v 1.8 2005/01/15 16:18:20 cmorgan Exp $
+
+Credits
+-------
+   The OLE automation support for winvile was written by Clark Morgan, from
+   1998 to 2005.
+
+-- (generated by make-hlp.pl from oleauto.html(1.1))
+-- vile:txtmode fillcol=78
+-- $Header: /users/source/archives/vile.vcs/doc/RCS/oleauto.doc,v 1.10 2009/12/28 17:02:06 tom Exp $

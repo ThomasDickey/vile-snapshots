@@ -1,0 +1,447 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+  $Id: visvile.html,v 1.2 2009/12/28 17:02:00 tom Exp $
+-->
+<HTML>
+<HEAD>
+<TITLE>
+VisVile -- Developer Studio Support
+</TITLE>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link rev="made" href="mailto:dickey@invisible-island.net">
+<link rel="SHORTCUT ICON" href="/img/icons/vile.ico" type="image/x-icon">
+</HEAD>
+<BODY>
+<h1 id="toplevel-id"><a name="toplevel">VisVile -- Developer Studio Support</a></h1>
+Within a limited context, winvile may be substituted as the default
+Developer Studio editor.
+
+<h2 id="prereqs-id"><a name="prereqs">Preconditions</a></h2>
+<ul>
+<li>You must be using Developer Studio version 5 (or later), which exposes
+  OLE automation "hooks" that permit winvile to augment and/or replace the
+  default editor.  The implementation described within this document will
+  not work with earlier versions of DevStudio.
+
+<li>Obtain or build a version of winvile that supports OLE Automation.
+  Register same.  For further details, refer to the file oleauto.doc,
+  stored in the same directory as this document.  When reading oleauto.doc,
+  note that:
+<ul>
+  <li>step 1 (building the editor) is optional if using pre-built versions
+    of _both_ winvile.exe and visvile.dll&nbsp;.
+
+  <li>step 2 (configuring the editor as a server) is mandatory, and
+
+  <li>step 3 (manipulating winvile via an automation client) is described
+    in great detail within this document :-)&nbsp;.
+</ul>
+</ul>
+
+
+<h2 id="installing-id"><a name="installing">Installation</a></h2>
+<ol>
+<li>Obtain or build visvile.dll, a Developer Studio add-in that actually
+   invokes winvile.  To build visvile, follow these steps:
+<ol>
+   <li>First build winvile using the syntax described in oleauto.doc .
+      This is an important step, since the build process creates a file
+      called winviletlb.h that is included by visvile.dll's sources.
+
+   <li>Use Developer Studio to open the visvile source directory as a
+      project.
+
+   <li>Set the "active project configuration" (see the Build Menu) as
+      "VisVile - Win32 Release".
+
+   <li>Press F7 (which builds visvile.dll in the Release subdirectory).
+</ol>
+<li>Copy Release/visvile.dll to a directory location of your choice.
+   It may or may not be important for the destination directory to be a
+   member of your PATH.  On a Win95 host, it is not.
+
+<li>On a WinNT host it may be necessary to formally register visvile.dll's
+   type information in the Win32 registry (on a Win95 host it is not).
+   Type registration is accomplished like so:
+<ol>
+   <li>login to an account with Administrator rights,
+   <li>open a dos box,
+   <li>cd to the destination directory chosen in step 2 above,
+   <li>execute this command:
+<pre>
+   regsvr32 visvile.dll
+</pre>
+</ol>
+
+<li>Almost done :-) .  Invoke Developer Studio and incorporate visvile.dll
+   as an add-in using these steps:
+<ol>
+   <li>Invoke the add-in dialog box via these menus:
+<pre>
+          Tools
+             Customize...
+                Add-Ins and Macro Files
+</pre>
+   <li>Click the Browse button and point Developer Studio at visvile.dll&nbsp;.
+   <li>Select visvile.dll (it will be registered as an add-in).
+   <li>Close the Customize dialog box.
+</ol>
+<li>You should immediately notice a new VisVile Toolbar.  Click the first
+   toolbar icon to configure VisVile (configuration options and toolbar
+   icons are discussed shortly).
+</ol><p>
+That's it.  Now, every time Developer Studio is invoked, visvile.dll is
+automatically loaded as an add-in.
+
+<h2 id="configopts-id"><a name="configopts">Configuration Options</a></h2>
+<table border="1" summary="Command Prefixes">
+<colgroup><col width="15%"><col width="20%"><col width="65%"></colgroup>
+<tr>
+<th>Option Name</th>
+<th>Explanation</th></tr>
+
+<tr><td valign="top">Add-in enabled</td><td>
+		  VisVile causes winvile to open any new or existing _text_
+                  document accessed by DevStudio, provided that the default
+                  editor doesn't already have that document open (see next
+                  option).
+
+<tr><td valign="top">Close DevStudio copy of text documen</td><td>
+		  
+                  VisVile closes DevStudio's copy of an open text document
+                  after winvile has opened its copy.  This feature keeps
+                  DevStudio from issuing a warning message each time a
+                  project file is modified by an external editor.  If
+                  unchecked, winvile and the DevStudio text editor co-exist
+                  side by side.  But see the Caveats section below.
+
+<tr><td valign="top">CWD set from opened document's pat</td><td>
+		  
+                  Winvile's current working directory is set to match the
+                  path of any document opened by VisVile.
+
+<tr><td valign="top">Write all modified buffers to disk prior to buil</td><td>
+		  
+                  VisVile forces winvile to flush all modified buffers to
+                  disk before a DevStudio build begins.  Note that
+                  DevStudio (v5, at least) decides which files must be
+                  compiled _prior_ to notifying VisVile of an imminent
+                  build.  This is arguably a DevStudio (v5) bug and it does
+                  diminish the usefulness of this option.
+<p>
+                  One workaround is to press the build accelerator key (F7)
+                  twice for each build.  The first key press builds
+                  whatever files are out-of-date before modified winvile
+                  buffers are written to disk.  The second key press forces
+                  DevStudio to re-examine its dependencies and build
+                  everything affected by the last winvile buffer flush.
+<p>
+                  Another workaround is to become accustomed to typing :ww
+                  within winvile prior to starting a DevStudio build.
+
+<tr><td valign="top">Build log -> errbuf if build reports errs/warning</td><td>
+		  
+                  Assuming DevStudio has been configured to create an error
+                  log (refer to the Tools->Customize->Build dialog box),
+                  then when the current DevStudio build reports errors or
+                  warnings, VisVile causes winvile to use the build log as
+                  its error buffer.  In this configuration, the source code
+                  associated with each error/warning message may be
+                  directly accessed by simply typing ^X-^X.  For a complete
+                  description of ^X-^X, browse vile's help and search for
+                  the string "error finder".
+
+<tr><td valign="top">Redirect selected Winvile keys to DevStudi</td><td>
+		  
+                  Winvile redirects keystrokes specified in the
+                  "redirect-keys" mode to DevStudio.  This option permits,
+                  for example, a single winvile keystroke to start a
+                  DevStudio build, execute the target application, or
+                  initiate application debugging.  More will be said about
+                  this option near the end of this document.
+</table>
+
+<h2 id="studioops-id"><a name="studioops">DevStudio Operations Affected By VisVile</a></h2>
+<p>
+When VisVile is enabled, any operation that causes DevStudio to open a text
+file will instead/also cause winvile to open that file.  Note too that
+repeatedly pressing the F4 key within DevStudio following a failed build
+causes winvile to be positioned at the source code line(s) triggering error
+and/or warning messages.  However, _each_ error or warning message accessed
+via the F4 key requires a manual switch between winvile and DevStudio.  For
+that reason, the "Build log -> errbuf..." option is much more convenient
+(no switching required).
+
+<h2 id="toolbaricons-id"><a name="toolbaricons">Toolbar Icons</a></h2>
+<p>
+The first icon, bound to command name "VisVileConfigCmd", configures VisVile.
+
+The second and third icons provide shortcuts for enabling and disabling
+VisVile.  Note that it makes sense to disable VisVile before debugging an
+application (otherwise, the debugger pops up winvile whenever a breakpoint
+is taken).  These icons are bound to command names "VisVileEnableCmd" and
+"VisVileDisableCmd", respectively.
+<p>
+The fourth icon, bound to command name "VisVileOpenDocCmd", forces winvile
+to unconditionally open the text document currently visible in the default
+text editor.  This icon is often useful when VisVile is disabled.
+
+
+<h2 id="keyboardaliases-id"><a name="keyboardaliases">Keyboard Shortcuts</a></h2>
+<p>
+Use this menu hierarchy:
+<pre>
+      Tools
+         Customize...
+            Keyboard (category Add-ins)
+</pre><p>
+to assign DevStudio keyboard shortcuts to any of the command names mentioned
+in the previous section of this document.
+
+
+<h2 id="donotforget-id"><a name="donotforget">Don't Forget These Details</a></h2>
+<p>
++ DevStudio sends VisVile a "document opened" event _only_ if the affected
+  document is not currently open in the default editor.  Keep this fact in
+  mind when configuring the "Close DevStudio copy of text document" option.
+  This restriction does not apply to the fourth toolbar icon.
+
++ It makes sense to disable VisVile before debugging an application
+  (otherwise, the debugger pops up winvile whenever a breakpoint is taken).
+
+
+<h2 id="controllingit-id"><a name="controllingit">Controlling DevStudio From Winvile</a></h2>
+<p>
+Initially, VisVile was created so that various DevStudio events caused
+winvile to execute text editing commands on behalf of the IDE.  In other
+words, DevStudio controlled winvile.  But given the rich interprocess
+communication mechanisms available in the Win32 environment, it became
+obvious that once DevStudio established an OLE connection wtih winvile, the
+editor could turn the tables and manipulate its OLE client :-) .
+<p>
+To that end, when winvile is compiled as an OLE Automation server, a new
+mode called "redirect-keys" is available.  This mode specifies a list of
+keystrokes that are to be redirected to DevStudio.  The list must be in the
+following format:
+<pre>
+	&lt;keyspec>,...
+</pre><p>
+where
+<pre>
+	&lt;virt_key>:[&lt;modifier>...]:[&lt;action>...]
+</pre><p>
+and
+
+<table border="0" summary="Command Prefixes">
+<colgroup><col width="15%"><col width="20%"><col width="65%"></colgroup>
+<tr><td valign="top">&lt;virt_key></td>
+	<td valign="top">:== virtual keycode macro name sans "VK_".</td>
+	<td>Refer to the table near the end of this document for a list of
+	keycodes that may be redirected.</td></tr>
+<tr><td valign="top">&lt;modifier></td>
+	<td valign="top">:== S|C|A &lt;--</td>
+	<td>mnemonics for shift, control, alt</td></tr>
+<tr><td valign="top">&lt;action></td>
+	<td valign="top">:== &lt;flush>|&lt;switch>|&lt;sync></td></tr>
+<tr><td valign="top">&lt;Flush></td>
+	<td valign="top">:== F &lt;--</td>
+	<td>flush all modified buffers to disk prior to redirecting key</td></tr>
+<tr><td valign="top">&lt;Switch></td>
+	<td valign="top">:== S &lt;--</td>
+	<td>switch focus to redirected window prior to redirecting key</td></tr>
+<tr><td valign="top">&lt;sYnc></td>
+	<td valign="top">:== Y &lt;--</td>
+	<td>synchronize current buffer (at its current line) within the
+	DevStudio editor.  Very useful when setting breakpoints.</td></tr>
+</table>
+The default list looks like so:
+<pre>
+    F5::S,F10::S,F11::S,F7::F,F5:C:,F9::Y
+</pre><p>
+which can be translated using this table:
+
+<table border="0" summary="Command Prefixes">
+<colgroup><col width="15%"><col width="20%"><col width="65%"></colgroup>
+<tr><th align="left">KeyStoke</th>
+<th align="left">Action</th>
+<th align="left">Standard DevStudio ShortCut Semantics
+</tr>
+<tr><td>F5</td>
+	<td>Switch Focus</td>
+	<td>Run program under debugger</td></tr>
+<tr><td>F10</td>
+	<td>Switch Focus</td>
+	<td>Step over</td></tr>
+<tr><td>F11</td>
+	<td>Switch Focus</td>
+	<td>Step into</td></tr>
+<tr><td>F7</td>
+	<td>Flush buffers</td>
+	<td>Build application</td></tr>
+<tr><td>Ctrl+F5</td>
+	<td>&lt;none></td>
+	<td>Execute application</td></tr>
+<tr><td>F9</td>
+	<td>Sync buffer</td>
+	<td>Set/Remove breakpoint at DevStudio's current file location.</td></tr>
+</table>
+
+<h2 id="augmentingit-id"><a name="augmentingit">Augmenting Winvile Control With DevStudio Macros</a></h2>
+<p>
+We're almost set.  For example, we can now start the debugger from winvile
+by simply pressing F5.  Or, we might use winvile to position a source file
+at a desired breakpoint location and then press F9 to actually set the
+breakpoint in DevStudio's debugger.  Neat.  But wouldn't it be great if we
+could disable VisVile before starting the debugger so that breakpoints
+don't cause DevStudio to switch focus back to winvile?  This is possible,
+but requires an assist from a small macro (written in Visual Basic).
+Included with the VisVile source distribution is a macro file called
+VisVile.dsm that includes assists for the redirected F5, F7, F9, F10, and
+F11 keys.  The F5, F9, F10, and F11 macros simply disable VisVile prior to
+executing DevStudio's DebugGo, DebugToggleBreakpoint, DebugStepOver, and
+DebugStepInto commands, respectively.  The F7 macro is a bit more
+complicated, but each of its actions are documented.  Notice that
+VisVile.dsm doesn't include assist macros for Ctrl+F5, which makes sense,
+because target application execution does not require disabling VisVile.
+<p>
+Our final configuration task, then, is to modify DevStudio so that it
+executes Visvile.dsm's macros when the F5, F7, F9, F10, and F11 keys are
+pressed.  We want control flow established like so (using the F10 key as an
+example):
+<pre>
+        Winvile User Presses F10
+               ||
+               \/
+        DevStudio Message Pump
+               ||
+               \/
+        Visvile.dsm's F10 Macro Executed
+               ||
+               \/
+        VisVile Disabled
+               ||
+               \/
+        DevStudio's DebugStepOver Command Executed
+</pre><p>
+To achieve the desired objective, follow this recipe:
+<ol>
+<li>Navigate this menu hierarchy:
+
+      Tools
+         Customize...
+            Add-ins and Macro Files
+
+<li>Use the Browse button to find, open, and load visvile.dsm .
+
+<li>Now navigate using this menu hierarchy:
+<pre>
+      Tools
+         Customize...
+            Keyboard
+                Category
+                    Macros
+</pre>
+<li>Next, use the "Commands" drop-down box to select the "F10" macro.  In the
+   same dialog box context, use the "Editor" drop-down box to select "Main"
+   and then enter F10 (by pressing F10 on the keyboard) as the new shortcut
+   key.  Be sure to click the Assign button or your actions will be lost.
+<p>
+   As a side effect of this sequence, the standard DevStudio F10 shortcut
+   (available from the Debug Menu) will be deleted.  Finally, in the same
+   dialog box context, use the "Editor" drop-down box to select "Text" and
+   again enter F10 as a new shortcut key (and don't forget to click the
+   Assign button).
+</ol><p>
+Repeat the last step for the F5, F7, F9, and F11 macros.
+<p>
+At this point it's probably a good idea to close DevStudio and re-invoke.
+After checking to ensure that VisVile.dll and VisVile.dsm are still
+installed as add-ins and also ensuring that your new shortcuts are in
+place, test the winvile redirection feature as follows:
+<ol>
+<li>open a buildable project and enable Visvile.
+<li>configure VisVile so that the "Redirect selected Winvile keys to DevStudio"
+   option is checked.
+<li>perform some action that causes DevStudio to invoke winvile (for
+   example, double click on a filename in the file view pane).
+<li>with window focus directed to winvile, press F7.  If the aforementioned
+   configuration is correct, DevStudio will begin building the selected
+   project.
+</ol><p>
+If nothing happens when the F7 key is pressed, chances are good that
+DevStudio was not configured to direct the F7 key to the F7 assist macro
+for both the "Main" and "Text" editors.
+
+<h2 id="uninstallingit-id"><a name="uninstallingit">Uninstalling VisVile</a></h2>
+<ol>
+<li>Invoke Developer Studio, invoke the Add-Ins and Macro Files dialog
+   box, and uncheck "Winvile Developer Studio Add-In".
+
+<li>If it was necessary to register visvile.dll's type information, open a dos
+   box, cd to the destination directory chosen in installation step 2 above,
+   and execute this command:    regsvr32 -unregister visvile.dll  .
+</ol>
+
+<h2 id="keydefinitions-id"><a name="keydefinitions">Redirectable Virtual Keycode Names (sans VK_ prefix</a>)</h2>
+<pre>
+        BACK    /* backspace */
+        TAB
+        PAUSE
+        SPACE
+        PRIOR
+        NEXT
+        END
+        HOME
+        LEFT
+        UP
+        RIGHT
+        DOWN
+        SNAPSHOT  /* print screen */
+        INSERT
+        DELETE
+        0-9       /* taken from VK_0, VK_1, etc. */
+        A-Z       /* taken from VK_A, VK_B, etc. */
+        APPS      /* properties key  (Win95 kybd) */
+        MULTIPLY  /* keypad */
+        ADD       /* keypad */
+        SUBTRACT  /* keypad */
+        DECIMAL   /* keypad */
+        DIVIDE    /* keypad */
+        F1-F24    /* taken from VK_F1, VK_F2, etc. */
+        NUMLOCK
+        SCROLL
+</pre>
+<h2 id="visvimdiffs-id"><a name="visvimdiffs">Known Differences Between VisVile and VisVim</a></h2>
+<p>
+Unique to VisVile:
+<ul>
+<li>Context-sensitive configuration dialog box.
+<li>"Write all modified buffers to disk prior to build" option.
+<li>"Build log -> errbuf if build reports errs/warnings" option.
+<li>"Redirect selected Winvile keys to DevStudio" option.
+<li>When winvile is in insert mode, visvile forces the editor to command mode
+  before sending command strings.
+<li>Synchronization of winvile's current buffer with DevStudio's editor.
+</ul><p>
+Unique to VisVim:
+<ul>
+<li>"CWD set to opened document's parent directory" option
+</ul>
+
+<h2 id="credits-id"><a name="credits">Copyright And Acknowledgments</a></h2>
+<p>
+Copyright &copy; 1998-2002 Clark Morgan
+<p>
+VisVile is based upon VisVim, written by Heiko Erhardt (Copyright &copy; 1997
+Heiko Erhardt).  VisVim is based upon VisEmacs, written by Christopher
+Payne (Copyright &copy; Christopher Payne 1997).
+<p>
+VisVile is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2, or (at your option)
+any later version.
+<p>
+VisVile is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.

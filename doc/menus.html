@@ -1,0 +1,142 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+  $Id: menus.html,v 1.2 2009/12/28 15:30:51 tom Exp $
+-->
+<HTML>
+<HEAD>
+<TITLE>
+XVile Menus
+</TITLE>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link rev="made" href="mailto:dickey@invisible-island.net">
+<link rel="SHORTCUT ICON" href="/img/icons/vile.ico" type="image/x-icon">
+</HEAD>
+<BODY>
+<h1 id="fixme-id"><a name="fixme">XVile Menus</a></h1>
+The Motif and Athena widget versions of xvile automatically support user
+configurable menus.
+<h2 id="fixme-id"><a name="fixme">Search-Rules</a></h2>
+If the environment variable XVILE_MENU is set, it contains the name of the rc
+file.  Otherwise, the name ".vilemenu" is used.  The name of the menu file is
+given in the variable "$menu-file".  If it is not found, and is different from
+"vilemenu.rc", xvile looks for that file in the list of directories given in
+"$startup-path".  The "vilemenu.rc" file is treated specially because it is the
+file installed from vile's distribution.
+<h2 id="fixme-id"><a name="fixme">Format</a></h2>
+The file contains a series of lines whose first character denotes the
+type of entry, subsequent fields delimited by colon:
+
+<table border="0" summary="Command Prefixes">
+<colgroup><col width="15%"><col width="20%"><col width="65%"></colgroup>
+<tr><td valign="top">C &ndash;</td><td>
+	    cascade (actually pulldown).  One field only is recognized,
+	    the menu heading.</td></tr>
+
+<tr><td valign="top">B &ndash;</td><td>
+	    button (menu entry).  The first field is the menu label. 
+	    The second is the command which will be executed.  If the
+	    command is a number, it is expanded into the vile command
+	    execute-macro-&lt;number>.
+<p>
+	    Besides the normal vile commands, the menu implements the
+	    following
+<p>
+		new_xvile &ndash; spawn a new copy of xvile.<br>
+		edit_rc &ndash; switch to a buffer with ".vilerc".<br>
+		parse_rc &ndash; source ".vilerc"<br>
+		edit_mrc &ndash; switch to a buffer with the menu rc file
+			which was found, e.g., "$menu-file" or "vilemenu.rc".
+</td></tr>
+<tr><td>S &ndash;</td><td>
+	    separator</td></tr>
+
+<tr><td valign="top">L &ndash;</td><td>
+	    list buffers.  Each time you select this menu entry, vile
+	    constructs a current list of the buffers, allowing you to
+	    switch to any buffer by selecting it from the menu.  It has
+	    to be at the end of a menu, and only one is allowed.
+<p>
+	    For the Motif version, the accelerators are constructed to
+	    correspond with the vile commands for switching buffers,
+	    e.g., _0, _1 ...</td></tr>
+</table><p>
+Lines beginning with '"' or ';' are ignored.  character.  Lines beginning with
+'#', or text after a tab also are ignored, but we may drop this feature at some
+point, to make it more consistent with vile's macro files.
+<p>
+The special keyword "cmd" tells the menu function to invoke the following
+keyword as a :-line command, so that commands which must solicit input
+will work properly.
+<h2 id="fixme-id"><a name="fixme">Example</a></h2>
+A sample .vilemenu file:
+<pre>
+	C:Xvile
+	B:New:new_xvile
+	B:Edit .vilerc:edit_rc
+	B:Parse .vilerc:parse_rc
+	B:Edit .vilemenu:edit_mrc
+	B:Quit:quit
+	;
+	C:Editing
+	B:Apply Highlighting:cmd HighlightFilter
+	B:Clear Highlighting (above):clear-attributes-til beginning-of-file
+	B:Clear Highlighting (below):clear-attributes-til end-of-file
+	S
+	B:Search Forward...:cmd search-forward
+	B:Search Backward...:cmd search-reverse
+	S
+	B:Reload File:cmd e!
+	B:Rename Buffer:cmd rename-buffer
+	B:Edit:cmd edit-file
+	B:Rename File:cmd filename
+	S
+	B:Manual for...:cmd ShowManpage
+	S
+	B:Files:capture-command "ls -l"
+	B:Processes:capture-command "ps"
+	B:Users:capture-command "w"
+	;
+	C:Buffers
+	B:Show Current Only:delete-other-windows
+	B:Toggle Show:toggle-buffer
+	L:list_buff
+	;
+	C:Fixed Fonts
+	B:5x8:setv $font 5x8
+	B:7x14:setv $font 7x14
+	B:8x13:setv $font 8x13
+	B:8x16:setv $font 8x16
+	B:9x15:setv $font 9x15
+	B:10x20:setv $font 10x20
+	B:12x24:setv $font 12x24
+	;
+	C:Nice Fonts
+	B:10pt:setv $font "-*-lucidatypewriter-*-r-normal-sans-10-*-*-*-*-0-iso8859-1"
+	B:12pt:setv $font "-*-lucidatypewriter-*-r-normal-sans-12-*-*-*-*-0-iso8859-1"
+	B:14pt:setv $font "-*-lucidatypewriter-*-r-normal-sans-14-*-*-*-*-0-iso8859-1"
+	B:16pt:setv $font "-*-lucidatypewriter-*-r-normal-sans-16-*-*-*-*-0-iso8859-1"
+	B:18pt:setv $font "-*-lucidatypewriter-*-r-normal-sans-18-*-*-*-*-0-iso8859-1"
+	B:20pt:setv $font "-*-lucidatypewriter-*-r-normal-sans-20-*-*-*-*-0-iso8859-1"
+	;
+	C:Help:help
+	B:About:version
+	S
+	B:General:help
+	B:Bindings:describe-bindings
+	B:Motions:describe-motions
+	B:Operators:describe-operators
+	S
+	B:Apropos...:cmd apropos
+	B:On Function...:cmd describe-function
+	B:On Key...:describe-key &amp;gts
+	S
+	B:Settings:setall
+	B:Variables:show-variables
+	B:Registers:show-registers
+	S
+	B:Majormodes:show-majormodes
+	B:Colors:show-colors
+	B:Color Schemes:show-color-schemes
+</pre>
+<h2 id="fixme-id"><a name="fixme">Credits</a></h2>
+This was originally adapted from a description by Philippe Chassany in 1997.
