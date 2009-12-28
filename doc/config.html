@@ -1,0 +1,475 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+  $Id: config.html,v 1.3 2009/12/28 16:48:17 tom Exp $
+-->
+<HTML>
+<HEAD>
+<TITLE>
+Configuring vile and xvile
+</TITLE>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link rev="made" href="mailto:dickey@invisible-island.net">
+<link rel="SHORTCUT ICON" href="/img/icons/vile.ico" type="image/x-icon">
+</HEAD>
+<BODY>
+<h1 id="toplevel-id"><a name="toplevel">Configuring vile and xvile</a></h1>
+This file describes the steps which are needed to configure and make either
+vile or xvile.  See the file README for a blurb on what (x)vile is and how
+great it is :-).  The file INSTALL contains generic information on the
+process of configuring and building programs which (more or less) conform
+to the GNU coding standards.  You might want to consult that document for
+more information.
+<h2 id="building-id"><a name="building">Building vile</a></h2>
+<p>
+To build vile, enter the following command from your shell:
+<pre>
+	./configure; make
+</pre><p>
+If you'd like to examine makefile and config.h prior to making, split these
+steps up as follows:
+<pre>
+	./configure
+	make
+</pre><p>
+If you are unfortunate enough to be running on a platform in which some
+part of the above process does not work perfectly, you might well want to
+modify makefile to add references to obscure libraries or non-standard
+library locations.
+<p>
+    [ At least one version of bash running on Linux (and perhaps other)
+    systems will cause the configure script to produce invalid results.
+    Specifically, if you're running version 1.14.3 of bash consider
+    upgrading to a newer one.  ]
+<p>
+Modifying makefile is not recommended because your changes will be lost
+should you run configure again.  Many configuration options can be
+set externally to the configure script or the makefile.  For instance,
+if you'd like to change some of the flags passed to the C compiler, try
+doing it like this:
+<pre>
+	make CFLAGS=-O2
+</pre><p>
+Or, this can be done when running the configure script instead -- try:
+<pre>
+	CFLAGS=-O2 ./configure			(sh, ksh, bash)
+</pre><p>
+or:
+<pre>
+	(setenv CFLAGS -O2 ; ./configure)	(csh)
+</pre><p>
+Then again, a configure script argument is shell-agnostic:
+<pre>
+	./configure --with-cflags=-O2
+</pre><p>
+If you need to suppress your optimizer (which is invoked as -O by default),
+because it's known to be buggy, use CFLAGS=" ".  [ One combination
+thought to be buggy is AIX 3.2.5 with gcc 2.6.0.  ]
+<p>
+The configure script will favor using gcc on your system if available.  This
+is usually fine, but if gcc was not installed correctly (or your environment
+isn't quite right), it can be disastrous.  You can override the choice
+of compiler with:
+<pre>
+	CC=cc ./configure		(sh, ksh, bash)
+</pre><p>
+or:
+<pre>
+	(setenv CC cc ; ./configure)	(csh)
+</pre><p>
+Likewise, extra link libraries can be added by setting them in LIBS before
+running configure.
+<h2 id="screentypes-id"><a name="screentypes">Screen Types</a></h2>
+<p>
+Vile is configured and built with a terminal driver.  At this time, only
+one driver is built with vile at a time.  Some other editors attempt to
+combine more than one driver in the default configuration, making the
+resulting program much larger and slower.  We will ultimately modify vile
+to support multiple drivers, but the default configuration will be the
+smallest and fastest.
+<p>
+Use the configure script's "--with-screen" option to specify the driver
+type, e.g.,
+<pre>
+	./configure --with-screen=tcap
+</pre><p>
+The default configuration for vile uses termcap (or terminfo, depending
+what your system has available).  The configuration script tests several
+possibilities.  Your system may have more than one library to link against,
+e.g., on Linux you may have both termcap and ncurses (a terminfo-based
+system).  If you wish to use color, you are generally better off using
+terminfo, since termcap descriptions usually are limited to a fixed size,
+and some features are omitted.
+<p>
+A curses interface is provided as well:
+<pre>
+	./configure --with-screen=curses
+</pre><p>
+To tell the configure script to link against the ncurses library (using the
+curses.c driver), type
+<pre>
+	./configure --with-screen=ncurses
+</pre><p>
+A much less capable driver uses builtin ANSI escape sequences:
+<pre>
+	./configure --with-screen=ansi
+</pre>
+<h2 id="syntaxopts-id"><a name="syntaxopts">Syntax coloring options</a></h2>
+<p>
+Adding syntax coloring to the editor can be simple or not.
+<h3 id="fastsyntax-id"><a name="fastsyntax">Fast, simple syntax coloring</a></h3>
+<p>
+Maximally efficient syntax coloring can be selected by specifying
+this configure command line:
+<pre>
+	--with-builtin-filters
+</pre><p>
+An ensuing build binds _all_ of the editor's syntax coloring filters into
+the resultant executable.  On the plus side, the build options are simple
+and since no filters are invoked externally (via a pipe), syntax coloring
+is executed with minimal overhead.  On the minus side, this configure
+option generates a much larger executable.
+<h3 id="simplesyntax-id"><a name="simplesyntax">Slower, simple syntax coloring</a></h3>
+<p>
+Omitting any variant of the --with-builtin-filters option or specifying
+"--with-builtin-filters=none" ensures that all of the editor's syntax
+coloring filters are created as separate, external executables.  On the
+plus side, this choice minimizes the editor's footprint.  However, external
+filters are invoked via a pipe, which is substantially slower than the
+direct execution model.
+<h3 id="complexsyntax-id"><a name="complexsyntax">Complex syntax coloring</a></h3>
+<p>
+vile also supports a mix of both internal and external filters, which
+facilitates configuration of the editor with as few or as many internal
+filters as desired.  But before describing how this is achieved, note the
+breadth of the following table of editor filter names and language
+mappings:
+
+<table border="0" summary="Command Prefixes">
+<colgroup><col width="15%"><col width="20%"><col width="65%"></colgroup>
+<tr>
+<th align="left">Builtin Filter Name</th>
+<th align="left">External Filter Name</th>
+<th align="left">Colors These Language(s)/Files</th>
+</tr>
+<tr><td>ada         </td><td>vile-ada-filt    </td><td>ada</td></tr>
+<tr><td>as          </td><td>vile-as-filt     </td><td>GNU assembler (x86)</td></tr>
+<tr><td>asm         </td><td>vile-asm-filt    </td><td>Microsoft ASM (x86)</td></tr>
+<tr><td>au3         </td><td>vile-au3-filt    </td><td>au3</td></tr>
+<tr><td>awk         </td><td>vile-awk-filt    </td><td>awk</td></tr>
+<tr><td>basic       </td><td>vile-basic-filt  </td><td>basic and visual basic (vb, vbs)</td></tr>
+<tr><td>bat         </td><td>vile-bat-filt    </td><td>Windows .bat files</td></tr>
+<tr><td>bnf         </td><td>vile-bnf-filt    </td><td>BNF files</td></tr>
+<tr><td>c           </td><td>vile-c-filt      </td><td>c, cpp, java, and javascript (js)</td></tr>
+<tr><td>cfg         </td><td>vile-cfg-filt    </td><td>lynx config files</td></tr>
+<tr><td>conf        </td><td>vile-conf-filt   </td><td>ordinary config files</td></tr>
+<tr><td>css         </td><td>vile-css-filt    </td><td>cascading style-sheets</td></tr>
+<tr><td>cweb        </td><td>vile-cweb-filt   </td><td>cweb and cwebx</td></tr>
+<tr><td>dcl         </td><td>vile-dcl-filt    </td><td>VMS DCL scripts</td></tr>
+<tr><td>def         </td><td>vile-def-filt    </td><td>Windows .def files</td></tr>
+<tr><td>diff        </td><td>vile-diff-filt   </td><td>output of diff command</td></tr>
+<tr><td>ecl         </td><td>vile-ecl-filt    </td><td>Prolog/ECLiPSe</td></tr>
+<tr><td>esql        </td><td>vile-esql-filt   </td><td>embedded SQL with C/C++.</td></tr>
+<tr><td>est         </td><td>vile-est-filt    </td><td>Enscript syntax-descriptions</td></tr>
+<tr><td>fdl         </td><td>vile-fdl-filt    </td><td>forms definition language</td></tr>
+<tr><td>html        </td><td>vile-html-filt   </td><td>HTML, JSP</td></tr>
+<tr><td>imake       </td><td>vile-imake-filt  </td><td>imake files</td></tr>
+<tr><td>info        </td><td>vile-info-filt   </td><td>GNU info files</td></tr>
+<tr><td>ini         </td><td>vile-ini-filt    </td><td>Windows .ini, .reg, .vbp files</td></tr>
+<tr><td>iss         </td><td>vile-iss-filt    </td><td>InnoSetup</td></tr>
+<tr><td>key         </td><td>vile-key-filt    </td><td>vile .keyword files</td></tr>
+<tr><td>latex       </td><td>vile-latex-filt  </td><td>LaTeX</td></tr>
+<tr><td>lex         </td><td>vile-lex-filt    </td><td>flex and lex</td></tr>
+<tr><td>lisp        </td><td>vile-lisp-filt   </td><td>lisp, scheme</td></tr>
+<tr><td>lua         </td><td>vile-lua-filt    </td><td>Lua</td></tr>
+<tr><td>m4          </td><td>vile-m4-filt     </td><td>autoconf and m4</td></tr>
+<tr><td>mail        </td><td>vile-mail-filt   </td><td>messages</td></tr>
+<tr><td>make        </td><td>vile-make-filt   </td><td>make and nmake files</td></tr>
+<tr><td>mcrl        </td><td>vile-mcrl-filt   </td><td>mCRL/mCRL2 modeling language.</td></tr>
+<tr><td>midl        </td><td>vile-midl-filt   </td><td>Microsoft IDL</td></tr>
+<tr><td>mms         </td><td>vile-mms-filt    </td><td>VMS make files</td></tr>
+<tr><td>nr          </td><td>vile-nr-filt     </td><td>nroff/troff files</td></tr>
+<tr><td>pas         </td><td>vile-pas-filt    </td><td>Pascal, Delphi</td></tr>
+<tr><td>php         </td><td>vile-php-filt    </td><td>PHP</td></tr>
+<tr><td>pl          </td><td>vile-pl-filt     </td><td>Perl</td></tr>
+<tr><td>pot         </td><td>vile-pot-filt    </td><td>gettext (.po) files</td></tr>
+<tr><td>ps          </td><td>vile-ps-filt     </td><td>PostScript</td></tr>
+<tr><td>py          </td><td>vile-py-filt     </td><td>python</td></tr>
+<tr><td>rc          </td><td>vile-rc-filt     </td><td>Windows resource (.rc) files</td></tr>
+<tr><td>rcs         </td><td>vile-rcs-filt    </td><td>RCS archives</td></tr>
+<tr><td>rexx        </td><td>vile-rexx-filt   </td><td>REXX</td></tr>
+<tr><td>rpm         </td><td>vile-rpm-filt    </td><td>RPM .spec files</td></tr>
+<tr><td>rtf         </td><td>vile-rtf-filt    </td><td>Rich Text Format</td></tr>
+<tr><td>rb          </td><td>vile-ruby-filt   </td><td>Ruby</td></tr>
+<tr><td>sccs        </td><td>vile-sccs-filt   </td><td>SCCS files</td></tr>
+<tr><td>sed         </td><td>vile-sed-filt    </td><td>sed scripts</td></tr>
+<tr><td>sh          </td><td>vile-sh-filt     </td><td>csh, sh, PCLI</td></tr>
+<tr><td>sml         </td><td>vile-sml-filt    </td><td>SML input text</td></tr>
+<tr><td>spell       </td><td>vile-spell-filt  </td><td>highlight misspelled words using ispell or spell (see filters/spell.rc)</td></tr>
+<tr><td>sql         </td><td>vile-sql-filt    </td><td>SQL</td></tr>
+<tr><td>tags        </td><td>vile-tags-filt   </td><td>tags files (see ctags(1)).</td></tr>
+<tr><td>tbl         </td><td>vile-tbl-filt    </td><td>vile's modetbl and cmdtbl files</td></tr>
+<tr><td>tc          </td><td>vile-tc-filt     </td><td>termcap and printcap files</td></tr>
+<tr><td>tcl         </td><td>vile-tcl-filt    </td><td>tcl/tk scripts</td></tr>
+<tr><td>tex         </td><td>vile-latex-filt  </td><td>TeX</td></tr>
+<tr><td>texi        </td><td>vile-texi-filt   </td><td>texinfo</td></tr>
+<tr><td>ti          </td><td>vile-ti-filt     </td><td>terminfo files</td></tr>
+<tr><td>txt         </td><td>vile-txt-filt    </td><td>various flavors of text files</td></tr>
+<tr><td>vile        </td><td>vile-vile-filt   </td><td>vile and vim macros</td></tr>
+<tr><td>vlog        </td><td>vile-vlog-filt   </td><td>verilog</td></tr>
+<tr><td>wbt         </td><td>vile-wbt-filt    </td><td>WinBatch</td></tr>
+<tr><td>xml         </td><td>vile-html-filt   </td><td>XML, DocBook</td></tr>
+<tr><td>xpm         </td><td>vile-xpm-filt    </td><td>X resource files</td></tr>
+<tr><td>xres        </td><td>vile-xres-filt   </td><td>X resource files</td></tr>
+<tr><td>xs          </td><td>vile-xs-filt     </td><td>Perl extension source files</td></tr>
+<tr><td>yacc        </td><td>vile-yacc-filt   </td><td>yacc and bison</td></tr>
+</table>
+<p>
+As you might expect, when the "--with-builtin-filters" option is selected,
+all of the internal filters listed above are bound into the editor.  "Hey,
+wait a minute", you say, "I'll never use some of those filters--not in a
+hundred years." In that case, use this configure syntax:
+<pre>
+	--with-builtin-filters="&lt;filter_list&gt;"
+</pre><p>
+For example:
+<pre>
+	./configure --with-cflags=-O2 \
+		    --with-builtin-filters="awk c key lex m4 perl sed tags
+		    diff html mail make pl rcs sh sql tbl tcl txt vile yacc"
+	make
+	make install
+</pre><p>
+The above commands:
+<ul>
+    <li>compile vile [1],
+    <li>compile and link 21 filters into the final editor image,
+    <li>create the remaining, non-builtin filters as external executable
+      images, and
+    <li>copy the editor and external filters to an to an install tree [2].
+</ul>
+Assuming the editor's startup file initiates syntax coloring [3], then at
+vile run time, the macro file filters/filters.rc preferentially selects and
+executes internal filters when coloring a supported language or file
+format.  If a required internal filter is not available, filters.rc
+starts a pipe and applies color attributes via the corresponsing external
+filter listed in the table above.
+<p>
+[1] Or xvile if you prefer.  See next topic.<br>
+[2] Described below in the topic "Installing x(vile)".<br>
+[3] Refer to the topics "Color basics" and "Syntax coloring" in vile.hlp
+
+<h2 id="buildxvile-id"><a name="buildxvile">Building xvile</a></h2>
+<p>
+You must decide which version of xvile you want to build.  To a certain
+degree this decision may be forced upon you by which libraries you have
+on your machine.  There are three different versions you can build.
+<ol>
+<li>X toolkit version: This version uses only the X toolkit to implement
+scrollbars and the window resize grips (meaning _vile_ windows, not X
+windows).  As a consequence, it should only require the X toolkit library
+(-lXt) and the Xlib library (-lX11).  (Don't worry if you don't know what
+these are or where these are; the configuration script will probably be
+able to find them.)  The scrollbars in this version look much like those
+found in a standard xterm.  We recommend that you try this version out
+first as it is superior in some respects to the other versions which use
+fancy widget sets.  To configure this version, enter the following command:
+<pre>
+	./configure --with-screen=x11
+</pre><p>
+A minor variation using the Athena widgets supports menus:
+<pre>
+	./configure --with-screen=Xaw
+</pre><p>
+Two other variations on the Athena widgets are provided:
+<pre>
+	./configure --with-Xaw3d
+</pre><p>
+to link with Xaw 3d library
+<pre>
+	./configure --with-neXtaw
+</pre><p>
+to link with neXT Athena library.  There's little functional difference
+between the three versions of Athena libraries, they provide different
+appearance.  You can also configure with the corresponding scrollbars from
+the Athena library (though we are not as satisfied with their performance,
+particularly with resizing):
+<pre>
+	./configure --with-Xaw-scrollbars
+</pre><p>
+to use Xaw scrollbars rather than our own (applies to all variations of
+Athena library).  You can also use Kevin's dragging/scrolling logic with
+the Athena library:
+<pre>
+	./configure --with-drag-extension
+</pre>
+<li>Motif version:  This version uses the Motif widget set to implement
+the scrollbars and (vile) window resize pane.  To configure the Motif
+version, enter one of the following commands (several variations are
+recognized for each screen value to simplify integration with other
+scripts):
+<pre>
+	./configure --with-screen=motif
+	./configure --with-screen=Xm
+</pre>
+<li>OpenLook version:  Uses the OpenLook widgets to implement scrollbars. Since
+OpenLook lacks a pane widget, resizing (vile) windows is pretty cheesy.  Still,
+if you are running olwm or olvwm, you might well want to run this version
+so that xvile will look the same as your other applications.
+<pre>
+	./configure --with-screen=openlook
+	./configure --with-screen=Xol
+</pre><p>
+After configuration, you may look at the makefile or config.h if you wish. You
+can finish making xvile by entering the following command:
+<pre>
+	make
+</pre><p>
+On some systems it seems to be sometimes necessary (?) to have X_LIBS set
+to -static prior running configure, i.e, use either:
+<pre>
+	X_LIBS=-static ./configure --with-screen=openlook
+</pre><p>
+for sh, ksh, and bash.  Or:
+<pre>
+	(setenv X_LIBS -static ; ./configure --with-screen=openlook)
+</pre><p>
+for csh and tcsh.
+</ol>
+
+
+<h2 id="installxvile-id"><a name="installxvile">Installing (x)vile</a></h2>
+
+Installation of (x)vile is simple.  Obtain the appropriate privileges (become
+superuser if necessary), and enter the following command:
+<pre>
+	make install
+</pre><p>
+If you have ever installed an older version of vile, you should probably
+check to be sure the old help files are gone.  They used to go to a
+different place (by default) than they do now.  It can be most confusing
+to use an older version of the help file with a newer version of the
+program, and unfortunately, older help files didn't have version numbers.
+<p>
+By default, (x)vile and the script "vile-pager" are installed in
+/usr/local/bin.  Other editor components are stored in these directories:
+
+<table border="0" summary="Command Prefixes">
+<colgroup><col width="15%"><col width="20%"><col width="65%"></colgroup>
+<tr><th>component</th><th>install dir</th></tr>
+<tr><td>vile.hlp                  </td><td>/usr/local/share/vile</td></tr>
+<tr><td>vile.1 (man page)         </td><td>/usr/local/man/man1</td></tr>
+<tr><td>syntax coloring filters   </td><td>[note 1]</td></tr>
+<tr><td>coloring keyword files    </td><td>/usr/local/share/vile</td></tr>
+<tr><td>various macro files       </td><td>/usr/local/share/vile</td></tr>
+</table>
+<p>
+    Note 1:  the value of the environment variable VILE_LIBDIR_PATH
+             specifies where configure installs external coloring filters.
+             If unset, configure defaults to /usr/local/lib/vile.
+<p>
+We realize that not everyone has superuser privileges on the machines on
+which they wish to build (x)vile.  If you lack superuser access or write
+access to /usr/local, you will want to change the installation location.
+You may do so by using the --prefix option to "configure".  Suppose you
+wish to have xvile installed in $HOME/bin (your home bin directory).  You
+would issue the following commands:
+<pre>
+    ./configure --with-screen=x11 --prefix=$HOME
+    make install
+</pre><p>
+The file INSTALL has more information on installation and on configure's
+--prefix option.  If you don't feel like rebuilding (likely), you can
+also edit the makefile and change the "prefix", "bindir", or "libdir"
+definitions--but remember that your changes will be lost the next time
+configure is run.
+
+
+<h2 id="sourcedir-id"><a name="sourcedir">Building in a separate directory</a></h2>
+
+If you are building (x)vile for several machines or want to perhaps
+simultaneously build and try out the various versions of xvile, you will
+probably want to configure (x)vile to build in a directory different from
+where the source resides.  This requires that you have make program which
+correctly uses the VPATH variable.  GNU make does this well, others may
+or may not.
+<p>
+Suppose that the source resides in vile-src.  At the same level as
+vile-src, you might perhaps create a directory called vile-x11-sunos to
+indicate that you are building xvile on a platform running sunos.  You
+would then cd into this directory and issue the following configuration
+command:
+<pre>
+	../vile-src/configure --with-screen=x11
+</pre><p>
+Another directory at the same level as vile-src might be named vile-sunos
+to indicate that you are building vile on a platform running sunos. After
+you cd into this directory, you'd then issue the following command to
+configure ordinary vile.
+<pre>
+	../vile-src/configure
+</pre><p>
+The "make" step in each case is the same as described above; you simply
+issue the command:
+<pre>
+	make
+</pre><p>
+to finish making (x)vile.
+<p>
+This process is described in more formally in the INSTALL document.  As
+described there, you will need to use a version of "make" which supports
+the VPATH variable.  And it must support it _correctly_.  Again, GNU make
+does this.  A lot of older "make"s don't.
+
+
+<h2 id="otheroptions-id"><a name="otheroptions">Other Compile-Time Options</a></h2>
+<p>
+Aside from the screen type, most functionality in vile is controlled by the
+"OPT_" #ifdef's in the estruct.h file.  Some of the more useful ones (or
+those that require manipulating the makefile) are also provided as configure
+options:
+<pre>
+  --with-exec-macros=N    specify count of numbered macros  (anachronism)
+  --with-perl             enable use of Perl as an extension language
+</pre>
+<h2 id="testingoptions-id"><a name="testingoptions">Testing/Development Options</a></h2>
+<p>
+Several other options appear in the configure script's "--help" message.
+They are used to support testing and development, by building various
+debug versions of vile.  These include:
+<pre>
+  --disable-echo          test: display "compiling" commands (default: on)
+  --disable-extensions    test: build only core functions (default: on)
+  --disable-shell         test: disable shell/external commands (default: on)
+  --with-dbmalloc         test: use Conor Cahill's dbmalloc library
+  --with-dmalloc          test: use Gray Watson's dmalloc library
+  --with-no-leaks         test: free permanent memory, analyze leaks
+  --with-trace            test: turn on debug-tracing
+  --with-warnings         test: turn on GCC compiler warnings
+</pre><p>
+The dbmalloc and dmalloc libraries are similar, checking for memory leaks
+and related malloc/free problems.  Both have limitations, so we use both,
+as well as other tools such as Purify and ElectricFence, according to the
+problem.
+<p>
+The --with-no-leaks option compiles in code that frees all of the
+permanently allocated memory on exit.  This greatly simplifies the task of
+analyzing memory leaks.
+<p>
+The --with-trace option turns on debug traces that go to the Trace.out
+file.  Since vile is a fullscreen program, it is not useful to write
+messages to the screen.  (The OPT_HEAPSIZE option is an exception; you may
+be amused by it).
+<p>
+The --with-warnings option applies mostly to compiles with GCC, since it is
+available across several platforms.  We build with all available compilers, but
+their warnings options are not consistent.
+<p>
+Because the echoed commands in the makefile are long, the
+--disable-echo option is provided to shorten the commands, making it easy to
+see the warnings.
+<p>
+The --disable-extensions and --disable-shell options are for testing.
+Disabling extensions produces a smaller program, essentially the core of
+vile (no macros), which is a workable editor.  You may wish to build vile
+without shell support, but perhaps not (ymmv).
+</body>

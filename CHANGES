@@ -9,6 +9,7 @@ Changes for vile 9.8 (released ??? ??? ?? ????)
 	  if the program is not found since that would cause an unexpected
 	  build-failure.
 	> Tom Dickey:
+	+ convert all ".doc" files to html, generate ".doc" from those files.
 	+ improve xterm-fkeys implementation:
 	  + check for existence of shifted cursor- and editing-keys when the
 	    unshifted keys do not use CSI format.

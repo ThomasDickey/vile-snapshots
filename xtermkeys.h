@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/xtermkeys.h,v 1.14 2009/12/26 02:13:36 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/xtermkeys.h,v 1.15 2009/12/28 00:35:21 tom Exp $
  *
  * Function-key definitions and modifiers used for xterm.  This is a header
  * file to simplify sharing between the termcap/curses drivers.
@@ -172,7 +172,7 @@ format_modified(char *target, const char *source, int length, int which)
     } else {
 	++result;
 	sprintf(target, "%.*s1;%d%s",
-		(params - source),
+		(int) (params - source),
 		source,
 		xterm_mods[which].code,
 		params);

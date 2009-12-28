@@ -6,7 +6,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/sh-filt.l,v 1.105 2009/12/27 21:17:42 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/sh-filt.l,v 1.106 2009/12/27 22:41:20 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Shell script.
  */
@@ -85,6 +85,7 @@ BACKTIC		`
 ACTION		[\.{}]
 
 BRACES		"${"
+END_BRACES	"}"
 
 IDENT		{NAME0}{NAME}*
 QIDENT		({SSTRING}|{DSTRING}|[^ \"'$\t\r\n])+
@@ -230,20 +231,17 @@ DASHIDENT	{NAME0}{NAME}*("-"{NAME}{NAME2}*)*
 <EXPRS>{INTEGER}	{ flt_bfr_embed(yytext, yyleng, Number_attr); }
 <EXPRS>[^`\r\n\\\$)]+	{ flt_bfr_append(yytext, yyleng); }
 
-	/* on entry, after "${" */
-<BRACES>"}"		{ end_braces(yytext, yyleng); }
+<BRACES>{END_BRACES}	{ end_braces(yytext, yyleng); }
 <BRACES>{IDENT}		{ flt_bfr_embed(yytext, yyleng, Ident_attr); new_state(BRACES2); }
 <BRACES>{INTEGER}	{ flt_bfr_embed(yytext, yyleng, Ident_attr); new_state(BRACES2); }
 <BRACES>[?#!%]		{ flt_bfr_embed(yytext, yyleng, Action_attr); }
 <BRACES>[^?#!%}[:alnum:]_-]+ { flt_bfr_append(yytext, yyleng); }
 
-	/* after processing an identifier or integer, looking for operator */
-<BRACES2>"}"		{ end_braces(yytext, yyleng); }
+<BRACES2>{END_BRACES}	{ end_braces(yytext, yyleng); }
 <BRACES2>[-:=?+*@#%/^,]+ { braces_operator(yytext, yyleng); }
 <BRACES2>[^-:=?+*@#%/^,}[:blank:]]+ { flt_bfr_embed(yytext, yyleng, ""); } /* FIXME - error */
 <BRACES2>{SPACE}	{ flt_bfr_append(yytext, yyleng); }
 
-	/* ...after getting an operator */
 <BRACES3>{BACKTIC2_DOWN} { handle_backtic(yytext, yyleng, yyleng, 1); }
 <BRACES3>{BACKTIC1_DOWN} { handle_backtic(yytext, yyleng, yyleng, 1); }
 <BRACES3>{BACKTIC}	{ handle_backtic(yytext, yyleng, yyleng, -1); }
@@ -254,8 +252,8 @@ DASHIDENT	{NAME0}{NAME}*("-"{NAME}{NAME2}*)*
 <BRACES3>{IDENT}	{ flt_bfr_embed(yytext, yyleng, ""); }
 <BRACES3>{INTEGER}	{ flt_bfr_embed(yytext, yyleng, ""); }
 <BRACES3>"${"		{ begin_braces(yytext, yyleng); }
-<BRACES3>"}"		{ end_braces(yytext, yyleng); }
-<BRACES3>[^}[:alnum:]_\\"']+ { flt_bfr_embed(yytext, yyleng, ""); }
+<BRACES3>{END_BRACES}	{ end_braces(yytext, yyleng); }
+<BRACES3>[^}[:alnum:]_\\\"']+ { flt_bfr_embed(yytext, yyleng, ""); }
 
 %%
 

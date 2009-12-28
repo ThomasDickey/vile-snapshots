@@ -1,4 +1,4 @@
-MANIFEST for vile, version v9_7xA
+MANIFEST for vile, version v9_7xB
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 AUTHORS                         list of authors, with nicknames in CHANGES
@@ -160,22 +160,33 @@ xtermkeys.h                     generate bindings for xterm key-modifiers
 xvile.wmconfig                  windowmaker config file for xvile
 doc                             subdirectory
 doc/Vileserv.doc                overview of Vileserv and vileget scripts
+doc/Vileserv.html               overview of Vileserv and vileget scripts
 doc/config.doc                  configuration-instructions for VILE
+doc/config.html                 vile's configure script information
 doc/dir.doc                     description of perl directory-browser
+doc/dir.html                    description of perl directory-browser
 doc/filters.doc                 overview of syntax filter programs
+doc/filters.html                description of vile's syntax filters
 doc/macros.doc                  documentation for VILE macros
+doc/macros.html                 description of vile's macro language
 doc/make-hlp.pl                 script to format vile.hlp from dump
 doc/make-hlp.sh                 script to generate vile.hlp
 doc/make-toc.pl                 script to generate table-of-contents
 doc/make-toc.sh                 script to generate table-of-contents
+doc/makefile                    script to manage the ".doc" files
 doc/menus.doc                   description of xvile (Xm and Xaw) menus
+doc/menus.html                  description of xvile (Xm and Xaw) menus
 doc/modes.doc                   overview of modes/majormodes
+doc/modes.html                  description of vile's majormodes
 doc/ncu-indent                  copy of ncu-indent
 doc/oleauto.doc                 document Winvile OLE
+doc/oleauto.html                description of winvile's OLE automation support
 doc/perl.doc                    notes about perl interface to vile
+doc/perl.html                   notes about perl interface to vile
 doc/vile-hlp.html               html version of help-file
 doc/vile-toc.html               generated table-of-contents
 doc/visvile.doc                 document visvile.dll
+doc/visvile.html                description of VisVile
 filters                         subdirectory
 filters/ada-filt.l              ada syntax highlighter for vile
 filters/ada.key                 Ada95 keywords

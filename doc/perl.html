@@ -1,0 +1,58 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+  $Id: perl.html,v 1.2 2009/12/28 16:51:23 tom Exp $
+-->
+<HTML>
+<HEAD>
+<TITLE>
+Perl Support
+</TITLE>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link rev="made" href="mailto:dickey@invisible-island.net">
+<link rel="SHORTCUT ICON" href="/img/icons/vile.ico" type="image/x-icon">
+</HEAD>
+<BODY>
+<h1 id="toplevel-id"><a name="toplevel">Perl Support</a></h1>
+Vile supports the use of Perl as an extension language by embedding a
+Perl interpreter into the editor.
+<p>
+The "--with-perl" configure option enables Perl support at build time on
+Unix hosts (for Win32 instructions see the file README.PC).
+<p>
+After the executable is successfully built, up to date documentation for
+the API in various formats may be obtained from the following make
+targets (not built by default):
+<pre>
+    vile-perl-api.doc   (unix and win32)
+    vile-perl-api.man   (unix hosts only)
+    vile-perl-api.html  (unix hosts only)
+</pre><p>
+A recent version of Perl is required.  The interface was developed and
+tested using 5.004_04.  The most recent version of Perl may be retrieved
+from the URL:
+<pre>
+    <a href="http://www.perl.com/CPAN/src/latest.tar.gz">http://www.perl.com/CPAN/src/latest.tar.gz</a>
+</pre><p>
+The Perl interpreter requires subsidiary files, the location of which is
+coded into the Perl library.  As such, if a Perl-enabled Vile binary is
+to be installed onto multiple machines, the same version of Perl must be
+installed on each target machine, in the same location.
+<p>
+This also means that if a newer version of Perl is installed, Vile must
+either be rebuilt against the new version, or the version-specific
+directory (given by "perl -V:archlib") of the old version must be
+retained.
+<p>
+Note also that embedding a Perl interpreter into Vile will increase the
+size of the binary.  On many platforms, a shared Perl library may be
+built which, at the cost of a load-time performance penalty, can
+substantially reduce the size of the compiled vile, xvile, [nvi, apache,
+etc, ...] and of course perl binaries.
+<p>
+See also the output of "perl -V:useshrplib" and the section "Building a
+shared libperl.so Perl library" in the "INSTALL" file from the Perl
+distribution.
+
+<h2 id="credits-id"><a name="credits">Credits</a></h2>
+The Perl interface for vile was originally written
+by Kevin Buettner in 1997 and 1998.

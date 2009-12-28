@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/rcs-filt.l,v 1.17 2009/12/10 00:28:47 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/rcs-filt.l,v 1.18 2009/12/28 00:36:42 tom Exp $
  *
  * Filter to add vile "attribution" sequences to RCS archives.
  */
@@ -71,7 +71,7 @@ find_ident(char *first)
  * keywords.
  */
 static char  *save_bfr;
-static size_t save_max;
+static unsigned save_max;
 static size_t save_len;
 
 static void
