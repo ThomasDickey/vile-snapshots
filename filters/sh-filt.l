@@ -1,17 +1,18 @@
 %pointer
-%x NORMAL HEREDOC HEREDOC2 DQUOTED SQUOTED SUBST EXPRS
+%x NORMAL HEREDOC HEREDOC2 DQUOTED SQUOTED EXPRS BRACES BRACES2 BRACES3
 
 %o 10000
 %a 5000
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/sh-filt.l,v 1.90 2009/12/25 22:05:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/sh-filt.l,v 1.105 2009/12/27 21:17:42 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Shell script.
  */
 
 #include <filters.h>
+#undef YY_NO_UNPUT
 
 #define FLTSTACK_EXTRA      int backtic;
 #define FLTSTACK_EXTRA_PUSH FLTSTACK_THIS.backtic = 0;
@@ -46,16 +47,19 @@ static char *here_tag;
 static unsigned here_len;
 static int here_exp;
 
-static int embed_or_append(const char *text, int length);
 static int got_here(const char *text, int length);
 static int pop_backtic1(const char *text, int len, int test);
+static void begin_braces(const char *text, int length);
+static void braces_operator(const char *text, int length);
 static void color_delimiter(char *text, int size, char *attr);
+static void embed_or_append(const char *text, int length);
+static void end_braces(const char *text, int length);
 static void handle_backtic(const char *text, int length, int test, int which);
 static void save_here(const char *text, int length);
 
 %}
 
-SPACE		[ \t]
+SPACE		[[:blank:]]
 
 SSTRING		\'([^']|\n)*\'
 DSTRING		\"([^"]|\n)*\"
@@ -80,15 +84,13 @@ BACKTIC1_UP	")"
 BACKTIC		`
 ACTION		[\.{}]
 
+BRACES		"${"
+
 IDENT		{NAME0}{NAME}*
 QIDENT		({SSTRING}|{DSTRING}|[^ \"'$\t\r\n])+
 IDENT0		[-]+[[:digit:]]*{NAME0}+{NAME2}*
 
 IDENT1		\${NAME}+
-IDENT2		\$\{[#]?({IDENT}|{INTEGER})\}
-IDENT2L		\$\{([#]?{IDENT}|{INTEGER})
-IDENT2R		\}
-IDENTEQLS	{NAME0}{NAME}*=
 IDENTX		\$[\*@#\?\$!-]
 
 DASHIDENT	{NAME0}{NAME}*("-"{NAME}{NAME2}*)*
@@ -106,12 +108,12 @@ DASHIDENT	{NAME0}{NAME}*("-"{NAME}{NAME2}*)*
 
 <NORMAL>{ANY_INTEGER}	{ WriteToken(Number_attr); }
 
-<NORMAL>{IDENT1}	|
-<NORMAL>{IDENT2}	{ WriteToken(Ident_attr); }
-<NORMAL>{IDENT2L}	{ WriteToken(Ident_attr); push_state(SUBST); }
+<NORMAL>{BRACES}	{ begin_braces(yytext, yyleng); }
+
+<NORMAL>{IDENT1}	{ WriteToken(Ident_attr); }
 <NORMAL>{IDENTX}	{ WriteToken(Ident_attr); }
 
-<NORMAL>{IDENTEQLS}	{ flt_puts(yytext, yyleng-1, Ident_attr); flt_putc('='); }
+<NORMAL>{IDENT}"="	{ flt_puts(yytext, yyleng-1, Ident_attr); flt_putc('='); }
 
 <NORMAL>\\.		|
 <NORMAL>{SSTRING}	{ WriteToken(String_attr); }
@@ -154,9 +156,13 @@ DASHIDENT	{NAME0}{NAME}*("-"{NAME}{NAME2}*)*
 <HEREDOC>{BACKTIC1_DOWN} { handle_backtic(yytext, yyleng, yyleng, 1); }
 <HEREDOC>{BACKTIC}	{ handle_backtic(yytext, yyleng, yyleng, -1); }
 <HEREDOC>\\\$		{ flt_bfr_append(yytext, yyleng); }
-<HEREDOC>{IDENT1}	|
-<HEREDOC>{IDENT2}	{ embed_or_append(yytext, yyleng); }
-<HEREDOC>{IDENT2L}	{ if (embed_or_append(yytext, yyleng)) push_state(SUBST); }
+<HEREDOC>{IDENT1}	{ if (here_exp) {
+			      flt_bfr_embed(yytext, yyleng, Ident_attr);
+			  } else {
+			      flt_bfr_append(yytext, yyleng);
+			  }
+			}
+<HEREDOC>{BRACES}	{ embed_or_append(yytext, yyleng); }
 <HEREDOC>^[\t]*{QIDENT}$ {
 			    int used = 0;
 			    if (strip_tabs) {
@@ -201,27 +207,14 @@ DASHIDENT	{NAME0}{NAME}*("-"{NAME}{NAME2}*)*
 <DQUOTED>{BACKTIC}	{ handle_backtic(yytext, yyleng, yyleng, -1); }
 <DQUOTED>\\[\n]		|
 <DQUOTED>\\.		{ flt_bfr_embed(yytext, 1, Action_attr); flt_bfr_append(yytext + 1, yyleng - 1); }
-<DQUOTED>{IDENT1}	|
-<DQUOTED>{IDENT2}	{ flt_bfr_embed(yytext, yyleng, Ident_attr); }
-<DQUOTED>{IDENT2L}	{ if (embed_or_append(yytext, yyleng)) push_state(SUBST); }
+<DQUOTED>{IDENT1}	{ flt_bfr_embed(yytext, yyleng, Ident_attr); }
+<DQUOTED>{BRACES}	{ begin_braces(yytext, yyleng); }
 <DQUOTED>[^`\r\n\\\"$]+	{ flt_bfr_append(yytext, yyleng); }
 <DQUOTED>[\n$]		{ flt_bfr_append(yytext, yyleng); }
 <DQUOTED>\"		{ PopQuote(); }
 
 <SQUOTED>[^']		{ flt_bfr_append(yytext, yyleng); }
 <SQUOTED>\'		{ PopQuote(); }
-
-<SUBST>{SSTRING}	{ flt_bfr_embed(yytext, yyleng, String_attr); }
-<SUBST>{BACKTIC1_UP}	{ if (!pop_backtic1(yytext, yyleng, LEN_BACKTIC1_DOWN)) 
-			      flt_bfr_append(yytext, yyleng);
-			}
-<SUBST>{BACKTIC2_DOWN}	{ handle_backtic(yytext, yyleng, yyleng, 1); }
-<SUBST>{BACKTIC1_DOWN}	{ handle_backtic(yytext, yyleng, yyleng, 1); }
-<SUBST>{BACKTIC}	{ handle_backtic(yytext, yyleng, yyleng, -1); }
-<SUBST>{IDENT2R}	{ flt_bfr_embed(yytext, yyleng, Ident_attr); pop_state(); }
-<SUBST>\\\"		{ flt_bfr_embed(yytext, yyleng, String_attr); }
-<SUBST>\"		{ PushQuote(DQUOTED, String_attr); }
-<SUBST>[^"}\\]		{ flt_bfr_embed(yytext, yyleng, ""); }
 
 <EXPRS>{BACKTIC1_UP}	{ if (!pop_backtic1(yytext, yyleng, LEN_BACKTIC1_DOWN)) 
 			      flt_bfr_append(yytext, yyleng);
@@ -232,15 +225,125 @@ DASHIDENT	{NAME0}{NAME}*("-"{NAME}{NAME2}*)*
 <EXPRS>{BACKTIC}	{ handle_backtic(yytext, yyleng, yyleng, -1); }
 <EXPRS>\\[\n]		|
 <EXPRS>\\.		{ flt_bfr_embed(yytext, 1, Action_attr); flt_bfr_append(yytext + 1, yyleng - 1); }
-<EXPRS>{IDENT1}		|
-<EXPRS>{IDENT2}		{ flt_bfr_embed(yytext, yyleng, Ident_attr); }
-<EXPRS>{IDENT2L}	{ if (embed_or_append(yytext, yyleng)) push_state(SUBST); }
+<EXPRS>{IDENT1}		{ flt_bfr_embed(yytext, yyleng, Ident_attr); }
+<EXPRS>{BRACES}		{ begin_braces(yytext, yyleng); }
 <EXPRS>{INTEGER}	{ flt_bfr_embed(yytext, yyleng, Number_attr); }
 <EXPRS>[^`\r\n\\\$)]+	{ flt_bfr_append(yytext, yyleng); }
+
+	/* on entry, after "${" */
+<BRACES>"}"		{ end_braces(yytext, yyleng); }
+<BRACES>{IDENT}		{ flt_bfr_embed(yytext, yyleng, Ident_attr); new_state(BRACES2); }
+<BRACES>{INTEGER}	{ flt_bfr_embed(yytext, yyleng, Ident_attr); new_state(BRACES2); }
+<BRACES>[?#!%]		{ flt_bfr_embed(yytext, yyleng, Action_attr); }
+<BRACES>[^?#!%}[:alnum:]_-]+ { flt_bfr_append(yytext, yyleng); }
+
+	/* after processing an identifier or integer, looking for operator */
+<BRACES2>"}"		{ end_braces(yytext, yyleng); }
+<BRACES2>[-:=?+*@#%/^,]+ { braces_operator(yytext, yyleng); }
+<BRACES2>[^-:=?+*@#%/^,}[:blank:]]+ { flt_bfr_embed(yytext, yyleng, ""); } /* FIXME - error */
+<BRACES2>{SPACE}	{ flt_bfr_append(yytext, yyleng); }
+
+	/* ...after getting an operator */
+<BRACES3>{BACKTIC2_DOWN} { handle_backtic(yytext, yyleng, yyleng, 1); }
+<BRACES3>{BACKTIC1_DOWN} { handle_backtic(yytext, yyleng, yyleng, 1); }
+<BRACES3>{BACKTIC}	{ handle_backtic(yytext, yyleng, yyleng, -1); }
+<BRACES3>\\\"		{ flt_bfr_embed(yytext, yyleng, String_attr); }
+<BRACES3>\\[^"]		{ flt_bfr_embed(yytext, 1, Action_attr); flt_bfr_append(yytext + 1, yyleng - 1); }
+<BRACES3>\"		{ PushQuote(DQUOTED, String_attr); }
+<BRACES3>\'		{ PushQuote(SQUOTED, String_attr); }
+<BRACES3>{IDENT}	{ flt_bfr_embed(yytext, yyleng, ""); }
+<BRACES3>{INTEGER}	{ flt_bfr_embed(yytext, yyleng, ""); }
+<BRACES3>"${"		{ begin_braces(yytext, yyleng); }
+<BRACES3>"}"		{ end_braces(yytext, yyleng); }
+<BRACES3>[^}[:alnum:]_\\"']+ { flt_bfr_embed(yytext, yyleng, ""); }
 
 %%
 
 #include <fltstack.h>
+
+static void
+resume_state(void)
+{
+    switch (FLT_STATE) {
+    case DQUOTED:
+    case EXPRS:
+    case HEREDOC:
+	flt_bfr_begin(String_attr);
+	break;
+    }
+}
+
+static void
+begin_braces(const char *text, int length)
+{
+    flt_bfr_finish();
+    push_state(BRACES);
+
+    flt_bfr_begin(Ident_attr);
+    flt_bfr_append(text, length);
+}
+
+static void
+braces_operator(const char *text, int length)
+{
+    static const struct {
+	int length;
+	const char *text;
+    } table[] = {
+	{ 2, "%%" },
+	{ 2, "##" },
+	{ 2, ":+" },
+	{ 2, ":?" },
+	{ 2, ":-" },
+	{ 2, ":=" },
+	{ 2, ",," },
+	{ 2, "^^" },
+	{ 1, "%" },
+	{ 1, "#" },
+	{ 1, "*" },
+	{ 1, "@" },
+	{ 1, "/" },
+	{ 1, ":" },
+	{ 1, "," },
+	{ 1, "^" },
+	/* sh */
+	{ 1, "+" },
+	{ 1, "?" },
+	{ 1, "-" },
+	{ 1, "=" },
+    };
+    unsigned n;
+    const char *attr = Error_attr;
+
+    for (n = 0; n < TABLESIZE(table); ++n) {
+	if (table[n].length <= length) {
+	    if (!strncmp(table[n].text, text, (size_t) table[n].length)) {
+		attr = Action_attr;
+		if (length > table[n].length) {
+		    char *temp = strmalloc(text);
+		    while (length > table[n].length) {
+			unput(temp[--length]);
+		    }
+		    free(temp);
+		}
+		break;
+	    }
+	}
+    }
+
+    flt_bfr_embed(text, length, attr);
+    new_state(BRACES3);
+}
+
+static void
+end_braces(const char *text, int length)
+{
+    flt_bfr_embed(text, length, Ident_attr);
+    flt_bfr_finish();
+
+    pop_state();
+    resume_state();
+}
 
 static int
 pop_backtic1(const char *text, int len, int test)
@@ -266,13 +369,7 @@ handle_backtic(const char *text, int len, int test, int which)
     flt_puts(text, len, Action_attr);
     if (FLTSTACK_OK && (which <= 0) && (FLTSTACK_THIS.backtic == test)) {
 	pop_state();
-	switch (FLT_STATE) {
-	case DQUOTED:
-	case SUBST:
-	case EXPRS:
-	    flt_bfr_begin(String_attr);
-	    break;
-	}
+	resume_state();
     } else {
 	flt_bfr_finish();
 	switch (test) {
@@ -329,16 +426,14 @@ save_here(const char *text, int length)
     DPRINTF(("-> '%s'(%d)\n", here_tag, here_exp));
 }
 
-static int
+static void
 embed_or_append(const char *text, int length)
 {
-    /* FIXME: here_exp should always be true - verify that */
     if (here_exp) {
-	flt_bfr_embed(text, length, Ident_attr);
+	begin_braces(text, length);
     } else {
 	flt_bfr_append(text, length);
     }
-    return here_exp;
 }
 
 static int
