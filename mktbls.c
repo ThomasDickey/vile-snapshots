@@ -15,7 +15,7 @@
  * by Tom Dickey, 1993.    -pgf
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/mktbls.c,v 1.162 2009/10/23 00:54:32 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/mktbls.c,v 1.163 2009/12/28 23:21:30 tom Exp $
  *
  */
 
@@ -1545,6 +1545,8 @@ init_statevars(void)
 	"",
 	"/*\tlist of recognized state variables\t*/",
 	"",
+	"extern BLIST blist_statevars;",
+	"",
 	"#ifdef realdef",
 	"DECL_EXTERN_CONST(char *const statevars[]) = {"
     };
@@ -1583,7 +1585,6 @@ dump_statevars(void)
 	"BLIST blist_statevars = init_blist(statevars);",
 	"#else",
 	"extern const char *const statevars[];",
-	"extern BLIST blist_statevars;",
 	"#endif",
 	"",
 	""
@@ -1683,10 +1684,10 @@ init_fsms(void)
     for (n = 0; fsm_uc_name[n] != '\0'; n++)
 	fsm_uc_name[n] = (char) toUpper(fsm_uc_name[n]);
     Fprintf(nefsms, "\n");
+    Fprintf(nefsms, "extern FSM_BLIST fsm_%s_blist;\n\n", fsm_lc_name);
     Fprintf(nefsms, "#if OPT_%s_CHOICES\n", fsm_uc_name);
     Fprintf(nefsms, "#ifndef realdef\n");
     Fprintf(nefsms, "extern const FSM_CHOICES fsm_%s_choices[];\n", fsm_lc_name);
-    Fprintf(nefsms, "extern FSM_BLIST fsm_%s_blist;\n", fsm_lc_name);
     Fprintf(nefsms, "#else\n");
     Fprintf(nefsms, "DECL_EXTERN_CONST(FSM_CHOICES fsm_%s_choices[]) = %c\n",
 	    fsm_lc_name, L_CURL);
@@ -1934,6 +1935,7 @@ dump_names(void)
     Fprintf(nename, "\n/* if you maintain this by hand, keep it in */\n");
     Fprintf(nename, "/* alphabetical order!!!! */\n\n");
     Fprintf(nename, "#include <blist.h>\n\n");
+    Fprintf(nename, "extern BLIST blist_nametbl;\n\n");
     Fprintf(nename, "#ifdef real_NAMETBL\n\n");
     Fprintf(nename, "EXTERN_CONST NTAB nametbl[] = {\n");
 
@@ -1947,7 +1949,6 @@ dump_names(void)
     Fprintf(nename, "\t{ NULL, NULL }\n};\n\n");
     Fprintf(nename, "BLIST blist_nametbl = init_blist(nametbl);\n\n");
     Fprintf(nename, "#else\n\n");
-    Fprintf(nename, "extern BLIST blist_nametbl;\n\n");
     Fprintf(nename, "#endif\n");
 }
 
@@ -2018,6 +2019,11 @@ save_ufuncs(char **vec)
 static void
 dump_ufuncs(void)
 {
+    static const char *const head[] =
+    {
+	"extern BLIST blist_ufuncs;",
+	"",
+    };
     static const char *const middle[] =
     {
 	"\tDATA(NULL, 0, \"\"),",
@@ -2026,7 +2032,6 @@ dump_ufuncs(void)
 	"BLIST blist_ufuncs = init_blist(vl_ufuncs);",
 	"#else",
 	"extern const UFUNC vl_ufuncs[];",
-	"extern BLIST blist_ufuncs;",
 	"#endif",
 	"",
     };
@@ -2034,6 +2039,7 @@ dump_ufuncs(void)
     LIST *p;
     int count;
 
+    write_lines(nevars, head);
     for (p = all_ufuncs, count = 0; p != 0; p = p->nst) {
 	if (!count++)
 	    init_ufuncs();

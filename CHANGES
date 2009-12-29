@@ -1,6 +1,6 @@
 Changes for vile 9.8 (released ??? ??? ?? ????)
 
- 20091227 (y)
+ 20091228 (y)
 	> Brendan O'Dea:
 	+ modify ".desktop" files to use freedesktop category names as in
 	  http://standards.freedesktop.org/menu-spec/1.0/apa.html
@@ -9,6 +9,8 @@ Changes for vile 9.8 (released ??? ??? ?? ????)
 	  if the program is not found since that would cause an unexpected
 	  build-failure.
 	> Tom Dickey:
+	+ change Inno Setup script to install html files rather than doc files
+	  for documentation; added a shortcut to the table of contents.
 	+ convert all ".doc" files to html, generate ".doc" from those files.
 	+ improve xterm-fkeys implementation:
 	  + check for existence of shifted cursor- and editing-keys when the
@@ -20,6 +22,7 @@ Changes for vile 9.8 (released ??? ??? ?? ????)
 	  + "${number}"
 	  + "$(commands)"
 	  + "$((expression))"
+	  + "${name#value}", etc.
 	+ make $font always available, but readonly for non-GUI configurations.
 	+ use -F option to highlight the code-examples in vile's help-file.
 	+ add -F command-line option, to only run the syntax filters for the
