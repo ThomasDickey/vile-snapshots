@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/xtermkeys.h,v 1.15 2009/12/28 00:35:21 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/xtermkeys.h,v 1.17 2009/12/29 02:13:40 tom Exp $
  *
  * Function-key definitions and modifiers used for xterm.  This is a header
  * file to simplify sharing between the termcap/curses drivers.
@@ -205,7 +205,7 @@ add_fkey(const char *string, int length, int code, int modify)
 	    && is_csi(string)
 	    && !has_param(string)) {
 	    for (n = 0; n < TABLESIZE(xterm_mods); ++n) {
-		int lenn = format_modified(buffer, string, length, n);
+		int lenn = format_modified(buffer, string, length, (int) n);
 		add_modified_key(buffer, lenn, code | xterm_mods[n].mask, modify);
 	    }
 	}
@@ -299,7 +299,7 @@ tcap_init_fkeys(void)
 	for (i = 0; i < TABLESIZE(fallback_arrows); i++) {
 	    for (j = 'A'; j <= 'D'; j++) {
 		char temp[80];
-		lsprintf(temp, "%s%c", fallback_arrows[i], j);
+		lsprintf(temp, "%s%c", fallback_arrows[i], (char) j);
 		add_fkey(temp, (int) strlen(temp), (int) (SPEC | j), pass);
 	    }
 	}

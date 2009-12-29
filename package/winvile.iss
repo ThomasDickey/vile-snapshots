@@ -1,4 +1,4 @@
-; $Header: /users/source/archives/vile.vcs/package/RCS/winvile.iss,v 1.13 2009/03/21 15:52:13 root Exp $
+; $Header: /users/source/archives/vile.vcs/package/RCS/winvile.iss,v 1.14 2009/12/28 21:58:24 tom Exp $
 ; vile:ts=2 sw=2
 ;
 ; This installs winvile as "winvile-ole.exe", since that is the name I use when building the OLE flavor
@@ -19,8 +19,6 @@
 ;	the skipifdoesntexist flag on the [Run] does not appear to work.
 ;
 ; context-menu should require admin privilege to set?
-;
-; install link to extra-docs
 ;
 ;	install visvile (separate install, or component to add-on)
 ;	install vile.exe (separate install)
@@ -102,7 +100,7 @@ Name: {app}\filters; Components: filters
 Source: ..\bin\wvwrap.exe; DestDir: {app}\bin; DestName: wvwrap.exe; Components: explorer; AfterInstall: myPostExplorer; Flags: ignoreversion
 Source: ..\vile.hlp; DestDir: {app}\bin; Components: docs help; AfterInstall: myPostHelpfile; Flags: ignoreversion
 Source: ..\README; DestDir: {app}; DestName: README.txt; Components: docs main; Flags: isreadme
-Source: ..\doc\*.doc; Destdir: {app}\doc; Components: docs; Flags: ignoreversion
+Source: ..\doc\*.html; Destdir: {app}\doc; Components: docs; Flags: ignoreversion
 Source: ..\macros\*.rc; DestDir: {app}\macros; Components: macros; AfterInstall: myPostMacros; Flags: ignoreversion recursesubdirs
 Source: ..\filters\*.rc; DestDir: {app}\macros; Components: macros; AfterInstall: myPostMacros; Flags: ignoreversion
 Source: c:\vile\*.keywords; DestDir: {app}\macros; Components: macros; Flags: ignoreversion
@@ -128,6 +126,9 @@ Type: dirifempty; Name: {app}
 [Code]
 #emit 'const MY_CONTEXT_MENU = ''Edit with ' + myAppName + ''';'
 #emit 'const MY_EDITOR_APP = ''{app}\bin\' + myRootName + '.exe'';'
+
+const MY_HELP_CONTENTS = 'Help - Contents';
+
 const MY_REGISTER_OLE = 'Register OLE Server';
 const MY_UNREGISTER_OLE = 'Unregister OLE Server';
 
@@ -505,6 +506,43 @@ begin
     end;
 end;
 
+function myDocsDir(): String;
+begin
+  Result := ExpandConstant('{group}');
+end;
+
+function myDocsLink(const Description: String): String;
+begin
+  Result := myDocsDir() + '\' + Description + '.lnk';
+end;
+
+// use shortcuts so we will "see" the right path.
+procedure AddDocsLink(const Description, Params: String);
+begin
+  CreateShellLink(
+    ExpandConstant(myDocsLink(Description)),
+    Description,
+    ExpandConstant('{app}\doc\' + Params), // document
+    '',                               //
+    ExpandConstant('{app}\doc'),      // target directory contains documents
+    '',                               // no icon filename
+    -1,                               // no icon index
+    SW_HIDE);
+end;
+
+procedure RemoveDocsLink(const Description: String);
+var
+  ToRemove : String;
+begin
+  ToRemove := myDocsLink(Description);
+  if FileExists(ToRemove) then
+    begin
+    Log('Deleting link: ' + ToRemove);
+    if not DeleteFile(ToRemove) then
+      Log('Failed to remove ' + ToRemove);
+    end;
+end;
+
 function CleanupMyKey(const theRootKey: Integer): Boolean;
 var
   Path : String;
@@ -576,6 +614,7 @@ begin
       begin
       AddToolLink(MY_REGISTER_OLE, '-Or');
       AddToolLink(MY_UNREGISTER_OLE, '-Ou');
+      AddDocsLink(MY_HELP_CONTENTS, 'vile-toc.html');
       end
     else
       MsgBox('Cannot create:' #13#13 '    ' + myToolsDir(), mbInformation, MB_OK);
@@ -614,6 +653,7 @@ begin
 		
 		if DirExists(myToolsDir()) then
   		begin
+      removeDocsLink(MY_HELP_CONTENTS);
   		Log('Removing ' + myToolsDir());
 	 	  removeToolLink(MY_REGISTER_OLE);
 		  removeToolLink(MY_UNREGISTER_OLE);
