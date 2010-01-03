@@ -1,6 +1,6 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
-  $Id: menus.html,v 1.2 2009/12/28 15:30:51 tom Exp $
+  $Id: menus.html,v 1.5 2009/12/29 10:56:51 tom Exp $
 -->
 <HTML>
 <HEAD>
@@ -12,27 +12,27 @@ XVile Menus
 <link rel="SHORTCUT ICON" href="/img/icons/vile.ico" type="image/x-icon">
 </HEAD>
 <BODY>
-<h1 id="fixme-id"><a name="fixme">XVile Menus</a></h1>
+<h1 id="toplevel-id"><a name="toplevel">XVile Menus</a></h1>
 The Motif and Athena widget versions of xvile automatically support user
 configurable menus.
-<h2 id="fixme-id"><a name="fixme">Search-Rules</a></h2>
+<h2 id="searchrules-id"><a name="searchrules">Search-Rules</a></h2>
 If the environment variable XVILE_MENU is set, it contains the name of the rc
 file.  Otherwise, the name ".vilemenu" is used.  The name of the menu file is
 given in the variable "$menu-file".  If it is not found, and is different from
 "vilemenu.rc", xvile looks for that file in the list of directories given in
 "$startup-path".  The "vilemenu.rc" file is treated specially because it is the
 file installed from vile's distribution.
-<h2 id="fixme-id"><a name="fixme">Format</a></h2>
+<h2 id="format-id"><a name="format">Format</a></h2>
 The file contains a series of lines whose first character denotes the
 type of entry, subsequent fields delimited by colon:
 
 <table border="0" summary="Command Prefixes">
-<colgroup><col width="15%"><col width="20%"><col width="65%"></colgroup>
-<tr><td valign="top">C &ndash;</td><td>
+<colgroup><col width="5%"><col width="95%"></colgroup>
+<tr><td valign="top">C&nbsp;&ndash;</td><td>
 	    cascade (actually pulldown).  One field only is recognized,
 	    the menu heading.</td></tr>
 
-<tr><td valign="top">B &ndash;</td><td>
+<tr><td valign="top">B&nbsp;&ndash;</td><td>
 	    button (menu entry).  The first field is the menu label. 
 	    The second is the command which will be executed.  If the
 	    command is a number, it is expanded into the vile command
@@ -47,10 +47,10 @@ type of entry, subsequent fields delimited by colon:
 		edit_mrc &ndash; switch to a buffer with the menu rc file
 			which was found, e.g., "$menu-file" or "vilemenu.rc".
 </td></tr>
-<tr><td>S &ndash;</td><td>
+<tr><td>S&nbsp;&ndash;</td><td>
 	    separator</td></tr>
 
-<tr><td valign="top">L &ndash;</td><td>
+<tr><td valign="top">L&nbsp;&ndash;</td><td>
 	    list buffers.  Each time you select this menu entry, vile
 	    constructs a current list of the buffers, allowing you to
 	    switch to any buffer by selecting it from the menu.  It has
@@ -67,76 +67,76 @@ point, to make it more consistent with vile's macro files.
 The special keyword "cmd" tells the menu function to invoke the following
 keyword as a :-line command, so that commands which must solicit input
 will work properly.
-<h2 id="fixme-id"><a name="fixme">Example</a></h2>
+<h2 id="example-id"><a name="example">Example</a></h2>
 A sample .vilemenu file:
-<pre>
-	C:Xvile
-	B:New:new_xvile
-	B:Edit .vilerc:edit_rc
-	B:Parse .vilerc:parse_rc
-	B:Edit .vilemenu:edit_mrc
-	B:Quit:quit
-	;
-	C:Editing
-	B:Apply Highlighting:cmd HighlightFilter
-	B:Clear Highlighting (above):clear-attributes-til beginning-of-file
-	B:Clear Highlighting (below):clear-attributes-til end-of-file
-	S
-	B:Search Forward...:cmd search-forward
-	B:Search Backward...:cmd search-reverse
-	S
-	B:Reload File:cmd e!
-	B:Rename Buffer:cmd rename-buffer
-	B:Edit:cmd edit-file
-	B:Rename File:cmd filename
-	S
-	B:Manual for...:cmd ShowManpage
-	S
-	B:Files:capture-command "ls -l"
-	B:Processes:capture-command "ps"
-	B:Users:capture-command "w"
-	;
-	C:Buffers
-	B:Show Current Only:delete-other-windows
-	B:Toggle Show:toggle-buffer
-	L:list_buff
-	;
-	C:Fixed Fonts
-	B:5x8:setv $font 5x8
-	B:7x14:setv $font 7x14
-	B:8x13:setv $font 8x13
-	B:8x16:setv $font 8x16
-	B:9x15:setv $font 9x15
-	B:10x20:setv $font 10x20
-	B:12x24:setv $font 12x24
-	;
-	C:Nice Fonts
-	B:10pt:setv $font "-*-lucidatypewriter-*-r-normal-sans-10-*-*-*-*-0-iso8859-1"
-	B:12pt:setv $font "-*-lucidatypewriter-*-r-normal-sans-12-*-*-*-*-0-iso8859-1"
-	B:14pt:setv $font "-*-lucidatypewriter-*-r-normal-sans-14-*-*-*-*-0-iso8859-1"
-	B:16pt:setv $font "-*-lucidatypewriter-*-r-normal-sans-16-*-*-*-*-0-iso8859-1"
-	B:18pt:setv $font "-*-lucidatypewriter-*-r-normal-sans-18-*-*-*-*-0-iso8859-1"
-	B:20pt:setv $font "-*-lucidatypewriter-*-r-normal-sans-20-*-*-*-*-0-iso8859-1"
-	;
-	C:Help:help
-	B:About:version
-	S
-	B:General:help
-	B:Bindings:describe-bindings
-	B:Motions:describe-motions
-	B:Operators:describe-operators
-	S
-	B:Apropos...:cmd apropos
-	B:On Function...:cmd describe-function
-	B:On Key...:describe-key &amp;gts
-	S
-	B:Settings:setall
-	B:Variables:show-variables
-	B:Registers:show-registers
-	S
-	B:Majormodes:show-majormodes
-	B:Colors:show-colors
-	B:Color Schemes:show-color-schemes
-</pre>
-<h2 id="fixme-id"><a name="fixme">Credits</a></h2>
+<!--{{atr2html--><p style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;C:Xvile<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">B</font></strong>:New:new_xvile<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">B</font></strong>:Edit&nbsp;.vilerc:edit_rc<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">B</font></strong>:Parse&nbsp;.vilerc:parse_rc<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">B</font></strong>:Edit&nbsp;.vilemenu:edit_mrc<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">B</font></strong>:Quit:<strong><font color="#000080">quit</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#800000">;</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;C:Editing<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">B</font></strong>:Apply&nbsp;Highlighting:cmd&nbsp;<strong><font color="#000080">HighlightFilter</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">B</font></strong>:Clear&nbsp;Highlighting&nbsp;(above):<strong><font color="#000080">clear-attributes-til</font></strong>&nbsp;<strong><font color="#000080">beginning-of-file</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">B</font></strong>:Clear&nbsp;Highlighting&nbsp;(below):<strong><font color="#000080">clear-attributes-til</font></strong>&nbsp;<strong><font color="#000080">end-of-file</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">S</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">B</font></strong>:Search&nbsp;Forward...:cmd&nbsp;<strong><font color="#000080">search-forward</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">B</font></strong>:Search&nbsp;Backward...:cmd&nbsp;<strong><font color="#000080">search-reverse</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">S</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">B</font></strong>:Reload&nbsp;File:cmd&nbsp;<strong><font color="#000080">e!</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">B</font></strong>:Rename&nbsp;Buffer:cmd&nbsp;<strong><font color="#000080">rename-buffer</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">B</font></strong>:Edit:cmd&nbsp;<strong><font color="#000080">edit-file</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">B</font></strong>:Rename&nbsp;File:cmd&nbsp;<strong><font color="#000080">filename</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">S</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">B</font></strong>:Manual&nbsp;<strong><font color="#000080">for</font></strong>...:cmd&nbsp;<strong><font color="#000080">ShowManpage</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">S</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">B</font></strong>:Files:<strong><font color="#000080">capture-command</font></strong>&nbsp;<font color="#800080">"ls&nbsp;-l"</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">B</font></strong>:Processes:<strong><font color="#000080">capture-command</font></strong>&nbsp;<font color="#800080">"ps"</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">B</font></strong>:Users:<strong><font color="#000080">capture-command</font></strong>&nbsp;<font color="#800080">"w"</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#800000">;</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;C:Buffers<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">B</font></strong>:<strong><font color="#000080">Show</font></strong>&nbsp;Current&nbsp;Only:<strong><font color="#000080">delete-other-windows</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">B</font></strong>:<strong><font color="#000080">Toggle</font></strong>&nbsp;<strong><font color="#000080">Show</font></strong>:<strong><font color="#000080">toggle-buffer</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">L</font></strong>:list_buff<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#800000">;</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;C:Fixed&nbsp;Fonts<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">B</font></strong>:<strong><font color="#008080">5</font></strong>x8:<strong><font color="#000080">setv</font></strong>&nbsp;<font color="#008080">$font</font>&nbsp;<strong><font color="#008080">5</font></strong>x8<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">B</font></strong>:<strong><font color="#008080">7</font></strong>x14:<strong><font color="#000080">setv</font></strong>&nbsp;<font color="#008080">$font</font>&nbsp;<strong><font color="#008080">7</font></strong>x14<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">B</font></strong>:<strong><font color="#008080">8</font></strong>x13:<strong><font color="#000080">setv</font></strong>&nbsp;<font color="#008080">$font</font>&nbsp;<strong><font color="#008080">8</font></strong>x13<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">B</font></strong>:<strong><font color="#008080">8</font></strong>x16:<strong><font color="#000080">setv</font></strong>&nbsp;<font color="#008080">$font</font>&nbsp;<strong><font color="#008080">8</font></strong>x16<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">B</font></strong>:<strong><font color="#008080">9</font></strong>x15:<strong><font color="#000080">setv</font></strong>&nbsp;<font color="#008080">$font</font>&nbsp;<strong><font color="#008080">9</font></strong>x15<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">B</font></strong>:<strong><font color="#008080">10</font></strong>x20:<strong><font color="#000080">setv</font></strong>&nbsp;<font color="#008080">$font</font>&nbsp;<strong><font color="#008080">10</font></strong>x20<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">B</font></strong>:<strong><font color="#008080">12</font></strong>x24:<strong><font color="#000080">setv</font></strong>&nbsp;<font color="#008080">$font</font>&nbsp;<strong><font color="#008080">12</font></strong>x24<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#800000">;</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;C:Nice&nbsp;Fonts<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">B</font></strong>:<strong><font color="#008080">10</font></strong>pt:<strong><font color="#000080">setv</font></strong>&nbsp;<font color="#008080">$font</font>&nbsp;<font color="#800080">"-*-lucidatypewriter-*-r-normal-sans-10-*-*-*-*-0-iso8859-1"</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">B</font></strong>:<strong><font color="#008080">12</font></strong>pt:<strong><font color="#000080">setv</font></strong>&nbsp;<font color="#008080">$font</font>&nbsp;<font color="#800080">"-*-lucidatypewriter-*-r-normal-sans-12-*-*-*-*-0-iso8859-1"</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">B</font></strong>:<strong><font color="#008080">14</font></strong>pt:<strong><font color="#000080">setv</font></strong>&nbsp;<font color="#008080">$font</font>&nbsp;<font color="#800080">"-*-lucidatypewriter-*-r-normal-sans-14-*-*-*-*-0-iso8859-1"</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">B</font></strong>:<strong><font color="#008080">16</font></strong>pt:<strong><font color="#000080">setv</font></strong>&nbsp;<font color="#008080">$font</font>&nbsp;<font color="#800080">"-*-lucidatypewriter-*-r-normal-sans-16-*-*-*-*-0-iso8859-1"</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">B</font></strong>:<strong><font color="#008080">18</font></strong>pt:<strong><font color="#000080">setv</font></strong>&nbsp;<font color="#008080">$font</font>&nbsp;<font color="#800080">"-*-lucidatypewriter-*-r-normal-sans-18-*-*-*-*-0-iso8859-1"</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">B</font></strong>:<strong><font color="#008080">20</font></strong>pt:<strong><font color="#000080">setv</font></strong>&nbsp;<font color="#008080">$font</font>&nbsp;<font color="#800080">"-*-lucidatypewriter-*-r-normal-sans-20-*-*-*-*-0-iso8859-1"</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#800000">;</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;C:Help:<strong><font color="#000080">help</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">B</font></strong>:About:<strong><font color="#000080">version</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">S</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">B</font></strong>:General:<strong><font color="#000080">help</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">B</font></strong>:Bindings:<strong><font color="#000080">describe-bindings</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">B</font></strong>:Motions:<strong><font color="#000080">describe-motions</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">B</font></strong>:Operators:<strong><font color="#000080">describe-operators</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">S</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">B</font></strong>:Apropos...:cmd&nbsp;<strong><font color="#000080">apropos</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">B</font></strong>:On&nbsp;Function...:cmd&nbsp;<strong><font color="#000080">describe-function</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">B</font></strong>:On&nbsp;Key...:<strong><font color="#000080">describe-key</font></strong>&nbsp;<font color="#008080">&amp;gts</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">S</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">B</font></strong>:Settings:<strong><font color="#000080">setall</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">B</font></strong>:Variables:<strong><font color="#000080">show-variables</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">B</font></strong>:Registers:<strong><font color="#000080">show-registers</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">S</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">B</font></strong>:Majormodes:<strong><font color="#000080">show-majormodes</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">B</font></strong>:Colors:<strong><font color="#000080">show-colors</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">B</font></strong>:Color&nbsp;Schemes:<strong><font color="#000080">show-color-schemes</font></strong><br>
+<!--atr2html}}--></p>
+<h2 id="credits-id"><a name="credits">Credits</a></h2>
 This was originally adapted from a description by Philippe Chassany in 1997.

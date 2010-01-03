@@ -1,5 +1,15 @@
 Changes for vile 9.8 (released ??? ??? ?? ????)
 
+ 20100103 (z)
+	> Tom Dickey:
+	+ add makefile install-html rule
+	+ add doc/vile-man.html, generated from vile.1
+	+ add check in x11.c get_color_gc in case index falls out of bounds
+	  (report by Gary Jennejohn).
+	+ finish colorizing examples in html files.
+	+ completed doc/menus.html
+	+ cleanup some debris from working files (report by Brendan O'Dea).
+
  20091228 (y)
 	> Brendan O'Dea:
 	+ modify ".desktop" files to use freedesktop category names as in

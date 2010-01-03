@@ -1,6 +1,6 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
-  $Id: oleauto.html,v 1.2 2009/12/28 17:00:10 tom Exp $
+  $Id: oleauto.html,v 1.7 2010/01/03 13:54:51 tom Exp $
 -->
 <HTML>
 <HEAD>
@@ -71,14 +71,14 @@ The complete registration syntax is:
 where:
 
 <table border="0" summary="Registration Options">
-<colgroup><col width="15%"><col width="20%"><col width="65%"></colgroup>
-<tr><td>-geometry &lt;cols>x&lt;rows></td><td>specifies the editor's window geometry.</td></tr>
-<tr><td>-invisible</td><td>launched server(s) are invisible and must be
+<colgroup><col width="200px"></colgroup>
+<tr><td valign="top">-geometry &lt;cols>x&lt;rows></td><td>specifies the editor's window geometry.</td></tr>
+<tr><td valign="top">-invisible</td><td>launched server(s) are invisible and must be
                                   made visible via the application's Visible
                                   property.</td></tr>
-<tr><td>-multiple</td><td>each client creates a new, unique server
+<tr><td valign="top">-multiple</td><td>each client creates a new, unique server
                                   instance.</td></tr>
-<tr><td>-font &lt;font_spec></td><td>specifies the editor's font</td></tr>
+<tr><td valign="top">-font &lt;font_spec></td><td>specifies the editor's font</td></tr>
 </table>
 <p>
 where:
@@ -89,17 +89,17 @@ where:
     &lt;style>      :== { bold | italic | bold-italic }
 </pre>
 <table border="0" summary="Registration Options">
-<colgroup><col width="15%"><col width="20%"><col width="65%"></colgroup>
-<tr><td>Note 1:</td>
+<colgroup><col width="60px"></colgroup>
+<tr><td valign="top">Note 1:</td>
 	<td>if &lt;style> is unspecified, "normal" is assumed.</td></tr>
-<tr><td>Note 2:</td>
+<tr><td valign="top">Note 2:</td>
 	<td>if &lt;face> contains a comma escape it with '\'.</td></tr>
-<tr><td>Note 3:</td>
+<tr><td valign="top">Note 3:</td>
 	<td>if &lt;face> is omitted, the current font is modified.</td></tr>
-<tr><td>Note 4:</td>
+<tr><td valign="top">Note 4:</td>
 	<td>if &lt;face> contains spaces, delimit &lt;font_spec> as appropriate
              for the current shell/desktop environment.</td></tr>
-<tr><td>Note 5:</td>
+<tr><td valign="top">Note 5:</td>
 	<td>&lt;face> must be fixed pitch.  To obtain a list of all fixed
              pitch fonts on the current win32 host, invoke winvile and
              browse the "Font" dialog box accessible from the System menu
@@ -117,35 +117,35 @@ information.
 <h2 id="example-id"><a name="example">Example Automation Client Access</a></h2>
 <p>
 Perl Access
-<pre>
-	use Win32::OLE;
-	$vile = new Win32::OLE 'Winvile.Application';
-	$vile->VileKeys(":show-bindings\n");
-	$vile->{Visible} = 1;           # may not be necessary
-	print "sleeping for 3 seconds\n";
-	sleep(3);
-	$vile->VileKeys(":buffer [unnamed]\n");
-	$vile->VileKeys(":r c:/config.sys\n");
-	sleep(3);
-	print "killing vile\n";
-	$vile->Quit();
-	exit
-</pre><p>
+<!--{{atr2html--><p style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">use</font></strong>&nbsp;Win32::OLE;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008080">$vile</font>&nbsp;=&nbsp;new&nbsp;Win32::OLE&nbsp;<font color="#800080">'Winvile.Application'</font>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008080">$vile</font>-&gt;VileKeys(<font color="#800080">":show-bindings\n"</font>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008080">$vile</font>-&gt;{Visible}&nbsp;=&nbsp;<strong><font color="#008080">1</font></strong>;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#800000">#&nbsp;may&nbsp;not&nbsp;be&nbsp;necessary</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">print</font></strong>&nbsp;<font color="#800080">"sleeping&nbsp;for&nbsp;3&nbsp;seconds\n"</font>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">sleep</font></strong>(<strong><font color="#008080">3</font></strong>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008080">$vile</font>-&gt;VileKeys(<font color="#800080">":buffer&nbsp;[unnamed]\n"</font>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008080">$vile</font>-&gt;VileKeys(<font color="#800080">":r&nbsp;c:/config.sys\n"</font>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">sleep</font></strong>(<strong><font color="#008080">3</font></strong>);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">print</font></strong>&nbsp;<font color="#800080">"killing&nbsp;vile\n"</font>;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008080">$vile</font>-&gt;Quit();<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">exit</font></strong><br>
+<!--atr2html}}--></p>
 VB Access
-<pre>
-	Private VileObj As Winvile.Application
-
-	Private Sub Form_Load()
-	Set VileObj = New Winvile.Application
-	VileObj.Visible = True           ' may not be necessary
-	VileObj.VileKeys (":help" + vbLf)
-	End Sub
-
-	Private Sub Quit_Click()
-	VileObj.Quit                     ' Kill the server (winvile)
-	End
-	End Sub
-</pre>
+<!--{{atr2html--><p style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">Private</font></strong>&nbsp;VileObj&nbsp;<strong><font color="#000080">As</font></strong>&nbsp;Winvile.Application<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">Private</font></strong>&nbsp;<strong><font color="#000080">Sub</font></strong>&nbsp;Form_Load()<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">Set</font></strong>&nbsp;VileObj&nbsp;=&nbsp;<strong><font color="#000080">New</font></strong>&nbsp;Winvile.Application<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;VileObj.Visible&nbsp;=&nbsp;<strong><font color="#008080">True</font></strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#800000">'&nbsp;may&nbsp;not&nbsp;be&nbsp;necessary</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;VileObj.VileKeys&nbsp;(<font color="#800080">":help"</font>&nbsp;+&nbsp;vbLf)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">End</font></strong>&nbsp;<strong><font color="#000080">Sub</font></strong><br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">Private</font></strong>&nbsp;<strong><font color="#000080">Sub</font></strong>&nbsp;Quit_Click()<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;VileObj.Quit&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#800000">'&nbsp;Kill&nbsp;the&nbsp;server&nbsp;(winvile)</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">End</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">End</font></strong>&nbsp;<strong><font color="#000080">Sub</font></strong><br>
+<!--atr2html}}--></p>
 
 <h2 id="winvilewrapper-id"><a name="winvilewrapper">wvwrap.exe -- WinVile WRAPper</a></h2>
 <p>
@@ -200,60 +200,74 @@ single instance of winvile, one buffer per file.
 
 <h2 id="serverprops-id"><a name="serverprops">Server Properties And Methods</a></h2>
 <table border="0" summary="Server Properties and Methods">
-<colgroup><col width="15%"><col width="20%"><col width="65%"></colgroup>
-<tr><td>Application
-</td><td>&mdash;</td><td>[out] Returns the application object.</td></tr>
+<colgroup><col width="200px"><col width="20px"></colgroup>
+<tr><td valign="top">Application
+</td><td valign="top">&mdash;
+</td><td>[out] Returns the application object.</td></tr>
 
-<tr><td>ForegroundWindow()
-</td><td>&mdash;</td><td>Makes the editor the foreground window.  Note that
+<tr><td valign="top">ForegroundWindow()
+</td><td valign="top">&mdash;
+</td><td>Makes the editor the foreground window.  Note that
                        Windows 2000 and XP essentially emasculated this
                        method.  See MainHwnd() for an alternative approach.</td></tr>
 
-<tr><td>FullName
-</td><td>&mdash;</td><td>[out] Returns the path of the application.</td></tr>
+<tr><td valign="top">FullName
+</td><td valign="top">&mdash;
+</td><td>[out] Returns the path of the application.</td></tr>
 
-<tr><td>InsertMode
-</td><td>&mdash;</td><td>[out] True if editor window with keyboard focus is
+<tr><td valign="top">InsertMode
+</td><td valign="top">&mdash;
+</td><td>[out] True if editor window with keyboard focus is
                        in insert mode.</td></tr>
 
-<tr><td>IsMinimized
-</td><td>&mdash;</td><td>[out] True if editor minimized.</td></tr>
+<tr><td valign="top">IsMinimized
+</td><td valign="top">&mdash;
+</td><td>[out] True if editor minimized.</td></tr>
 
-<tr><td>MainHwnd
-</td><td>&mdash;</td><td>[out] Returns the editor's main window handle.
+<tr><td valign="top">MainHwnd
+</td><td valign="top">&mdash;
+</td><td>[out] Returns the editor's main window handle.
                        Useful if the client wishes to, say, call
                        SetForegroundWindow() on behalf of the editor.</td></tr>
 
-<tr><td>Minimize()
-</td><td>&mdash;</td><td>Minimizes the editor.</td></tr>
+<tr><td valign="top">Minimize()
+</td><td valign="top">&mdash;
+</td><td>Minimizes the editor.</td></tr>
 
-<tr><td>Name()
-</td><td>&mdash;</td><td>[out] Returns the name of the application.</td></tr>
+<tr><td valign="top">Name()
+</td><td valign="top">&mdash;
+</td><td>[out] Returns the name of the application.</td></tr>
 
-<tr><td>Parent()
-</td><td>&mdash;</td><td>Returns the parent of the application object.</td></tr>
+<tr><td valign="top">Parent()
+</td><td valign="top">&mdash;
+</td><td>Returns the parent of the application object.</td></tr>
 
-<tr><td>Quit()
-</td><td>&mdash;</td><td>Exits the editor.</td></tr>
+<tr><td valign="top">Quit()
+</td><td valign="top">&mdash;
+</td><td>Exits the editor.</td></tr>
 
-<tr><td>Restore()
-</td><td>&mdash;</td><td>Restores the editor's window.</td></tr>
+<tr><td valign="top">Restore()
+</td><td valign="top">&mdash;
+</td><td>Restores the editor's window.</td></tr>
 
-<tr><td>VileKeys([in] keys)
-</td><td>&mdash;</td><td>Sends keystrokes to the editor.  Note that this method
+<tr><td valign="top">VileKeys([in] keys)
+</td><td valign="top">&mdash;
+</td><td>Sends keystrokes to the editor.  Note that this method
                        is implemented by using PostMessage() to send a
                        WM_CHAR message for _each_ character in the "keys"
                        string.  In other words, this is not an efficient
                        method and should not be used to create large files.</td></tr>
 
-<tr><td>Visible
-</td><td>&mdash;</td><td>[in, out] Sets or returns the editor's visibility.</td></tr>
+<tr><td valign="top">Visible
+</td><td valign="top">&mdash;
+</td><td>[in, out] Sets or returns the editor's visibility.</td></tr>
 
-<tr><td>WindowRedirect([in] hwnd)
-</td><td>&mdash;</td><td>Specifies a window handle to which
+<tr><td valign="top">WindowRedirect([in] hwnd)
+</td><td valign="top">&mdash;
+</td><td>Specifies a window handle to which
                        user-specified keystrokes are redirected.
                        Redirected keystrokes are specified via winvile's
-                       "redirect-keys" mode.  Refer to the file visvile.doc
+                       "redirect-keys" mode.  Refer to the file <a href="visvile.html">visvile.doc</a>
                        for a detailed discussion of this method and its
                        associated mode.
 <p>
