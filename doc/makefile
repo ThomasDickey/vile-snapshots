@@ -1,12 +1,15 @@
-# $Header: /users/source/archives/vile.vcs/doc/RCS/makefile,v 1.11 2009/12/28 16:58:36 tom Exp $
+# $Header: /users/source/archives/vile.vcs/doc/RCS/makefile,v 1.14 2010/01/03 14:03:01 tom Exp $
 # construct ".doc" and ".hlp" files from the ".html" files
 
 # list the html files in the order needed for table of contents
-SOURCES = vile-hlp.html \
+SOURCES = \
+	vile-man.html \
+	vile-hlp.html \
 	config.html \
 	macros.html \
 	modes.html \
 	filters.html \
+	menus.html \
 	perl.html \
 	dir.html \
 	Vileserv.html \
@@ -42,12 +45,16 @@ clean:
 mostlyclean:
 realclean:
 distclean:
+	:
 maintainer-clean:
 	rm -f $(TARGETS)
 
 vile-toc.html : $(SOURCES)
 	rm -f $@
 	sh make-toc.sh $(SOURCES) >$@
+
+vile-man.html : ../vile.1
+	GROFF_NO_SGR=stupid $(SHELL) -c "tbl ../vile.1 | groff -Thtml -man" | sed -f vile-man.sed >$@
 
 ../vile.hlp : vile-hlp.html
 	rm -f $@

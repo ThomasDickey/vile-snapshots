@@ -20,7 +20,7 @@
 #
 # gnu autoconf support by kevin buettner, 5/94
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.227 2009/12/10 01:26:57 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.228 2010/01/03 15:42:10 tom Exp $
 
 SHELL		= /bin/sh
 
@@ -66,6 +66,7 @@ libdir		= @libdir@
 bindir		= @bindir@
 datadir		= @datadir@/vile
 docdir		= $(datadir)/doc
+htmldir		= $(datadir)/html
 perldir		= $(datadir)/perl
 mandir		= @mandir@/man$(manext)
 appsdir		= @appsdir@
@@ -92,6 +93,7 @@ LDFLAGS		= @IMAKE_LOADFLAGS@ @LDFLAGS@
 BINDIR		= $(DESTDIR)$(bindir)
 DATADIR		= $(DESTDIR)$(datadir)
 DOCDIR		= $(DESTDIR)$(docdir)
+HTMLDIR		= $(DESTDIR)$(htmldir)
 PERLDIR		= $(DESTDIR)$(perldir)
 MANDIR		= $(DESTDIR)$(mandir)
 APPSDIR		= $(DESTDIR)$(appsdir)
@@ -214,8 +216,8 @@ OTHERSRC = \
 	vms2unix.c \
 	vmspipe.c
 
-# documentation, such as it is
-DOCS =	\
+# documentation
+PLAINDOCS = \
 	doc/Vileserv.doc \
 	doc/config.doc \
 	doc/dir.doc \
@@ -228,6 +230,22 @@ DOCS =	\
 	doc/visvile.doc \
 	vile.1 \
 	vile.hlp
+
+# corresponding documentation
+HTMLDOCS =	\
+	doc/Vileserv.html \
+	doc/config.html \
+	doc/dir.html \
+	doc/filters.html \
+	doc/macros.html \
+	doc/menus.html \
+	doc/modes.html \
+	doc/oleauto.html \
+	doc/perl.html \
+	doc/vile-hlp.html \
+	doc/vile-man.html \
+	doc/vile-toc.html \
+	doc/visvile.html
 
 # miscellaneous text files
 TEXTFILES = README README.PC \
@@ -253,7 +271,7 @@ DEVELOPER_ONLY = \
 	fakevms.c fakevms.h
 
 # these are the files that go to everyone
-DISTFILES = $(ALLTOOLS) $(ALLSRC) $(DOCS) $(TEXTFILES)
+DISTFILES = $(ALLTOOLS) $(ALLSRC) $(PLAINDOCS) $(HTMLDOCS) $(TEXTFILES)
 
 # these are the files that go to coders
 DEV_DISTFILES = $(DISTFILES) $(DEVELOPER_ONLY)
@@ -369,6 +387,20 @@ INSTALL_DOC_FILES = \
 	$(DOCDIR)/perl.doc \
 	$(DOCDIR)/visvile.doc
 
+INSTALL_HTML_FILES = \
+	$(HTMLDIR)/vile-hlp.html \
+	$(HTMLDIR)/vile-toc.html \
+	$(HTMLDIR)/Vileserv.html \
+	$(HTMLDIR)/config.html \
+	$(HTMLDIR)/dir.html \
+	$(HTMLDIR)/filters.html \
+	$(HTMLDIR)/macros.html \
+	$(HTMLDIR)/menus.html \
+	$(HTMLDIR)/modes.html \
+	$(HTMLDIR)/oleauto.html \
+	$(HTMLDIR)/perl.html \
+	$(HTMLDIR)/visvile.html
+
 INSTALL_MACRO_FILES = \
 	$(DATADIR)/color-ls.rc \
 	$(DATADIR)/dates.rc \
@@ -433,6 +465,8 @@ install :: $(INSTALL_DIRS) \
 	@echo 'Completed installation.'
 
 install-doc :		$(DOCDIR)		$(INSTALL_DOC_FILES)
+
+install-html :		$(HTMLDIR)		$(INSTALL_HTML_FILES)
 
 install-macros :	$(DATADIR)		$(INSTALL_MACRO_FILES)
 
@@ -760,6 +794,31 @@ $(DOCDIR)/perl.doc:		$(srcdir)/doc/perl.doc
 	$(INSTALL_DATA)		$(srcdir)/doc/perl.doc $@
 $(DOCDIR)/visvile.doc:		$(srcdir)/doc/visvile.doc
 	$(INSTALL_DATA)		$(srcdir)/doc/visvile.doc $@
+
+$(HTMLDIR)/vile-hlp.html:	$(srcdir)/doc/vile-hlp.html
+	$(INSTALL_DATA)		$(srcdir)/doc/vile-hlp.html $@
+$(HTMLDIR)/vile-toc.html:	$(srcdir)/doc/vile-toc.html
+	$(INSTALL_DATA)		$(srcdir)/doc/vile-toc.html $@
+$(HTMLDIR)/Vileserv.html:	$(srcdir)/doc/Vileserv.html
+	$(INSTALL_DATA)		$(srcdir)/doc/Vileserv.html $@
+$(HTMLDIR)/config.html:		$(srcdir)/doc/config.html
+	$(INSTALL_DATA)		$(srcdir)/doc/config.html $@
+$(HTMLDIR)/dir.html:		$(srcdir)/doc/dir.html
+	$(INSTALL_DATA)		$(srcdir)/doc/dir.html $@
+$(HTMLDIR)/filters.html:	$(srcdir)/doc/filters.html
+	$(INSTALL_DATA)		$(srcdir)/doc/filters.html $@
+$(HTMLDIR)/macros.html:		$(srcdir)/doc/macros.html
+	$(INSTALL_DATA)		$(srcdir)/doc/macros.html $@
+$(HTMLDIR)/menus.html:		$(srcdir)/doc/menus.html
+	$(INSTALL_DATA)		$(srcdir)/doc/menus.html $@
+$(HTMLDIR)/modes.html:		$(srcdir)/doc/modes.html
+	$(INSTALL_DATA)		$(srcdir)/doc/modes.html $@
+$(HTMLDIR)/oleauto.html:	$(srcdir)/doc/oleauto.html
+	$(INSTALL_DATA)		$(srcdir)/doc/oleauto.html $@
+$(HTMLDIR)/perl.html:		$(srcdir)/doc/perl.html
+	$(INSTALL_DATA)		$(srcdir)/doc/perl.html $@
+$(HTMLDIR)/visvile.html:	$(srcdir)/doc/visvile.html
+	$(INSTALL_DATA)		$(srcdir)/doc/visvile.html $@
 
 $(DATADIR)/color-ls.rc:		$(srcdir)/macros/color-ls.rc
 	$(INSTALL_DATA)		$(srcdir)/macros/color-ls.rc $@

@@ -34,15 +34,15 @@ Creating, executing, storing macros
    In the simplest case, valid macro language constructs are placed in a file
    or buffer and subsequently executed with one of these editor commands:
 
-   +------------------------------------------------------------------------+
-   |        command         |     applies to     |         example          |
-   |------------------------+--------------------+--------------------------|
-   | execute-buffer         | buffer             | execute-buffer cfgcmds   |
-   |------------------------+--------------------+--------------------------|
-   | execute-file           | disk file          | execute-file ~/.projcfg  |
-   |------------------------+--------------------+--------------------------|
-   | source                 | disk file          | source c:/utils/proj.cfg |
-   +------------------------------------------------------------------------+
+   +--------------------------------------------------------+
+   |    command     | applies to |         example          |
+   |----------------+------------+--------------------------|
+   | execute-buffer | buffer     | execute-buffer cfgcmds   |
+   |----------------+------------+--------------------------|
+   | execute-file   | disk file  | execute-file ~/.projcfg  |
+   |----------------+------------+--------------------------|
+   | source         | disk file  | source c:/utils/proj.cfg |
+   +--------------------------------------------------------+
 
    The most common example of this usage is vile's startup file, which is
    "sourced" during the editor's invocation. Typically, the startup file
@@ -57,9 +57,9 @@ Creating, executing, storing macros
    conditionally configure the editor. For example, if xvile executes this
    startup file fragment:
 
-        ~if &sequal $progname "xvile"
-            set-variable $title $cbufname
-        ~endif
+         ~if &sequal $progname "xvile"
+             set-variable $title $cbufname
+         ~endif
 
    then the editor's X window titlebar changes. However, "standard" vile
    (i.e., non-gui vile) ignores this fragment and thus, a single startup file
@@ -154,7 +154,7 @@ Creating, executing, storing macros
        another macro, from a startup/configuration file, or from vile's
        command line, like so:
 
-        :write-msg-tst
+            :write-msg-tst
 
    Named macros may have parameters. Like Bourne shell, the parameters are
    denoted '$' followed by a number, e.g., $1 for the first parameter.
@@ -318,7 +318,7 @@ Misc macro syntax features
    backslash and another character to represent the "special character:"
 
    +------------------------------------------------------------------------+
-   | Escape code |          Actual character          |       Example       |
+   | Escape code | Actual character                   | Example             |
    |-------------+------------------------------------+---------------------|
    | \n          | newline character                  | (control-J)         |
    |-------------+------------------------------------+---------------------|
@@ -363,7 +363,7 @@ Variables
    distinguished syntactically by the character preceding their name.
 
    +------------------------------------------------------------------------+
-   |               Class               |              Example               |
+   | Class                             | Example                            |
    |-----------------------------------+------------------------------------|
    | Temporary variable                | %foo                               |
    |-----------------------------------+------------------------------------|
@@ -422,21 +422,21 @@ State Variables
            [READ ONLY] Status flags for current buffer, as shown in [Buffer
            List].
 
-           +-----------------------------------------------------------+
-           |    Flag    |                 Description                  |
-           |------------+----------------------------------------------|
-           | a          | autobuffer caused this to be created         |
-           |------------+----------------------------------------------|
-           | d          | directory listing                            |
-           |------------+----------------------------------------------|
-           | i          | invisible, e.g., tags                        |
-           |------------+----------------------------------------------|
-           | m          | modified                                     |
-           |------------+----------------------------------------------|
-           | s          | scratch, will be removed when popped down    |
-           |------------+----------------------------------------------|
-           | u          | unread                                       |
-           +-----------------------------------------------------------+
+           +--------------------------------------------------+
+           | Flag | Description                               |
+           |------+-------------------------------------------|
+           | a    | autobuffer caused this to be created      |
+           |------+-------------------------------------------|
+           | d    | directory listing                         |
+           |------+-------------------------------------------|
+           | i    | invisible, e.g., tags                     |
+           |------+-------------------------------------------|
+           | m    | modified                                  |
+           |------+-------------------------------------------|
+           | s    | scratch, will be removed when popped down |
+           |------+-------------------------------------------|
+           | u    | unread                                    |
+           +--------------------------------------------------+
 
    $blines
            [READ ONLY] Number of lines in current buffer.
@@ -479,7 +479,7 @@ State Variables
            options. Currently tracked options include:
 
            +------------------------------------------------------+
-           |  Option  |                Description                |
+           | Option   | Description                               |
            |----------+-------------------------------------------|
            | athena   | xvile built with Athena widgets           |
            |----------+-------------------------------------------|
@@ -528,9 +528,9 @@ State Variables
            current macro if it was defined using store-operator. Use with
            $cmd-count to compose the complete motion, e.g.,
 
-         store-operator fmt
-             $cmd-count filter-til $cmd-motion 'fmt -'
-         ~endm
+                 set-variable $search "new pattern to look for"
+                 setv %index "1"
+                 setv %index2="2"
 
    $cryptkey
            [WRITE ONLY] encryption key.
@@ -797,7 +797,7 @@ State Variables
            Values:
 
            +-------------------------------+
-           |      $sres      | screen size |
+           | $sres           | screen size |
            |-----------------+-------------|
            | "2"             | "25"        |
            |-----------------+-------------|
@@ -1158,7 +1158,7 @@ Functions
            Evaluate value of "S" as a macro language variable itself. Thus if
            %foo has value "HOME", then
 
-         &env &indirect %foo
+                 &env &indirect %foo
 
            will return the home directory pathname.
 
@@ -1332,59 +1332,59 @@ Directives
    The block of statements bracketed by ~while and ~endwhile are executed
    repeatedly, until the condition being tested by ~while becomes false.
 
-        ; how many occurrences of a given pattern in a buffer?
-        set nowrapscan
-        set-variable %lookfor somepattern
-        ; we'll count one too many
-        set-variable %howmany "-1"
+         ; how many occurrences of a given pattern in a buffer?
+         set nowrapscan
+         set-variable %lookfor somepattern
+         ; we'll count one too many
+         set-variable %howmany "-1"
 
-        set-variable %continue yes
-        ~while %continue
-            ~force search-forward %lookfor
-            set-variable %continue $status
-            set-variable %howmany &add %howmany "1"
-        ~endwhile
+         set-variable %continue yes
+         ~while %continue
+             ~force search-forward %lookfor
+             set-variable %continue $status
+             set-variable %howmany &add %howmany "1"
+         ~endwhile
 
-        write-message &cat &cat %howmany " appearances of " %lookfor
+         write-message &cat &cat %howmany " appearances of " %lookfor
 
   ~break
 
    The ~break directive allows early termination of an enclosing while-loop.
    Extending the above example:
 
-        ; count the occurrences of a pattern in all buffers
-        set nowrapscan
-        set noautobuffer
-        rewind
+         ; count the occurrences of a pattern in all buffers
+         set nowrapscan
+         set noautobuffer
+         rewind
 
-        set-variable %lookfor pgf
-        set-variable %howmany "0"
-        set-variable %buffers "1"
-        set-variable %cont yes
+         set-variable %lookfor pgf
+         set-variable %howmany "0"
+         set-variable %buffers "1"
+         set-variable %cont yes
 
-        ~while true
-            goto-beginning-of-file
-            ~while true
-                ~force search-forward %lookfor
-                ~if &not $status
-                    ~break
-                ~endif
-                set-variable %howmany &add %howmany "1"
-            ~endwhile
-            ~force next-buffer
-            ~if &not $status
-                ~break
-            ~endif
-            set-variable %buffers &add %buffers "1"
-        ~endwhile
+         ~while true
+             goto-beginning-of-file
+             ~while true
+                 ~force search-forward %lookfor
+                 ~if &not $status
+                     ~break
+                 ~endif
+                 set-variable %howmany &add %howmany "1"
+             ~endwhile
+             ~force next-buffer
+             ~if &not $status
+                 ~break
+             ~endif
+             set-variable %buffers &add %buffers "1"
+         ~endwhile
 
-        set-variable %msg  %lookfor
-        set-variable %msg  &cat " appeared "
-        set-variable %msg  &cat %howmany
-        set-variable %msg  &cat %msg " times in "
-        set-variable %msg  &cat %msg %buffers
-        set-variable %msg  &cat %msg " buffers."
-        write-message %msg
+         set-variable %msg  %lookfor
+         set-variable %msg  &cat " appeared "
+         set-variable %msg  &cat %howmany
+         set-variable %msg  &cat %msg " times in "
+         set-variable %msg  &cat %msg %buffers
+         set-variable %msg  &cat %msg " buffers."
+         write-message %msg
 
   ~return
 
@@ -1643,7 +1643,9 @@ Debugging macros
    When the "write-message" command is executed, the [Messages] buffer pops
    up and displays the string written by the unexpected code path.
 
-   : Disable popup-msgs using this command: set nopopup-msgs
+   Disable popup-msgs using this command:
+
+        :set nopopup-msgs
 
 
 Example startup file
@@ -1757,6 +1759,6 @@ Credits
    to Dan Lawrence and his MicroEMACS text editor. Many of the features
    described herein first appeared in this form in MicroEMACS.
 
--- (generated by make-hlp.pl from macros.html(1.6))
+-- (generated by make-hlp.pl from macros.html(1.8))
 -- vile:txtmode fillcol=78
--- $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.116 2009/12/28 16:31:57 tom Exp $
+-- $Header: /users/source/archives/vile.vcs/doc/RCS/macros.doc,v 1.119 2009/12/29 14:30:16 tom Exp $

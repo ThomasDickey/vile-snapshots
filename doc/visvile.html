@@ -1,6 +1,6 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
-  $Id: visvile.html,v 1.2 2009/12/28 17:02:00 tom Exp $
+  $Id: visvile.html,v 1.4 2010/01/03 14:00:02 tom Exp $
 -->
 <HTML>
 <HEAD>
@@ -24,8 +24,8 @@ Developer Studio editor.
   not work with earlier versions of DevStudio.
 
 <li>Obtain or build a version of winvile that supports OLE Automation.
-  Register same.  For further details, refer to the file oleauto.doc,
-  stored in the same directory as this document.  When reading oleauto.doc,
+  Register same.  For further details, refer to the file <a href="oleauto.html">oleauto.doc</a>,
+  stored in the same directory as this document.  When reading <a href="oleauto.html">oleauto.doc</a>,
   note that:
 <ul>
   <li>step 1 (building the editor) is optional if using pre-built versions
@@ -44,7 +44,7 @@ Developer Studio editor.
 <li>Obtain or build visvile.dll, a Developer Studio add-in that actually
    invokes winvile.  To build visvile, follow these steps:
 <ol>
-   <li>First build winvile using the syntax described in oleauto.doc .
+   <li>First build winvile using the syntax described in <a href="oleauto.html">oleauto.doc</a> .
       This is an important step, since the build process creates a file
       called winviletlb.h that is included by visvile.dll's sources.
 
@@ -95,7 +95,7 @@ automatically loaded as an add-in.
 
 <h2 id="configopts-id"><a name="configopts">Configuration Options</a></h2>
 <table border="1" summary="Command Prefixes">
-<colgroup><col width="15%"><col width="20%"><col width="65%"></colgroup>
+<colgroup><col width="250px"></colgroup>
 <tr>
 <th>Option Name</th>
 <th>Explanation</th></tr>
@@ -106,7 +106,7 @@ automatically loaded as an add-in.
                   editor doesn't already have that document open (see next
                   option).
 
-<tr><td valign="top">Close DevStudio copy of text documen</td><td>
+<tr><td valign="top">Close DevStudio copy of text document</td><td>
 		  
                   VisVile closes DevStudio's copy of an open text document
                   after winvile has opened its copy.  This feature keeps
@@ -115,12 +115,12 @@ automatically loaded as an add-in.
                   unchecked, winvile and the DevStudio text editor co-exist
                   side by side.  But see the Caveats section below.
 
-<tr><td valign="top">CWD set from opened document's pat</td><td>
+<tr><td valign="top">CWD set from opened document's path</td><td>
 		  
                   Winvile's current working directory is set to match the
                   path of any document opened by VisVile.
 
-<tr><td valign="top">Write all modified buffers to disk prior to buil</td><td>
+<tr><td valign="top">Write all modified buffers to disk prior to build</td><td>
 		  
                   VisVile forces winvile to flush all modified buffers to
                   disk before a DevStudio build begins.  Note that
@@ -151,7 +151,7 @@ automatically loaded as an add-in.
                   description of ^X-^X, browse vile's help and search for
                   the string "error finder".
 
-<tr><td valign="top">Redirect selected Winvile keys to DevStudi</td><td>
+<tr><td valign="top">Redirect selected Winvile keys to DevStudio</td><td>
 		  
                   Winvile redirects keystrokes specified in the
                   "redirect-keys" mode to DevStudio.  This option permits,
@@ -233,7 +233,7 @@ where
 and
 
 <table border="0" summary="Command Prefixes">
-<colgroup><col width="15%"><col width="20%"><col width="65%"></colgroup>
+<colgroup><col width="100px"><col width="200px"></colgroup>
 <tr><td valign="top">&lt;virt_key></td>
 	<td valign="top">:== virtual keycode macro name sans "VK_".</td>
 	<td>Refer to the table near the end of this document for a list of

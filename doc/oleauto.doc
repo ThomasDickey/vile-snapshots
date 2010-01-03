@@ -73,8 +73,8 @@ Registration Options
    Note 3: if <face> is omitted, the current font is modified.
    Note 4: if <face> contains spaces, delimit <font_spec> as appropriate for
            the current shell/desktop environment.
-           <face> must be fixed pitch. To obtain a list of all fixed pitch
-   Note 5: fonts on the current win32 host, invoke winvile and browse the
+   Note 5: <face> must be fixed pitch. To obtain a list of all fixed pitch
+           fonts on the current win32 host, invoke winvile and browse the
            "Font" dialog box accessible from the System menu (accelerator key
            is ALT+<space bar>+F).
 
@@ -173,37 +173,40 @@ Background
 
 Server Properties And Methods
 -----------------------------
-   Application          - [out] Returns the application object.
-                          Makes the editor the foreground window. Note that
-   ForegroundWindow()   - Windows 2000 and XP essentially emasculated this
-                          method. See MainHwnd() for an alternative approach.
-   FullName             - [out] Returns the path of the application.
-   InsertMode           - [out] True if editor window with keyboard focus is
-                          in insert mode.
-   IsMinimized          - [out] True if editor minimized.
-                          [out] Returns the editor's main window handle.
-   MainHwnd             - Useful if the client wishes to, say, call
-                          SetForegroundWindow() on behalf of the editor.
-   Minimize()           - Minimizes the editor.
-   Name()               - [out] Returns the name of the application.
-   Parent()             - Returns the parent of the application object.
-   Quit()               - Exits the editor.
-   Restore()            - Restores the editor's window.
-                          Sends keystrokes to the editor. Note that this
-                          method is implemented by using PostMessage() to
-   VileKeys([in] keys)  - send a WM_CHAR message for _each_ character in the
-                          "keys" string. In other words, this is not an
-                          efficient method and should not be used to create
-                          large files.
-   Visible              - [in, out] Sets or returns the editor's visibility.
-                          Specifies a window handle to which user-specified
-                          keystrokes are redirected. Redirected keystrokes
-                          are specified via winvile's "redirect-keys" mode.
-   WindowRedirect([in]  - Refer to the file visvile.doc for a detailed
-   hwnd)                  discussion of this method and its associated mode.
+   Application               - [out] Returns the application object.
+   ForegroundWindow()        - Makes the editor the foreground window. Note
+                               that Windows 2000 and XP essentially
+                               emasculated this method. See MainHwnd() for an
+                               alternative approach.
+   FullName                  - [out] Returns the path of the application.
+   InsertMode                - [out] True if editor window with keyboard
+                               focus is in insert mode.
+   IsMinimized               - [out] True if editor minimized.
+   MainHwnd                  - [out] Returns the editor's main window handle.
+                               Useful if the client wishes to, say, call
+                               SetForegroundWindow() on behalf of the editor.
+   Minimize()                - Minimizes the editor.
+   Name()                    - [out] Returns the name of the application.
+   Parent()                  - Returns the parent of the application object.
+   Quit()                    - Exits the editor.
+   Restore()                 - Restores the editor's window.
+   VileKeys([in] keys)       - Sends keystrokes to the editor. Note that this
+                               method is implemented by using PostMessage()
+                               to send a WM_CHAR message for _each_ character
+                               in the "keys" string. In other words, this is
+                               not an efficient method and should not be used
+                               to create large files.
+   Visible                   - [in, out] Sets or returns the editor's
+                               visibility.
+   WindowRedirect([in] hwnd) - Specifies a window handle to which
+                               user-specified keystrokes are redirected.
+                               Redirected keystrokes are specified via
+                               winvile's "redirect-keys" mode. Refer to the
+                               file visvile.doc for a detailed discussion of
+                               this method and its associated mode.
 
-                          To disable redirection once enabled, pass this
-                          method a NULL window handle.
+                               To disable redirection once enabled, pass this
+                               method a NULL window handle.
 
    Note: ForegroundWindow(), Minimize(), and Restore() implicitly force an
    Invisible server to the Visible state.
@@ -221,6 +224,6 @@ Credits
    The OLE automation support for winvile was written by Clark Morgan, from
    1998 to 2005.
 
--- (generated by make-hlp.pl from oleauto.html(1.1))
+-- (generated by make-hlp.pl from oleauto.html(1.7))
 -- vile:txtmode fillcol=78
--- $Header: /users/source/archives/vile.vcs/doc/RCS/oleauto.doc,v 1.10 2009/12/28 17:02:06 tom Exp $
+-- $Header: /users/source/archives/vile.vcs/doc/RCS/oleauto.doc,v 1.12 2010/01/03 14:35:24 tom Exp $

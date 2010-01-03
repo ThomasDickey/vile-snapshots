@@ -1,6 +1,6 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
-  $Id: modes.html,v 1.3 2009/12/28 16:56:29 tom Exp $
+  $Id: modes.html,v 1.4 2009/12/29 11:40:09 tom Exp $
 -->
 <HTML>
 <HEAD>
@@ -59,9 +59,9 @@ nocmode".  In the new scheme,
 <p>
 	  In rare circumstances, both suffixes and preamble are needed to
 	  distinguish a given mode from another.  Use
-<pre>
-	  	qualifiers=all
-</pre>
+<!--{{atr2html--><p style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;qualifiers=all<br>
+<!--atr2html}}--></p>
 	  to specify this.  The default, "qualifiers=any", allows either
 	  suffixes or preamble to determine the majormode.
 <p>
@@ -98,37 +98,37 @@ a {majormode}.  To make name-completion simple, we use the term 'submode'.
 
 
 <h3 id="example-id"><a name="example">Example</a></h3>
-<pre>
-	define-majormode c
-	; Declares a mode 'c', and corresponding symbol 'cmode'
-
-	define-submode c suffixes=\\.\\(\\([Cchisyl]\\)\\|CC\\|cc|cpp\\|cxx\\|hxx\\|scm\\)$
-	; Specifies the filename suffixes which control whether a newly-loaded
-	; buffer is set to 'c' mode.
-
-	define-submode c tabstop=4
-	define-submode c shiftwidth=4
-	; Defines the 'c' tabstop and shiftwidth.  If no "define-submode"
-	; command is given, no separate symbol is defined.
-</pre><p>
+<!--{{atr2html--><p style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">define-majormode</font></strong>&nbsp;<strong><font color="#000080">c</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#800000">;&nbsp;Declares&nbsp;a&nbsp;mode&nbsp;'c',&nbsp;and&nbsp;corresponding&nbsp;symbol&nbsp;'cmode'</font><br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">define-submode</font></strong>&nbsp;<strong><font color="#000080">c</font></strong>&nbsp;<strong><font color="#000080">suffixes</font></strong><strong><font color="#800000">=</font></strong><font color="#800080">"\\.\\(\\([Cchisyl]\\)\\|CC\\|cc|cpp\\|cxx\\|hxx\\|scm\\)$"</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#800000">;&nbsp;Specifies&nbsp;the&nbsp;filename&nbsp;suffixes&nbsp;which&nbsp;control&nbsp;whether&nbsp;a&nbsp;newly-loaded</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#800000">;&nbsp;buffer&nbsp;is&nbsp;set&nbsp;to&nbsp;'c'&nbsp;mode.</font><br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">define-submode</font></strong>&nbsp;<strong><font color="#000080">c</font></strong>&nbsp;<strong><font color="#000080">tabstop</font></strong><strong><font color="#800000">=</font></strong><strong><font color="#008080">4</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">define-submode</font></strong>&nbsp;<strong><font color="#000080">c</font></strong>&nbsp;<strong><font color="#000080">shiftwidth</font></strong><strong><font color="#800000">=</font></strong><strong><font color="#008080">4</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#800000">;&nbsp;Defines&nbsp;the&nbsp;'c'&nbsp;tabstop&nbsp;and&nbsp;shiftwidth.&nbsp;&nbsp;If&nbsp;no&nbsp;"define-submode"</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#800000">;&nbsp;command&nbsp;is&nbsp;given,&nbsp;no&nbsp;separate&nbsp;symbol&nbsp;is&nbsp;defined.</font><br>
+<!--atr2html}}--></p>
 As an example, to define a new major mode for perl programming, you might
 include the following in your .vilerc file:
-<pre>
-	define-majormode perl
-	define-submode perl preamble "^#.*perl\\>"
-	define-submode perl suffixes '\.\(pm\|t\)$'
-	define-submode perl shiftwidth 4
-</pre><p>
+<!--{{atr2html--><p style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">define-majormode</font></strong>&nbsp;<strong><font color="#000080">perl</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">define-submode</font></strong>&nbsp;<strong><font color="#000080">perl</font></strong>&nbsp;<strong><font color="#000080">preamble</font></strong>&nbsp;<font color="#800080">"^#.*perl\\&gt;"</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">define-submode</font></strong>&nbsp;<strong><font color="#000080">perl</font></strong>&nbsp;<strong><font color="#000080">suffixes</font></strong>&nbsp;<font color="#800080">'\.\(pm\|t\)$'</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">define-submode</font></strong>&nbsp;<strong><font color="#000080">perl</font></strong>&nbsp;<strong><font color="#000080">shiftwidth</font></strong>&nbsp;<strong><font color="#008080">4</font></strong><br>
+<!--atr2html}}--></p>
 To avoid the tediousness of this syntax, use the ~with and ~endwidth
 keywords, like so:
-<pre>
-	define-majormode perl
-	~with define-submode perl
-	    preamble "^#.*perl\\>"
-	    suffixes '\.\(pm\|t\)$'
-	    shiftwidth 4
-	~endwith
-</pre><p>
+<!--{{atr2html--><p style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">define-majormode</font></strong>&nbsp;<strong><font color="#000080">perl</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~with</font>&nbsp;<strong><font color="#000080">define-submode</font></strong>&nbsp;<strong><font color="#000080">perl</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">preamble</font></strong>&nbsp;<font color="#800080">"^#.*perl\\&gt;"</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">suffixes</font></strong>&nbsp;<font color="#800080">'\.\(pm\|t\)$'</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">shiftwidth</font></strong>&nbsp;<strong><font color="#008080">4</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~endwith</font><br>
+<!--atr2html}}--></p>
 You can define several regions using ~with and (after the first) ~elsewith
 blocks.  Each block specifies a set of tokens which are substituted at the
 beginning of each line.  Each ~elsewith block should have a group identifier
@@ -139,28 +139,28 @@ For example, in the definition of cshmode, the symbols "fence-XXX" give
 patterns which vile can use to move the cursor from one if/elif/else/fi
 marker to the next as you press "%".  The other settings such as "suf"
 in the first block are settings that apply to the majormode itself:
-<pre>
-	define-mode csh
-	~with define-submode csh
-	    suf '\.\(csh[^/]*\|login\|logout\)$'
-	    pre '^#!\s*\/.*csh\>\(\s*-[a-z]\+\)*\s*$'
-	    filtername	'vile-sh-filt -k csh'
-	    comment-prefix	'^\s*#'
-	    comments	'^\s*#\s*$'
-	    fence-if	'^\s*\&lt;if\>.*\&lt;then\>'
-	    fence-elif	'^\s*\&lt;else\s*if\>'
-	    fence-else	'^\s*\&lt;else\>'
-	    fence-fi	'^\s*\&lt;endif\>'
-	~elsewith define-submode csh group 'case'
-	    fence-if	'^\s*\&lt;switch\>\s*(.*)'
-	    fence-elif	'^\s*\&lt;case\>.*:'
-	    fence-else	'^\s*\&lt;default\>\s*:'
-	    fence-fi	'^\s*\&lt;endsw\>'
-	~elsewith define-submode csh group 'loop'
-	    fence-if	'^\s*\&lt;foreach\s\+.*\|while\>\s*(.*)'
-	    fence-fi	'^\s*\&lt;end\>'
-	~endwith
-</pre>
+<!--{{atr2html--><p style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">define-mode</font></strong>&nbsp;<em>csh</em><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~with</font>&nbsp;<strong><font color="#000080">define-submode</font></strong>&nbsp;<em>csh</em><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">suf</font></strong>&nbsp;<font color="#800080">'\.\(csh[^/]*\|login\|logout\)$'</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">pre</font></strong>&nbsp;<font color="#800080">'^#!\s*\/.*csh\&gt;\(\s*-[a-z]\+\)*\s*$'</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">filtername</font></strong>&nbsp;&nbsp;<font color="#800080">'vile-sh-filt&nbsp;-k&nbsp;csh'</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">comment-prefix</font></strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#800080">'^\s*#'</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">comments</font></strong>&nbsp;&nbsp;&nbsp;&nbsp;<font color="#800080">'^\s*#\s*$'</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">fence-if</font></strong>&nbsp;&nbsp;&nbsp;&nbsp;<font color="#800080">'^\s*\&lt;if\&gt;.*\&lt;then\&gt;'</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">fence-elif</font></strong>&nbsp;&nbsp;<font color="#800080">'^\s*\&lt;else\s*if\&gt;'</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">fence-else</font></strong>&nbsp;&nbsp;<font color="#800080">'^\s*\&lt;else\&gt;'</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">fence-fi</font></strong>&nbsp;&nbsp;&nbsp;&nbsp;<font color="#800080">'^\s*\&lt;endif\&gt;'</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~elsewith</font>&nbsp;<strong><font color="#000080">define-submode</font></strong>&nbsp;<em>csh</em>&nbsp;<strong><font color="#000080">group</font></strong>&nbsp;<font color="#800080">'case'</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">fence-if</font></strong>&nbsp;&nbsp;&nbsp;&nbsp;<font color="#800080">'^\s*\&lt;switch\&gt;\s*(.*)'</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">fence-elif</font></strong>&nbsp;&nbsp;<font color="#800080">'^\s*\&lt;case\&gt;.*:'</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">fence-else</font></strong>&nbsp;&nbsp;<font color="#800080">'^\s*\&lt;default\&gt;\s*:'</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">fence-fi</font></strong>&nbsp;&nbsp;&nbsp;&nbsp;<font color="#800080">'^\s*\&lt;endsw\&gt;'</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~elsewith</font>&nbsp;<strong><font color="#000080">define-submode</font></strong>&nbsp;<em>csh</em>&nbsp;<strong><font color="#000080">group</font></strong>&nbsp;<font color="#800080">'loop'</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">fence-if</font></strong>&nbsp;&nbsp;&nbsp;&nbsp;<font color="#800080">'^\s*\&lt;foreach\s\+.*\|while\&gt;\s*(.*)'</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">fence-fi</font></strong>&nbsp;&nbsp;&nbsp;&nbsp;<font color="#800080">'^\s*\&lt;end\&gt;'</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~endwith</font><br>
+<!--atr2html}}-->
 
 <h3 id="definemajormode-id"><a name="definemajormode">The "define-majormode" command</a></h3>
 <p>
@@ -171,19 +171,19 @@ command.  Vile maintains a list of majormodes.  Only one majormode can
 be associated with a buffer (none need be associated).  After
 definition, a majormode can be set or unset just like any other buffer
 mode:
-<pre>
-	define-majormode c
-	; defines "cmode"
-
-	setl cmode
-	; sets the mode for the current buffer
-
-	setl nocmode
-	; clear c mode (existing implementation)
-
-	unsetl cmode
-	; clear c mode
-</pre><p>
+<!--{{atr2html--><p style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">define-majormode</font></strong>&nbsp;<strong><font color="#000080">c</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#800000">;&nbsp;defines&nbsp;"cmode"</font><br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">setl</font></strong>&nbsp;<strong><font color="#000080">cmode</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#800000">;&nbsp;sets&nbsp;the&nbsp;mode&nbsp;for&nbsp;the&nbsp;current&nbsp;buffer</font><br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">setl</font></strong>&nbsp;<strong><font color="#000080">nocmode</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#800000">;&nbsp;clear&nbsp;c&nbsp;mode&nbsp;(existing&nbsp;implementation)</font><br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">unsetl</font></strong>&nbsp;<strong><font color="#000080">cmode</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#800000">;&nbsp;clear&nbsp;c&nbsp;mode</font><br>
+<!--atr2html}}--></p>
 The restriction to a single majormode is because mode values are
 internally represented as structures with a pointer.  The pointer
 denotes which value (currently local or global) is used.  The
@@ -205,15 +205,15 @@ mode values).
 <p>
 This command sets local values of buffer modes for the given majormode,
 e.g.,
-<pre>
-	define-submode c autoindent
-</pre><p>
+<!--{{atr2html--><p style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">define-submode</font></strong>&nbsp;<strong><font color="#000080">c</font></strong>&nbsp;<strong><font color="#000080">autoindent</font></strong><br>
+<!--atr2html}}--></p>
 The majormode name is required.  The names after the majormode name are
 names of buffer modes with a corresponding value.  Any number of modes
 can be specified in a single command, e.g.,
-<pre>
-	define-submode c autoindent tabstop=4
-</pre><p>
+<!--{{atr2html--><p style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">define-submode</font></strong>&nbsp;<strong><font color="#000080">c</font></strong>&nbsp;<strong><font color="#000080">autoindent</font></strong>&nbsp;<strong><font color="#000080">tabstop</font></strong><strong><font color="#800000">=</font></strong><strong><font color="#008080">4</font></strong><br>
+<!--atr2html}}--></p>
 For each mode given, vile defines corresponding names by which they can
 be referenced, e.g., "c-autoindent" (from the long mode name
 "autoindent") and "cai" (from the short mode name "ai" for autoindent). 
@@ -254,11 +254,11 @@ solely by the define-submode command:
 		that.  The form of the command is limited, since it is
 		interpreted for internal calls:
 <pre>
-			{filter} {options}
+	{filter} {options}
 </pre><p>
 		where {filter} is the filename for the filter, e.g.,
 <pre>
-			vile-c-filt
+	vile-c-filt
 </pre><p>
 		and options include:
 <dl>
@@ -307,7 +307,7 @@ solely by the define-submode command:
 		per line.  The names are "fence-" followed by any of the
 		following keywords with a regular expression:
 <pre>
-			if, elif, else, fi
+	if, elif, else, fi
 </pre><p>
 		Vile searches through all groups of complex fences for a
 		match before trying simple fences.
@@ -352,27 +352,27 @@ Remove the special association of a submode from a majormode.
 <h3 id="example2-id"><a name="example2">Example</a></h3>
 <p>
 The original builtin C/C++ majormode description is equivalent to
-<pre>
-	define-mode c
-	~with define-submode c
-		suffix "\\.\\(\\([Cchisyl]\\)\\|CC\\|cc|cpp\\|cxx\\|hxx\\|scm\\)$"
-		comment-prefix="^\\s*\\(\\s*[#*>]\\)\\+"
-		comments="^\\s*/\\?\\(\\s*[#*>]\\)\\+/\\?\\s*$"
-		fence-begin="/\\*"
-		fence-end="\\*/"
-		fence-if="^\\s*#\\s*if"
-		fence-elif="^\\s*#\\s*elif\\>"
-		fence-else="^\\s*#\\s*else\\>"
-		fence-fi="^\\s*#\\s*endif\\>"
-		cindent
-	~endwith
-</pre><p>
+<!--{{atr2html--><p style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">define-mode</font></strong>&nbsp;<strong><font color="#000080">c</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~with</font>&nbsp;<strong><font color="#000080">define-submode</font></strong>&nbsp;<strong><font color="#000080">c</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">suffix</font></strong>&nbsp;<font color="#800080">"\\.\\(\\([Cchisyl]\\)\\|CC\\|cc|cpp\\|cxx\\|hxx\\|scm\\)$"</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">comment-prefix</font></strong><strong><font color="#800000">=</font></strong><font color="#800080">"^\\s*\\(\\s*[#*&gt;]\\)\\+"</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">comments</font></strong><strong><font color="#800000">=</font></strong><font color="#800080">"^\\s*/\\?\\(\\s*[#*&gt;]\\)\\+/\\?\\s*$"</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">fence-begin</font></strong><strong><font color="#800000">=</font></strong><font color="#800080">"/\\*"</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">fence-end</font></strong><strong><font color="#800000">=</font></strong><font color="#800080">"\\*/"</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">fence-if</font></strong><strong><font color="#800000">=</font></strong><font color="#800080">"^\\s*#\\s*if"</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">fence-elif</font></strong><strong><font color="#800000">=</font></strong><font color="#800080">"^\\s*#\\s*elif\\&gt;"</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">fence-else</font></strong><strong><font color="#800000">=</font></strong><font color="#800080">"^\\s*#\\s*else\\&gt;"</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">fence-fi</font></strong><strong><font color="#800000">=</font></strong><font color="#800080">"^\\s*#\\s*endif\\&gt;"</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">cindent</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~endwith</font><br>
+<!--atr2html}}--></p>
 Note that the following are equivalent once you have defined the majormode "c":
-<pre>
-	set cts=8
-	set c-tabstop=8
-	define-submode c tabstop=8
-</pre>
+<!--{{atr2html--><p style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">set</font></strong>&nbsp;<strong><font color="#000080">cts</font></strong><strong><font color="#800000">=</font></strong><strong><font color="#008080">8</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">set</font></strong>&nbsp;<strong><font color="#000080">c-tabstop</font></strong><strong><font color="#800000">=</font></strong><strong><font color="#008080">8</font></strong><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">define-submode</font></strong>&nbsp;<strong><font color="#000080">c</font></strong>&nbsp;<strong><font color="#000080">tabstop</font></strong><strong><font color="#800000">=</font></strong><strong><font color="#008080">8</font></strong><br>
+<!--atr2html}}--></p>
 <h2 id="credits-id"><a name="credits">Credits</a></h2>
 Most of this was written by Thomas Dickey, with fixes from Clark Morgan and
 Steven Lembark.

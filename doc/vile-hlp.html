@@ -1,6 +1,6 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
-  $Id: vile-hlp.html,v 1.23 2009/12/28 14:59:29 tom Exp $
+  $Id: vile-hlp.html,v 1.25 2010/01/03 14:34:52 tom Exp $
 -->
 <HTML>
 <HEAD>
@@ -4253,7 +4253,7 @@ Getting along with vile						(version 9.7)
 <p>
 	[
 	  Note 1:  the information presented in this section of the help file
-	  is a subset of "doc/macros.doc", which is supplied with the vile
+	  is a subset of "<a href="macros.html">doc/macros.doc</a>", which is supplied with the vile
 	  source code.  macros.doc is the authoritative reference manual
 	  for the editor's macro language.
 <p>
@@ -4362,7 +4362,7 @@ Getting along with vile						(version 9.7)
 </ul>
 <p>
 	Note that named macros may also include parameters and a help
-	string, each of which are described in doc/macros.doc.
+	string, each of which are described in <a href="macros.html">doc/macros.doc</a>.
 
 <h3 id="user-defined-ops2"><a name="user-defined-ops">User-defined Operators</a></h3>
 	These are defined using the store-operator command, and accept no
@@ -4901,7 +4901,7 @@ Getting along with vile						(version 9.7)
 <h3 id="macro-directives2"><a name="macro-directives">Directives</a></h3>
 	Primitive flow-of-control within a macro may be obtained with
 	certain directives.  Macro directives start with a "~" and include
-	the following:  (see the file macros.doc for more detail)
+	the following:  (see the file <a href="macros.html">macros.doc</a> for more detail)
 <table border="1" summary="Directives">
 <colgroup><col width="150px"><col width="400px"></colgroup>
 <tr><th>Name</th><th>Description</th></tr>
@@ -5372,7 +5372,7 @@ $<br>
 <p>
 	Files can be executed at any time with the ":source" (or
 	":execute-file") command.  There are control structures available,
-	such as ~while, ~if, etc.  Refer to the file doc/macros.doc which
+	such as ~while, ~if, etc.  Refer to the file <a href="macros.html">doc/macros.doc</a> which
 	is distributed with vile for more information.
 <p>
 	Nesting of source'd files is limited to a depth of ten, to prevent
@@ -5986,12 +5986,12 @@ $<br>
 </table>
 <p>
 	For a complete listing of all filters and supported languages and
-	text file formats, refer to the file doc/config.doc in the editor's
+	text file formats, refer to the file <a href="config.html">doc/config.doc</a> in the editor's
 	source distribution.
 <p>
 	[1] Whether the editor uses builtin or external filters depends
 	    solely upon configuration options specified when the editor is
-	    compiled and linked (see doc/config.doc for details).  As you
+	    compiled and linked (see <a href="config.html">doc/config.doc</a> for details).  As you
 	    might expect, builtin filters offer faster syntax coloring at
 	    the cost of a larger editor executable.  For the purposes of
 	    this document, it's assumed that the editor is bound with
@@ -6000,7 +6000,7 @@ $<br>
 	[2] Majormodes are an interesting subject in their own right, but
 	    won't be discussed much within the context of syntax coloring.
 	    For more info, refer to the help topic "Majormodes" in this help
-	    file, as well as the file doc/modes.doc .
+	    file, as well as the file <a href="modes.html">doc/modes.doc</a>.
 <p>
 	[3] Previous releases of vile utilized a syntax filtering system
 	    that actually applied color attributes to a target buffer,
@@ -6213,8 +6213,8 @@ $<br>
 <h3 id="changing-filters2"><a name="changing-filters">Changing color/attribute mappings</a></h3>
 	Filters will color text based on the contents of the file
 	COLORDIR/vile.keywords .  This file's configuration syntax is
-	described in detail in doc/filters.doc .  We'll hit the high points
-	here:
+	described in detail in <a href="filters.html">doc/filters.doc</a>.
+	We'll hit the high points here:
 <ul>
 	<li>a line that begins with ':' is a comment
 	<li>language elements are grouped into classes, each of which is
@@ -6343,7 +6343,7 @@ $<br>
 
 <h3 id="more-filters2"><a name="more-filters">Further reading</a></h3>
 	More information on syntax coloring can be found in the file
-	doc/filters.doc, in the vile source directory.
+	<a href="filters.html">doc/filters.doc</a>, in the vile source directory.
 
 <h2 id="extra-colors2"><a name="extra-colors">Setting Extra Colors</a></h2>
 <p>
@@ -6418,7 +6418,7 @@ $<br>
 <p>
 	The syntax for defining a new majormode or overriding an existing
 	majormode is quite rich and fully described in the file
-	doc/modes.doc .  Rather than regurgitating the contents of that
+	<a href="modes.html">doc/modes.doc</a>.  Rather than regurgitating the contents of that
 	file here, we'll hit the high points with a couple of examples.
 <p>
 	To define a new majormode, add this in your vile startup file:
@@ -7940,10 +7940,10 @@ There are several ways to copy to/from the clipboard:
 
 <h3 id="winvile-ole2"><a name="winvile-ole">OLE Automation</a></h3>
 	Winvile may be invoked as an OLE automation server and thereafter
-	controlled by an OLE client.  Refer to the file doc/oleauto.doc for
+	controlled by an OLE client.  Refer to the file <a href="oleauto.html">doc/oleauto.doc</a> for
 	further details.  Additionally, the OLE client "visvile.dll"
 	provides a mechanism for substituting winvile as the default
-	Developer Studio editor.  Refer to the file doc/visvile.doc for
+	Developer Studio editor.  Refer to the file <a href="visvile.html">doc/visvile.doc</a> for
 	detailed information.
 
 <h3 id="ole-font2"><a name="ole-font">Winvile Font</a></h3>
