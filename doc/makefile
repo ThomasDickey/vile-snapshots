@@ -1,4 +1,4 @@
-# $Header: /users/source/archives/vile.vcs/doc/RCS/makefile,v 1.14 2010/01/03 14:03:01 tom Exp $
+# $Header: /users/source/archives/vile.vcs/doc/RCS/makefile,v 1.15 2010/01/03 20:53:14 tom Exp $
 # construct ".doc" and ".hlp" files from the ".html" files
 
 # list the html files in the order needed for table of contents
@@ -18,6 +18,7 @@ SOURCES = \
 
 TARGETS	= \
 	../vile.hlp \
+	vile-man.html \
 	vile-toc.html \
 	Vileserv.doc \
 	config.doc \
