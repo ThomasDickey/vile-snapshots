@@ -1,7 +1,10 @@
 Changes for vile 9.8 (released ??? ??? ?? ????)
 
- 20100103 (z)
+ 20100107 (z)
 	> Tom Dickey:
+	+ modify format for CF_DISABLE_ECHO, from mawk.
+	+ add special case for darwin extensions in CF_XOPEN_SOURCE macro,
+	  from tin.
 	+ add makefile install-html rule
 	+ add doc/vile-man.html, generated from vile.1
 	+ add check in x11.c get_color_gc in case index falls out of bounds
@@ -9,6 +12,7 @@ Changes for vile 9.8 (released ??? ??? ?? ????)
 	+ finish colorizing examples in html files.
 	+ completed doc/menus.html
 	+ cleanup some debris from working files (report by Brendan O'Dea).
+	+ update config.guess, config.sub
 
  20091228 (y)
 	> Brendan O'Dea:

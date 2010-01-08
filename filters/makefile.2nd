@@ -1,4 +1,4 @@
-# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.2nd,v 1.15 2009/10/10 00:46:05 tom Exp $
+# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.2nd,v 1.16 2010/01/07 22:22:39 tom Exp $
 #
 
 .SUFFIXES: .l .c .i $o
@@ -6,22 +6,22 @@
 # This rule is only used for external filters since we generate explicit
 # rules to rename the entrypoints of each built-in or loadable filter.
 .l$o:
-@RULE_CC@
+	@RULE_CC@
 	@ECHO_CC@echo "#include <flt_defs.h>" > $*.c
 	@ECHO_CC@@LEX_CHAR_CLASSES@ $(LEX) -t $< >> $*.c
 	@ECHO_CC@$(CC) -c $(CPPFLAGS) $(CFLAGS) $*.c
 	-$(RM) $*.c
 
 .l.c:
-@RULE_CC@
+	@RULE_CC@
 	@ECHO_CC@echo "#include <flt_defs.h>" > $*.c
 	@ECHO_CC@@LEX_CHAR_CLASSES@ $(LEX) -t $< >> $*.c
 
 .c.i:
-@RULE_CC@
+	@RULE_CC@
 	@ECHO_CC@$(CPP) -C $(CPPFLAGS) $(QUOTDEFS) $< >$@
 .c$o:
-@RULE_CC@
+	@RULE_CC@
 	@ECHO_CC@$(CC) -c $(CPPFLAGS) $(QUOTDEFS) $(CFLAGS) $<
 
 LF_DEPS = filterio$o filters$o
