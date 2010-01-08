@@ -20,7 +20,7 @@
 #
 # gnu autoconf support by kevin buettner, 5/94
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.229 2010/01/04 01:09:36 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.230 2010/01/07 22:22:09 tom Exp $
 
 SHELL		= /bin/sh
 
@@ -104,10 +104,10 @@ INSTALL_DIRS    = $(BINDIR) $(DATADIR) $(DOCDIR) $(MANDIR) @EXTRA_INSTALL_DIRS@
 .SUFFIXES: .c .i .cpp .rc $o
 
 .c.i:
-@RULE_CC@
+	@RULE_CC@
 	@ECHO_CC@$(CPP) -C $(CPPFLAGS) $(QUOTDEFS) $< >$@
 .c$o .cpp$o:
-@RULE_CC@
+	@RULE_CC@
 	@ECHO_CC@$(CC) -c $(CPPFLAGS) $(QUOTDEFS) $(CFLAGS) -DHELP_LOC=\"$(datadir)\" $<
 
 .rc.o:
