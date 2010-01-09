@@ -1,5 +1,10 @@
 Changes for vile 9.8 (released ??? ??? ?? ????)
 
+ 20100109 (za)
+	> Tom Dickey:
+	+ improve CF_IMAKE_CFLAGS and CF_XOPEN_SOURCE by using CF_ADD_CFLAGS
+	  to add (and remove duplicates) consistently in CPPFLAGS.
+
  20100107 (z)
 	> Tom Dickey:
 	+ modify format for CF_DISABLE_ECHO, from mawk.
