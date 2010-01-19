@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.338 2009/12/08 23:23:39 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.339 2010/01/18 21:53:54 tom Exp $
  *
  */
 
@@ -1491,6 +1491,8 @@ static int
 check_file_access(char *fname, UINT mode)
 {
     int result = ffaccess(fname, mode);
+
+    TRACE((T_CALLED "check_file_access(%s, %#x) = %d\n", fname, mode, result));
 #if SYS_UNIX
 #define CHK_OWNER (FL_HOME | FL_CDIR)
     if (result) {
@@ -1545,7 +1547,7 @@ check_file_access(char *fname, UINT mode)
     }
 #endif
 
-    return result;
+    returnCode(result);
 }
 
 static char *
