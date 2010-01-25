@@ -1,4 +1,4 @@
-MANIFEST for vile, version v9_7z3
+MANIFEST for vile, version v9_7z4
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 AUTHORS                         list of authors, with nicknames in CHANGES
@@ -118,6 +118,7 @@ trace.h                         development: trace to logfile
 ucrypt.c                        interface to Unix crypt(1)
 undo.c                          support for "undo"
 version.c                       version & usage messages
+version.sh                      print version for current sources
 vile-9.7.spec                   sample RPM spec file for vile 9.7
 vile.1                          man-page for VILE
 vile.hlp                        help-file
