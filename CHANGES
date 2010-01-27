@@ -1,9 +1,11 @@
 Changes for vile 9.8 (released ??? ??? ?? ????)
 
- 20100126 (za)
+ 20100127 (za)
 	> Tom Dickey:
+	+ improve nroff filter by allowing for macro-names to be used for fonts
 	+ add "always" setting for check-access mode, to distinguish between
-	  scripts and datafiles.  Use "always" to check permissions for data.
+	  scripts and datafiles, e.g., tags.  Use "always" to check permissions
+	  for data.
 	+ add to diffmode's preamble pattern to allow it to detect diff's in
 	  a piped input.
 	+ add configure option --with-symlink which augments --program-suffix

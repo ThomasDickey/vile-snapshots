@@ -3,12 +3,13 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/nr-filt.l,v 1.27 2008/11/19 23:11:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/nr-filt.l,v 1.29 2010/01/27 10:13:20 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of NROFF
  */
 
 #include <filters.h>
+#undef YY_NO_UNPUT
 
 DefineFilter("nr");
 
@@ -51,14 +52,27 @@ write_font(char *text, int size)
 
 COMMAND		^[\.'][[:blank:]]*([[:alnum:]]+|(\\[^\\\r\n\"#])+)([ \t][^\r\n]+)?
 COMMENT		^[\.'][[:blank:]]*(\\\"|#)
+END_COMMAND	^\.\.$
 
 ENIT		\\[e *\n\\+-]
 
-FONT		\\f[[:upper:]1-4]
+USE_MACRO	\(..
+USE_SUBST	\\\*
+FONT		\\f([BI1-4]|{USE_MACRO})
 
 %%
 
 {COMMAND}			{ write_cmd(yytext, yyleng); }
+{END_COMMAND}			{ WriteToken(Action_attr); }
+
+{USE_SUBST}{USE_MACRO}		{ WriteToken3(Action_attr, 3);
+				  WriteToken2(String_attr, 3);
+				}
+
+\\f[PR1]			{ WriteToken(Action_attr); }
+{FONT}[\\\r\n]			{ WriteToken3(Action_attr, 3);
+				  unput(yytext[yyleng - 1]);
+				}
 
 {FONT}([^\\\r\n]|{ENIT})+(\\f[^PR1]|\n)	{ WriteToken(Action_attr); /* err? */ }
 {FONT}([^\\\r\n]|{ENIT})+\\f[PR1]	{ write_font(yytext, yyleng); }
