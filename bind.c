@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.339 2010/01/18 21:53:54 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.342 2010/01/27 02:04:47 tom Exp $
  *
  */
 
@@ -235,7 +235,7 @@ vl_help(int f GCC_UNUSED, int n GCC_UNUSED)
 	returnCode(FALSE);
 
     if (bp->b_active == FALSE) {	/* never been used */
-	hname = cfg_locate(helpfile, FL_ANYWHERE | FL_READABLE);
+	hname = cfg_locate(helpfile, LOCATE_HELP);
 	if (!hname) {
 	    mlforce("[Sorry, can't find the help information]");
 	    (void) zotbuf(bp);
@@ -1523,10 +1523,13 @@ check_file_access(char *fname, UINT mode)
 	     * those as an ordered list.  Hence, setting "home" implies we
 	     * also check "current", since that is the first item in the list.
 	     */
-	    if ((mode
-		 & (check * 2 - 1)
-		 & ~(FL_EXECABLE | FL_WRITEABLE | FL_READABLE)) != 0)
+	    if ((mode & FL_ALWAYS) && !(check & FL_ALWAYS)) {
+		doit = FALSE;
+	    } else if ((mode
+			& (check * 2 - 1)
+			& ~(FL_EXECABLE | FL_WRITEABLE | FL_READABLE)) != 0) {
 		doit = TRUE;
+	    }
 	}
 #endif
 	if (doit) {
@@ -1629,10 +1632,10 @@ char *
 cfg_locate(char *fname, UINT which)
 {
     char *sp;
-    UINT mode = (which & (FL_EXECABLE | FL_WRITEABLE | FL_READABLE));
+    UINT mode = (which & (FL_ALWAYS | FL_EXECABLE | FL_WRITEABLE | FL_READABLE));
 
 #define FL_BIT(name) ((which & FL_##name) ? " " #name : "")
-    TRACE((T_CALLED "cfg_locate('%s',%s%s%s%s%s%s%s%s%s)\n", NonNull(fname),
+    TRACE((T_CALLED "cfg_locate('%s',%s%s%s%s%s%s%s%s%s%s)\n", NonNull(fname),
 	   FL_BIT(EXECABLE),
 	   FL_BIT(WRITEABLE),
 	   FL_BIT(READABLE),
@@ -1641,7 +1644,8 @@ cfg_locate(char *fname, UINT which)
 	   FL_BIT(EXECDIR),
 	   FL_BIT(STARTPATH),
 	   FL_BIT(PATH),
-	   FL_BIT(LIBDIR)));
+	   FL_BIT(LIBDIR),
+	   FL_BIT(ALWAYS)));
 
     /* take care of special cases */
     if (!fname || !fname[0] || isSpace(fname[0]))

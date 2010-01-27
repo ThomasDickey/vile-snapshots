@@ -1,6 +1,6 @@
 dnl vile's local definitions for autoconf.
 dnl
-dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.202 2010/01/24 15:33:44 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.207 2010/01/27 00:22:53 tom Exp $
 dnl
 dnl See
 dnl		http://invisible-island.net/autoconf/autoconf.html
@@ -467,6 +467,34 @@ ifelse($3,,[    :]dnl
   $4
 ])dnl
   ])])dnl
+dnl ---------------------------------------------------------------------------
+dnl CF_AUTO_SYMLINK version: 1 updated: 2010/01/26 05:55:00
+dnl ---------------
+dnl If CF_WITH_SYMLINK is set, but the program transformation is inactive,
+dnl override it to provide a version-suffix to the result.  This assumes that
+dnl a "version.sh" script is in the source directory.
+dnl
+dnl $1 = variable to substitute
+AC_DEFUN([CF_AUTO_SYMLINK],[
+AC_REQUIRE([CF_WITH_SYMLINK])dnl
+
+if test "$with_symlink" != no ; then
+	if test "[$]$1" = NONE ; then
+		cf_version=`$srcdir/version.sh 2>/dev/null`
+		if test -n "$cf_version" ; then
+			if test "$program_suffix" = NONE ; then
+				program_suffix="-$cf_version"
+			else
+				program_suffix="$program_suffix-$cf_version"
+			fi
+			CF_TRANSFORM_PROGRAM
+			$1="$with_symlink"
+		else
+			AC_MSG_ERROR(No version number found in sources)
+		fi
+	fi
+fi
+])
 dnl ---------------------------------------------------------------------------
 dnl CF_CC_INIT_UNIONS version: 2 updated: 1998/07/01 22:16:27
 dnl -----------------
@@ -1005,7 +1033,7 @@ esac
 
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_CURSES_TERM_H version: 6 updated: 2003/11/06 19:59:57
+dnl CF_CURSES_TERM_H version: 7 updated: 2010/01/24 18:40:06
 dnl ----------------
 dnl SVr4 curses should have term.h as well (where it puts the definitions of
 dnl the low-level interface).  This may not be true in old/broken implementations,
@@ -3368,6 +3396,26 @@ ncursesw/term.h)
 esac
 ])dnl
 dnl ---------------------------------------------------------------------------
+dnl CF_TRANSFORM_PROGRAM version: 1 updated: 2010/01/26 05:55:00
+dnl --------------------
+dnl From AC_ARG_PROGRAM, (re)compute $program_transform_name based on the
+dnl $program_prefix and $program_suffix values.
+AC_DEFUN([CF_TRANSFORM_PROGRAM],[
+program_transform_name=s,x,x,
+test "$program_prefix" != NONE &&
+  program_transform_name="s,^,$program_prefix,;$program_transform_name"
+# Use a double $ so make ignores it.
+test "$program_suffix" != NONE &&
+  program_transform_name="s,\$,$program_suffix,;$program_transform_name"
+# Double any \ or $.  echo might interpret backslashes.
+# By default was `s,x,x', remove it if useless.
+cat <<\_ACEOF >conftest.sed
+s/[\\$]/&&/g;s/;s,x,x,$//
+_ACEOF
+program_transform_name=`echo $program_transform_name | sed -f conftest.sed`
+rm conftest.sed
+])
+dnl ---------------------------------------------------------------------------
 dnl CF_TYPE_FD_SET version: 4 updated: 2008/03/25 20:56:03
 dnl --------------
 dnl Check for the declaration of fd_set.  Some platforms declare it in
@@ -3839,6 +3887,35 @@ CF_NO_LEAKS_OPTION(purify,
 AC_SUBST(LINK_PREFIX)
 ])dnl
 dnl ---------------------------------------------------------------------------
+dnl CF_WITH_SYMLINK version: 4 updated: 2010/01/26 19:22:22
+dnl ---------------
+dnl If any of --program-prefix, --program-suffix or --program-transform-name is
+dnl given, accept an option tell the makefile to create a symbolic link, e.g.,
+dnl to the given program on install.
+dnl
+dnl $1 = variable to substitute
+dnl $2 = program name
+dnl $3 = option default
+AC_DEFUN([CF_WITH_SYMLINK],[
+$1=NONE
+AC_SUBST($1)
+if test "$program_transform_name" != "'CF__INIT_TRANSFORM'" ; then
+cf_name=`echo "$program_transform_name" | sed -e '[s,\\$\\$,$,g]'`
+cf_name=`echo $2 |sed -e "$cf_name"`
+AC_MSG_CHECKING(for symbolic link to create to $cf_name)
+AC_ARG_WITH(symlink,
+	[  --with-symlink=XXX      make symbolic link to installed application],
+	[with_symlink=$withval],
+	[with_symlink=$3])
+AC_MSG_RESULT($with_symlink)
+test "$with_symlink" = yes && with_symlink=$2
+test -n "$with_symlink" && \
+	test "$with_symlink" != no && \
+	test "$with_symlink" != $cf_name && \
+	$1="$with_symlink"
+fi
+])
+dnl ---------------------------------------------------------------------------
 dnl CF_WITH_VALGRIND version: 1 updated: 2006/12/14 18:00:21
 dnl ----------------
 AC_DEFUN([CF_WITH_VALGRIND],[
@@ -3895,7 +3972,7 @@ AC_DEFUN([CF_WITH_X_APP_DEFAULTS],
 	AC_SUBST(no_appsdir)
 ])
 dnl ---------------------------------------------------------------------------
-dnl CF_WITH_X_DESKTOP_UTILS version: 1 updated: 2009/10/08 05:20:04
+dnl CF_WITH_X_DESKTOP_UTILS version: 2 updated: 2010/01/25 20:34:54
 dnl -----------------------
 dnl Option for specifying desktop-utils program and flags.
 AC_DEFUN([CF_WITH_X_DESKTOP_UTILS],
@@ -3903,7 +3980,7 @@ AC_DEFUN([CF_WITH_X_DESKTOP_UTILS],
 	# Comment-out the install-desktop rule if the desktop-utils are not found.
 	AC_MSG_CHECKING(if you want to install desktop files)
 	CF_ARG_OPTION(desktop,
-		[  --disable-desktop       disable install of xterm desktop files],
+		[  --disable-desktop       disable install of X desktop files],
 		[enable_desktop=$enableval],
 		[enable_desktop=$enableval],yes)
 	AC_MSG_RESULT($enable_desktop)
@@ -4330,3 +4407,9 @@ define([CF__ICONV_HEAD],[
 #include <stdlib.h>
 #include <iconv.h>]
 )dnl
+dnl ---------------------------------------------------------------------------
+dnl CF__INIT_TRANSFORM version: 1 updated: 2010/01/26 06:48:38
+dnl ------------------
+dnl The initial/inactive value for $program_transform_name is a dummy
+dnl substitution.
+define([CF__INIT_TRANSFORM],[s,x,x,])dnl

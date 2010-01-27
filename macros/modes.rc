@@ -1,4 +1,4 @@
-; $Id: modes.rc,v 1.103 2009/12/24 10:20:15 tom Exp $
+; $Id: modes.rc,v 1.104 2010/01/27 00:59:48 tom Exp $
 ; majormodes in this file are ordered alphabetically for convenience - the
 ; precedence used by vile is strictly alphabetic, counting case.  Use the
 ; before and after qualifiers to override the precedence.
@@ -282,7 +282,7 @@ define-mode diff
 ~with define-submode diff
 	suffixes	'\.\(patch\|dif\|diff\|diffs\|rej\)$'
 	mode-filename	'^!\([[:file:]]*diff\|rcshist\).*'
-	pre '^\(\<diff\>\|\(# patch by\)\)'
+	preamble	'^\(\<diff\>\|\(# patch by\)\|\(Index:\s\+[[:file:]]\+\)\|\(\(---\|\*\*\*\)\s\+[[:file:]]\+.*\d\{4\}\)\|\(^==== .* ==== content$\)\)'
 	before conf
 ~endwith
 
