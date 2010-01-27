@@ -1,5 +1,5 @@
 Summary: VILE VI Like Emacs editor
-# $Header: /users/source/archives/vile.vcs/RCS/vile-9.7.spec,v 1.29 2010/01/09 16:13:51 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/vile-9.7.spec,v 1.30 2010/01/25 10:05:30 tom Exp $
 Name: vile
 Version: 9.7za
 # each patch should update the version
@@ -37,7 +37,7 @@ Patch26: vile-9.7z.patch.gz
 Patch27: vile-9.7za.patch.gz
 # each patch should add itself to this list
 Packager: Thomas Dickey <dickey@invisible-island.net>
-BuildRoot: %{_tmppath}/%{name}-root
+# BuildRoot: %{_tmppath}/%{name}-root
 
 %description
 Vile is a text editor which is extremely compatible with vi in terms of
@@ -86,16 +86,15 @@ touch xvile
 
 %install
 [ "$RPM_BUILD_ROOT" != "/" ] && rm -rf $RPM_BUILD_ROOT
-make install prefix=$RPM_BUILD_ROOT/%{_prefix}
-make TARGET=xvile install-xvile prefix=$RPM_BUILD_ROOT/%{_prefix}/X11R6
+make install                    prefix=$RPM_BUILD_ROOT/%{_prefix} mandir=$RPM_BUILD_ROOT/%{_mandir}/man1
+make TARGET=xvile install-xvile prefix=$RPM_BUILD_ROOT/%{_prefix} mandir=$RPM_BUILD_ROOT/%{_mandir}/man1
 
 strip $RPM_BUILD_ROOT/%{_prefix}/X11R6/bin/xvile
 strip $RPM_BUILD_ROOT/%{_bindir}/vile
 strip $RPM_BUILD_ROOT/%{_libdir}/vile/vile-*filt
 
-./mkdirs.sh $RPM_BUILD_ROOT/%{_prefix}/X11R6/man/man1  
-install -m 644 vile.1 $RPM_BUILD_ROOT/%{_prefix}/X11R6/man/man1/xvile.1  
 ./mkdirs.sh $RPM_BUILD_ROOT/%{_mandir}/man1  
+install -m 644 vile.1 $RPM_BUILD_ROOT/%{_mandir}/man1/xvile.1  
 install -m 644 vile.1 $RPM_BUILD_ROOT/%{_mandir}/man1/vile.1  
 
 ./mkdirs.sh $RPM_BUILD_ROOT/%{_sysconfdir}/X11/wmconfig  
@@ -113,18 +112,21 @@ install xvile.wmconfig $RPM_BUILD_ROOT/%{_sysconfdir}/X11/wmconfig/xvile
 %doc macros
 %config(missingok) %{_sysconfdir}/X11/wmconfig/vile
 %config(missingok) %{_sysconfdir}/X11/wmconfig/xvile
-%{_prefix}/X11R6/bin/xvile
-%{_prefix}/X11R6/bin/vile-pager
-%{_prefix}/X11R6/man/man1/xvile.*
-%{_prefix}/X11R6/share/vile
+%{_prefix}/bin/xvile
+%{_prefix}/bin/xvile-pager
+%{_prefix}/share/vile
 %{_bindir}/vile
 %{_bindir}/vile-pager
+%{_mandir}/man1/xvile.*
 %{_mandir}/man1/vile.*
 %{_datadir}/vile/
 %{_libdir}/vile/
 
 %changelog
 # each patch should add its ChangeLog entries here
+
+* Mon Jan 25 2010 Thomas Dickey
+- remove obsolete use of /usr/X11R6 (report by Radek Liboska).
 
 * Sat Jan 09 2010 Thomas Dickey
 - added patch for 9.7za

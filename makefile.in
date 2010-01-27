@@ -20,7 +20,7 @@
 #
 # gnu autoconf support by kevin buettner, 5/94
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.230 2010/01/07 22:22:09 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.236 2010/01/26 21:50:11 tom Exp $
 
 SHELL		= /bin/sh
 
@@ -49,6 +49,9 @@ o		= .@OBJEXT@
 
 X_LIBS		= @X_LIBS@
 
+transform	= @program_transform_name@
+ACTUAL		= `echo @TARGET@|sed '$(transform)'`$x
+
 SCREEN		= @SCREEN@
 TARGET		= @TARGET@$x
 
@@ -74,6 +77,7 @@ icondir		= @icondir@
 
 #### End of system configuration section. ####
 
+LN_S		= @LN_S@
 RM		= rm -f
 MAKE_RECUR	= @cf_cv_makeflags@ prefix=$(prefix) DESTDIR=$(DESTDIR)
 
@@ -81,7 +85,7 @@ CLASS		= XVile
 ICON		= vile
 ICON_SUFFIX	= @ICON_SUFFIX@
 QUOTDEFS	= \
-		-DPROGRAM_NAME=\"@TARGET@\" \
+		-DPROGRAM_NAME=\"$(ACTUAL)\" \
 		-DVILE_ICON=\"icons/$(ICON)$(ICON_SUFFIX)\" \
 		-DVILE_LIBDIR_PATH=\"'@VILE_LIBDIR_PATH@'\" \
 		-DVILE_STARTUP_PATH=\"'@VILE_STARTUP_PATH@'\"
@@ -452,17 +456,50 @@ INSTALL_X_FILES = \
 	$(DATADIR)/vilemenu.rc
 
 INSTALL_FILES = \
-	$(BINDIR)/$(TARGET) \
-	$(BINDIR)/@TARGET@-pager \
 	$(MANDIR)/@TARGET@.$(manext) \
 	$(INSTALL_MACRO_FILES) \
 	$(DATADIR)/vile.hlp @EXTRA_INSTALL_FILES@
 
-install-$(TARGET) \
+USE_SYMLINK = test @VILE_SYMLINK@ != NONE
+
+NAME_OF_ACTUAL = $(ACTUAL)
+NAME_OF_PAGER  = $(ACTUAL)-pager
+
+LINK_TO_ACTUAL = @VILE_SYMLINK@
+LINK_TO_PAGER  = @VILE_SYMLINK@-pager
+
+PATH_OF_ACTUAL = $(BINDIR)/$(ACTUAL)
+PATH_OF_PAGER  = $(BINDIR)/$(NAME_OF_PAGER)
+
+install-@TARGET@ \
 install-full \
-install :: $(INSTALL_DIRS) \
-	$(INSTALL_FILES)
-	@echo 'Completed installation.'
+install :: \
+		$(INSTALL_DIRS) \
+		$(INSTALL_FILES) \
+		$(TARGET) \
+		$(srcdir)/macros/vile-pager
+	@echo "** installing $(NAME_OF_ACTUAL)"
+	$(INSTALL_PROGRAM) $(TARGET) $(PATH_OF_ACTUAL)
+	@ECHO_CC@-$(SHELL) -c "if $(USE_SYMLINK) ; then \
+		cd $(BINDIR) ; \
+		rm -f $(LINK_TO_ACTUAL) ; \
+		$(LN_S) $(NAME_OF_ACTUAL) $(LINK_TO_ACTUAL) ; \
+		echo '... created symbolic link:' ; \
+		ls -l $(NAME_OF_ACTUAL) $(LINK_TO_ACTUAL) ; \
+	fi"
+
+	@echo "** installing $(NAME_OF_PAGER)"
+	@ECHO_CC@sed -e 's/=vile$$/='$(ACTUAL)'/' $(srcdir)/macros/vile-pager >$(PATH_OF_PAGER)
+	@ECHO_CC@chmod 755 $(PATH_OF_PAGER)
+	@ECHO_CC@-$(SHELL) -c "if $(USE_SYMLINK) ; then \
+		cd $(BINDIR); \
+		rm -f $(LINK_TO_PAGER) ; \
+		$(LN_S) $(NAME_OF_PAGER) $(LINK_TO_PAGER) ; \
+		echo '... created symbolic link:' ; \
+		ls -l $(NAME_OF_PAGER) $(LINK_TO_PAGER) ; \
+	fi"
+
+	@echo 'Completed install of program.'
 
 install-doc :		$(DOCDIR)		$(INSTALL_DOC_FILES)
 
@@ -474,9 +511,12 @@ install-perl :		$(INSTALL_PERL_DIRS)	$(INSTALL_PERL_FILES)
 
 installdirs:		$(INSTALL_DIRS)
 
-uninstall-$(TARGET) \
+uninstall-@TARGET@ \
 uninstall ::
-	- $(RM) $(INSTALL_FILES)
+	@ECHO_CC@-$(SHELL) -c "if $(USE_SYMLINK) ; then cd $(BINDIR) && rm -f $(LINK_TO_ACTUAL) ; fi"
+	@ECHO_CC@-$(SHELL) -c "if $(USE_SYMLINK) ; then cd $(BINDIR) && rm -f $(LINK_TO_PAGER) ; fi"
+	@ECHO_CC@- $(RM) $(INSTALL_FILES) $(PATH_OF_ACTUAL) $(PATH_OF_PAGER)
+	@echo 'Completed uninstall of program.'
 
 uninstall-doc :
 	- $(RM) $(INSTALL_DOC_FILES)
@@ -550,7 +590,7 @@ distclean ::
 
 mostlyclean ::
 	- $(RM) *.[oi] o$(TARGET) $(BUILTHDRS) $(BUILTSRCS) $(MKTBLS) \
-	    builtflt.h core core.* *~ *.BAK *.bb* *.da *.gcov
+	    builtflt.h core core.* *~ *.tmp *.BAK *.bb* *.da *.gcov
 
 clean :: mostlyclean
 	- $(RM) $(ALL)
@@ -763,19 +803,12 @@ test_io$x :	$(TEST_IO_OBJS)
 	$(CC) -o $@ $(TEST_IO_OBJS) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) $(LIBS)
 
 # dependency-rules for install/installdirs
-$(BINDIR)/$(TARGET):		$(TARGET)
-	$(INSTALL_PROGRAM)	$(TARGET) $@
-
 $(BINDIR)/xshell.sh:		$(srcdir)/xshell.sh
 	$(INSTALL_SCRIPT)	$(srcdir)/xshell.sh $@
 $(BINDIR)/uxvile:		$(srcdir)/macros/uxvile
 	$(INSTALL_SCRIPT)	$(srcdir)/macros/uxvile $@
 $(BINDIR)/vileget:		$(srcdir)/perl/vileget
 	$(INSTALL_PL_EXE)	$(srcdir)/perl/vileget $@
-
-$(BINDIR)/@TARGET@-pager:	$(srcdir)/macros/vile-pager
-	sed -e 's/=vile$$/=@TARGET@/' $(srcdir)/macros/vile-pager >$@
-	chmod 755 $@
 
 $(DOCDIR)/Vileserv.doc:		$(srcdir)/doc/Vileserv.doc
 	$(INSTALL_DATA)		$(srcdir)/doc/Vileserv.doc $@

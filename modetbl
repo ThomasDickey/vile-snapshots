@@ -11,7 +11,7 @@
 #
 # The modes are table entries in the BUFFER and WINDOW structures.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.297 2009/12/23 00:24:47 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.298 2010/01/27 01:45:27 tom Exp $
 #
 #
 # Mode-table entries.  Capitalized letters are used for abbreviations.
@@ -565,6 +565,7 @@ string
 "startup"	FL_STARTPATH
 "path"		FL_PATH
 "libdir"	FL_LIBDIR
+"always"	FL_ALWAYS
 
 .table lookup
 "readable"	FL_READABLE

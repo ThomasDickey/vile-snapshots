@@ -1,6 +1,6 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
-  $Id: config.html,v 1.4 2009/12/29 11:52:34 tom Exp $
+  $Id: config.html,v 1.5 2010/01/27 00:20:00 tom Exp $
 -->
 <HTML>
 <HEAD>
@@ -420,6 +420,49 @@ described there, you will need to use a version of "make" which supports
 the VPATH variable.  And it must support it _correctly_.  Again, GNU make
 does this.  A lot of older "make"s don't.
 
+<h2 id="versionedprog-id"><a name="versionedprog">Building Versioned Executables</a></h2>
+Normally vile is installed without renaming it.
+But the configure script supports these options,
+which allow you to rename the program:
+<pre>
+  --program-prefix=PREFIX            prepend PREFIX to installed program names
+  --program-suffix=SUFFIX            append SUFFIX to installed program names
+  --program-transform-name=PROGRAM   run sed PROGRAM on installed program names
+  --with-symlink=XXX      make symbolic link to installed application
+</pre>
+In particular, the <code>--with-symlink</code> option is used to install
+executables that are named according to vile's version, e.g.,
+<code>vile-9.7za</code>,
+<code>vile-9.7zb</code>, etc.,
+with a symbolic link pointing to the
+most recently installed executables.
+This allows you to install successive releases of vile,
+and easily switch between them (provided that the associated macros
+are compatible).
+
+<h2 id="locale-id"><a name="locale">Locale Support</a></h2>
+There are two parts to locale support:
+<pre>
+  --with-locale           use i18n support for character-types
+  --with-iconv            use iconv() support for character-types
+  --with-libiconv-prefix=DIR
+                          search for libiconv in DIR/include and DIR/lib
+</pre>
+<p>
+The <code>--with-locale</code> option provides the basic portable support
+for different character types.
+It is enabled by default since only rather old systems lack support for
+these functions.
+(Some older systems have the functions but only a buggy implementation;
+it is not simple to make the configure script aware of those).
+<p>
+The <code>--with-iconv</code> option checks for functions that vile
+can use to facilitate editing UTF-8 text on devices which do not display UTF-8,
+as well as work with UTF-8 files which are largely compatible with 8-bit
+encoding.
+<p>
+Without the iconv option, vile can still work with UTF-8, but the
+support for non-UTF-8 encoding is focused on ISO-8859-1.
 
 <h2 id="otheroptions-id"><a name="otheroptions">Other Compile-Time Options</a></h2>
 <p>

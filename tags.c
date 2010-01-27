@@ -7,7 +7,7 @@
  *
  * Copyright (c) 1990, 1995-2007 by Paul Fox and Thomas E. Dickey
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tags.c,v 1.139 2009/10/31 17:09:31 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tags.c,v 1.140 2010/01/27 01:32:39 tom Exp $
  *
  */
 #include "estruct.h"
@@ -101,7 +101,7 @@ gettagsfile(int n, int *endofpathflagp, int *did_read)
 	}
 
 	/* look up the tags file */
-	tagsfile = cfg_locate(tagfilename, FL_CDIR | FL_READABLE);
+	tagsfile = cfg_locate(tagfilename, LOCATE_TAGS);
 
 	/* if it isn't around, don't sweat it */
 	if (tagsfile == NULL) {

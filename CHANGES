@@ -1,7 +1,19 @@
 Changes for vile 9.8 (released ??? ??? ?? ????)
 
- 20100109 (za)
+ 20100126 (za)
 	> Tom Dickey:
+	+ add "always" setting for check-access mode, to distinguish between
+	  scripts and datafiles.  Use "always" to check permissions for data.
+	+ add to diffmode's preamble pattern to allow it to detect diff's in
+	  a piped input.
+	+ add configure option --with-symlink which augments --program-suffix
+	  to make it simple(r) to install versioned binaries (request by Steven
+	  Lembark).
+	+ add configure options for transforming program name upon install:
+	  --program-prefix, --program-suffix, --program-transform-name
+	+ updates/fixes to ".spec" file (report/patch by Radek Liboska).
+	+ improve configure-check for term.h header, to eliminate compiler
+	  warnings for cygwin.
 	+ improve CF_IMAKE_CFLAGS and CF_XOPEN_SOURCE by using CF_ADD_CFLAGS
 	  to add (and remove duplicates) consistently in CPPFLAGS.
 

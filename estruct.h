@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.703 2009/12/23 00:22:07 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.705 2010/01/27 01:39:25 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -641,7 +641,7 @@ typedef unsigned short	mode_t;
 #define OPT_MACRO_ARGS	(!SMALLER && OPT_EVAL)	/* macro argument parsing */
 #define OPT_MLFORMAT    !SMALLER		/* modeline-format */
 #define OPT_MODELINE    !SMALLER		/* vi-style modeline-support */
-#define OPT_MULTIBYTE   (!SMALLER && OPT_LOCALE) /* experimental multibyte support */
+#define OPT_MULTIBYTE   (!SMALLER && OPT_LOCALE) /* multibyte support */
 #define OPT_NAMEBST     !SMALLER		/* name's stored in a bst */
 #define OPT_ONLINEHELP  !SMALLER		/* short per-command help */
 #define OPT_POPUPCHOICE !SMALLER		/* popup-choices mode */
@@ -1394,6 +1394,7 @@ typedef enum {
 #define FL_STARTPATH iBIT(6)	/* look in environment $VILE_STARTUP_PATH */
 #define FL_PATH      iBIT(7)	/* look in environment $PATH */
 #define FL_LIBDIR    iBIT(8)	/* look in environment $VILE_LIBDIR_PATH */
+#define FL_ALWAYS    iBIT(9)	/* file is not a script, but data */
 
 #define FL_ANYWHERE  (FL_CDIR|FL_HOME|FL_EXECDIR|FL_STARTPATH|FL_PATH|FL_LIBDIR)
 
@@ -1406,6 +1407,8 @@ typedef enum {
 #endif
 
 #define LOCATE_EXEC   (FL_PATH | FL_LIBDIR | FL_EXECABLE)
+#define LOCATE_HELP   (FL_READABLE | FL_ALWAYS | FL_ANYWHERE)
+#define LOCATE_TAGS   (FL_READABLE | FL_ALWAYS | FL_CDIR)
 
 /* definitions for name-completion */
 #define	NAMEC		name_cmpl /* char for forcing name-completion */
