@@ -1,6 +1,6 @@
 Changes for vile 9.8 (released ??? ??? ?? ????)
 
- 20100127 (za)
+ 20100128 (za)
 	> Tom Dickey:
 	+ improve nroff filter by allowing for macro-names to be used for fonts
 	+ add "always" setting for check-access mode, to distinguish between

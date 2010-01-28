@@ -1,6 +1,6 @@
 dnl vile's local definitions for autoconf.
 dnl
-dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.207 2010/01/27 00:22:53 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.209 2010/01/28 01:40:48 tom Exp $
 dnl
 dnl See
 dnl		http://invisible-island.net/autoconf/autoconf.html
@@ -468,7 +468,7 @@ ifelse($3,,[    :]dnl
 ])dnl
   ])])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_AUTO_SYMLINK version: 1 updated: 2010/01/26 05:55:00
+dnl CF_AUTO_SYMLINK version: 2 updated: 2010/01/27 20:39:52
 dnl ---------------
 dnl If CF_WITH_SYMLINK is set, but the program transformation is inactive,
 dnl override it to provide a version-suffix to the result.  This assumes that
@@ -480,7 +480,7 @@ AC_REQUIRE([CF_WITH_SYMLINK])dnl
 
 if test "$with_symlink" != no ; then
 	if test "[$]$1" = NONE ; then
-		cf_version=`$srcdir/version.sh 2>/dev/null`
+		cf_version=`$SHELL $srcdir/version.sh 2>/dev/null`
 		if test -n "$cf_version" ; then
 			if test "$program_suffix" = NONE ; then
 				program_suffix="-$cf_version"
@@ -3396,7 +3396,7 @@ ncursesw/term.h)
 esac
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_TRANSFORM_PROGRAM version: 1 updated: 2010/01/26 05:55:00
+dnl CF_TRANSFORM_PROGRAM version: 2 updated: 2010/01/27 20:20:39
 dnl --------------------
 dnl From AC_ARG_PROGRAM, (re)compute $program_transform_name based on the
 dnl $program_prefix and $program_suffix values.
@@ -3410,7 +3410,7 @@ test "$program_suffix" != NONE &&
 # Double any \ or $.  echo might interpret backslashes.
 # By default was `s,x,x', remove it if useless.
 cat <<\_ACEOF >conftest.sed
-s/[\\$]/&&/g;s/;s,x,x,$//
+s/[[\\$]]/&&/g;s/;s,x,x,$//
 _ACEOF
 program_transform_name=`echo $program_transform_name | sed -f conftest.sed`
 rm conftest.sed
