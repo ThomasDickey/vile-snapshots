@@ -1,12 +1,12 @@
-revlist for vile, version v9_7z
+revlist for vile-9.7za, version v9_7za
 --------------------------------------------------------------------------------
-aclocal.m4	1.199
+aclocal.m4	1.209
 ansi.c	1.52
 api.c	1.45
 api.h	1.14
 AUTHORS	1.2
 basic.c	1.162
-bind.c	1.338
+bind.c	1.342
 blist.c	1.12
 blist.h	1.4
 borland.c	1.40
@@ -15,7 +15,7 @@ btree.h	1.5
 buffer.c	1.341
 buglist	1.416
 builtflt.c	1.84
-CHANGES	1.1409
+CHANGES	1.1418
 CHANGES.R3	1.1
 CHANGES.R4	1.1
 CHANGES.R5	1.1
@@ -25,11 +25,11 @@ CHANGES.R8	1.1
 charsets.c	1.67
 chgdfunc.h	1.23
 cmdtbl	1.261
-config.guess	1.12
+config.guess	1.13
 config_h.in	1.2
-config.sub	1.13
-configure	1.50
-configure.in	1.276
+config.sub	1.14
+configure	1.58
+configure.in	1.280
 COPYING	1.4
 csrch.c	1.34
 curses.c	1.45
@@ -40,7 +40,7 @@ djhandl.c	1.6
 dumbterm.c	1.26
 edef.h	1.356
 eightbit.c	1.51
-estruct.h	1.703
+estruct.h	1.705
 eval.c	1.412
 exec.c	1.332
 externs.c	1.11
@@ -67,7 +67,7 @@ makeargv.h	1.3
 makefile.blc	1.24
 makefile.djg	1.41
 makefile.icc	1.19
-makefile.in	1.230
+makefile.in	1.237
 makefile.wnt	1.102
 MANIFEST	none
 map.c	1.117
@@ -76,7 +76,7 @@ mkdirs.sh	1.7
 mkprlenv.wnt	1.9
 mktbls.c	1.163
 modes.c	1.405
-modetbl	1.297
+modetbl	1.298
 msgs.c	1.29
 npopen.c	1.98
 ntconio.c	1.92
@@ -87,7 +87,7 @@ opers.c	1.97
 os2keys.h	1.2
 os2pipe.c	1.5
 os2vio.c	1.37
-patchlev.h	1.401
+patchlev.h	1.402
 path.c	1.168
 perl.xs	1.119
 plugin.c	1.1
@@ -101,13 +101,13 @@ README.PC	1.33
 README.VMS	1.5
 regexp.c	1.196
 region.c	1.157
-revlist	v9_7z
+revlist	v9_7za
 search.c	1.148
 select.c	1.175
 sinstall.sh	1.1
 spawn.c	1.205
 statevar.c	1.139
-tags.c	1.139
+tags.c	1.140
 tbuff.c	1.74
 tcap.c	1.184
 tcap.h	1.15
@@ -118,9 +118,10 @@ trace.h	1.36
 ucrypt.c	1.16
 undo.c	1.101
 version.c	1.73
+version.sh	1.1
 vile.1	1.41
-vile-9.7.spec	1.28
-vile.hlp	1.688
+vile-9.7.spec	1.30
+vile.hlp	1.689
 vile.wmconfig	1.1
 vl_alloc.h	1.1
 vl_ctype.c	1.7
@@ -158,8 +159,8 @@ xshell.sh	1.4
 xterm.c	1.5
 xtermkeys.h	1.17
 xvile.wmconfig	1.1
-doc/config.doc	1.19
-doc/config.html	1.4
+doc/config.doc	1.20
+doc/config.html	1.5
 doc/dir.doc	1.8
 doc/dir.html	1.4
 doc/filters.doc	1.48
@@ -180,12 +181,12 @@ doc/oleauto.doc	1.12
 doc/oleauto.html	1.7
 doc/perl.doc	1.4
 doc/perl.html	1.2
-doc/vile-hlp.html	1.27
+doc/vile-hlp.html	1.28
 doc/vile-man.html	1.6
 doc/vile-man.sed	1.8
 doc/Vileserv.doc	1.3
 doc/Vileserv.html	1.2
-doc/vile-toc.html	1.29
+doc/vile-toc.html	1.31
 doc/visvile.doc	1.13
 doc/visvile.html	1.4
 filters/ada-filt.l	1.17
@@ -298,7 +299,7 @@ filters/mk-key.awk	1.2
 filters/mms-filt.l	1.17
 filters/mvn.key	1.1
 filters/noclass.sh	1.7
-filters/nr-filt.l	1.27
+filters/nr-filt.l	1.29
 filters/nr.key	1.1
 filters/nsis.key	1.4
 filters/objc.key	1.4
@@ -394,7 +395,7 @@ macros/digraphs.rc	1.3
 macros/gnugpg.rc	1.3
 macros/loaderrs.rc	1.2
 macros/manpage.rc	1.24
-macros/modes.rc	1.103
+macros/modes.rc	1.104
 macros/palettes.rc	1.8
 macros/pictmode.rc	1.4
 macros/search.rc	1.3
