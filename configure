@@ -16797,7 +16797,7 @@ fi
 
 if test "$with_symlink" != no ; then
 	if test "$VILE_SYMLINK" = NONE ; then
-		cf_version=`$srcdir/version.sh 2>/dev/null`
+		cf_version=`$SHELL $srcdir/version.sh 2>/dev/null`
 		if test -n "$cf_version" ; then
 			if test "$program_suffix" = NONE ; then
 				program_suffix="-$cf_version"
@@ -16814,7 +16814,7 @@ test "$program_suffix" != NONE &&
 # Double any \ or $.  echo might interpret backslashes.
 # By default was `s,x,x', remove it if useless.
 cat <<\_ACEOF >conftest.sed
-s/\\$/&&/g;s/;s,x,x,$//
+s/[\\$]/&&/g;s/;s,x,x,$//
 _ACEOF
 program_transform_name=`echo $program_transform_name | sed -f conftest.sed`
 rm conftest.sed

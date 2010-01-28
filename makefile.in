@@ -20,7 +20,7 @@
 #
 # gnu autoconf support by kevin buettner, 5/94
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.236 2010/01/26 21:50:11 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.237 2010/01/28 00:03:03 tom Exp $
 
 SHELL		= /bin/sh
 
@@ -50,7 +50,7 @@ o		= .@OBJEXT@
 X_LIBS		= @X_LIBS@
 
 transform	= @program_transform_name@
-ACTUAL		= `echo @TARGET@|sed '$(transform)'`$x
+ACTUAL		= `echo @TARGET@|sed '$(transform)'`
 
 SCREEN		= @SCREEN@
 TARGET		= @TARGET@$x
@@ -85,7 +85,7 @@ CLASS		= XVile
 ICON		= vile
 ICON_SUFFIX	= @ICON_SUFFIX@
 QUOTDEFS	= \
-		-DPROGRAM_NAME=\"$(ACTUAL)\" \
+		-DPROGRAM_NAME=\"@TARGET@\" \
 		-DVILE_ICON=\"icons/$(ICON)$(ICON_SUFFIX)\" \
 		-DVILE_LIBDIR_PATH=\"'@VILE_LIBDIR_PATH@'\" \
 		-DVILE_STARTUP_PATH=\"'@VILE_STARTUP_PATH@'\"
@@ -462,13 +462,13 @@ INSTALL_FILES = \
 
 USE_SYMLINK = test @VILE_SYMLINK@ != NONE
 
-NAME_OF_ACTUAL = $(ACTUAL)
+NAME_OF_ACTUAL = $(ACTUAL)$x
 NAME_OF_PAGER  = $(ACTUAL)-pager
 
 LINK_TO_ACTUAL = @VILE_SYMLINK@
 LINK_TO_PAGER  = @VILE_SYMLINK@-pager
 
-PATH_OF_ACTUAL = $(BINDIR)/$(ACTUAL)
+PATH_OF_ACTUAL = $(BINDIR)/$(ACTUAL)$x
 PATH_OF_PAGER  = $(BINDIR)/$(NAME_OF_PAGER)
 
 install-@TARGET@ \
