@@ -22,7 +22,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.680 2009/12/24 10:02:10 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.682 2010/01/29 11:54:07 tom Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -75,6 +75,7 @@ unsigned _stklen = 24000U;
 static int cmd_mouse_motion(const CMDFUNC * cfp);
 static void get_executable_dir(void);
 static void global_val_init(void);
+static void state_val_init(void);
 static void main_loop(void);
 static void make_startup_file(char *name);
 static void siginit(int enabled);
@@ -325,6 +326,8 @@ MainProgram(int argc, char *argv[])
     *startkey = EOS;
 #endif
 
+    state_val_init();		/* state variable values */
+
 #if OPT_LOCALE
     {
 	char *env = "";
@@ -347,16 +350,10 @@ MainProgram(int argc, char *argv[])
 	    && (((env = getenv("LC_ALL")) != 0 && *env != 0) ||
 		((env = getenv("LC_CTYPE")) != 0 && *env != 0) ||
 		((env = getenv("LANG")) != 0 && *env != 0))) {
-	    char *utf;
 	    char *tmp;
 
 	    TRACE(("Checking for UTF-8 suffix of '%s'\n", env));
-	    if (((utf = strstr(env, ".UTF-8")) != 0
-		 || (utf = strstr(env, ".utf-8")) != 0
-		 || (utf = strstr(env, ".UTF8")) != 0
-		 || (utf = strstr(env, ".utf8")) != 0)
-		&& (tmp = strmalloc(env)) != 0) {
-		tmp[utf - env] = EOS;
+	    if ((tmp = vl_narrowed(env)) != 0) {
 		vl_init_8bit(env, tmp);
 		env = tmp;
 	    } else {
@@ -1310,6 +1307,36 @@ no_memory(const char *s)
 
 #define DFT_IDENTIFIER_EXPR    "\\w\\+"
 
+#if OPT_MULTIBYTE
+/* default value assumes POSIX locale, since it is used before vl_ctyle init */
+#define DFT_LATIN1_EXPR	"\\(\
+aa\\|\
+af\\|\
+br\\|\
+de\\|\
+en\\|\
+es\\|\
+fr\\|\
+fi\\|\
+ga\\|\
+gb\\|\
+gl\\|\
+gv\\|\
+id\\|\
+it\\|\
+kl\\|\
+ms\\|\
+nl\\|\
+nn\\|\
+om\\|\
+pt\\|\
+so\\|\
+sv\\|\
+tl\\)\
+_[A-Za-z]\\+$\
+"
+#endif
+
 			/* where do paragraphs start? */
 #define DFT_PARAGRAPHS  "^\\.[ILPQ]P\\>\\|^\\.P\\>\\|\
 ^\\.LI\\>\\|^\\.[plinb]p\\>\\|^\\.\\?\\s*$"
@@ -1853,6 +1880,11 @@ init_state_value(int which)
     case VAR_HELPFILE:
 	value = default_help_file();
 	break;
+#if OPT_MULTIBYTE
+    case VAR_LATIN1_EXPR:
+	value = DFT_LATIN1_EXPR;
+	break;
+#endif
     case VAR_LIBDIR_PATH:
 	value = default_libdir_path();
 	break;
@@ -1931,6 +1963,49 @@ copy_kbindtbl(BINDINGS * dst)
 extern void flt_array(void);
 #endif
 
+/*
+ * Initialize compiled-in state variable values.
+ */
+static void
+state_val_init(void)
+{
+#if OPT_EVAL
+    int i;
+
+    /*
+     * Note that not all state variables can be initialized explicitly, many
+     * are either read-only, or have too many side-effects to set blindly.
+     */
+    for (i = 0; i < Num_StateVars; i++) {
+	char *s;
+	if ((s = init_state_value(i)) != 0) {
+	    set_state_variable(statevars[i], s);
+	    free(s);
+	}
+    }
+#else
+    helpfile = default_help_file();
+    startup_file = strmalloc(default_startup_file());
+    startup_path = default_startup_path();
+    libdir_path = default_libdir_path();
+#if OPT_MENUS
+    menu_file = default_menu_file();
+#endif
+#if OPT_MLFORMAT
+    modeline_format = strmalloc(DFT_MLFORMAT);
+#endif
+#if OPT_LOCALE
+    latin1_expr = strmalloc(DFT_LATIN1_EXPR);
+#endif
+#if OPT_POSFORMAT
+    position_format = strmalloc(DFT_POSFORMAT);
+#endif
+#if OPT_FINDERR
+    filename_expr = strmalloc(DFT_FILENAME_EXPR);
+#endif
+#endif
+}
+
 static void
 global_val_init(void)
 {
@@ -1977,37 +2052,6 @@ global_val_init(void)
     set_majormode_rexp("c", MVAL_MODE_WILDCARD, DFT_WILDCARD);
 #endif
 #endif /* OPT_MAJORMODE */
-
-#if OPT_EVAL
-    /*
-     * Note that not all state variables can be initialized explicitly, many
-     * are either read-only, or have too many side-effects to set blindly.
-     */
-    for (i = 0; i < Num_StateVars; i++) {
-	char *s;
-	if ((s = init_state_value(i)) != 0) {
-	    set_state_variable(statevars[i], s);
-	    free(s);
-	}
-    }
-#else
-    helpfile = default_help_file();
-    startup_file = strmalloc(default_startup_file());
-    startup_path = default_startup_path();
-    libdir_path = default_libdir_path();
-#if OPT_MENUS
-    menu_file = default_menu_file();
-#endif
-#if OPT_MLFORMAT
-    modeline_format = strmalloc(DFT_MLFORMAT);
-#endif
-#if OPT_POSFORMAT
-    position_format = strmalloc(DFT_POSFORMAT);
-#endif
-#if OPT_FINDERR
-    filename_expr = strmalloc(DFT_FILENAME_EXPR);
-#endif
-#endif
 
     /*
      * Initialize the "normal" bindings for insert and command mode to
