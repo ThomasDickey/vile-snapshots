@@ -11,7 +11,7 @@
 #
 # The modes are table entries in the BUFFER and WINDOW structures.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.298 2010/01/27 01:45:27 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.299 2010/01/29 01:16:24 tom Exp $
 #
 #
 # Mode-table entries.  Capitalized letters are used for abbreviations.
@@ -271,6 +271,7 @@ regex
 	"buf-fname-expr" BUF_FNAME_EXPR	OPT_CURTOKENS	"buffer+fname expression"
 	"error-expr"	ERROR_EXPR	OPT_FINDERR	"last matched error pattern"
 	"filename-expr"	FILENAME_EXPR	OPT_FINDERR	"regular expression for %F"
+	"latin1-expr"	LATIN1_EXPR	OPT_MULTIBYTE	"regular expression matching language codes assumed to be Latin-1"
 	"search"	SEARCH		1		"search pattern"
 string
 	"abufname"	ABUFNAME	1		"alternate buffer name (i.e. '#')"

@@ -1,5 +1,13 @@
 Changes for vile 9.8 (released ??? ??? ?? ????)
 
+ 20100129 (zb)
+	> Tom Dickey:
+	+ add $latin1-expr variable, which can be used to specify whether a
+	  derived narrow locale really has Latin1 (ISO-8859-1) encoding.  This
+	  is used to provide a default encoding for the case where the user's
+	  locale uses UTF-8 encoding, and the system has no corresponding
+	  narrow locale installed (report by Chris Green).
+
  20100128 (za)
 	> Tom Dickey:
 	+ improve nroff filter by allowing for macro-names to be used for fonts

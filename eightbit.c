@@ -1,5 +1,5 @@
 /*
- * $Id: eightbit.c,v 1.51 2009/12/09 00:42:29 tom Exp $
+ * $Id: eightbit.c,v 1.53 2010/01/29 11:56:34 tom Exp $
  *
  * Maintain "8bit" file-encoding mode by converting incoming UTF-8 to single
  * bytes, and providing a function that tells vile whether a given Unicode
@@ -640,6 +640,24 @@ initialize_table_8bit_utf8(void)
 }
 #endif /* OPT_ICONV_FUNCS */
 
+char *
+vl_narrowed(const char *wide)
+{
+    char *result = 0;
+    char *utf;
+
+    if (wide != 0) {
+	if (((utf = strstr(wide, ".UTF-8")) != 0
+	     || (utf = strstr(wide, ".utf-8")) != 0
+	     || (utf = strstr(wide, ".UTF8")) != 0
+	     || (utf = strstr(wide, ".utf8")) != 0)) {
+	    if ((result = strmalloc(wide)) != 0)
+		result[utf - wide] = EOS;
+	}
+    }
+    return result;
+}
+
 /*
  * Do the rest of the work for setting up the wide- and narrow-locales.
  *
@@ -826,7 +844,30 @@ vl_get_encoding(char **target, const char *locale)
     char *result = 0;
     char *actual = setlocale(LC_ALL, locale);
 
-    if (!isEmpty(actual)) {	/* nonempty means legal locale */
+    TRACE((T_CALLED "vl_get_encoding(%s)\n", NONNULL(locale)));
+    if (isEmpty(actual)) {	/* nonempty means legal locale */
+	char *mylocale;
+
+	/*
+	 * If it failed, this may be because we asked for a narrow locale
+	 * that corresponds to the given (wide) locale.
+	 */
+	beginDisplay();
+	if (!isEmpty(locale) && (mylocale = strmalloc(locale)) != 0) {
+	    regexp *exp;
+
+	    exp = regcomp(tb_values(latin1_expr), tb_length0(latin1_expr), TRUE);
+	    if (exp != 0) {
+		if (nregexec(exp, mylocale, (char *) 0, 0, -1)) {
+		    TRACE(("... found match in $latin1-expr\n"));
+		    result = "ISO-8859-1";
+		}
+		free(exp);
+	    }
+	    free(mylocale);
+	}
+	endofDisplay();
+    } else {
 #ifdef HAVE_LANGINFO_CODESET
 	result = nl_langinfo(CODESET);
 #else
@@ -839,14 +880,13 @@ vl_get_encoding(char **target, const char *locale)
 	}
 #endif
     }
-    TRACE(("vl_get_encoding(%s) -> %s\n", NONNULL(locale), NONNULL(result)));
     if (target != 0) {
 	FreeIfNeeded(*target);
 	if (result != 0)
 	    result = strmalloc(result);
 	*target = result;
     }
-    return result;
+    returnString(result);
 }
 
 /*

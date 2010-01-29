@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.688 2009/12/13 16:01:53 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.689 2010/01/29 11:48:46 tom Exp $
  *
  */
 
@@ -396,6 +396,7 @@ extern int did_hard_error_occur (void);
 /* eightbit.c */
 extern char * vl_get_encoding (char **target, const char *locale);
 extern char * vl_get_locale (char **target);
+extern char * vl_narrowed (const char *wide);
 extern const char * vl_mb_to_utf8 (int code);
 extern int vl_is_8bit_encoding (const char * value);
 extern int vl_is_latin1_encoding (const char * value);

@@ -3,7 +3,7 @@
  *	for getting and setting the values of the vile state variables,
  *	plus helper utility functions.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.139 2009/12/23 00:21:51 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.140 2010/01/29 11:55:30 tom Exp $
  */
 
 #include	"estruct.h"
@@ -1664,6 +1664,19 @@ var_TERM_ENCODING(TBUFF **rp, const char *vp GCC_UNUSED)
     } else {
 	return FALSE;
     }
+}
+
+int
+var_LATIN1_EXPR(TBUFF **rp, const char *vp)
+{
+    int rc = any_rw_EXPR(rp, vp, &latin1_expr);
+    if (rc && !rp) {
+	char *narrow = vl_narrow_enc.locale;
+	if (narrow == 0)
+	    narrow = vl_narrowed(vl_wide_enc.locale);
+	vl_init_8bit(vl_wide_enc.locale, narrow);
+    }
+    return rc;
 }
 #endif
 
