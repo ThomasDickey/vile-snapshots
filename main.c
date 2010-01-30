@@ -22,7 +22,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.682 2010/01/29 11:54:07 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.684 2010/01/30 01:09:13 tom Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -75,10 +75,13 @@ unsigned _stklen = 24000U;
 static int cmd_mouse_motion(const CMDFUNC * cfp);
 static void get_executable_dir(void);
 static void global_val_init(void);
-static void state_val_init(void);
 static void main_loop(void);
 static void make_startup_file(char *name);
 static void siginit(int enabled);
+
+#if OPT_MULTIBYTE
+static void pre_init_ctype(void);
+#endif
 
 extern const int nametblsize;
 
@@ -326,7 +329,12 @@ MainProgram(int argc, char *argv[])
     *startkey = EOS;
 #endif
 
-    state_val_init();		/* state variable values */
+    /*
+     * This is needed for a fallback case in locales.
+     */
+#if OPT_MULTIBYTE
+    pre_init_ctype();
+#endif
 
 #if OPT_LOCALE
     {
@@ -1857,6 +1865,14 @@ default_startup_path(void)
     return result;
 }
 
+#if OPT_MULTIBYTE
+static void
+pre_init_ctype(void)
+{
+    tb_scopy(&latin1_expr, DFT_LATIN1_EXPR);
+}
+#endif
+
 #if OPT_EVAL
 /*
  * Returns a string representing the default/initial value of the given
@@ -1994,14 +2010,14 @@ state_val_init(void)
 #if OPT_MLFORMAT
     modeline_format = strmalloc(DFT_MLFORMAT);
 #endif
-#if OPT_LOCALE
-    latin1_expr = strmalloc(DFT_LATIN1_EXPR);
+#if OPT_MULTIBYTE
+    tb_scopy(&latin1_expr, DFT_LATIN1_EXPR);
 #endif
 #if OPT_POSFORMAT
     position_format = strmalloc(DFT_POSFORMAT);
 #endif
 #if OPT_FINDERR
-    filename_expr = strmalloc(DFT_FILENAME_EXPR);
+    tb_scopy(&filename_expr, DFT_FILENAME_EXPR);
 #endif
 #endif
 }
@@ -2034,6 +2050,7 @@ global_val_init(void)
 	make_local_val(global_w_values.wv, i);
 	init_mode_value(&global_w_values.wv[i], WIN_MODE, i);
     }
+    state_val_init();
 
 #if OPT_MAJORMODE
     /*

@@ -1,7 +1,13 @@
 Changes for vile 9.8 (released ??? ??? ?? ????)
 
- 20100129 (zb)
+ 20100130 (zb)
 	> Tom Dickey:
+	+ modify :show-printable to show results from system locale settings
+	  if a parameter is given.
+	+ minor formatting fix to output of :show-printable to show the "sh"
+	  on the end of each row.
+	+ modify vtputc() to correctly display non-UTF-8/non-ISO-8859-1 codes
+	  when running in a UTF-8 locale (prompted by report by Radek Liboska).
 	+ add $latin1-expr variable, which can be used to specify whether a
 	  derived narrow locale really has Latin1 (ISO-8859-1) encoding.  This
 	  is used to provide a default encoding for the case where the user's

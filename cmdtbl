@@ -97,7 +97,7 @@
 #		in '!' listed, then the flag does nothing, and should be
 #		viewed simply as documentation.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.261 2009/05/27 23:33:45 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.262 2010/01/30 18:23:06 tom Exp $
 #
 #
 
@@ -561,7 +561,7 @@ desschemes	NONE			OPT_COLOR_SCHEMES
 	<show the color scheme parameters>
 desprint	NONE			OPT_SHOW_CTYPE
 	"show-printable"
-	<show the printable characters, with types>
+	<show the printable characters, with types, use CNT to select system locale>
 dessubstr	NONE			OPT_REBIND
 	"apropos"
 	"list-commands-apropos-to"

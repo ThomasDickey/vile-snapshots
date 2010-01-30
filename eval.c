@@ -2,7 +2,7 @@
  *	eval.c -- function and variable evaluation
  *	original by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.412 2009/12/22 09:39:22 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.414 2010/01/30 18:18:37 tom Exp $
  *
  */
 
@@ -56,47 +56,82 @@ static void free_vars_cmpl(void);
 /*--------------------------------------------------------------------------*/
 #if OPT_SHOW_CTYPE
 
+static int show_ctypes_f;
+static int show_ctypes_n;
+
 /* list the current character-classes into the current buffer */
 /* ARGSUSED */
 static void
 makectypelist(int dum1 GCC_UNUSED, void *ptr GCC_UNUSED)
 {
-    UINT i, j;
-    CHARTYPE k;
+    UINT i, j, last = N_chars;
+    CHARTYPE test;
     const char *s;
+    VL_CTYPE2 *enc = &vl_real_enc;
+#if OPT_MULTIBYTE
+    int rc;
+    char temp[10];
+#endif
 
 #if OPT_MULTIBYTE
-    /*
-     * Keep the buffer encoding 8-bit to make it work with the character
-     * classes for the narrow locale.
-     */
     make_local_b_val(curbp, VAL_FILE_ENCODING);
-    set_b_val(curbp, VAL_FILE_ENCODING, enc_8BIT);
+    if ((vl_encoding > enc_8BIT) && show_ctypes_f) {
+	set_b_val(curbp, VAL_FILE_ENCODING, vl_encoding);
+	enc = &vl_wide_enc;
+    } else {
+	/*
+	 * Keep the buffer encoding 8-bit to make it work with the character
+	 * classes for the narrow locale.
+	 */
+	set_b_val(curbp, VAL_FILE_ENCODING, enc_8BIT);
+    }
 #endif
 
     bprintf("--- Printable Characters for locale %s (%s) ",
-	    NONNULL(vl_real_enc.locale),
-	    NONNULL(vl_real_enc.encoding));
+	    NONNULL(enc->locale),
+	    NONNULL(enc->encoding));
     bpadc('-', term.cols - DOT.o);
     bputc('\n');
 
-    for (i = 0; i < N_chars; i++) {
+    for (i = 0; i < last; i++) {
 	bprintf("\n%d\t", (int) i);
-	if ((i == '\n') || (i == '\t'))		/* vtlistc() may not do these */
+	if ((i == '\n') || (i == '\t')) {	/* vtlistc() may not do these */
 	    bprintf("^%c", (int) ('@' | i));
-	else
-	    bprintf("%c", (int) i);
+	} else {
+#if OPT_MULTIBYTE
+	    if ((enc != &vl_real_enc)
+		&& (rc = vl_conv_to_utf8((UCHAR *) temp,
+					 (UINT) i,
+					 sizeof(temp))) > 0) {
+		temp[rc] = EOS;
+		bputsn(temp, -1);
+	    } else
+#endif
+		bputc(i);
+	}
 	bputc('\t');
 	for (j = 0; j != vl_UNUSED; j++) {
 	    if ((s = choice_to_name(&fsm_charclass_blist, (int) j)) != 0) {
-		k = (CHARTYPE) (1 << j);
-		if (j != 0)
+		int used;
+
+		test = (CHARTYPE) (1 << j);
+#if OPT_MULTIBYTE
+		if (enc == &vl_real_enc) {
+		    used = vl_chartypes_[i];
+		} else {
+		    used = vl_ctype_bits(i, TRUE);
+		}
+#else
+		used = vl_chartypes_[i];
+#endif
+
+		if (j != 0 && *s != EOS)
 		    bputc(' ');
 		bprintf("%*s",
 			(int) strlen(s),
-			(vl_chartypes_[i] & k)
-			? s
-			: "-");
+			((used & test)
+			 ? s
+			 : "-"));
 	    }
 	}
     }
@@ -122,6 +157,8 @@ update_char_classes(void)
 int
 desprint(int f GCC_UNUSED, int n GCC_UNUSED)
 {
+    show_ctypes_f = f;
+    show_ctypes_n = n;
     return show_CharClasses(curbp);
 }
 

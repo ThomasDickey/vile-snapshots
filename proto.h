@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.689 2010/01/29 11:48:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.691 2010/01/30 01:40:07 tom Exp $
  *
  */
 
@@ -398,6 +398,7 @@ extern char * vl_get_encoding (char **target, const char *locale);
 extern char * vl_get_locale (char **target);
 extern char * vl_narrowed (const char *wide);
 extern const char * vl_mb_to_utf8 (int code);
+extern int vl_8bit_to_ucs(int *result, int code);
 extern int vl_is_8bit_encoding (const char * value);
 extern int vl_is_latin1_encoding (const char * value);
 extern int vl_is_utf8_encoding (const char * value);
@@ -481,7 +482,9 @@ extern long scan_long (const char *s);
 #define scan_int(s) (int)scan_long(s)
 #else
 #define gtenv(name) getenv(name)
+#define rmv_tempvar(name) /* nothing */
 #define scan_int(s) atoi(s)
+#define set_state_variable(name, value) /* nothing */
 #endif
 
 #if OPT_EVAL || DISP_X11

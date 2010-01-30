@@ -1,9 +1,9 @@
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/vl_ctype.h,v 1.25 2009/07/07 08:14:49 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/vl_ctype.h,v 1.26 2010/01/30 18:00:44 tom Exp $
  *
  * Character-type tests, like <ctype.h> for vile (vi-like-emacs).
  *
- * Copyright 2005-2008,2009 Thomas E. Dickey
+ * Copyright 2005-2009,2010 Thomas E. Dickey
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
@@ -192,6 +192,7 @@ typedef struct {
 extern CHARTYPE vl_ctype_ascii[];
 extern CHARTYPE vl_ctype_latin1[];
 
+extern CHARTYPE vl_ctype_bits(int ch, int use_locale);
 extern void vl_ctype_init(int print_lo, int print_hi);
 extern void vl_ctype_apply(void);
 extern void vl_ctype_discard(void);

@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/vl_ctype.c,v 1.7 2009/12/10 23:57:58 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/vl_ctype.c,v 1.8 2010/01/30 18:01:08 tom Exp $
  */
 
 /*
@@ -57,25 +57,7 @@ vl_ctype_init(int print_lo, int print_hi)
 	if (print_hi > 0 && c > print_hi) {
 	    vlCTYPE(c) = 0;
 	} else if (okCTYPE2(vl_narrow_enc)) {
-	    vlCTYPE(c) = 0;
-	    if (sys_iscntrl(c))
-		vlCTYPE(c) |= vl_cntrl;
-	    if (sys_isdigit(c))
-		vlCTYPE(c) |= vl_digit;
-	    if (sys_islower(c))
-		vlCTYPE(c) |= vl_lower;
-	    if (sys_isprint(c) && c != '\t')
-		vlCTYPE(c) |= vl_print;
-	    if (sys_ispunct(c))
-		vlCTYPE(c) |= vl_punct;
-	    if (sys_isspace(c))
-		vlCTYPE(c) |= vl_space;
-	    if (sys_isupper(c))
-		vlCTYPE(c) |= vl_upper;
-#ifdef vl_xdigit
-	    if (sys_isxdigit(c))
-		vlCTYPE(c) |= vl_xdigit;
-#endif
+	    vlCTYPE(c) = vl_ctype_bits(c, TRUE);
 	    vl_uppercase[c] = (char) toupper(c);
 	    vl_lowercase[c] = (char) tolower(c);
 	} else {
@@ -299,6 +281,38 @@ vl_ctype_init(int print_lo, int print_hi)
 #endif
 
     returnVoid();
+}
+
+CHARTYPE
+vl_ctype_bits(int ch, int use_locale GCC_UNUSED)
+{
+    CHARTYPE result = 0;
+
+#if OPT_LOCALE
+    if (use_locale) {
+	if (sys_iscntrl(ch))
+	    result |= vl_cntrl;
+	if (sys_isdigit(ch))
+	    result |= vl_digit;
+	if (sys_islower(ch))
+	    result |= vl_lower;
+	if (sys_isprint(ch) && ch != '\t')
+	    result |= vl_print;
+	if (sys_ispunct(ch))
+	    result |= vl_punct;
+	if (sys_isspace(ch))
+	    result |= vl_space;
+	if (sys_isupper(ch))
+	    result |= vl_upper;
+#ifdef vl_xdigit
+	if (sys_isxdigit(ch))
+	    result |= vl_xdigit;
+#endif
+    } else
+#endif
+    if (ch >= 0 && ch < N_chars)
+	result = vlCTYPE(ch);
+    return result;
 }
 
 /*

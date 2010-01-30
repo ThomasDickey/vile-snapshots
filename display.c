@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.498 2009/12/21 01:26:43 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.499 2010/01/30 16:09:26 tom Exp $
  *
  */
 
@@ -573,11 +573,19 @@ vtputc(WINDOW *wp, const char *src, unsigned limit)
      * to evaluate this once.  */
     int lastcol = current_limit();
     int rc = 1;
-    UCHAR ch = (UCHAR) (*src);
+    UINT ch = (UCHAR) (*src);
     VIDEO *vp = current_video();
 
     if (vp != 0) {
 	if (isPrint(ch) && vtcol >= 0 && vtcol < lastcol) {
+#if OPT_MULTIBYTE
+	    if (!b_is_utfXX(wp->w_bufp) && (vl_encoding >= enc_UTF8)) {
+		int ch2;
+		if (vl_8bit_to_ucs(&ch2, ch)) {
+		    ch = ch2;
+		}
+	    }
+#endif
 	    VideoText(vp)[vtcol++] = ch;
 #ifdef WMDLINEWRAP
 	    if ((allow_wrap != 0)
