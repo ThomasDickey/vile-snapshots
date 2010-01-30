@@ -1,5 +1,5 @@
 /*
- * $Id: eightbit.c,v 1.53 2010/01/29 11:56:34 tom Exp $
+ * $Id: eightbit.c,v 1.54 2010/01/30 01:50:15 tom Exp $
  *
  * Maintain "8bit" file-encoding mode by converting incoming UTF-8 to single
  * bytes, and providing a function that tells vile whether a given Unicode
@@ -635,6 +635,10 @@ initialize_table_8bit_utf8(void)
 	    vl_conv_to_utf32(&(table_8bit_utf8[n].code),
 			     table_8bit_utf8[n].text,
 			     strlen(table_8bit_utf8[n].text));
+#if OPT_TRACE
+	     if (n != (int) table_8bit_utf8[n].code)
+		 TRACE(("8bit_utf8 %d:%#4x\n", n, table_8bit_utf8[n].code));
+#endif
 	}
     }
 }
@@ -911,6 +915,23 @@ vl_mb_to_utf8(int code)
 	result = table_8bit_utf8[p->rinx].text;
 
     return result;
+}
+
+/*
+ * Use the lookup table created in vl_init_8bit() to convert an "8bit"
+ * value to the corresponding Unicode value.  If the current locale
+ * encoding is ISO-8859-1 (the default), this is a 1-1 mapping.
+ */
+int
+vl_8bit_to_ucs(int *result, int code)
+{
+    int status = FALSE;
+
+    if (code >= 0 && code < 256) {
+	*result = table_8bit_utf8[code].code;
+	status = TRUE;
+    }
+    return status;
 }
 
 #if USE_MBTERM
