@@ -2,6 +2,8 @@ Changes for vile 9.8 (released ??? ??? ?? ????)
 
  20100130 (zb)
 	> Tom Dickey:
+	+ correct return-value for vl_mb_is_8bit(), to correctly display
+	  non-UTF-8/non-ISO-8859-1 codes (report by Radek Liboska).
 	+ modify :show-printable to show results from system locale settings
 	  if a parameter is given.
 	+ minor formatting fix to output of :show-printable to show the "sh"
