@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.691 2010/01/30 01:40:07 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.692 2010/02/01 09:20:28 tom Exp $
  *
  */
 
@@ -403,6 +403,7 @@ extern int vl_is_8bit_encoding (const char * value);
 extern int vl_is_latin1_encoding (const char * value);
 extern int vl_is_utf8_encoding (const char * value);
 extern int vl_mb_is_8bit (int value);
+extern int vl_ucs_to_8bit (int *result, int code);
 extern void vl_close_mbterm (void);
 extern void vl_init_8bit (const char *wide, const char *narrow);
 extern void vl_open_mbterm (void);

@@ -1,7 +1,12 @@
 Changes for vile 9.8 (released ??? ??? ?? ????)
 
- 20100130 (zb)
+ 20100201 (zb)
 	> Tom Dickey:
+	+ modify lins_chars() so that pasting UTF-8 text into a non-UTF-8
+	  buffer automatically converts it into the non-UTF-8 locale.  This is
+	  not the same as other methods such as yank/put, which copy bytes.
+	+ remove iconv() logic in vl_mb_getch() which does not work for
+	  non-UTF-8/non-ISO-8859-1 encodings (report by Radek Liboska).
 	+ correct return-value for vl_mb_is_8bit(), to correctly display
 	  non-UTF-8/non-ISO-8859-1 codes (report by Radek Liboska).
 	+ modify :show-printable to show results from system locale settings
