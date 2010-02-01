@@ -1,5 +1,5 @@
 /*
- * $Id: eightbit.c,v 1.55 2010/01/31 02:21:04 tom Exp $
+ * $Id: eightbit.c,v 1.58 2010/02/01 09:25:50 tom Exp $
  *
  * Maintain "8bit" file-encoding mode by converting incoming UTF-8 to single
  * bytes, and providing a function that tells vile whether a given Unicode
@@ -587,13 +587,19 @@ static int
 try_encoding(const char *from, const char *to)
 {
     mb_desc = iconv_open(to, from);
+
+    TRACE(("try_encoding(from=%s, to=%s) %s\n",
+	   from, to,
+	   ((mb_desc != NO_ICONV)
+	    ? "OK"
+	    : "FAIL")));
+
     return (mb_desc != NO_ICONV);
 }
 
 static void
 open_encoding(char *from, char *to)
 {
-    TRACE(("open_encoding(from=%s, to=%s)\n", from, to));
     if (!try_encoding(from, to)) {
 	fprintf(stderr, "Cannot setup translation from %s to %s\n", from, to);
 	tidy_exit(BADEXIT);
@@ -635,9 +641,9 @@ initialize_table_8bit_utf8(void)
 	    vl_conv_to_utf32(&(table_8bit_utf8[n].code),
 			     table_8bit_utf8[n].text,
 			     strlen(table_8bit_utf8[n].text));
-#if OPT_TRACE
-	     if (n != (int) table_8bit_utf8[n].code)
-		 TRACE(("8bit_utf8 %d:%#4x\n", n, table_8bit_utf8[n].code));
+#if OPT_TRACE > 1
+	    if (n != (int) table_8bit_utf8[n].code)
+		TRACE(("8bit_utf8 %d:%#4x\n", n, table_8bit_utf8[n].code));
 #endif
 	}
     }
@@ -821,7 +827,7 @@ vl_mb_is_8bit(int code)
 				cmp_rindex);
 
     if (p != 0)
-    	result = (p->code < 256);
+	result = (p->code < 256);
 
     return result;
 }
@@ -940,6 +946,30 @@ vl_8bit_to_ucs(int *result, int code)
     return status;
 }
 
+/*
+ * Use the lookup table to find if a Unicode value exists in the 8bit/utf-8
+ * mapping, and if so, set the 8bit result, returning true.
+ */
+int
+vl_ucs_to_8bit(int *result, int code)
+{
+    int status = FALSE;
+    RINDEX_8BIT *p;
+    RINDEX_8BIT key;
+
+    key.code = (UINT) code;
+    p = (RINDEX_8BIT *) bsearch(&key,
+				rindex_8bit,
+				N_chars,
+				sizeof(RINDEX_8BIT),
+				cmp_rindex);
+    if (p != 0) {
+	*result = p->rinx;
+	status = TRUE;
+    }
+    return status;
+}
+
 #if USE_MBTERM
 #if OPT_ICONV_FUNCS
 /*
@@ -975,51 +1005,16 @@ vl_mb_getch(void)
     int ch;
     char input[80];
 #if OPT_ICONV_FUNCS
-    ICONV_CONST char *ip;
-    char output[80];
-    char *op;
     int used = 0;
-    size_t converted, in_bytes, out_bytes;
 
     for (;;) {
 	ch = save_getch();
 	input[used++] = (char) ch;
 	input[used] = 0;
-	ip = input;
-	in_bytes = used;
-	op = output;
-	out_bytes = sizeof(output);
-	*output = 0;
-	if (mb_desc != NO_ICONV) {
-	    /*
-	     * First, try with iconv, assuming it does a better job.
-	     */
-	    converted = iconv(mb_desc, &ip, &in_bytes, &op, &out_bytes);
-	    TRACE(("converted %d '%s' -> %d:%#x\n",
-		   (int) converted, input, (int) out_bytes, *output));
-	    if (converted == (size_t) (-1)) {
-		if (errno == EILSEQ) {
-		    /*
-		     * If iconv gave up - because a character was not
-		     * representable in the narrow encoding - just convert it
-		     * from UTF-8.
-		     *
-		     * FIXME:  perhaps a better solution would be to use iconv
-		     * for converting from the wide encoding to UTF-32. 
-		     */
-		    ch = decode_utf8(input, used);
-		    break;
-		}
-	    } else {
-		/* assume it is 8-bits */
-		ch = CharOf(output[0]);
-		break;
-	    }
-	} else {
-	    ch = decode_utf8(input, used);
-	    if (ch >= 0 || used > 5)
-		break;
-	}
+
+	ch = decode_utf8(input, used);
+	if (ch >= 0 || used > 5)
+	    break;
     }
 #else
     char *ip;
