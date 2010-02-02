@@ -20,7 +20,7 @@
 #
 # gnu autoconf support by kevin buettner, 5/94
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.237 2010/01/28 00:03:03 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.238 2010/02/02 10:21:10 tom Exp $
 
 SHELL		= /bin/sh
 
@@ -471,7 +471,7 @@ LINK_TO_PAGER  = @VILE_SYMLINK@-pager
 PATH_OF_ACTUAL = $(BINDIR)/$(ACTUAL)$x
 PATH_OF_PAGER  = $(BINDIR)/$(NAME_OF_PAGER)
 
-install-@TARGET@ \
+install-bin \
 install-full \
 install :: \
 		$(INSTALL_DIRS) \

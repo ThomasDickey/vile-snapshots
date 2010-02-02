@@ -1,7 +1,11 @@
 Changes for vile 9.8 (released ??? ??? ?? ????)
 
- 20100201 (zb)
+ 20100202 (zb)
 	> Tom Dickey:
+	+ change makefile.in to use "install-bin" rule rather than "install-vile"
+	  or "install-xvile", according to the target, since that interferes
+	  with building both versions before installing (report by Radek
+	  Liboska).
 	+ extend :show-printable to show detail for the character in the
 	  current buffer if showchar mode is set.
 	+ modify lins_chars() so that pasting UTF-8 text into a non-UTF-8
