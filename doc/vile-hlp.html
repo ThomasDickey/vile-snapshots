@@ -1,6 +1,6 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
-  $Id: vile-hlp.html,v 1.30 2010/02/02 00:36:09 tom Exp $
+  $Id: vile-hlp.html,v 1.31 2010/02/02 09:20:22 tom Exp $
 -->
 <HTML>
 <HEAD>
@@ -2938,7 +2938,7 @@ Getting along with vile						(version 9.7)
 		links &ndash; only symbolic ones.) (U)
 </dd>
 <dt>
-	ruler
+	<a name="mode-ruler">ruler</a>
 </dt>
 <dd>
 		Shows the current line and column in the status line, as
@@ -2985,7 +2985,9 @@ Getting along with vile						(version 9.7)
 </dt>
 <dd>
 		Controls whether the modeline can show the %C formatted
-		character at the current editing position (W).
+		character at the current editing position.  This is overridden
+		by the <a href="#mode-ruler">ruler</a> mode, to save space on
+		the modeline (W).
 </dd>
 <dt>
 	showformat (sf)
