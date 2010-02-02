@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.692 2010/02/01 09:20:28 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.693 2010/02/01 23:24:59 tom Exp $
  *
  */
 
@@ -382,6 +382,14 @@ extern	void	psc_flush	(void);
 extern	void	psc_move	(int row, int col);
 extern	void	psc_rev		(UINT huh);
 #endif	/* OPT_PSCREEN */
+
+#if OPT_UPBUFF
+extern	BUFFER * recomputing_buf (void);
+extern	WINDOW * recomputing_win (void);
+extern	int is_recomputing (WINDOW *wp);
+#else
+#define is_recomputing(wp) FALSE
+#endif
 
 /* djhandl.c */
 #if CC_DJGPP

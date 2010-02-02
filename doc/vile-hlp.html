@@ -1,6 +1,6 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
-  $Id: vile-hlp.html,v 1.28 2010/01/27 01:38:01 tom Exp $
+  $Id: vile-hlp.html,v 1.30 2010/02/02 00:36:09 tom Exp $
 -->
 <HTML>
 <HEAD>
@@ -1471,6 +1471,14 @@ Getting along with vile						(version 9.7)
 		with associated types.  To allow it to fit within 80 columns,
 		abbreviations are used, which are the same names as used in
 		character classes.
+		<p>
+		Use a repeat count to show the data for the wide locale.
+		The default shows the narrow locale.
+		<p>
+		If <a href="#mode-showchar">showchar</a> is set,
+		this also shows a line for the current character in the
+		current buffer, with the character type information for
+		that character.
 </dd>
 <dt>
 	show-registers
@@ -2973,7 +2981,7 @@ Getting along with vile						(version 9.7)
 		assumes the local buffer mode value of 8.  (B)
 </dd>
 <dt>
-	showchar (sc)
+	<a name="mode-showchar">showchar (sc)</a>
 </dt>
 <dd>
 		Controls whether the modeline can show the %C formatted
@@ -4607,6 +4615,9 @@ Getting along with vile						(version 9.7)
 </tr>
 <tr>
 	<td>$lastkey</td><td>last keyboard char struck</td>
+</tr>
+<tr>
+	<td>$latin1-expr</td><td>pattern to match locales using ISO-8859-1 in case they are not installed</td>
 </tr>
 <tr>
 	<td>$lcols</td><td>length of current line, in columns	(read only)</td>

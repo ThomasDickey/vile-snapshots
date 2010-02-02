@@ -1,6 +1,6 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
-  $Id: macros.html,v 1.9 2009/12/29 14:30:09 tom Exp $
+  $Id: macros.html,v 1.10 2010/02/02 00:31:31 tom Exp $
 -->
 <HTML>
 <HEAD>
@@ -690,6 +690,16 @@ sections may be read in any order.
 <dt>$lastkey
 			<dd>[READ ONLY]  Character most recently entered at
 			the keyboard.
+<dt>$latin1-expr
+			<dd>pattern to match locales using ISO-8859-1 in case
+			they are not installed.  Normally vile looks for a
+			narrow locale to correspond with the wide (UTF-8
+			encoding) locale.  If locale data is incomplete,
+			vile can still support ISO-8859-1 encoding, but checks
+			to ensure that the locale is compatible.
+			Some systems lack a full set of locale data.
+			This pattern helps it decide if the (missing) narrow
+			locale would use ISO-8859-1 encoding.
 <dt>$lcols
 			<dd>[READ ONLY] The length (in columns) of the current line.
 <dt>$libdir-path

@@ -2,7 +2,7 @@
  *	eval.c -- function and variable evaluation
  *	original by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.414 2010/01/30 18:18:37 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.419 2010/02/02 01:51:31 tom Exp $
  *
  */
 
@@ -59,19 +59,68 @@ static void free_vars_cmpl(void);
 static int show_ctypes_f;
 static int show_ctypes_n;
 
-/* list the current character-classes into the current buffer */
-/* ARGSUSED */
 static void
-makectypelist(int dum1 GCC_UNUSED, void *ptr GCC_UNUSED)
+one_ctype_row(VL_CTYPE2 * enc, UINT ch)
 {
-    UINT i, j, last = N_chars;
+    UINT j;
     CHARTYPE test;
+    CHARTYPE used;
     const char *s;
-    VL_CTYPE2 *enc = &vl_real_enc;
 #if OPT_MULTIBYTE
     int rc;
     char temp[10];
 #endif
+
+    bprintf("\n%d\t", (int) ch);
+    if ((ch == '\n') || (ch == '\t')) {		/* vtlistc() may not do these */
+	bprintf("^%c", (int) ('@' | ch));
+    } else {
+#if OPT_MULTIBYTE
+	if ((enc != &vl_real_enc)
+	    && (rc = vl_conv_to_utf8((UCHAR *) temp,
+				     (UINT) ch,
+				     sizeof(temp))) > 1) {
+	    sprintf(temp, "\\u%04x", ch);
+	    bputsn(temp, -1);
+	} else
+#endif
+	    bputc(ch);
+    }
+    bputc('\t');
+
+#if OPT_MULTIBYTE
+    if (enc == &vl_narrow_enc) {
+	used = vl_chartypes_[ch];
+    } else {
+	used = vl_ctype_bits(ch, TRUE);
+    }
+#else
+    used = vl_chartypes_[ch];
+#endif
+
+    for (j = 0; j != vl_UNUSED; j++) {
+	if ((s = choice_to_name(&fsm_charclass_blist, (int) j)) != 0) {
+
+	    test = (CHARTYPE) (1 << j);
+
+	    if (j != 0 && *s != EOS)
+		bputc(' ');
+	    bprintf("%*s",
+		    (int) strlen(s),
+		    ((used & test)
+		     ? s
+		     : "-"));
+	}
+    }
+}
+
+/* list the current character-classes into the current buffer */
+/* ARGSUSED */
+static void
+make_ctype_list(int dum1 GCC_UNUSED, void *ptr GCC_UNUSED)
+{
+    UINT i, last = N_chars;
+    VL_CTYPE2 *enc = &vl_real_enc;
 
 #if OPT_MULTIBYTE
     make_local_b_val(curbp, VAL_FILE_ENCODING);
@@ -87,6 +136,43 @@ makectypelist(int dum1 GCC_UNUSED, void *ptr GCC_UNUSED)
     }
 #endif
 
+#ifdef WMDSHOWCHAR
+    /*
+     * If "showchar" is set, and the current buffer is not this one, show
+     * the row for the current character as well.  Slow, but as noted, useful
+     * for debugging.
+     */
+    if (w_val(curwp, WMDSHOWCHAR)) {
+	WINDOW *wp = recomputing_win();
+	BUFFER *bp = recomputing_buf();
+
+	if (wp != 0 && bp != 0 && (curbp != bp)) {
+	    VL_CTYPE2 *my_enc = ((b_val(bp, VAL_FILE_ENCODING) >= enc_UTF8)
+				 ? &vl_wide_enc
+				 : &vl_real_enc);
+	    BUFFER *savebp = curbp;
+	    int savech;
+
+	    bprintf("-- Current Character in %s, locale %s (%s) ",
+		    bp->b_bname,
+		    (my_enc->locale
+		     ? my_enc->locale
+		     : NONNULL(enc->locale)),
+		    NONNULL(encoding2s(b_val(bp, VAL_FILE_ENCODING))));
+	    bpadc('-', term.cols - DOT.o);
+	    bputc('\n');
+
+	    curbp = bp;
+	    savech = char_at_mark(wp->w_dot);
+	    curbp = savebp;
+
+	    one_ctype_row(my_enc, savech);
+	    bputc('\n');
+	    bputc('\n');
+	}
+    }
+#endif
+
     bprintf("--- Printable Characters for locale %s (%s) ",
 	    NONNULL(enc->locale),
 	    NONNULL(enc->encoding));
@@ -94,46 +180,7 @@ makectypelist(int dum1 GCC_UNUSED, void *ptr GCC_UNUSED)
     bputc('\n');
 
     for (i = 0; i < last; i++) {
-	bprintf("\n%d\t", (int) i);
-	if ((i == '\n') || (i == '\t')) {	/* vtlistc() may not do these */
-	    bprintf("^%c", (int) ('@' | i));
-	} else {
-#if OPT_MULTIBYTE
-	    if ((enc != &vl_real_enc)
-		&& (rc = vl_conv_to_utf8((UCHAR *) temp,
-					 (UINT) i,
-					 sizeof(temp))) > 0) {
-		temp[rc] = EOS;
-		bputsn(temp, -1);
-	    } else
-#endif
-		bputc(i);
-	}
-	bputc('\t');
-	for (j = 0; j != vl_UNUSED; j++) {
-	    if ((s = choice_to_name(&fsm_charclass_blist, (int) j)) != 0) {
-		int used;
-
-		test = (CHARTYPE) (1 << j);
-#if OPT_MULTIBYTE
-		if (enc == &vl_real_enc) {
-		    used = vl_chartypes_[i];
-		} else {
-		    used = vl_ctype_bits(i, TRUE);
-		}
-#else
-		used = vl_chartypes_[i];
-#endif
-
-		if (j != 0 && *s != EOS)
-		    bputc(' ');
-		bprintf("%*s",
-			(int) strlen(s),
-			((used & test)
-			 ? s
-			 : "-"));
-	    }
-	}
+	one_ctype_row(enc, i);
     }
 }
 
@@ -142,7 +189,7 @@ static int
 show_CharClasses(BUFFER *bp GCC_UNUSED)
 {
     return liststuff(PRINTABLECHARS_BufName,
-		     FALSE, makectypelist, 0, (void *) 0);
+		     FALSE, make_ctype_list, 0, (void *) 0);
 }
 
 #if OPT_UPBUFF
