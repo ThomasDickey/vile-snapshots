@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/vl_ctype.c,v 1.8 2010/01/30 18:01:08 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/vl_ctype.c,v 1.9 2010/02/02 01:45:20 tom Exp $
  */
 
 /*
@@ -9,7 +9,6 @@
  * 128-255.  Since we're using these functions in vile 9.6 only for the normal
  * ctypes (the narrow 8-bit locale), just use the normal ctype functions.
  */
-#define USE_WIDE_CTYPE 0
 
 #include <estruct.h>
 #include <edef.h>
@@ -57,7 +56,7 @@ vl_ctype_init(int print_lo, int print_hi)
 	if (print_hi > 0 && c > print_hi) {
 	    vlCTYPE(c) = 0;
 	} else if (okCTYPE2(vl_narrow_enc)) {
-	    vlCTYPE(c) = vl_ctype_bits(c, TRUE);
+	    vlCTYPE(c) = vl_ctype_bits(c, -TRUE);
 	    vl_uppercase[c] = (char) toupper(c);
 	    vl_lowercase[c] = (char) tolower(c);
 	} else {
@@ -289,7 +288,7 @@ vl_ctype_bits(int ch, int use_locale GCC_UNUSED)
     CHARTYPE result = 0;
 
 #if OPT_LOCALE
-    if (use_locale) {
+    if (use_locale > 0) {
 	if (sys_iscntrl(ch))
 	    result |= vl_cntrl;
 	if (sys_isdigit(ch))
@@ -306,6 +305,25 @@ vl_ctype_bits(int ch, int use_locale GCC_UNUSED)
 	    result |= vl_upper;
 #ifdef vl_xdigit
 	if (sys_isxdigit(ch))
+	    result |= vl_xdigit;
+#endif
+    } else if (use_locale < 0) {
+	if (iscntrl(ch))
+	    result |= vl_cntrl;
+	if (isdigit(ch))
+	    result |= vl_digit;
+	if (islower(ch))
+	    result |= vl_lower;
+	if (isprint(ch) && ch != '\t')
+	    result |= vl_print;
+	if (ispunct(ch))
+	    result |= vl_punct;
+	if (isspace(ch))
+	    result |= vl_space;
+	if (isupper(ch))
+	    result |= vl_upper;
+#ifdef vl_xdigit
+	if (isxdigit(ch))
 	    result |= vl_xdigit;
 #endif
     } else

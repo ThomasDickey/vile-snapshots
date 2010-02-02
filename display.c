@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.499 2010/01/30 16:09:26 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.500 2010/02/02 00:16:52 tom Exp $
  *
  */
 
@@ -1712,10 +1712,6 @@ row2window(int row)
 }
 #endif
 
-/*
- * Recompute the given buffer. Save/restore its modes and position information
- * so that a redisplay will show as little change as possible.
- */
 #if OPT_UPBUFF
 typedef struct {
     WINDOW *wp;
@@ -1727,87 +1723,133 @@ typedef struct {
 
 static SAVEWIN *recomp_tbl;
 static size_t recomp_len;
+static WINDOW *recomp_win;
 
+/*
+ * Return true if the current window (or its associated buffer) is being
+ * recomputed.
+ */
+int
+is_recomputing(WINDOW *wp)
+{
+    int result = FALSE;
+
+    if (recomp_win && wp) {
+	if (recomp_win == wp) {
+	    result = TRUE;
+	} else if (recomp_win->w_bufp == wp->w_bufp) {
+	    result = TRUE;
+	}
+    }
+
+    return result;
+}
+
+BUFFER *
+recomputing_buf(void)
+{
+    BUFFER *result = 0;
+
+    if (recomp_win != 0)
+	result = recomp_win->w_bufp;
+
+    return result;
+}
+
+WINDOW *
+recomputing_win(void)
+{
+    return recomp_win;
+}
+
+/*
+ * Recompute the given buffer. Save/restore its modes and position information
+ * so that a redisplay will show as little change as possible.
+ */
 static void
 recompute_buffer(BUFFER *bp)
 {
-    WINDOW *wp;
-    SAVEWIN *tbl;
+    if (b_val(bp, MDUPBUFF)) {
+	WINDOW *wp;
+	SAVEWIN *tbl;
 
-    struct VAL b_vals[MAX_B_VALUES];
-    size_t num = 0;
-    BUFFER *savebp = curbp;
-    WINDOW *savewp = curwp;
-    int mygoal = curgoal;
+	struct VAL b_vals[MAX_B_VALUES];
+	size_t num = 0;
+	BUFFER *savebp = curbp;
+	WINDOW *savewp = curwp;
+	int mygoal = curgoal;
 
-    if (!b_val(bp, MDUPBUFF)) {
-	b_clr_obsolete(bp);
-	return;
-    }
-    if (recomp_len < bp->b_nwnd) {
-	recomp_len = bp->b_nwnd + 1;
-	recomp_tbl = (recomp_tbl != 0)
-	    ? typereallocn(SAVEWIN, recomp_tbl, recomp_len)
-	    : typeallocn(SAVEWIN, recomp_len);
-	if (recomp_tbl == 0) {
-	    recomp_len = 0;
-	    return;
+	recomp_win = curwp;
+
+	if (recomp_len < bp->b_nwnd) {
+	    recomp_len = bp->b_nwnd + 1;
+	    recomp_tbl = (recomp_tbl != 0)
+		? typereallocn(SAVEWIN, recomp_tbl, recomp_len)
+		: typeallocn(SAVEWIN, recomp_len);
+	    if (recomp_tbl == 0) {
+		recomp_len = 0;
+		return;
+	    }
 	}
-    }
-    tbl = recomp_tbl;
+	tbl = recomp_tbl;
 
-    /* remember where we are, to reposition */
-    /* ...in case line is deleted from buffer-list */
-    relisting_b_vals = 0;
-    relisting_w_vals = 0;
-    if (curbp == bp) {
-	relisting_b_vals = b_vals;
-    } else {
-	curbp = bp;
-	curwp = bp2any_wp(bp);
-    }
-    for_each_visible_window(wp) {
-	if (wp->w_bufp == bp) {
-	    if (wp == savewp)
-		relisting_w_vals = tbl[num].w_vals;
-	    curwp = wp;		/* to make 'getccol()' work */
+	/* remember where we are, to reposition */
+	/* ...in case line is deleted from buffer-list */
+	relisting_b_vals = 0;
+	relisting_w_vals = 0;
+	if (curbp == bp) {
+	    relisting_b_vals = b_vals;
+	} else {
+	    curbp = bp;
+	    curwp = bp2any_wp(bp);
+	}
+	for_each_visible_window(wp) {
+	    if (wp->w_bufp == bp) {
+		if (wp == savewp)
+		    relisting_w_vals = tbl[num].w_vals;
+		curwp = wp;	/* to make 'getccol()' work */
+		curbp = curwp->w_bufp;
+		tbl[num].wp = wp;
+		tbl[num].top = line_no(bp, wp->w_line.l);
+		tbl[num].line = line_no(bp, wp->w_dot.l);
+		tbl[num].col = getccol(FALSE);
+		save_vals(NUM_W_VALUES, global_w_values.wv,
+			  tbl[num].w_vals, wp->w_values.wv);
+		if (++num >= recomp_len)
+		    break;
+	    }
+	}
+	curwp = savewp;
+	curbp = savebp;
+
+	save_vals(NUM_B_VALUES, global_b_values.bv, b_vals, bp->b_values.bv);
+	(bp->b_upbuff) (bp);
+	copy_mvals(NUM_B_VALUES, bp->b_values.bv, b_vals);
+
+	/* reposition and restore */
+	while (num-- != 0) {
+	    curwp = wp = tbl[num].wp;
 	    curbp = curwp->w_bufp;
-	    tbl[num].wp = wp;
-	    tbl[num].top = line_no(bp, wp->w_line.l);
-	    tbl[num].line = line_no(bp, wp->w_dot.l);
-	    tbl[num].col = getccol(FALSE);
-	    save_vals(NUM_W_VALUES, global_w_values.wv,
-		      tbl[num].w_vals, wp->w_values.wv);
-	    if (++num >= recomp_len)
-		break;
+	    (void) vl_gotoline(tbl[num].top);
+	    wp->w_line.l = wp->w_dot.l;
+	    wp->w_line.o = 0;
+	    if (tbl[num].line != tbl[num].top)
+		(void) vl_gotoline(tbl[num].line);
+	    (void) gocol(tbl[num].col);
+	    wp->w_flag |= WFMOVE | WFSBAR;
+	    copy_mvals(NUM_W_VALUES, wp->w_values.wv, tbl[num].w_vals);
 	}
-    }
-    curwp = savewp;
-    curbp = savebp;
+	curwp = savewp;
+	curbp = savebp;
+	curgoal = mygoal;
+	relisting_b_vals = 0;
+	relisting_w_vals = 0;
 
-    save_vals(NUM_B_VALUES, global_b_values.bv, b_vals, bp->b_values.bv);
-    (bp->b_upbuff) (bp);
-    copy_mvals(NUM_B_VALUES, bp->b_values.bv, b_vals);
-
-    /* reposition and restore */
-    while (num-- != 0) {
-	curwp = wp = tbl[num].wp;
-	curbp = curwp->w_bufp;
-	(void) vl_gotoline(tbl[num].top);
-	wp->w_line.l = wp->w_dot.l;
-	wp->w_line.o = 0;
-	if (tbl[num].line != tbl[num].top)
-	    (void) vl_gotoline(tbl[num].line);
-	(void) gocol(tbl[num].col);
-	wp->w_flag |= WFMOVE | WFSBAR;
-	copy_mvals(NUM_W_VALUES, wp->w_values.wv, tbl[num].w_vals);
+	recomp_win = 0;
     }
-    curwp = savewp;
-    curbp = savebp;
-    curgoal = mygoal;
     b_clr_obsolete(bp);
-    relisting_b_vals = 0;
-    relisting_w_vals = 0;
+
+    return;
 }
 #endif /* OPT_UPBUFF */
 
@@ -3774,6 +3816,7 @@ update(int force /* force update past type ahead? */ )
 #ifdef WMDSHOWCHAR
 	} else if (w_val(wp, WMDSHOWCHAR)) {
 	    wp->w_flag |= WFMODE;
+	    update_char_classes();
 #endif
 	} else if (wp->w_flag & WFSTAT) {
 	    wp->w_flag |= WFMODE;

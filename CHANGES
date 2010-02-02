@@ -2,6 +2,8 @@ Changes for vile 9.8 (released ??? ??? ?? ????)
 
  20100201 (zb)
 	> Tom Dickey:
+	+ extend :show-printable to show detail for the character in the
+	  current buffer if showchar mode is set.
 	+ modify lins_chars() so that pasting UTF-8 text into a non-UTF-8
 	  buffer automatically converts it into the non-UTF-8 locale.  This is
 	  not the same as other methods such as yank/put, which copy bytes.
