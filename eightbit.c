@@ -1,5 +1,5 @@
 /*
- * $Id: eightbit.c,v 1.58 2010/02/01 09:25:50 tom Exp $
+ * $Id: eightbit.c,v 1.59 2010/02/03 23:52:45 tom Exp $
  *
  * Maintain "8bit" file-encoding mode by converting incoming UTF-8 to single
  * bytes, and providing a function that tells vile whether a given Unicode
@@ -583,9 +583,20 @@ cmp_rindex(const void *a, const void *b)
 
 static iconv_t mb_desc = NO_ICONV;
 
+static void
+close_encoding(void)
+{
+    if (mb_desc != NO_ICONV) {
+	iconv_close(mb_desc);
+	mb_desc = NO_ICONV;
+    }
+}
+
 static int
 try_encoding(const char *from, const char *to)
 {
+    close_encoding();
+
     mb_desc = iconv_open(to, from);
 
     TRACE(("try_encoding(from=%s, to=%s) %s\n",
@@ -603,15 +614,6 @@ open_encoding(char *from, char *to)
     if (!try_encoding(from, to)) {
 	fprintf(stderr, "Cannot setup translation from %s to %s\n", from, to);
 	tidy_exit(BADEXIT);
-    }
-}
-
-static void
-close_encoding(void)
-{
-    if (mb_desc != NO_ICONV) {
-	iconv_close(mb_desc);
-	mb_desc = NO_ICONV;
     }
 }
 

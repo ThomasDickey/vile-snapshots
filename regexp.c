@@ -1,7 +1,7 @@
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/regexp.c,v 1.196 2009/06/05 00:12:23 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/regexp.c,v 1.198 2010/02/03 00:16:59 tom Exp $
  *
- * Copyright 2005-2008,2009 Thomas E. Dickey and Paul G. Fox
+ * Copyright 2005-2009,2010 Thomas E. Dickey and Paul G. Fox
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
@@ -593,6 +593,50 @@ reg_char_at(const char *source, const char *last)
 }
 #define WCHAR_AT(source, last) (doUTF8(UCHAR_AT(source)) ? reg_char_at(source, last) : UCHAR_AT(source))
 
+static int
+reg_bytes_before(const char *source, const char *first)
+{
+    B_COUNT before;
+    B_COUNT limit = (B_COUNT) (source - first);
+    int result = 0;
+    int check;
+
+    for (before = 1; before <= limit; ++before) {
+	check = vl_conv_to_utf32((UINT *) 0, source - before, before);
+	if (check == (int) before) {
+	    result = (int) before;
+	    break;
+	}
+    }
+
+    return result;
+}
+#define BYTES_BEFORE(source, first) (doUTF8(UCHAR_AT(source - 1)) ? reg_bytes_before(source, first) : 1)
+
+#if 0
+static int
+reg_char_before(const char *source, const char *first)
+{
+    B_COUNT before;
+    B_COUNT limit = (B_COUNT) (source - first);
+    int result = 0;
+    int check;
+    UINT target;
+
+    for (before = 1; before < limit; ++before) {
+	check = vl_conv_to_utf32((UINT *) 0, source - before, before);
+	if (check == (int) before) {
+	    if (vl_conv_to_utf32(&target, source, before) == (int) before)
+		result = (int) target;
+	    break;
+	}
+    }
+
+    return result;
+}
+#endif
+#define WCHAR_BEFORE(source, first) (doUTF8(UCHAR_AT(source-1)) ? reg_char_before(source, first) : UCHAR_AT(source-1))
+
 /*
  * Put a whole multibyte character in the output if we're in UTF-8 mode.
  */
@@ -702,7 +746,9 @@ reg_CTYPE(UPPER, (sys_isalpha((sys_WINT_T) target) &&
 reg_CTYPE(XDIGIT, sys_isxdigit((sys_WINT_T) target))
 #else
 #define BYTES_AT(source, last) 1
+#define BYTES_BEFORE(source, first) 1
 #define WCHAR_AT(source, last) UCHAR_AT(source)
+#define WCHAR_BEFORE(source, first) UCHAR_AT(source[-1])
 #define PUT_REGC(c) regc(c)
 #define EQ_CHARS(p,q) SAME(p,q)
 #define set_utf8flag(bp)	/* nothing */
@@ -2051,17 +2097,17 @@ regmatch(char *prog, int plevel)
 	case BEGWORD:
 	    /* Match if current char isident
 	     * and previous char BOL or !ident */
-	    if ((reginput >= regnomore || !isident(*reginput))
+	    if ((reginput >= regnomore || !is_CLASS(IDENT, reginput))
 		|| (reginput != regbol
-		    && isident(reginput[-1])))
+		    && is_CLASS(IDENT, reginput - BYTES_BEFORE(reginput, regbol))))
 		returnReg(0);
 	    break;
 	case ENDWORD:
 	    /* Match if previous char isident
 	     * and current char EOL or !ident */
-	    if ((reginput != regnomore && isident(*reginput))
+	    if ((reginput != regnomore && is_CLASS(IDENT, reginput))
 		|| reginput == regbol
-		|| !isident(reginput[-1]))
+		|| !is_CLASS(IDENT, reginput - BYTES_BEFORE(reginput, regbol)))
 		returnReg(0);
 	    break;
 
