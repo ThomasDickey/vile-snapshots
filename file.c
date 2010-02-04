@@ -5,7 +5,7 @@
  * reading and writing of the disk are
  * in "fileio.c".
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.435 2009/12/12 00:30:10 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.438 2010/02/04 00:13:26 tom Exp $
  */
 
 #include "estruct.h"
@@ -1910,6 +1910,57 @@ slowreadf(BUFFER *bp, int *nlinep)
 }
 
 /*
+ * Append to the buffer-name characters up to the allowed length, which will
+ * make a well-formed name.  The 'blanks' option is true to allow embedded
+ * blanks, e.g., for a shell command.  A trailing null is added after the
+ * 'len' bytes have been appended.
+ */
+static char *
+add_to_name(char *target, const char *source, size_t len, int blanks)
+{
+    while (len-- != 0) {
+	UINT ch;
+#if OPT_MULTIBYTE
+	if (vl_encoding >= enc_UTF8) {
+	    int used;
+	    int check;
+	    int code;
+
+	    used = vl_conv_to_utf32(&ch, source, len + 1);
+	    if (used <= 0)
+		break;
+	    source += used;
+
+	    if ((code = vl_ucs_to_8bit(&check, ch))) {
+		if (ch <= 127)
+		    ch = check;
+		else
+		    code = 0;
+	    }
+	    if (!code) {
+		if (isPrint(ch)) {
+		    ch = 'X';
+		} else {
+		    ch = '?';
+		}
+	    }
+	} else {
+	    ch = CharOf(*source++);
+	}
+#else
+	ch = CharOf(*source++);
+#endif
+	if (!isPrint(ch))
+	    break;
+	if (isSpace(ch))
+	    ch = blanks ? ' ' : '-';
+	*target++ = (char) ch;
+    }
+    *target = '\0';		/* buffer names are always null-terminated */
+    return target;
+}
+
+/*
  * Take a (null-terminated) file name, and from it fabricate a buffer name.
  * This routine knows about the syntax of file names on the target system.  I
  * suppose that this information could be put in a better place than a line of
@@ -1920,7 +1971,6 @@ makename(char *bname, const char *fname)
 {
     char *fcp;
     char *bcp;
-    int j;
     char temp[NFILEN];
 
     TRACE(("makename(%s)\n", fname));
@@ -1962,44 +2012,19 @@ makename(char *bname, const char *fname)
 		++fcp;
 	    } while (isSpace(*fcp));
 
-	    (void) vl_strncpy(bcp, fcp, NBUFN - 2);
-
-	    for (j = 4; (j < NBUFN) && isPrint(*bcp); j++) {
-		bcp++;
-	    }
+	    bcp = add_to_name(bcp, fcp, NBUFN - 4, TRUE);
 	    (void) strcpy(bcp, SCRTCH_RIGHT);
 
 	} else {
 
-	    (void) vl_strncpy(bcp, pathleaf(fcp), NBUFN);
+	    (void) add_to_name(bcp, pathleaf(fcp), NBUFN - 1, FALSE);
 
-#if SYS_UNIX
-	    /* UNIX filenames can have any characters (other than EOS!).
-	     * Refuse (rightly) to deal with leading/trailing blanks, but allow
-	     * embedded blanks.  For this special case, ensure that the buffer
-	     * name has no blanks, otherwise it is difficult to reference from
-	     * commands.
-	     */
-	    for (j = 0; j < NBUFN; j++) {
-		if (*bcp == EOS)
-		    break;
-		if (isSpace(*bcp))
-		    *bcp = '-';
-		bcp++;
-	    }
-#endif
 	}
 
 #else /* !(SYS_UNIX||SYS_VMS||SYS_MSDOS) */
 
-	bcp = skip_string(fcp);
-	{
-	    char *cp2 = bname;
-	    vl_strncpy(bname, bcp, NBUFN);
-	    cp2 = strchr(bname, ':');
-	    if (cp2)
-		*cp2 = EOS;
-	}
+	(void) add_to_name(bcp, fcp, NBUFN - 1, FALSE);
+
 #endif
     }
     if (*bname == EOS)
@@ -2024,7 +2049,7 @@ unqname(char *name)
 	j = strlen(strcpy(name, NO_BNAME));
 
     /* check to see if this name is in use */
-    vl_strncpy(newname, name, NBUFN);
+    add_to_name(newname, name, NBUFN - 1, TRUE);
     adjust = is_scratchname(newname);
     strcpy(suffixbuf, "-");
     while (find_b_name(newname) != NULL) {

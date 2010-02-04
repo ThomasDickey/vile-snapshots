@@ -1,7 +1,12 @@
 Changes for vile 9.8 (released ??? ??? ?? ????)
 
- 20100202 (zb)
+ 20100203 (zb)
 	> Tom Dickey:
+	+ make ifdef'ing of gettimeofday() in random.c consistent with estruct.h
+	  (report by Chris Green).
+	+ in UTF-8 locales, limit buffer names to ASCII, to simplify name
+	  management in wide/narrow encodings.
+	+ modify regexp.c to handle wide-characters for \< and \> markers.
 	+ change makefile.in to use "install-bin" rule rather than "install-vile"
 	  or "install-xvile", according to the target, since that interferes
 	  with building both versions before installing (report by Radek

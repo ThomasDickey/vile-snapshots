@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.500 2010/02/02 00:16:52 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.501 2010/02/03 10:48:13 tom Exp $
  *
  */
 
@@ -3098,13 +3098,12 @@ special_formatter(TBUFF **result, const char *fs, WINDOW *wp)
 		    temp[sizeof(temp) - 1] = '\0';
 
 		    if ((p = shorten_path(temp, FALSE)) != 0
-			&& *p
+			&& *(p = skip_space_tab(p)) != '\0'
 			&& !eql_bname(bp, p)
 			&& ((fc == 'f')
 			    ? !is_internalname(p)
 			    : is_internalname(p))) {
 			mlfs_prefix(&fs, &ms, lchar);
-			for (; *p == ' '; p++) ;
 			ms = lsprintf(ms, "%s", p);
 			mlfs_suffix(&fs, &ms, lchar);
 			skip = FALSE;
@@ -3338,6 +3337,7 @@ update_modeline(WINDOW *wp)
 #endif
     int n;
 
+    TRACE((T_CALLED "update_modeline\n"));
     if (is_vtinit()) {
 	term.cursorvis(FALSE);
 
@@ -3447,7 +3447,11 @@ update_modeline(WINDOW *wp)
 	}
 #endif /* OPT_MLFORMAT */
 	term.cursorvis(TRUE);
+	TRACE2(("MODE %4d:%s\n",
+		vtrow,
+		visible_video_text(vscreen[vtrow]->v_text, vtcol)));
     }
+    returnVoid();
 }
 
 /*

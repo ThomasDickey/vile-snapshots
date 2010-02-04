@@ -2,7 +2,7 @@
  * This file contains the command processing functions for a number of random
  * commands. There is no functional grouping here, for sure.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.332 2009/10/31 13:44:55 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.333 2010/02/03 23:57:08 tom Exp $
  *
  */
 
@@ -1639,7 +1639,7 @@ vl_elapsed(VL_ELAPSED * first, int begin)
 {
     double result;
 
-#if SYS_UNIX && !SYS_MINGW
+#if defined(HAVE_GETTIMEOFDAY) && (SYS_UNIX && !SYS_MINGW)
 #define	SECS(tv)	(tv.tv_sec + (tv.tv_usec / 1.0e6))
     VL_ELAPSED tv1;
     gettimeofday(&tv1, 0);
