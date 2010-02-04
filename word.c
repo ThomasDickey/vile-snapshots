@@ -3,7 +3,7 @@
  * paragraph at a time.  There are all sorts of word mode commands.  If I
  * do any sentence mode commands, they are likely to be put in this file.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/word.c,v 1.96 2009/10/31 13:38:30 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/word.c,v 1.98 2010/02/04 10:23:22 tom Exp $
  *
  */
 
@@ -423,8 +423,8 @@ byte_to_columns(char text, int size)
     return result;
 }
 
-static int
-string_to_columns(TBUFF *text)
+int
+tb_wcs_width(TBUFF *text)
 {
     long bytes = (long) tb_length(text);
     int result = 0;
@@ -447,10 +447,8 @@ string_to_columns(TBUFF *text)
     return result;
 }
 #define Byte2Column(s,n) byte_to_columns(s, n)
-#define String2Columns(s) string_to_columns(s)
 #else
 #define Byte2Column(s,n) n
-#define String2Columns(s) tb_length(s)
 #endif
 
 #define cplus_comment_start(c) \

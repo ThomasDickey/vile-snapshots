@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.693 2010/02/01 23:24:59 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.694 2010/02/04 10:23:14 tom Exp $
  *
  */
 
@@ -135,8 +135,11 @@ extern int count_bytes(LINE *lp, int off, int chars);
 extern int count_chars(LINE *lp, int off, int bytes);
 extern int mb_cellwidth(WINDOW *wp, const char *text, int limit);
 
+extern int tb_wcs_width(TBUFF *text);
+
 #define BytesAt(lp,off)     (b_is_utfXX(curbp) ? bytes_at(lp,off) : 1)
 #define BytesBefore(lp,off) (b_is_utfXX(curbp) ? bytes_before(lp,off) : (off)!=0)
+#define String2Columns(s)   tb_wcs_width(s)
 
 #else
 
@@ -147,6 +150,7 @@ extern int mb_cellwidth(WINDOW *wp, const char *text, int limit);
 
 #define BytesAt(lp,off) 1
 #define BytesBefore(lp,off) ((off)!=0)
+#define String2Columns(s)   tb_length(s)
 
 #endif
 
