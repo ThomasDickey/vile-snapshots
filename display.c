@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.501 2010/02/03 10:48:13 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.508 2010/02/04 10:23:51 tom Exp $
  *
  */
 
@@ -82,7 +82,6 @@ typedef int (*OutFunc) (int c);
 static OutFunc dfoutfn;
 
 static int vtlistc(WINDOW *wp, const char *src, unsigned limit);
-static void vtputsn(WINDOW *wp, const char *src, size_t n);
 
 /*--------------------------------------------------------------------------*/
 
@@ -615,6 +614,16 @@ vtputc(WINDOW *wp, const char *src, unsigned limit)
     return rc;
 }
 
+static void
+vtputsn(WINDOW *wp, const char *src, size_t n)
+{
+    if (src != 0) {
+	while (n != 0 && *src != EOS) {
+	    vtputc(wp, src++, n--);
+	}
+    }
+}
+
 /*
  * Shows non-printing character.  Returns the number of bytes eaten from the
  * source, which will always be one except when decoding UTF-8.
@@ -744,16 +753,6 @@ vtlistc(WINDOW *wp, const char *src, unsigned limit)
     }
     vtputsn(wp, temp, n);
     return rc;
-}
-
-static void
-vtputsn(WINDOW *wp, const char *src, size_t n)
-{
-    if (src != 0) {
-	while (n != 0 && *src != EOS) {
-	    vtputc(wp, src++, n--);
-	}
-    }
 }
 
 #if OPT_MULTIBYTE
@@ -2999,6 +2998,12 @@ percentage(WINDOW *wp)
     return PERCENT(val, denom);
 }
 
+#define MAX_FORMAT ((NFILEN + 1) * 2 * COLS_UTF8)
+
+#define HaveEnough(string) ((ms + strlen(string)) - base < MAX_FORMAT)
+
+#define MARK_COL 80
+
 /*
  * Format special single-use messages, i.e., the modeline format, which has
  * a number of special variables that we would like to output quickly.
@@ -3008,10 +3013,13 @@ special_formatter(TBUFF **result, const char *fs, WINDOW *wp)
 {
     BUFFER *bp;
     char *ms;
+    char *base;
+    const char *want;
     const char *save_fs;
-    char left_ms[NFILEN * 2];
-    char right_ms[NFILEN * 2];
-    char temp[NFILEN];
+    char left_ms[MAX_FORMAT];
+    char right_ms[MAX_FORMAT];
+    char temp[MAX_FORMAT / 2];
+    int have_cols;
     int col;
     int fc;
     char lchar;
@@ -3030,7 +3038,7 @@ special_formatter(TBUFF **result, const char *fs, WINDOW *wp)
     tb_init(result, EOS);
 
     left_ms[0] = right_ms[0] = EOS;
-    ms = left_ms;
+    ms = base = left_ms;
     need_eighty_column_indicator = FALSE;
 
     bp = wp->w_bufp;
@@ -3046,9 +3054,18 @@ special_formatter(TBUFF **result, const char *fs, WINDOW *wp)
     }
 
     while (*fs) {
-	if (*fs != '%')
+	/* check for single-character buffer overflow */
+	if ((ms + (COLS_UTF8 + 2)) - base >= MAX_FORMAT) {
+	    if (base == right_ms)
+		break;
+	    if (strncmp(fs, "%=", 2)) {
+		++fs;
+		continue;
+	    }
+	}
+	if (*fs != '%') {
 	    *ms++ = *fs++;
-	else {
+	} else {
 	    fs++;
 	    switch ((fc = *fs++)) {
 	    case EOS:		/* Null character ! */
@@ -3066,13 +3083,16 @@ special_formatter(TBUFF **result, const char *fs, WINDOW *wp)
 		break;
 	    case '=':
 		*ms = EOS;
-		ms = right_ms;
+		ms = base = right_ms;
 		break;
 	    case 'i':		/* insert mode indicator */
 		*ms++ = modeline_show(wp, lchar);
 		break;
 	    case 'b':
-		ms = lsprintf(ms, "%s", bp ? bp->b_bname : UNNAMED_BufName);
+		want = (bp ? bp->b_bname : UNNAMED_BufName);
+		if (!HaveEnough(want))
+		    continue;
+		ms = lsprintf(ms, "%s", want);
 		break;
 	    case 'M':
 	    case 'm':
@@ -3095,7 +3115,6 @@ special_formatter(TBUFF **result, const char *fs, WINDOW *wp)
 		     * arbitrarily long
 		     */
 		    vl_strncpy(temp, bp->b_fname, sizeof(temp));
-		    temp[sizeof(temp) - 1] = '\0';
 
 		    if ((p = shorten_path(temp, FALSE)) != 0
 			&& *(p = skip_space_tab(p)) != '\0'
@@ -3104,6 +3123,8 @@ special_formatter(TBUFF **result, const char *fs, WINDOW *wp)
 			    ? !is_internalname(p)
 			    : is_internalname(p))) {
 			mlfs_prefix(&fs, &ms, lchar);
+			if (!HaveEnough(p))
+			    continue;
 			ms = lsprintf(ms, "%s", p);
 			mlfs_suffix(&fs, &ms, lchar);
 			skip = FALSE;
@@ -3118,31 +3139,31 @@ special_formatter(TBUFF **result, const char *fs, WINDOW *wp)
 		mlfs_prefix(&fs, &ms, lchar);
 		if (bp != 0) {
 		    if (bp->b_fname != 0 && !is_internalname(bp->b_bname)) {
-			char *p;
 
 			vl_strncpy(temp, bp->b_fname, sizeof(temp));
-			temp[sizeof(temp) - 1] = '\0';
 
 			switch (fc) {
 			case 'r':
-			    p = shorten_path(temp, FALSE);
-			    if (p == 0)
-				p = temp;
+			    want = shorten_path(temp, FALSE);
+			    if (want == 0)
+				want = temp;
 			    break;
 			case 'n':
-			    p = pathleaf(temp);
+			    want = pathleaf(temp);
 			    break;
 			default:
-			    p = temp;
+			    want = temp;
 			    break;
 			}
-			ms = lsprintf(ms, "%s", p);
 		    } else {
-			ms = lsprintf(ms, "%s", bp->b_bname);
+			want = bp->b_bname;
 		    }
 		} else {
-		    ms = lsprintf(ms, "%s", UNNAMED_BufName);
+		    want = UNNAMED_BufName;
 		}
+		if (!HaveEnough(want))
+		    continue;
+		ms = lsprintf(ms, "%s", want);
 		mlfs_suffix(&fs, &ms, lchar);
 		break;
 #ifdef WMDRULER
@@ -3182,8 +3203,9 @@ special_formatter(TBUFF **result, const char *fs, WINDOW *wp)
 		    mlfs_prefix(&fs, &ms, lchar);
 		    ms = lsprintf(ms, "%s", temp);
 		    mlfs_suffix(&fs, &ms, lchar);
-		} else
+		} else {
 		    mlfs_skipfix(&fs);
+		}
 		break;
 #endif
 	    case 'P':
@@ -3270,41 +3292,50 @@ special_formatter(TBUFF **result, const char *fs, WINDOW *wp)
 
     tb_bappend(result, left_ms, strlen(left_ms));
 
-    if (tb_values(*result) != 0 && ((int) tb_length(*result) < term.cols)
-	&& (right_len = (int) strlen(right_ms)) != 0) {
-	for (n = term.cols - (int) tb_length(*result) - right_len;
-	     n > 0;
-	     n--)
-	    tb_append(result, lchar);
-	if ((n = term.cols - right_len) < 0) {
-	    col = right_len + n;
-	    n = -n;
-	} else {
-	    col = right_len;
-	    n = 0;
+    if (tb_values(*result) != 0) {
+	have_cols = String2Columns(*result);
+
+	if ((have_cols < term.cols)
+	    && (right_len = (int) strlen(right_ms)) != 0) {
+	    for (n = term.cols - have_cols - right_len; n > 0; n--)
+		tb_append(result, lchar);
+	    if ((n = term.cols - right_len) < 0) {
+		col = right_len + n;
+		n = -n;
+	    } else {
+		col = right_len;
+		n = 0;
+	    }
+	    if ((col < term.cols)
+		&& (n < right_len)) {
+		/* FIXME - need char-offset */
+		tb_bappend(result, right_ms + n, term.cols - col);
+	    }
 	}
-	if ((col < term.cols)
-	    && (n < right_len))
-	    tb_bappend(result, right_ms + n, term.cols - col);
     }
 
     /* mark column 80 */
-    if (tb_values(*result) != 0 && need_eighty_column_indicator) {
-	int left = -nu_width(wp);
-	char *ss;
-#ifdef WMDLINEWRAP
-	if (!w_val(wp, WMDLINEWRAP))
-#endif
-	    left += w_val(wp, WVAL_SIDEWAYS);
-	n = term.cols + left;
-	col = 80 - left;
+    if (tb_values(*result) != 0) {
+	have_cols = String2Columns(*result);
 
-	if ((n > 80) && (col >= 0)) {
-	    for (n = (int) tb_length(*result); n < col; n++)
-		tb_append(result, lchar);
-	    if ((ss = tb_values(*result)) != 0
-		&& ss[col] == lchar) {
-		ss[col] = '|';
+	if (need_eighty_column_indicator) {
+	    int left = -nu_width(wp);
+	    char *ss;
+#ifdef WMDLINEWRAP
+	    if (!w_val(wp, WMDLINEWRAP))
+#endif
+		left += w_val(wp, WVAL_SIDEWAYS);
+	    n = term.cols + left;
+	    col = MARK_COL - left;
+
+	    if ((n > MARK_COL) && (col >= 0)) {
+		for (n = have_cols; n < col; n++)
+		    tb_append(result, lchar);
+		if ((ss = tb_values(*result)) != 0
+		    && ss[col] == lchar) {
+		    /* FIXME - need char-offset */
+		    ss[col] = '|';
+		}
 	    }
 	}
     }
@@ -3327,21 +3358,22 @@ update_modeline(WINDOW *wp)
 #else
     static char lchar_pad[4];
     BUFFER *bp;
-    char temp[NFILEN];
+    char temp[MAX_FORMAT / 2];
     int col;
     char lchar[2];
     int right_len;
-    char left_ms[NFILEN * 2];
+    char left_ms[MAX_FORMAT];
     char *ms;
-    char right_ms[NFILEN * 2];
+    char right_ms[MAX_FORMAT];
+    int my_col;
 #endif
-    int n;
+    int my_row;
 
     TRACE((T_CALLED "update_modeline\n"));
     if (is_vtinit()) {
 	term.cursorvis(FALSE);
 
-	n = mode_row(wp);	/* Location. */
+	my_row = mode_row(wp);	/* Location. */
 #if OPT_VIDEO_ATTRS
 	{
 	    VIDEO_ATTR attr;
@@ -3356,21 +3388,29 @@ update_modeline(WINDOW *wp)
 	    attr |= VAREV;
 #endif
 #endif
-	    vscreen[n]->v_flag |= VFCHG;
-	    set_vattrs(n, 0, attr, term.cols);
+	    vscreen[my_row]->v_flag |= VFCHG;
+	    set_vattrs(my_row, 0, attr, term.cols);
 	}
 #else
-	vscreen[n]->v_flag |= VFCHG | VFREQ | VFCOL;	/* Redraw next time. */
+	vscreen[my_row]->v_flag |= VFCHG | VFREQ | VFCOL;	/* Redraw next time. */
 #endif
 #if OPT_COLOR
-	ReqFcolor(vscreen[n]) = gfcolor;
-	ReqBcolor(vscreen[n]) = gbcolor;
+	ReqFcolor(vscreen[my_row]) = gfcolor;
+	ReqBcolor(vscreen[my_row]) = gbcolor;
 #endif
-	vtmove(n, 0);		/* Seek to right line. */
+	vtmove(my_row, 0);	/* Seek to right line. */
 
 #if OPT_MLFORMAT
 	special_formatter(&result, modeline_format, wp);
+#if OPT_MULTIBYTE
+	{
+	    char *from = tb_values(result);
+	    int n = strlen(from);
+	    VTSET_LOOP(n > 0);
+	}
+#else
 	vtputsn(wp, tb_values(result), tb_length(result));
+#endif
 #else /* hard-coded format */
 	bp = wp->w_bufp;
 	if (bp == 0)
@@ -3397,8 +3437,8 @@ update_modeline(WINDOW *wp)
 	    && (shorten_path(vl_strncpy(temp, bp->b_fname, sizeof(temp)), FALSE))
 	    && !eql_bname(bp, temp)) {
 	    if (is_internalname(temp)) {
-		for (n = term.cols - (13 + strlen(temp));
-		     n > 0; n--)
+		for (my_col = term.cols - (13 + strlen(temp));
+		     my_col > 0; my_col--)
 		    *ms++ = lchar[0];
 	    } else {
 		ms = lsprintf(ms, "is");
@@ -3417,29 +3457,30 @@ update_modeline(WINDOW *wp)
 	*ms++ = EOS;
 	right_len = strlen(right_ms);
 	vtputsn(wp, left_ms, term.cols);
-	for (n = term.cols - strlen(left_ms) - right_len; n > 0; n--)
+	for (my_col = term.cols - strlen(left_ms) - right_len; my_col > 0;
+	     my_col--)
 	    vtputc(wp, lchar, 1);
 
 	vtcol = term.cols - right_len;
 	if (vtcol < 0) {
-	    n = -vtcol;
+	    my_col = -vtcol;
 	    vtcol = 0;
 	} else {
-	    n = 0;
+	    my_col = 0;
 	}
 
 	if (term.cols > vtcol)
-	    vtputsn(wp, right_ms + n, term.cols - vtcol);
+	    vtputsn(wp, right_ms + my_col, term.cols - vtcol);
 
 	col = -nu_width(wp);
 #ifdef WMDLINEWRAP
 	if (!w_val(wp, WMDLINEWRAP))
 #endif
 	    col += w_val(wp, WVAL_SIDEWAYS);
-	n = term.cols + col;
-	col = 80 - col;
+	my_col = term.cols + col;
+	col = MARK_COL - col;
 
-	if ((n > 80)
+	if ((my_col > MARK_COL)
 	    && (col >= 0)
 	    && (vscreen[vtrow]->v_text[col] == lchar[0])) {
 	    vtcol = col;
