@@ -11,7 +11,7 @@
 #
 # The modes are table entries in the BUFFER and WINDOW structures.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.299 2010/01/29 01:16:24 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.302 2010/02/05 11:54:14 tom Exp $
 #
 #
 # Mode-table entries.  Capitalized letters are used for abbreviations.
@@ -344,6 +344,8 @@ string
 	"xdisplay"	XDISPLAY	DISP_X11&&OPT_SHELL	"X Windows display, etc."
 	"xshell"	XSHELL		DISP_X11&&OPT_SHELL	"xterm emulator, etc."
 	"xshell-flags"	XSHELLFLAGS	DISP_X11&&OPT_SHELL	"$xshell flags, e.g., '-c'"
+enum
+	"title-encoding" TITLE_ENCODING	OPT_MULTIBYTE	"xterm title encoding"
 
 # function name, id, numargs
 .functions
@@ -517,7 +519,6 @@ string
 "endm"		D_ENDM
 "trace"		D_TRACE
 
-# FIXME: this table should be generated from runtime locale
 .table file_encoding				# see byteorder_mark
 "locale"	enc_LOCALE
 "auto"		ENUM_UNKNOWN
@@ -653,6 +654,11 @@ string
 "foreign"	SF_FOREIGN
 "local"		SF_LOCAL
 "never"		SF_NEVER
+
+.table title_encoding
+"locale"	enc_LOCALE
+"8bit"		enc_8BIT
+"utf-8"		enc_UTF8
 
 .table xcolors			OPT_EXTRA_COLOR
 "enum"		XCOLOR_ENUM

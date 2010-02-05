@@ -3,13 +3,14 @@
  *	for getting and setting the values of the vile state variables,
  *	plus helper utility functions.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.140 2010/01/29 11:55:30 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.141 2010/02/05 01:30:21 tom Exp $
  */
 
-#include	"estruct.h"
-#include	"edef.h"
-#include	"nevars.h"
-#include	"patchlev.h"
+#include	<estruct.h>
+#include	<edef.h>
+#include	<nevars.h>
+#include	<nefsms.h>
+#include	<patchlev.h>
 
 #if SYS_WINNT
 #include	<process.h>
@@ -1724,6 +1725,20 @@ var_TITLE(TBUFF **rp, const char *vp)
 #else
 	return ABORT;		/* read-only */
 #endif
+    }
+    return FALSE;
+}
+
+int
+var_TITLE_ENCODING(TBUFF **rp, const char *vp)
+{
+    if (rp) {
+	tb_scopy(rp, encoding2s(title_encoding));
+	return TRUE;
+    } else if (vp) {
+	title_encoding = choice_to_code(&fsm_title_encoding_blist, vp,
+					strlen(vp));
+	return TRUE;
     }
     return FALSE;
 }

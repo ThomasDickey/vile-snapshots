@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.705 2010/01/27 01:39:25 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.706 2010/02/05 00:18:18 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -749,6 +749,7 @@ typedef unsigned short	mode_t;
 #define OPT_RECORDFORMAT_CHOICES   (OPT_ENUM_MODES && SYS_VMS)
 #define OPT_RECORDSEP_CHOICES      !SMALLER
 #define OPT_SHOWFORMAT_CHOICES     !SMALLER
+#define OPT_TITLE_ENCODING_CHOICES OPT_MULTIBYTE
 #define OPT_VIDEOATTRS_CHOICES     (OPT_ENUM_MODES && OPT_COLOR_SCHEMES)
 #define OPT_VTFLASHSEQ_CHOICES     (OPT_ENUM_MODES && VTFLASH_HOST && OPT_FLASH)
 #define OPT_XCOLORS_CHOICES        (OPT_ENUM_MODES && OPT_EXTRA_COLOR)

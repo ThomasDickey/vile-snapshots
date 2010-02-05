@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/xterm.c,v 1.5 2009/11/11 09:04:52 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/xterm.c,v 1.6 2010/02/05 01:22:20 tom Exp $
  *
  * xterm-specific code for vi-like-emacs.
  */
@@ -289,10 +289,50 @@ xterm_button(int c)
 void
 xterm_settitle(const char *string)
 {
+#if OPT_MULTIBYTE
+    int check;
+    UINT ch;
+    UCHAR temp[10];
+#endif
+
     if (global_g_val(GMDXTERM_TITLE) && string != 0) {
 	TRACE(("xterm_settitle(%s)\n", string));
 	putpad("\033]0;");
-	putpad(string);
+#if OPT_MULTIBYTE
+	if (title_encoding == enc_UTF8 && !b_is_utfXX(curbp)) {
+	    TRACE(("...converting to UTF-8\n"));
+	    while (*string != EOS) {
+		ch = CharOf(*string++);
+		if (vl_8bit_to_ucs(&check, ch))
+		    ch = check;
+		else
+		    ch = '?';
+		check = vl_conv_to_utf8(temp, ch, sizeof(temp));
+		temp[check] = EOS;
+		putpad((char *) temp);
+	    }
+	} else if (title_encoding == enc_8BIT && b_is_utfXX(curbp)) {
+	    TRACE(("...converting to 8-bit\n"));
+	    while (*string != EOS) {
+		check = vl_conv_to_utf32(&ch, string, strlen(string));
+		if (check <= 0) {
+		    string++;
+		    continue;
+		} else {
+		    string += check;
+		}
+		if (isPrint(ch) && vl_ucs_to_8bit(&check, ch)) {
+		    ch = check < 256 ? check : '?';
+		} else {
+		    ch = '?';
+		}
+		temp[0] = ch;
+		temp[1] = EOS;
+		putpad((char *) temp);
+	    }
+	} else
+#endif
+	    putpad(string);
 	putpad("\007");
 	term.flush();
     }

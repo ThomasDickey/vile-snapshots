@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.405 2009/12/08 23:27:35 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.406 2010/02/05 00:19:05 tom Exp $
  *
  */
 
@@ -924,6 +924,7 @@ static const FSM_TABLE fsm_tbl[] =
 #if OPT_MULTIBYTE
     {"byteorder-mark", &fsm_byteorder_mark_blist},
     {"file-encoding", &fsm_file_encoding_blist},
+    {"title-encoding", &fsm_title_encoding_blist},
 #endif
 #if OPT_VTFLASHSEQ_CHOICES
     {"vtflash", &fsm_vtflashseq_blist},

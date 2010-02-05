@@ -2,6 +2,8 @@ Changes for vile 9.8 (released ??? ??? ?? ????)
 
  20100204 (zb)
 	> Tom Dickey:
+	+ add $title-encoding, to control whether vile 8-bit or UTF-8 encoding
+	  when setting xterm title.
 	+ improve special_formatter(), used in modeline formatting, to display
 	  UTF-8 filenames.
 	+ make ifdef'ing of gettimeofday() in random.c consistent with estruct.h
