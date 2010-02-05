@@ -2,7 +2,7 @@
  *	eval.c -- function and variable evaluation
  *	original by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.419 2010/02/02 01:51:31 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.420 2010/02/05 10:38:58 tom Exp $
  *
  */
 
@@ -1760,7 +1760,10 @@ PromptAndSet(const char *name, int f, int n)
 		tb_scopy(&tmp, (vd.v_ptr->u_value) ? vd.v_ptr->u_value : "");
 	    }
 	    (void) lsprintf(prompt, "Value of %s: ", var);
-	    status = mlreply2(prompt, &tmp);
+	    status = kbd_string2(prompt, &tmp, '\n', KBD_NORMAL,
+				 (*name == '$' && name_to_choices(name + 1))
+				 ? fsm_complete
+				 : no_completion);
 	    if (status == ABORT)
 		tb_error(&tmp);
 	    else if (status != TRUE)

@@ -15,7 +15,7 @@
  * by Tom Dickey, 1993.    -pgf
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/mktbls.c,v 1.163 2009/12/28 23:21:30 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/mktbls.c,v 1.164 2010/02/05 10:36:25 tom Exp $
  *
  */
 
@@ -1605,7 +1605,7 @@ dump_statevars(void)
 	"typedef struct { StateFunc *func; char type; } StateVars;",
 	"",
 	"#ifdef realdef",
-	"DECL_EXTERN(StateVars statevar_funcs[]) = {",
+	"DECL_EXTERN(const StateVars statevar_funcs[]) = {",
 	""
     };
     static const char *const tail[] =
@@ -1613,7 +1613,7 @@ dump_statevars(void)
 	"\t{ (StateFunc *)NULL, 0 }",
 	"};",
 	"#else",
-	"extern StateVars statevar_funcs[];",
+	"extern const StateVars statevar_funcs[];",
 	"#endif /* realdef */",
 	"",
     };
