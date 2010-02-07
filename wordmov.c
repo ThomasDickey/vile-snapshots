@@ -5,7 +5,7 @@
  *	need to back up to get to the char. before the transition.
  *	Written for vile.  Copyright (c) 1990, 1995-1999 by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/wordmov.c,v 1.23 2006/11/06 21:00:51 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/wordmov.c,v 1.25 2010/02/07 13:58:08 tom Exp $
  *
  */
 
@@ -26,14 +26,19 @@ static int ochartype;
 static int
 getchartype(void)
 {
-    int c;
+    CHARTYPE type;
+    int result;
+    int ch;
 
-    if (is_at_end_of_line(DOT))
-	return (ISNL);
-    else
-	c = char_at(DOT);
-    return (isSpace(c) ? ISSPACE :
-	    (isident(c) ? ISIDENT : ISOTHER));
+    if (is_at_end_of_line(DOT)) {
+	result = (ISNL);
+    } else {
+	ch = CharAtDot();
+	type = CTypeOf(ch);
+	result = ((type & vl_space) ? ISSPACE :
+		  ((type & vl_ident) ? ISIDENT : ISOTHER));
+    }
+    return result;
 }
 
 void

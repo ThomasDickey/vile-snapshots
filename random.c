@@ -2,7 +2,7 @@
  * This file contains the command processing functions for a number of random
  * commands. There is no functional grouping here, for sure.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.333 2010/02/03 23:57:08 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.334 2010/02/06 00:13:48 tom Exp $
  *
  */
 
@@ -214,7 +214,7 @@ showcpos(int f GCC_UNUSED, int n GCC_UNUSED)
 	if (lp == DOT.l) {
 	    predlines = numlines;
 	    predchars = numchars + DOT.o;
-	    curchar = char_at_mark(DOT);
+	    curchar = CharAtDot();
 	}
 	/* on to the next line */
 	++numlines;

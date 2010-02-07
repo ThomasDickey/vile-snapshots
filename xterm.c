@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/xterm.c,v 1.6 2010/02/05 01:22:20 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/xterm.c,v 1.7 2010/02/05 23:31:41 tom Exp $
  *
  * xterm-specific code for vi-like-emacs.
  */
@@ -289,17 +289,24 @@ xterm_button(int c)
 void
 xterm_settitle(const char *string)
 {
-#if OPT_MULTIBYTE
-    int check;
-    UINT ch;
-    UCHAR temp[10];
-#endif
-
     if (global_g_val(GMDXTERM_TITLE) && string != 0) {
+#if OPT_MULTIBYTE
+	int check;
+	UINT ch;
+	UCHAR temp[10];
+	ENC_CHOICES want_encoding = title_encoding;
+#endif
 	TRACE(("xterm_settitle(%s)\n", string));
 	putpad("\033]0;");
 #if OPT_MULTIBYTE
-	if (title_encoding == enc_UTF8 && !b_is_utfXX(curbp)) {
+	if (want_encoding == enc_LOCALE) {
+	    if (vl_encoding >= enc_UTF8) {
+		want_encoding = enc_UTF8;
+	    } else {
+		want_encoding = enc_8BIT;
+	    }
+	}
+	if (want_encoding == enc_UTF8 && !b_is_utfXX(curbp)) {
 	    TRACE(("...converting to UTF-8\n"));
 	    while (*string != EOS) {
 		ch = CharOf(*string++);
@@ -311,7 +318,7 @@ xterm_settitle(const char *string)
 		temp[check] = EOS;
 		putpad((char *) temp);
 	    }
-	} else if (title_encoding == enc_8BIT && b_is_utfXX(curbp)) {
+	} else if (want_encoding == enc_8BIT && b_is_utfXX(curbp)) {
 	    TRACE(("...converting to 8-bit\n"));
 	    while (*string != EOS) {
 		check = vl_conv_to_utf32(&ch, string, strlen(string));

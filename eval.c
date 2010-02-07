@@ -2,7 +2,7 @@
  *	eval.c -- function and variable evaluation
  *	original by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.420 2010/02/05 10:38:58 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.421 2010/02/07 17:40:10 tom Exp $
  *
  */
 
@@ -59,6 +59,8 @@ static void free_vars_cmpl(void);
 static int show_ctypes_f;
 static int show_ctypes_n;
 
+#define same_string(a,b) (((a) && (b) && !strcmp(a,b)) || !((a) || (b)))
+
 static void
 one_ctype_row(VL_CTYPE2 * enc, UINT ch)
 {
@@ -69,6 +71,7 @@ one_ctype_row(VL_CTYPE2 * enc, UINT ch)
 #if OPT_MULTIBYTE
     int rc;
     char temp[10];
+    int use_locale = same_string(enc->locale, vl_wide_enc.locale);
 #endif
 
     bprintf("\n%d\t", (int) ch);
@@ -76,12 +79,11 @@ one_ctype_row(VL_CTYPE2 * enc, UINT ch)
 	bprintf("^%c", (int) ('@' | ch));
     } else {
 #if OPT_MULTIBYTE
-	if ((enc != &vl_real_enc)
+	if (use_locale
 	    && (rc = vl_conv_to_utf8((UCHAR *) temp,
 				     (UINT) ch,
 				     sizeof(temp))) > 1) {
-	    sprintf(temp, "\\u%04x", ch);
-	    bputsn(temp, -1);
+	    bputsn(temp, rc);
 	} else
 #endif
 	    bputc(ch);
@@ -89,11 +91,7 @@ one_ctype_row(VL_CTYPE2 * enc, UINT ch)
     bputc('\t');
 
 #if OPT_MULTIBYTE
-    if (enc == &vl_narrow_enc) {
-	used = vl_chartypes_[ch];
-    } else {
-	used = vl_ctype_bits(ch, TRUE);
-    }
+    used = vl_ctype_bits(ch, use_locale);
 #else
     used = vl_chartypes_[ch];
 #endif

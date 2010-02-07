@@ -10,7 +10,7 @@
  * editing must be being displayed, which means that "b_nwnd" is non zero,
  * which means that the dot and mark values in the buffer headers are nonsense.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.209 2010/02/01 09:44:55 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.211 2010/02/07 14:42:32 tom Exp $
  *
  */
 
@@ -888,7 +888,7 @@ lrepl_ctype(CHARTYPE type, const char *np, int length)
 	if (type != 0) {	/* it's an exact region */
 	    regionshape = rgn_EXACT;
 	    while (DOT.o < llength(DOT.l)
-		   && istype(type, char_at(DOT))) {
+		   && HasCType(type, CharAtDot())) {
 		if ((status = forwdelchar(FALSE, 1)) != TRUE)
 		    break;
 	    }

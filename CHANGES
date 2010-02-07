@@ -2,6 +2,7 @@ Changes for vile 9.8 (released ??? ??? ?? ????)
 
  20100204 (zb)
 	> Tom Dickey:
+	+ modify vl_ctype2tbuff() to handle wide-characters.
 	+ add $title-encoding, to control whether vile 8-bit or UTF-8 encoding
 	  when setting xterm title.
 	+ improve special_formatter(), used in modeline formatting, to display

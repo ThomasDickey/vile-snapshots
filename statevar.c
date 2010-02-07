@@ -3,7 +3,7 @@
  *	for getting and setting the values of the vile state variables,
  *	plus helper utility functions.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.141 2010/02/05 01:30:21 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.143 2010/02/06 00:14:06 tom Exp $
  */
 
 #include	<estruct.h>
@@ -686,7 +686,7 @@ var_CHAR(TBUFF **rp, const char *vp)
 
     if (rp) {
 	if (valid_buffer(curbp) && !is_empty_buf(curbp)) {
-	    render_int(rp, char_at_mark(DOT));
+	    render_int(rp, CharAtDot());
 	} else {
 	    tb_scopy(rp, error_val);
 	}
@@ -1738,6 +1738,9 @@ var_TITLE_ENCODING(TBUFF **rp, const char *vp)
     } else if (vp) {
 	title_encoding = choice_to_code(&fsm_title_encoding_blist, vp,
 					strlen(vp));
+	if (auto_set_title) {
+	    term.set_title(tb_values(current_title));
+	}
 	return TRUE;
     }
     return FALSE;

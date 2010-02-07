@@ -44,7 +44,7 @@
  *	tgetc_avail()     true if a key is avail from tgetc() or below.
  *	keystroke_avail() true if a key is avail from keystroke() or below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.324 2009/08/20 20:54:00 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.328 2010/02/07 02:05:32 tom Exp $
  *
  */
 
@@ -778,14 +778,14 @@ vl_ctype2tbuff(TBUFF **result, CHARTYPE inclchartype, int whole_line)
 {
     int i = 0;
     MARK save_dot;
-    int first = -1;
-    int last = -1;
+    int first_ch = -1;
+    int last_ch = -1;
+    int first_off = -1;
+    int last_off = -1;
 
     TRACE((T_CALLED "vl_ctype2tbuff(incl=%#lx)\n", (ULONG) inclchartype));
 
     save_dot = DOT;
-
-    tb_init(result, EOS);
 
     /*
      * If we're processing the whole line, find the beginning of the token
@@ -793,10 +793,10 @@ vl_ctype2tbuff(TBUFF **result, CHARTYPE inclchartype, int whole_line)
      */
     if (whole_line
 	&& DOT.o > 0
-	&& istype(inclchartype, char_at(DOT))) {
+	&& HasCType(inclchartype, CharAtDot())) {
 	while (DOT.o > 0) {
 	    backchar_to_bol(TRUE, 1);
-	    if (!istype(inclchartype, char_at(DOT))) {
+	    if (!HasCType(inclchartype, CharAtDot())) {
 		forwchar_to_eol(TRUE, 1);
 		break;
 	    }
@@ -806,18 +806,19 @@ vl_ctype2tbuff(TBUFF **result, CHARTYPE inclchartype, int whole_line)
     /*
      * Search for the start of the token, and then the end of the token.
      */
+    first_off = DOT.o;
     while (!is_at_end_of_line(DOT)) {
-	last = CharOf(char_at(DOT));
-	if (first < 0)
-	    first = last;
+	last_ch = CharAtDot();
+	if (first_ch < 0)
+	    first_ch = last_ch;
 #if OPT_WIDE_CTYPES
 	if (i == 0) {
 	    if (inclchartype & vl_scrtch) {
-		if (first != SCRTCH_LEFT[0])
+		if (first_ch != SCRTCH_LEFT[0])
 		    inclchartype &= ~vl_scrtch;
 	    }
 	    if (inclchartype & vl_shpipe) {
-		if (first != SHPIPE_LEFT[0])
+		if (first_ch != SHPIPE_LEFT[0])
 		    inclchartype &= ~vl_shpipe;
 	    }
 	}
@@ -825,32 +826,33 @@ vl_ctype2tbuff(TBUFF **result, CHARTYPE inclchartype, int whole_line)
 	/* allow "[!command]" */
 	if ((inclchartype & vl_scrtch)
 	    && (i == 1)
-	    && (last == SHPIPE_LEFT[0])) {
+	    && (last_ch == SHPIPE_LEFT[0])) {
 	    /*EMPTY */ ;
-	    /* guard against things like "[Buffer List]" on VMS */
 	} else if ((inclchartype & vl_pathn)
-		   && !ispath(last)
+		   && !HasCType(vl_pathn, last_ch)
 		   && (inclchartype == vl_pathn)) {
+	    /* guard against things like "[Buffer List]" on VMS */
 	    break;
 	} else
 #endif
-	if (inclchartype && !istype(inclchartype, last))
+	if (inclchartype && !HasCType(inclchartype, last_ch))
 	    break;
-	tb_append(result, last);
 	if (!forwchar_to_eol(TRUE, 1))
 	    break;
 	i++;
 #if OPT_WIDE_CTYPES
 	if (inclchartype & vl_scrtch) {
 	    if ((inclchartype & vl_pathn)
-		&& ispath(char_at(DOT)))
+		&& HasCType(vl_pathn, CharAtDot()))
 		continue;
-	    if (last == SCRTCH_RIGHT[0])
+	    if (last_ch == SCRTCH_RIGHT[0])
 		break;
 	}
 #endif
     }
-    tb_append(result, EOS);
+    last_off = DOT.o;
+    if (!inclchartype)
+	last_off += len_record_sep(curbp);
 
 #if OPT_WIDE_CTYPES
 #if OPT_VMS_PATH
@@ -859,11 +861,18 @@ vl_ctype2tbuff(TBUFF **result, CHARTYPE inclchartype, int whole_line)
     } else
 #endif
     if (inclchartype & vl_scrtch) {
-	if (last != SCRTCH_RIGHT[0])
-	    tb_init(result, EOS);
+	if (last_ch != SCRTCH_RIGHT[0]) {
+	    last_off = first_off - 1;
+	}
     }
 #endif
 
+    tb_init(result, EOS);
+    while (first_off < last_off) {
+	tb_append(result, lgetc(DOT.l, first_off));
+	++first_off;
+    }
+    tb_append(result, EOS);
     DOT = save_dot;
 
     returnCode(tb_length(*result) != 0);
