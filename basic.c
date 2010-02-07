@@ -5,7 +5,7 @@
  * functions that adjust the top line in the window and invalidate the
  * framing, are hard.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/basic.c,v 1.162 2009/12/22 00:33:08 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/basic.c,v 1.164 2010/02/06 00:10:33 tom Exp $
  *
  */
 
@@ -911,7 +911,7 @@ gotobosent(int f, int n)
     savepos = DOT;
     exp = b_val_rexp(curbp, VAL_SENTENCES)->reg;
 
-    while (s && (is_at_end_of_line(DOT) || isSpace(char_at(DOT)))) {
+    while (s && (is_at_end_of_line(DOT) || isSpace(CharAtDot()))) {
 	s = backchar(TRUE, 1);
 	if (is_empty_line(DOT) && !empty)
 	    return TRUE;
@@ -922,7 +922,7 @@ gotobosent(int f, int n)
 	return gotobob(f, n);
     }
     s = forwchar(TRUE, RegexpLen(exp));
-    while (s && (is_at_end_of_line(DOT) || isSpace(char_at(DOT)))) {
+    while (s && (is_at_end_of_line(DOT) || isSpace(CharAtDot()))) {
 	s = forwchar(TRUE, 1);
 	extra++;
     }
@@ -962,7 +962,7 @@ gotoeosent(int f, int n)
 	    DOT = curbp->b_line;
 	} else if (empty || !is_at_end_of_line(DOT)) {
 	    s = forwchar(TRUE, RegexpLen(exp));
-	    while (s && (is_at_end_of_line(DOT) || isSpace(char_at(DOT)))) {
+	    while (s && (is_at_end_of_line(DOT) || isSpace(CharAtDot()))) {
 		LINE *lp = DOT.l;
 		s = forwchar(TRUE, 1);
 		if (lp != DOT.l)
@@ -971,7 +971,7 @@ gotoeosent(int f, int n)
 	}
     } else {
 	s = forwchar(TRUE, RegexpLen(exp));
-	while (s && (is_at_end_of_line(DOT) || isSpace(char_at(DOT))))
+	while (s && (is_at_end_of_line(DOT) || isSpace(CharAtDot())))
 	    s = forwchar(TRUE, 1);
     }
     return TRUE;

@@ -11,7 +11,7 @@
 #
 # The modes are table entries in the BUFFER and WINDOW structures.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.302 2010/02/05 11:54:14 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.303 2010/02/05 21:35:50 tom Exp $
 #
 #
 # Mode-table entries.  Capitalized letters are used for abbreviations.
@@ -232,12 +232,17 @@ bool
 	"debug"		DEBUG		1		"macro debugging"
 	"discmd"	DISCMD		1		"display commands on command line"
 	"disinp"	DISINP		1		"display command line input characters"
+	"end-of-cmd"	EOC		1		"true if they ended the cmd with <CR>"
 	"fchanged"	FCHANGED	!SMALLER	"true if current buffer's file is changed"
 	"filename-ic"	FILENAME_IC	1		"true if we set OPT_CASELESS"
 	"forward-search" FWD_SEARCH	1		"search-direction (true if forward)"
 	"modified"	MODIFIED	1		"is current buffer modified?"
 	"pending"	PENDING		1		"type ahead pending flag"
 	"term-resizes"	TERM_RESIZES	1		"true if terminal can be resized"
+enum
+	"mode"		MODE		1		"are we inserting/overwriting/command"
+	"term-encoding" TERM_ENCODING	OPT_MULTIBYTE	"terminal's encoding support"
+	"title-encoding" TITLE_ENCODING	OPT_MULTIBYTE	"xterm title encoding"
 int
 	"_"		_STATUS		OPT_EVAL	"function's result (external)"
 	"bchars"	BCHARS		1		"chars in current buffer"
@@ -291,7 +296,6 @@ string
 	"cwd"		CWD		OPT_SHELL	"current directory"
 	"directory"	DIRECTORY	OPT_SHELL	"controls location of temp-files"
 	"encoding"	ENCODING	OPT_LOCALE	"8-bit encoding associated with buffer contents"
-	"end-of-cmd"	EOC		1		"true if they ended the cmd with <CR>"
 	"error-buffer"	ERROR_BUFFER	OPT_FINDERR	"buffer to use for find-next-error"
 	"error-match"	ERROR_MATCH	OPT_FINDERR	"last matching text for error-pattern"
 	"exec-path"	EXEC_PATH	1		"directory where vile's executable is found"
@@ -314,7 +318,6 @@ string
 	"majormode-hook" MAJORMODEHOOK	OPT_HOOKS&&OPT_MAJORMODE	"procedure to run for majormodes"
 	"match"		MATCH		1		"last matched magic pattern"
 	"menu-file"	MENU_FILE	OPT_MENUS	"the name of the menu-file (e.g., .vilemenu)"
-	"mode"		MODE		1		"are we inserting/overwriting/command"
 	"modeline-format" MLFORMAT	OPT_MLFORMAT	"modeline format string"
 	"ocwd"		OCWD		OPT_SHELL	"previous directory"
 	"os"		OS		1		"what os are we on?"
@@ -334,7 +337,6 @@ string
 	"sres"		SRES		1		"current screen resolution"
 	"startup-file"	STARTUP_FILE	1		"the name of the startup-file (e.g., .vilerc)"
 	"startup-path"	STARTUP_PATH	1		"where to find the startup-file (e.g., .)"
-	"term-encoding" TERM_ENCODING	OPT_MULTIBYTE	"terminal's encoding support"
 	"title"		TITLE		OPT_TITLE	"window title"
 	"title-format"	TITLEFORMAT	OPT_TITLE	"window title format"
 	"version"	VERSION		1		"current version number"
@@ -344,8 +346,6 @@ string
 	"xdisplay"	XDISPLAY	DISP_X11&&OPT_SHELL	"X Windows display, etc."
 	"xshell"	XSHELL		DISP_X11&&OPT_SHELL	"xterm emulator, etc."
 	"xshell-flags"	XSHELLFLAGS	DISP_X11&&OPT_SHELL	"$xshell flags, e.g., '-c'"
-enum
-	"title-encoding" TITLE_ENCODING	OPT_MULTIBYTE	"xterm title encoding"
 
 # function name, id, numargs
 .functions

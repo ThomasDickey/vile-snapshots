@@ -18,7 +18,7 @@
  * transferring the selection are not dealt with in this file.  Procedures
  * for dealing with the representation are maintained in this file.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.175 2009/12/11 10:02:44 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.176 2010/02/06 00:02:10 tom Exp $
  *
  */
 
@@ -732,10 +732,10 @@ on_double_click(void)
     TRACE(("MOUSE double-click DOT %d.%d\n", line_no(curbp, DOT.l), DOT.o));
     sel_release();
     if (!is_at_end_of_line(DOT)
-	&& !isSpace(char_at(DOT))) {
+	&& !isSpace(CharAtDot())) {
 	while (DOT.o > 0) {
 	    DOT.o -= BytesBefore(DOT.l, DOT.o);
-	    if (isSpace(char_at(DOT))) {
+	    if (isSpace(CharAtDot())) {
 		DOT.o += BytesAt(DOT.l, DOT.o);
 		break;
 	    }
@@ -745,7 +745,7 @@ on_double_click(void)
 	while (!is_at_end_of_line(DOT)) {
 	    DOT.o += BytesAt(DOT.l, DOT.o);
 	    if (is_at_end_of_line(DOT)
-		|| isSpace(char_at(DOT))) {
+		|| isSpace(CharAtDot())) {
 		DOT.o -= BytesBefore(DOT.l, DOT.o);
 		break;
 	    }
@@ -1692,7 +1692,7 @@ attribute_cntl_a_sequences(void)
 	if (interrupted())
 	    return FALSE;
 	while (DOT.o < llength(DOT.l)) {
-	    if (char_at(DOT) == CONTROL_A) {
+	    if (CharAtDot() == CONTROL_A) {
 		offset = decode_attribute(lvalue(DOT.l), llength(DOT.l),
 					  DOT.o, &count);
 		if (offset > DOT.o) {

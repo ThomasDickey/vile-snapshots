@@ -4,7 +4,7 @@
  * Most code probably by Dan Lawrence or Dave Conroy for MicroEMACS
  * Extensions for vile by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/insert.c,v 1.173 2009/11/05 10:54:49 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/insert.c,v 1.174 2010/02/06 00:02:10 tom Exp $
  */
 
 #include	"estruct.h"
@@ -725,7 +725,7 @@ blanks_on_line(void)
     int list = w_val(curwp, WMDLIST);
 
     for (DOT.o = 0; DOT.o < llength(DOT.l); DOT.o += BytesAt(DOT.l, DOT.o)) {
-	if (isSpace(char_at(DOT))
+	if (isSpace(CharAtDot())
 	    && getccol(list) >= indentwas) {
 	    code = TRUE;
 	    break;
@@ -898,7 +898,7 @@ inschar(int c, int *backsp_limit_p)
 	&& !is_utf8_continuation(curbp, c)
 	&& (!DOT_ARGUMENT || (dotcmdrep <= 1))
 	&& (DOT.o < llength(DOT.l))
-	&& (char_at(DOT) != '\t'
+	&& (CharAtDot() != '\t'
 	    || DOT.o % tabstop_val(curbp) == tabstop_val(curbp) - 1)) {
 	autoindented = -1;
 	(void) ldel_chars(1, FALSE);
@@ -1354,7 +1354,7 @@ shiftwidth(int f GCC_UNUSED, int n GCC_UNUSED)
     space_count = 0;
     all_white = TRUE;
     while (DOT.o < char_index) {
-	c = char_at(DOT);
+	c = CharAtDot();
 	if (c == ' ') {
 	    space_count++;
 	} else {

@@ -9,7 +9,7 @@
  * Extensions for vile by Paul Fox
  * Rewrote to use regular expressions - T.Dickey
  *
- * $Header: /users/source/archives/vile.vcs/RCS/fences.c,v 1.88 2009/12/09 01:18:04 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/fences.c,v 1.90 2010/02/06 00:14:36 tom Exp $
  *
  */
 
@@ -48,7 +48,7 @@
 #define BlkEnd   b_val_rexp(curbp, VAL_FENCE_END)->reg
 
 #define CurrentChar() \
-	(is_at_end_of_line(DOT) ? '\n' : char_at(DOT))
+	(is_at_end_of_line(DOT) ? '\n' : CharAtDot())
 #define InDirection(sdir) \
 	((sdir == REVERSE) ? backchar(FALSE, 1) : forwchar(FALSE, 1))
 
@@ -581,7 +581,7 @@ getfence(int ch,		/* fence type to match against */
 	} else if (sdir == FORWARD) {
 	    if (oldpos.o < llength(oldpos.l)) {
 		do {
-		    ch = char_at(oldpos);
+		    ch = char_at_mark(oldpos);
 		} while (!is_user_fence(ch, (int *) 0) &&
 			 ++oldpos.o < llength(oldpos.l));
 	    }
@@ -591,7 +591,7 @@ getfence(int ch,		/* fence type to match against */
 	} else {
 	    if (oldpos.o >= 0) {
 		do {
-		    ch = char_at(oldpos);
+		    ch = char_at_mark(oldpos);
 		} while (!is_user_fence(ch, (int *) 0) &&
 			 --oldpos.o >= 0);
 	    }

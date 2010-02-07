@@ -1,5 +1,5 @@
 /*
- * $Id: eightbit.c,v 1.59 2010/02/03 23:52:45 tom Exp $
+ * $Id: eightbit.c,v 1.61 2010/02/07 15:26:05 tom Exp $
  *
  * Maintain "8bit" file-encoding mode by converting incoming UTF-8 to single
  * bytes, and providing a function that tells vile whether a given Unicode
@@ -748,7 +748,7 @@ vl_init_8bit(const char *wide, const char *narrow)
 	/* if nothing else, still accept POSIX characters */
 	fixup = 128;
     }
-    for (n = 0, fixed_up = 0; n < fixup; ++n) {
+    for (n = 0, latin1_codes = 128, fixed_up = 0; n < fixup; ++n) {
 	if (table_8bit_utf8[n].text == 0) {
 	    char temp[10];
 	    int len = vl_conv_to_utf8((UCHAR *) temp, (UINT) n, sizeof(temp));
@@ -773,6 +773,20 @@ vl_init_8bit(const char *wide, const char *narrow)
 	rindex_8bit[n].rinx = n;
     }
     qsort(rindex_8bit, N_chars, sizeof(RINDEX_8BIT), cmp_rindex);
+
+    /*
+     * As long as the narrow/wide encodings match, we can treat those as
+     * Latin-1.
+     */
+    for (n = 0, latin1_codes = 0; n < N_chars; ++n) {
+	int check;
+	if (vl_ucs_to_8bit(&check, n)) {
+	    latin1_codes = n + 1;
+	} else {
+	    break;
+	}
+    }
+    TRACE(("assume %d Latin1 codes\n", latin1_codes));
 
     returnVoid();
 }

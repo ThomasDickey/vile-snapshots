@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.694 2010/02/04 10:23:14 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.698 2010/02/07 13:56:51 tom Exp $
  *
  */
 
@@ -127,6 +127,7 @@ extern	int setwmark (int row, int col);
 
 #if OPT_MULTIBYTE
 
+extern int char_at_dot(void);
 extern int bytes_at(LINE *lp, int off);
 extern int bytes_before(LINE *lp, int off);
 extern int chars_to_eol(LINE *lp, int off);
@@ -137,6 +138,9 @@ extern int mb_cellwidth(WINDOW *wp, const char *text, int limit);
 
 extern int tb_wcs_width(TBUFF *text);
 
+#define CTypeOf(ch)         (b_is_utfXX(curbp) ? vl_ctype_bits(ch,TRUE) : vlCTYPE(ch))
+#define HasCType(type,ch)   ((CTypeOf(ch) & type) != 0)
+#define CharAtDot()         (b_is_utfXX(curbp) ? char_at_mark(DOT) : CharOf(char_at(DOT)))
 #define BytesAt(lp,off)     (b_is_utfXX(curbp) ? bytes_at(lp,off) : 1)
 #define BytesBefore(lp,off) (b_is_utfXX(curbp) ? bytes_before(lp,off) : (off)!=0)
 #define String2Columns(s)   tb_wcs_width(s)
@@ -148,6 +152,9 @@ extern int tb_wcs_width(TBUFF *text);
 #define count_bytes(lp, off, chars) (chars)
 #define count_chars(lp, off, bytes) (bytes)
 
+#define CTypeOf(ch)         vlCTYPE(ch)
+#define HasCType(type,ch)   ((CTypeOf(ch) & type) != 0)
+#define CharAtDot()         CharOf(char_at(DOT))
 #define BytesAt(lp,off) 1
 #define BytesBefore(lp,off) ((off)!=0)
 #define String2Columns(s)   tb_length(s)
