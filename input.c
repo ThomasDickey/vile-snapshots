@@ -44,7 +44,7 @@
  *	tgetc_avail()     true if a key is avail from tgetc() or below.
  *	keystroke_avail() true if a key is avail from keystroke() or below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.328 2010/02/07 02:05:32 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.330 2010/02/08 01:23:38 tom Exp $
  *
  */
 
@@ -782,6 +782,7 @@ vl_ctype2tbuff(TBUFF **result, CHARTYPE inclchartype, int whole_line)
     int last_ch = -1;
     int first_off = -1;
     int last_off = -1;
+    int at_end = 0;
 
     TRACE((T_CALLED "vl_ctype2tbuff(incl=%#lx)\n", (ULONG) inclchartype));
 
@@ -835,22 +836,27 @@ vl_ctype2tbuff(TBUFF **result, CHARTYPE inclchartype, int whole_line)
 	    break;
 	} else
 #endif
-	if (inclchartype && !HasCType(inclchartype, last_ch))
+	if (inclchartype && !HasCType(inclchartype, last_ch)) {
 	    break;
-	if (!forwchar_to_eol(TRUE, 1))
+	}
+	if (!forwchar_to_eol(TRUE, 1)) {
+	    at_end = 1;
 	    break;
+	}
 	i++;
 #if OPT_WIDE_CTYPES
 	if (inclchartype & vl_scrtch) {
 	    if ((inclchartype & vl_pathn)
-		&& HasCType(vl_pathn, CharAtDot()))
+		&& HasCType(vl_pathn, CharAtDot())) {
 		continue;
-	    if (last_ch == SCRTCH_RIGHT[0])
+	    }
+	    if (last_ch == SCRTCH_RIGHT[0]) {
 		break;
+	    }
 	}
 #endif
     }
-    last_off = DOT.o;
+    last_off = DOT.o + at_end;
     if (!inclchartype)
 	last_off += len_record_sep(curbp);
 
@@ -868,7 +874,7 @@ vl_ctype2tbuff(TBUFF **result, CHARTYPE inclchartype, int whole_line)
 #endif
 
     tb_init(result, EOS);
-    while (first_off < last_off) {
+    while (first_off < last_off && first_off < llength(DOT.l)) {
 	tb_append(result, lgetc(DOT.l, first_off));
 	++first_off;
     }
