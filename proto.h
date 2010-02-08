@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.698 2010/02/07 13:56:51 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.699 2010/02/07 21:41:28 tom Exp $
  *
  */
 
@@ -136,6 +136,7 @@ extern int count_bytes(LINE *lp, int off, int chars);
 extern int count_chars(LINE *lp, int off, int bytes);
 extern int mb_cellwidth(WINDOW *wp, const char *text, int limit);
 
+extern int str_wcs_width(const char *text);
 extern int tb_wcs_width(TBUFF *text);
 
 #define CTypeOf(ch)         (b_is_utfXX(curbp) ? vl_ctype_bits(ch,TRUE) : vlCTYPE(ch))
@@ -143,7 +144,8 @@ extern int tb_wcs_width(TBUFF *text);
 #define CharAtDot()         (b_is_utfXX(curbp) ? char_at_mark(DOT) : CharOf(char_at(DOT)))
 #define BytesAt(lp,off)     (b_is_utfXX(curbp) ? bytes_at(lp,off) : 1)
 #define BytesBefore(lp,off) (b_is_utfXX(curbp) ? bytes_before(lp,off) : (off)!=0)
-#define String2Columns(s)   tb_wcs_width(s)
+#define str_columns(s)      str_wcs_width(s)
+#define tb_columns(s)       tb_wcs_width(s)
 
 #else
 
@@ -157,7 +159,8 @@ extern int tb_wcs_width(TBUFF *text);
 #define CharAtDot()         CharOf(char_at(DOT))
 #define BytesAt(lp,off) 1
 #define BytesBefore(lp,off) ((off)!=0)
-#define String2Columns(s)   tb_length(s)
+#define str_columns(s)      strlen(s)
+#define tb_columns(s)       tb_length(s)
 
 #endif
 

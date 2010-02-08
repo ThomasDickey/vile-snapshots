@@ -1,6 +1,6 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
-  $Id: macros.html,v 1.10 2010/02/02 00:31:31 tom Exp $
+  $Id: macros.html,v 1.11 2010/02/07 18:55:54 tom Exp $
 -->
 <HTML>
 <HEAD>
@@ -832,6 +832,16 @@ sections may be read in any order.
 			the corresponding "utf-8" or "utf-16" value.
 <dt>$title
 			<dd>The current window title (X11, win32 versions only).
+<dt>$title-encoding
+			<dd>Tell whether to send title-change escape sequences
+			to xterm in ISO-8859-1 (8bit) or UTF-8 (utf-8).
+			A "locale" setting is provided, which tells vile to
+			use UTF-8 if the locale encoding uses UTF-8, and
+			ISO-8859-1 otherwise.
+			ISO-8859-1 is standard; some terminal emulators
+			require UTF-8.
+			Even with this, other programs such as GNU screen
+			interfere with setting titles with non-ASCII content.
 <dt>$title-format
 			<dd>The format for the window title (X11, win32 versions).
 			If this variable is not set, the title is the program

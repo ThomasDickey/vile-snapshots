@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.508 2010/02/04 10:23:51 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.510 2010/02/08 01:05:15 tom Exp $
  *
  */
 
@@ -2998,6 +2998,51 @@ percentage(WINDOW *wp)
     return PERCENT(val, denom);
 }
 
+#if OPT_MULTIBYTE
+static int
+str_col2offs(WINDOW *wp, int target_col, const char *source, int length)
+{
+    const char *base = source;
+    int result = 0;
+    int have_col = 0;
+
+    while (have_col < target_col) {
+	int rc;
+	UINT value;
+	int need = column_sizes(wp, source, length, &rc);
+	int cells = need;
+
+	switch (need) {
+	case COLS_UTF8:
+	    rc = vl_conv_to_utf32(&value, source, length);
+	    cells = vl_wcwidth(value);
+	    source += rc;
+	    length -= rc;
+	    break;
+	case COLS_CTRL:
+	    source += 1;
+	    length -= 1;
+	    break;
+	case COLS_8BIT:
+	    source += 1;
+	    length -= 1;
+	    break;
+	default:
+	    source += 1;
+	    length -= 1;
+	    break;
+	}
+	have_col += cells;
+
+	if (have_col < target_col)
+	    result = (source - base);
+    }
+    return result;
+}
+#else
+#define str_col2offs(wp,target_col,value,length) target_col
+#endif
+
 #define MAX_FORMAT ((NFILEN + 1) * 2 * COLS_UTF8)
 
 #define HaveEnough(string) ((ms + strlen(string)) - base < MAX_FORMAT)
@@ -3024,7 +3069,8 @@ special_formatter(TBUFF **result, const char *fs, WINDOW *wp)
     int fc;
     char lchar;
     int need_eighty_column_indicator;
-    int right_len;
+    int right_cols;
+    int right_offs;
     int n;
     int skip = TRUE;
 
@@ -3293,30 +3339,40 @@ special_formatter(TBUFF **result, const char *fs, WINDOW *wp)
     tb_bappend(result, left_ms, strlen(left_ms));
 
     if (tb_values(*result) != 0) {
-	have_cols = String2Columns(*result);
+	have_cols = tb_columns(*result);
 
 	if ((have_cols < term.cols)
-	    && (right_len = (int) strlen(right_ms)) != 0) {
-	    for (n = term.cols - have_cols - right_len; n > 0; n--)
+	    && (right_cols = str_columns(right_ms)) != 0) {
+	    for (n = term.cols - have_cols - right_cols; n > 0; n--)
 		tb_append(result, lchar);
-	    if ((n = term.cols - right_len) < 0) {
-		col = right_len + n;
+	    if ((n = term.cols - right_cols) < 0) {
+		/* FIXME - incorrect expression */
+		col = right_cols + n;
 		n = -n;
 	    } else {
-		col = right_len;
+		col = right_cols;
 		n = 0;
 	    }
 	    if ((col < term.cols)
-		&& (n < right_len)) {
-		/* FIXME - need char-offset */
-		tb_bappend(result, right_ms + n, term.cols - col);
+		&& (n < right_cols)) {
+		right_offs = str_col2offs(wp, n, right_ms, strlen(right_ms));
+		if ((tb_columns(*result) + col) > term.cols) {
+		    tb_setlen(result,
+			      str_col2offs(wp, term.cols - col,
+					   tb_values(*result),
+					   tb_length(*result)));
+		    have_cols = tb_columns(*result);
+		    for (n = term.cols - have_cols - right_cols; n > 0; n--)
+			tb_append(result, lchar);
+		}
+		tb_bappend(result, right_ms + right_offs, col);
 	    }
 	}
     }
 
     /* mark column 80 */
     if (tb_values(*result) != 0) {
-	have_cols = String2Columns(*result);
+	have_cols = tb_columns(*result);
 
 	if (need_eighty_column_indicator) {
 	    int left = -nu_width(wp);
@@ -3361,7 +3417,7 @@ update_modeline(WINDOW *wp)
     char temp[MAX_FORMAT / 2];
     int col;
     char lchar[2];
-    int right_len;
+    int right_cols;
     char left_ms[MAX_FORMAT];
     char *ms;
     char right_ms[MAX_FORMAT];
@@ -3455,13 +3511,14 @@ update_modeline(WINDOW *wp)
 	    (void) lsprintf(right_ms, " %s %s", rough_position(wp), lchar_pad);
 
 	*ms++ = EOS;
-	right_len = strlen(right_ms);
+	right_cols = str_columns(right_ms);
 	vtputsn(wp, left_ms, term.cols);
-	for (my_col = term.cols - strlen(left_ms) - right_len; my_col > 0;
+	for (my_col = term.cols - str_columns(left_ms) - right_cols;
+	     my_col > 0;
 	     my_col--)
 	    vtputc(wp, lchar, 1);
 
-	vtcol = term.cols - right_len;
+	vtcol = term.cols - right_cols;
 	if (vtcol < 0) {
 	    my_col = -vtcol;
 	    vtcol = 0;

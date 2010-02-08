@@ -3,7 +3,7 @@
  * paragraph at a time.  There are all sorts of word mode commands.  If I
  * do any sentence mode commands, they are likely to be put in this file.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/word.c,v 1.99 2010/02/06 00:02:10 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/word.c,v 1.100 2010/02/07 22:33:35 tom Exp $
  *
  */
 
@@ -423,14 +423,12 @@ byte_to_columns(char text, int size)
     return result;
 }
 
-int
-tb_wcs_width(TBUFF *text)
+static int
+any_wcs_width(const char *value, long bytes)
 {
-    long bytes = (long) tb_length(text);
     int result = 0;
 
     if (b_is_utfXX(curbp)) {
-	char *value = tb_values(text);
 
 	while (bytes > 0) {
 	    int step = vl_conv_to_utf32((UINT *) 0, value, (B_COUNT) bytes);
@@ -446,6 +444,19 @@ tb_wcs_width(TBUFF *text)
 
     return result;
 }
+
+int
+str_wcs_width(const char *value)
+{
+    return any_wcs_width(value, (long) strlen(value));
+}
+
+int
+tb_wcs_width(TBUFF *text)
+{
+    return any_wcs_width(tb_values(text), (long) tb_length(text));
+}
+
 #define Byte2Column(s,n) byte_to_columns(s, n)
 #else
 #define Byte2Column(s,n) n
@@ -472,7 +483,7 @@ tb_wcs_width(TBUFF *text)
 		    if ((s = lins_bytes(1, tb_values(str)[i])) != TRUE) \
 			return s; \
 		} \
-		clength += String2Columns(str)
+		clength += tb_columns(str)
 
 #define fmt_c_preprocessor(cp) \
 		(tb_length(*cp) == 1 \
@@ -657,7 +668,7 @@ do_formatting(TBUFF **wp, TBUFF **cp)
 		/* at a word break with a word waiting */
 		/* calculate tentative new length
 		   with word added */
-		newlen = (int) (clength + 1 + String2Columns(*wp));
+		newlen = (int) (clength + 1 + tb_columns(*wp));
 		if (newlen <= fillcolumn) {
 		    /* add word to current line */
 		    if (!firstflag) {
