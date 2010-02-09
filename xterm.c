@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/xterm.c,v 1.7 2010/02/05 23:31:41 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/xterm.c,v 1.8 2010/02/09 00:58:19 tom Exp $
  *
  * xterm-specific code for vi-like-emacs.
  */
@@ -10,7 +10,7 @@
 #if DISP_TERMCAP || DISP_CURSES
 
 #define putpad(s)	vl_fputs(s, stdout)
-#define	XtermPos()	((unsigned)(keystroke() - 040))
+#define	XtermPos()	(keystroke() - 040)
 
 #if OPT_XTERM >= 3
 # define XTERM_ENABLE_TRACKING   "\033[?1001h"	/* mouse hilite tracking */
@@ -310,8 +310,8 @@ xterm_settitle(const char *string)
 	    TRACE(("...converting to UTF-8\n"));
 	    while (*string != EOS) {
 		ch = CharOf(*string++);
-		if (vl_8bit_to_ucs(&check, ch))
-		    ch = check;
+		if (vl_8bit_to_ucs(&check, (int) ch))
+		    ch = (UINT) check;
 		else
 		    ch = '?';
 		check = vl_conv_to_utf8(temp, ch, sizeof(temp));
@@ -328,12 +328,12 @@ xterm_settitle(const char *string)
 		} else {
 		    string += check;
 		}
-		if (isPrint(ch) && vl_ucs_to_8bit(&check, ch)) {
-		    ch = check < 256 ? check : '?';
+		if (isPrint(ch) && vl_ucs_to_8bit(&check, (int) ch)) {
+		    ch = (UINT) (check < 256 ? check : '?');
 		} else {
 		    ch = '?';
 		}
-		temp[0] = ch;
+		temp[0] = (UCHAR) ch;
 		temp[1] = EOS;
 		putpad((char *) temp);
 	    }

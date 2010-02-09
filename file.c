@@ -5,7 +5,7 @@
  * reading and writing of the disk are
  * in "fileio.c".
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.438 2010/02/04 00:13:26 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.439 2010/02/09 00:47:17 tom Exp $
  */
 
 #include "estruct.h"
@@ -1931,9 +1931,9 @@ add_to_name(char *target, const char *source, size_t len, int blanks)
 		break;
 	    source += used;
 
-	    if ((code = vl_ucs_to_8bit(&check, ch))) {
+	    if ((code = vl_ucs_to_8bit(&check, (int) ch))) {
 		if (ch <= 127)
-		    ch = check;
+		    ch = (UINT) check;
 		else
 		    code = 0;
 	    }
@@ -1953,7 +1953,7 @@ add_to_name(char *target, const char *source, size_t len, int blanks)
 	if (!isPrint(ch))
 	    break;
 	if (isSpace(ch))
-	    ch = blanks ? ' ' : '-';
+	    ch = (UINT) (blanks ? ' ' : '-');
 	*target++ = (char) ch;
     }
     *target = '\0';		/* buffer names are always null-terminated */

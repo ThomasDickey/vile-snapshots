@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.706 2010/02/05 00:18:18 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.707 2010/02/08 10:44:21 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -1887,9 +1887,9 @@ typedef UCHAR VIDEO_ATTR;
  */
 #define GROW(ptr, type, oldsize, newsize) \
 { \
-	unsigned tmpold = oldsize; \
+	UINT tmpold = (UINT) oldsize; \
 	type *tmpp; \
-	tmpp = typeallocn(type, newsize); \
+	tmpp = typeallocn(type, (UINT) newsize); \
 	if (tmpp == NULL) \
 		return FALSE; \
  \
@@ -1900,7 +1900,7 @@ typedef UCHAR VIDEO_ATTR;
 		tmpold = 0; \
 	} \
 	ptr = tmpp; \
-	(void) memset ((char *)(ptr+tmpold), 0, (newsize - tmpold) * sizeof(type)); \
+	(void) memset ((char *)(ptr+tmpold), 0, ((UINT) newsize - tmpold) * sizeof(type)); \
 }
 
 /*
