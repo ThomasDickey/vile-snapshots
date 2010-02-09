@@ -2,7 +2,7 @@
  *	eval.c -- function and variable evaluation
  *	original by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.421 2010/02/07 17:40:10 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.422 2010/02/09 00:46:05 tom Exp $
  *
  */
 
@@ -62,7 +62,7 @@ static int show_ctypes_n;
 #define same_string(a,b) (((a) && (b) && !strcmp(a,b)) || !((a) || (b)))
 
 static void
-one_ctype_row(VL_CTYPE2 * enc, UINT ch)
+one_ctype_row(VL_CTYPE2 * enc, int ch)
 {
     UINT j;
     CHARTYPE test;
@@ -117,7 +117,7 @@ one_ctype_row(VL_CTYPE2 * enc, UINT ch)
 static void
 make_ctype_list(int dum1 GCC_UNUSED, void *ptr GCC_UNUSED)
 {
-    UINT i, last = N_chars;
+    int i, last = N_chars;
     VL_CTYPE2 *enc = &vl_real_enc;
 
 #if OPT_MULTIBYTE
@@ -2456,6 +2456,8 @@ complete_vars(DONE_ARGS)
 static int
 read_argument(TBUFF **paramp, const PARAM_INFO * info)
 {
+    static char empty_string[] = "";
+
     int status = TRUE;
     const char *prompt;
     TBUFF *temp;
@@ -2533,7 +2535,7 @@ read_argument(TBUFF **paramp, const PARAM_INFO * info)
 	if (execstr == 0 || !*skip_blanks(execstr)) {
 	    clexec = FALSE;
 	    isnamedcmd = TRUE;
-	    execstr = "";
+	    execstr = empty_string;
 	}
 
 	if (info->pi_type == PT_FILE) {

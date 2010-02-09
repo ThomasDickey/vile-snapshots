@@ -1,5 +1,5 @@
 /*
- * $Id: eightbit.c,v 1.61 2010/02/07 15:26:05 tom Exp $
+ * $Id: eightbit.c,v 1.62 2010/02/09 01:05:53 tom Exp $
  *
  * Maintain "8bit" file-encoding mode by converting incoming UTF-8 to single
  * bytes, and providing a function that tells vile whether a given Unicode
@@ -873,6 +873,8 @@ vl_get_locale(char **target)
 char *
 vl_get_encoding(char **target, const char *locale)
 {
+    static char iso_latin1[] = "ISO-8859-1";
+
     char *result = 0;
     char *actual = setlocale(LC_ALL, locale);
 
@@ -888,11 +890,12 @@ vl_get_encoding(char **target, const char *locale)
 	if (!isEmpty(locale) && (mylocale = strmalloc(locale)) != 0) {
 	    regexp *exp;
 
-	    exp = regcomp(tb_values(latin1_expr), tb_length0(latin1_expr), TRUE);
+	    exp = regcomp(tb_values(latin1_expr),
+			  (size_t) tb_length0(latin1_expr), TRUE);
 	    if (exp != 0) {
 		if (nregexec(exp, mylocale, (char *) 0, 0, -1)) {
 		    TRACE(("... found match in $latin1-expr\n"));
-		    result = "ISO-8859-1";
+		    result = iso_latin1;
 		}
 		free(exp);
 	    }
@@ -908,7 +911,7 @@ vl_get_encoding(char **target, const char *locale)
 	    || !strcmp(locale, "POSIX")) {
 	    result = "ASCII";
 	} else {
-	    result = "ISO-8859-1";
+	    result = iso_latin1;
 	}
 #endif
     }
@@ -956,7 +959,7 @@ vl_8bit_to_ucs(int *result, int code)
     int status = FALSE;
 
     if (code >= 0 && code < 256) {
-	*result = table_8bit_utf8[code].code;
+	*result = (int) table_8bit_utf8[code].code;
 	status = TRUE;
     }
     return status;
@@ -1006,7 +1009,7 @@ decode_utf8(char *input, int used)
      * FIXME: perhaps a better solution would be to use iconv for
      * converting from the wide encoding to UTF-32. 
      */
-    rc = vl_conv_to_utf32(&check, input, used);
+    rc = vl_conv_to_utf32(&check, input, (B_COUNT) used);
     if ((rc == used) && (check != 0) && !isSpecial(check))
 	ch = (int) check;
     else

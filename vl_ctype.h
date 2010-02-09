@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/vl_ctype.h,v 1.26 2010/01/30 18:00:44 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/vl_ctype.h,v 1.27 2010/02/09 00:59:24 tom Exp $
  *
  * Character-type tests, like <ctype.h> for vile (vi-like-emacs).
  *
@@ -243,20 +243,20 @@ extern void vl_ctype_clr(int ch, CHARTYPE cclass);
 #if !(defined(iswblank) || defined(HAVE_ISWBLANK))
 #define iswblank(c) ((c) == ' ' || (c) == '\t')
 #endif
-#define sys_isalpha(n)  iswalpha(n)
-#define sys_isalnum(n)  iswalnum(n)
-#define sys_isblank(n)  iswblank(n)
-#define sys_iscntrl(n)  iswcntrl(n)
-#define sys_isdigit(n)  iswdigit(n)
-#define sys_isgraph(n)  iswgraph(n)
-#define sys_islower(n)  iswlower(n)
-#define sys_isprint(n)  iswprint(n)
-#define sys_ispunct(n)  iswpunct(n)
-#define sys_isspace(n)  iswspace(n)
-#define sys_isupper(n)  iswupper(n)
-#define sys_isxdigit(n) iswxdigit(n)
-#define sys_tolower(n)  towlower(n)
-#define sys_toupper(n)  towupper(n)
+#define sys_isalpha(n)  iswalpha((wint_t)(n))
+#define sys_isalnum(n)  iswalnum((wint_t)(n))
+#define sys_isblank(n)  iswblank((wint_t)(n))
+#define sys_iscntrl(n)  iswcntrl((wint_t)(n))
+#define sys_isdigit(n)  iswdigit((wint_t)(n))
+#define sys_isgraph(n)  iswgraph((wint_t)(n))
+#define sys_islower(n)  iswlower((wint_t)(n))
+#define sys_isprint(n)  iswprint((wint_t)(n))
+#define sys_ispunct(n)  iswpunct((wint_t)(n))
+#define sys_isspace(n)  iswspace((wint_t)(n))
+#define sys_isupper(n)  iswupper((wint_t)(n))
+#define sys_isxdigit(n) iswxdigit((wint_t)(n))
+#define sys_tolower(n)  towlower((wint_t)(n))
+#define sys_toupper(n)  towupper((wint_t)(n))
 
 #else /* ! USE_WIDE_CTYPE */
 

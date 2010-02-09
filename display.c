@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.510 2010/02/08 01:05:15 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.514 2010/02/08 23:58:27 tom Exp $
  *
  */
 
@@ -191,8 +191,8 @@ dfputf(OutFunc outfunc, double s)
     /* send out the integer portion */
     n += dfputi(outfunc, i, 10);
     (*outfunc) ('.');
-    (*outfunc) ((f / 10) + '0');
-    (*outfunc) ((f % 10) + '0');
+    (*outfunc) ((int) (f / 10) + '0');
+    (*outfunc) ((int) (f % 10) + '0');
     return n;
 }
 
@@ -393,7 +393,7 @@ int
 video_alloc(VIDEO ** vpp)
 {
     VIDEO *vp;
-    unsigned need = sizeof(VIDEO_TEXT) * (term.maxcols - VIDEO_MIN);
+    unsigned need = sizeof(VIDEO_TEXT) * (UINT) (term.maxcols - VIDEO_MIN);
 
     /* struct VIDEO already has 4 of the VIDEO_TEXT cells */
     if ((vp = typeallocplus(VIDEO, need)) != 0) {
@@ -580,12 +580,12 @@ vtputc(WINDOW *wp, const char *src, unsigned limit)
 #if OPT_MULTIBYTE
 	    if (!b_is_utfXX(wp->w_bufp) && (vl_encoding >= enc_UTF8)) {
 		int ch2;
-		if (vl_8bit_to_ucs(&ch2, ch)) {
-		    ch = ch2;
+		if (vl_8bit_to_ucs(&ch2, (int) ch)) {
+		    ch = (UINT) ch2;
 		}
 	    }
 #endif
-	    VideoText(vp)[vtcol++] = ch;
+	    VideoText(vp)[vtcol++] = (VIDEO_TEXT) ch;
 #ifdef WMDLINEWRAP
 	    if ((allow_wrap != 0)
 		&& (vtcol == lastcol)
@@ -597,7 +597,7 @@ vtputc(WINDOW *wp, const char *src, unsigned limit)
 	    }
 #endif
 	} else if (vtcol >= lastcol) {
-	    VideoText(vp)[lastcol - 1] = MRK_EXTEND_RIGHT[0];
+	    VideoText(vp)[lastcol - 1] = (VIDEO_TEXT) MRK_EXTEND_RIGHT[0];
 	} else if (isTab(ch)) {
 	    do {
 		vtputc(wp, " ", 1);
@@ -644,12 +644,12 @@ vtlistc(WINDOW *wp, const char *src, unsigned limit)
 	switch (need) {
 	case COLS_UTF8:
 	    rc = vl_conv_to_utf32(&value, src, limit);
-	    cells = vl_wcwidth(value);
+	    cells = vl_wcwidth((int) value);
 
 	    if (!w_val(wp, WMDUNICODE_AS_HEX)
 		&& cells == 1
 		&& isPrint(value)
-		&& FoldTo8bits(value)) {
+		&& FoldTo8bits((int) value)) {
 		temp[n++] = (char) value;
 	    } else if (!w_val(wp, WMDUNICODE_AS_HEX)
 		       && cells > 0
@@ -684,7 +684,8 @@ vtlistc(WINDOW *wp, const char *src, unsigned limit)
 		    }
 #endif
 		} else if (vtcol >= lastcol) {
-		    VideoText(vp)[lastcol - 1] = MRK_EXTEND_RIGHT[0];
+		    VideoText(vp)[lastcol - 1] =
+			(VIDEO_TEXT) MRK_EXTEND_RIGHT[0];
 		} else if (vtcol < 0) {
 		    /* have to account for split-characters... */
 		    while (cells-- > 0 && vtcol <= lastcol) {
@@ -699,7 +700,7 @@ vtlistc(WINDOW *wp, const char *src, unsigned limit)
 		 * rather than 4 - but the low 4 digits are the same.
 		 */
 		sprintf(temp, "\\u%04X", value & ((1 << MaxCBits) - 1));
-		n = need;
+		n = (unsigned) need;
 	    }
 	    break;
 	case COLS_CTRL:
@@ -716,7 +717,7 @@ vtlistc(WINDOW *wp, const char *src, unsigned limit)
 	     */
 	    TRACE2(("vtlistc illegal:%#x\n", CharOf(*src)));
 	    sprintf(temp, "\\?%02X", CharOf(*src));
-	    n = need;
+	    n = (unsigned) need;
 	    break;
 	default:
 	    temp[n++] = *src;
@@ -821,7 +822,7 @@ vtset(LINE *lp, WINDOW *wp)
 	    int c = from[j];
 	    int used = 1;
 	    if ((list || !isTab(c)) && !isPrint(c)) {
-		k += column_sizes(wp, from + j, n - j, &used);
+		k += column_sizes(wp, from + j, (UINT) (n - j), &used);
 	    } else {
 		if (isTab(c)) {
 		    k += (wp->w_tabstop - (k % wp->w_tabstop));
@@ -986,7 +987,7 @@ mk_to_vcol(WINDOW *wp, MARK mark, int expanded, int col, int adjust)
 #if OPT_MULTIBYTE
 	else if (b_is_utfXX(wp->w_bufp)) {
 	    int nxt = llength(mark.l) - i;
-	    int adj = column_sizes(wp, text + i, nxt, &used);
+	    int adj = column_sizes(wp, text + i, (unsigned) nxt, &used);
 
 	    if (adj == COLS_UTF8 && !w_val(wp, WMDUNICODE_AS_HEX)) {
 		adj = mb_cellwidth(wp, text + i, nxt);
@@ -995,7 +996,7 @@ mk_to_vcol(WINDOW *wp, MARK mark, int expanded, int col, int adjust)
 	}
 #endif
 	else if (!isPrint(c)) {
-	    col += column_sizes(wp, text + i, llength(mark.l) - i, &used);
+	    col += column_sizes(wp, text + i, (UINT) (llength(mark.l) - i), &used);
 	} else {
 	    ++col;
 	}
@@ -1496,13 +1497,13 @@ kbd_flush(void)
 		   (VIDEO_ATTR) (miniedit
 				 ? global_g_val(GVAL_MINI_HILITE)
 				 : 0),
-		   term.cols);
+		   (size_t) term.cols);
 	if (my_overlay[0] != EOS) {
 	    int j;
 	    int n = term.cols - (int) strlen(my_overlay) - 1;
 	    if (n > 0) {
 		for (j = 0; my_overlay[j] != EOS; ++j)
-		    vscreen[row]->v_text[n + j] = my_overlay[j];
+		    vscreen[row]->v_text[n + j] = (VIDEO_TEXT) my_overlay[j];
 	    }
 	}
 	vscreen[row]->v_flag |= VFCHG;
@@ -1571,7 +1572,7 @@ offs2col0(WINDOW *wp,
 #if OPT_MULTIBYTE
 	    if ((n < length) && b_is_utfXX(bp) && !isTab(c)) {
 		int nxt = offset - n;
-		int adj = column_sizes(wp, text + n, nxt, &used);
+		int adj = column_sizes(wp, text + n, (UINT) nxt, &used);
 
 		if (adj == COLS_UTF8 && !w_val(wp, WMDUNICODE_AS_HEX)) {
 		    adj = mb_cellwidth(wp, text + n, nxt);
@@ -1584,7 +1585,7 @@ offs2col0(WINDOW *wp,
 	    } else if (list || !isTab(c)) {
 		column += column_sizes(wp,
 				       (n >= length) ? "" : (text + n),
-				       offset - n, &used);
+				       (UINT) (offset - n), &used);
 	    } else if (isTab(c)) {
 		column = ((column / tabs) + 1) * tabs;
 	    }
@@ -1641,7 +1642,7 @@ col2offs(WINDOW *wp, LINE *lp, C_NUM col)
 #if OPT_MULTIBYTE
 	    if (b_is_utfXX(wp->w_bufp) && !isTab(c)) {
 		int nxt = len - offset;
-		int adj = column_sizes(wp, text + offset, nxt, &used);
+		int adj = column_sizes(wp, text + offset, (UINT) nxt, &used);
 
 		if (adj == COLS_UTF8 && !w_val(wp, WMDUNICODE_AS_HEX)) {
 		    adj = mb_cellwidth(wp, text + offset, nxt);
@@ -1652,7 +1653,7 @@ col2offs(WINDOW *wp, LINE *lp, C_NUM col)
 	    if (isPrint(c)) {
 		n++;
 	    } else if (list || !isTab(c)) {
-		n += column_sizes(wp, text + offset, len - offset, &used);
+		n += column_sizes(wp, text + offset, (UINT) (len - offset), &used);
 	    } else if (isTab(c)) {
 		n = ((n / tabs) + 1) * tabs;
 	    }
@@ -1902,7 +1903,7 @@ update_screen_line(WINDOW *wp, LINE *lp, int sline)
 	vtset(lp, wp);
 	if (left && sline >= 0) {
 	    int zero = nu_width(wp);
-	    vscreen[sline]->v_text[zero] = MRK_EXTEND_LEFT[0];
+	    vscreen[sline]->v_text[zero] = (VIDEO_TEXT) MRK_EXTEND_LEFT[0];
 	    if (vtcol <= zero)
 		vtcol = zero + 1;
 	}
@@ -2099,7 +2100,7 @@ update_window_attrs(WINDOW *wp)
      */
     /* FIXME: color; need to set to value indicating fg and bg for window */
     for (i = wp->w_toprow + wp->w_ntrows - 1; i >= wp->w_toprow; i--)
-	set_vattrs(i, 0, 0, term.cols);
+	set_vattrs(i, 0, 0, (size_t) term.cols);
 
 #if OPT_LINE_ATTRS
     update_line_attrs(wp);
@@ -2379,7 +2380,7 @@ update_extended_line(int col, int excess, int use_excess)
     horscroll = 0;
 
     if (use_excess || col != rcursor) {		/* ... put a marker in column 1 */
-	vscreen[currow]->v_text[zero] = MRK_EXTEND_LEFT[0];
+	vscreen[currow]->v_text[zero] = (VIDEO_TEXT) MRK_EXTEND_LEFT[0];
     }
     vscreen[currow]->v_flag |= (VFEXT | VFCHG);
     return rcursor;
@@ -2587,10 +2588,10 @@ simple_scroll(int inserts)
 
     if (inserts) {
 	/* determine types of potential scrolls */
-	end = endofline(vpv->v_text, cols);
+	end = (size_t) endofline(vpv->v_text, cols);
 	if (end == 0)
 	    ptarget = first;	/* newlines */
-	else if (same_video_text(vpp->v_text, vpv->v_text, end))
+	else if (same_video_text(vpp->v_text, vpv->v_text, (int) end))
 	    ptarget = first + 1;	/* broken line newlines */
 	else
 	    ptarget = first;
@@ -3009,13 +3010,13 @@ str_col2offs(WINDOW *wp, int target_col, const char *source, int length)
     while (have_col < target_col) {
 	int rc;
 	UINT value;
-	int need = column_sizes(wp, source, length, &rc);
+	int need = column_sizes(wp, source, (UINT) length, &rc);
 	int cells = need;
 
 	switch (need) {
 	case COLS_UTF8:
-	    rc = vl_conv_to_utf32(&value, source, length);
-	    cells = vl_wcwidth(value);
+	    rc = vl_conv_to_utf32(&value, source, (B_COUNT) length);
+	    cells = vl_wcwidth((int) value);
 	    source += rc;
 	    length -= rc;
 	    break;
@@ -3284,7 +3285,7 @@ special_formatter(TBUFF **result, const char *fs, WINDOW *wp)
 		    clexec = TRUE;
 		    execstr = temp;
 
-		    strncpy0(temp, save_fs, fs + 1 - save_fs);
+		    strncpy0(temp, save_fs, (size_t) (fs + 1 - save_fs));
 		    execstr = get_token(execstr,
 					&tok,
 					eol_null,
@@ -3312,7 +3313,7 @@ special_formatter(TBUFF **result, const char *fs, WINDOW *wp)
 			char format[NSTRING];
 
 			format[0] = '%';
-			strncpy0(format + 1, save_fs, fs + 2 - save_fs);
+			strncpy0(format + 1, save_fs, (size_t) (fs + 2 - save_fs));
 			if (strchr("dDxXo", *fs)) {
 			    int value = scan_int(temp);
 			    ms = lsprintf(ms, format, value);
@@ -3346,7 +3347,6 @@ special_formatter(TBUFF **result, const char *fs, WINDOW *wp)
 	    for (n = term.cols - have_cols - right_cols; n > 0; n--)
 		tb_append(result, lchar);
 	    if ((n = term.cols - right_cols) < 0) {
-		/* FIXME - incorrect expression */
 		col = right_cols + n;
 		n = -n;
 	    } else {
@@ -3355,17 +3355,17 @@ special_formatter(TBUFF **result, const char *fs, WINDOW *wp)
 	    }
 	    if ((col < term.cols)
 		&& (n < right_cols)) {
-		right_offs = str_col2offs(wp, n, right_ms, strlen(right_ms));
+		right_offs = str_col2offs(wp, n, right_ms, (int) strlen(right_ms));
 		if ((tb_columns(*result) + col) > term.cols) {
 		    tb_setlen(result,
 			      str_col2offs(wp, term.cols - col,
 					   tb_values(*result),
-					   tb_length(*result)));
+					   (int) tb_length(*result)));
 		    have_cols = tb_columns(*result);
 		    for (n = term.cols - have_cols - right_cols; n > 0; n--)
 			tb_append(result, lchar);
 		}
-		tb_bappend(result, right_ms + right_offs, col);
+		tb_bappend(result, right_ms + right_offs, (size_t) col);
 	    }
 	}
     }
@@ -3387,10 +3387,12 @@ special_formatter(TBUFF **result, const char *fs, WINDOW *wp)
 	    if ((n > MARK_COL) && (col >= 0)) {
 		for (n = have_cols; n < col; n++)
 		    tb_append(result, lchar);
+		right_offs = str_col2offs(wp, col,
+					  tb_values(*result),
+					  (int) tb_length(*result));
 		if ((ss = tb_values(*result)) != 0
-		    && ss[col] == lchar) {
-		    /* FIXME - need char-offset */
-		    ss[col] = '|';
+		    && ss[right_offs] == lchar) {
+		    ss[right_offs] = '|';
 		}
 	    }
 	}
@@ -3445,7 +3447,7 @@ update_modeline(WINDOW *wp)
 #endif
 #endif
 	    vscreen[my_row]->v_flag |= VFCHG;
-	    set_vattrs(my_row, 0, attr, term.cols);
+	    set_vattrs(my_row, 0, attr, (size_t) term.cols);
 	}
 #else
 	vscreen[my_row]->v_flag |= VFCHG | VFREQ | VFCOL;	/* Redraw next time. */
@@ -3461,7 +3463,7 @@ update_modeline(WINDOW *wp)
 #if OPT_MULTIBYTE
 	{
 	    char *from = tb_values(result);
-	    int n = strlen(from);
+	    int n = (int) strlen(from);
 	    VTSET_LOOP(n > 0);
 	}
 #else
@@ -4459,7 +4461,7 @@ bputsn_attr(const char *src, int len, int attr)
 	videoattribute = (VIDEO_ATTR) attr;
 
 	if (len < 0)
-	    len = strlen(src);
+	    len = (int) strlen(src);
 	rc = bputsn(src, len);
 
 	/*
@@ -4733,7 +4735,7 @@ imworking(int ACTUAL_SIG_ARGS GCC_UNUSED)
 		    int len = cur_working > 999999L ? 10 : 6;
 
 		    old_working = cur_working;
-		    strcat(result, right_num(temp, len, cur_working));
+		    strcat(result, right_num(temp, len, (long) cur_working));
 		    if (len == 10)
 			/*EMPTY */ ;
 		    else if (max_working != 0) {
