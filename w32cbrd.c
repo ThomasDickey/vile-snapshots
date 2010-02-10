@@ -11,7 +11,7 @@
  *    Subsequent copies do not show this cursor.  On an NT host, this
  *    phenomenon does not occur.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32cbrd.c,v 1.36 2009/10/24 13:29:07 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32cbrd.c,v 1.37 2010/02/10 12:05:43 tom Exp $
  */
 
 #include "estruct.h"
@@ -308,7 +308,7 @@ cbrd_reg_copy(void)
  * Bound to Alt+Insert.
  */
 int
-cbrdcpy_unnamed(int unused1, int unused2)
+cbrdcpy_unnamed(int unused1 GCC_UNUSED, int unused2 GCC_UNUSED)
 {
     int rc;
 
@@ -537,7 +537,7 @@ paste_to_minibuffer(W32_CHAR * cbrddata)
  * Bound to Shift+Insert.
  */
 int
-cbrdpaste(int f, int n)
+cbrdpaste(int f GCC_UNUSED, int n GCC_UNUSED)
 {
     UINT c;
     W32_CHAR *data;
@@ -728,7 +728,7 @@ map_and_insert(UINT c,		/* ANSI char to insert   */
  * Bound to Shift+Delete.
  */
 int
-cbrdcut(int f, int n)
+cbrdcut(int f GCC_UNUSED, int n GCC_UNUSED)
 {
     return (w32_del_selection(TRUE));
 }

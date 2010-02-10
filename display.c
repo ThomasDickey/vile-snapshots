@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.514 2010/02/08 23:58:27 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.517 2010/02/10 11:19:50 tom Exp $
  *
  */
 
@@ -28,6 +28,9 @@
 #else
 #define set_term_attrs(a)  term.rev(a)
 #endif
+
+#define line_has_newline(lp, bp) \
+	(b_val(bp, MDNEWLINE) || (lforw(lp) != buf_head(bp)))
 
 #define	MRK_EMPTY        "~"
 #define	MRK_EXTEND_LEFT  "<"
@@ -603,7 +606,7 @@ vtputc(WINDOW *wp, const char *src, unsigned limit)
 		vtputc(wp, " ", 1);
 	    } while (((vtcol + horscroll) % wp->w_tabstop) != 0
 		     && vtcol < lastcol);
-	} else if (!is_record_sep(wp->w_bufp, ch)) {
+	} else if (!is_record_sep(wp->w_bufp, (int) ch)) {
 	    if (isPrint(ch)) {
 		++vtcol;
 	    } else {
@@ -883,9 +886,7 @@ vtset(LINE *lp, WINDOW *wp)
     if (list && (n >= 0)) {
 	if (b_is_scratch(bp) && listrimmed(lp))
 	    /*EMPTY */ ;
-	else if (!b_val(bp, MDNEWLINE) && (lforw(lp) == buf_head(bp)))
-	    /*EMPTY */ ;
-	else {
+	else if (line_has_newline(lp, bp)) {
 	    const char *s = get_record_sep(bp);
 	    unsigned len = len_record_sep(bp);
 	    while (len != 0)
@@ -3219,14 +3220,14 @@ special_formatter(TBUFF **result, const char *fs, WINDOW *wp)
 	    case 'p':		/* percentage */
 	    case 'L':		/* number of lines in buffer */
 
-		if (w_val(wp, WMDRULER) && !is_empty_buf(wp->w_bufp)) {
+		if (w_val(wp, WMDRULER) && !is_empty_buf(bp)) {
 		    int val = 0;
 		    switch (fc) {
 		    case 'l':
 			val = wp->w_ruler_line;
 			break;
 		    case 'L':
-			val = vl_line_count(wp->w_bufp);
+			val = vl_line_count(bp);
 			break;
 		    case 'c':
 			val = wp->w_ruler_col;
@@ -3245,7 +3246,10 @@ special_formatter(TBUFF **result, const char *fs, WINDOW *wp)
 #endif
 #ifdef WMDSHOWCHAR
 	    case 'C':
-		if (w_val(wp, WMDSHOWCHAR) && !is_empty_buf(wp->w_bufp)) {
+		if (w_val(wp, WMDSHOWCHAR)
+		    && !is_empty_buf(bp)
+		    && (wp->w_dot.o < llength(wp->w_dot.l)
+			|| line_has_newline(wp->w_dot.l, bp))) {
 		    sprintf(temp, "%02X", char_at_mark(wp->w_dot));
 		    mlfs_prefix(&fs, &ms, lchar);
 		    ms = lsprintf(ms, "%s", temp);
@@ -3264,7 +3268,7 @@ special_formatter(TBUFF **result, const char *fs, WINDOW *wp)
 #ifdef WMDRULER
 		       !w_val(wp, WMDRULER) ||
 #endif
-		       is_empty_buf(wp->w_bufp)) {
+		       is_empty_buf(bp)) {
 		    mlfs_prefix(&fs, &ms, lchar);
 		    ms = lsprintf(ms, " %s ", rough_position(wp));
 		    mlfs_suffix(&fs, &ms, lchar);

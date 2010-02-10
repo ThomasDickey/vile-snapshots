@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/xterm.c,v 1.8 2010/02/09 00:58:19 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/xterm.c,v 1.9 2010/02/09 21:32:14 tom Exp $
  *
  * xterm-specific code for vi-like-emacs.
  */
@@ -306,7 +306,8 @@ xterm_settitle(const char *string)
 		want_encoding = enc_8BIT;
 	    }
 	}
-	if (want_encoding == enc_UTF8 && !b_is_utfXX(curbp)) {
+	if (curbp == 0) {
+	} else if (want_encoding == enc_UTF8 && !b_is_utfXX(curbp)) {
 	    TRACE(("...converting to UTF-8\n"));
 	    while (*string != EOS) {
 		ch = CharOf(*string++);

@@ -2,7 +2,7 @@
  * w32misc:  collection of unrelated, common win32 functions used by both
  *           the console and GUI flavors of the editor.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32misc.c,v 1.57 2009/10/24 00:05:16 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32misc.c,v 1.58 2010/02/10 11:59:06 tom Exp $
  */
 
 #include "estruct.h"
@@ -196,15 +196,16 @@ is_win95(void)
 char *
 mk_shell_cmd_str(const char *cmd, int *allocd_mem, int prepend_shc)
 {
-    int alloc_len, bourne_shell,	/* Boolean, T if user's shell has
-					 * appearances of a Unix lookalike
-					 * bourne shell (e.g., sh, ksh, bash).
-					 */
-      len;
+    int alloc_len;
+    int bourne_shell;		/* Boolean, T if user's shell has appearances
+				 * of a Unix lookalike bourne shell (e.g.,
+				 * sh, ksh, bash).
+				 */
+    size_t len;
     char *out_str, *cp, *shell, *shell_c = "/c";
 
     shell = get_shell();
-    len = (int) strlen(shell);
+    len = strlen(shell);
     bourne_shell = (len >= 2 &&
 		    toLower(shell[len - 2]) == 's' &&
 		    toLower(shell[len - 1]) == 'h')

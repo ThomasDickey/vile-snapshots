@@ -5,7 +5,7 @@
  * reading and writing of the disk are
  * in "fileio.c".
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.439 2010/02/09 00:47:17 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.440 2010/02/10 01:53:22 tom Exp $
  */
 
 #include "estruct.h"
@@ -1931,7 +1931,7 @@ add_to_name(char *target, const char *source, size_t len, int blanks)
 		break;
 	    source += used;
 
-	    if ((code = vl_ucs_to_8bit(&check, (int) ch))) {
+	    if ((code = vl_ucs_to_8bit(&check, (int) ch)) != 0) {
 		if (ch <= 127)
 		    ch = (UINT) check;
 		else
