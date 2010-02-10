@@ -2,7 +2,7 @@
  * w32cmd:  collection of functions that add Win32-specific editor
  *          features (modulo the clipboard interface) to [win]vile.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32cmd.c,v 1.43 2007/11/09 00:25:45 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32cmd.c,v 1.45 2010/02/10 12:09:25 tom Exp $
  */
 
 #include "estruct.h"
@@ -36,7 +36,7 @@ comm_dlg_error(void)
     DWORD errcode;
 
     if ((errcode = CommDlgExtendedError()) != 0)
-	mlforce("[CommDlgExtendedError() returns err code %d]", errcode);
+	mlforce("[CommDlgExtendedError() returns err code %ld]", (long) errcode);
     return (errcode);
 }
 
@@ -60,7 +60,8 @@ Text Files (*.txt)\0\
 
     TRACE(("ofn_init\n"));
     TRACE(("   filter %s\n", visible_buff(filter, sizeof(filter), 0)));
-    TRACE(("   custom-filter %s\n", visible_buff(custFilter, sizeof(custFilter), 0)));
+    TRACE(("   custom-filter %s\n",
+	   visible_buff(custFilter, sizeof(custFilter), 0)));
 
     memset(&ofn, 0, sizeof(ofn));
     ofn.lStructSize       = sizeof(ofn);
@@ -320,7 +321,7 @@ wopen_common(int chdir_allowed)
 
 
 int
-winopen_nocd(int f, int n)
+winopen_nocd(int f GCC_UNUSED, int n GCC_UNUSED)
 {
     return (wopen_common(FALSE));
 }
@@ -328,7 +329,7 @@ winopen_nocd(int f, int n)
 
 
 int
-winopen(int f, int n)
+winopen(int f GCC_UNUSED, int n GCC_UNUSED)
 {
     return (wopen_common(TRUE));
 }
@@ -559,14 +560,14 @@ wsave_common(int chdir_allowed)
 
 
 int
-winsave(int f, int n)
+winsave(int f GCC_UNUSED, int n GCC_UNUSED)
 {
     return (wsave_common(TRUE));
 }
 
 
 int
-winsave_nocd(int f, int n)
+winsave_nocd(int f GCC_UNUSED, int n GCC_UNUSED)
 {
     return (wsave_common(FALSE));
 }
@@ -584,7 +585,7 @@ winsave_dir(const char *dir)
 /* ------------------ delete current text selection -------------------- */
 /* --------------------------------------------------------------------- */
 int
-windeltxtsel(int f, int n)  /* bound to Alt+Delete */
+windeltxtsel(int f GCC_UNUSED, int n GCC_UNUSED)  /* bound to Alt+Delete */
 {
     return (w32_del_selection(FALSE));
 }
@@ -952,7 +953,7 @@ empty_text_selection(BUFFER *selbp, AREGION *psel)
 
 
 static BOOL CALLBACK
-printer_abort_proc(HDC hPrintDC, int errcode)
+printer_abort_proc(HDC hPrintDC GCC_UNUSED, int errcode GCC_UNUSED)
 {
     MSG msg;
 
@@ -970,7 +971,10 @@ printer_abort_proc(HDC hPrintDC, int errcode)
 
 
 static DIALOG_PROC_RETVAL CALLBACK
-printer_dlg_proc(HWND hDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+printer_dlg_proc(HWND hDlg,
+		 UINT msg,
+		 WPARAM wParam GCC_UNUSED,
+		 LPARAM lParam GCC_UNUSED)
 {
     switch (msg)
     {
@@ -1056,7 +1060,7 @@ winprint_endpage(PRINT_PARAM *pparam)
 
     /* FIXME -- footer is hardwired as page number */
     txtmode    = (GetTextAlign(pd->hDC) & ~TA_LEFT);
-    footbuflen = sprintf(footbuf, "%lu", pparam->pagenum);
+    footbuflen = sprintf(footbuf, "%lu", (ULONG) pparam->pagenum);
     txtmode    = SetTextAlign(pd->hDC, txtmode | TA_CENTER);
     winprint_write(pd->hDC,
 		   (printrect.left + printrect.right) / 2,
@@ -1687,8 +1691,9 @@ winprint_curbuffer(PRINT_PARAM *pparam)
 	{
 	    /* print a single page of output n times */
 
-	    for (i = 0; rc && i < pparam->ncopies && (! printing_aborted); i++)
-	    {
+	    for (i = 0;
+		 rc && i < pparam->ncopies && (! printing_aborted);
+		 i++) {
 		rc = winprint_curbuffer_uncollated(pparam,
 						   curpglp,
 						   &nextpglp,
@@ -1707,7 +1712,7 @@ winprint_curbuffer(PRINT_PARAM *pparam)
 }
 
 /* Build up LOGFONT data structure. */
-void
+static void
 w32_init_logfont(LOGFONT *logfont, FONTSTR_OPTIONS *str_rslts, int height)
 {
     W32_CHAR *facename;
@@ -1833,7 +1838,7 @@ GetHinstance(HWND hwnd)
  * rigorously support this concept (what's the page height? cur window?).
  */
 int
-winprint(int f, int n)
+winprint(int f GCC_UNUSED, int n GCC_UNUSED)
 {
     char            buf[NFILEN + 64];
     DOCINFO         di;
@@ -2138,7 +2143,7 @@ winprint(int f, int n)
 
 
 int
-winpg_setup(int f, int n)
+winpg_setup(int f GCC_UNUSED, int n GCC_UNUSED)
 {
     HWND hwnd;
     int  rc = TRUE, status;
@@ -2243,13 +2248,13 @@ recent_regvalue(int n)
  * coded for maximum speed.
  */
 static int
-delete_recent_files_folder_registry_data(int is_file)
+delete_recent_files_folder_registry_data(int isFile)
 {
     HKEY hkey;
     int  i, maxpaths;
     W32_CHAR *subkey;
 
-    subkey = (is_file) ? REGKEY_RECENT_FILES : REGKEY_RECENT_FLDRS;
+    subkey = (isFile) ? REGKEY_RECENT_FILES : REGKEY_RECENT_FLDRS;
     if (RegOpenKeyEx(HKEY_CURRENT_USER,
 		     subkey,
 		     0,
@@ -2260,7 +2265,7 @@ delete_recent_files_folder_registry_data(int is_file)
 
 	return (TRUE);
     }
-    maxpaths = (is_file) ? MAX_RECENT_FILES : MAX_RECENT_FLDRS;
+    maxpaths = (isFile) ? MAX_RECENT_FILES : MAX_RECENT_FLDRS;
     for (i = 0; i < maxpaths; i++)
     {
 	W32_CHAR *value_name = recent_regvalue(i);
@@ -2273,14 +2278,14 @@ delete_recent_files_folder_registry_data(int is_file)
 
 /* callable from both console vile and winvile */
 int
-purge_recent_files(int f, int n)
+purge_recent_files(int f GCC_UNUSED, int n GCC_UNUSED)
 {
     return (delete_recent_files_folder_registry_data(TRUE));
 }
 
 /* callable from both console vile and winvile */
 int
-purge_recent_folders(int f, int n)
+purge_recent_folders(int f GCC_UNUSED, int n GCC_UNUSED)
 {
     return (delete_recent_files_folder_registry_data(FALSE));
 }
@@ -2354,7 +2359,7 @@ free_mru_list(char **list)
  * must free same.
  */
 static char **
-fetch_mru_list(int is_file, int maxpaths)
+fetch_mru_list(int isFile, int maxpaths)
 {
     HKEY  hkey;
     int   i;
@@ -2362,9 +2367,9 @@ fetch_mru_list(int is_file, int maxpaths)
     char  path[FILENAME_MAX + 1];
     W32_CHAR  *subkey;
 
-    TRACE((T_CALLED "fetch_mru_list(%d,%d)\n", is_file, maxpaths));
+    TRACE((T_CALLED "fetch_mru_list(%d,%d)\n", isFile, maxpaths));
 
-    subkey = (is_file) ? REGKEY_RECENT_FILES : REGKEY_RECENT_FLDRS;
+    subkey = (isFile) ? REGKEY_RECENT_FILES : REGKEY_RECENT_FLDRS;
     if (RegOpenKeyEx(HKEY_CURRENT_USER,
 		     subkey,
 		     0,
@@ -2683,22 +2688,22 @@ edit_recent_file(int mnu_index)
  * front of the list.
  */
 void
-store_recent_file_or_folder(const char *path, int is_file)
+store_recent_file_or_folder(const char *path, int isFile)
 {
     char *newlist[MAX_RECENT_FILES+MAX_RECENT_FLDRS + 1]; /* overdim'd */
     char **oldlist;
-    W32_CHAR *subkey = (is_file) ? REGKEY_RECENT_FILES : REGKEY_RECENT_FLDRS;
+    W32_CHAR *subkey = (isFile) ? REGKEY_RECENT_FILES : REGKEY_RECENT_FLDRS;
     char **listp;
     HKEY hkey;
     int  i, j, maxpaths;
 
-    TRACE((T_CALLED "store_recent_file_or_folder(%s, %d)\n", path, is_file));
+    TRACE((T_CALLED "store_recent_file_or_folder(%s, %d)\n", path, isFile));
 
-    maxpaths = global_g_val((is_file) ? GVAL_RECENT_FILES : GVAL_RECENT_FLDRS);
+    maxpaths = global_g_val((isFile) ? GVAL_RECENT_FILES : GVAL_RECENT_FLDRS);
     if (maxpaths == 0) {
 	returnVoid();   /* feature disabled */
     /* read all existing MRU data into dynamic array of strings */
-    } else if ((oldlist = fetch_mru_list(is_file, maxpaths)) == NULL) {
+    } else if ((oldlist = fetch_mru_list(isFile, maxpaths)) == NULL) {
 	/* assume no MRU data -- degenerate case */
 
 	if (RegCreateKeyEx(HKEY_CURRENT_USER,
@@ -2733,7 +2738,9 @@ store_recent_file_or_folder(const char *path, int is_file)
 	/* ----------- do some actual work -> construct new list -------- */
 
 	newlist[0] = (char *) path;
-	for (i = 0, j = 1, listp = oldlist; *listp && i < maxpaths; i++, listp++) {
+	for (i = 0, j = 1, listp = oldlist;
+	     *listp && i < maxpaths;
+	     i++, listp++) {
 	    if (stricmp(*listp, path) != 0) {
 		/* don't dup "path" from oldMRU */
 
@@ -2750,7 +2757,9 @@ store_recent_file_or_folder(const char *path, int is_file)
 	    /* what? */
 	    disp_win32_error(W32_SYS_ERROR, winvile_hwnd());
 	} else {
-	    for (i = 0, listp = newlist; *listp && i < maxpaths; i++, listp++) {
+	    for (i = 0, listp = newlist;
+		 *listp && i < maxpaths;
+		 i++, listp++) {
 		char value_name[32];
 		sprintf(value_name, RECENT_REGVALUE_FMT, i);
 		TRACE(("...store %d -> %s\n", i, *listp));

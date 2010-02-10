@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.699 2010/02/07 21:41:28 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.700 2010/02/10 10:53:20 tom Exp $
  *
  */
 
@@ -141,7 +141,7 @@ extern int tb_wcs_width(TBUFF *text);
 
 #define CTypeOf(ch)         (b_is_utfXX(curbp) ? vl_ctype_bits(ch,TRUE) : vlCTYPE(ch))
 #define HasCType(type,ch)   ((CTypeOf(ch) & type) != 0)
-#define CharAtDot()         (b_is_utfXX(curbp) ? char_at_mark(DOT) : CharOf(char_at(DOT)))
+#define CharAtDot()         char_at_mark(DOT)
 #define BytesAt(lp,off)     (b_is_utfXX(curbp) ? bytes_at(lp,off) : 1)
 #define BytesBefore(lp,off) (b_is_utfXX(curbp) ? bytes_before(lp,off) : (off)!=0)
 #define str_columns(s)      str_wcs_width(s)
@@ -156,7 +156,7 @@ extern int tb_wcs_width(TBUFF *text);
 
 #define CTypeOf(ch)         vlCTYPE(ch)
 #define HasCType(type,ch)   ((CTypeOf(ch) & type) != 0)
-#define CharAtDot()         CharOf(char_at(DOT))
+#define CharAtDot()         char_at_mark(DOT)
 #define BytesAt(lp,off) 1
 #define BytesBefore(lp,off) ((off)!=0)
 #define str_columns(s)      strlen(s)
