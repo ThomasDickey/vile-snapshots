@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.700 2010/02/10 10:53:20 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.701 2010/02/10 23:14:28 tom Exp $
  *
  */
 
@@ -523,7 +523,7 @@ extern char *mkupper (char *str);
 #endif
 
 #if OPT_COLOR
-extern void set_ctrans (const char *value);
+extern int set_ctrans (const char *value);
 #endif
 
 #if OPT_MACRO_ARGS
