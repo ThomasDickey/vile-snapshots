@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/w32vile.h,v 1.7 2009/02/23 00:27:44 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32vile.h,v 1.8 2010/02/10 15:06:13 tom Exp $
  *
  * Do the pragmas in a separate file to avoid contaminating portable code.
  */
@@ -13,6 +13,7 @@
 #pragma warning (disable : 4214) /* bit field types other than int */
 #pragma warning (disable : 4310) /* cast truncates constant value */
 #pragma warning (disable : 4514) /* unreferenced inline function has been removed */
+#pragma warning (disable : 4996) /* This function or variable may be unsafe. ... */
 #endif
 
 #include <windows.h>

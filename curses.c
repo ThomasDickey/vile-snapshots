@@ -1,7 +1,7 @@
 /*
  * A terminal driver using the curses library
  *
- * $Header: /users/source/archives/vile.vcs/RCS/curses.c,v 1.45 2009/12/09 00:57:59 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/curses.c,v 1.47 2010/02/10 23:36:35 tom Exp $
  */
 
 #include "estruct.h"
@@ -35,6 +35,19 @@ static char tc_parsed[TCAPSLEN];
 static const char ANSI_palette[] =
 {"0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15"};
 
+#ifdef HAVE_USE_DEFAULT_COLORS
+#define DefaultColor(dft) -1
+#define DEFAULT_FG        -1
+#define DEFAULT_BG        -1
+#else
+#define DefaultColor(dft) dft
+#define DEFAULT_FG        COLOR_WHITE
+#define DEFAULT_BG        COLOR_BLACK
+#endif
+
+#define	Num2Color(n,dft)  ((n >= 0) ? ctrans[(n) & (ncolors-1)] : DefaultColor(dft))
+#define Num2Fore(n)       Num2Color(n, DEFAULT_FG)
+#define Num2Back(n)       Num2Color(n, DEFAULT_BG)
 #endif /* OPT_COLOR */
 
 #if SYS_OS2_EMX
@@ -49,6 +62,71 @@ static int in_screen = FALSE;
 static int can_color = FALSE;
 
 #include "xtermkeys.h"
+
+#if OPT_COLOR
+
+static int used_bcolor = -999;
+
+/*
+ * Compute a color pair number given foreground/background values.
+ *
+ * We use multiple foreground (text) colors on a given background color,
+ * which should leave enough room in the color-pairs array to allow for
+ * default colors as well.
+ *
+ * Color pair 0 in curses is special; it corresponds to default foreground
+ * and background colors.
+ */
+static int
+compute_pair(int fg, int bg, int updateit)
+{
+    int pair;
+    int map_fg = DEFAULT_FG;
+    int map_bg = DEFAULT_BG;
+
+    if (is_default(fg) && is_default(bg)) {
+	pair = 0;
+	fg = -1;
+	bg = -1;
+    } else if (is_default(fg)) {
+	pair = 1;
+	fg = -1;
+	map_bg = Num2Back(bg);
+    } else {
+	if (is_default(bg))
+	    bg = -1;
+	else
+	    map_bg = Num2Back(bg);
+	map_fg = Num2Fore(fg);
+	pair = 2 + fg;
+    }
+
+    if (updateit) {
+	TRACE(("init_pair %2d fg %2d, bg %2d -> %2d, %2d\n",
+	       pair, fg, bg, map_fg, map_bg));
+	init_pair(pair, map_fg, map_bg);
+    }
+    return pair;
+}
+
+/*
+ * Initialize all color pairs when the palette is (re)initialized.
+ */
+static void
+reinitialize_colors(void)
+{
+    short fg;
+
+    TRACE((T_CALLED "reinitialize_colors\n"));
+
+    for (fg = -1; fg < ncolors; ++fg) {
+	(void) compute_pair(fg, gbcolor, TRUE);
+    }
+
+    used_bcolor = gbcolor;
+    returnVoid();
+}
+#endif /* OPT_COLOR */
 
 static void
 curs_set_encoding(ENC_CHOICES code)
@@ -88,7 +166,6 @@ curs_initialize(void)
     char *p = tc_parsed;
 #endif
     unsigned i;
-    int j;
 
     TRACE((T_CALLED "curs_open()\n"));
 
@@ -160,9 +237,6 @@ curs_initialize(void)
 	use_default_colors();
 #endif
 	set_colors(COLORS);
-	for (j = 1; j < COLOR_PAIRS; j++) {
-	    init_pair((short) j, (short) (j / COLORS), (short) (j % COLORS));
-	}
     } else {
 	set_colors(2);		/* white/black */
     }
@@ -367,35 +441,11 @@ curs_scroll(int from, int to, int howmany)
 static void
 set_bkgd_colors(int fg, int bg)
 {
-    int pair;
-
-#ifdef HAVE_USE_DEFAULT_COLORS
-    /*
-     * ncurses supports the use of default colors, which we can specify
-     * in the init_pair() function at the expense of specifying all of the
-     * allowable explicit color combinations.
-     */
-    if (is_default(fg) && is_default(bg)) {
-	pair = 0;
-	fg = -1;
-	bg = -1;
-    } else {
-	if (is_default(fg)) {
-	    pair = bg;
-	    fg = -1;
-	} else if (is_default(bg)) {
-	    pair = fg * COLORS;
-	    bg = -1;
-	} else {
-	    pair = fg * COLORS + bg;
-	}
+    if (used_bcolor != gbcolor) {
+	TRACE(("...bcolor changed from %d to %d\n", used_bcolor, gbcolor));
+	reinitialize_colors();
     }
-    if (init_pair((short) pair, (short) fg, (short) bg) == ERR)
-	return;
-#else
-    pair = fg * COLORS + bg;
-#endif
-    bkgdset((chtype) (COLOR_PAIR(pair) | ' '));
+    bkgdset((chtype) (COLOR_PAIR(compute_pair(fg, bg, TRUE)) | ' '));
 }
 
 static void
@@ -421,7 +471,10 @@ curs_bcol(int color)
 static void
 curs_spal(const char *thePalette)
 {				/* reset the palette registers */
-    set_ctrans(thePalette);
+    if (set_ctrans(thePalette)) {
+	TRACE(("palette changed\n"));
+	reinitialize_colors();
+    }
 }
 #endif /* OPT_COLOR */
 
@@ -439,22 +492,11 @@ curs_attr(UINT attr)
 	result |= A_REVERSE;
 #if OPT_COLOR
     if (can_color) {
-	int pair = PAIR_NUMBER(getattrs(stdscr));
-	short fg, bg;
+	int fg;
+
 	if (attr & VACOLOR) {
-	    fg = (short) (VCOLORNUM(attr) % ncolors);
-	    bg = (short) (gbcolor);
-#ifdef HAVE_USE_DEFAULT_COLORS
-	    if (is_default(bg)) {
-		pair = fg * COLORS;
-		init_pair((short) pair, fg, -1);
-	    } else {
-		pair = fg * COLORS + bg;
-	    }
-#else
-	    pair = fg * COLORS + bg;
-#endif
-	    result |= COLOR_PAIR(pair);
+	    fg = (VCOLORNUM(attr) % ncolors);
+	    result |= COLOR_PAIR(compute_pair(fg, gbcolor, FALSE));
 	}
     }
 #endif

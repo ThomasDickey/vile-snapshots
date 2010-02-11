@@ -15,7 +15,7 @@
  * by Tom Dickey, 1993.    -pgf
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/mktbls.c,v 1.164 2010/02/05 10:36:25 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/mktbls.c,v 1.166 2010/02/10 23:44:52 tom Exp $
  *
  */
 
@@ -55,6 +55,10 @@
 # endif
 
 #endif /* !defined(HAVE_CONFIG_H) */
+
+#if defined(WIN32)
+#include "w32vile.h"
+#endif
 
 #ifndef SYS_VMS
 #define SYS_VMS 0

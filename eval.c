@@ -2,7 +2,7 @@
  *	eval.c -- function and variable evaluation
  *	original by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.422 2010/02/09 00:46:05 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.423 2010/02/10 23:15:10 tom Exp $
  *
  */
 
@@ -2050,9 +2050,10 @@ skip_space_tab(char *src)
 }
 
 #if OPT_COLOR
-void
+int
 set_ctrans(const char *thePalette)
 {
+    int changed = 0;
     int n = 0, value;
     char *next;
 
@@ -2065,7 +2066,10 @@ set_ctrans(const char *thePalette)
 	    if (next == thePalette)
 		break;
 	    thePalette = next;
-	    ctrans[n] = value;
+	    if (ctrans[n] != value) {
+		ctrans[n] = value;
+		++changed;
+	    }
 	    if (++n >= NCOLORS)
 		break;
 	}
@@ -2077,6 +2081,7 @@ set_ctrans(const char *thePalette)
 	}
 #endif
     }
+    return changed;
 }
 #endif
 
