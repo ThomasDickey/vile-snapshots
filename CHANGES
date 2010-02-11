@@ -1,6 +1,6 @@
 Changes for vile 9.8 (released ??? ??? ?? ????)
 
- 20100210 (zb)
+ 20100211 (zb)
 	> Tom Dickey:
 	+ modify curses driver to support color-schemes.
 	+ modify vl_ctype2tbuff() to handle wide-characters.
