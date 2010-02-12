@@ -2,6 +2,8 @@ Changes for vile 9.8 (released ??? ??? ?? ????)
 
  20100212 (zc)
 	> Tom Dickey:
+	+ make kill_response() work with wide-characters (report by Ramil
+	  Farkhshatov).
 	+ revert a change in word.c from 9.7zb which broke wide-character use
 	  of format-til (report by Ramil Farkhshatov).
 

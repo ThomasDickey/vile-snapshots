@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.701 2010/02/10 23:14:28 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.702 2010/02/12 10:31:07 tom Exp $
  *
  */
 
@@ -136,6 +136,8 @@ extern int count_bytes(LINE *lp, int off, int chars);
 extern int count_chars(LINE *lp, int off, int bytes);
 extern int mb_cellwidth(WINDOW *wp, const char *text, int limit);
 
+extern int tb_bytes_before(TBUFF *text, int off);
+
 extern int str_wcs_width(const char *text);
 extern int tb_wcs_width(TBUFF *text);
 
@@ -144,6 +146,7 @@ extern int tb_wcs_width(TBUFF *text);
 #define CharAtDot()         char_at_mark(DOT)
 #define BytesAt(lp,off)     (b_is_utfXX(curbp) ? bytes_at(lp,off) : 1)
 #define BytesBefore(lp,off) (b_is_utfXX(curbp) ? bytes_before(lp,off) : (off)!=0)
+
 #define str_columns(s)      str_wcs_width(s)
 #define tb_columns(s)       tb_wcs_width(s)
 
@@ -159,6 +162,9 @@ extern int tb_wcs_width(TBUFF *text);
 #define CharAtDot()         char_at_mark(DOT)
 #define BytesAt(lp,off) 1
 #define BytesBefore(lp,off) ((off)!=0)
+
+#define tb_bytes_before(s,n) 1
+
 #define str_columns(s)      strlen(s)
 #define tb_columns(s)       tb_length(s)
 
