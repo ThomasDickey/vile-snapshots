@@ -1,5 +1,10 @@
 Changes for vile 9.8 (released ??? ??? ?? ????)
 
+ 20100212 (zc)
+	> Tom Dickey:
+	+ revert a change in word.c from 9.7zb which broke wide-character use
+	  of format-til (report by Ramil Farkhshatov).
+
  20100211 (zb)
 	> Tom Dickey:
 	+ modify curses driver to support color-schemes.
