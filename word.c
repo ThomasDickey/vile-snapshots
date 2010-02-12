@@ -3,7 +3,7 @@
  * paragraph at a time.  There are all sorts of word mode commands.  If I
  * do any sentence mode commands, they are likely to be put in this file.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/word.c,v 1.100 2010/02/07 22:33:35 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/word.c,v 1.101 2010/02/12 09:57:34 tom Exp $
  *
  */
 
@@ -77,7 +77,7 @@ wrapword(int f, int n)
 	    /* Back up until we aren't in a word, make sure there is a
 	     * break in the line
 	     */
-	    while (c = CharAtDot(), !isSpace(c)) {
+	    while (c = char_at(DOT), !isSpace(c)) {
 		cnt++;
 		if (!backchar(FALSE, 1)) {
 		    rc = FALSE;
@@ -554,7 +554,7 @@ do_formatting(TBUFF **wp, TBUFF **cp)
 	tb_init(cp, EOS);
 	sentence = FALSE;
 
-	c = CharAtDot();
+	c = char_at(DOT);
 	is_comment = FALSE;
 	if ((plength = comment_prefix()) >= 0) {
 	    is_comment = TRUE;
@@ -624,7 +624,7 @@ do_formatting(TBUFF **wp, TBUFF **cp)
 		DOT.l = lback(DOT.l);
 		at_nl = TRUE;
 	    } else {
-		c = CharAtDot();
+		c = char_at(DOT);
 		if (at_nl && ((plength-- > 0) || isSpace(c)))
 		    c = ' ';
 		else
