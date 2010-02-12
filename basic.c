@@ -5,7 +5,7 @@
  * functions that adjust the top line in the window and invalidate the
  * framing, are hard.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/basic.c,v 1.164 2010/02/06 00:10:33 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/basic.c,v 1.165 2010/02/12 10:41:40 tom Exp $
  *
  */
 
@@ -18,20 +18,23 @@
  * Replace "DOT.o++".
  */
 #if OPT_MULTIBYTE
+#define lp_bytes_at0(lp, off) bytes_at0(lvalue(lp), llength(lp), off)
+#define tb_bytes_at0(tb, off) bytes_at0(tb_values(tb), tb_length(tb), off)
+
 static int
-bytes_at0(LINE *lp, int off)
+bytes_at0(const char *value, int length, int off)
 {
-    return ((llength(lp) > off)
+    return ((length > off)
 	    ? vl_conv_to_utf32((UINT *) 0,
-			       lvalue(lp) + off,
-			       llength(lp) - off)
+			       value + off,
+			       length - off)
 	    : 0);
 }
 
 int
 bytes_at(LINE *lp, int off)
 {
-    int rc = bytes_at0(lp, off);
+    int rc = lp_bytes_at0(lp, off);
     return rc ? rc : 1;
 }
 
@@ -48,7 +51,26 @@ bytes_before(LINE *lp, int off)
 
     while (off-- > 0) {
 	++rc;
-	if (bytes_at0(lp, off) == rc) {
+	if (lp_bytes_at0(lp, off) == rc) {
+	    legal = TRUE;
+	    break;
+	}
+    }
+    if (!legal && first)
+	rc = 1;
+    return rc;
+}
+
+int
+tb_bytes_before(TBUFF *tb, int off)
+{
+    int rc = 0;
+    int first = off;
+    int legal = FALSE;
+
+    while (off-- > 0) {
+	++rc;
+	if (tb_bytes_at0(tb, off) == rc) {
 	    legal = TRUE;
 	    break;
 	}
