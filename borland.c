@@ -9,7 +9,7 @@
  * Note: Visual flashes are not yet supported.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/borland.c,v 1.40 2009/12/09 01:19:12 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/borland.c,v 1.41 2010/02/14 18:40:30 tom Exp $
  *
  */
 
@@ -406,20 +406,26 @@ borbeep(void)
 static void
 boropen(void)
 {
+    static int already_open;
+
     int i;
 
 #if OPT_LOCALE
     vl_open_mbterm();
 #endif
 
-    set_palette(initpalettestr);
-    setup_colors();
+    if (!already_open) {
+	already_open = TRUE;
 
-    if (!borcres(current_res_name))
-	(void) scinit(-1);
-    ttopen();
-    for (i = TABLESIZE(keyseqs) - 1; i >= 0; i--)
-	addtosysmap(keyseqs[i].seq, 2, keyseqs[i].code);
+	set_palette(initpalettestr);
+	setup_colors();
+
+	if (!borcres(current_res_name))
+	    (void) scinit(-1);
+	ttopen();
+	for (i = TABLESIZE(keyseqs) - 1; i >= 0; i--)
+	    addtosysmap(keyseqs[i].seq, 2, keyseqs[i].code);
+    }
 }
 
 static void

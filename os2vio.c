@@ -3,7 +3,7 @@
  * Modified from a really old version of "borland.c" (before the VIO
  * stuff went in there.)
  *
- * $Header: /users/source/archives/vile.vcs/RCS/os2vio.c,v 1.37 2009/12/09 01:15:39 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/os2vio.c,v 1.38 2010/02/14 19:04:43 tom Exp $
  */
 
 #include "estruct.h"
@@ -409,52 +409,58 @@ vio_beep(void)
 static void
 vio_open(void)
 {
+    static int already_open;
+
 #if OPT_COLOR
     PTIB ptib;
     PPIB ppib;
 #endif
     int i;
 
-    /* Initialize output buffer. */
-    TextRow = 0;
-    TextColumn = 0;
-    TextOut = TextBuf;
-    TextFree = TEXT_BUFFER_SIZE;
+    if (!already_open) {
+	already_open = TRUE;
 
-    for (i = 0; i < sizeof(VIO_KeyMap) / sizeof(VIO_KeyMap[0]); i++) {
-	addtosysmap(VIO_KeyMap[i].seq, 2, VIO_KeyMap[i].code);
-    }
+	/* Initialize output buffer. */
+	TextRow = 0;
+	TextColumn = 0;
+	TextOut = TextBuf;
+	TextFree = TEXT_BUFFER_SIZE;
+
+	for (i = 0; i < sizeof(VIO_KeyMap) / sizeof(VIO_KeyMap[0]); i++) {
+	    addtosysmap(VIO_KeyMap[i].seq, 2, VIO_KeyMap[i].code);
+	}
 
 #if OPT_COLOR
-    blinking = 1;		/* nonzero if "bright" background would blink */
-    DosGetInfoBlocks(&ptib, &ppib);
-    TRACE(("DosGetInfoBlocks pib_ultype = %d\n", ppib->pib_ultype));
-    /* 0=FS, 1=DOS, 2=VIO, 3=PM */
-    if (ppib->pib_ultype == 2) {
-	blinking = 0;		/* VIO won't blink */
-    } else if (ppib->pib_ultype == 0) {
-	VIOINTENSITY intense;
-	intense.cb = sizeof(intense);
-	intense.type = 2;
-	intense.fs = 1;		/* ask for bright colors, not blink */
-	if (VioSetState(&intense, 0) == 0) {
-	    blinking = 0;
-	    TRACE(("vio_open VioSetState\n"));
+	blinking = 1;		/* nonzero if "bright" background would blink */
+	DosGetInfoBlocks(&ptib, &ppib);
+	TRACE(("DosGetInfoBlocks pib_ultype = %d\n", ppib->pib_ultype));
+	/* 0=FS, 1=DOS, 2=VIO, 3=PM */
+	if (ppib->pib_ultype == 2) {
+	    blinking = 0;	/* VIO won't blink */
+	} else if (ppib->pib_ultype == 0) {
+	    VIOINTENSITY intense;
+	    intense.cb = sizeof(intense);
+	    intense.type = 2;
+	    intense.fs = 1;	/* ask for bright colors, not blink */
+	    if (VioSetState(&intense, 0) == 0) {
+		blinking = 0;
+		TRACE(("vio_open VioSetState\n"));
+	    }
 	}
-    }
-    set_palette(initpalettestr);
-    vio_fcol(gfcolor);
-    vio_bcol(gbcolor);
+	set_palette(initpalettestr);
+	vio_fcol(gfcolor);
+	vio_bcol(gbcolor);
 #endif
 
 #if CURSOR_SHAPE
-    set_cursor(1);
+	set_cursor(1);
 #endif
 
-    if (!vio_cres(current_res_name))
-	(void) scinit(-1);
-    fprintf(stderr, "Press 'Q' to exit");
-    fflush(stderr);
+	if (!vio_cres(current_res_name))
+	    (void) scinit(-1);
+	fprintf(stderr, "Press 'Q' to exit");
+	fflush(stderr);
+    }
 }
 
 static void

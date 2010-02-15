@@ -14,7 +14,7 @@
  *   -- support wide and narrow screen resolutions,
  *   -- support visual bells.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/vmsvt.c,v 1.66 2009/12/09 01:15:39 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/vmsvt.c,v 1.68 2010/02/14 18:43:48 tom Exp $
  *
  */
 
@@ -48,7 +48,7 @@ static void vmsvt_scroll_reg(int from, int to, int n);
 static void vmsvt_scroll_delins(int from, int to, int n);
 
 /* SMG stuff (just like termcap) */
-static int initialized;
+static int already_open;
 static int termtype;
 static char *tc_SO;		/* begin standout (reverse) */
 static char *tc_SE;		/* end standout (reverse) */
@@ -226,7 +226,7 @@ vmsvt_tgoto(request_code, parm1, parm2)
 
     register int i;
 
-    if (!initialized) {
+    if (!already_open) {
 	printf("\n");
 	return;
     }
@@ -491,96 +491,98 @@ vmsvt_open(void)
     int i, keyseq_tablesize;
     struct vmskeyseqs *keyseqs;
 
-    get_terminal_type();
-    if (tc.t_type == TT$_UNKNOWN) {
-	printf("Terminal type is unknown!\n");
-	printf("Set your terminal type using $ SET TERMINAL/INQUIRE\n");
-	tidy_exit(3);
+    if (!already_open) {
+	already_open = TRUE;
+
+	get_terminal_type();
+	if (tc.t_type == TT$_UNKNOWN) {
+	    printf("Terminal type is unknown!\n");
+	    printf("Set your terminal type using $ SET TERMINAL/INQUIRE\n");
+	    tidy_exit(3);
+	}
+	if (tc.t_type != TT$_VT52) {
+	    keyseqs = vt100seqs;
+	    keyseq_tablesize = TABLESIZE(vt100seqs);
+	} else {
+	    keyseqs = vt52seqs;
+	    keyseq_tablesize = TABLESIZE(vt52seqs);
+	}
+
+	/* Access the system terminal definition table for the          */
+	/* information of the terminal type returned by IO$_SENSEMODE   */
+	if (!$VMS_STATUS_SUCCESS(smg$init_term_table_by_type(&tc.t_type, &termtype)))
+	    return;
+
+	/* Set sizes */
+	term.rows = ((UINT) tc.t_mandl >> 24);
+	term.cols = tc.t_width;
+
+	if (term.maxrows < term.rows)
+	    term.maxrows = term.rows;
+
+	if (term.maxcols < term.cols)
+	    term.maxcols = term.cols;
+
+	cache_capabilities();
+
+	revexist = (tc_SO != NULL && tc_SE != NULL);
+	eolexist = erase_whole_display != NULL;
+
+	/*
+	 * I tried 'vmsgetstr()' for a VT100 terminal and it had no codes
+	 * for insert_line or for delete_line.  (Have to work up a test for
+	 * that) - TD
+	 */
+
+	if (scroll_regn && scroll_back) {
+	    if (scroll_forw == NULL)	/* assume '\n' scrolls forward */
+		scroll_forw = "\n";
+	    term.scroll = vmsvt_scroll_reg;
+	} else if (delete_line && insert_line)
+	    term.scroll = vmsvt_scroll_delins;
+	else
+	    term.scroll = nullterm_scroll;
+
+	/* Set resolution */
+	(void) strcpy(screen_desc,
+		      (term.cols == narrow_cols)
+		      ? "NORMAL"
+		      : "WIDE");
+
+	/* Open terminal I/O drivers */
+	status = sys$assign(&odsc, &iochan, 0, 0);
+	if (status != SS$_NORMAL)
+	    tidy_exit(status);
+	status = sys$qiow(EFN, iochan, IO$_SENSEMODE, &iosb, 0, 0,
+			  oldmode, sizeof(oldmode), 0, 0, 0, 0);
+	if (status != SS$_NORMAL
+	    || iosb.status != SS$_NORMAL)
+	    tidy_exit(status);
+	newmode[0] = oldmode[0];
+	newmode[1] = oldmode[1];
+	newmode[1] |= TT$M_NOBRDCST;	/* turn on no-broadcast */
+	newmode[1] &= ~TT$M_TTSYNC;
+	newmode[1] &= ~TT$M_ESCAPE;	/* turn off escape-processing */
+	newmode[1] &= ~TT$M_HOSTSYNC;
+	newmode[1] &= ~TT$M_NOTYPEAHD;	/* turn off no-typeahead */
+	newmode[2] = oldmode[2];
+	newmode[2] |= TT2$M_PASTHRU;	/* turn on pass-through */
+	newmode[2] |= TT2$M_ALTYPEAHD;	/* turn on big typeahead buffer */
+	status = sys$qiow(EFN, iochan, IO$_SETMODE, &iosb, 0, 0,
+			  newmode, sizeof(newmode), 0, 0, 0, 0);
+	if (status != SS$_NORMAL
+	    || iosb.status != SS$_NORMAL)
+	    tidy_exit(status);
+	term.rows = (newmode[1] >> 24);
+	term.cols = newmode[0] >> 16;
+
+	/* make sure backspace is bound to backspace */
+	asciitbl[backspc] = &f_backchar_to_bol;
+
+	/* Set predefined keys */
+	for (i = keyseq_tablesize; i--;)
+	    addtosysmap(keyseqs[i].seq, strlen(keyseqs[i].seq), keyseqs[i].code);
     }
-    if (tc.t_type != TT$_VT52) {
-	keyseqs = vt100seqs;
-	keyseq_tablesize = TABLESIZE(vt100seqs);
-    } else {
-	keyseqs = vt52seqs;
-	keyseq_tablesize = TABLESIZE(vt52seqs);
-    }
-
-    /* Access the system terminal definition table for the          */
-    /* information of the terminal type returned by IO$_SENSEMODE   */
-    if (!$VMS_STATUS_SUCCESS(smg$init_term_table_by_type(&tc.t_type, &termtype)))
-	return;
-
-    /* Set sizes */
-    term.rows = ((UINT) tc.t_mandl >> 24);
-    term.cols = tc.t_width;
-
-    if (term.maxrows < term.rows)
-	term.maxrows = term.rows;
-
-    if (term.maxcols < term.cols)
-	term.maxcols = term.cols;
-
-    cache_capabilities();
-
-    revexist = (tc_SO != NULL && tc_SE != NULL);
-    eolexist = erase_whole_display != NULL;
-
-    /*
-     * I tried 'vmsgetstr()' for a VT100 terminal and it had no codes
-     * for insert_line or for delete_line.  (Have to work up a test for
-     * that) - TD
-     */
-
-    if (scroll_regn && scroll_back) {
-	if (scroll_forw == NULL)	/* assume '\n' scrolls forward */
-	    scroll_forw = "\n";
-	term.scroll = vmsvt_scroll_reg;
-    } else if (delete_line && insert_line)
-	term.scroll = vmsvt_scroll_delins;
-    else
-	term.scroll = nullterm_scroll;
-
-    /* Set resolution */
-    (void) strcpy(screen_desc,
-		  (term.cols == narrow_cols)
-		  ? "NORMAL"
-		  : "WIDE");
-
-    /* Open terminal I/O drivers */
-    status = sys$assign(&odsc, &iochan, 0, 0);
-    if (status != SS$_NORMAL)
-	tidy_exit(status);
-    status = sys$qiow(EFN, iochan, IO$_SENSEMODE, &iosb, 0, 0,
-		      oldmode, sizeof(oldmode), 0, 0, 0, 0);
-    if (status != SS$_NORMAL
-	|| iosb.status != SS$_NORMAL)
-	tidy_exit(status);
-    newmode[0] = oldmode[0];
-    newmode[1] = oldmode[1];
-    newmode[1] |= TT$M_NOBRDCST;	/* turn on no-broadcast */
-    newmode[1] &= ~TT$M_TTSYNC;
-    newmode[1] &= ~TT$M_ESCAPE;	/* turn off escape-processing */
-    newmode[1] &= ~TT$M_HOSTSYNC;
-    newmode[1] &= ~TT$M_NOTYPEAHD;	/* turn off no-typeahead */
-    newmode[2] = oldmode[2];
-    newmode[2] |= TT2$M_PASTHRU;	/* turn on pass-through */
-    newmode[2] |= TT2$M_ALTYPEAHD;	/* turn on big typeahead buffer */
-    status = sys$qiow(EFN, iochan, IO$_SETMODE, &iosb, 0, 0,
-		      newmode, sizeof(newmode), 0, 0, 0, 0);
-    if (status != SS$_NORMAL
-	|| iosb.status != SS$_NORMAL)
-	tidy_exit(status);
-    term.rows = (newmode[1] >> 24);
-    term.cols = newmode[0] >> 16;
-
-    /* make sure backspace is bound to backspace */
-    asciitbl[backspc] = &f_backchar_to_bol;
-
-    /* Set predefined keys */
-    for (i = keyseq_tablesize; i--;)
-	addtosysmap(keyseqs[i].seq, strlen(keyseqs[i].seq), keyseqs[i].code);
-
-    initialized = TRUE;
 }
 
 /* copied/adapted from 'tcap.c' 19-apr-1993 dickey@software.org */
@@ -690,29 +692,32 @@ vmsvt_cres(const char *res)
 static void
 vmsvt_close(void)
 {
-    if (tc.t_type != TT$_VT52) {
+    if (already_open) {
 	/*
-	 * Restore terminal width to previous state (if necessary) and then
-	 * cleanup as usual.
+	 * Note: this code used to check for errors when closing the output,
+	 * but it didn't work properly (left the screen set in 1-line mode)
+	 * when I was running as system manager, so I took out the error
+	 * checking -- T.Dickey 94/7/15.
 	 */
-	if (tc.t_width != term.cols)
-	    vmsvt_cres((tc.t_width == narrow_cols) ? "NORMAL" : "WIDE");
-    }
-    /*
-     * Note: this code used to check for errors when closing the output,
-     * but it didn't work properly (left the screen set in 1-line mode)
-     * when I was running as system manager, so I took out the error
-     * checking -- T.Dickey 94/7/15.
-     */
-    int status;
-    QIO_SB iosb;
+	int status;
+	QIO_SB iosb;
 
-    vmsvt_flush();
-    status = sys$qiow(EFN, iochan, IO$_SETMODE, &iosb, 0, 0,
-		      oldmode, sizeof(oldmode), 0, 0, 0, 0);
-    if (status == SS$_IVCHAN)
-	return;			/* already closed it */
-    (void) sys$dassgn(iochan);
+	if (tc.t_type != TT$_VT52) {
+	    /*
+	     * Restore terminal width to previous state (if necessary) and then
+	     * cleanup as usual.
+	     */
+	    if (tc.t_width != term.cols)
+		vmsvt_cres((tc.t_width == narrow_cols) ? "NORMAL" : "WIDE");
+	}
+	vmsvt_flush();
+	status = sys$qiow(EFN, iochan, IO$_SETMODE, &iosb, 0, 0,
+			  oldmode, sizeof(oldmode), 0, 0, 0, 0);
+	if (status != SS$_IVCHAN)
+	    (void) sys$dassgn(iochan);
+
+	already_open = FALSE;
+    }
 }
 
 /***

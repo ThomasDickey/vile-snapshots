@@ -1,7 +1,9 @@
 Changes for vile 9.8 (released ??? ??? ?? ????)
 
- 20100212 (zc)
+ 20100214 (zc)
 	> Tom Dickey:
+	+ reopen terminal in CleanAfterPipe() so that multibyte-output still
+	  works after reading into a buffer from a shell command.
 	+ make kill_response() work with wide-characters (report by Ramil
 	  Farkhshatov).
 	+ revert a change in word.c from 9.7zb which broke wide-character use

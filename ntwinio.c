@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 screen API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.193 2010/01/08 01:54:12 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.194 2010/02/14 18:43:03 tom Exp $
  * Written by T.E.Dickey for vile (october 1997).
  * -- improvements by Clark Morgan (see w32cbrd.c, w32pipe.c).
  */
@@ -2025,11 +2025,17 @@ ntwinio_get_encoding(void)
 static void
 ntwinio_open(void)
 {
+    static int already_open = FALSE;
+
     TRACE(("ntwinio_open\n"));
 
-    set_colors(NCOLORS);
-    set_palette(initpalettestr);
-    ResetRGBPalette(FALSE, 1);
+    if (!already_open) {
+	already_open = TRUE;
+
+	set_colors(NCOLORS);
+	set_palette(initpalettestr);
+	ResetRGBPalette(FALSE, 1);
+    }
 }
 
 static int old_title_set = 0;
