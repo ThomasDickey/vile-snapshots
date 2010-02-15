@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.702 2010/02/12 10:31:07 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.703 2010/02/12 11:45:57 tom Exp $
  *
  */
 
@@ -150,6 +150,8 @@ extern int tb_wcs_width(TBUFF *text);
 #define str_columns(s)      str_wcs_width(s)
 #define tb_columns(s)       tb_wcs_width(s)
 
+#define TbBytesBefore(tb,off) (b_is_utfXX(curbp) ? tb_bytes_before(tb,off) : (off)!=0)
+
 #else
 
 #define chars_to_eol(lp,off) bytes_to_bol(lp,off)
@@ -167,6 +169,8 @@ extern int tb_wcs_width(TBUFF *text);
 
 #define str_columns(s)      strlen(s)
 #define tb_columns(s)       tb_length(s)
+
+#define TbBytesBefore(tb,off) ((off)!=0)
 
 #endif
 

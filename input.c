@@ -44,7 +44,7 @@
  *	tgetc_avail()     true if a key is avail from tgetc() or below.
  *	keystroke_avail() true if a key is avail from keystroke() or below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.331 2010/02/12 10:42:23 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.332 2010/02/12 11:45:38 tom Exp $
  *
  */
 
@@ -1247,7 +1247,7 @@ kbd_kill_response(TBUFF *buffer, size_t *position, int c)
     if (buf != 0) {
 	tmp = tb_copy(&tmp, buffer);
 	while (cpos > 0) {
-	    cpos -= tb_bytes_before(tmp, cpos);
+	    cpos -= TbBytesBefore(tmp, cpos);
 	    kbd_erase();
 	    if (c == wkillc) {
 		if (!isSpace(buf[cpos])) {

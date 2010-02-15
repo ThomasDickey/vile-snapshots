@@ -1,7 +1,7 @@
 /*
  * debugging support -- tom dickey.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.100 2009/12/22 00:41:31 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.101 2010/02/14 15:48:20 tom Exp $
  *
  */
 
@@ -946,9 +946,10 @@ void
 trace_buffer(BUFFER *bp)
 {
     LINE *lp;
-    Trace("trace_buffer(%s)%s dot=%p%s fn=%s\n",
+    Trace("trace_buffer(%s)%s %s dot=%p%s fn=%s\n",
 	  bp->b_bname,
 	  (bp == bminip ? " MINI" : ""),
+	  encoding2s(b_val(bp, VAL_FILE_ENCODING)),
 	  (void *) bp->b_dot.l,
 	  bp == curbp ? " (curbp)" : "",
 	  NonNull(bp->b_fname));

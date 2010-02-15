@@ -2,7 +2,7 @@
  *	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.356 2009/12/31 11:22:21 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.357 2010/02/14 18:37:30 tom Exp $
  *
  */
 
@@ -3875,33 +3875,39 @@ x_get_encoding(void)
 static void
 x_open(void)
 {
+    static int already_open;
+
 #if OPT_COLOR
     static const char *initpalettestr = "0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15";
-
-    set_colors(NCOLORS);
-    set_ctrans(initpalettestr);	/* should be set_palette() */
 #endif
 
     TRACE((T_CALLED "x_open\n"));
 
-    kqinit(cur_win);
-    cur_win->scrollbars = NULL;
-    cur_win->maxscrollbars = 0;
+    if (!already_open) {
+#if OPT_COLOR
+	set_colors(NCOLORS);
+	set_ctrans(initpalettestr);	/* should be set_palette() */
+#endif
+	kqinit(cur_win);
+	cur_win->scrollbars = NULL;
+	cur_win->maxscrollbars = 0;
 #if OPT_KEV_SCROLLBARS || OPT_XAW_SCROLLBARS
-    cur_win->scrollinfo = NULL;
-    cur_win->grips = NULL;
+	cur_win->scrollinfo = NULL;
+	cur_win->grips = NULL;
 #endif
 #if OL_WIDGETS
-    cur_win->sliders = NULL;
+	cur_win->sliders = NULL;
 #endif
 
-    /* main code assumes that it can access a cell at nrow x ncol */
-    term.maxcols = term.cols = cur_win->cols;
-    term.maxrows = term.rows = cur_win->rows;
+	/* main code assumes that it can access a cell at nrow x ncol */
+	term.maxcols = term.cols = cur_win->cols;
+	term.maxrows = term.rows = cur_win->rows;
 
-    if (check_scrollbar_allocs() != TRUE) {
-	fprintf(stderr, "Cannot allocate scrollbars\n");
-	ExitProgram(BADEXIT);
+	if (check_scrollbar_allocs() != TRUE) {
+	    fprintf(stderr, "Cannot allocate scrollbars\n");
+	    ExitProgram(BADEXIT);
+	}
+	already_open = TRUE;
     }
     returnVoid();
 }
