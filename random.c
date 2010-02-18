@@ -2,7 +2,7 @@
  * This file contains the command processing functions for a number of random
  * commands. There is no functional grouping here, for sure.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.334 2010/02/06 00:13:48 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.337 2010/02/18 09:52:11 tom Exp $
  *
  */
 
@@ -104,9 +104,11 @@ set_rdonly(BUFFER *bp, const char *name, int mode)
     fix_cmode(bp, FALSE);
 }
 
-/* generic "lister", which takes care of popping a window/buffer pair under
-	the given name, and calling "func" with a couple of args to fill in
-	the buffer */
+/*
+ * This is a generic "lister", which takes care of popping a window/buffer pair
+ * under the given name, and calling "func" with a couple of args to fill in
+ * the buffer.
+ */
 int
 liststuff(const char *name,
 	  int appendit,
@@ -114,11 +116,14 @@ liststuff(const char *name,
 	  int iarg,
 	  void *vargp)
 {
+    int rc = FALSE;
     BUFFER *bp;
-    int s;
     WINDOW *wp;
     int alreadypopped;
     BUFFER *ocurbp = curbp;
+    L_NUM save_line = -1;
+    C_NUM save_off = -1;
+    int save_top = -1;
 
     TRACE((T_CALLED
 	   "liststuff(name=%s, appendit=%d, func=%p, iarg=%d, vargp=%p)\n",
@@ -126,44 +131,68 @@ liststuff(const char *name,
 
     /* create the buffer list buffer   */
     bp = bfind(name, BFSCRTCH);
-    if (bp == NULL)
-	returnCode(FALSE);
+    if (bp != NULL) {
 
-    if (!appendit && (s = bclear(bp)) != TRUE)	/* clear old text (?) */
-	returnCode(s);
-    b_set_scratch(bp);
-    alreadypopped = (bp->b_nwnd != 0);
-    if (popupbuff(bp) == FALSE) {
-	(void) zotbuf(bp);
-	returnCode(FALSE);
-    }
+	if ((appendit <= 0)
+	    && b_val(bp, MDREUSE_POS)
+	    && (wp = bp2any_wp(bp)) != NULL) {
+	    save_line = line_no(bp, wp->w_dot.l);
+	    save_off = wp->w_dot.o;
+	    save_top = line_no(bp, wp->w_line.l);
+	}
 
-    if ((wp = bp2any_wp(bp)) != NULL) {
-	make_local_w_val(wp, WMDNUMBER);
-	set_w_val(wp, WMDNUMBER, FALSE);
-    }
-    if (appendit) {
-	(void) gotoeob(FALSE, 1);
-	MK = DOT;
-    }
-    /* call the passed in function, giving it both the integer and
-       character pointer arguments */
-    (*func) (iarg, vargp);
-    if (alreadypopped && appendit) {
-	(void) gomark(FALSE, 1);
-	(void) forwbline(FALSE, 1);
-	(void) reposition(FALSE, 1);
-    } else {			/* if we're not appending, go to the top */
-	(void) gotobob(FALSE, 1);
-    }
-    set_rdonly(bp, non_filename(), MDVIEW);
+	/* clear old text (?) */
+	if ((appendit > 0) || (rc = bclear(bp)) == TRUE) {
 
-    if (alreadypopped)		/* don't switch to the popup if it wasn't there */
-	swbuffer(ocurbp);
-    else
-	shrinkwrap();		/* only resize if it's fresh */
+	    b_set_scratch(bp);
+	    alreadypopped = (bp->b_nwnd != 0);
+	    if (popupbuff(bp) == FALSE) {
+		(void) zotbuf(bp);
+	    } else {
 
-    returnCode(TRUE);
+		if ((wp = bp2any_wp(bp)) != NULL) {
+		    make_local_w_val(wp, WMDNUMBER);
+		    set_w_val(wp, WMDNUMBER, FALSE);
+		}
+		if (appendit > 0) {
+		    (void) gotoeob(FALSE, 1);
+		    MK = DOT;
+		}
+		/*
+		 * call the passed in function, giving it both the integer and
+		 * character pointer arguments
+		 */
+		(*func) (iarg, vargp);
+		if (alreadypopped && (appendit > 0)) {
+		    (void) gomark(FALSE, 1);
+		    (void) forwbline(FALSE, 1);
+		    (void) reposition(FALSE, 1);
+		} else if (appendit < 0 && save_line >= 0) {
+		    (void) vl_gotoline(save_top);
+		    wp->w_line.l = wp->w_dot.l;
+		    wp->w_line.o = 0;
+		    if (save_line != save_top)
+			(void) vl_gotoline(save_line);
+		    gocol(save_off);
+		} else {
+		    /* if we're not appending, go to the top */
+		    (void) gotobob(FALSE, 1);
+		}
+		set_rdonly(bp, non_filename(), MDVIEW);
+
+		if (alreadypopped) {
+		    /* don't switch to the popup if it wasn't there */
+		    swbuffer(ocurbp);
+		} else {
+		    /* only resize if it's fresh */
+		    shrinkwrap();
+		}
+
+		rc = TRUE;
+	    }
+	}
+    }
+    returnCode(rc);
 }
 
 /*

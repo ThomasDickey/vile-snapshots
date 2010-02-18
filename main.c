@@ -22,7 +22,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.684 2010/01/30 01:09:13 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.685 2010/02/18 09:54:05 tom Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -1660,6 +1660,9 @@ init_mode_value(struct VAL *d, MODECLASS v_class, int v_which)
 #endif
 #ifdef MDMODELINE
 	    setINT(MDMODELINE, FALSE);
+#endif
+#ifdef MDREUSE_POS
+	    setINT(MDREUSE_POS, FALSE);		/* reuse position */
 #endif
 #ifdef MDTAGIGNORECASE
 	    setINT(MDTAGIGNORECASE, FALSE);	/* ignore case in tags */

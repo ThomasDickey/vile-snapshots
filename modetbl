@@ -11,7 +11,7 @@
 #
 # The modes are table entries in the BUFFER and WINDOW structures.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.303 2010/02/05 21:35:50 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.304 2010/02/18 09:48:08 tom Exp $
 #
 #
 # Mode-table entries.  Capitalized letters are used for abbreviations.
@@ -117,6 +117,7 @@ bool							# MD prefix
 	"ModeLine"	MODELINE	0		OPT_MODELINE # modeline (selected :setl only) (vi-style)
 	"NewLine"	NEWLINE		chgd_buffer	# trailing newline (vi-style)
 	"ReadOnly"	READONLY	chgd_major	# allow writing the buffer
+	"reuse-position" REUSE_POS	0		OPT_UPBUFF # reuse position when (re)creating scratch-buffers
 	"ShowMatch"	SHOWMAT		0		# show matching braces during insert
 	"ShowMoDe"	SHOWMODE	chgd_status	# show insert/replace/command mode
 	"Spaces-After-Sentence" SPACESENT	0	# add two spaces after a

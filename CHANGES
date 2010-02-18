@@ -1,7 +1,14 @@
 Changes for vile 9.8 (released ??? ??? ?? ????)
 
- 20100214 (zc)
+ 20100218 (zc)
 	> Tom Dickey:
+	+ add mode "reuse-position" to allow users to specify that vile should
+	  restore the current line/column position when (re)displaying a
+	  scratch buffer built with liststuff.  The motivation is to allow
+	  switching between the displays for show-printable and
+	  show-wide-printable, which use the same buffer.
+	+ add show-wide-printable command, to provide a way to see details for
+	  other "pages" than the ASCII/Latin-1 0-255 code.
 	+ reopen terminal in CleanAfterPipe() so that multibyte-output still
 	  works after reading into a buffer from a shell command.
 	+ make kill_response() work with wide-characters (report by Ramil
