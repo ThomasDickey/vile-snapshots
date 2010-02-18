@@ -1,6 +1,6 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
-  $Id: vile-hlp.html,v 1.32 2010/02/07 18:56:44 tom Exp $
+  $Id: vile-hlp.html,v 1.33 2010/02/18 10:10:51 tom Exp $
 -->
 <HTML>
 <HEAD>
@@ -1467,13 +1467,15 @@ Getting along with vile						(version 9.7)
 	<a name="command-show-printable">show-printable</a>
 </dt>
 <dd>
-		displays a table of the printable characters,
+		displays a table of the first 256 printable characters,
 		with associated types.  To allow it to fit within 80 columns,
 		abbreviations are used, which are the same names as used in
 		character classes.
 		<p>
-		Use a repeat count to show the data for the wide locale.
-		The default shows the narrow locale.
+		Use a repeat count to show data for the wide locale.
+		The default (no repeat count) shows the narrow locale.
+		Use <a href="#command-show-wide-printable">show-wide-printable</a>
+		to see wide characters past the first 256.
 		<p>
 		If <a href="#mode-showchar">showchar</a> is set,
 		this also shows a line for the current character in the
@@ -1519,6 +1521,25 @@ Getting along with vile						(version 9.7)
 		temporary %variables, and their values.  Use a repeat count
 		to show all mode variables, including majormode submodes
 		rather than just the state variables.
+</dd>
+<dt>
+	<a name="command-show-wide-printable">show-wide-printable</a>
+</dt>
+<dd>
+		displays a table of the "wide" (Unicode) printable characters,
+		with associated types.  To allow it to fit within 80 columns,
+		abbreviations are used, which are the same names as used in
+		character classes.
+		<p>
+		Use a repeat count to show the data for successive "pages"
+		of 256 characters, e.g., 1 for 256-511, 2 for 512-767, etc.
+		<p>
+		This uses the same buffer as 
+		<a href="#command-show-printable">show-printable</a>.
+		If <a href="#mode-showchar">showchar</a> is set,
+		this also shows a line for the current character in the
+		current buffer, with the character type information for
+		that character.
 </dd>
 </dl>
 
@@ -1831,12 +1852,16 @@ Getting along with vile						(version 9.7)
 		vile, should be set.) (U)
 </dd>
 <dt>
-	animated
+	<a name="mode-animated">animated</a>
 </dt>
 <dd>
 		Controls whether vile automatically updates the contents of
-		scratch buffers when their contents would change.  The animated
-		buffers include:
+		scratch buffers when their contents would change as a side
+		effect of commands.
+		To retain the position within buffers when recreating them,
+		use the <a href="#mode-reuseposition">reuse-position</a> mode.
+<p>
+		The animated buffers include:
 <pre>
 	[Binding List]
 	[Buffer List]
@@ -2938,6 +2963,18 @@ Getting along with vile						(version 9.7)
 		links &ndash; only symbolic ones.) (U)
 </dd>
 <dt>
+	<a name="mode-reuseposition">reuse-position</a>
+</dt>
+<dd>
+		Like the <a href="#mode-animated">animated</a> mode,
+		restore the position in a scratch buffer when recreating it.
+		This is useful for closely related commands such as
+		<a href="#command-show-printable">show-printable</a>
+		and
+		<a href="#command-show-wide-printable">show-wide-printable</a>
+		that use the same scratch buffer name.
+</dd>
+<dt>
 	<a name="mode-ruler">ruler</a>
 </dt>
 <dd>
@@ -3649,10 +3686,15 @@ Getting along with vile						(version 9.7)
 <h2 id="char-classes2"><a name="char-classes">Character Classes</a></h2>
 <p>
 	The "show-printable" command shows a table of the characters and their
-	classes, e.g., printable, punctuation, etc.  You may modify this table
+	classes, e.g., printable, punctuation, etc.
+	<p>
+	You may modify the
+	characters in (or corresponding to) the narrow local in this table
 	by setting or unsetting a given class for a range of characters.  The
 	commands which do this are  "set-char-class" and "delete-char-class"
-	or "unset-char-class".  These commands expect the class name and a
+	or "unset-char-class".
+	<p>
+	These commands expect the class name and a
 	regular expression which defines a range of characters.  The class
 	names (short to allow "show-printable" to show everything in 80
 	columns) are

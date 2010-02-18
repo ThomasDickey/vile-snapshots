@@ -2,7 +2,7 @@
  *	eval.c -- function and variable evaluation
  *	original by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.423 2010/02/10 23:15:10 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.425 2010/02/18 01:54:24 tom Exp $
  *
  */
 
@@ -117,7 +117,9 @@ one_ctype_row(VL_CTYPE2 * enc, int ch)
 static void
 make_ctype_list(int dum1 GCC_UNUSED, void *ptr GCC_UNUSED)
 {
-    int i, last = N_chars;
+    int first = (show_ctypes_n * 256);
+    int last = first + N_chars;
+    int i;
     VL_CTYPE2 *enc = &vl_real_enc;
 
 #if OPT_MULTIBYTE
@@ -177,7 +179,7 @@ make_ctype_list(int dum1 GCC_UNUSED, void *ptr GCC_UNUSED)
     bpadc('-', term.cols - DOT.o);
     bputc('\n');
 
-    for (i = 0; i < last; i++) {
+    for (i = first; i < last; i++) {
 	one_ctype_row(enc, i);
     }
 }
@@ -187,7 +189,7 @@ static int
 show_CharClasses(BUFFER *bp GCC_UNUSED)
 {
     return liststuff(PRINTABLECHARS_BufName,
-		     FALSE, make_ctype_list, 0, (void *) 0);
+		     -TRUE, make_ctype_list, 0, (void *) 0);
 }
 
 #if OPT_UPBUFF
@@ -200,12 +202,27 @@ update_char_classes(void)
 
 /* ARGSUSED */
 int
-desprint(int f GCC_UNUSED, int n GCC_UNUSED)
+desprint(int f, int n GCC_UNUSED)
 {
     show_ctypes_f = f;
-    show_ctypes_n = n;
+    show_ctypes_n = 0;		/* always page 0 with this command */
     return show_CharClasses(curbp);
 }
+
+#if OPT_MULTIBYTE
+/*
+ * Show just wide-characters, if they are available.  The 'f' parameter is only
+ * true if 'n' is greater than zero, so a separate function from desprint() is
+ * needed if we are allowing the user to select pages of printing information.
+ */
+int
+deswprint(int f, int n)
+{
+    show_ctypes_f = TRUE;
+    show_ctypes_n = f ? n : 0;
+    return show_CharClasses(curbp);
+}
+#endif
 
 static int
 cclass_complete(DONE_ARGS)
