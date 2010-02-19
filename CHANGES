@@ -1,7 +1,11 @@
 Changes for vile 9.8 (released ??? ??? ?? ????)
 
- 20100218 (zc)
+ 20100219 (zc)
 	> Tom Dickey:
+	+ add environment variable VILE_LOCALE_MAPPING to help with special
+	  cases of associating wide/narrow locales, e.g., where the narrow
+	  locale is only available under a non-empty suffix.
+	+ improve reverse-index used for associating wide/narrow encoding.
 	+ add mode "reuse-position" to allow users to specify that vile should
 	  restore the current line/column position when (re)displaying a
 	  scratch buffer built with liststuff.  The motivation is to allow

@@ -1,7 +1,7 @@
 /*
  * Common utility functions for vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.149 2009/12/25 23:39:55 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.150 2010/02/18 22:59:17 tom Exp $
  *
  */
 
@@ -261,24 +261,25 @@ ExecDefault(const char *param)
     char *temp = strmalloc(param);
     char *s = skip_ident(temp);
     int save = *s;
-    int fixup = 1;
+    int isClass;
 
     *s = 0;
     if (!*temp) {
-	fixup = 0;
 	free(temp);
 	temp = strmalloc(NAME_KEYWORD);
+	isClass = (is_class(temp) != 0);
+    } else {
+	isClass = (is_class(temp) != 0);
+	*s = (char) save;
     }
-    if (is_class(temp)) {
-	if (fixup)
-	    *s = (char) save;
+
+    if (isClass) {
 	flt_init_attr(temp);
 	VERBOSE(1, ("set default_attr '%s' %p\n", default_attr, default_attr));
     } else {
-	if (fixup)
-	    *s = (char) save;
 	VERBOSE(1, ("not a class:%s", temp));
     }
+
     free(temp);
 }
 

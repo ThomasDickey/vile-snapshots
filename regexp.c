@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/regexp.c,v 1.198 2010/02/03 00:16:59 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/regexp.c,v 1.199 2010/02/19 10:03:42 tom Exp $
  *
  * Copyright 2005-2009,2010 Thomas E. Dickey and Paul G. Fox
  *
@@ -2721,6 +2721,54 @@ nregexec(regexp * prog,
     returnReg(s);
 }
 #endif /* VILE LINE */
+
+/*
+ * Parse one slice of a substitute expression, e.g., as needed for
+ * s/part1/part2/
+ */
+char *
+regparser(const char **source)
+{
+    const char *parse = *source;
+    int delim = CharOf(*parse);
+    char *result = 0;
+    int escape = 0;
+    int braces = 0;
+
+    TRACE(("regparser {%s}\n", parse));
+    if (delim != '\\' && ispunct(delim)) {
+	result = strmalloc(++parse);
+	while (*parse != delim && *parse != '\0') {
+	    if (escape) {
+		escape = 0;
+	    } else if (*parse == '\\') {
+		escape = 1;
+	    } else if (*parse == '[') {
+		braces = 1;
+	    } else if (braces && *parse == ']' && parse > (*source + 1)) {
+		braces = 0;
+	    }
+	    ++parse;
+	}
+	if (*parse == '\0' || escape || braces) {
+	    free(result);
+	    result = 0;
+	} else {
+	    result[parse - *source - 1] = '\0';
+	}
+	if (result != 0) {
+	    TRACE(("...regparser {%s}\n", result));
+	    *source = parse;
+	}
+    }
+    return result;
+}
+
+void
+regfree(regexp * prog)
+{
+    free(prog);
+}
 
 #ifdef DEBUG_REGEXP
 
