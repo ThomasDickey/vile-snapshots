@@ -1,7 +1,7 @@
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/vl_regex.h,v 1.5 2009/01/18 01:49:34 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/vl_regex.h,v 1.6 2010/02/19 10:03:48 tom Exp $
  *
- * Copyright 2005, Thomas E. Dickey and Paul G. Fox
+ * Copyright 2005-2009,2010 Thomas E. Dickey and Paul G. Fox
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
@@ -85,6 +85,8 @@ extern void mlforce (const char *fmt, ...) GCC_PRINTFLIKE(1,2);
 extern void regerror (const char *s);
 extern regexp * regcomp (const char *origexp, size_t exp_len, int magic);
 extern int regexec (regexp *prog, char *string, char *stringend, int startoff, int endoff);
+extern void regfree (regexp *prog);
+extern char *regparser (const char **s);
 
 #if !OPT_VILE_CTYPE
 extern int ignorecase;

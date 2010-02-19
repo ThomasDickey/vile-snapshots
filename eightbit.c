@@ -1,5 +1,5 @@
 /*
- * $Id: eightbit.c,v 1.62 2010/02/09 01:05:53 tom Exp $
+ * $Id: eightbit.c,v 1.67 2010/02/19 11:38:50 tom Exp $
  *
  * Maintain "8bit" file-encoding mode by converting incoming UTF-8 to single
  * bytes, and providing a function that tells vile whether a given Unicode
@@ -656,18 +656,69 @@ char *
 vl_narrowed(const char *wide)
 {
     char *result = 0;
-    char *utf;
 
+    TRACE((T_CALLED "vl_narrowed(%s)\n", NonNull(wide)));
     if (wide != 0) {
-	if (((utf = strstr(wide, ".UTF-8")) != 0
-	     || (utf = strstr(wide, ".utf-8")) != 0
-	     || (utf = strstr(wide, ".UTF8")) != 0
-	     || (utf = strstr(wide, ".utf8")) != 0)) {
-	    if ((result = strmalloc(wide)) != 0)
-		result[utf - wide] = EOS;
+	const char *mapping = getenv("VILE_LOCALE_MAPPING");
+	const char *parsed;
+	char *on_left;
+	char *on_right;
+	regexp *exp;
+	int n;
+
+	/*
+	 * The default mapping strips ".UTF-8", ".utf-8", ".UTF8" or ".utf8",
+	 * and assumes that the default locale alias corresponds to the 8-bit
+	 * encoding.  That is true on many systems.
+	 */
+	if (mapping == 0)
+	    mapping = "/\\.\\(UTF\\|utf\\)[-]\\?8$//";
+
+	parsed = mapping;
+	on_left = regparser(&parsed);
+	on_right = regparser(&parsed);
+	if (on_left != 0
+	    && on_right != 0
+	    && parsed[1] == '\0'
+	    && (exp = regcomp(on_left, strlen(on_left), TRUE)) != 0) {
+	    int len = (int) strlen(wide);
+	    int found = 0;
+
+	    if ((result = malloc(strlen(wide) + 2 + strlen(on_right))) != 0) {
+		strcpy(result, wide);
+		for (n = 0; n < len; ++n) {
+		    found = regexec(exp, result, result + len, n, len);
+		    if (found)
+			break;
+		}
+
+		/*
+		 * Substitute the result (back-substitutions not supported).
+		 */
+		if (found) {
+		    char *save = strmalloc(exp->endp[0]);
+
+		    TRACE(("vl_narrowed match \"%.*s\", replace with \"%s\"\n",
+			   exp->endp[0] - exp->startp[0],
+			   exp->startp[0],
+			   on_right));
+
+		    strcpy(exp->startp[0], on_right);
+		    strcat(exp->startp[0], save);
+		    free(save);
+		} else {
+		    free(result);
+		    result = 0;
+		}
+	    }
+	    regfree(exp);
+	} else {
+	    fprintf(stderr, "VILE_LOCAL_MAPPING error:%s\n", mapping);
 	}
+	FreeIfNeeded(on_left);
+	FreeIfNeeded(on_right);
     }
-    return result;
+    returnString(result);
 }
 
 /*
@@ -766,11 +817,20 @@ vl_init_8bit(const char *wide, const char *narrow)
      * Build reverse-index.
      */
     for (n = 0; n < N_chars; ++n) {
+	int code = (int) table_8bit_utf8[n].code;
+
+	if (n == 0 || code > 0) {
+	    rindex_8bit[n].code = code;
+	    rindex_8bit[n].rinx = n;
+	} else {
+	    table_8bit_utf8[n].code = (UINT) - 1;
+	    rindex_8bit[n].code = (UINT) - 1;
+	    rindex_8bit[n].rinx = -1;
+	}
+
 	TRACE2(("code %d is \\u%04X:%s\n", n,
 		table_8bit_utf8[n].code,
 		NonNull(table_8bit_utf8[n].text)));
-	rindex_8bit[n].code = table_8bit_utf8[n].code;
-	rindex_8bit[n].rinx = n;
     }
     qsort(rindex_8bit, N_chars, sizeof(RINDEX_8BIT), cmp_rindex);
 
@@ -843,7 +903,7 @@ vl_mb_is_8bit(int code)
 				cmp_rindex);
 
     if (p != 0)
-	result = (p->code < 256);
+	result = ((int) p->code >= 0 && p->code < 256);
 
     return result;
 }
@@ -942,7 +1002,7 @@ vl_mb_to_utf8(int code)
 				N_chars,
 				sizeof(RINDEX_8BIT),
 				cmp_rindex);
-    if (p != 0)
+    if (p != 0 && p->rinx >= 0)
 	result = table_8bit_utf8[p->rinx].text;
 
     return result;
@@ -958,7 +1018,7 @@ vl_8bit_to_ucs(int *result, int code)
 {
     int status = FALSE;
 
-    if (code >= 0 && code < 256) {
+    if (code >= 0 && code < 256 && (int) table_8bit_utf8[code].code >= 0) {
 	*result = (int) table_8bit_utf8[code].code;
 	status = TRUE;
     }
@@ -982,7 +1042,7 @@ vl_ucs_to_8bit(int *result, int code)
 				N_chars,
 				sizeof(RINDEX_8BIT),
 				cmp_rindex);
-    if (p != 0) {
+    if (p != 0 && p->rinx >= 0) {
 	*result = p->rinx;
 	status = TRUE;
     }
