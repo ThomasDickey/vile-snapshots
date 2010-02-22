@@ -1,7 +1,13 @@
 Changes for vile 9.8 (released ??? ??? ?? ????)
 
- 20100219 (zc)
+ 20100221 (zc)
+	> Rick Sladkey:
+	+ add missing "close" for terminal for win32 console version.  Lacking
+	  the close, vile could hang if it was run from a subshell.
+	+ do not check X_OK in ffaccess() for win32.
 	> Tom Dickey:
+	+ add preamble to makemode to work with lines such as
+		#!/usr/bin/make -f
 	+ add environment variable VILE_LOCALE_MAPPING to help with special
 	  cases of associating wide/narrow locales, e.g., where the narrow
 	  locale is only available under a non-empty suffix.

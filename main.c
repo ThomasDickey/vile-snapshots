@@ -22,7 +22,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.685 2010/02/18 09:54:05 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.686 2010/02/21 23:07:21 Rick.Sladkey Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -1243,6 +1243,9 @@ tidy_exit(int code)
 #endif
 #if DISP_NTWIN
     winvile_cleanup();
+#endif
+#if DISP_NTCONS
+    term.close();
 #endif
 #if DISP_X11
     term.close();		/* need this if $xshell left subprocesses */
