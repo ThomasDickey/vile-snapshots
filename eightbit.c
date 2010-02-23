@@ -1,5 +1,5 @@
 /*
- * $Id: eightbit.c,v 1.67 2010/02/19 11:38:50 tom Exp $
+ * $Id: eightbit.c,v 1.68 2010/02/23 00:05:33 tom Exp $
  *
  * Maintain "8bit" file-encoding mode by converting incoming UTF-8 to single
  * bytes, and providing a function that tells vile whether a given Unicode
@@ -867,21 +867,53 @@ vl_is_8bit_encoding(const char *value)
 int
 vl_is_latin1_encoding(const char *value)
 {
-    return (!isEmpty(value)
-	    && (strncmp(value, "ISO-8859", 8) == 0
+    int rc = FALSE;
+
+    if (!isEmpty(value)) {
+#ifdef WIN32
+	char *suffix = strchr(value, '.');
+	if (suffix != 0
+	    && !strcmp(suffix, ".1252")) {
+	    rc = TRUE;
+	} else
+#endif
+	    if (strncmp(value, "ISO-8859", 8) == 0
 		|| strncmp(value, "ISO 8859", 8) == 0
 		|| strncmp(value, "ISO_8859", 8) == 0
 		|| strncmp(value, "ISO8859", 7) == 0
-		|| strncmp(value, "8859", 4) == 0));
+		|| strncmp(value, "8859", 4) == 0) {
+	    rc = TRUE;
+	}
+    }
+    return rc;
 }
 
 int
 vl_is_utf8_encoding(const char *value)
 {
-    return (!isEmpty(value)
-	    && (strstr(value, "UTF-8") != 0
-		|| strstr(value, "UTF8") != 0
-		|| strcmp(value, "646") == 0));
+    int rc = FALSE;
+
+    if (!isEmpty(value)) {
+	char *suffix = strchr(value, '.');
+	if (suffix != 0) {
+#ifdef WIN32
+	    if (!strcmp(suffix, ".65000")) {
+		rc = TRUE;
+	    } else
+#endif
+		if (strchr(value + 1, '.') == 0
+		    && vl_is_utf8_encoding(value + 1)) {
+		rc = TRUE;
+	    }
+	} else if (!strcmp(value, "UTF8")
+		   || !strcmp(value, "UTF-8")
+		   || !strcmp(value, "utf8")
+		   || !strcmp(value, "utf-8")
+		   || !strcmp(value, "646")) {
+	    rc = TRUE;
+	}
+    }
+    return rc;
 }
 
 /*
@@ -934,6 +966,7 @@ char *
 vl_get_encoding(char **target, const char *locale)
 {
     static char iso_latin1[] = "ISO-8859-1";
+    static char utf_eight[] = "UTF-8";
 
     char *result = 0;
     char *actual = setlocale(LC_ALL, locale);
@@ -947,7 +980,9 @@ vl_get_encoding(char **target, const char *locale)
 	 * that corresponds to the given (wide) locale.
 	 */
 	beginDisplay();
-	if (!isEmpty(locale) && (mylocale = strmalloc(locale)) != 0) {
+	if (vl_is_utf8_encoding(locale)) {
+	    result = utf_eight;
+	} else if (!isEmpty(locale) && (mylocale = strmalloc(locale)) != 0) {
 	    regexp *exp;
 
 	    exp = regcomp(tb_values(latin1_expr),
@@ -966,9 +1001,11 @@ vl_get_encoding(char **target, const char *locale)
 #ifdef HAVE_LANGINFO_CODESET
 	result = nl_langinfo(CODESET);
 #else
-	if (isEmpty(locale)
-	    || !strcmp(locale, "C")
-	    || !strcmp(locale, "POSIX")) {
+	if (vl_is_utf8_encoding(locale)) {
+	    result = utf_eight;
+	} else if (isEmpty(locale)
+		   || !strcmp(locale, "C")
+		   || !strcmp(locale, "POSIX")) {
 	    result = "ASCII";
 	} else {
 	    result = iso_latin1;
