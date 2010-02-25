@@ -81,31 +81,126 @@ Screen Types
    to support multiple drivers, but the default configuration will be the
    smallest and fastest.
 
-   Use the configure script's "--with-screen" option to specify the driver
+   There are several types of terminal driver:
+     * text terminals
+     * X Window displays
+     * Win32 displays, when building in MSYS for MinGW
+     * Special displays, e.g., for OS/2
+
+   The configure script provides an option for selecting a text, X Window or
+   even Win32 display. Use the "--with-screen" option to specify the driver
    type, e.g.,
 
          ./configure --with-screen=tcap
 
-   The default configuration for vile uses termcap (or terminfo, depending
-   what your system has available). The configuration script tests several
-   possibilities. Your system may have more than one library to link against,
-   e.g., on Linux you may have both termcap and ncurses (a terminfo-based
-   system). If you wish to use color, you are generally better off using
-   terminfo, since termcap descriptions usually are limited to a fixed size,
-   and some features are omitted.
+   Some of the choices use mixed-case, e.g., "Athena". The configure script
+   also recognizes the lowercase form of each of those names, in this
+   instance "athena".
 
-   A curses interface is provided as well:
+  Text Terminal Drivers
 
-         ./configure --with-screen=curses
+   There are several choices, listed here in their order of capabilities:
 
-   To tell the configure script to link against the ncurses library (using
-   the curses.c driver), type
+   --with-screen=ncursesw
+   --with-screen=tcap (default)
+   --with-screen=ncurses
+   --with-screen=curses
+   --with-screen=ansi
 
-         ./configure --with-screen=ncurses
+   The default configuration for vile uses termcap (or terminfo, depending on
+   what your system has available). That is the default because it is the
+   most widely available. The "ncursesw" configuration provides better
+   optimization of the terminal's capabilities, e.g., for scrolling and
+   combining video attributes. Most users would not see a difference between
+   the two choices.
 
-   A much less capable driver uses builtin ANSI escape sequences:
+   The configuration script tests several possibilities for each choice. Your
+   system may have more than one library to link against, e.g., on Linux you
+   may have both termcap and ncurses (a terminfo-based system). If you wish
+   to use color, you are generally better off using terminfo, since termcap
+   descriptions usually are limited to a fixed size, and some features are
+   omitted. The termcap databases also tend to not be as well-maintained as
+   their terminfo counterparts.
 
-         ./configure --with-screen=ansi
+   In addition to "ncursesw", two other forms of "curses" driver are
+   supported:
+     * curses
+     * ncurses
+   They both use the same driver source, but "ncurses" tells the configure
+   script to look for the ncurses library, which may not be the default
+   curses implementation on your machine. Like "ncursesw", these can provide
+   better optimization of the terminal than the termcap/terminfo driver.
+
+   The "ansi" driver is the least capable. It uses built-in ANSI escape
+   sequences.
+
+   The "--with-ncurses" option is used as a special case of the default
+   termcap/terminfo driver, to ensure that it uses the ncurses library rather
+   than a termcap-only library.
+
+  X Window Drivers
+
+   There are several choices, again listed in
+
+   --with-screen=Motif
+   --with-screen=Athena
+   --with-screen=Xaw
+   --with-screen=Xaw3d
+   --with-screen=neXtaw
+   --with-screen=X11
+   --with-screen=OpenLook
+
+   The Motif display has the nicest appearance. The one drawback (relative to
+   Athena) is that dragging the separator between window panes is done on the
+   scrollbar. The Athena interface allows you to drag the separator by
+   clicking on the status-line of a window, and moving the mouse.
+
+   "Athena" and "Xaw" are the same; the two values are given to make the
+   script simpler to use. The "Xaw", "Xaw3d" and "neXtaw" choices are almost
+   the same, choosing libraries that have the same capabilities but different
+   appearances.
+
+   The OpenLook driver is deprecated (does not work with current Solaris
+   systems), and will be removed at some point.
+
+  Win32 Drivers
+
+   If you are building vile in the MSYS environment, i.e., compiling for
+   MinGW, you can build "convile" or "minvile" instead of the text- or
+   X-choices:
+
+   --with-screen=DOS
+   --with-screen=Windows
+
+   The "DOS" and "Windows" choices are comparable in functionality to the
+   executables built using Visual C++.
+
+
+UTF-8 Support versus Driver
+---------------------------
+   vile supports UTF-8 in two ways:
+     * it edits UTF-8 data as characters rather than bytes and
+     * it can display UTF-8 data.
+
+   The ability to manipulate UTF-8 data depends on the operating system and
+   your locale settings. The ability to display UTF-8 data depends on the
+   terminal driver. If the terminal driver is unable to render UTF-8 data,
+   vile displays it using "\u" sequences.
+
+   In the choices for text-drivers, ncursesw is before tcap and ncurses after
+   because of their support for UTF-8 The "ncurses" library supports 8-bit
+   encodings, and cannot display UTF-8. Both "ncursesw" and the
+   termcap/terminfo drivers can display UTF-8, as long as your locale
+   settings support it.
+
+   The X Window drivers all support UTF-8. Currently that is for single-width
+   characters (in contrast to the text- and Win32 drivers). There is no
+   support (yet) for combining characters.
+
+   Win32 drivers support UTF-8. But they display based on font selection. The
+   "Lucida Console" font is widely available, and can be used for this
+   purpose. To have complete support for UTF-8, you need the fonts provided
+   with Microsoft Office.
 
 
 Syntax coloring options
@@ -505,6 +600,6 @@ Testing/Development Options
    vile (no macros), which is a workable editor. You may wish to build vile
    without shell support, but perhaps not (ymmv).
 
--- (generated by make-hlp.pl from config.html(1.5))
+-- (generated by make-hlp.pl from config.html(1.7))
 -- vile:txtmode fillcol=78
--- $Header: /users/source/archives/vile.vcs/doc/RCS/config.doc,v 1.20 2010/01/27 00:21:35 tom Exp $
+-- $Header: /users/source/archives/vile.vcs/doc/RCS/config.doc,v 1.22 2010/02/25 10:55:01 tom Exp $
