@@ -1,11 +1,18 @@
 Changes for vile 9.8 (released ??? ??? ?? ????)
 
- 20100224 (zc)
+ 20100225 (zc)
 	> Rick Sladkey:
 	+ add missing "close" for terminal for win32 console version.  Lacking
 	  the close, vile could hang if it was run from a subshell.
 	+ do not check X_OK in ffaccess() for win32.
 	> Tom Dickey:
+	+ change "install-xvile" makefile target to "install-bin" in RPM
+	  spec-file to work with UTF-8 (report by Radek Liboska).
+	+ add/revise sections in config.html / config.doc summarizing the
+	  differences between related text- and X11-drivers and their support
+	  of UTF-8 (report by Radek Liboska).
+	+ change "ncurses" to "ncursesw" in RPM spec-file to work with UTF-8
+	  (report by Radek Liboska).
 	+ correct order of ifdef/include's for USE_MULTIBYTE symbol in
 	  curses.c, which broke wide-character support for curses-driver in
 	  9.7zb (report by Radek Liboska).

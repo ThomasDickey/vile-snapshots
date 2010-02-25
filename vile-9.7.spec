@@ -1,5 +1,5 @@
 Summary: VILE VI Like Emacs editor
-# $Header: /users/source/archives/vile.vcs/RCS/vile-9.7.spec,v 1.32 2010/02/12 09:58:41 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/vile-9.7.spec,v 1.34 2010/02/25 10:13:20 tom Exp $
 Name: vile
 Version: 9.7zc
 # each patch should update the version
@@ -83,7 +83,7 @@ rebinding, and real X window system support.
 %build
 EXTRA_CFLAGS="$RPM_OPT_FLAGS" INSTALL_PROGRAM='${INSTALL} -s' ./configure --target %{_target_platform} --prefix=%{_prefix} --with-locale --with-builtin-filters --with-screen=x11 --with-xpm
 make xvile
-EXTRA_CFLAGS="$RPM_OPT_FLAGS" INSTALL_PROGRAM='${INSTALL} -s' ./configure --target %{_target_platform} --prefix=%{_prefix} --with-locale --with-builtin-filters --with-screen=ncurses --mandir=%{_mandir}
+EXTRA_CFLAGS="$RPM_OPT_FLAGS" INSTALL_PROGRAM='${INSTALL} -s' ./configure --target %{_target_platform} --prefix=%{_prefix} --with-locale --with-builtin-filters --with-screen=ncursesw --mandir=%{_mandir}
 touch x11.o menu.o
 make
 touch xvile
@@ -91,7 +91,7 @@ touch xvile
 %install
 [ "$RPM_BUILD_ROOT" != "/" ] && rm -rf $RPM_BUILD_ROOT
 make install                    prefix=$RPM_BUILD_ROOT/%{_prefix} mandir=$RPM_BUILD_ROOT/%{_mandir}/man1
-make TARGET=xvile install-xvile prefix=$RPM_BUILD_ROOT/%{_prefix} mandir=$RPM_BUILD_ROOT/%{_mandir}/man1
+make TARGET=xvile install-bin   prefix=$RPM_BUILD_ROOT/%{_prefix} mandir=$RPM_BUILD_ROOT/%{_mandir}/man1
 
 strip $RPM_BUILD_ROOT/%{_prefix}/X11R6/bin/xvile
 strip $RPM_BUILD_ROOT/%{_bindir}/vile
