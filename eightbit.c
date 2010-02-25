@@ -1,5 +1,5 @@
 /*
- * $Id: eightbit.c,v 1.68 2010/02/23 00:05:33 tom Exp $
+ * $Id: eightbit.c,v 1.69 2010/02/25 00:53:46 tom Exp $
  *
  * Maintain "8bit" file-encoding mode by converting incoming UTF-8 to single
  * bytes, and providing a function that tells vile whether a given Unicode
@@ -820,7 +820,7 @@ vl_init_8bit(const char *wide, const char *narrow)
 	int code = (int) table_8bit_utf8[n].code;
 
 	if (n == 0 || code > 0) {
-	    rindex_8bit[n].code = code;
+	    rindex_8bit[n].code = (UINT) code;
 	    rindex_8bit[n].rinx = n;
 	} else {
 	    table_8bit_utf8[n].code = (UINT) - 1;

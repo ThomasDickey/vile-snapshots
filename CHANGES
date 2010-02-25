@@ -1,11 +1,14 @@
 Changes for vile 9.8 (released ??? ??? ?? ????)
 
- 20100221 (zc)
+ 20100224 (zc)
 	> Rick Sladkey:
 	+ add missing "close" for terminal for win32 console version.  Lacking
 	  the close, vile could hang if it was run from a subshell.
 	+ do not check X_OK in ffaccess() for win32.
 	> Tom Dickey:
+	+ correct order of ifdef/include's for USE_MULTIBYTE symbol in
+	  curses.c, which broke wide-character support for curses-driver in
+	  9.7zb (report by Radek Liboska).
 	+ add preamble to makemode to work with lines such as
 		#!/usr/bin/make -f
 	+ add environment variable VILE_LOCALE_MAPPING to help with special

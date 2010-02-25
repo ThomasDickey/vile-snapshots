@@ -1,17 +1,11 @@
 /*
  * A terminal driver using the curses library
  *
- * $Header: /users/source/archives/vile.vcs/RCS/curses.c,v 1.47 2010/02/10 23:36:35 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/curses.c,v 1.48 2010/02/24 23:51:30 tom Exp $
  */
 
 #include "estruct.h"
 #include "edef.h"
-
-#if OPT_LOCALE && defined(NCURSES_VERSION) && defined(HAVE_ADDNWSTR)
-#define USE_MULTIBYTE 1
-#else
-#define USE_MULTIBYTE 0
-#endif
 
 #if OPT_LOCALE
 #include <locale.h>
@@ -22,6 +16,12 @@
 #undef WINDOW
 
 #include "tcap.h"
+
+#if OPT_LOCALE && defined(NCURSES_VERSION) && defined(HAVE_ADDNWSTR)
+#define USE_MULTIBYTE 1
+#else
+#define USE_MULTIBYTE 0
+#endif
 
 #define is_default(color) (color < 0 || color == 255)
 
