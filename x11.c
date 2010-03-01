@@ -2,7 +2,7 @@
  *	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.357 2010/02/14 18:37:30 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.359 2010/02/28 16:49:12 tom Exp $
  *
  */
 
@@ -190,6 +190,43 @@
 #include <X11/xpm.h>
 #endif
 #endif
+
+#ifndef CI_NONEXISTCHAR
+/* from X11/Xlibint.h - not all vendors install this file */
+#define CI_NONEXISTCHAR(cs) (((cs)->width == 0) && \
+			     (((cs)->rbearing|(cs)->lbearing| \
+			       (cs)->ascent|(cs)->descent) == 0))
+
+#define CI_GET_CHAR_INFO_1D(fs,col,def,cs) \
+{ \
+    cs = def; \
+    if (col >= fs->min_char_or_byte2 && col <= fs->max_char_or_byte2) { \
+	if (fs->per_char == NULL) { \
+	    cs = &fs->min_bounds; \
+	} else { \
+	    cs = &fs->per_char[(col - fs->min_char_or_byte2)]; \
+	    if (CI_NONEXISTCHAR(cs)) cs = def; \
+	} \
+    } \
+}
+
+#define CI_GET_CHAR_INFO_2D(fs,row,col,def,cs) \
+{ \
+    cs = def; \
+    if (row >= fs->min_byte1 && row <= fs->max_byte1 && \
+	col >= fs->min_char_or_byte2 && col <= fs->max_char_or_byte2) { \
+	if (fs->per_char == NULL) { \
+	    cs = &fs->min_bounds; \
+	} else { \
+	    cs = &fs->per_char[((row - fs->min_byte1) * \
+				(fs->max_char_or_byte2 - \
+				 fs->min_char_or_byte2 + 1)) + \
+			       (col - fs->min_char_or_byte2)]; \
+	    if (CI_NONEXISTCHAR(cs)) cs = def; \
+	} \
+    } \
+}
+#endif /* CI_NONEXISTCHAR */
 
 #define TRACE_RES_I(res,val) TRACE(("\t%s: %d\n", res, cur_win->val));
 #define TRACE_RES_B(res,val) TRACE(("\t%s: %s\n", res, cur_win->val ? "true" : "false"));
@@ -460,7 +497,8 @@ typedef struct {
 } SelectionList;
 
 static Display *dpy;
-static ENC_CHOICES my_encoding = enc_DEFAULT;
+static ENC_CHOICES term_encoding = enc_DEFAULT;
+static ENC_CHOICES font_encoding = enc_DEFAULT;
 
 static TextWindowRec cur_win_rec;
 static TextWindow cur_win = &cur_win_rec;
@@ -3349,7 +3387,6 @@ x_preparse_args(int *pargc, char ***pargv)
     init_xlocale();
     if (okCTYPE2(vl_wide_enc)) {
 	term.set_enc(enc_UTF8);
-	TRACE(("initialized $term-encoding to enc_UTF8\n"));
     }
 #endif
 
@@ -3579,7 +3616,7 @@ query_font(TextWindow tw, const char *fname)
 	}
 
 	/*
-	 * Free resources assoicated with any presently loaded fonts.
+	 * Free resources associated with any presently loaded fonts.
 	 */
 	if (tw->pfont)
 	    XFreeFont(dpy, tw->pfont);
@@ -3704,6 +3741,27 @@ query_font(TextWindow tw, const char *fname)
 	    TRACE(("...resulting piecemeal font %s\n", tw->fontname));
 	}
     }
+#if OPT_MULTIBYTE
+    if (pf != 0) {
+	ENC_CHOICES old_encoding = font_encoding;
+	ENC_CHOICES new_encoding;
+
+	/*
+	 * max_byte1 is the maximum for the high-byte of 16-bit chars.
+	 * If it is nonzero, this is not an 8-bit font.
+	 */
+	if (pf->max_byte1 != 0) {
+	    new_encoding = enc_UTF8;
+	} else {
+	    new_encoding = enc_8BIT;
+	}
+	if (old_encoding != new_encoding) {
+	    TRACE(("set $font-encoding to %s\n", encoding2s(new_encoding)));
+	    font_encoding = new_encoding;
+	    set_winflags(TRUE, WFHARD);
+	}
+    }
+#endif
     return pf;
 }
 
@@ -3863,13 +3921,14 @@ x_setfont(const char *fname)
 static void
 x_set_encoding(ENC_CHOICES code)
 {
-    my_encoding = code;
+    term_encoding = code;
+    TRACE(("x11:set_encoding %s\n", encoding2s(code)));
 }
 
 static ENC_CHOICES
 x_get_encoding(void)
 {
-    return my_encoding;
+    return term_encoding;
 }
 
 static void
@@ -6715,34 +6774,41 @@ x_autocolor_timeout(XtPointer data GCC_UNUSED, XtIntervalId * id GCC_UNUSED)
 }
 
 /*
- * Return true if the given character would be printable.  Not all characters are.
+ * Return true if the given character would be printable.  Not all characters
+ * are printable.
+ *
+ * FIXME: this is only used in vl_ctype_init for handling 0-255 codes.
  */
 int
 gui_isprint(int ch)
 {
+    int result = TRUE;
     XFontStruct *pf = cur_win->pfont;
     XCharStruct *pc = 0;
+    static XCharStruct dft, *tmp = &dft;
 
-    if (pf != 0
+    if (ch >= 0
+	&& pf != 0
 	&& pf->per_char != 0
 	&& !pf->all_chars_exist) {
-	if (ch < (int) pf->min_char_or_byte2
-	    || ch > (int) pf->max_char_or_byte2) {
-	    TRACE(("MissingChar %c\n", ch));
-	    return FALSE;
-	}
-	if (pf->min_byte1 == 0
-	    && pf->max_byte1 == 0) {
-	    pc = pf->per_char + (ch - pf->min_char_or_byte2);
-	}			/* FIXME: this does not handle doublebyte characters */
-	if (pc != 0
-	    && (pc->lbearing + pc->rbearing) == 0
-	    && (pc->ascent + pc->descent) == 0
-	    && pc->width == 0) {
-	    return FALSE;
+
+	if (pf->max_byte1 == 0) {
+	    if (ch > 255) {
+		result = FALSE;
+	    } else {
+		CI_GET_CHAR_INFO_1D(pf, (unsigned) ch, tmp, pc);
+		if (pc == 0 || CI_NONEXISTCHAR(pc)) {
+		    result = FALSE;
+		}
+	    }
+	} else {
+	    CI_GET_CHAR_INFO_2D(pf, CharOf((ch >> 8)), CharOf(ch), tmp, pc);
+	    if (pc == 0 || CI_NONEXISTCHAR(pc)) {
+		result = FALSE;
+	    }
 	}
     }
-    return TRUE;
+    return result;
 }
 
 #if OPT_INPUT_METHOD

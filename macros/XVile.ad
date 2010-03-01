@@ -1,4 +1,4 @@
-! $Header: /users/source/archives/vile.vcs/macros/RCS/XVile.ad,v 1.4 2009/10/09 09:18:40 tom Exp $
+! $Header: /users/source/archives/vile.vcs/macros/RCS/XVile.ad,v 1.5 2010/02/26 10:38:35 tom Exp $
 
 ! "white" on "black" main window
 *background: grey5
@@ -8,7 +8,7 @@
 *cursor.foreground: grey5
 
 ! Note: xvile uses the main window's foreground/background as default values
-! for the colors in the subresoures for highlighting, menu, modeline and
+! for the colors in the subresources for highlighting, menu, modeline and
 ! scrollbar.
 
 ! white on blue modeline

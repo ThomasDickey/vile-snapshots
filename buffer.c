@@ -5,7 +5,7 @@
  * keys. Like everyone else, they set hints
  * for the display system.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.341 2009/12/13 16:10:32 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.342 2010/02/28 19:11:12 tom Exp $
  *
  */
 
@@ -1195,13 +1195,25 @@ do_one_modeline(LINE *lp, int vi, int first, int last)
 void
 do_modelines(BUFFER *bp)
 {
+    WINDOW *wp;
+
     if (b_val(bp, MDMODELINE) &&
-	b_val(bp, VAL_MODELINES) > 0) {
+	b_val(bp, VAL_MODELINES) > 0 &&
+	(wp = bp2any_wp(bp)) != 0) {
 	LINE *lp;
 	int once = b_val(bp, VAL_MODELINES);
 	int limit = 2 * once;
 	int count;
 	int rc, first = 0, last = 0;
+	BUFFER *save_bp = curbp;
+	WINDOW *save_wp = curwp;
+
+	/*
+	 * If we're sourcing a file, then curbp is not necessarily the same.
+	 * Fix that.
+	 */
+	curwp = wp;
+	curbp = bp;
 
 	bsizes(bp);
 
@@ -1227,6 +1239,8 @@ do_modelines(BUFFER *bp)
 		do_one_modeline(lp, rc, first, last);
 	    }
 	}
+	curbp = save_bp;
+	curwp = save_wp;
 	returnVoid();
     }
 }
