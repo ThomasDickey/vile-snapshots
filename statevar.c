@@ -3,7 +3,7 @@
  *	for getting and setting the values of the vile state variables,
  *	plus helper utility functions.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.145 2010/02/10 12:17:36 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.147 2010/02/28 11:55:34 tom Exp $
  */
 
 #include	<estruct.h>
@@ -40,12 +40,15 @@ static char *cdpath;		/* $CDPATH environment is "$cdpath" state variable. */
 static const char *
 DftEnv(const char *name, const char *dft)
 {
+    const char *result;
+
 #if OPT_EVAL && OPT_SHELL
     name = safe_getenv(name);
-    return isEmpty(name) ? dft : name;
+    result = isEmpty(name) ? dft : name;
 #else
-    return dft;
+    result = dft;
 #endif
+    return result;
 }
 
 static void
@@ -274,16 +277,18 @@ any_HOOK(TBUFF **rp, const char *vp, HOOK * hook)
 const char *
 safe_getenv(const char *s)
 {
+    const char *result;
 #if OPT_EVAL && OPT_SHELL
     char *v = getenv(s);
 #if defined(_WIN32)
     if (v == 0)
 	v = vile_getenv(s);
 #endif
-    return NONNULL(v);
+    result = NONNULL(v);
 #else
-    return "";
+    result = "";
 #endif
+    return result;
 }
 
 #if OPT_EVAL && OPT_SHELL
@@ -990,27 +995,27 @@ var_FINDCMD(TBUFF **rp, const char *vp)
 int
 var_FONT(TBUFF **rp, const char *vp)
 {
+    int result = FALSE;
+
 #if SYS_WINNT && DISP_NTWIN
     if (rp) {
 	tb_scopy(rp, ntwinio_current_font());
-	return TRUE;
+	result = TRUE;
     } else if (vp) {
-	return ntwinio_font_frm_str(vp, FALSE);
-    } else {
-	return FALSE;
+	result = ntwinio_font_frm_str(vp, FALSE);
     }
 #elif DISP_X11
     if (rp) {
 	tb_scopy(rp, x_current_fontname());
-	return TRUE;
+	result = TRUE;
     } else if (vp) {
-	return x_setfont(vp);
-    } else {
-	return FALSE;
+	result = x_setfont(vp);
     }
 #else
-    return any_ro_STR(rp, vp, "fixed");
+    result = any_ro_STR(rp, vp, "fixed");
 #endif
+
+    return result;
 }
 
 int
@@ -1311,19 +1316,20 @@ var_OS(TBUFF **rp, const char *vp)
 int
 var_PAGELEN(TBUFF **rp, const char *vp)
 {
+    int result = FALSE;
+
     if (rp) {
 	render_int(rp, term.rows);
-	return TRUE;
+	result = TRUE;
     } else if (vp) {
 #if DISP_X11 || DISP_NTWIN
 	gui_resize(term.cols, strtol(vp, 0, 0));
-	return TRUE;
+	result = TRUE;
 #else
-	return newlength(TRUE, strtol(vp, 0, 0));
+	result = newlength(TRUE, strtol(vp, 0, 0));
 #endif
-    } else {
-	return FALSE;
     }
+    return result;
 }
 
 /* separator for lists of pathnames */
@@ -1382,19 +1388,20 @@ var_POSFORMAT(TBUFF **rp, const char *vp)
 int
 var_CURWIDTH(TBUFF **rp, const char *vp)
 {
+    int result = FALSE;
+
     if (rp) {
 	render_int(rp, term.cols);
-	return TRUE;
+	result = TRUE;
     } else if (vp) {
 #if DISP_X11 || DISP_NTWIN
 	gui_resize(strtol(vp, 0, 0), term.rows);
-	return TRUE;
+	result = TRUE;
 #else
-	return newwidth(TRUE, strtol(vp, 0, 0));
+	result = newwidth(TRUE, strtol(vp, 0, 0));
 #endif
-    } else {
-	return FALSE;
     }
+    return result;
 }
 
 int
@@ -1710,23 +1717,24 @@ var_TERM_RESIZES(TBUFF **rp, const char *vp GCC_UNUSED)
 int
 var_TITLE(TBUFF **rp, const char *vp)
 {
+    int result = FALSE;
     if (rp) {
 #if DISP_X11
 	tb_scopy(rp, x_get_window_name());
-	return TRUE;
+	result = TRUE;
 #elif SYS_WINNT
 	tb_scopy(rp, w32_wdw_title());
-	return TRUE;
+	result = TRUE;
 #endif
     } else if (vp) {
 #if DISP_X11 || SYS_WINNT
 	tb_scopy(&request_title, vp);
-	return TRUE;
+	result = TRUE;
 #else
-	return ABORT;		/* read-only */
+	result = ABORT;		/* read-only */
 #endif
     }
-    return FALSE;
+    return result;
 }
 
 int

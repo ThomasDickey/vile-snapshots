@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.517 2010/02/10 11:19:50 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.519 2010/02/28 18:03:25 tom Exp $
  *
  */
 
@@ -19,6 +19,15 @@
 
 #define	NU_WIDTH 8
 #define NU_GUTTER 1
+
+#if DISP_X11
+#define FontHasGlyph(ch) gui_isprint(ch)
+#else
+#define FontHasGlyph(ch) TRUE
+#endif
+
+#define UseCellWidth(lp, off, wp) \
+	(!w_val(wp, WMDUNICODE_AS_HEX) && FontHasGlyph(get_char2(lp, off)))
 
 #define reset_term_attrs() term.rev(0)
 
@@ -656,7 +665,8 @@ vtlistc(WINDOW *wp, const char *src, unsigned limit)
 		temp[n++] = (char) value;
 	    } else if (!w_val(wp, WMDUNICODE_AS_HEX)
 		       && cells > 0
-		       && (term_is_utfXX())) {
+		       && term_is_utfXX()
+		       && FontHasGlyph(value)) {
 		/*
 		 * It does not fit into the "8bit" mapping, but is printable
 		 * (since the number of cells is nonzero).  Write the Unicode
@@ -990,7 +1000,7 @@ mk_to_vcol(WINDOW *wp, MARK mark, int expanded, int col, int adjust)
 	    int nxt = llength(mark.l) - i;
 	    int adj = column_sizes(wp, text + i, (unsigned) nxt, &used);
 
-	    if (adj == COLS_UTF8 && !w_val(wp, WMDUNICODE_AS_HEX)) {
+	    if (adj == COLS_UTF8 && UseCellWidth(lp, i, wp)) {
 		adj = mb_cellwidth(wp, text + i, nxt);
 	    }
 	    col += adj;
@@ -1575,7 +1585,7 @@ offs2col0(WINDOW *wp,
 		int nxt = offset - n;
 		int adj = column_sizes(wp, text + n, (UINT) nxt, &used);
 
-		if (adj == COLS_UTF8 && !w_val(wp, WMDUNICODE_AS_HEX)) {
+		if (adj == COLS_UTF8 && UseCellWidth(lp, n, wp)) {
 		    adj = mb_cellwidth(wp, text + n, nxt);
 		}
 		column += adj;
@@ -1645,7 +1655,7 @@ col2offs(WINDOW *wp, LINE *lp, C_NUM col)
 		int nxt = len - offset;
 		int adj = column_sizes(wp, text + offset, (UINT) nxt, &used);
 
-		if (adj == COLS_UTF8 && !w_val(wp, WMDUNICODE_AS_HEX)) {
+		if (adj == COLS_UTF8 && UseCellWidth(lp, offset, wp)) {
 		    adj = mb_cellwidth(wp, text + offset, nxt);
 		}
 		n += adj;

@@ -1,11 +1,15 @@
 Changes for vile 9.8 (released ??? ??? ?? ????)
 
- 20100225 (zc)
+ 20100228 (zc)
 	> Rick Sladkey:
 	+ add missing "close" for terminal for win32 console version.  Lacking
 	  the close, vile could hang if it was run from a subshell.
 	+ do not check X_OK in ffaccess() for win32.
 	> Tom Dickey:
+	+ when processing modelines, ensure that settings for a source'd file
+	  are not applied to the current file.
+	+ modify xvile to use \uXXXX format when the font does not contain
+	  a glyph for a given character.
 	+ change "install-xvile" makefile target to "install-bin" in RPM
 	  spec-file to work with UTF-8 (report by Radek Liboska).
 	+ add/revise sections in config.html / config.doc summarizing the
