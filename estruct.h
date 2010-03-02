@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.707 2010/02/08 10:44:21 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.708 2010/03/02 09:46:16 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -3017,7 +3017,10 @@ extern void ExitProgram(int code);
 /*
  * If we have va_copy(), use it.
  */
-#if defined(va_copy) || defined(HAVE_VA_COPY)
+#if defined(HAVE___VA_COPY)
+#define begin_va_copy(dst,src)	__va_copy(dst, src)
+#define end_va_copy(dst)	va_end(dst)
+#elif defined(va_copy) || defined(HAVE_VA_COPY)
 #define begin_va_copy(dst,src)	va_copy(dst, src)
 #define end_va_copy(dst)	va_end(dst)
 #else

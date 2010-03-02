@@ -2,7 +2,7 @@
  * Unix crypt(1)-style interface.
  * Written by T.E.Dickey for vile (March 1999).
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ucrypt.c,v 1.16 2009/10/31 15:23:16 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ucrypt.c,v 1.17 2010/03/02 01:41:20 tom Exp $
  *
  */
 
@@ -183,7 +183,7 @@ vl_setup_encrypt(char *encrypted_password)
     unsigned c1, c2;
     char temp;
     unsigned mixs;
-    long myseed = seed;	/* this isn't a random number, it's a parameter */
+    int myseed = seed;	/* this isn't a random number, it's a parameter */
 
     TRACE(("setup_encrypt(%s)\n", encrypted_password));
 

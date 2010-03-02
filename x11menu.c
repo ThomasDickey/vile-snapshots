@@ -8,7 +8,7 @@
 /************************************************************************/
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/x11menu.c,v 1.12 2008/11/30 22:16:25 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11menu.c,v 1.13 2010/03/02 09:05:26 tom Exp $
  */
 
 #define NEED_X_INCLUDES 1
@@ -202,7 +202,7 @@ list_proc_back(Widget w GCC_UNUSED,
     XmStringGetLtoR(xms, XmFONTLIST_DEFAULT_TAG, &accel);
     num_buff = atoi(&accel[1]);
 #elif ATHENA_WIDGETS
-    num_buff = (int) bname;
+    num_buff = (int) (long) bname;
 #endif
 
     if (vile_is_busy)
@@ -344,7 +344,7 @@ post_buffer_list(Widget w GCC_UNUSED,
 	XtAddCallback(pm_buffer[nb_item_menu_list],
 		      XtNcallback,
 		      list_proc_back,
-		      (XtPointer) nb_item_menu_list);
+		      (XtPointer) (long) nb_item_menu_list);
 #endif
 	nb_item_menu_list++;
     }

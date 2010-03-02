@@ -1,12 +1,12 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_REVISION($Revision: 1.280 $)
+AC_REVISION($Revision: 1.281 $)
 AC_PREREQ(2.13.20030927)
 rm -f config.cache
 
 ### Use "configure -with-screen" to override the default configuration, which is
 ### termcap-based on unix systems.
 
-dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.280 2010/01/26 10:32:34 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.281 2010/03/02 09:26:48 tom Exp $
 
 define(MAKELIST, sh $srcdir/filters/makelist.sh $srcdir/filters/genmake.mak)
 
@@ -423,6 +423,7 @@ CF_WCTYPE
 ###	checks for system services and user specified options
 AC_LONG_FILE_NAMES
 CF_RESTARTABLE_PIPEREAD		# is a read() of a pipe restartable?
+CF_VA_COPY
 
 AC_SUBST(CFLAGS)
 AC_SUBST(LIBS)

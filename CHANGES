@@ -1,11 +1,15 @@
 Changes for vile 9.8 (released ??? ??? ?? ????)
 
- 20100228 (zc)
+ 20100302 (zc)
 	> Rick Sladkey:
 	+ add missing "close" for terminal for win32 console version.  Lacking
 	  the close, vile could hang if it was run from a subshell.
 	+ do not check X_OK in ffaccess() for win32.
 	> Tom Dickey:
+	+ add configure check for va_copy, which may not be a macro.
+	+ change type in vl_setup_encrypt() to "int", to make this 32-bits for
+	  32- and 64-bit platforms, needed to make the algorithm work with
+	  64-bits.  The original "long" was needed for 16-bit systems.
 	+ when processing modelines, ensure that settings for a source'd file
 	  are not applied to the current file.
 	+ modify xvile to use \uXXXX format when the font does not contain
