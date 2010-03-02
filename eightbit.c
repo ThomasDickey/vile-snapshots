@@ -1,5 +1,5 @@
 /*
- * $Id: eightbit.c,v 1.69 2010/02/25 00:53:46 tom Exp $
+ * $Id: eightbit.c,v 1.70 2010/03/01 10:43:38 tom Exp $
  *
  * Maintain "8bit" file-encoding mode by converting incoming UTF-8 to single
  * bytes, and providing a function that tells vile whether a given Unicode
@@ -699,7 +699,7 @@ vl_narrowed(const char *wide)
 		    char *save = strmalloc(exp->endp[0]);
 
 		    TRACE(("vl_narrowed match \"%.*s\", replace with \"%s\"\n",
-			   exp->endp[0] - exp->startp[0],
+			   (int) (exp->endp[0] - exp->startp[0]),
 			   exp->startp[0],
 			   on_right));
 

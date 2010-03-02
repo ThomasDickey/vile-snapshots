@@ -1,6 +1,6 @@
 dnl vile's local definitions for autoconf.
 dnl
-dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.209 2010/01/28 01:40:48 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.210 2010/03/02 10:04:18 tom Exp $
 dnl
 dnl See
 dnl		http://invisible-island.net/autoconf/autoconf.html
@@ -3562,6 +3562,36 @@ if test "$cf_cv_utf8_lib" = "add-on" ; then
 	LIBS="-lutf8 $LIBS"
 fi
 ])dnl
+dnl ---------------------------------------------------------------------------
+dnl CF_VA_COPY version: 1 updated: 2010/03/02 05:02:52
+dnl ----------
+dnl check for va_copy, part of stdarg.h
+dnl Also, workaround for glibc's __va_copy, by checking for both.
+AC_DEFUN([CF_VA_COPY],[
+AC_CACHE_CHECK(for va_copy, cf_cv_have_va_copy,[
+AC_TRY_COMPILE([
+#include <stdarg.h>
+],[
+	static va_list dst;
+	static va_list src;
+	va_copy(dst, src)],
+	cf_cv_have_va_copy=yes,
+	cf_cv_have_va_copy=no)])
+
+test "$cf_cv_have_va_copy" = yes && AC_DEFINE(HAVE_VA_COPY)
+
+AC_CACHE_CHECK(for __va_copy, cf_cv_have___va_copy,[
+AC_TRY_COMPILE([
+#include <stdarg.h>
+],[
+	static va_list dst;
+	static va_list src;
+	__va_copy(dst, src)],
+	cf_cv_have___va_copy=yes,
+	cf_cv_have___va_copy=no)])
+
+test "$cf_cv_have___va_copy" = yes && AC_DEFINE(HAVE___VA_COPY)
+])
 dnl ---------------------------------------------------------------------------
 dnl CF_VERBOSE version: 3 updated: 2007/07/29 09:55:12
 dnl ----------

@@ -2,7 +2,7 @@
  *	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.359 2010/02/28 16:49:12 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.360 2010/03/02 09:05:55 tom Exp $
  *
  */
 
@@ -1548,7 +1548,7 @@ do_scroll(Widget w,
 	    XtAppAddTimeOut(cur_win->app_context,
 			    cur_win->scroll_repeat_timeout,
 			    repeat_scroll,
-			    (XtPointer) count);
+			    (XtPointer) (long) count);
 	(void) update(TRUE);
 	break;
     case 'S':			/* StartDrag */
@@ -1580,7 +1580,7 @@ repeat_scroll(XtPointer count,
 			cur_win->scroll_repeat_interval,
 			repeat_scroll,
 			(XtPointer) count);
-    mvdnwind(TRUE, (int) count);
+    mvdnwind(TRUE, (int) (long) count);
     (void) update(TRUE);
     XSync(dpy, False);
 }
@@ -6697,7 +6697,7 @@ watched_input_callback(XtPointer fd,
 		       int *src GCC_UNUSED,
 		       XtInputId * id GCC_UNUSED)
 {
-    dowatchcallback((int) fd);
+    dowatchcallback((int) (long) fd);
 }
 
 static int
@@ -6711,7 +6711,7 @@ x_watchfd(int fd, WATCHTYPE type, long *idp)
 						? XtInputWriteMask
 						: XtInputExceptMask)),
 				watched_input_callback,
-				(XtPointer) fd);
+				(XtPointer) (long) fd);
     return TRUE;
 }
 
