@@ -1,5 +1,5 @@
 Summary: VILE VI Like Emacs editor
-# $Header: /users/source/archives/vile.vcs/RCS/vile-9.7.spec,v 1.34 2010/02/25 10:13:20 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/vile-9.7.spec,v 1.36 2010/03/03 01:26:18 tom Exp $
 Name: vile
 Version: 9.7zc
 # each patch should update the version
@@ -81,30 +81,57 @@ rebinding, and real X window system support.
 # each patch should add itself to this list
 
 %build
-EXTRA_CFLAGS="$RPM_OPT_FLAGS" INSTALL_PROGRAM='${INSTALL} -s' ./configure --target %{_target_platform} --prefix=%{_prefix} --with-locale --with-builtin-filters --with-screen=x11 --with-xpm
+VILE_LIBDIR_PATH=%{_libdir}/vile \
+EXTRA_CFLAGS="$RPM_OPT_FLAGS" \
+INSTALL_PROGRAM='${INSTALL} -s' \
+	./configure \
+		--target %{_target_platform} \
+		--prefix=%{_prefix} \
+		--bindir=%{_bindir} \
+		--libdir=%{_libdir} \
+		--with-locale \
+		--with-builtin-filters \
+		--with-screen=x11 \
+		--with-xpm
 make xvile
-EXTRA_CFLAGS="$RPM_OPT_FLAGS" INSTALL_PROGRAM='${INSTALL} -s' ./configure --target %{_target_platform} --prefix=%{_prefix} --with-locale --with-builtin-filters --with-screen=ncursesw --mandir=%{_mandir}
+
+VILE_LIBDIR_PATH=%{_libdir}/vile \
+EXTRA_CFLAGS="$RPM_OPT_FLAGS" \
+INSTALL_PROGRAM='${INSTALL} -s' \
+	./configure \
+		--target %{_target_platform} \
+		--prefix=%{_prefix} \
+		--bindir=%{_bindir} \
+		--libdir=%{_libdir} \
+		--mandir=%{_mandir} \
+		--with-locale \
+		--with-builtin-filters
 touch x11.o menu.o
 make
 touch xvile
 
 %install
 [ "$RPM_BUILD_ROOT" != "/" ] && rm -rf $RPM_BUILD_ROOT
-make install                    prefix=$RPM_BUILD_ROOT/%{_prefix} mandir=$RPM_BUILD_ROOT/%{_mandir}/man1
-make TARGET=xvile install-bin   prefix=$RPM_BUILD_ROOT/%{_prefix} mandir=$RPM_BUILD_ROOT/%{_mandir}/man1
 
-strip $RPM_BUILD_ROOT/%{_prefix}/X11R6/bin/xvile
-strip $RPM_BUILD_ROOT/%{_bindir}/vile
-strip $RPM_BUILD_ROOT/%{_libdir}/vile/vile-*filt
+make install                    DESTDIR=$RPM_BUILD_ROOT
+make install-bin   TARGET=xvile DESTDIR=$RPM_BUILD_ROOT
 
-./mkdirs.sh $RPM_BUILD_ROOT/%{_mandir}/man1  
-install -m 644 vile.1 $RPM_BUILD_ROOT/%{_mandir}/man1/xvile.1  
-install -m 644 vile.1 $RPM_BUILD_ROOT/%{_mandir}/man1/vile.1  
+strip $RPM_BUILD_ROOT%{_bindir}/xvile
+strip $RPM_BUILD_ROOT%{_bindir}/vile
+strip $RPM_BUILD_ROOT%{_libdir}/vile/atr2html
+strip $RPM_BUILD_ROOT%{_libdir}/vile/vile-crypt
+strip $RPM_BUILD_ROOT%{_libdir}/vile/vile-manfilt
+strip $RPM_BUILD_ROOT%{_libdir}/vile/atr2ansi
+strip $RPM_BUILD_ROOT%{_libdir}/vile/atr2text
 
-./mkdirs.sh $RPM_BUILD_ROOT/%{_sysconfdir}/X11/wmconfig  
-install vile.wmconfig $RPM_BUILD_ROOT/%{_sysconfdir}/X11/wmconfig/vile  
-install xvile.wmconfig $RPM_BUILD_ROOT/%{_sysconfdir}/X11/wmconfig/xvile  
-  
+mkdir -p $RPM_BUILD_ROOT%{_mandir}/man1
+install -m 644 vile.1 $RPM_BUILD_ROOT%{_mandir}/man1/xvile.1
+install -m 644 vile.1 $RPM_BUILD_ROOT%{_mandir}/man1/vile.1
+
+mkdir -p $RPM_BUILD_ROOT/%{_sysconfdir}/X11/wmconfig
+install vile.wmconfig $RPM_BUILD_ROOT%{_sysconfdir}/X11/wmconfig/vile
+install xvile.wmconfig $RPM_BUILD_ROOT%{_sysconfdir}/X11/wmconfig/xvile
+
 %clean
 [ "$RPM_BUILD_ROOT" != "/" ] && rm -rf $RPM_BUILD_ROOT
 
@@ -128,6 +155,10 @@ install xvile.wmconfig $RPM_BUILD_ROOT/%{_sysconfdir}/X11/wmconfig/xvile
 
 %changelog
 # each patch should add its ChangeLog entries here
+
+* Tue Mar 02 2010 Thomas Dickey
+- use termcap/terminfo driver rather than ncursesw
+  also minor cleanup.
 
 * Fri Feb 12 2010 Thomas Dickey
 - added patch for 9.7zc

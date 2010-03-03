@@ -1,4 +1,4 @@
-# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.in,v 1.80 2005/06/09 22:53:05 tom Exp $
+# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.in,v 1.81 2010/03/03 01:17:20 tom Exp $
 #
 
 #### Start of system configuration section. ####
@@ -41,8 +41,10 @@ TARGET		= @TARGET@$x
 prefix		= @prefix@
 exec_prefix	= @exec_prefix@
 
+bindir		= @bindir@
 libdir		= @libdir@
-bindir		= @filters_bindir@
+
+filters_bindir	= @filters_bindir@
 datadir		= @datadir@/vile
 
 #### End of system configuration section. ####
@@ -57,7 +59,9 @@ BINDIR		= $(DESTDIR)$(bindir)
 LIBDIR		= $(DESTDIR)$(libdir)
 DATADIR		= $(DESTDIR)$(datadir)
 
-INSTALL_DIRS    = $(BINDIR) $(DATADIR)
+FILTERS_BINDIR	= $(DESTDIR)/$(filters_bindir)
+
+INSTALL_DIRS    = $(FILTERS_BINDIR) $(DATADIR)
 
 LF_DEPS = filterio$o filters$o
 LF_ARGS = $(LF_DEPS) $(LEXLIB)
