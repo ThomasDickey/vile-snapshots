@@ -1,4 +1,4 @@
-# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.2nd,v 1.16 2010/01/07 22:22:39 tom Exp $
+# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.2nd,v 1.17 2010/03/03 01:17:49 tom Exp $
 #
 
 .SUFFIXES: .l .c .i $o
@@ -48,11 +48,11 @@ check: $(TARGET)
 	@echo Sorry, no batch tests available.
 
 INSTALL_FILES = \
-	$(BINDIR)/atr2ansi$x \
-	$(BINDIR)/atr2html$x \
-	$(BINDIR)/atr2text$x \
-	$(BINDIR)/vile-crypt$x \
-	$(BINDIR)/vile-manfilt$x \
+	$(FILTERS_BINDIR)/atr2ansi$x \
+	$(FILTERS_BINDIR)/atr2html$x \
+	$(FILTERS_BINDIR)/atr2text$x \
+	$(FILTERS_BINDIR)/vile-crypt$x \
+	$(FILTERS_BINDIR)/vile-manfilt$x \
 	$(DATADIR)/filters.rc \
 	$(DATADIR)/spell.rc $(INSTALL_C) $(INSTALL_DYN_C) @MAKE_LEX@ $(INSTALL_LEX) $(INSTALL_DYN_LEX) 
 
@@ -111,17 +111,17 @@ atr2text$x : atr2text$o	unfilter$o ; $(LINK) -o $@ atr2text$o unfilter$o $(LDFLA
 vile-crypt$x :	ecrypt$o	; $(LINK) -o $@ ecrypt$o $(LDFLAGS) $(LIBS)
 vile-manfilt$x : manfilt$o	; $(LINK) -o $@ manfilt$o $(LDFLAGS) $(LIBS)
 
-$(BINDIR)/atr2ansi$x :		atr2ansi$x		; $(INSTALL) $? $@
-$(BINDIR)/atr2html$x :		atr2html$x		; $(INSTALL) $? $@
-$(BINDIR)/atr2text$x :		atr2text$x		; $(INSTALL) $? $@
-$(BINDIR)/vile-crypt$x :	vile-crypt$x		; $(INSTALL) $? $@
-$(BINDIR)/vile-manfilt$x :	vile-manfilt$x		; $(INSTALL) $? $@
+$(FILTERS_BINDIR)/atr2ansi$x :	   atr2ansi$x		; $(INSTALL) $? $@
+$(FILTERS_BINDIR)/atr2html$x :	   atr2html$x		; $(INSTALL) $? $@
+$(FILTERS_BINDIR)/atr2text$x :	   atr2text$x		; $(INSTALL) $? $@
+$(FILTERS_BINDIR)/vile-crypt$x :   vile-crypt$x		; $(INSTALL) $? $@
+$(FILTERS_BINDIR)/vile-manfilt$x : vile-manfilt$x	; $(INSTALL) $? $@
 
 $(DATADIR)/filters.rc :		$(srcdir)/filters.rc	; $(INSTALL_DATA) $? $@
 $(DATADIR)/spell.rc :		$(srcdir)/spell.rc	; $(INSTALL_DATA) $? $@
 
 $(INSTALL_DIRS):
-	$(SHELL) ${top_srcdir}/mkdirs.sh $@
+	mkdir -p $@
 
 ALWAYS:
 

@@ -6,6 +6,13 @@ Changes for vile 9.8 (released ??? ??? ?? ????)
 	  the close, vile could hang if it was run from a subshell.
 	+ do not check X_OK in ffaccess() for win32.
 	> Tom Dickey:
+	+ remove mkdirs.sh; use mkdir -p
+	+ minor cleanup of .spec file, change the terminal configuration to
+	  use the default termcap/terminfo driver rather than ncursesw
+	  (discussion with Radek Liboska).
+	+ fix makefile.in so that rpm build works; the changes for the 
+	  --with-symlink configure option had broken the way the TARGET symbol
+	  was used by the .spec file.
 	+ add configure check for va_copy, which may not be a macro.
 	+ change type in vl_setup_encrypt() to "int", to make this 32-bits for
 	  32- and 64-bit platforms, needed to make the algorithm work with

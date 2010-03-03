@@ -1,4 +1,4 @@
-MANIFEST for vile, version v9_7zb12
+MANIFEST for vile, version v9_7zb13
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 AUTHORS                         list of authors, with nicknames in CHANGES
@@ -75,7 +75,6 @@ makefile.in                     used by 'configure' to generate a makefile
 makefile.wnt                    makefile for Win32 with Microsoft Visual C++
 map.c                           map and map! commands
 menu.c                          menu-support for xvile
-mkdirs.sh                       script to make directory-hierarchy
 mkprlenv.wnt                    vile-7.4h
 mktbls.c                        utility for constructing VILE's command & mode tables
 modes.c                         mode-command support

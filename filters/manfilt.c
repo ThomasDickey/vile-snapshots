@@ -46,7 +46,7 @@
  * vile will choose some appropriate fallback (such as underlining) if
  * italics are not available.
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/manfilt.c,v 1.50 2009/11/03 00:08:22 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/manfilt.c,v 1.51 2010/03/01 10:43:38 tom Exp $
  *
  */
 
@@ -623,7 +623,7 @@ flush_line(void)
 			    break;
 		    }
 		    if (ref_code != ATR_NORMAL) {
-			printf("%c%u", CNTL_A, ccol - col);
+			printf("%c%u", CNTL_A, (unsigned) (ccol - col));
 			if (ref_code & ATR_BOLD)
 			    my_putc('B');
 			if (ref_code & ATR_ITAL)

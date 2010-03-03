@@ -20,7 +20,7 @@
 #
 # gnu autoconf support by kevin buettner, 5/94
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.238 2010/02/02 10:21:10 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.240 2010/03/02 23:51:08 tom Exp $
 
 SHELL		= /bin/sh
 
@@ -50,10 +50,11 @@ o		= .@OBJEXT@
 X_LIBS		= @X_LIBS@
 
 transform	= @program_transform_name@
-ACTUAL		= `echo @TARGET@|sed '$(transform)'`
+TARGET		= @TARGET@
+ACTUAL		= `echo $(TARGET)|sed '$(transform)'`
 
 SCREEN		= @SCREEN@
-TARGET		= @TARGET@$x
+PROGRAM		= $(TARGET)$x
 
 AWK		= @AWK@
 PERL		= @PERL@
@@ -85,7 +86,7 @@ CLASS		= XVile
 ICON		= vile
 ICON_SUFFIX	= @ICON_SUFFIX@
 QUOTDEFS	= \
-		-DPROGRAM_NAME=\"@TARGET@\" \
+		-DPROGRAM_NAME=\"$(TARGET)\" \
 		-DVILE_ICON=\"icons/$(ICON)$(ICON_SUFFIX)\" \
 		-DVILE_LIBDIR_PATH=\"'@VILE_LIBDIR_PATH@'\" \
 		-DVILE_STARTUP_PATH=\"'@VILE_STARTUP_PATH@'\"
@@ -135,7 +136,7 @@ MAKFILES = \
 
 ALLTOOLS = $(MAKFILES) mktbls.c cmdtbl modetbl \
 	configure config_h.in \
-	install-sh mkdirs.sh \
+	install-sh \
 	configure.in aclocal.m4
 
 # these are normal editable headers
@@ -319,7 +320,7 @@ OBJ2 =	@EXTRAOBJS2@
 # BSD-makes) cannot handle it.
 SRC =	$(OBJ:.o=.c)
 
-ALL =	$(TARGET)
+ALL =	$(PROGRAM)
 
 @MAKE_FILTERS@all \
 @MAKE_FILTERS@install-full \
@@ -333,8 +334,8 @@ sources : $(BUILTHDRS)
 filters/@LIB_PREFIX@vlflt.a : $(BUILTHDRS)
 	cd filters && $(MAKE) $(MAKE_RECUR) @LIB_PREFIX@vlflt.a
 
-$(TARGET): $(BUILTHDRS) $(OBJ) $(OBJ2) $(BUILTLIBS)
-	- mv $(TARGET) o$(TARGET)
+$(PROGRAM): $(BUILTHDRS) $(OBJ) $(OBJ2) $(BUILTLIBS)
+	- mv $(PROGRAM) o$(PROGRAM)
 	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ $(OBJ) $(OBJ2) $(X_LIBS) $(LIBS)
 
 vile.man: vile.1
@@ -376,7 +377,7 @@ $(MKTBLS):  $(srcdir)/mktbls.c
 	@ECHO_LD@$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) \
 	    -o $(MKTBLS)  $(srcdir)/mktbls.c
 
-check: $(TARGET)
+check: $(PROGRAM)
 	@echo Sorry, no batch tests available.
 
 INSTALL_DOC_FILES = \
@@ -456,7 +457,6 @@ INSTALL_X_FILES = \
 	$(DATADIR)/vilemenu.rc
 
 INSTALL_FILES = \
-	$(MANDIR)/@TARGET@.$(manext) \
 	$(INSTALL_MACRO_FILES) \
 	$(DATADIR)/vile.hlp @EXTRA_INSTALL_FILES@
 
@@ -476,10 +476,10 @@ install-full \
 install :: \
 		$(INSTALL_DIRS) \
 		$(INSTALL_FILES) \
-		$(TARGET) \
+		$(PROGRAM) \
 		$(srcdir)/macros/vile-pager
 	@echo "** installing $(NAME_OF_ACTUAL)"
-	$(INSTALL_PROGRAM) $(TARGET) $(PATH_OF_ACTUAL)
+	$(INSTALL_PROGRAM) $(PROGRAM) $(PATH_OF_ACTUAL)
 	@ECHO_CC@-$(SHELL) -c "if $(USE_SYMLINK) ; then \
 		cd $(BINDIR) ; \
 		rm -f $(LINK_TO_ACTUAL) ; \
@@ -501,6 +501,10 @@ install :: \
 
 	@echo 'Completed install of program.'
 
+install-man \
+install :: $(MANDIR)
+	$(INSTALL_DATA)		$(srcdir)/vile.1 $(MANDIR)/$(TARGET).$(manext)
+
 install-doc :		$(DOCDIR)		$(INSTALL_DOC_FILES)
 
 install-html :		$(HTMLDIR)		$(INSTALL_HTML_FILES)
@@ -511,12 +515,16 @@ install-perl :		$(INSTALL_PERL_DIRS)	$(INSTALL_PERL_FILES)
 
 installdirs:		$(INSTALL_DIRS)
 
-uninstall-@TARGET@ \
+uninstall-bin \
 uninstall ::
 	@ECHO_CC@-$(SHELL) -c "if $(USE_SYMLINK) ; then cd $(BINDIR) && rm -f $(LINK_TO_ACTUAL) ; fi"
 	@ECHO_CC@-$(SHELL) -c "if $(USE_SYMLINK) ; then cd $(BINDIR) && rm -f $(LINK_TO_PAGER) ; fi"
 	@ECHO_CC@- $(RM) $(INSTALL_FILES) $(PATH_OF_ACTUAL) $(PATH_OF_PAGER)
 	@echo 'Completed uninstall of program.'
+
+uninstall-man \
+uninstall ::
+	- $(RM) $(MANDIR)/$(TARGET).$(manext)
 
 uninstall-doc :
 	- $(RM) $(INSTALL_DOC_FILES)
@@ -589,7 +597,7 @@ distclean ::
 	- test -f filters/makefile && cd filters && $(MAKE) $(MAKE_RECUR) $@
 
 mostlyclean ::
-	- $(RM) *.[oi] o$(TARGET) $(BUILTHDRS) $(BUILTSRCS) $(MKTBLS) \
+	- $(RM) *.[oi] o$(PROGRAM) $(BUILTHDRS) $(BUILTSRCS) $(MKTBLS) \
 	    builtflt.h core core.* *~ *.tmp *.BAK *.bb* *.da *.gcov
 
 clean :: mostlyclean
@@ -893,9 +901,6 @@ $(DATADIR)/vilemenu.rc:		$(srcdir)/macros/vilemenu.rc
 $(DATADIR)/vile.hlp:		$(srcdir)/vile.hlp
 	$(INSTALL_DATA)		$(srcdir)/vile.hlp $@
 
-$(MANDIR)/@TARGET@.$(manext):	$(srcdir)/vile.1
-	$(INSTALL_DATA)		$(srcdir)/vile.1 $@
-
 $(PERLDIR)/Breadcrumbs.pm:	$(srcdir)/perl/Breadcrumbs.pm
 	$(INSTALL_DATA)		$(srcdir)/perl/Breadcrumbs.pm $@
 $(PERLDIR)/CaptHook.pm:		$(srcdir)/perl/CaptHook.pm
@@ -944,7 +949,7 @@ $(PERLDIR)/winops.pm:		$(srcdir)/perl/winops.pm
 	$(INSTALL_DATA)		$(srcdir)/perl/winops.pm $@
 
 $(INSTALL_DIRS):
-	$(SHELL) ${srcdir}/mkdirs.sh $@
+	mkdir -p $@
 
 ALWAYS:
 
