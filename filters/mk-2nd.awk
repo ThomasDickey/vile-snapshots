@@ -1,4 +1,4 @@
-# $Header: /users/source/archives/vile.vcs/filters/RCS/mk-2nd.awk,v 1.19 2007/11/25 15:03:50 tom Exp $
+# $Header: /users/source/archives/vile.vcs/filters/RCS/mk-2nd.awk,v 1.20 2010/03/03 11:54:25 tom Exp $
 #
 # Generate makefile rules for vile's external and built-in filters.  We will
 # build each filter only one way, to avoid conflict with the generated files. 
@@ -67,7 +67,7 @@ END	{
 		print "# dependency-rules for install/installdirs (%s)", mode
 		for (i = 0; i < count; i++) {
 		    src = prog[i];
-		    dst = sprintf("$(BINDIR)/%s", src);
+		    dst = sprintf("$(FILTERS_BINDIR)/%s", src);
 		    printf "%s :\t%s\t\t; $(INSTALL_PROGRAM) $? $@\n", dst, src
 		}
 	    } else {
@@ -109,7 +109,7 @@ END	{
 		    print "# dependency-rules for install/installdirs (%s)", mode
 		    for (i = 0; i < count; i++) {
 			src = prog[i];
-			dst = sprintf("$(BINDIR)/%s", src);
+			dst = sprintf("$(FILTERS_BINDIR)/%s", src);
 			printf "%s :\t%s\t\t; $(INSTALL_PROGRAM) $? $@\n", dst, src
 		    }
 		}

@@ -1,4 +1,4 @@
-# $Header: /users/source/archives/vile.vcs/filters/RCS/mk-1st.awk,v 1.14 2007/11/25 15:03:27 tom Exp $
+# $Header: /users/source/archives/vile.vcs/filters/RCS/mk-1st.awk,v 1.15 2010/03/03 11:54:25 tom Exp $
 #
 # Generate makefile lists for vile's external and built-in filters.  We will
 # build each filter only one way (external _or_ built-in).  This script uses
@@ -62,8 +62,8 @@ END	{
 	    } else if (mode == "external") {
 		dump_list("%s", "C_ALL", prog, ".c");
 		dump_list("%s", "LEX_ALL", prog, ".l");
-		dump_list("$(BINDIR)/%s", "INSTALL_C", prog, ".c");
-		dump_list("$(BINDIR)/%s", "INSTALL_LEX", prog, ".l");
+		dump_list("$(FILTERS_BINDIR)/%s", "INSTALL_C", prog, ".c");
+		dump_list("$(FILTERS_BINDIR)/%s", "INSTALL_LEX", prog, ".l");
 	    } else if (mode == "built-in") {
 		dump_list("%s$o", "C_OBJ", root, ".c");
 		dump_list("%s$o", "LEX_OBJ", root, ".l");
@@ -72,7 +72,7 @@ END	{
 		dump_list("%s", "C_DYN", prog, ".c");
 		dump_list("%s", "LEX_DYN", prog, ".l");
 		dump_list("%s.c", "BUILTSRCS", root, ".l");
-		dump_list("$(BINDIR)/%s", "INSTALL_DYN_C", prog, ".c");
-		dump_list("$(BINDIR)/%s", "INSTALL_DYN_LEX", prog, ".l");
+		dump_list("$(FILTERS_BINDIR)/%s", "INSTALL_DYN_C", prog, ".c");
+		dump_list("$(FILTERS_BINDIR)/%s", "INSTALL_DYN_LEX", prog, ".l");
 	    }
 	}
