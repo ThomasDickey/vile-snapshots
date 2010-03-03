@@ -1,5 +1,5 @@
 Summary: VILE VI Like Emacs editor
-# $Header: /users/source/archives/vile.vcs/RCS/vile-9.7.spec,v 1.36 2010/03/03 01:26:18 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/vile-9.7.spec,v 1.38 2010/03/03 10:44:24 tom Exp $
 Name: vile
 Version: 9.7zc
 # each patch should update the version
@@ -48,6 +48,15 @@ notably multi-file editing and viewing, syntax highlighting, key
 rebinding, and real X window system support.
 
 %prep
+
+%define is_mandrake %(test -e /etc/mandrake-release && echo 1 || echo 0)
+%define is_suse %(test -e /etc/SuSE-release && echo 1 || echo 0)
+%define is_fedora %(test -e /etc/fedora-release && echo 1 || echo 0)
+
+%define _xresdir %{_prefix}/lib/X11/app-defaults
+%define _iconsdir %{_datadir}/icons
+%define _pixmapsdir %{_datadir}/pixmaps
+
 %setup -q -n vile-9.7
 %patch1 -p1
 %patch2 -p1
@@ -81,19 +90,6 @@ rebinding, and real X window system support.
 # each patch should add itself to this list
 
 %build
-VILE_LIBDIR_PATH=%{_libdir}/vile \
-EXTRA_CFLAGS="$RPM_OPT_FLAGS" \
-INSTALL_PROGRAM='${INSTALL} -s' \
-	./configure \
-		--target %{_target_platform} \
-		--prefix=%{_prefix} \
-		--bindir=%{_bindir} \
-		--libdir=%{_libdir} \
-		--with-locale \
-		--with-builtin-filters \
-		--with-screen=x11 \
-		--with-xpm
-make xvile
 
 VILE_LIBDIR_PATH=%{_libdir}/vile \
 EXTRA_CFLAGS="$RPM_OPT_FLAGS" \
@@ -106,15 +102,33 @@ INSTALL_PROGRAM='${INSTALL} -s' \
 		--mandir=%{_mandir} \
 		--with-locale \
 		--with-builtin-filters
-touch x11.o menu.o
+make vile
+
+VILE_LIBDIR_PATH=%{_libdir}/vile \
+EXTRA_CFLAGS="$RPM_OPT_FLAGS" \
+INSTALL_PROGRAM='${INSTALL} -s' \
+	./configure \
+		--target %{_target_platform} \
+		--prefix=%{_prefix} \
+		--bindir=%{_bindir} \
+		--libdir=%{_libdir} \
+		--mandir=%{_mandir} \
+		--with-locale \
+		--with-builtin-filters \
+		--with-screen=Xaw \
+		--with-xpm
+
+touch tcap.o
 make
-touch xvile
+touch vile
 
 %install
 [ "$RPM_BUILD_ROOT" != "/" ] && rm -rf $RPM_BUILD_ROOT
 
 make install                    DESTDIR=$RPM_BUILD_ROOT
-make install-bin   TARGET=xvile DESTDIR=$RPM_BUILD_ROOT
+make install-app                DESTDIR=$RPM_BUILD_ROOT
+make install-icon               DESTDIR=$RPM_BUILD_ROOT
+make install-bin   TARGET=vile  DESTDIR=$RPM_BUILD_ROOT
 
 strip $RPM_BUILD_ROOT%{_bindir}/xvile
 strip $RPM_BUILD_ROOT%{_bindir}/vile
@@ -144,14 +158,18 @@ install xvile.wmconfig $RPM_BUILD_ROOT%{_sysconfdir}/X11/wmconfig/xvile
 %config(missingok) %{_sysconfdir}/X11/wmconfig/vile
 %config(missingok) %{_sysconfdir}/X11/wmconfig/xvile
 %{_prefix}/bin/xvile
+%{_prefix}/bin/uxvile
 %{_prefix}/bin/xvile-pager
-%{_prefix}/share/vile
+%{_prefix}/bin/xshell.sh
 %{_bindir}/vile
 %{_bindir}/vile-pager
 %{_mandir}/man1/xvile.*
 %{_mandir}/man1/vile.*
 %{_datadir}/vile/
+%{_pixmapsdir}/vile.xpm
 %{_libdir}/vile/
+%{_xresdir}/XVile
+%{_xresdir}/UXVile
 
 %changelog
 # each patch should add its ChangeLog entries here
