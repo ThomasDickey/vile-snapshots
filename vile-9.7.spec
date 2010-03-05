@@ -1,5 +1,5 @@
 Summary: VILE VI Like Emacs editor
-# $Header: /users/source/archives/vile.vcs/RCS/vile-9.7.spec,v 1.38 2010/03/03 10:44:24 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/vile-9.7.spec,v 1.43 2010/03/05 01:55:00 tom Exp $
 Name: vile
 Version: 9.7zc
 # each patch should update the version
@@ -49,13 +49,24 @@ rebinding, and real X window system support.
 
 %prep
 
-%define is_mandrake %(test -e /etc/mandrake-release && echo 1 || echo 0)
-%define is_suse %(test -e /etc/SuSE-release && echo 1 || echo 0)
-%define is_fedora %(test -e /etc/fedora-release && echo 1 || echo 0)
+%define desktop_vendor  dickey
+%define desktop_utils   %(if which desktop-file-install 2>&1 >/dev/null ; then echo "yes" ; fi)
 
-%define _xresdir %{_prefix}/lib/X11/app-defaults
-%define _iconsdir %{_datadir}/icons
+%define is_mandrake %(test -e /etc/mandrake-release && echo 1 || echo 0)
+%define is_suse     %(test -e /etc/SuSE-release     && echo 1 || echo 0)
+%define is_fedora   %(test -e /etc/fedora-release   && echo 1 || echo 0)
+
+%if %{is_fedora}
+# tested Fedora (5, 12)
+%define _xresdir    %{_datadir}/X11/app-defaults
+%define _iconsdir   %{_datadir}/icons
 %define _pixmapsdir %{_datadir}/pixmaps
+%else
+# tested Debian (squeeze)
+%define _xresdir    %{_sysconfdir}/X11/app-defaults
+%define _iconsdir   %{_datadir}/icons
+%define _pixmapsdir %{_datadir}/pixmaps
+%endif
 
 %setup -q -n vile-9.7
 %patch1 -p1
@@ -93,7 +104,7 @@ rebinding, and real X window system support.
 
 VILE_LIBDIR_PATH=%{_libdir}/vile \
 EXTRA_CFLAGS="$RPM_OPT_FLAGS" \
-INSTALL_PROGRAM='${INSTALL} -s' \
+INSTALL_PROGRAM='${INSTALL}' \
 	./configure \
 		--target %{_target_platform} \
 		--prefix=%{_prefix} \
@@ -106,13 +117,15 @@ make vile
 
 VILE_LIBDIR_PATH=%{_libdir}/vile \
 EXTRA_CFLAGS="$RPM_OPT_FLAGS" \
-INSTALL_PROGRAM='${INSTALL} -s' \
+INSTALL_PROGRAM='${INSTALL}' \
 	./configure \
 		--target %{_target_platform} \
 		--prefix=%{_prefix} \
 		--bindir=%{_bindir} \
 		--libdir=%{_libdir} \
 		--mandir=%{_mandir} \
+		--with-app-defaults=%{_xresdir} \
+		--with-icondir=%{_pixmapsdir} \
 		--with-locale \
 		--with-builtin-filters \
 		--with-screen=Xaw \
@@ -129,6 +142,10 @@ make install                    DESTDIR=$RPM_BUILD_ROOT
 make install-app                DESTDIR=$RPM_BUILD_ROOT
 make install-icon               DESTDIR=$RPM_BUILD_ROOT
 make install-bin   TARGET=vile  DESTDIR=$RPM_BUILD_ROOT
+
+%if "%{desktop_utils}" == "yes"
+make install-desktop            DESKTOP_FLAGS="--vendor='%{desktop_vendor}' --dir %{buildroot}%{_datadir}/applications"
+%endif
 
 strip $RPM_BUILD_ROOT%{_bindir}/xvile
 strip $RPM_BUILD_ROOT%{_bindir}/vile
@@ -170,6 +187,11 @@ install xvile.wmconfig $RPM_BUILD_ROOT%{_sysconfdir}/X11/wmconfig/xvile
 %{_libdir}/vile/
 %{_xresdir}/XVile
 %{_xresdir}/UXVile
+
+%if "%{desktop_utils}" == "yes"
+%config(missingok) %{_datadir}/applications/%{desktop_vendor}-uxvile.desktop
+%config(missingok) %{_datadir}/applications/%{desktop_vendor}-xvile.desktop
+%endif
 
 %changelog
 # each patch should add its ChangeLog entries here
