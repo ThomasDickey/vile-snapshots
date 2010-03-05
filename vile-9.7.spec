@@ -1,5 +1,5 @@
 Summary: VILE VI Like Emacs editor
-# $Header: /users/source/archives/vile.vcs/RCS/vile-9.7.spec,v 1.43 2010/03/05 01:55:00 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/vile-9.7.spec,v 1.44 2010/03/05 10:10:25 tom Exp $
 Name: vile
 Version: 9.7zc
 # each patch should update the version
@@ -144,7 +144,7 @@ make install-icon               DESTDIR=$RPM_BUILD_ROOT
 make install-bin   TARGET=vile  DESTDIR=$RPM_BUILD_ROOT
 
 %if "%{desktop_utils}" == "yes"
-make install-desktop            DESKTOP_FLAGS="--vendor='%{desktop_vendor}' --dir %{buildroot}%{_datadir}/applications"
+make install-desktop            DESKTOP_FLAGS="--vendor='%{desktop_vendor}' --dir $RPM_BUILD_ROOT%{_datadir}/applications"
 %endif
 
 strip $RPM_BUILD_ROOT%{_bindir}/xvile
