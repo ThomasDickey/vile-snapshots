@@ -1,4 +1,4 @@
-# $XTermId: xvile.desktop,v 1.2 2009/12/08 10:08:53 bod Exp $
+# $XTermId: xvile.desktop,v 1.3 2010/03/05 09:47:57 tom Exp $
 [Desktop Entry]
 Name=XVile
 Comment=VI Like Emacs
@@ -7,4 +7,4 @@ Terminal=false
 Type=Application
 Encoding=UTF-8
 Icon=vile
-Categories=Utility;TextEditor;
+Categories=Application;Utility;TextEditor;
