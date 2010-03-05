@@ -1,11 +1,12 @@
 Changes for vile 9.8 (released ??? ??? ?? ????)
 
- 20100304 (zc)
+ 20100305 (zc)
 	> Rick Sladkey:
 	+ add missing "close" for terminal for win32 console version.  Lacking
 	  the close, vile could hang if it was run from a subshell.
 	+ do not check X_OK in ffaccess() for win32.
 	> Tom Dickey:
+	+ add "Application" to desktop files.
 	+ improve .spec file, to install uxvile as well as configure xvile
 	  using Xaw to obtain menu support.
 	+ remove mkdirs.sh; use mkdir -p
