@@ -1,11 +1,18 @@
 Changes for vile 9.8 (released ??? ??? ?? ????)
 
- 20100305 (zc)
+ 20100321 (zc)
 	> Rick Sladkey:
 	+ add missing "close" for terminal for win32 console version.  Lacking
 	  the close, vile could hang if it was run from a subshell.
 	+ do not check X_OK in ffaccess() for win32.
 	> Tom Dickey:
+	+ improve CF_FIND_LINKAGE configure macro, avoid adding to CPPFLAGS
+	  and LDFLAGS if the check only needs to add a library name.
+	+ improve configure check for gcc -rdynamic option.
+	+ incorporate "reflex" into AC_PROG_LEX check for working version of
+	  flex.
+	+ change resource file's forkOnStartup to false, matching compiled-in
+	  default (discussion on mailing list).
 	+ add "Application" to desktop files.
 	+ improve .spec file, to install uxvile as well as configure xvile
 	  using Xaw to obtain menu support.

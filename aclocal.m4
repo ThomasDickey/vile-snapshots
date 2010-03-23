@@ -1,6 +1,6 @@
 dnl vile's local definitions for autoconf.
 dnl
-dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.211 2010/03/04 10:39:59 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.214 2010/03/23 00:15:02 tom Exp $
 dnl
 dnl See
 dnl		http://invisible-island.net/autoconf/autoconf.html
@@ -1222,7 +1222,7 @@ fi
 ])
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_FIND_LINKAGE version: 13 updated: 2008/12/24 07:59:55
+dnl CF_FIND_LINKAGE version: 14 updated: 2010/03/21 14:34:38
 dnl ---------------
 dnl Find a library (specifically the linkage used in the code fragment),
 dnl searching for it if it is not already in the library path.
@@ -1251,9 +1251,18 @@ cf_cv_library_path_$3=
 
 CF_MSG_LOG([Starting [FIND_LINKAGE]($3,$6)])
 
-AC_TRY_LINK([$1],[$2],
-    cf_cv_find_linkage_$3=yes,[
+AC_TRY_LINK([$1],[$2],[
+	cf_cv_find_linkage_$3=yes
+],[
+
+cf_save_LIBS="$LIBS"
+LIBS="-l$3 $7 $cf_save_LIBS"
+
+AC_TRY_LINK([$1],[$2],[
+	cf_cv_find_linkage_$3=yes
+],[
     cf_cv_find_linkage_$3=no
+	LIBS="$cf_save_LIBS"
 
     CF_VERBOSE(find linkage for $3 library)
     CF_MSG_LOG([Searching for headers in [FIND_LINKAGE]($3,$6)])
@@ -1323,6 +1332,7 @@ AC_TRY_LINK([$1],[$2],
       cf_cv_find_linkage_$3=no
     fi
     ],$7)
+])
 
 if test "$cf_cv_find_linkage_$3" = yes ; then
 ifelse([$4],,[
@@ -1518,6 +1528,44 @@ else
 	fgrep define conftest.i >>confdefs.h
 fi
 rm -rf conftest*
+fi
+])dnl
+dnl ---------------------------------------------------------------------------
+dnl CF_GCC_OPT_RDYNAMIC version: 1 updated: 2010/03/20 12:37:42
+dnl -------------------
+dnl "Newer" versions of gcc support the -rdynamic option:
+dnl		Pass the flag -export-dynamic to the ELF linker, on targets that
+dnl		support it. This instructs the linker to add all symbols, not only
+dnl		used ones, to the dynamic symbol table. This option is needed for
+dnl		some uses of "dlopen" or to allow obtaining backtraces from within
+dnl		a program.
+dnl Check for the option, and add it to $CFLAGS if available.
+AC_DEFUN([CF_GCC_OPT_RDYNAMIC],[
+AC_CACHE_CHECK([if $CC has -rdynamic option],cf_cv_gcc_opt_rdynamic,[
+
+cf_save_CFLAGS="$CFLAGS"
+CFLAGS="-Wall -rdynamic $CFLAGS"
+
+# gcc usually does not return an error for unrecognized options.
+AC_TRY_LINK([#include <stdio.h>],
+	[printf("Hello");],
+	[
+	# refine check...
+	case testing`eval $ac_link 2>&1` in #(vi
+	*unrecog*) #(vi
+		cf_cv_gcc_opt_rdynamic=no
+		;;
+	*)
+		cf_cv_gcc_opt_rdynamic=yes
+		;;
+	esac
+	],
+	[cf_cv_gcc_opt_rdynamic=no])
+
+CFLAGS="$cf_save_CFLAGS"
+])
+if test "$cf_cv_gcc_opt_rdynamic" = yes ; then
+	CF_ADD_CFLAGS([-rdynamic])
 fi
 ])dnl
 dnl ---------------------------------------------------------------------------
