@@ -1,4 +1,4 @@
-! $Header: /users/source/archives/vile.vcs/macros/RCS/XVile.ad,v 1.5 2010/02/26 10:38:35 tom Exp $
+! $Header: /users/source/archives/vile.vcs/macros/RCS/XVile.ad,v 1.6 2010/03/20 13:19:36 tom Exp $
 
 ! "white" on "black" main window
 *background: grey5
@@ -34,7 +34,7 @@
 
 ! options
 *focusFollowsMouse: true
-*forkOnStartup: true
+*forkOnStartup: false
 
 ! highlighting colours
 *color.fcolor0: black
