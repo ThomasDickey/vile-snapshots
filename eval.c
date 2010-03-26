@@ -2,7 +2,7 @@
  *	eval.c -- function and variable evaluation
  *	original by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.425 2010/02/18 01:54:24 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.426 2010/03/25 21:02:05 tom Exp $
  *
  */
 
@@ -218,8 +218,13 @@ desprint(int f, int n GCC_UNUSED)
 int
 deswprint(int f, int n)
 {
-    show_ctypes_f = TRUE;
-    show_ctypes_n = f ? n : 0;
+    if (isEmpty(vl_wide_enc.locale) || isEmpty(vl_narrow_enc.locale)) {
+	show_ctypes_f = f;
+	show_ctypes_n = 0;
+    } else {
+	show_ctypes_f = TRUE;
+	show_ctypes_n = f ? n : 0;
+    }
     return show_CharClasses(curbp);
 }
 #endif

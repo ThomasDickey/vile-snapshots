@@ -1,6 +1,6 @@
 Changes for vile 9.8 (released ??? ??? ?? ????)
 
- 20100321 (zc)
+ 20100325 (zc)
 	> Rick Sladkey:
 	+ add missing "close" for terminal for win32 console version.  Lacking
 	  the close, vile could hang if it was run from a subshell.
