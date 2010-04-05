@@ -1,12 +1,12 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_REVISION($Revision: 1.282 $)
+AC_REVISION($Revision: 1.284 $)
 AC_PREREQ(2.13.20030927)
 rm -f config.cache
 
 ### Use "configure -with-screen" to override the default configuration, which is
 ### termcap-based on unix systems.
 
-dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.282 2010/03/20 15:58:59 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.284 2010/04/04 23:07:53 tom Exp $
 
 define(MAKELIST, sh $srcdir/filters/makelist.sh $srcdir/filters/genmake.mak)
 
@@ -486,7 +486,7 @@ case "$screen" in
 		AC_DEFINE(DISP_X11)
 		AC_DEFINE(XTOOLKIT)
 		AC_CHECK_HEADERS(X11/IntrinsicI.h X11/Xpoll.h X11/Xmu/Atoms.h)
-		AC_HAVE_FUNCS(Xutf8TextPropertyToTextList XmbTextPropertyToTextList)
+		AC_HAVE_FUNCS(Xutf8LookupString Xutf8TextPropertyToTextList XmbTextPropertyToTextList)
 	;;
 esac
 
@@ -1027,6 +1027,9 @@ else
 	no_icondir="#"
 	desktop_utils="#"
 fi
+
+CF_MAKE_TAGS
+CF_RPATH_HACK
 
 ###	output makefile and config.h
 AC_OUTPUT(makefile filters/makefile filters/makefile.tmp:filters/makefile.2nd,

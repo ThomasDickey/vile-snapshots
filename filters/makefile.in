@@ -1,4 +1,4 @@
-# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.in,v 1.81 2010/03/03 01:17:20 tom Exp $
+# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.in,v 1.83 2010/04/04 23:08:35 tom Exp $
 #
 
 #### Start of system configuration section. ####
@@ -17,9 +17,12 @@ INSTALL_DATA	= @INSTALL_DATA@
 
 EXTRA_CFLAGS	= @EXTRA_CFLAGS@
 CFLAGS		= @CFLAGS@ $(EXTRA_CFLAGS)
-LDFLAGS		= @IMAKE_LOADFLAGS@ @LDFLAGS@
+LDFLAGS		= @IMAKE_LOADFLAGS@ @LDFLAGS@ @EXTRA_LDFLAGS@
 LIBS		= @LIBS@
+
 LINT		= @LINT@
+CTAGS		= @CTAGS@
+ETAGS		= @ETAGS@
 
 AR		= @AR@
 AR_OPTS		= @AR_OPTS@

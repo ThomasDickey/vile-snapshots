@@ -1,11 +1,15 @@
 Changes for vile 9.8 (released ??? ??? ?? ????)
 
- 20100325 (zc)
+ 20100404 (zc)
 	> Rick Sladkey:
 	+ add missing "close" for terminal for win32 console version.  Lacking
 	  the close, vile could hang if it was run from a subshell.
 	+ do not check X_OK in ffaccess() for win32.
 	> Tom Dickey:
+	+ add configure check for exctags vs ctags, to work with pkgsrc.
+	+ use Xutf8LookupString for input of UTF-8 key-events, if available.
+	+ add configure check for rpath linkage options, use this for libraries
+	  in unusual places.
 	+ improve CF_FIND_LINKAGE configure macro, avoid adding to CPPFLAGS
 	  and LDFLAGS if the check only needs to add a library name.
 	+ improve configure check for gcc -rdynamic option.

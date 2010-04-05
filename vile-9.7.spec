@@ -1,5 +1,5 @@
 Summary: VILE VI Like Emacs editor
-# $Header: /users/source/archives/vile.vcs/RCS/vile-9.7.spec,v 1.44 2010/03/05 10:10:25 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/vile-9.7.spec,v 1.45 2010/04/01 22:13:39 tom Exp $
 Name: vile
 Version: 9.7zc
 # each patch should update the version
@@ -52,21 +52,17 @@ rebinding, and real X window system support.
 %define desktop_vendor  dickey
 %define desktop_utils   %(if which desktop-file-install 2>&1 >/dev/null ; then echo "yes" ; fi)
 
-%define is_mandrake %(test -e /etc/mandrake-release && echo 1 || echo 0)
-%define is_suse     %(test -e /etc/SuSE-release     && echo 1 || echo 0)
-%define is_fedora   %(test -e /etc/fedora-release   && echo 1 || echo 0)
+%define apps_shared %(test -d /usr/share/X11/app-defaults && echo 1 || echo 0)
+%define apps_syscnf %(test -d /etc/X11/app-defaults && echo 1 || echo 0)
 
-%if %{is_fedora}
-# tested Fedora (5, 12)
+%if %{apps_shared}
 %define _xresdir    %{_datadir}/X11/app-defaults
-%define _iconsdir   %{_datadir}/icons
-%define _pixmapsdir %{_datadir}/pixmaps
 %else
-# tested Debian (squeeze)
 %define _xresdir    %{_sysconfdir}/X11/app-defaults
+%endif
+
 %define _iconsdir   %{_datadir}/icons
 %define _pixmapsdir %{_datadir}/pixmaps
-%endif
 
 %setup -q -n vile-9.7
 %patch1 -p1
