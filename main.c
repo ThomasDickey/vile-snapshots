@@ -22,7 +22,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.686 2010/02/21 23:07:21 Rick.Sladkey Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.687 2010/04/03 12:04:18 tom Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -224,7 +224,7 @@ default_fill(void)
 static char *
 get_set_locale(const char *value)
 {
-    char *result = setlocale(LC_ALL, value);
+    char *result = setlocale(LC_CTYPE, value);
     if (result != 0)
 	result = strmalloc(result);
     return result;

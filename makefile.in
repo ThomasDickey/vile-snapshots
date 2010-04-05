@@ -20,7 +20,7 @@
 #
 # gnu autoconf support by kevin buettner, 5/94
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.240 2010/03/02 23:51:08 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.242 2010/04/04 23:09:18 tom Exp $
 
 SHELL		= /bin/sh
 
@@ -42,7 +42,10 @@ INSTALL_DATA	= @INSTALL_DATA@
 EXTRA_CFLAGS	= @EXTRA_CFLAGS@
 CFLAGS		= @CFLAGS@ $(EXTRA_CFLAGS)
 LIBS		= @FILTER_LIBS@ @LIBICONV@ @LIBS@
+
 LINT		= @LINT@
+CTAGS		= @CTAGS@
+ETAGS		= @ETAGS@
 
 x		= @EXEEXT@
 o		= .@OBJEXT@
@@ -93,7 +96,7 @@ QUOTDEFS	= \
 CPPFLAGS	= -I. -I$(srcdir) \
 		-DHAVE_CONFIG_H @CPPFLAGS@
 
-LDFLAGS		= @IMAKE_LOADFLAGS@ @LDFLAGS@
+LDFLAGS		= @IMAKE_LOADFLAGS@ @LDFLAGS@ @EXTRA_LDFLAGS@
 
 BINDIR		= $(DESTDIR)$(bindir)
 DATADIR		= $(DESTDIR)$(datadir)
@@ -618,10 +621,10 @@ lint: $(BUILTHDRS)
 TAG_SRC = $(SRC) $(HDRS) $(BUILTSRC) $(BUILTHDRS)
 
 tags:	$(TAG_SRC)
-	ctags $(TAG_SRC)
+	$(CTAGS) $(TAG_SRC)
 
 TAGS:	$(TAG_SRC)
-	etags $(TAG_SRC)
+	$(ETAGS) $(TAG_SRC)
 
 #	 this builds vile-N.Ndev.tar.gz, including all development files
 devtarball:	$(DEV_DISTFILES) /tmp/vilevers release_warnings

@@ -1,5 +1,5 @@
 /*
- * $Id: eightbit.c,v 1.70 2010/03/01 10:43:38 tom Exp $
+ * $Id: eightbit.c,v 1.71 2010/04/03 12:04:30 tom Exp $
  *
  * Maintain "8bit" file-encoding mode by converting incoming UTF-8 to single
  * bytes, and providing a function that tells vile whether a given Unicode
@@ -947,7 +947,7 @@ vl_mb_is_8bit(int code)
 char *
 vl_get_locale(char **target)
 {
-    char *result = setlocale(LC_ALL, 0);
+    char *result = setlocale(LC_CTYPE, 0);
 
     if (target != 0) {
 	FreeIfNeeded(*target);
@@ -969,7 +969,7 @@ vl_get_encoding(char **target, const char *locale)
     static char utf_eight[] = "UTF-8";
 
     char *result = 0;
-    char *actual = setlocale(LC_ALL, locale);
+    char *actual = setlocale(LC_CTYPE, locale);
 
     TRACE((T_CALLED "vl_get_encoding(%s)\n", NONNULL(locale)));
     if (isEmpty(actual)) {	/* nonempty means legal locale */

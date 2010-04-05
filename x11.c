@@ -2,7 +2,7 @@
  *	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.360 2010/03/02 09:05:55 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.363 2010/04/04 23:43:27 tom Exp $
  *
  */
 
@@ -6408,11 +6408,20 @@ x_key_press(Widget w GCC_UNUSED,
     if (!XFilterEvent(ev, *(&ev->xkey.window))) {
 	if (cur_win->imInputContext != NULL) {
 	    Status status_return;
-
-	    num = XmbLookupString(cur_win->imInputContext,
-				  (XKeyPressedEvent *) ev, buffer,
-				  sizeof(buffer), &keysym,
-				  &status_return);
+#ifdef HAVE_XUTF8LOOKUPSTRING
+	    if (b_is_utfXX(curbp)) {
+		num = Xutf8LookupString(cur_win->imInputContext,
+					(XKeyPressedEvent *) ev, buffer,
+					sizeof(buffer), &keysym,
+					&status_return);
+	    } else
+#endif
+	    {
+		num = XmbLookupString(cur_win->imInputContext,
+				      (XKeyPressedEvent *) ev, buffer,
+				      sizeof(buffer), &keysym,
+				      &status_return);
+	    }
 	} else {
 	    num = XLookupString((XKeyPressedEvent *) ev, buffer,
 				sizeof(buffer), &keysym,
@@ -6956,7 +6965,8 @@ xim_real_init(void)
 
     if (cur_win->xim == NULL) {
 	fprintf(stderr, "Failed to open input method\n");
-	ExitProgram(BADEXIT);
+	cur_win->cannot_im = True;
+	returnVoid();
     }
 
     if (XGetIMValues(cur_win->xim, XNQueryInputStyle, &xim_styles, NULL)
