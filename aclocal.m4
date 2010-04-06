@@ -1,6 +1,6 @@
 dnl vile's local definitions for autoconf.
 dnl
-dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.218 2010/04/04 23:07:30 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.219 2010/04/06 00:03:50 tom Exp $
 dnl
 dnl See
 dnl		http://invisible-island.net/autoconf/autoconf.html
@@ -3219,7 +3219,7 @@ fi
 AC_SUBST(EXTRA_LDFLAGS)
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_RPATH_HACK_2 version: 3 updated: 2010/04/02 20:27:47
+dnl CF_RPATH_HACK_2 version: 4 updated: 2010/04/05 20:03:50
 dnl ---------------
 dnl Do one set of substitutions for CF_RPATH_HACK, adding an rpath option to
 dnl EXTRA_LDFLAGS for each -L option found.
@@ -3236,9 +3236,9 @@ do
 	case $cf_rpath_src in #(vi
 	-L*) #(vi
 		if test "$LD_RPATH_OPT" = "-R " ; then
-			cf_rpath_tmp=`echo "$cf_rpath_src" |sed -e 's%-L%-R %'`
+			cf_rpath_tmp=`echo "$cf_rpath_src" |sed -e "s%-L%-R %"`
 		else
-			cf_rpath_tmp=`echo "$cf_rpath_src" |sed -e s%-L%$LD_RPATH_OPT%`
+			cf_rpath_tmp=`echo "$cf_rpath_src" |sed -e "s%-L%$LD_RPATH_OPT%"`
 		fi
 		CF_VERBOSE(...Filter $cf_rpath_src ->$cf_rpath_tmp)
 		EXTRA_LDFLAGS="$cf_rpath_tmp $EXTRA_LDFLAGS"
