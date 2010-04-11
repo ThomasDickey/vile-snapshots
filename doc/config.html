@@ -1,6 +1,6 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
-  $Id: config.html,v 1.7 2010/02/25 10:54:41 tom Exp $
+  $Id: config.html,v 1.8 2010/04/11 14:51:57 tom Exp $
 -->
 <HTML>
 <HEAD>
@@ -456,7 +456,6 @@ for sh, ksh, and bash.  Or:
 for csh and tcsh.
 </ol>
 
-
 <h2 id="installxvile-id"><a name="installxvile">Installing (x)vile</a></h2>
 
 Installation of (x)vile is simple.  Obtain the appropriate privileges (become
@@ -496,13 +495,19 @@ would issue the following commands:
 <pre>
     ./configure --with-screen=x11 --prefix=$HOME
     make install
-</pre><p>
+</pre>
+<p>Here are other useful options for configuring xvile:
+<pre>
+  --with-app-defaults=DIR directory in which to install resource files (default: EPREFIX/lib/X11/app-defaults)
+  --with-icondir=DIR      directory in which to install icons (default: EPREFIX/share/pixmaps)
+  --disable-desktop       disable install of X desktop files
+</pre>
+<p>
 The file INSTALL has more information on installation and on configure's
 --prefix option.  If you don't feel like rebuilding (likely), you can
 also edit the makefile and change the "prefix", "bindir", or "libdir"
 definitions--but remember that your changes will be lost the next time
 configure is run.
-
 
 <h2 id="sourcedir-id"><a name="sourcedir">Building in a separate directory</a></h2>
 
@@ -602,6 +607,7 @@ debug versions of vile.  These include:
 <pre>
   --disable-echo          test: display "compiling" commands (default: on)
   --disable-extensions    test: build only core functions (default: on)
+  --disable-rpath-hack    don't add rpath options for additional libraries
   --disable-shell         test: disable shell/external commands (default: on)
   --with-dbmalloc         test: use Conor Cahill's dbmalloc library
   --with-dmalloc          test: use Gray Watson's dmalloc library
@@ -635,4 +641,8 @@ The --disable-extensions and --disable-shell options are for testing.
 Disabling extensions produces a smaller program, essentially the core of
 vile (no macros), which is a workable editor.  You may wish to build vile
 without shell support, but perhaps not (ymmv).
+<p>
+The --disable-rpath-hack option is useful for packagers, who may not wish
+the executable to be bound to a particular library path from their build
+environment.
 </body>
