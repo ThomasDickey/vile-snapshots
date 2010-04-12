@@ -3,7 +3,7 @@
  *	for getting and setting the values of the vile state variables,
  *	plus helper utility functions.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.148 2010/03/25 20:55:03 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.150 2010/04/11 21:43:51 tom Exp $
  */
 
 #include	<estruct.h>
@@ -1661,6 +1661,22 @@ var_BUF_ENCODING(TBUFF **rp, const char *vp GCC_UNUSED)
     } else {
 	return FALSE;
     }
+}
+
+int
+var_CMD_ENCODING(TBUFF **rp, const char *vp)
+{
+    if (rp) {
+	tb_scopy(rp, encoding2s(cmd_encoding));
+	return TRUE;
+    } else if (vp) {
+	int choice = choice_to_code(&fsm_cmd_encoding_blist, vp, strlen(vp));
+	cmd_encoding = (ENC_CHOICES) choice;
+	make_local_b_val(bminip, VAL_FILE_ENCODING);
+	set_b_val(bminip, VAL_FILE_ENCODING, vl_encoding);
+	return TRUE;
+    }
+    return FALSE;
 }
 
 int

@@ -11,7 +11,7 @@
 #
 # The modes are table entries in the BUFFER and WINDOW structures.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.304 2010/02/18 09:48:08 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.305 2010/04/11 18:36:00 tom Exp $
 #
 #
 # Mode-table entries.  Capitalized letters are used for abbreviations.
@@ -241,6 +241,7 @@ bool
 	"pending"	PENDING		1		"type ahead pending flag"
 	"term-resizes"	TERM_RESIZES	1		"true if terminal can be resized"
 enum
+	"cmd-encoding"	CMD_ENCODING	OPT_MULTIBYTE	"terminal's encoding support"
 	"mode"		MODE		1		"are we inserting/overwriting/command"
 	"term-encoding" TERM_ENCODING	OPT_MULTIBYTE	"terminal's encoding support"
 	"title-encoding" TITLE_ENCODING	OPT_MULTIBYTE	"xterm title encoding"
@@ -472,6 +473,12 @@ string
 "qid"		vl_QIDENT
 "tmp"		vl_SCRTCH	OPT_WIDE_CTYPES
 "sh"		vl_SHPIPE	OPT_WIDE_CTYPES
+
+.table cmd_encoding
+"auto"		enc_AUTO
+"ascii"		enc_POSIX
+"8bit"		enc_8BIT
+"utf-8"		enc_UTF8
 
 .table color
 "fcolor"	ENUM_FCOLOR	DISP_X11

@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.703 2010/02/12 11:45:57 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.704 2010/04/11 18:52:47 tom Exp $
  *
  */
 
@@ -200,7 +200,9 @@ extern int kcod2escape_seq (int c, char *ptr, size_t limit);
 extern int no_such_function (const char *fname);
 extern int ourstrstr (const char *haystack, const char *needle, int anchor);
 extern void kbd_erase (void);
+extern void kbd_finish (KBD_DATA *save);
 extern void kbd_init (void);
+extern void kbd_start (KBD_DATA *save);
 extern void kbd_unquery (void);
 extern void popdown_completions (const char *old_bname, WINDOW *old_wp);
 

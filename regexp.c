@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/regexp.c,v 1.199 2010/02/19 10:03:42 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/regexp.c,v 1.200 2010/04/11 21:26:46 tom Exp $
  *
  * Copyright 2005-2009,2010 Thomas E. Dickey and Paul G. Fox
  *
@@ -565,7 +565,7 @@ set_utf8flag(BUFFER *bp)
 #else
     reg_utf8flag = (bp
 		    ? b_val(bp, VAL_FILE_ENCODING)
-		    : global_b_val(VAL_FILE_ENCODING));
+		    : global_b_val(VAL_FILE_ENCODING)) >= enc_UTF8;
 #endif
 }
 
@@ -2061,19 +2061,21 @@ regmatch(char *prog, int plevel)
     char *scan;			/* Current node. */
     char *next;			/* Next node. */
 
-    REGTRACE((T_CALLED "regmatch(%d) plevel %d\n", reginput - regbol, plevel));
+    REGTRACE((T_CALLED "regmatch(%d) plevel %d\n",
+	      (int) (reginput - regbol), plevel));
+
     if ((scan = prog) != NULL) {
 #ifdef REGDEBUG
 	if (scan != NULL && regnarrate) {
 	    if (reginput < regnomore) {
 		TRACE(("%2d%s %d{%.*s}\n",
-		       scan - reg_program, regprop(scan),
-		       regnomore - reginput,
-		       regnomore - reginput, reginput));
+		       (int) (scan - reg_program), regprop(scan),
+		       (int) (regnomore - reginput),
+		       (int) (regnomore - reginput), reginput));
 	    } else {
 		TRACE(("%2d%s %d{}\n",
-		       scan - reg_program, regprop(scan),
-		       regnomore - reginput));
+		       (int) (scan - reg_program), regprop(scan),
+		       (int) (regnomore - reginput)));
 	    }
 	}
 #endif
@@ -2535,19 +2537,18 @@ regdump1(char *program, char *s)
 
     tb_init(&dump, EOS);
     op = OP(s);
-    sprintf(temp, "%2d%s", s - program, regprop(s));	/* Where, what. */
+    sprintf(temp, "%2d%s", (int) (s - program), regprop(s));	/* Where, what. */
     tb_sappend0(&dump, temp);
     next = regnext(s);
     if (next == NULL)		/* Next ptr. */
 	strcpy(temp, "(0)");
     else
-	sprintf(temp, "(%d)", (s - program) + (next - s));
+	sprintf(temp, "(%d)", (int) ((s - program) + (next - s)));
     tb_sappend0(&dump, temp);
     len = OPSIZE(s);
     s += OP_HDR;
     if (op == ANYOF || op == ANYBUT || op == EXACTLY) {
 	tb_sappend0(&dump, visible_buff(s, len, FALSE));
-	tb_append(&dump, EOS);	/* FIXME: obsolete */
 	s += (len + 1);
     } else if (op == RSIMPLE || op == RCOMPLX) {
 	s += (RR_LEN - OP_HDR);
