@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.342 2010/01/27 02:04:47 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.344 2010/04/11 21:49:50 tom Exp $
  *
  */
 
@@ -2418,22 +2418,46 @@ kbd_alarm(void)
     warnings++;
 }
 
+void
+kbd_start(KBD_DATA * data)
+{
+    beginDisplay();
+
+#if OPT_MULTIBYTE
+    if (cmd_encoding == enc_AUTO) {
+	set_b_val(bminip, VAL_FILE_ENCODING, b_val(curbp, VAL_FILE_ENCODING));
+    } else {
+	set_b_val(bminip, VAL_FILE_ENCODING, cmd_encoding);
+    }
+#endif
+
+    data->save_bp = curbp;
+    data->save_wp = curwp;
+    data->save_mk = MK;
+
+    curbp = bminip;
+    curwp = wminip;
+    MK = DOT;
+}
+
+void
+kbd_finish(KBD_DATA * data)
+{
+    curbp = data->save_bp;
+    curwp = data->save_wp;
+    MK = data->save_mk;
+
+    endofDisplay();
+}
+
 /* put a character to the keyboard-prompt */
 int
 kbd_putc(int c)
 {
-    BUFFER *savebp;
-    WINDOW *savewp;
-    MARK savemk;
+    KBD_DATA save;
     int status;
 
-    beginDisplay();
-    savebp = curbp;
-    savewp = curwp;
-    curbp = bminip;
-    curwp = wminip;
-    savemk = MK;
-    MK = DOT;
+    kbd_start(&save);
     if ((kbd_expand <= 0) && isreturn(c)) {
 	status = kbd_erase_to_end(0);
     } else {
@@ -2446,10 +2470,7 @@ kbd_putc(int c)
 	TRACE(("mini:%2d:%s\n", llength(DOT.l), lp_visible(DOT.l)));
 #endif
     }
-    curbp = savebp;
-    curwp = savewp;
-    MK = savemk;
-    endofDisplay();
+    kbd_finish(&save);
 
     return status;
 }
@@ -2466,58 +2487,35 @@ kbd_puts(const char *s)
 void
 kbd_erase(void)
 {
-    BUFFER *savebp;
-    WINDOW *savewp;
-    MARK savemk;
+    if (vl_echo && !clhide) {
+	KBD_DATA save;
 
-    if (!vl_echo || clhide)
-	return;
-
-    beginDisplay();
-    savebp = curbp;
-    savewp = curwp;
-    curbp = bminip;
-    curwp = wminip;
-    savemk = MK;
-    MK = DOT;
-    if (DOT.o > 0) {
-	backchar_to_bol(TRUE, 1);
-	ldel_chars(1, FALSE);
-    }
+	kbd_start(&save);
+	if (DOT.o > 0) {
+	    backchar_to_bol(TRUE, 1);
+	    ldel_chars(1, FALSE);
+	}
 #ifdef VILE_DEBUG
-    TRACE(("MINI:%2d:%s\n", llength(DOT.l), lp_visible(DOT.l)));
+	TRACE(("MINI:%2d:%s\n", llength(DOT.l), lp_visible(DOT.l)));
 #endif
-    curbp = savebp;
-    curwp = savewp;
-    MK = savemk;
-    endofDisplay();
+	kbd_finish(&save);
+    }
 }
 
 int
 kbd_erase_to_end(int column)
 {
-    BUFFER *savebp;
-    WINDOW *savewp;
-    MARK savemk;
-
     if (vl_echo && !clhide) {
-	beginDisplay();
-	savebp = curbp;
-	savewp = curwp;
-	curbp = bminip;
-	curwp = wminip;
-	savemk = MK;
-	MK = DOT;
+	KBD_DATA save;
+
+	kbd_start(&save);
 	if (llength(DOT.l) > 0) {
 	    DOT.o = column;
 	    if (llength(DOT.l) > DOT.o)
 		ldel_bytes(llength(DOT.l) - DOT.o, FALSE);
 	    TRACE(("NULL:%2d:%s\n", llength(DOT.l), lp_visible(DOT.l)));
 	}
-	curbp = savebp;
-	curwp = savewp;
-	MK = savemk;
-	endofDisplay();
+	kbd_finish(&save);
     }
 
     return TRUE;

@@ -1,5 +1,5 @@
 Summary: VILE VI Like Emacs editor
-# $Header: /users/source/archives/vile.vcs/RCS/vile-9.7.spec,v 1.46 2010/04/11 14:56:00 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/vile-9.7.spec,v 1.47 2010/04/11 15:48:29 tom Exp $
 Name: vile
 Version: 9.7zd
 # each patch should update the version
@@ -104,6 +104,7 @@ VILE_LIBDIR_PATH=%{_libdir}/vile \
 EXTRA_CFLAGS="$RPM_OPT_FLAGS" \
 INSTALL_PROGRAM='${INSTALL}' \
 	./configure \
+		--disable-rpath-hack \
 		--target %{_target_platform} \
 		--prefix=%{_prefix} \
 		--bindir=%{_bindir} \
@@ -117,6 +118,7 @@ VILE_LIBDIR_PATH=%{_libdir}/vile \
 EXTRA_CFLAGS="$RPM_OPT_FLAGS" \
 INSTALL_PROGRAM='${INSTALL}' \
 	./configure \
+		--disable-rpath-hack \
 		--target %{_target_platform} \
 		--prefix=%{_prefix} \
 		--bindir=%{_bindir} \

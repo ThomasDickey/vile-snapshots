@@ -3,7 +3,7 @@
 ------------------------
 vile bug/enhancement/wish list (mostly wishes ;-)
 ------------------------
-$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.416 2009/06/05 18:53:45 tom Exp $
+$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.417 2010/04/11 21:59:42 tom Exp $
 ----------------------
 	(E means enhancement, L,M,H are low, medium, high priority)
 
@@ -1650,3 +1650,9 @@ very old lex programs such as that bundled with HPUX.  That refers to the list
 on lines beginning with "%x", which is not adjustable in most lex
 implementations (though the HPUX lex program suggests using the "-Xs" option
 without actually accepting it).  Use flex for those cases.
+
+-- 10-04-11 (tom)
+If editing a mixture of UTF-8 and non-UTF-8 buffers, the [History] buffer
+will get a mixture of encodings corresponding to searches, etc., in the various
+buffers.  vile does not automatically translate those commands into the same
+encoding.

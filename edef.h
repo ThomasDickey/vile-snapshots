@@ -6,7 +6,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.360 2010/02/07 13:34:26 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.361 2010/04/11 18:22:43 tom Exp $
  */
 
 #ifndef VILE_EDEF_H
@@ -139,6 +139,7 @@ decl_uninit( BUFFER *bminip );		/* buffer for command-line      */
 decl_uninit( BUFFER *btempp );		/* buffer for ffgetline()       */
 decl_init( TBUFF *latin1_expr, 0 );	/* fallback for narrow/wide	*/
 decl_init( int latin1_codes, 0 );	/* range where narrow/wide equal*/
+decl_init( ENC_CHOICES cmd_encoding, enc_AUTO );
 decl_init( ENC_CHOICES title_encoding, enc_8BIT );
 #endif
 

@@ -4,6 +4,11 @@ Changes for vile 9.8 (released ??? ??? ?? ????)
 	> Brendan O'Dea:
 	+ add configure option --disable-rpath-hack, since Debian guidelines
 	  do not allow rpath.
+	> Tom Dickey:
+	+ correct setting of reg_utf8flag in regexp.c; the error was preventing
+	  matches of non-ASCII text in Latin-1 encoding.
+	+ add $cmd-encoding variable to allow control of minibuffer's encoding
+	+ disable rpath in rpm spec-file.
 
  20100405 (zc)
 	> Rick Sladkey:

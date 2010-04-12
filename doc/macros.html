@@ -1,6 +1,6 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
-  $Id: macros.html,v 1.11 2010/02/07 18:55:54 tom Exp $
+  $Id: macros.html,v 1.12 2010/04/11 21:56:52 tom Exp $
 -->
 <HTML>
 <HEAD>
@@ -561,6 +561,11 @@ sections may be read in any order.
 			<dd>[READ ONLY] Counts repetition of the current macro,
 			from 1 up to the given repeat count.  If not in a
 			macro, this is zero.
+<dt>$cmd-encoding
+			<dd>Character set to use for the minibuffer, i.e.,
+			the buffer used for commands and messages.  The
+			default (auto) tells vile to set it to match the
+			character set of the current buffer.
 <dt>$cmd-motion
 			<dd>[READ ONLY] Returns the motion (keyword) associated
 			with the current macro if it was defined using

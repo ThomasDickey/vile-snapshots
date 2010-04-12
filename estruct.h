@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.708 2010/03/02 09:46:16 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.709 2010/04/11 18:52:01 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -733,6 +733,7 @@ typedef unsigned short	mode_t;
 #define OPT_BOOL_CHOICES	   !SMALLER
 #define OPT_BYTEORDER_MARK_CHOICES OPT_MULTIBYTE
 #define OPT_CHARCLASS_CHOICES	   OPT_SHOW_CTYPE
+#define OPT_CMD_ENCODING_CHOICES   OPT_MULTIBYTE
 #define OPT_COLOR_CHOICES	   (OPT_ENUM_MODES && OPT_COLOR)
 #define OPT_CURTOKENS_CHOICES      OPT_CURTOKENS
 #define OPT_DIRECTIVE_CHOICES      !SMALLER
@@ -2508,6 +2509,15 @@ typedef struct	WINDOW {
 #else
 #define MK Mark
 #endif
+
+/*
+ * Data to save/restore when switching temporarily to the minibuffer for I/O.
+ */
+typedef struct {
+	BUFFER *save_bp;
+	WINDOW *save_wp;
+	MARK save_mk;
+} KBD_DATA;
 
 	/* we use left-margin for protecting the prefix-area of [Registers]
 	 * from cut/paste selection.

@@ -44,7 +44,7 @@
  *	tgetc_avail()     true if a key is avail from tgetc() or below.
  *	keystroke_avail() true if a key is avail from keystroke() or below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.332 2010/02/12 11:45:38 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.333 2010/04/11 19:02:57 tom Exp $
  *
  */
 
@@ -1487,17 +1487,9 @@ shiftMiniBuffer(int offs)
     static const int slack = 5;
     int shift = w_val(wminip, WVAL_SIDEWAYS);
     int adjust;
-    BUFFER *savebp;
-    WINDOW *savewp;
-    MARK savemk;
+    KBD_DATA save;
 
-    beginDisplay();
-    savebp = curbp;
-    savewp = curwp;
-    savemk = MK;
-
-    curbp = bminip;
-    curwp = wminip;
+    kbd_start(&save);
 
     adjust = offs - (shift + LastMsgCol - 1);
     if (adjust >= 0)
@@ -1505,12 +1497,9 @@ shiftMiniBuffer(int offs)
     else if (shift > 0 && (slack + adjust) < 0)
 	mvleftwind(TRUE, slack - adjust);
 
-    curbp = savebp;
-    curwp = savewp;
-    MK = savemk;
+    kbd_finish(&save);
 
     kbd_flush();
-    endofDisplay();
 }
 
 static int
@@ -1541,16 +1530,9 @@ reallyEditMiniBuffer(TBUFF **buf,
     int edited = FALSE;
     const CMDFUNC *cfp;
     int save_insertmode = insertmode;
-    BUFFER *savebp;
-    WINDOW *savewp;
-    MARK savemk;
+    KBD_DATA save;
 
-    beginDisplay();
-    savebp = curbp;
-    savewp = curwp;
-    curbp = bminip;
-    curwp = wminip;
-    savemk = MK;
+    kbd_start(&save);
     ++no_minimsgs;
 
     TRACE((T_CALLED
@@ -1701,11 +1683,9 @@ reallyEditMiniBuffer(TBUFF **buf,
     }
 
     --no_minimsgs;
-    curbp = savebp;
-    curwp = savewp;
-    MK = savemk;
+
+    kbd_finish(&save);
     kbd_flush();
-    endofDisplay();
 
     returnCode(edited);
 }
