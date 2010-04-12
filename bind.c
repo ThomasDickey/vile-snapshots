@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.344 2010/04/11 21:49:50 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.345 2010/04/11 23:26:17 tom Exp $
  *
  */
 
@@ -2424,6 +2424,7 @@ kbd_start(KBD_DATA * data)
     beginDisplay();
 
 #if OPT_MULTIBYTE
+    make_local_b_val(bminip, VAL_FILE_ENCODING);
     if (cmd_encoding == enc_AUTO) {
 	set_b_val(bminip, VAL_FILE_ENCODING, b_val(curbp, VAL_FILE_ENCODING));
     } else {
