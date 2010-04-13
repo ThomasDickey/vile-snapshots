@@ -1,5 +1,5 @@
 /*
- * $Id: eightbit.c,v 1.71 2010/04/03 12:04:30 tom Exp $
+ * $Id: eightbit.c,v 1.72 2010/04/12 10:56:14 tom Exp $
  *
  * Maintain "8bit" file-encoding mode by converting incoming UTF-8 to single
  * bytes, and providing a function that tells vile whether a given Unicode
@@ -816,6 +816,7 @@ vl_init_8bit(const char *wide, const char *narrow)
     /*
      * Build reverse-index.
      */
+    TRACE2(("build rindex_8bit\n"));
     for (n = 0; n < N_chars; ++n) {
 	int code = (int) table_8bit_utf8[n].code;
 
@@ -828,7 +829,7 @@ vl_init_8bit(const char *wide, const char *narrow)
 	    rindex_8bit[n].rinx = -1;
 	}
 
-	TRACE2(("code %d is \\u%04X:%s\n", n,
+	TRACE2(("code %d (0x%04X) is \\u%04X:%s\n", n, n,
 		table_8bit_utf8[n].code,
 		NonNull(table_8bit_utf8[n].text)));
     }

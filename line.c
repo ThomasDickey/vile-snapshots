@@ -10,7 +10,7 @@
  * editing must be being displayed, which means that "b_nwnd" is non zero,
  * which means that the dot and mark values in the buffer headers are nonsense.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.211 2010/02/07 14:42:32 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.212 2010/04/12 10:56:06 tom Exp $
  *
  */
 
@@ -533,8 +533,6 @@ lins_chars(int n, int c)
 	    nbytes = vl_conv_to_utf8(target, (UINT) c, sizeof(target));
 	} else if (vl_ucs_to_8bit(&mapped, c)) {
 	    c = mapped;
-	} else {
-	    n = 0;
 	}
     } else {
 	nbytes = 1;
@@ -550,7 +548,7 @@ lins_chars(int n, int c)
 		break;
 	}
     } else {
-	rc = lins_bytes(n, c);
+	rc = lins_bytes(1, c);
     }
     return rc;
 }
