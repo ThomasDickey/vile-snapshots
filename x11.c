@@ -2,7 +2,7 @@
  *	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.363 2010/04/04 23:43:27 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.364 2010/04/13 00:38:16 tom Exp $
  *
  */
 
@@ -6475,8 +6475,10 @@ x_key_press(Widget w GCC_UNUSED,
 	    modifier |= mod_KEY;
 	TRACE(("modifier %#x\n", modifier));
 
-	if (num == 1 && (ev->xkey.state & Mod1Mask))
+	if (num == 1 && (ev->xkey.state & Mod1Mask)) {
+	    TRACE(("ADD-META %#x\n", CharOf(buffer[0])));
 	    buffer[0] |= (char) HIGHBIT;
+	}
 
 	/* FIXME: Should do something about queue full conditions */
 	for (i = 0; i < num && !kqfull(cur_win); i++) {
