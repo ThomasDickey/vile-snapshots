@@ -5,7 +5,7 @@
  * keys. Like everyone else, they set hints
  * for the display system.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.342 2010/02/28 19:11:12 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.343 2010/04/30 23:40:04 tom Exp $
  *
  */
 
@@ -2381,37 +2381,47 @@ add_line_at(BUFFER *bp, LINE *prevp, const char *text, int len)
     LINE *nextp;
     LINE *lp;
     int ntext;
+    int result = FALSE;
 
-    nextp = lforw(prevp);
-    ntext = (len < 0) ? (int) strlen(NONNULL(text)) : len;
-    newlp = lalloc(ntext, bp);
-    if (newlp == 0)
-	return (FALSE);
+    if (len < 0) {
+	if (text != 0) {
+	    result = add_line_at(bp, prevp, text, strlen(text));
+	} else {
+	    result = add_line_at(bp, prevp, "", 0);
+	}
+    } else {
+	nextp = lforw(prevp);
+	ntext = len;
+	newlp = lalloc(ntext, bp);
+	if (newlp != 0) {
 
-    lp = newlp;
-    if (ntext > 0)
-	(void) memcpy(lvalue(lp), text, (size_t) ntext);
+	    lp = newlp;
+	    if (ntext > 0)
+		(void) memcpy(lvalue(lp), text, (size_t) ntext);
 
-    /* try to maintain byte/line counts? */
-    if (b_is_counted(bp)) {
-	if (nextp == buf_head(bp)) {
-	    make_local_b_val(bp, MDNEWLINE);
-	    set_b_val(bp, MDNEWLINE, TRUE);
-	    bp->b_bytecount += (ntext + 1);
-	    bp->b_linecount += 1;
+	    /* try to maintain byte/line counts? */
+	    if (b_is_counted(bp)) {
+		if (nextp == buf_head(bp)) {
+		    make_local_b_val(bp, MDNEWLINE);
+		    set_b_val(bp, MDNEWLINE, TRUE);
+		    bp->b_bytecount += (ntext + 1);
+		    bp->b_linecount += 1;
 #if !SMALLER			/* tradeoff between codesize & data */
-	    lp->l_number = bp->b_linecount;
+		    lp->l_number = bp->b_linecount;
 #endif
-	} else
-	    b_clr_counted(bp);
+		} else
+		    b_clr_counted(bp);
+	    }
+
+	    set_lforw(prevp, newlp);	/* link into the buffer */
+	    set_lback(newlp, prevp);
+	    set_lback(nextp, newlp);
+	    set_lforw(newlp, nextp);
+
+	    result = TRUE;
+	}
     }
-
-    set_lforw(prevp, newlp);	/* link into the buffer */
-    set_lback(newlp, prevp);
-    set_lback(nextp, newlp);
-    set_lforw(newlp, nextp);
-
-    return (TRUE);
+    return result;
 }
 
 /*

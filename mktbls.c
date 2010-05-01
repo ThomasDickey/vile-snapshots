@@ -15,7 +15,7 @@
  * by Tom Dickey, 1993.    -pgf
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/mktbls.c,v 1.166 2010/02/10 23:44:52 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/mktbls.c,v 1.167 2010/05/01 11:58:52 tom Exp $
  *
  */
 
@@ -1682,19 +1682,22 @@ init_fsms(void)
 {
     int n;
 
-    if (fsm_uc_name == 0)
+    if (fsm_uc_name == 0) {
 	badfmt("Missing table name");
+    } else {
 
-    for (n = 0; fsm_uc_name[n] != '\0'; n++)
-	fsm_uc_name[n] = (char) toUpper(fsm_uc_name[n]);
-    Fprintf(nefsms, "\n");
-    Fprintf(nefsms, "extern FSM_BLIST fsm_%s_blist;\n\n", fsm_lc_name);
-    Fprintf(nefsms, "#if OPT_%s_CHOICES\n", fsm_uc_name);
-    Fprintf(nefsms, "#ifndef realdef\n");
-    Fprintf(nefsms, "extern const FSM_CHOICES fsm_%s_choices[];\n", fsm_lc_name);
-    Fprintf(nefsms, "#else\n");
-    Fprintf(nefsms, "DECL_EXTERN_CONST(FSM_CHOICES fsm_%s_choices[]) = %c\n",
-	    fsm_lc_name, L_CURL);
+	for (n = 0; fsm_uc_name[n] != '\0'; n++)
+	    fsm_uc_name[n] = (char) toUpper(fsm_uc_name[n]);
+	Fprintf(nefsms, "\n");
+	Fprintf(nefsms, "extern FSM_BLIST fsm_%s_blist;\n\n", fsm_lc_name);
+	Fprintf(nefsms, "#if OPT_%s_CHOICES\n", fsm_uc_name);
+	Fprintf(nefsms, "#ifndef realdef\n");
+	Fprintf(nefsms, "extern const FSM_CHOICES fsm_%s_choices[];\n", fsm_lc_name);
+	Fprintf(nefsms, "#else\n");
+	Fprintf(nefsms,
+		"DECL_EXTERN_CONST(FSM_CHOICES fsm_%s_choices[]) = %c\n",
+		fsm_lc_name, L_CURL);
+    }
 }
 
 static void

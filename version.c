@@ -1,7 +1,7 @@
 /*
  * version & usage-messages for vile
  *
- * $Header: /users/source/archives/vile.vcs/RCS/version.c,v 1.73 2009/12/11 02:01:06 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/version.c,v 1.74 2010/04/30 22:38:41 tom Exp $
  *
  */
 
@@ -247,7 +247,7 @@ int
 showversion(int f GCC_UNUSED, int n)
 {
     personals(n);
-    mlforce(getversion());
+    mlforce("%s", getversion());
 
     return TRUE;
 }

@@ -22,7 +22,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.687 2010/04/03 12:04:18 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.688 2010/04/30 22:59:27 tom Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -264,7 +264,7 @@ filter_to_stdio(FILE *fp GCC_UNUSED)
 	filter_only = TRUE;
 	gotobob(FALSE, 0);
 	havemotion = &f_gotoeob;
-	s = CMD_U_FUNC(cmd) (FALSE, 0);
+	(void) CMD_U_FUNC(cmd) (FALSE, 0);
     } else
 #endif
     {
@@ -949,7 +949,7 @@ MainProgram(int argc, char *argv[])
     purge_msgs();
 #endif
     if (startstat == TRUE)	/* else there's probably an error message */
-	mlforce(msg);
+	mlforce("%s", msg);
 
   begin:
 #if SYS_VMS

@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.345 2010/04/11 23:26:17 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.346 2010/04/30 22:59:27 tom Exp $
  *
  */
 
@@ -1159,7 +1159,7 @@ show_onlinehelp(const CMDFUNC * cmd)
 #endif
     if (flags & (RANGE | UNDO | REDO | GLOBOK)) {
 	const char *gaps = "";
-	char *next = outseq;
+	char *next;
 
 	next = lsprintf(outseq, "  ( ");
 	if (cmd->c_flags & (UNDO | REDO)) {

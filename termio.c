@@ -3,7 +3,7 @@
  * characters, and write characters in a barely buffered fashion on the display.
  * All operating systems.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/termio.c,v 1.218 2009/10/31 15:24:23 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/termio.c,v 1.220 2010/05/01 12:33:07 tom Exp $
  *
  */
 
@@ -1233,19 +1233,19 @@ open_terminal(TERM * termp)
     static TERM save_term;
     static int initialized;
 
-    /*
-     * Help separate dumb_term from termio.c
-     */
-    if (termp != 0 && termp != &null_term) {
-	if (termp->clean == nullterm_clean)
-	    termp->clean = ttclean;
-	if (termp->unclean == nullterm_unclean)
-	    termp->unclean = ttunclean;
-	if (termp->openup == nullterm_openup)
-	    termp->openup = kbd_openup;
-    }
-
     if (!initialized++) {
+
+	/*
+	 * Help separate dumb_term from termio.c
+	 */
+	if (termp != &null_term) {
+	    if (termp->clean == nullterm_clean)
+		termp->clean = ttclean;
+	    if (termp->unclean == nullterm_unclean)
+		termp->unclean = ttunclean;
+	    if (termp->openup == nullterm_openup)
+		termp->openup = kbd_openup;
+	}
 
 	/*
 	 * If the open and/or close slots are empty, fill them in with

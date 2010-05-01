@@ -1,5 +1,5 @@
 /*
- * $Id: charsets.c,v 1.67 2009/10/31 15:50:17 tom Exp $
+ * $Id: charsets.c,v 1.68 2010/04/30 23:51:24 tom Exp $
  *
  * see
  http://msdn.microsoft.com/library/default.asp?url=/library/en-us/intl/unicode_42jv.asp
@@ -460,6 +460,7 @@ load_as_utf8(BUFFER *bp, LINE *lp)
 	TRACE2(("load_as_utf8:%d:%s\n", need, lp_visible(lp)));
 	allow_decoder(bp, need);
 	if (bp->decode_utf_buf != 0) {
+	    rc = TRUE;
 	    if (need) {
 		for (j = k = 0; j < need; ++k) {
 		    UCHAR ch = CH(j);
@@ -537,7 +538,6 @@ load_as_utf8(BUFFER *bp, LINE *lp)
 		    }
 		}
 	    }
-	    rc = TRUE;
 	} else {
 	    bp->decode_utf_len = 0;
 	}

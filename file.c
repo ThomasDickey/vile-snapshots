@@ -5,7 +5,7 @@
  * reading and writing of the disk are
  * in "fileio.c".
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.441 2010/02/14 18:21:39 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.442 2010/05/01 00:02:34 tom Exp $
  */
 
 #include "estruct.h"
@@ -595,7 +595,7 @@ fileread(int f GCC_UNUSED, int n GCC_UNUSED)
     } else if (b_is_temporary(bp)) {
 	returnCode(cannot_reread());
     } else if (!(global_g_val(GMDWARNREREAD) || bp->b_fname[0] == EOS)
-	       || ((status = mlyesno("Reread current buffer")) == TRUE)) {
+	       || (mlyesno("Reread current buffer") == TRUE)) {
 	(void) vl_strncpy(fname, bp->b_fname, sizeof(fname));
 	/* Check if we are rereading an unnamed-buffer if it is not
 	 * associated with a file.
@@ -2259,7 +2259,6 @@ actually_write(REGION * rp, char *fn, int msgf, BUFFER *bp, int forced, int enco
     int s;
     int nline;
     B_COUNT nchar;
-    C_NUM offset = rp->r_orig.o;
 
     /* this is adequate as long as we cannot write parts of lines */
     int whole_file = ((rp->r_orig.l == lforw(buf_head(bp)))
@@ -2283,7 +2282,6 @@ actually_write(REGION * rp, char *fn, int msgf, BUFFER *bp, int forced, int enco
 	    MK = rp->r_end;
 	    (void) getregion(bp, rp);
 	}
-	offset = rp->r_orig.o;
     }
 #endif
 
@@ -2293,7 +2291,7 @@ actually_write(REGION * rp, char *fn, int msgf, BUFFER *bp, int forced, int enco
 #endif
 
     /* open writes error message, if needed */
-    if ((s = ffwopen(fn, forced)) != FIOSUC)
+    if (ffwopen(fn, forced) != FIOSUC)
 	returnCode(FALSE);
 
     /* disable "working..." while we are writing - not reading - a pipe, since
@@ -2944,7 +2942,7 @@ imdying(int ACTUAL_SIG_ARGS)
 			      "echo errors:  check in current",
 			      "directory too.;");
 
-	    cp = lsprintf(cp, ") | %s %s", *mailcmdp, np);
+	    (void) lsprintf(cp, ") | %s %s", *mailcmdp, np);
 
 	    IGNORE_RC(system(cmd));
 	}

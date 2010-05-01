@@ -18,7 +18,7 @@
  * transferring the selection are not dealt with in this file.  Procedures
  * for dealing with the representation are maintained in this file.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.176 2010/02/06 00:02:10 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.177 2010/04/30 23:52:07 tom Exp $
  *
  */
 
@@ -1680,9 +1680,8 @@ attribute_cntl_a_sequences(void)
     int count;
 
 #if EFFICIENCY_HACK
-    AREGION *orig_attribs;
+    AREGION *orig_attribs = bp->b_attribs;
     AREGION *new_attribs;
-    orig_attribs = new_attribs = bp->b_attribs;
 #endif
 
     if ((pastline = setup_region()) == 0)

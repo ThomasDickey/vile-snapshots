@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/regexp.c,v 1.200 2010/04/11 21:26:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/regexp.c,v 1.201 2010/04/30 23:57:10 tom Exp $
  *
  * Copyright 2005-2009,2010 Thomas E. Dickey and Paul G. Fox
  *
@@ -2264,9 +2264,7 @@ regmatch(char *prog, int plevel)
 
 			if ((max == 0
 			     || reg_cnts[plevel + 1] < max)) {
-			    success = regmatch(next, plevel);
-			} else {
-			    success = 1;
+			    (void) regmatch(next, plevel);
 			}
 
 			REGTRACE(("compare %d vs \\{%d,%d\\}\n",

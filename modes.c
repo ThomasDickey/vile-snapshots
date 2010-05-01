@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.407 2010/04/11 18:30:07 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.408 2010/05/01 00:00:29 tom Exp $
  *
  */
 
@@ -1646,11 +1646,11 @@ do_a_mode(int kind, int global)
 	    hst_glue(' ');
 	    rc = listmodes(last_listmodes_f, last_listmodes_n);
 	}
-    } else if ((s = find_mode(curbp, tb_values(cbuf), global, &args)) != TRUE) {
+    } else if (find_mode(curbp, tb_values(cbuf), global, &args) != TRUE) {
 #if OPT_EVAL
 	if (global) {
 	    rc = set_state_variable(tb_values(cbuf), NULL);
-	} else if ((s = find_mode(curbp, tb_values(cbuf), TRUE, &args)) != TRUE) {
+	} else if (find_mode(curbp, tb_values(cbuf), TRUE, &args) != TRUE) {
 	    rc = set_state_variable(tb_values(cbuf), NULL);
 	} else {
 	    mlforce("[Not a local mode: \"%s\"]", tb_values(cbuf));
@@ -3717,7 +3717,7 @@ prompt_submode(MAJORMODE * ptr, char **result, int defining)
 			       eol_history, '=',
 			       KBD_NORMAL,
 			       submode_complete)) == TRUE) {
-	if ((status = ok_subqual(ptr, tb_values(cbuf))) == TRUE) {
+	if (ok_subqual(ptr, tb_values(cbuf)) == TRUE) {
 	    continue;
 	} else if ((status = ok_submode(tb_values(cbuf))) == TRUE) {
 	    *result = tb_values(cbuf);
@@ -3959,7 +3959,7 @@ extend_VAL_array(struct VAL *ptr, size_t item, size_t len)
 	endofDisplay();
 
 	if (ptr != 0) {
-	    for (j = k = 0; j < len; j++) {
+	    for (j = 0; j < len; j++) {
 		k = (j >= item) ? j + 1 : j;
 		ptr[k] = ptr[j];
 		make_local_val(ptr, k);
