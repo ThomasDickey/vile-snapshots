@@ -1,5 +1,5 @@
 /*
- * $Id: eightbit.c,v 1.72 2010/04/12 10:56:14 tom Exp $
+ * $Id: eightbit.c,v 1.73 2010/04/30 23:29:36 tom Exp $
  *
  * Maintain "8bit" file-encoding mode by converting incoming UTF-8 to single
  * bytes, and providing a function that tells vile whether a given Unicode
@@ -956,7 +956,7 @@ vl_get_locale(char **target)
 	    result = strmalloc(result);
 	*target = result;
     }
-    return *target;
+    return result;
 }
 
 /*

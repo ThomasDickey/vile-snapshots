@@ -5,7 +5,7 @@
  * Written by T.E.Dickey for vile (march 1993).
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/filec.c,v 1.127 2007/12/31 19:47:41 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/filec.c,v 1.128 2010/05/01 00:01:13 tom Exp $
  *
  */
 
@@ -693,10 +693,12 @@ fillMyBuff(BUFFER *bp, char *name)
 {
     size_t dots = 0;
     int count = 0;
-    int trim_leaf = FALSE;
     char *s;
     char path[NFILEN + 2];
     char temp[NFILEN + 2];
+#if OPT_VMS_PATH
+    int trim_leaf = FALSE;
+#endif
 
     TRACE(("fillMyBuff '%s'\n", name));
 
@@ -765,7 +767,9 @@ fillMyBuff(BUFFER *bp, char *name)
 	strip_dots(path, &dots);	/* ignore trailing /. or /.. */
 #endif
 	if (!is_environ(path) && !is_directory(path)) {
+#if OPT_VMS_PATH
 	    trim_leaf = TRUE;
+#endif
 	    *pathleaf(path) = EOS;
 	    if (!is_directory(path))
 		return 1;

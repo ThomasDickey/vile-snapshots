@@ -2,7 +2,7 @@
  * Window management. Some of the functions are internal, and some are
  * attached to keys that the user actually types.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/window.c,v 1.120 2009/12/13 15:14:19 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/window.c,v 1.121 2010/04/30 23:54:23 tom Exp $
  *
  */
 
@@ -1121,11 +1121,12 @@ new_WINDOW(int screen)
     if (wp == NULL) {
 	fprintf(stderr, "Cannot allocate windows\n");
 	ExitProgram(BADEXIT);
+    } else {
+	init_window(wp, (BUFFER *) 0);
+	wp->w_ntrows = (screen
+			? (term.rows - 2)	/* "-1" for mode line.  */
+			: 1);	/* command-line         */
     }
-    init_window(wp, (BUFFER *) 0);
-    wp->w_ntrows = (screen
-		    ? (term.rows - 2)	/* "-1" for mode line.  */
-		    : 1);	/* command-line         */
     return wp;
 }
 

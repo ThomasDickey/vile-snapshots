@@ -4,7 +4,7 @@
  *	original by Daniel Lawrence, but
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.332 2009/12/22 00:53:25 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.333 2010/05/01 00:03:34 tom Exp $
  *
  */
 
@@ -409,14 +409,13 @@ making_pattern(EOL_ARGS)
 {
     int done = FALSE;
     int in_regexp = FALSE;
-    const char *src = buffer;
 
     (void) eolchar;
 
     TRACE(("making_pattern(buffer=%.*s, cpos=%d, c=%#x, eolchar=%#x)\n",
 	   (int) cpos, buffer, (int) cpos, c, eolchar));
     if (cpos != 0) {
-	src = skip_linespecs(buffer, cpos, &done);
+	(void) skip_linespecs(buffer, cpos, &done);
 	in_regexp = !done || isPattern(c);
     } else if (isPattern(c)) {
 	in_regexp = TRUE;

@@ -1,5 +1,5 @@
 /*
- * $Id: btree.c,v 1.25 2009/10/31 17:02:34 tom Exp $
+ * $Id: btree.c,v 1.26 2010/04/30 23:53:54 tom Exp $
  * Copyright 1997-2006,2008 by Thomas E. Dickey
  *
  * Maintains a balanced binary tree (aka AVL tree) of unspecified nodes.  The
@@ -273,7 +273,7 @@ btree_delete(BI_TREE * funcs, const char *data)
     }
     /* (A2:Compare) */
     while ((a = COMPARE(data, value = KEY(p))) != 0) {
-	if ((q = LINK(a, p)) == 0) {
+	if (LINK(a, p) == 0) {
 	    value = 0;
 	    break;
 	}
@@ -399,7 +399,9 @@ btree_delete(BI_TREE * funcs, const char *data)
 		assert(k > 0);
 		assert(B(p) == -a);
 
+#if OPT_TRACE
 		t = stack[k - 1].p;
+#endif
 		TRACE(("t:%s, balance:%d\n", KEY(t), B(t)));
 		TRACE(("A:p:%s, balance:%d\n", KEY(p), B(p)));
 		TRACE(("B:q:%s, balance:%d\n", KEY(q), B(q)));
