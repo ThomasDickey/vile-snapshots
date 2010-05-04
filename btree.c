@@ -1,6 +1,6 @@
 /*
- * $Id: btree.c,v 1.26 2010/04/30 23:53:54 tom Exp $
- * Copyright 1997-2006,2008 by Thomas E. Dickey
+ * $Id: btree.c,v 1.28 2010/05/04 00:17:47 tom Exp $
+ * Copyright 1997-2008,2010 by Thomas E. Dickey
  *
  * Maintains a balanced binary tree (aka AVL tree) of unspecified nodes.  The
  * algorithm is taken from "The Art of Computer Programming -- Volume 3 --
@@ -355,7 +355,6 @@ btree_delete(BI_TREE * funcs, const char *data)
 	TRACE_TREE("after delinking:", funcs);
 
 	/* Construct the auxiliary stack */
-	a = 1;
 	q = &(funcs->head);
 	if (s != 0
 	    && s != q

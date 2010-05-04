@@ -15,27 +15,9 @@
  * by Tom Dickey, 1993.    -pgf
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/mktbls.c,v 1.167 2010/05/01 11:58:52 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/mktbls.c,v 1.168 2010/05/01 14:46:32 tom Exp $
  *
  */
-
-/*
- * gcc (at least through 4.04) allows offsets, but g++ does not.
- *
- * Visual C++ warns about cases for 64-bit compiles that do not work with
- * the default USE_OFFSETS=1, and that works with modern C compilers, but
- * that does not work with some legacy C compilers, e.g., Solaris.  Since
- * the Unix compilers mostly follow LP64 model, it is not (yet) necessary
- * to make a configure script check to distinguish between the two - just
- * support that USE_OFFSET=2 for Visual C++.
- */
-#if defined(__GNUG__) || (defined(__OS2__) && defined(__IBMC__) && (__IBMC__ >= 200))
-#define USE_OFFSETS 0
-#elif defined(_MSC_VER)
-#define USE_OFFSETS 2
-#else
-#define USE_OFFSETS 1
-#endif
 
 /* stuff borrowed/adapted from estruct.h */
 
@@ -106,6 +88,8 @@ extern void free(char *ptr);
 #define GOODEXIT	0
 #define BADEXIT		1
 #endif
+
+#define ENUM_PREFIX	"vile_"
 
 #define	TABLESIZE(v)	(sizeof(v)/sizeof(v[0]))
 
@@ -812,63 +796,24 @@ Name2Address(char *name, char *type)
     return base;
 }
 
-/* define Member_Offset macro, used in index-definitions */
-static void
-DefineOffset(FILE *fp)
-{
-    Fprintf(fp, "#ifndef\tMember_Offset\n");
-#if USE_OFFSETS == 2
-    Fprintf(fp, "\
-#define\tMember_Offset(T,M) ((int)(((long)(&(((T*)0)->M) - (char *)0))/\\\n\
-\t\t\t\t ((long)(&(((T*)0)->Q1) - &(((T*)0)->s_MAX)))))\n");
-#elif USE_OFFSETS == 1
-    Fprintf(fp, "\
-#define\tMember_Offset(T,M) ((int)(((long)&(((T*)0)->M))/\\\n\
-\t\t\t\t ((long)&(((T*)0)->Q1) - (long)&(((T*)0)->s_MAX))))\n");
-#else
-    Fprintf(fp, "\
-#define\tMember_Offset(T,M) ((vile_ ## M)-1)\n");
-#endif
-    Fprintf(fp, "#endif\n");
-}
-
 /* generate the index-struct (used for deriving ifdef-able index definitions) */
 static void
 WriteIndexStruct(FILE *fp, LIST * p, const char *ppref)
 {
-#if USE_OFFSETS
-    char *s, temp[MAX_BUFFER], line[MAX_BUFFER], *vec[MAX_PARSE];
-
-    BeginIf();
-    Fprintf(fp, "typedef\tstruct\t%c\n", L_CURL);
-    while (p != 0) {
-	WriteIf(fp, p->Cond);
-	(void) Parse(strcpy(line, p->Name), vec);
-	Sprintf(temp, "\tchar\t%s;", s = Name2Symbol(vec[1]));
-	free(s);
-	if (p->Note[0]) {
-	    (void) PadTo(32, temp);
-	    Sprintf(temp + strlen(temp), "/* %s */", p->Note);
-	}
-	Fprintf(fp, "%s\n", temp);
-	p = p->nst;
-    }
-
-    FlushIf(fp);
-    Fprintf(fp, "\tchar\ts_MAX;\n");
-    Fprintf(fp, "\tchar\tQ1;\n");
-    Fprintf(fp, "\t%c Index%s;\n\n", R_CURL, ppref);
-#else
     char *s, temp[MAX_BUFFER], line[MAX_BUFFER], *vec[MAX_PARSE];
     int count = 0;
 
     BeginIf();
     Fprintf(fp, "typedef\tenum\t%c\n", L_CURL);
-    Fprintf(fp, "\tMIN_%c_VALUES = 0\n", *ppref);
+    /*
+     * The first symbol is unused; it is a placeholder in case the first value
+     * is ifdef'd out.
+     */
+    Fprintf(fp, "\tDUMMY_%c_VALUES = -1\n", *ppref);
     for (; p != 0; p = p->nst, count++) {
 	WriteIf(fp, p->Cond);
 	(void) Parse(strcpy(line, p->Name), vec);
-	Sprintf(temp, "\t,vile_%s", s = Name2Symbol(vec[1]));
+	Sprintf(temp, "\t,%s%s", ENUM_PREFIX, s = Name2Symbol(vec[1]));
 	free(s);
 	if (p->Note[0]) {
 	    (void) PadTo(32, temp);
@@ -885,7 +830,6 @@ WriteIndexStruct(FILE *fp, LIST * p, const char *ppref)
     Fprintf(nemode, "%s", temp);
 
     Fprintf(fp, "\t%c Index%s;\n\n", R_CURL, ppref);
-#endif
 }
 
 /* generate the index-definitions */
@@ -905,23 +849,14 @@ WriteModeDefines(LIST * p, const char *ppref)
 		p->Func);
 	(void) PadTo(24, temp);
 	WriteIf(nemode, p->Cond);
-	Sprintf(temp + strlen(temp), "Member_Offset(Index%s, %s)",
-		ppref, s = Name2Symbol(vec[1]));
+	Sprintf(temp + strlen(temp), "%s%s",
+		ENUM_PREFIX, s = Name2Symbol(vec[1]));
 	free(s);
 	Fprintf(nemode, "%s\n", temp);
     }
 
     Fprintf(nemode, "\n");
     FlushIf(nemode);
-
-#if USE_OFFSETS
-    Sprintf(temp, "#define NUM_%c_VALUES\tMember_Offset(Index%s, s_MAX)",
-	    *ppref, ppref);
-    (void) PadTo(32, temp);
-    Sprintf(temp + strlen(temp), "/* TABLESIZE(%c_valnames) -- %s */\n",
-	    toLower(*ppref), ppref);
-    Fprintf(nemode, "%s", temp);
-#endif
 
     Fprintf(nemode, "#define MAX_%c_VALUES\t%d\n\n", *ppref, count);
 }
@@ -2519,7 +2454,6 @@ main(int argc, char *argv[])
 
     if (all_wmodes || all_bmodes) {
 	nemode = OpenHeader("nemode.h", argv);
-	DefineOffset(nemode);
 	dump_majors();
 	dump_all_modes();
 	dump_all_submodes();

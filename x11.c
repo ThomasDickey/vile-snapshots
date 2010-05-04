@@ -2,7 +2,7 @@
  *	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.364 2010/04/13 00:38:16 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.366 2010/05/04 00:01:53 tom Exp $
  *
  */
 
@@ -1697,6 +1697,8 @@ gui_update_scrollbar(WINDOW *uwp)
 	    break;
 	i++;
     }
+    if (wp == 0)
+	return;
     if (i >= cur_win->nscrollbars || (wp->w_flag & WFSBAR)) {
 	/*
 	 * update_scrollbar_sizes will recursively invoke gui_update_scrollbar,
@@ -2346,7 +2348,7 @@ x_preparse_args(int *pargc, char ***pargv)
     XGCValues gcvals;
     ULONG gcmask;
     int geo_mask, startx, starty;
-    int i, j;
+    int i;
     int status = TRUE;
     Cardinal start_cols, start_rows;
     char *xvile_class = MY_CLASS;
@@ -2904,8 +2906,6 @@ x_preparse_args(int *pargc, char ***pargv)
 				   gcmask, &gcvals);
 
     cur_win->bg_follows_fg = (gbcolor == ENUM_FCOLOR);
-    if ((j = gbcolor) < 0)
-	j = 0;
 
 #define COLOR_FMT " %#8lx %s"
 #define COLOR_ARG(name) name, ColorsOf(name)
@@ -6427,8 +6427,9 @@ x_key_press(Widget w GCC_UNUSED,
 				sizeof(buffer), &keysym,
 				(XComposeStatus *) 0);
 	}
-    } else
-	num = 0;
+    } else {
+	return;
+    }
 #else
     num = XLookupString((XKeyPressedEvent *) ev, buffer, sizeof(buffer),
 			&keysym, (XComposeStatus *) 0);
@@ -6930,33 +6931,33 @@ xim_real_init(void)
 	if (t == NULL) {
 	    fprintf(stderr, "Cannot allocate buffer for input-method\n");
 	    ExitProgram(BADEXIT);
-	}
-
-	for (ns = s; ns && *s;) {
-	    while (*s && isSpace(CharOf(*s)))
-		s++;
-	    if (!*s)
-		break;
-	    if ((ns = end = strchr(s, ',')) == 0)
-		end = s + strlen(s);
-	    while ((end != s) && isSpace(CharOf(end[-1])))
-		end--;
-
-	    if (end != s) {
-		strcpy(t, "@im=");
-		strncat(t, s, (unsigned) (end - s));
-
-		if ((p = XSetLocaleModifiers(t)) != 0 && *p
-		    && (cur_win->xim = XOpenIM(XtDisplay(cur_win->screen),
-					       NULL,
-					       NULL,
-					       NULL)) != 0)
+	} else {
+	    for (ns = s; ns && *s;) {
+		while (*s && isSpace(CharOf(*s)))
+		    s++;
+		if (!*s)
 		    break;
+		if ((ns = end = strchr(s, ',')) == 0)
+		    end = s + strlen(s);
+		while ((end != s) && isSpace(CharOf(end[-1])))
+		    end--;
 
+		if (end != s) {
+		    strcpy(t, "@im=");
+		    strncat(t, s, (unsigned) (end - s));
+
+		    if ((p = XSetLocaleModifiers(t)) != 0 && *p
+			&& (cur_win->xim = XOpenIM(XtDisplay(cur_win->screen),
+						   NULL,
+						   NULL,
+						   NULL)) != 0)
+			break;
+
+		}
+		s = ns + 1;
 	    }
-	    s = ns + 1;
+	    MyStackFree(t, buf);
 	}
-	MyStackFree(t, buf);
     }
 
     if (cur_win->xim == NULL

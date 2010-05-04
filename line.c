@@ -10,7 +10,7 @@
  * editing must be being displayed, which means that "b_nwnd" is non zero,
  * which means that the dot and mark values in the buffer headers are nonsense.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.212 2010/04/12 10:56:06 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.213 2010/05/02 22:01:46 tom Exp $
  *
  */
 
@@ -877,7 +877,7 @@ lrepl_ctype(CHARTYPE type, const char *np, int length)
 
     TRACE((T_CALLED "lrepl_ctype:%s%lx:%.*s\n",
 	   type ? "word" : "line",
-	   (ULONG) type, length, NONNULL(np)));
+	   (ULONG) type, length, np));
 
     if ((status = check_editable(curbp)) == TRUE) {
 

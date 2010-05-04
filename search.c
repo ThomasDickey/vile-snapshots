@@ -3,7 +3,7 @@
  * and backward directions.
  *  heavily modified by Paul Fox, 1990
  *
- * $Header: /users/source/archives/vile.vcs/RCS/search.c,v 1.148 2008/12/21 23:57:33 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/search.c,v 1.150 2010/05/03 10:56:36 tom Exp $
  *
  * original written Aug. 1986 by John M. Gamble, but I (pgf) have since
  * replaced his regex stuff with Henry Spencer's regexp package.
@@ -68,6 +68,8 @@ fsearch(int f, int n, int marking, int fromscreen)
     int didmark = FALSE;
     int didwrap;
 
+    assert(curwp != 0);
+
     if (f && n < 0)
 	return rsearch(f, -n, FALSE, FALSE);
 
@@ -91,6 +93,9 @@ fsearch(int f, int n, int marking, int fromscreen)
     }
 
     ignorecase = window_b_val(curwp, MDIGNCASE);
+
+    if (curwp == 0)
+	return FALSE;
 
     curpos = DOT;
     scanboundry(wrapok, curpos, FORWARD);
@@ -158,6 +163,8 @@ forwhunt(int f, int n)
     MARK curpos;
     int didwrap;
 
+    assert(curwp != 0);
+
     wrapok = window_b_val(curwp, MDSWRAP);
 
     if (f && n < 0)		/* search backwards */
@@ -173,6 +180,9 @@ forwhunt(int f, int n)
     }
 
     ignorecase = window_b_val(curwp, MDIGNCASE);
+
+    if (curwp == 0)
+	return FALSE;
 
     /* find n'th occurrence of pattern
      */
@@ -233,6 +243,8 @@ rsearch(int f, int n, int dummy GCC_UNUSED, int fromscreen)
     MARK curpos;
     int didwrap;
 
+    assert(curwp != 0);
+
     if (f && n < 0)		/* reverse direction */
 	return fsearch(f, -n, FALSE, fromscreen);
 
@@ -252,6 +264,9 @@ rsearch(int f, int n, int dummy GCC_UNUSED, int fromscreen)
 	return status;
 
     ignorecase = window_b_val(curwp, MDIGNCASE);
+
+    if (curwp == 0)
+	return FALSE;
 
     curpos = DOT;
     scanboundry(wrapok, DOT, REVERSE);
@@ -296,6 +311,8 @@ backhunt(int f, int n)
     MARK curpos;
     int didwrap;
 
+    assert(curwp != 0);
+
     wrapok = window_b_val(curwp, MDSWRAP);
 
     if (f && n < 0)		/* search forwards */
@@ -311,6 +328,9 @@ backhunt(int f, int n)
     }
 
     ignorecase = window_b_val(curwp, MDIGNCASE);
+
+    if (curwp == 0)
+	return FALSE;
 
     /* find n'th occurrence of pattern
      */
@@ -628,6 +648,8 @@ attrib_matches(void)
     REGIONSHAPE oregionshape = regionshape;
     VIDEO_ATTR vattr;
 
+    assert(curwp != 0);
+
     ignorecase = window_b_val(curwp, MDIGNCASE);
 
     if (!need_to_rehilite())
@@ -646,6 +668,9 @@ attrib_matches(void)
 	return;
 
     (void) clear_match_attrs(TRUE, 1);
+
+    if (curwp == 0)
+	return;
 
     origdot = DOT;
     DOT.l = buf_head(curbp);

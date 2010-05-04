@@ -4,7 +4,7 @@
  *	original by Daniel Lawrence, but
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.333 2010/05/01 00:03:34 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.335 2010/05/03 23:29:41 tom Exp $
  *
  */
 
@@ -1039,8 +1039,9 @@ execute(const CMDFUNC * execfunc, int f, int n)
 	/* but if we're in insertmode, it's okay, since we must
 	   be executing a function key, like an arrow key,
 	   that the user will want to have replayed later */
-	if ((curwp == NULL || !insertmode) && (flags & REDO) == 0)
+	if ((!insertmode) && (flags & REDO) == 0)
 	    dotcmdstop();
+
 	if (flags & UNDO) {
 	    /* undoable command can't be permitted when read-only */
 	    if (!(flags & VIEWOK)) {
@@ -2351,8 +2352,10 @@ compute_indent(char *cmd, size_t length, int *indent, int *indstate)
 	    break;
 	}
 	*indstate = next;
-	if ((*indent += here) < 0)
-	    *indent = 0;
+	if (indent != 0) {
+	    if ((*indent += here) < 0)
+		*indent = 0;
+	}
     }
 }
 

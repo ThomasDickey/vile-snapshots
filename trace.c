@@ -1,7 +1,7 @@
 /*
  * debugging support -- tom dickey.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.101 2010/02/14 15:48:20 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.102 2010/05/01 15:34:13 tom Exp $
  *
  */
 
@@ -377,8 +377,9 @@ trace_indent(int level, int marker)
 	else
 	    visible_indent = typereallocn(char, visible_indent, need);
 
-	if (visible_indent != 0)
-	    memset(visible_indent, 0, need);
+	assert(visible_indent != 0);
+
+	memset(visible_indent, 0, need);
     }
 
     *visible_indent = EOS;
@@ -531,7 +532,7 @@ fail_alloc(char *msg, char *ptr)
 #if NO_LEAKS
     show_alloc();
 #endif
-    Trace(bad_form);
+    Trace("%s", bad_form);
     abort();
 }
 
@@ -1076,7 +1077,7 @@ close_me(void)
 #if OPT_ELAPSED
     btree_freeup(&elapsed_tree);
 #endif
-    Trace(bad_form);
+    Trace("%s", bad_form);
 
     FreeAndNull(visible_result);
     FreeAndNull(visible_indent);

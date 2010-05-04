@@ -7,7 +7,7 @@
  *
  * original author: D. R. Banks 9-May-86
  *
- * $Header: /users/source/archives/vile.vcs/RCS/isearch.c,v 1.64 2009/10/31 17:01:47 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/isearch.c,v 1.66 2010/05/03 09:39:14 tom Exp $
  *
  */
 
@@ -50,7 +50,7 @@ scanmore(			/* search forward or back for a pattern */
 	    kbd_alarm();	/* beep the terminal if we fail */
 	}
 #if OPT_EXTRA_COLOR
-	else {
+	else if (curwp != 0) {
 	    MARK save_MK;
 	    int *attrp = lookup_extra_color(XCOLOR_ISEARCH);
 	    if (!isEmpty(attrp)) {

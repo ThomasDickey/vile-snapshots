@@ -8,7 +8,7 @@
 /************************************************************************/
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/menu.c,v 1.73 2008/11/30 22:19:55 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/menu.c,v 1.74 2010/05/03 09:35:24 tom Exp $
  */
 
 /* Vile includes */
@@ -284,7 +284,7 @@ parse_menu_entry(MenuToken * token, const char *source, unsigned slen)
 	    token->type = *ptr_tok;
 	    if ((ptr_tok = strtok(NULL, ":\n")) != NULL) {
 		strcpy(token->label, ptr_tok);
-		if ((ptr_tok = strtok(NULL, ":\n")) != NULL) {
+		if (strtok(NULL, ":\n") != NULL) {
 		    token->type = 'H';
 		}
 	    } else {

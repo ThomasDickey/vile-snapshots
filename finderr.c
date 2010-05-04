@@ -5,7 +5,7 @@
  *
  * Copyright (c) 1990-2008 by Paul Fox and Thomas Dickey
  *
- * $Header: /users/source/archives/vile.vcs/RCS/finderr.c,v 1.137 2008/10/14 22:23:41 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/finderr.c,v 1.139 2010/05/03 23:50:39 tom Exp $
  *
  */
 
@@ -687,6 +687,10 @@ finderr(int f GCC_UNUSED, int n GCC_UNUSED)
 	endofDisplay();
     }
     dotp = getdot(sbp);
+    if (dotp == 0) {
+	TRACE(("getdot returns null\n"));
+	return (FALSE);
+    }
 
     if (newfebuff || dotp != odotp) {
 
@@ -848,17 +852,20 @@ finderr(int f GCC_UNUSED, int n GCC_UNUSED)
 static LINE *
 getdot(BUFFER *bp)
 {
-    register WINDOW *wp;
+    LINE *result = bp->b_dot.l;
+    WINDOW *wp;
+
     if (bp->b_nwnd) {
 	/* scan for windows holding that buffer,
 	   pull dot from the first */
 	for_each_visible_window(wp) {
 	    if (wp->w_bufp == bp) {
-		return wp->w_dot.l;
+		result = wp->w_dot.l;
+		break;
 	    }
 	}
     }
-    return bp->b_dot.l;
+    return result;
 }
 
 static void
