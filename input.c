@@ -44,7 +44,7 @@
  *	tgetc_avail()     true if a key is avail from tgetc() or below.
  *	keystroke_avail() true if a key is avail from keystroke() or below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.333 2010/04/11 19:02:57 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.334 2010/05/03 09:43:26 tom Exp $
  *
  */
 
@@ -1870,6 +1870,8 @@ kbd_reply(const char *prompt,	/* put this out first */
     WINDOW *old_wp = curwp;
     int old_reading;
 
+    assert(extbuf != 0);
+
     TRACE((T_CALLED "kbd_reply(prompt=%s, extbuf=%s, options=%#x)\n",
 	   TRACE_NULL(prompt),
 	   tb_visible(*extbuf),
@@ -1885,7 +1887,7 @@ kbd_reply(const char *prompt,	/* put this out first */
      * Allowing the user to change the string to something like "ERROR_VALUE"
      * would be confusing and is not really necessary.
      */
-    if ((extbuf != 0 && *extbuf != 0)
+    if (*extbuf != 0
 	&& (isErrorVal(tb_values(*extbuf))
 	    || isTB_ERRS(*extbuf))) {
 	tb_init(extbuf, EOS);

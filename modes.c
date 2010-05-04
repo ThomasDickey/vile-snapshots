@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.408 2010/05/01 00:00:29 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.411 2010/05/03 09:33:58 tom Exp $
  *
  */
 
@@ -1560,7 +1560,7 @@ find_mode_class(BUFFER *bp,
 	    TRACE(("...found class %d %s\n", mode_class, rp));
 #if OPT_MAJORMODE
 	    if (mode_class == MAJ_MODE) {
-		const char *it = ((bp->majr != 0)
+		const char *it = (valid_buffer(bp) && (bp->majr != 0)
 				  ? bp->majr->shortname
 				  : "?");
 		make_global_val(args->local, args->global, 0);
@@ -2456,12 +2456,9 @@ chgd_status(BUFFER *bp GCC_UNUSED, VALARGS * args GCC_UNUSED, int glob_vals, int
 
 #if OPT_CURTOKENS
 static int
-have_b_val_rexp(BUFFER *bp, int mode)
+valid_rexp(REGEXVAL * r)
 {
-    return (bp != 0
-	    && bp->b_values.bv[mode].vp != 0
-	    && bp->b_values.bv[mode].vp->r != 0
-	    && bp->b_values.bv[mode].vp->r->pat != 0);
+    return (r != 0 && r->pat != 0);
 }
 
 static int
@@ -2491,14 +2488,21 @@ void
 set_buf_fname_expr(BUFFER *bp)
 {
     TBUFF *combined = 0;
+    REGEXVAL *bufname_expr = ((bp != 0)
+			      ? b_val_rexp(bp, VAL_BUFNAME_EXPR)
+			      : global_b_val_rexp(VAL_BUFNAME_EXPR));
+    REGEXVAL *pathname_expr = ((bp != 0)
+			       ? b_val_rexp(bp, VAL_PATHNAME_EXPR)
+			       : global_b_val_rexp(VAL_PATHNAME_EXPR));
 
-    if ((bp == 0 || b_val(bp, VAL_CURSOR_TOKENS) != CT_CCLASS)
-	&& have_b_val_rexp(bp, VAL_BUFNAME_EXPR)
-	&& have_b_val_rexp(bp, VAL_PATHNAME_EXPR)
+    if ((bp == 0
+	 || b_val(bp, VAL_CURSOR_TOKENS) != CT_CCLASS)
+	&& valid_rexp(bufname_expr)
+	&& valid_rexp(pathname_expr)
 	&& tb_sappend(&combined, "\\(")
-	&& tb_sappend(&combined, b_val_rexp(bp, VAL_BUFNAME_EXPR)->pat)
+	&& tb_sappend(&combined, bufname_expr->pat)
 	&& tb_sappend(&combined, "\\|")
-	&& tb_sappend(&combined, b_val_rexp(bp, VAL_PATHNAME_EXPR)->pat)
+	&& tb_sappend(&combined, pathname_expr->pat)
 	&& tb_sappend(&combined, "\\)")
 	&& tb_append(&combined, EOS)) {
 	char *pattern = tb_values(combined);

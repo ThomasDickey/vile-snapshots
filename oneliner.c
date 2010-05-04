@@ -4,7 +4,7 @@
  *	Copyright (c) 1990, 1995-1999 by Paul Fox, except for delins(), which is
  *	Copyright (c) 1986 by University of Toronto, as noted below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/oneliner.c,v 1.115 2009/10/31 17:07:00 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/oneliner.c,v 1.118 2010/05/04 00:58:30 tom Exp $
  */
 
 #include	"estruct.h"
@@ -318,6 +318,8 @@ substline(regexp * exp, int nth_occur, int printit, int globally, int *confirmp)
     int matched_at_eol = FALSE;
     int yes, c, skipped;
 
+    assert(curwp != 0);
+
     TRACE((T_CALLED
 	   "substline(exp=%p, nth_occur=%d, printit=%d, globally=%d, confirmp=%p)\n",
 	   (void *) exp, nth_occur, printit, globally, (void *) confirmp));
@@ -329,6 +331,9 @@ substline(regexp * exp, int nth_occur, int printit, int globally, int *confirmp)
     }
 
     ignorecase = window_b_val(curwp, MDIGNCASE);
+
+    if (curwp == 0)
+	returnCode(FALSE);
 
     foundit = FALSE;
     scanboundpos.l = DOT.l;

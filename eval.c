@@ -2,7 +2,7 @@
  *	eval.c -- function and variable evaluation
  *	original by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.427 2010/05/01 00:03:54 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.428 2010/05/02 23:30:26 tom Exp $
  *
  */
 
@@ -2492,6 +2492,8 @@ read_argument(TBUFF **paramp, const PARAM_INFO * info)
     int save_clexec;
     int save_isnamed;
     char *save_execstr;
+    char fname[NFILEN];
+    char bname[NBUFN];
     KBD_OPTIONS flags = 0;	/* no expansion, etc. */
 
     if (mac_tokval(paramp) == 0) {
@@ -2565,35 +2567,37 @@ read_argument(TBUFF **paramp, const PARAM_INFO * info)
 	    execstr = empty_string;
 	}
 
-	if (info->pi_type == PT_FILE) {
-	    char fname[NFILEN];
-
-	    status = mlreply_file(tb_values(temp), (TBUFF **) 0,
-				  FILEC_UNKNOWN, fname);
-	    if (status != ABORT)
-		tb_scopy(paramp, fname);
-	} else if (info->pi_type == PT_DIR) {
-	    char fname[NFILEN];
-
-	    status = mlreply_dir(tb_values(temp), (TBUFF **) 0, fname);
-	    if (status != ABORT)
-		tb_scopy(paramp, fname);
-	} else if (info->pi_type == PT_BUFFER) {
-	    char bname[NBUFN];
-
-	    status = ask_for_bname(tb_values(temp), bname, sizeof(bname));
-	    if (status != ABORT)
-		tb_scopy(paramp, bname);
-	} else {
-	    status = kbd_reply(tb_values(temp),
-			       paramp,	/* in/out buffer */
-			       eol_history,
-			       '\n',	/* expect a newline or return */
-			       flags,	/* no expansion, etc. */
-			       complete);
-	    if (status == TRUE)
-		tb_prequote(paramp);
+	if (info != 0) {
+	    switch (info->pi_type) {
+	    case PT_FILE:
+		status = mlreply_file(tb_values(temp), (TBUFF **) 0,
+				      FILEC_UNKNOWN, fname);
+		if (status != ABORT)
+		    tb_scopy(paramp, fname);
+		break;
+	    case PT_DIR:
+		status = mlreply_dir(tb_values(temp), (TBUFF **) 0, fname);
+		if (status != ABORT)
+		    tb_scopy(paramp, fname);
+		break;
+	    case PT_BUFFER:
+		status = ask_for_bname(tb_values(temp), bname, sizeof(bname));
+		if (status != ABORT)
+		    tb_scopy(paramp, bname);
+		break;
+	    default:
+		status = kbd_reply(tb_values(temp),
+				   paramp,	/* in/out buffer */
+				   eol_history,
+				   '\n',	/* expect a newline or return */
+				   flags,	/* no expansion, etc. */
+				   complete);
+		if (status == TRUE)
+		    tb_prequote(paramp);
+		break;
+	    }
 	}
+
 	clexec = save_clexec;
 	execstr = save_execstr;
 	isnamedcmd = save_isnamed;

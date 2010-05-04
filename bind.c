@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.346 2010/04/30 22:59:27 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.347 2010/05/02 23:21:29 tom Exp $
  *
  */
 
@@ -2809,6 +2809,7 @@ fill_partial(
 	   TRACE_NULL(THIS_NAME(first)),
 	   TRACE_NULL(THIS_NAME(last))));
 
+    assert(buf != 0);
 #if 0				/* case insensitive reply correction doesn't work reliably yet */
     if (!clexec && case_insensitive) {
 	int spos = pos;
@@ -3190,13 +3191,15 @@ insert_namebst(const char *name, const CMDFUNC * cmd, int ro)
 {
     int result;
 
+    TRACE(("insert_namebst(%s,%s)\n", name, ro ? "ro" : "rw"));
     if (name != 0) {
 	BI_DATA temp, *p;
 
 	if ((p = btree_search(&namebst, name)) != 0) {
 	    if ((p->n_flags & NBST_READONLY)) {
-		if (btree_insert(&redefns, p) == 0
-		    || !btree_delete(&namebst, name)) {
+		if (btree_insert(&redefns, p) == 0) {
+		    return FALSE;
+		} else if (!btree_delete(&namebst, name)) {
 		    return FALSE;
 		}
 		mlwrite("[Redefining builtin '%s']", name);
@@ -3261,6 +3264,7 @@ delete_namebst(const char *name, int release)
     BI_DATA *p = btree_search(&namebst, name);
     int code;
 
+    TRACE(("delete_namebst(%s,%d) %p\n", name, release, p));
     /* not a named procedure */
     if (!p)
 	return TRUE;
@@ -3338,9 +3342,10 @@ search_namebst(const char *name)
 void
 build_namebst(const NTAB * nptr, int lo, int hi)
 {
-    for (; lo < hi; lo++)
+    for (; lo < hi; lo++) {
 	if (!insert_namebst(nptr[lo].n_name, nptr[lo].n_cmd, TRUE))
 	    tidy_exit(BADEXIT);
+    }
 }
 
 /*

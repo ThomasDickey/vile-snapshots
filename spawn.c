@@ -1,7 +1,7 @@
 /*	Spawn:	various DOS access commands
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.206 2010/02/28 17:49:10 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.207 2010/05/03 09:23:20 tom Exp $
  *
  */
 
@@ -88,7 +88,7 @@ x_window_SHELL(const char *cmd)
     if ((pid = fork()) > 0) {
 	waitpid(pid, 0, 0);
     } else if (pid == 0) {
-	if ((pid = fork()) == 0) {
+	if (fork() == 0) {
 #endif
 	    /*
 	     * We would use the -display option of xterm, but that

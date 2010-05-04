@@ -2,7 +2,7 @@
  * This file contains the command processing functions for a number of random
  * commands. There is no functional grouping here, for sure.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.337 2010/02/18 09:52:11 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.338 2010/05/02 21:46:29 tom Exp $
  *
  */
 
@@ -167,7 +167,7 @@ liststuff(const char *name,
 		    (void) gomark(FALSE, 1);
 		    (void) forwbline(FALSE, 1);
 		    (void) reposition(FALSE, 1);
-		} else if (appendit < 0 && save_line >= 0) {
+		} else if (wp != 0 && (appendit < 0 && save_line >= 0)) {
 		    (void) vl_gotoline(save_top);
 		    wp->w_line.l = wp->w_dot.l;
 		    wp->w_line.o = 0;

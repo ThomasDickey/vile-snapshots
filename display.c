@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.519 2010/02/28 18:03:25 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.521 2010/05/03 22:31:39 tom Exp $
  *
  */
 
@@ -3100,6 +3100,7 @@ special_formatter(TBUFF **result, const char *fs, WINDOW *wp)
     need_eighty_column_indicator = FALSE;
 
     bp = wp->w_bufp;
+
     if (wp == curwp) {		/* mark the current buffer */
 	lchar = '=';
     } else {
@@ -3230,7 +3231,7 @@ special_formatter(TBUFF **result, const char *fs, WINDOW *wp)
 	    case 'p':		/* percentage */
 	    case 'L':		/* number of lines in buffer */
 
-		if (w_val(wp, WMDRULER) && !is_empty_buf(bp)) {
+		if (w_val(wp, WMDRULER) && (bp != 0 && !is_empty_buf(bp))) {
 		    int val = 0;
 		    switch (fc) {
 		    case 'l':
@@ -3257,7 +3258,7 @@ special_formatter(TBUFF **result, const char *fs, WINDOW *wp)
 #ifdef WMDSHOWCHAR
 	    case 'C':
 		if (w_val(wp, WMDSHOWCHAR)
-		    && !is_empty_buf(bp)
+		    && (bp != 0 && !is_empty_buf(bp))
 		    && (wp->w_dot.o < llength(wp->w_dot.l)
 			|| line_has_newline(wp->w_dot.l, bp))) {
 		    sprintf(temp, "%02X", char_at_mark(wp->w_dot));
@@ -3278,7 +3279,7 @@ special_formatter(TBUFF **result, const char *fs, WINDOW *wp)
 #ifdef WMDRULER
 		       !w_val(wp, WMDRULER) ||
 #endif
-		       is_empty_buf(bp)) {
+		       ((bp == 0) || is_empty_buf(bp))) {
 		    mlfs_prefix(&fs, &ms, lchar);
 		    ms = lsprintf(ms, " %s ", rough_position(wp));
 		    mlfs_suffix(&fs, &ms, lchar);
@@ -4598,15 +4599,20 @@ tprintf(const char *fmt,...)
     static int nested;
 
     BUFFER *bp;
-    LINE *line;
     va_list ap;
+#if OPT_TRACE
+    LINE *line;
+#endif
 
     if (!nested
 	&& (bp = make_ro_bp(TRACE_BufName, BFINVS)) != 0) {
 	nested = TRUE;
 
 	va_start(ap, fmt);
-	line = b2vprintf(bp, fmt, ap);
+#if OPT_TRACE
+	line =
+#endif
+	    b2vprintf(bp, fmt, ap);
 	va_end(ap);
 
 	TRACE(("tprintf {%.*s}\n", llength(line), lvalue(line)));

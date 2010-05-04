@@ -5,7 +5,7 @@
  * reading and writing of the disk are
  * in "fileio.c".
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.442 2010/05/01 00:02:34 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.443 2010/05/02 22:37:21 tom Exp $
  */
 
 #include "estruct.h"
@@ -1581,7 +1581,7 @@ readin(char *fname, int lockfl, BUFFER *bp, int mflg)
 #endif
 
     TRACE((T_CALLED "readin(fname=%s, lockfl=%d, bp=%p, mflg=%d)\n",
-	   NONNULL(fname), lockfl, (void *) bp, mflg));
+	   fname, lockfl, (void *) bp, mflg));
 
 #if SYS_WINNT && DISP_NTWIN
     ffshadow = file_is_closed;	/* an assumption */

@@ -7,7 +7,7 @@
  *
  * Copyright (c) 1990, 1995-2007 by Paul Fox and Thomas E. Dickey
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tags.c,v 1.140 2010/01/27 01:32:39 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tags.c,v 1.141 2010/05/02 21:26:49 tom Exp $
  *
  */
 #include "estruct.h"
@@ -733,7 +733,7 @@ tag_search(char *tag, int taglen, int initial)
 	return FALSE;
     }
 
-    if (curbp && curwp) {
+    if (curbp) {
 	lineno = line_no(curbp, DOT.l);
 	colno = getccol(FALSE);
 	if (!isInternalName(curbp->b_fname))
