@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.347 2010/05/02 23:21:29 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.348 2010/05/11 09:40:28 tom Exp $
  *
  */
 
@@ -196,8 +196,10 @@ static void
 dpy_namebst(BI_NODE * a GCC_UNUSED, int level GCC_UNUSED)
 {
 #if OPT_TRACE
-    TRACE(("%s%p -> %s (%d)\n",
-	   trace_indent(level, '.'), (void *) a, BI_KEY(a), a->balance));
+    char *indent = strmalloc(trace_indent(level, '.'));
+    TRACE(("[%d]%s%p -> %s (%d)\n",
+	   level, indent, (void *) a, BI_KEY(a), a->balance));
+    free(indent);
 #endif
 }
 
@@ -3191,20 +3193,24 @@ insert_namebst(const char *name, const CMDFUNC * cmd, int ro)
 {
     int result;
 
-    TRACE(("insert_namebst(%s,%s)\n", name, ro ? "ro" : "rw"));
+    TRACE((T_CALLED "insert_namebst(%s,%s)\n", name, ro ? "ro" : "rw"));
     if (name != 0) {
 	BI_DATA temp, *p;
 
 	if ((p = btree_search(&namebst, name)) != 0) {
 	    if ((p->n_flags & NBST_READONLY)) {
 		if (btree_insert(&redefns, p) == 0) {
-		    return FALSE;
-		} else if (!btree_delete(&namebst, name)) {
-		    return FALSE;
+		    returnCode(FALSE);
+		} else {
+		    if (!btree_delete(&namebst, name)) {
+			returnCode(FALSE);
+		    }
 		}
 		mlwrite("[Redefining builtin '%s']", name);
-	    } else if (!delete_namebst(name, TRUE)) {
-		return FALSE;
+	    } else {
+		if (!delete_namebst(name, TRUE, TRUE)) {
+		    returnCode(FALSE);
+		}
 	    }
 	}
 
@@ -3216,7 +3222,7 @@ insert_namebst(const char *name, const CMDFUNC * cmd, int ro)
     } else {
 	result = FALSE;
     }
-    return result;
+    returnCode(result);
 }
 
 static void
@@ -3259,45 +3265,47 @@ remove_cmdfunc_ref(BINDINGS * bs, const CMDFUNC * cmd)
  * Lookup a name in the binary-search tree, remove it if found
  */
 int
-delete_namebst(const char *name, int release)
+delete_namebst(const char *name, int release, int redefining)
 {
     BI_DATA *p = btree_search(&namebst, name);
-    int code;
+    int code = TRUE;
 
-    TRACE(("delete_namebst(%s,%d) %p\n", name, release, p));
+    TRACE((T_CALLED "delete_namebst(%s,%d) %p\n", name, release, p));
     /* not a named procedure */
-    if (!p)
-	return TRUE;
+    if ((p = btree_search(&namebst, name)) != 0) {
 
-    /* we may have to free some stuff */
-    if (p && release) {
-	remove_cmdfunc_ref(&dft_bindings, p->n_cmd);
-	remove_cmdfunc_ref(&ins_bindings, p->n_cmd);
-	remove_cmdfunc_ref(&cmd_bindings, p->n_cmd);
+	/* we may have to free some stuff */
+	if (p && release) {
+	    remove_cmdfunc_ref(&dft_bindings, p->n_cmd);
+	    remove_cmdfunc_ref(&ins_bindings, p->n_cmd);
+	    remove_cmdfunc_ref(&cmd_bindings, p->n_cmd);
 
-	/* free stuff */
+	    /* free stuff */
 #if OPT_PERL
-	if (p->n_cmd->c_flags & CMD_PERL)
-	    perl_free_sub(CMD_U_PERL(p->n_cmd));
+	    if (p->n_cmd->c_flags & CMD_PERL)
+		perl_free_sub(CMD_U_PERL(p->n_cmd));
 #endif
 
-	if (!(p->n_flags & NBST_READONLY)) {
-	    beginDisplay();
-	    free(TYPECAST(char, p->n_cmd->c_help));
-	    free(TYPECAST(char, p->n_cmd));
-	    endofDisplay();
+	    if (!(p->n_flags & NBST_READONLY)) {
+		beginDisplay();
+		free(TYPECAST(char, p->n_cmd->c_help));
+		free(TYPECAST(char, p->n_cmd));
+		endofDisplay();
+	    }
+	    p->n_cmd = 0;	/* ...so old_namebst won't free this too */
 	}
-	p->n_cmd = 0;		/* ...so old_namebst won't free this too */
-    }
 
-    if ((code = btree_delete(&namebst, name)) == TRUE) {
-	if ((p = btree_search(&redefns, name)) != 0) {
-	    mlwrite("[Restoring builtin '%s']", name);
-	    code = (btree_insert(&namebst, p) != 0);
-	    (void) btree_delete(&redefns, p->bi_key);
+	if ((code = btree_delete(&namebst, name)) == TRUE) {
+	    if (!redefining) {
+		if ((p = btree_search(&redefns, name)) != 0) {
+		    mlwrite("[Restoring builtin '%s']", name);
+		    code = (btree_insert(&namebst, p) != 0);
+		    (void) btree_delete(&redefns, p->bi_key);
+		}
+	    }
 	}
     }
-    return code;
+    returnCode(code);
 }
 
 /*
@@ -3317,7 +3325,7 @@ rename_namebst(const char *oldname, const char *newname)
 
     /* remove the entry if the new name is not a procedure (bracketed) */
     if (!is_scratchname(newname))
-	return delete_namebst(oldname, TRUE);
+	return delete_namebst(oldname, TRUE, FALSE);
 
     /* add the new name */
     strip_brackets(name, newname);
@@ -3326,7 +3334,7 @@ rename_namebst(const char *oldname, const char *newname)
 	return FALSE;
 
     /* delete the old (but don't free the data) */
-    return delete_namebst(oldname, FALSE);
+    return delete_namebst(oldname, FALSE, FALSE);
 }
 
 int
