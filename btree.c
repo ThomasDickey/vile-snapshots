@@ -1,5 +1,5 @@
 /*
- * $Id: btree.c,v 1.28 2010/05/04 00:17:47 tom Exp $
+ * $Id: btree.c,v 1.29 2010/05/11 09:40:28 tom Exp $
  * Copyright 1997-2008,2010 by Thomas E. Dickey
  *
  * Maintains a balanced binary tree (aka AVL tree) of unspecified nodes.  The
@@ -244,10 +244,13 @@ parent_of(BI_TREE * funcs, BI_NODE * s)
     return r;
 }
 
-#define MAXSTK 20
+#define MAXSTK 100
 #define PUSH(A,P) { \
 	TRACE(("@%d:push #%d a=%2d, B=%2d, p='%s' -> '%s'\n", __LINE__, \
-		k, A, B(P), P?KEY(P):"", LINK(A,P)?KEY(LINK(A,P)):"")); \
+		k, A, \
+		P ? B(P) : -99, \
+		P ? KEY(P) : "", \
+		(P && LINK(A,P)) ? KEY(LINK(A,P)) : "")); \
 	stack[k].a = A;\
 	stack[k].p = P;\
 	k++; }
@@ -366,6 +369,8 @@ btree_delete(BI_TREE * funcs, const char *data)
 	    while (s != q) {
 		PUSH(a, q);
 		q = LINK(a, q);
+		if (q == 0)
+		    break;
 		a = COMPARE(KEY(s), KEY(q));
 	    }
 	    PUSH(b, q);
@@ -381,9 +386,12 @@ btree_delete(BI_TREE * funcs, const char *data)
 	    }
 	    p = stack[k].p;
 	    a = stack[k].a;
-	    TRACE(("processing #%d '%s' B = %d, a = %d (%p)\n",
-		   k, KEY(p), B(p), a, LINK(a, p)));
-	    if (B(p) == a) {
+	    TRACE(("processing #%d '%s' B = %d, a = %d (%p->%p)\n",
+		   k, p ? KEY(p) : "", p ? B(p) : -99, a, p, p ? LINK(a, p)
+		   : 0));
+	    if (p == 0) {
+		break;
+	    } else if (B(p) == a) {
 		TRACE(("Case (i)\n"));
 		B(p) = 0;
 	    } else if (B(p) == 0) {

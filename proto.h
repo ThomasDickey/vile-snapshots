@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.704 2010/04/11 18:52:47 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.705 2010/05/11 00:48:16 tom Exp $
  *
  */
 
@@ -219,7 +219,7 @@ extern char *give_accelerator ( char * );
 #endif
 
 #if OPT_NAMEBST
-extern int delete_namebst(const char *name, int release);
+extern int delete_namebst(const char *name, int release, int redefining);
 extern int insert_namebst(const char *name, const CMDFUNC *cmd, int ro);
 extern int rename_namebst(const char *oldname, const char *newname);
 extern int search_namebst(const char *name);

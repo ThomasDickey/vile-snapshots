@@ -1,10 +1,11 @@
 Changes for vile 9.8 (released ??? ??? ?? ????)
 
- 20100501 (zd)
+ 20100511 (zd)
 	> Brendan O'Dea:
 	+ add configure option --disable-rpath-hack, since Debian guidelines
 	  do not allow rpath.
 	> Tom Dickey:
+	+ several fixes for redefining a built-in command via a procedure.
 	+ fix warnings from "clang --analyze".
 	+ remove a check that prevented inserting non-UTF-8/non-Latin1 8bit
 	  codes.
