@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/rubyfilt.c,v 1.49 2009/12/10 00:22:04 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/rubyfilt.c,v 1.50 2010/05/12 08:43:09 tom Exp $
  *
  * Filter to add vile "attribution" sequences to ruby scripts.  This is a
  * translation into C of an earlier version written for LEX/FLEX.
@@ -72,6 +72,19 @@ static int var_embedded(char *);
 static char *the_file;
 static char *the_last;
 static size_t the_size;
+
+/*
+ * Stack of here-document tags
+ */
+#define HERE_TAGS struct _here_tags
+HERE_TAGS {
+    HERE_TAGS *next;
+    char *value;
+    int strip;
+    int quote;
+};
+
+static HERE_TAGS *here_tags;
 
 #ifdef DEBUG
 static char *
@@ -539,15 +552,58 @@ end_POD(char *s)
 }
 
 /*
- * FIXME: we're only implementing a single here-doc (documentation says they
- * can be stacked), and don't check for unbalanced quotes).
+ * Ruby allows more than one here-document to begin on a line.  They "stack",
+ * and are processed in succession.
  */
-static char *
-begin_HERE(char *s, int *quoted, int *strip_here)
+static void
+make_here_tag(char *value, int quote, int strip)
 {
-    char *base;
-    char *marker;
+    unsigned size = 0;
+    HERE_TAGS *data = type_alloc(HERE_TAGS, (char *) 0, 1, &size);
+
+    if (data != 0) {
+	HERE_TAGS *p = here_tags;
+	HERE_TAGS *q = 0;
+
+	while (p != 0) {
+	    q = p;
+	    p = p->next;
+	}
+	if (q != 0)
+	    q->next = data;
+	else
+	    here_tags = data;
+	data->next = p;
+	data->value = value;
+	data->quote = quote;
+	data->strip = strip;
+    }
+}
+
+static char *
+free_here_tag(void)
+{
+    HERE_TAGS *next = here_tags->next;
+    char *result = next ? next->value : 0;
+
+    free(here_tags->value);
+    free(here_tags);
+    here_tags = next;
+
+    return result;
+}
+
+/*
+ * FIXME: we don't check for unbalanced quotes.
+ */
+static int
+begin_HERE(char *s)
+{
+    char *base = s;
+    char *first;
+    char *marker = 0;
     int ok;
+    int quote = 1;
     int strip = 0;
 
     if (ATLEAST(s, 3)
@@ -555,7 +611,7 @@ begin_HERE(char *s, int *quoted, int *strip_here)
 	&& s[1] == '<'
 	&& !isBlank(s[2])) {
 	s += 2;
-	base = s;
+	first = s;
 	if (*s == '-') {
 	    strip = 1;
 	    ++s;
@@ -564,24 +620,23 @@ begin_HERE(char *s, int *quoted, int *strip_here)
 	    unsigned temp = 0;
 
 	    s += ok;
-	    *quoted = 0;
-	    *strip_here = 1;
+	    quote = 0;
 
 	    if ((marker = do_alloc((char *) 0, (size_t) (ok + 1), &temp)) != 0) {
 		char *d = marker;
-		while (base != s) {
-		    if (isIdent(*base))
-			*d++ = *base;
+		while (first != s) {
+		    if (isIdent(*first))
+			*d++ = *first;
 		    else
-			*quoted = (*base != DQUOTE);
-		    base++;
+			quote = (*first != DQUOTE);
+		    first++;
 		}
 		*d = 0;
+		make_here_tag(marker, quote, strip);
 	    }
-	    return marker;
 	}
     }
-    return 0;
+    return (marker ? (s - base) : 0);
 }
 
 static char *
@@ -1085,8 +1140,6 @@ do_filter(FILE *input GCC_UNUSED)
     int ok;
     int err;
     int delim;
-    int strip_here = 0;		/* strip leading blanks in here-document */
-    int quote_here = 0;		/* tokens in here-document are quoted */
     int had_op = 1;		/* true to allow regex */
 
     (void) input;
@@ -1126,6 +1179,8 @@ do_filter(FILE *input GCC_UNUSED)
 	s = the_file;
 	while (MORE(s)) {
 	    if (*s == '\n') {
+		if (marker != 0)
+		    state = eHERE;
 		in_line = -1;
 		if (state == eCODE)
 		    had_op = 1;
@@ -1194,11 +1249,11 @@ do_filter(FILE *input GCC_UNUSED)
 		break;
 	    case eCODE:
 		if ((last_tok == tKEYWORD || last_tok == tOPERATOR)
-		    && (marker = begin_HERE(s, &quote_here, &strip_here)) != 0) {
-		    ok = 1;	/* FIXME: should allow other tokens on line */
+		    && (ok = begin_HERE(s)) != 0) {
 		    Parsed(this_tok, tHERE);
-		    state = eHERE;
-		    s = put_remainder(s, String_attr, quote_here);
+		    flt_puts(s, ok, String_attr);
+		    s += ok;
+		    marker = here_tags->value;
 		} else if ((in_line < 0 && begin_POD(s + 1))
 			   || ((s == the_file && begin_POD(s)))) {
 		    DPRINTF(("...POD\n"));
@@ -1287,12 +1342,19 @@ do_filter(FILE *input GCC_UNUSED)
 		}
 		break;
 	    case eHERE:
-		if (end_marker(s + is_BLANK(s), marker, 1)) {
+		if (here_tags == 0) {
 		    state = eCODE;
-		    free(marker);
-		    marker = 0;
+		} else if (end_marker(s + (here_tags->strip
+					   ? is_BLANK(s)
+					   : 0),
+				      marker, 1)) {
+		    if ((marker = free_here_tag()) == 0)
+			state = eCODE;
 		}
-		s = put_remainder(s, String_attr, quote_here);
+		s = put_remainder(s, String_attr,
+				  (here_tags
+				   ? here_tags->quote
+				   : 0));
 		break;
 	    case ePOD:
 		if (end_POD(s))
@@ -1325,6 +1387,10 @@ do_filter(FILE *input GCC_UNUSED)
 	    }
 	}
 	free(the_file);
+    }
+    while (here_tags != 0) {
+	flt_error("expected tag:%s", here_tags->value);
+	(void) free_here_tag();
     }
 }
 

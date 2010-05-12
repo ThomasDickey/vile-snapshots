@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/flt_defs.h,v 1.14 2009/10/07 23:30:31 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/flt_defs.h,v 1.15 2010/05/11 23:18:20 tom Exp $
  */
 
 #ifndef FLT_DEFS_H
@@ -70,6 +70,8 @@ extern	char *	malloc	( size_t len );
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
+
+#include <assert.h>
 
 #include <vl_stdio.h>
 

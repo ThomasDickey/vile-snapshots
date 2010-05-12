@@ -46,7 +46,7 @@
  * vile will choose some appropriate fallback (such as underlining) if
  * italics are not available.
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/manfilt.c,v 1.51 2010/03/01 10:43:38 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/manfilt.c,v 1.52 2010/05/04 00:47:41 tom Exp $
  *
  */
 
@@ -373,18 +373,20 @@ extend_line(void)
 	} else {
 	    c = typereallocn(CHARCELL, c, want);
 	}
-	if (c == 0)
+	if (c == 0) {
 	    failed("extend_line");
-	while (have < want) {
-	    c[have].link = 0;
-	    c[have].c_attrs = ATR_NORMAL;
-	    c[have].c_value = SPACE;
-	    c[have].c_level = 0;
-	    c[have].c_ident = CS_NORMAL;
-	    have++;
+	} else {
+	    while (have < want) {
+		c[have].link = 0;
+		c[have].c_attrs = ATR_NORMAL;
+		c[have].c_value = SPACE;
+		c[have].c_level = 0;
+		c[have].c_ident = CS_NORMAL;
+		have++;
+	    }
+	    cur_line->l_last = want;
+	    cur_line->l_cell = c;
 	}
-	cur_line->l_last = want;
-	cur_line->l_cell = c;
     }
 }
 
