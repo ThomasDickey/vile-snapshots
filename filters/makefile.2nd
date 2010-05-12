@@ -1,4 +1,4 @@
-# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.2nd,v 1.18 2010/04/04 23:08:58 tom Exp $
+# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.2nd,v 1.19 2010/05/11 21:45:04 tom Exp $
 #
 
 .SUFFIXES: .l .c .i $o
@@ -87,10 +87,14 @@ realclean: distclean
 	-$(RM) tags TAGS
 
 lint:
-	$(LINT) $(CPPFLAGS) c-filt.c
-	$(LINT) $(CPPFLAGS) ecrypt.c
-	$(LINT) $(CPPFLAGS) manfilt.c
-	$(LINT) $(CPPFLAGS) pas-filt.c
+	-$(SHELL) -c 'for L in $(C_OBJ) $(CF_DEPS); do \
+			N=`basename $$L $o`.c; \
+			$(LINT) $(CPPFLAGS) $$N; \
+		done'
+	-$(SHELL) -c 'for L in $(LEX_OBJ); do \
+			N=`basename $$L $o`.c; \
+			make $$N && $(LINT) $(CPPFLAGS) $$N; \
+		done'
 
 tags:
 	$(CTAGS) *.[chyl]

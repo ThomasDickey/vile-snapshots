@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/sed-filt.c,v 1.24 2009/10/07 09:03:10 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/sed-filt.c,v 1.25 2010/05/11 21:32:08 tom Exp $
  *
  * Filter to add vile "attribution" sequences to sed scripts.
  */
@@ -185,7 +185,7 @@ SkipPattern(char *s, int *done, int join)
 static char *
 SkipTwoPatterns(char *s, int flags)
 {
-    char *base = s;
+    char *base;
     int done;
 
     s = SkipPattern(s, &done, 0);

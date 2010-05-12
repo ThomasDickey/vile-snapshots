@@ -7,7 +7,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/vilefilt.l,v 1.67 2010/04/03 00:24:44 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/vilefilt.l,v 1.68 2010/05/11 21:39:56 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of vile macros
  * - T.Dickey
@@ -313,6 +313,7 @@ check_ctl_v(char *text, int len)
 	    skip = 0;
 	    base = 8;
 	    digits = 3;
+	    break;
 	case 'x':
 	    skip = 1;
 	    base = 16;

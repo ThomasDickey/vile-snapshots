@@ -8,7 +8,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/lex-filt.l,v 1.74 2009/10/07 09:20:02 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/lex-filt.l,v 1.75 2010/05/11 21:39:56 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of LEX program.
  */
@@ -296,8 +296,6 @@ write_states(char *text, int len)
 	    write_1state(text, n - 1);
 	    *last = '>';
 	    flt_bfr_append(last, 1);
-	    text += n;
-	    len -= n;
 	}
 	flt_bfr_finish();
     }

@@ -1,7 +1,7 @@
 /*
  * Main program and I/O for external vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filterio.c,v 1.55 2009/10/07 23:30:13 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filterio.c,v 1.56 2010/05/11 22:35:45 tom Exp $
  *
  */
 
@@ -473,10 +473,12 @@ main(int argc, char **argv)
 	if (FltOptions('Q'))
 	    flt_dump_symtab(NULL);
     } else if (n < argc) {
-	char *name = argv[n++];
-	if ((my_in = fopen(name, "r")) != 0) {
-	    filter_def.DoFilter(my_in);
-	    fclose(my_in);
+	while (n < argc) {
+	    char *name = argv[n++];
+	    if ((my_in = fopen(name, "r")) != 0) {
+		filter_def.DoFilter(my_in);
+		fclose(my_in);
+	    }
 	}
     } else {
 	filter_def.DoFilter(my_in);

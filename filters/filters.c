@@ -1,7 +1,7 @@
 /*
  * Common utility functions for vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.150 2010/02/18 22:59:17 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.151 2010/05/11 22:05:46 tom Exp $
  *
  */
 
@@ -351,8 +351,8 @@ FindIdentifier(const char *name)
     unsigned size;
     KEYWORD *result = 0;
 
-    if (name != 0 && (size = strlen(name)) != 0) {
 #if USE_TSEARCH
+    if (name != 0 && strlen(name) != 0) {
 	KEYWORD find;
 	void *pp;
 
@@ -360,7 +360,9 @@ FindIdentifier(const char *name)
 	if ((pp = tfind(&find, &(current_class->data), compare_data)) != 0) {
 	    result = *(KEYWORD **) pp;
 	}
+    }
 #else
+    if (name != 0 && (size = strlen(name)) != 0) {
 	int Index = hash_function(name);
 
 	result = my_table[Index];
@@ -371,8 +373,8 @@ FindIdentifier(const char *name)
 	    }
 	    result = result->kw_next;
 	}
-#endif /* TSEARCH */
     }
+#endif /* TSEARCH */
     return result;
 }
 
@@ -1005,7 +1007,6 @@ static KEYWORD *
 alloc_keyword(const char *ident, const char *attribute, int classflag, char *flag)
 {
     KEYWORD *nxt;
-    int Index;
 
     if ((nxt = FindIdentifier(ident)) != 0) {
 	Free(nxt->kw_attr);
@@ -1015,7 +1016,6 @@ alloc_keyword(const char *ident, const char *attribute, int classflag, char *fla
 	}
     } else {
 	nxt = NULL;
-	Index = hash_function(ident);
 	if ((nxt = typecallocn(KEYWORD, 1)) != NULL) {
 	    init_data(nxt, ident, attribute, classflag, flag);
 
@@ -1035,7 +1035,7 @@ alloc_keyword(const char *ident, const char *attribute, int classflag, char *fla
 		}
 #else
 		nxt->kw_next = my_table[Index];
-		my_table[Index] = nxt;
+		my_table[hash_function(ident)] = nxt;
 #endif
 	    } else {
 		free_data(nxt);
@@ -1271,8 +1271,9 @@ parse_keyword(char *name, int classflag)
 	    args = default_attr;
 	    VERBOSE(2, ("using attr \"%s\"", args));
 	}
+	assert(args != 0);
 	if (strcmp(name, args)
-	    && (data = FindIdentifier(args)) != 0) {
+	    && FindIdentifier(args) != 0) {
 	    /*
 	     * Insert the classname rather than the data->kw_attr value,
 	     * since insert_keyword makes a copy of the string we pass to it.

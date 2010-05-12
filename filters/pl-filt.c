@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/pl-filt.c,v 1.100 2009/12/10 00:13:12 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/pl-filt.c,v 1.101 2010/05/11 21:32:08 tom Exp $
  *
  * Filter to add vile "attribution" sequences to perl scripts.  This is a
  * translation into C of an earlier version written for LEX/FLEX.
@@ -1003,7 +1003,7 @@ is_Subscript(char *s, int len, char *delimp)
 {
     if (delimp != 0) {
 	int delim = *delimp;
-	int delim2 = delim;
+	int delim2;
 	char *next;
 
 	if (delim != 0 && (next = strchr(LOOKUP_TERM, delim)) != 0) {
@@ -1178,7 +1178,7 @@ put_NOKEYWORD(char *s, int ok, AfterKey * if_wrd)
     s[ok] = '\0';
     attr = keyword_attr(s);
     s[ok] = save;
-    flt_puts(s, ok, "");
+    flt_puts(s, ok, attr);
     check_keyword(s, ok, if_wrd);
     return s + ok;
 }
@@ -1324,7 +1324,6 @@ do_filter(FILE *input GCC_UNUSED)
 	the_last = the_file + the_size;
 
 	s = the_file;
-	if_old = nullKey;
 	if_wrd = nullKey;
 	while (MORE(s)) {
 	    if (*s == '\n' || s == the_file) {

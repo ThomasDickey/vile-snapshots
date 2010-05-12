@@ -3,7 +3,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/xq-filt.l,v 1.13 2009/10/07 09:34:01 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/xq-filt.l,v 1.14 2010/05/11 21:47:04 tom Exp $
  *
  * XQuery is case-sensitive
  * XQuery elements, attributes, and variables must be valid XML names
@@ -392,6 +392,8 @@ do_filter(FILE *inputs)
     flt_bfr_error();
 
     if (Tags != 0) {
+	if (Num_tags > 1)
+	    flt_error("expected tag:%s", Tags[Num_tags - 1].name);
 	while (Num_tags > 0)
 	    free(Tags[--Num_tags].name);
 #if NO_LEAKS
@@ -399,8 +401,6 @@ do_filter(FILE *inputs)
 	Tags = 0;
 #endif
     }
-    if (Num_tags > 1)
-	flt_error("expected tag:%s", Tags[Num_tags - 1].name);
     end_state();
 }
 
