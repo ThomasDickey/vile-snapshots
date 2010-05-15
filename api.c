@@ -15,7 +15,7 @@
  * in handy.
  *				- kev 4/7/1998
  *
- * $Header: /users/source/archives/vile.vcs/RCS/api.c,v 1.45 2009/03/22 01:06:34 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/api.c,v 1.46 2010/05/13 00:24:54 tom Exp $
  */
 
 #include "estruct.h"
@@ -815,7 +815,7 @@ api_free_private(void *vsp)
 
     if (vbp) {
 	vbp->bp->b_api_private = 0;
-#if OPT_PERL
+#if OPT_PERL && !NO_LEAKS
 	perl_free_handle(vbp->perl_handle);
 #endif
 	free(vbp);

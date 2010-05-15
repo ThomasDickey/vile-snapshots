@@ -2,7 +2,7 @@
  *	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.366 2010/05/04 00:01:53 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.368 2010/05/14 22:05:47 tom Exp $
  *
  */
 
@@ -189,6 +189,10 @@
 #ifdef HAVE_LIBXPM
 #include <X11/xpm.h>
 #endif
+#endif
+
+#if OPT_INPUT_METHOD
+#include <locale.h>
 #endif
 
 #ifndef CI_NONEXISTCHAR
@@ -6313,6 +6317,10 @@ x_key_press(Widget w GCC_UNUSED,
     KeySym keysym;
     int num;
 
+#if OPT_INPUT_METHOD
+    UINT uch;
+#endif
+
     int i;
     size_t n;
     /* *INDENT-OFF* */
@@ -6487,7 +6495,19 @@ x_key_press(Widget w GCC_UNUSED,
 	    if (isCntrl(ch)) {
 		TRACE(("ADD-CTRL %#x\n", ch));
 		kqadd(cur_win, modifier | ch);
-	    } else {
+	    }
+#if OPT_INPUT_METHOD
+	    else if (i == 0
+		     && num > 1
+		     && cur_win->imInputContext != NULL
+		     && b_is_utfXX(curbp)
+		     && vl_conv_to_utf32(&uch, buffer, num) == num) {
+		TRACE(("ADD-CHAR %#x\n", uch));
+		kqadd(cur_win, uch);
+		break;
+	    }
+#endif
+	    else {
 		TRACE(("ADD-CHAR %#x\n", ch));
 		kqadd(cur_win, ch);
 	    }
@@ -6630,6 +6650,9 @@ x11_leaks(void)
     if (cur_win != 0) {
 	FreeIfNeeded(cur_win->fontname);
     }
+#if OPT_MENUS
+    init_menus();
+#endif
 }
 #endif /* NO_LEAKS */
 
@@ -6893,6 +6916,7 @@ xim_real_init(void)
 {
     unsigned i, j;
     char *p, *s, *t, *ns, *end, buf[32];
+    char *save_ctype = 0;
     XIMStyle input_style = 0;
     XIMStyles *xim_styles = NULL;
     Bool found;
@@ -6916,6 +6940,9 @@ xim_real_init(void)
     if (cur_win->cannot_im) {
 	return;
     }
+
+    if (okCTYPE2(vl_wide_enc))
+	save_ctype = setlocale(LC_CTYPE, vl_wide_enc.locale);
 
     TRACE((T_CALLED "init_xlocale:\n  inputMethod:%s\n  preeditType:%s\n",
 	   NonNull(cur_win->rs_inputMethod),
@@ -7112,6 +7139,10 @@ xim_real_init(void)
 	    fprintf(stderr, "Could not set destroy callback to IM\n");
     }
 #endif
+
+    if (save_ctype != 0)
+	setlocale(LC_CTYPE, save_ctype);
+
     returnVoid();
 }
 

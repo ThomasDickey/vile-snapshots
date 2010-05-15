@@ -1,7 +1,7 @@
 /*
  * Common utility functions for vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.151 2010/05/11 22:05:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.152 2010/05/12 10:40:27 tom Exp $
  *
  */
 
@@ -348,7 +348,6 @@ ExecTable(const char *param)
 static KEYWORD *
 FindIdentifier(const char *name)
 {
-    unsigned size;
     KEYWORD *result = 0;
 
 #if USE_TSEARCH
@@ -362,6 +361,7 @@ FindIdentifier(const char *name)
 	}
     }
 #else
+    unsigned size;
     if (name != 0 && (size = strlen(name)) != 0) {
 	int Index = hash_function(name);
 
@@ -1266,7 +1266,6 @@ parse_keyword(char *name, int classflag)
     if (*name && args) {
 	insert_keyword2(name, args, classflag, flag);
     } else if (*name) {
-	KEYWORD *data;
 	if (args == 0) {
 	    args = default_attr;
 	    VERBOSE(2, ("using attr \"%s\"", args));

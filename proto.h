@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.705 2010/05/11 00:48:16 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.706 2010/05/13 00:43:04 tom Exp $
  *
  */
 
@@ -881,6 +881,7 @@ extern ActionFunc vlmenu_action_func(char *action);
 extern char * vlmenu_is_cmd (char *action);
 extern int do_menu (void * menubar);
 extern int vlmenu_is_bind (char *action);
+extern void init_menus (void);
 	/* driver-specific interface */
 extern int gui_create_menus (void);
 extern void * gui_add_menu_item (void * pm, char *nom, char *accel, int the_class);
