@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.126 2009/12/25 23:41:06 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.127 2010/05/14 10:53:09 tom Exp $
  */
 
 #ifndef FILTERS_H
@@ -146,6 +146,16 @@ DCL_LEXFREE \
 FILTER_DEF filter_def = { name, 1, init_filter, do_filter, options REF_LEXFREE }
 
 #define DefineFilter(name) DefineOptFilter(name,0)
+
+#if NO_LEAKS
+#define LoadableFilter(name) \
+	extern FILTER_DEF define_##name; \
+	FILTER_DEF define_##name = { #name, 0, 0, 0, 0, 0 }
+#else
+#define LoadableFilter(name) \
+	extern FILTER_DEF define_##name; \
+	FILTER_DEF define_##name = { #name, 0, 0, 0, 0 }
+#endif
 
 #if defined(FLEX_SCANNER)
 #if defined(filter_def)

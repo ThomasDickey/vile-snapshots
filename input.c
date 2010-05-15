@@ -44,7 +44,7 @@
  *	tgetc_avail()     true if a key is avail from tgetc() or below.
  *	keystroke_avail() true if a key is avail from keystroke() or below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.334 2010/05/03 09:43:26 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.335 2010/05/14 22:16:58 tom Exp $
  *
  */
 
@@ -578,10 +578,10 @@ tgetc(int quoted)
 #if OPT_TRACE
     {
 	char temp[NSTRING];
-	TRACE(("tgetc(%s) = %s\n", (quoted
-				    ? "quoted"
-				    : "unquoted"),
-	       kcod2prc(c, temp)));
+	TRACE(("tgetc(%s) = %s(%#x)\n", (quoted
+					 ? "quoted"
+					 : "unquoted"),
+	       kcod2prc(c, temp), c));
     }
 #endif
     return c;

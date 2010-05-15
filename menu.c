@@ -8,7 +8,7 @@
 /************************************************************************/
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/menu.c,v 1.74 2010/05/03 09:35:24 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/menu.c,v 1.75 2010/05/13 10:56:30 tom Exp $
  */
 
 /* Vile includes */
@@ -88,7 +88,7 @@ free_all_tokens(void)
     endofDisplay();
 }
 
-static void
+void
 init_menus(void)
 {
     free_all_tokens();
@@ -455,6 +455,7 @@ add_menu_entry(const char *text, unsigned slen)
     int result;
     MenuToken myToken;
     MenuToken *hisToken;
+    MenuToken *links;
 
     result = parse_menu_entry(&myToken, text, slen);
     if (result == FALSE) {
@@ -464,7 +465,9 @@ add_menu_entry(const char *text, unsigned slen)
 	    add_menu_separator();
 	}
 	hisToken = newToken();
+	links = hisToken->next;
 	*hisToken = myToken;
+	hisToken->next = links;
 	define_menu_entry(hisToken);
     }
     return result;

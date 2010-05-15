@@ -1,10 +1,18 @@
 Changes for vile 9.8 (released ??? ??? ?? ????)
 
- 20100512 (zd)
+ 20100514 (zd)
 	> Brendan O'Dea:
 	+ add configure option --disable-rpath-hack, since Debian guidelines
 	  do not allow rpath.
 	> Tom Dickey:
+	+ two fixes for handling compose sequences with UTF-8 encoding (report
+	  by Radek Liboska):
+	  + restore the wide-character locale setting while opening the input
+	    method.
+	  + check in x_key_press() for resolved strings that can be interpreted
+	    as UTF-8 encoding.
+	+ add CFLAGS to link-commands in makefile.in, so that --with-cflags=-g
+	  works with linkers that require this.
 	+ implement stacked here-documents in ruby syntax highlighter.
 	+ several fixes for redefining a built-in command via a procedure.
 	+ fix warnings from "clang --analyze".
@@ -39,7 +47,7 @@ Changes for vile 9.8 (released ??? ??? ?? ????)
 	+ minor cleanup of .spec file, change the terminal configuration to
 	  use the default termcap/terminfo driver rather than ncursesw
 	  (discussion with Radek Liboska).
-	+ fix makefile.in so that rpm build works; the changes for the 
+	+ fix makefile.in so that rpm build works; the changes for the
 	  --with-symlink configure option had broken the way the TARGET symbol
 	  was used by the .spec file.
 	+ add configure check for va_copy, which may not be a macro.
@@ -219,7 +227,7 @@ Changes for vile 9.8 (released ??? ??? ?? ????)
 	  platforms such as IRIX64, including it generates an error.
 	+ implement Unicode select/paste in winvile.
 	+ build-fix in mktbls.c for Visual Studio.Net 2003, apparent compiler
-	  bug. 
+	  bug.
 	+ add detailed example of extra-colors to vile.hlp
 	+ change spaces-after-sentence to a buffer mode, to allow it to be part
 	  of a majormode.

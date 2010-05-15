@@ -20,7 +20,7 @@
 #
 # gnu autoconf support by kevin buettner, 5/94
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.242 2010/04/04 23:09:18 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.243 2010/05/13 21:05:44 tom Exp $
 
 SHELL		= /bin/sh
 
@@ -339,7 +339,7 @@ filters/@LIB_PREFIX@vlflt.a : $(BUILTHDRS)
 
 $(PROGRAM): $(BUILTHDRS) $(OBJ) $(OBJ2) $(BUILTLIBS)
 	- mv $(PROGRAM) o$(PROGRAM)
-	@ECHO_LD@$(LINK) $(LDFLAGS) -o $@ $(OBJ) $(OBJ2) $(X_LIBS) $(LIBS)
+	@ECHO_LD@$(LINK) $(CFLAGS) $(LDFLAGS) -o $@ $(OBJ) $(OBJ2) $(X_LIBS) $(LIBS)
 
 vile.man: vile.1
 	nroff -man vile.1 | col -b >vile.man
