@@ -13,8 +13,8 @@ extern VIDEO **pscreen;		/* Physical screen. */
 #define IS_REVERSED(r,c)	((pscreen[(r)]->v_attrs[(c)] & (VAREV|VASEL)) != 0)
 #define MARK_LINE_DIRTY(r)	(pscreen[(r)]->v_flag |= VFCHG)
 #define MARK_CELL_DIRTY(r,c)	(pscreen[(r)]->v_attrs[(c)] |= VADIRTY)
-#define CLEAR_LINE_DIRTY(r)	(pscreen[(r)]->v_flag &= ~VFCHG)
-#define CLEAR_CELL_DIRTY(r,c)	(pscreen[(r)]->v_attrs[(c)] &= ~VADIRTY)
+#define CLEAR_LINE_DIRTY(r)	(pscreen[(r)]->v_flag &= (UINT) ~VFCHG)
+#define CLEAR_CELL_DIRTY(r,c)	(pscreen[(r)]->v_attrs[(c)] &= (VIDEO_ATTR) ~VADIRTY)
 #define CELL_TEXT(r,c)		(pscreen[(r)]->v_text[(c)])
 #define CELL_ATTR(r,c)		(pscreen[(r)]->v_attrs[(c)])
 

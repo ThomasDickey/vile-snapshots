@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.348 2010/05/11 09:40:28 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.349 2010/05/18 10:50:47 tom Exp $
  *
  */
 
@@ -151,22 +151,26 @@ old_namebst(BI_NODE * a)
     if (!(a->value.n_flags & NBST_READONLY)) {
 	CMDFUNC *cmd = TYPECAST(CMDFUNC, a->value.n_cmd);
 	if (cmd != 0) {
+	    if ((cmd->c_flags & CMD_TYPE) != CMD_FUNC) {
 #if OPT_ONLINEHELP
-	    if (cmd->c_help)
-		free(TYPECAST(char, cmd->c_help));
+		if (cmd->c_help)
+		    free(TYPECAST(char, cmd->c_help));
 #endif
 #if OPT_MACRO_ARGS
-	    if (cmd->c_args) {
-		int n;
-		for (n = 0; cmd->c_args[n].pi_text != 0; ++n) {
-		    free(cmd->c_args[n].pi_text);
+		if (cmd->c_args) {
+		    int n;
+		    for (n = 0; cmd->c_args[n].pi_text != 0; ++n) {
+			free(cmd->c_args[n].pi_text);
+		    }
+		    free(cmd->c_args);
 		}
-		free(cmd->c_args);
-	    }
 #endif
-	    free(cmd);
+		free(cmd);
+		free(TYPECAST(char, BI_KEY(a)));
+	    }
+	} else {
+	    free(TYPECAST(char, BI_KEY(a)));
 	}
-	free(TYPECAST(char, BI_KEY(a)));
     }
     free(a);
     endofDisplay();
