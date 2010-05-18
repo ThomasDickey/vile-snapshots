@@ -1,5 +1,5 @@
 /*
- * $Id: btree.c,v 1.31 2010/05/11 22:25:34 tom Exp $
+ * $Id: btree.c,v 1.44 2010/05/18 09:42:43 tom Exp $
  * Copyright 1997-2008,2010 by Thomas E. Dickey
  *
  * Maintains a balanced binary tree (aka AVL tree) of unspecified nodes.  The
@@ -7,6 +7,8 @@
  * Sorting and Searching", by Donald Knuth.  Knuth presents the insertion and
  * search algorithms in assembly language for MIX, and gives an overview of the
  * deletion algorithm for the "interested reader".
+ *
+ * See 6.2.2 for deletion, as well as notes in 6.2.3 for rebalancing.
  */
 
 #ifdef HAVE_CONFIG_H
@@ -16,6 +18,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <ctype.h>
 
 #if !defined(DEBUG_BTREE) && !defined(NDEBUG)
 #define NDEBUG
@@ -38,6 +41,8 @@
 #define	for_ever for(;;)
 #define beginDisplay()		/* nothing */
 #define endofDisplay()		/* nothing */
+
+#define	NonNull(s)	((s == 0) ? "" : s)
 
 #include <time.h>
 
@@ -62,14 +67,16 @@
 
 #ifdef DEBUG_BTREE
 # ifndef TRACE
-#  if DEBUG_BTREE > 0
+#  if DEBUG_BTREE > 1
 #   define TRACE(p)	printf p ; fflush(stdout)
 #  endif
 # endif
-#else
+#elif 1
 # undef TRACE
 # undef OPT_TRACE
 # define OPT_TRACE 0
+# define DEBUG_BTREE -1
+#else
 # define DEBUG_BTREE -1
 #endif
 
@@ -99,7 +106,7 @@ static void dump_nodes(BI_TREE * funcs, BI_NODE * p, int level);
 #endif
 
 /*
- * FIXME
+ * FIXME - this should compare unsigned chars to be completely consistent.
  */
 static int
 btree_strcmp(const char *a, const char *b)
@@ -126,7 +133,7 @@ btree_insert(BI_TREE * funcs, BI_DATA * data)
     int a;
     BI_DATA *value = 0;
 
-    TRACE(("inserting '%s'\n", data->bi_key));
+    TRACE(("btree_insert(%p,%s)\n", funcs, data->bi_key));
     if (p == 0) {
 	if ((p = (*funcs->allocat) (data)) == 0)
 	    return 0;
@@ -198,6 +205,11 @@ btree_insert(BI_TREE * funcs, BI_DATA * data)
 		    assert(B(r) == -a);
 		    TRACE(("(A9: Double rotation)\n"));
 		    p = LINK(-a, r);
+		    assert(p != 0);
+		    if (p == 0) {
+			TRACE(("(BUG: null pointer)\n"));
+			break;
+		    }
 		    LINK(-a, r) = LINK(a, p);
 		    LINK(a, p) = r;
 		    LINK(a, s) = LINK(-a, p);
@@ -230,6 +242,26 @@ btree_insert(BI_TREE * funcs, BI_DATA * data)
     return (value);
 }
 
+#define SafeB(p)   ((p) ? B(p)   : -999)
+#define SafeKEY(p) ((p) ? KEY(p) : "")
+
+#define MAXSTK 100
+#define PUSH(A,P) { \
+	TRACE(("...push #%d a=%2d, B=%2d, p='%s' -> '%s'\n", \
+		k, A, \
+		SafeB(P), \
+		SafeKEY(P), \
+		(P && LINK(A,P)) ? KEY(LINK(A,P)) : "")); \
+	stack[k].a = A;\
+	stack[k].p = P;\
+	k++; }
+
+typedef struct {
+    BI_NODE *p;
+    int a;
+} STACKDATA;
+
+#if 0
 static BI_NODE *
 parent_of(BI_TREE * funcs, BI_NODE * s)
 {
@@ -246,32 +278,192 @@ parent_of(BI_TREE * funcs, BI_NODE * s)
     return r;
 }
 
-#define MAXSTK 100
-#define PUSH(A,P) { \
-	TRACE(("@%d:push #%d a=%2d, B=%2d, p='%s' -> '%s'\n", __LINE__, \
-		k, A, \
-		P ? B(P) : -99, \
-		P ? KEY(P) : "", \
-		(P && LINK(A,P)) ? KEY(LINK(A,P)) : "")); \
-	stack[k].a = A;\
-	stack[k].p = P;\
-	k++; }
+static int
+build_stack(BI_TREE * funcs, BI_NODE * p, STACKDATA stack[MAXSTK])
+{
+    BI_NODE *q;
+    int a;
+    int k = 0;
+
+    /*
+     * Construct the auxiliary stack (path down to but not including
+     * the node that we will delete).
+     */
+    q = &(funcs->head);
+    a = 1;
+    TRACE(("...build stack\n"));
+    while (LINK(a, q) != p) {
+	if (k + 1 >= MAXSTK) {
+	    TRACE(("BUG: stack overflow\n"));
+	    break;
+	}
+	PUSH(a, q);
+	q = LINK(a, q);
+	assert(q != 0);
+	if (q == 0) {
+	    TRACE(("(BUG: null pointer)\n"));
+	    break;
+	}
+	a = COMPARE(KEY(p), KEY(q));
+    }
+    TRACE(("...done building stack\n"));
+
+    return k;
+}
+
+static void
+rebalance_with_stack(BI_TREE * funcs, STACKDATA stack[MAXSTK], int k)
+{
+    BI_NODE *p, *q, *r, *t;
+
+    int a;
+
+    /* Rebalance the tree */
+    for_ever {
+	if (--k <= 0) {
+	    TRACE(("shorten the whole tree\n"));
+	    funcs->depth -= 1;
+	    break;
+	}
+	p = stack[k].p;
+	a = stack[k].a;
+	TRACE(("processing #%d '%s' B = %d, a = %d (%p->%p)\n",
+	       k, SafeKEY(p), SafeB(p), a, p, p ? LINK(a, p)
+	       : 0));
+	assert(q != 0);
+	if (p == 0) {
+	    TRACE(("(BUG: null pointer)\n"));
+	    break;
+	} else if (B(p) == a) {
+	    TRACE(("Case (i)\n"));
+	    B(p) = 0;
+	} else if (B(p) == 0) {
+	    TRACE(("Case (ii)\n"));
+	    B(p) = -a;
+	    break;
+	} else {
+	    TRACE(("Case (iii): Rebalancing needed!\n"));
+
+	    q = LINK(-a, p);
+	    assert(q != 0);
+	    assert(k > 0);
+	    assert(B(p) == -a);
+
+#ifdef OPT_TRACE
+	    t = stack[k - 1].p;
+	    TRACE(("t:%s, balance:%d\n", KEY(t), B(t)));
+	    TRACE(("A:p:%s, balance:%d\n", KEY(p), B(p)));
+	    TRACE(("B:q:%s, balance:%d\n", KEY(q), B(q)));
+	    TRACE_TREE("before rebalancing:", funcs);
+#endif
+
+	    if (B(q) == -a) {
+		TRACE(("CASE 1: single rotation\n"));
+
+		r = q;
+
+		TRACE(("link LINK(-a,p) -> LINK( a,q) = '%s'\n",
+		       SafeKEY(LINK(a, q))));
+		TRACE(("link LINK( a,q) -> p          = '%s'\n",
+		       SafeKEY(p)));
+
+		LINK(-a, p) = LINK(a, q);
+		LINK(a, q) = p;
+
+		B(p) = B(q) = 0;
+
+		t = parent_of(funcs, p);
+
+		TRACE(("Finish by linking '%s' to %sLINK(%s)\n",
+		       KEY(r),
+		       (p == RLINK(t))
+		       ? "R"
+		       : (p == LLINK(t))
+		       ? "L" : "?",
+		       KEY(t)));
+
+		t->links[(p == RLINK(t))] = r;
+
+	    } else if (B(q) == a) {
+		TRACE(("CASE 2: double rotation\n"));
+
+		r = LINK(a, q);
+#if DEBUG_BTREE > 1
+		TRACE(("a = '%d'\n", a));
+		TRACE(("p = '%s'\n", SafeKEY(p)));
+		TRACE(("q = '%s'\n", SafeKEY(q)));
+		TRACE(("r = '%s'\n", SafeKEY(r)));
+		TRACE(("link LINK( a,q) -> LINK(-a,r) = '%s'\n",
+		       SafeKEY(LINK(-a, r))));
+		TRACE(("link LINK(-a,r) -> q          = '%s'\n",
+		       KEY(q)));
+		TRACE(("link LINK(-a,p) -> LINK(a,r)  = '%s'\n",
+		       SafeKEY(LINK(a, r))));
+		TRACE(("link LINK( a,r) -> p          = '%s'\n",
+		       KEY(p)));
+#endif
+		LINK(a, q) = LINK(-a, r);
+		LINK(-a, r) = q;
+		LINK(-a, p) = LINK(a, r);
+		LINK(a, r) = p;
+
+		TRACE(("compute balance for '%s', %d vs a=%d\n",
+		       KEY(r), B(r), a));
+
+		if (B(r) == -a) {
+		    B(p) = a;
+		    B(q) = 0;
+		} else if (B(r) == 0) {
+		    B(p) = 0;
+		    B(q) = 0;
+		} else {	/* (B(r) == a) */
+		    B(p) = 0;
+		    B(q) = -a;
+		}
+
+		B(r) = 0;
+
+		a = stack[k - 1].a;
+		t = stack[k - 1].p;
+
+		TRACE(("Finish by linking '%s' to %sLINK(%s)\n",
+		       KEY(r),
+		       (a > 0) ? "R" : "L",
+		       KEY(t)));
+
+		LINK(a, t) = r;
+
+	    } else {
+		TRACE(("CASE 3: single rotation, end\n"));
+
+		LINK(-a, p) = LINK(a, q);
+		LINK(a, q) = p;
+
+		B(q) = -B(p);
+
+		LINK(stack[k - 1].a, stack[k - 1].p) = q;
+		break;
+	    }
+
+	    TRACE_TREE("after rebalancing:", funcs);
+
+	}
+    }
+}
 
 int
 btree_delete(BI_TREE * funcs, const char *data)
 {
-    struct {
-	BI_NODE *p;
-	int a;
-    } stack[MAXSTK];
+    STACKDATA stack[MAXSTK];
     int k = 0;
     /* (A1:Initialize) */
 
     BI_NODE *t = &(funcs->head), *p, *q, *r, *s;
 
-    int a, b;
+    int a;
     char *value;
 
+    TRACE(("btree_delete(%p,%s)\n", funcs, NonNull(data)));
     if ((p = t) == 0
 	|| (p = LINK(a = 1, p)) == 0) {
 	return 0;
@@ -289,13 +481,20 @@ btree_delete(BI_TREE * funcs, const char *data)
     }
 
     if (value != 0) {		/* we found the node to delete, in p */
+
+	/*
+	 * Construct the auxiliary stack (path down to but not including
+	 * the node that we will delete).
+	 */
+	k = build_stack(funcs, p, stack);
+
 	TRACE(("deleting node '%s'\n", value));
 	q = p;
 	p = t;
 	a = (q == RLINK(p)) ? 1 : -1;
 
-	TRACE(("@%d, p='%s'\n", __LINE__, p ? KEY(p) : ""));
-	TRACE(("@%d, q='%s'\n", __LINE__, q ? KEY(q) : ""));
+	TRACE(("@%d, p='%s'\n", __LINE__, SafeKEY(p)));
+	TRACE(("@%d, q='%s'\n", __LINE__, SafeKEY(q)));
 	TRACE(("@%d, a=%d\n", __LINE__, a));
 
 	/* D1: Is RLINK null? */
@@ -304,12 +503,10 @@ btree_delete(BI_TREE * funcs, const char *data)
 
 	    LINK(a, p) = LLINK(q);
 	    s = p;
-#if 0				/* LATER? */
 	} else if (LLINK(q) == 0) {	/* D1.5 */
 	    TRACE(("D1.5\n"));
 	    LINK(a, p) = RLINK(q);
 	    s = RLINK(q);
-#endif
 	} else {		/* D2: Find successor */
 	    TRACE_SUBTREE("SUBTREE(p)-before\n", funcs, p);
 	    r = RLINK(q);
@@ -323,7 +520,6 @@ btree_delete(BI_TREE * funcs, const char *data)
 		TRACE(("(D2) replace balance %2d with %2d, a=%2d\n",
 		       B(s), B(q), a));
 		B(s) = B(q);
-		a = 1;		/* for RLINK(q) */
 
 		TRACE_SUBTREE("SUBTREE(p)-after\n", funcs, p);
 		TRACE(("@%d, p='%s'\n", __LINE__, KEY(p)));
@@ -331,11 +527,12 @@ btree_delete(BI_TREE * funcs, const char *data)
 	    } else {		/* D3: Find null LLINK */
 		TRACE(("D3: find null LLINK\n"));
 
-		TRACE(("@%d, r='%s'\n", __LINE__, r ? KEY(r) : ""));
+		TRACE(("... r %d'%s'\n", SafeB(r), SafeKEY(r)));
 		s = r;
 		do {
 		    r = s;
 		    s = LLINK(r);
+		    TRACE(("... s %d'%s'\n", SafeB(s), SafeKEY(s)));
 		} while (LLINK(s) != 0);
 
 		LLINK(s) = LLINK(q);
@@ -345,172 +542,193 @@ btree_delete(BI_TREE * funcs, const char *data)
 		TRACE(("@%d, r='%s'\n", __LINE__, KEY(r)));
 		TRACE(("@%d, s='%s'\n", __LINE__, KEY(s)));
 		LINK(a, p) = s;
-		TRACE(("(D3) replace balance %2d with %2d, a=%2d\n",
+		TRACE(("(D3) replace balance s(%d) with q(%d), a=%d\n",
 		       B(s), B(q), a));
 		B(s) = B(q);
 		s = r;
-		a = -1;		/* ...since we followed left */
 	    }
 	}
-	b = a;
 	/* D4: Free the node */
 	assert(q != 0);
 	(*funcs->dealloc) (q);
 	funcs->count -= 1;
 	TRACE_TREE("after delinking:", funcs);
 
-	/* Construct the auxiliary stack */
-	q = &(funcs->head);
-	if (s != 0
-	    && s != q
-	    && q != 0) {
-	    TRACE(("Construct stack from '%s' down to '%s', final a=%d\n",
-		   q ? KEY(q) : "",
-		   s ? KEY(s) : "",
-		   b));
-	    while (s != q) {
-		PUSH(a, q);
-		q = LINK(a, q);
-		if (q == 0)
-		    break;
-		a = COMPARE(KEY(s), KEY(q));
-	    }
-	    PUSH(b, q);
-	    TRACE(("...done building stack\n"));
-	}
-
-	/* Rebalance the tree */
-	for_ever {
-	    if (--k <= 0) {
-		TRACE(("shorten the whole tree\n"));
-		funcs->depth -= 1;
-		break;
-	    }
-	    p = stack[k].p;
-	    a = stack[k].a;
-	    TRACE(("processing #%d '%s' B = %d, a = %d (%p->%p)\n",
-		   k, p ? KEY(p) : "", p ? B(p) : -99, a, p, p ? LINK(a, p)
-		   : 0));
-	    if (p == 0) {
-		break;
-	    } else if (B(p) == a) {
-		TRACE(("Case (i)\n"));
-		B(p) = 0;
-	    } else if (B(p) == 0) {
-		TRACE(("Case (ii)\n"));
-		B(p) = -a;
-		break;
-	    } else {
-		TRACE(("Case (iii): Rebalancing needed!\n"));
-
-		q = LINK(-a, p);
-		assert(q != 0);
-		assert(k > 0);
-		assert(B(p) == -a);
-
-#if OPT_TRACE
-		t = stack[k - 1].p;
-#endif
-		TRACE(("t:%s, balance:%d\n", KEY(t), B(t)));
-		TRACE(("A:p:%s, balance:%d\n", KEY(p), B(p)));
-		TRACE(("B:q:%s, balance:%d\n", KEY(q), B(q)));
-		TRACE_TREE("before rebalancing:", funcs);
-
-		if (B(q) == -a) {
-		    TRACE(("CASE 1: single rotation\n"));
-
-		    r = q;
-
-		    TRACE(("link LINK(-a,p) -> LINK( a,q) = '%s'\n",
-			   LINK(a, q) ? KEY(LINK(a, q)) : ""));
-		    TRACE(("link LINK( a,q) -> p          = '%s'\n",
-			   p ? KEY(p) : ""));
-
-		    LINK(-a, p) = LINK(a, q);
-		    LINK(a, q) = p;
-
-		    B(p) = B(q) = 0;
-
-		    t = parent_of(funcs, p);
-
-		    TRACE(("Finish by linking '%s' to %sLINK(%s)\n",
-			   KEY(r),
-			   (p == RLINK(t))
-			   ? "R"
-			   : (p == LLINK(t))
-			   ? "L" : "?",
-			   KEY(t)));
-
-		    t->links[(p == RLINK(t))] = r;
-
-		} else if (B(q) == a) {
-		    TRACE(("CASE 2: double rotation\n"));
-
-		    r = LINK(a, q);
-#if DEBUG_BTREE > 1
-		    TRACE(("a = '%d'\n", a));
-		    TRACE(("p = '%s'\n", p ? KEY(p) : ""));
-		    TRACE(("q = '%s'\n", q ? KEY(q) : ""));
-		    TRACE(("r = '%s'\n", r ? KEY(r) : ""));
-		    TRACE(("link LINK( a,q) -> LINK(-a,r) = '%s'\n",
-			   LINK(-a, r) ? KEY(LINK(-a, r)) : ""));
-		    TRACE(("link LINK(-a,r) -> q          = '%s'\n",
-			   KEY(q)));
-		    TRACE(("link LINK(-a,p) -> LINK(a,r)  = '%s'\n",
-			   LINK(a, r) ? KEY(LINK(a, r)) : ""));
-		    TRACE(("link LINK( a,r) -> p          = '%s'\n",
-			   KEY(p)));
-#endif
-		    LINK(a, q) = LINK(-a, r);
-		    LINK(-a, r) = q;
-		    LINK(-a, p) = LINK(a, r);
-		    LINK(a, r) = p;
-
-		    TRACE(("compute balance for '%s', %d vs a=%d\n",
-			   KEY(r), B(r), a));
-
-		    if (B(r) == -a) {
-			B(p) = a;
-			B(q) = 0;
-		    } else if (B(r) == 0) {
-			B(p) = 0;
-			B(q) = 0;
-		    } else {	/* (B(r) == a) */
-			B(p) = 0;
-			B(q) = -a;
-		    }
-
-		    B(r) = 0;
-
-		    a = stack[k - 1].a;
-		    t = stack[k - 1].p;
-
-		    TRACE(("Finish by linking '%s' to %sLINK(%s)\n",
-			   KEY(r),
-			   (a > 0) ? "R" : "L",
-			   KEY(t)));
-
-		    LINK(a, t) = r;
-
-		} else {
-		    TRACE(("CASE 3: single rotation, end\n"));
-
-		    LINK(-a, p) = LINK(a, q);
-		    LINK(a, q) = p;
-
-		    B(q) = -B(p);
-
-		    LINK(stack[k - 1].a, stack[k - 1].p) = q;
-		    break;
-		}
-
-		TRACE_TREE("after rebalancing:", funcs);
-
-	    }
-	}
+	rebalance_with_stack(funcs, stack, k);
     }
     return (value != 0);
 }
+#else
+
+static BI_NODE *
+jsw_single(BI_NODE * root, int dir)
+{
+    BI_NODE *save = root->links[!dir];
+
+    root->links[!dir] = save->links[dir];
+    save->links[dir] = root;
+
+    return save;
+}
+
+static BI_NODE *
+jsw_double(BI_NODE * root, int dir)
+{
+    BI_NODE *save = root->links[!dir]->links[dir];
+
+    root->links[!dir]->links[dir] = save->links[!dir];
+    save->links[!dir] = root->links[!dir];
+    root->links[!dir] = save;
+
+    save = root->links[!dir];
+    root->links[!dir] = save->links[dir];
+    save->links[dir] = root;
+
+    return save;
+}
+
+static void
+jsw_adjust_balance(BI_NODE * root, int dir, int bal)
+{
+    BI_NODE *n = root->links[dir];
+    BI_NODE *nn = n->links[!dir];
+
+    if (nn->balance == 0)
+	root->balance = n->balance = 0;
+    else if (nn->balance == bal) {
+	root->balance = -bal;
+	n->balance = 0;
+    } else {			/* nn->balance == -bal */
+	root->balance = 0;
+	n->balance = bal;
+    }
+
+    nn->balance = 0;
+}
+
+static BI_NODE *
+jsw_remove_balance(BI_NODE * root, int dir, int *done)
+{
+    BI_NODE *n = root->links[!dir];
+    int bal = (dir == 0) ? -1 : 1;
+
+    if (n->balance == -bal) {
+	root->balance = n->balance = 0;
+	root = jsw_single(root, dir);
+    } else if (n->balance == bal) {
+	jsw_adjust_balance(root, !dir, -bal);
+	root = jsw_double(root, dir);
+    } else {			/* n->balance == 0 */
+	root->balance = -bal;
+	n->balance = bal;
+	root = jsw_single(root, dir);
+	*done = 1;
+    }
+
+    return root;
+}
+
+int
+btree_delete(BI_TREE * funcs, const char *data)
+{
+    TRACE(("btree_delete(%p,%s)\n", funcs, NonNull(data)));
+
+    if (funcs->count != 0) {
+	BI_DATA value;
+	BI_NODE *it, *up[32];
+	int upd[32], top = 0;
+	int done = 0;
+
+	it = &(funcs->head);
+	if (it == 0
+	    || (it = LINK(1, it)) == 0) {
+	    TRACE(("...not found @%d\n", __LINE__));
+	    return 0;
+	}
+	TRACE(("...first check %p\n", KEY(it)));
+
+	for (;;) {
+	    /* Terminate if not found */
+	    if (it == NULL || KEY(it) == 0) {
+		TRACE(("...not found @%d\n", __LINE__));
+		return 0;
+	    } else {
+		if (COMPARE(KEY(it), data) == 0) {
+		    break;
+		}
+	    }
+
+	    /* Push direction and node onto stack */
+	    upd[top] = (COMPARE(KEY(it), data) < 0);
+	    up[top++] = it;
+
+	    it = it->links[upd[top - 1]];
+	}
+
+	/* Remove the node */
+	if (it->links[0] == NULL || it->links[1] == NULL) {
+	    /* Which child is not null? */
+	    int dir = it->links[0] == NULL;
+
+	    /* Fix parent */
+	    if (top != 0)
+		up[top - 1]->links[upd[top - 1]] = it->links[dir];
+	    else
+		LINK(1, &(funcs->head)) = it->links[dir];
+
+	    TRACE(("...freed %p @%d\n", BI_KEY(it), __LINE__));
+	    (*funcs->dealloc) (it);
+	    funcs->count -= 1;
+	} else {
+	    /* Find the inorder successor */
+	    BI_NODE *heir = it->links[1];
+
+	    /* Save the path */
+	    upd[top] = 1;
+	    up[top++] = it;
+
+	    while (heir->links[0] != NULL) {
+		upd[top] = 0;
+		up[top++] = heir;
+		heir = heir->links[0];
+	    }
+
+	    /* Swap data */
+	    value = it->value;
+	    it->value = heir->value;
+	    heir->value = value;
+	    /* Unlink successor and fix parent */
+	    up[top - 1]->links[up[top - 1] == it] = heir->links[1];
+
+	    TRACE(("...freed %p @%d\n", BI_KEY(heir), __LINE__));
+	    (*funcs->dealloc) (heir);
+	    funcs->count -= 1;
+	}
+
+	/* Walk back up the search path */
+	while (--top >= 0 && !done) {
+	    /* Update balance factors */
+	    up[top]->balance += upd[top] != 0 ? -1 : +1;
+
+	    /* Terminate or rebalance as necessary */
+	    if (abs(up[top]->balance) == 1)
+		break;
+	    else if (abs(up[top]->balance) > 1) {
+		up[top] = jsw_remove_balance(up[top], upd[top], &done);
+
+		/* Fix parent */
+		if (top != 0)
+		    up[top - 1]->links[upd[top - 1]] = up[top];
+		else
+		    LINK(1, &(funcs->head)) = up[0];
+	    }
+	}
+    }
+
+    TRACE(("...found @%d\n", __LINE__));
+    return 1;
+}
+#endif
 
 BI_DATA *
 btree_search(BI_TREE * funcs, const char *data)
@@ -590,7 +808,7 @@ dump_nodes(BI_TREE * funcs, BI_NODE * p, int level)
     if (p) {
 	dump_nodes(funcs, LLINK(p), level + 1);
 	(*funcs->display) (p, level);
-#if DEBUG_BTREE > 0
+#if DEBUG_BTREE > 1
 	if (LLINK(p) != 0
 	    && COMPARE(KEY(LLINK(p)), KEY(p)) > 0)
 	    TRACE((" OOPS:L"));
@@ -774,13 +992,13 @@ btree_verify(BI_TREE * funcs, BI_NODE * p)
 	    if (balance > 0) {
 		if (balance > 1) {
 		    ok = 0;
-		    TRACE(("OOPS: '%s' is unbalanced\n", KEY(p)));
+		    TRACE(("OOPS: '%s' is unbalanced: %d\n", KEY(p), balance));
 		}
 		balance = 1;
 	    } else {
 		if (balance < -1) {
 		    ok = 0;
-		    TRACE(("OOPS: '%s' is unbalanced\n", KEY(p)));
+		    TRACE(("OOPS: '%s' is unbalanced: %d\n", KEY(p), balance));
 		}
 		balance = -1;
 	    }
@@ -830,6 +1048,7 @@ static void
 old_node(BI_NODE * node)
 {
     beginDisplay();
+    free(BI_KEY(node));
     free(node);
     endofDisplay();
 }
@@ -860,8 +1079,8 @@ static BI_TREE text_tree =
 
 #define MAX_VEC 10000
 
-int
-main(int argc, char *argv[])
+static void
+test_btree(FILE *fp)
 {
     BI_DATA temp;
     BI_NODE *top;
@@ -872,28 +1091,30 @@ main(int argc, char *argv[])
     const char **list;
 
     memset(&temp, 0, sizeof(temp));
-    for (n = 1; n < argc; n++) {
-	temp.bi_key = argv[n];
-	btree_insert(&text_tree, &temp);
-    }
 
-    btree_printf(&text_tree);
-    btree_verify(&text_tree, RLINK(&(text_tree.head)));
-
-    while (!done && fgets(buffer, sizeof(buffer), stdin) != 0) {
+    while (!done && fgets(buffer, sizeof(buffer), fp) != 0) {
 	char *t = buffer;
 	char *s = t + strlen(t);
 
 	if (s != buffer && *--s == '\n')
 	    *s = 0;
 
+	if (isalpha(*buffer))
+	    printf("%s\n", buffer);
+
 	switch (*t++) {
+	case '[':
+	case ']':
+	case '!':
+	case '#':
+	case '*':
+	    break;
 	default:
 	    printf("Commands are f(ind) i(nsert), d(elete), l(ist), p(rint), r(andom)\n");
 	    break;
 	case 'f':
 	    n = (btree_search(&text_tree, t) != 0);
-	    printf("** found(%s) %d\n", t, n);
+	    printf("** find(%s) %d\n", t, n);
 	    break;
 	case 'i':
 	    temp.bi_key = t;
@@ -947,7 +1168,7 @@ main(int argc, char *argv[])
 		    if (!btree_verify(&text_tree, RLINK(&(text_tree.head)))) {
 			printf("OOPS: Random %s-verify '%s' failed\n", name, buffer);
 			btree_printf(&text_tree);
-			return (1);
+			return;
 		    }
 		    printf("** result: %d\n", ok);
 		}
@@ -955,14 +1176,34 @@ main(int argc, char *argv[])
 	case 'q':
 	    done = 1;
 	    break;
-	case '#':
-	    break;
 	}
 	btree_verify(&text_tree, RLINK(&(text_tree.head)));
     }
+}
+
+int
+main(int argc, char *argv[])
+{
+    if (argc > 1) {
+	int n;
+
+	for (n = 1; n < argc; ++n) {
+	    FILE *fp = fopen(argv[n], "r");
+	    if (fp != 0) {
+		printf("** read commands from \"%s\"\n", argv[n]);
+		test_btree(fp);
+		fclose(fp);
+	    } else {
+		perror(argv[n]);
+	    }
+	}
+    } else {
+	printf("** read commands from <stdin>\n");
+	test_btree(stdin);
+    }
+
     btree_freeup(&text_tree);
 
-    printf("done!\n\n");
     return 0;
 }
 #endif /* DEBUG_BTREE >= BTREE_DRIVER */

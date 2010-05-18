@@ -2,7 +2,7 @@
  *	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.368 2010/05/14 22:05:47 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.369 2010/05/15 00:23:45 tom Exp $
  *
  */
 
@@ -624,8 +624,8 @@ static void evqadd(const XEvent * evp);
 
 #define	FONTNAME	"7x13"
 
-#define	x_width(tw)		((tw)->cols * (tw)->char_width)
-#define	x_height(tw)		((tw)->rows * (tw)->char_height)
+#define	x_width(tw)		((tw)->cols * (UINT) (tw)->char_width)
+#define	x_height(tw)		((tw)->rows * (UINT) (tw)->char_height)
 #define	x_pos(tw, c)		((c) * (tw)->char_width)
 #define	y_pos(tw, r)		((r) * (tw)->char_height)
 #define	text_y_pos(tw, r)	(y_pos((tw), (r)) + (tw)->char_ascent)
@@ -1271,12 +1271,12 @@ update_scrollbar_sizes(void)
     /* Set sizes and positions on scrollbars and grips */
     i = 0;
     for_each_visible_window(wp) {
-	new_height = wp->w_ntrows * cur_win->char_height;
+	new_height = (Dimension) (wp->w_ntrows * cur_win->char_height);
 	XtVaSetValues(cur_win->scrollbars[i],
 		      Nval(XtNx, cur_win->slider_is_3D ? 0 : 1),
 		      Nval(XtNy, wp->w_toprow * cur_win->char_height),
 		      Nval(XtNheight, new_height),
-		      Nval(XtNwidth, cur_win->pane_width
+		      Nval(XtNwidth, (int) cur_win->pane_width
 			   + (cur_win->slider_is_3D ? 2 : -1)),
 		      NULL);
 	cur_win->scrollinfo[i].totlen = new_height;
@@ -1293,14 +1293,14 @@ update_scrollbar_sizes(void)
     }
 
     if (cur_win->nscrollbars > newsbcnt) {
-	nchildren = cur_win->nscrollbars - newsbcnt;
+	nchildren = (Cardinal) (cur_win->nscrollbars - newsbcnt);
 	XtUnmanageChildren(cur_win->scrollbars + newsbcnt, nchildren);
 	XtUnmanageChildren(cur_win->grips + newsbcnt - 1, nchildren);
 	for (i = cur_win->nscrollbars; i > newsbcnt;) {
 	    cur_win->scrollinfo[--i].exposed = False;
 	}
     } else if (cur_win->nscrollbars < newsbcnt) {
-	nchildren = newsbcnt - cur_win->nscrollbars;
+	nchildren = (Cardinal) (newsbcnt - cur_win->nscrollbars);
 	XtManageChildren(cur_win->scrollbars + cur_win->nscrollbars, nchildren);
 	if (cur_win->nscrollbars > 0)
 	    XtManageChildren(cur_win->grips + cur_win->nscrollbars - 1, nchildren);
@@ -1311,7 +1311,7 @@ update_scrollbar_sizes(void)
 
     i = 0;
     for_each_visible_window(wp) {
-	wp->w_flag &= ~WFSBAR;
+	wp->w_flag = (USHORT) (wp->w_flag & ~WFSBAR);
 	gui_update_scrollbar(wp);
 	i++;
     }
@@ -1550,7 +1550,7 @@ do_scroll(Widget w,
 	mvdnwind(TRUE, count);
 	cur_win->scroll_repeat_id =
 	    XtAppAddTimeOut(cur_win->app_context,
-			    cur_win->scroll_repeat_timeout,
+			    (ULONG) cur_win->scroll_repeat_timeout,
 			    repeat_scroll,
 			    (XtPointer) (long) count);
 	(void) update(TRUE);
@@ -1581,7 +1581,7 @@ repeat_scroll(XtPointer count,
 {
     cur_win->scroll_repeat_id =
 	XtAppAddTimeOut(cur_win->app_context,
-			cur_win->scroll_repeat_interval,
+			(ULONG) cur_win->scroll_repeat_interval,
 			repeat_scroll,
 			(XtPointer) count);
     mvdnwind(TRUE, (int) (long) count);
@@ -2452,7 +2452,7 @@ x_preparse_args(int *pargc, char ***pargv)
 
     for (i = 1; i < (*pargc) - 1; i++) {
 	char *param = (*pargv)[i];
-	UINT len = strlen(param);
+	UINT len = (UINT) strlen(param);
 	if (len > 1) {
 #if OPT_TITLE
 	    /*
@@ -3212,7 +3212,7 @@ x_preparse_args(int *pargc, char ***pargv)
 				bbWidgetClass,
 				cur_win->form_widget,
 				Nval(XtNwidth, cur_win->pane_width + 2),
-				Nval(XtNheight, (x_height(cur_win)
+				Nval(XtNheight, ((int) x_height(cur_win)
 						 - cur_win->char_height)),
 				Nval(XtNx, (cur_win->scrollbar_on_left
 					    ? 0
@@ -3531,7 +3531,7 @@ alloc_shadows(Pixel pixel, Pixel * light, Pixel * dark)
 	return False;		/* It'll look awful! */
 
 #define MAXINTENS ((ULONG)65535L)
-#define PlusFortyPercent(v) ((7 * (long) (v)) / 5)
+#define PlusFortyPercent(v) (ULONG) ((7 * (long) (v)) / 5)
     lred = PlusFortyPercent(color.red);
     lred = min(lred, MAXINTENS);
     lred = max(lred, (color.red + MAXINTENS) / 2);
@@ -3544,24 +3544,24 @@ alloc_shadows(Pixel pixel, Pixel * light, Pixel * dark)
     lblue = min(lblue, MAXINTENS);
     lblue = max(lblue, (color.blue + MAXINTENS) / 2);
 
-#define MinusFortyPercent(v) ((3 * (long) (v)) / 5)
+#define MinusFortyPercent(v) (ULONG) ((3 * (long) (v)) / 5)
 
     dred = MinusFortyPercent(color.red);
     dgreen = MinusFortyPercent(color.green);
     dblue = MinusFortyPercent(color.blue);
 
-    color.red = (UINT) lred;
-    color.green = (UINT) lgreen;
-    color.blue = (UINT) lblue;
+    color.red = (USHORT) lred;
+    color.green = (USHORT) lgreen;
+    color.blue = (USHORT) lblue;
 
     if (!XAllocColor(dpy, colormap, &color))
 	return False;
 
     *light = color.pixel;
 
-    color.red = (UINT) dred;
-    color.green = (UINT) dgreen;
-    color.blue = (UINT) dblue;
+    color.red = (USHORT) dred;
+    color.green = (USHORT) dgreen;
+    color.blue = (USHORT) dblue;
 
     if (!XAllocColor(dpy, colormap, &color))
 	return False;
@@ -3875,8 +3875,8 @@ x_setfont(const char *fname)
     Dimension oldh;
 
     if (cur_win) {
-	oldw = x_width(cur_win);
-	oldh = x_height(cur_win);
+	oldw = (Dimension) x_width(cur_win);
+	oldh = (Dimension) x_height(cur_win);
 	if ((pfont = query_font(cur_win, fname)) != 0) {
 	    XSetFont(dpy, cur_win->textgc, pfont->fid);
 	    XSetFont(dpy, cur_win->reversegc, pfont->fid);
@@ -3906,8 +3906,8 @@ x_setfont(const char *fname)
 		XClearWindow(dpy, cur_win->win);
 		x_touch(cur_win, 0, 0, cur_win->cols, cur_win->rows);
 		XResizeWindow(dpy, XtWindow(cur_win->top_widget),
-			      x_width(cur_win) + cur_win->base_width,
-			      x_height(cur_win) + cur_win->base_height);
+			      x_width(cur_win) + (unsigned) cur_win->base_width,
+			      x_height(cur_win) + (unsigned) cur_win->base_height);
 
 	    } else {
 		XClearWindow(dpy, cur_win->win);
@@ -3963,8 +3963,8 @@ x_open(void)
 #endif
 
 	/* main code assumes that it can access a cell at nrow x ncol */
-	term.maxcols = term.cols = cur_win->cols;
-	term.maxrows = term.rows = cur_win->rows;
+	term.maxcols = term.cols = (int) cur_win->cols;
+	term.maxrows = term.rows = (int) cur_win->rows;
 
 	if (check_scrollbar_allocs() != TRUE) {
 	    fprintf(stderr, "Cannot allocate scrollbars\n");
@@ -4015,9 +4015,9 @@ x_touch(TextWindow tw, int sc, int sr, UINT ec, UINT er)
     if (ec > tw->cols)
 	ec = tw->cols;
 
-    for (r = sr; r < er; r++) {
+    for (r = (UINT) sr; r < er; r++) {
 	MARK_LINE_DIRTY(r);
-	for (c = sc; c < ec; c++) {
+	for (c = (UINT) sc; c < ec; c++) {
 	    if (CELL_TEXT(r, c) != ' ' || CELL_ATTR(r, c)) {
 		MARK_CELL_DIRTY(r, c);
 	    }
@@ -4040,8 +4040,8 @@ wait_for_scroll(TextWindow tw)
 	    gev = (XGraphicsExposeEvent *) & ev;
 	    sc = gev->x / tw->char_width;
 	    sr = gev->y / tw->char_height;
-	    ec = CEIL(gev->x + gev->width, tw->char_width);
-	    er = CEIL(gev->y + gev->height, tw->char_height);
+	    ec = (UINT) CEIL(gev->x + gev->width, tw->char_width);
+	    er = (UINT) CEIL(gev->y + gev->height, tw->char_height);
 	    x_touch(tw, sc, sr, ec, er);
 	    if (gev->count == 0)
 		return;
@@ -4114,14 +4114,14 @@ really_draw(GC fore_gc,
 		wide = True;
 		break;
 	    }
-	    buffer[n] = text[n];
+	    buffer[n] = (char) text[n];
 	}
 
 	if (wide) {
 
 	    for (n = 0; n < (Cardinal) tlen; ++n) {
-		buffer2[n].byte2 = text[n];
-		buffer2[n].byte1 = (text[n] >> 8);
+		buffer2[n].byte2 = CharOf(text[n]);
+		buffer2[n].byte1 = CharOf(text[n] >> 8);
 	    }
 
 	    DRAW_WITH(XDrawImageString16, buffer2, 0);
@@ -4132,10 +4132,10 @@ really_draw(GC fore_gc,
 	    if (attr & VABOLD)
 		DRAW_WITH(XDrawImageString, buffer, 1);
 	}
-	tlen -= sizeof(buffer);
+	tlen -= (int) sizeof(buffer);
 	if (tlen > 0) {
 	    text += sizeof(buffer);
-	    sc += sizeof(buffer);
+	    sc += (int) sizeof(buffer);
 	}
     }
 }
@@ -4262,7 +4262,7 @@ flush_line(VIDEO_TEXT * text, int len, UINT attr, int sr, int sc)
 	} else {
 	    if (cc >= CLEAR_THRESH) {
 		tlen -= cc;
-		really_draw(fore_gc, p, tlen, attr, sr, sc);
+		really_draw(fore_gc, p, tlen, (VIDEO_ATTR) attr, sr, sc);
 		p += tlen + cc;
 		sc += tlen;
 		XFillRectangle(dpy, cur_win->win, back_gc,
@@ -4278,14 +4278,14 @@ flush_line(VIDEO_TEXT * text, int len, UINT attr, int sr, int sc)
     }
     if (cc >= CLEAR_THRESH) {
 	tlen -= cc;
-	really_draw(fore_gc, p, tlen, attr, sr, sc);
+	really_draw(fore_gc, p, tlen, (VIDEO_ATTR) attr, sr, sc);
 	sc += tlen;
 	XFillRectangle(dpy, cur_win->win, back_gc,
 		       x_pos(cur_win, sc), back_yy,
 		       (UINT) (cc * cur_win->char_width),
 		       (UINT) (cur_win->char_height));
     } else if (tlen > 0) {
-	really_draw(fore_gc, p, tlen, attr, sr, sc);
+	really_draw(fore_gc, p, tlen, (VIDEO_ATTR) attr, sr, sc);
     }
     if (attr & (VAUL | VAITAL)) {
 	fore_yy += cur_win->char_descent - 1;
@@ -4326,7 +4326,7 @@ x_flush(void)
 
     /* sometimes we're the last to know about resizing... */
     if ((int) cur_win->rows > term.maxrows)
-	cur_win->rows = term.maxrows;
+	cur_win->rows = (UINT) term.maxrows;
 
     for (r = 0; r < (int) cur_win->rows; r++) {
 	if (!IS_DIRTY_LINE(r))
@@ -4517,7 +4517,7 @@ set_character_class(char *s)
     base = 10;			/* in case we ever add octal, hex */
     low = high = -1;		/* out of range */
 
-    for (i = 0, len = strlen(s), acc = 0, numbers = digits = 0;
+    for (i = 0, len = (int) strlen(s), acc = 0, numbers = digits = 0;
 	 i < len; i++) {
 	int c = s[i];
 
@@ -4607,7 +4607,7 @@ pasting_utf8(TBUFF *p, int c)
 	temp[0] = (char) c;
 	if (vl_conv_to_utf32((UINT *) 0, temp, 6) > 0) {
 	    result = TRUE;
-	} else if ((limit = tb_length(p)) > 0) {
+	} else if ((limit = (int) tb_length(p)) > 0) {
 	    for (n = limit - 1; n > 0; --n) {
 		if (vl_conv_to_utf32((UINT *) 0, tb_values(p) + n, 6) > 0) {
 		    result = TRUE;
@@ -4901,7 +4901,8 @@ x_get_selected_text(UCHAR ** datp, size_t *lenp)
     for (length = 0, kp = kbs[SEL_KREG].kbufh; kp; kp = kp->d_next)
 	length += KbSize(SEL_KREG, kp);
     if (length == 0
-	|| (dp = data = (UCHAR *) XtMalloc(length * sizeof(UCHAR))) == 0
+	|| (dp = data = (UCHAR *) XtMalloc((Cardinal) (length
+						       * sizeof(UCHAR)))) == 0
 	|| (kp = kbs[SEL_KREG].kbufh) == 0)
 	return False;
 
@@ -4928,7 +4929,8 @@ x_get_clipboard_text(UCHAR ** datp, size_t *lenp)
     for (length = 0, kp = kbs[CLIP_KREG].kbufh; kp; kp = kp->d_next)
 	length += KbSize(CLIP_KREG, kp);
     if (length == 0
-	|| (dp = data = (UCHAR *) XtMalloc(length * sizeof(UCHAR))) == 0
+	|| (dp = data = (UCHAR *) XtMalloc((Cardinal) (length
+						       * sizeof(UCHAR)))) == 0
 	|| (kp = kbs[CLIP_KREG].kbufh) == 0)
 	return False;
 
@@ -4992,7 +4994,7 @@ x_convert_selection(Widget w GCC_UNUSED,
 		*tp++ = *sp;
 
 	    *type = XA_ATOM;
-	    *length = tp - *(Atom **) value;
+	    *length = (ULONG) (tp - *(Atom **) value);
 	    *format = 32;	/* width of the data being transfered */
 	    result = True;
 	}
@@ -5101,7 +5103,7 @@ line_count_and_interval(long scroll_count, ULONG * ip)
 {
     scroll_count = scroll_count / 4 - 2;
     if (scroll_count <= 0) {
-	*ip = (1 - scroll_count) * cur_win->scroll_repeat_interval;
+	*ip = (ULONG) ((1 - scroll_count) * cur_win->scroll_repeat_interval);
 	return 1;
     } else {
 	/*
@@ -5123,8 +5125,8 @@ line_count_and_interval(long scroll_count, ULONG * ip)
 	    scroll_count *= 3;
 	else if (scroll_count > 50)
 	    scroll_count *= 2;
-	*ip = cur_win->scroll_repeat_interval;
-	return scroll_count;
+	*ip = (ULONG) cur_win->scroll_repeat_interval;
+	return (int) scroll_count;
     }
 }
 
@@ -5411,8 +5413,8 @@ x_process_event(Widget w GCC_UNUSED,
 	gev = (XExposeEvent *) ev;
 	sc = gev->x / cur_win->char_width;
 	sr = gev->y / cur_win->char_height;
-	ec = CEIL(gev->x + gev->width, cur_win->char_width);
-	er = CEIL(gev->y + gev->height, cur_win->char_height);
+	ec = (UINT) CEIL(gev->x + gev->width, cur_win->char_width);
+	er = (UINT) CEIL(gev->y + gev->height, cur_win->char_height);
 	x_touch(cur_win, sc, sr, ec, er);
 	cur_win->exposed = TRUE;
 	if (ev->xexpose.count == 0)
@@ -5442,12 +5444,12 @@ x_process_event(Widget w GCC_UNUSED,
 	if (nr < 0)
 	    nr = -1;		/* want to be out of bounds to force scrolling */
 	else if (nr > (int) cur_win->rows)
-	    nr = cur_win->rows;
+	    nr = (int) cur_win->rows;
 
 	if (nc < 0)
 	    nc = 0;
 	else if (nc >= (int) cur_win->cols)
-	    nc = cur_win->cols - 1;
+	    nc = (int) (cur_win->cols - 1);
 
 	/* ignore any spurious motion during a multi-cick */
 	if (cur_win->numclicks > 1
@@ -5572,12 +5574,12 @@ x_configure_window(Widget w GCC_UNUSED,
 		  XtNheight, &new_height,
 		  XtNwidth, &new_width,
 		  NULL);
-    new_height = (((int) (new_height - cur_win->base_height)
-		   / cur_win->char_height)
-		  * cur_win->char_height);
-    new_width = (((int) (new_width - cur_win->base_width)
-		  / cur_win->char_width)
-		 * cur_win->char_width);
+    new_height = (Dimension) (((int) (new_height - cur_win->base_height)
+			       / cur_win->char_height)
+			      * cur_win->char_height);
+    new_width = (Dimension) (((int) (new_width - cur_win->base_width)
+			      / cur_win->char_width)
+			     * cur_win->char_width);
 
     /* Check to make sure the dimensions are sane both here and below
        to avoid BadMatch errors */
@@ -5678,8 +5680,8 @@ x_configure_window(Widget w GCC_UNUSED,
     if (nc != (int) cur_win->cols
 	|| nr != (int) cur_win->rows) {
 	newscreensize(nr, nc);
-	cur_win->rows = nr;
-	cur_win->cols = nc;
+	cur_win->rows = (UINT) nr;
+	cur_win->cols = (UINT) nc;
 	if (check_scrollbar_allocs() == TRUE)	/* no allocation failure */
 	    update_scrollbar_sizes();
     }
@@ -5697,15 +5699,15 @@ gui_resize(int cols, int rows)
 	rows = MINROWS;
 
     XResizeWindow(dpy, XtWindow(cur_win->top_widget),
-		  (UINT) cols * cur_win->char_width + cur_win->base_width,
-		  (UINT) rows * cur_win->char_height + cur_win->base_height);
+		  (UINT) (cols * cur_win->char_width + cur_win->base_width),
+		  (UINT) (rows * cur_win->char_height + cur_win->base_height));
     /* This should cause a ConfigureNotify event */
 }
 
 static int
 check_scrollbar_allocs(void)
 {
-    int newmax = cur_win->rows / 2;
+    int newmax = (int) (cur_win->rows / 2);
     int oldmax = cur_win->maxscrollbars;
 
     if (newmax > oldmax) {
@@ -6164,18 +6166,18 @@ x_getc(void)
 #if OPT_MULTIBYTE
 	    UINT result;
 	    int check;
-	    int limit = tb_length(PasteBuf);
-	    int offset = PasteBuf->tb_last;
+	    int limit = (int) tb_length(PasteBuf);
+	    int offset = (int) PasteBuf->tb_last;
 	    char *data = tb_values(PasteBuf) + offset;
 
-	    check = vl_conv_to_utf32(&result, data, (limit - offset));
+	    check = vl_conv_to_utf32(&result, data, (B_COUNT) (limit - offset));
 	    if (check > 0) {
-		c = result;
-		PasteBuf->tb_last += check;
+		c = (int) result;
+		PasteBuf->tb_last += (size_t) check;
 	    } else
 #endif
 		c = tb_next(PasteBuf);
-	    c |= NOREMAP;	/* pasted chars are not subject to mapping */
+	    c = (c | (int) NOREMAP);	/* pasted chars are not subject to mapping */
 	    cur_win->pasting = True;
 	    break;
 	} else if (cur_win->pasting) {
@@ -6221,7 +6223,7 @@ x_getc(void)
 
     x_stop_autocolor_timer();
 
-    if ((UINT) c != (NOREMAP | esc_c))
+    if (c != ((int) NOREMAP | esc_c))
 	cur_win->last_getc = c;
     return c;
 }
@@ -6457,7 +6459,7 @@ x_key_press(Widget w GCC_UNUSED,
 	   (ev->xkey.state & Mod5Mask) ? "Mod5" : ""));
 
     if (num <= 0) {
-	int modifier = 0;
+	unsigned modifier = 0;
 
 	if (ev->xkey.state & ShiftMask)
 	    modifier |= mod_SHIFT;
@@ -6471,12 +6473,12 @@ x_key_press(Widget w GCC_UNUSED,
 	for (n = 0; n < TABLESIZE(escapes); n++) {
 	    if (keysym == escapes[n].key) {
 		TRACE(("ADD-FKEY %#x\n", escapes[n].code));
-		kqadd(cur_win, modifier | escapes[n].code);
+		kqadd(cur_win, (int) modifier | escapes[n].code);
 		break;
 	    }
 	}
     } else {
-	int modifier = 0;
+	unsigned modifier = 0;
 
 	if (ev->xkey.state & ShiftMask)
 	    modifier |= mod_SHIFT;
@@ -6494,16 +6496,16 @@ x_key_press(Widget w GCC_UNUSED,
 	    int ch = CharOf(buffer[i]);
 	    if (isCntrl(ch)) {
 		TRACE(("ADD-CTRL %#x\n", ch));
-		kqadd(cur_win, modifier | ch);
+		kqadd(cur_win, (int) modifier | ch);
 	    }
 #if OPT_INPUT_METHOD
 	    else if (i == 0
 		     && num > 1
 		     && cur_win->imInputContext != NULL
 		     && b_is_utfXX(curbp)
-		     && vl_conv_to_utf32(&uch, buffer, num) == num) {
+		     && vl_conv_to_utf32(&uch, buffer, (B_COUNT) num) == num) {
 		TRACE(("ADD-CHAR %#x\n", uch));
-		kqadd(cur_win, uch);
+		kqadd(cur_win, (int) uch);
 		break;
 	    }
 #endif
@@ -6522,7 +6524,7 @@ x_key_press(Widget w GCC_UNUSED,
 static void
 x_rev(UINT state)
 {
-    cur_win->reverse = state;
+    cur_win->reverse = (int) state;
 }
 
 #if OPT_COLOR
@@ -6870,8 +6872,8 @@ PreeditPosition(void)
     XVaNestedList list;
 
     if (cur_win->imInputContext) {
-	spot.x = x_pos(cur_win, ttcol);
-	spot.y = y_pos(cur_win, ttrow);
+	spot.x = (short) x_pos(cur_win, ttcol);
+	spot.y = (short) y_pos(cur_win, ttrow);
 	list = XVaCreateNestedList(0,
 				   XNSpotLocation, &spot,
 				   XNForeground, cur_win->fg,
@@ -6953,7 +6955,7 @@ xim_real_init(void)
 	    cur_win->xim = XOpenIM(dpy, NULL, NULL, NULL);
     } else {
 	s = cur_win->rs_inputMethod;
-	i = 5 + strlen(s);
+	i = (unsigned) (5 + strlen(s));
 	t = (char *) MyStackAlloc(i, buf);
 	if (t == NULL) {
 	    fprintf(stderr, "Cannot allocate buffer for input-method\n");
@@ -7103,7 +7105,7 @@ xim_real_init(void)
 	    returnVoid();
 	}
 	(void) XExtentsOfFontSet(cur_win->imFontSet);
-	j = XFontsOfFontSet(cur_win->imFontSet, &fonts, &font_name_list);
+	j = (unsigned) XFontsOfFontSet(cur_win->imFontSet, &fonts, &font_name_list);
 	for (i = 0, cur_win->imFontHeight = 0; i < j; i++) {
 	    if (cur_win->imFontHeight < (*fonts)->ascent)
 		cur_win->imFontHeight = (*fonts)->ascent;
