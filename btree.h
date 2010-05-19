@@ -1,5 +1,5 @@
 /*
- * $Id: btree.h,v 1.5 2006/04/25 20:13:37 tom Exp $
+ * $Id: btree.h,v 1.6 2010/05/18 22:59:38 tom Exp $
  *
  * Interface for btree.c
  */
@@ -26,6 +26,7 @@
 	BI_NODE*(*allocat) (BI_DATA *a);
 	void	(*dealloc) (BI_NODE *a);
 	void	(*display) (BI_NODE *a, int level);
+	void	(*exchang) (BI_NODE *a, BI_NODE *b);
 	int	depth;
 	int	count;
 	BI_NODE	head;		/* root data, on end to ease initialization */

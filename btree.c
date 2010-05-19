@@ -1,5 +1,5 @@
 /*
- * $Id: btree.c,v 1.44 2010/05/18 09:42:43 tom Exp $
+ * $Id: btree.c,v 1.49 2010/05/19 00:49:58 tom Exp $
  * Copyright 1997-2008,2010 by Thomas E. Dickey
  *
  * Maintains a balanced binary tree (aka AVL tree) of unspecified nodes.  The
@@ -242,390 +242,81 @@ btree_insert(BI_TREE * funcs, BI_DATA * data)
     return (value);
 }
 
-#define SafeB(p)   ((p) ? B(p)   : -999)
-#define SafeKEY(p) ((p) ? KEY(p) : "")
-
 #define MAXSTK 100
-#define PUSH(A,P) { \
-	TRACE(("...push #%d a=%2d, B=%2d, p='%s' -> '%s'\n", \
-		k, A, \
-		SafeB(P), \
-		SafeKEY(P), \
-		(P && LINK(A,P)) ? KEY(LINK(A,P)) : "")); \
-	stack[k].a = A;\
-	stack[k].p = P;\
-	k++; }
 
 typedef struct {
-    BI_NODE *p;
-    int a;
+    BI_NODE *ptr;
+    int dir;
 } STACKDATA;
 
-#if 0
 static BI_NODE *
-parent_of(BI_TREE * funcs, BI_NODE * s)
+single_rotation(BI_NODE * item, int dir)
 {
-    BI_NODE *r = &(funcs->head);
-    BI_NODE *p = RLINK(r);	/* 'p' => down the tree        */
-    int a;
+    BI_NODE *temp = item->links[!dir];
 
-    while ((a = COMPARE(KEY(s), KEY(p))) != 0) {
-	assert(LINK(a, p) != 0);
-	r = p;
-	p = LINK(a, p);
-    }
-    TRACE(("parent of '%s' is '%s'\n", KEY(s), KEY(r)));
-    return r;
+    item->links[!dir] = temp->links[dir];
+    temp->links[dir] = item;
+
+    return temp;
 }
 
-static int
-build_stack(BI_TREE * funcs, BI_NODE * p, STACKDATA stack[MAXSTK])
+static BI_NODE *
+double_rotation(BI_NODE * item, int dir)
 {
-    BI_NODE *q;
-    int a;
-    int k = 0;
+    BI_NODE *temp = item->links[!dir]->links[dir];
 
-    /*
-     * Construct the auxiliary stack (path down to but not including
-     * the node that we will delete).
-     */
-    q = &(funcs->head);
-    a = 1;
-    TRACE(("...build stack\n"));
-    while (LINK(a, q) != p) {
-	if (k + 1 >= MAXSTK) {
-	    TRACE(("BUG: stack overflow\n"));
-	    break;
-	}
-	PUSH(a, q);
-	q = LINK(a, q);
-	assert(q != 0);
-	if (q == 0) {
-	    TRACE(("(BUG: null pointer)\n"));
-	    break;
-	}
-	a = COMPARE(KEY(p), KEY(q));
-    }
-    TRACE(("...done building stack\n"));
+    item->links[!dir]->links[dir] = temp->links[!dir];
+    temp->links[!dir] = item->links[!dir];
+    item->links[!dir] = temp;
 
-    return k;
+    temp = item->links[!dir];
+    item->links[!dir] = temp->links[dir];
+    temp->links[dir] = item;
+
+    return temp;
 }
 
 static void
-rebalance_with_stack(BI_TREE * funcs, STACKDATA stack[MAXSTK], int k)
+readjust_balance(BI_NODE * item, int dir, int balance)
 {
-    BI_NODE *p, *q, *r, *t;
+    BI_NODE *next = item->links[dir];
+    BI_NODE *last = next->links[!dir];
 
-    int a;
-
-    /* Rebalance the tree */
-    for_ever {
-	if (--k <= 0) {
-	    TRACE(("shorten the whole tree\n"));
-	    funcs->depth -= 1;
-	    break;
-	}
-	p = stack[k].p;
-	a = stack[k].a;
-	TRACE(("processing #%d '%s' B = %d, a = %d (%p->%p)\n",
-	       k, SafeKEY(p), SafeB(p), a, p, p ? LINK(a, p)
-	       : 0));
-	assert(q != 0);
-	if (p == 0) {
-	    TRACE(("(BUG: null pointer)\n"));
-	    break;
-	} else if (B(p) == a) {
-	    TRACE(("Case (i)\n"));
-	    B(p) = 0;
-	} else if (B(p) == 0) {
-	    TRACE(("Case (ii)\n"));
-	    B(p) = -a;
-	    break;
-	} else {
-	    TRACE(("Case (iii): Rebalancing needed!\n"));
-
-	    q = LINK(-a, p);
-	    assert(q != 0);
-	    assert(k > 0);
-	    assert(B(p) == -a);
-
-#ifdef OPT_TRACE
-	    t = stack[k - 1].p;
-	    TRACE(("t:%s, balance:%d\n", KEY(t), B(t)));
-	    TRACE(("A:p:%s, balance:%d\n", KEY(p), B(p)));
-	    TRACE(("B:q:%s, balance:%d\n", KEY(q), B(q)));
-	    TRACE_TREE("before rebalancing:", funcs);
-#endif
-
-	    if (B(q) == -a) {
-		TRACE(("CASE 1: single rotation\n"));
-
-		r = q;
-
-		TRACE(("link LINK(-a,p) -> LINK( a,q) = '%s'\n",
-		       SafeKEY(LINK(a, q))));
-		TRACE(("link LINK( a,q) -> p          = '%s'\n",
-		       SafeKEY(p)));
-
-		LINK(-a, p) = LINK(a, q);
-		LINK(a, q) = p;
-
-		B(p) = B(q) = 0;
-
-		t = parent_of(funcs, p);
-
-		TRACE(("Finish by linking '%s' to %sLINK(%s)\n",
-		       KEY(r),
-		       (p == RLINK(t))
-		       ? "R"
-		       : (p == LLINK(t))
-		       ? "L" : "?",
-		       KEY(t)));
-
-		t->links[(p == RLINK(t))] = r;
-
-	    } else if (B(q) == a) {
-		TRACE(("CASE 2: double rotation\n"));
-
-		r = LINK(a, q);
-#if DEBUG_BTREE > 1
-		TRACE(("a = '%d'\n", a));
-		TRACE(("p = '%s'\n", SafeKEY(p)));
-		TRACE(("q = '%s'\n", SafeKEY(q)));
-		TRACE(("r = '%s'\n", SafeKEY(r)));
-		TRACE(("link LINK( a,q) -> LINK(-a,r) = '%s'\n",
-		       SafeKEY(LINK(-a, r))));
-		TRACE(("link LINK(-a,r) -> q          = '%s'\n",
-		       KEY(q)));
-		TRACE(("link LINK(-a,p) -> LINK(a,r)  = '%s'\n",
-		       SafeKEY(LINK(a, r))));
-		TRACE(("link LINK( a,r) -> p          = '%s'\n",
-		       KEY(p)));
-#endif
-		LINK(a, q) = LINK(-a, r);
-		LINK(-a, r) = q;
-		LINK(-a, p) = LINK(a, r);
-		LINK(a, r) = p;
-
-		TRACE(("compute balance for '%s', %d vs a=%d\n",
-		       KEY(r), B(r), a));
-
-		if (B(r) == -a) {
-		    B(p) = a;
-		    B(q) = 0;
-		} else if (B(r) == 0) {
-		    B(p) = 0;
-		    B(q) = 0;
-		} else {	/* (B(r) == a) */
-		    B(p) = 0;
-		    B(q) = -a;
-		}
-
-		B(r) = 0;
-
-		a = stack[k - 1].a;
-		t = stack[k - 1].p;
-
-		TRACE(("Finish by linking '%s' to %sLINK(%s)\n",
-		       KEY(r),
-		       (a > 0) ? "R" : "L",
-		       KEY(t)));
-
-		LINK(a, t) = r;
-
-	    } else {
-		TRACE(("CASE 3: single rotation, end\n"));
-
-		LINK(-a, p) = LINK(a, q);
-		LINK(a, q) = p;
-
-		B(q) = -B(p);
-
-		LINK(stack[k - 1].a, stack[k - 1].p) = q;
-		break;
-	    }
-
-	    TRACE_TREE("after rebalancing:", funcs);
-
-	}
-    }
-}
-
-int
-btree_delete(BI_TREE * funcs, const char *data)
-{
-    STACKDATA stack[MAXSTK];
-    int k = 0;
-    /* (A1:Initialize) */
-
-    BI_NODE *t = &(funcs->head), *p, *q, *r, *s;
-
-    int a;
-    char *value;
-
-    TRACE(("btree_delete(%p,%s)\n", funcs, NonNull(data)));
-    if ((p = t) == 0
-	|| (p = LINK(a = 1, p)) == 0) {
-	return 0;
-    }
-    /* (A2:Compare) */
-    while ((a = COMPARE(data, value = KEY(p))) != 0) {
-	if (LINK(a, p) == 0) {
-	    value = 0;
-	    break;
-	}
-	/* (A3,A4: move left/right accordingly) */
-	t = p;
-	p = LINK(a, p);
-	/* ...continue comparing */
+    if (last->balance == 0) {
+	item->balance = next->balance = 0;
+    } else if (last->balance == balance) {
+	item->balance = -balance;
+	next->balance = 0;
+    } else {
+	/* last->balance == -balance */
+	item->balance = 0;
+	next->balance = balance;
     }
 
-    if (value != 0) {		/* we found the node to delete, in p */
-
-	/*
-	 * Construct the auxiliary stack (path down to but not including
-	 * the node that we will delete).
-	 */
-	k = build_stack(funcs, p, stack);
-
-	TRACE(("deleting node '%s'\n", value));
-	q = p;
-	p = t;
-	a = (q == RLINK(p)) ? 1 : -1;
-
-	TRACE(("@%d, p='%s'\n", __LINE__, SafeKEY(p)));
-	TRACE(("@%d, q='%s'\n", __LINE__, SafeKEY(q)));
-	TRACE(("@%d, a=%d\n", __LINE__, a));
-
-	/* D1: Is RLINK null? */
-	if (RLINK(q) == 0) {
-	    TRACE(("D1\n"));
-
-	    LINK(a, p) = LLINK(q);
-	    s = p;
-	} else if (LLINK(q) == 0) {	/* D1.5 */
-	    TRACE(("D1.5\n"));
-	    LINK(a, p) = RLINK(q);
-	    s = RLINK(q);
-	} else {		/* D2: Find successor */
-	    TRACE_SUBTREE("SUBTREE(p)-before\n", funcs, p);
-	    r = RLINK(q);
-	    if (LLINK(r) == 0) {
-		TRACE(("D2, r='%s', q='%s'\n", KEY(r), KEY(q)));
-		TRACE(("DIFF: %d\n", B(r) - B(q)));
-
-		LLINK(r) = LLINK(q);
-		LINK(a, p) = r;
-		s = r;
-		TRACE(("(D2) replace balance %2d with %2d, a=%2d\n",
-		       B(s), B(q), a));
-		B(s) = B(q);
-
-		TRACE_SUBTREE("SUBTREE(p)-after\n", funcs, p);
-		TRACE(("@%d, p='%s'\n", __LINE__, KEY(p)));
-		TRACE(("@%d, r='%s'\n", __LINE__, KEY(r)));
-	    } else {		/* D3: Find null LLINK */
-		TRACE(("D3: find null LLINK\n"));
-
-		TRACE(("... r %d'%s'\n", SafeB(r), SafeKEY(r)));
-		s = r;
-		do {
-		    r = s;
-		    s = LLINK(r);
-		    TRACE(("... s %d'%s'\n", SafeB(s), SafeKEY(s)));
-		} while (LLINK(s) != 0);
-
-		LLINK(s) = LLINK(q);
-		LLINK(r) = RLINK(s);
-		RLINK(s) = RLINK(q);
-		TRACE(("@%d, p='%s', a=%d\n", __LINE__, KEY(p), a));
-		TRACE(("@%d, r='%s'\n", __LINE__, KEY(r)));
-		TRACE(("@%d, s='%s'\n", __LINE__, KEY(s)));
-		LINK(a, p) = s;
-		TRACE(("(D3) replace balance s(%d) with q(%d), a=%d\n",
-		       B(s), B(q), a));
-		B(s) = B(q);
-		s = r;
-	    }
-	}
-	/* D4: Free the node */
-	assert(q != 0);
-	(*funcs->dealloc) (q);
-	funcs->count -= 1;
-	TRACE_TREE("after delinking:", funcs);
-
-	rebalance_with_stack(funcs, stack, k);
-    }
-    return (value != 0);
-}
-#else
-
-static BI_NODE *
-jsw_single(BI_NODE * root, int dir)
-{
-    BI_NODE *save = root->links[!dir];
-
-    root->links[!dir] = save->links[dir];
-    save->links[dir] = root;
-
-    return save;
+    last->balance = 0;
 }
 
 static BI_NODE *
-jsw_double(BI_NODE * root, int dir)
+remove_balance(BI_NODE * item, int dir, int *done)
 {
-    BI_NODE *save = root->links[!dir]->links[dir];
+    BI_NODE *next = item->links[!dir];
+    int balance = (dir == 0) ? -1 : 1;
 
-    root->links[!dir]->links[dir] = save->links[!dir];
-    save->links[!dir] = root->links[!dir];
-    root->links[!dir] = save;
-
-    save = root->links[!dir];
-    root->links[!dir] = save->links[dir];
-    save->links[dir] = root;
-
-    return save;
-}
-
-static void
-jsw_adjust_balance(BI_NODE * root, int dir, int bal)
-{
-    BI_NODE *n = root->links[dir];
-    BI_NODE *nn = n->links[!dir];
-
-    if (nn->balance == 0)
-	root->balance = n->balance = 0;
-    else if (nn->balance == bal) {
-	root->balance = -bal;
-	n->balance = 0;
-    } else {			/* nn->balance == -bal */
-	root->balance = 0;
-	n->balance = bal;
-    }
-
-    nn->balance = 0;
-}
-
-static BI_NODE *
-jsw_remove_balance(BI_NODE * root, int dir, int *done)
-{
-    BI_NODE *n = root->links[!dir];
-    int bal = (dir == 0) ? -1 : 1;
-
-    if (n->balance == -bal) {
-	root->balance = n->balance = 0;
-	root = jsw_single(root, dir);
-    } else if (n->balance == bal) {
-	jsw_adjust_balance(root, !dir, -bal);
-	root = jsw_double(root, dir);
-    } else {			/* n->balance == 0 */
-	root->balance = -bal;
-	n->balance = bal;
-	root = jsw_single(root, dir);
+    if (next->balance == -balance) {
+	item->balance = next->balance = 0;
+	item = single_rotation(item, dir);
+    } else if (next->balance == balance) {
+	readjust_balance(item, !dir, -balance);
+	item = double_rotation(item, dir);
+    } else {
+	/* next->balance == 0 */
+	item->balance = -balance;
+	next->balance = balance;
+	item = single_rotation(item, dir);
 	*done = 1;
     }
 
-    return root;
+    return item;
 }
 
 int
@@ -634,93 +325,102 @@ btree_delete(BI_TREE * funcs, const char *data)
     TRACE(("btree_delete(%p,%s)\n", funcs, NonNull(data)));
 
     if (funcs->count != 0) {
-	BI_DATA value;
-	BI_NODE *it, *up[32];
-	int upd[32], top = 0;
+	STACKDATA stack[MAXSTK];
+	BI_NODE *item;
+	int top = 0;
 	int done = 0;
 
-	it = &(funcs->head);
-	if (it == 0
-	    || (it = LINK(1, it)) == 0) {
+	/* (A1:Initialize) */
+	item = &(funcs->head);
+	if (item == 0
+	    || (item = LINK(1, item)) == 0) {
 	    TRACE(("...not found @%d\n", __LINE__));
 	    return 0;
 	}
-	TRACE(("...first check %p\n", KEY(it)));
 
 	for (;;) {
-	    /* Terminate if not found */
-	    if (it == NULL || KEY(it) == 0) {
+	    /* (A2:Compare) */
+	    if (item == NULL || KEY(item) == 0) {
 		TRACE(("...not found @%d\n", __LINE__));
 		return 0;
 	    } else {
-		if (COMPARE(KEY(it), data) == 0) {
+		if (COMPARE(KEY(item), data) == 0) {
 		    break;
 		}
 	    }
 
 	    /* Push direction and node onto stack */
-	    upd[top] = (COMPARE(KEY(it), data) < 0);
-	    up[top++] = it;
+	    stack[top].dir = (COMPARE(KEY(item), data) < 0);
+	    stack[top].ptr = item;
+	    ++top;
 
-	    it = it->links[upd[top - 1]];
+	    /* (A3,A4: move left/right accordingly) */
+	    item = item->links[stack[top - 1].dir];
 	}
 
-	/* Remove the node */
-	if (it->links[0] == NULL || it->links[1] == NULL) {
+	/* D1: Is RLINK null? */
+	/* D1.5: Is LLINK null? */
+	if (item->links[0] == NULL || item->links[1] == NULL) {
 	    /* Which child is not null? */
-	    int dir = it->links[0] == NULL;
+	    int dir = item->links[0] == NULL;
 
 	    /* Fix parent */
 	    if (top != 0)
-		up[top - 1]->links[upd[top - 1]] = it->links[dir];
+		stack[top - 1].ptr->links[stack[top - 1].dir] = item->links[dir];
 	    else
-		LINK(1, &(funcs->head)) = it->links[dir];
+		LINK(1, &(funcs->head)) = item->links[dir];
 
-	    TRACE(("...freed %p @%d\n", BI_KEY(it), __LINE__));
-	    (*funcs->dealloc) (it);
+	    TRACE(("...freed %p @%d\n", BI_KEY(item), __LINE__));
+	    (*funcs->dealloc) (item);
 	    funcs->count -= 1;
 	} else {
-	    /* Find the inorder successor */
-	    BI_NODE *heir = it->links[1];
+	    /* D2: Find the inorder successor */
+	    BI_NODE *child = item->links[1];
 
 	    /* Save the path */
-	    upd[top] = 1;
-	    up[top++] = it;
+	    stack[top].dir = 1;
+	    stack[top].ptr = item;
+	    ++top;
 
-	    while (heir->links[0] != NULL) {
-		upd[top] = 0;
-		up[top++] = heir;
-		heir = heir->links[0];
+	    /* D3: Find null LLINK */
+	    while (child->links[0] != NULL) {
+		stack[top].dir = 0;
+		stack[top].ptr = child;
+		++top;
+		child = child->links[0];
 	    }
 
 	    /* Swap data */
-	    value = it->value;
-	    it->value = heir->value;
-	    heir->value = value;
-	    /* Unlink successor and fix parent */
-	    up[top - 1]->links[up[top - 1] == it] = heir->links[1];
+	    (*funcs->exchang) (item, child);
+	    /* Unlink successor and adjust parent */
+	    stack[top - 1].ptr->links[stack[top - 1].ptr == item] =
+		child->links[1];
 
-	    TRACE(("...freed %p @%d\n", BI_KEY(heir), __LINE__));
-	    (*funcs->dealloc) (heir);
+	    /* D4: Free the node */
+	    TRACE(("...freed %p @%d\n", BI_KEY(child), __LINE__));
+	    (*funcs->dealloc) (child);
 	    funcs->count -= 1;
 	}
 
-	/* Walk back up the search path */
+	/* Walk back up the stack */
 	while (--top >= 0 && !done) {
 	    /* Update balance factors */
-	    up[top]->balance += upd[top] != 0 ? -1 : +1;
+	    stack[top].ptr->balance += (stack[top].dir != 0) ? -1 : +1;
 
-	    /* Terminate or rebalance as necessary */
-	    if (abs(up[top]->balance) == 1)
+	    /* Terminate, or rebalance as necessary */
+	    if (abs(stack[top].ptr->balance) == 1) {
 		break;
-	    else if (abs(up[top]->balance) > 1) {
-		up[top] = jsw_remove_balance(up[top], upd[top], &done);
+	    } else if (abs(stack[top].ptr->balance) > 1) {
+		stack[top].ptr = remove_balance(stack[top].ptr,
+						stack[top].dir, &done);
 
 		/* Fix parent */
-		if (top != 0)
-		    up[top - 1]->links[upd[top - 1]] = up[top];
-		else
-		    LINK(1, &(funcs->head)) = up[0];
+		if (top != 0) {
+		    stack[top - 1].ptr->links[stack[top - 1].dir] =
+			stack[top].ptr;
+		} else {
+		    LINK(1, &(funcs->head)) = stack[0].ptr;
+		}
 	    }
 	}
     }
@@ -728,7 +428,6 @@ btree_delete(BI_TREE * funcs, const char *data)
     TRACE(("...found @%d\n", __LINE__));
     return 1;
 }
-#endif
 
 BI_DATA *
 btree_search(BI_TREE * funcs, const char *data)
@@ -1062,11 +761,20 @@ dpy_node(BI_NODE * a, int level)
     fflush(stdout);
 }
 
+static void
+xcg_node(BI_NODE * a, BI_NODE * b)
+{
+    BI_DATA value = a->value;
+    a->value = b->value;
+    b->value = value;
+}
+
 static BI_TREE text_tree =
 {
     new_node,
     old_node,
     dpy_node,
+    xcg_node,
     0,
     0,
     {

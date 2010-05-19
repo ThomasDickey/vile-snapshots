@@ -7,7 +7,7 @@
  *
  * Copyright (c) 1990, 1995-2007 by Paul Fox and Thomas E. Dickey
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tags.c,v 1.141 2010/05/02 21:26:49 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tags.c,v 1.142 2010/05/18 23:10:27 tom Exp $
  *
  */
 #include "estruct.h"
@@ -183,10 +183,18 @@ dpy_tags(BI_NODE * a GCC_UNUSED, int level GCC_UNUSED)
 #endif
 }
 
+static void
+xcg_tags(BI_NODE * a, BI_NODE * b)
+{
+    BI_DATA temp = a->value;
+    a->value = b->value;
+    b->value = temp;
+}
+
 #define BI_DATA0 {{0}, 0, {0}}
 #define BI_TREE0 0, 0, BI_DATA0
 static BI_TREE tags_tree =
-{new_tags, old_tags, dpy_tags, BI_TREE0};
+{new_tags, old_tags, dpy_tags, xcg_tags, BI_TREE0};
 
 /* Parse the identifier out of the given line and store it in the binary tree */
 static void
