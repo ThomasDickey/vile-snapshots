@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.349 2010/05/18 10:50:47 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.350 2010/05/18 23:10:27 tom Exp $
  *
  */
 
@@ -201,18 +201,31 @@ dpy_namebst(BI_NODE * a GCC_UNUSED, int level GCC_UNUSED)
 {
 #if OPT_TRACE
     char *indent = strmalloc(trace_indent(level, '.'));
-    TRACE(("[%d]%s%p -> %s (%d)\n",
-	   level, indent, (void *) a, BI_KEY(a), a->balance));
+    TRACE(("[%d]%s%p -> %s%s (%d)\n",
+	   level, indent,
+	   (void *) a,
+	   (a->value.n_flags & NBST_READONLY)
+	   ? "*"
+	   : "",
+	   BI_KEY(a), a->balance));
     free(indent);
 #endif
+}
+
+static void
+xcg_namebst(BI_NODE * a, BI_NODE * b)
+{
+    BI_DATA temp = a->value;
+    a->value = b->value;
+    b->value = temp;
 }
 
 #define BI_DATA0 {{0}, 0, {0,0,0}}
 #define BI_TREE0 0, 0, BI_DATA0
 static BI_TREE namebst =
-{new_namebst, old_namebst, dpy_namebst, BI_TREE0};
+{new_namebst, old_namebst, dpy_namebst, xcg_namebst, BI_TREE0};
 static BI_TREE redefns =
-{new_namebst, old_namebst, dpy_namebst, BI_TREE0};
+{new_namebst, old_namebst, dpy_namebst, xcg_namebst, BI_TREE0};
 #endif /* OPT_NAMEBST */
 
 /*----------------------------------------------------------------------------*/
@@ -3470,6 +3483,7 @@ free_ext_bindings(BINDINGS * bs)
 void
 bind_leaks(void)
 {
+    btree_printf(&namebst);
 #if OPT_REBIND
     free_all_bindings(&dft_bindings);
     free_ext_bindings(&ins_bindings);
