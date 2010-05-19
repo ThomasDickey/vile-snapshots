@@ -1,5 +1,5 @@
 /*
- * $Id: btree.c,v 1.49 2010/05/19 00:49:58 tom Exp $
+ * $Id: btree.c,v 1.50 2010/05/19 10:44:50 tom Exp $
  * Copyright 1997-2008,2010 by Thomas E. Dickey
  *
  * Maintains a balanced binary tree (aka AVL tree) of unspecified nodes.  The
@@ -350,6 +350,11 @@ btree_delete(BI_TREE * funcs, const char *data)
 	    }
 
 	    /* Push direction and node onto stack */
+	    assert(top < MAXSTK);
+	    if (top >= MAXSTK) {
+		TRACE(("(BUG: stack overflow)\n"));
+		return 0;
+	    }
 	    stack[top].dir = (COMPARE(KEY(item), data) < 0);
 	    stack[top].ptr = item;
 	    ++top;
@@ -378,6 +383,11 @@ btree_delete(BI_TREE * funcs, const char *data)
 	    BI_NODE *child = item->links[1];
 
 	    /* Save the path */
+	    assert(top < MAXSTK);
+	    if (top >= MAXSTK) {
+		TRACE(("(BUG: stack overflow)\n"));
+		return 0;
+	    }
 	    stack[top].dir = 1;
 	    stack[top].ptr = item;
 	    ++top;
