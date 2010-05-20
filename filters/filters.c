@@ -1,7 +1,7 @@
 /*
  * Common utility functions for vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.152 2010/05/12 10:40:27 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.153 2010/05/19 23:19:24 tom Exp $
  *
  */
 
@@ -1034,8 +1034,9 @@ alloc_keyword(const char *ident, const char *attribute, int classflag, char *fla
 		    current_class->keywords = nxt;
 		}
 #else
+		int Index = hash_function(ident);
 		nxt->kw_next = my_table[Index];
-		my_table[hash_function(ident)] = nxt;
+		my_table[Index] = nxt;
 #endif
 	    } else {
 		free_data(nxt);
@@ -1270,8 +1271,8 @@ parse_keyword(char *name, int classflag)
 	    args = default_attr;
 	    VERBOSE(2, ("using attr \"%s\"", args));
 	}
-	assert(args != 0);
-	if (strcmp(name, args)
+	if (args != 0
+	    && strcmp(name, args)
 	    && FindIdentifier(args) != 0) {
 	    /*
 	     * Insert the classname rather than the data->kw_attr value,
