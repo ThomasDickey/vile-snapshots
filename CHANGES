@@ -1,6 +1,6 @@
 Changes for vile 9.8 (released ??? ??? ?? ????)
 
- 20100518 (zd)
+ 20100520 (zd)
 	> Brendan O'Dea:
 	+ add configure option --disable-rpath-hack, since Debian guidelines
 	  do not allow rpath.
