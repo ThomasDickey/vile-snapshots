@@ -3,7 +3,7 @@
  *	for getting and setting the values of the vile state variables,
  *	plus helper utility functions.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.150 2010/04/11 21:43:51 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.151 2010/06/09 20:54:25 tom Exp $
  */
 
 #include	<estruct.h>
@@ -1756,6 +1756,7 @@ var_TITLE(TBUFF **rp, const char *vp)
     return result;
 }
 
+#if OPT_MULTIBYTE
 int
 var_TITLE_ENCODING(TBUFF **rp, const char *vp)
 {
@@ -1772,6 +1773,7 @@ var_TITLE_ENCODING(TBUFF **rp, const char *vp)
     }
     return FALSE;
 }
+#endif
 
 int
 var_TITLEFORMAT(TBUFF **rp, const char *vp)

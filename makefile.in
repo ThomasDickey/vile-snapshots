@@ -20,7 +20,7 @@
 #
 # gnu autoconf support by kevin buettner, 5/94
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.243 2010/05/13 21:05:44 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.244 2010/06/11 23:32:31 tom Exp $
 
 SHELL		= /bin/sh
 
@@ -455,8 +455,10 @@ INSTALL_PERL_FILES = \
 
 
 INSTALL_X_FILES = \
-	$(BINDIR)/xshell.sh \
+	$(BINDIR)/lxvile \
+	$(BINDIR)/lxvile-fonts \
 	$(BINDIR)/uxvile \
+	$(BINDIR)/xshell.sh \
 	$(DATADIR)/vilemenu.rc
 
 INSTALL_FILES = \
@@ -575,8 +577,9 @@ uninstall-perl :
 @desktop_utils@DESKTOP_FLAGS = --vendor=dickey @DESKTOP_FLAGS@
 @desktop_utils@install-desktop \
 @desktop_utils@install-full ::
-@desktop_utils@	desktop-file-install $(DESKTOP_FLAGS) macros/xvile.desktop
+@desktop_utils@	desktop-file-install $(DESKTOP_FLAGS) macros/lxvile.desktop
 @desktop_utils@	desktop-file-install $(DESKTOP_FLAGS) macros/uxvile.desktop
+@desktop_utils@	desktop-file-install $(DESKTOP_FLAGS) macros/xvile.desktop
 ################################################################################
 
 # The makefile is technically dependent upon the config.status file, but
@@ -816,6 +819,10 @@ test_io$x :	$(TEST_IO_OBJS)
 # dependency-rules for install/installdirs
 $(BINDIR)/xshell.sh:		$(srcdir)/xshell.sh
 	$(INSTALL_SCRIPT)	$(srcdir)/xshell.sh $@
+$(BINDIR)/lxvile-fonts:		$(srcdir)/macros/lxvile-fonts
+	$(INSTALL_SCRIPT)	$(srcdir)/macros/lxvile-fonts $@
+$(BINDIR)/lxvile:		$(srcdir)/macros/lxvile
+	$(INSTALL_SCRIPT)	$(srcdir)/macros/lxvile $@
 $(BINDIR)/uxvile:		$(srcdir)/macros/uxvile
 	$(INSTALL_SCRIPT)	$(srcdir)/macros/uxvile $@
 $(BINDIR)/vileget:		$(srcdir)/perl/vileget

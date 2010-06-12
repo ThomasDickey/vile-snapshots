@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.521 2010/05/03 22:31:39 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.522 2010/06/10 12:03:18 tom Exp $
  *
  */
 
@@ -2988,6 +2988,10 @@ rough_position(WINDOW *wp)
     return msg;
 }
 
+#define MAX_FORMAT ((NFILEN + 1) * 2 * COLS_UTF8)
+
+#define MARK_COL 80
+
 #if OPT_MLFORMAT || OPT_POSFORMAT || OPT_TITLE
 
 #define L_CURL '{'
@@ -3055,11 +3059,7 @@ str_col2offs(WINDOW *wp, int target_col, const char *source, int length)
 #define str_col2offs(wp,target_col,value,length) target_col
 #endif
 
-#define MAX_FORMAT ((NFILEN + 1) * 2 * COLS_UTF8)
-
 #define HaveEnough(string) ((ms + strlen(string)) - base < MAX_FORMAT)
-
-#define MARK_COL 80
 
 /*
  * Format special single-use messages, i.e., the modeline format, which has

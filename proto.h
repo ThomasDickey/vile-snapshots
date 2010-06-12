@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.706 2010/05/13 00:43:04 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.707 2010/06/09 20:55:37 tom Exp $
  *
  */
 
@@ -168,7 +168,7 @@ extern int tb_wcs_width(TBUFF *text);
 #define tb_bytes_before(s,n) 1
 
 #define str_columns(s)      strlen(s)
-#define tb_columns(s)       tb_length(s)
+#define tb_columns(s)       (int) tb_length(s)
 
 #define TbBytesBefore(tb,off) ((off)!=0)
 

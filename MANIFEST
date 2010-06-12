@@ -1,4 +1,4 @@
-MANIFEST for vile, version v9_7zd
+MANIFEST for vile, version v9_7zd2
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 AUTHORS                         list of authors, with nicknames in CHANGES
@@ -399,6 +399,9 @@ macros/dates.rc                 demo of &date function
 macros/digraphs.rc              macros for inserting digraphs
 macros/gnugpg.rc                GNU gpg macros
 macros/loaderrs.rc              macro to perform load-error-expressions
+macros/lxvile                   locale-sensitive wrapper for xvile
+macros/lxvile-fonts             wrapper for xlsfonts which shows the fonts matched by lxvile's query.
+macros/lxvile.desktop           desktop file for lxvile
 macros/manpage.rc               macros for man-page filtering/display
 macros/modes.rc                 settings for majormodes (except filtername)
 macros/palettes.rc              sample color schemes

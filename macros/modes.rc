@@ -1,4 +1,4 @@
-; $Id: modes.rc,v 1.105 2010/02/20 21:19:06 tom Exp $
+; $Id: modes.rc,v 1.107 2010/06/11 18:33:02 tom Exp $
 ; majormodes in this file are ordered alphabetically for convenience - the
 ; precedence used by vile is strictly alphabetic, counting case.  Use the
 ; before and after qualifiers to override the precedence.
@@ -150,7 +150,7 @@ define-mode cfg
 
 define-mode conf
 ~with define-submode conf
-	suffixes	'\.\(config\|dat\|.*rc\|dsw\)$'
+	suffixes	'\.\(config\|dat\|.*rc\|dsw\|la\)$'
 	after		"yacc"
 	preamble	'^[#;]'
 	comment-prefix	'^\s*[#;]'
@@ -904,7 +904,7 @@ define-mode ti
 
 define-mode txt
 ~with define-submode txt
-	mode-filename	'^\(\(TODO\|\(\(.*-\)\?README\)\|CHANGES\|Change[Ll]og\|COPYING\).*\)$'
+	mode-filename	'^\(\(TODO\|\(\(.*-\)\?README\)\|CHANGES\|[Cc]hange[Ll]og\|COPYING\).*\)$'
 	suffixes	'\.\(txt\|doc\|hlp\)$'
 	comment-prefix	'^\s*--'
 	comments	'^\s*--\s*$'
@@ -1129,7 +1129,7 @@ define-mode xpm
 
 define-mode xres
 ~with define-submode xres
-	mode-filename	'^\(!appres\)\|\(\.Xdefaults\(-.\+$\)\?\)$'
+	mode-filename	'^\(!appres\)\|\(\.\(Xdefaults\|xmodmap\)\(-.\+$\)\?\)$'
 	suffixes	'\.\(ad\)$'
 	~if &not $filename-ic
 		mode-pathname	'\(app-defaults/[A-Z][A-Z0-9]*\([a-z0-9-][A-Z]\?\.\?\)\+\)$'
