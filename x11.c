@@ -2,7 +2,7 @@
  *	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.369 2010/05/15 00:23:45 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.370 2010/06/12 18:28:36 tom Exp $
  *
  */
 
@@ -502,7 +502,10 @@ typedef struct {
 
 static Display *dpy;
 static ENC_CHOICES term_encoding = enc_DEFAULT;
+
+#if OPT_MULTIBYTE
 static ENC_CHOICES font_encoding = enc_DEFAULT;
+#endif
 
 static TextWindowRec cur_win_rec;
 static TextWindow cur_win = &cur_win_rec;
@@ -4110,10 +4113,12 @@ really_draw(GC fore_gc,
 	Cardinal n;
 
 	for (n = 0; ((int) n < tlen) && (n < sizeof(buffer)); ++n) {
+#if OPT_MULTIBYTE
 	    if (text[n] >= 256) {
 		wide = True;
 		break;
 	    }
+#endif
 	    buffer[n] = (char) text[n];
 	}
 

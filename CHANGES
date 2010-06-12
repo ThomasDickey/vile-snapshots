@@ -4,6 +4,7 @@ Changes for vile 9.8 (released ??? ??? ?? ????)
 	> Tom Dickey:
 	+ add lxvile wrapper for xvile, which chooses a font based on locale
 	  setting (suggested by Radek Liboska):
+	+ add ".gpr" files to adamode
 	+ add ".xmodmap" files to xresmode
 	+ add ".la" files to confmode
 	+ add "changelog" to txtmode
