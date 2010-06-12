@@ -1,8 +1,8 @@
 .\" obligatory man page for vile
-.\" $Header: /users/source/archives/vile.vcs/RCS/vile.1,v 1.41 2010/01/03 14:23:04 tom Exp $
+.\" $Header: /users/source/archives/vile.vcs/RCS/vile.1,v 1.42 2010/06/12 18:19:22 tom Exp $
 .TH VILE 1
 .SH NAME
-vile, xvile, uxvile \- \fBVI L\fRike \fBE\fRmacs
+vile, xvile, uxvile, lxvile \- \fBVI L\fRike \fBE\fRmacs
 .SH SYNOPSIS
 .B "vile [@\fIcmdfile\fB] [+\fIcommand\fB] [-FhIiRVv] [-g\fINNN\fB] [-k\fIcryptkey\fB] [-s\fIpattern\fB] [-t\fItag\fB] [\fIfilename\fB]..."
 .SH DESCRIPTION
@@ -22,6 +22,12 @@ is a wrapper around
 which invokes the latter program with the correct locale environment
 required to use a unicode character set and the "UXVile" X resource
 class set.
+.PP
+.I lxvile
+is a wrapper around
+.I xvile
+which invokes the latter program with a font chosen to match the current locale
+environment.
 .SH "SPIRIT"
 .I vile
 retains the "finger-feel", if you will, of

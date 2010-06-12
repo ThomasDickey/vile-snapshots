@@ -1,4 +1,4 @@
-; $Id: modes.rc,v 1.107 2010/06/11 18:33:02 tom Exp $
+; $Id: modes.rc,v 1.108 2010/06/12 17:08:48 tom Exp $
 ; majormodes in this file are ordered alphabetically for convenience - the
 ; precedence used by vile is strictly alphabetic, counting case.  Use the
 ; before and after qualifiers to override the precedence.
@@ -9,7 +9,7 @@ setv %filters-modes=true
 ; turn follows gnat's style.
 define-mode ada
 ~with define-submode ada
-	suffixes	'\.\(ada\|ads\|adb\)$'
+	suffixes	'\.\(ada\|ads\|adb\|gpr\)$'
 	comment-prefix	'^\s*--'
 	comments	'^\s*--\s*$'
 	fence-if   '^\s*\<if\>'
