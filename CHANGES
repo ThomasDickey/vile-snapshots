@@ -1,5 +1,27 @@
 Changes for vile 9.8 (released ??? ??? ?? ????)
 
+ 20100612 (ze)
+	> Tom Dickey:
+	+ add lxvile wrapper for xvile, which chooses a font based on locale
+	  setting (suggested by Radek Liboska):
+	+ add ".xmodmap" files to xresmode
+	+ add ".la" files to confmode
+	+ add "changelog" to txtmode
+	+ update yacc.key to bison 2.4.1 and byacc 20100610.
+	+ improve configure macros:
+	  + improve CF_RPATH_HACK by using ldd to obtain a list of directories
+	    to ignore.
+	  + use pkg-config for X libraries, if available.
+	  + correct a test of cache variable in CF_MKSTEMP 
+	  + modify CF_GCC_WARNINGS to work with c89 wrapper for gcc.
+	  + ignore stderr in CF_GCC_VERSION 
+	  + add/use CF_ADD_LIB and CF_ADD_LIBS macros to force consistency in
+	    updating the $LIBS variable.
+	  + add assignments in CF_FIND_LINKAGE to address a case where the
+	    function is found in predefined libraries.
+	  + add quoting for ifelse() parameters
+	+ build-fixes for configure --without-locale (report by Michael Finken).
+
  20100520 (zd)
 	> Brendan O'Dea:
 	+ add configure option --disable-rpath-hack, since Debian guidelines

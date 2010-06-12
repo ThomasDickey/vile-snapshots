@@ -5,7 +5,7 @@
  * reading and writing of the disk are
  * in "fileio.c".
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.443 2010/05/02 22:37:21 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.444 2010/06/09 20:54:06 tom Exp $
  */
 
 #include "estruct.h"
@@ -2183,6 +2183,8 @@ write_region(BUFFER *bp, REGION * rp, int encoded, int *nline, B_COUNT * nchar)
     if ((s = write_bom(bp)) != FIOSUC) {
 	goto out;
     }
+#else
+    s = FIOSUC;
 #endif
 
     /* first (maybe partial) line and succeeding whole lines */

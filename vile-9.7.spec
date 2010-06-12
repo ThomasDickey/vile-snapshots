@@ -1,7 +1,7 @@
 Summary: VILE VI Like Emacs editor
-# $Header: /users/source/archives/vile.vcs/RCS/vile-9.7.spec,v 1.47 2010/04/11 15:48:29 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/vile-9.7.spec,v 1.49 2010/06/11 23:44:51 tom Exp $
 Name: vile
-Version: 9.7zd
+Version: 9.7ze
 # each patch should update the version
 Release: 1
 License: GPLv2
@@ -38,6 +38,7 @@ Patch27: vile-9.7za.patch.gz
 Patch28: vile-9.7zb.patch.gz
 Patch29: vile-9.7zc.patch.gz
 Patch30: vile-9.7zd.patch.gz
+Patch31: vile-9.7ze.patch.gz
 # each patch should add itself to this list
 Packager: Thomas Dickey <dickey@invisible-island.net>
 # BuildRoot: %{_tmppath}/%{name}-root
@@ -96,6 +97,7 @@ rebinding, and real X window system support.
 %patch28 -p1
 %patch29 -p1
 %patch30 -p1
+%patch31 -p1
 # each patch should add itself to this list
 
 %build
@@ -176,6 +178,8 @@ install xvile.wmconfig $RPM_BUILD_ROOT%{_sysconfdir}/X11/wmconfig/xvile
 %config(missingok) %{_sysconfdir}/X11/wmconfig/xvile
 %{_prefix}/bin/xvile
 %{_prefix}/bin/uxvile
+%{_prefix}/bin/lxvile
+%{_prefix}/bin/lxvile-fonts
 %{_prefix}/bin/xvile-pager
 %{_prefix}/bin/xshell.sh
 %{_bindir}/vile
@@ -189,12 +193,19 @@ install xvile.wmconfig $RPM_BUILD_ROOT%{_sysconfdir}/X11/wmconfig/xvile
 %{_xresdir}/UXVile
 
 %if "%{desktop_utils}" == "yes"
+%config(missingok) %{_datadir}/applications/%{desktop_vendor}-lxvile.desktop
 %config(missingok) %{_datadir}/applications/%{desktop_vendor}-uxvile.desktop
 %config(missingok) %{_datadir}/applications/%{desktop_vendor}-xvile.desktop
 %endif
 
 %changelog
 # each patch should add its ChangeLog entries here
+
+* Fri Jun 11 2010 Thomas Dickey
+- add lxvile and lxvile-fonts
+
+* Thu Jun 10 2010 Thomas Dickey
+- added patch for 9.7ze
 
 * Sun Apr 11 2010 Thomas Dickey
 - added patch for 9.7zd

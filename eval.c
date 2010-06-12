@@ -2,7 +2,7 @@
  *	eval.c -- function and variable evaluation
  *	original by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.428 2010/05/02 23:30:26 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.429 2010/06/09 20:56:25 tom Exp $
  *
  */
 
@@ -68,10 +68,13 @@ one_ctype_row(VL_CTYPE2 * enc, int ch)
     CHARTYPE test;
     CHARTYPE used;
     const char *s;
+
 #if OPT_MULTIBYTE
     int rc;
     char temp[10];
     int use_locale = same_string(enc->locale, vl_wide_enc.locale);
+#else
+    (void) enc;
 #endif
 
     bprintf("\n%d\t", (int) ch);
@@ -136,7 +139,7 @@ make_ctype_list(int dum1 GCC_UNUSED, void *ptr GCC_UNUSED)
     }
 #endif
 
-#ifdef WMDSHOWCHAR
+#if defined(WMDSHOWCHAR) && OPT_MULTIBYTE
     /*
      * If "showchar" is set, and the current buffer is not this one, show
      * the row for the current character as well.  Slow, but as noted, useful

@@ -1,0 +1,23 @@
+#!/usr/bin/perl -w
+# $Id: lxvile,v 1.1 2010/06/11 22:43:28 tom Exp $
+# locale-sensitive wrapper for xvile which selects font-encoding to correspond
+# with the user's locale settings.
+
+use strict;
+use I18N::Langinfo qw(langinfo CODESET);
+
+my $encoding = lc( langinfo( CODESET() ) );
+if ( $encoding eq "utf-8" ) {
+    $encoding = "iso10646-1";
+}
+elsif ( $encoding =~ /iso-/ ) {
+    $encoding =~ s/iso-/iso/;
+}
+else {
+    $encoding = "iso8859-1";
+}
+
+my $size = 14;
+my $xlfd = "-*-fixed-medium-r-normal--" . $size . "-*-*-*-*-*-" . $encoding;
+
+exec "xvile", ( "-fn", $xlfd, @ARGV );

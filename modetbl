@@ -11,7 +11,7 @@
 #
 # The modes are table entries in the BUFFER and WINDOW structures.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.305 2010/04/11 18:36:00 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.306 2010/06/09 23:56:38 tom Exp $
 #
 #
 # Mode-table entries.  Capitalized letters are used for abbreviations.
@@ -244,7 +244,7 @@ enum
 	"cmd-encoding"	CMD_ENCODING	OPT_MULTIBYTE	"terminal's encoding support"
 	"mode"		MODE		1		"are we inserting/overwriting/command"
 	"term-encoding" TERM_ENCODING	OPT_MULTIBYTE	"terminal's encoding support"
-	"title-encoding" TITLE_ENCODING	OPT_MULTIBYTE	"xterm title encoding"
+	"title-encoding" TITLE_ENCODING	OPT_MULTIBYTE&&OPT_TITLE "xterm title encoding"
 int
 	"_"		_STATUS		OPT_EVAL	"function's result (external)"
 	"bchars"	BCHARS		1		"chars in current buffer"

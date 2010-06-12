@@ -2,7 +2,7 @@
  * This file contains the command processing functions for a number of random
  * commands. There is no functional grouping here, for sure.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.338 2010/05/02 21:46:29 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.339 2010/06/10 12:04:07 tom Exp $
  *
  */
 
@@ -133,6 +133,7 @@ liststuff(const char *name,
     bp = bfind(name, BFSCRTCH);
     if (bp != NULL) {
 
+#ifdef MDREUSE_POS
 	if ((appendit <= 0)
 	    && b_val(bp, MDREUSE_POS)
 	    && (wp = bp2any_wp(bp)) != NULL) {
@@ -140,6 +141,7 @@ liststuff(const char *name,
 	    save_off = wp->w_dot.o;
 	    save_top = line_no(bp, wp->w_line.l);
 	}
+#endif
 
 	/* clear old text (?) */
 	if ((appendit > 0) || (rc = bclear(bp)) == TRUE) {
