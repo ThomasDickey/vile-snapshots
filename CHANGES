@@ -1,5 +1,15 @@
 Changes for vile 9.8 (released ??? ??? ?? ????)
 
+ 20100707 (zf)
+	> Tom Dickey:
+	+ several changes to configure macros:
+	  + quote params of ifelse().
+	  + add/use CF_ADD_LIB/CF_ADD_LIBS for consistency.
+	  + add --verbose messages to a few macros.
+	  + use CF_TRY_PKG_CONFIG in CF_X_ATHENA, for extra checks, etc.
+	  + modify CF_X_TOOLKIT, adding check to ensure that -lICE is added,
+	    to work around broken ".pc" files.
+
  20100612 (ze)
 	> Tom Dickey:
 	+ add lxvile wrapper for xvile, which chooses a font based on locale

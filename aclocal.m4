@@ -1,6 +1,6 @@
 dnl vile's local definitions for autoconf.
 dnl
-dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.221 2010/06/09 20:47:56 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.223 2010/07/11 17:47:29 tom Exp $
 dnl
 dnl See
 dnl		http://invisible-island.net/autoconf/autoconf.html
@@ -357,7 +357,7 @@ $2])
 done
 ])
 dnl ---------------------------------------------------------------------------
-dnl CF_ADD_SUBDIR_PATH version: 2 updated: 2007/07/29 10:12:59
+dnl CF_ADD_SUBDIR_PATH version: 3 updated: 2010/07/03 20:58:12
 dnl ------------------
 dnl Append to a search-list for a nonstandard header/lib-file
 dnl	$1 = the variable to return as result
@@ -369,7 +369,7 @@ AC_DEFUN([CF_ADD_SUBDIR_PATH],
 [
 test "$4" != "$5" && \
 test -d "$4" && \
-ifelse([$5],NONE,,[(test $5 = NONE || test -d $5) &&]) {
+ifelse([$5],NONE,,[(test $5 = NONE || test "$4" != "$5") &&]) {
 	test -n "$verbose" && echo "	... testing for $3-directories under $4"
 	test -d $4/$3 &&          $1="[$]$1 $4/$3"
 	test -d $4/$3/$2 &&       $1="[$]$1 $4/$3/$2"
@@ -863,7 +863,7 @@ fi
 AC_CHECK_HEADERS($cf_cv_ncurses_header)
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_CURSES_LIBS version: 29 updated: 2009/01/06 19:34:57
+dnl CF_CURSES_LIBS version: 30 updated: 2010/06/20 09:24:28
 dnl --------------
 dnl Look for the curses libraries.  Older curses implementations may require
 dnl termcap/termlib to be linked as well.  Call CF_CURSES_CPPFLAGS first.
@@ -880,16 +880,16 @@ AC_MSG_RESULT($cf_result)
 if test "$cf_result" = no ; then
 case $host_os in #(vi
 freebsd*) #(vi
-    AC_CHECK_LIB(mytinfo,tgoto,[LIBS="-lmytinfo $LIBS"])
+    AC_CHECK_LIB(mytinfo,tgoto,[CF_ADD_LIBS(-lmytinfo)])
     ;;
 hpux10.*) #(vi
     AC_CHECK_LIB(cur_colr,initscr,[
-        LIBS="-lcur_colr $LIBS"
+        CF_ADD_LIBS(-lcur_colr)
         ac_cv_func_initscr=yes
         ],[
     AC_CHECK_LIB(Hcurses,initscr,[
         # HP's header uses __HP_CURSES, but user claims _HP_CURSES.
-        LIBS="-lHcurses $LIBS"
+        CF_ADD_LIBS(-lHcurses)
         CPPFLAGS="$CPPFLAGS -D__HP_CURSES -D_HP_CURSES"
         ac_cv_func_initscr=yes
         ])])
@@ -900,7 +900,7 @@ linux*) # Suse Linux does not follow /usr/lib convention
 sunos3*|sunos4*)
     if test -d /usr/5lib ; then
       CF_ADD_LIBDIR(/usr/5lib)
-      LIBS="$LIBS -lcurses -ltermcap"
+      CF_ADD_LIBS(-lcurses -ltermcap)
     fi
     ac_cv_func_initscr=yes
     ;;
@@ -2635,10 +2635,10 @@ printf("old\n");
 	,[$1=no])
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_NCURSES_CONFIG version: 6 updated: 2010/04/28 06:02:16
+dnl CF_NCURSES_CONFIG version: 8 updated: 2010/07/08 05:17:30
 dnl -----------------
 dnl Tie together the configure-script macros for ncurses.
-dnl Prefer the "-config" script from ncurses 5.6, to simplify analysis.
+dnl Prefer the "-config" script from ncurses 6.x, to simplify analysis.
 dnl Allow that to be overridden using the $NCURSES_CONFIG environment variable.
 dnl
 dnl $1 is the root library name (default: "ncurses")
@@ -2652,7 +2652,7 @@ AC_PATH_PROGS(NCURSES_CONFIG,${cf_ncuconfig_root}6-config ${cf_ncuconfig_root}5-
 if test "$NCURSES_CONFIG" != none ; then
 
 CPPFLAGS="$CPPFLAGS `$NCURSES_CONFIG --cflags`"
-LIBS="`$NCURSES_CONFIG --libs` $LIBS"
+CF_ADD_LIBS(`$NCURSES_CONFIG --libs`)
 
 # even with config script, some packages use no-override for curses.h
 CF_CURSES_HEADER(ifelse($1,,ncurses,$1))
@@ -2792,7 +2792,7 @@ esac
 
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_NCURSES_LIBS version: 13 updated: 2007/07/29 10:29:20
+dnl CF_NCURSES_LIBS version: 14 updated: 2010/06/20 09:24:28
 dnl ---------------
 dnl Look for the ncurses library.  This is a little complicated on Linux,
 dnl because it may be linked with the gpm (general purpose mouse) library.
@@ -2828,12 +2828,12 @@ freebsd*)
 	;;
 esac
 
-LIBS="$cf_ncurses_LIBS $LIBS"
+CF_ADD_LIBS($cf_ncurses_LIBS)
 
 if ( test -n "$cf_cv_curses_dir" && test "$cf_cv_curses_dir" != "no" )
 then
 	CF_ADD_LIBDIR($cf_cv_curses_dir/lib)
-	LIBS="-l$cf_nculib_root $LIBS"
+	CF_ADD_LIBS(-l$cf_nculib_root)
 else
 	CF_FIND_LIBRARY($cf_nculib_root,$cf_nculib_root,
 		[#include <${cf_cv_ncurses_header-curses.h}>],
@@ -3627,7 +3627,7 @@ AC_DEFUN([CF_SYS_ERRLIST],
     CF_CHECK_ERRNO(sys_errlist)
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_TERMCAP_LIBS version: 11 updated: 2006/10/28 15:15:38
+dnl CF_TERMCAP_LIBS version: 12 updated: 2010/06/20 09:24:28
 dnl ---------------
 dnl Look for termcap libraries, or the equivalent in terminfo.
 dnl
@@ -3677,8 +3677,8 @@ if test "$cf_cv_termlib" = none; then
 fi
 if test "$cf_cv_termlib" = none; then
 	# allow curses library for broken AIX system.
-	AC_CHECK_LIB(curses, initscr, [LIBS="$LIBS -lcurses" cf_cv_termlib=termcap])
-	AC_CHECK_LIB(termcap, tgoto, [LIBS="$LIBS -ltermcap" cf_cv_termlib=termcap])
+	AC_CHECK_LIB(curses, initscr, [CF_ADD_LIBS(-lcurses) cf_cv_termlib=termcap])
+	AC_CHECK_LIB(termcap, tgoto, [CF_ADD_LIBS(-ltermcap) cf_cv_termlib=termcap])
 fi
 ])
 if test "$cf_cv_termlib" = none; then
@@ -3753,7 +3753,7 @@ program_transform_name=`echo $program_transform_name | sed -f conftest.sed`
 rm conftest.sed
 ])
 dnl ---------------------------------------------------------------------------
-dnl CF_TRY_PKG_CONFIG version: 3 updated: 2010/06/02 05:03:05
+dnl CF_TRY_PKG_CONFIG version: 4 updated: 2010/06/14 17:42:30
 dnl -----------------
 dnl This is a simple wrapper to use for pkg-config, for libraries which may be
 dnl available in that form.
@@ -3768,6 +3768,8 @@ if test "$PKG_CONFIG" != none && "$PKG_CONFIG" --exists $1; then
 	CF_VERBOSE(found package $1)
 	cf_pkgconfig_incs="`$PKG_CONFIG --cflags $1 2>/dev/null`"
 	cf_pkgconfig_libs="`$PKG_CONFIG --libs   $1 2>/dev/null`"
+	CF_VERBOSE(package $1 CFLAGS: $cf_pkgconfig_incs)
+	CF_VERBOSE(package $1 LIBS: $cf_pkgconfig_libs)
 	CF_ADD_CFLAGS($cf_pkgconfig_incs)
 	CF_ADD_LIBS($cf_pkgconfig_libs)
 	ifelse([$2],,:,[$2])
@@ -3897,7 +3899,7 @@ AC_DEFUN([CF_UPPER],
 $1=`echo "$2" | sed y%abcdefghijklmnopqrstuvwxyz./-%ABCDEFGHIJKLMNOPQRSTUVWXYZ___%`
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_UTF8_LIB version: 6 updated: 2010/04/21 06:20:50
+dnl CF_UTF8_LIB version: 7 updated: 2010/06/20 09:24:28
 dnl -----------
 dnl Check for multibyte support, and if not found, utf8 compatibility library
 AC_DEFUN([CF_UTF8_LIB],
@@ -3919,7 +3921,7 @@ if test "$cf_cv_utf8_lib" = "add-on" ; then
 	AC_DEFINE(HAVE_LIBUTF8_H)
 	CF_ADD_INCDIR($cf_cv_header_path_utf8)
 	CF_ADD_LIBDIR($cf_cv_library_path_utf8)
-	LIBS="$cf_cv_library_file_utf8 $LIBS"
+	CF_ADD_LIBS($cf_cv_library_file_utf8)
 fi
 ])dnl
 dnl ---------------------------------------------------------------------------
@@ -4004,7 +4006,7 @@ AC_ARG_WITH(curses-dir,
 	[cf_cv_curses_dir=no])
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_WITH_DBMALLOC version: 6 updated: 2006/12/16 14:24:05
+dnl CF_WITH_DBMALLOC version: 7 updated: 2010/06/21 17:26:47
 dnl ----------------
 dnl Configure-option for dbmalloc.  The optional parameter is used to override
 dnl the updating of $LIBS, e.g., to avoid conflict with subsequent tests.
@@ -4015,11 +4017,11 @@ CF_NO_LEAKS_OPTION(dbmalloc,
 
 if test "$with_dbmalloc" = yes ; then
 	AC_CHECK_HEADER(dbmalloc.h,
-		[AC_CHECK_LIB(dbmalloc,[debug_malloc]ifelse($1,,[],[,$1]))])
+		[AC_CHECK_LIB(dbmalloc,[debug_malloc]ifelse([$1],,[],[,$1]))])
 fi
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_WITH_DMALLOC version: 6 updated: 2006/12/16 14:24:05
+dnl CF_WITH_DMALLOC version: 7 updated: 2010/06/21 17:26:47
 dnl ---------------
 dnl Configure-option for dmalloc.  The optional parameter is used to override
 dnl the updating of $LIBS, e.g., to avoid conflict with subsequent tests.
@@ -4030,7 +4032,7 @@ CF_NO_LEAKS_OPTION(dmalloc,
 
 if test "$with_dmalloc" = yes ; then
 	AC_CHECK_HEADER(dmalloc.h,
-		[AC_CHECK_LIB(dmalloc,[dmalloc_debug]ifelse($1,,[],[,$1]))])
+		[AC_CHECK_LIB(dmalloc,[dmalloc_debug]ifelse([$1],,[],[,$1]))])
 fi
 ])dnl
 dnl ---------------------------------------------------------------------------
@@ -4550,7 +4552,7 @@ if test -n "$cf_xopen_source" ; then
 fi
 ])
 dnl ---------------------------------------------------------------------------
-dnl CF_X_ATHENA version: 15 updated: 2010/06/02 05:03:05
+dnl CF_X_ATHENA version: 16 updated: 2010/06/14 17:42:30
 dnl -----------
 dnl Check for Xaw (Athena) libraries
 dnl
@@ -4604,17 +4606,11 @@ if test "$PKG_CONFIG" != none ; then
 		lib${cf_x_athena} \
 		lib${cf_x_athena}-devel
 	do
-		if "$PKG_CONFIG" --exists $cf_athena_pkg; then
-			CF_VERBOSE(found package $cf_athena_pkg)
-			cf_x_athena_inc="`$PKG_CONFIG --cflags $cf_athena_pkg 2>/dev/null`"
-			cf_x_athena_lib="`$PKG_CONFIG --libs   $cf_athena_pkg 2>/dev/null`"
-			CF_ADD_CFLAGS($cf_x_athena_inc)
-			CF_ADD_LIBS($cf_x_athena_lib)
-
+		CF_TRY_PKG_CONFIG($cf_athena_pkg,[
+			cf_x_athena_lib="$cf_pkgconfig_libs"
 			CF_UPPER(cf_x_athena_LIBS,HAVE_LIB_$cf_x_athena)
 			AC_DEFINE_UNQUOTED($cf_x_athena_LIBS)
-			break
-		fi
+			break])
 	done
 fi
 
@@ -4770,7 +4766,7 @@ AC_CHECK_LIB(Xol, OlToolkitInitialize,
 [Unable to successfully link OpenLook library (-lXol) with test program])) dnl
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_X_TOOLKIT version: 14 updated: 2010/06/02 05:03:05
+dnl CF_X_TOOLKIT version: 15 updated: 2010/06/14 17:42:30
 dnl ------------
 dnl Check for X Toolkit libraries
 dnl
@@ -4782,6 +4778,23 @@ AC_REQUIRE([CF_CHECK_CACHE])
 cf_have_X_LIBS=no
 
 CF_TRY_PKG_CONFIG(xt,[
+
+	# workaround for broken ".pc" files used for X Toolkit.
+	case "x$X_PRE_LIBS" in #(vi
+	*-lICE*)
+		case "x$LIBS" in #(vi
+		*-lICE*) #(vi
+			;;
+		*)
+			CF_VERBOSE(work around broken package)
+			CF_VERBOSE(...before $LIBS)
+			LIBS=`echo "$LIBS" | sed -e "s/[[ 	]][[ 	]]*/ /g" -e "s,-lXt ,-lXt $X_PRE_LIBS ," -e 's/  / /g'`
+			CF_VERBOSE(...after  $LIBS)
+			;;
+		esac
+		;;
+	esac
+
 	cf_have_X_LIBS=yes
 ],[
 
