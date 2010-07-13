@@ -3,7 +3,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/xml-filt.l,v 1.33 2010/05/11 23:09:44 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/xml-filt.l,v 1.34 2010/07/11 18:12:29 Rick.Sladkey Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of XML input
  * text.
@@ -303,7 +303,8 @@ do_filter(FILE *inputs)
     flt_bfr_error();
 
     if (Tags != 0) {
-	while (Num_tags-- > 0) {
+	while (Num_tags > 0) {
+	    --Num_tags;
 	    flt_error("expected tag:%s", Tags[Num_tags].name);
 	    free(Tags[Num_tags].name);
 	}

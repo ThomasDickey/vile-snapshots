@@ -6,7 +6,7 @@
  *		string literal ("Literal") support --  ben stoltz
  *		factor-out hashing and file I/O - tom dickey
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/c-filt.c,v 1.84 2010/05/04 00:47:41 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/c-filt.c,v 1.85 2010/07/11 18:12:26 Rick.Sladkey Exp $
  *
  * Usage: refer to vile.hlp and doc/filters.doc .
  *
@@ -15,11 +15,12 @@
  *	-o	objc has '@' directives
  *	-p	suppress preprocessor support
  *	-s	javascript special cases
+ *	-#	C# special cases
  */
 
 #include <filters.h>
 
-DefineOptFilter("c", "jops");
+DefineOptFilter("c", "jops#");
 
 #define UPPER(c) isalpha(CharOf(c)) ? toupper(CharOf(c)) : c
 
@@ -88,13 +89,19 @@ has_endofcomment(char *s)
 }
 
 static int
-has_endofliteral(char *s, int delim)
+has_endofliteral(char *s, int delim, int verbatim)
 {				/* points to '"' */
     int i = 0;
     while (*s) {
-	if (*s == delim)
-	    return (i);
-	if (s[0] == BACKSLASH && (s[1] == delim || s[1] == BACKSLASH)) {
+	if (*s == delim) {
+	    if (verbatim && s[1] == delim) {
+		++i;
+		++s;
+	    } else {
+		return (i);
+	    }
+	}
+	if (!verbatim && s[0] == BACKSLASH && (s[1] == delim || s[1] == BACKSLASH)) {
 	    ++i;
 	    ++s;
 	}
@@ -306,22 +313,24 @@ write_number(char *s)
 }
 
 static char *
-write_literal(char *s, int *literal, int escaped)
+write_literal(char *s, int *literal, int *verbatim, int escaped)
 {
-    int c_length = has_endofliteral(s, *literal);
+    int c_length = has_endofliteral(s, *literal, *verbatim);
     if (c_length < 0)
 	c_length = (int) strlen(s);
     else
 	*literal = 0;
-    if (escaped) {
+    if (escaped || *verbatim) {
 	flt_puts(s, c_length, Literal_attr);
     } else {
 	flt_error("expected an escape");
 	flt_puts(s, c_length, Error_attr);
     }
     s += c_length;
-    if (!*literal)
+    if (!*literal) {
 	flt_putc(*s++);
+	*verbatim = 0;
+    }
     return s;
 }
 
@@ -459,6 +468,7 @@ do_filter(FILE *input GCC_UNUSED)
     int comment;
     int escaped;
     int literal;
+    int verbatim;
     int was_eql;
     int was_esc;
     unsigned len;
@@ -474,6 +484,7 @@ do_filter(FILE *input GCC_UNUSED)
 
     comment = 0;
     literal = 0;
+    verbatim = 0;
     was_eql = 0;
     was_esc = 0;
 
@@ -482,7 +493,7 @@ do_filter(FILE *input GCC_UNUSED)
 	was_esc = 0;
 	s = line;
 	if (literal)
-	    s = write_literal(s, &literal, escaped);
+	    s = write_literal(s, &literal, &verbatim, escaped);
 	s = skip_white(s);
 	while (*s) {
 	    if (!comment && *s == '/' && *(s + 1) == '*') {
@@ -531,11 +542,14 @@ do_filter(FILE *input GCC_UNUSED)
 		    s = write_escape(s, Error_attr);
 		}
 		was_eql = 0;
+	    } else if (FltOptions('#') && *s == '@' && s[1] == DQUOTE) {
+		verbatim = 1;
+		flt_putc(*s++);
 	    } else if (isQuote(*s)) {
 		literal = (literal == 0) ? *s : 0;
 		flt_putc(*s++);
 		if (literal) {
-		    s = write_literal(s, &literal, 1);
+		    s = write_literal(s, &literal, &verbatim, 1);
 		}
 		was_eql = 0;
 	    } else if (isIdent(*s)) {

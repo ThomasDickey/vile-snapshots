@@ -1,0 +1,10 @@
+#!/bin/sh -e
+
+if [ "$1" != upgrade ]
+then
+    update-alternatives --remove editor /usr/bin/vile
+    update-alternatives --remove view /usr/bin/vile
+    update-alternatives --remove vi /usr/bin/vile
+fi
+
+#DEBHELPER#

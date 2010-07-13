@@ -1,0 +1,6 @@
+/usr/lib/vile/*filt.so
+/usr/lib/vile/atr2*
+/usr/lib/vile/vile-crypt
+/usr/lib/vile/vile-manfilt
+/usr/share/vile/filters.rc
+/usr/share/vile/*.keywords

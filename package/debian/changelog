@@ -1,0 +1,733 @@
+vile (9.7zf) unstable; urgency=low
+
+  * add Debian scripts to upstream source, for test-builds.
+
+ -- Thomas E. Dickey <dickey@invisible-island.net>  Tue, 13 Jul 2010 07:53:15 -0400
+
+vile (9.7ze-1) unstable; urgency=low
+
+  * New upstream release.
+  * Move to standards version 3.9.0.
+  * Add ${misc:Depends} to packages (lintian).
+  * Explicitly select .desktop files for install (not installing lxvile at this
+    time).
+
+ -- Brendan O'Dea <bod@debian.org>  Mon, 05 Jul 2010 21:09:45 +1000
+
+vile (9.7zd-1) unstable; urgency=low
+
+  * New upstream release.
+
+ -- Brendan O'Dea <bod@debian.org>  Mon, 31 May 2010 22:41:04 +1000
+
+vile (9.7zc-1) unstable; urgency=low
+
+  * New upstream release.
+  * configure.in: wrap CF_RPATH_HACK with an option to allow this behaviour to
+    be suppressed.
+
+ -- Brendan O'Dea <bod@debian.org>  Sun, 11 Apr 2010 19:51:46 +1000
+
+vile (9.7za-1) unstable; urgency=low
+
+  * New upstream release.
+
+ -- Brendan O'Dea <bod@debian.org>  Fri, 29 Jan 2010 20:48:59 +1100
+
+vile (9.7z-1) unstable; urgency=low
+
+  * New upstream release.
+
+ -- Brendan O'Dea <bod@debian.org>  Fri, 08 Jan 2010 21:57:10 +1100
+
+vile (9.7y-1) unstable; urgency=low
+
+  * New upstream release.
+  * Include html docs.
+
+ -- Brendan O'Dea <bod@debian.org>  Tue, 29 Dec 2009 18:37:25 +1100
+
+vile (9.7x-2) unstable; urgency=low
+
+  * xvile replaces vile-common after moving xvile.sh.
+  * remove ancient conflcts on xvile-{xt,xaw,xm}.
+  * install view alternative (closes: #399321).
+
+ -- Brendan O'Dea <bod@debian.org>  Wed, 25 Nov 2009 00:00:25 +1100
+
+vile (9.7x-1) unstable; urgency=low
+
+  * New upstream release.
+  * Use upstream app-defaults file.
+  * Install .desktop files.
+  * Install uxvile.
+  * Move xshell.sh and vilemenu.rc to xvile package.
+  * Fix desktop category.
+  * Add description of uxvile to vile.1.
+
+ -- Brendan O'Dea <bod@debian.org>  Thu, 19 Nov 2009 17:46:51 +1100
+
+vile (9.7v-1) unstable; urgency=low
+
+  * New upstream release. 
+
+ -- Paul van Tilburg <paulvt@debian.org>  Tue, 13 Oct 2009 14:20:36 +0200
+
+vile (9.7u-1) unstable; urgency=low
+
+  * New upstream release. 
+  * Bumped standards version to 3.8.3; no changes required. 
+
+ -- Paul van Tilburg <paulvt@debian.org>  Tue, 25 Aug 2009 11:07:24 +0200
+
+vile (9.7t-2) unstable; urgency=low
+
+  * There are after all still some issues with flex.  Reverting to
+    flex-old again.
+
+ -- Brendan O'Dea <bod@debian.org>  Thu, 16 Jul 2009 19:58:59 +1000
+
+vile (9.7t-1) unstable; urgency=low
+
+  * New upstream release.
+  * flex now appears to work: remove flex-old from Build-Depends.
+
+ -- Brendan O'Dea <bod@debian.org>  Sun, 05 Jul 2009 18:36:15 +1000
+
+vile (9.7s-1) unstable; urgency=low
+
+  * New upstream release.
+  * Set DEFAULT_XSHELL to use x-terminal-emulator via debian/rules.
+  * Remove debian/patches/z50_debian_use_x-terminal-emulator.
+
+ -- Brendan O'Dea <bod@debian.org>  Tue, 09 Jun 2009 00:44:21 +1000
+
+vile (9.7r2-1) unstable; urgency=low
+
+  * New patch release, resolves issues with file permissions of 
+    ~/.vilerc. 
+
+ -- Paul van Tilburg <paulvt@debian.org>  Thu, 28 May 2009 13:44:53 +0200
+
+vile (9.7r-1) unstable; urgency=low
+
+  * New upstream release. 
+
+ -- Paul van Tilburg <paulvt@debian.org>  Tue, 26 May 2009 11:58:00 +0200
+
+vile (9.7o-1) unstable; urgency=low
+
+  * New upstream release. 
+
+ -- Paul van Tilburg <paulvt@debian.org>  Mon, 27 Apr 2009 13:42:53 +0200
+
+vile (9.7m-1) unstable; urgency=low
+
+  * New upstream release. 
+  * Switched maintainer and uploader roles between me and Brendan O'Dea.
+  * Bumped standards version to 3.8.1; no changes required.
+
+ -- Paul van Tilburg <paulvt@debian.org>  Mon, 23 Mar 2009 13:00:32 +0100
+
+vile (9.7l-1) unstable; urgency=low
+
+  * New upstream release. 
+
+ -- Paul van Tilburg <paulvt@debian.org>  Sat, 28 Feb 2009 23:54:46 +0100
+
+vile (9.7k-1) unstable; urgency=low
+
+  * New upstream release.
+  * debian/copyright: be more specific about the GPL license version.
+
+ -- Paul van Tilburg <paulvt@debian.org>  Tue, 24 Feb 2009 11:01:26 +0100
+
+vile (9.7j-1) unstable; urgency=low
+
+  * New upstream release. 
+  * Now that an upstream tarball is available next to version revision
+    patches, removed the version 9.6 revision patches and the patch
+    rules from debian/control.
+  * Bumped the standars version to 3.8.0; no changes required.
+
+ -- Paul van Tilburg <paulvt@debian.org>  Fri, 09 Jan 2009 13:51:50 +0100
+
+vile (9.6m-1) unstable; urgency=low
+
+  * New upstream release. 
+
+ -- Paul van Tilburg <paulvt@debian.org>  Fri, 09 May 2008 08:07:12 +0200
+
+vile (9.6-l1) unstable; urgency=low
+
+  * New upstream release. 
+
+ -- Paul van Tilburg <paulvt@debian.org>  Sun, 27 Apr 2008 14:04:05 +0200
+
+vile (9.6-k1) unstable; urgency=low
+
+  * New upstream release.
+  * Added provides field for "editor" for vile and xvile (closes: #398755). 
+
+ -- Paul van Tilburg <paulvt@debian.org>  Sat, 12 Apr 2008 10:04:55 +0200
+
+vile (9.6-j1) unstable; urgency=low
+
+  * New upstream release. 
+  * Updates with respect to policy:
+    - debian/rules: 
+      * removed DH_COMPAT declaration, use debian/compat.
+      * install the vile lintian override; man-page for vile
+        is in vile-common, not vile, so lintian should ignore it.
+    - debian/compat: addded, set to 5. 
+    - debian/control: 
+      * replaced ${Source-Version} by ${source:Version} to allow for
+        binNMUs (closes: #435962).
+      * bumped standards version to 3.7.3.
+      * fixed versioned build-depend on libxaw7-dev.
+      * modified build-depend on debhelper to >= 5.
+    - debian/copyright: small textual fix.
+    - debian/*.menu: fixed quotation and section names.
+
+ -- Paul van Tilburg <paulvt@debian.org>  Wed, 26 Mar 2008 13:31:38 +0100
+
+vile (9.6-i1) unstable; urgency=low
+
+  * New upstream version, and a bunch of patches.
+  * Add Paul van Tilburg as uploader.
+
+ -- Brendan O'Dea <bod@debian.org>  Sun, 16 Mar 2008 22:52:08 +1100
+
+vile (9.5-s1) unstable; urgency=low
+
+  * New upstream patch version.
+
+ -- Brendan O'Dea <bod@debian.org>  Tue, 27 Nov 2007 10:21:43 +1100
+
+vile (9.5-r1) unstable; urgency=low
+
+  * New upstream patch version.
+
+ -- Brendan O'Dea <bod@debian.org>  Mon, 17 Sep 2007 12:12:33 +1000
+
+vile (9.5-i1) unstable; urgency=low
+
+  * New upstream patch version.
+
+ -- Brendan O'Dea <bod@debian.org>  Fri,  2 Jun 2006 08:58:36 +1000
+
+vile (9.5-h1) unstable; urgency=low
+
+  * New upstream patch version.
+  * Interim fix from Tom for a case in bsizes() which subtracted
+    line-ending from zero-sized buffer when nonewline mode was set. 
+    Closes: #368007.
+
+ -- Brendan O'Dea <bod@debian.org>  Thu, 25 May 2006 22:35:20 +1000
+
+vile (9.5-g2) unstable; urgency=low
+
+  * Move pixmaps from /usr/X11R6 to /usr/share .
+
+ -- Brendan O'Dea <bod@debian.org>  Mon, 24 Apr 2006 06:06:15 +1000
+
+vile (9.5-g1) unstable; urgency=low
+
+  * New upstream patch version.
+
+ -- Brendan O'Dea <bod@debian.org>  Tue,  4 Apr 2006 23:54:22 +1000
+
+vile (9.5-d1) unstable; urgency=low
+
+  * New upstream patch version.
+  * Update debhelper to v5.
+
+ -- Brendan O'Dea <bod@debian.org>  Mon,  5 Dec 2005 00:02:15 +1100
+
+vile (9.5-b1) unstable; urgency=low
+
+  * New upstream patch version.
+
+ -- Brendan O'Dea <bod@debian.org>  Tue,  4 Oct 2005 22:20:32 +1000
+
+vile (9.5-1) unstable; urgency=low
+
+  * New upstream version.
+
+ -- Brendan O'Dea <bod@debian.org>  Fri, 29 Jul 2005 13:07:44 +1000
+
+vile (9.4-za1) unstable; urgency=low
+
+  * New upstream patch version.
+  * Remove emacs settings from changelog.
+  * Move xshell.sh to /usr/share/vile (in arch all package -common).
+
+ -- Brendan O'Dea <bod@debian.org>  Sat, 16 Jul 2005 12:56:43 +1000
+
+vile (9.4-z1) unstable; urgency=low
+
+  * New upstream patch version.
+
+ -- Brendan O'Dea <bod@debian.org>  Mon,  4 Jul 2005 00:50:04 +1000
+
+vile (9.4-y1) unstable; urgency=low
+
+  * New upstream patch version.
+
+ -- Brendan O'Dea <bod@debian.org>  Wed, 22 Jun 2005 00:21:53 +1000
+
+vile (9.4-w1) unstable; urgency=low
+
+  * New upstream patch version.
+
+ -- Brendan O'Dea <bod@debian.org>  Wed,  8 Jun 2005 21:48:37 +1000
+
+vile (9.4-v1) unstable; urgency=low
+
+  * New upstream patch version.
+  * Cosmetic change to the "unpatch" target: drop "Prereq:" lines.
+
+ -- Brendan O'Dea <bod@debian.org>  Fri,  3 Jun 2005 10:56:53 +1000
+
+vile (9.4-t1) unstable; urgency=low
+
+  * New upstream patch version.
+
+ -- Brendan O'Dea <bod@debian.org>  Sat, 21 May 2005 17:15:15 +1000
+
+vile (9.4-s1) unstable; urgency=low
+
+  * New upstream patch version.
+
+ -- Brendan O'Dea <bod@debian.org>  Wed, 30 Mar 2005 16:02:08 +1000
+
+vile (9.4-r1) unstable; urgency=low
+
+  * New upstream patch version.
+
+ -- Brendan O'Dea <bod@debian.org>  Tue, 15 Mar 2005 00:28:38 +1100
+
+vile (9.4-q1) unstable; urgency=low
+
+  * New upstream patch version.  Fixes two issues related to rbmode
+    (closes: #292652).
+
+  * Update xvile app-defaults:
+    + copy colours from example XVile.ad,
+    + set focusFollowsMouse and forkOnStartup options, and
+    + set cursor colour so it is visible over highlighted text
+      (closes: #235182).
+
+ -- Brendan O'Dea <bod@debian.org>  Mon, 14 Feb 2005 13:27:24 +1100
+
+vile (9.4-p1) unstable; urgency=low
+
+  * New upstream patch version.
+
+ -- Brendan O'Dea <bod@debian.org>  Sat, 12 Feb 2005 07:48:10 +1100
+
+vile (9.4-o1) unstable; urgency=low
+
+  * New upstream patch version.
+
+ -- Brendan O'Dea <bod@debian.org>  Wed, 26 Jan 2005 07:59:45 +1100
+
+vile (9.4-k1) unstable; urgency=low
+
+  * New upstream patch version.
+
+ -- Brendan O'Dea <bod@debian.org>  Mon,  8 Nov 2004 23:18:25 +1100
+
+vile (9.4-j1) unstable; urgency=low
+
+  * New upstream patch version.
+
+ -- Brendan O'Dea <bod@debian.org>  Wed,  3 Nov 2004 02:03:02 +1100
+
+vile (9.4-h1) unstable; urgency=low
+
+  * New upstream patch version.
+
+ -- Brendan O'Dea <bod@debian.org>  Thu,  1 Jul 2004 22:18:46 +1000
+
+vile (9.4-f1) unstable; urgency=low
+
+  * New upstream patch version.
+  * Change build dependency from xlibs-dev to libxaw7-dev.
+
+ -- Brendan O'Dea <bod@debian.org>  Sun, 18 Apr 2004 14:20:14 +1000
+
+vile (9.4-d1) unstable; urgency=low
+
+  * New upstream patch version.
+
+ -- Brendan O'Dea <bod@debian.org>  Sun, 15 Feb 2004 17:40:25 +1100
+
+vile (9.4-c2) unstable; urgency=low
+
+  * Invert flex-old/flex build-depends.
+
+ -- Brendan O'Dea <bod@debian.org>  Sat,  8 Nov 2003 00:53:58 +1100
+
+vile (9.4-c1) unstable; urgency=low
+
+  * New upstream patch version.
+  * Build filters as shared objects rather than executables.
+  * Change build depends to specify flex-old due to problems with new
+    flex.
+
+ -- Brendan O'Dea <bod@debian.org>  Thu,  6 Nov 2003 20:04:54 +1100
+
+vile (9.4-a1) unstable; urgency=low
+
+  * New upstream patch version.
+  * Update build-dep version for libperl-dev to ensure that packages
+    are built against 5.8.1 due to a binary incompatability with
+    DynaLoader (closes: #213850).
+
+ -- Brendan O'Dea <bod@debian.org>  Tue, 21 Oct 2003 08:39:11 +1000
+
+vile (9.4-1) unstable; urgency=low
+
+  * New upstream version.
+  * Fix description for xvile (closes: #209342).
+
+ -- Brendan O'Dea <bod@debian.org>  Tue,  9 Sep 2003 23:36:48 +1000
+
+vile (9.3-u1) unstable; urgency=low
+
+  * New upstream patch version.
+
+ -- Brendan O'Dea <bod@debian.org>  Wed,  9 Jul 2003 22:27:43 +1000
+
+vile (9.3-t1) unstable; urgency=low
+
+  * New upstream patch version.
+
+ -- Brendan O'Dea <bod@debian.org>  Sat,  5 Jul 2003 09:22:15 +1000
+
+vile (9.3-s1) unstable; urgency=low
+
+  * New upstream patch version.
+
+ -- Brendan O'Dea <bod@debian.org>  Mon, 23 Jun 2003 23:29:15 +1000
+
+vile (9.3-q1) unstable; urgency=low
+
+  * New upstream patch version.
+  * Builds with new flex (closes: #191819).
+
+ -- Brendan O'Dea <bod@debian.org>  Tue,  3 Jun 2003 23:31:17 +1000
+
+vile (9.3-m1) unstable; urgency=low
+
+  * New upstream patch version.
+
+ -- Brendan O'Dea <bod@debian.org>  Tue, 11 Mar 2003 22:18:25 +1100
+
+vile (9.3-l1) unstable; urgency=low
+
+  * New upstream patch version.
+  * Corrects completion of file/buffer names containing backslashes
+    (closes: #164593).
+
+ -- Brendan O'Dea <bod@debian.org>  Sun,  2 Mar 2003 11:52:58 +1100
+
+vile (9.3-j1) unstable; urgency=low
+
+  * New upstream patch version.
+
+ -- Brendan O'Dea <bod@debian.org>  Fri, 10 Jan 2003 06:16:04 +1100
+
+vile (9.3-h1) unstable; urgency=low
+
+  * New upstream patch version.
+
+ -- Brendan O'Dea <bod@debian.org>  Thu,  7 Nov 2002 00:35:15 +1100
+
+vile (9.3-g1) unstable; urgency=low
+
+  * New upstream patch version.
+
+ -- Brendan O'Dea <bod@debian.org>  Tue, 29 Oct 2002 00:03:14 +1100
+
+vile (9.3-f1) unstable; urgency=low
+
+  * New upstream patch version.
+
+ -- Brendan O'Dea <bod@debian.org>  Sat, 26 Oct 2002 15:23:44 +1000
+
+vile (9.3-d1) unstable; urgency=low
+
+  * New upstream patch version.
+
+ -- Brendan O'Dea <bod@debian.org>  Wed,  4 Sep 2002 00:16:07 +1000
+
+vile (9.3-c1) unstable; urgency=low
+
+  * New upstream patch version.
+  * Patched to build against perl 5.8.0 .
+
+ -- Brendan O'Dea <bod@debian.org>  Sat, 31 Aug 2002 00:45:07 +1000
+
+vile (9.3-b1) unstable; urgency=low
+
+  * New upstream patch version.
+
+ -- Brendan O'Dea <bod@debian.org>  Thu,  4 Jul 2002 23:25:38 +1000
+
+vile (9.3-1) unstable; urgency=low
+
+  * New upstream version.
+
+ -- Brendan O'Dea <bod@debian.org>  Sun, 30 Jun 2002 21:47:46 +1000
+
+vile (9.2zd-1) unstable; urgency=low
+
+  * New upstream version.
+
+ -- Brendan O'Dea <bod@debian.org>  Sun, 23 Jun 2002 20:32:59 +1000
+
+vile (9.2za-1) unstable; urgency=low
+
+  * New upstream version.
+
+ -- Brendan O'Dea <bod@debian.org>  Wed,  8 May 2002 23:53:25 +1000
+
+vile (9.2y-1) unstable; urgency=low
+
+  * New upstream version.
+
+ -- Brendan O'Dea <bod@debian.org>  Mon, 18 Feb 2002 21:31:58 +1100
+
+vile (9.2w-1) unstable; urgency=low
+
+  * New upstream version.
+
+ -- Brendan O'Dea <bod@debian.org>  Tue, 12 Feb 2002 23:54:50 +1100
+
+vile (9.2t-1) unstable; urgency=low
+
+  * New upstream version.
+
+ -- Brendan O'Dea <bod@debian.org>  Sat,  5 Jan 2002 02:50:15 +1100
+
+vile (9.2s-1) unstable; urgency=low
+
+  * New upstream version.
+  * Applied patch from H.J. Lu <hjl@gnu.org> to fix config.guess for mips.
+
+ -- Brendan O'Dea <bod@debian.org>  Fri, 28 Dec 2001 16:35:36 +1100
+
+vile (9.2r-1) unstable; urgency=low
+
+  * New upstream version.
+
+ -- Brendan O'Dea <bod@debian.org>  Mon, 17 Dec 2001 11:23:36 +1100
+
+vile (9.2q-1) unstable; urgency=low
+
+  * New upstream version.
+
+ -- Brendan O'Dea <bod@debian.org>  Sun,  9 Dec 2001 13:36:50 +1100
+
+vile (9.2o-1) unstable; urgency=low
+
+  * New upstream version.
+  * Update copyright.
+  * Install icons with xvile.
+
+ -- Brendan O'Dea <bod@debian.org>  Tue,  4 Sep 2001 08:44:25 +1000
+
+vile (9.2m-1) unstable; urgency=low
+
+  * New upstream version (closes: #97486).
+  * Updated policy version.
+  * Changed build-depend from virtual libxaw-dev to libxaw7-dev.
+  * Removed -g from the build unless DEB_BUILD_OPTIONS contains
+    "debug" as per Debian Policy 11.1.
+
+ -- Brendan O'Dea <bod@debian.org>  Mon, 28 May 2001 16:35:46 +1000
+
+vile (9.2l-1) unstable; urgency=low
+
+  * New upstream version.
+
+ -- Brendan O'Dea <bod@debian.org>  Mon, 30 Apr 2001 12:31:13 +1000
+
+vile (9.2h-1) unstable; urgency=low
+
+  * New upstream version.
+
+ -- Brendan O'Dea <bod@debian.org>  Sun, 25 Feb 2001 16:13:11 +1100
+
+vile (9.2g-1) unstable; urgency=low
+
+  * New upstream version.
+  * Convert to debhelper v3.
+  * Update build-depends for debhelper and add libperl-dev.
+  * Remove vile.1 and overrides.Lintian from /usr/share/doc as per
+    policy change outlined in #59403.
+
+ -- Brendan O'Dea <bod@debian.org>  Mon, 19 Feb 2001 02:03:02 +1100
+
+vile (9.2e-1) unstable; urgency=low
+
+  * New upstream version.
+  * Fix /usr/share/doc links.
+
+ -- Brendan O'Dea <bod@debian.org>  Tue, 16 Jan 2001 02:44:11 +1100
+
+vile (9.2d-1) unstable; urgency=low
+
+  * New upstream version.
+  * Build against perl-5.6.  (Closes: #80667, #80670, #80706, #80711).
+  * Build against X4, merging xvile-* into xvile (uses Xaw).
+  * Install basic app-defaults file so that Xaw menus look reasonable.
+
+ -- Brendan O'Dea <bod@debian.org>  Fri, 29 Dec 2000 23:45:44 +1100
+
+vile (9.1p-1) unstable; urgency=low
+
+  * New upstream version.
+  * Convert to debhelper v2.
+
+ -- Brendan O'Dea <bod@debian.org>  Mon, 31 Jul 2000 14:16:21 +1000
+
+vile (9.1m-1) unstable; urgency=low
+
+  * New upstream version.
+  * Updated ftp site and added copyright lines from code to
+    debian/copyright.
+
+ -- Brendan O'Dea <bod@debian.org>  Tue,  4 Jul 2000 18:53:49 +1000
+
+vile (9.1g-1) unstable; urgency=low
+
+  * New upstream version.
+
+ -- Brendan O'Dea <bod@debian.org>  Wed,  3 May 2000 01:29:45 +1000
+
+vile (9.1d-1) unstable; urgency=low
+
+  * New upstream version.
+  * Move xvile binaries/manpages from /usr/X11R6 to /usr
+
+ -- Brendan O'Dea <bod@compusol.com.au>  Thu, 16 Mar 2000 04:48:04 +1100
+
+vile (9.1-1) unstable; urgency=low
+
+  * New upstream version.
+  * Add libio-pty-perl dependancy.
+
+ -- Brendan O'Dea <bod@compusol.com.au>  Thu, 20 Jan 2000 19:29:49 +1100
+
+vile (9.0s-1) unstable; urgency=low
+
+  * New upstream version.
+
+ -- Brendan O'Dea <bod@compusol.com.au>  Sat, 15 Jan 2000 00:38:57 +1100
+
+vile (9.0r-2) unstable; urgency=low
+
+  * Remove libio-pty-perl dependancy (not in by freeze).
+
+ -- Brendan O'Dea <bod@compusol.com.au>  Fri, 14 Jan 2000 20:40:11 +1100
+
+vile (9.0r-1) unstable; urgency=low
+
+  * New upstream version.
+  * Add Build-Depends.
+
+ -- Brendan O'Dea <bod@compusol.com.au>  Thu, 13 Jan 2000 17:37:22 +1100
+
+vile (9.0c-1) unstable; urgency=low
+
+  * New upstream version.
+
+ -- Brendan O'Dea <bod@compusol.com.au>  Fri,  3 Dec 1999 18:02:00 +1100
+
+vile (9.0b-1) unstable; urgency=low
+
+  * New upstream version.
+  * Move architecture dependent `vile-crypt' to vile-filters package.
+  * Install old changelogs (CHANGES.R*).
+  * Reverse symlink for current changelog (CHANGES.gz -> changelog.gz).
+
+ -- Brendan O'Dea <bod@compusol.com.au>  Mon, 29 Nov 1999 17:29:14 +1100
+
+vile (9.0-1) unstable; urgency=low
+
+  * New upstream version.
+  * Install xshell.sh, .vilemenu and examples.
+  * Set default value of $xshell.
+
+ -- Brendan O'Dea <bod@compusol.com.au>  Tue, 16 Nov 1999 13:35:27 +1100
+
+vile (8.4b-1) unstable; urgency=low
+
+  * New upstream version.
+  * This version is now covered by the GPL.  Update copyright and move
+    from `non-free/editors' to `editors'.
+
+ -- Brendan O'Dea <bod@compusol.com.au>  Fri, 12 Nov 1999 17:56:21 +1100
+
+vile (8.3y-1) unstable; urgency=low
+
+  * New upstream version.
+
+ -- Brendan O'Dea <bod@compusol.com.au>  Mon,  1 Nov 1999 10:56:11 +1100
+
+vile (8.3x-2) unstable; urgency=low
+
+  * xvile-xm: Debian package `lesstifg' has been renamed to `lesstif1'.
+  * Create /usr/doc symlinks for all packages.
+  * Create required CHANGES.gz -> changelog.gz symlink.
+  * Revise `copyright'.
+  * Prune some build-related and obsolete docs.
+  * Build/install vile-perl-api.doc.
+
+ -- Brendan O'Dea <bod@compusol.com.au>  Tue, 26 Oct 1999 10:27:06 +1000
+
+vile (8.3x-1) unstable; urgency=low
+
+  * New upstream version.
+
+ -- Brendan O'Dea <bod@compusol.com.au>  Wed, 20 Oct 1999 10:28:04 +1000
+
+vile (8.3w-1) unstable; urgency=low
+
+  * New upstream version.
+  * Update to Standards-Version 3.0.1.
+
+ -- Brendan O'Dea <bod@compusol.com.au>  Tue, 12 Oct 1999 20:48:31 +1000
+
+vile (8.3v-1) unstable; urgency=low
+
+  * Add dh_perlembed script for perl dependencies.
+  * Manpages and docs now in /usr/share/{man,doc}
+
+ -- Brendan O'Dea <bod@compusol.com.au>  Wed,  6 Oct 1999 17:35:52 +1000
+
+vile (8.3v-0slink1) unstable; urgency=low
+
+  * New upstream version.
+  * Make vile a `vi' alternative (at 20).
+
+ -- Brendan O'Dea <bod@compusol.com.au>  Wed,  6 Oct 1999 15:14:10 +1000
+
+vile (8.3u-2) unstable; urgency=low
+
+  * Remove build number from perl version.
+  * Split `vile' into `vile', `vile-common' and `vile-filters'.
+  * Slave manual page to xvile alternative.
+  * Make vile an `editor' alternative (at 60) and provide `editor'.
+  * Allow partial builds.
+
+ -- Brendan O'Dea <bod@compusol.com.au>  Thu, 30 Sep 1999 18:52:22 +1000
+
+vile (8.3u-1) unstable; urgency=low
+
+  * Initial Release.
+
+ -- Brendan O'Dea <bod@compusol.com.au>  Tue, 28 Sep 1999 14:27:29 +1000

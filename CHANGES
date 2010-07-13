@@ -1,7 +1,23 @@
 Changes for vile 9.8 (released ??? ??? ?? ????)
 
- 20100707 (zf)
+ 20100713 (zf)
+	> Rick Sladkey:
+	+ add support for C# verbatim string literals to c-filter.c
+	+ correct a sign-extension problem with xml-filt.l, for 64-bit
+	  platforms
 	> Tom Dickey:
+	+ add Debian build-scripts, for test-builds.
+	+ improve awk filter:
+	  + correct DSTRING expression, to handle "\\\\" value.
+	  + accept literal spaces in patterns.
+	+ improve rpm filter:
+	  + recognize keywords ending with digits, such as "Source0".
+	  + distinguish one-liner tags from multi-line sections.
+	  + ignore case of keywords.
+	  + add keywords for %XXX variants of %{XXX} names.
+	  + highlight %XXX words in single-quotes.
+	+ improve sh filter:
+	  + handle escape character in here-document.
 	+ several changes to configure macros:
 	  + quote params of ifelse().
 	  + add/use CF_ADD_LIB/CF_ADD_LIBS for consistency.

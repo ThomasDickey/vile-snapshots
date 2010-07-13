@@ -1,0 +1,11 @@
+vile for Debian
+----------------------
+
+This build of vile has been split into four packages:
+
+    vile         - character interface
+    xvile        - X11 interface
+    vile-common  - help file, scripts and docs
+    vile-filters - syntax filters
+
+Brendan O'Dea <bod@debian.org>, Tue, 28 Sep 1999 14:27:29 +1000

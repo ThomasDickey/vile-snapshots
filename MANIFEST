@@ -1,4 +1,4 @@
-MANIFEST for vile, version v9_7ze2
+MANIFEST for vile, version v9_7ze3
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 AUTHORS                         list of authors, with nicknames in CHANGES
@@ -417,6 +417,31 @@ macros/vilemenu.rc              sample menu for xvile
 macros/vileperl.rc              sample initialization for perl scripts
 macros/which.rc                 script to show which keyword file is found by filters
 macros/xvile.desktop            desktop-file for xvile
+package/debian                  subdirectory
+package/debian/README.Debian    debian build script
+package/debian/changelog        debian build script
+package/debian/compat           debian build script
+package/debian/control          debian build script
+package/debian/copyright        debian build script
+package/debian/overrides        subdirectory
+package/debian/overrides/vile   debian build script
+package/debian                  subdirectory
+package/debian/rules            debian build script
+package/debian/vile-common.docs debian build script
+package/debian/vile-common.examples  debian build script
+package/debian/vile-common.files  debian build script
+package/debian/vile-common.manpages  debian build script
+package/debian/vile-filters.files  debian build script
+package/debian/vile-filters.links  debian build script
+package/debian/vile.files       debian build script
+package/debian/vile.links       debian build script
+package/debian/vile.menu        debian build script
+package/debian/vile.mini.xpm    debian build script
+package/debian/vile.postinst    debian build script
+package/debian/vile.prerm       debian build script
+package/debian/xvile.files      debian build script
+package/debian/xvile.links      debian build script
+package/debian/xvile.menu       debian build script
 package                         subdirectory
 package/winvile-wide.iss        Inno Setup script for winvile-wide
 package/winvile.iss             Inno Setup script for winvile

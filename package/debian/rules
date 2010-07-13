@@ -1,0 +1,167 @@
+#!/usr/bin/make -f
+
+#
+# debian/rules for vile/xvile
+#
+
+# packages
+PACKAGES.indep = vile-common
+PACKAGES.arch  = vile vile-filters xvile
+
+configure = ../../configure --prefix=/usr --mandir='$${prefix}/share/man' \
+    --with-app-defaults=/etc/X11/app-defaults --with-locale --with-perl \
+    --with-loadable-filters=all --disable-rpath-hack \
+    --with-cflags='-O2 -DDEFAULT_XSHELL="\"x-terminal-emulator -e \
+	$${prefix}/share/vile/xshell.sh\""'
+
+# install path for upstream make
+TMP = $(CURDIR)/debian/tmp
+
+# use debhelper v5
+#export DH_COMPAT = 5
+
+# add -g if DEB_BUILD_OPTIONS contains the string "debug" (policy 11.1)
+ifeq ($(findstring debug,$(DEB_BUILD_OPTIONS)),)
+    debug =
+else
+    debug = -g
+endif
+
+.PHONY: all config build install binary clean config-indep config-arch \
+    build-indep build-arch install-indep install-arch binary-indep \
+    binary-arch
+
+all: build
+
+config: config-indep config-arch
+build: build-indep build-arch
+install: install-indep install-arch
+binary: binary-indep binary-arch
+clean:
+	dh_testdir
+	dh_testroot
+	rm -f stamp-*
+	rm -rf t
+	dh_clean
+
+config-indep: $(PACKAGES.indep:%=stamp-config.%)
+config-arch: $(PACKAGES.arch:%=stamp-config.%)
+
+build-indep: $(PACKAGES.indep:%=stamp-build.%)
+build-arch: $(PACKAGES.arch:%=stamp-build.%)
+
+install-indep: $(PACKAGES.indep:%=stamp-install.%)
+install-arch: $(PACKAGES.arch:%=stamp-install.%)
+
+binary-indep: install-indep
+ifneq ($(PACKAGES.indep),)
+	rm -f $(PACKAGES.indep:%=stamp-install.%)
+	dh_testdir
+	dh_testroot
+	dh_installdocs       $(PACKAGES.indep:%=-p%)
+	dh_installman        $(PACKAGES.indep:%=-p%)
+	dh_installexamples   $(PACKAGES.indep:%=-p%)
+	dh_installchangelogs $(PACKAGES.indep:%=-p%) -k CHANGES
+	dh_compress          $(PACKAGES.indep:%=-p%)
+	dh_fixperms          $(PACKAGES.indep:%=-p%)
+	dh_installdeb        $(PACKAGES.indep:%=-p%)
+	dh_gencontrol        $(PACKAGES.indep:%=-p%)
+	dh_md5sums           $(PACKAGES.indep:%=-p%)
+	dh_builddeb          $(PACKAGES.indep:%=-p%)
+endif
+
+binary-arch: install-arch
+ifneq ($(PACKAGES.arch),)
+	rm -f $(PACKAGES.arch:%=stamp-install.%)
+	dh_testdir
+	dh_testroot
+	dh_link              $(PACKAGES.arch:%=-p%)
+	dh_installdocs       $(PACKAGES.arch:%=-p%)
+	dh_installmenu       $(PACKAGES.arch:%=-p%)
+	dh_strip             $(PACKAGES.arch:%=-p%)
+	dh_compress          $(PACKAGES.arch:%=-p%)
+	dh_fixperms          $(PACKAGES.arch:%=-p%)
+	dh_installdeb        $(PACKAGES.arch:%=-p%)
+	dh_shlibdeps         $(PACKAGES.arch:%=-p%)
+	dh_gencontrol        $(PACKAGES.arch:%=-p%)
+	dh_md5sums           $(PACKAGES.arch:%=-p%)
+	dh_builddeb          $(PACKAGES.arch:%=-p%)
+endif
+
+# these all have to be configured, made and built together
+stamp-%.vile-common stamp-%.vile-filters: stamp-%.vile
+	touch $@
+
+stamp-config.vile:
+	dh_testdir
+	rm -rf t/vile
+	mkdir -p t/vile
+	cd t/vile; $(configure)
+	touch $@
+
+stamp-config.xvile:
+	dh_testdir
+	rm -rf t/xvile
+	mkdir -p t/xvile
+	cd t/xvile; $(configure) --with-xpm --with-screen=Xaw
+	touch $@
+
+stamp-build.vile: stamp-config.vile
+	dh_testdir
+	# build in three steps so that filters aren't linked to
+	# un-needed perl libs
+	$(MAKE) -C t/vile vile                  EXTRA_CFLAGS="$(debug)"
+	$(MAKE) -C t/vile/filters         LIBS= EXTRA_CFLAGS="$(debug)"
+	$(MAKE) -C t/vile all vile-perl-api.doc EXTRA_CFLAGS="$(debug)"
+	touch $@
+
+stamp-build.xvile: stamp-config.xvile
+	dh_testdir
+	$(MAKE) -C t/xvile xvile EXTRA_CFLAGS="$(debug)"
+	touch $@
+
+stamp-install.vile: stamp-build.vile
+	dh_testdir
+	dh_testroot
+	dh_clean -k -pvile -pvile-filters -pvile-common
+
+	$(MAKE) -C t/vile DESTDIR=$(TMP) install
+	rm -f $(TMP)/usr/bin/vile-pager # examples
+	rm -f $(TMP)/usr/share/man/man1/vile.1 # docs
+	pod2man $(TMP)/usr/bin/vileget > \
+	    $(TMP)/usr/share/man/man1/vileget.1
+
+	install -d $(TMP)/usr/share/lintian/overrides
+	install -c -m 644 debian/overrides/vile \
+	    $(TMP)/usr/share/lintian/overrides
+
+	dh_movefiles -pvile -pvile-filters -pvile-common
+
+	# ensure that all file have been moved from debian/tmp
+	test `find $(TMP) ! -type d | wc -l` -eq 0
+
+	touch $@
+
+stamp-install.xvile: stamp-build.xvile
+	dh_testdir
+	dh_testroot
+	dh_clean -k -pxvile
+
+	install -d $(TMP)/usr/bin $(TMP)/etc/X11/app-defaults \
+            $(TMP)/usr/share/applications $(TMP)/usr/share/pixmaps \
+	    $(TMP)/usr/share/vile
+
+	install -c t/xvile/xvile $(TMP)/usr/bin/xvile
+	install -c macros/uxvile $(TMP)/usr/bin/uxvile
+	install -c -m 644 macros/xvile.desktop macros/uxvile.desktop \
+	    $(TMP)/usr/share/applications
+
+	install -c -m 644 debian/*.xpm $(TMP)/usr/share/pixmaps
+
+	$(MAKE) -C t/xvile DESTDIR=$(TMP) install-app install-icon
+	$(MAKE) -C t/xvile DESTDIR=$(TMP) bindir='$${datadir}' \
+	    $(TMP)/usr/share/vile/vilemenu.rc \
+	    $(TMP)/usr/share/vile/xshell.sh
+
+	dh_movefiles -pxvile
+	touch $@

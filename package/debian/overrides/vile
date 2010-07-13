@@ -1,0 +1,2 @@
+# man page is in vile-common, which vile depends upon
+vile: binary-without-manpage usr/bin/vile

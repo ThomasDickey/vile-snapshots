@@ -3,7 +3,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/awk-filt.l,v 1.24 2009/08/23 20:53:22 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/awk-filt.l,v 1.26 2010/07/12 22:09:26 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of awk
  * input text.
@@ -33,7 +33,7 @@ static int braces;
 
 BLANK		[ \t]*
 
-DSTRING		\"((\\\")|[^"\r\n])*\"
+DSTRING		\"((\\.)|[^"\\\r\n])*\"
 
 KEYWORD		[[:alpha:]_][[:alnum:]_]*
 IDENT		\$[[:alnum:]_]+
@@ -42,7 +42,7 @@ SIGN		[-+]
 INTEGER		{SIGN}?([[:digit:]]+)
 REAL		{SIGN}?([[:digit:]]*\.[[:digit:]]+)([eE]{SIGN}?[[:digit:]]+)?
 
-PATTERN		"/"(\\.|\[(\\.|.)*\]|[^ \t\r\n])*"/"
+PATTERN		"/"(\\.|\[(\\.|.)*\]|[^\t\r\n])*"/"
 
 %%
 
