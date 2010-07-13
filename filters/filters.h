@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.127 2010/05/14 10:53:09 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.128 2010/07/13 13:26:08 tom Exp $
  */
 
 #ifndef FILTERS_H
@@ -250,12 +250,12 @@ extern const char *get_symbol_table(void);
 extern const char *keyword_attr(const char *name);
 extern const char *keyword_flag(const char *name);
 extern const char *lowercase_of(const char *name);
-extern char *readline(FILE *fp, char **ptr, unsigned *len);
+extern char *readline(FILE *fp, char **ptr, size_t *len);
 extern char *skip_ident(char *src);
 extern int flt_bfr_length(void);
 extern int set_symbol_table(const char *classname);
 extern long hash_function(const char *id);
-extern void *flt_alloc(void *ptr, unsigned need, unsigned *have, unsigned size);
+extern void *flt_alloc(void *ptr, size_t need, size_t *have, size_t size);
 extern void flt_bfr_append(const char *text, int length);
 extern void flt_bfr_begin(const char *attr);
 extern void flt_bfr_embed(const char *text, int length, const char *attr);
@@ -295,7 +295,7 @@ extern char *strmalloc(const char *src);
 
 #endif
 
-extern char *flt_gets(char **ptr, unsigned *len);
+extern char *flt_gets(char **ptr, size_t *len);
 extern char *flt_put_blanks(char *string);
 extern const char *flt_name(void);
 extern const void *vl_lookup_cmd(const char *name);

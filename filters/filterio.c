@@ -1,7 +1,7 @@
 /*
  * Main program and I/O for external vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filterio.c,v 1.56 2010/05/11 22:35:45 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filterio.c,v 1.57 2010/07/13 13:29:30 tom Exp $
  *
  */
 
@@ -107,7 +107,7 @@ chop_newline(char *s)
 }
 
 char *
-flt_gets(char **ptr, unsigned *len)
+flt_gets(char **ptr, size_t *len)
 {
     return readline(my_in, ptr, len);
 }
@@ -123,7 +123,7 @@ flt_put_blanks(char *string)
 {
     char *result = skip_blanks(string);
     if (result != string)
-	flt_puts(string, result - string, "");
+	flt_puts(string, (int) (result - string), "");
     return result;
 }
 

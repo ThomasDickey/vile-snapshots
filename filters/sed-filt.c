@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/sed-filt.c,v 1.25 2010/05/11 21:32:08 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/sed-filt.c,v 1.26 2010/07/13 13:38:09 tom Exp $
  *
  * Filter to add vile "attribution" sequences to sed scripts.
  */
@@ -64,10 +64,10 @@ SkipRemaining(char *s, const char *attr)
 
     s += len;
     if (attr != Comment_attr && len > 1 && s[-2] == BACKSLASH) {
-	flt_puts(base, s - base - 2, attr);
+	flt_puts(base, (int) (s - base - 2), attr);
 	flt_puts(s - 2, 1, Literal_attr);
     } else {
-	flt_puts(base, s - base - 1, attr);
+	flt_puts(base, (int) (s - base - 1), attr);
     }
     flt_putc('\n');
     return s;
@@ -114,8 +114,8 @@ SkipLabel(char *s)
 	if (*s || tail == base) {
 	    s = SkipRemaining(base, Error_attr);
 	} else {
-	    flt_puts(base, tail - base, Ident2_attr);
-	    flt_puts(tail, s - tail, "");
+	    flt_puts(base, (int) (tail - base), Ident2_attr);
+	    flt_puts(tail, (int) (s - tail), "");
 	}
     }
     return s;
@@ -167,14 +167,14 @@ SkipPattern(char *s, int *done, int join)
 
     if (s != base) {
 	if (error) {
-	    flt_puts(base, s - base, Error_attr);
+	    flt_puts(base, (int) (s - base), Error_attr);
 	} else {
 	    if (!join)
 		flt_puts(base, 1, Action_attr);
 	    base++;
 	    if (done)
 		s--;
-	    flt_puts(base, s - base, Literal_attr);
+	    flt_puts(base, (int) (s - base), Literal_attr);
 	    if (done)
 		flt_puts(s++, 1, Action_attr);
 	}
@@ -204,7 +204,7 @@ SkipTwoPatterns(char *s, int flags)
 		break;
 	    }
 	}
-	flt_puts(base, s - base, Ident2_attr);
+	flt_puts(base, (int) (s - base), Ident2_attr);
 	s = SkipBlanks(s);
 	s = SkipError(s);
     }
@@ -234,7 +234,7 @@ SkipAddress(char *s, int *count)
     if (isdigit(CharOf(*s))) {
 	while (isdigit(CharOf(*s)))
 	    s++;
-	flt_puts(base, s - base, Number_attr);
+	flt_puts(base, (int) (s - base), Number_attr);
     } else if (*s == '$') {
 	flt_puts(s++, 1, Literal_attr);
     } else if (isSlash(*s)) {
@@ -258,7 +258,7 @@ init_filter(int before GCC_UNUSED)
 static void
 do_filter(FILE *input GCC_UNUSED)
 {
-    static unsigned used;
+    static size_t used;
     static char *line;
 
     char *s;

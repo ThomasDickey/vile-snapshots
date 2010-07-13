@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/pl-filt.c,v 1.101 2010/05/11 21:32:08 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/pl-filt.c,v 1.102 2010/07/13 13:35:01 tom Exp $
  *
  * Filter to add vile "attribution" sequences to perl scripts.  This is a
  * translation into C of an earlier version written for LEX/FLEX.
@@ -114,7 +114,7 @@ count_blanks(char *s)
 	}
 	++s;
     }
-    return s - base;
+    return (int) (s - base);
 }
 
 /******************************************************************************
@@ -186,7 +186,7 @@ is_STRINGS(char *s, int *err, int delim)
 	    }
 	    s++;
 	}
-	found = s - base;
+	found = (int) (s - base);
     }
     return found;
 }
@@ -223,7 +223,7 @@ is_KEYWORD(const char *s)
     }
     if (quote == (s - base))
 	s = base;
-    return s - base;
+    return (int) (s - base);
 }
 
 /*
@@ -256,7 +256,7 @@ is_QIDENT(char *s)
 		break;
 	}
     }
-    return s - base;
+    return (int) (s - base);
 }
 
 /*
@@ -298,7 +298,7 @@ is_NORMALVARS(const char *s, int dquoted)
 	}
 	s++;
     }
-    return (part1 && (dquoted || (squoted == part2))) ? (s - base) : 0;
+    return (part1 && (dquoted || (squoted == part2))) ? (int) (s - base) : 0;
 }
 
 static int
@@ -337,7 +337,7 @@ is_OTHERVARS(const char *s)
 	}
 	s++;
     }
-    return (part1 || part2) ? (s - base) : 0;
+    return (part1 || part2) ? (int) (s - base) : 0;
 }
 
 static int
@@ -428,7 +428,7 @@ is_NUMBER(char *s, int *err)
 	s++;
     }
 
-    return value ? (s - base) : 0;
+    return value ? (int) (s - base) : 0;
 }
 
 static char *
@@ -498,7 +498,7 @@ is_COMMENT(char *s)
 	}
 	s = t;
     }
-    return (s - base);
+    return (int) (s - base);
 }
 
 /* preprocessor stuff:
@@ -530,7 +530,7 @@ is_PREPROC(char *s)
 	    return 0;
     }
     s += is_BLANK(s);
-    return (s - base);
+    return (int) (s - base);
 }
 
 /******************************************************************************
@@ -569,7 +569,7 @@ begin_POD(char *s)
 	&& ATLEAST(s, 2)
 	&& s[0] == '='
 	&& isalpha(CharOf(s[1]))) {
-	result = s + 1 - base;
+	result = (int) (s + 1 - base);
 	while (base != s) {
 	    flt_putc(*base++);	/* skip the newlines */
 	}
@@ -601,8 +601,8 @@ begin_HERE(char *s, int *quoted)
 	s += count_blanks(s);
 	base = s;
 	if ((ok = is_QIDENT(s)) != 0) {
-	    unsigned temp = 0;
-	    char *marker = do_alloc((char *) 0, (unsigned) (ok + 1), &temp);
+	    size_t temp = 0;
+	    char *marker = do_alloc((char *) 0, (size_t) (ok + 1), &temp);
 	    char *d = marker;
 
 	    s += ok;
@@ -665,7 +665,7 @@ line_size(char *s)
 	    break;
 	s++;
     }
-    return s - base;
+    return (int) (s - base);
 }
 
 /*
@@ -732,7 +732,7 @@ is_QUOTE(char *s, int *delims)
 		 (s != base) ? (int) (s - base) : 1,
 		 (s != base) ? base : ""));
     }
-    return (s - base);
+    return (int) (s - base);
 }
 
 static int
@@ -849,7 +849,7 @@ add_to_PATTERN(char *s)
 	    s++;
 	}
 	DPRINTF(("*finally\n->%.*s\n", line_size(s), s));
-	return (s - base);
+	return (int) (s - base);
     }
     return 0;
 }
@@ -880,7 +880,7 @@ write_PATTERN(char *s, int len)
 	len -= skip;
     }
 
-    skip = skip_BLANKS(s) - s;
+    skip = (int) (skip_BLANKS(s) - s);
     if (skip) {
 	s += skip;
 	len -= skip;
@@ -955,7 +955,7 @@ write_PATTERN(char *s, int len)
 	}
     }
     if (comment)
-	first += (skip_BLANKS(s) - s);
+	first += (int) (skip_BLANKS(s) - s);
     if (comment) {
 	flt_puts(s + first, (len - first), Comment_attr);
     } else {
@@ -1199,7 +1199,7 @@ end_BACKTIC(char *s)
 	}
 	++s;
     }
-    return found ? (s - base) : 0;
+    return found ? (int) (s - base) : 0;
 }
 
 /*
@@ -1227,7 +1227,7 @@ is_GLOB(char *s)
 	    }
 	}
     }
-    return (wild && both) ? (s - base) : 0;
+    return (wild && both) ? (int) (s - base) : 0;
 }
 
 /*
@@ -1266,7 +1266,7 @@ init_filter(int before GCC_UNUSED)
 static void
 do_filter(FILE *input GCC_UNUSED)
 {
-    static unsigned used;
+    static size_t used;
     static char *line;
 
     AfterKey if_old;
@@ -1285,8 +1285,8 @@ do_filter(FILE *input GCC_UNUSED)
     int quoted = 0;
     int save;
     size_t request = 0;
-    unsigned actual = 0;
-    unsigned mark_len = 0;
+    size_t actual = 0;
+    size_t mark_len = 0;
 
     (void) input;
 
@@ -1389,7 +1389,7 @@ do_filter(FILE *input GCC_UNUSED)
 		    flt_puts(s, ok, Preproc_attr);
 		    s += ok;
 		} else if ((ok = is_COMMENT(s)) != 0) {
-		    int skip = (skip_BLANKS(s) - s);
+		    int skip = (int) (skip_BLANKS(s) - s);
 		    ok -= skip;
 		    s += skip;
 		    flt_puts(s, ok, Comment_attr);

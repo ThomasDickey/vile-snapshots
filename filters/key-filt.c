@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/key-filt.c,v 1.45 2009/10/07 10:43:14 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/key-filt.c,v 1.46 2010/07/13 13:31:15 tom Exp $
  *
  * Filter to add vile "attribution" sequences to a vile keyword file.  It's
  * done best in C because the delimiters may change as a result of processing
@@ -152,7 +152,7 @@ abbr_len(char *s)
 	    break;
 	++s;
     }
-    return (s - base);
+    return (int) (s - base);
 }
 
 static const char *
@@ -203,21 +203,21 @@ ExecClass(char *param)
     t = flt_put_blanks(param);
     s = skip_ident(t);
     if (FltOptions('c')) {
-	attr = actual_color(param, s - param, 1);
+	attr = actual_color(param, (int) (s - param), 1);
     } else {
 	attr = Ident2_attr;
     }
-    flt_puts(param, s - param, attr);
+    flt_puts(param, (int) (s - param), attr);
     if (parse_eqls_ch(&s)) {
 	t = s;
 	s = skip_ident(t);
 	if (FltOptions('c')) {
-	    attr = actual_color(t, s - t, 1);
+	    attr = actual_color(t, (int) (s - t), 1);
 	} else {
 	    if (*(attr = color_of(t, 0)) == '\0')
 		attr = Action_attr;
 	}
-	flt_puts(t, s - t, attr);
+	flt_puts(t, (int) (s - t), attr);
 	if (parse_eqls_ch(&s)) {
 	    flt_puts(s, (int) strlen(s), Literal_attr);
 	} else if (*s) {
@@ -316,7 +316,7 @@ ExecTable(char *param)
     }
 
     t = skip_ident(param);
-    flt_puts(param, t - param, Literal_attr);
+    flt_puts(param, (int) (t - param), Literal_attr);
     if (*skip_blanks(t) == '\0') {
 	flt_puts(t, (int) strlen(t), "");
     } else {
@@ -355,7 +355,7 @@ parse_directive(char *line)
 	if ((len = (unsigned) (skip_ident(s) - s)) != 0) {
 	    for (n = 0; n < sizeof(table) / sizeof(table[0]); n++) {
 		if (!strncmp(s, table[n].name, len)) {
-		    flt_puts(line, s + len - line, Ident_attr);
+		    flt_puts(line, (int) (s + len - line), Ident_attr);
 		    s = flt_put_blanks(s + len);
 		    (*table[n].func) (s);
 		    return 1;
@@ -396,13 +396,13 @@ parse_nondirective(char *s)
 	if (skip_eqls_ch(&t)) {
 	    s = skip_ident(t);
 	    if (s != t) {
-		attr1 = actual_color(t, s - t, 1);
+		attr1 = actual_color(t, (int) (s - t), 1);
 	    }
 	}
     }
 
     t = skip_ident(s = base);
-    flt_puts(s, t - s, attr0);
+    flt_puts(s, (int) (t - s), attr0);
     if (parse_eqls_ch(&t)) {
 	s = skip_ident(t);
 	if (s != t) {
@@ -434,7 +434,7 @@ init_filter(int before GCC_UNUSED)
 static void
 do_filter(FILE *input GCC_UNUSED)
 {
-    static unsigned used;
+    static size_t used;
     static char *line;
 
     char *s;

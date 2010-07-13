@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/nr-filt.l,v 1.29 2010/01/27 10:13:20 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/nr-filt.l,v 1.30 2010/07/13 13:44:40 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of NROFF
  */
@@ -32,7 +32,7 @@ write_cmd(char *text, int size)
 	    got++;
 	} else if ((got && isspace(ch)) || ((s != text) && ispunct(ch))) {
 	    if (cmd == size)
-		cmd = (s - text) + 1;
+		cmd = (int) (s - text) + 1;
 	}
     }
 

@@ -3,7 +3,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/xs-filt.l,v 1.17 2009/12/10 00:37:58 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/xs-filt.l,v 1.18 2010/07/13 13:48:27 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Perl/C
  * extension source
@@ -82,7 +82,7 @@ comment_or_preproc(char *text)
 	"ifndef",
 	"undef",
     };
-    unsigned j, k;
+    size_t j, k;
     char *base = text;
     text++;	/* skip "#" */
     while (isspace(CharOf(*text)))
@@ -92,13 +92,13 @@ comment_or_preproc(char *text)
 	if (!strncmp(tbl[j], text, k)
 	 && !isalnum(CharOf(text[k]))) {
 	    text += k;
-	    flt_puts(base, text-base, Preproc_attr);
+	    flt_puts(base, (int) (text - base), Preproc_attr);
 	    /* FIXME: this can't handle inline comment or a continuation line */
 	    flt_puts(text, (int) strlen(text), "");
 	    return;
 	}
     }
-    flt_puts(base, text-base, "");
+    flt_puts(base, (int) (text - base), "");
     flt_puts(text, (int) strlen(text), Comment_attr);
 }
 

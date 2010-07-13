@@ -3,7 +3,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/xq-filt.l,v 1.14 2010/05/11 21:47:04 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/xq-filt.l,v 1.15 2010/07/13 13:25:02 tom Exp $
  *
  * XQuery is case-sensitive
  * XQuery elements, attributes, and variables must be valid XML names
@@ -292,8 +292,8 @@ xml_command(char *text)
     const char *attr = xml_keyword_attr(name);
 
     if (!ending) {
-	unsigned need = sizeof(XMLTAGS) * Num_tags;
-	static unsigned have = 0;
+	size_t need = sizeof(XMLTAGS) * Num_tags;
+	static size_t have = 0;
 
 	Tags = type_alloc(XMLTAGS, Tags, need, &have);
 	Tags[Num_tags].name = strmalloc(text);

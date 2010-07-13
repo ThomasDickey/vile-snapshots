@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/spellflt.l,v 1.48 2010/05/11 21:39:56 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/spellflt.l,v 1.49 2010/07/13 13:47:24 tom Exp $
  *
  * Filter to add vile "attribution" sequences to misspelled words.
  */
@@ -327,7 +327,7 @@ do_filter(FILE *inputs GCC_UNUSED)
     sprintf(buffer, "%s <%s", prog, chop);
     if ((fp = pipe_open(buffer)) != 0) {
 	while (pipe_read(buffer, fp)) {
-	    unsigned len  = strlen(buffer);
+	    size_t len  = strlen(buffer);
 	    while (len-- && isspace(CharOf(buffer[len]))) {
 		buffer[len] = 0;
 	    }

@@ -3,7 +3,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/xml-filt.l,v 1.34 2010/07/11 18:12:29 Rick.Sladkey Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/xml-filt.l,v 1.35 2010/07/13 13:24:54 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of XML input
  * text.
@@ -186,8 +186,8 @@ xml_command(char *text)
     const char *attr = xml_keyword_attr(name);
 
     if (!ending) {
-	unsigned need = sizeof(XMLTAGS) * Num_tags;
-	static unsigned have = 0;
+	size_t need = sizeof(XMLTAGS) * Num_tags;
+	static size_t have = 0;
 
 	Tags = type_alloc(XMLTAGS, Tags, need, &have);
 	Tags[Num_tags].name = strmalloc(text);

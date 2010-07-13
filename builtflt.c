@@ -1,7 +1,7 @@
 /*
  * Main program and I/O for external vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/RCS/builtflt.c,v 1.84 2009/12/22 09:30:40 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/builtflt.c,v 1.85 2010/07/13 14:27:29 tom Exp $
  *
  */
 
@@ -279,7 +279,7 @@ fixup_cr_lf(char ch)
 }
 
 char *
-flt_gets(char **ptr, unsigned *len)
+flt_gets(char **ptr, size_t *len)
 {
     int need = is_header_line(mark_in, curbp) ? -1 : llength(mark_in.l);
 
@@ -475,7 +475,7 @@ flt_put_blanks(char *string)
 {
     char *result = skip_blanks(string);
     if (result != string)
-	flt_puts(string, result - string, "");
+	flt_puts(string, (int) (result - string), "");
     return result;
 }
 

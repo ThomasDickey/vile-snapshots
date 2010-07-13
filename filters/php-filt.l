@@ -3,7 +3,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/php-filt.l,v 1.21 2009/12/10 00:26:43 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/php-filt.l,v 1.22 2010/07/13 13:24:23 tom Exp $
  *
  * Filter to add vile "attribution" sequences to PHP scripts.
  * - T.Dickey
@@ -31,7 +31,7 @@ static char *Number_attr;
 static char *String_attr;
 
 static char *here_tag;
-static unsigned here_len;
+static size_t here_len;
 static int here_exp;
 
 static int got_here(char *text, int length);
