@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/m4-filt.c,v 1.35 2009/12/10 00:09:34 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/m4-filt.c,v 1.36 2010/07/13 13:32:39 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of m4
  * input text.  This is in C rather than LEX because M4's quoting delimiters
@@ -46,7 +46,7 @@ static char *Number_attr;
 /* changequote */
 typedef struct {
     char *text;
-    unsigned used, have;
+    size_t used, have;
 } Quote;
 
 typedef struct {
@@ -151,8 +151,8 @@ parse_arglist(char *name, char *s, char ***args, int *parens)
     char *r;
     char *v;
     int quoted;
-    unsigned count;
-    unsigned used;
+    size_t count;
+    size_t used;
     char *t;
     int processing;
 
@@ -215,7 +215,7 @@ parse_arglist(char *name, char *s, char ***args, int *parens)
 	    }
 	    t++;
 	}
-	flt_puts(s, t - s, "");
+	flt_puts(s, (int) (t - s), "");
 	return t;
     }
     return s;
@@ -289,7 +289,7 @@ static char *
 extract_identifier(char *s, char ***args, int *parens)
 {
     static char *name;
-    static unsigned have;
+    static size_t have;
 
     unsigned has_cpp = 0;
     unsigned extra;
@@ -318,15 +318,15 @@ extract_identifier(char *s, char ***args, int *parens)
 	    if (!strcmp(name, "dnl")) {
 		/* FIXME: GNU m4 may accept an argument list here */
 		s += strlen(s);
-		flt_puts(show, s - show, Comment_attr);
+		flt_puts(show, (int) (s - show), Comment_attr);
 	    } else if ((attr = keyword_attr(name)) != 0) {
-		flt_puts(show, s - show, attr);
+		flt_puts(show, (int) (s - show), attr);
 	    } else {
-		flt_puts(show, s - show, Ident_attr);
+		flt_puts(show, (int) (s - show), Ident_attr);
 	    }
 	    s = parse_directive(name, s, args, parens);
 	} else {
-	    flt_puts(show, s - show, Ident_attr);
+	    flt_puts(show, (int) (s - show), Ident_attr);
 	}
 #if NO_LEAKS
 	free(name);
@@ -350,7 +350,7 @@ has_endofcomment(char *s, int *level)
 	    ++s;
 	}
     }
-    return (s - base);
+    return (int) (s - base);
 }
 
 static int
@@ -370,7 +370,7 @@ has_endofliteral(char *s, int *level)
 	    ++s;
 	}
     }
-    return (s - base);
+    return (int) (s - base);
 }
 
 static char *
@@ -396,7 +396,7 @@ write_number(char *s)
 	    break;
 	}
     }
-    flt_puts(base, s - base, Number_attr);
+    flt_puts(base, (int) (s - base), Number_attr);
     return s;
 }
 
@@ -404,14 +404,14 @@ static char *
 write_literal(char *s, int *literal)
 {
     static char *buffer;
-    static unsigned have;
-    static unsigned used;
+    static size_t have;
+    static size_t used;
 
     char *result = s;
 
     if (s != 0) {
-	unsigned c_length = (unsigned) has_endofliteral(s, literal);
-	unsigned need = c_length;
+	size_t c_length = (unsigned) has_endofliteral(s, literal);
+	size_t need = c_length;
 
 	if (*literal == 0) {
 	    if (need > rightquote.used) {
@@ -473,7 +473,7 @@ init_filter(int before)
 static void
 do_filter(FILE *input GCC_UNUSED)
 {
-    static unsigned used;
+    static size_t used;
     static char *line;
 
     char *s;

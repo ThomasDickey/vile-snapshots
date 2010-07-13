@@ -6,7 +6,7 @@
  *		string literal ("Literal") support --  ben stoltz
  *		factor-out hashing and file I/O - tom dickey
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/c-filt.c,v 1.85 2010/07/11 18:12:26 Rick.Sladkey Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/c-filt.c,v 1.86 2010/07/13 13:25:50 tom Exp $
  *
  * Usage: refer to vile.hlp and doc/filters.doc .
  *
@@ -43,7 +43,7 @@ static char *
 extract_identifier(char *s)
 {
     static char *name;
-    static unsigned have;
+    static size_t have;
 
     size_t need;
     const char *attr;
@@ -135,10 +135,10 @@ write_comment(char *s, int len, int begin)
     if (begin)
 	t += 2;
     while ((nested = strstr(t, "/*")) != 0 && (nested - s) < len) {
-	flt_puts(s, nested - s, Comment_attr);
+	flt_puts(s, (int) (nested - s), Comment_attr);
 	flt_error("nested comment");
 	flt_puts(nested, 2, Error_attr);
-	len -= (nested + 2 - s);
+	len -= (int) (nested + 2 - s);
 	s = t = nested + 2;
     }
     flt_puts(s, len, Comment_attr);
@@ -157,7 +157,7 @@ write_escape(char *s, char *attr)
 	s++;
 	want--;
     }
-    flt_puts(base, s - base, attr);
+    flt_puts(base, (int) (s - base), attr);
     return s;
 }
 
@@ -308,7 +308,7 @@ write_number(char *s)
 	}
     } else {
     }
-    flt_puts(base, s - base, attr);
+    flt_puts(base, (int) (s - base), attr);
     return s;
 }
 
@@ -381,7 +381,7 @@ write_regexp(char *s)
     }
     if (!adjust)
 	++s;
-    flt_puts(base, s - base, Literal_attr);
+    flt_puts(base, (int) (s - base), Literal_attr);
     return s;
 }
 
@@ -404,11 +404,11 @@ parse_prepro(char *s, int *literal)
     if (keyword_attr(ss) == 0) {
 	char *dst = 0;
 	if (strtol(ss, &dst, 10) != 0 && dst != 0 && *dst == 0) {
-	    flt_puts(s, ss - s, Preproc_attr);
-	    flt_puts(ss, tt - ss, Number_attr);
+	    flt_puts(s, (int) (ss - s), Preproc_attr);
+	    flt_puts(ss, (int) (tt - ss), Number_attr);
 	} else {
 	    flt_error("unknown preprocessor directive");
-	    flt_puts(s, tt - s, Error_attr);
+	    flt_puts(s, (int) (tt - s), Error_attr);
 	}
 	s = tt;
     }
@@ -416,11 +416,11 @@ parse_prepro(char *s, int *literal)
     *tt = (char) save;
 
     if (isinclude) {		/* eat filename as well */
-	flt_puts(s, tt - s, attr);
+	flt_puts(s, (int) (tt - s), attr);
 	ss = tt;
 	while (isBlank(*tt))
 	    tt++;
-	flt_puts(ss, tt - ss, "");
+	flt_puts(ss, (int) (tt - ss), "");
 	s = ss = tt;
 	attr = Literal_attr;
 	while (*tt != 0) {
@@ -447,7 +447,7 @@ parse_prepro(char *s, int *literal)
 	    }
 	}
     }
-    flt_puts(s, tt - s, attr);
+    flt_puts(s, (int) (tt - s), attr);
     return tt;
 }
 
@@ -460,7 +460,7 @@ init_filter(int before GCC_UNUSED)
 static void
 do_filter(FILE *input GCC_UNUSED)
 {
-    static unsigned used;
+    static size_t used;
     static char *line;
 
     char *s;
@@ -564,7 +564,7 @@ do_filter(FILE *input GCC_UNUSED)
 		char *t = s;
 		while (*s == '#')
 		    s++;
-		flt_puts(t, s - t, ((s - t) > 2) ?
+		flt_puts(t, (int) (s - t), ((s - t) > 2) ?
 			 Error_attr : Preproc_attr);
 		was_eql = 0;
 	    } else if (ispunct(CharOf(*s))) {

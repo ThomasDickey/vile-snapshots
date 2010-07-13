@@ -1,7 +1,7 @@
 /*
  * Common utility functions for vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.153 2010/05/19 23:19:24 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.154 2010/07/13 13:27:07 tom Exp $
  *
  */
 
@@ -37,7 +37,7 @@ struct _keyword {
     char *kw_name;		/* the keyword name */
     char *kw_attr;		/* its color attributes, if any */
     char *kw_flag;		/* optional flags for the syntax parser */
-    unsigned kw_size;		/* strlen(kw_name) */
+    size_t kw_size;		/* strlen(kw_name) */
     unsigned short kw_type;	/* nonzero for classes */
     short kw_used;		/* nonzero for classes */
 };
@@ -87,16 +87,16 @@ static CLASS *current_class;
  */
 static char *flt_bfr_text = 0;
 static const char *flt_bfr_attr = "";
-static unsigned flt_bfr_used = 0;
-static unsigned flt_bfr_size = 0;
+static size_t flt_bfr_used = 0;
+static size_t flt_bfr_size = 0;
 
 /*
  * OpenKeywords() function data
  */
 static char *str_keyword_name = 0;
 static char *str_keyword_file = 0;
-static unsigned len_keyword_name = 0;
-static unsigned len_keyword_file = 0;
+static size_t len_keyword_name = 0;
+static size_t len_keyword_file = 0;
 
 /******************************************************************************
  * Private functions                                                          *
@@ -361,7 +361,7 @@ FindIdentifier(const char *name)
 	}
     }
 #else
-    unsigned size;
+    size_t size;
     if (name != 0 && (size = strlen(name)) != 0) {
 	int Index = hash_function(name);
 
@@ -407,7 +407,7 @@ OpenKeywords(const char *table_name)
 
     FILE *fp;
     const char *path;
-    unsigned need;
+    size_t need;
     char myLeaf[20];
 
     need = sizeof(suffix) + strlen(table_name) + 2;
@@ -507,10 +507,10 @@ ParseDirective(char *line)
     return 0;
 }
 
-static unsigned
+static size_t
 TrimBlanks(char *src)
 {
-    unsigned len = strlen(src);
+    size_t len = strlen(src);
 
     while (len != 0
 	   && isspace(CharOf(src[len - 1])))
@@ -550,7 +550,7 @@ class_attr(const char *name)
 }
 
 void *
-flt_alloc(void *ptr, unsigned need, unsigned *have, unsigned size)
+flt_alloc(void *ptr, size_t need, size_t *have, size_t size)
 {
     need += (2 * size);		/* allow for trailing null, etc */
     if ((need > *have) || (ptr == 0)) {
@@ -571,7 +571,7 @@ flt_alloc(void *ptr, unsigned need, unsigned *have, unsigned size)
 void
 flt_bfr_append(const char *text, int length)
 {
-    flt_bfr_text = do_alloc(flt_bfr_text, flt_bfr_used + (unsigned) length, &flt_bfr_size);
+    flt_bfr_text = do_alloc(flt_bfr_text, flt_bfr_used + (size_t) length, &flt_bfr_size);
     if (flt_bfr_text != 0) {
 	strncpy(flt_bfr_text + flt_bfr_used, text, (unsigned) length);
 	flt_bfr_used += (unsigned) length;
@@ -946,7 +946,7 @@ flt_read_keywords(const char *table_name)
     FILE *kwfile;
     char *line = 0;
     char *name;
-    unsigned line_len = 0;
+    size_t line_len = 0;
     FLTCHARS fltchars;
 
     VERBOSE(1, ("flt_read_keywords(%s)", table_name));
@@ -1179,7 +1179,7 @@ const char *
 lowercase_of(const char *text)
 {
     static char *name;
-    static unsigned used;
+    static size_t used;
     unsigned n;
     const char *result;
 
@@ -1288,10 +1288,10 @@ parse_keyword(char *name, int classflag)
 }
 
 char *
-readline(FILE *fp, char **ptr, unsigned *len)
+readline(FILE *fp, char **ptr, size_t *len)
 {
     char *buf = *ptr;
-    unsigned used = 0;
+    size_t used = 0;
 
     if (buf == 0) {
 	*len = BUFSIZ;

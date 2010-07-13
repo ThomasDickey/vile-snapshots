@@ -6,7 +6,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/rpm-filt.l,v 1.30 2010/07/12 09:02:34 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/rpm-filt.l,v 1.31 2010/07/13 13:45:53 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of rpm spec-file.
  */
@@ -26,7 +26,7 @@ static char *String_attr;
 
 static int strip_tabs;
 static char *here_tag;
-static unsigned here_len;
+static size_t here_len;
 static int here_exp;
 
 #include <fltstack.h>
@@ -191,7 +191,7 @@ SECTION		%{IDENT}
 <HEREDOC>^[\t]*{QIDENT}$ {
 			    int used = 0;
 			    if (strip_tabs) {
-				used = skip_blanks(yytext) - (char *) yytext;
+				used = (int) (skip_blanks(yytext) - (char *) yytext);
 				if (used != 0)
 				    flt_bfr_append(yytext, used);
 			    }

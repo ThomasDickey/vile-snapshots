@@ -7,7 +7,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/makefilt.l,v 1.60 2009/10/07 09:40:11 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/makefilt.l,v 1.61 2010/07/13 13:44:18 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Makefile
  *
@@ -216,17 +216,17 @@ write_delimited_unit(char *text, char **attr, const char **gaps)
 	pwhite++;
     }
     if (pwhite > panchor)
-	flt_puts(panchor, pwhite - panchor, *gaps);
+	flt_puts(panchor, (int) (pwhite - panchor), *gaps);
     panchor = ptoken = pwhite;
     while (*ptoken && (! isspace(CharOf(*ptoken))))
 	ptoken++;
-    flt_puts(panchor, ptoken - panchor, *attr);
+    flt_puts(panchor, (int) (ptoken - panchor), *attr);
     if (isspace(CharOf(*ptoken))) {
 	panchor = ptoken;
 	pwhite	= ptoken + 1;  /* advance beyond initial white space byte */
 	while (isspace(CharOf(*pwhite)))
 	    pwhite++;
-	flt_puts(panchor, pwhite - panchor, *gaps);
+	flt_puts(panchor, (int) (pwhite - panchor), *gaps);
 	pnxt_unit = pwhite;
     } else
 	pnxt_unit = ptoken;

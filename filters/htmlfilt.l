@@ -8,7 +8,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/htmlfilt.l,v 1.103 2009/12/10 00:23:36 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/htmlfilt.l,v 1.104 2010/07/13 13:41:32 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of HTML input
  * text.
@@ -362,7 +362,7 @@ CSS_INVALID	({CSS_INVALID1}|{CSS_INVALID2})
 			      }
 			  }
 			  if (next != 0) {
-			      int used = last - (char *) yytext;
+			      int used = (int) (last - (char *) yytext);
 			      WriteToken3(Comment_attr, used);
 			      used = (int) strlen(next);
 			      while (used-- > 0)
@@ -478,7 +478,7 @@ html_quotes(char *text, int len, int state, int which)
      */
     if (got_language2) {
 	static char *temp;
-	static unsigned used = 0;
+	static size_t used = 0;
 	size_t need = (temp ? strlen(temp) : 0) + (size_t) (len + 1);
 
 	temp = do_alloc(temp, need, &used);
@@ -555,12 +555,12 @@ may_resume_html(char *text)
     char *next;
     int save;
 
-    flt_puts(text, left - text, "");
+    flt_puts(text, (int) (left - text), "");
     flt_puts(left, 1, Keyword_attr);
     next = ++left;
     while (isspace(CharOf(*next)))
 	next++;
-    flt_puts(left, next-left, "");
+    flt_puts(left, (int) (next-left), "");
     left = next;
     while (!isspace(CharOf(*next)) && *next != '>')
 	next++;
@@ -680,7 +680,7 @@ language2keys(const char *name)
     if (name != 0) {
 	char *name2 = strmalloc(name);
 	const char *lowered = lowercase_of(name2);
-	unsigned len = strlen(lowered);
+	size_t len = strlen(lowered);
 	char temp[80];
 
 	if ((len + 1) >= sizeof(temp))

@@ -6,7 +6,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/sh-filt.l,v 1.108 2010/07/13 00:27:04 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/sh-filt.l,v 1.109 2010/07/13 13:46:24 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Shell script.
  */
@@ -44,7 +44,7 @@ static char *String_attr;
 
 static int strip_tabs;
 static char *here_tag;
-static unsigned here_len;
+static size_t here_len;
 static int here_exp;
 
 static int got_here(const char *text, int length);
@@ -166,7 +166,7 @@ DASHIDENT	{NAME0}{NAME}*("-"{NAME}{NAME2}*)*
 <HEREDOC>^[\t]*{QIDENT}$ {
 			    int used = 0;
 			    if (strip_tabs) {
-				used = skip_blanks(yytext) - (char *) yytext;
+				used = (int) (skip_blanks(yytext) - (char *) yytext);
 				if (used != 0)
 				    flt_bfr_append(yytext, used);
 			    }
@@ -189,7 +189,7 @@ DASHIDENT	{NAME0}{NAME}*("-"{NAME}{NAME2}*)*
 <HEREDOC2>^[^\r\n]+ {
 			    int used = 0;
 			    if (strip_tabs) {
-				used = skip_blanks(yytext) - (char *) yytext;
+				used = (int) (skip_blanks(yytext) - (char *) yytext);
 				if (used != 0)
 				    flt_bfr_append(yytext, used);
 			    }

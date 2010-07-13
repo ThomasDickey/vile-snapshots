@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/rubyfilt.c,v 1.50 2010/05/12 08:43:09 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/rubyfilt.c,v 1.51 2010/07/13 13:37:15 tom Exp $
  *
  * Filter to add vile "attribution" sequences to ruby scripts.  This is a
  * translation into C of an earlier version written for LEX/FLEX.
@@ -228,7 +228,7 @@ is_STRINGS(char *s, int *err, int left_delim, int right_delim, int single)
 	    }
 	    s++;
 	}
-	found = s - base;
+	found = (int) (s - base);
 	DPRINTF(("...found(%d)\n", found));
     }
     return found;
@@ -259,7 +259,7 @@ is_QIDENT(char *s)
 	    break;
 	}
     }
-    return s - base;
+    return (int) (s - base);
 }
 
 /*
@@ -340,7 +340,7 @@ is_INSTANCE(char *s)
 	if (*s == '@')
 	    s++;
 	if ((found = is_KEYWORD(s)) != 0)
-	    found += (s - base);
+	    found += (int) (s - base);
     }
     return found;
 }
@@ -487,7 +487,7 @@ is_NUMBER(char *s, int *err)
 	s++;
     }
 
-    return value ? (s - base) : 0;
+    return value ? (int) (s - base) : 0;
 }
 
 /*
@@ -511,7 +511,7 @@ is_COMMENT(char *s)
 	}
 	s = t;
     }
-    return (s - base);
+    return (int) (s - base);
 }
 
 /******************************************************************************
@@ -558,7 +558,7 @@ end_POD(char *s)
 static void
 make_here_tag(char *value, int quote, int strip)
 {
-    unsigned size = 0;
+    size_t size = 0;
     HERE_TAGS *data = type_alloc(HERE_TAGS, (char *) 0, 1, &size);
 
     if (data != 0) {
@@ -617,7 +617,7 @@ begin_HERE(char *s)
 	    ++s;
 	}
 	if ((ok = is_QIDENT(s)) != 0) {
-	    unsigned temp = 0;
+	    size_t temp = 0;
 
 	    s += ok;
 	    quote = 0;
@@ -636,7 +636,7 @@ begin_HERE(char *s)
 	    }
 	}
     }
-    return (marker ? (s - base) : 0);
+    return (marker ? (int) (s - base) : 0);
 }
 
 static char *
@@ -651,7 +651,7 @@ skip_BLANKS(char *s)
 	++s;
     }
     if (s != base) {
-	flt_puts(base, s - base, "");
+	flt_puts(base, (int) (s - base), "");
     }
     return s;
 }
@@ -778,7 +778,7 @@ is_REGEXP(char *s, int left_delim, int right_delim)
 	    while (MORE(s) && isalpha(CharOf(*s))) {
 		++s;
 	    }
-	    found = s - base;
+	    found = (int) (s - base);
 	    break;
 	} else {
 	    ++s;
@@ -934,7 +934,7 @@ line_size(char *s)
 	    break;
 	s++;
     }
-    return s - base;
+    return (int) (s - base);
 }
 
 static char *
@@ -1022,7 +1022,7 @@ put_remainder(char *s, char *attr, int quoted)
 static char *
 put_COMMENT(char *s, int ok)
 {
-    int skip = (skip_BLANKS(s) - s);
+    int skip = (int) (skip_BLANKS(s) - s);
     ok -= skip;
     s += skip;
     flt_puts(s, ok, Comment_attr);
@@ -1103,7 +1103,7 @@ put_REGEXP(char *s, int length, int delim)
 	    while (MORE(s) && isalpha(CharOf(*s))) {
 		++s;
 	    }
-	    flt_bfr_embed(last, s - last, Keyword_attr);
+	    flt_bfr_embed(last, (int) (s - last), Keyword_attr);
 	    break;
 	} else {
 	    flt_bfr_append(s, 1);
@@ -1126,10 +1126,10 @@ init_filter(int before GCC_UNUSED)
 static void
 do_filter(FILE *input GCC_UNUSED)
 {
-    static unsigned used;
+    static size_t used;
     static char *line;
 
-    unsigned actual = 0;
+    size_t actual = 0;
     size_t request = 0;
     States state = eCODE;
     TType this_tok = tNULL;

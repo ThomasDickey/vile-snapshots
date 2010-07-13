@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/rcs-filt.l,v 1.18 2009/12/28 00:36:42 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/rcs-filt.l,v 1.19 2010/07/13 13:45:25 tom Exp $
  *
  * Filter to add vile "attribution" sequences to RCS archives.
  */
@@ -71,7 +71,7 @@ find_ident(char *first)
  * keywords.
  */
 static char  *save_bfr;
-static unsigned save_max;
+static size_t save_max;
 static size_t save_len;
 
 static void
@@ -98,11 +98,11 @@ flush_quoted(void)
 	    if (ident != 0) {
 		char *next = strchr(ident+1, '$');
 		if (ident != base)
-		    flt_puts(base, ident - base, String_attr);
+		    flt_puts(base, (int) (ident - base), String_attr);
 		base = next + 1;
-		flt_puts(ident, base - ident, Ident2_attr);
+		flt_puts(ident, (int) (base - ident), Ident2_attr);
 	    } else {
-		flt_puts(base, last - base, String_attr);
+		flt_puts(base, (int) (last - base), String_attr);
 		break;
 	    }
 	}
