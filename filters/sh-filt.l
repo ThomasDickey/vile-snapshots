@@ -6,7 +6,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/sh-filt.l,v 1.106 2009/12/27 22:41:20 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/sh-filt.l,v 1.108 2010/07/13 00:27:04 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Shell script.
  */
@@ -156,7 +156,6 @@ DASHIDENT	{NAME0}{NAME}*("-"{NAME}{NAME2}*)*
 <HEREDOC>{BACKTIC2_DOWN} { handle_backtic(yytext, yyleng, yyleng, 1); }
 <HEREDOC>{BACKTIC1_DOWN} { handle_backtic(yytext, yyleng, yyleng, 1); }
 <HEREDOC>{BACKTIC}	{ handle_backtic(yytext, yyleng, yyleng, -1); }
-<HEREDOC>\\\$		{ flt_bfr_append(yytext, yyleng); }
 <HEREDOC>{IDENT1}	{ if (here_exp) {
 			      flt_bfr_embed(yytext, yyleng, Ident_attr);
 			  } else {
@@ -179,7 +178,11 @@ DASHIDENT	{NAME0}{NAME}*("-"{NAME}{NAME2}*)*
 				flt_bfr_append(yytext, yyleng);
 			    }
 			}
-<HEREDOC>[^\r\n\$]+	{ flt_bfr_append(yytext, yyleng); }
+<HEREDOC>\\[\$\`\"\\\n]	{
+			  flt_bfr_embed(yytext, 1, Action_attr);
+			  flt_bfr_embed(yytext+1, 1, String_attr);
+			}
+<HEREDOC>[^\r\n\\\$]+	{ flt_bfr_append(yytext, yyleng); }
 <HEREDOC>\n		{ flt_bfr_append(yytext, yyleng); }
 <HEREDOC>.		{ flt_bfr_append(yytext, yyleng); }
 

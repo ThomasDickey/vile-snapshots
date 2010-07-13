@@ -1,0 +1,45 @@
+This package was debianized by Brendan O'Dea <bod@debian.org> on
+Tue, 28 Sep 1999 14:27:29 +1000.
+
+It was downloaded from:
+
+    <URL:ftp://dickey.his.com/vile/>
+
+Upstream Authors:
+
+    Tom Dickey <dickey@clark.net>, Kevin Buettner <kev@primenet.com>
+    and Paul Fox <pgf@foxharp.boston.ma.us>.
+
+Copyright:
+
+    Previous versions of vile were limited to non-commercial use due
+    to their inclusion of code from versions of MicroEMACS which were
+    restricted in that way.  in the current version of vile, every
+    attempt has been made to ensure that this later code has been
+    removed or rewritten, returning vile's original basis to public
+    domain status.  the current version of vile, however, is _not_ in
+    the public domain -- it is released under the provisions of the
+    GNU General Public License.
+
+    On Debian GNU/Linux systems, the complete text of the GNU General
+    Public License can be found in `/usr/share/common-licenses/GPL-2'.
+
+Copyright notices appearing in the code:
+
+    Copyright (c) 1986 Dana L. Hoggatt
+    Copyright (c) 1986 University of Toronto
+    Copyright (c) 1990 Paul Fox
+    Copyright (c) 1990, 1995-1999 Paul Fox
+    Copyright (c) 1990, 1995-2000 Paul Fox
+    Copyright (c) 1990, 1995-2001 Paul Fox
+    Copyright (c) 1990-1999 Paul Fox
+    Copyright (c) 1990-2000 Paul Fox and Thomas Dickey
+    Copyright (c) 1991 J. Alan Eldridge
+    Copyright (c) 1992-2001 Paul Fox and Thomas Dickey
+    Copyright (c) 1995-1999 Paul Fox and Thomas Dickey
+    Copyright (c) 1995-2001 Paul Fox, Tom Dickey, and Kevin Buettner
+    Copyright (c) 1997-1999 Thomas E. Dickey
+    Copyright (c) 1998 Clark Morgan
+    Copyright (c) 1998 J. Chris Coppick
+    Copyright (c) 1998-2000 Clark Morgan
+    Copyright (c) Tom Dickey 1997-2001

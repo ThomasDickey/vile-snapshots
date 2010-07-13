@@ -1,0 +1,2 @@
+?package(vile):needs="text" section="Applications/Editors" title="Vile" \
+    command="/usr/bin/vile"

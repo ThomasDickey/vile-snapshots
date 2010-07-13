@@ -1,0 +1,15 @@
+#!/bin/sh -e
+
+update-alternatives --install /usr/bin/editor editor /usr/bin/vile 50 \
+    --slave /usr/share/man/man1/editor.1.gz editor.1.gz \
+	    /usr/share/man/man1/vile.1.gz
+
+update-alternatives --install /usr/bin/view view /usr/bin/vile 50 \
+    --slave /usr/share/man/man1/view.1.gz view.1.gz \
+	    /usr/share/man/man1/vile.1.gz
+
+update-alternatives --install /usr/bin/vi vi /usr/bin/vile 20 \
+    --slave /usr/share/man/man1/vi.1.gz vi.1.gz \
+	    /usr/share/man/man1/vile.1.gz
+
+#DEBHELPER#
