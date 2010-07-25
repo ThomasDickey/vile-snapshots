@@ -3,7 +3,7 @@
  *	Original interface by Otto Lind, 6/3/93
  *	Additional map and map! support by Kevin Buettner, 9/17/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/map.c,v 1.117 2009/10/31 16:23:47 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/map.c,v 1.119 2010/07/25 09:13:33 tom Exp $
  *
  */
 
@@ -519,32 +519,32 @@ map_common(struct maprec **mpp, const char *bufname, UINT remapflag)
 
 #if OPT_SHOW_MAPS
     if (end_named_cmd()) {
-	return show_mapped_chars(bufname);
-    }
+	status = show_mapped_chars(bufname);
+    } else
 #endif
-    tb_scopy(&kbuf, "");
-    status = kbd_reply("change this string: ", &kbuf, eol_history,
-		       ' ', KBD_NOMAP | KBD_NOEVAL, no_completion);
-    if (status != TRUE)
-	return status;
+    {
+	tb_scopy(&kbuf, "");
+	status = kbd_reply("change this string: ", &kbuf, eol_history,
+			   ' ', KBD_NOMAP | KBD_NOEVAL, no_completion);
+	if (status == TRUE) {
+	    hst_glue(' ');
+	    tb_scopy(&val, "");
+	    if (!clexec) {
+		status = kbd_reply("to this new string: ", &val, eol_history,
+				   '\n', KBD_NOMAP, no_completion);
+	    } else {
+		(void) mac_literalarg(&val);	/* consume to end of line */
+		status = tb_length(val) > 1;
+	    }
+	    if (status == TRUE) {
+		reverse_abbr(mpp, bufname, kbuf);
 
-    hst_glue(' ');
-    tb_scopy(&val, "");
-    if (!clexec) {
-	status = kbd_reply("to this new string: ", &val, eol_history,
-			   '\n', KBD_NOMAP, no_completion);
-    } else {
-	(void) mac_literalarg(&val);	/* consume to end of line */
-	status = tb_length(val) > 1;
+		status = addtomap(mpp, tb_values(kbuf), tb_length0(kbuf),
+				  MAPF_USERTIMER | remapflag, -1, tb_values(val));
+		relist_mappings(bufname);
+	    }
+	}
     }
-    if (status != TRUE)
-	return status;
-
-    reverse_abbr(mpp, bufname, kbuf);
-
-    status = addtomap(mpp, tb_values(kbuf), tb_length0(kbuf),
-		      MAPF_USERTIMER | remapflag, -1, tb_values(val));
-    relist_mappings(bufname);
     return status;
 }
 

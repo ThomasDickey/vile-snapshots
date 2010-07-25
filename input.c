@@ -44,7 +44,7 @@
  *	tgetc_avail()     true if a key is avail from tgetc() or below.
  *	keystroke_avail() true if a key is avail from keystroke() or below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.335 2010/05/14 22:16:58 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.336 2010/07/25 09:29:16 tom Exp $
  *
  */
 
@@ -1912,9 +1912,11 @@ kbd_reply(const char *prompt,	/* put this out first */
 	}
 
 	TRACE(("...getting token from: %s\n", str_visible0(execstr)));
-	execstr = ((options & KBD_REGLUE) != 0 && pushed_back)
-	    ? get_token2(execstr, extbuf, endfunc, eolchar, &actual)
-	    : get_token(execstr, extbuf, endfunc, eolchar, &actual);
+	execstr = (dontmap
+		   ? get_token1(execstr, extbuf, endfunc, eolchar, &actual)
+		   : (((options & KBD_REGLUE) != 0 && pushed_back)
+		      ? get_token2(execstr, extbuf, endfunc, eolchar, &actual)
+		      : get_token(execstr, extbuf, endfunc, eolchar, &actual)));
 	StrToBuff(*extbuf);	/* FIXME: get_token should use TBUFF */
 	TRACE(("...got token, result:  %s\n", tb_visible(*extbuf)));
 	status = (tb_length(*extbuf) != 0);

@@ -4,7 +4,7 @@
  *	original by Daniel Lawrence, but
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.335 2010/05/03 23:29:41 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.336 2010/07/25 10:40:24 tom Exp $
  *
  */
 
@@ -1110,6 +1110,67 @@ get_token(char *src, TBUFF **tok, int (*endfunc) (EOL_ARGS), int eolchar, int *a
 {
     tb_init(tok, EOS);
     return get_token2(src, tok, endfunc, eolchar, actual);
+}
+
+/*
+ * This is used for the "map" command, which doesn't honor anything except ^V.
+ */
+char *
+get_token1(char *src, TBUFF **tok, int (*endfunc) (EOL_ARGS), int eolchar, int *actual)
+{
+    int c, chr;
+
+    if (actual != 0)
+	*actual = EOS;
+    if (src == 0)
+	return src;
+
+    /* first scan past any whitespace in the source string */
+    src = skip_space_tab(src);
+
+    /* scan through the source string, which may be quoted */
+    while ((c = *src) != EOS) {
+	if (c == quotec) {
+	    ++src;
+	}
+#if OPT_MODELINE
+	/*
+	 * Multiple settings on the line may be separated by colons.
+	 */
+	else if (c == ':' && in_modeline) {
+	    if (actual != 0)
+		*actual = ' ';
+	    src++;
+	    break;
+	} else
+#endif
+	if (c == eolchar) {
+	    if (actual != 0)
+		*actual = *src;
+	    if (!isBlank(c))
+		src++;
+	    break;
+	} else if (endfunc(tb_values(*tok), tb_length(*tok), c, eolchar)) {
+	    if (actual != 0)
+		*actual = *src;
+	    break;
+	} else if (isBlank(c)) {
+	    if (actual != 0)
+		*actual = *src;
+	    break;
+	}
+
+	chr = *src++;		/* record the character */
+	tb_append(tok, chr);
+    }
+
+    /* scan past any whitespace remaining in the source string */
+    src = skip_space_tab(src);
+    token_ended_line = isreturn(*src) || *src == EOS;
+
+    tb_append(tok, EOS);
+
+    return src;
 }
 
 /*
