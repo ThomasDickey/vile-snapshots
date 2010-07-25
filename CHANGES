@@ -1,5 +1,11 @@
 Changes for vile 9.8 (released ??? ??? ?? ????)
 
+ 20100725 (zg)
+	> Tom Dickey:
+	+ correct scripting for map/map! commands to allow ^V to escape any
+	  character, as well as ignoring single/double quotes and backslashes
+	  (report by Larry Gensch).
+
  20100713 (zf)
 	> Rick Sladkey:
 	+ add support for C# verbatim string literals to c-filter.c

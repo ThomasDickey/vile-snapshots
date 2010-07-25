@@ -1,3 +1,9 @@
+vile (9.7zg) unstable; urgency=low
+
+  * fixes for map command
+
+ -- Thomas E. Dickey <dickey@invisible-island.net>  Sun, 25 Jul 2010 06:30:51 -0400
+
 vile (9.7zf) unstable; urgency=low
 
   * add Debian scripts to upstream source, for test-builds.

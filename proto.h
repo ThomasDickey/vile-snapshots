@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.707 2010/06/09 20:55:37 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.708 2010/07/25 09:23:41 tom Exp $
  *
  */
 
@@ -467,6 +467,7 @@ extern char * get_xshellflags (void);
 extern UINT mac_tokens (void);
 extern char * get_directory (void);
 extern char * get_token (char *src, TBUFF **tok, int (*endfunc) (EOL_ARGS), int eolchar, int *actual);
+extern char * get_token1 (char *src, TBUFF **tok, int (*endfunc) (EOL_ARGS), int eolchar, int *actual);
 extern char * get_token2 (char *src, TBUFF **tok, int (*endfunc) (EOL_ARGS), int eolchar, int *actual);
 extern char * mac_tokval (TBUFF **tok);
 extern char * mac_unquotedarg (TBUFF **tok);
