@@ -4,7 +4,7 @@
  *	original by Daniel Lawrence, but
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.336 2010/07/25 10:40:24 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.337 2010/07/25 20:15:32 tom Exp $
  *
  */
 
@@ -1131,7 +1131,8 @@ get_token1(char *src, TBUFF **tok, int (*endfunc) (EOL_ARGS), int eolchar, int *
     /* scan through the source string, which may be quoted */
     while ((c = *src) != EOS) {
 	if (c == quotec) {
-	    ++src;
+	    if (*++src == EOS)
+		break;
 	}
 #if OPT_MODELINE
 	/*
