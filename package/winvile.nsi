@@ -1,9 +1,9 @@
-; $Id: winvile.nsi,v 1.5 2008/06/14 12:07:42 tom Exp $
+; $Id: winvile.nsi,v 1.6 2010/08/08 17:56:43 tom Exp $
 ; Script generated with the Venis Install Wizard
 
 ; Define your application name
 !define APPNAME "WinVile"
-!define APPNAMEANDVERSION "WinVile 9.7"
+!define APPNAMEANDVERSION "WinVile 9.8"
 
 ; Main Install settings
 Name "${APPNAMEANDVERSION}"

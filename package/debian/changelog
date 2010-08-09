@@ -1,3 +1,9 @@
+vile (9.8) unstable; urgency=low
+
+  * major release
+
+ -- Thomas E. Dickey <dickey@invisible-island.net>  Sun, 08 Aug 2010 13:59:07 -0400
+
 vile (9.7zg) unstable; urgency=low
 
   * fixes for map command
