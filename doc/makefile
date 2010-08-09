@@ -1,5 +1,8 @@
-# $Header: /users/source/archives/vile.vcs/doc/RCS/makefile,v 1.15 2010/01/03 20:53:14 tom Exp $
+# $Header: /users/source/archives/vile.vcs/doc/RCS/makefile,v 1.16 2010/08/08 18:05:39 tom Exp $
 # construct ".doc" and ".hlp" files from the ".html" files
+
+# NOTE: the perl script uses the version from the running copy of vile rather
+# than the source, to apply the version number to .doc files.
 
 # list the html files in the order needed for table of contents
 SOURCES = \

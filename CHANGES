@@ -1,4 +1,9 @@
-Changes for vile 9.8 (released ??? ??? ?? ????)
+Changes for vile 9.8 (released Sun Aug 08 2010)
+
+ 20100808
+	> Tom Dickey:
+	+ mark 9.8 release
+	+ move rpm spec-file to package directory.
 
  20100725 (zg)
 	> Tom Dickey:

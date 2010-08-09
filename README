@@ -1,5 +1,5 @@
 
-README for vile, version 9.7
+README for vile, version 9.8
 ----------------------------
 
 vile is a text editor which is extremely compatible with vi in terms
@@ -1730,6 +1730,422 @@ June 2008,
 
 	none
 
+August 2010,
+    vile 9.8 is released.  The goal of this release is to fill in the remainder
+    of the UTF-8 support.
+
+    Highlights since 9.7 (aside from build- and bug-fixes):
+
+    General changes:
+
+	+ many improvements to UTF-8, for regular expressions and input.
+
+	+ implement user-definable operators
+
+	+ vile.hlp and all ".doc" plain-text files are generated from html.
+
+	  http://invisible-island.net/vile/vile-toc.html
+
+	+ highlight matches in which-keywords, etc., and put a hyperlink on the
+	  highlighted text to view the corresponding file.
+
+	+ add a brief mode format "%M" for modeline-format
+
+	+ improve checks for insecure file permissions.
+
+	+ improve which-source and which-exec commands, showing which files
+	  fail the checks for insecure permissions.
+
+	+ new configure script options:
+
+	  + --with-symlink, which augments --program-suffix to make it
+	    simple(r) to install versioned binaries.
+
+	  + options for transforming program name upon install:
+	    -- program-prefix, --program-suffix, --program-transform-name
+
+    Locale Improvements:
+
+	+ add environment variable VILE_LOCALE_MAPPING to help with special
+	  cases of associating wide/narrow locales, e.g., where the narrow
+	  locale is only available under a non-empty suffix.
+
+	+ regular expressions support character classes for UTF-8.
+
+	+ regular expressions support \< and \> markers for UTF-8.
+
+	+ format-til, lower-til, upper-til and flip-til work with UTF-8
+
+	+ xvile uses \uXXXX format when the font does not contain a glyph for a
+	  given character.
+
+	+ accept ^VUddddd input for Unicode in decimal (base ten).
+
+    New Commands:
+
+	+ new command-line option "-F" tells vile to only run the syntax
+	  filters for the given files, writing the attributed text to the
+	  standard output.  Used this option to highlight the code-examples in
+	  vile's html and documentation.
+
+	+ added several "list-XXX" aliases to match "show-XXX" commands, for
+	  consistency.
+
+	+ "append-number", "insert-number", "overwrite-number" commands work
+	  with characters entered as numbers.
+
+	+ "define-menu-entry" modifies xvile menu entries.
+
+	+ "set-extra-colors" allows setting extra colors for special buffers
+	  such as [Settings].
+
+	+ "show-filtercolors" macro shows the class names and their colors for
+	  the current majormode.
+
+	+ "show-extra-colors" shows classes and colors modified by
+	  "set-extra-colors".
+
+	+ "show-local-modes" is an easier-to-remember variation for the
+	  count+"show-modes" combination.
+
+	+ "show-undo-stack" shows the contents of the undo-stack.
+
+	+ "show-wide-printable" provides a way to see details for other "pages"
+	  than the ASCII/Latin-1 0-255 code.
+
+	+ "store-operator" stores a macro which is treated as an operator.
+
+    New Modes:
+
+	+ "spaces-after-sentence" is now a buffer mode, to allow it to be part
+	  of a majormode.
+
+	+ "check-access" makes the check for insecure file-permissions
+	  configurable by the user.
+
+	+ "percent-autocolor" can be used to override the autocolor mode for
+	  very large files.
+
+	+ "reuse-position" allows users to specify that vile should restore the
+	  current line/column position when (re)displaying a scratch buffer
+	  built with liststuff.
+
+    New Variables and Functions:
+
+	+ &bchanged, &fchanged and state variables $bchanged (same as
+	  $modified) and $fchanged make it simpler for scripts to check if
+	  buffer/file timestamps differ.
+
+	+ $cfgopts now shows drivers (ansi, borland, ntcons, ntwin, os2vio,
+	  vmsvt) and other useful settings (iconv, multibyte).
+
+	+ $cmd-encoding variable allows control of minibuffer's encoding
+
+	+ $cmd-motion variable is used in user-defined operators.
+
+	+ $font is always available, but readonly for non-GUI configurations.
+
+	+ $kill-size and $kill-limit variables to improve scripting with the
+	  $kill variable.
+
+	+ $latin1-expr variable specifies whether a derived narrow locale
+	  really has Latin1 (ISO-8859-1) encoding.
+
+	+ $modeline-limit limits the offset into each line that vile scans for
+	  modelines.
+
+	+ $term-cols, $term-lines and $term-resizes give the terminal
+	  dimensions, and tell if it is in a resizable window.
+
+	+ $title-encoding controls whether vile 8-bit or UTF-8 encoding is used
+	  when setting xterm title.
+
+    Syntax Filters:
+
+	+ new "-c" option to vile-key-filt tells it to display tokens in their
+	  final color rather than based on syntax.
+
+	+ new "-Q" option for all syntax filters makes the filter write a
+	  ".keyword" table to stderr to show the effect of the "-k" option.
+
+	+ extend syntax keyword parsing to allow flags to be set for each
+	  keyword, e.g., to mark keywords that are used to delimit comments.
+
+	+ vile-awk-filt improvements
+
+	  + highlight inline comments.
+
+	  + highlight regular expression used as parameter, e.g., in sub().
+
+	  + change $0, etc., to Ident2 class for consistency with other
+filters.
+
+	  + highlight some cases of unbalanced right-parenthesis or
+	    curly-braces.
+
+	  + correct DSTRING expression, to handle "\\\\" value.
+
+	  + accept literal spaces in patterns.
+
+	+ vile-basic-filt improvements
+
+	  + allow continuation marker in comments
+
+	  + support .NET-style preprocessor directives.
+
+	+ vile-ecl-filt (ECLiPSe/Prolog)
+
+	  + fix typo in STARTQUERY pattern
+
+	  + parse based-numbers.
+
+	  + highlight strings and numbers.
+
+	+ vile-html-filt improvements
+
+	  + "<%" "%>" are recognized anywhere - not just outside tags.
+
+	  + ensure that "server" is the tag, not one of the named values, e.g.,
+	    "<server>" vs "<foo server=bar>".
+
+	  + use language value in script tag, e.g., to handle C# scripts.
+
+	  + modify check for language value to accept anything beginning
+	    "javascript", e.g., "javascript1.1".
+
+	  + check for "src" property in script tag before deciding whether to
+	    use JavaScript keywords.
+
+	  + create separate table "htmlprop" for HTML properties.
+
+	  + highlight CSS embedded in HTML.
+
+	+ vile-lisp-filt (also for scheme filter)
+
+	  + highlight quasiquote/backtick (`), quote ('), unquote (,) and
+	    unquote-splice (,@), including unquoted sub-expressions.
+
+	  + highlight the parentheses of quoted expressions in a different
+	    color.
+
+	+ vile-php-filt improvements
+
+	  + identifiers may begin with "_".
+
+	  + color heredocs and nowdocs
+
+	  + color comments beginning with "#".
+
+	  + add preamble pattern for phpmode.
+
+	+ nroff filter allows for macro-names to be used for fonts.
+
+	+ spell filter now uses $TMPDIR rather than putting its temporary files
+	  in the current directory.
+
+	+ vile-rpm-filter improvements:
+
+	  + recognize keywords ending with digits, such as "Source0".
+
+	  + distinguish one-liner tags from multi-line sections.
+
+	  + ignore case of keywords.
+
+	  + add keywords for %XXX variants of %{XXX} names.
+
+	  + highlight %XXX words in single-quotes.
+
+	+ vile-ruby-filt now handles stacked here-documents.
+
+	+ vile-scheme-filt
+
+	  + handle combinations of quotation literals.
+
+	  + highlight the unquote/unquote-splicing keywords.
+
+	  + handle the optional scheme parentheses extension ('[' and ']').
+
+	+ vile-sh-filt
+
+	  + handle "${number}", "$(commands)", "$((expression))",
+	    "${name#value}", etc.
+
+	  + handle escape character in here-document.
+
+	+ vile-sql-filt improvements:
+
+	  + allow host variables in LEAD state.
+
+	  + improve parsing of "@" character.
+
+	  + allow newlines inside quoted strings.
+
+	+ vile-vile-filt improvements:
+
+	  + display numeric codes following a control/V as in a map-command as
+	    numbers or errors if fewer digits were found than expected
+
+	+ vile-yacc-filt improvements:
+
+	  + highlight all of the terminal symbols with "Terminal" class.
+
+	  + modify keyword ".merge" directive to make it distinct from
+	    ".source".  The former reads without modifying the table name, the
+	    latter builds a new table.  Use this feature in the yacc syntax
+	    filter to keep the terminal names and C keywords separate.
+
+	+ vile-xml-filt improvements:
+
+	  + use the prefixes defined by xmlns properties to select different
+	    symbol tables.
+
+	  + modify the way keywords are loaded, to support multiple symbol
+	    tables defined via the keyword files using the ".include" feature.
+
+    Other improvements to majormodes:
+
+	+ lots of new file suffixes added to existing modes, of course.
+
+	+ new majormodes:
+
+	  + "ant" and "mvn" (maven)
+
+	  + asp
+
+	  + dtd
+
+	  + haskell
+
+	  + mailcap
+
+	  + objc (objective-c)
+
+	  + vb6
+
+	  + xq (XQuery)
+
+	  + xsl
+
+	+ add option for C# verbatim string literals to c-filter.c
+
+	+ add to diffmode's preamble pattern to allow it to detect diff's in a
+	  piped input.
+
+	+ vbmode and vb6mode provide try-bloc,, "with" and "select" complex
+	  fences.
+
+	+ yacc.key updated to bison 2.4.1 and byacc 20100610.
+
+	+ modify xresmode to include shell-output from appres, e.g., ^X!appres
+		XTerm
+
+	+ modify preamble settings for majormodes of the form "#!path" to make
+	  them more distinct.
+
+    X11 changes:
+
+	+ add lxvile wrapper for xvile, which chooses a font based on locale
+	  setting
+
+	+ add uxvile script, based on uxterm.
+
+	+ vilemenu.rc lists fonts used in uxterm for the set of ordinary fonts
+	  if the $term-encoding is utf-8.
+
+	+ vilemenu.rc is scriptable; use this to work with the --disable-shell
+	  configuration by omitting menu entries which use shell features.
+
+	+ vilemenu.rc provides a default-font entry, to restore the font to
+	  whatever was given in a -fn option, or resource setting.
+
+	+ XVile.ad now matches Debian package.
+
+	+ handle XA_COMPOUND_TEXT and XA_UTF8_STRING selection types.
+
+	+ use Xutf8LookupString for input of UTF-8 key-events, if available.
+
+	+ RPM spec file configures xvile to provide menu support.
+
+	+ RPM spec file now installs uxvile.
+
+    Win32 changes:
+
+	+ winvile supports Unicode select/paste.
+
+	+ modify winvile installer to optionally refrain from putting the newly
+	  installed directories first in $VILE_STARTUP_PATH, etc., if they
+	  already exist in the given path.  That allows one to have vile.rc in
+	  the first path, e.g.,
+
+		c:\vile;c:\program files\vi like emacs
+
+	+ winvile "-i" option now saves the original command string, so
+	  filenames with embedded blanks now longer need quotes.
+
+	+ change Inno Setup script to install html files rather than doc files
+	  for documentation; added a shortcut to the table of contents.
+
+	+ UNC-paths are recognized with Cygwin.
+
+	+ modify configure script, etc., to build "minvile" and "convile"
+	  flavors using MinGW.
+
+	+ implement quick-launch rule in winvile.iss script.
+
+	+ DJGPP version provides syntax highlighting.
+
+	+ borland.c (used for DJGPP) now tabuluates the shift/control/alt
+	  flavors of cursor- and function-keys, defining function keys up to
+	  48.
+
+    Terminal drivers:
+
+	+ ansi driver supports color syntax highlighting.
+
+	+ curses driver supports color-schemes.
+
+	+ improve configuration/initialization of curses-driver to ensure that
+	  no attempt is made to display UTF-8 using 8-bit curses.
+
+	+ modeline formatting supports UTF-8 filenames.
+
+	+ xterm-fkeys improvement:
+
+	  + checks for existence of shifted cursor- and editing-keys when the
+	    unshifted keys do not use CSI format.
+
+	  + recognizes either form of CSI
+
+	+ use xterm patch #251 feature for saving/restoring title in termcap
+	  and curses drivers.
+
+    Other portability:
+
+	+ add configure check for utf8 library, needed for some platforms to
+	  use iconv library.
+
+	+ add configure check for SIGWINCH, to fix resizing on OS X
+
+	+ optionally use rpath feature to simplify linking against libraries in
+	  nonstandard locations.
+
+	+ use pkg-config for X libraries, if available.
+
+	+ encryption feature works with 64-bit platforms.
+
+    Performance:
+
+	+ improve performance for show-variables and describe-bindings.
+
+	+ improve performance for displaying syntax highlighting of very long
+	  lines by using a fast check on the left/right limits of single-line
+	  regions that could be displayed, and ignoring attributed regions past
+	  those bounds.
+
+	+ improve performance of on-the-fly UTF-8 regular expressions by
+	  inlining and making checks to see if a byte is ASCII before doing
+	  conversions.
+
 -------------------------------
-$Header: /users/source/archives/vile.vcs/RCS/README,v 1.102 2008/06/14 12:52:39 tom Exp $
+$Header: /users/source/archives/vile.vcs/RCS/README,v 1.103 2010/08/08 21:56:28 tom Exp $
 -------------------------------

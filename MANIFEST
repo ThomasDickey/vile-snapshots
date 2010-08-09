@@ -1,4 +1,4 @@
-MANIFEST for vile, version v9_7zg
+MANIFEST for vile, version v9_8
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 AUTHORS                         list of authors, with nicknames in CHANGES
@@ -118,7 +118,6 @@ ucrypt.c                        interface to Unix crypt(1)
 undo.c                          support for "undo"
 version.c                       version & usage messages
 version.sh                      print version for current sources
-vile-9.7.spec                   sample RPM spec file for vile 9.7
 vile.1                          man-page for VILE
 vile.hlp                        help-file
 vile.wmconfig                   windowmaker config file for vile
@@ -443,6 +442,7 @@ package/debian/xvile.files      debian build script
 package/debian/xvile.links      debian build script
 package/debian/xvile.menu       debian build script
 package                         subdirectory
+package/vile.spec               sample RPM spec file for vile
 package/winvile-wide.iss        Inno Setup script for winvile-wide
 package/winvile.iss             Inno Setup script for winvile
 package/winvile.nsi             NSIS package for winvile
