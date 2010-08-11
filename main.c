@@ -22,7 +22,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.688 2010/04/30 22:59:27 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.689 2010/08/11 09:30:58 tom Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -1197,7 +1197,7 @@ get_executable_dir(void)
 	exec_pathname = strmalloc(lengthen_path(strcpy(temp, s)));
 #ifndef VILE_STARTUP_PATH
 	/* workaround for DJGPP, to add executable's directory to startup path */
-	if ((s = vile_getenv("VILE_STARTUP_PATH")) == 0) {
+	if (vile_getenv("VILE_STARTUP_PATH") == 0) {
 	    append_to_path_list(&startup_path, exec_pathname);
 	}
 #endif
