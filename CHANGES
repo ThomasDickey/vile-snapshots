@@ -1,3 +1,12 @@
+Changes for vile 9.9 (released ??? ??? ?? ????)
+
+ 201008??
+	> Tom Dickey:
+	+ build/runtime fixes for DJGPP:
+	  + provide fallback for intptr_t type.
+	  + amend a change from 9.7h which assigned a non-malloc'd pointer to
+	    context where it was later freed.
+
 Changes for vile 9.8 (released Sun Aug 08 2010)
 
  20100808

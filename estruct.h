@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.709 2010/04/11 18:52:01 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.710 2010/08/11 09:33:20 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -2937,12 +2937,14 @@ extern void exit (int code);
 extern void _exit (int code);
 #endif	/* HAVE_STDLIB_H */
 
+#if !(defined(intptr_t))
 /* get intptr_t */
-#ifdef HAVE_INTTYPES_H
+#if defined(HAVE_INTTYPES_H)
 #include <inttypes.h>
-#else
-#ifdef HAVE_STDINT_H
+#elif defined(HAVE_STDINT_H)
 #include <stdint.h>
+#else
+typedef long intptr_t;
 #endif
 #endif
 
@@ -2952,10 +2954,7 @@ extern void _exit (int code);
 #define PERCENT(num,den) ((den) ? (int)((100.0 * (num))/(den)) : 100)
 
 /* Quiet compiler warnings on places where we're being blamed incorrectly,
- * e.g., for casting away const, or for alignment problems.  It's generally
- * legal in c89 to cast a pointer to long w/o loss of precision.
- *
- * FIXME: c99 may require a wider type.
+ * e.g., for casting away const, or for alignment problems.
  */
 #ifdef __GNUC__
 #define TYPECAST(type,ptr) (type*)((intptr_t)(ptr))
