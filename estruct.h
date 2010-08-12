@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.710 2010/08/11 09:33:20 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.711 2010/08/11 22:47:26 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -180,7 +180,7 @@
  * probably correct for MSC (Microsoft C) and ZTC (Zortech), but I'm not
  * sure of those.  (It implies a lot of ANSI and POSIX behavior.)
  */
-#if CC_TURBO || CC_WATCOM || CC_MSC || CC_DJGPP || SYS_WINNT || CC_CSETPP || CC_MSVC || CC_LCC_WIN32
+#if CC_TURBO || CC_WATCOM || CC_MSC || CC_DJGPP || SYS_WINNT || CC_CSETPP || CC_MSVC || CC_LCC_WIN32 || SYS_OS2_EMX 
 # define CC_NEWDOSCC 1
 #endif
 
@@ -282,6 +282,10 @@ typedef unsigned short	mode_t;
 #else
 #define mode_t int
 #endif
+#endif
+
+#if SYS_OS2 && !SYS_OS2_EMX
+#define inline /* nothing */
 #endif
 
 #endif /* HAVE_CONFIG_H */
