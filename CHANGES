@@ -2,6 +2,9 @@ Changes for vile 9.9 (released ??? ??? ?? ????)
 
  201008??
 	> Tom Dickey:
+	+ build-fix for OS/2 EMX:
+	  + remove a '/' after $(DESTDIR), to work with DOS devices.
+	  + suppress unsupported "inline" definition for icc compiler.
 	+ build/runtime fixes for DJGPP:
 	  + provide fallback for intptr_t type.
 	  + amend a change from 9.7h which assigned a non-malloc'd pointer to
