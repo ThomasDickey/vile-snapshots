@@ -1,3 +1,9 @@
+vile (9.8a) unstable; urgency=low
+
+  * build-fixes for very-old platforms, e.g., OS/2.
+
+ -- Thomas E. Dickey <dickey@invisible-island.net>  Thu, 12 Aug 2010 17:04:05 -0400
+
 vile (9.8) unstable; urgency=low
 
   * major release

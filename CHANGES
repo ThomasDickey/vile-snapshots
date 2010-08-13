@@ -1,7 +1,11 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 201008??
+ 20100813 (a)
 	> Tom Dickey:
+	+ modify perl.xs to build/work with perl 5.004 (cf: 9.7e).
+	+ add configure workaround for perl 5.004's prototype for main().
+	+ drop two symbols from embedded-Perl configure check, since they did
+	  not appear in 5.004, and are not used by perl.xs
 	+ build-fix for OS/2 EMX:
 	  + remove a '/' after $(DESTDIR), to work with DOS devices.
 	  + suppress unsupported "inline" definition for icc compiler.
