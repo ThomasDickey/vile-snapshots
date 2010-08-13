@@ -1,47 +1,14 @@
 Summary: VILE VI Like Emacs editor
-# $Header: /users/source/archives/vile.vcs/package/RCS/vile.spec,v 1.2 2010/08/08 22:18:04 tom Exp $
+# $Header: /users/source/archives/vile.vcs/package/RCS/vile.spec,v 1.3 2010/08/12 21:03:13 tom Exp $
 Name: vile
-Version: 9.8
+Version: 9.8a
 # each patch should update the version
 Release: 1
 License: GPLv2
 Group: Applications/Editors
 URL: ftp://invisible-island.net/vile
-Source0: vile-9.7.tgz
-Patch1: vile-9.7a.patch.gz
-Patch2: vile-9.7b.patch.gz
-Patch3: vile-9.7c.patch.gz
-Patch4: vile-9.7d.patch.gz
-Patch5: vile-9.7e.patch.gz
-Patch6: vile-9.7f.patch.gz
-Patch7: vile-9.7g.patch.gz
-Patch8: vile-9.7h.patch.gz
-Patch9: vile-9.7i.patch.gz
-Patch10: vile-9.7j.patch.gz
-Patch11: vile-9.7k.patch.gz
-Patch12: vile-9.7l.patch.gz
-Patch13: vile-9.7m.patch.gz
-Patch14: vile-9.7n.patch.gz
-Patch15: vile-9.7o.patch.gz
-Patch16: vile-9.7p.patch.gz
-Patch17: vile-9.7q.patch.gz
-Patch18: vile-9.7r.patch.gz
-Patch19: vile-9.7s.patch.gz
-Patch20: vile-9.7t.patch.gz
-Patch21: vile-9.7u.patch.gz
-Patch22: vile-9.7v.patch.gz
-Patch23: vile-9.7w.patch.gz
-Patch24: vile-9.7x.patch.gz
-Patch25: vile-9.7y.patch.gz
-Patch26: vile-9.7z.patch.gz
-Patch27: vile-9.7za.patch.gz
-Patch28: vile-9.7zb.patch.gz
-Patch29: vile-9.7zc.patch.gz
-Patch30: vile-9.7zd.patch.gz
-Patch31: vile-9.7ze.patch.gz
-Patch32: vile-9.7zf.patch.gz
-Patch33: vile-9.7zg.patch.gz
-Patch34: vile-9.8.patch.gz
+Source0: vile-9.8.tgz
+Patch1: vile-9.8a.patch.gz
 # each patch should add itself to this list
 Packager: Thomas Dickey <dickey@invisible-island.net>
 # BuildRoot: %{_tmppath}/%{name}-root
@@ -69,41 +36,8 @@ rebinding, and real X window system support.
 %define _iconsdir   %{_datadir}/icons
 %define _pixmapsdir %{_datadir}/pixmaps
 
-%setup -q -n vile-9.7
+%setup -q -n vile-9.8
 %patch1 -p1
-%patch2 -p1
-%patch3 -p1
-%patch4 -p1
-%patch5 -p1
-%patch6 -p1
-%patch7 -p1
-%patch8 -p1
-%patch9 -p1
-%patch10 -p1
-%patch11 -p1
-%patch12 -p1
-%patch13 -p1
-%patch14 -p1
-%patch15 -p1
-%patch16 -p1
-%patch17 -p1
-%patch18 -p1
-%patch19 -p1
-%patch20 -p1
-%patch21 -p1
-%patch22 -p1
-%patch23 -p1
-%patch24 -p1
-%patch25 -p1
-%patch26 -p1
-%patch27 -p1
-%patch28 -p1
-%patch29 -p1
-%patch30 -p1
-%patch31 -p1
-%patch32 -p1
-%patch33 -p1
-%patch34 -p1
 # each patch should add itself to this list
 
 %build
@@ -206,6 +140,9 @@ install xvile.wmconfig $RPM_BUILD_ROOT%{_sysconfdir}/X11/wmconfig/xvile
 
 %changelog
 # each patch should add its ChangeLog entries here
+
+* Thu Aug 12 2010 Thomas Dickey
+- added patch for 9.8a
 
 * Sun Aug 08 2010 Thomas Dickey
 - added patch for 9.8

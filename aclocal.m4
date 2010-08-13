@@ -1,6 +1,6 @@
 dnl vile's local definitions for autoconf.
 dnl
-dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.223 2010/07/11 17:47:29 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.225 2010/08/13 08:47:48 tom Exp $
 dnl
 dnl See
 dnl		http://invisible-island.net/autoconf/autoconf.html
@@ -4198,7 +4198,7 @@ AC_SUBST($3)dnl
 
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_WITH_PERL version: 3 updated: 2009/02/24 16:51:36
+dnl CF_WITH_PERL version: 5 updated: 2010/08/13 04:43:13
 dnl ------------
 dnl Check if perl-extension (using embedded perl interpreter) is wanted, and
 dnl update symbols if we are able to use the extension.
@@ -4230,15 +4230,15 @@ if test "$with_perl" = yes ; then
 		CF_CHECK_CFLAGS($cf_perl_ccopts)
 		LIBS="$LIBS $cf_perl_ldopts"
 
-		AC_TRY_LINK([
+		AC_TRY_LINK([#define main perl_main
 #include <EXTERN.h>
 #include <perl.h>
 #include <XSUB.h>
-		],[
+#undef main],[
 		PerlInterpreter* interp = perl_alloc();
 		perl_construct(interp);
-		perl_parse(interp, (XSINIT_t)0, 0, (char **)0, (char **)0);
-		Perl_croak(aTHX_ "Why:%s\n", "Bye!");
+		perl_parse(interp, 0, 0, (char **)0, (char **)0);
+		Perl_croak("Why:%s\n", "Bye!");
 ],[
 		PERLLIB=`$PERL -MConfig -e 'print $Config{privlib}'`
 

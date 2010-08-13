@@ -13,7 +13,7 @@
  * vile.  The file api.c (sometimes) provides a middle layer between
  * this interface and the rest of vile.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.119 2009/10/31 17:12:03 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.120 2010/08/13 09:29:31 tom Exp $
  */
 
 #ifdef __GNUC__
@@ -196,6 +196,10 @@ static MGVTBL svcurbuf_accessors = {
 
 static SV *ofs_sv;
 static SV *ors_sv;
+
+#ifdef PERL_SYS_INIT3
+#define USE_SYS_INIT3 1
+#endif
 
 static int real_perl_init(void);
 static void xs_init(pTHX);
@@ -1158,10 +1162,12 @@ real_perl_init(void)
     returnCode(TRUE);
 }
 
+#ifdef USE_SYS_INIT3
 void perl_init(int *argc, char ***argv, char ***envp)
 {
     PERL_SYS_INIT3(argc, argv, envp);
 }
+#endif
 
 /* make sure END blocks and destructors get called */
 void perl_exit()
@@ -1172,7 +1178,9 @@ void perl_exit()
 	perl_destruct(perl_interp);	/* global destructors */
 	perl_free(perl_interp);
 	perl_interp = 0;
+#ifdef USE_SYS_INIT3
 	PERL_SYS_TERM();
+#endif
     }
     returnVoid();
 }
