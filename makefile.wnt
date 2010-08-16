@@ -1,7 +1,7 @@
 #
 # makefile for vile on WIN32 using Microsoft Visual C++
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.wnt,v 1.102 2009/12/24 00:54:21 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.wnt,v 1.103 2010/08/15 21:54:30 tom Exp $
 #
 #
 !include <ntwin32.mak>
@@ -99,7 +99,7 @@ MY_LDOPT = -pdb:none
 !endif
 
 # options common to all configurations
-MY_CCOPT = $(MY_CCOPT) -DOPT_LOCALE -I.
+MY_CCOPT = $(MY_CCOPT) -DOPT_LOCALE -I. -Ifilters
 
 !IF  "$(VILEDEFS)" != ""
 MY_CCOPT = $(MY_CCOPT) $(VILEDEFS)
@@ -213,8 +213,8 @@ HDRS = estruct.h edef.h proto.h dirstuff.h
 
 SRC = 	main.c $(SCREEN).c \
 	basic.c bind.c blist.c btree.c buffer.c charsets.c \
-	csrch.c display.c eightbit.c eval.c exec.c externs.c \
-	fences.c file.c filec.c \
+	csrch.c display.c eightbit.c encrypt.c eval.c exec.c \
+	externs.c fences.c file.c filec.c \
 	fileio.c finderr.c glob.c globals.c history.c \
 	input.c insert.c itbuff.c isearch.c \
 	line.c modes.c msgs.c nullterm.c oneliner.c opers.c \
@@ -228,8 +228,8 @@ SRC = 	main.c $(SCREEN).c \
 
 OBJ = 	main.obj $(SCREEN).obj \
 	basic.obj bind.obj blist.obj btree.obj buffer.obj charsets.obj \
-	csrch.obj display.obj eightbit.obj eval.obj exec.obj externs.obj \
-	fences.obj file.obj filec.obj \
+	csrch.obj display.obj eightbit.obj encrypt.obj eval.obj exec.obj \
+	externs.obj fences.obj file.obj filec.obj \
 	fileio.obj finderr.obj glob.obj globals.obj history.obj \
 	input.obj insert.obj itbuff.obj isearch.obj \
 	line.obj modes.obj msgs.obj nullterm.obj oneliner.obj opers.obj \

@@ -1,4 +1,4 @@
-# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.2nd,v 1.21 2010/08/15 15:45:05 tom Exp $
+# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.2nd,v 1.22 2010/08/15 23:03:47 tom Exp $
 #
 
 .SUFFIXES: .l .c .i $o
@@ -119,6 +119,10 @@ atr2html$x : $(ATR2HTML_O) ; $(LINK) -o $@ $(ATR2HTML_O) $(CFLAGS) $(LDFLAGS) $(
 atr2text$x : $(ATR2TEXT_O) ; $(LINK) -o $@ $(ATR2TEXT_O) $(CFLAGS) $(LDFLAGS) $(LIBS)
 vile-crypt$x :	$(VL_CRYPT_O)	; $(LINK) -o $@ $(VL_CRYPT_O) $(CFLAGS) $(LDFLAGS) $(LIBS)
 vile-manfilt$x : manfilt$o	; $(LINK) -o $@ manfilt$o $(CFLAGS) $(LDFLAGS) $(LIBS)
+
+encrypt$o : $(top_srcdir)/encrypt.c
+	@RULE_CC@
+	@ECHO_CC@$(CC) -c $(CPPFLAGS) $(QUOTDEFS) $(CFLAGS) $<
 
 $(FILTERS_BINDIR)/atr2ansi$x :	   atr2ansi$x		; $(INSTALL) $? $@
 $(FILTERS_BINDIR)/atr2html$x :	   atr2html$x		; $(INSTALL) $? $@

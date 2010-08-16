@@ -1,7 +1,7 @@
 /*	Crypt:	Encryption routines for MicroEMACS
  *		written by Dana Hoggatt and Paul Fox.
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/ecrypt.c,v 1.17 2010/08/15 21:22:34 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/ecrypt.c,v 1.19 2010/08/15 23:43:00 tom Exp $
  *
  */
 
@@ -233,7 +233,7 @@ filecrypt(FILE *ifp, char *key, char *options)
 	    break;
 	if (ferror(ifp))
 	    failed("reading file");
-	buf[0] = ch;
+	buf[0] = (char) ch;
 	buf[1] = 0;
 
 	if (MailMode) {
@@ -258,18 +258,32 @@ filecrypt(FILE *ifp, char *key, char *options)
 static void
 usage(const char *prog)
 {
-    fprintf(stderr,
-	    "usage: %s [-m] [-k crypt-key] [file ...]\n"
-	    "  where crypt-key will be prompted for if not specified\n"
-	    "  and -m will force \"mail-mode\", which leaves text before\n"
-	    "  the first empty line of a file (i.e. headers) intact.\n",
-	    prog
-	);
+    static const char *table[] =
+    {
+	"usage: %s [options] [file ...]",
+	"",
+	"Encrypt one or more files, writing result to standard output.",
+	"If no file is specified, read from standard input.",
+	"",
+	"Options:",
+	"  -k KEY specify crypt-key",
+#ifdef HAVE_GETPASS
+	"         If option is missing, %s will prompt for it.",
+#endif
+	"  -m     forces \"mail-mode\", which leaves text before",
+	"         the first empty line of a file (i.e. headers) intact.",
+	"  -u     use Unix-style encryption (default is UEmacs)"
+    };
+    size_t n;
+    for (n = 0; n < TABLESIZE(table); ++n) {
+	fprintf(stderr, table[n], prog);
+	fputc('\n', stderr);
+    }
     exit(BADEXIT);
 }
 
 static void
-process_stream(FILE *fp, char *key, char *options)
+process_stream(const char *prog, FILE *fp, char *key, char *options)
 {
     if (!key[0]) {
 #ifdef HAVE_GETPASS
@@ -284,7 +298,7 @@ process_stream(FILE *fp, char *key, char *options)
 	 * really be the INTR char -pgf
 	 */
 	if (len == 0 || userkey[len - 1] == 3) {
-	    fprintf(stderr, "Aborted\n");
+	    fprintf(stderr, "%s: Aborted\n", prog);
 	    exit(BADEXIT);
 	}
 	(void) strncpy(key, userkey, KEY_LIMIT);
@@ -297,12 +311,12 @@ process_stream(FILE *fp, char *key, char *options)
 }
 
 static void
-process_filename(const char *name, char *key, char *options)
+process_filename(const char *prog, const char *name, char *key, char *options)
 {
     FILE *fp = fopen(name, "r");
     if (fp == 0)
 	failed(name);
-    process_stream(fp, key, options);
+    process_stream(prog, fp, key, options);
     (void) fclose(fp);
 }
 
@@ -354,12 +368,12 @@ main(int argc, char **argv)
 	    }
 	} else {
 	    had_file = 1;
-	    process_filename(argv[n], key, options);
+	    process_filename(prog, argv[n], key, options);
 	}
     }
 
     if (!had_file) {
-	process_stream(stdin, key, options);
+	process_stream(prog, stdin, key, options);
     }
     fflush(stdout);
     fclose(stdout);
