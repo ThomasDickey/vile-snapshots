@@ -20,7 +20,7 @@
 #
 # gnu autoconf support by kevin buettner, 5/94
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.247 2010/08/15 20:45:30 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.248 2010/08/15 23:49:19 tom Exp $
 
 SHELL		= /bin/sh
 
@@ -792,12 +792,6 @@ tcap$o :	tcap.h xtermkeys.h
 ucrypt$o :	vl_crypt.h
 version$o :	patchlev.h
 x11$o :		pscreen.h
-
-# This is in the filters directory, since it can also be used in vile-crypt,
-# and the build requires that the filter programs build without the sources
-# from the top-level directory.
-encrypt$o :	$(srcdir)/filters/encrypt.c
-	$(CC) -c $(CPPFLAGS) $(QUOTDEFS) $(CFLAGS) -DHELP_LOC=\"$(datadir)\" $<
 
 # test-drivers
 

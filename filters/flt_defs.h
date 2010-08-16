@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/flt_defs.h,v 1.18 2010/08/15 19:33:22 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/flt_defs.h,v 1.19 2010/08/15 22:19:07 tom Exp $
  */
 
 #ifndef FLT_DEFS_H
@@ -17,10 +17,6 @@ extern "C" {
 /* assume ANSI C */
 # define HAVE_STDLIB_H 1
 # define HAVE_STRING_H 1
-#endif
-
-#ifndef OPT_ENCRYPT
-#define OPT_ENCRYPT 1
 #endif
 
 #ifndef OPT_FILTER
@@ -47,6 +43,10 @@ extern "C" {
 
 #ifndef NO_LEAKS
 #define NO_LEAKS 0
+#endif
+
+#ifndef OPT_ENCRYPT
+#define OPT_ENCRYPT 1
 #endif
 
 #ifndef OPT_TRACE
@@ -169,6 +169,22 @@ extern	void	filters_leaks (void);
 extern	void	flt_leaks (void);
 #endif
 
+#ifdef __OS2__
+/*
+ * The OS/2 toolkit defines identical typedefs for UCHAR, etc.;
+ * we use those definitions to avoid trouble when using OS/2 include
+ * files.
+ */
+# include <os2def.h>
+#else
+# if !(defined(WIN32) || defined(WIN32_LEAN_AND_MEAN))
+#  define UCHAR  unsigned char
+#  define UINT   unsigned int
+#  define USHORT unsigned short
+#  define ULONG  unsigned long
+# endif
+#endif
+
 #endif /* OPT_FILTER */
 #endif /* _estruct_h */
 
@@ -177,18 +193,6 @@ extern	void	flt_leaks (void);
 #endif
 
 #include <ctype.h>
-
-#ifndef UCHAR
-#define UCHAR unsigned char
-#endif
-
-#ifndef UINT
-#define UINT unsigned int
-#endif
-
-#ifndef ULONG
-#define ULONG unsigned long
-#endif
 
 #ifndef TRACE
 #define TRACE(params) /* nothing */

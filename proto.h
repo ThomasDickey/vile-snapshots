@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.709 2010/08/15 19:24:02 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.710 2010/08/15 22:29:25 tom Exp $
  *
  */
 
@@ -1673,7 +1673,6 @@ extern	void	x11_leaks (void);
 #define vl_mkdtemp(path) mkdtemp(path)
 #endif
 
-#if SYS_UNIX
 #ifdef MISSING_EXTERN_ACCESS
 extern	int	access	(const char *path, int mode);
 #endif
@@ -1878,7 +1877,6 @@ extern	int	write	(int fd, const char *buffer, int size);
 #endif
 #ifdef MISSING_EXTERN__NC_FREEALL
 extern	void	_nc_freeall (void);
-#endif
 #endif
 
 #ifdef __cplusplus

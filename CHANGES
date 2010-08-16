@@ -2,6 +2,9 @@ Changes for vile 9.9 (released ??? ??? ?? ????)
 
  20100815 (a)
 	> Tom Dickey:
+	+ modify makefiles for winvile so that it supports unix-style
+	  encryption.
+	+ modify vile-crypt to accept a "-u" option for unix-style encryption.
 	+ add Jochen Obalek's unix-style crypt function for platforms without
 	  that, e.g., win32 and OS/2.
 	+ modify perl.xs to build/work with perl 5.004 (cf: 9.7e).

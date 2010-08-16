@@ -185,7 +185,7 @@ crypt_main (char *nachr_l, char *nachr_r, char *schl)
         sbval = (sbval << 1) | (nachr_r[UCH(*e++)] ^ *schl++);
       sbval = S_BOX[i][sbval];
       for (tp += 4, j = 4; j--; sbval >>= 1)
-        *--tp = sbval & 1;
+        *--tp = (char) (sbval & 1);
       tp += 4;
     }
 
@@ -264,12 +264,12 @@ crypt (const char *wort, const char *salt)
 
   for (k = key, i = 0; i < BS; i++)
     {
-      if (!(keybyte = *wort++))
+      if ((keybyte = *wort++) == 0)
         break;
       k += 7;
       for (j = 0; j < 7; j++, i++)
       {
-        *--k = keybyte & 1;
+        *--k = (char) (keybyte & 1);
         keybyte >>= 1;
       }
       k += 8;

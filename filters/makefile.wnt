@@ -1,7 +1,7 @@
 #
 # makefile for vile filters on WIN32 using Microsoft Visual C++
 #
-# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.wnt,v 1.35 2009/03/21 16:09:16 root Exp $
+# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.wnt,v 1.36 2010/08/15 22:05:30 tom Exp $
 #
 #
 !include <ntwin32.mak>
@@ -185,11 +185,14 @@ atr2html$x : atr2html$o unfilter$o
 atr2text$x : atr2text$o unfilter$o
 	$(link) -out:$@ $(CON_LDFLAGS) atr2text$o unfilter$o
 
-vile-crypt$x : ecrypt$o
-	$(link) -out:$@ $(CON_LDFLAGS) ecrypt$o
+vile-crypt$x : ecrypt$o encrypt$o
+	$(link) -out:$@ $(CON_LDFLAGS) ecrypt$o encrypt$o
 
 vile-manfilt$x : manfilt$o
 	$(link) -out:$@ $(CON_LDFLAGS) manfilt$o
+
+encrypt$o : ..\encrypt.c
+	$(cc) $(CFLAGS) -c ..\encrypt.c -Fo$@
 
 !endif # "$(RECUR_FILTERS)" == ""
 

@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.712 2010/08/15 14:02:04 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.713 2010/08/15 22:24:14 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -286,6 +286,10 @@ typedef unsigned short	mode_t;
 
 #if SYS_OS2 && !SYS_OS2_EMX
 #define inline /* nothing */
+#endif
+
+#if SYS_OS2 || SYS_OS2_EMX || SYS_WINNT || SYS_MSDOS
+#define MISSING_EXTERN_CRYPT 1
 #endif
 
 #endif /* HAVE_CONFIG_H */
@@ -2939,7 +2943,7 @@ extern void _exit (int code);
 #include <inttypes.h>
 #elif defined(HAVE_STDINT_H)
 #include <stdint.h>
-#else
+#elif !defined(WIN32)
 typedef long intptr_t;
 #endif
 #endif
