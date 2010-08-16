@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.708 2010/07/25 09:23:41 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.709 2010/08/15 19:24:02 tom Exp $
  *
  */
 
@@ -1344,10 +1344,10 @@ extern void nullterm_unwatchfd (int fd, long id);
 /* ucrypt.c */
 #if	OPT_ENCRYPT
 extern	int	vl_encrypt_char(int c);
-extern	int	vl_resetkey (BUFFER *bp, const char *fname);
-extern	void	vl_encrypt_blok (char *bptr, UINT len);
-extern	void	vl_make_encrypt_key (char *dst, const char *src);
-extern	void	vl_setup_encrypt (char *pw);
+extern	int	vl_resetkey (BUFFER * /* bp */, const char * /* fname */);
+extern	void	vl_encrypt_blok (char * /* bptr */, UINT /* len */);
+extern	void	vl_make_encrypt_key (char * /* dst */, const char * /* src */);
+extern	void	vl_setup_encrypt (char * /* pw */, int /* seed */);
 #endif	/* OPT_ENCRYPT */
 
 /* undo.c */

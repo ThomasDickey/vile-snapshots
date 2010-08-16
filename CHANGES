@@ -1,7 +1,9 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20100813 (a)
+ 20100815 (a)
 	> Tom Dickey:
+	+ add Jochen Obalek's unix-style crypt function for platforms without
+	  that, e.g., win32 and OS/2.
 	+ modify perl.xs to build/work with perl 5.004 (cf: 9.7e).
 	+ add configure workaround for perl 5.004's prototype for main().
 	+ drop two symbols from embedded-Perl configure check, since they did

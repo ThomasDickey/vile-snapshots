@@ -22,7 +22,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.690 2010/08/13 09:29:19 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.691 2010/08/14 15:02:05 tom Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -428,7 +428,7 @@ MainProgram(int argc, char *argv[])
     }
 #endif /* OPT_LOCALE */
 
-#if OPT_PERL && defined(PERL_SYS_INIT3)
+#if OPT_PERL
     perl_init(&argc, &argv, &environ);
 #endif
 

@@ -1,4 +1,4 @@
-MANIFEST for vile, version v9_8_c
+MANIFEST for vile, version v9_8_d
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 AUTHORS                         list of authors, with nicknames in CHANGES
@@ -45,6 +45,7 @@ djhandl.c                       CTL/C & interrupt handling for DJGCC
 dumbterm.c                      DUMB terminal driver
 edef.h                          global variable definitions
 eightbit.c                      character translation for "8bit" mode
+encrypt.c                       Jochen Obalek's unix-style crypt function
 estruct.h                       master include/struct definitions
 eval.c                          expression-evaluation
 exec.c                          command (':', macros) execution
@@ -122,6 +123,7 @@ vile.1                          man-page for VILE
 vile.hlp                        help-file
 vile.wmconfig                   windowmaker config file for vile
 vl_alloc.h                      malloc-macros for vile
+vl_crypt.h                      interface to Unix crypt(1)
 vl_ctype.c                      vile's ctype functions
 vl_ctype.h                      character-set tests for vile
 vl_regex.h                      interface for vile's regexp.c

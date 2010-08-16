@@ -20,7 +20,7 @@
 #
 # gnu autoconf support by kevin buettner, 5/94
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.244 2010/06/11 23:32:31 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.247 2010/08/15 20:45:30 tom Exp $
 
 SHELL		= /bin/sh
 
@@ -158,6 +158,7 @@ HDRS = \
 	tcap.h \
 	trace.h \
 	vl_alloc.h \
+	vl_crypt.h \
 	vl_ctype.h \
 	vl_regex.h \
 	vl_stdio.h
@@ -321,7 +322,7 @@ OBJ2 =	@EXTRAOBJS2@
 
 # This should be "$(OBJ:$o=.c)", but IRIX64's make (and some not very old
 # BSD-makes) cannot handle it.
-SRC =	$(OBJ:.o=.c)
+SRC =	$(VILESRC) $(SCREEN).c
 
 ALL =	$(PROGRAM)
 
@@ -788,8 +789,15 @@ random$o :	dirstuff.h
 statevar$o :	patchlev.h
 tags$o :	btree.h
 tcap$o :	tcap.h xtermkeys.h
+ucrypt$o :	vl_crypt.h
 version$o :	patchlev.h
 x11$o :		pscreen.h
+
+# This is in the filters directory, since it can also be used in vile-crypt,
+# and the build requires that the filter programs build without the sources
+# from the top-level directory.
+encrypt$o :	$(srcdir)/filters/encrypt.c
+	$(CC) -c $(CPPFLAGS) $(QUOTDEFS) $(CFLAGS) -DHELP_LOC=\"$(datadir)\" $<
 
 # test-drivers
 

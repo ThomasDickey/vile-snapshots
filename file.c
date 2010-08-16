@@ -5,7 +5,7 @@
  * reading and writing of the disk are
  * in "fileio.c".
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.444 2010/06/09 20:54:06 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.445 2010/08/15 19:24:21 tom Exp $
  */
 
 #include "estruct.h"
@@ -1473,7 +1473,7 @@ quickreadf(BUFFER *bp, int *nlinep)
 #if OPT_ENCRYPT
 	if (b_val(bp, MDCRYPT)
 	    && bp->b_cryptkey[0]) {	/* decrypt the file */
-	    vl_setup_encrypt(bp->b_cryptkey);
+	    vl_setup_encrypt(bp->b_cryptkey, seed);
 	    vl_encrypt_blok((char *) buffer, (UINT) length);
 	}
 #endif
