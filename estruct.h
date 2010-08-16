@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.711 2010/08/11 22:47:26 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.712 2010/08/15 14:02:04 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -719,36 +719,28 @@ typedef unsigned short	mode_t;
 #endif
 
 /*
- * Unix vi-style file encryption is available only on some platforms
- */
-#ifdef HAVE_CRYPT
-#define OPT_ENCRYPT     !SMALLER
-#else
-#define OPT_ENCRYPT     0
-#endif
-
-/*
  * Symbols that turn on tables related to OPT_ENUM_MODES in nefsms.h
  */
 #define OPT_COLOR_SCHEMES          (OPT_ENUM_MODES && !SMALLER && OPT_COLOR)
 
 #define OPT_ACCESS_CHOICES         !SMALLER
-#define OPT_BACKUP_CHOICES	   (OPT_ENUM_MODES && OPT_FILEBACK)
-#define OPT_BOOL_CHOICES	   !SMALLER
+#define OPT_BACKUP_CHOICES         (OPT_ENUM_MODES && OPT_FILEBACK)
+#define OPT_BOOL_CHOICES           !SMALLER
 #define OPT_BYTEORDER_MARK_CHOICES OPT_MULTIBYTE
-#define OPT_CHARCLASS_CHOICES	   OPT_SHOW_CTYPE
+#define OPT_CHARCLASS_CHOICES      OPT_SHOW_CTYPE
 #define OPT_CMD_ENCODING_CHOICES   OPT_MULTIBYTE
-#define OPT_COLOR_CHOICES	   (OPT_ENUM_MODES && OPT_COLOR)
+#define OPT_COLOR_CHOICES          (OPT_ENUM_MODES && OPT_COLOR)
 #define OPT_CURTOKENS_CHOICES      OPT_CURTOKENS
 #define OPT_DIRECTIVE_CHOICES      !SMALLER
+#define OPT_ENCRYPT                !SMALLER
 #define OPT_FILE_ENCODING_CHOICES  OPT_MULTIBYTE
 #define OPT_FORBUFFERS_CHOICES     !SMALLER
-#define OPT_HILITE_CHOICES	   (OPT_ENUM_MODES && OPT_HILITEMATCH)
+#define OPT_HILITE_CHOICES         (OPT_ENUM_MODES && OPT_HILITEMATCH)
 #define OPT_LOOKUP_CHOICES         !SMALLER
 #define OPT_MMQUALIFIERS_CHOICES   OPT_MAJORMODE
 #define OPT_PARAMTYPES_CHOICES     OPT_MACRO_ARGS
 #define OPT_PATH_CHOICES           !SMALLER
-#define OPT_POPUP_CHOICES	   (OPT_ENUM_MODES && OPT_POPUPCHOICE)
+#define OPT_POPUP_CHOICES          (OPT_ENUM_MODES && OPT_POPUPCHOICE)
 #define OPT_READERPOLICY_CHOICES   !SMALLER
 #define OPT_RECORDATTRS_CHOICES    (OPT_ENUM_MODES && SYS_VMS)
 #define OPT_RECORDFORMAT_CHOICES   (OPT_ENUM_MODES && SYS_VMS)
@@ -766,7 +758,7 @@ typedef unsigned short	mode_t;
 #define	GLOB_SINGLE	'?'
 #define	GLOB_ELLIPSIS	"..."	/* implemented on VMS-only */
 #define	GLOB_RANGE	"[]"
-#define GLOB_ENVIRON	"$"	/* unimplemented */
+#define	GLOB_ENVIRON	"$"	/* unimplemented */
 #define	GLOB_NEGATE	"^!"
 
 /*

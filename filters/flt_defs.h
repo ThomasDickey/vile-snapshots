@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/flt_defs.h,v 1.16 2010/07/13 13:47:11 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/flt_defs.h,v 1.18 2010/08/15 19:33:22 tom Exp $
  */
 
 #ifndef FLT_DEFS_H
@@ -17,6 +17,10 @@ extern "C" {
 /* assume ANSI C */
 # define HAVE_STDLIB_H 1
 # define HAVE_STRING_H 1
+#endif
+
+#ifndef OPT_ENCRYPT
+#define OPT_ENCRYPT 1
 #endif
 
 #ifndef OPT_FILTER
@@ -173,6 +177,22 @@ extern	void	flt_leaks (void);
 #endif
 
 #include <ctype.h>
+
+#ifndef UCHAR
+#define UCHAR unsigned char
+#endif
+
+#ifndef UINT
+#define UINT unsigned int
+#endif
+
+#ifndef ULONG
+#define ULONG unsigned long
+#endif
+
+#ifndef TRACE
+#define TRACE(params) /* nothing */
+#endif
 
 #ifdef __cplusplus
 }

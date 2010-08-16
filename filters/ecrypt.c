@@ -1,18 +1,19 @@
 /*	Crypt:	Encryption routines for MicroEMACS
  *		written by Dana Hoggatt and Paul Fox.
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/ecrypt.c,v 1.11 2010/07/13 15:00:57 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/ecrypt.c,v 1.17 2010/08/15 21:22:34 tom Exp $
  *
  */
 
 #define CAN_VMS_PATH 0
-#include <filters.h>
 
-# ifndef OPT_ENCRYPT
-#  define OPT_ENCRYPT 1
-# endif
-# define UINT	unsigned int
-# define ULONG	unsigned long
+#include <filters.h>
+#include <vl_crypt.h>
+
+#define KEY_LIMIT 256
+
+#define MailMode   options['m']
+#define UnixCrypt  options['u']
 
 static int mod95(int val);
 
@@ -209,29 +210,44 @@ ue_crypt(register char *bptr,	/* buffer of characters to be encrypted */
 }
 
 static void
-filecrypt(FILE *ifp, char *key, int mailmode)
+filecrypt(FILE *ifp, char *key, char *options)
 {
     char buf[BUFSIZ];
-    char *p;
+    char temp_key[KEY_LIMIT];
+    int seed = 123;
+    int ch = EOF, c0;
 
-    ue_crypt((char *) 0, 0);
-    ue_crypt(key, (unsigned) strlen(key));
+    if (UnixCrypt) {
+	strcpy(temp_key, key);
+	vl_make_encrypt_key(key, temp_key);
+	vl_setup_encrypt(key, seed);
+    } else {
+	ue_crypt((char *) 0, 0);
+	ue_crypt(key, (unsigned) strlen(key));
+    }
 
     while (1) {
-	p = vl_fgets(buf, sizeof(buf), ifp);
-	if (!p) {
-	    if (ferror(ifp))
-		failed("reading file");
-	    if (feof(ifp))
-		break;
+	c0 = ch;
+	ch = vl_getc(ifp);
+	if (ch == EOF && feof(ifp))
+	    break;
+	if (ferror(ifp))
+	    failed("reading file");
+	buf[0] = ch;
+	buf[1] = 0;
+
+	if (MailMode) {
+	    if (ch == '\n' && c0 == '\n')
+		MailMode = 0;
 	}
-	if (mailmode) {
-	    if (strcmp(buf, "\n") == 0)
-		mailmode = 0;
+	if (!MailMode) {
+	    if (UnixCrypt) {
+		vl_encrypt_blok(buf, 1);
+	    } else {
+		ue_crypt(buf, 1);
+	    }
 	}
-	if (!mailmode)
-	    ue_crypt(buf, (unsigned) strlen(buf));
-	if (vl_fputs(buf, stdout) == EOF)
+	if (vl_putc(buf[0], stdout) == EOF)
 	    failed("writing stdout");
     }
 
@@ -239,86 +255,111 @@ filecrypt(FILE *ifp, char *key, int mailmode)
 	failed("flushing stdout");
 }
 
-int
-main(int argc, char **argv)
+static void
+usage(const char *prog)
 {
-    char key[256];
-    char *prog = argv[0];
-    int mailmode = 0;
+    fprintf(stderr,
+	    "usage: %s [-m] [-k crypt-key] [file ...]\n"
+	    "  where crypt-key will be prompted for if not specified\n"
+	    "  and -m will force \"mail-mode\", which leaves text before\n"
+	    "  the first empty line of a file (i.e. headers) intact.\n",
+	    prog
+	);
+    exit(BADEXIT);
+}
 
-    key[0] = 0;
-
-    /* -m for mailmode:  leaves headers intact (up to first blank line)
-     * then crypts the rest.  i use this for encrypting mail messages
-     * in mh folders.  */
-    if (argc > 1 && strcmp(argv[1], "-m") == 0) {
-	mailmode = 1;
-	argc -= 1;
-	argv += 1;
-    }
-    if (argc > 2 && strcmp(argv[1], "-k") == 0) {
-	if (strlen(argv[2]) > sizeof(key) - 1) {
-	    fprintf(stderr, "%s: excessive key length\n", prog);
-	    exit(BADEXIT);
-	}
-	(void) strncpy(key, argv[2], sizeof(key));
-	(void) memset(argv[2], '.', strlen(argv[2]));
-	key[sizeof(key) - 1] = '\0';
-	argc -= 2;
-	argv += 2;
-    }
-    if (argc > 1 && argv[1][0] == '-') {
-	fprintf(stderr,
-		"usage: %s [-m] [-k crypt-key] [file ...]\n"
-		"  where crypt-key will be prompted for if not specified\n"
-		"  and -m will force \"mail-mode\", which leaves text before\n"
-		"  the first empty line of a file (i.e. headers) intact.\n",
-		prog
-	    );
-	exit(BADEXIT);
-    }
+static void
+process_stream(FILE *fp, char *key, char *options)
+{
     if (!key[0]) {
 #ifdef HAVE_GETPASS
 	char *userkey = (char *) getpass("Enter key: ");
 	size_t len = strlen(userkey);
 
-	/* HACK -- the linux version of getpass is not
-	 * interruptible.  this means there's no way to abort
-	 * a botched passwd.  until this problem goes away (and
-	 * i do believe it's a bug, and i'm not planning on
-	 * providing our own getpass()) we'll just see if the last
-	 * char of the entered key is ^C, and consider it an abort
-	 * if so.  yes, this should really be the INTR char.
+	/* HACK -- the linux version of getpass is not interruptible.  this
+	 * means there's no way to abort a botched passwd.  until this problem
+	 * goes away (and i do believe it's a bug, and i'm not planning on
+	 * providing our own getpass()) we'll just see if the last char of the
+	 * entered key is ^C, and consider it an abort if so.  yes, this should
+	 * really be the INTR char -pgf
 	 */
 	if (len == 0 || userkey[len - 1] == 3) {
 	    fprintf(stderr, "Aborted\n");
 	    exit(BADEXIT);
 	}
-	(void) strncpy(key, userkey, sizeof(key));
+	(void) strncpy(key, userkey, KEY_LIMIT);
 	(void) memset(userkey, '.', strlen(userkey));
 #else
-	fprintf(stderr,
-		"usage: %s [-m] -k crypt-key [file ...]\n"
-		"  where '-k crypt-key' is required (no prompting on this system)\n"
-		"  and -m will force \"mail-mode\", which leaves text before\n"
-		"  the first empty line of a file (i.e. headers) intact.\n",
-		prog
-	    );
-	exit(BADEXIT);
+	usage(prog);
 #endif
     }
+    filecrypt(fp, key, options);
+}
 
-    if (argc > 1) {
-	int n;
-	for (n = 1; n < argc; n++) {
-	    FILE *fp = fopen(argv[n], "r");
-	    if (fp == 0)
-		failed(argv[n]);
-	    filecrypt(fp, key, mailmode);
-	    (void) fclose(fp);
+static void
+process_filename(const char *name, char *key, char *options)
+{
+    FILE *fp = fopen(name, "r");
+    if (fp == 0)
+	failed(name);
+    process_stream(fp, key, options);
+    (void) fclose(fp);
+}
+
+int
+main(int argc, char **argv)
+{
+    char key[KEY_LIMIT];
+    char *prog = argv[0];
+    char options[256];
+    int had_file = 0;
+    int n;
+
+    memset(key, 0, sizeof(key));
+    memset(options, 0, sizeof(options));
+
+    for (n = 1; n < argc; ++n) {
+	if (*argv[n] == '-') {
+	    char *param = argv[n] + 1;
+	    while (*param != 0) {
+		switch (*param++) {
+		case 'k':
+		    if (*param == 0)
+			param = argv[++n];
+		    if (param == 0)
+			usage(prog);
+		    if (strlen(param) > KEY_LIMIT - 1) {
+			fprintf(stderr, "%s: excessive key length\n", prog);
+			exit(BADEXIT);
+		    }
+		    (void) strncpy(key, param, KEY_LIMIT);
+		    (void) memset(param, '.', strlen(param));
+		    key[KEY_LIMIT - 1] = '\0';
+		    param = "";
+		    break;
+		case 'm':
+		    /* -m for mailmode:  leaves headers intact (up to first
+		     * blank line) then crypts the rest.  i use this for
+		     * encrypting mail messages in mh folders -pgf */
+		    MailMode = 1;
+		    break;
+		case 'u':
+		    UnixCrypt = 1;
+		    break;
+		default:
+		    fprintf(stderr, "unknown switch -%c\n", *param);
+		    usage(prog);
+		    break;
+		}
+	    }
+	} else {
+	    had_file = 1;
+	    process_filename(argv[n], key, options);
 	}
-    } else {
-	filecrypt(stdin, key, mailmode);
+    }
+
+    if (!had_file) {
+	process_stream(stdin, key, options);
     }
     fflush(stdout);
     fclose(stdout);

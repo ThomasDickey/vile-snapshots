@@ -13,7 +13,7 @@
  * vile.  The file api.c (sometimes) provides a middle layer between
  * this interface and the rest of vile.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.120 2010/08/13 09:29:31 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.121 2010/08/14 15:03:30 tom Exp $
  */
 
 #ifdef __GNUC__
@@ -1162,12 +1162,16 @@ real_perl_init(void)
     returnCode(TRUE);
 }
 
-#ifdef USE_SYS_INIT3
+/*
+ * This is called from main.c in a context that precludes including Perl's
+ * header files.
+ */
 void perl_init(int *argc, char ***argv, char ***envp)
 {
+#ifdef USE_SYS_INIT3
     PERL_SYS_INIT3(argc, argv, envp);
-}
 #endif
+}
 
 /* make sure END blocks and destructors get called */
 void perl_exit()
