@@ -8,7 +8,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/htmlfilt.l,v 1.104 2010/07/13 13:41:32 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/htmlfilt.l,v 1.105 2010/09/06 15:41:18 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of HTML input
  * text.
@@ -695,7 +695,7 @@ language2keys(const char *name)
 	    result = SYMS_CS;
 	else if (!strcmp(lowered, "java"))
 	    result = SYMS_JAVA;
-	else if (!strncmp(lowered, "javascript", 10))
+	else if (!strncmp(lowered, "javascript", (size_t) 10))
 	    result = SYMS_JS;
 	else if (!strcmp(lowered, "vbscript"))
 	    result = SYMS_VBS;

@@ -5,7 +5,7 @@
  * Written by T.E.Dickey for vile (march 1993).
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/filec.c,v 1.128 2010/05/01 00:01:13 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/filec.c,v 1.129 2010/09/05 17:38:50 tom Exp $
  *
  */
 
@@ -180,7 +180,7 @@ makeString(BUFFER *bp, LINE *lp, char *text, size_t len)
 	text = add_backslashes(text);
 #endif
 	(void) strcpy(lvalue(np), text);
-	lvalue(np)[len + extra - 1] = 0;	/* clear scan indicator */
+	lvalue(np)[len + (size_t) extra - 1] = 0;	/* clear scan indicator */
 	llength(np) -= extra;	/* hide the null and scan indicator */
 
 	set_lforw(lback(lp), np);
@@ -803,7 +803,7 @@ fillMyBuff(BUFFER *bp, char *name)
 		need = strlen(temp);
 		want = strlen(path);
 		for_each_line(lp, bp) {
-		    size_t have = llength(lp);
+		    size_t have = (size_t) llength(lp);
 		    if (have == need
 			&& !memcmp(lvalue(lp), temp, need))
 			count = -1;
@@ -842,7 +842,7 @@ makeMyList(BUFFER *bp, char *name)
 	len++;
 
     (void) bsizes(bp);
-    need = bp->b_linecount + 2;
+    need = (size_t) bp->b_linecount + 2;
     if (bp->b_index_size < need) {
 	bp->b_index_size = need * 2;
 	if (bp->b_index_list == 0)
@@ -1202,7 +1202,7 @@ mlreply_file(const char *prompt, TBUFF **buffer, UINT flag, char *result)
     int do_prompt = (clexec || isnamedcmd || (flag & FILEC_PROMPT));
     int ok_expand = (flag & FILEC_EXPAND);
 
-    flag &= ~(FILEC_PROMPT | FILEC_EXPAND);
+    flag &= (UINT) (~(FILEC_PROMPT | FILEC_EXPAND));
 
 #if COMPLETE_FILES
     if (do_prompt && !clexec) {

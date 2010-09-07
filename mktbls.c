@@ -15,7 +15,7 @@
  * by Tom Dickey, 1993.    -pgf
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/mktbls.c,v 1.168 2010/05/01 14:46:32 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/mktbls.c,v 1.169 2010/09/06 15:44:42 tom Exp $
  *
  */
 
@@ -282,7 +282,7 @@ badfmt2(const char *s, int col)
 
 /******************************************************************************/
 static char *
-Alloc(unsigned len)
+Alloc(size_t len)
 {
     char *pointer = (char *) malloc(len);
     if (pointer == 0)
@@ -293,7 +293,7 @@ Alloc(unsigned len)
 static char *
 StrAlloc(const char *s)
 {
-    return strcpy(Alloc((unsigned) strlen(s) + 1), s);
+    return strcpy(Alloc(strlen(s) + 1), s);
 }
 
 static LIST *
@@ -670,14 +670,14 @@ is_majormode(const char *name)
 static void
 CheckModes(char *name)
 {
-    if (!strncmp(name, "no", 2))
+    if (!strncmp(name, "no", (size_t) 2))
 	badfmt("illegal mode-name");
 }
 
 static char *
 AllocKey(char *normal, int type, char *abbrev)
 {
-    char *tmp = Alloc((unsigned) (4 + strlen(normal) + strlen(abbrev)));
+    char *tmp = Alloc(4 + strlen(normal) + strlen(abbrev));
     Sprintf(tmp, "%s\n%c\n%s", normal, type, abbrev);
     return tmp;
 }
@@ -761,7 +761,7 @@ Name2Symbol(char *name)
 
     /* allocate enough for adjustment in 'Name2Address()' */
     /*   "+ 10" for comfort */
-    base = dst = Alloc((unsigned) (strlen(name) + 10));
+    base = dst = Alloc(strlen(name) + 10);
 
     *dst++ = 's';
     *dst++ = '_';
@@ -781,7 +781,7 @@ static char *
 Name2Address(char *name, char *type)
 {
     /*  "+ 10" for comfort */
-    unsigned len = (unsigned) strlen(name) + 10;
+    size_t len = strlen(name) + 10;
     char *base = Alloc(len);
     char *temp;
 
@@ -2291,8 +2291,8 @@ main(int argc, char *argv[])
 		    if (strcmp("W32KY", vec[2]) == 0) {
 			mkw32binding(vec[1], vec[3], func, fcond);
 		    } else {
-			if (strncmp("KEY_", vec[2], 4) == 0) {
-			    if (strncmp("FN-", vec[1], 3) != 0)
+			if (strncmp("KEY_", vec[2], (size_t) 4) == 0) {
+			    if (strncmp("FN-", vec[1], (size_t) 3) != 0)
 				badfmt("KEY_xxx definition must for FN- binding");
 			    if (!nefkeys)
 				nefkeys = OpenHeader("nefkeys.h", argv);

@@ -1,7 +1,7 @@
 /*
  * Common utility functions for vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.154 2010/07/13 13:27:07 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.156 2010/09/07 00:32:51 tom Exp $
  *
  */
 
@@ -490,11 +490,11 @@ ParseDirective(char *line)
 	/* *INDENT-ON* */
 
     };
-    unsigned n, len;
+    size_t n, len;
 
     if (*(line = skip_blanks(line)) == meta_ch) {
 	line = skip_blanks(line + 1);
-	if ((len = (unsigned) (skip_ident(line) - line)) != 0) {
+	if ((len = (size_t) (skip_ident(line) - line)) != 0) {
 	    for (n = 0; n < sizeof(table) / sizeof(table[0]); n++) {
 		if (!strncmp(line, table[n].name, len)) {
 		    (*table[n].func) (skip_blanks(line + len));
@@ -573,7 +573,7 @@ flt_bfr_append(const char *text, int length)
 {
     flt_bfr_text = do_alloc(flt_bfr_text, flt_bfr_used + (size_t) length, &flt_bfr_size);
     if (flt_bfr_text != 0) {
-	strncpy(flt_bfr_text + flt_bfr_used, text, (unsigned) length);
+	strncpy(flt_bfr_text + flt_bfr_used, text, (size_t) length);
 	flt_bfr_used += (unsigned) length;
     } else {
 	CannotAllocate("flt_bfr_append");
@@ -880,7 +880,7 @@ flt_make_symtab(const char *table_name)
     if (!set_symbol_table(table_name)) {
 	CLASS *p;
 
-	if ((p = typecallocn(CLASS, 1)) == 0) {
+	if ((p = typecallocn(CLASS, (size_t) 1)) == 0) {
 	    CannotAllocate("flt_make_symtab");
 	    return;
 	}
@@ -1016,7 +1016,7 @@ alloc_keyword(const char *ident, const char *attribute, int classflag, char *fla
 	}
     } else {
 	nxt = NULL;
-	if ((nxt = typecallocn(KEYWORD, 1)) != NULL) {
+	if ((nxt = typecallocn(KEYWORD, (size_t) 1)) != NULL) {
 	    init_data(nxt, ident, attribute, classflag, flag);
 
 	    if (nxt->kw_name != 0

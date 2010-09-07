@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/pl-filt.c,v 1.102 2010/07/13 13:35:01 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/pl-filt.c,v 1.103 2010/09/06 11:59:07 tom Exp $
  *
  * Filter to add vile "attribution" sequences to perl scripts.  This is a
  * translation into C of an earlier version written for LEX/FLEX.
@@ -516,7 +516,7 @@ is_PREPROC(char *s)
     if (*s++ != '#')
 	return 0;
     s += is_BLANK(s);
-    if (strncmp(s, "line", 4))
+    if (strncmp(s, "line", (size_t) 4))
 	return 0;
     if ((skip = is_BLANK(s += 4)) == 0)
 	return 0;
@@ -707,12 +707,12 @@ is_QUOTE(char *s, int *delims)
 	    }
 	    break;
 	case 2:
-	    if (!strncmp(base, "tr", 2)) {
+	    if (!strncmp(base, "tr", (size_t) 2)) {
 		*delims = 3;
-	    } else if (!strncmp(base, "qq", 2) ||
-		       !strncmp(base, "qx", 2) ||
-		       !strncmp(base, "qw", 2) ||
-		       !strncmp(base, "qr", 2)) {
+	    } else if (!strncmp(base, "qq", (size_t) 2) ||
+		       !strncmp(base, "qx", (size_t) 2) ||
+		       !strncmp(base, "qw", (size_t) 2) ||
+		       !strncmp(base, "qr", (size_t) 2)) {
 		*delims = 2;
 	    }
 	    break;
@@ -827,7 +827,7 @@ add_to_PATTERN(char *s)
 			     */
 			    if (ATLEAST(s, 4)
 				&& need == 1
-				&& !strncmp(s + 1, "...", 3))
+				&& !strncmp(s + 1, "...", (size_t) 3))
 				need += 2;
 			    /*
 			     * check for /pattern/ {pattern}
@@ -1447,7 +1447,7 @@ do_filter(FILE *input GCC_UNUSED)
 			    quoted = 0;
 			    state = eHERE;
 			    mark_len = 0;
-			    try_mark = do_alloc(0, 2, &mark_len);
+			    try_mark = do_alloc(0, (size_t) 2, &mark_len);
 			    if (try_mark != 0)
 				marker = strcpy(try_mark, ".");
 			}

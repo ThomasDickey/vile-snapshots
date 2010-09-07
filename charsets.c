@@ -1,5 +1,5 @@
 /*
- * $Id: charsets.c,v 1.68 2010/04/30 23:51:24 tom Exp $
+ * $Id: charsets.c,v 1.70 2010/09/06 19:55:04 tom Exp $
  *
  * see
  http://msdn.microsoft.com/library/default.asp?url=/library/en-us/intl/unicode_42jv.asp
@@ -29,7 +29,7 @@ static const UCHAR mark_UTF32BE[] = { 0x00, 0x00, 0xfe, 0xff };
 typedef struct {
     BOM_CODES code;
     const UCHAR *mark;
-    unsigned size;
+    size_t size;
 } BOM_TABLE;
 
 #define DATA(name) { bom_##name, mark_##name, sizeof(mark_##name) }
@@ -58,7 +58,7 @@ allow_decoder(BUFFER *bp, unsigned need)
 }
 
 static void
-allow_encoder(BUFFER *bp, unsigned need)
+allow_encoder(BUFFER *bp, size_t need)
 {
     if (need > bp->encode_utf_len) {
 	bp->encode_utf_len = (need + 1) * 2;
@@ -215,14 +215,14 @@ vl_conv_to_utf32(UINT * target, const char *source, B_COUNT limit)
 }
 
 static const BOM_TABLE *
-find_mark_info(int code)
+find_mark_info(BOM_CODES code)
 {
     const BOM_TABLE *result = 0;
     unsigned n;
 
     for (n = 0; n < TABLESIZE(bom_table); ++n) {
 	const BOM_TABLE *mp = bom_table + n;
-	if (mp->code == (BOM_CODES) code) {
+	if (mp->code == code) {
 	    result = mp;
 	    break;
 	}
@@ -362,7 +362,7 @@ dump_as_utfXX(BUFFER *bp, const char *buf, int nbuf, const char *ending)
 	while (j < (unsigned) nbuf) {
 	    int skip = vl_conv_to_utf32(bp->decode_utf_buf + k++,
 					buf + j,
-					(UINT) nbuf - j);
+					(B_COUNT) ((UINT) nbuf - j));
 	    if (skip == 0)
 		goto finish;
 	    j += (UINT) skip;
@@ -370,7 +370,7 @@ dump_as_utfXX(BUFFER *bp, const char *buf, int nbuf, const char *ending)
 	while (*ending != 0) {
 	    int skip = vl_conv_to_utf32(bp->decode_utf_buf + k++,
 					ending++,
-					lend--);
+					(B_COUNT) (lend--));
 	    if (skip == 0)
 		goto finish;
 	}
@@ -509,7 +509,7 @@ load_as_utf8(BUFFER *bp, LINE *lp)
 		    for (j = k = 0; j < used; ++j) {
 			int nn = vl_conv_to_utf8(buffer,
 						 bp->decode_utf_buf[j],
-						 used + 1 - j);
+						 (B_COUNT) (used + 1 - j));
 			if (buffer != 0)
 			    buffer += nn;
 			k += (UINT) nn;
@@ -524,7 +524,7 @@ load_as_utf8(BUFFER *bp, LINE *lp)
 			     * of the buffer, do not want to allow undo.  Just
 			     * go ahead and reallocate the line's text buffer.
 			     */
-			    if ((ntext = castalloc(char, k)) == NULL) {
+			    if ((ntext = castalloc(char, (size_t) k)) == NULL) {
 				rc = FALSE;
 				break;
 			    }
@@ -557,7 +557,7 @@ remove_crlf_nulls(BUFFER *bp, UCHAR * buffer, B_COUNT * length)
     const BOM_TABLE *mp = find_mark_info2(bp);
     UCHAR mark_cr[4];
     UCHAR mark_lf[4];
-    unsigned marklen = 0;
+    size_t marklen = 0;
 
     if (mp != 0) {
 	memset(mark_cr, 0, sizeof(mark_cr));
@@ -668,7 +668,7 @@ riddled_buffer(const BOM_TABLE * mp, UCHAR * buffer, B_COUNT length)
 }
 
 static void
-set_encoding_from_bom(BUFFER *bp, int bom_value)
+set_encoding_from_bom(BUFFER *bp, BOM_CODES bom_value)
 {
     const BOM_TABLE *mp;
     int result;
@@ -778,7 +778,7 @@ decode_bom(BUFFER *bp, UCHAR * buffer, B_COUNT * length)
     }
 
     if (b_val(bp, VAL_BYTEORDER_MARK) > bom_NONE
-	&& (mp = find_mark_info(b_val(bp, VAL_BYTEORDER_MARK))) != 0
+	&& (mp = find_mark_info((BOM_CODES) b_val(bp, VAL_BYTEORDER_MARK))) != 0
 	&& line_has_mark(mp, buffer, *length)) {
 	for (n = 0; n < *length - mp->size; ++n) {
 	    buffer[n] = buffer[n + mp->size];
@@ -788,7 +788,7 @@ decode_bom(BUFFER *bp, UCHAR * buffer, B_COUNT * length)
 	}
 	*length -= mp->size;
 
-	set_encoding_from_bom(bp, b_val(bp, VAL_BYTEORDER_MARK));
+	set_encoding_from_bom(bp, (BOM_CODES) b_val(bp, VAL_BYTEORDER_MARK));
 	code = TRUE;
     }
     returnCode(code);
@@ -929,7 +929,7 @@ write_bom(BUFFER *bp)
     const BOM_TABLE *mp;
     int status = FIOSUC;
 
-    if ((mp = find_mark_info(b_val(bp, VAL_BYTEORDER_MARK))) != 0) {
+    if ((mp = find_mark_info((BOM_CODES) b_val(bp, VAL_BYTEORDER_MARK))) != 0) {
 	status = ffputline((const char *) mp->mark, (int) mp->size, NULL);
     }
     return status;
@@ -961,7 +961,7 @@ chgd_byteorder(BUFFER *bp,
 	       int testing)
 {
     if (!testing && !glob_vals) {
-	set_encoding_from_bom(bp, args->local->vp->i);
+	set_encoding_from_bom(bp, (BOM_CODES) args->local->vp->i);
     }
     return TRUE;
 }

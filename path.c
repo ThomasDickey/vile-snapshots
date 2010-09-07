@@ -2,7 +2,7 @@
  *		The routines in this file handle the conversion of pathname
  *		strings.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.168 2009/11/14 00:25:42 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.169 2010/09/06 17:29:59 tom Exp $
  *
  *
  */
@@ -301,13 +301,13 @@ pathcat(char *dst, const char *path, const char *cleaf)
     if (cleaf == 0)
 	cleaf = "";
 
-    leaf = vl_strncpy(save_leaf, cleaf, NFILEN);	/* leaf may be in dst */
+    leaf = vl_strncpy(save_leaf, cleaf, (size_t) NFILEN);	/* leaf may be in dst */
 
     if (isEmpty(path)) {
 	(void) strcpy(dst, leaf);
     } else {
 
-	path = vl_strncpy(save_path, path, NFILEN);	/* path may be in dst */
+	path = vl_strncpy(save_path, path, (size_t) NFILEN);	/* path may be in dst */
 
 #if OPT_MSDOS_PATH
 	if (is_msdos_drive(save_path) != 0

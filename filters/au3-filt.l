@@ -3,7 +3,7 @@
 
 %{
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/au3-filt.l,v 1.10 2009/04/25 16:12:30 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/au3-filt.l,v 1.11 2010/09/06 15:40:34 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of AutoIt
  * input text.
@@ -42,12 +42,12 @@ NUMBER		{HEX}|{INTEGER}|{REAL}
 
 <NORMAL,IFCMT>^#[^\r\n]*$	{ const char *text = lowercase_of(yytext);
 				  WriteToken(Prepro_attr);
-				  if (!strncmp(text, "#comments-start", 15)
-				   || !strncmp(text, "#cs", 3)) {
+				  if (!strncmp(text, "#comments-start", (size_t) 15)
+				   || !strncmp(text, "#cs", (size_t) 3)) {
 				    ++if0_level;
 				  }
-				  else if (!strncmp(text, "#comments-end", 13)
-				   || !strncmp(text, "#ce", 3)) {
+				  else if (!strncmp(text, "#comments-end", (size_t) 13)
+				   || !strncmp(text, "#ce", (size_t) 3)) {
 				    --if0_level;
 				  }
 				  if (if0_level > 0)

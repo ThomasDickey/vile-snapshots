@@ -1,7 +1,17 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20100815 (a)
+ 20100907 (a)
 	> Tom Dickey:
+	+ modify configure check for gcc's -r dynamic option to include the
+	  message from QNX's gcc 2.95.2, which simply ignores the "dynamic".
+	+ modify RPM spec-file to remove the doc-directories' scripts at build
+	  time, since rpmbuild 4.4.2.3 on Centos 5.5 automatically adds unwanted
+	  dependencies on the Perl scripts found there as part of the package's
+	  requirements for installing.
+	+ fix many strict gcc compiler warnings.
+	+ remove support for OpenLook.
+	+ add configure --enable-colored-menus option (discussion with Chris
+	  Green).
 	+ modify makefiles for winvile so that it supports unix-style
 	  encryption.
 	+ modify vile-crypt to accept a "-u" option for unix-style encryption.

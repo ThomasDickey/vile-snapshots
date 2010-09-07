@@ -4,7 +4,7 @@
  *	original by Daniel Lawrence, but
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.337 2010/07/25 20:15:32 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.340 2010/09/07 00:27:04 tom Exp $
  *
  */
 
@@ -234,7 +234,7 @@ parse_linespec(const char *s, LINE **markptr)
 	    last_srch_direc = (*save == '/') ? FORWARD : REVERSE;
 	    s = skip_pattern(save, &done);
 	    tb_init(&searchpat, EOS);
-	    tb_bappend(&searchpat, save + 1, s - save - 1 - done);
+	    tb_bappend(&searchpat, save + 1, (size_t) (s - save - 1 - done));
 	    tb_append(&searchpat, EOS);
 
 	    if ((gregexp = regcomp(tb_values(searchpat),
@@ -415,7 +415,7 @@ making_pattern(EOL_ARGS)
     TRACE(("making_pattern(buffer=%.*s, cpos=%d, c=%#x, eolchar=%#x)\n",
 	   (int) cpos, buffer, (int) cpos, c, eolchar));
     if (cpos != 0) {
-	(void) skip_linespecs(buffer, cpos, &done);
+	(void) skip_linespecs(buffer, (int) cpos, &done);
 	in_regexp = !done || isPattern(c);
     } else if (isPattern(c)) {
 	in_regexp = TRUE;
@@ -934,7 +934,7 @@ docmd(char *cline, int execflag, int f, int n)
      */
     if (toktyp(token) != TOK_LITSTR || isDigit(token[0])) {
 	f = TRUE;
-	n = strtol(tokval(token), 0, 0);
+	n = (int) strtol(tokval(token), 0, 0);
 
 	/* and now get the command to execute */
 	if ((token = mac_unquotedarg(&tok)) == 0) {
@@ -1386,7 +1386,7 @@ macroize(TBUFF **p, TBUFF *src, int skip)
 
 		TRACE(("macroizing %s\n", tb_visible(src)));
 		(void) tb_append(p, DQUOTE);
-		for (n = skip; n < len; n++) {
+		for (n = (size_t) skip; n < len; n++) {
 		    c = txt[n];
 		    if (multi && count++)
 			(void) tb_sappend(p, "\" \"");
@@ -1678,7 +1678,7 @@ store_macro(int f, int n)
 	mlforce("[Macro number out of range]");
 	status = FALSE;
     } else {
-	status = setup_macro_buffer((TBUFF *) 0, n, CMD_PROC);
+	status = setup_macro_buffer((TBUFF *) 0, n, (UINT) CMD_PROC);
     }
     return status;
 }
@@ -1706,7 +1706,7 @@ store_proc(int f, int n)
 	if ((status = kbd_reply("Procedure name: ", &name,
 				eol_command, ' ',
 				KBD_NORMAL, no_completion)) == TRUE) {
-	    status = setup_macro_buffer(name, -1, CMD_PROC);
+	    status = setup_macro_buffer(name, -1, (UINT) CMD_PROC);
 	}
     }
     return status;
@@ -1730,7 +1730,7 @@ store_op(int f, int n)
 	if ((status = kbd_reply("Operator name: ", &name,
 				eol_command, ' ',
 				KBD_NORMAL, no_completion)) == TRUE) {
-	    status = setup_macro_buffer(name, -1, CMD_OPER);
+	    status = setup_macro_buffer(name, -1, (UINT) CMD_OPER);
 	}
     }
     return status;
@@ -1749,7 +1749,7 @@ execproc(int f, int n)
     char bufn[NBUFN];		/* name of buffer to execute */
 
     if ((status = mlreply("Execute procedure: ",
-			  name, sizeof(name))) != TRUE) {
+			  name, (int) sizeof(name))) != TRUE) {
 	return status;
     }
 
@@ -2252,7 +2252,7 @@ setup_dobuf(BUFFER *bp, WHLOOP ** result)
 	if (i <= 0)
 	    continue;
 
-	dirnum = dname_to_dirnum(&cmdp, i);
+	dirnum = dname_to_dirnum(&cmdp, (size_t) i);
 	if (dirnum == D_WHILE ||
 	    dirnum == D_BREAK ||
 	    dirnum == D_ENDWHILE) {
@@ -2391,7 +2391,7 @@ compute_indent(char *cmd, size_t length, int *indent, int *indstate)
 	int next = 0;
 
 	cmd = skip_blanks(cmd);
-	dirnum = dname_to_dirnum(&cmd, (length - (cmd - base)));
+	dirnum = dname_to_dirnum(&cmd, (length - (size_t) (cmd - base)));
 	switch (dirnum) {
 	case D_IF:		/* FALLTHRU */
 	case D_WHILE:		/* FALLTHRU */
@@ -2439,7 +2439,7 @@ handle_endm(void)
 	macrobuffer->b_dot.o = 0;
 	macrobuffer = 0;
 #if !SMALLER
-	compute_indent((char *) 0, 0, (int *) 0, (int *) 0);
+	compute_indent((char *) 0, (size_t) 0, (int *) 0, (int *) 0);
 #endif
     }
 }
@@ -2479,10 +2479,11 @@ perform_dobuf(BUFFER *bp, WHLOOP * whlist)
 	if (llength(lp) <= 0)
 	    linlen = 0;
 	else
-	    linlen = llength(lp);
+	    linlen = (size_t) llength(lp);
 
 	if (glue) {
-	    if ((linebuf = castrealloc(char, linebuf, glue + linlen + 1)) == 0) {
+	    linebuf = castrealloc(char, linebuf, (size_t) glue + linlen + 1);
+	    if (linebuf == 0) {
 		status = no_memory("during macro execution");
 		break;
 	    }
@@ -2493,7 +2494,8 @@ perform_dobuf(BUFFER *bp, WHLOOP * whlist)
 #if !SMALLER
 	    compute_indent(lvalue(lp), linlen, &indent, &indstate);
 #endif
-	    if ((linebuf = cmdp = castalloc(char, indent + linlen + 1)) == 0) {
+	    linebuf = cmdp = castalloc(char, (size_t) indent + linlen + 1);
+	    if (linebuf == 0) {
 		status = no_memory("during macro execution");
 		break;
 	    }
@@ -2534,7 +2536,7 @@ perform_dobuf(BUFFER *bp, WHLOOP * whlist)
 	if (lforw(lp) != buf_head(bp)
 	    && linlen != 0
 	    && isEscaped(cmdp + linlen)) {
-	    glue = (int) (linlen + (cmdp - linebuf) - 1);
+	    glue = (int) (linlen + (size_t) (cmdp - linebuf) - 1);
 	    continue;
 	}
 	cmdp = skip_space_tab(linebuf);

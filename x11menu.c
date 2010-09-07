@@ -8,7 +8,7 @@
 /************************************************************************/
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/x11menu.c,v 1.13 2010/03/02 09:05:26 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11menu.c,v 1.15 2010/09/05 18:50:32 tom Exp $
  */
 
 #define NEED_X_INCLUDES 1
@@ -54,7 +54,7 @@ static MY_MENUS *my_menus;
 /* Motif function to make a cascade button into a menubar               */
 /************************************************************************/
 void *
-gui_make_menu(void *menubar, char *nom, int the_class GCC_UNUSED)
+gui_make_menu(void *menubar, const char *nom, int the_class GCC_UNUSED)
 {
     MY_MENUS *remember;
     Widget pm;
@@ -96,7 +96,7 @@ gui_make_menu(void *menubar, char *nom, int the_class GCC_UNUSED)
     }
 #elif ATHENA_WIDGETS
     static Widget last;
-    String str = XtMalloc(strlen(nom) + 10);
+    char *str = XtMalloc(strlen(nom) + 10);
 
     sprintf(str, "%sMenu", nom);
     pm = XtVaCreatePopupShell(str,
@@ -113,6 +113,20 @@ gui_make_menu(void *menubar, char *nom, int the_class GCC_UNUSED)
 				      Nval(XtNfromHoriz, last),
 				      Nval(XtNmenuName, str),
 				      NULL);
+#if OPT_MENUS_COLORED
+    XtVaSetValues(pm,
+		  Nval(XtNforeground, x_menu_foreground()),
+		  Nval(XtNbackground, x_menu_background()),
+		  NULL);
+    XtVaSetValues(menub,
+		  Nval(XtNforeground, x_menu_foreground()),
+		  Nval(XtNbackground, x_menu_background()),
+		  NULL);
+    XtVaSetValues(cascade,
+		  Nval(XtNforeground, x_menu_foreground()),
+		  Nval(XtNbackground, x_menu_background()),
+		  NULL);
+#endif /* OPT_MENUS_COLORED */
     last = cascade;
 
 #endif /* ATHENA_WIDGETS */
@@ -132,7 +146,7 @@ gui_make_menu(void *menubar, char *nom, int the_class GCC_UNUSED)
 /* Motif function to make a button into a cascade (with accelarator)    */
 /************************************************************************/
 void *
-gui_add_menu_item(void *pm, char *nom, char *accel GCC_UNUSED, int the_class)
+gui_add_menu_item(void *pm, const char *nom, char *accel GCC_UNUSED, int the_class)
 {
     Widget w;
 #if MOTIF_WIDGETS
@@ -272,11 +286,11 @@ post_buffer_list(Widget w GCC_UNUSED,
 		 XEvent * ev GCC_UNUSED,
 		 Boolean * ok GCC_UNUSED)
 {
-    static int in_item_menu_list = 0;	/* number allocated */
-    static int nb_item_menu_list = 0;	/* number in use */
+    static unsigned in_item_menu_list = 0;	/* number allocated */
+    static unsigned nb_item_menu_list = 0;	/* number in use */
     static Widget *pm_buffer;
 
-    int i, n = nb_item_menu_list;
+    unsigned i, n = nb_item_menu_list;
     BUFFER *bp;
     char string[NBUFN + 2 + NFILEN], temp[1 + NFILEN], *p;
     Widget pm = (Widget) client;
@@ -296,7 +310,7 @@ post_buffer_list(Widget w GCC_UNUSED,
 	TRACE(("ACCEL(%s) = %s\n", temp, string));
 
 	if (nb_item_menu_list + 2 >= in_item_menu_list) {
-	    int m = in_item_menu_list;
+	    unsigned m = in_item_menu_list;
 
 	    in_item_menu_list = (in_item_menu_list + 3) * 2;
 

@@ -3,7 +3,7 @@
  * paragraph at a time.  There are all sorts of word mode commands.  If I
  * do any sentence mode commands, they are likely to be put in this file.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/word.c,v 1.101 2010/02/12 09:57:34 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/word.c,v 1.103 2010/09/07 00:37:07 tom Exp $
  *
  */
 
@@ -411,12 +411,13 @@ comment_prefix(void)
 
 #if OPT_MULTIBYTE
 static int
-byte_to_columns(char text, int size)
+byte_to_columns(int text, int size)
 {
+    char ch = (char) text;
     int result = 0;
 
     if (b_is_utfXX(curbp)) {
-	result = (mb_cellwidth(curwp, &text, 1) * size);
+	result = (mb_cellwidth(curwp, &ch, 1) * size);
     } else {
 	result = size;
     }
@@ -439,7 +440,7 @@ any_wcs_width(const char *value, long bytes)
 	    bytes -= step;
 	}
     } else {
-	result = bytes;
+	result = (int) bytes;
     }
 
     return result;
@@ -492,7 +493,7 @@ tb_wcs_width(TBUFF *text)
 
 #define word_finishes_c_comment(wp) \
 		(tb_length(*wp) >= 2 \
-		&& memcmp("/*", tb_values(*wp), 2) == 0)
+		&& memcmp("/*", tb_values(*wp), (size_t) 2) == 0)
 
 static int
 do_formatting(TBUFF **wp, TBUFF **cp)
@@ -563,10 +564,10 @@ do_formatting(TBUFF **wp, TBUFF **cp)
 		       (size_t) (plength - DOT.o));
 	} else if (cplus_comment_start(c)) {
 	    is_comment = TRUE;
-	    tb_bappend(cp, "//", 2);
+	    tb_bappend(cp, "//", (size_t) 2);
 	} else if (c_comment_start(c)) {
 	    is_comment = TRUE;
-	    tb_bappend(cp, "*", 1);
+	    tb_bappend(cp, "*", (size_t) 1);
 	}
 
 	/* scan through lines, filling words */
@@ -657,8 +658,8 @@ do_formatting(TBUFF **wp, TBUFF **cp)
 			     * add "etc.", but that is a valid sentence ending,
 			     * and would be unclear without a comma otherwise.
 			     */
-			    sentence = memcmp(ptr, "e.g.", 4)
-				&& memcmp(ptr, "i.e.", 4);
+			    sentence = memcmp(ptr, "e.g.", (size_t) 4)
+				&& memcmp(ptr, "i.e.", (size_t) 4);
 			} else {
 			    sentence = TRUE;
 			}
@@ -799,7 +800,7 @@ wordcount(int f GCC_UNUSED, int n GCC_UNUSED)
 
     /* and report on the info */
     if (nwords > 0L)
-	avgch = ((1.0 * nchars) / nwords);
+	avgch = ((1.0 * (double) nchars) / (double) nwords);
     else
 	avgch = 0.0;
 

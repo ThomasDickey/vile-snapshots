@@ -8,7 +8,7 @@
 /************************************************************************/
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/menu.c,v 1.75 2010/05/13 10:56:30 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/menu.c,v 1.76 2010/09/05 19:30:04 tom Exp $
  */
 
 /* Vile includes */
@@ -612,7 +612,8 @@ do_menu(void *menub)
 	    dobuf(bp, 1, -1);
 	} else if (!delay_menus) {
 	    for_each_line(lp, bp) {
-		if ((rc = add_menu_entry(lvalue(lp), llength(lp))) == FALSE)
+		rc = add_menu_entry(lvalue(lp), (unsigned) llength(lp));
+		if (rc == FALSE)
 		    break;
 	    }
 	}

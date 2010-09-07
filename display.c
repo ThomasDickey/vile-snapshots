@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.522 2010/06/10 12:03:18 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.525 2010/09/07 00:25:39 tom Exp $
  *
  */
 
@@ -33,7 +33,7 @@
 
 #ifdef GVAL_VIDEO
 #define VIDEOATTRS (VABOLD|VAUL|VAITAL)
-#define set_term_attrs(a)  term.rev(a ^ (global_g_val(GVAL_VIDEO) & VIDEOATTRS))
+#define set_term_attrs(a)  term.rev(a ^ ((VIDEO_ATTR) global_g_val(GVAL_VIDEO) & VIDEOATTRS))
 #else
 #define set_term_attrs(a)  term.rev(a)
 #endif
@@ -177,7 +177,7 @@ dfputli(OutFunc outfunc, ULONG l, UINT r)
 
     q = (l >= r) ? dfputli(outfunc, (l / r), r) : 0;
 
-    return q + dfputi(outfunc, (l % r), r);
+    return q + dfputi(outfunc, (UINT) (l % r), r);
 }
 
 /*
@@ -381,10 +381,10 @@ col_limit(WINDOW *wp)
 
 #if OPT_VIDEO_ATTRS
 static void
-set_vattrs(int row, int col, VIDEO_ATTR attr, size_t len)
+set_vattrs(int row, int col, unsigned attr, size_t len)
 {
     while (len--)
-	vscreen[row]->v_attrs[col++] = attr;
+	vscreen[row]->v_attrs[col++] = (VIDEO_ATTR) attr;
 }
 #else
 #define set_vattrs(row, col, attr, len)		/*nothing */
@@ -405,7 +405,7 @@ int
 video_alloc(VIDEO ** vpp)
 {
     VIDEO *vp;
-    unsigned need = sizeof(VIDEO_TEXT) * (UINT) (term.maxcols - VIDEO_MIN);
+    size_t need = sizeof(VIDEO_TEXT) * (UINT) (term.maxcols - VIDEO_MIN);
 
     /* struct VIDEO already has 4 of the VIDEO_TEXT cells */
     if ((vp = typeallocplus(VIDEO, need)) != 0) {
@@ -631,7 +631,7 @@ vtputsn(WINDOW *wp, const char *src, size_t n)
 {
     if (src != 0) {
 	while (n != 0 && *src != EOS) {
-	    vtputc(wp, src++, n--);
+	    vtputc(wp, src++, (unsigned) (n--));
 	}
     }
 }
@@ -655,7 +655,7 @@ vtlistc(WINDOW *wp, const char *src, unsigned limit)
 
 	switch (need) {
 	case COLS_UTF8:
-	    rc = vl_conv_to_utf32(&value, src, limit);
+	    rc = vl_conv_to_utf32(&value, src, (B_COUNT) limit);
 	    cells = vl_wcwidth((int) value);
 
 	    if (!w_val(wp, WMDUNICODE_AS_HEX)
@@ -666,7 +666,7 @@ vtlistc(WINDOW *wp, const char *src, unsigned limit)
 	    } else if (!w_val(wp, WMDUNICODE_AS_HEX)
 		       && cells > 0
 		       && term_is_utfXX()
-		       && FontHasGlyph(value)) {
+		       && FontHasGlyph((int) value)) {
 		/*
 		 * It does not fit into the "8bit" mapping, but is printable
 		 * (since the number of cells is nonzero).  Write the Unicode
@@ -765,7 +765,7 @@ vtlistc(WINDOW *wp, const char *src, unsigned limit)
 	    break;
 	}
     }
-    vtputsn(wp, temp, n);
+    vtputsn(wp, temp, (size_t) n);
     return rc;
 }
 
@@ -823,9 +823,10 @@ vtset(LINE *lp, WINDOW *wp)
 	char temp[NU_WIDTH + 2];
 
 	vtcol = 0;		/* make sure we always see line numbers */
-	vtputsn(wp, right_num(temp, NU_WIDTH - NU_GUTTER, line),
-		NU_WIDTH - NU_GUTTER);
-	vtputsn(wp, "  ", NU_GUTTER);
+	vtputsn(wp,
+		right_num(temp, NU_WIDTH - NU_GUTTER, (long) line),
+		(size_t) (NU_WIDTH - NU_GUTTER));
+	vtputsn(wp, "  ", (size_t) NU_GUTTER);
 	horscroll = skip - vtcol;
 
 	/* account for leading fill; this repeats logic in vtputc so
@@ -869,7 +870,7 @@ vtset(LINE *lp, WINDOW *wp)
      * performance hit.
      */
 #define VTSET_PUT() \
-	int used = vtset_put(wp, from, n); \
+	int used = vtset_put(wp, from, (UINT) n); \
 	from += used; n -= used
 
 #define VTSET_LOOP(condition) \
@@ -898,7 +899,7 @@ vtset(LINE *lp, WINDOW *wp)
 	    /*EMPTY */ ;
 	else if (line_has_newline(lp, bp)) {
 	    const char *s = get_record_sep(bp);
-	    unsigned len = len_record_sep(bp);
+	    UINT len = (UINT) len_record_sep(bp);
 	    while (len != 0)
 		vtlistc(wp, s++, len--);
 	}
@@ -1223,7 +1224,7 @@ update_line(int row, int colfrom, int colto)
     while (vc < evc) {
 	xx = *va;
 #ifdef GVAL_VIDEO
-	xx ^= global_g_val(GVAL_VIDEO);
+	xx ^= (VIDEO_ATTR) global_g_val(GVAL_VIDEO);
 #endif
 	if (*vc != *pc || VATTRIB(xx) != VATTRIB(*pa)) {
 	    *pc = *vc;
@@ -1980,7 +1981,7 @@ update_all(WINDOW *wp)
 #if OPT_VIDEO_ATTRS
 /* Merge (or combine) the specified attribute into the vscreen structure */
 static void
-mergeattr(WINDOW *wp, int row, int start_col, int end_col, VIDEO_ATTR attr)
+mergeattr(WINDOW *wp, int row, int start_col, int end_col, unsigned attr)
 {
     int col;
 #ifdef WMDLINEWRAP
@@ -2776,7 +2777,7 @@ update_physical_screen(int force GCC_UNUSED)
 
 #if OPT_MLFORMAT || OPT_POSFORMAT || OPT_TITLE
 static void
-mlfs_prefix(const char **fsp, char **msp, char lchar)
+mlfs_prefix(const char **fsp, char **msp, int lchar)
 {
     const char *fs = *fsp;
     char *ms = *msp;
@@ -2799,7 +2800,7 @@ mlfs_prefix(const char **fsp, char **msp, char lchar)
 		    *ms++ = ':';
 		    break;
 		case '-':
-		    *ms++ = lchar;
+		    *ms++ = (char) lchar;
 		    break;
 		default:
 		    *ms++ = '%';
@@ -2814,7 +2815,7 @@ mlfs_prefix(const char **fsp, char **msp, char lchar)
 }
 
 static void
-mlfs_suffix(const char **fsp, char **msp, char lchar)
+mlfs_suffix(const char **fsp, char **msp, int lchar)
 {
     mlfs_prefix(fsp, msp, lchar);
     if (**fsp == ':')
@@ -2932,9 +2933,9 @@ modeline_modes(BUFFER *bp, char **msptr, int brief)
 }
 
 static char
-modeline_show(WINDOW *wp, char lchar)
+modeline_show(WINDOW *wp, int lchar)
 {
-    char ic = lchar;
+    char ic = (char) lchar;
     BUFFER *bp = wp->w_bufp;
 
     if (b_val(bp, MDSHOWMODE)) {
@@ -3051,7 +3052,7 @@ str_col2offs(WINDOW *wp, int target_col, const char *source, int length)
 	have_col += cells;
 
 	if (have_col < target_col)
-	    result = (source - base);
+	    result = (int) (source - base);
     }
     return result;
 }
@@ -3117,7 +3118,7 @@ special_formatter(TBUFF **result, const char *fs, WINDOW *wp)
 	if ((ms + (COLS_UTF8 + 2)) - base >= MAX_FORMAT) {
 	    if (base == right_ms)
 		break;
-	    if (strncmp(fs, "%=", 2)) {
+	    if (strncmp(fs, "%=", (size_t) 2)) {
 		++fs;
 		continue;
 	    }
@@ -3456,7 +3457,7 @@ update_modeline(WINDOW *wp)
 		attr = VAML;
 #if OPT_REVSTA
 #ifdef	GVAL_MCOLOR
-	    attr |= (global_g_val(GVAL_MCOLOR) & ~VASPCOL);
+	    attr = (VIDEO_ATTR) (attr | (global_g_val(GVAL_MCOLOR) & ~VASPCOL));
 #else
 	    attr |= VAREV;
 #endif
@@ -3744,7 +3745,7 @@ reframe_cursor_position(WINDOW *wp)
 	&&lp != wp->w_line.l) {	/* no need to set it if already there */
 	wp->w_line.l = lp;
 	wp->w_flag |= WFHARD;
-	wp->w_flag &= ~WFFORCE;
+	wp->w_flag &= (USHORT) (~WFFORCE);
     }
 #ifdef WMDLINEWRAP
     /*
@@ -3758,17 +3759,17 @@ reframe_cursor_position(WINDOW *wp)
 	if (want + wp->w_line.o >= wp->w_ntrows) {
 	    wp->w_line.o = wp->w_ntrows - want - 1;
 	    wp->w_flag |= WFHARD;
-	    wp->w_flag &= ~WFFORCE;
+	    wp->w_flag &= (USHORT) (~WFFORCE);
 	} else if (want + wp->w_line.o < 0) {
 	    wp->w_line.o = -want;
 	    wp->w_flag |= WFHARD;
-	    wp->w_flag &= ~WFFORCE;
+	    wp->w_flag &= (USHORT) (~WFFORCE);
 	}
     } else if (!w_val(wp, WMDLINEWRAP)) {
 	if (wp->w_line.o < 0) {
 	    wp->w_line.o = 0;
 	    wp->w_flag |= WFHARD;
-	    wp->w_flag &= ~WFFORCE;
+	    wp->w_flag &= (USHORT) (~WFFORCE);
 	}
     }
 #endif
@@ -3940,7 +3941,7 @@ update(int force /* force update past type ahead? */ )
 	} else if (wp->w_flag & WFSTAT) {
 	    wp->w_flag |= WFMODE;
 	}
-	wp->w_flag &= ~WFSTAT;
+	wp->w_flag &= (USHORT) (~WFSTAT);
     }
 #endif
 
@@ -3954,7 +3955,7 @@ update(int force /* force update past type ahead? */ )
 		reframe_cursor_position(wp);	/* check the framing */
 		if (wp->w_flag & (WFKILLS | WFINS)) {
 		    scrflags |= (wp->w_flag & (WFINS | WFKILLS));
-		    wp->w_flag &= ~(WFKILLS | WFINS);
+		    wp->w_flag &= (USHORT) (~(WFKILLS | WFINS));
 		}
 		if ((wp->w_flag & ~(WFMODE)) == WFEDIT)
 		    update_oneline(wp);		/* update EDITed line */
@@ -4065,7 +4066,7 @@ hilite(int row, int colfrom, int colto, int on)
 	} else {
 	    int col;
 	    for (col = colfrom; col < colto; col++)
-		vscreen[row]->v_attrs[col] &= ~VAREV;
+		vscreen[row]->v_attrs[col] &= (VIDEO_ATTR) (~VAREV);
 	}
 	vscreen[row]->v_flag |= VFCHG;
 	update_line(row, 0, term.cols);
@@ -4761,7 +4762,8 @@ imworking(int ACTUAL_SIG_ARGS GCC_UNUSED)
 		    else if (max_working != 0) {
 			strcat(result, " ");
 			strcat(result, right_num(temp, 2,
-						 (100 * cur_working) / max_working));
+						 (long) ((100 * cur_working)
+							 / max_working)));
 			strcat(result, "%");
 		    } else
 			strcat(result, " ...");
@@ -4844,7 +4846,7 @@ psc_putchar(int c)
 
 	SWAP_VT_PSC;
 
-	temp[0] = c;
+	temp[0] = (char) c;
 	vtputc(wminip, temp, 1);
 	vscreen[vtrow]->v_flag |= VFCHG;
 

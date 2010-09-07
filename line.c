@@ -10,7 +10,7 @@
  * editing must be being displayed, which means that "b_nwnd" is non zero,
  * which means that the dot and mark values in the buffer headers are nonsense.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.213 2010/05/02 22:01:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.216 2010/09/07 00:29:28 tom Exp $
  *
  */
 
@@ -26,7 +26,7 @@
 
 #include <assert.h>
 
-#define roundlenup(n) ((n+NBLOCK-1) & (UINT)~(NBLOCK-1))
+#define roundlenup(n) (((size_t) (n) + NBLOCK - 1) & (size_t)~(NBLOCK-1))
 
 static int doput(int f, int n, int after, REGIONSHAPE shape);
 static int ldelnewline(void);
@@ -422,7 +422,7 @@ lins_bytes(int n, int c)
 	nsize = (size_t) (llength(lp1) + 1 + doto + n);
 	if (nsize > lp1->l_size) {	/* Hard: reallocate     */
 	    /* first, create the new image */
-	    nsize = roundlenup((int) nsize);
+	    nsize = roundlenup(nsize);
 	    CopyForUndo(lp1);
 	    if ((ntext = castalloc(char, nsize)) == NULL) {
 		rc = FALSE;
@@ -798,10 +798,10 @@ ldel_bytes(B_COUNT nbytes, int kflag)
 	}
 	while (cp2 != lvalue(dotp) + llength(dotp))
 	    *cp1++ = *cp2++;
-	llength(dotp) -= schunk;
+	llength(dotp) -= (int) schunk;
 #if ! WINMARK
 	if (MK.l == dotp && MK.o > doto) {
-	    MK.o -= schunk;
+	    MK.o -= (C_NUM) schunk;
 	    if (MK.o < doto)
 		MK.o = doto;
 	}
@@ -809,7 +809,7 @@ ldel_bytes(B_COUNT nbytes, int kflag)
 	for_each_window(wp) {	/* Fix windows          */
 	    if (wp->w_dot.l == dotp
 		&& wp->w_dot.o > doto) {
-		wp->w_dot.o -= schunk;
+		wp->w_dot.o -= (C_NUM) schunk;
 		if (wp->w_dot.o < doto)
 		    wp->w_dot.o = doto;
 	    }
@@ -823,7 +823,7 @@ ldel_bytes(B_COUNT nbytes, int kflag)
 #endif
 	    if (wp->w_lastdot.l == dotp
 		&& wp->w_lastdot.o > doto) {
-		wp->w_lastdot.o -= schunk;
+		wp->w_lastdot.o -= (C_NUM) schunk;
 		if (wp->w_lastdot.o < doto)
 		    wp->w_lastdot.o = doto;
 	    }
@@ -831,13 +831,13 @@ ldel_bytes(B_COUNT nbytes, int kflag)
 	do_mark_iterate(mp, {
 	    if (mp->l == dotp
 		&& mp->o > doto) {
-		mp->o -= schunk;
+		mp->o -= (C_NUM) schunk;
 		if (mp->o < doto)
 		    mp->o = doto;
 	    }
 	});
 #if OPT_LINE_ATTRS
-	if (!lattr_shift(curbp, dotp, doto, -schunk)) {
+	if (!lattr_shift(curbp, dotp, doto, (int) -schunk)) {
 	    status = FALSE;
 	    break;
 	}
@@ -940,7 +940,7 @@ lrepl_regex(REGEXVAL * rexp, const char *np, int length)
 	mayneedundo();
 
 	if (lregexec(exp, DOT.l, DOT.o, llength(DOT.l))) {
-	    int old = exp->endp[0] - exp->startp[0];
+	    int old = (int) (exp->endp[0] - exp->startp[0]);
 	    if (old > 0) {
 		regionshape = rgn_EXACT;
 		status = forwdelchar(TRUE, old);
@@ -1770,7 +1770,7 @@ execkreg(int f, int n)
 	    i = (int) KbSize(jj, tkp);
 	    sp = (char *) tkp->d_chunk + i - 1;
 	    while (i--) {
-		mapungetc((int) ((*sp--) | YESREMAP));
+		mapungetc((int) ((UINT) (*sp--) | YESREMAP));
 	    }
 	    kbcount--;
 	}
@@ -1788,7 +1788,7 @@ loadkreg(int f, int n GCC_UNUSED)
     ksetup();
     *respbuf = EOS;
     s = mlreply_no_opts("Load register with: ",
-			respbuf, sizeof(respbuf));
+			respbuf, (UINT) sizeof(respbuf));
     if (s != TRUE)
 	return FALSE;
     if (f)

@@ -2,7 +2,7 @@
  *	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.370 2010/06/12 18:28:36 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.373 2010/09/06 00:34:09 tom Exp $
  *
  */
 
@@ -14,7 +14,6 @@
  *    NO_WIDGETS	-- Use only Xlib and X toolkit (Xt)
  *    ATHENA_WIDGETS	-- Use Xlib, Xt, and Xaw widget set
  *    MOTIF_WIDGETS	-- Use Xlib, Xt, and Motif widget set
- *    OL_WIDGETS	-- Use Xlib, Xt, and Openlook widget set
  *
  * We derive/set from the configure script some flags that allow intermediate
  * configurations between NO_WIDGETS and ATHENA_WIDGETS
@@ -48,23 +47,18 @@
 /* sanity-check, so we know it's safe to not nest ifdef's */
 
 #if NO_WIDGETS
-# if ATHENA_WIDGETS || MOTIF_WIDGETS || OL_WIDGETS
+# if ATHENA_WIDGETS || MOTIF_WIDGETS
 > make an error <
 # endif
 #else
 # if ATHENA_WIDGETS
-#  if MOTIF_WIDGETS || OL_WIDGETS
+#  if MOTIF_WIDGETS
 > make an error <
 #  endif
 # else
 #  if MOTIF_WIDGETS
-#   if OL_WIDGETS
->make an error <
-#   endif
 #  else
-#   if !OL_WIDGETS
 >make an error <
-#   endif
 #  endif
 # endif
 #endif
@@ -141,16 +135,6 @@
 #include	<X11/neXtaw/XawImP.h>
 #endif
 #endif /* OPT_XAW_SCROLLBARS */
-
-#if OL_WIDGETS
-#undef BANG
-#define OWTOOLKIT_WARNING_DISABLED
-#include	<Xol/OpenLook.h>
-#include	<Xol/Form.h>
-#include	<Xol/BulletinBo.h>
-#include	<Xol/Slider.h>
-#include	<Xol/Scrollbar.h>
-#endif /* OL_WIDGETS */
 
 #include	<X11/Shell.h>
 #include	<X11/keysym.h>
@@ -256,7 +240,7 @@
 # define PANE_WIDTH_DEFAULT 15
 # define PANE_WIDTH_MIN 7
 #else
-# if MOTIF_WIDGETS || OL_WIDGETS
+# if MOTIF_WIDGETS
 #  define PANE_WIDTH_DEFAULT 20
 #  define PANE_WIDTH_MIN 10
 # endif
@@ -351,9 +335,6 @@ typedef struct _text_win {
     int maxscrollbars;		/* how many scrollbars, sliders, etc. */
     Widget *scrollbars;		/* the scrollbars */
     int nscrollbars;		/* number of currently active scroll bars */
-#if OL_WIDGETS
-    Widget *sliders;
-#endif
 
 #if OPT_MENUS_COLORED
     Pixel menubar_fg;		/* color of the menubar */
@@ -565,7 +546,7 @@ static void x_ccol(int);
 #define	x_ccol	nullterm_setccol
 #endif
 
-static int set_character_class(char *s);
+static int set_character_class(const char *s);
 static void x_touch(TextWindow tw, int sc, int sr, UINT ec, UINT er);
 static void x_own_selection(Atom selection);
 static Boolean x_get_selected_text(UCHAR ** datp, size_t *lenp);
@@ -632,7 +613,11 @@ static void evqadd(const XEvent * evp);
 #define	x_pos(tw, c)		((c) * (tw)->char_width)
 #define	y_pos(tw, r)		((r) * (tw)->char_height)
 #define	text_y_pos(tw, r)	(y_pos((tw), (r)) + (tw)->char_ascent)
+
+#undef min
 #define min(a,b)		((a) < (b) ? (a) : (b))
+
+#undef max
 #define max(a,b)		((a) > (b) ? (a) : (b))
 
 #if KEV_WIDGETS
@@ -767,9 +752,11 @@ set_pointer(Window win, Cursor cursor)
     XRecolorCursor(dpy, cursor, colordefs, colordefs + 1);
 }
 
-#if !OPT_KEV_DRAGGING
+#if !OPT_KEV_SCROLLBARS && !OPT_XAW_SCROLLBARS
 static int dont_update_sb = FALSE;
+#endif
 
+#if !OPT_KEV_DRAGGING
 static void
 set_scroll_window(long n)
 {
@@ -783,136 +770,6 @@ set_scroll_window(long n)
 }
 #endif /* !OPT_KEV_DRAGGING */
 
-#if OL_WIDGETS
-static void
-JumpProc(Widget scrollbar,
-	 XtPointer closure,
-	 XtPointer call_data)
-{
-    long value = (long) closure;
-    OlScrollbarVerify *cbs = (OlScrollbarVerify *) call_data;
-
-    if (value >= cur_win->nscrollbars)
-	return;
-    set_scroll_window(value);
-    mvupwind(TRUE,
-	     line_no(curwp->w_bufp, curwp->w_line.l) - cbs->new_location);
-    dont_update_sb = TRUE;
-    (void) update(TRUE);
-    dont_update_sb = FALSE;
-}
-
-static void
-grip_moved(Widget slider,
-	   XtPointer closure,
-	   XtPointer call_data)
-{
-    WINDOW *wp, *saved_curwp;
-    int nlines;
-    long i = (long) closure;
-    OlScrollbarVerify *cbs = (OlScrollbarVerify *) call_data;
-
-    for_each_visible_window(wp) {
-	if (i-- == 0)
-	    break;
-    }
-    if (!wp)
-	return;
-    saved_curwp = curwp;
-    nlines = -cbs->new_location;
-    if (nlines < 1)
-	nlines = 1;
-    curwp = wp;
-    resize(TRUE, nlines);
-    set_curwp(saved_curwp);
-    (void) update(TRUE);
-}
-
-static void
-update_scrollbar_sizes(void)
-{
-    WINDOW *wp;
-    int i, newsbcnt;
-    Dimension new_height;
-
-    i = 0;
-    for_each_visible_window(wp)
-	i++;
-    newsbcnt = i;
-
-    /* Create any needed new scrollbars and sliders */
-    for (i = cur_win->nscrollbars + 1; i <= newsbcnt; i++)
-	if (cur_win->scrollbars[i] == NULL) {
-	    cur_win->scrollbars[i] = XtVaCreateWidget("scrollbar",
-						      scrollbarWidgetClass,
-						      cur_win->pane,
-						      Nval(XtNtranslations, cur_win->my_scrollbars_trans),
-						      NULL);
-	    XtAddCallback(cur_win->scrollbars[i],
-			  XtNsliderMoved, JumpProc, (XtPointer) i);
-	    cur_win->sliders[i] = XtVaCreateWidget("slider",
-						   sliderWidgetClass,
-						   cur_win->pane,
-						   NULL);
-	    XtAddCallback(cur_win->sliders[i],
-			  XtNsliderMoved, grip_moved, (XtPointer) i);
-	}
-
-    /* Unmanage current set of scrollbars */
-    if (cur_win->nscrollbars > 0)
-	XtUnmanageChildren(cur_win->scrollbars,
-			   (Cardinal) (cur_win->nscrollbars));
-    if (cur_win->nscrollbars > 1)
-	XtUnmanageChildren(cur_win->sliders,
-			   (Cardinal) (cur_win->nscrollbars - 1));
-
-    /* Set sizes and positions on scrollbars and sliders */
-    cur_win->nscrollbars = newsbcnt;
-    i = 0;
-    for_each_visible_window(wp) {
-	new_height = wp->w_ntrows * cur_win->char_height;
-	XtVaSetValues(cur_win->scrollbars[i],
-		      Nval(XtNy, wp->w_toprow * cur_win->char_height),
-		      Nval(XtNheight, new_height),
-		      Nval(XtNsliderMin, 1),
-		      Nval(XtNsliderMax, 200),
-		      Nval(XtNproportionLength, 2),
-		      Nval(XtNsliderValue, 3),
-		      NULL);
-	if (wp->w_wndp) {
-	    XtVaSetValues(cur_win->sliders[i],
-			  Nval(XtNy, wp->w_toprow * cur_win->char_height),
-			  Nval(XtNheight, ((wp->w_ntrows
-					    + wp->w_wndp->w_ntrows + 1)
-					   * cur_win->char_height)),
-			  Nval(XtNsliderMax, 0),
-			  Nval(XtNsliderMin, -(wp->w_ntrows + wp->w_wndp->w_ntrows)),
-			  Nval(XtNsliderValue, -wp->w_ntrows),
-			  Nval(XtNstopPosition, OL_GRANULARITY),
-			  Nval(XtNendBoxes, FALSE),
-			  Nval(XtNdragCBType, OL_RELEASE),
-			  Nval(XtNbackground, cur_win->fg),
-			  NULL);
-	}
-	wp->w_flag &= ~WFSBAR;
-	gui_update_scrollbar(wp);
-	i++;
-    }
-
-    /* Manage the sliders */
-    if (cur_win->nscrollbars > 1)
-	XtManageChildren(cur_win->sliders,
-			 (Cardinal) (cur_win->nscrollbars - 1));
-
-    /* Manage the current set of scrollbars */
-    XtManageChildren(cur_win->scrollbars,
-		     (Cardinal) (cur_win->nscrollbars));
-
-    for (i = 0; i < cur_win->nscrollbars; i++)
-	XRaiseWindow(dpy, XtWindow(cur_win->scrollbars[i]));
-}
-
-#else
 #if MOTIF_WIDGETS
 
 static void
@@ -1083,7 +940,7 @@ JumpProc(Widget scrollbar GCC_UNUSED,
 	set_scroll_window(value);
 	lcur = line_no(curwp->w_bufp, curwp->w_line.l);
 	lmax = vl_line_count(curwp->w_bufp);
-	mvupwind(TRUE, (int) (lcur - lmax * (*percent)));
+	mvupwind(TRUE, (int) ((float) lcur - (float) lmax * (*percent)));
 	(void) update(TRUE);
     }
 }
@@ -1167,7 +1024,7 @@ update_scrollbar_sizes(void)
 	L_NUM total = vl_line_count(curwp->w_bufp);
 	L_NUM thumb = line_no(curwp->w_bufp, curwp->w_line.l);
 
-	new_height = wp->w_ntrows * cur_win->char_height;
+	new_height = (Dimension) (wp->w_ntrows * cur_win->char_height);
 	cur_win->scrollinfo[i].totlen = new_height;
 	XtVaSetValues(cur_win->scrollbars[i],
 		      Nval(XtNy, wp->w_toprow * cur_win->char_height),
@@ -1178,9 +1035,9 @@ update_scrollbar_sizes(void)
 		      Nval(XtNhorizDistance, 1),
 		      NULL);
 	XawScrollbarSetThumb(cur_win->scrollbars[i],
-			     ((float) (thumb - 1)) / max(total, 1),
-			     ((float) wp->w_ntrows) / max(total, wp->w_ntrows));
-	wp->w_flag &= ~WFSBAR;
+			     ((float) (thumb - 1)) / (float) max(total, 1),
+			     ((float) wp->w_ntrows) / (float) max(total, wp->w_ntrows));
+	wp->w_flag &= (USHORT) (~WFSBAR);
 	gui_update_scrollbar(wp);
 	if (wp->w_wndp) {
 	    XtVaSetValues(cur_win->grips[i],
@@ -1462,7 +1319,6 @@ x_expose_scrollbar(Widget w,
 #endif /* OPT_KEV_SCROLLBARS  */
 #endif /* OPT_XAW_SCROLLBARS  */
 #endif /* MOTIF_WIDGETS */
-#endif /* OL_WIDGETS */
 
 #if OPT_KEV_DRAGGING
 static void
@@ -1729,19 +1585,10 @@ gui_update_scrollbar(WINDOW *uwp)
 					  : 1)),
 		  NULL);
 #else
-#if OL_WIDGETS
-    lcnt += 1;
-    XtVaSetValues(cur_win->scrollbars[i],
-		  Nval(XtNsliderMin, 1),
-		  Nval(XtNsliderMax, lcnt + wp->w_ntrows),
-		  Nval(XtNproportionLength, wp->w_ntrows),
-		  Nval(XtNsliderValue, lnum),
-		  NULL);
-#else
 #if OPT_XAW_SCROLLBARS
     XawScrollbarSetThumb(cur_win->scrollbars[i],
-			 ((float) (lnum - 1)) / max(lcnt, wp->w_ntrows),
-			 ((float) wp->w_ntrows) / max(lcnt, wp->w_ntrows));
+			 ((float) (lnum - 1)) / (float) max(lcnt, wp->w_ntrows),
+			 ((float) wp->w_ntrows) / (float) max(lcnt, wp->w_ntrows));
 #else
 #if OPT_KEV_SCROLLBARS
     {
@@ -1755,7 +1602,6 @@ gui_update_scrollbar(WINDOW *uwp)
     }
 #endif /* OPT_KEV_SCROLLBARS */
 #endif /* OPT_XAW_SCROLLBARS */
-#endif /* OL_WIDGETS */
 #endif /* MOTIF_WIDGETS */
 }
 
@@ -2358,7 +2204,7 @@ x_preparse_args(int *pargc, char ***pargv)
     int i;
     int status = TRUE;
     Cardinal start_cols, start_rows;
-    char *xvile_class = MY_CLASS;
+    const char *xvile_class = MY_CLASS;
     static XrmOptionDescRec options[] =
     {
 	{"-t", (char *) 0, XrmoptionSkipArg, (caddr_t) 0},
@@ -2368,7 +2214,7 @@ x_preparse_args(int *pargc, char ***pargv)
 	{"-rightbar", "*scrollbarOnLeft", XrmoptionNoArg, "false"},
 	{"-class", NULL, XrmoptionSkipArg, (caddr_t) 0},
     };
-#if MOTIF_WIDGETS || OL_WIDGETS
+#if MOTIF_WIDGETS
     static XtActionsRec new_actions[] =
     {
 	{"ConfigureBar", configure_bar}
@@ -2438,20 +2284,9 @@ x_preparse_args(int *pargc, char ***pargv)
 #endif
     static char stippled_pixmap_bits[] =
     {'\002', '\001'};
-#endif /* MOTIF_WIDGETS || OL_WIDGETS */
+#endif /* MOTIF_WIDGETS */
 
     TRACE((T_CALLED "x_preparse_args\n"));
-#if OL_WIDGETS
-    /* There is a cryptic statement in the poor documentation that I have
-     * on OpenLook that OlToolkitInitialize is now preferred to the older
-     * OlInitialize (which is used in the examples and is documented better).
-     * The documentation I have says that OlToolkitInitialize returns a
-     * widget.  I don't believe it, nor do I understand what kind of widget
-     * it would be.  I get the impression that it takes one argument, but
-     * I don't know what that argument is supposed to be.
-     */
-    (void) OlToolkitInitialize(NULL);
-#endif /* OL_WIDGETS */
 
     for (i = 1; i < (*pargc) - 1; i++) {
 	char *param = (*pargv)[i];
@@ -2478,7 +2313,7 @@ x_preparse_args(int *pargc, char ***pargv)
     cur_win->top_widget = XtVaAppInitialize(&cur_win->app_context,
 					    xvile_class,
 					    options, XtNumber(options),
-					    pargc, *pargv,
+					    pargc, (String *) (*pargv),
 					    fallback_resources,
 					    Nval(XtNgeometry, NULL),
 					    Nval(XtNinput, TRUE),
@@ -2739,13 +2574,6 @@ x_preparse_args(int *pargc, char ***pargv)
 				cur_win->top_widget,
 				NULL);
 #else
-#if OL_WIDGETS
-    cur_win->form_widget =
-	XtVaCreateManagedWidget("form",
-				formWidgetClass,
-				cur_win->top_widget,
-				NULL);
-#else
 #if ATHENA_WIDGETS && OPT_MENUS
     cur_win->pane_widget =
 	XtVaCreateManagedWidget("pane",
@@ -2811,7 +2639,6 @@ x_preparse_args(int *pargc, char ***pargv)
 #endif /* NO_WIDGETS */
 #endif /* ATHENA_WIDGETS */
 #endif /* ATHENA_WIDGETS && OPT_MENUS */
-#endif /* OL_WIDGETS */
 #endif /* MOTIF_WIDGETS */
 
 #if OPT_MENUS
@@ -2856,12 +2683,6 @@ x_preparse_args(int *pargc, char ***pargv)
 				Nval(XmNleftAttachment, XmATTACH_FORM),
 				Nval(XmNrightAttachment, XmATTACH_NONE),
 #else
-#if OL_WIDGETS
-				Nval(XtNyAttachBottom, TRUE),
-				Nval(XtNyVaryOffset, FALSE),
-				Nval(XtNxAddWidth, TRUE),
-				Nval(XtNyAddHeight, TRUE),
-#else
 #if OPT_KEV_SCROLLBARS || OPT_XAW_SCROLLBARS
 #if !OPT_KEV_SCROLLBARS
 				Sval(XtNleft, XtChainLeft),
@@ -2872,7 +2693,6 @@ x_preparse_args(int *pargc, char ***pargv)
 					    : 0)),
 				Nval(XtNy, 0),
 #endif /* OPT_KEV_SCROLLBARS */
-#endif /* OL_WIDGETS */
 #endif /* MOTIF_WIDGETS */
 				NULL);
 
@@ -3162,21 +2982,6 @@ x_preparse_args(int *pargc, char ***pargv)
 				Nval(XmNseparatorOn, FALSE),
 				NULL);
 #else
-#if OL_WIDGETS
-    cur_win->pane =
-	XtVaCreateManagedWidget("scrollPane",
-				bulletinBoardWidgetClass,
-				cur_win->form_widget,
-				Nval(XtNwidth, cur_win->pane_width),
-				Nval(XtNheight, x_height(cur_win)),
-				Nval(XtNxRefWidget, cur_win->screen),
-				Nval(XtNyAttachBottom, TRUE),
-				Nval(XtNyVaryOffset, FALSE),
-				Nval(XtNxAddWidth, TRUE),
-				Nval(XtNyAddHeight, TRUE),
-				Nval(XtNlayout, OL_IGNORE),
-				NULL);
-#else
 #if OPT_XAW_SCROLLBARS
     cur_win->my_resizeGrip_trans = XtParseTranslationTable(resizeGrip_translations);
     cur_win->pane =
@@ -3184,7 +2989,7 @@ x_preparse_args(int *pargc, char ***pargv)
 				formWidgetClass,
 				cur_win->form_widget,
 				Nval(XtNwidth, cur_win->pane_width + 2),
-				Nval(XtNheight, (x_height(cur_win)
+				Nval(XtNheight, ((int) x_height(cur_win)
 						 - cur_win->char_height)),
 				Nval(XtNx, (cur_win->scrollbar_on_left
 					    ? 0
@@ -3226,7 +3031,6 @@ x_preparse_args(int *pargc, char ***pargv)
 				NULL);
 #endif /* OPT_KEV_SCROLLBARS */
 #endif /* OPT_XAW_SCROLLBARS */
-#endif /* OL_WIDGETS */
 #endif /* MOTIF_WIDGETS */
 
 #if OPT_KEV_SCROLLBARS || OPT_XAW_SCROLLBARS
@@ -3259,17 +3063,6 @@ x_preparse_args(int *pargc, char ***pargv)
 		      Nval(XmNleftAttachment, XmATTACH_NONE),
 		      Nval(XmNrightAttachment, XmATTACH_FORM),
 		      NULL);
-#else /* !MOTIF_WIDGETS */
-# if OL_WIDGETS
-	XtVaSetValues(cur_win->pane,
-		      Nval(XtNxRefWidget, cur_win->form_widget),
-		      NULL);
-	XtVaSetValues(cur_win->screen,
-		      Nval(XtNxRefWidget, cur_win->pane),
-		      NULL);
-# else
-	/* EMPTY */ ;
-# endif				/* OL_WIDGETS */
 #endif /* !MOTIF_WIDGETS */
     }
 
@@ -3861,12 +3654,13 @@ x_menu_height(void)
 int
 x_menu_foreground(void)
 {
-    return cur_win->menubar_fg;
+    return (int) cur_win->menubar_fg;
 }
+
 int
 x_menu_background(void)
 {
-    return cur_win->menubar_bg;
+    return (int) cur_win->menubar_bg;
 }
 #endif /* OPT_MENUS_COLORED */
 
@@ -3960,9 +3754,6 @@ x_open(void)
 #if OPT_KEV_SCROLLBARS || OPT_XAW_SCROLLBARS
 	cur_win->scrollinfo = NULL;
 	cur_win->grips = NULL;
-#endif
-#if OL_WIDGETS
-	cur_win->sliders = NULL;
 #endif
 
 	/* main code assumes that it can access a cell at nrow x ncol */
@@ -4505,7 +4296,7 @@ set_character_class_range(int low, int high, int value)
  */
 
 static int
-set_character_class(char *s)
+set_character_class(const char *s)
 {
     int i;			/* iterator, index into s */
     int len;			/* length of s */
@@ -4514,7 +4305,7 @@ set_character_class(char *s)
     int base;			/* 8, 10, 16 (octal, decimal, hex) */
     int numbers;		/* count of numbers per range */
     int digits;			/* count of digits in a number */
-    static char *errfmt = "xvile:  %s in range string \"%s\" (position %d)\n";
+    static const char *errfmt = "xvile:  %s in range string \"%s\" (position %d)\n";
 
     if (!s || !s[0])
 	return -1;
@@ -5636,9 +5427,6 @@ x_configure_window(Widget w GCC_UNUSED,
     XtVaSetValues(cur_win->pane,
 #if !OPT_KEV_SCROLLBARS && !OPT_XAW_SCROLLBARS
 		  Nval(XtNwidth, cur_win->pane_width),
-#if OL_WIDGETS
-		  Nval(XtNheight, new_height),
-#endif /* OL_WIDGETS */
 #else /* OPT_KEV_SCROLLBARS */
 		  Nval(XtNx, (cur_win->scrollbar_on_left
 			      ? 0
@@ -5718,9 +5506,6 @@ check_scrollbar_allocs(void)
     if (newmax > oldmax) {
 
 	GROW(cur_win->scrollbars, Widget, oldmax, newmax);
-#if OL_WIDGETS
-	GROW(cur_win->sliders, Widget, oldmax, newmax);
-#endif
 #if OPT_KEV_SCROLLBARS || OPT_XAW_SCROLLBARS
 	GROW(cur_win->scrollinfo, ScrollInfo, oldmax, newmax);
 	GROW(cur_win->grips, Widget, oldmax, newmax);
@@ -5810,7 +5595,7 @@ x_change_focus(Widget w GCC_UNUSED,
 	cur_win->show_cursor = True;
 #if MOTIF_WIDGETS
 	XmProcessTraversal(cur_win->screen, XmTRAVERSE_CURRENT);
-#else /* OL_WIDGETS || NO_WIDGETS */
+#else /* NO_WIDGETS */
 	XtSetKeyboardFocus(w, cur_win->screen);
 #endif
 	x_flush();
@@ -6713,10 +6498,10 @@ x_set_window_name(const char *name)
     }
 }
 
-char *
+const char *
 x_get_window_name(void)
 {
-    char *result;
+    const char *result;
 #ifdef USE_SET_WM_NAME
     result = x_window_name;
 #else

@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/rubyfilt.c,v 1.51 2010/07/13 13:37:15 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/rubyfilt.c,v 1.52 2010/09/06 11:59:36 tom Exp $
  *
  * Filter to add vile "attribution" sequences to ruby scripts.  This is a
  * translation into C of an earlier version written for LEX/FLEX.
@@ -559,7 +559,7 @@ static void
 make_here_tag(char *value, int quote, int strip)
 {
     size_t size = 0;
-    HERE_TAGS *data = type_alloc(HERE_TAGS, (char *) 0, 1, &size);
+    HERE_TAGS *data = type_alloc(HERE_TAGS, (char *) 0, (size_t) 1, &size);
 
     if (data != 0) {
 	HERE_TAGS *p = here_tags;

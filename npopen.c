@@ -1,7 +1,7 @@
 /*	npopen:  like popen, but grabs stderr, too
  *		written by John Hutchinson, heavily modified by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/npopen.c,v 1.98 2009/10/31 17:03:26 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/npopen.c,v 1.99 2010/09/06 18:47:30 tom Exp $
  *
  */
 
@@ -117,7 +117,7 @@ inout_popen(FILE **fr, FILE **fw, char *cmd)
 	if (fw) {
 	    (void) close(0);
 	    if (dup(wp[0]) != 0) {
-		IGNORE_RC( write(2, "dup 0 failed\r\n", 15));
+		IGNORE_RC( write(2, "dup 0 failed\r\n", (size_t) 15));
 		exit(-1);
 	    }
 	}
@@ -125,12 +125,12 @@ inout_popen(FILE **fr, FILE **fw, char *cmd)
 	if (fr) {
 	    (void) close(1);
 	    if (dup(rp[1]) != 1) {
-		IGNORE_RC( write(2, "dup 1 failed\r\n", 15));
+		IGNORE_RC( write(2, "dup 1 failed\r\n", (size_t) 15));
 		exit(-1);
 	    }
 	    (void) close(2);
 	    if (dup(rp[1]) != 2) {
-		IGNORE_RC( write(1, "dup 2 failed\r\n", 15));
+		IGNORE_RC( write(1, "dup 2 failed\r\n", (size_t) 15));
 		exit(-1);
 	    }
 	} else {
@@ -218,7 +218,7 @@ exec_sh_c(char *cmd)
     } else {
 	(void) execlp(sh, shname, (void *) 0);
     }
-    IGNORE_RC( write(2, "exec failed\r\n", 14));
+    IGNORE_RC( write(2, "exec failed\r\n", (size_t) 14));
     exit(-1);
 }
 
@@ -248,7 +248,7 @@ system_SHELL(char *cmd)
 
     cpid = softfork();
     if (cpid < 0) {
-	IGNORE_RC( write(2, "cannot fork\n", 13));
+	IGNORE_RC( write(2, "cannot fork\n", (size_t) 13));
 	return cpid;
     }
 
@@ -270,7 +270,7 @@ system_SHELL(char *cmd)
     } else {
 	beginDisplay();
 	exec_sh_c(cmd);
-	IGNORE_RC( write(2, "cannot exec\n", 13));
+	IGNORE_RC( write(2, "cannot exec\n", (size_t) 13));
 	endofDisplay();
 	return -1;
     }

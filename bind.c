@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.350 2010/05/18 23:10:27 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.352 2010/09/06 17:45:49 tom Exp $
  *
  */
 
@@ -775,7 +775,7 @@ update_binding_list(BUFFER *bp GCC_UNUSED)
 }
 
 static int
-describe_any_bindings(char *lookup, int whichcmd)
+describe_any_bindings(char *lookup, CMDFLAGS whichcmd)
 {
     last_lookup_string = lookup;
     last_whichcmds = whichcmd;
@@ -787,7 +787,7 @@ describe_any_bindings(char *lookup, int whichcmd)
 int
 desbind(int f GCC_UNUSED, int n GCC_UNUSED)
 {
-    return describe_any_bindings((char *) 0, 0);
+    return describe_any_bindings((char *) 0, (CMDFLAGS) 0);
 }
 
 static int
@@ -795,7 +795,7 @@ describe_alternate_bindings(BINDINGS * bs)
 {
     int code;
     bindings_to_describe = bs;
-    code = describe_any_bindings((char *) 0, 0);
+    code = describe_any_bindings((char *) 0, (CMDFLAGS) 0);
     bindings_to_describe = &dft_bindings;
     return code;
 }
@@ -840,11 +840,11 @@ dessubstr(int f GCC_UNUSED, int n GCC_UNUSED)
     int s;
     static char substring[NSTRING];
 
-    s = mlreply("Apropos string: ", substring, sizeof(substring));
+    s = mlreply("Apropos string: ", substring, (UINT) sizeof(substring));
     if (s != TRUE)
 	return (s);
 
-    return describe_any_bindings(substring, 0);
+    return describe_any_bindings(substring, (CMDFLAGS) 0);
 }
 
 static char described_cmd[NLINE + 1];	/* string to match cmd names to */
@@ -866,7 +866,7 @@ desfunc(int f GCC_UNUSED, int n GCC_UNUSED)
 	s = no_such_function(fnp);
     } else {
 	append_to_binding_list = TRUE;
-	s = describe_any_bindings(described_cmd, 0);
+	s = describe_any_bindings(described_cmd, (CMDFLAGS) 0);
 	append_to_binding_list = FALSE;
     }
     return s;
@@ -1000,7 +1000,7 @@ prompt_describe_key(BINDINGS * bs)
     described_cmd[0] = '^';
     (void) strcpy(described_cmd + 1, temp.n_name);
     append_to_binding_list = TRUE;
-    s = describe_any_bindings(described_cmd, 0);
+    s = describe_any_bindings(described_cmd, (CMDFLAGS) 0);
     append_to_binding_list = FALSE;
 
     mlwrite("Key sequence '%s' is bound to function \"%s\"",
@@ -1052,7 +1052,7 @@ static unsigned
 converted_len(char *buffer)
 {
     unsigned len = 0, c;
-    while ((c = *buffer++) != EOS) {
+    while ((c = CharOf(*buffer++)) != EOS) {
 	if (c == '\t')
 	    len |= 7;
 	len++;
@@ -1321,7 +1321,7 @@ makebindlist(int whichmask, void *mstring)
 {
     struct bindlist_data data;
 
-    data.mask = whichmask;
+    data.mask = (UINT) whichmask;
     data.min = SHORT_CMD_LEN;
     data.apropos = (char *) mstring;
     data.bs = bindings_to_describe;
@@ -1542,10 +1542,10 @@ check_file_access(char *fname, UINT mode)
 	     * those as an ordered list.  Hence, setting "home" implies we
 	     * also check "current", since that is the first item in the list.
 	     */
-	    if ((mode & FL_ALWAYS) && !(check & FL_ALWAYS)) {
+	    if ((mode & FL_ALWAYS) && !((UINT) check & FL_ALWAYS)) {
 		doit = FALSE;
 	    } else if ((mode
-			& (check * 2 - 1)
+			& ((UINT) check * 2 - 1)
 			& ~(FL_EXECABLE | FL_WRITEABLE | FL_READABLE)) != 0) {
 		doit = TRUE;
 	    }
@@ -1789,8 +1789,9 @@ list_which_file_in_list(char *list, char *fname, UINT mode)
 static void
 list_which(LIST_ARGS)
 {
+    UINT uflag = (UINT) flag;
     char *fname = (char *) ptr;
-    UINT mode = (flag & (FL_EXECABLE | FL_WRITEABLE | FL_READABLE));
+    UINT mode = (uflag & (FL_EXECABLE | FL_WRITEABLE | FL_READABLE));
 
     /* take care of special cases */
     if (!fname || !fname[0] || isSpace(fname[0]))
@@ -1803,27 +1804,27 @@ list_which(LIST_ARGS)
 	    fname);
 
     /* look in the current directory */
-    if (flag & FL_CDIR) {
+    if (uflag & FL_CDIR) {
 	bprintf("\n$cwd");
 	list_one_fname(fname, FL_CDIR | mode);
     }
 
-    if (flag & FL_HOME) {	/* look in the home directory */
+    if (uflag & FL_HOME) {	/* look in the home directory */
 	bprintf("\n$HOME");
 	list_which_fname(home_dir(), fname, FL_HOME | mode);
     }
 
-    if (flag & FL_EXECDIR) {	/* look in vile's bin directory */
+    if (uflag & FL_EXECDIR) {	/* look in vile's bin directory */
 	bprintf("\n$exec-path");
 	list_which_fname(exec_pathname, fname, FL_EXECDIR | mode);
     }
 
-    if (flag & FL_STARTPATH) {	/* look along "VILE_STARTUP_PATH" */
+    if (uflag & FL_STARTPATH) {	/* look along "VILE_STARTUP_PATH" */
 	bprintf("\n$startup-path");
 	list_which_file_in_list(startup_path, fname, FL_STARTPATH | mode);
     }
 
-    if (flag & FL_PATH) {	/* look along "PATH" */
+    if (uflag & FL_PATH) {	/* look along "PATH" */
 #if OPT_PATHLOOKUP
 	bprintf("\n$PATH");
 	list_which_file_in_list(PATH_value(), fname, FL_PATH | mode);
@@ -1831,7 +1832,7 @@ list_which(LIST_ARGS)
 
     }
 
-    if (flag & FL_LIBDIR) {	/* look along "VILE_LIBDIR_PATH" */
+    if (uflag & FL_LIBDIR) {	/* look along "VILE_LIBDIR_PATH" */
 	bprintf("\n$libdir-path");
 	list_which_file_in_list(libdir_path, fname, FL_LIBDIR | mode);
     }
@@ -1845,7 +1846,7 @@ show_which_file(char *fname, UINT mode, int f, int n)
 	mlwrite("%s", result);
     }
     if (f)
-	liststuff(WHICH_BufName, n > 2, list_which, mode, fname);
+	liststuff(WHICH_BufName, n > 2, list_which, (int) mode, fname);
     return (result != 0);
 }
 
@@ -1881,7 +1882,7 @@ which_exec(int f, int n)
 char *
 kcod2pstr(int c, char *seq, int limit)
 {
-    seq[0] = (char) kcod2escape_seq(c, &seq[1], limit - 1);
+    seq[0] = (char) kcod2escape_seq(c, &seq[1], (size_t) (limit - 1));
     return seq;
 }
 
@@ -1904,7 +1905,7 @@ static const struct {
 #endif
 
 #define ADD_KCODE(src) \
-	if ((ptr - base) + (len = strlen(src)) + 3 < limit) { \
+	if (((size_t) (ptr - base) + (len = strlen(src)) + 3) < limit) { \
 	    strcpy(ptr, src); \
 	    ptr += len; \
 	}
@@ -1918,13 +1919,13 @@ kcod2escape_seq(int c, char *ptr, size_t limit)
     char *base = ptr;
 
     if (base != 0 && limit > 5) {
-	if (c & CTLA)
+	if ((UINT) c & CTLA)
 	    *ptr++ = (char) cntl_a;
-	else if (c & CTLX)
+	else if ((UINT) c & CTLX)
 	    *ptr++ = (char) cntl_x;
 
 #if OPT_KEY_MODIFY
-	if (c & mod_KEY) {
+	if ((UINT) c & mod_KEY) {
 	    size_t len;
 	    unsigned n;
 	    for (n = 0; n < TABLESIZE(key_modifiers); ++n) {
@@ -1946,7 +1947,7 @@ kcod2escape_seq(int c, char *ptr, size_t limit)
 #endif
 	}
 #endif
-	if (c & SPEC)
+	if ((UINT) c & SPEC)
 	    *ptr++ = (char) poundc;
 	*ptr++ = (char) c;
 	*ptr = EOS;
@@ -2005,9 +2006,9 @@ kcod2prc(int c, char *seq)
     char temp[NSTRING];
     int length;
 
-    length = kcod2pstr(c, temp, sizeof(temp))[0];
+    length = kcod2pstr(c, temp, (int) sizeof(temp))[0];
 #if OPT_KEY_MODIFY
-    if ((c & mod_KEY) != 0 && (length != 0)) {
+    if (((UINT) c & mod_KEY) != 0 && (length != 0)) {
 	(void) strcpy(seq, temp + 1);
 	if (length < (int) (1 + strlen(temp + 1) + (CharOf(c) == 0))) {
 	    (void) bytes2prc(seq + length - 1, temp + length, 1);
@@ -2290,7 +2291,7 @@ decode_prefix(const char *kk, UINT * prefix)
 		    bits = CTLX;
 		if (isCntrl(poundc) && ch == (UCHAR) toalpha(poundc))
 		    bits = SPEC;
-	    } else if (!strncmp(kk, "FN", 2)) {
+	    } else if (!strncmp(kk, "FN", (size_t) 2)) {
 		bits = SPEC;
 	    }
 	    if (bits != 0)
@@ -2329,13 +2330,13 @@ prc2kcod(const char *kk)
 		break;
 	    if (s == kk || s[1] == '\n' || s[1] == '\0')
 		break;
-	    mklower(vl_strncpy(temp, kk, len + 1));
+	    mklower(vl_strncpy(temp, kk, (size_t) (len + 1)));
 	    if (isLower(temp[0]))
 		temp[0] = (char) toUpper(temp[0]);
 	    for (n = 0; n < TABLESIZE(key_modifiers); ++n) {
-		if (!strncmp(key_modifiers[n].name, temp, len)) {
+		if (!strncmp(key_modifiers[n].name, temp, (size_t) len)) {
 		    found = TRUE;
-		    pref |= (key_modifiers[n].code | mod_KEY);
+		    pref |= ((UINT) key_modifiers[n].code | mod_KEY);
 		    break;
 		}
 	    }
@@ -2361,7 +2362,7 @@ prc2kcod(const char *kk)
     }
 #endif
 
-    if (strlen(kk) > 2 && !strncmp(kk, "M-", 2)) {
+    if (strlen(kk) > 2 && !strncmp(kk, "M-", (size_t) 2)) {
 	pref |= HIGHBIT;
 	kk += 2;
     }
@@ -2369,7 +2370,7 @@ prc2kcod(const char *kk)
     if (*kk == '^' && kk[1] != EOS) {	/* control character */
 	kcod = (UCHAR) kk[1];
 	if (isLower(kcod))
-	    kcod = toUpper(kcod);
+	    kcod = (UINT) toUpper(kcod);
 	kcod = tocntrl(kcod);
 	kk += 2;
     } else {			/* any single char, control or not */
@@ -2513,7 +2514,7 @@ kbd_erase(void)
 	kbd_start(&save);
 	if (DOT.o > 0) {
 	    backchar_to_bol(TRUE, 1);
-	    ldel_chars(1, FALSE);
+	    ldel_chars((B_COUNT) 1, FALSE);
 	}
 #ifdef VILE_DEBUG
 	TRACE(("MINI:%2d:%s\n", llength(DOT.l), lp_visible(DOT.l)));
@@ -2532,7 +2533,7 @@ kbd_erase_to_end(int column)
 	if (llength(DOT.l) > 0) {
 	    DOT.o = column;
 	    if (llength(DOT.l) > DOT.o)
-		ldel_bytes(llength(DOT.l) - DOT.o, FALSE);
+		ldel_bytes((B_COUNT) (llength(DOT.l) - DOT.o), FALSE);
 	    TRACE(("NULL:%2d:%s\n", llength(DOT.l), lp_visible(DOT.l)));
 	}
 	kbd_finish(&save);
@@ -2685,7 +2686,7 @@ makecmpllist(int case_insensitive, void *cinfop)
 	    maxlen = l;
     }
 
-    slashcol = (int) (pathleaf(buf) - buf);
+    slashcol = (size_t) (pathleaf(buf) - buf);
     if (slashcol != 0) {
 	char b[NLINE];
 	(void) strncpy(b, buf, slashcol);
@@ -2700,7 +2701,7 @@ makecmpllist(int case_insensitive, void *cinfop)
     if (cmplcols == 0)
 	cmplcols = 1;
 
-    nentries = (int) ((last - first) / size_entry);
+    nentries = (int) ((size_t) (last - first) / size_entry);
     cmplrows = nentries / cmplcols;
     cmpllen = term.cols / cmplcols;
     if (cmplrows * cmplcols < nentries)
@@ -2710,7 +2711,9 @@ makecmpllist(int case_insensitive, void *cinfop)
 	for (j = 0; j < cmplcols; j++) {
 	    int idx = cmplrows * j + i;
 	    if (idx < nentries) {
-		const char *s = THIS_NAME(first + (idx * size_entry)) + slashcol;
+		const char *s = (THIS_NAME(first
+					   + ((size_t) idx * size_entry))
+				 + slashcol);
 		if (j == cmplcols - 1)
 		    bprintf("%s\n", s);
 		else
@@ -2857,7 +2860,7 @@ fill_partial(
 
 	/* scan through the candidates */
 	for (p = first; p != last; p = NEXT_DATA(p)) {
-	    if (StrNcmp(&THIS_NAME(p)[n], &buf[n], 1) != 0) {
+	    if (StrNcmp(&THIS_NAME(p)[n], &buf[n], (size_t) 1) != 0) {
 		buf[n] = EOS;
 		if (n == pos
 #if OPT_POPUPCHOICE
@@ -3190,7 +3193,7 @@ kbd_engl_stat(const char *prompt, char *buffer, int stated)
 #if COMPLETE_FILES
     init_filec(FILECOMPLETION_BufName);
 #endif
-    kbd_flags |= stated;
+    kbd_flags |= (KBD_OPTIONS) stated;
     code = kbd_reply(
 			prompt,	/* no-prompt => splice */
 			&temp,	/* in/out buffer */
@@ -3384,7 +3387,7 @@ kbd_complete_bst(
 		    char *buf,
 		    size_t *pos)
 {
-    unsigned cpos = (unsigned) *pos;
+    size_t cpos = *pos;
     int status = FALSE;
     const char **nptr;
 

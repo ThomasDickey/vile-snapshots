@@ -44,7 +44,7 @@
  *	tgetc_avail()     true if a key is avail from tgetc() or below.
  *	keystroke_avail() true if a key is avail from keystroke() or below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.336 2010/07/25 09:29:16 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.339 2010/09/07 00:27:43 tom Exp $
  *
  */
 
@@ -288,7 +288,7 @@ mlreply_reg_count(int state,	/* negative=register, positive=count, zero=either *
 
     (void) lsprintf(prompt, "Specify%s: ", expect);
     *buffer = EOS;
-    status = kbd_string(prompt, buffer, length, ' ', 0, no_completion);
+    status = kbd_string(prompt, buffer, (size_t) length, ' ', 0, no_completion);
 
     if (status == TRUE) {
 	if (state <= 0
@@ -319,7 +319,7 @@ mlreply_reg_count(int state,	/* negative=register, positive=count, zero=either *
 int
 mlreply(const char *prompt, char *buf, UINT bufn)
 {
-    return kbd_string(prompt, buf, bufn, '\n', KBD_NORMAL, no_completion);
+    return kbd_string(prompt, buf, (size_t) bufn, '\n', KBD_NORMAL, no_completion);
 }
 
 int
@@ -337,7 +337,11 @@ mlreply_no_bs(const char *prompt, char *buf, UINT bufn)
     doing_shell = TRUE;
     init_filec(FILECOMPLETION_BufName);
 #endif
-    s = kbd_string(prompt, buf, bufn, '\n', KBD_EXPAND | KBD_SHPIPE, shell_complete);
+    s = kbd_string(prompt,
+		   buf,
+		   (size_t) bufn,
+		   '\n',
+		   KBD_EXPAND | KBD_SHPIPE, shell_complete);
 #if COMPLETE_FILES
     doing_shell = FALSE;
 #endif
@@ -348,7 +352,7 @@ mlreply_no_bs(const char *prompt, char *buf, UINT bufn)
 int
 mlreply_no_opts(const char *prompt, char *buf, UINT bufn)
 {
-    return kbd_string(prompt, buf, bufn, '\n', 0, no_completion);
+    return kbd_string(prompt, buf, (size_t) bufn, '\n', 0, no_completion);
 }
 
 /* the numbered buffer names increment each time they are referenced */
@@ -409,7 +413,7 @@ get_recorded_char(int eatit)	/* consume the character? */
 	    if (!itb_more(buffer = dotcmd)) {
 		if (!eatit) {
 		    if (dotcmdrep > 1)
-			return itb_get(buffer, 0);
+			return itb_get(buffer, (size_t) 0);
 		} else {	/* at the end of last repetition?  */
 		    if (--dotcmdrep < 1) {
 			dotcmdactive = 0;
@@ -468,7 +472,7 @@ get_recorded_char(int eatit)	/* consume the character? */
 void
 unkeystroke(int c)
 {
-    mapungetc(c | NOREMAP);
+    mapungetc((int) ((UINT) c | NOREMAP));
 }
 
 int
@@ -549,7 +553,7 @@ tgetc(int quoted)
 	/* read a character from the terminal */
 	not_interrupted();
 	if (setjmp(read_jmp_buf)) {
-	    c = kcod2key(intrc);
+	    c = kcod2key((UINT) intrc);
 	    TRACE(("setjmp/getc:%c (%#x)\n", c, c));
 #if defined(BUG_LINUX_2_0_INTR) && DISP_TERMCAP
 	    /*
@@ -570,7 +574,7 @@ tgetc(int quoted)
 	    } while (c == -1);
 	}
 	(void) im_waiting(FALSE);
-	if (quoted || (c != kcod2key(intrc)))
+	if (quoted || (c != kcod2key((UINT) intrc)))
 	    record_char(c);
     }
 
@@ -909,8 +913,8 @@ vl_regex2tbuff(TBUFF **result, REGEXVAL * rexp, int whole_line)
 
 	while (given >= 0) {
 	    if (lregexec(exp, DOT.l, given, llength(DOT.l))) {
-		offset = exp->startp[0] - line_text;
-		length = exp->endp[0] - exp->startp[0];
+		offset = (C_NUM) (exp->startp[0] - line_text);
+		length = (C_NUM) (exp->endp[0] - exp->startp[0]);
 		if ((length > match_len) && (offset + length >= DOT.o)) {
 		    match_off = offset;
 		    match_len = length;
@@ -921,7 +925,7 @@ vl_regex2tbuff(TBUFF **result, REGEXVAL * rexp, int whole_line)
 	    --given;
 	}
 	if (match_len > 0) {
-	    tb_bappend(result, line_text + match_off, match_len);
+	    tb_bappend(result, line_text + match_off, (size_t) match_len);
 	    tb_append(result, EOS);
 	}
     }
@@ -1212,12 +1216,12 @@ expandChar(TBUFF **buf,
 
     if (cp != NULL) {
 	while ((c = *cp++) != EOS) {
-	    tb_insert(buf, cpos++, c);
+	    tb_insert(buf, (size_t) cpos++, c);
 	    showChar(c);
 	}
 	kbd_flush();
     }
-    *position = cpos;
+    *position = (size_t) cpos;
     return TRUE;
 }
 
@@ -1242,7 +1246,7 @@ kbd_kill_response(TBUFF *buffer, size_t *position, int c)
     char *buf = tb_values(buffer);
     TBUFF *tmp = 0;
     int cpos = (int) *position;
-    UINT mark = cpos;
+    size_t mark = *position;
 
     if (buf != 0) {
 	tmp = tb_copy(&tmp, buffer);
@@ -1262,8 +1266,8 @@ kbd_kill_response(TBUFF *buffer, size_t *position, int c)
 	if (vl_echo)
 	    kbd_flush();
 
-	*position = cpos;
-	buffer->tb_used = cpos;
+	*position = (size_t) cpos;
+	buffer->tb_used = (size_t) cpos;
 	if (mark < tb_length(tmp)) {
 	    tb_bappend(&buffer, tb_values(tmp) + mark, tb_length(tmp) - mark);
 	}
@@ -1363,7 +1367,7 @@ kbd_pushback(TBUFF *buf, int skip)
 	clexec = TRUE;
 	execstr = tb_values(PushBack);
 	buffer[skip] = EOS;
-	buf->tb_used = skip;
+	buf->tb_used = (size_t) skip;
     }
 }
 
@@ -1554,7 +1558,7 @@ reallyEditMiniBuffer(TBUFF **buf,
 	&& ((char2int(c) >= (int) iBIT(MinCBits))
 	    || (char2int(c) >= 128 && b_is_utfXX(bminip)))) {
 	UCHAR temp[10];
-	int used = vl_conv_to_utf8(temp, c, sizeof(temp));
+	int used = vl_conv_to_utf8(temp, (UINT) c, sizeof(temp));
 	int n;
 
 	for (n = 0; n < used; ++n) {
@@ -1616,14 +1620,17 @@ reallyEditMiniBuffer(TBUFF **buf,
 	    if (DOT.o > llength(DOT.l)) {
 		DOT.o = llength(DOT.l);
 	    }
-	    *cpos = DOT.o - margin;
+	    *cpos = (size_t) (DOT.o - margin);
 
 	    /*
 	     * Copy the data back from the minibuffer into our working TBUFF.
 	     */
 	    tb_init(buf, EOS);
-	    if (llength(DOT.l) > margin)
-		tb_bappend(buf, lvalue(DOT.l) + margin, llength(DOT.l) - margin);
+	    if (llength(DOT.l) > margin) {
+		tb_bappend(buf,
+			   lvalue(DOT.l) + margin,
+			   (size_t) (llength(DOT.l) - margin));
+	    }
 
 	    /*
 	     * Below are some workarounds for making it appear that we're doing the
@@ -1660,13 +1667,13 @@ reallyEditMiniBuffer(TBUFF **buf,
 	    miniedit = FALSE;
 	    if (!vl_echo || qpasswd) {
 		char tmp = (char) c;
-		tb_bappend(buf, &tmp, 1);
+		tb_bappend(buf, &tmp, (size_t) 1);
 		if (qpasswd)
 		    show1Char(c);
 	    } else if (llength(lp) >= margin) {
 		show1Char(c);
 		tb_init(buf, EOS);
-		tb_bappend(buf, lvalue(lp) + margin, llength(lp) - margin);
+		tb_bappend(buf, lvalue(lp) + margin, (size_t) (llength(lp) - margin));
 	    }
 	    *cpos += 1;
 	    edited = TRUE;
@@ -1753,7 +1760,7 @@ read_quoted(int count, int inscreen)
 	}
 	do {
 	    if (isbackspace(c)) {
-		value /= base;
+		value /= (UINT) base;
 		if (--i < 0)
 		    break;
 	    } else {
@@ -1766,7 +1773,7 @@ read_quoted(int count, int inscreen)
 		    delta = '0';
 		else
 		    break;
-		value = value * base + c - delta;
+		value = (value * (UINT) base) + (UINT) (c - delta);
 		i++;
 	    }
 
@@ -2015,11 +2022,11 @@ kbd_reply(const char *prompt,	/* put this out first */
      * field left/right within the margins.
      */
     margin = llength(wminip->w_dot.l);
-    cpos = kbd_show_response(&buf,
-			     tb_values(*extbuf),
-			     tb_length(*extbuf),
-			     eolchar,
-			     options);
+    cpos = (size_t) kbd_show_response(&buf,
+				      tb_values(*extbuf),
+				      tb_length(*extbuf),
+				      eolchar,
+				      options);
     backslashes = 0;		/* by definition, there is an even
 				   number of backslashes */
     c = -1;			/* initialize 'lastch' */
@@ -2131,7 +2138,7 @@ kbd_reply(const char *prompt,	/* put this out first */
 					     tbreserve(&buf), &cpos));
 		    }
 		    firstch = FALSE;
-		    shiftMiniBuffer((int) (cpos + margin));
+		    shiftMiniBuffer(((int) cpos + margin));
 		    continue;
 		}
 	    }
@@ -2143,7 +2150,7 @@ kbd_reply(const char *prompt,	/* put this out first */
 		remove_backslashes(buf);	/* take out quoters */
 
 	    save_len = tb_length(buf);
-	    hst_append(buf, eolchar, (options & KBD_EXPCMD));
+	    hst_append(buf, eolchar, (int) (options & KBD_EXPCMD));
 	    (void) tb_copy(extbuf, buf);
 	    status = (tb_length(*extbuf) != 0);
 
@@ -2405,7 +2412,9 @@ get_kbd_macro(TBUFF **rp)
     *rp = tb_init(rp, EOS);
     if ((last = itb_length(KbdMacro)) != 0) {
 	for (n = 0; n < last; n++) {
-	    len = kcod2escape_seq(itb_get(KbdMacro, n), temp, sizeof(temp));
+	    len = (size_t) kcod2escape_seq(itb_get(KbdMacro, n),
+					   temp,
+					   sizeof(temp));
 	    *rp = tb_bappend(rp, temp, len);
 	}
     }

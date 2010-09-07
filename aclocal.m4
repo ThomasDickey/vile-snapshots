@@ -1,6 +1,6 @@
 dnl vile's local definitions for autoconf.
 dnl
-dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.225 2010/08/13 08:47:48 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.227 2010/09/06 23:28:53 tom Exp $
 dnl
 dnl See
 dnl		http://invisible-island.net/autoconf/autoconf.html
@@ -1573,7 +1573,7 @@ rm -rf conftest*
 fi
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_GCC_OPT_RDYNAMIC version: 1 updated: 2010/03/20 12:37:42
+dnl CF_GCC_OPT_RDYNAMIC version: 2 updated: 2010/09/06 19:26:50
 dnl -------------------
 dnl "Newer" versions of gcc support the -rdynamic option:
 dnl		Pass the flag -export-dynamic to the ELF linker, on targets that
@@ -1594,7 +1594,7 @@ AC_TRY_LINK([#include <stdio.h>],
 	[
 	# refine check...
 	case testing`eval $ac_link 2>&1` in #(vi
-	*unrecog*) #(vi
+	*unexpect*|*unrecog*) #(vi
 		cf_cv_gcc_opt_rdynamic=no
 		;;
 	*)
@@ -1625,7 +1625,7 @@ if test "$GCC" = yes ; then
 fi
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_GCC_WARNINGS version: 25 updated: 2010/04/24 11:03:31
+dnl CF_GCC_WARNINGS version: 26 updated: 2010/08/14 18:25:37
 dnl ---------------
 dnl Check if the compiler supports useful warning options.  There's a few that
 dnl we don't use, simply because they're too noisy:
@@ -1729,7 +1729,7 @@ then
 	done
 	CFLAGS="$cf_save_CFLAGS"
 fi
-rm -f conftest*
+rm -rf conftest*
 
 AC_SUBST(EXTRA_CFLAGS)
 ])dnl
@@ -2544,13 +2544,13 @@ fi
 test "$cf_cv_mixedcase" = yes && AC_DEFINE(MIXEDCASE_FILENAMES)
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_MKSTEMP version: 6 updated: 2010/05/22 14:44:30
+dnl CF_MKSTEMP version: 7 updated: 2010/08/14 18:25:37
 dnl ----------
 dnl Check for a working mkstemp.  This creates two files, checks that they are
 dnl successfully created and distinct (AmigaOS apparently fails on the last).
 AC_DEFUN([CF_MKSTEMP],[
 AC_CACHE_CHECK(for working mkstemp, cf_cv_func_mkstemp,[
-rm -f conftest*
+rm -rf conftest*
 AC_TRY_RUN([
 #include <sys/types.h>
 #include <stdlib.h>
@@ -4748,22 +4748,6 @@ AC_CHECK_LIB(Xm, XmProcessTraversal, [LIBS="-lXm $LIBS"],
 	AC_MSG_ERROR(
 [Unable to successfully link Motif library (-lXm) with test program]),
 	[$X_PRE_LIBS $LIBS $X_EXTRA_LIBS]) dnl
-])dnl
-dnl ---------------------------------------------------------------------------
-dnl CF_X_OPENLOOK version: 3 updated: 2008/03/23 14:48:54
-dnl -------------
-AC_DEFUN([CF_X_OPENLOOK],
-[AC_REQUIRE([CF_X_TOOLKIT])dnl
-if test -n "$OPENWINHOME"; then
-	X_LIBS="$X_LIBS -L${OPENWINHOME}/lib"
-	X_CFLAGS="$X_CFLAGS -I${OPENWINHOME}/include"
-fi
-LDFLAGS="$LDFLAGS $X_LIBS"
-AC_CHECK_LIB(Xmu,XmuClientWindow)
-AC_CHECK_LIB(Xol, OlToolkitInitialize,
-	[LIBS="-lXol -lm $LIBS"],
-	AC_MSG_ERROR(
-[Unable to successfully link OpenLook library (-lXol) with test program])) dnl
 ])dnl
 dnl ---------------------------------------------------------------------------
 dnl CF_X_TOOLKIT version: 15 updated: 2010/06/14 17:42:30

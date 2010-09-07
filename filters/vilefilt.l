@@ -7,7 +7,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/vilefilt.l,v 1.68 2010/05/11 21:39:56 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/vilefilt.l,v 1.69 2010/09/06 15:41:18 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of vile macros
  * - T.Dickey
@@ -296,7 +296,7 @@ command_attr(char *text)
 static int
 is_funckey(const char *text)
 {
-    return (!strncmp(text, "FN-", 3));
+    return (!strncmp(text, "FN-", (size_t) 3));
 }
 
 #if HAVE_DIRECTIVE

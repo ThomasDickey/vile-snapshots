@@ -5,7 +5,7 @@
  * functions that adjust the top line in the window and invalidate the
  * framing, are hard.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/basic.c,v 1.165 2010/02/12 10:41:40 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/basic.c,v 1.167 2010/09/06 17:57:36 tom Exp $
  *
  */
 
@@ -19,7 +19,7 @@
  */
 #if OPT_MULTIBYTE
 #define lp_bytes_at0(lp, off) bytes_at0(lvalue(lp), llength(lp), off)
-#define tb_bytes_at0(tb, off) bytes_at0(tb_values(tb), tb_length(tb), off)
+#define tb_bytes_at0(tb, off) bytes_at0(tb_values(tb), (int) tb_length(tb), off)
 
 static int
 bytes_at0(const char *value, int length, int off)
@@ -27,7 +27,7 @@ bytes_at0(const char *value, int length, int off)
     return ((length > off)
 	    ? vl_conv_to_utf32((UINT *) 0,
 			       value + off,
-			       length - off)
+			       (B_COUNT) (length - off))
 	    : 0);
 }
 
@@ -163,8 +163,8 @@ mb_cellwidth(WINDOW *wp, const char *text, int limit)
     UINT value;
     int rc = COLS_UTF8;		/* "\uXXXX" */
 
-    vl_conv_to_utf32(&value, text, limit);
-    if (isPrint(value) && FoldTo8bits(value)) {
+    vl_conv_to_utf32(&value, text, (B_COUNT) limit);
+    if (isPrint(value) && FoldTo8bits((int) value)) {
 	rc = 1;
 	if (w_val(wp, WMDUNICODE_AS_HEX)) {
 	    rc = COLS_UTF8;
@@ -172,7 +172,7 @@ mb_cellwidth(WINDOW *wp, const char *text, int limit)
 	    rc = COLS_8BIT;
 	}
     } else if (term_is_utfXX()) {
-	rc = vl_wcwidth(value);
+	rc = vl_wcwidth((int) value);
 	if (rc <= 0)
 	    rc = COLS_UTF8;
     }
@@ -444,7 +444,7 @@ gotoline(int f, int n)
     } else {
 	status = vl_gotoline(n);
 	if (status != TRUE)
-	    mlwarn("[Not that many lines in buffer: %d]", absol(n));
+	    mlwarn("[Not that many lines in buffer: %ld]", absol((long) n));
     }
     return status;
 }
@@ -1083,7 +1083,7 @@ column_after(int c, int col, int list)
     }
 #if OPT_MULTIBYTE
     else if (b_is_utfXX(curbp)) {
-	if (vl_conv_to_utf8((UCHAR *) 0, c, 10) > 1)
+	if (vl_conv_to_utf8((UCHAR *) 0, (UINT) c, (B_COUNT) 10) > 1)
 	    rc = col + COLS_UTF8;	/* "\uXXXX" */
     }
 #endif
@@ -1108,7 +1108,7 @@ column_sizes(WINDOW *wp, const char *text, unsigned limit, int *used)
     *used = 1;
 #if OPT_MULTIBYTE
     if (b_is_utfXX(wp->w_bufp)) {
-	*used = vl_conv_to_utf32((UINT *) 0, text, limit);
+	*used = vl_conv_to_utf32((UINT *) 0, text, (B_COUNT) limit);
 	if (*used > 1) {
 	    rc = COLS_UTF8;	/* "\uXXXX" */
 	} else if (*used < 1) {

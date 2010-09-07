@@ -5,7 +5,7 @@
  *
  * Copyright (c) 1990-2008 by Paul Fox and Thomas Dickey
  *
- * $Header: /users/source/archives/vile.vcs/RCS/finderr.c,v 1.139 2010/05/03 23:50:39 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/finderr.c,v 1.142 2010/09/07 00:26:58 tom Exp $
  *
  */
 
@@ -165,7 +165,7 @@ static size_t exp_count = 0;
 void
 set_febuff(const char *name)
 {
-    (void) strncpy0(febuff, name, NBUFN);
+    (void) strncpy0(febuff, name, (size_t) NBUFN);
     newfebuff = TRUE;
 }
 
@@ -251,7 +251,7 @@ convert_pattern(ERR_PATTERN * errp, LINE *lp)
     int mark;
     int range;
     int status = TRUE;
-    size_t want = llength(lp);
+    size_t want = (size_t) llength(lp);
     char *first = lvalue(lp);
     char *last = first + want;
 
@@ -450,7 +450,7 @@ load_patterns(void)
 
     if (exp_count == 0) {
 	beginDisplay();
-	exp_count = bp->b_linecount;
+	exp_count = (size_t) bp->b_linecount;
 	exp_table = typeallocn(ERR_PATTERN, exp_count);
 	endofDisplay();
 
@@ -598,7 +598,7 @@ goto_column(void)
     if (error_tabstop > 0)
 	set_tabstop_val(curbp, error_tabstop);
 
-    gocol(fe_colm ? fe_colm - cC_base : 0);
+    gocol((int) (fe_colm ? fe_colm - cC_base : 0));
 
     if (error_tabstop > 0)
 	set_tabstop_val(curbp, saved_tabstop);
@@ -663,7 +663,7 @@ finderr(int f GCC_UNUSED, int n GCC_UNUSED)
     char ferrfile[NFILEN];
     size_t len;
 
-    static int oerrline = -1;
+    static long oerrline = -1;
     static TBUFF *oerrfile;
     static TBUFF *oerrtext;
 
@@ -816,7 +816,7 @@ finderr(int f GCC_UNUSED, int n GCC_UNUSED)
     } else {
 	mlforce("Error: %.*s", llength(dotp), lvalue(dotp));
 	errtext = lvalue(dotp);
-	len = llength(dotp);
+	len = (size_t) llength(dotp);
     }
     if ((oerrtext = tb_init(&oerrtext, EOS)) != 0) {
 	tb_bappend(&oerrtext, errtext, len);
@@ -829,7 +829,8 @@ finderr(int f GCC_UNUSED, int n GCC_UNUSED)
     } else if ((fe_line - lL_base) >= curbp->b_lines_on_disk) {
 	status = gotoeob(f, n);
     } else {
-	status = gotoline(TRUE, -(curbp->b_lines_on_disk - fe_line + lL_base));
+	status = gotoline(TRUE,
+			  (int) -(curbp->b_lines_on_disk - fe_line + lL_base));
     }
     goto_column();
 
@@ -838,7 +839,7 @@ finderr(int f GCC_UNUSED, int n GCC_UNUSED)
     if (status == TRUE) {
 	TBUFF *match = 0;
 	var_ERROR_EXPR((TBUFF **) 0, exp_table[count - 1].exp_text);
-	if (tb_bappend(&match, lvalue(dotp), llength(dotp))
+	if (tb_bappend(&match, lvalue(dotp), (size_t) llength(dotp))
 	    && tb_append(&match, EOS) != 0) {
 	    var_ERROR_MATCH((TBUFF **) 0, tb_values(match));
 	    tb_free(&match);

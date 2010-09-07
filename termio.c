@@ -3,7 +3,7 @@
  * characters, and write characters in a barely buffered fashion on the display.
  * All operating systems.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/termio.c,v 1.220 2010/05/01 12:33:07 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/termio.c,v 1.222 2010/09/07 00:35:30 tom Exp $
  *
  */
 
@@ -267,7 +267,7 @@ ttopen(void)
 # ifdef SETVBUF_REVERSED
     setvbuf(stdout, _IOFBF, tobuf, TBUFSIZ);
 # else
-    setvbuf(stdout, tobuf, _IOFBF, TBUFSIZ);
+    setvbuf(stdout, tobuf, _IOFBF, (size_t) TBUFSIZ);
 # endif
 #else /* !HAVE_SETVBUF */
     setbuffer(stdout, tobuf, TBUFSIZ);
@@ -808,7 +808,7 @@ vl_getchar(void)
     char c;
     int n;
 
-    n = read(0, &c, 1);
+    n = (int) read(0, &c, (size_t) 1);
     if (n <= 0) {
 	if (n < 0 && errno == EINTR)
 	    return -1;
@@ -1193,7 +1193,7 @@ getscreensize(int *widthp, int *heightp)
     *widthp = 0;
     *heightp = 0;
 #ifdef HAVE_SIZECHANGE
-    if (ioctl(0, IOCTL_GET_WINSIZE, (void *) &size) == 0) {
+    if (ioctl(0, (long) IOCTL_GET_WINSIZE, (void *) &size) == 0) {
 	if ((int) (WINSIZE_ROWS(size)) > 0)
 	    *heightp = WINSIZE_ROWS(size);
 	if ((int) (WINSIZE_COLS(size)) > 0)

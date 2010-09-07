@@ -6,7 +6,7 @@
  *		string literal ("Literal") support --  ben stoltz
  *		factor-out hashing and file I/O - tom dickey
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/c-filt.c,v 1.86 2010/07/13 13:25:50 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/c-filt.c,v 1.87 2010/09/06 15:45:38 tom Exp $
  *
  * Usage: refer to vile.hlp and doc/filters.doc .
  *
@@ -300,7 +300,7 @@ write_number(char *s)
 	    s++;
 	if (dot > 0
 	    && (s - base) == 3
-	    && !strncmp(base, "...", 3)) {
+	    && !strncmp(base, "...", (size_t) 3)) {
 	    attr = "";
 	} else {
 	    flt_error("illegal number");

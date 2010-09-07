@@ -1,6 +1,6 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
-  $Id: config.html,v 1.8 2010/04/11 14:51:57 tom Exp $
+  $Id: config.html,v 1.10 2010/09/05 18:30:54 tom Exp $
 -->
 <HTML>
 <HEAD>
@@ -171,8 +171,6 @@ again listed in
   --with-screen=neXtaw
 <br>
   --with-screen=X11
-<br>
-  --with-screen=OpenLook
 <p>
 The Motif display has the nicest appearance.
 The one drawback (relative to Athena) is that dragging the separator between
@@ -185,9 +183,6 @@ and moving the mouse.
 the two values are given to make the script simpler to use.
 The "Xaw", "Xaw3d" and "neXtaw" choices are almost the same,
 choosing libraries that have the same capabilities but different appearances.
-<p>
-The OpenLook driver is deprecated (does not work with current Solaris systems),
-and will be removed at some point.
 
 <h3 id="w32drivers-id"><a name="w32drivers">Win32 Drivers</a></h3>
 If you are building vile in the MSYS environment,
@@ -431,30 +426,14 @@ scripts):
 	./configure --with-screen=motif
 	./configure --with-screen=Xm
 </pre>
-<li>OpenLook version:  Uses the OpenLook widgets to implement scrollbars. Since
-OpenLook lacks a pane widget, resizing (vile) windows is pretty cheesy.  Still,
-if you are running olwm or olvwm, you might well want to run this version
-so that xvile will look the same as your other applications.
-<pre>
-	./configure --with-screen=openlook
-	./configure --with-screen=Xol
-</pre><p>
-After configuration, you may look at the makefile or config.h if you wish. You
-can finish making xvile by entering the following command:
-<pre>
-	make
-</pre><p>
-On some systems it seems to be sometimes necessary (?) to have X_LIBS set
-to -static prior running configure, i.e, use either:
-<pre>
-	X_LIBS=-static ./configure --with-screen=openlook
-</pre><p>
-for sh, ksh, and bash.  Or:
-<pre>
-	(setenv X_LIBS -static ; ./configure --with-screen=openlook)
-</pre><p>
-for csh and tcsh.
 </ol>
+The Athena and Motif versions support a menubar, with pulldown menus.
+The configure option <code>--enable-colored-menus</code>
+compiles-in resource values which simplify coloring
+the menubar and menus with the same foreground and background colors.
+The corresponding resource values are
+<code>menuForeground</code> and
+<code>menuBackground</code>.
 
 <h2 id="installxvile-id"><a name="installxvile">Installing (x)vile</a></h2>
 

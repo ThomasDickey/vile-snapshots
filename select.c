@@ -18,7 +18,7 @@
  * transferring the selection are not dealt with in this file.  Procedures
  * for dealing with the representation are maintained in this file.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.177 2010/04/30 23:52:07 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.180 2010/09/07 00:39:56 tom Exp $
  *
  */
 
@@ -51,7 +51,7 @@ static void detach_attrib(BUFFER *bp, AREGION * arp);
 static int attribute_cntl_a_sequences(void);
 static void free_line_attribs(BUFFER *bp);
 static int add_line_attrib(BUFFER *bp, REGION * rp, REGIONSHAPE rs,
-			   VIDEO_ATTR vattr, TBUFF *hypercmd);
+			   unsigned vattr, TBUFF *hypercmd);
 static void purge_line_attribs(BUFFER *bp, REGION * rp, REGIONSHAPE rs,
 			       int owner);
 
@@ -688,7 +688,7 @@ static void
 sweepmsg(const char *msg)
 {
     char temp[NLINE];
-    (void) kcod2pstr(fnc2kcod(&f_multimotion), temp, sizeof(temp));
+    (void) kcod2pstr(fnc2kcod(&f_multimotion), temp, (int) sizeof(temp));
     mlforce("[%s (end with %.*s)]", msg, CharOf(*temp), temp + 1);
 }
 
@@ -1187,7 +1187,7 @@ attributeregion(void)
 	    if (tb_length(hypercmd) && *tb_values(hypercmd)) {
 #if OPT_EXTRA_COLOR
 		if (tb_length(hypercmd) > 4
-		    && !memcmp(tb_values(hypercmd), "view ", 4)) {
+		    && !memcmp(tb_values(hypercmd), "view ", (size_t) 4)) {
 		    int *newVideo = lookup_extra_color(XCOLOR_HYPERTEXT);
 		    if (!isEmpty(newVideo)) {
 			arp->ar_vattr = (VIDEO_ATTR) * newVideo;
@@ -1307,7 +1307,7 @@ attributeregion(void)
 int
 attributeregion_in_region(REGION * rp,
 			  REGIONSHAPE shape,
-			  VIDEO_ATTR vattr,
+			  unsigned vattr,
 			  char *hc)
 {
     haveregion = rp;
@@ -1316,7 +1316,7 @@ attributeregion_in_region(REGION * rp,
     if (shape == rgn_FULLLINE)
 	MK.l = lback(MK.l);
     regionshape = shape;	/* Not that the following actually cares */
-    videoattribute = vattr;
+    videoattribute = (VIDEO_ATTR) vattr;
 #if OPT_HYPERTEXT
     tb_scopy(&hypercmd, hc);
 #endif /* OPT_HYPERTEXT */
@@ -1692,8 +1692,9 @@ attribute_cntl_a_sequences(void)
 	    return FALSE;
 	while (DOT.o < llength(DOT.l)) {
 	    if (CharAtDot() == CONTROL_A) {
-		offset = decode_attribute(lvalue(DOT.l), llength(DOT.l),
-					  DOT.o, &count);
+		offset = decode_attribute(lvalue(DOT.l),
+					  (size_t) llength(DOT.l),
+					  (size_t) DOT.o, &count);
 		if (offset > DOT.o) {
 #if EFFICIENCY_HACK
 		    new_attribs = bp->b_attribs;
@@ -1773,7 +1774,7 @@ attribute_from_filter(void)
 		if (fflinebuf[n] == CONTROL_A) {
 		    done = decode_attribute(fflinebuf, nbytes, n, &skip);
 		    if (done) {
-			n = (done - 1);
+			n = (size_t) (done - 1);
 			set_mark_after(skip, 1);
 			if (apply_attribute())
 			    (void) attributeregion();
@@ -1899,7 +1900,7 @@ init_line_attr_tbl(void)
    be a real problem.  But if it is, it should be possible to garbage
    collect the table.) */
 static int
-find_line_attr_idx(VIDEO_ATTR vattr)
+find_line_attr_idx(unsigned vattr)
 {
     int hash = 0;
     int start;
@@ -1911,7 +1912,7 @@ find_line_attr_idx(VIDEO_ATTR vattr)
     if (vattr == 0)
 	return 1;		/* Normal attributes get mapped to index 1 */
 
-    v = vattr;
+    v = (VIDEO_ATTR) vattr;
     for (i = 0; i < sizeof(VIDEO_ATTR); i++) {
 	hash ^= v & 0xff;
 	v >>= 8;
@@ -1932,7 +1933,7 @@ find_line_attr_idx(VIDEO_ATTR vattr)
 				   that 0 and 1 must be in use. */
     }
 
-    line_attr_tbl[hash].vattr = vattr;
+    line_attr_tbl[hash].vattr = (VIDEO_ATTR) vattr;
     line_attr_tbl[hash].in_use = TRUE;
 
     return hash;
@@ -1965,7 +1966,8 @@ lattr_shift(BUFFER *bp GCC_UNUSED, LINE *lp, int doto, int shift)
 
 			beginDisplay();
 			newlen = len + shift - (t - f);
-			if ((lap = castrealloc(UCHAR, lap, newlen + 1)) != 0) {
+			lap = castrealloc(UCHAR, lap, (size_t) newlen + 1);
+			if (lap != 0) {
 			    lp->l_attrs = lap;
 			    lap[newlen] = 0;
 			    t = newlen - 1;
@@ -2038,7 +2040,7 @@ free_line_attribs(BUFFER *bp)
 }
 
 static int
-add_line_attrib(BUFFER *bp, REGION * rp, REGIONSHAPE rs, VIDEO_ATTR vattr,
+add_line_attrib(BUFFER *bp, REGION * rp, REGIONSHAPE rs, unsigned vattr,
 		TBUFF *hypercmdp)
 {
 #if OPT_LINE_ATTRS
@@ -2069,7 +2071,7 @@ add_line_attrib(BUFFER *bp, REGION * rp, REGIONSHAPE rs, VIDEO_ATTR vattr,
 	/* Make sure the line attribute is long enough */
 	if (len < rp->r_end.o) {
 	    last = rp->r_end.o;
-	    lp->l_attrs = castrealloc(UCHAR, lp->l_attrs, last + 1);
+	    lp->l_attrs = castrealloc(UCHAR, lp->l_attrs, (size_t) (last + 1));
 	    if (lp->l_attrs != NULL) {
 		for (i = len; i < rp->r_end.o; i++)
 		    lp->l_attrs[i] = 1;
@@ -2089,7 +2091,8 @@ add_line_attrib(BUFFER *bp, REGION * rp, REGIONSHAPE rs, VIDEO_ATTR vattr,
     } else {
 	/* Must allocate and initialize memory for the line attributes */
 	beginDisplay();
-	if ((lp->l_attrs = castalloc(UCHAR, llength(lp) + 1)) != 0) {
+	lp->l_attrs = castalloc(UCHAR, (size_t) (llength(lp) + 1));
+	if (lp->l_attrs != 0) {
 	    lp->l_attrs[llength(lp)] = 0;
 	    for (i = llength(lp) - 1; i >= 0; i--)
 		lp->l_attrs[i] = 1;

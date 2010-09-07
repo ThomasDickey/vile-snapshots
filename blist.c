@@ -1,5 +1,5 @@
 /*
- * $Id: blist.c,v 1.13 2010/04/30 22:59:27 tom Exp $
+ * $Id: blist.c,v 1.14 2010/09/06 17:46:35 tom Exp $
  * Copyright 2007,2008 by Thomas E. Dickey
  *
  * Provide binary-search lookup of arrays of sorted structs.  The beginning of
@@ -70,7 +70,11 @@ blist_match(BLIST * data, const char *name)
     ToFind dummy;
 
     dummy.name = name;
-    check = bsearch(&dummy, data->theList, (size_t) last, data->itemSize, exact_match);
+    check = bsearch(&dummy,
+		    data->theList,
+		    (size_t) last,
+		    (size_t) data->itemSize,
+		    exact_match);
     if (check != 0) {
 	rc = (int) ItemToInx(data, check);
     }
@@ -129,7 +133,7 @@ blist_pmatch(BLIST * data, const char *name, int len)
 		    test = (const char *) bsearch(&dummy,
 						  &ItemOf(data, lo),
 						  (size_t) (x1 + 1 - lo),
-						  data->itemSize,
+						  (size_t) data->itemSize,
 						  exact_match);
 		    if (test) {
 			rc = (int) ItemToInx(data, test);

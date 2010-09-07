@@ -22,7 +22,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.691 2010/08/14 15:02:05 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.692 2010/08/16 09:49:46 tom Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -76,7 +76,7 @@ static int cmd_mouse_motion(const CMDFUNC * cfp);
 static void get_executable_dir(void);
 static void global_val_init(void);
 static void main_loop(void);
-static void make_startup_file(char *name);
+static void make_startup_file(const char *name);
 static void siginit(int enabled);
 
 #if OPT_MULTIBYTE
@@ -305,6 +305,7 @@ filter_to_stdio(FILE *fp GCC_UNUSED)
 int
 MainProgram(int argc, char *argv[])
 {
+    static char dft_vileinit[] = "vileinit.rc";
     int tt_opened;
     BUFFER *bp;
     int carg;			/* current arg to scan */
@@ -338,7 +339,7 @@ MainProgram(int argc, char *argv[])
 
 #if OPT_LOCALE
     {
-	char *env = "";
+	const char *env = "";
 	char *old_locale = get_set_locale("");
 	char *old_encoding = 0;
 
@@ -579,7 +580,7 @@ MainProgram(int argc, char *argv[])
 
 		case 'i':
 		case 'I':
-		    vileinit = "vileinit.rc";
+		    vileinit = dft_vileinit;
 		    /*
 		     * If the user has no startup file, make a simple
 		     * one that points to this one.
@@ -702,7 +703,7 @@ MainProgram(int argc, char *argv[])
 #if !SYS_WINNT
 #if !DISP_X11
 #if SYS_UNIX
-	char *tty = 0;
+	const char *tty = 0;
 #else
 	FILE *in;
 	int fd;
@@ -1791,19 +1792,19 @@ init_mode_value(struct VAL *d, MODECLASS v_class, int v_which)
  Char %{$curchar}d of %{$bchars}d\
  (%P%%) char is 0x%{$char}x or 0%{$char}o"
 
-static char *
+static const char *
 default_help_file(void)
 {
-    char *result;
+    const char *result;
     if ((result = vile_getenv("VILE_HELP_FILE")) == 0)
 	result = DFT_HELP_FILE;
     return result;
 }
 
-static char *
+static const char *
 default_libdir_path(void)
 {
-    char *result;
+    const char *result;
     if ((result = vile_getenv("VILE_LIBDIR_PATH")) == 0)
 	result = DFT_LIBDIR_PATH;
     return result;
@@ -1830,10 +1831,10 @@ default_menu_file(void)
 }
 #endif
 
-static char *
+static const char *
 default_startup_file(void)
 {
-    char *result;
+    const char *result;
     if ((result = vile_getenv("VILE_STARTUP_FILE")) == 0)
 	result = DFT_STARTUP_FILE;
     return result;
@@ -2921,7 +2922,7 @@ cmd_mouse_motion(const CMDFUNC * cfp)
 }
 
 static void
-make_startup_file(char *name)
+make_startup_file(const char *name)
 {
     FILE *fp;
     char temp[NFILEN];

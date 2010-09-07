@@ -2,7 +2,7 @@
  * Unix crypt(1)-style interface.
  * Written by T.E.Dickey for vile (March 1999).
  *
- * $Header: /users/source/archives/vile.vcs/RCS/vl_crypt.h,v 1.2 2010/08/15 19:30:27 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/vl_crypt.h,v 1.3 2010/09/06 15:39:34 tom Exp $
  */
 
 #if	OPT_ENCRYPT
@@ -69,7 +69,7 @@ vl_make_encrypt_key(char *dst, const char *src)
 
     memcpy(key, src, sizeof(key));
     memcpy(salt, src, sizeof(salt));
-    memcpy(dst, (char *) crypt(key, salt), LEN_CRYPT);
+    memcpy(dst, (char *) crypt(key, salt), (size_t) LEN_CRYPT);
     dst[LEN_CRYPT] = 0;
 
     TRACE(("made encryption key(%s)\n", dst));

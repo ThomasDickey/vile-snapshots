@@ -1,5 +1,5 @@
 Summary: VILE VI Like Emacs editor
-# $Header: /users/source/archives/vile.vcs/package/RCS/vile.spec,v 1.3 2010/08/12 21:03:13 tom Exp $
+# $Header: /users/source/archives/vile.vcs/package/RCS/vile.spec,v 1.4 2010/09/06 22:09:11 tom Exp $
 Name: vile
 Version: 9.8a
 # each patch should update the version
@@ -39,6 +39,11 @@ rebinding, and real X window system support.
 %setup -q -n vile-9.8
 %patch1 -p1
 # each patch should add itself to this list
+
+# help rpmbuild to ignore the maintainer scripts in the doc directory...
+rm -f doc/makefile
+rm -f doc/*.pl
+rm -f doc/*.sh
 
 %build
 
@@ -140,6 +145,12 @@ install xvile.wmconfig $RPM_BUILD_ROOT%{_sysconfdir}/X11/wmconfig/xvile
 
 %changelog
 # each patch should add its ChangeLog entries here
+
+* Mon Sep 06 2010 Thomas Dickey
+- rpmbuild is confused by doc/makefile, adding dependencies on the relatively
+  nonportable Perl scripts used to generate table of contents.  Workaround by
+  removing those from the build-tree, to eliminate spurious dependencies that
+  interferes with installing the RPM.
 
 * Thu Aug 12 2010 Thomas Dickey
 - added patch for 9.8a

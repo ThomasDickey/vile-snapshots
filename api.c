@@ -15,7 +15,7 @@
  * in handy.
  *				- kev 4/7/1998
  *
- * $Header: /users/source/archives/vile.vcs/RCS/api.c,v 1.46 2010/05/13 00:24:54 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/api.c,v 1.47 2010/09/05 16:56:36 tom Exp $
  */
 
 #include "estruct.h"
@@ -105,7 +105,7 @@ linsert_chars(char *s, int len)
 	    for (i = 1; i < len && s[i] != '\n'; i++) ;
 	    lins_bytes(i, *s);
 	    if (i > 1) {
-		memcpy(lvalue(DOT.l) + DOT.o - i + 1, s + 1, i - 1);
+		memcpy(lvalue(DOT.l) + DOT.o - i + 1, s + 1, (size_t) (i - 1));
 	    }
 	    len -= i;
 	    s += i;
@@ -135,12 +135,12 @@ lreplace(char *s, int len)
     DOT.o = 0;
 
     if (len > (int) lp->l_size) {
-	int nlen;
+	size_t nlen;
 	char *ntext;
 
 #define roundlenup(n) ((n+NBLOCK-1) & ~(NBLOCK-1))
 
-	nlen = roundlenup(len);
+	nlen = (size_t) roundlenup(len);
 	ntext = castalloc(char, nlen);
 	if (ntext == 0)
 	    return FALSE;
@@ -373,7 +373,7 @@ api_dline(VileBuf * vbp, int lno)
     if (lno > 0 && lno <= vl_line_count(vbp->bp)) {
 	api_gotoline(vbp, lno);
 	gotobol(TRUE, TRUE);
-	status = ldel_bytes(llength(DOT.l) + 1, FALSE);
+	status = ldel_bytes((B_COUNT) (llength(DOT.l) + 1), FALSE);
     } else
 	status = FALSE;
 
@@ -490,7 +490,7 @@ api_sline(VileBuf * vbp, int lno, char *line, int len)
 	api_gotoline(vbp, lno);
 	if (lvalue(DOT.l) != line
 	    && (llength(DOT.l) != len
-		|| memcmp(line, lvalue(DOT.l), len) != 0)) {
+		|| memcmp(line, lvalue(DOT.l), (size_t) len) != 0)) {
 	    lreplace(line, len);
 	    vbp->changed = 1;
 	}
@@ -572,11 +572,11 @@ api_motion(VileBuf * vbp, char *mstr)
 
     mp = mstr + strlen(mstr);
 
-    mapungetc(esc_c | NOREMAP);
+    mapungetc((int) ((unsigned char) esc_c | NOREMAP));
     /* Should we allow remapping?  Seems to me like it introduces too
        many variables. */
     while (mp-- > mstr) {
-	mapungetc(*mp | NOREMAP);
+	mapungetc((int) ((unsigned char) *mp | NOREMAP));
     }
 
     while (mapped_ungotc_avail()) {

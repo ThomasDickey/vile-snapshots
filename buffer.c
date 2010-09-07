@@ -5,7 +5,7 @@
  * keys. Like everyone else, they set hints
  * for the display system.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.346 2010/05/11 00:48:16 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.349 2010/09/07 00:23:48 tom Exp $
  *
  */
 
@@ -512,7 +512,7 @@ histbuff0(int f, int n, int this_window)
 		if (++cycle >= hi_limit)
 		    cycle = 0;
 		c = -1;
-	    } else if (isBackTab(c)) {
+	    } else if (isBackTab((UINT) c)) {
 		if (--cycle < 0)
 		    cycle = hi_limit - 1;
 		c = -1;
@@ -778,7 +778,7 @@ init_bname_cmpl(void)
     char **list = 0;
     BUFFER *bp;
 
-    if ((count = countBuffers()) != 0) {
+    if ((count = (size_t) countBuffers()) != 0) {
 	beginDisplay();
 	if ((list = typeallocn(char *, count + 1)) != 0) {
 	    for_each_buffer(bp) {
@@ -1147,17 +1147,17 @@ found_modeline(LINE *lp, int *first, int *last)
 	limit = modeline_limit;
 
     for (n = 0; n < TABLESIZE(mls_patterns); ++n) {
-	regexp *prog = mls_regcomp(n);
+	regexp *prog = mls_regcomp((int) n);
 	if (lregexec(prog, lp, 0, limit)) {
 	    int j = mls_patterns[n].mark;
-	    *first = prog->startp[j] - prog->startp[0];
-	    *last = prog->endp[j] - prog->startp[0];
+	    *first = (int) (prog->startp[j] - prog->startp[0]);
+	    *last = (int) (prog->endp[j] - prog->startp[0]);
 
 	    /*
 	     * Real vi may have modes that we do not want to set.
 	     */
 	    if (prog->endp[1] - prog->startp[1] == 2
-		&& !strncmp(prog->startp[1], "vi", 2))
+		&& !strncmp(prog->startp[1], "vi", (size_t) 2))
 		rc = 2;
 	    else
 		rc = 1;
@@ -1181,7 +1181,7 @@ do_one_modeline(LINE *lp, int vi, int first, int last)
 	while (last > first && isSpace(lgetc(lp, last - 1)))
 	    --last;
 
-	tb_bappend(&data, lvalue(lp) + first, last - first);
+	tb_bappend(&data, lvalue(lp) + first, (size_t) (last - first));
 	tb_append(&data, EOS);
 
 	in_modeline = vi;
@@ -1569,7 +1569,7 @@ make_buffer_list(char *bufn)
     BUFFER *bp;
     int count = 0;
     int limit = countBuffers();
-    char **result = typecallocn(char *, limit + 1);
+    char **result = typecallocn(char *, (size_t) limit + 1);
 
     if (result != 0) {
 #if OPT_FORBUFFERS_CHOICES
@@ -1954,7 +1954,7 @@ rename_specific_buffer(BUFFER *bp)
 
     /* prompt for and get the new buffer name */
     do {
-	if (mlreply(prompt, bufn, sizeof(bufn)) != TRUE)
+	if (mlreply(prompt, bufn, (UINT) sizeof(bufn)) != TRUE)
 	    return (FALSE);
 	prompt = "That name's been used.  New name: ";
 	status = renamebuffer(bp, bufn);
@@ -2394,7 +2394,7 @@ add_line_at(BUFFER *bp, LINE *prevp, const char *text, int len)
 
     if (len < 0) {
 	if (text != 0) {
-	    result = add_line_at(bp, prevp, text, strlen(text));
+	    result = add_line_at(bp, prevp, text, (int) strlen(text));
 	} else {
 	    result = add_line_at(bp, prevp, "", 0);
 	}
@@ -2413,7 +2413,7 @@ add_line_at(BUFFER *bp, LINE *prevp, const char *text, int len)
 		if (nextp == buf_head(bp)) {
 		    make_local_b_val(bp, MDNEWLINE);
 		    set_b_val(bp, MDNEWLINE, TRUE);
-		    bp->b_bytecount += (ntext + 1);
+		    bp->b_bytecount += (B_COUNT) (ntext + 1);
 		    bp->b_linecount += 1;
 #if !SMALLER			/* tradeoff between codesize & data */
 		    lp->l_number = bp->b_linecount;
@@ -2464,9 +2464,9 @@ next_buffer_line(const char *bname)
 	return NULL;
 
     /* how much left on the current line? */
-    blen = llength(bp->b_dot.l);
+    blen = (B_COUNT) llength(bp->b_dot.l);
     if (blen > (B_COUNT) bp->b_dot.o)
-	blen -= bp->b_dot.o;
+	blen -= (B_COUNT) bp->b_dot.o;
     else
 	blen = 0;
 
@@ -2544,7 +2544,7 @@ set_bname(BUFFER *bp, const char *name)
     int j, k;
     char *d;
 
-    (void) strncpy0(bp->b_bname, name, NBUFN);
+    (void) strncpy0(bp->b_bname, name, (size_t) NBUFN);
 
     d = bp->b_bname;
     for (j = 0, k = -1; d[j]; j++) {
@@ -2793,14 +2793,14 @@ bsizes(BUFFER *bp)
     if (valid_buffer(curbp)
 	&& !b_is_counted(bp)) {
 	LINE *lp;		/* current line */
-	B_COUNT ending = len_record_sep(bp);
+	B_COUNT ending = (B_COUNT) len_record_sep(bp);
 	B_COUNT numchars = 0;	/* # of chars in file */
 	L_NUM numlines = 0;	/* # of lines in file */
 
 	/* count chars and lines */
 	for_each_line(lp, bp) {
 	    ++numlines;
-	    numchars += llength(lp) + ending;
+	    numchars += ((B_COUNT) llength(lp) + ending);
 #if !SMALLER			/* tradeoff between codesize & data */
 	    lp->l_number = numlines;
 #endif
@@ -2831,7 +2831,7 @@ bsizes(BUFFER *bp)
  * Mark a buffer 'changed'
  */
 void
-chg_buff(BUFFER *bp, USHORT flag)
+chg_buff(BUFFER *bp, unsigned flag)
 {
     WINDOW *wp;
 
@@ -2853,7 +2853,7 @@ chg_buff(BUFFER *bp, USHORT flag)
 #endif
     for_each_visible_window(wp) {
 	if (wp->w_bufp == bp) {
-	    wp->w_flag |= flag;
+	    wp->w_flag |= (USHORT) flag;
 #ifdef WMDLINEWRAP
 	    /* The change may affect the line-height displayed
 	     * on the screen.  Assume the worst-case.
@@ -2869,7 +2869,7 @@ chg_buff(BUFFER *bp, USHORT flag)
  * Mark a buffer 'unchanged'
  */
 void
-unchg_buff(BUFFER *bp, USHORT flag)
+unchg_buff(BUFFER *bp, unsigned flag)
 {
     WINDOW *wp;
 
@@ -2884,7 +2884,7 @@ unchg_buff(BUFFER *bp, USHORT flag)
 
 	for_each_visible_window(wp) {
 	    if (wp->w_bufp == bp)
-		wp->w_flag |= flag;
+		wp->w_flag |= (USHORT) flag;
 	}
 #if OPT_UPBUFF
 	if (update_on_chg(bp))
@@ -2987,15 +2987,15 @@ writeall(int f, int n, int promptuser, int leaving, int autowriting, int all)
 		char tmp[NFILEN];
 
 		mlforce("\n");
-		outlen = (term.cols - 1) -
-		    (sizeof(SAVE_FAILED_FMT) - 3);
+		outlen = ((term.cols - 1) -
+			  (int) (sizeof(SAVE_FAILED_FMT) - 3));
 		mlforce(SAVE_FAILED_FMT,
 			path_trunc(is_internalname(bp->b_fname)
 				   ? bp->b_bname
 				   : bp->b_fname,
 				   outlen,
 				   tmp,
-				   sizeof(tmp)));
+				   (int) sizeof(tmp)));
 		/* dirtymsgline still TRUE */
 		break;
 #undef SAVE_FAILED_FMT

@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.411 2010/05/03 09:33:58 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.416 2010/09/07 00:30:30 tom Exp $
  *
  */
 
@@ -24,7 +24,7 @@
 
 #define MAJOR_SUFFIX	"mode"
 #define NO_PREFIX	"no"
-#define noPrefix(mode)	(!strncmp(mode, NO_PREFIX, 2))
+#define noPrefix(mode)	(!strncmp(mode, NO_PREFIX, (size_t) 2))
 
 /*--------------------------------------------------------------------------*/
 
@@ -191,7 +191,7 @@ combine_choices(FSM_BLIST * choices, const char *string)
  * property, or something that requires repainting a window.
  */
 void
-set_bufflags(int glob_vals, USHORT flags)
+set_bufflags(int glob_vals, unsigned flags)
 {
     if (glob_vals) {
 	set_winflags(glob_vals, flags);
@@ -199,7 +199,7 @@ set_bufflags(int glob_vals, USHORT flags)
 	WINDOW *wp;
 	for_each_visible_window(wp) {
 	    if (wp->w_bufp == curbp)
-		wp->w_flag |= flags;
+		wp->w_flag |= (USHORT) flags;
 	}
     }
 }
@@ -209,7 +209,7 @@ set_bufflags(int glob_vals, USHORT flags)
  * requires repainting all (or the current if local) windows.
  */
 void
-set_winflags(int glob_vals, USHORT flags)
+set_winflags(int glob_vals, unsigned flags)
 {
     if (glob_vals) {
 	WINDOW *wp;
@@ -217,10 +217,10 @@ set_winflags(int glob_vals, USHORT flags)
 	    if ((wp->w_bufp == NULL)
 		|| !b_is_scratch(wp->w_bufp)
 		|| !(flags & WFMODE))
-		wp->w_flag |= flags;
+		wp->w_flag |= (USHORT) flags;
 	}
     } else {
-	curwp->w_flag |= flags;
+	curwp->w_flag |= (USHORT) flags;
     }
 }
 
@@ -1862,8 +1862,8 @@ choosable_color(const char *name, int n)
 {
     if (ncolors > 2 && n < NCOLORS) {
 	if (ncolors <= 8	/* filter out misleading names */
-	    && (!strncmp(name, "bright", 6)
-		|| !strncmp(name, "light", 5)
+	    && (!strncmp(name, "bright", (size_t) 6)
+		|| !strncmp(name, "light", (size_t) 5)
 		|| !strcmp(name, "gray")
 		|| !strcmp(name, "brown")))
 	    return FALSE;
@@ -2186,7 +2186,7 @@ set_extra_colors(int f GCC_UNUSED, int n GCC_UNUSED)
 		++count;
 		if (code2 & VACOLOR)
 		    value &= ~VACOLOR;
-		value |= (int) (code2 & ~VASPCOL);
+		value |= (int) ((unsigned) code2 & (unsigned) (~VASPCOL));
 
 		strcat(prompt, reply);
 		if (end_string() == '+') {
@@ -3920,16 +3920,16 @@ init_my_mode_list(void)
 }
 
 static size_t
-extend_mode_list(size_t increment)
+extend_mode_list(int increment)
 {
     size_t j, k;
 
     beginDisplay();
 
     j = (size_t) count_modes();
-    k = increment + j + 1;
+    k = (size_t) increment + j + 1;
 
-    TRACE(("extend_mode_list from %d by %d\n", (int) j, (int) increment));
+    TRACE(("extend_mode_list from %d by %d\n", (int) j, increment));
 
     if (my_mode_list == all_modes) {
 	my_mode_list = typeallocn(const char *, k);
@@ -4140,7 +4140,7 @@ alloc_mode(const char *shortname, int predef)
     TRACE((T_CALLED "alloc_mode(%s,%d)\n", shortname, predef));
     if (major_valnames == 0) {
 	beginDisplay();
-	major_valnames = typecallocn(struct VALNAMES, 2);
+	major_valnames = typecallocn(struct VALNAMES, (size_t) 2);
 	endofDisplay();
 	j = 0;
 	k = 1;
@@ -4190,7 +4190,7 @@ alloc_mode(const char *shortname, int predef)
 
     if (my_majormodes == 0) {
 	beginDisplay();
-	my_majormodes = typecallocn(MAJORMODE_LIST, 2);
+	my_majormodes = typecallocn(MAJORMODE_LIST, (size_t) 2);
 	endofDisplay();
 	j = 0;
 	k = 1;
@@ -4979,9 +4979,9 @@ alloc_scheme(const char *name)
 	beginDisplay();
 	if (len == 1) {
 	    len = (int) (++num_schemes);
-	    my_schemes = typecallocn(PALETTES, (unsigned) len);
+	    my_schemes = typecallocn(PALETTES, (size_t) len);
 	} else {
-	    my_schemes = typereallocn(PALETTES, my_schemes, (unsigned) len);
+	    my_schemes = typereallocn(PALETTES, my_schemes, (size_t) len);
 	}
 	endofDisplay();
 

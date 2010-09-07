@@ -4,7 +4,7 @@
  * Most code probably by Dan Lawrence or Dave Conroy for MicroEMACS
  * Extensions for vile by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/insert.c,v 1.174 2010/02/06 00:02:10 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/insert.c,v 1.176 2010/09/06 18:26:15 tom Exp $
  */
 
 #include	"estruct.h"
@@ -567,9 +567,9 @@ ins_anytime(int playback, int cur_count, int max_count, int *splicep)
 	     */
 	    if (global_g_val(GMDINSEXEC)) {
 		if (c == cntl_a) {
-		    c = (int) (CTLA | keystroke());
+		    c = (int) (CTLA | (UINT) keystroke());
 		} else if (c == cntl_x) {
-		    c = (int) (CTLX | keystroke());
+		    c = (int) (CTLX | (UINT) keystroke());
 		}
 	    }
 #if OPT_MOUSE
@@ -901,7 +901,7 @@ inschar(int c, int *backsp_limit_p)
 	&& (CharAtDot() != '\t'
 	    || DOT.o % tabstop_val(curbp) == tabstop_val(curbp) - 1)) {
 	autoindented = -1;
-	(void) ldel_chars(1, FALSE);
+	(void) ldel_chars((B_COUNT) 1, FALSE);
     }
 
     /* do the appropriate insertion */
@@ -1044,7 +1044,7 @@ backspace(void)
     int s;
 
     if ((s = backchar(TRUE, 1)) == TRUE && insertmode != INSMODE_OVR)
-	s = ldel_chars(1, FALSE);
+	s = ldel_chars((B_COUNT) 1, FALSE);
     return (s);
 }
 
