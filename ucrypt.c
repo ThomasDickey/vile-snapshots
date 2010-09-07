@@ -2,7 +2,7 @@
  * Unix crypt(1)-style interface.
  * Written by T.E.Dickey for vile (March 1999).
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ucrypt.c,v 1.19 2010/08/15 19:24:32 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ucrypt.c,v 1.20 2010/09/06 18:45:48 tom Exp $
  */
 
 #include "estruct.h"
@@ -17,7 +17,7 @@
  */
 static int
 get_encryption_key(char *key,	/* where to write key */
-		   UINT len)
+		   size_t len)
 {
     int status;			/* return status */
     int save_vl_echo = vl_echo;
@@ -27,7 +27,7 @@ get_encryption_key(char *key,	/* where to write key */
     vl_echo = FALSE;
 
     temp[0] = EOS;
-    status = mlreply("-Encryption String: ", temp, len - 1);
+    status = mlreply("-Encryption String: ", temp, (UINT) (len - 1));
     vl_echo = save_vl_echo;
 
     if (status == TRUE)

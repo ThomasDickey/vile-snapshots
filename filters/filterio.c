@@ -1,7 +1,7 @@
 /*
  * Main program and I/O for external vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filterio.c,v 1.57 2010/07/13 13:29:30 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filterio.c,v 1.58 2010/08/16 09:38:01 tom Exp $
  *
  */
 
@@ -28,6 +28,7 @@ static int my_col;
 static char *
 ParamValue(char **option, int *inx, int argc, char *argv[])
 {
+    static char empty[1];
     char *s = *option;
     char *result = ++s;
 
@@ -36,7 +37,7 @@ ParamValue(char **option, int *inx, int argc, char *argv[])
 	if (*inx < argc) {
 	    result = argv[*inx];
 	} else {
-	    result = "";
+	    result = empty;
 	}
     } else {
 	*option += strlen(*option) - 1;
@@ -459,7 +460,7 @@ main(int argc, char **argv)
 	 * Unix hosts.   Handle those hosts now.
 	 */
 
-	char *name;
+	const char *name;
 
 #if defined(_WIN32)
 	name = "NUL";

@@ -7,7 +7,7 @@
  *	To do:	add 'itb_ins()' and 'itb_del()' to support cursor-level command
  *		editing.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/itbuff.c,v 1.25 2005/01/23 14:40:49 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/itbuff.c,v 1.26 2010/09/06 18:26:15 tom Exp $
  *
  */
 
@@ -116,7 +116,7 @@ itb_init(ITBUFF ** p, int c)
 {
     ITBUFF *q = *p;
     if (q == 0)
-	q = itb_alloc(p, NCHUNK);
+	q = itb_alloc(p, (size_t) NCHUNK);
     if (q != 0) {
 	q->itb_used = 0;
 	q->itb_last = 0;
@@ -339,7 +339,7 @@ itb_seek(ITBUFF * p, size_t seekto, int whence)
 void
 itb_first(ITBUFF * p)
 {
-    (void) itb_seek(p, 0, 0);
+    (void) itb_seek(p, (size_t) 0, 0);
 }
 
 /*

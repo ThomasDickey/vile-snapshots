@@ -3,7 +3,7 @@
  *	Original interface by Otto Lind, 6/3/93
  *	Additional map and map! support by Kevin Buettner, 9/17/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/map.c,v 1.119 2010/07/25 09:13:33 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/map.c,v 1.121 2010/09/06 18:29:22 tom Exp $
  *
  */
 
@@ -710,7 +710,7 @@ save_keystroke(int c)
 	if (kr->kused >= NUMKEYSTR * 2) {	/* time to dump the oldest half */
 	    (void) memcpy((kp->d_chunk),
 			  (&kp->d_chunk[NUMKEYSTR / 2]),
-			  NUMKEYSTR / 2);
+			  (size_t) (NUMKEYSTR / 2));
 	    kr->kused = NUMKEYSTR / 2;
 	}
     }
@@ -865,7 +865,7 @@ mapped_c(int remap, int raw)
     mapgetc_raw_flag = raw;
     c = mapgetc();
 
-    if ((c & YESREMAP) == 0 && (!remap || (c & NOREMAP)))
+    if (((UINT) c & YESREMAP) == 0 && (!remap || ((UINT) c & NOREMAP)))
 	return STRIP_REMAPFLAGS(c);
 
     c = STRIP_REMAPFLAGS(c);
@@ -879,9 +879,9 @@ mapped_c(int remap, int raw)
 
     /* if we got a function key from the lower layers, turn it into '#c'
        and see if the user remapped that */
-    if ((c & SPEC)
+    if (((UINT) c & SPEC)
 #if OPT_KEY_MODIFY
-	&& !(c & mod_KEY)	/* we don't do this special case */
+	&& !((UINT) c & mod_KEY)	/* we don't do this special case */
 #endif
 	) {
 	mapungetc(kcod2key(c));
@@ -922,7 +922,7 @@ mapped_c(int remap, int raw)
 	speckey = FALSE;
 
     } while (matched &&
-	     ((remap && !(c & NOREMAP)) || (c & YESREMAP)));
+	     ((remap && !((UINT) c & NOREMAP)) || ((UINT) c & YESREMAP)));
 
     return STRIP_REMAPFLAGS(c);
 

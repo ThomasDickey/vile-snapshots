@@ -7,7 +7,7 @@
  *	To do:	add 'tb_ins()' and 'tb_del()' to support cursor-level command
  *		editing.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tbuff.c,v 1.74 2009/10/31 17:10:23 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tbuff.c,v 1.76 2010/09/07 00:35:09 tom Exp $
  *
  */
 
@@ -157,7 +157,7 @@ tb_init(TBUFF **p, int c)
 {
     TBUFF *q = *p;
     if (q == 0)
-	q = tb_alloc(p, NCHUNK);
+	q = tb_alloc(p, (size_t) NCHUNK);
     if (q != 0) {
 	q->tb_used = 0;
 	q->tb_last = 0;
@@ -588,7 +588,7 @@ tb_prequote(TBUFF **p)
 	if (*tb_values(*p) == DQUOTE || *tb_values(*p) == SQUOTE) {
 	    tb_append(p, EOS);
 	    {
-		unsigned len = tb_length(*p);
+		size_t len = tb_length(*p);
 		char *value = tb_values(*p);
 
 		do {

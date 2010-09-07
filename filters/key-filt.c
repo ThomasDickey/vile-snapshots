@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/key-filt.c,v 1.46 2010/07/13 13:31:15 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/key-filt.c,v 1.48 2010/09/07 00:32:39 tom Exp $
  *
  * Filter to add vile "attribution" sequences to a vile keyword file.  It's
  * done best in C because the delimiters may change as a result of processing
@@ -346,13 +346,13 @@ parse_directive(char *line)
     };
     /* *INDENT-ON* */
 
-    unsigned n, len;
+    size_t n, len;
     char *s;
 
     VERBOSE(1, ("parse_directive(%s)\n", line));
     if (*(s = skip_blanks(line)) == meta_ch) {
 	s = skip_blanks(s + 1);
-	if ((len = (unsigned) (skip_ident(s) - s)) != 0) {
+	if ((len = (size_t) (skip_ident(s) - s)) != 0) {
 	    for (n = 0; n < sizeof(table) / sizeof(table[0]); n++) {
 		if (!strncmp(s, table[n].name, len)) {
 		    flt_puts(line, (int) (s + len - line), Ident_attr);

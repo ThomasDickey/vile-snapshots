@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/xtermkeys.h,v 1.17 2009/12/29 02:13:40 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/xtermkeys.h,v 1.18 2010/09/06 15:46:27 tom Exp $
  *
  * Function-key definitions and modifiers used for xterm.  This is a header
  * file to simplify sharing between the termcap/curses drivers.
@@ -137,9 +137,9 @@ skip_csi(const char *string)
 {
     const char *result = string;
 
-    if (!strncmp(string, "\033[", 2))
+    if (!strncmp(string, "\033[", (size_t) 2))
 	result = string + 2;
-    else if (!strncmp(string, "\233", 1))
+    else if (!strncmp(string, "\233", (size_t) 1))
 	result = string + 1;
 
     return result;

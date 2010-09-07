@@ -4,7 +4,7 @@
  *	Copyright (c) 1990, 1995-1999 by Paul Fox, except for delins(), which is
  *	Copyright (c) 1986 by University of Toronto, as noted below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/oneliner.c,v 1.118 2010/05/04 00:58:30 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/oneliner.c,v 1.120 2010/09/06 19:28:58 tom Exp $
  */
 
 #include	"estruct.h"
@@ -77,7 +77,7 @@ pregion(UINT flag)
 	    } else {
 		make_local_w_val(curwp, WMDNUMBER);
 		set_w_val(curwp, WMDNUMBER, TRUE);
-		flag &= ~PNUMS;
+		flag &= (UINT) (~PNUMS);
 	    }
 	    curbp = savebp;
 	    curwp = savewp;
@@ -237,9 +237,9 @@ substreg1(int needpats, int use_opts, int is_globalsub)
 	char *bp = buf;
 
 	buf[0] = EOS;
-	status = mlreply(
-			    "(g)lobally, ([1-9])th occurrence on line, (c)onfirm, and/or (p)rint result: ",
-			    buf, sizeof buf);
+	status =
+			 mlreply("(g)lobally, ([1-9])th occurrence on line, (c)onfirm, and/or (p)rint result: ",
+			 buf, (UINT) sizeof buf);
 	if (status == ABORT) {
 	    return FALSE;
 	}

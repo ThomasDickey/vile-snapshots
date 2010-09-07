@@ -55,7 +55,7 @@
  *	not (yet) correspond to :-commands.  Before implementing, probably will
  *	have to make TESTC a settable mode.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/history.c,v 1.87 2007/12/31 19:49:33 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/history.c,v 1.88 2010/09/05 19:05:12 tom Exp $
  *
  */
 
@@ -67,6 +67,7 @@
 #define HST_QUOTES 1
 
 #define	tb_args(p)	tb_values(p), (int)tb_length(p)
+#define	tb_args2(p)	tb_values(p), tb_length(p)
 #define	lp_args(p)	lvalue(p), llength(p)
 
 typedef struct {
@@ -200,7 +201,7 @@ endOfParm(HST * parm, char *src, int offset, int limit)
 		    }
 		} else
 #endif
-		if ((parm->endfunc) (src, n, src[n], parm->eolchar))
+		if ((parm->endfunc) (src, (size_t) n, src[n], parm->eolchar))
 		    break;
 	    }
 	}
@@ -310,7 +311,7 @@ glueBufferToResult(TBUFF **dst, TBUFF *src)
 	&& needQuotes(src)) {
 	append_quoted_token(dst, tb_values(src), tb_length(src));
     } else {
-	(void) tb_bappend(dst, tb_args(src));
+	(void) tb_bappend(dst, tb_args2(src));
     }
 }
 
@@ -486,7 +487,8 @@ hst_find(HST * parm, BUFFER *bp, LINE *lp, int direction)
 	    return 0;		/* empty or no matches */
 
 	if (!lisreal(lp)
-	    || ((size_t) llength(lp) <= tb_length(MyText) + willGlue())
+	    || ((size_t) llength(lp) <= (tb_length(MyText)
+					 + (size_t) willGlue()))
 	    || (sameLine(lp, tb_args(MyText)) < 0))
 	    continue;		/* prefix mismatches */
 
@@ -559,10 +561,10 @@ hst_display(HST * parm, char *src, int srclen)
 				   &n);
 #endif
 	TRACE(("...hst_display offset=%d, string='%.*s'\n", offset, n, stripped));
-	*parm->position = kbd_show_response(parm->buffer,
-					    stripped,
-					    n,
-					    parm->eolchar, parm->options);
+	*parm->position = (size_t) kbd_show_response(parm->buffer,
+						     stripped,
+						     (size_t) n,
+						     parm->eolchar, parm->options);
 #if HST_QUOTES
 	if (stripped != 0 && stripped != src)
 	    free(stripped);

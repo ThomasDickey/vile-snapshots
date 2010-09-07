@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/vl_ctype.c,v 1.13 2010/02/07 17:55:01 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/vl_ctype.c,v 1.14 2010/09/06 18:38:50 tom Exp $
  */
 
 /*
@@ -425,7 +425,7 @@ vl_ctype_set(int ch, CHARTYPE cclass)
     TRACE(("vl_ctype_set %d:%#lx\n", ch, (ULONG) cclass));
 
     if (ctype_sets == 0) {
-	ctype_sets = typecallocn(CHARTYPE, N_chars);
+	ctype_sets = typecallocn(CHARTYPE, (size_t) N_chars);
     }
     if (ctype_sets != 0) {
 	ctype_sets[ch] |= cclass;
@@ -442,7 +442,7 @@ vl_ctype_clr(int ch, CHARTYPE cclass)
     TRACE(("vl_ctype_clr %d:%#lx\n", ch, (ULONG) cclass));
 
     if (ctype_clrs == 0) {
-	ctype_clrs = typecallocn(CHARTYPE, N_chars);
+	ctype_clrs = typecallocn(CHARTYPE, (size_t) N_chars);
     }
     if (ctype_clrs != 0) {
 	ctype_clrs[ch] |= cclass;

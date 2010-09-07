@@ -1,10 +1,11 @@
 /*	Crypt:	Encryption routines for MicroEMACS
  *		written by Dana Hoggatt and Paul Fox.
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/ecrypt.c,v 1.19 2010/08/15 23:43:00 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/ecrypt.c,v 1.23 2010/09/06 15:39:53 tom Exp $
  *
  */
 
+#define CAN_TRACE    0
 #define CAN_VMS_PATH 0
 
 #include <filters.h>
@@ -210,11 +211,12 @@ ue_crypt(register char *bptr,	/* buffer of characters to be encrypted */
 }
 
 static void
-filecrypt(FILE *ifp, char *key, char *options)
+filecrypt(FILE *ifp, char *key, char *options, const char *seedValue)
 {
     char buf[BUFSIZ];
     char temp_key[KEY_LIMIT];
-    int seed = 123;
+    char *temp = 0;
+    int seed = (int) strtol(seedValue, &temp, 0);
     int ch = EOF, c0;
 
     if (UnixCrypt) {
@@ -272,6 +274,7 @@ usage(const char *prog)
 #endif
 	"  -m     forces \"mail-mode\", which leaves text before",
 	"         the first empty line of a file (i.e. headers) intact.",
+	"  -s NUM seed value for Unix-style encryption (default matches vile)",
 	"  -u     use Unix-style encryption (default is UEmacs)"
     };
     size_t n;
@@ -283,7 +286,7 @@ usage(const char *prog)
 }
 
 static void
-process_stream(const char *prog, FILE *fp, char *key, char *options)
+do_stream(const char *prog, FILE *fp, char *key, char *options, const char *seed)
 {
     if (!key[0]) {
 #ifdef HAVE_GETPASS
@@ -301,34 +304,37 @@ process_stream(const char *prog, FILE *fp, char *key, char *options)
 	    fprintf(stderr, "%s: Aborted\n", prog);
 	    exit(BADEXIT);
 	}
-	(void) strncpy(key, userkey, KEY_LIMIT);
+	(void) strncpy(key, userkey, (size_t) KEY_LIMIT);
 	(void) memset(userkey, '.', strlen(userkey));
 #else
 	usage(prog);
 #endif
     }
-    filecrypt(fp, key, options);
+    filecrypt(fp, key, options, seed);
 }
 
 static void
-process_filename(const char *prog, const char *name, char *key, char *options)
+do_filename(const char *prog, const char *name, char *key, char *options, const char *seed)
 {
     FILE *fp = fopen(name, "r");
     if (fp == 0)
 	failed(name);
-    process_stream(prog, fp, key, options);
+    do_stream(prog, fp, key, options, seed);
     (void) fclose(fp);
 }
 
 int
 main(int argc, char **argv)
 {
+    char empty[1];
     char key[KEY_LIMIT];
     char *prog = argv[0];
     char options[256];
+    const char *seed = "123";
     int had_file = 0;
     int n;
 
+    empty[0] = 0;
     memset(key, 0, sizeof(key));
     memset(options, 0, sizeof(options));
 
@@ -346,10 +352,10 @@ main(int argc, char **argv)
 			fprintf(stderr, "%s: excessive key length\n", prog);
 			exit(BADEXIT);
 		    }
-		    (void) strncpy(key, param, KEY_LIMIT);
+		    (void) strncpy(key, param, (size_t) KEY_LIMIT);
 		    (void) memset(param, '.', strlen(param));
 		    key[KEY_LIMIT - 1] = '\0';
-		    param = "";
+		    param = empty;
 		    break;
 		case 'm':
 		    /* -m for mailmode:  leaves headers intact (up to first
@@ -357,23 +363,31 @@ main(int argc, char **argv)
 		     * encrypting mail messages in mh folders -pgf */
 		    MailMode = 1;
 		    break;
+		case 's':
+		    if (*param == 0)
+			param = argv[++n];
+		    if (param == 0)
+			usage(prog);
+		    seed = param;
+		    param = empty;
+		    break;
 		case 'u':
 		    UnixCrypt = 1;
 		    break;
 		default:
-		    fprintf(stderr, "unknown switch -%c\n", *param);
+		    fprintf(stderr, "unknown switch -%c\n", param[-1]);
 		    usage(prog);
 		    break;
 		}
 	    }
 	} else {
 	    had_file = 1;
-	    process_filename(prog, argv[n], key, options);
+	    do_filename(prog, argv[n], key, options, seed);
 	}
     }
 
     if (!had_file) {
-	process_stream(prog, stdin, key, options);
+	do_stream(prog, stdin, key, options, seed);
     }
     fflush(stdout);
     fclose(stdout);

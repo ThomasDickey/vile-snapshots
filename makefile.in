@@ -20,7 +20,7 @@
 #
 # gnu autoconf support by kevin buettner, 5/94
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.248 2010/08/15 23:49:19 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.249 2010/08/16 09:44:16 tom Exp $
 
 SHELL		= /bin/sh
 
@@ -322,7 +322,7 @@ OBJ2 =	@EXTRAOBJS2@
 
 # This should be "$(OBJ:$o=.c)", but IRIX64's make (and some not very old
 # BSD-makes) cannot handle it.
-SRC =	$(VILESRC) $(SCREEN).c
+SRC =	$(OBJ:.o=.c)
 
 ALL =	$(PROGRAM)
 

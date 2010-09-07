@@ -13,7 +13,7 @@
  * vile.  The file api.c (sometimes) provides a middle layer between
  * this interface and the rest of vile.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.121 2010/08/14 15:03:30 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.124 2010/09/07 00:38:55 tom Exp $
  */
 
 #ifdef __GNUC__
@@ -223,7 +223,7 @@ tie_handle(SV *sv, SV *obj)
 
 /* write each line to message line */
 static int
-write_message(char *prefix, SV *sv)
+write_message(const char *prefix, SV *sv)
 {
     int count = 0;
     char *text = SvPV(sv, PL_na);
@@ -256,7 +256,7 @@ write_message(char *prefix, SV *sv)
 /* require a file, `optional' indicates that it is OK for the file not
    to exist */
 static int
-require(char *file, int optional)
+require(const char *file, int optional)
 {
     TRACE((T_CALLED "Vile::require(%s,%s)\n", file, optional ? "optional" : "required"));
     /* require the file */
@@ -269,7 +269,7 @@ require(char *file, int optional)
     if (optional)
     {
 	/* this error is OK for optional files */
-	SV *tmp = newSVpv("Can't locate ", 0);
+	SV *tmp = newSVpv("Can't locate ", (size_t) 0);
 	char const *my_check;
 	STRLEN sz;
 	int not_found;
@@ -322,7 +322,7 @@ newVBrv(SV *rv, VileBuf *sp)
 {
     if (sp->perl_handle == 0) {
 	sp->perl_handle = newGVgen("Vile::Buffer");
-	GvSV((GV*)sp->perl_handle) = newSV(0);
+	GvSV((GV*)sp->perl_handle) = newSV((size_t) 0);
 	sv_setiv(GvSV((GV*)sp->perl_handle), (IV) sp);
 	tie_handle(sp->perl_handle, rv);
 	gv_IOadd((GV*)sp->perl_handle);
@@ -342,7 +342,7 @@ newVBrv(SV *rv, VileBuf *sp)
 }
 
 static VileBuf *
-getVB(SV *sv, char **croakmessage_ptr)
+getVB(SV *sv, const char **croakmessage_ptr)
 {
     VileBuf *vbp = 0;
     if (sv_isa(sv, "Vile::Buffer")) {
@@ -371,7 +371,7 @@ perl_free_handle(void *handle)
     /*
      * Zero out perl's handle to the VileBuf structure
      */
-    sv_setiv(GvSV((GV*)handle), 0);
+    sv_setiv(GvSV((GV*)handle), (size_t) 0);
 
     /*
      * Decrement the reference count to indicate the fact that
@@ -402,11 +402,11 @@ newVWrv(SV *rv, VileWin vw)
 }
 
 static VileWin
-getVW(SV *sv, char **croakmessage_ptr)
+getVW(SV *sv, const char **croakmessage_ptr)
 {
     VileWin vw = 0;
     if (sv_isa(sv, "Vile::Window")) {
-	vw = id2win((ULONG)SvIV((SV*)SvRV(sv)));
+	vw = id2win((WIN_ID)SvIV((SV*)SvRV(sv)));
 	if (!vw) {
 	    *croakmessage_ptr = "window no longer exists";
 	}
@@ -451,7 +451,7 @@ do_perl_cmd(SV *cmd, int inplace)
 	curvbp->inplace_edit = inplace;
 
 	{
-	    SV *sv = newVBrv(newSV(0), curvbp);
+	    SV *sv = newVBrv(newSV((size_t) 0), curvbp);
 	    sv_setsv(svcurbuf, sv);
 	    SvREFCNT_dec(sv);
 	}
@@ -656,7 +656,7 @@ perl_prompt(void)
     TRACE((T_CALLED "perl_prompt\n"));
 
     buf[0] = EOS;
-    if ((status = mlreply_no_opts("Perl command: ", buf, sizeof(buf))) != TRUE)
+    if ((status = mlreply_no_opts("Perl command: ", buf, (UINT) sizeof(buf))) != TRUE)
 	returnCode(status);
 
     /* Hack to workaround problem with perl5.005 in which package Dynaloader
@@ -666,7 +666,7 @@ perl_prompt(void)
     cmd = newSVpv(buf, 0);
 #else
     /* This is the hack... */
-    cmd = newSVpv("package main; ", 0);
+    cmd = newSVpv("package main; ", (size_t) 0);
     sv_catpv(cmd, buf);
 #endif
     status = do_perl_cmd(cmd, FALSE);
@@ -857,7 +857,7 @@ perldo_prompt(void)
     TRACE((T_CALLED "perldo_prompt\n"));
 
     buf[0] = EOS;
-    if ((status = mlreply_no_opts("Perl command: ", buf, sizeof(buf))) != TRUE)
+    if ((status = mlreply_no_opts("Perl command: ", buf, (UINT) sizeof(buf))) != TRUE)
 	returnCode(status);
 
 #if OPT_HISTORY
@@ -865,7 +865,7 @@ perldo_prompt(void)
 #endif
 
     strcpy(obuf, "-lpi");
-    if ((status = mlreply_no_opts("options: ", obuf, sizeof(obuf))) != TRUE)
+    if ((status = mlreply_no_opts("options: ", obuf, (UINT) sizeof(obuf))) != TRUE)
 	returnCode(status);
 
     /* skip optional leading `-' */
@@ -897,7 +897,7 @@ perldo_prompt(void)
 		i_rs = RS_PARA;
 		o++;
 	    }
-	    else if (!strncmp(o, "777", 3))
+	    else if (!strncmp(o, "777", (size_t) 3))
 	    {
 		i_rs = RS_NONE;
 		o += 3;
@@ -976,7 +976,7 @@ perldo_prompt(void)
     cmd = newSVpv("{local $/=", 0); /*}*/
 #else
     /* Package name hack - works around a bug in perl5.00503 */
-    cmd = newSVpv("package main; {local $/=", 0); /*}*/
+    cmd = newSVpv("package main; {local $/=", (size_t) 0); /*}*/
 #endif
     if (i_rs == RS_NONE)
 	sv_catpv(cmd, "undef");
@@ -1016,7 +1016,7 @@ perldo_prompt(void)
 	    else
 	    {
 		char delim;
-		char *test = "'~#\200\1";
+		const char *test = "'~#\200\1";
 		/* try to find a delimiter not in the string */
 		while (*test && strchr(split, *test)) test++;
 		delim = *test;
@@ -1063,7 +1063,7 @@ svcurbuf_set(pTHX_ SV *sv, MAGIC *mg GCC_UNUSED)
     else {
 	VileBuf *curvbp = api_bp2vbp(curbp);
 	if (curvbp != 0) {
-	    SV *my_sv = newVBrv(newSV(0), curvbp);
+	    SV *my_sv = newVBrv(newSV((size_t) 0), curvbp);
 	    sv_setsv(svcurbuf, my_sv);
 	    SvREFCNT_dec(my_sv);
 	}
@@ -1080,7 +1080,7 @@ prepend_include(char *path)
     if (is_directory(path)) {
 	TRACE(("prepend_include(%s)\n", path));
 	av_unshift(av = GvAVn(PL_incgv), 1);
-	sv = newSVpv(path, 0);
+	sv = newSVpv(path, (size_t) 0);
 	av_store(av, 0, sv);
     }
 }
@@ -1133,7 +1133,7 @@ real_perl_init(void)
        if they do not exist. */
     svcurbuf  = perl_get_sv(svcurbuf_name,  TRUE);
 
-    svminibuf   = newVBrv(newSV(0), api_bp2vbp(bminip));
+    svminibuf   = newVBrv(newSV((size_t) 0), api_bp2vbp(bminip));
 
     /* Tie STDOUT and STDERR to miniscr->PRINT() function */
     tie_handle((SV *) gv_fetchpv("STDOUT", TRUE, SVt_PVIO), svminibuf);
@@ -1205,7 +1205,7 @@ extern void boot_Vile(pTHX_ CV* cv);
 static void
 xs_init(pTHX)
 {
-    char *file = __FILE__;
+    const char *file = __FILE__;
     dXSUB_SYS;
     newXS("DynaLoader::boot_DynaLoader", boot_DynaLoader, file);
     newXS("Vile::bootstrap", boot_Vile, file);
@@ -1215,7 +1215,7 @@ xs_init(pTHX)
  * Stringify a code ref so it may be called from vile.
  */
 
-static char *CRfmtstr = "perl \"&{$Vile::CRs[%d]}\"";
+static const char *CRfmtstr = "perl \"&{$Vile::CRs[%d]}\"";
 static AV *CRarray   = 0;
 static int freeCRidx = 0;
 
@@ -1240,7 +1240,7 @@ stringify_coderef(SV *coderef) {
 	    freeCRidx = -1;
 	}
 	else {
-	    freeCRidx = SvIV(*svp);
+	    freeCRidx = (int) SvIV(*svp);
 	}
 	if (av_store(CRarray, (I32) idx, SvREFCNT_inc(coderef)) == 0) {
 	    cantstore = 1;
@@ -1329,7 +1329,7 @@ perl_free_callback(char *callback)
 	CRs_tofree[CRs_tofree_idx++] = *svp;
 #endif /* HAVE_BROKEN_PERL_ANON_SUB_DEALLOC */
 
-	svfreeCRidx = newSViv(freeCRidx);
+	svfreeCRidx = newSViv((IV)freeCRidx);
 	if (av_store(CRarray, (I32) idx, svfreeCRidx) == 0) {
 	    /* Not successful (!) */
 	    SvREFCNT_dec(svfreeCRidx);
@@ -1360,7 +1360,7 @@ sv2linenum(SV *sv)
 	linenum = vl_line_count(curbp) + 1;
     }
     else {
-	linenum = SvIV(sv);
+	linenum = (I32) SvIV(sv);
 	if (linenum < 1) {
 	    linenum = 1;
 	}
@@ -1392,7 +1392,7 @@ sv2offset(SV *sv)
 	offset = llength(DOT.l);
     }
     else {
-	offset = SvIV(sv);
+	offset = (I32) SvIV(sv);
 	if (offset < 0) {
 	    offset = 0;
 	}
@@ -1486,7 +1486,7 @@ svgetline(SV **svp, VileBuf *vbp, char *rsstr GCC_UNUSED, STRLEN rslen GCC_UNUSE
 	sv_setpvn(sv, ending, len_rs);
     }
     else {
-	sv_setpvn(sv, "", 0);
+	sv_setpvn(sv, "", (size_t) 0);
     }
 
     return TRUE;
@@ -1515,7 +1515,7 @@ svgetregion(SV **svp, VileBuf *vbp, char *rsstr GCC_UNUSED, STRLEN rslen GCC_UNU
     vbp->region.r_size = 0;
 
     *svp = sv = newSV(len + 1);	/* + 1 for \0 */
-    sv_setpvn(sv, "", 0);
+    sv_setpvn(sv, "", (size_t) 0);
 
     if (vbp->inplace_edit)
 	vbp->ndel += len;
@@ -1701,7 +1701,7 @@ have_length:
 
     /* Now copy the region over to the SV... */
     *svp = sv = newSV(len + 1);	/* + 1 for \0 */
-    sv_setpvn(sv, "", 0);
+    sv_setpvn(sv, "", (size_t) 0);
 
     if (vbp->inplace_edit)
 	vbp->ndel += len;
@@ -1979,7 +1979,7 @@ buffers(...)
 	}
 
 	for_each_buffer(bp) {
-	    XPUSHs(sv_2mortal(newVBrv(newSV(0), api_bp2vbp(bp))));
+	    XPUSHs(sv_2mortal(newVBrv(newSV((size_t) 0), api_bp2vbp(bp))));
 	}
 
   #
@@ -2048,7 +2048,7 @@ keystroke(...)
 	}
 
 	if (!noget)
-	    XPUSHs(sv_2mortal(newSViv(sysmapped_c())));
+	    XPUSHs(sv_2mortal(newSViv((IV)sysmapped_c())));
 
 	curwp_visible = curwp;
 
@@ -2115,13 +2115,13 @@ mlreply(prompt, ...)
 
 	switch (ix) {
 	    case 1:
-		status = mlreply_no_opts(prompt, buf, sizeof(buf));
+		status = mlreply_no_opts(prompt, buf, (UINT) sizeof(buf));
 		break;
 	    case 2:
-		status = mlreply_no_bs(prompt, buf, sizeof(buf));
+		status = mlreply_no_bs(prompt, buf, (UINT) sizeof(buf));
 		break;
 	    default:
-		status = mlreply(prompt, buf, sizeof(buf));
+		status = mlreply(prompt, buf, (UINT) sizeof(buf));
 		break;
 	}
 #if OPT_HISTORY
@@ -2129,7 +2129,7 @@ mlreply(prompt, ...)
 	    hst_glue('\r');
 #endif
 	XPUSHs((status == TRUE || status == FALSE)
-		 ? sv_2mortal(newSVpv(buf, 0))
+		 ? sv_2mortal(newSVpv(buf, (size_t) 0))
 		 : &PL_sv_undef);
 
 
@@ -2174,7 +2174,7 @@ mlreply_dir(prompt, ...)
 	    hst_glue('\r');
 #endif
 	XPUSHs((status == TRUE || status == FALSE)
-		 ? sv_2mortal(newSVpv(buf, 0))
+		 ? sv_2mortal(newSVpv(buf, (size_t) 0))
 		 : &PL_sv_undef);
 
 
@@ -2219,7 +2219,7 @@ mlreply_file(prompt, ...)
 	    hst_glue('\r');
 #endif
 	XPUSHs((status == TRUE || status == FALSE)
-		 ? sv_2mortal(newSVpv(buf, 0))
+		 ? sv_2mortal(newSVpv(buf, (size_t) 0))
 		 : &PL_sv_undef);
 
   #
@@ -2294,7 +2294,7 @@ selection_buffer(...)
 		if (vbp != 0) {
 		    vbp->region = aregion.ar_region;
 		    vbp->regionshape =  aregion.ar_shape;
-		    XPUSHs(sv_2mortal(newVBrv(newSV(0), vbp)));
+		    XPUSHs(sv_2mortal(newVBrv(newSV((size_t) 0), vbp)));
 		}
 	    }
 	    else {
@@ -2303,7 +2303,7 @@ selection_buffer(...)
 	}
 	else if (items - argno == 1) { /* setter */
 	    VileBuf *vbp;
-	    char *croakmess;
+	    const char *croakmess;
 	    /* Need a buffer object */
 	    vbp = getVB(ST(argno), &croakmess);
 
@@ -2397,7 +2397,7 @@ set(...)
 	mode     = NULL;		/* just in case it never gets set */
 
 	if (!isglobal /* one of the Vile::Buffer methods */) {
-	    char *croakmess;
+	    const char *croakmess;
 	    VileBuf *vbp;
 
 	    /* Need a buffer object */
@@ -2447,7 +2447,7 @@ set(...)
 		    modenames[nmodenames++] = mode;
 
 		if (issetter) {
-		    char *val;
+		    const char *val;
 		    val = NULL;
 		    if (argno >= items) {
 			if (args.names->type == VALTYPE_BOOL) {
@@ -2497,14 +2497,14 @@ set(...)
 	if (modenames == NULL) {
 	    if (issetter) {
 		if (isglobal)
-		    XPUSHs(sv_2mortal(newSVpv("Vile", 0)));
+		    XPUSHs(sv_2mortal(newSVpv("Vile", (size_t) 0)));
 		else
 		    XPUSHs(ST(0));	/* Buffer object */
 	    }
 	    else {
 		if (mode != NULL) {
 		    value = FindMode(mode, isglobal, &args);
-		    XPUSHs(sv_2mortal(newSVpv(value, 0)));
+		    XPUSHs(sv_2mortal(newSVpv(value, (size_t) 0)));
 		    FreeMode(value);
 		}
 	    }
@@ -2514,8 +2514,8 @@ set(...)
 	    for (i = 0; i < nmodenames; i++) {
 		mode = modenames[i];
 		value = FindMode(mode, isglobal, &args);
-		XPUSHs(sv_2mortal(newSVpv(mode, 0)));
-		XPUSHs(sv_2mortal(newSVpv(value, 0)));
+		XPUSHs(sv_2mortal(newSVpv(mode, (size_t) 0)));
+		XPUSHs(sv_2mortal(newSVpv(value, (size_t) 0)));
 		FreeMode(value);
 	    }
 	    free(modenames);
@@ -2651,7 +2651,7 @@ register(name, ...)
 
 	ix |= (I32) ((ix == OPER) ? RANGE : VIEWOK);
 	cmd->cu.c_perl = av = newAV();
-	cmd->c_flags = REDO|UNDO|CMD_PERL|ix;
+	cmd->c_flags = (REDO | UNDO | CMD_PERL | (CMDFLAGS) ix);
 #if OPT_ONLINEHELP
 	cmd->c_help = strmalloc((items > 2 && SvTRUE(ST(2)))
 				? SvPV(ST(2), PL_na)
@@ -2669,7 +2669,7 @@ register(name, ...)
 	else
 	{
 	    /* push the name */
-	    av_push(av, newSVpv(name, 0));
+	    av_push(av, newSVpv(name, (size_t) 0));
 
 	    /* push the subroutine */
 	    if (items > 1 && SvTRUE(ST(1)))
@@ -2685,7 +2685,7 @@ register(name, ...)
 		}
 	    }
 	    else /* sub = name */
-		av_push(av, newSVpv(name, 0));
+		av_push(av, newSVpv(name, (size_t) 0));
 	}
 #else
 	croak("%s requires vile to be compiled with OPT_NAMBST",
@@ -2887,7 +2887,7 @@ READLINE(vbp)
 		    prompt[len] = EOS;
 		}
 	    }
-	    status = mlreply_no_opts(prompt, buf, sizeof(buf));
+	    status = mlreply_no_opts(prompt, buf, (UINT) sizeof(buf));
 #if OPT_HISTORY
 	    if (status == TRUE)
 		hst_glue('\r');
@@ -2898,7 +2898,7 @@ READLINE(vbp)
 	    }
 	    else {
 		use_ml_as_prompt = 0;
-		PUSHs(sv_2mortal(newSVpv(buf,0)));
+		PUSHs(sv_2mortal(newSVpv(buf,(size_t) 0)));
 	    }
 	}
 	else {
@@ -3165,8 +3165,10 @@ buffername(vbp,...)
 	}
 
 	if (status == TRUE) {
-	    XPUSHs(sv_2mortal(newSVpv(ix == 0 ?
-				      curbp->b_bname : curbp->b_fname, 0)));
+	    XPUSHs(sv_2mortal(newSVpv((ix == 0
+				       ? curbp->b_bname
+				       : curbp->b_fname),
+				      (size_t) 0)));
 	}
 	else {
 	    XPUSHs(&PL_sv_undef);		/* return undef */
@@ -3450,11 +3452,11 @@ dot(vbp, ...)
 	}
 	gimme = GIMME_V;
 	if (gimme == G_SCALAR) {
-	    XPUSHs(sv_2mortal(newSViv(line_no(curbp, DOT.l))));
+	    XPUSHs(sv_2mortal(newSViv((IV)line_no(curbp, DOT.l))));
 	}
 	else if (gimme == G_ARRAY) {
-	    XPUSHs(sv_2mortal(newSViv(line_no(curbp, DOT.l))));
-	    XPUSHs(sv_2mortal(newSViv(DOT.o)));
+	    XPUSHs(sv_2mortal(newSViv((IV)line_no(curbp, DOT.l))));
+	    XPUSHs(sv_2mortal(newSViv((IV)DOT.o)));
 	}
 
   #
@@ -3490,7 +3492,7 @@ fetch(vbp)
 
 	old_DOT = DOT;
 
-	svgetregion(&sv, vbp, 0, 0);
+	svgetregion(&sv, vbp, 0, (STRLEN) 0);
 
 	XPUSHs(sv_2mortal(sv));
 
@@ -3625,10 +3627,10 @@ motion(vbp,mstr)
 		so = eo;
 		eo = to;
 	    }
-	    XPUSHs(sv_2mortal(newSViv(sl)));
-	    XPUSHs(sv_2mortal(newSViv(so)));
-	    XPUSHs(sv_2mortal(newSViv(el)));
-	    XPUSHs(sv_2mortal(newSViv(eo)));
+	    XPUSHs(sv_2mortal(newSViv((IV)sl)));
+	    XPUSHs(sv_2mortal(newSViv((IV)so)));
+	    XPUSHs(sv_2mortal(newSViv((IV)el)));
+	    XPUSHs(sv_2mortal(newSViv((IV)eo)));
 	}
 
   #
@@ -3939,15 +3941,16 @@ set_region(vbp, ...)
 	}
 	else if (gimme == G_ARRAY) {
 	    /* Return range information */
-	    XPUSHs(sv_2mortal(newSViv(line_no(curbp, vbp->region.r_orig.l))));
-	    XPUSHs(sv_2mortal(newSViv(vbp->region.r_orig.o)));
-	    XPUSHs(sv_2mortal(newSViv(line_no(curbp, vbp->region.r_end.l)
+	    XPUSHs(sv_2mortal(newSViv((IV)line_no(curbp, vbp->region.r_orig.l))));
+	    XPUSHs(sv_2mortal(newSViv((IV)vbp->region.r_orig.o)));
+	    XPUSHs(sv_2mortal(newSViv((IV)line_no(curbp, vbp->region.r_end.l)
 						     - (vbp->regionshape == rgn_FULLLINE))));
-	    XPUSHs(sv_2mortal(newSViv(vbp->region.r_end.o)));
+	    XPUSHs(sv_2mortal(newSViv((IV)vbp->region.r_end.o)));
 	    XPUSHs(sv_2mortal(newSVpv(
 		vbp->regionshape == rgn_FULLLINE ? "fullline" :
 		vbp->regionshape == rgn_EXACT    ? "exact"
-						 : "rectangle",  0 )));
+						 : "rectangle",
+		(size_t) 0 )));
 	}
 
 
@@ -4065,7 +4068,7 @@ buffer(vw, ...)
 	if (items > 2)
 	    croak("Vile::Window::buffer: Too many arguments.");
 	else if (items == 2) {
-	    char *croakmess;
+	    const char *croakmess;
 	    VileBuf *vbp;
 	    WINDOW *savewp = curwp;
 	    vbp = getVB(ST(1), &croakmess);
@@ -4128,7 +4131,7 @@ current_window(...)
 	}
 	else if (items - argno == 1) { /* setter */
 	    VileWin vw;
-	    char *croakmess;
+	    const char *croakmess;
 	    /* Need a window object */
 	    vw = getVW(ST(argno), &croakmess);
 
@@ -4180,7 +4183,7 @@ delete(vw)
 	    XPUSHs(&PL_sv_undef);
 	}
 	else {
-	    XPUSHs(sv_2mortal(newSViv(1)));
+	    XPUSHs(sv_2mortal(newSViv((IV)1)));
 	}
 
   #
@@ -4240,11 +4243,11 @@ dot(vw, ...)
 	if (gimme == G_SCALAR || gimme == G_ARRAY) {
 	    /* Return line number when in either a scalar or an array context */
 	    XPUSHs(sv_2mortal(newSViv(
-		line_no(vw->w_bufp, vw->w_traits.w_dt.l))));
+		(IV)line_no(vw->w_bufp, vw->w_traits.w_dt.l))));
 	}
 	if (gimme == G_ARRAY) {
 	    /* When in an array context, also return the line offset */
-	    XPUSHs(sv_2mortal(newSViv(vw->w_traits.w_dt.o)));
+	    XPUSHs(sv_2mortal(newSViv((IV)vw->w_traits.w_dt.o)));
 	}
 
   #
@@ -4308,7 +4311,7 @@ new(...)
 
     CODE:
 	if (items == 2) {
-	    char *croakmess;
+	    const char *croakmess;
 	    vbp = getVB(ST(1), &croakmess);
 	    if (!vbp)
 		croak("Vile::Window::new: %s",croakmess);
@@ -4324,7 +4327,7 @@ new(...)
 	    vw = wpopup();
 	}
 	else if (sv_isa(ST(0), "Vile::Window")) {
-	    char *croakmess;
+	    const char *croakmess;
 	    vw = getVW(ST(0), &croakmess);	/* Fetch window object */
 	    if (vw == 0)
 		croak("Vile::Window::new: %s", croakmess);
@@ -4411,11 +4414,11 @@ size(vw, ...)
 	}
 	gimme = GIMME_V;
 	if (gimme == G_SCALAR) {
-	    XPUSHs(sv_2mortal(newSViv(vw->w_ntrows)));
+	    XPUSHs(sv_2mortal(newSViv((IV)vw->w_ntrows)));
 	}
 	else if (gimme == G_ARRAY) {
-	    XPUSHs(sv_2mortal(newSViv(vw->w_ntrows)));
-	    XPUSHs(sv_2mortal(newSViv(term.cols)));
+	    XPUSHs(sv_2mortal(newSViv((IV)vw->w_ntrows)));
+	    XPUSHs(sv_2mortal(newSViv((IV)term.cols)));
 	}
 
   #

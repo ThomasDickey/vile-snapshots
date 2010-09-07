@@ -1,7 +1,7 @@
 /*	tcap:	Unix V5, V7 and BS4.2 Termcap video driver
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.184 2009/12/09 01:45:35 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.185 2010/09/07 00:46:49 tom Exp $
  *
  */
 
@@ -492,7 +492,7 @@ end_reverse(void)
 }
 
 #ifdef GVAL_VIDEO
-#define REVERSED (global_g_val(GVAL_VIDEO) & VAREV)
+#define REVERSED ((UINT) global_g_val(GVAL_VIDEO) & VAREV)
 static void
 set_reverse(void)
 {
@@ -529,7 +529,7 @@ erase_non_bce(int row, int col)
 	term.curmove(row, col);
 }
 
-#define NEED_BCE_FIX ((!have_bce && shown_bcolor != NO_COLOR) || REVERSED)
+#define NEED_BCE_FIX ((UINT) (!have_bce && shown_bcolor != NO_COLOR) || REVERSED)
 #define FILL_BCOLOR(row,col) if(NEED_BCE_FIX) erase_non_bce(row, col)
 #else
 #define FILL_BCOLOR(row,col)	/*nothing */
@@ -820,13 +820,13 @@ tcap_attr(UINT attr)
 #endif
     if (!colored
 	&& (attr & (VASPCOL | VACOLOR)) != 0) {
-	attr &= ~(VASPCOL | VACOLOR);
+	attr &= (UINT) (~(VASPCOL | VACOLOR));
     }
     if (attr & VASPCOL) {
 	attr = VCOLORATTR((VCOLORNUM(attr) & (ncolors - 1)));
     } else {
 	if (attr & VACOLOR) {
-	    attr &= (VCOLORATTR(ncolors - 1) | ~VACOLOR);
+	    attr &= (UINT) (VCOLORATTR(ncolors - 1) | ~VACOLOR);
 	}
 	attr &= ~(VAML | VAMLFOC);
     }
@@ -841,10 +841,10 @@ tcap_attr(UINT attr)
     if (tc_NC != 0
 	&& (attr & VACOLOR) != 0) {
 	for (n = 0; n < TABLESIZE(tbl); n++) {
-	    if ((tbl[n].NC_bit & tc_NC) != 0
+	    if ((tbl[n].NC_bit & (UINT) tc_NC) != 0
 		&& (tbl[n].mask & attr) != 0) {
 		if ((tbl[n].mask & (VASEL | VAREV)) != 0)
-		    attr &= ~VACOLOR;
+		    attr &= (UINT) (~VACOLOR);
 		else
 		    attr &= ~tbl[n].mask;
 	    }

@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.710 2010/08/15 22:29:25 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.713 2010/09/06 18:18:59 tom Exp $
  *
  */
 
@@ -270,13 +270,13 @@ extern int tabstop_val (BUFFER *bp);
 extern int zotbuf (BUFFER *bp);
 extern int zotwp (BUFFER *bp);
 extern void buffer_flags (char *dst, BUFFER *bp);
-extern void chg_buff (BUFFER *bp, USHORT flag);
+extern void chg_buff (BUFFER *bp, unsigned flag);
 extern void imply_alt (char *fname, int copy, int lockfl);
 extern void make_current (BUFFER *nbp);
 extern void set_bname (BUFFER *bp, const char *name);
 extern void set_editor_title(void);
 extern void sortlistbuffers (void);
-extern void unchg_buff (BUFFER *bp, USHORT flag);
+extern void unchg_buff (BUFFER *bp, unsigned flag);
 extern void undispbuff (BUFFER *bp, WINDOW *wp);
 
 #if !OPT_MAJORMODE
@@ -483,7 +483,6 @@ extern const char * skip_cnumber (const char *str);
 extern const char * skip_cstring (const char *str);
 extern const char * skip_ctext (const char *str);
 extern const char * tokval (const char *tokn);
-extern int absol (int x);
 extern int eval_fchanged (BUFFER *bp);
 extern int is_falsem (const char *val);
 extern int is_truem (const char *val);
@@ -494,6 +493,7 @@ extern int must_quote_token (const char * values, size_t last);
 extern int scan_bool (const char *s );
 extern int toktyp (const char *tokn);
 extern int vl_lookup_statevar(const char *vname);
+extern long absol (long x);
 extern void append_quoted_token (TBUFF ** dst, const char * values, size_t last);
 extern void path_quote (TBUFF **result, const char *path);
 
@@ -885,8 +885,8 @@ extern int vlmenu_is_bind (char *action);
 extern void init_menus (void);
 	/* driver-specific interface */
 extern int gui_create_menus (void);
-extern void * gui_add_menu_item (void * pm, char *nom, char *accel, int the_class);
-extern void * gui_make_menu (void * menubar, char *nom, int the_class);
+extern void * gui_add_menu_item (void * pm, const char *nom, char *accel, int the_class);
+extern void * gui_make_menu (void * menubar, const char *nom, int the_class);
 extern void gui_add_func_callback (void * w, void * closure);
 extern void gui_add_list_callback (void *pm);
 #endif
@@ -921,9 +921,9 @@ extern void copy_mvals (int maximum, struct VAL *dst, struct VAL *src);
 extern void free_local_vals (const struct VALNAMES *names, struct VAL *gbl, struct VAL *val);
 extern void free_val (const struct VALNAMES *names, struct VAL *values);
 extern void set_buf_fname_expr (BUFFER *bp);
-extern void set_bufflags (int glob_vals, USHORT flags);
+extern void set_bufflags (int glob_vals, unsigned flags);
 extern void set_record_sep (BUFFER *bp, RECORD_SEP value);
-extern void set_winflags (int glob_vals, USHORT flags);
+extern void set_winflags (int glob_vals, unsigned flags);
 
 #if OPT_COLOR_SCHEMES
 extern void init_scheme (void);
@@ -1199,7 +1199,7 @@ extern	int	assign_attr_id	(void);
 extern	int	attribute_cntl_a_seqs_in_region (REGION *rp, REGIONSHAPE shape);
 extern	int	attributeregion (void);
 extern	int	attributeregion_in_region (REGION *rp, REGIONSHAPE shape,
-					    VIDEO_ATTR vattr, char *hc);
+					    unsigned vattr, char *hc);
 extern	int	decode_attribute (char *text, size_t length, size_t offset, int *countp);
 extern	int	sel_begin	(void);
 extern	int	sel_extend	(int wiping, int include_dot);
@@ -1570,8 +1570,8 @@ extern BUFFER * pop_fake_win(WINDOW *oldwp, BUFFER *oldbp);
 #endif
 
 #if OPT_PERL
-extern ULONG win2id (WINDOW *wp);
-extern WINDOW * id2win (ULONG id);
+extern WIN_ID win2id (WINDOW *wp);
+extern WINDOW * id2win (WIN_ID id);
 extern WINDOW * index2win (int idx);
 #endif
 
@@ -1598,7 +1598,7 @@ extern void setchartype (void);
 extern	char *	x_current_fontname	(void);
 extern	char *	x_get_display_name	(void);
 extern	char *	x_get_icon_name		(void);
-extern	char *	x_get_window_name	(void);
+extern	const char * x_get_window_name	(void);
 extern	int	x_preparse_args		(int *pargc, char ***pargv);
 extern	int	x_setfont		(const char *fname);
 extern	int	x_milli_sleep		(int milli);
@@ -1763,7 +1763,7 @@ extern	int	kill	(int pid, int sig);
 #if defined(MISSING_EXTERN_KILLPG) && defined(HAVE_KILLPG)
 extern	int	killpg	(int pgrp, int sig);
 #endif
-#ifdef MISSING_EXTERN_LONGJMP
+#if defined(MISSING_EXTERN_LONGJMP) && !defined(longjmp)
 extern	void	longjmp	(jmp_buf env, int val);
 #endif
 #ifdef MISSING_EXTERN_LSTAT

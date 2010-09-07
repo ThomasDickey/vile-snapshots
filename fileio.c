@@ -2,7 +2,7 @@
  * The routines in this file read and write ASCII files from the disk. All of
  * the knowledge about files are here.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/fileio.c,v 1.195 2010/08/15 21:58:42 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/fileio.c,v 1.197 2010/09/06 18:22:04 tom Exp $
  *
  */
 
@@ -280,12 +280,12 @@ file_stat(const char *fn, struct stat *sb)
 	    rc = cache[n].rc;
 	    *sb = cache[n].sb;
 	} else if (found) {
-	    vl_strncpy(cache[n].fn, "", NFILEN);
+	    vl_strncpy(cache[n].fn, "", (size_t) NFILEN);
 	}
     } else {
 	fn = "";
 	for (n = 0; n < TABLESIZE(cache); ++n) {
-	    vl_strncpy(cache[n].fn, fn, NFILEN);
+	    vl_strncpy(cache[n].fn, fn, (size_t) NFILEN);
 	}
     }
     TRACE(("file_stat(%s) = %d%s\n", fn, rc,
@@ -645,9 +645,9 @@ ffread(char *buf, B_COUNT want, B_COUNT * have)
 	 * avoid overflow.
 	 */
 	while (want != 0) {
-	    long ask = (((want - *have) > LONG_MAX)
-			? LONG_MAX
-			: (want - *have));
+	    size_t ask = (((want - *have) > LONG_MAX)
+			  ? LONG_MAX
+			  : (want - *have));
 
 #if FFREAD_FREAD
 	    /* size_t may not fit in long, making a sign-extension */
@@ -657,7 +657,7 @@ ffread(char *buf, B_COUNT want, B_COUNT * have)
 #endif
 	    if (got <= 0)
 		break;
-	    *have += got;
+	    *have += (B_COUNT) got;
 	}
 	if (*have == 0)
 	    result = -1;
@@ -672,7 +672,7 @@ ffseek(B_COUNT n)
 #if SYS_VMS
     ffrewind();			/* see below */
 #endif
-    fseek(ffp, n, SEEK_SET);
+    fseek(ffp, (long) n, SEEK_SET);
 }
 
 void
@@ -827,7 +827,7 @@ alloc_linebuf(size_t needed)
 }
 
 #define ALLOC_LINEBUF(i) \
-	    if ((i) >= fflinelen && !alloc_linebuf(i)) \
+	    if ((i) >= fflinelen && !alloc_linebuf((size_t) i)) \
 		return (FIOMEM)
 
 /*
@@ -857,7 +857,7 @@ ffgetline(size_t *lenp)
 	    return (FIOEOF);
 	}
 	if (llength(ffcursor) > 0) {
-	    i = llength(ffcursor);
+	    i = (size_t) llength(ffcursor);
 	    ALLOC_LINEBUF(i);
 	    memcpy(fflinebuf, lvalue(ffcursor), i);
 	}
@@ -993,7 +993,7 @@ ffhasdata(void)
 #if defined(FIONREAD) && !SYS_WINNT
     {
 	long x;
-	if ((ioctl(fileno(ffp), FIONREAD, (void *) &x) >= 0) && x != 0)
+	if ((ioctl(fileno(ffp), (long) FIONREAD, (void *) &x) >= 0) && x != 0)
 	    return TRUE;
     }
 #endif

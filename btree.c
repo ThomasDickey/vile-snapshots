@@ -1,5 +1,5 @@
 /*
- * $Id: btree.c,v 1.50 2010/05/19 10:44:50 tom Exp $
+ * $Id: btree.c,v 1.51 2010/09/06 15:42:19 tom Exp $
  * Copyright 1997-2008,2010 by Thomas E. Dickey
  *
  * Maintains a balanced binary tree (aka AVL tree) of unspecified nodes.  The
@@ -742,7 +742,7 @@ btree_verify(BI_TREE * funcs, BI_NODE * p)
 
 /******************************************************************************/
 #undef typecalloc
-#define typecalloc(cast) (cast *)calloc(sizeof(cast),1)
+#define typecalloc(cast) (cast *)calloc(sizeof(cast), (size_t) 1)
 
 static BI_NODE *
 new_node(BI_DATA * data)

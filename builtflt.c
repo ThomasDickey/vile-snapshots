@@ -1,7 +1,7 @@
 /*
  * Main program and I/O for external vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/RCS/builtflt.c,v 1.85 2010/07/13 14:27:29 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/builtflt.c,v 1.86 2010/09/06 22:45:56 tom Exp $
  *
  */
 
@@ -263,8 +263,8 @@ flt_finish(void)
  * Syntax filters expect text to be separated by newlines, and don't
  * expect embedded carriage returns.  Try to meet that expectation.
  */
-static char
-fixup_cr_lf(char ch)
+static int
+fixup_cr_lf(int ch)
 {
     if (b_val(curbp, VAL_RECORD_SEP) == RS_CR) {
 	if (ch == '\n')
@@ -312,7 +312,7 @@ flt_gets(char **ptr, size_t *len)
 		char *values = tb_values(gets_data);
 
 		for (n = 0; n < len2; ++n) {
-		    values[n] = fixup_cr_lf(values[n]);
+		    values[n] = (char) fixup_cr_lf(values[n]);
 		}
 	    }
 	}
@@ -446,8 +446,8 @@ flt_input(char *buffer, int max_size)
     if (!is_header_line(mark_in, curbp)) {
 	while (used < max_size) {
 	    if (mark_in.o < llength(mark_in.l)) {
-		buffer[used++] = fixup_cr_lf((char) lgetc(mark_in.l,
-							  mark_in.o++));
+		buffer[used++] = (char) fixup_cr_lf((char) lgetc(mark_in.l,
+							         mark_in.o++));
 	    } else {
 		mark_in.l = lforw(mark_in.l);
 		mark_in.o = w_left_margin(curwp);
@@ -564,7 +564,7 @@ flt_puts(const char *string, int length, const char *marker)
 	    vl_strncpy(bfr2, marker, sizeof(bfr1) - 10);
 	    sprintf(bfr1, "%c%d%s:", CTL_A, length, bfr2);
 	    last = bfr1 + strlen(bfr1);
-	    decode_attribute(bfr1, (size_t) (last - bfr1), 0, &count);
+	    decode_attribute(bfr1, (size_t) (last - bfr1), (size_t) 0, &count);
 
 	    flt_echo(string, length);
 	    save_mark(FALSE);

@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/vl_alloc.h,v 1.1 2005/11/18 01:27:00 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/vl_alloc.h,v 1.2 2010/09/06 15:42:53 tom Exp $
  *
  * Copyright 2005, Thomas E. Dickey and Paul G. Fox
  *
@@ -34,13 +34,13 @@
 /* structure-allocate, for appeasing strict compilers */
 #define	castalloc(cast,nbytes)		(cast *)malloc(nbytes)
 #define	castrealloc(cast,ptr,nbytes)	(cast *)realloc((ptr),(nbytes))
-#define	typecalloc(cast)		(cast *)calloc(sizeof(cast),1)
-#define	typecallocn(cast,ntypes)	(cast *)calloc(sizeof(cast),ntypes)
+#define	typecalloc(cast)		(cast *)calloc(sizeof(cast), (size_t) 1)
+#define	typecallocn(cast,ntypes)	(cast *)calloc(sizeof(cast), ntypes)
 #define	typealloc(cast)			(cast *)malloc(sizeof(cast))
 #define	typeallocn(cast,ntypes)		(cast *)malloc((ntypes)*sizeof(cast))
 #define	typereallocn(cast,ptr,ntypes)	(cast *)realloc((ptr),\
 							(ntypes)*sizeof(cast))
-#define	typeallocplus(cast,extra)	(cast *)calloc((extra)+sizeof(cast),1)
+#define	typeallocplus(cast,extra)	(cast *)calloc((extra)+sizeof(cast), (size_t) 1)
 
 #define	FreeAndNull(p)	if ((p) != 0)	{ free(p); p = 0; }
 #define	FreeIfNeeded(p)	if ((p) != 0)	free(p)

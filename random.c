@@ -2,7 +2,7 @@
  * This file contains the command processing functions for a number of random
  * commands. There is no functional grouping here, for sure.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.339 2010/06/10 12:04:07 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.341 2010/09/07 00:34:20 tom Exp $
  *
  */
 
@@ -1078,7 +1078,7 @@ current_directory(int force)
     cwd = realpath(s ? s : ".", current_dirname);
     if (cwd == 0)
 #endif
-	cwd = getcwd(current_dirname, NFILEN);
+	cwd = getcwd(current_dirname, (size_t) NFILEN);
 #else
 # ifdef HAVE_GETWD
     cwd = getwd(current_dirname);
@@ -1506,7 +1506,7 @@ set_directory(const char *dir)
 #endif
 
     outlen = (int) ((unsigned) (term.cols - 1) - (sizeof(CHANGE_FAILED) - 3));
-    mlforce(CHANGE_FAILED, path_trunc(exdir, outlen, tmp, sizeof(tmp)));
+    mlforce(CHANGE_FAILED, path_trunc(exdir, outlen, tmp, (int) sizeof(tmp)));
     return FALSE;
 
 #undef CHANGE_FAILED
@@ -1518,7 +1518,7 @@ set_directory_from_file(BUFFER *bp)
     TRACE((T_CALLED "set_directory_from_file(%s)\n", bp->b_fname));
     if (!isInternalName(bp->b_fname)) {
 	char name[NFILEN];
-	char *leaf = pathleaf(vl_strncpy(name, bp->b_fname, NFILEN));
+	char *leaf = pathleaf(vl_strncpy(name, bp->b_fname, (size_t) NFILEN));
 	if (leaf != 0
 	    && leaf != name) {
 	    *leaf = EOS;
@@ -1671,7 +1671,7 @@ vl_elapsed(VL_ELAPSED * first, int begin)
     double result;
 
 #if defined(HAVE_GETTIMEOFDAY) && (SYS_UNIX && !SYS_MINGW)
-#define	SECS(tv)	(tv.tv_sec + (tv.tv_usec / 1.0e6))
+#define	SECS(tv)	((double) tv.tv_sec + ((double) tv.tv_usec / 1.0e6))
     VL_ELAPSED tv1;
     gettimeofday(&tv1, 0);
     if (begin)
@@ -2040,7 +2040,7 @@ pushd(int f GCC_UNUSED, int n GCC_UNUSED)
 		    mlforce("[Pushd index out-of-range]");
 		    return (FALSE);
 		}
-		rc = do_pushd(dirlocn, sign);
+		rc = do_pushd((int) dirlocn, sign);
 	    }
 	}
     }
@@ -2116,7 +2116,7 @@ popd(int f GCC_UNUSED, int n GCC_UNUSED)
 	mlforce("[Popd index out-of-range]");
 	return (FALSE);
     }
-    if ((rc = do_popd(dirlocn, sign)) == TRUE)
+    if ((rc = do_popd((int) dirlocn, sign)) == TRUE)
 	(void) vl_dirs(0, 0);
     return (rc);
 }

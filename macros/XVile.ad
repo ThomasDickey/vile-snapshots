@@ -1,4 +1,4 @@
-! $Header: /users/source/archives/vile.vcs/macros/RCS/XVile.ad,v 1.6 2010/03/20 13:19:36 tom Exp $
+! $Header: /users/source/archives/vile.vcs/macros/RCS/XVile.ad,v 1.8 2010/09/05 14:37:12 tom Exp $
 
 ! "white" on "black" main window
 *background: grey5
@@ -31,6 +31,11 @@
 *menubar.vSpace: 1
 *menubar.hSpace: 1
 *menuHeader.highlightThickness: 1
+
+! if OPT_MENUS_COLORED is set in configure/compile, these override/extend
+! menubar*background and menubar*foreground:
+*menuBackground: grey
+*menuForeground: black
 
 ! options
 *focusFollowsMouse: true

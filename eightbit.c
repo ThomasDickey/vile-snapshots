@@ -1,5 +1,5 @@
 /*
- * $Id: eightbit.c,v 1.74 2010/05/12 09:21:41 tom Exp $
+ * $Id: eightbit.c,v 1.75 2010/09/06 19:03:13 tom Exp $
  *
  * Maintain "8bit" file-encoding mode by converting incoming UTF-8 to single
  * bytes, and providing a function that tells vile whether a given Unicode
@@ -835,7 +835,7 @@ vl_init_8bit(const char *wide, const char *narrow)
 		table_8bit_utf8[n].code,
 		NonNull(table_8bit_utf8[n].text)));
     }
-    qsort(rindex_8bit, N_chars, sizeof(RINDEX_8BIT), cmp_rindex);
+    qsort(rindex_8bit, (size_t) N_chars, sizeof(RINDEX_8BIT), cmp_rindex);
 
     /*
      * As long as the narrow/wide encodings match, we can treat those as
@@ -862,7 +862,7 @@ vl_is_8bit_encoding(const char *value)
 	rc = (isEmpty(value)
 	      || strstr(value, "ASCII") != 0
 	      || strstr(value, "ANSI") != 0
-	      || strncmp(value, "KOI8-R", 6) == 0);
+	      || strncmp(value, "KOI8-R", (size_t) 6) == 0);
     }
     return rc;
 }
@@ -880,11 +880,11 @@ vl_is_latin1_encoding(const char *value)
 	    rc = TRUE;
 	} else
 #endif
-	    if (strncmp(value, "ISO-8859", 8) == 0
-		|| strncmp(value, "ISO 8859", 8) == 0
-		|| strncmp(value, "ISO_8859", 8) == 0
-		|| strncmp(value, "ISO8859", 7) == 0
-		|| strncmp(value, "8859", 4) == 0) {
+	    if (strncmp(value, "ISO-8859", (size_t) 8) == 0
+		|| strncmp(value, "ISO 8859", (size_t) 8) == 0
+		|| strncmp(value, "ISO_8859", (size_t) 8) == 0
+		|| strncmp(value, "ISO8859", (size_t) 7) == 0
+		|| strncmp(value, "8859", (size_t) 4) == 0) {
 	    rc = TRUE;
 	}
     }
@@ -933,7 +933,7 @@ vl_mb_is_8bit(int code)
     key.code = (UINT) code;
     p = (RINDEX_8BIT *) bsearch(&key,
 				rindex_8bit,
-				N_chars,
+				(size_t) N_chars,
 				sizeof(RINDEX_8BIT),
 				cmp_rindex);
 
@@ -1039,7 +1039,7 @@ vl_mb_to_utf8(int code)
     key.code = (UINT) code;
     p = (RINDEX_8BIT *) bsearch(&key,
 				rindex_8bit,
-				N_chars,
+				(size_t) N_chars,
 				sizeof(RINDEX_8BIT),
 				cmp_rindex);
     if (p != 0 && p->rinx >= 0)
@@ -1079,7 +1079,7 @@ vl_ucs_to_8bit(int *result, int code)
     key.code = (UINT) code;
     p = (RINDEX_8BIT *) bsearch(&key,
 				rindex_8bit,
-				N_chars,
+				(size_t) N_chars,
 				sizeof(RINDEX_8BIT),
 				cmp_rindex);
     if (p != 0 && p->rinx >= 0) {

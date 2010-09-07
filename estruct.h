@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.713 2010/08/15 22:24:14 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.718 2010/09/06 22:21:53 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -505,10 +505,6 @@ typedef unsigned short	mode_t;
 #define NO_WIDGETS 0
 #endif
 
-#ifndef OL_WIDGETS
-#define OL_WIDGETS 0
-#endif
-
 /*
  * Constants for ifdef'ing out chunks of code
  */
@@ -525,7 +521,7 @@ typedef unsigned short	mode_t;
 #define	OPT_COLOR (DISP_ANSI || IBM_VIDEO || DISP_TERMCAP || DISP_CURSES || DISP_X11)
 #define	OPT_16_COLOR (IBM_VIDEO || DISP_TERMCAP || DISP_CURSES || DISP_X11)
 
-#define OPT_DUMBTERM (DISP_TERMCAP || DISP_CURSES || DISP_VMSVT)
+#define OPT_DUMBTERM (DISP_TERMCAP || DISP_CURSES || DISP_VMSVT || DISP_X11)
 
 /* Feature turnon/turnoff */
 #define OPT_CACHE_VCOL  !SMALLER /* cache mk_to_vcol() starting point          */
@@ -706,7 +702,9 @@ typedef unsigned short	mode_t;
 
 	/* menus */
 #define	OPT_MENUS	(!SMALLER && DISP_X11 && (MOTIF_WIDGETS||ATHENA_WIDGETS))
-#define OPT_MENUS_COLORED 0	/* (MOTIF_WIDGETS && OPT_MENUS) */
+#ifndef OPT_MENUS_COLORED
+#define OPT_MENUS_COLORED 0
+#endif
 
 	/* icons */
 #define OPT_X11_ICON	DISP_X11 /* use compiled-in X icon */
@@ -1123,7 +1121,7 @@ extern void endofDisplay(void);
 #define mod_NOMOD  (~(mod_KEY|mod_SHIFT|mod_CTRL|mod_ALT))
 #endif
 
-#define kcod2key(c)	(int)((c) & (UINT)(iBIT(MaxCBits)-1)) /* strip off the above prefixes */
+#define kcod2key(c)	(int)((UINT)(c) & (UINT)(iBIT(MaxCBits)-1)) /* strip off the above prefixes */
 #define	isSpecial(c)	(((UINT)(c) & (UINT)~(iBIT(MaxCBits)-1)) != 0)
 
 #define	char2int(c)	((int)kcod2key(c))	/* mask off sign-extension, etc. */
@@ -1771,12 +1769,12 @@ typedef struct	LINE {
 
 #define lismarked(lp)		((lp)->l.l_flag & LGMARK)
 #define lsetmarked(lp)		((lp)->l.l_flag |= LGMARK)
-#define lsetnotmarked(lp)	((lp)->l.l_flag &= ~LGMARK)
+#define lsetnotmarked(lp)	((lp)->l.l_flag &= (USHORT) ~LGMARK)
 #define lflipmark(lp)		((lp)->l.l_flag ^= LGMARK)
 
 #define listrimmed(lp)		((lp)->l.l_flag & LTRIMMED)
 #define lsettrimmed(lp)		((lp)->l.l_flag |= LTRIMMED)
-#define lsetnottrimmed(lp)	((lp)->l.l_flag &= ~LTRIMMED)
+#define lsetnottrimmed(lp)	((lp)->l.l_flag &= (USHORT) ~LTRIMMED)
 #define lsetclear(lp)		((lp)->l.l_flag = (lp)->l.l_undo_cookie = 0)
 
 #define lisreal(lp)		(llength(lp) >= 0)
@@ -2215,9 +2213,9 @@ typedef struct	BUFFER {
 #if OPT_MULTIBYTE
 	BOM_CODES implied_BOM;		/* fix decode/encode if BOM missing */
 	UINT	*decode_utf_buf;	/* workspace for decode_charset() */
-	UINT	decode_utf_len;
+	size_t	decode_utf_len;
 	char	*encode_utf_buf;	/* workspace for encode_charset() */
-	UINT	encode_utf_len;
+	size_t	encode_utf_len;
 #endif
 #if OPT_PERL || OPT_TCL || OPT_PLUGIN
 	void *	b_api_private;		/* pointer to private perl, tcl, etc.
@@ -2442,6 +2440,8 @@ extern MARK *api_mark_iterator(BUFFER *bp, int *iter);
     } one_time
 #endif /* OPT_VIDEO_ATTRS */
 
+typedef int WIN_ID;
+
 /*
  * There is a window structure allocated for every active display window. The
  * windows are kept in a big list, in top to bottom screen order, with the
@@ -2470,7 +2470,7 @@ typedef struct	WINDOW {
 	int	w_ruler_col;
 #endif
 #if OPT_PERL || OPT_TCL
-	ULONG	w_id;			/* Unique window id */
+	WIN_ID	w_id;			/* Unique window id */
 #endif
 }	WINDOW;
 
@@ -2943,7 +2943,7 @@ extern void _exit (int code);
 #include <inttypes.h>
 #elif defined(HAVE_STDINT_H)
 #include <stdint.h>
-#elif !defined(WIN32)
+#elif !(defined(WIN32) || defined(WIN32_LEAN_AND_MEAN))
 typedef long intptr_t;
 #endif
 #endif
@@ -3194,7 +3194,7 @@ extern void show_elapsed(void);
 #endif /* gcc workarounds */
 
 #if defined(__GNUC__) && defined(_FORTIFY_SOURCE)
-#define IGNORE_RC(func) ignore_unused = func
+#define IGNORE_RC(func) ignore_unused = (int) func
 #else
 #define IGNORE_RC(func) (void) func
 #endif /* gcc workarounds */

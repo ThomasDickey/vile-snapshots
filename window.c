@@ -2,7 +2,7 @@
  * Window management. Some of the functions are internal, and some are
  * attached to keys that the user actually types.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/window.c,v 1.121 2010/04/30 23:54:23 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/window.c,v 1.124 2010/09/07 00:36:17 tom Exp $
  *
  */
 
@@ -11,7 +11,7 @@
 
 #if OPT_PERL || OPT_TCL
 /* Window id to assign to w_id field for next visible window allocated */
-static ULONG w_id_next = 1;
+static WIN_ID w_id_next = 1;
 
 /* Fake windows are given a window id of 0 */
 #define FAKE_WINDOW_ID 0
@@ -129,11 +129,11 @@ int
 reposition(int f, int n)
 {
     if (f) {
-	int an;
+	long an;
 	/* clamp the value at the size of the window */
-	an = absol(n);
+	an = absol((long) n);
 	if (an > curwp->w_ntrows)
-	    curwp->w_force = curwp->w_ntrows * (n / an);
+	    curwp->w_force = (int) (curwp->w_ntrows * (n / an));
 	else
 	    curwp->w_force = n;
 	curwp->w_flag |= WFFORCE;
@@ -562,7 +562,7 @@ save_window_modes(BUFFER *bp)
 
     if (bp->b_nwnd != 0) {
 	beginDisplay();
-	result = typecallocn(W_VALUES, bp->b_nwnd);
+	result = typecallocn(W_VALUES, (size_t) bp->b_nwnd);
 	if (result != 0) {
 	    n = 0;
 	    for_each_window(wp) {
@@ -1265,7 +1265,7 @@ pop_fake_win(WINDOW *oldwp, BUFFER *oldbp)
 /* Find and return the window with the given window id.  Return NULL
    if not found */
 WINDOW *
-id2win(ULONG id)
+id2win(WIN_ID id)
 {
     WINDOW *wp;
     for_each_visible_window(wp) {
@@ -1276,7 +1276,7 @@ id2win(ULONG id)
 }
 
 /* Return the window id associated with the given window */
-ULONG
+WIN_ID
 win2id(WINDOW *wp)
 {
     return wp->w_id;

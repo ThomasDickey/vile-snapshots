@@ -13,7 +13,7 @@
  *
  *	modify (ifdef-style) 'expand_leaf()' to allow ellipsis.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/glob.c,v 1.93 2008/05/31 00:28:38 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/glob.c,v 1.94 2010/09/05 17:41:52 tom Exp $
  *
  */
 
@@ -382,7 +382,7 @@ expand_leaf(char *path,		/* built-up pathname, top-level */
 	    (void) strcpy(path, ".");
 	leaf = skip_string(path) + 1;
     } else {
-	len = (int) (wild - pattern) - 1;
+	len = (size_t) (wild - pattern) - 1;
 	if (*(s = path) != EOS) {
 	    s += strlen(s);
 	    *s++ = SLASHC;

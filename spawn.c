@@ -1,7 +1,7 @@
 /*	Spawn:	various DOS access commands
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.207 2010/05/03 09:23:20 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.209 2010/09/06 19:28:10 tom Exp $
  *
  */
 
@@ -592,7 +592,10 @@ write_kreg_to_pipe(void *writefp)
     kregcirculate(FALSE);
     kp = kbs[ukb].kbufh;
     while (kp != NULL) {
-	IGNORE_RC(fwrite((char *) kp->d_chunk, 1, (size_t) KbSize(ukb, kp), fw));
+	IGNORE_RC(fwrite((char *) kp->d_chunk,
+			 (size_t) 1,
+			 (size_t) KbSize(ukb, kp),
+			 fw));
 	kp = kp->d_next;
     }
 #if SYS_UNIX && ! TEST_DOS_PIPES
@@ -1167,7 +1170,7 @@ extract_wildcards(char *cmd, char ***vec, size_t *vecidx, const char *fnname)
 	    cp++;
 	    while (*cp && (!isSpace(*cp)))
 		cp++;
-	    len = cp - anchor;
+	    len = (size_t) (cp - anchor);
 	    strncpy(buf, anchor, len);
 	    buf[len] = EOS;
 	    if (string_has_wildcards(buf)) {
@@ -1375,6 +1378,14 @@ ck_find_cmd(char *cmd, int *allocd_storage, int prepend_bang)
     return (cmd);
 }
 
+#if SYS_UNIX
+#define EGREP_OPT_CASELESS ""
+#define EGREP_TAG_CASELESS "[Tt][Aa][Gg][Ss]"
+#else
+#define EGREP_OPT_CASELESS "i"
+#define EGREP_TAG_CASELESS "tags"
+#endif
+
 /*
  * FUNCTION
  *   find_dirs_only(char *cmd, FINDINFO *pinfo, int prepend_bang)
@@ -1468,12 +1479,7 @@ find_dirs_only(char *cmd, FINDINFO * pinfo, int prepend_bang)
      * ========================== FIXME ==================================
      */
     sprintf(buf,
-	    "| egrep -v%s %s(RCS|CVS)/%s",
-#if SYS_UNIX
-	    "",
-#else
-	    "i",
-#endif
+	    "| egrep -v" EGREP_OPT_CASELESS " %s(RCS|CVS)/%s",
 	    qdelim,
 	    qdelim);
     if (!add_token_to_cmd(&rslt, &outidx, &outlen, buf, fnname))
@@ -1630,13 +1636,8 @@ find_all_files(char *cmd, FINDINFO * pinfo, int prepend_bang)
     /* add wildcards (if any) to find command */
     for (i = 0; i < vecidx; i++) {
 	sprintf(buf,
-		"%s-%sname %s%s%s",
+		"%s-" EGREP_OPT_CASELESS "name %s%s%s",
 		(i != 0) ? "-o " : "",
-#if SYS_UNIX
-		"",
-#else
-		"i",		/* find uses case insensitive filename search */
-#endif
 		qdelim,
 		vec[i],
 		qdelim);
@@ -1667,18 +1668,9 @@ find_all_files(char *cmd, FINDINFO * pinfo, int prepend_bang)
      * ========================== FIXME ==================================
      */
     sprintf(buf,
-	    "| egrep -v%s %s((RCS|CVS)/|/%s$)%s",
-#if SYS_UNIX
-	    "",
-#else
-	    "i",
-#endif
+	    "| egrep -v" EGREP_OPT_CASELESS
+	    " %s((RCS|CVS)/|/" EGREP_TAG_CASELESS "$)%s",
 	    qdelim,
-#if SYS_UNIX
-	    "[Tt][Aa][Gg][Ss]",
-#else
-	    "tags",
-#endif
 	    qdelim);
     if (!add_token_to_cmd(&rslt, &outidx, &outlen, buf, fnname))
 	return (NULL);

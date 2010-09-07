@@ -2,7 +2,7 @@
  *	eval.c -- function and variable evaluation
  *	original by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.429 2010/06/09 20:56:25 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.432 2010/09/07 00:26:19 tom Exp $
  *
  */
 
@@ -413,7 +413,7 @@ show_charclass(TBUFF **result, const char *arg)
     const char *s;
 
     for (j = 0; j != vl_UNUSED; j++) {
-	if (((1 << j) & k) != 0
+	if (((CHARTYPE) (1 << j) & k) != 0
 	    && (s = choice_to_name(&fsm_charclass_blist, (int) j)) != 0) {
 	    if (tb_length(*result))
 		tb_sappend0(result, "+");
@@ -1422,7 +1422,7 @@ run_func(int fnum)
 		break;
 	    case PATH_FULL:
 		if (tb_scopy(&juggle, arg[1])
-		    && tb_alloc(&juggle, NFILEN)) {
+		    && tb_alloc(&juggle, (size_t) NFILEN)) {
 		    lengthen_path(tb_values(juggle));
 		    tb_setlen(&juggle, -1);
 		    tb_scopy(&result, SL_TO_BSL(tb_values(juggle)));
@@ -1445,7 +1445,7 @@ run_func(int fnum)
 		break;
 	    case PATH_SHORT:
 		if (tb_scopy(&juggle, arg[1])
-		    && tb_alloc(&juggle, NFILEN)) {
+		    && tb_alloc(&juggle, (size_t) NFILEN)) {
 		    shorten_path(tb_values(juggle), FALSE);
 		    tb_setlen(&juggle, -1);
 		    tb_scopy(&result, SL_TO_BSL(tb_values(juggle)));
@@ -1463,7 +1463,7 @@ run_func(int fnum)
 	}
 	break;
     case UFPATHCAT:
-	tb_alloc(&juggle, NFILEN);
+	tb_alloc(&juggle, (size_t) NFILEN);
 	pathcat(tb_values(juggle), arg[0], arg[1]);
 	tb_setlen(&juggle, -1);
 	tb_scopy(&result, SL_TO_BSL(tb_values(juggle)));
@@ -1496,7 +1496,7 @@ run_func(int fnum)
 		while (kp != 0) {
 		    tb_bappend(&result,
 			       (char *) (kp->d_chunk),
-			       KbSize(i, kp));
+			       (size_t) KbSize(i, kp));
 		    kp = kp->d_next;
 		}
 		tb_append(&result, EOS);
@@ -1532,7 +1532,7 @@ run_func(int fnum)
 	if (ret_numeric)
 	    render_long(&result, value);
 	else if (ret_boolean)
-	    render_boolean(&result, value);
+	    render_boolean(&result, (int) value);
 	else
 	    tb_enquote(&result);
     }
@@ -1686,7 +1686,7 @@ FindVar(char *var, VWRAP * vd)
 	    TBUFF *tok = 0;
 	    /* grab token, and eval it */
 	    execstr = get_token(execstr, &tok, eol_null, EOS, (int *) 0);
-	    (void) vl_strncpy(var, tokval(tb_values(tok)), NLINE);
+	    (void) vl_strncpy(var, tokval(tb_values(tok)), (size_t) NLINE);
 	    FindVar(var, vd);	/* recursive, but probably safe */
 	    tb_free(&tok);
 	}
@@ -2225,7 +2225,7 @@ render_int(TBUFF **rp, int i)
 {
     char *p, *q;
 
-    p = tb_values(tb_alloc(rp, 32));
+    p = tb_values(tb_alloc(rp, (size_t) 32));
     q = lsprintf(p, "%d", i);
     if (rp != 0 && q != 0 && p != 0)
 	(*rp)->tb_used = (size_t) (q - p + 1);
@@ -2238,7 +2238,7 @@ render_long(TBUFF **rp, long i)
 {
     char *p, *q;
 
-    p = tb_values(tb_alloc(rp, 32));
+    p = tb_values(tb_alloc(rp, (size_t) 32));
     q = lsprintf(p, "%ld", i);
     if (rp != 0 && q != 0 && p != 0)
 	(*rp)->tb_used = (size_t) (q - p + 1);
@@ -2262,7 +2262,7 @@ render_ulong(TBUFF **rp, ULONG i)
 {
     char *p, *q;
 
-    p = tb_values(tb_alloc(rp, 32));
+    p = tb_values(tb_alloc(rp, (size_t) 32));
     q = lsprintf(p, "%lu", i);
     if (rp != 0 && q != 0 && p != 0)
 	(*rp)->tb_used = (size_t) (q - p + 1);
@@ -2462,7 +2462,7 @@ init_vars_cmpl(void)
 
 	if (vars_cmpl_list != 0) {
 	    vars_cmpl_list[count] = 0;
-	    qsort(vars_cmpl_list, count, sizeof(char *), qs_vars_cmp);
+	    qsort(vars_cmpl_list, (size_t) count, sizeof(char *), qs_vars_cmp);
 	}
 
     }
@@ -3081,7 +3081,7 @@ evaluate(int f, int n)
 static size_t
 s2size(const char *s)
 {
-    int n = strtol(s, 0, 0);
+    long n = strtol(s, 0, 0);
     if (n < 0)
 	n = 0;
     return (size_t) n;
@@ -3191,9 +3191,9 @@ mktrimmed(char *str)
     return base;
 }
 
-int
-absol(int x)
-{				/* return absolute value of given integer */
+long
+absol(long x)
+{				/* return absolute value of given number */
     return (x < 0) ? -x : x;
 }
 

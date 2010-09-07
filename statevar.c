@@ -3,7 +3,7 @@
  *	for getting and setting the values of the vile state variables,
  *	plus helper utility functions.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.151 2010/06/09 20:54:25 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.154 2010/09/07 00:40:07 tom Exp $
  */
 
 #include	<estruct.h>
@@ -266,7 +266,7 @@ any_HOOK(TBUFF **rp, const char *vp, HOOK * hook)
 	tb_scopy(rp, hook->proc);
 	return TRUE;
     } else if (vp) {
-	(void) strncpy0(hook->proc, vp, NBUFN);
+	(void) strncpy0(hook->proc, vp, (size_t) NBUFN);
 	return TRUE;
     } else {
 	return FALSE;
@@ -464,9 +464,6 @@ cfgopts(void)
 	"vmsvt",
 #endif
 #if DISP_X11
-# if OL_WIDGETS
-	"openlook",
-# endif
 # if MOTIF_WIDGETS
 	"motif",
 # endif
@@ -739,7 +736,7 @@ var_CURCHAR(TBUFF **rp, const char *vp)
 	render_ulong(rp, vl_getcchar() + 1);
 	return TRUE;
     } else if (vp && valid_buffer(curbp)) {
-	return gotochr(TRUE, strtol(vp, 0, 0));
+	return gotochr(TRUE, (int) strtol(vp, 0, 0));
     } else {
 	return FALSE;
     }
@@ -753,7 +750,7 @@ var_CURCOL(TBUFF **rp, const char *vp)
 	render_int(rp, getccol(FALSE) + 1);
 	return TRUE;
     } else if (vp && valid_buffer(curbp)) {
-	return gotocol(TRUE, strtol(vp, 0, 0));
+	return gotocol(TRUE, (int) strtol(vp, 0, 0));
     } else {
 	return FALSE;
     }
@@ -766,7 +763,7 @@ var_CURLINE(TBUFF **rp, const char *vp)
 	render_int(rp, getcline());
 	return TRUE;
     } else if (vp && valid_buffer(curbp)) {
-	return gotoline(TRUE, strtol(vp, 0, 0));
+	return gotoline(TRUE, (int) strtol(vp, 0, 0));
     } else {
 	return FALSE;
     }
@@ -794,7 +791,7 @@ var_CWLINE(TBUFF **rp, const char *vp)
 	render_int(rp, getlinerow());
 	return TRUE;
     } else if (vp && valid_buffer(curbp)) {
-	return forwline(TRUE, strtol(vp, 0, 0) - getlinerow());
+	return forwline(TRUE, (int) strtol(vp, 0, 0) - getlinerow());
     } else {
 	return FALSE;
     }
@@ -1271,7 +1268,7 @@ var_NCOLORS(TBUFF **rp, const char *vp)
 	render_int(rp, ncolors);
 	return TRUE;
     } else if (vp) {
-	return set_colors(strtol(vp, 0, 0));
+	return set_colors((int) strtol(vp, 0, 0));
     }
     return FALSE;
 }
@@ -1290,7 +1287,7 @@ var_NTILDES(TBUFF **rp, const char *vp)
 	render_int(rp, ntildes);
 	return TRUE;
     } else if (vp) {
-	ntildes = strtol(vp, 0, 0);
+	ntildes = (int) strtol(vp, 0, 0);
 	if (ntildes > 100)
 	    ntildes = 100;
 	return TRUE;
@@ -1323,10 +1320,10 @@ var_PAGELEN(TBUFF **rp, const char *vp)
 	result = TRUE;
     } else if (vp) {
 #if DISP_X11 || DISP_NTWIN
-	gui_resize(term.cols, strtol(vp, 0, 0));
+	gui_resize(term.cols, (int) strtol(vp, 0, 0));
 	result = TRUE;
 #else
-	result = newlength(TRUE, strtol(vp, 0, 0));
+	result = newlength(TRUE, (int) strtol(vp, 0, 0));
 #endif
     }
     return result;
@@ -1395,10 +1392,10 @@ var_CURWIDTH(TBUFF **rp, const char *vp)
 	result = TRUE;
     } else if (vp) {
 #if DISP_X11 || DISP_NTWIN
-	gui_resize(strtol(vp, 0, 0), term.rows);
+	gui_resize((int) strtol(vp, 0, 0), term.rows);
 	result = TRUE;
 #else
-	result = newwidth(TRUE, strtol(vp, 0, 0));
+	result = newwidth(TRUE, (int) strtol(vp, 0, 0));
 #endif
     }
     return result;
@@ -1539,7 +1536,7 @@ var_SEED(TBUFF **rp, const char *vp)
 	render_int(rp, seed);
 	return TRUE;
     } else if (vp) {
-	seed = strtol(vp, 0, 0);
+	seed = (int) strtol(vp, 0, 0);
 	srand((UINT) seed);
 	return TRUE;
     } else {
@@ -1804,7 +1801,7 @@ var_WLINES(TBUFF **rp, const char *vp)
 	render_int(rp, curwp->w_ntrows);
 	return TRUE;
     } else if (vp && curwp) {
-	return resize(TRUE, strtol(vp, 0, 0));
+	return resize(TRUE, (int) strtol(vp, 0, 0));
     } else {
 	return FALSE;
     }

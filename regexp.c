@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/regexp.c,v 1.201 2010/04/30 23:57:10 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/regexp.c,v 1.203 2010/09/07 00:34:48 tom Exp $
  *
  * Copyright 2005-2009,2010 Thomas E. Dickey and Paul G. Fox
  *
@@ -495,7 +495,7 @@ typedef enum {
  * value is unspecified.
  */
 #define RR_BYTES  sizeof(int)
-#define RR_LEN		3 + (2 * RR_BYTES)	/* sizeof(RSIMPLE/RCOMPLX) */
+#define RR_LEN		(3 + (2 * RR_BYTES))	/* sizeof(RSIMPLE/RCOMPLX) */
 #define RR_MIN(p) ((p)[3])
 #define RR_MAX(p) ((p)[3 + RR_BYTES])
 
@@ -1341,11 +1341,11 @@ parse_char_class(char **src)
 static int
 parse_unsupported(const char *src)
 {
-    if (strncmp(src, "[.", 2) == 0 && strstr(src, ".]") != 0) {
+    if (strncmp(src, "[.", (size_t) 2) == 0 && strstr(src, ".]") != 0) {
 	regerror("collating symbols are not implemented");
 	return 1;
     }
-    if (strncmp(src, "[=", 2) == 0 && strstr(src, "=]") != 0) {
+    if (strncmp(src, "[=", (size_t) 2) == 0 && strstr(src, "=]") != 0) {
 	regerror("equivalence class expressions are not implemented");
 	return 1;
     }
@@ -1640,7 +1640,7 @@ regc(int b)
 static void
 regrange(int op, char *opnd, int lo, int hi)
 {
-    regninsert(RR_LEN, opnd);	/* like regopinsert */
+    regninsert((int) RR_LEN, opnd);	/* like regopinsert */
     if (regcode == &regdummy)
 	return;
     *opnd = (char) op;
@@ -2029,7 +2029,7 @@ regtry(regexp * prog,
 	restore_state1()
 
 #define update_greedy() \
-		int diff = (reginput - save_input); \
+		int diff = (int) (reginput - save_input); \
 		if (greedy < diff) { \
 		    REGTRACE(("update_greedy:%d\n", diff)); \
 		    greedy = diff; \
@@ -2149,7 +2149,10 @@ regmatch(char *prog, int plevel)
 		}
 		len = OPSIZE(scan);
 		if (len > 1
-		    && regstrncmp(reginput, opnd, len, regnomore) != 0)
+		    && regstrncmp(reginput,
+				  opnd,
+				  (size_t) len,
+				  regnomore) != 0)
 		    returnReg(0);
 		reginput += len;
 	    }

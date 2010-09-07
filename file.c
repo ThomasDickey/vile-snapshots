@@ -5,7 +5,7 @@
  * reading and writing of the disk are
  * in "fileio.c".
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.445 2010/08/15 19:24:21 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.446 2010/09/06 18:21:27 tom Exp $
  */
 
 #include "estruct.h"
@@ -837,7 +837,7 @@ writelinesmsg(char *fn, int nline, B_COUNT nchar)
 		PLURAL(nline),
 		strchars,
 		PLURAL(nchar),
-		path_trunc(fn, outlen, tmp, sizeof(tmp)));
+		path_trunc(fn, outlen, tmp, (int) sizeof(tmp)));
     } else {
 	mlforce("[%d lines]", nline);
     }
@@ -863,7 +863,7 @@ set_rdonly_modes(BUFFER *bp, int always)
 static void
 ff_read_directory(BUFFER *bp, char *fname)
 {
-    int count = fill_directory_buffer(bp, fname, 0);
+    int count = fill_directory_buffer(bp, fname, (size_t) 0);
 
     mlwrite("[Read %d line%s]", count, PLURAL(count));
     b_set_flags(bp, BFDIRS);
@@ -1053,7 +1053,7 @@ getfile2bp(const char *fname,	/* file name to find */
 	    if (!ok_to_ask || !global_g_val(GMDWARNRENAME))
 		continue;
 	    hst_glue(' ');
-	    s = mlreply("Will use buffer name: ", bname, sizeof(bname));
+	    s = mlreply("Will use buffer name: ", bname, (int) sizeof(bname));
 	    if (s == ABORT)
 		return 0;
 	    if (s == FALSE || bname[0] == EOS)
@@ -1646,7 +1646,7 @@ readin(char *fname, int lockfl, BUFFER *bp, int mflg)
 	    outlen = ((term.cols - 1) -
 		      (int) (sizeof(READING_FILE_FMT) - 3));
 	    mlforce(READING_FILE_FMT,
-		    path_trunc(fname, outlen, tmp, sizeof(tmp)));
+		    path_trunc(fname, outlen, tmp, (int) sizeof(tmp)));
 #undef READING_FILE_FMT
 	}
 #if OPT_VMS_PATH
@@ -2013,12 +2013,12 @@ makename(char *bname, const char *fname)
 		++fcp;
 	    } while (isSpace(*fcp));
 
-	    bcp = add_to_name(bcp, fcp, NBUFN - 4, TRUE);
+	    bcp = add_to_name(bcp, fcp, (size_t) (NBUFN - 4), TRUE);
 	    (void) strcpy(bcp, SCRTCH_RIGHT);
 
 	} else {
 
-	    (void) add_to_name(bcp, pathleaf(fcp), NBUFN - 1, FALSE);
+	    (void) add_to_name(bcp, pathleaf(fcp), (size_t) (NBUFN - 1), FALSE);
 
 	}
 
@@ -2050,7 +2050,7 @@ unqname(char *name)
 	j = strlen(strcpy(name, NO_BNAME));
 
     /* check to see if this name is in use */
-    add_to_name(newname, name, NBUFN - 1, TRUE);
+    add_to_name(newname, name, (size_t) (NBUFN - 1), TRUE);
     adjust = is_scratchname(newname);
     strcpy(suffixbuf, "-");
     while (find_b_name(newname) != NULL) {
@@ -2074,7 +2074,7 @@ unqname(char *name)
 	} else
 	    strcpy(&newname[k], suffixbuf);
     }
-    strncpy0(name, newname, NBUFN);
+    strncpy0(name, newname, (size_t) NBUFN);
     TRACE(("unqname ->%s\n", name));
 }
 
