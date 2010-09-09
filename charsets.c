@@ -1,5 +1,5 @@
 /*
- * $Id: charsets.c,v 1.70 2010/09/06 19:55:04 tom Exp $
+ * $Id: charsets.c,v 1.71 2010/09/08 21:15:08 tom Exp $
  *
  * see
  http://msdn.microsoft.com/library/default.asp?url=/library/en-us/intl/unicode_42jv.asp
@@ -47,7 +47,7 @@ static const BOM_TABLE bom_table[] = {
 /******************************************************************************/
 
 static void
-allow_decoder(BUFFER *bp, unsigned need)
+allow_decoder(BUFFER *bp, size_t need)
 {
     if (need > bp->decode_utf_len) {
 	bp->decode_utf_len = (need + 1) * 2;
@@ -352,10 +352,10 @@ dump_as_utfXX(BUFFER *bp, const char *buf, int nbuf, const char *ending)
     const BOM_TABLE *mp = find_mark_info2(bp);
 
     if (mp != 0 && mp->size > 1) {
-	unsigned j = 0;
-	unsigned k = 0;
-	unsigned need = (UINT) nbuf + strlen(ending);
-	unsigned lend = strlen(ending);
+	size_t j = 0;
+	size_t k = 0;
+	size_t need = (size_t) nbuf + strlen(ending);
+	size_t lend = strlen(ending);
 
 	allow_encoder(bp, need * mp->size);
 	allow_decoder(bp, need);
@@ -500,7 +500,7 @@ load_as_utf8(BUFFER *bp, LINE *lp)
 						 + (UINT) (CH(j + 0) << 24));
 			break;
 		    }
-		    j += mp->size;
+		    j += (UINT) mp->size;
 		}
 		used = k;
 
@@ -628,19 +628,21 @@ riddled_buffer(const BOM_TABLE * mp, UCHAR * buffer, B_COUNT length)
 {
     int result = 0;
     B_COUNT total = 0;
-    unsigned offset = 0;
-    unsigned j, k;
+    size_t offset = 0;
+    size_t j, k;
 
     if (mp->size && !(mp->size % 2)) {
-	TRACE(("checking if %s / %d-byte\n",
+	TRACE(("checking if %s / %u-byte\n",
 	       byteorder2s(mp->code),
-	       mp->size));
+	       (UINT) mp->size));
 
 	/* Check the line-length.  If it is not a multiple of the pattern
 	 * size, just give up.
 	 */
 	if ((length + offset) % mp->size) {
-	    TRACE(("length %ld vs pattern %d - give up\n", length, mp->size));
+	    TRACE(("length %ld vs pattern %u - give up\n",
+		   length,
+		   (UINT) mp->size));
 	} else {
 	    /*
 	     * Now walk through the line and measure the pattern against it.
@@ -660,7 +662,9 @@ riddled_buffer(const BOM_TABLE * mp, UCHAR * buffer, B_COUNT length)
 		}
 	    }
 	}
-	result = (int) (length ? (((100.0 * total) / length)) : 0);
+	result = (int) (length
+			? (((100.0 * (double) total) / (double) length))
+			: 0);
 
 	TRACE(("...%ld/%ld ->%d%%\n", total, length, result));
     }
@@ -778,7 +782,8 @@ decode_bom(BUFFER *bp, UCHAR * buffer, B_COUNT * length)
     }
 
     if (b_val(bp, VAL_BYTEORDER_MARK) > bom_NONE
-	&& (mp = find_mark_info((BOM_CODES) b_val(bp, VAL_BYTEORDER_MARK))) != 0
+	&& (mp = find_mark_info((BOM_CODES) b_val(bp,
+						  VAL_BYTEORDER_MARK))) != 0
 	&& line_has_mark(mp, buffer, *length)) {
 	for (n = 0; n < *length - mp->size; ++n) {
 	    buffer[n] = buffer[n + mp->size];

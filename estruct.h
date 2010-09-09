@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.718 2010/09/06 22:21:53 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.719 2010/09/08 08:44:59 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -294,7 +294,7 @@ typedef unsigned short	mode_t;
 
 #endif /* HAVE_CONFIG_H */
 
-#if defined(WIN32) || CC_TURBO
+#if (defined(WIN32) || CC_TURBO || defined(WIN32_LEAN_AND_MEAN))
 #include "w32vile.h"
 #endif
 
@@ -1012,14 +1012,12 @@ extern void endofDisplay(void);
  * we use those definitions to avoid trouble when using OS/2 include
  * files.
  */
-# include <os2def.h>
-#else
-# if !defined(WIN32)
+#  include <os2def.h>
+#elif !(defined(WIN32) || defined(WIN32_LEAN_AND_MEAN))
 #  define UCHAR  unsigned char
 #  define UINT   unsigned int
 #  define USHORT unsigned short
 #  define ULONG  unsigned long
-# endif
 #endif
 
 /*	internal constants	*/

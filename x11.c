@@ -2,7 +2,7 @@
  *	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.373 2010/09/06 00:34:09 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.374 2010/09/08 21:09:44 tom Exp $
  *
  */
 
@@ -836,7 +836,7 @@ update_scrollbar_sizes(void)
 
     for_each_visible_window(wp)
 	i++;
-    newsbcnt = i;
+    newsbcnt = (int) i;
 
     /* Remove event handlers on sashes */
     XtVaGetValues(cur_win->pane,
@@ -885,7 +885,7 @@ update_scrollbar_sizes(void)
     cur_win->nscrollbars = newsbcnt;
     i = 0;
     for_each_visible_window(wp) {
-	new_height = wp->w_ntrows * cur_win->char_height;
+	new_height = (Dimension) (wp->w_ntrows * cur_win->char_height);
 	XtVaSetValues(cur_win->scrollbars[i],
 		      Nval(XmNallowResize, TRUE),
 		      Nval(XmNheight, new_height),
@@ -893,7 +893,7 @@ update_scrollbar_sizes(void)
 		      Nval(XmNpaneMaximum, DisplayHeight(dpy, DefaultScreen(dpy))),
 		      Nval(XmNshowArrows, wp->w_ntrows > 3 ? TRUE : FALSE),
 		      NULL);
-	wp->w_flag &= ~WFSBAR;
+	wp->w_flag &= (USHORT) (~WFSBAR);
 	gui_update_scrollbar(wp);
 	i++;
     }
@@ -6814,7 +6814,7 @@ xim_real_init(void)
 	    end--;
 
 	if (end != s) {		/* just in case we have a spurious comma */
-	    TRACE(("looking for style '%.*s'\n", end - s, s));
+	    TRACE(("looking for style '%.*s'\n", (int) (end - s), s));
 	    for (i = 0; i < XtNumber(known_style); i++) {
 		if ((int) strlen(known_style[i].name) == (end - s)
 		    && !strncmp(s, known_style[i].name, (unsigned) (end - s))) {
