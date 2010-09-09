@@ -4,7 +4,7 @@
  *	original by Daniel Lawrence, but
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.340 2010/09/07 00:27:04 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.341 2010/09/08 21:13:26 tom Exp $
  *
  */
 
@@ -2334,7 +2334,7 @@ setup_dobuf(BUFFER *bp, WHLOOP ** result)
 
 #if OPT_TRACE && !SMALLER
 static const char *
-TraceIndent(int level, char *cmdp, int length)
+TraceIndent(int level, char *cmdp, size_t length)
 {
     static const char indent[] = ".  .  .  .  .  .  .  .  ";
     switch (dname_to_dirnum(&cmdp, length)) {
@@ -2347,7 +2347,7 @@ TraceIndent(int level, char *cmdp, int length)
     default:
 	break;
     }
-    level = strlen(indent) - (3 * level);
+    level = (int) strlen(indent) - (3 * level);
     if (level < 0)
 	level = 0;
     return &indent[level];

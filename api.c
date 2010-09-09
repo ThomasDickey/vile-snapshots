@@ -15,7 +15,7 @@
  * in handy.
  *				- kev 4/7/1998
  *
- * $Header: /users/source/archives/vile.vcs/RCS/api.c,v 1.47 2010/09/05 16:56:36 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/api.c,v 1.48 2010/09/08 21:11:54 tom Exp $
  */
 
 #include "estruct.h"
@@ -683,7 +683,9 @@ api_swscreen(VileBuf * oldsp, VileBuf * newsp)
      * buried in the macro "for_each_visible_window".
      *          - kev 4/20/1998
      */
-    TRACE((T_CALLED "api_swscreen(oldsp=%p, newsp=%p)\n", oldsp, newsp));
+    TRACE((T_CALLED "api_swscreen(oldsp=%p, newsp=%p)\n",
+	   (void *) oldsp,
+	   (void *) newsp));
 
     curwp = curwp_visible ? curwp_visible : curwp;
     curbp = curwp->w_bufp;

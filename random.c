@@ -2,7 +2,7 @@
  * This file contains the command processing functions for a number of random
  * commands. There is no functional grouping here, for sure.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.341 2010/09/07 00:34:20 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.342 2010/09/08 08:44:37 tom Exp $
  *
  */
 
@@ -37,11 +37,6 @@
 #if SYS_VMS
 #include <starlet.h>
 #include <lib$routines.h>
-#endif
-
-#ifdef WIN32
-#include "w32vile.h"		/* for VL_ELAPSED */
-#undef WIN32_LEAN_AND_MEAN
 #endif
 
 #define DIRS_FORCE    0		/* force DirStack buffer on screen if dirs_idx > 0.

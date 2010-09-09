@@ -18,7 +18,7 @@
  * transferring the selection are not dealt with in this file.  Procedures
  * for dealing with the representation are maintained in this file.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.180 2010/09/07 00:39:56 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.181 2010/09/08 08:44:37 tom Exp $
  *
  */
 
@@ -28,11 +28,6 @@
 
 #if OPT_FILTER
 #include	<filters.h>
-#endif
-
-#ifdef WIN32
-#include	"w32vile.h"	/* for VL_ELAPSED */
-#undef WIN32_LEAN_AND_MEAN
 #endif
 
 #define BTN_BEGIN   1

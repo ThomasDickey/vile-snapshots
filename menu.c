@@ -8,7 +8,7 @@
 /************************************************************************/
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/menu.c,v 1.76 2010/09/05 19:30:04 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/menu.c,v 1.77 2010/09/08 20:57:54 tom Exp $
  */
 
 /* Vile includes */
@@ -252,7 +252,7 @@ vlmenu_is_cmd(char *action)
  * If only a comment-line was found, return sort-of-true.
  */
 static int
-parse_menu_entry(MenuToken * token, const char *source, unsigned slen)
+parse_menu_entry(MenuToken * token, const char *source, size_t slen)
 {
     char *ptr_tok;
     int n, tmp;
@@ -450,7 +450,7 @@ add_menu_separator(void)
 }
 
 static int
-add_menu_entry(const char *text, unsigned slen)
+add_menu_entry(const char *text, size_t slen)
 {
     int result;
     MenuToken myToken;
