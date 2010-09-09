@@ -1,6 +1,6 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20100907 (a)
+ 20100908 (a)
 	> Tom Dickey:
 	+ modify configure check for gcc's -r dynamic option to include the
 	  message from QNX's gcc 2.95.2, which simply ignores the "dynamic".
