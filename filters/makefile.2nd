@@ -1,4 +1,4 @@
-# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.2nd,v 1.24 2010/09/08 10:52:53 tom Exp $
+# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.2nd,v 1.25 2010/09/09 21:20:09 tom Exp $
 #
 
 .SUFFIXES: .l .c .i $o
@@ -122,7 +122,7 @@ vile-manfilt$x : manfilt$o	; $(LINK) -o $@ manfilt$o $(CFLAGS) $(LDFLAGS) $(LIBS
 
 encrypt$o : $(top_srcdir)/encrypt.c
 	@RULE_CC@
-	@ECHO_CC@$(CC) -c $(CPPFLAGS) $(QUOTDEFS) $(CFLAGS) $?
+	@ECHO_CC@$(CC) -c $(CPPFLAGS) $(QUOTDEFS) $(CFLAGS) $? $(LIBS)
 
 $(FILTERS_BINDIR)/atr2ansi$x :	   atr2ansi$x		; $(INSTALL) $? $@
 $(FILTERS_BINDIR)/atr2html$x :	   atr2html$x		; $(INSTALL) $? $@

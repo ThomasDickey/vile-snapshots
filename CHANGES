@@ -1,5 +1,10 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
+ 20100909 (b)
+	> Tom Dickey:
+	+ build-fix for Ubuntu package, which must ensure that -lcrypt is
+	  added when building vile-crypt due to weak-linkage issues.
+
  20100908 (a)
 	> Tom Dickey:
 	+ modify configure check for gcc's -r dynamic option to include the
