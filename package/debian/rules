@@ -8,11 +8,15 @@
 PACKAGES.indep = vile-common
 PACKAGES.arch  = vile vile-filters xvile
 
-configure = ../../configure --prefix=/usr --mandir='$${prefix}/share/man' \
-    --with-app-defaults=/etc/X11/app-defaults --with-locale --with-perl \
-    --with-loadable-filters=all --disable-rpath-hack \
-    --with-cflags='-O2 -DDEFAULT_XSHELL="\"x-terminal-emulator -e \
-	$${prefix}/share/vile/xshell.sh\""'
+configure = \
+	../../configure \
+	--prefix=/usr \
+	--mandir='$${prefix}/share/man' \
+	--with-app-defaults=/etc/X11/app-defaults \
+	--with-locale \
+	--with-loadable-filters=all \
+	--disable-rpath-hack \
+	--with-cflags='-O2 -DDEFAULT_XSHELL="\"x-terminal-emulator -e $${prefix}/share/vile/xshell.sh\""'
 
 # install path for upstream make
 TMP = $(CURDIR)/debian/tmp
@@ -88,31 +92,36 @@ ifneq ($(PACKAGES.arch),)
 	dh_builddeb          $(PACKAGES.arch:%=-p%)
 endif
 
-# these all have to be configured, made and built together
-stamp-%.vile-common stamp-%.vile-filters: stamp-%.vile
+# build in three steps so that filters aren't linked to un-needed perl libs
+stamp-%.vile-common stamp-%.vile-filters:
+	dh_testdir
+	rm -rf t/filters
+	mkdir -p t/filters
+	cd t/filters; $(configure)
 	touch $@
 
 stamp-config.vile:
 	dh_testdir
 	rm -rf t/vile
 	mkdir -p t/vile
-	cd t/vile; $(configure)
+	cd t/vile; $(configure) --with-perl
 	touch $@
 
 stamp-config.xvile:
 	dh_testdir
 	rm -rf t/xvile
 	mkdir -p t/xvile
-	cd t/xvile; $(configure) --with-xpm --with-screen=Xaw
+	cd t/xvile; $(configure) --with-perl --with-xpm --with-screen=Xaw
+	touch $@
+
+stamp-build.filters: stamp-config.vile-filters
+	dh_testdir
+	$(MAKE) -C t/filters EXTRA_CFLAGS="$(debug)"
 	touch $@
 
 stamp-build.vile: stamp-config.vile
 	dh_testdir
-	# build in three steps so that filters aren't linked to
-	# un-needed perl libs
-	$(MAKE) -C t/vile vile                  EXTRA_CFLAGS="$(debug)"
-	$(MAKE) -C t/vile/filters         LIBS= EXTRA_CFLAGS="$(debug)"
-	$(MAKE) -C t/vile all vile-perl-api.doc EXTRA_CFLAGS="$(debug)"
+	$(MAKE) -C t/vile vile vile-perl-api.doc EXTRA_CFLAGS="$(debug)"
 	touch $@
 
 stamp-build.xvile: stamp-config.xvile
@@ -120,12 +129,14 @@ stamp-build.xvile: stamp-config.xvile
 	$(MAKE) -C t/xvile xvile EXTRA_CFLAGS="$(debug)"
 	touch $@
 
-stamp-install.vile: stamp-build.vile
+stamp-install.vile: stamp-build.filters stamp-build.vile
 	dh_testdir
 	dh_testroot
 	dh_clean -k -pvile -pvile-filters -pvile-common
 
-	$(MAKE) -C t/vile DESTDIR=$(TMP) install
+	$(MAKE) -C t/vile DESTDIR=$(TMP) install-bin install-man
+	$(MAKE) -C t/filters/filters DESTDIR=$(TMP) install
+
 	rm -f $(TMP)/usr/bin/vile-pager # examples
 	rm -f $(TMP)/usr/share/man/man1/vile.1 # docs
 	pod2man $(TMP)/usr/bin/vileget > \
