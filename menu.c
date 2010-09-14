@@ -8,7 +8,7 @@
 /************************************************************************/
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/menu.c,v 1.77 2010/09/08 20:57:54 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/menu.c,v 1.78 2010/09/14 09:36:08 tom Exp $
  */
 
 /* Vile includes */
@@ -612,7 +612,7 @@ do_menu(void *menub)
 	    dobuf(bp, 1, -1);
 	} else if (!delay_menus) {
 	    for_each_line(lp, bp) {
-		rc = add_menu_entry(lvalue(lp), (unsigned) llength(lp));
+		rc = add_menu_entry(lvalue(lp), (size_t) llength(lp));
 		if (rc == FALSE)
 		    break;
 	    }
@@ -637,7 +637,7 @@ vlmenu_entry(int f, int n)
 	result = add_menu_entry(execstr, strlen(execstr));
     } else {
 	*buffer = EOS;
-	result = mlreply("Menu entry:", buffer, sizeof(buffer));
+	result = mlreply("Menu entry:", buffer, (UINT) sizeof(buffer));
 	if (result == TRUE)
 	    result = add_menu_entry(buffer, strlen(buffer));
 	if (result == TRUE)

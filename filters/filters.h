@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.128 2010/07/13 13:26:08 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.129 2010/09/14 09:13:32 tom Exp $
  */
 
 #ifndef FILTERS_H
@@ -238,6 +238,10 @@ extern int meta_ch;
 extern int vile_keywords;
 extern int flt_options[256];
 
+#if defined(__GNUC__) && defined(_FORTIFY_SOURCE)
+extern int ignore_unused;
+#endif
+
 #define FltOptions(c) flt_options[CharOf(c)]
 
 extern KEYWORD *is_class(const char *name);
@@ -306,7 +310,7 @@ extern int flt_input(char *buffer, int max_size);
 extern int flt_lookup(char *name);
 extern int flt_restart(char *name);
 extern int flt_start(char *name);
-extern int vl_check_cmd(const void *cmd, unsigned flags);
+extern int vl_check_cmd(const void *cmd, unsigned long flags);
 extern int vl_is_majormode(const void *cmd);
 extern int vl_is_setting(const void *cmd);
 extern int vl_is_submode(const void *cmd);

@@ -20,15 +20,16 @@
 #
 # gnu autoconf support by kevin buettner, 5/94
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.249 2010/08/16 09:44:16 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.251 2010/09/13 09:14:56 tom Exp $
 
 SHELL		= /bin/sh
 
 #### Start of system configuration section. ####
 
-srcdir = @srcdir@
-srcdir_sl = @srcdir@/
-VPATH  = @srcdir@
+top_srcdir	= @top_srcdir@
+srcdir		= @srcdir@
+srcdir_sl	= @srcdir@/
+VPATH		= @srcdir@
 @SET_MAKE@
 
 CC		= @CC@
@@ -327,7 +328,10 @@ SRC =	$(OBJ:.o=.c)
 ALL =	$(PROGRAM)
 
 @MAKE_FILTERS@all \
+@MAKE_FILTERS@install-filters \
+@MAKE_FILTERS@uninstall-filters \
 @MAKE_FILTERS@install-full \
+@MAKE_FILTERS@uninstall-full \
 @MAKE_FILTERS@install :: $(BUILTHDRS)
 @MAKE_FILTERS@	cd filters && $(MAKE) $(MAKE_RECUR) $@
 

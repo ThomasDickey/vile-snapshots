@@ -1,7 +1,7 @@
 /*
  * Main program and I/O for external vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filterio.c,v 1.58 2010/08/16 09:38:01 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filterio.c,v 1.59 2010/09/14 09:13:59 tom Exp $
  *
  */
 
@@ -325,7 +325,7 @@ dname_to_dirnum(char **s GCC_UNUSED, size_t length GCC_UNUSED)
 }
 
 int
-vl_check_cmd(const void *cmd GCC_UNUSED, unsigned flags GCC_UNUSED)
+vl_check_cmd(const void *cmd GCC_UNUSED, unsigned long flags GCC_UNUSED)
 {
     /* added in 9.5s */
     return 0;

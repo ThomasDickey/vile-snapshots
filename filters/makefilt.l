@@ -7,7 +7,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/makefilt.l,v 1.61 2010/07/13 13:44:18 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/makefilt.l,v 1.62 2010/09/14 09:19:10 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Makefile
  *
@@ -38,6 +38,7 @@ SPACE		[ \t]
 
 ID		[[:alpha:]_][[:alnum:]_]+
 NAME		[[:alpha:]_][[:alnum:]_.-]+
+TARGET		[[:alpha:]_][[:alnum:]_.%-]+
 
 SUBST		"@"{NAME}"@"
 MACRO		([$]?\$\{{ID}\}|[$]?\${ID}|[$]?\$[[:alpha:]@!%^&*?<]|\${SPACE}*\([^\)]+\))
@@ -52,9 +53,9 @@ OPER		[+:?]?=
 
 <NORMAL>^{SPACE}*([-.])?include{SPACE}* { write_keyword(yytext, yyleng, 1, 0); }
 
-<NORMAL>^{SPACE}*[\.]{NAME}{SPACE}*:[:]? { write_keyword(yytext, yyleng, 0, 0); }
+<NORMAL>^{SPACE}*[\.]{TARGET}{SPACE}*:[:]? { write_keyword(yytext, yyleng, 0, 0); }
 
-<NORMAL>^({SPACE}*{NAME}{SPACE}*|\\\n)+: { write_delimited(yytext, yyleng, 1, Keyword_attr); }
+<NORMAL>^({SPACE}*{TARGET}{SPACE}*|\\\n)+: { write_delimited(yytext, yyleng, 1, Keyword_attr); }
 
 <NORMAL>^{SPACE}*{NAME}{SPACE}*{OPER}	{
 				  int oper = 1;

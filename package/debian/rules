@@ -31,6 +31,8 @@ else
     debug = -g
 endif
 
+verbose = # -v
+
 .PHONY: all config build install binary clean config-indep config-arch \
     build-indep build-arch install-indep install-arch binary-indep \
     binary-arch
@@ -46,7 +48,7 @@ clean:
 	dh_testroot
 	rm -f stamp-*
 	rm -rf t
-	dh_clean
+	dh_clean $(verbose)
 
 config-indep: $(PACKAGES.indep:%=stamp-config.%)
 config-arch: $(PACKAGES.arch:%=stamp-config.%)
@@ -62,16 +64,16 @@ ifneq ($(PACKAGES.indep),)
 	rm -f $(PACKAGES.indep:%=stamp-install.%)
 	dh_testdir
 	dh_testroot
-	dh_installdocs       $(PACKAGES.indep:%=-p%)
-	dh_installman        $(PACKAGES.indep:%=-p%)
-	dh_installexamples   $(PACKAGES.indep:%=-p%)
-	dh_installchangelogs $(PACKAGES.indep:%=-p%) -k CHANGES
-	dh_compress          $(PACKAGES.indep:%=-p%)
-	dh_fixperms          $(PACKAGES.indep:%=-p%)
-	dh_installdeb        $(PACKAGES.indep:%=-p%)
-	dh_gencontrol        $(PACKAGES.indep:%=-p%)
-	dh_md5sums           $(PACKAGES.indep:%=-p%)
-	dh_builddeb          $(PACKAGES.indep:%=-p%)
+	dh_installdocs       $(verbose) $(PACKAGES.indep:%=-p%)
+	dh_installman        $(verbose) $(PACKAGES.indep:%=-p%)
+	dh_installexamples   $(verbose) $(PACKAGES.indep:%=-p%)
+	dh_installchangelogs $(verbose) $(PACKAGES.indep:%=-p%) -k CHANGES
+	dh_compress          $(verbose) $(PACKAGES.indep:%=-p%)
+	dh_fixperms          $(verbose) $(PACKAGES.indep:%=-p%)
+	dh_installdeb        $(verbose) $(PACKAGES.indep:%=-p%)
+	dh_gencontrol        $(verbose) $(PACKAGES.indep:%=-p%)
+	dh_md5sums           $(verbose) $(PACKAGES.indep:%=-p%)
+	dh_builddeb          $(verbose) $(PACKAGES.indep:%=-p%)
 endif
 
 binary-arch: install-arch
@@ -79,21 +81,24 @@ ifneq ($(PACKAGES.arch),)
 	rm -f $(PACKAGES.arch:%=stamp-install.%)
 	dh_testdir
 	dh_testroot
-	dh_link              $(PACKAGES.arch:%=-p%)
-	dh_installdocs       $(PACKAGES.arch:%=-p%)
-	dh_installmenu       $(PACKAGES.arch:%=-p%)
-	dh_strip             $(PACKAGES.arch:%=-p%)
-	dh_compress          $(PACKAGES.arch:%=-p%)
-	dh_fixperms          $(PACKAGES.arch:%=-p%)
-	dh_installdeb        $(PACKAGES.arch:%=-p%)
-	dh_shlibdeps         $(PACKAGES.arch:%=-p%)
-	dh_gencontrol        $(PACKAGES.arch:%=-p%)
-	dh_md5sums           $(PACKAGES.arch:%=-p%)
-	dh_builddeb          $(PACKAGES.arch:%=-p%)
+	dh_link              $(verbose) $(PACKAGES.arch:%=-p%)
+	dh_installdocs       $(verbose) $(PACKAGES.arch:%=-p%)
+	dh_installmenu       $(verbose) $(PACKAGES.arch:%=-p%)
+	dh_strip             $(verbose) $(PACKAGES.arch:%=-p%)
+	dh_compress          $(verbose) $(PACKAGES.arch:%=-p%)
+	dh_fixperms          $(verbose) $(PACKAGES.arch:%=-p%)
+	dh_installdeb        $(verbose) $(PACKAGES.arch:%=-p%)
+	dh_shlibdeps         $(verbose) $(PACKAGES.arch:%=-p%)
+	dh_gencontrol        $(verbose) $(PACKAGES.arch:%=-p%)
+	dh_md5sums           $(verbose) $(PACKAGES.arch:%=-p%)
+	dh_builddeb          $(verbose) $(PACKAGES.arch:%=-p%)
 endif
 
 # build in three steps so that filters aren't linked to un-needed perl libs
-stamp-%.vile-common stamp-%.vile-filters:
+stamp-%.vile-common : stamp-%.vile
+	touch $@
+
+stamp-config.vile-filters:
 	dh_testdir
 	rm -rf t/filters
 	mkdir -p t/filters
@@ -114,14 +119,14 @@ stamp-config.xvile:
 	cd t/xvile; $(configure) --with-perl --with-xpm --with-screen=Xaw
 	touch $@
 
-stamp-build.filters: stamp-config.vile-filters
+stamp-build.vile-filters: stamp-config.vile-filters
 	dh_testdir
 	$(MAKE) -C t/filters EXTRA_CFLAGS="$(debug)"
 	touch $@
 
 stamp-build.vile: stamp-config.vile
 	dh_testdir
-	$(MAKE) -C t/vile vile vile-perl-api.doc EXTRA_CFLAGS="$(debug)"
+	$(MAKE) -C t/vile all vile-perl-api.doc EXTRA_CFLAGS="$(debug)"
 	touch $@
 
 stamp-build.xvile: stamp-config.xvile
@@ -129,13 +134,20 @@ stamp-build.xvile: stamp-config.xvile
 	$(MAKE) -C t/xvile xvile EXTRA_CFLAGS="$(debug)"
 	touch $@
 
-stamp-install.vile: stamp-build.filters stamp-build.vile
+stamp-install.vile-filters: stamp-build.vile-filters
+	touch $@
+
+stamp-install.vile: stamp-build.vile stamp-install.vile-filters
 	dh_testdir
 	dh_testroot
 	dh_clean -k -pvile -pvile-filters -pvile-common
 
-	$(MAKE) -C t/vile DESTDIR=$(TMP) install-bin install-man
-	$(MAKE) -C t/filters/filters DESTDIR=$(TMP) install
+	# selectively install everything except filters
+	$(MAKE) -C t/vile DESTDIR=$(TMP) install
+	$(MAKE) -C t/vile DESTDIR=$(TMP) uninstall-filters
+
+	# install the customized filters
+	$(MAKE) -C t/filters DESTDIR=$(TMP) install-filters
 
 	rm -f $(TMP)/usr/bin/vile-pager # examples
 	rm -f $(TMP)/usr/share/man/man1/vile.1 # docs
@@ -146,7 +158,7 @@ stamp-install.vile: stamp-build.filters stamp-build.vile
 	install -c -m 644 debian/overrides/vile \
 	    $(TMP)/usr/share/lintian/overrides
 
-	dh_movefiles -pvile -pvile-filters -pvile-common
+	dh_movefiles $(verbose) -pvile -pvile-filters -pvile-common
 
 	# ensure that all file have been moved from debian/tmp
 	test `find $(TMP) ! -type d | wc -l` -eq 0
@@ -156,7 +168,7 @@ stamp-install.vile: stamp-build.filters stamp-build.vile
 stamp-install.xvile: stamp-build.xvile
 	dh_testdir
 	dh_testroot
-	dh_clean -k -pxvile
+	dh_clean $(verbose) -k -pxvile
 
 	install -d $(TMP)/usr/bin $(TMP)/etc/X11/app-defaults \
             $(TMP)/usr/share/applications $(TMP)/usr/share/pixmaps \
@@ -174,5 +186,5 @@ stamp-install.xvile: stamp-build.xvile
 	    $(TMP)/usr/share/vile/vilemenu.rc \
 	    $(TMP)/usr/share/vile/xshell.sh
 
-	dh_movefiles -pxvile
+	dh_movefiles $(verbose) -pxvile
 	touch $@

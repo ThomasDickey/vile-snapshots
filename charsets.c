@@ -1,5 +1,5 @@
 /*
- * $Id: charsets.c,v 1.71 2010/09/08 21:15:08 tom Exp $
+ * $Id: charsets.c,v 1.72 2010/09/14 09:17:35 tom Exp $
  *
  * see
  http://msdn.microsoft.com/library/default.asp?url=/library/en-us/intl/unicode_42jv.asp
@@ -453,9 +453,9 @@ load_as_utf8(BUFFER *bp, LINE *lp)
 
     if (mp != 0 && mp->size > 1) {
 	int pass;
-	unsigned j, k;
-	unsigned need = (UINT) llength(lp);
-	unsigned used;
+	size_t j, k;
+	size_t need = (size_t) llength(lp);
+	size_t used;
 
 	TRACE2(("load_as_utf8:%d:%s\n", need, lp_visible(lp)));
 	allow_decoder(bp, need);

@@ -2,7 +2,7 @@
  *	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.374 2010/09/08 21:09:44 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.375 2010/09/14 09:41:44 tom Exp $
  *
  */
 
@@ -2071,7 +2071,7 @@ color_cursor(void)
 }
 
 static GC
-get_color_gc(int n, Boolean normal)
+get_color_gc(int n, Bool normal)
 {
     ColorGC *data;
 
@@ -2290,7 +2290,7 @@ x_preparse_args(int *pargc, char ***pargv)
 
     for (i = 1; i < (*pargc) - 1; i++) {
 	char *param = (*pargv)[i];
-	UINT len = (UINT) strlen(param);
+	size_t len = strlen(param);
 	if (len > 1) {
 #if OPT_TITLE
 	    /*
@@ -3891,7 +3891,7 @@ static void
 really_draw(GC fore_gc,
 	    VIDEO_TEXT * text,
 	    int tlen,
-	    VIDEO_ATTR attr,
+	    unsigned attr,
 	    int sr,
 	    int sc)
 {
@@ -4058,7 +4058,7 @@ flush_line(VIDEO_TEXT * text, int len, UINT attr, int sr, int sc)
 	} else {
 	    if (cc >= CLEAR_THRESH) {
 		tlen -= cc;
-		really_draw(fore_gc, p, tlen, (VIDEO_ATTR) attr, sr, sc);
+		really_draw(fore_gc, p, tlen, attr, sr, sc);
 		p += tlen + cc;
 		sc += tlen;
 		XFillRectangle(dpy, cur_win->win, back_gc,
@@ -4074,14 +4074,14 @@ flush_line(VIDEO_TEXT * text, int len, UINT attr, int sr, int sc)
     }
     if (cc >= CLEAR_THRESH) {
 	tlen -= cc;
-	really_draw(fore_gc, p, tlen, (VIDEO_ATTR) attr, sr, sc);
+	really_draw(fore_gc, p, tlen, attr, sr, sc);
 	sc += tlen;
 	XFillRectangle(dpy, cur_win->win, back_gc,
 		       x_pos(cur_win, sc), back_yy,
 		       (UINT) (cc * cur_win->char_width),
 		       (UINT) (cur_win->char_height));
     } else if (tlen > 0) {
-	really_draw(fore_gc, p, tlen, (VIDEO_ATTR) attr, sr, sc);
+	really_draw(fore_gc, p, tlen, attr, sr, sc);
     }
     if (attr & (VAUL | VAITAL)) {
 	fore_yy += cur_win->char_descent - 1;
@@ -4398,14 +4398,17 @@ pasting_utf8(TBUFF *p, int c)
     int result = FALSE;
     if (b_is_utfXX(curbp)) {
 	char temp[2];
-	int n, limit;
+	int n, limit, len;
 
 	temp[0] = (char) c;
-	if (vl_conv_to_utf32((UINT *) 0, temp, 6) > 0) {
+	if (vl_conv_to_utf32((UINT *) 0, temp, (B_COUNT) 6) > 0) {
 	    result = TRUE;
 	} else if ((limit = (int) tb_length(p)) > 0) {
 	    for (n = limit - 1; n > 0; --n) {
-		if (vl_conv_to_utf32((UINT *) 0, tb_values(p) + n, 6) > 0) {
+		len = vl_conv_to_utf32((UINT *) 0,
+				       tb_values(p) + n,
+				       (B_COUNT) 6);
+		if (len > 0) {
 		    result = TRUE;
 		    break;
 		}
@@ -4780,7 +4783,8 @@ x_convert_selection(Widget w GCC_UNUSED,
 
 #define NTARGS 10
 
-	*(Atom **) value = tp = (Atom *) XtMalloc(NTARGS * sizeof(Atom));
+	tp = (Atom *) XtMalloc((Cardinal) (NTARGS * sizeof(Atom)));
+	*(Atom **) value = tp;
 
 	if (tp != NULL) {
 	    *tp++ = atom_TARGETS;
@@ -6212,19 +6216,19 @@ x_key_press(Widget w GCC_UNUSED,
 	    if (b_is_utfXX(curbp)) {
 		num = Xutf8LookupString(cur_win->imInputContext,
 					(XKeyPressedEvent *) ev, buffer,
-					sizeof(buffer), &keysym,
+					(int) sizeof(buffer), &keysym,
 					&status_return);
 	    } else
 #endif
 	    {
 		num = XmbLookupString(cur_win->imInputContext,
 				      (XKeyPressedEvent *) ev, buffer,
-				      sizeof(buffer), &keysym,
+				      (int) sizeof(buffer), &keysym,
 				      &status_return);
 	    }
 	} else {
 	    num = XLookupString((XKeyPressedEvent *) ev, buffer,
-				sizeof(buffer), &keysym,
+				(int) sizeof(buffer), &keysym,
 				(XComposeStatus *) 0);
 	}
     } else {
@@ -6459,7 +6463,7 @@ x_set_icon_name(const char *name)
 {
     XTextProperty Prop;
 
-    (void) strncpy0(x_icon_name, name, NFILEN);
+    (void) strncpy0(x_icon_name, name, (size_t) NFILEN);
 
     Prop.value = (UCHAR *) x_icon_name;
     Prop.encoding = XA_STRING;
@@ -6648,7 +6652,7 @@ gui_isprint(int ch)
 #define MyStackAlloc(size, stack_cache_array)     \
     ((size) <= sizeof(stack_cache_array)	  \
     ?  (XtPointer)(stack_cache_array)		  \
-    :  (XtPointer)malloc((unsigned)(size)))
+    :  (XtPointer)malloc((size_t)(size)))
 
 #define MyStackFree(pointer, stack_cache_array) \
     if ((pointer) != ((char *)(stack_cache_array))) free(pointer)
@@ -6763,7 +6767,7 @@ xim_real_init(void)
 
 		if (end != s) {
 		    strcpy(t, "@im=");
-		    strncat(t, s, (unsigned) (end - s));
+		    strncat(t, s, (size_t) (end - s));
 
 		    if ((p = XSetLocaleModifiers(t)) != 0 && *p
 			&& (cur_win->xim = XOpenIM(XtDisplay(cur_win->screen),
@@ -6817,7 +6821,7 @@ xim_real_init(void)
 	    TRACE(("looking for style '%.*s'\n", (int) (end - s), s));
 	    for (i = 0; i < XtNumber(known_style); i++) {
 		if ((int) strlen(known_style[i].name) == (end - s)
-		    && !strncmp(s, known_style[i].name, (unsigned) (end - s))) {
+		    && !strncmp(s, known_style[i].name, (size_t) (end - s))) {
 		    input_style = known_style[i].code;
 		    for (j = 0; j < xim_styles->count_styles; j++) {
 			if (input_style == xim_styles->supported_styles[j]) {

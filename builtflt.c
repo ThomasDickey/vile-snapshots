@@ -1,7 +1,7 @@
 /*
  * Main program and I/O for external vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/RCS/builtflt.c,v 1.86 2010/09/06 22:45:56 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/builtflt.c,v 1.87 2010/09/14 09:38:34 tom Exp $
  *
  */
 
@@ -447,7 +447,7 @@ flt_input(char *buffer, int max_size)
 	while (used < max_size) {
 	    if (mark_in.o < llength(mark_in.l)) {
 		buffer[used++] = (char) fixup_cr_lf((char) lgetc(mark_in.l,
-							         mark_in.o++));
+								 mark_in.o++));
 	    } else {
 		mark_in.l = lforw(mark_in.l);
 		mark_in.o = w_left_margin(curwp);
@@ -808,7 +808,7 @@ vl_is_submode(const void *cmd)
 }
 
 int
-vl_check_cmd(const void *cmd, unsigned flags)
+vl_check_cmd(const void *cmd, unsigned long flags)
 {
     const CMDFUNC *actual = (const CMDFUNC *) cmd;
     int result = 0;

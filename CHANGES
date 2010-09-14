@@ -1,7 +1,10 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20100909 (b)
+ 20100914 (b)
 	> Tom Dickey:
+	+ add "%" to syntax highlighting of makefile target patterns.
+	+ add configure --enable-link-prefix, which is used to trim unneeded
+	  libraries from link-commands, to reduce package dependencies.
 	+ build-fix for Ubuntu package, which must ensure that -lcrypt is
 	  added when building vile-crypt due to weak-linkage issues.
 
