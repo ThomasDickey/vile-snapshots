@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/spellflt.l,v 1.49 2010/07/13 13:47:24 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/spellflt.l,v 1.50 2010/09/14 09:15:19 tom Exp $
  *
  * Filter to add vile "attribution" sequences to misspelled words.
  */
@@ -42,7 +42,7 @@ static void ChopWords(FILE *fp, char *text, int len);
 
 #ifdef HAVE_POPEN
 #define pipe_open(command)	popen(command, "r")
-#define	pipe_read(b,s)		fgets(b, sizeof(b), s)
+#define	pipe_read(b,s)		fgets(b, (int) sizeof(b), s)
 #define pipe_close(s)		pclose(s)
 #else				/* platforms with no workable popen */
 #ifdef filter_def		/* built-in filter? */

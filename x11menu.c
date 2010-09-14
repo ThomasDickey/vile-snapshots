@@ -8,7 +8,7 @@
 /************************************************************************/
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/x11menu.c,v 1.15 2010/09/05 18:50:32 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11menu.c,v 1.16 2010/09/14 09:34:43 tom Exp $
  */
 
 #define NEED_X_INCLUDES 1
@@ -96,7 +96,7 @@ gui_make_menu(void *menubar, const char *nom, int the_class GCC_UNUSED)
     }
 #elif ATHENA_WIDGETS
     static Widget last;
-    char *str = XtMalloc(strlen(nom) + 10);
+    char *str = XtMalloc((Cardinal) strlen(nom) + 10);
 
     sprintf(str, "%sMenu", nom);
     pm = XtVaCreatePopupShell(str,

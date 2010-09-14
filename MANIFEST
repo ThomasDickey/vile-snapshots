@@ -1,4 +1,4 @@
-MANIFEST for vile, version v9_8a2
+MANIFEST for vile, version v9_8a3
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 AUTHORS                         list of authors, with nicknames in CHANGES
@@ -93,6 +93,7 @@ os2vio.c                        OS/2 video terminal driver
 patchlev.h                      patch-level
 path.c                          functions that manipulate pathnames
 perl.xs                         Perl/C interface wrapper
+plink.sh                        script to trim unneeded libraries from a link-command.
 plugin.c                        command interface to plugins
 plugin.h                        interface of plugin.c
 proto.h                         function prototypes

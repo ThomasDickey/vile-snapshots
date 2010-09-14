@@ -92,7 +92,7 @@ unwatch_free_callback(char *callback)
 	return;
 
 #if OPT_PERL
-    if (strncmp("perl", callback, 4) == 0)
+    if (strncmp("perl", callback, (size_t) 4) == 0)
 	perl_free_callback(callback);
 #endif
 

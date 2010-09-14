@@ -1,6 +1,6 @@
 dnl vile's local definitions for autoconf.
 dnl
-dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.227 2010/09/06 23:28:53 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.228 2010/09/13 10:43:21 tom Exp $
 dnl
 dnl See
 dnl		http://invisible-island.net/autoconf/autoconf.html
@@ -2377,6 +2377,28 @@ AC_DEFUN([CF_LIB_PREFIX],
 	esac
 ifelse($1,,,[$1=$LIB_PREFIX])
 	AC_SUBST(LIB_PREFIX)
+])dnl
+dnl ---------------------------------------------------------------------------
+dnl CF_LINK_PREFIX version: 1 updated: 2010/09/13 05:56:50
+dnl --------------
+dnl Use xterm's plink.sh script as a link-prefix, to trim unneeded libraries.
+dnl This is optional since in some obscure cases of weak-linkage it may be
+dnl possible to trim too much.
+AC_DEFUN([CF_LINK_PREFIX],
+[
+AC_MSG_CHECKING(if you want to trim unneeded libraries)
+CF_ARG_DISABLE(link-prefix,
+	[  --disable-link-prefix   do not trim unneeded libraries from link command],
+	[with_link_prefix=no],
+	[with_link_prefix=yes])
+AC_MSG_RESULT($with_link_prefix)
+if test $with_link_prefix = yes
+then
+	LINK_PREFIX='$(SHELL) $(top_srcdir)/plink.sh'
+else
+	LINK_PREFIX=
+fi
+AC_SUBST(LINK_PREFIX)
 ])dnl
 dnl ---------------------------------------------------------------------------
 dnl CF_LOCALE version: 4 updated: 2003/02/16 08:16:04

@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/vl_alloc.h,v 1.2 2010/09/06 15:42:53 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/vl_alloc.h,v 1.3 2010/09/14 09:35:24 tom Exp $
  *
  * Copyright 2005, Thomas E. Dickey and Paul G. Fox
  *
@@ -32,10 +32,10 @@
 #define VL_ALLOC_H_incl 1
 
 /* structure-allocate, for appeasing strict compilers */
-#define	castalloc(cast,nbytes)		(cast *)malloc(nbytes)
-#define	castrealloc(cast,ptr,nbytes)	(cast *)realloc((ptr),(nbytes))
+#define	castalloc(cast,nbytes)		(cast *)malloc((size_t) nbytes)
+#define	castrealloc(cast,ptr,nbytes)	(cast *)realloc((ptr), (size_t)(nbytes))
 #define	typecalloc(cast)		(cast *)calloc(sizeof(cast), (size_t) 1)
-#define	typecallocn(cast,ntypes)	(cast *)calloc(sizeof(cast), ntypes)
+#define	typecallocn(cast,ntypes)	(cast *)calloc(sizeof(cast), (size_t) ntypes)
 #define	typealloc(cast)			(cast *)malloc(sizeof(cast))
 #define	typeallocn(cast,ntypes)		(cast *)malloc((ntypes)*sizeof(cast))
 #define	typereallocn(cast,ptr,ntypes)	(cast *)realloc((ptr),\

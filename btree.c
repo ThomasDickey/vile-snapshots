@@ -1,5 +1,5 @@
 /*
- * $Id: btree.c,v 1.51 2010/09/06 15:42:19 tom Exp $
+ * $Id: btree.c,v 1.52 2010/09/14 09:35:05 tom Exp $
  * Copyright 1997-2008,2010 by Thomas E. Dickey
  *
  * Maintains a balanced binary tree (aka AVL tree) of unspecified nodes.  The
@@ -37,7 +37,7 @@
 #include <dmalloc.h>
 #endif
 
-#define castalloc(cast,nbytes) (cast *)malloc(nbytes)
+#define castalloc(cast,nbytes) (cast *)malloc((size_t) nbytes)
 #define	for_ever for(;;)
 #define beginDisplay()		/* nothing */
 #define endofDisplay()		/* nothing */

@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.352 2010/09/06 17:45:49 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.353 2010/09/14 09:33:32 tom Exp $
  *
  */
 
@@ -2091,7 +2091,7 @@ fnc2pstr(const CMDFUNC * f)
     if (c == -1)
 	return NULL;
 
-    return kcod2pstr(c, seq, sizeof(seq));
+    return kcod2pstr(c, seq, (int) sizeof(seq));
 }
 #endif
 
