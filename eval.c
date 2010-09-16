@@ -2,7 +2,7 @@
  *	eval.c -- function and variable evaluation
  *	original by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.432 2010/09/07 00:26:19 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.433 2010/09/14 23:37:55 tom Exp $
  *
  */
 
@@ -150,7 +150,7 @@ make_ctype_list(int dum1 GCC_UNUSED, void *ptr GCC_UNUSED)
 	BUFFER *bp = recomputing_buf();
 
 	if (wp != 0 && bp != 0 && (curbp != bp)) {
-	    VL_CTYPE2 *my_enc = ((b_val(bp, VAL_FILE_ENCODING) >= enc_UTF8)
+	    VL_CTYPE2 *my_enc = (b_is_utfXX(bp)
 				 ? &vl_wide_enc
 				 : &vl_real_enc);
 	    BUFFER *savebp = curbp;

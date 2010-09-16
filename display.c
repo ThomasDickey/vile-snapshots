@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.525 2010/09/07 00:25:39 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.526 2010/09/15 09:23:02 tom Exp $
  *
  */
 
@@ -3923,6 +3923,12 @@ update(int force /* force update past type ahead? */ )
     /* look for windows that need the ruler updated */
 #ifdef WMDRULER
     for_each_visible_window(wp) {
+#ifdef WMDSHOWCHAR
+	if (w_val(wp, WMDSHOWCHAR)) {
+	    wp->w_flag |= WFMODE;
+	    update_char_classes();
+	}
+#endif
 	if (w_val(wp, WMDRULER)) {
 	    int line = line_no(wp->w_bufp, wp->w_dot.l);
 	    int col = dot_to_vcol(wp) + 1;
@@ -3933,11 +3939,6 @@ update(int force /* force update past type ahead? */ )
 		wp->w_ruler_col = col;
 		wp->w_flag |= WFMODE;
 	    }
-#ifdef WMDSHOWCHAR
-	} else if (w_val(wp, WMDSHOWCHAR)) {
-	    wp->w_flag |= WFMODE;
-	    update_char_classes();
-#endif
 	} else if (wp->w_flag & WFSTAT) {
 	    wp->w_flag |= WFMODE;
 	}

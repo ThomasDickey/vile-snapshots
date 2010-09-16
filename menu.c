@@ -8,7 +8,7 @@
 /************************************************************************/
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/menu.c,v 1.78 2010/09/14 09:36:08 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/menu.c,v 1.79 2010/09/15 00:06:52 tom Exp $
  */
 
 /* Vile includes */
@@ -104,7 +104,10 @@ menu_filename(void)
 #if SYS_UNIX
     /* just for backward compatibility */
     if (result == 0 && strcmp(menu_file, "vilemenu.rc")) {
-	result = cfg_locate("vilemenu.rc", FL_STARTPATH | FL_READABLE);
+	static char *param;
+	if (param == 0)
+	    param = strmalloc("vilemenu.rc");
+	result = cfg_locate(param, FL_STARTPATH | FL_READABLE);
     }
 #endif
     return result;
