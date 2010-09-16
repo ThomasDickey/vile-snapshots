@@ -1,6 +1,6 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
-  $Id: macros.html,v 1.12 2010/04/11 21:56:52 tom Exp $
+  $Id: macros.html,v 1.13 2010/09/15 09:06:14 tom Exp $
 -->
 <HTML>
 <HEAD>
@@ -864,7 +864,9 @@ sections may be read in any order.
 <dt>$wlines
 			<dd>Height of current window.
 <dt>$word
-			<dd>The "word" at the cursor location.
+			<dd>The "word" at the cursor location.  The word is
+			a contiguous sequence of nonblank characters,
+			rather than the vi-style "word".
 <dt>$write-hook
 			<dd>Name of procedure to run before a file is written
 <dt>$xdisplay

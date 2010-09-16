@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/regexp.c,v 1.203 2010/09/07 00:34:48 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/regexp.c,v 1.204 2010/09/14 23:23:33 tom Exp $
  *
  * Copyright 2005-2009,2010 Thomas E. Dickey and Paul G. Fox
  *
@@ -563,9 +563,12 @@ set_utf8flag(BUFFER *bp)
 #ifdef DEBUG_REGEXP
     (void) bp;			/* test-driver sets flag once, in main program */
 #else
-    reg_utf8flag = (bp
-		    ? b_val(bp, VAL_FILE_ENCODING)
-		    : global_b_val(VAL_FILE_ENCODING)) >= enc_UTF8;
+    ENC_CHOICES encoding = (bp
+			    ? b_val(bp, VAL_FILE_ENCODING)
+			    : global_b_val(VAL_FILE_ENCODING));
+    if (encoding == enc_LOCALE)
+	encoding = vl_encoding;
+    reg_utf8flag = (encoding >= enc_UTF8);
 #endif
 }
 

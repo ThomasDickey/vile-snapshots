@@ -1,7 +1,13 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20100914 (b)
+ 20100915 (b)
 	> Tom Dickey:
+	+ correct a check in the combination of showchar mode with the
+	  :show-printable command when the global file-encoding mode is set to
+	  locale.  Also make this combination apply whether or not the ruler
+	  mode is set.
+	+ correct setting of reg_utf8flag when the global file-encoding mode is
+	  set to locale, e.g., for UTF-8 encoding.
 	+ add "%" to syntax highlighting of makefile target patterns.
 	+ add configure --enable-link-prefix, which is used to trim unneeded
 	  libraries from link-commands, to reduce package dependencies.
