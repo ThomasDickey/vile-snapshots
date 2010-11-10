@@ -5,8 +5,9 @@
 %k 2000
 
 %{
+
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/css-filt.l,v 1.26 2009/08/19 09:02:41 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/css-filt.l,v 1.27 2010/11/04 09:25:28 tom Exp $
  *
  * Filter to add vile "attribution" sequences to Cascading Style Sheets.
  *
@@ -184,11 +185,11 @@ do_filter(FILE *inputs)
     InitLEX(inputs);
 
     Comment_attr = class_attr(NAME_COMMENT);
-    Error_attr   = class_attr(NAME_ERROR);
-    Ident_attr   = class_attr(NAME_IDENT);
-    Ident2_attr  = class_attr(NAME_IDENT2);
-    Number_attr  = class_attr(NAME_NUMBER);
-    String_attr  = class_attr(NAME_LITERAL);
+    Error_attr = class_attr(NAME_ERROR);
+    Ident_attr = class_attr(NAME_IDENT);
+    Ident2_attr = class_attr(NAME_IDENT2);
+    Number_attr = class_attr(NAME_NUMBER);
+    String_attr = class_attr(NAME_LITERAL);
 
     css_state = -1;
     BEGIN(CSS_CODE);

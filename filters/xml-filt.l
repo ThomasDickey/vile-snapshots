@@ -2,8 +2,9 @@
 %x XMLTAG XMLATTR XMLCDATA XMLPI COMMENT INLINE
 
 %{
+
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/xml-filt.l,v 1.36 2010/09/06 15:46:12 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/xml-filt.l,v 1.37 2010/11/04 09:25:30 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of XML input
  * text.
@@ -28,7 +29,7 @@ DefineFilter("xml");
 #ifdef FLEX_DEBUG
 #define DBG_HTML(params) if (yy_flex_debug) fprintf params
 #else
-#define DBG_HTML(params) /* nothing */
+#define DBG_HTML(params)	/* nothing */
 #endif
 
 static char *Action_attr;
@@ -43,8 +44,7 @@ typedef struct {
     char *name;
     int line;
     int col;
-}
-XMLTAGS;
+} XMLTAGS;
 
 static XMLTAGS *Tags;
 static unsigned Num_tags = 0;
@@ -52,7 +52,7 @@ static int In_error = 0;
 
 #include <fltstack.h>
 
-static const char * xml_keyword_attr(const char *name);
+static const char *xml_keyword_attr(const char *name);
 static void xml_close(char *text);
 static void xml_command(char *text);
 static void xml_prefixed_property(char *text, int len);
@@ -199,7 +199,7 @@ xml_command(char *text)
 	int bad = 0;
 
 	if (Num_tags == 0
-	|| strcmp(text + 1, Tags[Num_tags - 1].name) != 0) {
+	    || strcmp(text + 1, Tags[Num_tags - 1].name) != 0) {
 	    /*
 	     * If we already reported an error, and this (new erroneous) tag
 	     * does, in fact, correctly match a non-current opening tag, then
@@ -288,13 +288,13 @@ do_filter(FILE *inputs)
 {
     InitLEX(inputs);
 
-    Action_attr  = class_attr(NAME_ACTION);
+    Action_attr = class_attr(NAME_ACTION);
     Comment_attr = class_attr(NAME_COMMENT);
-    Ident_attr   = class_attr(NAME_IDENT);
+    Ident_attr = class_attr(NAME_IDENT);
     Keyword_attr = class_attr(NAME_KEYWORD);
-    Number_attr  = class_attr(NAME_NUMBER);
-    String_attr  = class_attr(NAME_LITERAL);
-    Error_attr   = class_attr(NAME_ERROR);
+    Number_attr = class_attr(NAME_NUMBER);
+    String_attr = class_attr(NAME_LITERAL);
+    Error_attr = class_attr(NAME_ERROR);
 
     set_symbol_table(default_table);
 

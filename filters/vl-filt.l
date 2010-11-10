@@ -2,8 +2,9 @@
 %s RULES ACTIONS CODE COMMENT
 
 %{
+
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/vl-filt.l,v 1.19 2009/12/10 00:37:58 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/vl-filt.l,v 1.20 2010/11/04 09:25:30 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of VeriLog
  * program.
@@ -102,13 +103,13 @@ do_filter(FILE *inputs)
 {
     InitLEX(inputs);
     Comment_attr = class_attr(NAME_COMMENT);
-    Error_attr   = class_attr(NAME_ERROR);
-    Ident_attr   = class_attr(NAME_IDENT);
-    Ident2_attr  = class_attr(NAME_IDENT2);
+    Error_attr = class_attr(NAME_ERROR);
+    Ident_attr = class_attr(NAME_IDENT);
+    Ident2_attr = class_attr(NAME_IDENT2);
     Keyword_attr = class_attr(NAME_KEYWORD);
-    Number_attr  = class_attr(NAME_NUMBER);
+    Number_attr = class_attr(NAME_NUMBER);
     Preproc_attr = class_attr(NAME_PREPROC);
-    String_attr  = class_attr(NAME_LITERAL);
+    String_attr = class_attr(NAME_LITERAL);
 
     BEGIN(CODE);
     RunLEX();

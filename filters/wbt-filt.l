@@ -2,8 +2,9 @@
 %x NORMAL
 
 %{
+
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/wbt-filt.l,v 1.9 2009/04/25 16:20:07 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/wbt-filt.l,v 1.10 2010/11/04 09:25:30 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of WinBatch script.
  */
@@ -73,10 +74,10 @@ do_filter(FILE *inputs)
     InitLEX(inputs);
 
     Comment_attr = class_attr(NAME_COMMENT);
-    Error_attr   = class_attr(NAME_ERROR);
-    Number_attr  = class_attr(NAME_NUMBER);
-    Prepro_attr  = class_attr(NAME_PREPROC);
-    String_attr  = class_attr(NAME_LITERAL);
+    Error_attr = class_attr(NAME_ERROR);
+    Number_attr = class_attr(NAME_NUMBER);
+    Prepro_attr = class_attr(NAME_PREPROC);
+    String_attr = class_attr(NAME_LITERAL);
 
     BEGIN(NORMAL);
 

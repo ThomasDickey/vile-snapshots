@@ -5,7 +5,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/mms-filt.l,v 1.17 2008/11/19 23:11:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/mms-filt.l,v 1.18 2010/11/04 09:25:29 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of VMS mms script
  * - T.Dickey
@@ -23,7 +23,7 @@ static char *String_attr;
 static void
 write_keyword(char *text, int size)
 {
-    int colon = size > 1 && text[size-1] == ':';
+    int colon = size > 1 && text[size - 1] == ':';
     int space = 0;
 
     if (colon)
@@ -38,7 +38,7 @@ write_keyword(char *text, int size)
 	flt_putc(' ');
 
     space = 0;
-    while (isspace(CharOf(text[size-1]))) {
+    while (isspace(CharOf(text[size - 1]))) {
 	text[--size] = 0;
 	space++;
     }
@@ -100,9 +100,9 @@ do_filter(FILE *inputs)
     InitLEX(inputs);
 
     Comment_attr = class_attr(NAME_COMMENT);
-    Ident2_attr  = class_attr(NAME_IDENT2);
+    Ident2_attr = class_attr(NAME_IDENT2);
     Keyword_attr = class_attr(NAME_KEYWORD);
-    String_attr  = class_attr(NAME_LITERAL);
+    String_attr = class_attr(NAME_LITERAL);
 
     RunLEX();
 }

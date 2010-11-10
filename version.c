@@ -1,7 +1,7 @@
 /*
  * version & usage-messages for vile
  *
- * $Header: /users/source/archives/vile.vcs/RCS/version.c,v 1.74 2010/04/30 22:38:41 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/version.c,v 1.77 2010/11/10 09:47:07 tom Exp $
  *
  */
 
@@ -31,11 +31,11 @@ print_usage(int code)
 #endif
 	"-R             edit files \"read-only\" -- no writes permitted",
 #if OPT_TAGS
-#if DISP_X11			/* because -title is predefined */
+# if DISP_X11			/* because -title is predefined */
 	"-T tagname     look up a tag",
-#else
+# else
 	"-t tagname     look up a tag",
-#endif
+# endif
 #endif
 	"-v             edit in \"view\" mode -- no changes permitted",
 	"-V             for version info",
@@ -62,22 +62,22 @@ print_usage(int code)
 #if SYS_WINNT
 	"",
 	"Win32-specific:",
-#if DISP_NTWIN
+# if DISP_NTWIN
 	"-fn fontspec   change font",
 	"-geometry CxR  set initial size to R rows and C columns",
 	"-i             set current-directory to pathname of file-parameter",
-#if defined(VILE_OLE)
+#  if defined(VILE_OLE)
 	"-Oa            invoke as an OLE Automation server",
 	"-Or            register ole automation interface and exit",
 	"-Ou            unregister ole automation interface and exit",
 	"-invisible     OLE Automation server does not initially show a window",
 	"-multiple      multiple instances of OLE Automation server permitted",
-#endif
-#endif				/* DISP_NTWIN */
+#  endif
+# endif				/* DISP_NTWIN */
 
-#if DISP_NTCONS
+# if DISP_NTCONS
 	"-console       if stdin is not a tty, start editor in a new console",
-#endif
+# endif
 #endif				/* SYS_WINNT */
 
 #if DISP_X11
@@ -200,7 +200,7 @@ getversion(void)
 #   endif
 	);
 #  endif
-# endif				/* SYS_MSDOS || SYS_OS2 || SYS_WINNT */
+# endif	/* SYS_MSDOS || SYS_OS2 || SYS_WINNT */
 #endif /* not SYS_UNIX or SYS_VMS */
     return version_string;
 }

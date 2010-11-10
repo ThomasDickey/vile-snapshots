@@ -1,8 +1,9 @@
 %pointer
 
 %{
+
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/bnf-filt.l,v 1.12 2008/11/19 23:11:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/bnf-filt.l,v 1.13 2010/11/04 09:25:28 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of BNF syntax.
  */
@@ -48,10 +49,10 @@ static void
 do_filter(FILE *inputs)
 {
     InitLEX(inputs);
-    Action_attr  = class_attr(NAME_ACTION);
+    Action_attr = class_attr(NAME_ACTION);
     Comment_attr = class_attr(NAME_COMMENT);
-    Number_attr  = class_attr(NAME_NUMBER);
-    String_attr  = class_attr(NAME_LITERAL);
+    Number_attr = class_attr(NAME_NUMBER);
+    String_attr = class_attr(NAME_LITERAL);
 
     RunLEX();
 }

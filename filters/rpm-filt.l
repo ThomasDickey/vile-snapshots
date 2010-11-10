@@ -5,8 +5,9 @@
 %a 10000
 
 %{
+
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/rpm-filt.l,v 1.31 2010/07/13 13:45:53 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/rpm-filt.l,v 1.32 2010/11/04 09:25:29 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of rpm spec-file.
  */
@@ -31,8 +32,8 @@ static int here_exp;
 
 #include <fltstack.h>
 
-static const char * meta_variable(char *name, int len);
-static const char * my_keyword_attr(char *name, int len);
+static const char *meta_variable(char *name, int len);
+static const char *my_keyword_attr(char *name, int len);
 static int embed_or_append(char *text, int length);
 static int got_here(char *text, int length);
 static void begin_section(char *name, int length);
@@ -267,7 +268,7 @@ my_keyword_attr(char *name, int len)
 	char save;
 	const char *flags;
 
-	while (try > 0 && isdigit(CharOf(name[try-1]))) {
+	while (try > 0 && isdigit(CharOf(name[try - 1]))) {
 	    --try;
 	}
 	if (try < len) {
@@ -357,10 +358,10 @@ color_delimiter(char *text, int size, char *attr)
 {
     char delim[2];
 
-    delim[0] = text[--size];       /* save the trailing delimiter */
-    delim[1] = text[size] = '\0';  /* chop the trailing delimiter */
+    delim[0] = text[--size];	/* save the trailing delimiter */
+    delim[1] = text[size] = '\0';	/* chop the trailing delimiter */
     if (size)
-	flt_puts(text, size , "");
+	flt_puts(text, size, "");
     flt_puts(delim, 1, attr);
 }
 
@@ -375,12 +376,12 @@ do_filter(FILE *inputs)
 {
     InitLEX(inputs);
 
-    Action_attr  = class_attr(NAME_ACTION);
+    Action_attr = class_attr(NAME_ACTION);
     Comment_attr = class_attr(NAME_COMMENT);
-    Error_attr   = class_attr(NAME_ERROR);
-    Ident_attr   = class_attr(NAME_IDENT2);
-    Number_attr  = class_attr(NAME_NUMBER);
-    String_attr  = class_attr(NAME_LITERAL);
+    Error_attr = class_attr(NAME_ERROR);
+    Ident_attr = class_attr(NAME_IDENT2);
+    Number_attr = class_attr(NAME_NUMBER);
+    String_attr = class_attr(NAME_LITERAL);
 
     here_exp = 0;
     begin_state(NORMAL);

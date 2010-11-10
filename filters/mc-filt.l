@@ -5,8 +5,9 @@
 %a 10000
 
 %{
+
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/mc-filt.l,v 1.9 2009/04/04 00:47:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/mc-filt.l,v 1.10 2010/11/04 09:25:29 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of mailcap-file.
  */
@@ -122,12 +123,12 @@ do_filter(FILE *inputs)
 {
     InitLEX(inputs);
 
-    Action_attr  = class_attr(NAME_ACTION);
+    Action_attr = class_attr(NAME_ACTION);
     Comment_attr = class_attr(NAME_COMMENT);
-    Error_attr   = class_attr(NAME_ERROR);
-    Ident_attr   = class_attr(NAME_IDENT2);
-    Number_attr  = class_attr(NAME_NUMBER);
-    String_attr  = class_attr(NAME_LITERAL);
+    Error_attr = class_attr(NAME_ERROR);
+    Ident_attr = class_attr(NAME_IDENT2);
+    Number_attr = class_attr(NAME_NUMBER);
+    String_attr = class_attr(NAME_LITERAL);
 
     begin_state(NORMAL);
 

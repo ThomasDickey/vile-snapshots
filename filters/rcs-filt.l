@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/rcs-filt.l,v 1.19 2010/07/13 13:45:25 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/rcs-filt.l,v 1.20 2010/11/04 09:08:24 tom Exp $
  *
  * Filter to add vile "attribution" sequences to RCS archives.
  */
@@ -46,7 +46,7 @@ is_ident(char *src)
     char *base = src;
     while (isalnum(CharOf(*src)))
 	src++;
-    return (src != base && (*src == ':' || *src == '$')) ;
+    return (src != base && (*src == ':' || *src == '$'));
 }
 
 /*
@@ -58,8 +58,8 @@ find_ident(char *first)
     char *dollar = strchr(first, '$');
 
     if (dollar != 0
-     && is_ident(dollar+1)
-     && strchr(dollar+1, '$')) {
+	&& is_ident(dollar + 1)
+	&& strchr(dollar + 1, '$')) {
 	return dollar;
     }
 
@@ -70,7 +70,7 @@ find_ident(char *first)
  * Buffer text for quoted-strings, so we can highlight the embedded RCS
  * keywords.
  */
-static char  *save_bfr;
+static char *save_bfr;
 static size_t save_max;
 static size_t save_len;
 
@@ -96,7 +96,7 @@ flush_quoted(void)
 	while (base < last) {
 	    char *ident = find_ident(base);
 	    if (ident != 0) {
-		char *next = strchr(ident+1, '$');
+		char *next = strchr(ident + 1, '$');
 		if (ident != base)
 		    flt_puts(base, (int) (ident - base), String_attr);
 		base = next + 1;

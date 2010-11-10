@@ -6,7 +6,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/mailfilt.l,v 1.24 2009/04/25 16:41:57 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/mailfilt.l,v 1.25 2010/11/04 09:25:29 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of mail
  */
@@ -79,10 +79,10 @@ do_filter(FILE *inputs)
 {
     InitLEX(inputs);
 
-    Action_attr  = class_attr(NAME_ACTION);
+    Action_attr = class_attr(NAME_ACTION);
     Comment_attr = class_attr(NAME_COMMENT);
-    Ident2_attr  = class_attr(NAME_IDENT2);
-    String_attr  = class_attr(NAME_LITERAL);
+    Ident2_attr = class_attr(NAME_IDENT2);
+    String_attr = class_attr(NAME_LITERAL);
 
     BEGIN(HEADER);
     RunLEX();

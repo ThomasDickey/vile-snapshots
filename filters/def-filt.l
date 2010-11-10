@@ -1,8 +1,9 @@
 %pointer
 
 %{
+
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/def-filt.l,v 1.12 2008/11/19 23:11:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/def-filt.l,v 1.13 2010/11/04 09:25:28 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of M$ linker-definition
  * input text.
@@ -48,8 +49,8 @@ do_filter(FILE *inputs)
     InitLEX(inputs);
 
     Comment_attr = class_attr(NAME_COMMENT);
-    Number_attr  = class_attr(NAME_NUMBER);
-    String_attr  = class_attr(NAME_LITERAL);
+    Number_attr = class_attr(NAME_NUMBER);
+    String_attr = class_attr(NAME_LITERAL);
 
     RunLEX();
 }

@@ -1,5 +1,14 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
+ 20101110 (c)
+	> Tom Dickey:
+	+ ncu-indent is now provided by "cindent" at
+	  http://invisible-island.net/cindent/
+	+ set pointsize in output from atr2html.
+	+ use cindent to format the ".c"-files.
+	+ use cindent to format the lex-files.
+	+ correct description of "copy-to-clipboard" in cmdtbl.
+
  20100915 (b)
 	> Tom Dickey:
 	+ correct a check in the combination of showchar mode with the

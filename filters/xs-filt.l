@@ -2,8 +2,9 @@
 %x COMMENT CODE PERLXS
 
 %{
+
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/xs-filt.l,v 1.18 2010/07/13 13:48:27 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/xs-filt.l,v 1.19 2010/11/04 09:25:30 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Perl/C
  * extension source
@@ -72,7 +73,8 @@ NUMBER		{SIGN}?({DECIMAL}|{OCTAL}|{HEXADECIMAL}|{REAL})
 static void
 comment_or_preproc(char *text)
 {
-    static const char *tbl[] = {
+    static const char *tbl[] =
+    {
 	"define",
 	"elif",
 	"else",
@@ -84,13 +86,13 @@ comment_or_preproc(char *text)
     };
     size_t j, k;
     char *base = text;
-    text++;	/* skip "#" */
+    text++;			/* skip "#" */
     while (isspace(CharOf(*text)))
-    	text++;
-    for (j = 0; j < sizeof(tbl)/sizeof(tbl[0]); j++) {
+	text++;
+    for (j = 0; j < sizeof(tbl) / sizeof(tbl[0]); j++) {
 	k = strlen(tbl[j]);
 	if (!strncmp(tbl[j], text, k)
-	 && !isalnum(CharOf(text[k]))) {
+	    && !isalnum(CharOf(text[k]))) {
 	    text += k;
 	    flt_puts(base, (int) (text - base), Preproc_attr);
 	    /* FIXME: this can't handle inline comment or a continuation line */
@@ -114,9 +116,9 @@ do_filter(FILE *inputs)
     InitLEX(inputs);
 
     Comment_attr = class_attr(NAME_COMMENT);
-    Number_attr  = class_attr(NAME_NUMBER);
+    Number_attr = class_attr(NAME_NUMBER);
     Preproc_attr = class_attr(NAME_PREPROC);
-    String_attr  = class_attr(NAME_LITERAL);
+    String_attr = class_attr(NAME_LITERAL);
 
     my_state = CODE;
     BEGIN(my_state);

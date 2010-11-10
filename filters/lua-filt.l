@@ -2,8 +2,9 @@
 %x LONG_STR LONG_CMT
 
 %{
+
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/lua-filt.l,v 1.10 2009/04/04 00:47:09 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/lua-filt.l,v 1.11 2010/11/04 09:25:28 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of lua
  * input text.
@@ -69,8 +70,8 @@ do_filter(FILE *inputs)
     InitLEX(inputs);
 
     Comment_attr = class_attr(NAME_COMMENT);
-    Number_attr  = class_attr(NAME_NUMBER);
-    String_attr  = class_attr(NAME_LITERAL);
+    Number_attr = class_attr(NAME_NUMBER);
+    String_attr = class_attr(NAME_LITERAL);
 
     begin_state(INITIAL);
     RunLEX();

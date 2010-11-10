@@ -2,8 +2,9 @@
 %x NORMAL QUOTED
 
 %{
+
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/pot-filt.l,v 1.10 2008/11/19 23:11:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/pot-filt.l,v 1.11 2010/11/04 09:25:29 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of gettext files.
  */
@@ -65,13 +66,13 @@ do_filter(FILE *inputs)
 {
     InitLEX(inputs);
 
-    Action_attr  = class_attr(NAME_ACTION);
+    Action_attr = class_attr(NAME_ACTION);
     Comment_attr = class_attr(NAME_COMMENT);
-    Error_attr   = class_attr(NAME_ERROR);
-    Ident_attr   = class_attr(NAME_IDENT2);
-    Number_attr  = class_attr(NAME_NUMBER);
-    Prepro_attr  = class_attr(NAME_PREPROC);
-    String_attr  = class_attr(NAME_LITERAL);
+    Error_attr = class_attr(NAME_ERROR);
+    Ident_attr = class_attr(NAME_IDENT2);
+    Number_attr = class_attr(NAME_NUMBER);
+    Prepro_attr = class_attr(NAME_PREPROC);
+    String_attr = class_attr(NAME_LITERAL);
 
     BEGIN(NORMAL);
 

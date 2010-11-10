@@ -2,8 +2,9 @@
 %x XMLTAG XMLATTR XMLCDATA XMLPI COMMENT INLINE XQ_NOTE
 
 %{
+
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/xq-filt.l,v 1.16 2010/09/06 15:46:12 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/xq-filt.l,v 1.17 2010/11/04 09:25:30 tom Exp $
  *
  * XQuery is case-sensitive
  * XQuery elements, attributes, and variables must be valid XML names
@@ -34,7 +35,7 @@ DefineFilter("xq");
 #ifdef FLEX_DEBUG
 #define DBG_HTML(params) if (yy_flex_debug) fprintf params
 #else
-#define DBG_HTML(params) /* nothing */
+#define DBG_HTML(params)	/* nothing */
 #endif
 
 static char *Action_attr;
@@ -50,8 +51,7 @@ typedef struct {
     char *name;
     int line;
     int col;
-}
-XMLTAGS;
+} XMLTAGS;
 
 static XMLTAGS *Tags;
 static unsigned Num_tags = 0;
@@ -60,9 +60,9 @@ static unsigned curly_braces;
 
 #include <fltstack.h>
 
-static const char * prefixed_attr(char *, char **);
-static const char * unprefixed_attr(char *);
-static const char * xml_keyword_attr(const char *name);
+static const char *prefixed_attr(char *, char **);
+static const char *unprefixed_attr(char *);
+static const char *xml_keyword_attr(const char *name);
 static void xml_close(char *text);
 static void xml_command(char *text);
 static void xml_prefixed_property(char *text, int len);
@@ -305,7 +305,7 @@ xml_command(char *text)
 	int bad = 0;
 
 	if (Num_tags == 0
-	|| strcmp(text + 1, Tags[Num_tags - 1].name) != 0) {
+	    || strcmp(text + 1, Tags[Num_tags - 1].name) != 0) {
 	    /*
 	     * If we already reported an error, and this (new erroneous) tag
 	     * does, in fact, correctly match a non-current opening tag, then
@@ -374,14 +374,14 @@ do_filter(FILE *inputs)
 {
     InitLEX(inputs);
 
-    Action_attr  = class_attr(NAME_ACTION);
+    Action_attr = class_attr(NAME_ACTION);
     Comment_attr = class_attr(NAME_COMMENT);
-    Ident_attr   = class_attr(NAME_IDENT);
-    Ident2_attr  = class_attr(NAME_IDENT2);
+    Ident_attr = class_attr(NAME_IDENT);
+    Ident2_attr = class_attr(NAME_IDENT2);
     Keyword_attr = class_attr(NAME_KEYWORD);
-    Number_attr  = class_attr(NAME_NUMBER);
-    String_attr  = class_attr(NAME_LITERAL);
-    Error_attr   = class_attr(NAME_ERROR);
+    Number_attr = class_attr(NAME_NUMBER);
+    String_attr = class_attr(NAME_LITERAL);
+    Error_attr = class_attr(NAME_ERROR);
 
     set_symbol_table(default_table);
     curly_braces = 0;

@@ -2,8 +2,9 @@
 %x NORMAL CMT_STANDARD CMT_TURBOC
 
 %{
+
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/pas-filt.l,v 1.9 2009/04/04 00:48:24 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/pas-filt.l,v 1.10 2010/11/04 09:25:29 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Pascal
  * input text.  A few TurboC and Delphi extensions are recognized:
@@ -71,8 +72,8 @@ do_filter(FILE *inputs)
     InitLEX(inputs);
 
     Comment_attr = class_attr(NAME_COMMENT);
-    Number_attr  = class_attr(NAME_NUMBER);
-    String_attr  = class_attr(NAME_LITERAL);
+    Number_attr = class_attr(NAME_NUMBER);
+    String_attr = class_attr(NAME_LITERAL);
 
     begin_state(NORMAL);
     RunLEX();

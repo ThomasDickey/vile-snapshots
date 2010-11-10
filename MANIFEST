@@ -1,4 +1,4 @@
-MANIFEST for vile, version v9_8b
+MANIFEST for vile, version v9_8b2
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 AUTHORS                         list of authors, with nicknames in CHANGES
@@ -180,7 +180,6 @@ doc/menus.doc                   description of xvile (Xm and Xaw) menus
 doc/menus.html                  description of xvile (Xm and Xaw) menus
 doc/modes.doc                   overview of modes/majormodes
 doc/modes.html                  description of vile's majormodes
-doc/ncu-indent                  copy of ncu-indent
 doc/oleauto.doc                 document Winvile OLE
 doc/oleauto.html                description of winvile's OLE automation support
 doc/perl.doc                    notes about perl interface to vile

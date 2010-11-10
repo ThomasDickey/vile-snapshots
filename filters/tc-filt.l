@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/tc-filt.l,v 1.36 2010/09/06 15:41:18 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/tc-filt.l,v 1.37 2010/11/04 09:25:29 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of termcap
  */
@@ -87,7 +87,7 @@ check_name(const char *name)
     if (attr == 0)
 	attr = "";
     if (strcmp(attr, Keyword_attr))
-    	attr = Action_attr;	/* not necessarily an error */
+	attr = Action_attr;	/* not necessarily an error */
     return attr;
 }
 
@@ -156,13 +156,13 @@ do_filter(FILE *inputs)
 {
     InitLEX(inputs);
 
-    Action_attr  = class_attr(NAME_ACTION);
+    Action_attr = class_attr(NAME_ACTION);
     Comment_attr = class_attr(NAME_COMMENT);
-    Error_attr   = class_attr(NAME_ERROR);
+    Error_attr = class_attr(NAME_ERROR);
     Keyword_attr = class_attr(NAME_KEYWORD);
-    Number_attr  = class_attr(NAME_NUMBER);
-    Ident_attr   = class_attr(NAME_IDENT);
-    String_attr  = class_attr(NAME_LITERAL);
+    Number_attr = class_attr(NAME_NUMBER);
+    Ident_attr = class_attr(NAME_IDENT);
+    String_attr = class_attr(NAME_LITERAL);
 
     commented = 0;
 

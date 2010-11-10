@@ -5,8 +5,9 @@
 %a 5000
 
 %{
+
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/sh-filt.l,v 1.109 2010/07/13 13:46:24 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/sh-filt.l,v 1.110 2010/11/04 09:08:55 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Shell script.
  */
@@ -287,6 +288,7 @@ begin_braces(const char *text, int length)
 static void
 braces_operator(const char *text, int length)
 {
+    /* *INDENT-OFF* */
     static const struct {
 	int length;
 	const char *text;
@@ -313,6 +315,8 @@ braces_operator(const char *text, int length)
 	{ 1, "-" },
 	{ 1, "=" },
     };
+    /* *INDENT-ON* */
+
     unsigned n;
     const char *attr = Error_attr;
 
@@ -474,10 +478,10 @@ color_delimiter(char *text, int size, char *attr)
 {
     char delim[2];
 
-    delim[0] = text[--size];       /* save the trailing delimiter */
-    delim[1] = text[size] = '\0';  /* chop the trailing delimiter */
+    delim[0] = text[--size];	/* save the trailing delimiter */
+    delim[1] = text[size] = '\0';	/* chop the trailing delimiter */
     if (size)
-	flt_puts(text, size , "");
+	flt_puts(text, size, "");
     flt_puts(delim, 1, attr);
 }
 
@@ -486,12 +490,12 @@ do_filter(FILE *inputs)
 {
     InitLEX(inputs);
 
-    Action_attr  = class_attr(NAME_ACTION);
+    Action_attr = class_attr(NAME_ACTION);
     Comment_attr = class_attr(NAME_COMMENT);
-    Error_attr   = class_attr(NAME_ERROR);
-    Ident_attr   = class_attr(NAME_IDENT2);
-    Number_attr  = class_attr(NAME_NUMBER);
-    String_attr  = class_attr(NAME_LITERAL);
+    Error_attr = class_attr(NAME_ERROR);
+    Ident_attr = class_attr(NAME_IDENT2);
+    Number_attr = class_attr(NAME_NUMBER);
+    String_attr = class_attr(NAME_LITERAL);
 
     here_exp = 0;
     begin_state(NORMAL);

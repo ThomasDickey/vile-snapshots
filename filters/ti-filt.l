@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/ti-filt.l,v 1.26 2009/04/25 16:31:09 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/ti-filt.l,v 1.27 2010/11/04 09:25:30 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of terminfo
  */
@@ -27,7 +27,7 @@ static char *String_attr;
 
 static int commented;
 
-static const char * check_name(const char *name);
+static const char *check_name(const char *name);
 static void echo_vals(char *text, int size, char *attr);
 
 %}
@@ -87,7 +87,7 @@ check_name(const char *name)
     if (attr == 0)
 	attr = "";
     if (strcmp(attr, Keyword_attr))
-    	attr = Action_attr;
+	attr = Action_attr;
     return attr;
 }
 
@@ -102,12 +102,12 @@ do_filter(FILE *inputs)
 {
     InitLEX(inputs);
 
-    Action_attr  = class_attr(NAME_ACTION);
+    Action_attr = class_attr(NAME_ACTION);
     Comment_attr = class_attr(NAME_COMMENT);
     Keyword_attr = class_attr(NAME_KEYWORD);
-    Number_attr  = class_attr(NAME_NUMBER);
-    Ident_attr   = class_attr(NAME_IDENT);
-    String_attr  = class_attr(NAME_LITERAL);
+    Number_attr = class_attr(NAME_NUMBER);
+    Ident_attr = class_attr(NAME_IDENT);
+    String_attr = class_attr(NAME_LITERAL);
 
     commented = 0;
 

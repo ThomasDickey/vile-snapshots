@@ -2,8 +2,9 @@
 %x NORMAL COMMENT QUOTED
 
 %{
+
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/as-filt.l,v 1.11 2009/04/25 16:20:48 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/as-filt.l,v 1.12 2010/11/04 09:25:28 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of assembler files.
  */
@@ -20,7 +21,7 @@ static char *Number_attr;
 static char *Prepro_attr;
 static char *String_attr;
 
-static const char * expect_attr(char *name);
+static const char *expect_attr(char *name);
 
 %}
 
@@ -88,13 +89,13 @@ do_filter(FILE *inputs)
 {
     InitLEX(inputs);
 
-    Action_attr  = class_attr(NAME_ACTION);
+    Action_attr = class_attr(NAME_ACTION);
     Comment_attr = class_attr(NAME_COMMENT);
-    Error_attr   = class_attr(NAME_ERROR);
-    Ident_attr   = class_attr(NAME_IDENT2);
-    Number_attr  = class_attr(NAME_NUMBER);
-    Prepro_attr  = class_attr(NAME_PREPROC);
-    String_attr  = class_attr(NAME_LITERAL);
+    Error_attr = class_attr(NAME_ERROR);
+    Ident_attr = class_attr(NAME_IDENT2);
+    Number_attr = class_attr(NAME_NUMBER);
+    Prepro_attr = class_attr(NAME_PREPROC);
+    String_attr = class_attr(NAME_LITERAL);
 
     BEGIN(NORMAL);
 

@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/bat-filt.l,v 1.33 2010/07/13 13:40:00 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/bat-filt.l,v 1.34 2010/11/04 09:25:28 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of DOS (and
  * similar, such as W95, NT) batch file.
@@ -22,7 +22,7 @@ static char *String_attr;
 
 static int setting;
 
-static const char * variable_attr(char *text);
+static const char *variable_attr(char *text);
 static void write_label(char *text, int length);
 
 %}
@@ -102,6 +102,7 @@ IDENT2		({PARAM}|{VARIABLE})
 				  BEGIN(INITIAL);
 				}
 %%
+
 static const char *
 variable_attr(char *text)
 {
@@ -117,7 +118,7 @@ variable_attr(char *text)
     return attr;
 }
 
-#define MAX_LABEL 8	/* labels are unique to only 8 chars */
+#define MAX_LABEL 8		/* labels are unique to only 8 chars */
 
 static void
 write_label(char *text, int length)
@@ -147,11 +148,11 @@ do_filter(FILE *inputs)
     InitLEX(inputs);
 
     setting = 0;
-    Action_attr  = class_attr(NAME_ACTION);
+    Action_attr = class_attr(NAME_ACTION);
     Comment_attr = class_attr(NAME_COMMENT);
-    Error_attr   = class_attr(NAME_ERROR);
-    Ident2_attr  = class_attr(NAME_IDENT2);
-    String_attr  = class_attr(NAME_LITERAL);
+    Error_attr = class_attr(NAME_ERROR);
+    Ident2_attr = class_attr(NAME_IDENT2);
+    String_attr = class_attr(NAME_LITERAL);
 
     BEGIN(INITIAL);
     RunLEX();

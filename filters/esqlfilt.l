@@ -2,8 +2,9 @@
 %x COMMENT CODE SQL
 
 %{
+
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/esqlfilt.l,v 1.22 2009/10/07 09:36:17 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/esqlfilt.l,v 1.23 2010/11/04 09:25:28 tom Exp $
  *
  * Filter to add vile "attribution" sequences to embedded SQL with C/C++.
  * - T.Dickey
@@ -118,13 +119,13 @@ process_keyword(char *text, int len)
 	 * patterns below, with no intervening comments or blank lines.
 	 */
 	if (len == 4
-	 && !strcmp(lowercase_of(text), "exec")) {
+	    && !strcmp(lowercase_of(text), "exec")) {
 	    exec_sql = 1;
 	}
 	break;
     case 1:
 	if (len == 3
-	 && !strcmp(lowercase_of(text), "sql")) {
+	    && !strcmp(lowercase_of(text), "sql")) {
 	    begin_sql();
 	} else {
 	    reset_symbol_table();
@@ -151,8 +152,8 @@ process_keyword(char *text, int len)
 	    set_symbol_table(default_table);
 	}
 	if (in_execute
-	 && (exec_sql == 0)
-	 && !strcmp(temp, "end-exec")) {
+	    && (exec_sql == 0)
+	    && !strcmp(temp, "end-exec")) {
 	    in_execute = 0;
 	    reset_symbol_table();
 	}
@@ -173,12 +174,12 @@ do_filter(FILE *inputs)
 {
     InitLEX(inputs);
 
-    Action_attr  = class_attr(NAME_ACTION);
+    Action_attr = class_attr(NAME_ACTION);
     Comment_attr = class_attr(NAME_COMMENT);
-    Ident2_attr  = class_attr(NAME_IDENT2);
-    Number_attr  = class_attr(NAME_NUMBER);
+    Ident2_attr = class_attr(NAME_IDENT2);
+    Number_attr = class_attr(NAME_NUMBER);
     Preproc_attr = class_attr(NAME_PREPROC);
-    String_attr  = class_attr(NAME_LITERAL);
+    String_attr = class_attr(NAME_LITERAL);
 
     exec_sql = 0;
     in_execute = 0;

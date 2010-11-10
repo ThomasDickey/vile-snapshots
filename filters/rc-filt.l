@@ -2,8 +2,9 @@
 %state NORMAL PREPRO COMMENT
 
 %{
+
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/rc-filt.l,v 1.14 2010/07/13 13:45:03 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/rc-filt.l,v 1.15 2010/11/04 09:25:29 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Windows
  * resource files.
@@ -67,9 +68,9 @@ do_filter(FILE *inputs)
     InitLEX(inputs);
 
     Comment_attr = class_attr(NAME_COMMENT);
-    Number_attr  = class_attr(NAME_NUMBER);
+    Number_attr = class_attr(NAME_NUMBER);
     Preproc_attr = class_attr(NAME_PREPROC);
-    String_attr  = class_attr(NAME_LITERAL);
+    String_attr = class_attr(NAME_LITERAL);
 
     RunLEX();
 }

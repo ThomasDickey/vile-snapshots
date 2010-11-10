@@ -2,8 +2,9 @@
 %s NORMAL CODE ARGS
 
 %{
+
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/awk-filt.l,v 1.26 2010/07/12 22:09:26 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/awk-filt.l,v 1.27 2010/11/04 09:25:28 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of awk
  * input text.
@@ -90,12 +91,14 @@ PATTERN		"/"(\\.|\[(\\.|.)*\]|[^\t\r\n])*"/"
 
 #include <fltstack.h>
 
-static void PushState(int value)
+static void
+PushState(int value)
 {
     push_state(value);
 }
 
-static void PopState(void)
+static void
+PopState(void)
 {
     pop_state();
 }
@@ -112,12 +115,12 @@ do_filter(FILE *inputs)
     InitLEX(inputs);
 
     Comment_attr = class_attr(NAME_COMMENT);
-    Error_attr   = class_attr(NAME_ERROR);
-    Ident_attr   = class_attr(NAME_IDENT2);
+    Error_attr = class_attr(NAME_ERROR);
+    Ident_attr = class_attr(NAME_IDENT2);
     Keyword_attr = class_attr(NAME_KEYWORD);
-    Number_attr  = class_attr(NAME_NUMBER);
+    Number_attr = class_attr(NAME_NUMBER);
     Preproc_attr = class_attr(NAME_PREPROC);
-    String_attr  = class_attr(NAME_LITERAL);
+    String_attr = class_attr(NAME_LITERAL);
 
     begin_state(NORMAL);
     braces = 0;
