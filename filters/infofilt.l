@@ -6,7 +6,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/infofilt.l,v 1.11 2008/11/19 23:11:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/infofilt.l,v 1.12 2010/11/04 09:25:28 tom Exp $
  *
  * Filter to add vile "attribution" sequences to an info file.
  * (An extension of "text" mode).
@@ -103,12 +103,12 @@ do_filter(FILE *inputs)
 {
     InitLEX(inputs);
 
-    Action_attr  = class_attr(NAME_ACTION);
+    Action_attr = class_attr(NAME_ACTION);
     Comment_attr = class_attr(NAME_COMMENT);
-    Ident2_attr  = class_attr(NAME_IDENT2);
+    Ident2_attr = class_attr(NAME_IDENT2);
     Keyword_attr = class_attr(NAME_KEYWORD);
-    Number_attr  = class_attr(NAME_NUMBER);
-    String_attr  = class_attr(NAME_LITERAL);
+    Number_attr = class_attr(NAME_NUMBER);
+    String_attr = class_attr(NAME_LITERAL);
 
     BEGIN(NORMAL);
     RunLEX();

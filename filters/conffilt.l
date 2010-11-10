@@ -5,8 +5,9 @@
 %a 5000
 
 %{
+
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/conffilt.l,v 1.8 2009/04/04 00:40:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/conffilt.l,v 1.9 2010/11/04 09:25:28 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of config-file.
  */
@@ -85,11 +86,11 @@ do_filter(FILE *inputs)
 {
     InitLEX(inputs);
 
-    Action_attr  = class_attr(NAME_ACTION);
+    Action_attr = class_attr(NAME_ACTION);
     Comment_attr = class_attr(NAME_COMMENT);
-    Ident_attr   = class_attr(NAME_IDENT2);
-    Number_attr  = class_attr(NAME_NUMBER);
-    String_attr  = class_attr(NAME_LITERAL);
+    Ident_attr = class_attr(NAME_IDENT2);
+    Number_attr = class_attr(NAME_NUMBER);
+    String_attr = class_attr(NAME_LITERAL);
 
     begin_state(NORMAL);
 

@@ -13,7 +13,7 @@
  *
  *	modify (ifdef-style) 'expand_leaf()' to allow ellipsis.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/glob.c,v 1.94 2010/09/05 17:41:52 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/glob.c,v 1.95 2010/11/10 09:26:07 tom Exp $
  *
  */
 
@@ -836,7 +836,7 @@ expand_pattern(char *item)
 	result = glob_from_pipe(item);
     } else
 # else
-	result = glob_from_pipe(item);
+    result = glob_from_pipe(item);
 #  if UNIX_GLOBBING
     huh ? ?			/* thought I turned that off ... */
 #  endif

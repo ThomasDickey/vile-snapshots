@@ -7,8 +7,9 @@
 %p 25000
 
 %{
+
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/lex-filt.l,v 1.76 2010/07/13 13:43:04 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/lex-filt.l,v 1.77 2010/11/04 09:07:21 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of LEX program.
  */
@@ -304,11 +305,11 @@ write_states(char *text, int len)
 static int
 ok_to_embed(char *text, int first, int last, int value)
 {
-    return (value != first
-    	 && value < last
-	 && text[value] == R_CURLY)
-	     ? (value + 1)
-	     : -1;
+    return ((value != first
+	     && value < last
+	     && text[value] == R_CURLY)
+	    ? (value + 1)
+	    : -1);
 }
 
 static int
@@ -429,14 +430,14 @@ do_filter(FILE *inputs)
     section = 0;
     nesting = 0;
 
-    Action_attr  = class_attr(NAME_ACTION);
+    Action_attr = class_attr(NAME_ACTION);
     Comment_attr = class_attr(NAME_COMMENT);
-    Error_attr   = class_attr(NAME_ERROR);
-    Ident_attr   = class_attr(NAME_IDENT);
+    Error_attr = class_attr(NAME_ERROR);
+    Ident_attr = class_attr(NAME_IDENT);
     Keyword_attr = class_attr(NAME_KEYWORD);
-    Number_attr  = class_attr(NAME_NUMBER);
+    Number_attr = class_attr(NAME_NUMBER);
     Preproc_attr = class_attr(NAME_PREPROC);
-    String_attr  = class_attr(NAME_LITERAL);
+    String_attr = class_attr(NAME_LITERAL);
 
     if ((Section_attr = class_attr(NAME_LEX_SECTION)) == 0)
 	Section_attr = Keyword_attr;

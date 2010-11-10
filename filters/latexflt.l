@@ -5,8 +5,9 @@
 %a 4000
 
 %{
+
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/latexflt.l,v 1.52 2009/10/07 09:20:02 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/latexflt.l,v 1.53 2010/11/04 09:25:28 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of TeX or LaTeX
  * input text.
@@ -44,7 +45,7 @@
  * Options:
  *	-a	tells us to highlight any \keyword
  */
-DefineOptFilter("latex","a");
+DefineOptFilter("latex", "a");
 
 #define NAME_MATH       "Math"
 #define NAME_MATH_C     "Math_c"
@@ -56,8 +57,8 @@ static char *Comment_attr;
 static char *Ident_attr;
 static char *Ident2_attr;
 static char *Keyword_attr;
-static char *Math_attr;		/* math formula [$...$]*/
-static char *Math_c_attr;	/* math formula (2) [$$...$$]*/
+static char *Math_attr;		/* math formula [$...$] */
+static char *Math_c_attr;	/* math formula (2) [$$...$$] */
 static char *Number_attr;
 static char *Section_attr;	/* subsection */
 static char *String_attr;
@@ -179,7 +180,7 @@ write_keyword(void)
     else
 	attr = keyword_attr(yytext);
     if (!attr || !*attr)
-	attr = "";	/* not Keyword_attr! */
+	attr = "";		/* not Keyword_attr! */
     WriteToken(attr);
 }
 
@@ -216,17 +217,17 @@ do_filter(FILE *inputs)
 {
     InitLEX(inputs);
 
-    Action_attr  = class_attr(NAME_ACTION);
+    Action_attr = class_attr(NAME_ACTION);
 
     Comment_attr = class_attr(NAME_COMMENT);
     Keyword_attr = class_attr(NAME_KEYWORD);
-    Ident_attr   = class_attr(NAME_IDENT);
-    Ident2_attr  = class_attr(NAME_IDENT2);
-    Number_attr  = class_attr(NAME_NUMBER);
-    String_attr  = class_attr(NAME_LITERAL);
+    Ident_attr = class_attr(NAME_IDENT);
+    Ident2_attr = class_attr(NAME_IDENT2);
+    Number_attr = class_attr(NAME_NUMBER);
+    String_attr = class_attr(NAME_LITERAL);
 
-    Math_attr    = class_attr(NAME_MATH);
-    Math_c_attr  = class_attr(NAME_MATH_C);
+    Math_attr = class_attr(NAME_MATH);
+    Math_c_attr = class_attr(NAME_MATH_C);
     Section_attr = class_attr(NAME_SECTION);
     Subsection_attr = class_attr(NAME_SUBSECTION);
 

@@ -2,8 +2,9 @@
 %s sTEXT NOTE
 
 %{
+
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/texifilt.l,v 1.11 2009/04/25 16:28:48 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/texifilt.l,v 1.12 2010/11/04 09:25:30 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of texinfo input.
  */
@@ -67,10 +68,10 @@ do_filter(FILE *inputs)
 {
     InitLEX(inputs);
 
-    Action_attr  = class_attr(NAME_ACTION);
+    Action_attr = class_attr(NAME_ACTION);
     Comment_attr = class_attr(NAME_COMMENT);
-    Number_attr  = class_attr(NAME_NUMBER);
-    String_attr  = class_attr(NAME_LITERAL);
+    Number_attr = class_attr(NAME_NUMBER);
+    String_attr = class_attr(NAME_LITERAL);
 
     BEGIN(sTEXT);
     RunLEX();

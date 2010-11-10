@@ -7,8 +7,9 @@
 %k 2000
 
 %{
+
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/htmlfilt.l,v 1.105 2010/09/06 15:41:18 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/htmlfilt.l,v 1.106 2010/11/04 09:06:06 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of HTML input
  * text.
@@ -102,7 +103,7 @@ DefineOptFilter("html", "aj");
 #ifdef FLEX_DEBUG
 #define DBG_HTML(msg) if (yy_flex_debug) fprintf(stderr, "%s\n", msg)
 #else
-#define DBG_HTML(msg) /* nothing */
+#define DBG_HTML(msg)		/* nothing */
 #endif
 
 static char *Action_attr;
@@ -113,8 +114,8 @@ static char *Keyword_attr;
 static char *Number_attr;
 static char *String_attr;
 
-static const char *dft_language; /* asp or jsp or nothing */
-static const char *use_language; /* vbscript, javascript, C#, Java, etc */
+static const char *dft_language;	/* asp or jsp or nothing */
+static const char *use_language;	/* vbscript, javascript, C#, Java, etc */
 
 static int got_tag;		/* parse state for <tag> vs <tag name=value> */
 static int got_language;	/* parse-state for language=string */
@@ -394,9 +395,9 @@ html_command(const char *text)
     int ending = (text[0] == '/');
     const char *theText = (ending ? text + 1 : text);
     int exact = ispunct(CharOf(*theText));
-    const char *temp = exact
-		       ? theText
-		       : lowercase_of(theText);
+    const char *temp = (exact
+			? theText
+			: lowercase_of(theText));
     const char *attr = 0;
     int change = 0;
 
@@ -411,12 +412,12 @@ html_command(const char *text)
     got_language2 = 0;
     if (change) {
 	set_symbol_table(default_table);
-    } else if (!strcmp(temp,"language")) {
+    } else if (!strcmp(temp, "language")) {
 	got_language2 = 1;
     }
-    attr = exact
-	   ? keyword_attr(temp)
-	   : ci_keyword_attr(temp);
+    attr = (exact
+	    ? keyword_attr(temp)
+	    : ci_keyword_attr(temp));
     if (!attr || !*attr)
 	flt_error("Unknown keyword: %s", temp);
     flt_puts(text, (int) strlen(text), attr);
@@ -560,7 +561,7 @@ may_resume_html(char *text)
     next = ++left;
     while (isspace(CharOf(*next)))
 	next++;
-    flt_puts(left, (int) (next-left), "");
+    flt_puts(left, (int) (next - left), "");
     left = next;
     while (!isspace(CharOf(*next)) && *next != '>')
 	next++;
@@ -725,9 +726,9 @@ language_code(void)
 
     if (use_language != 0) {
 	if (*use_language == 'v') {	/* vbs = vbscript */
-	    result = ASP_CODE;		/* Basic-syntax */
+	    result = ASP_CODE;	/* Basic-syntax */
 	} else {
-	    result = JSP_CODE;		/* C-syntax */
+	    result = JSP_CODE;	/* C-syntax */
 	}
     }
     return result;
@@ -761,13 +762,13 @@ do_filter(FILE *inputs)
 	setup_language("java");
     }
 
-    Action_attr  = class_attr(NAME_ACTION);
+    Action_attr = class_attr(NAME_ACTION);
     Comment_attr = class_attr(NAME_COMMENT);
-    Error_attr   = class_attr(NAME_ERROR);
-    Ident_attr   = class_attr(NAME_IDENT);
+    Error_attr = class_attr(NAME_ERROR);
+    Ident_attr = class_attr(NAME_IDENT);
     Keyword_attr = class_attr(NAME_KEYWORD);
-    Number_attr  = class_attr(NAME_NUMBER);
-    String_attr  = class_attr(NAME_LITERAL);
+    Number_attr = class_attr(NAME_NUMBER);
+    String_attr = class_attr(NAME_LITERAL);
 
     next_state = INITIAL;
     begin_state(INITIAL);

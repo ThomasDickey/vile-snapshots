@@ -2,8 +2,9 @@
 %x NORMAL COMMENT PREPRO PREPMORE PREPNOTE
 
 %{
+
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/hs-filt.l,v 1.24 2009/05/23 01:08:03 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/hs-filt.l,v 1.25 2010/11/04 09:25:28 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Haskell
  * input text.
@@ -103,13 +104,13 @@ do_filter(FILE *inputs)
 {
     InitLEX(inputs);
 
-    Action_attr  = class_attr(NAME_ACTION);
+    Action_attr = class_attr(NAME_ACTION);
     Comment_attr = class_attr(NAME_COMMENT);
-    Error_attr   = class_attr(NAME_ERROR);
-    Ident2_attr  = class_attr(NAME_IDENT2);
-    Number_attr  = class_attr(NAME_NUMBER);
+    Error_attr = class_attr(NAME_ERROR);
+    Ident2_attr = class_attr(NAME_IDENT2);
+    Number_attr = class_attr(NAME_NUMBER);
     Preproc_attr = class_attr(NAME_PREPROC);
-    String_attr  = class_attr(NAME_LITERAL);
+    String_attr = class_attr(NAME_LITERAL);
 
     begin_state(NORMAL);
     RunLEX();

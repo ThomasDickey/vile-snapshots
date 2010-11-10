@@ -2,8 +2,9 @@
 %s CODE NOTE EXP1 EXP2
 
 %{
+
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/est-filt.l,v 1.9 2008/11/19 23:11:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/est-filt.l,v 1.10 2010/11/04 09:25:28 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of enscript
  * syntax-description files.
@@ -74,10 +75,10 @@ do_filter(FILE *inputs)
     InitLEX(inputs);
 
     Comment_attr = class_attr(NAME_COMMENT);
-    Ident_attr   = class_attr(NAME_IDENT);
+    Ident_attr = class_attr(NAME_IDENT);
     Keyword_attr = class_attr(NAME_KEYWORD);
-    Number_attr  = class_attr(NAME_NUMBER);
-    String_attr  = class_attr(NAME_LITERAL);
+    Number_attr = class_attr(NAME_NUMBER);
+    String_attr = class_attr(NAME_LITERAL);
 
     BEGIN(CODE);
 

@@ -2,8 +2,9 @@
 %state NORMAL IFCMT COMMENT
 
 %{
+
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/au3-filt.l,v 1.11 2010/09/06 15:40:34 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/au3-filt.l,v 1.12 2010/11/04 09:25:28 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of AutoIt
  * input text.
@@ -94,11 +95,11 @@ do_filter(FILE *inputs)
     InitLEX(inputs);
 
     Comment_attr = class_attr(NAME_COMMENT);
-    Error_attr   = class_attr(NAME_ERROR);
-    Ident2_attr  = class_attr(NAME_IDENT2);
-    Number_attr  = class_attr(NAME_NUMBER);
-    Prepro_attr  = class_attr(NAME_PREPROC);
-    String_attr  = class_attr(NAME_LITERAL);
+    Error_attr = class_attr(NAME_ERROR);
+    Ident2_attr = class_attr(NAME_IDENT2);
+    Number_attr = class_attr(NAME_NUMBER);
+    Prepro_attr = class_attr(NAME_PREPROC);
+    String_attr = class_attr(NAME_LITERAL);
 
     BEGIN(NORMAL);
     if0_level = 0;

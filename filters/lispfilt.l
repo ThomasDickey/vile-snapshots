@@ -2,8 +2,9 @@
 %x NORMAL QUOTED COMMENT
 
 %{
+
 /*
- * $Id: lispfilt.l,v 1.24 2009/04/04 00:45:57 tom Exp $
+ * $Id: lispfilt.l,v 1.25 2010/11/04 09:25:28 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of lisp code.
  *
@@ -135,13 +136,13 @@ do_filter(FILE *inputs)
 {
     InitLEX(inputs);
 
-    Action_attr  = class_attr(NAME_ACTION);
+    Action_attr = class_attr(NAME_ACTION);
     Comment_attr = class_attr(NAME_COMMENT);
-    Error_attr   = class_attr(NAME_ERROR);
-    Ident_attr   = class_attr(NAME_IDENT2);
+    Error_attr = class_attr(NAME_ERROR);
+    Ident_attr = class_attr(NAME_IDENT2);
     Keyword_attr = class_attr(NAME_KEYWORD);
-    Number_attr  = class_attr(NAME_NUMBER);
-    Literal_attr  = class_attr(NAME_LITERAL);
+    Number_attr = class_attr(NAME_NUMBER);
+    Literal_attr = class_attr(NAME_LITERAL);
 
     begin_state(NORMAL);
     RunLEX();

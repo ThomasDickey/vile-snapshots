@@ -2,8 +2,9 @@
 %x SETUP FLAGS VALUE OTHER COMMENT CODE PREPRO CMT_STANDARD CMT_TURBOC
 
 %{
+
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/iss-filt.l,v 1.14 2009/10/07 09:39:52 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/iss-filt.l,v 1.15 2010/11/04 09:25:28 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Inno Setup
  * input text.
@@ -120,12 +121,12 @@ do_filter(FILE *inputs)
 {
     InitLEX(inputs);
 
-    Action_attr  = class_attr(NAME_ACTION);
+    Action_attr = class_attr(NAME_ACTION);
     Comment_attr = class_attr(NAME_COMMENT);
-    Ident2_attr  = class_attr(NAME_IDENT2);
-    Number_attr  = class_attr(NAME_NUMBER);
-    Prepro_attr  = class_attr(NAME_PREPROC);
-    String_attr  = class_attr(NAME_LITERAL);
+    Ident2_attr = class_attr(NAME_IDENT2);
+    Number_attr = class_attr(NAME_NUMBER);
+    Prepro_attr = class_attr(NAME_PREPROC);
+    String_attr = class_attr(NAME_LITERAL);
 
     begin_state(FLAGS);
     RunLEX();

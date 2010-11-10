@@ -2,8 +2,9 @@
 %state NORMAL COMMENT NOTE2 PREPRO
 
 %{
+
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/bas-filt.l,v 1.24 2010/09/06 15:40:31 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/bas-filt.l,v 1.25 2010/11/04 09:25:28 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Basic
  * input text.
@@ -116,9 +117,9 @@ is_hex(char *s)
     while (*s != 0) {
 	if (isxdigit(CharOf(*s))) {
 	    if (isalpha(CharOf(*s)))
-	    	++alpha;
+		++alpha;
 	    else
-	    	++number;
+		++number;
 	} else {
 	    number = 0;
 	    break;
@@ -139,12 +140,12 @@ do_filter(FILE *inputs)
 {
     InitLEX(inputs);
 
-    Action_attr  = class_attr(NAME_ACTION);
+    Action_attr = class_attr(NAME_ACTION);
     Comment_attr = class_attr(NAME_COMMENT);
-    Number_attr  = class_attr(NAME_NUMBER);
-    Prepro_attr  = class_attr(NAME_PREPROC);
-    String_attr  = class_attr(NAME_LITERAL);
-    LineNo_attr  = class_attr("LineNumber");
+    Number_attr = class_attr(NAME_NUMBER);
+    Prepro_attr = class_attr(NAME_PREPROC);
+    String_attr = class_attr(NAME_LITERAL);
+    LineNo_attr = class_attr("LineNumber");
 
     first_token = 1;
     handle_attrs = 0;

@@ -1,8 +1,9 @@
 %pointer
 
 %{
+
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/rtf-filt.l,v 1.7 2009/04/25 16:28:25 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/rtf-filt.l,v 1.8 2010/11/04 09:25:29 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of RTF (rich text format)
  * input text.
@@ -43,7 +44,7 @@ control_attr(char *text, int length)
     if (length > 1) {
 	char save = 0;
 
-	if (isBlank(CharOf(text[length-1]))) {
+	if (isBlank(CharOf(text[length - 1]))) {
 	    save = text[--length];
 	    text[length] = '\0';
 	}
@@ -68,10 +69,10 @@ do_filter(FILE *inputs)
 {
     InitLEX(inputs);
 
-    Error_attr   = class_attr(NAME_ERROR);
+    Error_attr = class_attr(NAME_ERROR);
     Comment_attr = class_attr(NAME_COMMENT);
-    Number_attr  = class_attr(NAME_NUMBER);
-    String_attr  = class_attr(NAME_LITERAL);
+    Number_attr = class_attr(NAME_NUMBER);
+    String_attr = class_attr(NAME_LITERAL);
 
     RunLEX();
 }

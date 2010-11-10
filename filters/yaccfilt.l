@@ -2,8 +2,9 @@
 %s RULES ACTIONS CODE COMMENT
 
 %{
+
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/yaccfilt.l,v 1.40 2009/10/07 09:33:33 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/yaccfilt.l,v 1.41 2010/11/04 09:25:30 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of YACC program.
  */
@@ -164,7 +165,8 @@ PopCode(void)
 static int
 DeclareTerminal(const char *text)
 {
-    static const char *table[] = {
+    static const char *table[] =
+    {
 	"left",
 	"nonassoc",
 	"right",
@@ -222,15 +224,15 @@ static void
 do_filter(FILE *inputs)
 {
     InitLEX(inputs);
-    Action_attr  = class_attr(NAME_ACTION);
+    Action_attr = class_attr(NAME_ACTION);
     Comment_attr = class_attr(NAME_COMMENT);
-    Error_attr   = class_attr(NAME_ERROR);
-    Ident_attr   = class_attr(NAME_IDENT);
-    Ident2_attr  = class_attr(NAME_IDENT2);
+    Error_attr = class_attr(NAME_ERROR);
+    Ident_attr = class_attr(NAME_IDENT);
+    Ident2_attr = class_attr(NAME_IDENT2);
     Keyword_attr = class_attr(NAME_KEYWORD);
-    Number_attr  = class_attr(NAME_NUMBER);
+    Number_attr = class_attr(NAME_NUMBER);
     Preproc_attr = class_attr(NAME_PREPROC);
-    String_attr  = class_attr(NAME_LITERAL);
+    String_attr = class_attr(NAME_LITERAL);
 
     /* this is defined in yacc.key */
     Terminal_attr = class_attr("Terminal");

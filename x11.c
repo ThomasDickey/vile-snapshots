@@ -2,7 +2,7 @@
  *	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.375 2010/09/14 09:41:44 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.376 2010/11/10 09:55:38 tom Exp $
  *
  */
 
@@ -58,7 +58,7 @@
 # else
 #  if MOTIF_WIDGETS
 #  else
->make an error <
+> make an error <
 #  endif
 # endif
 #endif

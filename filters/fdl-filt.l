@@ -2,8 +2,9 @@
 %s PRETEXT NOTE sTEXT
 
 %{
+
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/fdl-filt.l,v 1.17 2009/12/10 00:22:32 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/fdl-filt.l,v 1.18 2010/11/04 09:25:28 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of fdl
  * input text.  This treats all of the text area as quoted, except for
@@ -79,9 +80,9 @@ do_filter(FILE *inputs)
     InitLEX(inputs);
 
     Comment_attr = class_attr(NAME_COMMENT);
-    Ident2_attr  = class_attr(NAME_IDENT2);
+    Ident2_attr = class_attr(NAME_IDENT2);
     Keyword_attr = class_attr(NAME_KEYWORD);
-    String_attr  = class_attr(NAME_LITERAL);
+    String_attr = class_attr(NAME_LITERAL);
 
     next_state = INITIAL;
 

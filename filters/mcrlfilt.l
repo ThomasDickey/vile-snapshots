@@ -6,7 +6,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/mcrlfilt.l,v 1.4 2008/11/19 23:11:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/mcrlfilt.l,v 1.5 2010/11/04 09:25:29 tom Exp $
  *
  * Filter to add vile "attribution" sequences to a mCRL(2) specification
  * or model, based on the text filter.
@@ -56,7 +56,7 @@ do_filter(FILE *inputs)
 
     Comment_attr = class_attr(NAME_COMMENT);
     Keyword_attr = class_attr(NAME_KEYWORD);
-    Number_attr  = class_attr(NAME_NUMBER);
+    Number_attr = class_attr(NAME_NUMBER);
 
     BEGIN(NORMAL);
     RunLEX();

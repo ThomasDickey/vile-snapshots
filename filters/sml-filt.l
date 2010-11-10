@@ -2,8 +2,9 @@
 %x COMMENT STRING STRSKIP
 
 %{
+
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/sml-filt.l,v 1.9 2008/11/19 23:11:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/sml-filt.l,v 1.10 2010/11/04 09:25:29 tom Exp $
 
     Filter to add vile "attribution" sequences to selected bits of SML
     input text.
@@ -30,12 +31,12 @@ static char *String_attr;
 /*  We accumulate strings into this buffer.
 */
 #define	STRBUF	1024
-static char	strbuf[STRBUF];
-static int	strpos;
+static char strbuf[STRBUF];
+static int strpos;
 
 #define ADD_STRING add_string(yytext, yyleng)
 
-static void add_string(char* str, int len);
+static void add_string(char *str, int len);
 static void flush_string(void);
 static void start_string(void);
 
@@ -107,7 +108,7 @@ start_string(void)
 }
 
 static void
-add_string(char* str, int len)
+add_string(char *str, int len)
 {
     while (len-- > 0) {
 	if (strpos >= STRBUF) {
@@ -132,9 +133,9 @@ do_filter(FILE *inputs)
 
     Keyword_attr = class_attr(NAME_KEYWORD);
     Comment_attr = class_attr(NAME_COMMENT);
-    Ident2_attr  = class_attr(NAME_IDENT2);
-    Number_attr  = class_attr(NAME_NUMBER);
-    String_attr  = class_attr(NAME_LITERAL);
+    Ident2_attr = class_attr(NAME_IDENT2);
+    Number_attr = class_attr(NAME_NUMBER);
+    String_attr = class_attr(NAME_LITERAL);
 
     BEGIN(INITIAL);
     RunLEX();

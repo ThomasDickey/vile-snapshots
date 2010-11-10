@@ -1,7 +1,7 @@
 /*
  * Convert attributed text to html.
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/atr2html.c,v 1.8 2009/11/05 10:37:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/atr2html.c,v 1.10 2010/11/10 10:55:43 tom Exp $
  */
 #include <unfilter.h>
 
@@ -15,7 +15,8 @@ void
 begin_unfilter(FILE *dst)
 {
     fprintf(dst, "<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\">\n");
-    fprintf(dst, "<html><head><title></title></head><body>\n<!--{{atr2html--><p style=\"font-family: monospace;\">\n");
+    fprintf(dst,
+	    "<html><head><title></title></head><body>\n<!--{{atr2html--><p style=\"font-family: monospace; font-size: 10pt;\">\n");
     last_attrib = 0;
     last_column = 0;
 }

@@ -2,8 +2,9 @@
 %x HTML CODE COMMENT HEREDOC NOWDOC
 
 %{
+
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/php-filt.l,v 1.22 2010/07/13 13:24:23 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/php-filt.l,v 1.23 2010/11/04 09:25:29 tom Exp $
  *
  * Filter to add vile "attribution" sequences to PHP scripts.
  * - T.Dickey
@@ -36,6 +37,7 @@ static int here_exp;
 
 static int got_here(char *text, int length);
 static void save_here(char *text, int length);
+
 %}
 
 BLANK		[[:blank:]]*
@@ -176,12 +178,12 @@ do_filter(FILE *inputs)
 {
     InitLEX(inputs);
 
-    Action_attr  = class_attr(NAME_ACTION);
+    Action_attr = class_attr(NAME_ACTION);
     Comment_attr = class_attr(NAME_COMMENT);
-    Error_attr   = class_attr(NAME_ERROR);
-    Ident2_attr  = class_attr(NAME_IDENT2);
-    Number_attr  = class_attr(NAME_NUMBER);
-    String_attr  = class_attr(NAME_LITERAL);
+    Error_attr = class_attr(NAME_ERROR);
+    Ident2_attr = class_attr(NAME_IDENT2);
+    Number_attr = class_attr(NAME_NUMBER);
+    String_attr = class_attr(NAME_LITERAL);
 
     begin_state(HTML);
     RunLEX();

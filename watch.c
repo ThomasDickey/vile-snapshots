@@ -1,21 +1,22 @@
 /*
  * watch.c	-- generic data structures and routines for watching
  *		   file descriptors and timers (eventually)
+ *
+ * $Header: /users/source/archives/vile.vcs/RCS/watch.c,v 1.7 2010/11/10 10:43:37 tom Exp $
  */
 
 #include "estruct.h"
 #include "edef.h"
 
 typedef struct {
-    char     *callback;	/* a vile command to run... */
-    long      otherid;	/* e.g, the XtInputId is stored here for x11. */
-    WATCHTYPE type;	/* one of WATCHINPUT, WATCHOUTPUT, or WATCHERROR */
+    char *callback;		/* a vile command to run... */
+    long otherid;		/* e.g, the XtInputId is stored here for x11. */
+    WATCHTYPE type;		/* one of WATCHINPUT, WATCHOUTPUT, or WATCHERROR */
 } watchrec;
 
 #define NWATCHFDS 256
 
 static watchrec *watchfds[NWATCHFDS];
-
 
 static void unwatch_dealloc(int fd);
 static void unwatch_free_callback(char *callback);
@@ -40,6 +41,7 @@ watchfd(int fd, WATCHTYPE type, char *callback)
 
     status = term.watchfd(fd, type, &otherid);
 
+    /* *INDENT-EQLS* */
     watchfds[fd]->callback = callback;
     watchfds[fd]->type     = type;
     watchfds[fd]->otherid  = otherid;

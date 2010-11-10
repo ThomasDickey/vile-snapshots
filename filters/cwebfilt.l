@@ -2,8 +2,9 @@
 %x COMMENT PREP_COM
 
 %{
+
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/cwebfilt.l,v 1.20 2008/11/19 23:11:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/cwebfilt.l,v 1.21 2010/11/04 09:25:28 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Cwebx input
  * text.  Also useful for Cweb
@@ -34,7 +35,7 @@ static char *Cweb_nom_module;
 static char *Cweb_code_titre;
 static char *Cweb_code_autre;
 
-static int in_code;	/* FIXME: should implement a stack */
+static int in_code;		/* FIXME: should implement a stack */
 
 %}
 
@@ -121,8 +122,8 @@ init_filter(int before)
 	insert_keyword(NAME_TeX_command, ATTR_KEYWORD, 1);
 	insert_keyword(NAME_TeX_comment, ATTR_COMMENT, 1);
 	insert_keyword(NAME_Cweb_module, ATTR_KEYWORD, 1);
-	insert_keyword(NAME_Cweb_title,  ATTR_IDENT2,  1);
-	insert_keyword(NAME_Cweb_other,  "",           1);
+	insert_keyword(NAME_Cweb_title, ATTR_IDENT2, 1);
+	insert_keyword(NAME_Cweb_other, "", 1);
     }
 }
 
@@ -135,12 +136,12 @@ do_filter(FILE *inputs)
     Comment_attr = class_attr(NAME_COMMENT);
     Preproc_attr = class_attr(NAME_PREPROC);
     Keyword_attr = class_attr(NAME_KEYWORD);
-    String_attr  = class_attr(NAME_LITERAL);
-    Number_attr  = class_attr(NAME_NUMBER);
-    Type_attr    = class_attr(NAME_TYPES);
+    String_attr = class_attr(NAME_LITERAL);
+    Number_attr = class_attr(NAME_NUMBER);
+    Type_attr = class_attr(NAME_TYPES);
 
-    TeX_mot_cle  = class_attr(NAME_TeX_command);
-    TeX_comment  = class_attr(NAME_TeX_comment);
+    TeX_mot_cle = class_attr(NAME_TeX_command);
+    TeX_comment = class_attr(NAME_TeX_comment);
     Cweb_nom_module = class_attr(NAME_Cweb_module);
     Cweb_code_titre = class_attr(NAME_Cweb_title);
     Cweb_code_autre = class_attr(NAME_Cweb_other);

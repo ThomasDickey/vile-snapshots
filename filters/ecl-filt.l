@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/ecl-filt.l,v 1.26 2009/06/20 16:21:50 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/ecl-filt.l,v 1.27 2010/11/04 09:25:28 tom Exp $
  *
  * Filter to add vile "attribution" sequences to Prolog/ECLiPSe code
  *
@@ -92,10 +92,10 @@ do_filter(FILE *inputs)
 {
     InitLEX(inputs);
 
-    Comment_attr  = class_attr(NAME_COMMENT);
-    Number_attr   = class_attr(NAME_NUMBER);
-    Preproc_attr  = class_attr(NAME_PREPROC);
-    String_attr   = class_attr(NAME_LITERAL);
+    Comment_attr = class_attr(NAME_COMMENT);
+    Number_attr = class_attr(NAME_NUMBER);
+    Preproc_attr = class_attr(NAME_PREPROC);
+    String_attr = class_attr(NAME_LITERAL);
 
     begin_state(NORMAL);
     RunLEX();

@@ -7,7 +7,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/makefilt.l,v 1.62 2010/09/14 09:19:10 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/makefilt.l,v 1.63 2010/11/04 09:07:56 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Makefile
  *
@@ -113,11 +113,11 @@ want_tabs(char *text, int size)
 	for (n = 0; n < size; ++n) {
 	    if (text[n] == ' ') {
 		if (!tabs)
-			result = !continued;
+		    result = !continued;
 		++spcs;
 	    } else if (text[n] == '\t') {
 		if (spcs)
-			result = !continued;
+		    result = !continued;
 		++tabs;
 	    }
 	}
@@ -125,7 +125,7 @@ want_tabs(char *text, int size)
 	if ((spcs == FltOptions('t')) && !tabs)
 	    result = 1;
     } else {
-	result = 1;	/* should not happen */
+	result = 1;		/* should not happen */
     }
     return result;
 }
@@ -156,25 +156,25 @@ write_keyword(char *text, int size, int prepro, int caseless)
 	before++;
     }
 
-    while (isspace(CharOf(text[size-1]))) {
+    while (isspace(CharOf(text[size - 1]))) {
 	size--;
 	after++;
     }
 
     save = text[size];
     text[size] = 0;
-    attr = caseless
-	 ? ci_keyword_attr(text)
-	 : keyword_attr(text);
+    attr = (caseless
+	    ? ci_keyword_attr(text)
+	    : keyword_attr(text));
     /*
      * Some symbols cannot be preceded by tabs - we put those in the "premake"
      * table.
      */
     if ((attr == 0) && !continued && prepro) {
 	set_symbol_table("premake");
-	attr = caseless
-	     ? ci_keyword_attr(text)
-	     : keyword_attr(text);
+	attr = (caseless
+		? ci_keyword_attr(text)
+		: keyword_attr(text));
 	set_symbol_table(flt_name());
 	notabs = (attr != 0);
 	if (attr == 0)
@@ -219,12 +219,12 @@ write_delimited_unit(char *text, char **attr, const char **gaps)
     if (pwhite > panchor)
 	flt_puts(panchor, (int) (pwhite - panchor), *gaps);
     panchor = ptoken = pwhite;
-    while (*ptoken && (! isspace(CharOf(*ptoken))))
+    while (*ptoken && (!isspace(CharOf(*ptoken))))
 	ptoken++;
     flt_puts(panchor, (int) (ptoken - panchor), *attr);
     if (isspace(CharOf(*ptoken))) {
 	panchor = ptoken;
-	pwhite	= ptoken + 1;  /* advance beyond initial white space byte */
+	pwhite = ptoken + 1;	/* advance beyond initial white space byte */
 	while (isspace(CharOf(*pwhite)))
 	    pwhite++;
 	flt_puts(panchor, (int) (pwhite - panchor), *gaps);
@@ -247,7 +247,7 @@ write_delimited(char *text, int size, int less, char *attr)
     int save = text[size - less];
 
     text[size - less] = '\0';
-    cp       = text;
+    cp = text;
     do {
 	if (*cp == '\\' && cp[1] == '\n') {
 	    flt_puts(cp, 2, gaps);
@@ -284,11 +284,11 @@ do_filter(FILE *inputs)
     InitLEX(inputs);
 
     Comment_attr = class_attr(NAME_COMMENT);
-    Error_attr   = class_attr(NAME_ERROR);
-    Ident2_attr  = class_attr(NAME_IDENT2);
+    Error_attr = class_attr(NAME_ERROR);
+    Ident2_attr = class_attr(NAME_IDENT2);
     Keyword_attr = class_attr(NAME_KEYWORD);
     Preproc_attr = class_attr(NAME_PREPROC);
-    String_attr  = class_attr(NAME_LITERAL);
+    String_attr = class_attr(NAME_LITERAL);
 
     continued = 0;
 

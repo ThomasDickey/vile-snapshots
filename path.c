@@ -2,7 +2,7 @@
  *		The routines in this file handle the conversion of pathname
  *		strings.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.169 2010/09/06 17:29:59 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.170 2010/11/10 09:44:34 tom Exp $
  *
  *
  */
@@ -1432,7 +1432,7 @@ shorten_path(char *path, int keep_cwd)
     }
 
     /* we're off by more than just '..', so use absolute path */
-# endif				/* SYS_UNIX || SYS_MSDOS */
+# endif	/* SYS_UNIX || SYS_MSDOS */
 #endif /* OPT_VMS_PATH */
 
     TRACE(("     -> '%s' shorten\n", path));

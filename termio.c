@@ -3,7 +3,7 @@
  * characters, and write characters in a barely buffered fashion on the display.
  * All operating systems.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/termio.c,v 1.222 2010/09/07 00:35:30 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/termio.c,v 1.223 2010/11/10 09:46:51 tom Exp $
  *
  */
 
@@ -65,7 +65,7 @@ error "No termios or sgtty"
 /* try harder to get it */
 # ifdef HAVE_SYS_FILIO_H
 #  include <sys/filio.h>
-# else				/* if you have trouble including ioctl.h, try "sys/ioctl.h" instead */
+# else /* if you have trouble including ioctl.h, try "sys/ioctl.h" instead */
 #  ifdef HAVE_IOCTL_H
 #   include <ioctl.h>
 #  else
@@ -988,9 +988,9 @@ tttypahead(void)
 #   else
     /* otherwise give up */
     return FALSE;
-#   endif			/* USE_FCNTL */
-#  endif			/* USE_FIONREAD */
-# endif				/* using catnap */
+#   endif /* USE_FCNTL */
+#  endif /* USE_FIONREAD */
+# endif	/* using catnap */
 #endif /* DISP_X11 */
 }
 

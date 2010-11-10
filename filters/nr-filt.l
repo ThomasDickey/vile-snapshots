@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/nr-filt.l,v 1.30 2010/07/13 13:44:40 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/nr-filt.l,v 1.31 2010/11/04 09:25:29 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of NROFF
  */
@@ -37,14 +37,14 @@ write_cmd(char *text, int size)
     }
 
     flt_puts(text, cmd, Keyword_attr);
-    flt_puts(text+cmd, size-cmd, String_attr);
+    flt_puts(text + cmd, size - cmd, String_attr);
 }
 
 static void
 write_font(char *text, int size)
 {
     flt_puts(text, 3, Ident2_attr);
-    flt_puts(text + 3, size-6, String_attr);
+    flt_puts(text + 3, size - 6, String_attr);
     flt_puts(text + size - 3, 3, Ident2_attr);
 }
 
@@ -94,11 +94,11 @@ do_filter(FILE *inputs)
 {
     InitLEX(inputs);
 
-    Action_attr  = class_attr(NAME_ACTION);
+    Action_attr = class_attr(NAME_ACTION);
     Comment_attr = class_attr(NAME_COMMENT);
-    Ident2_attr  = class_attr(NAME_IDENT2);
+    Ident2_attr = class_attr(NAME_IDENT2);
     Keyword_attr = class_attr(NAME_KEYWORD);
-    String_attr  = class_attr(NAME_LITERAL);
+    String_attr = class_attr(NAME_LITERAL);
 
     RunLEX();
 }

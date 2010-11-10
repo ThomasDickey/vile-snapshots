@@ -1,7 +1,7 @@
 /*	Crypt:	Encryption routines for MicroEMACS
  *		written by Dana Hoggatt and Paul Fox.
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/ecrypt.c,v 1.23 2010/09/06 15:39:53 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/ecrypt.c,v 1.24 2010/11/10 10:54:03 tom Exp $
  *
  */
 
@@ -23,7 +23,7 @@ static int mod95(int val);
   /* An ANSI string.h and pre-ANSI memory.h might conflict.  */
 # if !defined(STDC_HEADERS) && defined(HAVE_MEMORY_H)
 #  include <memory.h>
-# endif				/* not STDC_HEADERS and HAVE_MEMORY_H */
+# endif	/* not STDC_HEADERS and HAVE_MEMORY_H */
 #else /* not STDC_HEADERS and not HAVE_STRING_H */
 # if defined(HAVE_STRINGS_H)
 #  include <strings.h>

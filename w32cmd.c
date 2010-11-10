@@ -2,7 +2,7 @@
  * w32cmd:  collection of functions that add Win32-specific editor
  *          features (modulo the clipboard interface) to [win]vile.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32cmd.c,v 1.45 2010/02/10 12:09:25 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32cmd.c,v 1.46 2010/11/10 10:34:47 tom Exp $
  */
 
 #include "estruct.h"
@@ -16,7 +16,7 @@
 #include <commdlg.h>
 #include <direct.h>
 
-#define FOOTER_OFFS      0.333  /* inches from bottom of page */
+#define FOOTER_OFFS      0.333	/* inches from bottom of page */
 #define _FF_             '\f'
 
 #undef VILE_SUBKEY
@@ -45,14 +45,14 @@ comm_dlg_error(void)
 /* --------------------------------------------------------------------- */
 
 static OPENFILENAME ofn;
-static int          ofn_initialized;
+static int ofn_initialized;
 
 static void
 ofn_init(void)
 {
-    static char         custFilter[128] = "All Files (*.*)\0*.*\0";
-    static char         filter[]        =
-"C/C++ Files (*.c;*.cpp;*.h;*.rc)\0\
+    static char custFilter[128] = "All Files (*.*)\0*.*\0";
+    static char filter[] =
+    "C/C++ Files (*.c;*.cpp;*.h;*.rc)\0\
 *.c;*.cpp;*.h;*.rc\0\
 Text Files (*.txt)\0\
 *.txt\0\
@@ -63,6 +63,7 @@ Text Files (*.txt)\0\
     TRACE(("   custom-filter %s\n",
 	   visible_buff(custFilter, sizeof(custFilter), 0)));
 
+    /* *INDENT-EQLS* */
     memset(&ofn, 0, sizeof(ofn));
     ofn.lStructSize       = sizeof(ofn);
     ofn.lpstrFilter       = w32_charstring2(filter, sizeof(filter));
@@ -71,19 +72,17 @@ Text Files (*.txt)\0\
     ofn_initialized       = TRUE;
 }
 
-
-
 /* glob a canonical filename, and if a true directory, put it in win32 fmt */
 int
 w32_glob_and_validate_dir(const char *inputdir, char *outputdir)
 {
 #define NOT_A_DIR  "[\"%s\" is not a directory]"
 
-    int  outlen, rc;
+    int outlen, rc;
     char tmp[NFILEN];
 
     strcpy(outputdir, inputdir);
-    if (! doglob(outputdir)) {	/* doglob updates outputdir */
+    if (!doglob(outputdir)) {	/* doglob updates outputdir */
 	rc = FALSE;
     } else {
 	/*
@@ -91,7 +90,7 @@ w32_glob_and_validate_dir(const char *inputdir, char *outputdir)
 	 * values without reporting an error.  Handle that.
 	 */
 
-	if (! is_directory(outputdir)) {
+	if (!is_directory(outputdir)) {
 	    outlen = (term.cols - 1) - (sizeof(NOT_A_DIR) - 3);
 	    mlforce(NOT_A_DIR, path_trunc(outputdir, outlen, tmp, sizeof(tmp)));
 	    rc = FALSE;
@@ -104,8 +103,6 @@ w32_glob_and_validate_dir(const char *inputdir, char *outputdir)
 
 #undef NOT_A_DIR
 }
-
-
 
 /*
  * FUNCTION
@@ -129,31 +126,31 @@ commdlg_open_files(int chdir_allowed, const char *dir)
 #define NO_MEMORY() no_memory("commdlg_open_files()")
 #define RET_BUF_SIZE_ (24 * 1024)
 
-    int   domore = TRUE;
-    int   rc = TRUE;
+    int domore = TRUE;
+    int rc = TRUE;
 
-    int   chdir_mask, i, len, nfile;
-    int   status;
-    char  oldcwd[FILENAME_MAX];
-    char  newcwd[FILENAME_MAX];
-    char  *cp;
-    char  validated_dir[FILENAME_MAX];
+    int chdir_mask, i, len, nfile;
+    int status;
+    char oldcwd[FILENAME_MAX];
+    char newcwd[FILENAME_MAX];
+    char *cp;
+    char validated_dir[FILENAME_MAX];
 
-    char  *our_filebuf = 0;
-    W32_CHAR  *sys_filebuf = 0;
-    W32_CHAR  *initial_dir = 0;
+    char *our_filebuf = 0;
+    W32_CHAR *sys_filebuf = 0;
+    W32_CHAR *initial_dir = 0;
 
     TRACE((T_CALLED "commdlg_open_files(chdir_allowed=%d, dir=%s)\n",
 	   chdir_allowed, TRACE_NULL(dir)));
 
     if (dir) {
-	if (! w32_glob_and_validate_dir(dir, validated_dir))
+	if (!w32_glob_and_validate_dir(dir, validated_dir))
 	    returnCode(FALSE);
 	else
 	    dir = validated_dir;
     }
 
-    oldcwd[0]  = newcwd[0] = '\0';
+    oldcwd[0] = newcwd[0] = '\0';
     chdir_mask = (chdir_allowed) ? 0 : OFN_NOCHANGEDIR;
 
     if ((sys_filebuf = typeallocn(W32_CHAR, RET_BUF_SIZE_)) == 0) {
@@ -162,7 +159,7 @@ commdlg_open_files(int chdir_allowed, const char *dir)
 
     if (domore) {
 	sys_filebuf[0] = '\0';
-	if (! ofn_initialized)
+	if (!ofn_initialized)
 	    ofn_init();
 
 	(void) _getcwd(oldcwd, sizeof(oldcwd));
@@ -172,20 +169,21 @@ commdlg_open_files(int chdir_allowed, const char *dir)
 
 	    TRACE(("initial_dir: %s\n", dir ? dir : oldcwd));
 
+	    /* *INDENT-EQLS* */
 	    ofn.lpstrInitialDir = initial_dir;
-	    ofn.lpstrFile       = sys_filebuf;
-	    ofn.nMaxFile        = RET_BUF_SIZE_;
-	    ofn.Flags           = (OFN_PATHMUSTEXIST | OFN_HIDEREADONLY |
+	    ofn.lpstrFile      = sys_filebuf;
+	    ofn.nMaxFile       = RET_BUF_SIZE_;
+	    ofn.Flags          = (OFN_PATHMUSTEXIST | OFN_HIDEREADONLY |
 				  OFN_ALLOWMULTISELECT | OFN_EXPLORER) | chdir_mask;
-	    ofn.hwndOwner       = GetVileWindow();
-	    status              = GetOpenFileName(&ofn);
+	    ofn.hwndOwner      = GetVileWindow();
+	    status             = GetOpenFileName(&ofn);
 
 #if DISP_NTCONS
 	    /* attempt to restore focus to the console editor */
 	    (void) SetForegroundWindow(ofn.hwndOwner);
 #endif
 
-	    if (! status) {
+	    if (!status) {
 		/* user CANCEL'd the dialog box (err code 0), else some other error. */
 
 		if (comm_dlg_error() == 0) {
@@ -196,7 +194,7 @@ commdlg_open_files(int chdir_allowed, const char *dir)
 			    (void) chdir(oldcwd);
 		    }
 		} else {
-		    rc = FALSE;  /* Win32 error */
+		    rc = FALSE;	/* Win32 error */
 		}
 		domore = FALSE;
 	    }
@@ -207,11 +205,11 @@ commdlg_open_files(int chdir_allowed, const char *dir)
 	if (chdir_allowed) {
 	    /* tell editor cwd changed, if it did... */
 
-	    if (! _getcwd(newcwd, sizeof(newcwd))) {
+	    if (!_getcwd(newcwd, sizeof(newcwd))) {
 		mlerror("_getcwd() failed");
 		rc = FALSE;
 	    } else if (stricmp(newcwd, oldcwd) != 0) {
-		if (! set_directory(newcwd)) {
+		if (!set_directory(newcwd)) {
 		    rc = FALSE;
 		}
 	    }
@@ -231,7 +229,7 @@ commdlg_open_files(int chdir_allowed, const char *dir)
     }
 
     if (domore) {
-	cp    = our_filebuf;
+	cp = our_filebuf;
 	nfile = 0;
 	for_ever {
 	    len = (int) strlen(cp);
@@ -239,27 +237,29 @@ commdlg_open_files(int chdir_allowed, const char *dir)
 		break;
 	    nfile++;
 	    TRACE(("...file %d:%s\n", nfile, cp));
-	    cp += len + 1;  /* skip filename and its terminator */
+	    cp += len + 1;	/* skip filename and its terminator */
 	}
 
 	TRACE(("dialog returns %d filenames\n", nfile));
 	if (nfile) {
 	    BUFFER *bp, *first_bp;
-	    char   *dir2 = 0, tmp[FILENAME_MAX * 2], *nxtfile;
-	    int    have_dir;
+	    char *dir2 = 0, tmp[FILENAME_MAX * 2], *nxtfile;
+	    int have_dir;
 
 	    if (nfile > 1) {
 		/* first "file" in the list is actually a folder */
 
+		/* *INDENT-EQLS* */
 		have_dir = 1;
-		dir2     = our_filebuf;
-		cp       = dir2 + strlen(dir2) + 1;
+		dir2    = our_filebuf;
+		cp      = dir2 + strlen(dir2) + 1;
 		nfile--;
 	    } else {
+		/* *INDENT-EQLS* */
 		have_dir = 0;
-		cp       = our_filebuf;
+		cp      = our_filebuf;
 	    }
-	    for (i = 0, first_bp = NULL; rc && i < nfile; i++) {
+	    for (i  = 0, first_bp = NULL; rc && i < nfile; i++) {
 		if (have_dir) {
 		    sprintf(tmp, "%s\\%s", dir2, cp);
 		    nxtfile = tmp;
@@ -267,16 +267,16 @@ commdlg_open_files(int chdir_allowed, const char *dir)
 		    nxtfile = cp;
 		}
 		if ((bp = getfile2bp(nxtfile, FALSE, FALSE)) == 0) {
-		    rc = FALSE;
+		    rc      = FALSE;
 		} else {
-		    bp->b_flag |= BFARGS;   /* treat this as an argument */
-		    if (! first_bp)
+		    bp->b_flag |= BFARGS;	/* treat this as an argument */
+		    if (!first_bp)
 			first_bp = bp;
-		    cp += strlen(cp) + 1;
+		    cp      += strlen(cp) + 1;
 		}
 	    }
 	    if (rc)
-		rc = swbuffer(first_bp);  /* editor switches to 1st buffer */
+		rc      = swbuffer(first_bp);	/* editor switches to 1st buffer */
 	}
     }
 
@@ -291,25 +291,20 @@ commdlg_open_files(int chdir_allowed, const char *dir)
 #undef RET_BUF_SIZE_
 }
 
-
-
 static int
 wopen_common(int chdir_allowed)
 {
 
-    char         dir[NFILEN];
+    char dir[NFILEN];
     static TBUFF *last;
-    int          rc;
+    int rc;
 
     dir[0] = '\0';
-    rc     = mlreply_dir("Directory: ", &last, dir);
-    if (rc == TRUE)
-    {
+    rc = mlreply_dir("Directory: ", &last, dir);
+    if (rc == TRUE) {
 	mktrimmed(dir);
 	rc = commdlg_open_files(chdir_allowed, (dir[0]) ? dir : NULL);
-    }
-    else if (rc == FALSE)
-    {
+    } else if (rc == FALSE) {
 	/* empty response */
 
 	rc = commdlg_open_files(chdir_allowed, NULL);
@@ -318,15 +313,11 @@ wopen_common(int chdir_allowed)
     return (rc);
 }
 
-
-
 int
 winopen_nocd(int f GCC_UNUSED, int n GCC_UNUSED)
 {
     return (wopen_common(FALSE));
 }
-
-
 
 int
 winopen(int f GCC_UNUSED, int n GCC_UNUSED)
@@ -334,16 +325,12 @@ winopen(int f GCC_UNUSED, int n GCC_UNUSED)
     return (wopen_common(TRUE));
 }
 
-
-
 /* explicitly specify initial directory */
 int
 winopen_dir(const char *dir)
 {
     return (commdlg_open_files(TRUE, dir));
 }
-
-
 
 /*
  * FUNCTION
@@ -367,19 +354,19 @@ commdlg_save_file(int chdir_allowed, const char *dir)
 {
 #define NO_MEMORY() no_memory("commdlg_save_file()")
 
-    int   domore = TRUE;
-    int   rc = TRUE;
+    int domore = TRUE;
+    int rc = TRUE;
 
-    int   chdir_mask, status;
-    char  filebuf[FILENAME_MAX];
-    char  validated_dir[FILENAME_MAX];
-    char  oldcwd[FILENAME_MAX];
-    char  newcwd[FILENAME_MAX];
-    char  *fname;
-    char  *leaf;
-    char  scratch[FILENAME_MAX];
+    int chdir_mask, status;
+    char filebuf[FILENAME_MAX];
+    char validated_dir[FILENAME_MAX];
+    char oldcwd[FILENAME_MAX];
+    char newcwd[FILENAME_MAX];
+    char *fname;
+    char *leaf;
+    char scratch[FILENAME_MAX];
 
-    char  *our_filebuf = 0;
+    char *our_filebuf = 0;
     W32_CHAR *sys_filebuf = 0;
     W32_CHAR *initial_dir = 0;
 
@@ -387,7 +374,7 @@ commdlg_save_file(int chdir_allowed, const char *dir)
 	   chdir_allowed, dir));
 
     if (dir) {
-	if (! w32_glob_and_validate_dir(dir, validated_dir))
+	if (!w32_glob_and_validate_dir(dir, validated_dir))
 	    returnCode(FALSE);
 	else
 	    dir = validated_dir;
@@ -397,9 +384,9 @@ commdlg_save_file(int chdir_allowed, const char *dir)
      * The "Save As" dialog box is traditionally initialized with the
      * name of the current open file.  Handle that detail now.
      */
-    fname      = curbp->b_fname;
-    filebuf[0] = '\0';           /* copy the currently open filename here */
-    if (! is_internalname(fname)) {
+    fname = curbp->b_fname;
+    filebuf[0] = '\0';		/* copy the currently open filename here */
+    if (!is_internalname(fname)) {
 	strcpy(scratch, fname);
 	if ((leaf = last_slash(scratch)) == NULL) {
 	    /* easy case -- fname is a pure leaf */
@@ -409,7 +396,7 @@ commdlg_save_file(int chdir_allowed, const char *dir)
 	    /* fname specifies a path */
 
 	    *leaf++ = '\0';
-	    if (! dir) {
+	    if (!dir) {
 		/* save dirspec from path */
 
 		dir = sl_to_bsl(scratch);
@@ -417,14 +404,14 @@ commdlg_save_file(int chdir_allowed, const char *dir)
 	}
 	strcpy(filebuf, leaf);
     }
-    oldcwd[0]  = newcwd[0] = '\0';
+    oldcwd[0] = newcwd[0] = '\0';
     chdir_mask = (chdir_allowed) ? 0 : OFN_NOCHANGEDIR;
-    if (! ofn_initialized)
+    if (!ofn_initialized)
 	ofn_init();
 
     (void) _getcwd(oldcwd, sizeof(oldcwd));
 
-    if ((initial_dir = w32_charstring((dir) ?  dir :  oldcwd)) == 0) {
+    if ((initial_dir = w32_charstring((dir) ? dir : oldcwd)) == 0) {
 	domore = rc = NO_MEMORY();
     }
 
@@ -440,24 +427,24 @@ commdlg_save_file(int chdir_allowed, const char *dir)
     }
 
     if (domore) {
+	/* *INDENT-EQLS* */
 	ofn.lpstrInitialDir = initial_dir;
-	ofn.lpstrFile       = sys_filebuf;
-	ofn.nMaxFile        = sizeof(filebuf);
-	ofn.Flags           = (OFN_PATHMUSTEXIST | OFN_HIDEREADONLY |
+	ofn.lpstrFile      = sys_filebuf;
+	ofn.nMaxFile       = sizeof(filebuf);
+	ofn.Flags          = (OFN_PATHMUSTEXIST | OFN_HIDEREADONLY |
 			      OFN_OVERWRITEPROMPT | OFN_EXPLORER) | chdir_mask;
-	ofn.hwndOwner       = GetVileWindow();
-	status              = GetSaveFileName(&ofn);
+	ofn.hwndOwner      = GetVileWindow();
+	status             = GetSaveFileName(&ofn);
 
 #if DISP_NTCONS
 	/* attempt to restore focus to the console editor */
 	(void) SetForegroundWindow(ofn.hwndOwner);
 #endif
 
-	if (! status) {
+	if (!status) {
 	    /* user CANCEL'd the dialog box (err code 0), else some other error. */
 
-	    if (comm_dlg_error() == 0)
-	    {
+	    if (comm_dlg_error() == 0) {
 		/* canceled -- restore old cwd if necessary */
 
 		if (chdir_allowed) {
@@ -465,7 +452,7 @@ commdlg_save_file(int chdir_allowed, const char *dir)
 			(void) chdir(oldcwd);
 		}
 	    } else {
-		rc = FALSE;  /* Win32 error */
+		rc = FALSE;	/* Win32 error */
 	    }
 	    domore = FALSE;
 	} else {
@@ -479,11 +466,11 @@ commdlg_save_file(int chdir_allowed, const char *dir)
 	if (chdir_allowed) {
 	    /* tell editor cwd changed, if it did... */
 
-	    if (! _getcwd(newcwd, sizeof(newcwd))) {
+	    if (!_getcwd(newcwd, sizeof(newcwd))) {
 		mlerror("_getcwd() failed");
 		rc = FALSE;
 	    } else if (stricmp(newcwd, oldcwd) != 0) {
-		if (! set_directory(newcwd))
+		if (!set_directory(newcwd))
 		    rc = FALSE;
 	    }
 	    domore = (rc == TRUE);
@@ -500,12 +487,12 @@ commdlg_save_file(int chdir_allowed, const char *dir)
 	 */
 	/* ------------ begin :f ------------ */
 #if OPT_LCKFILES
-	if ( global_g_val(GMDUSEFILELOCK) ) {
-	    if (!b_val(curbp,MDLOCKED) && !b_val(curbp,MDVIEW))
+	if (global_g_val(GMDUSEFILELOCK)) {
+	    if (!b_val(curbp, MDLOCKED) && !b_val(curbp, MDVIEW))
 		release_lock(curbp->b_fname);
 	    ch_fname(curbp, fname);
-	    make_global_b_val(curbp,MDLOCKED);
-	    make_global_b_val(curbp,VAL_LOCKER);
+	    make_global_b_val(curbp, MDLOCKED);
+	    make_global_b_val(curbp, VAL_LOCKER);
 	    grab_lck_file(curbp, fname);
 	} else
 #endif
@@ -530,25 +517,20 @@ commdlg_save_file(int chdir_allowed, const char *dir)
 #undef NO_MEMORY
 }
 
-
-
 static int
 wsave_common(int chdir_allowed)
 {
 
-    char         dir[NFILEN];
+    char dir[NFILEN];
     static TBUFF *last;
-    int          rc;
+    int rc;
 
     dir[0] = '\0';
-    rc     = mlreply_dir("Directory: ", &last, dir);
-    if (rc == TRUE)
-    {
+    rc = mlreply_dir("Directory: ", &last, dir);
+    if (rc == TRUE) {
 	mktrimmed(dir);
 	rc = commdlg_save_file(chdir_allowed, (dir[0]) ? dir : NULL);
-    }
-    else if (rc == FALSE)
-    {
+    } else if (rc == FALSE) {
 	/* empty user response */
 
 	rc = commdlg_save_file(chdir_allowed, NULL);
@@ -557,22 +539,17 @@ wsave_common(int chdir_allowed)
     return (rc);
 }
 
-
-
 int
 winsave(int f GCC_UNUSED, int n GCC_UNUSED)
 {
     return (wsave_common(TRUE));
 }
 
-
 int
 winsave_nocd(int f GCC_UNUSED, int n GCC_UNUSED)
 {
     return (wsave_common(FALSE));
 }
-
-
 
 /* explicitly specify initial directory */
 int
@@ -585,7 +562,7 @@ winsave_dir(const char *dir)
 /* ------------------ delete current text selection -------------------- */
 /* --------------------------------------------------------------------- */
 int
-windeltxtsel(int f GCC_UNUSED, int n GCC_UNUSED)  /* bound to Alt+Delete */
+windeltxtsel(int f GCC_UNUSED, int n GCC_UNUSED)	/* bound to Alt+Delete */
 {
     return (w32_del_selection(FALSE));
 }
@@ -597,86 +574,79 @@ windeltxtsel(int f GCC_UNUSED, int n GCC_UNUSED)  /* bound to Alt+Delete */
 /* - 4 & 15 of Petzold's "Programming Windows 95". --------------------- */
 /* --------------------------------------------------------------------- */
 
-#if DISP_NTWIN                 /* Printing is only supported for winvile.
-				* There are hooks in the code to support
-				* this feature in console vile, but the
-				* following items require attention:
-				*
-				* - console vile users must be able to
-				*   specify a printing font (via a state var)
-				* - some mechanism must be added to permit
-				*   emulation of a modeless "cancel printing"
-				*   dialog box (it's not possible for console
-				*   apps to create modeless dlg boxes).
-				*
-				* A query of the vile user base returned
-				* zero interest in this feature, so there's
-				* not much incentive to add the missing
-				* pieces.
-				*/
+#if DISP_NTWIN			/* Printing is only supported for winvile.
+				 * There are hooks in the code to support
+				 * this feature in console vile, but the
+				 * following items require attention:
+				 *
+				 * - console vile users must be able to
+				 *   specify a printing font (via a state var)
+				 * - some mechanism must be added to permit
+				 *   emulation of a modeless "cancel printing"
+				 *   dialog box (it's not possible for console
+				 *   apps to create modeless dlg boxes).
+				 *
+				 * A query of the vile user base returned
+				 * zero interest in this feature, so there's
+				 * not much incentive to add the missing
+				 * pieces.
+				 */
 
-typedef struct print_param_struct
-{
-    char *        buf;         /* scratch formatting buffer, large enough to
-				* hold mcpl chars + line numbers, if any.
-				*/
-    int           collate,     /* T -> print all copies of page 1 first,
-				* then all copies of page 2, etc.
-				*/
-		  endpg_req,   /* T -> "end page" operation pending      */
-		  mcpl,        /* max printable chars per line           */
-		  mlpp,        /* max lines per page                     */
-		  ncopies,
-		  pagenum,     /* running page count                     */
-		  plines,      /* running count of lines printed         */
-		  xchar,       /* avg char width                         */
-		  ychar,       /* max character height                   */
-		  xorg,        /* X coord viewport origin -- strips out the
-				* unprintable margin reserved by the printer.
-				*/
-		  yorg,        /* Y coord viewport origin                */
-		  ypos;        /* Y coord of "cursor"  on output page.   */
-    HFONT         hfont;       /* printing font handle                   */
+typedef struct print_param_struct {
+    char *buf;			/* scratch formatting buffer, large enough to
+				 * hold mcpl chars + line numbers, if any.
+				 */
+    int collate,		/* T -> print all copies of page 1 first,
+				 * then all copies of page 2, etc.
+				 */
+      endpg_req,		/* T -> "end page" operation pending      */
+      mcpl,			/* max printable chars per line           */
+      mlpp,			/* max lines per page                     */
+      ncopies, pagenum,		/* running page count                     */
+      plines,			/* running count of lines printed         */
+      xchar,			/* avg char width                         */
+      ychar,			/* max character height                   */
+      xorg,			/* X coord viewport origin -- strips out the
+				 * unprintable margin reserved by the printer.
+				 */
+      yorg,			/* Y coord viewport origin                */
+      ypos;			/* Y coord of "cursor"  on output page.   */
+    HFONT hfont;		/* printing font handle                   */
 } PRINT_PARAM;
 
-typedef struct split_line_struct
-{
-    LINE *        splitlp;     /* points at a buffer line that has been split
-				* across a page break while printing multiple,
-				* uncollated copies.
-				*/
-    ULONG         outlen;      /* #bytes of splitlp that were "output" prior
-				* to page break.
-				*/
+typedef struct split_line_struct {
+    LINE *splitlp;		/* points at a buffer line that has been split
+				 * across a page break while printing multiple,
+				 * uncollated copies.
+				 */
+    ULONG outlen;		/* #bytes of splitlp that were "output" prior
+				 * to page break.
+				 */
 } SPLIT_LINE;
 
-
-static int  printing_aborted,  /* T -> user aborted print job.     */
-	    print_low, print_high, print_tabstop,
-	    print_number,      /* T -> line numbering is in effect */
-	    pgsetup_chgd,      /* T -> user invoked page setup dlg
-				*      and did not cancel out
-				*/
-	    printdlg_chgd,     /* T -> user invoked print dialog and
-				*      did not cancel out
-				*/
-	    spooler_failure,
-	    yfootpos;          /* device Y coordinate of the footer */
+static int printing_aborted,	/* T -> user aborted print job.     */
+  print_low, print_high, print_tabstop, print_number,	/* T -> line numbering is in effect */
+  pgsetup_chgd,			/* T -> user invoked page setup dlg
+				 *      and did not cancel out
+				 */
+  printdlg_chgd,		/* T -> user invoked print dialog and
+				 *      did not cancel out
+				 */
+  spooler_failure, yfootpos;	/* device Y coordinate of the footer */
 
 /* selection printing requires a few saved state vars */
 static REGIONSHAPE oshape;
 
 static PAGESETUPDLG *pgsetup;
-static PRINTDLG     *pd;
+static PRINTDLG *pd;
 
-static RECT printrect;         /* Area where printing is allowed, includes
-				* the ruser's preferred margin (or a default).
-				* This area is  scaled in device coordinates
-				* (pixels).
-				*/
+static RECT printrect;		/* Area where printing is allowed, includes
+				 * the ruser's preferred margin (or a default).
+				 * This area is  scaled in device coordinates
+				 * (pixels).
+				 */
 
-static HWND hDlgCancelPrint,
-	    hPrintWnd;         /* window that spawned print request */
+static HWND hDlgCancelPrint, hPrintWnd;		/* window that spawned print request */
 
 /*
  * GetLastError() doesn't return a legitimate Win32 error if the spooler
@@ -695,17 +665,21 @@ display_spooler_error(HWND hwnd)
 	"out of disk space",
 	"out of memory",
     };
-    char       buf[256], *cp;
-    long       errcode,
-	       max_err = (sizeof(spooler_errs) / sizeof(spooler_errs));
+    char buf[256], *cp;
+    long errcode, max_err = (sizeof(spooler_errs) / sizeof(spooler_errs));
 
+    /* *INDENT-EQLS* */
     errcode         = GetLastError();
     spooler_failure = TRUE;
+
     if ((errcode & SP_NOTREPORTED) == 0)
 	return;
+
+    /* *INDENT-EQLS* */
     errcode *= -1;
     strcpy(buf, ERRPREFIX);
-    cp = buf + (sizeof(ERRPREFIX) - 1);
+    cp              = buf + (sizeof(ERRPREFIX) - 1);
+
     if (errcode >= max_err || errcode < 0)
 	sprintf(cp, "unknown error code (%ld)", errcode);
     else
@@ -715,26 +689,21 @@ display_spooler_error(HWND hwnd)
 #undef ERRPREFIX
 }
 
-
-
 /* Obtain/adjust default info about the printed page. */
 static int
 handle_page_dflts(HWND hwnd)
 {
     RECT m;
 
-    if (pgsetup == NULL)
-    {
+    if (pgsetup == NULL) {
 	if ((pgsetup = typecalloc(PAGESETUPDLG)) == NULL)
 	    return (no_memory("get_page_dflts"));
-	pgsetup->Flags       = PSD_RETURNDEFAULT|PSD_DEFAULTMINMARGINS;
+	pgsetup->Flags = PSD_RETURNDEFAULT | PSD_DEFAULTMINMARGINS;
 	pgsetup->lStructSize = sizeof(*pgsetup);
 
 	/* ask system to return current settings without showing dlg box */
-	if (! PageSetupDlg(pgsetup))
-	{
-	    if (comm_dlg_error() == 0)
-	    {
+	if (!PageSetupDlg(pgsetup)) {
+	    if (comm_dlg_error() == 0) {
 		/* uh-oh */
 
 		mlforce("BUG: PageSetupDlg() fails default data call");
@@ -751,15 +720,15 @@ handle_page_dflts(HWND hwnd)
 	    m.bottom = m.top = m.left = m.right = 1250;
 	else
 	    m.bottom = m.top = m.left = m.right = 500;
-	pgsetup->rtMargin  = m;
-	pgsetup->Flags    &= ~PSD_RETURNDEFAULT;
-	pgsetup->Flags    |= PSD_MARGINS;
+
+	/* *INDENT-EQLS* */
+	pgsetup->rtMargin = m;
+	pgsetup->Flags   &= ~PSD_RETURNDEFAULT;
+	pgsetup->Flags   |= PSD_MARGINS;
 	pgsetup->hwndOwner = hwnd;
     }
     return (TRUE);
 }
-
-
 
 /*
  * Handles two chores:
@@ -773,43 +742,45 @@ handle_page_dflts(HWND hwnd)
  * CAVEATS:  call handle_page_dflts() before this function.
  */
 static void
-compute_printrect(int  xdpi,    /* dots (pixels) per inch in x axis */
-		  int  ydpi,    /* dots (pixels) per inch in y axis */
-		  RECT *minmar, /* unprintable offsets (pixels)     */
-		  int  horzres, /* max horizontal print pixels      */
-		  int  vertres  /* max vertical print pixels        */
-		  )
+compute_printrect(int xdpi,	/* dots (pixels) per inch in x axis */
+		  int ydpi,	/* dots (pixels) per inch in y axis */
+		  RECT * minmar,	/* unprintable offsets (pixels)     */
+		  int horzres,	/* max horizontal print pixels      */
+		  int vertres	/* max vertical print pixels        */
+)
 {
     RECT u;
 
     /* Extract user's preferred margins, scaled in * 0.001in or 0.01mm . */
     u = pgsetup->rtMargin;
 
-    if (pgsetup->Flags & PSD_INHUNDREDTHSOFMILLIMETERS)
-    {
+    if (pgsetup->Flags & PSD_INHUNDREDTHSOFMILLIMETERS) {
 	/* convert user's margins to thousandths of inches */
 
-	u.top    = (int) (1000.0 * u.top / 2500.0);
+	/* *INDENT-EQLS* */
+	u.top = (int) (1000.0 * u.top / 2500.0);
 	u.bottom = (int) (1000.0 * u.bottom / 2500.0);
-	u.right  = (int) (1000.0 * u.right / 2500.0);
-	u.left   = (int) (1000.0 * u.left / 2500.0);
+	u.right = (int) (1000.0 * u.right / 2500.0);
+	u.left = (int) (1000.0 * u.left / 2500.0);
     }
 
     /*
      * now, convert preferred margins to device coordinates, in standard
      * rectangular notation
      */
+    /* *INDENT-EQLS* */
     u.top    = (int) (u.top * ydpi / 1000.0);
-    u.bottom = minmar->top + minmar->bottom + vertres -
-				    ((int) (u.bottom * ydpi / 1000.0));
+    u.bottom = (minmar->top + minmar->bottom + vertres -
+		((int) (u.bottom * ydpi / 1000.0)));
     u.left   = (int) (u.left * xdpi / 1000.0);
-    u.right  = minmar->left + minmar->right + horzres -
-				    ((int) (u.right * xdpi / 1000.0));
+    u.right  = (minmar->left + minmar->right + horzres -
+		((int) (u.right * xdpi / 1000.0)));
 
     /*
      * Compute maximum printing rectangle coordinates (pixels).  Note that
      * many printers define a minimum margin -- printing not allowed there.
      */
+    /* *INDENT-EQLS* */
     printrect.top    = minmar->top;
     printrect.bottom = minmar->top + vertres;
     printrect.left   = minmar->left;
@@ -826,16 +797,14 @@ compute_printrect(int  xdpi,    /* dots (pixels) per inch in x axis */
 	printrect.right -= printrect.right - u.right;
 }
 
-
-
 static void
-compute_foot_hdr_pos(int  ydpi,    /* dots (pixels) per inch in y axis */
-		     RECT *minmar, /* unprintable offsets (pixels)     */
-		     int  ychar,   /* max character height (pixels)    */
-		     int  vertres  /* max vertical, printable pixels   */
-		     )
+compute_foot_hdr_pos(int ydpi,	/* dots (pixels) per inch in y axis */
+		     RECT * minmar,	/* unprintable offsets (pixels)     */
+		     int ychar,	/* max character height (pixels)    */
+		     int vertres	/* max vertical, printable pixels   */
+)
 {
-    int    halfchar;
+    int halfchar;
     double ymin;
 
     /*
@@ -864,7 +833,7 @@ compute_foot_hdr_pos(int  ydpi,    /* dots (pixels) per inch in y axis */
      * footer text will align with the desired margin.
      */
     yfootpos = minmar->top + minmar->bottom + vertres -
-					     ((int) (ymin * ydpi)) - ychar;
+	((int) (ymin * ydpi)) - ychar;
 
     /*
      * if the header/footer positions overlap with the edges of the printing
@@ -875,8 +844,6 @@ compute_foot_hdr_pos(int  ydpi,    /* dots (pixels) per inch in y axis */
     if (printrect.bottom + halfchar > yfootpos)
 	printrect.bottom = yfootpos - halfchar;
 }
-
-
 
 /*
  * save current buffer and misc state info and then switch to the
@@ -893,21 +860,17 @@ push_curbp(BUFFER *selbp)
     return (wp);
 }
 
-
-
 static void
 pop_curbp(WINDOW *owp)
 {
-    pop_fake_win(owp, (BUFFER *)0);
+    pop_fake_win(owp, (BUFFER *) 0);
 }
-
-
 
 static int
 ck_empty_rgn_data(void *argp, int l, int r)
 {
-    LINE          *lp;
-    int           rc = TRUE, vile_llen, *empty;
+    LINE *lp;
+    int rc = TRUE, vile_llen, *empty;
 
     lp = DOT.l;
 
@@ -917,28 +880,27 @@ ck_empty_rgn_data(void *argp, int l, int r)
     if (r > llength(lp))
 	r = llength(lp);
     vile_llen = r - l;
-    if (vile_llen > 0)
-    {
-	empty  = argp;
+    if (vile_llen > 0) {
+	empty = argp;
 	*empty = rc = FALSE;
     }
     return (rc);
 }
 
-
-
 static int
-empty_text_selection(BUFFER *selbp, AREGION *psel)
+empty_text_selection(BUFFER *selbp, AREGION * psel)
 {
-    DORGNLINES  dorgn;
-    int         empty = TRUE;
-    WINDOW      *ocurwp;
-    MARK        odot;
+    DORGNLINES dorgn;
+    int empty = TRUE;
+    WINDOW *ocurwp;
+    MARK odot;
 
     if ((ocurwp = push_curbp(selbp)) == NULL)
-	return (FALSE);  /* eh? */
+	return (FALSE);		/* eh? */
+
+    /* *INDENT-EQLS* */
     oshape      = regionshape;
-    odot        = DOT;          /* do_lines_in_region() moves DOT. */
+    odot        = DOT;		/* do_lines_in_region() moves DOT. */
     dorgn       = get_do_lines_rgn();
     haveregion  = &psel->ar_region;
     regionshape = psel->ar_shape;
@@ -950,25 +912,19 @@ empty_text_selection(BUFFER *selbp, AREGION *psel)
     return (empty);
 }
 
-
-
 static BOOL CALLBACK
 printer_abort_proc(HDC hPrintDC GCC_UNUSED, int errcode GCC_UNUSED)
 {
     MSG msg;
 
-    while (! printing_aborted && PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
-    {
-	if (hDlgCancelPrint || ! IsDialogMessage(hDlgCancelPrint, &msg))
-	{
+    while (!printing_aborted && PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
+	if (hDlgCancelPrint || !IsDialogMessage(hDlgCancelPrint, &msg)) {
 	    TranslateMessage(&msg);
 	    DispatchMessage(&msg);
 	}
     }
-    return (! printing_aborted);
+    return (!printing_aborted);
 }
-
-
 
 static DIALOG_PROC_RETVAL CALLBACK
 printer_dlg_proc(HWND hDlg,
@@ -976,23 +932,20 @@ printer_dlg_proc(HWND hDlg,
 		 WPARAM wParam GCC_UNUSED,
 		 LPARAM lParam GCC_UNUSED)
 {
-    switch (msg)
-    {
-	case WM_INITDIALOG:
-	    w32_center_window(hDlg, hPrintWnd);
-	    EnableMenuItem(GetSystemMenu(hDlg, FALSE), SC_CLOSE, MF_GRAYED);
-	    return (TRUE);
-	case WM_COMMAND:       /* user cancels printing */
-	    printing_aborted = TRUE;
-	    EnableWindow(GetParent(hDlg), TRUE);
-	    DestroyWindow(hDlg);
-	    hDlgCancelPrint = NULL;
-	    return (TRUE);
+    switch (msg) {
+    case WM_INITDIALOG:
+	w32_center_window(hDlg, hPrintWnd);
+	EnableMenuItem(GetSystemMenu(hDlg, FALSE), SC_CLOSE, MF_GRAYED);
+	return (TRUE);
+    case WM_COMMAND:		/* user cancels printing */
+	printing_aborted = TRUE;
+	EnableWindow(GetParent(hDlg), TRUE);
+	DestroyWindow(hDlg);
+	hDlgCancelPrint = NULL;
+	return (TRUE);
     }
     return (FALSE);
 }
-
-
 
 static void
 winprint_cleanup(HFONT hfont_prev)
@@ -1003,14 +956,11 @@ winprint_cleanup(HFONT hfont_prev)
     (void) DeleteDC(pd->hDC);
 }
 
-
-
 static int
-winprint_startpage(PRINT_PARAM *pparam)
+winprint_startpage(PRINT_PARAM * pparam)
 {
     /* Petzold tests "< 0", API ref sez, "<= 0".  I trust Petzold */
-    if (StartPage(pd->hDC) < 0)
-    {
+    if (StartPage(pd->hDC) < 0) {
 	display_spooler_error(pd->hwndOwner);
 	return (FALSE);
     }
@@ -1043,22 +993,22 @@ winprint_write(HDC hndl, int x, int y, const char *text)
 #ifdef UNICODE
     W32_CHAR *buffer = w32_charstring(text);
     TextOut(hndl, x, y, buffer, (int) strlen(text));
-    free (buffer);
+    free(buffer);
 #else
     TextOut(hndl, x, y, text, (int) strlen(text));
 #endif
 }
 
-
 static int
-winprint_endpage(PRINT_PARAM *pparam)
+winprint_endpage(PRINT_PARAM * pparam)
 {
-    char     footbuf[256];
-    UINT     footbuflen;
-    int      rc = TRUE;
-    UINT     txtmode;
+    char footbuf[256];
+    UINT footbuflen;
+    int rc = TRUE;
+    UINT txtmode;
 
     /* FIXME -- footer is hardwired as page number */
+    /* *INDENT-EQLS* */
     txtmode    = (GetTextAlign(pd->hDC) & ~TA_LEFT);
     footbuflen = sprintf(footbuf, "%lu", (ULONG) pparam->pagenum);
     txtmode    = SetTextAlign(pd->hDC, txtmode | TA_CENTER);
@@ -1069,16 +1019,13 @@ winprint_endpage(PRINT_PARAM *pparam)
     (void) SetTextAlign(pd->hDC, txtmode | TA_LEFT);
 
     /* Petzold tests "< 0", API ref sez, "<= 0".  I trust Petzold */
-    if (EndPage(pd->hDC) < 0)
-    {
+    if (EndPage(pd->hDC) < 0) {
 	display_spooler_error(pd->hwndOwner);
 	rc = FALSE;
     }
     pparam->endpg_req = FALSE;
     return (rc);
 }
-
-
 
 /*
  * FUNCTION
@@ -1113,24 +1060,20 @@ winprint_fmttxt(char *dst,
 		ULONG srclen,
 		ULONG mcpl,
 		ULONG line_num,
-		int   *saw_ff)
+		int *saw_ff)
 {
     UINT c;
     ULONG i, nout, nconsumed, orig_srclen = srclen, line_num_offset;
 
-    *saw_ff   = FALSE;
+    *saw_ff = FALSE;
     nconsumed = nout = line_num_offset = 0;
-    if (print_number && line_num > 0)
-    {
+    if (print_number && line_num > 0) {
 	nout = sprintf(dst, "%6lu  ", line_num);
-	if (nout >= mcpl)
-	{
+	if (nout >= mcpl) {
 	    /* absurd printer output width -- skip line numbering */
 
 	    nout = 0;
-	}
-	else
-	{
+	} else {
 	    dst += nout;
 	    line_num_offset = nout;
 	}
@@ -1141,22 +1084,19 @@ winprint_fmttxt(char *dst,
      * whitespace (modulo a formfeed), or empty, handle that case now.
      */
     i = 0;
-    while (i < srclen && isSpace((UCHAR)src[i]) && src[i] != _FF_)
+    while (i < srclen && isSpace((UCHAR) src[i]) && src[i] != _FF_)
 	i++;
-    if (i == srclen)
-    {
+    if (i == srclen) {
 	/* input line is empty or all white space */
 
 	*dst++ = ' ';
-	*dst   = '\0';
-	return (srclen);  /* collapsed entire input line to single byte */
+	*dst = '\0';
+	return (srclen);	/* collapsed entire input line to single byte */
     }
 
-    while (srclen--)
-    {
-	c = (UCHAR) *src;
-	if (c == _TAB_)
-	{
+    while (srclen--) {
+	c = (UCHAR) * src;
+	if (c == _TAB_) {
 	    ULONG nspaces;
 
 	    nspaces = print_tabstop - (nout - line_num_offset) % print_tabstop;
@@ -1165,29 +1105,25 @@ winprint_fmttxt(char *dst,
 	    nout += nspaces;
 	    for (i = 0; i < nspaces; i++)
 		*dst++ = ' ';
-	}
-	else if  (c < _SPC_)  /* assumes ASCII char set  */
+	} else if (c < _SPC_)	/* assumes ASCII char set  */
 	{
 	    if (nout + 2 > mcpl)
 		break;
 	    if (c == _FF_)
 		*saw_ff = TRUE;
-	    nout  += 2;       /* account for '^' meta char */
+	    nout += 2;		/* account for '^' meta char */
 	    *dst++ = '^';
 	    *dst++ = ctrldigits[c];
-	}
-	else if (c > _TILDE_ && (! PASS_HIGH(c))) /* assumes ASCII char set */
+	} else if (c > _TILDE_ && (!PASS_HIGH(c)))	/* assumes ASCII char set */
 	{
 	    if (nout + 4 > mcpl)
 		break;
-	    nout  += 4;       /* account for '\xdd' meta chars */
+	    nout += 4;		/* account for '\xdd' meta chars */
 	    *dst++ = '\\';
 	    *dst++ = 'x';
 	    *dst++ = hexdigits[(c & 0xf0) >> 4];
 	    *dst++ = hexdigits[c & 0xf];
-	}
-	else
-	{
+	} else {
 	    if (nout + 1 > mcpl)
 		break;
 	    nout++;
@@ -1198,8 +1134,7 @@ winprint_fmttxt(char *dst,
     }
     *dst = '\0';
 
-    if (srclen > 0)
-    {
+    if (srclen > 0) {
 	/*
 	 * Still more data in the current input line that needs to be
 	 * formatted, but there's no more room left on the current output
@@ -1211,14 +1146,12 @@ winprint_fmttxt(char *dst,
 	 */
 
 	i = 0;
-	while (i < srclen && isSpace((UCHAR)src[i]))
-	{
-	    if (src[i] == _FF_ && (! *saw_ff))
+	while (i < srclen && isSpace((UCHAR) src[i])) {
+	    if (src[i] == _FF_ && (!*saw_ff))
 		break;
 	    i++;
 	}
-	if (i == srclen)
-	{
+	if (i == srclen) {
 	    /* remainder of input line is all white space */
 
 	    nconsumed = orig_srclen;
@@ -1227,32 +1160,25 @@ winprint_fmttxt(char *dst,
     return (nconsumed);
 }
 
-
-
 /* user wants to print empty page(s) -- whatever */
 static int
-print_blank_pages(PRINT_PARAM *pparam)
+print_blank_pages(PRINT_PARAM * pparam)
 {
     int i, rc = TRUE;
 
-    for (i = 0; i < pparam->ncopies && (! printing_aborted); i++)
-    {
-	if (! winprint_startpage(pparam))
-	{
+    for (i = 0; i < pparam->ncopies && (!printing_aborted); i++) {
+	if (!winprint_startpage(pparam)) {
 	    rc = FALSE;
 	    break;
 	}
 	pparam->pagenum++;
-	if (! winprint_endpage(pparam))
-	{
+	if (!winprint_endpage(pparam)) {
 	    rc = FALSE;
 	    break;
 	}
     }
     return (rc);
 }
-
-
 
 /*
  * Prints a single line in a selected region.  Code structure based upon
@@ -1261,11 +1187,11 @@ print_blank_pages(PRINT_PARAM *pparam)
 static int
 print_rgn_data(void *argp, int l, int r)
 {
-    LINE          *lp;
-    PRINT_PARAM   *pparam;
-    char          *src;
-    int           saw_ff, isempty_line;
-    ULONG         vile_llen, outlen;
+    LINE *lp;
+    PRINT_PARAM *pparam;
+    char *src;
+    int saw_ff, isempty_line;
+    ULONG vile_llen, outlen;
 
     if (printing_aborted)
 	return (FALSE);
@@ -1280,9 +1206,9 @@ print_rgn_data(void *argp, int l, int r)
     if (r >= l)
 	vile_llen = r - l;
     else
-	return (TRUE);  /* prevent a disaster */
+	return (TRUE);		/* prevent a disaster */
     pparam = argp;
-    src    = (lvalue(lp) + l);
+    src = (lvalue(lp) + l);
     saw_ff = FALSE;
 
     /*
@@ -1291,12 +1217,11 @@ print_rgn_data(void *argp, int l, int r)
      * (mcpl).
      */
     isempty_line = (vile_llen == 0);
-    outlen       = 0;
-    while (isempty_line || outlen < vile_llen)
-    {
+    outlen = 0;
+    while (isempty_line || outlen < vile_llen) {
 	if (pparam->plines % pparam->mlpp == 0) {
 	    pparam->ypos = 0;
-	    if (! winprint_startpage(pparam)) {
+	    if (!winprint_startpage(pparam)) {
 		break;
 	    }
 	}
@@ -1328,14 +1253,11 @@ print_rgn_data(void *argp, int l, int r)
 		       printrect.left,
 		       printrect.top + pparam->ychar * pparam->ypos++,
 		       pparam->buf);
-	if (saw_ff || (++pparam->plines % pparam->mlpp == 0))
-	{
-	    if (! winprint_endpage(pparam))
-	    {
+	if (saw_ff || (++pparam->plines % pparam->mlpp == 0)) {
+	    if (!winprint_endpage(pparam)) {
 		break;
 	    }
-	    if (saw_ff)
-	    {
+	    if (saw_ff) {
 		/* resync on arbitrary page boundary */
 
 		pparam->plines = pparam->mlpp;
@@ -1346,8 +1268,6 @@ print_rgn_data(void *argp, int l, int r)
     return (TRUE);
 }
 
-
-
 /*
  * Print a text selection--does not support uncollated printing.  Why?
  * Ans:  "dorgn" iterates over a line at a time, making it necessary
@@ -1357,42 +1277,41 @@ print_rgn_data(void *argp, int l, int r)
  * of a selection, s/he gets the copies collated or none at all.
  */
 static int
-winprint_selection(PRINT_PARAM *pparam, AREGION *selarp)
+winprint_selection(PRINT_PARAM * pparam, AREGION * selarp)
 {
-    DORGNLINES     dorgn;
-    int            i, rc = TRUE;
-    MARK           odot;
+    DORGNLINES dorgn;
+    int i, rc = TRUE;
+    MARK odot;
 
+    /* *INDENT-EQLS* */
     print_tabstop = tabstop_val(curbp);
     print_number  = (nu_width(curwp) > 0);
     oshape        = regionshape;
-    odot          = DOT;          /* do_lines_in_region() moves DOT. */
+    odot          = DOT;	/* do_lines_in_region() moves DOT. */
     dorgn         = get_do_lines_rgn();
 
-    for (i = 0; i < pparam->ncopies && rc && (! printing_aborted); i++)
-    {
+    for (i = 0; i < pparam->ncopies && rc && (!printing_aborted); i++) {
 	/*
 	 * do_lines_in_region(), via a call to getregion(), resets
 	 * "haveregion" each time it's called.
 	 */
 
-	haveregion      = &selarp->ar_region;
-	regionshape     = selarp->ar_shape;
+	/* *INDENT-EQLS* */
+	haveregion = &selarp->ar_region;
+	regionshape = selarp->ar_shape;
 	pparam->pagenum = 1;
-	pparam->plines  = pparam->ypos = 0;
-	rc              = dorgn(print_rgn_data, pparam, TRUE);
-	if (rc && pparam->endpg_req)
-	    rc = winprint_endpage(pparam);
+	pparam->plines = pparam->ypos = 0;
+	rc        = dorgn(print_rgn_data, pparam, TRUE);
+	if (rc    && pparam->endpg_req)
+	    rc        = winprint_endpage(pparam);
     }
 
     /* clean up the global state that was whacked */
-    DOT         = odot;
-    haveregion  = NULL;
+    DOT = odot;
+    haveregion = NULL;
     regionshape = oshape;
     return (rc);
 }
-
-
 
 /*
  * prints curbp from bob to eob.
@@ -1402,48 +1321,43 @@ winprint_selection(PRINT_PARAM *pparam, AREGION *selarp)
  * called iff curbp is not empty.
  */
 static int
-winprint_curbuffer_collated(PRINT_PARAM *pparam)
+winprint_curbuffer_collated(PRINT_PARAM * pparam)
 {
-    int           eob,    /* end of buffer */
-		  rc,
-		  saw_ff,
-		  isempty_line;
-    LINE *        lp;
-    ULONG         vile_llen, outlen;
+    int eob;			/* end of buffer */
+    int rc;
+    int saw_ff;
+    int isempty_line;
+    LINE *lp;
+    ULONG vile_llen, outlen;
 
-    rc  = TRUE;
+    rc = TRUE;
     eob = saw_ff = FALSE;
-    lp  = lforw(buf_head(curbp));
+    lp = lforw(buf_head(curbp));
 
     /* if printing uncollated, emit "n" copies of the same page */
-    while (rc && (! printing_aborted) && (! eob))
-    {
+    while (rc && (!printing_aborted) && (!eob)) {
 	/*
 	 * printing a line of text is not as simple as it seems, since
 	 * care must be taken to wrap buffer data that exceeds max chars
 	 * per line (mcpl).
 	 */
 
-	vile_llen    = llength(lp);
+	/* *INDENT-EQLS* */
+	vile_llen = llength(lp);
 	isempty_line = (vile_llen == 0);
-	outlen       = 0;
-	while (isempty_line || outlen < vile_llen)
-	{
-	    if (pparam->plines % pparam->mlpp == 0)
-	    {
+	outlen   = 0;
+	while (isempty_line || outlen < vile_llen) {
+	    if (pparam->plines % pparam->mlpp == 0) {
 		pparam->ypos = 0;
-		if (! winprint_startpage(pparam))
-		{
-		    rc = FALSE;
+		if (!winprint_startpage(pparam)) {
+		    rc       = FALSE;
 		    break;
 		}
 	    }
-	    if (isempty_line)
-	    {
+	    if (isempty_line) {
 		isempty_line = FALSE;
 
-		if (print_number)
-		{
+		if (print_number) {
 		    /* winprint_fmttxt() handles line number formatting */
 
 		    (void) winprint_fmttxt(pparam->buf,
@@ -1452,15 +1366,11 @@ winprint_curbuffer_collated(PRINT_PARAM *pparam)
 					   pparam->mcpl,
 					   lp->l_number,
 					   &saw_ff);
-		}
-		else
-		{
+		} else {
 		    pparam->buf[0] = ' ';
 		    pparam->buf[1] = '\0';
 		}
-	    }
-	    else
-	    {
+	    } else {
 		outlen += winprint_fmttxt(pparam->buf,
 					  lvalue(lp) + outlen,
 					  vile_llen - outlen,
@@ -1472,15 +1382,12 @@ winprint_curbuffer_collated(PRINT_PARAM *pparam)
 			   printrect.left,
 			   printrect.top + pparam->ychar * pparam->ypos++,
 			   pparam->buf);
-	    if (saw_ff || (++pparam->plines % pparam->mlpp == 0))
-	    {
-		if (! winprint_endpage(pparam))
-		{
+	    if (saw_ff || (++pparam->plines % pparam->mlpp == 0)) {
+		if (!winprint_endpage(pparam)) {
 		    rc = FALSE;
 		    break;
 		}
-		if (saw_ff)
-		{
+		if (saw_ff) {
 		    /* resync on arbitrary page boundary */
 
 		    pparam->plines = pparam->mlpp;
@@ -1496,8 +1403,6 @@ winprint_curbuffer_collated(PRINT_PARAM *pparam)
 	rc = winprint_endpage(pparam);
     return (rc);
 }
-
-
 
 /*
  * FUNCTION
@@ -1532,52 +1437,52 @@ winprint_curbuffer_collated(PRINT_PARAM *pparam)
  */
 
 static int
-winprint_curbuffer_uncollated(PRINT_PARAM *pparam,
-			      LINE *      curpg,
-			      LINE *      *nxtpg,
-			      int         *eob,
-			      SPLIT_LINE  *pcursplit,
-			      SPLIT_LINE  *pnxtsplit)
+winprint_curbuffer_uncollated(PRINT_PARAM * pparam,
+			      LINE *curpg,
+			      LINE **nxtpg,
+			      int *eob,
+			      SPLIT_LINE * pcursplit,
+			      SPLIT_LINE * pnxtsplit)
 {
-    int            eop,       /* T -> end of page */
-		   rc,
-		   saw_ff,
-		   isempty_line;
-    LINE *         lp;
-    ULONG          vile_llen, outlen;
+    int eop,			/* T -> end of page */
+      rc, saw_ff, isempty_line;
+    LINE *lp;
+    ULONG vile_llen, outlen;
 
+    /* *INDENT-EQLS* */
     rc           = TRUE;
-    lp           = curpg;       /* valid most of the time */
+    lp           = curpg;	/* valid most of the time */
     eop          = saw_ff = FALSE;
     pparam->ypos = pparam->plines = 0;
 
     /* while not (eop or error)... */
-    while (rc && (! printing_aborted) && (! eop))
-    {
+    while (rc && (!printing_aborted) && (!eop)) {
 	/*
 	 * printing a line of text is not as simple as it seems, since
 	 * care must be taken to wrap buffer data that exceeds the
 	 * max chars per line (mcpl).
 	 */
 
-	outlen = 0;               /* valid most of the time */
+	outlen = 0;		/* valid most of the time */
 	if (pparam->plines == 0 && pcursplit->outlen > 0) {
 	    /*
 	     * at top of page and there is data carried forward from a
 	     * line previously split across a page.
 	     */
 
+	    /* *INDENT-EQLS* */
 	    outlen = pcursplit->outlen;
-	    lp     = pcursplit->splitlp;
+	    lp    = pcursplit->splitlp;
 	}
 
-	vile_llen    = llength(lp);
+	/* *INDENT-EQLS* */
+	vile_llen = llength(lp);
 	isempty_line = (vile_llen == 0);
 
-	while ((isempty_line || outlen < vile_llen) && (! eop)) {
+	while ((isempty_line || outlen < vile_llen) && (!eop)) {
 	    if (pparam->plines % pparam->mlpp == 0) {
 		pparam->ypos = 0;
-		if (! winprint_startpage(pparam)) {
+		if (!winprint_startpage(pparam)) {
 		    rc = FALSE;
 		    break;
 		}
@@ -1612,28 +1517,26 @@ winprint_curbuffer_uncollated(PRINT_PARAM *pparam,
 			   pparam->buf);
 	    if (saw_ff || (++pparam->plines % pparam->mlpp == 0)) {
 		eop = TRUE;
-		if (! winprint_endpage(pparam)) {
+		if (!winprint_endpage(pparam)) {
 		    rc = FALSE;
 		    break;
 		}
 	    }
 	}
-	if (outlen < vile_llen)
-	{
+	if (outlen < vile_llen) {
 	    /*
 	     * forced to split a long line across a printer page (i.e., carry
 	     * forward data to the next page).
 	     */
 
-	    pnxtsplit->outlen  = outlen;
+	    pnxtsplit->outlen = outlen;
 	    pnxtsplit->splitlp = lp;
 	}
 	lp = lforw(lp);
 	if (eop)
 	    *nxtpg = lp;
-	if (lp == buf_head(curbp))
-	{
-	    eop = TRUE;   /* by defn */
+	if (lp == buf_head(curbp)) {
+	    eop = TRUE;		/* by defn */
 	    if (pnxtsplit->outlen == 0)
 		*eob = TRUE;
 	}
@@ -1643,56 +1546,53 @@ winprint_curbuffer_uncollated(PRINT_PARAM *pparam,
     return (rc);
 }
 
-
-
 /*
  * controls winprint_curbuffer_driver() as required by user's printing
  * options.
  */
 static int
-winprint_curbuffer(PRINT_PARAM *pparam)
+winprint_curbuffer(PRINT_PARAM * pparam)
 {
-    LINE *  curpglp;
-    LINE *  nextpglp;
-    int     i, eob, rc = TRUE;
+    LINE *curpglp;
+    LINE *nextpglp;
+    int i, eob, rc = TRUE;
 
     if (is_empty_buf(curbp))
 	return (print_blank_pages(pparam));
+
+    /* *INDENT-EQLS* */
     print_tabstop = tabstop_val(curbp);
     print_number  = (nu_width(curwp) > 0);
-    if (pparam->collate || pparam->ncopies == 1)
-    {
+
+    if (pparam->collate || pparam->ncopies == 1) {
 	/*
 	 * request for collated copy(s), or uncollated single copy
 	 * (same diff).
 	 */
 
-	for (i = 0; rc && i < pparam->ncopies && (! printing_aborted); i++)
-	{
+	for (i = 0; rc && i < pparam->ncopies && (!printing_aborted); i++) {
+	    /* *INDENT-EQLS* */
 	    pparam->pagenum = 1;
-	    pparam->plines  = pparam->ypos = 0;
+	    pparam->plines = pparam->ypos = 0;
 
 	    /* print curbuf from bob to eob */
 	    rc = winprint_curbuffer_collated(pparam);
 	}
-    }
-    else
-    {
+    } else {
 	SPLIT_LINE cursplit, nxtsplit;
 
 	/* request for uncollated copy(s) */
 	pparam->pagenum = 1;
 	memset(&cursplit, 0, sizeof(cursplit));
 	memset(&nxtsplit, 0, sizeof(nxtsplit));
-	eob      = FALSE;
-	curpglp  = lforw(buf_head(curbp));
+	eob = FALSE;
+	curpglp = lforw(buf_head(curbp));
 	nextpglp = NULL;
-	while ((! eob) && rc && (! printing_aborted))
-	{
+	while ((!eob) && rc && (!printing_aborted)) {
 	    /* print a single page of output n times */
 
 	    for (i = 0;
-		 rc && i < pparam->ncopies && (! printing_aborted);
+		 rc && i < pparam->ncopies && (!printing_aborted);
 		 i++) {
 		rc = winprint_curbuffer_uncollated(pparam,
 						   curpglp,
@@ -1701,10 +1601,14 @@ winprint_curbuffer(PRINT_PARAM *pparam)
 						   &cursplit,
 						   &nxtsplit);
 	    }
+
 	    pparam->pagenum++;
-	    curpglp  = nextpglp;
+
+	    /* *INDENT-EQLS* */
+	    curpglp = nextpglp;
 	    cursplit = nxtsplit;
 	    nextpglp = NULL;
+
 	    memset(&nxtsplit, 0, sizeof(nxtsplit));
 	}
     }
@@ -1713,7 +1617,7 @@ winprint_curbuffer(PRINT_PARAM *pparam)
 
 /* Build up LOGFONT data structure. */
 static void
-w32_init_logfont(LOGFONT *logfont, FONTSTR_OPTIONS *str_rslts, int height)
+w32_init_logfont(LOGFONT * logfont, FONTSTR_OPTIONS * str_rslts, int height)
 {
     W32_CHAR *facename;
     int length;
@@ -1732,9 +1636,8 @@ w32_init_logfont(LOGFONT *logfont, FONTSTR_OPTIONS *str_rslts, int height)
 	length = LF_FACESIZE;
     facename = w32_charstring(str_rslts->face);
     memcpy(logfont->lfFaceName, facename, length * sizeof(W32_CHAR));
-    free (facename);
+    free(facename);
 }
-
 
 /*
  * Map winvile's display font to, hopefully, a suitable printer font.
@@ -1743,16 +1646,16 @@ w32_init_logfont(LOGFONT *logfont, FONTSTR_OPTIONS *str_rslts, int height)
 static HFONT
 get_printing_font(HDC hdc, HWND hwnd)
 {
-    char            *curfont;
-    HFONT           hfont = 0;
-    LOGFONT         logfont;
-    W32_CHAR        font_mapper_face[LF_FACESIZE + 1];
-    char            *mapper_face;
-    char            msg[LF_FACESIZE * 2 + 128];
-    POINT           pt;
+    char *curfont;
+    HFONT hfont = 0;
+    LOGFONT logfont;
+    W32_CHAR font_mapper_face[LF_FACESIZE + 1];
+    char *mapper_face;
+    char msg[LF_FACESIZE * 2 + 128];
+    POINT pt;
     FONTSTR_OPTIONS str_rslts;
-    TEXTMETRIC      tm;
-    double          ydpi;
+    TEXTMETRIC tm;
+    double ydpi;
 
     /*
      * FIXME -- allow user to specify distinct printing font via a
@@ -1761,11 +1664,11 @@ get_printing_font(HDC hdc, HWND hwnd)
 #if DISP_NTWIN
     curfont = ntwinio_current_font();
 #else
-    curfont = "courier new,8";     /* A console port would substitute a
-				    * user-defined printing font here.
-				    */
+    curfont = "courier new,8";	/* A console port would substitute a
+				 * user-defined printing font here.
+				 */
 #endif
-    if (! parse_font_str(curfont, &str_rslts)) {
+    if (!parse_font_str(curfont, &str_rslts)) {
 	mlforce("BUG: Invalid internal font string");
     } else {
 	SaveDC(hdc);
@@ -1779,8 +1682,7 @@ get_printing_font(HDC hdc, HWND hwnd)
 	DPtoLP(hdc, &pt, 1);
 
 	w32_init_logfont(&logfont, &str_rslts, -pt.y);
-	if ((hfont = CreateFontIndirect(&logfont)) == NULL)
-	{
+	if ((hfont = CreateFontIndirect(&logfont)) == NULL) {
 	    disp_win32_error(W32_SYS_ERROR, hwnd);
 	    RestoreDC(hdc, -1);
 	} else {
@@ -1797,7 +1699,7 @@ get_printing_font(HDC hdc, HWND hwnd)
 		hfont = NULL;
 
 		sprintf(msg,
-		    "Fontmapper selected proportional printing font (%s), aborting...",
+			"Fontmapper selected proportional printing font (%s), aborting...",
 			font_mapper_face);
 		w32_message_box(hwnd, msg, MB_ICONSTOP | MB_OK);
 	    } else if ((mapper_face = asc_charstring(font_mapper_face)) != 0) {
@@ -1815,13 +1717,12 @@ get_printing_font(HDC hdc, HWND hwnd)
 		    mlforce(msg);
 		}
 		RestoreDC(hdc, -1);
-		free (mapper_face);
+		free(mapper_face);
 	    }
 	}
     }
     return (hfont);
 }
-
 
 static HINSTANCE
 GetHinstance(HWND hwnd)
@@ -1840,41 +1741,39 @@ GetHinstance(HWND hwnd)
 int
 winprint(int f GCC_UNUSED, int n GCC_UNUSED)
 {
-    char            buf[NFILEN + 64];
-    DOCINFO         di;
-    HDC             hdc;
-    HFONT           hfont, old_hfont;
-    HWND            hwnd;
-    int             horzres,
-		    mcpl,    /* max chars per line                 */
-		    mlpp,    /* max lines per page                 */
-		    rc = TRUE,
-		    status,
-		    vertres,
-		    xchar,   /* avg char width (pixels)            */
-		    xdpi,    /* dots per inch, x axis              */
-		    xwidth,  /* physical page width (pixels)       */
-		    ychar,   /* max character height (pixels)      */
-		    ydpi,    /* dots per inch, y axis              */
-		    ylen;    /* physical page height (pixels)      */
-    RECT            minmar;  /* printer's minimum margins (pixels) */
-    DEVMODE         *pdm_print, *pdm_setup;
-    PRINT_PARAM     pparam;
-    AREGION         selar;
-    BUFFER          *selbp;
-    TEXTMETRIC      tm;
+    char buf[NFILEN + 64];
+    DOCINFO di;
+    HDC hdc;
+    HFONT hfont, old_hfont;
+    HWND hwnd;
+    int horzres, int mcpl;	/* max chars per line                 */
+    int mlpp;			/* max lines per page                 */
+    int rc = TRUE;
+    int status;
+    int vertres;
+    int xchar;			/* avg char width (pixels)            */
+    int xdpi;			/* dots per inch, x axis              */
+    int xwidth;			/* physical page width (pixels)       */
+    int ychar;			/* max character height (pixels)      */
+    int ydpi;			/* dots per inch, y axis              */
+    int ylen;			/* physical page height (pixels)      */
+    RECT minmar;		/* printer's minimum margins (pixels) */
+    DEVMODE *pdm_print, *pdm_setup;
+    PRINT_PARAM pparam;
+    AREGION selar;
+    BUFFER *selbp;
+    TEXTMETRIC tm;
 
     TRACE((T_CALLED "winprint(%d,%d)\n", f, n));
 
     memset(&pparam, 0, sizeof(pparam));
     hwnd = hPrintWnd = GetVileWindow();
-    if (! pd)
-    {
+    if (!pd) {
 	if ((pd = typecalloc(PRINTDLG)) == NULL)
 	    returnCode(no_memory("winprint"));
 	pd->lStructSize = sizeof(*pd);
-	pd->nCopies     = 1;
-	pd->Flags       = PD_COLLATE|PD_ALLPAGES|PD_RETURNDC|PD_NOPAGENUMS;
+	pd->nCopies = 1;
+	pd->Flags = PD_COLLATE | PD_ALLPAGES | PD_RETURNDC | PD_NOPAGENUMS;
 
     }
     pd->hwndOwner = hwnd;
@@ -1884,10 +1783,10 @@ winprint(int f GCC_UNUSED, int n GCC_UNUSED)
      * default, as long as that selection is in the current buffer
      */
     if ((selbp = get_selection_buffer_and_region(&selar)) == NULL) {
-	pd->Flags |= PD_NOSELECTION;   /* disable "selection" radio button */
+	pd->Flags |= PD_NOSELECTION;	/* disable "selection" radio button */
     } else {
-	pd->Flags &= ~PD_NOSELECTION;  /* enable "selection" radio button  */
-	if (curbp == selbp && (! empty_text_selection(selbp, &selar))) {
+	pd->Flags &= ~PD_NOSELECTION;	/* enable "selection" radio button  */
+	if (curbp == selbp && (!empty_text_selection(selbp, &selar))) {
 	    /*
 	     * uncollated printing of text selections doesn't work in all
 	     * cases, so enable collation by default.
@@ -1898,11 +1797,10 @@ winprint(int f GCC_UNUSED, int n GCC_UNUSED)
 	    pd->Flags &= ~PD_SELECTION;
 	}
     }
-    if (! handle_page_dflts(hwnd))
+    if (!handle_page_dflts(hwnd))
 	returnCode(FALSE);
 
-    if (pgsetup_chgd)
-    {
+    if (pgsetup_chgd) {
 	ULONG nbytes;
 
 	/*
@@ -1917,22 +1815,19 @@ winprint(int f GCC_UNUSED, int n GCC_UNUSED)
 	 * Sure, you betcha'.
 	 */
 
-	if (pd->hDevMode)
-	{
+	if (pd->hDevMode) {
 	    GlobalFree(pd->hDevMode);
 	    pd->hDevMode = NULL;
 	}
-	if (pd->hDevNames)
-	{
+	if (pd->hDevNames) {
 	    /* this is stale -- force PrintDlg to reload it */
 
 	    GlobalFree(pd->hDevNames);
 	    pd->hDevNames = NULL;
 	}
 	pdm_setup = GlobalLock(pgsetup->hDevMode);
-	nbytes    = pdm_setup->dmSize + pdm_setup->dmDriverExtra;
-	if ((pd->hDevMode = GlobalAlloc(GMEM_MOVEABLE, nbytes)) == NULL)
-	{
+	nbytes = pdm_setup->dmSize + pdm_setup->dmDriverExtra;
+	if ((pd->hDevMode = GlobalAlloc(GMEM_MOVEABLE, nbytes)) == NULL) {
 	    GlobalUnlock(pgsetup->hDevMode);
 	    returnCode(no_memory("winprint"));
 	}
@@ -1951,12 +1846,10 @@ winprint(int f GCC_UNUSED, int n GCC_UNUSED)
     (void) SetForegroundWindow(ofn.hwndOwner);
 #endif
 
-    if (! status)
-    {
+    if (!status) {
 	/* user cancel'd dialog box or some error detected. */
 
-	if (comm_dlg_error() != 0)
-	{
+	if (comm_dlg_error() != 0) {
 	    /* legit error */
 
 	    rc = FALSE;
@@ -1964,14 +1857,14 @@ winprint(int f GCC_UNUSED, int n GCC_UNUSED)
 	returnCode(rc);
     }
 
+    /* *INDENT-EQLS* */
     printdlg_chgd    = TRUE;
     printing_aborted = spooler_failure = FALSE;
     print_high       = global_g_val(GVAL_PRINT_HIGH);
     print_low        = global_g_val(GVAL_PRINT_LOW);
     pparam.ncopies   = pd->nCopies;
     pparam.collate   = (pd->Flags & PD_COLLATE);
-    if ((! pparam.collate) && (pd->nCopies > 1) && (pd->Flags & PD_SELECTION))
-    {
+    if ((!pparam.collate) && (pd->nCopies > 1) && (pd->Flags & PD_SELECTION)) {
 	/*
 	 * The issue here is that uncollated printing of multiple copies of
 	 * a text selection is _not_ supported.  This could be done, but
@@ -1990,8 +1883,7 @@ winprint(int f GCC_UNUSED, int n GCC_UNUSED)
 				 "supported when using this printer.\r\r"
 				 "Continue printing with collation?",
 				 MB_ICONQUESTION | MB_YESNO);
-	if (status != IDYES)
-	{
+	if (status != IDYES) {
 	    winprint_cleanup(NULL);
 	    returnCode(FALSE);
 	}
@@ -2001,8 +1893,7 @@ winprint(int f GCC_UNUSED, int n GCC_UNUSED)
     /* compute some printing parameters */
     hdc = pd->hDC;
     SetMapMode(hdc, MM_TEXT);
-    if ((hfont = get_printing_font(hdc, hwnd)) == NULL)
-    {
+    if ((hfont = get_printing_font(hdc, hwnd)) == NULL) {
 	winprint_cleanup(NULL);
 	returnCode(FALSE);
     }
@@ -2012,6 +1903,7 @@ winprint(int f GCC_UNUSED, int n GCC_UNUSED)
      * didja' know -- there exist printers drivers that render inside
      * asymmetrical margins?  For example, an HPDJ 870CSE.
      */
+    /* *INDENT-EQLS* */
     xdpi          = GetDeviceCaps(hdc, LOGPIXELSX);
     ydpi          = GetDeviceCaps(hdc, LOGPIXELSY);
     horzres       = GetDeviceCaps(hdc, HORZRES);
@@ -2022,34 +1914,31 @@ winprint(int f GCC_UNUSED, int n GCC_UNUSED)
     minmar.top    = GetDeviceCaps(hdc, PHYSICALOFFSETY);
     minmar.right  = xwidth - horzres - minmar.left;
     minmar.bottom = ylen - vertres - minmar.top;
-    if (minmar.bottom < 0 || minmar.right < 0)
-    {
+    if (minmar.bottom < 0 || minmar.right < 0) {
 	w32_message_box(hwnd,
 			"Printer driver's physical dimensions not rationale",
-			MB_ICONSTOP | MB_OK);
+			MB_ICONSTOP   | MB_OK);
 	winprint_cleanup(old_hfont);
 	returnCode(FALSE);
     }
     (void) GetTextMetrics(hdc, &tm);
-    ychar = tm.tmHeight + tm.tmExternalLeading;
-    xchar = tm.tmAveCharWidth;
+    ychar         = tm.tmHeight + tm.tmExternalLeading;
+    xchar         = tm.tmAveCharWidth;
     compute_printrect(xdpi, ydpi, &minmar, horzres, vertres);
     compute_foot_hdr_pos(ydpi, &minmar, ychar, vertres);
-    mcpl = (printrect.right - printrect.left) / xchar;
-    if (mcpl <= 0)
-    {
+    mcpl          = (printrect.right - printrect.left) / xchar;
+    if (mcpl      <= 0) {
 	w32_message_box(hwnd,
 			"Left/Right margins too wide",
-			MB_ICONSTOP | MB_OK);
+			MB_ICONSTOP   | MB_OK);
 	winprint_cleanup(old_hfont);
 	returnCode(FALSE);
     }
-    mlpp = (printrect.bottom - printrect.top) / ychar;
-    if (mlpp <= 0)
-    {
+    mlpp          = (printrect.bottom - printrect.top) / ychar;
+    if (mlpp      <= 0) {
 	w32_message_box(hwnd,
 			"Top/Bottom margins too wide",
-			MB_ICONSTOP | MB_OK);
+			MB_ICONSTOP   | MB_OK);
 	winprint_cleanup(old_hfont);
 	returnCode(FALSE);
     }
@@ -2063,7 +1952,7 @@ winprint(int f GCC_UNUSED, int n GCC_UNUSED)
 				   W32_STRING("PrintCancelDlg"),
 				   hwnd,
 				   printer_dlg_proc);
-    if (! hDlgCancelPrint) {
+    if (!hDlgCancelPrint) {
 	disp_win32_error(W32_SYS_ERROR, hwnd);
 	winprint_cleanup(old_hfont);
 	returnCode(FALSE);
@@ -2093,13 +1982,14 @@ winprint(int f GCC_UNUSED, int n GCC_UNUSED)
 	 */
 	if ((pparam.buf = typeallocn(char, mcpl + 32)) != NULL) {
 
+	    /* *INDENT-EQLS* */
 	    pparam.xchar = xchar;
 	    pparam.ychar = ychar;
-	    pparam.mcpl  = mcpl;
-	    pparam.mlpp  = mlpp;
+	    pparam.mcpl = mcpl;
+	    pparam.mlpp = mlpp;
 	    pparam.hfont = hfont;
-	    pparam.xorg  = minmar.left;
-	    pparam.yorg  = minmar.top;
+	    pparam.xorg = minmar.left;
+	    pparam.yorg = minmar.top;
 
 	    if (pd->Flags & PD_SELECTION) {
 		WINDOW *ocurwp;
@@ -2117,7 +2007,7 @@ winprint(int f GCC_UNUSED, int n GCC_UNUSED)
 	} else {
 	    rc = no_memory("winprint");
 	}
-	if (! spooler_failure) {
+	if (!spooler_failure) {
 	    /*
 	     * don't close document if spooler failed -- causes a fault
 	     * on Win9x hosts.
@@ -2125,7 +2015,7 @@ winprint(int f GCC_UNUSED, int n GCC_UNUSED)
 
 	    (void) EndDoc(hdc);
 	}
-	if (! printing_aborted) {
+	if (!printing_aborted) {
 	    /*
 	     * order is important here:  enable winvile's message queue before
 	     * destroying the cancel printing dlg, else winvile loses focus
@@ -2140,43 +2030,38 @@ winprint(int f GCC_UNUSED, int n GCC_UNUSED)
     returnCode(rc);
 }
 
-
-
 int
 winpg_setup(int f GCC_UNUSED, int n GCC_UNUSED)
 {
     HWND hwnd;
-    int  rc = TRUE, status;
+    int rc = TRUE, status;
 
     TRACE((T_CALLED "winpg_setup(%d,%d)\n", f, n));
     hwnd = GetVileWindow();
-    if (! handle_page_dflts(hwnd)) {
+    if (!handle_page_dflts(hwnd)) {
 	rc = FALSE;
     } else {
 	if (printdlg_chgd) {
-	    ULONG          nbytes;
-	    DEVMODE       *pdm_print, *pdm_setup;
+	    ULONG nbytes;
+	    DEVMODE *pdm_print, *pdm_setup;
 
 	    /*
 	     * Force PageSetupDlg() to use parameters specified by last
 	     * invocation of PrinterDlg().
 	     */
-	    if (pgsetup->hDevMode)
-	    {
+	    if (pgsetup->hDevMode) {
 		GlobalFree(pgsetup->hDevMode);
 		pgsetup->hDevMode = NULL;
 	    }
-	    if (pgsetup->hDevNames)
-	    {
+	    if (pgsetup->hDevNames) {
 		/* stale by defn -- force PrintSetupDlg to reload it */
 
 		GlobalFree(pgsetup->hDevNames);
 		pgsetup->hDevNames = NULL;
 	    }
 	    pdm_print = GlobalLock(pd->hDevMode);
-	    nbytes    = pdm_print->dmSize + pdm_print->dmDriverExtra;
-	    if ((pgsetup->hDevMode = GlobalAlloc(GMEM_MOVEABLE, nbytes)) == NULL)
-	    {
+	    nbytes = pdm_print->dmSize + pdm_print->dmDriverExtra;
+	    if ((pgsetup->hDevMode = GlobalAlloc(GMEM_MOVEABLE, nbytes)) == NULL) {
 		GlobalUnlock(pd->hDevMode);
 		returnCode(no_memory("winpg_setup"));
 	    }
@@ -2193,12 +2078,10 @@ winpg_setup(int f GCC_UNUSED, int n GCC_UNUSED)
 	(void) SetForegroundWindow(hwnd);
 #endif
 
-	if (! status)
-	{
+	if (!status) {
 	    /* user cancel'd dialog box or some error detected. */
 
-	    if (comm_dlg_error() != 0)
-	    {
+	    if (comm_dlg_error() != 0) {
 		/* legit error -- user did not cancel dialog box */
 
 		rc = FALSE;
@@ -2251,7 +2134,7 @@ static int
 delete_recent_files_folder_registry_data(int isFile)
 {
     HKEY hkey;
-    int  i, maxpaths;
+    int i, maxpaths;
     W32_CHAR *subkey;
 
     subkey = (isFile) ? REGKEY_RECENT_FILES : REGKEY_RECENT_FLDRS;
@@ -2259,18 +2142,16 @@ delete_recent_files_folder_registry_data(int isFile)
 		     subkey,
 		     0,
 		     KEY_WRITE,
-		     &hkey) != ERROR_SUCCESS)
-    {
+		     &hkey) != ERROR_SUCCESS) {
 	/* assume there's no there, there */
 
 	return (TRUE);
     }
     maxpaths = (isFile) ? MAX_RECENT_FILES : MAX_RECENT_FLDRS;
-    for (i = 0; i < maxpaths; i++)
-    {
+    for (i = 0; i < maxpaths; i++) {
 	W32_CHAR *value_name = recent_regvalue(i);
 	(void) RegDeleteValue(hkey, value_name);
-	free (value_name);
+	free(value_name);
     }
     (void) RegCloseKey(hkey);
     return (TRUE);
@@ -2342,11 +2223,10 @@ free_mru_list(char **list)
 {
     char *p, **orig_listp;
 
-    if (! list)
+    if (!list)
 	return;
     orig_listp = list;
-    while (*list)
-    {
+    while (*list) {
 	p = *list++;
 	(void) free(p);
     }
@@ -2361,11 +2241,11 @@ free_mru_list(char **list)
 static char **
 fetch_mru_list(int isFile, int maxpaths)
 {
-    HKEY  hkey;
-    int   i;
-    char  **list;
-    char  path[FILENAME_MAX + 1];
-    W32_CHAR  *subkey;
+    HKEY hkey;
+    int i;
+    char **list;
+    char path[FILENAME_MAX + 1];
+    W32_CHAR *subkey;
 
     TRACE((T_CALLED "fetch_mru_list(%d,%d)\n", isFile, maxpaths));
 
@@ -2389,10 +2269,8 @@ fetch_mru_list(int isFile, int maxpaths)
     for (i = 0; i < maxpaths; i++) {
 	char value_name[32];
 	sprintf(value_name, RECENT_REGVALUE_FMT, i);
-	if (w32_get_reg_sz(hkey, value_name, path, sizeof(path)) == ERROR_SUCCESS)
-	{
-	    if ((list[i] = strmalloc(path)) == NULL)
-	    {
+	if (w32_get_reg_sz(hkey, value_name, path, sizeof(path)) == ERROR_SUCCESS) {
+	    if ((list[i] = strmalloc(path)) == NULL) {
 		(void) RegCloseKey(hkey);
 		free_mru_list(list);
 		(void) no_memory("fetch_mru_list()");
@@ -2404,8 +2282,7 @@ fetch_mru_list(int isFile, int maxpaths)
     (void) RegCloseKey(hkey);
 
     /* handle degenerate case */
-    if (list[0] == NULL)
-    {
+    if (list[0] == NULL) {
 	free_mru_list(list);
 	list = NULL;
     }
@@ -2419,17 +2296,16 @@ delete_popup_menu(HMENU vile_menu, int mnu_posn)
 
     memset(&mii, 0, sizeof(mii));
     mii.cbSize = sizeof(mii);
-    mii.fMask  = MIIM_SUBMENU;
-    if (! GetMenuItemInfo(vile_menu, mnu_posn, TRUE, &mii))
+    mii.fMask = MIIM_SUBMENU;
+    if (!GetMenuItemInfo(vile_menu, mnu_posn, TRUE, &mii))
 	return (FALSE);
 
     /* only delete popup menu if it exists */
-    if (mii.hSubMenu)
-    {
-	if (! DestroyMenu(mii.hSubMenu))
+    if (mii.hSubMenu) {
+	if (!DestroyMenu(mii.hSubMenu))
 	    return (FALSE);
 	mii.hSubMenu = NULL;
-	if (! SetMenuItemInfo(vile_menu, mnu_posn, TRUE, &mii))
+	if (!SetMenuItemInfo(vile_menu, mnu_posn, TRUE, &mii))
 	    return (FALSE);
     }
     return (TRUE);
@@ -2437,28 +2313,29 @@ delete_popup_menu(HMENU vile_menu, int mnu_posn)
 
 static int
 create_popup_menu(HMENU vile_menu,
-		  int   mnu_posn,
-		  char  **list,
-		  int   base_mnu_item_id,
-		  int   maxitems)
+		  int mnu_posn,
+		  char **list,
+		  int base_mnu_item_id,
+		  int maxitems)
 {
-    int		 rc = FALSE;
-    HMENU        hPopupMenu = CreateMenu();
-    int          i;
+    int rc = FALSE;
+    HMENU hPopupMenu = CreateMenu();
+    int i;
     MENUITEMINFO mii;
 
     if (hPopupMenu) {
 	for (i = 0; i < maxitems && *list; i++, list++) {
 	    W32_CHAR *item = w32_charstring(*list);
 	    AppendMenu(hPopupMenu, MF_STRING, base_mnu_item_id++, item);
-	    free (item);
+	    free(item);
 	}
+	/* *INDENT-EQLS* */
 	memset(&mii, 0, sizeof(mii));
-	mii.cbSize   = sizeof(mii);
-	mii.fMask    = MIIM_SUBMENU;
+	mii.cbSize = sizeof(mii);
+	mii.fMask = MIIM_SUBMENU;
 	mii.hSubMenu = hPopupMenu;
 	if (SetMenuItemInfo(vile_menu, mnu_posn, TRUE, &mii))
-	    rc = TRUE;
+	    rc        = TRUE;
     }
     return rc;
 }
@@ -2469,40 +2346,33 @@ find_files_folder_menu_posns(int *files_mnu_posn, int *fldrs_mnu_posn)
 {
     static int cached_files_posn = -1, cached_fldrs_posn = -1;
 
-    int      i, nitems;
-    HMENU    vile_menu;
+    int i, nitems;
+    HMENU vile_menu;
 
-    if (cached_files_posn >= 0)
-    {
+    if (cached_files_posn >= 0) {
 	*files_mnu_posn = cached_files_posn;
 	*fldrs_mnu_posn = cached_fldrs_posn;
 	return (TRUE);
     }
     vile_menu = GetSystemMenu(winvile_hwnd(), FALSE);
-    nitems    = GetMenuItemCount(vile_menu);
-    if (nitems < 0)
-    {
+    nitems = GetMenuItemCount(vile_menu);
+    if (nitems < 0) {
 	mlforce("[system menu inaccessible]");
 	return (FALSE);
     }
-    for (i = nitems - 1 ; i >= 0; i--)
-    {
-	if (GetMenuItemID(vile_menu, i) == IDM_SEP_AFTER_RCNT_FLDRS)
-	{
+    for (i = nitems - 1; i >= 0; i--) {
+	if (GetMenuItemID(vile_menu, i) == IDM_SEP_AFTER_RCNT_FLDRS) {
 	    cached_fldrs_posn = i - 1;
 	    cached_files_posn = i - 2;
 	    break;
 	}
     }
-    if (cached_files_posn < 0)
-    {
+    if (cached_files_posn < 0) {
 	/* search failed, something is quite wrong.... */
 
 	mlforce("[system menu RECENT FILE/FLDR items missing]");
 	return (FALSE);
-    }
-    else
-    {
+    } else {
 	*files_mnu_posn = cached_files_posn;
 	*fldrs_mnu_posn = cached_fldrs_posn;
 	return (TRUE);
@@ -2513,34 +2383,30 @@ void
 build_recent_file_and_folder_menus(void)
 {
 
-    char     **list;   /* dynamic array of files or folders */
-    int      maxfiles, maxfldrs, files_mnu_posn, fldrs_mnu_posn;
+    char **list;		/* dynamic array of files or folders */
+    int maxfiles, maxfldrs, files_mnu_posn, fldrs_mnu_posn;
     unsigned mnu_state;
-    HMENU    vile_menu;
+    HMENU vile_menu;
 
-    if (! find_files_folder_menu_posns(&files_mnu_posn, &fldrs_mnu_posn))
-	return;  /* system menu scrogged */
+    if (!find_files_folder_menu_posns(&files_mnu_posn, &fldrs_mnu_posn))
+	return;			/* system menu scrogged */
 
     vile_menu = GetSystemMenu(winvile_hwnd(), FALSE);
 
     /* --------- create or disable "recent files" popup menu --------- */
 
-    maxfiles  = global_g_val(GVAL_RECENT_FILES);
+    maxfiles = global_g_val(GVAL_RECENT_FILES);
     mnu_state = MF_GRAYED;
-    if (maxfiles != 0)
-    {
-	if ((list = fetch_mru_list(TRUE, maxfiles)) != NULL)
-	{
+    if (maxfiles != 0) {
+	if ((list = fetch_mru_list(TRUE, maxfiles)) != NULL) {
 	    /* first things first -- whack the old popup menu */
 
-	    if (delete_popup_menu(vile_menu, files_mnu_posn))
-	    {
+	    if (delete_popup_menu(vile_menu, files_mnu_posn)) {
 		if (create_popup_menu(vile_menu,
 				      files_mnu_posn,
 				      list,
 				      IDM_RECENT_FILES,
-				      maxfiles))
-		{
+				      maxfiles)) {
 		    mnu_state = MF_ENABLED;
 		}
 	    }
@@ -2551,22 +2417,18 @@ build_recent_file_and_folder_menus(void)
 
     /* --------- create or disable "recent folders" popup menu --------- */
 
-    maxfldrs  = global_g_val(GVAL_RECENT_FLDRS);
+    maxfldrs = global_g_val(GVAL_RECENT_FLDRS);
     mnu_state = MF_GRAYED;
-    if (maxfldrs != 0)
-    {
-	if ((list = fetch_mru_list(FALSE, maxfldrs)) != NULL)
-	{
+    if (maxfldrs != 0) {
+	if ((list = fetch_mru_list(FALSE, maxfldrs)) != NULL) {
 	    /* first things first -- whack the old popup menu */
 
-	    if (delete_popup_menu(vile_menu, fldrs_mnu_posn))
-	    {
+	    if (delete_popup_menu(vile_menu, fldrs_mnu_posn)) {
 		if (create_popup_menu(vile_menu,
 				      fldrs_mnu_posn,
 				      list,
 				      IDM_RECENT_FLDRS,
-				      maxfldrs))
-		{
+				      maxfldrs)) {
 		    mnu_state = MF_ENABLED;
 		}
 	    }
@@ -2580,26 +2442,26 @@ build_recent_file_and_folder_menus(void)
 int
 cd_recent_folder(int mnu_index)
 {
-    int      rc = FALSE;
+    int rc = FALSE;
     W32_CHAR dir[FILENAME_MAX + 1];
-    int      files_mnu_posn, fldrs_mnu_posn;
-    HMENU    vile_menu, fldrs_menu;
+    int files_mnu_posn, fldrs_mnu_posn;
+    HMENU vile_menu, fldrs_menu;
 
     TRACE((T_CALLED "cd_recent_folder(%d)\n", mnu_index));
     if (find_files_folder_menu_posns(&files_mnu_posn, &fldrs_mnu_posn)) {
 	vile_menu = GetSystemMenu(winvile_hwnd(), FALSE);
 	if ((fldrs_menu = GetSubMenu(vile_menu, fldrs_mnu_posn)) == NULL) {
 	    mlforce("BUG: folders popup menu damaged");
-	} else if (! GetMenuString(fldrs_menu,
-				mnu_index,
-				dir,
-				TABLESIZE(dir),
-				MF_BYCOMMAND)) {
+	} else if (!GetMenuString(fldrs_menu,
+				  mnu_index,
+				  dir,
+				  TABLESIZE(dir),
+				  MF_BYCOMMAND)) {
 	    mlforce("BUG: folders popup menu(%d) bogus", mnu_index);
 	} else {
 	    char *actual = asc_charstring(dir);
 	    rc = set_directory(actual);
-	    free (actual);
+	    free(actual);
 
 	    /*
 	     * note that set_directory() eventually calls
@@ -2615,12 +2477,12 @@ cd_recent_folder(int mnu_index)
 int
 edit_recent_file(int mnu_index)
 {
-    int      rc = FALSE;
-    BUFFER   *bp;
+    int rc = FALSE;
+    BUFFER *bp;
     W32_CHAR file[FILENAME_MAX + 1];
-    char     *actual;
-    int      files_mnu_posn, fldrs_mnu_posn;
-    HMENU    vile_menu, files_menu;
+    char *actual;
+    int files_mnu_posn, fldrs_mnu_posn;
+    HMENU vile_menu, files_menu;
 
     TRACE((T_CALLED "edit_recent_file(%d)\n", mnu_index));
     if (find_files_folder_menu_posns(&files_mnu_posn, &fldrs_mnu_posn)) {
@@ -2628,15 +2490,15 @@ edit_recent_file(int mnu_index)
 
 	if ((files_menu = GetSubMenu(vile_menu, files_mnu_posn)) == NULL) {
 	    mlforce("BUG: files popup menu damaged");
-	} else if (! GetMenuString(files_menu,
-			    mnu_index,
-			    file,
-			    TABLESIZE(file),
-			    MF_BYCOMMAND)) {
+	} else if (!GetMenuString(files_menu,
+				  mnu_index,
+				  file,
+				  TABLESIZE(file),
+				  MF_BYCOMMAND)) {
 	    mlforce("BUG: files popup menu(%d) bogus", mnu_index);
 	} else if ((actual = asc_charstring(file)) != 0) {
 
-	    rc = TRUE;  /* an assumption */
+	    rc = TRUE;		/* an assumption */
 
 	    /*
 	     * Perhaps the editor has the target file in a buffer already?
@@ -2646,13 +2508,12 @@ edit_recent_file(int mnu_index)
 	     * winvile occasionally drops incorrect highlights on existing buffers.
 	     * Yes, it's all magic to me.
 	     */
-	    if (! getfile(actual, TRUE)) {
+	    if (!getfile(actual, TRUE)) {
 		/* guess not */
 
-		if ((bp = getfile2bp(actual, FALSE, FALSE)) != NULL)
-		{
-		    bp->b_flag |= BFARGS;         /* treat this as an argument */
-		    rc = swbuffer(bp);            /* editor switches buffer    */
+		if ((bp = getfile2bp(actual, FALSE, FALSE)) != NULL) {
+		    bp->b_flag |= BFARGS;	/* treat this as an argument */
+		    rc = swbuffer(bp);	/* editor switches buffer    */
 
 		    /*
 		     * note that swbuffer() eventually calls
@@ -2673,9 +2534,9 @@ edit_recent_file(int mnu_index)
 		 * Fix that.
 		 */
 
-		 store_recent_file_or_folder(actual, TRUE);
+		store_recent_file_or_folder(actual, TRUE);
 	    }
-	    free (actual);
+	    free(actual);
 	} else {
 	    rc = no_memory("edit_recent_file");
 	}
@@ -2690,19 +2551,19 @@ edit_recent_file(int mnu_index)
 void
 store_recent_file_or_folder(const char *path, int isFile)
 {
-    char *newlist[MAX_RECENT_FILES+MAX_RECENT_FLDRS + 1]; /* overdim'd */
+    char *newlist[MAX_RECENT_FILES + MAX_RECENT_FLDRS + 1];	/* overdim'd */
     char **oldlist;
     W32_CHAR *subkey = (isFile) ? REGKEY_RECENT_FILES : REGKEY_RECENT_FLDRS;
     char **listp;
     HKEY hkey;
-    int  i, j, maxpaths;
+    int i, j, maxpaths;
 
     TRACE((T_CALLED "store_recent_file_or_folder(%s, %d)\n", path, isFile));
 
     maxpaths = global_g_val((isFile) ? GVAL_RECENT_FILES : GVAL_RECENT_FLDRS);
     if (maxpaths == 0) {
-	returnVoid();   /* feature disabled */
-    /* read all existing MRU data into dynamic array of strings */
+	returnVoid();		/* feature disabled */
+	/* read all existing MRU data into dynamic array of strings */
     } else if ((oldlist = fetch_mru_list(isFile, maxpaths)) == NULL) {
 	/* assume no MRU data -- degenerate case */
 
@@ -2721,15 +2582,12 @@ store_recent_file_or_folder(const char *path, int isFile)
 	    sprintf(value_name, RECENT_REGVALUE_FMT, 0);
 	    if (w32_set_reg_sz(hkey,
 			       value_name,
-			       path) != ERROR_SUCCESS)
-	    {
+			       path) != ERROR_SUCCESS) {
 		disp_win32_error(W32_SYS_ERROR, winvile_hwnd());
 	    }
 	    (void) RegCloseKey(hkey);
 	}
-    }
-    else if (oldlist[0] && stricmp(path, oldlist[0]) == 0)
-    {
+    } else if (oldlist[0] && stricmp(path, oldlist[0]) == 0) {
 	/* degenerate case -- path already at head of MRU list */
 
 	free_mru_list(oldlist);
@@ -2763,9 +2621,8 @@ store_recent_file_or_folder(const char *path, int isFile)
 		char value_name[32];
 		sprintf(value_name, RECENT_REGVALUE_FMT, i);
 		TRACE(("...store %d -> %s\n", i, *listp));
-		if (w32_set_reg_sz(hkey, value_name, *listp) != ERROR_SUCCESS)
-		{
-		    free (value_name);
+		if (w32_set_reg_sz(hkey, value_name, *listp) != ERROR_SUCCESS) {
+		    free(value_name);
 		    disp_win32_error(W32_SYS_ERROR, winvile_hwnd());
 		    break;
 		}

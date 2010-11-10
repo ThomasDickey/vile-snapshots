@@ -2,8 +2,9 @@
 %x NORMAL QUOTED COMMENT
 
 %{
+
 /*
- * $Id: scm-filt.l,v 1.7 2009/12/10 00:33:18 tom Exp $
+ * $Id: scm-filt.l,v 1.8 2010/11/04 09:25:29 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of scheme code.
  *
@@ -198,7 +199,6 @@ count_spaces(const char *text, int len)
     return i;
 }
 
-
 static void
 init_filter(int before GCC_UNUSED)
 {
@@ -210,13 +210,13 @@ do_filter(FILE *inputs)
 {
     InitLEX(inputs);
 
-    Action_attr  = class_attr(NAME_ACTION);
+    Action_attr = class_attr(NAME_ACTION);
     Comment_attr = class_attr(NAME_COMMENT);
-    Error_attr   = class_attr(NAME_ERROR);
-    Ident_attr   = class_attr(NAME_IDENT2);
+    Error_attr = class_attr(NAME_ERROR);
+    Ident_attr = class_attr(NAME_IDENT2);
     Keyword_attr = class_attr(NAME_KEYWORD);
-    Number_attr  = class_attr(NAME_NUMBER);
-    Literal_attr  = class_attr(NAME_LITERAL);
+    Number_attr = class_attr(NAME_NUMBER);
+    Literal_attr = class_attr(NAME_LITERAL);
 
     begin_state(NORMAL);
     RunLEX();

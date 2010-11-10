@@ -4,7 +4,7 @@
  *	Copyright (c) 1990, 1995-1999 by Paul Fox, except for delins(), which is
  *	Copyright (c) 1986 by University of Toronto, as noted below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/oneliner.c,v 1.120 2010/09/06 19:28:58 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/oneliner.c,v 1.121 2010/11/10 09:31:31 tom Exp $
  */
 
 #include	"estruct.h"
@@ -238,8 +238,8 @@ substreg1(int needpats, int use_opts, int is_globalsub)
 
 	buf[0] = EOS;
 	status =
-			 mlreply("(g)lobally, ([1-9])th occurrence on line, (c)onfirm, and/or (p)rint result: ",
-			 buf, (UINT) sizeof buf);
+	    mlreply("(g)lobally, ([1-9])th occurrence on line, (c)onfirm, and/or (p)rint result: ",
+		    buf, (UINT) sizeof buf);
 	if (status == ABORT) {
 	    return FALSE;
 	}

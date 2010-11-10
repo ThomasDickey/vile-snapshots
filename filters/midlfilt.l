@@ -2,8 +2,9 @@
 %x COMMENT CODE UUID
 
 %{
+
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/midlfilt.l,v 1.7 2008/11/19 23:11:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/midlfilt.l,v 1.8 2010/11/04 09:25:29 tom Exp $
  *
  * Filter to add vile "attribution" sequences to MIDL / ODL files.
  * - T.Dickey
@@ -18,6 +19,7 @@ static char *Error_attr;
 static char *Ident2_attr;
 static char *Number_attr;
 static char *String_attr;
+
 %}
 
 STRINGS		\"(\\.|[^"\\]|\\\n)*\"
@@ -64,10 +66,10 @@ do_filter(FILE *inputs)
     InitLEX(inputs);
 
     Comment_attr = class_attr(NAME_COMMENT);
-    Error_attr   = class_attr(NAME_ERROR);
-    Ident2_attr  = class_attr(NAME_IDENT2);
-    Number_attr  = class_attr(NAME_NUMBER);
-    String_attr  = class_attr(NAME_LITERAL);
+    Error_attr = class_attr(NAME_ERROR);
+    Ident2_attr = class_attr(NAME_IDENT2);
+    Number_attr = class_attr(NAME_NUMBER);
+    String_attr = class_attr(NAME_LITERAL);
 
     BEGIN(CODE);
     RunLEX();

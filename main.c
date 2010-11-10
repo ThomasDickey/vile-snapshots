@@ -22,7 +22,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.692 2010/08/16 09:49:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.693 2010/11/10 09:29:18 tom Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -773,7 +773,7 @@ MainProgram(int argc, char *argv[])
 # else
 #  if SYS_VMS
 	fd = open("tt:", O_RDONLY, S_IREAD);	/* or sys$command */
-#  else				/* e.g., DOS-based systems */
+#  else	/* e.g., DOS-based systems */
 	fd = fileno(stderr);	/* this normally cannot be redirected */
 #  endif
 	if ((fd >= 0)
@@ -782,8 +782,8 @@ MainProgram(int argc, char *argv[])
 	    && (in = fdopen(fd, "r")) != 0) {
 	    *stdin = *in;	/* FIXME: won't work on opaque FILE's */
 	}
-#  endif			/* SYS_WINNT */
-# endif				/* SYS_UNIX */
+#  endif /* SYS_WINNT */
+# endif	/* SYS_UNIX */
 #endif /* DISP_X11 */
 
 #if OPT_ENCRYPT
@@ -2252,7 +2252,7 @@ siginit(int enabled)
 	void *ptrfunc = wat_crit_handler;
 	_harderr(ptrfunc);
     }
-#  else				/* CC_TURBO */
+#  else	/* CC_TURBO */
     _harderr(dos_crit_handler);
 #  endif
 # endif
@@ -2900,9 +2900,9 @@ newprocessgroup(int f GCC_UNUSED, int n GCC_UNUSED)
     (void) setpgrp(0, 0);
 #   else
     (void) setpgrp();
-#   endif			/* HAVE_BSD_SETPGRP */
-#  endif			/* HAVE_SETSID */
-# endif				/* SYS_VMS */
+#   endif /* HAVE_BSD_SETPGRP */
+#  endif /* HAVE_SETSID */
+# endif	/* SYS_VMS */
 #endif /* DISP_X11 */
     return TRUE;
 }

@@ -15,7 +15,10 @@
    along with this program; if not, write to the Free Software
    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
-/* changes for vile are GPLv2, no "later version" express or implied -TD */
+/*
+ * $Header: /users/source/archives/vile.vcs/RCS/encrypt.c,v 1.9 2010/11/10 09:21:53 tom Exp $
+ * changes for vile are GPLv2, no "later version" express or implied -TD
+ */
 #include <filters.h>
 
 #ifndef HAVE_CRYPT
@@ -32,7 +35,6 @@
 #define IS2 28
 
 #define UCH(c) (unsigned char)(c)
-
 /* *INDENT-OFF* */
 static char schluessel[16][KS];
 
@@ -164,164 +166,152 @@ static char S_BOX[][64] =
 /* *INDENT-ON* */
 
 static void
-perm (char *a, const char *e, char *pc, int n)
+perm(char *a, const char *e, char *pc, int n)
 {
-  for (; n--; pc++, a++)
-    *a = e[UCH(*pc)];
+    for (; n--; pc++, a++)
+	*a = e[UCH(*pc)];
 }
 
 static void
-crypt_main (char *nachr_l, char *nachr_r, char *schl)
+crypt_main(char *nachr_l, char *nachr_r, char *schl)
 {
-  char tmp[KS];
-  register int sbval;
-  register char *tp = tmp;
-  register char *e = E;
-  register int i, j;
+    char tmp[KS];
+    register int sbval;
+    register char *tp = tmp;
+    register char *e = E;
+    register int i, j;
 
-  for (i = 0; i < 8; i++)
-    {
-      for (j = 0, sbval = 0; j < 6; j++)
-        sbval = (sbval << 1) | (nachr_r[UCH(*e++)] ^ *schl++);
-      sbval = S_BOX[i][sbval];
-      for (tp += 4, j = 4; j--; sbval >>= 1)
-        *--tp = (char) (sbval & 1);
-      tp += 4;
+    for (i = 0; i < 8; i++) {
+	for (j = 0, sbval = 0; j < 6; j++)
+	    sbval = (sbval << 1) | (nachr_r[UCH(*e++)] ^ *schl++);
+	sbval = S_BOX[i][sbval];
+	for (tp += 4, j = 4; j--; sbval >>= 1)
+	    *--tp = (char) (sbval & 1);
+	tp += 4;
     }
 
-  e = PERM;
-  for (i = 0; i < BS2; i++)
-    *nachr_l++ ^= tmp[UCH(*e++)];
+    e = PERM;
+    for (i = 0; i < BS2; i++)
+	*nachr_l++ ^= tmp[UCH(*e++)];
 }
 
 void
-encrypt (char *nachr, int decr)
+encrypt(char *nachr, int decr)
 {
-  char (*schl)[KS] = decr ? schluessel + 15 : schluessel;
-  char tmp[BS];
-  int i;
+    char (*schl)[KS] = decr ? schluessel + 15 : schluessel;
+    char tmp[BS];
+    int i;
 
-  perm (tmp, nachr, IP, BS);
+    perm(tmp, nachr, IP, BS);
 
-  for (i = 8; i--;)
-    {
-      crypt_main (tmp, tmp + BS2, *schl);
-      if (decr)
-        schl--;
-      else
-        schl++;
-      crypt_main (tmp + BS2, tmp, *schl);
-      if (decr)
-        schl--;
-      else
-        schl++;
+    for (i = 8; i--;) {
+	crypt_main(tmp, tmp + BS2, *schl);
+	if (decr)
+	    schl--;
+	else
+	    schl++;
+	crypt_main(tmp + BS2, tmp, *schl);
+	if (decr)
+	    schl--;
+	else
+	    schl++;
     }
 
-  perm (nachr, tmp, EP, BS);
+    perm(nachr, tmp, EP, BS);
 }
 
 void
-setkey (const char *schl)
+setkey(const char *schl)
 {
-  char tmp1[IS];
-  register unsigned int ls = 0x7efc;
-  register int i, j, k;
-  register int shval = 0;
-  register char *akt_schl;
+    char tmp1[IS];
+    register unsigned int ls = 0x7efc;
+    register int i, j, k;
+    register int shval = 0;
+    register char *akt_schl;
 
-  memcpy (E, E0, KS);
-  perm (tmp1, schl, PC1, IS);
+    memcpy(E, E0, KS);
+    perm(tmp1, schl, PC1, IS);
 
-  for (i = 0; i < 16; i++)
-    {
-      shval += (int) (1 + (ls & 1));
-      akt_schl = schluessel[i];
-      for (j = 0; j < KS; j++)
-      {
-        if ((k = PC2[j]) >= IS2)
-        {
-          if ((k += shval) >= IS)
-            k = (k - IS2) % IS2 + IS2;
-        }
-        else if ((k += shval) >= IS2)
-          k %= IS2;
-        *akt_schl++ = tmp1[k];
-      }
-      ls >>= 1;
+    for (i = 0; i < 16; i++) {
+	shval += (int) (1 + (ls & 1));
+	akt_schl = schluessel[i];
+	for (j = 0; j < KS; j++) {
+	    if ((k = PC2[j]) >= IS2) {
+		if ((k += shval) >= IS)
+		    k = (k - IS2) % IS2 + IS2;
+	    } else if ((k += shval) >= IS2)
+		k %= IS2;
+	    *akt_schl++ = tmp1[k];
+	}
+	ls >>= 1;
     }
 }
 
 char *
-crypt (const char *wort, const char *salt)
+crypt(const char *wort, const char *salt)
 {
-  static char retkey[14];
-  char key[BS + 2];
-  char *k;
-  int tmp, keybyte;
-  int i, j;
+    static char retkey[14];
+    char key[BS + 2];
+    char *k;
+    int tmp, keybyte;
+    int i, j;
 
-  memset (key, 0, BS + 2);
+    memset(key, 0, BS + 2);
 
-  for (k = key, i = 0; i < BS; i++)
-    {
-      if ((keybyte = *wort++) == 0)
-        break;
-      k += 7;
-      for (j = 0; j < 7; j++, i++)
-      {
-        *--k = (char) (keybyte & 1);
-        keybyte >>= 1;
-      }
-      k += 8;
+    for (k = key, i = 0; i < BS; i++) {
+	if ((keybyte = *wort++) == 0)
+	    break;
+	k += 7;
+	for (j = 0; j < 7; j++, i++) {
+	    *--k = (char) (keybyte & 1);
+	    keybyte >>= 1;
+	}
+	k += 8;
     }
 
-  setkey (key);
-  memset (key, 0, BS + 2);
+    setkey(key);
+    memset(key, 0, BS + 2);
 
-  for (k = E, i = 0; i < 2; i++)
-    {
-      retkey[i] = (char) (keybyte = *salt++);
-      if (keybyte > 'Z')
-        keybyte -= 'a' - 'Z' - 1;
-      if (keybyte > '9')
-        keybyte -= 'A' - '9' - 1;
-      keybyte -= '.';
+    for (k = E, i = 0; i < 2; i++) {
+	retkey[i] = (char) (keybyte = *salt++);
+	if (keybyte > 'Z')
+	    keybyte -= 'a' - 'Z' - 1;
+	if (keybyte > '9')
+	    keybyte -= 'A' - '9' - 1;
+	keybyte -= '.';
 
-      for (j = 0; j < 6; j++, keybyte >>= 1, k++)
-      {
-        if (!(keybyte & 1))
-          continue;
-        tmp = *k;
-        *k = k[24];
-        k[24] = (char) tmp;
-      }
+	for (j = 0; j < 6; j++, keybyte >>= 1, k++) {
+	    if (!(keybyte & 1))
+		continue;
+	    tmp = *k;
+	    *k = k[24];
+	    k[24] = (char) tmp;
+	}
     }
 
-  for (i = 0; i < 25; i++)
-    encrypt (key, 0);
+    for (i = 0; i < 25; i++)
+	encrypt(key, 0);
 
-  for (k = key, i = 0; i < 11; i++)
-    {
-      for (j = keybyte = 0; j < 6; j++)
-      {
-        keybyte <<= 1;
-        keybyte |= *k++;
-      }
+    for (k = key, i = 0; i < 11; i++) {
+	for (j = keybyte = 0; j < 6; j++) {
+	    keybyte <<= 1;
+	    keybyte |= *k++;
+	}
 
-      keybyte += '.';
-      if (keybyte > '9')
-        keybyte += 'A' - '9' - 1;
-      if (keybyte > 'Z')
-        keybyte += 'a' - 'Z' - 1;
-      retkey[i + 2] = (char) keybyte;
+	keybyte += '.';
+	if (keybyte > '9')
+	    keybyte += 'A' - '9' - 1;
+	if (keybyte > 'Z')
+	    keybyte += 'a' - 'Z' - 1;
+	retkey[i + 2] = (char) keybyte;
     }
 
-  retkey[i + 2] = 0;
+    retkey[i + 2] = 0;
 
-  if (!retkey[1])
-    retkey[1] = *retkey;
+    if (!retkey[1])
+	retkey[1] = *retkey;
 
-  return retkey;
+    return retkey;
 }
 
 #else

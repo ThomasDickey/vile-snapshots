@@ -7,7 +7,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/vilefilt.l,v 1.69 2010/09/06 15:41:18 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/vilefilt.l,v 1.70 2010/11/04 09:25:30 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of vile macros
  * - T.Dickey
@@ -37,7 +37,7 @@ static const char *Number_attr;
 static const char *Preproc_attr;
 static const char *String_attr;
 
-static const char * command_attr(char *text);
+static const char *command_attr(char *text);
 static int is_funckey(const char *text);
 static void handle_keyword(char *text, int len);
 static void handle_newline(void);
@@ -154,9 +154,9 @@ SPACE		;
 static void
 handle_keyword(char *text, int len)
 {
-    const char *attr = is_funckey(text)
-		       ? String_attr
-		       : command_attr(text);
+    const char *attr = (is_funckey(text)
+			? String_attr
+			: command_attr(text));
 
 #if HAVE_DIRECTIVE
     if (vile_keywords) {
@@ -171,22 +171,25 @@ handle_keyword(char *text, int len)
 	    } else if (vl_check_cmd(cmd, USEREG)) {
 		new_state(REGISTER);
 	    } else if (vl_check_cmd(cmd, OPER)) {
-		;	/* operators are followed by motion */
+		;		/* operators are followed by motion */
 	    } else if (vl_check_cmd(cmd, EXTRA)) {
 		new_state(LITERAL);
 	    }
 	    break;
 	case REGISTER:
 	    attr = String_attr;
-	    if (yyleng != 1) attr = Error_attr;
+	    if (yyleng != 1)
+		attr = Error_attr;
 	    new_state(NORMAL);
 	    break;
 	case MAJORMODE_NAME:
-	    if (*attr == 0) attr = "U";
+	    if (*attr == 0)
+		attr = "U";
 	    new_state(NORMAL);
 	    break;
 	case SUBMODE_NAME:
-	    if (*attr == 0) attr = "U";
+	    if (*attr == 0)
+		attr = "U";
 	    new_state(SUBMODE_VALS);
 	    break;
 	case SUBMODE_VALS:
@@ -417,14 +420,14 @@ do_filter(FILE *inputs)
 {
     InitLEX(inputs);
 
-    Action_attr  = class_attr(NAME_ACTION);
+    Action_attr = class_attr(NAME_ACTION);
     Comment_attr = class_attr(NAME_COMMENT);
-    Error_attr   = class_attr(NAME_ERROR);
-    Ident2_attr  = class_attr(NAME_IDENT2);
+    Error_attr = class_attr(NAME_ERROR);
+    Ident2_attr = class_attr(NAME_IDENT2);
     Keyword_attr = class_attr(NAME_KEYWORD);
-    Number_attr  = class_attr(NAME_NUMBER);
+    Number_attr = class_attr(NAME_NUMBER);
     Preproc_attr = class_attr(NAME_PREPROC);
-    String_attr  = class_attr(NAME_LITERAL);
+    String_attr = class_attr(NAME_LITERAL);
 
     begin_state(NORMAL);
     FltStack_WITH_ACTIVE = 0;

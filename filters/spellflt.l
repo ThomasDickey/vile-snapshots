@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/spellflt.l,v 1.50 2010/09/14 09:15:19 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/spellflt.l,v 1.51 2010/11/04 09:25:29 tom Exp $
  *
  * Filter to add vile "attribution" sequences to misspelled words.
  */
@@ -44,7 +44,7 @@ static void ChopWords(FILE *fp, char *text, int len);
 #define pipe_open(command)	popen(command, "r")
 #define	pipe_read(b,s)		fgets(b, (int) sizeof(b), s)
 #define pipe_close(s)		pclose(s)
-#else				/* platforms with no workable popen */
+#else /* platforms with no workable popen */
 #ifdef filter_def		/* built-in filter? */
 #define HAVE_POPEN		/* we can fake it */
 static char lastdata[BUFFER_SIZE];
@@ -113,8 +113,8 @@ pipe_close(FILE *s)
     (void) s;
     ffclose();
 }
-#endif				/* filter_def */
-#endif				/* HAVE_POPEN */
+#endif /* filter_def */
+#endif /* HAVE_POPEN */
 
 static FILE *
 open_tempfile(char **fname)
@@ -126,7 +126,7 @@ open_tempfile(char **fname)
     int fd;
 
     if (tmpdir == NULL)
-        tmpdir = "/tmp";
+	tmpdir = "/tmp";
     if ((*fname = (char *) malloc(strlen(tmpdir) + sizeof(fmt))) != 0) {
 	sprintf(*fname, fmt, tmpdir);
 	fd = mkstemp(*fname);
@@ -135,7 +135,7 @@ open_tempfile(char **fname)
     }
 #else
     int oldmask = umask(0077);
-    char *result = tmpnam((char *)0);
+    char *result = tmpnam((char *) 0);
     if (result != 0 && (*fname = malloc(2 * strlen(result) + 1)) != 0) {
 	strcpy(*fname, result);
 	fp = fopen(*fname, "w");
@@ -292,7 +292,7 @@ do_filter(FILE *inputs GCC_UNUSED)
 	ffputline(lp->l_text, llength(lp), "\n");
     }
     RunLEX();
-#else				/* external filter */
+#else /* external filter */
     if ((FromFP = open_tempfile(&from)) == 0) {
 	fclose(ChopFP);
 	zap_tempfile(&from);
@@ -327,7 +327,7 @@ do_filter(FILE *inputs GCC_UNUSED)
     sprintf(buffer, "%s <%s", prog, chop);
     if ((fp = pipe_open(buffer)) != 0) {
 	while (pipe_read(buffer, fp)) {
-	    size_t len  = strlen(buffer);
+	    size_t len = strlen(buffer);
 	    while (len-- && isspace(CharOf(buffer[len]))) {
 		buffer[len] = 0;
 	    }
