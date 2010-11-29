@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 console API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntconio.c,v 1.92 2009/12/09 01:43:48 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntconio.c,v 1.93 2010/11/29 10:14:59 Rick.Sladkey Exp $
  *
  */
 
@@ -43,6 +43,7 @@ static int icursor;		/* T -> enable insertion cursor       */
 static int icursor_cmdmode;	/* cmd mode cursor height             */
 static int icursor_insmode;	/* insertion mode  cursor height      */
 static int chgd_cursor;		/* must restore cursor height on exit */
+static ENC_CHOICES my_encoding = enc_DEFAULT;
 
 static int cfcolor = -1;	/* current forground color */
 static int cbcolor = -1;	/* current background color */
@@ -62,7 +63,7 @@ static int ac_active = FALSE;	/* autocolor active */
 static const char *initpalettestr = "0 4 2 6 1 5 3 7 8 12 10 14 9 13 11 15";
 /* black, red, green, yellow, blue, magenta, cyan, white   */
 
-static char linebuf[NCOL];
+static W32_CHAR linebuf[NCOL];
 static int bufpos = 0;
 
 /* Add state variables for console vile's autoscroll feature.              */
@@ -145,32 +146,15 @@ scflush(void)
     if (bufpos) {
 	COORD coordCursor;
 	DWORD written;
-#ifdef UNICODE
-	W32_CHAR *actual;
-	char save_buf;
-#endif
 
 	coordCursor.X = (SHORT) ccol;
 	coordCursor.Y = (SHORT) crow;
 	TRACE2(("scflush %04x [%d,%d]%.*s\n",
 		currentAttribute, crow, ccol, bufpos, linebuf));
-#ifdef UNICODE
-	save_buf = linebuf[bufpos];
-	linebuf[bufpos] = 0;
-	if ((actual = w32_charstring(linebuf)) != 0) {
-	    WriteConsoleOutputCharacter(
-					   hConsoleOutput, actual, bufpos,
-					   coordCursor, &written
-		);
-	    free(actual);
-	}
-	linebuf[bufpos] = save_buf;
-#else
 	WriteConsoleOutputCharacter(
 				       hConsoleOutput, linebuf, bufpos,
 				       coordCursor, &written
 	    );
-#endif
 	FillConsoleOutputAttribute(
 				      hConsoleOutput, currentAttribute,
 				      bufpos, coordCursor, &written
@@ -377,7 +361,7 @@ ntconio_putc(int ch)
     if (ch >= ' ') {
 
 	/* This is an optimization for the most common case. */
-	linebuf[bufpos++] = (char) ch;
+	linebuf[bufpos++] = (W32_CHAR) ch;
 
     } else {
 
@@ -416,7 +400,7 @@ ntconio_putc(int ch)
 	    break;
 
 	default:
-	    linebuf[bufpos++] = (char) ch;
+	    linebuf[bufpos++] = (W32_CHAR) ch;
 	    break;
 	}
     }
@@ -499,6 +483,18 @@ nthandler(DWORD ctrl_type)
 }
 
 static void
+ntconio_set_encoding(ENC_CHOICES code)
+{
+    my_encoding = code;
+}
+
+static ENC_CHOICES
+ntconio_get_encoding(void)
+{
+    return my_encoding;
+}
+
+static void
 ntconio_open(void)
 {
     CONSOLE_CURSOR_INFO newcci;
@@ -546,6 +542,7 @@ ntconio_open(void)
     newscreensize(csbi.dwMaximumWindowSize.Y, csbi.dwMaximumWindowSize.X);
     hConsoleInput = GetStdHandle(STD_INPUT_HANDLE);
     SetConsoleCtrlHandler(nthandler, TRUE);
+    ntconio_set_encoding(enc_UTF16);
 }
 
 static void
@@ -1496,8 +1493,8 @@ TERM term =
     NROW,
     NCOL,
     NCOL,
-    dumb_set_encoding,
-    dumb_get_encoding,
+    ntconio_set_encoding,
+    ntconio_get_encoding,
     ntconio_open,
     ntconio_close,
     ntconio_kopen,

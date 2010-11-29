@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.719 2010/09/08 08:44:59 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.720 2010/11/29 10:14:59 Rick.Sladkey Exp $
  */
 
 #ifndef _estruct_h
@@ -2599,7 +2599,7 @@ typedef struct	{
 #define WIDE_CURSES 0
 #endif
 
-#if OPT_MULTIBYTE && (DISP_TERMCAP || WIDE_CURSES || DISP_X11 || (DISP_NTWIN && defined(UNICODE)))
+#if OPT_MULTIBYTE && (DISP_TERMCAP || WIDE_CURSES || DISP_X11 || ((DISP_NTCONS || DISP_NTWIN) && defined(UNICODE)))
 typedef USHORT VIDEO_TEXT;
 typedef USHORT VIDEO_CHAR;
 #else
