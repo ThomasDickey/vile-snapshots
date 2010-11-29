@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 screen API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.194 2010/02/14 18:43:03 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.195 2010/11/29 10:14:59 Rick.Sladkey Exp $
  * Written by T.E.Dickey for vile (october 1997).
  * -- improvements by Clark Morgan (see w32cbrd.c, w32pipe.c).
  */
@@ -1083,7 +1083,7 @@ is_fixed_pitch(HFONT font)
 	 * FIXME - find how to (simply) determine the total number of glyphs
 	 * in a font.
 	 */
-	if ((metrics.tmFirstChar == 0x20) && (metrics.tmLastChar > 10000)) {
+	if ((metrics.tmFirstChar == 0x20) && (metrics.tmLastChar > 8000)) {
 	    term.set_enc(enc_UTF16);
 	    TRACE(("Assume font useful for UNICODE\n"));
 	} else {

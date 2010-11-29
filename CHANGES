@@ -1,13 +1,27 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20101110 (c)
+ 20101129 (c)
+	> Rick Sladkey
+	+ add Unicode support to the vile Win32 console driver.
 	> Tom Dickey:
+	+ modify CF_WITH_CURSES_DIR and related macros so the --with-curses-dir
+	  option applies to both ncurses and curses.
+	+ modify CF_X_ATHENA and CF_X_TOOLKIT autoconf macros to accomodate
+	  changes in xorg package scripts.
+	+ modify several autoconf macros to lessen use of legacy
+	  "${name-value}" feature in favor of standard "${name:-value}", since
+	  it is broken in recent version of bash.
+	+ remove a spurious '\' in backreference for sed in CF_LEX_VERSION
+	  macro (report by Mark McKinstry)
+	+ add ".yy" suffix to yaccmode.
+	+ add ".gperf" and ".ll" suffixes to lexmode.
 	+ ncu-indent is now provided by "cindent" at
 	  http://invisible-island.net/cindent/
 	+ set pointsize in output from atr2html.
 	+ use cindent to format the ".c"-files.
 	+ use cindent to format the lex-files.
 	+ correct description of "copy-to-clipboard" in cmdtbl.
+	+ update config.guess, config.sub
 
  20100915 (b)
 	> Tom Dickey:
