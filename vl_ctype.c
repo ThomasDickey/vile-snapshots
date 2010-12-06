@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/vl_ctype.c,v 1.14 2010/09/06 18:38:50 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/vl_ctype.c,v 1.15 2010/12/05 00:41:28 tom Exp $
  */
 
 /*
@@ -61,20 +61,7 @@ vl_ctype_init(int print_lo, int print_hi)
 	    vl_lowercase[c] = (char) tolower(c);
 	} else {
 	    /* fallback to built-in character tables */
-	    if (okCTYPE2(vl_wide_enc)) {
-		vlCTYPE(c) = vl_ctype_latin1[c];
-	    } else {
-		vlCTYPE(c) = vl_ctype_ascii[c];
-	    }
-	    vl_uppercase[c] = (char) c;
-	    vl_lowercase[c] = (char) c;
-	    if (isAlpha(c)) {
-		if (isUpper(c)) {
-		    vl_lowercase[c] = (char) (c ^ DIFCASE);
-		} else {
-		    vl_uppercase[c] = (char) (c ^ DIFCASE);
-		}
-	    }
+	    vl_8bit_ctype_init(okCTYPE2(vl_wide_enc), c);
 	}
     }
 #else /* ! OPT_LOCALE */

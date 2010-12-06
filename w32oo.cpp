@@ -8,7 +8,7 @@
  *   "FAILED" may not be used to test an OLE return code.  Use SUCCEEDED
  *   instead.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32oo.cpp,v 1.15 2010/11/29 10:14:59 Rick.Sladkey Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32oo.cpp,v 1.16 2010/12/05 23:01:35 tom Exp $
  */
 
 #include "w32vile.h"
@@ -37,7 +37,7 @@ vl_GetPathFromIDList(LPITEMIDLIST lp, char *bufferp)
     W32_CHAR buffer[FILENAME_MAX];
     char *result;
 
-    rc = SHGetPathFromIDList(lp, (LPWSTR) buffer);
+    rc = SHGetPathFromIDList(lp, buffer);
     if (rc) {
 	if ((result = asc_charstring(buffer)) != 0) {
 	    strcpy(bufferp, result);
@@ -166,7 +166,7 @@ BrowseCallbackProc(HWND hwnd, UINT uMsg, LPARAM lp, LPARAM pData)
             break;
         case BFFM_SELCHANGED:
            // Set the status window text to the currently selected path.
-           if (SHGetPathFromIDList((LPITEMIDLIST) lp, (LPWSTR) szDir))
+           if (SHGetPathFromIDList((LPITEMIDLIST) lp, szDir))
               SendMessage(hwnd, BFFM_SETSTATUSTEXT, 0, (LPARAM) szDir);
            break;
         default:

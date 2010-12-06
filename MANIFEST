@@ -1,4 +1,4 @@
-MANIFEST for vile, version v9_8b3
+MANIFEST for vile, version v9_8c
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 AUTHORS                         list of authors, with nicknames in CHANGES
@@ -57,6 +57,7 @@ fileio.c                        low-level file I/O functions
 finderr.c                       error-finder
 glob.c                          globbing (wildcard & environment-variable substitution)
 globals.c                       ed/vi/ex style global commands
+gnreight.h                      generated data for single-byte encodings
 gppconio.c                      patched console I/O support for DJGCC
 history.c                       command-history
 input.c                         various input-routines

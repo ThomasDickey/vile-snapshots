@@ -44,7 +44,7 @@
  *	tgetc_avail()     true if a key is avail from tgetc() or below.
  *	keystroke_avail() true if a key is avail from keystroke() or below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.339 2010/09/07 00:27:43 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.340 2010/12/05 21:08:03 tom Exp $
  *
  */
 
@@ -1134,7 +1134,7 @@ expandChar(TBUFF **buf,
     char *buffer = tb_values(*buf);
     int shell = editingShellCmd(buffer, options);
     int expand = ((options & KBD_EXPAND) || shell);
-    int exppat = (options & KBD_EXPPAT);
+    int exppat = (options & KBD_EXPPAT) != 0;
 
     if (buffer == 0)
 	return FALSE;

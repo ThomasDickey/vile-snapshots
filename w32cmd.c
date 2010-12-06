@@ -2,7 +2,7 @@
  * w32cmd:  collection of functions that add Win32-specific editor
  *          features (modulo the clipboard interface) to [win]vile.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32cmd.c,v 1.46 2010/11/10 10:34:47 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32cmd.c,v 1.47 2010/12/05 22:38:43 tom Exp $
  */
 
 #include "estruct.h"
@@ -1746,7 +1746,8 @@ winprint(int f GCC_UNUSED, int n GCC_UNUSED)
     HDC hdc;
     HFONT hfont, old_hfont;
     HWND hwnd;
-    int horzres, int mcpl;	/* max chars per line                 */
+    int horzres;
+    int mcpl;			/* max chars per line                 */
     int mlpp;			/* max lines per page                 */
     int rc = TRUE;
     int status;

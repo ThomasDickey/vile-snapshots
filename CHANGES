@@ -1,9 +1,14 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20101129 (c)
+ 20101206 (c)
 	> Rick Sladkey
 	+ add Unicode support to the vile Win32 console driver.
 	> Tom Dickey:
+	+ add generated set of single-byte encodings, to replace the ASCII and
+	  ISO-8859-1 fallbacks used when no suitable 8-bit "narrow" locale can
+	  be setup.  The tables also have the corresponding set of locale names,
+	  which provides a fallback for cases when the locale support is
+	  incomplete (prompted by report by Ramil Farkhshatov).
 	+ modify CF_WITH_CURSES_DIR and related macros so the --with-curses-dir
 	  option applies to both ncurses and curses.
 	+ modify CF_X_ATHENA and CF_X_TOOLKIT autoconf macros to accomodate

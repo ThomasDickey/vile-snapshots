@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.353 2010/09/14 09:33:32 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.354 2010/12/05 21:09:45 tom Exp $
  *
  */
 
@@ -2010,7 +2010,7 @@ kcod2prc(int c, char *seq)
 #if OPT_KEY_MODIFY
     if (((UINT) c & mod_KEY) != 0 && (length != 0)) {
 	(void) strcpy(seq, temp + 1);
-	if (length < (int) (1 + strlen(temp + 1) + (CharOf(c) == 0))) {
+	if (length < (int) (1 + strlen(temp + 1) + (size_t) (CharOf(c) == 0))) {
 	    (void) bytes2prc(seq + length - 1, temp + length, 1);
 	}
     } else

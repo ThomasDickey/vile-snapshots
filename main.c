@@ -22,7 +22,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.693 2010/11/10 09:29:18 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.696 2010/12/05 18:50:23 tom Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -398,7 +398,7 @@ MainProgram(int argc, char *argv[])
 	 * corresponding encoding.
 	 */
 	if (!okCTYPE2(vl_real_enc)) {
-	    vl_real_enc.encoding = 0;
+	    vl_get_encoding(&vl_real_enc.encoding, env);
 	} else {
 	    vl_get_encoding(&vl_real_enc.encoding, vl_real_enc.locale);
 	}
