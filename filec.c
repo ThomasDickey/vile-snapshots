@@ -5,7 +5,7 @@
  * Written by T.E.Dickey for vile (march 1993).
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/filec.c,v 1.129 2010/09/05 17:38:50 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/filec.c,v 1.130 2010/12/05 21:06:14 tom Exp $
  *
  */
 
@@ -1200,7 +1200,7 @@ mlreply_file(const char *prompt, TBUFF **buffer, UINT flag, char *result)
 		     && curbp->b_fname != 0
 		     && curbp->b_fname[0] != EOS);
     int do_prompt = (clexec || isnamedcmd || (flag & FILEC_PROMPT));
-    int ok_expand = (flag & FILEC_EXPAND);
+    int ok_expand = ((flag & FILEC_EXPAND) != 0);
 
     flag &= (UINT) (~(FILEC_PROMPT | FILEC_EXPAND));
 

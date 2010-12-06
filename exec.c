@@ -4,7 +4,7 @@
  *	original by Daniel Lawrence, but
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.341 2010/09/08 21:13:26 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.342 2010/12/05 21:05:36 tom Exp $
  *
  */
 
@@ -502,6 +502,8 @@ static				/* next procedure is local */
 int
 execute_named_command(int f, int n)
 {
+    static char empty[] = "";
+
     int status;
     const CMDFUNC *cfp;		/* function to execute */
     char *fnp;			/* ptr to the name of the cmd to exec */
@@ -650,7 +652,7 @@ execute_named_command(int f, int n)
 	    return FALSE;
 	} else {		/* range, no function */
 	    cfp = &f_gomark;
-	    fnp = "";
+	    fnp = empty;
 	}
     } else if ((cfp = engl2fnc(fnp)) == NULL) {		/* bad function */
 	return no_such_function(fnp);
@@ -799,7 +801,7 @@ execute_named_command(int f, int n)
 		swapmark();
 	    } else {
 		ukb = (short) num;
-		kregflag = (short) ((that == 1) ? KAPPEND : 0);
+		kregflag = (USHORT) ((that == 1) ? KAPPEND : 0);
 		that = 1;
 		/* patch: need to handle recursion */
 	    }
@@ -994,7 +996,7 @@ call_cmdfunc(const CMDFUNC * p, int f, int n)
 
 #if OPT_PERL
     case CMD_PERL:		/* perl subroutine */
-	status = perl_call_sub(CMD_U_PERL(p), p->c_flags & OPER, f, n);
+	status = perl_call_sub(CMD_U_PERL(p), (int) (p->c_flags & OPER), f, n);
 	break;
 #endif
 #endif /* OPT_NAMEBST */

@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/vl_ctype.h,v 1.27 2010/02/09 00:59:24 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/vl_ctype.h,v 1.30 2010/12/05 00:45:50 tom Exp $
  *
  * Character-type tests, like <ctype.h> for vile (vi-like-emacs).
  *
@@ -92,14 +92,16 @@
 #define chrBIT(n) ((CHARTYPE)(1L<<(n)))
 
 typedef enum {
-	vl_UPPER = 0
+	vl_ALPHA = 0
+	, vl_UPPER
 	, vl_LOWER
 	, vl_DIGIT
 	, vl_SPACE
-	, vl_BSPACE
 	, vl_CNTRL
 	, vl_PRINT
 	, vl_PUNCT
+	/* first 8 comprise a byte in gnreight.h */
+	, vl_BSPACE
 	, vl_IDENT
 	, vl_PATHN
 	, vl_WILD
@@ -117,6 +119,7 @@ typedef enum {
 	, vl_UNUSED
 } VL_CTYPES;
 
+#define vl_alpha    chrBIT(vl_ALPHA)	/* alphabetic */
 #define vl_upper    chrBIT(vl_UPPER)	/* upper case */
 #define vl_lower    chrBIT(vl_LOWER)	/* lower case */
 #define vl_digit    chrBIT(vl_DIGIT)	/* digits */
@@ -188,9 +191,6 @@ typedef struct {
 #define toLower(c)	vl_lowercase[CharOf(c)]
 #define tocntrl(c)	(((unsigned)(c)) ^ DIFCNTRL)
 #define toalpha(c)	(((unsigned)(c)) ^ DIFCNTRL)
-
-extern CHARTYPE vl_ctype_ascii[];
-extern CHARTYPE vl_ctype_latin1[];
 
 extern CHARTYPE vl_ctype_bits(int ch, int use_locale);
 extern void vl_ctype_init(int print_lo, int print_hi);

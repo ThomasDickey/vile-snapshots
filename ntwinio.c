@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 screen API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.195 2010/11/29 10:14:59 Rick.Sladkey Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.196 2010/12/05 22:42:39 tom Exp $
  * Written by T.E.Dickey for vile (october 1997).
  * -- improvements by Clark Morgan (see w32cbrd.c, w32pipe.c).
  */
@@ -2154,7 +2154,7 @@ decode_key_event(KEY_EVENT_RECORD * irp)
     if ((key = (UCHAR) irp->uChar.AsciiChar) != 0)
 	return key;
 
-#if VILE_OLE
+#ifdef VILE_OLE
     if (redirect_keys &&
 	oleauto_redirected_key(irp->wVirtualKeyCode, irp->dwControlKeyState)) {
 	return (KYREDIR);	/* Key sent to another window. */
@@ -3724,7 +3724,7 @@ MainWndProc(
     switch (message) {
 	HANDLE_MSG(hWnd, WM_CLOSE, HandleClose);
     case WM_COMMAND:
-#if FIXME
+#if 0				/* FIXME */
 	switch (wParam) {
 	case IDC_button:
 	    wParam = IDC_button_x;
