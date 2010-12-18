@@ -1,5 +1,13 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
+ 20101212 (d)
+	> Tom Dickey:
+	+ use the generated single-byte encodings from 9.8c to improve UTF-8
+	  support for platforms without iconv, i.e., by relating the narrow
+	  and wide encodings.
+	+ add $kbd-encoding variable, to control whether the keyboard uses the
+	  same encoding as the display and/or locale.
+
  20101206 (c)
 	> Rick Sladkey
 	+ add Unicode support to the vile Win32 console driver.

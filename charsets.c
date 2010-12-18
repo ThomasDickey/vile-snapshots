@@ -1,5 +1,5 @@
 /*
- * $Id: charsets.c,v 1.72 2010/09/14 09:17:35 tom Exp $
+ * $Id: charsets.c,v 1.74 2010/12/17 23:43:58 tom Exp $
  *
  * see
  http://msdn.microsoft.com/library/default.asp?url=/library/en-us/intl/unicode_42jv.asp
@@ -147,58 +147,85 @@ vl_conv_to_utf8(UCHAR * target, UINT source, B_COUNT limit)
 }
 
 int
-vl_conv_to_utf32(UINT * target, const char *source, B_COUNT limit)
+vl_check_utf8(const char *source, B_COUNT limit)
 {
-#define CH(n) (UCHAR)((*target) >> ((n) * 8))
     int rc = 0;
     int j;
-    UINT mask = 0;
 
     /*
      * Find the number of bytes we will need from the source.
      */
     if ((*source & 0x80) == 0) {
 	rc = 1;
-	mask = (UINT) * source;
     } else if ((*source & 0xe0) == 0xc0) {
 	rc = 2;
-	mask = (UINT) (*source & 0x1f);
     } else if ((*source & 0xf0) == 0xe0) {
 	rc = 3;
-	mask = (UINT) (*source & 0x0f);
     } else if ((*source & 0xf8) == 0xf0) {
 	rc = 4;
-	mask = (UINT) (*source & 0x07);
     } else if ((*source & 0xfc) == 0xf8) {
 	rc = 5;
-	mask = (UINT) (*source & 0x03);
     } else if ((*source & 0xfe) == 0xfc) {
 	rc = 6;
-	mask = (UINT) (*source & 0x01);
-    }
-
-    if ((B_COUNT) rc > limit) {	/* whatever it is, we cannot decode it */
-	TRACE2(("limit failed %d/%ld in vl_conv_to_utf32\n", rc, limit));
-	rc = 0;
     }
 
     /*
      * sanity-check.
      */
     if (rc > 1) {
-	for (j = 1; j < rc; j++) {
+	for (j = 1; j < rc && (B_COUNT) j < limit; j++) {
 	    if ((source[j] & 0xc0) != 0x80)
 		break;
 	}
 	if (j != rc) {
-	    TRACE2(("check failed %d/%d in vl_conv_to_utf32\n", j, rc));
+	    TRACE2(("check failed %d/%d in vl_check_utf8\n", j, rc));
 	    rc = 0;
 	}
     }
+    return rc;
+}
+
+int
+vl_conv_to_utf32(UINT * target, const char *source, B_COUNT limit)
+{
+#define CH(n) (UCHAR)((*target) >> ((n) * 8))
+    int rc = vl_check_utf8(source, limit);
+
+    if ((B_COUNT) rc > limit) {	/* whatever it is, we cannot decode it */
+	TRACE2(("limit failed %d/%ld in vl_conv_to_utf32\n", rc, limit));
+	rc = 0;
+    }
 
     if (target != 0) {
+	UINT mask = 0;
+	int j;
 	int shift = 0;
 	*target = 0;
+
+	switch (rc) {
+	case 1:
+	    mask = (UINT) * source;
+	    break;
+	case 2:
+	    mask = (UINT) (*source & 0x1f);
+	    break;
+	case 3:
+	    mask = (UINT) (*source & 0x0f);
+	    break;
+	case 4:
+	    mask = (UINT) (*source & 0x07);
+	    break;
+	case 5:
+	    mask = (UINT) (*source & 0x03);
+	    break;
+	case 6:
+	    mask = (UINT) (*source & 0x01);
+	    break;
+	default:
+	    mask = 0;
+	    break;
+	}
+
 	for (j = 1; j < rc; j++) {
 	    *target |= (UINT) (source[rc - j] & 0x3f) << shift;
 	    shift += 6;

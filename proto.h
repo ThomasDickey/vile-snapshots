@@ -4,12 +4,13 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.715 2010/12/05 00:46:17 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.716 2010/12/17 21:41:05 tom Exp $
  *
  */
 
 #ifndef VILE_PROTO_H
 #define VILE_PROTO_H 1
+/* *INDENT-OFF* */
 
 #if !CHECK_PROTOTYPES
 extern int main (int argc, char **argv);
@@ -303,6 +304,7 @@ extern int vl_wcwidth(int code);
 extern int aligned_charset (BUFFER *bp, UCHAR *buffer, B_COUNT *length);
 extern int check_utf8 (UCHAR * buffer, B_COUNT length);
 extern int cleanup_charset (BUFFER *bp, UCHAR *buffer, B_COUNT *length);
+extern int vl_check_utf8 (const char *source, B_COUNT limit);
 extern int vl_conv_to_utf32 (UINT * target, const char *source, B_COUNT limit);
 extern int vl_conv_to_utf8 (UCHAR * target, UINT source, B_COUNT limit);
 extern void found_utf8 (BUFFER *bp);
@@ -1883,5 +1885,7 @@ extern	void	_nc_freeall (void);
 #ifdef __cplusplus
 }
 #endif
+
+/* *INDENT-ON* */
 
 #endif /* VILE_PROTO_H */

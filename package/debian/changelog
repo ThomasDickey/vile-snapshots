@@ -1,5 +1,12 @@
+vile (9.8d) unstable; urgency=low
+
+  * add $kbd-encoding variable.
+
+ -- Thomas E. Dickey <dickey@invisible-island.net>  Sun, 12 Dec 2010 16:43:25 -0500
+
 vile (9.8c) unstable; urgency=low
 
+  * add built-in character encoding tables.
   * code-cleanup
 
  -- Thomas E. Dickey <dickey@invisible-island.net>  Wed, 10 Nov 2010 05:58:29 -0500
