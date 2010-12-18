@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.720 2010/11/29 10:14:59 Rick.Sladkey Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.722 2010/12/13 01:14:31 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -738,6 +738,7 @@ typedef unsigned short	mode_t;
 #define OPT_FILE_ENCODING_CHOICES  OPT_MULTIBYTE
 #define OPT_FORBUFFERS_CHOICES     !SMALLER
 #define OPT_HILITE_CHOICES         (OPT_ENUM_MODES && OPT_HILITEMATCH)
+#define OPT_KBD_ENCODING_CHOICES   OPT_MULTIBYTE
 #define OPT_LOOKUP_CHOICES         !SMALLER
 #define OPT_MMQUALIFIERS_CHOICES   OPT_MAJORMODE
 #define OPT_PARAMTYPES_CHOICES     OPT_MACRO_ARGS
@@ -1088,6 +1089,12 @@ extern void endofDisplay(void);
 #define C_WHITE (ncolors-1)
 
 #define MinCBits   8			/* bits in N_chars		*/
+
+#if OPT_MULTIBYTE && (DISP_TERMCAP || DISP_CURSES || DISP_BORLAND)
+#define OPT_VL_OPEN_MBTERM 1		/* uses vl_open_mbterm		*/
+#else
+#define OPT_VL_OPEN_MBTERM 0
+#endif
 
 #if OPT_MULTIBYTE
 #define MaxCBits   16			/* allow UTF-16 internal	*/

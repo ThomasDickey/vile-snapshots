@@ -1,5 +1,5 @@
 /*
- * $Id: eightbit.c,v 1.84 2010/12/05 22:48:47 tom Exp $
+ * $Id: eightbit.c,v 1.93 2010/12/18 01:07:33 tom Exp $
  *
  * Maintain "8bit" file-encoding mode by converting incoming UTF-8 to single
  * bytes, and providing a function that tells vile whether a given Unicode
@@ -35,6 +35,8 @@ static OUTC_DCL(*save_putch) (int c);
 #define USE_MBTERM 0
 #endif
 
+#define LEN_UTF8 6		/* maximum number of bytes in UTF-8 encoding */
+
 /******************************************************************************/
 static BLIST blist_encodings = init_blist(all_encodings);
 static BLIST blist_locales = init_blist(all_locales);
@@ -63,26 +65,31 @@ cmp_rindex(const void *a, const void *b)
     return (int) p->code - (int) q->code;
 }
 
-#if OPT_ICONV_FUNCS
-#define FROM_MY_ICONV  (iconv_t)(-2)
-#define TO_MY_ICONV    (iconv_t)(-3)
-#define NO_ICONV       (iconv_t)(-1)
-
-static iconv_t mb_desc = NO_ICONV;
 static const GNREIGHT_ENC *from_encoding = 0;
+
+#if OPT_ICONV_FUNCS
+#define MY_ICONV_TYPE iconv_t
+#else
+#define MY_ICONV_TYPE  const GNREIGHT_ENC *
+#endif /* OPT_ICONV_FUNCS */
+
+#define MY_ICONV  (MY_ICONV_TYPE)(-2)
+#define NO_ICONV  (MY_ICONV_TYPE)(-1)
+
+static MY_ICONV_TYPE mb_desc = NO_ICONV;
 
 static void
 close_encoding(void)
 {
-    if (mb_desc == FROM_MY_ICONV) {
-	;
-    } else if (mb_desc == TO_MY_ICONV) {
+#if OPT_ICONV_FUNCS
+    if (mb_desc == MY_ICONV) {
 	;
     } else if (mb_desc != NO_ICONV) {
 	iconv_close(mb_desc);
     }
-    from_encoding = 0;
+#endif /* OPT_ICONV_FUNCS */
     mb_desc = NO_ICONV;
+    from_encoding = 0;
 }
 
 static int
@@ -92,19 +99,18 @@ try_encoding(const char *from, const char *to)
 
     close_encoding();
 
+#if OPT_ICONV_FUNCS
     mb_desc = iconv_open(to, from);
+#endif
 
     if (mb_desc == NO_ICONV) {
 	if (!vl_stricmp(to, "UTF-8")) {
 	    found = blist_match(&blist_encodings, from);
 	    if (found >= 0) {
-		mb_desc = FROM_MY_ICONV;
+		mb_desc = MY_ICONV;
 		from_encoding = all_encodings[found].data;
 		TRACE(("using built-in encoding\n"));
 	    }
-	} else {
-	    found = blist_match(&blist_encodings, to);
-	    mb_desc = TO_MY_ICONV;
 	}
     }
 
@@ -134,16 +140,18 @@ initialize_table_8bit_utf8(void)
     for (n = 0; n < N_chars; ++n) {
 	size_t converted;
 	char input[80];
-	ICONV_CONST char *ip = input;
 	char output[80];
-	char *op = output;
 	size_t in_bytes = 1;
 	size_t out_bytes = sizeof(output);
+
+	FreeIfNeeded(table_8bit_utf8[n].text);
+	table_8bit_utf8[n].text = 0;
 
 	input[0] = (char) n;
 	input[1] = 0;
 
-	if (mb_desc == FROM_MY_ICONV) {
+#if OPT_ICONV_FUNCS
+	if (mb_desc == MY_ICONV) {
 	    UINT source = ((n >= 128)
 			   ? (from_encoding->chmap[n - 128])
 			   : (UINT) n);
@@ -151,16 +159,28 @@ initialize_table_8bit_utf8(void)
 						 sizeof(output));
 	    out_bytes = sizeof(output) - converted;
 	} else {
+	    ICONV_CONST char *ip = input;
+	    char *op = output;
 	    converted = iconv(mb_desc, &ip, &in_bytes, &op, &out_bytes);
 	}
+#else
+	UINT source = ((n >= 128)
+		       ? (from_encoding->chmap[n - 128])
+		       : (UINT) n);
+	converted = (size_t) vl_conv_to_utf8((UCHAR *) output, source,
+					     sizeof(output));
+	out_bytes = sizeof(output) - converted;
+#endif /* OPT_ICONV_FUNCS */
 
 	if (converted == (size_t) (-1)) {
 	    TRACE(("err:%d\n", errno));
 	    TRACE(("convert(%d) %d %d/%d\n", n,
 		   (int) converted, (int) in_bytes, (int) out_bytes));
-	} else {
+	} else if (n == 0) {
+	    table_8bit_utf8[n].code = 0;
+	    table_8bit_utf8[n].text = strmalloc("");
+	} else if ((sizeof(output) - out_bytes) != 0) {
 	    output[sizeof(output) - out_bytes] = 0;
-	    FreeIfNeeded(table_8bit_utf8[n].text);
 	    table_8bit_utf8[n].text = strmalloc(output);
 	    vl_conv_to_utf32(&(table_8bit_utf8[n].code),
 			     table_8bit_utf8[n].text,
@@ -172,7 +192,6 @@ initialize_table_8bit_utf8(void)
 	}
     }
 }
-#endif /* OPT_ICONV_FUNCS */
 
 /*
  * Fill-in character type information from built-in tables, i.e., when the
@@ -184,8 +203,8 @@ vl_8bit_ctype_init(int wide, int ch)
     const GNREIGHT_ENC *encode;
 #if !OPT_ICONV_FUNCS
     int found;
-    const GNREIGHT_ENC *from_encoding = 0;
 
+    from_encoding = 0;
     found = blist_match(&blist_encodings, wide ? "ISO-8859-1" : "POSIX");
     if (found >= 0) {
 	from_encoding = all_encodings[found].data;
@@ -332,7 +351,6 @@ vl_init_8bit(const char *wide, const char *narrow)
 	 * If the wide/narrow encodings do not differ, that is probably because
 	 * the narrow encoding is really a wide-encoding.
 	 */
-#if OPT_ICONV_FUNCS
 	if (vl_narrow_enc.encoding != 0
 	    && vl_wide_enc.encoding != 0
 	    && vl_stricmp(vl_narrow_enc.encoding, vl_wide_enc.encoding)) {
@@ -340,19 +358,16 @@ vl_init_8bit(const char *wide, const char *narrow)
 	    initialize_table_8bit_utf8();
 	    close_encoding();
 	}
-#endif
     } else {
 	TRACE(("setup narrow-locale(%s)\n", narrow));
 	vl_encoding = enc_8BIT;
 	vl_wide_enc.locale = 0;
 	vl_narrow_enc.locale = StrMalloc(narrow);
 	vl_get_encoding(&vl_narrow_enc.encoding, narrow);
-#if OPT_ICONV_FUNCS
 	if (try_encoding(vl_narrow_enc.encoding, "UTF-8")) {
 	    initialize_table_8bit_utf8();
 	    close_encoding();
 	}
-#endif
     }
 
     /*
@@ -695,45 +710,111 @@ decode_utf8(char *input, int used)
 }
 #endif
 
+/*
+ * Read a whole character, according to the locale.  If an error is detected,
+ * return -1.
+ */
 static int
 vl_mb_getch(void)
 {
+    static char input[80];
+    static int used = 0;
+    static int have = 0;
+
+    UINT tempch;
     int ch;
-    char input[80];
+    int need, test;
+    int actual_encoding;
+
+    if (used < have) {
+	ch = CharOf(input[used++]);
+    } else {
+	used = have = 0;
+
+	if ((actual_encoding = kbd_encoding) == enc_LOCALE) {
+	    actual_encoding = (okCTYPE2(vl_wide_enc)
+			       ? enc_UTF8
+			       : enc_8BIT);
+	}
+	switch (actual_encoding) {
+	case enc_AUTO:
+	    input[0] = ch = save_getch();
+	    if ((need = vl_check_utf8(input, 1)) > 1) {
+		have = 1;
+		for (;;) {
+		    input[have++] = save_getch();
+		    test = vl_check_utf8(input, have);
+		    if (test == 0) {
+			kbd_encoding = enc_8BIT;
+			ch = vl_mb_getch();
+			break;
+		    } else if (test == need) {
+			kbd_encoding = enc_UTF8;
+			vl_conv_to_utf32(&tempch, input, have);
+			ch = (int) tempch;
+			break;
+		    }
+		}
+	    }
+	    break;
+	case enc_POSIX:
+	    do {
+		ch = save_getch();
+	    } while (ch >= 128);
+	    break;
+	default:
+	case enc_8BIT:
+	    ch = save_getch();
+	    if (ch >= 128 && okCTYPE2(vl_wide_enc)) {
+		if (ch >= 256) {
+		    ch = -1;
+		} else if ((ch = table_8bit_utf8[ch].code) == 0) {
+		    ch = -1;
+		}
+	    }
+	    break;
+	case enc_UTF8:
+	    for (;;) {
 #if OPT_ICONV_FUNCS
-    int used = 0;
+		ch = save_getch();
+		input[have++] = (char) ch;
+		input[have] = 0;
 
-    for (;;) {
-	ch = save_getch();
-	input[used++] = (char) ch;
-	input[used] = 0;
-
-	ch = decode_utf8(input, used);
-	if (ch >= 0 || used > 5)
-	    break;
-    }
+		ch = decode_utf8(input, have);
+		if (ch >= 0) {
+		    break;
+		} else if (have > LEN_UTF8) {
+		    ch = -1;
+		    break;
+		}
 #else
-    char *ip;
-    for (ip = input;;) {
-	UINT result;
+		int check;
+		UINT result;
 
-	if ((ch = save_getch()) < 0)
-	    break;
-	*ip++ = ch;
-	*ip = EOS;
-	ch = vl_conv_to_utf32(&result, input, ip - input);
-	if (ch == 0) {
-	    ch = -1;
-	} else if (ch == (ip - input)) {
-	    /* ensure result is 8-bits */
-	    if (vl_mb_to_utf8(result) != 0)
-		ch = result;
-	    else
+		if ((ch = save_getch()) < 0)
+		    break;
+		input[have++] = (char) ch;
+		input[have] = 0;
+		check = vl_conv_to_utf32(&result, input, have);
+		if (check == 0) {
+		    check = -1;
+		} else if (check == have) {
+		    /* ensure result is 8-bits */
+		    if (vl_mb_to_utf8(result) != 0)
+			ch = result;
+		    else
+			ch = -1;
+		    break;
+		}
+#endif
+	    }
+	    have = used = 0;
+	    if (ch >= 256 && !okCTYPE2(vl_wide_enc)) {
 		ch = -1;
+	    }
 	    break;
 	}
     }
-#endif
     TRACE(("vl_mb_getch:%#x\n", ch));
     return ch;
 }
@@ -743,7 +824,7 @@ vl_mb_putch(int c)
 {
     if (c > 0) {
 	int rc;
-	UCHAR temp[10];
+	UCHAR temp[LEN_UTF8 + 1];
 	const char *s = vl_mb_to_utf8(c);
 
 	/*
@@ -774,14 +855,21 @@ vl_mb_putch(int c)
 void
 vl_open_mbterm(void)
 {
-    if (okCTYPE2(vl_wide_enc)) {
-	TRACE(("vl_open_mbterm\n"));
-	save_putch = term.putch;
+    TRACE(("vl_open_mbterm\n"));
+
+    if (term.putch != vl_mb_putch) {
+	TRACE(("...using vl_mb_getch(%s)\n", encoding2s(kbd_encoding)));
 	save_getch = term.getch;
-
-	term.putch = vl_mb_putch;
 	term.getch = vl_mb_getch;
+    }
 
+    if (okCTYPE2(vl_wide_enc)) {
+	TRACE(("...using vl_mb_putch\n"));
+
+	if (term.putch != vl_mb_putch) {
+	    save_putch = term.putch;
+	    term.putch = vl_mb_putch;
+	}
 	term.set_enc(enc_UTF8);
     }
 }

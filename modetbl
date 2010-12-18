@@ -11,7 +11,7 @@
 #
 # The modes are table entries in the BUFFER and WINDOW structures.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.306 2010/06/09 23:56:38 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.307 2010/12/12 23:41:34 tom Exp $
 #
 #
 # Mode-table entries.  Capitalized letters are used for abbreviations.
@@ -242,6 +242,7 @@ bool
 	"term-resizes"	TERM_RESIZES	1		"true if terminal can be resized"
 enum
 	"cmd-encoding"	CMD_ENCODING	OPT_MULTIBYTE	"terminal's encoding support"
+	"kbd-encoding"	KBD_ENCODING	OPT_MULTIBYTE	"terminal's keyboard encoding"
 	"mode"		MODE		1		"are we inserting/overwriting/command"
 	"term-encoding" TERM_ENCODING	OPT_MULTIBYTE	"terminal's encoding support"
 	"title-encoding" TITLE_ENCODING	OPT_MULTIBYTE&&OPT_TITLE "xterm title encoding"
@@ -529,12 +530,19 @@ string
 
 .table file_encoding				# see byteorder_mark
 "locale"	enc_LOCALE
-"auto"		ENUM_UNKNOWN
+"auto"		enc_AUTO
 "ascii"		enc_POSIX
 "8bit"		enc_8BIT
 "utf-8"		enc_UTF8
 "utf-16"	enc_UTF16
 "utf-32"	enc_UTF32
+
+.table kbd_encoding				# see byteorder_mark
+"locale"	enc_LOCALE
+"auto"		enc_AUTO
+"ascii"		enc_POSIX
+"8bit"		enc_8BIT
+"utf-8"		enc_UTF8
 
 .table forbuffers
 "glob"		FB_GLOB

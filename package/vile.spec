@@ -1,7 +1,7 @@
 Summary: VILE VI Like Emacs editor
-# $Header: /users/source/archives/vile.vcs/package/RCS/vile.spec,v 1.7 2010/11/10 10:57:59 tom Exp $
+# $Header: /users/source/archives/vile.vcs/package/RCS/vile.spec,v 1.8 2010/12/12 21:41:20 tom Exp $
 Name: vile
-Version: 9.8c
+Version: 9.8d
 # each patch should update the version
 Release: 1
 License: GPLv2
@@ -11,6 +11,7 @@ Source0: vile-9.8.tgz
 Patch1: vile-9.8a.patch.gz
 Patch2: vile-9.8b.patch.gz
 Patch3: vile-9.8c.patch.gz
+Patch4: vile-9.8d.patch.gz
 # each patch should add itself to this list
 Packager: Thomas Dickey <dickey@invisible-island.net>
 # BuildRoot: %{_tmppath}/%{name}-root
@@ -42,6 +43,7 @@ rebinding, and real X window system support.
 %patch1 -p1
 %patch2 -p1
 %patch3 -p1
+%patch4 -p1
 # each patch should add itself to this list
 
 # help rpmbuild to ignore the maintainer scripts in the doc directory...
@@ -149,6 +151,9 @@ install xvile.wmconfig $RPM_BUILD_ROOT%{_sysconfdir}/X11/wmconfig/xvile
 
 %changelog
 # each patch should add its ChangeLog entries here
+
+* Sun Dec 12 2010 Thomas Dickey
+- added patch for 9.8d
 
 * Wed Nov 10 2010 Thomas Dickey
 - added patch for 9.8c
