@@ -3,7 +3,7 @@
  *	for getting and setting the values of the vile state variables,
  *	plus helper utility functions.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.156 2010/12/13 01:08:59 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.157 2010/12/20 10:16:12 tom Exp $
  */
 
 #include	<estruct.h>
@@ -1686,6 +1686,12 @@ var_KBD_ENCODING(TBUFF **rp, const char *vp)
 #if OPT_VL_OPEN_MBTERM
 	int choice = choice_to_code(&fsm_kbd_encoding_blist, vp, strlen(vp));
 	kbd_encoding = (ENC_CHOICES) choice;
+	/* We can use 8-bit keyboard in UTF-8 mode, but have not setup
+	 * tables to use UTF-8 keyboard in 8-bit mode (though it is feasible
+	 * to implement this).
+	 */
+	if (kbd_encoding > term.get_enc())
+	    kbd_encoding = term.get_enc();
 	return TRUE;
 #else
 	/* treat as readonly value */
