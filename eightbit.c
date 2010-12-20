@@ -1,5 +1,5 @@
 /*
- * $Id: eightbit.c,v 1.93 2010/12/18 01:07:33 tom Exp $
+ * $Id: eightbit.c,v 1.96 2010/12/20 10:44:23 tom Exp $
  *
  * Maintain "8bit" file-encoding mode by converting incoming UTF-8 to single
  * bytes, and providing a function that tells vile whether a given Unicode
@@ -682,7 +682,6 @@ vl_ucs_to_8bit(int *result, int code)
 }
 
 #if USE_MBTERM
-#if OPT_ICONV_FUNCS
 /*
  * Decode a buffer as UTF-8, returning the character value if successful.
  * If unsuccessful, return -1.
@@ -691,16 +690,9 @@ static int
 decode_utf8(char *input, int used)
 {
     UINT check = 0;
-    int rc = 0;
+    int rc;
     int ch;
 
-    /*
-     * If iconv gave up - because a character was not representable
-     * in the narrow encoding - just convert it from UTF-8.
-     *
-     * FIXME: perhaps a better solution would be to use iconv for
-     * converting from the wide encoding to UTF-32. 
-     */
     rc = vl_conv_to_utf32(&check, input, (B_COUNT) used);
     if ((rc == used) && (check != 0) && !isSpecial(check))
 	ch = (int) check;
@@ -708,7 +700,6 @@ decode_utf8(char *input, int used)
 	ch = -1;
     return ch;
 }
-#endif
 
 /*
  * Read a whole character, according to the locale.  If an error is detected,
@@ -752,6 +743,7 @@ vl_mb_getch(void)
 			kbd_encoding = enc_UTF8;
 			vl_conv_to_utf32(&tempch, input, have);
 			ch = (int) tempch;
+			used = have = 0;
 			break;
 		    }
 		}
@@ -775,7 +767,6 @@ vl_mb_getch(void)
 	    break;
 	case enc_UTF8:
 	    for (;;) {
-#if OPT_ICONV_FUNCS
 		ch = save_getch();
 		input[have++] = (char) ch;
 		input[have] = 0;
@@ -787,26 +778,6 @@ vl_mb_getch(void)
 		    ch = -1;
 		    break;
 		}
-#else
-		int check;
-		UINT result;
-
-		if ((ch = save_getch()) < 0)
-		    break;
-		input[have++] = (char) ch;
-		input[have] = 0;
-		check = vl_conv_to_utf32(&result, input, have);
-		if (check == 0) {
-		    check = -1;
-		} else if (check == have) {
-		    /* ensure result is 8-bits */
-		    if (vl_mb_to_utf8(result) != 0)
-			ch = result;
-		    else
-			ch = -1;
-		    break;
-		}
-#endif
 	    }
 	    have = used = 0;
 	    if (ch >= 256 && !okCTYPE2(vl_wide_enc)) {
@@ -857,7 +828,7 @@ vl_open_mbterm(void)
 {
     TRACE(("vl_open_mbterm\n"));
 
-    if (term.putch != vl_mb_putch) {
+    if (save_getch == 0) {
 	TRACE(("...using vl_mb_getch(%s)\n", encoding2s(kbd_encoding)));
 	save_getch = term.getch;
 	term.getch = vl_mb_getch;
@@ -877,16 +848,19 @@ vl_open_mbterm(void)
 void
 vl_close_mbterm(void)
 {
+    if (save_getch != 0) {
+	term.getch = save_getch;
+	save_getch = 0;
+    }
+
     if (okCTYPE2(vl_wide_enc)) {
-	if (save_putch && save_getch) {
+	if (save_putch != 0) {
 	    TRACE(("vl_close_mbterm\n"));
 	    term.putch = save_putch;
-	    term.getch = save_getch;
 
 	    term.set_enc(enc_POSIX);
 
 	    save_putch = 0;
-	    save_getch = 0;
 	}
     }
 }

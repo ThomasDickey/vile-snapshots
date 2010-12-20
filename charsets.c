@@ -1,5 +1,5 @@
 /*
- * $Id: charsets.c,v 1.74 2010/12/17 23:43:58 tom Exp $
+ * $Id: charsets.c,v 1.75 2010/12/20 10:37:04 tom Exp $
  *
  * see
  http://msdn.microsoft.com/library/default.asp?url=/library/en-us/intl/unicode_42jv.asp
@@ -173,11 +173,16 @@ vl_check_utf8(const char *source, B_COUNT limit)
      * sanity-check.
      */
     if (rc > 1) {
-	for (j = 1; j < rc && (B_COUNT) j < limit; j++) {
+	int have = rc;
+
+	if ((int) limit < have)
+	    have = (int) limit;
+
+	for (j = 1; j < have; j++) {
 	    if ((source[j] & 0xc0) != 0x80)
 		break;
 	}
-	if (j != rc) {
+	if (j != have) {
 	    TRACE2(("check failed %d/%d in vl_check_utf8\n", j, rc));
 	    rc = 0;
 	}
