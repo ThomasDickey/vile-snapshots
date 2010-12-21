@@ -12,11 +12,12 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.722 2010/12/13 01:14:31 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.726 2010/12/21 00:17:10 tom Exp $
  */
 
 #ifndef _estruct_h
 #define _estruct_h 1
+/* *INDENT-OFF* */
 
 #ifdef HAVE_CONFIG_H
 #include <config.h>
@@ -1127,6 +1128,7 @@ extern void endofDisplay(void);
 #endif
 
 #define kcod2key(c)	(int)((UINT)(c) & (UINT)(iBIT(MaxCBits)-1)) /* strip off the above prefixes */
+#define	is8Bits(c)	(((UINT)(c) & (UINT)~0xff) == 0)
 #define	isSpecial(c)	(((UINT)(c) & (UINT)~(iBIT(MaxCBits)-1)) != 0)
 
 #define	char2int(c)	((int)kcod2key(c))	/* mask off sign-extension, etc. */
@@ -3118,13 +3120,13 @@ extern void ExitProgram(int code);
 #    define show_alloc() void __mp_summary()
 #  endif
 #  if CAN_TRACE && OPT_TRACE
-#    include "trace.h"
+#    include <trace.h>
 #  endif
-#else
-#  if CAN_TRACE && (NO_LEAKS || DOALLOC || OPT_TRACE)
-#    include "trace.h"
+#elif CAN_TRACE
+#  if (NO_LEAKS || DOALLOC || OPT_TRACE)
+#    include <trace.h>
 #  elif !defined(show_alloc) && NO_LEAKS
-#    include "trace.h"
+#    include <trace.h>
 #  endif
 #endif	/* USE_DBMALLOC */
 
@@ -3224,5 +3226,7 @@ extern void show_elapsed(void);
 #if CAN_VMS_PATH && (SYS_UNIX && OPT_VMS_PATH)
 #include "fakevms.h"
 #endif
+
+/* *INDENT-ON* */
 
 #endif /* _estruct_h */
