@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.354 2010/12/05 21:09:45 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.357 2010/12/21 10:14:02 tom Exp $
  *
  */
 
@@ -524,7 +524,7 @@ unbindchar(BINDINGS * bs, int c)
     KBIND *skbp;		/* saved pointer into the command table */
 
     /* if it's a simple character, it will be in the normal[] array */
-    if (!isSpecial(c)) {
+    if (is8Bits(c)) {
 	if (bs->kb_normal[CharOf(c)]) {
 	    bs->kb_normal[CharOf(c)] = 0;
 	    return TRUE;
@@ -685,7 +685,7 @@ install_bind(int c, const CMDFUNC * kcmd, BINDINGS * bs)
     reset_prefix(-1, kcod2fnc(bs, c), bs);
     reset_prefix(c, kcmd, bs);
 
-    if (!isSpecial(c)) {
+    if (is8Bits(c)) {
 	bs->kb_normal[CharOf(c)] = TYPECAST(CMDFUNC, kcmd);
     } else if ((kbp = kcode2kbind(bs, c)) != 0) {	/* change it in place */
 	kbp->k_cmd = kcmd;
@@ -1905,7 +1905,7 @@ static const struct {
 #endif
 
 #define ADD_KCODE(src) \
-	if (((size_t) (ptr - base) + (len = strlen(src)) + 3) < limit) { \
+	if (((size_t) (ptr - base) + (len = strlen(src)) + need + 2) < limit) { \
 	    strcpy(ptr, src); \
 	    ptr += len; \
 	}
@@ -1917,8 +1917,26 @@ int
 kcod2escape_seq(int c, char *ptr, size_t limit)
 {
     char *base = ptr;
+    char temp[20];
+    const char *s;
+    size_t need;
+    int ch = (c & ((1 << MaxCBits) - 1));
 
-    if (base != 0 && limit > 5) {
+#if OPT_MULTIBYTE
+    if ((ch >= 256)
+	&& (cmd_encoding >= enc_UTF8
+	    || (cmd_encoding <= enc_AUTO && okCTYPE2(vl_wide_enc)))
+	&& (s = vl_mb_to_utf8(ch)) != 0) {
+	strcpy(temp, s);
+    } else
+#endif
+    {
+	temp[0] = (char) c;
+	temp[1] = EOS;
+    }
+    need = strlen(temp);
+
+    if (base != 0 && limit > (4 + need)) {
 	if ((UINT) c & CTLA)
 	    *ptr++ = (char) cntl_a;
 	else if ((UINT) c & CTLX)
@@ -1949,8 +1967,8 @@ kcod2escape_seq(int c, char *ptr, size_t limit)
 #endif
 	if ((UINT) c & SPEC)
 	    *ptr++ = (char) poundc;
-	*ptr++ = (char) c;
-	*ptr = EOS;
+	strcpy(ptr, temp);
+	ptr += need;
     }
     return (int) (ptr - base);
 }
@@ -2053,7 +2071,7 @@ kcod2fnc(const BINDINGS * bs, int c)
     const CMDFUNC *result = 0;
 
     if (bs != 0) {
-	if (isSpecial(c)) {
+	if (!is8Bits(c)) {
 	    KBIND *kp = kcode2kbind(bs, c);
 	    result = (kp != 0) ? kp->k_cmd : 0;
 	} else {
