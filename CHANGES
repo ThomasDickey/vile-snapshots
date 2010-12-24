@@ -1,7 +1,10 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20101220 (d)
+ 20101224 (d)
 	> Tom Dickey:
+	+ extend generate set of single-byte encodings to include those listed
+	  by iconv for which there is no predefined locale, e.g., the Windows
+	  codepages.
 	+ modify several places which check for special characters, e.g., when
 	  parsing repeat-counts in normal mode, to also exclude multibyte
 	  characters (report by Ramil Farkhshatov).
