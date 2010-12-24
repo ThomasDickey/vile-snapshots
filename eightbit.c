@@ -1,5 +1,5 @@
 /*
- * $Id: eightbit.c,v 1.96 2010/12/20 10:44:23 tom Exp $
+ * $Id: eightbit.c,v 1.97 2010/12/22 01:50:20 tom Exp $
  *
  * Maintain "8bit" file-encoding mode by converting incoming UTF-8 to single
  * bytes, and providing a function that tells vile whether a given Unicode
@@ -164,12 +164,14 @@ initialize_table_8bit_utf8(void)
 	    converted = iconv(mb_desc, &ip, &in_bytes, &op, &out_bytes);
 	}
 #else
-	UINT source = ((n >= 128)
-		       ? (from_encoding->chmap[n - 128])
-		       : (UINT) n);
-	converted = (size_t) vl_conv_to_utf8((UCHAR *) output, source,
-					     sizeof(output));
-	out_bytes = sizeof(output) - converted;
+	{
+	    UINT source = ((n >= 128)
+			   ? (from_encoding->chmap[n - 128])
+			   : (UINT) n);
+	    converted = (size_t) vl_conv_to_utf8((UCHAR *) output, source,
+						 sizeof(output));
+	    out_bytes = sizeof(output) - converted;
+	}
 #endif /* OPT_ICONV_FUNCS */
 
 	if (converted == (size_t) (-1)) {
