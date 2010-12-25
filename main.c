@@ -22,7 +22,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.697 2010/12/21 00:25:12 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.698 2010/12/22 01:26:05 tom Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -1321,7 +1321,7 @@ no_memory(const char *s)
 
 #if OPT_MULTIBYTE
 /* default value assumes POSIX locale, since it is used before vl_ctyle init */
-#define DFT_LATIN1_EXPR	"\\(\
+#define DFT_LATIN1_EXPR	"^\\(\
 aa\\|\
 af\\|\
 br\\|\
