@@ -1,5 +1,5 @@
 /*
- * $Id: eightbit.c,v 1.97 2010/12/22 01:50:20 tom Exp $
+ * $Id: eightbit.c,v 1.98 2010/12/24 20:56:46 tom Exp $
  *
  * Maintain "8bit" file-encoding mode by converting incoming UTF-8 to single
  * bytes, and providing a function that tells vile whether a given Unicode
@@ -455,18 +455,11 @@ vl_is_latin1_encoding(const char *value)
     int rc = FALSE;
 
     if (!isEmpty(value)) {
-#ifdef WIN32
-	char *suffix = strchr(value, '.');
-	if (suffix != 0
-	    && !strcmp(suffix, ".1252")) {
-	    rc = TRUE;
-	} else
-#endif
-	    if (strncmp(value, "ISO-8859", (size_t) 8) == 0
-		|| strncmp(value, "ISO 8859", (size_t) 8) == 0
-		|| strncmp(value, "ISO_8859", (size_t) 8) == 0
-		|| strncmp(value, "ISO8859", (size_t) 7) == 0
-		|| strncmp(value, "8859", (size_t) 4) == 0) {
+	if (strncmp(value, "ISO-8859", (size_t) 8) == 0
+	    || strncmp(value, "ISO 8859", (size_t) 8) == 0
+	    || strncmp(value, "ISO_8859", (size_t) 8) == 0
+	    || strncmp(value, "ISO8859", (size_t) 7) == 0
+	    || strncmp(value, "8859", (size_t) 4) == 0) {
 	    rc = TRUE;
 	}
     }
@@ -550,10 +543,16 @@ vl_get_encoding(char **target, const char *locale)
     static char iso_latin1[] = "ISO-8859-1";
     static char utf_eight[] = "UTF-8";
 
+#ifdef WIN32
+    char cp_value[80];
+#endif
     char *result = 0;
     char *actual = setlocale(LC_CTYPE, locale);
 
-    TRACE((T_CALLED "vl_get_encoding(%s)\n", NONNULL(locale)));
+    TRACE((T_CALLED "vl_get_encoding(%s)%s\n",
+	   NONNULL(locale),
+	   isEmpty(actual) ? " illegal" : ""));
+
     if (isEmpty(actual)) {	/* nonempty means legal locale */
 	char *mylocale;
 
@@ -605,7 +604,18 @@ vl_get_encoding(char **target, const char *locale)
 		   || !vl_stricmp(locale, "POSIX")) {
 	    result = "ASCII";
 	} else {
-	    result = iso_latin1;
+#ifdef WIN32
+	    char *suffix = strrchr(locale, '.');
+	    char *next = 0;
+
+	    if (suffix != 0
+		&& strtol(++suffix, &next, 10) != 0
+		&& (next == 0 || *next == 0)) {
+		result = cp_value;
+		sprintf(result, "CP%s", suffix);
+	    } else
+#endif
+		result = iso_latin1;
 	}
 #endif
     }

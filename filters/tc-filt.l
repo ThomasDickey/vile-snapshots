@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/tc-filt.l,v 1.37 2010/11/04 09:25:29 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/tc-filt.l,v 1.38 2010/12/25 13:10:24 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of termcap
  */
@@ -34,7 +34,7 @@ static void write_value(const char *name, int len, const char *attr);
 
 %}
 
-CAPNAME		[^\.| #\\\t\r\n:=]+
+CAPNAME		[^\.| \\\t\r\n:=][^\.| #\\\t\r\n:=]+
 DOTNAME		(\.)+{CAPNAME}
 
 ALIAS		[[:alnum:]_\.+-]+

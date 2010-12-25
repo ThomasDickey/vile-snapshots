@@ -1,7 +1,8 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20101224 (d)
+ 20101225 (d)
 	> Tom Dickey:
+	+ modify CAPNAME expression in tc-filt.l to accept "#2", etc.
 	+ extend generate set of single-byte encodings to include those listed
 	  by iconv for which there is no predefined locale, e.g., the Windows
 	  codepages.
