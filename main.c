@@ -22,7 +22,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.698 2010/12/22 01:26:05 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.699 2010/12/26 22:18:33 tom Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -1212,7 +1212,7 @@ get_executable_dir(void)
     HKEY hkey;
     char buffer[256];
 
-    for (j = 0; j < TABLESIZE(rootkeys); ++j) {
+    for (j = 0; j < (int) TABLESIZE(rootkeys); ++j) {
 	if (RegOpenKeyEx(rootkeys[j],
 			 VILE_SUBKEY,
 			 0,
@@ -2806,7 +2806,7 @@ vile_getenv(const char *name)
 	HKEY hkey;
 	char buffer[256];
 
-	for (j = 0; j < TABLESIZE(rootkeys); ++j) {
+	for (j = 0; j < (int) TABLESIZE(rootkeys); ++j) {
 	    if (RegOpenKeyEx(rootkeys[j],
 			     VILE_SUBKEY W32_STRING("\\Environment"),
 			     0,

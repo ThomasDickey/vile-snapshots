@@ -10,7 +10,7 @@
  * editing must be being displayed, which means that "b_nwnd" is non zero,
  * which means that the dot and mark values in the buffer headers are nonsense.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.216 2010/09/07 00:29:28 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.218 2010/12/27 21:25:54 tom Exp $
  *
  */
 
@@ -34,7 +34,12 @@ static int PutChar(int n, REGIONSHAPE shape);
 
 #if OPT_SHOW_REGS && OPT_UPBUFF
 static int will_relist_regs;
-static void relist_registers(void);
+static int show_Registers(BUFFER *);
+#define relist_registers() \
+    if (!will_relist_regs) { \
+	will_relist_regs = TRUE; \
+	update_scratch(REGISTERS_BufName, show_Registers); \
+    }
 #else
 #define relist_registers()
 #endif
@@ -234,22 +239,24 @@ lremove(BUFFER *bp, LINE *lp)
 #endif
 #if OPT_VIDEO_ATTRS
     {
-	AREGION *ap = bp->b_attribs;
-	while (ap != NULL) {
-	    AREGION *next = ap->ar_next;
+	AREGION **rpp = &(bp->b_attribs);
+	AREGION *ap;
+
+	while ((ap = *rpp) != NULL) {
+	    AREGION **next = &(ap->ar_next);
 	    int samestart = (ap->ar_region.r_orig.l == lp);
 	    int sameend = (ap->ar_region.r_end.l == lp);
 
 	    if (samestart && sameend) {
-		AREGION *tofree = ap;
-		free_attrib(bp, tofree);
+		free_attrib2(bp, rpp);
+		next = rpp;
 	    } else if (samestart) {
 		ap->ar_region.r_orig = mark_after;
 	    } else if (sameend) {
 		ap->ar_region.r_end.l = lback(lp);
 		ap->ar_region.r_end.o = llength(ap->ar_region.r_end.l);
 	    }
-	    ap = next;
+	    rpp = next;
 	}
     }
 #endif /* OPT_VIDEO_ATTRS */
@@ -1886,24 +1893,11 @@ showkreg(int f, int n GCC_UNUSED)
 }
 
 #if OPT_UPBUFF
-
 static int
 show_Registers(BUFFER *bp)
 {
     b_clr_obsolete(bp);
     return showkreg(show_all_chars, 1);
-}
-
-static void
-relist_registers(void)
-{
-
-    if (will_relist_regs)	/* have we already done this? */
-	return;
-
-    will_relist_regs = TRUE;
-
-    update_scratch(REGISTERS_BufName, show_Registers);
 }
 #endif /* OPT_UPBUFF */
 

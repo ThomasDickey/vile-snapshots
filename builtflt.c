@@ -1,7 +1,7 @@
 /*
  * Main program and I/O for external vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/RCS/builtflt.c,v 1.87 2010/09/14 09:38:34 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/builtflt.c,v 1.89 2010/12/27 16:08:22 tom Exp $
  *
  */
 
@@ -25,6 +25,19 @@ static MARK mark_out;
 static TBUFF *gets_data;
 static const char *current_params;
 static int need_separator;
+
+#define FLT_PUTC(ch) \
+    if (filter_only > 0) { \
+	putchar(ch); \
+    } else { \
+	if (ch == '\n') { \
+	    if (mark_out.l != buf_head(curbp)) \
+		mark_out.l = lforw(mark_out.l); \
+	    mark_out.o = w_left_margin(curwp); \
+	} else { \
+	    mark_out.o++; \
+	} \
+    }
 
 /******************************************************************************
  * Private functions                                                          *
@@ -239,8 +252,11 @@ chop_newline(char *s)
 void
 flt_echo(const char *string, int length)
 {
-    while (length-- > 0)
-	flt_putc(*string++);
+    int ch;
+    while (length-- > 0) {
+	ch = *string++;
+	FLT_PUTC(ch);
+    }
 }
 
 void
@@ -310,9 +326,12 @@ flt_gets(char **ptr, size_t *len)
 	    if (len2 != 0) {
 		size_t n;
 		char *values = tb_values(gets_data);
+		int ch;
 
 		for (n = 0; n < len2; ++n) {
-		    values[n] = (char) fixup_cr_lf(values[n]);
+		    ch = values[n];
+		    if (isreturn(ch))
+			values[n] = (char) fixup_cr_lf(ch);
 		}
 	    }
 	}
@@ -437,6 +456,7 @@ flt_input(char *buffer, int max_size)
     const char *separator = "\n";
     int need = (int) strlen(separator);
     int used = 0;
+    int ch;
 
     if (need_separator) {
 	strcpy(buffer, separator);
@@ -446,8 +466,10 @@ flt_input(char *buffer, int max_size)
     if (!is_header_line(mark_in, curbp)) {
 	while (used < max_size) {
 	    if (mark_in.o < llength(mark_in.l)) {
-		buffer[used++] = (char) fixup_cr_lf((char) lgetc(mark_in.l,
-								 mark_in.o++));
+		ch = lgetc(mark_in.l, mark_in.o++);
+		if (isreturn(ch))
+		    ch = fixup_cr_lf(ch);
+		buffer[used++] = (char) ch;
 	    } else {
 		mark_in.l = lforw(mark_in.l);
 		mark_in.o = w_left_margin(curwp);
@@ -482,17 +504,7 @@ flt_put_blanks(char *string)
 void
 flt_putc(int ch)
 {
-    if (filter_only > 0) {
-	putchar(ch);
-    } else {
-	if (ch == '\n') {
-	    if (mark_out.l != buf_head(curbp))
-		mark_out.l = lforw(mark_out.l);
-	    mark_out.o = w_left_margin(curwp);
-	} else {
-	    mark_out.o++;
-	}
-    }
+    FLT_PUTC(ch);
 }
 
 static int

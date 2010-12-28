@@ -18,7 +18,7 @@
  * transferring the selection are not dealt with in this file.  Procedures
  * for dealing with the representation are maintained in this file.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.181 2010/09/08 08:44:37 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.185 2010/12/28 00:43:33 tom Exp $
  *
  */
 
@@ -49,6 +49,15 @@ static int add_line_attrib(BUFFER *bp, REGION * rp, REGIONSHAPE rs,
 			   unsigned vattr, TBUFF *hypercmd);
 static void purge_line_attribs(BUFFER *bp, REGION * rp, REGIONSHAPE rs,
 			       int owner);
+
+#define mark_buffers_windows(bp) \
+	{ \
+	    WINDOW *wp; \
+	    for_each_visible_window(wp) { \
+		if (wp->w_bufp == bp) \
+		    wp->w_flag |= WFHARD; \
+	    } \
+	}
 
 /*
  * startbufp and startregion are used to represent the start of a selection
@@ -121,9 +130,16 @@ free_attribs(BUFFER *bp)
 }
 
 void
-free_attrib(BUFFER *bp, AREGION * ap)
+free_attrib2(BUFFER *bp, AREGION ** rpp)
 {
-    detach_attrib(bp, ap);
+    AREGION *ap = *rpp;
+    AREGION *next = ap->ar_next;
+
+    /* The caller already has found the right value for 'rpp',
+     * so there is no need to call detach_attrib() to find it.
+     */
+    mark_buffers_windows(bp);
+    ap->ar_region.r_attr_id = 0;
 
     beginDisplay();
 #if OPT_HYPERTEXT
@@ -136,6 +152,9 @@ free_attrib(BUFFER *bp, AREGION * ap)
     else
 	free((char *) ap);
     endofDisplay();
+
+    /* finally, delink the region */
+    *rpp = next;
 }
 
 static void
@@ -143,12 +162,8 @@ detach_attrib(BUFFER *bp, AREGION * arp)
 {
     if (find_bp(bp) != 0) {
 	if (valid_buffer(bp)) {
-	    WINDOW *wp;
 	    AREGION **rpp;
-	    for_each_visible_window(wp) {
-		if (wp->w_bufp == bp)
-		    wp->w_flag |= WFHARD;
-	    }
+	    mark_buffers_windows(bp);
 	    rpp = &bp->b_attribs;
 	    while (*rpp != NULL) {
 		if (*rpp == arp) {
@@ -166,14 +181,15 @@ void
 find_release_attr(BUFFER *bp, REGION * rp)
 {
     if (valid_buffer(bp)) {
-	AREGION **rpp;
-	rpp = &bp->b_attribs;
-	while (*rpp != NULL) {
-	    if ((*rpp)->ar_region.r_attr_id == rp->r_attr_id) {
-		free_attrib(bp, *rpp);
+	AREGION **rpp = &bp->b_attribs;
+	AREGION *ap;
+
+	while ((ap = *rpp) != NULL) {
+	    if (ap->ar_region.r_attr_id == rp->r_attr_id) {
+		free_attrib2(bp, rpp);
 		break;
 	    } else
-		rpp = &(*rpp)->ar_next;
+		rpp = &ap->ar_next;
 	}
     }
 }
@@ -189,13 +205,9 @@ static void
 attach_attrib(BUFFER *bp, AREGION * arp)
 {
     if (valid_buffer(bp)) {
-	WINDOW *wp;
 	arp->ar_next = bp->b_attribs;
 	bp->b_attribs = arp;
-	for_each_visible_window(wp) {
-	    if (wp->w_bufp == bp)
-		wp->w_flag |= WFHARD;
-	}
+	mark_buffers_windows(bp);
 	arp->ar_region.r_attr_id = (USHORT) assign_attr_id();
     }
 }
@@ -274,7 +286,6 @@ sel_extend(int wiping, int include_dot)
     BUFFER *bp = curbp;
     REGIONSHAPE save_shape = regionshape;
     REGION a, b;
-    WINDOW *wp;
     MARK saved_dot;
     MARK working_dot;
 
@@ -381,10 +392,7 @@ sel_extend(int wiping, int include_dot)
     }
 
     selregion.ar_vattr = VASEL | VOWN_SELECT;
-    for_each_visible_window(wp) {
-	if (wp->w_bufp == selbufp)
-	    wp->w_flag |= WFHARD;
-    }
+    mark_buffers_windows(selbufp);
 
     show_selection_position(FALSE);
 
@@ -1199,21 +1207,25 @@ attributeregion(void)
 	    L_NUM rle = line_no(bp, region.r_end.l);
 	    C_NUM ros = region.r_orig.o;
 	    C_NUM roe = region.r_end.o;
-	    AREGION *p, *q, *n;
+	    AREGION **pp;
+	    AREGION **qq;
+	    AREGION *p, *n;
 	    int owner;
 
 	    owner = VOWNER(videoattribute);
 
 	    purge_line_attribs(bp, &region, regionshape, owner);
 
-	    for (p = bp->b_attribs; p != 0; p = q) {
+	    pp = &(bp->b_attribs);
+
+	    for (p = *pp; p != 0; pp = qq, p = *pp) {
 		L_NUM pls, ple;
 		C_NUM pos, poe;
 
 		if (interrupted())
 		    return FALSE;
 
-		q = p->ar_next;
+		qq = &(p->ar_next);
 
 		if (owner != 0 && owner != VOWNER(p->ar_vattr))
 		    continue;
@@ -1292,7 +1304,8 @@ attributeregion(void)
 		    }
 		}
 
-		free_attrib(bp, p);
+		free_attrib2(bp, pp);
+		qq = pp;
 	    }
 	}
     }
@@ -2025,11 +2038,7 @@ free_line_attribs(BUFFER *bp)
 	FreeAndNull(lp->l_attrs);
     }
     if (do_update) {
-	WINDOW *wp;
-	for_each_visible_window(wp) {
-	    if (wp->w_bufp == bp)
-		wp->w_flag |= WFHARD;
-	}
+	mark_buffers_windows(bp);
     }
 #endif /* OPT_LINE_ATTRS */
 }
@@ -2040,7 +2049,6 @@ add_line_attrib(BUFFER *bp, REGION * rp, REGIONSHAPE rs, unsigned vattr,
 {
 #if OPT_LINE_ATTRS
     LINE *lp;
-    WINDOW *wp;
     int vidx;
     int i;
     int overlap = FALSE;
@@ -2103,10 +2111,7 @@ add_line_attrib(BUFFER *bp, REGION * rp, REGIONSHAPE rs, unsigned vattr,
 	    for (i = rp->r_orig.o; i < last; i++)
 		lp->l_attrs[i] = (UCHAR) vidx;
 
-	    for_each_visible_window(wp) {
-		if (wp->w_bufp == bp)
-		    wp->w_flag |= WFHARD;
-	    }
+	    mark_buffers_windows(bp);
 	    return TRUE;
 	}
     }
@@ -2151,11 +2156,7 @@ purge_line_attribs(BUFFER *bp, REGION * rp, REGIONSHAPE rs, int owner)
 	    break;
     }
     if (do_update) {
-	WINDOW *wp;
-	for_each_visible_window(wp) {
-	    if (wp->w_bufp == bp)
-		wp->w_flag |= WFHARD;
-	}
+	mark_buffers_windows(bp);
     }
 #endif /* OPT_LINE_ATTRS */
 }
