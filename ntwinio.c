@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 screen API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.196 2010/12/05 22:42:39 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.197 2010/12/27 00:05:35 tom Exp $
  * Written by T.E.Dickey for vile (october 1997).
  * -- improvements by Clark Morgan (see w32cbrd.c, w32pipe.c).
  */
@@ -499,6 +499,8 @@ AdjustedWidth(int wide)
 static WINDOW_PROC_RETVAL
 AdjustPosChanging(HWND hwnd, WINDOWPOS * pos)
 {
+    (void) hwnd;
+
     if (!(pos->flags & SWP_NOSIZE)) {
 	int wide = AdjustedWidth(pos->cx);
 	int high = AdjustedHeight(pos->cy);
@@ -550,6 +552,8 @@ AdjustResizing(HWND hwnd, WPARAM fwSide, RECT * rect)
     int high = rect->bottom - rect->top;
     int adjX = wide - AdjustedWidth(wide);
     int adjY = high - AdjustedHeight(high);
+
+    (void) hwnd;
 
     TRACE(("AdjustResizing now (%d,%d) (%d,%d) (%dx%d pixels)\n",
 	   rect->top, rect->left, rect->bottom, rect->right,
@@ -666,6 +670,9 @@ SetRGBPalette(int f, int n)
     int count = 0;
     int status;			/* status return code */
     long value;
+
+    (void) f;
+    (void) n;
 
     *tstring = EOS;
     status = kbd_string("Color: ", tstring, sizeof(tstring), ' ',
@@ -1004,6 +1011,8 @@ fshow_cursor(void)
 static void
 ntwinio_icursor(int unused)
 {
+    (void) unused;
+
     if (icursor && caret_visible) {
 	fhide_cursor();		/* Kill the old caret        */
 	fshow_cursor();		/* And bring it back to life */
@@ -1048,6 +1057,9 @@ enumerate_fonts(
     int code = 2;
     const LOGFONT *src = lpelf;
     LOGFONT *dst = ((LOGFONT *) lParam);
+
+    (void) lpntm;
+    (void) FontType;
 
     if ((src->lfPitchAndFamily & 3) != FIXED_PITCH) {
 	code = 1;
@@ -1477,7 +1489,7 @@ get_keyboard_state(void)
 }
 
 #define KEY_FIFO struct key_fifo
-typedef KEY_FIFO {
+KEY_FIFO {
     KEY_FIFO *link;
     MSG data;
     DWORD state;
@@ -1659,17 +1671,17 @@ really_draw_text(HDC hdc,
 		 VIDEO_TEXT * text,
 		 VIDEO_ATTR attr,
 		 int length,
-		 int crow,
-		 int ccol)
+		 int my_crow,
+		 int my_ccol)
 {
     TRACE(("Draw [%3d,%3d]%s\n",
-	   crow, ccol, visible_video_text(text, length)));
+	   my_crow, my_ccol, visible_video_text(text, length)));
 
     nt_set_colors(hdc, attr);
 
     ExtTextOut(hdc,
-	       ColToPixel(ccol),
-	       RowToPixel(crow),
+	       ColToPixel(my_ccol),
+	       RowToPixel(my_crow),
 	       0,
 	       (RECT *) 0,
 	       (VIDEO_CHAR *) text, length,
@@ -1679,10 +1691,10 @@ really_draw_text(HDC hdc,
 	HBRUSH brush;
 	RECT rect;
 
-	rect.left = ColToPixel(ccol);
-	rect.top = RowToPixel(crow + 1) - nLineToFill;
-	rect.right = ColToPixel(ccol + length);
-	rect.bottom = RowToPixel(crow + 1);
+	rect.left = ColToPixel(my_ccol);
+	rect.top = RowToPixel(my_crow + 1) - nLineToFill;
+	rect.right = ColToPixel(my_ccol + length);
+	rect.bottom = RowToPixel(my_crow + 1);
 
 	brush = Background(hdc);
 	FillRect(hdc, &rect, brush);
@@ -2006,6 +2018,8 @@ ntwinio_rev(UINT reverse)
 static int
 ntwinio_cres(const char *res)
 {				/* change screen resolution */
+    (void) res;
+
     scflush();
     return 0;
 }
@@ -2037,11 +2051,6 @@ ntwinio_open(void)
 	ResetRGBPalette(FALSE, 1);
     }
 }
-
-static int old_title_set = 0;
-static char old_title[256];
-static int orig_title_set = 0;
-static char orig_title[256];
 
 static void
 ntwinio_close(void)
@@ -2162,7 +2171,7 @@ decode_key_event(KEY_EVENT_RECORD * irp)
 #endif
 
     key = NOKYMAP;
-    for (i = 0, keyp = keyxlate; i < TABLESIZE(keyxlate); i++, keyp++) {
+    for (i = 0, keyp = keyxlate; i < (int) TABLESIZE(keyxlate); i++, keyp++) {
 	if (keyp->windows == irp->wVirtualKeyCode) {
 	    DWORD state = irp->dwControlKeyState;
 
@@ -2347,6 +2356,8 @@ AboutBoxProc(HWND hDlg, UINT iMsg, WPARAM wParam, LPARAM lParam)
 {
     char buf[512];
     HWND hwnd;
+
+    (void) lParam;
 
     switch (iMsg) {
     case WM_INITDIALOG:
@@ -2552,7 +2563,9 @@ AutoScroll(WINDOW *wp)
 
 	// Set the cursor. Column doesn't really matter, it will
 	// get updated as soon as we get back into the window...
-	setcursor(row, 0) && sel_extend(TRUE, TRUE);
+	if (setcursor(row, 0)) {
+	    sel_extend(TRUE, TRUE);
+	}
 	(void) update(TRUE);
 	ScrollCount++;
 	if (ScrollCount > TRIGGER && Throttle > 0 && ScrollCount % INCR == 0)
@@ -2803,7 +2816,7 @@ set_scrollbar_range(int n, WINDOW *wp)
  * the borders of the dummy window we're surrounding it with.  That's because
  * the resize-grip itself isn't resizable.
  */
-WINDOW_PROC_RETVAL FAR PASCAL
+static WINDOW_PROC_RETVAL FAR PASCAL
 GripWndProc(
 	       HWND hWnd,
 	       UINT message,
@@ -3549,7 +3562,7 @@ static void
 repaint_window(HWND hWnd)
 {
     PAINTSTRUCT ps;
-    int x0, y0, x1, y1;
+    int x1, y1, x2, y2;
     int row, col;
 
     BeginPaint(hWnd, &ps);
@@ -3564,40 +3577,40 @@ repaint_window(HWND hWnd)
 	   ps.rcPaint.bottom,
 	   ps.rcPaint.right));
 
-    y0 = PixelToRow(ps.rcPaint.top);
-    x0 = PixelToCol(ps.rcPaint.left);
-    y1 = PixelToRow(ps.rcPaint.bottom + nLineHeight);
-    x1 = PixelToCol(ps.rcPaint.right + nCharWidth);
+    y1 = PixelToRow(ps.rcPaint.top);
+    x1 = PixelToCol(ps.rcPaint.left);
+    y2 = PixelToRow(ps.rcPaint.bottom + nLineHeight);
+    x2 = PixelToCol(ps.rcPaint.right + nCharWidth);
 
-    if (y0 < 0)
-	y0 = 0;
-    if (x0 < 0)
-	x0 = 0;
-    if (y1 > term.rows)
-	y1 = term.rows;
-    if (y1 > term.maxrows)
-	y1 = term.maxrows;
-    if (x1 > term.cols)
-	x1 = term.cols;
-    if (x1 > term.maxcols)
-	x1 = term.maxcols;
+    if (y1 < 0)
+	y1 = 0;
+    if (x1 < 0)
+	x1 = 0;
+    if (y2 > term.rows)
+	y2 = term.rows;
+    if (y2 > term.maxrows)
+	y2 = term.maxrows;
+    if (x2 > term.cols)
+	x2 = term.cols;
+    if (x2 > term.maxcols)
+	x2 = term.maxcols;
 
     TRACE(("...erase %d\n", ps.fErase));
-    TRACE(("...cells (%d,%d) - (%d,%d)\n", y0, x0, y1, x1));
-    TRACE(("...top:    %d\n", RowToPixel(y0) - ps.rcPaint.top));
-    TRACE(("...left:   %d\n", ColToPixel(x0) - ps.rcPaint.left));
-    TRACE(("...bottom: %d\n", RowToPixel(y1) - ps.rcPaint.bottom));
-    TRACE(("...right:  %d\n", ColToPixel(x1) - ps.rcPaint.right));
+    TRACE(("...cells (%d,%d) - (%d,%d)\n", y1, x1, y2, x2));
+    TRACE(("...top:    %d\n", RowToPixel(y1) - ps.rcPaint.top));
+    TRACE(("...left:   %d\n", ColToPixel(x1) - ps.rcPaint.left));
+    TRACE(("...bottom: %d\n", RowToPixel(y2) - ps.rcPaint.bottom));
+    TRACE(("...right:  %d\n", ColToPixel(x2) - ps.rcPaint.right));
 
-    for (row = y0; row < y1; row++) {
+    for (row = y1; row < y2; row++) {
 	if (pscreen != 0
 	    && VideoText(pscreen[row]) != 0
 	    && VideoAttr(pscreen[row]) != 0) {
-	    int old_col = x0;
+	    int old_col = x1;
 	    VIDEO_ATTR old_atr = CELL_ATTR(row, old_col);
 	    VIDEO_ATTR new_atr;
 
-	    for (col = x0 + 1; col < x1; col++) {
+	    for (col = x1 + 1; col < x2; col++) {
 		new_atr = CELL_ATTR(row, col);
 		if (new_atr != old_atr) {
 		    really_draw_text(ps.hdc,
@@ -3610,11 +3623,11 @@ repaint_window(HWND hWnd)
 		    old_col = col;
 		}
 	    }
-	    if (old_col < x1) {
+	    if (old_col < x2) {
 		really_draw_text(ps.hdc,
 				 &CELL_TEXT(row, old_col),
 				 old_atr,
-				 x1 - old_col,
+				 x2 - old_col,
 				 row,
 				 old_col);
 	    }
@@ -3660,10 +3673,12 @@ receive_dropped_files(HDROP hDrop)
 static void
 HandleClose(HWND hWnd)
 {
+    (void) hWnd;
+
     quit(FALSE, 1);
 }
 
-WINDOW_PROC_RETVAL FAR PASCAL
+static WINDOW_PROC_RETVAL FAR PASCAL
 TextWndProc(
 	       HWND hWnd,
 	       UINT message,
@@ -3708,7 +3723,7 @@ TextWndProc(
     return (0);
 }
 
-WINDOW_PROC_RETVAL FAR PASCAL
+static WINDOW_PROC_RETVAL FAR PASCAL
 MainWndProc(
 	       HWND hWnd,
 	       UINT message,
@@ -4421,6 +4436,10 @@ ntwinio_redirect_hwnd(int redirect)
 int
 chgd_popupmenu(BUFFER *bp, VALARGS * args, int glob_vals, int testing)
 {
+    (void) bp;
+    (void) args;
+    (void) glob_vals;
+
     if (!testing)
 	enable_popup_menu();
     return TRUE;
@@ -4458,6 +4477,9 @@ int
 chgd_icursor(BUFFER *bp, VALARGS * args, int glob_vals, int testing)
 {
     int rc = TRUE;
+
+    (void) bp;
+    (void) glob_vals;
 
     if (!testing) {
 	char *val = args->global->vp->p;
@@ -4499,6 +4521,8 @@ option_size(const char *option)
 void
 gui_version(char *program)
 {
+    (void) program;
+
     ShowWindow(cur_win->main_hwnd, SW_HIDE);
     show_ok_message(getversion());
 }
@@ -4511,6 +4535,8 @@ gui_usage(char *program, const char *const *options, size_t length)
     const char *fmt1 = "%s\n\nOptions:\n";
     const char *fmt2 = "    %s\t%s\n";
     const char *fmt3 = "%s\n";
+
+    (void) program;
 
     /*
      * Hide the (partly-constructed) main window.  It'll flash (FIXME).

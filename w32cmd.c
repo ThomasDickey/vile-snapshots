@@ -2,7 +2,7 @@
  * w32cmd:  collection of functions that add Win32-specific editor
  *          features (modulo the clipboard interface) to [win]vile.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32cmd.c,v 1.47 2010/12/05 22:38:43 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32cmd.c,v 1.48 2010/12/26 22:26:46 tom Exp $
  */
 
 #include "estruct.h"
@@ -1727,7 +1727,7 @@ get_printing_font(HDC hdc, HWND hwnd)
 static HINSTANCE
 GetHinstance(HWND hwnd)
 {
-#if (_MSC_VER >= 1300)
+#ifdef GWLP_HINSTANCE
     return (HINSTANCE) GetWindowLongPtr(hwnd, GWLP_HINSTANCE);
 #else
     return (HINSTANCE) GetWindowLong(hwnd, GWL_HINSTANCE);

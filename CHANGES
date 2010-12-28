@@ -1,7 +1,14 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20101225 (d)
+ 20101227 (d)
 	> Tom Dickey:
+	+ minor improvements to performance by inlining as macros some
+	  frequently used functions.
+	+ apply the same improvement for line-deletion to these functions: 
+	  attributereqion(), find_release_attr(), update_window_attrs().
+	+ improve performance of line-deletion by eliminating a search for
+	  region-pointer, using data already collected (report by Gary
+	  Jennejohn).
 	+ modify CAPNAME expression in tc-filt.l to accept "#2", etc.
 	+ extend generate set of single-byte encodings to include those listed
 	  by iconv for which there is no predefined locale, e.g., the Windows

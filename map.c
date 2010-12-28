@@ -3,7 +3,7 @@
  *	Original interface by Otto Lind, 6/3/93
  *	Additional map and map! support by Kevin Buettner, 9/17/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/map.c,v 1.121 2010/09/06 18:29:22 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/map.c,v 1.122 2010/12/26 19:47:52 tom Exp $
  *
  */
 
@@ -345,7 +345,7 @@ delfrommap(struct maprec **mpp, const char *ks, int length)
  */
 static int
 maplookup(int c,
-	  ITBUFF ** outp,
+	  ITBUFF ** out_ptr,
 	  struct maprec *mp,
 	  GetFunc get,
 	  AvailFunc avail,
@@ -460,7 +460,7 @@ maplookup(int c,
     } else if (had_start && (rmp != 0)) {
 	/* unget the unmatched suffix */
 	while (suffix && (count > 0)) {
-	    (void) itb_append(outp, itb_values(unmatched)[--count]);
+	    (void) itb_append(out_ptr, itb_values(unmatched)[--count]);
 	    TRACE2(("...1 ungetting %#x\n", itb_values(unmatched)[count]));
 	}
 	/* unget the mapping and elide correct number of recorded chars */
@@ -474,22 +474,22 @@ maplookup(int c,
 	    else
 		remapflag = 0;
 	    while (cp > rmp->srv) {
-		(void) itb_append(outp, CharOf(*--cp) | (int) remapflag);
+		(void) itb_append(out_ptr, CharOf(*--cp) | (int) remapflag);
 		TRACE2(("...2 ungetting %#x|%#x\n", CharOf(*cp), remapflag));
 	    }
 	} else {
-	    (void) itb_append(outp, rmp->irv);
+	    (void) itb_append(out_ptr, rmp->irv);
 	    TRACE2(("...3 ungetting %#x\n", rmp->irv));
 	}
     } else {			/* didn't find a match */
 	while (count > 0) {
-	    (void) itb_append(outp, itb_values(unmatched)[--count]);
+	    (void) itb_append(out_ptr, itb_values(unmatched)[--count]);
 	    TRACE2(("...4 ungetting %#x\n", itb_values(unmatched)[count]));
 	}
 	matchedcnt = 0;
     }
     itb_free(&unmatched);
-    TRACE2(("...maplookup %d:%s\n", matchedcnt, itb_visible(*outp)));
+    TRACE2(("...maplookup %d:%s\n", matchedcnt, itb_visible(*out_ptr)));
     return matchedcnt;
 }
 

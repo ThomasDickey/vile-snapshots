@@ -1,5 +1,5 @@
 /*
- * $Id: eightbit.c,v 1.98 2010/12/24 20:56:46 tom Exp $
+ * $Id: eightbit.c,v 1.99 2010/12/27 12:10:33 tom Exp $
  *
  * Maintain "8bit" file-encoding mode by converting incoming UTF-8 to single
  * bytes, and providing a function that tells vile whether a given Unicode
@@ -741,19 +741,19 @@ vl_mb_getch(void)
 	}
 	switch (actual_encoding) {
 	case enc_AUTO:
-	    input[0] = ch = save_getch();
-	    if ((need = vl_check_utf8(input, 1)) > 1) {
+	    input[0] = (char) (ch = save_getch());
+	    if ((need = vl_check_utf8(input, (B_COUNT) 1)) > 1) {
 		have = 1;
 		for (;;) {
-		    input[have++] = save_getch();
-		    test = vl_check_utf8(input, have);
+		    input[have++] = (char) save_getch();
+		    test = vl_check_utf8(input, (B_COUNT) have);
 		    if (test == 0) {
 			kbd_encoding = enc_8BIT;
 			ch = vl_mb_getch();
 			break;
 		    } else if (test == need) {
 			kbd_encoding = enc_UTF8;
-			vl_conv_to_utf32(&tempch, input, have);
+			vl_conv_to_utf32(&tempch, input, (B_COUNT) have);
 			ch = (int) tempch;
 			used = have = 0;
 			break;
@@ -772,7 +772,7 @@ vl_mb_getch(void)
 	    if (ch >= 128 && okCTYPE2(vl_wide_enc)) {
 		if (ch >= 256) {
 		    ch = -1;
-		} else if ((ch = table_8bit_utf8[ch].code) == 0) {
+		} else if ((ch = (int) table_8bit_utf8[ch].code) == 0) {
 		    ch = -1;
 		}
 	    }

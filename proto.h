@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.716 2010/12/17 21:41:05 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.718 2010/12/28 00:43:33 tom Exp $
  *
  */
 
@@ -1211,7 +1211,7 @@ extern	int	sel_get_rightmark (MARK *result);
 extern	int	sel_setshape	(REGIONSHAPE shape);
 extern	void	do_sweep	(int flag);
 extern	void	find_release_attr (BUFFER *bp, REGION *rp);
-extern	void	free_attrib	(BUFFER *bp, AREGION *ap);
+extern	void	free_attrib2	(BUFFER *bp, AREGION **rpp);
 extern	void	free_attribs	(BUFFER *bp);
 extern	void	sel_reassert_ownership (BUFFER *bp);
 extern	void	sel_release	(void);

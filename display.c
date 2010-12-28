@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.526 2010/09/15 09:23:02 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.527 2010/12/28 00:34:44 tom Exp $
  *
  */
 
@@ -2094,6 +2094,7 @@ static void
 update_window_attrs(WINDOW *wp)
 {
     BUFFER *bp = wp->w_bufp;
+    AREGION **rpp;
     AREGION *ap;
     int i, lmax;
 
@@ -2160,7 +2161,9 @@ update_window_attrs(WINDOW *wp)
      * Set current attributes in virtual screen associated with window
      * pointer.
      */
-    for (ap = bp->b_attribs; ap != NULL;) {
+    rpp = &(bp->b_attribs);
+    while ((ap = *rpp) != NULL) {
+	AREGION **next = &(ap->ar_next);
 	VIDEO_ATTR attr;
 	C_NUM start_col, end_col;
 	C_NUM rect_start_col = 0, rect_end_col = 0;
@@ -2174,9 +2177,7 @@ update_window_attrs(WINDOW *wp)
 	if (start_rlnum == end_rlnum
 	    && VATTRIB(ap->ar_vattr) != 0
 	    && ap->ar_region.r_orig.o >= ap->ar_region.r_end.o) {
-	    AREGION *nap = ap->ar_next;
-	    free_attrib(bp, ap);
-	    ap = nap;
+	    free_attrib2(bp, rpp);
 	    continue;
 	}
 
@@ -2245,63 +2246,61 @@ update_window_attrs(WINDOW *wp)
 #if OPT_TRACE
 	total_regions++;
 #endif
-	if (!visible) {
-	    ap = ap->ar_next;
-	    continue;
-	}
+	if (visible) {
 #if OPT_TRACE
-	visible_regions++;
+	    visible_regions++;
 #endif
 
-	attr = ap->ar_vattr;
+	    attr = ap->ar_vattr;
 
-	/* if it's a rectangle, precompute the start/end columns */
-	if (ap->ar_shape == rgn_RECTANGLE) {
-	    int n;
-	    rect_start_col = mark2col(wp, ap->ar_region.r_orig);
-	    rect_end_col = mark2col(wp, ap->ar_region.r_end);
-	    if (rect_end_col < rect_start_col) {
-		col = rect_end_col;
-		rect_end_col = rect_start_col;
-		rect_start_col = col;
-		n = MARK2COL(wp, ap->ar_region.r_orig);
-	    } else {
-		n = MARK2COL(wp, ap->ar_region.r_end);
-	    }
-	    if (rect_end_col < n)
-		rect_end_col = n;
-	}
-	for (lnum = start_lnum; lnum <= end_lnum; lnum++, lp = lforw(lp)) {
-	    int row;
+	    /* if it's a rectangle, precompute the start/end columns */
 	    if (ap->ar_shape == rgn_RECTANGLE) {
-		start_col = rect_start_col;
-	    } else if (lnum == start_rlnum) {
-		start_col = mark2col(wp, ap->ar_region.r_orig);
-	    } else {
-		start_col = w_left_margin(wp) + nu_width(wp);
+		int n;
+		rect_start_col = mark2col(wp, ap->ar_region.r_orig);
+		rect_end_col = mark2col(wp, ap->ar_region.r_end);
+		if (rect_end_col < rect_start_col) {
+		    col = rect_end_col;
+		    rect_end_col = rect_start_col;
+		    rect_start_col = col;
+		    n = MARK2COL(wp, ap->ar_region.r_orig);
+		} else {
+		    n = MARK2COL(wp, ap->ar_region.r_end);
+		}
+		if (rect_end_col < n)
+		    rect_end_col = n;
 	    }
+	    for (lnum = start_lnum; lnum <= end_lnum; lnum++, lp = lforw(lp)) {
+		int row;
+		if (ap->ar_shape == rgn_RECTANGLE) {
+		    start_col = rect_start_col;
+		} else if (lnum == start_rlnum) {
+		    start_col = mark2col(wp, ap->ar_region.r_orig);
+		} else {
+		    start_col = w_left_margin(wp) + nu_width(wp);
+		}
 
-	    if (start_col < w_left_margin(wp))
-		start_col = (lnum == start_rlnum)
-		    ? w_left_margin(wp) + nu_width(wp)
-		    : w_left_margin(wp);
+		if (start_col < w_left_margin(wp))
+		    start_col = (lnum == start_rlnum)
+			? w_left_margin(wp) + nu_width(wp)
+			: w_left_margin(wp);
 
-	    if (ap->ar_shape == rgn_RECTANGLE) {
-		end_col = rect_end_col;
-	    } else if (lnum == end_rlnum) {
-		end_col = mark2col(wp, ap->ar_region.r_end) - 1;
-	    } else {
-		end_col = offs2col(wp, lp, llength(lp) + 1) - 1;
+		if (ap->ar_shape == rgn_RECTANGLE) {
+		    end_col = rect_end_col;
+		} else if (lnum == end_rlnum) {
+		    end_col = mark2col(wp, ap->ar_region.r_end) - 1;
+		} else {
+		    end_col = offs2col(wp, lp, llength(lp) + 1) - 1;
 #ifdef WMDLINEWRAP
-		if (w_val(wp, WMDLINEWRAP)
-		    && (end_col % term.cols) == 0)
-		    end_col--;	/* cannot highlight the newline */
+		    if (w_val(wp, WMDLINEWRAP)
+			&& (end_col % term.cols) == 0)
+			end_col--;	/* cannot highlight the newline */
 #endif
+		}
+		row = lmap[lnum - start_wlnum].map;
+		mergeattr(wp, row, start_col, end_col, attr);
 	    }
-	    row = lmap[lnum - start_wlnum].map;
-	    mergeattr(wp, row, start_col, end_col, attr);
 	}
-	ap = ap->ar_next;
+	rpp = next;
     }
     TRACE2(("update_window_attrs visible %d / %d\n",
 	    visible_regions,
