@@ -1,4 +1,4 @@
-# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.2nd,v 1.27 2010/09/12 23:40:11 tom Exp $
+# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.2nd,v 1.28 2010/12/29 17:33:58 tom Exp $
 #
 
 .SUFFIXES: .l .c .i $o
@@ -76,7 +76,8 @@ config.status: configure
 	$(SHELL) ./config.status --recheck
 
 mostlyclean:
-	-$(RM) *.[oi] *$(so) o$(TARGET) $(BUILTSRCS) core *~ *.BAK $(LEX_OUTPUT_ROOT).* *.bb* *.da *.gcov @LIBBUILTFLT@
+	-$(RM) *.[oi] *$(so) o$(TARGET) $(LEX_OUTPUT_ROOT).* $(BUILTSRCS) @LIBBUILTFLT@
+	-$(RM) core core.* *.stackdump *~ *.BAK *.bb* *.da *.gcov
 
 clean: mostlyclean
 	-$(SHELL) -c 'for L in *.l;do C=`basename $$L .l`.c;test -f $$C && rm -f $$C; done; exit 0'
