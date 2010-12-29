@@ -46,22 +46,21 @@ binary: binary-indep binary-arch
 clean:
 	dh_testdir
 	dh_testroot
-	rm -f stamp-*
-	rm -rf t
 	dh_clean $(verbose)
+	rm -rf t
 
-config-indep: $(PACKAGES.indep:%=stamp-config.%)
-config-arch: $(PACKAGES.arch:%=stamp-config.%)
+config-indep: $(PACKAGES.indep:%=config-%-stamp)
+config-arch: $(PACKAGES.arch:%=config-%-stamp)
 
-build-indep: $(PACKAGES.indep:%=stamp-build.%)
-build-arch: $(PACKAGES.arch:%=stamp-build.%)
+build-indep: $(PACKAGES.indep:%=build-%-stamp)
+build-arch: $(PACKAGES.arch:%=build-%-stamp)
 
-install-indep: $(PACKAGES.indep:%=stamp-install.%)
-install-arch: $(PACKAGES.arch:%=stamp-install.%)
+install-indep: $(PACKAGES.indep:%=install-%-stamp)
+install-arch: $(PACKAGES.arch:%=install-%-stamp)
 
 binary-indep: install-indep
 ifneq ($(PACKAGES.indep),)
-	rm -f $(PACKAGES.indep:%=stamp-install.%)
+	rm -f $(PACKAGES.indep:%=install-%-stamp)
 	dh_testdir
 	dh_testroot
 	dh_installdocs       $(verbose) $(PACKAGES.indep:%=-p%)
@@ -78,7 +77,7 @@ endif
 
 binary-arch: install-arch
 ifneq ($(PACKAGES.arch),)
-	rm -f $(PACKAGES.arch:%=stamp-install.%)
+	rm -f $(PACKAGES.arch:%=install-%-stamp)
 	dh_testdir
 	dh_testroot
 	dh_link              $(verbose) $(PACKAGES.arch:%=-p%)
@@ -94,63 +93,41 @@ ifneq ($(PACKAGES.arch),)
 	dh_builddeb          $(verbose) $(PACKAGES.arch:%=-p%)
 endif
 
-# build in three steps so that filters aren't linked to un-needed perl libs
-stamp-%.vile-common : stamp-%.vile
-	touch $@
-
-stamp-config.vile-filters:
-	dh_testdir
-	rm -rf t/filters
-	mkdir -p t/filters
-	cd t/filters; $(configure)
-	touch $@
-
-stamp-config.vile:
+config-vile-stamp:
 	dh_testdir
 	rm -rf t/vile
 	mkdir -p t/vile
 	cd t/vile; $(configure) --with-perl
 	touch $@
 
-stamp-config.xvile:
+%-vile-common-stamp %-vile-filters-stamp: %-vile-stamp
+	touch $@
+
+config-xvile-stamp:
 	dh_testdir
 	rm -rf t/xvile
 	mkdir -p t/xvile
 	cd t/xvile; $(configure) --with-perl --with-xpm --with-screen=Xaw
 	touch $@
 
-stamp-build.vile-filters: stamp-config.vile-filters
-	dh_testdir
-	$(MAKE) -C t/filters EXTRA_CFLAGS="$(debug)"
-	touch $@
-
-stamp-build.vile: stamp-config.vile
+build-vile-stamp: config-vile-stamp
 	dh_testdir
 	$(MAKE) -C t/vile all vile-perl-api.doc EXTRA_CFLAGS="$(debug)"
 	touch $@
 
-stamp-build.xvile: stamp-config.xvile
+build-xvile-stamp: config-xvile-stamp
 	dh_testdir
 	$(MAKE) -C t/xvile xvile EXTRA_CFLAGS="$(debug)"
 	touch $@
 
-stamp-install.vile-filters: stamp-build.vile-filters
-	touch $@
-
-stamp-install.vile: stamp-build.vile stamp-install.vile-filters
+install-vile-stamp: build-vile-stamp
 	dh_testdir
 	dh_testroot
-	dh_clean -k -pvile -pvile-filters -pvile-common
+	dh_prep -pvile-filters -pvile-common -pvile
 
-	# selectively install everything except filters
 	$(MAKE) -C t/vile DESTDIR=$(TMP) install
-	$(MAKE) -C t/vile DESTDIR=$(TMP) uninstall-filters
-
-	# install the customized filters
-	$(MAKE) -C t/filters DESTDIR=$(TMP) install-filters
-
-	rm -f $(TMP)/usr/bin/vile-pager # examples
-	rm -f $(TMP)/usr/share/man/man1/vile.1 # docs
+	rm -f $(TMP)/usr/bin/vile-pager  # examples
+	rm -f $(TMP)/usr/share/man/man1/vile.1  # docs
 	pod2man $(TMP)/usr/bin/vileget > \
 	    $(TMP)/usr/share/man/man1/vileget.1
 
@@ -158,20 +135,20 @@ stamp-install.vile: stamp-build.vile stamp-install.vile-filters
 	install -c -m 644 debian/overrides/vile \
 	    $(TMP)/usr/share/lintian/overrides
 
-	dh_movefiles $(verbose) -pvile -pvile-filters -pvile-common
+	dh_movefiles $(verbose) -pvile-filters -pvile-common -pvile
 
-	# ensure that all file have been moved from debian/tmp
+	# ensure that all files have been moved from debian/tmp
 	test `find $(TMP) ! -type d | wc -l` -eq 0
 
 	touch $@
 
-stamp-install.xvile: stamp-build.xvile
+install-xvile-stamp: build-xvile-stamp
 	dh_testdir
 	dh_testroot
-	dh_clean $(verbose) -k -pxvile
+	dh_prep -pxvile
 
 	install -d $(TMP)/usr/bin $(TMP)/etc/X11/app-defaults \
-            $(TMP)/usr/share/applications $(TMP)/usr/share/pixmaps \
+	    $(TMP)/usr/share/applications $(TMP)/usr/share/pixmaps \
 	    $(TMP)/usr/share/vile
 
 	install -c t/xvile/xvile $(TMP)/usr/bin/xvile

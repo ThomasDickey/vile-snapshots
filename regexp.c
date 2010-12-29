@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/regexp.c,v 1.204 2010/09/14 23:23:33 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/regexp.c,v 1.205 2010/12/28 18:17:07 tom Exp $
  *
  * Copyright 2005-2009,2010 Thomas E. Dickey and Paul G. Fox
  *
@@ -212,7 +212,7 @@ static int regnarrate = 1;
 static char *reg_program;
 static char *regdump1(char *base, char *op);
 static void regdump(regexp * r);
-static char *regprop(char *op);
+static const char *regprop(char *op);
 #endif
 
 /*
@@ -740,7 +740,8 @@ reg_CTYPE(IDENT, sys_isalnum((sys_WINT_T) target))
 reg_CTYPE(LOWER, (sys_isalpha((sys_WINT_T) target) &&
 		  sys_islower((sys_WINT_T) target)))
 reg_CTYPE(OCTAL, (target >= '0') && (target <= '7'))
-reg_CTYPE(PATHN, sys_isgraph((sys_WINT_T) target))
+reg_CTYPE(PATHN, (((target < 128) && ispath(target)) ||
+		  ((target >= 128) && sys_isalnum((sys_WINT_T) target))))
 reg_CTYPE(PRINT, sys_isprint((sys_WINT_T) target))
 reg_CTYPE(PUNCT, sys_ispunct((sys_WINT_T) target))
 reg_CTYPE(SPACE, sys_isspace((sys_WINT_T) target))
@@ -2552,7 +2553,7 @@ regdump1(char *program, char *s)
     len = OPSIZE(s);
     s += OP_HDR;
     if (op == ANYOF || op == ANYBUT || op == EXACTLY) {
-	tb_sappend0(&dump, visible_buff(s, len, FALSE));
+	tb_sappend0(&dump, visible_buff(s, (int) len, FALSE));
 	s += (len + 1);
     } else if (op == RSIMPLE || op == RCOMPLX) {
 	s += (RR_LEN - OP_HDR);
@@ -2601,10 +2602,10 @@ regdump(regexp * r)
 /*
  - regprop - printable representation of opcode
  */
-static char *
+static const char *
 regprop(char *op)
 {
-    char *p = "?";
+    const char *p = "?";
     static char buf[50];
 
     (void) strcpy(buf, ":");

@@ -1,4 +1,4 @@
-; $Id: modes.rc,v 1.109 2010/11/26 11:55:22 tom Exp $
+; $Id: modes.rc,v 1.110 2010/12/28 14:02:45 tom Exp $
 ; majormodes in this file are ordered alphabetically for convenience - the
 ; precedence used by vile is strictly alphabetic, counting case.  Use the
 ; before and after qualifiers to override the precedence.
@@ -523,8 +523,8 @@ define-mode lua
 ; actually, m4 used for autoconf scripts, which is Bourne-shell
 define-mode m4
 ~with define-submode m4
-	pre '^\s*dnl\>'
-	suffixes	'\.\(ac\|m4\)$'
+	preamble   '\(^\s*dnl\>\|-*- Autotest -*-\)'
+	suffixes   '\.\(ac\|m4\)$'
 	comment-prefix '^\s*\(dnl\|#\)'
 	comments   '^\s*\(dnl\>\|#\)\s*$'
 	fence-if   '^\s*\<if\>'
@@ -905,6 +905,7 @@ define-mode ti
 define-mode txt
 ~with define-submode txt
 	mode-filename	'^\(\(TODO\|\(\(.*-\)\?README\)\|CHANGES\|[Cc]hange[Ll]og\|COPYING\).*\)$'
+	preamble	'-\*- text -\*-'
 	suffixes	'\.\(txt\|doc\|hlp\)$'
 	comment-prefix	'^\s*--'
 	comments	'^\s*--\s*$'
