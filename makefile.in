@@ -20,7 +20,7 @@
 #
 # gnu autoconf support by kevin buettner, 5/94
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.251 2010/09/13 09:14:56 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.252 2010/12/29 17:34:07 tom Exp $
 
 SHELL		= /bin/sh
 
@@ -608,8 +608,8 @@ distclean ::
 	- test -f filters/makefile && cd filters && $(MAKE) $(MAKE_RECUR) $@
 
 mostlyclean ::
-	- $(RM) *.[oi] o$(PROGRAM) $(BUILTHDRS) $(BUILTSRCS) $(MKTBLS) \
-	    builtflt.h core core.* *~ *.tmp *.BAK *.bb* *.da *.gcov
+	- $(RM) *.[oi] o$(PROGRAM) $(BUILTHDRS) $(BUILTSRCS) $(MKTBLS)
+	- $(RM) builtflt.h core core.* *.stackdump *~ *.tmp *.BAK *.bb* *.da *.gcov
 
 clean :: mostlyclean
 	- $(RM) $(ALL)

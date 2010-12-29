@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.726 2010/12/21 00:17:10 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.727 2010/12/29 17:29:49 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -295,7 +295,7 @@ typedef unsigned short	mode_t;
 
 #endif /* HAVE_CONFIG_H */
 
-#if (defined(WIN32) || CC_TURBO || defined(WIN32_LEAN_AND_MEAN))
+#if !(SYS_CYGWIN) && (defined(WIN32) || CC_TURBO || defined(WIN32_LEAN_AND_MEAN))
 #include "w32vile.h"
 #endif
 
@@ -1015,7 +1015,8 @@ extern void endofDisplay(void);
  * files.
  */
 #  include <os2def.h>
-#elif !(defined(WIN32) || defined(WIN32_LEAN_AND_MEAN))
+/* #elif !(defined(WIN32) || defined(WIN32_LEAN_AND_MEAN)) */
+#elif !defined(UINT)
 #  define UCHAR  unsigned char
 #  define UINT   unsigned int
 #  define USHORT unsigned short

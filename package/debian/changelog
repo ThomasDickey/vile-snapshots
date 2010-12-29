@@ -1,3 +1,9 @@
+vile (9.8e) unstable; urgency=low
+
+  * build-fix for xvile with cygwin.
+
+ -- Thomas E. Dickey <dickey@invisible-island.net>  Wed, 29 Dec 2010 13:57:20 -0500
+
 vile (9.8d) unstable; urgency=low
 
   * merge changes from Debian package scripts for 9.8c.

@@ -1,5 +1,10 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
+ 20101229 (e)
+	> Tom Dickey:
+	+ build-fix for xvile with cygwin, broken in 9.8a changes to
+	  consolidate w32vile.h includes.
+
  20101228 (d)
 	> Tom Dickey:
 	+ modify expression used for "path" type in regexp.c to avoid matching
