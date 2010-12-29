@@ -1,7 +1,11 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20101227 (d)
+ 20101228 (d)
 	> Tom Dickey:
+	+ modify expression used for "path" type in regexp.c to avoid matching
+	  non-ASCII punctuation characters.
+	+ merge changes from Debian package script for 9.8c
+	+ add preamble patterns for Emacs "text" and "Autotest" modes.
 	+ minor improvements to performance by inlining as macros some
 	  frequently used functions.
 	+ apply the same improvement for line-deletion to these functions: 

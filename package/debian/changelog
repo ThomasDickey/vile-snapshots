@@ -1,5 +1,7 @@
 vile (9.8d) unstable; urgency=low
 
+  * merge changes from Debian package scripts for 9.8c.
+  * extend built-in locale support.
   * add $kbd-encoding variable.
 
  -- Thomas E. Dickey <dickey@invisible-island.net>  Sun, 12 Dec 2010 16:43:25 -0500

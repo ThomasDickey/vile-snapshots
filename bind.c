@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.357 2010/12/21 10:14:02 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.358 2010/12/28 17:41:02 tom Exp $
  *
  */
 
@@ -3308,7 +3308,7 @@ delete_namebst(const char *name, int release, int redefining)
     BI_DATA *p = btree_search(&namebst, name);
     int code = TRUE;
 
-    TRACE((T_CALLED "delete_namebst(%s,%d) %p\n", name, release, p));
+    TRACE((T_CALLED "delete_namebst(%s,%d) %p\n", name, release, (void *) p));
     /* not a named procedure */
     if ((p = btree_search(&namebst, name)) != 0) {
 
