@@ -2,7 +2,7 @@
  * The routines in this file read and write ASCII files from the disk. All of
  * the knowledge about files are here.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/fileio.c,v 1.197 2010/09/06 18:22:04 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/fileio.c,v 1.198 2011/04/06 08:52:33 tom Exp $
  *
  */
 
@@ -185,7 +185,7 @@ make_backup(char *fname)
 	char tname[NFILEN];
 	char *s = pathleaf(strcpy(tname, fname));
 	char *t = strrchr(s, '.');
-	char *gvalfileback = global_g_val_ptr(GVAL_BACKUPSTYLE);
+	char *gvalfileback = b_val_ptr(curbp, VAL_BACKUPSTYLE);
 
 	switch (choice_to_code(&fsm_backup_blist, gvalfileback, strlen(gvalfileback))) {
 	case bak_BAK:
@@ -409,7 +409,7 @@ ffwopen(char *fn, int forced)
 	    return (FIOERR);
 	}
 
-	if (*global_g_val_ptr(GVAL_BACKUPSTYLE) != 'o') {	/* "off" ? */
+	if (*b_val_ptr(curbp, VAL_BACKUPSTYLE) != 'o') {	/* "off" ? */
 	    if (!make_backup(fn)) {
 		if (!forced) {
 		    mlerror("making backup file");

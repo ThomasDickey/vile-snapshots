@@ -11,7 +11,7 @@
 #
 # The modes are table entries in the BUFFER and WINDOW structures.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.307 2010/12/12 23:41:34 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.308 2011/04/06 08:40:23 tom Exp $
 #
 #
 # Mode-table entries.  Capitalized letters are used for abbreviations.
@@ -87,7 +87,6 @@ int							# VAL_ prefix
 regex							# VAL_ prefix
 	"C-SUFfixes"	CSUFFIXES	0		!OPT_MAJORMODE # match against filenames to turn on c-mode
 string							# VAL_ prefix
-	"backup-style"  BACKUPSTYLE	0		OPT_FILEBACK # file backup style
 	"expand-chars"	EXPAND_CHARS	0		# list of chars we can expand (%,#,:)
 	"find-cfg"	FINDCFG		chgd_find_cfg	OPT_FINDPATH # configuration of the "find" feature
 	"icursor"	ICURSOR		chgd_icursor	OPT_ICURSOR # specify insertion cursor
@@ -160,6 +159,7 @@ int							# VAL_ prefix
 	"UndoLimit"	UNDOLIM		0		# how much undo stack is saved
 	"WrapMargin"	WRAPMARGIN	0		# width of right margin for autowrap
 string							# VAL_ prefix
+	"backup-style"  BACKUPSTYLE	0		OPT_FILEBACK # file backup style
 	"CIndent-Chars"	CINDENT_CHARS	0		# c-style indent flags
 	"FENCE-pairS"	FENCES		chgd_fences	# pairs of fences {,}; (,); etc.
 	"FilterName"	FILTERNAME	0		OPT_MAJORMODE # Name of syntax-filter

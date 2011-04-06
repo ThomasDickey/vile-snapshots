@@ -22,7 +22,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.699 2010/12/26 22:18:33 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.700 2011/04/06 09:15:42 tom Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -1517,9 +1517,6 @@ init_mode_value(struct VAL *d, MODECLASS v_class, int v_which)
 #ifdef GMDXTERM_TITLE
 	    setINT(GMDXTERM_TITLE, FALSE);	/* xterm window-title */
 #endif
-#ifdef GVAL_BACKUPSTYLE
-	    setTXT(GVAL_BACKUPSTYLE, DFT_BACKUPSTYLE);
-#endif
 #ifdef GVAL_BCOLOR
 	    setINT(GVAL_BCOLOR, C_BLACK);	/* background color */
 #endif
@@ -1676,6 +1673,9 @@ init_mode_value(struct VAL *d, MODECLASS v_class, int v_which)
 #endif
 #ifdef VAL_AUTOCOLOR
 	    setINT(VAL_AUTOCOLOR, 0);	/* auto syntax coloring timeout */
+#endif
+#ifdef VAL_BACKUPSTYLE
+	    setTXT(VAL_BACKUPSTYLE, DFT_BACKUPSTYLE);
 #endif
 #ifdef VAL_BYTEORDER_MARK
 	    setINT(VAL_BYTEORDER_MARK, ENUM_UNKNOWN);	/* byteorder-mark NONE */

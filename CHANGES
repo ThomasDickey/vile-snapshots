@@ -1,7 +1,9 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20110226 (e)
+ 20110406 (e)
 	> Tom Dickey:
+	+ change backup-style from universal to buffer-mode (request by Wayne
+	  on mailing list).
 	+ add a check in bytes_at0() to ensure that the offset is positive.
 	+ modify logic used when cursor-tokens is set, to extract the token
 	  from the screen.  It was only searching for the first token which
