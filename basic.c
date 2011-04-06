@@ -5,7 +5,7 @@
  * functions that adjust the top line in the window and invalidate the
  * framing, are hard.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/basic.c,v 1.167 2010/09/06 17:57:36 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/basic.c,v 1.168 2011/02/26 18:42:13 tom Exp $
  *
  */
 
@@ -24,7 +24,7 @@
 static int
 bytes_at0(const char *value, int length, int off)
 {
-    return ((length > off)
+    return ((length > off && off >= 0)
 	    ? vl_conv_to_utf32((UINT *) 0,
 			       value + off,
 			       (B_COUNT) (length - off))

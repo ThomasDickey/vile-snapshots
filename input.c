@@ -44,7 +44,7 @@
  *	tgetc_avail()     true if a key is avail from tgetc() or below.
  *	keystroke_avail() true if a key is avail from keystroke() or below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.340 2010/12/05 21:08:03 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.342 2011/04/06 00:18:28 tom Exp $
  *
  */
 
@@ -888,45 +888,100 @@ vl_ctype2tbuff(TBUFF **result, CHARTYPE inclchartype, int whole_line)
     returnCode(tb_length(*result) != 0);
 }
 
-/*
- * Get a string matching the given expression, which includes the current
- * position.  If the "whole_line" parameter is true, allow the string to
- * start before the current position.
- */
 #if OPT_CURTOKENS
-int
-vl_regex2tbuff(TBUFF **result, REGEXVAL * rexp, int whole_line)
+static void
+vl_regex2tbuff_best(TBUFF **result, regexp * exp)
 {
+    C_NUM start = DOT.o;
     C_NUM given = DOT.o;
     C_NUM length;
     C_NUM offset;
     C_NUM match_off = -1;
     C_NUM match_len = -1;
+    char *line_text = lvalue(DOT.l);
 
+    while (given >= 0) {
+	if (lregexec(exp, DOT.l, given, llength(DOT.l))) {
+	    offset = (C_NUM) (exp->startp[0] - line_text);
+	    length = (C_NUM) (exp->endp[0] - exp->startp[0]);
+	    if ((length > match_len) && (offset + length >= DOT.o)) {
+		match_off = offset;
+		match_len = length;
+	    }
+	}
+	--given;
+    }
+    if (match_len > 0) {
+	tb_bappend(result, line_text + match_off, (size_t) match_len);
+	tb_append(result, EOS);
+    }
+}
+
+static void
+vl_regex2tbuff_dot(TBUFF **result, regexp * exp)
+{
+    C_NUM start = DOT.o;
+    C_NUM given = DOT.o;
+    C_NUM length;
+    C_NUM offset;
+    C_NUM match_off = -1;
+    C_NUM match_len = -1;
+    char *line_text = lvalue(DOT.l);
+
+    while (given >= 0) {
+	if (lregexec(exp, DOT.l, given, llength(DOT.l))) {
+	    offset = (C_NUM) (exp->startp[0] - line_text);
+	    length = (C_NUM) (exp->endp[0] - exp->startp[0]);
+	    if (offset <= DOT.o) {
+		if ((length > match_len || match_off > DOT.o)
+		    && (offset + length > DOT.o)) {
+		    match_off = offset;
+		    match_len = length;
+		}
+	    } else if ((length > match_len) && (offset + length >= DOT.o)) {
+		match_off = offset;
+		match_len = length;
+	    }
+	}
+	if ((match_off >= 0
+	     && match_off <= DOT.o
+	     && match_off + match_len > DOT.o)) {
+	    match_len -= (start - given);
+	    match_off = start;
+	    break;
+	}
+	--given;
+    }
+    if (match_len > 0) {
+	tb_bappend(result, line_text + match_off, (size_t) match_len);
+	tb_append(result, EOS);
+    }
+}
+
+/*
+ * Get a string matching the given expression, which includes the current
+ * position.
+ *
+ * The "whole_line" parameter selects one of two cases for matching:
+ *
+ * 1. true, try successively smaller offsets, looking only for the best match.
+ * This is used for tags and directory-buffers.
+ *
+ * 2. false, try smaller offsets, constrained by preferring to match a string
+ * including dot.  This is used for matching $identifier
+ */
+int
+vl_regex2tbuff(TBUFF **result, REGEXVAL * rexp, int whole_line)
+{
     TRACE((T_CALLED "vl_regex2tbuff\n"));
 
     tb_init(result, EOS);
 
     if (rexp != 0 && rexp->pat != 0 && rexp->pat[0] && rexp->reg) {
-	regexp *exp = rexp->reg;
-	char *line_text = lvalue(DOT.l);
-
-	while (given >= 0) {
-	    if (lregexec(exp, DOT.l, given, llength(DOT.l))) {
-		offset = (C_NUM) (exp->startp[0] - line_text);
-		length = (C_NUM) (exp->endp[0] - exp->startp[0]);
-		if ((length > match_len) && (offset + length >= DOT.o)) {
-		    match_off = offset;
-		    match_len = length;
-		}
-	    }
-	    if (!whole_line)
-		break;
-	    --given;
-	}
-	if (match_len > 0) {
-	    tb_bappend(result, line_text + match_off, (size_t) match_len);
-	    tb_append(result, EOS);
+	if (whole_line) {
+	    vl_regex2tbuff_best(result, rexp->reg);
+	} else {
+	    vl_regex2tbuff_dot(result, rexp->reg);
 	}
     }
 

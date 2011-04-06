@@ -1,7 +1,12 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20101229 (e)
+ 20110226 (e)
 	> Tom Dickey:
+	+ add a check in bytes_at0() to ensure that the offset is positive.
+	+ modify logic used when cursor-tokens is set, to extract the token
+	  from the screen.  It was only searching for the first token which
+	  began on or after the current position.  Now it searches for tokens
+	  which may begin before the current position (report by Ian Watson).
 	+ build-fix for xvile with cygwin, broken in 9.8a changes to
 	  consolidate w32vile.h includes.
 
