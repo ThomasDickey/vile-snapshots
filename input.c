@@ -44,7 +44,7 @@
  *	tgetc_avail()     true if a key is avail from tgetc() or below.
  *	keystroke_avail() true if a key is avail from keystroke() or below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.342 2011/04/06 00:18:28 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.343 2011/04/06 08:53:56 tom Exp $
  *
  */
 
@@ -892,7 +892,6 @@ vl_ctype2tbuff(TBUFF **result, CHARTYPE inclchartype, int whole_line)
 static void
 vl_regex2tbuff_best(TBUFF **result, regexp * exp)
 {
-    C_NUM start = DOT.o;
     C_NUM given = DOT.o;
     C_NUM length;
     C_NUM offset;
