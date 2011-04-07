@@ -1,7 +1,13 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20110406 (e)
+ 20110407 (e)
 	> Tom Dickey:
+	+ add tables, modify functions, to support name-completion for the
+	  ":g" global commands.  Previously, name-completion used the entire
+	  table, which is about 7 times longer.
+	+ add "describe-globals" command.
+	+ add the "pp" operator to documentation of :g in help-file (report by
+	  Wayne on mailing list)
 	+ change backup-style from universal to buffer-mode (request by Wayne
 	  on mailing list).
 	+ add a check in bytes_at0() to ensure that the offset is positive.

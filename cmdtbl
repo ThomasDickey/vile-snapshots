@@ -97,7 +97,7 @@
 #		in '!' listed, then the flag does nothing, and should be
 #		viewed simply as documentation.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.264 2010/09/24 09:23:58 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.265 2011/04/06 21:18:10 tom Exp $
 #
 #
 
@@ -550,6 +550,11 @@ desmotions	NONE			OPT_REBIND
 	"describe-motions"
 	"show-motions"
 	<show a list of all motion commands>
+desglobals	NONE			OPT_REBIND
+	"list-globals"			!FEWNAMES
+	"describe-globals"
+	"show-globals"
+	<show a list of all global commands>
 desopers	NONE			OPT_REBIND
 	"list-operators"		!FEWNAMES
 	"describe-operators"

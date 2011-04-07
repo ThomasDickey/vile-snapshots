@@ -2,7 +2,7 @@
  *	matching lines, then for each such line, an action is performed.
  *	written for vile.  Copyright (c) 1990-1999 by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/globals.c,v 1.49 2006/11/06 21:00:51 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/globals.c,v 1.50 2011/04/06 22:28:01 tom Exp $
  *
  */
 
@@ -51,7 +51,7 @@ globber(int f GCC_UNUSED, int n GCC_UNUSED, int g_or_v)
        searching delay is too long, and unexpected in the
        middle of a command.  */
 
-    fnp = kbd_engl("action to perform on each matching line: ", cmd);
+    fnp = kbd_engl("action to perform on each matching line: ", cmd, GLOBOK);
     /* get the name of, and then the function to execute */
     if (!fnp) {
 	mlforce("[No function]");

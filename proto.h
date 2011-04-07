@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.718 2010/12/28 00:43:33 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.719 2011/04/07 08:58:28 tom Exp $
  *
  */
 
@@ -183,7 +183,7 @@ extern int gotoeob (int f, int n);
 /* bind.c */
 extern BINDINGS * vl_get_binding (const char *name);
 extern char *cfg_locate (char *fname, UINT hflag);
-extern char *kbd_engl (const char *prompt, char *buffer);
+extern char *kbd_engl (const char *prompt, char *buffer, UINT which);
 extern char *kcod2prc (int c, char *seq);
 extern char *kcod2pstr (int c, char *seq, int limit);
 extern const CMDFUNC *engl2fnc (const char *fname);
@@ -193,7 +193,7 @@ extern int eol_command (EOL_ARGS);
 extern int fnc2kcod (const CMDFUNC *);
 extern int fnc2kins (const CMDFUNC *);
 extern int kbd_complete (DONE_ARGS, const char *table, size_t size_entry);
-extern int kbd_engl_stat (const char *prompt, char *buffer, int stated);
+extern int kbd_engl_stat (const char *prompt, char *buffer, UINT which, int stated);
 extern int kbd_erase_to_end (int column);
 extern int kbd_length (void);
 extern int kbd_putc (int c);
@@ -220,11 +220,11 @@ extern char *give_accelerator ( char * );
 #endif
 
 #if OPT_NAMEBST
-extern int delete_namebst(const char *name, int release, int redefining);
-extern int insert_namebst(const char *name, const CMDFUNC *cmd, int ro);
-extern int rename_namebst(const char *oldname, const char *newname);
-extern int search_namebst(const char *name);
-extern void build_namebst(const NTAB *nametbl, int lo, int hi);
+extern int delete_namebst(const char *name, int release, int redefining, UINT which);
+extern int insert_namebst(const char *name, const CMDFUNC *cmd, int ro, UINT which);
+extern int rename_namebst(const char *oldname, const char *newname, UINT which);
+extern int search_namebst(const char *name, UINT which);
+extern void build_namebst(const NTAB *nametbl, int lo, int hi, UINT which);
 #endif
 
 #if OPT_TRACE
@@ -640,6 +640,8 @@ extern int mlreply_file (const char *prompt, TBUFF **buf, UINT flag, char *resul
 extern int fill_directory_buffer(BUFFER *bp, char *path, size_t dots);
 extern int path_completion (DONE_ARGS);
 extern void init_filec(const char *buffer_name);
+#else
+#define init_filec(buffer_name) /* nothing */
 #endif
 
 /* fileio.c */

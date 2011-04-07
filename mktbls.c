@@ -5,7 +5,7 @@
  *	included in main.c
  *
  *	Copyright (c) 1990 by Paul Fox
- *	Copyright (c) 1995-2007 by Paul Fox and Thomas Dickey
+ *	Copyright (c) 1995-2011 by Paul Fox and Thomas Dickey
  *
  *	See the file "cmdtbl" for input data formats, and "estruct.h" for
  *	the output structures.
@@ -15,7 +15,7 @@
  * by Tom Dickey, 1993.    -pgf
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/mktbls.c,v 1.169 2010/09/06 15:44:42 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/mktbls.c,v 1.171 2011/04/07 00:44:55 tom Exp $
  *
  */
 
@@ -142,6 +142,7 @@ typedef struct stringl {
     char *Data;			/* associated data, if any */
     char *Cond;			/* stores ifdef-flags */
     char *Note;			/* stores comment, if any */
+    char *Flag;			/* stores execution flags, if any */
     struct stringl *nst;
 } LIST;
 
@@ -358,7 +359,8 @@ InsertSorted(
 		const char *func,
 		const char *data,
 		const char *cond,
-		const char *note)
+		const char *note,
+		const char *flag)
 {
     LIST *n, *p, *q;
     int r;
@@ -369,6 +371,7 @@ InsertSorted(
     n->Data = StrAlloc(data);
     n->Cond = StrAlloc(cond);
     n->Note = StrAlloc(note);
+    n->Flag = StrAlloc(flag);
 
     for (p = *headp, q = 0; p != 0; q = p, p = p->nst) {
 	if ((r = strcmp(n->Name, p->Name)) < 0)
@@ -497,7 +500,7 @@ set_binding(int btype, int c, char *cond, char *func)
 		    (c == '\'' || c == '\\') ? "\\" : "",
 		    c);
 	}
-	InsertSorted(&all_kbind, name, func, "", cond, "");
+	InsertSorted(&all_kbind, name, func, "", cond, "", "");
     } else {
 	if (bindings[c] != NULL) {
 	    if (!two_conds(c, cond))
@@ -741,7 +744,9 @@ Vars2Key(char *type, char *name, char *cond)
     /* insert into 'all_modes' to provide for common name-completion
      * table, and into 'all_statevars' to get name/index correspondence.
      */
-    InsertSorted(&all_modes, name, "state", "", formcond("OPT_EVAL", cond),
+    InsertSorted(&all_modes, name, "state", "",
+		 formcond("OPT_EVAL", cond),
+		 "",
 		 "");
 
     tmp = AllocKey(normal, c, abbrev);
@@ -917,9 +922,9 @@ save_all_modes(
 	}
 	save_all_modes("Bool", t_normal, t_abbrev, cond);
     }
-    InsertSorted(&all_modes, normal, type, "", cond, "");
+    InsertSorted(&all_modes, normal, type, "", cond, "", "");
     if (*abbrev && strcmp(normal, abbrev)) {
-	InsertSorted(&all_modes, abbrev, type, "", cond, "");
+	InsertSorted(&all_modes, abbrev, type, "", cond, "", "");
     }
 }
 
@@ -954,7 +959,7 @@ dump_all_modes(void)
     char temp[MAX_BUFFER], *s;
     LIST *p, *q;
 
-    InsertSorted(&all_modes, "all", "?", "", "", "");
+    InsertSorted(&all_modes, "all", "?", "", "", "", "");
     write_lines(nemode, top);
     BeginIf();
     for (p = all_modes; p; p = p->nst) {
@@ -1140,7 +1145,7 @@ save_mmodes(char *type, char **vec)
 {
     char *key = Mode2Key(type, vec[1], vec[4], TRUE);
 
-    InsertSorted(&all_mmodes, key, vec[2], vec[3], vec[4], vec[0]);
+    InsertSorted(&all_mmodes, key, vec[2], vec[3], vec[4], vec[0], "");
 #if NO_LEAKS
     free(key);
 #endif
@@ -1228,7 +1233,7 @@ save_abbrs(char **vec)
     save_abbr_in(&p, all_wmodes, vec);
     save_abbr_in(&p, all_mmodes, vec);
     if (p) {
-	InsertSorted(&all_modes, vec[2], p->Data, "", p->Cond, "");
+	InsertSorted(&all_modes, vec[2], p->Data, "", p->Cond, "", "");
     } else {
 	fprintf(stderr, "Did not find \"%s\"\n", vec[1]);
 	longjmp(my_top, 1);
@@ -1253,9 +1258,9 @@ save_all_submodes(
 	}
 	save_all_submodes("Bool", t_normal, t_abbrev, cond);
     }
-    InsertSorted(&all_submodes, normal, type, "", cond, "");
+    InsertSorted(&all_submodes, normal, type, "", cond, "", "");
     if (*abbrev && strcmp(normal, abbrev)) {
-	InsertSorted(&all_submodes, abbrev, type, "", cond, "");
+	InsertSorted(&all_submodes, abbrev, type, "", cond, "", "");
     }
 }
 
@@ -1310,7 +1315,7 @@ predefine_submodes(char **vec, int len)
 	    }
 	}
 	if (!found) {
-	    InsertSorted(&all_majors, vec[2], "", "", "", "");
+	    InsertSorted(&all_majors, vec[2], "", "", "", "", "");
 	}
 	if (len > 2) {
 	    for (p = all_bmodes, found = FALSE; p; p = p->nst) {
@@ -1339,7 +1344,7 @@ static void
 save_qmodes(char *type, char **vec)
 {
     char *key = Mode2Key(type, vec[1], vec[4], TRUE);
-    InsertSorted(&all_qmodes, key, vec[2], vec[3], vec[4], vec[0]);
+    InsertSorted(&all_qmodes, key, vec[2], vec[3], vec[4], vec[0], "");
 #if NO_LEAKS
     free(key);
 #endif
@@ -1394,7 +1399,7 @@ static void
 save_bmodes(char *type, char **vec)
 {
     char *key = Mode2Key(type, vec[1], vec[4], ok_submode(vec[3]));
-    InsertSorted(&all_bmodes, key, vec[2], vec[3], vec[4], vec[0]);
+    InsertSorted(&all_bmodes, key, vec[2], vec[3], vec[4], vec[0], "");
 #if NO_LEAKS
     free(key);
 #endif
@@ -1511,7 +1516,7 @@ save_statevars(char *type, char **vec)
     char *cond = vec[3];
     char *key = Vars2Key(type, name, cond);
 
-    InsertSorted(&all_statevars, key, vars, "", cond, vec[0]);
+    InsertSorted(&all_statevars, key, vars, "", cond, vec[0], "");
 }
 
 static void
@@ -1609,7 +1614,13 @@ dump_statevars(void)
 static void
 save_fsms(char **vec)
 {
-    InsertSorted(&all_fsms, lowercase(vec[1]), "", vec[2], vec[3], vec[0]);
+    InsertSorted(&all_fsms,
+		 lowercase(vec[1]),
+		 "",
+		 vec[2],
+		 vec[3],
+		 vec[0],
+		 "");
 }
 
 static void
@@ -1811,7 +1822,7 @@ save_gmodes(char *type, char **vec)
 {
     char *key = Mode2Key(type, vec[1], vec[4], FALSE);
 
-    InsertSorted(&all_gmodes, key, vec[2], vec[3], vec[4], vec[0]);
+    InsertSorted(&all_gmodes, key, vec[2], vec[3], vec[4], vec[0], "");
 #if NO_LEAKS
     free(key);
 #endif
@@ -1857,15 +1868,15 @@ dump_gmodes(void)
 
 /******************************************************************************/
 static void
-save_names(char *name, char *func, char *cond)
+save_names(char *name, char *func, char *cond, char *flags)
 {
-    InsertSorted(&all_names, name, func, "", cond, "");
+    InsertSorted(&all_names, name, func, "", cond, "", flags);
 }
 
 static void
-save_aliases(char *name, char *func, char *cond)
+save_aliases(char *name, char *func, char *cond, char *flags)
 {
-    InsertSorted(&all_aliases, name, func, "", cond, "");
+    InsertSorted(&all_aliases, name, func, "", cond, "", flags);
 }
 
 static void
@@ -1874,11 +1885,13 @@ dump_names(void)
     LIST *m;
     char temp[MAX_BUFFER];
 
-    Fprintf(nename, "\n/* if you maintain this by hand, keep it in */\n");
-    Fprintf(nename, "/* alphabetical order!!!! */\n\n");
-    Fprintf(nename, "#include <blist.h>\n\n");
-    Fprintf(nename, "extern BLIST blist_nametbl;\n\n");
-    Fprintf(nename, "#ifdef real_NAMETBL\n\n");
+    Fprintf(nename, "#include <blist.h>\n");
+    Fprintf(nename, "\n");
+    Fprintf(nename, "extern BLIST blist_nametbl;\n");
+    Fprintf(nename, "extern BLIST blist_glbstbl;\n");
+    Fprintf(nename, "\n");
+    Fprintf(nename, "#ifdef real_NAMETBL\n");
+    Fprintf(nename, "\n");
     Fprintf(nename, "EXTERN_CONST NTAB nametbl[] = {\n");
 
     BeginIf();
@@ -1888,9 +1901,26 @@ dump_names(void)
 	Fprintf(nename, "%s&f_%s },\n", PadTo(40, temp), m->Func);
     }
     FlushIf(nename);
-    Fprintf(nename, "\t{ NULL, NULL }\n};\n\n");
-    Fprintf(nename, "BLIST blist_nametbl = init_blist(nametbl);\n\n");
-    Fprintf(nename, "#else\n\n");
+    Fprintf(nename, "\t{ NULL, NULL }\n};\n");
+    Fprintf(nename, "\n");
+    Fprintf(nename, "BLIST blist_nametbl = init_blist(nametbl);\n");
+    Fprintf(nename, "\n");
+    Fprintf(nename, "EXTERN_CONST NTAB glbstbl[] = {\n");
+    BeginIf();
+    for (m = all_names; m != NULL; m = m->nst) {
+	if (m->Flag != 0 && strstr(m->Flag, "GLOBOK") != 0) {
+	    WriteIf(nename, m->Cond);
+	    Sprintf(temp, "\t{ \"%s\",", m->Name);
+	    Fprintf(nename, "%s&f_%s },\n", PadTo(40, temp), m->Func);
+	}
+    }
+    FlushIf(nename);
+    Fprintf(nename, "\t{ NULL, NULL }\n};\n");
+    Fprintf(nename, "\n");
+    Fprintf(nename, "BLIST blist_glbstbl = init_blist(glbstbl);\n");
+    Fprintf(nename, "\n");
+    Fprintf(nename, "#else\n");
+    Fprintf(nename, "\n");
     Fprintf(nename, "#endif\n");
 }
 
@@ -1955,7 +1985,7 @@ init_ufuncs(void)
 static void
 save_ufuncs(char **vec)
 {
-    InsertSorted(&all_ufuncs, vec[1], vec[2], vec[3], "", vec[4]);
+    InsertSorted(&all_ufuncs, vec[1], vec[2], vec[3], "", vec[4], "");
 }
 
 static void
@@ -2000,7 +2030,7 @@ static void
 save_wmodes(char *type, char **vec)
 {
     char *key = Mode2Key(type, vec[1], vec[4], FALSE);
-    InsertSorted(&all_wmodes, key, vec[2], vec[3], vec[4], vec[0]);
+    InsertSorted(&all_wmodes, key, vec[2], vec[3], vec[4], vec[0], "");
 #if NO_LEAKS
     free(key);
 #endif
@@ -2115,6 +2145,7 @@ mkw32binding(char *key, char *conditional, char *func, char *fcond)
 		 func,
 		 "",
 		 formcond(fcond, conditional),
+		 "",
 		 "");
 #undef KEYTOKEN
 }
@@ -2280,8 +2311,8 @@ main(int argc, char *argv[])
 		    if (r < 1 || r > 2)
 			badfmt("looking for english name");
 
-		    save_names(vec[1], func, formcond(fcond, vec[2]));
-		    save_aliases(vec[1], func, formcond(fcond, vec[2]));
+		    save_names(vec[1], func, formcond(fcond, vec[2]), flags);
+		    save_aliases(vec[1], func, formcond(fcond, vec[2]), flags);
 		    break;
 
 		case '\'':	/* then it's a key */

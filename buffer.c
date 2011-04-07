@@ -5,7 +5,7 @@
  * keys. Like everyone else, they set hints
  * for the display system.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.349 2010/09/07 00:23:48 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.350 2011/04/07 08:58:37 tom Exp $
  *
  */
 
@@ -1895,7 +1895,7 @@ zotbuf(BUFFER *bp)
     } else {
 #if OPT_NAMEBST
 	if (tb_values(bp->b_procname) != 0) {
-	    delete_namebst(tb_values(bp->b_procname), TRUE, FALSE);
+	    delete_namebst(tb_values(bp->b_procname), TRUE, FALSE, 0);
 	    tb_free(&(bp->b_procname));
 	}
 #endif
@@ -1930,8 +1930,8 @@ renamebuffer(BUFFER *rbp, char *bufname)
     if (is_scratchname(rbp->b_bname)) {
 	char procname[NBUFN];
 	(void) strip_brackets(procname, rbp->b_bname);
-	if (search_namebst(procname)
-	    && rename_namebst(procname, bufn) != TRUE)
+	if (search_namebst(procname, 0)
+	    && rename_namebst(procname, bufn, 0) != TRUE)
 	    returnCode(ABORT);
     }
 #endif
