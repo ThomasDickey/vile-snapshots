@@ -4,7 +4,7 @@
  *	original by Daniel Lawrence, but
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.342 2010/12/05 21:05:36 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.343 2011/04/07 08:41:40 tom Exp $
  *
  */
 
@@ -556,7 +556,7 @@ execute_named_command(int f, int n)
 	    repeat_cmd = EOS;
 	} else {		/* looking for command-name */
 	    fnp = NULL;
-	    status = kbd_engl_stat((char *) 0, cspec, KBD_STATED);
+	    status = kbd_engl_stat((char *) 0, cspec, 0, KBD_STATED);
 	    if (status == TRUE) {
 		fnp = cspec;
 #if !SMALLER
@@ -1635,7 +1635,7 @@ setup_macro_buffer(TBUFF *name, int bufnum, UINT flags)
 	tb_free(&helpstring);
 #endif
 
-	if (insert_namebst(tb_values(name), cf, FALSE) != TRUE)
+	if (insert_namebst(tb_values(name), cf, FALSE, 0) != TRUE)
 	    return FALSE;
 	tb_copy(&(bp->b_procname), name);
     }

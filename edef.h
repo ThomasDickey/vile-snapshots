@@ -6,7 +6,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.362 2010/12/12 23:47:39 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.363 2011/04/07 00:55:35 tom Exp $
  */
 
 #ifndef VILE_EDEF_H
@@ -510,6 +510,7 @@ decl_init_const( char UNDOSTK_BufName[],	"[Undo Stack]" );
 
 /* defined in nebind.h and nename.h */
 extern const NTAB nametbl[];
+extern const NTAB glbstbl[];
 extern const CMDFUNC *asciitbl[];
 extern KBIND kbindtbl[];
 

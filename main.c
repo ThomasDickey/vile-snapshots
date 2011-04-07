@@ -17,12 +17,12 @@
  * distributable status.  This version of vile is distributed under the
  * terms of the GNU Public License (see COPYING).
  *
- * Copyright (c) 1992-2008 by Paul Fox and Thomas Dickey
+ * Copyright (c) 1992-2011 by Paul Fox and Thomas Dickey
  *
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.700 2011/04/06 09:15:42 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.701 2011/04/07 09:17:15 tom Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -83,7 +83,8 @@ static void siginit(int enabled);
 static void pre_init_ctype(void);
 #endif
 
-extern const int nametblsize;
+extern const int nametbl_size;
+extern const int glbstbl_size;
 
 /*--------------------------------------------------------------------------*/
 
@@ -434,7 +435,8 @@ MainProgram(int argc, char *argv[])
 #endif
 
 #if OPT_NAMEBST
-    build_namebst(nametbl, 0, nametblsize - 1);
+    build_namebst(nametbl, 0, nametbl_size - 1, 0);
+    build_namebst(glbstbl, 0, glbstbl_size - 1, GLOBOK);
 #endif
     vl_ctype_init(global_g_val(GVAL_PRINT_LOW),
 		  global_g_val(GVAL_PRINT_HIGH));

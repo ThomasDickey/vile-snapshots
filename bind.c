@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.358 2010/12/28 17:41:02 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.361 2011/04/07 09:37:24 tom Exp $
  *
  */
 
@@ -222,11 +222,42 @@ xcg_namebst(BI_NODE * a, BI_NODE * b)
 
 #define BI_DATA0 {{0}, 0, {0,0,0}}
 #define BI_TREE0 0, 0, BI_DATA0
+
 static BI_TREE namebst =
 {new_namebst, old_namebst, dpy_namebst, xcg_namebst, BI_TREE0};
+
+static BI_TREE glbsbst =
+{new_namebst, old_namebst, dpy_namebst, xcg_namebst, BI_TREE0};
+
 static BI_TREE redefns =
 {new_namebst, old_namebst, dpy_namebst, xcg_namebst, BI_TREE0};
 #endif /* OPT_NAMEBST */
+
+/*----------------------------------------------------------------------------*/
+/*
+ * Name-completion for global commands uses a different table (a subset) from
+ * the normal command-table.  Provide a way to select that table.
+ */
+static UINT which_current;
+
+static BI_TREE *
+bst_pointer(UINT which)
+{
+    BI_TREE *result;
+
+    if (which == GLOBOK) {
+	result = &glbsbst;
+    } else {
+	result = &namebst;
+    }
+    return result;
+}
+
+static BI_TREE *
+bst_current(void)
+{
+    return bst_pointer(which_current);
+}
 
 /*----------------------------------------------------------------------------*/
 
@@ -717,7 +748,7 @@ bind_any_key(BINDINGS * bs)
 
     /* prompt the user to type in a key to bind */
     /* and get the function name to bind it to */
-    fnp = kbd_engl("Bind function whose full name is: ", cmd);
+    fnp = kbd_engl("Bind function whose full name is: ", cmd, 0);
 
     if (fnp == NULL || (kcmd = engl2fnc(fnp)) == NULL) {
 	return no_such_function(fnp);
@@ -832,6 +863,13 @@ desopers(int f GCC_UNUSED, int n GCC_UNUSED)
     return describe_any_bindings((char *) 0, OPER);
 }
 
+/* ARGSUSED */
+int
+desglobals(int f GCC_UNUSED, int n GCC_UNUSED)
+{
+    return describe_any_bindings((char *) 0, GLOBOK);
+}
+
 /* lookup function by substring */
 /* ARGSUSED */
 int
@@ -861,7 +899,7 @@ desfunc(int f GCC_UNUSED, int n GCC_UNUSED)
     described_cmd[0] = '^';
 
     fnp = kbd_engl("Describe function whose full name is: ",
-		   described_cmd + 1);
+		   described_cmd + 1, 0);
     if (fnp == NULL || engl2fnc(fnp) == NULL) {
 	s = no_such_function(fnp);
     } else {
@@ -1319,6 +1357,7 @@ makebind_func(BI_NODE * node, const void *d)
 static void
 makebindlist(int whichmask, void *mstring)
 {
+    BI_TREE *my_bst = bst_current();
     struct bindlist_data data;
 
     data.mask = (UINT) whichmask;
@@ -1330,15 +1369,15 @@ makebindlist(int whichmask, void *mstring)
     mlwrite("[Building binding list]");
 
     /* clear the NBST_DONE flag */
-    btree_walk(&namebst.head, clearflag_func, 0);
+    btree_walk(&(my_bst->head), clearflag_func, 0);
 
     /* create binding list */
-    if (btree_walk(&namebst.head, makebind_func, &data))
+    if (btree_walk(&(my_bst->head), makebind_func, &data))
 	return;
 
     /* catch entries with no synonym > SHORT_CMD_LEN */
     data.min = 0;
-    if (btree_walk(&namebst.head, makebind_func, &data))
+    if (btree_walk(&(my_bst->head), makebind_func, &data))
 	return;
 
     mlerase();			/* clear the message line */
@@ -2146,7 +2185,7 @@ fnc2ntab(NTAB * result, const CMDFUNC * cfp)
 #if OPT_NAMEBST
 	result->n_name = 0;
 	result->n_cmd = cfp;
-	btree_walk(&namebst.head, match_cmdfunc, result);
+	btree_walk(&(bst_current()->head), match_cmdfunc, result);
 	found = (result->n_name != 0);
 #else
 	switch (cfp->c_flags & CMD_TYPE) {
@@ -2210,29 +2249,14 @@ fnc2engl(const CMDFUNC * cfp)
 	translate english name to function pointer
 		 return any match or NULL if none
  */
-#define BINARY_SEARCH_IS_BROKEN 0
-
 const CMDFUNC *
 engl2fnc(const char *fname)
 {
 #if OPT_NAMEBST
-    BI_NODE *n = btree_pmatch(BI_RIGHT(&namebst.head), TRUE, fname);
+    BI_NODE *n = btree_pmatch(BI_RIGHT(&(bst_current()->head)), TRUE, fname);
 
     if (n != NULL)
 	return n->value.n_cmd;
-#else
-#if BINARY_SEARCH_IS_BROKEN	/* then use the old linear look-up */
-    NTAB *nptr;			/* pointer to entry in name binding table */
-    size_t len = strlen(fname);
-
-    if (len != 0) {		/* scan through the table, returning any match */
-	nptr = nametbl;
-	while (nptr->n_cmd != NULL) {
-	    if (strncmp(fname, nptr->n_name, len) == 0)
-		return nptr->n_cmd;
-	    ++nptr;
-	}
-    }
 #else
     /* this runs 10 times faster for 'nametbl[]' */
     int lo, hi, cur;
@@ -2261,7 +2285,6 @@ engl2fnc(const char *fname)
 	    }
 	}
     }
-#endif /* binary vs linear */
 #endif /* OPT_NAMEBST */
     return NULL;
 }
@@ -2427,11 +2450,12 @@ prc2engl(const char *kk)
  * we will splice calls.
  */
 char *
-kbd_engl(const char *prompt, char *buffer)
+kbd_engl(const char *prompt, char *buffer, UINT which)
 {
-    if (kbd_engl_stat(prompt, buffer, 0) == TRUE)
-	return buffer;
-    return NULL;
+    char *result = NULL;
+    if (kbd_engl_stat(prompt, buffer, which, 0) == TRUE)
+	result = buffer;
+    return result;
 }
 
 /* sound the alarm! */
@@ -3200,17 +3224,17 @@ cmd_complete(DONE_ARGS)
 }
 
 int
-kbd_engl_stat(const char *prompt, char *buffer, int stated)
+kbd_engl_stat(const char *prompt, char *buffer, UINT which, int stated)
 {
     KBD_OPTIONS kbd_flags = KBD_EXPCMD | KBD_NULLOK | ((NAMEC != ' ') ? 0 : KBD_MAYBEC);
     int code;
     static TBUFF *temp;
     size_t len = NLINE;
 
+    which_current = which;
+
     tb_scopy(&temp, "");
-#if COMPLETE_FILES
     init_filec(FILECOMPLETION_BufName);
-#endif
     kbd_flags |= (KBD_OPTIONS) stated;
     code = kbd_reply(
 			prompt,	/* no-prompt => splice */
@@ -3222,31 +3246,34 @@ kbd_engl_stat(const char *prompt, char *buffer, int stated)
     if (len > tb_length(temp))
 	len = tb_length(temp);
     strncpy0(buffer, tb_values(temp), len);
+
+    which_current = 0;
     return code;
 }
 
 #if OPT_NAMEBST
 int
-insert_namebst(const char *name, const CMDFUNC * cmd, int ro)
+insert_namebst(const char *name, const CMDFUNC * cmd, int ro, UINT which)
 {
     int result;
 
     TRACE((T_CALLED "insert_namebst(%s,%s)\n", name, ro ? "ro" : "rw"));
     if (name != 0) {
+	BI_TREE *my_bst = bst_pointer(which);
 	BI_DATA temp, *p;
 
-	if ((p = btree_search(&namebst, name)) != 0) {
+	if ((p = btree_search(my_bst, name)) != 0) {
 	    if ((p->n_flags & NBST_READONLY)) {
 		if (btree_insert(&redefns, p) == 0) {
 		    returnCode(FALSE);
 		} else {
-		    if (!btree_delete(&namebst, name)) {
+		    if (!btree_delete(my_bst, name)) {
 			returnCode(FALSE);
 		    }
 		}
 		mlwrite("[Redefining builtin '%s']", name);
 	    } else {
-		if (!delete_namebst(name, TRUE, TRUE)) {
+		if (!delete_namebst(name, TRUE, TRUE, which)) {
 		    returnCode(FALSE);
 		}
 	    }
@@ -3256,7 +3283,7 @@ insert_namebst(const char *name, const CMDFUNC * cmd, int ro)
 	temp.n_cmd = cmd;
 	temp.n_flags = (UCHAR) (ro ? NBST_READONLY : 0);
 
-	result = (btree_insert(&namebst, &temp) != 0);
+	result = (btree_insert(my_bst, &temp) != 0);
     } else {
 	result = FALSE;
     }
@@ -3303,14 +3330,15 @@ remove_cmdfunc_ref(BINDINGS * bs, const CMDFUNC * cmd)
  * Lookup a name in the binary-search tree, remove it if found
  */
 int
-delete_namebst(const char *name, int release, int redefining)
+delete_namebst(const char *name, int release, int redefining, UINT which)
 {
-    BI_DATA *p = btree_search(&namebst, name);
+    BI_TREE *my_bst = bst_pointer(which);
+    BI_DATA *p = btree_search(my_bst, name);
     int code = TRUE;
 
     TRACE((T_CALLED "delete_namebst(%s,%d) %p\n", name, release, (void *) p));
     /* not a named procedure */
-    if ((p = btree_search(&namebst, name)) != 0) {
+    if ((p = btree_search(my_bst, name)) != 0) {
 
 	/* we may have to free some stuff */
 	if (p && release) {
@@ -3333,11 +3361,11 @@ delete_namebst(const char *name, int release, int redefining)
 	    p->n_cmd = 0;	/* ...so old_namebst won't free this too */
 	}
 
-	if ((code = btree_delete(&namebst, name)) == TRUE) {
+	if ((code = btree_delete(my_bst, name)) == TRUE) {
 	    if (!redefining) {
 		if ((p = btree_search(&redefns, name)) != 0) {
 		    mlwrite("[Restoring builtin '%s']", name);
-		    code = (btree_insert(&namebst, p) != 0);
+		    code = (btree_insert(my_bst, p) != 0);
 		    (void) btree_delete(&redefns, p->bi_key);
 		}
 	    }
@@ -3352,33 +3380,35 @@ delete_namebst(const char *name, int release, int redefining)
  * name-completions.
  */
 int
-rename_namebst(const char *oldname, const char *newname)
+rename_namebst(const char *oldname, const char *newname, UINT which)
 {
     BI_DATA *prior;
     char name[NBUFN];
 
     /* not a named procedure */
-    if ((prior = btree_search(&namebst, oldname)) == 0)
+    if ((prior = btree_search(bst_pointer(which), oldname)) == 0)
 	return TRUE;
 
     /* remove the entry if the new name is not a procedure (bracketed) */
     if (!is_scratchname(newname))
-	return delete_namebst(oldname, TRUE, FALSE);
+	return delete_namebst(oldname, TRUE, FALSE, which);
 
     /* add the new name */
     strip_brackets(name, newname);
-    if ((insert_namebst(name, prior->n_cmd,
-			prior->n_flags & NBST_READONLY)) != TRUE)
+    if ((insert_namebst(name,
+			prior->n_cmd,
+			prior->n_flags & NBST_READONLY,
+			which)) != TRUE)
 	return FALSE;
 
     /* delete the old (but don't free the data) */
-    return delete_namebst(oldname, FALSE, FALSE);
+    return delete_namebst(oldname, FALSE, FALSE, which);
 }
 
 int
-search_namebst(const char *name)
+search_namebst(const char *name, UINT which)
 {
-    return (btree_search(&namebst, name) != 0);
+    return (btree_search(bst_pointer(which), name) != 0);
 }
 
 /*
@@ -3386,10 +3416,10 @@ search_namebst(const char *name)
  * do this in a binary-search manner to get a balanced tree.
  */
 void
-build_namebst(const NTAB * nptr, int lo, int hi)
+build_namebst(const NTAB * nptr, int lo, int hi, UINT which)
 {
     for (; lo < hi; lo++) {
-	if (!insert_namebst(nptr[lo].n_name, nptr[lo].n_cmd, TRUE))
+	if (!insert_namebst(nptr[lo].n_name, nptr[lo].n_cmd, TRUE, which))
 	    tidy_exit(BADEXIT);
     }
 }
@@ -3399,20 +3429,21 @@ build_namebst(const NTAB * nptr, int lo, int hi)
  * contents.
  */
 static int
-kbd_complete_bst(
-		    unsigned flags GCC_UNUSED,
-		    int c,	/* TESTC, NAMEC or isreturn() */
-		    char *buf,
-		    size_t *pos)
+kbd_complete_bst(unsigned flags,
+		 int c,		/* TESTC, NAMEC or isreturn() */
+		 char *buf,
+		 size_t *pos)
 {
     size_t cpos = *pos;
     int status = FALSE;
     const char **nptr;
 
+    (void) flags;
+
     kbd_init();			/* nothing to erase */
     buf[cpos] = EOS;		/* terminate it for us */
 
-    if ((nptr = btree_parray(&namebst, buf, cpos)) != 0) {
+    if ((nptr = btree_parray(bst_current(), buf, cpos)) != 0) {
 	status = kbd_complete(0, c, buf, pos, (const char *) nptr,
 			      sizeof(*nptr));
 	beginDisplay();
@@ -3514,6 +3545,7 @@ bind_leaks(void)
 #if OPT_NAMEBST
     btree_freeup(&redefns);
     btree_freeup(&namebst);
+    btree_freeup(&glbsbst);
 #endif
 }
 #endif /* NO_LEAKS */
