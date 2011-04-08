@@ -7,7 +7,7 @@
  *
  * Copyright (c) 1990, 1995-2007 by Paul Fox and Thomas E. Dickey
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tags.c,v 1.142 2010/05/18 23:10:27 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tags.c,v 1.143 2011/04/07 22:40:12 tom Exp $
  *
  */
 #include "estruct.h"
@@ -389,6 +389,8 @@ static void
 pushuntag(char *fname, L_NUM lineno, C_NUM colno, char *tag)
 {
     UNTAG *utp;
+
+    (void) tag;
 
     beginDisplay();
     if ((utp = typealloc(UNTAG)) != 0) {

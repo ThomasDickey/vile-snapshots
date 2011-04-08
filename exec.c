@@ -4,7 +4,7 @@
  *	original by Daniel Lawrence, but
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.343 2011/04/07 08:41:40 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.344 2011/04/07 22:37:03 tom Exp $
  *
  */
 
@@ -1560,6 +1560,8 @@ setup_macro_buffer(TBUFF *name, int bufnum, UINT flags)
     char bname[NBUFN];		/* name of buffer to use */
     BUFFER *bp;
 
+    (void) flags;
+
     /* construct the buffer name for the macro */
     if (bufnum < 0)
 	(void) add_brackets(bname, tb_values(name));
@@ -2466,6 +2468,8 @@ perform_dobuf(BUFFER *bp, WHLOOP * whlist)
 #endif
 
     static BUFFER *dobuferrbp = 0;
+
+    (void) whlist;
 
     TRACE((T_CALLED "perform_dobuf(bp=%p, whlist=%p) buffer '%s'\n",
 	   (void *) bp, (void *) whlist, bp->b_bname));

@@ -5,7 +5,7 @@
  * reading and writing of the disk are
  * in "fileio.c".
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.446 2010/09/06 18:21:27 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.447 2011/04/07 22:38:10 tom Exp $
  */
 
 #include "estruct.h"
@@ -1438,6 +1438,8 @@ quickreadf(BUFFER *bp, int *nlinep)
     UCHAR *buffer;
     int rc;
 
+    (void) lineno;
+
     TRACE((T_CALLED "quickreadf(buffer=%s, file=%s)\n", bp->b_bname, bp->b_fname));
 
     beginDisplay();
@@ -2175,6 +2177,8 @@ write_region(BUFFER *bp, REGION * rp, int encoded, int *nline, B_COUNT * nchar)
     B_COUNT len_rs = (B_COUNT) len_record_sep(bp);
     C_NUM offset = rp->r_orig.o;
 
+    (void) encoded;
+
     lp = rp->r_orig.l;
     *nline = 0;			/* Number of lines     */
     *nchar = 0;			/* Number of chars     */
@@ -2228,10 +2232,10 @@ write_region(BUFFER *bp, REGION * rp, int encoded, int *nline, B_COUNT * nchar)
 
     /* last line (fragment) */
     if (rp->r_size > 0) {
+#if OPT_SELECTIONS
 	C_NUM len = llength(lp);
 	char *text = lvalue(lp);
 
-#if OPT_SELECTIONS
 	if (encoded) {
 	    TBUFF *temp;
 	    if ((temp = encode_attributes(lp, bp, rp)) != 0) {

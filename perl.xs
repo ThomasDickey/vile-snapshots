@@ -13,7 +13,7 @@
  * vile.  The file api.c (sometimes) provides a middle layer between
  * this interface and the rest of vile.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.124 2010/09/07 00:38:55 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.125 2011/04/08 09:53:27 tom Exp $
  */
 
 #ifdef __GNUC__
@@ -2658,7 +2658,7 @@ register(name, ...)
 				: "Perl subroutine");
 #endif
 
-	if (insert_namebst(name, cmd, FALSE) != TRUE)
+	if (insert_namebst(name, cmd, FALSE, 0) != TRUE)
 	{
 #if OPT_ONLINEHELP
 	    free((char *) cmd->c_help);

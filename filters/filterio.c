@@ -1,7 +1,7 @@
 /*
  * Main program and I/O for external vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filterio.c,v 1.59 2010/09/14 09:13:59 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filterio.c,v 1.60 2011/04/07 22:28:31 tom Exp $
  *
  */
 
@@ -370,6 +370,7 @@ vl_lookup_cmd(const char *name GCC_UNUSED)
     return 0;
 }
 
+#if OPT_EXTRA_COLOR
 /* ARGSUSED */
 int
 vl_lookup_color(const char *mode GCC_UNUSED)
@@ -377,6 +378,7 @@ vl_lookup_color(const char *mode GCC_UNUSED)
     /* added in 9.7f */
     return 0;
 }
+#endif /*  OPT_EXTRA_COLOR */
 
 /* ARGSUSED */
 int
@@ -401,6 +403,7 @@ vl_lookup_var(const char *mode GCC_UNUSED)
     return 0;
 }
 
+#if OPT_EXTRA_COLOR
 /* ARGSUSED */
 int
 vl_lookup_xcolor(const char *mode GCC_UNUSED)
@@ -408,6 +411,7 @@ vl_lookup_xcolor(const char *mode GCC_UNUSED)
     /* added in 9.7f */
     return 0;
 }
+#endif /* OPT_EXTRA_COLOR */
 
 /******************************************************************************
  * Standalone main-program                                                    *

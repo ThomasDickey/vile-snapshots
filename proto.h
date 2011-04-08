@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.719 2011/04/07 08:58:28 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.720 2011/04/07 22:29:50 tom Exp $
  *
  */
 
@@ -516,7 +516,6 @@ extern char *skip_text (char *str);
 extern LINE *label2lp (BUFFER *bp, const char *label);
 extern int rmv_tempvar (const char *name);
 extern int set_state_variable (const char *name, const char *value);
-extern int vl_lookup_func (const char *name);
 extern long scan_long (const char *s);
 #define scan_int(s) (int)scan_long(s)
 #else
@@ -525,6 +524,8 @@ extern long scan_long (const char *s);
 #define scan_int(s) atoi(s)
 #define set_state_variable(name, value) /* nothing */
 #endif
+
+extern int vl_lookup_func (const char *name);
 
 #if OPT_EVAL || DISP_X11
 extern int stol (const char *val);
