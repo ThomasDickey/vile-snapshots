@@ -9,7 +9,7 @@
  * Extensions for vile by Paul Fox
  * Rewrote to use regular expressions - T.Dickey
  *
- * $Header: /users/source/archives/vile.vcs/RCS/fences.c,v 1.90 2010/02/06 00:14:36 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/fences.c,v 1.91 2011/04/07 22:38:01 tom Exp $
  *
  */
 
@@ -231,6 +231,10 @@ complex_fence(int sdir, int key, int group, int level, int *newkey)
     int that = CPP_UNKNOWN;
     int result = -1;
     struct VAL *vals;
+
+    (void) group;
+    (void) level;
+    (void) newkey;
 
     TRACE(("ComplexFence(%d:%d) %d: %s %s\n",
 	   level,

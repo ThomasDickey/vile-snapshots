@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.419 2010/12/27 12:05:36 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.420 2011/04/07 22:40:12 tom Exp $
  *
  */
 
@@ -2705,6 +2705,8 @@ chgd_mouse(BUFFER *bp, VALARGS * args GCC_UNUSED, int glob_vals, int testing GCC
 int
 chgd_hilite(BUFFER *bp, VALARGS * args GCC_UNUSED, int glob_vals GCC_UNUSED, int testing)
 {
+    (void) bp;
+
     if (!testing) {
 #if OPT_HILITEMATCH
 	if (bp->b_highlight & HILITE_ON)

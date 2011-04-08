@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.361 2011/04/07 09:37:24 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.362 2011/04/07 22:32:03 tom Exp $
  *
  */
 
@@ -20,7 +20,7 @@
 				   over those shorter.  e.g. display "quit"
 				   instead of "q" if possible */
 
-extern const int nametblsize;
+extern const int nametbl_size;
 
 #if OPT_CASELESS
 #define Strcmp(s,d)      cs_strcmp(case_insensitive, s, d)
@@ -118,6 +118,8 @@ static struct {
 	"select", &sel_bindings
     },
 };
+
+static UINT which_current;
 
 #if OPT_REBIND
 static BINDINGS *bindings_to_describe = &dft_bindings;
@@ -231,14 +233,12 @@ static BI_TREE glbsbst =
 
 static BI_TREE redefns =
 {new_namebst, old_namebst, dpy_namebst, xcg_namebst, BI_TREE0};
-#endif /* OPT_NAMEBST */
 
 /*----------------------------------------------------------------------------*/
 /*
  * Name-completion for global commands uses a different table (a subset) from
  * the normal command-table.  Provide a way to select that table.
  */
-static UINT which_current;
 
 static BI_TREE *
 bst_pointer(UINT which)
@@ -258,6 +258,7 @@ bst_current(void)
 {
     return bst_pointer(which_current);
 }
+#endif /* OPT_NAMEBST */
 
 /*----------------------------------------------------------------------------*/
 
@@ -1438,7 +1439,7 @@ makebindlist(int whichmask, void *mstring)
     char *listed;
 
     beginDisplay();
-    listed = typecallocn(char, (size_t) nametblsize);
+    listed = typecallocn(char, (size_t) nametbl_size);
     endofDisplay();
 
     if (listed == 0) {
@@ -1957,11 +1958,12 @@ kcod2escape_seq(int c, char *ptr, size_t limit)
 {
     char *base = ptr;
     char temp[20];
-    const char *s;
     size_t need;
-    int ch = (c & ((1 << MaxCBits) - 1));
 
 #if OPT_MULTIBYTE
+    int ch = (c & ((1 << MaxCBits) - 1));
+    const char *s;
+
     if ((ch >= 256)
 	&& (cmd_encoding >= enc_UTF8
 	    || (cmd_encoding <= enc_AUTO && okCTYPE2(vl_wide_enc)))
@@ -2267,7 +2269,7 @@ engl2fnc(const char *fname)
 
 	/* scan through the table, returning any match */
 	lo = 0;
-	hi = nametblsize - 2;	/* don't want last entry -- it's NULL */
+	hi = nametbl_size - 2;	/* don't want last entry -- it's NULL */
 
 	while (lo <= hi) {
 	    cur = (lo + hi) >> 1;

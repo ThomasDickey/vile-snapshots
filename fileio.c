@@ -2,7 +2,7 @@
  * The routines in this file read and write ASCII files from the disk. All of
  * the knowledge about files are here.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/fileio.c,v 1.198 2011/04/06 08:52:33 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/fileio.c,v 1.199 2011/04/07 22:38:24 tom Exp $
  *
  */
 
@@ -372,6 +372,8 @@ ffwopen(char *fn, int forced)
 #if SYS_UNIX || SYS_MSDOS || SYS_OS2 || SYS_WINNT
     char *name;
     const char *mode = FOPEN_WRITE;
+
+    (void) forced;
 
     TRACE(("ffwopen(fn=%s, forced=%d)\n", fn, forced));
     ffstatus = file_is_closed;

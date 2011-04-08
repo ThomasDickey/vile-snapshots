@@ -44,7 +44,7 @@
  *	tgetc_avail()     true if a key is avail from tgetc() or below.
  *	keystroke_avail() true if a key is avail from keystroke() or below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.343 2011/04/06 08:53:56 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.344 2011/04/07 22:40:12 tom Exp $
  *
  */
 
@@ -1930,6 +1930,9 @@ kbd_reply(const char *prompt,	/* put this out first */
     const char *old_bname = curbp->b_bname;
     WINDOW *old_wp = curwp;
     int old_reading;
+
+    (void) old_wp;
+    (void) old_bname;
 
     assert(extbuf != 0);
 
