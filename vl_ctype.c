@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/vl_ctype.c,v 1.15 2010/12/05 00:41:28 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/vl_ctype.c,v 1.16 2011/04/09 15:33:17 tom Exp $
  */
 
 /*
@@ -47,15 +47,15 @@ vl_ctype_init(int print_lo, int print_hi)
     TRACE(("narrow_locale:%s\n", NonNull(vl_narrow_enc.locale)));
     TRACE(("current_locale:%s\n", NonNull(save_ctype)));
 
-    if (vl_narrow_enc.locale)
+    if (okCTYPE2(vl_narrow_enc))
 	setlocale(LC_CTYPE, vl_narrow_enc.locale);
-    else if (vl_wide_enc.locale)
+    else if (okCTYPE2(vl_wide_enc))
 	setlocale(LC_CTYPE, vl_wide_enc.locale);
 
     for (c = 0; c < N_chars; c++) {
 	if (print_hi > 0 && c > print_hi) {
 	    vlCTYPE(c) = 0;
-	} else if (okCTYPE2(vl_narrow_enc)) {
+	} else if (!vl_8bit_builtin() && okCTYPE2(vl_narrow_enc)) {
 	    vlCTYPE(c) = vl_ctype_bits(c, -TRUE);
 	    vl_uppercase[c] = (char) toupper(c);
 	    vl_lowercase[c] = (char) tolower(c);

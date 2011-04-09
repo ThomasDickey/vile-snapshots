@@ -22,7 +22,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.701 2011/04/07 09:17:15 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.702 2011/04/09 15:31:37 tom Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -407,7 +407,9 @@ MainProgram(int argc, char *argv[])
 	if (!okCTYPE2(vl_real_enc)
 	    || isEmpty(vl_real_enc.encoding)) {
 	    TRACE(("...checking original locale '%s'\n", NonNull(old_locale)));
-	    if (vl_is_utf8_encoding(old_encoding)) {
+	    if (vl_8bit_builtin()) {
+		TRACE(("using built-in locale data\n"));
+	    } else if (vl_is_utf8_encoding(old_encoding)) {
 		TRACE(("original encoding is UTF-8\n"));
 		vl_narrow_enc.locale = 0;
 	    } else {

@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/vl_ctype.h,v 1.30 2010/12/05 00:45:50 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/vl_ctype.h,v 1.31 2011/04/09 12:00:30 tom Exp $
  *
  * Character-type tests, like <ctype.h> for vile (vi-like-emacs).
  *
@@ -152,7 +152,7 @@ typedef struct {
     char *encoding;		/* "ISO-8859-1" */
 } VL_CTYPE2;
 
-#define okCTYPE2(ct)	((ct).locale != 0)
+#define okCTYPE2(ct)	((ct).locale != 0 && *((ct).locale) != '\0')
 
 /* these parallel the ctypes.h definitions, except that
 	they force the char to valid range first */

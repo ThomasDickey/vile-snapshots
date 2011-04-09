@@ -1,5 +1,5 @@
 /*
- * $Id: eightbit.c,v 1.99 2010/12/27 12:10:33 tom Exp $
+ * $Id: eightbit.c,v 1.100 2011/04/09 15:37:45 tom Exp $
  *
  * Maintain "8bit" file-encoding mode by converting incoming UTF-8 to single
  * bytes, and providing a function that tells vile whether a given Unicode
@@ -66,6 +66,7 @@ cmp_rindex(const void *a, const void *b)
 }
 
 static const GNREIGHT_ENC *from_encoding = 0;
+static const GNREIGHT_ENC *builtin_locale = 0;
 
 #if OPT_ICONV_FUNCS
 #define MY_ICONV_TYPE iconv_t
@@ -203,14 +204,21 @@ void
 vl_8bit_ctype_init(int wide, int ch)
 {
     const GNREIGHT_ENC *encode;
-#if !OPT_ICONV_FUNCS
-    int found;
 
-    from_encoding = 0;
-    found = blist_match(&blist_encodings, wide ? "ISO-8859-1" : "POSIX");
-    if (found >= 0) {
-	from_encoding = all_encodings[found].data;
-	TRACE(("using built-in encoding\n"));
+    if (builtin_locale) {
+	TRACE(("using previously found built-in encoding\n"));
+	from_encoding = builtin_locale;
+    }
+#if !OPT_ICONV_FUNCS
+    else {
+	int found;
+
+	from_encoding = 0;
+	found = blist_match(&blist_encodings, wide ? "ISO-8859-1" : "POSIX");
+	if (found >= 0) {
+	    from_encoding = all_encodings[found].data;
+	    TRACE(("using built-in encoding\n"));
+	}
     }
 #endif
 
@@ -243,6 +251,12 @@ vl_8bit_ctype_init(int wide, int ch)
 				   ? encode_POSIX.upper[ch]
 				   : encode->upper[ch - 128]);
     }
+}
+
+int
+vl_8bit_builtin(void)
+{
+    return (builtin_locale != 0);
 }
 
 char *
@@ -586,6 +600,7 @@ vl_get_encoding(char **target, const char *locale)
 			if (all_encodings[find].data == all_locales[found].data) {
 			    TRACE(("... found built-in encoding data\n"));
 			    result = strmalloc(all_encodings[find].name);
+			    builtin_locale = all_encodings[find].data;
 			    break;
 			}
 		    }

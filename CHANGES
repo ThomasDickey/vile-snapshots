@@ -1,7 +1,9 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20110407 (e)
+ 20110409 (e)
 	> Tom Dickey:
+	+ fix character-type initialization to allow built-in locales in 9.7d
+	  to work (report by Ramil Farkhshatov).
 	+ amend a change from 9.7zd which lost the repeat-count for single-byte
 	  characters in "r" and other uses of lins_chars() (report by Hymie on
 	  mailing list).
