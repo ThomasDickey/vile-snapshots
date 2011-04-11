@@ -1,7 +1,9 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20110409 (e)
+ 20110410 (e)
 	> Tom Dickey:
+	+ improve ada syntax highlighter by parsing attributes, adding a list
+	  of the predefined attributes to its keyword file.
 	+ fix character-type initialization to allow built-in locales in 9.7d
 	  to work (report by Ramil Farkhshatov).
 	+ amend a change from 9.7zd which lost the repeat-count for single-byte
