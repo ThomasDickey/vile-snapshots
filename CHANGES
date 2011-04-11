@@ -1,6 +1,6 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20110410 (e)
+ 20110411 (e)
 	> Tom Dickey:
 	+ improve ada syntax highlighter by parsing attributes, adding a list
 	  of the predefined attributes to its keyword file.
