@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.727 2010/12/29 17:29:49 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.728 2011/04/13 08:32:57 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -1015,8 +1015,7 @@ extern void endofDisplay(void);
  * files.
  */
 #  include <os2def.h>
-/* #elif !(defined(WIN32) || defined(WIN32_LEAN_AND_MEAN)) */
-#elif !defined(UINT)
+#elif SYS_CYGWIN || !(defined(WIN32) || defined(WIN32_LEAN_AND_MEAN))
 #  define UCHAR  unsigned char
 #  define UINT   unsigned int
 #  define USHORT unsigned short

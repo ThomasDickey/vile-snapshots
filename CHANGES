@@ -1,5 +1,8 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
+ 20110411 (f)
+	+ amend build-fix for cygwin to fix winvile OLE.
+
  20110411 (e)
 	> Tom Dickey:
 	+ improve ada syntax highlighter by parsing attributes, adding a list
