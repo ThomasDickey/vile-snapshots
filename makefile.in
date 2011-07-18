@@ -20,7 +20,7 @@
 #
 # gnu autoconf support by kevin buettner, 5/94
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.252 2010/12/29 17:34:07 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.253 2011/05/30 12:57:11 tom Exp $
 
 SHELL		= /bin/sh
 
@@ -832,7 +832,7 @@ $(BINDIR)/lxvile:		$(srcdir)/macros/lxvile
 $(BINDIR)/uxvile:		$(srcdir)/macros/uxvile
 	$(INSTALL_SCRIPT)	$(srcdir)/macros/uxvile $@
 $(BINDIR)/vileget:		$(srcdir)/perl/vileget
-	$(INSTALL_PL_EXE)	$(srcdir)/perl/vileget $@
+	$(INSTALL_SCRIPT)	$(srcdir)/perl/vileget $@
 
 $(DOCDIR)/Vileserv.doc:		$(srcdir)/doc/Vileserv.doc
 	$(INSTALL_DATA)		$(srcdir)/doc/Vileserv.doc $@

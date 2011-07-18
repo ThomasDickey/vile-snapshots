@@ -1,6 +1,56 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20110411 (f)
+ 20110718 (f)
+	+ add build-dependency for dpkg test-script against libperl-dev
+	+ several configure macro updates, from lynx/ncurses/xterm:
+	  + CF_ANSI_CC_CHECK - do a sanity check on $CC; occasional users add
+	    options directly to it rather than follow the standards by setting
+	    $CFLAGS and/or $CPPFLAGS.
+	  + CF_CURSES_CPPFLAGS - make checks for special libraries on hpux10
+	    and sunos4 optional
+	  + CF_CURSES_FUNCS - workaround for bug in gcc 4.2.1 (FreeBSD 8.1)
+	    which caused part of test program to be omitted, i.e., when it saw
+	    two return-statements in a row it omitted the _first_ one.  Also
+	    add expression to pointer check to help FreeBSD's linker decide it
+	    should be validated.  Just an assignment was not enough.
+	  + CF_CURSES_HEADER - change order for curses.h / ncurses.h pairs to
+	    put ncurses.h first, which will tend to provide the same #define's
+	    as in CF_NCURSES_HEADER (report by Dennis Preiser).
+	  + CF_CURSES_LIBS - make checks for special libraries on hpux10 and
+	    sunos4 optional
+	  + CF_CURSES_TERM_H - modify to avoid spurious check for
+	    <curses.hterm.h> if there is no ncurses version.  Look for
+	    ncurses's term.h anyway, to work around breakage by packagers who
+	    separate ncurses' header files.
+	  + CF_DISABLE_RPATH_HACK - fix garbled message
+	  + CF_LD_RPATH_OPT - add cases for DragonFlyBSD and MirBSD
+	  + CF_MAKEFLAGS - filter out GNU make's entering/leaving messages. 
+	    This only appeared when using the macro in a dpkg script, though it
+	    should have in other cases.
+	  + CF_PKG_CONFIG - modify to allow autoconf-2.13 or autoconf-2.52
+	    configurations.
+	  + CF_RPATH_HACK - add a check for libraries not found, e.g., from
+	    suppressed functionality of gcc in linking from /usr/local/lib, and
+	    add a -L option to help work around this.
+	  + CF_STRUCT_TERMIOS - relax ncurses-oriented change to make this work
+	    as fixup after CF_XOPEN_SOURCE
+	  + CF_TERMCAP_LIBS - modify the workaround for old AIX system (from
+	    1997 or before) to not set $cf_cv_termlib if it succeeds in finding
+	    initscr in libcurses.  Doing that confused a check in tin's
+	    configure.in which looks at that variable to decide if
+	    termcap/terminfo library was found.  The check for tgoto in
+	    libtermcap on the next line is the actual check which is needed,
+	    and should fail if there is no termcap library installed.
+	  + CF_XOPEN_CURSES - fix typo in the workaround for
+	    _XOPEN_SOURCE_EXTENDED
+	  + CF_XOPEN_SOURCE - extend aix case to aix 7.x
+	  + CF_X_ATHENA_LIBS - DragonFlyBSD's pkgsrc combines Xaw6 and Xaw7
+	    into a single package, and doesn't provide a plain "libXaw.so"
+	    symlink.  Work around by testing for the 6/7 versions.
+	+ restore delphi keyword file.
+	+ amend change from 9.7w to install rule for vileget, making it use
+	  the normal INSTALL_SCRIPT symbol.  Some platforms' "strip" utility
+	  do not error if the file happens to be a shell script.
 	+ amend build-fix for cygwin to fix winvile OLE.
 
  20110411 (e)

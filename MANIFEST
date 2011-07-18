@@ -1,4 +1,4 @@
-MANIFEST for vile, version v9_8e2
+MANIFEST for vile, version v9_8e3
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 AUTHORS                         list of authors, with nicknames in CHANGES
@@ -229,6 +229,7 @@ filters/dcl-filt.l              VAX dcl syntax highlighting filter for vile
 filters/dcl.key                 dcl keywords
 filters/def-filt.l              syntax filter for Windows ".def" files
 filters/def.key                 keywords for Windows ".def" files
+filters/delphi.key              keywords for delphi
 filters/diff.key                keywords for 'diff' syntax filter
 filters/difffilt.l              syntax filter for 'diff' output
 filters/docbook.key             keywords for docbook
@@ -429,6 +430,9 @@ package/debian/overrides        subdirectory
 package/debian/overrides/vile   debian build script
 package/debian                  subdirectory
 package/debian/rules            debian build script
+package/debian/source           subdirectory
+package/debian/source/format    build-script
+package/debian                  subdirectory
 package/debian/vile-common.docs debian build script
 package/debian/vile-common.examples  debian build script
 package/debian/vile-common.files  debian build script
