@@ -1,6 +1,11 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20110718 (f)
+ 20110914 (f)
+	+ modify debian/rules to work around a quoting problem in Brendan
+	  O'Dea's build environment.
+	+ fix a typo in help-file description of modeline (report by Wayne).
+	+ adapt/use multi-package feature of Fedora rpm script.
+	+ modify dpkg and rpm scripts to install lxvile.
 	+ add build-dependency for dpkg test-script against libperl-dev
 	+ several configure macro updates, from lynx/ncurses/xterm:
 	  + CF_ANSI_CC_CHECK - do a sanity check on $CC; occasional users add

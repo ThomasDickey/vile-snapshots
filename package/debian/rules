@@ -16,7 +16,7 @@ configure = \
 	--with-locale \
 	--with-loadable-filters=all \
 	--disable-rpath-hack \
-	--with-cflags='-O2 -DDEFAULT_XSHELL="\"x-terminal-emulator -e $${prefix}/share/vile/xshell.sh\""'
+	--with-cflags=-O2
 
 # install path for upstream make
 TMP = $(CURDIR)/debian/tmp
@@ -32,6 +32,8 @@ else
 endif
 
 verbose = # -v
+
+xshell = x-terminal-emulator -e $${prefix}/share/vile/xshell.sh
 
 .PHONY: all config build install binary clean config-indep config-arch \
     build-indep build-arch install-indep install-arch binary-indep \
@@ -108,6 +110,7 @@ config-xvile-stamp:
 	rm -rf t/xvile
 	mkdir -p t/xvile
 	cd t/xvile; $(configure) --with-perl --with-xpm --with-screen=Xaw
+	echo "#define DEFAULT_XSHELL \"${xshell}\"" >>t/xvile/config.h
 	touch $@
 
 build-vile-stamp: config-vile-stamp
@@ -153,6 +156,7 @@ install-xvile-stamp: build-xvile-stamp
 
 	install -c t/xvile/xvile $(TMP)/usr/bin/xvile
 	install -c macros/uxvile $(TMP)/usr/bin/uxvile
+	install -c macros/lxvile $(TMP)/usr/bin/lxvile
 	install -c -m 644 macros/xvile.desktop macros/uxvile.desktop \
 	    $(TMP)/usr/share/applications
 
