@@ -1,9 +1,9 @@
-Summary: VILE VI Like Emacs editor
-# $Header: /users/source/archives/vile.vcs/package/RCS/vile.spec,v 1.10 2011/04/11 22:23:30 tom Exp $
+Summary: VILE (VI Like Emacs) editor
+# $Header: /users/source/archives/vile.vcs/package/RCS/vile.spec,v 1.13 2011/07/20 00:53:49 tom Exp $
 Name: vile
 Version: 9.8f
 # each patch should update the version
-Release: 1
+Release: dev
 License: GPLv2
 Group: Applications/Editors
 URL: ftp://invisible-island.net/vile
@@ -16,10 +16,35 @@ Patch5: vile-9.8e.patch.gz
 Patch6: vile-9.8f.patch.gz
 # each patch should add itself to this list
 Packager: Thomas Dickey <dickey@invisible-island.net>
-# BuildRoot: %{_tmppath}/%{name}-root
+
+BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
+Requires:	%{name}-common = %{version}-%{release}
+
+%package	common
+Summary:	The common files needed by any version of VILE (VI Like Emacs)
+Group:		Applications/Editors
+
+%package -n	xvile
+Summary:	XVILE (VI Like Emacs for X11)
+Group:		Applications/Editors
+
+Requires:	%{name}-common = %{version}-%{release}
+#Requires:	xorg-x11-fonts-misc
+
+%description	common
+vile is a text editor which is extremely compatible with vi in terms of
+"finger feel".  In addition, it has extended capabilities in many areas,
+notably multi-file editing and viewing, syntax highlighting, key
+rebinding, and real X window system support.
+
+%description -n xvile
+xvile is a text editor which is extremely compatible with vi in terms of
+"finger feel".  In addition, it has extended capabilities in many areas,
+notably multi-file editing and viewing, syntax highlighting, key
+rebinding, and real X window system support.
 
 %description
-Vile is a text editor which is extremely compatible with vi in terms of
+vile is a text editor which is extremely compatible with vi in terms of
 "finger feel".  In addition, it has extended capabilities in many areas,
 notably multi-file editing and viewing, syntax highlighting, key
 rebinding, and real X window system support.
@@ -40,6 +65,7 @@ rebinding, and real X window system support.
 
 %define _iconsdir   %{_datadir}/icons
 %define _pixmapsdir %{_datadir}/pixmaps
+%define _wmcfgdir   %{_sysconfdir}/X11/wmconfig
 
 %setup -q -n vile-9.8
 %patch1 -p1
@@ -56,96 +82,69 @@ rm -f doc/*.pl
 rm -f doc/*.sh
 
 %build
-
-VILE_LIBDIR_PATH=%{_libdir}/vile \
-EXTRA_CFLAGS="$RPM_OPT_FLAGS" \
-INSTALL_PROGRAM='${INSTALL}' \
-	./configure \
-		--disable-rpath-hack \
-		--target %{_target_platform} \
-		--prefix=%{_prefix} \
-		--bindir=%{_bindir} \
-		--libdir=%{_libdir} \
-		--mandir=%{_mandir} \
-		--with-locale \
-		--with-builtin-filters
+%configure \
+	--with-loadable-filters \
+	--disable-rpath-hack
 make vile
 
-VILE_LIBDIR_PATH=%{_libdir}/vile \
-EXTRA_CFLAGS="$RPM_OPT_FLAGS" \
-INSTALL_PROGRAM='${INSTALL}' \
-	./configure \
-		--disable-rpath-hack \
-		--target %{_target_platform} \
-		--prefix=%{_prefix} \
-		--bindir=%{_bindir} \
-		--libdir=%{_libdir} \
-		--mandir=%{_mandir} \
-		--with-app-defaults=%{_xresdir} \
-		--with-icondir=%{_pixmapsdir} \
-		--with-locale \
-		--with-builtin-filters \
-		--with-screen=Xaw \
-		--with-xpm
-
-touch tcap.o
-make
+%configure \
+	--with-loadable-filters \
+	--disable-rpath-hack \
+	--with-app-defaults=%{_xresdir} \
+	--with-icondir=%{_pixmapsdir} \
+	--with-screen=Xaw \
+	--with-xpm
+make xvile
 touch vile
 
 %install
-[ "$RPM_BUILD_ROOT" != "/" ] && rm -rf $RPM_BUILD_ROOT
-
-make install                    DESTDIR=$RPM_BUILD_ROOT
-make install-app                DESTDIR=$RPM_BUILD_ROOT
-make install-icon               DESTDIR=$RPM_BUILD_ROOT
-make install-bin   TARGET=vile  DESTDIR=$RPM_BUILD_ROOT
+rm -rf %{buildroot}
+make install DESTDIR=%{buildroot} INSTALL='install -p' TARGET='xvile'
+make install DESTDIR=%{buildroot} INSTALL='install -p' TARGET='vile'
 
 %if "%{desktop_utils}" == "yes"
-make install-desktop            DESKTOP_FLAGS="--vendor='%{desktop_vendor}' --dir $RPM_BUILD_ROOT%{_datadir}/applications"
+make install-desktop            DESKTOP_FLAGS="--vendor='%{desktop_vendor}' --dir %{buildroot}%{_datadir}/applications"
 %endif
 
-strip $RPM_BUILD_ROOT%{_bindir}/xvile
-strip $RPM_BUILD_ROOT%{_bindir}/vile
-strip $RPM_BUILD_ROOT%{_libdir}/vile/atr2html
-strip $RPM_BUILD_ROOT%{_libdir}/vile/vile-crypt
-strip $RPM_BUILD_ROOT%{_libdir}/vile/vile-manfilt
-strip $RPM_BUILD_ROOT%{_libdir}/vile/atr2ansi
-strip $RPM_BUILD_ROOT%{_libdir}/vile/atr2text
+mkdir -p %{buildroot}/%{_wmcfgdir}
+install vile.wmconfig %{buildroot}%{_wmcfgdir}/vile
+install xvile.wmconfig %{buildroot}%{_wmcfgdir}/xvile
 
-mkdir -p $RPM_BUILD_ROOT%{_mandir}/man1
-install -m 644 vile.1 $RPM_BUILD_ROOT%{_mandir}/man1/xvile.1
-install -m 644 vile.1 $RPM_BUILD_ROOT%{_mandir}/man1/vile.1
-
-mkdir -p $RPM_BUILD_ROOT/%{_sysconfdir}/X11/wmconfig
-install vile.wmconfig $RPM_BUILD_ROOT%{_sysconfdir}/X11/wmconfig/vile
-install xvile.wmconfig $RPM_BUILD_ROOT%{_sysconfdir}/X11/wmconfig/xvile
+ln -s %{_mandir}/man1/xvile.1 %{buildroot}%{_mandir}/man1/uxvile.1
+ln -s %{_mandir}/man1/xvile.1 %{buildroot}%{_mandir}/man1/lxvile.1
 
 %clean
-[ "$RPM_BUILD_ROOT" != "/" ] && rm -rf $RPM_BUILD_ROOT
+rm -rf %{buildroot}
 
 %files
-%defattr(-,root,root)
-%doc CHANGES*
-%doc COPYING INSTALL MANIFEST README*
-%doc doc/*
-%doc macros
-%config(missingok) %{_sysconfdir}/X11/wmconfig/vile
-%config(missingok) %{_sysconfdir}/X11/wmconfig/xvile
-%{_prefix}/bin/xvile
-%{_prefix}/bin/uxvile
-%{_prefix}/bin/lxvile
-%{_prefix}/bin/lxvile-fonts
-%{_prefix}/bin/xvile-pager
-%{_prefix}/bin/xshell.sh
+%defattr(-,root,root,-)
 %{_bindir}/vile
 %{_bindir}/vile-pager
-%{_mandir}/man1/xvile.*
-%{_mandir}/man1/vile.*
+%{_mandir}/man1/vile.1*
+
+%files common
+%defattr(-,root,root,-)
+%doc AUTHORS COPYING CHANGES README doc/*doc
 %{_datadir}/vile/
-%{_pixmapsdir}/vile.xpm
 %{_libdir}/vile/
+
+%files -n xvile
+%defattr(-,root,root,-)
+%{_bindir}/lxvile
+%{_bindir}/lxvile-fonts
+%{_bindir}/uxvile
+%{_bindir}/xshell.sh
+%{_bindir}/xvile
+%{_bindir}/xvile-pager
+%{_mandir}/man1/xvile.1*
+%{_mandir}/man1/lxvile.1*
+%{_mandir}/man1/uxvile.1*
+%{_pixmapsdir}/vile.xpm
 %{_xresdir}/XVile
 %{_xresdir}/UXVile
+
+%config(missingok) %{_wmcfgdir}/vile
+%config(missingok) %{_wmcfgdir}/xvile
 
 %if "%{desktop_utils}" == "yes"
 %config(missingok) %{_datadir}/applications/%{desktop_vendor}-lxvile.desktop
@@ -155,6 +154,12 @@ install xvile.wmconfig $RPM_BUILD_ROOT%{_sysconfdir}/X11/wmconfig/xvile
 
 %changelog
 # each patch should add its ChangeLog entries here
+
+* Tue Jul 19 2011 Thomas Dickey
+- adapt scheme in Fedora spec-file for providing separate RPMs.
+
+* Mon Jul 18 2011 Thomas Dickey
+- add symlink for lxvile manpage; use symlink for xvile manpage.
 
 * Mon Apr 11 2011 Thomas Dickey
 - added patch for 9.8f
