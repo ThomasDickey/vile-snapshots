@@ -1,6 +1,8 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20110914 (f)
+ 20110915 (f)
+	+ fill in a missing chunk of logic for wrapping double-width characters
+	  (report by Sukegawa Shigeyuki).
 	+ modify debian/rules to work around a quoting problem in Brendan
 	  O'Dea's build environment.
 	+ fix a typo in help-file description of modeline (report by Wayne).

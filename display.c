@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.527 2010/12/28 00:34:44 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.531 2011/09/16 00:00:25 tom Exp $
  *
  */
 
@@ -699,13 +699,27 @@ vtlistc(WINDOW *wp, const char *src, unsigned limit)
 		} else if (vtcol >= lastcol) {
 		    VideoText(vp)[lastcol - 1] =
 			(VIDEO_TEXT) MRK_EXTEND_RIGHT[0];
-		} else if (vtcol < 0) {
+		} else {
+		    int nulls = cells;
 		    /* have to account for split-characters... */
 		    while (cells-- > 0 && vtcol <= lastcol) {
 			if (vtcol >= 0)
 			    VideoText(vp)[vtcol] = ' ';
 			++vtcol;
 		    }
+#ifdef WMDLINEWRAP
+		    if (allow_wrap != 0
+			&& (vtrow < allow_wrap)) {
+			vtcol = 0;
+			if (++vtrow >= 0) {
+			    vscreen[vtrow]->v_flag |= VFCHG;
+			    vp = current_video();
+			    VideoText(vp)[vtcol++] = (VIDEO_TEXT) value;
+			    while (--nulls > 0)
+				VideoText(vp)[vtcol++] = 0;
+			}
+		    }
+#endif
 		}
 		return rc;
 	    } else {
@@ -797,12 +811,20 @@ vtset_put(WINDOW *wp, const char *src, unsigned limit)
 static void
 vtset(LINE *lp, WINDOW *wp)
 {
+#if OPT_TRACE > 1
+    int save_vtrow = vtrow;
+#endif
     char *from;
     int n = llength(lp);
     BUFFER *bp = wp->w_bufp;
     int skip = -vtcol;
     int list = w_val(wp, WMDLIST);
 
+    TRACE2(("vtset line %d (top %d.%d), row %d \n",
+	    line_no(wp->w_bufp, lp),
+	    line_no(wp->w_bufp, wp->w_line.l),
+	    wp->w_line.o,
+	    vtrow));
     wp->w_tabstop = tabstop_val(wp->w_bufp);
 
 #ifdef WMDLINEWRAP
@@ -907,9 +929,23 @@ vtset(LINE *lp, WINDOW *wp)
 #ifdef WMDLINEWRAP
     allow_wrap = 0;
 #endif
-    TRACE2(("TEXT %4d:%s\n",
-	    vtrow,
-	    visible_video_text(vscreen[vtrow]->v_text, vtcol)));
+#if OPT_TRACE > 1
+    while (save_vtrow <= vtrow) {
+	/*
+	 * Display the row(s) which we just wrote to the virtual screen.
+	 *
+	 * FIXME - need to compute length from the number of columns.
+	 * This is only assuming columns==cells.
+	 */
+	TRACE2(("TEXT %4d:%s\n",
+		save_vtrow,
+		visible_video_text(vscreen[save_vtrow]->v_text,
+				   (save_vtrow == vtrow)
+				   ? vtcol
+				   : term.cols)));
+	++save_vtrow;
+    }
+#endif
 }
 
 /*
@@ -1380,8 +1416,9 @@ update_line(int row, int colfrom, int colto)
 #if OPT_VIDEO_ATTRS
 	       && VATTRIB(ap1[xx - 1]) == Blank
 #endif
-	    )
+	    ) {
 	    xx--;
+	}
 
 	if ((xr - xx) <= 3)	/* Use only if erase is */
 	    xx = xr;		/* fewer characters. */
