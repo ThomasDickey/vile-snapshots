@@ -11,7 +11,7 @@
 #
 # The modes are table entries in the BUFFER and WINDOW structures.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.308 2011/04/06 08:40:23 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.309 2011/09/16 09:22:00 tom Exp $
 #
 #
 # Mode-table entries.  Capitalized letters are used for abbreviations.
@@ -186,6 +186,7 @@ regex							# VAL_ prefix
 bool							# WMD prefix
 	"LIst"		LIST		chgd_window	# "list" mode -- show tabs and EOL
 	"HorizScroll"	HORSCROLL	0		# scroll whole screen
+	"LineBreak"	LINEBREAK	chgd_window	OPT_LINEWRAP # when line-wrapping, pad display to avoid splitting words
 	"LineWrap"	LINEWRAP	chgd_window	OPT_LINEWRAP # wrap lines wider than screen
 	"NUmber"	NUMBER		chgd_window	# line-numbers shown
 	"ruler"		RULER		chgd_status	!SMALLER # display line+col in modeline

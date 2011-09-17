@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.531 2011/09/16 00:00:25 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.538 2011/09/17 14:18:54 tom Exp $
  *
  */
 
@@ -36,6 +36,12 @@
 #define set_term_attrs(a)  term.rev(a ^ ((VIDEO_ATTR) global_g_val(GVAL_VIDEO) & VIDEOATTRS))
 #else
 #define set_term_attrs(a)  term.rev(a)
+#endif
+
+#ifdef WMDLINEWRAP		/* overrides left/right scrolling */
+#define if_LINEWRAP(wp, t, f) w_val(wp, WMDLINEWRAP) ? (t) : (f)
+#else
+#define if_LINEWRAP(wp, t, f) (f)
 #endif
 
 #define line_has_newline(lp, bp) \
@@ -372,11 +378,7 @@ nu_width(WINDOW *wp)
 int
 col_limit(WINDOW *wp)
 {
-#ifdef WMDLINEWRAP
-    if (w_val(wp, WMDLINEWRAP))
-	return curcol + 1;	/* effectively unlimited */
-#endif
-    return term.cols - 1 - nu_width(wp);
+    return if_LINEWRAP(wp, curcol + 1, term.cols - 1 - nu_width(wp));
 }
 
 #if OPT_VIDEO_ATTRS
@@ -568,6 +570,19 @@ current_limit(void)
 	    : term.cols);
 }
 
+static unsigned
+cols_until(const char *src, unsigned limit)
+{
+    unsigned n;
+
+    for (n = 0; n < limit; ++n) {
+	if (isBlank(src[n])) {
+	    break;
+	}
+    }
+    return n;			/* FIXME convert to columns */
+}
+
 /*
  * Write a character to the virtual screen.  The virtual row and column are
  * updated.  Only print characters if they would be "visible".  If the line is
@@ -594,6 +609,30 @@ vtputc(WINDOW *wp, const char *src, unsigned limit)
 		int ch2;
 		if (vl_8bit_to_ucs(&ch2, (int) ch)) {
 		    ch = (UINT) ch2;
+		}
+	    }
+#endif
+#ifdef WMDLINEWRAP
+	    /* FIXME - account for nu_width */
+	    if ((allow_wrap != 0)
+		&& w_val(wp, WMDLINEBREAK)
+		&& w_val(wp, WMDLINEWRAP)
+		&& vtcol > 0
+		&& VideoText(vp)[vtcol - 1] == ' '
+		&& !isBlank(ch)) {
+		unsigned n = cols_until(src, limit);
+		int have = term.cols - vtcol;
+
+		if (n < limit)
+		    ++n;
+		if ((int) n > have) {
+		    while (vtcol < term.cols)
+			VideoText(vp)[vtcol++] = ' ';
+		    vtcol = 0;
+		    ++vtrow;
+		    vp = current_video();
+		    vp->v_flag |= VFCHG;
+		    horscroll += lastcol;
 		}
 	    }
 #endif
@@ -697,6 +736,9 @@ vtlistc(WINDOW *wp, const char *src, unsigned limit)
 		    }
 #endif
 		} else if (vtcol >= lastcol) {
+		    if (VideoText(vp)[lastcol - 1] == 0)
+			VideoText(vp)[lastcol - 2] =
+			    (VIDEO_TEXT) MRK_EXTEND_RIGHT[0];
 		    VideoText(vp)[lastcol - 1] =
 			(VIDEO_TEXT) MRK_EXTEND_RIGHT[0];
 		} else {
@@ -704,7 +746,7 @@ vtlistc(WINDOW *wp, const char *src, unsigned limit)
 		    /* have to account for split-characters... */
 		    while (cells-- > 0 && vtcol <= lastcol) {
 			if (vtcol >= 0)
-			    VideoText(vp)[vtcol] = ' ';
+			    VideoText(vp)[vtcol] = MRK_EXTEND_RIGHT[0];
 			++vtcol;
 		    }
 #ifdef WMDLINEWRAP
@@ -987,50 +1029,77 @@ static UINT scrflags;
  * The buffer may have a left-margin, e.g., [Registers].  Use the 'bp'
  * parameter to get that value.
  *
- * To allow this to be used in the OPT_CACHE_VCOL logic, it accepts a 'col'
+ * To allow this to be used in the OPT_CACHE_VCOL logic, it accepts a 'column'
  * parameter which in that case may be nonzero, e.g., the nominal column of the
  * left margin of the display (the column at which the sideways-shift
  * coincides).
  *
  * Finally, use 'adjust' to adjust for cases where the sideways-shift does
- * not exactly coincide with the 'col', where nonprinting data is displayed
+ * not exactly coincide with the 'column', where nonprinting data is displayed
  * in hex/octal/uparrow format and is split across the display's left margin.
  * After adding the left margin, that gives the index into the line for
  * reading bytes whose width is added til we read the mark's offset.
  */
 int
-mk_to_vcol(WINDOW *wp, MARK mark, int expanded, int col, int adjust)
+mk_to_vcol(WINDOW *wp, MARK mark, int expanded, int column, int adjust)
 {
     BUFFER *bp = wp->w_bufp;
     int i = b_left_margin(bp) + adjust;
-    int c;
-    int lim;
+    int ch, c0;
+    int limit;
     int t = tabstop_val(bp);
     LINE *lp;
     int extra = ((!global_g_val(GMDALTTABPOS) && !insertmode) ? 1 : 0);
     const char *text;
-    int prev_col = col;
+    int prev_col = column;
 
     TRACE2((T_CALLED "mk_to_vcol(mark.o=%d, col=%d, adjust=%d) extra %d\n",
-	    mark.o, col, adjust, extra));
+	    mark.o, column, adjust, extra));
 
     if (i < 0) {
 	i = 0;
-	col = 0;
+	column = 0;
     }
     lp = mark.l;
-    lim = mark.o + (extra ? BytesAt(mark.l, mark.o) : 0);
-    if (lim > llength(lp))
-	lim = llength(lp);
+    limit = mark.o + (extra ? BytesAt(mark.l, mark.o) : 0);
+    if (limit > llength(lp))
+	limit = llength(lp);
 
     text = lvalue(lp);
-    while (i < lim) {
+    if (column == 0 || !mark.o) {
+	ch = EOF;
+    } else if (mark.o) {
+	ch = text[mark.o - 1];
+    }
+    while (i < limit) {
 	int used = 1;
 
-	prev_col = col;
-	c = text[i];
-	if (isTab(c) && !expanded) {
-	    col += t - (col % t);
+	prev_col = column;
+	c0 = ch;
+	ch = text[i];
+#ifdef WMDLINEWRAP
+	/* FIXME - account for nu_width */
+	if (column != 0
+	    && w_val(wp, WMDLINEBREAK)
+	    && w_val(wp, WMDLINEWRAP)
+	    && isBlank(c0)) {
+	    int k = cols_until(text + i, llength(lp) - i);
+	    int wide = term.cols;
+	    int have;
+
+	    if ((k + i) < llength(lp))
+		++k;
+	    have = (column % wide) + k;
+	    if (have >= wide) {
+		int wrap = (column / wide);
+		int need = (wrap + 1) * wide;
+		prev_col = need;
+		column = need;
+	    }
+	}
+#endif
+	if (isTab(ch) && !expanded) {
+	    column += t - (column % t);
 	}
 #if OPT_MULTIBYTE
 	else if (b_is_utfXX(wp->w_bufp)) {
@@ -1040,20 +1109,23 @@ mk_to_vcol(WINDOW *wp, MARK mark, int expanded, int col, int adjust)
 	    if (adj == COLS_UTF8 && UseCellWidth(lp, i, wp)) {
 		adj = mb_cellwidth(wp, text + i, nxt);
 	    }
-	    col += adj;
+	    column += adj;
 	}
 #endif
-	else if (!isPrint(c)) {
-	    col += column_sizes(wp, text + i, (UINT) (llength(mark.l) - i), &used);
+	else if (!isPrint(ch)) {
+	    column += column_sizes(wp,
+				   text + i,
+				   (UINT) (llength(mark.l) - i),
+				   &used);
 	} else {
-	    ++col;
+	    ++column;
 	}
 	i += used;
     }
-    if (extra && (col != 0) && (mark.o < llength(lp))) {
-	col = prev_col;
+    if (extra && (column != 0) && (mark.o < llength(lp))) {
+	column = prev_col;
     }
-    return2Code(col);
+    return2Code(column);
 }
 
 /*
@@ -1117,7 +1189,7 @@ dot_to_vcol(WINDOW *wp)
 	if (wp->w_dot.o < lo
 	    || wp->w_dot.o >= hi) {
 	    col = offs2col(wp, wt->w_left_dot.l, wp->w_dot.o);
-	    TRACE(("offs2col(%d)) = %d\n", wp->w_dot.o, col));
+	    TRACE(("offs2col(%d) = %d\n", wp->w_dot.o, col));
 	    TRACE(("...in row %d\n", col % term.cols));
 	    row = col / term.cols;
 	    col = row * term.cols;
@@ -1217,7 +1289,7 @@ dot_to_vcol(WINDOW *wp)
 	       wp->w_dot.o,
 	       wt->w_left_dot.o, use_off,
 	       wt->w_left_col));
-	result = check;
+	//result = check;
     }
 #endif
 #else
@@ -1594,12 +1666,9 @@ offs2col0(WINDOW *wp,
 	int tabs = tabstop_val(wp->w_bufp);
 	int list = w_val(wp, WMDLIST);
 	int last = (list ? (N_chars * 2) : rs);
-	int left =
-#ifdef WMDLINEWRAP		/* overrides left/right scrolling */
-	w_val(wp, WMDLINEWRAP) ? 0 :
-#endif
-	w_val(wp, WVAL_SIDEWAYS);
-	C_NUM n, c;
+	int left = if_LINEWRAP(wp, 0, w_val(wp, WVAL_SIDEWAYS));
+	int ch = EOF, c0;
+	C_NUM n;
 	C_NUM start_offset;
 	const char *text = lvalue(lp);
 
@@ -1617,9 +1686,10 @@ offs2col0(WINDOW *wp,
 	for (n = start_offset; n < offset;) {
 	    int used = 1;
 
-	    c = (n == length) ? rs : text[n];
+	    c0 = ch;
+	    ch = (n == length) ? rs : CharOf(text[n]);
 #if OPT_MULTIBYTE
-	    if ((n < length) && b_is_utfXX(bp) && !isTab(c)) {
+	    if ((n < length) && b_is_utfXX(bp) && !isTab(ch)) {
 		int nxt = offset - n;
 		int adj = column_sizes(wp, text + n, (UINT) nxt, &used);
 
@@ -1629,13 +1699,35 @@ offs2col0(WINDOW *wp,
 		column += adj;
 	    } else
 #endif
-	    if (isPrint(c) || (c == last)) {
+	    if (isPrint(ch)) {
+#ifdef WMDLINEWRAP
+		/* FIXME - account for nu_width */
+		if (column != 0
+		    && w_val(wp, WMDLINEBREAK)
+		    && w_val(wp, WMDLINEWRAP)
+		    && isBlank(c0)) {
+		    int k = cols_until(text + n, offset - n);
+		    int wide = term.cols;
+		    int have;
+
+		    if (k + n < offset)
+			++k;
+		    have = (column % wide) + k;
+		    if (have >= wide) {
+			int wrap = (column / wide);
+			int need = (wrap + 1) * wide;
+			column = need;
+		    }
+		}
+#endif
 		column++;
-	    } else if (list || !isTab(c)) {
+	    } else if (ch == last) {
+		column++;
+	    } else if (list || !isTab(ch)) {
 		column += column_sizes(wp,
 				       (n >= length) ? "" : (text + n),
 				       (UINT) (offset - n), &used);
-	    } else if (isTab(c)) {
+	    } else if (isTab(ch)) {
 		column = ((column / tabs) + 1) * tabs;
 	    }
 	    n += used;
@@ -1668,11 +1760,7 @@ col2offs(WINDOW *wp, LINE *lp, C_NUM col)
 {
     int tabs = tabstop_val(wp->w_bufp);
     int list = w_val(wp, WMDLIST);
-    int left =
-#ifdef WMDLINEWRAP		/* overrides left/right scrolling */
-    w_val(wp, WMDLINEWRAP) ? 0 :
-#endif
-    w_val(wp, WVAL_SIDEWAYS);
+    int left = if_LINEWRAP(wp, 0, w_val(wp, WVAL_SIDEWAYS));
     int goal = col + left - nu_width(wp) - w_left_margin(wp);
 
     C_NUM n;
@@ -1700,6 +1788,9 @@ col2offs(WINDOW *wp, LINE *lp, C_NUM col)
 	    } else
 #endif
 	    if (isPrint(c)) {
+#ifdef WMDLINEWRAP
+		/* FIXME - account for linebreak */
+#endif
 		n++;
 	    } else if (list || !isTab(c)) {
 		n += column_sizes(wp, text + offset, (UINT) (len - offset), &used);
@@ -1723,6 +1814,7 @@ int
 line_height(WINDOW *wp, LINE *lp)
 {
     int hi = 1;
+
     if (w_val(wp, WMDLINEWRAP)) {
 	int len = llength(lp);
 	if (len > 0) {
@@ -3932,8 +4024,8 @@ update(int force /* force update past type ahead? */ )
 #ifdef WMDLINEWRAP
 	/* Make sure that movements in very long wrapped lines
 	   get updated properly.  */
-	if (w_val(wp, WMDLINEWRAP) && line_height(wp, wp->w_dot.l)
-	    > wp->w_ntrows)
+	if (w_val(wp, WMDLINEWRAP)
+	    && line_height(wp, wp->w_dot.l) > wp->w_ntrows)
 	    wp->w_flag |= WFMOVE;
 #endif
 #if OPT_CACHE_VCOL
