@@ -1,6 +1,7 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20110915 (f)
+ 20110916 (f)
+	+ add linebreak mode, like vim (request by Paul Van Tilburg).
 	+ fill in a missing chunk of logic for wrapping double-width characters
 	  (report by Sukegawa Shigeyuki).
 	+ modify debian/rules to work around a quoting problem in Brendan

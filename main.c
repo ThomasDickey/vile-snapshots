@@ -22,7 +22,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.702 2011/04/09 15:31:37 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.703 2011/09/16 09:22:45 tom Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -1749,7 +1749,8 @@ init_mode_value(struct VAL *d, MODECLASS v_class, int v_which)
 	    setINT(WMDNONPRINTOCTAL, FALSE);	/* unprintable-as-octal */
 	    setINT(WVAL_SIDEWAYS, 0);	/* list-mode */
 #ifdef WMDLINEWRAP
-	    setINT(WMDLINEWRAP, FALSE);		/* line-wrap */
+	    setINT(WMDLINEBREAK, FALSE);	/* linebreak */
+	    setINT(WMDLINEWRAP, FALSE);		/* linewrap */
 #endif
 #ifdef WMDRULER
 	    setINT(WMDRULER, FALSE);	/* ruler */

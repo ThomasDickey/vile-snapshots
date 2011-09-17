@@ -3,7 +3,7 @@
  *	for getting and setting the values of the vile state variables,
  *	plus helper utility functions.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.157 2010/12/20 10:16:12 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.158 2011/09/16 09:28:14 tom Exp $
  */
 
 #include	<estruct.h>
@@ -1145,12 +1145,15 @@ var_LCOLS(TBUFF **rp, const char *vp)
 	/* temporarily set linewrap to avoid having the sideways value
 	 * subtracted from the returned column.
 	 */
-	int save = w_val(curwp, WMDLINEWRAP);
+	int save_break = w_val(curwp, WMDLINEBREAK);
+	int save_wrap = w_val(curwp, WMDLINEWRAP);
+	w_val(curwp, WMDLINEBREAK) = 1;
 	w_val(curwp, WMDLINEWRAP) = 1;
 #endif
 	col = offs2col(curwp, DOT.l, llength(DOT.l));
 #ifdef WMDLINEWRAP
-	w_val(curwp, WMDLINEWRAP) = save;
+	w_val(curwp, WMDLINEBREAK) = save_break;
+	w_val(curwp, WMDLINEWRAP) = save_wrap;
 #endif
 	render_int(rp, col);
 	return TRUE;
