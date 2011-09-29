@@ -1,4 +1,4 @@
-MANIFEST for vile, version v9_8e6
+MANIFEST for vile, version v9_8e7
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 AUTHORS                         list of authors, with nicknames in CHANGES
@@ -236,6 +236,8 @@ filters/docbook.key             keywords for docbook
 filters/ecl-filt.l              syntax filter for ECLiPSe
 filters/ecl.key                 keywords for ecl-filt.l
 filters/ecrypt.c                uemacs-derived encryption
+filters/erl-filt.l              erlang syntax filter
+filters/erl.key                 erlang keywords
 filters/esql.key                keywords for embedded SQL with C/C++
 filters/esqlfilt.l              syntax filter for embedded SQL with C/C++
 filters/est-filt.l              syntax-highlighter for enscript syntax descriptions

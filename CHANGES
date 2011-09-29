@@ -1,6 +1,10 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20110916 (f)
+ 20110928 (f)
+	+ modify makemode to use tabinsert, allowing notabinsert to be a
+	  default in other mode (patch by Anthony Shipman).
+	+ add erlang syntax highlighter and majormode (patch by Anthony
+	  Shipman).
 	+ add linebreak mode, like vim (request by Paul Van Tilburg).
 	+ fill in a missing chunk of logic for wrapping double-width characters
 	  (report by Sukegawa Shigeyuki).
