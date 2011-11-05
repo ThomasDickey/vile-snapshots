@@ -2,7 +2,7 @@
  *	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.376 2010/11/10 09:55:38 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.377 2011/11/04 21:56:17 tom Exp $
  *
  */
 
@@ -1037,7 +1037,7 @@ update_scrollbar_sizes(void)
 	XawScrollbarSetThumb(cur_win->scrollbars[i],
 			     ((float) (thumb - 1)) / (float) max(total, 1),
 			     ((float) wp->w_ntrows) / (float) max(total, wp->w_ntrows));
-	wp->w_flag &= (USHORT) (~WFSBAR);
+	clr_typed_flags(wp->w_flag, USHORT, WFSBAR);
 	gui_update_scrollbar(wp);
 	if (wp->w_wndp) {
 	    XtVaSetValues(cur_win->grips[i],
@@ -2732,7 +2732,7 @@ x_preparse_args(int *pargc, char ***pargv)
 				   DefaultRootWindow(dpy),
 				   gcmask, &gcvals);
 
-    cur_win->bg_follows_fg = (gbcolor == ENUM_FCOLOR);
+    cur_win->bg_follows_fg = (Boolean) (gbcolor == ENUM_FCOLOR);
 
 #define COLOR_FMT " %#8lx %s"
 #define COLOR_ARG(name) name, ColorsOf(name)
@@ -3290,6 +3290,8 @@ check_visuals(void)
 
 #if OPT_KEV_SCROLLBARS || OPT_XAW_SCROLLBARS
 static Boolean
+#define TooLight(color) ((color) > 0xfff0)
+#define TooDark(color)  ((color) < 0x0020)
 too_light_or_too_dark(Pixel pixel)
 {
     XColor color;
@@ -3302,8 +3304,12 @@ too_light_or_too_dark(Pixel pixel)
     color.pixel = pixel;
     XQueryColor(dpy, colormap, &color);
 
-    return (color.red > 0xfff0 && color.green > 0xfff0 && color.blue > 0xfff0)
-	|| (color.red < 0x0020 && color.green < 0x0020 && color.blue < 0x0020);
+    return (Boolean) ((TooLight(color.red) &&
+		       TooLight(color.green) &&
+		       TooLight(color.blue)) ||
+		      (TooDark(color.red) &&
+		       TooDark(color.green) &&
+		       TooDark(color.blue)));
 }
 #endif
 
@@ -5739,7 +5745,7 @@ x_has_events(void)
 	x_set_watch_cursor(TRUE);
 	cur_win->want_to_work = FALSE;
     }
-    return (XtAppPending(cur_win->app_context) & XtIMXEvent);
+    return (int) (XtAppPending(cur_win->app_context) & XtIMXEvent);
 }
 
 static void
@@ -6359,7 +6365,7 @@ x_bcol(int color)
 	XSetBackground(dpy, cur_win->textgc, cur_win->bg);
 	XSetForeground(dpy, cur_win->reversegc, cur_win->bg);
     }
-    cur_win->bg_follows_fg = (color == ENUM_FCOLOR);
+    cur_win->bg_follows_fg = (Boolean) (color == ENUM_FCOLOR);
     TRACE(("...cur_win->bg_follows_fg = %#x\n", cur_win->bg_follows_fg));
 
     reset_color_gcs();

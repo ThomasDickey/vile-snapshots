@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.538 2011/09/17 14:18:54 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.544 2011/11/04 21:44:15 tom Exp $
  *
  */
 
@@ -60,7 +60,8 @@ typedef struct {
     int left;			/* offset of leftmost character on line */
     int right;			/* offset of rightmost character on line */
 } LMAP;
-static LMAP *lmap;
+static LMAP *lmap0;		/* where to _not_ alter attributes */
+static LMAP *lmap;		/* workspace for computing attributes */
 
 #if OPT_SCROLLCODE
 #define CAN_SCROLL 1
@@ -388,8 +389,33 @@ set_vattrs(int row, int col, unsigned attr, size_t len)
     while (len--)
 	vscreen[row]->v_attrs[col++] = (VIDEO_ATTR) attr;
 }
+
+static void
+preset_lmap0(void)
+{
+    int n;
+    for (n = 0; n <= term.rows; ++n) {
+	lmap0[n].left = 0;
+	lmap0[n].right = term.cols;
+    }
+}
+
+/* use this to markup line-numbers and line-break padding, which conveniently
+ * are both on the extreme left/right of the line on the display.
+ */
+static void
+preset_vattrs(int row, int col, int attr, size_t len)
+{
+    set_vattrs(row, col, (unsigned) attr, len);
+    if (col == 0)
+	lmap0[row].left = (int) len;
+    else
+	lmap0[row].right = col;
+}
 #else
+#define preset_lmap0()		/* nothing */
 #define set_vattrs(row, col, attr, len)		/*nothing */
+#define preset_vattrs(row, col, attr, len)	/*nothing */
 #endif
 
 static void
@@ -436,6 +462,7 @@ vtalloc(void)
     if (term.maxrows > vrows) {
 	GROW(vscreen, VIDEO *, vrows, term.maxrows);
 	GROW(pscreen, VIDEO *, vrows, term.maxrows);
+	GROW(lmap0, LMAP, vrows, (term.maxrows + 1));
 	GROW(lmap, LMAP, vrows, (term.maxrows + 1));
     } else {
 	for (i = term.maxrows; i < vrows; i++) {
@@ -479,6 +506,7 @@ vtfree(void)
 	free((char *) pscreen);
 	pscreen = 0;
     }
+    FreeIfNeeded(lmap0);
     FreeIfNeeded(lmap);
 }
 #endif
@@ -613,7 +641,6 @@ vtputc(WINDOW *wp, const char *src, unsigned limit)
 	    }
 #endif
 #ifdef WMDLINEWRAP
-	    /* FIXME - account for nu_width */
 	    if ((allow_wrap != 0)
 		&& w_val(wp, WMDLINEBREAK)
 		&& w_val(wp, WMDLINEWRAP)
@@ -626,6 +653,13 @@ vtputc(WINDOW *wp, const char *src, unsigned limit)
 		if (n < limit)
 		    ++n;
 		if ((int) n > have) {
+#if OPT_EXTRA_COLOR
+		    int *attrp = lookup_extra_color(XCOLOR_LINEBREAK);
+		    if (!isEmpty(attrp)) {
+			preset_vattrs(vtrow, vtcol, *attrp,
+				      (size_t) (term.cols - vtcol));
+		    }
+#endif /* OPT_EXTRA_COLOR */
 		    while (vtcol < term.cols)
 			VideoText(vp)[vtcol++] = ' ';
 		    vtcol = 0;
@@ -745,8 +779,10 @@ vtlistc(WINDOW *wp, const char *src, unsigned limit)
 		    int nulls = cells;
 		    /* have to account for split-characters... */
 		    while (cells-- > 0 && vtcol <= lastcol) {
-			if (vtcol >= 0)
-			    VideoText(vp)[vtcol] = MRK_EXTEND_RIGHT[0];
+			if (vtcol >= 0) {
+			    VideoText(vp)[vtcol] = ((VIDEO_TEXT)
+						    MRK_EXTEND_RIGHT[0]);
+			}
 			++vtcol;
 		    }
 #ifdef WMDLINEWRAP
@@ -891,6 +927,14 @@ vtset(LINE *lp, WINDOW *wp)
 		right_num(temp, NU_WIDTH - NU_GUTTER, (long) line),
 		(size_t) (NU_WIDTH - NU_GUTTER));
 	vtputsn(wp, "  ", (size_t) NU_GUTTER);
+#if OPT_EXTRA_COLOR
+	{
+	    int *attrp = lookup_extra_color(XCOLOR_LINENUMBER);
+	    if (!isEmpty(attrp)) {
+		preset_vattrs(vtrow, 0, *attrp, (NU_WIDTH - NU_GUTTER));
+	    }
+	}
+#endif /* OPT_EXTRA_COLOR */
 	horscroll = skip - vtcol;
 
 	/* account for leading fill; this repeats logic in vtputc so
@@ -982,6 +1026,11 @@ vtset(LINE *lp, WINDOW *wp)
 	TRACE2(("TEXT %4d:%s\n",
 		save_vtrow,
 		visible_video_text(vscreen[save_vtrow]->v_text,
+				   (save_vtrow == vtrow)
+				   ? vtcol
+				   : term.cols)));
+	TRACE3(("ATTR     :%s\n",
+		visible_video_attr(vscreen[save_vtrow]->v_attrs,
 				   (save_vtrow == vtrow)
 				   ? vtcol
 				   : term.cols)));
@@ -1078,17 +1127,18 @@ mk_to_vcol(WINDOW *wp, MARK mark, int expanded, int column, int adjust)
 	c0 = ch;
 	ch = text[i];
 #ifdef WMDLINEWRAP
-	/* FIXME - account for nu_width */
 	if (column != 0
 	    && w_val(wp, WMDLINEBREAK)
 	    && w_val(wp, WMDLINEWRAP)
 	    && isBlank(c0)) {
-	    int k = cols_until(text + i, llength(lp) - i);
+	    int k = (int) cols_until(text + i, (unsigned) (llength(lp) - i));
 	    int wide = term.cols;
 	    int have;
 
+#if 0
 	    if ((k + i) < llength(lp))
 		++k;
+#endif
 	    have = (column % wide) + k;
 	    if (have >= wide) {
 		int wrap = (column / wide);
@@ -1289,7 +1339,7 @@ dot_to_vcol(WINDOW *wp)
 	       wp->w_dot.o,
 	       wt->w_left_dot.o, use_off,
 	       wt->w_left_col));
-	//result = check;
+	result = check;
     }
 #endif
 #else
@@ -1701,12 +1751,11 @@ offs2col0(WINDOW *wp,
 #endif
 	    if (isPrint(ch)) {
 #ifdef WMDLINEWRAP
-		/* FIXME - account for nu_width */
 		if (column != 0
 		    && w_val(wp, WMDLINEBREAK)
 		    && w_val(wp, WMDLINEWRAP)
 		    && isBlank(c0)) {
-		    int k = cols_until(text + n, offset - n);
+		    int k = (int) cols_until(text + n, (unsigned) (offset - n));
 		    int wide = term.cols;
 		    int have;
 
@@ -2241,8 +2290,11 @@ update_window_attrs(WINDOW *wp)
      * of all attributes.
      */
     /* FIXME: color; need to set to value indicating fg and bg for window */
-    for (i = wp->w_toprow + wp->w_ntrows - 1; i >= wp->w_toprow; i--)
-	set_vattrs(i, 0, 0, (size_t) term.cols);
+    for (i = wp->w_toprow + wp->w_ntrows - 1; i >= wp->w_toprow; i--) {
+	set_vattrs(i,
+		   lmap0[i].left, 0,
+		   (size_t) (lmap0[i].right - lmap0[i].left));
+    }
 
 #if OPT_LINE_ATTRS
     update_line_attrs(wp);
@@ -2544,6 +2596,7 @@ update_cursor_position(int *screenrowp, int *screencolp)
     int nuadj = is_empty_buf(curwp->w_bufp) ? 0 : nu_width(curwp);
     int liadj = (w_val(curwp, WMDLIST)) ? 1 : 0;
 
+    TRACE2((T_CALLED "update_cursor_position\n"));
     /* find the current row */
     lp = curwp->w_line.l;
     currow = TopRow(curwp);
@@ -2589,7 +2642,8 @@ update_cursor_position(int *screenrowp, int *screencolp)
 	    *screenrowp = i;
 	    *screencolp = term.cols - 1;
 	}
-	return FALSE;
+	TRACE2(("... (%d,%d)\n", *screenrowp, *screencolp));
+	return2Code(FALSE);
     } else
 #endif
 	*screenrowp = currow;
@@ -2626,7 +2680,8 @@ update_cursor_position(int *screenrowp, int *screencolp)
     }
     if (!moved)
 	*screencolp += nuadj;
-    return moved;
+    TRACE2(("... (%d,%d)\n", *screenrowp, *screencolp));
+    return2Code(moved);
 }
 
 #if CAN_SCROLL
@@ -3873,7 +3928,7 @@ reframe_cursor_position(WINDOW *wp)
 	&&lp != wp->w_line.l) {	/* no need to set it if already there */
 	wp->w_line.l = lp;
 	wp->w_flag |= WFHARD;
-	wp->w_flag &= (USHORT) (~WFFORCE);
+	clr_typed_flags(wp->w_flag, USHORT, WFFORCE);
     }
 #ifdef WMDLINEWRAP
     /*
@@ -3887,17 +3942,17 @@ reframe_cursor_position(WINDOW *wp)
 	if (want + wp->w_line.o >= wp->w_ntrows) {
 	    wp->w_line.o = wp->w_ntrows - want - 1;
 	    wp->w_flag |= WFHARD;
-	    wp->w_flag &= (USHORT) (~WFFORCE);
+	    clr_typed_flags(wp->w_flag, USHORT, WFFORCE);
 	} else if (want + wp->w_line.o < 0) {
 	    wp->w_line.o = -want;
 	    wp->w_flag |= WFHARD;
-	    wp->w_flag &= (USHORT) (~WFFORCE);
+	    clr_typed_flags(wp->w_flag, USHORT, WFFORCE);
 	}
     } else if (!w_val(wp, WMDLINEWRAP)) {
 	if (wp->w_line.o < 0) {
 	    wp->w_line.o = 0;
 	    wp->w_flag |= WFHARD;
-	    wp->w_flag &= (USHORT) (~WFFORCE);
+	    clr_typed_flags(wp->w_flag, USHORT, WFFORCE);
 	}
     }
 #endif
@@ -3994,6 +4049,7 @@ update(int force /* force update past type ahead? */ )
 
     beginDisplay();
 
+    preset_lmap0();
 #if OPT_TITLE
     /*
      * Only update the title when we have nothing better to do.  The
@@ -4070,7 +4126,7 @@ update(int force /* force update past type ahead? */ )
 	} else if (wp->w_flag & WFSTAT) {
 	    wp->w_flag |= WFMODE;
 	}
-	wp->w_flag &= (USHORT) (~WFSTAT);
+	clr_typed_flags(wp->w_flag, USHORT, WFSTAT);
     }
 #endif
 
@@ -4084,7 +4140,7 @@ update(int force /* force update past type ahead? */ )
 		reframe_cursor_position(wp);	/* check the framing */
 		if (wp->w_flag & (WFKILLS | WFINS)) {
 		    scrflags |= (wp->w_flag & (WFINS | WFKILLS));
-		    wp->w_flag &= (USHORT) (~(WFKILLS | WFINS));
+		    clr_typed_flags(wp->w_flag, USHORT, WFKILLS | WFINS);
 		}
 		if ((wp->w_flag & ~(WFMODE)) == WFEDIT)
 		    update_oneline(wp);		/* update EDITed line */
@@ -4194,8 +4250,9 @@ hilite(int row, int colfrom, int colto, int on)
 		vscreen[row]->v_attrs[col] |= VAREV;
 	} else {
 	    int col;
-	    for (col = colfrom; col < colto; col++)
-		vscreen[row]->v_attrs[col] &= (VIDEO_ATTR) (~VAREV);
+	    for (col = colfrom; col < colto; col++) {
+		clr_typed_flags(vscreen[row]->v_attrs[col], VIDEO_ATTR, VAREV);
+	    }
 	}
 	vscreen[row]->v_flag |= VFCHG;
 	update_line(row, 0, term.cols);

@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.728 2011/04/13 08:32:57 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.733 2011/11/04 21:39:43 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -181,7 +181,7 @@
  * probably correct for MSC (Microsoft C) and ZTC (Zortech), but I'm not
  * sure of those.  (It implies a lot of ANSI and POSIX behavior.)
  */
-#if CC_TURBO || CC_WATCOM || CC_MSC || CC_DJGPP || SYS_WINNT || CC_CSETPP || CC_MSVC || CC_LCC_WIN32 || SYS_OS2_EMX 
+#if CC_TURBO || CC_WATCOM || CC_MSC || CC_DJGPP || SYS_WINNT || CC_CSETPP || CC_MSVC || CC_LCC_WIN32 || SYS_OS2_EMX
 # define CC_NEWDOSCC 1
 #endif
 
@@ -834,6 +834,9 @@ extern	char *	sys_errlist[];
 #define	lBIT(n)	((ULONG)(1L<<(n)))
 #define	iBIT(n) ((UINT)(1 <<(n)))
 
+#define clr_typed_flags(dst,type,flags)  (dst) = (type) ((dst) & ~(flags))
+#define clr_flags(dst,flags)             (dst) = ((dst) & ~(flags))
+
 #if !(defined(HAVE_STRCHR) && defined(HAVE_STRRCHR))
 #define USE_INDEX 1
 #endif
@@ -972,10 +975,14 @@ extern int MainProgram(int argc, char *argv[]);
 #endif
 
 	/* semaphore may be needed to prevent interrupt of display-code */
-#if defined(SIGWINCH) || OPT_WORKING
-# if OPT_TRACE > 2
+#if OPT_WORKING && OPT_TRACE
 extern void beginDisplay(void);
 extern void endofDisplay(void);
+#endif
+
+#if defined(SIGWINCH) || OPT_WORKING
+# if OPT_WORKING && (OPT_TRACE > 2)
+	/* no macros */
 # else
 # define beginDisplay() ++im_displaying
 # define endofDisplay() if (im_displaying > 0) --im_displaying; else assert(im_displaying > 0)
@@ -1226,6 +1233,8 @@ typedef enum {
 	, XCOLOR_ENUM
 	, XCOLOR_HYPERTEXT
 	, XCOLOR_ISEARCH
+	, XCOLOR_LINEBREAK
+	, XCOLOR_LINENUMBER
 	, XCOLOR_MODELINE
 	, XCOLOR_NUMBER
 	, XCOLOR_REGEX
@@ -1776,7 +1785,7 @@ typedef struct	LINE {
 
 #define lismarked(lp)		((lp)->l.l_flag & LGMARK)
 #define lsetmarked(lp)		((lp)->l.l_flag |= LGMARK)
-#define lsetnotmarked(lp)	((lp)->l.l_flag &= (USHORT) ~LGMARK)
+#define lsetnotmarked(lp)	(clr_typed_flags((lp)->l.l_flag, USHORT, LGMARK))
 #define lflipmark(lp)		((lp)->l.l_flag ^= LGMARK)
 
 #define listrimmed(lp)		((lp)->l.l_flag & LTRIMMED)
@@ -3177,6 +3186,12 @@ extern void show_elapsed(void);
 #define return2Ptr(c)     return(c)
 #define return2String(c)  return(c)
 #define return2Void()     return
+#endif
+
+#if OPT_TRACE > 2
+#define TRACE3(params)    TRACE(params)
+#else
+#define TRACE3(params) /*nothing*/
 #endif
 
 #if OPT_EVAL || OPT_DEBUGMACROS

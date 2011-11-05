@@ -1,6 +1,7 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20110928 (f)
+ 20111104 (f)
+	+ add extra-colors settings for linenumber and linebreak.
 	+ modify makemode to use tabinsert, allowing notabinsert to be a
 	  default in other mode (patch by Anthony Shipman).
 	+ add erlang syntax highlighter and majormode (patch by Anthony
@@ -14,7 +15,7 @@ Changes for vile 9.9 (released ??? ??? ?? ????)
 	+ adapt/use multi-package feature of Fedora rpm script.
 	+ modify dpkg and rpm scripts to install lxvile.
 	+ add build-dependency for dpkg test-script against libperl-dev
-	+ several configure macro updates, from lynx/ncurses/xterm:
+	+ several configure macro updates, from lynx/ncurses/tctest/xterm:
 	  + CF_ANSI_CC_CHECK - do a sanity check on $CC; occasional users add
 	    options directly to it rather than follow the standards by setting
 	    $CFLAGS and/or $CPPFLAGS.
@@ -25,6 +26,7 @@ Changes for vile 9.9 (released ??? ??? ?? ????)
 	    two return-statements in a row it omitted the _first_ one.  Also
 	    add expression to pointer check to help FreeBSD's linker decide it
 	    should be validated.  Just an assignment was not enough.
+	  + CF_CURSES_LIBS - add check for NetBSD's otermcap
 	  + CF_CURSES_HEADER - change order for curses.h / ncurses.h pairs to
 	    put ncurses.h first, which will tend to provide the same #define's
 	    as in CF_NCURSES_HEADER (report by Dennis Preiser).
@@ -55,7 +57,8 @@ Changes for vile 9.9 (released ??? ??? ?? ????)
 	    and should fail if there is no termcap library installed.
 	  + CF_XOPEN_CURSES - fix typo in the workaround for
 	    _XOPEN_SOURCE_EXTENDED
-	  + CF_XOPEN_SOURCE - extend aix case to aix 7.x
+	  + CF_XOPEN_SOURCE - extend aix case to aix 7.x, modify checks to
+	    prefer _XOPEN_SOURCE vs _XOPEN_SOURCE_EXTENDED.
 	  + CF_X_ATHENA_LIBS - DragonFlyBSD's pkgsrc combines Xaw6 and Xaw7
 	    into a single package, and doesn't provide a plain "libXaw.so"
 	    symlink.  Work around by testing for the 6/7 versions.

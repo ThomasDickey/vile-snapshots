@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.362 2011/04/07 22:32:03 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.363 2011/11/04 21:45:03 tom Exp $
  *
  */
 
@@ -1284,7 +1284,7 @@ btree_walk(BI_NODE * node, int (*func) (BI_NODE *, const void *),
 static int
 clearflag_func(BI_NODE * n, const void *d GCC_UNUSED)
 {
-    n->value.n_flags &= (UCHAR) (~NBST_DONE);
+    clr_typed_flags(n->value.n_flags, UCHAR, NBST_DONE);
     return 0;
 }
 
