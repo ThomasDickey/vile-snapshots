@@ -6,7 +6,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.363 2011/04/07 00:55:35 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.364 2011/11/03 10:44:53 tom Exp $
  */
 
 #ifndef VILE_EDEF_H
@@ -219,6 +219,7 @@ decl_init( int filter_only, FALSE );	/* command-line -F option	*/
 
 decl_uninit( int vtrow );		/* Row location of SW cursor	*/
 decl_uninit( int vtcol );		/* Column location of SW cursor */
+decl_uninit( int vtcol0 );		/* Column location of first row */
 decl_init( int ttrow, VL_HUGE );	/* Row location of HW cursor	*/
 decl_init( int ttcol, VL_HUGE );	/* Column location of HW cursor */
 decl_uninit( int horscroll );		/* line offset when displaying	*/

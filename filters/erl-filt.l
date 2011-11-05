@@ -3,6 +3,8 @@
 %{
 
 /*
+    $Id: erl-filt.l,v 1.3 2011/10/31 10:48:41 tom Exp $
+
     Filter to add vile "attribution" sequences to selected bits of Erlang
     input text.
 
@@ -46,7 +48,7 @@ DECIMAL		-?([0-9]+#)?([0-9]+)
 REAL		-?([0-9]*\.[0-9]+)([eE][~]?[0-9]+)?
 SATOM		[a-z][a-zA-Z_0-9@]*
 QATOM		'[^']*'
-VAR		[A-Z_][a-zA-Z_0-9@]*
+VAR		([A-Z][a-zA-Z_0-9@]*|[A-Z][a-zA-Z_0-9@]+)
 
 ATOM		{SATOM}|{QATOM}
 NUMBER		{DECIMAL}|{REAL}

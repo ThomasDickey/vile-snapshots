@@ -5,7 +5,7 @@
  * keys. Like everyone else, they set hints
  * for the display system.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.350 2011/04/07 08:58:37 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.351 2011/11/04 21:45:52 tom Exp $
  *
  */
 
@@ -1784,7 +1784,7 @@ killbuffer(int f, int n)
 	DOT = save_DOT;
 	DOT.o = getgoal(DOT.l);
 	curwp->w_line = save_TOP;
-	curwp->w_flag &= (USHORT) ~ WFMOVE;
+	clr_typed_flags(curwp->w_flag, USHORT, WFMOVE);
     }
 #endif
     return s;

@@ -1,7 +1,7 @@
 /*
  * debugging support -- tom dickey.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.102 2010/05/01 15:34:13 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.106 2011/11/04 00:52:28 tom Exp $
  *
  */
 
@@ -363,6 +363,25 @@ my_vischr(char *buffer, int ch)
     return buffer;
 }
 
+static char *
+my_visattr(char *buffer, int ch)
+{
+    if (ch & (VACOLOR | VASPCOL)) {
+	*buffer = 'C';
+    } else if (ch & VASEL) {
+	*buffer = 'S';
+    } else if (ch & VAREV) {
+	*buffer = 'R';
+    } else if (ch & VAUL) {
+	*buffer = '_';
+    } else if (ch) {
+	*buffer = '#';
+    } else {
+	*buffer = '.';
+    }
+    return buffer;
+}
+
 char *
 trace_indent(int level, int marker)
 {
@@ -442,6 +461,35 @@ visible_video_text(const VIDEO_TEXT * buffer, int length)
 	char *dst = result + k;
 	my_vischr(dst, c);
 	k += (unsigned) strlen(dst);
+    }
+    result[k] = 0;
+    endofDisplay();
+    return result;
+}
+
+char *
+visible_video_attr(const VIDEO_ATTR * buffer, int length)
+{
+    int j;
+    unsigned k = 0;
+    unsigned need = (unsigned) (((length > 0) ? length : 0) + 1);
+    char *result;
+
+    beginDisplay();
+    if (buffer == 0) {
+	static const VIDEO_ATTR dummy[] =
+	{0};
+	buffer = dummy;
+	length = 0;
+    }
+
+    result = alloc_visible(need);
+
+    for (j = 0; j < length; j++) {
+	int c = buffer[j] & ((1 << (8 * sizeof(VIDEO_ATTR))) - 1);
+	char *dst = result + k;
+	my_visattr(dst, c);
+	++k;
     }
     result[k] = 0;
     endofDisplay();
@@ -1049,12 +1097,13 @@ trace_ctype(CHARTYPE *table, int first, int last)
     }
 }
 
-#if OPT_WORKING && (OPT_TRACE > 2)
+#if OPT_WORKING
 #undef beginDisplay
 void
 beginDisplay(void)
 {
-    Trace(T_CALLED "beginDisplay(%d)\n", ++im_displaying);
+    ++im_displaying;
+    TRACE2((T_CALLED "beginDisplay(%d)\n", im_displaying));
 }
 
 #undef endofDisplay
@@ -1063,7 +1112,7 @@ endofDisplay(void)
 {
     assert(im_displaying > 0);
     --im_displaying;
-    returnVoid();		/* matches beginDisplay */
+    return2Void();		/* matches beginDisplay */
 }
 #endif
 
