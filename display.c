@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.544 2011/11/04 21:44:15 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.547 2011/11/15 10:12:44 tom Exp $
  *
  */
 
@@ -1101,6 +1101,9 @@ mk_to_vcol(WINDOW *wp, MARK mark, int expanded, int column, int adjust)
     int extra = ((!global_g_val(GMDALTTABPOS) && !insertmode) ? 1 : 0);
     const char *text;
     int prev_col = column;
+#ifdef WMDLINEWRAP
+    int first_wide = term.cols - nu_width(wp);
+#endif
 
     TRACE2((T_CALLED "mk_to_vcol(mark.o=%d, col=%d, adjust=%d) extra %d\n",
 	    mark.o, column, adjust, extra));
@@ -1132,14 +1135,14 @@ mk_to_vcol(WINDOW *wp, MARK mark, int expanded, int column, int adjust)
 	    && w_val(wp, WMDLINEWRAP)
 	    && isBlank(c0)) {
 	    int k = (int) cols_until(text + i, (unsigned) (llength(lp) - i));
-	    int wide = term.cols;
+	    int wide = ((column >= first_wide) ? term.cols : first_wide);
 	    int have;
 
-#if 0
-	    if ((k + i) < llength(lp))
-		++k;
-#endif
-	    have = (column % wide) + k;
+	    if (column >= first_wide) {
+		have = ((column + nu_width(wp)) % wide) + k;
+	    } else {
+		have = (column % wide) + k;
+	    }
 	    if (have >= wide) {
 		int wrap = (column / wide);
 		int need = (wrap + 1) * wide;
@@ -1230,31 +1233,71 @@ dot_to_vcol(WINDOW *wp)
     }
 #ifdef WMDLINEWRAP
     if (w_val(wp, WMDLINEWRAP)) {
+	int on_1st = (nu_width(wp) + w_left_margin(wp));
 	int lo = wt->w_left_dot.o;
 	int hi = lo + term.cols;	/* estimate (may be lower) */
+	int inside;
 	int row;
 	int col = wt->w_left_col;
-	int tmp = (nu_width(wp) + w_left_margin(wp));
 
-	if (wp->w_dot.o < lo
-	    || wp->w_dot.o >= hi) {
+	/*
+	 * Normally 'hi' is a good estimate since each column in the display
+	 * corresponds to one or more bytes of the displayed data.  But if we
+	 * are in linebreak mode, then we can get some extra columns on each
+	 * row.  That can make the estimate too high, causing the chunk of
+	 * code tested by 'inside' to not be executed.
+	 *
+	 * FIXME - it would be nice to cache the offset corresponding to the
+	 * right-limit of the row containing dot, e.g., wt->w_right_dot.o
+	 */
+	if (w_val(wp, WMDLINEBREAK)) {
+	    int chk = hi;
+	    int tst;
+	    char *text = lvalue(wp->w_dot.l);
+
+	    while (chk < llength(wp->w_dot.l) && !isBlank(text[chk])) {
+		++chk;
+	    }
+	    tst = offs2col(wp, wp->w_dot.l, chk);
+	    if (tst > hi) {
+		chk = hi;
+		do {
+		    while (chk >= 0 && !isBlank(text[chk])) {
+			--chk;
+		    }
+		    tst = offs2col(wp, wp->w_dot.l, chk);
+		} while (--chk >= 0 && tst > hi);
+	    }
+	    hi = tst;
+	}
+
+	inside = (wp->w_dot.o >= lo && wp->w_dot.o < hi);
+	TRACE(("dot.o %d is %s [%d..%d]\n",
+	       wp->w_dot.o,
+	       inside ? "inside" : "NOT inside",
+	       lo, hi - 1));
+
+	if (!inside) {
 	    col = offs2col(wp, wt->w_left_dot.l, wp->w_dot.o);
 	    TRACE(("offs2col(%d) = %d\n", wp->w_dot.o, col));
-	    TRACE(("...in row %d\n", col % term.cols));
 	    row = col / term.cols;
+	    TRACE(("...in row %d\n", row));
 	    col = row * term.cols;
-	    if (row != 0)
-		col -= (nu_width(wp) + w_left_margin(wp));
+	    if (row == 0)
+		col -= on_1st;
 	    TRACE(("...row %d ends with col %d\n", row, col));
 	}
+
 	if (wt->w_left_col != col) {
 	    TRACE(("left_col %d vs %d\n", wt->w_left_col, col));
 	    wt->w_left_col = col;
-	    wt->w_left_dot.o = col2offs(wp, wt->w_left_dot.l, col + tmp);
+	    wt->w_left_dot.o = col2offs(wp, wt->w_left_dot.l, col + on_1st);
+	    TRACE(("...left_dot.o:%d\n", wt->w_left_dot.o));
 
-	    col -= (offs2col(wp, wt->w_left_dot.l, wt->w_left_dot.o) - tmp);
+	    col -= (offs2col(wp, wt->w_left_dot.l, wt->w_left_dot.o) - on_1st);
 	    TRACE(("...adjust:%d\n", col));
 	    wt->w_left_col -= col;
+	    TRACE(("...left_col now %d\n", wt->w_left_col));
 	}
     } else
 #endif
