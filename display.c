@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.547 2011/11/15 10:12:44 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.550 2011/11/20 19:46:35 tom Exp $
  *
  */
 
@@ -1102,7 +1102,7 @@ mk_to_vcol(WINDOW *wp, MARK mark, int expanded, int column, int adjust)
     const char *text;
     int prev_col = column;
 #ifdef WMDLINEWRAP
-    int first_wide = term.cols - nu_width(wp);
+    int nu_adj = nu_width(wp);
 #endif
 
     TRACE2((T_CALLED "mk_to_vcol(mark.o=%d, col=%d, adjust=%d) extra %d\n",
@@ -1134,20 +1134,17 @@ mk_to_vcol(WINDOW *wp, MARK mark, int expanded, int column, int adjust)
 	    && w_val(wp, WMDLINEBREAK)
 	    && w_val(wp, WMDLINEWRAP)
 	    && isBlank(c0)) {
+	    int nu_col = (column + nu_adj);
 	    int k = (int) cols_until(text + i, (unsigned) (llength(lp) - i));
-	    int wide = ((column >= first_wide) ? term.cols : first_wide);
-	    int have;
+	    int wide = term.cols;
+	    int have = (nu_col % wide) + k;
 
-	    if (column >= first_wide) {
-		have = ((column + nu_width(wp)) % wide) + k;
-	    } else {
-		have = (column % wide) + k;
-	    }
 	    if (have >= wide) {
-		int wrap = (column / wide);
+		int wrap = (nu_col / wide);
 		int need = (wrap + 1) * wide;
-		prev_col = need;
-		column = need;
+		nu_col = need;
+		column = nu_col - nu_adj;
+		prev_col = column;
 	    }
 	}
 #endif
@@ -1756,6 +1753,7 @@ offs2col0(WINDOW *wp,
 	BUFFER *bp = wp->w_bufp;
 	int rs = use_record_sep(bp);
 	int length = llength(lp);
+	int nums = nu_width(wp);
 	int tabs = tabstop_val(wp->w_bufp);
 	int list = w_val(wp, WMDLIST);
 	int last = (list ? (N_chars * 2) : rs);
@@ -1799,16 +1797,15 @@ offs2col0(WINDOW *wp,
 		    && w_val(wp, WMDLINEWRAP)
 		    && isBlank(c0)) {
 		    int k = (int) cols_until(text + n, (unsigned) (offset - n));
+		    int col2 = column + nums;
 		    int wide = term.cols;
 		    int have;
 
-		    if (k + n < offset)
-			++k;
-		    have = (column % wide) + k;
+		    have = (col2 % wide) + k;
 		    if (have >= wide) {
-			int wrap = (column / wide);
+			int wrap = (col2 / wide);
 			int need = (wrap + 1) * wide;
-			column = need;
+			column = need - nums;
 		    }
 		}
 #endif
@@ -1830,7 +1827,7 @@ offs2col0(WINDOW *wp,
 	    *cache_column = column;
 	}
 
-	column += (nu_width(wp) + w_left_margin(wp) - left);
+	column += (nums + w_left_margin(wp) - left);
     }
     return column;
 }
@@ -1850,10 +1847,11 @@ offs2col(WINDOW *wp, LINE *lp, C_NUM offset)
 int
 col2offs(WINDOW *wp, LINE *lp, C_NUM col)
 {
+    int nums = nu_width(wp);
     int tabs = tabstop_val(wp->w_bufp);
     int list = w_val(wp, WMDLIST);
     int left = if_LINEWRAP(wp, 0, w_val(wp, WVAL_SIDEWAYS));
-    int goal = col + left - nu_width(wp) - w_left_margin(wp);
+    int goal = col + left - nums - w_left_margin(wp);
 
     C_NUM n;
     C_NUM offset;
@@ -1868,6 +1866,28 @@ col2offs(WINDOW *wp, LINE *lp, C_NUM col)
 	    ) {
 	    int c = text[offset];
 	    int used = 1;
+
+#ifdef WMDLINEWRAP
+	    /*
+	     * A linebreak can happen after whitespace.  To avoid a confusing
+	     * display, we avoid doing the linebreak at the beginning or in the
+	     * middle of whitespace.  Also, we disallow linebreak at the
+	     * beginning of a line.
+	     */
+	    if (offset != 0
+		&& w_val(wp, WMDLINEBREAK)
+		&& w_val(wp, WMDLINEWRAP)
+		&& isBlank(text[offset - 1])
+		&& !isBlank(text[offset])) {
+		unsigned n2 = cols_until(text + offset, len - offset);
+		int col1 = ((n + nums) % term.cols);
+		int col2 = col1 + n2;
+		if (col2 >= term.cols) {
+		    n += (term.cols - col1);
+		}
+	    }
+#endif
+
 #if OPT_MULTIBYTE
 	    if (b_is_utfXX(wp->w_bufp) && !isTab(c)) {
 		int nxt = len - offset;
@@ -1880,9 +1900,6 @@ col2offs(WINDOW *wp, LINE *lp, C_NUM col)
 	    } else
 #endif
 	    if (isPrint(c)) {
-#ifdef WMDLINEWRAP
-		/* FIXME - account for linebreak */
-#endif
 		n++;
 	    } else if (list || !isTab(c)) {
 		n += column_sizes(wp, text + offset, (UINT) (len - offset), &used);
