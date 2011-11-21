@@ -1,4 +1,4 @@
-MANIFEST for vile, version v9_8e10
+MANIFEST for vile, version v9_8e11
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 AUTHORS                         list of authors, with nicknames in CHANGES
@@ -387,10 +387,13 @@ filters/xsl.key                 keywords for xsl files
 filters/yacc.key                yacc keywords
 filters/yaccfilt.l              yacc syntax highlighting filter for vile
 icons                           subdirectory
+icons/pumpkin.ico               V-eyes pumpkin icon
 icons/pumpkin.xbm               X bitmap, for vile icon
 icons/pumpkin.xpm               pumpkin icon, in Xpm form
+icons/sink.ico                  kitchen-sink icon (J.R.Sladkey)
 icons/sink.xbm                  X bitmap, for vile icon
 icons/sink.xpm                  X bitmap for vile icon
+icons/vile.ico                  Windows icon, for vile
 icons/vile.xbm                  sample icon, for X bitmap
 icons/vile.xpm                  sample icon, for xpm library
 macros                          subdirectory

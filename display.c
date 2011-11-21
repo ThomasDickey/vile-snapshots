@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.550 2011/11/20 19:46:35 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.552 2011/11/21 18:34:46 tom Exp $
  *
  */
 
@@ -1262,7 +1262,11 @@ dot_to_vcol(WINDOW *wp)
 		    while (chk >= 0 && !isBlank(text[chk])) {
 			--chk;
 		    }
-		    tst = offs2col(wp, wp->w_dot.l, chk);
+		    if (chk >= 0) {
+			tst = offs2col(wp, wp->w_dot.l, chk);
+		    } else {
+			break;
+		    }
 		} while (--chk >= 0 && tst > hi);
 	    }
 	    hi = tst;
@@ -1276,23 +1280,28 @@ dot_to_vcol(WINDOW *wp)
 
 	if (!inside) {
 	    col = offs2col(wp, wt->w_left_dot.l, wp->w_dot.o);
-	    TRACE(("offs2col(%d) = %d\n", wp->w_dot.o, col));
+	    TRACE(("w_dot offs2col(%d) = %d\n", wp->w_dot.o, col));
 	    row = col / term.cols;
 	    TRACE(("...in row %d\n", row));
 	    col = row * term.cols;
 	    if (row == 0)
 		col -= on_1st;
-	    TRACE(("...row %d ends with col %d\n", row, col));
+	    TRACE(("...row %d begins with col %d\n", row, col));
 	}
 
 	if (wt->w_left_col != col) {
 	    TRACE(("left_col %d vs %d\n", wt->w_left_col, col));
 	    wt->w_left_col = col;
-	    wt->w_left_dot.o = col2offs(wp, wt->w_left_dot.l, col + on_1st);
-	    TRACE(("...left_dot.o:%d\n", wt->w_left_dot.o));
+
+	    wt->w_left_dot.o = (col2offs(wp, wt->w_left_dot.l, col + on_1st)
+				- 1);
+	    TRACE(("...left_dot col2offs(%d) = %d\n",
+		   col + on_1st, wt->w_left_dot.o));
 
 	    col -= (offs2col(wp, wt->w_left_dot.l, wt->w_left_dot.o) - on_1st);
-	    TRACE(("...adjust:%d\n", col));
+	    TRACE(("...left_dot offs2col(%d) - %d = %d\n",
+		   wt->w_left_dot.o, on_1st, col));
+
 	    wt->w_left_col -= col;
 	    TRACE(("...left_col now %d\n", wt->w_left_col));
 	}
@@ -1796,7 +1805,7 @@ offs2col0(WINDOW *wp,
 		    && w_val(wp, WMDLINEBREAK)
 		    && w_val(wp, WMDLINEWRAP)
 		    && isBlank(c0)) {
-		    int k = (int) cols_until(text + n, (unsigned) (offset - n));
+		    int k = (int) cols_until(text + n, (unsigned) (length - n));
 		    int col2 = column + nums;
 		    int wide = term.cols;
 		    int have;

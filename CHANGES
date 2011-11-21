@@ -1,6 +1,6 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20111104 (f)
+ 20111121 (f)
 	+ add extra-colors settings for linenumber and linebreak.
 	+ modify makemode to use tabinsert, allowing notabinsert to be a
 	  default in other mode (patch by Anthony Shipman).
