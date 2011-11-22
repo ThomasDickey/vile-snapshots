@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.552 2011/11/21 18:34:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.555 2011/11/22 01:07:52 tom Exp $
  *
  */
 
@@ -598,17 +598,48 @@ current_limit(void)
 	    : term.cols);
 }
 
+/*
+ * Given an offset limit and a string, find the offset of the first blank
+ * within that limit.  Compute the corresponding number of columns.
+ */
 static unsigned
-cols_until(const char *src, unsigned limit)
+cols_until(WINDOW *wp, const char *src, unsigned limit)
 {
     unsigned n;
+    unsigned cols = 0;
 
     for (n = 0; n < limit; ++n) {
 	if (isBlank(src[n])) {
 	    break;
 	}
+#if OPT_MULTIBYTE
+	if (b_is_utfXX(wp->w_bufp)) {
+	    int used = 1;
+	    int nxt = limit - n;
+	    int adj = column_sizes(wp, src + n, nxt, &used);
+
+	    if (adj == COLS_UTF8
+		&& !w_val(wp, WMDUNICODE_AS_HEX)) {
+		UINT target;
+		int ch2;
+
+		if (vl_conv_to_utf32(&target,
+				     src + n,
+				     (B_COUNT) (limit - n)) > 0) {
+		    ch2 = (int) target;
+		} else {
+		    ch2 = CharOf(src[n]);
+		}
+		if (FontHasGlyph(ch2)) {
+		    adj = mb_cellwidth(wp, src + n, nxt);
+		}
+	    }
+	    cols += adj;
+	    n += (used - 1);
+	}
+#endif
     }
-    return n;			/* FIXME convert to columns */
+    return cols;
 }
 
 /*
@@ -647,7 +678,7 @@ vtputc(WINDOW *wp, const char *src, unsigned limit)
 		&& vtcol > 0
 		&& VideoText(vp)[vtcol - 1] == ' '
 		&& !isBlank(ch)) {
-		unsigned n = cols_until(src, limit);
+		unsigned n = cols_until(wp, src, limit);
 		int have = term.cols - vtcol;
 
 		if (n < limit)
@@ -1135,7 +1166,7 @@ mk_to_vcol(WINDOW *wp, MARK mark, int expanded, int column, int adjust)
 	    && w_val(wp, WMDLINEWRAP)
 	    && isBlank(c0)) {
 	    int nu_col = (column + nu_adj);
-	    int k = (int) cols_until(text + i, (unsigned) (llength(lp) - i));
+	    int k = (int) cols_until(wp, text + i, (unsigned) (llength(lp) - i));
 	    int wide = term.cols;
 	    int have = (nu_col % wide) + k;
 
@@ -1283,9 +1314,9 @@ dot_to_vcol(WINDOW *wp)
 	    TRACE(("w_dot offs2col(%d) = %d\n", wp->w_dot.o, col));
 	    row = col / term.cols;
 	    TRACE(("...in row %d\n", row));
-	    col = row * term.cols;
-	    if (row == 0)
-		col -= on_1st;
+	    col = row * term.cols - on_1st;
+	    if (col < 0)
+		col = 0;
 	    TRACE(("...row %d begins with col %d\n", row, col));
 	}
 
@@ -1293,17 +1324,9 @@ dot_to_vcol(WINDOW *wp)
 	    TRACE(("left_col %d vs %d\n", wt->w_left_col, col));
 	    wt->w_left_col = col;
 
-	    wt->w_left_dot.o = (col2offs(wp, wt->w_left_dot.l, col + on_1st)
-				- 1);
-	    TRACE(("...left_dot col2offs(%d) = %d\n",
-		   col + on_1st, wt->w_left_dot.o));
-
-	    col -= (offs2col(wp, wt->w_left_dot.l, wt->w_left_dot.o) - on_1st);
-	    TRACE(("...left_dot offs2col(%d) - %d = %d\n",
-		   wt->w_left_dot.o, on_1st, col));
-
-	    wt->w_left_col -= col;
-	    TRACE(("...left_col now %d\n", wt->w_left_col));
+	    wt->w_left_dot.o = col2offs(wp, wt->w_left_dot.l, col + on_1st);
+	    TRACE(("...left_dot col2offs(%d + %d) = %d\n",
+		   col, on_1st, wt->w_left_dot.o));
 	}
     } else
 #endif
@@ -1805,7 +1828,9 @@ offs2col0(WINDOW *wp,
 		    && w_val(wp, WMDLINEBREAK)
 		    && w_val(wp, WMDLINEWRAP)
 		    && isBlank(c0)) {
-		    int k = (int) cols_until(text + n, (unsigned) (length - n));
+		    int k = (int) cols_until(wp,
+					     text + n,
+					     (unsigned) (length - n));
 		    int col2 = column + nums;
 		    int wide = term.cols;
 		    int have;
@@ -1888,9 +1913,10 @@ col2offs(WINDOW *wp, LINE *lp, C_NUM col)
 		&& w_val(wp, WMDLINEWRAP)
 		&& isBlank(text[offset - 1])
 		&& !isBlank(text[offset])) {
-		unsigned n2 = cols_until(text + offset, len - offset);
+		unsigned n2 = cols_until(wp, text + offset, len - offset);
 		int col1 = ((n + nums) % term.cols);
 		int col2 = col1 + n2;
+
 		if (col2 >= term.cols) {
 		    n += (term.cols - col1);
 		}
