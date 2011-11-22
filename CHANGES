@@ -1,7 +1,8 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20111121 (f)
-	+ add extra-colors settings for linenumber and linebreak.
+ 20111122 (f)
+	+ add extra-colors settings for linenumber and linebreak, as well
+	  as the normal "<" and ">" markers.
 	+ modify makemode to use tabinsert, allowing notabinsert to be a
 	  default in other mode (patch by Anthony Shipman).
 	+ add erlang syntax highlighter and majormode (patch by Anthony

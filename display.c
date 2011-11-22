@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.555 2011/11/22 01:07:52 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.557 2011/11/22 14:14:09 tom Exp $
  *
  */
 
@@ -393,10 +393,10 @@ set_vattrs(int row, int col, unsigned attr, size_t len)
 static void
 preset_lmap0(void)
 {
-    int n;
-    for (n = 0; n <= term.rows; ++n) {
-	lmap0[n].left = 0;
-	lmap0[n].right = term.cols;
+    int row;
+    for (row = 0; row <= term.rows; ++row) {
+	lmap0[row].left = 0;
+	lmap0[row].right = term.cols;
     }
 }
 
@@ -407,10 +407,11 @@ static void
 preset_vattrs(int row, int col, int attr, size_t len)
 {
     set_vattrs(row, col, (unsigned) attr, len);
-    if (col == 0)
+    if (col == 0) {
 	lmap0[row].left = (int) len;
-    else
+    } else {
 	lmap0[row].right = col;
+    }
 }
 #else
 #define preset_lmap0()		/* nothing */
@@ -590,6 +591,25 @@ current_video(void)
     return vp;
 }
 
+static void
+mark_extent(int row, int col, int ch)
+{
+    if (row >= 0 && row < term.maxrows && col >= 0 && col < term.maxcols) {
+#if OPT_EXTRA_COLOR && OPT_VIDEO_ATTRS
+	int *attrp = lookup_extra_color(XCOLOR_LINEBREAK);
+	if (!isEmpty(attrp)) {
+	    set_vattrs(row, col, *attrp, 1);
+	    if (ch == MRK_EXTEND_LEFT[0]) {
+		lmap0[row].left = col + 1;
+	    } else {
+		lmap0[row].right = col;
+	    }
+	}
+#endif /* OPT_EXTRA_COLOR */
+	vscreen[row]->v_text[col] = (VIDEO_TEXT) ch;
+    }
+}
+
 static int
 current_limit(void)
 {
@@ -607,37 +627,39 @@ cols_until(WINDOW *wp, const char *src, unsigned limit)
 {
     unsigned n;
     unsigned cols = 0;
+    int used;
+    int nxt;
+    int adj;
 
     for (n = 0; n < limit; ++n) {
 	if (isBlank(src[n])) {
 	    break;
 	}
+	used = 1;
+	nxt = limit - n;
+	adj = column_sizes(wp, src + n, nxt, &used);
+
 #if OPT_MULTIBYTE
-	if (b_is_utfXX(wp->w_bufp)) {
-	    int used = 1;
-	    int nxt = limit - n;
-	    int adj = column_sizes(wp, src + n, nxt, &used);
+	if (adj == COLS_UTF8
+	    && b_is_utfXX(wp->w_bufp)
+	    && !w_val(wp, WMDUNICODE_AS_HEX)) {
+	    UINT target;
+	    int ch2;
 
-	    if (adj == COLS_UTF8
-		&& !w_val(wp, WMDUNICODE_AS_HEX)) {
-		UINT target;
-		int ch2;
-
-		if (vl_conv_to_utf32(&target,
-				     src + n,
-				     (B_COUNT) (limit - n)) > 0) {
-		    ch2 = (int) target;
-		} else {
-		    ch2 = CharOf(src[n]);
-		}
-		if (FontHasGlyph(ch2)) {
-		    adj = mb_cellwidth(wp, src + n, nxt);
-		}
+	    if (vl_conv_to_utf32(&target,
+				 src + n,
+				 (B_COUNT) (limit - n)) > 0) {
+		ch2 = (int) target;
+	    } else {
+		ch2 = CharOf(src[n]);
 	    }
-	    cols += adj;
-	    n += (used - 1);
+	    if (FontHasGlyph(ch2)) {
+		adj = mb_cellwidth(wp, src + n, nxt);
+	    }
 	}
 #endif
+	cols += adj;
+	n += (used - 1);
     }
     return cols;
 }
@@ -713,7 +735,7 @@ vtputc(WINDOW *wp, const char *src, unsigned limit)
 	    }
 #endif
 	} else if (vtcol >= lastcol) {
-	    VideoText(vp)[lastcol - 1] = (VIDEO_TEXT) MRK_EXTEND_RIGHT[0];
+	    mark_extent(vtrow, lastcol - 1, MRK_EXTEND_RIGHT[0]);
 	} else if (isTab(ch)) {
 	    do {
 		vtputc(wp, " ", 1);
@@ -802,19 +824,13 @@ vtlistc(WINDOW *wp, const char *src, unsigned limit)
 #endif
 		} else if (vtcol >= lastcol) {
 		    if (VideoText(vp)[lastcol - 1] == 0)
-			VideoText(vp)[lastcol - 2] =
-			    (VIDEO_TEXT) MRK_EXTEND_RIGHT[0];
-		    VideoText(vp)[lastcol - 1] =
-			(VIDEO_TEXT) MRK_EXTEND_RIGHT[0];
+			mark_extent(vtrow, lastcol - 2, MRK_EXTEND_RIGHT[0]);
+		    mark_extent(vtrow, lastcol - 1, MRK_EXTEND_RIGHT[0]);
 		} else {
 		    int nulls = cells;
 		    /* have to account for split-characters... */
 		    while (cells-- > 0 && vtcol <= lastcol) {
-			if (vtcol >= 0) {
-			    VideoText(vp)[vtcol] = ((VIDEO_TEXT)
-						    MRK_EXTEND_RIGHT[0]);
-			}
-			++vtcol;
+			mark_extent(vtrow, vtcol++, MRK_EXTEND_RIGHT[0]);
 		    }
 #ifdef WMDLINEWRAP
 		    if (allow_wrap != 0
@@ -2188,7 +2204,7 @@ update_screen_line(WINDOW *wp, LINE *lp, int sline)
 	vtset(lp, wp);
 	if (left && sline >= 0) {
 	    int zero = nu_width(wp);
-	    vscreen[sline]->v_text[zero] = (VIDEO_TEXT) MRK_EXTEND_LEFT[0];
+	    mark_extent(sline, zero, MRK_EXTEND_LEFT[0]);
 	    if (vtcol <= zero)
 		vtcol = zero + 1;
 	}
