@@ -1,6 +1,10 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
  20111123 (f)
+	+ modify special case for "dos" setting in a submode introduced in
+	  8.3q, recognizing "nodos" also.  This allows overriding a submode
+	  that is previously defined, e.g., in modes.rc, by a user's .vilerc
+	  (report by Wayne).
 	+ correct "nohl" when used in a submode.  As a side-effect, vile frees
 	  video attributes for the buffers, but in this special case it did not
 	  limit the freeing to buffers using the majormode whose highlight
