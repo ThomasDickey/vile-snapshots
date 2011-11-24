@@ -3,7 +3,7 @@
  *	for getting and setting the values of the vile state variables,
  *	plus helper utility functions.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.158 2011/09/16 09:28:14 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.159 2011/11/23 15:23:23 tom Exp $
  */
 
 #include	<estruct.h>
@@ -737,6 +737,22 @@ var_CURCHAR(TBUFF **rp, const char *vp)
 	return TRUE;
     } else if (vp && valid_buffer(curbp)) {
 	return gotochr(TRUE, (int) strtol(vp, 0, 0));
+    } else {
+	return FALSE;
+    }
+}
+
+int
+var_EMPTY_LINES(TBUFF **rp, const char *vp)
+{
+    if (rp) {
+	render_int(rp, var_empty_lines);
+	return TRUE;
+    } else if (vp) {
+	var_empty_lines = (int) strtol(vp, 0, 0);
+	if (var_empty_lines <= 0)
+	    var_empty_lines = 1;
+	return TRUE;
     } else {
 	return FALSE;
     }

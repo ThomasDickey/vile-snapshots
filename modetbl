@@ -11,7 +11,7 @@
 #
 # The modes are table entries in the BUFFER and WINDOW structures.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.310 2011/11/04 09:28:54 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.312 2011/11/23 14:43:22 tom Exp $
 #
 #
 # Mode-table entries.  Capitalized letters are used for abbreviations.
@@ -129,8 +129,8 @@ bool							# MD prefix
 	"overlap-matches"  HILITEOVERLAP	chgd_hilite	OPT_HILITEMATCH # highlight all search matches
 	"UndoAble"	UNDOABLE	chgd_undoable	# changes to buffer are undoable (or not)
 	"Undo-Dos-Trim"	UNDO_DOS_TRIM	0		# changes to buffer made when setting dosmode are undoable (or not)
-	"WrapScan"	SWRAP		0		# wrap-around search mode
-	"WrapWords"	WRAP		0		# word wrap
+	"WrapScan"	WRAPSCAN	0		# wrap-around search mode
+	"WrapWords"	WRAPWORDS	0		# word wrap
 	"YankMotion"	YANKMOTION	0		# honor vi-style motion after yanking text
 enum
 	"ByteOrder-Mark" BYTEORDER_MARK	chgd_byteorder	OPT_MULTIBYTE # byte-order-mark
@@ -258,6 +258,7 @@ int
 	"curcol"	CURCOL		1		"current column pos of cursor"
 	"curline"	CURLINE		1		"current line in file"
 	"cwline"	CWLINE		1		"current screen line in window"
+	"empty-lines"	EMPTY_LINES	!SMALLER	"tabstop to use when interpreting %C"
 	"error-tabstop"	ERROR_TABSTOP	OPT_FINDERR	"tabstop to use when interpreting %C"
 	"goal-column"	GOAL_COLUMN	OPT_TRACE	"goal-column (debug-only)"
 	"lastkey"	LASTKEY		1		"last keyboard char struck"

@@ -3,7 +3,7 @@
 %{
 
 /*
-    $Id: erl-filt.l,v 1.3 2011/10/31 10:48:41 tom Exp $
+    $Id: erl-filt.l,v 1.4 2011/11/23 13:01:03 tom Exp $
 
     Filter to add vile "attribution" sequences to selected bits of Erlang
     input text.
@@ -151,3 +151,11 @@ do_filter(FILE *inputs)
 
     flush_string();
 }
+
+#if NO_LEAKS
+static void
+free_filter(void)
+{
+    USE_LEXFREE;
+}
+#endif

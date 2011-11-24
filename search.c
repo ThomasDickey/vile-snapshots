@@ -3,7 +3,7 @@
  * and backward directions.
  *  heavily modified by Paul Fox, 1990
  *
- * $Header: /users/source/archives/vile.vcs/RCS/search.c,v 1.150 2010/05/03 10:56:36 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/search.c,v 1.151 2011/11/22 21:52:14 tom Exp $
  *
  * original written Aug. 1986 by John M. Gamble, but I (pgf) have since
  * replaced his regex stuff with Henry Spencer's regexp package.
@@ -76,7 +76,7 @@ fsearch(int f, int n, int marking, int fromscreen)
     if (n == 0)
 	n = 1;
 
-    wrapok = marking || window_b_val(curwp, MDSWRAP);
+    wrapok = marking || window_b_val(curwp, MDWRAPSCAN);
 
     last_srch_direc = FORWARD;
 
@@ -165,7 +165,7 @@ forwhunt(int f, int n)
 
     assert(curwp != 0);
 
-    wrapok = window_b_val(curwp, MDSWRAP);
+    wrapok = window_b_val(curwp, MDWRAPSCAN);
 
     if (f && n < 0)		/* search backwards */
 	return (backhunt(f, -n));
@@ -251,7 +251,7 @@ rsearch(int f, int n, int dummy GCC_UNUSED, int fromscreen)
     if (n == 0)
 	n = 1;
 
-    wrapok = window_b_val(curwp, MDSWRAP);
+    wrapok = window_b_val(curwp, MDWRAPSCAN);
 
     last_srch_direc = REVERSE;
 
@@ -313,7 +313,7 @@ backhunt(int f, int n)
 
     assert(curwp != 0);
 
-    wrapok = window_b_val(curwp, MDSWRAP);
+    wrapok = window_b_val(curwp, MDWRAPSCAN);
 
     if (f && n < 0)		/* search forwards */
 	return (forwhunt(f, -n));

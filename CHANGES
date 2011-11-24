@@ -1,6 +1,20 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20111122 (f)
+ 20111123 (f)
+	+ add force-empty-lines operator.
+	+ add delete-empty-lines operator (request by Wayne).
+	+ change tabstop within [Printable Chars] to keep the result within
+	  80 columns.
+	+ improved rpm syntax highlighter:
+	  + modify number pattern to add dots and dashes for version numbers.
+	  + match keywords in more places by checking for the name in %name and
+	    %{name} patterns when the first match fails.
+	  + add keywords %exclude, %makeinstall and %run_ldconfig
+	+ add vile-pager to dpkg package script for vile.
+	+ add ".pod" files to perlmode.
+	+ change default in basic.key to Keyword for consistency.
+	+ modify xresfilt.l to check for continuation-lines of comments.
+	+ add "YI" capability to tc.key, per ncurses fix.
 	+ add extra-colors settings for linenumber and linebreak, as well
 	  as the normal "<" and ">" markers.
 	+ modify makemode to use tabinsert, allowing notabinsert to be a
@@ -8,6 +22,8 @@ Changes for vile 9.9 (released ??? ??? ?? ????)
 	+ add erlang syntax highlighter and majormode (patch by Anthony
 	  Shipman).
 	+ add linebreak mode, like vim (request by Paul Van Tilburg).
+	  This does NOT yet work with color highlighting, but does work with
+	  wide-characters.
 	+ fill in a missing chunk of logic for wrapping double-width characters
 	  (report by Sukegawa Shigeyuki).
 	+ modify debian/rules to work around a quoting problem in Brendan

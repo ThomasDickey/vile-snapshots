@@ -10,7 +10,7 @@
  * editing must be being displayed, which means that "b_nwnd" is non zero,
  * which means that the dot and mark values in the buffer headers are nonsense.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.219 2011/04/07 23:42:39 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.220 2011/11/23 15:48:32 tom Exp $
  *
  */
 
@@ -566,7 +566,7 @@ lins_chars(int n, int c)
  * current window. The funny ass-backwards way it does things is not a botch;
  * it just makes the last line in the file not a special case. Return TRUE if
  * everything works out and FALSE on error (memory allocation failure). The
- * update of dot and mark is a bit easier then in the above case, because the
+ * update of dot and mark is a bit easier than in the above case, because the
  * split forces more updating.
  */
 int

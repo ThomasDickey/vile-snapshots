@@ -129,7 +129,7 @@ install-vile-stamp: build-vile-stamp
 	dh_prep -pvile-filters -pvile-common -pvile
 
 	$(MAKE) -C t/vile DESTDIR=$(TMP) install
-	rm -f $(TMP)/usr/bin/vile-pager  # examples
+	#rm -f $(TMP)/usr/bin/vile-pager  # examples
 	rm -f $(TMP)/usr/share/man/man1/vile.1  # docs
 	pod2man $(TMP)/usr/bin/vileget > \
 	    $(TMP)/usr/share/man/man1/vileget.1

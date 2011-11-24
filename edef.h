@@ -6,7 +6,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.364 2011/11/03 10:44:53 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.365 2011/11/23 15:24:02 tom Exp $
  */
 
 #ifndef VILE_EDEF_H
@@ -278,6 +278,7 @@ decl_uninit( int warnings );		/* from 'mlwarn()', for reporting */
 decl_uninit( TBUFF *prompt_string );	/* command-line prompt-string	*/
 decl_uninit( WINDOW *swindow );		/* saved window pointer		*/
 decl_init( TBUFF *with_prefix, 0 );	/* prefix set by "~with"	*/
+decl_uninit ( int var_empty_lines );
 #endif
 
 #if OPT_ENCRYPT

@@ -97,7 +97,7 @@
 #		in '!' listed, then the flag does nothing, and should be
 #		viewed simply as documentation.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.265 2011/04/06 21:18:10 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.269 2011/11/23 15:11:39 tom Exp $
 #
 #
 
@@ -499,6 +499,14 @@ forceblank	REDO|UNDO
 	"force-blank-lines"		!FEWNAMES
 	'^A-d'
 	<delete blank lines (or force some if CNT specified)>
+del_emptylines	OPER|REDO|UNDO|GLOBOK|RANGE	!SMALLER
+	"delete-empty-lines"		!FEWNAMES
+	'^A-e'
+	<delete empty lines in the region>
+frc_emptylines	OPER|REDO|UNDO|GLOBOK|RANGE	!SMALLER
+	"force-empty-lines"		!FEWNAMES
+	'^X-E'
+	<force sequences of empty lines in the region to be $empty-lines>
 delglobmode	NONE
 	"delete-global-mode"		!FEWNAMES
 	"setgno"
@@ -1130,12 +1138,12 @@ namedcmd	NONE
 	":"
 	':'
 	<execute the given function, by name, applying CNT as its repeat-count>
-openup		REDO|UNDO|(FROM)
+openup		REDO|UNDO|FROM
 	"open-line-above-and-insert-chars"	!FEWNAMES
 	"i"
 	'O'
 	<insert text in CNT fresh blank line(s), before current line>
-openup_i	REDO|UNDO|(FROM)	!SMALLER
+openup_i	REDO|UNDO|FROM		!SMALLER
 	"insert-indented-chars"		!FEWNAMES
 	"i!"
 	<insert text in CNT fresh blank line(s), before current line, toggle autoindent>
@@ -1152,7 +1160,7 @@ opendown_no_aindent	REDO|UNDO|FROM|ZERO
 	"open-line-below-no-autoindent"	!FEWNAMES
 	'^A-o'
 	<insert text in CNT fresh blank line(s), after current, no autoindent>
-operopenrect	OPER|REDO|UNDO|GLOBOK|(RANGE)
+operopenrect	OPER|REDO|UNDO|GLOBOK|RANGE
 	"open-rectangle"
 	'^A-r'
 	<open blank rectangular area specified by given motion>
@@ -1160,12 +1168,12 @@ operattrbold	OPER|GLOBOK|RANGE	OPT_SELECTIONS
 	"attribute-bold-til"		!FEWNAMES
 	'^A-B'
 	<display text as bold in the region>
-operattrcaseq	REDO|UNDO|OPER|GLOBOK|RANGE	OPT_SELECTIONS
+operattrcaseq	OPER|REDO|UNDO|GLOBOK|RANGE	OPT_SELECTIONS
 	"attribute-cntl_a-sequences-til"	!FEWNAMES
 	"decode-attributes-til"			!FEWNAMES
 	'^A-A'
 	<display text as given by ^A sequences in the region>
-operattrencode	REDO|UNDO|OPER|GLOBOK|RANGE	OPT_SELECTIONS
+operattrencode	OPER|REDO|UNDO|GLOBOK|RANGE	OPT_SELECTIONS
 	"encode-attributes-til"			!FEWNAMES
 	'^A-E'
 	<encode attributes in the region as ^A sequences>
@@ -1208,19 +1216,19 @@ operchg_i	OPER|REDO|UNDO		!SMALLER
 	"change-indented-chars"		!FEWNAMES
 	"c!"
 	<insert text, replacing that in the region, toggles autoindent>
-operdetab	OPER|REDO|UNDO|GLOBOK|(RANGE)
+operdetab	OPER|REDO|UNDO|GLOBOK|RANGE
 	"detab-lines-til"		!FEWNAMES
 	'^A- '
 	<convert tabs to spaces in the region>
-oper_l_detab	OPER|REDO|UNDO|GLOBOK|(RANGE)
+oper_l_detab	OPER|REDO|UNDO|GLOBOK|RANGE
 	"leading-detab-lines-til"	!FEWNAMES
 	'^X- '
 	<convert leading tabs to spaces in the region>
-operentab	OPER|REDO|UNDO|GLOBOK|(RANGE)
+operentab	OPER|REDO|UNDO|GLOBOK|RANGE
 	"entab-lines-til"		!FEWNAMES
 	'^A-^I'
 	<convert spaces to tabs where possible in the region>
-oper_l_entab	OPER|REDO|UNDO|GLOBOK|(RANGE)
+oper_l_entab	OPER|REDO|UNDO|GLOBOK|RANGE
 	"leading-entab-lines-til"	!FEWNAMES
 	'^X-^I'
 	<convert leading spaces to tabs where possible in the region>
@@ -1228,7 +1236,7 @@ opermove	OPER|RANGE|EXTRA
 	"move-til"
 	"m"
 	<move text in the region to the given line>
-operlinechg	OPER|REDO|UNDO|(RANGE)
+operlinechg	OPER|REDO|UNDO|RANGE
 	"change-lines-til"		!FEWNAMES
 	"delete-lines-and-insert-chars-til"	!FEWNAMES
 	"ch"
@@ -1256,12 +1264,12 @@ operfilter	OPER|REDO|UNDO|EXRCOK|RANGE|NAMEDFS|DFLNONE|VI_NL OPT_SHELL
 	"!"
 	'!'
 	<pipe the text in the region through an external filter command>
-operformat	OPER|REDO|UNDO|(RANGE)	OPT_FORMAT
+operformat	OPER|REDO|UNDO|RANGE	OPT_FORMAT
 	"format-til"			!FEWNAMES
 	'^A-f'
 	'^A-j'
 	<format (rejustify) the text in the region>
-operflip	OPER|REDO|UNDO|GLOBOK|(RANGE)
+operflip	OPER|REDO|UNDO|GLOBOK|RANGE
 	"flip-til"			!FEWNAMES
 	"~"
 	'^A-~'
@@ -1279,43 +1287,43 @@ opervglobals	BANG|EXTRA|DFLALL
 	"g!"
 	"v"
 	<perform command on all lines not containing the given pattern>
-operlower	OPER|REDO|UNDO|GLOBOK|(RANGE)
+operlower	OPER|REDO|UNDO|GLOBOK|RANGE
 	"lower-til"			!FEWNAMES
 	"L"
 	'^A-l'
 	<convert to lowercase all characters in the region>
-operlist	OPER|GLOBOK|(RANGE)
+operlist	OPER|GLOBOK|RANGE
 	"list-lines-til"		!FEWNAMES
 	"l"
 	<show lines, making tabs and newlines visible>
-opernumber	OPER|GLOBOK|(RANGE)
+opernumber	OPER|GLOBOK|RANGE
 	"number-lines-til"		!FEWNAMES
 	"nu"
 	"#"
 	<show lines with their line numbers>
-operprint	OPER|GLOBOK|(RANGE)
+operprint	OPER|GLOBOK|RANGE
 	"print-lines-til"		!FEWNAMES
 	"p"
 	<show lines>
-operpprint	OPER|GLOBOK|(RANGE)
+operpprint	OPER|GLOBOK|RANGE
 	"print-prefixed-lines-til"	!FEWNAMES
 	"pp"
 	<show lines with line numbers>
-operselect	OPER|GLOBOK|(RANGE)	OPT_SELECTIONS
+operselect	OPER|GLOBOK|RANGE	OPT_SELECTIONS
 	"select-til"			!FEWNAMES
 	'^A-s'
 	<select (and yank) the text in the region>
-operupper	OPER|REDO|UNDO|GLOBOK|(RANGE)
+operupper	OPER|REDO|UNDO|GLOBOK|RANGE
 	"upper-til"			!FEWNAMES
 	"U"
 	'^A-u'
 	<convert to uppercase all characters in the region>
-operlshift	OPER|REDO|UNDO|GLOBOK|(RANGE)
+operlshift	OPER|REDO|UNDO|GLOBOK|RANGE
 	"shift-left-til"		!FEWNAMES
 	"<"
 	'<'
 	<shift lines in the region left by one \"shiftwidth\">
-operrshift	OPER|REDO|UNDO|GLOBOK|(RANGE)
+operrshift	OPER|REDO|UNDO|GLOBOK|RANGE
 	"shift-right-til"		!FEWNAMES
 	">"
 	'>'
@@ -1328,12 +1336,12 @@ opersubstall	OPER|REDO|UNDO|GLOBOK|RANGE|EXTRA
 	"substitute-all-til"	!FEWNAMES
 	'^X-s'
 	<perform an all-occurrence text substitution over the region>
-opertrim	REDO|UNDO|GLOBOK|UNDO|(RANGE)
+opertrim	REDO|UNDO|GLOBOK|UNDO|RANGE
 	"trim-lines-til"		!FEWNAMES
 	"trim"
 	'^A-t'
 	<trim trailing whitespace from lines in the region>
-operblank       REDO|UNDO|GLOBOK|UNDO|(RANGE)
+operblank       REDO|UNDO|GLOBOK|UNDO|RANGE
 	"blank-region"
 	"blank"
 	'^A-b'

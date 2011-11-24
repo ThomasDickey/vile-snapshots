@@ -22,7 +22,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.703 2011/09/16 09:22:45 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.705 2011/11/23 15:25:13 tom Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -1602,7 +1602,6 @@ init_mode_value(struct VAL *d, MODECLASS v_class, int v_which)
 	    setINT(MDSHOWMAT, FALSE);	/* show-match */
 	    setINT(MDSHOWMODE, TRUE);	/* show-mode */
 	    setINT(MDSPACESENT, TRUE);	/* add two spaces after each sentence */
-	    setINT(MDSWRAP, TRUE);	/* scan wrap */
 	    setINT(MDTABINSERT, TRUE);	/* allow tab insertion */
 	    setINT(MDTAGSRELTIV, FALSE);	/* path relative tag lookups */
 	    setINT(MDTAGWORD, FALSE);	/* tag entire word */
@@ -1610,7 +1609,8 @@ init_mode_value(struct VAL *d, MODECLASS v_class, int v_which)
 	    setINT(MDUNDOABLE, TRUE);	/* undo stack active */
 	    setINT(MDUNDO_DOS_TRIM, FALSE);	/* undo dos trimming */
 	    setINT(MDVIEW, FALSE);	/* view-only */
-	    setINT(MDWRAP, FALSE);	/* wrap */
+	    setINT(MDWRAPSCAN, TRUE);	/* scan wrap */
+	    setINT(MDWRAPWORDS, FALSE);		/* wrap */
 	    setINT(MDYANKMOTION, TRUE);		/* yank-motion */
 	    setINT(VAL_ASAVECNT, 256);	/* autosave count */
 	    setINT(VAL_FILL, default_fill());	/* column for paragraph reformat */
@@ -1943,6 +1943,11 @@ init_state_value(int which)
     case VAR_STARTUP_PATH:
 	result = default_startup_path();
 	break;
+#if !SMALLER
+    case VAR_EMPTY_LINES:
+	value = "1";
+	break;
+#endif
     }
     return (value != 0) ? strmalloc(value) : result;
 }

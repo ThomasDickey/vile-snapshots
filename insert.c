@@ -4,7 +4,7 @@
  * Most code probably by Dan Lawrence or Dave Conroy for MicroEMACS
  * Extensions for vile by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/insert.c,v 1.176 2010/09/06 18:26:15 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/insert.c,v 1.179 2011/11/23 20:39:56 tom Exp $
  */
 
 #include	"estruct.h"
@@ -75,22 +75,23 @@ past_wrapmargin(int c)
 static int
 wrap_at_col(int c)
 {
+    int rc;
     int n;
 
     /* if we'll split the line, there is no point in wrapping */
     if (isreturn(c)
 	&& (DOT.o >= llength(DOT.l)
-	    || !isSpace(lgetc(DOT.l, DOT.o))))
-	return FALSE;
-
-    if (past_wrapmargin(c) >= 0)
-	return TRUE;
-
-    if (b_val(curbp, MDWRAP)
-	&& (n = getfillcol(curbp)) > 0)
-	return (getccol(FALSE) > n);
-
-    return FALSE;
+	    || !isSpace(lgetc(DOT.l, DOT.o)))) {
+	rc = FALSE;
+    } else if (past_wrapmargin(c) >= 0) {
+	rc = TRUE;
+    } else if (b_val(curbp, MDWRAPWORDS)
+	       && (n = getfillcol(curbp)) > 0) {
+	rc = (getccol(FALSE) > n);
+    } else {
+	rc = FALSE;
+    }
+    return rc;
 }
 
 /* advance one character past the current position, for 'append()' */
@@ -770,6 +771,7 @@ is_utf8_continuation(BUFFER *bp, int ch)
 int
 inschar(int c, int *backsp_limit_p)
 {
+    int rc = FALSE;
     CmdFunc execfunc;		/* ptr to function to execute */
 
     execfunc = NULL;
@@ -792,8 +794,9 @@ inschar(int c, int *backsp_limit_p)
 		|| (is_print && (offset >= 1) && blanks_on_line())) {
 		int status = wrapword(wm_flag, is_space);
 		*backsp_limit_p = w_left_margin(curwp);
-		if (wm_flag && is_space)
+		if (wm_flag && is_space) {
 		    return status;
+		}
 	    } else if (wm_flag
 		       && !blanks_on_line()
 		       && (c == '\t' || is_print)) {
@@ -882,40 +885,46 @@ inschar(int c, int *backsp_limit_p)
 	}
 
 	last_insert_char = c;
-
     }
 
-    if (execfunc != NULL)
-	return (*execfunc) (FALSE, 1);
+    if (execfunc != NULL) {
+	rc = (*execfunc) (FALSE, 1);
+    } else {
+	/* make it a real character again */
+	c = kcod2key(c);
 
-    /* make it a real character again */
-    c = kcod2key(c);
+	/* if we are in overwrite mode, not at eol,
+	   and next char is not a tab or we are at a tab stop,
+	   delete a char forword                        */
+	if ((insertmode == INSMODE_OVR)
+	    && !is_utf8_continuation(curbp, c)
+	    && (!DOT_ARGUMENT || (dotcmdrep <= 1))
+	    && (DOT.o < llength(DOT.l))
+	    && (CharAtDot() != '\t'
+		|| DOT.o % tabstop_val(curbp) == tabstop_val(curbp) - 1)) {
+	    autoindented = -1;
+	    (void) ldel_chars((B_COUNT) 1, FALSE);
+	}
 
-    /* if we are in overwrite mode, not at eol,
-       and next char is not a tab or we are at a tab stop,
-       delete a char forword                        */
-    if ((insertmode == INSMODE_OVR)
-	&& !is_utf8_continuation(curbp, c)
-	&& (!DOT_ARGUMENT || (dotcmdrep <= 1))
-	&& (DOT.o < llength(DOT.l))
-	&& (CharAtDot() != '\t'
-	    || DOT.o % tabstop_val(curbp) == tabstop_val(curbp) - 1)) {
-	autoindented = -1;
-	(void) ldel_chars((B_COUNT) 1, FALSE);
-    }
-
-    /* do the appropriate insertion */
-    if (allow_aindent && b_val(curbp, MDCINDENT)) {
-	int dir;
-	if (is_cindent_char(curbp, c) && is_user_fence(c, &dir) && dir == REVERSE) {
-	    return insbrace(1, c);
-	} else if (c == '#' && is_cindent_char(curbp, '#')) {
-	    return inspound();
+	/* do the appropriate insertion */
+	if (allow_aindent && b_val(curbp, MDCINDENT)) {
+	    int dir;
+	    if (is_cindent_char(curbp, c)
+		&& is_user_fence(c, &dir)
+		&& dir == REVERSE) {
+		rc = insbrace(1, c);
+	    } else if (c == '#' && is_cindent_char(curbp, '#')) {
+		rc = inspound();
+	    } else {
+		autoindented = -1;
+		rc = lins_chars(1, c);
+	    }
+	} else {
+	    autoindented = -1;
+	    rc = lins_chars(1, c);
 	}
     }
-
-    autoindented = -1;
-    return lins_chars(1, c);
+    return rc;
 }
 
 #if ! SMALLER

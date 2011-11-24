@@ -1,10 +1,10 @@
 %pointer
-%s NORMAL RESNAME RESVALUE
+%s NORMAL RESNAME RESVALUE COMMENT
 
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/xresfilt.l,v 1.27 2010/11/04 09:25:30 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/xresfilt.l,v 1.28 2011/11/22 15:36:35 tom Exp $
  *
  * Filter to add vile "attribution" sequences to an X resource file.
  */
@@ -21,6 +21,7 @@ static char *Number_attr;
 static char *Preproc_attr;
 static char *String_attr;
 
+static int escaped_nl(const char *, int);
 static int isClass(char *name);
 static int preprocessor(char *text, int size);
 static void quoted_name(char *text, int length);
@@ -29,7 +30,7 @@ static void quoted_name(char *text, int length);
 
 SPACE		[ \t]
 
-COMMENT		![^\r\n]*\n
+COMMENT		![^\r\n]*
 
 SIGN		[-+]
 DECIMAL		[[:digit:]]+
@@ -58,7 +59,16 @@ KEYWORD		({NAME}|[<]{NAME}[>])
 <RESVALUE>({ESCAPED}|.)	{ flt_bfr_append(yytext, yyleng); }
 <RESVALUE>\n		{ flt_bfr_finish(); ECHO; BEGIN(NORMAL); }
 
-<NORMAL>{COMMENT}	{ WriteToken(Comment_attr); }
+<NORMAL>{COMMENT}	{ WriteToken(Comment_attr);
+			  if (escaped_nl(yytext, yyleng)) {
+			      BEGIN(COMMENT);
+			  }
+			}
+<COMMENT>[^\r\n]*	{ WriteToken(Comment_attr);
+                          if (!escaped_nl(yytext, yyleng)) {
+			      BEGIN(NORMAL);
+			  }
+		        }
 
 <NORMAL>^{SPACE}*#{SPACE}*{NAME} {
 			    if (!preprocessor(yytext, yyleng)) {
@@ -68,6 +78,12 @@ KEYWORD		({NAME}|[<]{NAME}[>])
 			}
 
 %%
+
+static int
+escaped_nl(const char *text, int size)
+{
+    return (size > 0 && text[size - 1] == '\\');
+}
 
 static char *
 skip_name(char *text)
