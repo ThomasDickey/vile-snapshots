@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.421 2011/11/04 09:30:15 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.422 2011/11/23 22:47:12 tom Exp $
  *
  */
 
@@ -4727,7 +4727,7 @@ chgd_mm_order(BUFFER *bp GCC_UNUSED,
 
 /*ARGSUSED*/
 int
-chgd_filter(BUFFER *bp, VALARGS * args GCC_UNUSED, int glob_vals GCC_UNUSED, int testing)
+chgd_filter(BUFFER *bp, VALARGS * args, int glob_vals, int testing)
 {
     if (!testing) {
 	struct VAL *values = args->local;
@@ -4735,8 +4735,19 @@ chgd_filter(BUFFER *bp, VALARGS * args GCC_UNUSED, int glob_vals GCC_UNUSED, int
 
 	if (values->vp->i == FALSE) {
 	    if (glob_vals) {
+		/*
+		 * Check whether we are being called to suppress highlighting
+		 * globally, or as part of a submode setting.  In the latter
+		 * case, we will discard attributes only for buffers using
+		 * the majormode which is being updated.
+		 */
+		struct VAL *check = get_sm_vals(bp->majr);
+		int submode = (args->global -check) == MDHILITE;
+
 		for_each_buffer(bp2) {
-		    free_attribs(bp2);
+		    if (!submode || (check == get_sm_vals(bp2->majr))) {
+			free_attribs(bp2);
+		    }
 		}
 	    } else {
 		free_attribs(bp);
