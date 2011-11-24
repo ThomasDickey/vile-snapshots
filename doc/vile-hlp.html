@@ -1,6 +1,6 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
-  $Id: vile-hlp.html,v 1.46 2011/11/23 15:27:38 tom Exp $
+  $Id: vile-hlp.html,v 1.50 2011/11/23 19:05:21 tom Exp $
 -->
 <HTML>
 <HEAD>
@@ -1139,13 +1139,39 @@ Getting along with vile						(version 9.8)
 	^A-d
 </dt>
 <dd>
-		Remove blank lines ("deblank").  If the cursor is on a blank
-		line, then it and any blank lines surrounding it will be
-		removed.  If a non-blank line, then any immediately following
-		blank lines will be removed.  If given an argument, will force
-		exactly that many blank lines to exist at that point,
-		regardless of how many were there before.  Moves current
+		Remove blank lines ("delete-blank-lines").  If the cursor is on
+		a blank line, then it and any blank lines surrounding it will
+		be removed.  If a non-blank line, then any immediately
+		following blank lines will be removed.  If given an argument,
+		will force exactly that many blank lines to exist at that
+		point, regardless of how many were there before.  Moves current
 		location forward, to allow repeated use.
+</dd>
+<dt>
+	^A-e
+</dt>
+<dd>
+		Remove empty lines (<code>delete-empty-lines</code>).  This
+		command differs from <code>delete-blank-lines</code>:
+		<ul>
+		<li>empty lines contain no printable characters; blank lines
+		contain no characters.
+		<li>this command can be used with a range, and works as an
+		operator.
+		<li>the feature for forcing blank lines to appear is
+		provided by another operator <code>force-empty-lines</code>.
+		</ul>
+</dd>
+<dt>
+	^X-E
+</dt>
+<dd>
+		Force gaps with "empty" lines (no printable characters)
+		to have the same size
+		(<code>force-empty-lines</code>).  This uses the
+		variable $empty-lines as the size that should be used.
+		Like <code>delete-empty-lines</code>, this is an
+		operator and can be used with a range.
 </dd>
 <dt>
 	^X-^X
@@ -1154,8 +1180,11 @@ Getting along with vile						(version 9.8)
 		The "error finder".  Goes to the next file/line error pair
 		specified in the last buffer captured from a command's
 		output.  This buffer is usually created with the ^X-!
-		command.  For example, "^X-!cc -c junk.c" puts all of the
+		command.
+<p>
+		For example, "^X-!cc -c junk.c" puts all of the
 		compiler output into the buffer named "[Output]".
+<p>
 		Repeatedly hitting ^X-^X will position the editor at each
 		error in turn, and will eventually start over again at the
 		top.  The buffer searched for "errors" will be the last
@@ -1163,9 +1192,13 @@ Getting along with vile						(version 9.8)
 		buffer" command.  The "Entering directory XXX" and "Leaving
 		directory XXX" messages that GNU make puts out with the -w
 		switch are honored, so that files are found with the
-		correct path.  Tip: I use the following macro to quickly
+		correct path.
+<p>
+		Tip: I use the following macro to quickly
 		grep a source directory for the string under the cursor:
+		<pre>
 		    use-register g load-register "^X!egrep -n : *.[chs]^M"
+		</pre>
 		where the ^X and ^M are each single control characters,
 		entered using ^V to escape them.  Then I invoke with @g to
 		execute.  [NB:  this macro won't work with the DOS/VMS/Win32
@@ -1442,10 +1475,10 @@ Getting along with vile						(version 9.8)
 		and the keys bound to them.
 </dd>
 <dt>
-	show-global-modes, show-modes
+	<a name="command-show-global-modes">show-global-modes</a>, show-modes
 </dt>
 <dd>
-		both synonymous with ":set&lt;cr&gt;"
+		both synonymous with ":<a href="#current-modes2">set</a>&lt;cr&gt;"
 </dd>
 <dt>
 	show-help
@@ -1458,6 +1491,14 @@ Getting along with vile						(version 9.8)
 </dt>
 <dd>
 		displays the user's command line history.
+</dd>
+<dt>
+	<a name="command-show-local-modes">show-local-modes</a>
+</dt>
+<dd>
+		Shows the local value of each mode, if it differs
+		from the global value.  If a majormode is set on the buffer,
+		that is used for the "global" value in this display.
 </dd>
 <dt>
 	show-majormodes
@@ -1845,9 +1886,17 @@ Getting along with vile						(version 9.8)
 	are described separately in the topic entitled "Majormodes".
 
 <h3 id="current-modes2"><a name="current-modes">Current mode settings</a></h3>
-	To display modes, use "setall", "modes", or "set all".  Local
-	mode values are only shown if they differ from the global values,
+	To display modes, use "setall", "modes",
+	"set all", or simply "set".
+	vile displays all of the current mode values in the 
+	<code>[Settings]</code> buffer.
+	<p>
+	vile shows local mode values
+	only if they differ from the global values,
 	whether they have been independently set or not.
+	<p>
+	To show just the local mode values that differ from the global values,
+	use <a href="#command-show-local-modes">show-local-modes</a>.
 
 <h3 id="mode-details2"><a name="mode-details">Modes in detail</a></h3>
 	Shown next is a listing of vile's various modes.  Synonyms, if they
@@ -6478,10 +6527,13 @@ $<br>
 	enum             default
 	hypertext        default
 	isearch          default
+	linebreak        default
+	linenumber       default
 	modeline         reverse
 	number           default
 	regex            default
 	string           default
+	warning          default
 </pre>
 	The set-extra-color command sets the colors.   It prompts for the
 	name of a type, followed by a combination of color and attributes.

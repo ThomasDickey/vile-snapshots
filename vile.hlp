@@ -821,33 +821,59 @@ Text manipulation command:
 Miscellaneous commands
 ----------------------
    ^A-d
-           Remove blank lines ("deblank"). If the cursor is on a blank line,
-           then it and any blank lines surrounding it will be removed. If a
-           non-blank line, then any immediately following blank lines will be
-           removed. If given an argument, will force exactly that many blank
-           lines to exist at that point, regardless of how many were there
-           before. Moves current location forward, to allow repeated use.
+           Remove blank lines ("delete-blank-lines"). If the cursor is on a
+           blank line, then it and any blank lines surrounding it will be
+           removed. If a non-blank line, then any immediately following blank
+           lines will be removed. If given an argument, will force exactly
+           that many blank lines to exist at that point, regardless of how
+           many were there before. Moves current location forward, to allow
+           repeated use.
+
+   ^A-e
+           Remove empty lines (delete-empty-lines). This command differs from
+           delete-blank-lines:
+              * empty lines contain no printable characters; blank lines
+                contain no characters.
+              * this command can be used with a range, and works as an
+                operator.
+              * the feature for forcing blank lines to appear is provided by
+                another operator force-empty-lines.
+
+   ^X-E
+           Force gaps with "empty" lines (no printable characters) to have
+           the same size (force-empty-lines). This uses the variable
+           $empty-lines as the size that should be used. Like
+           delete-empty-lines, this is an operator and can be used with a
+           range.
 
    ^X-^X
            The "error finder". Goes to the next file/line error pair
            specified in the last buffer captured from a command's output.
-           This buffer is usually created with the ^X-! command. For example,
-           "^X-!cc -c junk.c" puts all of the compiler output into the buffer
-           named "[Output]". Repeatedly hitting ^X-^X will position the
-           editor at each error in turn, and will eventually start over again
-           at the top. The buffer searched for "errors" will be the last
-           shell command run, or the buffer named with the "error- buffer"
-           command. The "Entering directory XXX" and "Leaving directory XXX"
-           messages that GNU make puts out with the -w switch are honored, so
-           that files are found with the correct path. Tip: I use the
-           following macro to quickly grep a source directory for the string
-           under the cursor: use-register g load-register "^X!egrep -n :
-           *.[chs]^M" where the ^X and ^M are each single control characters,
-           entered using ^V to escape them. Then I invoke with @g to execute.
-           [NB: this macro won't work with the DOS/VMS/Win32 versions of
-           vile, since ':' doesn't expand to the word under the cursor on
-           those hosts due to conflicts with filename drive/disk delimiters.
-           For those hosts, substitute '&' instead.]
+           This buffer is usually created with the ^X-! command.
+
+           For example, "^X-!cc -c junk.c" puts all of the compiler output
+           into the buffer named "[Output]".
+
+           Repeatedly hitting ^X-^X will position the editor at each error in
+           turn, and will eventually start over again at the top. The buffer
+           searched for "errors" will be the last shell command run, or the
+           buffer named with the "error- buffer" command. The "Entering
+           directory XXX" and "Leaving directory XXX" messages that GNU make
+           puts out with the -w switch are honored, so that files are found
+           with the correct path.
+
+           Tip: I use the following macro to quickly grep a source directory
+           for the string under the cursor:
+
+                     use-register g load-register "^X!egrep -n : *.[chs]^M"
+
+
+           where the ^X and ^M are each single control characters, entered
+           using ^V to escape them. Then I invoke with @g to execute. [NB:
+           this macro won't work with the DOS/VMS/Win32 versions of vile,
+           since ':' doesn't expand to the word under the cursor on those
+           hosts due to conflicts with filename drive/disk delimiters. For
+           those hosts, substitute '&' instead.]
 
            The command parsing is done with regular expressions. Vile
            compiles these from the buffer [Error Expressions], which are a
@@ -1050,6 +1076,11 @@ Miscellaneous commands
 
    show-history
            displays the user's command line history.
+
+   show-local-modes
+           Shows the local value of each mode, if it differs from the global
+           value. If a majormode is set on the buffer, that is used for the
+           "global" value in this display.
 
    show-majormodes
            displays the builtin and user-defined major modes.
@@ -1337,9 +1368,14 @@ Editor modes
 
   Current mode settings
 
-   To display modes, use "setall", "modes", or "set all". Local mode values
-   are only shown if they differ from the global values, whether they have
-   been independently set or not.
+   To display modes, use "setall", "modes", "set all", or simply "set". vile
+   displays all of the current mode values in the [Settings] buffer.
+
+   vile shows local mode values only if they differ from the global values,
+   whether they have been independently set or not.
+
+   To show just the local mode values that differ from the global values, use
+   show-local-modes.
 
   Modes in detail
 
@@ -5227,10 +5263,13 @@ Setting Extra Colors
          enum             default
          hypertext        default
          isearch          default
+         linebreak        default
+         linenumber       default
          modeline         reverse
          number           default
          regex            default
          string           default
+         warning          default
 
    The set-extra-color command sets the colors. It prompts for the name of a
    type, followed by a combination of color and attributes. Use '+' to join
@@ -7233,6 +7272,6 @@ Online resources
 Copyright 1995-2009,2010 by Paul Fox, Thomas Dickey, and Kevin Buettner
 -----------------------------------------------------------------------
 
--- (generated by make-hlp.pl from vile-hlp.html(1.46))
+-- (generated by make-hlp.pl from vile-hlp.html(1.50))
 -- vile:txtmode fillcol=78
--- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.705 2011/11/23 16:44:29 tom Exp $
+-- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.706 2011/11/23 19:08:16 tom Exp $

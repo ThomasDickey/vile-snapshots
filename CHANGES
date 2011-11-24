@@ -1,6 +1,10 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
  20111123 (f)
+	+ correct "nohl" when used in a submode.  As a side-effect, vile frees
+	  video attributes for the buffers, but in this special case it did not
+	  limit the freeing to buffers using the majormode whose highlight
+	  submode was turned off (report by Wayne).
 	+ add force-empty-lines operator.
 	+ add delete-empty-lines operator (request by Wayne).
 	+ change tabstop within [Printable Chars] to keep the result within
