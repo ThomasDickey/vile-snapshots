@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.422 2011/11/23 22:47:12 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.423 2011/11/24 01:07:16 tom Exp $
  *
  */
 
@@ -3778,13 +3778,17 @@ attach_mmode(BUFFER *bp, const char *name)
 			   && is_local_val(mm, n)
 			   && !b_val(bp, n)) {
 		    /*
-		     * This is a special case - we need a
-		     * way to force vile to go back and
-		     * strip the ^M's from the end of each
-		     * line when reading a .bat file on
-		     * a Unix system.
+		     * This is a special case - we need a way to force vile to
+		     * go back and strip the ^M's from the end of each line
+		     * when reading a .bat file on a Unix system.  Conversely,
+		     * we need a way to suppress this feature selectively in
+		     * majormodes which normally use cr/lf endings.
 		     */
-		    set_rs_crlf(0, 1);
+		    if (mm[MDDOS].v.i) {
+			set_rs_crlf(0, 1);
+		    } else {
+			set_rs_lf(0, 1);
+		    }
 		}
 	    }
 	    return TRUE;
