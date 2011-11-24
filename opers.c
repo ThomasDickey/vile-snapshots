@@ -3,7 +3,7 @@
  * that take motion operators.
  * written for vile.  Copyright (c) 1990, 1995-2003 by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/opers.c,v 1.97 2008/08/17 16:25:49 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/opers.c,v 1.101 2011/11/23 16:40:56 tom Exp $
  *
  */
 
@@ -469,3 +469,38 @@ operopenrect(int f, int n)
     regionshape = rgn_RECTANGLE;
     return vile_op(f, n, openregion, "Opening");
 }
+
+#if !SMALLER
+int
+del_emptylines(int f, int n)
+{
+    int status;
+
+    opcmd = OPOTHER;
+    lines_deleted = 0;
+    status = vile_op(f, n, del_emptylines_region, "Delete empty lines");
+
+    if (do_report(lines_deleted))
+	mlforce("[%d lines deleted]", lines_deleted);
+    return status;
+}
+
+int
+frc_emptylines(int f, int n)
+{
+    int status;
+
+    opcmd = OPOTHER;
+    lines_deleted = 0;
+    status = vile_op(f, n, frc_emptylines_region, "Force empty lines");
+
+    if (do_report(lines_deleted)) {
+	if (lines_deleted > 0) {
+	    mlforce("[%d lines deleted", lines_deleted);
+	} else {
+	    mlforce("[%d lines added]", -lines_deleted);
+	}
+    }
+    return status;
+}
+#endif

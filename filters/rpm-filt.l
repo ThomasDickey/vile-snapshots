@@ -7,7 +7,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/rpm-filt.l,v 1.32 2010/11/04 09:25:29 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/rpm-filt.l,v 1.34 2011/11/22 20:06:39 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of rpm spec-file.
  */
@@ -75,7 +75,7 @@ IDENT2R		\}
 IDENTEQLS	[[:alpha:]_]{NAME}*=
 IDENTX		\$[\*@#\?\$!-]
 
-INTEGER		[-+]?([[:digit:]]+)
+NUMBER		[-+]?([[:digit:]]+)?([[:digit:].-]+)?([[:digit:]]+)
 
 SECTION		%{IDENT}
 
@@ -140,7 +140,7 @@ SECTION		%{IDENT}
 
 <NORMAL>{ACTION}	{ WriteToken(Action_attr); }
 
-<NORMAL>{INTEGER}	{ WriteToken(Number_attr); }
+<NORMAL>{NUMBER}	{ WriteToken(Number_attr); }
 
 <NORMAL>{IDENT1}	|
 <NORMAL>{IDENT2}	{ WriteToken(meta_variable(yytext, yyleng)); }
@@ -285,6 +285,12 @@ my_keyword_attr(char *name, int len)
 		} else {
 		    attr = 0;
 		}
+	    }
+	} else if (*name == '%') {
+	    if (name[1] == '{') {
+		attr = meta_variable(name + 2, len - 3);
+	    } else {
+		attr = meta_variable(name + 1, len - 1);
 	    }
 	}
     }

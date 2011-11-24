@@ -3,7 +3,7 @@
  * and mark.  Some functions are commands.  Some functions are just for
  * internal use.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/region.c,v 1.159 2010/09/06 18:36:11 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/region.c,v 1.163 2011/11/23 16:39:27 tom Exp $
  *
  */
 
@@ -1080,6 +1080,122 @@ get_fl_region(BUFFER *bp, REGION * rp)
 
     return status;
 }
+
+#if !SMALLER
+static int
+isEmptyLine(LINE *lp, int l, int r)
+{
+    int empty = TRUE;
+
+    if (lp == buf_head(curbp)) {
+	empty = FALSE;		/* we cannot treat this line as empty! */
+    } else if (llength(lp) > 0) {
+	int n;
+
+	if (r > llength(lp))
+	    r = llength(lp);
+
+	for (n = l; n < r; ++n) {
+	    int ch = lgetc(lp, n);
+	    if (!isSpace(ch)) {
+		empty = FALSE;
+		break;
+	    }
+	}
+    }
+
+    return empty;
+}
+
+/* delete line if it contains nothing (except possibly blanks) */
+/*ARGSUSED*/
+static int
+delete_empty_line(void *flagp GCC_UNUSED, int l, int r)
+{
+    LINE *lp = DOT.l;
+    int rc = TRUE;
+
+    if (isEmptyLine(lp, l, r)) {
+	DOT.o = l;
+	if (r > llength(lp))
+	    r = llength(lp);
+	if (l > 0 || r < llength(lp)) {
+	    rc = ldel_bytes((B_COUNT) (r - l), FALSE);
+	} else {
+	    TossToUndo(lp);
+	    lremove(curbp, lp);
+	    lines_deleted++;
+	    chg_buff(curbp, WFEDIT);
+	}
+    }
+
+    return rc;
+}
+
+/*
+ * Workaround to distinguish the given right-limit from the line's length.
+ */
+#define EmptyRight(lp,r) \
+    ((regionshape == rgn_RECTANGLE) ? (r) : llength(lp))
+
+static int
+force_empty_line(void *flagp, int l, int r)
+{
+    int rc;
+    LINE *lp = DOT.l;
+    LINE *lp0 = lback(lp);
+
+    /*
+     * Only do work if we are at the beginning of a blank-line sequence.
+     */
+    if (!isEmptyLine(lp0, l, EmptyRight(lp0, r))
+	&& isEmptyLine(lp, l, r)) {
+	int count = 0;
+	while (isEmptyLine(lp, l, EmptyRight(lp, r))) {
+	    ++count;
+	    lp = lforw(lp);
+	}
+	lp = DOT.l;
+	if (count > var_empty_lines) {
+	    while (count > var_empty_lines) {
+		--count;
+		rc = delete_empty_line(flagp, l, r);
+		if (rc != TRUE)
+		    break;
+	    }
+	} else if (count < var_empty_lines) {
+	    while (count < var_empty_lines) {
+		++count;
+		--lines_deleted;
+		DOT.o = 0;
+		rc = lnewline();
+		if (rc != TRUE)
+		    break;
+	    }
+	}
+    }
+    return TRUE;
+}
+
+/*
+ * Delete blank lines in the region.
+ */
+int
+del_emptylines_region(void)
+{
+    return do_lines_in_region(delete_empty_line, (void *) NULL, FALSE);
+}
+
+/*
+ * Adjust blank-line sequences to be $empty-lines uniformly.
+ */
+int
+frc_emptylines_region(void)
+{
+    return do_lines_in_region(force_empty_line, (void *) NULL, FALSE);
+}
+
+#endif
 
 #if OPT_SELECTIONS
 

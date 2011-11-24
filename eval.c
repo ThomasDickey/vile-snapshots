@@ -2,7 +2,7 @@
  *	eval.c -- function and variable evaluation
  *	original by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.433 2010/09/14 23:37:55 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.434 2011/11/22 22:13:14 tom Exp $
  *
  */
 
@@ -189,10 +189,16 @@ make_ctype_list(int dum1 GCC_UNUSED, void *ptr GCC_UNUSED)
 
 /* ARGSUSED */
 static int
-show_CharClasses(BUFFER *bp GCC_UNUSED)
+show_CharClasses(BUFFER *bp)
 {
-    return liststuff(PRINTABLECHARS_BufName,
-		     -TRUE, make_ctype_list, 0, (void *) 0);
+    int rc;
+
+    rc = liststuff(PRINTABLECHARS_BufName,
+		   -TRUE, make_ctype_list, 0, (void *) 0);
+    if ((bp = find_b_name(PRINTABLECHARS_BufName)) != 0) {
+	set_b_val(bp, VAL_TAB, 7);
+    }
+    return rc;
 }
 
 #if OPT_UPBUFF

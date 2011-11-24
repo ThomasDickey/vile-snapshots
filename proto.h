@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.721 2011/04/09 15:17:42 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.723 2011/11/23 15:29:35 tom Exp $
  *
  */
 
@@ -1159,11 +1159,13 @@ typedef int (*DORGNLINES)(int (*)(REGN_ARGS), void *, int);
 
 extern DORGNLINES get_do_lines_rgn (void);
 extern int        blank_region (void);
+extern int        del_emptylines_region (void);
 extern int        detab_region (void);
 extern int        detabline (void *flagp, int l, int r);
 extern int        entab_region (void);
 extern int        entabline (void *flagp, int l, int r);
 extern int        flipregion (void);
+extern int        frc_emptylines_region (void);
 extern int        get_fl_region (BUFFER *bp, REGION *rp);
 extern int        getregion (BUFFER *bp, REGION *rp);
 extern int        kill_line (void *flagp, int l, int r);
