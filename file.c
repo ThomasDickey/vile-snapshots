@@ -5,7 +5,7 @@
  * reading and writing of the disk are
  * in "fileio.c".
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.447 2011/04/07 22:38:10 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.448 2011/11/24 18:27:00 tom Exp $
  */
 
 #include "estruct.h"
@@ -438,7 +438,7 @@ same_fname(const char *fname, BUFFER *bp, int lengthen)
 /* support for "unique-buffers" mode -- file uids. */
 
 int
-fileuid_get(const char *fname, FUID * fuid)
+fileuid_get(const char *fname GCC_UNUSED, FUID * fuid GCC_UNUSED)
 {
 #ifdef CAN_CHECK_INO
     struct stat sb;
@@ -457,7 +457,7 @@ fileuid_get(const char *fname, FUID * fuid)
 }
 
 void
-fileuid_set(BUFFER *bp, FUID * fuid)
+fileuid_set(BUFFER *bp GCC_UNUSED, FUID * fuid GCC_UNUSED)
 {
 #ifdef CAN_CHECK_INO
     bp->b_fileuid = *fuid;	/* struct copy */
@@ -465,7 +465,7 @@ fileuid_set(BUFFER *bp, FUID * fuid)
 }
 
 void
-fileuid_invalidate(BUFFER *bp)
+fileuid_invalidate(BUFFER *bp GCC_UNUSED)
 {
 #ifdef CAN_CHECK_INO
     bp->b_fileuid.ino = 0;

@@ -3,7 +3,7 @@
  * Modified from a really old version of "borland.c" (before the VIO
  * stuff went in there.)
  *
- * $Header: /users/source/archives/vile.vcs/RCS/os2vio.c,v 1.38 2010/02/14 19:04:43 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/os2vio.c,v 1.39 2011/11/24 19:53:33 tom Exp $
  */
 
 #include "estruct.h"
@@ -169,7 +169,6 @@ vio_bcol(int color)
 #else
 #define	vio_fcol   nullterm_setfore
 #define	vio_bcol   nullterm_setback
-#define vio_spal   nullterm_setpal
 #endif
 
 static void

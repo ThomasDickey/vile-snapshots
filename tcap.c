@@ -1,7 +1,7 @@
 /*	tcap:	Unix V5, V7 and BS4.2 Termcap video driver
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.185 2010/09/07 00:46:49 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.187 2011/11/24 20:07:08 tom Exp $
  *
  */
 
@@ -108,7 +108,7 @@ static void tcapscrollregion(int top, int bot);
 #if OPT_COLOR
 static void tcap_fcol(int color);
 static void tcap_bcol(int color);
-static void tcap_spal(const char *s);
+static int tcap_spal(const char *s);
 #else
 #define tcap_fcol nullterm_setfore
 #define tcap_bcol nullterm_setback
@@ -744,11 +744,12 @@ tcap_bcol(int color)
     }
 }
 
-static void
+static int
 tcap_spal(const char *thePalette)	/* reset the palette registers */
 {
-    set_ctrans(thePalette);
+    int rc = set_ctrans(thePalette);
     reinitialize_colors();
+    return rc;
 }
 #endif /* OPT_COLOR */
 

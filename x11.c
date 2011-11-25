@@ -2,7 +2,7 @@
  *	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.377 2011/11/04 21:56:17 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.378 2011/11/24 19:58:04 tom Exp $
  *
  */
 
@@ -3850,13 +3850,17 @@ wait_for_scroll(TextWindow tw)
     }
 }
 
-static void
+static int
 x_setpal(const char *thePalette)
 {
+    int rc;
+
     TRACE(("x_setpal(%s)\n", thePalette));
-    set_ctrans(thePalette);
+    rc = set_ctrans(thePalette);
     x_touch(cur_win, 0, 0, cur_win->cols, cur_win->rows);
     x_flush();
+
+    return rc;
 }
 
 static void

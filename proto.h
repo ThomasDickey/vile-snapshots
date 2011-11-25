@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.723 2011/11/23 15:29:35 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.724 2011/11/24 19:52:33 tom Exp $
  *
  */
 
@@ -1330,6 +1330,7 @@ extern void dumb_set_encoding(ENC_CHOICES);
 extern ENC_CHOICES dumb_get_encoding(void);
 
 extern int  nullterm_setdescrip (const char *res);
+extern int  nullterm_setpal (const char *p);
 extern int  nullterm_watchfd (int fd, WATCHTYPE type, long *idp);
 extern void nullterm_clean (int flag);
 extern void nullterm_cursorvis (int flag);
@@ -1345,7 +1346,6 @@ extern void nullterm_scroll (int f, int t, int n);
 extern void nullterm_setback (int b);
 extern void nullterm_setccol (int c);
 extern void nullterm_setfore (int f);
-extern void nullterm_setpal (const char *p);
 extern void nullterm_settitle (const char *t);
 extern void nullterm_unclean (void);
 extern void nullterm_unwatchfd (int fd, long id);
@@ -1357,6 +1357,13 @@ extern	int	vl_resetkey (BUFFER * /* bp */, const char * /* fname */);
 extern	void	vl_encrypt_blok (char * /* bptr */, UINT /* len */);
 extern	void	vl_make_encrypt_key (char * /* dst */, const char * /* src */);
 extern	void	vl_setup_encrypt (char * /* pw */, int /* seed */);
+
+#if defined(MISSING_EXTERN_CRYPT) || !defined(HAVE_CRYPT)
+extern	char *	crypt	(const char *key, const char *salt);
+extern	void	encrypt	(char *nachr, int decr);
+extern	void	setkey	(const char *schl);
+#endif
+
 #endif	/* OPT_ENCRYPT */
 
 /* undo.c */
@@ -1696,9 +1703,6 @@ extern	int	chdir	(const char *path);
 #endif
 #ifdef MISSING_EXTERN_CLOSE
 extern	int	close	(int fd);
-#endif
-#ifdef MISSING_EXTERN_CRYPT
-extern	char *	crypt	(const char *key, const char *salt);
 #endif
 #ifdef MISSING_EXTERN_DUP
 extern	int	dup	(int fd);

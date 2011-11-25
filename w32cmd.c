@@ -2,7 +2,7 @@
  * w32cmd:  collection of functions that add Win32-specific editor
  *          features (modulo the clipboard interface) to [win]vile.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32cmd.c,v 1.48 2010/12/26 22:26:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32cmd.c,v 1.49 2011/11/24 18:28:09 tom Exp $
  */
 
 #include "estruct.h"
@@ -2623,7 +2623,6 @@ store_recent_file_or_folder(const char *path, int isFile)
 		sprintf(value_name, RECENT_REGVALUE_FMT, i);
 		TRACE(("...store %d -> %s\n", i, *listp));
 		if (w32_set_reg_sz(hkey, value_name, *listp) != ERROR_SUCCESS) {
-		    free(value_name);
 		    disp_win32_error(W32_SYS_ERROR, winvile_hwnd());
 		    break;
 		}

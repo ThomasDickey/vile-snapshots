@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.733 2011/11/04 21:39:43 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.734 2011/11/24 19:31:20 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -2590,7 +2590,7 @@ typedef struct	{
 	int	(*setdescrip) (const char *f); /* reset display description */
 	void	(*setfore) (int f);	/* set foreground color		*/
 	void	(*setback) (int b);	/* set background color		*/
-	void	(*setpal) (const char *p); /* set color palette	*/
+	int	(*setpal) (const char *p); /* set color palette	*/
 	void	(*setccol) (int c);	/* set cursor color		*/
 	void	(*scroll) (int from, int to, int n); /* scroll region	*/
 	void	(*pflush) (void);	/* really flush			*/

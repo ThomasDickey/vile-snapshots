@@ -1,6 +1,8 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20111123 (f)
+ 20111124 (f)
+	+ change return type of TERM.setpal from void to int, since the return
+	  value is used with the win32 platform.
 	+ modify special case for "dos" setting in a submode introduced in
 	  8.3q, recognizing "nodos" also.  This allows overriding a submode
 	  that is previously defined, e.g., in modes.rc, by a user's .vilerc
