@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.423 2011/11/24 01:07:16 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.424 2011/11/24 19:51:02 tom Exp $
  *
  */
 
@@ -2726,7 +2726,10 @@ chgd_hilite(BUFFER *bp, VALARGS * args GCC_UNUSED, int glob_vals GCC_UNUSED, int
 
 #if SYS_WINNT
 int
-chgd_rcntfiles(BUFFER *bp, VALARGS * args, int glob_vals, int testing)
+chgd_rcntfiles(BUFFER *bp GCC_UNUSED,
+	       VALARGS * args,
+	       int glob_vals GCC_UNUSED,
+	       int testing)
 {
     if (!testing) {
 	int nfiles = args->global->v.i;
@@ -2738,7 +2741,10 @@ chgd_rcntfiles(BUFFER *bp, VALARGS * args, int glob_vals, int testing)
 }
 
 int
-chgd_rcntfldrs(BUFFER *bp, VALARGS * args, int glob_vals, int testing)
+chgd_rcntfldrs(BUFFER *bp GCC_UNUSED,
+	       VALARGS * args,
+	       int glob_vals GCC_UNUSED,
+	       int testing)
 {
     if (!testing) {
 	int nfolders = args->global->v.i;

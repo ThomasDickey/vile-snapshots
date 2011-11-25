@@ -2,7 +2,7 @@
  * Define an empty terminal type for machines where we cannot use 'dumb_term',
  * so that command-line prompting will have something to talk to.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/nullterm.c,v 1.9 2009/12/22 01:49:47 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/nullterm.c,v 1.11 2011/11/24 20:04:08 tom Exp $
  */
 
 #include	<estruct.h>
@@ -209,10 +209,10 @@ nullterm_setfore(int f GCC_UNUSED)
 }
 
 /*ARGSUSED*/
-void
+int
 nullterm_setpal(const char *thePalette)
 {
-    set_ctrans(thePalette);
+    return set_ctrans(thePalette);
 }
 
 /*ARGSUSED*/

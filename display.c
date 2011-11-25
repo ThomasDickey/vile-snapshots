@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.557 2011/11/22 14:14:09 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.558 2011/11/24 20:18:22 tom Exp $
  *
  */
 
@@ -598,7 +598,7 @@ mark_extent(int row, int col, int ch)
 #if OPT_EXTRA_COLOR && OPT_VIDEO_ATTRS
 	int *attrp = lookup_extra_color(XCOLOR_LINEBREAK);
 	if (!isEmpty(attrp)) {
-	    set_vattrs(row, col, *attrp, 1);
+	    set_vattrs(row, col, (unsigned) *attrp, 1);
 	    if (ch == MRK_EXTEND_LEFT[0]) {
 		lmap0[row].left = col + 1;
 	    } else {
@@ -636,8 +636,8 @@ cols_until(WINDOW *wp, const char *src, unsigned limit)
 	    break;
 	}
 	used = 1;
-	nxt = limit - n;
-	adj = column_sizes(wp, src + n, nxt, &used);
+	nxt = (int) (limit - n);
+	adj = column_sizes(wp, src + n, (unsigned) nxt, &used);
 
 #if OPT_MULTIBYTE
 	if (adj == COLS_UTF8
@@ -658,8 +658,8 @@ cols_until(WINDOW *wp, const char *src, unsigned limit)
 	    }
 	}
 #endif
-	cols += adj;
-	n += (used - 1);
+	cols += (unsigned) adj;
+	n += (unsigned) (used - 1);
     }
     return cols;
 }
@@ -1929,7 +1929,9 @@ col2offs(WINDOW *wp, LINE *lp, C_NUM col)
 		&& w_val(wp, WMDLINEWRAP)
 		&& isBlank(text[offset - 1])
 		&& !isBlank(text[offset])) {
-		unsigned n2 = cols_until(wp, text + offset, len - offset);
+		int n2 = (int) cols_until(wp,
+					  text + offset,
+					  (unsigned) (len - offset));
 		int col1 = ((n + nums) % term.cols);
 		int col2 = col1 + n2;
 
