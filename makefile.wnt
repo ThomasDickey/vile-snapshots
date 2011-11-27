@@ -1,7 +1,7 @@
 #
 # makefile for vile on WIN32 using Microsoft Visual C++
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.wnt,v 1.103 2010/08/15 21:54:30 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.wnt,v 1.106 2011/11/25 19:47:46 tom Exp $
 #
 #
 !include <ntwin32.mak>
@@ -16,6 +16,7 @@
 #	LEX - name of flex/lex program, if any (needed to make most filters).
 #	OPT - secondary configuration (extra features)
 #	ICON - winvile's icon
+#	WIDE - nonempty for Unicode build
 #	TRACE - nonempty to suppress tracing when building a debug-executable.
 #	PROGNAME - vile/winvile $progname value
 #	VILEDEFS - other options, as needed
@@ -105,10 +106,14 @@ MY_CCOPT = $(MY_CCOPT) -DOPT_LOCALE -I. -Ifilters
 MY_CCOPT = $(MY_CCOPT) $(VILEDEFS)
 !endif
 
+!IF  "$(WIDE)" != ""
+MY_CCOPT = $(MY_CCOPT) -DUNICODE
+!endif
+
 !IF  "$(CFG)" == "vile" || "$(CFG)" == "vile-with-perl"
 DISP_DEF = -DDISP_NTCONS
 TARGET   = vile
-CFLAGS   = $(cvarsmt) $(CC_DEBUG) -nologo -DWIN32_LEAN_AND_MEAN -G4 \
+CFLAGS   = $(cvarsmt) $(CC_DEBUG) -nologo -DWIN32_LEAN_AND_MEAN \
 	   -Dscrn_chosen $(DISP_DEF) $(PERLOPTS) $(MY_CCOPT) $(CFLWIN32)
 LDFLAGS  = -nologo $(MY_LDOPT)
 SCREEN   = ntconio
@@ -120,7 +125,7 @@ EXTRAOBJ = dumbterm.obj
 !IF  "$(CFG)" == "winvile" || "$(CFG)" == "winvile-with-perl"
 DISP_DEF = -DDISP_NTWIN
 TARGET   = winvile
-CFLAGS   = $(cvarsmt) $(CC_DEBUG) -nologo -DWIN32_LEAN_AND_MEAN -G4 \
+CFLAGS   = $(cvarsmt) $(CC_DEBUG) -nologo -DWIN32_LEAN_AND_MEAN \
 	   -Dscrn_chosen $(DISP_DEF) $(PERLOPTS) $(MY_CCOPT) $(CFLWIN32)
 LDFLAGS  = -nologo /subsystem:windows /incremental:no $(MY_LDOPT)
 SCREEN   = ntwinio
@@ -145,7 +150,11 @@ CFLAGS   = $(CFLAGS) -DVILE_OLE
 OLEOBJS  = w32ole.obj w32reg.obj w32ole.res
 OLESRCS  = w32ole.cpp w32reg.c
 WRAPUTIL = wvwrap.exe
-OLELIBS  = uuid.lib oleaut32.lib comsupp.lib
+!IF  "$(WIDE)" != ""
+OLELIBS  = uuid.lib oleaut32.lib comsuppw.lib
+!else
+OLELIBS  = uuid.lib oleaut32.lib comsuppw.lib
+!endif
 EXTRA    = 
 !endif
 

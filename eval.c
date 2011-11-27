@@ -2,7 +2,7 @@
  *	eval.c -- function and variable evaluation
  *	original by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.434 2011/11/22 22:13:14 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.435 2011/11/25 01:09:24 tom Exp $
  *
  */
 
@@ -1376,7 +1376,7 @@ run_func(int fnum)
 	if (!is_error
 	    && (bp = find_any_buffer(arg[0])) != 0
 	    && !is_internalname(bp->b_fname))
-	    value = file_modified(bp->b_fname);
+	    value = (long) file_modified(bp->b_fname);
 	break;
     case UFLOCMODE:
     case UFGLOBMODE:
@@ -1478,7 +1478,7 @@ run_func(int fnum)
 	path_quote(&result, SL_TO_BSL(arg[0]));
 	break;
     case UFSTIME:
-	value = time((time_t *) 0);
+	value = (long) time((time_t *) 0);
 	break;
     case UFSTOKEN:
 	value = search_token(arg[0], arg[1], arg[2]);

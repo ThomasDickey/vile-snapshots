@@ -1,7 +1,7 @@
 #
 # makefile for vile filters on WIN32 using Microsoft Visual C++
 #
-# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.wnt,v 1.36 2010/08/15 22:05:30 tom Exp $
+# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.wnt,v 1.37 2011/11/25 00:56:59 tom Exp $
 #
 #
 !include <ntwin32.mak>
@@ -30,7 +30,7 @@ UTILS	= \
 SCRIPTS = \
 	filters.rc
 
-CFLAGS   = $(cvarsmt) $(CC_DEBUG) -nologo -DWIN32_LEAN_AND_MEAN -G4 -I. -I..
+CFLAGS   = $(cvarsmt) $(CC_DEBUG) -nologo -DWIN32_LEAN_AND_MEAN -I. -I..
 
 # special definition for spell-filter
 !if "$(SCREEN)" == "ntconio"

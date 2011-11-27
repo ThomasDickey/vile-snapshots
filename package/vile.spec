@@ -1,5 +1,5 @@
 Summary: VILE (VI Like Emacs) editor
-# $Header: /users/source/archives/vile.vcs/package/RCS/vile.spec,v 1.13 2011/07/20 00:53:49 tom Exp $
+# $Header: /users/source/archives/vile.vcs/package/RCS/vile.spec,v 1.14 2011/11/26 18:06:15 tom Exp $
 Name: vile
 Version: 9.8f
 # each patch should update the version
@@ -110,8 +110,19 @@ mkdir -p %{buildroot}/%{_wmcfgdir}
 install vile.wmconfig %{buildroot}%{_wmcfgdir}/vile
 install xvile.wmconfig %{buildroot}%{_wmcfgdir}/xvile
 
-ln -s %{_mandir}/man1/xvile.1 %{buildroot}%{_mandir}/man1/uxvile.1
-ln -s %{_mandir}/man1/xvile.1 %{buildroot}%{_mandir}/man1/lxvile.1
+MY_MANDIR=%{buildroot}%{_mandir}/man1
+for alias in uxvile lxvile
+do
+	for name in $MY_MANDIR/xvile.1*
+	do
+		ls -l "$name"
+		if test -f "$name"
+		then
+			rename=`basename "$name" | sed -e 's,xvile\.,'$alias'\.,'`
+			( cd $MY_MANDIR && ln -s `basename $name` $rename )
+		fi
+	done
+done
 
 %clean
 rm -rf %{buildroot}
@@ -154,6 +165,11 @@ rm -rf %{buildroot}
 
 %changelog
 # each patch should add its ChangeLog entries here
+
+* Sat Nov 26 2011 Thomas Dickey
+- modified scheme of sym-linking the uxvile and lxvile manpages to ensure
+  relative links, since absolute links may be automatically removed in
+  rpmbuild.
 
 * Tue Jul 19 2011 Thomas Dickey
 - adapt scheme in Fedora spec-file for providing separate RPMs.

@@ -1,6 +1,15 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20111124 (f)
+ 20111127 (f)
+	+ trim unneeded loader flags added in Mandriva 2010.2's rpmbuild, since
+	  those prevent the loadable filters from linking.
+	+ modify symlinking of manpages in vile.spec to avoid using absolute
+	  links, since those may be removed in rpmbuild.
+	+ change makefile.wnt to add WIDE knob to define UNICODE, and also for
+	  the OLE configuration to use comsuppw.lib rather than comsupp.lib
+	+ drop -G4 option from makefile.wnt, which was an optmization to favor
+	  486 processors phased out in Visual C++ 5.0, and with 9.0 produces
+	  a warning.
 	+ change return type of TERM.setpal from void to int, since the return
 	  value is used with the win32 platform.
 	+ modify special case for "dos" setting in a submode introduced in
