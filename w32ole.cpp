@@ -17,7 +17,7 @@
  *   "FAILED" may not be used to test an OLE return code.  Use SUCCEEDED
  *   instead.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32ole.cpp,v 1.31 2009/10/15 10:41:22 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32ole.cpp,v 1.33 2011/11/25 19:42:11 tom Exp $
  */
 
 #include "w32vile.h"
@@ -212,7 +212,7 @@ oleauto_exit(int code)
 
 /* ----------------------- C++ Helper Functions --------------------- */
 
-#if OPT_TRACE
+#if OPT_TRACE && !(defined(_UNICODE) || defined(UNICODE))
 static char *visible_wcs(OLECHAR *source)
 {
     static char *result = 0;
@@ -278,7 +278,7 @@ static char *visible_wcs(OLECHAR *source)
  * used/copied before the conversion routine is called again.
  *
  */
-#if !(defined(_UNICODE) || defined(UNICODE))
+#if 0 // !(defined(_UNICODE) || defined(UNICODE))
 
 static char *
 ConvertToAnsi(OLECHAR *szW)
@@ -305,7 +305,9 @@ ConvertToAnsi(OLECHAR *szW)
     TRACE(("ConvertToAnsi %d->%d:%s\n", len, strlen(ansibuf), ansibuf));
     return (ansibuf);
 }
+#endif
 
+#if !(defined(_UNICODE) || defined(UNICODE))
 static OLECHAR *
 ConvertToUnicode(const char *szA)
 {
@@ -484,7 +486,7 @@ vile_oa::Create(vile_oa **ppvile, BOOL visible)
     pvile->m_bVisible = (visible) ? VARIANT_TRUE : VARIANT_FALSE;
 
     // Name
-    tmp = TO_OLE_STRING(prognam);
+    tmp = reinterpret_cast<OLECHAR *>(TO_OLE_STRING(prognam));
     if (! (tmp && (pvile->m_bstrName = SysAllocString(tmp)) != 0))
         return E_OUTOFMEMORY;
 
@@ -625,7 +627,7 @@ vile_oa::get_FullName(BSTR *pbstr)
         /* Extract server path from registry. */
         sprintf(key, "CLSID\\%s\\LocalServer32", CLSID_VILEAUTO_KEY);
         if (RegOpenKeyEx(HKEY_CLASSES_ROOT,
-                         w32_charstring(key),
+                         reinterpret_cast<LPTSTR>(w32_charstring(key)),
                          0,
                          KEY_QUERY_VALUE,
                          &hk) != ERROR_SUCCESS)
@@ -642,7 +644,7 @@ vile_oa::get_FullName(BSTR *pbstr)
         }
         if ((cp = strchr(value, ' ')) != NULL)
             *cp = '\0';
-        tmp = TO_OLE_STRING(value);
+        tmp = reinterpret_cast<OLECHAR *>(TO_OLE_STRING(value));
         if (! (tmp && (m_bstrFullName = SysAllocString(tmp)) != 0))
             return (E_OUTOFMEMORY);
     }
@@ -679,7 +681,7 @@ STDMETHODIMP
 vile_oa::VileKeys(BSTR keys)
 {
     HRESULT hr   = NOERROR;
-    char    *msg = FROM_OLE_STRING(keys);
+    char    *msg = _com_util::ConvertBSTRToString(keys);
 
     TRACE(("VileKeys %d bytes:\n%s\n", strlen(msg), msg));
     while (*msg)

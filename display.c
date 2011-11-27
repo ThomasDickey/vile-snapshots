@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.558 2011/11/24 20:18:22 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.559 2011/11/25 01:01:58 tom Exp $
  *
  */
 
@@ -1169,6 +1169,8 @@ mk_to_vcol(WINDOW *wp, MARK mark, int expanded, int column, int adjust)
 	ch = EOF;
     } else if (mark.o) {
 	ch = text[mark.o - 1];
+    } else {
+	ch = EOF;
     }
     while (i < limit) {
 	int used = 1;
