@@ -1,7 +1,7 @@
 Summary: VILE (VI Like Emacs) editor
-# $Header: /users/source/archives/vile.vcs/package/RCS/vile.spec,v 1.14 2011/11/26 18:06:15 tom Exp $
+# $Header: /users/source/archives/vile.vcs/package/RCS/vile.spec,v 1.15 2011/12/11 14:36:55 tom Exp $
 Name: vile
-Version: 9.8f
+Version: 9.8g
 # each patch should update the version
 Release: dev
 License: GPLv2
@@ -14,6 +14,7 @@ Patch3: vile-9.8c.patch.gz
 Patch4: vile-9.8d.patch.gz
 Patch5: vile-9.8e.patch.gz
 Patch6: vile-9.8f.patch.gz
+Patch7: vile-9.8g.patch.gz
 # each patch should add itself to this list
 Packager: Thomas Dickey <dickey@invisible-island.net>
 
@@ -74,6 +75,7 @@ rebinding, and real X window system support.
 %patch4 -p1
 %patch5 -p1
 %patch6 -p1
+%patch7 -p1
 # each patch should add itself to this list
 
 # help rpmbuild to ignore the maintainer scripts in the doc directory...
@@ -165,6 +167,9 @@ rm -rf %{buildroot}
 
 %changelog
 # each patch should add its ChangeLog entries here
+
+* Sun Dec 11 2011 Thomas Dickey
+- added patch for 9.8g
 
 * Sat Nov 26 2011 Thomas Dickey
 - modified scheme of sym-linking the uxvile and lxvile manpages to ensure
