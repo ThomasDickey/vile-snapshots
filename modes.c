@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.424 2011/11/24 19:51:02 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.425 2011/12/25 12:18:56 tom Exp $
  *
  */
 
@@ -3574,48 +3574,50 @@ static struct VAL *
 get_sm_vals(MAJORMODE * ptr)
 {
     struct VAL *result = 0;
-    MINORMODE *p, *q;
-    char *name = ptr->mq.qv[QVAL_GROUP].vp->p;
+    if (ptr != 0) {
+	MINORMODE *p, *q;
+	char *name = ptr->mq.qv[QVAL_GROUP].vp->p;
 
-    for (p = ptr->sm, q = 0; p != 0; q = p, p = p->sm_next) {
-	if (!strcmp(name, p->sm_name)) {
-	    break;
-	}
-    }
-
-    if (p == 0) {
-
-	beginDisplay();
-	if ((p = typecalloc(MINORMODE)) != 0) {
-	    if ((p->sm_name = strmalloc(name)) == 0) {
-		free(p);
-		p = 0;
+	for (p = ptr->sm, q = 0; p != 0; q = p, p = p->sm_next) {
+	    if (!strcmp(name, p->sm_name)) {
+		break;
 	    }
 	}
-	endofDisplay();
 
+	if (p == 0) {
+
+	    beginDisplay();
+	    if ((p = typecalloc(MINORMODE)) != 0) {
+		if ((p->sm_name = strmalloc(name)) == 0) {
+		    free(p);
+		    p = 0;
+		}
+	    }
+	    endofDisplay();
+
+	    if (p != 0) {
+		init_sm_vals(&(p->sm_vals.bv[0]));
+		if (ptr->sm != 0) {
+		    copy_sm_vals(&(p->sm_vals.bv[0]),
+				 &(ptr->sm->sm_vals.bv[0]),
+				 VALTYPE_BOOL);
+		    copy_sm_vals(&(p->sm_vals.bv[0]),
+				 &(ptr->sm->sm_vals.bv[0]),
+				 VALTYPE_INT);
+		    copy_sm_vals(&(p->sm_vals.bv[0]),
+				 &(ptr->sm->sm_vals.bv[0]),
+				 VALTYPE_ENUM);
+		}
+		if (q != 0)
+		    q->sm_next = p;
+		else
+		    ptr->sm = p;
+	    }
+	}
 	if (p != 0) {
-	    init_sm_vals(&(p->sm_vals.bv[0]));
-	    if (ptr->sm != 0) {
-		copy_sm_vals(&(p->sm_vals.bv[0]),
-			     &(ptr->sm->sm_vals.bv[0]),
-			     VALTYPE_BOOL);
-		copy_sm_vals(&(p->sm_vals.bv[0]),
-			     &(ptr->sm->sm_vals.bv[0]),
-			     VALTYPE_INT);
-		copy_sm_vals(&(p->sm_vals.bv[0]),
-			     &(ptr->sm->sm_vals.bv[0]),
-			     VALTYPE_ENUM);
-	    }
-	    if (q != 0)
-		q->sm_next = p;
-	    else
-		ptr->sm = p;
+	    TRACE2(("...get_sm_vals(%s:%s)\n", ptr->shortname, p->sm_name));
+	    result = &(p->sm_vals.bv[0]);
 	}
-    }
-    if (p != 0) {
-	TRACE2(("...get_sm_vals(%s:%s)\n", ptr->shortname, p->sm_name));
-	result = &(p->sm_vals.bv[0]);
     }
     return result;
 }
@@ -4744,7 +4746,7 @@ chgd_filter(BUFFER *bp, VALARGS * args, int glob_vals, int testing)
 	BUFFER *bp2;
 
 	if (values->vp->i == FALSE) {
-	    if (glob_vals) {
+	    if (glob_vals && bp->majr) {
 		/*
 		 * Check whether we are being called to suppress highlighting
 		 * globally, or as part of a submode setting.  In the latter

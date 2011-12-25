@@ -1,5 +1,11 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
+ 20111211 (g)
+	+ add null-pointer checks for "nohl" fix in 9.8f, needed for the case
+	  when no majormode is in effect.
+	+ modify vile-manfilt to accept 0xb7 bullet character used in some
+	  manpages.
+
  20111127 (f)
 	+ trim unneeded loader flags added in Mandriva 2010.2's rpmbuild, since
 	  those prevent the loadable filters from linking.
