@@ -1,10 +1,13 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20111211 (g)
+ 20120213 (g)
+	+ modify configure script to support cross-compiling, tested with
+	  cross-compiler to mingw using convile target. 
 	+ add null-pointer checks for "nohl" fix in 9.8f, needed for the case
 	  when no majormode is in effect.
 	+ modify vile-manfilt to accept 0xb7 bullet character used in some
 	  manpages.
+	+ updates for configure macros CF_NCURSES_CONFIG, CF_XOPEN_SOURCE
 
  20111127 (f)
 	+ trim unneeded loader flags added in Mandriva 2010.2's rpmbuild, since
