@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 console API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntconio.c,v 1.93 2010/11/29 10:14:59 Rick.Sladkey Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntconio.c,v 1.94 2012/02/14 01:52:20 tom Exp $
  *
  */
 
@@ -381,7 +381,7 @@ ntconio_putc(int ch)
 	    scflush();
 	    do {
 		linebuf[bufpos++] = ' ';
-		if (bufpos >= sizeof(linebuf))
+		if (bufpos >= (int) sizeof(linebuf))
 		    scflush();
 	    } while ((ccol + bufpos) % 8 != 0);
 	    break;
@@ -404,7 +404,7 @@ ntconio_putc(int ch)
 	    break;
 	}
     }
-    if (bufpos >= sizeof(linebuf))
+    if (bufpos >= (int) sizeof(linebuf))
 	scflush();
 }
 
@@ -465,6 +465,7 @@ ntconio_rev(UINT attr)
 static int
 ntconio_cres(const char *res)
 {				/* change screen resolution */
+    (void) res;
     scflush();
     return 0;
 }
@@ -724,7 +725,7 @@ decode_key_event(INPUT_RECORD * irp)
     }
 
     key = NOKYMAP;
-    for (i = 0; i < TABLESIZE(keyxlate); i++) {
+    for (i = 0; i < (int) TABLESIZE(keyxlate); i++) {
 	if (keyxlate[i].windows == irp->Event.KeyEvent.wVirtualKeyCode) {
 
 	    /*
@@ -902,7 +903,9 @@ AutoScroll(WINDOW *wp)
 
 	// Set the cursor. Column doesn't really matter, it will
 	// get updated as soon as we get back into the window...
-	setcursor(row, 0) && sel_extend(TRUE, TRUE);
+	if (setcursor(row, 0)) {
+	    sel_extend(TRUE, TRUE);
+	}
 	(void) update(TRUE);
 	ScrollCount++;
 	if (ScrollCount > TRIGGER && Throttle > 0 && ScrollCount % INCR == 0)
@@ -933,6 +936,7 @@ autoscroll_thread(void *unused)
 {
     DWORD status;
 
+    (void) unused;
     for_ever {
 	status = WaitForSingleObject(hAsMutex, AS_TMOUT);
 	if (!buttondown) {
@@ -1060,6 +1064,7 @@ handle_mouse_event(MOUSE_EVENT_RECORD mer)
     DWORD thisclick;
     UINT clicktime = GetDoubleClickTime();
 
+    memset(&first, 0, sizeof(first));
     buttondown = FALSE;
     for_ever {
 	current = mer.dwMousePosition;
@@ -1443,6 +1448,9 @@ parse_icursor_string(char *str, int *revert_cursor)
 int
 chgd_icursor(BUFFER *bp, VALARGS * args, int glob_vals, int testing)
 {
+    (void) bp;
+    (void) glob_vals;
+
     if (!testing) {
 	int revert_cursor;
 	char *val = args->global->vp->p;

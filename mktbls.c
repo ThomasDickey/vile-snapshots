@@ -15,7 +15,7 @@
  * by Tom Dickey, 1993.    -pgf
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/mktbls.c,v 1.171 2011/04/07 00:44:55 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/mktbls.c,v 1.172 2012/02/14 01:56:50 tom Exp $
  *
  */
 
@@ -44,6 +44,10 @@
 
 #ifndef SYS_VMS
 #define SYS_VMS 0
+#endif
+
+#ifndef HAVE_CONFIG_H
+# define HAVE_STDLIB_H 1
 #endif
 
 #ifndef HAVE_STDLIB_H

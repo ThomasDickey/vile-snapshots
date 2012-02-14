@@ -11,7 +11,7 @@
  *    Subsequent copies do not show this cursor.  On an NT host, this
  *    phenomenon does not occur.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32cbrd.c,v 1.37 2010/02/10 12:05:43 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32cbrd.c,v 1.38 2012/02/14 01:58:36 tom Exp $
  */
 
 #include "estruct.h"
@@ -455,7 +455,7 @@ static MAP cbrdmap[] =
 static int
 map_compare(const void *elem1, const void *elem2)
 {
-    return (((MAP *) elem1)->val - ((MAP *) elem2)->val);
+    return (((const MAP *) elem1)->val - ((const MAP *) elem2)->val);
 }
 
 static int

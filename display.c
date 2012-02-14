@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.559 2011/11/25 01:01:58 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.560 2012/02/14 01:55:27 tom Exp $
  *
  */
 
@@ -653,6 +653,7 @@ cols_until(WINDOW *wp, const char *src, unsigned limit)
 	    } else {
 		ch2 = CharOf(src[n]);
 	    }
+	    (void) ch2;
 	    if (FontHasGlyph(ch2)) {
 		adj = mb_cellwidth(wp, src + n, nxt);
 	    }

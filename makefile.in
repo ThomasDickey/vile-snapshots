@@ -20,7 +20,7 @@
 #
 # gnu autoconf support by kevin buettner, 5/94
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.253 2011/05/30 12:57:11 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.255 2012/02/14 09:50:12 tom Exp $
 
 SHELL		= /bin/sh
 
@@ -50,6 +50,16 @@ ETAGS		= @ETAGS@
 
 x		= @EXEEXT@
 o		= .@OBJEXT@
+
+BUILD_CC	= @BUILD_CC@
+BUILD_CFLAGS	= @BUILD_CFLAGS@
+BUILD_CPPFLAGS	= @BUILD_CPPFLAGS@
+BUILD_LDFLAGS	= @BUILD_LDFLAGS@
+BUILD_LIBS	= @BUILD_LIBS@
+BUILD_EXEEXT	= @BUILD_EXEEXT@
+BUILD_OBJEXT	= @BUILD_OBJEXT@
+
+WINDRES		= @WINDRES@
 
 X_LIBS		= @X_LIBS@
 
@@ -120,7 +130,7 @@ INSTALL_DIRS    = $(BINDIR) $(DATADIR) $(DOCDIR) $(MANDIR) @EXTRA_INSTALL_DIRS@
 	@ECHO_CC@$(CC) -c $(CPPFLAGS) $(QUOTDEFS) $(CFLAGS) -DHELP_LOC=\"$(datadir)\" $<
 
 .rc.o:
-	windres $(QUOTDEFS) $< $@
+	$(WINDRES) $(QUOTDEFS) $< $@
 # All of the makefiles which should be preserved and distributed
 UNIXMAKIN = makefile.in				# for use with configure
 VMSMAK = descrip.mms vmsbuild.com		# on VMS
@@ -286,7 +296,7 @@ DISTFILES = $(ALLTOOLS) $(ALLSRC) $(PLAINDOCS) $(HTMLDOCS) $(TEXTFILES)
 # these are the files that go to coders
 DEV_DISTFILES = $(DISTFILES) $(DEVELOPER_ONLY)
 
-MKTBLS = ./mktbls$x
+MKTBLS = ./mktbls$(BUILD_EXEEXT)
 
 # Generated header-files, e.g., nemodes.h
 BUILTHDRS = @BUILTHDRS@
@@ -382,7 +392,7 @@ builtflt.h :
 	$(AWK) -f $(srcdir)/filters/mk-0th.awk <$(srcdir)/filters/genmake.mak static="@VILE_BUILT_IN_FILTERS@" dynamic="@VILE_LOADABLE_FILTERS@" >$@
 
 $(MKTBLS):  $(srcdir)/mktbls.c
-	@ECHO_LD@$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) \
+	@ECHO_LD@$(BUILD_CC) $(BUILD_CPPFLAGS) $(BUILD_CFLAGS) $(BUILD_LDFLAGS) \
 	    -o $(MKTBLS)  $(srcdir)/mktbls.c
 
 check: $(PROGRAM)
