@@ -11,7 +11,7 @@
 #
 # The modes are table entries in the BUFFER and WINDOW structures.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.312 2011/11/23 14:43:22 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.315 2012/03/04 22:26:13 tom Exp $
 #
 #
 # Mode-table entries.  Capitalized letters are used for abbreviations.
@@ -238,6 +238,8 @@ bool
 	"fchanged"	FCHANGED	!SMALLER	"true if current buffer's file is changed"
 	"filename-ic"	FILENAME_IC	1		"true if we set OPT_CASELESS"
 	"forward-search" FWD_SEARCH	1		"search-direction (true if forward)"
+	"get-at-dot"	GET_AT_DOT	1		"true if token must have DOT when getting $identifier, etc., from screen"
+	"get-it-all"	GET_IT_ALL	1		"true if full-token when getting $identifier, etc., from screen"
 	"modified"	MODIFIED	1		"is current buffer modified?"
 	"pending"	PENDING		1		"type ahead pending flag"
 	"term-resizes"	TERM_RESIZES	1		"true if terminal can be resized"
@@ -260,6 +262,8 @@ int
 	"cwline"	CWLINE		1		"current screen line in window"
 	"empty-lines"	EMPTY_LINES	!SMALLER	"tabstop to use when interpreting %C"
 	"error-tabstop"	ERROR_TABSTOP	OPT_FINDERR	"tabstop to use when interpreting %C"
+	"get-length"	GET_LENGTH	1		"set as side-effect of getting $identifier, etc., from screen"
+	"get-offset"	GET_OFFSET	1		"set as side-effect of getting $identifier, etc., from screen"
 	"goal-column"	GOAL_COLUMN	OPT_TRACE	"goal-column (debug-only)"
 	"lastkey"	LASTKEY		1		"last keyboard char struck"
 	"kill-limit"	KILL_LIMIT	1		"maximum number of bytes to return in $kill"
@@ -377,6 +381,10 @@ string
 "filter"	FILTER		1|STR|BRET	"check if internal filter exists"
 "ftime"		FTIME		1|STR|NRET	"file-timestamp (last-modified)"
 "geq"		GEQ		2|NUM|BRET	"logical greater than or equal"
+"get-key"	GET_KEY		0		"get 1 character"
+"get-completion" GET_COMPLETE	2|STR|SRET	"prompt for completion from given category (b/e/c/f/M/m/t/v)"
+"get-motion"	GET_MOTION	1|STR|SRET	"get keyboard-sequence (characters), result is motion's name"
+"get-sequence"	GET_SEQ		0		"get keyboard-sequence (characters)"
 "global"	GLOBMODE	1|STR|SRET	"retrieve global setting"
 "greater"	GREATER		2|NUM|BRET	"logical greater than"
 "gt"		GT		2|NUM|BRET	"logical greater than (greater)"

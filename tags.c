@@ -7,7 +7,7 @@
  *
  * Copyright (c) 1990, 1995-2007 by Paul Fox and Thomas E. Dickey
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tags.c,v 1.143 2011/04/07 22:40:12 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tags.c,v 1.144 2012/03/04 19:59:59 tom Exp $
  *
  */
 #include "estruct.h"
@@ -289,7 +289,7 @@ init_tags_cmpl(char *buf, size_t cpos)
     return btree_parray(&tags_tree, buf, cpos);
 }
 
-static int
+int
 tags_completion(DONE_ARGS)
 {
     size_t cpos = *pos;
@@ -864,6 +864,21 @@ tag_search(char *tag, int taglen, int initial)
     return status;
 }
 
+KBD_OPTIONS
+tags_kbd_options(void)
+{
+    KBD_OPTIONS mode = KBD_NORMAL
+#if OPT_TAGS_CMPL
+    | KBD_MAYBEC
+#endif
+     ;
+#ifdef MDTAGIGNORECASE
+    if (b_val(curbp, MDTAGIGNORECASE))
+	mode |= KBD_LOWERC;
+#endif
+    return mode;
+}
+
 /* ARGSUSED */
 int
 gototag(int f GCC_UNUSED, int n GCC_UNUSED)
@@ -872,18 +887,9 @@ gototag(int f GCC_UNUSED, int n GCC_UNUSED)
     int taglen;
 
     if (clexec || isnamedcmd) {
-	KBD_OPTIONS mode = KBD_NORMAL
-#if OPT_TAGS_CMPL
-	| KBD_MAYBEC
-#endif
-	 ;
-#ifdef MDTAGIGNORECASE
-	if (b_val(curbp, MDTAGIGNORECASE))
-	    mode |= KBD_LOWERC;
-#endif
 	if ((s = kbd_string("Tag name: ",
 			    tagname, sizeof(tagname),
-			    '\n', mode, tags_completion)) != TRUE)
+			    '\n', tags_kbd_options(), tags_completion)) != TRUE)
 	    return (s);
 	taglen = b_val(curbp, VAL_TAGLEN);
     } else {

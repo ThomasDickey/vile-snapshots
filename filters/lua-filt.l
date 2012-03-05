@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/lua-filt.l,v 1.11 2010/11/04 09:25:28 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/lua-filt.l,v 1.12 2012/02/18 13:10:32 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of lua
  * input text.
@@ -38,7 +38,7 @@ LONG_R		"]"[=]*"]"
 
 %%
 
-<INITIAL>{IDENT}	{ WriteToken(ci_keyword_attr(yytext)); }
+<INITIAL>{IDENT}	{ WriteToken(get_keyword_attr(yytext)); }
 <INITIAL>{STRINGS}	{ WriteToken(String_attr); }
 <INITIAL>{NUMBER}	{ WriteToken(Number_attr); }
 

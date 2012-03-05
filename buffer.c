@@ -5,7 +5,7 @@
  * keys. Like everyone else, they set hints
  * for the display system.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.351 2011/11/04 21:45:52 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.352 2012/03/04 18:11:37 tom Exp $
  *
  */
 
@@ -800,7 +800,7 @@ init_bname_cmpl(void)
     return list;
 }
 
-static int
+int
 bname_complete(DONE_ARGS)
 {
     size_t cpos = *pos;

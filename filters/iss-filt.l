@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/iss-filt.l,v 1.15 2010/11/04 09:25:28 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/iss-filt.l,v 1.16 2012/02/18 13:01:36 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Inno Setup
  * input text.
@@ -49,7 +49,7 @@ NUMBER		{HEXADECIMAL}|{INTEGER}|{REAL}
 			  save_table = get_symbol_table();
 			  push_state(PREPRO);
 			  set_symbol_table("iss_cpp");
-			  WriteToken2(ci_keyword_attr(yytext+1), 1);
+			  WriteToken2(get_keyword_attr(yytext+1), 1);
 			}
 <PREPRO>{STRING}	{ WriteToken(String_attr); }
 <PREPRO>{NUMBER}	{ WriteToken(Number_attr); }
@@ -73,7 +73,7 @@ NUMBER		{HEXADECIMAL}|{INTEGER}|{REAL}
 			    set_symbol_table(default_table);
 			  }
 			}
-<SETUP,FLAGS,CODE>{IDENT} { WriteToken(ci_keyword_attr(yytext)); }
+<SETUP,FLAGS,CODE>{IDENT} { WriteToken(get_keyword_attr(yytext)); }
 
 <SETUP>"="		{ ECHO; begin_state(VALUE); }
 <SETUP,VALUE>{SSTRING}	{ WriteToken(String_attr); }

@@ -7,7 +7,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/mc-filt.l,v 1.10 2010/11/04 09:25:29 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/mc-filt.l,v 1.11 2012/02/18 13:44:37 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of mailcap-file.
  */
@@ -63,7 +63,7 @@ MIMENAME	{MIMELEAF}("/"{MIMELEAF})?
 <COMMAND>[\r\n]		{ ECHO; new_state(NORMAL); }
 
 <FIELD>{BLANK}		{ ECHO; }
-<FIELD>{IDENT}		{ WriteToken(keyword_attr(yytext)); new_state(NEXTARG); }
+<FIELD>{IDENT}		{ WriteToken(get_keyword_attr(yytext)); new_state(NEXTARG); }
 
 <NEXTARG>{BLANK}	{ ECHO; }
 <NEXTARG>";"		{ ECHO; new_state(FIELD); }

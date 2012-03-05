@@ -1,8 +1,27 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20120213 (g)
+ 20120304 (g)
+	+ modify vilefilt.l to highlight functions using "-" character.
+	+ add aliases &get-key, &get-motion, &get-sequence as more readable
+	  names for &gtkey, &gtmotion and &gtsequence.
+	+ add &get-completion function to support macros that can handle
+	  name-completion in insert mode (prompted by mailing list discussion).
+	+ reset video-attributes for linebreak when computing the left/right
+	  scrolling offset, fixing a case from 9.8f which left stray highlights
+	+ updated nsis.key
+	+ modify conffilt.l to match leading keywords that may begin with a
+	  leading punctuation mark, other than the existing comment markers or
+	  brackets.
+	+ modify nsis mode to ignore case of keywords.
+	+ add -i option to most syntax filters to control whether keyword
+	  matching is done ignoring case.  The exceptions are html, imake and
+	  make, which use special logic for deciding which to use.
+	  NOTE: this is an incompatible change which can affect user-defined
+	  majormodes that use the affected filters.  However, presetting the
+	  -i option on about a third of the syntax filters would be more
+	  confusing than making this explicit in filters.rc
 	+ modify configure script to support cross-compiling, tested with
-	  cross-compiler to mingw using convile target. 
+	  cross-compiler to mingw using convile and minvile targets.
 	+ add null-pointer checks for "nohl" fix in 9.8f, needed for the case
 	  when no majormode is in effect.
 	+ modify vile-manfilt to accept 0xb7 bullet character used in some

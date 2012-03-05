@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/midlfilt.l,v 1.8 2010/11/04 09:25:29 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/midlfilt.l,v 1.9 2012/02/18 13:44:37 tom Exp $
  *
  * Filter to add vile "attribution" sequences to MIDL / ODL files.
  * - T.Dickey
@@ -33,7 +33,7 @@ NUMBER		{SIGN}?({DECIMAL}|{REAL})
 
 %%
 
-<CODE>{IDENT}		{ WriteToken(keyword_attr(yytext)); }
+<CODE>{IDENT}		{ WriteToken(get_keyword_attr(yytext)); }
 <CODE>";"		{ ECHO; }
 
 <CODE>"/*"		{ WriteToken(Comment_attr); BEGIN(COMMENT); }

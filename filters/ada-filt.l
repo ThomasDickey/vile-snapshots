@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/ada-filt.l,v 1.19 2011/04/10 23:37:04 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/ada-filt.l,v 1.20 2012/02/18 13:19:50 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Ada
  * input text.
@@ -33,7 +33,7 @@ ATTRIBUTE	\'{IDENT}
 
 %%
 
-{IDENT}			{ WriteToken(ci_keyword_attr(yytext)); }
+{IDENT}			{ WriteToken(get_keyword_attr(yytext)); }
 "<<"{IDENT}">>"		{ WriteToken(Ident2_attr); }
 {QUOTECHAR}		|
 {STRING}		{ WriteToken(String_attr); }
@@ -41,7 +41,7 @@ ATTRIBUTE	\'{IDENT}
 "--"[^\r\n]*		{ WriteToken(Comment_attr); }
 {ATTRIBUTE}		{
 			  set_symbol_table("ada_attribute");
-			  WriteToken(ci_keyword_attr(yytext + 1));
+			  WriteToken(get_keyword_attr(yytext + 1));
 			  set_symbol_table(default_table);
 			}
 

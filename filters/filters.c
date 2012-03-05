@@ -1,7 +1,7 @@
 /*
  * Common utility functions for vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.156 2010/09/07 00:32:51 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.157 2012/02/18 01:55:57 tom Exp $
  *
  */
 
@@ -526,6 +526,15 @@ const char *
 ci_keyword_attr(const char *text)
 {
     return keyword_attr(lowercase_of(text));
+}
+
+/*
+ * The "-i" option toggles between case-independent and case-dependent.
+ */
+const char *
+get_keyword_attr(const char *text)
+{
+    return keyword_attr((FltOptions('i') & 1) ? lowercase_of(text) : text);
 }
 
 const char *

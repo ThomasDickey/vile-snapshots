@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/key-filt.c,v 1.48 2010/09/07 00:32:39 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/key-filt.c,v 1.49 2012/02/18 13:49:37 tom Exp $
  *
  * Filter to add vile "attribution" sequences to a vile keyword file.  It's
  * done best in C because the delimiters may change as a result of processing
@@ -73,7 +73,7 @@ color_of(char *s, int arg)
 
     if (is_class(s)) {
 	if (FltOptions('c')) {
-	    result = keyword_attr(s);
+	    result = get_keyword_attr(s);
 	    if (result == 0)
 		result = class_attr(s);
 	    if (result == 0)
@@ -167,7 +167,7 @@ actual_color(const char *param, int len, int arg)
 
     result = color_of(s, arg);
     if (*result == 0)
-	result = keyword_attr(s);
+	result = get_keyword_attr(s);
 
     if (result != 0 && *result != 0 && !is_color(result)) {
 	result = Literal_attr;

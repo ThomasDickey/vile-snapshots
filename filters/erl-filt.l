@@ -3,7 +3,7 @@
 %{
 
 /*
-    $Id: erl-filt.l,v 1.4 2011/11/23 13:01:03 tom Exp $
+    $Id: erl-filt.l,v 1.5 2012/02/18 13:43:42 tom Exp $
 
     Filter to add vile "attribution" sequences to selected bits of Erlang
     input text.
@@ -56,9 +56,9 @@ NUMBER		{DECIMAL}|{REAL}
 %%
 
 {VAR}			{ WriteToken(Ident2_attr); }
-{ATOM}			{ WriteToken(keyword_attr(yytext)); }
-"_"			{ WriteToken(keyword_attr(yytext)); }
-"$".			{ WriteToken(keyword_attr(yytext)); }
+{ATOM}			{ WriteToken(get_keyword_attr(yytext)); }
+"_"			{ WriteToken(get_keyword_attr(yytext)); }
+"$".			{ WriteToken(get_keyword_attr(yytext)); }
 
 {NUMBER}		{ WriteToken(Number_attr); }
 

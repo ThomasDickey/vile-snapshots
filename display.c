@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.560 2012/02/14 01:55:27 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.561 2012/03/02 01:21:35 tom Exp $
  *
  */
 
@@ -2776,6 +2776,7 @@ update_cursor_position(int *screenrowp, int *screencolp)
 	if (w_val(curwp, WMDHORSCROLL)) {
 	    (void) mvrightwind(TRUE, excess + collimit / 2);
 	    moved = TRUE;
+	    preset_lmap0();
 	} else {
 	    *screencolp = update_extended_line(col, excess, TRUE);
 	}
@@ -2783,6 +2784,7 @@ update_cursor_position(int *screenrowp, int *screencolp)
 	if (w_val(curwp, WMDHORSCROLL)) {
 	    (void) mvleftwind(TRUE, -curcol + collimit / 2 + 1);
 	    moved = TRUE;
+	    preset_lmap0();
 	} else {
 	    *screencolp = update_extended_line(col, 0, FALSE);
 	}

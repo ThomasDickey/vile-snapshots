@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/fdl-filt.l,v 1.18 2010/11/04 09:25:28 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/fdl-filt.l,v 1.19 2012/02/18 13:43:42 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of fdl
  * input text.  This treats all of the text area as quoted, except for
@@ -56,7 +56,7 @@ KEYWORD		$[[:alpha:]_][[:alnum:]_]*
 static void
 handle_keyword(char *name)
 {
-    flt_puts(name, (int) strlen(name), keyword_attr(name));
+    flt_puts(name, (int) strlen(name), get_keyword_attr(name));
     next_state = INITIAL;
     if (!strcmp(name, "$rem")) {
 	BEGIN(NOTE);

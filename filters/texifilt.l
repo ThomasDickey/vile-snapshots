@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/texifilt.l,v 1.12 2010/11/04 09:25:30 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/texifilt.l,v 1.13 2012/02/18 13:47:15 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of texinfo input.
  */
@@ -37,7 +37,7 @@ NUMBER		({INTEGER}|{REAL})
 <sTEXT>[{}]		|
 <sTEXT>"@"{PUNCT}	{ WriteToken(String_attr); }
 
-<sTEXT>"@"{NAME}	{ const char *attr = keyword_attr(yytext + 1);
+<sTEXT>"@"{NAME}	{ const char *attr = get_keyword_attr(yytext + 1);
 			  const char *mark = Action_attr;
 			  if (attr == Comment_attr) {
 			      BEGIN(NOTE);
@@ -46,7 +46,7 @@ NUMBER		({INTEGER}|{REAL})
 			      mark = attr;
 			  }
 			  flt_puts("@", 1, mark);
-			  WriteToken2(keyword_attr(yytext + 1), 1);
+			  WriteToken2(get_keyword_attr(yytext + 1), 1);
 			}
 
 <NOTE>[^\r\n]*		{ WriteToken(Comment_attr); }

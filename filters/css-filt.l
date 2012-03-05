@@ -7,7 +7,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/css-filt.l,v 1.27 2010/11/04 09:25:28 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/css-filt.l,v 1.28 2012/02/18 12:58:12 tom Exp $
  *
  * Filter to add vile "attribution" sequences to Cascading Style Sheets.
  *
@@ -89,7 +89,7 @@ URL		[[:alpha:]]+"://"[[:alnum:]#%&+\,.\/?;@_=~-]+
 static const char *
 css_keyword_attr(char *text)
 {
-    const char *attr = ci_keyword_attr(text);
+    const char *attr = get_keyword_attr(text);
     if (isEmpty(attr))
 	attr = Ident_attr;
     return attr;
@@ -124,7 +124,7 @@ css_number_units(char *text, int length)
 	    flt_puts(text + digits, length - digits, "");
 	} else {
 	    set_symbol_table("cssUnits");
-	    if ((attr = ci_keyword_attr(text + digits)) == 0)
+	    if ((attr = get_keyword_attr(text + digits)) == 0)
 		attr = Error_attr;
 	    flt_puts(text + digits, length - digits, attr);
 	    set_symbol_table(default_table);

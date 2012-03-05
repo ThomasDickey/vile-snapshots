@@ -7,7 +7,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/latexflt.l,v 1.53 2010/11/04 09:25:28 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/latexflt.l,v 1.54 2012/02/18 13:51:13 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of TeX or LaTeX
  * input text.
@@ -178,7 +178,7 @@ write_keyword(void)
     if (FltOptions('a'))
 	attr = Keyword_attr;
     else
-	attr = keyword_attr(yytext);
+	attr = get_keyword_attr(yytext);
     if (!attr || !*attr)
 	attr = "";		/* not Keyword_attr! */
     WriteToken(attr);
@@ -189,7 +189,10 @@ write_define(int keylen)
 {
     int save = yytext[keylen];
     yytext[keylen] = '\0';
-    flt_puts(yytext, keylen, FltOptions('a') ? Keyword_attr : keyword_attr(yytext));
+    flt_puts(yytext, keylen,
+	     (FltOptions('a')
+	      ? Keyword_attr
+	      : get_keyword_attr(yytext)));
     yytext[keylen] = (char) save;
     flt_puts(yytext + keylen, yyleng - keylen, Number_attr);
 }

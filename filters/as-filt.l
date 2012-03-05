@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/as-filt.l,v 1.12 2010/11/04 09:25:28 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/as-filt.l,v 1.13 2012/02/18 13:14:37 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of assembler files.
  */
@@ -41,7 +41,7 @@ FORMAT		"%"[.*[:digit:]l#+-]*[cdeEfFgGisuxX]
 %%
 
 <NORMAL>"$"		{ WriteToken(Prepro_attr); }
-<NORMAL>{IDENT}		{ WriteToken(ci_keyword_attr(yytext)); }
+<NORMAL>{IDENT}		{ WriteToken(get_keyword_attr(yytext)); }
 <NORMAL>"%"{IDENT}	{ WriteToken(expect_attr(yytext)); }
 <NORMAL>";"[^\r\n]*	{ WriteToken(Comment_attr); }
 <NORMAL>{INTEGER}	{ WriteToken(Number_attr); }
@@ -70,7 +70,7 @@ FORMAT		"%"[.*[:digit:]l#+-]*[cdeEfFgGisuxX]
 static const char *
 expect_attr(char *name)
 {
-    const char *attr = ci_keyword_attr(name);
+    const char *attr = get_keyword_attr(name);
     if (attr == 0) {
 	attr = Error_attr;
 	flt_error("unexpected token");

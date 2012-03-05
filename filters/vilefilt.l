@@ -7,7 +7,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/vilefilt.l,v 1.70 2010/11/04 09:25:30 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/vilefilt.l,v 1.72 2012/03/04 21:58:54 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of vile macros
  * - T.Dickey
@@ -79,7 +79,7 @@ BINDING		(M-)?((^[AX]-(^)?{VISIBLE})|((#|FN)-?{VISIBLE})|^.)
 SSTRING		(\'(\\[^']|[^'\n])*\')
 DSTRING		\"(\\.|[^\\"\n])*\"
 
-FUNCTION	&[[:alpha:]]+
+FUNCTION	&[[:alpha:]][[:alnum:]-]*
 
 PARAMETER	[$]{DECIMAL}
 VARIABLE	[$%]{NAME}
@@ -293,7 +293,7 @@ command_attr(char *text)
 	static char none[] = "";
 	return vl_lookup_cmd(text) != 0 ? Keyword_attr : none;
     }
-    return keyword_attr(text);
+    return get_keyword_attr(text);
 }
 
 static int

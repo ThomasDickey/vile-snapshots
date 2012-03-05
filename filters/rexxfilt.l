@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/rexxfilt.l,v 1.13 2010/11/04 09:25:29 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/rexxfilt.l,v 1.14 2012/02/18 13:15:55 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of REXX source
  * - T.Dickey
@@ -37,7 +37,7 @@ NUMBER		{SIGN}?({DECIMAL}|{OCTAL}|{HEXADECIMAL}|{REAL})
 
 %%
 
-<CODE>{KEYWORD}		{ WriteToken(ci_keyword_attr(yytext)); }
+<CODE>{KEYWORD}		{ WriteToken(get_keyword_attr(yytext)); }
 
 <CODE>"/*"		{ WriteToken(Comment_attr); BEGIN(COMMENT); }
 <COMMENT>[^*]*		{ WriteToken(Comment_attr); }

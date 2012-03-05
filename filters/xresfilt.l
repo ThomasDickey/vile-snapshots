@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/xresfilt.l,v 1.28 2011/11/22 15:36:35 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/xresfilt.l,v 1.29 2012/02/18 13:48:30 tom Exp $
  *
  * Filter to add vile "attribution" sequences to an X resource file.
  */
@@ -106,7 +106,7 @@ preprocessor(char *text, int size)
 	t = skip_name(s);
 	save = *t;
 	*t = 0;
-	attr = keyword_attr(s);
+	attr = get_keyword_attr(s);
 	*t = (char) save;
 	set_symbol_table(default_table);
     }
@@ -129,7 +129,7 @@ isClass(char *name)
 static void
 quoted_name(char *text, int length)
 {
-    const char *attr = keyword_attr(lowercase_of(text));
+    const char *attr = get_keyword_attr(lowercase_of(text));
     if (attr != 0)
 	flt_bfr_embed(text, length, attr);
     else

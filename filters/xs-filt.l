@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/xs-filt.l,v 1.19 2010/11/04 09:25:30 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/xs-filt.l,v 1.20 2012/02/18 13:48:20 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Perl/C
  * extension source
@@ -48,7 +48,7 @@ NUMBER		{SIGN}?({DECIMAL}|{OCTAL}|{HEXADECIMAL}|{REAL})
 <CODE>^{BLANK}[#]include{BLANK}{INCLUDE} |
 <CODE>^{BLANK}[#]{KEYWORD} { WriteToken(Preproc_attr); }
 
-<CODE,PERLXS>{KEYWORD}	{ WriteToken(keyword_attr(yytext));
+<CODE,PERLXS>{KEYWORD}	{ WriteToken(get_keyword_attr(yytext));
 			  if (!strcmp(yytext, "MODULE")) {
 			      my_state = PERLXS;
 			      BEGIN(my_state);

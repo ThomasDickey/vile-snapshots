@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/xml-filt.l,v 1.37 2010/11/04 09:25:30 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/xml-filt.l,v 1.38 2012/02/18 13:47:30 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of XML input
  * text.
@@ -141,7 +141,7 @@ VALUE		#{IDENT}
 static const char *
 xml_keyword_attr(const char *name)
 {
-    const char *attr = keyword_attr(name);
+    const char *attr = get_keyword_attr(name);
 
     if (attr == 0)
 	attr = Ident_attr;
@@ -246,7 +246,7 @@ xml_command(char *text)
 
 	    *marker = '\0';
 	    set_symbol_table(SYMS_XMLNS);
-	    flt_puts(text, (int) strlen(text), keyword_attr(name));
+	    flt_puts(text, (int) strlen(text), get_keyword_attr(name));
 	    set_symbol_table(old_table);
 
 	    sprintf(new_table, FMT_XMLNS, name);
@@ -255,7 +255,7 @@ xml_command(char *text)
 
 	    text = marker + 1;
 	    set_symbol_table(new_table);
-	    attr = keyword_attr(text);
+	    attr = get_keyword_attr(text);
 	    *marker = ':';
 
 	    set_symbol_table(old_table);

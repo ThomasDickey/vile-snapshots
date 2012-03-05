@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/yaccfilt.l,v 1.41 2010/11/04 09:25:30 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/yaccfilt.l,v 1.42 2012/02/18 13:49:19 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of YACC program.
  */
@@ -139,10 +139,10 @@ DefineTerminal(char *text)
 static const char *
 merged_attr(char *text)
 {
-    const char *attr = keyword_attr(text);
+    const char *attr = get_keyword_attr(text);
     if ((cur_state == CODE) && isEmpty(attr)) {
 	set_symbol_table(default_table);
-	attr = keyword_attr(text);
+	attr = get_keyword_attr(text);
 	set_symbol_table("c");
     }
     return attr;

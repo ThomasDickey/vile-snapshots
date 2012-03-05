@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/py-filt.l,v 1.17 2010/11/04 09:25:29 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/py-filt.l,v 1.18 2012/02/18 13:47:15 tom Exp $
  *
  * Filter to add vile "attribution" sequences to a Python script
  */
@@ -34,7 +34,7 @@ NUMBER		{SIGN}?({DECIMAL}|{OCTAL}|{HEXADECIMAL})[L]?|{REAL}
 
 %%
 
-<NORMAL>{KEYWORD}	{ WriteToken(keyword_attr(yytext)); }
+<NORMAL>{KEYWORD}	{ WriteToken(get_keyword_attr(yytext)); }
 
 <NORMAL>{COMMENT}	{ WriteToken(Comment_attr); }
 

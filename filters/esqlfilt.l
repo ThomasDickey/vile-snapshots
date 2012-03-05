@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/esqlfilt.l,v 1.23 2010/11/04 09:25:28 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/esqlfilt.l,v 1.25 2012/02/18 13:43:42 tom Exp $
  *
  * Filter to add vile "attribution" sequences to embedded SQL with C/C++.
  * - T.Dickey
@@ -146,9 +146,9 @@ process_keyword(char *text, int len)
     if ((exec_sql >= 2) || in_execute || in_block) {
 	if (*temp == 0)
 	    temp = lowercase_of(text);
-	if ((attr = ci_keyword_attr(text)) == 0) {
+	if ((attr = get_keyword_attr(text)) == 0) {
 	    set_symbol_table(other_symbols);
-	    attr = keyword_attr(text);
+	    attr = get_keyword_attr(text);
 	    set_symbol_table(default_table);
 	}
 	if (in_execute
@@ -158,7 +158,7 @@ process_keyword(char *text, int len)
 	    reset_symbol_table();
 	}
     } else {
-	attr = keyword_attr(text);
+	attr = get_keyword_attr(text);
     }
     flt_puts(text, len, attr);
 }

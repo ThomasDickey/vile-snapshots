@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/def-filt.l,v 1.13 2010/11/04 09:25:28 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/def-filt.l,v 1.14 2012/02/18 13:11:22 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of M$ linker-definition
  * input text.
@@ -30,7 +30,7 @@ NUMBER		{INTEGER}
 
 %%
 
-{IDENT}			{ WriteToken(ci_keyword_attr(yytext)); }
+{IDENT}			{ WriteToken(get_keyword_attr(yytext)); }
 {STRING}		{ WriteToken(String_attr); }
 {NUMBER}		{ WriteToken(Number_attr); }
 ";"[^\r\n]*		{ WriteToken(Comment_attr); }

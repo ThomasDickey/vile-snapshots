@@ -1,6 +1,6 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
-  $Id: filters.html,v 1.5 2010/07/13 09:41:31 tom Exp $
+  $Id: filters.html,v 1.6 2012/02/18 14:00:28 tom Exp $
 -->
 <HTML>
 <HEAD>
@@ -176,7 +176,14 @@ A few options are common to all filters:
 <dt>-d
 <dd>is recognized when the filters have been compiled with "DEBUG" defined.  This is used in the more complicated filters such as perl, ruby and sql
 	to show the parsing.
+<dt>-i
+<dd>is used (in all except for <em>html</em>, <em>imake</em> and <em>make</em>)
+	to tell vile to ignore case when matching keywords.
+	It is ignored in the few instances mentioned because those filters
+	contain logic to distinguish between caseless and case-sensitive
+	syntax.
 <dt>-k FILE
+	<dd>specifies the keyword file to use.
 <dt>-q
 	<dd>exits the filter before writing the marked-up output.  This happens
 	after processing the class definitions, so it is useful in combination

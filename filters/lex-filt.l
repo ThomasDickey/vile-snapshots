@@ -9,7 +9,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/lex-filt.l,v 1.77 2010/11/04 09:07:21 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/lex-filt.l,v 1.78 2012/02/18 13:43:42 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of LEX program.
  */
@@ -130,7 +130,7 @@ STATES		("<"("*"|({IDENT}|\,)+)">")
 			  const char *attr = class_attr(yytext);
 			  if (attr == 0) {
 			    insert_keyword(yytext, NAME_LEX_STATES, 0);
-			    attr = keyword_attr(yytext);
+			    attr = get_keyword_attr(yytext);
 			  } else {
 			    attr = Error_attr;
 			    flt_error("Keyword \"%s\" is already a classname", yytext);
@@ -148,7 +148,7 @@ STATES		("<"("*"|({IDENT}|\,)+)">")
 			      const char *attr = class_attr(yytext);
 			      if (attr == 0) {
 				  insert_keyword(yytext, Pattern_attr, 0);
-				  attr = keyword_attr(yytext);
+				  attr = get_keyword_attr(yytext);
 			      } else {
 				  attr = Error_attr;
 				  flt_error("Keyword \"%s\" is already a classname", yytext);
@@ -190,13 +190,13 @@ STATES		("<"("*"|({IDENT}|\,)+)">")
 <ACTION2>{SPACE}+	{ ECHO; new_state(ACTION3); }
 <ACTION2>[\n]		{ ECHO; end_action(); }
 
-<ACTION3>{IDENT}	{ WriteToken(keyword_attr(yytext)); new_state(CODE1); }
+<ACTION3>{IDENT}	{ WriteToken(get_keyword_attr(yytext)); new_state(CODE1); }
 <ACTION3>"//"[^\r\n]*	{ WriteToken(Comment_attr); }
 <ACTION3>"/*"		{ PushQuote(COMMENT, Comment_attr); }
 <ACTION3>\{		{ ECHO; nesting = 1; new_state(CODE); }
 <ACTION3>[\n]		{ ECHO; end_action(); }
 
-<CODE,CODE1>{IDENT}	{ WriteToken(keyword_attr(yytext)); }
+<CODE,CODE1>{IDENT}	{ WriteToken(get_keyword_attr(yytext)); }
 <CODE,CODE1>{STRINGS}	{ WriteToken(String_attr); }
 <CODE,CODE1>{INTEGER}	{ WriteToken(Number_attr); }
 <CODE1>[\n]		{ ECHO; set_rules(); }
@@ -250,7 +250,7 @@ set_rules(void)
 static void
 write_1state(char *text, int len)
 {
-    const char *attr = keyword_attr(text);
+    const char *attr = get_keyword_attr(text);
     if (attr == 0) {
 	if (len == 1 && *text == '*') {
 	    attr = Keyword_attr;
@@ -395,7 +395,7 @@ write_patterns(char *text, int len)
 		     * it is more likely to be useful.
 		     */
 		    flt_bfr_append(text + first, last - first);
-		    if ((attr = keyword_attr(text + last + 1)) == 0) {
+		    if ((attr = get_keyword_attr(text + last + 1)) == 0) {
 			attr = Error_attr;
 			flt_error("Undefined name \"%s\"", text + last + 1);
 		    }

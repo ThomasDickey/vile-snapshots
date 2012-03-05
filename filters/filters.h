@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.129 2010/09/14 09:13:32 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.130 2012/02/18 01:53:10 tom Exp $
  */
 
 #ifndef FILTERS_H
@@ -247,9 +247,10 @@ extern int ignore_unused;
 extern KEYWORD *is_class(const char *name);
 extern KEYWORD *is_keyword(const char *name);
 extern KEYWORD *keyword_data(const char *name);
+extern char *class_attr(const char *name);
 extern const char *ci_keyword_attr(const char *name);
 extern const char *ci_keyword_flag(const char *name);
-extern char *class_attr(const char *name);
+extern const char *get_keyword_attr(const char *text);
 extern const char *get_symbol_table(void);
 extern const char *keyword_attr(const char *name);
 extern const char *keyword_flag(const char *name);

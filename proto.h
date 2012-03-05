@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.725 2011/11/27 11:24:42 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.728 2012/03/04 19:58:11 tom Exp $
  *
  */
 
@@ -189,6 +189,7 @@ extern char *kcod2pstr (int c, char *seq, int limit);
 extern const CMDFUNC *engl2fnc (const char *fname);
 extern const CMDFUNC *kcod2fnc (const BINDINGS *bs, int c);
 extern const char * fnc2engl(const CMDFUNC * cfp);
+extern int cmd_complete (DONE_ARGS);
 extern int eol_command (EOL_ARGS);
 extern int fnc2kcod (const CMDFUNC *);
 extern int fnc2kins (const CMDFUNC *);
@@ -256,6 +257,7 @@ extern int any_changed_buf (BUFFER **bpp);
 extern int any_unread_buf (BUFFER **bpp);
 extern int ask_for_bname(const char *prompt, char *bufn, size_t len);
 extern int bclear (BUFFER *bp);
+extern int bname_complete (DONE_ARGS);
 extern int bsizes (BUFFER *bp);
 extern int buffer_in_use (BUFFER *bp);
 extern int buffer_is_solo (BUFFER *bp);
@@ -1279,6 +1281,10 @@ extern int open_region_filter (void);
 #else
 #define pressreturn() (void)keystroke()
 #endif
+
+/* tags.c */
+extern KBD_OPTIONS tags_kbd_options (void);
+extern int tags_completion (DONE_ARGS);
 
 /* tbuff.c */
 TBUFF *	tb_alloc (TBUFF **p, size_t n);

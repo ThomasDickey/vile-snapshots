@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 screen API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.197 2010/12/27 00:05:35 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.198 2012/02/15 11:46:41 tom Exp $
  * Written by T.E.Dickey for vile (october 1997).
  * -- improvements by Clark Morgan (see w32cbrd.c, w32pipe.c).
  */
@@ -2979,6 +2979,7 @@ update_scrollbar_sizes(void)
 	    TRACE(("... move SIZEGRIP %d:%x to %d,%d\n",
 		   ok, cur_win->size_grip.w, left, top));
 	}
+	(void) ok;
     }
 }
 

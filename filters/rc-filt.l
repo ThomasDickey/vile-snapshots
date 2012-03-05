@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/rc-filt.l,v 1.15 2010/11/04 09:25:29 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/rc-filt.l,v 1.16 2012/02/18 13:47:15 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Windows
  * resource files.
@@ -29,7 +29,7 @@ show_prepro(char *text)
     s = skip_blanks(text = ++s);
     flt_puts(text, (int) (s - text), "");
     set_symbol_table("cpre");
-    flt_puts(text, (int) strlen(text), keyword_attr(text));
+    flt_puts(text, (int) strlen(text), get_keyword_attr(text));
     set_symbol_table(default_table);
 }
 
@@ -48,7 +48,7 @@ NUMBER		({DECIMAL}|{OCTAL}|{HEXADECIMAL})[L]?
 %%
 
 ^[ \t]*#[ \t]*{IDENT}	{ show_prepro(yytext); }
-{IDENT}			{ WriteToken(keyword_attr(yytext)); }
+{IDENT}			{ WriteToken(get_keyword_attr(yytext)); }
 {STRING}		{ WriteToken(String_attr); }
 {NUMBER}		{ WriteToken(Number_attr); }
 

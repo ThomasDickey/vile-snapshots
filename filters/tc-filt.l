@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/tc-filt.l,v 1.38 2010/12/25 13:10:24 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/tc-filt.l,v 1.39 2012/02/18 13:49:19 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of termcap
  */
@@ -83,7 +83,7 @@ check_name(const char *name)
 
     strncpy(temp, name, (size_t) 2);
     temp[2] = 0;
-    attr = keyword_attr(temp);
+    attr = get_keyword_attr(temp);
     if (attr == 0)
 	attr = "";
     if (strcmp(attr, Keyword_attr))

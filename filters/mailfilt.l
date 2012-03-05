@@ -6,7 +6,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/mailfilt.l,v 1.25 2010/11/04 09:25:29 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/mailfilt.l,v 1.26 2012/02/18 13:44:37 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of mail
  */
@@ -61,7 +61,7 @@ write_label(char *text, int size)
 	buffer = strcpy(temp, lname);
     }
     buffer[--size] = 0;
-    flt_puts(text, size, keyword_attr(buffer));
+    flt_puts(text, size, get_keyword_attr(buffer));
     flt_putc(':');
 
     if (buffer != temp)
