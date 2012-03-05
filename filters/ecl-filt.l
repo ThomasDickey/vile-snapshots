@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/ecl-filt.l,v 1.27 2010/11/04 09:25:28 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/ecl-filt.l,v 1.28 2012/02/18 13:43:42 tom Exp $
  *
  * Filter to add vile "attribution" sequences to Prolog/ECLiPSe code
  *
@@ -54,7 +54,7 @@ NUMBER		[-]?({INTEGER}|{RATIONAL}|{REAL})
 
 %%
 
-<NORMAL>{KEYWORD}	{ WriteToken(keyword_attr(yytext)); }
+<NORMAL>{KEYWORD}	{ WriteToken(get_keyword_attr(yytext)); }
 <NORMAL>{IDENT}		{ WriteToken(""); }
 
 <NORMAL>{LINECOMMENT}	{ WriteToken(Comment_attr); }

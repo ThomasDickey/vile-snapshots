@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/vl-filt.l,v 1.20 2010/11/04 09:25:30 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/vl-filt.l,v 1.21 2012/02/18 13:47:15 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of VeriLog
  * program.
@@ -44,8 +44,8 @@ DSTRING		\"(\\.|[^"\\])*\"
 
 %%
 
-<CODE>{ESCNAME}		{ WriteToken(keyword_attr(yytext)); }
-<CODE>{SYSNAME}		{ const char *attr = keyword_attr(yytext);
+<CODE>{ESCNAME}		{ WriteToken(get_keyword_attr(yytext)); }
+<CODE>{SYSNAME}		{ const char *attr = get_keyword_attr(yytext);
 			  if (attr != 0) {
 			      WriteToken(attr);
 			  } else {
@@ -53,10 +53,10 @@ DSTRING		\"(\\.|[^"\\])*\"
 			      WriteToken(Error_attr);
 			  }
 			}
-<CODE>{IDENT}		{ WriteToken(keyword_attr(yytext)); }
+<CODE>{IDENT}		{ WriteToken(get_keyword_attr(yytext)); }
 
 <CODE>`define{SPACE}+{IDENT} { do_define(yytext); }
-<CODE>{DIRECTIVE}	{ const char *attr = keyword_attr(yytext);
+<CODE>{DIRECTIVE}	{ const char *attr = get_keyword_attr(yytext);
 			  if (attr != 0) {
 			      WriteToken(attr);
 			  } else {
@@ -83,7 +83,7 @@ do_define(char *string)
     const char *keydef = "`define";
     int lendef = 7;
 
-    flt_puts(string, lendef, keyword_attr(keydef));
+    flt_puts(string, lendef, get_keyword_attr(keydef));
     for (string += lendef; isspace(CharOf(*string)); string++)
 	flt_putc(*string);
     string--;

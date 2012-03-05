@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/sql-filt.l,v 1.48 2010/11/04 09:10:09 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/sql-filt.l,v 1.49 2012/02/18 12:54:27 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of SQL script
  * - T.Dickey
@@ -69,7 +69,7 @@ HOSTVAR		":"{IDENT}
 %%
 
 <LEAD>{IDENT}		{   const char *text = lowercase_of(yytext);
-			    const char *attr = ci_keyword_attr(text);
+			    const char *attr = get_keyword_attr(text);
 			    DPRINTF(("{%s->%s}", text, NONNULL(attr)));
 			    if (attr == Comment_attr) {
 				WriteToken(attr);
@@ -77,7 +77,7 @@ HOSTVAR		":"{IDENT}
 			    } else if (attr == 0) {
 				new_state(BODY);
 				if (set_symbol_table("sqlplus")) {
-				    attr = ci_keyword_attr(text);
+				    attr = get_keyword_attr(text);
 				    WriteToken(attr);
 				    if (attr != 0
 					&& is_oneliner(text)) {
@@ -95,7 +95,7 @@ HOSTVAR		":"{IDENT}
 			}
 
 <MORE,BODY>{IDENT}	{   const char *text = lowercase_of(yytext);
-			    const char *attr = ci_keyword_attr(text);
+			    const char *attr = get_keyword_attr(text);
 			    DPRINTF(("{%s->%s}", text, NONNULL(attr)));
 			    if (attr == Comment_attr) {
 				new_state(INLINE_CMT);

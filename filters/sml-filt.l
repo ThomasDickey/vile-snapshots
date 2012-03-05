@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/sml-filt.l,v 1.10 2010/11/04 09:25:29 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/sml-filt.l,v 1.11 2012/02/18 13:47:15 tom Exp $
 
     Filter to add vile "attribution" sequences to selected bits of SML
     input text.
@@ -53,8 +53,8 @@ NUMBER		{DECIMAL}|{HEX}|{WORD}|{WORDHEX}|{REAL}
 
 %%
 
-{IDENT}			{ WriteToken(keyword_attr(yytext)); }
-"_"			{ WriteToken(keyword_attr(yytext)); }
+{IDENT}			{ WriteToken(get_keyword_attr(yytext)); }
+"_"			{ WriteToken(get_keyword_attr(yytext)); }
 
 {NUMBER}		{ WriteToken(Number_attr); }
 

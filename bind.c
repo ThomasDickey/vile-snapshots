@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.363 2011/11/04 21:45:03 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.364 2012/03/03 12:32:28 tom Exp $
  *
  */
 
@@ -3189,7 +3189,7 @@ eol_command(EOL_ARGS)
  * This procedure is invoked from 'kbd_string()' to setup the command-name
  * completion and query displays.
  */
-static int
+int
 cmd_complete(DONE_ARGS)
 {
     int status;

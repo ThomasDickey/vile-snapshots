@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/awk-filt.l,v 1.27 2010/11/04 09:25:28 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/awk-filt.l,v 1.28 2012/02/18 13:43:42 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of awk
  * input text.
@@ -76,7 +76,7 @@ PATTERN		"/"(\\.|\[(\\.|.)*\]|[^\t\r\n])*"/"
 
 ^{BLANK}*#!.*$		{ WriteToken(Preproc_attr); }
 
-{KEYWORD}		{ WriteToken(keyword_attr(yytext)); }
+{KEYWORD}		{ WriteToken(get_keyword_attr(yytext)); }
 
 "#".*$			{ WriteToken(Comment_attr); }
 

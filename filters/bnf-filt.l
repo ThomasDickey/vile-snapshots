@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/bnf-filt.l,v 1.13 2010/11/04 09:25:28 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/bnf-filt.l,v 1.14 2012/02/18 13:14:01 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of BNF syntax.
  */
@@ -28,7 +28,7 @@ BSTRING		\'(=.|[^'=])*\'
 
 %%
 
-{IDENT}			{ WriteToken(ci_keyword_attr(yytext)); }
+{IDENT}			{ WriteToken(get_keyword_attr(yytext)); }
 "::="			|
 [<>\[\]{}?|;+*/-]	{ WriteToken(Action_attr); }
 

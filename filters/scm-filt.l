@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Id: scm-filt.l,v 1.8 2010/11/04 09:25:29 tom Exp $
+ * $Id: scm-filt.l,v 1.9 2012/02/18 13:16:47 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of scheme code.
  *
@@ -112,7 +112,7 @@ RPAREN		[\)\]]
 			      FLTSTACK_THIS.quoted = save ? save : (yytext[yyleng-6] == 'i' ? 2 : 1);
 			  WriteToken3(paren_attr(),1);
 			  flt_puts(yytext+1, skip, "");
-			  flt_puts(yytext+1+skip, yyleng-1-skip, ci_keyword_attr(yytext+1+skip));
+			  flt_puts(yytext+1+skip, yyleng-1-skip, get_keyword_attr(yytext+1+skip));
 			}
 
 <NORMAL>['`]\,@?	{
@@ -148,7 +148,7 @@ RPAREN		[\)\]]
 			  flt_puts(yytext+1+skip, yyleng-1-skip,
 				   save == 0
 				   ? Error_attr
-				   : ci_keyword_attr(yytext+1+skip));
+				   : get_keyword_attr(yytext+1+skip));
 			  next_quoted = 0;
 			}
 
@@ -171,7 +171,7 @@ RPAREN		[\)\]]
 
 <NORMAL>{NUMBER}	{ WriteToken(Number_attr); }
 
-<NORMAL>{IDENT}		{ WriteToken(ci_keyword_attr(yytext)); }
+<NORMAL>{IDENT}		{ WriteToken(get_keyword_attr(yytext)); }
 
 <NORMAL>\"		{ BeginQuote(QUOTED, Literal_attr); }
 <QUOTED>\\.		{ flt_bfr_append(yytext, yyleng); }

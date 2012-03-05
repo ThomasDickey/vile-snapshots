@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/rtf-filt.l,v 1.8 2010/11/04 09:25:29 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/rtf-filt.l,v 1.9 2012/02/18 13:47:15 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of RTF (rich text format)
  * input text.
@@ -48,7 +48,7 @@ control_attr(char *text, int length)
 	    save = text[--length];
 	    text[length] = '\0';
 	}
-	attr = keyword_attr(text + 1);
+	attr = get_keyword_attr(text + 1);
 	text[length] = save;
     }
     if (attr == 0) {

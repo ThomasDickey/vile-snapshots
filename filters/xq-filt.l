@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/xq-filt.l,v 1.17 2010/11/04 09:25:30 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/xq-filt.l,v 1.18 2012/02/18 13:47:59 tom Exp $
  *
  * XQuery is case-sensitive
  * XQuery elements, attributes, and variables must be valid XML names
@@ -122,7 +122,7 @@ VALUE		#{IDENT}
 			  char *text = yytext;
 			  const char *attr = "";
 			  if (Num_tags <= 0 || curly_braces > Num_tags) {
-			      attr = keyword_attr(yytext);
+			      attr = get_keyword_attr(yytext);
 			      if (isEmpty(attr)) {
 				  attr = prefixed_attr(yytext, &text);
 				  if (isEmpty(attr)) {
@@ -197,7 +197,7 @@ VALUE		#{IDENT}
 static const char *
 xml_keyword_attr(const char *name)
 {
-    const char *attr = keyword_attr(name);
+    const char *attr = get_keyword_attr(name);
 
     if (isEmpty(attr))
 	attr = Ident_attr;
@@ -246,7 +246,7 @@ prefixed_attr(char *name, char **text)
 
 	*marker = '\0';
 	set_symbol_table(SYMS_XMLNS);
-	attr = keyword_attr(name);
+	attr = get_keyword_attr(name);
 	if (isEmpty(attr))
 	    attr = Ident_attr;
 	flt_puts(name, (int) strlen(name), attr);
@@ -258,7 +258,7 @@ prefixed_attr(char *name, char **text)
 
 	*text = marker + 1;
 	set_symbol_table(new_table);
-	attr = keyword_attr(*text);
+	attr = get_keyword_attr(*text);
 	*marker = ':';
 
 	set_symbol_table(old_table);
@@ -277,7 +277,7 @@ unprefixed_attr(char *name)
     sprintf(new_table, FMT_XMLNS, "fn");
 
     set_symbol_table(new_table);
-    attr = keyword_attr(name);
+    attr = get_keyword_attr(name);
 
     set_symbol_table(old_table);
 

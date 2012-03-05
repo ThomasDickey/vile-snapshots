@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/wbt-filt.l,v 1.10 2010/11/04 09:25:30 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/wbt-filt.l,v 1.11 2012/02/18 13:18:58 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of WinBatch script.
  */
@@ -38,7 +38,7 @@ NUMBER		({REAL}|{DECIMAL})
 
 %%
 
-<NORMAL>{IDENT}		{ WriteToken(ci_keyword_attr(yytext)); }
+<NORMAL>{IDENT}		{ WriteToken(get_keyword_attr(yytext)); }
 <NORMAL>#{IDENT}	{ WriteToken(want_attr(Prepro_attr, yytext)); }
 <NORMAL>"@"{IDENT}	{ WriteToken(want_attr(Number_attr, yytext)); }
 
@@ -56,7 +56,7 @@ NUMBER		({REAL}|{DECIMAL})
 static const char *
 want_attr(char *want, char *name)
 {
-    const char *have = ci_keyword_attr(name);
+    const char *have = get_keyword_attr(name);
     if (have != want)
 	have = Error_attr;
     return have;

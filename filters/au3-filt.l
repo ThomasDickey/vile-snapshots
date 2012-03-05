@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/au3-filt.l,v 1.12 2010/11/04 09:25:28 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/au3-filt.l,v 1.13 2012/02/18 13:07:09 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of AutoIt
  * input text.
@@ -63,7 +63,7 @@ NUMBER		{HEX}|{INTEGER}|{REAL}
 
 <NORMAL>;			{ WriteToken(Comment_attr); BEGIN(COMMENT); }
 <NORMAL>{IDENT}			{
-				  const char *attr = ci_keyword_attr(yytext);
+				  const char *attr = get_keyword_attr(yytext);
 				  if (attr == 0) {
 				      if (yytext[0] == '$') {
 					  attr = Ident2_attr;

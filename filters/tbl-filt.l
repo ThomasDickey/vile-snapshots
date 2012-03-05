@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/tbl-filt.l,v 1.15 2010/11/04 09:25:29 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/tbl-filt.l,v 1.16 2012/02/18 13:47:15 tom Exp $
  *
  * Filter to add vile "attribution" sequences to a vile mktbls datafile.
  */
@@ -37,7 +37,7 @@ NUMBER		{SIGN}?({DECIMAL}|{OCTAL}|{HEXADECIMAL}|{REAL})
 
 %%
 
-<NORMAL>{KEYWORD}	{ WriteToken(mixedcase(yytext) ? keyword_attr(yytext) : Preproc_attr); }
+<NORMAL>{KEYWORD}	{ WriteToken(mixedcase(yytext) ? get_keyword_attr(yytext) : Preproc_attr); }
 
 <NORMAL>{COMMENT}	{ WriteToken(Comment_attr); }
 

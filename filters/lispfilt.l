@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Id: lispfilt.l,v 1.25 2010/11/04 09:25:28 tom Exp $
+ * $Id: lispfilt.l,v 1.26 2012/02/18 12:59:14 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of lisp code.
  *
@@ -108,7 +108,7 @@ RPAREN		\)
 
 <NORMAL>{NUMBER}	{ WriteToken(Number_attr); }
 
-<NORMAL>{IDENT}		{ WriteToken(ci_keyword_attr(yytext)); }
+<NORMAL>{IDENT}		{ WriteToken(get_keyword_attr(yytext)); }
 
 <NORMAL>\"		{ BeginQuote(QUOTED, Literal_attr); }
 <QUOTED>\\.		{ flt_bfr_append(yytext, yyleng); }

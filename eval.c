@@ -2,7 +2,7 @@
  *	eval.c -- function and variable evaluation
  *	original by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.435 2011/11/25 01:09:24 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.440 2012/03/04 20:21:50 tom Exp $
  *
  */
 
@@ -972,6 +972,72 @@ dequoted_parameter(TBUFF **tok)
     return (result);
 }
 
+/*
+ * Prompt for completion of the given "value", selecting possible completions
+ * from a given "space".
+ *
+ * The "space" parameter can be (any unique abbreviation for):
+ * buffer, command, directory, filename, tags
+ *
+ * Returns false (and reports message) in any of these cases:
+ * a) no match for space parameter
+ * b) user cancels the prompt.
+ *
+ * FIXME: there are other interesting spaces, such as environment, as well as
+ * vile's Majormode, mode, variable
+ */
+static int
+get_completion(TBUFF **result, const char *space, const char *value)
+{
+    int code = FALSE;
+    int save_clexec = clexec;
+    int save_isname = isnamedcmd;
+    char fname[NFILEN];
+
+    TRACE((T_CALLED "get_completion(%s:%s)\n", NonNull(space), NonNull(value)));
+
+    clexec = FALSE;		/* this is an interactive feature */
+
+    if (!isEmpty(space) && !isErrorVal(space)) {
+	size_t len = strlen(space);
+	KBD_OPTIONS kbd_namec = ((NAMEC != ' ') ? 0 : KBD_MAYBEC);
+
+	code = TRUE;
+	tb_scopy(result, value);
+
+	if (!strncmp(space, "buffer", len)) {
+	    KBD_OPTIONS kbd_flags = (KBD_NORMAL
+				     | kbd_namec);
+	    code = kbd_reply("Buffer: ", result, eol_history, '\n',
+			     kbd_flags, bname_complete);
+	} else if (!strncmp(space, "command", len)) {
+	    KBD_OPTIONS kbd_flags = (KBD_EXPCMD
+				     | KBD_NULLOK
+				     | kbd_namec);
+	    code = kbd_reply("Command: ", result, eol_command, ' ',
+			     kbd_flags, cmd_complete);
+	} else if (!strncmp(space, "directory", len)) {
+	    isnamedcmd = TRUE;	/* do not read from screen... */
+	    code = mlreply_dir("Directory: ", result, fname);
+	    tb_scopy(result, fname);
+	} else if (!strncmp(space, "filename", len)) {
+	    isnamedcmd = TRUE;	/* do not read from screen... */
+	    code = mlreply_file("Filename: ", result,
+				FILEC_READ | FILEC_PROMPT, fname);
+	    tb_scopy(result, fname);
+	} else if (!strncmp(space, "tags", len)) {
+	    code = kbd_reply("Tag name: ", result, eol_history, '\n',
+			     tags_kbd_options(), tags_completion);
+	} else {
+	    code = FALSE;
+	}
+    }
+
+    isnamedcmd = save_isname;
+    clexec = save_clexec;
+    returnCode(code);
+}
+
 #define UNI_CLASSNAME "universal"
 #define BUF_CLASSNAME "buffer"
 #define WIN_CLASSNAME "window"
@@ -1297,17 +1363,24 @@ run_func(int fnum)
 	tb_append(&result, (char) nums[0]);
 	tb_append(&result, EOS);
 	break;
+    case UFGET_KEY:
     case UFGTKEY:
 	tb_append(&result, (char) keystroke_raw8());
 	tb_append(&result, EOS);
 	break;
+    case UFGET_MOTION:
     case UFGTMOTION:
 	if (!ufunc_get_motion(&result, arg[0]))
 	    is_error = TRUE;
 	break;
+    case UFGET_SEQ:
     case UFGTSEQ:
 	(void) kcod2escape_seq(kbd_seq_nomap(), tb_values(result), result->tb_size);
 	tb_setlen(&result, -1);
+	break;
+    case UFGET_COMPLETE:
+	if (!get_completion(&result, arg[0], arg[1]))
+	    is_error = TRUE;
 	break;
     case UFCMATCH:
 	if ((exp = new_regexval(arg[0], TRUE)) != 0) {

@@ -7,7 +7,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/sh-filt.l,v 1.110 2010/11/04 09:08:55 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/sh-filt.l,v 1.111 2012/02/18 13:47:15 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Shell script.
  */
@@ -102,7 +102,7 @@ DASHIDENT	{NAME0}{NAME}*("-"{NAME}{NAME2}*)*
 <NORMAL>{IDENT0}	|
 <NORMAL>{FILENAME}	{ WriteToken(""); /* exclude from other classes */ }
 
-<NORMAL>{DASHIDENT}	{ WriteToken(keyword_attr(yytext)); }
+<NORMAL>{DASHIDENT}	{ WriteToken(get_keyword_attr(yytext)); }
 
 <NORMAL>"#"[^\r\n]*	{ WriteToken(Comment_attr); }
 

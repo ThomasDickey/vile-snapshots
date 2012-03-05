@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/pl-filt.c,v 1.103 2010/09/06 11:59:07 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/pl-filt.c,v 1.104 2012/02/18 13:49:48 tom Exp $
  *
  * Filter to add vile "attribution" sequences to perl scripts.  This is a
  * translation into C of an earlier version written for LEX/FLEX.
@@ -1159,7 +1159,7 @@ put_IDENT(char *s, int ok, AfterKey * if_wrd)
     char save = s[ok];
 
     s[ok] = '\0';
-    attr = keyword_attr(s);
+    attr = get_keyword_attr(s);
     s[ok] = save;
     flt_puts(s, ok, (attr != 0 && *attr != '\0') ? attr : Ident2_attr);
     check_keyword(s, ok, if_wrd);
@@ -1176,7 +1176,7 @@ put_NOKEYWORD(char *s, int ok, AfterKey * if_wrd)
     char save = s[ok];
 
     s[ok] = '\0';
-    attr = keyword_attr(s);
+    attr = get_keyword_attr(s);
     s[ok] = save;
     flt_puts(s, ok, attr);
     check_keyword(s, ok, if_wrd);
@@ -1456,7 +1456,7 @@ do_filter(FILE *input GCC_UNUSED)
 			if (!strcmp(s, "__END__") || !strcmp(s, "__DATA__"))
 			    state = eIGNORED;
 			clearOp();
-			flt_puts(s, ok, keyword_attr(s));
+			flt_puts(s, ok, get_keyword_attr(s));
 			check_keyword(s, ok, &if_wrd);
 			s[ok] = (char) save;
 			s += ok;

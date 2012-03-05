@@ -7,7 +7,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/conffilt.l,v 1.9 2010/11/04 09:25:28 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/conffilt.l,v 1.12 2012/02/19 13:59:41 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of config-file.
  */
@@ -41,14 +41,40 @@ IDENT1		\${NAME}+
 IDENT2		\$\{[#]?{IDENT}\}
 IDENTX		\$[\*@#\?\$!-]
 
+CMT_MARK	[;#]
+TXT_MARK	[!@$%^&+*_=:"'<>,./?|\\]
+
+BLANK		[ \t]
+
 %%
 
 <NORMAL>{IDENT0}	|
 <NORMAL>{FILENAME}	{ ECHO; /* exclude from other classes */ }
 
-<NORMAL>{IDENT}		{ WriteToken(keyword_attr(yytext)); }
+<NORMAL>^{BLANK}*{TXT_MARK}{IDENT} {
+			  const char *attr;
+			  int skip = 0;
 
-<NORMAL>[;#][^\r\n]*	{ WriteToken(Comment_attr); }
+			  while (isblank(yytext[skip])) {
+			      ++skip;
+			  }
+			  attr = get_keyword_attr(yytext + skip);
+			  if (isEmpty(attr)) {
+			      attr = get_keyword_attr(yytext + skip + 1);
+			      if (!isEmpty(attr)) {
+				  ++skip;
+			      }
+			  }
+			  if (skip && !isEmpty(attr)) {
+			      WriteToken3("", skip);
+			      WriteToken2(attr, skip);
+			  } else {
+			      WriteToken(attr);
+			  }
+			}
+<NORMAL>{IDENT}		{ WriteToken(get_keyword_attr(yytext)); }
+
+<NORMAL>{CMT_MARK}[^\r\n]* { WriteToken(Comment_attr); }
 
 <NORMAL>{INTEGER}	{ WriteToken(Number_attr); }
 

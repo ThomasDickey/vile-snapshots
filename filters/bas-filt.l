@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/bas-filt.l,v 1.25 2010/11/04 09:25:28 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/bas-filt.l,v 1.26 2012/02/18 12:57:14 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Basic
  * input text.
@@ -59,7 +59,7 @@ NUMBER		{INTEGER}|{REAL}|{UUID}|({INTEGER}{HEX}|("&"[Hh]|\$){HEX}){TYPES}
 				  BEGIN(PREPRO);
 				  set_symbol_table("basic_prepro");
 				}
-<PREPRO>{IDENT}			{ WriteToken(ci_keyword_attr(yytext)); }
+<PREPRO>{IDENT}			{ WriteToken(get_keyword_attr(yytext)); }
 <PREPRO>[\r\n]			{ ECHO;
 				  BEGIN(NORMAL);
 				  set_symbol_table(default_table);
@@ -68,7 +68,7 @@ NUMBER		{INTEGER}|{REAL}|{UUID}|({INTEGER}{HEX}|("&"[Hh]|\$){HEX}){TYPES}
 <NORMAL>^{INTEGER}		{ WriteToken(LineNo_attr); }
 <NORMAL>{IDENT}			{ const char *attr = is_hex(yytext)
 						     ? Number_attr
-						     : ci_keyword_attr(yytext);
+						     : get_keyword_attr(yytext);
 				  if (attr == 0) attr = "";
 				  if (!strcmp(attr, Comment_attr)) {
 				    BEGIN(COMMENT);

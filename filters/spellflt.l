@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/spellflt.l,v 1.51 2010/11/04 09:25:29 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/spellflt.l,v 1.52 2012/02/18 13:47:15 tom Exp $
  *
  * Filter to add vile "attribution" sequences to misspelled words.
  */
@@ -180,7 +180,7 @@ ChopWords(FILE *fp, char *text, int len)
 	IGNORE_RC(fwrite(text, sizeof(*text), (size_t) len, fp));
 	fputc('\n', fp);
     } else {
-	attr = keyword_attr(text);
+	attr = get_keyword_attr(text);
 	if (isEmpty(attr)) {
 	    flt_puts(text, next, attr);
 	    return;
@@ -238,7 +238,7 @@ ChopWords(FILE *fp, char *text, int len)
 	    if (next > 1) {
 		save = text[next];
 		text[next] = '\0';
-		attr = keyword_attr(text);
+		attr = get_keyword_attr(text);
 		if (attr != 0)
 		    flt_error("%s", text);
 		text[next] = save;
@@ -336,7 +336,7 @@ do_filter(FILE *inputs GCC_UNUSED)
 		 * If user did not override with an entry in spell.keywords,
 		 * add the latest as a misspelled word to highlight.
 		 */
-		if (keyword_attr(buffer) == 0) {
+		if (get_keyword_attr(buffer) == 0) {
 		    insert_keyword(buffer, attr, 0);
 		}
 	    }

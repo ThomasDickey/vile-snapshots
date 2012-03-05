@@ -6,7 +6,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/tcl-filt.l,v 1.22 2010/11/04 09:25:29 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/tcl-filt.l,v 1.23 2012/02/18 13:49:19 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of TCL/TK script.
  *
@@ -66,7 +66,7 @@ NONUMBER	{SIGN}?({NODECIMAL}|{NOOCTAL}|{NOHEXADECIMAL}|{NOREAL})
 %%
 
 [{}]			{ WriteToken(Braces_attr); }
-{IDENT}			{ WriteToken(keyword_attr(yytext)); BEGIN(ARGS); }
+{IDENT}			{ WriteToken(get_keyword_attr(yytext)); BEGIN(ARGS); }
 
 <VERB>"#"([^\r\n]|\\\n)*$	{ WriteToken(Comment_attr); }
 <ARGS>[;\n]		{ ECHO; BEGIN(VERB); }

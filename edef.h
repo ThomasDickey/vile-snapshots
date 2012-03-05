@@ -6,7 +6,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.365 2011/11/23 15:24:02 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.366 2012/03/04 22:25:21 tom Exp $
  */
 
 #ifndef VILE_EDEF_H
@@ -345,6 +345,13 @@ decl_init( char error_val[], "ERROR" );
 #if OPT_EVAL
 decl_uninit( TBUFF *this_macro_result ); /* "$result" variable		*/
 decl_uninit( TBUFF *last_macro_result ); /* "$_" variable		*/
+#endif
+
+#if OPT_EVAL
+decl_uninit( int vl_get_at_dot );	/* "$get-at-dot" variable	*/
+decl_uninit( int vl_get_it_all );	/* "$get-it-all" variable	*/
+decl_uninit( int vl_get_length );	/* "$get-length" variable	*/
+decl_uninit( int vl_get_offset );	/* "$get-offset" variable	*/
 #endif
 
 #if OPT_EVAL || OPT_COLOR

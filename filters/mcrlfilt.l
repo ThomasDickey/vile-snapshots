@@ -6,7 +6,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/mcrlfilt.l,v 1.5 2010/11/04 09:25:29 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/mcrlfilt.l,v 1.6 2012/02/18 13:44:37 tom Exp $
  *
  * Filter to add vile "attribution" sequences to a mCRL(2) specification
  * or model, based on the text filter.
@@ -35,7 +35,7 @@ NUMBER		{SIGN}?({DECIMAL}|{REAL})
 
 %%
 
-<NORMAL>{KEYWORD}	{ WriteToken(keyword_attr(yytext)); }
+<NORMAL>{KEYWORD}	{ WriteToken(get_keyword_attr(yytext)); }
 
 <NORMAL>{COMMENT}	{ WriteToken(Comment_attr); }
 

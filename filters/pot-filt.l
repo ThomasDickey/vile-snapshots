@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/pot-filt.l,v 1.11 2010/11/04 09:25:29 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/pot-filt.l,v 1.12 2012/02/18 13:47:15 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of gettext files.
  */
@@ -35,7 +35,7 @@ FORMAT		"%"[.*[:digit:]l$#+-]*[cdeEfFgGisuxX]
 
 %%
 
-<NORMAL>{IDENT}		{ WriteToken(keyword_attr(yytext)); }
+<NORMAL>{IDENT}		{ WriteToken(get_keyword_attr(yytext)); }
 <NORMAL>"#:"[^\r\n]*	{ WriteToken(Prepro_attr); }
 <NORMAL>"#"[^\r\n]*	{ WriteToken(Comment_attr); }
 <NORMAL>{INTEGER}	{ WriteToken(Number_attr); }

@@ -44,7 +44,7 @@
  *	tgetc_avail()     true if a key is avail from tgetc() or below.
  *	keystroke_avail() true if a key is avail from keystroke() or below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.344 2011/04/07 22:40:12 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.348 2012/03/05 00:21:25 tom Exp $
  *
  */
 
@@ -640,9 +640,13 @@ adjust_chartype(CHARTYPE *mask)
 {
     int whole_line = FALSE;
 
-    /* if from gototag(), grab from the beginning of the string */
-    if (b_val(curbp, MDTAGWORD)
-	&& *mask == vl_ident) {
+    if (vl_get_it_all) {
+	whole_line = TRUE;
+	if (*mask == 0)		/* special case for $line variable */
+	    *mask = ~(*mask);
+    } else if (b_val(curbp, MDTAGWORD)
+	       && *mask == vl_ident) {
+	/* if from gototag(), grab from the beginning of the string */
 	whole_line = TRUE;
     } else if (b_is_directory(curbp)
 	       && *mask == SCREEN_STRING) {
@@ -671,7 +675,9 @@ read_by_ctype(char *buf, size_t bufn, CHARTYPE inclchartype, int whole_line)
     }
 #endif
 
-    TRACE((T_CALLED "read_by_ctype(incl=%#lx)\n", (ULONG) inclchartype));
+    TRACE((T_CALLED "read_by_ctype(incl=%#lx, whole=%d)\n",
+	   (ULONG) inclchartype, whole_line));
+
     if ((rc = vl_ctype2tbuff(&temp, inclchartype, whole_line)) == TRUE) {
 	if ((len = tb_length(temp)) >= bufn)
 	    len = bufn - 1;
@@ -780,15 +786,18 @@ screen_to_ident(char *buf, size_t bufn)
 int
 vl_ctype2tbuff(TBUFF **result, CHARTYPE inclchartype, int whole_line)
 {
+    int okay;
     int i = 0;
     MARK save_dot;
     int first_ch = -1;
     int last_ch = -1;
     int first_off = -1;
+    int save_off;
     int last_off = -1;
     int at_end = 0;
 
-    TRACE((T_CALLED "vl_ctype2tbuff(incl=%#lx)\n", (ULONG) inclchartype));
+    TRACE((T_CALLED "vl_ctype2tbuff(incl=%#lx, whole=%d)\n",
+	   (ULONG) inclchartype, whole_line));
 
     save_dot = DOT;
 
@@ -878,6 +887,7 @@ vl_ctype2tbuff(TBUFF **result, CHARTYPE inclchartype, int whole_line)
 #endif
 
     tb_init(result, EOS);
+    save_off = first_off;
     while (first_off < last_off && first_off < llength(DOT.l)) {
 	tb_append(result, lgetc(DOT.l, first_off));
 	++first_off;
@@ -885,7 +895,29 @@ vl_ctype2tbuff(TBUFF **result, CHARTYPE inclchartype, int whole_line)
     tb_append(result, EOS);
     DOT = save_dot;
 
-    returnCode(tb_length(*result) != 0);
+    okay = (tb_length(*result) != 0);
+
+    /*
+     * Set side-effect variable $get-offset and $get-length, for scripts.
+     */
+#if OPT_EVAL
+    if (okay) {
+	vl_get_offset = (C_NUM) save_off;
+	vl_get_length = (C_NUM) tb_length(*result);
+	if (vl_get_at_dot) {
+	    if ((vl_get_offset + vl_get_length <= DOT.o) ||
+		(vl_get_offset > DOT.o)) {
+		vl_get_offset = -1;
+		vl_get_length = -1;
+	    }
+	}
+    } else {
+	vl_get_offset = -1;
+	vl_get_length = -1;
+    }
+#endif
+
+    returnCode(okay);
 }
 
 #if OPT_CURTOKENS
@@ -972,19 +1004,44 @@ vl_regex2tbuff_dot(TBUFF **result, regexp * exp)
 int
 vl_regex2tbuff(TBUFF **result, REGEXVAL * rexp, int whole_line)
 {
+    int okay;
+    regexp *exp = rexp->reg;
+
     TRACE((T_CALLED "vl_regex2tbuff\n"));
 
     tb_init(result, EOS);
 
     if (rexp != 0 && rexp->pat != 0 && rexp->pat[0] && rexp->reg) {
 	if (whole_line) {
-	    vl_regex2tbuff_best(result, rexp->reg);
+	    vl_regex2tbuff_best(result, exp);
 	} else {
-	    vl_regex2tbuff_dot(result, rexp->reg);
+	    vl_regex2tbuff_dot(result, exp);
 	}
     }
 
-    returnCode(tb_length(*result) != 0);
+    okay = (tb_length(*result) != 0);
+
+    /*
+     * Set side-effect variable $get-offset and $get-length, for scripts.
+     */
+#if OPT_EVAL
+    if (okay) {
+	vl_get_offset = (C_NUM) (exp->startp[0] - lvalue(DOT.l));
+	vl_get_length = (C_NUM) (exp->endp[0] - exp->startp[0]);
+	if (vl_get_at_dot) {
+	    if ((vl_get_offset + vl_get_length <= DOT.o) ||
+		(vl_get_offset > DOT.o)) {
+		vl_get_offset = -1;
+		vl_get_length = -1;
+	    }
+	}
+    } else {
+	vl_get_offset = -1;
+	vl_get_length = -1;
+    }
+#endif
+
+    returnCode(okay);
 }
 #endif /* OPT_CURTOKENS */
 

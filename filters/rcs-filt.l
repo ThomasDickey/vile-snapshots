@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/rcs-filt.l,v 1.20 2010/11/04 09:08:24 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/rcs-filt.l,v 1.21 2012/02/18 13:47:15 tom Exp $
  *
  * Filter to add vile "attribution" sequences to RCS archives.
  */
@@ -28,7 +28,7 @@ NAME		[[:alnum:]]+
 %%
 
 <INITIAL>[\n]		{ ECHO; }
-<INITIAL>{NAME}		{ WriteToken(keyword_attr(yytext)); }
+<INITIAL>{NAME}		{ WriteToken(get_keyword_attr(yytext)); }
 <INITIAL>{NUMBER}	{ WriteToken(Number_attr); }
 <INITIAL>"@"		{ add_to_quoted(yytext, yyleng); BEGIN(QUOTED); }
 <QUOTED>[^@\r\n]*	{ add_to_quoted(yytext, yyleng); }

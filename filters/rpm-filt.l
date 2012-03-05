@@ -7,7 +7,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/rpm-filt.l,v 1.34 2011/11/22 20:06:39 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/rpm-filt.l,v 1.35 2012/02/18 13:21:12 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of rpm spec-file.
  */
@@ -262,7 +262,7 @@ meta_variable(char *name, int len)
 static const char *
 my_keyword_attr(char *name, int len)
 {
-    const char *attr = ci_keyword_attr(name);
+    const char *attr = get_keyword_attr(name);
     if (attr == 0) {
 	int try = len;
 	char save;
@@ -274,7 +274,7 @@ my_keyword_attr(char *name, int len)
 	if (try < len) {
 	    save = name[try];
 	    name[try] = 0;
-	    attr = ci_keyword_attr(name);
+	    attr = get_keyword_attr(name);
 	    flags = ci_keyword_flag(name);
 	    name[try] = save;
 	    if (attr != 0) {

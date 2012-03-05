@@ -3,7 +3,7 @@
  *	for getting and setting the values of the vile state variables,
  *	plus helper utility functions.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.159 2011/11/23 15:23:23 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.160 2012/03/04 22:30:27 tom Exp $
  */
 
 #include	<estruct.h>
@@ -248,7 +248,7 @@ static int
 any_REGEX_MATCH(TBUFF **rp, const char *vp, REGEXVAL * rexp)
 {
     if (rp) {
-	(void) vl_regex2tbuff(rp, rexp, FALSE);
+	(void) vl_regex2tbuff(rp, rexp, vl_get_it_all);
 	return TRUE;
     } else if (vp && valid_buffer(curbp)) {
 	return lrepl_regex(rexp, vp, (int) strlen(vp));
@@ -1855,6 +1855,30 @@ int
 var_WORD(TBUFF **rp, const char *vp)
 {
     return any_CTYPE_MATCH(rp, vp, vl_nonspace);
+}
+
+int
+var_GET_AT_DOT(TBUFF **rp, const char *vp)
+{
+    return any_rw_BOOL(rp, vp, &vl_get_at_dot);
+}
+
+int
+var_GET_IT_ALL(TBUFF **rp, const char *vp)
+{
+    return any_rw_BOOL(rp, vp, &vl_get_it_all);
+}
+
+int
+var_GET_LENGTH(TBUFF **rp, const char *vp)
+{
+    return any_ro_INT(rp, vp, vl_get_length);
+}
+
+int
+var_GET_OFFSET(TBUFF **rp, const char *vp)
+{
+    return any_ro_INT(rp, vp, vl_get_offset);
 }
 
 #if OPT_HOOKS

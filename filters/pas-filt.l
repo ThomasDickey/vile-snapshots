@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/pas-filt.l,v 1.10 2010/11/04 09:25:29 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/pas-filt.l,v 1.11 2012/02/18 13:18:07 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Pascal
  * input text.  A few TurboC and Delphi extensions are recognized:
@@ -37,7 +37,7 @@ NUMBER		{HEXADECIMAL}|{INTEGER}|{REAL}
 
 %%
 
-<NORMAL>{IDENT}		{ WriteToken(ci_keyword_attr(yytext)); }
+<NORMAL>{IDENT}		{ WriteToken(get_keyword_attr(yytext)); }
 <NORMAL>{STRING}	{ WriteToken(String_attr); }
 <NORMAL>{CHARACTER}	|
 <NORMAL>{NUMBER}	{ WriteToken(Number_attr); }

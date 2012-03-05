@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/cwebfilt.l,v 1.21 2010/11/04 09:25:28 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/cwebfilt.l,v 1.22 2012/02/18 13:43:42 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Cwebx input
  * text.  Also useful for Cweb
@@ -73,7 +73,7 @@ RC		\n
 #{BLANK}*include{BLANK}*\"(\\\.|[^\"])*\" |
 #{BLANK}*undef		{ WriteToken(Preproc_attr); }
 
-{IDENT}			{ WriteToken(in_code ? keyword_attr(yytext) : ""); }
+{IDENT}			{ WriteToken(in_code ? get_keyword_attr(yytext) : ""); }
 
 
 "/*"			{ WriteToken(Comment_attr);

@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/bat-filt.l,v 1.34 2010/11/04 09:25:28 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/bat-filt.l,v 1.35 2012/02/18 12:52:56 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of DOS (and
  * similar, such as W95, NT) batch file.
@@ -67,7 +67,7 @@ IDENT2		({PARAM}|{VARIABLE})
 				   */
 				  if (type != 0)
 				      *type = '\0';
-				  attr = keyword_attr(temp);
+				  attr = get_keyword_attr(temp);
 				  if (!strcmp(temp, "echo")) {
 					BEGIN(ECHOING);
 					echoing = 1;
@@ -106,7 +106,7 @@ IDENT2		({PARAM}|{VARIABLE})
 static const char *
 variable_attr(char *text)
 {
-    const char *attr = ci_keyword_attr(text);
+    const char *attr = get_keyword_attr(text);
     int isvar = (setting || *text == '%');
 
     if (isEmpty(attr) && isvar) {
