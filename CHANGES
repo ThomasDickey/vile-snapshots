@@ -1,6 +1,8 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20120304 (g)
+ 20120306 (g)
+	+ add variables $get-at-dot, $get-it-all, $get-length and $get-offset
+	  to simplify scripting of &get-completion and similar features.
 	+ modify vilefilt.l to highlight functions using "-" character.
 	+ add aliases &get-key, &get-motion, &get-sequence as more readable
 	  names for &gtkey, &gtmotion and &gtsequence.
