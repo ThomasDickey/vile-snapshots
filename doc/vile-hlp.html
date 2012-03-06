@@ -1,6 +1,6 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
-  $Id: vile-hlp.html,v 1.50 2011/11/23 19:05:21 tom Exp $
+  $Id: vile-hlp.html,v 1.52 2012/03/06 10:41:35 tom Exp $
 -->
 <HTML>
 <HEAD>
@@ -4720,6 +4720,18 @@ Getting along with vile						(version 9.8)
 	<td>$forward-search</td><td>search direction, true=forward</td>
 </tr>
 <tr>
+	<td>$get-at-dot</td><td>ensure that "identifier-like" matching includes current editing position.</td>
+</tr>
+<tr>
+	<td>$get-it-all</td><td>match entire "identifier-like" word under the cursor.</td>
+</tr>
+<tr>
+	<td>$get-length</td><td>sets length of "identifier-like" word as side-effect.</td>
+</tr>
+<tr>
+	<td>$get-offset</td><td>sets offset of "identifier-like" word as side-effect.</td>
+</tr>
+<tr>
 	<td>$helpfile</td><td>$VILE_HELP_FILE env var or "vile.hlp"   (read/write)</td>
 </tr>
 <tr>
@@ -4964,6 +4976,11 @@ Getting along with vile						(version 9.8)
 <tr><td>&amp;filter</td><td>1</td><td>true if the given majormode's filter is builtin</td></tr>
 <tr><td>&amp;ftime</td><td>1</td><td>modification-time of the given file, as a number</td></tr>
 <tr><td>&amp;geq</td><td>2</td><td>numeric greater than or equal</td></tr>
+<tr><td>&amp;get-key</td><td>0</td><td>(alias for &amp;gtkey)</td></tr>
+<tr><td>&amp;get-key</td><td>0</td><td>(alias for &amp;gtkey)</td></tr>
+<tr><td>&amp;get-completion</td><td>2</td><td>get name-completion for given category and value (see <a href="#completion-params">below</a> for arguments)</td></tr>
+<tr><td>&amp;get-motion</td><td>1</td><td>(alias for &amp;gtmotion)</td></tr>
+<tr><td>&amp;get-sequence</td><td>0</td><td>(alias for &amp;gtsequence)</td></tr>
 <tr><td>&amp;global</td><td>1</td><td>retrieves global mode setting</td></tr>
 <tr><td>&amp;greater</td><td>2</td><td>numeric greater than</td></tr>
 <tr><td>&amp;gt</td><td>2</td><td>numeric greater than</td></tr>
@@ -5019,6 +5036,10 @@ Getting along with vile						(version 9.8)
 <tr><td>&amp;word</td><td>2</td><td>select n'th word of string, blank-separated</td></tr>
 <tr><td>&amp;writable</td><td>1</td><td>is a file writable</td></tr>
 </table>
+<p>
+	<a name="completion-params">The &amp;get-completion function takes two arguments.</a>
+	The first is a category (one of "buffer", "command", "directory", "filename" or "tags").
+	The second is an initial value to complete.
 <p>
 	<a name="lookup-params">The &amp;lookup function takes two arguments.</a>
 	The first is a keyword and
@@ -8700,5 +8721,5 @@ vt102<font color="#800080">|</font>vt-102<font color="#800080">|</font><font col
 	>http://invisible-island.net/vile/vile-hlp.html</a> (this file)
 </ul>
 
-<h2 id="copying2"><a name="copying">Copyright 1995-2009,2010 by Paul Fox, Thomas Dickey, and Kevin Buettner</a></h2>
+<h2 id="copying2"><a name="copying">Copyright 1995-2011,2012 by Paul Fox, Thomas Dickey, and Kevin Buettner</a></h2>
 </BODY>

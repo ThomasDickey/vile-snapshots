@@ -1,6 +1,6 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
-  $Id: macros.html,v 1.15 2011/11/23 17:47:18 tom Exp $
+  $Id: macros.html,v 1.17 2012/03/06 10:34:37 tom Exp $
 -->
 <HTML>
 <HEAD>
@@ -602,7 +602,7 @@ sections may be read in any order.
 <dt>$discmd
 			<dd>Boolean value which will prevent vile from
 			printing some status messages.
-			
+
 			It is automatically set to FALSE while sourcing a
 			file, or while executing a macro (after prompting for
 			missing parameters).
@@ -680,6 +680,46 @@ sections may be read in any order.
 			<dd>Name of the current font (in xvile/winvile only).
 <dt>$forward-search
 			<dd>Boolean value indicating search direction.
+<dt>$get-at-dot
+			<dd>Boolean value telling whether to ensure that
+			state variables which return a match for a
+			regular expression match
+			(such as $bufname, $identifier, $pathname)
+			or character type ($line, $qidentifier, $word)
+			must include the current
+			editing position "dot".
+			<p>
+			The default (false) allows vile to search forward
+			until it gets a match which may not necessarily include
+			"dot".
+<dt>$get-it-all
+			<dd>Boolean value telling whether to set state variables
+			which return a match for a regular expression
+			(such as $bufname, $identifier, $pathname)
+			or character type ($line, $qidentifier, $word)
+			to the complete match.
+			<p>
+			The default (false) behavior in vile matches from
+			the current editing position onward.
+<dt>$get-offset
+			<dd>This number is set as a side-effect of computing
+			a state variable
+			which is a match for a regular expression
+			(such as $bufname, $identifier, $pathname)
+			or character type ($line, $qidentifier, $word).
+			<p>
+			The number is the character offset (starting at zero)
+			of the match.
+			It is set to -1 if there is no match.
+<dt>$get-length
+			<dd>This number is set as a side-effect of computing
+			a state variable
+			which is a match for a regular expression
+			(such as $bufname, $identifier, $pathname)
+			or character type ($line, $qidentifier, $word).
+			<p>
+			The number is the character length of the match.
+			It is set to -1 if there is no match.
 <dt>$helpfile
 			<dd>Filename referred to when help is requested (usually
 			vile.hlp).
@@ -1012,6 +1052,19 @@ sections may be read in any order.
 	<dd>Character class (see "show-printable")
 <dt>&amp;env    "S"
 	<dd>Return the value of the user's environment variable named "S".
+<dt>&amp;get-key
+	<dd>(alias for &amp;gtkey).
+<dt>&amp;get-completion
+	<dd>Prompt for and return name-completion.  There are two parameters:
+	<ol>
+	<li>category (any of "command", "buffer", "directory", "filename", "tags")
+	<li>value to complete, e.g., $identifier, $word or just a string in
+	quotes.
+	</ol>
+<dt>&amp;get-motion
+	<dd>(alias for &amp;gtmotion).
+<dt>&amp;get-sequence
+	<dd>(alias for &amp;gtsequence).
 <dt>&amp;gtkey
 	<dd>Get a single raw keystroke from the user.
 <dt>&amp;gtmotion "N"
@@ -1117,8 +1170,8 @@ sections may be read in any order.
 	  These all return string values:
 <dl>
 <dt>&amp;classof "N"
-	<dd>Retrieves the class(es) to which the given name may return. 
-	Usually this is a single name, e.g., one of those checked by &amp;isa. 
+	<dd>Retrieves the class(es) to which the given name may return.
+	Usually this is a single name, e.g., one of those checked by &amp;isa.
 	If multiple matches are found, the result contains each classname
 	separated by a space.
 
@@ -1155,7 +1208,7 @@ sections may be read in any order.
 		readable - test if file is readable<br>
 		writable - test if file is writable
 	<p>
-	The search order is fixed:  current, home, bin, startup, path, libdir. 
+	The search order is fixed:  current, home, bin, startup, path, libdir.
 	Note that the directory lists may overlap.
 <dt>&amp;mclass "M"
 	<dd>Retrieve the class to which the given mode belongs.  This is
@@ -1168,7 +1221,7 @@ sections may be read in any order.
 <dt>&amp;query  "S"
 	<dd>Present "S" to the user, and return their typed response.
 <dt>&amp;date "F" "T"
-	<dd>If strftime() is found, format the time "T" using the "F" format. 
+	<dd>If strftime() is found, format the time "T" using the "F" format.
 	Otherwise, use ctime() to format the time.  Times are numbers (see
 	&amp;ftime and &amp;stime).
 <dt>&amp;dquery  "S" "D"
