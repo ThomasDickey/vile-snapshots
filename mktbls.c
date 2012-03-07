@@ -5,7 +5,7 @@
  *	included in main.c
  *
  *	Copyright (c) 1990 by Paul Fox
- *	Copyright (c) 1995-2011 by Paul Fox and Thomas Dickey
+ *	Copyright (c) 1995-2012 by Paul Fox and Thomas Dickey
  *
  *	See the file "cmdtbl" for input data formats, and "estruct.h" for
  *	the output structures.
@@ -15,7 +15,7 @@
  * by Tom Dickey, 1993.    -pgf
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/mktbls.c,v 1.172 2012/02/14 01:56:50 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/mktbls.c,v 1.174 2012/03/06 23:43:11 tom Exp $
  *
  */
 
@@ -1520,7 +1520,7 @@ save_statevars(char *type, char **vec)
     char *cond = vec[3];
     char *key = Vars2Key(type, name, cond);
 
-    InsertSorted(&all_statevars, key, vars, "", cond, vec[0], "");
+    InsertSorted(&all_statevars, key, vars, "", cond, vec[4], "");
 }
 
 static void
@@ -1550,15 +1550,29 @@ dump_statevars(void)
 	"",
 	"typedef int (StateFunc)(TBUFF **resultp, const char *valuep);",
 	"",
-	"typedef struct { StateFunc *func; char type; } StateVars;",
+	"typedef struct {",
+	"\tStateFunc *func;",
+	"\tchar type;",
+	"#if OPT_ONLINEHELP",
+	"\tconst char* help;",
+	"#endif",
+	"} StateVars;",
 	"",
 	"#ifdef realdef",
+	"",
+	"#undef DATA",
+	"#if OPT_ONLINEHELP",
+	"#define DATA(func,type,help) { func, type, help }",
+	"#else",
+	"#define DATA(func,type,help) { func, type}",
+	"#endif",
+	"",
 	"DECL_EXTERN(const StateVars statevar_funcs[]) = {",
 	""
     };
     static const char *const tail[] =
     {
-	"\t{ (StateFunc *)NULL, 0 }",
+	"\tDATA( (StateFunc *)NULL, 0, 0 )",
 	"};",
 	"#else",
 	"extern const StateVars statevar_funcs[];",
@@ -1605,9 +1619,11 @@ dump_statevars(void)
 	if (sscanf(p->Name, "%s\n%s", norm, type) != 2)
 	    continue;
 	WriteIf(nevars, p->Cond);
-	Sprintf(temp, "\t{ var_%s,", p->Func);
+	Sprintf(temp, "\tDATA( var_%s,", p->Func);
 	(void) PadTo(32, temp);
-	Sprintf(temp + strlen(temp), "VALTYPE_%s },", c2TYPE(*type));
+	Sprintf(temp + strlen(temp), "VALTYPE_%s,", c2TYPE(*type));
+	(void) PadTo(50, temp);
+	Sprintf(temp + strlen(temp), "\"%s\" ),", p->Note);
 	Fprintf(nevars, "%s\n", temp);
     }
     FlushIf(nevars);
@@ -1961,6 +1977,7 @@ init_ufuncs(void)
 	"",
 	"#ifdef realdef",
 	"",
+	"#undef DATA",
 	"#if OPT_ONLINEHELP",
 	"#define DATA(name,code,help) {name,(unsigned)(code),help}",
 	"#else",

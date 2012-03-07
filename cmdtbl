@@ -97,7 +97,7 @@
 #		in '!' listed, then the flag does nothing, and should be
 #		viewed simply as documentation.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.269 2011/11/23 15:11:39 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.270 2012/03/06 21:48:44 tom Exp $
 #
 #
 
@@ -604,8 +604,10 @@ dotcmdplay	UNDO
 	<repeat the last text-changing command, CNT times>
 des_amp_funcs	NONE			OPT_EVAL
 	"describe-&functions"
+	"describe-user-functions"	!FEWNAMES
 des_dlr_vars	NONE			OPT_EVAL
 	"describe-$variables"
+	"describe-state-variables"	!FEWNAMES
 evaluate	NONE			OPT_EVAL
 	"eval"
 	"execute-string"		!FEWNAMES
@@ -1669,10 +1671,19 @@ list_majormodes	NONE			OPT_MAJORMODE
 	"show-majormodes"
 	<report values of all majormode settings (use CNT for verbose listing)>
 listvars	NONE			OPT_SHOW_EVAL
-	"list-variables"		!FEWNAMES
 	"show-variables"
+	"list-variables"		!FEWNAMES
 	"showvars"			!FEWNAMES
 	<report values of all variables, built-in and user>
+list_dlr_vars	NONE			OPT_SHOW_EVAL
+	"show-system-variables"
+	"list-$variables"		!FEWNAMES
+	"list-system-variables"		!FEWNAMES
+	<report values of all user variables>
+list_user_vars	NONE			OPT_SHOW_EVAL
+	"list-user-variables"		!FEWNAMES
+	"show-user-variables"
+	<report values of all user variables>
 showversion	EXRCOK
 	"version"
 	<report version information for the editor>
