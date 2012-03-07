@@ -2,7 +2,7 @@
  *	eval.c -- function and variable evaluation
  *	original by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.440 2012/03/04 20:21:50 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.445 2012/03/07 00:59:02 tom Exp $
  *
  */
 
@@ -435,6 +435,8 @@ show_charclass(TBUFF **result, const char *arg)
 /*--------------------------------------------------------------------------*/
 
 #if OPT_SHOW_EVAL
+static unsigned vars_to_list;
+
 /* list the current vars into the current buffer */
 /* ARGSUSED */
 static void
@@ -442,52 +444,65 @@ makevarslist(int dum1 GCC_UNUSED, void *ptr)
 {
     UVAR *p;
     int j, k;
+    int first = TRUE;
 
-    bprintf("--- State variables ");
-    bpadc('-', term.cols - DOT.o);
-    bputc('\n');
-
-    for (p = (UVAR *) ptr; p->u_name != 0; ++p) {
-	bprintf("\n$%s = ", p->u_name);
-	bputsn_xcolor(p->u_value,
-		      (int) strlen(p->u_value),
-		      ((p->u_type == VALTYPE_ENUM ||
-			p->u_type == VALTYPE_BOOL ||
-			p->u_type == VALTYPE_MAJOR)
-		       ? XCOLOR_ENUM
-		       : ((p->u_type == VALTYPE_REGEX)
-			  ? XCOLOR_REGEX
-			  : (p->u_type == VALTYPE_STRING
-			     ? XCOLOR_STRING
-			     : (p->u_type == VALTYPE_INT
-				? XCOLOR_NUMBER
-				: (p->u_type == (char) VALTYPE_UNKNOWN
-				   ? XCOLOR_WARNING
-				   : XCOLOR_NONE))))));
-    }
-
-    if (arg_stack != 0 && ((k = arg_stack->num_args) != 0)) {
-	bprintf("--- %s parameters ",
-		tb_values(arg_stack->all_args[0]));
+    if (vars_to_list & 1) {
+	bprintf("--- State variables ");
 	bpadc('-', term.cols - DOT.o);
-	for (j = 1; j <= k; j++) {
-	    bprintf("\n$%d = ", j);
-	    bputsn_xcolor(tb_values(arg_stack->all_args[j]),
-			  (int) tb_length(arg_stack->all_args[j]),
-			  XCOLOR_STRING);
+	bputc('\n');
+
+	for (p = (UVAR *) ptr; p->u_name != 0; ++p) {
+	    bprintf("\n$%s = ", p->u_name);
+	    bputsn_xcolor(p->u_value,
+			  (int) strlen(p->u_value),
+			  ((p->u_type == VALTYPE_ENUM ||
+			    p->u_type == VALTYPE_BOOL ||
+			    p->u_type == VALTYPE_MAJOR)
+			   ? XCOLOR_ENUM
+			   : ((p->u_type == VALTYPE_REGEX)
+			      ? XCOLOR_REGEX
+			      : (p->u_type == VALTYPE_STRING
+				 ? XCOLOR_STRING
+				 : (p->u_type == VALTYPE_INT
+				    ? XCOLOR_NUMBER
+				    : (p->u_type == (char) VALTYPE_UNKNOWN
+				       ? XCOLOR_WARNING
+				       : XCOLOR_NONE))))));
+	}
+	first = FALSE;
+    }
+
+    if (vars_to_list & 2) {
+	if (arg_stack != 0 && ((k = arg_stack->num_args) != 0)) {
+	    if (!first)
+		bputc('\n');
+	    bprintf("--- %s parameters ",
+		    tb_values(arg_stack->all_args[0]));
+	    bpadc('-', term.cols - DOT.o);
+	    for (j = 1; j <= k; j++) {
+		bprintf("\n$%d = ", j);
+		bputsn_xcolor(tb_values(arg_stack->all_args[j]),
+			      (int) tb_length(arg_stack->all_args[j]),
+			      XCOLOR_STRING);
+	    }
+	    first = FALSE;
 	}
     }
-    if (temp_vars != 0)
-	bputc('\n');
-    for (p = temp_vars, j = 0; p != 0; p = p->next) {
-	if (!j++) {
-	    bprintf("--- Temporary variables ");
-	    bpadc('-', term.cols - DOT.o);
+    if (vars_to_list & 4) {
+	if (temp_vars != 0) {
+	    if (!first)
+		bputc('\n');
+	    for (p = temp_vars, j = 0; p != 0; p = p->next) {
+		if (!j++) {
+		    bprintf("--- Temporary variables ");
+		    bpadc('-', term.cols - DOT.o);
+		}
+		bprintf("\n%%%s = ", p->u_name);
+		bputsn_xcolor(p->u_value,
+			      (int) strlen(p->u_value),
+			      XCOLOR_STRING);
+	    }
 	}
-	bprintf("\n%%%s = ", p->u_name);
-	bputsn_xcolor(p->u_value,
-		      (int) strlen(p->u_value),
-		      XCOLOR_STRING);
     }
 }
 
@@ -618,6 +633,7 @@ listvars(int f, int n)
 {
     show_vars_f = f;
     show_vars_n = n;
+    vars_to_list = 7;
     return show_VariableList(curbp);
 }
 #endif /* OPT_SHOW_EVAL */
@@ -625,11 +641,43 @@ listvars(int f, int n)
 #if OPT_EVAL
 /* ARGSUSED */
 static void
-list_dlr_vars(int dum1 GCC_UNUSED, void *ptr GCC_UNUSED)
+describe_dlr_vars(int dum1 GCC_UNUSED, void *ptr GCC_UNUSED)
 {
-    bprintf("--- $variables ");
-    bpadc('-', term.cols - DOT.o);
-    bputc('\n');
+    int j;
+    char temp[NSTRING];
+    const char *what;
+
+    for (j = 0; statevar_funcs[j].func != 0; ++j) {
+	if (j)
+	    bputc('\n');
+	lsprintf(temp, "\"%s\"", statevars[j]);
+	bputsn_xcolor(temp, -1, XCOLOR_STRING);
+	bputc('\n');
+	switch (statevar_funcs[j].type) {
+	case VALTYPE_INT:
+	    what = "integer";
+	    break;
+	case VALTYPE_STRING:
+	    what = "string";
+	    break;
+	case VALTYPE_BOOL:
+	    what = "bool";
+	    break;
+	case VALTYPE_REGEX:
+	    what = "regex";
+	    break;
+	case VALTYPE_ENUM:
+	    what = "enum";
+	    break;
+	case VALTYPE_MAJOR:
+	    what = "majormode";
+	    break;
+	default:
+	    what = "?";
+	}
+	bprintf("  ( %s )\n", what);
+	bprintf("  ( %s )", statevar_funcs[j].help);
+    }
 }
 
 int
@@ -638,7 +686,25 @@ des_dlr_vars(int f GCC_UNUSED, int n GCC_UNUSED)
     show_vars_f = f;
     show_vars_n = n;
     return liststuff(DLR_VARIABLES_BufName, FALSE,
-		     list_dlr_vars, 0, (void *) 0);
+		     describe_dlr_vars, 0, (void *) 0);
+}
+
+int
+list_dlr_vars(int f GCC_UNUSED, int n GCC_UNUSED)
+{
+    show_vars_f = f;
+    show_vars_n = n;
+    vars_to_list = 1;
+    return show_VariableList(curbp);
+}
+
+int
+list_user_vars(int f GCC_UNUSED, int n GCC_UNUSED)
+{
+    show_vars_f = f;
+    show_vars_n = n;
+    vars_to_list = 4;
+    return show_VariableList(curbp);
 }
 #endif
 
@@ -662,6 +728,7 @@ static void
 list_amp_funcs(int dum1 GCC_UNUSED, void *ptr GCC_UNUSED)
 {
     int n;
+    char temp[NSTRING];
 
     bprintf("--- &functions ");
     bpadc('-', term.cols - DOT.o);
@@ -671,15 +738,17 @@ list_amp_funcs(int dum1 GCC_UNUSED, void *ptr GCC_UNUSED)
 	const char *t_params = UF_PARAMS(vl_ufuncs[n].f_code);
 	const char *t_return = UF_RETURN(vl_ufuncs[n].f_code);
 
+	if (n)
+	    bputc('\n');
 	bputc('\n');
-	bprintf("&%s", vl_ufuncs[n].f_name);
+	lsprintf(temp, "\"&%s\"", vl_ufuncs[n].f_name);
+	bputsn_xcolor(temp, -1, XCOLOR_STRING);
+	bputc('\n');
 #if OPT_ONLINEHELP
-	bpadc(' ', 15 - DOT.o);
-	bprintf(" %s", vl_ufuncs[n].f_help);
+	bprintf("  ( %s )\n", vl_ufuncs[n].f_help);
 #endif
-	bputc('\n');
-	bprintf("\t%d %s parameter%s\n", nparams, t_params, PLURAL(nparams));
-	bprintf("\treturns %s\n", t_return);
+	bprintf("  ( %d %s parameter%s )\n", nparams, t_params, PLURAL(nparams));
+	bprintf("  ( returns %s )", t_return);
     }
 }
 

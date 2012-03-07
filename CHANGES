@@ -1,6 +1,10 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
  20120306 (g)
+	+ add "show-user-variables" command.
+	+ implement "describe-$variables" command.
+	+ add alias "describe-user-functions" for "describe-&functions"
+	+ add alias "describe-state-variables" for "describe-$variables"
 	+ add variables $get-at-dot, $get-it-all, $get-length and $get-offset
 	  to simplify scripting of &get-completion and similar features.
 	+ modify vilefilt.l to highlight functions using "-" character.

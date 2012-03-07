@@ -11,7 +11,7 @@
 #
 # The modes are table entries in the BUFFER and WINDOW structures.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.315 2012/03/04 22:26:13 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.316 2012/03/06 11:48:00 tom Exp $
 #
 #
 # Mode-table entries.  Capitalized letters are used for abbreviations.
@@ -382,7 +382,7 @@ string
 "ftime"		FTIME		1|STR|NRET	"file-timestamp (last-modified)"
 "geq"		GEQ		2|NUM|BRET	"logical greater than or equal"
 "get-key"	GET_KEY		0		"get 1 character"
-"get-completion" GET_COMPLETE	2|STR|SRET	"prompt for completion from given category (b/e/c/f/M/m/t/v)"
+"get-completion" GET_COMPLETE	2|STR|SRET	"prompt for completion from given category (b/c/d/f/t)"
 "get-motion"	GET_MOTION	1|STR|SRET	"get keyboard-sequence (characters), result is motion's name"
 "get-sequence"	GET_SEQ		0		"get keyboard-sequence (characters)"
 "global"	GLOBMODE	1|STR|SRET	"retrieve global setting"
