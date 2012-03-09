@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/vl_ctype.h,v 1.31 2011/04/09 12:00:30 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/vl_ctype.h,v 1.32 2012/03/09 11:39:24 tom Exp $
  *
  * Character-type tests, like <ctype.h> for vile (vi-like-emacs).
  *
@@ -262,9 +262,6 @@ extern void vl_ctype_clr(int ch, CHARTYPE cclass);
 
 #define sys_WINT_T	int
 
-#if !(defined(isblank) || defined(HAVE_ISBLANK))
-#define isblank(c) ((c) == ' ' || (c) == '\t')
-#endif
 #define sys_isalpha(n)  isalpha(n)
 #define sys_isalnum(n)  isalnum(n)
 #define sys_isblank(n)  isblank(n)
@@ -281,6 +278,10 @@ extern void vl_ctype_clr(int ch, CHARTYPE cclass);
 #define sys_toupper(n)  toUpper(n)
 
 #endif /* USE_WIDE_CTYPE */
+
+#if !(defined(isblank) || defined(HAVE_ISBLANK))
+#define isblank(c) ((c) == ' ' || (c) == '\t')
+#endif
 
 /* macro for cases where return & newline are equivalent */
 #define	isreturn(c)	((c == '\r') || (c == '\n'))
