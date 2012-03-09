@@ -5,7 +5,7 @@
  * keys. Like everyone else, they set hints
  * for the display system.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.352 2012/03/04 18:11:37 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.354 2012/03/09 00:49:11 tom Exp $
  *
  */
 
@@ -254,35 +254,38 @@ zotwp(BUFFER *bp)
     WINDOW dummy;
     int s = FALSE;
 
-    TRACE((T_CALLED "zotwp(%s)\n", bp->b_bname));
+    TRACE((T_CALLED "zotwp(%s)\n", bp ? bp->b_bname : "null"));
 
-    /*
-     * Locate buffer to switch to after deleting windows.  It can't be
-     * the same as the buffer which is being deleted and if it's an
-     * invisible or scratch buffer, it must have been already visible.
-     * From the set of allowable buffers, choose the most recently
-     * used.
-     */
-    for_each_buffer(nbp) {
-	if (nbp != bp && (!b_is_temporary(nbp) || nbp->b_nwnd != 0)) {
-	    if (obp == 0)
-		obp = nbp;
-	    else if (obp->b_last_used < nbp->b_last_used)
-		obp = nbp;
+    if (bp != 0) {
+
+	/*
+	 * Locate buffer to switch to after deleting windows.  It can't be
+	 * the same as the buffer which is being deleted and if it's an
+	 * invisible or scratch buffer, it must have been already visible.
+	 * From the set of allowable buffers, choose the most recently
+	 * used.
+	 */
+	for_each_buffer(nbp) {
+	    if (nbp != bp && (!b_is_temporary(nbp) || nbp->b_nwnd != 0)) {
+		if (obp == 0)
+		    obp = nbp;
+		else if (obp->b_last_used < nbp->b_last_used)
+		    obp = nbp;
+	    }
 	}
-    }
 
-    /* Delete window instances... */
-    for_each_window(wp) {
-	if (wp->w_bufp == bp && valid_window(wheadp->w_wndp)) {
-	    dummy.w_wndp = wp->w_wndp;
-	    s = delwp(wp);
-	    wp = &dummy;
+	/* Delete window instances... */
+	for_each_window(wp) {
+	    if (wp->w_bufp == bp && valid_window(wheadp->w_wndp)) {
+		dummy.w_wndp = wp->w_wndp;
+		s = delwp(wp);
+		wp = &dummy;
+	    }
 	}
-    }
-    if (valid_buffer(obp))
-	s = swbuffer(obp);
+	if (valid_buffer(obp))
+	    s = swbuffer(obp);
 
+    }
     returnCode(s);
 }
 

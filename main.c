@@ -22,7 +22,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.705 2011/11/23 15:25:13 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.707 2012/03/09 01:24:47 tom Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -128,9 +128,19 @@ restore_buffer_state(BUFFER *save_bp, UINT save_flags)
     }
 }
 
-static int
-run_startup_commands(BUFFER *cmds)
+static void
+hide_and_discard(BUFFER **bp)
 {
+    if (zotwp(*bp)) {
+	zotbuf(*bp);
+	*bp = 0;
+    }
+}
+
+static int
+run_startup_commands(BUFFER **bp)
+{
+    BUFFER *cmds = *bp;
     int result = TRUE;
     BUFFER *save_bp = NULL;	/* saves curbp when doing startup commands */
     LINE *lp;
@@ -174,7 +184,7 @@ run_startup_commands(BUFFER *cmds)
     }
     if (result) {		/* remove the now unneeded buffer */
 	b_set_scratch(cmds);	/* make sure it will go */
-	(void) zotbuf(cmds);
+	hide_and_discard(bp);
     }
 
     returnCode(result);
@@ -183,9 +193,9 @@ run_startup_commands(BUFFER *cmds)
 static int
 run_and_discard(BUFFER **bp)
 {
-    int rc = run_startup_commands(*bp);
-    zotbuf(*bp);
-    *bp = 0;
+    int rc = run_startup_commands(bp);
+
+    hide_and_discard(bp);
     return rc;
 }
 
@@ -1021,10 +1031,17 @@ MainProgram(int argc, char *argv[])
 	}
 #endif
 
-	/* We won't always be able to show messages before the screen is
-	 * initialized.  Give it one last chance.
+	/*
+	 * These should be gone, but may have persisted to this point if
+	 * there was some problem with the scripting.  Try again.
 	 */
-	if ((startstat != TRUE) && tb_length(mlsave))
+	hide_and_discard(&init_bp);
+	hide_and_discard(&opts_bp);
+
+	/*
+	 * Force the last message, if any, onto the status line.
+	 */
+	if (tb_length(mlsave))
 	    mlforce("%.*s", (int) tb_length(mlsave), tb_values(mlsave));
 
 	/* process commands */
