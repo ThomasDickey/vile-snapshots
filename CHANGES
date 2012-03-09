@@ -1,6 +1,6 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20120308 (g)
+ 20120309 (g)
 	+ relax conditions for displaying saved message just before starting
 	  full screen mode, to allow the default help-summary to show (report
 	  by Paul Fox).

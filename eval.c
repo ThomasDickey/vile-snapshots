@@ -2,7 +2,7 @@
  *	eval.c -- function and variable evaluation
  *	original by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.446 2012/03/08 23:15:12 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.447 2012/03/09 09:29:39 tom Exp $
  *
  */
 
@@ -1061,6 +1061,7 @@ static int
 get_completion(TBUFF **result, const char *space, const char *value)
 {
     int code = FALSE;
+    int save_msgs = vl_msgs;
     int save_clexec = clexec;
     int save_isname = isnamedcmd;
     char fname[NFILEN];
@@ -1068,6 +1069,7 @@ get_completion(TBUFF **result, const char *space, const char *value)
     TRACE((T_CALLED "get_completion(%s:%s)\n", NonNull(space), NonNull(value)));
 
     clexec = FALSE;		/* this is an interactive feature */
+    vl_msgs = TRUE;
 
     if (!isEmpty(space) && !isErrorVal(space)) {
 	size_t len = strlen(space);
@@ -1106,6 +1108,7 @@ get_completion(TBUFF **result, const char *space, const char *value)
     }
 
     isnamedcmd = save_isname;
+    vl_msgs = save_msgs;
     clexec = save_clexec;
     returnCode(code);
 }
@@ -1451,7 +1454,7 @@ run_func(int fnum)
 	tb_setlen(&result, -1);
 	break;
     case UFGET_COMPLETE:
-	if (!get_completion(&result, arg[0], arg[1]))
+	if (get_completion(&result, arg[0], arg[1]) != TRUE)
 	    is_error = TRUE;
 	break;
     case UFCMATCH:
