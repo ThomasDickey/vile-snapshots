@@ -1,6 +1,11 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20120306 (g)
+ 20120308 (g)
+	+ improve insert-exec mode by filtering out characters which have
+	  special meaning in insert-mode.
+	+ add ToggleMode macro (prompted by question by Wayne).
+	+ add complete.rc GetCompletion macro as an example of how to do
+	  insert-completion.
 	+ add "show-user-variables" command.
 	+ implement "describe-$variables" command.
 	+ add alias "describe-user-functions" for "describe-&functions"

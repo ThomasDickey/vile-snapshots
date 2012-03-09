@@ -2,7 +2,7 @@
  *	eval.c -- function and variable evaluation
  *	original by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.445 2012/03/07 00:59:02 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.446 2012/03/08 23:15:12 tom Exp $
  *
  */
 
@@ -498,9 +498,11 @@ makevarslist(int dum1 GCC_UNUSED, void *ptr)
 		    bpadc('-', term.cols - DOT.o);
 		}
 		bprintf("\n%%%s = ", p->u_name);
-		bputsn_xcolor(p->u_value,
-			      (int) strlen(p->u_value),
-			      XCOLOR_STRING);
+		if (p->u_value) {
+		    bputsn_xcolor(p->u_value,
+				  (int) strlen(p->u_value),
+				  XCOLOR_STRING);
+		}
 	    }
 	}
     }
@@ -1072,6 +1074,7 @@ get_completion(TBUFF **result, const char *space, const char *value)
 	KBD_OPTIONS kbd_namec = ((NAMEC != ' ') ? 0 : KBD_MAYBEC);
 
 	code = TRUE;
+	fname[0] = EOS;
 	tb_scopy(result, value);
 
 	if (!strncmp(space, "buffer", len)) {

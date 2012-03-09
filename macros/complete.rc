@@ -1,0 +1,24 @@
+; $Id: complete.rc,v 1.1 2012/03/08 00:14:06 tom Exp $
+; This is designed/tested for binding in insert-mode, e.g.,
+;	set insert-exec
+;	bind-insmode-key GetCompletion ^P
+store-procedure GetCompletion "Prompts for category (b/c/d/f/t), then name-completes current identifier"
+~local %space %result
+~local $get-at-dot $get-it-all
+	setv $get-at-dot=true
+	setv $get-it-all=true
+	setv %space &get-key
+	setv %result &get-completion %space $identifier
+	~if &not &error %result
+		~if &neq 0 &length $identifier
+			setv $identifier %result
+			write-message &cat "replaced " %result
+		~else
+			insert-string %result
+			write-message &cat "inserted " %result
+		~endif
+	~endif
+~endm
+
+set insert-exec
+bind-insmode-key GetCompletion ^P

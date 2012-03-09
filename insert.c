@@ -4,13 +4,19 @@
  * Most code probably by Dan Lawrence or Dave Conroy for MicroEMACS
  * Extensions for vile by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/insert.c,v 1.179 2011/11/23 20:39:56 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/insert.c,v 1.181 2012/03/08 10:44:15 tom Exp $
  */
 
 #include	"estruct.h"
 #include	"edef.h"
 
 #define	DOT_ARGUMENT	((dotcmdactive == PLAY) && dotcmdarg)
+
+#if OPT_SHELL && SYS_UNIX && defined(SIGTSTP)	/* job control, ^Z */
+#define USE_SIGTSTP 1
+#else
+#define USE_SIGTSTP 0
+#endif
 
 #define	BackspaceLimit() (b_val(curbp,MDBACKLIMIT) && autoindented <= 0)\
 			? DOT.o\
@@ -454,11 +460,55 @@ replacechar(int f, int n)
 /*
  * Check if a command is safe to execute within insert-mode.
  */
-#define can_ins_exec(cfp,c) \
-	((isSpecial(c) || global_g_val(GMDINSEXEC)) \
-	 && (cfp = InsertKeyBinding(c)) != 0 \
-	 && ((cfp->c_flags & (GOAL|MOTION)) != 0 \
-	  || (cfp->c_flags & (UNDO|REDO)) == (UNDO|REDO))) \
+static const CMDFUNC *
+can_ins_exec(int c)
+{
+    const CMDFUNC *cfp = 0;
+    int always = isSpecial(c);
+    int okay = FALSE;
+
+    if (always || global_g_val(GMDINSEXEC)) {
+	if ((cfp = InsertKeyBinding(c)) != 0) {
+	    okay = always;
+
+	    if (!always) {
+		/* filter out things that would be a nuisance */
+		if (ABORTED(c) ||
+		    isreturn(c) ||
+		    isBlank(c) ||
+		    isbackspace(c) ||
+		    c == tocntrl('D') ||
+		    c == tocntrl('T') ||
+		    c == startc ||
+		    c == stopc ||
+#if USE_SIGTSTP			/* job control, ^Z */
+		    c == suspc ||
+#endif
+		    c == killc ||
+		    c == wkillc) {
+		    /* ...unless they are rebound to user macros */
+		    /* FIXME - implement check */
+		    okay = FALSE;
+		} else {
+		    okay = TRUE;
+		}
+	    }
+
+	    /*
+	     * Finally, verify that the character is at least (a) bound to a
+	     * goal/motion, making its movement consistent and/or (b) undoable.
+	     */
+	    if (okay) {
+		if ((cfp->c_flags & (GOAL | MOTION)) == 0
+		    && (cfp->c_flags & (UNDO | REDO)) != (UNDO | REDO)) {
+		    okay = FALSE;
+		}
+	    }
+	}
+    }
+
+    return okay ? cfp : 0;
+}
 
 /*
  * Execute a command within the insert-mode.
@@ -599,7 +649,7 @@ ins_anytime(int playback, int cur_count, int max_count, int *splicep)
 	/* if we're allowed to honor SPEC bindings,
 	   then see if it's bound to something, and
 	   execute it */
-	if (can_ins_exec(cfp, c)) {
+	if ((cfp = can_ins_exec(c)) != 0) {
 	    backsp_limit = insertion_exec(cfp);
 	    continue;
 	} else if (isSpecial(c)) {
@@ -647,7 +697,7 @@ ins_anytime(int playback, int cur_count, int max_count, int *splicep)
 	    /* if we're allowed to honor meta-character bindings,
 	       then see if it's bound to something, and
 	       insert it if not */
-	    if (can_ins_exec(cfp, c)) {
+	    if ((cfp = can_ins_exec(c)) != 0) {
 		backsp_limit = insertion_exec(cfp);
 		continue;
 	    }
@@ -656,7 +706,7 @@ ins_anytime(int playback, int cur_count, int max_count, int *splicep)
 	if (c == startc || c == stopc) {	/* ^Q and ^S */
 	    continue;
 	}
-#if OPT_SHELL && SYS_UNIX && defined(SIGTSTP)	/* job control, ^Z */
+#if USE_SIGTSTP			/* job control, ^Z */
 	else if (c == suspc) {
 	    status = bktoshell(FALSE, 1);
 	}

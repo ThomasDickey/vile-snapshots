@@ -1,4 +1,4 @@
-MANIFEST for vile, version v9_8f6
+MANIFEST for vile, version v9_8f7
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 AUTHORS                         list of authors, with nicknames in CHANGES
@@ -400,6 +400,7 @@ macros                          subdirectory
 macros/UXVile.ad                X resources for uxvile
 macros/XVile.ad                 sample X resource file for vile
 macros/color-ls.rc              sample macro: read output of "color ls"
+macros/complete.rc              example for insert-mode completion
 macros/dates.rc                 demo of &date function
 macros/digraphs.rc              macros for inserting digraphs
 macros/gnugpg.rc                GNU gpg macros

@@ -20,7 +20,7 @@
 #
 # gnu autoconf support by kevin buettner, 5/94
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.255 2012/02/14 09:50:12 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.256 2012/03/08 00:15:05 tom Exp $
 
 SHELL		= /bin/sh
 
@@ -214,6 +214,7 @@ PERL_SRC = \
 
 MACRO_SRC = \
 	$(srcdir)/macros/color-ls.rc \
+	$(srcdir)/macros/complete.rc \
 	$(srcdir)/macros/dates.rc \
 	$(srcdir)/macros/digraphs.rc \
 	$(srcdir)/macros/gnugpg.rc \
@@ -426,6 +427,7 @@ INSTALL_HTML_FILES = \
 
 INSTALL_MACRO_FILES = \
 	$(DATADIR)/color-ls.rc \
+	$(DATADIR)/complete.rc \
 	$(DATADIR)/dates.rc \
 	$(DATADIR)/digraphs.rc \
 	$(DATADIR)/gnugpg.rc \
@@ -892,6 +894,8 @@ $(HTMLDIR)/visvile.html:	$(srcdir)/doc/visvile.html
 
 $(DATADIR)/color-ls.rc:		$(srcdir)/macros/color-ls.rc
 	$(INSTALL_DATA)		$(srcdir)/macros/color-ls.rc $@
+$(DATADIR)/complete.rc:		$(srcdir)/macros/complete.rc
+	$(INSTALL_DATA)		$(srcdir)/macros/complete.rc $@
 $(DATADIR)/dates.rc:		$(srcdir)/macros/dates.rc
 	$(INSTALL_DATA)		$(srcdir)/macros/dates.rc $@
 $(DATADIR)/digraphs.rc:		$(srcdir)/macros/digraphs.rc
