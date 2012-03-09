@@ -1,6 +1,13 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
  20120308 (g)
+	+ relax conditions for displaying saved message just before starting
+	  full screen mode, to allow the default help-summary to show (report
+	  by Paul Fox).
+	+ modify logic for [vileinit] and [vileopts] buffers which are used
+	  during startup, to first close their window if possible, eliminating
+	  a message that interfered with other startup messages (report by
+	  Paul Fox).
 	+ improve insert-exec mode by filtering out characters which have
 	  special meaning in insert-mode.
 	+ add ToggleMode macro (prompted by question by Wayne).
