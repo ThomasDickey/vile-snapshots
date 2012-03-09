@@ -44,7 +44,7 @@
  *	tgetc_avail()     true if a key is avail from tgetc() or below.
  *	keystroke_avail() true if a key is avail from keystroke() or below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.351 2012/03/06 00:44:25 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.352 2012/03/08 00:00:12 tom Exp $
  *
  */
 
@@ -910,6 +910,14 @@ vl_ctype2tbuff(TBUFF **result, CHARTYPE inclchartype, int whole_line)
 		vl_get_offset = -1;
 		vl_get_length = -1;
 	    }
+#if OPT_MULTIBYTE
+	    else if (b_is_utfXX(curbp)) {
+		int offset = chars_to_bol(DOT.l, vl_get_offset);
+		int length = count_chars(DOT.l, vl_get_offset, vl_get_length);
+		vl_get_offset = offset;
+		vl_get_length = length;
+	    }
+#endif
 	}
     } else {
 	vl_get_offset = -1;
@@ -1020,6 +1028,14 @@ vl_regex2tbuff(TBUFF **result, REGEXVAL * rexp, int whole_line)
 	    vl_regex2tbuff_dot(result, exp);
 	}
     }
+#if OPT_MULTIBYTE
+    if (vl_get_offset >= 0 && vl_get_length > 0 && b_is_utfXX(curbp)) {
+	int offset = chars_to_bol(DOT.l, vl_get_offset);
+	int length = count_chars(DOT.l, vl_get_offset, vl_get_length);
+	vl_get_offset = offset;
+	vl_get_length = length;
+    }
+#endif
 
     returnCode(tb_length(*result) != 0);
 }

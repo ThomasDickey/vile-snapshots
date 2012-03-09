@@ -15,7 +15,7 @@
  * by Tom Dickey, 1993.    -pgf
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/mktbls.c,v 1.174 2012/03/06 23:43:11 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/mktbls.c,v 1.179 2012/03/08 21:45:34 tom Exp $
  *
  */
 
@@ -105,7 +105,7 @@ extern void free(char *ptr);
 
 #define MAX_BIND        4	/* maximum # of key-binding types */
 #define	MAX_PARSE	5	/* maximum # of tokens on line */
-#define	LEN_BUFFER	120	/* nominal buffer-length */
+#define	LEN_BUFFER	220	/* nominal buffer-length */
 #define	MAX_BUFFER	(LEN_BUFFER*10)
 #define	LEN_CHRSET	256	/* total # of chars in set (ascii) */
 
@@ -289,7 +289,7 @@ badfmt2(const char *s, int col)
 static char *
 Alloc(size_t len)
 {
-    char *pointer = (char *) malloc(len);
+    char *pointer = (char *) calloc(len, sizeof(char));
     if (pointer == 0)
 	badfmt("bug: not enough memory");
     return pointer;
@@ -324,6 +324,8 @@ free_LIST(LIST ** p)
 	    FreeIfNeeded(q->Cond);
 	if (q->Note != Blank)
 	    FreeIfNeeded(q->Note);
+	if (q->Flag != 0)
+	    FreeIfNeeded(q->Flag);
 	free((char *) q);
     }
     *p = 0;
@@ -905,7 +907,6 @@ WriteModeSymbols(LIST * p)
 	p = p->nst;
     }
     FlushIf(nemode);
-
 }
 
 /******************************************************************************/
@@ -1141,6 +1142,7 @@ dump_majors(void)
 	    save_all_modes(c2TYPE(*type), normal, abbrev, my_cond);
 	}
     }
+    free_LIST(&all_majors);
 }
 
 /******************************************************************************/
@@ -1521,6 +1523,7 @@ save_statevars(char *type, char **vec)
     char *key = Vars2Key(type, name, cond);
 
     InsertSorted(&all_statevars, key, vars, "", cond, vec[4], "");
+    free(key);
 }
 
 static void
@@ -2466,6 +2469,7 @@ main(int argc, char *argv[])
 	    }
 	}
     }
+    fclose(cmdtbl);
 
     if (func[0]) {		/* flush the old one */
 	save_funcs(func, flags, fcond, old_fcond, funchelp);
@@ -2515,6 +2519,23 @@ main(int argc, char *argv[])
 	dump_bmodes();
 	dump_wmodes();
     }
+
+    if (nebind != 0)
+	fclose(nebind);
+    if (nefkeys != 0)
+	fclose(nefkeys);
+    if (nefsms != 0)
+	fclose(nefsms);
+    if (nefunc != 0)
+	fclose(nefunc);
+    if (nemode != 0)
+	fclose(nemode);
+    if (nename != 0)
+	fclose(nename);
+    if (neprot != 0)
+	fclose(neprot);
+    if (nevars != 0)
+	fclose(nevars);
 
     free_mktbls();
     return (GOODEXIT);

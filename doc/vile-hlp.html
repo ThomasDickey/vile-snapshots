@@ -1,6 +1,6 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
-  $Id: vile-hlp.html,v 1.52 2012/03/06 10:41:35 tom Exp $
+  $Id: vile-hlp.html,v 1.54 2012/03/08 00:59:06 tom Exp $
 -->
 <HTML>
 <HEAD>
@@ -78,6 +78,9 @@ Getting along with vile						(version 9.8)
 	key sequences that are bound to the same function, along with a
 	short description of the command, and whether it is a motion or
 	operator command.
+<p>	
+	For a list of motions, type ":describe-motions".  Likewise,
+	you can see a list of operators by typing ":describe-operators".
 <p>
 	To get information on a specific key-binding or function, use the
 	"describe-key" or "describe-function" commands.  You will be asked
@@ -2601,6 +2604,12 @@ Getting along with vile						(version 9.8)
 		functions during insert mode.  For example, ^F and ^B would
 		scroll forward and backward.  ^A and ^X bindings are honored
 		as well.  (U)
+		<p>See the discussion of <a href="#insert-mode">insert mode</a>,
+		in particular
+<pre>
+	describe-insmode-bindings
+	describe-insmode-key
+</pre>
 </dd>
 <dt>
 	linebreak (lb)
@@ -3917,7 +3926,7 @@ Getting along with vile						(version 9.8)
 	The sequence 'M-', represents a "meta-key", or a "meta" character.
 	It is equivalent to setting the high bit of the following
 	character, so 'M-e' is has the value of (0x80|0x65), or 0xe5.
-<p>
+<p id="insert-mode">
 	Function and meta-key bindings are available in insert mode, as
 	well as in command mode.  (But only via either the "meta bit" or
 	'FN' sequence form &ndash; the '#' prefix will not work in insert mode.)
@@ -4524,6 +4533,10 @@ Getting along with vile						(version 9.8)
 	Built-in variables are accessed by name, prefixed with the '$'
 	character.  There are two types of built-in variables (the so-called
 	"state" variables, and mode values).  The state variables are:
+	shown in the table below.
+<p>
+	You can also show a summary using
+	the "describe-state-variables" command:
 <table border="1" summary="State variables">
 <tr>
 <th>Name</th>
@@ -4951,6 +4964,8 @@ Getting along with vile						(version 9.8)
 	or on hard-coded values.  Operations are expressed in prefix notation,
 	so to add to numbers you would say "&amp;add 3 5".  You may use any
 	unique abbreviation of the function names.
+<p>	
+	The "describe-user-functions" command shows this information:
 <table border="1" summary="Functions">
 <tr><th>Name</th><th>Args</th><th>Description</th></tr>
 <tr><td>&amp;abs</td><td>1</td><td>absolute value of a number</td></tr>
