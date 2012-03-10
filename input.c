@@ -44,7 +44,7 @@
  *	tgetc_avail()     true if a key is avail from tgetc() or below.
  *	keystroke_avail() true if a key is avail from keystroke() or below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.352 2012/03/08 00:00:12 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.353 2012/03/09 11:55:35 tom Exp $
  *
  */
 
@@ -640,12 +640,15 @@ adjust_chartype(CHARTYPE *mask)
 {
     int whole_line = FALSE;
 
+#if OPT_EVAL
     if (vl_get_it_all) {
 	whole_line = TRUE;
 	if (*mask == 0)		/* special case for $line variable */
 	    *mask = ~(*mask);
-    } else if (b_val(curbp, MDTAGWORD)
-	       && *mask == vl_ident) {
+    } else
+#endif
+	if (b_val(curbp, MDTAGWORD)
+	    && *mask == vl_ident) {
 	/* if from gototag(), grab from the beginning of the string */
 	whole_line = TRUE;
     } else if (b_is_directory(curbp)
@@ -1686,7 +1689,9 @@ reallyEditMiniBuffer(TBUFF **buf,
 	    C_NUM first = (C_NUM) * cpos + margin;
 	    int old_clexec = clexec;
 	    int old_named = isnamedcmd;
+#if OPT_B_LIMITS
 	    int old_margin = b_left_margin(bminip);
+#endif
 	    REGIONSHAPE old_shape = regionshape;
 
 	    /*
