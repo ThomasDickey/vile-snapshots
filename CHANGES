@@ -1,5 +1,8 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
+ 20120312 (h)
+	+ build-fix for HP-UX 10.20 lex, which prototyped main() without params
+
  20120309 (g)
 	+ relax conditions for displaying saved message just before starting
 	  full screen mode, to allow the default help-summary to show (report
