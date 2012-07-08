@@ -1,6 +1,8 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20120312 (h)
+ 20120707 (h)
+	+ use autoconf 2.52.20120310, to work around Intel 12.x compiler.
+	+ add configure check for clang, to improve compiler warnings.
 	+ build-fix for HP-UX 10.20 lex, which prototyped main() without params
 
  20120309 (g)
