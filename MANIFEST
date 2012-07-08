@@ -1,4 +1,4 @@
-MANIFEST for vile, version v9_8g2
+MANIFEST for vile, version v9_8g3
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 AUTHORS                         list of authors, with nicknames in CHANGES
@@ -91,6 +91,7 @@ opers.c                         operator-commands (that use motions)
 os2keys.h                       function-key definitions for OS/2
 os2pipe.c                       OS/2 pipe support
 os2vio.c                        OS/2 video terminal driver
+patchlev.h                      patch-level
 path.c                          functions that manipulate pathnames
 perl.xs                         Perl/C interface wrapper
 plink.sh                        script to trim unneeded libraries from a link-command.
