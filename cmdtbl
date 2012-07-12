@@ -97,7 +97,7 @@
 #		in '!' listed, then the flag does nothing, and should be
 #		viewed simply as documentation.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.270 2012/03/06 21:48:44 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.271 2012/07/10 10:55:03 tom Exp $
 #
 #
 
@@ -483,6 +483,10 @@ define_mode	NONE			OPT_MAJORMODE
 	"define-majormode"
 	"define-mode"
 	<define a major mode, i.e., a collection of buffer modes>
+derive_mode	NONE			OPT_MAJORMODE
+	"derive-majormode"
+	"derive-mode"
+	<derive a major mode based on an existing majormode>
 define_submode	NONE			OPT_MAJORMODE
 	"define-submode"
 	<define a submode within a major mode>

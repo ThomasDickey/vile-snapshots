@@ -4,17 +4,13 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.728 2012/03/04 19:58:11 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.729 2012/07/08 09:13:54 tom Exp $
  *
  */
 
 #ifndef VILE_PROTO_H
 #define VILE_PROTO_H 1
 /* *INDENT-OFF* */
-
-#if !CHECK_PROTOTYPES
-extern int main (int argc, char **argv);
-#endif
 
 #ifdef __cplusplus
 extern "C" {

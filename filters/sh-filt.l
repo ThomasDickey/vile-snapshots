@@ -7,7 +7,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/sh-filt.l,v 1.111 2012/02/18 13:47:15 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/sh-filt.l,v 1.117 2012/07/12 00:11:35 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Shell script.
  */
@@ -20,10 +20,12 @@
 #include <fltstack.h>
 
 #ifdef DEBUG
-DefineOptFilter("sh", "d");
+#define OPTS "dK"
 #else
-DefineFilter("sh");
+#define OPTS "K"
 #endif
+
+DefineOptFilter("sh", OPTS);
 
 #ifdef DEBUG
 #define DPRINTF(params) if(FltOptions('d'))printf params
@@ -54,9 +56,11 @@ static void begin_braces(const char *text, int length);
 static void braces_operator(const char *text, int length);
 static void color_delimiter(char *text, int size, char *attr);
 static void embed_or_append(const char *text, int length);
+static void embed_vname(const char *text, int length);
 static void end_braces(const char *text, int length);
 static void handle_backtic(const char *text, int length, int test, int which);
 static void save_here(const char *text, int length);
+static void write_vname(const char *text, int length);
 
 %}
 
@@ -92,10 +96,13 @@ IDENT		{NAME0}{NAME}*
 QIDENT		({SSTRING}|{DSTRING}|[^ \"'$\t\r\n])+
 IDENT0		[-]+[[:digit:]]*{NAME0}+{NAME2}*
 
+VNAME		[.]?{IDENT}([.]{IDENT})*
+
 IDENT1		\${NAME}+
+IDENT2		\$({NAME}+|{VNAME})
 IDENTX		\$[\*@#\?\$!-]
 
-DASHIDENT	{NAME0}{NAME}*("-"{NAME}{NAME2}*)*
+DASHIDENT	{IDENT}("-"{NAME}{NAME2}*)*
 
 %%
 
@@ -112,7 +119,7 @@ DASHIDENT	{NAME0}{NAME}*("-"{NAME}{NAME2}*)*
 
 <NORMAL>{BRACES}	{ begin_braces(yytext, yyleng); }
 
-<NORMAL>{IDENT1}	{ WriteToken(Ident_attr); }
+<NORMAL>{IDENT1}	{ write_vname(yytext, yyleng); }
 <NORMAL>{IDENTX}	{ WriteToken(Ident_attr); }
 
 <NORMAL>{IDENT}"="	{ flt_puts(yytext, yyleng-1, Ident_attr); flt_putc('='); }
@@ -130,6 +137,7 @@ DASHIDENT	{NAME0}{NAME}*("-"{NAME}{NAME2}*)*
 <NORMAL>{BACKTIC}	{ handle_backtic(yytext, yyleng, yyleng, -1); }
 <NORMAL>{ACTION}	{ WriteToken(Action_attr); }
 
+<NORMAL>\<\<\<		{ WriteToken(String_attr); }
 <NORMAL>\<\<[-]?{SPACE}*{QIDENT} {
 			    int state;
 			    int n;
@@ -158,7 +166,7 @@ DASHIDENT	{NAME0}{NAME}*("-"{NAME}{NAME2}*)*
 <HEREDOC>{BACKTIC1_DOWN} { handle_backtic(yytext, yyleng, yyleng, 1); }
 <HEREDOC>{BACKTIC}	{ handle_backtic(yytext, yyleng, yyleng, -1); }
 <HEREDOC>{IDENT1}	{ if (here_exp) {
-			      flt_bfr_embed(yytext, yyleng, Ident_attr);
+			      embed_vname(yytext, yyleng);
 			  } else {
 			      flt_bfr_append(yytext, yyleng);
 			  }
@@ -183,7 +191,7 @@ DASHIDENT	{NAME0}{NAME}*("-"{NAME}{NAME2}*)*
 			  flt_bfr_embed(yytext, 1, Action_attr);
 			  flt_bfr_embed(yytext+1, 1, String_attr);
 			}
-<HEREDOC>[^\r\n\\\$]+	{ flt_bfr_append(yytext, yyleng); }
+<HEREDOC>[^\r\n`\\\$]+	{ flt_bfr_append(yytext, yyleng); }
 <HEREDOC>\n		{ flt_bfr_append(yytext, yyleng); }
 <HEREDOC>.		{ flt_bfr_append(yytext, yyleng); }
 
@@ -212,7 +220,7 @@ DASHIDENT	{NAME0}{NAME}*("-"{NAME}{NAME2}*)*
 <DQUOTED>{BACKTIC}	{ handle_backtic(yytext, yyleng, yyleng, -1); }
 <DQUOTED>\\[\n]		|
 <DQUOTED>\\.		{ flt_bfr_embed(yytext, 1, Action_attr); flt_bfr_append(yytext + 1, yyleng - 1); }
-<DQUOTED>{IDENT1}	{ flt_bfr_embed(yytext, yyleng, Ident_attr); }
+<DQUOTED>{IDENT1}	{ embed_vname(yytext, yyleng); }
 <DQUOTED>{BRACES}	{ begin_braces(yytext, yyleng); }
 <DQUOTED>[^`\r\n\\\"$]+	{ flt_bfr_append(yytext, yyleng); }
 <DQUOTED>[\n$]		{ flt_bfr_append(yytext, yyleng); }
@@ -230,7 +238,7 @@ DASHIDENT	{NAME0}{NAME}*("-"{NAME}{NAME2}*)*
 <EXPRS>{BACKTIC}	{ handle_backtic(yytext, yyleng, yyleng, -1); }
 <EXPRS>\\[\n]		|
 <EXPRS>\\.		{ flt_bfr_embed(yytext, 1, Action_attr); flt_bfr_append(yytext + 1, yyleng - 1); }
-<EXPRS>{IDENT1}		{ flt_bfr_embed(yytext, yyleng, Ident_attr); }
+<EXPRS>{IDENT1}		{ embed_vname(yytext, yyleng); }
 <EXPRS>{BRACES}		{ begin_braces(yytext, yyleng); }
 <EXPRS>{INTEGER}	{ flt_bfr_embed(yytext, yyleng, Number_attr); }
 <EXPRS>[^`\r\n\\\$)]+	{ flt_bfr_append(yytext, yyleng); }
@@ -293,27 +301,33 @@ braces_operator(const char *text, int length)
 	int length;
 	const char *text;
     } table[] = {
-	{ 2, "%%" },
-	{ 2, "##" },
-	{ 2, ":+" },
-	{ 2, ":?" },
-	{ 2, ":-" },
-	{ 2, ":=" },
-	{ 2, ",," },
-	{ 2, "^^" },
-	{ 1, "%" },
-	{ 1, "#" },
-	{ 1, "*" },
-	{ 1, "@" },
-	{ 1, "/" },
-	{ 1, ":" },
-	{ 1, "," },
-	{ 1, "^" },
-	/* sh */
-	{ 1, "+" },
-	{ 1, "?" },
-	{ 1, "-" },
-	{ 1, "=" },
+	{ 3, "::=" },		/*             zsh */
+	{ 2, "##" },		/* sh bash ksh zsh */
+	{ 2, "%%" },		/* sh bash ksh zsh */
+	{ 2, ",," },		/*         ksh     */
+	{ 2, "/#" },		/*         ksh     */
+	{ 2, "/%" },		/*         ksh     */
+	{ 2, "//" },		/*         ksh zsh */
+	{ 2, ":#" },		/*             zsh */
+	{ 2, ":+" },		/* sh bash ksh zsh */
+	{ 2, ":-" },		/* sh bash ksh zsh */
+	{ 2, ":=" },		/* sh bash ksh zsh */
+	{ 2, ":?" },		/* sh bash ksh zsh */
+	{ 2, "^^" },		/*             zsh */
+	{ 1, "#" },		/* sh bash ksh zsh */
+	{ 1, "%" },		/* sh bash ksh     */
+	{ 1, "*" },		/*    bash ksh     */
+	{ 1, "+" },		/* sh bash ksh zsh */
+	{ 1, "," },		/*         ksh     */
+	{ 1, "-" },		/* sh      ksh zsh */
+	{ 1, "!" },		/*    bash ksh     */
+	{ 1, "/" },		/*    bash ksh zsh */
+	{ 1, ":" },		/*    bash ksh     */
+	{ 1, "=" },		/* sh      ksh zsh */
+	{ 1, "?" },		/* sh bash ksh zsh */
+	{ 1, "@" },		/*    bash ksh     */
+	{ 1, "~" },		/*             zsh */
+	{ 1, "^" },		/*             zsh */
     };
     /* *INDENT-ON* */
 
@@ -438,6 +452,48 @@ embed_or_append(const char *text, int length)
 	begin_braces(text, length);
     } else {
 	flt_bfr_append(text, length);
+    }
+}
+
+/*
+ * Korn shell allows dots in variable names; Bourne does not.
+ */
+static int
+vname_allows_dots(const char *text, int length)
+{
+    int result = length;
+
+    if (!FltOptions('K')) {
+	char *dot = strchr(text, '.');
+
+	if (dot != 0) {
+	    result = (int) (dot - text);
+	    if (result == (*text != '$'))
+		++result;
+	}
+    }
+    return result;
+}
+
+static void
+embed_vname(const char *text, int length)
+{
+    int actual = vname_allows_dots(text, length);
+
+    flt_bfr_embed(text, actual, Ident_attr);
+    if (actual < length) {
+	flt_bfr_append(text + actual, length - actual);
+    }
+}
+
+static void
+write_vname(const char *text, int length)
+{
+    int actual = vname_allows_dots(text, length);
+
+    flt_puts(text, actual, Ident_attr);
+    if (actual < length) {
+	flt_puts(text + actual, length - actual, "");
     }
 }
 
