@@ -1,6 +1,6 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
-  $Id: modes.html,v 1.4 2009/12/29 11:40:09 tom Exp $
+  $Id: modes.html,v 1.5 2012/07/11 15:26:15 tom Exp $
 -->
 <HTML>
 <HEAD>
@@ -77,7 +77,7 @@ nocmode".  In the new scheme,
 
 <h2 id="neededcommands-id"><a name="neededcommands">Commands</a></h2>
 <p>
-These are the commands which I think are necessary:
+These are the commands which I originally thought necessary:
 <ul>
 	<li>define-majormode {majormode}
 
@@ -95,6 +95,12 @@ The {majormode} is a new symbol.
 <p>
 The {minormode} can be any one of the existing buffer modes, except for
 a {majormode}.  To make name-completion simple, we use the term 'submode'.
+<p>
+Later, I added features to make majormodes simpler to configure:
+<ul>
+<li>"~with" in the scripting language prefixes text.
+<li>derive-majormode {newmode} {oldmode}
+</ul>
 
 
 <h3 id="example-id"><a name="example">Example</a></h3>
@@ -200,6 +206,22 @@ associated with a majormode, all of its buffer mode values are pointed
 to the majormode's values.  (To keep the bookkeeping straight, modifying
 a global buffer mode must also modify the copies of non-local buffer
 mode values).
+
+<h3 id="derivemajormode-id"><a name="derivemajormode">The "derive-majormode" command</a></h3>
+<p>
+This is used to clone an existing majormode, using a new name.
+The command takes two parameters:
+<ol>
+<li>the new majormode name
+<li>the old majormode name, used as a source of settings
+</ol>
+<p>
+If the new majormode already exists,
+it is not removed.
+Instead, settings are copied from the old majormode into the
+existing majormode.
+In principle, a series of these commands could be used to merge
+several different majormodes.
 
 <h3 id="definesubmode-id"><a name="definesubmode">The "define-submode" command</a></h3>
 <p>

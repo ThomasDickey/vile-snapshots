@@ -22,7 +22,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.707 2012/03/09 01:24:47 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.708 2012/07/11 14:23:04 tom Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -1041,8 +1041,10 @@ MainProgram(int argc, char *argv[])
 	/*
 	 * Force the last message, if any, onto the status line.
 	 */
-	if (tb_length(mlsave))
+	if (tb_length(mlsave)) {
+	    tb_append(&mlsave, EOS);
 	    mlforce("%.*s", (int) tb_length(mlsave), tb_values(mlsave));
+	}
 
 	/* process commands */
 	main_loop();

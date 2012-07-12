@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.426 2012/03/05 11:59:19 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.430 2012/07/11 15:12:50 tom Exp $
  *
  */
 
@@ -718,6 +718,57 @@ copy_mvals(int maximum,
     int n;
     for (n = 0; n < maximum; n++)
 	(void) copy_val(&dst[n], &src[n]);
+}
+
+/*
+ * Copy a VAL-struct ensuring that strings are allocated anew.
+ */
+static void
+clone_val(struct VAL *dst, struct VAL *src, const struct VALNAMES *names)
+{
+    REGEXVAL *r;
+
+    switch (names->type) {
+    case VALTYPE_INT:
+    case VALTYPE_BOOL:
+    case VALTYPE_ENUM:
+	dst->v.i = src->v.i;
+	break;
+
+    case VALTYPE_STRING:
+	FreeAndNull(dst->v.p);
+	dst->v.p = strmalloc(src->v.p);
+	break;
+
+    case VALTYPE_REGEX:
+	if (dst->v.r) {
+	    free_regexval(dst->v.r);
+	    dst->v.r = 0;
+	}
+	if (src->v.r &&
+	    src->v.r->pat) {
+	    if ((r = new_regexval(src->v.r->pat, TRUE)) == 0) {
+		dst->v.r = new_regexval("", TRUE);
+	    } else {
+		dst->v.r = r;
+	    }
+	}
+	break;
+    }
+    if (isLocalVal(src)) {
+	makeLocalVal(dst);
+    }
+}
+
+static void
+clone_mvals(int maximum,
+	    struct VAL *dst,
+	    struct VAL *src,
+	    const struct VALNAMES *names)
+{
+    int n;
+    for (n = 0; n < maximum; n++)
+	clone_val(&dst[n], &src[n], &names[n]);
 }
 
 /*
@@ -3561,6 +3612,24 @@ copy_sm_vals(struct VAL *dst, struct VAL *src, int type)
 }
 
 /*
+ * Get/set the 'group' qualifier, which is stored as a property in the
+ * MAJORMODE structure.  It is used to distinguish MINORMODE structures linked
+ * to the MAJORMODE.
+ */
+static char *
+get_sm_group(MAJORMODE * ptr)
+{
+    return ptr->mq.qv[QVAL_GROUP].vp->p;
+}
+
+static void
+set_sm_group(MAJORMODE * ptr, const char *name)
+{
+    FreeIfNeeded(ptr->mq.qv[QVAL_GROUP].vp->p);
+    ptr->mq.qv[QVAL_GROUP].vp->p = strmalloc(name);
+}
+
+/*
  * Using the currently specified 'group' qualifier, lookup the corresponding
  * MINORMODE structure and return a pointer to the B_VALUES VALS data.  If
  * no structure is found, create one.
@@ -3575,7 +3644,7 @@ get_sm_vals(MAJORMODE * ptr)
     struct VAL *result = 0;
     if (ptr != 0) {
 	MINORMODE *p, *q;
-	char *name = ptr->mq.qv[QVAL_GROUP].vp->p;
+	char *name = get_sm_group(ptr);
 
 	for (p = ptr->sm, q = 0; p != 0; q = p, p = p->sm_next) {
 	    if (!strcmp(name, p->sm_name)) {
@@ -4328,6 +4397,56 @@ define_mode(int f GCC_UNUSED, int n GCC_UNUSED)
     } else if (status == SORTOFTRUE) {
 	status = TRUE;		/* don't complain if it's already true */
     }
+    return status;
+}
+
+static void
+copy_derived_submodes(const char *newname, const char *oldname)
+{
+    MAJORMODE_LIST *old_mm;
+    MAJORMODE_LIST *new_mm;
+    MINORMODE *old_sm;
+
+    if ((old_mm = lookup_mm_list(oldname)) != 0 &&
+	(new_mm = lookup_mm_list(newname)) != 0) {
+	MAJORMODE *source = old_mm->data;
+	MAJORMODE *target = new_mm->data;
+
+	clone_mvals(NUM_M_VALUES,
+		    target->mm.mv,
+		    source->mm.mv,
+		    m_valnames);
+	for (old_sm = source->sm; old_sm != 0; old_sm = old_sm->sm_next) {
+	    set_sm_group(target, old_sm->sm_name);
+	    clone_mvals(NUM_B_VALUES,
+			get_sm_vals(target),
+			old_sm->sm_vals.bv,
+			b_valnames);
+	}
+    }
+}
+
+/* ARGSUSED */
+int
+derive_mode(int f GCC_UNUSED, int n GCC_UNUSED)
+{
+    char *oldname;
+    char *newname;
+    TBUFF *newtb = 0;
+    int status;
+
+    if ((status = prompt_majormode(&newname, TRUE)) == TRUE
+	&& tb_scopy(&newtb, newname) != 0
+	&& (status = prompt_majormode(&oldname, FALSE)) == TRUE) {
+	TRACE(("derive majormode %s->%s\n", oldname, newname));
+	status = alloc_mode(tb_values(newtb), FALSE);
+	copy_derived_submodes(tb_values(newtb), oldname);
+	relist_settings();
+	relist_majormodes();
+    } else if (status == SORTOFTRUE) {
+	status = TRUE;		/* don't complain if it's already true */
+    }
+    tb_free(&newtb);
     return status;
 }
 

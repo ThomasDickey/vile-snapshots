@@ -1,6 +1,19 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20120707 (h)
+ 20120711 (h)
+	+ reduce sh.key to POSIX shell keywords and utilities.
+	+ add zshmode and bashmode, for consistency.
+	+ add kshmode, to address slight syntax differences between Korn
+	  (ksh93) and Bourne shell scripts.
+	+ add new command "derive-majormode", which is used to make a new
+	  mode initially copying another mode's settings.
+	+ improved sh-filt.l:
+	  + "<<<" short-form here-document.
+	  + add "-K" option to support Korn shell's "vnames", which allows one
+	    to define a variable containing "." if there already exists a
+	    variable consisting of the part before the ".".
+	  + exclude backtic from a pattern in here-documents, which prevented
+	    embedded backtic's from being recognized.
 	+ use autoconf 2.52.20120310, to work around Intel 12.x compiler.
 	+ add configure check for clang, to improve compiler warnings.
 	+ build-fix for HP-UX 10.20 lex, which prototyped main() without params
@@ -125,7 +138,7 @@ Changes for vile 9.9 (released ??? ??? ?? ????)
 	    separate ncurses' header files.
 	  + CF_DISABLE_RPATH_HACK - fix garbled message
 	  + CF_LD_RPATH_OPT - add cases for DragonFlyBSD and MirBSD
-	  + CF_MAKEFLAGS - filter out GNU make's entering/leaving messages. 
+	  + CF_MAKEFLAGS - filter out GNU make's entering/leaving messages.
 	    This only appeared when using the macro in a dpkg script, though it
 	    should have in other cases.
 	  + CF_PKG_CONFIG - modify to allow autoconf-2.13 or autoconf-2.52
@@ -189,7 +202,7 @@ Changes for vile 9.9 (released ??? ??? ?? ????)
 	+ add preamble patterns for Emacs "text" and "Autotest" modes.
 	+ minor improvements to performance by inlining as macros some
 	  frequently used functions.
-	+ apply the same improvement for line-deletion to these functions: 
+	+ apply the same improvement for line-deletion to these functions:
 	  attributereqion(), find_release_attr(), update_window_attrs().
 	+ improve performance of line-deletion by eliminating a search for
 	  region-pointer, using data already collected (report by Gary
@@ -330,9 +343,9 @@ Changes for vile 9.8 (released Sun Aug 08 2010)
 	  + improve CF_RPATH_HACK by using ldd to obtain a list of directories
 	    to ignore.
 	  + use pkg-config for X libraries, if available.
-	  + correct a test of cache variable in CF_MKSTEMP 
+	  + correct a test of cache variable in CF_MKSTEMP
 	  + modify CF_GCC_WARNINGS to work with c89 wrapper for gcc.
-	  + ignore stderr in CF_GCC_VERSION 
+	  + ignore stderr in CF_GCC_VERSION
 	  + add/use CF_ADD_LIB and CF_ADD_LIBS macros to force consistency in
 	    updating the $LIBS variable.
 	  + add assignments in CF_FIND_LINKAGE to address a case where the

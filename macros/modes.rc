@@ -1,4 +1,4 @@
-; $Id: modes.rc,v 1.112 2011/11/22 16:53:30 tom Exp $
+; $Id: modes.rc,v 1.118 2012/07/11 19:46:41 tom Exp $
 ; majormodes in this file are ordered alphabetically for convenience - the
 ; precedence used by vile is strictly alphabetic, counting case.  Use the
 ; before and after qualifiers to override the precedence.
@@ -801,27 +801,51 @@ define-mode sed
 	comments	'^\s*#\s*$'
 ~endwith
 
-; This is matched after 'csh', and will pick up /bin/sh, /bin/bash, /bin/ksh
+; This is matched after 'csh', and will pick up /bin/sh, /bin/bash
 ; FIXME "Jamrules" is something like sh, but uses different rules for "^", etc.
 define-mode sh
 ~with define-submode sh
-	mode-filename	'^\(\([a-z.-]*profile\)\|Jamrules\)$'
-	suffixes	'\(\.\(sh\|ksh\|shar\|.*shrc\|bash_[a-z]\+\|ebuild\)$\)'
-	pre '^\(\(#!\s*\(\/[^\\]*\)\?sh\>\(\s*[-]\+[\a]*\s*\)\?\)\|:\)\s*$'
+	mode-filename	'^\(\.profile\|Jamrules\)$'
+	suffixes	'\(\.\(sh\|shar\|.*shrc\)$\)'
+	preamble	'^\(\(#!\s*\(\/[^\\]*\)\?sh\>\(\s*[-]\+[\a]*\s*\)\?\)\|:\)\s*$'
 	comment-prefix	'^\s*[:#]'
 	comments	'^\s*[:#]\s*$'
-	fence-if   '^\s*\<if\>'
-	fence-elif '^\s*\<elif\>'
-	fence-else '^\s*\<else\>'
-	fence-fi   '^\s*\<fi\>'
+	fence-if	'^\s*\<if\>'
+	fence-elif	'^\s*\<elif\>'
+	fence-else	'^\s*\<else\>'
+	fence-fi	'^\s*\<fi\>'
 ~elsewith define-submode sh group 'case'
-	fence-if   '^\s*\<case\>.*\<in\>'
-	fence-elif '^\s*[^ 	)]\+)'
-	fence-else '^\s*\*)'
-	fence-fi   '^\s*\<esac\>'
+	fence-if	'^\s*\<case\>.*\<in\>'
+	fence-elif	'^\s*[^ 	)]\+)'
+	fence-else	'^\s*\*)'
+	fence-fi	'^\s*\<esac\>'
 ~elsewith define-submode sh group 'do'
-	fence-if   '\(^\s*\<do\>\|;\s*\<do\>\)\s*$'
-	fence-fi   '^\s*\<done\>'
+	fence-if	'\(^\s*\<do\>\|;\s*\<do\>\)\s*$'
+	fence-fi	'^\s*\<done\>'
+~endwith
+
+derive-mode bash sh
+~with define-submode bash
+	before sh
+	mode-filename	'^\(\.bash_[a-z]\+$\)'
+	suffixes	'\(\.\(bash_[a-z]\+$\|ebuild\)\)'
+	preamble	'^\(\(#!\s*\(\/[^\\]*\)\?bash\>\(\s*[-]\+[\a]*\s*\)\?\)\|:\)\s*$'
+~endwith
+
+derive-mode ksh sh
+~with define-submode ksh
+	before bash
+	mode-filename	'^\([a-z.-]*kshrc\)$'
+	suffixes	'\(\.\(ksh\)$\)'
+	preamble	'^\(\(#!\s*\(\/[^\\]*\)\?ksh\>\(\s*[-]\+[\a]*\s*\)\?\)\|:\)\s*$'
+~endwith
+
+derive-mode zsh sh
+~with define-submode zsh
+	before bash
+	mode-filename	'^\(\.\)?z\(shenv\|profile\|shrc\|login\|logout\)$'
+	suffixes	'\(\.\(zsh\)$\)'
+	preamble	'^\(\(#!\s*\(\/[^\\]*\)\?zsh\>\(\s*[-]\+[\a]*\s*\)\?\)\|:\)\s*$'
 ~endwith
 
 define-mode sml
@@ -1023,37 +1047,13 @@ define-mode vb6
 	fence-fi	'^\s*\<end\s\+select\>'
 ~endwith
 
-; FIXME this should be the same as vb6mode except for the preamble and keywords
-define-mode vbs
+derive-mode vbs vb6
 ~with define-submode vbs
 	before		"basic"
 	suffixes	'\.\(vbs\)$'
 	comment-prefix	"^\\s*'"
-	comments	"^\\s*'\\s\\+\\s*$"
-	dos
-	ignorecase
-	notabinsert
-	tabstop=4
-	shiftwidth=4
-	; disallow continuation lines, or if-then-statement lines
-	fence-if	"^\\s*if\\>.*\\<then\\>\\(\\s*\'.*\\)\\?$"
-	fence-elif	'^\s*elseif\>'
-	fence-else	'^\s*else\>'
-	fence-fi	'^\s*end\s\+if\>'
-	sections	&cat %vb6-access '\(Sub\|Function\|Property\)'
-~elsewith define-submode vbs group 'for-loop'
-	fence-if	'^\s*for\>'
-	fence-fi	'^\s*next\>'
-~elsewith define-submode vbs group 'while-loop'
-	fence-if	'^\s*while\>'
-	fence-fi	'^\s*wend\>'
-~elsewith define-submode vbs group 'sub'
-	fence-if	&cat %vb6-access 'sub\>'
-	fence-fi	'^\s*end\s\+sub\>'
-~elsewith define-submode vbs group 'function'
-	fence-if	&cat %vb6-access 'function\>'
-	fence-fi	'^\s*end\s\+function\>'
 ~endwith
+remove-submode vbs preamble
 
 define-mode vlog
 ~with define-submode vlog
