@@ -7,7 +7,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/sh-filt.l,v 1.117 2012/07/12 00:11:35 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/sh-filt.l,v 1.118 2012/07/13 09:12:27 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Shell script.
  */
@@ -56,7 +56,7 @@ static void begin_braces(const char *text, int length);
 static void braces_operator(const char *text, int length);
 static void color_delimiter(char *text, int size, char *attr);
 static void embed_or_append(const char *text, int length);
-static void embed_vname(const char *text, int length);
+static void embed_vname(const char *text, int length, const char *dft);
 static void end_braces(const char *text, int length);
 static void handle_backtic(const char *text, int length, int test, int which);
 static void save_here(const char *text, int length);
@@ -119,7 +119,7 @@ DASHIDENT	{IDENT}("-"{NAME}{NAME2}*)*
 
 <NORMAL>{BRACES}	{ begin_braces(yytext, yyleng); }
 
-<NORMAL>{IDENT1}	{ write_vname(yytext, yyleng); }
+<NORMAL>{IDENT2}	{ write_vname(yytext, yyleng); }
 <NORMAL>{IDENTX}	{ WriteToken(Ident_attr); }
 
 <NORMAL>{IDENT}"="	{ flt_puts(yytext, yyleng-1, Ident_attr); flt_putc('='); }
@@ -165,8 +165,8 @@ DASHIDENT	{IDENT}("-"{NAME}{NAME2}*)*
 <HEREDOC>{BACKTIC2_DOWN} { handle_backtic(yytext, yyleng, yyleng, 1); }
 <HEREDOC>{BACKTIC1_DOWN} { handle_backtic(yytext, yyleng, yyleng, 1); }
 <HEREDOC>{BACKTIC}	{ handle_backtic(yytext, yyleng, yyleng, -1); }
-<HEREDOC>{IDENT1}	{ if (here_exp) {
-			      embed_vname(yytext, yyleng);
+<HEREDOC>{IDENT2}	{ if (here_exp) {
+			      embed_vname(yytext, yyleng, String_attr);
 			  } else {
 			      flt_bfr_append(yytext, yyleng);
 			  }
@@ -220,7 +220,7 @@ DASHIDENT	{IDENT}("-"{NAME}{NAME2}*)*
 <DQUOTED>{BACKTIC}	{ handle_backtic(yytext, yyleng, yyleng, -1); }
 <DQUOTED>\\[\n]		|
 <DQUOTED>\\.		{ flt_bfr_embed(yytext, 1, Action_attr); flt_bfr_append(yytext + 1, yyleng - 1); }
-<DQUOTED>{IDENT1}	{ embed_vname(yytext, yyleng); }
+<DQUOTED>{IDENT2}	{ embed_vname(yytext, yyleng, String_attr); }
 <DQUOTED>{BRACES}	{ begin_braces(yytext, yyleng); }
 <DQUOTED>[^`\r\n\\\"$]+	{ flt_bfr_append(yytext, yyleng); }
 <DQUOTED>[\n$]		{ flt_bfr_append(yytext, yyleng); }
@@ -238,13 +238,13 @@ DASHIDENT	{IDENT}("-"{NAME}{NAME2}*)*
 <EXPRS>{BACKTIC}	{ handle_backtic(yytext, yyleng, yyleng, -1); }
 <EXPRS>\\[\n]		|
 <EXPRS>\\.		{ flt_bfr_embed(yytext, 1, Action_attr); flt_bfr_append(yytext + 1, yyleng - 1); }
-<EXPRS>{IDENT1}		{ embed_vname(yytext, yyleng); }
+<EXPRS>{IDENT2}		{ embed_vname(yytext, yyleng, ""); }
 <EXPRS>{BRACES}		{ begin_braces(yytext, yyleng); }
 <EXPRS>{INTEGER}	{ flt_bfr_embed(yytext, yyleng, Number_attr); }
 <EXPRS>[^`\r\n\\\$)]+	{ flt_bfr_append(yytext, yyleng); }
 
 <BRACES>{END_BRACES}	{ end_braces(yytext, yyleng); }
-<BRACES>{IDENT}		{ flt_bfr_embed(yytext, yyleng, Ident_attr); new_state(BRACES2); }
+<BRACES>{VNAME}		{ embed_vname(yytext, yyleng, ""); new_state(BRACES2); }
 <BRACES>{INTEGER}	{ flt_bfr_embed(yytext, yyleng, Ident_attr); new_state(BRACES2); }
 <BRACES>[?#!%]		{ flt_bfr_embed(yytext, yyleng, Action_attr); }
 <BRACES>[^?#!%}[:alnum:]_-]+ { flt_bfr_append(yytext, yyleng); }
@@ -476,13 +476,14 @@ vname_allows_dots(const char *text, int length)
 }
 
 static void
-embed_vname(const char *text, int length)
+embed_vname(const char *text, int length, const char *dft)
 {
     int actual = vname_allows_dots(text, length);
 
-    flt_bfr_embed(text, actual, Ident_attr);
+    if (actual != 0)
+	flt_bfr_embed(text, actual, Ident_attr);
     if (actual < length) {
-	flt_bfr_append(text + actual, length - actual);
+	flt_bfr_embed(text + actual, length - actual, dft);
     }
 }
 
@@ -491,7 +492,8 @@ write_vname(const char *text, int length)
 {
     int actual = vname_allows_dots(text, length);
 
-    flt_puts(text, actual, Ident_attr);
+    if (actual != 0)
+	flt_puts(text, actual, Ident_attr);
     if (actual < length) {
 	flt_puts(text + actual, length - actual, "");
     }

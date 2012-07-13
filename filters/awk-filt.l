@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/awk-filt.l,v 1.28 2012/02/18 13:43:42 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/awk-filt.l,v 1.29 2012/07/12 23:51:51 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of awk
  * input text.
@@ -34,7 +34,7 @@ static int braces;
 
 BLANK		[ \t]*
 
-DSTRING		\"((\\.)|[^"\\\r\n])*\"
+DSTRING		\"(\\.|[^"\\\r\n]|\\\n)*\"
 
 KEYWORD		[[:alpha:]_][[:alnum:]_]*
 IDENT		\$[[:alnum:]_]+

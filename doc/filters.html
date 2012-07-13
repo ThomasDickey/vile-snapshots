@@ -1,6 +1,6 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
-  $Id: filters.html,v 1.6 2012/02/18 14:00:28 tom Exp $
+  $Id: filters.html,v 1.7 2012/07/13 09:36:12 tom Exp $
 -->
 <HTML>
 <HEAD>
@@ -221,6 +221,13 @@ codes with the corresponding color rather than the "Action" color.
 <p>
 The MAN filter recognizes a "-8" option which tells it to use 8-bit
 approximations for some common UTF-8 equivalents such as hyphen.
+<p>
+The SH filter recognizes a "-K" option to turn on Korn shell's syntax for
+dotted variable names.
+The ksh93 "vnames" allow a dotted name such as "$foo.bar" to be defined
+it is root ("$foo") is already defined.
+That affects portability of scripts because other sh-like programs
+do not behave this way.
 
 <h2 id="programs-id"><a name="programs">PROGRAMS</a></h2>
 <p>

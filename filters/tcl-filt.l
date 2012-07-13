@@ -6,7 +6,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/tcl-filt.l,v 1.23 2012/02/18 13:49:19 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/tcl-filt.l,v 1.26 2012/07/12 23:34:41 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of TCL/TK script.
  *
@@ -37,7 +37,7 @@ static char *String_attr;
 SPACE		[ \t]
 
 SSTRING		\'([^\\'\r\n]|\\[^'\r\n])*\'
-DSTRING		\"([^"\r\n]|\\[^\r\n])*[\"]?
+DSTRING		\"(\\.|[^"\\\r\n]|\\\n)*[\"]?
 STRINGS		({SSTRING}|{DSTRING})
 
 ACTION		([\.`]|\\\n)
@@ -65,7 +65,7 @@ NONUMBER	{SIGN}?({NODECIMAL}|{NOOCTAL}|{NOHEXADECIMAL}|{NOREAL})
 
 %%
 
-[{}]			{ WriteToken(Braces_attr); }
+[{}]+			{ WriteToken(Braces_attr); }
 {IDENT}			{ WriteToken(get_keyword_attr(yytext)); BEGIN(ARGS); }
 
 <VERB>"#"([^\r\n]|\\\n)*$	{ WriteToken(Comment_attr); }
