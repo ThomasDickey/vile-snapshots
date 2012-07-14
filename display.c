@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.561 2012/03/02 01:21:35 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.562 2012/07/13 23:29:52 Adam.Denton Exp $
  *
  */
 
@@ -3608,7 +3608,7 @@ special_formatter(TBUFF **result, const char *fs, WINDOW *wp)
 					eol_null,
 					EOS,
 					(int *) 0);
-		    vl_strncpy(temp, tokval(temp), sizeof(temp));
+		    vl_strncpy(temp, tokval(tb_values(tok)), sizeof(temp));
 
 		    tb_free(&tok);
 		    execstr = save_execstr;
