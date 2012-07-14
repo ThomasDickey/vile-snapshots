@@ -22,7 +22,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.708 2012/07/11 14:23:04 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.709 2012/07/14 15:54:06 tom Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -200,6 +200,17 @@ run_and_discard(BUFFER **bp)
 }
 
 static void
+add_cmdarg(BUFFER *bp, const char *cmd, const char *arg)
+{
+    TBUFF *tb = 0;
+    if (tb_scopy(&tb, arg) != 0
+	&& tb_enquote(&tb) != 0) {
+	b2printf(bp, cmd, tb_values(tb));
+    }
+    tb_free(&tb);
+}
+
+static void
 setup_command(BUFFER *opts_bp, char *param)
 {
     char *p1;
@@ -217,7 +228,7 @@ setup_command(BUFFER *opts_bp, char *param)
 	    param = skip_blanks(p2 + 1);
 	}
     }
-    b2printf(opts_bp, "execute-named-command %s\n", param);
+    add_cmdarg(opts_bp, "execute-named-command %s\n", param);
 }
 
 static int
@@ -585,7 +596,7 @@ MainProgram(int argc, char *argv[])
 		    break;
 		case 'g':	/* -g for initial goto */
 		case 'G':
-		    b2printf(opts_bp, "%s goto-line\n", GetArgVal(param));
+		    add_cmdarg(opts_bp, "%s goto-line\n", GetArgVal(param));
 		    break;
 		case 'h':	/* -h for initial help */
 		case 'H':
@@ -602,7 +613,7 @@ MainProgram(int argc, char *argv[])
 		    if (cfg_locate(vileinit, LOCATE_SOURCE) != 0
 			&& cfg_locate(startup_file, LOCATE_SOURCE) == 0)
 			make_startup_file(vileinit);
-		    b2printf(init_bp, "source %s\n", vileinit);
+		    add_cmdarg(init_bp, "source %s\n", vileinit);
 		    break;
 
 #if OPT_ENCRYPT
@@ -622,12 +633,12 @@ MainProgram(int argc, char *argv[])
 #endif
 		case 's':	/* -s <pattern> */
 		case 'S':
-		    b2printf(opts_bp, "search-forward %s\n", GetArgVal(param));
+		    add_cmdarg(opts_bp, "search-forward %s\n", GetArgVal(param));
 		    break;
 #if OPT_TAGS
 		case 't':	/* -t for initial tag lookup */
 		case 'T':
-		    b2printf(opts_bp, "tag %s\n", GetArgVal(param));
+		    add_cmdarg(opts_bp, "tag %s\n", GetArgVal(param));
 		    break;
 #endif
 		case 'v':	/* -v is view mode */
@@ -657,7 +668,7 @@ MainProgram(int argc, char *argv[])
 	    setup_command(opts_bp, GetArgVal(param));
 	} else if (*param == '@') {
 	    vileinit = ++param;
-	    b2printf(init_bp, "source %s\n", param);
+	    add_cmdarg(init_bp, "source %s\n", param);
 	} else if (*param != EOS) {
 
 	    /* must be a filename */

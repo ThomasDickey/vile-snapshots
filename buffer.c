@@ -5,7 +5,7 @@
  * keys. Like everyone else, they set hints
  * for the display system.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.354 2012/03/09 00:49:11 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.355 2012/07/14 11:08:49 tom Exp $
  *
  */
 
@@ -419,6 +419,14 @@ run_buffer_hook(void)
 
 #define HIST_SHOW 9
 
+/*
+ * Display the names of the buffers along with their index numbers on the
+ * minibuffer line.  This is normally done in response to "_", i.e.,
+ * "historical-buffer".
+ *
+ * Returns the index of the "#" buffer in the list, so that we can use this in
+ * histbuff0() to select "#" when "_" is repeated (toggled).
+ */
 static int
 hist_show(int lo_limit, int hi_limit, int cycle)
 {
@@ -429,8 +437,9 @@ hist_show(int lo_limit, int hi_limit, int cycle)
 
     TRACE((T_CALLED "hist_show(%d..%d) %d\n", lo_limit, hi_limit, cycle));
 
-    if (!global_g_val(GMDABUFF))
+    if (!global_g_val(GMDABUFF)) {
 	abp = find_alt();
+    }
 
     (void) strcpy(line, "");
     for (i = lo_limit; i <= hi_limit; ++i) {
@@ -440,6 +449,10 @@ hist_show(int lo_limit, int hi_limit, int cycle)
 	if (bp != 0 && bp != curbp) {
 	    if (first < 0)
 		first = j;
+	    if (!global_g_val(GMDABUFF)) {
+		if (abp && abp == bp)
+		    first = j;
+	    }
 	    (void) lsprintf(line + strlen(line), "  %d%s%s %s",
 			    j,
 			    b_is_changed(bp) ? "*" : "",
@@ -538,7 +551,7 @@ histbuff0(int f, int n, int this_window)
 	    mlwarn("[No such buffer.]");
 	    return FALSE;
 	}
-	/* first assume its a buffer name, then a file name */
+	/* first assume it is a buffer name, then a file name */
 	if ((bp = find_b_name(bufn)) == NULL)
 	    return getfile(bufn, TRUE);
 

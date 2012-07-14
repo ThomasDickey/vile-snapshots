@@ -1,8 +1,17 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20120712 (h)
+ 20120714 (h)
+	+ modify initialization of [vileinit] to quote parameters passed from
+	  the command-line, e.g., for the "-s" option so that embedded blanks
+	  are retained (Savannah #36801).
+	+ modify hist_show() to return correct index for "#" buffer when
+	  autobuffer mode is turned off (Savannah #36739).
+	+ correct logic in special_formatter() for L_CURL case so that
+	  expressions such as
+		setv $modeline-format "%{&cat 'ignorecase is ' $ignorecase}"
+	  work (patch by Adam Denton, Savannah #35288).
 	+ corrected highlighting of continuation-lines for double-quoted
-	  strings in awk, tcl filters.
+	  strings in awk, tcl filters (prompted by report by Wayne Cuddy).
 	+ reduce sh.key to POSIX shell keywords and utilities.
 	+ add zshmode and bashmode, for consistency.
 	+ add kshmode, to address slight syntax differences between Korn
