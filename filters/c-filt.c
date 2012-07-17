@@ -6,7 +6,7 @@
  *		string literal ("Literal") support --  ben stoltz
  *		factor-out hashing and file I/O - tom dickey
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/c-filt.c,v 1.88 2012/02/18 13:43:42 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/c-filt.c,v 1.90 2012/07/17 09:36:44 tom Exp $
  *
  * Usage: refer to vile.hlp and doc/filters.doc .
  *
@@ -89,16 +89,20 @@ has_endofcomment(char *s)
 }
 
 static int
-has_endofliteral(char *s, int delim, int verbatim)
+has_endofliteral(char *s, int delim, int verbatim, int *escaped)
 {				/* points to '"' */
     int i = 0;
+    int result = -1;
+    char *base = s;
+
     while (*s) {
 	if (*s == delim) {
 	    if (verbatim && s[1] == delim) {
 		++i;
 		++s;
 	    } else {
-		return (i);
+		result = i;
+		break;
 	    }
 	}
 	if (!verbatim && s[0] == BACKSLASH && (s[1] == delim || s[1] == BACKSLASH)) {
@@ -108,7 +112,12 @@ has_endofliteral(char *s, int delim, int verbatim)
 	++i;
 	++s;
     }
-    return (-1);
+
+    if (*escaped && !verbatim && (s > base) && (*s == '\0') && (s[-1] != BACKSLASH)) {
+	*escaped = 0;
+    }
+
+    return result;
 }
 
 static char *
@@ -315,7 +324,7 @@ write_number(char *s)
 static char *
 write_literal(char *s, int *literal, int *verbatim, int escaped)
 {
-    int c_length = has_endofliteral(s, *literal, *verbatim);
+    int c_length = has_endofliteral(s, *literal, *verbatim, &escaped);
     if (c_length < 0)
 	c_length = (int) strlen(s);
     else
@@ -325,10 +334,12 @@ write_literal(char *s, int *literal, int *verbatim, int escaped)
     } else {
 	flt_error("expected an escape");
 	flt_puts(s, c_length, Error_attr);
+	*literal = 0;
     }
     s += c_length;
     if (!*literal) {
-	flt_putc(*s++);
+	if (*s)
+	    flt_putc(*s++);
 	*verbatim = 0;
     }
     return s;
@@ -492,8 +503,9 @@ do_filter(FILE *input GCC_UNUSED)
 	escaped = was_esc;
 	was_esc = 0;
 	s = line;
-	if (literal)
+	if (literal) {
 	    s = write_literal(s, &literal, &verbatim, escaped);
+	}
 	s = skip_white(s);
 	while (*s) {
 	    if (!comment && *s == '/' && *(s + 1) == '*') {

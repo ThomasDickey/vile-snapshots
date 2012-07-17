@@ -1,9 +1,16 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20120714 (h)
+ 20120717 (h)
+	+ improve check in c-filt.c for quoted strings to ensure that a
+	  backslash is given for continuation-lines.
+	+ modify ecrypt.c to reset seed/salt before each file, so that a set
+	  of files can be decrypted with a wildcard.
+	+ improved lex-filt.l:
+	  + do not treat a line consisting only of whitespace as indented-code.
+	  + amend CODE1 state to handle indented comments between patterns.
 	+ modify initialization of [vileinit] to quote parameters passed from
 	  the command-line, e.g., for the "-s" option so that embedded blanks
-	  are retained (Savannah #36801).
+	  are retained (report by Greg McFarlane, Savannah #36801).
 	+ modify hist_show() to return correct index for "#" buffer when
 	  autobuffer mode is turned off (Savannah #36739).
 	+ correct logic in special_formatter() for L_CURL case so that
