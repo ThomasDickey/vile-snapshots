@@ -9,7 +9,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/lex-filt.l,v 1.78 2012/02/18 13:43:42 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/lex-filt.l,v 1.83 2012/07/16 09:02:25 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of LEX program.
  */
@@ -76,6 +76,10 @@ RANGE		("["{RANGE0}?{RANGE1}*"]")
 LIMITED		([[:digit:]]+([,][[:digit:]]+)*)
 BRACED		("{"({IDENT}|{LIMITED}+)"}")
 
+		/*
+		 * Combining all of these pieces makes the lex filter much
+		 * larger than the other lex-based filters.
+		 */
 PATTERN0	({ESCAPED}|{BRACED}|{QUOTED}|{RANGE}|{UNQUOTED0})
 PATTERN1	({ESCAPED}|{BRACED}|{QUOTED}|{RANGE}|{UNQUOTED1})
 PATTERN		(({PATTERN0}|"("{PATTERN1}")")+|"<<EOF>>")
@@ -85,11 +89,33 @@ STATES		("<"("*"|({IDENT}|\,)+)">")
 
 %%
 
-<RULES>^[\t]+	{
+		/*
+		 * An entirely blank line should not affect the state.
+		 */
+^{SPACE}+$	{ ECHO; }
+
+		/*
+		 * Lines in the patterns section beginning with whitespace
+		 * are passed through to the output as-is.  The main use for
+		 * that is to allow inline comments.  However, variables also
+		 * can be declared.
+		 */
+<RULES>^{SPACE}+	{
     			ECHO;
 			new_state(CODE1);
 		}
 
+		/*
+		 * Handle comments.  flex actually pays attention only to
+		 * newlines and C-style comments.  We handle "//" here to
+		 * help with compiling its output.
+		 */
+<RULES,ACTION0,ACTION3,CODE,CODE1>"//"[^\r\n]* {
+			WriteToken(Comment_attr);
+		}
+<RULES,ACTION0,ACTION3,CODE,CODE1>"/*" {
+			PushQuote(COMMENT, Comment_attr);
+		}
 <RULES,ACTIONS,CODE>^"%%"{SPACE}*[^[:space:]]+[^\r\n]*	{
 			WriteToken(Comment_attr);
 		}
@@ -160,8 +186,6 @@ STATES		("<"("*"|({IDENT}|\,)+)">")
 			  }
 			  new_state(RULE1);
 			}
-<RULES>"//"[^\r\n]*	{ WriteToken(Comment_attr); }
-<RULES>"/*"		{ PushQuote(COMMENT, Comment_attr); }
 
 <RULE1>{SPACE}+		{ ECHO; new_state(RULEX); }
 <RULEX>{PATTERNS}	{ write_patterns(yytext, yyleng); new_state(RULER); }
@@ -175,10 +199,8 @@ STATES		("<"("*"|({IDENT}|\,)+)">")
 <ACTIONS>^{STATES}	{ write_states(yytext, yyleng); new_state(ACTION1); }
 <ACTIONS>^{PATTERN}	{ write_patterns(yytext, yyleng); new_state(ACTION2); }
 
-<ACTION0>"//"[^\r\n]*	{ WriteToken(Comment_attr); }
 <ACTION0>^{SPACE}+	{ ECHO; }
 <ACTION0>{STATES}	{ write_states(yytext, yyleng); new_state(ACTION1); }
-<ACTION0>"/*"		{ PushQuote(COMMENT, Comment_attr); }
 <ACTION0>{PATTERN}	{ write_patterns(yytext, yyleng); new_state(ACTION2); }
 
 <ACTION1>"{"		{ WriteToken(Action_attr); ++bracket; new_state(ACTION0); }
@@ -191,20 +213,16 @@ STATES		("<"("*"|({IDENT}|\,)+)">")
 <ACTION2>[\n]		{ ECHO; end_action(); }
 
 <ACTION3>{IDENT}	{ WriteToken(get_keyword_attr(yytext)); new_state(CODE1); }
-<ACTION3>"//"[^\r\n]*	{ WriteToken(Comment_attr); }
-<ACTION3>"/*"		{ PushQuote(COMMENT, Comment_attr); }
 <ACTION3>\{		{ ECHO; nesting = 1; new_state(CODE); }
 <ACTION3>[\n]		{ ECHO; end_action(); }
 
 <CODE,CODE1>{IDENT}	{ WriteToken(get_keyword_attr(yytext)); }
 <CODE,CODE1>{STRINGS}	{ WriteToken(String_attr); }
 <CODE,CODE1>{INTEGER}	{ WriteToken(Number_attr); }
-<CODE1>[\n]		{ ECHO; set_rules(); }
-<CODE,CODE1>\{		{ ECHO; nesting++; }
-<CODE,CODE1>\}		{ ECHO; if (--nesting <= 0) { nesting = 0; set_rules(); } }
+<CODE1>[\n]		{ ECHO; set_state(); }
+<CODE>\{		{ ECHO; nesting++; }
+<CODE>\}		{ ECHO; if (--nesting <= 0) { nesting = 0; set_rules(); } }
 
-<CODE,CODE1>"//"[^\r\n]*	{ WriteToken(Comment_attr); }
-<CODE,CODE1>"/*"	{ PushQuote(COMMENT, Comment_attr); }
 <COMMENT>[^*]*		{ flt_bfr_append(yytext, yyleng); }
 <COMMENT>"*"+[^*/]*	{ flt_bfr_append(yytext, yyleng); }
 <COMMENT>"*"+"/"	{ PopQuote(); }
