@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/awk-filt.l,v 1.29 2012/07/12 23:51:51 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/awk-filt.l,v 1.32 2012/07/18 00:52:21 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of awk
  * input text.
@@ -43,11 +43,11 @@ SIGN		[-+]
 INTEGER		{SIGN}?([[:digit:]]+)
 REAL		{SIGN}?([[:digit:]]*\.[[:digit:]]+)([eE]{SIGN}?[[:digit:]]+)?
 
-PATTERN		"/"(\\.|\[(\\.|.)*\]|[^\t\r\n])*"/"
+PATTERN		"/"(\\.|("["("^")?([][])*([^][])*"]")|[^\r\n/])*"/"
 
 %%
 
-<NORMAL>{PATTERN}	{ WriteToken(String_attr); }
+<NORMAL,ARGS>{PATTERN}	{ WriteToken(String_attr); }
 
 <CODE>"/"		{ ECHO; }
 
@@ -58,7 +58,6 @@ PATTERN		"/"(\\.|\[(\\.|.)*\]|[^\t\r\n])*"/"
 <ARGS>"("		{ ECHO;
 			  ++FLTSTACK_THIS.parens;
 			}
-<ARGS>{PATTERN}		{ WriteToken(String_attr); }
 <ARGS>")"		{ ECHO;
 			  if (--FLTSTACK_THIS.parens == 0) {
 			      PopState();

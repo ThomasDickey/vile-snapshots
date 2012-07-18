@@ -1,6 +1,7 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
  20120717 (h)
+	+ improve pattern used for regular expressions in awk-filt.l
 	+ improve check in c-filt.c for quoted strings to ensure that a
 	  backslash is given for continuation-lines.
 	+ modify ecrypt.c to reset seed/salt before each file, so that a set
