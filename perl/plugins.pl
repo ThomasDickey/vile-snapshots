@@ -1,6 +1,8 @@
-# $Header: /users/source/archives/vile.vcs/perl/RCS/plugins.pl,v 1.3 2000/01/09 22:53:07 bod Exp $
+# $Header: /users/source/archives/vile.vcs/perl/RCS/plugins.pl,v 1.4 2012/07/20 00:59:17 tom Exp $
 # (see dir.doc)
 package plugins;
+
+our $RPM_Provides = 'plugins.pl';
 
 sub gzip {
     my ($file) = @_;

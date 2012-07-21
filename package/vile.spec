@@ -1,7 +1,8 @@
 Summary: VILE (VI Like Emacs) editor
-# $Header: /users/source/archives/vile.vcs/package/RCS/vile.spec,v 1.16 2012/03/12 00:43:41 tom Exp $
+# $Header: /users/source/archives/vile.vcs/package/RCS/vile.spec,v 1.27 2012/07/21 14:50:16 tom Exp $
 Name: vile
-Version: 9.8h
+%define AppVersion 9.8
+Version: %{AppVersion}h
 # each patch should update the version
 Release: dev
 License: GPLv2
@@ -21,6 +22,148 @@ Packager: Thomas Dickey <dickey@invisible-island.net>
 
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 Requires:	%{name}-common = %{version}-%{release}
+
+%prep
+
+%define desktop_vendor  dickey
+%define desktop_utils   %(if which desktop-file-install 2>&1 >/dev/null ; then echo "yes" ; fi)
+
+%define apps_shared %(test -d /usr/share/X11/app-defaults && echo 1 || echo 0)
+%define apps_syscnf %(test -d /etc/X11/app-defaults && echo 1 || echo 0)
+
+%if %{apps_shared}
+%define _xresdir    %{_datadir}/X11/app-defaults
+%else
+%define _xresdir    %{_sysconfdir}/X11/app-defaults
+%endif
+
+%define _iconsdir   %{_datadir}/icons
+%define _pixmapsdir %{_datadir}/pixmaps
+%define _wmcfgdir   %{_sysconfdir}/X11/wmconfig
+
+# rpm5 came too late to be more than a niche.  Use environment variables to
+# override configure settings.
+%define without_perl %(test -n "$_without_perl" && echo 1 || echo 0)
+%if %{without_perl} == 1
+%define perl_opt --without-perl
+%define with_perl 0
+%else
+%define perl_opt --with-perl
+%define with_perl 1
+%endif
+
+%setup -q -n %{name}-%{AppVersion}
+%patch1 -p1
+%patch2 -p1
+%patch3 -p1
+%patch4 -p1
+%patch5 -p1
+%patch6 -p1
+%patch7 -p1
+%patch8 -p1
+# each patch should add itself to this list
+
+rpm --version
+
+# Fedora dependencies:
+#	perl-devel-5.14.2-198.fc16.x86_64
+# warnings on install:
+#	perl(Net::Dict) is needed by vile-common-9.8h-dev.x86_64
+# can get
+#	perl-Net-Dict from http://pkgs.org/download/perl-Net-Dict
+# however that opens up a can of worms.  Filter it out.
+#
+# Also filter out require on IO::Pty since that should be an optional
+# feature.
+#
+# see
+#	https://fedoraproject.org/wiki/EPEL:Packaging#Perl_Provides_and_Requires_Filtering
+
+%if "%{?perl_default_filter_revision}" != ""
+# see https://fedorahosted.org/fpc/ticket/76
+# tested Fedora16 with revision 3
+# tested Fedora15 with revision 2
+echo "have perl_default_filter_revision %{perl_default_filter_revision}"
+%perl_default_filter
+%global __requires_exclude %{?_requires_exclude:%__requires_exclude|}perl\\(mime.pl\\)
+%global __requires_exclude %__requires_exclude|perl\\(plugins.pl\\)
+%global __requires_exclude %__requires_exclude|perl\\(IO::Pty\\)
+%global __requires_exclude %__requires_exclude|perl\\(Net::Dict\\)
+%global __requires_exclude %__requires_exclude|perl\\(Vile\\)
+%global __requires_exclude %__requires_exclude|perl\\(Vile::Exporter\\)
+%global __requires_exclude %__requires_exclude|perl\\(Vile::Manual\\)
+
+%else
+
+%if "%{?perl_default_filter}" != ""
+echo "have perl_default_filter %{perl_default_filter}"
+%endif
+
+%if "%{?__find_provides}" != ""
+echo "have __find_provides %{__find_provides}"
+%endif
+
+%if "%{?__perl_provides}" == ""
+%define __perl_provides /usr/lib/rpm/perl.prov
+echo defined __perl_provides
+%endif
+
+%if "%{?__find_requires}" != ""
+echo filter %{__find_requires} 
+cat << \EOF > %{name}_find_req
+#!/bin/sh
+%{__find_requires} "$@" |\
+sed	-e '/perl(mime.pl)/d' \
+	-e '/perl(plugins.pl)/d' \
+	-e '/perl(IO::Pty)/d' \
+	-e '/perl(Net::Dict)/d' \
+	-e '/perl(Vile)/d' \
+	-e '/perl(Vile::Exporter)/d' \
+	-e '/perl(Vile::Manual)/d'
+EOF
+
+%global __find_requires %{_builddir}/%{name}-%{AppVersion}/%{name}_find_req
+chmod +x %{__find_requires}
+%endif
+
+%if "%{?__perl_requires}" == ""
+%define __perl_requires /usr/lib/rpm/perl.req
+echo defined __perl_requires
+%endif
+
+echo filter %{__perl_provides} 
+cat << \EOF >%{name}_perl_prov
+#!/bin/sh
+%{__perl_provides} "$@" |\
+sed	-e '/perl(mime.pl)/d' \
+	-e '/perl(plugins.pl)/d'
+EOF
+
+%global __perl_provides %{_builddir}/%{name}-%{AppVersion}/%{name}_perl_prov
+chmod +x %{__perl_provides}
+
+echo filter %{__perl_requires} 
+cat << \EOF > %{name}_perl_req
+#!/bin/sh
+%{__perl_requires} "$@" |\
+sed	-e '/perl(mime.pl)/d' \
+	-e '/perl(plugins.pl)/d' \
+	-e '/perl(IO::Pty)/d' \
+	-e '/perl(Net::Dict)/d' \
+	-e '/perl(Vile)/d' \
+	-e '/perl(Vile::Exporter)/d' \
+	-e '/perl(Vile::Manual)/d'
+EOF
+
+%global __perl_requires %{_builddir}/%{name}-%{AppVersion}/%{name}_perl_req
+chmod +x %{__perl_requires}
+
+%endif
+
+# help rpmbuild to ignore the maintainer scripts in the doc directory...
+rm -f doc/makefile
+rm -f doc/*.pl
+rm -f doc/*.sh
 
 %package	common
 Summary:	The common files needed by any version of VILE (VI Like Emacs)
@@ -51,44 +194,10 @@ vile is a text editor which is extremely compatible with vi in terms of
 notably multi-file editing and viewing, syntax highlighting, key
 rebinding, and real X window system support.
 
-%prep
-
-%define desktop_vendor  dickey
-%define desktop_utils   %(if which desktop-file-install 2>&1 >/dev/null ; then echo "yes" ; fi)
-
-%define apps_shared %(test -d /usr/share/X11/app-defaults && echo 1 || echo 0)
-%define apps_syscnf %(test -d /etc/X11/app-defaults && echo 1 || echo 0)
-
-%if %{apps_shared}
-%define _xresdir    %{_datadir}/X11/app-defaults
-%else
-%define _xresdir    %{_sysconfdir}/X11/app-defaults
-%endif
-
-%define _iconsdir   %{_datadir}/icons
-%define _pixmapsdir %{_datadir}/pixmaps
-%define _wmcfgdir   %{_sysconfdir}/X11/wmconfig
-
-%setup -q -n vile-9.8
-%patch1 -p1
-%patch2 -p1
-%patch3 -p1
-%patch4 -p1
-%patch5 -p1
-%patch6 -p1
-%patch7 -p1
-%patch8 -p1
-# each patch should add itself to this list
-
-# help rpmbuild to ignore the maintainer scripts in the doc directory...
-rm -f doc/makefile
-rm -f doc/*.pl
-rm -f doc/*.sh
-
 %build
 %configure \
 	--with-loadable-filters \
-	--disable-rpath-hack
+	--disable-rpath-hack %{perl_opt}
 make vile
 
 %configure \
@@ -97,7 +206,7 @@ make vile
 	--with-app-defaults=%{_xresdir} \
 	--with-icondir=%{_pixmapsdir} \
 	--with-screen=Xaw \
-	--with-xpm
+	--with-xpm %{perl_opt}
 make xvile
 touch vile
 
@@ -151,6 +260,9 @@ rm -rf %{buildroot}
 %{_bindir}/xshell.sh
 %{_bindir}/xvile
 %{_bindir}/xvile-pager
+%if %{with_perl} == 1
+%{_bindir}/vileget
+%endif
 %{_mandir}/man1/xvile.1*
 %{_mandir}/man1/lxvile.1*
 %{_mandir}/man1/uxvile.1*
