@@ -1,8 +1,10 @@
-# $Header: /users/source/archives/vile.vcs/perl/RCS/mime.pl,v 1.4 2002/05/03 10:18:24 tom Exp $
+# $Header: /users/source/archives/vile.vcs/perl/RCS/mime.pl,v 1.5 2012/07/20 00:59:25 tom Exp $
 # (see dir.doc)
 require 'plugins.pl';
 
 package mime;
+
+our $RPM_Provides = 'mime.pl';
 
 sub mime {
     my $work = Vile::working(0);

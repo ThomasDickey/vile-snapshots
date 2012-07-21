@@ -1,6 +1,7 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20120717 (h)
+ 20120720 (h)
+	+ modify vile.spec to conditionally incorporate the perl features.
 	+ improve pattern used for regular expressions in awk-filt.l
 	+ improve check in c-filt.c for quoted strings to ensure that a
 	  backslash is given for continuation-lines.
