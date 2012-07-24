@@ -1,4 +1,4 @@
-; $Id: filters.rc,v 1.236 2012/07/11 18:16:16 tom Exp $
+; $Id: filters.rc,v 1.237 2012/07/22 00:08:21 tom Exp $
 ; majormodes in this file are ordered alphabetically for convenience - the
 ; precedence used by vile is strictly alphabetic, counting case.
 
@@ -265,6 +265,11 @@ define-mode vim
 define-mode wbt
 ~with define-submode wbt
 	filtername	'vile-wbt-filt -i'
+~endwith
+
+define-mode xpm
+~with define-submode xpm
+	filtername	'vile-c-filt'
 ~endwith
 
 define-mode xsl

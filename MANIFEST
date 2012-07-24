@@ -1,4 +1,4 @@
-MANIFEST for vile, version v9_8g9
+MANIFEST for vile, version v9_8g10
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 AUTHORS                         list of authors, with nicknames in CHANGES
@@ -392,13 +392,25 @@ filters/zsh.key                 zsh keywords
 icons                           subdirectory
 icons/pumpkin.ico               V-eyes pumpkin icon
 icons/pumpkin.xbm               X bitmap, for vile icon
+icons/pumpkin.xcf               Gimp-formatted pumpkin-icon
 icons/pumpkin.xpm               pumpkin icon, in Xpm form
+icons/pumpkin_48x48.png         png-formatted pumpkin-icon 48x48
+icons/pumpkin_48x48.svg         svg-formatted pumpkin-icon on 48x48 grid
+icons/pumpkin_48x48.xcf         Gimp-formatted pumpkin-icon scaled to 48x48
 icons/sink.ico                  kitchen-sink icon (J.R.Sladkey)
 icons/sink.xbm                  X bitmap, for vile icon
+icons/sink.xcf                  Gimp-formatted sink-icon
 icons/sink.xpm                  X bitmap for vile icon
+icons/sink_48x48.png            png-formatted sink-icon 48x48
+icons/sink_48x48.svg            svg-formatted sink-icon on 48x48 grid
+icons/sink_48x48.xcf            Gimp-formatted sink-icon scaled to 48x48
 icons/vile.ico                  Windows icon, for vile
 icons/vile.xbm                  sample icon, for X bitmap
+icons/vile.xcf                  Gimp-formatted vile-icon
 icons/vile.xpm                  sample icon, for xpm library
+icons/vile_48x48.png            png-formatted vile-icon 48x48
+icons/vile_48x48.svg            svg-formatted vile-icon on 48x48 grid
+icons/vile_48x48.xcf            Gimp-formatted vile-icon scaled to 48x48
 macros                          subdirectory
 macros/UXVile.ad                X resources for uxvile
 macros/XVile.ad                 sample X resource file for vile

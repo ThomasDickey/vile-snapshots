@@ -1,6 +1,6 @@
 dnl vile's local definitions for autoconf.
 dnl
-dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.242 2012/07/08 01:04:33 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.246 2012/07/24 10:50:52 tom Exp $
 dnl
 dnl See
 dnl		http://invisible-island.net/autoconf/autoconf.html
@@ -4400,6 +4400,114 @@ if test "$cf_cv_have_wctype" = yes ; then
 fi
 ])dnl
 dnl ---------------------------------------------------------------------------
+dnl CF_WITH_APP_CLASS version: 1 updated: 2011/07/08 04:54:40
+dnl -----------------
+dnl Handle configure option "--with-app-class", setting the $APP_CLASS
+dnl variable, used for X resources.
+dnl
+dnl $1 = default value.
+AC_DEFUN(CF_WITH_APP_CLASS,[
+AC_MSG_CHECKING(for X applications class)
+AC_ARG_WITH(app-class,
+	[  --with-app-class=XXX    override X applications class (default $1)],
+	[APP_CLASS=$withval],
+	[APP_CLASS=$1])
+
+case x$APP_CLASS in #(vi
+*[[/@,%]]*) #(vi
+	AC_MSG_WARN(X applications class cannot contain punctuation)
+	APP_CLASS=$1
+	;;
+x[[A-Z]]*) #(vi
+	;;
+*)
+	AC_MSG_WARN([X applications class must start with capital, ignoring $APP_CLASS])
+	APP_CLASS=$1
+	;;
+esac
+
+AC_MSG_RESULT($APP_CLASS)
+
+AC_SUBST(APP_CLASS)
+])dnl
+dnl ---------------------------------------------------------------------------
+dnl CF_WITH_APP_DEFAULTS version: 3 updated: 2012/06/19 20:58:54
+dnl --------------------
+dnl Handle configure option "--with-app-defaults", setting these shell
+dnl variables:
+dnl
+dnl $APPSDIR is the option value, used for installing app-defaults files.
+dnl $no_appsdir is a "#" (comment) if "--without-app-defaults" is given.
+dnl
+dnl Most Linux's use this:
+dnl 	/usr/share/X11/app-defaults
+dnl Debian uses this:
+dnl 	/etc/X11/app-defaults
+dnl DragonFlyBSD ports uses this:
+dnl 	/usr/pkg/lib/X11/app-defaults
+dnl FreeBSD ports use these:
+dnl 	/usr/local/lib/X11/app-defaults
+dnl 	/usr/local/share/X11/app-defaults
+dnl Mandriva has these:
+dnl 	/usr/lib/X11/app-defaults
+dnl 	/usr/lib64/X11/app-defaults
+dnl NetBSD has these
+dnl 	/usr/X11R7/lib/X11/app-defaults
+dnl OpenSolaris uses
+dnl 	32-bit:
+dnl 	/usr/X11/etc/X11/app-defaults
+dnl 	/usr/X11/share/X11/app-defaults
+dnl 	/usr/X11/lib/X11/app-defaults
+dnl	64-bit:
+dnl 	/usr/X11/etc/X11/app-defaults
+dnl 	/usr/X11/share/X11/app-defaults (I mkdir'd this)
+dnl 	/usr/X11/lib/amd64/X11/app-defaults
+dnl Solaris10 uses (in this order):
+dnl 	/usr/openwin/lib/X11/app-defaults
+dnl 	/usr/X11/lib/X11/app-defaults
+AC_DEFUN(CF_WITH_APP_DEFAULTS,[
+AC_MSG_CHECKING(for directory to install resource files)
+AC_ARG_WITH(app-defaults,
+	[  --with-app-defaults=DIR directory in which to install resource files (EPREFIX/lib/X11/app-defaults)],
+	[APPSDIR=$withval],
+	[APPSDIR='${exec_prefix}/lib/X11/app-defaults'])
+
+if test "x[$]APPSDIR" = xauto
+then
+	APPSDIR='${exec_prefix}/lib/X11/app-defaults'
+	for cf_path in \
+		/usr/share/X11/app-defaults \
+		/usr/X11/share/X11/app-defaults \
+		/usr/X11/lib/X11/app-defaults \
+		/usr/lib/X11/app-defaults \
+		/etc/X11/app-defaults \
+		/usr/pkg/lib/X11/app-defaults \
+		/usr/X11R7/lib/X11/app-defaults \
+		/usr/X11R6/lib/X11/app-defaults \
+		/usr/X11R5/lib/X11/app-defaults \
+		/usr/X11R4/lib/X11/app-defaults \
+		/usr/local/lib/X11/app-defaults \
+		/usr/local/share/X11/app-defaults \
+		/usr/lib64/X11/app-defaults
+	do
+		if test -d "$cf_path" ; then
+			APPSDIR="$cf_path"
+			break
+		fi
+	done
+else
+	cf_path=$APPSDIR
+	CF_PATH_SYNTAX(cf_path)
+fi
+
+AC_MSG_RESULT($APPSDIR)
+AC_SUBST(APPSDIR)
+
+no_appsdir=
+test "$APPSDIR" = no && no_appsdir="#"
+AC_SUBST(no_appsdir)
+])dnl
+dnl ---------------------------------------------------------------------------
 dnl CF_WITH_CURSES_DIR version: 3 updated: 2010/11/20 17:02:38
 dnl ------------------
 dnl Wrapper for AC_ARG_WITH to specify directory under which to look for curses
@@ -4452,6 +4560,207 @@ if test "$with_dmalloc" = yes ; then
 	AC_CHECK_HEADER(dmalloc.h,
 		[AC_CHECK_LIB(dmalloc,[dmalloc_debug]ifelse([$1],,[],[,$1]))])
 fi
+])dnl
+dnl ---------------------------------------------------------------------------
+dnl CF_WITH_ICONDIR version: 5 updated: 2012/07/22 09:18:02
+dnl ---------------
+dnl Handle configure option "--with-icondir", setting these shell variables:
+dnl
+dnl $ICONDIR is the option value, used for installing icon files.
+dnl $no_icondir is a "#" (comment) if "--without-icondir" is given.
+AC_DEFUN([CF_WITH_ICONDIR],[
+AC_MSG_CHECKING(for directory to install icons)
+AC_ARG_WITH(icondir,
+	[  --with-icondir=DIR      directory in which to install icons for desktop],
+	[ICONDIR=$withval],
+	[test -z "$ICONDIR" && ICONDIR=no])
+
+if test "x[$]ICONDIR" = xauto
+then
+	ICONDIR='${datadir}/icons'
+	for cf_path in \
+		/usr/share/icons \
+		/usr/X11R6/share/icons
+	do
+		if test -d "$cf_path" ; then
+			ICONDIR="$cf_path"
+			break
+		fi
+	done
+else
+	cf_path=$ICONDIR
+	CF_PATH_SYNTAX(cf_path)
+fi
+AC_MSG_RESULT($ICONDIR)
+AC_SUBST(ICONDIR)
+
+no_icondir=
+if test "$ICONDIR" = no
+then
+	no_icondir="#"
+else
+	EXTRA_INSTALL_DIRS="$EXTRA_INSTALL_DIRS \$(ICONDIR)"
+fi
+AC_SUBST(no_icondir)
+])dnl
+dnl ---------------------------------------------------------------------------
+dnl CF_WITH_ICON_THEME version: 6 updated: 2012/07/24 06:49:05
+dnl ------------------
+dnl If asked, check for prerequisites and setup symbols to permit installing
+dnl one or more application icons in the Red Hat icon-theme directory
+dnl hierarchy. 
+dnl
+dnl If the prerequisites are missing, give a warning and revert to the long-
+dnl standing pixmaps directory.
+dnl
+dnl Parameters:
+dnl
+dnl $1 = application icon.  This can be a list, and is not optional.
+dnl $2 = default theme (defaults to hicolor)
+dnl $3 = formats (defaults to list [.svg .png .xpm])
+dnl $4 = alternate icon if no theme is used (defaults to $1).
+dnl
+dnl Result:
+dnl ICON_NAME = basename of first item in $1
+dnl ICON_LIST = reprocessed $1
+dnl ICON_THEME = reprocessed $2
+dnl ICON_FORMAT = reprocessed $3
+AC_DEFUN([CF_WITH_ICON_THEME],
+[
+ifelse([$1],,[
+	AC_MSG_ERROR([macro [CF_WITH_ICON_THEME] requires application-icon name])
+],[
+
+CF_WITH_PIXMAPDIR
+CF_WITH_ICONDIR
+
+AC_MSG_CHECKING(if icon theme should be used)
+AC_ARG_WITH(icon-theme,
+	[  --with-icon-theme=XXX   install icons into desktop theme (hicolor)],
+	[ICON_THEME=$withval],
+	[ICON_THEME=no])
+
+case "x$ICON_THEME" in #(vi
+xno) #(vi
+	;;
+x|xyes)
+	ICON_THEME=ifelse([$2],,hicolor,$2)
+	;;
+esac
+AC_MSG_RESULT($ICON_THEME)
+
+if test "x$ICON_THEME" = xno
+then
+	if test "x$ICONDIR" != xno
+	then
+		AC_MSG_WARN(ignoring icondir without theme)
+		no_icondir="#"
+	fi
+else
+	if test "x$ICONDIR" = xno
+	then
+		AC_MSG_ERROR(icondir must be set for icon theme)
+	fi
+fi
+
+: ${ICON_FORMAT:=ifelse([$3],,[.svg .png .xpm],[$3])}
+
+ICON_NAME=
+ICON_LIST=
+
+ifelse([$4],,[cf_icon_list=$1],[
+if test "x$ICON_THEME" != xno
+then
+	cf_icon_list="$1"
+else
+	cf_icon_list="$4"
+fi
+])
+
+AC_MSG_CHECKING([for icon(s) to install])
+for cf_name in $cf_icon_list
+do
+	CF_VERBOSE(using $ICON_FORMAT)
+	for cf_suffix in $ICON_FORMAT
+	do
+		cf_icon="${cf_name}${cf_suffix}"
+		cf_left=`echo "$cf_icon" | sed -e 's/:.*//'`
+		if test ! -f "${cf_left}"
+		then
+			if test "x$srcdir" != "x."
+			then
+				cf_icon="${srcdir}/${cf_left}"
+				cf_left=`echo "$cf_icon" | sed -e 's/:.*//'`
+				if test ! -f "${cf_left}"
+				then
+					continue
+				fi
+			else
+				continue
+			fi
+		fi
+		if test "x$ICON_THEME" != xno
+		then
+			cf_base=`basename $cf_left`
+			cf_trim=`echo "$cf_base" | sed -e 's/_[[0-9]][[0-9]]x[[0-9]][[0-9]]\././'`
+			case "x${cf_base}" in #(vi
+			*:*) #(vi
+				cf_next=$cf_base
+				# user-defined mapping
+				;;
+			*.png) #(vi
+				cf_size=`file "$cf_left"|sed -e 's/^[[^:]]*://' -e 's/^.*[[^0-9]]\([[0-9]][[0-9]]* x [[0-9]][[0-9]]*\)[[^0-9]].*$/\1/' -e 's/ //g'`
+				if test -z "$cf_size"
+				then
+					AC_MSG_WARN(cannot determine size of $cf_left)
+					continue
+				fi
+				cf_next="$cf_size/apps/$cf_trim"
+				;;
+			*.svg) #(vi
+				cf_next="scalable/apps/$cf_trim"
+				;;
+			*.xpm)
+				CF_VERBOSE(ignored XPM file in icon theme)
+				continue
+				;;
+			*_[[0-9]][[0-9]]*x[[0-9]][[0-9]]*.*) #(vi
+				cf_size=`echo "$cf_left"|sed -e 's/^.*_\([[0-9]][[0-9]]*x[[0-9]][[0-9]]*\)\..*$/\1/'`
+				cf_left=`echo "$cf_left"|sed -e 's/^\(.*\)_\([[0-9]][[0-9]]*x[[0-9]][[0-9]]*\)\(\..*\)$/\1\3/'`
+				cf_next="$cf_size/apps/$cf_base"
+				;;
+			esac
+			CF_VERBOSE(adding $cf_next)
+			cf_icon="${cf_icon}:${cf_next}"
+		fi
+		test -n "$ICON_LIST" && ICON_LIST="$ICON_LIST "
+		ICON_LIST="$ICON_LIST${cf_icon}"
+		if test -z "$ICON_NAME"
+		then
+			ICON_NAME=`basename $cf_icon | sed -e 's/[[.:]].*//'`
+		fi
+	done
+done
+
+if test -n "$verbose"
+then
+	AC_MSG_CHECKING(result)
+fi
+AC_MSG_RESULT($ICON_LIST)
+
+if test -z "$ICON_LIST"
+then
+	AC_MSG_ERROR(no icons found)
+fi
+])
+
+AC_MSG_CHECKING(for icon name)
+AC_MSG_RESULT($ICON_NAME)
+
+AC_SUBST(ICON_FORMAT)
+AC_SUBST(ICON_THEME)
+AC_SUBST(ICON_LIST)
+AC_SUBST(ICON_NAME)
 ])dnl
 dnl ---------------------------------------------------------------------------
 dnl CF_WITH_IMAKE_CFLAGS version: 9 updated: 2010/05/26 05:38:42
@@ -4687,6 +4996,48 @@ AC_SUBST(EXTRA_INSTALL_DIRS)
 AC_SUBST(EXTRA_INSTALL_FILES)
 ])
 dnl ---------------------------------------------------------------------------
+dnl CF_WITH_PIXMAPDIR version: 3 updated: 2012/07/22 09:18:02
+dnl -----------------
+dnl Handle configure option "--with-pixmapdir", setting these shell variables:
+dnl
+dnl $PIXMAPDIR is the option value, used for installing pixmap files.
+dnl $no_pixmapdir is a "#" (comment) if "--without-pixmapdir" is given.
+AC_DEFUN([CF_WITH_PIXMAPDIR],[
+AC_MSG_CHECKING(for directory to install pixmaps)
+AC_ARG_WITH(pixmapdir,
+	[  --with-pixmapdir=DIR    directory in which to install pixmaps (DATADIR/pixmaps)],
+	[PIXMAPDIR=$withval],
+	[test -z "$PIXMAPDIR" && PIXMAPDIR='${datadir}/pixmaps'])
+
+if test "x[$]PIXMAPDIR" = xauto
+then
+	PIXMAPDIR='${datadir}/pixmaps'
+	for cf_path in \
+		/usr/share/pixmaps \
+		/usr/X11R6/share/pixmaps
+	do
+		if test -d "$cf_path" ; then
+			PIXMAPDIR="$cf_path"
+			break
+		fi
+	done
+else
+	cf_path=$PIXMAPDIR
+	CF_PATH_SYNTAX(cf_path)
+fi
+AC_MSG_RESULT($PIXMAPDIR)
+AC_SUBST(PIXMAPDIR)
+
+no_pixmapdir=
+if test "$PIXMAPDIR" = no
+then
+	no_pixmapdir="#"
+else
+	EXTRA_INSTALL_DIRS="$EXTRA_INSTALL_DIRS \$(PIXMAPDIR)"
+fi
+AC_SUBST(no_pixmapdir)
+])dnl
+dnl ---------------------------------------------------------------------------
 dnl CF_WITH_PURIFY version: 2 updated: 2006/12/14 18:43:43
 dnl --------------
 AC_DEFUN([CF_WITH_PURIFY],[
@@ -4757,30 +5108,43 @@ fi
 fi
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_WITH_X_APP_DEFAULTS version: 2 updated: 2009/10/14 20:08:12
-dnl ----------------------
-dnl Option for specifying the location of the X app-defaults directory.
+dnl CF_WITH_XPM version: 1 updated: 2012/07/22 09:18:02
+dnl -----------
+dnl Test for Xpm library, update compiler/loader flags if it is wanted and
+dnl found.
 dnl
-dnl The entire feature can be suppressed by --without-app-defaults, 
-dnl which makes $no_appsdir become a comment-marker.
-AC_DEFUN([CF_WITH_X_APP_DEFAULTS],
+dnl Also sets ICON_SUFFIX
+AC_DEFUN([CF_WITH_XPM],
 [
-	AC_MSG_CHECKING(for directory to install resource files)
-	CF_WITH_PATH(app-defaults,
-		[  --with-app-defaults=DIR directory in which to install resource files],
-		[appsdir],[EPREFIX/lib/X11/app-defaults],
-		[\$(exec_prefix)/lib/X11/app-defaults])
-	AC_MSG_RESULT($appsdir)
-	AC_SUBST(appsdir)
+ICON_SUFFIX=.xbm
 
-	no_appsdir=
-	if test "$appsdir" = no ; then
-		no_appsdir="#"
-	else
-		EXTRA_INSTALL_DIRS="$EXTRA_INSTALL_DIRS \$(APPSDIR)"
-	fi
-	AC_SUBST(no_appsdir)
-])
+cf_save_cppflags="${CPPFLAGS}"
+cf_save_ldflags="${LDFLAGS}"
+
+AC_MSG_CHECKING(if you want to use the Xpm library for colored icon)
+AC_ARG_WITH(xpm,
+[  --with-xpm=DIR          use Xpm library for colored icon, may specify path],
+	[cf_Xpm_library="$withval"],
+	[cf_Xpm_library=no])
+AC_MSG_RESULT($cf_Xpm_library)
+
+if test "$cf_Xpm_library" != no ; then
+    if test "$cf_Xpm_library" != yes ; then
+	CPPFLAGS="$CPPFLAGS -I$withval/include"
+	LDFLAGS="$LDFLAGS -L$withval/lib"
+    fi
+    AC_CHECK_HEADER(X11/xpm.h,[
+	AC_CHECK_LIB(Xpm, XpmCreatePixmapFromData,[
+	    AC_DEFINE(HAVE_LIBXPM)
+	    ICON_SUFFIX=.xpm
+	    LIBS="-lXpm $LIBS"],
+	    [CPPFLAGS="${cf_save_cppflags}" LDFLAGS="${cf_save_ldflags}"],
+	    [-lX11 $X_LIBS])],
+	[CPPFLAGS="${cf_save_cppflags}" LDFLAGS="${cf_save_ldflags}"])
+fi
+
+AC_SUBST(ICON_SUFFIX)
+])dnl
 dnl ---------------------------------------------------------------------------
 dnl CF_WITH_X_DESKTOP_UTILS version: 2 updated: 2010/01/25 20:34:54
 dnl -----------------------
@@ -4802,31 +5166,6 @@ AC_DEFUN([CF_WITH_X_DESKTOP_UTILS],
 
 	test "$desktop_utils" = yes && desktop_utils= || desktop_utils="#"
 	AC_SUBST(DESKTOP_FLAGS)
-])
-dnl ---------------------------------------------------------------------------
-dnl CF_WITH_X_ICONDIR version: 2 updated: 2009/10/14 20:08:12
-dnl -----------------
-dnl Option for specifying the location of the X icon directory.
-dnl
-dnl The entire feature can be suppressed by --without-icondir 
-dnl which makes $no_icondir become a comment-marker.
-AC_DEFUN([CF_WITH_X_ICONDIR],
-[
-	AC_MSG_CHECKING(for directory to install icons)
-	CF_WITH_PATH(icondir,
-		[  --with-icondir=DIR      directory in which to install icons],
-		[icondir],[EPREFIX/share/pixmaps],
-		[\$(exec_prefix)/share/pixmaps])
-	AC_MSG_RESULT($icondir)
-	AC_SUBST(icondir)
-
-	no_icondir=
-	if test "$icondir" = no ; then
-		no_icondir="#"
-	else
-		EXTRA_INSTALL_DIRS="$EXTRA_INSTALL_DIRS \$(ICONDIR)"
-	fi
-	AC_SUBST(no_icondir)
 ])
 dnl ---------------------------------------------------------------------------
 dnl CF_XOPEN_CURSES version: 11 updated: 2011/01/18 18:15:30
