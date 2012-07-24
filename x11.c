@@ -2,7 +2,7 @@
  *	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.378 2011/11/24 19:58:04 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.381 2012/07/24 08:40:44 tom Exp $
  *
  */
 
@@ -169,10 +169,8 @@
 #define XtCOpenIm		"OpenIm"
 #endif
 
-#if OPT_X11_ICON
 #ifdef HAVE_LIBXPM
 #include <X11/xpm.h>
-#endif
 #endif
 
 #if OPT_INPUT_METHOD
@@ -409,6 +407,7 @@ typedef struct _text_win {
     Bool left_ink;		/* font has "ink" past bounding box on left */
     Bool right_ink;		/* font has "ink" past bounding box on right */
     int wheel_scroll_amount;
+    char *iconname;
     char *geometry;
     char *starting_fontname;	/* name of font at startup */
     char *fontname;		/* name of current font */
@@ -987,9 +986,9 @@ update_scrollbar_sizes(void)
 				 NULL);
 #if !OPT_KEV_DRAGGING
 	    XtAddCallback(cur_win->scrollbars[i],
-			  XtNjumpProc, JumpProc, (XtPointer) i);
+			  XtNjumpProc, JumpProc, (XtPointer) (intptr_t) i);
 	    XtAddCallback(cur_win->scrollbars[i],
-			  XtNscrollProc, ScrollProc, (XtPointer) i);
+			  XtNscrollProc, ScrollProc, (XtPointer) (intptr_t) i);
 #endif
 	}
     }
@@ -1813,6 +1812,7 @@ static XtResource app_resources[] =
     XRES_INTEGER(XtNscrollRepeatInterval, XtCScrollRepeatInterval,
 		 scroll_repeat_interval, 60),	/* 60 milliseconds */
     XRES_BOOL(XtNreverseVideo, XtCReverseVideo, reverse_video, False),
+    XRES_STRING(XtNiconName, XtCIconName, iconname, ""),
     XRES_STRING(XtNgeometry, XtCGeometry, geometry, "80x36"),
     XRES_STRING(XtNfont, XtCFont, starting_fontname, "fixed"),
     XRES_FG(XtNforeground, XtCForeground, fg),
@@ -2192,6 +2192,161 @@ visibleAtoms(Atom value)
     return result;
 }
 #endif
+
+#ifndef PIXMAP_ROOTDIR
+#define PIXMAP_ROOTDIR "/usr/share/pixmaps/"
+#endif
+
+static char *
+x_find_icon(char **work, int *state, const char *suffix)
+{
+    const char *filename = cur_win->iconname;
+    const char *prefix = "";
+    char *result = 0;
+    size_t length;
+
+    switch (*state) {
+    case 0:
+	suffix = "";
+	break;
+    case 1:
+	break;
+    case 2:
+	if (!strncmp(filename, "/", 1) ||
+	    !strncmp(filename, "./", 2) ||
+	    !strncmp(filename, "../", 3))
+	    goto giveup;
+	prefix = PIXMAP_ROOTDIR;
+	suffix = "";
+	break;
+    case 3:
+	prefix = PIXMAP_ROOTDIR;
+	break;
+      giveup:
+    default:
+	*state = -1;
+	break;
+    }
+    if (*state >= 0) {
+	if (*work) {
+	    free(*work);
+	    *work = 0;
+	}
+	length = 3 + strlen(prefix) + strlen(filename) + strlen(suffix);
+	if ((result = malloc(length)) != 0) {
+	    sprintf(result, "%s%s%s", prefix, filename, suffix);
+	    *work = result;
+	}
+	*state += 1;
+	TRACE(("x_find_icon %d:%s\n", *state, result));
+    }
+    return result;
+}
+
+static void
+x_load_icon(void)
+{
+    Pixmap myIcon = 0;
+    char *workname = 0;
+
+    TRACE((T_CALLED "x_load_icon\n"));
+    /*
+     * Use the compiled-in icon as a resource default.
+     */
+#if OPT_X11_ICON
+    {
+#ifdef VILE_ICON
+# include VILE_ICON
+#else
+# ifdef HAVE_LIBXPM
+#  include <icons/vile.xpm>
+# else
+#  if SYS_VMS
+#   include "icons/vile.xbm"
+#  else
+#   include <icons/vile.xbm>
+#  endif
+# endif
+#endif
+#ifdef HAVE_LIBXPM
+	if (XpmCreatePixmapFromData(dpy,
+				    DefaultRootWindow(dpy),
+				    vile, &myIcon, 0, 0) != 0) {
+	    myIcon = 0;
+	}
+#else
+	myIcon = XCreateBitmapFromData(dpy,
+				       DefaultRootWindow(dpy),
+				       (char *) vile_bits,
+				       vile_width,
+				       vile_height);
+#endif
+    }
+#endif /* OPT_X11_ICON */
+
+    if (!isEmpty(cur_win->iconname)) {
+	int state = 0;
+#ifdef HAVE_LIBXPM
+	while (x_find_icon(&workname, &state, ".xpm") != 0) {
+	    Pixmap resIcon = 0;
+	    Pixmap shapemask = 0;
+	    XpmAttributes attributes;
+
+	    attributes.depth = 1;
+	    attributes.valuemask = XpmDepth;
+
+	    if (XpmReadFileToPixmap(dpy,
+				    DefaultRootWindow(dpy),
+				    workname,
+				    &resIcon,
+				    &shapemask,
+				    &attributes) == XpmSuccess) {
+		myIcon = resIcon;
+		TRACE(("...success\n"));
+		break;
+	    }
+	}
+#else
+	while (x_find_icon(&workname, &state, ".xbm") != 0) {
+	    Pixmap resIcon = 0;
+	    unsigned width;
+	    unsigned height;
+	    int x_hot;
+	    int y_hot;
+
+	    if (XReadBitmapFile(dpy,
+				DefaultRootWindow(dpy),
+				workname,
+				&width, &height,
+				&resIcon,
+				&x_hot, &y_hot) == BitmapSuccess) {
+		myIcon = resIcon;
+		TRACE(("...success\n"));
+		break;
+	    }
+	}
+#endif
+    }
+
+    if (myIcon != 0) {
+	XWMHints *hints = XGetWMHints(dpy, XtWindow(cur_win->top_widget));
+	if (!hints)
+	    hints = XAllocWMHints();
+
+	if (hints) {
+	    hints->flags = IconPixmapHint;
+	    hints->icon_pixmap = myIcon;
+
+	    XSetWMHints(dpy, XtWindow(cur_win->top_widget), hints);
+	    XFree(hints);
+	}
+    }
+
+    if (workname != 0)
+	free(workname);
+
+    returnVoid();
+}
 
 /* ARGSUSED */
 int
@@ -3190,43 +3345,7 @@ x_preparse_args(int *pargc, char ***pargv)
     }
 #endif
 
-#if OPT_X11_ICON
-    {
-#ifdef VILE_ICON
-# include VILE_ICON
-#else
-# ifdef HAVE_LIBXPM
-#  include <icons/vile.xpm>
-# else
-#  if SYS_VMS
-#   include "icons/vile.xbm"
-#  else
-#   include <icons/vile.xbm>
-#  endif
-# endif
-#endif
-	XWMHints *hints = XGetWMHints(dpy, XtWindow(cur_win->top_widget));
-	if (!hints)
-	    hints = XAllocWMHints();
-
-	if (hints) {
-	    hints->flags = IconPixmapHint;
-#ifdef HAVE_LIBXPM
-	    XpmCreatePixmapFromData(dpy, DefaultRootWindow(dpy),
-				    vile, &hints->icon_pixmap, 0, 0
-		);
-#else
-	    hints->icon_pixmap =
-		XCreateBitmapFromData(dpy, DefaultRootWindow(dpy),
-				      (char *) vile_bits, vile_width, vile_height
-		);
-#endif
-
-	    XSetWMHints(dpy, XtWindow(cur_win->top_widget), hints);
-	    XFree(hints);
-	}
-    }
-#endif /* OPT_X11_ICON */
+    x_load_icon();
 
     /* We wish to participate in the "delete window" protocol */
     atom_WM_PROTOCOLS = XInternAtom(dpy, "WM_PROTOCOLS", False);
@@ -6481,6 +6600,7 @@ x_set_icon_name(const char *name)
     Prop.nitems = strlen(x_icon_name);
 
     XSetWMIconName(dpy, XtWindow(cur_win->top_widget), &Prop);
+    TRACE(("x_set_icon_name(%s)\n", name));
 }
 
 char *
@@ -6504,6 +6624,7 @@ x_set_window_name(const char *name)
 	Prop.nitems = strlen(x_window_name);
 
 	XSetWMName(dpy, XtWindow(cur_win->top_widget), &Prop);
+	TRACE(("x_set_window_name(%s)\n", name));
 #else
 	XtVaSetValues(cur_win->top_widget,
 		      Nval(XtNtitle, name),
@@ -6524,6 +6645,7 @@ x_get_window_name(void)
 	XtVaGetValues(cur_win->top_widget, XtNtitle, &result, NULL);
     }
 #endif
+    TRACE(("x_get_window_name(%s)\n", result));
     return result;
 }
 

@@ -20,7 +20,7 @@
 #
 # gnu autoconf support by kevin buettner, 5/94
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.256 2012/03/08 00:15:05 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.262 2012/07/24 08:55:42 tom Exp $
 
 SHELL		= /bin/sh
 
@@ -87,8 +87,9 @@ docdir		= $(datadir)/doc
 htmldir		= $(datadir)/html
 perldir		= $(datadir)/perl
 mandir		= @mandir@/man$(manext)
-appsdir		= @appsdir@
-icondir		= @icondir@
+appsdir		= @APPSDIR@
+icondir		= @ICONDIR@
+pixmapdir	= @PIXMAPDIR@
 
 #### End of system configuration section. ####
 
@@ -101,9 +102,11 @@ ICON		= vile
 ICON_SUFFIX	= @ICON_SUFFIX@
 QUOTDEFS	= \
 		-DPROGRAM_NAME=\"$(TARGET)\" \
-		-DVILE_ICON=\"icons/$(ICON)$(ICON_SUFFIX)\" \
 		-DVILE_LIBDIR_PATH=\"'@VILE_LIBDIR_PATH@'\" \
 		-DVILE_STARTUP_PATH=\"'@VILE_STARTUP_PATH@'\"
+X_QUOTDEFS	= \
+		-DVILE_ICON=\"icons/$(ICON)$(ICON_SUFFIX)\" \
+		-DPIXMAP_ROOTDIR=\"$(pixmapdir)/\"
 CPPFLAGS	= -I. -I$(srcdir) \
 		-DHAVE_CONFIG_H @CPPFLAGS@
 
@@ -117,6 +120,7 @@ PERLDIR		= $(DESTDIR)$(perldir)
 MANDIR		= $(DESTDIR)$(mandir)
 APPSDIR		= $(DESTDIR)$(appsdir)
 ICONDIR		= $(DESTDIR)$(icondir)
+PIXMAPDIR	= $(DESTDIR)$(pixmapdir)
 
 INSTALL_DIRS    = $(BINDIR) $(DATADIR) $(DOCDIR) $(MANDIR) @EXTRA_INSTALL_DIRS@
 
@@ -357,6 +361,10 @@ $(PROGRAM): $(BUILTHDRS) $(OBJ) $(OBJ2) $(BUILTLIBS)
 	- mv $(PROGRAM) o$(PROGRAM)
 	@ECHO_LD@$(LINK) $(CFLAGS) $(LDFLAGS) -o $@ $(OBJ) $(OBJ2) $(X_LIBS) $(LIBS)
 
+x11$o :
+	@SHOW_CC@
+	@ECHO_CC@$(CC) -c $(CPPFLAGS) $(X_QUOTDEFS) $(QUOTDEFS) $(CFLAGS) -DHELP_LOC=\"$(datadir)\" $(srcdir)/$*.c
+
 vile.man: vile.1
 	nroff -man vile.1 | col -b >vile.man
 
@@ -573,22 +581,54 @@ uninstall-perl :
 @no_appsdir@	@rm -f XVile.tmp
 @no_icondir@	@echo "... installed app-defaults"
 
-@no_icondir@install \
-@no_icondir@install-icon \
-@no_icondir@install-full :: $(ICONDIR)
-@no_icondir@	@$(INSTALL_DATA) $(srcdir)/icons/$(ICON)$(ICON_SUFFIX) $(ICONDIR)
-@no_icondir@	@echo "... installed icons"
-################################################################################
 @no_appsdir@uninstall \
 @no_appsdir@uninstall-app \
 @no_appsdir@uninstall-full ::
 @no_appsdir@	-$(RM) $(APPSDIR)/$(CLASS)
 @no_appsdir@	-$(RM) $(APPSDIR)/UXVile
+################################################################################
+@no_icondir@ICON_LIST = @ICON_LIST@
+@no_icondir@ICON_THEME = @ICON_THEME@
+@no_icondir@install \
+@no_icondir@install-icon \
+@no_icondir@install-full :: $(ICONDIR)
+@no_icondir@	$(SHELL) -c 'for n in $(ICON_LIST); \
+@no_icondir@		do \
+@no_icondir@		l=`echo "$$n" | cut -f1 -d:`; \
+@no_icondir@		r=`echo "$$n" | cut -f2 -d:`; \
+@no_icondir@		test -z "$$r" && continue; \
+@no_icondir@		h=$(ICONDIR)/$(ICON_THEME); \
+@no_icondir@		d=$$h/`echo "$$r" | sed -e "s,/[^/]*$$,,"`; \
+@no_icondir@		test -d "$$d" || mkdir -p "$$d"; \
+@no_icondir@		echo installing $$h/$$r; \
+@no_icondir@		$(INSTALL_DATA) $$l $$h/$$r; \
+@no_icondir@		done'
+@no_icondir@	@echo "... installed icons"
 
 @no_icondir@uninstall \
 @no_icondir@uninstall-icon \
 @no_icondir@uninstall-full ::
-@no_icondir@	-$(RM) $(ICONDIR)/$(ICON)$(ICON_SUFFIX)
+@no_icondir@	-@$(SHELL) -c 'for n in $(ICON_LIST); \
+@no_icondir@		do \
+@no_icondir@		r=`echo "$$n" | cut -f2 -d:`; \
+@no_icondir@		test -z "$$r" && continue; \
+@no_icondir@		h=$(ICONDIR)/$(ICON_THEME); \
+@no_icondir@		echo removing $$h/$$r; \
+@no_icondir@		$(RM) $$h/$$r; \
+@no_icondir@		done'
+@no_icondir@	@echo "... removed icons"
+################################################################################
+@no_pixmapdir@install \
+@no_pixmapdir@install-icon \
+@no_pixmapdir@install-full :: $(PIXMAPDIR)
+@no_pixmapdir@	@$(INSTALL_DATA) $(srcdir)/icons/$(ICON)$(ICON_SUFFIX) $(PIXMAPDIR)
+@no_pixmapdir@	@echo "... installed icons"
+
+@no_pixmapdir@uninstall \
+@no_pixmapdir@uninstall-icon \
+@no_pixmapdir@uninstall-full ::
+@no_pixmapdir@	-$(RM) $(PIXMAPDIR)/$(ICON)$(ICON_SUFFIX)
+@no_pixmapdir@	@echo "... removed icons"
 ################################################################################
 # Desktop-utils does not provide an uninstall, and is not uniformly available.
 @desktop_utils@DESKTOP_FLAGS = --vendor=dickey @DESKTOP_FLAGS@

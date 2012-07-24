@@ -109,7 +109,13 @@ config-xvile-stamp:
 	dh_testdir
 	rm -rf t/xvile
 	mkdir -p t/xvile
-	cd t/xvile; $(configure) --with-perl --with-xpm --with-screen=Xaw
+	cd t/xvile; $(configure) \
+		--with-perl \
+		--with-icondir=auto \
+		--with-pixmapdir=auto \
+		--with-icon-theme \
+		--with-xpm \
+		--with-screen=Xaw
 	echo "#define DEFAULT_XSHELL \"${xshell}\"" >>t/xvile/config.h
 	touch $@
 
@@ -150,8 +156,11 @@ install-xvile-stamp: build-xvile-stamp
 	dh_testroot
 	dh_prep -pxvile
 
-	install -d $(TMP)/usr/bin $(TMP)/etc/X11/app-defaults \
-	    $(TMP)/usr/share/applications $(TMP)/usr/share/pixmaps \
+	install -d $(TMP)/usr/bin \
+	    $(TMP)/etc/X11/app-defaults \
+	    $(TMP)/usr/share/applications \
+	    $(TMP)/usr/share/icons \
+	    $(TMP)/usr/share/pixmaps \
 	    $(TMP)/usr/share/vile
 
 	install -c t/xvile/xvile $(TMP)/usr/bin/xvile

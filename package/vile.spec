@@ -1,5 +1,5 @@
 Summary: VILE (VI Like Emacs) editor
-# $Header: /users/source/archives/vile.vcs/package/RCS/vile.spec,v 1.27 2012/07/21 14:50:16 tom Exp $
+# $Header: /users/source/archives/vile.vcs/package/RCS/vile.spec,v 1.28 2012/07/22 13:34:54 tom Exp $
 Name: vile
 %define AppVersion 9.8
 Version: %{AppVersion}h
@@ -204,7 +204,8 @@ make vile
 	--with-loadable-filters \
 	--disable-rpath-hack \
 	--with-app-defaults=%{_xresdir} \
-	--with-icondir=%{_pixmapsdir} \
+	--with-icondir=%{_icondir} \
+	--with-pixmapdir=%{_pixmapsdir} \
 	--with-screen=Xaw \
 	--with-xpm %{perl_opt}
 make xvile

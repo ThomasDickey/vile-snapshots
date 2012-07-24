@@ -1,12 +1,12 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_REVISION($Revision: 1.291 $)
+AC_REVISION($Revision: 1.295 $)
 AC_PREREQ(2.13.20030927)
 rm -f config.cache
 
 ### Use "configure -with-screen" to override the default configuration, which is
 ### termcap-based on unix systems.
 
-dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.291 2012/02/14 09:53:34 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.295 2012/07/22 17:38:44 tom Exp $
 
 define(MAKELIST, sh $srcdir/filters/makelist.sh $srcdir/filters/genmake.mak)
 
@@ -705,33 +705,7 @@ case "$TARGET" in
 	xvile)
 		AC_DEFINE(SYS_UNIX)
 
-		ICON_SUFFIX=.xbm
-
-dnl test for Xpm library
-cf_save_cppflags="${CPPFLAGS}"
-cf_save_ldflags="${LDFLAGS}"
-
-AC_MSG_CHECKING(if you want to use the Xpm library for colored icon)
-AC_ARG_WITH(xpm,
-[  --with-xpm=DIR          use Xpm library for colored icon, may specify path],
-	[cf_Xpm_library="$withval"],
-	[cf_Xpm_library=no])
-AC_MSG_RESULT($cf_Xpm_library)
-
-if test "$cf_Xpm_library" != no ; then
-    if test "$cf_Xpm_library" != yes ; then
-	CPPFLAGS="$CPPFLAGS -I$withval/include"
-	LDFLAGS="$LDFLAGS -L$withval/lib"
-    fi
-    AC_CHECK_HEADER(X11/xpm.h,[
-	AC_CHECK_LIB(Xpm, XpmCreatePixmapFromData,[
-	    AC_DEFINE(HAVE_LIBXPM)
-	    ICON_SUFFIX=.xpm
-	    LIBS="-lXpm $LIBS"],
-	    [CPPFLAGS="${cf_save_cppflags}" LDFLAGS="${cf_save_ldflags}"],
-	    [-lX11 $X_LIBS])],
-	[CPPFLAGS="${cf_save_cppflags}" LDFLAGS="${cf_save_ldflags}"])
-fi
+		CF_WITH_XPM
 
 if test -n "$cf_x_athena" ; then
     AC_MSG_CHECKING(if you want to use Xaw scrollbars rather than our own)
@@ -1029,12 +1003,17 @@ AC_MSG_WARN([You should get a working version of flex, for instance:
 fi
 
 if test "$TARGET" = xvile; then
-	CF_WITH_X_APP_DEFAULTS
-	CF_WITH_X_ICONDIR
+	CF_WITH_APP_CLASS(XVile)
+	CF_WITH_APP_DEFAULTS
+	CF_WITH_ICON_THEME([icons/vile icons/vile_48x48],,,icons/vile_48x48)
 	CF_WITH_X_DESKTOP_UTILS
+	if test "x$ICON_THEME" != xno; then
+		AC_DEFINE(USE_ICON_THEME)
+	fi
 else
 	no_appsdir="#"
 	no_icondir="#"
+	no_pixmapdir="#"
 	desktop_utils="#"
 fi
 

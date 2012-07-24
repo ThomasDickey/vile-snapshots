@@ -1,6 +1,10 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20120720 (h)
+ 20120723 (h)
+	+ add iconName resource, which can override the compiled-in pixmap.
+	+ revise xvile configure options with improved versions from xterm.
+	+ add .png and .svg icons, for use in icon-themes.
+	+ restore highlighting of xpmmode, lost in 9.8g changes.
 	+ modify vile.spec to conditionally incorporate the perl features.
 	+ improve pattern used for regular expressions in awk-filt.l
 	+ improve check in c-filt.c for quoted strings to ensure that a
