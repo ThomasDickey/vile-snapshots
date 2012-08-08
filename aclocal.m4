@@ -1,6 +1,6 @@
 dnl vile's local definitions for autoconf.
 dnl
-dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.246 2012/07/24 10:50:52 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.251 2012/08/08 00:16:23 tom Exp $
 dnl
 dnl See
 dnl		http://invisible-island.net/autoconf/autoconf.html
@@ -4431,7 +4431,7 @@ AC_MSG_RESULT($APP_CLASS)
 AC_SUBST(APP_CLASS)
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_WITH_APP_DEFAULTS version: 3 updated: 2012/06/19 20:58:54
+dnl CF_WITH_APP_DEFAULTS version: 4 updated: 2012/07/25 19:35:53
 dnl --------------------
 dnl Handle configure option "--with-app-defaults", setting these shell
 dnl variables:
@@ -4504,7 +4504,12 @@ AC_MSG_RESULT($APPSDIR)
 AC_SUBST(APPSDIR)
 
 no_appsdir=
-test "$APPSDIR" = no && no_appsdir="#"
+if test "$APPSDIR" = no
+then
+	no_appsdir="#"
+else
+	EXTRA_INSTALL_DIRS="$EXTRA_INSTALL_DIRS \$(APPSDIR)"
+fi
 AC_SUBST(no_appsdir)
 ])dnl
 dnl ---------------------------------------------------------------------------
@@ -4604,7 +4609,7 @@ fi
 AC_SUBST(no_icondir)
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_WITH_ICON_THEME version: 6 updated: 2012/07/24 06:49:05
+dnl CF_WITH_ICON_THEME version: 8 updated: 2012/08/07 20:14:58
 dnl ------------------
 dnl If asked, check for prerequisites and setup symbols to permit installing
 dnl one or more application icons in the Red Hat icon-theme directory
@@ -4663,9 +4668,9 @@ else
 	fi
 fi
 
-: ${ICON_FORMAT:=ifelse([$3],,[.svg .png .xpm],[$3])}
+: ${ICON_FORMAT:=ifelse([$3],,[".svg .png .xpm"],[$3])}
 
-ICON_NAME=
+# ICON_NAME=
 ICON_LIST=
 
 ifelse([$4],,[cf_icon_list=$1],[

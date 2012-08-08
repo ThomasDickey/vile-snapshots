@@ -1,4 +1,4 @@
-; $Id: modes.rc,v 1.118 2012/07/11 19:46:41 tom Exp $
+; $Id: modes.rc,v 1.120 2012/08/07 23:36:04 tom Exp $
 ; majormodes in this file are ordered alphabetically for convenience - the
 ; precedence used by vile is strictly alphabetic, counting case.  Use the
 ; before and after qualifiers to override the precedence.
@@ -761,6 +761,9 @@ define-mode RCS
 define-mode rpm
 ~with define-submode rpm
 	suffixes	'\.spec$'
+	fence-if	'^\s*%if\>'
+	fence-else	'^\s*%else\>'
+	fence-fi	'^\s*%endif\>'
 ~endwith
 
 define-mode rtf

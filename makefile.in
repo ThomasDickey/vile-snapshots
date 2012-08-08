@@ -20,7 +20,7 @@
 #
 # gnu autoconf support by kevin buettner, 5/94
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.262 2012/07/24 08:55:42 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.264 2012/07/31 09:27:14 tom Exp $
 
 SHELL		= /bin/sh
 
@@ -98,7 +98,7 @@ RM		= rm -f
 MAKE_RECUR	= @cf_cv_makeflags@ prefix=$(prefix) DESTDIR=$(DESTDIR)
 
 CLASS		= XVile
-ICON		= vile
+ICON		= @ICON_NAME@
 ICON_SUFFIX	= @ICON_SUFFIX@
 QUOTDEFS	= \
 		-DPROGRAM_NAME=\"$(TARGET)\" \
@@ -631,12 +631,16 @@ uninstall-perl :
 @no_pixmapdir@	@echo "... removed icons"
 ################################################################################
 # Desktop-utils does not provide an uninstall, and is not uniformly available.
+@desktop_utils@DESKTOP_FILES = $(srcdir)/macros/lxvile.desktop $(srcdir)/macros/uxvile.desktop $(srcdir)/macros/xvile.desktop
+@desktop_utils@DESKTOP_DIR   = .
 @desktop_utils@DESKTOP_FLAGS = --vendor=dickey @DESKTOP_FLAGS@
 @desktop_utils@install-desktop \
 @desktop_utils@install-full ::
-@desktop_utils@	desktop-file-install $(DESKTOP_FLAGS) macros/lxvile.desktop
-@desktop_utils@	desktop-file-install $(DESKTOP_FLAGS) macros/uxvile.desktop
-@desktop_utils@	desktop-file-install $(DESKTOP_FLAGS) macros/xvile.desktop
+@desktop_utils@	$(SHELL) -c 'for n in $(DESKTOP_FILES); \
+@desktop_utils@		do $(SHELL) df-install xvile $(DESKTOP_DIR) $(DESKTOP_FLAGS) $$n; \
+@desktop_utils@		done'
+@desktop_utils@distclean ::
+@desktop_utils@	- $(RM) df-install
 ################################################################################
 
 # The makefile is technically dependent upon the config.status file, but

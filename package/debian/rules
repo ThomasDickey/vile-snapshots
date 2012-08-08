@@ -166,8 +166,11 @@ install-xvile-stamp: build-xvile-stamp
 	install -c t/xvile/xvile $(TMP)/usr/bin/xvile
 	install -c macros/uxvile $(TMP)/usr/bin/uxvile
 	install -c macros/lxvile $(TMP)/usr/bin/lxvile
-	install -c -m 644 macros/xvile.desktop macros/uxvile.desktop \
-	    $(TMP)/usr/share/applications
+
+	# all of the build-scripts were moved
+	( cd t/xvile ; make install-desktop \
+		DESKTOP_DIR=$(TMP)/usr/share/applications \
+		DESKTOP_FILES="$(CURDIR)/macros/xvile.desktop $(CURDIR)/macros/uxvile.desktop" )
 
 	install -c -m 644 debian/*.xpm $(TMP)/usr/share/pixmaps
 
@@ -177,4 +180,5 @@ install-xvile-stamp: build-xvile-stamp
 	    $(TMP)/usr/share/vile/xshell.sh
 
 	dh_movefiles $(verbose) -pxvile
+	dh_icons $(verbose) -pxvile
 	touch $@
