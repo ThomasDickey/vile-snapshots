@@ -1,6 +1,6 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
-  $Id: config.html,v 1.11 2011/11/23 19:03:57 tom Exp $
+  $Id: config.html,v 1.12 2012/07/31 09:12:36 tom Exp $
 -->
 <HTML>
 <HEAD>
@@ -435,6 +435,45 @@ the menubar and menus with the same foreground and background colors.
 The corresponding resource values are
 <code>menuForeground</code> and
 <code>menuBackground</code>.
+<p>
+There are also options for configuring the icon used,
+using option values:
+<dl>
+<dt>--with-xpm
+<dd>use this to check for, and use the Xpm library which supports
+colored options (".xpm" in contrast to the monochrome ".xbm").
+<dt>--with-icon-name=XXX
+<dd>allows you to override the icon name.
+Normally this is the "vile" icon, which shows a representation of an
+editing screen.
+The other choices are
+<ul>
+<li>--with-icon-name=pumpkin
+<li>--with-icon-name=sink
+</ul>
+There is a "mini" icon used in a few special cases which consists
+only of the tilde's from the "vile" icon.
+That is unaffected by this configure option.
+<dt>--with-pixmapdir=XXX
+<dd>
+specify the directory in which to install pixmaps,
+e.g., /usr/share/pixmaps.
+<p>
+The special value "auto" tells the configure script to check for the existence of (fairly standard) locations.
+<dt>--with-icondir=XXX
+<dd>
+specify the directory in which to install icons for desktop,
+e.g., /usr/share/icons.
+<p>
+The special value "auto" tells the configure script to check for the existence of (fairly standard) locations.
+<dt>--with-icon-theme=XXX
+<dd>install icons into desktop theme (default "hicolor").
+Vile provides ".svg" and ".png" flavors of the icons which are
+used for this option.
+If you use the icon-theme option, it is still a good idea to
+not suppress the pixmap feature due to inconsistencies and gaps
+in the support provided by the desktop configurations.
+</dl>
 
 <h2 id="installxvile-id"><a name="installxvile">Installing (x)vile</a></h2>
 

@@ -6,7 +6,7 @@
  *		string literal ("Literal") support --  ben stoltz
  *		factor-out hashing and file I/O - tom dickey
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/c-filt.c,v 1.90 2012/07/17 09:36:44 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/c-filt.c,v 1.91 2012/08/05 15:37:15 tom Exp $
  *
  * Usage: refer to vile.hlp and doc/filters.doc .
  *
@@ -113,7 +113,12 @@ has_endofliteral(char *s, int delim, int verbatim, int *escaped)
 	++s;
     }
 
-    if (*escaped && !verbatim && (s > base) && (*s == '\0') && (s[-1] != BACKSLASH)) {
+    if (*escaped
+	&& !verbatim
+	&& (s > base)
+	&& (s[1] == '\0')
+	&& isreturn(s[0])
+	&& (s[-1] != BACKSLASH)) {
 	*escaped = 0;
     }
 

@@ -1,11 +1,19 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20120723 (h)
+ 20120807 (h)
+	+ document icon options in config.doc
+	  NOTE: the meaning of the --with-icondir option changes with this
+	  version; --with-pixmapdir replaces that usage, while --with-icondir
+	  is used to support icon themes.
+	+ update vile.mini.xpm to add 32x32 and 48x48 sizes.
+	+ add configure --with-icon-name option.
 	+ add iconName resource, which can override the compiled-in pixmap.
 	+ revise xvile configure options with improved versions from xterm.
 	+ add .png and .svg icons, for use in icon-themes.
+	+ add fences to rpmmode.
 	+ restore highlighting of xpmmode, lost in 9.8g changes.
 	+ modify vile.spec to conditionally incorporate the perl features.
+	  NOTE: this omits dict.pm due to limitations of the rpm program.
 	+ improve pattern used for regular expressions in awk-filt.l
 	+ improve check in c-filt.c for quoted strings to ensure that a
 	  backslash is given for continuation-lines.

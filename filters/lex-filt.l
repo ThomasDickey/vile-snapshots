@@ -9,7 +9,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/lex-filt.l,v 1.83 2012/07/16 09:02:25 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/lex-filt.l,v 1.84 2012/07/25 22:12:37 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of LEX program.
  */
@@ -122,8 +122,6 @@ STATES		("<"("*"|({IDENT}|\,)+)">")
 
 <RULES,ACTIONS,CODE>^"%%"{SPACE}*	|
 <RULES,ACTIONS,CODE>{DIRECTIVE}	{
-		    int keep_state = 0;
-
 		    WriteToken(Section_attr);
 		    switch(yytext[1]) {
 		    case '%':
@@ -145,7 +143,6 @@ STATES		("<"("*"|({IDENT}|\,)+)">")
 		    case '+':
 		    case '-':
 		    case '*':
-			keep_state = 1;
 			break;
 		    default:
 			break;

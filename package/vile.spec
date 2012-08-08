@@ -1,5 +1,5 @@
 Summary: VILE (VI Like Emacs) editor
-# $Header: /users/source/archives/vile.vcs/package/RCS/vile.spec,v 1.28 2012/07/22 13:34:54 tom Exp $
+# $Header: /users/source/archives/vile.vcs/package/RCS/vile.spec,v 1.34 2012/08/06 23:06:01 tom Exp $
 Name: vile
 %define AppVersion 9.8
 Version: %{AppVersion}h
@@ -28,8 +28,12 @@ Requires:	%{name}-common = %{version}-%{release}
 %define desktop_vendor  dickey
 %define desktop_utils   %(if which desktop-file-install 2>&1 >/dev/null ; then echo "yes" ; fi)
 
+%define icon_theme  %(test -d /usr/share/icons/hicolor && echo 1 || echo 0)
 %define apps_shared %(test -d /usr/share/X11/app-defaults && echo 1 || echo 0)
 %define apps_syscnf %(test -d /etc/X11/app-defaults && echo 1 || echo 0)
+
+# loadable filters are mistreated by rpmbuild
+%define debug_package %{nil}
 
 %if %{apps_shared}
 %define _xresdir    %{_datadir}/X11/app-defaults
@@ -64,101 +68,6 @@ Requires:	%{name}-common = %{version}-%{release}
 # each patch should add itself to this list
 
 rpm --version
-
-# Fedora dependencies:
-#	perl-devel-5.14.2-198.fc16.x86_64
-# warnings on install:
-#	perl(Net::Dict) is needed by vile-common-9.8h-dev.x86_64
-# can get
-#	perl-Net-Dict from http://pkgs.org/download/perl-Net-Dict
-# however that opens up a can of worms.  Filter it out.
-#
-# Also filter out require on IO::Pty since that should be an optional
-# feature.
-#
-# see
-#	https://fedoraproject.org/wiki/EPEL:Packaging#Perl_Provides_and_Requires_Filtering
-
-%if "%{?perl_default_filter_revision}" != ""
-# see https://fedorahosted.org/fpc/ticket/76
-# tested Fedora16 with revision 3
-# tested Fedora15 with revision 2
-echo "have perl_default_filter_revision %{perl_default_filter_revision}"
-%perl_default_filter
-%global __requires_exclude %{?_requires_exclude:%__requires_exclude|}perl\\(mime.pl\\)
-%global __requires_exclude %__requires_exclude|perl\\(plugins.pl\\)
-%global __requires_exclude %__requires_exclude|perl\\(IO::Pty\\)
-%global __requires_exclude %__requires_exclude|perl\\(Net::Dict\\)
-%global __requires_exclude %__requires_exclude|perl\\(Vile\\)
-%global __requires_exclude %__requires_exclude|perl\\(Vile::Exporter\\)
-%global __requires_exclude %__requires_exclude|perl\\(Vile::Manual\\)
-
-%else
-
-%if "%{?perl_default_filter}" != ""
-echo "have perl_default_filter %{perl_default_filter}"
-%endif
-
-%if "%{?__find_provides}" != ""
-echo "have __find_provides %{__find_provides}"
-%endif
-
-%if "%{?__perl_provides}" == ""
-%define __perl_provides /usr/lib/rpm/perl.prov
-echo defined __perl_provides
-%endif
-
-%if "%{?__find_requires}" != ""
-echo filter %{__find_requires} 
-cat << \EOF > %{name}_find_req
-#!/bin/sh
-%{__find_requires} "$@" |\
-sed	-e '/perl(mime.pl)/d' \
-	-e '/perl(plugins.pl)/d' \
-	-e '/perl(IO::Pty)/d' \
-	-e '/perl(Net::Dict)/d' \
-	-e '/perl(Vile)/d' \
-	-e '/perl(Vile::Exporter)/d' \
-	-e '/perl(Vile::Manual)/d'
-EOF
-
-%global __find_requires %{_builddir}/%{name}-%{AppVersion}/%{name}_find_req
-chmod +x %{__find_requires}
-%endif
-
-%if "%{?__perl_requires}" == ""
-%define __perl_requires /usr/lib/rpm/perl.req
-echo defined __perl_requires
-%endif
-
-echo filter %{__perl_provides} 
-cat << \EOF >%{name}_perl_prov
-#!/bin/sh
-%{__perl_provides} "$@" |\
-sed	-e '/perl(mime.pl)/d' \
-	-e '/perl(plugins.pl)/d'
-EOF
-
-%global __perl_provides %{_builddir}/%{name}-%{AppVersion}/%{name}_perl_prov
-chmod +x %{__perl_provides}
-
-echo filter %{__perl_requires} 
-cat << \EOF > %{name}_perl_req
-#!/bin/sh
-%{__perl_requires} "$@" |\
-sed	-e '/perl(mime.pl)/d' \
-	-e '/perl(plugins.pl)/d' \
-	-e '/perl(IO::Pty)/d' \
-	-e '/perl(Net::Dict)/d' \
-	-e '/perl(Vile)/d' \
-	-e '/perl(Vile::Exporter)/d' \
-	-e '/perl(Vile::Manual)/d'
-EOF
-
-%global __perl_requires %{_builddir}/%{name}-%{AppVersion}/%{name}_perl_req
-chmod +x %{__perl_requires}
-
-%endif
 
 # help rpmbuild to ignore the maintainer scripts in the doc directory...
 rm -f doc/makefile
@@ -195,18 +104,22 @@ notably multi-file editing and viewing, syntax highlighting, key
 rebinding, and real X window system support.
 
 %build
-%configure \
+%configure --verbose \
 	--with-loadable-filters \
 	--disable-rpath-hack %{perl_opt}
 make vile
 
-%configure \
+%configure --verbose \
 	--with-loadable-filters \
 	--disable-rpath-hack \
 	--with-app-defaults=%{_xresdir} \
 	--with-icondir=%{_icondir} \
 	--with-pixmapdir=%{_pixmapsdir} \
 	--with-screen=Xaw \
+%if "%{icon_theme}"
+	--with-icon-theme \
+	--with-icondir=%{_iconsdir} \
+%endif
 	--with-xpm %{perl_opt}
 make xvile
 touch vile
@@ -215,6 +128,10 @@ touch vile
 rm -rf %{buildroot}
 make install DESTDIR=%{buildroot} INSTALL='install -p' TARGET='xvile'
 make install DESTDIR=%{buildroot} INSTALL='install -p' TARGET='vile'
+
+# There is no possible cross-version check possible for rpm to filter this,
+# and it would make the dependencies hard to satisfy - remove it.
+rm -f %{buildroot}/%{_datadir}/vile/perl/dict.pm
 
 %if "%{desktop_utils}" == "yes"
 make install-desktop            DESKTOP_FLAGS="--vendor='%{desktop_vendor}' --dir %{buildroot}%{_datadir}/applications"
@@ -237,6 +154,22 @@ do
 		fi
 	done
 done
+
+%post
+%if "%{icon_theme}"
+touch --no-create %{_iconsdir}/hicolor
+if [ -x %{_bindir}/gtk-update-icon-cache ]; then
+  %{_bindir}/gtk-update-icon-cache %{_iconsdir}/hicolor || :
+fi
+%endif
+
+%postun
+%if "%{icon_theme}"
+touch --no-create %{_iconsdir}/hicolor
+if [ -x %{_bindir}/gtk-update-icon-cache ]; then
+  %{_bindir}/gtk-update-icon-cache %{_iconsdir}/hicolor || :
+fi
+%endif
 
 %clean
 rm -rf %{buildroot}
@@ -267,7 +200,13 @@ rm -rf %{buildroot}
 %{_mandir}/man1/xvile.1*
 %{_mandir}/man1/lxvile.1*
 %{_mandir}/man1/uxvile.1*
+
+%if "%{icon_theme}"
+# should have 2 files, but patch will not work for png-file
+%{_iconsdir}/hicolor/*/apps/vile.*
+%endif
 %{_pixmapsdir}/vile.xpm
+
 %{_xresdir}/XVile
 %{_xresdir}/UXVile
 

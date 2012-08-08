@@ -1,4 +1,4 @@
-MANIFEST for vile, version v9_8g10
+MANIFEST for vile, version v9_8h
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 AUTHORS                         list of authors, with nicknames in CHANGES
@@ -39,6 +39,7 @@ configure.in                    used by 'autoconf' to generate 'configure'
 csrch.c                         current-line character-scanning commands
 curses.c                        terminal driver using curses
 descrip.mms                     VAX/VMS MMS build-script
+df-install.in                   desktop-file installer, adapted from xterm
 dirstuff.h                      interfaces for UNIX-like directory functions
 display.c                       message & screen formatting & display
 djhandl.c                       CTL/C & interrupt handling for DJGCC
@@ -404,6 +405,10 @@ icons/sink.xpm                  X bitmap for vile icon
 icons/sink_48x48.png            png-formatted sink-icon 48x48
 icons/sink_48x48.svg            svg-formatted sink-icon on 48x48 grid
 icons/sink_48x48.xcf            Gimp-formatted sink-icon scaled to 48x48
+icons/vile-mini.svg             just the tildes from vile_48x48.svg, resized.
+icons/vile-mini_16x16.xpm       16x16 pixmap from vile-mini.svg
+icons/vile-mini_32x32.xpm       32x32 pixmap from vile-mini.svg
+icons/vile-mini_48x48.xpm       48x48 pixmap from vile-mini.svg
 icons/vile.ico                  Windows icon, for vile
 icons/vile.xbm                  sample icon, for X bitmap
 icons/vile.xcf                  Gimp-formatted vile-icon
