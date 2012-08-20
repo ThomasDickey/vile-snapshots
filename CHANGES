@@ -1,5 +1,9 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
+ 20120820 (i)
+	+ improve ToggleMode macro, making it set the local value as ToggleList
+	  does (report by Wayne Cuddy).
+
  20120807 (h)
 	+ document icon options in config.doc
 	  NOTE: the meaning of the --with-icondir option changes with this
