@@ -1,4 +1,4 @@
-; $Header: /users/source/archives/vile.vcs/macros/RCS/vileinit.rc,v 1.39 2012/03/08 01:45:38 tom Exp $
+; $Header: /users/source/archives/vile.vcs/macros/RCS/vileinit.rc,v 1.40 2012/08/20 10:54:16 tom Exp $
 ; This is a sample which may be installed as .vilerc (or vile.rc for non-Unix
 ; systems), or source'd as-is to provide quick initialization of some useful
 ; macros and settings.
@@ -163,16 +163,17 @@ map #7 :format-til
 
 ; generalized from ToggleList, for any boolean mode
 store-procedure ToggleMode mode='Mode'
-	~local %mode
-	setv %mode &cat '$' $1
-	~if &or \
-		&seq "TRUE" &indirect %mode \
-		&seq "FALSE" &indirect %mode
-		setv &indirect $1 &not &indirect %mode
+	~local %value
+	setv %value &local $1
+	~if &seq "TRUE" %value
+		eval &cat "setl no" $1
+	~elseif &seq "FALSE" %value
+		eval &cat "setl " $1
 	~else
 		write-message "Not a boolean mode"
 	~endif
 ~endm
+map #4 :ToggleMode list
 
 ; take the identifier under the cursor, wrap it in '<', '>' and search for it.
 store-procedure next-cur-identifier "Find next occurrence of current $identifier"
