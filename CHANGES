@@ -1,6 +1,8 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20120820 (i)
+ 20120831 (i)
+	+ improve dependencies for rpm package by adding extra patterns for
+	  vile's mime.pl and plugins.pl scripts.
 	+ improve ToggleMode macro, making it set the local value as ToggleList
 	  does (report by Wayne Cuddy).
 
