@@ -1,6 +1,12 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20120831 (i)
+ 20120923 (i)
+	+ fix build for minvile, whose icon path was broken in 9.8h
+	+ amend fix for Savannah #36801 to make a special case for the calls
+	  via "execute-named-command" which limits the quoting to search
+	  commands and shell-commands by testing the first character of the
+	  command-line (report by Wayne Cuddy).
+	+ update configure script to support --datarootdir option.
 	+ improve dependencies for rpm package by adding extra patterns for
 	  vile's mime.pl and plugins.pl scripts.
 	+ improve ToggleMode macro, making it set the local value as ToggleList

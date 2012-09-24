@@ -22,7 +22,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.709 2012/07/14 15:54:06 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.710 2012/09/23 18:28:17 tom Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -215,6 +215,8 @@ setup_command(BUFFER *opts_bp, char *param)
 {
     char *p1;
     char *p2;
+    const CMDFUNC *cfp;
+
     /*
      * Check for special cases where a leading number should be treated
      * as a repeat-count (see docmd(), which does something similar).
@@ -228,7 +230,21 @@ setup_command(BUFFER *opts_bp, char *param)
 	    param = skip_blanks(p2 + 1);
 	}
     }
-    add_cmdarg(opts_bp, "execute-named-command %s\n", param);
+
+    /*
+     * As a special case, quote simple commands such as forward and reverse
+     * search.
+     */
+    cfp = DefaultKeyBinding(CharOf(*param));
+    if (isPunct(CharOf(*param))
+	&& ((cfp == &f_forwsearch)
+	    || (cfp == &f_backsearch)
+	    || (cfp == &f_capturecmd)
+	    || (cfp == &f_operfilter))) {
+	add_cmdarg(opts_bp, "execute-named-command %s\n", param);
+    } else {
+	b2printf(opts_bp, "execute-named-command %s\n", param);
+    }
 }
 
 static int
