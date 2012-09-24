@@ -1,7 +1,7 @@
-revlist for vile, version v9_8h
+revlist for vile, version v9_8i
 --------------------------------------------------------------------------------
 AUTHORS	1.2
-CHANGES	1.1646
+CHANGES	1.1651
 CHANGES.R3	1.1
 CHANGES.R4	1.1
 CHANGES.R5	1.1
@@ -34,7 +34,7 @@ cmdtbl	1.271
 config.guess	1.14
 config.sub	1.15
 config_h.in	1.2
-configure	1.92
+configure	1.93
 configure.in	1.298
 csrch.c	1.34
 curses.c	1.48
@@ -68,13 +68,13 @@ isearch.c	1.66
 itbuff.c	1.26
 lckfiles.c	1.11
 line.c	1.220
-main.c	1.709
+main.c	1.710
 makeargv.c	1.5
 makeargv.h	1.3
 makefile.blc	1.24
 makefile.djg	1.41
 makefile.icc	1.19
-makefile.in	1.264
+makefile.in	1.266
 makefile.wnt	1.107
 map.c	1.122
 menu.c	1.79
@@ -85,14 +85,14 @@ modetbl	1.316
 msgs.c	1.30
 npopen.c	1.100
 ntconio.c	1.94
-ntwinio.c	1.198
+ntwinio.c	1.199
 nullterm.c	1.11
 oneliner.c	1.121
 opers.c	1.101
 os2keys.h	1.2
 os2pipe.c	1.6
 os2vio.c	1.39
-patchlev.h	1.417
+patchlev.h	1.418
 path.c	1.170
 perl.xs	1.125
 plink.sh	1.6
@@ -104,7 +104,7 @@ ptypemap	1.7
 random.c	1.342
 regexp.c	1.205
 region.c	1.163
-revlist	v9_8h
+revlist	v9_8i
 search.c	1.151
 select.c	1.185
 sinstall.sh	1.1
@@ -286,7 +286,7 @@ filters/makefile.2nd	1.28
 filters/makefile.djg	1.5
 filters/makefile.emx	1.4
 filters/makefile.icc	1.3
-filters/makefile.in	1.84
+filters/makefile.in	1.85
 filters/makefile.wnt	1.37
 filters/makefilt.l	1.63
 filters/makelist.sh	1.5
@@ -434,13 +434,13 @@ macros/showeach.rc	1.5
 macros/uxvile	1.1
 macros/uxvile.desktop	1.4
 macros/vile-pager	1.6
-macros/vileinit.rc	1.39
+macros/vileinit.rc	1.40
 macros/vilemenu.rc	1.6
 macros/vileperl.rc	1.7
 macros/which.rc	1.19
 macros/xvile.desktop	1.3
 package/debian/README.Debian	1.1
-package/debian/changelog	1.14
+package/debian/changelog	1.15
 package/debian/compat	1.1
 package/debian/control	1.2
 package/debian/copyright	1.1
@@ -462,7 +462,7 @@ package/debian/vile.prerm	1.1
 package/debian/xvile.files	1.3
 package/debian/xvile.links	1.2
 package/debian/xvile.menu	1.1
-package/vile.spec	1.34
+package/vile.spec	1.35
 package/winvile-wide.iss	1.1
 package/winvile.iss	1.15
 package/winvile.nsi	1.6
@@ -483,8 +483,8 @@ perl/gdb.pm	1.1
 perl/hgrep.pm	1.3
 perl/lock.pm	1.2
 perl/man.pm	1.3
-perl/mime.pl	1.5
-perl/plugins.pl	1.4
+perl/mime.pl	1.6
+perl/plugins.pl	1.5
 perl/search.pm	1.2
 perl/shell.pm	1.6
 perl/spell.pm	1.4

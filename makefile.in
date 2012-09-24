@@ -20,7 +20,7 @@
 #
 # gnu autoconf support by kevin buettner, 5/94
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.264 2012/07/31 09:27:14 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.266 2012/09/23 23:16:16 tom Exp $
 
 SHELL		= /bin/sh
 
@@ -78,6 +78,7 @@ INSTALL_MODULE	= $(SHELL) $(srcdir)/sinstall.sh $(PERL) $(INSTALL_DATA)
 
 prefix		= @prefix@
 exec_prefix	= @exec_prefix@
+datarootdir	= @datarootdir@
 
 manext		= 1
 libdir		= @libdir@
@@ -102,10 +103,10 @@ ICON		= @ICON_NAME@
 ICON_SUFFIX	= @ICON_SUFFIX@
 QUOTDEFS	= \
 		-DPROGRAM_NAME=\"$(TARGET)\" \
+		-DVILE_ICON=\"icons/$(ICON)$(ICON_SUFFIX)\" \
 		-DVILE_LIBDIR_PATH=\"'@VILE_LIBDIR_PATH@'\" \
 		-DVILE_STARTUP_PATH=\"'@VILE_STARTUP_PATH@'\"
 X_QUOTDEFS	= \
-		-DVILE_ICON=\"icons/$(ICON)$(ICON_SUFFIX)\" \
 		-DPIXMAP_ROOTDIR=\"$(pixmapdir)/\"
 CPPFLAGS	= -I. -I$(srcdir) \
 		-DHAVE_CONFIG_H @CPPFLAGS@
