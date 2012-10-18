@@ -20,7 +20,7 @@
 #
 # gnu autoconf support by kevin buettner, 5/94
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.266 2012/09/23 23:16:16 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.267 2012/10/18 00:27:17 tom Exp $
 
 SHELL		= /bin/sh
 
@@ -104,8 +104,8 @@ ICON_SUFFIX	= @ICON_SUFFIX@
 QUOTDEFS	= \
 		-DPROGRAM_NAME=\"$(TARGET)\" \
 		-DVILE_ICON=\"icons/$(ICON)$(ICON_SUFFIX)\" \
-		-DVILE_LIBDIR_PATH=\"'@VILE_LIBDIR_PATH@'\" \
-		-DVILE_STARTUP_PATH=\"'@VILE_STARTUP_PATH@'\"
+		-DVILE_LIBDIR_PATH=\"@VILE_LIBDIR_PATH@\" \
+		-DVILE_STARTUP_PATH=\"@VILE_STARTUP_PATH@\"
 X_QUOTDEFS	= \
 		-DPIXMAP_ROOTDIR=\"$(pixmapdir)/\"
 CPPFLAGS	= -I. -I$(srcdir) \

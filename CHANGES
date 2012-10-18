@@ -1,5 +1,11 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
+ 20121016 (j)
+	+ updates for configure script macros:
+	  + add 3rd parameter to AC_DEFINE's to allow autoheader to run
+	  + remove unused macros
+	+ update config.guess, config.sub
+
  20120923 (i)
 	+ fix build for minvile, whose icon path was broken in 9.8h
 	+ amend fix for Savannah #36801 to make a special case for the calls
