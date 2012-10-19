@@ -1,6 +1,11 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20121016 (j)
+ 20121018 (j)
+	+ use shape-mask and correct visual depth for window-decoration icon
+	  in xvile.
+	+ the "-i" option is available in most filters now.  Ignore it when
+	  checking for unknown options in the wrapper for external filters
+	  (report by Wayne Cuddy).
 	+ updates for configure script macros:
 	  + add 3rd parameter to AC_DEFINE's to allow autoheader to run
 	  + remove unused macros
