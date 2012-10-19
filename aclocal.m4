@@ -1,6 +1,6 @@
 dnl vile's local definitions for autoconf.
 dnl
-dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.255 2012/10/16 11:04:41 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.257 2012/10/18 10:47:28 tom Exp $
 dnl
 dnl See
 dnl		http://invisible-island.net/autoconf/autoconf.html
@@ -542,7 +542,7 @@ if test "$with_symlink" != no ; then
 fi
 ])
 dnl ---------------------------------------------------------------------------
-dnl CF_BUILD_CC version: 6 updated: 2006/10/14 15:23:15
+dnl CF_BUILD_CC version: 7 updated: 2012/10/06 15:31:55
 dnl -----------
 dnl If we're cross-compiling, allow the user to override the tools and their
 dnl options.  The configure script is oriented toward identifying the host
@@ -552,7 +552,8 @@ dnl
 dnl $1 = default for $CPPFLAGS
 dnl $2 = default for $LIBS
 AC_DEFUN([CF_BUILD_CC],[
-AC_REQUIRE([CF_PROG_EXT])
+CF_ACVERSION_CHECK(2.52,,
+	[AC_REQUIRE([CF_PROG_EXT])])
 if test "$cross_compiling" = yes ; then
 
 	# defaults that we might want to override
@@ -1377,7 +1378,7 @@ dnl ----------
 dnl "dirname" is not portable, so we fake it with a shell script.
 AC_DEFUN([CF_DIRNAME],[$1=`echo $2 | sed -e 's%/[[^/]]*$%%'`])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_DISABLE_ECHO version: 11 updated: 2009/12/13 13:16:57
+dnl CF_DISABLE_ECHO version: 12 updated: 2012/10/06 16:30:28
 dnl ---------------
 dnl You can always use "make -n" to see the actual options, but it's hard to
 dnl pick out/analyze warning messages when the compile-line is long.
@@ -1392,7 +1393,7 @@ dnl
 AC_DEFUN([CF_DISABLE_ECHO],[
 AC_MSG_CHECKING(if you want to see long compiling messages)
 CF_ARG_DISABLE(echo,
-	[  --disable-echo          display "compiling" commands],
+	[  --disable-echo          do not display "compiling" commands],
 	[
     ECHO_LT='--silent'
     ECHO_LD='@echo linking [$]@;'
@@ -1872,7 +1873,7 @@ if test "$cf_cv_gcc_opt_rdynamic" = yes ; then
 fi
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_GCC_VERSION version: 5 updated: 2010/04/24 11:02:31
+dnl CF_GCC_VERSION version: 7 updated: 2012/10/18 06:46:33
 dnl --------------
 dnl Find version of gcc
 AC_DEFUN([CF_GCC_VERSION],[
@@ -1880,7 +1881,7 @@ AC_REQUIRE([AC_PROG_CC])
 GCC_VERSION=none
 if test "$GCC" = yes ; then
 	AC_MSG_CHECKING(version of $CC)
-	GCC_VERSION="`${CC} --version 2>/dev/null | sed -e '2,$d' -e 's/^.*(GCC) //' -e 's/^[[^0-9.]]*//' -e 's/[[^0-9.]].*//'`"
+	GCC_VERSION="`${CC} --version 2>/dev/null | sed -e '2,$d' -e 's/^.*(GCC[[^)]]*) //' -e 's/^.*(Debian[[^)]]*) //' -e 's/^[[^0-9.]]*//' -e 's/[[^0-9.]].*//'`"
 	test -z "$GCC_VERSION" && GCC_VERSION=unknown
 	AC_MSG_RESULT($GCC_VERSION)
 fi
@@ -3750,6 +3751,7 @@ dnl ---------------------------------------------------------------------------
 dnl CF_SIZECHANGE version: 9 updated: 2012/10/06 11:17:15
 dnl -------------
 dnl Check for definitions & structures needed for window size-changing
+dnl FIXME: check that this works with "snake" (HP-UX 10.x)
 AC_DEFUN([CF_SIZECHANGE],
 [
 AC_REQUIRE([CF_STRUCT_TERMIOS])
@@ -3849,7 +3851,7 @@ if test "$cf_stdio_unlocked" != no ; then
 fi
 ])
 dnl ---------------------------------------------------------------------------
-dnl CF_STRUCT_TERMIOS version: 6 updated: 2011/04/16 11:52:53
+dnl CF_STRUCT_TERMIOS version: 7 updated: 2012/10/06 17:56:13
 dnl -----------------
 dnl Some machines require _POSIX_SOURCE to completely define struct termios.
 AC_DEFUN([CF_STRUCT_TERMIOS],[
@@ -3880,7 +3882,7 @@ if test "$ac_cv_header_termios_h" = yes ; then
 #include <termios.h>],
 			[struct termios foo; int x = foo.c_iflag],
 			termios_bad=unknown,
-			termios_bad=yes AC_DEFINE(_POSIX_SOURCE))
+			termios_bad=yes AC_DEFINE(_POSIX_SOURCE,1,[Define to 1 if we must define _POSIX_SOURCE]))
 			])
 	AC_MSG_RESULT($termios_bad)
 	fi
@@ -4824,7 +4826,7 @@ AC_ARG_WITH(no-leaks,
 AC_MSG_RESULT($with_no_leaks)
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_WITH_PATHLIST version: 8 updated: 2012/09/29 15:04:19
+dnl CF_WITH_PATHLIST version: 9 updated: 2012/10/18 05:05:24
 dnl ----------------
 dnl Process an option specifying a list of colon-separated paths.
 dnl

@@ -1,7 +1,7 @@
 /*
  * Main program and I/O for external vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filterio.c,v 1.60 2011/04/07 22:28:31 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filterio.c,v 1.61 2012/10/18 23:15:10 tom Exp $
  *
  */
 
@@ -74,7 +74,7 @@ ProcessArgs(int argc, char *argv[], int flag)
 		    if (((filter_def.options != 0
 			  && strchr(filter_def.options, *s) == 0)
 			 || filter_def.options == 0)
-			&& strchr("vqQ", *s) == 0) {
+			&& strchr("ivqQ", *s) == 0) {
 			fprintf(stderr, "unknown option %c\n", *s);
 			exit(BADEXIT);
 		    }

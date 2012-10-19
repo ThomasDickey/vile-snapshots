@@ -2,7 +2,7 @@
  *	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.381 2012/07/24 08:40:44 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.382 2012/10/18 23:32:17 tom Exp $
  *
  */
 
@@ -580,9 +580,6 @@ static int kqfull(TextWindow tw);
 static void kqadd(TextWindow tw, int c);
 static int kqpop(TextWindow tw);
 static void display_cursor(XtPointer client_data, XtIntervalId * idp);
-#if 0
-static void check_visuals(void);
-#endif
 #if MOTIF_WIDGETS
 static void pane_button(Widget w, XtPointer unused, XEvent * ev,
 			Boolean * continue_to_dispatch);
@@ -2197,6 +2194,28 @@ visibleAtoms(Atom value)
 #define PIXMAP_ROOTDIR "/usr/share/pixmaps/"
 #endif
 
+#ifdef HAVE_LIBXPM
+static int
+getVisualDepth(void)
+{
+    XVisualInfo myTemplate, *visInfoPtr;
+    int numFound;
+    int result = 0;
+
+    myTemplate.visualid = XVisualIDFromVisual(DefaultVisual(dpy,
+							    XDefaultScreen(dpy)));
+    visInfoPtr = XGetVisualInfo(dpy, (long) VisualIDMask,
+				&myTemplate, &numFound);
+    if (visInfoPtr != 0) {
+	if (numFound != 0) {
+	    result = visInfoPtr->depth;
+	}
+	XFree(visInfoPtr);
+    }
+    return result;
+}
+#endif /* HAVE_LIBXPM */
+
 static char *
 x_find_icon(char **work, int *state, const char *suffix)
 {
@@ -2247,6 +2266,7 @@ static void
 x_load_icon(void)
 {
     Pixmap myIcon = 0;
+    Pixmap myMask = 0;
     char *workname = 0;
 
     TRACE((T_CALLED "x_load_icon\n"));
@@ -2271,8 +2291,9 @@ x_load_icon(void)
 #ifdef HAVE_LIBXPM
 	if (XpmCreatePixmapFromData(dpy,
 				    DefaultRootWindow(dpy),
-				    vile, &myIcon, 0, 0) != 0) {
+				    vile, &myIcon, &myMask, 0) != 0) {
 	    myIcon = 0;
+	    myMask = 0;
 	}
 #else
 	myIcon = XCreateBitmapFromData(dpy,
@@ -2292,7 +2313,7 @@ x_load_icon(void)
 	    Pixmap shapemask = 0;
 	    XpmAttributes attributes;
 
-	    attributes.depth = 1;
+	    attributes.depth = (unsigned) getVisualDepth();
 	    attributes.valuemask = XpmDepth;
 
 	    if (XpmReadFileToPixmap(dpy,
@@ -2302,6 +2323,7 @@ x_load_icon(void)
 				    &shapemask,
 				    &attributes) == XpmSuccess) {
 		myIcon = resIcon;
+		myMask = shapemask;
 		TRACE(("...success\n"));
 		break;
 	    }
@@ -2336,6 +2358,10 @@ x_load_icon(void)
 	if (hints) {
 	    hints->flags = IconPixmapHint;
 	    hints->icon_pixmap = myIcon;
+	    if (myMask) {
+		hints->flags |= IconMaskHint;
+		hints->icon_mask = myMask;
+	    }
 
 	    XSetWMHints(dpy, XtWindow(cur_win->top_widget), hints);
 	    XFree(hints);
@@ -2475,10 +2501,6 @@ x_preparse_args(int *pargc, char ***pargv)
 					    NULL);
     XtSetErrorHandler(runtime_error_handler);
     dpy = XtDisplay(cur_win->top_widget);
-
-#if 0
-    check_visuals();
-#endif
 
     XtVaGetValues(cur_win->top_widget,
 		  XtNdepth, &cur_win->screen_depth,
@@ -3378,34 +3400,6 @@ x_preparse_args(int *pargc, char ***pargv)
 
     returnCode(status);
 }
-
-#if 0
-static void
-check_visuals(void)
-{
-    static char *classes[] =
-    {
-	"StaticGray",
-	"GrayScale",
-	"StaticColor",
-	"PseudoColor",
-	"TrueColor",
-	"DirectColor"
-    };
-    XVisualInfo *visuals, visual_template;
-    int nvisuals;
-
-    visuals = XGetVisualInfo(dpy, VisualNoMask, &visual_template, &nvisuals);
-    if (visuals != NULL) {
-	int i;
-	for (i = 0; i < nvisuals; i++) {
-	    printf("Class: %s, Depth: %d\n",
-		   classes[visuals[i].class], visuals[i].depth);
-	}
-	XFree(visuals);
-    }
-}
-#endif
 
 #if OPT_KEV_SCROLLBARS || OPT_XAW_SCROLLBARS
 static Boolean
