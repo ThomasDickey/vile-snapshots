@@ -1,6 +1,13 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20121018 (j)
+ 20121024 (j)
+	> Brendan O'Dea:
+	+ correct warnings from pod2text
+	> Tom Dickey:
+	+ merge/adapt Brendan's current scripts to add perl documentation
+	  to the vile-common Debian package for test-builds.  This also makes
+	  the ".xpm" file consistent with the desktop icons.
+	+ add "divert" to m4 preamble to work with sendmail's ".mc" files.
 	+ use shape-mask and correct visual depth for window-decoration icon
 	  in xvile.
 	+ the "-i" option is available in most filters now.  Ignore it when
@@ -12,6 +19,7 @@ Changes for vile 9.9 (released ??? ??? ?? ????)
 	+ update config.guess, config.sub
 
  20120923 (i)
+	> Tom Dickey:
 	+ fix build for minvile, whose icon path was broken in 9.8h
 	+ amend fix for Savannah #36801 to make a special case for the calls
 	  via "execute-named-command" which limits the quoting to search
@@ -24,6 +32,7 @@ Changes for vile 9.9 (released ??? ??? ?? ????)
 	  does (report by Wayne Cuddy).
 
  20120807 (h)
+	> Tom Dickey:
 	+ document icon options in config.doc
 	  NOTE: the meaning of the --with-icondir option changes with this
 	  version; --with-pixmapdir replaces that usage, while --with-icondir
@@ -75,6 +84,7 @@ Changes for vile 9.9 (released ??? ??? ?? ????)
 	+ build-fix for HP-UX 10.20 lex, which prototyped main() without params
 
  20120309 (g)
+	> Tom Dickey:
 	+ relax conditions for displaying saved message just before starting
 	  full screen mode, to allow the default help-summary to show (report
 	  by Paul Fox).
@@ -121,6 +131,7 @@ Changes for vile 9.9 (released ??? ??? ?? ????)
 	+ updates for configure macros CF_NCURSES_CONFIG, CF_XOPEN_SOURCE
 
  20111127 (f)
+	> Tom Dickey:
 	+ trim unneeded loader flags added in Mandriva 2010.2's rpmbuild, since
 	  those prevent the loadable filters from linking.
 	+ modify symlinking of manpages in vile.spec to avoid using absolute

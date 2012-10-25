@@ -2,3 +2,5 @@ CHANGES.*
 README
 doc/*.doc
 doc/*.html
+t/vile/perl
+t/vile/vile-perl-api.doc
