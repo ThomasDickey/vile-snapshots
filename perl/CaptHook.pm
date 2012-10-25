@@ -193,6 +193,8 @@ any previously setup hooks... so to speak.
 
 =head1 USAGE
 
+=over 4
+
 =item perl "use CaptHook"
 
 Invite the Captain on board...
@@ -281,6 +283,8 @@ whenever a hook is activated, but they could be invoked manually as
 well.
 
 =item capthook-help
+
+=back
 
 Discover the Captain's treasure map.
 

@@ -78,6 +78,8 @@ the Breadcrumbs code so you can use DBM or whatever.
 
 =head1 USAGE
 
+=over 4
+
 =item :perl use Breadcrumbs
 
 Load the Breadcrumbs package into Vile.
@@ -122,6 +124,8 @@ value.
 =item :breadcrumbs-help
 
 Show this manual page.
+
+=back
 
 =head1 TODO
 

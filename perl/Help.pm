@@ -63,6 +63,8 @@ help-related key bindings retain their original behavior.
 
 =head1 USAGE
 
+=over 4
+
 =item help
 
 =item h
@@ -102,6 +104,8 @@ the B<help-...> commands, which is really the whole point.  For example:
 
 effectively displays a complete "table of contents" for the Vile help text
 (notwithstanding the state of the I<popup-choices> mode, of course).
+
+=back
 
 =head1 BUGS
 

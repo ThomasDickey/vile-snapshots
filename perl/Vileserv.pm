@@ -374,7 +374,7 @@ I<.vilerc> file:
    ; Import and start Vileserv (adds :startserv and :stopserv commands)
    perl "use Vileserv"
 
-=head CUSTOMIZATION
+=head1 CUSTOMIZATION
 
 Several variables settings can be used to modify Vileserv's default
 behaviors.  For best results, any of these variables that you choose

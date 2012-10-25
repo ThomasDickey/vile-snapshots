@@ -8,15 +8,22 @@
 PACKAGES.indep = vile-common
 PACKAGES.arch  = vile vile-filters xvile
 
+# Debian 7 builds depcrecate passing CFLAGS in the environment, preferring to
+# use a new "--export=make" flag.  This script works around that, to allow
+# builds with Debian 5 and 6:
+MYFLAGS= echo >myvars; \
+	test -n "$(CFLAGS)" || dpkg-buildflags --export=sh >myvars; \
+	. ./myvars; \
+	rm myvars
+
 configure = \
-	../../configure \
+	$(MYFLAGS); ../../configure \
 	--prefix=/usr \
 	--mandir='$${prefix}/share/man' \
 	--with-app-defaults=/etc/X11/app-defaults \
 	--with-locale \
 	--with-loadable-filters=all \
-	--disable-rpath-hack \
-	--with-cflags=-O2
+	--disable-rpath-hack
 
 # install path for upstream make
 TMP = $(CURDIR)/debian/tmp
@@ -111,17 +118,28 @@ config-xvile-stamp:
 	mkdir -p t/xvile
 	cd t/xvile; $(configure) \
 		--with-perl \
-		--with-icondir=auto \
-		--with-pixmapdir=auto \
-		--with-icon-theme \
 		--with-xpm \
-		--with-screen=Xaw
-	echo "#define DEFAULT_XSHELL \"${xshell}\"" >>t/xvile/config.h
+		--with-screen=Xaw \
+		--with-pixmapdir='$${prefix}/share/pixmaps' \
+		--with-icondir='$${prefix}/share/icons' \
+		--with-icon-theme=hicolor
+	echo '#define DEFAULT_XSHELL "${xshell}"' >> t/xvile/config.h
 	touch $@
 
 build-vile-stamp: config-vile-stamp
 	dh_testdir
 	$(MAKE) -C t/vile all vile-perl-api.doc EXTRA_CFLAGS="$(debug)"
+	mkdir -p t/vile/perl
+	(cd perl; find * -type f -name '*.p[lm]' -print | \
+	    xargs grep -l =head1 | \
+	    while read file; do \
+		out=$$(echo $$file | sed 's#/#::#g; s/\.p.$$/.doc/'); \
+		pod2text $$file ../t/vile/perl/$$out; \
+		if fgrep "POD ERRORS" ../t/vile/perl/$$out >/dev/null; \
+		then \
+			echo "** errors in $$file";\
+		fi \
+	    done)
 	touch $@
 
 build-xvile-stamp: config-xvile-stamp
