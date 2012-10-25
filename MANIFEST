@@ -1,4 +1,4 @@
-MANIFEST for vile, version v9_8i4
+MANIFEST for vile, version v9_8i5
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 AUTHORS                         list of authors, with nicknames in CHANGES
@@ -158,6 +158,8 @@ wordmov.c                       cursor-movement commands (e.g., word, spaces)
 wvwrap.cpp                      wrapper for winvile, e.g., from NT Explorer
 x11.c                           X11 (Xt, Motif or Openlook) terminal driver
 x11menu.c                       X11-specific part of menu support
+x11plain.c                      draw text for xvile using X11, no fontsets
+x11vile.h                       common definitions for xvile modules
 xshell.sh                       wrapper/sample script for xvile
 xterm.c                         xterm-specific I/O driver support
 xtermkeys.h                     generate bindings for xterm key-modifiers

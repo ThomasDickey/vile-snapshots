@@ -1,12 +1,11 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_REVISION($Revision: 1.300 $)
-AC_PREREQ(2.13.20030927)
-rm -f config.cache
+AC_REVISION($Revision: 1.303 $)
+AC_PREREQ(2.52.20011201)
 
 ### Use "configure -with-screen" to override the default configuration, which is
 ### termcap-based on unix systems.
 
-dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.300 2012/10/16 11:03:08 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.303 2012/10/25 08:35:30 tom Exp $
 
 define(MAKELIST, sh $srcdir/filters/makelist.sh $srcdir/filters/genmake.mak)
 
@@ -18,19 +17,12 @@ CF_CHECK_CACHE
 AC_ARG_PROGRAM
 
 ###	checks for compiler
-AC_PROG_CC
+CF_PROG_CC
 AC_PROG_CPP
 AC_GCC_TRADITIONAL
 
-###	checks for UNIX variants that set C preprocessor variables
-AC_AIX
-AC_ISC_POSIX
-AC_MINIX
-
 ###	checks for compiler characteristics
 CF_INTEL_COMPILER
-CF_PROG_EXT
-CF_ANSI_CC_REQD
 CF_BUILD_CC
 AC_CONST
 AC_C_INLINE
@@ -125,13 +117,10 @@ elif test -z "$CFLAGS" ; then
 fi
 AC_MSG_RESULT($cflags)
 
-AC_MSG_CHECKING(if you want to compile-in plugin support)
-CF_ARG_ENABLE(plugins,
-	[  --enable-plugins        compile-in plugin support],
-	[with_plugins=yes],
-	[with_plugins=no])
-AC_MSG_RESULT($with_plugins)
+CF_WITH_PERL
 
+###############################################################################
+CF_HELP_MESSAGE(Options for syntax filters)
 AC_MSG_CHECKING(if you want to build syntax filters)
 CF_ARG_DISABLE(filters,
 	[  --disable-filters       do not build syntax filters],
@@ -341,8 +330,6 @@ if test -n "$MAKE_LEX" ; then
 	AC_MSG_WARN(disabling build for lex-filters)
 fi
 
-CF_WITH_PERL
-
 # X11 checks will sometimes add to CFLAGS.  We want the state of CFLAGS
 # prior to these checks
 
@@ -435,7 +422,6 @@ AC_SUBST(X_LIBS)
 AC_SUBST(X_EXTRA_LIBS)
 AC_SUBST(SCREEN)
 AC_SUBST(TARGET)
-CF_LINK_PREFIX
 dnl
 dnl The killpg test and the tests for the presence of certain functions on
 dnl a particular operating system are done prior to the checks for existence
@@ -450,6 +436,9 @@ CF_KILLPG
 CF_ERRNO
 CF_CHECK_ENVIRON(environ)
 CF_SYS_ERRLIST
+
+###############################################################################
+CF_HELP_MESSAGE(Select screen-type)
 AC_DEFINE(scrn_chosen,1,[Define to 1 if screen-type has been chosen])
 # Try to eventually eliminate the following
 AC_DEFINE(os_chosen,1,[Define to 1 if operating system type has been chosen])
@@ -474,6 +463,8 @@ if test -z "$screen"; then
 fi
 AC_MSG_RESULT($screen)
 
+###############################################################################
+CF_HELP_MESSAGE(Options specific to screen-types)
 : See if this is any type of xvile configuration:
 case "$screen" in
 	[[Oo]]pen[[Ll]]ook | [[Mm]]otif* | [[xX]] | [[Aa]]thena | [[xX]][[atTmMoO]]* | [[xX]]11 | neXtaw | XawPlus )
@@ -486,20 +477,13 @@ case "$screen" in
 
 		SCREEN=x11
 		TARGET=xvile
+		EXTRAOBJS="$EXTRAOBJS x11plain\$o"
 
 		AC_DEFINE(DISP_X11,1,[Define to 1 if terminal driver uses X11])
 		AC_DEFINE(XTOOLKIT,1,[Define to 1 if terminal driver uses Xt])
 
 		AC_CHECK_HEADERS(X11/IntrinsicI.h X11/Xpoll.h X11/Xmu/Atoms.h)
 		AC_HAVE_FUNCS(Xutf8LookupString Xutf8TextPropertyToTextList XmbTextPropertyToTextList)
-
-		AC_MSG_CHECKING(if you want to enable colored-menus)
-		CF_ARG_ENABLE(colored-menus,
-			[  --enable-colored-menus  enable colored-menus],
-			[with_colored_menus=yes],
-			[with_colored_menus=no])
-		AC_MSG_RESULT($with_colored_menus)
-		test "$with_colored_menus" = yes && AC_DEFINE(OPT_MENUS_COLORED,1,[Define to 1 if xvile menus can be colored])
 	;;
 esac
 
@@ -575,9 +559,6 @@ case "$screen" in
 		CF_TERMCAP_LIBS($screen)
 	;;
 esac
-
-CF_WITH_SYMLINK(VILE_SYMLINK, $TARGET, no)
-CF_AUTO_SYMLINK(VILE_SYMLINK)
 
 # work around for broken FreeBSD header files (see tcap.h)
 case "$cf_cv_ncurses_version" in
@@ -709,6 +690,14 @@ case "$TARGET" in
 
 		CF_WITH_XPM
 
+		AC_MSG_CHECKING(if you want to enable colored-menus)
+		CF_ARG_ENABLE(colored-menus,
+			[  --enable-colored-menus  enable colored-menus],
+			[with_colored_menus=yes],
+			[with_colored_menus=no])
+		AC_MSG_RESULT($with_colored_menus)
+		test "$with_colored_menus" = yes && AC_DEFINE(OPT_MENUS_COLORED,1,[Define to 1 if xvile menus can be colored])
+
 if test -n "$cf_x_athena" ; then
     AC_MSG_CHECKING(if you want to use Xaw scrollbars rather than our own)
     AC_ARG_WITH(Xaw-scrollbars,
@@ -759,6 +748,22 @@ fi
 
 AC_SUBST(ICON_SUFFIX)
 
+###############################################################################
+CF_HELP_MESSAGE(Miscellaneous features)
+
+AC_MSG_CHECKING(if you want to compile-in plugin support)
+CF_ARG_ENABLE(plugins,
+	[  --enable-plugins        compile-in plugin support],
+	[with_plugins=yes],
+	[with_plugins=no])
+AC_MSG_RESULT($with_plugins)
+
+CF_LARGEFILE
+CF_LINK_PREFIX
+
+CF_WITH_SYMLINK(VILE_SYMLINK, $TARGET, no)
+CF_AUTO_SYMLINK(VILE_SYMLINK)
+
 AC_MSG_CHECKING(if you want to change the number of exec-macros)
 AC_ARG_WITH(exec-macros,
 	[  --with-exec-macros=N    specify count of numbered macros],
@@ -766,8 +771,6 @@ AC_ARG_WITH(exec-macros,
 	[cf_exec_macros=no])
 AC_MSG_RESULT($cf_exec_macros)
 test "$cf_exec_macros" != no && AC_DEFINE_UNQUOTED(OPT_EXEC_MACROS,$cf_exec_macros,[Define to 1 if you want to override the number of exec-macros])
-
-CF_LARGEFILE
 
 # I don't know of a reliable test for working locale, but we can at least check
 # that it is available before offering it as an option.
@@ -800,7 +803,8 @@ fi # test $cf_func_iconv" = yes
 fi # test $cf_locale != no
 fi # test $cf_cv_locale = yes
 
-###	Debugging/development options
+###############################################################################
+CF_HELP_MESSAGE(Debugging/development options)
 CF_WITH_NO_LEAKS
 
 AC_ARG_WITH(fakevms,
@@ -1022,6 +1026,8 @@ fi
 
 EXTRA_OUTPUT_FILES=
 
+###############################################################################
+CF_HELP_MESSAGE(Options for XVile installation directories)
 if test "$TARGET" = xvile; then
 	CF_WITH_APP_CLASS(XVile)
 	CF_WITH_APP_DEFAULTS
