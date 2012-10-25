@@ -4,6 +4,7 @@ Changes for vile 9.9 (released ??? ??? ?? ????)
 	> Brendan O'Dea:
 	+ correct warnings from pod2text
 	> Tom Dickey:
+	+ start refactoring x11.c, making the current text-drawer x11plain.c
 	+ merge/adapt Brendan's current scripts to add perl documentation
 	  to the vile-common Debian package for test-builds.  This also makes
 	  the ".xpm" file consistent with the desktop icons.
