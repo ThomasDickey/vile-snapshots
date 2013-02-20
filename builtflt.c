@@ -1,7 +1,7 @@
 /*
  * Main program and I/O for external vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/RCS/builtflt.c,v 1.89 2010/12/27 16:08:22 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/builtflt.c,v 1.90 2013/02/20 10:11:08 tom Exp $
  *
  */
 
@@ -13,12 +13,15 @@
 #include "edef.h"
 #include "nefunc.h"
 #include "nevars.h"
+
 #include <stdarg.h>
+#include <setjmp.h>
 
 #ifdef HAVE_LIBDL
 #include <dlfcn.h>
 #endif
 
+static jmp_buf flt_recovery;
 static FILTER_DEF *current_filter;
 static MARK mark_in;
 static MARK mark_out;
@@ -259,10 +262,24 @@ flt_echo(const char *string, int length)
     }
 }
 
+/*
+ * Followup from flt_failed() by returning zero if we are recovering from a
+ * fatal error.
+ */
+int
+flt_succeeds(void)
+{
+    return !setjmp(flt_recovery);
+}
+
+/*
+ * This is used to stop lex/flex from exiting the program on a syntax error.
+ */
 void
 flt_failed(const char *msg)
 {
     mlforce("[Filter: %s]", msg);
+    longjmp(flt_recovery, 1);
 }
 
 void

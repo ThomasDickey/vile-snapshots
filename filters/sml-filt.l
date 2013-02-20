@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/sml-filt.l,v 1.11 2012/02/18 13:47:15 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/sml-filt.l,v 1.12 2013/02/20 01:25:52 tom Exp $
 
     Filter to add vile "attribution" sequences to selected bits of SML
     input text.
@@ -97,8 +97,8 @@ flush_string(void)
 {
     if (strpos > 0) {
 	flt_puts(strbuf, strpos, String_attr);
-	strpos = 0;
     }
+    strpos = 0;
 }
 
 static void

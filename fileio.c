@@ -2,7 +2,7 @@
  * The routines in this file read and write ASCII files from the disk. All of
  * the knowledge about files are here.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/fileio.c,v 1.199 2011/04/07 22:38:24 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/fileio.c,v 1.200 2013/02/20 01:09:12 tom Exp $
  *
  */
 
@@ -551,6 +551,7 @@ ffsize(B_COUNT * have)
     long prev;
 
     prev = ftell(ffp);
+    *have = 0;
     if (fseek(ffp, 0, SEEK_END) >= 0) {
 	result = 0;
 	*have = ftell(ffp);
@@ -559,6 +560,7 @@ ffsize(B_COUNT * have)
 #else
     struct stat statbuf;
 
+    *have = 0;
     if ((result = fstat(fileno(ffp), &statbuf)) == 0) {
 	*have = (B_COUNT) statbuf.st_size;
     }
