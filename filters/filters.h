@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.130 2012/02/18 01:53:10 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.132 2013/02/20 10:06:43 tom Exp $
  */
 
 #ifndef FILTERS_H
@@ -187,10 +187,10 @@ extern FILE *yyin;
 #ifdef __FLEX_LEXER_H
 #define InitLEX(theInput) \
 	yyFlexLexer lexer
-#define RunLEX() while (lexer.yylex() > 0)
+#define RunLEX() if (flt_succeeds()) while (lexer.yylex() > 0)
 #else
 #define InitLEX(theInput) yyin = theInput
-#define RunLEX() while (yylex() > 0)
+#define RunLEX() if (flt_succeeds()) while (yylex() > 0)
 #endif
 
 #if defined(__GNUC__) || defined(__INTEL_COMPILER)
@@ -267,7 +267,7 @@ extern void flt_bfr_embed(const char *text, int length, const char *attr);
 extern void flt_bfr_error(void);
 extern void flt_bfr_finish(void);
 extern void flt_dump_symtab(const char *table_name);
-extern void flt_free(char **p, unsigned *len);
+extern void flt_free(char **p, size_t *len);
 extern void flt_free_keywords(const char *classname);
 extern void flt_free_symtab(void);
 extern void flt_init_attr(const char *attr_name);
@@ -318,6 +318,7 @@ extern int vl_is_submode(const void *cmd);
 extern int vl_is_xcolor(const void *cmd);
 extern int vl_lookup_mode(const char *name);
 extern int vl_lookup_var(const char *name);
+extern int flt_succeeds(void);
 extern void flt_echo(const char *string, int length);
 extern void flt_error(const char *fmt, ...) VILE_PRINTF(1,2);
 extern void flt_failed(const char *msg);

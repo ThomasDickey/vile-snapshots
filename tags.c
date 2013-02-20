@@ -7,7 +7,7 @@
  *
  * Copyright (c) 1990, 1995-2007 by Paul Fox and Thomas E. Dickey
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tags.c,v 1.144 2012/03/04 19:59:59 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tags.c,v 1.145 2013/02/19 23:38:04 tom Exp $
  *
  */
 #include "estruct.h"
@@ -361,13 +361,15 @@ free_tag_hits(void)
 static void
 free_untag(UNTAG * utp)
 {
-    beginDisplay();
-    FreeIfNeeded(utp->u_fname);
+    if (utp != 0) {
+	beginDisplay();
+	FreeIfNeeded(utp->u_fname);
 #if OPT_SHOW_TAGS
-    FreeIfNeeded(utp->u_templ);
+	FreeIfNeeded(utp->u_templ);
 #endif
-    free(utp);
-    endofDisplay();
+	free(utp);
+	endofDisplay();
+    }
 }
 
 /* discard without returning anything */
@@ -393,7 +395,7 @@ pushuntag(char *fname, L_NUM lineno, C_NUM colno, char *tag)
     (void) tag;
 
     beginDisplay();
-    if ((utp = typealloc(UNTAG)) != 0) {
+    if ((utp = typecalloc(UNTAG)) != 0) {
 
 	if ((utp->u_fname = strmalloc(fname)) == 0
 #if OPT_SHOW_TAGS

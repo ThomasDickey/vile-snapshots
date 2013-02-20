@@ -2,7 +2,7 @@
  *	eval.c -- function and variable evaluation
  *	original by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.447 2012/03/09 09:29:39 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.448 2013/02/19 23:42:25 tom Exp $
  *
  */
 
@@ -1286,9 +1286,15 @@ run_func(int fnum)
 	     UF_PARAMS(vl_ufuncs[fnum].f_code),
 	     UF_RETURN(vl_ufuncs[fnum].f_code)));
 
+    for (i = 0; i < MAXARGS; ++i) {
+	arg[i] = 0;
+	args[i] = 0;
+	nums[i] = 0;
+	bools[i] = 0;
+    }
+
     /* fetch required arguments */
     for (i = 0; i < nargs; i++) {
-	args[i] = 0;
 	if ((arg[i] = dequoted_parameter(&args[i])) == 0
 	    || isErrorVal(arg[i])
 	    || isTB_ERRS(args[i])) {

@@ -5,7 +5,7 @@
  *
  * Copyright (c) 1990-2008 by Paul Fox and Thomas Dickey
  *
- * $Header: /users/source/archives/vile.vcs/RCS/finderr.c,v 1.142 2010/09/07 00:26:58 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/finderr.c,v 1.143 2013/02/20 01:23:58 tom Exp $
  *
  */
 
@@ -606,7 +606,7 @@ goto_column(void)
 
 #define DIRLEVELS 20
 static int dir_level = 0;
-static char *dir_stack[DIRLEVELS];
+static char *dir_stack[DIRLEVELS + 1];
 
 static void
 freeDirs(void)

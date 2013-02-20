@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/spellflt.l,v 1.52 2012/02/18 13:47:15 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/spellflt.l,v 1.53 2013/02/20 01:14:43 tom Exp $
  *
  * Filter to add vile "attribution" sequences to misspelled words.
  */
@@ -274,6 +274,7 @@ do_filter(FILE *inputs GCC_UNUSED)
     char buffer[BUFFER_SIZE + 2];
     const char *attr = class_attr(NAME_ERROR);
     const char *prog;
+    char *command;
 
     (void) inputs;
 
@@ -324,24 +325,29 @@ do_filter(FILE *inputs GCC_UNUSED)
      */
     if ((prog = vile_getenv("VILE_SPELL_FILT")) == 0)
 	prog = SPELL_PIPE;
-    sprintf(buffer, "%s <%s", prog, chop);
-    if ((fp = pipe_open(buffer)) != 0) {
-	while (pipe_read(buffer, fp)) {
-	    size_t len = strlen(buffer);
-	    while (len-- && isspace(CharOf(buffer[len]))) {
-		buffer[len] = 0;
-	    }
-	    if (*buffer) {
-		/*
-		 * If user did not override with an entry in spell.keywords,
-		 * add the latest as a misspelled word to highlight.
-		 */
-		if (get_keyword_attr(buffer) == 0) {
-		    insert_keyword(buffer, attr, 0);
+    command = malloc(strlen(prog) + strlen(chop) + 4);
+    if (command != 0) {
+	sprintf(command, "%s <%s", prog, chop);
+	if ((fp = pipe_open(command)) != 0) {
+	    while (pipe_read(buffer, fp)) {
+		size_t len = strlen(buffer);
+		while (len-- && isspace(CharOf(buffer[len]))) {
+		    buffer[len] = 0;
+		}
+		if (*buffer) {
+		    /*
+		     * If user did not override with an entry in
+		     * spell.keywords, add the latest as a misspelled word to
+		     * highlight.
+		     */
+		    if (get_keyword_attr(buffer) == 0) {
+			insert_keyword(buffer, attr, 0);
+		    }
 		}
 	    }
+	    pipe_close(fp);
 	}
-	pipe_close(fp);
+	free(command);
     }
     zap_tempfile(&chop);
 

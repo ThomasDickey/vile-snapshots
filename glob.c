@@ -13,7 +13,7 @@
  *
  *	modify (ifdef-style) 'expand_leaf()' to allow ellipsis.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/glob.c,v 1.95 2010/11/10 09:26:07 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/glob.c,v 1.97 2013/02/20 01:38:30 tom Exp $
  *
  */
 
@@ -182,6 +182,7 @@ static int
 record_a_match(char *item)
 {
     int result = TRUE;
+    char **myTmp;
 
     beginDisplay();
     if (item != 0 && *item != EOS) {
@@ -190,12 +191,16 @@ record_a_match(char *item)
 	} else {
 	    if (myLen + 2 >= myMax) {
 		myMax = myLen + 2;
-		if (myVec == 0)
+		if (myVec == 0) {
 		    myVec = typeallocn(char *, myMax);
-		else
-		    myVec = typereallocn(char *, myVec, myMax);
+		} else {
+		    myTmp = typereallocn(char *, myVec, myMax);
+		    if (myTmp == 0)
+			myVec = glob_free(myVec);
+		}
 	    }
 	    if (myVec == 0) {
+		free(item);
 		result = no_memory("glob-pointers");
 	    } else {
 		myVec[myLen++] = item;
@@ -321,8 +326,8 @@ next_leaf(char *path)
 static char *
 wild_leaf(char *pattern)
 {
-    register int j, k, ok;
-    register char c;
+    int j, k, ok;
+    char c;
 
     /* skip leading slashes */
     for (j = 0; pattern[j] != EOS && is_slashc(pattern[j]); j++) ;
@@ -372,7 +377,7 @@ expand_leaf(char *path,		/* built-up pathname, top-level */
     char *leaf;
     char *wild = wild_leaf(pattern);
     char *next = next_leaf(wild);
-    register char *s;
+    char *s;
 
     /* Fill-in 'path[]' with the non-wild leaves that we skipped to get
      * to 'wild'.
@@ -504,7 +509,7 @@ expand_leaf(char *path,		/* built-up pathname, top-level */
     char *leaf;
     char *wild = wild_leaf(pattern);
     char *next = next_leaf(wild);
-    register char *s;
+    char *s;
 
     /* Fill-in 'path[]' with the non-wild leaves that we skipped to get
      * to 'wild'.
@@ -617,8 +622,8 @@ glob_from_pipe(const char *pattern)
     FILE *cf;
     char tmp[NFILEN];
     int result = FALSE;
-    register size_t len;
-    register char *s, *d;
+    size_t len;
+    char *s, *d;
 
 #ifdef GVAL_GLOB
 
@@ -700,7 +705,7 @@ glob_from_pipe(const char *pattern)
 static void
 expand_environ(char *pattern)
 {
-    register int j, k;
+    int j, k;
     int delim, left, right;
     const char *s;
     char save[NFILEN];
@@ -748,12 +753,18 @@ expand_environ(char *pattern)
 #endif
 		    if ((s = getenv(pattern + left)) == 0)
 			s = "";
-		} else
+		} else {
 		    s = "";
+		}
 
-		(void) strcpy(pattern + j, s);
-		(void) strcat(pattern, save);
-		j += (int) strlen(s) - 1;
+		if ((int) (strlen(pattern) + strlen(s) + 2) < NFILEN) {
+		    (void) strcpy(pattern + j, s);
+		    (void) strcat(pattern, save);
+		    j += (int) strlen(s) - 1;
+		} else {
+		    /* give up - substitution does not fit */
+		    break;
+		}
 	    }
 	}
     }
@@ -904,7 +915,7 @@ expand_pattern(char *item)
 int
 glob_needed(char **list_of_items)
 {
-    register int n;
+    int n;
 
     for (n = 0; list_of_items[n] != 0; n++)
 	if (string_has_wildcards(list_of_items[n]))
@@ -974,7 +985,7 @@ glob_string(char *item)
 int
 glob_length(char **list_of_items)
 {
-    register int len;
+    int len;
     if (list_of_items != 0) {
 	for (len = 0; list_of_items[len] != 0; len++) ;
     } else
@@ -990,12 +1001,12 @@ glob_length(char **list_of_items)
 char **
 glob_free(char **list_of_items)
 {
-    register int len;
+    int len;
     beginDisplay();
     if (list_of_items != 0) {
 	for (len = 0; list_of_items[len] != 0; len++)
 	    free(list_of_items[len]);
-	free((char *) list_of_items);
+	free(list_of_items);
     }
     endofDisplay();
     return 0;

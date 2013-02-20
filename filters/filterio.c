@@ -1,7 +1,7 @@
 /*
  * Main program and I/O for external vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filterio.c,v 1.61 2012/10/18 23:15:10 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filterio.c,v 1.62 2013/02/20 10:36:05 tom Exp $
  *
  */
 
@@ -177,6 +177,12 @@ flt_get_col(void)
     return my_col;
 }
 
+int
+flt_succeeds(void)
+{
+    return 1;
+}
+
 void
 flt_error(const char *fmt,...)
 {
@@ -192,6 +198,7 @@ flt_error(const char *fmt,...)
 
 	fflush(stderr);
     }
+    exit(BADEXIT);
 }
 
 void

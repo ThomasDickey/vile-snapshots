@@ -1,7 +1,7 @@
 /*
  * Common utility functions for vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.157 2012/02/18 01:55:57 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.158 2013/02/20 01:42:25 tom Exp $
  *
  */
 
@@ -792,7 +792,7 @@ flt_dump_symtab(const char *table_name)
 /*----------------------------------------------------------------------------*/
 
 void
-flt_free(char **p, unsigned *len)
+flt_free(char **p, size_t *len)
 {
     FreeAndNull(*p);
     *len = 0;
