@@ -4,7 +4,7 @@
  *	original by Daniel Lawrence, but
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.344 2011/04/07 22:37:03 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.346 2013/02/21 10:03:44 tom Exp $
  *
  */
 
@@ -1611,8 +1611,10 @@ setup_macro_buffer(TBUFF *name, int bufnum, UINT flags)
 		case TOK_LITSTR:
 		    if (cf->c_args == 0) {
 			cf->c_args = typeallocn(PARAM_INFO, limit + 1);
-			if (cf->c_args == 0)
+			if (cf->c_args == 0) {
+			    free(cf);
 			    return no_memory("Allocating parameter info");
+			}
 		    }
 		    if (decode_parameter_info(temp, &(cf->c_args[count]))) {
 			cf->c_args[++count].pi_type = PT_UNKNOWN;
@@ -1622,6 +1624,7 @@ setup_macro_buffer(TBUFF *name, int bufnum, UINT flags)
 		    /* FALLTHRU */
 #endif
 		default:
+		    free(cf);
 		    mlforce("[Unexpected token '%s']", tb_values(temp));
 		    return FALSE;
 		}
@@ -2739,94 +2742,96 @@ dobuf(BUFFER *bp, int limit, int real_cmd_count)
 
     static int dobufnesting;	/* flag to prevent runaway recursion */
 
-    TRACE((T_CALLED "dobuf(%s, %d)\n", bp->b_bname, limit));
-    beginDisplay();
-    if (++dobufnesting < 9) {
+    if (bp != 0) {
+	TRACE((T_CALLED "dobuf(%s, %d)\n", bp->b_bname, limit));
+	beginDisplay();
+	if (++dobufnesting < 9) {
 
-	save_vl_msgs = vl_msgs;
-	save_cmd_count = cmd_count;
+	    save_vl_msgs = vl_msgs;
+	    save_cmd_count = cmd_count;
 
-	/* macro arguments are readonly, so we do this once */
-	if ((status = save_arguments(bp)) != ABORT) {
-	    vl_msgs = FALSE;
+	    /* macro arguments are readonly, so we do this once */
+	    if ((status = save_arguments(bp)) != ABORT) {
+		vl_msgs = FALSE;
 
-	    for (counter = 1; counter <= limit; counter++) {
-		if (dobufnesting == 1)
-		    cmd_count = ((real_cmd_count >= 0)
-				 ? real_cmd_count
-				 : counter);
+		for (counter = 1; counter <= limit; counter++) {
+		    if (dobufnesting == 1)
+			cmd_count = ((real_cmd_count >= 0)
+				     ? real_cmd_count
+				     : counter);
 
 #if ! SMALLER
-		if (setup_dobuf(bp, &whlist) != TRUE) {
-		    status = FALSE;
-		} else
+		    if (setup_dobuf(bp, &whlist) != TRUE) {
+			status = FALSE;
+		    } else
 #else
-		whlist = NULL;
+		    whlist = NULL;
 #endif
-		{
-		    IFSTK save_ifstk;
-		    push_buffer(&save_ifstk);
-		    status = perform_dobuf(bp, whlist);
-		    pop_buffer(&save_ifstk);
+		    {
+			IFSTK save_ifstk;
+			push_buffer(&save_ifstk);
+			status = perform_dobuf(bp, whlist);
+			pop_buffer(&save_ifstk);
+		    }
+
+		    handle_endm();
+		    free_all_whiles(whlist);
+
+		    if (status != TRUE)
+			break;
 		}
 
-		handle_endm();
-		free_all_whiles(whlist);
-
-		if (status != TRUE)
-		    break;
-	    }
-
-	    /*
-	     * If the caller set $return, use that value.
-	     */
+		/*
+		 * If the caller set $return, use that value.
+		 */
 #if OPT_EVAL
-	    if (this_macro_result != 0)
-		tb_copy(&macro_result, this_macro_result);
+		if (this_macro_result != 0)
+		    tb_copy(&macro_result, this_macro_result);
 #endif
 
-	    restore_arguments(bp);
-	    vl_msgs = save_vl_msgs;
-	    cmd_count = save_cmd_count;
+		restore_arguments(bp);
+		vl_msgs = save_vl_msgs;
+		cmd_count = save_cmd_count;
+	    } else {
+	    }
 	} else {
+	    mlwarn("[Too many levels of files]");
+	    tb_error(&macro_result);
 	}
-    } else {
-	mlwarn("[Too many levels of files]");
-	tb_error(&macro_result);
-    }
-    dobufnesting--;
+	dobufnesting--;
 
-    /*
-     * Set $_ from our TBUFF (preferred), or a readable form of the status
-     * codes.  In the latter case, this is not the same as $status, since we
-     * try to show the ABORT and SORTOFTRUE cases as well.
-     */
+	/*
+	 * Set $_ from our TBUFF (preferred), or a readable form of the status
+	 * codes.  In the latter case, this is not the same as $status, since
+	 * we try to show the ABORT and SORTOFTRUE cases as well.
+	 */
 #if OPT_EVAL
-    tb_free(&last_macro_result);
-    if (macro_result != 0) {
-	last_macro_result = macro_result;
-    } else {
-	switch (status) {
-	case FALSE:
-	    tb_scopy(&last_macro_result, "FALSE");
-	    break;
-	case TRUE:
-	    tb_scopy(&last_macro_result, "TRUE");
-	    break;
-	case ABORT:
-	    tb_scopy(&last_macro_result, "ABORT");
-	    break;
-	case SORTOFTRUE:
-	    tb_scopy(&last_macro_result, "SORTOFTRUE");
-	    break;
-	default:
-	    tb_error(&last_macro_result);
-	    break;
+	tb_free(&last_macro_result);
+	if (macro_result != 0) {
+	    last_macro_result = macro_result;
+	} else {
+	    switch (status) {
+	    case FALSE:
+		tb_scopy(&last_macro_result, "FALSE");
+		break;
+	    case TRUE:
+		tb_scopy(&last_macro_result, "TRUE");
+		break;
+	    case ABORT:
+		tb_scopy(&last_macro_result, "ABORT");
+		break;
+	    case SORTOFTRUE:
+		tb_scopy(&last_macro_result, "SORTOFTRUE");
+		break;
+	    default:
+		tb_error(&last_macro_result);
+		break;
+	    }
 	}
-    }
 #endif /* OPT_EVAL */
 
-    endofDisplay();
+	endofDisplay();
+    }
 
     returnCode(status);
 }

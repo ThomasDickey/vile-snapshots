@@ -1,5 +1,5 @@
 /*
- * $Id: eightbit.c,v 1.100 2011/04/09 15:37:45 tom Exp $
+ * $Id: eightbit.c,v 1.102 2013/02/21 01:17:27 tom Exp $
  *
  * Maintain "8bit" file-encoding mode by converting incoming UTF-8 to single
  * bytes, and providing a function that tells vile whether a given Unicode
@@ -243,13 +243,13 @@ vl_8bit_ctype_init(int wide, int ch)
 
 	vlCTYPE(ch) = value;
 
-	vl_lowercase[ch] = (char) ((ch < 128)
-				   ? encode_POSIX.lower[ch]
-				   : encode->lower[ch - 128]);
+	vl_lowercase[ch + 1] = (char) ((ch < 128)
+				       ? encode_POSIX.lower[ch]
+				       : encode->lower[ch - 128]);
 
-	vl_uppercase[ch] = (char) ((ch < 128)
-				   ? encode_POSIX.upper[ch]
-				   : encode->upper[ch - 128]);
+	vl_uppercase[ch + 1] = (char) ((ch < 128)
+				       ? encode_POSIX.upper[ch]
+				       : encode->upper[ch - 128]);
     }
 }
 
@@ -562,6 +562,7 @@ vl_get_encoding(char **target, const char *locale)
 #endif
     char *result = 0;
     char *actual = setlocale(LC_CTYPE, locale);
+    int can_free = 0;
 
     TRACE((T_CALLED "vl_get_encoding(%s)%s\n",
 	   NONNULL(locale),
@@ -600,6 +601,7 @@ vl_get_encoding(char **target, const char *locale)
 			if (all_encodings[find].data == all_locales[found].data) {
 			    TRACE(("... found built-in encoding data\n"));
 			    result = strmalloc(all_encodings[find].name);
+			    can_free = 1;
 			    builtin_locale = all_encodings[find].data;
 			    break;
 			}
@@ -636,7 +638,7 @@ vl_get_encoding(char **target, const char *locale)
     }
     if (target != 0) {
 	FreeIfNeeded(*target);
-	if (result != 0)
+	if (result != 0 && !can_free)
 	    result = strmalloc(result);
 	*target = result;
     }

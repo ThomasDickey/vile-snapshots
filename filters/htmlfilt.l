@@ -9,7 +9,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/htmlfilt.l,v 1.106 2010/11/04 09:06:06 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/htmlfilt.l,v 1.107 2013/02/21 09:59:47 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of HTML input
  * text.
@@ -556,21 +556,23 @@ may_resume_html(char *text)
     char *next;
     int save;
 
-    flt_puts(text, (int) (left - text), "");
-    flt_puts(left, 1, Keyword_attr);
-    next = ++left;
-    while (isspace(CharOf(*next)))
-	next++;
-    flt_puts(left, (int) (next - left), "");
-    left = next;
-    while (!isspace(CharOf(*next)) && *next != '>')
-	next++;
-    save = *next;
-    *next = 0;
-    html_command(left);
-    *next = (char) save;
-    flt_puts(next, (int) strlen(next), Keyword_attr);
-    finish_htmlcode();
+    if (left != 0) {
+	flt_puts(text, (int) (left - text), "");
+	flt_puts(left, 1, Keyword_attr);
+	next = ++left;
+	while (isspace(CharOf(*next)))
+	    next++;
+	flt_puts(left, (int) (next - left), "");
+	left = next;
+	while (!isspace(CharOf(*next)) && *next != '>')
+	    next++;
+	save = *next;
+	*next = 0;
+	html_command(left);
+	*next = (char) save;
+	flt_puts(next, (int) strlen(next), Keyword_attr);
+	finish_htmlcode();
+    }
 }
 
 static void

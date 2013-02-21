@@ -44,7 +44,7 @@
  *	tgetc_avail()     true if a key is avail from tgetc() or below.
  *	keystroke_avail() true if a key is avail from keystroke() or below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.353 2012/03/09 11:55:35 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.354 2013/02/21 01:03:56 tom Exp $
  *
  */
 
@@ -2633,7 +2633,7 @@ start_kbm(int n,		/* # of times to repeat */
 	  int macnum,		/* register to execute */
 	  ITBUFF * ptr)		/* data to interpret */
 {
-    KSTACK *sp;
+    KSTACK *sp = 0;
     ITBUFF *tp = 0;
 
     if (interrupted())
@@ -2667,6 +2667,7 @@ start_kbm(int n,		/* # of times to repeat */
 	return (itb_init(&dotcmd, esc_c) != 0
 		&& itb_init(&(sp->m_dots), esc_c) != 0);
     }
+    free(sp);
     return FALSE;
 }
 

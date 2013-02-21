@@ -13,7 +13,7 @@
  *
  *	modify (ifdef-style) 'expand_leaf()' to allow ellipsis.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/glob.c,v 1.97 2013/02/20 01:38:30 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/glob.c,v 1.98 2013/02/21 00:09:30 tom Exp $
  *
  */
 
@@ -195,8 +195,11 @@ record_a_match(char *item)
 		    myVec = typeallocn(char *, myMax);
 		} else {
 		    myTmp = typereallocn(char *, myVec, myMax);
-		    if (myTmp == 0)
+		    if (myTmp == 0) {
 			myVec = glob_free(myVec);
+		    } else {
+			myVec = myTmp;
+		    }
 		}
 	    }
 	    if (myVec == 0) {

@@ -1,7 +1,7 @@
 /*	Spawn:	various DOS access commands
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.209 2010/09/06 19:28:10 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.210 2013/02/21 00:13:57 tom Exp $
  *
  */
 
@@ -1133,6 +1133,18 @@ parse_findcfg_mode(FINDCFG * pcfg, char *inputstr)
     return (rc);
 }
 
+static void
+free_vector(char ***vec, size_t vec_elements)
+{
+    char **base;
+    ULONG i;
+
+    base = *vec;
+    for (i = 0; i < vec_elements; i++, base++)
+	(void) free(*base);
+    (void) free(*vec);
+}
+
 /*
  * Cruise through the user's shell command, stripping out unquoted tokens
  * that include wildcard characters.   Save each token in a vector.  Return
@@ -1141,7 +1153,11 @@ parse_findcfg_mode(FINDCFG * pcfg, char *inputstr)
 static char *
 extract_wildcards(char *cmd, char ***vec, size_t *vecidx, const char *fnname)
 {
-    char **base, *cp, *anchor, buf[NFILEN * 2];
+    char **temp;
+    char **base;
+    char *cp;
+    char *anchor;
+    char buf[NFILEN * 2];
     int delim;
     size_t idx, len;
 
@@ -1158,13 +1174,14 @@ extract_wildcards(char *cmd, char ***vec, size_t *vecidx, const char *fnname)
 	if (*cp == '\'' || *cp == '"') {
 	    delim = *cp++;
 	    while (*cp) {
-		if (*cp == '\\' && cp[1] == delim)
+		if (*cp == '\\' && cp[1] == delim) {
 		    cp += 2;
-		else if (*cp == delim) {
+		} else if (*cp == delim) {
 		    cp++;
 		    break;
-		} else
+		} else {
 		    cp++;
+		}
 	    }
 	} else {
 	    cp++;
@@ -1177,14 +1194,18 @@ extract_wildcards(char *cmd, char ***vec, size_t *vecidx, const char *fnname)
 		memset(anchor, ' ', len);	/* blank out wildcard in cmd */
 		if (idx >= len) {
 		    len *= 2;
-		    base = castrealloc(char *, base, sizeof(*base));
-		    if (base == NULL) {
+		    temp = castrealloc(char *, base, sizeof(*base));
+		    if (temp == NULL) {
+			free_vector(&base, idx);
 			(void) no_memory(fnname);
 			return (NULL);
+		    } else {
+			base = temp;
 		    }
 		}
 		base[idx] = castalloc(char, len + 1);
 		if (base[idx] == NULL) {
+		    free_vector(&base, idx);
 		    (void) no_memory(fnname);
 		    return (NULL);
 		}
@@ -1197,18 +1218,6 @@ extract_wildcards(char *cmd, char ***vec, size_t *vecidx, const char *fnname)
     *vec = base;
     *vecidx = idx;
     return (cmd);
-}
-
-static void
-free_vector(char ***vec, size_t vec_elements)
-{
-    char **base;
-    ULONG i;
-
-    base = *vec;
-    for (i = 0; i < vec_elements; i++, base++)
-	(void) free(*base);
-    (void) free(*vec);
 }
 
 static const char *

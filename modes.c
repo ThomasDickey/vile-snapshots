@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.430 2012/07/11 15:12:50 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.432 2013/02/21 10:08:17 tom Exp $
  *
  */
 
@@ -4467,7 +4467,8 @@ do_a_submode(int defining)
     if ((status = prompt_majormode(&name, FALSE)) != TRUE)
 	return status;
 
-    ptr = lookup_mm_data(name);
+    if ((ptr = lookup_mm_data(name)) == 0)
+	return FALSE;
     reset_sm_qualifiers(ptr);
 
     if ((status = prompt_submode(ptr, &subname, TRUE)) != TRUE) {
@@ -4934,22 +4935,28 @@ static FSM_CHOICES *my_scheme_choices;
 static int
 set_scheme_color(FSM_BLIST * fp, int *d, char *s)
 {
-#if OPT_ENUM_MODES
-    int nval;
+    int status = TRUE;
 
-    if (isDigit(*s)) {
-	if (!string_to_number(s, &nval))
-	    return FALSE;
-	if (choice_to_name(fp, nval) == 0)
-	    nval = ENUM_ILLEGAL;
-    } else {
-	nval = choice_to_code(fp, s, strlen(s));
-    }
-    *d = nval;
-    return TRUE;
+    if (fp != 0) {
+#if OPT_ENUM_MODES
+	int nval;
+
+	if (isDigit(*s)) {
+	    if (!string_to_number(s, &nval)) {
+		status = FALSE;
+	    } else if (choice_to_name(fp, nval) == 0) {
+		*d = ENUM_ILLEGAL;
+	    } else {
+		*d = nval;
+	    }
+	} else {
+	    *d = choice_to_code(fp, s, strlen(s));
+	}
 #else
-    return string_to_number(s, d);
+	status = string_to_number(s, d);
 #endif
+    }
+    return status;
 }
 
 static void

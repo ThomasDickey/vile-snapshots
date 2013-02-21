@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/vl_ctype.h,v 1.32 2012/03/09 11:39:24 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/vl_ctype.h,v 1.33 2013/02/20 11:56:34 tom Exp $
  *
  * Character-type tests, like <ctype.h> for vile (vi-like-emacs).
  *
@@ -156,7 +156,7 @@ typedef struct {
 
 /* these parallel the ctypes.h definitions, except that
 	they force the char to valid range first */
-#define vlCTYPE(c)	vl_chartypes_[CharOf(c)]
+#define vlCTYPE(c)	vl_chartypes_[CharOf(c) + 1]
 #define istype(m,c)	((vlCTYPE(c) & (m)) != 0)
 
 #define isAlnum(c)	istype(vl_lower | vl_upper | vl_digit, c)
@@ -187,8 +187,8 @@ typedef struct {
    They are xor-able values.  */
 #define	DIFCASE		0x20
 #define	DIFCNTRL	0x40
-#define toUpper(c)	vl_uppercase[CharOf(c)]
-#define toLower(c)	vl_lowercase[CharOf(c)]
+#define toUpper(c)	vl_uppercase[CharOf(c) + 1]
+#define toLower(c)	vl_lowercase[CharOf(c) + 1]
 #define tocntrl(c)	(((unsigned)(c)) ^ DIFCNTRL)
 #define toalpha(c)	(((unsigned)(c)) ^ DIFCNTRL)
 

@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 screen API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.199 2012/08/20 10:57:50 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.200 2013/02/21 02:13:15 tom Exp $
  * Written by T.E.Dickey for vile (october 1997).
  * -- improvements by Clark Morgan (see w32cbrd.c, w32pipe.c).
  */
@@ -3164,6 +3164,7 @@ ntwinio_getch(void)
     } else {
 	fhide_cursor();
     }
+    memset(&lmbdn_mark, 0, sizeof(lmbdn_mark));
     while (result < 0) {
 	if (!restore_key_data(&msg, &keyboard_state)) {
 #ifdef VAL_AUTOCOLOR

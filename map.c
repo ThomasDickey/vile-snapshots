@@ -3,7 +3,7 @@
  *	Original interface by Otto Lind, 6/3/93
  *	Additional map and map! support by Kevin Buettner, 9/17/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/map.c,v 1.122 2010/12/26 19:47:52 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/map.c,v 1.123 2013/02/21 01:01:50 tom Exp $
  *
  */
 
@@ -301,8 +301,10 @@ delfrommap(struct maprec **mpp, const char *ks, int length)
 		mpp = &(*mpp)->flink;
 	}
 
-	if (n < length)
+	if (n < length) {
+	    free(mstk);
 	    return FALSE;	/* not in map */
+	}
 	if (!pass) {
 	    mstk = typecallocn(struct maprec **, (size_t) depth + 1);
 	    if (mstk == 0)

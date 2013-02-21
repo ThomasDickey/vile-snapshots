@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.562 2012/07/13 23:29:52 Adam.Denton Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.564 2013/02/21 09:50:28 tom Exp $
  *
  */
 
@@ -434,14 +434,14 @@ int
 video_alloc(VIDEO ** vpp)
 {
     VIDEO *vp;
-    size_t need = sizeof(VIDEO_TEXT) * (UINT) (term.maxcols - VIDEO_MIN);
+    size_t have = (size_t) ((term.maxcols > 0) ? term.maxcols : 1);
+    size_t need = sizeof(VIDEO_TEXT) * (have - 1);
 
-    /* struct VIDEO already has 4 of the VIDEO_TEXT cells */
     if ((vp = typeallocplus(VIDEO, need)) != 0) {
 	(void) memset((char *) vp, 0, sizeof(VIDEO) + need);
 
 #if OPT_VIDEO_ATTRS
-	VideoAttr(vp) = typecallocn(VIDEO_ATTR, (size_t) term.maxcols);
+	VideoAttr(vp) = typecallocn(VIDEO_ATTR, have);
 	if (VideoAttr(vp) == 0) {
 	    FreeAndNull(vp);
 	}
@@ -2664,7 +2664,7 @@ static int
 update_extended_line(int col, int excess, int use_excess)
 {
     int rcursor;
-    int zero = nu_width(curwp);
+    int zero;
     int scrollsiz;
 
     /* calculate what column the real cursor will end up in */
@@ -2687,7 +2687,9 @@ update_extended_line(int col, int excess, int use_excess)
 
     horscroll = 0;
 
-    if (use_excess || col != rcursor) {		/* ... put a marker in column 1 */
+    if ((use_excess || col != rcursor)
+	&& (zero = nu_width(curwp)) < term.cols) {
+	/* ... put a marker in column 1 */
 	vscreen[currow]->v_text[zero] = (VIDEO_TEXT) MRK_EXTEND_LEFT[0];
     }
     vscreen[currow]->v_flag |= (VFEXT | VFCHG);

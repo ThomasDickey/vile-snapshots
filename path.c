@@ -2,7 +2,7 @@
  *		The routines in this file handle the conversion of pathname
  *		strings.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.170 2010/11/10 09:44:34 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.171 2013/02/21 00:25:30 tom Exp $
  *
  *
  */
@@ -2279,9 +2279,8 @@ append_libdir_to_path(void)
 		putenv(tmp);
 		TRACE(("putenv %s\n", tmp));
 	    }
-	} else {
-	    free(env);
 	}
+	free(env);
     }
 }
 #else

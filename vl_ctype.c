@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/vl_ctype.c,v 1.16 2011/04/09 15:33:17 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/vl_ctype.c,v 1.17 2013/02/20 11:56:34 tom Exp $
  */
 
 /*
@@ -57,8 +57,8 @@ vl_ctype_init(int print_lo, int print_hi)
 	    vlCTYPE(c) = 0;
 	} else if (!vl_8bit_builtin() && okCTYPE2(vl_narrow_enc)) {
 	    vlCTYPE(c) = vl_ctype_bits(c, -TRUE);
-	    vl_uppercase[c] = (char) toupper(c);
-	    vl_lowercase[c] = (char) tolower(c);
+	    vl_uppercase[c + 1] = (char) toupper(c);
+	    vl_lowercase[c + 1] = (char) tolower(c);
 	} else {
 	    /* fallback to built-in character tables */
 	    vl_8bit_ctype_init(okCTYPE2(vl_wide_enc), c);
@@ -95,13 +95,13 @@ vl_ctype_init(int print_lo, int print_hi)
      * If you want to do this properly, compile-in locale support.
      */
     for (c = 0; c < N_chars; c++) {
-	vl_uppercase[c] = (char) c;
-	vl_lowercase[c] = (char) c;
+	vl_uppercase[c + 1] = (char) c;
+	vl_lowercase[c + 1] = (char) c;
 	if (isAlpha(c)) {
 	    if (isUpper(c)) {
-		vl_lowercase[c] = (char) (c ^ DIFCASE);
+		vl_lowercase[c + 1] = (char) (c ^ DIFCASE);
 	    } else {
-		vl_uppercase[c] = (char) (c ^ DIFCASE);
+		vl_uppercase[c + 1] = (char) (c ^ DIFCASE);
 	    }
 	}
     }

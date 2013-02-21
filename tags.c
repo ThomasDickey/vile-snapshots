@@ -5,9 +5,9 @@
  *	the cursor.
  *	written for vile.
  *
- * Copyright (c) 1990, 1995-2007 by Paul Fox and Thomas E. Dickey
+ * Copyright (c) 1990, 1995-2013 by Paul Fox and Thomas E. Dickey
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tags.c,v 1.145 2013/02/19 23:38:04 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tags.c,v 1.147 2013/02/20 23:58:43 tom Exp $
  *
  */
 #include "estruct.h"
@@ -735,7 +735,7 @@ tag_search(char *tag, int taglen, int initial)
 	while (lastsl != first)
 	    tfname[i++] = *first++;
     }
-    while (i < sizeof(tfname) && tfp < lplim && *tfp != '\t') {
+    while (i < (sizeof(tfname) - 2) && tfp < lplim && *tfp != '\t') {
 	tfname[i++] = *tfp++;
     }
     tfname[i] = EOS;

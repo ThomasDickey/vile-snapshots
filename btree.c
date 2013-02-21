@@ -1,6 +1,6 @@
 /*
- * $Id: btree.c,v 1.52 2010/09/14 09:35:05 tom Exp $
- * Copyright 1997-2008,2010 by Thomas E. Dickey
+ * $Id: btree.c,v 1.54 2013/02/21 09:53:42 tom Exp $
+ * Copyright 1997-2010,2013 by Thomas E. Dickey
  *
  * Maintains a balanced binary tree (aka AVL tree) of unspecified nodes.  The
  * algorithm is taken from "The Art of Computer Programming -- Volume 3 --
@@ -325,7 +325,7 @@ btree_delete(BI_TREE * funcs, const char *data)
     TRACE(("btree_delete(%p,%s)\n", funcs, NonNull(data)));
 
     if (funcs->count != 0) {
-	STACKDATA stack[MAXSTK];
+	STACKDATA stack[MAXSTK + 1];
 	BI_NODE *item;
 	int top = 0;
 	int done = 0;
@@ -350,7 +350,7 @@ btree_delete(BI_TREE * funcs, const char *data)
 	    }
 
 	    /* Push direction and node onto stack */
-	    assert(top < MAXSTK);
+	    assert(top < (MAXSTK - 1));
 	    if (top >= MAXSTK) {
 		TRACE(("(BUG: stack overflow)\n"));
 		return 0;
@@ -383,8 +383,8 @@ btree_delete(BI_TREE * funcs, const char *data)
 	    BI_NODE *child = item->links[1];
 
 	    /* Save the path */
-	    assert(top < MAXSTK);
-	    if (top >= MAXSTK) {
+	    assert(top < (MAXSTK - 1));
+	    if (top >= (MAXSTK - 1)) {
 		TRACE(("(BUG: stack overflow)\n"));
 		return 0;
 	    }
