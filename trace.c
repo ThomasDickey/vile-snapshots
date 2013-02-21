@@ -1,7 +1,7 @@
 /*
  * debugging support -- tom dickey.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.106 2011/11/04 00:52:28 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.107 2013/02/20 23:50:05 tom Exp $
  *
  */
 
@@ -1025,8 +1025,7 @@ trace_window(WINDOW *wp)
     int had_line = FALSE;
 
     if (wp == 0
-	|| wp->w_bufp == 0
-	|| wp->w_bufp->b_bname == 0)
+	|| wp->w_bufp == 0)
 	return;
 
     Trace("trace_window(%s)%s top=%d, rows=%d, head=%p, line=%p dot=%p%s\n",

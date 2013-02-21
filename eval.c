@@ -2,7 +2,7 @@
  *	eval.c -- function and variable evaluation
  *	original by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.448 2013/02/19 23:42:25 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.450 2013/02/21 01:14:42 tom Exp $
  *
  */
 
@@ -96,7 +96,7 @@ one_ctype_row(VL_CTYPE2 * enc, int ch)
 #if OPT_MULTIBYTE
     used = vl_ctype_bits(ch, use_locale);
 #else
-    used = vl_chartypes_[ch];
+    used = vl_chartypes_[ch + 1];
 #endif
 
     for (j = 0; j != vl_UNUSED; j++) {
@@ -397,10 +397,10 @@ charclass_of(const char *arg)
     if (isErrorVal(arg)) {
 	k = 0;
     } else {
-	k = vl_chartypes_[CharOf(*arg)];
+	k = vl_chartypes_[CharOf(*arg) + 1];
 	if (*arg) {
 	    while (*++arg) {
-		k &= vl_chartypes_[CharOf(*arg)];
+		k &= vl_chartypes_[CharOf(*arg) + 1];
 	    }
 	}
     }
@@ -1828,14 +1828,16 @@ FindVar(char *var, VWRAP * vd)
 	    vd->v_type = VW_TEMPVAR;
 	} else {		/* new */
 	    beginDisplay();
-	    p = typealloc(UVAR);
-	    if (p &&
-		(p->u_name = strmalloc(VarName(var))) != 0) {
-		p->next = temp_vars;
-		p->u_value = 0;
-		temp_vars = vd->v_ptr = p;
-		vd->v_type = VW_TEMPVAR;
-		free_vars_cmpl();
+	    if ((p = typealloc(UVAR)) != 0) {
+		if ((p->u_name = strmalloc(VarName(var))) != 0) {
+		    p->next = temp_vars;
+		    p->u_value = 0;
+		    temp_vars = vd->v_ptr = p;
+		    vd->v_type = VW_TEMPVAR;
+		    free_vars_cmpl();
+		} else {
+		    free(p);
+		}
 	    }
 	    endofDisplay();
 	}

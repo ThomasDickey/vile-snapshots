@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.364 2012/03/03 12:32:28 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.365 2013/02/20 23:43:51 tom Exp $
  *
  */
 
@@ -457,9 +457,8 @@ set_termchrs(int f GCC_UNUSED, int n GCC_UNUSED)
     /* get the table-entry */
     tb_scopy(&name, "");
     if ((s = kbd_reply("Terminal setting: ", &name, chr_eol,
-		       ' ', 0, chr_complete)) == TRUE) {
-
-	j = chr_lookup(tb_values(name));
+		       ' ', 0, chr_complete)) == TRUE
+	&& (j = chr_lookup(tb_values(name))) >= 0) {
 	switch (TermChrs[j].how_to) {
 	case 's':
 	default:

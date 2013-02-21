@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 console API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntconio.c,v 1.94 2012/02/14 01:52:20 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntconio.c,v 1.95 2013/02/21 02:11:45 tom Exp $
  *
  */
 
@@ -1065,6 +1065,8 @@ handle_mouse_event(MOUSE_EVENT_RECORD mer)
     UINT clicktime = GetDoubleClickTime();
 
     memset(&first, 0, sizeof(first));
+    memset(&current, 0, sizeof(current));
+    memset(&lmbdn_mark, 0, sizeof(lmbdn_mark));
     buttondown = FALSE;
     for_ever {
 	current = mer.dwMousePosition;

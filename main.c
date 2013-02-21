@@ -22,7 +22,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.710 2012/09/23 18:28:17 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.711 2013/02/21 10:11:40 tom Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -747,18 +747,19 @@ MainProgram(int argc, char *argv[])
 	const char *tty = 0;
 #else
 	FILE *in;
-	int fd;
 #endif /* SYS_UNIX */
 #endif /* DISP_X11 */
 #endif /* !SYS_WINNT */
 	BUFFER *lastbp = havebp;
 	int nline = 0;
+	int fd;
 
 	bp = bfind(STDIN_BufName, BFARGS);
 	make_current(bp);	/* pull it to the front */
 	if (!havebp)
 	    havebp = bp;
-	ffp = fdopen(dup(fileno(stdin)), "r");
+	fd = dup(fileno(stdin));
+	ffp = (fd >= 0) ? fdopen(fd, "r") : 0;
 #if !DISP_X11
 # if SYS_UNIX
 # if defined(HAVE_TTYNAME)

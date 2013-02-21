@@ -5,6 +5,8 @@ Changes for vile 9.9 (released ??? ??? ?? ????)
 	+ correct warnings from pod2text
 	> Tom Dickey:
 	+ fixes for issues reported by Coverity:
+	  + modify ctype-tables to allow for -1 as a character value, since
+	    that may be used in CharAtDot().
 	  + use setjmp/longjmp for recovering from fatal errors in lexers.
 	  + various minor resource leaks.
 	+ start refactoring x11.c, making the current text-drawer x11plain.c

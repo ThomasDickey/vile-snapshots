@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/spellflt.l,v 1.53 2013/02/20 01:14:43 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/spellflt.l,v 1.55 2013/02/21 09:38:33 tom Exp $
  *
  * Filter to add vile "attribution" sequences to misspelled words.
  */
@@ -269,7 +269,7 @@ do_filter(FILE *inputs GCC_UNUSED)
     char *from;
     int ch;
 #endif
-    char *chop;
+    char *chop = 0;
     FILE *fp;
     char buffer[BUFFER_SIZE + 2];
     const char *attr = class_attr(NAME_ERROR);
@@ -281,8 +281,10 @@ do_filter(FILE *inputs GCC_UNUSED)
     /*
      * Create a temporary file which will hold the words to check spelling.
      */
-    if ((ChopFP = open_tempfile(&chop)) == 0)
+    if ((ChopFP = open_tempfile(&chop)) == 0) {
+	free(chop);
 	return;
+    }
 
 #ifdef filter_def		/* built-in filter? */
     ffp = ChopFP;
