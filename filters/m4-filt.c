@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/m4-filt.c,v 1.39 2013/02/21 01:11:22 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/m4-filt.c,v 1.40 2013/02/21 22:11:22 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of m4
  * input text.  This is in C rather than LEX because M4's quoting delimiters
@@ -196,7 +196,7 @@ parse_arglist(char *name, char *s, char ***args, int *parens)
 		v[t - r] = 0;
 		*args = type_alloc(char *,
 				     (char *) (*args),
-				   sizeof(*args) * (count + 2),
+				   sizeof(**args) * (count + 2),
 				   &used);
 		if (*args == 0) {
 		    free(v);

@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.432 2013/02/21 10:08:17 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.434 2013/02/22 00:10:48 tom Exp $
  *
  */
 
@@ -299,18 +299,21 @@ size_val(const struct VALNAMES *names, struct VAL *values)
 const char *
 string_mode_val(VALARGS * args)
 {
-    const struct VALNAMES *names = args->names;
     struct VAL *values = args->local;
-    union V *actual = values->vp ? values->vp : &(values->v);
-    static TBUFF *result;
+    const char *result = error_val;
 
     if (values != 0) {
+	const struct VALNAMES *names = args->names;
+	union V *actual = values->vp ? values->vp : &(values->v);
+	static TBUFF *buffer;
+
 	switch (names->type) {
 #if OPT_MAJORMODE
 	case VALTYPE_MAJOR:
 #endif
 	case VALTYPE_BOOL:
-	    return actual->i ? "TRUE" : "FALSE";
+	    result = actual->i ? "TRUE" : "FALSE";
+	    break;
 	case VALTYPE_ENUM:
 #if OPT_ENUM_MODES
 	    {
@@ -318,20 +321,23 @@ string_mode_val(VALARGS * args)
 		(void) tb_scopy(&temp,
 				choice_to_name(valname_to_choices(names),
 					       actual->i));
-		return tb_values(temp);
+		result = tb_values(temp);
+		break;
 	    }
 #endif /* else, fall-thru to use int-code */
 	case VALTYPE_INT:
-	    return render_int(&result, actual->i);
+	    result = render_int(&buffer, actual->i);
+	    break;
 	case VALTYPE_STRING:
-	    return NonNull(actual->p);
+	    result = NonNull(actual->p);
+	    break;
 	case VALTYPE_REGEX:
-	    if (actual->r == 0)
-		break;
-	    return NonNull(actual->r->pat);
+	    if (actual->r != 0)
+		result = NonNull(actual->r->pat);
+	    break;
 	}
     }
-    return error_val;
+    return result;
 }
 
 /* listvalueset:  print each value in the array according to type, along with
@@ -5054,8 +5060,7 @@ set_current_scheme(PALETTES * p)
     TRACE((T_CALLED "set_current_scheme()\n"));
     current_scheme = p->code;
 
-    if (p != 0
-	&& q != 0
+    if (q != 0
 	&& (p->fcol != q->fcol
 	    || p->bcol != q->bcol
 	    || p->ccol != q->ccol

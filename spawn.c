@@ -1,7 +1,7 @@
 /*	Spawn:	various DOS access commands
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.210 2013/02/21 00:13:57 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.211 2013/02/21 23:50:03 tom Exp $
  *
  */
 
@@ -785,6 +785,9 @@ filterregion(void)
 	    (void) firstnonwhite(FALSE, 1);
 	    (void) setmark();
 	    end_kill();
+	} else {
+	    fclose(fw);
+	    npclose(fr);
 	}
     }
 #else

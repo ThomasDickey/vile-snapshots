@@ -2,7 +2,7 @@
  * This file contains the command processing functions for a number of random
  * commands. There is no functional grouping here, for sure.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.342 2010/09/08 08:44:37 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.344 2013/02/21 22:07:34 tom Exp $
  *
  */
 
@@ -2298,7 +2298,7 @@ vl_atol(const char *str, int base, int *failed)
 	    if (errno == EDOM || errno == ERANGE) {
 		*failed = TRUE;
 	    } else {
-		if (*(prem = skip_blanks(prem)) != EOS) {
+		if (*skip_blanks(prem) != EOS) {
 		    *failed = TRUE;	/* trailing garbage */
 		}
 	    }
@@ -2338,7 +2338,7 @@ vl_atoul(const char *str, int base, int *failed)
 	    if (errno == EDOM || errno == ERANGE) {
 		*failed = TRUE;
 	    } else {
-		if (*(prem = skip_blanks(prem)) != EOS)
+		if (*skip_blanks(prem) != EOS)
 		    *failed = TRUE;	/* trailing garbage */
 	    }
 	}

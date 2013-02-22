@@ -2,7 +2,7 @@
  *	eval.c -- function and variable evaluation
  *	original by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.450 2013/02/21 01:14:42 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.452 2013/02/22 00:03:11 tom Exp $
  *
  */
 
@@ -2389,7 +2389,7 @@ render_int(TBUFF **rp, int i)
 
     p = tb_values(tb_alloc(rp, (size_t) 32));
     q = lsprintf(p, "%d", i);
-    if (rp != 0 && q != 0 && p != 0)
+    if (*rp != 0 && q != 0 && p != 0)
 	(*rp)->tb_used = (size_t) (q - p + 1);
     return p;
 }
@@ -2402,7 +2402,7 @@ render_long(TBUFF **rp, long i)
 
     p = tb_values(tb_alloc(rp, (size_t) 32));
     q = lsprintf(p, "%ld", i);
-    if (rp != 0 && q != 0 && p != 0)
+    if (*rp != 0 && q != 0 && p != 0)
 	(*rp)->tb_used = (size_t) (q - p + 1);
     return p;
 }
@@ -2414,7 +2414,9 @@ char *
 render_boolean(TBUFF **rp, int val)
 {
     static const char *bools[] =
-    {"FALSE", "TRUE"};
+    {
+	"FALSE", "TRUE"
+    };
     return tb_values(tb_scopy(rp, bools[val ? 1 : 0]));
 }
 
@@ -2426,7 +2428,7 @@ render_ulong(TBUFF **rp, ULONG i)
 
     p = tb_values(tb_alloc(rp, (size_t) 32));
     q = lsprintf(p, "%lu", i);
-    if (rp != 0 && q != 0 && p != 0)
+    if (*rp != 0 && q != 0 && p != 0)
 	(*rp)->tb_used = (size_t) (q - p + 1);
     return p;
 }
@@ -2440,7 +2442,7 @@ render_hex(TBUFF **rp, unsigned i)
 
     p = tb_values(tb_alloc(rp, 32));
     q = lsprintf(p, "%x", i);
-    if (rp != 0 && q != 0 && p != 0)
+    if (*rp != 0 && q != 0 && p != 0)
 	(*rp)->tb_used = (q - p + 1);
     return p;
 }
