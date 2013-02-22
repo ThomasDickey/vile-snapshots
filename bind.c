@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.365 2013/02/20 23:43:51 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.366 2013/02/22 00:21:58 tom Exp $
  *
  */
 
@@ -1208,11 +1208,11 @@ show_onlinehelp(const CMDFUNC * cmd)
 	return FALSE;
 #if OPT_PROCEDURES
     if ((cmd->c_flags & CMD_TYPE) == CMD_PROC)
-	flags &= !(UNDO | REDO);
+	flags &= ~(UNDO | REDO);
 #endif
 #if OPT_PERL
     if ((cmd->c_flags & CMD_TYPE) == CMD_PERL)
-	flags &= !(UNDO | REDO);
+	flags &= ~(UNDO | REDO);
 #endif
     if (flags & (RANGE | UNDO | REDO | GLOBOK)) {
 	const char *gaps = "";

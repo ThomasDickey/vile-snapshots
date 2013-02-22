@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/sed-filt.c,v 1.26 2010/07/13 13:38:09 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/sed-filt.c,v 1.27 2013/02/22 00:05:29 tom Exp $
  *
  * Filter to add vile "attribution" sequences to sed scripts.
  */
@@ -172,10 +172,10 @@ SkipPattern(char *s, int *done, int join)
 	    if (!join)
 		flt_puts(base, 1, Action_attr);
 	    base++;
-	    if (done)
+	    if (*done)
 		s--;
 	    flt_puts(base, (int) (s - base), Literal_attr);
-	    if (done)
+	    if (*done)
 		flt_puts(s++, 1, Action_attr);
 	}
     }
