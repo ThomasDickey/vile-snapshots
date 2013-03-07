@@ -2,7 +2,7 @@
  * The routines in this file read and write ASCII files from the disk. All of
  * the knowledge about files are here.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/fileio.c,v 1.200 2013/02/20 01:09:12 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/fileio.c,v 1.203 2013/03/06 01:29:47 tom Exp $
  *
  */
 
@@ -183,7 +183,7 @@ make_backup(char *fname)
 
     if (ffexists(fname)) {	/* if the file exists, attempt a backup */
 	char tname[NFILEN];
-	char *s = pathleaf(strcpy(tname, fname));
+	char *s = pathleaf(vl_strncpy(tname, fname, sizeof(tname)));
 	char *t = strrchr(s, '.');
 	char *gvalfileback = b_val_ptr(curbp, VAL_BACKUPSTYLE);
 
@@ -274,7 +274,8 @@ file_stat(const char *fn, struct stat *sb)
 		    if (strlen(cache[n].fn) == 0)
 			break;
 		}
-		cache[n].rc = stat(SL_TO_BSL(strcpy(cache[n].fn, fn)),
+		cache[n].rc = stat(SL_TO_BSL(vl_strncpy(cache[n].fn, fn,
+							sizeof(cache[n].fn))),
 				   &(cache[n].sb));
 	    }
 	    rc = cache[n].rc;
@@ -555,7 +556,7 @@ ffsize(B_COUNT * have)
     if (fseek(ffp, 0, SEEK_END) >= 0) {
 	result = 0;
 	*have = ftell(ffp);
-	fseek(ffp, prev, SEEK_SET);
+	(void) fseek(ffp, prev, SEEK_SET);
     }
 #else
     struct stat statbuf;
@@ -676,7 +677,7 @@ ffseek(B_COUNT n)
 #if SYS_VMS
     ffrewind();			/* see below */
 #endif
-    fseek(ffp, (long) n, SEEK_SET);
+    (void) fseek(ffp, (long) n, SEEK_SET);
 }
 
 void
@@ -693,7 +694,7 @@ ffrewind(void)
     (void) fclose(ffp);
     ffp = fopen(temp, FOPEN_READ);
 #else
-    fseek(ffp, 0L, SEEK_SET);
+    (void) fseek(ffp, 0L, SEEK_SET);
 #endif
 }
 

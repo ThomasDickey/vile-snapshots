@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 console API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntconio.c,v 1.95 2013/02/21 02:11:45 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntconio.c,v 1.96 2013/03/07 10:11:21 tom Exp $
  *
  */
 
@@ -1065,6 +1065,7 @@ handle_mouse_event(MOUSE_EVENT_RECORD mer)
     UINT clicktime = GetDoubleClickTime();
 
     memset(&first, 0, sizeof(first));
+    memset(&latest, 0, sizeof(latest));
     memset(&current, 0, sizeof(current));
     memset(&lmbdn_mark, 0, sizeof(lmbdn_mark));
     buttondown = FALSE;

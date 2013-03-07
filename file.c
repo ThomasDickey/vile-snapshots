@@ -5,7 +5,7 @@
  * reading and writing of the disk are
  * in "fileio.c".
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.448 2011/11/24 18:27:00 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.449 2013/03/05 23:42:39 tom Exp $
  */
 
 #include "estruct.h"
@@ -2435,12 +2435,12 @@ writereg(REGION * rp,
 #endif
 			if (!ffaccess(fn, FL_WRITEABLE)
 			    && (protection = file_protection(fn)) >= 0) {
-			    chmod(SL_TO_BSL(fn), (mode_t) (protection | 0600));
+			    (void) chmod(SL_TO_BSL(fn), (mode_t) (protection | 0600));
 			}
 		    }
 		    status = actually_write(rp, fn, msgf, bp, forced, encoded);
 		    if (protection > 0)
-			chmod(SL_TO_BSL(fn), (mode_t) protection);
+			(void) chmod(SL_TO_BSL(fn), (mode_t) protection);
 #if SYS_WINNT
 		    if (write_acl_added)
 			(void) w32_remove_write_acl(fn, prev_access_mask);

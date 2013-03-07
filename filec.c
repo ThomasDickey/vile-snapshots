@@ -5,7 +5,7 @@
  * Written by T.E.Dickey for vile (march 1993).
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/filec.c,v 1.130 2010/12/05 21:06:14 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/filec.c,v 1.132 2013/03/06 01:54:39 tom Exp $
  *
  */
 
@@ -235,7 +235,7 @@ bs_find(char *fname, size_t len, BUFFER *bp, LINE **lpp)
 #if OPT_VMS_PATH
     char temp[NFILEN];
     if (!is_slashc(*fname))
-	vms2hybrid(fname = strcpy(temp, fname));
+	vms2hybrid(fname = vl_strncpy(temp, fname, sizeof(temp)));
 #endif
 
     if (lpp == NULL || (lp = *lpp) == NULL)
@@ -315,7 +315,7 @@ already_scanned(BUFFER *bp, char *path)
     char fname[NFILEN];
     LINE *slp;
 
-    len = force_slash(strcpy(fname, path));
+    len = force_slash(vl_strncpy(fname, path, sizeof(fname)));
 
     for_each_line(lp, bp) {
 #if OPT_CASELESS
@@ -402,16 +402,16 @@ vms2hybrid(char *path)
 {
     char leaf[NFILEN];
     char head[NFILEN];
-    char *s = strcpy(head, path);
+    char *s = vl_strncpy(head, path, sizeof(head));
     char *t;
 
     TRACE(("vms2hybrid '%s'\n", path));
-    (void) strcpy(leaf, s = pathleaf(head));
+    (void) vl_strncpy(leaf, s = pathleaf(head), sizeof(leaf));
     if ((t = is_vms_dirtype(leaf)) != 0)
 	(void) strcpy(t, "/");
     *s = EOS;
     if (s == path)		/* a non-canonical name got here somehow */
-	(void) strcpy(head, current_directory(FALSE));
+	(void) vl_strncpy(head, current_directory(FALSE), sizeof(head));
     pathcat(path, mkupper(vms2unix_path(head, head)), leaf);
     TRACE((" -> '%s' (vms2hybrid)\n", path));
 }
@@ -421,10 +421,10 @@ hybrid2vms(char *path)
 {
     char leaf[NFILEN];
     char head[NFILEN];
-    char *s = strcpy(head, path);
+    char *s = vl_strncpy(head, path, sizeof(head));
 
     TRACE(("hybrid2vms '%s'\n", path));
-    (void) strcpy(leaf, s = pathleaf(head));
+    (void) vl_strncpy(leaf, s = pathleaf(head), sizeof(leaf));
     *s = EOS;
     if (s == head)		/* a non-canonical name got here somehow */
 	(void) vms2unix_path(head, current_directory(FALSE));
@@ -443,10 +443,10 @@ hybrid2unix(char *path)
 {
     char leaf[NFILEN];
     char head[NFILEN];
-    char *s = strcpy(head, path);
+    char *s = vl_strncpy(head, path, sizeof(head));
 
     TRACE(("hybrid2unix '%s'\n", path));
-    (void) strcpy(leaf, s = pathleaf(head));
+    (void) vl_strncpy(leaf, s = pathleaf(head), sizeof(leaf));
     *s = EOS;
     if (s == path)		/* a non-canonical name got here somehow */
 	(void) vms2unix_path(head, current_directory(FALSE));
@@ -568,7 +568,7 @@ fill_directory_buffer(BUFFER *bp, char *path, size_t dots GCC_UNUSED)
 #endif
     char temp[NFILEN];
 
-    path = strcpy(temp, path);
+    path = vl_strncpy(temp, path, sizeof(temp));
 
     TRACE(("fill_directory_buffer '%s'\n", path));
 
@@ -662,7 +662,7 @@ fill_directory_buffer(BUFFER *bp, char *path, size_t dots GCC_UNUSED)
 #if USE_QSORT
 #if OPT_VMS_PATH
 	    if (temp != path)
-		strcpy(temp, path);
+		vl_strncpy(temp, path, sizeof(temp));
 	    vms2hybrid(s = temp);
 #else
 	    s = path;
@@ -757,7 +757,7 @@ fillMyBuff(BUFFER *bp, char *name)
 	sortMyBuff(bp);
 #endif
     } else {
-	(void) strcpy(path, name);
+	(void) vl_strncpy(path, name, sizeof(path));
 #if OPT_MSDOS_PATH
 	bsl_to_sl_inplace(path);
 #endif
@@ -775,11 +775,12 @@ fillMyBuff(BUFFER *bp, char *name)
 		return 1;
 	}
 #if OPT_VMS_PATH
-	(void) strcpy(temp, name);	/* will match the hybrid name */
+	(void) vl_strncpy(temp, name, sizeof(temp));
+	/* will match the hybrid name */
 	if (trim_leaf)
 	    *pathleaf(temp) = EOS;
 #else
-	(void) strcpy(temp, path);
+	(void) vl_strncpy(temp, path, sizeof(temp));
 #endif
 
 	if (already_scanned(bp, temp)) {
@@ -799,7 +800,7 @@ fillMyBuff(BUFFER *bp, char *name)
 
 		while (dots--)
 		    strcat(path, ".");
-		(void) lengthen_path(strcpy(temp, path));
+		(void) lengthen_path(vl_strncpy(temp, path, sizeof(temp)));
 		need = strlen(temp);
 		want = strlen(path);
 		for_each_line(lp, bp) {
@@ -961,8 +962,8 @@ path_completion(DONE_ARGS)
 	 * Copy 'buf' into 'path', making it canonical-form.
 	 */
 #if OPT_VMS_PATH
-	if (*strcpy(path, buf) == EOS) {
-	    (void) strcpy(path, current_directory(FALSE));
+	if (*vl_strncpy(path, buf, sizeof(path)) == EOS) {
+	    (void) vl_strncpy(path, current_directory(FALSE), sizeof(path));
 	} else if (!is_environ(path)) {
 	    char frac[NFILEN];
 
@@ -981,12 +982,15 @@ path_completion(DONE_ARGS)
 		}
 	    }
 	    if (*path == EOS)
-		(void) strcpy(path, current_directory(FALSE));
+		(void) vl_strncpy(path, current_directory(FALSE), sizeof(path));
 	    else {
 		if (!is_vms_pathname(path, -TRUE)) {
 		    unix2vms_path(path, path);
-		    if (*path == EOS)
-			(void) strcpy(path, current_directory(FALSE));
+		    if (*path == EOS) {
+			(void) vl_strncpy(path,
+					  current_directory(FALSE),
+					  sizeof(path));
+		    }
 		}
 		(void) lengthen_path(path);
 	    }
@@ -1008,7 +1012,7 @@ path_completion(DONE_ARGS)
 	}
 #else
 	if (is_environ(buf)) {
-	    (void) strcpy(path, buf);
+	    (void) vl_strncpy(path, buf, sizeof(path));
 	} else {
 # if SYS_UNIX || OPT_MSDOS_PATH
 	    char **expand;
@@ -1017,14 +1021,14 @@ path_completion(DONE_ARGS)
 	     * Expand _unique_ wildcards and environment variables.
 	     * Like 'doglob()', but without the prompt.
 	     */
-	    expand = glob_string(strcpy(path, buf));
+	    expand = glob_string(vl_strncpy(path, buf, sizeof(path)));
 	    switch (glob_length(expand)) {
 	    default:
 		(void) glob_free(expand);
 		kbd_alarm();
 		return FALSE;
 	    case 1:
-		(void) strcpy(path, expand[0]);
+		(void) vl_strncpy(path, expand[0], sizeof(path));
 		/*FALLTHRU */
 	    case 0:
 		(void) glob_free(expand);
@@ -1053,7 +1057,7 @@ path_completion(DONE_ARGS)
 	    s = buf;
 	if ((*s == EOS) || trailing_slash(s)) {
 	    if (*path == EOS)
-		(void) strcpy(path, ".");
+		(void) vl_strncpy(path, ".", sizeof(path));
 	    (void) force_slash(path);
 	}
 
@@ -1215,7 +1219,9 @@ mlreply_file(const char *prompt, TBUFF **buffer, UINT flag, char *result)
     if (buffer == 0) {
 	(void) tb_scopy(buffer = &last,
 			had_fname && is_pathname(curbp->b_fname)
-			? shorten_path(strcpy(Reply, curbp->b_fname),
+			? shorten_path(vl_strncpy(Reply,
+						  curbp->b_fname,
+						  sizeof(Reply)),
 				       FALSE)
 			: "");
     }
@@ -1225,7 +1231,7 @@ mlreply_file(const char *prompt, TBUFF **buffer, UINT flag, char *result)
 	char *t2 = is_appendname(t1);
 
 	if (t1 != 0)
-	    (void) strcpy(Reply, (t2 != 0) ? t2 : t1);
+	    (void) vl_strncpy(Reply, (t2 != 0) ? t2 : t1, sizeof(Reply));
 	else
 	    *Reply = EOS;
 
@@ -1240,7 +1246,7 @@ mlreply_file(const char *prompt, TBUFF **buffer, UINT flag, char *result)
 		&& had_fname
 		&& (!global_g_val(GMDWARNREREAD)
 		    || ((status = mlyesno("Reread current buffer")) == TRUE)))
-		(void) strcpy(Reply, curbp->b_fname);
+		(void) vl_strncpy(Reply, curbp->b_fname, sizeof(Reply));
 	    else
 		return status;
 	} else if (kbd_is_pushed_back() && isShellOrPipe(Reply)) {
@@ -1332,12 +1338,12 @@ mlreply_dir(const char *prompt, TBUFF **buffer, char *result)
     /* use the current directory if none given */
     if (buffer == 0) {
 	(void) tb_scopy(buffer = &last,
-			strcpy(Reply, current_directory(TRUE)));
+			vl_strncpy(Reply, current_directory(TRUE), sizeof(Reply)));
     }
 
     if (clexec || isnamedcmd) {
 	if (tb_values(*buffer) != 0)
-	    (void) strcpy(Reply, tb_values(*buffer));
+	    (void) vl_strncpy(Reply, tb_values(*buffer), sizeof(Reply));
 	else
 	    *Reply = EOS;
 

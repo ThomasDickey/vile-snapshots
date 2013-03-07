@@ -2,7 +2,7 @@
  * Unix crypt(1)-style interface.
  * Written by T.E.Dickey for vile (March 1999).
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ucrypt.c,v 1.20 2010/09/06 18:45:48 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ucrypt.c,v 1.21 2013/03/06 11:50:05 tom Exp $
  */
 
 #include "estruct.h"
@@ -56,7 +56,7 @@ vl_resetkey(BUFFER *bp,
 	/* don't automatically inherit key from other buffers */
 	if (bp->b_cryptkey[0] != EOS
 	    && !b_is_argument(bp)
-	    && strcmp(lengthen_path(strcpy(temp, fname)), bp->b_fname)) {
+	    && strcmp(lengthen_path(vl_strncpy(temp, fname, sizeof(temp))), bp->b_fname)) {
 	    char prompt[80];
 	    (void) lsprintf(prompt, "Use crypt-key from %s", bp->b_bname);
 	    s = mlyesno(prompt);
@@ -89,7 +89,7 @@ vl_setkey(int f GCC_UNUSED,
 
     if (rc == TRUE) {
 	TRACE(("set key for %s\n", curbp->b_bname));
-	(void) strcpy(curbp->b_cryptkey, result);
+	(void) vl_strncpy(curbp->b_cryptkey, result, sizeof(curbp->b_cryptkey));
 	make_local_b_val(curbp, MDCRYPT);
 	set_b_val(curbp, MDCRYPT, TRUE);
 	curwp->w_flag |= WFMODE;

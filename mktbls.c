@@ -15,7 +15,7 @@
  * by Tom Dickey, 1993.    -pgf
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/mktbls.c,v 1.179 2012/03/08 21:45:34 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/mktbls.c,v 1.184 2013/03/07 09:34:28 tom Exp $
  *
  */
 
@@ -231,6 +231,44 @@ static FILE *nemode;
 static FILE *nefkeys;
 static FILE *nefsms;
 static jmp_buf my_top;
+
+/******************************************************************************/
+static char *
+my_strncpy0(char *dest, const char *src, size_t destlen)
+{
+    if (dest != 0 && src != 0 && destlen != 0) {
+	(void) strncpy(dest, src, destlen);
+	dest[destlen - 1] = EOS;
+    }
+    return dest;
+}
+
+/*
+ * This is probably more efficient for copying short strings into a large
+ * fixed-size buffer, because strncpy always zero-pads the destination to
+ * the given length.
+ */
+static char *
+my_strncpy(char *dest, const char *src, size_t destlen)
+{
+    size_t srclen = (src != 0) ? (strlen(src) + 1) : 0;
+    if (srclen > destlen)
+	srclen = destlen;
+    return my_strncpy0(dest, src, srclen);
+}
+
+static char *
+my_strncat(char *dest, const char *src, size_t destlen)
+{
+    size_t srclen = (src != 0) ? (strlen(src) + 1) : 0;
+    size_t oldlen = strlen(dest);
+
+    if (srclen > (destlen - oldlen))
+	srclen = (destlen - oldlen);
+
+    (void) my_strncpy0(dest + oldlen, src, srclen);
+    return dest;
+}
 
 /******************************************************************************/
 static int
@@ -823,7 +861,7 @@ WriteIndexStruct(FILE *fp, LIST * p, const char *ppref)
     Fprintf(fp, "\tDUMMY_%c_VALUES = -1\n", *ppref);
     for (; p != 0; p = p->nst, count++) {
 	WriteIf(fp, p->Cond);
-	(void) Parse(strcpy(line, p->Name), vec);
+	(void) Parse(my_strncpy(line, p->Name, sizeof(line)), vec);
 	Sprintf(temp, "\t,%s%s", ENUM_PREFIX, s = Name2Symbol(vec[1]));
 	free(s);
 	if (p->Note[0]) {
@@ -853,7 +891,7 @@ WriteModeDefines(LIST * p, const char *ppref)
     BeginIf();
 
     for (; p != 0; p = p->nst, count++) {
-	(void) Parse(strcpy(line, p->Name), vec);
+	(void) Parse(my_strncpy(line, p->Name, sizeof(line)), vec);
 	Sprintf(temp, "#define %.1s%s%s",
 		(*ppref == 'B') ? "" : ppref,
 		(*vec[2] == 'b') ? "MD" : "VAL_",
@@ -882,7 +920,7 @@ WriteModeSymbols(LIST * p)
     BeginIf();
     while (p != 0) {
 	WriteIf(nemode, p->Cond);
-	(void) Parse(strcpy(line, p->Name), vec);
+	(void) Parse(my_strncpy(line, p->Name, sizeof(line)), vec);
 	Sprintf(temp, "\t%c %s,",
 		L_CURL, s = Name2Address(vec[1], vec[2]));
 	(void) PadTo(32, temp);
@@ -900,7 +938,7 @@ WriteModeSymbols(LIST * p)
 	Sprintf(temp + strlen(temp), "VALTYPE_%s,", c2TYPE(*vec[2]));
 	(void) PadTo(64, temp);
 	if (!strcmp(p->Data, "0"))
-	    (void) strcat(temp, "(ChgdFunc)0 },");
+	    (void) my_strncat(temp, "(ChgdFunc)0 },", sizeof(temp));
 	else
 	    Sprintf(temp + strlen(temp), "%s },", p->Data);
 	Fprintf(nemode, "%s\n", temp);
@@ -919,9 +957,9 @@ save_all_modes(
 {
     if (isboolean(*type)) {
 	char t_normal[LEN_BUFFER], t_abbrev[LEN_BUFFER];
-	strcat(strcpy(t_normal, "no"), normal);
+	my_strncat(strcpy(t_normal, "no"), normal, sizeof(t_normal));
 	if (*abbrev) {
-	    strcat(strcpy(t_abbrev, "no"), abbrev);
+	    my_strncat(strcpy(t_abbrev, "no"), abbrev, sizeof(t_abbrev));
 	} else {
 	    strcpy(t_abbrev, "");
 	}
@@ -1256,9 +1294,9 @@ save_all_submodes(
 {
     if (isboolean(*type)) {
 	char t_normal[LEN_BUFFER], t_abbrev[LEN_BUFFER];
-	strcat(strcpy(t_normal, "no"), normal);
+	my_strncat(strcpy(t_normal, "no"), normal, sizeof(t_normal));
 	if (*abbrev) {
-	    strcat(strcpy(t_abbrev, "no"), abbrev);
+	    my_strncat(strcpy(t_abbrev, "no"), abbrev, sizeof(t_abbrev));
 	} else {
 	    strcpy(t_abbrev, "");
 	}
@@ -1335,9 +1373,9 @@ predefine_submodes(char **vec, int len)
 	    }
 	    if (found) {
 		Sprintf(temp, "%s-%s", vec[2], norm);
-		strcpy(norm, temp);
+		my_strncpy(norm, temp, sizeof(norm));
 		Sprintf(temp, "%s%s", vec[2], abbr);
-		strcpy(abbr, temp);
+		my_strncpy(abbr, temp, sizeof(abbr));
 		save_all_modes(c2TYPE(*type), norm, abbr,
 			       formcond(p->Cond, "OPT_MAJORMODE"));
 	    }
@@ -2361,7 +2399,7 @@ main(int argc, char *argv[])
 
 		case '<':	/* then it's a help string */
 		    /* put code here. */
-		    (void) strcpy(funchelp, vec[1]);
+		    (void) my_strncpy(funchelp, vec[1], sizeof(funchelp));
 		    break;
 
 		default:
@@ -2423,9 +2461,9 @@ main(int argc, char *argv[])
 		    save_funcs(func, flags, fcond, old_fcond, funchelp);
 		    funchelp[0] = EOS;
 		}
-		(void) strcpy(func, vec[1]);
-		(void) strcpy(flags, vec[2]);
-		(void) strcpy(fcond, vec[3]);
+		(void) my_strncpy(func, vec[1], sizeof(func));
+		(void) my_strncpy(flags, vec[2], sizeof(flags));
+		(void) my_strncpy(fcond, vec[3], sizeof(fcond));
 		break;
 
 	    case SECT_FSMS:
@@ -2440,7 +2478,7 @@ main(int argc, char *argv[])
 			&& !strcmp(vec[1], "string")
 			&& !strcmp(vec[1], "regex")))
 		    badfmt("looking for mode datatype");
-		(void) strcpy(modetype, vec[1]);
+		(void) my_strncpy(modetype, vec[1], sizeof(modetype));
 		break;
 
 	    case SECT_FUNC:
@@ -2461,7 +2499,7 @@ main(int argc, char *argv[])
 			&& !strcmp(vec[1], "string")
 			&& !strcmp(vec[1], "regex")))
 		    badfmt("looking for mode datatype");
-		(void) strcpy(modetype, vec[1]);
+		(void) my_strncpy(modetype, vec[1], sizeof(modetype));
 		break;
 
 	    default:

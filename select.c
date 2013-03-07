@@ -18,7 +18,7 @@
  * transferring the selection are not dealt with in this file.  Procedures
  * for dealing with the representation are maintained in this file.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.185 2010/12/28 00:43:33 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.186 2013/03/06 00:13:44 tom Exp $
  *
  */
 
@@ -870,10 +870,6 @@ on_mouse_click(int button, int y, int x)
 			TRACE(("MOUSE setting SEL_BEGIN MK %d.%d\n",
 			       line_no(curbp, MK.l), MK.o));
 		    }
-		    break;
-		case BTN_PASTE:
-		    (void) setcursor(y, x);
-		    status = paste_selection();
 		    break;
 		default:
 		    (void) setcursor(y, x);

@@ -3,7 +3,7 @@
  *	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11plain.c,v 1.2 2012/10/25 09:33:41 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11plain.c,v 1.3 2013/03/06 10:53:03 tom Exp $
  *
  */
 
@@ -104,7 +104,7 @@ get_color_gc(Display * dpy, TextWindow win, int n, Bool normal)
 
     assert(n >= 0 && n < NCOLORS);
 
-    if (n < 0 || n > NCOLORS)
+    if (n < 0 || n >= NCOLORS)
 	n = 0;			/* shouldn't happen */
     data = (normal
 	    ? &(win->fore_color[n])

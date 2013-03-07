@@ -3,7 +3,7 @@
  *	Original interface by Otto Lind, 6/3/93
  *	Additional map and map! support by Kevin Buettner, 9/17/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/map.c,v 1.123 2013/02/21 01:01:50 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/map.c,v 1.125 2013/03/06 10:31:52 tom Exp $
  *
  */
 
@@ -283,7 +283,7 @@ delfrommap(struct maprec **mpp, const char *ks, int length)
     int pass;
     int n;
 
-    if (ks == 0 || length == 0)
+    if (mpp == 0 || ks == 0 || length == 0)
 	return FALSE;
 
     for (pass = 0; pass < 2; pass++) {
@@ -498,7 +498,8 @@ maplookup(int c,
 static void
 reverse_abbr(struct maprec **mpp, const char *bufname, TBUFF *kbuf)
 {
-    if ((*mpp && *mpp == abbr_map) || (strcmp(bufname, ABBR_BufName) == 0)) {
+    if ((mpp && *mpp && *mpp == abbr_map) ||
+	(strcmp(bufname, ABBR_BufName) == 0)) {
 	/* reverse the lhs */
 	int i;
 	char t;

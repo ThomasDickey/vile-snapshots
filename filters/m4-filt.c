@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/m4-filt.c,v 1.40 2013/02/21 22:11:22 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/m4-filt.c,v 1.42 2013/03/07 00:24:07 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of m4
  * input text.  This is in C rather than LEX because M4's quoting delimiters
@@ -163,8 +163,9 @@ parse_arglist(char *name, char *s, char ***args, int *parens)
 	used = 0;
 	if (*t == L_PAREN) {
 	    processing = 1;
-	    *args = type_alloc(char *, (char *) 0, sizeof(*args) *
-			         (count + 4), &used);
+	    *args = type_alloc(char *, (char *) 0,
+			       sizeof(**args) * (count + 4),
+			       &used);
 	    if (*args == 0)
 		return 0;
 	    (*args)[count++] = strmalloc(name);
@@ -523,10 +524,7 @@ do_filter(FILE *input GCC_UNUSED)
 		flt_error("unexpected right-quote");
 		wrong_quote(rightquote);
 		s += rightquote.used;
-		if (--literal > 0)
-		    s = write_literal(s, &literal);
-		else
-		    literal = 0;
+		literal = 0;
 	    } else if (comment) {
 		/*
 		 * Comments don't nest

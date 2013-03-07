@@ -1,7 +1,7 @@
 /*	Spawn:	various DOS access commands
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.211 2013/02/21 23:50:03 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.212 2013/03/05 23:23:20 tom Exp $
  *
  */
 
@@ -145,7 +145,7 @@ spawncli(int f GCC_UNUSED, int n GCC_UNUSED)
 #if	SYS_UNIX
 #define	OK_SPAWN
     term.clean(TRUE);
-    file_stat(0, 0);
+    (void) file_stat(0, 0);
     term.openup();
 #if	DISP_X11 && !SMALLER
     (void) x_window_SHELL((char *) 0);
@@ -231,7 +231,7 @@ bktoshell(int f, int n)		/* suspend and wait to wake up */
 
     beginDisplay();
     term.clean(TRUE);
-    file_stat(0, 0);
+    (void) file_stat(0, 0);
 
 /* #define simulate_job_control_for_debug */
 # ifdef simulate_job_control_for_debug
@@ -405,7 +405,7 @@ spawn1(int rerun, int pressret)
 #endif
 #else
     term.clean(TRUE);
-    file_stat(0, 0);
+    (void) file_stat(0, 0);
 
     (void) system_SHELL(line);
 
@@ -922,7 +922,7 @@ vile_filter(int f GCC_UNUSED, int n GCC_UNUSED)
 #if	SYS_UNIX
     bottomleft();
     term.clean(TRUE);
-    file_stat(0, 0);
+    (void) file_stat(0, 0);
     if ((t = strchr(line, '|')) != 0) {
 	char temp[NLINE];
 	(void) strcpy(temp, t);

@@ -4,7 +4,7 @@
  *	original by Daniel Lawrence, but
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.346 2013/02/21 10:03:44 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.347 2013/03/05 23:39:22 tom Exp $
  *
  */
 
@@ -237,7 +237,8 @@ parse_linespec(const char *s, LINE **markptr)
 	    tb_bappend(&searchpat, save + 1, (size_t) (s - save - 1 - done));
 	    tb_append(&searchpat, EOS);
 
-	    if ((gregexp = regcomp(tb_values(searchpat),
+	    if (tb_length(searchpat) > 1 &&
+		(gregexp = regcomp(tb_values(searchpat),
 				   tb_length(searchpat) - 1,
 				   b_val(curbp, MDMAGIC))) != 0) {
 

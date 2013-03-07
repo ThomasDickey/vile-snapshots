@@ -2,7 +2,7 @@
  *	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.383 2012/10/25 09:16:53 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.384 2013/03/06 10:57:26 tom Exp $
  *
  */
 
@@ -3903,7 +3903,7 @@ x_get_selection(Widget w GCC_UNUSED,
 	   visibleAtoms(*selection),
 	   visibleAtoms(*target),
 	   *format,
-	   *length));
+	   length ? *length : 0));
 
     if (length != 0 && value != NULL) {
 	if (*format != 8) {

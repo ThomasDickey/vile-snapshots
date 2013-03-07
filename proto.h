@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.729 2012/07/08 09:13:54 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.730 2013/03/06 00:47:49 tom Exp $
  *
  */
 
@@ -20,6 +20,7 @@ extern SIGT catchintr (int ACTUAL_SIG_ARGS);
 extern char *init_state_value (int n);
 extern char *strncpy0 (char *t, const char *f, size_t l);
 extern char *vile_getenv (const char *name);
+extern char *vl_strncat (char *dest, const char *src, size_t destlen);
 extern char *vl_strncpy (char *dest, const char *src, size_t destlen);
 extern int call_cmdfunc (const CMDFUNC *p, int f, int n);
 extern int no_memory (const char *s);
