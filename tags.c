@@ -7,7 +7,7 @@
  *
  * Copyright (c) 1990, 1995-2013 by Paul Fox and Thomas E. Dickey
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tags.c,v 1.147 2013/02/20 23:58:43 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tags.c,v 1.148 2013/03/06 00:57:06 tom Exp $
  *
  */
 #include "estruct.h"
@@ -426,7 +426,7 @@ popuntag(char *fname, L_NUM * linenop, C_NUM * colnop)
     if (untaghead) {
 	utp = untaghead;
 	untaghead = utp->u_stklink;
-	(void) strcpy(fname, utp->u_fname);
+	(void) vl_strncpy(fname, utp->u_fname, NFILEN);
 	*linenop = utp->u_lineno;
 	*colnop = utp->u_colno;
 	free_untag(utp);
@@ -707,7 +707,7 @@ tag_search(char *tag, int taglen, int initial)
 
     /* Save the position in the tags-file so "next-tag" will work */
     tf_num--;
-    (void) strcpy(last_bname, tagbp->b_bname);
+    (void) vl_strncpy(last_bname, tagbp->b_bname, sizeof(last_bname));
     tagbp->b_dot.l = lp;
     tagbp->b_dot.o = 0;
 #ifdef MDCHK_MODTIME
@@ -982,7 +982,8 @@ maketagslist(int value GCC_UNUSED, void *dummy GCC_UNUSED)
 		++n,
 		taglen, utp->u_templ,
 		utp->u_lineno,
-		shorten_path(strcpy(temp, utp->u_fname), TRUE));
+		shorten_path(vl_strncpy(temp, utp->u_fname, sizeof(temp)),
+		TRUE));
 }
 
 #if OPT_UPBUFF

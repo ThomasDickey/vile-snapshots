@@ -2,7 +2,7 @@
  *	eval.c -- function and variable evaluation
  *	original by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.452 2013/02/22 00:03:11 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.453 2013/03/06 10:55:14 tom Exp $
  *
  */
 
@@ -1236,8 +1236,8 @@ eval_fchanged(BUFFER *bp)
     time_t current;
     int changed;
 
-    if (valid_buffer(bp)) {
-	get_modtime(bp, &current);
+    if (valid_buffer(bp)
+	&& get_modtime(bp, &current)) {
 	changed = (current != bp->b_modtime);
     } else {
 	changed = FALSE;

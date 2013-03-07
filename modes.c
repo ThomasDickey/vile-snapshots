@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.434 2013/02/22 00:10:48 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.435 2013/03/06 01:13:40 tom Exp $
  *
  */
 
@@ -5484,7 +5484,7 @@ mode_leaks(void)
 #if OPT_MAJORMODE
     while (my_majormodes != 0 && my_majormodes->shortname != 0) {
 	char temp[NSTRING];
-	free_majormode(strcpy(temp, my_majormodes->shortname));
+	free_majormode(vl_strncpy(temp, my_majormodes->shortname, sizeof(temp)));
     }
     FreeAndNull(my_majormodes);
 

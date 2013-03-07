@@ -44,7 +44,7 @@
  *	tgetc_avail()     true if a key is avail from tgetc() or below.
  *	keystroke_avail() true if a key is avail from keystroke() or below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.354 2013/02/21 01:03:56 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.356 2013/03/06 01:20:25 tom Exp $
  *
  */
 
@@ -1024,7 +1024,7 @@ vl_regex2tbuff(TBUFF **result, REGEXVAL * rexp, int whole_line)
 
     tb_init(result, EOS);
 
-    if (rexp != 0 && rexp->pat != 0 && rexp->pat[0] && rexp->reg) {
+    if (rexp->pat != 0 && rexp->pat[0] && rexp->reg) {
 	if (whole_line) {
 	    vl_regex2tbuff_best(result, exp);
 	} else {
@@ -1273,7 +1273,7 @@ expandChar(TBUFF **buf,
 	if (isInternalName(cp)) {
 	    cp = bp->b_bname;
 	} else if (!global_g_val(GMDEXPAND_PATH)) {
-	    cp = shorten_path(strcpy(str, cp), FALSE);
+	    cp = shorten_path(vl_strncpy(str, cp, sizeof(str)), FALSE);
 #if OPT_MSDOS_PATH
 	    /* always use backslashes if invoking external prog */
 	    if (shell)

@@ -8,7 +8,7 @@
 /************************************************************************/
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/menu.c,v 1.79 2010/09/15 00:06:52 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/menu.c,v 1.80 2013/03/06 11:46:19 tom Exp $
  */
 
 /* Vile includes */
@@ -286,7 +286,7 @@ parse_menu_entry(MenuToken * token, const char *source, size_t slen)
 	case 'C':
 	    token->type = *ptr_tok;
 	    if ((ptr_tok = strtok(NULL, ":\n")) != NULL) {
-		strcpy(token->label, ptr_tok);
+		vl_strncpy(token->label, ptr_tok, sizeof(token->label));
 		if (strtok(NULL, ":\n") != NULL) {
 		    token->type = 'H';
 		}
@@ -302,7 +302,7 @@ parse_menu_entry(MenuToken * token, const char *source, size_t slen)
 	case 'L':
 	    token->type = *ptr_tok;
 	    if ((ptr_tok = strtok(NULL, ":\n")) != NULL) {
-		strcpy(token->action, ptr_tok);
+		vl_strncpy(token->action, ptr_tok, sizeof(token->action));
 	    }
 	    break;
 
@@ -312,7 +312,7 @@ parse_menu_entry(MenuToken * token, const char *source, size_t slen)
 	    while ((ptr_tok = strtok(NULL, ":\n")) != NULL) {
 		switch (n) {
 		case 0:
-		    strcpy(token->label, ptr_tok);
+		    vl_strncpy(token->label, ptr_tok, sizeof(token->label));
 		    break;
 		case 1:
 		    if (isDigit((int) *ptr_tok)) {
@@ -322,10 +322,10 @@ parse_menu_entry(MenuToken * token, const char *source, size_t slen)
 			if (is_action(ptr_tok)
 			    || vlmenu_is_bind(ptr_tok)
 			    || vlmenu_is_cmd(ptr_tok)) {
-			    strcpy(token->action, ptr_tok);
+			    vl_strncpy(token->action, ptr_tok, sizeof(token->action));
 			} else {
 			    mlwarn("'%s' is not an action", ptr_tok);
-			    strcpy(token->action, "beep");
+			    vl_strncpy(token->action, "beep", sizeof(token->action));
 			    result = FALSE;
 			}
 		    }

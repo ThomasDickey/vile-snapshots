@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.366 2013/02/22 00:21:58 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.367 2013/03/06 09:34:06 tom Exp $
  *
  */
 
@@ -1036,7 +1036,7 @@ prompt_describe_key(BINDINGS * bs)
 
     /* describe it */
     described_cmd[0] = '^';
-    (void) strcpy(described_cmd + 1, temp.n_name);
+    (void) vl_strncpy(described_cmd + 1, temp.n_name, sizeof(described_cmd));
     append_to_binding_list = TRUE;
     s = describe_any_bindings(described_cmd, (CMDFLAGS) 0);
     append_to_binding_list = FALSE;
@@ -1654,12 +1654,12 @@ PATH_value(void)
     if (!tb_length(myfiles)) {
 	char mypath[NFILEN];
 
-	(void) strcpy(mypath, NONNULL(prog_arg));
-	if ((tmp = vms_pathleaf(mypath)) == mypath)
-	    (void) strcpy(mypath,
-			  current_directory(FALSE));
-	else
+	(void) vl_strncpy(mypath, NONNULL(prog_arg), sizeof(mypath));
+	if ((tmp = vms_pathleaf(mypath)) == mypath) {
+	    (void) vl_strncpy(mypath, current_directory(FALSE), sizeof(mypath));
+	} else {
 	    *tmp = EOS;
+	}
 
 	if (!tb_init(&myfiles, EOS)
 	    || !tb_sappend(&myfiles, mypath)
@@ -1967,7 +1967,7 @@ kcod2escape_seq(int c, char *ptr, size_t limit)
 	&& (cmd_encoding >= enc_UTF8
 	    || (cmd_encoding <= enc_AUTO && okCTYPE2(vl_wide_enc)))
 	&& (s = vl_mb_to_utf8(ch)) != 0) {
-	strcpy(temp, s);
+	vl_strncpy(temp, s, sizeof(temp));
     } else
 #endif
     {

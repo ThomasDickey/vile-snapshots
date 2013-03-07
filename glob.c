@@ -13,7 +13,7 @@
  *
  *	modify (ifdef-style) 'expand_leaf()' to allow ellipsis.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/glob.c,v 1.98 2013/02/21 00:09:30 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/glob.c,v 1.102 2013/03/06 01:25:44 tom Exp $
  *
  */
 
@@ -349,12 +349,11 @@ wild_leaf(char *pattern)
 		break;
 	    }
 	}
-	if (skip)
+	if (skip) {
 	    j = k + 1;		/* point past slash */
-	else if (c == EOS)
+	} else {
 	    break;
-	else
-	    j++;		/* leaf is empty */
+	}
     }
     return string_has_globs(pattern + j) ? pattern + j : 0;
 }
@@ -748,7 +747,7 @@ expand_environ(char *pattern)
 		if (delim == EOS)
 		    right = k;
 
-		(void) strcpy(save, pattern + k);
+		(void) vl_strncpy(save, pattern + k, sizeof(save));
 		if (right != left) {
 		    pattern[right] = EOS;
 #if SYS_MSDOS || SYS_OS2
@@ -862,7 +861,7 @@ expand_pattern(char *item)
 	char pattern[NFILEN];
 	size_t first = myLen;
 
-	(void) strcpy(pattern, item);
+	(void) vl_strncpy(pattern, item, sizeof(pattern));
 	*builtup = EOS;
 #if OPT_MSDOS_PATH
 #if !OPT_CASELESS
@@ -950,7 +949,7 @@ glob_expand(char **list_of_items)
 	 */
 #if !SMALLER
 	char temp[NFILEN];
-	item = home_path(strcpy(temp, item));
+	item = home_path(vl_strncpy(temp, item, sizeof(temp)));
 #endif
 	if (!isInternalName(item)
 	    && globbing_active()

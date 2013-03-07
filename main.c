@@ -22,7 +22,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.711 2013/02/21 10:11:40 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.714 2013/03/07 09:34:46 tom Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -830,7 +830,7 @@ MainProgram(int argc, char *argv[])
 
 #if OPT_ENCRYPT
 	if (*startkey != EOS) {
-	    strcpy(bp->b_cryptkey, startkey);
+	    vl_strncpy(bp->b_cryptkey, startkey, sizeof(bp->b_cryptkey));
 	    make_local_b_val(bp, MDCRYPT);
 	    set_b_val(bp, MDCRYPT, TRUE);
 	}
@@ -1231,7 +1231,7 @@ get_executable_dir(void)
 	/* if there _are_ slashes, then argv[0] was either
 	 * absolute or relative. lengthen_path figures it out.
 	 */
-	s = strmalloc(lengthen_path(strcpy(temp, prog_arg)));
+	s = strmalloc(lengthen_path(vl_strncpy(temp, prog_arg, sizeof(temp))));
     }
     if (s == 0)
 	return;
@@ -1246,7 +1246,7 @@ get_executable_dir(void)
 	free(prog_arg);
 	prog_arg = strmalloc(t);
 	*t = EOS;
-	exec_pathname = strmalloc(lengthen_path(strcpy(temp, s)));
+	exec_pathname = strmalloc(lengthen_path(vl_strncpy(temp, s, sizeof(temp))));
 #ifndef VILE_STARTUP_PATH
 	/* workaround for DJGPP, to add executable's directory to startup path */
 	if (vile_getenv("VILE_STARTUP_PATH") == 0) {
@@ -2823,13 +2823,13 @@ showmemory(int f, int n)
 #endif /* SYS_MSDOS */
 
 char *
-strncpy0(char *t, const char *f, size_t l)
+strncpy0(char *dest, const char *src, size_t destlen)
 {
-    if (t != 0 && f != 0 && l != 0) {
-	(void) strncpy(t, f, l);
-	t[l - 1] = EOS;
+    if (dest != 0 && src != 0 && destlen != 0) {
+	(void) strncpy(dest, src, destlen);
+	dest[destlen - 1] = EOS;
     }
-    return t;
+    return dest;
 }
 
 /*
@@ -2844,6 +2844,19 @@ vl_strncpy(char *dest, const char *src, size_t destlen)
     if (srclen > destlen)
 	srclen = destlen;
     return strncpy0(dest, src, srclen);
+}
+
+char *
+vl_strncat(char *dest, const char *src, size_t destlen)
+{
+    size_t srclen = (src != 0) ? (strlen(src) + 1) : 0;
+    size_t oldlen = strlen(dest);
+
+    if (srclen > (destlen - oldlen))
+	srclen = (destlen - oldlen);
+
+    (void) strncpy0(dest + oldlen, src, srclen);
+    return dest;
 }
 
 /*

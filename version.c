@@ -1,7 +1,7 @@
 /*
  * version & usage-messages for vile
  *
- * $Header: /users/source/archives/vile.vcs/RCS/version.c,v 1.77 2010/11/10 09:47:07 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/version.c,v 1.78 2013/03/06 00:49:46 tom Exp $
  *
  */
 
@@ -147,8 +147,8 @@ getversion(void)
 			    (FL_EXECDIR | FL_PATH) | FL_EXECABLE)) != NULL) {
 	    time_t mtime = file_modified(s);
 	    if (mtime != 0) {
-		(void) strcat(version_string, ", installed ");
-		(void) strcat(version_string, ctime(&mtime));
+		(void) vl_strncat(version_string, ", installed ", NSTRING);
+		(void) vl_strncat(version_string, ctime(&mtime), NSTRING);
 		/* trim the newline */
 		version_string[strlen(version_string) - 1] = EOS;
 	    }

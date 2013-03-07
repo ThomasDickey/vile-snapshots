@@ -8,7 +8,7 @@
 /************************************************************************/
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/x11menu.c,v 1.16 2010/09/14 09:34:43 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11menu.c,v 1.17 2013/03/06 11:47:58 tom Exp $
  */
 
 #define NEED_X_INCLUDES 1
@@ -302,7 +302,7 @@ post_buffer_list(Widget w GCC_UNUSED,
 	if (b_is_temporary(bp))	/* cf: hist_show() */
 	    continue;
 
-	p = shorten_path(strcpy(temp, bp->b_fname), FALSE);
+	p = shorten_path(vl_strncpy(temp, bp->b_fname, sizeof(temp)), FALSE);
 	sprintf(string, "%-*.*s %s", NBUFN - 1, NBUFN - 1,
 		bp->b_bname, p);
 

@@ -1,7 +1,7 @@
 /*
  * Configurable headers used by termcap/terminfo driver for vile.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tcap.h,v 1.15 2008/10/15 23:35:48 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tcap.h,v 1.17 2013/03/06 00:54:34 tom Exp $
  */
 
 #ifndef VILE_TCAP_H
@@ -146,7 +146,7 @@ static int
 vl_tgetnum(const char *name)
 {
     char temp[10];
-    return tgetnum(strcpy(temp, name));
+    return tgetnum(vl_strncpy(temp, name, sizeof(temp)));
 }
 #define TGETNUM(name) vl_tgetnum(name)
 
@@ -160,7 +160,7 @@ static int
 vl_tgetnum(const char *name)
 {
     char temp[10];
-    return tigetnum(strcpy(temp, name));
+    return tigetnum(vl_strncpy(temp, name, sizeof(temp)));
 }
 #define TGETNUM(name) vl_tgetnum(name)
 
@@ -186,7 +186,7 @@ static int
 vl_tgetflag(const char *name)
 {
     char temp[10];
-    return tgetflag(strcpy(temp, name));
+    return tgetflag(vl_strncpy(temp, name, sizeof(temp)));
 }
 #define TGETFLAG(name) vl_tgetflag(name)
 
@@ -194,7 +194,7 @@ static char *
 vl_tgetstr(const char *name, char **area)
 {
     char temp[10];
-    return tgetstr(strcpy(temp, name), area);
+    return tgetstr(vl_strncpy(temp, name, sizeof(temp)), area);
 }
 #define TGETSTR(name, bufp) vl_tgetstr(name, bufp)
 
@@ -211,7 +211,7 @@ static int
 vl_tgetflag(const char *name)
 {
     char temp[10];
-    return tigetflag(strcpy(temp, name));
+    return tigetflag(vl_strncpy(temp, name, sizeof(temp)));
 }
 #define TGETFLAG(name) vl_tgetflag(name)
 
@@ -219,7 +219,7 @@ static char *
 vl_tgetstr(const char *name)
 {
     char temp[10];
-    return tigetstr(strcpy(temp, name));
+    return tigetstr(vl_strncpy(temp, name, sizeof(temp)));
 }
 #define TGETSTR(name, bufp) vl_tgetstr(name)
 

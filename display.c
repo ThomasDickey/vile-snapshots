@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.564 2013/02/21 09:50:28 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.566 2013/03/06 09:25:15 tom Exp $
  *
  */
 
@@ -2278,6 +2278,10 @@ static void
 mergeattr(WINDOW *wp, int row, int start_col, int end_col, unsigned attr)
 {
     int col;
+
+    if (start_col < 0)
+	start_col = 0;
+
 #ifdef WMDLINEWRAP
     if (w_val(wp, WMDLINEWRAP)) {
 	for (col = start_col; col <= end_col; col++) {
@@ -2289,8 +2293,9 @@ mergeattr(WINDOW *wp, int row, int start_col, int end_col, unsigned attr)
 		vscreen[x]->v_attrs[y] =
 		    (VIDEO_ATTR) ((vscreen[x]->v_attrs[y] | (attr & ~VAREV))
 				  ^ (attr & VAREV));
-	    } else
+	    } else {
 		break;
+	    }
 	}
     } else
 #endif
@@ -5062,20 +5067,25 @@ imworking(int ACTUAL_SIG_ARGS GCC_UNUSED)
 		    int len = cur_working > 999999L ? 10 : 6;
 
 		    old_working = cur_working;
-		    strcat(result, right_num(temp, len, (long) cur_working));
-		    if (len == 10)
+		    vl_strncat(result,
+			       right_num(temp, len, (long) cur_working),
+			       sizeof(result));
+		    if (len == 10) {
 			/*EMPTY */ ;
-		    else if (max_working != 0) {
-			strcat(result, " ");
-			strcat(result, right_num(temp, 2,
-						 (long) ((100 * cur_working)
-							 / max_working)));
-			strcat(result, "%");
-		    } else
-			strcat(result, " ...");
+		    } else if (max_working != 0) {
+			vl_strncat(result, " ", sizeof(result));
+			vl_strncat(result,
+				   right_num(temp, 2,
+					     (long) ((100 * cur_working)
+						     / max_working)),
+				   sizeof(result));
+			vl_strncat(result, "%", sizeof(result));
+		    } else {
+			vl_strncat(result, " ...", sizeof(result));
+		    }
 		} else {
-		    strcat(result, msg[flip]);
-		    strcat(result, msg[!flip]);
+		    vl_strncat(result, msg[flip], sizeof(result));
+		    vl_strncat(result, msg[!flip], sizeof(result));
 		}
 		kbd_overlay(result);
 		kbd_flush();

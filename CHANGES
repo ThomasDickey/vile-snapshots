@@ -1,6 +1,6 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20130221 (j)
+ 20130307 (j)
 	> Brendan O'Dea:
 	+ correct warnings from pod2text
 	> Tom Dickey:
@@ -8,6 +8,9 @@ Changes for vile 9.9 (released ??? ??? ?? ????)
 	  + modify ctype-tables to allow for -1 as a character value, since
 	    that may be used in CharAtDot().
 	  + use setjmp/longjmp for recovering from fatal errors in lexers.
+	  + undo change to wrap-word from 5.6t, allowing a parameter which is
+	    interpreted as a number of spaces to append after the cursor when
+	    the line is split.
 	  + various minor resource leaks.
 	+ start refactoring x11.c, making the current text-drawer x11plain.c
 	+ merge/adapt Brendan's current scripts to add perl documentation

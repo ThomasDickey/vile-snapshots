@@ -5,7 +5,7 @@
  * keys. Like everyone else, they set hints
  * for the display system.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.355 2012/07/14 11:08:49 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.357 2013/03/06 09:46:12 tom Exp $
  *
  */
 
@@ -1550,7 +1550,8 @@ kill_that_buffer(BUFFER *bp)
     int s;
     char bufn[NFILEN];
 
-    (void) strcpy(bufn, bp->b_bname);	/* ...for info-message */
+    /* ...for info-message */
+    (void) vl_strncpy(bufn, bp->b_bname, sizeof(bufn));
     if (buffer_is_solo(bp)) {
 	return FALSE;
     }
@@ -1684,7 +1685,7 @@ for_buffers(int f, int n)
 		    /*
 		     * FIXME: does namedcmd() modify what execstr points to?
 		     */
-		    execstr = strcpy(this_command, command);
+		    execstr = vl_strncpy(this_command, command, sizeof(this_command));
 		    clexec = TRUE;
 
 		    if (namedcmd(f, n))
@@ -1868,7 +1869,6 @@ int
 zotbuf(BUFFER *bp)
 {
     int status;
-    int didswitch = FALSE;
 
     TRACE((T_CALLED "zotbuf(bp=%p)\n", (void *) bp));
 
@@ -1904,11 +1904,7 @@ zotbuf(BUFFER *bp)
     }
 #endif
     /* Blow text away.      */
-    if ((status = bclear(bp)) != TRUE) {
-	/* the user must have answered no */
-	if (didswitch)
-	    (void) swbuffer(bp);
-    } else {
+    if ((status = bclear(bp)) == TRUE) {
 #if OPT_NAMEBST
 	if (tb_values(bp->b_procname) != 0) {
 	    delete_namebst(tb_values(bp->b_procname), TRUE, FALSE, 0);
@@ -1931,7 +1927,7 @@ renamebuffer(BUFFER *rbp, char *bufname)
 
     TRACE((T_CALLED "renamebuffer(%s, %s)\n", rbp->b_bname, bufname));
 
-    if (*mktrimmed(strcpy(bufn, bufname)) == EOS)
+    if (*mktrimmed(vl_strncpy(bufn, bufname, sizeof(bufn))) == EOS)
 	returnCode(ABORT);
 
     bp = find_b_name(bufn);
@@ -2654,7 +2650,7 @@ bfind(const char *bname, UINT bflag)
 #if OPT_ENCRYPT
 	    if (!b_is_temporary(bp)
 		&& cryptkey != 0 && *cryptkey != EOS) {
-		(void) strcpy(bp->b_cryptkey, cryptkey);
+		(void) vl_strncpy(bp->b_cryptkey, cryptkey, sizeof(bp->b_cryptkey));
 		make_local_b_val(bp, MDCRYPT);
 		set_b_val(bp, MDCRYPT, TRUE);
 	    } else
@@ -2741,7 +2737,12 @@ bclear(BUFFER *bp)
     if (!b_is_temporary(bp)	/* Not invisible or scratch */
 	&&b_is_changed(bp)) {	/* Something changed    */
 	char ques[30 + NBUFN];
-	(void) strcat(strcpy(ques, "Discard changes to "), bp->b_bname);
+
+	(void) vl_strncat(vl_strncpy(ques,
+				     "Discard changes to ",
+				     sizeof(ques)),
+			  bp->b_bname,
+			  sizeof(ques));
 	if (mlyesno(ques) != TRUE)
 	    return FALSE;
     }

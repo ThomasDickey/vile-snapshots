@@ -3,7 +3,7 @@
  * and mark.  Some functions are commands.  Some functions are just for
  * internal use.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/region.c,v 1.163 2011/11/23 16:39:27 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/region.c,v 1.164 2013/03/05 23:44:42 tom Exp $
  *
  */
 
@@ -1248,7 +1248,7 @@ recompute_regionsize(REGION * region)
     save_MK = MK;
     DOT = region->r_orig;
     MK = region->r_end;
-    getregion(curbp, region);
+    (void) getregion(curbp, region);
     DOT = save_DOT;
     MK = save_MK;
 }

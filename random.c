@@ -2,7 +2,7 @@
  * This file contains the command processing functions for a number of random
  * commands. There is no functional grouping here, for sure.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.344 2013/02/21 22:07:34 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.346 2013/03/06 09:20:01 tom Exp $
  *
  */
 
@@ -1250,7 +1250,7 @@ vl_chdir(int f GCC_UNUSED, int n GCC_UNUSED)
     status = mlreply_dir("Change to directory: ", &last, cdirname);
 #if SYS_UNIX || SYS_VMS || SYS_WINNT
     if (status == FALSE) {	/* empty reply, go HOME */
-	(void) strcpy(cdirname, "~");
+	(void) vl_strncpy(cdirname, "~", sizeof(cdirname));
 	status = TRUE;
     }
 #endif
@@ -1363,7 +1363,7 @@ set_directory(const char *dir)
     upmode();
 
     TRACE(("set_directory(%s)\n", dir));
-    exdp = strcpy(exdir, dir);
+    exdp = vl_strncpy(exdir, dir, sizeof(exdir));
 
     if (doglob(exdp)) {
 #if SYS_MSDOS || SYS_OS2
@@ -1394,7 +1394,7 @@ set_directory(const char *dir)
 	if (!dirs_add_active) {
 	    /* Save current directory for subsequent "cd -". */
 
-	    (void) strcpy(prevdir, current_directory(FALSE));
+	    (void) vl_strncpy(prevdir, current_directory(FALSE), sizeof(prevdir));
 	}
 #if OPT_VMS_PATH
 	if (!*exdp)
@@ -1436,7 +1436,7 @@ set_directory(const char *dir)
 		    char **globvec = glob_string(cdpathdir);
 
 		    if (glob_length(globvec) == 1) {
-			strcpy(cdpathdir, globvec[0]);
+			vl_strncpy(cdpathdir, globvec[0], sizeof(cdpathdir));
 			glob_free(globvec);
 			tmp = &cdpathdir[len - 1];
 			if (*tmp == R_BLOCK &&
@@ -1482,7 +1482,7 @@ set_directory(const char *dir)
 		char **globvec = glob_string(cdpathdir);
 
 		if (glob_length(globvec) == 1) {
-		    strcpy(cdpathdir, globvec[0]);
+		    vl_strncpy(cdpathdir, globvec[0], sizeof(cdpathdir));
 		    glob_free(globvec);
 		    if (cd_and_pwd(pathcat(cdpathdir, cdpathdir, exdp))) {
 			return TRUE;
@@ -1926,7 +1926,7 @@ do_pushd(int uindx,		/* user-specified dirstack index */
     int rc;
     char oldcwd[NFILEN], *path;
 
-    strcpy(oldcwd, current_directory(TRUE));
+    vl_strncpy(oldcwd, current_directory(TRUE), sizeof(oldcwd));
 
     beginDisplay();
     if ((uindx == 0 && sign > 0) || (uindx == dirs_idx && sign < 0)) {
@@ -1997,7 +1997,7 @@ pushd(int f GCC_UNUSED, int n GCC_UNUSED)
 
 	/* handle simple case first:  pushd without +|-n arg */
 	if (*cp != '+' && *cp != '-') {
-	    strcpy(oldcwd, current_directory(TRUE));
+	    vl_strncpy(oldcwd, current_directory(TRUE), sizeof(oldcwd));
 	    if ((rc = pushd_popd_set_dir(newcwd)) != TRUE)
 		return (rc);
 
@@ -2250,7 +2250,7 @@ vl_dirs_add(int f GCC_UNUSED, int n GCC_UNUSED)
 	 * might be accessible via CDPATH
 	 */
 
-	strcpy(savedcwd, current_directory(TRUE));
+	vl_strncpy(savedcwd, current_directory(TRUE), sizeof(savedcwd));
 	dirs_add_active = TRUE;
 	if (set_directory(newdir)) {
 	    rc = dirstack_extend(current_directory(TRUE), "vl_dirs_add");

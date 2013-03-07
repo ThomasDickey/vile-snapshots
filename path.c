@@ -2,7 +2,7 @@
  *		The routines in this file handle the conversion of pathname
  *		strings.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.171 2013/02/21 00:25:30 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.175 2013/03/06 09:21:33 tom Exp $
  *
  *
  */
@@ -1168,8 +1168,9 @@ canonpath(char *ss)
 
 	    if (real != 0) {
 		(void) strcpy(s, real);
-	    } else if ((leaf = pathleaf(strcpy(temp, s))) != 0) {
-		strcpy(temp2, leaf);
+	    } else if ((leaf = pathleaf(vl_strncpy(temp, s,
+						   sizeof(temp)))) != 0) {
+		vl_strncpy(temp2, leaf, sizeof(temp2));
 		if (leaf == temp + 1)
 		    leaf[0] = EOS;
 		else
@@ -1414,10 +1415,10 @@ shorten_path(char *path, int keep_cwd)
 	    *temp = EOS;
 	if (is_slashc(*ff)) {
 	    found = TRUE;
-	    (void) strcpy(path, strcat(temp, ff + 1));
+	    (void) strcpy(path, vl_strncat(temp, ff + 1, sizeof(temp)));
 	} else if (slp == ff - 1) {
 	    found = TRUE;
-	    (void) strcpy(path, strcat(temp, ff));
+	    (void) strcpy(path, vl_strncat(temp, ff, sizeof(temp)));
 	}
     }
 
@@ -1426,8 +1427,12 @@ shorten_path(char *path, int keep_cwd)
 	if (slp != path) {
 	    /* if we mismatched in the last component of cwd, then the file
 	       is under '..' */
-	    if (last_slash(cwd) == 0)
-		(void) strcpy(path, strcat(strcpy(temp, ".."), slp));
+	    if (last_slash(cwd) == 0) {
+		(void) strcpy(path,
+			      vl_strncat(vl_strncpy(temp, "..", sizeof(temp)),
+					 slp,
+					 sizeof(temp)));
+	    }
 	}
     }
 
@@ -1609,12 +1614,12 @@ lengthen_path(char *path)
 #if OPT_VMS_PATH
 	vms2unix_path(temp, cwd);
 #else
-	(void) strcpy(temp, cwd);
+	(void) vl_strncpy(temp, cwd, sizeof(temp));
 #endif
 	len = (int) strlen(temp);
 	temp[len++] = SLASHC;
 	(void) vl_strncpy(temp + len, f, sizeof(temp) - (size_t) len);
-	(void) strcpy(path, temp);
+	(void) vl_strncpy(path, temp, NFILEN);
     }
 #if OPT_MSDOS_PATH
     if (is_msdos_drive(path) == 0) {	/* ensure that we have drive too */
@@ -1623,7 +1628,7 @@ lengthen_path(char *path)
 	    temp[0] = (char) curdrive();
 	    temp[1] = ':';
 	    (void) vl_strncpy(temp + 2, path, sizeof(temp) - 2);
-	    (void) strcpy(path, temp);
+	    (void) vl_strncpy(path, temp, NFILEN);
 	}
     }
     if (free_cwd)
@@ -2283,6 +2288,7 @@ append_libdir_to_path(void)
 	free(env);
     }
 }
+
 #else
 void
 append_libdir_to_path(void)
