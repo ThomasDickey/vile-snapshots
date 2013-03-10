@@ -10,7 +10,7 @@
  * editing must be being displayed, which means that "b_nwnd" is non zero,
  * which means that the dot and mark values in the buffer headers are nonsense.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.220 2011/11/23 15:48:32 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.221 2013/03/07 10:38:09 tom Exp $
  *
  */
 
@@ -425,7 +425,6 @@ lins_bytes(int n, int c)
 	}
     } else {
 	doto = DOT.o;		/* Save for later.      */
-	lp1 = lp1;
 	nsize = (size_t) (llength(lp1) + 1 + doto + n);
 	if (nsize > lp1->l_size) {	/* Hard: reallocate     */
 	    /* first, create the new image */

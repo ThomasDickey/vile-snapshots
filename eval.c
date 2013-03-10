@@ -2,7 +2,7 @@
  *	eval.c -- function and variable evaluation
  *	original by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.453 2013/03/06 10:55:14 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.454 2013/03/07 11:43:48 tom Exp $
  *
  */
 
@@ -1075,7 +1075,6 @@ get_completion(TBUFF **result, const char *space, const char *value)
 	size_t len = strlen(space);
 	KBD_OPTIONS kbd_namec = ((NAMEC != ' ') ? 0 : KBD_MAYBEC);
 
-	code = TRUE;
 	fname[0] = EOS;
 	tb_scopy(result, value);
 
@@ -1287,7 +1286,7 @@ run_func(int fnum)
 	     UF_RETURN(vl_ufuncs[fnum].f_code)));
 
     for (i = 0; i < MAXARGS; ++i) {
-	arg[i] = 0;
+	arg[i] = error_val;
 	args[i] = 0;
 	nums[i] = 0;
 	bools[i] = 0;

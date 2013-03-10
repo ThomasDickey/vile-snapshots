@@ -1,5 +1,5 @@
 /*
- * $Id: charsets.c,v 1.75 2010/12/20 10:37:04 tom Exp $
+ * $Id: charsets.c,v 1.77 2013/03/09 01:48:55 tom Exp $
  *
  * see
  http://msdn.microsoft.com/library/default.asp?url=/library/en-us/intl/unicode_42jv.asp
@@ -46,7 +46,7 @@ static const BOM_TABLE bom_table[] = {
 
 /******************************************************************************/
 
-static void
+static int
 allow_decoder(BUFFER *bp, size_t need)
 {
     if (need > bp->decode_utf_len) {
@@ -55,9 +55,10 @@ allow_decoder(BUFFER *bp, size_t need)
 					  bp->decode_utf_buf,
 					  bp->decode_utf_len);
     }
+    return (bp->decode_utf_buf != 0);
 }
 
-static void
+static int
 allow_encoder(BUFFER *bp, size_t need)
 {
     if (need > bp->encode_utf_len) {
@@ -66,6 +67,7 @@ allow_encoder(BUFFER *bp, size_t need)
 					  bp->encode_utf_buf,
 					  bp->encode_utf_len);
     }
+    return (bp->encode_utf_buf != 0);
 }
 
 int
@@ -389,8 +391,11 @@ dump_as_utfXX(BUFFER *bp, const char *buf, int nbuf, const char *ending)
 	size_t need = (size_t) nbuf + strlen(ending);
 	size_t lend = strlen(ending);
 
-	allow_encoder(bp, need * mp->size);
-	allow_decoder(bp, need);
+	if (!allow_encoder(bp, need * mp->size))
+	    goto finish;
+	if (!allow_decoder(bp, need))
+	    goto finish;
+
 	while (j < (unsigned) nbuf) {
 	    int skip = vl_conv_to_utf32(bp->decode_utf_buf + k++,
 					buf + j,
@@ -490,8 +495,7 @@ load_as_utf8(BUFFER *bp, LINE *lp)
 	size_t used;
 
 	TRACE2(("load_as_utf8:%d:%s\n", need, lp_visible(lp)));
-	allow_decoder(bp, need);
-	if (bp->decode_utf_buf != 0) {
+	if (allow_decoder(bp, need)) {
 	    rc = TRUE;
 	    if (need) {
 		for (j = k = 0; j < need; ++k) {
@@ -556,7 +560,7 @@ load_as_utf8(BUFFER *bp, LINE *lp)
 			     * of the buffer, do not want to allow undo.  Just
 			     * go ahead and reallocate the line's text buffer.
 			     */
-			    if ((ntext = castalloc(char, (size_t) k)) == NULL) {
+			    if ((ntext = castalloc(char, (k + 1))) == NULL) {
 				rc = FALSE;
 				break;
 			    }

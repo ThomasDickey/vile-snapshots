@@ -3,7 +3,7 @@
  *
  * written for vile.  Copyright (c) 1990, 1995-2001 by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/undo.c,v 1.101 2009/03/22 01:09:55 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/undo.c,v 1.102 2013/03/09 01:14:13 tom Exp $
  *
  */
 
@@ -549,25 +549,27 @@ freshstack(int stkindx)
 	    LINE *newtail;
 	    LINE *lp;
 
-	    newtail = curbp->b_udtail;
-	    while (curbp->b_udcount > b_val(curbp, VAL_UNDOLIM)) {
-		newtail = newtail->l_nextsep;
-		curbp->b_udcount--;
-	    }
+	    if ((newtail = curbp->b_udtail) != 0) {
+		while (curbp->b_udcount > b_val(curbp, VAL_UNDOLIM)) {
+		    if ((newtail = newtail->l_nextsep) == 0)
+			break;
+		    curbp->b_udcount--;
+		}
 
-	    curbp->b_udtail = newtail;
-	    newtail = newtail->l_nxtundo;
-	    if (newtail != 0) {
-		do {
-		    lp = newtail;
-		    if (newtail == curbp->b_udlastsep)
-			mlforce("BUG: tail passed lastsep");
+		if ((curbp->b_udtail = newtail) != 0) {
 		    newtail = newtail->l_nxtundo;
-		    lfree(lp, curbp);
-		} while (newtail != 0);
+		    if (newtail != 0) {
+			do {
+			    lp = newtail;
+			    if (newtail == curbp->b_udlastsep)
+				mlforce("BUG: tail passed lastsep");
+			    newtail = newtail->l_nxtundo;
+			    lfree(lp, curbp);
+			} while (newtail != 0);
+		    }
+		    curbp->b_udtail->l_nxtundo = 0;
+		}
 	    }
-	    curbp->b_udtail->l_nxtundo = 0;
-
 	}
     }
 }

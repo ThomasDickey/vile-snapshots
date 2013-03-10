@@ -15,7 +15,7 @@
  * by Tom Dickey, 1993.    -pgf
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/mktbls.c,v 1.184 2013/03/07 09:34:28 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/mktbls.c,v 1.187 2013/03/10 13:26:53 tom Exp $
  *
  */
 
@@ -66,6 +66,11 @@ extern void free(char *ptr);
 #endif
 
 /*----------------------------------------------------------------------------*/
+#include <stdio.h>
+#include <ctype.h>
+#include <string.h>
+#include <setjmp.h>
+
 #ifndef DOALLOC
 #define DOALLOC 0
 #endif
@@ -74,14 +79,13 @@ extern void free(char *ptr);
 #include "trace.h"
 #endif
 
+#ifndef GCC_NORETURN
+#define GCC_NORETURN /*nothing*/
+#endif
+
 #ifndef NO_LEAKS
 #define NO_LEAKS 0
 #endif
-
-#include <stdio.h>
-#include <ctype.h>
-#include <string.h>
-#include <setjmp.h>
 
 /* argument for 'exit()' or '_exit()' */
 #if	SYS_VMS
@@ -172,6 +176,7 @@ static LIST *all_qmodes;	/* data for QUALIFIER modes */
 static LIST *all_bmodes;	/* data for BUFFER modes */
 static LIST *all_wmodes;	/* data for WINDOW modes */
 
+static void badfmt(const char *) GCC_NORETURN;
 static void save_all_modes(const char *type, char *normal, const char
 			   *abbrev, const char *cond);
 static void save_all_submodes(const char *type, char *normal, const char
@@ -324,10 +329,10 @@ badfmt2(const char *s, int col)
 }
 
 /******************************************************************************/
-static char *
+static void *
 Alloc(size_t len)
 {
-    char *pointer = (char *) calloc(len, sizeof(char));
+    void *pointer = calloc(len, sizeof(char));
     if (pointer == 0)
 	badfmt("bug: not enough memory");
     return pointer;

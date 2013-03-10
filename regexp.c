@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/regexp.c,v 1.205 2010/12/28 18:17:07 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/regexp.c,v 1.206 2013/03/08 01:50:47 tom Exp $
  *
  * Copyright 2005-2009,2010 Thomas E. Dickey and Paul G. Fox
  *
@@ -1928,7 +1928,6 @@ regexec(regexp * prog,
 	}
     } else {
 	/* We don't -- general case. */
-	skip = 0;
 	do {
 	    if (regtry(prog, s, stringend, 0))
 		return (1);

@@ -2,7 +2,7 @@
  * Window management. Some of the functions are internal, and some are
  * attached to keys that the user actually types.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/window.c,v 1.125 2011/09/16 09:26:23 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/window.c,v 1.126 2013/03/09 01:09:32 tom Exp $
  *
  */
 
@@ -886,14 +886,16 @@ shrinkwrap(void)
 	for (wp = wheadp;
 	     wp->w_wndp != curwp && wp->w_wndp != NULL;
 	     wp = wp->w_wndp) ;
-	curwp = wp;
-	nrows = curwp->w_ntrows + curwp->w_wndp->w_ntrows - 1;
-	/* don't take more than 3/4 of its rows */
-	snrows = (nrows * 3) / 4;
-	if (nlines > snrows)
-	    nlines = snrows;
-	resize(TRUE, nrows - nlines + 1);
-	curwp = savewp;
+	if (wp->w_wndp != 0) {
+	    curwp = wp;
+	    nrows = curwp->w_ntrows + curwp->w_wndp->w_ntrows - 1;
+	    /* don't take more than 3/4 of its rows */
+	    snrows = (nrows * 3) / 4;
+	    if (nlines > snrows)
+		nlines = snrows;
+	    resize(TRUE, nrows - nlines + 1);
+	    curwp = savewp;
+	}
     }
 }
 
@@ -1079,8 +1081,8 @@ init_window(WINDOW *wp, BUFFER *bp)
     if (valid_buffer(bp)) {
 	wp->w_line.l = lforw(buf_head(bp));
 	wp->w_line.o = 0;
-	wp->w_dot.l = lforw(buf_head(bp));
-	wp->w_dot.o = 0;
+	wp->w_dot.l = wp->w_line.l;
+	wp->w_dot.o = wp->w_line.o;
     } else {
 	wp->w_line = nullmark;
 	wp->w_dot = nullmark;

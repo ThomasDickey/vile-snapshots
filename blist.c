@@ -1,5 +1,5 @@
 /*
- * $Id: blist.c,v 1.14 2010/09/06 17:46:35 tom Exp $
+ * $Id: blist.c,v 1.15 2013/03/07 11:37:47 tom Exp $
  * Copyright 2007,2008 by Thomas E. Dickey
  *
  * Provide binary-search lookup of arrays of sorted structs.  The beginning of
@@ -13,7 +13,7 @@
 #include	<blist.h>
 
 #define	ILLEGAL_NUM	-1
-#define ItemOf(data,inx) *(const char * const*)((const char *)(data->theList) + ((UINT) (inx) * data->itemSize))
+#define ItemOf(data,inx) *(const char * const*)((const void *)((const char *)(data->theList) + ((UINT) (inx) * data->itemSize)))
 
 #define ItemToInx(data, item) \
 	((UINT) ((const char *) item - (const char *) (data->theList)) \

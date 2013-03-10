@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.735 2013/02/21 09:44:52 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.736 2013/03/09 00:26:00 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -1751,7 +1751,7 @@ typedef struct	LINE {
 
 /* macros to ease the use of lines */
 #define	for_each_line(lp,bp) for (lp = lforw(buf_head(bp)); \
-					lp != buf_head(bp); \
+					(lp != 0) && (lp != buf_head(bp)); \
 					lp = lforw(lp))
 
 #define l_nxtundo		l.l_stklnk
