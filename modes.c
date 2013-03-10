@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.435 2013/03/06 01:13:40 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.437 2013/03/10 11:02:59 tom Exp $
  *
  */
 
@@ -1043,8 +1043,9 @@ is_fsm(const struct VALNAMES *names)
 {
     size_t i;
 
-    if (names->type == VALTYPE_ENUM
-	|| names->type == VALTYPE_STRING) {
+    if (names->name != 0
+	&& (names->type == VALTYPE_ENUM
+	    || names->type == VALTYPE_STRING)) {
 	for (i = 1; i < TABLESIZE(fsm_tbl); i++) {
 	    if (strcmp(fsm_tbl[i].mode_name, names->name) == 0) {
 		fsm_idx = (int) i;
@@ -1276,7 +1277,8 @@ set_mode_value(BUFFER *bp,
 	    return FALSE;	/* this shouldn't happen */
 
 #if defined(GMD_GLOB) || defined(GVAL_GLOB)
-	if (!strcmp(names->name, "glob")
+	if (names->name != 0
+	    && !strcmp(names->name, "glob")
 	    && !legal_glob_mode(rp))
 	    return FALSE;
 #endif
@@ -1968,8 +1970,8 @@ set_colors(int n)
     } else {
 
 	beginDisplay();
-	my_colors = typecallocn(FSM_CHOICES, fsm_size(fsm_color_choices));
-	my_hilite = typecallocn(FSM_CHOICES, fsm_size(fsm_hilite_choices));
+	my_colors = typecallocn(FSM_CHOICES, 1 + fsm_size(fsm_color_choices));
+	my_hilite = typecallocn(FSM_CHOICES, 1 + fsm_size(fsm_hilite_choices));
 	endofDisplay();
 
 	if (my_colors == 0
@@ -3138,8 +3140,8 @@ put_majormode_before(unsigned j, const char *s)
 	       s));
 
 	for (k = 0; (kk = majormodes_order[k]) >= 0; k++) {
-	    t = my_majormodes[kk].shortname;
-	    if (strcmp(t, s) <= 0
+	    if ((t = my_majormodes[kk].shortname) != 0
+		&& strcmp(t, s) <= 0
 		&& (found < 0 || strcmp(told, t) < 0)) {
 		found = k;
 		told = t;
@@ -4831,8 +4833,10 @@ set_submode_txt(const char *name, int n, const char *value)
     TRACE((T_CALLED "set_submode_txt(%s, %d, %s)\n", name, n, value));
     if ((p = lookup_mm_data(name)) != 0) {
 	struct VAL *q = get_sm_vals(p);
-	q[n].v.p = strmalloc(value);
-	make_local_val(q, n);
+	if (q != 0) {
+	    q[n].v.p = strmalloc(value);
+	    make_local_val(q, n);
+	}
     }
     returnVoid();
 }

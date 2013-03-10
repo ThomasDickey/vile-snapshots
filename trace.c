@@ -1,7 +1,7 @@
 /*
  * debugging support -- tom dickey.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.107 2013/02/20 23:50:05 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.109 2013/03/09 00:24:15 tom Exp $
  *
  */
 
@@ -344,21 +344,23 @@ alloc_visible(size_t need)
 static char *
 my_vischr(char *buffer, int ch)
 {
-    if (ch == 127) {
-	strcpy(buffer, "^?");
-    } else if (ch < 32) {
-	sprintf(buffer, "^%c", ch | '@');
+    if (buffer != 0) {
+	if (ch == 127) {
+	    strcpy(buffer, "^?");
+	} else if (ch < 32) {
+	    sprintf(buffer, "^%c", ch | '@');
 #if OPT_MULTIBYTE
-    } else if (ch >= 256) {
-	sprintf(buffer, "\\u%04x", ch);
+	} else if (ch >= 256) {
+	    sprintf(buffer, "\\u%04x", ch);
 #endif
-    } else if (ch >= 128) {
-	sprintf(buffer, "\\x%02x", ch);
-    } else if (ch == '\\') {
-	sprintf(buffer, "\\\\");
-    } else {
-	buffer[0] = (char) ch;
-	buffer[1] = '\0';
+	} else if (ch >= 128) {
+	    sprintf(buffer, "\\x%02x", ch);
+	} else if (ch == '\\') {
+	    sprintf(buffer, "\\\\");
+	} else {
+	    buffer[0] = (char) ch;
+	    buffer[1] = '\0';
+	}
     }
     return buffer;
 }
@@ -366,18 +368,20 @@ my_vischr(char *buffer, int ch)
 static char *
 my_visattr(char *buffer, int ch)
 {
-    if (ch & (VACOLOR | VASPCOL)) {
-	*buffer = 'C';
-    } else if (ch & VASEL) {
-	*buffer = 'S';
-    } else if (ch & VAREV) {
-	*buffer = 'R';
-    } else if (ch & VAUL) {
-	*buffer = '_';
-    } else if (ch) {
-	*buffer = '#';
-    } else {
-	*buffer = '.';
+    if (buffer != 0) {
+	if (ch & (VACOLOR | VASPCOL)) {
+	    *buffer = 'C';
+	} else if (ch & VASEL) {
+	    *buffer = 'S';
+	} else if (ch & VAREV) {
+	    *buffer = 'R';
+	} else if (ch & VAUL) {
+	    *buffer = '_';
+	} else if (ch) {
+	    *buffer = '#';
+	} else {
+	    *buffer = '.';
+	}
     }
     return buffer;
 }
@@ -421,19 +425,19 @@ visible_buff(const char *buffer, int length, int eos)
 	length = 0;
     }
 
-    result = alloc_visible(need);
-
-    for (j = 0; j < length; j++) {
-	int c = CharOf(buffer[j]);
-	if (eos && !c) {
-	    break;
-	} else {
-	    char *dst = result + k;
-	    my_vischr(dst, c);
-	    k += (unsigned) strlen(dst);
+    if ((result = alloc_visible(need)) != 0) {
+	for (j = 0; j < length; j++) {
+	    int c = CharOf(buffer[j]);
+	    if (eos && !c) {
+		break;
+	    } else {
+		char *dst = result + k;
+		my_vischr(dst, c);
+		k += (unsigned) strlen(dst);
+	    }
 	}
+	result[k] = 0;
     }
-    result[k] = 0;
     endofDisplay();
     return result;
 }
@@ -454,15 +458,15 @@ visible_video_text(const VIDEO_TEXT * buffer, int length)
 	length = 0;
     }
 
-    result = alloc_visible(need);
-
-    for (j = 0; j < length; j++) {
-	int c = buffer[j] & ((1 << (8 * sizeof(VIDEO_TEXT))) - 1);
-	char *dst = result + k;
-	my_vischr(dst, c);
-	k += (unsigned) strlen(dst);
+    if ((result = alloc_visible(need)) != 0) {
+	for (j = 0; j < length; j++) {
+	    int c = buffer[j] & ((1 << (8 * sizeof(VIDEO_TEXT))) - 1);
+	    char *dst = result + k;
+	    my_vischr(dst, c);
+	    k += (unsigned) strlen(dst);
+	}
+	result[k] = 0;
     }
-    result[k] = 0;
     endofDisplay();
     return result;
 }
@@ -483,15 +487,15 @@ visible_video_attr(const VIDEO_ATTR * buffer, int length)
 	length = 0;
     }
 
-    result = alloc_visible(need);
-
-    for (j = 0; j < length; j++) {
-	int c = buffer[j] & ((1 << (8 * sizeof(VIDEO_ATTR))) - 1);
-	char *dst = result + k;
-	my_visattr(dst, c);
-	++k;
+    if ((result = alloc_visible(need)) != 0) {
+	for (j = 0; j < length; j++) {
+	    int c = buffer[j] & ((1 << (8 * sizeof(VIDEO_ATTR))) - 1);
+	    char *dst = result + k;
+	    my_visattr(dst, c);
+	    ++k;
+	}
+	result[k] = 0;
     }
-    result[k] = 0;
     endofDisplay();
     return result;
 }
@@ -551,11 +555,16 @@ itb_visible(ITBUFF * p)
 		    strcat(result, temp);
 		used += strlen(temp);
 	    }
-	    if (!pass)
-		*(result = alloc_visible(1 + used)) = EOS;
+	    if (!pass) {
+		if ((result = alloc_visible(1 + used)) == 0) {
+		    break;
+		}
+		*result = EOS;
+	    }
 	}
     } else {
-	*(result = alloc_visible(1)) = EOS;
+	if ((result = alloc_visible(1)) != 0)
+	    *result = EOS;
     }
     endofDisplay();
     return result;

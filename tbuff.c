@@ -7,7 +7,7 @@
  *	To do:	add 'tb_ins()' and 'tb_del()' to support cursor-level command
  *		editing.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tbuff.c,v 1.76 2010/09/07 00:35:09 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tbuff.c,v 1.78 2013/03/10 14:39:44 tom Exp $
  *
  */
 
@@ -306,7 +306,7 @@ tb_bappend(TBUFF **p, const char *s, size_t len)
 {
     TBUFF *q = *p;
 
-    if (!isTB_ERRS(*p)) {
+    if (!isTB_ERRS(*p) && (s != 0)) {
 	size_t n = (q != 0) ? q->tb_used : 0;
 
 	if (isErrorVal(s)) {
@@ -559,21 +559,23 @@ tb_enquote(TBUFF **p)
 	}
 
 	tb_alloc(p, need + 1);
-	(*p)->tb_used = need + 1;
+	if (*p)
+	    (*p)->tb_used = need + 1;
 
-	value = tb_values(*p);
-	value[need] = EOS;
-	value[need - 1] = (char) delim;
-	for (j = 0; j < have; ++j) {
-	    size_t i = have - j - 1;
-	    size_t k = need - j - 2;
-	    UINT ch = CharOf(value[k] = value[i]);
-	    if (delim == DQUOTE && (ch == DQUOTE || ch == BACKSLASH)) {
-		--need;
-		value[k - 1] = BACKSLASH;
+	if ((value = tb_values(*p)) != 0) {
+	    value[need] = EOS;
+	    value[need - 1] = (char) delim;
+	    for (j = 0; j < have; ++j) {
+		size_t i = have - j - 1;
+		size_t k = need - j - 2;
+		UINT ch = CharOf(value[k] = value[i]);
+		if (delim == DQUOTE && (ch == DQUOTE || ch == BACKSLASH)) {
+		    --need;
+		    value[k - 1] = BACKSLASH;
+		}
 	    }
+	    value[0] = (char) delim;
 	}
-	value[0] = (char) delim;
 	TRACE2(("...tb_enquote %s\n", tb_visible(*p)));
     }
     valid_tbuff(*p);
@@ -583,18 +585,20 @@ tb_enquote(TBUFF **p)
 void
 tb_prequote(TBUFF **p)
 {
+    char *value;
+
     TRACE2(("tb_prequote %s\n", tb_visible(*p)));
-    if (tb_length(*p)) {
-	if (*tb_values(*p) == DQUOTE || *tb_values(*p) == SQUOTE) {
+    if (tb_length(*p) && (value = tb_values(*p)) != 0) {
+	if (*value == DQUOTE || *value == SQUOTE) {
 	    tb_append(p, EOS);
 	    {
 		size_t len = tb_length(*p);
-		char *value = tb_values(*p);
-
-		do {
-		    value[len] = value[len - 1];
-		} while (--len != 0);
-		value[0] = SQUOTE;
+		if ((value = tb_values(*p)) != 0) {
+		    do {
+			value[len] = value[len - 1];
+		    } while (--len != 0);
+		    value[0] = SQUOTE;
+		}
 		TRACE2(("...tb_prequote %s\n", tb_visible(*p)));
 	    }
 	}
@@ -677,7 +681,8 @@ tb_setlen(TBUFF **p, int n)
 		len = (size_t) n;
 		tb_alloc(p, len);
 	    }
-	    (*p)->tb_used = len;
+	    if (*p)
+		(*p)->tb_used = len;
 	}
 	valid_tbuff(*p);
     }

@@ -55,7 +55,7 @@
  *	not (yet) correspond to :-commands.  Before implementing, probably will
  *	have to make TESTC a settable mode.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/history.c,v 1.88 2010/09/05 19:05:12 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/history.c,v 1.89 2013/03/08 01:39:02 tom Exp $
  *
  */
 
@@ -603,29 +603,33 @@ static LINE *
 hst_scroll(LINE *lp1, HST * parm)
 {
     BUFFER *bp = makeMyBuff();
-    LINE *lp0 = buf_head(bp);
-    LINE *lp2 = hst_find(parm, bp, lp1, h_direction);
+    LINE *result = 0;
 
-    if (lp1 != lp2) {
-	if (lp2 == 0) {
-	    if (h_direction + h_distance == 0) {
-		lp1 = lp0;
-		h_distance = 0;
-		display_TBUFF(parm, h_original);
-	    } else {
-		if (lp1 == lp0)	/* nothing to scroll for */
+    if (bp != 0) {
+	LINE *lp0 = buf_head(bp);
+	LINE *lp2 = hst_find(parm, bp, lp1, h_direction);
+
+	if (lp1 != lp2) {
+	    if (lp2 == 0) {
+		if (h_direction + h_distance == 0) {
+		    lp1 = lp0;
 		    h_distance = 0;
-		kbd_alarm();
+		    display_TBUFF(parm, h_original);
+		} else {
+		    if (lp1 == lp0)	/* nothing to scroll for */
+			h_distance = 0;
+		    kbd_alarm();
+		}
+		result = lp1;
+	    } else {
+		h_distance += h_direction;
+		display_LINE(parm, lp2);
+		h_was_edited++;
+		result = lp2;
 	    }
-	    return lp1;
-	} else {
-	    h_distance += h_direction;
-	    display_LINE(parm, lp2);
-	    h_was_edited++;
-	    return lp2;
 	}
     }
-    return 0;
+    return result;
 }
 
 /*

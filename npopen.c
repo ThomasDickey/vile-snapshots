@@ -1,7 +1,7 @@
 /*	npopen:  like popen, but grabs stderr, too
  *		written by John Hutchinson, heavily modified by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/npopen.c,v 1.100 2010/11/10 09:30:48 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/npopen.c,v 1.101 2013/03/08 09:58:49 tom Exp $
  *
  */
 
@@ -50,7 +50,7 @@ static void exec_sh_c(char *cmd);
 FILE *
 npopen(char *cmd, const char *type)
 {
-    FILE *ff;
+    FILE *ff = 0;
 
     if (*type != 'r' && *type != 'w')
 	return NULL;

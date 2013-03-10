@@ -22,7 +22,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.714 2013/03/07 09:34:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.715 2013/03/07 11:38:48 tom Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -501,8 +501,8 @@ MainProgram(int argc, char *argv[])
      * or setgid'd.
      */
 #if defined(HAVE_SETUID) && defined(HAVE_SETGID) && defined(HAVE_GETEGID) && defined(HAVE_GETEUID)
-    setgid(getegid());
-    setuid(geteuid());
+    (void) setgid(getegid());
+    (void) setuid(geteuid());
 #endif
 
     get_executable_dir();
@@ -1237,7 +1237,7 @@ get_executable_dir(void)
 	return;
 
     t = pathleaf(s);
-    if (t != s) {
+    if (t != s && t != 0) {
 	/*
 	 * On a unix host, 't' points past slash.  On a VMS host,
 	 * 't' points to first char after the last ':' or ']' in

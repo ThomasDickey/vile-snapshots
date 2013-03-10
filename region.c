@@ -3,7 +3,7 @@
  * and mark.  Some functions are commands.  Some functions are just for
  * internal use.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/region.c,v 1.164 2013/03/05 23:44:42 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/region.c,v 1.165 2013/03/08 09:58:00 tom Exp $
  *
  */
 
@@ -1155,7 +1155,6 @@ force_empty_line(void *flagp, int l, int r)
 	    ++count;
 	    lp = lforw(lp);
 	}
-	lp = DOT.l;
 	if (count > var_empty_lines) {
 	    while (count > var_empty_lines) {
 		--count;

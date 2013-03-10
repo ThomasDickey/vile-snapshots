@@ -18,7 +18,7 @@
  * transferring the selection are not dealt with in this file.  Procedures
  * for dealing with the representation are maintained in this file.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.186 2013/03/06 00:13:44 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.187 2013/03/08 09:58:33 tom Exp $
  *
  */
 
@@ -220,7 +220,7 @@ attach_attrib(BUFFER *bp, AREGION * arp)
 static void
 fix_dot(void)
 {
-    if (is_header_line(DOT, curwp->w_bufp)) {
+    if (curwp != 0 && is_header_line(DOT, curwp->w_bufp)) {
 	DOT.l = lback(DOT.l);
 	DOT.o = llength(DOT.l);
     }

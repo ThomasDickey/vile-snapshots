@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.730 2013/03/06 00:47:49 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.731 2013/03/08 01:31:27 tom Exp $
  *
  */
 
@@ -27,13 +27,13 @@ extern int no_memory (const char *s);
 extern int rdonly (void);
 extern int writeall (int f, int n, int promptuser, int leaving, int autowriting, int all);
 extern void do_repeats (int *cp, int *fp, int *np);
-extern void exit_program (int code);
+extern void exit_program (int code) GCC_NORETURN;
 extern void init_mode_value (struct VAL *, MODECLASS c, int n);
 extern void not_interrupted (void);
 extern void setup_handler (int sig, void (*disp) (int ACTUAL_SIG_ARGS));
 extern void tcap_init_fkeys (void);
 extern void tcap_setup_locale (char *real_locale, char *fake_locale);
-extern void tidy_exit (int code);
+extern void tidy_exit (int code) GCC_NORETURN;
 
 #ifndef interrupted
 extern int interrupted (void);

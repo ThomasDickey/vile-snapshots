@@ -5,7 +5,7 @@
  * Written by T.E.Dickey for vile (march 1993).
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/filec.c,v 1.132 2013/03/06 01:54:39 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/filec.c,v 1.133 2013/03/09 01:52:06 tom Exp $
  *
  */
 
@@ -127,7 +127,8 @@ pathcmp(const LINE *lp, const char *text)
     const char *l, *t;
     int lc, tc;
 
-    if (llength(lp) <= 0)	/* (This happens on the first insertion) */
+    if (lp == 0
+	|| llength(lp) <= 0)	/* (This happens on the first insertion) */
 	return -1;
 
     l = lvalue(lp);

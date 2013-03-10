@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.566 2013/03/06 09:25:15 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.567 2013/03/08 01:16:59 tom Exp $
  *
  */
 
@@ -4927,7 +4927,10 @@ tprintf(const char *fmt,...)
 	    b2vprintf(bp, fmt, ap);
 	va_end(ap);
 
-	TRACE(("tprintf {%.*s}\n", llength(line), lvalue(line)));
+#if OPT_TRACE
+	if (line)
+	    TRACE(("tprintf {%.*s}\n", llength(line), lvalue(line)));
+#endif
 
 	nested = FALSE;
     }

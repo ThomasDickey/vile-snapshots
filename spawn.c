@@ -1,7 +1,7 @@
 /*	Spawn:	various DOS access commands
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.212 2013/03/05 23:23:20 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.213 2013/03/09 00:40:16 tom Exp $
  *
  */
 
@@ -1276,24 +1276,30 @@ add_token_to_cmd(char **cmd,
 		 const char *funcname)
 {
     int rc = TRUE;
+    char *tmp;
     size_t toklen = strlen(token);
 
-    if (*cmdidx + toklen + 2 > *cmdlen) {
-	char *tmp = *cmd;
-
-	*cmdlen *= 2;
-	tmp = castrealloc(char, tmp, *cmdlen);
-	if (tmp == NULL) {
-	    (void) free(*cmd);
-	    rc = no_memory(funcname);
-	    return (rc);
+    if ((tmp = *cmd) != 0) {
+	if (*cmdidx + toklen + 2 > *cmdlen) {
+	    *cmdlen *= 2;
+	    tmp = castrealloc(char, tmp, *cmdlen);
+	    if (tmp == NULL) {
+		(void) free(*cmd);
+		*cmd = 0;
+	    } else {
+		*cmd = tmp;
+	    }
 	}
-	*cmd = tmp;
     }
-    strcpy(*cmd + *cmdidx, token);
-    *cmdidx += toklen;
-    (*cmd)[*cmdidx] = ' ';
-    (*cmdidx)++;
+    if (*cmd != 0) {
+	strcpy(*cmd + *cmdidx, token);
+	*cmdidx += toklen;
+	(*cmd)[*cmdidx] = ' ';
+	(*cmdidx)++;
+	rc = TRUE;
+    } else {
+	rc = no_memory(funcname);
+    }
     return (rc);
 }
 
@@ -1494,15 +1500,13 @@ find_dirs_only(char *cmd, FINDINFO * pinfo, int prepend_bang)
 	    "| egrep -v" EGREP_OPT_CASELESS " %s(RCS|CVS)/%s",
 	    qdelim,
 	    qdelim);
-    if (!add_token_to_cmd(&rslt, &outidx, &outlen, buf, fnname))
-	return (NULL);
-
-    /* finish off with xargs */
-    if (!add_token_to_cmd(&rslt, &outidx, &outlen, "| xargs", fnname))
-	return (NULL);
-    if (!add_token_to_cmd(&rslt, &outidx, &outlen, cmd, fnname))
+    if (!add_token_to_cmd(&rslt, &outidx, &outlen, buf, fnname)) {
 	rslt = NULL;
-    else {
+    } else if (!add_token_to_cmd(&rslt, &outidx, &outlen, "| xargs", fnname)) {
+	rslt = NULL;
+    } else if (!add_token_to_cmd(&rslt, &outidx, &outlen, cmd, fnname)) {
+	rslt = NULL;
+    } else if (rslt != 0) {
 	rslt[outidx] = EOS;	/* terminate cmd string */
 	if (outidx != 0) {
 	    char *cp;
@@ -1684,15 +1688,13 @@ find_all_files(char *cmd, FINDINFO * pinfo, int prepend_bang)
 	    " %s((RCS|CVS)/|/" EGREP_TAG_CASELESS "$)%s",
 	    qdelim,
 	    qdelim);
-    if (!add_token_to_cmd(&rslt, &outidx, &outlen, buf, fnname))
-	return (NULL);
-
-    /* finish off with xargs */
-    if (!add_token_to_cmd(&rslt, &outidx, &outlen, "| xargs", fnname))
-	return (NULL);
-    if (!add_token_to_cmd(&rslt, &outidx, &outlen, xargstr, fnname))
+    if (!add_token_to_cmd(&rslt, &outidx, &outlen, buf, fnname)) {
 	rslt = NULL;
-    else {
+    } else if (!add_token_to_cmd(&rslt, &outidx, &outlen, "| xargs", fnname)) {
+	rslt = NULL;
+    } else if (!add_token_to_cmd(&rslt, &outidx, &outlen, xargstr, fnname)) {
+	rslt = NULL;
+    } else if (rslt != 0) {
 	rslt[outidx] = EOS;	/* terminate cmd string */
 	if (outidx != 0) {
 	    char *cp;

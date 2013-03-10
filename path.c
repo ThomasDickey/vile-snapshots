@@ -2,7 +2,7 @@
  *		The routines in this file handle the conversion of pathname
  *		strings.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.175 2013/03/06 09:21:33 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.176 2013/03/08 10:27:22 tom Exp $
  *
  *
  */
@@ -323,7 +323,7 @@ pathcat(char *dst, const char *path, const char *cleaf)
 #endif
 	if (is_abs_pathname(leaf)) {
 	    (void) strcpy(dst, leaf);
-	} else {
+	} else if (leaf != 0) {
 	    have = strlen(strcpy(dst, path));
 	    if (have + strlen(leaf) + 2 < NFILEN) {
 		s = dst + have - 1;
@@ -389,7 +389,7 @@ save_user(const char *name, const char *path)
 
     if (name != NULL
 	&& path != NULL
-	&& (q = typealloc(UPATH)) != NULL) {
+	&& (q = typecalloc(UPATH)) != NULL) {
 	TRACE(("save_user(name=%s, path=%s)\n", name, path));
 	if ((q->name = strmalloc(name)) != NULL
 	    && (q->path = strmalloc(path)) != NULL) {
@@ -1646,32 +1646,36 @@ lengthen_path(char *path)
 int
 is_abs_pathname(char *path)
 {
+    int result = FALSE;
     char *f;
-    if ((f = is_appendname(path)) != 0)
-	return is_pathname(f);
+
+    if (path == 0)
+	result = FALSE;
+    else if ((f = is_appendname(path)) != 0)
+	result = is_pathname(f);
 
 #if OPT_VMS_PATH
-    if (is_vms_pathname(path, -TRUE)
-	&& (strchr(path, L_BLOCK) != 0
-	    || strchr(path, ':') != 0))
-	return TRUE;
+    else if (is_vms_pathname(path, -TRUE)
+	     && (strchr(path, L_BLOCK) != 0
+		 || strchr(path, ':') != 0))
+	result = TRUE;
 #endif
 
 #if OPT_MSDOS_PATH
-    if ((f = is_msdos_drive(path)) != 0)
-	return is_abs_pathname(f);
+    else if ((f = is_msdos_drive(path)) != 0)
+	result = is_abs_pathname(f);
 #endif
 
 #if SYS_UNIX || OPT_MSDOS_PATH || SYS_VMS
 #if SYS_UNIX
-    if (path[0] == CH_TILDE)
-	return TRUE;
+    else if (path[0] == CH_TILDE)
+	result = TRUE;
 #endif
-    if (is_slashc(path[0]))
-	return TRUE;
+    else if (is_slashc(path[0]))
+	result = TRUE;
 #endif /* SYS_UNIX || OPT_MSDOS_PATH || SYS_VMS */
 
-    return FALSE;
+    return result;
 }
 
 /*
