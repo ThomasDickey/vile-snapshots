@@ -2,7 +2,7 @@
  * This file contains the command processing functions for a number of random
  * commands. There is no functional grouping here, for sure.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.346 2013/03/06 09:20:01 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.347 2013/03/10 21:43:21 tom Exp $
  *
  */
 
@@ -1973,6 +1973,7 @@ pushd(int f GCC_UNUSED, int n GCC_UNUSED)
 {
     long dirlocn;
     int failed, rc, sign;
+    int ch;
     char oldcwd[NFILEN], newcwd[NFILEN], *tmp, *cp;
     static TBUFF *last;
 
@@ -2012,7 +2013,8 @@ pushd(int f GCC_UNUSED, int n GCC_UNUSED)
 		sign = (*cp == '-') ? -1 : 1;
 		cp++;
 		rc = FALSE;
-		if (isDigit(*cp++)) {
+		ch = *cp++;
+		if (isDigit(ch)) {
 		    cp = skip_number(cp);
 		    if (*cp == '\0')
 			rc = TRUE;
@@ -2054,6 +2056,7 @@ popd(int f GCC_UNUSED, int n GCC_UNUSED)
     long dirlocn;
     static TBUFF *last;
     int sign = 0, rc, failed;
+    int ch;
 
     rc = mlreply2("Directory stack entry: ", &last);
     if (rc == ABORT)
@@ -2087,7 +2090,8 @@ popd(int f GCC_UNUSED, int n GCC_UNUSED)
     if (*cp == '-' || *cp == '+') {
 	sign = (*cp == '-') ? -1 : 1;
 	cp++;
-	if (isDigit(*cp++)) {
+	ch = *cp++;
+	if (isDigit(ch)) {
 	    cp = skip_number(cp);
 	    if (*cp == '\0')
 		rc = TRUE;

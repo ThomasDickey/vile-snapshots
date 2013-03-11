@@ -1,9 +1,9 @@
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/vl_ctype.h,v 1.33 2013/02/20 11:56:34 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/vl_ctype.h,v 1.38 2013/03/10 23:07:46 tom Exp $
  *
  * Character-type tests, like <ctype.h> for vile (vi-like-emacs).
  *
- * Copyright 2005-2009,2010 Thomas E. Dickey
+ * Copyright 2005-2010,2013 Thomas E. Dickey
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
@@ -157,7 +157,16 @@ typedef struct {
 /* these parallel the ctypes.h definitions, except that
 	they force the char to valid range first */
 #define vlCTYPE(c)	vl_chartypes_[CharOf(c) + 1]
+
+#ifndef inline
+#define istype(m,c)	isVlCTYPE(m, (int)(c), (int)(c))
+#else
 #define istype(m,c)	((vlCTYPE(c) & (m)) != 0)
+#endif
+
+#define addVlCTYPE(c,m)	vl_chartypes_[CharOf(c) + 1] |= (m)
+#define clrVlCTYPE(c,m)	vl_chartypes_[CharOf(c) + 1] &= ~(m)
+#define setVlCTYPE(c,m)	vl_chartypes_[CharOf(c) + 1] = (m)
 
 #define isAlnum(c)	istype(vl_lower | vl_upper | vl_digit, c)
 #define isAlpha(c)	istype(vl_lower | vl_upper, c)

@@ -1,6 +1,6 @@
 /*
- * $Id: blist.c,v 1.15 2013/03/07 11:37:47 tom Exp $
- * Copyright 2007,2008 by Thomas E. Dickey
+ * $Id: blist.c,v 1.16 2013/03/11 00:04:11 tom Exp $
+ * Copyright 2007-2008,2013 by Thomas E. Dickey
  *
  * Provide binary-search lookup of arrays of sorted structs.  The beginning of
  * each struct is a pointer to a string, which is the key by which the structs

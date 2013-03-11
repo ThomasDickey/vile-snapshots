@@ -1,9 +1,15 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20130307 (j)
+ 20130310 (j)
 	> Brendan O'Dea:
 	+ correct warnings from pod2text
 	> Tom Dickey:
+	+ modify definition of istype() to ensure that it returns true only if
+	  the character parameter is actually in the range 0..255 (Savannah
+	  #38342).
+	+ amend change made to alt-tabpos in 9.7u for multibyte characters to
+	  make tab and other control characters work as they did before
+	  (Savannah #37806).
 	+ fixes for issues reported by Coverity:
 	  + modify ctype-tables to allow for -1 as a character value, since
 	    that may be used in CharAtDot().

@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.567 2013/03/08 01:16:59 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.568 2013/03/10 17:08:49 tom Exp $
  *
  */
 
@@ -1149,6 +1149,7 @@ mk_to_vcol(WINDOW *wp, MARK mark, int expanded, int column, int adjust)
     int extra = ((!global_g_val(GMDALTTABPOS) && !insertmode) ? 1 : 0);
     const char *text;
     int prev_col = column;
+    int my_bytes = BytesAt(mark.l, mark.o);
 #ifdef WMDLINEWRAP
     int nu_adj = nu_width(wp);
 #endif
@@ -1161,7 +1162,7 @@ mk_to_vcol(WINDOW *wp, MARK mark, int expanded, int column, int adjust)
 	column = 0;
     }
     lp = mark.l;
-    limit = mark.o + (extra ? BytesAt(mark.l, mark.o) : 0);
+    limit = mark.o + (extra ? my_bytes : 0);
     if (limit > llength(lp))
 	limit = llength(lp);
 
@@ -1223,7 +1224,7 @@ mk_to_vcol(WINDOW *wp, MARK mark, int expanded, int column, int adjust)
 	i += used;
     }
     if (extra && (column != 0) && (mark.o < llength(lp))) {
-	column = prev_col;
+	column = (my_bytes == 1) ? (column - 1) : prev_col;
     }
     return2Code(column);
 }

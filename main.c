@@ -17,12 +17,12 @@
  * distributable status.  This version of vile is distributed under the
  * terms of the GNU Public License (see COPYING).
  *
- * Copyright (c) 1992-2011 by Paul Fox and Thomas Dickey
+ * Copyright (c) 1992-2013 by Paul Fox and Thomas Dickey
  *
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.715 2013/03/07 11:38:48 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.718 2013/03/11 00:03:50 tom Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -2395,8 +2395,10 @@ do_rept_arg_proc(int *cp, int *fp, int *np)
     f = TRUE;			/* there is a # arg */
     mflag = 0;			/* that can be discarded. */
     mlwrite("arg: %d", n);
-    while ((isDigit(c = kbd_seq()) && is8Bits(c))
-	   || c == reptc || c == '-') {
+    for (;;) {
+	c = kbd_seq();
+	if (!(isDigit(c) || (c == reptc) || (c == '-')))
+	    break;
 	if (c == reptc)
 	    n = n * 4;
 

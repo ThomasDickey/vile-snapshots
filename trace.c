@@ -1,7 +1,7 @@
 /*
  * debugging support -- tom dickey.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.109 2013/03/09 00:24:15 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.110 2013/03/10 23:08:58 tom Exp $
  *
  */
 
@@ -371,11 +371,11 @@ my_visattr(char *buffer, int ch)
     if (buffer != 0) {
 	if (ch & (VACOLOR | VASPCOL)) {
 	    *buffer = 'C';
-	} else if (ch & VASEL) {
+	} else if (ch & (int) VASEL) {
 	    *buffer = 'S';
-	} else if (ch & VAREV) {
+	} else if (ch & (int) VAREV) {
 	    *buffer = 'R';
-	} else if (ch & VAUL) {
+	} else if (ch & (int) VAUL) {
 	    *buffer = '_';
 	} else if (ch) {
 	    *buffer = '#';
