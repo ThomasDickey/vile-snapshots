@@ -6,7 +6,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.367 2013/02/20 11:53:19 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.369 2013/03/10 23:07:23 tom Exp $
  */
 
 #ifndef VILE_EDEF_H
@@ -542,6 +542,19 @@ extern	TERM	null_term;
 #if DISP_BORLAND || DISP_VIO
 decl_init( char *current_res_name, "default" );
 #endif	/* resolution */
+
+/*
+ * Use an inline function to separate the two uses of 'c' as two parameters so
+ * that the compiler can warn about undefined behavior if the istype() macro's
+ * parameter has side effects.
+ */
+#ifndef inline
+static inline int
+isVlCTYPE(CHARTYPE m, int c1, int c2)
+{
+    return (c1 >= 0 && c1 < N_chars) ? ((vlCTYPE(c2) & (m)) != 0) : 0;
+}
+#endif
 
 #ifdef __cplusplus
 }

@@ -1,5 +1,5 @@
 /*
- * $Id: eightbit.c,v 1.102 2013/02/21 01:17:27 tom Exp $
+ * $Id: eightbit.c,v 1.103 2013/03/10 20:27:22 tom Exp $
  *
  * Maintain "8bit" file-encoding mode by converting incoming UTF-8 to single
  * bytes, and providing a function that tells vile whether a given Unicode
@@ -241,7 +241,7 @@ vl_8bit_ctype_init(int wide, int ch)
 
 	value &= ~vl_alpha;	/* unused in vile */
 
-	vlCTYPE(ch) = value;
+	setVlCTYPE(ch, value);
 
 	vl_lowercase[ch + 1] = (char) ((ch < 128)
 				       ? encode_POSIX.lower[ch]
