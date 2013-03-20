@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/rubyfilt.c,v 1.53 2012/02/18 13:49:59 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/rubyfilt.c,v 1.54 2013/03/14 08:36:54 tom Exp $
  *
  * Filter to add vile "attribution" sequences to ruby scripts.  This is a
  * translation into C of an earlier version written for LEX/FLEX.
@@ -7,6 +7,15 @@
  * Although the documentation says it has simpler syntax, Ruby borrows from
  * Perl the worst of its syntax, i.e., regular expressions which can be split
  * across lines, have embedded comments.
+ *
+ * TODO: general delimited strings, e.g., %&this is a string&
+ * TODO delimiter pairs, e.g., %{this is a string}
+ * TODO: %Q is equivalent of double-quoted string
+ * TODO: %q is equivalent of single-quoted string
+ * TODO: %x is equivalent of back-quoted string
+ * TODO: embed quotes using backslashes
+ * TODO: embed quotes by using double-quotes inside single
+ * TODO: embed quotes by using single-quotes inside double
  */
 
 #include <filters.h>
