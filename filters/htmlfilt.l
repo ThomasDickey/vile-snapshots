@@ -1,5 +1,5 @@
 %pointer
-%x HTMLNOTE HTMLCODE HTMLINCL HTMLQUO1 HTMLQUO2 AT_CMDS JS_NOTE JS_CODE ANY_MODE ASP_CODE ASP_CMT0 JSP_CODE JSP_CMT0 JSP_CMT1 CSS_CODE CSS_NOTE
+%x HTMLNOTE HTMLCODE HTMLINCL HTMLQUO1 HTMLQUO2 AT_CMDS JS_NOTE JS_CODE ANY_MODE ASP_CODE ASP_CMT0 JSP_CODE JSP_CMT0 JSP_CMT1 CSS_CODE CSS_NOTE PHP_CODE PHP_COMMENT PHP_HEREDOC PHP_NOWDOC
 %o 10000
 %e 2000
 %a 4000
@@ -9,7 +9,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/htmlfilt.l,v 1.107 2013/02/21 09:59:47 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/htmlfilt.l,v 1.113 2013/03/20 09:29:52 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of HTML input
  * text.
@@ -84,6 +84,9 @@
  * There can also be scripting elements, in either the tags or data, using
  * "${...}" or "#{...}" delimiters.
  * ----------------------------------------------------------------------------
+ * PHP is here:
+ *	http://www.php.net
+ * ----------------------------------------------------------------------------
  */
 
 #include <filters.h>
@@ -98,6 +101,7 @@ DefineOptFilter("html", "aj");
 #define SYMS_HTMLPROP  "htmlprop"
 #define SYMS_JAVA      "java"
 #define SYMS_JS        "js"
+#define SYMS_PHP       "php"
 #define SYMS_VBS       "vbs"
 
 #ifdef FLEX_DEBUG
@@ -106,10 +110,13 @@ DefineOptFilter("html", "aj");
 #define DBG_HTML(msg)		/* nothing */
 #endif
 
+#define isQuote(ch) (ch != 0 && strchr("'", ch) != 0)
+
 static char *Action_attr;
 static char *Comment_attr;
 static char *Error_attr;
 static char *Ident_attr;
+static char *Ident2_attr;
 static char *Keyword_attr;
 static char *Number_attr;
 static char *String_attr;
@@ -117,6 +124,7 @@ static char *String_attr;
 static const char *dft_language;	/* asp or jsp or nothing */
 static const char *use_language;	/* vbscript, javascript, C#, Java, etc */
 
+static int in_tag;		/* parse-state for "<" vs "<tag" */
 static int got_tag;		/* parse state for <tag> vs <tag name=value> */
 static int got_language;	/* parse-state for language=string */
 static int got_language2;
@@ -125,6 +133,11 @@ static int got_equals;		/* parse state to detect unquoted values */
 static int next_state;
 static int css_state;
 
+static char *here_tag;
+static size_t here_len;
+static int here_exp;
+
+static int got_here(char *text, int length);
 static int language_code(void);
 static void begin_htmlcode(void);
 static void css_hash(char *text, int length);
@@ -135,6 +148,7 @@ static void html_command(const char *text);
 static void html_quotes(char *text, int len, int state, int which);
 static void may_resume_html(char *text);
 static void resume_attr(void);
+static void save_here(char *text, int length);
 static void setup_language(const char *name);
 static void using_language(void);
 
@@ -142,13 +156,21 @@ static void using_language(void);
 
 NL		\n|\r\n|\r|\f
 SPACE		[ \t]
+BLANK		[[:blank:]]*
 
-INTEGER		[-+]?([[:digit:]]+)
-REAL		[-+]?([[:digit:]]*\.[[:digit:]]+)([eE][+-]?[[:digit:]]+)?
+SIGN		[-+]
+INTEGER		{SIGN}?([[:digit:]]+)
+REAL		{SIGN}?([[:digit:]]*\.[[:digit:]]+)([eE][+-]?[[:digit:]]+)?
 HEXNUM		"#"[xX]?[[:xdigit:]]+
 IDENT		[[:alpha:]_][[:alnum:]_.-]*
 
 HTML_IDENT	[.!?]?[[:alpha:]_][[:alnum:]_.-]*
+
+PHP_IDENT	[[:alpha:]_][[:alnum:]_]*
+PHP_DECIMAL	[[:digit:]_]+
+PHP_OCTAL	0[0-7_]+
+PHP_HEXADECIMAL	0x[[:xdigit:]_]+
+PHP_NUMBER	{SIGN}?({PHP_DECIMAL}|{PHP_OCTAL}|{PHP_HEXADECIMAL}|{REAL})
 
 STRING		\"([^"])*\"
 
@@ -216,7 +238,7 @@ CSS_INVALID	({CSS_INVALID1}|{CSS_INVALID2})
 			  resume_attr();
 			}
 <AT_CMDS>{IDENT}	{
-			  got_language = !strcmp("language", lowercase_of(yytext));
+			  got_language = !ci_compare("language", yytext);
 			  WriteToken("U"); /* FIXME - asp.key, jsp.key ? */
 			}
 <AT_CMDS>"="		{ ECHO; if (got_language) ++got_language; }
@@ -298,9 +320,35 @@ CSS_INVALID	({CSS_INVALID1}|{CSS_INVALID2})
 			  finish_htmlcode();
 			}
 
-<HTMLCODE>(\/)?{HTML_IDENT} {
+<HTMLCODE>(\/){HTML_IDENT} {
     			  html_command(yytext);
 			  got_equals = 0;
+			}
+
+<HTMLCODE>"?" {
+			  if (!in_tag) {
+			      WriteToken(Action_attr);
+			      new_state(PHP_CODE);
+			      setup_language("php");
+			      using_language();
+			  } else {
+			      ECHO;
+			  }
+			  ++in_tag;
+			}
+
+<HTMLCODE>{HTML_IDENT} {
+			  if (!in_tag
+			      && !ci_compare(yytext, "?php")) {
+			      WriteToken(Action_attr);
+			      new_state(PHP_CODE);
+			      setup_language("php");
+			      using_language();
+			  } else {
+			      html_command(yytext);
+			      got_equals = 0;
+			  }
+			  ++in_tag;
 			}
 
 <INITIAL>"<!--"		{ PushQuote(HTMLNOTE, Comment_attr); }
@@ -380,10 +428,71 @@ CSS_INVALID	({CSS_INVALID1}|{CSS_INVALID2})
 			}
 
 <JS_CODE>"/*"		{ BeginQuote(JS_NOTE, Comment_attr); }
-<JS_NOTE>\n		{ flt_bfr_append(yytext, yyleng); }
+<JS_NOTE>[\r\n]		{ flt_bfr_append(yytext, yyleng); }
 <JS_NOTE>[^*\r\n]+	{ flt_bfr_append(yytext, yyleng); }
 <JS_NOTE>[*]+[^*/]*	{ flt_bfr_append(yytext, yyleng); }
 <JS_NOTE>[*]+"/"	{ FinishQuote(JS_CODE); }
+
+<PHP_CODE>"?>" {
+			  flt_bfr_finish();
+			  WriteToken(Action_attr);
+			  pop_state();
+			  resume_attr();
+			}
+
+<PHP_CODE>"${"{PHP_IDENT}"}"	|
+<PHP_CODE>"$"{PHP_IDENT}	{ WriteToken(Ident2_attr); }
+<PHP_CODE>{PHP_IDENT}		{ WriteToken(get_keyword_attr(yytext)); }
+<PHP_CODE>";"		{ ECHO; }
+
+<PHP_CODE>"/*"		{ BeginQuote(PHP_COMMENT, Comment_attr); }
+<PHP_COMMENT>[^*]*		{ flt_bfr_append(yytext, yyleng); }
+<PHP_COMMENT>"*"+[^*/]*	{ flt_bfr_append(yytext, yyleng); }
+<PHP_COMMENT>"*"+"/"	{ FinishQuote(PHP_CODE); }
+
+<PHP_CODE>"#"[^\r\n]*	{ WriteToken(Comment_attr); }
+<PHP_CODE>"//"[^\r\n]*	{ WriteToken(Comment_attr); }
+
+<PHP_CODE>{STRINGS}	{ WriteToken(String_attr); }
+
+<PHP_CODE>{PHP_NUMBER}	{ WriteToken(Number_attr); }
+
+<PHP_CODE>\<\<\<{BLANK}*{PHP_IDENT} {
+			    save_here(yytext, yyleng);
+			    push_state(PHP_HEREDOC);
+			    BeginQuote(PHP_HEREDOC, String_attr);
+			}
+<PHP_HEREDOC>^{PHP_IDENT}[;]? {
+			    int used = 0;
+			    if (got_here(yytext + used, yyleng - used)) {
+				flt_bfr_finish();
+				pop_state();
+			    } else {
+				flt_bfr_append(yytext, yyleng);
+			    }
+			}
+<PHP_HEREDOC>"${"{PHP_IDENT}"}"	|
+<PHP_HEREDOC>[$]{PHP_IDENT}	{ flt_bfr_embed(yytext, yyleng, Ident2_attr); }
+<PHP_HEREDOC>\\.	{ flt_bfr_append(yytext, yyleng); }
+<PHP_HEREDOC>[\r\n]	{ flt_bfr_append(yytext, yyleng); }
+<PHP_HEREDOC>.		{ flt_bfr_append(yytext, yyleng); }
+
+<PHP_CODE>\<\<\<{BLANK}*'{PHP_IDENT}' {
+			    save_here(yytext, yyleng);
+			    push_state(PHP_NOWDOC);
+			    BeginQuote(PHP_NOWDOC, String_attr);
+			}
+<PHP_NOWDOC>^{PHP_IDENT}[;]? {
+			    int used = 0;
+			    if (got_here(yytext + used, yyleng - used)) {
+				flt_bfr_finish();
+				pop_state();
+			    } else {
+				flt_bfr_append(yytext, yyleng);
+			    }
+			}
+<PHP_NOWDOC>[\r\n]	{ flt_bfr_append(yytext, yyleng); }
+<PHP_NOWDOC>.		{ flt_bfr_append(yytext, yyleng); }
 
 %%
 
@@ -401,10 +510,12 @@ html_command(const char *text)
     const char *attr = 0;
     int change = 0;
 
+    in_tag = 0;
     if (!got_tag && !got_equals) {
 	if (!strcmp(temp, "server")
 	    || !strcmp(temp, "script")) {
 	    change = JS_CODE;
+	    /* FIXME - ASP vs PHP vs JSP? */
 	} else if (!strcmp(temp, "style")) {
 	    change = CSS_CODE;
 	}
@@ -443,6 +554,15 @@ html_command(const char *text)
 	    } else {
 		next_state = CSS_CODE;
 		DBG_HTML("next_state CSS_CODE");
+	    }
+	    break;
+	case PHP_CODE:
+	    if (ending) {
+		next_state = INITIAL;
+		DBG_HTML("next_state INITIAL");
+	    } else {
+		next_state = PHP_CODE;
+		DBG_HTML("next_state PHP_CODE");
 	    }
 	    break;
 	}
@@ -521,6 +641,7 @@ begin_htmlcode(void)
     new_state(HTMLCODE);
     got_equals = 0;
     got_tag = 0;
+    in_tag = 0;
 }
 
 static void
@@ -538,6 +659,10 @@ finish_htmlcode(void)
     case JS_CODE:
 	DBG_HTML("setting symbols for JS");
 	flt_setup_symbols(SYMS_JS);
+	break;
+    case PHP_CODE:
+	DBG_HTML("setting symbols for PHP");
+	flt_setup_symbols(SYMS_PHP);
 	break;
     default:
     case INITIAL:
@@ -655,6 +780,56 @@ css_units(char *text, int length)
     }
 }
 
+/* TODO: php-filt.l */
+static int
+got_here(char *text, int length)
+{
+    int pass, j, k;
+
+    for (pass = 0; pass < 2; pass++) {
+	for (j = k = 0; j < length; j++) {
+	    if (isQuote(text[j])) {
+		if (pass) {
+		    flt_error("unexpected quote");
+		    flt_bfr_embed(text + j, 1, Error_attr);
+		}
+	    } else if (text[j] == ';') {
+		if (pass)
+		    flt_bfr_append(text + j, 1);
+	    } else {
+		if (here_tag != 0 && (text[j] != here_tag[k++]))
+		    return 0;
+		if (pass)
+		    flt_bfr_append(text + j, 1);
+	    }
+	}
+    }
+    return 1;
+}
+
+static void
+save_here(char *text, int length)
+{
+    char *s;
+
+    here_exp = 1;
+    if ((here_tag = do_alloc(here_tag, (size_t) length, &here_len)) != 0) {
+	s = here_tag;
+	while (length--) {
+	    if (isQuote(*text)) {
+		here_exp = 0;
+	    } else if (strchr(" \t", *text) != 0) {
+		if (s != here_tag)
+		    break;
+	    } else if (strchr("<", *text) == 0) {
+		*s++ = *text;
+	    }
+	    text++;
+	}
+	*s = 0;
+    }
+}
+
 static void
 init_filter(int before GCC_UNUSED)
 {
@@ -700,6 +875,8 @@ language2keys(const char *name)
 	    result = SYMS_JAVA;
 	else if (!strncmp(lowered, "javascript", (size_t) 10))
 	    result = SYMS_JS;
+	else if (!strcmp(lowered, "php"))
+	    result = SYMS_PHP;
 	else if (!strcmp(lowered, "vbscript"))
 	    result = SYMS_VBS;
 
@@ -729,6 +906,8 @@ language_code(void)
     if (use_language != 0) {
 	if (*use_language == 'v') {	/* vbs = vbscript */
 	    result = ASP_CODE;	/* Basic-syntax */
+	} else if (*use_language == 'p') {
+	    result = PHP_CODE;	/* PHP-syntax */
 	} else {
 	    result = JSP_CODE;	/* C-syntax */
 	}
@@ -740,6 +919,8 @@ static void
 using_language(void)
 {
     if (use_language != 0) {
+	DBG_HTML("using_language:");
+	DBG_HTML(use_language);
 	set_symbol_table(use_language);
     }
 }
@@ -753,6 +934,8 @@ do_filter(FILE *inputs)
     got_language = 0;
     use_language = 0;
 
+    in_tag = 0;
+    got_tag = 0;
     got_equals = 0;
     got_language2 = 0;
 
@@ -768,6 +951,7 @@ do_filter(FILE *inputs)
     Comment_attr = class_attr(NAME_COMMENT);
     Error_attr = class_attr(NAME_ERROR);
     Ident_attr = class_attr(NAME_IDENT);
+    Ident2_attr = class_attr(NAME_IDENT2);
     Keyword_attr = class_attr(NAME_KEYWORD);
     Number_attr = class_attr(NAME_NUMBER);
     String_attr = class_attr(NAME_LITERAL);

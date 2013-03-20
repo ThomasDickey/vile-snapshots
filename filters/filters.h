@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.132 2013/02/20 10:06:43 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.133 2013/03/18 09:41:50 tom Exp $
  */
 
 #ifndef FILTERS_H
@@ -257,6 +257,7 @@ extern const char *keyword_flag(const char *name);
 extern const char *lowercase_of(const char *name);
 extern char *readline(FILE *fp, char **ptr, size_t *len);
 extern char *skip_ident(char *src);
+extern int ci_compare(const char *a, const char *b);
 extern int flt_bfr_length(void);
 extern int set_symbol_table(const char *classname);
 extern long hash_function(const char *id);

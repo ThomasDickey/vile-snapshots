@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/php-filt.l,v 1.24 2012/02/18 13:44:37 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/php-filt.l,v 1.25 2013/03/20 00:08:29 tom Exp $
  *
  * Filter to add vile "attribution" sequences to PHP scripts.
  * - T.Dickey
@@ -57,7 +57,7 @@ NUMBER		{SIGN}?({DECIMAL}|{OCTAL}|{HEXADECIMAL}|{REAL})
 
 %%
 
-<HTML>"<?"("php")?	{ WriteToken(Action_attr); push_state(CODE); }
+<HTML>"<?"("[pP][hH][pP]")? { WriteToken(Action_attr); push_state(CODE); }
 <CODE>"?>"		{ WriteToken(Action_attr); pop_state(); }
 
 <CODE>"${"{IDENT}"}"	|

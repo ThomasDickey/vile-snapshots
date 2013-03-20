@@ -1,7 +1,7 @@
 /*
  * Common utility functions for vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.158 2013/02/20 01:42:25 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.159 2013/03/18 09:43:21 tom Exp $
  *
  */
 
@@ -521,6 +521,24 @@ TrimBlanks(char *src)
 /******************************************************************************
  * Public functions                                                           *
  ******************************************************************************/
+
+int
+ci_compare(const char *a, const char *b)
+{
+    int ch1, ch2, cmp;
+
+    for (;;) {
+	ch1 = CharOf(*a++);
+	ch2 = CharOf(*b++);
+	if (islower(ch1))
+	    ch1 = toupper(ch1);
+	if (islower(ch2))
+	    ch2 = toupper(ch2);
+	cmp = ch1 - ch2;
+	if (cmp != 0 || ch1 == EOS || ch2 == EOS)
+	    return cmp;
+    }
+}
 
 const char *
 ci_keyword_attr(const char *text)
