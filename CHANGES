@@ -1,10 +1,11 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20130320 (j)
+ 20130322 (j)
 	> Brendan O'Dea:
 	+ correct warnings from pod2text
 	> Tom Dickey:
-	+ modify htmlfilt.l to highlight embedded php.
+	+ modify htmlfilt.l to highlight embedded php, improve its parsing
+	  of embedded css.
 	+ modify definition of istype() to ensure that it returns true only if
 	  the character parameter is actually in the range 0..255 (Savannah
 	  #38342).

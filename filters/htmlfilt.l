@@ -1,5 +1,5 @@
 %pointer
-%x HTMLNOTE HTMLCODE HTMLINCL HTMLQUO1 HTMLQUO2 AT_CMDS JS_NOTE JS_CODE ANY_MODE ASP_CODE ASP_CMT0 JSP_CODE JSP_CMT0 JSP_CMT1 CSS_CODE CSS_NOTE PHP_CODE PHP_COMMENT PHP_HEREDOC PHP_NOWDOC
+%x HTMLNOTE HTMLCODE HTMLINCL HTMLQUO1 HTMLQUO2 AT_CMDS JS_NOTE JS_CODE ANY_MODE ASP_CODE ASP_CMT0 JSP_CODE JSP_CMT0 JSP_CMT1 CSS_CODE CSS_NOTE PHP_CODE PHP_COMMENT PHP_CMT0 PHP_HEREDOC PHP_NOWDOC
 %o 10000
 %e 2000
 %a 4000
@@ -9,7 +9,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/htmlfilt.l,v 1.113 2013/03/20 09:29:52 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/htmlfilt.l,v 1.115 2013/03/22 22:49:26 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of HTML input
  * text.
@@ -301,7 +301,7 @@ CSS_INVALID	({CSS_INVALID1}|{CSS_INVALID2})
 <ASP_CMT0>[\r\n]	{ flt_bfr_finish(); ECHO; new_state(ASP_CODE); }
 <ASP_CMT0>.		{ flt_bfr_append(yytext, yyleng); }
 
-<INITIAL,CSS_CODE>"<"	{
+<INITIAL>"<"		{
 			  WriteToken(Keyword_attr);
 			  begin_htmlcode();
 			}
@@ -396,6 +396,11 @@ CSS_INVALID	({CSS_INVALID1}|{CSS_INVALID2})
 <CSS_NOTE>"*"+[^*/]*	{ WriteToken(Comment_attr); }
 <CSS_NOTE>"*"+"/"	{ WriteToken(Comment_attr); BEGIN(CSS_CODE); }
 
+<CSS_CODE>"</"{IDENT}	{
+ 			  WriteToken(Keyword_attr);
+			  next_state = INITIAL;
+ 			  begin_htmlcode();
+ 			}
 
 <JS_CODE>{IDENT}	{ WriteToken(keyword_attr(yytext)); }
 <JS_CODE>{STRINGS}	{ WriteToken(String_attr); }
@@ -433,7 +438,7 @@ CSS_INVALID	({CSS_INVALID1}|{CSS_INVALID2})
 <JS_NOTE>[*]+[^*/]*	{ flt_bfr_append(yytext, yyleng); }
 <JS_NOTE>[*]+"/"	{ FinishQuote(JS_CODE); }
 
-<PHP_CODE>"?>" {
+<PHP_CODE,PHP_CMT0>"?>" {
 			  flt_bfr_finish();
 			  WriteToken(Action_attr);
 			  pop_state();
@@ -450,8 +455,10 @@ CSS_INVALID	({CSS_INVALID1}|{CSS_INVALID2})
 <PHP_COMMENT>"*"+[^*/]*	{ flt_bfr_append(yytext, yyleng); }
 <PHP_COMMENT>"*"+"/"	{ FinishQuote(PHP_CODE); }
 
-<PHP_CODE>"#"[^\r\n]*	{ WriteToken(Comment_attr); }
-<PHP_CODE>"//"[^\r\n]*	{ WriteToken(Comment_attr); }
+<PHP_CODE>"#"		|
+<PHP_CODE>"//"		{ BeginQuote(PHP_CMT0, Comment_attr); }
+<PHP_CMT0>[\r\n]	{ flt_bfr_finish(); ECHO; new_state(PHP_CODE); }
+<PHP_CMT0>.		{ flt_bfr_append(yytext, yyleng); }
 
 <PHP_CODE>{STRINGS}	{ WriteToken(String_attr); }
 
