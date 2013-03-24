@@ -1,7 +1,7 @@
 /*
  * Main program and I/O for external vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filterio.c,v 1.62 2013/02/20 10:36:05 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filterio.c,v 1.63 2013/03/23 12:29:32 tom Exp $
  *
  */
 
@@ -198,7 +198,6 @@ flt_error(const char *fmt,...)
 
 	fflush(stderr);
     }
-    exit(BADEXIT);
 }
 
 void

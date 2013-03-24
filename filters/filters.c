@@ -1,7 +1,7 @@
 /*
  * Common utility functions for vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.159 2013/03/18 09:43:21 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.160 2013/03/23 11:19:44 tom Exp $
  *
  */
 
@@ -237,14 +237,14 @@ static void
 ExecAbbrev(const char *param)
 {
     zero_or_more = *param;
-    VERBOSE(1, ("set abbrev '%c'\n", zero_or_more));
+    VERBOSE(1, ("set abbrev '%c'", zero_or_more));
 }
 
 static void
 ExecBrief(const char *param)
 {
     zero_or_all = *param;
-    VERBOSE(1, ("set brief '%c'\n", zero_or_all));
+    VERBOSE(1, ("set brief '%c'", zero_or_all));
 }
 
 static void
@@ -275,7 +275,7 @@ ExecDefault(const char *param)
 
     if (isClass) {
 	flt_init_attr(temp);
-	VERBOSE(1, ("set default_attr '%s' %p\n", default_attr, default_attr));
+	VERBOSE(1, ("set default_attr '%s' %p", default_attr, default_attr));
     } else {
 	VERBOSE(1, ("not a class:%s", temp));
     }
@@ -571,7 +571,7 @@ class_attr(const char *name)
 	VERBOSE(data->kw_used, ("class_attr(%s) = %s",
 				name, AttrsOnce(data)));
 	name = result = data->kw_attr;
-	VERBOSE(1, ("-> %p\n", result));
+	VERBOSE(1, ("-> %p", result));
     }
     return result;
 }
@@ -1081,7 +1081,7 @@ insert_keyword2(const char *ident, const char *attribute, int classflag, char *f
     char *mark;
     char *temp;
 
-    VERBOSE(2, ("insert_keyword(%s, %s, %d, %s)\n",
+    VERBOSE(2, ("insert_keyword(%s, %s, %d, %s)",
 		ident,
 		NONNULL(attribute),
 		classflag,
@@ -1168,7 +1168,7 @@ keyword_attr(const char *name)
     if (data != 0) {
 	result = data->kw_attr;
     }
-    VERBOSE(1, ("keyword_attr(%s) = %p %s\n", name, result, NONNULL(result)));
+    VERBOSE(1, ("keyword_attr(%s) = %p %s", name, result, NONNULL(result)));
     return result;
 }
 
@@ -1198,7 +1198,7 @@ keyword_flag(const char *name)
     if (data != 0) {
 	result = data->kw_flag;
     }
-    VERBOSE(1, ("keyword_flag(%s) = %p %s\n", name, result, NONNULL(result)));
+    VERBOSE(1, ("keyword_flag(%s) = %p %s", name, result, NONNULL(result)));
     return result;
 }
 
@@ -1240,7 +1240,7 @@ parse_keyword(char *name, int classflag)
     char *s, *t;
     int quoted = 0;
 
-    VERBOSE(1, ("parse_keyword(%s, %d)\n", name, classflag));
+    VERBOSE(1, ("parse_keyword(%s, %d)", name, classflag));
     if ((s = strchr(name, eqls_ch)) != 0) {
 	*s++ = 0;
 	s = skip_blanks(s);
@@ -1265,13 +1265,13 @@ parse_keyword(char *name, int classflag)
 			} else if (*s == eqls_ch) {
 			    flag = s;
 			    *flag++ = '\0';
-			    VERBOSE(2, ("found flags \"%s\" for %s\n", flag, name));
+			    VERBOSE(2, ("found flags \"%s\" for %s", flag, name));
 			    /* an empty color field inherits the default */
 			    TrimBlanks(args);
 			    if (*args == 0)
 				args = default_attr;
 			} else {
-			    VERBOSE(1, ("unexpected:%s%c%s\n", name,
+			    VERBOSE(1, ("unexpected:%s%c%s", name,
 					eqls_ch, s));
 			    args = 0;	/* error: ignore */
 			}

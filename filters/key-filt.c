@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/key-filt.c,v 1.49 2012/02/18 13:49:37 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/key-filt.c,v 1.50 2013/03/23 11:18:44 tom Exp $
  *
  * Filter to add vile "attribution" sequences to a vile keyword file.  It's
  * done best in C because the delimiters may change as a result of processing
@@ -236,7 +236,7 @@ ExecDefault(char *param)
     const char *attr = Literal_attr;
     int save = *s;
 
-    VERBOSE(1, ("ExecDefault(%s)\n", param));
+    VERBOSE(1, ("ExecDefault(%s)", param));
     *s = 0;
     if (!*t)
 	t = NAME_KEYWORD;
@@ -246,7 +246,7 @@ ExecDefault(char *param)
     }
     if (FltOptions('c')) {
 	attr = actual_color(t, -1, 1);
-	VERBOSE(2, ("actual_color(%s) = %s\n", t, attr));
+	VERBOSE(2, ("actual_color(%s) = %s", t, attr));
     }
     *s = (char) save;
     flt_puts(param, (int) strlen(param), attr);
@@ -298,7 +298,7 @@ ExecTable(char *param)
 {
     char *t;
 
-    VERBOSE(1, ("ExecTable(%s)\n", param));
+    VERBOSE(1, ("ExecTable(%s)", param));
     if (FltOptions('c')) {
 	t = skip_ident(param);
 	if (*skip_blanks(t) == '\0') {
@@ -349,7 +349,7 @@ parse_directive(char *line)
     size_t n, len;
     char *s;
 
-    VERBOSE(1, ("parse_directive(%s)\n", line));
+    VERBOSE(1, ("parse_directive(%s)", line));
     if (*(s = skip_blanks(line)) == meta_ch) {
 	s = skip_blanks(s + 1);
 	if ((len = (size_t) (skip_ident(s) - s)) != 0) {
