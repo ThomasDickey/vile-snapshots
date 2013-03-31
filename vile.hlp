@@ -99,7 +99,7 @@ Command Prefixes
    default values for these prefixes are
 
    +------------------------------------------------------------------------+
-   |               Key:               |      Bound to dummy function:       |
+   | Key:                             | Bound to dummy function:            |
    |----------------------------------+-------------------------------------|
    | ^X Control-X                     | cntl_x-prefix                       |
    |----------------------------------+-------------------------------------|
@@ -1033,7 +1033,7 @@ Miscellaneous commands
            as follows:
 
            +----------------------------------------------------------------+
-           |            Technique            |          Applies To          |
+           | Technique                       | Applies To                   |
            |---------------------------------+------------------------------|
            | selection-clear command         | any host                     |
            |---------------------------------+------------------------------|
@@ -1286,9 +1286,9 @@ Editor modes
    the internal (read compiled) value of 0. Some concrete examples:
 
    +------------------------------------------------------------------------+
-   |              Technique              |            Applies To            |
+   | Technique                           | Applies To                       |
    |-------------------------------------+----------------------------------|
-   |    mode type     |    mode name     |          example usage           |
+   | mode type        | mode name        | example usage                    |
    |------------------+------------------+----------------------------------|
    | boolean          | autoindent       | set autoindent                   |
    |------------------+------------------+----------------------------------|
@@ -2404,7 +2404,7 @@ Editor modes
            then a visual bell effect may be achieved using this mode.
 
            +----------------------------------------------------------------+
-           | Mode Value |                  Mode Semantics                   |
+           | Mode Value | Mode Semantics                                    |
            |------------+---------------------------------------------------|
            | off        | feature disabled (default)                        |
            |------------+---------------------------------------------------|
@@ -2675,7 +2675,7 @@ Character Classes
    "show-printable" to show everything in 80 columns) are
 
    +------------------------------------------------------------------------+
-   |     Short      |                   Long Description                    |
+   | Short          | Long Description                                      |
    |----------------+-------------------------------------------------------|
    | arg            | ex-style line range: 1,$ or 13,15 or % etc.           |
    |----------------+-------------------------------------------------------|
@@ -2803,6 +2803,7 @@ Key Rebinding
            (function and meta-key) definitions.
 
          bind-key
+         describe-all-keys
          describe-bindings
          describe-key
          unbind-key
@@ -2813,6 +2814,7 @@ Key Rebinding
            associated with movement, e.g., ^N and ^P.
 
          bind-cmdmode-key
+         describe-all-cmdmode-keys
          describe-cmdmode-key
          show-cmdmode-bindings
          unbind-cmdmode-key
@@ -2825,6 +2827,7 @@ Key Rebinding
            inserted.
 
          bind-insmode-key
+         describe-all-insmode-keys
          describe-insmode-bindings
          describe-insmode-key
          unbind-insmode-key
@@ -2834,9 +2837,15 @@ Key Rebinding
            the same as the default binding table, but may be customized.
 
          bind-selmode-key
+         describe-all-selmode-keys
          describe-selmode-bindings
          describe-selmode-key
          unbind-selmode-key
+
+   The "describe-all-*keys" commands differ from the display-commands in each
+   group. They show for each of the 256 character codes which normal
+   (unmodified) or ^A/^X (modified) keys are bound to a given function. Use a
+   repeat count before those commands to show data for all 256 codes.
 
    The following macro will work correctly in both command and insert modes.
    Note that you must specify the insert mode (insmode) binding separately;
@@ -2908,7 +2917,7 @@ Key Rebinding
    follows:
 
    +------------------------------------------------------------------------+
-   |   Usual Label    |    Vile name    |   Usual Label    |   Vile name    |
+   | Usual Label      | Vile name       | Usual Label      | Vile name      |
    |------------------+-----------------+------------------+----------------|
    | Up-arrow         | #A              | Home             | #H             |
    |------------------+-----------------+------------------+----------------|
@@ -3087,7 +3096,7 @@ Special "Terminal" Key Rebinding
    command, and can be changed with the "set-terminal" command.
 
    +------------------------------------------------------+
-   |       Name       |   Default value   | Typical value |
+   | Name             | Default value     | Typical value |
    |------------------+-------------------+---------------|
    | backspace        | from tty settings | (DEL or ^H)   |
    |------------------+-------------------+---------------|
@@ -3314,7 +3323,7 @@ Programmed procedures (aka macros)
    You can also show a summary using the "describe-state-variables" command:
 
    +------------------------------------------------------------------------+
-   |        Name         |                   Description                    |
+   | Name                | Description                                      |
    |---------------------+--------------------------------------------------|
    | $_                  | most-recent macro $return value                  |
    |---------------------+--------------------------------------------------|
@@ -3332,7 +3341,7 @@ Programmed procedures (aka macros)
    |                     | status flags for current buffer (read only)      |
    |                     |                                                  |
    |                     | +----------------------------------------------+ |
-   |                     | | Flag |              Description              | |
+   |                     | | Flag | Description                           | |
    |                     | |------+---------------------------------------| |
    |                     | | a    | autobuffer caused this to be created  | |
    |                     | |------+---------------------------------------| |
@@ -3375,7 +3384,7 @@ Programmed procedures (aka macros)
    |                     | options (read only).                             |
    |                     |                                                  |
    |                     | +----------------------------------------------+ |
-   |                     | |   Name    |           Description            | |
+   |                     | | Name      | Description                      | |
    |                     | |-----------+----------------------------------| |
    |                     | | ansi      | vile built with ANSI terminal    | |
    |                     | |           | driver                           | |
@@ -3694,7 +3703,7 @@ Programmed procedures (aka macros)
    The "describe-user-functions" command shows this information:
 
    +------------------------------------------------------------------------+
-   |      Name       | Args |                  Description                  |
+   | Name            | Args | Description                                   |
    |-----------------+------+-----------------------------------------------|
    | &abs            | 1    | absolute value of a number                    |
    |-----------------+------+-----------------------------------------------|
@@ -3916,7 +3925,7 @@ Programmed procedures (aka macros)
    (see the file macros.doc for more detail)
 
    +------------------------------------------------------------------------+
-   |       Name       |                    Description                     ||
+   | Name             | Description                                        ||
    |------------------+----------------------------------------------------+|
    | ~break           | exit a ~while loop                                 ||
    |------------------+----------------------------------------------------+|
@@ -4883,8 +4892,8 @@ Color basics
   Host capability matrix
 
    +------------------------------------------------------------------------+
-   |Color Feature |  VMS   |  VMS  |DOS|OS/2| Win32 | Win32 | Unix  | Unix  |
-   |              | (std)  | (GUI) |   |    | (std) | (GUI) | (std) | (GUI) |
+   |Color Feature |VMS     |VMS    |DOS|OS/2|Win32  |Win32  |Unix   |Unix   |
+   |              |(std)   |(GUI)  |   |    |(std)  |(GUI)  |(std)  |(GUI)  |
    |--------------+--------+-------+---+----+-------+-------+-------+-------|
    |Visual        |Y       |Y      |Y  |Y   |Y      |Y      |Y      |Y      |
    |Matching      |        |       |   |    |       |       |       |       |
@@ -4928,8 +4937,8 @@ Syntax coloring
    lists example paired filter and majormode names:
 
    +------------------------------------------------------------------------+
-   | Language Name |    Builtin    | External Filter Name  |   Majormode    |
-   |               |  Filter Name  |          [1]          |    Name[2]     |
+   | Language Name | Builtin       | External Filter Name  | Majormode      |
+   |               | Filter Name   | [1]                   | Name[2]        |
    |---------------+---------------+-----------------------+----------------|
    | C             | c             | vile-c-filt           | cmode          |
    |---------------+---------------+-----------------------+----------------|
@@ -5094,7 +5103,7 @@ Syntax coloring
    procedures, including:
 
    +------------------------------------------------------------------------+
-   |     Macro Name     | Binding |                Function                 |
+   | Macro Name         | Binding | Function                                |
    |--------------------+---------+-----------------------------------------|
    | HighlightFilterMsg | ^X-q    | Colors the current buffer if a          |
    |                    |         | majormode and filter exist for same.    |
@@ -5392,7 +5401,7 @@ Majormodes
    specifying an appropriate regular expression, like so:
 
    +-----------------------------------------------+
-   | regexp mode name |     selection based on     |
+   | regexp mode name | selection based on         |
    |------------------+----------------------------|
    | mode-pathname    | any file component in path |
    |------------------+----------------------------|
@@ -6210,7 +6219,7 @@ X Window System specifics
   X Resources
 
    +------------------------------------------------------------------------+
-   |           Name           |                 Description                 |
+   | Name                     | Description                                 |
    |--------------------------+---------------------------------------------|
    | font                     | Font to use.                                |
    |--------------------------+---------------------------------------------|
@@ -6533,7 +6542,7 @@ VMS specifics
    vile accepts these command-line options in addition to the standard ones:
 
    +---------------------------------------------------------+
-   | Option |                  Description                   |
+   | Option | Description                                    |
    |--------+------------------------------------------------|
    | -80    | force 80-column mode (N/A for VT52 terminals)  |
    |--------+------------------------------------------------|
@@ -6543,7 +6552,7 @@ VMS specifics
   Modes
 
    +------------------------------------------------------------------------+
-   |     Name      |                      Description                       |
+   | Name          | Description                                            |
    |---------------+--------------------------------------------------------|
    |               | Show all versions of files in response to filename     |
    | allversions   | completion or wildcards on the command line. Normally  |
@@ -6571,7 +6580,7 @@ VMS specifics
   Variables
 
    +------------------------------------------------------------------------+
-   | Name  |                          Description                           |
+   | Name  | Description                                                    |
    |-------+----------------------------------------------------------------|
    |       | Switch between 80- and 132-column screen resolutions by        |
    | $sres | setting this variable to either NORMAL or WIDE (e.g., :setv    |
@@ -6610,7 +6619,7 @@ Win32 specifics
    ones:
 
    +------------------------------------------------------------------------+
-   |       Name        |                    Description                     |
+   | Name              | Description                                        |
    |-------------------+----------------------------------------------------|
    | -fn <fontspec>    | Initial font (or -font). The "Winvile Font"        |
    |                   | section below describes <fontspec> syntax.         |
@@ -6634,7 +6643,7 @@ Win32 specifics
    Vile accepts these additional command-line options:
 
    +------------------------------------------------------------------------+
-   |   Name   |                         Description                         |
+   | Name     | Description                                                 |
    |----------+-------------------------------------------------------------|
    |          | Start editor in a new console environment if stdin is       |
    |          | redirected (i.e., input is taken from a redirected file or  |
@@ -6661,7 +6670,7 @@ Win32 specifics
    w32pipes").
 
    +------------------------------------------------------------------------+
-   |                        ******* Warning ********                        |
+   | ******* Warning ********                                               |
    |------------------------------------------------------------------------|
    | If w32pipes is enabled and command.com initiates a pipe I/O            |
    | transaction on behalf of the editor, vile will almost certainly hang.  |
@@ -6759,7 +6768,7 @@ Win32 specifics
    are predefined:
 
    +------------------------------------------------------------------------+
-   | Menu entry |                        Description                        |
+   | Menu entry | Description                                               |
    |------------+-----------------------------------------------------------|
    | Open       | executes the "winopen" command (described below).         |
    |------------+-----------------------------------------------------------|
@@ -7326,6 +7335,6 @@ Online resources
 Copyright 1995-2011,2012 by Paul Fox, Thomas Dickey, and Kevin Buettner
 -----------------------------------------------------------------------
 
--- (generated by make-hlp.pl from vile-hlp.html(1.56))
+-- (generated by make-hlp.pl from vile-hlp.html(1.60))
 -- vile:txtmode fillcol=78
--- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.712 2012/07/24 00:51:20 tom Exp $
+-- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.714 2013/03/31 17:14:51 tom Exp $

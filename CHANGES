@@ -1,9 +1,17 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20130322 (j)
+ 20130331 (j)
 	> Brendan O'Dea:
 	+ correct warnings from pod2text
 	> Tom Dickey:
+	+ apply consistent stylesheet and website links to html documentation.
+	+ add commands to show bound commands ordered by the key to which they
+	  are bound:
+	  describe-all-keys,
+	  describe-all-cmdmode-keys,
+	  describe-all-insmode-keys,
+	  describe-all-selmode-keys
+	  (prompted by discussion with Chris Green).
 	+ modify htmlfilt.l to highlight embedded php, improve its parsing
 	  of embedded css.
 	+ modify definition of istype() to ensure that it returns true only if

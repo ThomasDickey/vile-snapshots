@@ -97,7 +97,7 @@
 #		in '!' listed, then the flag does nothing, and should be
 #		viewed simply as documentation.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.271 2012/07/10 10:55:03 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/cmdtbl,v 1.272 2013/03/31 14:13:46 tom Exp $
 #
 #
 
@@ -549,6 +549,26 @@ des_s_bind	NONE			OPT_REBIND
 	"list-selmode-bindings"		!FEWNAMES
 	"show-selmode-bindings"
 	<show a list of all commands that may be executed in selection mode>
+desall_bind	NONE			OPT_REBIND
+	"describe-all-keys"
+	"list-all-keys"			!FEWNAMES
+	"show-all-keys"
+	<show a list of all keys, showing if they are bound to command>
+desall_i_bind	NONE			OPT_REBIND
+	"describe-all-insmode-keys"
+	"list-all-insmode-keys"		!FEWNAMES
+	"show-all-insmode-keys"
+	<show a list of all insert-mode keys, showing if they are bound to command>
+desall_c_bind	NONE			OPT_REBIND
+	"describe-all-cmdmode-keys"
+	"list-all-cmdmode-keys"		!FEWNAMES
+	"show-all-cmdmode-keys"
+	<show a list of all editing-keys, showing if they are bound to command>
+desall_s_bind	NONE			OPT_REBIND
+	"describe-all-selmode-keys"
+	"list-all-selmode-keys"		!FEWNAMES
+	"show-all-selmode-keys"
+	<show a list of all selection-mode keys, showing if they are bound to command>
 des_keynames	NONE			OPT_REBIND
 	"list-key-names"		!FEWNAMES
 	"show-key-names"

@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.367 2013/03/06 09:34:06 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.369 2013/03/31 15:57:29 tom Exp $
  *
  */
 
@@ -42,6 +42,7 @@ extern const int nametbl_size;
 static int key_to_bind(const CMDFUNC * kcmd);
 static int update_binding_list(BUFFER *bp);
 static void makebindlist(LIST_ARGS);
+static void makebindkeyslist(LIST_ARGS);
 #endif /* OPT_REBIND */
 
 #if OPT_NAMEBST
@@ -795,6 +796,7 @@ bind_s_key(int f GCC_UNUSED, int n GCC_UNUSED)
 /* remember whether we last did "apropos" or "describe-bindings" */
 static char *last_lookup_string;
 static CMDFLAGS last_whichcmds;
+static int last_whichmode;
 static int append_to_binding_list;
 
 /* ARGSUSED */
@@ -819,6 +821,59 @@ int
 desbind(int f GCC_UNUSED, int n GCC_UNUSED)
 {
     return describe_any_bindings((char *) 0, (CMDFLAGS) 0);
+}
+
+/* ARGSUSED */
+static int
+update_bindkeys_list(BUFFER *bp GCC_UNUSED)
+{
+    return liststuff(bindings_to_describe->bufname, append_to_binding_list,
+		     makebindkeyslist, (int) last_whichcmds, (void *) last_lookup_string);
+}
+
+static int
+describe_all_bindings(char *lookup, CMDFLAGS whichcmd, int mode)
+{
+    last_lookup_string = lookup;
+    last_whichcmds = whichcmd;
+    last_whichmode = mode;
+
+    return update_bindkeys_list((BUFFER *) 0);
+}
+
+/* ARGSUSED */
+int
+desall_bind(int f GCC_UNUSED, int n GCC_UNUSED)
+{
+    return describe_all_bindings((char *) 0, (CMDFLAGS) 0, (f ? n : -1));
+}
+
+static int
+describe_all_keys_bindings(BINDINGS * bs, int mode)
+{
+    int code;
+    bindings_to_describe = bs;
+    code = describe_all_bindings((char *) 0, (CMDFLAGS) 0, mode);
+    bindings_to_describe = &dft_bindings;
+    return code;
+}
+
+int
+desall_i_bind(int f GCC_UNUSED, int n GCC_UNUSED)
+{
+    return describe_all_keys_bindings(&ins_bindings, (f ? n : -1));
+}
+
+int
+desall_c_bind(int f GCC_UNUSED, int n GCC_UNUSED)
+{
+    return describe_all_keys_bindings(&cmd_bindings, (f ? n : -1));
+}
+
+int
+desall_s_bind(int f GCC_UNUSED, int n GCC_UNUSED)
+{
+    return describe_all_keys_bindings(&sel_bindings, (f ? n : -1));
 }
 
 static int
@@ -1380,6 +1435,59 @@ makebindlist(int whichmask, void *mstring)
     if (btree_walk(&(my_bst->head), makebind_func, &data))
 	return;
 
+    mlerase();			/* clear the message line */
+}
+
+/* build a binding list (limited or full) */
+/* ARGSUSED */
+static void
+makebindkeyslist(int whichmask, void *mstring)
+{
+    char outseq[NSTRING];	/* output buffer for command sequence */
+    NTAB temp;			/* name table pointer */
+    int ch;
+    int state;
+
+    (void) mstring;
+
+    /* let us know this is in progress */
+    mlwrite("[Building binding list]");
+    for (state = 0; state < 3; ++state) {
+	int modify = 0;
+	int found = 0;
+	const char *what = "?";
+	switch (state) {
+	case 0:
+	    what = "Normal keys";
+	    break;
+	case 1:
+	    what = "^A-keys";
+	    modify = CTLA;
+	    break;
+	case 2:
+	    what = "^X-keys";
+	    modify = CTLX;
+	    break;
+	}
+	bprintf("%s-- %s", state ? "\n\n" : "", what);
+	for (ch = 0; ch < N_chars; ++ch) {
+	    (void) kcod2prc(ch + modify, outseq);
+	    if (fnc2ntab(&temp, kcod2fnc(bindings_to_describe, ch + modify))) {
+		if (whichmask && !(temp.n_cmd->c_flags & whichmask))
+		    continue;
+		bputc('\n');
+		bprintf("%d\t%s\t", ch, outseq);
+		quoted(0, temp.n_name);
+		++found;
+	    } else if (last_whichmode > 1) {
+		bputc('\n');
+		bprintf("%d\t%s", ch, outseq);
+	    }
+	}
+	if (found) {
+	    bprintf("\n-- %s total: %d", what, found);
+	}
+    }
     mlerase();			/* clear the message line */
 }
 #else /* OPT_NAMEBST */
