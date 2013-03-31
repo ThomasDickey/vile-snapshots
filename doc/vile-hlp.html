@@ -1,6 +1,6 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
-  $Id: vile-hlp.html,v 1.56 2012/07/24 00:49:21 tom Exp $
+  $Id: vile-hlp.html,v 1.60 2013/03/31 17:03:45 tom Exp $
 -->
 <HTML>
 <HEAD>
@@ -10,8 +10,13 @@ Getting along with vile						(version 9.8)
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
 <link rev="made" href="mailto:dickey@invisible-island.net">
 <link rel="SHORTCUT ICON" href="/img/icons/vile.ico" type="image/x-icon">
+<link rel="stylesheet" href="/css/simplestyle.css" type="text/css">
 </HEAD>
 <BODY>
+<hr>
+<a href=
+"http://invisible-island.net/">http://invisible-island.net/</a><a href="http://invisible-island.net/vile/">vile/</a><a href="http://invisible-island.net/vile/vile-toc.html">vile-toc</a><br>
+<hr>
 <h1 id="toplevel-id">Getting along with vile</h1>
 <p>
 	Use Ctrl-D and Ctrl-U to scroll through this help information.
@@ -3949,6 +3954,7 @@ Getting along with vile						(version 9.8)
 			definitions.
 <pre>
 	bind-key
+	describe-all-keys
 	describe-bindings
 	describe-key
 	unbind-key
@@ -3964,6 +3970,7 @@ Getting along with vile						(version 9.8)
 			e.g., ^N and ^P.
 <pre>
 	bind-cmdmode-key
+	describe-all-cmdmode-keys
 	describe-cmdmode-key
 	show-cmdmode-bindings
 	unbind-cmdmode-key
@@ -3980,6 +3987,7 @@ Getting along with vile						(version 9.8)
 			control characters are interpreted or inserted.
 <pre>
 	bind-insmode-key
+	describe-all-insmode-keys
 	describe-insmode-bindings
 	describe-insmode-key
 	unbind-insmode-key
@@ -3994,11 +4002,18 @@ Getting along with vile						(version 9.8)
 			table, but may be customized.
 <pre>
 	bind-selmode-key
+	describe-all-selmode-keys
 	describe-selmode-bindings
 	describe-selmode-key
 	unbind-selmode-key
 </pre>
 </dl>
+	The "describe-all-*keys" commands differ from the display-commands in
+	each group.
+	They show for each of the 256 character codes which normal (unmodified)
+	or ^A/^X (modified) keys are bound to a given function.  Use a repeat
+	count before those commands to show data for <em>all</em> 256 codes.
+	<p>
 	The following macro will work correctly in both command and insert
 	modes.  Note that you must specify the insert mode (insmode) binding
 	separately; default bindings are not inherited automatically because

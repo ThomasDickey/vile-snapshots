@@ -1,5 +1,5 @@
 #!/usr/bin/perl -w
-# $Id: make-hlp.pl,v 1.6 2009/12/28 16:38:43 tom Exp $
+# $Id: make-hlp.pl,v 1.7 2013/03/31 17:13:54 tom Exp $
 # Generate vile.hlp, using the dump feature of a text browser.
 #
 # Any of (e)links(2) or lynx would work.
@@ -138,11 +138,19 @@ sub doit() {
             $first = 0;
         }
 
+	my $body = 0;
         for $n ( 0 .. $#input ) {
             chomp( $input[$n] );
             $input[$n] = trim( $input[$n] );
+	    # omit the website url on ".doc" files
+	    if ( $body == 0
+		and $n > 0
+		and $input[$n] =~ /[-]{20,}/
+		and $input[$n] eq $input[0] ) {
+		    $body = $n + 1;
+	    }
         }
-        for $n ( 0 .. $#input ) {
+        for $n ( $body .. $#input ) {
             if (
                     $OOPS
                 and ( $n < $#input )
@@ -164,4 +172,4 @@ sub doit() {
     printf "%s\n", $foot;
 }
 
-doit();
+&doit();
