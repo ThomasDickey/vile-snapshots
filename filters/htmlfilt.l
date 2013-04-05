@@ -9,7 +9,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/htmlfilt.l,v 1.115 2013/03/22 22:49:26 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/htmlfilt.l,v 1.119 2013/04/05 00:57:46 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of HTML input
  * text.
@@ -104,6 +104,18 @@ DefineOptFilter("html", "aj");
 #define SYMS_PHP       "php"
 #define SYMS_VBS       "vbs"
 
+typedef enum {
+    CODE_NONE = 0
+    ,CODE_CS
+    ,CODE_CSS
+    ,CODE_CSS_UNITS
+    ,CODE_HTMLPROP
+    ,CODE_JAVA
+    ,CODE_JS
+    ,CODE_PHP
+    ,CODE_VBS
+} CODE_SYMS;
+
 #ifdef FLEX_DEBUG
 #define DBG_HTML(msg) if (yy_flex_debug) fprintf(stderr, "%s\n", msg)
 #else
@@ -137,6 +149,8 @@ static char *here_tag;
 static size_t here_len;
 static int here_exp;
 
+static CODE_SYMS language2code(const char *name);
+static int code2state(CODE_SYMS code);
 static int got_here(char *text, int length);
 static int language_code(void);
 static void begin_htmlcode(void);
@@ -312,7 +326,6 @@ CSS_INVALID	({CSS_INVALID1}|{CSS_INVALID2})
 			}
 <HTMLCODE>"="		{
 			  ECHO;
-			  if (got_language2) ++got_language2;
 			  ++got_equals;
 			}
 <HTMLCODE>(\/)?">" 	{
@@ -405,7 +418,7 @@ CSS_INVALID	({CSS_INVALID1}|{CSS_INVALID2})
 <JS_CODE>{IDENT}	{ WriteToken(keyword_attr(yytext)); }
 <JS_CODE>{STRINGS}	{ WriteToken(String_attr); }
 <JS_CODE>{INTEGER}	{ WriteToken(Number_attr); }
-<JS_CODE>"<!--"[^\r\n]* { WriteToken(Comment_attr); }
+<JS_CODE>"<!--"([^\r\n]*"-->")?	{ WriteToken(Comment_attr); }
 <JS_CODE>"//"[^\r\n]*	{
 			  char *last = strstr(yytext, "-->");
 			  char *next = 0;
@@ -505,6 +518,16 @@ CSS_INVALID	({CSS_INVALID1}|{CSS_INVALID2})
 
 #include <fltstack.h>
 
+/*
+ * This is called to process either any of the names in an html command, e.g.,
+ * <name>
+ * <foo name>
+ * <foo bar name=value>
+ * </name>
+ *
+ * The first/last cases are distinguished from the attributes by the got_tag
+ * and in_tag flags.
+ */
 static void
 html_command(const char *text)
 {
@@ -519,17 +542,36 @@ html_command(const char *text)
 
     in_tag = 0;
     if (!got_tag && !got_equals) {
-	if (!strcmp(temp, "server")
-	    || !strcmp(temp, "script")) {
+	if (!strcmp(temp, "server")) {
+	    /*
+	     * Example:
+	     * <server>...</server> (nonstandard, but used)
+	     */
 	    change = JS_CODE;
-	    /* FIXME - ASP vs PHP vs JSP? */
+	} else if (!strcmp(temp, "script")) {
+	    /*
+	     * There are several choices for the language, e.g., asp,
+	     * javascript, php.
+	     *
+	     * Examples:
+	     * <script>...</script> (ambiguous, but sometimes used)
+	     * <script type="JavaScript">...</script> (preferred)
+	     * <script language="JavaScript">...</script>
+	     */
+	    change = JS_CODE;
 	} else if (!strcmp(temp, "style")) {
+	    /*
+	     * Example:
+	     * <style type="text/css"> (type must be given)
+	     */
 	    change = CSS_CODE;
 	}
     }
     got_language2 = 0;
     if (change) {
 	set_symbol_table(default_table);
+    } else if (!strcmp(temp, "type")) {
+	got_language2 = 1;
     } else if (!strcmp(temp, "language")) {
 	got_language2 = 1;
     }
@@ -541,8 +583,10 @@ html_command(const char *text)
     flt_puts(text, (int) strlen(text), attr);
 
     if (got_tag && !strcmp(temp, "src")) {
-	next_state = HTMLINCL;
-	DBG_HTML("next_state HTMLINCL");
+	if (next_state == INITIAL) {
+	    next_state = HTMLINCL;
+	    DBG_HTML("next_state HTMLINCL");
+	}
     } else {
 	switch (change) {
 	case JS_CODE:
@@ -602,12 +646,13 @@ html_quotes(char *text, int len, int state, int which)
     }
 
     /*
-     * Check for language="foo" (the reason for this function).
+     * Check for type="foo" or language="foo" (the reason for this function).
      */
     if (got_language2) {
 	static char *temp;
 	static size_t used = 0;
 	size_t need = (temp ? strlen(temp) : 0) + (size_t) (len + 1);
+	int check;
 
 	temp = do_alloc(temp, need, &used);
 	if (temp != 0) {
@@ -618,8 +663,9 @@ html_quotes(char *text, int len, int state, int which)
 		strcat(temp, text);
 		if (which == 3) {
 		    got_language2 = 0;
-		    setup_language(temp);
-		    using_language();
+		    if ((check = language2code(temp)) != 0) {
+			next_state = code2state(check);
+		    }
 		}
 	    }
 	}
@@ -857,16 +903,17 @@ dequote(char *buffer)
     buffer[n] = '\0';
 }
 
-static const char *
-language2keys(const char *name)
+static CODE_SYMS
+language2code(const char *name)
 {
-    const char *result = 0;
+    int result = CODE_NONE;
 
     if (name != 0) {
 	char *name2 = strmalloc(name);
 	const char *lowered = lowercase_of(name2);
 	size_t len = strlen(lowered);
 	char temp[80];
+	const char *compare = lowered;
 
 	if ((len + 1) >= sizeof(temp))
 	    len = (sizeof(temp) - 1);
@@ -874,20 +921,101 @@ language2keys(const char *name)
 	strncpy(temp, lowered, len);
 	if (*temp == '"' || *temp == '\'') {
 	    dequote(temp);
+	    compare = temp;
 	}
 
-	if (!strcmp(lowered, "c#"))
-	    result = SYMS_CS;
-	else if (!strcmp(lowered, "java"))
-	    result = SYMS_JAVA;
-	else if (!strncmp(lowered, "javascript", (size_t) 10))
-	    result = SYMS_JS;
-	else if (!strcmp(lowered, "php"))
-	    result = SYMS_PHP;
-	else if (!strcmp(lowered, "vbscript"))
-	    result = SYMS_VBS;
+	if (!strcmp(compare, "c#"))
+	    result = CODE_CS;
+	else if (!strcmp(compare, "css"))
+	    result = CODE_CSS;
+	else if (!strcmp(compare, "java"))
+	    result = CODE_JAVA;
+	else if (!strncmp(compare, "javascript", (size_t) 10))
+	    result = CODE_JS;
+	else if (!strcmp(compare, "php"))
+	    result = CODE_PHP;
+	else if (!strcmp(compare, "vbscript"))
+	    result = CODE_VBS;
 
 	free(name2);
+    }
+
+    return result;
+}
+
+static const char *
+language2keys(const char *name)
+{
+    const char *result = 0;
+
+    if (name != 0) {
+	switch (language2code(name)) {
+	case CODE_NONE:
+	    break;
+	case CODE_CS:
+	    result = SYMS_CS;
+	    break;
+	case CODE_CSS:
+	    result = SYMS_CSS;
+	    break;
+	case CODE_CSS_UNITS:
+	    result = SYMS_CSS_UNITS;
+	    break;
+	case CODE_HTMLPROP:
+	    result = SYMS_HTMLPROP;
+	    break;
+	case CODE_JAVA:
+	    result = SYMS_JAVA;
+	    break;
+	case CODE_JS:
+	    result = SYMS_JS;
+	    break;
+	case CODE_PHP:
+	    result = SYMS_PHP;
+	    break;
+	case CODE_VBS:
+	    result = SYMS_VBS;
+	    break;
+	}
+    }
+
+    return result;
+}
+
+static int
+code2state(CODE_SYMS name)
+{
+    int result = INITIAL;
+
+    if (name != 0) {
+	switch (name) {
+	case CODE_NONE:
+	    break;
+	case CODE_CS:
+	    result = JS_CODE;
+	    break;
+	case CODE_CSS:
+	    result = CSS_CODE;
+	    break;
+	case CODE_CSS_UNITS:
+	    result = CSS_CODE;
+	    break;
+	case CODE_HTMLPROP:
+	    result = HTMLCODE;
+	    break;
+	case CODE_JAVA:
+	    result = JS_CODE;
+	    break;
+	case CODE_JS:
+	    result = JS_CODE;
+	    break;
+	case CODE_PHP:
+	    result = PHP_CODE;
+	    break;
+	case CODE_VBS:
+	    result = ASP_CODE;
+	    break;
+	}
     }
 
     return result;
