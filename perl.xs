@@ -13,7 +13,7 @@
  * vile.  The file api.c (sometimes) provides a middle layer between
  * this interface and the rest of vile.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.125 2011/04/08 09:53:27 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.126 2013/04/03 00:38:42 tom Exp $
  */
 
 #ifdef __GNUC__
@@ -1579,8 +1579,15 @@ svgettors(SV **svp, VileBuf *vbp, char *rsstr, STRLEN rslen)
 
     /* Adjust rsstr if need be */
     if (rslen == 0) {
-	rsstr = strcat(strcpy(temp, ending), ending);
-	rslen = strlen(rsstr);
+	rslen = strlen(ending);
+	if (rslen < (sizeof(temp) / 2) - 1) {
+	    rsstr = strcat(strcpy(temp, ending), ending);
+	    rslen = strlen(rsstr);
+	} else {	/* should never happen, but analyzers do not know */
+	    rsstr = temp;
+	    *rsstr = '\0';
+	    rslen = 0;
+	}
     }
 
     /* Get first separator character */
