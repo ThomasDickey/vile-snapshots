@@ -1,9 +1,20 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20130331 (j)
+ 20130407 (j)
 	> Brendan O'Dea:
 	+ correct warnings from pod2text
 	> Tom Dickey:
+	+ improve/fix ruby syntax highlighter:
+	  + add missing logic needed to make binary numbers parse
+	  + track curly-brace level in var_embedded().
+	  + improve parsing/highlighting of %r{pattern}
+	  + handle special token :`
+	  + stop highlighting after __END__
+	  + interpret extended mode for regular expressions, showing comments
+	    in different color.
+	  + corrected logic for here-document delimiter when it happens to be a
+	    quoted string.
+	  + recognize ruby 1.8's ?a syntax for ASCII character.
 	+ apply consistent stylesheet and website links to html documentation.
 	+ add commands to show bound commands ordered by the key to which they
 	  are bound:

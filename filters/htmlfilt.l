@@ -9,7 +9,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/htmlfilt.l,v 1.119 2013/04/05 00:57:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/htmlfilt.l,v 1.122 2013/04/07 15:46:47 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of HTML input
  * text.
@@ -607,15 +607,6 @@ html_command(const char *text)
 		DBG_HTML("next_state CSS_CODE");
 	    }
 	    break;
-	case PHP_CODE:
-	    if (ending) {
-		next_state = INITIAL;
-		DBG_HTML("next_state INITIAL");
-	    } else {
-		next_state = PHP_CODE;
-		DBG_HTML("next_state PHP_CODE");
-	    }
-	    break;
 	}
     }
     if (!got_tag++) {
@@ -989,8 +980,6 @@ code2state(CODE_SYMS name)
 
     if (name != 0) {
 	switch (name) {
-	case CODE_NONE:
-	    break;
 	case CODE_CS:
 	    result = JS_CODE;
 	    break;
@@ -1006,6 +995,7 @@ code2state(CODE_SYMS name)
 	case CODE_JAVA:
 	    result = JS_CODE;
 	    break;
+	default:
 	case CODE_JS:
 	    result = JS_CODE;
 	    break;
