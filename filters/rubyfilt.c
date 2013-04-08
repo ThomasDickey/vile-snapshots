@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/rubyfilt.c,v 1.54 2013/03/14 08:36:54 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/rubyfilt.c,v 1.70 2013/04/07 23:32:40 tom Exp $
  *
  * Filter to add vile "attribution" sequences to ruby scripts.  This is a
  * translation into C of an earlier version written for LEX/FLEX.
@@ -9,13 +9,13 @@
  * across lines, have embedded comments.
  *
  * TODO: general delimited strings, e.g., %&this is a string&
- * TODO delimiter pairs, e.g., %{this is a string}
  * TODO: %Q is equivalent of double-quoted string
  * TODO: %q is equivalent of single-quoted string
  * TODO: %x is equivalent of back-quoted string
  * TODO: embed quotes using backslashes
  * TODO: embed quotes by using double-quotes inside single
  * TODO: embed quotes by using single-quotes inside double
+ * TODO: make var_embedded() parse nested quotes
  */
 
 #include <filters.h>
@@ -48,6 +48,7 @@ typedef enum {
     ,eDEF
     ,eHERE
     ,ePOD
+    ,eEND
 } States;
 
 typedef enum {
@@ -73,6 +74,7 @@ static char *String_attr;
 static char *Number_attr;
 static char *Type_attr;
 
+static int line_size(char *);
 static int var_embedded(char *);
 
 /*
@@ -119,6 +121,9 @@ stateName(States state)
 	break;
     case ePOD:
 	result = "POD";
+	break;
+    case eEND:
+	result = "END";
 	break;
     }
     return result;
@@ -251,6 +256,7 @@ is_QIDENT(char *s)
 {
     char *base = s;
     int ch;
+    int delim = 0;
     int leading = 1;
 
     while (MORE(s)) {
@@ -264,8 +270,16 @@ is_QIDENT(char *s)
 		   || ch == SQUOTE
 		   || ch == DQUOTE) {
 	    s++;
-	} else {
+	    if (delim) {
+		if (delim == ch)
+		    break;
+	    } else {
+		delim = ch;
+	    }
+	} else if (!delim) {
 	    break;
+	} else {
+	    ++s;
 	}
     }
     return (int) (s - base);
@@ -372,7 +386,7 @@ is_VARIABLE(char *s)
 }
 
 /*
- * pattern: \?(\\M-)?(\\C-)?.
+ * pattern: \?(\\M-a)?(\\C-a)?
  */
 static int
 is_CHAR(char *s, int *err)
@@ -380,16 +394,34 @@ is_CHAR(char *s, int *err)
     int found = 0;
 
     if (*s == '?' && ATLEAST(s, 5)) {
-	if ((*++s == BACKSLASH)
-	    && ((*++s == 'M') || (*s == 'C'))
-	    && (s[1] == '-')) {
-	    *err = 0;
-	    found = 5;
-	    if (*s == 'M' && ATLEAST(s, 5)
-		&& s[2] == BACKSLASH
-		&& s[3] == 'C'
-		&& s[4] == '-') {
-		found += 3;
+	if (*++s == BACKSLASH) {
+	    ++s;
+	    if (((*s == 'M') || (*s == 'C'))
+		&& (s[1] == '-')) {
+		*err = 0;
+		found = 5;
+		if (*s == 'M' && ATLEAST(s, 5)
+		    && s[2] == BACKSLASH
+		    && s[3] == 'C'
+		    && s[4] == '-'
+		    && isgraph(s[5])) {
+		    s += 5;
+		    found += 3;
+		} else if (*s == 'C') {
+		    s += 2;
+		}
+	    } else {
+		found = 3;
+	    }
+	} else {
+	    found = 2;
+	}
+	if (found) {
+	    /* s now points to the character, but it may be escaped */
+	    if (!isgraph(*s)) {
+		found = 0;
+	    } else if (*s == BACKSLASH) {
+		++found;
 	    }
 	}
     }
@@ -470,13 +502,15 @@ is_NUMBER(char *s, int *err)
 		break;
 	    }
 	} else if (dot && (ch == 'e' || ch == 'E')) {
-	    if (state != 1 || !value)
+	    if (state != 1 || !value) {
 		*err = 1;
+	    }
 	    state = 2;
 	} else {
 	    if (((state || (radix == 10)) && isdigit(ch))
 		|| ((radix == 16) && isxdigit(ch))
-		|| ((radix == 8) && (ch >= '0' && ch < '8'))) {
+		|| ((radix == 8) && (ch >= '0' && ch < '8'))
+		|| ((radix == 2) && (ch >= '0' && ch < '2'))) {
 		value = 1;
 	    } else {
 		if (value) {
@@ -612,7 +646,6 @@ begin_HERE(char *s)
     char *first;
     char *marker = 0;
     int ok;
-    int quote = 1;
     int strip = 0;
 
     if (ATLEAST(s, 3)
@@ -627,17 +660,24 @@ begin_HERE(char *s)
 	}
 	if ((ok = is_QIDENT(s)) != 0) {
 	    size_t temp = 0;
+	    int delim = (*s == SQUOTE || *s == DQUOTE) ? *s : 0;
+	    int quote = (*s == SQUOTE);
 
 	    s += ok;
-	    quote = 0;
 
 	    if ((marker = do_alloc((char *) 0, (size_t) (ok + 1), &temp)) != 0) {
 		char *d = marker;
+		if (delim)
+		    ++first;
 		while (first != s) {
-		    if (isIdent(*first))
+		    if (delim) {
+			if (*first == delim)
+			    break;
 			*d++ = *first;
-		    else
-			quote = (*first != DQUOTE);
+		    } else {
+			if (isIdent(*first))
+			    *d++ = *first;
+		    }
 		    first++;
 		}
 		*d = 0;
@@ -757,6 +797,7 @@ is_REGEXP(char *s, int left_delim, int right_delim)
     int len;
     int level = 0;
     int range = 0;
+    int block = (left_delim != L_BLOCK);
 
     while (MORE(s)) {
 	if (left_delim != right_delim) {
@@ -772,10 +813,10 @@ is_REGEXP(char *s, int left_delim, int right_delim)
 	}
 	if ((len = is_ESCAPED(s)) != 0) {
 	    s += len;
-	} else if (*s == R_BLOCK && range) {
+	} else if (block && (*s == R_BLOCK) && range) {
 	    range = 0;
 	    ++s;
-	} else if (*s == L_BLOCK && !range) {
+	} else if (block && (*s == L_BLOCK) && !range) {
 	    range = 1;
 	    ++s;
 	} else if ((len = var_embedded(s)) != 0) {
@@ -863,8 +904,12 @@ is_Symbol(char *s, int *delim, int *err)
 	    if ((found = is_STRINGS(s, err, *s, *s, 0)) != 0)
 		*delim = DQUOTE;
 	    break;
+	case BQUOTE:
+	    found = 1;
+	    break;
 	default:
 	    found = is_MKEYWORD(s, 0);
+	    break;
 	}
     }
 
@@ -888,6 +933,19 @@ is_String(char *s, int *delim, int *err)
 	case '%':
 	    if (ATLEAST(s, 4)) {
 		switch (s[1]) {
+		case '(':
+		case '[':
+		case '{':
+		    found = is_STRINGS(s + 1,
+				       err,
+				       s[1],
+				       balanced_delimiter(s + 1),
+				       1);
+		    if (found != 0) {
+			found += 2;
+			*delim = SQUOTE;
+		    }
+		    break;
 		case 'q':
 		case 'w':
 		    found = is_STRINGS(s + 2,
@@ -963,17 +1021,23 @@ var_embedded(char *s)
 {
     int found = 0;
     int delim;
+    int level = 0;
 
     if (*s == '#' && MORE(++s)) {
 	if (*s == L_CURLY) {
+	    ++level;
 	    for (found = 1; ATLEAST(s, found); ++found) {
 		/* FIXME: this check for %q{xxx} is too naive... */
 		if (s[found] == '%' && (strchr("wqQ", s[found + 1]) != 0)) {
 		    int ignore;
 		    found += is_String(s + found, &delim, &ignore);
+		} else if (s[found] == L_CURLY) {
+		    ++level;
 		} else if (s[found] == R_CURLY) {
-		    ++found;
-		    break;
+		    if (--level <= 0) {
+			++found;
+			break;
+		    }
 		}
 	    }
 	} else {
@@ -1058,7 +1122,7 @@ static char *
 put_OPERATOR(char *s, int ok, int *had_op)
 {
     flt_puts(s, ok, "");
-    if (strchr("(|&=~!,;", *s) != 0)
+    if (strchr("[(|&=~!,;", *s) != 0)
 	*had_op = 1;
     return s + ok;
 }
@@ -1084,21 +1148,32 @@ put_REGEXP(char *s, int length, int delim)
     char *last;
     int len;
     int range = 0;
+    int on_end = 0;
+    int block = (delim != R_BLOCK);
+    int level = 0;
+    int extended = 0;
 
+    for (last = s + length - 1; last != s && isalpha(*last); --last) {
+	if (*last == 'x') {
+	    extended = 1;
+	    break;
+	}
+    }
     if (*s == '%') {
-	flt_puts(s, 2, Keyword_attr);
-	s += 2;
+	flt_puts(s, 3, Keyword_attr);
+	s += 3;
 	first = s;
+	on_end = 1;
     }
     flt_bfr_begin(String_attr);
     while (s < base + length) {
 	if ((len = is_ESCAPED(s)) != 0) {
 	    flt_bfr_append(s, len);
 	    s += len;
-	} else if (*s == R_BLOCK && range) {
+	} else if (block && (*s == R_BLOCK) && range) {
 	    range = 0;
 	    flt_bfr_append(s++, 1);
-	} else if (*s == L_BLOCK && !range) {
+	} else if (block && (*s == L_BLOCK) && !range) {
 	    range = 1;
 	    flt_bfr_append(s++, 1);
 	} else if ((len = var_embedded(s)) != 0) {
@@ -1106,9 +1181,28 @@ put_REGEXP(char *s, int length, int delim)
 	    s += len;
 	} else if (range) {
 	    flt_bfr_append(s++, 1);
-	} else if (s != first && *s == delim) {
-	    flt_bfr_append(s, 1);
-	    last = ++s;
+	} else if (*s == L_PAREN && delim != R_PAREN) {
+	    ++level;
+	    flt_bfr_append(s++, 1);
+	} else if (*s == R_PAREN && delim != R_PAREN) {
+	    --level;
+	    flt_bfr_append(s++, 1);
+	} else if (extended && (len = is_BLANK(s)) != 0) {
+	    last = s;
+	    flt_bfr_embed(last, len, "");
+	    s += len;
+	} else if (extended && (*s == '#')) {
+	    last = s;
+	    while (MORE(s) && !isreturn(CharOf(*s))) {
+		++s;
+	    }
+	    flt_bfr_embed(last, (int) (s - last), Comment_attr);
+	} else if (s != first && level == 0 && *s == delim) {
+	    if (!on_end)
+		flt_bfr_append(s++, 1);
+	    last = s;
+	    if (on_end)
+		++s;
 	    while (MORE(s) && isalpha(CharOf(*s))) {
 		++s;
 	    }
@@ -1276,7 +1370,8 @@ do_filter(FILE *input GCC_UNUSED)
 		    Parsed(this_tok, tBLANK);
 		    flt_puts(s, ok, "");
 		    s += ok;
-		} else if (had_op && (ok = is_Regexp(s, &delim)) != 0) {
+		} else if ((*s == '%' || had_op)
+			   && (ok = is_Regexp(s, &delim)) != 0) {
 		    Parsed(this_tok, tREGEXP);
 		    s = put_REGEXP(s, ok, delim);
 		} else if ((ok = is_CHAR(s, &err)) != 0) {
@@ -1307,6 +1402,8 @@ do_filter(FILE *input GCC_UNUSED)
 			state = eCLASS;
 		    else if (ok == 3 && !strncmp(s, "def", (size_t) ok))
 			state = eDEF;
+		    else if (ok == 7 && !strncmp(s, "__END__", (size_t) ok))
+			state = eEND;
 		    s = put_KEYWORD(s, ok, &had_op);
 		} else if ((ok = is_VARIABLE(s)) != 0) {
 		    Parsed(this_tok, tVARIABLE);
@@ -1318,10 +1415,17 @@ do_filter(FILE *input GCC_UNUSED)
 		    s = put_VARIABLE(s, ok);	/* csv.rb uses it, undocumented */
 		    had_op = 0;
 		} else if ((ok = is_String(s, &delim, &err)) != 0) {
+		    int on_end = 0;
 		    Parsed(this_tok, tSTRING);
 		    had_op = 0;
 		    if (*s == '%') {
 			flt_puts(s, 2, Keyword_attr);
+			if (!err) {
+			    --ok;
+			    if (strchr("[({", s[1]))	/* })] */
+				--ok;
+			    on_end = 1;
+			}
 			s += 2;
 			ok -= 2;
 		    }
@@ -1340,6 +1444,10 @@ do_filter(FILE *input GCC_UNUSED)
 			    flt_puts(s, ok, String_attr);
 			}
 			s += ok;
+		    }
+		    if (on_end) {
+			flt_puts(s, 1, Keyword_attr);
+			++s;
 		    }
 		} else if ((ok = is_OPERATOR(s)) != 0) {
 		    Parsed(this_tok, tOPERATOR);
@@ -1368,6 +1476,9 @@ do_filter(FILE *input GCC_UNUSED)
 	    case ePOD:
 		if (end_POD(s))
 		    state = eCODE;
+		s = put_remainder(s, Comment_attr, 1);
+		break;
+	    case eEND:
 		s = put_remainder(s, Comment_attr, 1);
 		break;
 	    }
