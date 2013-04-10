@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/vl_ctype.h,v 1.38 2013/03/10 23:07:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/vl_ctype.h,v 1.39 2013/04/08 00:22:25 tom Exp $
  *
  * Character-type tests, like <ctype.h> for vile (vi-like-emacs).
  *
@@ -158,7 +158,7 @@ typedef struct {
 	they force the char to valid range first */
 #define vlCTYPE(c)	vl_chartypes_[CharOf(c) + 1]
 
-#ifndef inline
+#if !defined(inline) && defined(__GNUC__)
 #define istype(m,c)	isVlCTYPE(m, (int)(c), (int)(c))
 #else
 #define istype(m,c)	((vlCTYPE(c) & (m)) != 0)

@@ -9,7 +9,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/htmlfilt.l,v 1.122 2013/04/07 15:46:47 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/htmlfilt.l,v 1.123 2013/04/08 00:33:57 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of HTML input
  * text.
@@ -643,7 +643,7 @@ html_quotes(char *text, int len, int state, int which)
 	static char *temp;
 	static size_t used = 0;
 	size_t need = (temp ? strlen(temp) : 0) + (size_t) (len + 1);
-	int check;
+	CODE_SYMS check;
 
 	temp = do_alloc(temp, need, &used);
 	if (temp != 0) {
@@ -897,7 +897,7 @@ dequote(char *buffer)
 static CODE_SYMS
 language2code(const char *name)
 {
-    int result = CODE_NONE;
+    CODE_SYMS result = CODE_NONE;
 
     if (name != 0) {
 	char *name2 = strmalloc(name);

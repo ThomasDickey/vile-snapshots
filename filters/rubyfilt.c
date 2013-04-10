@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/rubyfilt.c,v 1.70 2013/04/07 23:32:40 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/rubyfilt.c,v 1.77 2013/04/09 23:03:04 tom Exp $
  *
  * Filter to add vile "attribution" sequences to ruby scripts.  This is a
  * translation into C of an earlier version written for LEX/FLEX.
@@ -12,10 +12,11 @@
  * TODO: %Q is equivalent of double-quoted string
  * TODO: %q is equivalent of single-quoted string
  * TODO: %x is equivalent of back-quoted string
+ * TODO: %q, etc., can use "any character" for delimiter, (), etc, are special.
  * TODO: embed quotes using backslashes
  * TODO: embed quotes by using double-quotes inside single
  * TODO: embed quotes by using single-quotes inside double
- * TODO: make var_embedded() parse nested quotes
+ * TODO: make var_embedded() display nested expressions
  */
 
 #include <filters.h>
@@ -501,8 +502,8 @@ is_NUMBER(char *s, int *err)
 	    } else {
 		break;
 	    }
-	} else if (dot && (ch == 'e' || ch == 'E')) {
-	    if (state != 1 || !value) {
+	} else if (ch == 'e' || ch == 'E') {
+	    if ((state > 1 && radix < 16) || !value) {
 		*err = 1;
 	    }
 	    state = 2;
@@ -573,7 +574,7 @@ end_marker(char *s, const char *marker, int only)
     return (ATLEAST(s, len)
 	    && !strncmp(s, marker, (size_t) len)
 	    && isspace(CharOf(s[len]))
-	    && (!only || (s[len] == '\n')));
+	    && (!only || isreturn(s[len])));
 }
 
 /*
@@ -620,6 +621,9 @@ make_here_tag(char *value, int quote, int strip)
 	data->value = value;
 	data->quote = quote;
 	data->strip = strip;
+	DPRINTF(("make_here_tag(%s) %squoted %sstripped\n", value,
+		 quote ? "" : "un",
+		 strip ? "" : "un"));
     }
 }
 
@@ -637,7 +641,45 @@ free_here_tag(void)
 }
 
 /*
- * FIXME: we don't check for unbalanced quotes.
+ * Workaround for ruby bug: ignoring their documentation, which notes that you
+ * must separate a string from the "<<" operator to distinguish it from a here
+ * document tag, some of the source code happens to use " " or "\n" without an
+ * intervening space.
+ */
+static int
+valid_HERE(char *s)
+{
+    int ok = is_QIDENT(s);
+    int delim;
+    if (ok) {
+	switch (*s) {
+	default:
+	    delim = 0;
+	    break;
+	case DQUOTE:
+	    /* FALLTHRU */
+	case SQUOTE:
+	    delim = *s;
+	    break;
+	}
+	if (delim) {
+	    switch (ok) {
+	    case 3:
+		if (s[0] == s[2] && s[1] == ' ')
+		    ok = 0;
+		break;
+	    case 4:
+		if (s[0] == s[3] && s[1] == '\\' && s[2] == 'n')
+		    ok = 0;
+		break;
+	    }
+	}
+    }
+    return ok;
+}
+
+/*
+ * Mark the beginning of a here-document.
  */
 static int
 begin_HERE(char *s)
@@ -653,12 +695,12 @@ begin_HERE(char *s)
 	&& s[1] == '<'
 	&& !isBlank(s[2])) {
 	s += 2;
-	first = s;
 	if (*s == '-') {
 	    strip = 1;
 	    ++s;
 	}
-	if ((ok = is_QIDENT(s)) != 0) {
+	first = s;
+	if ((ok = valid_HERE(s)) != 0) {
 	    size_t temp = 0;
 	    int delim = (*s == SQUOTE || *s == DQUOTE) ? *s : 0;
 	    int quote = (*s == SQUOTE);
@@ -667,8 +709,9 @@ begin_HERE(char *s)
 
 	    if ((marker = do_alloc((char *) 0, (size_t) (ok + 1), &temp)) != 0) {
 		char *d = marker;
-		if (delim)
+		if (delim) {
 		    ++first;
+		}
 		while (first != s) {
 		    if (delim) {
 			if (*first == delim)
@@ -1013,38 +1056,76 @@ put_newline(char *s)
 }
 
 /*
- * pattern: #(\{[^}]*\}|{IDENT})
+ * pattern: #\{{EXPR}*\}
  * returns: length of the token
  */
 static int
 var_embedded(char *s)
 {
-    int found = 0;
+    char *base = s;
     int delim;
     int level = 0;
+    int had_op = 1;
+    int had_key = 0;
+    int ignore;
+    int ok;
 
     if (*s == '#' && MORE(++s)) {
 	if (*s == L_CURLY) {
 	    ++level;
-	    for (found = 1; ATLEAST(s, found); ++found) {
-		/* FIXME: this check for %q{xxx} is too naive... */
-		if (s[found] == '%' && (strchr("wqQ", s[found + 1]) != 0)) {
-		    int ignore;
-		    found += is_String(s + found, &delim, &ignore);
-		} else if (s[found] == L_CURLY) {
-		    ++level;
-		} else if (s[found] == R_CURLY) {
-		    if (--level <= 0) {
-			++found;
-			break;
+	    ++s;
+	    while (MORE(s)) {
+		if ((*s == '%' || had_op)
+		    && (ok = is_Regexp(s, &delim)) != 0) {
+		    had_op = 0;
+		    had_key = 0;
+		    s += ok;
+		} else if ((ok = is_String(s, &delim, &ignore)) != 0) {
+		    had_op = 0;
+		    had_key = 0;
+		    s += ok;
+		} else if ((ok = is_CHAR(s, &ignore)) != 0
+			   && (ok != 2 || (s[1] != L_CURLY && s[1] != R_CURLY))) {
+		    had_op = 0;
+		    had_key = 0;
+		    s += ok;
+		} else if ((ok = is_NUMBER(s, &ignore)) != 0) {
+		    had_op = 0;
+		    had_key = 0;
+		    s += ok;
+		} else if ((ok = is_KEYWORD(s)) != 0) {
+		    had_op = 0;
+		    had_key = 1;
+		    s += ok;
+		} else if ((ok = is_VARIABLE(s)) != 0) {
+		    had_op = 0;
+		    had_key = 1;
+		    s += ok;
+		} else if ((ok = is_OPERATOR(s)) != 0) {
+		    had_op = 1;
+		    had_key = 0;
+		    if (*s == L_CURLY) {
+			++level;
+		    } else if (*s == R_CURLY) {
+			if (--level <= 0) {
+			    ++s;
+			    break;
+			}
 		    }
+		    s += ok;
+		} else {
+		    ++s;
 		}
 	    }
 	} else {
-	    found = is_VARIABLE(s);
+	    if ((ok = is_VARIABLE(s)) != 0) {
+		++ok;
+	    } else {
+		s = base;
+	    }
 	}
     }
-    return found ? found + 1 : 0;
+    return (int) (s - base);
 }
 
 /*
@@ -1378,7 +1459,7 @@ do_filter(FILE *input GCC_UNUSED)
 		    Parsed(this_tok, tCHAR);
 		    had_op = 0;
 		    if (err) {
-			flt_error("not a number");
+			flt_error("not a number: %.*s", ok, s);
 			flt_puts(s, ok, Error_attr);
 		    } else {
 			flt_puts(s, ok, Number_attr);
@@ -1388,7 +1469,7 @@ do_filter(FILE *input GCC_UNUSED)
 		    Parsed(this_tok, tNUMBER);
 		    had_op = 0;
 		    if (err) {
-			flt_error("not a number");
+			flt_error("not a number: %.*s", ok, s);
 			flt_puts(s, ok, Error_attr);
 		    } else {
 			flt_puts(s, ok, Number_attr);
