@@ -1,6 +1,6 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20130409 (j)
+ 20130410 (j)
 	> Brendan O'Dea:
 	+ correct warnings from pod2text
 	> Tom Dickey:
@@ -18,6 +18,9 @@ Changes for vile 9.9 (released ??? ??? ?? ????)
 	  + accept floating point constant without decimal point.
 	  + handle CR/LF endings for lines with here-document tags.
 	  + improve parsing of embedded expressions in strings, e.g., "#{1+2}".
+	  + improve parsing of extended-quoting, e.g., %|foo|
+	  + add ruby.key as alias for rb.key, to simplify use of the filter
+	    as a standalone program.
 	+ apply consistent stylesheet and website links to html documentation.
 	+ add commands to show bound commands ordered by the key to which they
 	  are bound:

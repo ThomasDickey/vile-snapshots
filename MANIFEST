@@ -1,4 +1,4 @@
-MANIFEST for vile, version v9_8i18
+MANIFEST for vile, version v9_8i19
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 AUTHORS                         list of authors, with nicknames in CHANGES
@@ -339,6 +339,7 @@ filters/rpm-filt.l              syntax highlighter for rpm spec-files
 filters/rpm.key                 keywords for rpm spec files
 filters/rtf-filt.l              syntax filter for RTF files
 filters/rtf.key                 control keywords for RTF
+filters/ruby.key                alias for rb.key
 filters/rubyfilt.c              syntax filter for Ruby
 filters/sccs.key                keywords for SCCS syntax filter
 filters/sccsfilt.l              syntax filter for SCCS files.

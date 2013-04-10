@@ -1,18 +1,16 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/rubyfilt.c,v 1.77 2013/04/09 23:03:04 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/rubyfilt.c,v 1.78 2013/04/10 09:20:43 tom Exp $
  *
- * Filter to add vile "attribution" sequences to ruby scripts.  This is a
+ * Filter to add vile "attribution" sequences to ruby scripts.  This began as a
  * translation into C of an earlier version written for LEX/FLEX.
  *
  * Although the documentation says it has simpler syntax, Ruby borrows from
  * Perl the worst of its syntax, i.e., regular expressions which can be split
  * across lines, have embedded comments.
  *
- * TODO: general delimited strings, e.g., %&this is a string&
- * TODO: %Q is equivalent of double-quoted string
- * TODO: %q is equivalent of single-quoted string
  * TODO: %x is equivalent of back-quoted string
- * TODO: %q, etc., can use "any character" for delimiter, (), etc, are special.
+ * TODO: %r is equivalent of regular expression
+ * TODO: %-quoting may accept a space as delimiter
  * TODO: embed quotes using backslashes
  * TODO: embed quotes by using double-quotes inside single
  * TODO: embed quotes by using single-quotes inside double
@@ -880,6 +878,8 @@ is_REGEXP(char *s, int left_delim, int right_delim)
     return found;
 }
 
+#define valid_delimiter(c) (isgraph(CharOf(c)) && !isalnum(CharOf(c)))
+
 static int
 balanced_delimiter(char *s)
 {
@@ -899,10 +899,43 @@ balanced_delimiter(char *s)
 	result = R_ANGLE;
 	break;
     default:
-	result = *s;
+	if (valid_delimiter(*s))
+	    result = *s;
+	else
+	    result = 0;
 	break;
     }
     return result;
+}
+
+static int
+is_Balanced(char *s, int length, int *left, int *right)
+{
+    int delim;
+    int n;
+
+    *left = 0;
+    *right = 0;
+    if (*s == '%') {
+	for (n = 1; n < length; ++n) {
+	    if (isalnum(CharOf(s[n])))
+		continue;
+	    delim = balanced_delimiter(s + n);
+	    if (delim == 0) {
+		*left = n;
+		break;
+	    } else if (delim == s[n]) {
+		*left = n + 1;
+		*right = 1;
+		break;
+	    } else {
+		*left = n + 1;
+		*right = 1;
+		break;
+	    }
+	}
+    }
+    return *left;
 }
 
 /*
@@ -919,7 +952,7 @@ is_Regexp(char *s, int *delim)
     } else if (ATLEAST(s, 4)
 	       && s[0] == '%'
 	       && s[1] == 'r'
-	       && !isalnum(CharOf(s[2]))) {
+	       && valid_delimiter(s[2])) {
 
 	*delim = balanced_delimiter(s + 2);
 	found = 2 + is_REGEXP(s + 2, s[2], *delim);
@@ -975,44 +1008,39 @@ is_String(char *s, int *delim, int *err)
 	switch (*s) {
 	case '%':
 	    if (ATLEAST(s, 4)) {
-		switch (s[1]) {
-		case '(':
-		case '[':
-		case '{':
-		    found = is_STRINGS(s + 1,
+		int modifier = 0;
+		int single = 0;
+		char *base = s;
+
+		++s;
+		if (isalpha(CharOf(*s))) {
+		    modifier = *s++;
+		    switch (modifier) {
+		    case 'q':
+		    case 'w':	/* FIXME - sword */
+			single = 1;
+			break;
+		    case 'x':
+		    case 'Q':
+		    case 'W':	/* FIXME - dword */
+			break;
+		    case 'I':	/* FIXME - dword */
+		    case 'i':	/* FIXME - sword */
+		    case 'r':	/* FIXME - regexp */
+		    case 's':	/* FIXME - symbol */
+			break;
+		    }
+		}
+		if (valid_delimiter(*s)) {
+		    found = is_STRINGS(s,
 				       err,
-				       s[1],
-				       balanced_delimiter(s + 1),
+				       *s,
+				       balanced_delimiter(s),
 				       1);
-		    if (found != 0) {
-			found += 2;
-			*delim = SQUOTE;
-		    }
-		    break;
-		case 'q':
-		case 'w':
-		    found = is_STRINGS(s + 2,
-				       err,
-				       s[2],
-				       balanced_delimiter(s + 2),
-				       1);
-		    if (found != 0) {
-			found += 2;
-			*delim = SQUOTE;
-		    }
-		    break;
-		case 'x':
-		case 'Q':
-		    found = is_STRINGS(s + 2,
-				       err,
-				       s[2],
-				       balanced_delimiter(s + 2),
-				       0);
-		    if (found != 0) {
-			found += 2;
-			*delim = DQUOTE;
-		    }
-		    break;
+		}
+		if (found != 0) {
+		    found += (int) (s - 1 - base);
+		    *delim = single ? SQUOTE : DQUOTE;
 		}
 	    }
 	    break;
@@ -1496,19 +1524,14 @@ do_filter(FILE *input GCC_UNUSED)
 		    s = put_VARIABLE(s, ok);	/* csv.rb uses it, undocumented */
 		    had_op = 0;
 		} else if ((ok = is_String(s, &delim, &err)) != 0) {
+		    int on_left = 0;
 		    int on_end = 0;
 		    Parsed(this_tok, tSTRING);
 		    had_op = 0;
-		    if (*s == '%') {
-			flt_puts(s, 2, Keyword_attr);
-			if (!err) {
-			    --ok;
-			    if (strchr("[({", s[1]))	/* })] */
-				--ok;
-			    on_end = 1;
-			}
-			s += 2;
-			ok -= 2;
+		    if (is_Balanced(s, ok, &on_left, &on_end)) {
+			flt_puts(s, on_left, Keyword_attr);
+			s += on_left;
+			ok -= on_left;
 		    }
 		    if (delim == DQUOTE) {
 			if (err) {
