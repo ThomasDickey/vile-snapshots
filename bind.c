@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.369 2013/03/31 15:57:29 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.370 2013/04/08 00:32:45 tom Exp $
  *
  */
 
@@ -1473,7 +1473,7 @@ makebindkeyslist(int whichmask, void *mstring)
 	for (ch = 0; ch < N_chars; ++ch) {
 	    (void) kcod2prc(ch + modify, outseq);
 	    if (fnc2ntab(&temp, kcod2fnc(bindings_to_describe, ch + modify))) {
-		if (whichmask && !(temp.n_cmd->c_flags & whichmask))
+		if (whichmask && !(temp.n_cmd->c_flags & (CMDFLAGS) whichmask))
 		    continue;
 		bputc('\n');
 		bprintf("%d\t%s\t", ch, outseq);

@@ -6,7 +6,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.369 2013/03/10 23:07:23 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.370 2013/04/08 00:23:23 tom Exp $
  */
 
 #ifndef VILE_EDEF_H
@@ -548,7 +548,7 @@ decl_init( char *current_res_name, "default" );
  * that the compiler can warn about undefined behavior if the istype() macro's
  * parameter has side effects.
  */
-#ifndef inline
+#if !defined(inline) && defined(__GNUC__)
 static inline int
 isVlCTYPE(CHARTYPE m, int c1, int c2)
 {
