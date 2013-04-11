@@ -21,6 +21,8 @@ Changes for vile 9.9 (released ??? ??? ?? ????)
 	  + improve parsing of extended-quoting, e.g., %|foo|
 	  + add ruby.key as alias for rb.key, to simplify use of the filter
 	    as a standalone program.
+	  + add mode for special case of embedded-ruby used in Rails, call that
+	    "erb" mode, activated by the "-e" option of the filter.
 	+ apply consistent stylesheet and website links to html documentation.
 	+ add commands to show bound commands ordered by the key to which they
 	  are bound:

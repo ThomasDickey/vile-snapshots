@@ -1,4 +1,4 @@
-; $Id: filters.rc,v 1.237 2012/07/22 00:08:21 tom Exp $
+; $Id: filters.rc,v 1.238 2013/04/11 00:36:24 tom Exp $
 ; majormodes in this file are ordered alphabetically for convenience - the
 ; precedence used by vile is strictly alphabetic, counting case.
 
@@ -110,6 +110,11 @@ define-mode docbook
 define-mode dtd
 ~with define-submode dtd
 	filtername	'vile-xml-filt -k xsl'
+~endwith
+
+define-mode erb
+~with define-submode erb
+	filtername	'vile-ruby-filt -e -k rb'
 ~endwith
 
 define-mode esql

@@ -1,4 +1,4 @@
-; $Id: modes.rc,v 1.121 2012/10/24 08:32:15 tom Exp $
+; $Id: modes.rc,v 1.122 2013/04/11 00:27:42 tom Exp $
 ; majormodes in this file are ordered alphabetically for convenience - the
 ; precedence used by vile is strictly alphabetic, counting case.  Use the
 ; before and after qualifiers to override the precedence.
@@ -318,6 +318,12 @@ define-mode est
 ~with define-submode est
 	suffixes	'\.st$'
 	cindent
+~endwith
+
+; EmbeddedRuby
+define-mode erb
+~with define-submode erb
+	suffixes	'\.erb$'
 ~endwith
 
 ; Erlang

@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/rubyfilt.c,v 1.78 2013/04/10 09:20:43 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/rubyfilt.c,v 1.80 2013/04/11 00:57:59 tom Exp $
  *
  * Filter to add vile "attribution" sequences to ruby scripts.  This began as a
  * translation into C of an earlier version written for LEX/FLEX.
@@ -20,9 +20,9 @@
 #include <filters.h>
 
 #ifdef DEBUG
-DefineOptFilter("ruby", "d");
+DefineOptFilter("ruby", "de");
 #else
-DefineFilter("ruby");
+DefineOptFilter("ruby", "e");
 #endif
 
 #define isIdent(c)   (isalnum(CharOf(c)) || c == '_')
@@ -55,6 +55,7 @@ typedef enum {
     ,tBLANK
     ,tCHAR
     ,tCOMMENT
+    ,tERB
     ,tHERE
     ,tKEYWORD
     ,tNUMBER
@@ -64,6 +65,7 @@ typedef enum {
     ,tVARIABLE
 } TType;
 
+static char *Action_attr;
 static char *Comment_attr;
 static char *Error_attr;
 static char *Ident_attr;
@@ -145,6 +147,9 @@ tokenType(TType type)
 	break;
     case tCOMMENT:
 	result = "COMMENT";
+	break;
+    case tERB:
+	result = "ERB";
 	break;
     case tHERE:
 	result = "HERE";
@@ -747,6 +752,55 @@ skip_BLANKS(char *s)
 }
 
 /*
+ * Check for ERB (embedded ruby).  Ruby on Rails uses templates which fit into
+ * the special case of ruby embedded in ruby.
+ */
+static int
+is_ERB(char *s)
+{
+    int found = 0;
+#define OPS(s) { s, sizeof(s) - 1 }
+    static const struct {
+	const char *ops;
+	int len;
+    } table[] = {
+	/* 3 */
+	OPS("<%="),
+	    OPS("<%#"),
+	    OPS("<%-"),
+	    OPS("-%>"),
+	/* 2 */
+	    OPS("<%"),
+	    OPS("%>"),
+    };
+
+    if (FltOptions('e') && ispunct(CharOf(*s))) {
+	unsigned n;
+	for (n = 0; n < TABLESIZE(table); ++n) {
+	    if (ATLEAST(s, table[n].len)
+		&& table[n].ops[0] == *s
+		&& !memcmp(s, table[n].ops, (size_t) table[n].len)) {
+		found = table[n].len;
+		break;
+	    }
+	}
+	/* special-case comments */
+	if (found == 3 && s[2] == '#') {
+	    s += found;
+	    while (ATLEAST(s, 2)) {
+		if (!memcmp(s, "%>", 2)) {
+		    found += 2;
+		    break;
+		}
+		s++;
+		found++;
+	    }
+	}
+    }
+    return found;
+}
+
+/*
  * Return the number of characters if an operator is found, otherwise zero.
  */
 static int
@@ -1212,6 +1266,18 @@ put_COMMENT(char *s, int ok)
 }
 
 static char *
+put_ERB(char *s, int ok, int *had_op)
+{
+    if (ok > 3) {
+	flt_puts(s, ok, Comment_attr);
+    } else {
+	flt_puts(s, ok, Action_attr);
+    }
+    *had_op = 1;
+    return s + ok;
+}
+
+static char *
 put_KEYWORD(char *s, int ok, int *had_op)
 {
     const char *attr = 0;
@@ -1326,6 +1392,42 @@ put_REGEXP(char *s, int length, int delim)
     return s;
 }
 
+static char *
+put_String(char *s, int ok, int delim, int err, int *had_op)
+{
+    int on_left = 0;
+    int on_end = 0;
+    int embed = (delim == DQUOTE);
+
+    *had_op = 0;
+    if (is_Balanced(s, ok, &on_left, &on_end)) {
+	flt_puts(s, on_left, Keyword_attr);
+	s += on_left;
+	ok -= on_left;
+    }
+    if (embed) {
+	if (err) {
+	    flt_error("unexpected quote");
+	    s = put_embedded(s, ok, Error_attr);
+	} else {
+	    s = put_embedded(s, ok, String_attr);
+	}
+    } else {
+	if (err) {
+	    flt_error("unterminated string");
+	    flt_puts(s, ok, Error_attr);
+	} else {
+	    flt_puts(s, ok, String_attr);
+	}
+	s += ok;
+    }
+    if (on_end) {
+	flt_puts(s, 1, Keyword_attr);
+	++s;
+    }
+    return s;
+}
+
 /******************************************************************************
  ******************************************************************************/
 
@@ -1356,6 +1458,7 @@ do_filter(FILE *input GCC_UNUSED)
 
     (void) input;
 
+    Action_attr = class_attr(NAME_ACTION);
     Comment_attr = class_attr(NAME_COMMENT);
     Error_attr = class_attr(NAME_ERROR);
     Ident_attr = class_attr(NAME_IDENT);
@@ -1419,6 +1522,10 @@ do_filter(FILE *input GCC_UNUSED)
 		    Parsed(this_tok, tKEYWORD);
 		    s = put_KEYWORD(s, ok, &had_op);
 		    state = eCODE;
+		} else if ((ok = is_ERB(s)) != 0) {
+		    Parsed(this_tok, tERB);
+		    s = put_ERB(s, ok, &had_op);
+		    state = eCODE;
 		} else if ((ok = is_OPERATOR(s)) != 0) {
 		    Parsed(this_tok, tOPERATOR);
 		    s = put_OPERATOR(s, ok, &had_op);
@@ -1448,6 +1555,10 @@ do_filter(FILE *input GCC_UNUSED)
 		} else if ((ok = is_KEYWORD(s)) != 0) {
 		    Parsed(this_tok, tKEYWORD);
 		    s = put_KEYWORD(s, ok, &had_op);
+		    state = eCODE;
+		} else if ((ok = is_ERB(s)) != 0) {
+		    Parsed(this_tok, tERB);
+		    s = put_ERB(s, ok, &had_op);
 		    state = eCODE;
 		} else if ((ok = is_OPERATOR(s)) != 0) {
 		    Parsed(this_tok, tOPERATOR);
@@ -1523,36 +1634,13 @@ do_filter(FILE *input GCC_UNUSED)
 		    Parsed(this_tok, tVARIABLE);
 		    s = put_VARIABLE(s, ok);	/* csv.rb uses it, undocumented */
 		    had_op = 0;
+		} else if ((ok = is_ERB(s)) != 0) {
+		    Parsed(this_tok, tERB);
+		    s = put_ERB(s, ok, &had_op);
+		    state = eCODE;
 		} else if ((ok = is_String(s, &delim, &err)) != 0) {
-		    int on_left = 0;
-		    int on_end = 0;
 		    Parsed(this_tok, tSTRING);
-		    had_op = 0;
-		    if (is_Balanced(s, ok, &on_left, &on_end)) {
-			flt_puts(s, on_left, Keyword_attr);
-			s += on_left;
-			ok -= on_left;
-		    }
-		    if (delim == DQUOTE) {
-			if (err) {
-			    flt_error("unexpected quote");
-			    s = put_embedded(s, ok, Error_attr);
-			} else {
-			    s = put_embedded(s, ok, String_attr);
-			}
-		    } else {
-			if (err) {
-			    flt_error("unterminated string");
-			    flt_puts(s, ok, Error_attr);
-			} else {
-			    flt_puts(s, ok, String_attr);
-			}
-			s += ok;
-		    }
-		    if (on_end) {
-			flt_puts(s, 1, Keyword_attr);
-			++s;
-		    }
+		    s = put_String(s, ok, delim, err, &had_op);
 		} else if ((ok = is_OPERATOR(s)) != 0) {
 		    Parsed(this_tok, tOPERATOR);
 		    s = put_OPERATOR(s, ok, &had_op);
@@ -1593,6 +1681,7 @@ do_filter(FILE *input GCC_UNUSED)
 	    case tCOMMENT:
 		continue;
 	    case tCHAR:
+	    case tERB:
 	    case tHERE:
 	    case tNUMBER:
 	    case tREGEXP:
