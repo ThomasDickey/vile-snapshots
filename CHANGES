@@ -1,9 +1,14 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20130410 (j)
+ 20130412 (j)
 	> Brendan O'Dea:
 	+ correct warnings from pod2text
 	> Tom Dickey:
+	+ modify manfilt.c to interpret ANSI erase-line, insert/delete
+	  character and inline cursor-movement controls.
+	+ modify manfilt.c to improve parsing of SGR sequences, allowing for
+	  expansion to simple cursor movement as would be used in line-editing
+	  for bash and tcsh (prompted by discussion with Joel Winteregg).
 	+ improve/fix ruby syntax highlighter:
 	  + add missing logic needed to make binary numbers parse
 	  + track curly-brace level in var_embedded().
