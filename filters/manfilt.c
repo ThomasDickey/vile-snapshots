@@ -46,7 +46,7 @@
  * vile will choose some appropriate fallback (such as underlining) if
  * italics are not available.
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/manfilt.c,v 1.53 2011/12/11 14:51:20 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/manfilt.c,v 1.60 2013/04/13 01:50:00 tom Exp $
  *
  */
 
@@ -438,6 +438,117 @@ put_cell(int c, int level, int ident, int attrs)
 	cur_line->l_used = cur_line->l_this;
 }
 
+#define MAXPARAMS 10
+
+static void
+erase_cell(int col)
+{
+    CHARCELL *p = &(cur_line->l_cell[col]);
+    p->c_value = SPACE;
+    p->c_level = 0;
+    p->c_ident = CS_NORMAL;
+}
+
+#define DefaultOne(nparams, params) \
+	((nparams == 0) ? 1 : (nparams == 1) ? params[0] : -1)
+
+#define DefaultZero(nparams, params) \
+	((nparams == 0) ? 0 : (nparams == 1) ? params[0] : -1)
+
+static void
+ansi_CUB(int code)
+{
+    if (code > 0 && ((int) cur_line->l_this - code) >= 0) {
+	cur_line->l_this = cur_line->l_this - code;
+    }
+}
+
+static void
+ansi_CUF(int code)
+{
+    if (code > 0) {
+	size_t col = cur_line->l_this + code;
+	while (col > cur_line->l_last) {
+	    extend_line();
+	}
+	if (cur_line->l_used < col)
+	    cur_line->l_used = col;
+	cur_line->l_this = col;
+    }
+}
+
+static void
+ansi_DCH(int code)
+{
+    size_t dst;
+    size_t src;
+
+    if (code > 0) {
+	for (dst = cur_line->l_this; dst < cur_line->l_used; ++dst) {
+	    src = dst + code;
+	    if (src < cur_line->l_used) {
+		cur_line->l_cell[dst] = cur_line->l_cell[src];
+	    } else {
+		erase_cell(dst);
+	    }
+	}
+	cur_line->l_used -= code;
+    }
+}
+
+static void
+ansi_EL(int code)
+{
+    size_t col;
+
+    switch (code) {
+    case 0:			/* Erase to Right (default) */
+	for (col = cur_line->l_this; col <= cur_line->l_used; ++col)
+	    erase_cell(col);
+	break;
+    case 1:			/* Erase to Left */
+    case 2:			/* Erase All */
+	for (col = 0; col <= cur_line->l_this; ++col)
+	    erase_cell(col);
+	break;
+    }
+}
+
+static void
+ansi_ICH(int code)
+{
+    size_t dst;
+    size_t src;
+
+    if (code > 0) {
+	size_t last = cur_line->l_last - 1;
+	for (dst = last; dst >= cur_line->l_this; --dst) {
+	    src = dst - code;
+	    if (src >= cur_line->l_this) {
+		cur_line->l_cell[dst] = cur_line->l_cell[src];
+	    } else {
+		erase_cell(dst);
+	    }
+	}
+	if (cur_line->l_used < last)
+	    cur_line->l_used++;
+    }
+}
+
+static void
+ansi_HPA(int code)
+{
+    if (code > 0) {
+	size_t col = code - 1;
+	while (col > cur_line->l_last) {
+	    extend_line();
+	}
+	if (cur_line->l_used < col)
+	    cur_line->l_used = col;
+	cur_line->l_this = col;
+    }
+}
+
 /*
  * Interpret equivalent overstrike/underline for an ANSI escape sequence.
  */
@@ -445,64 +556,143 @@ static int
 ansi_escape(FILE *ifp, int last_code)
 {
     int ansi = 1;
-    int code = ATR_NORMAL;
+    int code = last_code;
+    int final = 0;
     int value = 0;
     int digits = 0;
+    int private = 0;
+    int params[MAXPARAMS + 1];
+    int nparams = 0;
     int c;
 
     while ((c = my_getc(ifp)) != EOF) {
-	if (sys_isdigit(c)) {
+	if (c >= 0x30 && c <= 0x39) {
 	    value = (value * 10) + (c - '0');
 	    digits++;
-	} else {
-	    if (digits) {
-		switch (value) {
-		case 1:
-		    code |= ATR_BOLD;
-		    break;
-		case 3:
-		    code |= ATR_ITAL;
-		    break;
-		case 4:
-		    code |= ATR_UNDER;
-		    break;
-		case 7:
-		    code |= ATR_REVERS;
-		    break;
-		case 22:
-		    code &= ~ATR_BOLD;
-		    break;
-		case 23:
-		    code &= ~ATR_BOLD;
-		    break;
-		case 24:
-		    code &= ~ATR_UNDER;
-		    break;
-		case 27:
-		    code &= ~ATR_REVERS;
-		    break;
-		default:
-		    /* we handle only foreground (text) colors */
-		    if (value >= 30 && value <= 37) {
-			value -= 30;
-			value <<= SHL_COLOR;
-			code &= ~ATR_COLOR;
-			code |= value;
-		    }
-		    break;
+	} else if (c == ';' || (c >= 0x40 && c <= 0x7e)) {
+	    if (nparams < MAXPARAMS) {
+		if (!digits) {
+		    value = -1;
+		} else {
+		    params[nparams++] = value;
 		}
 	    }
-	    if (isalpha(c))
+	    if (c != ';') {
+		final = c;
 		break;
-	    else if (c != ';')
-		ansi = 0;
+	    }
 	    value = 0;
 	    digits = 0;
+	} else if (c >= 0x3a && c <= 0x3f) {
+	    private = 1;
+	} else if (c < 0x30 || c > 0x7e) {
+	    ansi = 0;		/* ...at least, nothing we can handle */
+	    break;
 	}
     }
 
-    if ((c != 'm') || !ansi) {
-	code = last_code;
+    if (!private) {
+	/*
+	 * Multiline controls are implemented (but are noted below) because
+	 * doing this correctly depends on the filter knowing the width of
+	 * the terminal when the log/typescript was produced.  That width was
+	 * taken into account by the program which wrote the log, and is not
+	 * necessarily the same as that used in the current session.
+	 */
+	switch (final) {
+	case '@':
+	    ansi_ICH(DefaultOne(nparams, params));
+	    break;
+	case 'A':
+	    /* CUU - not implemented (multiline) */
+	    break;
+	case 'B':
+	    /* CUD - not implemented (multiline) */
+	    break;
+	case 'C':
+	    ansi_CUF(DefaultOne(nparams, params));
+	    break;
+	case 'D':
+	    ansi_CUB(DefaultOne(nparams, params));
+	    break;
+	case '`':
+	case 'G':
+	    ansi_HPA(DefaultOne(nparams, params));
+	    break;
+	case 'H':
+	    /* CUP - not implemented (multiline) */
+	    break;
+	case 'J':
+	    /* ED - not implemented (multiline) */
+	    break;
+	case 'K':
+	    ansi_EL(DefaultZero(nparams, params));
+	    break;
+	case 'L':
+	    /* IL - not implemented (multiline) */
+	    break;
+	case 'M':
+	    /* DL - not implemented (multiline) */
+	    break;
+	case 'P':
+	    ansi_DCH(DefaultOne(nparams, params));
+	    break;
+	case 'd':
+	    /* VPA - not implemented (multiline) */
+	    break;
+	case 'h':
+	case 'l':
+	    /* 4 is IRM - not implemented (ICH is preferred) */
+	    break;
+	case 'm':
+	    /* SGR */
+	    if (nparams != 0) {
+		for (c = 0; c < nparams; ++c) {
+		    value = params[c];
+		    switch (value) {
+		    case 0:
+			code = ATR_NORMAL;
+			break;
+		    case 1:
+			code |= ATR_BOLD;
+			break;
+		    case 3:
+			code |= ATR_ITAL;
+			break;
+		    case 4:
+			code |= ATR_UNDER;
+			break;
+		    case 7:
+			code |= ATR_REVERS;
+			break;
+		    case 22:
+			code &= ~ATR_BOLD;
+			break;
+		    case 23:
+			code &= ~ATR_BOLD;
+			break;
+		    case 24:
+			code &= ~ATR_UNDER;
+			break;
+		    case 27:
+			code &= ~ATR_REVERS;
+			break;
+		    default:
+			/* we handle only foreground (text) colors */
+			if (value >= 30 && value <= 37) {
+			    value -= 30;
+			    value <<= SHL_COLOR;
+			    code &= ~ATR_COLOR;
+			    code |= value;
+			}
+			break;
+		    }
+		}
+	    } else {
+		code = ATR_NORMAL;
+	    }
+	    break;
+	}
     }
     return code;
 }
