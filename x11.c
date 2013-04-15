@@ -2,7 +2,7 @@
  *	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.384 2013/03/06 10:57:26 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.386 2013/04/14 19:57:50 tom Exp $
  *
  */
 
@@ -37,28 +37,6 @@ static ENC_CHOICES font_encoding = enc_DEFAULT;
 static TextWindowRec cur_win_rec;
 static TextWindow cur_win = &cur_win_rec;
 static TBUFF *PasteBuf;
-
-static Atom atom_WM_PROTOCOLS;
-static Atom atom_WM_DELETE_WINDOW;
-static Atom atom_FONT;
-static Atom atom_FOUNDRY;
-static Atom atom_WEIGHT_NAME;
-static Atom atom_SLANT;
-static Atom atom_SETWIDTH_NAME;
-static Atom atom_PIXEL_SIZE;
-static Atom atom_RESOLUTION_X;
-static Atom atom_RESOLUTION_Y;
-static Atom atom_SPACING;
-static Atom atom_AVERAGE_WIDTH;
-static Atom atom_CHARSET_REGISTRY;
-static Atom atom_CHARSET_ENCODING;
-static Atom atom_TARGETS;
-static Atom atom_MULTIPLE;
-static Atom atom_TIMESTAMP;
-static Atom atom_TEXT;
-static Atom atom_CLIPBOARD;
-static Atom atom_COMPOUND_TEXT;
-static Atom atom_UTF8_STRING;
 
 #if OPT_KEV_SCROLLBARS || OPT_XAW_SCROLLBARS
 static Cursor curs_sb_v_double_arrow;
@@ -117,7 +95,6 @@ static Boolean too_light_or_too_dark(Pixel pixel);
 #if OPT_KEV_SCROLLBARS
 static Boolean alloc_shadows(Pixel pixel, Pixel * light, Pixel * dark);
 #endif
-static XFontStruct *query_font(TextWindow tw, const char *fname);
 static void configure_bar(Widget w, XEvent * event, String * params,
 			  Cardinal *num_params);
 static int check_scrollbar_allocs(void);
@@ -1652,23 +1629,23 @@ visibleAtoms(Atom value)
 	result = "None";
     else if (value == XA_ATOM)
 	result = "XA_ATOM";
-    else if (value == atom_CLIPBOARD)
+    else if (value == GetAtom(CLIPBOARD))
 	result = "XA_CLIPBOARD";
-    else if (value == atom_COMPOUND_TEXT)
+    else if (value == GetAtom(COMPOUND_TEXT))
 	result = "XA_COMPOUND_TEXT";
-    else if (value == atom_MULTIPLE)
+    else if (value == GetAtom(MULTIPLE))
 	result = "MULTIPLE";
     else if (value == XA_PRIMARY)
 	result = "XA_PRIMARY";
     else if (value == XA_STRING)
 	result = "XA_STRING";
-    else if (value == atom_TARGETS)
+    else if (value == GetAtom(TARGETS))
 	result = "XA_TARGETS";
-    else if (value == atom_TEXT)
+    else if (value == GetAtom(TEXT))
 	result = "XA_TEXT";
-    else if (value == atom_TIMESTAMP)
+    else if (value == GetAtom(TIMESTAMP))
 	result = "XA_TIMESTAMP";
-    else if (value == atom_UTF8_STRING)
+    else if (value == GetAtom(UTF8_STRING))
 	result = "XA_UTF8_STRING";
     else
 	result = "unknown";
@@ -1864,7 +1841,7 @@ x_load_icon(void)
 int
 x_preparse_args(int *pargc, char ***pargv)
 {
-    XFontStruct *pfont;
+    XVileFont *pfont;
     XGCValues gcvals;
     ULONG gcmask;
     int geo_mask, startx, starty;
@@ -2172,23 +2149,9 @@ x_preparse_args(int *pargc, char ***pargv)
     TRACE_RES_P(XtNfcolorF, colors_fg[15]);
     TRACE_RES_P(XtNbcolorF, colors_bg[15]);
 
-    /* Initialize atoms needed for getting a fully specified font name */
-    atom_FONT = XInternAtom(dpy, "FONT", False);
-    atom_FOUNDRY = XInternAtom(dpy, "FOUNDRY", False);
-    atom_WEIGHT_NAME = XInternAtom(dpy, "WEIGHT_NAME", False);
-    atom_SLANT = XInternAtom(dpy, "SLANT", False);
-    atom_SETWIDTH_NAME = XInternAtom(dpy, "SETWIDTH_NAME", False);
-    atom_PIXEL_SIZE = XInternAtom(dpy, "PIXEL_SIZE", False);
-    atom_RESOLUTION_X = XInternAtom(dpy, "RESOLUTION_X", False);
-    atom_RESOLUTION_Y = XInternAtom(dpy, "RESOLUTION_Y", False);
-    atom_SPACING = XInternAtom(dpy, "SPACING", False);
-    atom_AVERAGE_WIDTH = XInternAtom(dpy, "AVERAGE_WIDTH", False);
-    atom_CHARSET_REGISTRY = XInternAtom(dpy, "CHARSET_REGISTRY", False);
-    atom_CHARSET_ENCODING = XInternAtom(dpy, "CHARSET_ENCODING", False);
-
-    pfont = query_font(cur_win, cur_win->starting_fontname);
+    pfont = xvileQueryFont(dpy, cur_win, cur_win->starting_fontname);
     if (!pfont) {
-	pfont = query_font(cur_win, FONTNAME);
+	pfont = xvileQueryFont(dpy, cur_win, FONTNAME);
 	if (!pfont) {
 	    (void) fprintf(stderr,
 			   "couldn't get font \"%s\" or \"%s\", exiting\n",
@@ -2856,12 +2819,10 @@ x_preparse_args(int *pargc, char ***pargv)
     x_load_icon();
 
     /* We wish to participate in the "delete window" protocol */
-    atom_WM_PROTOCOLS = XInternAtom(dpy, "WM_PROTOCOLS", False);
-    atom_WM_DELETE_WINDOW = XInternAtom(dpy, "WM_DELETE_WINDOW", False);
     {
 	Atom atoms[2];
 	i = 0;
-	atoms[i++] = atom_WM_DELETE_WINDOW;
+	atoms[i++] = GetAtom(WM_DELETE_WINDOW);
 	XSetWMProtocols(dpy,
 			XtWindow(cur_win->top_widget),
 			atoms,
@@ -2872,15 +2833,6 @@ x_preparse_args(int *pargc, char ***pargv)
 		      TRUE,
 		      x_wm_delwin,
 		      (XtPointer) 0);
-
-    /* Atoms needed for selections */
-    atom_TARGETS = XInternAtom(dpy, "TARGETS", False);
-    atom_MULTIPLE = XInternAtom(dpy, "MULTIPLE", False);
-    atom_TIMESTAMP = XInternAtom(dpy, "TIMESTAMP", False);
-    atom_TEXT = XInternAtom(dpy, "TEXT", False);
-    atom_CLIPBOARD = XInternAtom(dpy, "CLIPBOARD", False);
-    atom_COMPOUND_TEXT = XInternAtom(dpy, "COMPOUND_TEXT", False);
-    atom_UTF8_STRING = XInternAtom(dpy, "UTF8_STRING", False);
 
     set_pointer(XtWindow(cur_win->screen), cur_win->normal_pointer);
 
@@ -2973,7 +2925,21 @@ alloc_shadows(Pixel pixel, Pixel * light, Pixel * dark)
 }
 #endif
 
-static void
+#if OPT_MULTIBYTE
+void
+x_set_font_encoding(ENC_CHOICES new_encoding)
+{
+    ENC_CHOICES old_encoding = font_encoding;
+
+    if (old_encoding != new_encoding) {
+	TRACE(("set $font-encoding to %s\n", encoding2s(new_encoding)));
+	font_encoding = new_encoding;
+	set_winflags(TRUE, WFHARD);
+    }
+}
+#endif
+
+void
 x_set_fontname(TextWindow tw, const char *fname)
 {
     char *newfont;
@@ -2989,185 +2955,6 @@ char *
 x_current_fontname(void)
 {
     return cur_win->fontname;
-}
-
-static char *
-x_get_font_atom_property(XFontStruct * pf, Atom atom)
-{
-    XFontProp *pp;
-    int i;
-    char *retval = NULL;
-
-    for (i = 0, pp = pf->properties; i < pf->n_properties; i++, pp++)
-	if (pp->name == atom) {
-	    retval = XGetAtomName(dpy, pp->card32);
-	    break;
-	}
-    return retval;
-}
-
-static XFontStruct *
-query_font(TextWindow tw, const char *fname)
-{
-    XFontStruct *pf;
-
-    TRACE(("x11:query_font(%s)\n", fname));
-    if ((pf = XLoadQueryFont(dpy, fname)) != 0) {
-	char *fullname = NULL;
-
-	if (pf->max_bounds.width != pf->min_bounds.width) {
-	    (void) fprintf(stderr,
-			   "proportional font, things will be miserable\n");
-	}
-
-	/*
-	 * Free resources associated with any presently loaded fonts.
-	 */
-	if (tw->pfont)
-	    XFreeFont(dpy, tw->pfont);
-	if (tw->pfont_bold) {
-	    XFreeFont(dpy, tw->pfont_bold);
-	    tw->pfont_bold = NULL;
-	}
-	if (tw->pfont_ital) {
-	    XFreeFont(dpy, tw->pfont_ital);
-	    tw->pfont_ital = NULL;
-	}
-	if (tw->pfont_boldital) {
-	    XFreeFont(dpy, tw->pfont_boldital);
-	    tw->pfont_boldital = NULL;
-	}
-	tw->fsrch_flags = 0;
-
-	tw->pfont = pf;
-	tw->char_width = pf->max_bounds.width;
-	tw->char_height = pf->ascent + pf->descent;
-	tw->char_ascent = pf->ascent;
-	tw->char_descent = pf->descent;
-	tw->left_ink = (pf->min_bounds.lbearing < 0);
-	tw->right_ink = (pf->max_bounds.rbearing > tw->char_width);
-
-	TRACE(("...success left:%d, right:%d\n", tw->left_ink, tw->right_ink));
-
-	if ((fullname = x_get_font_atom_property(pf, atom_FONT)) != NULL
-	    && fullname[0] == '-') {
-	    /*
-	     * Good. Not much work to do; the name was available via the FONT
-	     * property.
-	     */
-	    x_set_fontname(tw, fullname);
-	    XFree(fullname);
-	    TRACE(("...resulting FONT property font %s\n", tw->fontname));
-	} else {
-	    /*
-	     * Woops, fully qualified name not available from the FONT property.
-	     * Attempt to get the full name piece by piece.  Ugh!
-	     */
-	    char str[1024], *s;
-	    if (fullname != NULL)
-		XFree(fullname);
-
-	    s = str;
-	    *s++ = '-';
-
-#define GET_ATOM_OR_STAR(atom)					\
-    do {							\
-	char *as;						\
-	if ((as = x_get_font_atom_property(pf, (atom))) != NULL) { \
-	    char *asp = as;					\
-	    while ((*s++ = *asp++))				\
-		;						\
-	    *(s-1) = '-';					\
-	    XFree(as);						\
-	}							\
-	else {							\
-	    *s++ = '*';						\
-	    *s++ = '-';						\
-	}							\
-    } one_time
-
-#define GET_ATOM_OR_GIVEUP(atom)				\
-    do {							\
-	char *as;						\
-	if ((as = x_get_font_atom_property(pf, (atom))) != NULL) { \
-	    char *asp = as;					\
-	    while ((*s++ = *asp++))				\
-		;						\
-	    *(s-1) = '-';					\
-	    XFree(as);						\
-	}							\
-	else							\
-	    goto piecemeal_done;				\
-    } one_time
-
-#define GET_LONG_OR_GIVEUP(atom)				\
-    do {							\
-	ULONG val;						\
-	if (XGetFontProperty(pf, (atom), &val)) {		\
-	    sprintf(s, "%ld", (long)val);			\
-	    while (*s++ != '\0')				\
-		;						\
-	    *(s-1) = '-';					\
-	}							\
-	else							\
-	    goto piecemeal_done;				\
-    } one_time
-
-	    GET_ATOM_OR_STAR(atom_FOUNDRY);
-	    GET_ATOM_OR_GIVEUP(XA_FAMILY_NAME);
-	    GET_ATOM_OR_GIVEUP(atom_WEIGHT_NAME);
-	    GET_ATOM_OR_GIVEUP(atom_SLANT);
-	    GET_ATOM_OR_GIVEUP(atom_SETWIDTH_NAME);
-	    *s++ = '*';		/* ADD_STYLE_NAME */
-	    *s++ = '-';
-	    GET_LONG_OR_GIVEUP(atom_PIXEL_SIZE);
-	    GET_LONG_OR_GIVEUP(XA_POINT_SIZE);
-	    GET_LONG_OR_GIVEUP(atom_RESOLUTION_X);
-	    GET_LONG_OR_GIVEUP(atom_RESOLUTION_Y);
-	    GET_ATOM_OR_GIVEUP(atom_SPACING);
-	    GET_LONG_OR_GIVEUP(atom_AVERAGE_WIDTH);
-	    GET_ATOM_OR_STAR(atom_CHARSET_REGISTRY);
-	    GET_ATOM_OR_STAR(atom_CHARSET_ENCODING);
-	    *(s - 1) = '\0';
-
-#undef GET_ATOM_OR_STAR
-#undef GET_ATOM_OR_GIVEUP
-#undef GET_LONG_OR_GIVEUP
-
-	    fname = str;
-	  piecemeal_done:
-	    /*
-	     * We will either use the name which was built up piecemeal or
-	     * the name which was originally passed to us to assign to
-	     * the fontname field.  We prefer the fully qualified name
-	     * so that we can later search for bold and italic fonts.
-	     */
-	    x_set_fontname(tw, fname);
-	    TRACE(("...resulting piecemeal font %s\n", tw->fontname));
-	}
-    }
-#if OPT_MULTIBYTE
-    if (pf != 0) {
-	ENC_CHOICES old_encoding = font_encoding;
-	ENC_CHOICES new_encoding;
-
-	/*
-	 * max_byte1 is the maximum for the high-byte of 16-bit chars.
-	 * If it is nonzero, this is not an 8-bit font.
-	 */
-	if (pf->max_byte1 != 0) {
-	    new_encoding = enc_UTF8;
-	} else {
-	    new_encoding = enc_8BIT;
-	}
-	if (old_encoding != new_encoding) {
-	    TRACE(("set $font-encoding to %s\n", encoding2s(new_encoding)));
-	    font_encoding = new_encoding;
-	    set_winflags(TRUE, WFHARD);
-	}
-    }
-#endif
-    return pf;
 }
 
 #if OPT_MENUS
@@ -3201,14 +2988,14 @@ x_menu_background(void)
 int
 x_setfont(const char *fname)
 {
-    XFontStruct *pfont;
+    XVileFont *pfont;
     Dimension oldw;
     Dimension oldh;
 
     if (cur_win) {
 	oldw = (Dimension) x_width(cur_win);
 	oldh = (Dimension) x_height(cur_win);
-	if ((pfont = query_font(cur_win, fname)) != 0) {
+	if ((pfont = xvileQueryFont(dpy, cur_win, fname)) != 0) {
 	    XSetFont(dpy, cur_win->textgc, pfont->fid);
 	    XSetFont(dpy, cur_win->reversegc, pfont->fid);
 	    XSetFont(dpy, cur_win->selgc, pfont->fid);
@@ -3851,10 +3638,10 @@ GetSelectionTargets(void)
     if (result[0] == 0) {
 	Atom *tp = result;
 #if OPT_MULTIBYTE
-	*tp++ = atom_UTF8_STRING;
-	*tp++ = atom_COMPOUND_TEXT;
+	*tp++ = GetAtom(UTF8_STRING);
+	*tp++ = GetAtom(COMPOUND_TEXT);
 #endif
-	*tp++ = atom_TEXT;
+	*tp++ = GetAtom(TEXT);
 	*tp++ = XA_STRING;
 	*tp = None;
 #if OPT_TRACE
@@ -3876,7 +3663,7 @@ insert_selection(Atom * selection, char *value, size_t length)
     /* should be impossible to hit this with existing paste */
     /* XXX massive hack -- leave out 'i' if in prompt line */
     do_ins = !insertmode
-	&& (!onMsgRow(cur_win) || *selection == atom_CLIPBOARD)
+	&& (!onMsgRow(cur_win) || *selection == GetAtom(CLIPBOARD))
 	&& ((s = fnc2pstr(&f_insert_no_aindent)) != NULL);
 
     if (tb_init(&PasteBuf, esc_c)) {
@@ -3908,13 +3695,13 @@ x_get_selection(Widget w GCC_UNUSED,
     if (length != 0 && value != NULL) {
 	if (*format != 8) {
 	    kbd_alarm();	/* can't handle incoming data */
-	} else if (*target == XA_STRING || *target == atom_TEXT) {
+	} else if (*target == XA_STRING || *target == GetAtom(TEXT)) {
 	    insert_selection(selection, (char *) value, (size_t) *length);
 	    XtFree((char *) value);
 	} else
 #if OPT_MULTIBYTE
-	    if ((*target == atom_COMPOUND_TEXT)
-		|| (*target == atom_UTF8_STRING)) {
+	    if ((*target == GetAtom(COMPOUND_TEXT))
+		|| (*target == GetAtom(UTF8_STRING))) {
 	    XTextProperty text_prop;
 	    char **text_list = NULL;
 	    int text_list_count, n;
@@ -4103,7 +3890,7 @@ x_convert_selection(Widget w GCC_UNUSED,
      * handled by the Xt intrinsics).
      */
 
-    if (*target == atom_TARGETS) {
+    if (*target == GetAtom(TARGETS)) {
 	Atom *tp;
 	Atom *sp;
 
@@ -4113,9 +3900,9 @@ x_convert_selection(Widget w GCC_UNUSED,
 	*(Atom **) value = tp;
 
 	if (tp != NULL) {
-	    *tp++ = atom_TARGETS;
-	    *tp++ = atom_MULTIPLE;
-	    *tp++ = atom_TIMESTAMP;
+	    *tp++ = GetAtom(TARGETS);
+	    *tp++ = GetAtom(MULTIPLE);
+	    *tp++ = GetAtom(TIMESTAMP);
 	    for (sp = GetSelectionTargets(); *sp != None; ++sp)
 		*tp++ = *sp;
 
@@ -4124,7 +3911,7 @@ x_convert_selection(Widget w GCC_UNUSED,
 	    *format = 32;	/* width of the data being transfered */
 	    result = True;
 	}
-    } else if (*target == XA_STRING || *target == atom_TEXT) {
+    } else if (*target == XA_STRING || *target == GetAtom(TEXT)) {
 	*type = XA_STRING;
 	*format = 8;
 	if (IsPrimary(*selection))
@@ -4133,14 +3920,14 @@ x_convert_selection(Widget w GCC_UNUSED,
 	    result = x_get_clipboard_text((UCHAR **) value, (size_t *) length);
     }
 #if OPT_MULTIBYTE
-    else if (*target == atom_UTF8_STRING) {
+    else if (*target == GetAtom(UTF8_STRING)) {
 	*type = *target;
 	*format = 8;
 	if (IsPrimary(*selection))
 	    result = x_get_selected_text((UCHAR **) value, (size_t *) length);
 	else			/* CLIPBOARD */
 	    result = x_get_clipboard_text((UCHAR **) value, (size_t *) length);
-    } else if (*target == atom_COMPOUND_TEXT) {
+    } else if (*target == GetAtom(COMPOUND_TEXT)) {
 	*type = *target;
 	*format = 8;
 	if (IsPrimary(*selection))
@@ -4474,7 +4261,7 @@ copy_to_clipboard(int f GCC_UNUSED, int n GCC_UNUSED)
     }
 
     sel_yank(CLIP_KREG);
-    x_own_selection(atom_CLIPBOARD);
+    x_own_selection(GetAtom(CLIPBOARD));
 
     return TRUE;
 }
@@ -4483,7 +4270,7 @@ copy_to_clipboard(int f GCC_UNUSED, int n GCC_UNUSED)
 int
 paste_from_clipboard(int f GCC_UNUSED, int n GCC_UNUSED)
 {
-    x_paste_selection(atom_CLIPBOARD);
+    x_paste_selection(GetAtom(CLIPBOARD));
     return TRUE;
 }
 
@@ -4955,8 +4742,8 @@ x_wm_delwin(Widget w GCC_UNUSED,
 	    Boolean * continue_to_dispatch GCC_UNUSED)
 {
     if (ev->type == ClientMessage
-	&& ev->xclient.message_type == atom_WM_PROTOCOLS
-	&& (Atom) ev->xclient.data.l[0] == atom_WM_DELETE_WINDOW) {
+	&& ev->xclient.message_type == GetAtom(WM_PROTOCOLS)
+	&& (Atom) ev->xclient.data.l[0] == GetAtom(WM_DELETE_WINDOW)) {
 	quit(FALSE, 0);		/* quit might not return */
 	(void) update(TRUE);
     }
@@ -5936,37 +5723,40 @@ x_autocolor_timeout(XtPointer data GCC_UNUSED, XtIntervalId * id GCC_UNUSED)
 /*
  * Return true if the given character would be printable.  Not all characters
  * are printable.
- *
- * FIXME: this is only used in vl_ctype_init for handling 0-255 codes.
  */
 int
 gui_isprint(int ch)
 {
     int result = TRUE;
-    XFontStruct *pf = cur_win->pfont;
-    XCharStruct *pc = 0;
-    static XCharStruct dft, *tmp = &dft;
 
-    if (ch >= 0
-	&& pf != 0
-	&& pf->per_char != 0
-	&& !pf->all_chars_exist) {
+    if (ch >= 0) {
+#ifdef XRENDERFONT
+#else
+	static XCharStruct dft, *tmp = &dft;
+	XVileFont *pf = cur_win->pfont;
+	XCharStruct *pc = 0;
 
-	if (pf->max_byte1 == 0) {
-	    if (ch > 255) {
-		result = FALSE;
+	if (pf != 0
+	    && pf->per_char != 0
+	    && !pf->all_chars_exist) {
+
+	    if (pf->max_byte1 == 0) {
+		if (ch > 255) {
+		    result = FALSE;
+		} else {
+		    CI_GET_CHAR_INFO_1D(pf, (unsigned) ch, tmp, pc);
+		    if (pc == 0 || CI_NONEXISTCHAR(pc)) {
+			result = FALSE;
+		    }
+		}
 	    } else {
-		CI_GET_CHAR_INFO_1D(pf, (unsigned) ch, tmp, pc);
+		CI_GET_CHAR_INFO_2D(pf, CharOf((ch >> 8)), CharOf(ch), tmp, pc);
 		if (pc == 0 || CI_NONEXISTCHAR(pc)) {
 		    result = FALSE;
 		}
 	    }
-	} else {
-	    CI_GET_CHAR_INFO_2D(pf, CharOf((ch >> 8)), CharOf(ch), tmp, pc);
-	    if (pc == 0 || CI_NONEXISTCHAR(pc)) {
-		result = FALSE;
-	    }
 	}
+#endif
     }
     return result;
 }
@@ -6296,6 +6086,57 @@ x_move(int row, int col)
 {
     psc_move(row, col);
     PreeditPosition();
+}
+
+static const char *
+ae_names(XVileAtom n)
+{
+    const char *result = 0;
+
+#define DATA(name) case ae ## name: result = #name
+    switch (n) {
+    case aeMAX:
+	break;
+	DATA(AVERAGE_WIDTH);
+	DATA(CHARSET_ENCODING);
+	DATA(CHARSET_REGISTRY);
+	DATA(CLIPBOARD);
+	DATA(COMPOUND_TEXT);
+	DATA(FONT);
+	DATA(FOUNDRY);
+	DATA(MULTIPLE);
+	DATA(NONE);
+	DATA(PIXEL_SIZE);
+	DATA(RESOLUTION_X);
+	DATA(RESOLUTION_Y);
+	DATA(SETWIDTH_NAME);
+	DATA(SLANT);
+	DATA(SPACING);
+	DATA(TARGETS);
+	DATA(TEXT);
+	DATA(TIMESTAMP);
+	DATA(UTF8_STRING);
+	DATA(WEIGHT_NAME);
+	DATA(WM_DELETE_WINDOW);
+	DATA(WM_PROTOCOLS);
+    }
+#undef DATA
+    return result;
+}
+
+Atom
+xvileAtom(XVileAtom n)
+{
+    static Atom xvile_atoms[aeMAX];
+    Atom result = None;
+
+    if (n < aeMAX) {
+	if (xvile_atoms[n] == None) {
+	    xvile_atoms[n] = XInternAtom(dpy, ae_names(n), False);
+	}
+	result = xvile_atoms[n];
+    }
+    return result;
 }
 
 TERM term =

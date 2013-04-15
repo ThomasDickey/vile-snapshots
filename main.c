@@ -22,7 +22,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.718 2013/03/11 00:03:50 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.719 2013/04/13 13:45:59 tom Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -239,8 +239,11 @@ setup_command(BUFFER *opts_bp, char *param)
     if (isPunct(CharOf(*param))
 	&& ((cfp == &f_forwsearch)
 	    || (cfp == &f_backsearch)
+#if OPT_SHELL
 	    || (cfp == &f_capturecmd)
-	    || (cfp == &f_operfilter))) {
+	    || (cfp == &f_operfilter)
+#endif
+	)) {
 	add_cmdarg(opts_bp, "execute-named-command %s\n", param);
     } else {
 	b2printf(opts_bp, "execute-named-command %s\n", param);

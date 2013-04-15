@@ -3,7 +3,7 @@
  *	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11plain.c,v 1.3 2013/03/06 10:53:03 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11plain.c,v 1.4 2013/04/14 19:28:11 tom Exp $
  *
  */
 
@@ -26,12 +26,12 @@
 
 #include <x11vile.h>
 
-static XFontStruct *
+static XVileFont *
 alternate_font(Display * dpy, TextWindow win, const char *weight, const char *slant)
 {
     char *newname, *np, *op;
     int cnt;
-    XFontStruct *fsp = NULL;
+    XVileFont *fsp = NULL;
 
     if (win->fontname == NULL
 	|| win->fontname[0] != '-'
@@ -214,6 +214,21 @@ really_draw(Display * dpy,
     }
 }
 
+static char *
+x_get_font_atom_property(Display * dpy, XVileFont * pf, Atom atom)
+{
+    XFontProp *pp;
+    int i;
+    char *retval = NULL;
+
+    for (i = 0, pp = pf->properties; i < pf->n_properties; i++, pp++)
+	if (pp->name == atom) {
+	    retval = XGetAtomName(dpy, pp->card32);
+	    break;
+	}
+    return retval;
+}
+
 /*
  * The X protocol request for clearing a rectangle (PolyFillRectangle) takes
  * 20 bytes.  It will therefore be more expensive to switch from drawing text
@@ -288,7 +303,7 @@ xvileDraw(Display * dpy,
     }
 
     if (attr & (VABOLD | VAITAL)) {
-	XFontStruct *fsp = NULL;
+	XVileFont *fsp = NULL;
 	if ((attr & (VABOLD | VAITAL)) == (VABOLD | VAITAL)) {
 	    if (!(win->fsrch_flags & FSRCH_BOLDITAL)) {
 		if ((fsp = alternate_font(dpy, win, "bold", "i")) != NULL
@@ -377,4 +392,152 @@ xvileDraw(Display * dpy,
 
     if (fontchanged)
 	XSetFont(dpy, fore_gc, win->pfont->fid);
+}
+
+XVileFont *
+xvileQueryFont(Display * dpy, TextWindow tw, const char *fname)
+{
+    XVileFont *pf;
+
+    TRACE(("x11:query_font(%s)\n", fname));
+    if ((pf = XLoadQueryFont(dpy, fname)) != 0) {
+	char *fullname = NULL;
+
+	if (pf->max_bounds.width != pf->min_bounds.width) {
+	    (void) fprintf(stderr,
+			   "proportional font, things will be miserable\n");
+	}
+
+	/*
+	 * Free resources associated with any presently loaded fonts.
+	 */
+	if (tw->pfont)
+	    XFreeFont(dpy, tw->pfont);
+	if (tw->pfont_bold) {
+	    XFreeFont(dpy, tw->pfont_bold);
+	    tw->pfont_bold = NULL;
+	}
+	if (tw->pfont_ital) {
+	    XFreeFont(dpy, tw->pfont_ital);
+	    tw->pfont_ital = NULL;
+	}
+	if (tw->pfont_boldital) {
+	    XFreeFont(dpy, tw->pfont_boldital);
+	    tw->pfont_boldital = NULL;
+	}
+	tw->fsrch_flags = 0;
+
+	tw->pfont = pf;
+	tw->char_width = pf->max_bounds.width;
+	tw->char_height = pf->ascent + pf->descent;
+	tw->char_ascent = pf->ascent;
+	tw->char_descent = pf->descent;
+	tw->left_ink = (pf->min_bounds.lbearing < 0);
+	tw->right_ink = (pf->max_bounds.rbearing > tw->char_width);
+
+	TRACE(("...success left:%d, right:%d\n", tw->left_ink, tw->right_ink));
+
+	if ((fullname = x_get_font_atom_property(dpy, pf, GetAtom(FONT))) != NULL
+	    && fullname[0] == '-') {
+	    /*
+	     * Good. Not much work to do; the name was available via the FONT
+	     * property.
+	     */
+	    x_set_fontname(tw, fullname);
+	    XFree(fullname);
+	    TRACE(("...resulting FONT property font %s\n", tw->fontname));
+	} else {
+	    /*
+	     * Woops, fully qualified name not available from the FONT property.
+	     * Attempt to get the full name piece by piece.  Ugh!
+	     */
+	    char str[1024], *s;
+	    if (fullname != NULL)
+		XFree(fullname);
+
+	    s = str;
+	    *s++ = '-';
+
+#define GET_ATOM_OR_STAR(atom)					\
+    do {							\
+	char *as;						\
+	if ((as = x_get_font_atom_property(dpy, pf, (atom))) != NULL) { \
+	    char *asp = as;					\
+	    while ((*s++ = *asp++))				\
+		;						\
+	    *(s-1) = '-';					\
+	    XFree(as);						\
+	}							\
+	else {							\
+	    *s++ = '*';						\
+	    *s++ = '-';						\
+	}							\
+    } one_time
+
+#define GET_ATOM_OR_GIVEUP(atom)				\
+    do {							\
+	char *as;						\
+	if ((as = x_get_font_atom_property(dpy, pf, (atom))) != NULL) { \
+	    char *asp = as;					\
+	    while ((*s++ = *asp++))				\
+		;						\
+	    *(s-1) = '-';					\
+	    XFree(as);						\
+	}							\
+	else							\
+	    goto piecemeal_done;				\
+    } one_time
+
+#define GET_LONG_OR_GIVEUP(atom)				\
+    do {							\
+	ULONG val;						\
+	if (XGetFontProperty(pf, (atom), &val)) {		\
+	    sprintf(s, "%ld", (long)val);			\
+	    while (*s++ != '\0')				\
+		;						\
+	    *(s-1) = '-';					\
+	}							\
+	else							\
+	    goto piecemeal_done;				\
+    } one_time
+
+	    GET_ATOM_OR_STAR(GetAtom(FOUNDRY));
+	    GET_ATOM_OR_GIVEUP(XA_FAMILY_NAME);
+	    GET_ATOM_OR_GIVEUP(GetAtom(WEIGHT_NAME));
+	    GET_ATOM_OR_GIVEUP(GetAtom(SLANT));
+	    GET_ATOM_OR_GIVEUP(GetAtom(SETWIDTH_NAME));
+	    *s++ = '*';		/* ADD_STYLE_NAME */
+	    *s++ = '-';
+	    GET_LONG_OR_GIVEUP(GetAtom(PIXEL_SIZE));
+	    GET_LONG_OR_GIVEUP(XA_POINT_SIZE);
+	    GET_LONG_OR_GIVEUP(GetAtom(RESOLUTION_X));
+	    GET_LONG_OR_GIVEUP(GetAtom(RESOLUTION_Y));
+	    GET_ATOM_OR_GIVEUP(GetAtom(SPACING));
+	    GET_LONG_OR_GIVEUP(GetAtom(AVERAGE_WIDTH));
+	    GET_ATOM_OR_STAR(GetAtom(CHARSET_REGISTRY));
+	    GET_ATOM_OR_STAR(GetAtom(CHARSET_ENCODING));
+	    *(s - 1) = '\0';
+
+#undef GET_ATOM_OR_STAR
+#undef GET_ATOM_OR_GIVEUP
+#undef GET_LONG_OR_GIVEUP
+
+	    fname = str;
+	  piecemeal_done:
+	    /*
+	     * We will either use the name which was built up piecemeal or
+	     * the name which was originally passed to us to assign to
+	     * the fontname field.  We prefer the fully qualified name
+	     * so that we can later search for bold and italic fonts.
+	     */
+	    x_set_fontname(tw, fname);
+	    TRACE(("...resulting piecemeal font %s\n", tw->fontname));
+	}
+	/*
+	 * max_byte1 is the maximum for the high-byte of 16-bit chars.
+	 * If it is nonzero, this is not an 8-bit font.
+	 */
+	x_set_font_encoding(pf->max_byte1 ? enc_UTF8 : enc_8BIT);
+    }
+    return pf;
 }

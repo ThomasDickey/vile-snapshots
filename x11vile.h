@@ -1,7 +1,7 @@
 /*
  * Common definitions for xvile modules.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11vile.h,v 1.1 2012/10/25 09:13:01 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11vile.h,v 1.3 2013/04/14 19:09:08 tom Exp $
  */
 
 /*
@@ -291,6 +291,15 @@
 #include <Xm/RowColumn.h>
 #endif
 #endif /* OPT_MENUS */
+#ifdef XRENDERFONT
+#include <X11/Xft/Xft.h>
+#endif
+
+#ifdef XRENDERFONT
+typedef XftFont XVileFont;
+#else
+typedef XFontStruct XVileFont;
+#endif
 
 #if OPT_XAW_SCROLLBARS
 typedef struct _scroll_info {
@@ -371,10 +380,10 @@ typedef struct _text_win {
     int fsrch_flags;		/* flags which indicate which fonts have
 				 * been searched for
 				 */
-    XFontStruct *pfont;		/* Normal font */
-    XFontStruct *pfont_bold;
-    XFontStruct *pfont_ital;
-    XFontStruct *pfont_boldital;
+    XVileFont *pfont;		/* Normal font */
+    XVileFont *pfont_bold;
+    XVileFont *pfont_ital;
+    XVileFont *pfont_boldital;
     GC textgc;
     GC reversegc;
     GC selgc;
@@ -621,6 +630,38 @@ typedef struct {
 #define XtNbcolorF		"bcolor15"
 #define XtCBcolorF		"Bcolor15"
 
+typedef enum {
+	aeAVERAGE_WIDTH
+	,aeCHARSET_ENCODING
+	,aeCHARSET_REGISTRY
+	,aeCLIPBOARD
+	,aeCOMPOUND_TEXT
+	,aeFONT
+	,aeFOUNDRY
+	,aeMULTIPLE
+	,aeNONE
+	,aePIXEL_SIZE
+	,aeRESOLUTION_X
+	,aeRESOLUTION_Y
+	,aeSETWIDTH_NAME
+	,aeSLANT
+	,aeSPACING
+	,aeTARGETS
+	,aeTEXT
+	,aeTIMESTAMP
+	,aeUTF8_STRING
+	,aeWEIGHT_NAME
+	,aeWM_DELETE_WINDOW
+	,aeWM_PROTOCOLS
+	,aeMAX
+} XVileAtom;
+
+#define GetAtom(name) xvileAtom(ae ## name)
+
+extern Atom xvileAtom(XVileAtom);
+extern XVileFont *xvileQueryFont(Display *, TextWindow, const char *);
+extern void x_set_font_encoding(ENC_CHOICES);
+extern void x_set_fontname(TextWindow, const char *);
 extern void xvileDraw(Display *, TextWindow, VIDEO_TEXT *, int, UINT, int, int);
 
 #endif /* _x11vile_h */

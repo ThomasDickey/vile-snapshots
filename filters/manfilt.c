@@ -46,7 +46,7 @@
  * vile will choose some appropriate fallback (such as underlining) if
  * italics are not available.
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/manfilt.c,v 1.60 2013/04/13 01:50:00 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/manfilt.c,v 1.61 2013/04/14 23:53:16 tom Exp $
  *
  */
 
@@ -459,7 +459,7 @@ static void
 ansi_CUB(int code)
 {
     if (code > 0 && ((int) cur_line->l_this - code) >= 0) {
-	cur_line->l_this = cur_line->l_this - code;
+	cur_line->l_this = cur_line->l_this - (size_t) code;
     }
 }
 
@@ -467,7 +467,7 @@ static void
 ansi_CUF(int code)
 {
     if (code > 0) {
-	size_t col = cur_line->l_this + code;
+	size_t col = cur_line->l_this + (size_t) code;
 	while (col > cur_line->l_last) {
 	    extend_line();
 	}
@@ -485,14 +485,14 @@ ansi_DCH(int code)
 
     if (code > 0) {
 	for (dst = cur_line->l_this; dst < cur_line->l_used; ++dst) {
-	    src = dst + code;
+	    src = dst + (size_t) code;
 	    if (src < cur_line->l_used) {
 		cur_line->l_cell[dst] = cur_line->l_cell[src];
 	    } else {
-		erase_cell(dst);
+		erase_cell((int) dst);
 	    }
 	}
-	cur_line->l_used -= code;
+	cur_line->l_used -= (size_t) code;
     }
 }
 
@@ -504,12 +504,12 @@ ansi_EL(int code)
     switch (code) {
     case 0:			/* Erase to Right (default) */
 	for (col = cur_line->l_this; col <= cur_line->l_used; ++col)
-	    erase_cell(col);
+	    erase_cell((int) col);
 	break;
     case 1:			/* Erase to Left */
     case 2:			/* Erase All */
 	for (col = 0; col <= cur_line->l_this; ++col)
-	    erase_cell(col);
+	    erase_cell((int) col);
 	break;
     }
 }
@@ -523,11 +523,11 @@ ansi_ICH(int code)
     if (code > 0) {
 	size_t last = cur_line->l_last - 1;
 	for (dst = last; dst >= cur_line->l_this; --dst) {
-	    src = dst - code;
+	    src = dst - (size_t) code;
 	    if (src >= cur_line->l_this) {
 		cur_line->l_cell[dst] = cur_line->l_cell[src];
 	    } else {
-		erase_cell(dst);
+		erase_cell((int) dst);
 	    }
 	}
 	if (cur_line->l_used < last)
@@ -539,7 +539,7 @@ static void
 ansi_HPA(int code)
 {
     if (code > 0) {
-	size_t col = code - 1;
+	size_t col = (size_t) code - 1;
 	while (col > cur_line->l_last) {
 	    extend_line();
 	}

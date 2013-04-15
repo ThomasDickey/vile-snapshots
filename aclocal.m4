@@ -1,6 +1,6 @@
 dnl vile's local definitions for autoconf.
 dnl
-dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.260 2013/02/19 22:28:29 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.261 2013/04/14 15:14:08 tom Exp $
 dnl
 dnl See
 dnl		http://invisible-island.net/autoconf/autoconf.html
@@ -101,7 +101,7 @@ AC_DEFUN([AM_LANGINFO_CODESET],
   fi
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_ACVERSION_CHECK version: 3 updated: 2012/10/03 18:39:53
+dnl CF_ACVERSION_CHECK version: 4 updated: 2013/03/04 19:52:56
 dnl ------------------
 dnl Conditionally generate script according to whether we're using a given autoconf.
 dnl
@@ -110,6 +110,7 @@ dnl $2 = code to use if AC_ACVERSION is at least as high as $1.
 dnl $3 = code to use if AC_ACVERSION is older than $1.
 define([CF_ACVERSION_CHECK],
 [
+ifdef([AC_ACVERSION], ,[m4_copy([m4_PACKAGE_VERSION],[AC_ACVERSION])])dnl
 ifdef([m4_version_compare],
 [m4_if(m4_version_compare(m4_defn([AC_ACVERSION]), [$1]), -1, [$3], [$2])],
 [CF_ACVERSION_COMPARE(
@@ -5440,6 +5441,189 @@ CF_TRY_PKG_CONFIG(Xext,,[
 	AC_CHECK_LIB(Xext,XextCreateExtension,
 		[CF_ADD_LIB(Xext)])])
 ])dnl
+dnl ---------------------------------------------------------------------------
+dnl CF_X_FONTCONFIG version: 4 updated: 2011/07/04 10:01:31
+dnl ---------------
+dnl Check for fontconfig library, a dependency of the X FreeType library.
+AC_DEFUN([CF_X_FONTCONFIG],
+[
+AC_REQUIRE([CF_X_FREETYPE])
+
+if test "$cf_cv_found_freetype" = yes ; then
+AC_CACHE_CHECK(for usable Xft/fontconfig package,cf_cv_xft_compat,[
+AC_TRY_LINK([
+#include <X11/Xft/Xft.h>
+],[
+	XftPattern *pat;
+	XftPatternBuild(pat,
+					XFT_FAMILY, XftTypeString, "mono",
+					(void *) 0);
+],[cf_cv_xft_compat=yes],[cf_cv_xft_compat=no])
+])
+
+if test "$cf_cv_xft_compat" = no
+then
+	# workaround for broken ".pc" files used for Xft.
+	case "$cf_cv_x_freetype_libs" in #(vi
+	*-lfontconfig*) #(vi
+		;;
+	*)
+		CF_VERBOSE(work around broken package)
+		CF_TRY_PKG_CONFIG(fontconfig,,[CF_ADD_LIB_AFTER(-lXft,-lfontconfig)])
+		;;
+	esac
+fi
+fi
+])dnl
+dnl ---------------------------------------------------------------------------
+dnl CF_X_FREETYPE version: 26 updated: 2012/10/04 20:12:20
+dnl -------------
+dnl Check for X FreeType headers and libraries (XFree86 4.x, etc).
+dnl
+dnl First check for the appropriate config program, since the developers for
+dnl these libraries change their configuration (and config program) more or
+dnl less randomly.  If we cannot find the config program, do not bother trying
+dnl to guess the latest variation of include/lib directories.
+dnl
+dnl If either or both of these configure-script options are not given, rely on
+dnl the output of the config program to provide the cflags/libs options:
+dnl	--with-freetype-cflags
+dnl	--with-freetype-libs
+AC_DEFUN([CF_X_FREETYPE],
+[
+AC_REQUIRE([CF_PKG_CONFIG])
+
+cf_cv_x_freetype_incs=no
+cf_cv_x_freetype_libs=no
+cf_extra_freetype_libs=
+FREETYPE_CONFIG=none
+FREETYPE_PARAMS=
+
+AC_MSG_CHECKING(for FreeType configuration script)
+AC_ARG_WITH(freetype-config,
+	[  --with-freetype-config  configure script to use for FreeType],
+	[cf_cv_x_freetype_cfgs="$withval"],
+	[cf_cv_x_freetype_cfgs=auto])
+test -z $cf_cv_x_freetype_cfgs && cf_cv_x_freetype_cfgs=auto
+test $cf_cv_x_freetype_cfgs = no && cf_cv_x_freetype_cfgs=none
+AC_MSG_RESULT($cf_cv_x_freetype_cfgs)
+
+case $cf_cv_x_freetype_cfgs in
+none) #(vi
+	AC_MSG_CHECKING(if you specified -D/-I options for FreeType)
+	AC_ARG_WITH(freetype-cflags,
+		[  --with-freetype-cflags  -D/-I options for compiling with FreeType],
+		[cf_cv_x_freetype_incs="$with_freetype_cflags"],
+		[cf_cv_x_freetype_incs=no])
+	AC_MSG_RESULT($cf_cv_x_freetype_incs)
+
+	AC_MSG_CHECKING(if you specified -L/-l options for FreeType)
+	AC_ARG_WITH(freetype-libs,
+		[  --with-freetype-libs    -L/-l options to link FreeType],
+		[cf_cv_x_freetype_libs="$with_freetype_libs"],
+		[cf_cv_x_freetype_libs=no])
+	AC_MSG_RESULT($cf_cv_x_freetype_libs)
+	;;
+auto) #(vi
+	if test "$PKG_CONFIG" != none && "$PKG_CONFIG" --exists xft; then
+		FREETYPE_CONFIG=$PKG_CONFIG
+		FREETYPE_PARAMS=xft
+	else
+		AC_PATH_PROG(FREETYPE_CONFIG, freetype-config, none)
+		if test "$FREETYPE_CONFIG" != none; then
+			FREETYPE_CONFIG=$FREETYPE_CONFIG
+			cf_extra_freetype_libs="-lXft"
+		else
+			AC_PATH_PROG(FREETYPE_OLD_CONFIG, xft-config, none)
+			if test "$FREETYPE_OLD_CONFIG" != none; then
+				FREETYPE_CONFIG=$FREETYPE_OLD_CONFIG
+			fi
+		fi
+	fi
+	;;
+pkg*) #(vi
+	if test "$PKG_CONFIG" != none && "$PKG_CONFIG" --exists xft; then
+		FREETYPE_CONFIG=$cf_cv_x_freetype_cfgs
+		FREETYPE_PARAMS=xft
+	else
+		AC_MSG_WARN(cannot find pkg-config for Xft)
+	fi
+	;;
+*) #(vi
+	AC_PATH_PROG(FREETYPE_XFT_CONFIG, $cf_cv_x_freetype_cfgs, none)
+	if test "$FREETYPE_XFT_CONFIG" != none; then
+		FREETYPE_CONFIG=$FREETYPE_XFT_CONFIG
+	else
+		AC_MSG_WARN(cannot find config script for Xft)
+	fi
+	;;
+esac
+
+if test "$FREETYPE_CONFIG" != none ; then
+	AC_MSG_CHECKING(for FreeType config)
+	AC_MSG_RESULT($FREETYPE_CONFIG $FREETYPE_PARAMS)
+
+	if test "$cf_cv_x_freetype_incs" = no ; then
+		AC_MSG_CHECKING(for $FREETYPE_CONFIG cflags)
+		cf_cv_x_freetype_incs="`$FREETYPE_CONFIG $FREETYPE_PARAMS --cflags 2>/dev/null`"
+		AC_MSG_RESULT($cf_cv_x_freetype_incs)
+	fi
+
+	if test "$cf_cv_x_freetype_libs" = no ; then
+		AC_MSG_CHECKING(for $FREETYPE_CONFIG libs)
+		cf_cv_x_freetype_libs="$cf_extra_freetype_libs `$FREETYPE_CONFIG $FREETYPE_PARAMS --libs 2>/dev/null`"
+		AC_MSG_RESULT($cf_cv_x_freetype_libs)
+	fi
+fi
+
+if test "$cf_cv_x_freetype_incs" = no ; then
+	cf_cv_x_freetype_incs=
+fi
+
+if test "$cf_cv_x_freetype_libs" = no ; then
+	cf_cv_x_freetype_libs=-lXft
+fi
+
+AC_MSG_CHECKING(if we can link with FreeType libraries)
+
+cf_save_LIBS="$LIBS"
+cf_save_INCS="$CPPFLAGS"
+
+CF_ADD_LIBS($cf_cv_x_freetype_libs)
+CPPFLAGS="$CPPFLAGS $cf_cv_x_freetype_incs"
+
+AC_TRY_LINK([
+#include <X11/Xlib.h>
+#include <X11/extensions/Xrender.h>
+#include <X11/Xft/Xft.h>],[
+	XftPattern  *pat = XftNameParse ("name");],
+	[cf_cv_found_freetype=yes],
+	[cf_cv_found_freetype=no])
+AC_MSG_RESULT($cf_cv_found_freetype)
+
+LIBS="$cf_save_LIBS"
+CPPFLAGS="$cf_save_INCS"
+
+if test "$cf_cv_found_freetype" = yes ; then
+	CF_ADD_LIBS($cf_cv_x_freetype_libs)
+	CF_ADD_CFLAGS($cf_cv_x_freetype_incs)
+	AC_DEFINE(XRENDERFONT,1,[Define to 1 if we can/should link with FreeType libraries])
+
+AC_CHECK_FUNCS( \
+	XftDrawCharSpec \
+	XftDrawSetClip \
+	XftDrawSetClipRectangles \
+)
+
+else
+	AC_MSG_WARN(No libraries found for FreeType)
+	CPPFLAGS=`echo "$CPPFLAGS" | sed -e s/-DXRENDERFONT//`
+fi
+
+# FIXME: revisit this if needed
+AC_SUBST(HAVE_TYPE_FCCHAR32)
+AC_SUBST(HAVE_TYPE_XFTCHARSPEC)
+])
 dnl ---------------------------------------------------------------------------
 dnl CF_X_MOTIF version: 3 updated: 2008/03/23 14:48:54
 dnl ----------
