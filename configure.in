@@ -1,11 +1,11 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_REVISION($Revision: 1.304 $)
+AC_REVISION($Revision: 1.306 $)
 AC_PREREQ(2.52.20011201)
 
 ### Use "configure -with-screen" to override the default configuration, which is
 ### termcap-based on unix systems.
 
-dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.304 2013/03/07 10:13:44 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.306 2013/04/14 16:05:38 tom Exp $
 
 define(MAKELIST, sh $srcdir/filters/makelist.sh $srcdir/filters/genmake.mak)
 
@@ -468,7 +468,7 @@ AC_MSG_RESULT($screen)
 CF_HELP_MESSAGE(Options specific to screen-types)
 : See if this is any type of xvile configuration:
 case "$screen" in
-	[[Oo]]pen[[Ll]]ook | [[Mm]]otif* | [[xX]] | [[Aa]]thena | [[xX]][[atTmMoO]]* | [[xX]]11 | neXtaw | XawPlus )
+	[[Mm]]otif* | [[xX]] | [[Aa]]thena | [[xX]][[atTmMoO]]* | [[xX]]11 | neXtaw | XawPlus )
 		EXTRA_INSTALL_FILES="$EXTRA_INSTALL_FILES \$(INSTALL_X_FILES)"
 		CF_X_TOOLKIT
 		CF_WITH_IMAKE_CFLAGS
@@ -478,7 +478,31 @@ case "$screen" in
 
 		SCREEN=x11
 		TARGET=xvile
-		EXTRAOBJS="$EXTRAOBJS x11plain\$o"
+		X11_FONT=x11
+		X11_SETS=plain
+
+		AC_MSG_CHECKING(if you want to use FreeType library)
+		CF_ARG_ENABLE(freetype,
+			[  --enable-freetype       enable freetype library-support],
+			[enable_freetype=yes],
+			[enable_freetype=no])
+		AC_MSG_RESULT($enable_freetype)
+		if test "$enable_freetype" = yes ; then
+			CF_X_FONTCONFIG
+			X11_FONT=xft
+		fi
+
+		AC_MSG_CHECKING(if you want to use fontsets)
+		CF_ARG_ENABLE(fontsets,
+			[  --enable-fontsets       enable fontset-support],
+			[enable_fontsets=yes],
+			[enable_fontsets=no])
+		AC_MSG_RESULT($enable_fontsets)
+		if test "$enable_fontsets" = yes ; then
+			X11_SETS=fancy
+		fi
+
+		EXTRAOBJS="$EXTRAOBJS $X11_FONT$X11_SETS\$o"
 
 		AC_DEFINE(DISP_X11,1,[Define to 1 if terminal driver uses X11])
 		AC_DEFINE(XTOOLKIT,1,[Define to 1 if terminal driver uses Xt])

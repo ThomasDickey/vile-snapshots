@@ -1,9 +1,11 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20130412 (j)
+ 20130414 (j)
 	> Brendan O'Dea:
 	+ correct warnings from pod2text
 	> Tom Dickey:
+	+ add configure options --enable-freetype and --enable-fontsets, to
+	  support proposed refactoring of x11.c
 	+ modify manfilt.c to interpret ANSI erase-line, insert/delete
 	  character and inline cursor-movement controls.
 	+ modify manfilt.c to improve parsing of SGR sequences, allowing for

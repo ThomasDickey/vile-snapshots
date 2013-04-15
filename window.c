@@ -2,7 +2,7 @@
  * Window management. Some of the functions are internal, and some are
  * attached to keys that the user actually types.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/window.c,v 1.126 2013/03/09 01:09:32 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/window.c,v 1.127 2013/04/13 12:37:00 tom Exp $
  *
  */
 
@@ -492,9 +492,10 @@ delwp(WINDOW *thewp)
     }
 
     /* find receiving window and give up our space */
-    if (thewp == wheadp
-	|| ((thewp->w_split_hist & 1) == 0 && thewp->w_wndp)
-	|| !visible) {
+    if (thewp->w_wndp != 0
+	&& (thewp == wheadp
+	    || ((thewp->w_split_hist & 1) == 0)
+	    || !visible)) {
 	/* merge with next window down */
 	wp = thewp->w_wndp;
 	if (visible) {
@@ -506,9 +507,9 @@ delwp(WINDOW *thewp)
 	    if (wp->w_split_hist & 1)
 		wp->w_split_hist >>= 1;
 	}
-	if (thewp == wheadp)
+	if (thewp == wheadp) {
 	    wheadp = wp;
-	else {
+	} else {
 	    WINDOW *pwp = wheadp;
 	    while (pwp->w_wndp != thewp)
 		pwp = pwp->w_wndp;

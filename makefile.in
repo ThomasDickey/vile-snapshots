@@ -20,7 +20,7 @@
 #
 # gnu autoconf support by kevin buettner, 5/94
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.267 2012/10/18 00:27:17 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.268 2013/04/14 19:07:14 tom Exp $
 
 SHELL		= /bin/sh
 
@@ -362,7 +362,7 @@ $(PROGRAM): $(BUILTHDRS) $(OBJ) $(OBJ2) $(BUILTLIBS)
 	- mv $(PROGRAM) o$(PROGRAM)
 	@ECHO_LD@$(LINK) $(CFLAGS) $(LDFLAGS) -o $@ $(OBJ) $(OBJ2) $(X_LIBS) $(LIBS)
 
-x11$o :
+x11$o : $(srcdir)/x11.c
 	@SHOW_CC@
 	@ECHO_CC@$(CC) -c $(CPPFLAGS) $(X_QUOTDEFS) $(QUOTDEFS) $(CFLAGS) -DHELP_LOC=\"$(datadir)\" $(srcdir)/$*.c
 
