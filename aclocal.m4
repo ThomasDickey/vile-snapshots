@@ -1,6 +1,6 @@
 dnl vile's local definitions for autoconf.
 dnl
-dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.261 2013/04/14 15:14:08 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.263 2013/05/14 09:15:16 tom Exp $
 dnl
 dnl See
 dnl		http://invisible-island.net/autoconf/autoconf.html
@@ -4522,7 +4522,7 @@ fi
 AC_SUBST(no_icondir)
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_WITH_ICON_THEME version: 8 updated: 2012/08/07 20:14:58
+dnl CF_WITH_ICON_THEME version: 9 updated: 2013/04/17 05:31:24
 dnl ------------------
 dnl If asked, check for prerequisites and setup symbols to permit installing
 dnl one or more application icons in the Red Hat icon-theme directory
@@ -4571,7 +4571,7 @@ if test "x$ICON_THEME" = xno
 then
 	if test "x$ICONDIR" != xno
 	then
-		AC_MSG_WARN(ignoring icondir without theme)
+		CF_VERBOSE(ignoring icondir without theme)
 		no_icondir="#"
 	fi
 else
@@ -4832,7 +4832,7 @@ AC_SUBST($3)dnl
 
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_WITH_PERL version: 6 updated: 2012/10/06 11:17:15
+dnl CF_WITH_PERL version: 7 updated: 2013/05/14 05:13:27
 dnl ------------
 dnl Check if perl-extension (using embedded perl interpreter) is wanted, and
 dnl update symbols if we are able to use the extension.
@@ -4844,7 +4844,7 @@ AC_ARG_WITH(perl,
 	[with_perl=no])
 AC_MSG_RESULT($with_perl)
 
-PERLLIB=
+PERL_XSUBPP=
 
 if test "$with_perl" = yes ; then
 	CF_PROG_PERL(5.004)
@@ -4874,9 +4874,14 @@ if test "$with_perl" = yes ; then
 		perl_parse(interp, 0, 0, (char **)0, (char **)0);
 		Perl_croak("Why:%s\n", "Bye!");
 ],[
-		PERLLIB=`$PERL -MConfig -e 'print $Config{privlib}'`
+		eval `$PERL -le 'for $f (qw/xsubpp typemap/) {
+				   @p = grep -f, map "$_/ExtUtils/$f", @INC;
+				   print "cf_path_$f=", $p[[0]];
+				 }'`
 
-		CF_VERBOSE(adding perl library $PERLLIB)
+		PERL_XSUBPP="${cf_path_xsubpp:?} -typemap ${cf_path_typemap:?}"
+
+		CF_VERBOSE(setting perl xs compiler to $PERL_XSUBPP)
 
 		AC_DEFINE(OPT_PERL,1,[Define to 1 if we should compile-in the perl extension])
 
@@ -4897,8 +4902,8 @@ if test "$with_perl" = yes ; then
 ])
 	fi
 fi
-AC_SUBST(PERLLIB)
 AC_SUBST(PERL)
+AC_SUBST(PERL_XSUBPP)
 AC_SUBST(EXTRA_INSTALL_DIRS)
 AC_SUBST(EXTRA_INSTALL_FILES)
 ])

@@ -1,5 +1,11 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
+ 20130514 (k)
+	> Brendan O'Dea:
+	+ improve configure script for perl by locating xsubpp by the same
+	  process as the module is loaded, e.g., using @INC (prompted by
+	  discussion of Gentoo #380741).
+
  20130414 (j)
 	> Brendan O'Dea:
 	+ correct warnings from pod2text
