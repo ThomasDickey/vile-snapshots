@@ -20,7 +20,7 @@
 #
 # gnu autoconf support by kevin buettner, 5/94
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.268 2013/04/14 19:07:14 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.269 2013/05/14 08:38:57 bod Exp $
 
 SHELL		= /bin/sh
 
@@ -72,7 +72,7 @@ PROGRAM		= $(TARGET)$x
 
 AWK		= @AWK@
 PERL		= @PERL@
-PERLLIB		= @PERLLIB@
+PERL_XSUBPP	= @PERL_XSUBPP@
 INSTALL_PL_EXE	= $(SHELL) $(srcdir)/sinstall.sh $(PERL) $(INSTALL_PROGRAM)
 INSTALL_MODULE	= $(SHELL) $(srcdir)/sinstall.sh $(PERL) $(INSTALL_DATA)
 
@@ -827,10 +827,7 @@ populate:
 	done
 
 perl.c: $(srcdir)/perl.xs $(srcdir)/ptypemap
-	$(PERL) $(PERLLIB)/ExtUtils/xsubpp \
-		-typemap $(PERLLIB)/ExtUtils/typemap \
-		-typemap ptypemap \
-		$(srcdir)/perl.xs > $@
+	$(PERL) $(PERL_XSUBPP) -typemap ptypemap $(srcdir)/perl.xs > $@
 
 $(OBJ): estruct.h proto.h edef.h $(BUILTHDRS) config.h
 
