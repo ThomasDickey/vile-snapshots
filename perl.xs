@@ -13,7 +13,7 @@
  * vile.  The file api.c (sometimes) provides a middle layer between
  * this interface and the rest of vile.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.126 2013/04/03 00:38:42 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.128 2013/05/24 08:42:30 bod Exp $
  */
 
 #ifdef __GNUC__
@@ -3853,13 +3853,17 @@ PRINT(vbp, ...)
   #
   # Notes:
   #
-  # =item 1
+  # =over 4
+  #
+  # =item *
   #
   # rectangular regions are not implemented yet.
   #
-  # =item 2
+  # =item *
   #
   # setregion is an alias for set_region.
+  #
+  # =back
   #
   # =for html <br><br>
   #
@@ -4496,6 +4500,7 @@ window_at(idx)
   #
   # =for html <br><br>
   #
+  # =back
 
 int
 window_count()
