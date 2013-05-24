@@ -15,7 +15,7 @@
  * in handy.
  *				- kev 4/7/1998
  *
- * $Header: /users/source/archives/vile.vcs/RCS/api.c,v 1.48 2010/09/08 21:11:54 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/api.c,v 1.49 2013/05/24 08:44:56 bod Exp $
  */
 
 #include "estruct.h"
@@ -204,7 +204,7 @@ api_setup_fake_win(VileBuf * vbp, int do_delete)
 	if (vbp->ndel != 0 && do_delete) {
 	    int status;
 	    /* Do lazy delete; FALSE means don't put text in kill buffer */
-	    status = ldel_chars(vbp->ndel, FALSE);
+	    status = ldel_bytes(vbp->ndel, FALSE);
 	    vbp->ndel = 0;
 	    if (status == FALSE
 		|| (lforw(DOT.l) == buf_head(curbp) && DOT.o >= llength(DOT.l))) {
@@ -351,7 +351,7 @@ api_dotinsert(VileBuf * vbp, char *text, int len)
     linsert_chars(text, len);
     if (vbp->ndel) {
 	int status;
-	status = ldel_chars(vbp->ndel, FALSE);
+	status = ldel_bytes(vbp->ndel, FALSE);
 	vbp->ndel = 0;
 	if (status == FALSE
 	    || (lforw(DOT.l) == buf_head(curbp) && DOT.o >= llength(DOT.l))) {

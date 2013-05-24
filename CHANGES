@@ -2,6 +2,12 @@ Changes for vile 9.9 (released ??? ??? ?? ????)
 
  20130514 (k)
 	> Brendan O'Dea:
+	+ correct a couple of places in api.c which used characters rather
+	  than bytes, which made
+		:%perldo s/^/X/
+	  do the wrong thing for UTF-8 encoding.
+	+ change perl.xs to use bullets in a few cases to work with newer
+	  Perl's POD parser.  Also add a "back" tag (Debian #708027).
 	+ improve configure script for perl by locating xsubpp by the same
 	  process as the module is loaded, e.g., using @INC (prompted by
 	  discussion of Gentoo #380741).
