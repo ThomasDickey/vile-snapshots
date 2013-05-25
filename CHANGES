@@ -11,6 +11,8 @@ Changes for vile 9.9 (released ??? ??? ?? ????)
 	+ improve configure script for perl by locating xsubpp by the same
 	  process as the module is loaded, e.g., using @INC (prompted by
 	  discussion of Gentoo #380741).
+	> Tom Dickey:
+	+ add json mode
 
  20130414 (j)
 	> Brendan O'Dea:

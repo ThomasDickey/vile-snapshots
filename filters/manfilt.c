@@ -46,7 +46,7 @@
  * vile will choose some appropriate fallback (such as underlining) if
  * italics are not available.
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/manfilt.c,v 1.61 2013/04/14 23:53:16 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/manfilt.c,v 1.62 2013/05/25 16:17:59 tom Exp $
  *
  */
 
@@ -555,7 +555,6 @@ ansi_HPA(int code)
 static int
 ansi_escape(FILE *ifp, int last_code)
 {
-    int ansi = 1;
     int code = last_code;
     int final = 0;
     int value = 0;
@@ -586,8 +585,7 @@ ansi_escape(FILE *ifp, int last_code)
 	} else if (c >= 0x3a && c <= 0x3f) {
 	    private = 1;
 	} else if (c < 0x30 || c > 0x7e) {
-	    ansi = 0;		/* ...at least, nothing we can handle */
-	    break;
+	    break;		/* ...at least, nothing we can handle */
 	}
     }
 

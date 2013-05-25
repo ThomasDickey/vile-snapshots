@@ -1,4 +1,4 @@
-MANIFEST for vile, version v9_8j3
+MANIFEST for vile, version v9_8j4
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 AUTHORS                         list of authors, with nicknames in CHANGES
@@ -270,6 +270,8 @@ filters/iss-filt.l              syntax filter for Inno Setup
 filters/iss.key                 keywords for Inno Setup
 filters/java.key                java keywords
 filters/js.key                  javascript keywords
+filters/json.key                JSON keywords
+filters/jsonfilt.l              syntax highlighter for JSON
 filters/key-filt.c              syntax filter for vile keyword files
 filters/ksh.key                 keywords for ksh
 filters/latex.key               latex keywords

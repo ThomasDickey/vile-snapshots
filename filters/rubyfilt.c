@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/rubyfilt.c,v 1.80 2013/04/11 00:57:59 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/rubyfilt.c,v 1.81 2013/05/25 16:17:10 tom Exp $
  *
  * Filter to add vile "attribution" sequences to ruby scripts.  This began as a
  * translation into C of an earlier version written for LEX/FLEX.
@@ -1148,7 +1148,6 @@ var_embedded(char *s)
     int delim;
     int level = 0;
     int had_op = 1;
-    int had_key = 0;
     int ignore;
     int ok;
 
@@ -1160,32 +1159,25 @@ var_embedded(char *s)
 		if ((*s == '%' || had_op)
 		    && (ok = is_Regexp(s, &delim)) != 0) {
 		    had_op = 0;
-		    had_key = 0;
 		    s += ok;
 		} else if ((ok = is_String(s, &delim, &ignore)) != 0) {
 		    had_op = 0;
-		    had_key = 0;
 		    s += ok;
 		} else if ((ok = is_CHAR(s, &ignore)) != 0
 			   && (ok != 2 || (s[1] != L_CURLY && s[1] != R_CURLY))) {
 		    had_op = 0;
-		    had_key = 0;
 		    s += ok;
 		} else if ((ok = is_NUMBER(s, &ignore)) != 0) {
 		    had_op = 0;
-		    had_key = 0;
 		    s += ok;
 		} else if ((ok = is_KEYWORD(s)) != 0) {
 		    had_op = 0;
-		    had_key = 1;
 		    s += ok;
 		} else if ((ok = is_VARIABLE(s)) != 0) {
 		    had_op = 0;
-		    had_key = 1;
 		    s += ok;
 		} else if ((ok = is_OPERATOR(s)) != 0) {
 		    had_op = 1;
-		    had_key = 0;
 		    if (*s == L_CURLY) {
 			++level;
 		    } else if (*s == R_CURLY) {
