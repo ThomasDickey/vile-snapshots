@@ -12,6 +12,9 @@ Changes for vile 9.9 (released ??? ??? ?? ????)
 	  process as the module is loaded, e.g., using @INC (prompted by
 	  discussion of Gentoo #380741).
 	> Tom Dickey:
+	+ amend change for Savannah #37806 to exclude buffers where the file
+	  encoding is 8bit, fixing a mispositioning of the cursor, e.g., for
+	  ISO-8859-2 encoding (report by Radek Liboska).
 	+ add json mode
 
  20130414 (j)
