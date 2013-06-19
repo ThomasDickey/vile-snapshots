@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.568 2013/03/10 17:08:49 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.569 2013/06/19 09:18:12 tom Exp $
  *
  */
 
@@ -1224,7 +1224,7 @@ mk_to_vcol(WINDOW *wp, MARK mark, int expanded, int column, int adjust)
 	i += used;
     }
     if (extra && (column != 0) && (mark.o < llength(lp))) {
-	column = (my_bytes == 1) ? (column - 1) : prev_col;
+	column = (my_bytes == 1 && b_is_utfXX(bp)) ? (column - 1) : prev_col;
     }
     return2Code(column);
 }
