@@ -30,10 +30,10 @@ Getting along with vile                                            version 9.8
 
    To get help (probably just this text), use any of:
 
-         :h
-         :help
-         ^X-h
-         ^A-h
+     :h
+     :help
+     ^X-h
+     ^A-h
 
    The only vile commands described herein are those not present in vi, or
    differing greatly from those in vi. There is a section at the bottom
@@ -341,9 +341,9 @@ Window manipulation commands
 
    [ I put the following bindings in my startup file (.vilerc):
 
-         bind-key split-current-window ^T        ; split into 'T'wo windows
-         bind-key next-window ^N                 ; 'N'ext window
-         bind-key previous-window ^P             ; 'P'revious window
+     bind-key split-current-window ^T        ; split into 'T'wo windows
+     bind-key next-window ^N                 ; 'N'ext window
+     bind-key previous-window ^P             ; 'P'revious window
 
    Since ^K already 'K'ills a window, and ^O makes it the 'O'nly window,
    these give more mnemonic, and faster, access to multiple windows. (These
@@ -362,8 +362,8 @@ File manipulation commands:
    hosts, backquotes may be used to invoke a shell command that returns the
    path of a desired file. For example:
 
-         :e `which locks`       ; csh looks for script called "locks"
-         :e `type -path locks`  ; bash equivalent
+     :e `which locks`       ; csh looks for script called "locks"
+     :e `type -path locks`  ; bash equivalent
 
    The commands ":ww" and ":wwq" correspond roughly to ":w" and ":wq", but
    they each write all modified buffers, rather than just the current one.
@@ -473,6 +473,7 @@ Text manipulation command:
    The ":g" command can be followed by any of the "global command" modifiers.
    Use ":describe-globals" to see the whole list, or simply use
    name-completion. These are the most commonly used:
+
      * l (list),
      * p (print),
      * pp (print with buffer name and line number),
@@ -487,6 +488,7 @@ Text manipulation command:
      * Put (prepend yanked text),
      * s (substitute),
      * trim (trim trailing whitespace).
+
    For example, ":g/pattern/Put" will insert the contents of the default yank
    register just above every line containing "pattern". The ":g" command can
    only be used over the entire file - smaller regions are not permitted.
@@ -868,8 +870,7 @@ Miscellaneous commands
            Tip: I use the following macro to quickly grep a source directory
            for the string under the cursor:
 
-                     use-register g load-register "^X!egrep -n : *.[chs]^M"
-
+             use-register g load-register "^X!egrep -n : *.[chs]^M"
 
            where the ^X and ^M are each single control characters, entered
            using ^V to escape them. Then I invoke with @g to execute. [NB:
@@ -899,21 +900,21 @@ Miscellaneous commands
 
          ^\([^:  ]\+\):\s*\([0-9]\+\):\(.\+\)
 
-                 ; example of a macro to add to [Error Expressions]
-                 store-procedure AddError
-                         ~local %oldbuffer
-                         setv %oldbuffer=$cbufname
-                         compile-error-expressions
-                         yank-line
-                         edit-file '[Error Expressions]'
-                         unsetl view
-                         goto-beginning-of-file
-                         put-before
-                         unmark
-                         setl view
-                         buffer %oldbuffer
-                         compile-error-expressions
-                 ~endm
+             ; example of a macro to add to [Error Expressions]
+             store-procedure AddError
+                     ~local %oldbuffer
+                     setv %oldbuffer=$cbufname
+                     compile-error-expressions
+                     yank-line
+                     edit-file '[Error Expressions]'
+                     unsetl view
+                     goto-beginning-of-file
+                     put-before
+                     unmark
+                     setl view
+                     buffer %oldbuffer
+                     compile-error-expressions
+             ~endm
 
            Use the show-error-expressions command to display the contents of
            the [Error Expressions] buffer, along with the expanded regular
@@ -1339,6 +1340,7 @@ Editor modes
    edited the file "precious.cpp", which I did not want to modify. There are
    two approaches that could be taken:
 
+
          $ vile
          :set view          ; enable view mode globally
          :e precious.cpp    ; edited in "view" mode
@@ -1346,10 +1348,12 @@ Editor modes
 
    or
 
+
          $ vile
          :e precious.cpp    ; initially edited in "noview" mode
          :setl view         ; "view" mode now bound to precious.cpp
          :e other.cpp       ; edited in "noview" mode
+
 
    In the first approach, view mode is enabled globally and consequently
    affects all existing buffers and all subsequently created buffers. This
@@ -1561,6 +1565,7 @@ Editor modes
              1. popping up a window on an existing buffer,
              2. reading or writing the buffer, or
              3. after performing some shell command.
+
            The prompt will occur only once, unless the file changes again, in
            which case the warning will be repeated. The warning will be
            repeated in any case if the file is being written. Invoking a
@@ -2037,6 +2042,7 @@ Editor modes
              1. "off",
              2. "immediate", or
              3. "delayed"
+
            When enabled with either "immediate" or "delayed", vile pops up
            the [Completions] buffer showing choices for filename and command
            completion in response to a TAB. "immediate" will force the buffer
@@ -2106,6 +2112,7 @@ Editor modes
               * "crlf" (for DOS),
               * "cr" (for Macintosh, overridden by dos mode)
               * and "default" (lf or crlf, depending on the platform).
+
            When reading from a file, vile can determine the file format
            automatically, and set a local value for this mode. When reading
            from a pipe, it uses the global value of recordseparator to decide
@@ -2457,6 +2464,7 @@ Editor modes
                 input lines on a preceding space.
               * if negative, vile counts from the left margin.
               * if zero (default), this mode is inactive.
+
            A value of 5 and an 80 column screen will result in 75 character
            lines. This mode is different from the "wrapwords" mode (below)
            which uses the "fillcol" setting as its target column. The two
@@ -2566,6 +2574,7 @@ Editor modes
 
            Wide (Unicode) values can be entered in a similar fashion, though
            they are stored as more than one byte:
+
               * Unicode hexadecimal with a leading 'u' (^VuNNNN).
               * Unicode decimal with a leading 'U' (^VuNNNN).
 
@@ -2723,7 +2732,7 @@ Key Rebinding
    being rebound. Use ":show-commands" or ":apropos string" to find english
    names containing "string". Then use the command:
 
-         :bind-key <englishname> <keyseq>
+     :bind-key <englishname> <keyseq>
 
    where keyseq is the exact keyboard sequence (i.e. single character, or
    '^X', '^A', or '#' followed by a single character) to which the command
@@ -2756,18 +2765,18 @@ Key Rebinding
    Examples: To cause the / and ? commands to perform incremental searches,
    use:
 
-         bind-key incremental-search /
-         bind-key reverse-incremental-search ?
+     bind-key incremental-search /
+     bind-key reverse-incremental-search ?
 
    To make ^N and ^P switch windows instead of cause motion by lines, try:
 
-         bind-key next-window ^N
-         bind-key previous-window ^P
+     bind-key next-window ^N
+     bind-key previous-window ^P
 
    To cause the space bar to move forward by pages, as in the "more" command,
    use:
 
-         bind-key next-page \s
+     bind-key next-page \s
 
    (Space and tab can be represented with: "\s" and "\t".)
 
@@ -2781,11 +2790,11 @@ Key Rebinding
    0xNN, where NN is exactly two hexadecimal digits. If you know the
    hexadecimal value for a key, you can bind to it like:
 
-         bind-key next-window ^A-\x14
+     bind-key next-window ^A-\x14
 
    or
 
-         bind-key next-window #-\213
+     bind-key next-window #-\213
 
    The sequence 'M-', represents a "meta-key", or a "meta" character. It is
    equivalent to setting the high bit of the following character, so 'M-e' is
@@ -2852,22 +2861,22 @@ Key Rebinding
    default bindings are not inherited automatically because they may conflict
    with the bindings used for exiting or modifying text within insert mode.
 
-         store-procedure begin-errtext
-                 insert-string "fprintf(stderr, \""
-                 set-named-mark z
-                 insert-string "\\n\");\n"
-                 goto-named-mark-exact z
-                 ; enter insert mode if we weren't already there
-                 ~if &seq $mode "command"
-                         insert-chars
-                 ~endif
-         ~endm
-         ; bind to function key 5
-         bind-key begin-errtext FN-5
-         bind-insmode-key begin-errtext FN-5
-         ; also bind to meta-A
-         bind-key begin-errtext M-A
-         bind-insmode-key begin-errtext M-A
+     store-procedure begin-errtext
+             insert-string "fprintf(stderr, \""
+             set-named-mark z
+             insert-string "\\n\");\n"
+             goto-named-mark-exact z
+             ; enter insert mode if we weren't already there
+             ~if &seq $mode "command"
+                     insert-chars
+             ~endif
+     ~endm
+     ; bind to function key 5
+     bind-key begin-errtext FN-5
+     bind-insmode-key begin-errtext FN-5
+     ; also bind to meta-A
+     bind-key begin-errtext M-A
+     bind-insmode-key begin-errtext M-A
 
    Actually the "meta-insert-bindings" setting controls whether meta- keys
    will have their bound effect when in insert mode. If this setting is not
@@ -2877,21 +2886,25 @@ Key Rebinding
   Syntax for key-sequences:
 
    To summarize, a key-sequence being bound to is specified with:
+
     1. an optional prefix, like this:
 
        ^A- (three chars)
        ^X- (three chars)
        ^A (one char)
        ^X (one char)
+
     2. followed by an optional "function" prefix:
 
        #- (two chars) or
        FN- (three chars)
+
     3. followed by an optional "meta" prefix:
 
        M- (two chars)
        (this is the same as with specifying a character in that has the high
        bit set)
+
     4. followed by a character, like this:
 
        C (one char)
@@ -2986,7 +2999,7 @@ Key Rebinding
    function keys are mapped to "poundsign" sequences, like '#1' for function
    key 1, and '#B' for the down-arrow key. The remapping allows one to put
 
-         map #1 <some-user-map-sequence>
+     map #1 <some-user-map-sequence>
 
    in the .vilerc file, and have the user-sequence executed when the system
    F1 key is pressed. (Otherwise the terminal-specific sequence would have to
@@ -3003,7 +3016,7 @@ Key Rebinding
    expected to act as a unit, no remapping is done on characters that follow
    such prefixes. For instance, this keeps a map like:
 
-         :map h ihello<ESC>
+     :map h ihello<ESC>
 
    from breaking the '^X-h' command.
 
@@ -3030,8 +3043,8 @@ Key Rebinding
    and this is the default behavior. Though not particularly recommended, the
    "maplonger" mechanism even permits the following types of mappings:
 
-         :map z j
-         :map zz k
+     :map z j
+     :map zz k
 
    When 'z' is pressed by itself it will cause vile to move down one line
    (assuming j has not been rebound or remapped). But if 'z' is pressed twice
@@ -3176,13 +3189,13 @@ Recorded macros
    make this more useful, the "load-register" command will allow preloading a
    named register, from .vilerc file. For example:
 
-         use-register a load-register ihello^[
+     use-register a load-register ihello^[
 
    will load register 'a' with a command to insert the word "hello". (The ^[
    should be a real ESC character, entered by preceding it with ^V.) A better
    example, is this:
 
-         use-register w load-register ":!chmod +w %^M:w^M"
+     use-register w load-register ":!chmod +w %^M:w^M"
 
    which makes the current file writable and writes it. (Again, use ^V to get
    the CR characters into the .vilerc file.)
@@ -3203,18 +3216,18 @@ Programmed procedures (aka macros)
    execution of those macros to key sequences. For instance, if the following
    lines appear in a .vilerc file:
 
-         1 store-macro
-                 5 delete-til next-word
-         ~endm
-         bind-key execute-macro-1 ^A-1
+     1 store-macro
+             5 delete-til next-word
+     ~endm
+     bind-key execute-macro-1 ^A-1
 
    then when ^A-1 is executed, 5 words will be deleted. The "-til" suffix on
    an englishname denotes that it is a vi operator style command, and expects
    to be followed by a motion command. Also,
 
-         1 store-macro
-                 5 delete-til lines
-         ~endm
+     1 store-macro
+             5 delete-til lines
+     ~endm
 
    would be the equivalent of "5dd" since the word "lines" represents the
    stuttered 'dd' style of operation. More examples are given throughout this
@@ -3227,19 +3240,19 @@ Programmed procedures (aka macros)
 
    The numbered macro syntax looks like so:
 
-         <number> store-macro
-                 <language element>
-                 ...
-                 <language element>
-         ~endm
+     <number> store-macro
+             <language element>
+             ...
+             <language element>
+     ~endm
 
    A numbered macro is executed using this command:
 
-         execute-macro-<number>
+     execute-macro-<number>
 
    To bind a keystroke to this macro, use this command:
 
-         bind-key execute-macro-<number> <keystroke>
+     bind-key execute-macro-<number> <keystroke>
 
    The only advantage of numbered macros over named macros is that the former
    do not share the same namespace as vile's commands. This attribute can be
@@ -3255,11 +3268,11 @@ Programmed procedures (aka macros)
 
    A named macro, aka "stored procedure", uses this syntax:
 
-         store-procedure <unique-name>
-                 <language element>
-                 ...
-                 <language element>
-         ~endm
+     store-procedure <unique-name>
+             <language element>
+             ...
+             <language element>
+     ~endm
 
    where:
 
@@ -3271,23 +3284,24 @@ Programmed procedures (aka macros)
    A stored procedure is executed by simply referencing its name. To bind a
    keystroke to this macro, use this command:
 
-         bind-key <unique-name> <keystroke>
+     bind-key <unique-name> <keystroke>
 
    Here's a trivial example:
 
-         store-procedure write-msg-tst
-                 write-message "this is a test macro"
-         ~endm
-         bind-key write-msg-tst #h
+     store-procedure write-msg-tst
+             write-message "this is a test macro"
+     ~endm
+     bind-key write-msg-tst #h
 
    Two mechanisms now exist for executing this macro:
+
      * press "#h" within the editor, or
      * simply use the name "write-msg-tst" as if it were any other built-in
        editor command. This means that "write-msg-tst" can be invoked from
        another macro, from a startup/configuration file, or from vile's
        command line, like so:
 
-             :write-msg-tst
+         :write-msg-tst
 
    Note that named macros may also include parameters and a help string, each
    of which are described in doc/macros.doc.
@@ -3299,9 +3313,9 @@ Programmed procedures (aka macros)
    setup parameters and perform special processing wrapped around one of
    vile's built-in operators. Here is an example:
 
-         store-operator fmt
-                 $cmd-count filter-til $cmd-motion 'fmt -w50 -'
-         ~endm
+     store-operator fmt
+             $cmd-count filter-til $cmd-motion 'fmt -w50 -'
+     ~endm
 
    In the example, the combination of $cmd-count and $cmd-motion (passed into
    the macro) act as the "real" operator's associated motion.
@@ -3967,11 +3981,11 @@ Programmed procedures (aka macros)
 
    Line labels begin with a "*" as the first nonblank char, like:
 
-         *LBL01
+     *LBL01
 
    You would jump to this with:
 
-         ~goto LBL01
+     ~goto LBL01
 
    Lines ending with '\' are joined before interpreting them.
 
@@ -3984,13 +3998,13 @@ Programmed procedures (aka macros)
    run when you changej directories. Assume the following are included within
    a vile startup file:
 
-         store-procedure my-cd-action
-                write-message &cat &cat &cat "moved from " $ocwd " to " $cwd
-                ~if &seq $progname "xvile"
-                        set-variable $title $cwd
-                ~endif
-         ~endm
-         set cd-hook my-cd-action
+     store-procedure my-cd-action
+            write-message &cat &cat &cat "moved from " $ocwd " to " $cwd
+            ~if &seq $progname "xvile"
+                    set-variable $title $cwd
+            ~endif
+     ~endm
+     set cd-hook my-cd-action
 
    Whenever the current directory is changed within the editor (via the "cd"
    command), my-cd-action will print a message and, under xvile, change the
@@ -4030,10 +4044,10 @@ Programmed procedures (aka macros)
    will run the "man" command on the identifier under the cursor, where you
    don't really consider it an error if the command fails, you might use:
 
-         9 store-macro
-                 ~force 1 shell-command &cat "man " $identifier
-         ~endm
-         bind-key execute-macro-9 ^X-m
+     9 store-macro
+             ~force 1 shell-command &cat "man " $identifier
+     ~endm
+     bind-key execute-macro-9 ^X-m
 
    (The argument '1' suppresses the "press return" prompt which normally
    appears after a command runs, since man runs a pager which does this
@@ -4041,26 +4055,26 @@ Programmed procedures (aka macros)
 
    The "screen-search-forward" command could be re-implemented as:
 
-         10 store-macro
-                 ~force search-forward $identifier
-         ~endm
-         bind-key execute-macro-10 ^X-/
+     10 store-macro
+             ~force search-forward $identifier
+     ~endm
+     bind-key execute-macro-10 ^X-/
 
    And the "screen-search-pattern-grab" command, normally bound to ^A-/,
    could be implemented with:
 
-         11 store-macro
-             set-variable $search $identifier
-             write-message &cat "Search pattern is now " $search
-         ~endm
-         bind-key execute-macro-11 ^A-/
+     11 store-macro
+         set-variable $search $identifier
+         write-message &cat "Search pattern is now " $search
+     ~endm
+     bind-key execute-macro-11 ^A-/
 
    A variation, which will not find the identifier if it is a substring of
    another word, is:
 
-         12 store-macro
-                 ~force search-forward &cat "\\<" &cat $identifier "\\>"
-         ~endm
+     12 store-macro
+             ~force search-forward &cat "\\<" &cat $identifier "\\>"
+     ~endm
 
    This works by surrounding the string with the \< and \> regular expression
    metacharacters.
@@ -4068,15 +4082,15 @@ Programmed procedures (aka macros)
    Here's another example, which finds C++ qualified identifiers, and uses
    them for a tag lookup:
 
-         ; Implement  ^A-^] for qualified-name tag lookup
-         24 store-macro
-                 backward-character
-                 ~local $search
-                 search-forward "^[a-zA-Z_][a-zA-Z0-9_:]*"
-                 write-message &cat "Tag pattern is now " $match
-                 ~force find-tag $match
-         ~endm
-         bind-key execute-macro-24 ^A-^]
+           ; Implement  ^A-^] for qualified-name tag lookup
+     24 store-macro
+             backward-character
+             ~local $search
+             search-forward "^[a-zA-Z_][a-zA-Z0-9_:]*"
+             write-message &cat "Tag pattern is now " $match
+             ~force find-tag $match
+     ~endm
+     bind-key execute-macro-24 ^A-^]
 
    (The "backward-character" is needed because "search-forward" will always
    skip the cursor position when scanning, so as to always find the next
@@ -4087,157 +4101,157 @@ Programmed procedures (aka macros)
    creating a macro. Some people prefer using lower-case 'g' to as an
    equivalent to 'G', to goto a specific line. If done as a macro, like this:
 
-         3 store-macro
-                 goto-line
-         ~endm
-         bind-key execute-macro-3 g
+     3 store-macro
+             goto-line
+     ~endm
+     bind-key execute-macro-3 g
 
    then both g and G go to the end of the file, but whereas 1000G goes to
    line 1000, 1000g goes to the end of the file 1000 times. It is easier (and
    more correct) to do:
 
-         bind-key goto-line g
+     bind-key goto-line g
 
    A couple more examples of slightly more complex macros: They cause a jump
    to the next (or previous) line of the same (or lesser) indent, skipping
    over empty lines. (Thanks to MIURA Masahiro)
 
-         ; macro 1 - back to the line of same indent
-         ;
-         1 store-macro
-                 first-nonwhite
-                 set-variable %indlev $curcol
-                 ~force back-line-at-bol
-                 ~if &seq &trim $line ""
-                         ~goto L1
-                 ~endif
-                 ~while &les %indlev $curcol
-                         *L1
-                         ~force back-line-at-bol
-                         ~if &seq $status "FALSE"
-                                 ~return
-                         ~endif
-                         ~if &seq &trim $line ""
-                                 ~goto L1
-                         ~endif
-                 ~endwhile
-         ~endm
-         bind-key execute-macro-1 ^X-[
+     ; macro 1 - back to the line of same indent
+     ;
+     1 store-macro
+             first-nonwhite
+             set-variable %indlev $curcol
+             ~force back-line-at-bol
+             ~if &seq &trim $line ""
+                     ~goto L1
+             ~endif
+             ~while &les %indlev $curcol
+                     *L1
+                     ~force back-line-at-bol
+                     ~if &seq $status "FALSE"
+                             ~return
+                     ~endif
+                     ~if &seq &trim $line ""
+                             ~goto L1
+                     ~endif
+             ~endwhile
+     ~endm
+     bind-key execute-macro-1 ^X-[
 
-         ; macro 2 - forward to the line of same indent
-         ;
-         2 store-macro
-                 first-nonwhite
-                 set-variable %indlev $curcol
-                 ~force down-line-at-bol
-                 ~if &seq &trim $line ""
-                         ~goto L2
-                 ~endif
-                 ~while &les %indlev $curcol
-                         *L2
-                         ~force down-line-at-bol
-                         ~if &seq $status "FALSE"
-                                 ~return
-                         ~endif
-                         ~if &seq &trim $line ""
-                                 ~goto L2
-                         ~endif
-                 ~endwhile
-         ~endm
-         bind-key execute-macro-2 ^X-]
+     ; macro 2 - forward to the line of same indent
+     ;
+     2 store-macro
+             first-nonwhite
+             set-variable %indlev $curcol
+             ~force down-line-at-bol
+             ~if &seq &trim $line ""
+                     ~goto L2
+             ~endif
+             ~while &les %indlev $curcol
+                     *L2
+                     ~force down-line-at-bol
+                     ~if &seq $status "FALSE"
+                             ~return
+                     ~endif
+                     ~if &seq &trim $line ""
+                             ~goto L2
+                     ~endif
+             ~endwhile
+     ~endm
+     bind-key execute-macro-2 ^X-]
 
-         ; Use "@d" to change cwd to the dir containing the current file
-         ; (contributed by Richard Hussong).  Keep in mind that "^M" is an
-         ; explict CR and that ":cd -" reverts cwd to its previous value.
-         store-procedure cdcur
-                 cd &path head $cfilname
-         ~endm
-         use-register d load-register ":cdcur^M"
+     ; Use "@d" to change cwd to the dir containing the current file
+     ; (contributed by Richard Hussong).  Keep in mind that "^M" is an
+     ; explict CR and that ":cd -" reverts cwd to its previous value.
+     store-procedure cdcur
+             cd &path head $cfilname
+     ~endm
+     use-register d load-register ":cdcur^M"
 
-         ;; Underline current line with user-specified char.  Ex:
-         ;;        blah blah blah blah   <-- curr line
-         ;;        +++++++++++++++++++   <-- underline with +
-         ;; from Daniel L. Ashbrook .
-         store-procedure underline-currline
-                 write-message "enter underline char now..."
-                 set-variable %linechar &gtkey
-                 write-message ""
-                 ; don't underline trailing whitespace (trivial)
-                 trim-lines-til end-of-line
-                 ; don't underline leading whitespace (nontrivial)
-                 goto-bol
-                 setv %ldspace=&equ $char &ascii ' '
-                 setv %ldtab=&equ $char &ascii "\t"
-                 setv %ldwhite=&or %ldspace %ldtab
-                 ~if %ldwhite
-                 ~force substitute-til next-punctuated-word '^\b\b*' ''
-                 ~endif
-                 ; compute length sans lead/trail whitespace
-                 set-variable %linelength $llength
-                 ~if %ldwhite
-                         ; put leading whitespace back
-                         undo-change
-                         ; it's not possible to disable the screen clutter of
-                         ; visual-matches mode (following a substitution)
-                         ; for all buffers from within a macro. so substitute
-                         ; for an improbable char (which achieves desired effect)
-                         ~force substitute-til next-punctuated-word &chr \xff &chr \xff
-                         ~force clear-visual-matches
-                 ~endif
-                 unset-variable %ustring
-                 set-variable %i 0
-                 ; build underline string in memory and insert with a
-                 ; single operation (optimizes undo)
-                 ~while &less %i %linelength
-                         set-variable %ustring &cat %ustring %linechar
-                         set-variable %i &add %i 1
-                 ~endwhile
-                 ; force ustring to align with prev line
-                 ~local $autoindent
-                 setv $autoindent=true
-                 goto-eol
-                 append-string &chr 13  ; 13 -> CR
-                 insert-string %ustring
-                 ~force next-line
-                 goto-bol
-         ~endm
-         bind-key underline-currline #-
+     ;; Underline current line with user-specified char.  Ex:
+     ;;        blah blah blah blah   <-- curr line
+     ;;        +++++++++++++++++++   <-- underline with +
+     ;; from Daniel L. Ashbrook .
+     store-procedure underline-currline
+             write-message "enter underline char now..."
+             set-variable %linechar &gtkey
+             write-message ""
+             ; don't underline trailing whitespace (trivial)
+             trim-lines-til end-of-line
+             ; don't underline leading whitespace (nontrivial)
+             goto-bol
+             setv %ldspace=&equ $char &ascii ' '
+             setv %ldtab=&equ $char &ascii "\t"
+             setv %ldwhite=&or %ldspace %ldtab
+             ~if %ldwhite
+             ~force substitute-til next-punctuated-word '^\b\b*' ''
+             ~endif
+             ; compute length sans lead/trail whitespace
+             set-variable %linelength $llength
+             ~if %ldwhite
+                     ; put leading whitespace back
+                     undo-change
+                     ; it's not possible to disable the screen clutter of
+                     ; visual-matches mode (following a substitution)
+                     ; for all buffers from within a macro. so substitute
+                     ; for an improbable char (which achieves desired effect)
+                     ~force substitute-til next-punctuated-word &chr \xff &chr \xff
+                     ~force clear-visual-matches
+             ~endif
+             unset-variable %ustring
+             set-variable %i 0
+             ; build underline string in memory and insert with a
+             ; single operation (optimizes undo)
+             ~while &less %i %linelength
+                     set-variable %ustring &cat %ustring %linechar
+                     set-variable %i &add %i 1
+             ~endwhile
+             ; force ustring to align with prev line
+             ~local $autoindent
+             setv $autoindent=true
+             goto-eol
+             append-string &chr 13  ; 13 -> CR
+             insert-string %ustring
+             ~force next-line
+             goto-bol
+     ~endm
+     bind-key underline-currline #-
 
-         ; macro 14 - grep for the word under the cursor, and put the result
-         ;       in a buffer named after that word.  set the error-buffer,
-         ;       so that ^X-^X may be used to visit the lines found by grep.
-         ;       (we have to set error-buffer explicitly, since we renamed
-         ;       the buffer -- otherwise it tracks the last pipe read by vile)
-         14 store-macro
-                 set-variable %grepfor $identifier
-                 edit-file &cat "!egrep -n " &cat %grepfor " *.[chs]"
-                 rename-buffer %grepfor
-                 error-buffer %grepfor
-         ~endm
-         bind-key execute-macro-14 ^A-g
+     ; macro 14 - grep for the word under the cursor, and put the result
+     ;       in a buffer named after that word.  set the error-buffer,
+     ;       so that ^X-^X may be used to visit the lines found by grep.
+     ;       (we have to set error-buffer explicitly, since we renamed
+     ;       the buffer -- otherwise it tracks the last pipe read by vile)
+     14 store-macro
+             set-variable %grepfor $identifier
+             edit-file &cat "!egrep -n " &cat %grepfor " *.[chs]"
+             rename-buffer %grepfor
+             error-buffer %grepfor
+     ~endm
+     bind-key execute-macro-14 ^A-g
 
    As a hint, it is (almost?) never correct to write a ':' command when
    creating a programmed macro. For instance, if you find yourself writing
    something like:
 
-         &cat ":!chmod +w " $cfilname
-         &cat ":e! " $cfilname
+     &cat ":!chmod +w " $cfilname
+     &cat ":e! " $cfilname
 
    (in an attempt to make a buffer writable before editing it), then what you
    really want is:
 
-         shell-command &cat "chmod +w " $cfilname
-         replace-with-file $cfilname
+     shell-command &cat "chmod +w " $cfilname
+     replace-with-file $cfilname
 
    Furthermore, some things are just as easy if done with a "keystroke" macro
    rather than a programmed macro:
 
-         ; use this as '@w'
-         use-register w load-register ":!chmod +w %^M:setl noview^M:w^M"
+     ; use this as '@w'
+     use-register w load-register ":!chmod +w %^M:setl noview^M:w^M"
 
    or
 
-         map ^A-w ":!chmod +w %^M:setl noview^M:w^M"
+     map ^A-w ":!chmod +w %^M:setl noview^M:w^M"
 
    (Of course you need to replace the ^M's with real carriage-returns.)
 
@@ -4351,8 +4365,8 @@ Command files
    directory, and put the following lines in a .vilerc in a directory in
    which you prefer tabs be set to 4 spaces:
 
-         source "$HOME/.vilerc"
-         set tabstop 4
+     source "$HOME/.vilerc"
+     set tabstop 4
 
    The quotes surrounding the filename are necessary to protect the name from
    interpretation as a vile variable, since it starts with the '$' character.
@@ -4408,15 +4422,15 @@ Invocation
    VILEINIT sequence, the following setting recreates portions of the default
    initialization behavior:
 
-         export VILEINIT
-         VILEINIT="
-         ~if &rd \"./.vilerc\"
-                 source \"./.vilerc\"
-         ~else
-                 ~if &rd \"$HOME/.vilerc\"
-                         source \"$HOME/.vilerc\"
-                 ~endif
-         ~endif"
+     export VILEINIT
+     VILEINIT="
+     ~if &rd \"./.vilerc\"
+             source \"./.vilerc\"
+     ~else
+             ~if &rd \"$HOME/.vilerc\"
+                     source \"$HOME/.vilerc\"
+             ~endif
+     ~endif"
 
    Other environment variables:
 
@@ -4572,11 +4586,11 @@ Crash Recovery
 
   Unix (in priority order)
 
-         $TMPDIR/vileDXXXXXX
-         /var/tmp/vileDXXXXX
-         /usr/tmp/vileDXXXXX
-         /tmp/vileDXXXXXX
-         ./vileDXXXXXX
+     $TMPDIR/vileDXXXXXX
+     /var/tmp/vileDXXXXX
+     /usr/tmp/vileDXXXXX
+     /tmp/vileDXXXXXX
+     ./vileDXXXXXX
 
   DOS and OS/2
 
@@ -4584,8 +4598,8 @@ Crash Recovery
 
   All other hosts (in priority order)
 
-         $TMPDIR/vileDXXXXXX
-         ./vileDXXXXXX
+     $TMPDIR/vileDXXXXXX
+     ./vileDXXXXXX
 
    where "XXXXXX" is a unique suffix created by mktemp().
 
@@ -4689,14 +4703,14 @@ Mode line customization
 
    The default format control string is as follows:
 
-         "%-%i%- %b %m:: :%f:is : :%=%F: : :%l:(:,:%c::) :%p::% :%C:char ::%S%-%-%|"
+     "%-%i%- %b %m:: :%f:is : :%=%F: : :%l:(:,:%c::) :%p::% :%C:char ::%S%-%-%|"
 
    Mode lines for some versions of vile previous to version 4.7 can be
    obtained with the following format string. This will remove the percentage
    indication from the mode line when in ruler mode and also shift the ruler
    indicator to the far right in the mode line.
 
-         "%-%i%- %b %m:: :%f:is : :%=%F: : %-%-%-%-:%l:(:,:%c::):%S::%-%-:%|"
+     "%-%i%- %b %m:: :%f:is : :%=%F: : %-%-%-%-:%l:(:,:%c::):%S::%-%-:%|"
 
 
 Color basics
@@ -4710,6 +4724,7 @@ Color basics
   Console/standard vile versus GUI vile
 
    Depending on the host, vile comes in two flavors:
+
      * console (or "standard") vile, which displays text with block
        character, cursor-based addressing.
      * GUI vile (aka, winvile on a win32 host and xvile on a Unix host),
@@ -4771,18 +4786,18 @@ Color basics
    topic "X Resources" in this help file). So, for example, the following
    line in an .Xdefaults or .Xresources file maps "gray" above to red:
 
-         XVile.color.fcolor8: rgb:ff/0/0
+     XVile.color.fcolor8: rgb:ff/0/0
 
    or
 
-         XVile.color.fcolor8: red
+     XVile.color.fcolor8: red
 
   winvile custom colors
 
    winvile's default colors are changed via the editor's set-rgb-palette
    command. Mirroring the example above, map "gray" to red like so:
 
-         set-rgb-palette gray 255 0 0
+     set-rgb-palette gray 255 0 0
 
   Display attributes
 
@@ -4802,6 +4817,7 @@ Color basics
    Note that on some unix hosts it's possible to run standard vile in a color
    xterm and thereby gain access to an expanded color palette (albeit often
    limited to 8 colors). However, this is only possible when:
+
      * your terminal type (specified via the $TERM environment var) supports
        color, and
      * vile is compiled and linked with the terminfo library.
@@ -4817,11 +4833,11 @@ Color basics
    color). Assuming your host supports terminfo, the following build commands
    force the editor to use that library:
 
-         $ make clean; ./configure --with-ncurses; make
+     $ make clean; ./configure --with-ncurses; make
 
    For additional hints and help, try this URL:
 
-         http://invisible-island.net/xterm/xterm.faq.html#no_color
+     http://invisible-island.net/xterm/xterm.faq.html#no_color
 
   Visual matching (VM)
 
@@ -4829,7 +4845,7 @@ Color basics
    either a simple color (no modifiers) or a display attribute. To see the
    list of supported colors and attributes, type:
 
-         :set visual-matches=<tab><tab>
+     :set visual-matches=<tab><tab>
 
    To learn more about this mode, search for "visual-matches" elsewhere in
    this help file.
@@ -4840,7 +4856,7 @@ Color basics
    color may be set to a simple color value (no attribute modifiers allowed).
    Type:
 
-         :set fcolor=<tab><tab>
+     :set fcolor=<tab><tab>
 
    for a list of supported colors.
 
@@ -4876,6 +4892,7 @@ Color basics
   Syntax coloring (SC)
 
    vile colors a buffer via these steps:
+
     1. an external filter (e.g., vile-c-filt) is run and subsequently reads
        an optional keywords file and a color specification file. The latter
        maps classes of language keywords/elements to user-specified colors
@@ -4999,20 +5016,20 @@ Syntax coloring
    macro files to /usr/local/share/vile. The following commands accomplish
    that task:
 
-         unset VILE_STARTUP_PATH VILE_LIBDIR_PATH
-         make clean; ./configure --with-builtin-filters; make
-         make install
+     unset VILE_STARTUP_PATH VILE_LIBDIR_PATH
+     make clean; ./configure --with-builtin-filters; make
+     make install
 
    Users should take these additional steps:
 
    1) add the following to their $HOME/.vilerc startup files:
 
-         source "filters.rc"
+     source "filters.rc"
 
    2) execute these shell commands (as necessary):
 
-         mkdir $HOME/.vile
-         cp /usr/local/share/vile/vile.keywords $HOME/.vile
+     mkdir $HOME/.vile
+     cp /usr/local/share/vile/vile.keywords $HOME/.vile
 
    That's it. Now skim through the "Manual recipe" topic below and then pay
    attention again when you hit the topic entitled "Testing the
@@ -5026,22 +5043,22 @@ Syntax coloring
    writable directory tree (we'll assume $HOME/local). This syntax does the
    job:
 
-         unset VILE_STARTUP_PATH VILE_LIBDIR_PATH
-         make clean
-         ./configure --prefix=$HOME/local --with-builtin-filters
-         make
-         make install
+     unset VILE_STARTUP_PATH VILE_LIBDIR_PATH
+     make clean
+     ./configure --prefix=$HOME/local --with-builtin-filters
+     make
+     make install
 
    These additional steps are required:
 
    1) add the following to the $HOME/.vilerc startup file:
 
-         source "filters.rc"
+     source "filters.rc"
 
    2) execute these shell commands (as necessary):
 
-         mkdir $HOME/.vile
-         cp $HOME/local/share/vile/vile.keywords $HOME/.vile
+     mkdir $HOME/.vile
+     cp $HOME/local/share/vile/vile.keywords $HOME/.vile
 
    3) add $HOME/local/bin to $PATH (if not already specified)
 
@@ -5082,7 +5099,7 @@ Syntax coloring
 
    5) edit your startup file (vile.rc) and add this line:
 
-         source "filters.rc"
+     source "filters.rc"
 
    6) export these environment variable settings:
 
@@ -5091,8 +5108,8 @@ Syntax coloring
 
    Example entries in Win9x/ME's autoexec.bat:
 
-         SET VILE_LIBDIR_PATH=c:\util\vcolor
-         SET VILE_STARTUP_PATH=c:\util\vcolor
+     SET VILE_LIBDIR_PATH=c:\util\vcolor
+     SET VILE_STARTUP_PATH=c:\util\vcolor
 
    On a Win/NT/2K host, env vars are initialized via a control panel applet.
    WinXP uses a different mechanism.
@@ -5116,6 +5133,7 @@ Syntax coloring
    +------------------------------------------------------------------------+
 
    For a simple go/no-go test, do:
+
      * edit a C source file
      * examine the editor's modeline and ensure that "[cmode]" is in effect
      * type ^X-q
@@ -5130,7 +5148,7 @@ Syntax coloring
    Typing ^X-q each time a new file is opened gets old after awhile. To force
    the editor to take over this task, add this line to your startup file:
 
-         setv $read-hook HighlightFilterMsg
+     setv $read-hook HighlightFilterMsg
 
    This setting initiates syntax coloring whenever a new file is edited.
    However, note that the read-hook won't initiate syntax coloring when a
@@ -5145,9 +5163,9 @@ Syntax coloring
    detects no active input during a user-configurable interval. If this
    sounds appealing, add the following to your startup file:
 
-         ; change autocolor mode value to suit individual tastes
-         set autocolor=2000
-         setv $autocolor-hook HighlightFilterMsg
+     ; change autocolor mode value to suit individual tastes
+     set autocolor=2000
+     setv $autocolor-hook HighlightFilterMsg
 
    These settings initiate an automatic syntax coloring check whenever 2
    seconds of idle time elapses (autocolor's argument is scaled in
@@ -5173,18 +5191,19 @@ Syntax coloring
    If autocolor is too slow, you can temporarily disable it by turning the
    highlighting mode off:
 
-         :set nohl
+     :set nohl
 
   Changing color/attribute mappings
 
    Filters will color text based on the contents of the file
    COLORDIR/vile.keywords . This file's configuration syntax is described in
    detail in doc/filters.doc. We'll hit the high points here:
+
      * a line that begins with ':' is a comment
      * language elements are grouped into classes, each of which is assigned
        a color, using this syntax:
 
-         .class <name>:<ACS>
+     .class <name>:<ACS>
 
    where:
 
@@ -5198,17 +5217,17 @@ Syntax coloring
 
    An example keyword file might contain:
 
-         .class Action:BC2
-         .class Comment:BC1
-         .class Error:CA
-         :.class Ident:R
-         .class Ident2:C6
-         .class Keyword:C3
-         .class Keyword2:BC1
-         .class Literal:UC5
-         .class Number:C6
-         .class Preproc:C2
-         .class Type:CD
+     .class Action:BC2
+     .class Comment:BC1
+     .class Error:CA
+     :.class Ident:R
+     .class Ident2:C6
+     .class Keyword:C3
+     .class Keyword2:BC1
+     .class Literal:UC5
+     .class Number:C6
+     .class Preproc:C2
+     .class Type:CD
 
    The "Comment" class defines the color attribute applied to a language's
    comments, which will be rendered in "B"old "C"olor "1". "Literal" applies
@@ -5244,6 +5263,7 @@ Syntax coloring
   Troubleshooting
 
    Try this checklist when syntax coloring doesn't work:
+
      * Does your display hardware and/or host support color? Type
        ":show-colors" to list current capabilities. If colors/attributes
        appear to be missing, reread the "Color basics" topic in this help
@@ -5256,10 +5276,10 @@ Syntax coloring
 
      * Your startup file should include these lines:
 
-             source "filters.rc"      ; quotes matter on win32 hosts
-             setv $autocolor-hook HighlightFilterMsg
-             setv $read-hook HighlightFilterMsg
-             set autocolor=2000
+         source "filters.rc"      ; quotes matter on win32 hosts
+         setv $autocolor-hook HighlightFilterMsg
+         setv $read-hook HighlightFilterMsg
+         set autocolor=2000
 
      * Some users have made the mistake of explicitly specifying a filter via
        the filtername mode. Don't do that.
@@ -5281,7 +5301,7 @@ Syntax coloring
    not color the buffer. To set the proper majormode and force syntax
    coloring, simply type:
 
-         :set-highlighting cpp
+     :set-highlighting cpp
 
   Man pages
 
@@ -5296,7 +5316,7 @@ Syntax coloring
    color (as specified in vile.keywords). If this feature sounds useful, then
    add this line to your startup file:
 
-         source "spell.rc"
+     source "spell.rc"
 
    Spell.rc installs ^X-i as the keybinding that initiates spell checking.
 
@@ -5334,27 +5354,27 @@ Setting Extra Colors
    the color and attributes. These are possible commands for setting isearch
    (the highlighting used for incremental search):
 
-         set-extra-color isearch reverse
-         set-extra-color isearch reverse+blue
-         set-extra-color isearch blue+reverse
-         set-extra-color isearch blue+reverse+underline
-         set-extra-color isearch red
+     set-extra-color isearch reverse
+     set-extra-color isearch reverse+blue
+     set-extra-color isearch blue+reverse
+     set-extra-color isearch blue+reverse+underline
+     set-extra-color isearch red
 
    Here is an example of how the various extra colors might be used:
 
-         ~if &sge &cat $version $patchlevel 'version 9.7f'
-         ~with set-extra-colors
-                 isearch blue+underline
-                 hypertext underline+red
-                 modeline reverse+green
-                 string magenta
-                 regex underline+magenta
-                 number cyan
-                 enum green
-         ~if &sge &cat $version $patchlevel 'version 9.7m'
-                 warning reverse+bold+red
-         ~endif
-         ~endwith
+     ~if &sge &cat $version $patchlevel 'version 9.7f'
+     ~with set-extra-colors
+             isearch blue+underline
+             hypertext underline+red
+             modeline reverse+green
+             string magenta
+             regex underline+magenta
+             number cyan
+             enum green
+     ~if &sge &cat $version $patchlevel 'version 9.7m'
+             warning reverse+bold+red
+     ~endif
+     ~endwith
 
 
 Majormodes
@@ -5368,6 +5388,7 @@ Majormodes
    significant number of majormodes for various programming languages and
    file formats. The majormode assigned to a particular buffer is dependent
    upon two criteria, in the following priority order:
+
     1. the suffix of the file being edited, and
     2. the file's preamble (i.e., file's first line).
 
@@ -5384,18 +5405,18 @@ Majormodes
 
    To define a new majormode, add this in your vile startup file:
 
-         define-mode <new_majormode_name>
-         ~with define-submode <new_majormode_name>
-                 mode-pathname  "<regexp_pattern>"       ; see next para
-                 mode-filename  "<regexp_pattern>"       ; see next para
-                 suffixes       "<regexp_pattern>"       ; see next para
-                 preamble       "<regexp_pattern>"       ; see next para
-                 before         "<if necessary>"
-                 filtername     "<syntax-coloring-filter>"
-                 buffer mode setting#1
-                 buffer mode setting#2
-         ; etc.
-         ~endwith
+     define-mode <new_majormode_name>
+     ~with define-submode <new_majormode_name>
+             mode-pathname  "<regexp_pattern>"       ; see next para
+             mode-filename  "<regexp_pattern>"       ; see next para
+             suffixes       "<regexp_pattern>"       ; see next para
+             preamble       "<regexp_pattern>"       ; see next para
+             before         "<if necessary>"
+             filtername     "<syntax-coloring-filter>"
+             buffer mode setting#1
+             buffer mode setting#2
+     ; etc.
+     ~endwith
 
    Selecting file(s) for inclusion within a majormode is a matter of
    specifying an appropriate regular expression, like so:
@@ -5425,14 +5446,14 @@ Majormodes
    8. Also, it appears that the right margin is set fairly close to 80. To
    mirror this policy, create this new majormode:
 
-         define-mode hlp
-         ~with define-submode hlp
-                 suf '\.hlp$'
-                 ts=8
-                 fillcol=77
-                 tabinsert
-                 filtername 'vile-txt-filt'
-         ~endwith
+     define-mode hlp
+     ~with define-submode hlp
+             suf '\.hlp$'
+             ts=8
+             fillcol=77
+             tabinsert
+             filtername 'vile-txt-filt'
+     ~endwith
 
    Now, whenever a file with suffix ".hlp" is edited, it will be colored with
    vile-txt-filt and physical tabs inserted at multiples of 8.
@@ -5440,42 +5461,42 @@ Majormodes
    To override or augment the buffer mode settings of an existing majormode,
    do this in your startup file:
 
-         source "filters.rc"
-         ; ...
-         define-mode <existing_majormode_name>
-         ~with define-submode <existing_majormode_name>
-                 changed buffer mode setting#1
-                 changed buffer mode setting#2
-                 ; etc.
-         ~endwith
+     source "filters.rc"
+     ; ...
+     define-mode <existing_majormode_name>
+     ~with define-submode <existing_majormode_name>
+             changed buffer mode setting#1
+             changed buffer mode setting#2
+             ; etc.
+     ~endwith
 
    For example, suppose it was desirable to edit all text files with
    ignorecase disabled. This startup file snippet will suffice:
 
-         source "filters.rc"
-         ; ...
-         define-mode txt
-         ~with define-submode txt
-                 ignorecase
-         ~endwith
+     source "filters.rc"
+     ; ...
+     define-mode txt
+     ~with define-submode txt
+             ignorecase
+     ~endwith
 
    Once associated, majormode submodes can be setl/unsetl just like regular
    local buffer modes. But note well that set/unset have no effect on
    submodes. So, when hlpmode is in effect, this command works:
 
-         setl notabinsert
+     setl notabinsert
 
    but this command has no effect:
 
-         set notabinsert
+     set notabinsert
 
    As added syntactic sugar, majormode submodes may be prefixed with the
    majormode name and changed like so:
 
-         set/setl     txt-ignorecase
-         set/setl     hlp-fillcol=60
-         unset/unsetl txt-ignorecase
-         unset/unsetl hlp-tabinsert
+     set/setl     txt-ignorecase
+     set/setl     hlp-fillcol=60
+     unset/unsetl txt-ignorecase
+     unset/unsetl hlp-tabinsert
 
   Notes
 
@@ -5488,7 +5509,7 @@ Majormodes
    set-highlighting macro (defined in filters.rc) or the "setl
    <majormode_name>" command. Example:
 
-         setl cppmode     ; <-- force cppmode for current buffer
+     setl cppmode     ; <-- force cppmode for current buffer
 
   Distinguishing between C/C++ include files
 
@@ -5501,24 +5522,24 @@ Majormodes
    his/her time to C++ coding), simply add something like this to the vile
    startup file:
 
-         source "filters.rc"
-         ; ...
-         define-mode cpp
-         ~with define-submode cpp
-                 mode-pathname 'project_root_directory_name/.*\.h$'
-         ~endwith
+     source "filters.rc"
+     ; ...
+     define-mode cpp
+     ~with define-submode cpp
+             mode-pathname 'project_root_directory_name/.*\.h$'
+     ~endwith
 
    This change specifies that all "*.h" files beneath a root directory name
    are presumed to be C++ files.
 
    2) If coding C++ more than C, then make these changes:
 
-         source "filters.rc"
-         ; ...
-         define-mode cpp
-         ~with define-submode cpp
-                 suffixes        '\.\(C\|CC\|cc\|cpp\|cxx\|hxx\|h\|hh\)$'
-         ~endwith
+     source "filters.rc"
+     ; ...
+     define-mode cpp
+     ~with define-submode cpp
+             suffixes        '\.\(C\|CC\|cc\|cpp\|cxx\|hxx\|h\|hh\)$'
+     ~endwith
 
    This change adds ".h" to the list of C++ files and since vile tests
    cppmode before cmode, all "*.h" files will now be edited in cppmode.
@@ -5533,31 +5554,31 @@ Majormodes
    Today, even if filters.rc is not sourced at runtime, vile includes a
    builtin majormode called cmode that is defined internally like so:
 
-         define-mode c
-         ~with define-submode c
-                 ts=8
-                 sw=8
-                 cindent
-                 cindent-chars ":#"
-                 suffix "<complex_regexp_for_c_c++_file_suffixes>"
-                 filtername 'vile-c-filt'
-         ~endwith
+     define-mode c
+     ~with define-submode c
+             ts=8
+             sw=8
+             cindent
+             cindent-chars ":#"
+             suffix "<complex_regexp_for_c_c++_file_suffixes>"
+             filtername 'vile-c-filt'
+     ~endwith
 
-   This buitin majormode can produce some surprising results when editing C
+   This builtin majormode can produce some surprising results when editing C
    source files. In particular:
 
-         set ts=<val>   ; <-- has no effect, use "setl" instead
+     set ts=<val>   ; <-- has no effect, use "setl" instead
 
    What's more these settings may be anathema for the coding style in effect
    for a given software project. Override these settings in the vile startup
    file to suit your needs/taste, like so:
 
-         define-mode c
-         ~with define-submode c
-                 ts=4
-                 sw=4
-                 nocindent
-         ~endwith
+     define-mode c
+     ~with define-submode c
+             ts=4
+             sw=4
+             nocindent
+     ~endwith
 
 
 Filtering "man" pages
@@ -5575,7 +5596,7 @@ Filtering "man" pages
    verbatim into your .vilerc file or may be read from your .vilerc as
    follows:
 
-         source "manpage.rc"
+     source "manpage.rc"
 
    This assumes that you have moved the manpage.rc file to a directory known
    to vile (automatically handled by "make install" on Unix or,
@@ -5589,7 +5610,7 @@ Filtering "man" pages
    following command will format and filter the vile manual page (which is
    nroff source).
 
-         :e !nroff -man vile.1 | vile-manfilt
+     :e !nroff -man vile.1 | vile-manfilt
 
    Once loaded, it will look rather funny. There will be Cntl-A characters
    scattered throughout the text followed by a sequence of digits followed by
@@ -5688,7 +5709,7 @@ Working in a project hierarchy
 
    1) cd to the project root dir and issue this ctags command:
 
-         ctags -R . '*.[ch]' '*.cpp'
+     ctags -R . '*.[ch]' '*.cpp'
 
    This command drops out a tags file in the root directory that includes
    tags for all three subordinate directories. Repeat this step as necessary
@@ -5697,8 +5718,8 @@ Working in a project hierarchy
    2) modify the vile startup file (vile.rc or .vilerc) to include this
    setting:
 
-         set tagrelative
-         set tags="../tags"
+     set tagrelative
+     set tags="../tags"
 
    vile's tags lookup features now provide one-keystroke access to symbols in
    _all_ project source files, provided that the editor's current working
@@ -5714,7 +5735,7 @@ Working in a project hierarchy
 
    1) cd to the project root dir and issue this ctags command:
 
-         ctags src/*.[ch] src/*.cpp lib/*.[ch] lib/*.cpp include/*.h
+     ctags src/*.[ch] src/*.cpp lib/*.[ch] lib/*.cpp include/*.h
 
    this command drops out a tags file in the root directory that includes
    tags for all three subordinate directories. Repeat this step as necessary
@@ -5723,8 +5744,8 @@ Working in a project hierarchy
    2) modify the vile startup file (vile.rc or .vilerc) to include this
    setting:
 
-         set tagrelative
-         set tags="../tags"
+     set tagrelative
+     set tags="../tags"
 
    This method achieves the same one-keystroke symbol access as described for
    Exuberant Ctags.
@@ -5740,7 +5761,7 @@ Working in a project hierarchy
    To begin with, specify a directory hierarchy via the $findpath state
    variable using this syntax:
 
-         setv $findpath="<dir>[<delim><dir>]..."
+     setv $findpath="<dir>[<delim><dir>]..."
 
    where <delim> is ':' on a Unix host and ';' on a win32 host. If this state
    var is not set, "." is assumed.
@@ -5748,21 +5769,22 @@ Working in a project hierarchy
    Next, use find-cfg mode to enable the traversal feature. This mode's
    string argument syntax is as follows:
 
-   [<recursive_token>][,<nonrecursive_token>[,<option>...]]
+     [<recursive_token>][,<nonrecursive_token>[,<option>...]]
 
-     where:
-        <recursive_token> := an ascii character that triggers a
+   where:
+
+         <recursive_token> := an ascii character that triggers a
                              recursive find.  The selected token may
                              not be taken from the character set
                              defined by isalpha().  To use ',' as a
                              token, escape it with '\'.
 
-        <nonrecursive_token> := an ascii character that triggers a
+         <nonrecursive_token> := an ascii character that triggers a
                                 nonrecursive find-shares the same
                                 semantic restrictions as the
                                 recursive token.
 
-        <option>          := {d | f}
+         <option>          := {d | f}
 
    Note 1: The "d" option specifies that find should restrict its search
    solely to files of type "d" (i.e., directories). The "f" option adds a
@@ -5783,24 +5805,24 @@ Working in a project hierarchy
    is /local/proj/root and that the vile startup file contains these
    settings:
 
-         setv $findpath="/local/proj/root"
-         set find-cfg="$,@"
+     setv $findpath="/local/proj/root"
+     set find-cfg="$,@"
 
    Then consider this command:
 
-         ^X-!$egrep -n FIXME *.[ch] *.cpp
+     ^X-!$egrep -n FIXME *.[ch] *.cpp
 
    which spawns this Unix shell command:
 
-         find /local/proj/root '(' -name '*.[ch]' -o -name '*.cpp' ')' \
-                 -print | egrep -v '((RCS|CVS)/|/[Tt][Aa][Gg][Ss]$)' | \
-                 xargs egrep -n FIXME
+     find /local/proj/root '(' -name '*.[ch]' -o -name '*.cpp' ')' \
+             -print | egrep -v '((RCS|CVS)/|/[Tt][Aa][Gg][Ss]$)' | \
+             xargs egrep -n FIXME
 
    and this win32 shell command:
 
-         find /local/proj/root '(' -iname '*.[ch]' -o -iname '*.cpp' ')' \
-                 -print | egrep -vi '((RCS|CVS)/|/tags$)' | \
-                 xargs egrep -n FIXME
+     find /local/proj/root '(' -iname '*.[ch]' -o -iname '*.cpp' ')' \
+             -print | egrep -vi '((RCS|CVS)/|/tags$)' | \
+             xargs egrep -n FIXME
 
    The net result is that capture-command has been used to find the string
    FIXME in all C/C++ source files located in the project hierarchy. The
@@ -5812,26 +5834,26 @@ Working in a project hierarchy
    If it's preferable to use a nonrecursive find operation and the GNU find
    utility is available on your host, you might try this on a Unix host:
 
-         setv $findpath="/dir1:/dir2:/dir3"
-         set find-cfg="$,@"
-         ^X-!@egrep -ni copyright *.txt
+     setv $findpath="/dir1:/dir2:/dir3"
+     set find-cfg="$,@"
+     ^X-!@egrep -ni copyright *.txt
 
    which spawns this Unix shell command:
 
-         find /dir1 /dir2 /dir3 -maxdepth 1 -name '*.txt' -print | \
-                 egrep -v '((RCS|CVS)/|/[Tt][Aa][Gg][Ss]$)' | \
-                 xargs egrep -ni copyright
+     find /dir1 /dir2 /dir3 -maxdepth 1 -name '*.txt' -print | \
+             egrep -v '((RCS|CVS)/|/[Tt][Aa][Gg][Ss]$)' | \
+             xargs egrep -ni copyright
 
    Or, correspondingly, on a win32 host:
 
-         setv $findpath="/dir1;/dir2;/dir3"
-         set find-cfg="$,@"
-         ^X-!@egrep -ni copyright *.txt
+     setv $findpath="/dir1;/dir2;/dir3"
+     set find-cfg="$,@"
+     ^X-!@egrep -ni copyright *.txt
 
    which spawns this win32 shell command:
 
-         find /dir1 /dir2 /dir3 -maxdepth 1 -iname '*.txt' -print | \
-                 egrep -vi '((RCS|CVS)/|/tags$)' | xargs egrep -ni copyright
+     find /dir1 /dir2 /dir3 -maxdepth 1 -iname '*.txt' -print | \
+             egrep -vi '((RCS|CVS)/|/tags$)' | xargs egrep -ni copyright
 
    Of course, if your version of find doesn't support the "-maxdepth" option,
    this feature won't work. The workaround is simple-upgrade to the GNU
@@ -5845,14 +5867,14 @@ Working in a project hierarchy
    obtain this functionality, specify find-cfg's "d" option. As a contrived
    example:
 
-         setv $findpath="/local/proj/root"
-         set find-cfg="$,@,d"
-         ^X-!$ls -ld
+     setv $findpath="/local/proj/root"
+     set find-cfg="$,@,d"
+     ^X-!$ls -ld
 
    yields this shell command (on a Unix host):
 
-         find /local/proj/root -type d -print | egrep -v '(RCS|CVS)/' | \
-                 xargs ls -ld
+     find /local/proj/root -type d -print | egrep -v '(RCS|CVS)/' | \
+             xargs ls -ld
 
   File/directory traversal notes
 
@@ -5903,8 +5925,8 @@ Writing your own filters
          B               -- bold
          R               -- reverse (or inverse) video
          U               -- underline
-         C<hex digit>    -- color number (one of 16)
-         H<command>\0    -- hypertext command
+         C<hex digit>     -- color number (one of 16)
+         H<command>\0     -- hypertext command
 
    The <command> for hypertext commands may be any sequence of characters
    except for newlines and null characters. A null character must terminate
@@ -5927,13 +5949,13 @@ Hypertext
    the normal default action of advancing one character to the right is
    taken:
 
-         22 store-macro
-                 ~force execute-hypertext-command
-                 ~if  &not $status
-                 ~force forward-character-to-eol
-                 ~endif
-         ~endm
-         bind-key execute-macro-22 ' '
+     22 store-macro
+             ~force execute-hypertext-command
+             ~if  &not $status
+             ~force forward-character-to-eol
+             ~endif
+     ~endm
+     bind-key execute-macro-22 ' '
 
    [ TODO: Maybe we should just add a little bit of code to make this the
    default binding for space bar? Or is some other key binding preferable? In
@@ -5942,8 +5964,8 @@ Hypertext
    Here is another example, which gives a choice between following a
    hyperlink, e.g., as embedded in which-source, or showing its content:
 
-         bind-key execute-hypertext-command ^X-z
-         bind-key show-hypertext-command ^X-Z
+     bind-key execute-hypertext-command ^X-z
+     bind-key show-hypertext-command ^X-Z
 
    When using xvile, double clicking on a hypertext link will cause the
    hypertext command to be executed. If no hypertext command is associated
@@ -5967,19 +5989,19 @@ Debugging features
            executed, the local variables saved/restored and intermediate
            states of expression evaluation. To activate tracing, use:
 
-                 ~trace on
+             ~trace on
 
            or
 
-                 setv $debug true
+             setv $debug true
 
            To disable tracing, use:
 
-                 ~trace off
+             ~trace off
 
            or
 
-                 setv $debug false
+             setv $debug false
 
    which-exec <file>
            displays the full path that the editor's shell will use to exec
@@ -6100,8 +6122,8 @@ X Window System specifics
    .vilerc file in order to make use of the Copy and Paste keys found on
    their keyboards:
 
-         bind-key copy-to-clipboard #-^
-         bind-key paste-from-clipboard #-*
+     bind-key copy-to-clipboard #-^
+     bind-key paste-from-clipboard #-*
 
   Scrollbars
 
@@ -6395,19 +6417,19 @@ X Window System specifics
    color specifications. You may, however, wish to set up a blinking cursor,
    using "blinkInterval" (see above).
 
-         XVile*font: -*-courier-medium-r-normal-*-*-*-75-75-m-70-iso8859-*
-         XVile*geometry: 80x54
-         XVile.background: darkslategrey
-         XVile.foreground: honeydew
-         XVile.scrollbar.foreground: firebrick2
-         XVile.scrollbar.sliderIsSolid: true
-         XVile.selection.background: aquamarine4
-         XVile.selection.foreground: honeydew
-         XVile.cursor.background: yellow
-         XVile.cursor.foreground: darkslategrey
-         XVile.modeline.Background: steelblue
-         XVile.modeline.foreground: darkslategrey
-         XVile.modeline.focusForeground: yellow
+     XVile*font: -*-courier-medium-r-normal-*-*-*-75-75-m-70-iso8859-*
+     XVile*geometry: 80x54
+     XVile.background: darkslategrey
+     XVile.foreground: honeydew
+     XVile.scrollbar.foreground: firebrick2
+     XVile.scrollbar.sliderIsSolid: true
+     XVile.selection.background: aquamarine4
+     XVile.selection.foreground: honeydew
+     XVile.cursor.background: yellow
+     XVile.cursor.foreground: darkslategrey
+     XVile.modeline.Background: steelblue
+     XVile.modeline.foreground: darkslategrey
+     XVile.modeline.focusForeground: yellow
 
   Fonts
 
@@ -6425,6 +6447,7 @@ X Window System specifics
    bold and/or italic fonts available.
 
    Here are some tips on using xfontsel to find an appropriate font.
+
     1. Set rgstry (registry) to iso8859
     2. Set spc (spacing) to either "c" (cell font) or "m" (monospaced font).
        You will be more likely to find a font which will work as italic if
@@ -6453,13 +6476,13 @@ X Window System specifics
    (on many display servers) is pretty close to the size of the default font
    that xvile will start up with.
 
-         -*-courier-medium-r-*-*-*-*-*-*-*-70-*-*
+     -*-courier-medium-r-*-*-*-*-*-*-*-70-*-*
 
    You can try it out by issuing the appropriate "set font" command from
    xvile. For longer term use, you will probably want to put it in your
    .Xdefaults file. It will look something like this:
 
-         XVile*font: -*-courier-medium-r-*-*-*-*-*-*-*-70-*-*
+     XVile*font: -*-courier-medium-r-*-*-*-*-*-*-*-70-*-*
 
    You may also set the font from your .vilerc file. This is not recommended,
    however, as you lose the ability to choose a different font from the
@@ -6530,6 +6553,7 @@ VMS specifics
 
    CDPATH directory lists are delimited with a comma and only the following
    components may be included:
+
      * rooted logicals terminated with ':'
      * directories terminated with ']'
 
@@ -6594,9 +6618,9 @@ VMS specifics
    "Remove" mapped to vile's "Delete"). Some vt220 keyboard special keys have
    no obvious counterpart, in which case, these mappings apply:
 
-                 PF1-PF4  =>  F1-F4,
-                 Help     =>  F15,
-                 DO       =>  F16.
+         PF1-PF4  =>  F1-F4,
+         Help     =>  F15,
+         DO       =>  F16.
 
 
 Win32 specifics
@@ -6692,13 +6716,13 @@ Win32 specifics
    $COMSPEC environment variable. This default may be overridden by setting
    $shell from within vile.rc . Example:
 
-         set-variable $shell 'c:\usr\binw\sh.exe'
+     set-variable $shell 'c:\usr\binw\sh.exe'
 
    As is true on other hosts, external processes are normally started under
    the control of a shell. To forego the shell entirely, prefix the command
    string with "start ". Example:
 
-         :!start calc           # start the windows calculator
+     :!start calc           # start the windows calculator
 
    Finally, it may be necessary to pass one or more flags to the shell
    invoked via the :sh command (e.g., force execution of a special login
@@ -6706,17 +6730,17 @@ Win32 specifics
    Instead, use a macro similar to the following that supercedes the builtin
    :sh command:
 
-         store-procedure sh
-                 ; pass -L (login) flag to MKS shell, assumes sh is
-                 ; reachable from $PATH
-                 ~local %sh
-                 setv %sh="sh -L"
-                 ~if &seq $progname "winvile"
-                         1 shell-command &cat "start " %sh
-                 ~else
-                         1 shell-command %sh
-                 ~endif
-         ~endm
+     store-procedure sh
+             ; pass -L (login) flag to MKS shell, assumes sh is
+             ; reachable from $PATH
+             ~local %sh
+             setv %sh="sh -L"
+             ~if &seq $progname "winvile"
+                     1 shell-command &cat "start " %sh
+             ~else
+                     1 shell-command %sh
+             ~endif
+     ~endm
 
   Cygwin's Bash Versus Console vile
 
@@ -6726,16 +6750,17 @@ Win32 specifics
    As it turns out, bash's signal handling is crafted to work best with other
    Cygwin programs (ls, wc, etc.) and not with native Win32 apps. A simple
    workaround is as follows:
+
     1. obtain and install the ash shell, which is included with the Cygwin
        distribution. Note that ash is installed as sh.exe .
     2. edit .bashrc (or equivalent config file) and add this function:
 
-              function vile
-              {
-                       sh <<- ENDIT-
-                       vile $@
-              ENDIT
-              }
+          function vile
+          {
+                   sh <<- ENDIT-
+                   vile $@
+          ENDIT
+          }
 
        When console vile is subsequently invoked from a bash command line,
        the editor will be started by sh, which does not suffer from the
@@ -6813,6 +6838,7 @@ Win32 specifics
 
    The first six popup menu entries are added to the system menu (in the
    upper left corner of the window). The system menu also includes:
+
      * two selections that support the traditional Windows printing
        interface.
      * a "Recent Files" menu that lists the last N files opened/created by
@@ -6829,6 +6855,7 @@ Win32 specifics
   Clipboard
 
    There are several ways to copy to/from the clipboard:
+
      * Copy data from the unnamed register to the windows clipboard via the
        copy-unnamed-reg-to-clipboard command (bound to Alt+Insert).
      * Copy data from a named register or region to the clipboard (a la
@@ -6892,9 +6919,9 @@ Win32 specifics
          Vile.rc Example
          ***************
 
-         ~if &sequal $progname "winvile"
-                 set-variable $font "courier new,8"
-         ~endif
+     ~if &sequal $progname "winvile"
+             set-variable $font "courier new,8"
+     ~endif
 
   Perl with Winvile
 
@@ -6906,6 +6933,7 @@ Win32 specifics
 
    If you acquire (i.e., do not personally build) a copy of "perl-embedded"
    vile, these external configuration steps are necessary:
+
     1. Obtain a complete perl distribution[*] from the aforementioned URL and
        install it. Included in this distribution, among many other items, is
        a required DLL and the usual perl packages.
@@ -7009,11 +7037,11 @@ Win32 specifics
            With respect to winvile, this string specifies an integer in the
            range 0-2, which selects one of the following styles:
 
-             0 -> fixed block cursor
-             1 -> cmd mode = block cursor
-                  ins mode = vertical bar
-             2 -> cmd mode = vertical bar
-                  ins mode = block cursor (U)
+         0 -> fixed block cursor
+         1 -> cmd mode = block cursor
+             ins mode = vertical bar
+         2 -> cmd mode = vertical bar
+             ins mode = block cursor (U)
 
    popup-menu
            Enables/disables the winvile popup menu. (U)
@@ -7046,15 +7074,15 @@ Win32 specifics
    context of a single startup file, you'll need to include code similar to
    this in vile.rc:
 
-           ~if &sequal $progname "winvile"
-                   set-variable $font "r_ansi,8"
-                   setv $pagelen=39
-                   set icursor="1"
-                   ; etc
-           ~else
-                   set icursor="35,100"
-                   ; etc
-           ~endif
+       ~if &sequal $progname "winvile"
+               set-variable $font "r_ansi,8"
+               setv $pagelen=39
+               set icursor="1"
+               ; etc
+       ~else
+               set icursor="35,100"
+               ; etc
+       ~endif
 
 
 Differences from vi
@@ -7080,9 +7108,9 @@ Differences from vi
    complex, to support the traditional nroff and troff boundaries. If you are
    just editing code, you may want to replace them:
 
-           ; set paragraph and section r.e.s for speed on C/C++/perl code.
-           set paragraphs=^$
-           set sections=^[{^L]
+       ; set paragraph and section r.e.s for speed on C/C++/perl code.
+       set paragraphs=^$
+       set sections=^[{^L]
 
    There is no special lisp support. But then, when was the last time you
    heard of a lisp programmer that used vi?
@@ -7104,7 +7132,7 @@ Differences from vi
    the '_' command is used by default for buffer history. If the regular vi
    behavior is desired, put the following in the .vilerc file:
 
-           bind-key whole-lines _
+       bind-key whole-lines _
 
 
 Sample .vilerc
@@ -7112,62 +7140,62 @@ Sample .vilerc
    Here's a sample .vilerc, to help get you started with the syntax and style
    of vile macros:
 
-           source vileinit.rc
-           set autoindent
-           set fillcol 75
+       source vileinit.rc
+       set autoindent
+       set fillcol 75
 
-           ; sitting on a brace, run the C code block through indent
-           1 store-macro
-                   write-file
-                   filter-til goto-matching-fence "indent -st"
-           ~endm
+       ; sitting on a brace, run the C code block through indent
+       1 store-macro
+               write-file
+               filter-til goto-matching-fence "indent -st"
+       ~endm
 
-           ; format the current paragraph
-           2 store-macro
-                   previous-paragraph
-                   filter-til next-paragraph "/usr/ucb/fmt"
-           ~endm
+       ; format the current paragraph
+       2 store-macro
+               previous-paragraph
+               filter-til next-paragraph "/usr/ucb/fmt"
+       ~endm
 
-           ; put 'fprintf(stderr,"\n");' into the file, and
-           ; position the cursor to add to the string
-           3 store-macro
-                   ~force next-line
-                   beginning-of-line
-                   insert-string "fprintf(stderr, \"\\n\");\n"
-                   ; six back, because it counts the newline
-                   6 backward-character
-                   insert-chars
-           ~endm
+       ; put 'fprintf(stderr,"\n");' into the file, and
+       ; position the cursor to add to the string
+       3 store-macro
+               ~force next-line
+               beginning-of-line
+               insert-string "fprintf(stderr, \"\\n\");\n"
+               ; six back, because it counts the newline
+               6 backward-character
+               insert-chars
+       ~endm
 
-           ; insert '> ' in front of every line from here til the end
-           ; (this works because without argument, the default action
-           ; for "goto-line" is to go to the end of file.
-           4 store-macro
-                   substitute-til goto-line "^" "> "
-           ~endm
+       ; insert '> ' in front of every line from here til the end
+       ; (this works because without argument, the default action
+       ; for "goto-line" is to go to the end of file.
+       4 store-macro
+               substitute-til goto-line "^" "> "
+       ~endm
 
-           ; spelling keystroke: write the buffer, invoke ispell, and force
-           ;       it to be read back in.
-           2 store-macro
-                   ~local $warn-reread
-                   write-file
-                   ; suppress "press return" with "1" argument to shell-command
-                   1 shell-command &cat "ispell " $cfilname
-                   ; suppress reread warning
-                   set nowarn-reread
-                   replace-with-file $cfilname
-           ~endm
-           bind-key execute-macro-2 #I
+       ; spelling keystroke: write the buffer, invoke ispell, and force
+       ;       it to be read back in.
+       2 store-macro
+               ~local $warn-reread
+               write-file
+               ; suppress "press return" with "1" argument to shell-command
+               1 shell-command &cat "ispell " $cfilname
+               ; suppress reread warning
+               set nowarn-reread
+               replace-with-file $cfilname
+       ~endm
+       bind-key execute-macro-2 #I
 
-           ; the next three give more mnemonic window commands
-           bind-key next-window ^N
-           bind-key previous-window ^P
-           bind-key split-current-window ^T
+       ; the next three give more mnemonic window commands
+       bind-key next-window ^N
+       bind-key previous-window ^P
+       bind-key split-current-window ^T
 
-           bind-key execute-macro-1 ^A-C
-           bind-key execute-macro-2 ^A-F
-           bind-key execute-macro-3 ^A-K
-           bind-key execute-macro-4 ^A-M
+       bind-key execute-macro-1 ^A-C
+       bind-key execute-macro-2 ^A-F
+       bind-key execute-macro-3 ^A-K
+       bind-key execute-macro-4 ^A-M
 
 
 Notes on TERM types and Scrolling
@@ -7191,15 +7219,15 @@ Notes on TERM types and Scrolling
 
    In any case, here's a termcap entry that should work:
 
-   dy|vt102|vt-102|dec vt102:\
-          :do=^J:co#80:li#24:cl=50\E[;H\E[2J:\
-          :le=^H:bs:cm=5\E[%i%d;%dH:nd=2\E[C:up=2\E[A:\
-          :ce=3\E[K:cd=50\E[J:so=2\E[7m:se=2\E[m:us=2\E[4m:ue=2\E[m:\
-          :md=2\E[1m:mr=2\E[7m:mb=2\E[5m:me=2\E[m:is=\E[1;24r\E[24;1H:\
-          :rs=\E>\E[?3l\E[?4l\E[?5l\E[?7h\E[?8h:ks=\E[?1h\E=:ke=\E[?1l\E>:\
-          :ku=\EOA:kd=\EOB:kr=\EOC:kl=\EOD:kb=^H:\
-          :ho=\E[H:k1=\EOP:k2=\EOQ:k3=\EOR:k4=\EOS:pt:sr=5\EM:vt#3:\
-          :sc=\E7:rc=\E8:cs=\E[%i%d;%dr:vs=\E[?7l:ve=\E[?7h:
+     dy|vt102|vt-102|dec vt102:\
+             :do=^J:co#80:li#24:cl=50\E[;H\E[2J:\
+             :le=^H:bs:cm=5\E[%i%d;%dH:nd=2\E[C:up=2\E[A:\
+             :ce=3\E[K:cd=50\E[J:so=2\E[7m:se=2\E[m:us=2\E[4m:ue=2\E[m:\
+             :md=2\E[1m:mr=2\E[7m:mb=2\E[5m:me=2\E[m:is=\E[1;24r\E[24;1H:\
+             :rs=\E>\E[?3l\E[?4l\E[?5l\E[?7h\E[?8h:ks=\E[?1h\E=:ke=\E[?1l\E>:\
+             :ku=\EOA:kd=\EOB:kr=\EOC:kl=\EOD:kb=^H:\
+             :ho=\E[H:k1=\EOP:k2=\EOQ:k3=\EOR:k4=\EOS:pt:sr=5\EM:vt#3:\
+             :sc=\E7:rc=\E8:cs=\E[%i%d;%dr:vs=\E[?7l:ve=\E[?7h:
 
    The crucial entries are cs and sr - without both of them, vile will
    attempt to use dl and al, and will scroll by deleting and inserting a
@@ -7210,26 +7238,28 @@ Notes on TERM types and Scrolling
 
    Here is the terminfo entry equivalent to the above termcap entry:
 
-   vt102|vt-102|dec vt102,
-          xon,
-          cols#80, lines#24, vt#3,
-          bel=^G, blink=\E[5m$<2>, bold=\E[1m$<2>,
-          clear=\E[;H\E[2J$<50>, cnorm=\E[?7h, cr=\r,
-          csr=\E[%i%p1%d;%p2%dr, cub1=\b, cud1=\n,
-          cuf1=\E[C$<2>, cup=\E[%i%p1%d;%p2%dH$<5>,
-          cuu1=\E[A$<2>, cvvis=\E[?7l, ed=\E[J$<50>,
-          el=\E[K$<3>, home=\E[H, ht=\t, ind=\n,
-          is2=\E[1;24r\E[24;1H, kbs=\b, kcub1=\EOD, kcud1=\EOB,
-          kcuf1=\EOC, kcuu1=\EOA, kf1=\EOP, kf2=\EOQ, kf3=\EOR,
-          kf4=\EOS, rc=\E8, rev=\E[7m$<2>, ri=\EM$<5>,
-          rmkx=\E[?1l\E>, rmso=\E[m$<2>, rmul=\E[m$<2>,
-          rs2=\E>\E[?3l\E[?4l\E[?5l\E[?7h\E[?8h, sc=\E7,
-          sgr0=\E[m$<2>, smkx=\E[?1h\E=, smso=\E[7m$<2>,
-          smul=\E[4m$<2>,
+     vt102|vt-102|dec vt102,
+             xon,
+             cols#80, lines#24, vt#3,
+             bel=^G, blink=\E[5m$<2>, bold=\E[1m$<2>,
+             clear=\E[;H\E[2J$<50>, cnorm=\E[?7h, cr=\r,
+             csr=\E[%i%p1%d;%p2%dr, cub1=\b, cud1=\n,
+             cuf1=\E[C$<2>, cup=\E[%i%p1%d;%p2%dH$<5>,
+             cuu1=\E[A$<2>, cvvis=\E[?7l, ed=\E[J$<50>,
+             el=\E[K$<3>, home=\E[H, ht=\t, ind=\n,
+             is2=\E[1;24r\E[24;1H, kbs=\b, kcub1=\EOD, kcud1=\EOB,
+             kcuf1=\EOC, kcuu1=\EOA, kf1=\EOP, kf2=\EOQ, kf3=\EOR,
+             kf4=\EOS, rc=\E8, rev=\E[7m$<2>, ri=\EM$<5>,
+             rmkx=\E[?1l\E>, rmso=\E[m$<2>, rmul=\E[m$<2>,
+             rs2=\E>\E[?3l\E[?4l\E[?5l\E[?7h\E[?8h, sc=\E7,
+             sgr0=\E[m$<2>, smkx=\E[?1h\E=, smso=\E[7m$<2>,
+             smul=\E[4m$<2>,
 
 
-Credits (last updated Jan, 2000)
---------------------------------
+Credits
+-------
+   (last updated Jan, 2000)
+
    Since version 6.1, Tom Dickey has been maintaining the "official" source
    tree, and release responsibilities. Paul Fox maintains the mailing lists.
 
@@ -7298,15 +7328,18 @@ Where to Get It
 
    Up-to-date copies of vile, including executables for DOS, Win32 and OS/2
    are found at
+
      * ftp://invisible-island.net/vile/
 
    which is mirrored at
+
      * ftp://ftp.phred.org/pub/vile/
 
    There are also links on vile's homepage, for both ftp and http connections
    for the most often used executables and sources.
 
    Development patches are found at
+
      * ftp://invisible-island.net/vile/patches/
      * ftp://ftp.phred.org/pub/vile/patches/
 
@@ -7328,13 +7361,16 @@ Problems
 Online resources
 ----------------
    This information is also available online:
+
      * http://invisible-island.net/vile/vile-toc.html (table of contents)
      * http://invisible-island.net/vile/vile-hlp.html (this file)
 
 
-Copyright 1995-2011,2012 by Paul Fox, Thomas Dickey, and Kevin Buettner
------------------------------------------------------------------------
+Copyright
+---------
+   Copyright (c) 1995-2012,2013 by Paul Fox, Thomas Dickey, and Kevin
+   Buettner
 
--- (generated by make-hlp.pl from vile-hlp.html(1.60))
+-- (generated by make-hlp.pl from vile-hlp.html(1.66))
 -- vile:txtmode fillcol=78
--- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.714 2013/03/31 17:14:51 tom Exp $
+-- $Header: /users/source/archives/vile.vcs/RCS/vile.hlp,v 1.716 2013/06/22 00:26:31 tom Exp $

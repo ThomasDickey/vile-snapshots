@@ -1,4 +1,4 @@
-MANIFEST for vile, version v9_8j5
+MANIFEST for vile, version v9_8j6
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 AUTHORS                         list of authors, with nicknames in CHANGES
@@ -328,6 +328,8 @@ filters/pot.key                 keywords for pot (gettext) mode
 filters/prolog.key              keywords for prolog
 filters/ps-filt.l               syntax filter for PostScript files
 filters/ps.key                  keywords for PostScript syntax filter
+filters/ps1-filt.l              syntax highlighter for powershell
+filters/ps1.key                 keywords for powershell mode
 filters/py-filt.l               syntax filter for Python
 filters/py.key                  keywords for Python syntax filter
 filters/rb.key                  keywords for Ruby syntax filter

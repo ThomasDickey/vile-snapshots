@@ -1,5 +1,5 @@
 #!/usr/bin/perl -w
-# $Id: make-hlp.pl,v 1.7 2013/03/31 17:13:54 tom Exp $
+# $Id: make-hlp.pl,v 1.9 2013/06/21 22:22:33 tom Exp $
 # Generate vile.hlp, using the dump feature of a text browser.
 #
 # Any of (e)links(2) or lynx would work.
@@ -47,7 +47,7 @@ sub header() {
     return $header;
 }
 
-# A capital letter in the first line means a major heading.  Underline it.
+# A capital letter in the first column means a major heading.  Underline it.
 # Adjust blank lines before/after a major header, to look more/less like the
 # older hand-crafted version.
 sub output($) {
@@ -92,6 +92,7 @@ sub doit() {
 
     foreach $name (@ARGV) {
         my $n;
+        my $t;
         my (@input);
         my $text;
 
@@ -105,6 +106,9 @@ sub doit() {
 
         for $n ( 0 .. $#input ) {
             chomp( $input[$n] );
+        }
+
+        for $n ( 0 .. $#input ) {
             if ( $input[$n] =~ /$ident_pattern/ ) {
                 $text = $input[$n];
                 $text =~ s/^.*\$Id:\s+//;
@@ -113,12 +117,15 @@ sub doit() {
                 $file_version .= $text;
             }
             elsif ( $input[$n] =~ /<title>/i ) {
-                chomp( $input[ $n + 1 ] );
-                $text = $input[ $n + 1 ];
-                $text =~ s/^.*<h1>//;
-                $text =~ s/<\/h1>.*//;
-		$text =~ s/\(version.*//;
-		$text = trim($text);
+                $text = $input[$n];
+                $text =~ s/^.*\<title\>//gi;
+                $t = $n;
+                while ( $text !~ /.*\<\/title\>/i and $t != $#input ) {
+                    $text .= " " . $input[ ++$t ];
+                }
+                $text =~ s/\<\/title\>.*$//gi;
+                $text =~ s/\(version.*//;
+                $text       = trim($text);
                 $file_title = $text;
                 last;
             }
@@ -138,17 +145,19 @@ sub doit() {
             $first = 0;
         }
 
-	my $body = 0;
+        my $body = 0;
         for $n ( 0 .. $#input ) {
             chomp( $input[$n] );
             $input[$n] = trim( $input[$n] );
-	    # omit the website url on ".doc" files
-	    if ( $body == 0
-		and $n > 0
-		and $input[$n] =~ /[-]{20,}/
-		and $input[$n] eq $input[0] ) {
-		    $body = $n + 1;
-	    }
+
+            # omit the website url on ".doc" files
+            if (    $body == 0
+                and $n > 0
+                and $input[$n] =~ /[-]{20,}/
+                and $input[$n] eq $input[0] )
+            {
+                $body = $n + 1;
+            }
         }
         for $n ( $body .. $#input ) {
             if (

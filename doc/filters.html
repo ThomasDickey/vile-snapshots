@@ -1,345 +1,882 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
-  $Id: filters.html,v 1.10 2013/03/31 17:03:45 tom Exp $
+  $Id: filters.html,v 1.12 2013/06/27 01:16:22 tom Exp $
 -->
-<HTML>
-<HEAD>
-<TITLE>
-Programmed Macros in vile
-</TITLE>
-<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
-<link rev="made" href="mailto:dickey@invisible-island.net">
-<link rel="SHORTCUT ICON" href="/img/icons/vile.ico" type="image/x-icon">
-<link rel="stylesheet" href="/css/simplestyle.css" type="text/css">
-</HEAD>
-<BODY>
-<hr>
-<a href=
-"http://invisible-island.net/">http://invisible-island.net/</a><a href="http://invisible-island.net/vile/">vile/</a><a href="http://invisible-island.net/vile/vile-toc.html">vile-toc</a><br>
-<hr>
-<h1 id="toplevel-id"><a name="toplevel">Syntax Highlighting Filters</a></h1>
-There are several highlighting filters in the filters subdirectory.  These all
-are programs that read a file, usually from the standard input, and write to
-the standard output.  Vile invokes these, uses the marked-up text to display
-highlighting.
-<p>
-Except for the manpage filter (a special case) all of these can be (and most
-are) implemented using lex.
-<h2 id="keywords-id"><a name="keywords">Keywords</a></h2>
-<p>
-Each filter reads one or more keyword files, which list specific keywords
-and their highlighting attributes, as well as classes of keywords.
-<p>
-The filters search for these files in the current, $HOME, $HOME/vile and
-startup directories.  On Unix, the keyword files in the current and $HOME
-directories are hidden using a "." prefix.  Except for MS-DOS, the suffix is
-".keywords"; on that platform it is ".key".  In the source distribution, these
-files are ".key", to keep them compatible with MS-DOS 8.3 filename lengths.
-<p>
-You can specify the root name to search, otherwise they search for "vile" and
-the compiled-in filter name.  For example, on a Unix host, the C filter
-(vile-c-filt) searches first here:
-<!--{{atr2html--><p style="font-family: monospace;">
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;./.vile.keywords<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008080">$HOME</font>/.vile.keywords<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008080">$HOME</font>/.vile/vile.keywords<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008080">$VILE_STARTUP_PATH</font>/vile.keywords<br>
-<!--atr2html}}--></p>
-	[ If $VILE_STARTUP_PATH is not defined, the filter checks the
-	"prefix" directory specified when all filters were compiled
-	(default path is /usr/local/share/vile/vile.keywords). ]
-<p>
-and then here:
-<!--{{atr2html--><p style="font-family: monospace;">
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;./.c.keywords<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008080">$HOME</font>/.c.keywords<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008080">$HOME</font>/.vile/c.keywords<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008080">$VILE_STARTUP_PATH</font>/c.keywords<br>
-<!--atr2html}}--></p>
-	[ Again, if $VILE_STARTUP_PATH is not defined, the filter checks
-	the "prefix" directory specified when all filters were compiled
-	(default path is /usr/local/share/vile/c.keyords). ]
-<p>
-In each case, vile-c-filt stops as soon as it finds the desired file.  On a
-non-Unix host, the search looks like this:
-<!--{{atr2html--><p style="font-family: monospace;">
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;./vile.keywords<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008080">$HOME</font>/vile.keywords<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008080">$HOME</font>/vile/vile.keywords<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008080">$VILE_STARTUP_PATH</font>/vile.keywords<br>
-<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;./c.keywords<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008080">$HOME</font>/c.keywords<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008080">$HOME</font>/vile/c.keywords<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008080">$VILE_STARTUP_PATH</font>/c.keywords<br>
-<!--atr2html}}--></p>
-The vile.keywords file contains color information for the most common classes. 
-The c.keywords file contains the actual keywords to be highlighted, referenced
-to the classes which are in turn colored.  You can see the search for keyword
-files by running the filter with a -v option, repeating the option (-vv) to
-obtain more verbose traces.  Note that filters may be compiled-into vile.  In
-that case (vile calls the filter using the attribute-directly command), you can
-still get a trace by adding the -v option to the filtername line of the
-majormode.  The trace will go to the message line, but also if you have
-<!--{{atr2html--><p style="font-family: monospace;">
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">set</font></strong>&nbsp;<strong><font color="#000080">popup-msgs</font></strong><br>
-<!--atr2html}}--></p>
-specified, to the [Messages] buffer.
-<p>
-Predefined keyword classes include (but may not necessarily be used in specific
-filters):
-<pre>
-	Action
-	Comment
-	Ident
-	Ident2
-	Keyword
-	Keyword2
-	Literal
-	Number
-	Preproc
-	Type
-</pre><p>
-A few filters, e.g., cweb, latex, diff, use additional classes.  The predefined
-classes are a guideline, to implement a common style across the different
-filters.
-<p>
-Each line in the keyword file consists of two strings separated by a colon (:).
-If the first string is empty, the line is treated as a comment.  The second
-string is interpreted as follows:
-<ul>
-	<li>if quoted with single quotes, any value is permitted.  Use a doubled
-	  quote to insert a quote character.  Literal values of this type are
-	  used to override internal parameters of the filter programs.  See
-	  m4-filt.c for an example.
 
-	<li>otherwise (the usual case), the string is an identifier, which
-	  happens to include the characters used in vile's control/A
-	  highlighting attributes (digits plus the characters ABCDEFIRU).
-<p>
-	  If the second string matches a keyword class (or in fact, any other
-	  keyword), the highlighting attributes of that keyword are used.  An
-	  empty attribute string implies the default class, which usually
-	  is "Keyword".
-<p>
-	  If the second string does not match a keyword, it must be a set of
-	  highlighting attributes, which will be used for the first string.
-	  A special case is made for a string beginning "N", which is treated
-	  as no-attributes.
-<p>
-	  See "Writing your own filters" in vile.hlp for additional details
-	  about attribute strings.
-</ul><p>
-The keyword file reader supports a limited include facility.  In each case, the
-parameter of the include is the root name of the keyword file, e.g., "c" for
-"c.key".
-<ul>
-	<li>If a line begins with ".include", it reads from the given keyword
-	  file.
-	  
-	<li>A few filters (such as yacc) require multiple symbol tables; these
-	  include using ".source".
+<html>
+<head>
+  <meta name="generator" content=
+  "HTML Tidy for Linux (vers 25 March 2009), see www.w3.org">
 
-	<li>Use the ".table" directive to simply switch to a different
-	  symbol table in the same file with the same effect as ".source".
+  <title>Programmed Macros in vile</title>
+  <meta http-equiv="Content-Type" content=
+  "text/html; charset=us-ascii">
+  <link rev="made" href="mailto:dickey@invisible-island.net">
+  <link rel="SHORTCUT ICON" href="/img/icons/vile.ico" type=
+  "image/x-icon">
+  <link rel="stylesheet" href="/css/simplestyle.css" type=
+  "text/css">
+</head>
 
-	<li>Use the ".merge" directive to read into the current symbol table
-	  from another file.
-</ul><p>
-Specify abbreviations using a '*' character, e.g.,
-<pre>
-	vi*le
-</pre><p>
-to match any of vi, vil, vile.  You can change the '*' character using the
-".abbrev" directive.  A special case is provided for languages such as SQL*PLUS,
-using the '?' character, e.g.,
-<pre>
-	rem?ark
-</pre><p>
-Use ".brief" to alter the special character '?'.
-<p>
-For either ".abbrev" or ".brief", omitting the parameter disables the feature.
-<p>
-Use the ".default" directive to change the default class.  The parameter must
-be the name of a class which has already been defined.  Omit the parameter to
-reset the default back to "Keyword".
-<p>
-You can change the characters assigned to ':' and '.' using ".equals" and
-".meta" directives, respectively.
-<p>
-Some of the filters match case-independent keywords (e.g., the DOS batchfiles). 
-The keywords file must give these names in lowercase, since the filtered text
-is converted to lowercase when matching.
-<p>
-You can modify the behavior slightly, by giving an absolute pathname with the
--k option, but otherwise the filters search for both "vile" and the specific
-language keywords, if any.
-<h2 id="options-id"><a name="options">OPTIONS</a></h2>
-<p>
-A few options are common to all filters:
-<dl>
-<dt>-d
-<dd>is recognized when the filters have been compiled with "DEBUG" defined.  This is used in the more complicated filters such as perl, ruby and sql
-	to show the parsing.
-<dt>-i
-<dd>is used (in all except for <em>html</em>, <em>imake</em> and <em>make</em>)
-	to tell vile to ignore case when matching keywords.
-	It is ignored in the few instances mentioned because those filters
-	contain logic to distinguish between caseless and case-sensitive
-	syntax.
-<dt>-k FILE
-	<dd>specifies the keyword file to use.
-<dt>-q
-	<dd>exits the filter before writing the marked-up output.  This happens
-	after processing the class definitions, so it is useful in combination
-	with the -v option to simply obtain the class information.
-<dt>-Q
-	<dd>is like "-q", but also writes to stderr (or [Filter Messages]) the
-	resulting keyword information.
-<dt>-t
-	<dd>holds the tabstop setting, which can be used in a filter for column
-	computations.
-<dt>-v
-	<dd>verbose, turns on extra output which can be used for troubleshooting
-	configuration problems.
-</dl>
-The C syntax filter recognizes additional options to customize it for Java,
-JavaScript and Objective-C:
-<dl>
-<dt>-j
-	<dd>Extend name- and literal-syntax to include Java.
+<body>
+  <hr>
+  <a href=
+  "http://invisible-island.net/">http://invisible-island.net/</a><a href="http://invisible-island.net/vile/">vile/</a><a href="http://invisible-island.net/vile/vile-toc.html">vile-toc</a><br>
 
-<dt>-o
-	<dd>Allow '@' in names, for directives.
+  <hr>
 
-<dt>-p
-	<dd>Disallow preprocessor lines.
+  <h1 id="toplevel-id"><a name="toplevel" id="toplevel">Syntax
+  Highlighting Filters</a></h1>There are several highlighting
+  filters in the filters subdirectory. These all are programs that
+  read a file, usually from the standard input, and write to the
+  standard output. Vile invokes these, uses the marked-up text to
+  display highlighting.
 
-<dt>-s
-	<dd>for JavaScript (to support jsmode).  This controls whether to allow
-	regular expressions in certain cases.
-<dt>-#
-	<dd>support C# verbatim string literals
-</dl>
-The keyword filter recognizes a "-c" option to tell it to highlight color
-codes with the corresponding color rather than the "Action" color.
-<p>
-The MAN filter recognizes a "-8" option which tells it to use 8-bit
-approximations for some common UTF-8 equivalents such as hyphen.
-<p>
-The SH filter recognizes a "-K" option to turn on Korn shell's syntax for
-dotted variable names.
-The ksh93 "vnames" allow a dotted name such as "$foo.bar" to be defined
-it is root ("$foo") is already defined.
-That affects portability of scripts because other sh-like programs
-do not behave this way.
+  <p>Except for the manpage filter (a special case) all of these
+  can be (and most are) implemented using lex.</p>
 
-<h2 id="programs-id"><a name="programs">PROGRAMS</a></h2>
-<p>
-The following are implemented:
+  <h2 id="keywords-id"><a name="keywords" id=
+  "keywords">Keywords</a></h2>
 
-<table border="0" summary="Command Prefixes">
-<colgroup><col width="200px"></colgroup>
-<tr><td>vile-ada-filt	</td><td>(Ada95)</td></tr>
-<tr><td>vile-as-filt	</td><td>(GNU assembler (x86))</td></tr>
-<tr><td>vile-asm-filt	</td><td>(Microsoft ASM (x86))</td></tr>
-<tr><td>vile-au3-filt	</td><td>(AutoIt 3)</td></tr>
-<tr><td>vile-awk-filt	</td><td>(awk)</td></tr>
-<tr><td>vile-basic-filt	</td><td>(BASIC)</td></tr>
-<tr><td>vile-bat-filt	</td><td>(DOS batchfiles)</td></tr>
-<tr><td>vile-bnf-filt	</td><td>(BNF)</td></tr>
-<tr><td>vile-c-filt	</td><td>(C language)</td></tr>
-<tr><td>vile-cfg-filt	</td><td>(Lynx configure file)</td></tr>
-<tr><td>vile-conf-filt	</td><td>(General config-files)</td></tr>
-<tr><td>vile-css-filt	</td><td>(Cascading Style Sheets)</td></tr>
-<tr><td>vile-cweb-filt	</td><td>(CWEBx)</td></tr>
-<tr><td>vile-dcl-filt	</td><td>(VMS DCL batchfiles)</td></tr>
-<tr><td>vile-def-filt	</td><td>(Windows linker definition files)</td></tr>
-<tr><td>vile-diff-filt	</td><td>(diff/patch files)</td></tr>
-<tr><td>vile-ecl-filt	</td><td>(Prolog/ECLiPSe)</td></tr>
-<tr><td>vile-esql-filt	</td><td>(embedded SQL with C/C++)</td></tr>
-<tr><td>vile-est-filt	</td><td>(Enscript syntax-descriptions)</td></tr>
-<tr><td>vile-fdl-filt	</td><td>(Forms definition language)</td></tr>
-<tr><td>vile-html-filt	</td><td>(HTML with embedded JavaScript)</td></tr>
-<tr><td>vile-imake-filt	</td><td>(imake)</td></tr>
-<tr><td>vile-info-filt	</td><td>(GNU info files)</td></tr>
-<tr><td>vile-ini-filt	</td><td>(ini)</td></tr>
-<tr><td>vile-iss-filt	</td><td>(Inno Setup)</td></tr>
-<tr><td>vile-key-filt	</td><td>(Vile keyword files)</td></tr>
-<tr><td>vile-latex-filt	</td><td>(LaTeX or TeX)</td></tr>
-<tr><td>vile-lex-filt	</td><td>(lex)</td></tr>
-<tr><td>vile-lisp-filt	</td><td>(Lisp)</td></tr>
-<tr><td>vile-lua-filt	</td><td>(Lua)</td></tr>
-<tr><td>vile-m4-filt	</td><td>(m4)</td></tr>
-<tr><td>vile-mail-filt	</td><td>(mail folders)</td></tr>
-<tr><td>vile-make-filt	</td><td>(make)</td></tr>
-<tr><td>vile-manfilt	</td><td>(manual-page)</td></tr>
-<tr><td>vile-mcrl-filt	</td><td>(mCRL(2) specification)</td></tr>
-<tr><td>vile-midl-filt	</td><td>(Microsoft Interface Definition Language)</td></tr>
-<tr><td>vile-mms-filt	</td><td>(VMS makefiles)</td></tr>
-<tr><td>vile-nr-filt	</td><td>(nroff)</td></tr>
-<tr><td>vile-pas-filt	</td><td>(Pascal)</td></tr>
-<tr><td>vile-perl-filt	</td><td>(Perl, in C)</td></tr>
-<tr><td>vile-php-filt	</td><td>(PHP)</td></tr>
-<tr><td>vile-pl-filt	</td><td>(Perl, in lex)</td></tr>
-<tr><td>vile-pot-filt	</td><td>(gettext (.po) files)</td></tr>
-<tr><td>vile-ps-filt	</td><td>(PostScript)</td></tr>
-<tr><td>vile-py-filt	</td><td>(Python)</td></tr>
-<tr><td>vile-rb-filt	</td><td>(Ruby)</td></tr>
-<tr><td>vile-rc-filt	</td><td>(Windows resource files)</td></tr>
-<tr><td>vile-rcs-filt	</td><td>(RCS archives)</td></tr>
-<tr><td>vile-rexx-filt	</td><td>(REXX)</td></tr>
-<tr><td>vile-rpm-filt	</td><td>(RPM ".spec" files)</td></tr>
-<tr><td>vile-rtf-filt	</td><td>(Rich Text Format)</td></tr>
-<tr><td>vile-ruby-filt	</td><td>(Ruby)</td></tr>
-<tr><td>vile-sccs-filt	</td><td>(SCCS archives)</td></tr>
-<tr><td>vile-sed-filt	</td><td>(sed scripts)</td></tr>
-<tr><td>vile-sh-filt	</td><td>(sh/ksh/csh)</td></tr>
-<tr><td>vile-sml-filt	</td><td>(Standard ML)</td></tr>
-<tr><td>vile-spell-filt	</td><td>(ispell highlights misspelled words)</td></tr>
-<tr><td>vile-sql-filt	</td><td>(SQL scripts)</td></tr>
-<tr><td>vile-tags-filt	</td><td>(ctags tags files)</td></tr>
-<tr><td>vile-tbl-filt	</td><td>(Vile's mktbl format)</td></tr>
-<tr><td>vile-tc-filt	</td><td>(termcap)</td></tr>
-<tr><td>vile-tcl-filt	</td><td>(TCL/TK)</td></tr>
-<tr><td>vile-texi-filt	</td><td>(texinfo)</td></tr>
-<tr><td>vile-ti-filt	</td><td>(terminfo)</td></tr>
-<tr><td>vile-txt-filt	</td><td>(plain text files, such as vile.hlp)</td></tr>
-<tr><td>vile-vile-filt	</td><td>(Vile's macros)</td></tr>
-<tr><td>vile-vlog-filt	</td><td>(Verilog)</td></tr>
-<tr><td>vile-wbt-filt	</td><td>(WinBatch)</td></tr>
-<tr><td>vile-xml-filt	</td><td>(XML)</td></tr>
-<tr><td>vile-xres-filt	</td><td>(X Window resources)</td></tr>
-<tr><td>vile-xs-filt	</td><td>(Perl extension)</td></tr>
-<tr><td>vile-yacc-filt	</td><td>(yacc)</td></tr>
-</table>
-<p>
-Not all majormodes require a special filter for highlighting, since they
-use the same syntax as other majormodes:
+  <p>Each filter reads one or more keyword files, which list
+  specific keywords and their highlighting attributes, as well as
+  classes of keywords.</p>
 
-<table border="0" summary="Command Prefixes">
-<colgroup><col width="200px"></colgroup>
-<tr><td>cppmode		</td><td>C++ uses C filter</td></tr>
-<tr><td>cshmode		</td><td>C-shell uses shell filter</td></tr>
-<tr><td>csmode		</td><td>C# uses C filter</td></tr>
-<tr><td>csvmode		</td><td>CSV uses text filter</td></tr>
-<tr><td>delphimode	</td><td>Delphi uses Pascal filter</td></tr>
-<tr><td>docbookmode	</td><td>Docbook uses XML filter</td></tr>
-<tr><td>imakemode	</td><td>Imake uses C filter</td></tr>
-<tr><td>javamode	</td><td>Java uses C filter</td></tr>
-<tr><td>jsmode		</td><td>JavaScript uses C filter</td></tr>
-<tr><td>jspmode		</td><td>JSP uses HTML filter</td></tr>
-<tr><td>nmakemode	</td><td>nmake uses make filter</td></tr>
-<tr><td>nsismode	</td><td>nsis uses def filter</td></tr>
-<tr><td>pcmode		</td><td>printcap uses termcap filter</td></tr>
-<tr><td>texmode		</td><td>TeX uses latex filter</td></tr>
-<tr><td>vbmode		</td><td>Visual Basic uses basic filter</td></tr>
-<tr><td>vbsmode		</td><td>Visual Basic Scripting uses basic filter</td></tr>
-<tr><td>xpmmode		</td><td>XPM uses C filter</td></tr>
-</table>
+  <p>The filters search for these files in the current, $HOME,
+  $HOME/vile and startup directories. On Unix, the keyword files in
+  the current and $HOME directories are hidden using a "." prefix.
+  Except for MS-DOS, the suffix is ".keywords"; on that platform it
+  is ".key". In the source distribution, these files are ".key", to
+  keep them compatible with MS-DOS 8.3 filename lengths.</p>
 
-<h2 id="notes-id"><a name="notes">NOTE</a></h2>
-<p>
-The lex filters have been well tested only with flex, which treats newlines
-differently.  Older versions of lex may not support the %x states.
+  <p>You can specify the root name to search, otherwise they search
+  for "vile" and the compiled-in filter name. For example, on a
+  Unix host, the C filter (vile-c-filt) searches first here: 
+  <!--{{atr2html--></p>
+
+  <p style="font-family: monospace;">
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;./.vile.keywords<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
+  "#008080">$HOME</font>/.vile.keywords<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
+  "#008080">$HOME</font>/.vile/vile.keywords<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
+  "#008080">$VILE_STARTUP_PATH</font>/vile.keywords<br>
+  <!--atr2html}}--></p>[ If $VILE_STARTUP_PATH is not defined, the
+  filter checks the "prefix" directory specified when all filters
+  were compiled (default path is
+  /usr/local/share/vile/vile.keywords). ]
+
+  <p>and then here: <!--{{atr2html--></p>
+
+  <p style="font-family: monospace;">
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;./.c.keywords<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
+  "#008080">$HOME</font>/.c.keywords<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
+  "#008080">$HOME</font>/.vile/c.keywords<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
+  "#008080">$VILE_STARTUP_PATH</font>/c.keywords<br>
+  <!--atr2html}}--></p>[ Again, if $VILE_STARTUP_PATH is not
+  defined, the filter checks the "prefix" directory specified when
+  all filters were compiled (default path is
+  /usr/local/share/vile/c.keyords). ]
+
+  <p>In each case, vile-c-filt stops as soon as it finds the
+  desired file. On a non-Unix host, the search looks like this: 
+  <!--{{atr2html--></p>
+
+  <p style="font-family: monospace;">
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;./vile.keywords<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
+  "#008080">$HOME</font>/vile.keywords<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
+  "#008080">$HOME</font>/vile/vile.keywords<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
+  "#008080">$VILE_STARTUP_PATH</font>/vile.keywords<br>
+  <br>
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;./c.keywords<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
+  "#008080">$HOME</font>/c.keywords<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
+  "#008080">$HOME</font>/vile/c.keywords<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
+  "#008080">$VILE_STARTUP_PATH</font>/c.keywords<br>
+  <!--atr2html}}--></p>The vile.keywords file contains color
+  information for the most common classes. The c.keywords file
+  contains the actual keywords to be highlighted, referenced to the
+  classes which are in turn colored. You can see the search for
+  keyword files by running the filter with a -v option, repeating
+  the option (-vv) to obtain more verbose traces. Note that filters
+  may be compiled-into vile. In that case (vile calls the filter
+  using the attribute-directly command), you can still get a trace
+  by adding the -v option to the filtername line of the majormode.
+  The trace will go to the message line, but also if you have 
+  <!--{{atr2html-->
+
+  <p style="font-family: monospace;">
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
+  "#000080">set</font></strong>&nbsp;<strong><font color=
+  "#000080">popup-msgs</font></strong><br>
+  <!--atr2html}}--></p>specified, to the [Messages] buffer.
+
+  <p>Predefined keyword classes include (but may not necessarily be
+  used in specific filters):</p>
+  <pre>
+        Action
+        Comment
+        Ident
+        Ident2
+        Keyword
+        Keyword2
+        Literal
+        Number
+        Preproc
+        Type
+</pre>
+
+  <p>A few filters, e.g., cweb, latex, diff, use additional
+  classes. The predefined classes are a guideline, to implement a
+  common style across the different filters.</p>
+
+  <p>Each line in the keyword file consists of two strings
+  separated by a colon (:). If the first string is empty, the line
+  is treated as a comment. The second string is interpreted as
+  follows:</p>
+
+  <ul>
+    <li>if quoted with single quotes, any value is permitted. Use a
+    doubled quote to insert a quote character. Literal values of
+    this type are used to override internal parameters of the
+    filter programs. See m4-filt.c for an example.</li>
+
+    <li>otherwise (the usual case), the string is an identifier,
+    which happens to include the characters used in vile's
+    control/A highlighting attributes (digits plus the characters
+    ABCDEFIRU).
+
+      <p>If the second string matches a keyword class (or in fact,
+      any other keyword), the highlighting attributes of that
+      keyword are used. An empty attribute string implies the
+      default class, which usually is "Keyword".</p>
+
+      <p>If the second string does not match a keyword, it must be
+      a set of highlighting attributes, which will be used for the
+      first string. A special case is made for a string beginning
+      "N", which is treated as no-attributes.</p>
+
+      <p>See "Writing your own filters" in vile.hlp for additional
+      details about attribute strings.</p>
+    </li>
+  </ul>
+
+  <p>The keyword file reader supports a limited include facility.
+  In each case, the parameter of the include is the root name of
+  the keyword file, e.g., "c" for "c.key".</p>
+
+  <ul>
+    <li>If a line begins with ".include", it reads from the given
+    keyword file.</li>
+
+    <li>A few filters (such as yacc) require multiple symbol
+    tables; these include using ".source".</li>
+
+    <li>Use the ".table" directive to simply switch to a different
+    symbol table in the same file with the same effect as
+    ".source".</li>
+
+    <li>Use the ".merge" directive to read into the current symbol
+    table from another file.</li>
+  </ul>
+
+  <p>Specify abbreviations using a '*' character, e.g.,</p>
+  <pre>
+        vi*le
+</pre>
+
+  <p>to match any of vi, vil, vile. You can change the '*'
+  character using the ".abbrev" directive. A special case is
+  provided for languages such as SQL*PLUS, using the '?' character,
+  e.g.,</p>
+  <pre>
+        rem?ark
+</pre>
+
+  <p>Use ".brief" to alter the special character '?'.</p>
+
+  <p>For either ".abbrev" or ".brief", omitting the parameter
+  disables the feature.</p>
+
+  <p>Use the ".default" directive to change the default class. The
+  parameter must be the name of a class which has already been
+  defined. Omit the parameter to reset the default back to
+  "Keyword".</p>
+
+  <p>You can change the characters assigned to ':' and '.' using
+  ".equals" and ".meta" directives, respectively.</p>
+
+  <p>Some of the filters match case-independent keywords (e.g., the
+  DOS batchfiles). The keywords file must give these names in
+  lowercase, since the filtered text is converted to lowercase when
+  matching.</p>
+
+  <p>You can modify the behavior slightly, by giving an absolute
+  pathname with the -k option, but otherwise the filters search for
+  both "vile" and the specific language keywords, if any.</p>
+
+  <h2 id="options-id"><a name="options" id=
+  "options">OPTIONS</a></h2>
+
+  <p>A few options are common to all filters:</p>
+
+  <dl>
+    <dt>-d</dt>
+
+    <dd>is recognized when the filters have been compiled with
+    "DEBUG" defined. This is used in the more complicated filters
+    such as perl, ruby and sql to show the parsing.</dd>
+
+    <dt>-i</dt>
+
+    <dd>is used (in all except for <em>html</em>, <em>imake</em>
+    and <em>make</em>) to tell vile to ignore case when matching
+    keywords. It is ignored in the few instances mentioned because
+    those filters contain logic to distinguish between caseless and
+    case-sensitive syntax.</dd>
+
+    <dt>-k FILE</dt>
+
+    <dd>specifies the keyword file to use.</dd>
+
+    <dt>-q</dt>
+
+    <dd>exits the filter before writing the marked-up output. This
+    happens after processing the class definitions, so it is useful
+    in combination with the -v option to simply obtain the class
+    information.</dd>
+
+    <dt>-Q</dt>
+
+    <dd>is like "-q", but also writes to stderr (or [Filter
+    Messages]) the resulting keyword information.</dd>
+
+    <dt>-t</dt>
+
+    <dd>holds the tabstop setting, which can be used in a filter
+    for column computations.</dd>
+
+    <dt>-v</dt>
+
+    <dd>verbose, turns on extra output which can be used for
+    troubleshooting configuration problems.</dd>
+  </dl>The C syntax filter recognizes additional options to
+  customize it for Java, JavaScript and Objective-C:
+
+  <dl>
+    <dt>-j</dt>
+
+    <dd>Extend name- and literal-syntax to include Java.</dd>
+
+    <dt>-o</dt>
+
+    <dd>Allow '@' in names, for directives.</dd>
+
+    <dt>-p</dt>
+
+    <dd>Disallow preprocessor lines.</dd>
+
+    <dt>-s</dt>
+
+    <dd>for JavaScript (to support jsmode). This controls whether
+    to allow regular expressions in certain cases.</dd>
+
+    <dt>-#</dt>
+
+    <dd>support C# verbatim string literals</dd>
+  </dl>The keyword filter recognizes a "-c" option to tell it to
+  highlight color codes with the corresponding color rather than
+  the "Action" color.
+
+  <p>The MAN filter recognizes a "-8" option which tells it to use
+  8-bit approximations for some common UTF-8 equivalents such as
+  hyphen.</p>
+
+  <p>The SH filter recognizes a "-K" option to turn on Korn shell's
+  syntax for dotted variable names. The ksh93 "vnames" allow a
+  dotted name such as "$foo.bar" to be defined it is root ("$foo")
+  is already defined. That affects portability of scripts because
+  other sh-like programs do not behave this way.</p>
+
+  <h2 id="programs-id"><a name="programs" id=
+  "programs">PROGRAMS</a></h2>
+
+  <p>The following are implemented:</p>
+
+  <table border="0" summary="Command Prefixes">
+    <colgroup>
+      <col width="200px">
+    </colgroup>
+
+    <tr>
+      <td>vile-ada-filt</td>
+
+      <td>(Ada95)</td>
+    </tr>
+
+    <tr>
+      <td>vile-as-filt</td>
+
+      <td>(GNU assembler (x86))</td>
+    </tr>
+
+    <tr>
+      <td>vile-asm-filt</td>
+
+      <td>(Microsoft ASM (x86))</td>
+    </tr>
+
+    <tr>
+      <td>vile-au3-filt</td>
+
+      <td>(AutoIt 3)</td>
+    </tr>
+
+    <tr>
+      <td>vile-awk-filt</td>
+
+      <td>(awk)</td>
+    </tr>
+
+    <tr>
+      <td>vile-basic-filt</td>
+
+      <td>(BASIC)</td>
+    </tr>
+
+    <tr>
+      <td>vile-bat-filt</td>
+
+      <td>(DOS batchfiles)</td>
+    </tr>
+
+    <tr>
+      <td>vile-bnf-filt</td>
+
+      <td>(BNF)</td>
+    </tr>
+
+    <tr>
+      <td>vile-c-filt</td>
+
+      <td>(C language)</td>
+    </tr>
+
+    <tr>
+      <td>vile-cfg-filt</td>
+
+      <td>(Lynx configure file)</td>
+    </tr>
+
+    <tr>
+      <td>vile-conf-filt</td>
+
+      <td>(General config-files)</td>
+    </tr>
+
+    <tr>
+      <td>vile-css-filt</td>
+
+      <td>(Cascading Style Sheets)</td>
+    </tr>
+
+    <tr>
+      <td>vile-cweb-filt</td>
+
+      <td>(CWEBx)</td>
+    </tr>
+
+    <tr>
+      <td>vile-dcl-filt</td>
+
+      <td>(VMS DCL batchfiles)</td>
+    </tr>
+
+    <tr>
+      <td>vile-def-filt</td>
+
+      <td>(Windows linker definition files)</td>
+    </tr>
+
+    <tr>
+      <td>vile-diff-filt</td>
+
+      <td>(diff/patch files)</td>
+    </tr>
+
+    <tr>
+      <td>vile-ecl-filt</td>
+
+      <td>(Prolog/ECLiPSe)</td>
+    </tr>
+
+    <tr>
+      <td>vile-esql-filt</td>
+
+      <td>(embedded SQL with C/C++)</td>
+    </tr>
+
+    <tr>
+      <td>vile-est-filt</td>
+
+      <td>(Enscript syntax-descriptions)</td>
+    </tr>
+
+    <tr>
+      <td>vile-fdl-filt</td>
+
+      <td>(Forms definition language)</td>
+    </tr>
+
+    <tr>
+      <td>vile-html-filt</td>
+
+      <td>(HTML with embedded JavaScript)</td>
+    </tr>
+
+    <tr>
+      <td>vile-imake-filt</td>
+
+      <td>(imake)</td>
+    </tr>
+
+    <tr>
+      <td>vile-info-filt</td>
+
+      <td>(GNU info files)</td>
+    </tr>
+
+    <tr>
+      <td>vile-ini-filt</td>
+
+      <td>(ini)</td>
+    </tr>
+
+    <tr>
+      <td>vile-iss-filt</td>
+
+      <td>(Inno Setup)</td>
+    </tr>
+
+    <tr>
+      <td>vile-json-filt</td>
+
+      <td>(json)</td>
+    </tr>
+
+    <tr>
+      <td>vile-key-filt</td>
+
+      <td>(Vile keyword files)</td>
+    </tr>
+
+    <tr>
+      <td>vile-latex-filt</td>
+
+      <td>(LaTeX or TeX)</td>
+    </tr>
+
+    <tr>
+      <td>vile-lex-filt</td>
+
+      <td>(lex)</td>
+    </tr>
+
+    <tr>
+      <td>vile-lisp-filt</td>
+
+      <td>(Lisp)</td>
+    </tr>
+
+    <tr>
+      <td>vile-lua-filt</td>
+
+      <td>(Lua)</td>
+    </tr>
+
+    <tr>
+      <td>vile-m4-filt</td>
+
+      <td>(m4)</td>
+    </tr>
+
+    <tr>
+      <td>vile-mail-filt</td>
+
+      <td>(mail folders)</td>
+    </tr>
+
+    <tr>
+      <td>vile-make-filt</td>
+
+      <td>(make)</td>
+    </tr>
+
+    <tr>
+      <td>vile-manfilt</td>
+
+      <td>(manual-page)</td>
+    </tr>
+
+    <tr>
+      <td>vile-mcrl-filt</td>
+
+      <td>(mCRL(2) specification)</td>
+    </tr>
+
+    <tr>
+      <td>vile-midl-filt</td>
+
+      <td>(Microsoft Interface Definition Language)</td>
+    </tr>
+
+    <tr>
+      <td>vile-mms-filt</td>
+
+      <td>(VMS makefiles)</td>
+    </tr>
+
+    <tr>
+      <td>vile-nr-filt</td>
+
+      <td>(nroff)</td>
+    </tr>
+
+    <tr>
+      <td>vile-pas-filt</td>
+
+      <td>(Pascal)</td>
+    </tr>
+
+    <tr>
+      <td>vile-perl-filt</td>
+
+      <td>(Perl, in C)</td>
+    </tr>
+
+    <tr>
+      <td>vile-php-filt</td>
+
+      <td>(PHP)</td>
+    </tr>
+
+    <tr>
+      <td>vile-pl-filt</td>
+
+      <td>(Perl, in lex)</td>
+    </tr>
+
+    <tr>
+      <td>vile-pot-filt</td>
+
+      <td>(gettext (.po) files)</td>
+    </tr>
+
+    <tr>
+      <td>vile-ps-filt</td>
+
+      <td>(PostScript)</td>
+    </tr>
+
+    <tr>
+      <td>vile-ps1-filt</td>
+
+      <td>(PowerShell)</td>
+    </tr>
+
+    <tr>
+      <td>vile-py-filt</td>
+
+      <td>(Python)</td>
+    </tr>
+
+    <tr>
+      <td>vile-rb-filt</td>
+
+      <td>(Ruby)</td>
+    </tr>
+
+    <tr>
+      <td>vile-rc-filt</td>
+
+      <td>(Windows resource files)</td>
+    </tr>
+
+    <tr>
+      <td>vile-rcs-filt</td>
+
+      <td>(RCS archives)</td>
+    </tr>
+
+    <tr>
+      <td>vile-rexx-filt</td>
+
+      <td>(REXX)</td>
+    </tr>
+
+    <tr>
+      <td>vile-rpm-filt</td>
+
+      <td>(RPM ".spec" files)</td>
+    </tr>
+
+    <tr>
+      <td>vile-rtf-filt</td>
+
+      <td>(Rich Text Format)</td>
+    </tr>
+
+    <tr>
+      <td>vile-ruby-filt</td>
+
+      <td>(Ruby)</td>
+    </tr>
+
+    <tr>
+      <td>vile-sccs-filt</td>
+
+      <td>(SCCS archives)</td>
+    </tr>
+
+    <tr>
+      <td>vile-sed-filt</td>
+
+      <td>(sed scripts)</td>
+    </tr>
+
+    <tr>
+      <td>vile-sh-filt</td>
+
+      <td>(sh/ksh/csh)</td>
+    </tr>
+
+    <tr>
+      <td>vile-sml-filt</td>
+
+      <td>(Standard ML)</td>
+    </tr>
+
+    <tr>
+      <td>vile-spell-filt</td>
+
+      <td>(ispell highlights misspelled words)</td>
+    </tr>
+
+    <tr>
+      <td>vile-sql-filt</td>
+
+      <td>(SQL scripts)</td>
+    </tr>
+
+    <tr>
+      <td>vile-tags-filt</td>
+
+      <td>(ctags tags files)</td>
+    </tr>
+
+    <tr>
+      <td>vile-tbl-filt</td>
+
+      <td>(Vile's mktbl format)</td>
+    </tr>
+
+    <tr>
+      <td>vile-tc-filt</td>
+
+      <td>(termcap)</td>
+    </tr>
+
+    <tr>
+      <td>vile-tcl-filt</td>
+
+      <td>(TCL/TK)</td>
+    </tr>
+
+    <tr>
+      <td>vile-texi-filt</td>
+
+      <td>(texinfo)</td>
+    </tr>
+
+    <tr>
+      <td>vile-ti-filt</td>
+
+      <td>(terminfo)</td>
+    </tr>
+
+    <tr>
+      <td>vile-txt-filt</td>
+
+      <td>(plain text files, such as vile.hlp)</td>
+    </tr>
+
+    <tr>
+      <td>vile-vile-filt</td>
+
+      <td>(Vile's macros)</td>
+    </tr>
+
+    <tr>
+      <td>vile-vlog-filt</td>
+
+      <td>(Verilog)</td>
+    </tr>
+
+    <tr>
+      <td>vile-wbt-filt</td>
+
+      <td>(WinBatch)</td>
+    </tr>
+
+    <tr>
+      <td>vile-xml-filt</td>
+
+      <td>(XML)</td>
+    </tr>
+
+    <tr>
+      <td>vile-xres-filt</td>
+
+      <td>(X Window resources)</td>
+    </tr>
+
+    <tr>
+      <td>vile-xs-filt</td>
+
+      <td>(Perl extension)</td>
+    </tr>
+
+    <tr>
+      <td>vile-yacc-filt</td>
+
+      <td>(yacc)</td>
+    </tr>
+  </table>
+
+  <p>Not all majormodes require a special filter for highlighting,
+  since they use the same syntax as other majormodes:</p>
+
+  <table border="0" summary="Command Prefixes">
+    <colgroup>
+      <col width="200px">
+    </colgroup>
+
+    <tr>
+      <td>cppmode</td>
+
+      <td>C++ uses C filter</td>
+    </tr>
+
+    <tr>
+      <td>cshmode</td>
+
+      <td>C-shell uses shell filter</td>
+    </tr>
+
+    <tr>
+      <td>csmode</td>
+
+      <td>C# uses C filter</td>
+    </tr>
+
+    <tr>
+      <td>csvmode</td>
+
+      <td>CSV uses text filter</td>
+    </tr>
+
+    <tr>
+      <td>delphimode</td>
+
+      <td>Delphi uses Pascal filter</td>
+    </tr>
+
+    <tr>
+      <td>docbookmode</td>
+
+      <td>Docbook uses XML filter</td>
+    </tr>
+
+    <tr>
+      <td>imakemode</td>
+
+      <td>Imake uses C filter</td>
+    </tr>
+
+    <tr>
+      <td>javamode</td>
+
+      <td>Java uses C filter</td>
+    </tr>
+
+    <tr>
+      <td>jsmode</td>
+
+      <td>JavaScript uses C filter</td>
+    </tr>
+
+    <tr>
+      <td>jspmode</td>
+
+      <td>JSP uses HTML filter</td>
+    </tr>
+
+    <tr>
+      <td>nmakemode</td>
+
+      <td>nmake uses make filter</td>
+    </tr>
+
+    <tr>
+      <td>nsismode</td>
+
+      <td>nsis uses def filter</td>
+    </tr>
+
+    <tr>
+      <td>pcmode</td>
+
+      <td>printcap uses termcap filter</td>
+    </tr>
+
+    <tr>
+      <td>texmode</td>
+
+      <td>TeX uses latex filter</td>
+    </tr>
+
+    <tr>
+      <td>vbmode</td>
+
+      <td>Visual Basic uses basic filter</td>
+    </tr>
+
+    <tr>
+      <td>vbsmode</td>
+
+      <td>Visual Basic Scripting uses basic filter</td>
+    </tr>
+
+    <tr>
+      <td>xpmmode</td>
+
+      <td>XPM uses C filter</td>
+    </tr>
+  </table>
+
+  <h2 id="notes-id"><a name="notes" id="notes">NOTE</a></h2>
+
+  <p>The lex filters have been well tested only with flex, which
+  treats newlines differently. Older versions of lex may not
+  support the %x states.</p>
 </body>
+</html>
