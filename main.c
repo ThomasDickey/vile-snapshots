@@ -22,7 +22,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.719 2013/04/13 13:45:59 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.720 2013/06/19 23:00:59 tom Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -504,8 +504,8 @@ MainProgram(int argc, char *argv[])
      * or setgid'd.
      */
 #if defined(HAVE_SETUID) && defined(HAVE_SETGID) && defined(HAVE_GETEGID) && defined(HAVE_GETEUID)
-    (void) setgid(getegid());
-    (void) setuid(geteuid());
+    IGNORE_RC(setgid(getegid()));
+    IGNORE_RC(setuid(geteuid()));
 #endif
 
     get_executable_dir();

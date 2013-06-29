@@ -1,4 +1,4 @@
-; $Id: filters.rc,v 1.240 2013/05/24 10:50:54 tom Exp $
+; $Id: filters.rc,v 1.242 2013/06/25 00:55:00 tom Exp $
 ; majormodes in this file are ordered alphabetically for convenience - the
 ; precedence used by vile is strictly alphabetic, counting case.
 
@@ -200,6 +200,11 @@ define-mode pas
 define-mode pc
 ~with define-submode pc
 	filtername	'vile-tc-filt -k pc'
+~endwith
+
+define-mode powershell
+~with define-submode powershell
+	filtername	'vile-ps1-filt -k ps1 -i'
 ~endwith
 
 define-mode prolog

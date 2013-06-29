@@ -1,6 +1,6 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20130514 (k)
+ 20130624 (k)
 	> Brendan O'Dea:
 	+ correct a couple of places in api.c which used characters rather
 	  than bytes, which made
@@ -12,6 +12,9 @@ Changes for vile 9.9 (released ??? ??? ?? ????)
 	  process as the module is loaded, e.g., using @INC (prompted by
 	  discussion of Gentoo #380741).
 	> Tom Dickey:
+	+ add powershell mode
+	+ convert non-generated html documentation to HTML4-strict; change
+	  font-coloring to use css.
 	+ amend change for Savannah #37806 to exclude buffers where the file
 	  encoding is 8bit, fixing a mispositioning of the cursor, e.g., for
 	  ISO-8859-2 encoding (report by Radek Liboska).
