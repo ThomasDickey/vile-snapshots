@@ -2,7 +2,7 @@
  *	eval.c -- function and variable evaluation
  *	original by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.454 2013/03/07 11:43:48 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.456 2013/07/07 23:24:28 tom Exp $
  *
  */
 
@@ -1662,6 +1662,18 @@ run_func(int fnum)
 		break;
 	    }
 	}
+    case UFREGEX_ESCAPE:
+	if (!is_error) {
+	    for (sp = arg[0]; *sp != 0; ++sp) {
+		int ch = CharOf(*sp);
+		if (strchr("\\.[]*^$~", ch) != 0) {
+		    tb_append(&result, BACKSLASH);
+		}
+		tb_append(&result, ch);
+	    }
+	    tb_append(&result, EOS);
+	}
+	break;
     case UFBCHANGED:
 	if (!is_error
 	    && (bp = find_any_buffer(arg[0])) != 0) {
@@ -1678,7 +1690,6 @@ run_func(int fnum)
 	    is_error = TRUE;
 	}
 	break;
-	/* FALLTHRU */
     case NFUNCS:
 	TRACE(("unknown function #%d\n", fnum));
 	is_error = TRUE;

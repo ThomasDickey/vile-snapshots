@@ -12,6 +12,8 @@ Changes for vile 9.9 (released ??? ??? ?? ????)
 	  process as the module is loaded, e.g., using @INC (prompted by
 	  discussion of Gentoo #380741).
 	> Tom Dickey:
+	+ add "&regex-escape" function to allow a literal string to be assigned
+	  to "$search" without confusion (discussion with Wayne Cuddy).
 	+ add ".tmac" suffix to nrmode
 	+ modify ins_anytime() to request a screen update on completion so that
 	  temporary changes to the screen such as empty lines for the "o"
