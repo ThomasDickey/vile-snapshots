@@ -4,7 +4,7 @@
  * Most code probably by Dan Lawrence or Dave Conroy for MicroEMACS
  * Extensions for vile by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/insert.c,v 1.181 2012/03/08 10:44:15 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/insert.c,v 1.182 2013/07/07 19:53:43 tom Exp $
  */
 
 #include	"estruct.h"
@@ -561,6 +561,7 @@ ins_anytime(int playback, int cur_count, int max_count, int *splicep)
     static int nested;
     int osavedmode;
     const CMDFUNC *cfp;
+    int changed = FALSE;
 
     /*
      * Prevent recursion of insert-chars (it's confusing).
@@ -594,6 +595,8 @@ ins_anytime(int playback, int cur_count, int max_count, int *splicep)
     last_insert_char = EOS;
 
     for_ever {
+	if (curwp->w_flag & WFEDIT)
+	    changed++;
 
 	/*
 	 * Read another character from the insertion-string.
@@ -740,6 +743,16 @@ ins_anytime(int playback, int cur_count, int max_count, int *splicep)
     set_insertmode(FALSE);
     savedmode = osavedmode;
     nested--;
+
+    /*
+     * If we did changes for an insert, ensure that we do some tidying up to
+     * undo temporary changes to the display.
+     */
+    if (changed) {
+	chg_buff(curbp, WFEDIT);
+	update(TRUE);
+    }
+
     return (status);
 }
 

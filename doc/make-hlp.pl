@@ -1,5 +1,5 @@
 #!/usr/bin/perl -w
-# $Id: make-hlp.pl,v 1.9 2013/06/21 22:22:33 tom Exp $
+# $Id: make-hlp.pl,v 1.10 2013/07/07 13:53:13 tom Exp $
 # Generate vile.hlp, using the dump feature of a text browser.
 #
 # Any of (e)links(2) or lynx would work.
@@ -14,6 +14,7 @@
 # likely when regenerating vile.hlp
 
 use strict;
+use File::Temp qw/ tempfile /;
 
 our $PROG = "links";
 
@@ -96,9 +97,33 @@ sub doit() {
         my (@input);
         my $text;
 
-        # read the file directly to get the version-id and toplevel-title.
-        open( FP, $name ) || do {
+        my $temp_name;
+        my $temp_fh;
+
+        # use tidy to construct a file in consistent format, with the markdown
+        # bold/italics pre-substituted.
+        ( $temp_fh, $temp_name ) = tempfile();
+        open( FP, "tidy -q -wrap 4096 $name|" ) || do {
             print STDERR "Can't read $name: $!\n";
+            return;
+        };
+        @input = <FP>;
+        close(FP);
+        open( FP, ">$temp_name" ) || do {
+            print STDERR "Can't write $temp_name: $!\n";
+            return;
+        };
+        for $n ( 0 .. $#input ) {
+            chomp $input[$n];
+            $input[$n] =~ s,\<[/]?i\>,_,g;
+            $input[$n] =~ s,\<[/]?b\>,*,g;
+            printf FP "%s\n", $input[$n];
+        }
+        close(FP);
+
+        # read the file directly to get the version-id and toplevel-title.
+        open( FP, $temp_name ) || do {
+            print STDERR "Can't read $temp_name: $!\n";
             return;
         };
         @input = <FP>;
@@ -132,8 +157,8 @@ sub doit() {
         }
 
         # read the formatted file
-        open( FP, "$PROG -dump $name|" ) || do {
-            print STDERR "Can't dump $name: $!\n";
+        open( FP, "$PROG -dump $temp_name|" ) || do {
+            print STDERR "Can't dump $temp_name: $!\n";
             return;
         };
         @input = <FP>;
@@ -171,6 +196,8 @@ sub doit() {
             }
             output( $input[$n] );
         }
+
+        unlink $temp_name;
     }
 
     printf "\n";

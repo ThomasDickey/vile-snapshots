@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.569 2013/06/19 09:18:12 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.570 2013/07/07 20:14:14 tom Exp $
  *
  */
 
@@ -4268,10 +4268,11 @@ update(int force /* force update past type ahead? */ )
 		    scrflags |= (wp->w_flag & (WFINS | WFKILLS));
 		    clr_typed_flags(wp->w_flag, USHORT, WFKILLS | WFINS);
 		}
-		if ((wp->w_flag & ~(WFMODE)) == WFEDIT)
+		if ((wp->w_flag & ~(WFMODE)) == WFEDIT) {
 		    update_oneline(wp);		/* update EDITed line */
-		else if (wp->w_flag & ~(WFMOVE | WFMODE))
+		} else if (wp->w_flag & ~(WFMOVE | WFMODE)) {
 		    update_all(wp);	/* update all lines */
+		}
 #if OPT_SCROLLBARS
 		if (wp->w_flag & (WFHARD | WFMOVE | WFSBAR))
 		    gui_update_scrollbar(wp);
