@@ -1,6 +1,6 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20130624 (k)
+ 20130707 (k)
 	> Brendan O'Dea:
 	+ correct a couple of places in api.c which used characters rather
 	  than bytes, which made
@@ -12,6 +12,10 @@ Changes for vile 9.9 (released ??? ??? ?? ????)
 	  process as the module is loaded, e.g., using @INC (prompted by
 	  discussion of Gentoo #380741).
 	> Tom Dickey:
+	+ add ".tmac" suffix to nrmode
+	+ modify ins_anytime() to request a screen update on completion so that
+	  temporary changes to the screen such as empty lines for the "o"
+	  command will be undone if needed (Savannah #37988).
 	+ add powershell mode
 	+ convert non-generated html documentation to HTML4-strict; change
 	  font-coloring to use css.

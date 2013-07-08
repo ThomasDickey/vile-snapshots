@@ -1,5 +1,5 @@
 <!--
-  $Id: vile-hlp.html,v 1.66 2013/06/22 00:25:55 tom Exp $
+  $Id: vile-hlp.html,v 1.70 2013/07/07 14:02:43 tom Exp $
 -->
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN">
 
@@ -265,8 +265,8 @@
     basename matches that of one that was edited elsewhere, simply
     preface the name with "./". For example, if you edit
     "../Makefile" and later attempt to edit "Makefile", vile will
-    assume you are referring to the _buffer_ named "Makefile". To
-    get the file in the current directory, specify
+    assume you are referring to the <i>buffer</i> named "Makefile".
+    To get the file in the current directory, specify
     "./Makefile".</dd>
 
     <dt>:e!</dt>
@@ -380,10 +380,10 @@
 
     <dd>Always display a list of all buffers. Useful for updating
     the list if it's already on the screen but may be out of date.
-    Any argument will cause the list to include _all_ buffers, even
-    those normally considered "invisible". (For example, macros are
-    stored in "invisible" buffers.) [This command isn't as
-    necessary now that the buffer list is maintained
+    Any argument will cause the list to include <i>all</i> buffers,
+    even those normally considered "invisible". (For example,
+    macros are stored in "invisible" buffers.) [This command isn't
+    as necessary now that the buffer list is maintained
     dynamically...]</dd>
   </dl>
 
@@ -550,8 +550,8 @@
   <dl>
     <dt>^R</dt>
 
-    <dd>Prompts for a filename, and then reads it in _above_ the
-    current line. If a register is specified (e.g., "a^R ), the
+    <dd>Prompts for a filename, and then reads it in <i>above</i>
+    the current line. If a register is specified (e.g., "a^R ), the
     file is read into that named register, but not inserted into
     the current buffer.</dd>
 
@@ -564,8 +564,8 @@
       affected. Use 10^W^W to write 10 lines.
 
       <p>If a register is specified (e.g. "a^W ) then the command
-      is _not_ an operator, but writes the specified register to
-      the named file.</p>
+      is <i>not</i> an operator, but writes the specified register
+      to the named file.</p>
     </dd>
   </dl>
 
@@ -767,8 +767,8 @@
   numbered registers: the sequence "1pu.u.u.u. would successively
   insert the contents of "1, "2, "3, "4, and "5, allowing you to
   choose the "correct" register. This sequence no longer works. You
-  can still put them _all_ back with "1p..... ("1p for screen) and
-  then delete the ones you _don't_ want. ]</p>
+  can still put them <i>all</i> back with "1p..... ("1p for screen)
+  and then delete the ones you <i>don't</i> want. ]</p>
 
   <p>The number of changes stored in the undo "history" is
   controlled by the numeric mode "undolimit". The default history
@@ -859,7 +859,7 @@
     "paragraph" in the region are preserved, and all subsequent
     lines get the second line's indentation. This makes
     indented/outdented paragraphs (like this one) work correctly.
-    (This is intentionally _not_ the same behavior obtained by
+    (This is intentionally <i>not</i> the same behavior obtained by
     using "!fmt", since that behavior is obviously available
     elsewhere.) The usual usage of this command is "^A-f}", which
     reformats the current paragraph. The re-formatting begins again
@@ -1108,8 +1108,8 @@
   tag is an absolute index into the file. Or, it can be a search
   command. If it begins with a '/', the search goes forward. If it
   begins with a '?', the search goes backward. In either case, the
-  matching delimiter _must_ be the last character on the line in
-  the tags file.</p>
+  matching delimiter <i>must</i> be the last character on the line
+  in the tags file.</p>
 
   <p>All of this isn't as bad as it sounds, since ctags, the
   program most people use to generate tags files, does generate
@@ -1455,8 +1455,8 @@
     <dt>show-buffers</dt>
 
     <dd>displays the current list of available buffers. Given any
-    numeric argument, will list _all_ buffers, even those normally
-    invisible or considered temporary.</dd>
+    numeric argument, will list <i>all</i> buffers, even those
+    normally invisible or considered temporary.</dd>
 
     <dt>show-color-schemes</dt>
 
@@ -1682,10 +1682,10 @@
 
     <dt>c</dt>
 
-    <dd>Change the region. If the region is _not_ rectangular,
+    <dd>Change the region. If the region is <i>not</i> rectangular,
     insert mode is entered after the region is deleted. If the
-    region _is_ rectangular, the user is prompted for text with
-    which the lines of the rectangle will be filled.</dd>
+    region <i>is</i> rectangular, the user is prompted for text
+    with which the lines of the rectangle will be filled.</dd>
 
     <dt>^A-u</dt>
 
@@ -1738,13 +1738,13 @@
   <p>boolean enum int string</p>
 
   <p>The value of a mode is specified via "set" or "setl" (the
-  latter command _only_ affects buffer modes, as described below).
-  Mode values may be cleared with "unset" (or "unsetl" for buffer
-  modes), as well as other idioms described later. Clearing a mode,
-  by the way, is a fancy way of saying that its value is set to 0
-  or "", the latter for string types. When an enum mode is cleared,
-  vile selects whichever enum constant is assigned the internal
-  (read compiled) value of 0. Some concrete examples:</p>
+  latter command <i>only</i> affects buffer modes, as described
+  below). Mode values may be cleared with "unset" (or "unsetl" for
+  buffer modes), as well as other idioms described later. Clearing
+  a mode, by the way, is a fancy way of saying that its value is
+  set to 0 or "", the latter for string types. When an enum mode is
+  cleared, vile selects whichever enum constant is assigned the
+  internal (read compiled) value of 0. Some concrete examples:</p>
 
   <table border="1" summary="Types of Editor modes">
     <colgroup>
@@ -2251,10 +2251,10 @@
       incoming CR/LF pairs are taken as line terminators, the CR
       characters are stripped out, and the local dos mode is set
       for the buffer. (Actually, the local dos mode is only set if
-      the _majority_ of lines had CR characters at the end.) If
-      global dos mode is _not_ set, then incoming CR characters
-      will be left visible on the screen (as '^M'), and the local
-      mode will not be set.
+      the <i>majority</i> of lines had CR characters at the end.)
+      If global dos mode is <i>not</i> set, then incoming CR
+      characters will be left visible on the screen (as '^M'), and
+      the local mode will not be set.
 
       <p>The percent-crlf mode tells vile how many lines in the
       buffer must have CR/LF endings for it to automatically treat
@@ -3480,7 +3480,7 @@
   mode. The mode "meta-insert-bindings" controls whether functions
   bound to meta- keys (characters with the high bit set) are
   executed only in command mode, or in both command and insert
-  modes. In either case, if a character is _not_ bound to a
+  modes. In either case, if a character is <i>not</i> bound to a
   function, then it will be self-inserting when in insert mode. (To
   bind to a meta key in the .vilerc file, one may specify it as
   itself, or in hexadecimal or octal, or with the shorthand 'M-c'
@@ -3488,9 +3488,9 @@
   set.</p>
 
   <p>(Although it is possible to edit and view all 256 characters,
-  it is currently impossible to _search_ for a string that contains
-  the NULL character, since this is used internally to terminate
-  the search string.)</p>
+  it is currently impossible to <i>search</i> for a string that
+  contains the NULL character, since this is used internally to
+  terminate the search string.)</p>
 
   <h2 id="command-history2"><a name="command-history" id=
   "command-history">Command History</a></h2>
@@ -4317,7 +4317,7 @@
   that the first character of the sequence being mapped to is not
   subject to recursive (map) evaluation. Assuming "remap" is on,
   pressing 'j' when ":map j jh" is in effect will not cause an
-  infinite loop, whereas ":map j hj" _will_ cause such a loop.
+  infinite loop, whereas ":map j hj" <i>will</i> cause such a loop.
   Setting the "remapfirst" option will allow this sort of remapping
   (and will cause an infinite loops for both examples).</p>
 
@@ -4395,7 +4395,7 @@
   <p>vile is more lenient than vi regarding what is a valid
   abbreviation. vi insists that an abbreviation be all "word"
   characters, or be all "non-word" characters, except for the last
-  character, which _must_ be a "word" character. vile allows
+  character, which <i>must</i> be a "word" character. vile allows
   anything at all to be abbreviated, only enforcing the expansion
   rules mentioned above.</p>
 
@@ -7440,17 +7440,17 @@
     <tr>
       <td align="center"><code>\|</code></td>
 
-      <td>"A regular expression is zero or more branches, separated
+      <td>A regular expression is zero or more branches, separated
       by `\|'. It matches anything that matches one of the
-      branches."</td>
+      branches.</td>
     </tr>
 
     <tr>
       <td></td>
 
-      <td>"A branch is zero or more pieces, concatenated. It
+      <td>A branch is zero or more pieces, concatenated. It
       matches a match for the first, followed by a match for the
-      second, etc."</td>
+      second, etc.</td>
     </tr>
 
     <tr>
@@ -7458,11 +7458,11 @@
       +<br>
       \?</code></td>
 
-      <td>"A piece is an atom possibly followed by `*', `\+', or
+      <td>A piece is an atom possibly followed by `*', `\+', or
       `\?'. An atom followed by `*' matches a sequence of 0 or more
       matches of the atom. An atom followed by `\+' matches a
       sequence of 1 or more matches of the atom. An atom followed
-      by `\?' matches a match of the atom, or the null string."
+      by `\?' matches a match of the atom, or the null string.
       [i.e., `\?' matches 0 or 1 occurrences]</td>
     </tr>
 
@@ -7473,14 +7473,14 @@
       \<em>c</em><br>
       <em>c</em></code></td>
 
-      <td>"An atom is a regular expression in backslashed
+      <td>An atom is a regular expression in backslashed
       parentheses (matching a match for the regular expression), a
       range (see <a href="#regex-range">below</a>), (matching any
       single character), `^' (matching the null string at the
       beginning of the input string), `$' (matching the null string
       at the end of the input string), a `\' followed by a single
       character (matching that character), or a single character
-      with no other significance (matching that character)."</td>
+      with no other significance (matching that character).</td>
     </tr>
 
     <tr>
@@ -7537,7 +7537,7 @@
     <tr>
       <td><code>[ ]</code></td>
 
-      <td><a name="regex-range" id="regex-range">"A range is a
+      <td><a name="regex-range" id="regex-range">A range is a
       sequence of characters enclosed in `[]'.</a> It normally
       matches any single character from the sequence. If the
       sequence begins with `^', it matches any single character not
@@ -7547,7 +7547,7 @@
       any decimal digit). To include a literal `]' in the sequence,
       make it the first character (following a possible `^'). To
       include a literal `-', make it the first or last
-      character."</td>
+      character.</td>
     </tr>
 
     <tr>
@@ -7563,17 +7563,17 @@
 
       <td>In magic mode, the following set of metacharacters must
       be preceded by '\' to hide their special meaning: * [ . ^ $
-      These characters are special if they _are_ preceded with a
-      '\': ? + ( ) | &lt; &gt;</td>
+      These characters are special if they <i>are</i> preceded with
+      a '\': ? + ( ) | &lt; &gt;</td>
     </tr>
 
     <tr>
       <td></td>
 
-      <td>If magic mode is _not_ on, only ^ and $ are special if
-      not escaped. All of the following must be preceded with a '\'
-      to be special, otherwise they are taken literally: ? + ( ) |
-      * [ . &lt; &gt;</td>
+      <td>If magic mode is <i>not</i> on, only ^ and $ are special
+      if not escaped. All of the following must be preceded with a
+      '\' to be special, otherwise they are taken literally: ? + (
+      ) | * [ . &lt; &gt;</td>
     </tr>
 
     <tr>
@@ -7828,8 +7828,8 @@
   "commmandline-options">Command line options</a></h3>
 
   <p>The command line options are fairly straightforward. vile
-  supports running just _any_ command after a '+', as does vi. It
-  also has some shortcut options to support the commonly used
+  supports running just <i>any</i> command after a '+', as does vi.
+  It also has some shortcut options to support the commonly used
   '+400' to go to line 400 and '+/foo' to search for foo. Command
   files can be explicitly executed on startup by prefixing them
   with the '@' character, as in "vile @mycmds file.c". This will
@@ -8939,7 +8939,7 @@
 
   <p>b) copy vile.exe, vile.hlp, and winvile.exe to a directory in
   your PATH. Note that vile.exe and winvile.exe are both bound with
-  _all_ of the editor's builtin filters.</p>
+  <i>all</i> of the editor's builtin filters.</p>
 
   <p>5) edit your startup file (vile.rc) and add this line:</p>
 
@@ -9253,8 +9253,8 @@
   wrong majormode and/or not specify one at all (the latter case
   most likely occurs when the file's suffix doesn't match any of
   the possibilities listed in filters.rc). The result is either
-  inappropriate or _no_ highlighting. In this situation, use the
-  "set-highlighting" macro to explicitly specify the desired
+  inappropriate or <i>no</i> highlighting. In this situation, use
+  the "set-highlighting" macro to explicitly specify the desired
   majormode.</p>
 
   <p>For example, suppose I'm editing an older copy of a C++ source
@@ -10032,7 +10032,7 @@
   </blockquote>
 
   <p>vile's tags lookup features now provide one-keystroke access
-  to symbols in _all_ project source files, provided that the
+  to symbols in <i>all</i> project source files, provided that the
   editor's current working directory is set as either src, include,
   or lib.</p>
 
@@ -10141,8 +10141,9 @@
 
   <p>Note 2: An empty string argument disables find-cfg mode.</p>
 
-  <p>Note 3: Most versions of find do _not_ support nonrecursive
-  operations. The one known exception is GNU's find.</p>
+  <p>Note 3: Most versions of find do <i>not</i> support
+  nonrecursive operations. The one known exception is GNU's
+  find.</p>
 
   <h3 id="findpath-example2"><a name="findpath-example" id=
   "findpath-example">Examples (file traversal)</a></h3>
@@ -12155,7 +12156,7 @@
     working directory). Note that if this dialog box opens files
     outside the editor's cwd, then Windows (and vile) implicitly
     change the cwd to match that of the opened files. This command
-    _is_ available from console vile.</dd>
+    <i>is</i> available from console vile.</dd>
 
     <dt>winopen-nocd [dir]</dt>
 
@@ -12181,8 +12182,8 @@
     "dir" argument specifies the initial browse directory (default
     is cwd). Note that if this dialog box saves a file outside the
     editor's cwd, then Windows (and vile) implicitly change the cwd
-    to match that of the saved file. This command _is_ available
-    from console vile.</dd>
+    to match that of the saved file. This command <i>is</i>
+    available from console vile.</dd>
 
     <dt>winsave-nocd [dir]</dt>
 
@@ -12621,7 +12622,7 @@
   you're probably seeing. If you define PRETTIER_SCROLL when
   building vile, it will alternately delete and insert lines,
   instead of deleting them all and then inserting them all. This
-  makes it look a _little_ better, but it's slower.</p>
+  makes it look a <i>little</i> better, but it's slower.</p>
 
   <p>Here is the terminfo entry equivalent to the above termcap
   entry:</p>
@@ -12739,11 +12740,11 @@
   "official" source tree, and release responsibilities. Paul Fox
   maintains the mailing lists.</p>
 
-  <p>This code has been written by a _lot_ of people, with help
-  from a lot more sending in bug reports, fixes, and suggestions.
-  The authors of vile are Tom Dickey (dickey@invisible-island.net)
-  and Kevin Buettner (kevin@buettner.to) and Paul Fox
-  (pgf@foxharp.boston.ma.us).</p>
+  <p>This code has been written by a <i>lot</i> of people, with
+  help from a lot more sending in bug reports, fixes, and
+  suggestions. The authors of vile are Tom Dickey
+  (dickey@invisible-island.net) and Kevin Buettner
+  (kevin@buettner.to) and Paul Fox (pgf@foxharp.boston.ma.us).</p>
 
   <p>Names appearing within comments in the micro-Emacs source code
   are: Dave Conroy, Daniel Lawrence, John Gamble, Roger Ove, Dana
