@@ -1,4 +1,4 @@
-; $Id: modes.rc,v 1.126 2013/07/07 20:16:25 tom Exp $
+; $Id: modes.rc,v 1.127 2013/08/28 17:32:54 tom Exp $
 ; majormodes in this file are ordered alphabetically for convenience - the
 ; precedence used by vile is strictly alphabetic, counting case.  Use the
 ; before and after qualifiers to override the precedence.
@@ -639,7 +639,7 @@ define-mode nr
 
 define-mode nsis
 ~with define-submode nsis
-	suffixes	'\.\(nsi\)$'
+	suffixes	'\.\(nsi\|nsh\)$'
 	ignorecase
 	dos
 ~endwith
