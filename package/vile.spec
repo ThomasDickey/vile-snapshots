@@ -1,8 +1,8 @@
 Summary: VILE (VI Like Emacs) editor
-# $Header: /users/source/archives/vile.vcs/package/RCS/vile.spec,v 1.37 2013/05/14 08:49:03 tom Exp $
+# $Header: /users/source/archives/vile.vcs/package/RCS/vile.spec,v 1.38 2013/08/28 17:35:19 tom Exp $
 Name: vile
 %define AppVersion 9.8
-Version: %{AppVersion}k
+Version: %{AppVersion}l
 # each patch should update the version
 Release: dev
 License: GPLv2
@@ -20,6 +20,7 @@ Patch8: vile-9.8h.patch.gz
 Patch9: vile-9.8i.patch.gz
 Patch10: vile-9.8j.patch.gz
 Patch11: vile-9.8k.patch.gz
+Patch11: vile-9.8l.patch.gz
 # each patch should add itself to this list
 Packager: Thomas Dickey <dickey@invisible-island.net>
 
@@ -227,6 +228,9 @@ rm -rf %{buildroot}
 
 %changelog
 # each patch should add its ChangeLog entries here
+
+* Wed Aug 28 2013 Thomas Dickey
+- added patch for 9.8l
 
 * Tue May 14 2013 Thomas Dickey
 - added patch for 9.8k

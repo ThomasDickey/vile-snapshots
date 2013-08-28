@@ -22,7 +22,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.720 2013/06/19 23:00:59 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.721 2013/08/28 17:25:42 tom Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -290,7 +290,7 @@ set_posix_locale(void)
  * that if filters are built-in, that the appropriate one is available.
  */
 static void
-filter_to_stdio(FILE *fp GCC_UNUSED)
+filter_to_stdio(FILE *fp)
 {
     static char *my_macro;
     int s;
@@ -327,16 +327,17 @@ filter_to_stdio(FILE *fp GCC_UNUSED)
 	    REGION region;
 
 	    gotoeob(FALSE, 1);
-	    swapmark();
+	    setmark();
 	    gotobob(FALSE, 1);
 
 	    regionshape = rgn_FULLLINE;
-	    (void) getregion(curbp, &region);
+	    if (getregion(curbp, &region)) {
 
-	    ffp = fp;
-	    ffstatus = file_is_pipe;
+		ffp = fp;
+		ffstatus = file_is_pipe;
 
-	    write_region(curbp, &region, TRUE, &nlines, &nchars);
+		write_region(curbp, &region, TRUE, &nlines, &nchars);
+	    }
 	}
     }
 }

@@ -1,5 +1,11 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
+ 20130828 (l)
+	> Tom Dickey:
+	+ add ".nsh" suffix to nsis mode.
+	+ fix for "-F" option when filtered file has no syntax highlighting;
+	  the MK variable was not set, causing getregion() to fail.
+
  20130707 (k)
 	> Brendan O'Dea:
 	+ correct a couple of places in api.c which used characters rather
