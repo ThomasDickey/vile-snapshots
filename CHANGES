@@ -2,6 +2,16 @@ Changes for vile 9.9 (released ??? ??? ?? ????)
 
  20130828 (l)
 	> Tom Dickey:
+	+ review/improve tcl syntax highlighter (report by Wayne Cuddy):
+	  + do not treat single-quote specially
+	  + allow newlines in double-quotes
+	  + recognize square brackets in double-quotes to denote nested
+	    commands.
+	  + fix ambiguity between "-option" and "-number".
+	  + show sprintf-codes with string color.
+	  + highlight "#" prefixing hexadecimal digits as a number.
+	  + do not color args for unknown verbs.
+	  + update keywords to tcl/tk 8.6.0
 	+ add ".nsh" suffix to nsis mode.
 	+ fix for "-F" option when filtered file has no syntax highlighting;
 	  the MK variable was not set, causing getregion() to fail.
