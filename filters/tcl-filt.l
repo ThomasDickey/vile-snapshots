@@ -1,14 +1,16 @@
 %pointer
-%s VERB ARGS
+%s VERB ARGS DATA DQUOTED
 
 %a 5000
 
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/tcl-filt.l,v 1.26 2012/07/12 23:34:41 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/tcl-filt.l,v 1.45 2013/09/18 22:27:43 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of TCL/TK script.
+ *
+ * http://tmml.sourceforge.net/doc/tcl/Tcl.html
  *
  * note -
  * Solaris 2.7's lex:
@@ -17,6 +19,7 @@
  */
 
 #include <filters.h>
+#include <fltstack.h>
 
 DefineFilter("tcl");
 
@@ -36,13 +39,9 @@ static char *String_attr;
 
 SPACE		[ \t]
 
-SSTRING		\'([^\\'\r\n]|\\[^'\r\n])*\'
-DSTRING		\"(\\.|[^"\\\r\n]|\\\n)*[\"]?
-STRINGS		({SSTRING}|{DSTRING})
-
 ACTION		([\.`]|\\\n)
 
-BASICIDENT      [[:alpha:]_-][[:alnum:]_-]*
+BASICIDENT      (--)|((-)?[[:alpha:]_][[:alnum:]_-]*)
 IDENT           (::)?{BASICIDENT}(::{BASICIDENT})*
 IDENT1		\${IDENT}
 IDENT2		\$\{[^\}]*\}
@@ -57,6 +56,8 @@ EXP		[eE]{SIGN}?{DECIMAL}
 REAL		(({DECIMAL}\.{DECIMAL}?)|({DECIMAL}?\.{DECIMAL})){EXP}?
 NUMBER		{SIGN}?({DECIMAL}|{OCTAL}|{HEXADECIMAL}|{REAL})
 
+FORMAT		"%"[-+#%[:alnum:]]+
+
 NODECIMAL	[[:digit:]]+[g-zG-Z]+
 NOOCTAL      	0[0-7]*([89]+[0-7]*)+
 NOHEXADECIMAL	0X[[:xdigit:]]+
@@ -65,29 +66,66 @@ NONUMBER	{SIGN}?({NODECIMAL}|{NOOCTAL}|{NOHEXADECIMAL}|{NOREAL})
 
 %%
 
-[{}]+			{ WriteToken(Braces_attr); }
-{IDENT}			{ WriteToken(get_keyword_attr(yytext)); BEGIN(ARGS); }
+<VERB,ARGS,DATA>"{"{SPACE}*"}"	{ WriteToken(Braces_attr); }
+<VERB,ARGS,DATA>("{*}")?[{]	{ WriteToken(Braces_attr); push_state(VERB); }
+<VERB,ARGS,DATA>[}]		{ WriteToken(Braces_attr); pop_state(); }
 
-<VERB>"#"([^\r\n]|\\\n)*$	{ WriteToken(Comment_attr); }
-<ARGS>[;\n]		{ ECHO; BEGIN(VERB); }
+<VERB>{IDENT}			{
+				  const char *attr = get_keyword_attr(yytext);
+				  WriteToken(attr);
+				  new_state((attr && *attr) ? ARGS : DATA);
+				}
+<ARGS>{IDENT}			{ WriteToken(get_keyword_attr(yytext)); }
+<DATA>{IDENT}			{ ECHO; }
 
-{ACTION}		{ WriteToken(Action_attr); }
+<VERB>"#"([^\r\n]|\\\n)*$	{ WriteToken(Comment_attr); new_state(ARGS); }
+<ARGS,DATA>"#"[[:xdigit:]]+	{ WriteToken(Number_attr); }
+<ARGS,DATA>[;\n]		{ ECHO; new_state(VERB); }
 
-{NONUMBER}		{ flt_error("not a number"); WriteToken(Error_attr); }
-{NUMBER}		{ WriteToken(Number_attr); }
+<VERB,ARGS,DATA>{ACTION}	{ WriteToken(Action_attr); }
 
-{IDENT1}	|
-{IDENT2}	|
-{IDENTX}	|
-{WIDGET}		{ WriteToken(Ident2_attr); }
+<VERB,ARGS,DATA>{NONUMBER}	{ flt_error("not a number"); WriteToken(Error_attr); }
+<VERB,ARGS,DATA>{NUMBER}	{ WriteToken(Number_attr); }
 
-\{\"\}          |
-\\\"			{ WriteToken(""); }
+<VERB,ARGS,DATA>{IDENT1}	|
+<VERB,ARGS,DATA>{IDENT2}	|
+<VERB,ARGS,DATA>{IDENTX}	|
+<VERB,ARGS,DATA>{WIDGET}	{ WriteToken(Ident2_attr); }
 
-\\.		|
-{STRINGS}		{ WriteToken(String_attr); }
+<VERB,ARGS,DATA>\{\"\}	|
+<VERB,ARGS,DATA>\\\"	{ WriteToken(""); }
+
+<VERB>{FORMAT}		{ WriteToken(String_attr); new_state(ARGS); }
+<ARGS,DATA>{FORMAT}	{ WriteToken(String_attr); }
+<VERB,ARGS,DATA>\\.	{ WriteToken(String_attr); }
+<VERB,ARGS,DATA>["]	{ PushQuote(DQUOTED, String_attr); }
+<DQUOTED>(\\.|[^\\"\[]|(\\)?[\r\n])+	{ flt_bfr_append(yytext, yyleng); }
+<DQUOTED>["]		{ PopQuote(); }
+<DQUOTED>[\[]		{
+			  flt_bfr_finish();
+			  WriteToken(Braces_attr);
+			  push_state(VERB);
+			}
+<VERB,ARGS,DATA>[\[]	{
+			  WriteToken(Braces_attr);
+			  push_state(VERB);
+			}
+<VERB,ARGS,DATA>[\]]	{
+			  if (stk_level > 0) {
+			    WriteToken(Braces_attr);
+			    pop_state();
+			  } else {
+			    flt_error("unexpected right-bracket");
+			    WriteToken(Error_attr);
+			  }
+			  if (cur_state == DQUOTED) {
+			    flt_bfr_begin(String_attr);
+			  }
+			}
 
 %%
+
+#include <fltstack.h>
 
 static void
 init_filter(int before GCC_UNUSED)
@@ -109,8 +147,9 @@ do_filter(FILE *inputs)
     Number_attr = class_attr(NAME_NUMBER);
     String_attr = class_attr(NAME_LITERAL);
 
-    BEGIN(VERB);
+    begin_state(VERB);
     RunLEX();
+    end_state();
 }
 
 #if NO_LEAKS
