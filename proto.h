@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.731 2013/03/08 01:31:27 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.732 2013/09/20 21:32:55 tom Exp $
  *
  */
 
@@ -964,6 +964,7 @@ extern void infer_majormode (BUFFER *bp);
 extern void set_majormode_rexp (const char *name, int n, const char *pat);
 extern void set_submode_val (const char *name, int n, int value);
 extern void set_submode_txt (const char *name, int n, const char * value);
+extern void set_tagsmode (BUFFER *bp);
 extern void set_vilemode (BUFFER *bp);
 #else
 #define infer_majormode(bp) fix_cmode(bp, (global_b_val(MDCMOD) && has_C_suffix(bp)))

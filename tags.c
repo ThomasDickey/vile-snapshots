@@ -7,7 +7,7 @@
  *
  * Copyright (c) 1990, 1995-2013 by Paul Fox and Thomas E. Dickey
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tags.c,v 1.148 2013/03/06 00:57:06 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tags.c,v 1.149 2013/09/20 23:00:36 tom Exp $
  *
  */
 #include "estruct.h"
@@ -118,25 +118,26 @@ gettagsfile(int n, int *endofpathflagp, int *did_read)
 	    zotbuf(tagbp);
 	    return NULL;
 	}
+	set_tagsmode(tagbp);
 	*did_read = TRUE;
     }
 #ifdef MDCHK_MODTIME
     /*
-     * Re-read the tags buffer if we are checking modification-times and
-     * find that the tags file's been changed. We check the global mode
-     * value because it's too awkward to set the local mode value for a
-     * scratch buffer.
+     * Re-read the tags buffer if we are checking modification-times and find
+     * that the tags file's been changed.
      */
-    if (global_b_val(MDCHK_MODTIME)
+    if (b_val(tagbp, MDCHK_MODTIME)
 	&& get_modtime(tagbp, &current)
 	&& tagbp->b_modtime != current) {
-	if (!*did_read
-	    && readin(tagbp->b_fname, FALSE, tagbp, FALSE) != TRUE) {
-	    zotbuf(tagbp);
-	    return NULL;
+	if (!*did_read) {
+	    if (readin(tagbp->b_fname, FALSE, tagbp, FALSE) != TRUE) {
+		zotbuf(tagbp);
+		return NULL;
+	    }
+	    set_tagsmode(tagbp);
+	    *did_read = TRUE;
 	}
 	set_modtime(tagbp, tagbp->b_fname);
-	*did_read = TRUE;
     }
 #endif
     b_set_invisible(tagbp);
@@ -983,7 +984,7 @@ maketagslist(int value GCC_UNUSED, void *dummy GCC_UNUSED)
 		taglen, utp->u_templ,
 		utp->u_lineno,
 		shorten_path(vl_strncpy(temp, utp->u_fname, sizeof(temp)),
-		TRUE));
+			     TRUE));
 }
 
 #if OPT_UPBUFF
