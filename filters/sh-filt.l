@@ -7,7 +7,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/sh-filt.l,v 1.118 2012/07/13 09:12:27 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/sh-filt.l,v 1.120 2013/09/20 20:31:42 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Shell script.
  */
@@ -93,7 +93,7 @@ BRACES		"${"
 END_BRACES	"}"
 
 IDENT		{NAME0}{NAME}*
-QIDENT		({SSTRING}|{DSTRING}|[^ \"'$\t\r\n])+
+QIDENT		({SSTRING}|{DSTRING}|[^ \"'$\t\r\n(){}])+
 IDENT0		[-]+[[:digit:]]*{NAME0}+{NAME2}*
 
 VNAME		[.]?{IDENT}([.]{IDENT})*
@@ -137,7 +137,11 @@ DASHIDENT	{IDENT}("-"{NAME}{NAME2}*)*
 <NORMAL>{BACKTIC}	{ handle_backtic(yytext, yyleng, yyleng, -1); }
 <NORMAL>{ACTION}	{ WriteToken(Action_attr); }
 
-<NORMAL>\<\<\<		{ WriteToken(String_attr); }
+<NORMAL>\<\<\<[-]?{SPACE}*{QIDENT} {
+			  flt_error("here-strings are nonstandard");
+			  WriteToken(Error_attr);
+			}
+
 <NORMAL>\<\<[-]?{SPACE}*{QIDENT} {
 			    int state;
 			    int n;

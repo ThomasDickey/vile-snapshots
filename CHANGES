@@ -1,7 +1,13 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20130828 (l)
+ 20130920 (l)
 	> Tom Dickey:
+	+ modify tags logic to set "tagsmode" if it is defined, and assuming
+	  that, to test the local check-modtime value, i.e., that managed via
+	  the majormode to allow tags files to be selectively reloaded when
+	  their content changes (discussion with Wayne Cuddy).
+	+ modify sh-filt.l to recognize ksh93/bash here-strings, noting that
+	  they are not standardized.
 	+ review/improve tcl syntax highlighter (report by Wayne Cuddy):
 	  + do not treat single-quote specially
 	  + allow newlines in double-quotes

@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.437 2013/03/10 11:02:59 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.438 2013/09/20 21:32:36 tom Exp $
  *
  */
 
@@ -4911,13 +4911,24 @@ reset_majormode(int f GCC_UNUSED, int n GCC_UNUSED)
 }
 
 void
+set_tagsmode(BUFFER *bp)
+{
+    static const char *my_mode = "tags" MAJOR_SUFFIX;
+    VALARGS args;
+
+    if (find_mode(bp, my_mode, FALSE, &args) == TRUE) {
+	(void) set_mode_value(bp, my_mode, FALSE, TRUE, FALSE, &args,
+			      (char *) 0);
+    }
+}
+
+void
 set_vilemode(BUFFER *bp)
 {
     static const char *my_mode = "vile" MAJOR_SUFFIX;
     VALARGS args;
 
-    if (find_mode(bp, my_mode, FALSE, &args) == TRUE
-	&& !b_is_scratch(bp)) {
+    if (find_mode(bp, my_mode, FALSE, &args) == TRUE) {
 	(void) set_mode_value(bp, my_mode, FALSE, TRUE, FALSE, &args,
 			      (char *) 0);
     }
