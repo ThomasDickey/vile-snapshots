@@ -1,4 +1,4 @@
-; $Header: /users/source/archives/vile.vcs/macros/RCS/vileinit.rc,v 1.40 2012/08/20 10:54:16 tom Exp $
+; $Header: /users/source/archives/vile.vcs/macros/RCS/vileinit.rc,v 1.41 2013/09/27 08:21:10 tom Exp $
 ; This is a sample which may be installed as .vilerc (or vile.rc for non-Unix
 ; systems), or source'd as-is to provide quick initialization of some useful
 ; macros and settings.
@@ -15,6 +15,7 @@ set ruler
 set showmatch
 set smooth
 set undolimit=100
+set ignoresuffix '\.\(in\|orig\|~\)$'
 
 ; Since 'map' overrides 'bind-key', ensure that we don't have a mapping for
 ; function-key 1, since it is useful for HELP.
