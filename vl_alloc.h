@@ -1,7 +1,7 @@
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/vl_alloc.h,v 1.3 2010/09/14 09:35:24 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/vl_alloc.h,v 1.4 2010/09/14 09:35:24 tom Exp $
  *
- * Copyright 2005, Thomas E. Dickey and Paul G. Fox
+ * Copyright 2005,2010 Thomas E. Dickey and Paul G. Fox
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the

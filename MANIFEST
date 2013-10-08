@@ -1,4 +1,4 @@
-MANIFEST for vile, version v9_8k4
+MANIFEST for vile, version v9_8k5
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 AUTHORS                         list of authors, with nicknames in CHANGES
@@ -450,6 +450,8 @@ macros/vilemenu.rc              sample menu for xvile
 macros/vileperl.rc              sample initialization for perl scripts
 macros/which.rc                 script to show which keyword file is found by filters
 macros/xvile.desktop            desktop-file for xvile
+package                         subdirectory
+package/convile.nsi             NSIS package for convile
 package/debian                  subdirectory
 package/debian/README.Debian    debian build script
 package/debian/changelog        debian build script
@@ -479,6 +481,7 @@ package/debian/xvile.files      debian build script
 package/debian/xvile.links      debian build script
 package/debian/xvile.menu       debian build script
 package                         subdirectory
+package/minvile.nsi             NSIS package for minvile
 package/vile.spec               sample RPM spec file for vile
 package/winvile-wide.iss        Inno Setup script for winvile-wide
 package/winvile.iss             Inno Setup script for winvile

@@ -1,7 +1,13 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20130920 (l)
+ 20131008 (l)
 	> Tom Dickey:
+	+ add convile.nsi and minvile.nsi scripts to use for creating
+	  installers from convile and minvile via cross-compiling.  NSIS is far
+	  less capable than Inno Setup, so the latter still gives the
+	  recommended packages.
+	+ move ignoresuffix setting from cmode to global settings, i.e., to
+	  use for other filetypes.
 	+ modify tags logic to set "tagsmode" if it is defined, and assuming
 	  that, to test the local check-modtime value, i.e., that managed via
 	  the majormode to allow tags files to be selectively reloaded when
