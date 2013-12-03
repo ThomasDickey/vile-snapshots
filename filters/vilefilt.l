@@ -7,7 +7,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/vilefilt.l,v 1.72 2012/03/04 21:58:54 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/vilefilt.l,v 1.73 2013/12/02 01:32:53 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of vile macros
  * - T.Dickey
@@ -26,7 +26,7 @@
 #define HAVE_DIRECTIVE 0
 #endif
 
-DefineFilter("vile");
+DefineFilter(vile);
 
 static const char *Action_attr;
 static const char *Comment_attr;

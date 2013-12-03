@@ -4,14 +4,14 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/rcs-filt.l,v 1.21 2012/02/18 13:47:15 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/rcs-filt.l,v 1.22 2013/12/02 01:32:53 tom Exp $
  *
  * Filter to add vile "attribution" sequences to RCS archives.
  */
 
 #include <filters.h>
 
-DefineFilter("rcs");
+DefineFilter(rcs);
 
 static char *Ident2_attr;
 static char *Number_attr;

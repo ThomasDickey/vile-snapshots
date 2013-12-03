@@ -6,7 +6,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/tcl-filt.l,v 1.45 2013/09/18 22:27:43 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/tcl-filt.l,v 1.46 2013/12/02 01:32:53 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of TCL/TK script.
  *
@@ -21,7 +21,7 @@
 #include <filters.h>
 #include <fltstack.h>
 
-DefineFilter("tcl");
+DefineFilter(tcl);
 
 #define isIdent(ch) (isalnum(ch) || ch == '_')
 

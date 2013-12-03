@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/ini-filt.l,v 1.15 2012/02/18 13:00:25 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/ini-filt.l,v 1.16 2013/12/02 01:32:53 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of M$ ini-definition
  * input text.
@@ -12,7 +12,7 @@
 
 #include <filters.h>
 
-DefineFilter("ini");
+DefineFilter(ini);
 
 static char *Action_attr;
 static char *Comment_attr;

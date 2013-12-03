@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/ecl-filt.l,v 1.28 2012/02/18 13:43:42 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/ecl-filt.l,v 1.29 2013/12/02 01:32:53 tom Exp $
  *
  * Filter to add vile "attribution" sequences to Prolog/ECLiPSe code
  *
@@ -14,7 +14,7 @@
 #include <filters.h>
 #include <fltstack.h>
 
-DefineFilter("ecl");
+DefineFilter(ecl);
 
 static char *Comment_attr;
 static char *Number_attr;

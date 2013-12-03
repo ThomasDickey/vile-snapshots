@@ -4,14 +4,14 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/pot-filt.l,v 1.12 2012/02/18 13:47:15 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/pot-filt.l,v 1.13 2013/12/02 01:32:53 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of gettext files.
  */
 
 #include <filters.h>
 
-DefineFilter("pot");
+DefineFilter(pot);
 
 static char *Action_attr;
 static char *Comment_attr;

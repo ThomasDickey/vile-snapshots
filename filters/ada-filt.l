@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/ada-filt.l,v 1.20 2012/02/18 13:19:50 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/ada-filt.l,v 1.21 2013/12/02 01:32:54 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Ada
  * input text.
@@ -11,7 +11,7 @@
 
 #include <filters.h>
 
-DefineFilter("ada");
+DefineFilter(ada);
 
 static char *Comment_attr;
 static char *Ident2_attr;

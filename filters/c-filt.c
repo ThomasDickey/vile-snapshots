@@ -6,7 +6,7 @@
  *		string literal ("Literal") support --  ben stoltz
  *		factor-out hashing and file I/O - tom dickey
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/c-filt.c,v 1.91 2012/08/05 15:37:15 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/c-filt.c,v 1.92 2013/12/02 01:33:56 tom Exp $
  *
  * Usage: refer to vile.hlp and doc/filters.doc .
  *
@@ -20,7 +20,7 @@
 
 #include <filters.h>
 
-DefineOptFilter("c", "jops#");
+DefineOptFilter(c, "jops#");
 
 #define UPPER(c) isalpha(CharOf(c)) ? toupper(CharOf(c)) : c
 

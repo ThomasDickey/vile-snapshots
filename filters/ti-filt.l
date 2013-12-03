@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/ti-filt.l,v 1.28 2012/02/18 13:49:19 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/ti-filt.l,v 1.29 2013/12/02 01:32:53 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of terminfo
  */
@@ -12,7 +12,7 @@
 #include <filters.h>
 #undef YY_NO_UNPUT
 
-DefineFilter("ti");
+DefineFilter(ti);
 
 #define WriteAlias(attr) \
 	WriteToken3(attr, yyleng - 1); \

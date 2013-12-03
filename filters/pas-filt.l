@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/pas-filt.l,v 1.11 2012/02/18 13:18:07 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/pas-filt.l,v 1.12 2013/12/02 01:32:53 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Pascal
  * input text.  A few TurboC and Delphi extensions are recognized:
@@ -16,7 +16,7 @@
 #include <filters.h>
 #include <fltstack.h>
 
-DefineFilter("pas");
+DefineFilter(pas);
 
 static char *Comment_attr;
 static char *Number_attr;

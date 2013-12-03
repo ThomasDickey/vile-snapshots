@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/xs-filt.l,v 1.20 2012/02/18 13:48:20 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/xs-filt.l,v 1.21 2013/12/02 01:32:53 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Perl/C
  * extension source
@@ -13,7 +13,7 @@
 
 #include <filters.h>
 
-DefineFilter("xs");
+DefineFilter(xs);
 
 static char *Comment_attr;
 static char *Preproc_attr;

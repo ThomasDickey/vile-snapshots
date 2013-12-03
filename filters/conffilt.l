@@ -7,7 +7,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/conffilt.l,v 1.13 2012/03/09 10:45:02 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/conffilt.l,v 1.14 2013/12/02 01:32:54 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of config-file.
  */
@@ -16,7 +16,7 @@
 #include <fltstack.h>
 #include <vl_ctype.h>
 
-DefineFilter("conf");
+DefineFilter(conf);
 
 static char *Action_attr;
 static char *Comment_attr;

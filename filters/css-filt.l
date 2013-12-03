@@ -7,7 +7,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/css-filt.l,v 1.28 2012/02/18 12:58:12 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/css-filt.l,v 1.29 2013/12/02 01:32:54 tom Exp $
  *
  * Filter to add vile "attribution" sequences to Cascading Style Sheets.
  *
@@ -17,7 +17,7 @@
 
 #include <filters.h>
 
-DefineFilter("css");
+DefineFilter(css);
 
 static const char *css_keyword_attr(char *);
 static void css_hash(char *, int);

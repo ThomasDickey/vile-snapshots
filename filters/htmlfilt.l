@@ -9,7 +9,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/htmlfilt.l,v 1.123 2013/04/08 00:33:57 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/htmlfilt.l,v 1.124 2013/12/02 01:33:56 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of HTML input
  * text.
@@ -93,7 +93,7 @@
 #include <fltstack.h>
 #undef YY_NO_UNPUT
 
-DefineOptFilter("html", "aj");
+DefineOptFilter(html, "aj");
 
 #define SYMS_CS        "cs"
 #define SYMS_CSS       "css"

@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/def-filt.l,v 1.14 2012/02/18 13:11:22 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/def-filt.l,v 1.15 2013/12/02 01:32:54 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of M$ linker-definition
  * input text.
@@ -11,7 +11,7 @@
 
 #include <filters.h>
 
-DefineFilter("def");
+DefineFilter(def);
 
 static char *Comment_attr;
 static char *Number_attr;

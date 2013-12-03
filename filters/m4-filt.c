@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/m4-filt.c,v 1.42 2013/03/07 00:24:07 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/m4-filt.c,v 1.43 2013/12/02 01:33:56 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of m4
  * input text.  This is in C rather than LEX because M4's quoting delimiters
@@ -9,9 +9,9 @@
 #include <filters.h>
 
 #ifdef DEBUG
-DefineOptFilter("m4", "d");
+DefineOptFilter(m4, "d");
 #else
-DefineFilter("m4");
+DefineFilter(m4);
 #endif
 
 #ifdef DEBUG

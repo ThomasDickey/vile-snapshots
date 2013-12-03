@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/bat-filt.l,v 1.35 2012/02/18 12:52:56 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/bat-filt.l,v 1.36 2013/12/02 01:32:54 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of DOS (and
  * similar, such as W95, NT) batch file.
@@ -12,7 +12,7 @@
 
 #include <filters.h>
 
-DefineFilter("bat");
+DefineFilter(bat);
 
 static char *Action_attr;
 static char *Comment_attr;

@@ -7,7 +7,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/imakeflt.l,v 1.24 2010/11/04 09:06:45 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/imakeflt.l,v 1.25 2013/12/02 01:32:53 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Imakefile
  *
@@ -16,7 +16,7 @@
 
 #include <filters.h>
 
-DefineFilter("imake");
+DefineFilter(imake);
 
 static char *Comment_attr;
 static char *Error_attr;

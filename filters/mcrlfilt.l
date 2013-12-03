@@ -6,7 +6,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/mcrlfilt.l,v 1.6 2012/02/18 13:44:37 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/mcrlfilt.l,v 1.7 2013/12/02 01:32:53 tom Exp $
  *
  * Filter to add vile "attribution" sequences to a mCRL(2) specification
  * or model, based on the text filter.
@@ -16,7 +16,7 @@
 
 #include <filters.h>
 
-DefineFilter("mcrl");
+DefineFilter(mcrl);
 
 static char *Comment_attr;
 static char *Keyword_attr;

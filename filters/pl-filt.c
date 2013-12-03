@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/pl-filt.c,v 1.104 2012/02/18 13:49:48 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/pl-filt.c,v 1.105 2013/12/02 01:33:56 tom Exp $
  *
  * Filter to add vile "attribution" sequences to perl scripts.  This is a
  * translation into C of an earlier version written for LEX/FLEX.
@@ -8,9 +8,9 @@
 #include <filters.h>
 
 #ifdef DEBUG
-DefineOptFilter("perl", "d");
+DefineOptFilter(perl, "d");
 #else
-DefineFilter("perl");
+DefineFilter(perl);
 #endif
 
 /*

@@ -1,5 +1,5 @@
 Summary: VILE (VI Like Emacs) editor
-# $Header: /users/source/archives/vile.vcs/package/RCS/vile.spec,v 1.38 2013/08/28 17:35:19 tom Exp $
+# $Header: /users/source/archives/vile.vcs/package/RCS/vile.spec,v 1.39 2013/12/02 21:05:33 tom Exp $
 Name: vile
 %define AppVersion 9.8
 Version: %{AppVersion}l
@@ -20,7 +20,7 @@ Patch8: vile-9.8h.patch.gz
 Patch9: vile-9.8i.patch.gz
 Patch10: vile-9.8j.patch.gz
 Patch11: vile-9.8k.patch.gz
-Patch11: vile-9.8l.patch.gz
+Patch12: vile-9.8l.patch.gz
 # each patch should add itself to this list
 Packager: Thomas Dickey <dickey@invisible-island.net>
 
@@ -72,6 +72,7 @@ Requires:	%{name}-common = %{version}-%{release}
 %patch9 -p1
 %patch10 -p1
 %patch11 -p1
+%patch12 -p1
 # each patch should add itself to this list
 
 rpm --version

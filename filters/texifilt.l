@@ -4,14 +4,14 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/texifilt.l,v 1.13 2012/02/18 13:47:15 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/texifilt.l,v 1.14 2013/12/02 01:32:53 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of texinfo input.
  */
 
 #include <filters.h>
 
-DefineFilter("texi");
+DefineFilter(texi);
 
 static char *Action_attr;
 static char *Comment_attr;

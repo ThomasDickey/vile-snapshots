@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/spellflt.l,v 1.58 2013/03/07 10:06:12 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/spellflt.l,v 1.59 2013/12/02 01:32:53 tom Exp $
  *
  * Filter to add vile "attribution" sequences to misspelled words.
  */
@@ -15,7 +15,7 @@
 
 #include <filters.h>
 
-DefineFilter("spell");
+DefineFilter(spell);
 
 #define BUFFER_SIZE	BUFSIZ
 

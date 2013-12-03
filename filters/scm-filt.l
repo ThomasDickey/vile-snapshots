@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Id: scm-filt.l,v 1.9 2012/02/18 13:16:47 tom Exp $
+ * $Id: scm-filt.l,v 1.10 2013/12/02 01:32:53 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of scheme code.
  *
@@ -20,7 +20,7 @@
 #define FLTSTACK_EXTRA_PUSH FLTSTACK_THIS.quoted = 0;
 #include <fltstack.h>
 
-DefineFilter("scheme");
+DefineFilter(scheme);
 
 static char *Action_attr;
 static char *Comment_attr;

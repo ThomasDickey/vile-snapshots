@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/midlfilt.l,v 1.9 2012/02/18 13:44:37 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/midlfilt.l,v 1.10 2013/12/02 01:32:53 tom Exp $
  *
  * Filter to add vile "attribution" sequences to MIDL / ODL files.
  * - T.Dickey
@@ -12,7 +12,7 @@
 
 #include <filters.h>
 
-DefineFilter("midl");
+DefineFilter(midl);
 
 static char *Comment_attr;
 static char *Error_attr;

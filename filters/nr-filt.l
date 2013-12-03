@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/nr-filt.l,v 1.31 2010/11/04 09:25:29 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/nr-filt.l,v 1.32 2013/12/02 01:32:53 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of NROFF
  */
@@ -11,7 +11,7 @@
 #include <filters.h>
 #undef YY_NO_UNPUT
 
-DefineFilter("nr");
+DefineFilter(nr);
 
 static char *Action_attr;
 static char *Comment_attr;

@@ -7,7 +7,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/sh-filt.l,v 1.120 2013/09/20 20:31:42 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/sh-filt.l,v 1.121 2013/12/02 01:33:56 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Shell script.
  */
@@ -25,7 +25,7 @@
 #define OPTS "K"
 #endif
 
-DefineOptFilter("sh", OPTS);
+DefineOptFilter(sh, OPTS);
 
 #ifdef DEBUG
 #define DPRINTF(params) if(FltOptions('d'))printf params

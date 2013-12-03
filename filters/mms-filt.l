@@ -5,7 +5,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/mms-filt.l,v 1.19 2012/02/18 13:44:37 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/mms-filt.l,v 1.20 2013/12/02 01:32:53 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of VMS mms script
  * - T.Dickey
@@ -13,7 +13,7 @@
 
 #include <filters.h>
 
-DefineFilter("mms");
+DefineFilter(mms);
 
 static char *Comment_attr;
 static char *Ident2_attr;

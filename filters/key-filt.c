@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/key-filt.c,v 1.50 2013/03/23 11:18:44 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/key-filt.c,v 1.51 2013/12/02 01:33:56 tom Exp $
  *
  * Filter to add vile "attribution" sequences to a vile keyword file.  It's
  * done best in C because the delimiters may change as a result of processing
@@ -10,7 +10,7 @@
 
 #define QUOTE '\''
 
-DefineOptFilter("key", "c");
+DefineOptFilter(key, "c");
 
 #define VERBOSE(level,params)	if (FltOptions('v') >= level) mlforce params
 

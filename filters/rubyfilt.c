@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/rubyfilt.c,v 1.81 2013/05/25 16:17:10 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/rubyfilt.c,v 1.82 2013/12/02 01:33:56 tom Exp $
  *
  * Filter to add vile "attribution" sequences to ruby scripts.  This began as a
  * translation into C of an earlier version written for LEX/FLEX.
@@ -20,9 +20,9 @@
 #include <filters.h>
 
 #ifdef DEBUG
-DefineOptFilter("ruby", "de");
+DefineOptFilter(ruby, "de");
 #else
-DefineOptFilter("ruby", "e");
+DefineOptFilter(ruby, "e");
 #endif
 
 #define isIdent(c)   (isalnum(CharOf(c)) || c == '_')

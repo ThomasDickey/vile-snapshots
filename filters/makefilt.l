@@ -7,7 +7,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/makefilt.l,v 1.63 2010/11/04 09:07:56 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/makefilt.l,v 1.64 2013/12/02 01:32:53 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Makefile
  *
@@ -17,7 +17,7 @@
 
 #include <filters.h>
 
-DefineFilter("make");
+DefineFilter(make);
 
 static char *Comment_attr;
 static char *Error_attr;

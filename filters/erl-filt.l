@@ -3,7 +3,7 @@
 %{
 
 /*
-    $Id: erl-filt.l,v 1.5 2012/02/18 13:43:42 tom Exp $
+    $Id: erl-filt.l,v 1.6 2013/12/02 01:32:53 tom Exp $
 
     Filter to add vile "attribution" sequences to selected bits of Erlang
     input text.
@@ -21,7 +21,7 @@
 
 #include <filters.h>
 
-DefineFilter("erl");
+DefineFilter(erl);
 
 static char *Keyword_attr;
 static char *Comment_attr;

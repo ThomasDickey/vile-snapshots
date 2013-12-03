@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/php-filt.l,v 1.25 2013/03/20 00:08:29 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/php-filt.l,v 1.26 2013/12/02 01:32:53 tom Exp $
  *
  * Filter to add vile "attribution" sequences to PHP scripts.
  * - T.Dickey
@@ -20,7 +20,7 @@
 #include <filters.h>
 #include <fltstack.h>
 
-DefineFilter("php");
+DefineFilter(php);
 
 #define isQuote(ch) (ch != 0 && strchr("'", ch) != 0)
 

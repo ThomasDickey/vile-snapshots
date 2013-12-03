@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/xq-filt.l,v 1.18 2012/02/18 13:47:59 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/xq-filt.l,v 1.19 2013/12/02 01:32:53 tom Exp $
  *
  * XQuery is case-sensitive
  * XQuery elements, attributes, and variables must be valid XML names
@@ -24,7 +24,7 @@
 
 #include <filters.h>
 
-DefineFilter("xq");
+DefineFilter(xq);
 
 #define SYMS_XMLNS	"xmlns"
 

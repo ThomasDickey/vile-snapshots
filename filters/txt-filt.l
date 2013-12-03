@@ -7,7 +7,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/txt-filt.l,v 1.39 2012/02/18 13:47:15 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/txt-filt.l,v 1.40 2013/12/02 01:32:53 tom Exp $
  *
  * Filter to add vile "attribution" sequences to an ordinary text file
  */
@@ -15,7 +15,7 @@
 #include <filters.h>
 #include <fltstack.h>
 
-DefineFilter("txt");
+DefineFilter(txt);
 
 static char *Comment_attr;
 static char *Ident2_attr;

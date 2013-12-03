@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/au3-filt.l,v 1.13 2012/02/18 13:07:09 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/au3-filt.l,v 1.14 2013/12/02 01:32:54 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of AutoIt
  * input text.
@@ -15,7 +15,7 @@
 
 #include <filters.h>
 
-DefineFilter("au3");
+DefineFilter(au3);
 
 static char *Comment_attr;
 static char *Error_attr;

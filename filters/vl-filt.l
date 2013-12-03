@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/vl-filt.l,v 1.21 2012/02/18 13:47:15 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/vl-filt.l,v 1.22 2013/12/02 01:32:53 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of VeriLog
  * program.
@@ -12,7 +12,7 @@
 
 #include <filters.h>
 
-DefineFilter("vlog");
+DefineFilter(vlog);
 
 static char *Comment_attr;
 static char *Error_attr;

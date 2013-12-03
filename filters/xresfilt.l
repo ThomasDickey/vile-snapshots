@@ -4,14 +4,14 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/xresfilt.l,v 1.29 2012/02/18 13:48:30 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/xresfilt.l,v 1.30 2013/12/02 01:32:53 tom Exp $
  *
  * Filter to add vile "attribution" sequences to an X resource file.
  */
 
 #include <filters.h>
 
-DefineFilter("xres");
+DefineFilter(xres);
 
 static char *Comment_attr;
 static char *Error_attr;

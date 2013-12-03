@@ -4,14 +4,14 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/py-filt.l,v 1.18 2012/02/18 13:47:15 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/py-filt.l,v 1.19 2013/12/02 01:32:53 tom Exp $
  *
  * Filter to add vile "attribution" sequences to a Python script
  */
 
 #include <filters.h>
 
-DefineFilter("py");
+DefineFilter(py);
 
 static char *Comment_attr;
 static char *Ident2_attr;

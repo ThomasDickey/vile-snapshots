@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/sql-filt.l,v 1.49 2012/02/18 12:54:27 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/sql-filt.l,v 1.50 2013/12/02 01:33:56 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of SQL script
  * - T.Dickey
@@ -13,7 +13,7 @@
 #include <filters.h>
 #undef YY_NO_UNPUT
 
-DefineOptFilter("sql", "d");
+DefineOptFilter(sql, "d");
 
 #define DPRINTF(params) if(FltOptions('d'))printf params
 #define set_state(name) DPRINTF(("{@%d:" #name ":%d}", __LINE__, name)); BEGIN(name); began_state = name

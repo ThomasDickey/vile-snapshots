@@ -9,7 +9,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/lex-filt.l,v 1.84 2012/07/25 22:12:37 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/lex-filt.l,v 1.85 2013/12/02 01:32:53 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of LEX program.
  */
@@ -17,7 +17,7 @@
 #include <filters.h>
 #include <fltstack.h>
 
-DefineFilter("lex");
+DefineFilter(lex);
 
 #define NAME_LEX_PATTERN "LexPattern"
 #define NAME_LEX_SECTION "LexSection"

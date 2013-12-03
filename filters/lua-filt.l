@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/lua-filt.l,v 1.12 2012/02/18 13:10:32 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/lua-filt.l,v 1.13 2013/12/02 01:32:53 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of lua
  * input text.
@@ -13,7 +13,7 @@
 #include <filters.h>
 #include <fltstack.h>
 
-DefineFilter("lua");
+DefineFilter(lua);
 
 static char *Comment_attr;
 static char *Number_attr;
