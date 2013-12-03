@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/cwebfilt.l,v 1.22 2012/02/18 13:43:42 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/cwebfilt.l,v 1.23 2013/12/02 01:32:54 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Cwebx input
  * text.  Also useful for Cweb
@@ -15,7 +15,7 @@
 
 #include <filters.h>
 
-DefineFilter("cweb");
+DefineFilter(cweb);
 
 #define NAME_TeX_command "TeX_command"
 #define NAME_TeX_comment "TeX_comment"

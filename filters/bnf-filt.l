@@ -3,14 +3,14 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/bnf-filt.l,v 1.14 2012/02/18 13:14:01 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/bnf-filt.l,v 1.15 2013/12/02 01:32:54 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of BNF syntax.
  */
 
 #include <filters.h>
 
-DefineFilter("bnf");
+DefineFilter(bnf);
 
 static char *Action_attr;
 static char *Comment_attr;

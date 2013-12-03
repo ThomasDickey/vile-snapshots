@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/esqlfilt.l,v 1.25 2012/02/18 13:43:42 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/esqlfilt.l,v 1.26 2013/12/02 01:32:53 tom Exp $
  *
  * Filter to add vile "attribution" sequences to embedded SQL with C/C++.
  * - T.Dickey
@@ -12,7 +12,7 @@
 
 #include <filters.h>
 
-DefineFilter("esql");
+DefineFilter(esql);
 
 static const char *other_symbols = "cpp";	/* FIXME: assumes ".merge cpp" */
 

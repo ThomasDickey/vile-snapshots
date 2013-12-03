@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/sml-filt.l,v 1.13 2013/02/20 23:45:58 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/sml-filt.l,v 1.14 2013/12/02 01:32:53 tom Exp $
 
     Filter to add vile "attribution" sequences to selected bits of SML
     input text.
@@ -20,7 +20,7 @@
 
 #include <filters.h>
 
-DefineFilter("sml");
+DefineFilter(sml);
 
 static char *Keyword_attr;
 static char *Comment_attr;

@@ -1,4 +1,4 @@
-; $Id: minvile.nsi,v 1.16 2013/10/08 15:28:43 tom Exp $
+; $Id: minvile.nsi,v 1.18 2013/10/12 19:12:32 tom Exp $
 ; Script originally generated with the Venis Install Wizard, but customized.
 ; The Inno Setup script is preferred; but this can be built via cross-compiling.
 
@@ -15,7 +15,7 @@
 !define SUBKEY "VI like Emacs"
 
 !define INSTALL "${SUBKEY} (GUI)"
-!define VERSION "${VERSION_MAJOR}.${VERSION_MINOR}l"
+!define VERSION "${VERSION_MAJOR}.${VERSION_MINOR}${VERSION_PATCH}"
 
 ; Main Install settings
 Name "${INSTALL}"
@@ -134,7 +134,7 @@ SectionEnd
 !insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN
 	!insertmacro MUI_DESCRIPTION_TEXT ${Section1} "${SUBKEY}"
 	!insertmacro MUI_DESCRIPTION_TEXT ${Section2} "Initialization script and useful macros"
-	!insertmacro MUI_DESCRIPTION_TEXT ${Section3} "Syntax (highlighting) filters.  Most are compiled-in, but some are useful as stand-along programs."
+	!insertmacro MUI_DESCRIPTION_TEXT ${Section3} "Syntax (highlighting) filters.  Most are compiled-in, but some are useful as stand-alone programs."
 !insertmacro MUI_FUNCTION_DESCRIPTION_END
 
 ;Uninstall section

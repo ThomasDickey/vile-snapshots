@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/xml-filt.l,v 1.38 2012/02/18 13:47:30 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/xml-filt.l,v 1.39 2013/12/02 01:32:53 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of XML input
  * text.
@@ -18,7 +18,7 @@
 
 #include <filters.h>
 
-DefineFilter("xml");
+DefineFilter(xml);
 
 #define SYMS_XMLNS	"xmlns"
 

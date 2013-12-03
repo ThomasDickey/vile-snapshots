@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/tc-filt.l,v 1.39 2012/02/18 13:49:19 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/tc-filt.l,v 1.40 2013/12/02 01:32:53 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of termcap
  */
@@ -12,7 +12,7 @@
 #include <filters.h>
 #undef YY_NO_UNPUT
 
-DefineFilter("tc");
+DefineFilter(tc);
 
 #define WriteAlias(attr) \
 	WriteToken3(attr, yyleng - 1); \

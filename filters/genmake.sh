@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Header: /users/source/archives/vile.vcs/filters/RCS/genmake.sh,v 1.10 2009/08/24 20:36:21 tom Exp $
+# $Header: /users/source/archives/vile.vcs/filters/RCS/genmake.sh,v 1.11 2013/12/02 23:16:39 tom Exp $
 # Scan the source-files in the "filters" directory to obtain the names which
 # are used for the default symbol table for each filter.  Update genmake.mak
 # if the lists differ.
@@ -35,15 +35,15 @@ DATA=${TMPDIR-.}/data$PID.gen
 TEMP=${TMPDIR-.}/temp$PID.gen
 SORT=${TMPDIR-.}/sort$PID.gen
 DIFF=${TMPDIR-.}/diff$PID.gen
-fgrep 'DefineOptFilter("' $SOURCE/*.[cl] | \
+fgrep 'DefineOptFilter(' $SOURCE/*.[cl] | \
 	sed	-e 's,^.*/,,' \
-		-e 's/",.*//' \
-		-e 's/:.*"/ /' \
+		-e 's/,.*//' \
+		-e 's/:.*(/ /' \
 		-e 's/\./ /' >$TEMP
-fgrep 'DefineFilter("' $SOURCE/*.[cl] | \
+fgrep 'DefineFilter(' $SOURCE/*.[cl] | \
 	sed	-e 's,^.*/,,' \
-		-e 's/").*//' \
-		-e 's/:.*"/ /' \
+		-e 's/).*//' \
+		-e 's/:.*(/ /' \
 		-e 's/\./ /' >>$TEMP
 
 # put the filter-name first, so it sorts by that field

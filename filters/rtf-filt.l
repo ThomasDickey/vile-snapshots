@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/rtf-filt.l,v 1.9 2012/02/18 13:47:15 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/rtf-filt.l,v 1.10 2013/12/02 01:32:53 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of RTF (rich text format)
  * input text.
@@ -11,7 +11,7 @@
 
 #include <filters.h>
 
-DefineFilter("rtf");
+DefineFilter(rtf);
 
 static char *Comment_attr;
 static char *Error_attr;

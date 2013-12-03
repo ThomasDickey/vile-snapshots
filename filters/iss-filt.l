@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/iss-filt.l,v 1.16 2012/02/18 13:01:36 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/iss-filt.l,v 1.17 2013/12/02 01:32:53 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Inno Setup
  * input text.
@@ -13,7 +13,7 @@
 #include <filters.h>
 #include <fltstack.h>
 
-DefineFilter("iss");
+DefineFilter(iss);
 
 static const char *Action_attr;
 static const char *Comment_attr;

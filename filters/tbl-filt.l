@@ -4,14 +4,14 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/tbl-filt.l,v 1.16 2012/02/18 13:47:15 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/tbl-filt.l,v 1.17 2013/12/02 01:32:53 tom Exp $
  *
  * Filter to add vile "attribution" sequences to a vile mktbls datafile.
  */
 
 #include <filters.h>
 
-DefineFilter("tbl");
+DefineFilter(tbl);
 
 static char *Comment_attr;
 static char *Ident2_attr;

@@ -7,14 +7,14 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/rpm-filt.l,v 1.35 2012/02/18 13:21:12 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/rpm-filt.l,v 1.36 2013/12/02 01:32:53 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of rpm spec-file.
  */
 
 #include <filters.h>
 
-DefineFilter("rpm");
+DefineFilter(rpm);
 
 #define isQuote(ch) (ch != 0 && strchr("\\'\"", ch) != 0)
 

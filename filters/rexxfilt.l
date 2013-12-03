@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/rexxfilt.l,v 1.14 2012/02/18 13:15:55 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/rexxfilt.l,v 1.15 2013/12/02 01:32:53 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of REXX source
  * - T.Dickey
@@ -12,7 +12,7 @@
 
 #include <filters.h>
 
-DefineFilter("rexx");
+DefineFilter(rexx);
 
 static char *Comment_attr;
 static char *Number_attr;

@@ -1,7 +1,10 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20131008 (l)
+ 20131202 (l)
 	> Tom Dickey:
+	+ build-fixes to allow "new" flex 2.5.35 to be used to build the
+	  various filter configurations, noting that the recommended
+	  tool is still "reflex" (report by Joran Ahlback).
 	+ add convile.nsi and minvile.nsi scripts to use for creating
 	  installers from convile and minvile via cross-compiling.  NSIS is far
 	  less capable than Inno Setup, so the latter still gives the

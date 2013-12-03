@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/ps1-filt.l,v 1.11 2013/06/28 22:06:20 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/ps1-filt.l,v 1.12 2013/12/02 01:32:53 tom Exp $
  *
  * Filter to add vile "attribution" sequences to PowerShell scripts.
  * - T.Dickey
@@ -20,7 +20,7 @@
 #include <filters.h>
 #include <fltstack.h>
 
-DefineFilter("ps1");
+DefineFilter(ps1);
 
 static char *Action_attr;
 static char *Comment_attr;

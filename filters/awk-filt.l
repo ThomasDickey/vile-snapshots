@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/awk-filt.l,v 1.32 2012/07/18 00:52:21 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/awk-filt.l,v 1.33 2013/12/02 01:32:54 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of awk
  * input text.
@@ -15,7 +15,7 @@
 #include <filters.h>
 #include <fltstack.h>
 
-DefineFilter("awk");
+DefineFilter(awk);
 
 static void PushState(int);
 static void PopState(void);

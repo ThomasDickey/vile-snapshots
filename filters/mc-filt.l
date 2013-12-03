@@ -7,7 +7,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/mc-filt.l,v 1.11 2012/02/18 13:44:37 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/mc-filt.l,v 1.12 2013/12/02 01:32:53 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of mailcap-file.
  */
@@ -15,7 +15,7 @@
 #include <filters.h>
 #include <fltstack.h>
 
-DefineFilter("mailcap");
+DefineFilter(mailcap);
 
 static char *Action_attr;
 static char *Comment_attr;

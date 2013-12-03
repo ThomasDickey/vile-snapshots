@@ -4,14 +4,14 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/as-filt.l,v 1.13 2012/02/18 13:14:37 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/as-filt.l,v 1.14 2013/12/02 01:32:54 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of assembler files.
  */
 
 #include <filters.h>
 
-DefineFilter("as");
+DefineFilter(as);
 
 static char *Action_attr;
 static char *Comment_attr;

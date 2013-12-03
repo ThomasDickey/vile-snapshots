@@ -1,7 +1,7 @@
 /*
  * debugging support -- tom dickey.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.110 2013/03/10 23:08:58 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.111 2013/12/02 00:14:37 tom Exp $
  *
  */
 
@@ -1105,7 +1105,7 @@ trace_ctype(CHARTYPE *table, int first, int last)
     }
 }
 
-#if OPT_WORKING
+#if OPT_WORKING && OPT_TRACE
 #undef beginDisplay
 void
 beginDisplay(void)

@@ -4,14 +4,14 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/yaccfilt.l,v 1.42 2012/02/18 13:49:19 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/yaccfilt.l,v 1.43 2013/12/02 01:32:53 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of YACC program.
  */
 
 #include <filters.h>
 
-DefineFilter("yacc");
+DefineFilter(yacc);
 
 typedef enum {
     RuleSection = 0

@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/rc-filt.l,v 1.16 2012/02/18 13:47:15 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/rc-filt.l,v 1.17 2013/12/02 01:32:53 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Windows
  * resource files.
@@ -12,7 +12,7 @@
 
 #include <filters.h>
 
-DefineFilter("rc");
+DefineFilter(rc);
 
 static char *Comment_attr;
 static char *Number_attr;

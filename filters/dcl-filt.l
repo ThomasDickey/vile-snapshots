@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/dcl-filt.l,v 1.25 2012/02/18 12:56:03 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/dcl-filt.l,v 1.26 2013/12/02 01:32:54 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of DCL files.
  *
@@ -27,7 +27,7 @@
 
 #include <filters.h>
 
-DefineFilter("dcl");
+DefineFilter(dcl);
 
 static char *Action_attr;
 static char *Comment_attr;

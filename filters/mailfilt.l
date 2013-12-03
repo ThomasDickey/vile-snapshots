@@ -6,14 +6,14 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/mailfilt.l,v 1.29 2013/03/07 10:05:34 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/mailfilt.l,v 1.30 2013/12/02 01:32:53 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of mail
  */
 
 #include <filters.h>
 
-DefineFilter("mail");
+DefineFilter(mail);
 
 static char *Action_attr;
 static char *Comment_attr;

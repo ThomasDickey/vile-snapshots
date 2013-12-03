@@ -7,7 +7,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/latexflt.l,v 1.54 2012/02/18 13:51:13 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/latexflt.l,v 1.55 2013/12/02 01:33:56 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of TeX or LaTeX
  * input text.
@@ -45,7 +45,7 @@
  * Options:
  *	-a	tells us to highlight any \keyword
  */
-DefineOptFilter("latex", "a");
+DefineOptFilter(latex, "a");
 
 #define NAME_MATH       "Math"
 #define NAME_MATH_C     "Math_c"

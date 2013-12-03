@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Id: lispfilt.l,v 1.26 2012/02/18 12:59:14 tom Exp $
+ * $Id: lispfilt.l,v 1.27 2013/12/02 01:32:53 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of lisp code.
  *
@@ -24,7 +24,7 @@
 #define FLTSTACK_EXTRA_PUSH FLTSTACK_THIS.quoted = 0;
 #include <fltstack.h>
 
-DefineFilter("lisp");
+DefineFilter(lisp);
 
 static char *Action_attr;
 static char *Comment_attr;

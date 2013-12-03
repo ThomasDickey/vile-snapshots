@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.133 2013/03/18 09:41:50 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.136 2013/12/03 00:10:38 tom Exp $
  */
 
 #ifndef FILTERS_H
@@ -125,7 +125,13 @@ typedef struct {
 } FILTER_DEF;
 
 #ifdef LEX_IS_FLEX
-#define USE_LEXFREE { yy_delete_buffer(yy_current_buffer); yy_current_buffer = 0; yy_init = 1; }
+#ifndef YY_CURRENT_BUFFER
+#define YY_CURRENT_BUFFER yy_current_buffer
+#endif
+#ifndef YY_CURRENT_BUFFER_LVALUE
+#define YY_CURRENT_BUFFER_LVALUE YY_CURRENT_BUFFER
+#endif
+#define USE_LEXFREE { yy_delete_buffer(YY_CURRENT_BUFFER); YY_CURRENT_BUFFER_LVALUE = 0; yy_init = 1; }
 #else
 #define USE_LEXFREE if (yytext) { free(yytext); yytext = 0; yytextsz = 0; }
 #endif
@@ -136,14 +142,26 @@ typedef struct {
 extern FILTER_DEF filter_def;
 
 /*
+ * Workaround for incompatiblities between "new" flex versus flex/reflex.
+ */
+#if defined(FLEX_SCANNER)
+#undef yywrap
+#define YY_SKIP_YYWRAP
+#define USE_LEXWRAP(name) static int name(void) { return 1; }
+#else
+#define USE_LEXWRAP(name) /* nothing */
+#endif
+
+/*
  * We'll put a DefineFilter() in each filter program.  To handle special cases
  * such as c-filt.c, use DefineOptFilter().
  */
 #define DefineOptFilter(name,options) \
+USE_LEXWRAP(name##_wrap) \
 static void init_filter(int before); \
 static void do_filter(FILE *Input); \
 DCL_LEXFREE \
-FILTER_DEF filter_def = { name, 1, init_filter, do_filter, options REF_LEXFREE }
+FILTER_DEF filter_def = { #name, 1, init_filter, do_filter, options REF_LEXFREE }
 
 #define DefineFilter(name) DefineOptFilter(name,0)
 
@@ -159,7 +177,6 @@ FILTER_DEF filter_def = { name, 1, init_filter, do_filter, options REF_LEXFREE }
 
 #if defined(FLEX_SCANNER)
 #if defined(filter_def)
-#undef yywrap
 #define ECHO flt_echo(yytext, yyleng);
 #define YY_INPUT(buf,result,max_size) result = flt_input(buf,max_size)
 #define YY_FATAL_ERROR(msg) flt_failed(msg);
