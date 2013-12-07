@@ -13,7 +13,7 @@
  * vile.  The file api.c (sometimes) provides a middle layer between
  * this interface and the rest of vile.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.128 2013/05/24 08:42:30 bod Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.129 2013/12/07 12:38:39 tom Exp $
  */
 
 #ifdef __GNUC__
@@ -1018,7 +1018,7 @@ perldo_prompt(void)
 		char delim;
 		const char *test = "'~#\200\1";
 		/* try to find a delimiter not in the string */
-		while (*test && strchr(split, *test)) test++;
+		while (*test && vl_index(split, *test)) test++;
 		delim = *test;
 		sv_catpvf(cmd, "q%c%s%c", delim, split, delim);
 	    }

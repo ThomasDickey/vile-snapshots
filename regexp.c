@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/regexp.c,v 1.207 2013/03/11 00:05:24 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/regexp.c,v 1.208 2013/12/07 11:58:18 tom Exp $
  *
  * Copyright 2005-2010,2013 Thomas E. Dickey and Paul G. Fox
  *
@@ -817,12 +817,12 @@ regmassage(const char *in_text,
 		break;
 #endif
 	    }
-	    if (in_text[n + 1] != EOS && strchr(metas, in_text[n + 1])) {
+	    if (in_text[n + 1] != EOS && vl_index(metas, in_text[n + 1])) {
 		++n;
 	    } else if (in_text[n + 1] == BACKSLASH) {
 		*nxt++ = in_text[++n];	/* the escape */
 	    }
-	} else if (in_text[n] != EOS && strchr(metas, in_text[n])) {	/* add \ to these metas */
+	} else if (in_text[n] != EOS && vl_index(metas, in_text[n])) {	/* add \ to these metas */
 	    *nxt++ = BACKSLASH;
 	}
 	*nxt++ = in_text[n];	/* the char */
@@ -1366,7 +1366,7 @@ reg_strcspn(const char *s, const char *reject)
 
     while (s < reglimit) {
 	if (*s != EOS) {
-	    if (strchr(reject, CharOf(*s)) != 0) {
+	    if (vl_index(reject, CharOf(*s)) != 0) {
 		break;
 	    }
 	}

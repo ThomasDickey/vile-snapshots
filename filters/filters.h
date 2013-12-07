@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.136 2013/12/03 00:10:38 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.138 2013/12/07 11:54:41 tom Exp $
  */
 
 #ifndef FILTERS_H
@@ -142,10 +142,18 @@ typedef struct {
 extern FILTER_DEF filter_def;
 
 /*
- * Workaround for incompatiblities between "new" flex versus flex/reflex.
+ * Use flex's parser-specific wrap-function.
  */
 #if defined(FLEX_SCANNER)
 #undef yywrap
+#endif
+
+/*
+ * Workaround for incompatiblities between "new" flex versus flex/reflex.
+ * One of the problems with "new" flex is that it reverses the order of
+ * definitions for yywrap.
+ */
+#if defined(FLEX_SCANNER) && defined(FLEX_BETA)
 #define YY_SKIP_YYWRAP
 #define USE_LEXWRAP(name) static int name(void) { return 1; }
 #else

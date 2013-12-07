@@ -4,7 +4,7 @@
  * Most code probably by Dan Lawrence or Dave Conroy for MicroEMACS
  * Extensions for vile by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/insert.c,v 1.182 2013/07/07 19:53:43 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/insert.c,v 1.183 2013/12/07 11:58:46 tom Exp $
  */
 
 #include	"estruct.h"
@@ -808,7 +808,7 @@ is_cindent_char(BUFFER *bp, int ch)
     return valid_buffer(bp)
 	&& b_val(bp, MDCINDENT)
 	&& (b_val_ptr(bp, VAL_CINDENT_CHARS) != 0)
-	&& (strchr(b_val_ptr(bp, VAL_CINDENT_CHARS), ch) != 0);
+	&& (vl_index(b_val_ptr(bp, VAL_CINDENT_CHARS), ch) != 0);
 }
 
 /*

@@ -1,7 +1,7 @@
 /*
  * Common utility functions for vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.160 2013/03/23 11:19:44 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.161 2013/12/07 13:39:54 tom Exp $
  *
  */
 
@@ -693,7 +693,7 @@ dump_update2(const char *name, int keep)
     int result;
 
     for (result = 32; result < 127; ++result) {
-	if (result != keep && ispunct(result) && strchr(name, result) == 0) {
+	if (result != keep && ispunct(result) && vl_index(name, result) == 0) {
 	    break;
 	}
     }
@@ -710,12 +710,12 @@ dump_update(const char *name)
 {
     int newc;
 
-    if (strchr(name, dump_meta_ch) != 0) {
+    if (vl_index(name, dump_meta_ch) != 0) {
 	newc = dump_update2(name, dump_eqls_ch);
 	flt_message("%cmeta %c\n", dump_meta_ch, newc);
 	dump_meta_ch = newc;
     }
-    if (strchr(name, dump_eqls_ch) != 0) {
+    if (vl_index(name, dump_eqls_ch) != 0) {
 	dump_eqls_ch = dump_update2(name, dump_meta_ch);
 	flt_message("%cequals %c\n", dump_meta_ch, dump_eqls_ch);
     }
@@ -1088,7 +1088,7 @@ insert_keyword2(const char *ident, const char *attribute, int classflag, char *f
 		NONNULL(flag)));
 
     if (zero_or_more
-	&& (mark = strchr(ident, zero_or_more)) != 0
+	&& (mark = vl_index(ident, zero_or_more)) != 0
 	&& (mark != ident)) {
 	if ((temp = strmalloc(ident)) != 0) {
 
@@ -1105,7 +1105,7 @@ insert_keyword2(const char *ident, const char *attribute, int classflag, char *f
 	    CannotAllocate("insert_keyword");
 	}
     } else if (zero_or_all
-	       && (mark = strchr(ident, zero_or_all)) != 0
+	       && (mark = vl_index(ident, zero_or_all)) != 0
 	       && (mark != ident)) {
 	if ((temp = strmalloc(ident)) != 0) {
 
@@ -1241,7 +1241,7 @@ parse_keyword(char *name, int classflag)
     int quoted = 0;
 
     VERBOSE(1, ("parse_keyword(%s, %d)", name, classflag));
-    if ((s = strchr(name, eqls_ch)) != 0) {
+    if ((s = vl_index(name, eqls_ch)) != 0) {
 	*s++ = 0;
 	s = skip_blanks(s);
 	if (*s != 0) {

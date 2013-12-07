@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.736 2013/03/09 00:26:00 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.737 2013/12/07 11:57:39 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -849,6 +849,8 @@ extern char *index (const char *s, int c);
 extern char *rindex (const char *s, int c);
 #endif
 #endif /* USE_INDEX */
+
+#define vl_index (strchr)
 
 #if defined(STDC_HEADERS) || defined(HAVE_STRING_H)
 # include <string.h>

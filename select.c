@@ -18,7 +18,7 @@
  * transferring the selection are not dealt with in this file.  Procedures
  * for dealing with the representation are maintained in this file.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.187 2013/03/08 09:58:33 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.189 2013/12/07 01:13:27 tom Exp $
  *
  */
 
@@ -1604,6 +1604,28 @@ decode_attribute(char *text, size_t length, size_t offset, int *countp)
 		}
 		break;
 #endif
+	    case 'M':
+		if (((offset + 2) == length) && (text[offset + 1] == ':')) {
+		    /*
+		     * Work around special case in builtflt.c's flt_puts(),
+		     * which is sending only the markup code without data.
+		     */
+		    count = -1;
+		    found = TRUE;
+		} else {
+		    save_offset = offset;
+		    offset++;
+		    while (offset < length
+			   && text[offset] != EOS)
+			offset++;
+
+		    if (++offset >= length) {
+			offset = save_offset;
+		    } else {
+			TRACE(("flt_meta:%s\n", text + save_offset));
+		    }
+		}
+		break;
 	    case ':':
 		found = TRUE;
 		break;
