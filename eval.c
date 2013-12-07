@@ -2,7 +2,7 @@
  *	eval.c -- function and variable evaluation
  *	original by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.456 2013/07/07 23:24:28 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.457 2013/12/07 13:40:03 tom Exp $
  *
  */
 
@@ -836,7 +836,7 @@ translate_string(TBUFF **result, const char *from, const char *to, const char *s
     if (tb_scopy(result, string) != 0) {
 	if ((s = tb_values(*result)) != 0) {
 	    for (; *s != EOS; ++s) {
-		if ((t = strchr(from, *s)) != 0
+		if ((t = vl_index(from, *s)) != 0
 		    && (int) (t - from) < len_to) {
 		    *s = to[t - from];
 		}

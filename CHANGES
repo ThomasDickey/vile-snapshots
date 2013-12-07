@@ -1,7 +1,11 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20131202 (l)
+ 20131206 (l)
 	> Tom Dickey:
+	+ add a new attribute markup, "M" for "meta" which is ignored by vile.
+	  Modified filters to emit their command-line using this markup so
+	  that applications can determine which filter was invoked when the -F
+	  option is used to provided marked-up files.
 	+ build-fixes to allow "new" flex 2.5.35 to be used to build the
 	  various filter configurations, noting that the recommended
 	  tool is still "reflex" (report by Joran Ahlback).
@@ -30,6 +34,7 @@ Changes for vile 9.9 (released ??? ??? ?? ????)
 	+ add ".nsh" suffix to nsis mode.
 	+ fix for "-F" option when filtered file has no syntax highlighting;
 	  the MK variable was not set, causing getregion() to fail.
+	+ update config.guess, config.sub
 
  20130707 (k)
 	> Brendan O'Dea:

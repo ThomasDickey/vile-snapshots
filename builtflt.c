@@ -1,7 +1,7 @@
 /*
  * Main program and I/O for external vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/RCS/builtflt.c,v 1.90 2013/02/20 10:11:08 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/builtflt.c,v 1.93 2013/12/07 01:20:23 tom Exp $
  *
  */
 
@@ -127,6 +127,22 @@ ProcessArgs(int flag)
 {
     const char *s = current_params;
     char *value;
+
+    if (!flag) {
+	char *command = 0;
+	size_t needed = strlen(current_filter->filter_name) + 11 + strlen(s);
+	if (*s)
+	    ++needed;
+	if ((command = malloc(needed + 1)) != 0) {
+	    sprintf(command, "vile-%s-filt", current_filter->filter_name);
+	    if (*s) {
+		strcat(command, " ");
+		strcat(command, s);
+	    }
+	    flt_puts(command, (int) needed, "M");
+	    free(command);
+	}
+    }
 
     memset(flt_options, 0, sizeof(flt_options));
     FltOptions('t') = tabstop_val(curbp);
@@ -595,15 +611,19 @@ flt_puts(const char *string, int length, const char *marker)
 	    last = bfr1 + strlen(bfr1);
 	    decode_attribute(bfr1, (size_t) (last - bfr1), (size_t) 0, &count);
 
-	    flt_echo(string, length);
-	    save_mark(FALSE);
+	    if (count > 0) {
+		flt_echo(string, length);
+		save_mark(FALSE);
 
-	    if (apply_attribute()) {
-		REGIONSHAPE save_shape = regionshape;
-		regionshape = rgn_EXACT;
-		(void) attributeregion();
-		videoattribute = 0;
-		regionshape = save_shape;
+		if (apply_attribute()) {
+		    REGIONSHAPE save_shape = regionshape;
+		    regionshape = rgn_EXACT;
+		    (void) attributeregion();
+		    videoattribute = 0;
+		    regionshape = save_shape;
+		}
+	    } else {
+		save_mark(FALSE);
 	    }
 	} else {
 	    flt_echo(string, length);

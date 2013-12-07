@@ -1,7 +1,7 @@
 /*
  * Parsing and I/O support for atr2text, etc.
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/unfilter.c,v 1.11 2010/09/06 15:45:11 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/unfilter.c,v 1.12 2013/12/07 15:28:27 tom Exp $
  */
 #define CAN_TRACE 0
 #define CAN_VMS_PATH 0
@@ -12,7 +12,8 @@ typedef enum {
     Repeat,
     Attribs,
     Color,
-    Markup
+    Markup,
+    EatString
 } STATES;
 
 typedef struct {
@@ -75,6 +76,9 @@ unfilter(FILE *src, FILE *dst)
 		    markup_unfilter(dst, attrs);
 		}
 	    }
+	} else if (state == EatString) {
+	    if (ch == 0)
+		state = Default;
 	} else if (ch == ':') {
 	    if (count == 0)
 		count = 1;
@@ -122,6 +126,10 @@ unfilter(FILE *src, FILE *dst)
 		case 'I':
 		    attrs |= ATR_ITALIC;
 		    break;
+		case 'H':
+		case 'M':
+		    state = EatString;
+		    break;
 		}
 		break;
 	    case Color:
@@ -138,6 +146,7 @@ unfilter(FILE *src, FILE *dst)
 		}
 		state = Attribs;
 		break;
+	    case EatString:
 	    case Markup:
 	    case Default:
 		break;

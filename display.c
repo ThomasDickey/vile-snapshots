@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.570 2013/07/07 20:14:14 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.571 2013/12/07 12:09:49 tom Exp $
  *
  */
 
@@ -22,12 +22,16 @@
 
 #if DISP_X11
 #define FontHasGlyph(ch) gui_isprint(ch)
+#define UseCellWidth(wp, ch) \
+	(!w_val(wp, WMDUNICODE_AS_HEX) && FontHasGlyph(ch))
 #else
 #define FontHasGlyph(ch) TRUE
+#define UseCellWidth(wp, ch) \
+	(!w_val(wp, WMDUNICODE_AS_HEX))
 #endif
 
-#define UseCellWidth(lp, off, wp) \
-	(!w_val(wp, WMDUNICODE_AS_HEX) && FontHasGlyph(get_char2(lp, off)))
+#define UseCellWidth2(wp, lp, off) \
+	UseCellWidth(wp, get_char2(lp, off))
 
 #define reset_term_attrs() term.rev(0)
 
@@ -790,10 +794,9 @@ vtlistc(WINDOW *wp, const char *src, unsigned limit)
 		&& isPrint(value)
 		&& FoldTo8bits((int) value)) {
 		temp[n++] = (char) value;
-	    } else if (!w_val(wp, WMDUNICODE_AS_HEX)
-		       && cells > 0
+	    } else if (cells > 0
 		       && term_is_utfXX()
-		       && FontHasGlyph((int) value)) {
+		       && UseCellWidth(wp, (int) value)) {
 		/*
 		 * It does not fit into the "8bit" mapping, but is printable
 		 * (since the number of cells is nonzero).  Write the Unicode
@@ -1207,7 +1210,7 @@ mk_to_vcol(WINDOW *wp, MARK mark, int expanded, int column, int adjust)
 	    int nxt = llength(mark.l) - i;
 	    int adj = column_sizes(wp, text + i, (unsigned) nxt, &used);
 
-	    if (adj == COLS_UTF8 && UseCellWidth(lp, i, wp)) {
+	    if (adj == COLS_UTF8 && UseCellWidth2(wp, lp, i)) {
 		adj = mb_cellwidth(wp, text + i, nxt);
 	    }
 	    column += adj;
@@ -1836,7 +1839,7 @@ offs2col0(WINDOW *wp,
 		int nxt = offset - n;
 		int adj = column_sizes(wp, text + n, (UINT) nxt, &used);
 
-		if (adj == COLS_UTF8 && UseCellWidth(lp, n, wp)) {
+		if (adj == COLS_UTF8 && UseCellWidth2(wp, lp, n)) {
 		    adj = mb_cellwidth(wp, text + n, nxt);
 		}
 		column += adj;
@@ -1950,7 +1953,7 @@ col2offs(WINDOW *wp, LINE *lp, C_NUM col)
 		int nxt = len - offset;
 		int adj = column_sizes(wp, text + offset, (UINT) nxt, &used);
 
-		if (adj == COLS_UTF8 && UseCellWidth(lp, offset, wp)) {
+		if (adj == COLS_UTF8 && UseCellWidth2(wp, lp, offset)) {
 		    adj = mb_cellwidth(wp, text + offset, nxt);
 		}
 		n += adj;

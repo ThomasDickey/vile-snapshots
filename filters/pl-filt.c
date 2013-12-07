@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/pl-filt.c,v 1.105 2013/12/02 01:33:56 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/pl-filt.c,v 1.106 2013/12/07 13:39:54 tom Exp $
  *
  * Filter to add vile "attribution" sequences to perl scripts.  This is a
  * translation into C of an earlier version written for LEX/FLEX.
@@ -275,7 +275,7 @@ is_NORMALVARS(const char *s, int dquoted)
     while (MORE(s)) {
 	ch = CharOf(*s);
 	if (s == base) {
-	    if (strchr(dquoted ? "$" : "&$%@", ch) == 0) {
+	    if (vl_index(dquoted ? "$" : "&$%@", ch) == 0) {
 		break;
 	    }
 	} else if (squoted && !dquoted) {

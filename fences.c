@@ -9,7 +9,7 @@
  * Extensions for vile by Paul Fox
  * Rewrote to use regular expressions - T.Dickey
  *
- * $Header: /users/source/archives/vile.vcs/RCS/fences.c,v 1.91 2011/04/07 22:38:01 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/fences.c,v 1.92 2013/12/07 13:39:54 tom Exp $
  *
  */
 
@@ -484,7 +484,7 @@ is_user_fence(int ch, int *sdirp)
     char *chp, och;
     if (!ch)
 	return 0;
-    chp = strchr(fences, ch);
+    chp = vl_index(fences, ch);
     if (!chp)
 	return 0;
     if ((chp - fences) & 1) {

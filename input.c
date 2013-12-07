@@ -44,7 +44,7 @@
  *	tgetc_avail()     true if a key is avail from tgetc() or below.
  *	keystroke_avail() true if a key is avail from keystroke() or below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.356 2013/03/06 01:20:25 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.357 2013/12/07 11:58:39 tom Exp $
  *
  */
 
@@ -215,7 +215,7 @@ mlquickask(const char *prompt, const char *respchars, int *cp)
 		break;
 	    }
 
-	    if (strchr(respchars, *cp)) {
+	    if (vl_index(respchars, *cp)) {
 		result = TRUE;
 		break;
 	    }
@@ -1101,7 +1101,7 @@ add_backslashes2(char *text, const char *find)
 	if (strpbrk(text, find) != 0) {
 	    temp = tb_init(&temp, EOS);
 	    for (n = 0; text[n] != EOS; ++n) {
-		if (strchr(find, text[n]))
+		if (vl_index(find, text[n]))
 		    temp = tb_append(&temp, BACKSLASH);
 		temp = tb_append(&temp, text[n]);
 	    }
@@ -1254,7 +1254,7 @@ expandChar(TBUFF **buf,
 	return FALSE;
 
     /* Is this a character that we know about? */
-    if (strchr(global_g_val_ptr(GVAL_EXPAND_CHARS), c) == 0)
+    if (vl_index(global_g_val_ptr(GVAL_EXPAND_CHARS), c) == 0)
 	return FALSE;
 
     switch (c) {
@@ -1407,7 +1407,7 @@ kbd_show_response(TBUFF **dst,	/* string with escapes */
 	if ((c == BACKSLASH) || (c == eolchar && eolchar != '\n')) {
 	    if (options & KBD_QUOTES)
 		tb_append(dst, BACKSLASH);	/* add extra */
-	} else if (strchr(global_g_val_ptr(GVAL_EXPAND_CHARS), c) != 0) {
+	} else if (vl_index(global_g_val_ptr(GVAL_EXPAND_CHARS), c) != 0) {
 	    if (c == EXPC_RPAT && !(options & KBD_EXPPAT))
 		/*EMPTY */ ;
 	    else if (c == EXPC_SHELL && !(options & KBD_SHPIPE))

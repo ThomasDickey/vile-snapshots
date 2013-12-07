@@ -4,7 +4,7 @@
  *	original by Daniel Lawrence, but
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.347 2013/03/05 23:39:22 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.348 2013/12/07 13:40:19 tom Exp $
  *
  */
 
@@ -585,8 +585,8 @@ execute_named_command(int f, int n)
 		    } else {	/* e.g., ":e#" */
 			c = end_string();
 			if (isPunct(c)
-			    && strchr(global_g_val_ptr(GVAL_EXPAND_CHARS),
-				      c) != 0) {
+			    && vl_index(global_g_val_ptr(GVAL_EXPAND_CHARS),
+					c) != 0) {
 			    unkeystroke(c);
 			}
 		    }

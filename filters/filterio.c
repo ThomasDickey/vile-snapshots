@@ -1,7 +1,7 @@
 /*
  * Main program and I/O for external vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filterio.c,v 1.63 2013/03/23 12:29:32 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filterio.c,v 1.65 2013/12/07 12:39:23 tom Exp $
  *
  */
 
@@ -51,9 +51,13 @@ ProcessArgs(int argc, char *argv[], int flag)
     int n;
     char *s, *value;
 
+    if (!flag)
+	printf("\001M%s", argv[0]);
     memset(flt_options, 0, sizeof(flt_options));
     for (n = 1; n < argc; n++) {
 	s = argv[n];
+	if (!flag)
+	    printf(" %s", s);
 	if (*s == '-') {
 	    while (*++s) {
 		FltOptions(*s) += 1;
@@ -85,6 +89,8 @@ ProcessArgs(int argc, char *argv[], int flag)
 	    break;
 	}
     }
+    if (!flag)
+	fwrite("\0", sizeof(char), (size_t) 1, stdout);
     return n;
 }
 
@@ -285,7 +291,7 @@ vile_getenv(const char *name)
 	DWORD dwSzBuffer;
 	char buffer[256];
 
-	for (j = 0; j < TABLESIZE(rootkeys); ++j) {
+	for (j = 0; j < (int) TABLESIZE(rootkeys); ++j) {
 	    if (RegOpenKeyEx(rootkeys[j],
 			     VILE_SUBKEY "\\Environment",
 			     0,
