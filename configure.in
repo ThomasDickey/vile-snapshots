@@ -1,11 +1,11 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_REVISION($Revision: 1.306 $)
+AC_REVISION($Revision: 1.308 $)
 AC_PREREQ(2.52.20011201)
 
 ### Use "configure -with-screen" to override the default configuration, which is
 ### termcap-based on unix systems.
 
-dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.306 2013/04/14 16:05:38 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.308 2013/12/26 01:28:12 tom Exp $
 
 define(MAKELIST, sh $srcdir/filters/makelist.sh $srcdir/filters/genmake.mak)
 
@@ -22,7 +22,6 @@ AC_PROG_CPP
 AC_GCC_TRADITIONAL
 
 ###	checks for compiler characteristics
-CF_INTEL_COMPILER
 CF_BUILD_CC
 AC_CONST
 AC_C_INLINE
@@ -846,6 +845,21 @@ AC_ARG_WITH(trace,
 test -n "${with_trace}${with_no_leaks}" && EXTRAOBJS="$EXTRAOBJS trace\$o"
 
 CF_WITH_WARNINGS(Wno-unknown-pragmas)
+
+AC_MSG_CHECKING(if you want to install stripped executables)
+CF_ARG_DISABLE(stripping,
+	[  --disable-stripping     do not strip installed executables],
+	[with_stripping=no],
+	[with_stripping=yes])
+AC_MSG_RESULT($with_stripping)
+
+if test "$with_stripping" = yes
+then
+	INSTALL_OPTS="-s"
+else
+	INSTALL_OPTS=
+fi
+AC_SUBST(INSTALL_OPTS)
 
 ###	Do these last, since they rely on a properly constructed config.h
 

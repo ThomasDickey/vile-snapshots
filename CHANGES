@@ -1,7 +1,17 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20131206 (l)
+ 20131225 (l)
 	> Tom Dickey:
+	+ fix most issues reported by rpmlint for package/vile.spec:
+	  + add configure option "--disable-stripping"
+	  + strip executables during install by adding "-s" normally
+	  + make the wmconfig files non-executable
+	  + update FSF address in several files
+	+ modify -F option to ensure that output uses \n consistently for the
+	  line-separator verus \r\n.
+	+ minor fix to sh-filt.l's stripping of leading blanks in a here-
+	  document.
+	+ updated ftp-mirror to http://invisible-mirror.net/archives/vile
 	+ add a new attribute markup, "M" for "meta" which is ignored by vile.
 	  Modified filters to emit their command-line using this markup so
 	  that applications can determine which filter was invoked when the -F

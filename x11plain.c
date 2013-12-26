@@ -3,7 +3,7 @@
  *	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11plain.c,v 1.4 2013/04/14 19:28:11 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11plain.c,v 1.5 2013/12/07 16:26:12 tom Exp $
  *
  */
 
@@ -27,7 +27,7 @@
 #include <x11vile.h>
 
 static XVileFont *
-alternate_font(Display * dpy, TextWindow win, const char *weight, const char *slant)
+alternate_font(Display *dpy, TextWindow win, const char *weight, const char *slant)
 {
     char *newname, *np, *op;
     int cnt;
@@ -98,7 +98,7 @@ alternate_font(Display * dpy, TextWindow win, const char *weight, const char *sl
 }
 
 static GC
-get_color_gc(Display * dpy, TextWindow win, int n, Bool normal)
+get_color_gc(Display *dpy, TextWindow win, int n, Bool normal)
 {
     ColorGC *data;
 
@@ -164,7 +164,7 @@ get_color_gc(Display * dpy, TextWindow win, int n, Bool normal)
 		 buffer, tlen)
 
 static void
-really_draw(Display * dpy,
+really_draw(Display *dpy,
 	    TextWindow win,
 	    GC fore_gc,
 	    VIDEO_TEXT * text,
@@ -215,7 +215,7 @@ really_draw(Display * dpy,
 }
 
 static char *
-x_get_font_atom_property(Display * dpy, XVileFont * pf, Atom atom)
+x_get_font_atom_property(Display *dpy, XVileFont * pf, Atom atom)
 {
     XFontProp *pp;
     int i;
@@ -249,7 +249,7 @@ x_get_font_atom_property(Display * dpy, XVileFont * pf, Atom atom)
 #define	CLEAR_THRESH	36
 
 void
-xvileDraw(Display * dpy,
+xvileDraw(Display *dpy,
 	  TextWindow win,
 	  VIDEO_TEXT * text,
 	  int len,
@@ -395,7 +395,7 @@ xvileDraw(Display * dpy,
 }
 
 XVileFont *
-xvileQueryFont(Display * dpy, TextWindow tw, const char *fname)
+xvileQueryFont(Display *dpy, TextWindow tw, const char *fname)
 {
     XVileFont *pf;
 

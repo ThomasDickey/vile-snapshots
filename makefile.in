@@ -20,7 +20,7 @@
 #
 # gnu autoconf support by kevin buettner, 5/94
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.269 2013/05/14 08:38:57 bod Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.270 2013/12/26 01:28:38 tom Exp $
 
 SHELL		= /bin/sh
 
@@ -36,7 +36,8 @@ CC		= @CC@
 CPP		= @CPP@
 LINK		= @LINK_PREFIX@ $(CC) $(CFLAGS)
 INSTALL		= @INSTALL@
-INSTALL_PROGRAM	= @INSTALL_PROGRAM@
+INSTALL_OPTS	= @INSTALL_OPTS@
+INSTALL_PROGRAM	= @INSTALL_PROGRAM@ $(INSTALL_OPTS)
 INSTALL_SCRIPT	= @INSTALL_SCRIPT@
 INSTALL_DATA	= @INSTALL_DATA@
 

@@ -1,4 +1,4 @@
-# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.in,v 1.85 2012/09/23 19:56:32 tom Exp $
+# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.in,v 1.86 2013/12/26 01:28:44 tom Exp $
 #
 
 #### Start of system configuration section. ####
@@ -12,7 +12,8 @@ CC		= @CC@
 CPP		= @CPP@
 LINK		= @LINK_PREFIX@ $(CC) $(CFLAGS)
 INSTALL		= @INSTALL@
-INSTALL_PROGRAM	= @INSTALL_PROGRAM@
+INSTALL_OPTS	= @INSTALL_OPTS@
+INSTALL_PROGRAM	= @INSTALL_PROGRAM@ $(INSTALL_OPTS)
 INSTALL_DATA	= @INSTALL_DATA@
 
 EXTRA_CFLAGS	= @EXTRA_CFLAGS@
