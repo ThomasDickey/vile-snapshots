@@ -2,7 +2,7 @@
  * w32cmd:  collection of functions that add Win32-specific editor
  *          features (modulo the clipboard interface) to [win]vile.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32cmd.c,v 1.49 2011/11/24 18:28:09 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32cmd.c,v 1.50 2013/12/07 16:26:12 tom Exp $
  */
 
 #include "estruct.h"
@@ -171,12 +171,12 @@ commdlg_open_files(int chdir_allowed, const char *dir)
 
 	    /* *INDENT-EQLS* */
 	    ofn.lpstrInitialDir = initial_dir;
-	    ofn.lpstrFile      = sys_filebuf;
-	    ofn.nMaxFile       = RET_BUF_SIZE_;
-	    ofn.Flags          = (OFN_PATHMUSTEXIST | OFN_HIDEREADONLY |
-				  OFN_ALLOWMULTISELECT | OFN_EXPLORER) | chdir_mask;
-	    ofn.hwndOwner      = GetVileWindow();
-	    status             = GetOpenFileName(&ofn);
+	    ofn.lpstrFile       = sys_filebuf;
+	    ofn.nMaxFile        = RET_BUF_SIZE_;
+	    ofn.Flags           = (OFN_PATHMUSTEXIST | OFN_HIDEREADONLY |
+				   OFN_ALLOWMULTISELECT | OFN_EXPLORER) | chdir_mask;
+	    ofn.hwndOwner       = GetVileWindow();
+	    status              = GetOpenFileName(&ofn);
 
 #if DISP_NTCONS
 	    /* attempt to restore focus to the console editor */
@@ -251,32 +251,32 @@ commdlg_open_files(int chdir_allowed, const char *dir)
 
 		/* *INDENT-EQLS* */
 		have_dir = 1;
-		dir2    = our_filebuf;
-		cp      = dir2 + strlen(dir2) + 1;
+		dir2     = our_filebuf;
+		cp       = dir2 + strlen(dir2) + 1;
 		nfile--;
 	    } else {
 		/* *INDENT-EQLS* */
 		have_dir = 0;
-		cp      = our_filebuf;
+		cp       = our_filebuf;
 	    }
-	    for (i  = 0, first_bp = NULL; rc && i < nfile; i++) {
+	    for (i   = 0, first_bp = NULL; rc && i < nfile; i++) {
 		if (have_dir) {
 		    sprintf(tmp, "%s\\%s", dir2, cp);
-		    nxtfile = tmp;
+		    nxtfile  = tmp;
 		} else {
-		    nxtfile = cp;
+		    nxtfile  = cp;
 		}
-		if ((bp = getfile2bp(nxtfile, FALSE, FALSE)) == 0) {
-		    rc      = FALSE;
+		if ((bp  = getfile2bp(nxtfile, FALSE, FALSE)) == 0) {
+		    rc       = FALSE;
 		} else {
 		    bp->b_flag |= BFARGS;	/* treat this as an argument */
 		    if (!first_bp)
 			first_bp = bp;
-		    cp      += strlen(cp) + 1;
+		    cp       += strlen(cp) + 1;
 		}
 	    }
 	    if (rc)
-		rc      = swbuffer(first_bp);	/* editor switches to 1st buffer */
+		rc       = swbuffer(first_bp);	/* editor switches to 1st buffer */
 	}
     }
 
@@ -429,12 +429,12 @@ commdlg_save_file(int chdir_allowed, const char *dir)
     if (domore) {
 	/* *INDENT-EQLS* */
 	ofn.lpstrInitialDir = initial_dir;
-	ofn.lpstrFile      = sys_filebuf;
-	ofn.nMaxFile       = sizeof(filebuf);
-	ofn.Flags          = (OFN_PATHMUSTEXIST | OFN_HIDEREADONLY |
-			      OFN_OVERWRITEPROMPT | OFN_EXPLORER) | chdir_mask;
-	ofn.hwndOwner      = GetVileWindow();
-	status             = GetSaveFileName(&ofn);
+	ofn.lpstrFile       = sys_filebuf;
+	ofn.nMaxFile        = sizeof(filebuf);
+	ofn.Flags           = (OFN_PATHMUSTEXIST | OFN_HIDEREADONLY |
+			       OFN_OVERWRITEPROMPT | OFN_EXPLORER) | chdir_mask;
+	ofn.hwndOwner       = GetVileWindow();
+	status              = GetSaveFileName(&ofn);
 
 #if DISP_NTCONS
 	/* attempt to restore focus to the console editor */
@@ -723,8 +723,8 @@ handle_page_dflts(HWND hwnd)
 
 	/* *INDENT-EQLS* */
 	pgsetup->rtMargin = m;
-	pgsetup->Flags   &= ~PSD_RETURNDEFAULT;
-	pgsetup->Flags   |= PSD_MARGINS;
+	pgsetup->Flags    &= ~PSD_RETURNDEFAULT;
+	pgsetup->Flags    |= PSD_MARGINS;
 	pgsetup->hwndOwner = hwnd;
     }
     return (TRUE);
@@ -1301,9 +1301,9 @@ winprint_selection(PRINT_PARAM * pparam, AREGION * selarp)
 	regionshape = selarp->ar_shape;
 	pparam->pagenum = 1;
 	pparam->plines = pparam->ypos = 0;
-	rc        = dorgn(print_rgn_data, pparam, TRUE);
-	if (rc    && pparam->endpg_req)
-	    rc        = winprint_endpage(pparam);
+	rc         = dorgn(print_rgn_data, pparam, TRUE);
+	if (rc     && pparam->endpg_req)
+	    rc         = winprint_endpage(pparam);
     }
 
     /* clean up the global state that was whacked */
@@ -1345,12 +1345,12 @@ winprint_curbuffer_collated(PRINT_PARAM * pparam)
 	/* *INDENT-EQLS* */
 	vile_llen = llength(lp);
 	isempty_line = (vile_llen == 0);
-	outlen   = 0;
+	outlen    = 0;
 	while (isempty_line || outlen < vile_llen) {
 	    if (pparam->plines % pparam->mlpp == 0) {
 		pparam->ypos = 0;
 		if (!winprint_startpage(pparam)) {
-		    rc       = FALSE;
+		    rc        = FALSE;
 		    break;
 		}
 	    }
@@ -1472,7 +1472,7 @@ winprint_curbuffer_uncollated(PRINT_PARAM * pparam,
 
 	    /* *INDENT-EQLS* */
 	    outlen = pcursplit->outlen;
-	    lp    = pcursplit->splitlp;
+	    lp     = pcursplit->splitlp;
 	}
 
 	/* *INDENT-EQLS* */
@@ -1573,7 +1573,7 @@ winprint_curbuffer(PRINT_PARAM * pparam)
 	for (i = 0; rc && i < pparam->ncopies && (!printing_aborted); i++) {
 	    /* *INDENT-EQLS* */
 	    pparam->pagenum = 1;
-	    pparam->plines = pparam->ypos = 0;
+	    pparam->plines  = pparam->ypos = 0;
 
 	    /* print curbuf from bob to eob */
 	    rc = winprint_curbuffer_collated(pparam);
@@ -1986,11 +1986,11 @@ winprint(int f GCC_UNUSED, int n GCC_UNUSED)
 	    /* *INDENT-EQLS* */
 	    pparam.xchar = xchar;
 	    pparam.ychar = ychar;
-	    pparam.mcpl = mcpl;
-	    pparam.mlpp = mlpp;
+	    pparam.mcpl  = mcpl;
+	    pparam.mlpp  = mlpp;
 	    pparam.hfont = hfont;
-	    pparam.xorg = minmar.left;
-	    pparam.yorg = minmar.top;
+	    pparam.xorg  = minmar.left;
+	    pparam.yorg  = minmar.top;
 
 	    if (pd->Flags & PD_SELECTION) {
 		WINDOW *ocurwp;
@@ -2333,10 +2333,10 @@ create_popup_menu(HMENU vile_menu,
 	/* *INDENT-EQLS* */
 	memset(&mii, 0, sizeof(mii));
 	mii.cbSize = sizeof(mii);
-	mii.fMask = MIIM_SUBMENU;
+	mii.fMask  = MIIM_SUBMENU;
 	mii.hSubMenu = hPopupMenu;
 	if (SetMenuItemInfo(vile_menu, mnu_posn, TRUE, &mii))
-	    rc        = TRUE;
+	    rc         = TRUE;
     }
     return rc;
 }

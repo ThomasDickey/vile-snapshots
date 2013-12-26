@@ -60,7 +60,7 @@
  *    situation, kill the app by typing ^C (and then please apply for a
  *    QA position with a certain Redmond company).
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32pipe.c,v 1.37 2010/11/10 10:45:21 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32pipe.c,v 1.38 2013/12/07 16:26:12 tom Exp $
  */
 
 #define HAVE_FCNTL_H 1
@@ -213,7 +213,7 @@ exec_shell(char *cmd, HANDLE * handles, int hide_child)
 	si.hStdError  = handles[2];
 #if DISP_NTWIN
 	if (hide_child) {
-	    si.dwFlags  |= STARTF_USESHOWWINDOW;
+	    si.dwFlags    |= STARTF_USESHOWWINDOW;
 	    si.wShowWindow = SW_HIDE;
 	}
 #endif

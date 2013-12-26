@@ -1,4 +1,4 @@
-# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.2nd,v 1.28 2010/12/29 17:33:58 tom Exp $
+# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.2nd,v 1.29 2013/12/26 00:25:45 tom Exp $
 #
 
 .SUFFIXES: .l .c .i $o
@@ -127,11 +127,11 @@ encrypt$o : $(top_srcdir)/encrypt.c
 	@RULE_CC@
 	@ECHO_CC@$(CC) -c $(CPPFLAGS) $(QUOTDEFS) $(CFLAGS) $?
 
-$(FILTERS_BINDIR)/atr2ansi$x :	   atr2ansi$x		; $(INSTALL) $? $@
-$(FILTERS_BINDIR)/atr2html$x :	   atr2html$x		; $(INSTALL) $? $@
-$(FILTERS_BINDIR)/atr2text$x :	   atr2text$x		; $(INSTALL) $? $@
-$(FILTERS_BINDIR)/vile-crypt$x :   vile-crypt$x		; $(INSTALL) $? $@
-$(FILTERS_BINDIR)/vile-manfilt$x : vile-manfilt$x	; $(INSTALL) $? $@
+$(FILTERS_BINDIR)/atr2ansi$x :	   atr2ansi$x		; $(INSTALL_PROGRAM) $? $@
+$(FILTERS_BINDIR)/atr2html$x :	   atr2html$x		; $(INSTALL_PROGRAM) $? $@
+$(FILTERS_BINDIR)/atr2text$x :	   atr2text$x		; $(INSTALL_PROGRAM) $? $@
+$(FILTERS_BINDIR)/vile-crypt$x :   vile-crypt$x		; $(INSTALL_PROGRAM) $? $@
+$(FILTERS_BINDIR)/vile-manfilt$x : vile-manfilt$x	; $(INSTALL_PROGRAM) $? $@
 
 $(DATADIR)/filters.rc :		$(srcdir)/filters.rc	; $(INSTALL_DATA) $? $@
 $(DATADIR)/spell.rc :		$(srcdir)/spell.rc	; $(INSTALL_DATA) $? $@

@@ -7,7 +7,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/sh-filt.l,v 1.121 2013/12/02 01:33:56 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/sh-filt.l,v 1.122 2013/12/23 21:56:24 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Shell script.
  */
@@ -188,7 +188,7 @@ DASHIDENT	{IDENT}("-"{NAME}{NAME2}*)*
 				pop_state();
 				strip_tabs = 0;
 			    } else {
-				flt_bfr_append(yytext, yyleng);
+				flt_bfr_append(yytext + used, yyleng - used);
 			    }
 			}
 <HEREDOC>\\[\$\`\"\\\n]	{
@@ -211,7 +211,7 @@ DASHIDENT	{IDENT}("-"{NAME}{NAME2}*)*
 				pop_state();
 				strip_tabs = 0;
 			    } else {
-				flt_bfr_append(yytext, yyleng);
+				flt_bfr_append(yytext + used, yyleng - used);
 			    }
 			}
 <HEREDOC2>[\r\n]+	{ flt_bfr_append(yytext, yyleng); }

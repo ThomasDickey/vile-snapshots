@@ -1,5 +1,5 @@
-Summary: VILE (VI Like Emacs) editor
-# $Header: /users/source/archives/vile.vcs/package/RCS/vile.spec,v 1.40 2013/12/04 23:00:29 tom Exp $
+Summary: VI Like Emacs editor
+# $Header: /users/source/archives/vile.vcs/package/RCS/vile.spec,v 1.43 2013/12/26 01:54:33 tom Exp $
 Name: vile
 %define AppVersion 9.8
 Version: %{AppVersion}l
@@ -88,7 +88,7 @@ Summary:	The common files needed by any version of VILE (VI Like Emacs)
 Group:		Applications/Editors
 
 %package -n	xvile
-Summary:	XVILE (VI Like Emacs for X11)
+Summary:	VI Like Emacs editor for X11
 Group:		Applications/Editors
 
 Requires:	%{name}-common = %{version}-%{release}
@@ -97,19 +97,19 @@ Requires:	%{name}-common = %{version}-%{release}
 %description	common
 vile is a text editor which is extremely compatible with vi in terms of
 "finger feel".  In addition, it has extended capabilities in many areas,
-notably multi-file editing and viewing, syntax highlighting, key
+notably multifile editing and viewing, syntax highlighting, key
 rebinding, and real X window system support.
 
 %description -n xvile
 xvile is a text editor which is extremely compatible with vi in terms of
 "finger feel".  In addition, it has extended capabilities in many areas,
-notably multi-file editing and viewing, syntax highlighting, key
+notably multifile editing and viewing, syntax highlighting, key
 rebinding, and real X window system support.
 
 %description
 vile is a text editor which is extremely compatible with vi in terms of
 "finger feel".  In addition, it has extended capabilities in many areas,
-notably multi-file editing and viewing, syntax highlighting, key
+notably multifile editing and viewing, syntax highlighting, key
 rebinding, and real X window system support.
 
 %build
@@ -147,8 +147,8 @@ make install-desktop            DESKTOP_FLAGS="--vendor='%{desktop_vendor}' --di
 %endif
 
 mkdir -p %{buildroot}/%{_wmcfgdir}
-install vile.wmconfig %{buildroot}%{_wmcfgdir}/vile
-install xvile.wmconfig %{buildroot}%{_wmcfgdir}/xvile
+install -m 644 vile.wmconfig %{buildroot}%{_wmcfgdir}/vile
+install -m 644 xvile.wmconfig %{buildroot}%{_wmcfgdir}/xvile
 
 MY_MANDIR=%{buildroot}%{_mandir}/man1
 for alias in uxvile lxvile
@@ -219,13 +219,13 @@ rm -rf %{buildroot}
 %{_xresdir}/XVile
 %{_xresdir}/UXVile
 
-%config(missingok) %{_wmcfgdir}/vile
-%config(missingok) %{_wmcfgdir}/xvile
+%config(missingok,noreplace) %{_wmcfgdir}/vile
+%config(missingok,noreplace) %{_wmcfgdir}/xvile
 
 %if "%{desktop_utils}" == "yes"
-%config(missingok) %{_datadir}/applications/%{desktop_vendor}-lxvile.desktop
-%config(missingok) %{_datadir}/applications/%{desktop_vendor}-uxvile.desktop
-%config(missingok) %{_datadir}/applications/%{desktop_vendor}-xvile.desktop
+%config(missingok,noreplace) %{_datadir}/applications/%{desktop_vendor}-lxvile.desktop
+%config(missingok,noreplace) %{_datadir}/applications/%{desktop_vendor}-uxvile.desktop
+%config(missingok,noreplace) %{_datadir}/applications/%{desktop_vendor}-xvile.desktop
 %endif
 
 %changelog
@@ -243,7 +243,7 @@ rm -rf %{buildroot}
 * Mon Aug 20 2012 Thomas Dickey
 - added patch for 9.8i
 
-* Sun Mar 12 2012 Thomas Dickey
+* Sun Mar 11 2012 Thomas Dickey
 - added patch for 9.8h
 
 * Sun Dec 11 2011 Thomas Dickey
@@ -342,7 +342,7 @@ rm -rf %{buildroot}
 * Tue May 26 2009 Thomas Dickey
 - added patch for 9.7s
 
-* Fri May 19 2009 Thomas Dickey
+* Tue May 19 2009 Thomas Dickey
 - added patch for 9.7r
 
 * Fri May 01 2009 Thomas Dickey
@@ -375,7 +375,7 @@ rm -rf %{buildroot}
 * Thu Nov 06 2008 Thomas Dickey
 - added patch for 9.7h
 
-* Mon Oct 21 2008 Thomas Dickey
+* Mon Oct 20 2008 Thomas Dickey
 - added patch for 9.7g
 
 * Mon Sep 29 2008 Thomas Dickey
@@ -384,13 +384,13 @@ rm -rf %{buildroot}
 * Tue Aug 19 2008 Thomas Dickey
 - added patch for 9.7e
 
-* Wed Jul 29 2008 Thomas Dickey
+* Tue Jul 29 2008 Thomas Dickey
 - added patch for 9.7d
 
 * Wed Jul 16 2008 Thomas Dickey
 - added patch for 9.7c
 
-* Wed Jun 26 2008 Thomas Dickey
+* Thu Jun 26 2008 Thomas Dickey
 - added patch for 9.7b
 
 * Sun Jun 22 2008 Thomas Dickey
@@ -444,7 +444,7 @@ rm -rf %{buildroot}
 * Mon Dec 31 2007 Thomas Dickey
 - added patch for 9.6a
 
-* Tue Dec 27 2007 Thomas Dickey
+* Thu Dec 27 2007 Thomas Dickey
 - 9.6 release
 
 * Tue Dec 25 2007 Thomas Dickey

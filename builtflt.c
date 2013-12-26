@@ -1,7 +1,7 @@
 /*
  * Main program and I/O for external vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/RCS/builtflt.c,v 1.93 2013/12/07 01:20:23 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/builtflt.c,v 1.95 2013/12/25 12:58:36 tom Exp $
  *
  */
 
@@ -500,9 +500,13 @@ flt_input(char *buffer, int max_size)
 	while (used < max_size) {
 	    if (mark_in.o < llength(mark_in.l)) {
 		ch = lgetc(mark_in.l, mark_in.o++);
-		if (isreturn(ch))
-		    ch = fixup_cr_lf(ch);
-		buffer[used++] = (char) ch;
+		if (filter_only) {
+		    buffer[used++] = (char) ch;
+		} else {
+		    if (isreturn(ch))
+			ch = fixup_cr_lf(ch);
+		    buffer[used++] = (char) ch;
+		}
 	    } else {
 		mark_in.l = lforw(mark_in.l);
 		mark_in.o = w_left_margin(curwp);

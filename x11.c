@@ -2,7 +2,7 @@
  *	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.386 2013/04/14 19:57:50 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.387 2013/12/07 16:26:12 tom Exp $
  *
  */
 
@@ -76,16 +76,16 @@ static void x_own_selection(Atom selection);
 static Boolean x_get_selected_text(UCHAR ** datp, size_t *lenp);
 static void extend_selection(TextWindow tw, int nr, int nc, Bool wipe);
 static void x_process_event(Widget w, XtPointer unused, XEvent * ev,
-			    Boolean * continue_to_dispatch);
+			    Boolean *continue_to_dispatch);
 static void x_configure_window(Widget w, XtPointer unused, XEvent * ev,
-			       Boolean * continue_to_dispatch);
+			       Boolean *continue_to_dispatch);
 static void x_change_focus(Widget w, XtPointer unused, XEvent * ev,
-			   Boolean * continue_to_dispatch);
+			   Boolean *continue_to_dispatch);
 static void x_typahead_timeout(XtPointer flagp, XtIntervalId * id);
 static void x_key_press(Widget w, XtPointer unused, XEvent * ev,
-			Boolean * continue_to_dispatch);
+			Boolean *continue_to_dispatch);
 static void x_wm_delwin(Widget w, XtPointer unused, XEvent * ev,
-			Boolean * continue_to_dispatch);
+			Boolean *continue_to_dispatch);
 static void x_start_autocolor_timer(void);
 static void x_autocolor_timeout(XtPointer flagp, XtIntervalId * id);
 static void x_stop_autocolor_timer(void);
@@ -95,7 +95,7 @@ static Boolean too_light_or_too_dark(Pixel pixel);
 #if OPT_KEV_SCROLLBARS
 static Boolean alloc_shadows(Pixel pixel, Pixel * light, Pixel * dark);
 #endif
-static void configure_bar(Widget w, XEvent * event, String * params,
+static void configure_bar(Widget w, XEvent * event, String *params,
 			  Cardinal *num_params);
 static int check_scrollbar_allocs(void);
 static void kqinit(TextWindow tw);
@@ -106,11 +106,11 @@ static int kqpop(TextWindow tw);
 static void display_cursor(XtPointer client_data, XtIntervalId * idp);
 #if MOTIF_WIDGETS
 static void pane_button(Widget w, XtPointer unused, XEvent * ev,
-			Boolean * continue_to_dispatch);
+			Boolean *continue_to_dispatch);
 #endif /* MOTIF_WIDGETS */
 #if OPT_KEV_SCROLLBARS
 static void x_expose_scrollbar(Widget w, XtPointer unused, XEvent * ev,
-			       Boolean * continue_to_dispatch);
+			       Boolean *continue_to_dispatch);
 #endif /* OPT_KEV_SCROLLBARS */
 #if OPT_KEV_DRAGGING
 static void repeat_scroll(XtPointer count, XtIntervalId * id);
@@ -315,7 +315,7 @@ static void
 grip_moved(Widget w GCC_UNUSED,
 	   XtPointer unused GCC_UNUSED,
 	   XEvent * ev GCC_UNUSED,
-	   Boolean * continue_to_dispatch GCC_UNUSED)
+	   Boolean *continue_to_dispatch GCC_UNUSED)
 {
     int i;
     WINDOW *wp, *saved_curwp;
@@ -817,7 +817,7 @@ static void
 x_expose_scrollbar(Widget w,
 		   XtPointer unused GCC_UNUSED,
 		   XEvent * ev,
-		   Boolean * continue_to_dispatch GCC_UNUSED)
+		   Boolean *continue_to_dispatch GCC_UNUSED)
 {
     int i;
 
@@ -844,7 +844,7 @@ x_expose_scrollbar(Widget w,
 static void
 do_scroll(Widget w,
 	  XEvent * event,
-	  String * params,
+	  String *params,
 	  Cardinal *num_params)
 {
     static enum {
@@ -973,7 +973,7 @@ repeat_scroll(XtPointer count,
 static void
 resize_bar(Widget w,
 	   XEvent * event,
-	   String * params,
+	   String *params,
 	   Cardinal *num_params)
 {
     static int motion_permitted = False;
@@ -4307,7 +4307,7 @@ static void
 x_process_event(Widget w GCC_UNUSED,
 		XtPointer unused GCC_UNUSED,
 		XEvent * ev,
-		Boolean * continue_to_dispatch GCC_UNUSED)
+		Boolean *continue_to_dispatch GCC_UNUSED)
 {
     int sc, sr;
     UINT ec, er;
@@ -4471,7 +4471,7 @@ static void
 x_configure_window(Widget w GCC_UNUSED,
 		   XtPointer unused GCC_UNUSED,
 		   XEvent * ev,
-		   Boolean * continue_to_dispatch GCC_UNUSED)
+		   Boolean *continue_to_dispatch GCC_UNUSED)
 {
     int nr, nc;
     Dimension new_width, new_height;
@@ -4636,7 +4636,7 @@ check_scrollbar_allocs(void)
 static void
 configure_bar(Widget w,
 	      XEvent * event,
-	      String * params,
+	      String *params,
 	      Cardinal *num_params)
 {
     WINDOW *wp;
@@ -4683,7 +4683,7 @@ static void
 pane_button(Widget w GCC_UNUSED,
 	    XtPointer unused GCC_UNUSED,
 	    XEvent * ev GCC_UNUSED,
-	    Boolean * continue_to_dispatch GCC_UNUSED)
+	    Boolean *continue_to_dispatch GCC_UNUSED)
 {
     lookfor_sb_resize = TRUE;
 }
@@ -4694,7 +4694,7 @@ static void
 x_change_focus(Widget w GCC_UNUSED,
 	       XtPointer unused GCC_UNUSED,
 	       XEvent * ev,
-	       Boolean * continue_to_dispatch GCC_UNUSED)
+	       Boolean *continue_to_dispatch GCC_UNUSED)
 {
     static int got_focus_event = FALSE;
 
@@ -4739,7 +4739,7 @@ static void
 x_wm_delwin(Widget w GCC_UNUSED,
 	    XtPointer unused GCC_UNUSED,
 	    XEvent * ev,
-	    Boolean * continue_to_dispatch GCC_UNUSED)
+	    Boolean *continue_to_dispatch GCC_UNUSED)
 {
     if (ev->type == ClientMessage
 	&& ev->xclient.message_type == GetAtom(WM_PROTOCOLS)
@@ -5220,7 +5220,7 @@ static void
 x_key_press(Widget w GCC_UNUSED,
 	    XtPointer unused GCC_UNUSED,
 	    XEvent * ev,
-	    Boolean * continue_to_dispatch GCC_UNUSED)
+	    Boolean *continue_to_dispatch GCC_UNUSED)
 {
     char buffer[128];
     KeySym keysym;
@@ -5802,7 +5802,7 @@ PreeditPosition(void)
 #define USE_XIM_INSTANTIATE_CB
 
 static void
-xim_instantiate_cb(Display * display,
+xim_instantiate_cb(Display *display,
 		   XPointer client_data GCC_UNUSED,
 		   XPointer call_data GCC_UNUSED)
 {

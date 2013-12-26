@@ -8,7 +8,7 @@
 /************************************************************************/
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/x11menu.c,v 1.17 2013/03/06 11:47:58 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11menu.c,v 1.18 2013/12/07 16:26:12 tom Exp $
  */
 
 #define NEED_X_INCLUDES 1
@@ -284,7 +284,7 @@ static void
 post_buffer_list(Widget w GCC_UNUSED,
 		 XtPointer client GCC_UNUSED,
 		 XEvent * ev GCC_UNUSED,
-		 Boolean * ok GCC_UNUSED)
+		 Boolean *ok GCC_UNUSED)
 {
     static unsigned in_item_menu_list = 0;	/* number allocated */
     static unsigned nb_item_menu_list = 0;	/* number in use */

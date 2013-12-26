@@ -7,7 +7,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/conffilt.l,v 1.14 2013/12/02 01:32:54 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/conffilt.l,v 1.15 2013/12/24 00:49:33 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of config-file.
  */
@@ -88,7 +88,7 @@ BLANK		[ \t]
 <NORMAL>{SSTRING}	{ WriteToken(String_attr); }
 <NORMAL>\"		{ PushQuote(QUOTED, String_attr); }
 
-<NORMAL>[\n]		{ ECHO; }
+<NORMAL>[\r\n]		{ ECHO; }
 
 <QUOTED>\\[\n]		|
 <QUOTED>\\.		{ flt_bfr_embed(yytext, 1, Action_attr); flt_bfr_append(yytext + 1, yyleng - 1); }

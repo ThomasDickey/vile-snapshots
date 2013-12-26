@@ -15,7 +15,7 @@
  * by Tom Dickey, 1993.    -pgf
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/mktbls.c,v 1.188 2013/03/11 00:04:45 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/mktbls.c,v 1.189 2013/12/07 16:26:11 tom Exp $
  *
  */
 
@@ -80,7 +80,7 @@ extern void free(char *ptr);
 #endif
 
 #ifndef GCC_NORETURN
-#define GCC_NORETURN /*nothing*/
+#define GCC_NORETURN		/*nothing */
 #endif
 
 #ifndef NO_LEAKS
