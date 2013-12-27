@@ -1,6 +1,9 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20131225 (l)
+ 20131227 (l)
+	> Rick Sladkey:
+	+ change initialization in ntconio.c to improve use with ConEmu, e.g.,
+	  when the window is resized.
 	> Tom Dickey:
 	+ fix most issues reported by rpmlint for package/vile.spec:
 	  + add configure option "--disable-stripping"

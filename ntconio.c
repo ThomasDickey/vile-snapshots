@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 console API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntconio.c,v 1.96 2013/03/07 10:11:21 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntconio.c,v 1.97 2013/12/27 09:19:28 jrs Exp $
  *
  */
 
@@ -1290,11 +1290,11 @@ ntconio_getch(void)
 	    return key;
 
 	case WINDOW_BUFFER_SIZE_EVENT:
+	    GetConsoleScreenBufferInfo(hConsoleOutput, &csbi);
 	    newscreensize(
 			     ir.Event.WindowBufferSizeEvent.dwSize.Y,
 			     ir.Event.WindowBufferSizeEvent.dwSize.X
 		);
-	    GetConsoleScreenBufferInfo(hConsoleOutput, &csbi);
 	    continue;
 
 	case MOUSE_EVENT:
