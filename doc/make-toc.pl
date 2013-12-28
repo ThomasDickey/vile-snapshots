@@ -1,5 +1,5 @@
 #!/usr/bin/perl -w
-# $Id: make-toc.pl,v 1.6 2013/03/31 16:41:23 tom Exp $
+# $Id: make-toc.pl,v 1.7 2013/12/27 19:56:36 tom Exp $
 
 use strict;
 
@@ -33,7 +33,7 @@ VI Like Emacs &mdash; Table of Contents
 <BODY>
 <hr>
 <a href=
-"http://invisible-island.net/">http://invisible-island.net/</a><a href="http://invisible-island.net/vile/">vile/</a><br>
+"/">http://invisible-island.net/</a><a href="/vile/">vile/</a><br>
 <hr>
 EOF
 ;

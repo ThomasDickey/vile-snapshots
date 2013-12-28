@@ -1,6 +1,6 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
-  $Id: filters.html,v 1.12 2013/06/27 01:16:22 tom Exp $
+  $Id: filters.html,v 1.15 2013/12/28 00:32:17 tom Exp $
 -->
 
 <html>
@@ -8,7 +8,7 @@
   <meta name="generator" content=
   "HTML Tidy for Linux (vers 25 March 2009), see www.w3.org">
 
-  <title>Programmed Macros in vile</title>
+  <title>Syntax highlighting filters for vile</title>
   <meta http-equiv="Content-Type" content=
   "text/html; charset=us-ascii">
   <link rev="made" href="mailto:dickey@invisible-island.net">
@@ -20,22 +20,23 @@
 
 <body>
   <hr>
-  <a href=
-  "http://invisible-island.net/">http://invisible-island.net/</a><a href="http://invisible-island.net/vile/">vile/</a><a href="http://invisible-island.net/vile/vile-toc.html">vile-toc</a><br>
-
+  <a href="/">http://invisible-island.net/</a><a href=
+  "/vile/">vile/</a><a href="/vile/vile-toc.html">vile-toc</a><br>
   <hr>
 
-  <h1 id="toplevel-id"><a name="toplevel" id="toplevel">Syntax
-  Highlighting Filters</a></h1>There are several highlighting
-  filters in the filters subdirectory. These all are programs that
-  read a file, usually from the standard input, and write to the
-  standard output. Vile invokes these, uses the marked-up text to
-  display highlighting.
+  <h1 id="toplevel-toc"><a name="toplevel" id="toplevel">Syntax
+  Highlighting Filters</a></h1>
+
+  <p>There are several highlighting filters in the filters
+  subdirectory. These all are programs that read a file, usually
+  from the standard input, and write to the standard output. Vile
+  invokes these, uses the marked-up text to display
+  highlighting.</p>
 
   <p>Except for the manpage filter (a special case) all of these
   can be (and most are) implemented using lex.</p>
 
-  <h2 id="keywords-id"><a name="keywords" id=
+  <h2 id="keywords-toc"><a name="keywords" id=
   "keywords">Keywords</a></h2>
 
   <p>Each filter reads one or more keyword files, which list
@@ -224,7 +225,7 @@
   pathname with the -k option, but otherwise the filters search for
   both "vile" and the specific language keywords, if any.</p>
 
-  <h2 id="options-id"><a name="options" id=
+  <h2 id="options-toc"><a name="options" id=
   "options">OPTIONS</a></h2>
 
   <p>A few options are common to all filters:</p>
@@ -307,7 +308,7 @@
   is already defined. That affects portability of scripts because
   other sh-like programs do not behave this way.</p>
 
-  <h2 id="programs-id"><a name="programs" id=
+  <h2 id="programs-toc"><a name="programs" id=
   "programs">PROGRAMS</a></h2>
 
   <p>The following are implemented:</p>
@@ -873,7 +874,7 @@
     </tr>
   </table>
 
-  <h2 id="notes-id"><a name="notes" id="notes">NOTE</a></h2>
+  <h2 id="notes-toc"><a name="notes" id="notes">NOTE</a></h2>
 
   <p>The lex filters have been well tested only with flex, which
   treats newlines differently. Older versions of lex may not
