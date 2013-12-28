@@ -1,6 +1,6 @@
-# $Header: /users/source/archives/vile.vcs/doc/RCS/vile-man.sed,v 1.8 2010/01/08 00:15:17 tom Exp $
-s/<h1\([^>]*\)>\([^<]*\)/<h1 id="toplevel-id"\1>\2/
-s/<h2>\([^<]*\)/<h2 id="\1-id">\1/
+# $Header: /users/source/archives/vile.vcs/doc/RCS/vile-man.sed,v 1.10 2013/12/27 20:56:36 tom Exp $
+s/<h1\([^>]*\)>\([^<]*\)/<h1 id="toplevel-toc"\1><a name="toplevel">\2<\/a>/
+s/<h2>\([^<]*\)/<h2 id="\1-toc">\1/
 :ids
 	s/id=\("[^ "]*\) /id=\1_/g
 	t ids

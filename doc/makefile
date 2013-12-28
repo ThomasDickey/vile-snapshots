@@ -1,4 +1,4 @@
-# $Header: /users/source/archives/vile.vcs/doc/RCS/makefile,v 1.16 2010/08/08 18:05:39 tom Exp $
+# $Header: /users/source/archives/vile.vcs/doc/RCS/makefile,v 1.17 2013/12/27 20:43:50 tom Exp $
 # construct ".doc" and ".hlp" files from the ".html" files
 
 # NOTE: the perl script uses the version from the running copy of vile rather
@@ -54,8 +54,7 @@ maintainer-clean:
 	rm -f $(TARGETS)
 
 vile-toc.html : $(SOURCES)
-	rm -f $@
-	sh make-toc.sh $(SOURCES) >$@
+	sh make-toc.sh $(SOURCES)
 
 vile-man.html : ../vile.1
 	GROFF_NO_SGR=stupid $(SHELL) -c "tbl ../vile.1 | groff -Thtml -man" | sed -f vile-man.sed >$@

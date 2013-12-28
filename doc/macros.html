@@ -1,6 +1,6 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
-  $Id: macros.html,v 1.21 2013/06/22 00:52:18 tom Exp $
+  $Id: macros.html,v 1.23 2013/12/27 21:02:05 tom Exp $
 -->
 
 <html>
@@ -20,12 +20,11 @@
 
 <body>
   <hr>
-  <a href=
-  "http://invisible-island.net/">http://invisible-island.net/</a><a href="http://invisible-island.net/vile/">vile/</a><a href="http://invisible-island.net/vile/vile-toc.html">vile-toc</a><br>
-
+  <a href="/">http://invisible-island.net/</a><a href=
+  "/vile/">vile/</a><a href="/vile/vile-toc.html">vile-toc</a><br>
   <hr>
 
-  <h1 id="toplevel-id"><a name="toplevel" id="toplevel">Programmed
+  <h1 id="toplevel-toc"><a name="toplevel" id="toplevel">Programmed
   Macros in vile</a></h1>
 
   <p>vile presents a couple of forms of what are commonly called
@@ -55,7 +54,7 @@
   <p>Each of these language aspects will be described in turn, but
   first the execution framework must be explained.</p>
 
-  <h2 id="creating-id"><a name="creating" id="creating">Creating,
+  <h2 id="creating-toc"><a name="creating" id="creating">Creating,
   executing, storing macros</a></h2>
 
   <p>In the simplest case, valid macro language constructs are
@@ -143,7 +142,7 @@
   the word "macro" refers to one of aforementioned program
   types.</p>
 
-  <h3 id="numbered-id"><a name="numbered" id="numbered">Numbered
+  <h3 id="numbered-toc"><a name="numbered" id="numbered">Numbered
   macros (anachronism</a>)</h3>The numbered macro syntax looks like
   so: <!--{{atr2html-->
 
@@ -209,7 +208,7 @@
         --with-exec-macros=N    specify count of numbered macros
 </pre>
 
-  <h3 id="named-id"><a name="named" id="named">Named
+  <h3 id="named-toc"><a name="named" id="named">Named
   macros</a></h3>A named macro, aka "stored procedure", uses this
   syntax: <!--{{atr2html-->
 
@@ -397,7 +396,7 @@
         vtflash
 </pre>
 
-  <h3 id="returning-id"><a name="returning" id=
+  <h3 id="returning-toc"><a name="returning" id=
   "returning">Returning values</a></h3>Any macro can return a value
   to a calling script. This is done using special variables:
 
@@ -426,7 +425,7 @@ TRUE
     </dd>
   </dl>
 
-  <h3 id="storing-id"><a name="storing" id="storing">Storing
+  <h3 id="storing-toc"><a name="storing" id="storing">Storing
   macros</a></h3>In general, macros are stored in the editor's
   startup file. Prolific macro authors may instead opt to sprinkle
   their macros across one or more external text files and source
@@ -440,7 +439,7 @@ TRUE
   format), so individual sections may be read in any order.</p>
   <hr>
 
-  <h2 id="comments-id"><a name="comments" id=
+  <h2 id="comments-toc"><a name="comments" id=
   "comments">Comments</a></h2>
 
   <p>A semi-colon (;) or double-quote (") denotes a comment that
@@ -470,18 +469,18 @@ TRUE
   as a directory. In the second case, write-file flushes the
   current buffer to disk using ';' as the filename.</p>
 
-  <h2 id="joining-id"><a name="joining" id="joining">Misc macro
+  <h2 id="joining-toc"><a name="joining" id="joining">Misc macro
   syntax features</a></h2>
 
   <p>Lines ending with '\' are joined before interpretation.</p>
 
-  <h3 id="limits-id"><a name="limits" id="limits">Limits</a></h3>
+  <h3 id="limits-toc"><a name="limits" id="limits">Limits</a></h3>
 
   <p>The length of a variable name may not exceed 255 (NLINE-1)
   bytes of storage. Most other strings are allocated
   dynamically.</p>
 
-  <h3 id="strings-id"><a name="strings" id=
+  <h3 id="strings-toc"><a name="strings" id=
   "strings">Strings</a></h3>
 
   <p>Like many simple language, the macro language operates
@@ -615,7 +614,7 @@ TRUE
   simpler to enter regular expressions. Double a single quote to
   insert one into a string.</p>
 
-  <h2 id="variables-id"><a name="variables" id=
+  <h2 id="variables-toc"><a name="variables" id=
   "variables">Variables</a></h2>
 
   <p>As noted above, variables hold strings. These strings may
@@ -688,7 +687,7 @@ TRUE
   sign, or whitespace to delimit the left/right sides of the
   assignment, as shown.
 
-  <h2 id="tempvars-id"><a name="tempvars" id="tempvars">Temporary
+  <h2 id="tempvars-toc"><a name="tempvars" id="tempvars">Temporary
   variables</a></h2>
 
   <p>Temporary variables are used in macros to hold intermediate
@@ -698,7 +697,7 @@ TRUE
   Temporary variables are prefixed with the % character, and their
   names may be constructed from any printing character.</p>
 
-  <h2 id="statevars-id"><a name="statevars" id="statevars">State
+  <h2 id="statevars-toc"><a name="statevars" id="statevars">State
   Variables</a></h2>
 
   <p>State variables allow a macro to refer to and change some
@@ -1532,7 +1531,7 @@ TRUE
     value.</dd>
   </dl>
 
-  <h2 id="modevars-id"><a name="modevars" id="modevars">Mode
+  <h2 id="modevars-toc"><a name="modevars" id="modevars">Mode
   variables</a></h2>
 
   <p>You may set and use the values of the editor modes (i.e.,
@@ -1545,18 +1544,18 @@ TRUE
   set/setl commands, as well as the &amp;global/&amp;local
   functions, serve the same purpose.</p>
 
-  <h2 id="bufvars-id"><a name="bufvars" id="bufvars">Buffer
+  <h2 id="bufvars-toc"><a name="bufvars" id="bufvars">Buffer
   variables</a></h2>
 
   <p>Buffer variables (a '&lt;' followed by a buffer name) return
   the current line of the specified buffer, automatically setting
   the position to the next line.</p>
 
-  <h2 id="reponses-id"><a name="reponses" id="reponses">Interactive
-  variables</a></h2>Interactive variables are not actually
-  "variables" at all &mdash; they're really more like functions
-  that return a string, entered by the user in response to a
-  prompt. The prompt is the name of the "variable".
+  <h2 id="reponses-toc"><a name="reponses" id=
+  "reponses">Interactive variables</a></h2>Interactive variables
+  are not actually "variables" at all &mdash; they're really more
+  like functions that return a string, entered by the user in
+  response to a prompt. The prompt is the name of the "variable".
 
   <p>They are so similar to a query function that there is function
   which serves this exact purpose, and which should be used in
@@ -1579,7 +1578,7 @@ TRUE
   "#800080">"What&nbsp;file?"</font><br>
   <!--atr2html}}--></p>
 
-  <h2 id="functions-id"><a name="functions" id=
+  <h2 id="functions-toc"><a name="functions" id=
   "functions">Functions</a></h2>
 
   <p>Functions always return strings. Functions can take 0, 1, 2,
@@ -2074,7 +2073,7 @@ TRUE
     <dd>Select N'th word of string "S", blank separated.</dd>
   </dl>
 
-  <h2 id="directives-id"><a name="directives" id=
+  <h2 id="directives-toc"><a name="directives" id=
   "directives">Directives</a></h2>
 
   <p>The macro language has the capability for controlling flow and
@@ -2084,13 +2083,13 @@ TRUE
   are called "directives". They are always prefixed with the ~
   character, and they are always in all lowercase.</p>
 
-  <h3 id="endm-id">~<a name="endm" id="endm">endm</a></h3>
+  <h3 id="endm-toc">~<a name="endm" id="endm">endm</a></h3>
 
   <p>The "store-procedure" and "store-macro" commands both indicate
   the start of the body of a macro routine. ~endm indicates the end
   of that routine.</p>
 
-  <h3 id="force-id">~<a name="force" id="force">force</a></h3>
+  <h3 id="force-toc">~<a name="force" id="force">force</a></h3>
 
   <p>To prevent a failed command from terminating the macro which
   invokes it, the ~force directive can be used to "hide" a bad
@@ -2099,7 +2098,7 @@ TRUE
   the failure. The $status variable can be used to determine
   whether the command succeeded or not.</p>
 
-  <h3 id="hidden-id">~<a name="hidden" id="hidden">hidden</a></h3>
+  <h3 id="hidden-toc">~<a name="hidden" id="hidden">hidden</a></h3>
 
   <p>You can suppress not only the check for success or failure of
   a macro as in ~force, but also the screen refresh, making macros
@@ -2132,12 +2131,12 @@ TRUE
   the current position has been restored from the values saved with
   the ~local directive.
 
-  <h3 id="quiet-id">~<a name="quiet" id="quiet">quiet</a></h3>
+  <h3 id="quiet-toc">~<a name="quiet" id="quiet">quiet</a></h3>
 
   <p>Rather than suppress all screen updates, you may suppress any
   messages that are written as the command progresses.</p>
 
-  <h3 id="conditionals-id">~<a name="conditionals" id=
+  <h3 id="conditionals-toc">~<a name="conditionals" id=
   "conditionals">if, ~elseif, ~else, and ~endif</a></h3>
 
   <p>These control execution of macro commands in the expected
@@ -2182,7 +2181,7 @@ TRUE
 
   <!--atr2html}}--></p>
 
-  <h3 id="goto-id">~<a name="goto" id="goto">goto</a></h3>
+  <h3 id="goto-toc">~<a name="goto" id="goto">goto</a></h3>
 
   <p>What would a decent programming language be without a "goto"?
   The ~goto directive is followed by the name of a label. Labels
@@ -2206,7 +2205,7 @@ TRUE
 
   <!--atr2html}}--></p>
 
-  <h3 id="while-id">~<a name="while" id="while">while and
+  <h3 id="while-toc">~<a name="while" id="while">while and
   ~endwhile</a></h3>
 
   <p>The block of statements bracketed by ~while and ~endwhile are
@@ -2255,7 +2254,7 @@ TRUE
 
   <!--atr2html}}--></p>
 
-  <h3 id="break-id">~<a name="break" id="break">break</a></h3>
+  <h3 id="break-toc">~<a name="break" id="break">break</a></h3>
 
   <p>The ~break directive allows early termination of an enclosing
   while-loop. Extending the above example: <!--{{atr2html--></p>
@@ -2356,12 +2355,12 @@ TRUE
   "#008080">%msg</font><br>
   <!--atr2html}}--></p>
 
-  <h3 id="return-id">~<a name="return" id="return">return</a></h3>
+  <h3 id="return-toc">~<a name="return" id="return">return</a></h3>
 
   <p>This causes immediate exit of the current macro, back to the
   calling macro, or to user control, as appropriate.</p>
 
-  <h3 id="local-id">~<a name="local" id="local">local</a></h3>
+  <h3 id="local-toc">~<a name="local" id="local">local</a></h3>
 
   <p>The ~local directive causes the variables which are listed to
   be saved at that point (once if the directive is within a loop),
@@ -2393,7 +2392,7 @@ TRUE
   variables". Namely, "global values of the editor modes are not
   visible to the expression evaluator."</p>
 
-  <h3 id="withblocks-id">~<a name="withblocks" id=
+  <h3 id="withblocks-toc">~<a name="withblocks" id=
   "withblocks">with, ~elsewith and ~endwith</a></h3>
 
   <p>Tokens following the ~with directive will be prepended to
@@ -2435,7 +2434,7 @@ TRUE
 
   <!--atr2html}}--></p>
 
-  <h3 id="tracing-id">~<a name="tracing" id=
+  <h3 id="tracing-toc">~<a name="tracing" id=
   "tracing">trace</a></h3>No program is complete without a few
   bugs. Use vile's builtin macro tracing to see what the macros
   really do. The ~trace command sets the $debug variable, which
@@ -2461,7 +2460,7 @@ TRUE
   <!--atr2html}}--></p>prints a message telling if tracing is
   active.
 
-  <h2 id="commands-id"><a name="commands" id="commands">Editor
+  <h2 id="commands-toc"><a name="commands" id="commands">Editor
   commands</a></h2>
 
   <p>The "show-commands" command lists _all_ available editor
@@ -2482,7 +2481,7 @@ TRUE
   <p>Commands fall into three broad categories: simple, motion,
   operator.</p>
 
-  <h3 id="simplecommands-id"><a name="simplecommands" id=
+  <h3 id="simplecommands-toc"><a name="simplecommands" id=
   "simplecommands">Simple commands</a></h3>A simple command neither
   acts on a region nor does it explicitly move the cursor through a
   region (the "region" concept is explained in the "Motion
@@ -2529,7 +2528,7 @@ finds a fixed tag name: <!--{{atr2html-->
   "#008000">~endm</font><br>
   <!--atr2html}}--></p>
 
-  <h3 id="motioncommands-id"><a name="motioncommands" id=
+  <h3 id="motioncommands-toc"><a name="motioncommands" id=
   "motioncommands">Motion commands</a></h3>Motions move the cursor
   and, consequently, may be used to define a region. This latter
   property is an important aspect of an "operator command". The
@@ -2567,7 +2566,7 @@ finds a fixed tag name: <!--{{atr2html-->
   "#008000">~endm</font><br>
   <!--atr2html}}--></p>
 
-  <h3 id="operatorcommands-id"><a name="operatorcommands" id=
+  <h3 id="operatorcommands-toc"><a name="operatorcommands" id=
   "operatorcommands">Operator commands</a></h3>
 
   <p>Operators manipulate regions. The "show-operators" command
@@ -2659,7 +2658,7 @@ finds a fixed tag name: <!--{{atr2html-->
   "#008000">~endm</font><br>
   <!--atr2html}}--></p>
 
-  <h2 id="debuggingmacros-id"><a name="debuggingmacros" id=
+  <h2 id="debuggingmacros-toc"><a name="debuggingmacros" id=
   "debuggingmacros">Debugging macros</a></h2>
 
   <p>vile's popup-msgs mode pops up the [Messages] buffer to show
@@ -2720,7 +2719,7 @@ finds a fixed tag name: <!--{{atr2html-->
   "#000080">nopopup-msgs</font></strong><br>
   <!--atr2html}}--></p>
 
-  <h2 id="example-id"><a name="example" id="example">Example
+  <h2 id="example-toc"><a name="example" id="example">Example
   startup file</a></h2>
 
   <p>The startup file included below illustrates several of the
@@ -2985,7 +2984,7 @@ finds a fixed tag name: <!--{{atr2html-->
   "#008000">~endm</font><br>
   <!--atr2html}}--></p>
 
-  <h2 id="credits-id"><a name="credits" id=
+  <h2 id="credits-toc"><a name="credits" id=
   "credits">Credits</a></h2>
 
   <p>This document, and the macro language it describes, owes a

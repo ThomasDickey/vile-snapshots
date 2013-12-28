@@ -1,6 +1,6 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
-  $Id: modes.html,v 1.9 2013/06/22 00:52:14 tom Exp $
+  $Id: modes.html,v 1.11 2013/12/27 21:02:05 tom Exp $
 -->
 
 <html>
@@ -20,12 +20,11 @@
 
 <body>
   <hr>
-  <a href=
-  "http://invisible-island.net/">http://invisible-island.net/</a><a href="http://invisible-island.net/vile/">vile/</a><a href="http://invisible-island.net/vile/vile-toc.html">vile-toc</a><br>
-
+  <a href="/">http://invisible-island.net/</a><a href=
+  "/vile/">vile/</a><a href="/vile/vile-toc.html">vile-toc</a><br>
   <hr>
 
-  <h1 id="toplevel-id"><a name="toplevel" id="toplevel">Major (and
+  <h1 id="toplevel-toc"><a name="toplevel" id="toplevel">Major (and
   minor) modes in Vile</a></h1>
 
   <p>This document was originally written in May, 1998, and has
@@ -106,7 +105,7 @@
     not have a majormode associated with it.</li>
   </ul>
 
-  <h2 id="neededcommands-id"><a name="neededcommands" id=
+  <h2 id="neededcommands-toc"><a name="neededcommands" id=
   "neededcommands">Commands</a></h2>
 
   <p>These are the commands which I originally thought
@@ -141,7 +140,7 @@
     <li>derive-majormode {newmode} {oldmode}</li>
   </ul>
 
-  <h3 id="example-id"><a name="example" id=
+  <h3 id="example-toc"><a name="example" id=
   "example">Example</a></h3><!--{{atr2html-->
 
   <p style="font-family: monospace;">
@@ -272,7 +271,7 @@
   "#008000">~endwith</font><br>
   <!--atr2html}}--></p>
 
-  <h3 id="definemajormode-id"><a name="definemajormode" id=
+  <h3 id="definemajormode-toc"><a name="definemajormode" id=
   "definemajormode">The "define-majormode" command</a></h3>
 
   <p>This takes a single argument, a majormode name. To follow
@@ -328,7 +327,7 @@
   keep the bookkeeping straight, modifying a global buffer mode
   must also modify the copies of non-local buffer mode values).</p>
 
-  <h3 id="derivemajormode-id"><a name="derivemajormode" id=
+  <h3 id="derivemajormode-toc"><a name="derivemajormode" id=
   "derivemajormode">The "derive-majormode" command</a></h3>
 
   <p>This is used to clone an existing majormode, using a new name.
@@ -345,7 +344,7 @@
   existing majormode. In principle, a series of these commands
   could be used to merge several different majormodes.</p>
 
-  <h3 id="definesubmode-id"><a name="definesubmode" id=
+  <h3 id="definesubmode-toc"><a name="definesubmode" id=
   "definesubmode">The "define-submode" command</a></h3>
 
   <p>This command sets local values of buffer modes for the given
@@ -508,7 +507,7 @@
   <p>Other features which should be controlled by majormodes
   include limiting the scope of the entab and detab commands.</p>
 
-  <h3 id="removemajormode-id"><a name="removemajormode" id=
+  <h3 id="removemajormode-toc"><a name="removemajormode" id=
   "removemajormode">The "remove-majormode" command</a></h3>
 
   <p>This command has two forms:</p>
@@ -529,13 +528,13 @@
     it set to the global value, if any.</dd>
   </dl>
 
-  <h3 id="removesubmode-id"><a name="removesubmode" id=
+  <h3 id="removesubmode-toc"><a name="removesubmode" id=
   "removesubmode">The "remove-submode" command</a></h3>
 
   <p>Remove the special association of a submode from a
   majormode.</p>
 
-  <h3 id="example2-id"><a name="example2" id=
+  <h3 id="example2-toc"><a name="example2" id=
   "example2">Example</a></h3>
 
   <p>The original builtin C/C++ majormode description is equivalent
@@ -590,7 +589,7 @@
 
   <!--atr2html}}--></p>
 
-  <h2 id="credits-id"><a name="credits" id=
+  <h2 id="credits-toc"><a name="credits" id=
   "credits">Credits</a></h2>Most of this was written by Thomas
   Dickey, with fixes from Clark Morgan and Steven Lembark.
 </body>

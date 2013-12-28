@@ -1,5 +1,5 @@
 <!--
-  $Id: config.html,v 1.16 2013/06/22 00:55:46 tom Exp $
+  $Id: config.html,v 1.19 2013/12/27 22:53:20 tom Exp $
 -->
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN">
 
@@ -21,13 +21,12 @@
 <body>
   <hr>
 
-  <p><a href=
-  "http://invisible-island.net/">http://invisible-island.net/</a><a href="http://invisible-island.net/vile/">vile/</a><a href="http://invisible-island.net/vile/vile-toc.html">vile-toc</a><br>
-  </p>
+  <p><a href="/">http://invisible-island.net/</a><a href=
+  "/vile/">vile/</a><a href="/vile/vile-toc.html">vile-toc</a><br></p>
   <hr>
 
-  <h1 id="toplevel-id"><a name="toplevel" id="toplevel">Configuring
-  vile and xvile</a></h1>
+  <h1 id="toplevel-toc"><a name="toplevel" id=
+  "toplevel">Configuring vile and xvile</a></h1>
 
   <p>This file describes the steps which are needed to configure
   and make either vile or xvile. See the file README for a blurb on
@@ -37,7 +36,7 @@
   standards. You might want to consult that document for more
   information.</p>
 
-  <h2 id="building-id"><a name="building" id="building">Building
+  <h2 id="building-toc"><a name="building" id="building">Building
   vile</a></h2>
 
   <p>To build vile, enter the following command from your
@@ -109,7 +108,7 @@
   <p>Likewise, extra link libraries can be added by setting them in
   LIBS before running configure.</p>
 
-  <h2 id="screentypes-id"><a name="screentypes" id=
+  <h2 id="screentypes-toc"><a name="screentypes" id=
   "screentypes">Screen Types</a></h2>
 
   <p>Vile is configured and built with a terminal driver. At this
@@ -143,7 +142,7 @@
   configure script also recognizes the lowercase form of each of
   those names, in this instance "athena".</p>
 
-  <h3 id="textdrivers-id"><a name="textdrivers" id=
+  <h3 id="textdrivers-toc"><a name="textdrivers" id=
   "textdrivers">Text Terminal Drivers</a></h3>
 
   <p>There are several choices, listed here in their order of
@@ -194,7 +193,7 @@
   default termcap/terminfo driver, to ensure that it uses the
   ncurses library rather than a termcap-only library.</p>
 
-  <h3 id="x11drivers-id"><a name="x11drivers" id="x11drivers">X
+  <h3 id="x11drivers-toc"><a name="x11drivers" id="x11drivers">X
   Window Drivers</a></h3>
 
   <p>There are several choices, again listed in</p>
@@ -217,8 +216,8 @@
   choices are almost the same, choosing libraries that have the
   same capabilities but different appearances.</p>
 
-  <h3 id="w32drivers-id"><a name="w32drivers" id="w32drivers">Win32
-  Drivers</a></h3>
+  <h3 id="w32drivers-toc"><a name="w32drivers" id=
+  "w32drivers">Win32 Drivers</a></h3>
 
   <p>If you are building vile in the MSYS environment, i.e.,
   compiling for MinGW, you can build "convile" or "minvile" instead
@@ -230,7 +229,7 @@
   <p>The "DOS" and "Windows" choices are comparable in
   functionality to the executables built using Visual C++.</p>
 
-  <h2 id="utf8drivers-id"><a name="utf8drivers" id=
+  <h2 id="utf8drivers-toc"><a name="utf8drivers" id=
   "utf8drivers">UTF-8 Support versus Driver</a></h2>
 
   <p>vile supports UTF-8 in two ways:</p>
@@ -264,13 +263,13 @@
   be used for this purpose. To have complete support for UTF-8, you
   need the fonts provided with Microsoft Office.</p>
 
-  <h2 id="syntaxopts-id"><a name="syntaxopts" id=
+  <h2 id="syntaxopts-toc"><a name="syntaxopts" id=
   "syntaxopts">Syntax coloring options</a></h2>
 
   <p>Adding syntax coloring to the editor can be simple or not.</p>
 
-  <h3 id="fastsyntax-id"><a name="fastsyntax" id="fastsyntax">Fast,
-  simple syntax coloring</a></h3>
+  <h3 id="fastsyntax-toc"><a name="fastsyntax" id=
+  "fastsyntax">Fast, simple syntax coloring</a></h3>
 
   <p>Maximally efficient syntax coloring can be selected by
   specifying this configure command line:</p>
@@ -285,7 +284,7 @@
   overhead. On the minus side, this configure option generates a
   much larger executable.</p>
 
-  <h3 id="simplesyntax-id"><a name="simplesyntax" id=
+  <h3 id="simplesyntax-toc"><a name="simplesyntax" id=
   "simplesyntax">Slower, simple syntax coloring</a></h3>
 
   <p>Omitting any variant of the --with-builtin-filters option or
@@ -296,7 +295,7 @@
   pipe, which is substantially slower than the direct execution
   model.</p>
 
-  <h3 id="complexsyntax-id"><a name="complexsyntax" id=
+  <h3 id="complexsyntax-toc"><a name="complexsyntax" id=
   "complexsyntax">Complex syntax coloring</a></h3>
 
   <p>vile also supports a mix of both internal and external
@@ -944,7 +943,7 @@
   [3] Refer to the topics "Color basics" and "Syntax coloring" in
   vile.hlp</p>
 
-  <h2 id="buildxvile-id"><a name="buildxvile" id=
+  <h2 id="buildxvile-toc"><a name="buildxvile" id=
   "buildxvile">Building xvile</a></h2>
 
   <p>You must decide which version of xvile you want to build. To a
@@ -1080,7 +1079,7 @@
     configurations.</dd>
   </dl>
 
-  <h2 id="installxvile-id"><a name="installxvile" id=
+  <h2 id="installxvile-toc"><a name="installxvile" id=
   "installxvile">Installing (x)vile</a></h2>
 
   <p>Installation of (x)vile is simple. Obtain the appropriate
@@ -1172,8 +1171,8 @@
   "bindir", or "libdir" definitions--but remember that your changes
   will be lost the next time configure is run.</p>
 
-  <h2 id="sourcedir-id"><a name="sourcedir" id="sourcedir">Building
-  in a separate directory</a></h2>
+  <h2 id="sourcedir-toc"><a name="sourcedir" id=
+  "sourcedir">Building in a separate directory</a></h2>
 
   <p>If you are building (x)vile for several machines or want to
   perhaps simultaneously build and try out the various versions of
@@ -1213,7 +1212,7 @@
   _correctly_. Again, GNU make does this. A lot of older "make"s
   don't.</p>
 
-  <h2 id="versionedprog-id"><a name="versionedprog" id=
+  <h2 id="versionedprog-toc"><a name="versionedprog" id=
   "versionedprog">Building Versioned Executables</a></h2>
 
   <p>Normally vile is installed without renaming it. But the
@@ -1234,7 +1233,7 @@
   releases of vile, and easily switch between them (provided that
   the associated macros are compatible).</p>
 
-  <h2 id="locale-id"><a name="locale" id="locale">Locale
+  <h2 id="locale-toc"><a name="locale" id="locale">Locale
   Support</a></h2>
 
   <p>There are two parts to locale support:</p>
@@ -1260,7 +1259,7 @@
   <p>Without the iconv option, vile can still work with UTF-8, but
   the support for non-UTF-8 encoding is focused on ISO-8859-1.</p>
 
-  <h2 id="otheroptions-id"><a name="otheroptions" id=
+  <h2 id="otheroptions-toc"><a name="otheroptions" id=
   "otheroptions">Other Compile-Time Options</a></h2>
 
   <p>Aside from the screen type, most functionality in vile is
@@ -1272,7 +1271,7 @@
   --with-perl             enable use of Perl as an extension language
 </pre>
 
-  <h2 id="testingoptions-id"><a name="testingoptions" id=
+  <h2 id="testingoptions-toc"><a name="testingoptions" id=
   "testingoptions">Testing/Development Options</a></h2>
 
   <p>Several other options appear in the configure script's

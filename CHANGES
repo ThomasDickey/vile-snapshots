@@ -5,6 +5,7 @@ Changes for vile 9.9 (released ??? ??? ?? ????)
 	+ change initialization in ntconio.c to improve use with ConEmu, e.g.,
 	  when the window is resized.
 	> Tom Dickey:
+	+ modify internal links of html documentation to fix linklint warnings
 	+ fix most issues reported by rpmlint for package/vile.spec:
 	  + add configure option "--disable-stripping"
 	  + strip executables during install by adding "-s" normally

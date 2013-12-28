@@ -1,6 +1,6 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
-  $Id: oleauto.html,v 1.11 2013/06/22 00:52:13 tom Exp $
+  $Id: oleauto.html,v 1.13 2013/12/27 21:02:05 tom Exp $
 -->
 
 <html>
@@ -20,12 +20,11 @@
 
 <body>
   <hr>
-  <a href=
-  "http://invisible-island.net/">http://invisible-island.net/</a><a href="http://invisible-island.net/vile/">vile/</a><a href="http://invisible-island.net/vile/vile-toc.html">vile-toc</a><br>
-
+  <a href="/">http://invisible-island.net/</a><a href=
+  "/vile/">vile/</a><a href="/vile/vile-toc.html">vile-toc</a><br>
   <hr>
 
-  <h1 id="toplevel-id"><a name="toplevel" id="toplevel">OLE
+  <h1 id="toplevel-toc"><a name="toplevel" id="toplevel">OLE
   Automation Support</a></h1>Winvile can be built and configured to
   execute as an OLE Automation server. The following steps are
   required:
@@ -39,7 +38,7 @@
     winvile.</li>
   </ol>
 
-  <h2 id="building-id"><a name="building" id="building">Build
+  <h2 id="building-toc"><a name="building" id="building">Build
   Syntax</a></h2>
 
   <p>By default, winvile is _not_ built with OLE Automation
@@ -54,7 +53,7 @@
     nmake -f makefile.wnt CFG=winvile-with-perl OPT=ole-auto
 </pre>
 
-  <h2 id="minimalcfg-id"><a name="minimalcfg" id=
+  <h2 id="minimalcfg-toc"><a name="minimalcfg" id=
   "minimalcfg">Minimal Configuration</a></h2>
 
   <p>OLE Automation support is not available until the Windows
@@ -93,7 +92,7 @@
   be specified during registration and which subsequently affect
   the launched winvile server.</p>
 
-  <h2 id="registryopts-id"><a name="registryopts" id=
+  <h2 id="registryopts-toc"><a name="registryopts" id=
   "registryopts">Registration Options</a></h2>
 
   <p>The complete registration syntax is:</p>
@@ -195,7 +194,7 @@
   set in the vile startup file (vile.rc). See the vile help topic
   "Win32 specifics" for further information.</p>
 
-  <h2 id="example-id"><a name="example" id="example">Example
+  <h2 id="example-toc"><a name="example" id="example">Example
   Automation Client Access</a></h2>
 
   <p>Perl Access <!--{{atr2html--></p>
@@ -267,13 +266,13 @@
   "#000080">Sub</font></strong><br>
   <!--atr2html}}--></p>
 
-  <h2 id="winvilewrapper-id"><a name="winvilewrapper" id=
+  <h2 id="winvilewrapper-toc"><a name="winvilewrapper" id=
   "winvilewrapper">wvwrap.exe -- WinVile WRAPper</a></h2>
 
   <p>[ Note: Ed Henderson discovered this novel use of automation
   and wrote the original version of wvwrap.exe . Thanks, Ed! ]</p>
 
-  <h2 id="wvwrapbkg-id"><a name="wvwrapbkg" id=
+  <h2 id="wvwrapbkg-toc"><a name="wvwrapbkg" id=
   "wvwrapbkg">Background</a></h2>
 
   <p>It's possible to modify the Windows registry such that any
@@ -330,7 +329,7 @@
   are read into a single instance of winvile, one buffer per
   file.</p>
 
-  <h2 id="serverprops-id"><a name="serverprops" id=
+  <h2 id="serverprops-toc"><a name="serverprops" id=
   "serverprops">Server Properties And Methods</a></h2>
 
   <table border="0" summary="Server Properties and Methods">
@@ -473,7 +472,7 @@
   <p>Note: ForegroundWindow(), Minimize(), and Restore() implicitly
   force an Invisible server to the Visible state.</p>
 
-  <h2 id="unregistering-id"><a name="unregistering" id=
+  <h2 id="unregistering-toc"><a name="unregistering" id=
   "unregistering">Unregistering The Server</a></h2>
 
   <p>To unregister winvile as an OLE automation server, execute
@@ -482,7 +481,7 @@
     winvile -Ou
 </pre>
 
-  <h2 id="credits-id"><a name="credits" id=
+  <h2 id="credits-toc"><a name="credits" id=
   "credits">Credits</a></h2>The OLE automation support for winvile
   was written by Clark Morgan, from 1998 to 2005.
 </body>
