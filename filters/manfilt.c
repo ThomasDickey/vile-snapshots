@@ -46,7 +46,7 @@
  * vile will choose some appropriate fallback (such as underlining) if
  * italics are not available.
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/manfilt.c,v 1.62 2013/05/25 16:17:59 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/manfilt.c,v 1.63 2013/12/28 14:18:16 tom Exp $
  *
  */
 
@@ -443,10 +443,12 @@ put_cell(int c, int level, int ident, int attrs)
 static void
 erase_cell(int col)
 {
+    /* *INDENT-EQLS* */
     CHARCELL *p = &(cur_line->l_cell[col]);
-    p->c_value = SPACE;
-    p->c_level = 0;
-    p->c_ident = CS_NORMAL;
+    p->link     = 0;
+    p->c_value  = SPACE;
+    p->c_level  = 0;
+    p->c_ident  = CS_NORMAL;
 }
 
 #define DefaultOne(nparams, params) \

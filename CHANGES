@@ -1,10 +1,12 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20131227 (l)
+ 20131228 (l)
 	> Rick Sladkey:
 	+ change initialization in ntconio.c to improve use with ConEmu, e.g.,
 	  when the window is resized.
 	> Tom Dickey:
+	+ fix for 9.8j change to manfilt.c; reset the overstrike link to null
+	  in erase_cell(), to avoid freeing memory twice.
 	+ modify internal links of html documentation to fix linklint warnings
 	+ fix most issues reported by rpmlint for package/vile.spec:
 	  + add configure option "--disable-stripping"
