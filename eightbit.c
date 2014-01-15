@@ -1,5 +1,5 @@
 /*
- * $Id: eightbit.c,v 1.103 2013/03/10 20:27:22 tom Exp $
+ * $Id: eightbit.c,v 1.104 2013/12/28 17:23:10 tom Exp $
  *
  * Maintain "8bit" file-encoding mode by converting incoming UTF-8 to single
  * bytes, and providing a function that tells vile whether a given Unicode
@@ -187,7 +187,7 @@ initialize_table_8bit_utf8(void)
 	    table_8bit_utf8[n].text = strmalloc(output);
 	    vl_conv_to_utf32(&(table_8bit_utf8[n].code),
 			     table_8bit_utf8[n].text,
-			     strlen(table_8bit_utf8[n].text));
+			     (B_COUNT) strlen(table_8bit_utf8[n].text));
 #if OPT_TRACE > 1
 	    if (n != (int) table_8bit_utf8[n].code)
 		TRACE(("8bit_utf8 %d:%#4x\n", n, table_8bit_utf8[n].code));

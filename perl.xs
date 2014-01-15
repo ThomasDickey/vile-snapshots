@@ -13,7 +13,7 @@
  * vile.  The file api.c (sometimes) provides a middle layer between
  * this interface and the rest of vile.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.129 2013/12/07 12:38:39 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.130 2013/12/28 17:49:22 tom Exp $
  */
 
 #ifdef __GNUC__
@@ -1088,8 +1088,12 @@ prepend_include(char *path)
 static int
 real_perl_init(void)
 {
-    char *embedding[] = { "", "-e", "0" };
-    char *bootargs[]  = { "Vile", NULL };
+    static char empty[1];
+    static char option_e[] = "-e";
+    static char values_0[] = "0";
+    static char my_class[] = "Vile";
+    char *embedding[] = { empty, option_e, values_0 };
+    char *bootargs[]  = { my_class, NULL };
     SV   *svminibuf;
     char  temp[NFILEN];
     char *vile_path;

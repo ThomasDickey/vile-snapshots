@@ -15,7 +15,7 @@
  * in handy.
  *				- kev 4/7/1998
  *
- * $Header: /users/source/archives/vile.vcs/RCS/api.c,v 1.49 2013/05/24 08:44:56 bod Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/api.c,v 1.50 2013/12/28 17:43:24 tom Exp $
  */
 
 #include "estruct.h"
@@ -383,6 +383,7 @@ api_dline(VileBuf * vbp, int lno)
 int
 api_gline(VileBuf * vbp, int lno, char **linep, int *lenp)
 {
+    static char empty[1];
     int status = TRUE;
 
     api_setup_fake_win(vbp, TRUE);
@@ -392,7 +393,7 @@ api_gline(VileBuf * vbp, int lno, char **linep, int *lenp)
 	*linep = lvalue(DOT.l);
 	*lenp = llength(DOT.l);
 	if (*lenp == 0) {
-	    *linep = "";	/* Make sure we pass back a zero length,
+	    *linep = empty;	/* Make sure we pass back a zero length,
 				   null terminated value when the length
 				   is zero.  Otherwise perl gets confused.
 				   (It thinks it should calculate the length
