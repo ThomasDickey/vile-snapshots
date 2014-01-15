@@ -1,5 +1,5 @@
 /*
- * $Id: charsets.c,v 1.77 2013/03/09 01:48:55 tom Exp $
+ * $Id: charsets.c,v 1.78 2013/12/28 17:23:00 tom Exp $
  *
  * see
  http://msdn.microsoft.com/library/default.asp?url=/library/en-us/intl/unicode_42jv.asp
@@ -644,9 +644,9 @@ remove_crlf_nulls(BUFFER *bp, UCHAR * buffer, B_COUNT * length)
 		    skip = 0;
 		} else {
 		    memcpy(buffer + dst, buffer + src, marklen);
-		    dst += marklen;
+		    dst += (B_COUNT) marklen;
 		}
-		src += marklen;
+		src += (B_COUNT) marklen;
 	    }
 	    *length = dst;
 	}
@@ -694,7 +694,7 @@ riddled_buffer(const BOM_TABLE * mp, UCHAR * buffer, B_COUNT length)
 		    }
 		}
 		if (found) {
-		    total += mp->size;
+		    total += (B_COUNT) mp->size;
 		}
 	    }
 	}
@@ -827,7 +827,7 @@ decode_bom(BUFFER *bp, UCHAR * buffer, B_COUNT * length)
 	while (n < *length) {
 	    buffer[n++] = 0;
 	}
-	*length -= mp->size;
+	*length -= (B_COUNT) mp->size;
 
 	set_encoding_from_bom(bp, (BOM_CODES) b_val(bp, VAL_BYTEORDER_MARK));
 	code = TRUE;

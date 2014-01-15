@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 console API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntconio.c,v 1.97 2013/12/27 09:19:28 jrs Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntconio.c,v 1.98 2014/01/05 01:01:15 tom Exp $
  *
  */
 
@@ -501,26 +501,55 @@ ntconio_open(void)
     CONSOLE_CURSOR_INFO newcci;
     BOOL newcci_ok;
 
-    TRACE(("ntconio_open\n"));
+    TRACE((T_CALLED "ntconio_open\n"));
 
     set_colors(NCOLORS);
     set_palette(initpalettestr);
 
     hOldConsoleOutput = 0;
+
     hConsoleOutput = GetStdHandle(STD_OUTPUT_HANDLE);
+    TRACE(("hConsoleOutput %d\n", hConsoleOutput));
+
     origcci_ok = GetConsoleCursorInfo(hConsoleOutput, &origcci);
+
     GetConsoleScreenBufferInfo(hConsoleOutput, &csbi);
+    TRACE(("GetConsoleScreenBufferInfo X:%d Y:%d Top:%d Bottom:%d Left:%d Right:%d\n",
+	   csbi.dwMaximumWindowSize.X,
+	   csbi.dwMaximumWindowSize.Y,
+	   csbi.srWindow.Top,
+	   csbi.srWindow.Bottom,
+	   csbi.srWindow.Left,
+	   csbi.srWindow.Right));
+
+    TRACE(("...compare height %d vs %d\n",
+	   csbi.dwMaximumWindowSize.Y,
+	   csbi.srWindow.Bottom - csbi.srWindow.Top + 1));
+    TRACE(("...compare width  %d vs %d\n",
+	   csbi.dwMaximumWindowSize.X,
+	   csbi.srWindow.Right - csbi.srWindow.Left + 1));
+
     if (csbi.dwMaximumWindowSize.Y !=
 	csbi.srWindow.Bottom - csbi.srWindow.Top + 1
 	|| csbi.dwMaximumWindowSize.X !=
 	csbi.srWindow.Right - csbi.srWindow.Left + 1) {
+
 	TRACE(("..creating alternate screen buffer\n"));
 	hOldConsoleOutput = hConsoleOutput;
 	hConsoleOutput = CreateConsoleScreenBuffer(GENERIC_READ | GENERIC_WRITE,
 						   0, NULL,
 						   CONSOLE_TEXTMODE_BUFFER, NULL);
 	SetConsoleActiveScreenBuffer(hConsoleOutput);
+
 	GetConsoleScreenBufferInfo(hConsoleOutput, &csbi);
+	TRACE(("GetConsoleScreenBufferInfo X:%d Y:%d Top:%d Bottom:%d Left:%d Right:%d\n",
+	       csbi.dwMaximumWindowSize.X,
+	       csbi.dwMaximumWindowSize.Y,
+	       csbi.srWindow.Top,
+	       csbi.srWindow.Bottom,
+	       csbi.srWindow.Left,
+	       csbi.srWindow.Right));
+
 	newcci_ok = GetConsoleCursorInfo(hConsoleOutput, &newcci);
 	if (newcci_ok && origcci_ok && newcci.dwSize != origcci.dwSize) {
 	    /*
@@ -541,15 +570,19 @@ ntconio_open(void)
     set_current_attr();
 
     newscreensize(csbi.dwMaximumWindowSize.Y, csbi.dwMaximumWindowSize.X);
+
     hConsoleInput = GetStdHandle(STD_INPUT_HANDLE);
+    TRACE(("hConsoleInput %d\n", hConsoleInput));
+
     SetConsoleCtrlHandler(nthandler, TRUE);
     ntconio_set_encoding(enc_UTF16);
+    returnVoid();
 }
 
 static void
 ntconio_close(void)
 {
-    TRACE(("ntconio_close\n"));
+    TRACE((T_CALLED "ntconio_close\n"));
     if (chgd_cursor) {
 	/* restore cursor */
 	show_cursor(TRUE, origcci.dwSize);
@@ -570,38 +603,42 @@ ntconio_close(void)
     SetConsoleCtrlHandler(nthandler, FALSE);
     SetConsoleMode(hConsoleInput, ENABLE_LINE_INPUT | ENABLE_ECHO_INPUT | ENABLE_PROCESSED_INPUT);
     keyboard_open = FALSE;
+    returnVoid();
 }
 
 static void
 ntconio_kopen(void)
 {				/* open the keyboard */
-    TRACE(("ntconio_kopen (open:%d, was-closed:%d)\n", keyboard_open, keyboard_was_closed));
-    if (keyboard_open)
-	return;
-    if (hConsoleOutput) {
-	SetConsoleActiveScreenBuffer(hConsoleOutput);
-    }
-    keyboard_open = TRUE;
+    TRACE((T_CALLED "ntconio_kopen (open:%d, was-closed:%d)\n",
+	   keyboard_open, keyboard_was_closed));
+    if (!keyboard_open) {
+	if (hConsoleOutput) {
+	    SetConsoleActiveScreenBuffer(hConsoleOutput);
+	}
+	keyboard_open = TRUE;
 #ifdef DONT_USE_ON_WIN95
-    SetConsoleCtrlHandler(NULL, TRUE);
+	SetConsoleCtrlHandler(NULL, TRUE);
 #endif
-    SetConsoleMode(hConsoleInput, ENABLE_MOUSE_INPUT | ENABLE_WINDOW_INPUT);
+	SetConsoleMode(hConsoleInput, ENABLE_MOUSE_INPUT | ENABLE_WINDOW_INPUT);
+    }
+    returnVoid();
 }
 
 static void
 ntconio_kclose(void)
 {				/* close the keyboard */
-    TRACE(("ntconio_kclose\n"));
-    if (!keyboard_open)
-	return;
-    keyboard_open = FALSE;
-    keyboard_was_closed = TRUE;
-    if (hOldConsoleOutput) {
-	SetConsoleActiveScreenBuffer(hOldConsoleOutput);
-    }
+    TRACE((T_CALLED "ntconio_kclose\n"));
+    if (keyboard_open) {
+	keyboard_open = FALSE;
+	keyboard_was_closed = TRUE;
+	if (hOldConsoleOutput) {
+	    SetConsoleActiveScreenBuffer(hOldConsoleOutput);
+	}
 #ifdef DONT_USE_ON_WIN95
-    SetConsoleCtrlHandler(NULL, FALSE);
+	SetConsoleCtrlHandler(NULL, FALSE);
 #endif
+    }
+    returnVoid();
 }
 
 #define isModified(state) (state & \
@@ -1251,9 +1288,11 @@ ntconio_getch(void)
     int milli_ac, orig_milli_ac;
 #endif
 
+    TRACE((T_CALLED "ntconio_getch saveCount:%d\n", saveCount));
+
     if (saveCount > 0) {
 	saveCount--;
-	return savedChar;
+	returnCode(savedChar);
     }
 #ifdef VAL_AUTOCOLOR
     orig_milli_ac = global_b_val(VAL_AUTOCOLOR);
@@ -1262,8 +1301,11 @@ ntconio_getch(void)
 #ifdef VAL_AUTOCOLOR
 	milli_ac = orig_milli_ac;
 	while (milli_ac > 0) {
-	    if (PeekConsoleInput(hConsoleInput, &ir, 1, &nr) == 0)
+	    if (PeekConsoleInput(hConsoleInput, &ir, 1, &nr) == 0) {
+		TRACE(("PeekConsoleInput failed\n"));
 		break;		/* ?? system call failed ?? */
+	    }
+	    TRACE(("PeekConsoleInput nr %d\n", nr));
 	    if (nr > 0)
 		break;		/* something in the queue */
 	    Sleep(20);		/* sleep a bit, but be responsive to keybd input */
@@ -1287,7 +1329,7 @@ ntconio_getch(void)
 		saveCount = ir.Event.KeyEvent.wRepeatCount - 1;
 		savedChar = key;
 	    }
-	    return key;
+	    returnCode(key);
 
 	case WINDOW_BUFFER_SIZE_EVENT:
 	    GetConsoleScreenBufferInfo(hConsoleOutput, &csbi);

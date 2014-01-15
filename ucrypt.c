@@ -2,7 +2,7 @@
  * Unix crypt(1)-style interface.
  * Written by T.E.Dickey for vile (March 1999).
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ucrypt.c,v 1.21 2013/03/06 11:50:05 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ucrypt.c,v 1.22 2013/12/28 17:44:20 tom Exp $
  */
 
 #include "estruct.h"
@@ -72,7 +72,7 @@ vl_resetkey(BUFFER *bp,
 	}
 
 	ffdocrypt(TRUE);
-	vl_setup_encrypt(bp->b_cryptkey, seed);
+	vl_setup_encrypt(bp->b_cryptkey, vl_seed);
     }
 
     return TRUE;

@@ -3,7 +3,7 @@
  *	for getting and setting the values of the vile state variables,
  *	plus helper utility functions.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.160 2012/03/04 22:30:27 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/statevar.c,v 1.161 2013/12/28 17:44:20 tom Exp $
  */
 
 #include	<estruct.h>
@@ -1552,11 +1552,11 @@ int
 var_SEED(TBUFF **rp, const char *vp)
 {
     if (rp) {
-	render_int(rp, seed);
+	render_int(rp, vl_seed);
 	return TRUE;
     } else if (vp) {
-	seed = (int) strtol(vp, 0, 0);
-	srand((UINT) seed);
+	vl_seed = (int) strtol(vp, 0, 0);
+	srand((UINT) vl_seed);
 	return TRUE;
     } else {
 	return FALSE;

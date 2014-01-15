@@ -1,7 +1,7 @@
 /*
  * makeargv.c:  parse string to argv[]
  *
- * $Header: /users/source/archives/vile.vcs/RCS/makeargv.c,v 1.5 2009/02/28 11:42:40 root Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/makeargv.c,v 1.6 2013/12/28 17:27:50 tom Exp $
  */
 
 #include <estruct.h>
@@ -68,7 +68,7 @@ make_argv(const char *program,
 	  char **argend)
 {
 
-    int maxargs = 2 + (strlen(cmdline) + 2) / 2;
+    int maxargs = 2 + ((int) strlen(cmdline) + 2) / 2;
     char *blob;
     char *ptr;
     char **argv;

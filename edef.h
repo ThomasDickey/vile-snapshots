@@ -6,11 +6,12 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.370 2013/04/08 00:23:23 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.371 2013/12/28 17:57:58 tom Exp $
  */
 
 #ifndef VILE_EDEF_H
 #define VILE_EDEF_H 1
+/* *INDENT-OFF* */
 
 #ifdef __cplusplus
 extern "C" {
@@ -294,7 +295,7 @@ decl_uninit( int dotcmdrep );		/* original dot-command repeat-count */
 
 #if OPT_EVAL
 decl_init( int kill_limit, KBLOCK );	/* $kill-limit			*/
-decl_init( int seed, 123 );		/* random number seed		*/
+decl_init( int vl_seed, 123 );		/* random number seed		*/
 #endif
 
 decl_init( int cmd_count, 0 );		/* 1..n for procedure execution	*/
@@ -559,5 +560,6 @@ isVlCTYPE(CHARTYPE m, int c1, int c2)
 #ifdef __cplusplus
 }
 #endif
+/* *INDENT-ON* */
 
 #endif /* VILE_EDEF_H */

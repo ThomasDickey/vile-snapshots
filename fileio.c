@@ -2,7 +2,7 @@
  * The routines in this file read and write ASCII files from the disk. All of
  * the knowledge about files are here.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/fileio.c,v 1.203 2013/03/06 01:29:47 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/fileio.c,v 1.204 2013/12/28 17:25:21 tom Exp $
  *
  */
 
@@ -708,7 +708,7 @@ ffclose(void)
 
     if (ffstatus == file_is_unbuffered) {
 	if (fflinelen) {
-	    IGNORE_RC(write(ffd, fflinebuf, fflinelen));
+	    IGNORE_RC(write(ffd, fflinebuf, (unsigned) fflinelen));
 	    fflinelen = 0;
 	}
 	close(ffd);
@@ -793,7 +793,7 @@ ffputc(int c)
     if (i_am_dead) {
 	fflinebuf[fflinelen++] = d;
 	if (fflinelen >= NSTRING) {
-	    IGNORE_RC(write(ffd, fflinebuf, fflinelen));
+	    IGNORE_RC(write(ffd, fflinebuf, (unsigned) fflinelen));
 	    fflinelen = 0;
 	}
     } else {
@@ -891,7 +891,7 @@ ffgetline(size_t *lenp)
 		 */
 		if (count_fline == 0) {
 		    UCHAR *buffer = (UCHAR *) fflinebuf;
-		    B_COUNT length = i;
+		    B_COUNT length = (B_COUNT) i;
 		    make_global_b_val(btempp, VAL_BYTEORDER_MARK);
 		    make_global_b_val(btempp, VAL_FILE_ENCODING);
 		    if (decode_bom(btempp, buffer, &length))
@@ -908,7 +908,7 @@ ffgetline(size_t *lenp)
 			    ALLOC_LINEBUF(i + 2);
 			    fflinebuf[i++] = (char) c;
 			    c = vl_getc(ffp);	/* expecting a null... */
-			    length = (i + 1);
+			    length = (B_COUNT) (i + 1);
 			    buffer = (UCHAR *) fflinebuf;
 			} while (!aligned_charset(btempp, buffer, &length));
 			fflinebuf[i] = (char) c;
