@@ -1,12 +1,15 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20140114 (l)
+ 20140119 (l)
 	> Derek Woolverton:
 	+ add new keywords for C++11
 	> Rick Sladkey:
 	+ change initialization in ntconio.c to improve use with ConEmu, e.g.,
 	  when the window is resized.
 	> Tom Dickey:
+	+ correct a sign-extension bug in column_sizes(), which caused
+	  incorrect cursor-movement for some 8-bit encodings (report by Radek
+	  Liboska).
 	+ add still more keywords for C++11
 	+ fix for 9.8j change to manfilt.c; reset the overstrike link to null
 	  in erase_cell(), to avoid freeing memory twice.

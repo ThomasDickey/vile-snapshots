@@ -5,7 +5,7 @@
  * functions that adjust the top line in the window and invalidate the
  * framing, are hard.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/basic.c,v 1.168 2011/02/26 18:42:13 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/basic.c,v 1.169 2014/01/20 00:28:34 tom Exp $
  *
  */
 
@@ -1061,7 +1061,7 @@ next_column(LINE *lp, int off, int col)
 	    }
 	}
 #endif
-	else if (!isPrint(c)) {
+	else if (!isPrint(CharOf(c))) {
 	    rc = NonPrintingCols(c);
 	}
     } else {
@@ -1087,7 +1087,7 @@ column_after(int c, int col, int list)
 	    rc = col + COLS_UTF8;	/* "\uXXXX" */
     }
 #endif
-    else if (!isPrint(c)) {
+    else if (!isPrint(CharOf(c))) {
 	rc = col + NonPrintingCols(c);
     }
     return rc;
@@ -1103,7 +1103,7 @@ column_after(int c, int col, int list)
 int
 column_sizes(WINDOW *wp, const char *text, unsigned limit, int *used)
 {
-    int rc = NonPrintingCols(*text);
+    int rc = NonPrintingCols(CharOf(*text));
 
     *used = 1;
 #if OPT_MULTIBYTE
@@ -1113,7 +1113,7 @@ column_sizes(WINDOW *wp, const char *text, unsigned limit, int *used)
 	    rc = COLS_UTF8;	/* "\uXXXX" */
 	} else if (*used < 1) {
 	    *used = 1;		/* probably a broken character... */
-	} else if (isPrint(*text)) {
+	} else if (isPrint(CharOf(*text))) {
 	    rc = 1;
 	}
     } else
@@ -1121,7 +1121,7 @@ column_sizes(WINDOW *wp, const char *text, unsigned limit, int *used)
     (void) wp;
     (void) limit;
 #endif
-    if (isPrint(*text)) {
+    if (isPrint(CharOf(*text))) {
 	rc = 1;
     }
     return rc;
