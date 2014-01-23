@@ -1,5 +1,5 @@
 Summary: VI Like Emacs editor
-# $Header: /users/source/archives/vile.vcs/package/RCS/vile.spec,v 1.43 2013/12/26 01:54:33 tom Exp $
+# $Header: /users/source/archives/vile.vcs/package/RCS/vile.spec,v 1.46 2014/01/22 23:10:04 tom Exp $
 Name: vile
 %define AppVersion 9.8
 Version: %{AppVersion}l
@@ -86,6 +86,10 @@ rm -f doc/*.sh
 %package	common
 Summary:	The common files needed by any version of VILE (VI Like Emacs)
 Group:		Applications/Editors
+
+Provides:	perl(mime.pl)
+Provides:	perl(plugins.pl)
+Requires:	perl(DB_File)
 
 %package -n	xvile
 Summary:	VI Like Emacs editor for X11
@@ -230,6 +234,9 @@ rm -rf %{buildroot}
 
 %changelog
 # each patch should add its ChangeLog entries here
+
+* Mon Jan 20 2014 Thomas Dickey
+- add requires/provides for Perl modules
 
 * Wed Aug 28 2013 Thomas Dickey
 - added patch for 9.8l
