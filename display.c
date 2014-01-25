@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.571 2013/12/07 12:09:49 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.572 2014/01/25 14:55:56 tom Exp $
  *
  */
 
@@ -1988,14 +1988,15 @@ line_height(WINDOW *wp, LINE *lp)
 	int len = llength(lp);
 	if (len > 0) {
 	    int col = offs2col(wp, lp, len) - 1;
+	    int rsl = ((w_val(wp, WMDLIST))
+		       ? ((b_val(wp->w_bufp, VAL_RECORD_SEP) == RS_CRLF) ? 4 : 2)
+		       : 1);
 	    if (ins_mode(wp) != FALSE
 		&& lp == DOT.l
 		&& len <= DOT.o) {
-		col++;
-		if (w_val(wp, WMDLIST))
-		    col++;
+		col += rsl - 1;	/* wrapping treats one column specially */
 	    } else if (w_val(wp, WMDLIST)) {
-		col += 2;
+		col += rsl;
 	    }
 	    hi = (col / term.cols) + 1;
 	}
