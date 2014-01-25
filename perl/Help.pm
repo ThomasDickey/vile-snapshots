@@ -19,6 +19,8 @@
 
 package Help;
 
+use strict;
+
 =head1 NAME
 
 Help
@@ -125,7 +127,6 @@ S<J. Chris Coppick, 2001 (last updated: Oct. 10, 2001)>
 
 =cut
 
-
 use Vile;
 use Vile::Manual;
 require Vile::Exporter;
@@ -135,19 +136,19 @@ use IO::File;
 # use warnings;
 
 sub import {
-   Vile::Exporter::import(@_);
-   _setup();
+    Vile::Exporter::import(@_);
+    _setup();
 }
 
 sub _setup {
 
-   my $fullscreen = Vile::get('%help-fullscreen');
+    my $fullscreen = Vile::get('%help-fullscreen');
 
-   _addHelpCommands();
+    _addHelpCommands();
 
-   if ($fullscreen ne 'ERROR') {
+    if ( $fullscreen ne 'ERROR' ) {
 
-      eval <<EOD;
+        eval <<EOD;
 	 Vile::register \"h\",
 			sub {
 			   Vile::command \"list-help\";
@@ -156,7 +157,7 @@ sub _setup {
 			}
 EOD
 
-      eval <<EOD;
+        eval <<EOD;
 	 Vile::register \"help\",
 			sub {
 			   Vile::command \"list-help\";
@@ -165,59 +166,59 @@ EOD
 			}
 EOD
 
-   }
+    }
 
-   return 0;
+    return 0;
 
 }
 
-
 sub _addHelpCommands {
 
-   my ($startdir, $helpfile, $cmd, $section, $fh, $lastpos);
+    my ( $startdir, $helpfile, $cmd, $section, $fh, $lastpos );
 
-   $startdir = Vile::get('$startup-path');
-   $helpfile = Vile::get('$helpfile');
-   $fh = new IO::File "$startdir/$helpfile", "r";
-   if (!defined($fh)) {
-      print "Help:  couldn't open $startdir/$helpfile";
-      return 0;
-   }
+    $startdir = Vile::get('$startup-path');
+    $helpfile = Vile::get('$helpfile');
+    $fh       = new IO::File "$startdir/$helpfile", "r";
+    if ( !defined($fh) ) {
+        print "Help:  couldn't open $startdir/$helpfile";
+        return 0;
+    }
 
-   while (defined($_ = <$fh>)) {
-      if (/^([[:upper:][:digit:]].*$)/) {
-	 $section = $1;
-	 next if (/^Copyright/);
-	 next if (/^Credits/);
-	 $lastpos = $fh->getpos;
-	 last if (!defined($_ = <$fh>));
-	 if (/^-+[-\s]*$/) {
-	    $section =~ s/\s*\(.*\)$//;
-	    $cmd = "help-" . $section;
-	    $section = quotemeta($section);
-	    $cmd =~ tr/ [A-Z]/-[a-z]/;
-	    $cmd =~ s/\"//g;
-	    $cmd =~ s/\:$//;
-	    $cmd =~ s/\.//g;
+    while ( defined( $_ = <$fh> ) ) {
+        if (/^([[:upper:][:digit:]].*$)/) {
+            $section = $1;
+            next if (/^Copyright/);
+            next if (/^Credits/);
+            $lastpos = $fh->getpos;
+            last if ( !defined( $_ = <$fh> ) );
+            if (/^-+[-\s]*$/) {
+                $section =~ s/\s*\(.*\)$//;
+                $cmd     = "help-" . $section;
+                $section = quotemeta($section);
+                $cmd =~ tr/ [A-Z]/-[a-z]/;
+                $cmd =~ s/\"//g;
+                $cmd =~ s/\:$//;
+                $cmd =~ s/\.//g;
 
-	    eval <<EOD;
+                eval <<EOD;
 	       Vile::register \"$cmd\",
-	                   sub {
-				 Vile::command \"help\";
-				 Vile::command \"search-forward \'^$section\'\";
-				 Vile::command \"position-window t\";
-				 Vile::update;
-			   }
+		   sub {
+			 Vile::command \"help\";
+			 Vile::command \"search-forward \'^$section\'\";
+			 Vile::command \"position-window t\";
+			 Vile::update;
+		   }
 EOD
 
-	 } else {
-	    $fh->setpos($lastpos);
-	 }
-      }
-   }
+            }
+            else {
+                $fh->setpos($lastpos);
+            }
+        }
+    }
 
-   undef $fh;
-   return 0;
+    undef $fh;
+    return 0;
 }
 
 1;

@@ -52,43 +52,38 @@ Brendan O'Dea <bod@compusol.com.au>
 
 require Carp;
 
-sub import
-{
+sub import {
     my $pkg = shift;
     local *registry = *{"${pkg}::REGISTRY"};
     my @imports = @_ ? @_ : keys %registry;
     my $name;
 
-    while ($name = shift @imports)
-    {
-	unless (exists $registry{$name})
-	{
-	    Carp::carp("$name is not registered by $pkg");
-	    next;
-	}
+    while ( $name = shift @imports ) {
+        unless ( exists $registry{$name} ) {
+            Carp::carp("$name is not registered by $pkg");
+            next;
+        }
 
-	my @args;
-	my @keys;
-	local *register = *Vile::register;
+        my @args;
+        my @keys;
+        local *register = *Vile::register;
 
-	for ($registry{$name})
-	{
-	    if (ref eq 'ARRAY')
-	    {
-		@args = @$_;
-		*register = *{"Vile::register_" . shift @args}
-		    if $args[0] eq 'motion' or $args[0] eq 'oper';
+        for ( $registry{$name} ) {
+            if ( ref eq 'ARRAY' ) {
+                @args     = @$_;
+                *register = *{ "Vile::register_" . shift @args }
+                  if $args[0] eq 'motion'
+                      or $args[0] eq 'oper';
 
-		@keys = splice @args, 2 if @args > 2;
-	    }
-	    else
-	    {
-		@args = $_;
-	    }
-	}
+                @keys = splice @args, 2 if @args > 2;
+            }
+            else {
+                @args = $_;
+            }
+        }
 
-	# override default binding
-	@keys = shift @imports if @imports and $imports[0] =~ m{
+        # override default binding
+        @keys = shift @imports if @imports and $imports[0] =~ m{
 	    ^(	(\^[AX]-?)?			# optional ^A or ^X prefix
 	        ((\#|FN)-?)?			# optional function prefix
 		(M-)?				# optional meta prefix
@@ -102,7 +97,7 @@ sub import
 	     )$
 	}x;
 
-	register($name, @args);
-	for (@keys) { Vile::command("bind-key $name $_") if length }
+        register( $name, @args );
+        for (@keys) { Vile::command("bind-key $name $_") if length }
     }
 }

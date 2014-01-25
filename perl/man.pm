@@ -1,40 +1,47 @@
-# $Header: /users/source/archives/vile.vcs/perl/RCS/man.pm,v 1.3 2002/05/06 23:27:51 tom Exp $
+# $Header: /users/source/archives/vile.vcs/perl/RCS/man.pm,v 1.4 2014/01/23 19:53:42 tom Exp $
 package man;
+
+use strict;
 
 use Vile;
 use Vile::Manual;
 require Vile::Exporter;
-@ISA = 'Vile::Exporter';
+
+use vars qw(@ISA %REGISTRY);
+
+@ISA      = 'Vile::Exporter';
 %REGISTRY = (
-    'man' => [\&man, ''],
-    'man-help' => [ sub {&manual}, 'manual page']
+    'man' => [ \&man, '' ],
+    'man-help' => [ sub { &manual }, 'manual page' ]
 );
 
 sub man {
     my $work = Vile::working(0);
 
-    my $word = scalar(Vile->get("word"));
-    my $qid  = scalar(Vile->get("qidentifier"));
-    my $man  = Vile::mlreply_opts("Man? ", ($word,$qid));
+    my $word = scalar( Vile->get("word") );
+    my $qid  = scalar( Vile->get("qidentifier") );
+    my $man  = Vile::mlreply_opts( "Man? ", ( $word, $qid ) );
 
     my $s;
 
-    if (!defined $man || !length($man)) {
+    if ( !defined $man || !length($man) ) {
         Vile::working($work);
         print "";
         return;
     }
 
-    foreach $cb (Vile::buffers) {
-        if ($cb->buffername eq "<man:$man>") {
-	    Vile::working($work);
+    my $cb;
+    foreach $cb ( Vile::buffers() ) {
+        if ( $cb->buffername eq "<man:$man>" ) {
+            Vile::working($work);
             Vile->current_buffer($cb);
             return;
         }
     }
 
     print "";
-    open(MAN, "man $man |") || do { print "$!\n"; Vile::working($work); return; };
+    open( MAN, "man $man |" )
+      || do { print "$!\n"; Vile::working($work); return; };
 
     $cb = new Vile::Buffer;
     $cb->buffername("<man:$man>");
@@ -50,18 +57,18 @@ sub man {
         s/\010.//go;
     }
     continue {
-        print $cb $_ if /\S/ || ! $s;
+        print $cb $_ if /\S/ || !$s;
         $s = /^\s*$/;
     }
     close(MAN);
     print "";
 
-    $cb->setregion(1, '$$')->attribute_cntl_a_sequences;
-    $cb->set("view", 1);
-    $cb->set("readonly", 1);
-    $cb->unmark()->dot(1, 0);
+    $cb->setregion( 1, '$$' )->attribute_cntl_a_sequences;
+    $cb->set( "view",     1 );
+    $cb->set( "readonly", 1 );
+    $cb->unmark()->dot( 1, 0 );
     $cb->command("clear-and-redraw");
-    Vile::update;
+    Vile::update();
     Vile::working($work);
     return;
 }

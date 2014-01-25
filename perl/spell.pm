@@ -1,4 +1,4 @@
-# $Header: /users/source/archives/vile.vcs/perl/RCS/spell.pm,v 1.4 2007/11/23 15:27:11 tom Exp $
+# $Header: /users/source/archives/vile.vcs/perl/RCS/spell.pm,v 1.7 2014/01/24 00:20:36 tom Exp $
 package spell;
 
 use strict;
@@ -8,11 +8,12 @@ use Vile;
 require Vile::Exporter;
 
 our @ISA = 'Vile::Exporter';
-our %REGISTRY = (spell => [\&spell, 'spellcheck the current buffer (ispell)']);
+our %REGISTRY =
+  ( spell => [ \&spell, 'spellcheck the current buffer (ispell)' ] );
 
 sub checkline($) {
     my @reply;
-    (my $fh, my $filename) = tempfile( );
+    ( my $fh, my $filename ) = tempfile();
     print $fh $_[0];
     close $fh;
     open my $fh, "ispell -a < $filename |" or return @reply;
@@ -24,105 +25,130 @@ sub checkline($) {
 
 sub spell {
 
-    my $work = Vile::working(0);
+    my $work  = Vile::working(0);
     my %color = (
-        "&" => ["color", "2"],
-        "?" => ["color", "5"],
-        "#" => ["color", "1"],
+        "&" => [ "color", "2" ],
+        "?" => [ "color", "5" ],
+        "#" => [ "color", "1" ],
     );
     my $prompt = "[S]kip, [R]eplace, [A]ccept, [I]nsert, [U]ncap, [Q]uit? ";
 
-    my $cb = $Vile::current_buffer;
-    my $blines = scalar(Vile->get("\$blines"));
-    $cb->setregion(1,'$')->attribute("normal");
+    my $cb     = $Vile::current_buffer;
+    my $blines = scalar( Vile->get("\$blines") );
+    $cb->setregion( 1, '$' )->attribute("normal");
 
     my @dot = $cb->dot;
-    my ($resp, @H, @O, @cmds, %accepted, $off);
+    my ( $resp, @H, @O, @cmds, %accepted, %replaced, $off );
     my $i = 1;
     while (<$cb>) {
         $off = 0;
-        undef @cmds, %accepted;
+        undef @cmds, %accepted, %replaced;
         $cb->dot($i);
-        Vile::update;
-	foreach $resp (checkline($_)) { 
+        Vile::update();
+        foreach $resp ( checkline($_) ) {
             chop $resp;
-            if ($resp =~ m:^(\&|\?|\#):) {
-                @H = split(" ",  (split(": ", $resp))[0]);
-                next if (defined $accepted{$H[1]});
-                @O = split(", ", (split(": ", $resp))[1]);
-                if ($H[0] eq "#") {
+            if ( $resp =~ m:^(\&|\?|\#): ) {
+                @H = split( " ", ( split( ": ", $resp ) )[0] );
+                next if ( defined $accepted{ $H[1] } );
+                @O = split( ", ", ( split( ": ", $resp ) )[1] );
+                if ( $H[0] eq "#" ) {
                     $H[3] = $H[2];
                     $H[2] = 0;
                 }
-                @O = splice(@O, 0, $H[2]);
-                $H[3]--;
-                $cb->setregion($i,$H[3]+$off,$i,$H[3]+length($H[1])+$off)
-                   ->attribute("reverse", @{$color{$H[0]}});
-                Vile::update;
+                if ( defined $replaced{ $H[1] } ) {
+                    my $prior = -1;
+                    for my $n ( 0 .. $#O ) {
+                        if ( $O[$n] eq $replaced{ $H[1] } ) {
+                            $prior = $n;
+                            last;
+                        }
+                    }
+                    if ( $prior >= 0 ) {
+                        for my $n ( 1 .. $prior ) {
+                            $O[$n] = $O[ $n - 1 ];
+                        }
+                        $O[0] = $replaced{ $H[1] };
+                    }
+                    else {
+                        unshift @O, $replaced{ $H[1] };
+                        $H[2]++;
+                    }
+                }
+                @O = splice( @O, 0, $H[2] );
+                $cb->setregion( $i, $H[3] + $off,
+                    $i, $H[3] + length( $H[1] ) + $off )
+                  ->attribute( "reverse", @{ $color{ $H[0] } } );
+                Vile::update();
                 print $prompt;
-                while ($resp = uc(sprintf("%c",Vile::keystroke))) {
-                    if ($resp eq "A") {
-                        $accepted{$H[1]} = 1;
+                while ( $resp = uc( sprintf( "%c", Vile::keystroke() ) ) ) {
+                    if ( $resp eq "A" ) {
+                        $accepted{ $H[1] } = 1;
                         push @cmds, "\@$H[1]";
-                        $cb->setregion(
-                             $i, $H[3]+$off, $i,$H[3]+length($H[1])+$off)
-                           ->attribute("normal")
-                           ->attribute("bold", @{$color{$H[0]}});
+                        $cb->setregion( $i, $H[3] + $off,
+                            $i, $H[3] + length( $H[1] ) + $off )
+                          ->attribute("normal")
+                          ->attribute( "bold", @{ $color{ $H[0] } } );
                         last;
-                    } elsif ($resp eq "S") {
-                        $cb->setregion(
-                             $i, $H[3]+$off, $i,$H[3]+length($H[1])+$off)
-                           ->attribute("normal")
-                           ->attribute("bold", @{$color{$H[0]}});
+                    }
+                    elsif ( $resp eq "S" ) {
+                        $cb->setregion( $i, $H[3] + $off,
+                            $i, $H[3] + length( $H[1] ) + $off )
+                          ->attribute("normal")
+                          ->attribute( "bold", @{ $color{ $H[0] } } );
                         last;
-                    } elsif ($resp eq "R") {
-                        my $word = Vile::mlreply_opts("Replace with? ", @O);
-                        if (defined $word) {
-                            $cb->setregion(
-                                 $i, $H[3]+$off, $i,$H[3]+length($H[1])+$off)
-                               ->attribute("normal")
-                               ->delete;
-                            $cb->dot($i,$H[3]+$off);
+                    }
+                    elsif ( $resp eq "R" ) {
+                        my $word = Vile::mlreply_opts( "Replace with? ", @O );
+                        if ( defined $word ) {
+                            $replaced{ $H[1] } = $word;
+                            $cb->setregion( $i, $H[3] + $off,
+                                $i, $H[3] + length( $H[1] ) + $off )
+                              ->attribute("normal")->delete;
+                            $cb->dot( $i, $H[3] + $off );
                             print $cb $word;
-                            $off = $off + length($word) - length($H[1]);
-                        } else {
+                            $off = $off + length($word) - length( $H[1] );
+                        }
+                        else {
                             print $prompt;
                             next;
                         }
                         last;
-                    } elsif ($resp eq "I") {
-                        $accepted{$H[1]} = 1;
+                    }
+                    elsif ( $resp eq "I" ) {
+                        $accepted{ $H[1] } = 1;
                         push @cmds, "\@$H[1]";
                         push @cmds, "*$H[1]";
                         push @cmds, "#";
-                        $cb->setregion(
-                             $i, $H[3]+$off, $i,$H[3]+length($H[1])+$off)
-                           ->attribute("normal")
-                           ->attribute("bold", @{$color{$H[0]}});
+                        $cb->setregion( $i, $H[3] + $off,
+                            $i, $H[3] + length( $H[1] ) + $off )
+                          ->attribute("normal")
+                          ->attribute( "bold", @{ $color{ $H[0] } } );
                         last;
-                    } elsif ($resp eq "U") {
-                        $accepted{$H[1]} = 1;
+                    }
+                    elsif ( $resp eq "U" ) {
+                        $accepted{ $H[1] } = 1;
                         push @cmds, "\@$H[1]";
                         push @cmds, "&$H[1]";
                         push @cmds, "#";
-                        $cb->setregion(
-                             $i, $H[3]+$off, $i,$H[3]+length($H[1])+$off)
-                           ->attribute("normal")
-                           ->attribute("bold", @{$color{$H[0]}});
+                        $cb->setregion( $i, $H[3] + $off,
+                            $i, $H[3] + length( $H[1] ) + $off )
+                          ->attribute("normal")
+                          ->attribute( "bold", @{ $color{ $H[0] } } );
                         last;
-                    } elsif ($resp eq "Q") {
-                        $cb->setregion(
-                             $i, $H[3]+$off, $i,$H[3]+length($H[1])+$off)
-                           ->attribute("normal")
-                           ->attribute("bold", @{$color{$H[0]}});
+                    }
+                    elsif ( $resp eq "Q" ) {
+                        $cb->setregion( $i, $H[3] + $off,
+                            $i, $H[3] + length( $H[1] ) + $off )
+                          ->attribute("normal")
+                          ->attribute( "bold", @{ $color{ $H[0] } } );
                         Vile::working($work);
                         return;
                     }
                 }
             }
         }
-        last if (++$i > $blines);
-        $cb->setregion($i, '$');
+        last if ( ++$i > $blines );
+        $cb->setregion( $i, '$' );
     }
     $cb->dot(@dot);
     Vile::working($work);
@@ -158,20 +184,20 @@ internally  and hence is compatible  with ispell's usage  of
 public and private dictionaries.
 
 On  invocation, it goes through the  current buffer line  by
-line,  finding spelling  errors  and  hilighting  them.  The
-current  error is hilighted according to the following color
+line,  finding spelling  errors  and  highlighting  them.  The
+current  error is highlighted according to the following color
 code and in reverse.
 
 If  the word is not in  the dictionary,  but there are  near
-misses,  then the  error is  hilighted  in green  indicating
+misses,  then the  error is  highlighted  in green  indicating
 mild  error. If there are no near misses but the word  could
 be  formed by adding (illegal) affixes to a known root,  the
-error  is hilighted in  cyan  indicating moderately  serious
+error  is highlighted in  cyan  indicating moderately  serious
 error.  Finally, if the word is not in the dictionary, there
 are  no near misses and no  possible derivations found  then
-the error is hilighted in red indicating a grave error.
+the error is highlighted in red indicating a grave error.
 
-As  each error  is  hilighted  in  succession,  the user  is
+As  each error  is  highlighted  in  succession,  the user  is
 prompted  to enter  a single  character  command as  follows
 (case is ignored):
 
@@ -200,8 +226,8 @@ word  is replaced with  the  one provided  by  the user.  On
 pressing   <ESC>,  replacement  is  aborted  and  the  spell
 checker moves on to the next error.
 
-As  each new error is hilighted successively, old errors are
-switched  from reverse to bold hilighting to allow the  user
+As  each new error is highlighted successively, old errors are
+switched  from reverse to bold highlighting to allow the  user
 to  follow the progress of the spell checker and at the same
 time  leave a trace of errors for later changes from outside
 the spell checker.
@@ -213,7 +239,7 @@ internally,  it is mandatory that  "ispell" be available  in
 the users path.
 
 Since  the spell checker  works in  line by  line mode,  the
-"insert"  and  "uncap"  commands  dont  update  the  private
+"insert"  and  "uncap"  commands  don't  update  the  private
 dictionary  immediately but only on reaching the end of  the
 current line.
 
