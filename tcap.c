@@ -1,7 +1,7 @@
 /*	tcap:	Unix V5, V7 and BS4.2 Termcap video driver
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.188 2013/02/21 23:53:59 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tcap.c,v 1.189 2014/01/25 00:31:52 tom Exp $
  *
  */
 
@@ -485,10 +485,11 @@ begin_reverse(void)
 static void
 end_reverse(void)
 {
-    if (tc_MR != 0)
+    if (tc_MR != 0) {
 	putpad(tc_ME);
-    else if (tc_SO != 0)
+    } else if (tc_SO != 0) {
 	putpad(tc_SE);
+    }
 }
 
 #ifdef GVAL_VIDEO
@@ -844,10 +845,11 @@ tcap_attr(UINT attr)
 	for (n = 0; n < TABLESIZE(tbl); n++) {
 	    if ((tbl[n].NC_bit & (UINT) tc_NC) != 0
 		&& (tbl[n].mask & attr) != 0) {
-		if ((tbl[n].mask & (VASEL | VAREV)) != 0)
+		if ((tbl[n].mask & (VASEL | VAREV)) != 0) {
 		    attr &= (UINT) (~VACOLOR);
-		else
+		} else {
 		    attr &= ~tbl[n].mask;
+		}
 	    }
 	}
     }
@@ -857,6 +859,9 @@ tcap_attr(UINT attr)
 	register char *s;
 	UINT diff;
 	int ends = !colored;
+#if OPT_COLOR
+	int redo_color = FALSE;
+#endif
 
 	diff = last & ~attr;
 	/* turn OFF old attributes */
@@ -866,13 +871,21 @@ tcap_attr(UINT attr)
 		&& (s = *(tbl[n].end)) != 0) {
 		putpad(s);
 #if OPT_COLOR
-		if (!ends)	/* do this once */
-		    reinitialize_colors();
+		/*
+		 * Any of the resets can turn off color, but especially those
+		 * for reverse/bold since they use the sgr0 value.
+		 */
+		if (colored)
+		    redo_color = TRUE;
 #endif
 		ends = TRUE;
 		diff &= ~(tbl[n].mask);
 	    }
 	}
+#if OPT_COLOR
+	if (redo_color)		/* do this once */
+	    reinitialize_colors();
+#endif
 
 	if (all_sgr0)
 	    diff = attr;

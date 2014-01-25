@@ -1,43 +1,53 @@
 package dirlist;
+
+use strict;
+
 use File::Find;
 use FileHandle;
 use English;
 use Glob2re;
 use Vile::Manual;
+
 require Vile::Exporter;
-@ISA = 'Vile::Exporter';
-%REGISTRY = (dirlist => [ \&dirlist, 'flat hierarchical directory listing' ],
-             'dirlist-help' => [ sub {&manual}, 'manual page for dirlist' ]);
+
+use vars qw(@ISA %REGISTRY);
+
+@ISA      = 'Vile::Exporter';
+%REGISTRY = (
+    dirlist => [ \&dirlist, 'flat hierarchical directory listing' ],
+    'dirlist-help' => [ sub { &manual }, 'manual page for dirlist' ]
+);
 
 my $dirlist_oldroot = '.';
 
 sub dirlist {
 
-    my ($root, $fpat) = @_;
+    my ( $root, $fpat ) = @_;
     my $curbuf = $Vile::current_buffer;
 
-    while (!defined($root)) {
-	$root = Vile::mlreply_dir("Directory to search in? ", $dirlist_oldroot);
-	return if !defined($root);
+    while ( !defined($root) ) {
+        $root =
+          Vile::mlreply_dir( "Directory to search in? ", $dirlist_oldroot );
+        return if !defined($root);
     }
     $dirlist_oldroot = $root;
 
-    while (!defined($fpat)) {
-	$fpat = Vile::mlreply_no_opts("File name pattern? ", "*");
-	return if !defined($fpat);
+    while ( !defined($fpat) ) {
+        $fpat = Vile::mlreply_no_opts( "File name pattern? ", "*" );
+        return if !defined($fpat);
     }
 
+    my $work   = Vile::working(0);
     my $resbuf = $curbuf->edit("dirlist $root $fpat");
 
     $fpat = glob2re($fpat);
 
     my @fnames = ();
-    my $code = '
+    my $code   = '
     find(
 	sub {
 	    if (/'
-    .            $fpat
-    .                '/) {
+      . $fpat . '/) {
 		push @fnames, $File::Find::name;
 	    }
 	},
@@ -45,35 +55,40 @@ sub dirlist {
     ';
 
     eval $code;
-    if (defined($@) && $@) {
-	print "$@";
+    if ( defined($@) && $@ ) {
+        print "$@";
     }
     else {
-	my $fname;
-	my $halfyearago = time - 60*60*24*182;
-	@fnames = sort @fnames;
-	foreach $fname (@fnames) {
-	    my ($dev,$ino,$mode,$nlink,$uid,$gid,$rdev,$size,
-		  $atime,$mtime,$ctime,$blksize,$blocks)
-		    = lstat $fname;
-	    my $date = localtime($mtime);
-	    if ($halfyearago >= $mtime) {
-		$date =~ s/\S+\s+(\S+\s+\S+\s+)\S+(\s+\S+)/$1$2/;
-	    }
-	    else {
-		$date =~ s/\S+\s+(\S+\s+\S+\s+\S+):\d\d \S+/$1/;
-	    }
-	    my $symlinkinfo = '';
-	    if ($^O ne 'MSWin32' &&  -l _) {
-		$symlinkinfo = ' -> ' . readlink $fname;
-	    }
-	    print $resbuf sprintf("%9d %12s %s%s\n",
-				  $size, $date, $fname, $symlinkinfo);
-	}
-	print $resbuf "\n\n";
-	$curbuf->current_buffer($resbuf)
-	       ->unmark;
+        my $fname;
+        my $halfyearago = time - 60 * 60 * 24 * 182;
+        @fnames = sort @fnames;
+        foreach $fname (@fnames) {
+            my (
+                $dev,   $ino,     $mode, $nlink, $uid,
+                $gid,   $rdev,    $size, $atime, $mtime,
+                $ctime, $blksize, $blocks
+            ) = lstat $fname;
+            my $date = localtime($mtime);
+            if ( $halfyearago >= $mtime ) {
+                $date =~ s/\S+\s+(\S+\s+\S+\s+)\S+(\s+\S+)/$1$2/;
+            }
+            else {
+                $date =~ s/\S+\s+(\S+\s+\S+\s+\S+):\d\d \S+/$1/;
+            }
+            my $symlinkinfo = '';
+            if ( $^O ne 'MSWin32' && -l _ ) {
+                $symlinkinfo = ' -> ' . readlink $fname;
+            }
+            print $resbuf
+              sprintf( "%9d %12s %s%s\n", $size, $date, $fname, $symlinkinfo );
+        }
+        print $resbuf "\n\n";
+        $curbuf->current_buffer($resbuf)->unmark;
     }
+    Vile::update();
+    Vile::working($work);
+    Vile::command("position-window bottom");
+    return;
 }
 
 1;

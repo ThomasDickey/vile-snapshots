@@ -1,54 +1,52 @@
 package Vile::Manual;
 
+use strict;
+
 use Carp;
 
 require Exporter;
-@ISA = qw(Exporter);
+
+use vars qw(@ISA @EXPORT);
+
+@ISA    = qw(Exporter);
 @EXPORT = qw(manual);
 
-sub manual
-{
+sub manual {
     my $pm = (caller) . '.pm';
-   (my $path = $pm) =~ s!::!/!g;
-       $path = $INC{$path};
+    ( my $path = $pm ) =~ s!::!/!g;
+    $path = $INC{$path};
 
     croak "can't get path for module $pm" unless $path;
 
     my $b = edit Vile::Buffer "<$pm>";
-    if (!$b or $b->dotq('$') <= 1) {
-	$b = new Vile::Buffer "<$pm>" unless $b;
+    if ( !$b or $b->dotq('$') <= 1 ) {
+        $b = new Vile::Buffer "<$pm>" unless $b;
 
-	local *P;
-	my $pid = open P, '-|';
+        local *P;
+        my $pid = open P, '-|';
 
-	croak "can't fork ($!)" unless defined $pid;
+        croak "can't fork ($!)" unless defined $pid;
 
-	unless ($pid)
-	{
-	    my $filt = Vile::get('libdir-path') . '/vile-manfilt';
+        unless ($pid) {
+            my $filt = Vile::get('libdir-path') . '/vile-manfilt';
 
-	    if ($^O =~ /^(MSWin32|dos)$/ or !-x $filt)
-	    {
-		require Pod::Text;
-		Pod::Text::pod2text($path);
-	    }
-	    else
-	    {
-		untie *STDERR;
-		open STDERR, '>/dev/null'; # supress pod2man whining
-		system "pod2man --lax $path|nroff -man|$filt";
-	    }
+            if ( $^O =~ /^(MSWin32|dos)$/ or !-x $filt ) {
+                require Pod::Text;
+                Pod::Text::pod2text($path);
+            }
+            else {
+                untie *STDERR;
+                open STDERR, '>/dev/null';    # supress pod2man whining
+                system "pod2man --lax $path|nroff -man|$filt";
+            }
 
-	    exit;
-	}
+            exit;
+        }
 
-	print $b join '', <P>;
-	close P;
+        print $b join '', <P>;
+        close P;
 
-	$b->setregion(1,'$')
-	  ->attribute_cntl_a_sequences
-	  ->unmark
-	  ->dot(1);
+        $b->setregion( 1, '$' )->attribute_cntl_a_sequences->unmark->dot(1);
     }
 
     Vile::current_window->buffer($b);

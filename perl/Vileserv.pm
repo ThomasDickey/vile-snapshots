@@ -19,131 +19,145 @@
 
 package Vileserv;
 
+use strict;
+
 use Socket;
 use POSIX 'EINTR';
 use Vile;
 use Vile::Manual;
 require Vile::Exporter;
 
-@ISA = 'Vile::Exporter';
+use vars qw(@ISA %REGISTRY);
+
+@ISA      = 'Vile::Exporter';
 %REGISTRY = (
-    'startserv'  => [\&start, 'start edit server' ],
-    'stopserv' => [\&stop, 'stop edit server' ],
-    'vileserv-writehook' => [\&writehook, 'support for "vileget -w ..."'],
-    'vileserv-help' => [sub {&manual}, 'manual page for Vileserv.pm' ]
+    'startserv'          => [ \&start,     'start edit server' ],
+    'stopserv'           => [ \&stop,      'stop edit server' ],
+    'vileserv-writehook' => [ \&writehook, 'support for "vileget -w ..."' ],
+    'vileserv-help' => [ sub { &manual }, 'manual page for Vileserv.pm' ]
 );
 
 # path to PERL binary (needed to run server daemon)
-$__perl = Vile::get('%vileserv-perl-path');
-if ($__perl eq 'ERROR' || $__perl eq '') {
-   if (-e '/usr/bin/perl') {
-      $__perl = '/usr/bin/perl';
-   } elsif (-e '/usr/local/bin/perl') {
-      $__perl = '/usr/local/bin/perl';
-   } else {
-      die("can't find perl binary - try setting the %vileserv-perl-path \
-	  variable in your .vilerc file");
-   }
-} elsif (! -e $__perl) {
-   die("perl binary $__perl does not exist");
+our $__perl = Vile::get('%vileserv-perl-path');
+if ( $__perl eq 'ERROR' || $__perl eq '' ) {
+    if ( -e '/usr/bin/perl' ) {
+        $__perl = '/usr/bin/perl';
+    }
+    elsif ( -e '/usr/local/bin/perl' ) {
+        $__perl = '/usr/local/bin/perl';
+    }
+    else {
+        die(
+            "can't find perl binary - try setting the %vileserv-perl-path \
+	  variable in your .vilerc file"
+        );
+    }
+}
+elsif ( !-e $__perl ) {
+    die("perl binary $__perl does not exist");
 }
 
 # path to local socket
-$__vilesock = Vile::get('%vileserv-socket-path');
-if ($__vilesock eq 'ERROR' || $__vilesock eq '') {
-   if (defined($ENV{'VILESOCK'})) {
-      $__vilesock = $ENV{'VILESOCK'};
-   } else {
-      $__vilesock = "$ENV{'HOME'}/.vilesock";
-   }
+our $__vilesock = Vile::get('%vileserv-socket-path');
+if ( $__vilesock eq 'ERROR' || $__vilesock eq '' ) {
+    if ( defined( $ENV{'VILESOCK'} ) ) {
+        $__vilesock = $ENV{'VILESOCK'};
+    }
+    else {
+        $__vilesock = "$ENV{'HOME'}/.vilesock";
+    }
 }
 
 # out-of-band delimiter :-)
-$__esc = '+++';
+our $__esc = '+++';
 
 # Setup auto start/stop of vileserv...
 
 END {
-   &stop;
+    &stop;
 }
 
 sub import {
-   Vile::Exporter::import(@_);
-   start();
+    Vile::Exporter::import(@_);
+    start();
 }
 
 *unimport = *stop;
+
+our $__pid;
 
 # Initiates the child "server" process (vileserv) and sets up the appropriate
 # filehandle callbacks.
 #
 sub start {
 
-   # make calling start twice a silent no-op
-   return if defined $__pid;
+    # make calling start twice a silent no-op
+    return if defined $__pid;
 
-   if (-e $__vilesock) {
+    if ( -e $__vilesock ) {
 
-      if (Vile::get('%vileserv-doh!') ne 'ERROR') {
-	 die "Socket $__vilesock already exists. Vileserv already running?\n";
-	 return;
-      }
+        if ( Vile::get('%vileserv-doh!') ne 'ERROR' ) {
+            die
+              "Socket $__vilesock already exists. Vileserv already running?\n";
+            return;
+        }
 
-      socket(TESTSOCK, PF_UNIX, SOCK_STREAM, 0) || die "$0: socket: $!";
+        socket( TESTSOCK, PF_UNIX, SOCK_STREAM, 0 ) || die "$0: socket: $!";
 
-      if (connect(TESTSOCK, sockaddr_un($__vilesock))) {
+        if ( connect( TESTSOCK, sockaddr_un($__vilesock) ) ) {
 
-	 close TESTSOCK;
+            close TESTSOCK;
 
-	 # Assume there's a vileserv alive and well already...
-	 print "Vileserv seems to be running already...";
-	 return;
-      }
+            # Assume there's a vileserv alive and well already...
+            print "Vileserv seems to be running already...";
+            return;
+        }
 
-      # Assume a Vileserv died, delete the sock and get on with it...
-      close TESTSOCK;
-      unlink($__vilesock);
-   }
+        # Assume a Vileserv died, delete the sock and get on with it...
+        close TESTSOCK;
+        unlink($__vilesock);
+    }
 
-   die "pipe: $!" unless pipe DAEMON, EDITOR;
-   die "fork: $!" unless defined ($__pid = fork);
+    die "pipe: $!" unless pipe DAEMON, EDITOR;
+    die "fork: $!" unless defined( $__pid = fork );
 
-   unless ($__pid) {
-      # Child - close unused DAEMON handle, dup EDITOR as STDOUT, and
-      #         exec server daemon...
+    unless ($__pid) {
 
-      close DAEMON;
-      untie *STDOUT;
-      open(STDOUT, ">&EDITOR") || die "can't dup EDITOR to STDOUT";
-      $| = 1;
-      &vileserv;
-   }
+        # Child - close unused DAEMON handle, dup EDITOR as STDOUT, and
+        #         exec server daemon...
 
-   # Parent - watch DAEMON handle...
-   close EDITOR;
+        close DAEMON;
+        untie *STDOUT;
+        open( STDOUT, ">&EDITOR" ) || die "can't dup EDITOR to STDOUT";
+        $| = 1;
+        &vileserv;
+    }
 
-   Vile::watchfd (fileno(DAEMON), 'except', \&stop);
-   Vile::watchfd (fileno(DAEMON), 'read', \&readfiles);
+    # Parent - watch DAEMON handle...
+    close EDITOR;
 
-   hookwrites();
+    Vile::watchfd( fileno(DAEMON), 'except', \&stop );
+    Vile::watchfd( fileno(DAEMON), 'read',   \&readfiles );
 
-   print "Started vileserv...\n";
+    hookwrites();
+
+    print "Started vileserv...\n";
 
 }
 
 # Stops the server process.
 #
 sub stop {
-   return unless defined $__pid;
-   print "Shutting down vileserv...\n";
+    return unless defined $__pid;
+    print "Shutting down vileserv...\n";
 
-   Vile::unwatchfd fileno(DAEMON);
-   close DAEMON;
-   unlink $__vilesock;
+    Vile::unwatchfd( fileno(DAEMON) );
+    close DAEMON;
+    unlink $__vilesock;
 
-   kill 15, $__pid;
-   1 while (waitpid($__pid, 0) == -1 && $! == EINTR);
-   undef $__pid;
+    kill 15, $__pid;
+    1 while ( waitpid( $__pid, 0 ) == -1 && $! == EINTR );
+    undef $__pid;
 }
 
 # Reads data from the server process as necessary and performs the
@@ -152,43 +166,46 @@ sub stop {
 #
 sub readfiles {
 
-   my @files;
-   my $fileName;
+    my @files;
+    my $fileName;
 
-   do {
-      $fileName = <DAEMON>;
-      chomp $fileName;
-      if ($fileName ne "") {
-	 push @files,$fileName;
-      }
-   } until ($fileName eq "");
+    do {
+        $fileName = <DAEMON>;
+        chomp $fileName;
+        if ( $fileName ne "" ) {
+            push @files, $fileName;
+        }
+    } until ( $fileName eq "" );
 
-   while ($fileName = pop(@files)) {
+    while ( $fileName = pop(@files) ) {
 
-      if ($fileName =~ /^\Q$__esc\E (.*)/) {
+        if ( $fileName =~ /^\Q$__esc\E (.*)/ ) {
 
-         my $path = $1;
-         if ($path =~ /\S/) {
-	    Vile::command "cd $path";
-	 }
+            my $path = $1;
+            if ( $path =~ /\S/ ) {
+                Vile::command("cd $path");
+            }
 
-      } elsif ($fileName =~ /^\Q$__esc\Edo (.*)/) {
+        }
+        elsif ( $fileName =~ /^\Q$__esc\Edo (.*)/ ) {
 
-         my $cmd = $1;
-         my $security = Vile::get('%vileserv-accept-commands');
-	 if ($security ne 'ERROR' && $security ne 'false') {
-	    Vile::command $cmd;
-	 } else {
-	    print "Rejected remote command \"$cmd\"\n";
-	 }
+            my $cmd      = $1;
+            my $security = Vile::get('%vileserv-accept-commands');
+            if ( $security ne 'ERROR' && $security ne 'false' ) {
+                Vile::command $cmd;
+            }
+            else {
+                print "Rejected remote command \"$cmd\"\n";
+            }
 
-      } else {
+        }
+        else {
 
-	 $Vile::current_buffer = new Vile::Buffer "$fileName";
-      }
-   }
+            $Vile::current_buffer = new Vile::Buffer "$fileName";
+        }
+    }
 
-   Vile::update;
+    Vile::update();
 }
 
 # Setup vile write-hook so we can tell the vileserv process whenever
@@ -196,48 +213,52 @@ sub readfiles {
 #
 sub hookwrites {
 
-   my $do_this = Vile::get('%vileserv-no-writehook');
-   return 0 if ($do_this ne 'ERROR');
+    my $do_this = Vile::get('%vileserv-no-writehook');
+    return 0 if ( $do_this ne 'ERROR' );
 
-   if (defined($INC{'CaptHook.pm'})) {
+    if ( defined( $INC{'CaptHook.pm'} ) ) {
 
-      # No worries, the Captain has the helm...
+        # No worries, the Captain has the helm...
 
-      Vile::command 'write-hook vileserv-writehook vileserv-writehook 1000';
+        Vile::command('write-hook vileserv-writehook vileserv-writehook 1000');
 
-   } else {
+    }
+    else {
 
-      my $oldhook = Vile::get('$write-hook');
+        my $oldhook = Vile::get('$write-hook');
 
-      if ($oldhook ne 'ERROR' && $oldhook ne '' &&
-          $oldhook ne 'vileserv-writehook') {
+        if (   $oldhook ne 'ERROR'
+            && $oldhook ne ''
+            && $oldhook ne 'vileserv-writehook' )
+        {
 
-	 # Somebody got to the hook first...
+            # Somebody got to the hook first...
 
-	 print "Vileserv: \$write-hook already used. (You should install CaptHook.)";
-	 return 0;
-      }
+            print
+"Vileserv: \$write-hook already used. (You should install CaptHook.)";
+            return 0;
+        }
 
-      Vile::command 'setv $write-hook vileserv-writehook';
-   }
+        Vile::command('setv $write-hook vileserv-writehook');
+    }
 
-   return 0;
+    return 0;
 }
 
 # Tell the vileserv process which file got written.
 #
 sub writehook {
 
-   my $file = $Vile::current_buffer->filename();
+    my $file = $Vile::current_buffer->filename();
 
-   socket(HSOCK, PF_UNIX, SOCK_STREAM, 0) || die "$0: socket: $!";
-   connect(HSOCK, sockaddr_un($__vilesock)) || die "$0: connect: $!";
+    socket( HSOCK, PF_UNIX, SOCK_STREAM, 0 ) || die "$0: socket: $!";
+    connect( HSOCK, sockaddr_un($__vilesock) ) || die "$0: connect: $!";
 
-   select(HSOCK);
-   $| = 1;
+    select(HSOCK);
+    $| = 1;
 
-   print $__esc . "wrote $file\n";
-   close HSOCK;
+    print $__esc . "wrote $file\n";
+    close HSOCK;
 }
 
 # Execs a simple named-socket server that listens for file-load requests,
@@ -245,8 +266,8 @@ sub writehook {
 #
 sub vileserv {
 
-   my $vileserv = "exec $__perl -e ";
-   $vileserv .= <<EOD;
+    my $vileserv = "exec $__perl -e ";
+    $vileserv .= <<EOD;
    '
    use IO::Socket;
 
@@ -254,7 +275,7 @@ sub vileserv {
    \$esc = "$__esc";
 EOD
 
-   $vileserv .= <<'EOD';
+    $vileserv .= <<'EOD';
 
    $0 = "vileserv";
 
@@ -328,7 +349,7 @@ EOD
    '
 EOD
 
-   exec $vileserv || die "can't exec vileserv";
+    exec $vileserv || die "can't exec vileserv";
 
 }
 

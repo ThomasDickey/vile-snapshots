@@ -1,28 +1,38 @@
-# $Header: /users/source/archives/vile.vcs/perl/RCS/dict.pm,v 1.3 2002/05/06 23:27:51 tom Exp $
+# $Header: /users/source/archives/vile.vcs/perl/RCS/dict.pm,v 1.4 2014/01/23 20:04:38 tom Exp $
+# http://search.cpan.org/dist/Net-Dict/
 package dict;
+
+use strict;
 
 use Net::Dict;
 use Vile;
 require Vile::Exporter;
+
+use vars qw(@ISA %REGISTRY);
+
 @ISA = 'Vile::Exporter';
-%REGISTRY = (dict => [\&dict, 'dictionary']);
+%REGISTRY = ( dict => [ \&dict, 'dictionary' ] );
 
 sub dict {
-    my ($work, $wide, $word, $qid, $find, $dict, $dref, %strt, $strt, $entry,
-       $db, $def, @mtch, $mtch, %DEF) = ();
+    my (
+        $work, $wide,  $word, $qid, $find, $dict, $dref, %strt,
+        $strt, $entry, $db,   $def, @mtch, $mtch, %DEF
+    ) = ();
+    my $cb;
 
     $work = Vile::working(0);
-    $wide = scalar(Vile->get("pagewid"));
+    $wide = scalar( Vile->get("pagewid") );
 
-    if ($#_ < 0) {
-        $word = scalar(Vile->get("word"));
-        $qid  = scalar(Vile->get("qidentifier"));
-        $find = Vile::mlreply_opts("Find meaning for? ", ($qid, $word));
-    } else {
+    if ( $#_ < 0 ) {
+        $word = scalar( Vile->get("word") );
+        $qid  = scalar( Vile->get("qidentifier") );
+        $find = Vile::mlreply_opts( "Find meaning for? ", ( $qid, $word ) );
+    }
+    else {
         $find = $_[0];
     }
 
-    if (!defined $find || !length($find)) {
+    if ( !defined $find || !length($find) ) {
         Vile::working($work);
         return;
     }
@@ -32,60 +42,61 @@ sub dict {
     $dref = $dict->define($find);
     %strt = $dict->strategies;
 
-    if (@$dref == 0) {
+    if ( @$dref == 0 ) {
 
-        foreach $strt (keys %strt) {
-            $dref = $dict->match($find, $strt);
+        foreach $strt ( keys %strt ) {
+            $dref = $dict->match( $find, $strt );
             foreach $entry (@$dref) {
-                ($db, $mtch) = @$entry;
+                ( $db, $mtch ) = @$entry;
                 push @mtch, $mtch;
             }
         }
         Vile::working($work);
         print "No definitions of $find...\n";
         sleep 1;
-        $find = Vile::mlreply_opts("Do you mean? ", @mtch);
+        $find = Vile::mlreply_opts( "Do you mean? ", @mtch );
         &dict($find);
         return;
 
-    } else {
+    }
+    else {
 
         foreach $entry (@$dref) {
-            ($db, $def) = @$entry;
+            ( $db, $def ) = @$entry;
             push @{ $DEF{$db} }, $def;
         }
 
-        foreach $cb (Vile::buffers) {
-            if ($cb->buffername eq "<dictionary>") {
+        foreach $cb ( Vile::buffers() ) {
+            if ( $cb->buffername eq "<dictionary>" ) {
                 Vile->current_buffer($cb);
-                $cb->setregion(1, '$$')->attribute("normal")->delete;
+                $cb->setregion( 1, '$$' )->attribute("normal")->delete;
                 last;
             }
         }
         $cb = $Vile::current_buffer;
-        if ($cb->buffername ne "<dictionary>") {
+        if ( $cb->buffername ne "<dictionary>" ) {
             $cb = new Vile::Buffer;
             $cb->buffername("<dictionary>");
             Vile->current_buffer($cb);
-            $cb->set("view", 1);
-            $cb->set("readonly", 1);
+            $cb->set( "view",     1 );
+            $cb->set( "readonly", 1 );
             $cb->unmark->dot('$$');
         }
 
-        foreach $db (keys %DEF) {
-            print $cb "="x($wide-1), "\n";
+        foreach $db ( keys %DEF ) {
+            print $cb "=" x ( $wide - 1 ), "\n";
             print $cb "Dictionary: ", $dict->dbTitle($db), "($db)\n";
-            print $cb "-"x($wide-1), "\n";
-            foreach $def (@{ $DEF{$db} }) {
+            print $cb "-" x ( $wide - 1 ), "\n";
+            foreach $def ( @{ $DEF{$db} } ) {
                 print $cb $def, "\n";
-                print $cb "-"x($wide-1), "\n\n\n";
+                print $cb "-" x ( $wide - 1 ), "\n\n\n";
             }
         }
     }
 
     print "\n";
-    $cb->unmark()->dot(1, 0);
-    Vile::update;
+    $cb->unmark()->dot( 1, 0 );
+    Vile::update();
     Vile::working($work);
 }
 

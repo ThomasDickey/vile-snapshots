@@ -1,5 +1,7 @@
 package hgrep;
 
+use strict;
+
 use File::Find;
 use English;
 
@@ -7,10 +9,14 @@ use Visit;
 use Glob2re;
 use Vile::Manual;
 
+use vars qw(@ISA %REGISTRY);
+
 require Vile::Exporter;
-@ISA = 'Vile::Exporter';
-%REGISTRY = (hgrep => [ \&hgrep, 'recursive grep' ],
-             'hgrep-help' => [ sub {&manual}, 'manual page for hgrep' ]);
+@ISA      = 'Vile::Exporter';
+%REGISTRY = (
+    hgrep => [ \&hgrep, 'recursive grep' ],
+    'hgrep-help' => [ sub { &manual }, 'manual page for hgrep' ]
+);
 
 # Make &Visit::visit visible in main
 *main::visit = \&Visit::visit;
@@ -20,28 +26,31 @@ my $hgrep_oldroot = '.';
 
 sub hgrep {
 
-    my ($spat, $root, $fpat) = @_;
+    my ( $spat, $root, $fpat ) = @_;
 
-    if (!defined($spat)) {
-	$spat = Vile::mlreply_no_opts("Pattern to search for? ", $hgrep_oldspat);
-	return if !defined($spat);
+    if ( !defined($spat) ) {
+        $spat =
+          Vile::mlreply_no_opts( "Pattern to search for? ", $hgrep_oldspat );
+        return if !defined($spat);
     }
     $hgrep_oldspat = $spat;
 
-    while (!defined($root)) {
-	$root = Vile::mlreply_dir("Directory to search in? ", $hgrep_oldroot);
-	return if !defined($root);
+    while ( !defined($root) ) {
+        $root = Vile::mlreply_dir( "Directory to search in? ", $hgrep_oldroot );
+        return if !defined($root);
     }
     $hgrep_oldroot = $root;
 
-    while (!defined($fpat)) {
-	$fpat = Vile::mlreply_no_opts("File name pattern? ", "*");
-	return if !defined($fpat);
+    while ( !defined($fpat) ) {
+        $fpat = Vile::mlreply_no_opts( "File name pattern? ", "*" );
+        return if !defined($fpat);
     }
+    Vile::set( search => $spat );
 
     my $resbuf = new Vile::Buffer "hgrep $spat $root $fpat";
 
-    print $resbuf "Results of searching for /$spat/ in $root with filter $fpat...\n---------------\n";
+    print $resbuf
+"Results of searching for /$spat/ in $root with filter $fpat...\n---------------\n";
 
     $fpat = glob2re($fpat);
 
@@ -49,28 +58,25 @@ sub hgrep {
     find(
 	sub {
 	    if (-f && -T && $_ ne "tags" && /'
-    .                  $fpat
-    .                      '/) {
+      . $fpat . '/) {
 		my $fname = $File::Find::name;
 		if (open SFILE, "<$_") {
 		    local($_);
 		    while (<SFILE>) {
 			if (/'
-    .                        $spat
-    .                            '/) {
+      . $spat . '/) {
 			    chomp;
 			    s/^(.*?)('
-    .			        $spat
-    .                                ')/$1 . "\x01"
-                                           . length($2)
-                                           . q#BC4Hperl "visit(\'#
-					   . $fname
-					   . qq(\',)
-					   . $INPUT_LINE_NUMBER
-					   . q(,)
-					   . length($1)
-					   . qq#)"\0:#
-					   . $2/e;
+      . $spat . ')/$1 . "\x01"
+				   . length($2)
+				   . q#BC4Hperl "visit(\'#
+				   . $fname
+				   . qq(\',)
+				   . $INPUT_LINE_NUMBER
+				   . q(,)
+				   . length($1)
+				   . qq#)"\0:#
+				   . $2/e;
 			    print $resbuf "$fname\[$INPUT_LINE_NUMBER]: $_\n";
 			}
 		    }
@@ -78,7 +84,6 @@ sub hgrep {
 		}
 		else {
 		    print $resbuf "Warning: Can\'t open $fname\n";
-		    #print "Warning: Can\'t open $fname\n");
 		}
 	    }
 	},
@@ -86,24 +91,25 @@ sub hgrep {
     ';
 
     eval $code;
-    if (defined($@) && $@) {
-	print "$@";
+    if ( defined($@) && $@ ) {
+        print "$@";
     }
     else {
-	print $resbuf "\n\n";
-	$Vile::current_buffer = $resbuf;
-	# Don't let syntax coloring wipe out the hypertext links
-	$resbuf->set(autocolor => 0);
-	# Turn on highlighting (and hypertext links), clear modified
-	# status, and position the cursor on the first match
-	$resbuf->setregion(1,'$')
-	       ->attribute_cntl_a_sequences
-	       ->unmark
-	       ->dot(3);
-	# Set up error finder
-	my $bufname = $resbuf->buffername;
-	$bufname =~ s/\\/\\\\/g;
-	Vile::command("error-buffer " . $bufname);
+        print $resbuf "\n\n";
+        $Vile::current_buffer = $resbuf;
+
+        # Don't let syntax coloring wipe out the hypertext links
+        $resbuf->set( autocolor => 0 );
+
+        # Turn on highlighting (and hypertext links), clear modified
+        # status, and position the cursor on the first match
+        $resbuf->setregion( 1, '$' )
+          ->attribute_cntl_a_sequences->unmark->dot(3);
+
+        # Set up error finder
+        my $bufname = $resbuf->buffername;
+        $bufname =~ s/\\/\\\\/g;
+        Vile::command( "error-buffer " . $bufname );
     }
 }
 

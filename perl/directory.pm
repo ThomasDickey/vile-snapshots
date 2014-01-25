@@ -1,144 +1,164 @@
-# $Header: /users/source/archives/vile.vcs/perl/RCS/directory.pm,v 1.9 2004/06/19 17:50:47 tom Exp $
+# $Header: /users/source/archives/vile.vcs/perl/RCS/directory.pm,v 1.10 2014/01/23 20:02:44 tom Exp $
 # (see dir.doc)
 
 package directory;
 
+use strict;
+
 require Vile::Exporter;
+
+use vars qw(@ISA %REGISTRY);
+
 @ISA = 'Vile::Exporter';
-%REGISTRY = ('directory' => [ \&dir, 'interactive directory browser' ]);
+%REGISTRY = ( 'directory' => [ \&dir, 'interactive directory browser' ] );
 
 require 'mime.pl' unless $^O eq 'MSWin32';
 
 sub dir {
     my ($dir) = @_;
     my $width = Vile::get('$pagewid');
-    my $len = 30;
-    my ($cb, $cwd, $sub, @subdirs, @subfils, $i, $last, $spaces);
+    my $len   = 30;
+    my ( $cb, $cwd, $sub, @subdirs, @subfils, $i, $last, $spaces );
     my $work = Vile::working(0);
 
     # do not change the order of the file type
     my @color = (
         0,
-        2, #fifo
-        5, #char
+        2,    #fifo
+        5,    #char
         0,
-        0, #dir
+        0,    #dir
         0,
-        6, #block
+        6,    #block
         0,
-        0, #reg
+        0,    #reg
         0,
-        4, #symlink
+        4,    #symlink
         0,
-        3, #socket
+        3,    #socket
         0,
         0,
         0,
-        1, # exe
-        9, # nonexistent symlink
+        1,    # exe
+        9,    # nonexistent symlink
     );
 
-    $dir = Vile::mlreply_dir "Directory? ", "." if (! length($dir));
+    $dir = Vile::mlreply_dir( "Directory? ", "." ) if ( !length($dir) );
 
-    if ($width >= 80) {
-	    $width = $width - 57;
-    } else {
-	    $width = 14;
+    if ( $width >= 80 ) {
+        $width = $width - 57;
+    }
+    else {
+        $width = 14;
     }
 
-    do { print "[Aborted]"; Vile::working($work); return; } if (! defined $dir);
-    $dir = scalar(Vile->get("&path full $dir"));
+    do { print "[Aborted]"; Vile::working($work); return; }
+      if ( !defined $dir );
+    $dir = scalar( Vile->get("&path full $dir") );
     chdir $dir || do { print "$dir: $!\n"; Vile::working($work); return; };
 
     # Keep the vile current directory in sync with the directory the browser is
     # displaying.
-    Vile->set("cwd", $dir);
+    Vile->set( "cwd", $dir );
 
-    opendir(DIR, $dir) || do {
-      print "$dir: $!\n"; Vile::working($work); return; };
+    opendir( DIR, $dir ) || do {
+        print "$dir: $!\n";
+        Vile::working($work);
+        return;
+    };
 
-    foreach $sub (sort readdir(DIR)) {
-        my ($mod, $uid, $ind) = (undef, undef, 0);
-        do { ($mod, $uid) = (stat($sub))[2,4]; } || do { $ind = 17; };
-        $uid = substr((getpwuid($uid))[0], 0, 8) unless $^O eq 'MSWin32';
+    foreach $sub ( sort readdir(DIR) ) {
+        my ( $mod, $uid, $ind ) = ( undef, undef, 0 );
+        do { ( $mod, $uid ) = ( stat($sub) )[ 2, 4 ]; }
+          || do { $ind = 17; };
+        $uid = substr( ( getpwuid($uid) )[0], 0, 8 ) unless $^O eq 'MSWin32';
         if ( ( $mod & 0xF000 ) == 0x4000 ) {
-            $ind = (-l $sub ? 10 : $ind);
-            push @subdirs, [ $sub, $ind, $mod&0xFFF, $uid];
-        } else {
-            $ind = sprintf("%1X",($mod & 0xF000) >> 12) if ($ind != 17);
-            $ind = ((-f $sub && -x $sub) ? 16 : (-l $sub ? 10 : $ind))
-              if ($ind != 17);
-            push @subfils, [ $sub, $ind, $mod&0xFFF, $uid, (-s $sub) ];
+            $ind = ( -l $sub ? 10 : $ind );
+            push @subdirs, [ $sub, $ind, $mod & 0xFFF, $uid ];
+        }
+        else {
+            $ind = sprintf( "%1X", ( $mod & 0xF000 ) >> 12 ) if ( $ind != 17 );
+            $ind = ( ( -f $sub && -x $sub ) ? 16 : ( -l $sub ? 10 : $ind ) )
+              if ( $ind != 17 );
+            push @subfils, [ $sub, $ind, $mod & 0xFFF, $uid, ( -s $sub ) ];
         }
     }
     closedir DIR;
-    foreach $cb (Vile::buffers) {
-        if ($cb->buffername eq "<directory-browser>") {
+    foreach $cb ( Vile::buffers() ) {
+        if ( $cb->buffername eq "<directory-browser>" ) {
             Vile->current_buffer($cb);
-            $cb->setregion(1, '$$')->attribute("normal")->delete;
+            $cb->setregion( 1, '$$' )->attribute("normal")->delete;
             last;
         }
     }
     $cb = $Vile::current_buffer;
-    if ($cb->buffername ne "<directory-browser>") {
+    if ( $cb->buffername ne "<directory-browser>" ) {
         $cb = new Vile::Buffer;
         $cb->buffername("<directory-browser>");
         Vile->current_buffer($cb);
-        $cb->set("view", 1);
-        $cb->set("readonly", 1);
+        $cb->set( "view",     1 );
+        $cb->set( "readonly", 1 );
         $cb->unmark->dot('$$');
     }
 
-    $spaces = ((Vile->get("pagewid")-length($dir))/2);
-    print $cb "="x79, "\n", " "x$spaces;
-    print $cb "$dir \n", "="x79, "\n";
-    $cb->setregion(2, $spaces-1, 2, '$$')->attribute("reverse","bold");
+    $spaces = ( ( Vile->get("pagewid") - length($dir) ) / 2 );
+    print $cb "=" x 79, "\n", " " x $spaces;
+    print $cb "$dir \n", "=" x 79, "\n";
+    $cb->setregion( 2, $spaces - 1, 2, '$$' )->attribute( "reverse", "bold" );
     $cb->dot('$$');
     print $cb " Directories                  | Files\n";
-    print $cb "-"x30,"+","-"x48,"\n";
+    print $cb "-" x 30, "+", "-" x 48, "\n";
     $cb->dot('$$');
-    print $cb "\n","="x79;
-    for ($i = 0; $i <= ($#subdirs>$#subfils?$#subdirs:$#subfils); ++$i) {
-        $cb->dot($i+1+5, 0);
-        if (defined ($subdirs[$i])) {
-            my ($sub, $ind, $mod, $uid, $siz) = @{$subdirs[$i]};
-            $substr = substr($sub, 0, 14);
-            $str = sprintf(" % 4o %8s %s", $mod, $uid, $substr);
-            print $cb $str, " "x($len-length($str)), "| ";
-            $cb->setregion($i+1+5, 0, $i+1+5, length($str));
-            $cb->attribute("bold", "color", $color[$ind]) if ($color[$ind]);
-            $cb->setregion($i+1+5, 15, $i+1+5, 15+length($substr));
-            $cb->attribute("hyper", "directory '$sub'");
-        } else {
-            print $cb " "x$len, "| ";
+    print $cb "\n", "=" x 79;
+
+    for (
+        $i = 0 ;
+        $i <= ( $#subdirs > $#subfils ? $#subdirs : $#subfils ) ;
+        ++$i
+      )
+    {
+        $cb->dot( $i + 1 + 5, 0 );
+        if ( defined( $subdirs[$i] ) ) {
+            my ( $sub, $ind, $mod, $uid, $siz ) = @{ $subdirs[$i] };
+            my $substr = substr( $sub, 0, 14 );
+            my $str = sprintf( " % 4o %8s %s", $mod, $uid, $substr );
+            print $cb $str, " " x ( $len - length($str) ), "| ";
+            $cb->setregion( $i + 1 + 5, 0, $i + 1 + 5, length($str) );
+            $cb->attribute( "bold", "color", $color[$ind] ) if ( $color[$ind] );
+            $cb->setregion( $i + 1 + 5, 15, $i + 1 + 5, 15 + length($substr) );
+            $cb->attribute( "hyper", "directory '$sub'" );
         }
-        $cb->dot($i+1+5, '$$');
-        if (defined ($subfils[$i])) {
-            my ($sub, $ind, $mod, $uid, $siz) = @{$subfils[$i]};
-            $substr = substr($sub, 0, $width);
-            $siz = substr($siz, 0, 10);
-            $str = sprintf("% 4o %8s %10s %s", $mod, $uid, $siz, $substr);
+        else {
+            print $cb " " x $len, "| ";
+        }
+        $cb->dot( $i + 1 + 5, '$$' );
+        if ( defined( $subfils[$i] ) ) {
+            my ( $sub, $ind, $mod, $uid, $siz ) = @{ $subfils[$i] };
+            my $substr = substr( $sub, 0, $width );
+            $siz = substr( $siz, 0, 10 );
+            my $str = sprintf( "% 4o %8s %10s %s", $mod, $uid, $siz, $substr );
             print $cb $str, "\n";
-            $cb->setregion($i+1+5, $len+2,  $i+1+5, '$$');
-            $cb->attribute("bold", "color", $color[$ind]) if ($color[$ind]);
-            $cb->setregion($i+1+5, $len+25, $i+1+5, '$$');
-            $cb->attribute("hyper", "perl \"mime::mime('$sub')\"")
-                unless $^O eq 'MSWin32';
-        } else {
+            $cb->setregion( $i + 1 + 5, $len + 2, $i + 1 + 5, '$$' );
+            $cb->attribute( "bold", "color", $color[$ind] ) if ( $color[$ind] );
+            $cb->setregion( $i + 1 + 5, $len + 25, $i + 1 + 5, '$$' );
+            $cb->attribute( "hyper", "perl \"mime::mime('$sub')\"" )
+              unless $^O eq 'MSWin32';
+        }
+        else {
             print $cb "\n";
         }
     }
     $cb->dot('$$');
     $last = $cb->dot - 1;
-    for ($i = 1; $i < $last; ++$i) {
-        $cb->setregion($i, $i);
+    for ( $i = 1 ; $i < $last ; ++$i ) {
+        $cb->setregion( $i, $i );
         my $line = <$cb>;
-        $cb->delete if ($line =~ m!^\s*$!o);
+        $cb->delete if ( $line =~ m!^\s*$!o );
     }
-    $cb->unmark()->dot(1, 0);
+    $cb->unmark()->dot( 1, 0 );
     print "";
-    Vile::update;
-    $cb->dot(6, 15);
+    Vile::update();
+    $cb->dot( 6, 15 );
     Vile::working($work);
     return;
 }
