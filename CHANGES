@@ -1,12 +1,13 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20140125 (l)
+ 20140128 (l)
 	> Derek Woolverton:
 	+ add new keywords for C++11
 	> Rick Sladkey:
 	+ change initialization in ntconio.c to improve use with ConEmu, e.g.,
 	  when the window is resized.
 	> Tom Dickey:
+	+ fill in pod descriptions for undocumented perl modules.
 	+ additional change for Savannah #37988 to update screen when removing
 	  a newline which was inserted initially by the "o" command.
 	+ modify mode-pathname for makemode to work with arbitrary level of

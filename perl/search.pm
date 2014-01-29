@@ -1,15 +1,3 @@
-#
-# This package contains perl subroutines which are intended as a
-# drop in replacement for vile's search facilities.  Not all features
-# (such as visual matches) are implemented yet.
-#
-# These bindings are proper motions, however, so things like 'dn'
-# or 'd/foo' will work as expected.
-#
-# Usage
-# -----
-# :perl use search;
-
 package search;
 
 use strict;
@@ -245,3 +233,39 @@ sub searchprev {
 }
 
 1;
+
+__DATA__
+
+=head1 NAME
+
+search - drop-in replacement for Vile's search facilities
+
+=head1 SYNOPSIS
+
+In .vilerc:
+
+    perl "use search"
+
+In [x]vile:
+
+    :perl-fsearch
+    :perl-rsearch
+    :perl-search-next
+    :perl-search-prev
+
+and then provide responses to the ensuing prompts.
+
+=head1 DESCRIPTION
+
+The B<search> package contains perl subroutines which are intended as a
+drop in replacement for vile's search facilities.  Not all features
+(such as visual matches) are implemented yet.
+
+These bindings are proper motions, however, so things like 'dn'
+or 'd/foo' will work as expected.
+
+=head1 AUTHOR
+
+Brendan O'Dea
+
+=cut

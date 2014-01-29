@@ -1,4 +1,4 @@
-# $Header: /users/source/archives/vile.vcs/perl/RCS/spell.pm,v 1.7 2014/01/24 00:20:36 tom Exp $
+# $Header: /users/source/archives/vile.vcs/perl/RCS/spell.pm,v 1.9 2014/01/28 23:35:55 tom Exp $
 package spell;
 
 use strict;
@@ -16,7 +16,7 @@ sub checkline($) {
     ( my $fh, my $filename ) = tempfile();
     print $fh $_[0];
     close $fh;
-    open my $fh, "ispell -a < $filename |" or return @reply;
+    open my $fh, "ispell -a < $filename 2>/dev/null |" or return @reply;
     @reply = <$fh>;
     close $fh;
     unlink $filename;
@@ -164,17 +164,17 @@ spell - spelling checker in vile
 
 =head1 SYNOPSIS
 
-require "spell.pl"
+    require "spell.pl"
 
 In .vilerc
 
-perl "Vile::register 'spell', 'spell', 'Spell Check', 'spell.pl'"
+    perl "Vile::register 'spell', 'spell', 'Spell Check', 'spell.pl'"
 
 In [x]vile
 
-:spell
+    :spell
 
-:perl spell
+    :perl spell
 
 =head1 DESCRIPTION
 

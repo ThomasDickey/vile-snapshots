@@ -154,3 +154,65 @@ sub delete_windows_above {
 }
 
 1;
+
+__DATA__
+
+=head1 NAME
+
+winops - perl extension module for vile's window-operations
+
+=head1 SYNOPSIS
+
+In .vilerc:
+
+    perl "use winops"
+
+In [x]vile:
+
+    :equalize-window-height
+    :maximize-window-height
+    :swap-above
+    :swap-below
+    :new-window
+    :delete-windows-below
+    :delete-windows-above
+
+=head1 DESCRIPTION
+
+The B<winops> modules is a small collection of utilities written to test
+the Vile::Window facilities.  They are both useful for scripting, as well
+as demonstrating how to use the Vile::Window API.
+
+=head2 equalize-window-height.
+
+Make all windows the same approximate size
+
+=head2 maximize-window-height.
+
+Make the current window as large as possible without deleting other windows.
+
+=head2 swap-above
+
+Swap contents of the current window and the window above it.
+
+=head2 swap-below
+
+Swap contents of the current window and the window below it.
+
+=head2 new-window
+
+Create a new window and make it the current window.
+
+=head2 delete-windows-below
+
+Delete windows below the current window.
+
+=head2 delete-windows-above
+
+Delete windows above the current window.
+
+=head1 AUTHOR
+
+Kevin Buettner
+
+=cut

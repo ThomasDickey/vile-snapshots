@@ -42,7 +42,7 @@ sub terminal_emulation {
     while ( length($buf) > 0 ) {
         if ( $te_state->{IC} > 0 ) {
 
-            # Handle manditory characters to insert
+            # Handle mandatory characters to insert
             my $ic = $te_state->{IC};
             $buf =~ /^(.{0,$ic})(.*)$/s;
             print $b $1;
