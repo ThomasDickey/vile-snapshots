@@ -1,4 +1,4 @@
-# $Header: /users/source/archives/vile.vcs/perl/RCS/dict.pm,v 1.4 2014/01/23 20:04:38 tom Exp $
+# $Header: /users/source/archives/vile.vcs/perl/RCS/dict.pm,v 1.5 2014/01/28 23:37:16 tom Exp $
 # http://search.cpan.org/dist/Net-Dict/
 package dict;
 
@@ -112,11 +112,11 @@ dict - dictionary interface in vile
 
 In .vilerc
 
-perl use dict;
+    perl use dict;
 
 In [x]vile
 
-:dict
+    :dict
 
 =head1 DESCRIPTION
 

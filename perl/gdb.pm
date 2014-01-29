@@ -85,3 +85,54 @@ sub gdb_interrupt {
 }
 
 1;
+
+__DATA__
+
+=head1 NAME
+
+gdb - run gdb in a vile window
+
+=head1 SYNOPSIS
+
+In .vilerc:
+
+    perl "use gdb"
+
+In [x]vile:
+
+    :gdb
+    :gdb-break
+    :gdb-step
+    :gdb-next
+    :gdb-cont
+
+=head1 DESCRIPTION
+
+The B<gdb> module runs C<gdb> in a vile window and tracks changes in the editor.
+This must be used with the C<shell.pm> module.
+
+=head2 gdb
+
+Start or rejoin an interactive gdb session.
+
+=head2 gdb-break
+
+Set a breakpoint in gdb.
+
+=head2 gdb-step
+
+Single step in gdb.
+
+=head2 gdb-next
+
+Next in gdb.
+
+=head2 gdb-cont
+
+Continue in gdb.
+
+=head1 AUTHOR
+
+Kevin Buettner
+
+=cut

@@ -1,4 +1,4 @@
-# $Header: /users/source/archives/vile.vcs/perl/RCS/plugins.pl,v 1.6 2014/01/23 20:21:45 tom Exp $
+# $Header: /users/source/archives/vile.vcs/perl/RCS/plugins.pl,v 1.7 2014/01/28 21:37:40 tom Exp $
 # (see dir.doc)
 package plugins;
 
@@ -40,3 +40,27 @@ sub gzip {
 }
 
 1;
+
+__DATA__
+
+=head1 NAME
+
+plugins - additional perl module for vile
+
+=head1 SYNOPSIS
+
+    use plugins;
+    plugins::gzip("filename");
+
+=head1 DESCRIPTION
+
+The B<plugins> module is used by the B<mime> module to display a file according
+to this MIME-type in vile:
+
+    x-vile-flags=plugin
+
+=head1 AUTHOR
+
+Kuntal Daftary
+
+=cut

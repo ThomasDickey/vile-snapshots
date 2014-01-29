@@ -1,4 +1,4 @@
-# $Header: /users/source/archives/vile.vcs/perl/RCS/man.pm,v 1.4 2014/01/23 19:53:42 tom Exp $
+# $Header: /users/source/archives/vile.vcs/perl/RCS/man.pm,v 1.5 2014/01/28 23:35:26 tom Exp $
 package man;
 
 use strict;
@@ -85,11 +85,11 @@ man - Unix manual pages interface in vile
 
 In .vilerc
 
-perl use man;
+    perl use man;
 
 In [x]vile
 
-:man
+    :man
 
 =head1 DESCRIPTION
 

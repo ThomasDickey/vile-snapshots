@@ -24,7 +24,7 @@ use strict;
 
 =head1 NAME
 
-CaptHook
+CaptHook - hook management for vile
 
 =over 5
 

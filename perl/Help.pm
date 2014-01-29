@@ -23,7 +23,7 @@ use strict;
 
 =head1 NAME
 
-Help
+Help - section-level help-commands for Vile
 
 =head1 SYNOPSIS
 

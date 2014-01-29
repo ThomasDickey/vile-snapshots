@@ -1,4 +1,4 @@
-# $Header: /users/source/archives/vile.vcs/perl/RCS/mime.pl,v 1.7 2014/01/23 20:17:28 tom Exp $
+# $Header: /users/source/archives/vile.vcs/perl/RCS/mime.pl,v 1.9 2014/01/28 23:34:42 tom Exp $
 # (see dir.doc)
 require 'plugins.pl';
 
@@ -140,19 +140,17 @@ __END__
 
 =head1 NAME
 
-MIME library written for use from within vile using the perl interface
+mime - MIME library used within vile via perl interface
 
 =head1 SYNOPSIS
 
-require "mime.pl"
+    require "mime.pl"
 
-package mime;
+    package mime;
 
-readmc *prog, *flag, @mailcaps;
-
-readmt *type, *desc, @mimetypes;
-
-mime "filename"
+    readmc *prog, *flag, @mailcaps;
+    readmt *type, *desc, @mimetypes;
+    mime "filename";
 
 =head1 DESCRIPTION
 

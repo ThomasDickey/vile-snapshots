@@ -49,9 +49,9 @@ Vile - perl library additions to Vile package
 
 =head1 SYNOPSIS
 
-use Vile;
+    use Vile;
 
-Vile::mlreply_opts($prompt, @options)
+    Vile::mlreply_opts($prompt, @options)
 
 =head1 DESCRIPTION
 

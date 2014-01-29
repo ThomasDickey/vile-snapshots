@@ -26,3 +26,24 @@ sub visit {
 
 1;
 
+__DATA__
+
+=head1 NAME
+
+Visit - visit a file in vile
+
+=head1 SYNOPSIS
+
+    use Visit;
+    &visit("filename", 1);
+
+=head1 DESCRIPTION
+
+The B<Visit> module is used by C<hgrep> to visit a given line and column in
+a file.
+
+=head1 AUTHOR
+
+Kevin Buettner
+
+=cut
