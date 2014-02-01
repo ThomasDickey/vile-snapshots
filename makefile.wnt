@@ -1,7 +1,7 @@
 #
 # makefile for vile on WIN32 using Microsoft Visual C++
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.wnt,v 1.107 2012/03/08 00:15:34 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.wnt,v 1.108 2014/02/01 00:21:09 tom Exp $
 #
 #
 !include <ntwin32.mak>
@@ -155,7 +155,7 @@ OLELIBS  = uuid.lib oleaut32.lib comsuppw.lib
 !else
 OLELIBS  = uuid.lib oleaut32.lib comsuppw.lib
 !endif
-EXTRA    = 
+EXTRA    =
 !endif
 
 !IF "$(CFG)" == "winvile-with-perl" || "$(CFG)" == "vile-with-perl"
@@ -247,7 +247,7 @@ OBJ = 	main.obj $(SCREEN).obj \
 	tags.obj tbuff.obj termio.obj ucrypt.obj undo.obj vl_ctype.obj \
 	version.obj window.obj word.obj wordmov.obj map.obj \
 	w32cbrd.obj w32cmd.obj w32misc.obj w32oo.obj w32pipe.obj \
-	wcwidth.obj $(PERLOBJS) \
+	wcwidth.obj w32info.res $(PERLOBJS) \
 	$(OLEOBJS) $(DBGOBJS) $(EXTRAOBJ) $(EXTRA)
 
 .c.obj:
@@ -262,6 +262,9 @@ sources ::	$(MYHDRS)
 
 $(EXEFILE) : 	$(MYHDRS) $(OBJ) $(MYLIBS)
 	$(link) $(LDFLAGS) $(OBJ) $(MYLIBS) $(LIBS) -out:$(EXEFILE) -map:$(MAPFILE)
+
+w32info.res :	w32info.rc
+	$(RC) w32info.rc
 
 winvile.res :	winvile.rc winvile.h
 	$(RC) -DVILE_ICON="$(ICON).ico" -Iicons winvile.rc

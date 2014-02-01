@@ -1,5 +1,5 @@
 %pointer
-%x META sTEXT NORMAL ONELINE HEREDOC SSTRING DSTRING QUOTED2 SUBST
+%x META sTEXT NORMAL ONELINE HEREDOC SSTRING DSTRING QUOTED2 SUBST NOTE
 
 %o 10000
 %a 10000
@@ -7,7 +7,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/rpm-filt.l,v 1.36 2013/12/02 01:32:53 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/rpm-filt.l,v 1.38 2014/01/29 21:08:20 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of rpm spec-file.
  */
@@ -81,9 +81,9 @@ SECTION		%{IDENT}
 
 %%
 
-<NORMAL>{SECTION}	{ begin_section(yytext, yyleng); }
-
 <sTEXT,NORMAL>"%%"	{ WriteToken(String_attr); }
+
+<NORMAL>{SECTION}	{ begin_section(yytext, yyleng); }
 
 <sTEXT,NORMAL>^{IDENT}:	{
 			  const char *attr;
@@ -134,7 +134,10 @@ SECTION		%{IDENT}
 			  WriteToken(my_keyword_attr(yytext, yyleng));
 			}
 
-<NORMAL>"#"[^\r\n]*	{ WriteToken(Comment_attr); }
+<NORMAL>"#"		{
+			  push_state(NOTE);
+			  BeginQuote(NOTE, Comment_attr);
+			}
 
 <NORMAL>^{SPACE}*:	{ color_delimiter(yytext, yyleng, Action_attr); }
 
@@ -164,6 +167,16 @@ SECTION		%{IDENT}
 			  push_state(DSTRING);
 			  BeginQuote(DSTRING, String_attr);
 			}
+
+<NOTE>"%%"		{ flt_bfr_append(yytext, yyleng); }
+<NOTE>{MY_IDENT1}	|
+<NOTE>{MY_IDENT2}	|
+<NOTE>{MY_IDENT2L}	{
+			  flt_error("%%TOKENs cannot be commented-out");
+			  flt_bfr_embed(yytext, yyleng, Error_attr);
+			}
+<NOTE>[\r\n]+		{ flt_bfr_finish(); pop_state(); ECHO; }
+<NOTE>.			{ flt_bfr_append(yytext, yyleng); }
 
 <NORMAL>\<\<[-]?{SPACE}*{QIDENT} {
 			    int n;
@@ -241,14 +254,19 @@ begin_section(char *name, int len)
     if (flags == 0)
 	flags = "";
 
-    WriteToken(my_keyword_attr(name, len));
-    if (strchr(flags, 'o') != 0) {
-	push_state(ONELINE);
-	flt_bfr_begin(String_attr);
-    } else if (strchr(flags, 'q') != 0) {
-	new_state(sTEXT);
+    if (keyword_attr(name) == 0 && FLT_STATE == sTEXT) {
+	flt_error("unexpected keyword in text: %s", name);
+	flt_bfr_embed(name, len, Error_attr);
     } else {
-	new_state(NORMAL);
+	WriteToken(my_keyword_attr(name, len));
+	if (strchr(flags, 'o') != 0) {
+	    push_state(ONELINE);
+	    flt_bfr_begin(String_attr);
+	} else if (strchr(flags, 'q') != 0) {
+	    new_state(sTEXT);
+	} else {
+	    new_state(NORMAL);
+	}
     }
 }
 

@@ -1,11 +1,9 @@
 #!/bin/sh
-# $XTermId: plink.sh,v 1.7 2010/06/15 22:32:19 tom Exp $
+# $XTermId: plink.sh,v 1.8 2014/01/31 09:08:52 tom Exp $
 # -----------------------------------------------------------------------------
 # this file is part of xterm
 #
-# Copyright 2001-2005,2010 by Thomas E. Dickey
-# 
-#                         All Rights Reserved
+# Copyright 2001-2010,2014 by Thomas E. Dickey
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the

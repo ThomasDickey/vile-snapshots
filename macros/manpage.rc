@@ -3,7 +3,7 @@
 ;;
 ;; Author: Kevin Buettner
 ;;
-;; $Header: /users/source/archives/vile.vcs/macros/RCS/manpage.rc,v 1.24 2007/08/07 00:44:58 tom Exp $
+;; $Header: /users/source/archives/vile.vcs/macros/RCS/manpage.rc,v 1.25 2014/01/29 20:01:39 tom Exp $
 ;;
 
 store-procedure ShowManpage "Prompt for, and display a manual-page"
@@ -42,7 +42,7 @@ store-procedure ShowManpage "Prompt for, and display a manual-page"
 ~endm
 bind-key ShowManpage ^X-m
 
-store-procedure ShowFormatted "Render the current buffer with nroff -man or -ms"
+store-procedure ShowFormatted "Render the current buffer with nroff (-man or -ms), lynx or vile-pager"
 	~local %type %macros %table %nroff %filter %manpagesrc %manpagebuf $error-buffer
 
 	set-variable %filter &pquote &lookup e+l+p &cat vile-manfilt $exec-suffix
@@ -103,6 +103,11 @@ store-procedure ShowFormatted "Render the current buffer with nroff -man or -ms"
 				&cat %nroff \
 				&cat " -man | " %filter
 		~endif
+	~elseif &sin $cbufname "typescript"
+		edit-file &cat "!" \
+			&cat %filter \
+			&cat " " \
+			&pquote $cfilname
 	~else
 		~if &seq %type ".ms"
 			setv %macros="-ms"

@@ -1,7 +1,7 @@
 #
 # makefile for vile filters on WIN32 using Microsoft Visual C++
 #
-# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.wnt,v 1.37 2011/11/25 00:56:59 tom Exp $
+# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.wnt,v 1.39 2014/02/01 00:38:09 tom Exp $
 #
 #
 !include <ntwin32.mak>
@@ -99,8 +99,8 @@ FLTOBJ = $(FLTOBJ) $(OBJ_LEX)
 
 all ::	genmake.exe
 
-genmake.exe:  genmake.c
-	$(cc) $(CFLAGS) genmake.c -Fogenmake -link $(CON_LDFLAGS)
+genmake.exe:  genmake.c $(RC_DEPS)
+	$(cc) $(CFLAGS) genmake.c $(RC_ARGS) -Fogenmake -link $(CON_LDFLAGS)
 
 all :: $(FLTOBJ) $(FLTLIB)
 
@@ -167,6 +167,8 @@ uninstall :: $(KEYS)
 .c$o:
 	$(cc) $(CFLAGS) -c $< -Fo$@
 
+w32info.res :	..\w32info.rc
+	$(RC) ..\w32info.rc
 
 LF_DEPS = filterio$o filters$o
 LF_ARGS = $(LF_DEPS) $(LEXLIB)
@@ -174,22 +176,25 @@ LF_ARGS = $(LF_DEPS) $(LEXLIB)
 CF_DEPS	= filterio$o filters$o
 CF_ARGS	= $(CF_DEPS)
 
+RC_DEPS	= ..\w32info.res
+RC_ARGS	= ..\w32info.res
+
 !include mk-2nd.tmp
 
-atr2ansi$x : atr2ansi$o unfilter$o
-	$(link) -out:$@ $(CON_LDFLAGS) atr2ansi$o unfilter$o
+atr2ansi$x : atr2ansi$o unfilter$o $(RC_DEPS)
+	$(link) -out:$@ $(CON_LDFLAGS) atr2ansi$o unfilter$o $(RC_ARGS)
 
-atr2html$x : atr2html$o unfilter$o
-	$(link) -out:$@ $(CON_LDFLAGS) atr2html$o unfilter$o
+atr2html$x : atr2html$o unfilter$o $(RC_DEPS)
+	$(link) -out:$@ $(CON_LDFLAGS) atr2html$o unfilter$o $(RC_ARGS)
 
-atr2text$x : atr2text$o unfilter$o
-	$(link) -out:$@ $(CON_LDFLAGS) atr2text$o unfilter$o
+atr2text$x : atr2text$o unfilter$o $(RC_DEPS)
+	$(link) -out:$@ $(CON_LDFLAGS) atr2text$o unfilter$o $(RC_ARGS)
 
-vile-crypt$x : ecrypt$o encrypt$o
-	$(link) -out:$@ $(CON_LDFLAGS) ecrypt$o encrypt$o
+vile-crypt$x : ecrypt$o encrypt$o $(RC_DEPS)
+	$(link) -out:$@ $(CON_LDFLAGS) ecrypt$o encrypt$o $(RC_ARGS)
 
-vile-manfilt$x : manfilt$o
-	$(link) -out:$@ $(CON_LDFLAGS) manfilt$o
+vile-manfilt$x : manfilt$o $(RC_DEPS)
+	$(link) -out:$@ $(CON_LDFLAGS) manfilt$o $(RC_ARGS)
 
 encrypt$o : ..\encrypt.c
 	$(cc) $(CFLAGS) -c ..\encrypt.c -Fo$@
@@ -205,6 +210,7 @@ clean:
 	- del *$o
 	- del *.lib
 	- del *.map
+	- del *.res
 
 distclean: clean
 	- del *.zip

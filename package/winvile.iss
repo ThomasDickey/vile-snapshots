@@ -1,4 +1,4 @@
-; $Header: /users/source/archives/vile.vcs/package/RCS/winvile.iss,v 1.17 2014/01/14 22:15:15 tom Exp $
+; $Header: /users/source/archives/vile.vcs/package/RCS/winvile.iss,v 1.18 2014/01/31 21:15:48 tom Exp $
 ; vile:ts=2 sw=2
 ;
 ; This installs winvile as "winvile-ole.exe", since that is the name I use when building the OLE flavor
@@ -49,11 +49,9 @@
 #define mySendTo '{sendto}\' + myAppName + '.lnk'
 #define MyQuickLaunch '{userappdata}\Microsoft\Internet Explorer\Quick Launch\' + myAppName + '.lnk'
 
-#define NUM_PATCHLEVEL Pos(VILE_PATCHLEVEL, "@abcdefghijklmnopqrstuvwxyz")
-
 [Setup]
 AppName=WinVile
-#emit 'VersionInfoVersion=' + VILE_RELEASE + '.' + VILE_VERSION + '.' + Str(NUM_PATCHLEVEL)
+#emit 'VersionInfoVersion=' + VILE_RELEASE + '.' + VILE_VERSION + '.' + Str(VILE_PATCHVALUE)
 VersionInfoDescription=Setup for "WinVile - VI Like Emacs"
 #emit 'AppVersion=' + myVer
 #emit 'AppVerName=' + myAppVer

@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright 2010 by Thomas E. Dickey.  All Rights Reserved.                  *
+ * Copyright 2010,2014 by Thomas E. Dickey.  All Rights Reserved.             *
  *                                                                            *
  * Permission to use, copy, modify, and distribute this software and its      *
  * documentation for any purpose and without fee is hereby granted, provided  *
@@ -22,10 +22,10 @@
  *                                                                            *
  ******************************************************************************/
 /* vile:cmode cts=8
- * $XTermId: gnreight.h,v 1.19 2010/12/24 17:08:56 tom Exp $
+ * $XTermId: gnreight.h,v 1.21 2014/01/31 09:24:29 tom Exp $
  *
  * This is a generated set of single-byte encodings,
- * using all available locales in libc6 2.11.2-7 - T.E.Dickey
+ * using all available locales in libc6 2.13-38 - T.E.Dickey
  */
 #ifndef GNREIGHT_H
 #define GNREIGHT_H 1
