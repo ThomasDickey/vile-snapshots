@@ -1,5 +1,5 @@
 @echo off
-rem $Header: /users/source/archives/vile.vcs/filters/RCS/mk-2nd.bat,v 1.7 2005/03/10 23:59:27 tom Exp $
+rem $Header: /users/source/archives/vile.vcs/filters/RCS/mk-2nd.bat,v 1.9 2014/02/01 00:35:46 tom Exp $
 rem like mk-2nd.awk, used to generate rules from genmake.mak
 
 goto %2
@@ -20,14 +20,14 @@ genmake.exe -o%3 -n ""
 goto done
 
 :link_c
-genmake.exe -o%3 -n "vile-%4-filt$x : %5$o $(CF_DEPS)"
-genmake.exe -o%3 -n "	$(link) -out:$@ %5$o $(CF_ARGS) $(CON_LDFLAGS)"
+genmake.exe -o%3 -n "vile-%4-filt$x : %5$o $(CF_DEPS) $(RC_DEPS)"
+genmake.exe -o%3 -n "	$(link) -out:$@ %5$o $(CF_ARGS) $(RC_ARGS) $(CON_LDFLAGS)"
 genmake.exe -o%3 -n ""
 goto done
 
 :link_l
-genmake.exe -o%3 -n "vile-%4-filt$x : %5$o $(LF_DEPS)"
-genmake.exe -o%3 -n "	$(link) -out:$@ %5$o $(LF_ARGS) $(CON_LDFLAGS)"
+genmake.exe -o%3 -n "vile-%4-filt$x : %5$o $(LF_DEPS) $(RC_DEPS)"
+genmake.exe -o%3 -n "	$(link) -out:$@ %5$o $(LF_ARGS) $(RC_ARGS) $(CON_LDFLAGS)"
 genmake.exe -o%3 -n ""
 goto done
 

@@ -1,11 +1,11 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_REVISION($Revision: 1.308 $)
+AC_REVISION($Revision: 1.310 $)
 AC_PREREQ(2.52.20011201)
 
 ### Use "configure -with-screen" to override the default configuration, which is
 ### termcap-based on unix systems.
 
-dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.308 2013/12/26 01:28:12 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.310 2014/02/01 00:47:03 tom Exp $
 
 define(MAKELIST, sh $srcdir/filters/makelist.sh $srcdir/filters/genmake.mak)
 
@@ -619,7 +619,11 @@ LIBS="$LIBS $X_EXTRA_LIBS"
 CF_CHAR_DEVICE(/dev/tty)
 
 case $TARGET in
-	convile|minvile) ;;
+	convile|minvile)
+		CF_ACVERSION_CHECK(2.52,
+			[AC_PATH_TOOL(WINDRES, windres, none)],
+			[AC_PATH_PROG(WINDRES, windres, none)])
+		;;
 	*)
 		CF_CRYPT_FUNC
 	;;
@@ -687,7 +691,7 @@ case "$TARGET" in
 		ICON_SUFFIX=.ico
 		LDFLAGS="$LDFLAGS -s"
 		EXTRAOBJS="$EXTRAOBJS w32misc\$o w32cmd\$o w32cbrd\$o w32pipe\$o makeargv\$o"
-		EXTRAOBJS2="$EXTRAOBJS2 w32oo\$o"
+		EXTRAOBJS2="$EXTRAOBJS2 w32info\$o w32oo\$o"
 		EXEEXT=.exe
 
 	;;
@@ -700,13 +704,8 @@ case "$TARGET" in
 		ICON_SUFFIX=.ico
 		LDFLAGS="$LDFLAGS -s -mwindows"
 		EXTRAOBJS="$EXTRAOBJS w32misc\$o w32cmd\$o w32cbrd\$o w32pipe\$o makeargv\$o"
-		EXTRAOBJS2="$EXTRAOBJS2 winvile\$o w32oo\$o"
+		EXTRAOBJS2="$EXTRAOBJS2 winvile\$o w32info\$o w32oo\$o"
 		EXEEXT=.exe
-
-		CF_ACVERSION_CHECK(2.52,
-			[AC_PATH_TOOL(WINDRES, windres, none)],
-			[AC_PATH_PROG(WINDRES, windres, none)])
-
 	;;
 
 	xvile)

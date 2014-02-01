@@ -1,12 +1,17 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20140128 (l)
+ 20140131 (l)
 	> Derek Woolverton:
 	+ add new keywords for C++11
 	> Rick Sladkey:
 	+ change initialization in ntconio.c to improve use with ConEmu, e.g.,
 	  when the window is resized.
 	> Tom Dickey:
+	+ add version details to win32 executables.
+	+ improve rpm spec-file filter:
+	  + add checks for "%" markers in unexpected places, e.g., in comments.
+	  + change %package to not begin quoted text; it should be a one-liner
+	+ modify ^X-n to filter typescript files like vile-pager.
 	+ fill in pod descriptions for undocumented perl modules.
 	+ additional change for Savannah #37988 to update screen when removing
 	  a newline which was inserted initially by the "o" command.

@@ -1,0 +1,33 @@
+// $Id: w32info.rc,v 1.1 2014/01/31 21:17:03 tom Exp $
+// vile:rcmode
+
+#include <windows.h>
+
+VS_VERSION_INFO VERSIONINFO
+FILEVERSION    9,8,12,0
+PRODUCTVERSION 9,8,12,0
+FILEFLAGSMASK  VS_FFI_FILEFLAGSMASK
+FILEFLAGS      0
+FILEOS         VOS_NT_WINDOWS32
+FILETYPE       VFT_APP
+FILESUBTYPE    VFT2_UNKNOWN
+BEGIN
+  BLOCK "StringFileInfo"
+  BEGIN
+    BLOCK "040904B0"
+    BEGIN
+      VALUE "CompanyName",      "http://invisible-island.net/vile/"
+      VALUE "FileDescription",  "vile - Vi LIke Emacs"
+      VALUE "FileVersion",      "9.8.12.0"
+      VALUE "InternalName",     "WinVile"
+      VALUE "LegalCopyright",   "©1997-2013,2014 Thomas E. Dickey"
+      VALUE "OriginalFilename", "winvile.exe"
+      VALUE "ProductName",      "vile - VI Like Emacs"
+      VALUE "ProductVersion",   "9.8.12.0"
+    END
+  END
+  BLOCK "VarFileInfo"
+  BEGIN
+     VALUE "Translation", 0x409, 1200
+  END
+END
