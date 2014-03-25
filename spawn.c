@@ -1,7 +1,7 @@
 /*	Spawn:	various DOS access commands
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.213 2013/03/09 00:40:16 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.214 2014/03/24 21:29:07 tom Exp $
  *
  */
 
@@ -828,7 +828,7 @@ open_region_filter(void)
 		 * support.
 		 */
 		if (global_g_val(GMDW32PIPES)) {
-		    ULONG code = _beginthread(write_region_to_pipe, 0, fw);
+		    ULONG code = (ULONG) _beginthread(write_region_to_pipe, 0, fw);
 
 		    /*
 		     * w32pipes mode enabled -- create child thread to blast

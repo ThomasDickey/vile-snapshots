@@ -1,5 +1,11 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
+ 20140324 (m)
+	> Tom Dickey:
+	+ fix crash in winvile in "select-all" command (Savannah #41943).
+	+ update gnreight.h from Debian/testing libc6 2.17-97
+	+ update xvile.desktop with improvements from Fedora package.
+	
  20140131 (l)
 	> Derek Woolverton:
 	+ add new keywords for C++11

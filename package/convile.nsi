@@ -1,4 +1,4 @@
-; $Id: convile.nsi,v 1.12 2014/01/14 22:14:57 tom Exp $
+; $Id: convile.nsi,v 1.13 2014/02/02 01:00:20 tom Exp $
 ; Script originally generated with the Venis Install Wizard, but customized.
 ; The Inno Setup script is preferred; but this can be built via cross-compiling.
 
@@ -8,8 +8,8 @@
 
 !define VERSION_MAJOR "9"
 !define VERSION_MINOR "8"
-!define VERSION_LEVEL "12"
-!define VERSION_PATCH "l"
+!define VERSION_LEVEL "13"
+!define VERSION_PATCH "m"
 !define VERSION_BUILT "0"
 
 !define SUBKEY "VI like Emacs"

@@ -2,7 +2,7 @@
  * The routines in this file read and write ASCII files from the disk. All of
  * the knowledge about files are here.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/fileio.c,v 1.204 2013/12/28 17:25:21 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/fileio.c,v 1.205 2014/03/24 21:29:41 tom Exp $
  *
  */
 
@@ -901,7 +901,7 @@ ffgetline(size_t *lenp)
 
 		if (b_val(btempp, VAL_FILE_ENCODING) > enc_UTF8) {
 		    UCHAR *buffer = (UCHAR *) fflinebuf;
-		    B_COUNT length = (i + 1);
+		    B_COUNT length = (B_COUNT) (i + 1);
 
 		    if (!aligned_charset(btempp, buffer, &length)) {
 			do {

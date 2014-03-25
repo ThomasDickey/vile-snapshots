@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/w32vile.h,v 1.8 2010/02/10 15:06:13 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32vile.h,v 1.9 2014/03/24 23:03:08 tom Exp $
  *
  * Do the pragmas in a separate file to avoid contaminating portable code.
  */
@@ -22,7 +22,7 @@
 #define _MSC_VER 0		/* could be MinGW */
 #endif
 
-#if (_MSC_VER >= 1300) && (_MSC_VER < 1400)
+#if (_MSC_VER >= 1300)
 #define CWAIT_PARAM_TYPE   intptr_t
 #define DIALOG_PROC_RETVAL INT_PTR	/* but it still returns TRUE or FALSE */
 #define SETTIMER_RETVAL    UINT_PTR

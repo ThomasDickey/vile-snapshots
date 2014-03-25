@@ -1,7 +1,7 @@
 /*
  * debugging support -- tom dickey.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.111 2013/12/02 00:14:37 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.112 2014/03/24 22:03:27 tom Exp $
  *
  */
 
@@ -154,9 +154,19 @@ dpy_elapsed(BI_NODE * a, int level GCC_UNUSED)
 	  q->total_time / q->total_calls);
 }
 
-#define BI_TREE0 {{0}, 0, {0, 0}}
+static void
+xcg_elapsed(BI_NODE * a, BI_NODE * b)
+{
+    BI_DATA temp = a->value;
+    a->value = b->value;
+    b->value = temp;
+}
+
+#define BI_DATA0 {0,0}
+#define BI_TREE0 0, 0, BI_DATA0
+
 static BI_TREE elapsed_tree =
-{new_elapsed, old_elapsed, dpy_elapsed, 0, 0, BI_TREE0};
+{new_elapsed, old_elapsed, dpy_elapsed, xcg_elapsed, BI_TREE0};
 
 static BI_DATA *elapsed_stack[100];
 static int elapsed_sp = 0;
