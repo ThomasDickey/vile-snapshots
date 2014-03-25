@@ -1,8 +1,8 @@
 Summary: VI Like Emacs editor
-# $Header: /users/source/archives/vile.vcs/package/RCS/vile.spec,v 1.46 2014/01/22 23:10:04 tom Exp $
+# $Header: /users/source/archives/vile.vcs/package/RCS/vile.spec,v 1.47 2014/02/02 01:00:20 tom Exp $
 Name: vile
 %define AppVersion 9.8
-Version: %{AppVersion}l
+Version: %{AppVersion}m
 # each patch should update the version
 Release: dev
 License: GPLv2
@@ -21,6 +21,7 @@ Patch9: vile-9.8i.patch.gz
 Patch10: vile-9.8j.patch.gz
 Patch11: vile-9.8k.patch.gz
 Patch12: vile-9.8l.patch.gz
+Patch13: vile-9.8m.patch.gz
 # each patch should add itself to this list
 Vendor: Thomas E. Dickey <dickey@invisible-island.net>
 Packager: Thomas E. Dickey <dickey@invisible-island.net>
@@ -74,6 +75,7 @@ Requires:	%{name}-common = %{version}-%{release}
 %patch10 -p1
 %patch11 -p1
 %patch12 -p1
+%patch13 -p1
 # each patch should add itself to this list
 
 rpm --version
@@ -234,6 +236,9 @@ rm -rf %{buildroot}
 
 %changelog
 # each patch should add its ChangeLog entries here
+
+* Sat Feb  1 2014 Thomas E. Dickey
+- added patch for 9.8m
 
 * Mon Jan 20 2014 Thomas Dickey
 - add requires/provides for Perl modules

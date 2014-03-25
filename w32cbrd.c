@@ -11,7 +11,7 @@
  *    Subsequent copies do not show this cursor.  On an NT host, this
  *    phenomenon does not occur.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32cbrd.c,v 1.38 2012/02/14 01:58:36 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32cbrd.c,v 1.40 2014/03/24 23:34:48 tom Exp $
  */
 
 #include "estruct.h"
@@ -186,8 +186,12 @@ cbrd_copy_and_xlate(int len, W32_CHAR ** cbrd_ptr, UCHAR * src)
 	    UINT target;
 	    int rc = vl_conv_to_utf32(&target, (const char *) src, len);
 
-	    *dst++ = (W32_CHAR) target;
-	    src += (rc - 1);
+	    if (rc > 1) {
+		*dst++ = (W32_CHAR) target;
+		src += (rc - 1);
+	    } else {
+		*dst++ = (W32_CHAR) * src;
+	    }
 	}
 #else
 	else if ((c >= _SPC_ && c <= _TILDE_) || (c == _TAB_))
@@ -255,7 +259,8 @@ cbrd_reg_copy(void)
     KILL *kp;			/* pointer into [un]named register */
     UINT nbyte;
     UINT nline;
-    W32_CHAR *dst;
+    UCHAR *copy;
+    int rc;
 
     TRACE((T_CALLED "cbrd_reg_copy()\n"));
     /* make sure there is something to put */
@@ -292,14 +297,29 @@ cbrd_reg_copy(void)
     hClipMem = GlobalAlloc(GMEM_MOVEABLE | GMEM_DDESHARE, nbyte * sizeof(W32_CHAR));
     if (hClipMem == NULL) {
 	mlforce(CLIPBOARD_COPY_MEM);
-	returnCode(FALSE);
+	rc = FALSE;
+    } else {
+	copy = malloc(nbyte);
+	if (copy != 0) {
+	    UCHAR *tmp = copy;
+	    W32_CHAR *dst = GlobalLock(hClipMem);
+	    W32_CHAR *old = dst;
+	    for (kp = kbs[ukb].kbufh; kp; kp = kp->d_next) {
+		int size = KbSize(ukb, kp);
+		memcpy(tmp, kp->d_chunk, size);
+		tmp += size;
+	    }
+	    cbrd_copy_and_xlate((int) (tmp - copy), &dst, copy);
+	    *dst = '\0';
+	    GlobalUnlock(hClipMem);
+	    rc = setclipboard(hClipMem, (UINT) (dst - old), nline);
+	    free(copy);
+	} else {
+	    mlforce("[Cannot copy]");
+	    rc = FALSE;
+	}
     }
-    dst = GlobalLock(hClipMem);
-    for (kp = kbs[ukb].kbufh; kp; kp = kp->d_next)
-	cbrd_copy_and_xlate((int) KbSize(ukb, kp), &dst, kp->d_chunk);
-    *dst = '\0';
-    GlobalUnlock(hClipMem);
-    returnCode(setclipboard(hClipMem, nbyte, nline));
+    returnCode(rc);
 }
 
 /*

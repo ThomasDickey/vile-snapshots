@@ -22,10 +22,10 @@
  *                                                                            *
  ******************************************************************************/
 /* vile:cmode cts=8
- * $XTermId: gnreight.h,v 1.21 2014/01/31 09:24:29 tom Exp $
+ * $XTermId: gnreight.h,v 1.22 2014/02/16 21:18:24 tom Exp $
  *
  * This is a generated set of single-byte encodings,
- * using all available locales in libc6 2.13-38 - T.E.Dickey
+ * using all available locales in libc6 2.17-97 - T.E.Dickey
  */
 #ifndef GNREIGHT_H
 #define GNREIGHT_H 1
@@ -8315,7 +8315,967 @@ static const GNREIGHT_ENC encode_CP737 = {
     },
 };
 
-/*  42:CP775 */
+/*  42:CP770 */
+static const GNREIGHT_ENC encode_CP770 = {
+    /* encode_CP770.chmap */
+    {
+	 0x10c,  0xfc, 0x117, 0x101,  0xe4, 0x105, 0x13c, 0x10d,
+	 0x113, 0x112, 0x119, 0x118, 0x12b, 0x12f,  0xc4, 0x104,
+	 0x116, 0x17e, 0x17d,  0xf5,  0xf6,  0xd5, 0x16b, 0x173,
+	 0x123,  0xd6,  0xdc,  0xa2, 0x13b,0x201e, 0x161, 0x160,
+	 0x100, 0x12a, 0x137, 0x136, 0x146, 0x145, 0x16a, 0x172,
+	 0x122,0x2310,  0xac,  0xbd,  0xbc, 0x12e,  0xab,  0xbb,
+	0x2591,0x2592,0x2593,0x2502,0x2524,0x2561,0x2562,0x2556,
+	0x2555,0x2563,0x2551,0x2557,0x255d,0x255c,0x255b,0x2510,
+	0x2514,0x2534,0x252c,0x251c,0x2500,0x253c,0x255e,0x255f,
+	0x255a,0x2554,0x2569,0x2566,0x2560,0x2550,0x256c,0x2567,
+	0x2568,0x2564,0x2565,0x2559,0x2558,0x2552,0x2553,0x256b,
+	0x256a,0x2518,0x250c,0x2588,0x2584,0x258c,0x2590,0x2580,
+	 0x3b1,  0xdf, 0x393, 0x3c0, 0x3a3, 0x3c3,  0xb5, 0x3c4,
+	 0x3a6, 0x398, 0x3a9, 0x3b4,0x221e, 0x3c6, 0x3b5,0x2229,
+	0x2261,  0xb1,0x2265,0x2264,0x2320,0x2321,  0xf7,0x2248,
+	  0xb0,0x2219,  0xb7,0x221a,0x207f,  0xb2,0x25a0,  0xa0
+    },
+    /* encode_CP770.lower */
+    {
+	  0x87,  0x81,  0x82,  0x83,  0x84,  0x85,  0x86,  0x87,
+	  0x88,  0x88,  0x8a,  0x8a,  0x8c,  0x8d,  0x84,  0x85,
+	  0x82,  0x91,  0x91,  0x93,  0x94,  0x93,  0x96,  0x97,
+	  0x98,  0x94,  0x81,  0x9b,  0x86,  0x9d,  0x9e,  0x9e,
+	  0x83,  0x8c,  0xa2,  0xa2,  0xa4,  0xa4,  0x96,  0x97,
+	  0x98,  0xa9,  0xaa,  0xab,  0xac,  0x8d,  0xae,  0xaf,
+	  0xb0,  0xb1,  0xb2,  0xb3,  0xb4,  0xb5,  0xb6,  0xb7,
+	  0xb8,  0xb9,  0xba,  0xbb,  0xbc,  0xbd,  0xbe,  0xbf,
+	  0xc0,  0xc1,  0xc2,  0xc3,  0xc4,  0xc5,  0xc6,  0xc7,
+	  0xc8,  0xc9,  0xca,  0xcb,  0xcc,  0xcd,  0xce,  0xcf,
+	  0xd0,  0xd1,  0xd2,  0xd3,  0xd4,  0xd5,  0xd6,  0xd7,
+	  0xd8,  0xd9,  0xda,  0xdb,  0xdc,  0xdd,  0xde,  0xdf,
+	  0xe0,  0xe1,  0xe2,  0xe3,  0xe5,  0xe5,  0xe6,  0xe7,
+	  0xed,  0xe9,  0xea,  0xeb,  0xec,  0xed,  0xee,  0xef,
+	  0xf0,  0xf1,  0xf2,  0xf3,  0xf4,  0xf5,  0xf6,  0xf7,
+	  0xf8,  0xf9,  0xfa,  0xfb,  0xfc,  0xfd,  0xfe,  0xff
+    },
+    /* encode_CP770.upper */
+    {
+	  0x80,  0x9a,  0x90,  0xa0,  0x8e,  0x8f,  0x9c,  0x80,
+	  0x89,  0x89,  0x8b,  0x8b,  0xa1,  0xad,  0x8e,  0x8f,
+	  0x90,  0x92,  0x92,  0x95,  0x99,  0x95,  0xa6,  0xa7,
+	  0xa8,  0x99,  0x9a,  0x9b,  0x9c,  0x9d,  0x9f,  0x9f,
+	  0xa0,  0xa1,  0xa3,  0xa3,  0xa5,  0xa5,  0xa6,  0xa7,
+	  0xa8,  0xa9,  0xaa,  0xab,  0xac,  0xad,  0xae,  0xaf,
+	  0xb0,  0xb1,  0xb2,  0xb3,  0xb4,  0xb5,  0xb6,  0xb7,
+	  0xb8,  0xb9,  0xba,  0xbb,  0xbc,  0xbd,  0xbe,  0xbf,
+	  0xc0,  0xc1,  0xc2,  0xc3,  0xc4,  0xc5,  0xc6,  0xc7,
+	  0xc8,  0xc9,  0xca,  0xcb,  0xcc,  0xcd,  0xce,  0xcf,
+	  0xd0,  0xd1,  0xd2,  0xd3,  0xd4,  0xd5,  0xd6,  0xd7,
+	  0xd8,  0xd9,  0xda,  0xdb,  0xdc,  0xdd,  0xde,  0xdf,
+	  0xe0,  0xe1,  0xe2,  0xe3,  0xe4,  0xe4,  0xe6,  0xe7,
+	  0xe8,  0xe9,  0xea,  0xeb,  0xec,  0xe8,  0xee,  0xef,
+	  0xf0,  0xf1,  0xf2,  0xf3,  0xf4,  0xf5,  0xf6,  0xf7,
+	  0xf8,  0xf9,  0xfa,  0xfb,  0xfc,  0xfd,  0xfe,  0xff
+    },
+    /* encode_CP770.ctype */
+    {
+	/* 0x80 */	(vl_alpha | vl_print | vl_upper),
+	/* 0x81 */	(vl_alpha | vl_lower | vl_print),
+	/* 0x82 */	(vl_alpha | vl_lower | vl_print),
+	/* 0x83 */	(vl_alpha | vl_lower | vl_print),
+	/* 0x84 */	(vl_alpha | vl_lower | vl_print),
+	/* 0x85 */	(vl_alpha | vl_lower | vl_print),
+	/* 0x86 */	(vl_alpha | vl_lower | vl_print),
+	/* 0x87 */	(vl_alpha | vl_lower | vl_print),
+	/* 0x88 */	(vl_alpha | vl_lower | vl_print),
+	/* 0x89 */	(vl_alpha | vl_print | vl_upper),
+	/* 0x8a */	(vl_alpha | vl_lower | vl_print),
+	/* 0x8b */	(vl_alpha | vl_print | vl_upper),
+	/* 0x8c */	(vl_alpha | vl_lower | vl_print),
+	/* 0x8d */	(vl_alpha | vl_lower | vl_print),
+	/* 0x8e */	(vl_alpha | vl_print | vl_upper),
+	/* 0x8f */	(vl_alpha | vl_print | vl_upper),
+	/* 0x90 */	(vl_alpha | vl_print | vl_upper),
+	/* 0x91 */	(vl_alpha | vl_lower | vl_print),
+	/* 0x92 */	(vl_alpha | vl_print | vl_upper),
+	/* 0x93 */	(vl_alpha | vl_lower | vl_print),
+	/* 0x94 */	(vl_alpha | vl_lower | vl_print),
+	/* 0x95 */	(vl_alpha | vl_print | vl_upper),
+	/* 0x96 */	(vl_alpha | vl_lower | vl_print),
+	/* 0x97 */	(vl_alpha | vl_lower | vl_print),
+	/* 0x98 */	(vl_alpha | vl_lower | vl_print),
+	/* 0x99 */	(vl_alpha | vl_print | vl_upper),
+	/* 0x9a */	(vl_alpha | vl_print | vl_upper),
+	/* 0x9b */	(vl_print | vl_punct),
+	/* 0x9c */	(vl_alpha | vl_print | vl_upper),
+	/* 0x9d */	(vl_print | vl_punct),
+	/* 0x9e */	(vl_alpha | vl_lower | vl_print),
+	/* 0x9f */	(vl_alpha | vl_print | vl_upper),
+	/* 0xa0 */	(vl_alpha | vl_print | vl_upper),
+	/* 0xa1 */	(vl_alpha | vl_print | vl_upper),
+	/* 0xa2 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xa3 */	(vl_alpha | vl_print | vl_upper),
+	/* 0xa4 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xa5 */	(vl_alpha | vl_print | vl_upper),
+	/* 0xa6 */	(vl_alpha | vl_print | vl_upper),
+	/* 0xa7 */	(vl_alpha | vl_print | vl_upper),
+	/* 0xa8 */	(vl_alpha | vl_print | vl_upper),
+	/* 0xa9 */	(vl_print | vl_punct),
+	/* 0xaa */	(vl_print | vl_punct),
+	/* 0xab */	(vl_print | vl_punct),
+	/* 0xac */	(vl_print | vl_punct),
+	/* 0xad */	(vl_alpha | vl_print | vl_upper),
+	/* 0xae */	(vl_print | vl_punct),
+	/* 0xaf */	(vl_print | vl_punct),
+	/* 0xb0 */	(vl_print | vl_punct),
+	/* 0xb1 */	(vl_print | vl_punct),
+	/* 0xb2 */	(vl_print | vl_punct),
+	/* 0xb3 */	(vl_print | vl_punct),
+	/* 0xb4 */	(vl_print | vl_punct),
+	/* 0xb5 */	(vl_print | vl_punct),
+	/* 0xb6 */	(vl_print | vl_punct),
+	/* 0xb7 */	(vl_print | vl_punct),
+	/* 0xb8 */	(vl_print | vl_punct),
+	/* 0xb9 */	(vl_print | vl_punct),
+	/* 0xba */	(vl_print | vl_punct),
+	/* 0xbb */	(vl_print | vl_punct),
+	/* 0xbc */	(vl_print | vl_punct),
+	/* 0xbd */	(vl_print | vl_punct),
+	/* 0xbe */	(vl_print | vl_punct),
+	/* 0xbf */	(vl_print | vl_punct),
+	/* 0xc0 */	(vl_print | vl_punct),
+	/* 0xc1 */	(vl_print | vl_punct),
+	/* 0xc2 */	(vl_print | vl_punct),
+	/* 0xc3 */	(vl_print | vl_punct),
+	/* 0xc4 */	(vl_print | vl_punct),
+	/* 0xc5 */	(vl_print | vl_punct),
+	/* 0xc6 */	(vl_print | vl_punct),
+	/* 0xc7 */	(vl_print | vl_punct),
+	/* 0xc8 */	(vl_print | vl_punct),
+	/* 0xc9 */	(vl_print | vl_punct),
+	/* 0xca */	(vl_print | vl_punct),
+	/* 0xcb */	(vl_print | vl_punct),
+	/* 0xcc */	(vl_print | vl_punct),
+	/* 0xcd */	(vl_print | vl_punct),
+	/* 0xce */	(vl_print | vl_punct),
+	/* 0xcf */	(vl_print | vl_punct),
+	/* 0xd0 */	(vl_print | vl_punct),
+	/* 0xd1 */	(vl_print | vl_punct),
+	/* 0xd2 */	(vl_print | vl_punct),
+	/* 0xd3 */	(vl_print | vl_punct),
+	/* 0xd4 */	(vl_print | vl_punct),
+	/* 0xd5 */	(vl_print | vl_punct),
+	/* 0xd6 */	(vl_print | vl_punct),
+	/* 0xd7 */	(vl_print | vl_punct),
+	/* 0xd8 */	(vl_print | vl_punct),
+	/* 0xd9 */	(vl_print | vl_punct),
+	/* 0xda */	(vl_print | vl_punct),
+	/* 0xdb */	(vl_print | vl_punct),
+	/* 0xdc */	(vl_print | vl_punct),
+	/* 0xdd */	(vl_print | vl_punct),
+	/* 0xde */	(vl_print | vl_punct),
+	/* 0xdf */	(vl_print | vl_punct),
+	/* 0xe0 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xe1 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xe2 */	(vl_alpha | vl_print | vl_upper),
+	/* 0xe3 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xe4 */	(vl_alpha | vl_print | vl_upper),
+	/* 0xe5 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xe6 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xe7 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xe8 */	(vl_alpha | vl_print | vl_upper),
+	/* 0xe9 */	(vl_alpha | vl_print | vl_upper),
+	/* 0xea */	(vl_alpha | vl_print | vl_upper),
+	/* 0xeb */	(vl_alpha | vl_lower | vl_print),
+	/* 0xec */	(vl_print | vl_punct),
+	/* 0xed */	(vl_alpha | vl_lower | vl_print),
+	/* 0xee */	(vl_alpha | vl_lower | vl_print),
+	/* 0xef */	(vl_print | vl_punct),
+	/* 0xf0 */	(vl_print | vl_punct),
+	/* 0xf1 */	(vl_print | vl_punct),
+	/* 0xf2 */	(vl_print | vl_punct),
+	/* 0xf3 */	(vl_print | vl_punct),
+	/* 0xf4 */	(vl_print | vl_punct),
+	/* 0xf5 */	(vl_print | vl_punct),
+	/* 0xf6 */	(vl_print | vl_punct),
+	/* 0xf7 */	(vl_print | vl_punct),
+	/* 0xf8 */	(vl_print | vl_punct),
+	/* 0xf9 */	(vl_print | vl_punct),
+	/* 0xfa */	(vl_print | vl_punct),
+	/* 0xfb */	(vl_print | vl_punct),
+	/* 0xfc */	(vl_alpha | vl_print),
+	/* 0xfd */	(vl_print | vl_punct),
+	/* 0xfe */	(vl_print | vl_punct),
+	/* 0xff */	(vl_print | vl_punct),
+    },
+};
+
+/*  43:CP771 */
+static const GNREIGHT_ENC encode_CP771 = {
+    /* encode_CP771.chmap */
+    {
+	 0x410, 0x411, 0x412, 0x413, 0x414, 0x415, 0x416, 0x417,
+	 0x418, 0x419, 0x41a, 0x41b, 0x41c, 0x41d, 0x41e, 0x41f,
+	 0x420, 0x421, 0x422, 0x423, 0x424, 0x425, 0x426, 0x427,
+	 0x428, 0x429, 0x42a, 0x42b, 0x42c, 0x42d, 0x42e, 0x42f,
+	 0x430, 0x431, 0x432, 0x433, 0x434, 0x435, 0x436, 0x437,
+	 0x438, 0x439, 0x43a, 0x43b, 0x43c, 0x43d, 0x43e, 0x43f,
+	0x2591,0x2592,0x2593,0x2502,0x2524,0x2561,0x2562,0x2556,
+	0x2555,0x2563,0x2551,0x2557,0x255d,0x255c,0x255b,0x2510,
+	0x2514,0x2534,0x252c,0x251c,0x2500,0x253c,0x255e,0x255f,
+	0x255a,0x2554,0x2569,0x2566,0x2560,0x2550,0x256c,0x2567,
+	0x2568,0x2564,0x2565,0x2559,0x2558,0x2552,0x2553,0x256b,
+	0x256a,0x2518,0x250c,0x2588, 0x104, 0x105, 0x10c, 0x10d,
+	 0x440, 0x441, 0x442, 0x443, 0x444, 0x445, 0x446, 0x447,
+	 0x448, 0x449, 0x44a, 0x44b, 0x44c, 0x44d, 0x44e, 0x44f,
+	 0x118, 0x119, 0x116, 0x117, 0x12e, 0x12f, 0x160, 0x161,
+	 0x172, 0x173, 0x16a, 0x16b, 0x17d, 0x17e,0x25a0,  0xa0
+    },
+    /* encode_CP771.lower */
+    {
+	  0xa0,  0xa1,  0xa2,  0xa3,  0xa4,  0xa5,  0xa6,  0xa7,
+	  0xa8,  0xa9,  0xaa,  0xab,  0xac,  0xad,  0xae,  0xaf,
+	  0xe0,  0xe1,  0xe2,  0xe3,  0xe4,  0xe5,  0xe6,  0xe7,
+	  0xe8,  0xe9,  0xea,  0xeb,  0xec,  0xed,  0xee,  0xef,
+	  0xa0,  0xa1,  0xa2,  0xa3,  0xa4,  0xa5,  0xa6,  0xa7,
+	  0xa8,  0xa9,  0xaa,  0xab,  0xac,  0xad,  0xae,  0xaf,
+	  0xb0,  0xb1,  0xb2,  0xb3,  0xb4,  0xb5,  0xb6,  0xb7,
+	  0xb8,  0xb9,  0xba,  0xbb,  0xbc,  0xbd,  0xbe,  0xbf,
+	  0xc0,  0xc1,  0xc2,  0xc3,  0xc4,  0xc5,  0xc6,  0xc7,
+	  0xc8,  0xc9,  0xca,  0xcb,  0xcc,  0xcd,  0xce,  0xcf,
+	  0xd0,  0xd1,  0xd2,  0xd3,  0xd4,  0xd5,  0xd6,  0xd7,
+	  0xd8,  0xd9,  0xda,  0xdb,  0xdd,  0xdd,  0xdf,  0xdf,
+	  0xe0,  0xe1,  0xe2,  0xe3,  0xe4,  0xe5,  0xe6,  0xe7,
+	  0xe8,  0xe9,  0xea,  0xeb,  0xec,  0xed,  0xee,  0xef,
+	  0xf1,  0xf1,  0xf3,  0xf3,  0xf5,  0xf5,  0xf7,  0xf7,
+	  0xf9,  0xf9,  0xfb,  0xfb,  0xfd,  0xfd,  0xfe,  0xff
+    },
+    /* encode_CP771.upper */
+    {
+	  0x80,  0x81,  0x82,  0x83,  0x84,  0x85,  0x86,  0x87,
+	  0x88,  0x89,  0x8a,  0x8b,  0x8c,  0x8d,  0x8e,  0x8f,
+	  0x90,  0x91,  0x92,  0x93,  0x94,  0x95,  0x96,  0x97,
+	  0x98,  0x99,  0x9a,  0x9b,  0x9c,  0x9d,  0x9e,  0x9f,
+	  0x80,  0x81,  0x82,  0x83,  0x84,  0x85,  0x86,  0x87,
+	  0x88,  0x89,  0x8a,  0x8b,  0x8c,  0x8d,  0x8e,  0x8f,
+	  0xb0,  0xb1,  0xb2,  0xb3,  0xb4,  0xb5,  0xb6,  0xb7,
+	  0xb8,  0xb9,  0xba,  0xbb,  0xbc,  0xbd,  0xbe,  0xbf,
+	  0xc0,  0xc1,  0xc2,  0xc3,  0xc4,  0xc5,  0xc6,  0xc7,
+	  0xc8,  0xc9,  0xca,  0xcb,  0xcc,  0xcd,  0xce,  0xcf,
+	  0xd0,  0xd1,  0xd2,  0xd3,  0xd4,  0xd5,  0xd6,  0xd7,
+	  0xd8,  0xd9,  0xda,  0xdb,  0xdc,  0xdc,  0xde,  0xde,
+	  0x90,  0x91,  0x92,  0x93,  0x94,  0x95,  0x96,  0x97,
+	  0x98,  0x99,  0x9a,  0x9b,  0x9c,  0x9d,  0x9e,  0x9f,
+	  0xf0,  0xf0,  0xf2,  0xf2,  0xf4,  0xf4,  0xf6,  0xf6,
+	  0xf8,  0xf8,  0xfa,  0xfa,  0xfc,  0xfc,  0xfe,  0xff
+    },
+    /* encode_CP771.ctype */
+    {
+	/* 0x80 */	(vl_alpha | vl_print | vl_upper),
+	/* 0x81 */	(vl_alpha | vl_print | vl_upper),
+	/* 0x82 */	(vl_alpha | vl_print | vl_upper),
+	/* 0x83 */	(vl_alpha | vl_print | vl_upper),
+	/* 0x84 */	(vl_alpha | vl_print | vl_upper),
+	/* 0x85 */	(vl_alpha | vl_print | vl_upper),
+	/* 0x86 */	(vl_alpha | vl_print | vl_upper),
+	/* 0x87 */	(vl_alpha | vl_print | vl_upper),
+	/* 0x88 */	(vl_alpha | vl_print | vl_upper),
+	/* 0x89 */	(vl_alpha | vl_print | vl_upper),
+	/* 0x8a */	(vl_alpha | vl_print | vl_upper),
+	/* 0x8b */	(vl_alpha | vl_print | vl_upper),
+	/* 0x8c */	(vl_alpha | vl_print | vl_upper),
+	/* 0x8d */	(vl_alpha | vl_print | vl_upper),
+	/* 0x8e */	(vl_alpha | vl_print | vl_upper),
+	/* 0x8f */	(vl_alpha | vl_print | vl_upper),
+	/* 0x90 */	(vl_alpha | vl_print | vl_upper),
+	/* 0x91 */	(vl_alpha | vl_print | vl_upper),
+	/* 0x92 */	(vl_alpha | vl_print | vl_upper),
+	/* 0x93 */	(vl_alpha | vl_print | vl_upper),
+	/* 0x94 */	(vl_alpha | vl_print | vl_upper),
+	/* 0x95 */	(vl_alpha | vl_print | vl_upper),
+	/* 0x96 */	(vl_alpha | vl_print | vl_upper),
+	/* 0x97 */	(vl_alpha | vl_print | vl_upper),
+	/* 0x98 */	(vl_alpha | vl_print | vl_upper),
+	/* 0x99 */	(vl_alpha | vl_print | vl_upper),
+	/* 0x9a */	(vl_alpha | vl_print | vl_upper),
+	/* 0x9b */	(vl_alpha | vl_print | vl_upper),
+	/* 0x9c */	(vl_alpha | vl_print | vl_upper),
+	/* 0x9d */	(vl_alpha | vl_print | vl_upper),
+	/* 0x9e */	(vl_alpha | vl_print | vl_upper),
+	/* 0x9f */	(vl_alpha | vl_print | vl_upper),
+	/* 0xa0 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xa1 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xa2 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xa3 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xa4 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xa5 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xa6 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xa7 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xa8 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xa9 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xaa */	(vl_alpha | vl_lower | vl_print),
+	/* 0xab */	(vl_alpha | vl_lower | vl_print),
+	/* 0xac */	(vl_alpha | vl_lower | vl_print),
+	/* 0xad */	(vl_alpha | vl_lower | vl_print),
+	/* 0xae */	(vl_alpha | vl_lower | vl_print),
+	/* 0xaf */	(vl_alpha | vl_lower | vl_print),
+	/* 0xb0 */	(vl_print | vl_punct),
+	/* 0xb1 */	(vl_print | vl_punct),
+	/* 0xb2 */	(vl_print | vl_punct),
+	/* 0xb3 */	(vl_print | vl_punct),
+	/* 0xb4 */	(vl_print | vl_punct),
+	/* 0xb5 */	(vl_print | vl_punct),
+	/* 0xb6 */	(vl_print | vl_punct),
+	/* 0xb7 */	(vl_print | vl_punct),
+	/* 0xb8 */	(vl_print | vl_punct),
+	/* 0xb9 */	(vl_print | vl_punct),
+	/* 0xba */	(vl_print | vl_punct),
+	/* 0xbb */	(vl_print | vl_punct),
+	/* 0xbc */	(vl_print | vl_punct),
+	/* 0xbd */	(vl_print | vl_punct),
+	/* 0xbe */	(vl_print | vl_punct),
+	/* 0xbf */	(vl_print | vl_punct),
+	/* 0xc0 */	(vl_print | vl_punct),
+	/* 0xc1 */	(vl_print | vl_punct),
+	/* 0xc2 */	(vl_print | vl_punct),
+	/* 0xc3 */	(vl_print | vl_punct),
+	/* 0xc4 */	(vl_print | vl_punct),
+	/* 0xc5 */	(vl_print | vl_punct),
+	/* 0xc6 */	(vl_print | vl_punct),
+	/* 0xc7 */	(vl_print | vl_punct),
+	/* 0xc8 */	(vl_print | vl_punct),
+	/* 0xc9 */	(vl_print | vl_punct),
+	/* 0xca */	(vl_print | vl_punct),
+	/* 0xcb */	(vl_print | vl_punct),
+	/* 0xcc */	(vl_print | vl_punct),
+	/* 0xcd */	(vl_print | vl_punct),
+	/* 0xce */	(vl_print | vl_punct),
+	/* 0xcf */	(vl_print | vl_punct),
+	/* 0xd0 */	(vl_print | vl_punct),
+	/* 0xd1 */	(vl_print | vl_punct),
+	/* 0xd2 */	(vl_print | vl_punct),
+	/* 0xd3 */	(vl_print | vl_punct),
+	/* 0xd4 */	(vl_print | vl_punct),
+	/* 0xd5 */	(vl_print | vl_punct),
+	/* 0xd6 */	(vl_print | vl_punct),
+	/* 0xd7 */	(vl_print | vl_punct),
+	/* 0xd8 */	(vl_print | vl_punct),
+	/* 0xd9 */	(vl_print | vl_punct),
+	/* 0xda */	(vl_print | vl_punct),
+	/* 0xdb */	(vl_print | vl_punct),
+	/* 0xdc */	(vl_alpha | vl_print | vl_upper),
+	/* 0xdd */	(vl_alpha | vl_lower | vl_print),
+	/* 0xde */	(vl_alpha | vl_print | vl_upper),
+	/* 0xdf */	(vl_alpha | vl_lower | vl_print),
+	/* 0xe0 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xe1 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xe2 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xe3 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xe4 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xe5 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xe6 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xe7 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xe8 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xe9 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xea */	(vl_alpha | vl_lower | vl_print),
+	/* 0xeb */	(vl_alpha | vl_lower | vl_print),
+	/* 0xec */	(vl_alpha | vl_lower | vl_print),
+	/* 0xed */	(vl_alpha | vl_lower | vl_print),
+	/* 0xee */	(vl_alpha | vl_lower | vl_print),
+	/* 0xef */	(vl_alpha | vl_lower | vl_print),
+	/* 0xf0 */	(vl_alpha | vl_print | vl_upper),
+	/* 0xf1 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xf2 */	(vl_alpha | vl_print | vl_upper),
+	/* 0xf3 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xf4 */	(vl_alpha | vl_print | vl_upper),
+	/* 0xf5 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xf6 */	(vl_alpha | vl_print | vl_upper),
+	/* 0xf7 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xf8 */	(vl_alpha | vl_print | vl_upper),
+	/* 0xf9 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xfa */	(vl_alpha | vl_print | vl_upper),
+	/* 0xfb */	(vl_alpha | vl_lower | vl_print),
+	/* 0xfc */	(vl_alpha | vl_print | vl_upper),
+	/* 0xfd */	(vl_alpha | vl_lower | vl_print),
+	/* 0xfe */	(vl_print | vl_punct),
+	/* 0xff */	(vl_print | vl_punct),
+    },
+};
+
+/*  44:CP772 */
+static const GNREIGHT_ENC encode_CP772 = {
+    /* encode_CP772.chmap */
+    {
+	 0x410, 0x411, 0x412, 0x413, 0x414, 0x415, 0x416, 0x417,
+	 0x418, 0x419, 0x41a, 0x41b, 0x41c, 0x41d, 0x41e, 0x41f,
+	 0x420, 0x421, 0x422, 0x423, 0x424, 0x425, 0x426, 0x427,
+	 0x428, 0x429, 0x42a, 0x42b, 0x42c, 0x42d, 0x42e, 0x42f,
+	 0x430, 0x431, 0x432, 0x433, 0x434, 0x435, 0x436, 0x437,
+	 0x438, 0x439, 0x43a, 0x43b, 0x43c, 0x43d, 0x43e, 0x43f,
+	0x2591,0x2592,0x2593,0x2502,0x2524, 0x104, 0x10c, 0x118,
+	 0x116,0x2563,0x2551,0x2557,0x255d, 0x12e, 0x160,0x2510,
+	0x2514,0x2534,0x252c,0x251c,0x2500,0x253c, 0x172, 0x16a,
+	0x255a,0x2554,0x2569,0x2566,0x2560,0x2550,0x256c, 0x17d,
+	 0x105, 0x10d, 0x119, 0x117, 0x12f, 0x161, 0x173, 0x16b,
+	 0x17e,0x2518,0x250c,0x2588,0x2584,0x258c,0x2590,0x2580,
+	 0x440, 0x441, 0x442, 0x443, 0x444, 0x445, 0x446, 0x447,
+	 0x448, 0x449, 0x44a, 0x44b, 0x44c, 0x44d, 0x44e, 0x44f,
+	 0x401, 0x451,0x2265,0x2264,0x201e,0x201c,  0xf7,0x2248,
+	  0xb0,0x2219,  0xb7,0x221a,0x207f,  0xb2,0x25a0,  0xa0
+    },
+    /* encode_CP772.lower */
+    {
+	  0xa0,  0xa1,  0xa2,  0xa3,  0xa4,  0xa5,  0xa6,  0xa7,
+	  0xa8,  0xa9,  0xaa,  0xab,  0xac,  0xad,  0xae,  0xaf,
+	  0xe0,  0xe1,  0xe2,  0xe3,  0xe4,  0xe5,  0xe6,  0xe7,
+	  0xe8,  0xe9,  0xea,  0xeb,  0xec,  0xed,  0xee,  0xef,
+	  0xa0,  0xa1,  0xa2,  0xa3,  0xa4,  0xa5,  0xa6,  0xa7,
+	  0xa8,  0xa9,  0xaa,  0xab,  0xac,  0xad,  0xae,  0xaf,
+	  0xb0,  0xb1,  0xb2,  0xb3,  0xb4,  0xd0,  0xd1,  0xd2,
+	  0xd3,  0xb9,  0xba,  0xbb,  0xbc,  0xd4,  0xd5,  0xbf,
+	  0xc0,  0xc1,  0xc2,  0xc3,  0xc4,  0xc5,  0xd6,  0xd7,
+	  0xc8,  0xc9,  0xca,  0xcb,  0xcc,  0xcd,  0xce,  0xd8,
+	  0xd0,  0xd1,  0xd2,  0xd3,  0xd4,  0xd5,  0xd6,  0xd7,
+	  0xd8,  0xd9,  0xda,  0xdb,  0xdc,  0xdd,  0xde,  0xdf,
+	  0xe0,  0xe1,  0xe2,  0xe3,  0xe4,  0xe5,  0xe6,  0xe7,
+	  0xe8,  0xe9,  0xea,  0xeb,  0xec,  0xed,  0xee,  0xef,
+	  0xf1,  0xf1,  0xf2,  0xf3,  0xf4,  0xf5,  0xf6,  0xf7,
+	  0xf8,  0xf9,  0xfa,  0xfb,  0xfc,  0xfd,  0xfe,  0xff
+    },
+    /* encode_CP772.upper */
+    {
+	  0x80,  0x81,  0x82,  0x83,  0x84,  0x85,  0x86,  0x87,
+	  0x88,  0x89,  0x8a,  0x8b,  0x8c,  0x8d,  0x8e,  0x8f,
+	  0x90,  0x91,  0x92,  0x93,  0x94,  0x95,  0x96,  0x97,
+	  0x98,  0x99,  0x9a,  0x9b,  0x9c,  0x9d,  0x9e,  0x9f,
+	  0x80,  0x81,  0x82,  0x83,  0x84,  0x85,  0x86,  0x87,
+	  0x88,  0x89,  0x8a,  0x8b,  0x8c,  0x8d,  0x8e,  0x8f,
+	  0xb0,  0xb1,  0xb2,  0xb3,  0xb4,  0xb5,  0xb6,  0xb7,
+	  0xb8,  0xb9,  0xba,  0xbb,  0xbc,  0xbd,  0xbe,  0xbf,
+	  0xc0,  0xc1,  0xc2,  0xc3,  0xc4,  0xc5,  0xc6,  0xc7,
+	  0xc8,  0xc9,  0xca,  0xcb,  0xcc,  0xcd,  0xce,  0xcf,
+	  0xb5,  0xb6,  0xb7,  0xb8,  0xbd,  0xbe,  0xc6,  0xc7,
+	  0xcf,  0xd9,  0xda,  0xdb,  0xdc,  0xdd,  0xde,  0xdf,
+	  0x90,  0x91,  0x92,  0x93,  0x94,  0x95,  0x96,  0x97,
+	  0x98,  0x99,  0x9a,  0x9b,  0x9c,  0x9d,  0x9e,  0x9f,
+	  0xf0,  0xf0,  0xf2,  0xf3,  0xf4,  0xf5,  0xf6,  0xf7,
+	  0xf8,  0xf9,  0xfa,  0xfb,  0xfc,  0xfd,  0xfe,  0xff
+    },
+    /* encode_CP772.ctype */
+    {
+	/* 0x80 */	(vl_alpha | vl_print | vl_upper),
+	/* 0x81 */	(vl_alpha | vl_print | vl_upper),
+	/* 0x82 */	(vl_alpha | vl_print | vl_upper),
+	/* 0x83 */	(vl_alpha | vl_print | vl_upper),
+	/* 0x84 */	(vl_alpha | vl_print | vl_upper),
+	/* 0x85 */	(vl_alpha | vl_print | vl_upper),
+	/* 0x86 */	(vl_alpha | vl_print | vl_upper),
+	/* 0x87 */	(vl_alpha | vl_print | vl_upper),
+	/* 0x88 */	(vl_alpha | vl_print | vl_upper),
+	/* 0x89 */	(vl_alpha | vl_print | vl_upper),
+	/* 0x8a */	(vl_alpha | vl_print | vl_upper),
+	/* 0x8b */	(vl_alpha | vl_print | vl_upper),
+	/* 0x8c */	(vl_alpha | vl_print | vl_upper),
+	/* 0x8d */	(vl_alpha | vl_print | vl_upper),
+	/* 0x8e */	(vl_alpha | vl_print | vl_upper),
+	/* 0x8f */	(vl_alpha | vl_print | vl_upper),
+	/* 0x90 */	(vl_alpha | vl_print | vl_upper),
+	/* 0x91 */	(vl_alpha | vl_print | vl_upper),
+	/* 0x92 */	(vl_alpha | vl_print | vl_upper),
+	/* 0x93 */	(vl_alpha | vl_print | vl_upper),
+	/* 0x94 */	(vl_alpha | vl_print | vl_upper),
+	/* 0x95 */	(vl_alpha | vl_print | vl_upper),
+	/* 0x96 */	(vl_alpha | vl_print | vl_upper),
+	/* 0x97 */	(vl_alpha | vl_print | vl_upper),
+	/* 0x98 */	(vl_alpha | vl_print | vl_upper),
+	/* 0x99 */	(vl_alpha | vl_print | vl_upper),
+	/* 0x9a */	(vl_alpha | vl_print | vl_upper),
+	/* 0x9b */	(vl_alpha | vl_print | vl_upper),
+	/* 0x9c */	(vl_alpha | vl_print | vl_upper),
+	/* 0x9d */	(vl_alpha | vl_print | vl_upper),
+	/* 0x9e */	(vl_alpha | vl_print | vl_upper),
+	/* 0x9f */	(vl_alpha | vl_print | vl_upper),
+	/* 0xa0 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xa1 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xa2 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xa3 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xa4 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xa5 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xa6 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xa7 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xa8 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xa9 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xaa */	(vl_alpha | vl_lower | vl_print),
+	/* 0xab */	(vl_alpha | vl_lower | vl_print),
+	/* 0xac */	(vl_alpha | vl_lower | vl_print),
+	/* 0xad */	(vl_alpha | vl_lower | vl_print),
+	/* 0xae */	(vl_alpha | vl_lower | vl_print),
+	/* 0xaf */	(vl_alpha | vl_lower | vl_print),
+	/* 0xb0 */	(vl_print | vl_punct),
+	/* 0xb1 */	(vl_print | vl_punct),
+	/* 0xb2 */	(vl_print | vl_punct),
+	/* 0xb3 */	(vl_print | vl_punct),
+	/* 0xb4 */	(vl_print | vl_punct),
+	/* 0xb5 */	(vl_alpha | vl_print | vl_upper),
+	/* 0xb6 */	(vl_alpha | vl_print | vl_upper),
+	/* 0xb7 */	(vl_alpha | vl_print | vl_upper),
+	/* 0xb8 */	(vl_alpha | vl_print | vl_upper),
+	/* 0xb9 */	(vl_print | vl_punct),
+	/* 0xba */	(vl_print | vl_punct),
+	/* 0xbb */	(vl_print | vl_punct),
+	/* 0xbc */	(vl_print | vl_punct),
+	/* 0xbd */	(vl_alpha | vl_print | vl_upper),
+	/* 0xbe */	(vl_alpha | vl_print | vl_upper),
+	/* 0xbf */	(vl_print | vl_punct),
+	/* 0xc0 */	(vl_print | vl_punct),
+	/* 0xc1 */	(vl_print | vl_punct),
+	/* 0xc2 */	(vl_print | vl_punct),
+	/* 0xc3 */	(vl_print | vl_punct),
+	/* 0xc4 */	(vl_print | vl_punct),
+	/* 0xc5 */	(vl_print | vl_punct),
+	/* 0xc6 */	(vl_alpha | vl_print | vl_upper),
+	/* 0xc7 */	(vl_alpha | vl_print | vl_upper),
+	/* 0xc8 */	(vl_print | vl_punct),
+	/* 0xc9 */	(vl_print | vl_punct),
+	/* 0xca */	(vl_print | vl_punct),
+	/* 0xcb */	(vl_print | vl_punct),
+	/* 0xcc */	(vl_print | vl_punct),
+	/* 0xcd */	(vl_print | vl_punct),
+	/* 0xce */	(vl_print | vl_punct),
+	/* 0xcf */	(vl_alpha | vl_print | vl_upper),
+	/* 0xd0 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xd1 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xd2 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xd3 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xd4 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xd5 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xd6 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xd7 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xd8 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xd9 */	(vl_print | vl_punct),
+	/* 0xda */	(vl_print | vl_punct),
+	/* 0xdb */	(vl_print | vl_punct),
+	/* 0xdc */	(vl_print | vl_punct),
+	/* 0xdd */	(vl_print | vl_punct),
+	/* 0xde */	(vl_print | vl_punct),
+	/* 0xdf */	(vl_print | vl_punct),
+	/* 0xe0 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xe1 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xe2 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xe3 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xe4 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xe5 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xe6 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xe7 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xe8 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xe9 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xea */	(vl_alpha | vl_lower | vl_print),
+	/* 0xeb */	(vl_alpha | vl_lower | vl_print),
+	/* 0xec */	(vl_alpha | vl_lower | vl_print),
+	/* 0xed */	(vl_alpha | vl_lower | vl_print),
+	/* 0xee */	(vl_alpha | vl_lower | vl_print),
+	/* 0xef */	(vl_alpha | vl_lower | vl_print),
+	/* 0xf0 */	(vl_alpha | vl_print | vl_upper),
+	/* 0xf1 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xf2 */	(vl_print | vl_punct),
+	/* 0xf3 */	(vl_print | vl_punct),
+	/* 0xf4 */	(vl_print | vl_punct),
+	/* 0xf5 */	(vl_print | vl_punct),
+	/* 0xf6 */	(vl_print | vl_punct),
+	/* 0xf7 */	(vl_print | vl_punct),
+	/* 0xf8 */	(vl_print | vl_punct),
+	/* 0xf9 */	(vl_print | vl_punct),
+	/* 0xfa */	(vl_print | vl_punct),
+	/* 0xfb */	(vl_print | vl_punct),
+	/* 0xfc */	(vl_alpha | vl_print),
+	/* 0xfd */	(vl_print | vl_punct),
+	/* 0xfe */	(vl_print | vl_punct),
+	/* 0xff */	(vl_print | vl_punct),
+    },
+};
+
+/*  45:CP773 */
+static const GNREIGHT_ENC encode_CP773 = {
+    /* encode_CP773.chmap */
+    {
+	 0x106,  0xfc,  0xe9, 0x101,  0xe4, 0x123,  0xe5, 0x107,
+	 0x142, 0x113, 0x156, 0x157, 0x12b, 0x179,  0xc4,  0xc5,
+	  0xc9,  0xe6,  0xc6, 0x14d,  0xf6, 0x122,  0xa2, 0x15a,
+	 0x15b,  0xd6,  0xdc,  0xf8,  0xa3,  0xd8,  0xd7,  0xa4,
+	 0x100, 0x12a,  0xf3, 0x17b, 0x17c, 0x17a,0x201d,  0xa6,
+	  0xa9,  0xae,  0xac,  0xbd,  0xbc, 0x141,  0xab,  0xbb,
+	0x2591,0x2592,0x2593,0x2502,0x2524,0x2561,0x2562,0x2556,
+	0x2555,0x2563,0x2551,0x2557,0x255d,0x255c,0x255b,0x2510,
+	0x2514,0x2534,0x252c,0x251c,0x2500,0x253c,0x255e,0x255f,
+	0x255a,0x2554,0x2569,0x2566,0x2560,0x2550,0x256c,0x2567,
+	0x2568,0x2564,0x2565,0x2559,0x2558,0x2552,0x2553,0x256b,
+	0x256a,0x2518,0x250c,0x2588, 0x104, 0x105, 0x10c, 0x10d,
+	  0xd3,  0xdf, 0x14c, 0x143,  0xf5,  0xd5,  0xb5, 0x144,
+	 0x136, 0x137, 0x13b, 0x13c, 0x146, 0x112, 0x145,0x2019,
+	 0x118, 0x119, 0x116, 0x117, 0x12e, 0x12f, 0x160, 0x161,
+	 0x172, 0x173, 0x16a, 0x16b, 0x17d, 0x17e,0x25a0,  0xa0
+    },
+    /* encode_CP773.lower */
+    {
+	  0x87,  0x81,  0x82,  0x83,  0x84,  0x85,  0x86,  0x87,
+	  0x88,  0x89,  0x8b,  0x8b,  0x8c,  0xa5,  0x84,  0x86,
+	  0x82,  0x91,  0x91,  0x93,  0x94,  0x85,  0x96,  0x98,
+	  0x98,  0x94,  0x81,  0x9b,  0x9c,  0x9b,  0x9e,  0x9f,
+	  0x83,  0x8c,  0xa2,  0xa4,  0xa4,  0xa5,  0xa6,  0xa7,
+	  0xa8,  0xa9,  0xaa,  0xab,  0xac,  0x88,  0xae,  0xaf,
+	  0xb0,  0xb1,  0xb2,  0xb3,  0xb4,  0xb5,  0xb6,  0xb7,
+	  0xb8,  0xb9,  0xba,  0xbb,  0xbc,  0xbd,  0xbe,  0xbf,
+	  0xc0,  0xc1,  0xc2,  0xc3,  0xc4,  0xc5,  0xc6,  0xc7,
+	  0xc8,  0xc9,  0xca,  0xcb,  0xcc,  0xcd,  0xce,  0xcf,
+	  0xd0,  0xd1,  0xd2,  0xd3,  0xd4,  0xd5,  0xd6,  0xd7,
+	  0xd8,  0xd9,  0xda,  0xdb,  0xdd,  0xdd,  0xdf,  0xdf,
+	  0xa2,  0xe1,  0x93,  0xe7,  0xe4,  0xe4,  0xe6,  0xe7,
+	  0xe9,  0xe9,  0xeb,  0xeb,  0xec,  0x89,  0xec,  0xef,
+	  0xf1,  0xf1,  0xf3,  0xf3,  0xf5,  0xf5,  0xf7,  0xf7,
+	  0xf9,  0xf9,  0xfb,  0xfb,  0xfd,  0xfd,  0xfe,  0xff
+    },
+    /* encode_CP773.upper */
+    {
+	  0x80,  0x9a,  0x90,  0xa0,  0x8e,  0x95,  0x8f,  0x80,
+	  0xad,  0xed,  0x8a,  0x8a,  0xa1,  0x8d,  0x8e,  0x8f,
+	  0x90,  0x92,  0x92,  0xe2,  0x99,  0x95,  0x96,  0x97,
+	  0x97,  0x99,  0x9a,  0x9d,  0x9c,  0x9d,  0x9e,  0x9f,
+	  0xa0,  0xa1,  0xe0,  0xa3,  0xa3,  0x8d,  0xa6,  0xa7,
+	  0xa8,  0xa9,  0xaa,  0xab,  0xac,  0xad,  0xae,  0xaf,
+	  0xb0,  0xb1,  0xb2,  0xb3,  0xb4,  0xb5,  0xb6,  0xb7,
+	  0xb8,  0xb9,  0xba,  0xbb,  0xbc,  0xbd,  0xbe,  0xbf,
+	  0xc0,  0xc1,  0xc2,  0xc3,  0xc4,  0xc5,  0xc6,  0xc7,
+	  0xc8,  0xc9,  0xca,  0xcb,  0xcc,  0xcd,  0xce,  0xcf,
+	  0xd0,  0xd1,  0xd2,  0xd3,  0xd4,  0xd5,  0xd6,  0xd7,
+	  0xd8,  0xd9,  0xda,  0xdb,  0xdc,  0xdc,  0xde,  0xde,
+	  0xe0,  0xe1,  0xe2,  0xe3,  0xe5,  0xe5,  0xe6,  0xe3,
+	  0xe8,  0xe8,  0xea,  0xea,  0xee,  0xed,  0xee,  0xef,
+	  0xf0,  0xf0,  0xf2,  0xf2,  0xf4,  0xf4,  0xf6,  0xf6,
+	  0xf8,  0xf8,  0xfa,  0xfa,  0xfc,  0xfc,  0xfe,  0xff
+    },
+    /* encode_CP773.ctype */
+    {
+	/* 0x80 */	(vl_alpha | vl_print | vl_upper),
+	/* 0x81 */	(vl_alpha | vl_lower | vl_print),
+	/* 0x82 */	(vl_alpha | vl_lower | vl_print),
+	/* 0x83 */	(vl_alpha | vl_lower | vl_print),
+	/* 0x84 */	(vl_alpha | vl_lower | vl_print),
+	/* 0x85 */	(vl_alpha | vl_lower | vl_print),
+	/* 0x86 */	(vl_alpha | vl_lower | vl_print),
+	/* 0x87 */	(vl_alpha | vl_lower | vl_print),
+	/* 0x88 */	(vl_alpha | vl_lower | vl_print),
+	/* 0x89 */	(vl_alpha | vl_lower | vl_print),
+	/* 0x8a */	(vl_alpha | vl_print | vl_upper),
+	/* 0x8b */	(vl_alpha | vl_lower | vl_print),
+	/* 0x8c */	(vl_alpha | vl_lower | vl_print),
+	/* 0x8d */	(vl_alpha | vl_print | vl_upper),
+	/* 0x8e */	(vl_alpha | vl_print | vl_upper),
+	/* 0x8f */	(vl_alpha | vl_print | vl_upper),
+	/* 0x90 */	(vl_alpha | vl_print | vl_upper),
+	/* 0x91 */	(vl_alpha | vl_lower | vl_print),
+	/* 0x92 */	(vl_alpha | vl_print | vl_upper),
+	/* 0x93 */	(vl_alpha | vl_lower | vl_print),
+	/* 0x94 */	(vl_alpha | vl_lower | vl_print),
+	/* 0x95 */	(vl_alpha | vl_print | vl_upper),
+	/* 0x96 */	(vl_print | vl_punct),
+	/* 0x97 */	(vl_alpha | vl_print | vl_upper),
+	/* 0x98 */	(vl_alpha | vl_lower | vl_print),
+	/* 0x99 */	(vl_alpha | vl_print | vl_upper),
+	/* 0x9a */	(vl_alpha | vl_print | vl_upper),
+	/* 0x9b */	(vl_alpha | vl_lower | vl_print),
+	/* 0x9c */	(vl_print | vl_punct),
+	/* 0x9d */	(vl_alpha | vl_print | vl_upper),
+	/* 0x9e */	(vl_print | vl_punct),
+	/* 0x9f */	(vl_print | vl_punct),
+	/* 0xa0 */	(vl_alpha | vl_print | vl_upper),
+	/* 0xa1 */	(vl_alpha | vl_print | vl_upper),
+	/* 0xa2 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xa3 */	(vl_alpha | vl_print | vl_upper),
+	/* 0xa4 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xa5 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xa6 */	(vl_print | vl_punct),
+	/* 0xa7 */	(vl_print | vl_punct),
+	/* 0xa8 */	(vl_print | vl_punct),
+	/* 0xa9 */	(vl_print | vl_punct),
+	/* 0xaa */	(vl_print | vl_punct),
+	/* 0xab */	(vl_print | vl_punct),
+	/* 0xac */	(vl_print | vl_punct),
+	/* 0xad */	(vl_alpha | vl_print | vl_upper),
+	/* 0xae */	(vl_print | vl_punct),
+	/* 0xaf */	(vl_print | vl_punct),
+	/* 0xb0 */	(vl_print | vl_punct),
+	/* 0xb1 */	(vl_print | vl_punct),
+	/* 0xb2 */	(vl_print | vl_punct),
+	/* 0xb3 */	(vl_print | vl_punct),
+	/* 0xb4 */	(vl_print | vl_punct),
+	/* 0xb5 */	(vl_print | vl_punct),
+	/* 0xb6 */	(vl_print | vl_punct),
+	/* 0xb7 */	(vl_print | vl_punct),
+	/* 0xb8 */	(vl_print | vl_punct),
+	/* 0xb9 */	(vl_print | vl_punct),
+	/* 0xba */	(vl_print | vl_punct),
+	/* 0xbb */	(vl_print | vl_punct),
+	/* 0xbc */	(vl_print | vl_punct),
+	/* 0xbd */	(vl_print | vl_punct),
+	/* 0xbe */	(vl_print | vl_punct),
+	/* 0xbf */	(vl_print | vl_punct),
+	/* 0xc0 */	(vl_print | vl_punct),
+	/* 0xc1 */	(vl_print | vl_punct),
+	/* 0xc2 */	(vl_print | vl_punct),
+	/* 0xc3 */	(vl_print | vl_punct),
+	/* 0xc4 */	(vl_print | vl_punct),
+	/* 0xc5 */	(vl_print | vl_punct),
+	/* 0xc6 */	(vl_print | vl_punct),
+	/* 0xc7 */	(vl_print | vl_punct),
+	/* 0xc8 */	(vl_print | vl_punct),
+	/* 0xc9 */	(vl_print | vl_punct),
+	/* 0xca */	(vl_print | vl_punct),
+	/* 0xcb */	(vl_print | vl_punct),
+	/* 0xcc */	(vl_print | vl_punct),
+	/* 0xcd */	(vl_print | vl_punct),
+	/* 0xce */	(vl_print | vl_punct),
+	/* 0xcf */	(vl_print | vl_punct),
+	/* 0xd0 */	(vl_print | vl_punct),
+	/* 0xd1 */	(vl_print | vl_punct),
+	/* 0xd2 */	(vl_print | vl_punct),
+	/* 0xd3 */	(vl_print | vl_punct),
+	/* 0xd4 */	(vl_print | vl_punct),
+	/* 0xd5 */	(vl_print | vl_punct),
+	/* 0xd6 */	(vl_print | vl_punct),
+	/* 0xd7 */	(vl_print | vl_punct),
+	/* 0xd8 */	(vl_print | vl_punct),
+	/* 0xd9 */	(vl_print | vl_punct),
+	/* 0xda */	(vl_print | vl_punct),
+	/* 0xdb */	(vl_print | vl_punct),
+	/* 0xdc */	(vl_alpha | vl_print | vl_upper),
+	/* 0xdd */	(vl_alpha | vl_lower | vl_print),
+	/* 0xde */	(vl_alpha | vl_print | vl_upper),
+	/* 0xdf */	(vl_alpha | vl_lower | vl_print),
+	/* 0xe0 */	(vl_alpha | vl_print | vl_upper),
+	/* 0xe1 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xe2 */	(vl_alpha | vl_print | vl_upper),
+	/* 0xe3 */	(vl_alpha | vl_print | vl_upper),
+	/* 0xe4 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xe5 */	(vl_alpha | vl_print | vl_upper),
+	/* 0xe6 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xe7 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xe8 */	(vl_alpha | vl_print | vl_upper),
+	/* 0xe9 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xea */	(vl_alpha | vl_print | vl_upper),
+	/* 0xeb */	(vl_alpha | vl_lower | vl_print),
+	/* 0xec */	(vl_alpha | vl_lower | vl_print),
+	/* 0xed */	(vl_alpha | vl_print | vl_upper),
+	/* 0xee */	(vl_alpha | vl_print | vl_upper),
+	/* 0xef */	(vl_print | vl_punct),
+	/* 0xf0 */	(vl_alpha | vl_print | vl_upper),
+	/* 0xf1 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xf2 */	(vl_alpha | vl_print | vl_upper),
+	/* 0xf3 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xf4 */	(vl_alpha | vl_print | vl_upper),
+	/* 0xf5 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xf6 */	(vl_alpha | vl_print | vl_upper),
+	/* 0xf7 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xf8 */	(vl_alpha | vl_print | vl_upper),
+	/* 0xf9 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xfa */	(vl_alpha | vl_print | vl_upper),
+	/* 0xfb */	(vl_alpha | vl_lower | vl_print),
+	/* 0xfc */	(vl_alpha | vl_print | vl_upper),
+	/* 0xfd */	(vl_alpha | vl_lower | vl_print),
+	/* 0xfe */	(vl_print | vl_punct),
+	/* 0xff */	(vl_print | vl_punct),
+    },
+};
+
+/*  46:CP774 */
+static const GNREIGHT_ENC encode_CP774 = {
+    /* encode_CP774.chmap */
+    {
+	  0xc7,  0xfc,  0xe9,  0xe2,  0xe4,  0xe0,  0xe5,  0xe7,
+	  0xea,  0xeb,  0xe8,  0xef,  0xee,  0xec,  0xc4,  0xc5,
+	  0xc9,  0xe6,  0xc6,  0xf4,  0xf6,  0xf2,  0xfb,  0xf9,
+	  0xff,  0xd6,  0xdc,  0xa2,  0xa3,  0xa5,0x20a7, 0x192,
+	  0xe1,  0xed,  0xf3,  0xfa,  0xf1,  0xd1,  0xaa,  0xba,
+	  0xbf,0x2310,  0xac,  0xbd,  0xbc,  0xa1,  0xab,  0xbb,
+	0x2591,0x2592,0x2593,0x2502,0x2524, 0x104, 0x10c, 0x118,
+	 0x116,0x2563,0x2551,0x2557,0x255d, 0x12e, 0x160,0x2510,
+	0x2514,0x2534,0x252c,0x251c,0x2500,0x253c, 0x172, 0x16a,
+	0x255a,0x2554,0x2569,0x2566,0x2560,0x2550,0x256c, 0x17d,
+	 0x105, 0x10d, 0x119, 0x117, 0x12f, 0x161, 0x173, 0x16b,
+	 0x17e,0x2518,0x250c,0x2588,0x2584,0x258c,0x2590,0x2580,
+	 0x3b1,  0xdf, 0x393, 0x3c0, 0x3a3, 0x3c3,  0xb5, 0x3c4,
+	 0x3a6, 0x398, 0x3a9, 0x3b4,0x221e, 0x3c6, 0x3b5,0x2229,
+	0x2261,  0xb1,0x2265,0x2264,0x201e,0x201c,  0xf7,0x2248,
+	  0xb0,0x2219,  0xb7,0x221a,0x207f,  0xb2,0x25a0,  0xa0
+    },
+    /* encode_CP774.lower */
+    {
+	  0x87,  0x81,  0x82,  0x83,  0x84,  0x85,  0x86,  0x87,
+	  0x88,  0x89,  0x8a,  0x8b,  0x8c,  0x8d,  0x84,  0x86,
+	  0x82,  0x91,  0x91,  0x93,  0x94,  0x95,  0x96,  0x97,
+	  0x98,  0x94,  0x81,  0x9b,  0x9c,  0x9d,  0x9e,  0x9f,
+	  0xa0,  0xa1,  0xa2,  0xa3,  0xa4,  0xa4,  0xa6,  0xa7,
+	  0xa8,  0xa9,  0xaa,  0xab,  0xac,  0xad,  0xae,  0xaf,
+	  0xb0,  0xb1,  0xb2,  0xb3,  0xb4,  0xd0,  0xd1,  0xd2,
+	  0xd3,  0xb9,  0xba,  0xbb,  0xbc,  0xd4,  0xd5,  0xbf,
+	  0xc0,  0xc1,  0xc2,  0xc3,  0xc4,  0xc5,  0xd6,  0xd7,
+	  0xc8,  0xc9,  0xca,  0xcb,  0xcc,  0xcd,  0xce,  0xd8,
+	  0xd0,  0xd1,  0xd2,  0xd3,  0xd4,  0xd5,  0xd6,  0xd7,
+	  0xd8,  0xd9,  0xda,  0xdb,  0xdc,  0xdd,  0xde,  0xdf,
+	  0xe0,  0xe1,  0xe2,  0xe3,  0xe5,  0xe5,  0xe6,  0xe7,
+	  0xed,  0xe9,  0xea,  0xeb,  0xec,  0xed,  0xee,  0xef,
+	  0xf0,  0xf1,  0xf2,  0xf3,  0xf4,  0xf5,  0xf6,  0xf7,
+	  0xf8,  0xf9,  0xfa,  0xfb,  0xfc,  0xfd,  0xfe,  0xff
+    },
+    /* encode_CP774.upper */
+    {
+	  0x80,  0x9a,  0x90,  0x83,  0x8e,  0x85,  0x8f,  0x80,
+	  0x88,  0x89,  0x8a,  0x8b,  0x8c,  0x8d,  0x8e,  0x8f,
+	  0x90,  0x92,  0x92,  0x93,  0x99,  0x95,  0x96,  0x97,
+	  0x98,  0x99,  0x9a,  0x9b,  0x9c,  0x9d,  0x9e,  0x9f,
+	  0xa0,  0xa1,  0xa2,  0xa3,  0xa5,  0xa5,  0xa6,  0xa7,
+	  0xa8,  0xa9,  0xaa,  0xab,  0xac,  0xad,  0xae,  0xaf,
+	  0xb0,  0xb1,  0xb2,  0xb3,  0xb4,  0xb5,  0xb6,  0xb7,
+	  0xb8,  0xb9,  0xba,  0xbb,  0xbc,  0xbd,  0xbe,  0xbf,
+	  0xc0,  0xc1,  0xc2,  0xc3,  0xc4,  0xc5,  0xc6,  0xc7,
+	  0xc8,  0xc9,  0xca,  0xcb,  0xcc,  0xcd,  0xce,  0xcf,
+	  0xb5,  0xb6,  0xb7,  0xb8,  0xbd,  0xbe,  0xc6,  0xc7,
+	  0xcf,  0xd9,  0xda,  0xdb,  0xdc,  0xdd,  0xde,  0xdf,
+	  0xe0,  0xe1,  0xe2,  0xe3,  0xe4,  0xe4,  0xe6,  0xe7,
+	  0xe8,  0xe9,  0xea,  0xeb,  0xec,  0xe8,  0xee,  0xef,
+	  0xf0,  0xf1,  0xf2,  0xf3,  0xf4,  0xf5,  0xf6,  0xf7,
+	  0xf8,  0xf9,  0xfa,  0xfb,  0xfc,  0xfd,  0xfe,  0xff
+    },
+    /* encode_CP774.ctype */
+    {
+	/* 0x80 */	(vl_alpha | vl_print | vl_upper),
+	/* 0x81 */	(vl_alpha | vl_lower | vl_print),
+	/* 0x82 */	(vl_alpha | vl_lower | vl_print),
+	/* 0x83 */	(vl_alpha | vl_lower | vl_print),
+	/* 0x84 */	(vl_alpha | vl_lower | vl_print),
+	/* 0x85 */	(vl_alpha | vl_lower | vl_print),
+	/* 0x86 */	(vl_alpha | vl_lower | vl_print),
+	/* 0x87 */	(vl_alpha | vl_lower | vl_print),
+	/* 0x88 */	(vl_alpha | vl_lower | vl_print),
+	/* 0x89 */	(vl_alpha | vl_lower | vl_print),
+	/* 0x8a */	(vl_alpha | vl_lower | vl_print),
+	/* 0x8b */	(vl_alpha | vl_lower | vl_print),
+	/* 0x8c */	(vl_alpha | vl_lower | vl_print),
+	/* 0x8d */	(vl_alpha | vl_lower | vl_print),
+	/* 0x8e */	(vl_alpha | vl_print | vl_upper),
+	/* 0x8f */	(vl_alpha | vl_print | vl_upper),
+	/* 0x90 */	(vl_alpha | vl_print | vl_upper),
+	/* 0x91 */	(vl_alpha | vl_lower | vl_print),
+	/* 0x92 */	(vl_alpha | vl_print | vl_upper),
+	/* 0x93 */	(vl_alpha | vl_lower | vl_print),
+	/* 0x94 */	(vl_alpha | vl_lower | vl_print),
+	/* 0x95 */	(vl_alpha | vl_lower | vl_print),
+	/* 0x96 */	(vl_alpha | vl_lower | vl_print),
+	/* 0x97 */	(vl_alpha | vl_lower | vl_print),
+	/* 0x98 */	(vl_alpha | vl_lower | vl_print),
+	/* 0x99 */	(vl_alpha | vl_print | vl_upper),
+	/* 0x9a */	(vl_alpha | vl_print | vl_upper),
+	/* 0x9b */	(vl_print | vl_punct),
+	/* 0x9c */	(vl_print | vl_punct),
+	/* 0x9d */	(vl_print | vl_punct),
+	/* 0x9e */	(vl_print | vl_punct),
+	/* 0x9f */	(vl_alpha | vl_lower | vl_print),
+	/* 0xa0 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xa1 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xa2 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xa3 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xa4 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xa5 */	(vl_alpha | vl_print | vl_upper),
+	/* 0xa6 */	(vl_alpha | vl_print),
+	/* 0xa7 */	(vl_alpha | vl_print),
+	/* 0xa8 */	(vl_print | vl_punct),
+	/* 0xa9 */	(vl_print | vl_punct),
+	/* 0xaa */	(vl_print | vl_punct),
+	/* 0xab */	(vl_print | vl_punct),
+	/* 0xac */	(vl_print | vl_punct),
+	/* 0xad */	(vl_print | vl_punct),
+	/* 0xae */	(vl_print | vl_punct),
+	/* 0xaf */	(vl_print | vl_punct),
+	/* 0xb0 */	(vl_print | vl_punct),
+	/* 0xb1 */	(vl_print | vl_punct),
+	/* 0xb2 */	(vl_print | vl_punct),
+	/* 0xb3 */	(vl_print | vl_punct),
+	/* 0xb4 */	(vl_print | vl_punct),
+	/* 0xb5 */	(vl_alpha | vl_print | vl_upper),
+	/* 0xb6 */	(vl_alpha | vl_print | vl_upper),
+	/* 0xb7 */	(vl_alpha | vl_print | vl_upper),
+	/* 0xb8 */	(vl_alpha | vl_print | vl_upper),
+	/* 0xb9 */	(vl_print | vl_punct),
+	/* 0xba */	(vl_print | vl_punct),
+	/* 0xbb */	(vl_print | vl_punct),
+	/* 0xbc */	(vl_print | vl_punct),
+	/* 0xbd */	(vl_alpha | vl_print | vl_upper),
+	/* 0xbe */	(vl_alpha | vl_print | vl_upper),
+	/* 0xbf */	(vl_print | vl_punct),
+	/* 0xc0 */	(vl_print | vl_punct),
+	/* 0xc1 */	(vl_print | vl_punct),
+	/* 0xc2 */	(vl_print | vl_punct),
+	/* 0xc3 */	(vl_print | vl_punct),
+	/* 0xc4 */	(vl_print | vl_punct),
+	/* 0xc5 */	(vl_print | vl_punct),
+	/* 0xc6 */	(vl_alpha | vl_print | vl_upper),
+	/* 0xc7 */	(vl_alpha | vl_print | vl_upper),
+	/* 0xc8 */	(vl_print | vl_punct),
+	/* 0xc9 */	(vl_print | vl_punct),
+	/* 0xca */	(vl_print | vl_punct),
+	/* 0xcb */	(vl_print | vl_punct),
+	/* 0xcc */	(vl_print | vl_punct),
+	/* 0xcd */	(vl_print | vl_punct),
+	/* 0xce */	(vl_print | vl_punct),
+	/* 0xcf */	(vl_alpha | vl_print | vl_upper),
+	/* 0xd0 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xd1 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xd2 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xd3 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xd4 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xd5 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xd6 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xd7 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xd8 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xd9 */	(vl_print | vl_punct),
+	/* 0xda */	(vl_print | vl_punct),
+	/* 0xdb */	(vl_print | vl_punct),
+	/* 0xdc */	(vl_print | vl_punct),
+	/* 0xdd */	(vl_print | vl_punct),
+	/* 0xde */	(vl_print | vl_punct),
+	/* 0xdf */	(vl_print | vl_punct),
+	/* 0xe0 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xe1 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xe2 */	(vl_alpha | vl_print | vl_upper),
+	/* 0xe3 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xe4 */	(vl_alpha | vl_print | vl_upper),
+	/* 0xe5 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xe6 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xe7 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xe8 */	(vl_alpha | vl_print | vl_upper),
+	/* 0xe9 */	(vl_alpha | vl_print | vl_upper),
+	/* 0xea */	(vl_alpha | vl_print | vl_upper),
+	/* 0xeb */	(vl_alpha | vl_lower | vl_print),
+	/* 0xec */	(vl_print | vl_punct),
+	/* 0xed */	(vl_alpha | vl_lower | vl_print),
+	/* 0xee */	(vl_alpha | vl_lower | vl_print),
+	/* 0xef */	(vl_print | vl_punct),
+	/* 0xf0 */	(vl_print | vl_punct),
+	/* 0xf1 */	(vl_print | vl_punct),
+	/* 0xf2 */	(vl_print | vl_punct),
+	/* 0xf3 */	(vl_print | vl_punct),
+	/* 0xf4 */	(vl_print | vl_punct),
+	/* 0xf5 */	(vl_print | vl_punct),
+	/* 0xf6 */	(vl_print | vl_punct),
+	/* 0xf7 */	(vl_print | vl_punct),
+	/* 0xf8 */	(vl_print | vl_punct),
+	/* 0xf9 */	(vl_print | vl_punct),
+	/* 0xfa */	(vl_print | vl_punct),
+	/* 0xfb */	(vl_print | vl_punct),
+	/* 0xfc */	(vl_alpha | vl_print),
+	/* 0xfd */	(vl_print | vl_punct),
+	/* 0xfe */	(vl_print | vl_punct),
+	/* 0xff */	(vl_print | vl_punct),
+    },
+};
+
+/*  47:CP775 */
 static const GNREIGHT_ENC encode_CP775 = {
     /* encode_CP775.chmap */
     {
@@ -8507,7 +9467,7 @@ static const GNREIGHT_ENC encode_CP775 = {
     },
 };
 
-/*  43:CP901 */
+/*  48:CP901 */
 static const GNREIGHT_ENC encode_CP901 = {
     /* encode_CP901.chmap */
     {
@@ -8699,7 +9659,7 @@ static const GNREIGHT_ENC encode_CP901 = {
     },
 };
 
-/*  44:CP902 */
+/*  49:CP902 */
 static const GNREIGHT_ENC encode_CP902 = {
     /* encode_CP902.chmap */
     {
@@ -8891,7 +9851,7 @@ static const GNREIGHT_ENC encode_CP902 = {
     },
 };
 
-/*  45:CP922 */
+/*  50:CP922 */
 static const GNREIGHT_ENC encode_CP922 = {
     /* encode_CP922.chmap */
     {
@@ -9083,7 +10043,7 @@ static const GNREIGHT_ENC encode_CP922 = {
     },
 };
 
-/*  46:CP-AR */
+/*  51:CP-AR */
 static const GNREIGHT_ENC encode_CP_AR = {
     /* encode_CP_AR.chmap */
     {
@@ -9275,7 +10235,7 @@ static const GNREIGHT_ENC encode_CP_AR = {
     },
 };
 
-/*  47:CP-HU */
+/*  52:CP-HU */
 static const GNREIGHT_ENC encode_CP_HU = {
     /* encode_CP_HU.chmap */
     {
@@ -9467,7 +10427,7 @@ static const GNREIGHT_ENC encode_CP_HU = {
     },
 };
 
-/*  48:CSDECMCS */
+/*  53:CSDECMCS */
 static const GNREIGHT_ENC encode_CSDECMCS = {
     /* encode_CSDECMCS.chmap */
     {
@@ -9659,7 +10619,7 @@ static const GNREIGHT_ENC encode_CSDECMCS = {
     },
 };
 
-/*  49:CSHPROMAN8 */
+/*  54:CSHPROMAN8 */
 static const GNREIGHT_ENC encode_CSHPROMAN8 = {
     /* encode_CSHPROMAN8.chmap */
     {
@@ -9851,7 +10811,7 @@ static const GNREIGHT_ENC encode_CSHPROMAN8 = {
     },
 };
 
-/*  50:CSISO103T618BIT */
+/*  55:CSISO103T618BIT */
 static const GNREIGHT_ENC encode_CSISO103T618BIT = {
     /* encode_CSISO103T618BIT.chmap */
     {
@@ -10043,7 +11003,7 @@ static const GNREIGHT_ENC encode_CSISO103T618BIT = {
     },
 };
 
-/*  51:CSISO111ECMACYRILLIC */
+/*  56:CSISO111ECMACYRILLIC */
 static const GNREIGHT_ENC encode_CSISO111ECMACYRILLIC = {
     /* encode_CSISO111ECMACYRILLIC.chmap */
     {
@@ -10235,7 +11195,7 @@ static const GNREIGHT_ENC encode_CSISO111ECMACYRILLIC = {
     },
 };
 
-/*  52:CSISO143IECP271 */
+/*  57:CSISO143IECP271 */
 static const GNREIGHT_ENC encode_CSISO143IECP271 = {
     /* encode_CSISO143IECP271.chmap */
     {
@@ -10427,7 +11387,7 @@ static const GNREIGHT_ENC encode_CSISO143IECP271 = {
     },
 };
 
-/*  53:CSISO153GOST1976874 */
+/*  58:CSISO153GOST1976874 */
 static const GNREIGHT_ENC encode_CSISO153GOST1976874 = {
     /* encode_CSISO153GOST1976874.chmap */
     {
@@ -10619,7 +11579,7 @@ static const GNREIGHT_ENC encode_CSISO153GOST1976874 = {
     },
 };
 
-/*  54:CSMACINTOSH */
+/*  59:CSMACINTOSH */
 static const GNREIGHT_ENC encode_CSMACINTOSH = {
     /* encode_CSMACINTOSH.chmap */
     {
@@ -10811,7 +11771,7 @@ static const GNREIGHT_ENC encode_CSMACINTOSH = {
     },
 };
 
-/*  55:GEORGIAN-ACADEMY */
+/*  60:GEORGIAN-ACADEMY */
 static const GNREIGHT_ENC encode_GEORGIAN_ACADEMY = {
     /* encode_GEORGIAN_ACADEMY.chmap */
     {
@@ -11003,7 +11963,7 @@ static const GNREIGHT_ENC encode_GEORGIAN_ACADEMY = {
     },
 };
 
-/*  56:GEORGIAN-PS */
+/*  61:GEORGIAN-PS */
 static const GNREIGHT_ENC encode_GEORGIAN_PS = {
     /* encode_GEORGIAN_PS.chmap */
     {
@@ -11195,7 +12155,7 @@ static const GNREIGHT_ENC encode_GEORGIAN_PS = {
     },
 };
 
-/*  57:HP-GREEK8 */
+/*  62:HP-GREEK8 */
 static const GNREIGHT_ENC encode_HP_GREEK8 = {
     /* encode_HP_GREEK8.chmap */
     {
@@ -11387,7 +12347,7 @@ static const GNREIGHT_ENC encode_HP_GREEK8 = {
     },
 };
 
-/*  58:HP-ROMAN9 */
+/*  63:HP-ROMAN9 */
 static const GNREIGHT_ENC encode_HP_ROMAN9 = {
     /* encode_HP_ROMAN9.chmap */
     {
@@ -11579,7 +12539,7 @@ static const GNREIGHT_ENC encode_HP_ROMAN9 = {
     },
 };
 
-/*  59:HP-THAI8 */
+/*  64:HP-THAI8 */
 static const GNREIGHT_ENC encode_HP_THAI8 = {
     /* encode_HP_THAI8.chmap */
     {
@@ -11771,7 +12731,7 @@ static const GNREIGHT_ENC encode_HP_THAI8 = {
     },
 };
 
-/*  60:HP-TURKISH8 */
+/*  65:HP-TURKISH8 */
 static const GNREIGHT_ENC encode_HP_TURKISH8 = {
     /* encode_HP_TURKISH8.chmap */
     {
@@ -11963,7 +12923,7 @@ static const GNREIGHT_ENC encode_HP_TURKISH8 = {
     },
 };
 
-/*  61:ISIRI-3342 */
+/*  66:ISIRI-3342 */
 static const GNREIGHT_ENC encode_ISIRI_3342 = {
     /* encode_ISIRI_3342.chmap */
     {
@@ -12155,7 +13115,7 @@ static const GNREIGHT_ENC encode_ISIRI_3342 = {
     },
 };
 
-/*  62:ISO-8859-1 */
+/*  67:ISO-8859-1 */
 static const GNREIGHT_ENC encode_ISO_8859_1 = {
     /* encode_ISO_8859_1.chmap */
     {
@@ -12347,7 +13307,7 @@ static const GNREIGHT_ENC encode_ISO_8859_1 = {
     },
 };
 
-/*  63:ISO-8859-10 */
+/*  68:ISO-8859-10 */
 static const GNREIGHT_ENC encode_ISO_8859_10 = {
     /* encode_ISO_8859_10.chmap */
     {
@@ -12539,7 +13499,7 @@ static const GNREIGHT_ENC encode_ISO_8859_10 = {
     },
 };
 
-/*  64:ISO-8859-13 */
+/*  69:ISO-8859-13 */
 static const GNREIGHT_ENC encode_ISO_8859_13 = {
     /* encode_ISO_8859_13.chmap */
     {
@@ -12731,7 +13691,7 @@ static const GNREIGHT_ENC encode_ISO_8859_13 = {
     },
 };
 
-/*  65:ISO-8859-14 */
+/*  70:ISO-8859-14 */
 static const GNREIGHT_ENC encode_ISO_8859_14 = {
     /* encode_ISO_8859_14.chmap */
     {
@@ -12923,7 +13883,7 @@ static const GNREIGHT_ENC encode_ISO_8859_14 = {
     },
 };
 
-/*  66:ISO-8859-15 */
+/*  71:ISO-8859-15 */
 static const GNREIGHT_ENC encode_ISO_8859_15 = {
     /* encode_ISO_8859_15.chmap */
     {
@@ -13115,7 +14075,7 @@ static const GNREIGHT_ENC encode_ISO_8859_15 = {
     },
 };
 
-/*  67:ISO-8859-16 */
+/*  72:ISO-8859-16 */
 static const GNREIGHT_ENC encode_ISO_8859_16 = {
     /* encode_ISO_8859_16.chmap */
     {
@@ -13307,7 +14267,7 @@ static const GNREIGHT_ENC encode_ISO_8859_16 = {
     },
 };
 
-/*  68:ISO-8859-2 */
+/*  73:ISO-8859-2 */
 static const GNREIGHT_ENC encode_ISO_8859_2 = {
     /* encode_ISO_8859_2.chmap */
     {
@@ -13499,7 +14459,7 @@ static const GNREIGHT_ENC encode_ISO_8859_2 = {
     },
 };
 
-/*  69:ISO-8859-3 */
+/*  74:ISO-8859-3 */
 static const GNREIGHT_ENC encode_ISO_8859_3 = {
     /* encode_ISO_8859_3.chmap */
     {
@@ -13691,7 +14651,7 @@ static const GNREIGHT_ENC encode_ISO_8859_3 = {
     },
 };
 
-/*  70:ISO-8859-5 */
+/*  75:ISO-8859-5 */
 static const GNREIGHT_ENC encode_ISO_8859_5 = {
     /* encode_ISO_8859_5.chmap */
     {
@@ -13883,7 +14843,7 @@ static const GNREIGHT_ENC encode_ISO_8859_5 = {
     },
 };
 
-/*  71:ISO-8859-6 */
+/*  76:ISO-8859-6 */
 static const GNREIGHT_ENC encode_ISO_8859_6 = {
     /* encode_ISO_8859_6.chmap */
     {
@@ -14075,7 +15035,7 @@ static const GNREIGHT_ENC encode_ISO_8859_6 = {
     },
 };
 
-/*  72:ISO-8859-7 */
+/*  77:ISO-8859-7 */
 static const GNREIGHT_ENC encode_ISO_8859_7 = {
     /* encode_ISO_8859_7.chmap */
     {
@@ -14267,7 +15227,7 @@ static const GNREIGHT_ENC encode_ISO_8859_7 = {
     },
 };
 
-/*  73:ISO-8859-8 */
+/*  78:ISO-8859-8 */
 static const GNREIGHT_ENC encode_ISO_8859_8 = {
     /* encode_ISO_8859_8.chmap */
     {
@@ -14459,7 +15419,7 @@ static const GNREIGHT_ENC encode_ISO_8859_8 = {
     },
 };
 
-/*  74:ISO-8859-9 */
+/*  79:ISO-8859-9 */
 static const GNREIGHT_ENC encode_ISO_8859_9 = {
     /* encode_ISO_8859_9.chmap */
     {
@@ -14651,7 +15611,7 @@ static const GNREIGHT_ENC encode_ISO_8859_9 = {
     },
 };
 
-/*  75:ISO-8859-9E */
+/*  80:ISO-8859-9E */
 static const GNREIGHT_ENC encode_ISO_8859_9E = {
     /* encode_ISO_8859_9E.chmap */
     {
@@ -14843,7 +15803,7 @@ static const GNREIGHT_ENC encode_ISO_8859_9E = {
     },
 };
 
-/*  76:ISO-IR-156 */
+/*  81:ISO-IR-156 */
 static const GNREIGHT_ENC encode_ISO_IR_156 = {
     /* encode_ISO_IR_156.chmap */
     {
@@ -15035,7 +15995,7 @@ static const GNREIGHT_ENC encode_ISO_IR_156 = {
     },
 };
 
-/*  77:ISO-IR-197 */
+/*  82:ISO-IR-197 */
 static const GNREIGHT_ENC encode_ISO_IR_197 = {
     /* encode_ISO_IR_197.chmap */
     {
@@ -15227,7 +16187,7 @@ static const GNREIGHT_ENC encode_ISO_IR_197 = {
     },
 };
 
-/*  78:ISO-IR-209 */
+/*  83:ISO-IR-209 */
 static const GNREIGHT_ENC encode_ISO_IR_209 = {
     /* encode_ISO_IR_209.chmap */
     {
@@ -15419,7 +16379,7 @@ static const GNREIGHT_ENC encode_ISO_IR_209 = {
     },
 };
 
-/*  79:KOI8-R */
+/*  84:KOI8-R */
 static const GNREIGHT_ENC encode_KOI8_R = {
     /* encode_KOI8_R.chmap */
     {
@@ -15611,7 +16571,7 @@ static const GNREIGHT_ENC encode_KOI8_R = {
     },
 };
 
-/*  80:KOI8-T */
+/*  85:KOI8-T */
 static const GNREIGHT_ENC encode_KOI8_T = {
     /* encode_KOI8_T.chmap */
     {
@@ -15803,7 +16763,7 @@ static const GNREIGHT_ENC encode_KOI8_T = {
     },
 };
 
-/*  81:KOI8-U */
+/*  86:KOI8-U */
 static const GNREIGHT_ENC encode_KOI8_U = {
     /* encode_KOI8_U.chmap */
     {
@@ -15995,7 +16955,7 @@ static const GNREIGHT_ENC encode_KOI8_U = {
     },
 };
 
-/*  82:MAC-CYRILLIC */
+/*  87:MAC-CYRILLIC */
 static const GNREIGHT_ENC encode_MAC_CYRILLIC = {
     /* encode_MAC_CYRILLIC.chmap */
     {
@@ -16187,7 +17147,7 @@ static const GNREIGHT_ENC encode_MAC_CYRILLIC = {
     },
 };
 
-/*  83:MAC-IS */
+/*  88:MAC-IS */
 static const GNREIGHT_ENC encode_MAC_IS = {
     /* encode_MAC_IS.chmap */
     {
@@ -16379,7 +17339,7 @@ static const GNREIGHT_ENC encode_MAC_IS = {
     },
 };
 
-/*  84:MAC-SAMI */
+/*  89:MAC-SAMI */
 static const GNREIGHT_ENC encode_MAC_SAMI = {
     /* encode_MAC_SAMI.chmap */
     {
@@ -16571,7 +17531,7 @@ static const GNREIGHT_ENC encode_MAC_SAMI = {
     },
 };
 
-/*  85:MIK */
+/*  90:MIK */
 static const GNREIGHT_ENC encode_MIK = {
     /* encode_MIK.chmap */
     {
@@ -16763,7 +17723,7 @@ static const GNREIGHT_ENC encode_MIK = {
     },
 };
 
-/*  86:PT154 */
+/*  91:PT154 */
 static const GNREIGHT_ENC encode_PT154 = {
     /* encode_PT154.chmap */
     {
@@ -16955,7 +17915,7 @@ static const GNREIGHT_ENC encode_PT154 = {
     },
 };
 
-/*  87:RK1048 */
+/*  92:RK1048 */
 static const GNREIGHT_ENC encode_RK1048 = {
     /* encode_RK1048.chmap */
     {
@@ -17147,7 +18107,7 @@ static const GNREIGHT_ENC encode_RK1048 = {
     },
 };
 
-/*  88:TIS-620 */
+/*  93:TIS-620 */
 static const GNREIGHT_ENC encode_TIS_620 = {
     /* encode_TIS_620.chmap */
     {
@@ -17339,7 +18299,7 @@ static const GNREIGHT_ENC encode_TIS_620 = {
     },
 };
 
-/*  89:TSCII */
+/*  94:TSCII */
 static const GNREIGHT_ENC encode_TSCII = {
     /* encode_TSCII.chmap */
     {
@@ -17531,7 +18491,7 @@ static const GNREIGHT_ENC encode_TSCII = {
     },
 };
 
-/*  90:WIN-SAMI-2 */
+/*  95:WIN-SAMI-2 */
 static const GNREIGHT_ENC encode_WIN_SAMI_2 = {
     /* encode_WIN_SAMI_2.chmap */
     {
@@ -17787,6 +18747,11 @@ static const GNREIGHT_INX all_encodings[] = {
     { "CP4909",                      &encode_CP4909 },
     { "CP5347",                      &encode_CP5347 },
     { "CP737",                       &encode_CP737 },
+    { "CP770",                       &encode_CP770 },
+    { "CP771",                       &encode_CP771 },
+    { "CP772",                       &encode_CP772 },
+    { "CP773",                       &encode_CP773 },
+    { "CP774",                       &encode_CP774 },
     { "CP775",                       &encode_CP775 },
     { "CP813",                       &encode_ISO_8859_7 },
     { "CP819",                       &encode_ISO_8859_1 },
