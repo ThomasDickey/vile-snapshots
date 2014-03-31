@@ -46,7 +46,7 @@
  * vile will choose some appropriate fallback (such as underlining) if
  * italics are not available.
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/manfilt.c,v 1.63 2013/12/28 14:18:16 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/manfilt.c,v 1.65 2014/03/30 22:33:30 tom Exp $
  *
  */
 
@@ -698,6 +698,27 @@ ansi_escape(FILE *ifp, int last_code)
 }
 
 /*
+ * Simply ignore OSC strings, e.g., as used to set window title.
+ * This does not actually wait for a string terminator, since we may be stuck
+ * with some Linux console junk.
+ */
+static void
+osc_ignored(FILE *ifp)
+{
+    int c;
+
+    while ((c = my_getc(ifp)) != EOF) {
+	if (c == ESCAPE) {
+	    c = my_getc(ifp);
+	    break;
+	} else if (c < 0x20 || ((c >= 0x80) && (c < 0xa0))) {
+	    break;
+	}
+    }
+
+}
+
+/*
  * Set the current pointer to the previous line, allocating it if necessary
  */
 static void
@@ -896,6 +917,9 @@ ManFilter(FILE *ifp)
 	    switch (my_getc(ifp)) {
 	    case '[':
 		esc_mode = ansi_escape(ifp, esc_mode);
+		break;
+	    case ']':
+		osc_ignored(ifp);
 		break;
 	    case '\007':
 	    case '7':

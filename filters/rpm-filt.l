@@ -7,7 +7,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/rpm-filt.l,v 1.38 2014/01/29 21:08:20 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/rpm-filt.l,v 1.39 2014/03/30 18:24:47 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of rpm spec-file.
  */
@@ -181,7 +181,7 @@ SECTION		%{IDENT}
 <NORMAL>\<\<[-]?{SPACE}*{QIDENT} {
 			    int n;
 			    strip_tabs = 0;
-			    for (n = 0; n < yyleng; n++) {
+			    for (n = 0; n < (int) yyleng; n++) {
 				if (yytext[n] != '<'
 				 && !isspace(CharOf(yytext[n]))) {
 				    strip_tabs = (yytext[n] == '-');

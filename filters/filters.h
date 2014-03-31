@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.138 2013/12/07 11:54:41 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.139 2014/03/30 18:22:19 tom Exp $
  */
 
 #ifndef FILTERS_H
@@ -235,13 +235,15 @@ extern FILE *yyget_in (void);
 extern FILE *yyget_out (void);
 extern char *yyget_text (void);
 extern int yyget_debug (void);
-extern int yyget_leng (void);
 extern int yyget_lineno (void);
 extern int yylex_destroy (void);
 extern void yyset_debug (int bdebug);
 extern void yyset_in (FILE * in_str);
 extern void yyset_lineno (int line_number);
 extern void yyset_out (FILE * out_str);
+#if !defined(YY_FLEX_SUBMINOR_VERSION) || (YY_FLEX_SUBMINOR_VERSION < 37)
+extern int yyget_leng (void);
+#endif
 /* there's also warnings for unused 'yyunput()', but I don't see a fix */
 /* flex's skeleton includes <unistd.h> - no particular reason apparent */
 #endif

@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/lua-filt.l,v 1.13 2013/12/02 01:32:53 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/lua-filt.l,v 1.14 2014/03/30 18:27:27 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of lua
  * input text.
@@ -43,14 +43,14 @@ LONG_R		"]"[=]*"]"
 <INITIAL>{NUMBER}	{ WriteToken(Number_attr); }
 
 <INITIAL>"--"{LONG_L}	{ WriteToken(Comment_attr); push_state(LONG_CMT); long_str = yyleng - 2; }
-<LONG_CMT>{LONG_R}	{ WriteToken(Comment_attr); if (yyleng == long_str) pop_state(); }
+<LONG_CMT>{LONG_R}	{ WriteToken(Comment_attr); if ((int) yyleng == long_str) pop_state(); }
 <LONG_CMT>[^[]=]+	{ WriteToken(Comment_attr); }
 <LONG_CMT>.		{ WriteToken(Comment_attr); }
 
 <INITIAL>"--"[^\r\n]*	{ WriteToken(Comment_attr); }
 
 <INITIAL>{LONG_L}	{ WriteToken(String_attr); push_state(LONG_STR); long_str = yyleng; }
-<LONG_STR>{LONG_R}	{ WriteToken(String_attr); if (yyleng == long_str) pop_state(); }
+<LONG_STR>{LONG_R}	{ WriteToken(String_attr); if ((int) yyleng == long_str) pop_state(); }
 <LONG_STR>[^[]=]+	{ WriteToken(String_attr); }
 <LONG_STR>.		{ WriteToken(String_attr); }
 

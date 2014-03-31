@@ -7,7 +7,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/sh-filt.l,v 1.122 2013/12/23 21:56:24 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/sh-filt.l,v 1.123 2014/03/30 18:24:31 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Shell script.
  */
@@ -146,7 +146,7 @@ DASHIDENT	{IDENT}("-"{NAME}{NAME2}*)*
 			    int state;
 			    int n;
 			    strip_tabs = 0;
-			    for (n = 0; n < yyleng; n++) {
+			    for (n = 0; n < (int) yyleng; n++) {
 				if (yytext[n] != '<'
 				 && !isspace(CharOf(yytext[n]))) {
 				    strip_tabs = (yytext[n] == '-');

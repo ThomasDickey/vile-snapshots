@@ -2,7 +2,7 @@
  *	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.387 2013/12/07 16:26:12 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.388 2014/03/30 18:53:19 kev Exp $
  *
  */
 
@@ -6093,7 +6093,7 @@ ae_names(XVileAtom n)
 {
     const char *result = 0;
 
-#define DATA(name) case ae ## name: result = #name
+#define DATA(name) case ae ## name: result = #name; break
     switch (n) {
     case aeMAX:
 	break;
