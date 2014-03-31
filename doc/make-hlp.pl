@@ -1,5 +1,5 @@
 #!/usr/bin/perl -w
-# $Id: make-hlp.pl,v 1.10 2013/07/07 13:53:13 tom Exp $
+# $Id: make-hlp.pl,v 1.11 2014/03/30 19:39:26 tom Exp $
 # Generate vile.hlp, using the dump feature of a text browser.
 #
 # Any of (e)links(2) or lynx would work.
@@ -72,7 +72,9 @@ sub output($) {
 
     if ($caps) {
         $text =~ s/[^\s]/-/g;
-        $text =~ s/- -/---/g;
+        while ( $text =~ /-\s-/ ) {
+            $text =~ s/-\s-/---/g;
+        }
         printf "%s\n", $text;
     }
 

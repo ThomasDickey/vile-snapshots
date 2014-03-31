@@ -1,7 +1,7 @@
 #
 # makefile for vile on WIN32 using Microsoft Visual C++
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.wnt,v 1.108 2014/02/01 00:21:09 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.wnt,v 1.109 2014/03/30 19:56:44 tom Exp $
 #
 #
 !include <ntwin32.mak>
@@ -318,8 +318,8 @@ vile-perl-api.pod: perl.xs
 vile-perl-api.doc: vile-perl-api.pod
 	perl -e "use Pod::Text; pod2text(\"$?\");" > $@
 
-wvwrap.exe: wvwrap.obj makeargv.obj
- 	$(link) $(LDFLAGS) wvwrap.obj makeargv.obj $(LIBS) -out:$(@)
+wvwrap.exe: wvwrap.obj makeargv.obj w32info.res
+ 	$(link) $(LDFLAGS) wvwrap.obj makeargv.obj w32info.res $(LIBS) -out:$(@)
 
 mktbls.exe:  mktbls.c
 	$(cc) $(CFLAGS) mktbls.c -Fomktbls -link $(CON_LDFLAGS)
