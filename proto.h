@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.733 2014/03/30 20:40:25 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.734 2014/04/15 00:27:12 tom Exp $
  *
  */
 
@@ -851,6 +851,7 @@ extern void kregcirculate (int killing);
 extern void ksetup (void);
 extern void lfree (LINE *lp, BUFFER *bp);
 extern void lremove (BUFFER *bp, LINE *lp);
+extern void lremove2 (BUFFER *bp, LINE *lp);
 extern void ltextfree (LINE *lp, BUFFER *bp);
 
 #if OPT_EVAL

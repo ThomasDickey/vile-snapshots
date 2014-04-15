@@ -10,7 +10,7 @@
  * editing must be being displayed, which means that "b_nwnd" is non zero,
  * which means that the dot and mark values in the buffer headers are nonsense.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.221 2013/03/07 10:38:09 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.222 2014/04/15 00:30:08 tom Exp $
  *
  */
 
@@ -268,6 +268,18 @@ lremove(BUFFER *bp, LINE *lp)
      * a memory leak.
      */
     if (!b_val(bp, MDUNDOABLE)) {
+	lfree(lp, bp);
+    }
+}
+
+/*
+ * Remove a line, and free its memory whether or not the buffer is undoable.
+ */
+void
+lremove2(BUFFER *bp, LINE *lp)
+{
+    lremove(bp, lp);
+    if (b_val(bp, MDUNDOABLE)) {
 	lfree(lp, bp);
     }
 }

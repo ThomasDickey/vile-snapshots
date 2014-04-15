@@ -1,5 +1,13 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
+ 20140414 (n)
+	> Brendan O'Dea:
+	+ use INT2PTR and PTR2IV macros rather than an explicit cast in perl.xs
+	  and ptypemap.
+	> Tom Dickey:
+	+ fix a double-free in bclear(), when the buffer is marked noundoable
+	  (report by Paul Fox).
+
  20140330 (m)
 	> Kevin Buettner:
 	+ add missing "break" in DATA() macro in x11.c from 9.8j changes.
@@ -19,7 +27,7 @@ Changes for vile 9.9 (released ??? ??? ?? ????)
 	+ fix crash in winvile in "select-all" command (Savannah #41943).
 	+ update gnreight.h from Debian/testing libc6 2.17-97
 	+ update xvile.desktop with improvements from Fedora package.
-	
+
  20140131 (l)
 	> Derek Woolverton:
 	+ add new keywords for C++11

@@ -6,7 +6,7 @@ INPUT
 T_VileBuf
 	if (sv_isa($arg, \"Vile::Buffer\")) {
 	    IV tmp = SvIV((SV*)GvSV((GV*)SvRV($arg)));
-	    $var = ($type) tmp;
+	    $var = INT2PTR($type, tmp);
 	    if (!tmp)
 		croak(\"buffer no longer exists\");
 	}
