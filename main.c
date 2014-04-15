@@ -17,12 +17,12 @@
  * distributable status.  This version of vile is distributed under the
  * terms of the GNU Public License (see COPYING).
  *
- * Copyright (c) 1992-2013 by Paul Fox and Thomas Dickey
+ * Copyright (c) 1992-2013,2014 by Paul Fox and Thomas Dickey
  *
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.721 2013/08/28 17:25:42 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.723 2014/04/15 00:44:52 tom Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -155,10 +155,7 @@ run_startup_commands(BUFFER **bp)
 	LINE *nlp = lforw(lp);
 
 	if (lisreal(lp) && !llength(lp)) {
-	    lremove(cmds, lp);
-	    if (b_val(cmds, MDUNDOABLE)) {
-		lfree(lp, cmds);
-	    }
+	    lremove2(cmds, lp);
 	}
 	lp = nlp;
     }

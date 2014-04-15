@@ -5,7 +5,7 @@
  * keys. Like everyone else, they set hints
  * for the display system.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.357 2013/03/06 09:46:12 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.358 2014/04/15 00:25:51 tom Exp $
  *
  */
 
@@ -2760,8 +2760,7 @@ bclear(BUFFER *bp)
 #endif
 
     while ((lp = lforw(buf_head(bp))) != buf_head(bp)) {
-	lremove(bp, lp);
-	lfree(lp, bp);
+	lremove2(bp, lp);
     }
 
     if (bp->b_ulinep != 0) {

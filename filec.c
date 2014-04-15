@@ -5,7 +5,7 @@
  * Written by T.E.Dickey for vile (march 1993).
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/filec.c,v 1.133 2013/03/09 01:52:06 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/filec.c,v 1.134 2014/04/15 00:26:56 tom Exp $
  *
  */
 
@@ -503,8 +503,7 @@ remove_duplicates(BUFFER *bp)
     while (plp != buf_head(bp)) {
 	if ((lp = lforw(plp)) != buf_head(bp)) {
 	    if (pathcmp(plp, lvalue(lp)) == 0) {
-		lremove(bp, lp);
-		lfree(lp, bp);
+		lremove2(bp, lp);
 		continue;
 	    }
 	}

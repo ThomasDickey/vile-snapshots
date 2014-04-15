@@ -13,7 +13,7 @@
  * vile.  The file api.c (sometimes) provides a middle layer between
  * this interface and the rest of vile.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.130 2013/12/28 17:49:22 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.131 2014/03/31 23:19:46 bod Exp $
  */
 
 #ifdef __GNUC__
@@ -323,7 +323,7 @@ newVBrv(SV *rv, VileBuf *sp)
     if (sp->perl_handle == 0) {
 	sp->perl_handle = newGVgen("Vile::Buffer");
 	GvSV((GV*)sp->perl_handle) = newSV((size_t) 0);
-	sv_setiv(GvSV((GV*)sp->perl_handle), (IV) sp);
+	sv_setiv(GvSV((GV*)sp->perl_handle), PTR2IV(sp));
 	tie_handle(sp->perl_handle, rv);
 	gv_IOadd((GV*)sp->perl_handle);
 	IoLINES(GvIO((GV*)sp->perl_handle)) = 0;	/* initialise $. */
@@ -346,7 +346,7 @@ getVB(SV *sv, const char **croakmessage_ptr)
 {
     VileBuf *vbp = 0;
     if (sv_isa(sv, "Vile::Buffer")) {
-	vbp = (VileBuf *)SvIV((SV*)GvSV((GV*)SvRV(sv)));
+	vbp = INT2PTR(VileBuf *, SvIV((SV*)GvSV((GV*)SvRV(sv))));
 	if (vbp == 0) {
 	    *croakmessage_ptr = "buffer no longer exists";
 	}
@@ -1056,7 +1056,7 @@ svcurbuf_set(pTHX_ SV *sv, MAGIC *mg GCC_UNUSED)
 {
     VileBuf *vbp;
     if (sv_isa(sv, "Vile::Buffer")
-	&& (vbp = (VileBuf *) SvIV((SV*)GvSV((GV*)SvRV(sv)))) != NULL)
+	&& (vbp = INT2PTR(VileBuf *, SvIV((SV*)GvSV((GV*)SvRV(sv))))) != NULL)
     {
 	api_swscreen(NULL, vbp);
     }
@@ -3300,7 +3300,7 @@ current_buffer(...)
 	    croak("Too many arguments to current_buffer");
 	else if (items == 2) {
 	    if (sv_isa(ST(0), "Vile::Buffer")) {
-		callbuf = (VileBuf *)SvIV((SV*)GvSV((GV*)SvRV(ST(0))));
+		callbuf = INT2PTR(VileBuf *, SvIV((SV*)GvSV((GV*)SvRV(ST(0)))));
 		if (callbuf == 0) {
 		    croak("buffer no longer exists");
 		}
@@ -3309,7 +3309,7 @@ current_buffer(...)
 		callbuf = 0;
 
 	    if (sv_isa(ST(1), "Vile::Buffer")) {
-		newbuf = (VileBuf *)SvIV((SV*)GvSV((GV*)SvRV(ST(1))));
+		newbuf = INT2PTR(VileBuf *, SvIV((SV*)GvSV((GV*)SvRV(ST(1)))));
 		if (newbuf == 0) {
 		    croak("switched to buffer no longer exists");
 		}
