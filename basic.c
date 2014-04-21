@@ -5,7 +5,7 @@
  * functions that adjust the top line in the window and invalidate the
  * framing, are hard.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/basic.c,v 1.169 2014/01/20 00:28:34 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/basic.c,v 1.170 2014/04/20 23:51:32 tom Exp $
  *
  */
 
@@ -1701,15 +1701,18 @@ godotplus(int f, int n)
     int s;
 
     if (!f || n == 1) {
-	return firstnonwhite(FALSE, 1);
+	s = firstnonwhite(FALSE, 1);
+    } else if (n < 1) {
+	s = FALSE;
+    } else {
+	s = forwline(TRUE, n - 1);
+	if (s && is_header_line(DOT, curbp)) {
+	    s = backline(FALSE, 1);
+	}
+	if (s == TRUE) {
+	    (void) firstnonwhite(FALSE, 1);
+	}
     }
-    if (n < 1)
-	return (FALSE);
-    s = forwline(TRUE, n - 1);
-    if (s && is_header_line(DOT, curbp))
-	s = backline(FALSE, 1);
-    if (s == TRUE)
-	(void) firstnonwhite(FALSE, 1);
     return s;
 }
 

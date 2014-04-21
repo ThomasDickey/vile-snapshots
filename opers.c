@@ -3,7 +3,7 @@
  * that take motion operators.
  * written for vile.  Copyright (c) 1990, 1995-2003 by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/opers.c,v 1.101 2011/11/23 16:40:56 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/opers.c,v 1.103 2014/04/21 00:36:31 tom Exp $
  *
  */
 
@@ -47,11 +47,13 @@ vile_op(int f, int n, OpsFunc fn, const char *str)
 	/* or a command line, as approp. */
 	if (clexec) {
 	    char *value = mac_unquotedarg(&tok);	/* get the next token */
-	    if (value != 0 && strcmp(value, "lines"))
+	    if (value != 0 && strcmp(value, "lines")) {
 		cfp = engl2fnc(value);
-	    else
+	    } else {
 		cfp = &f_godotplus;
+	    }
 	} else {
+	    int foo = f;
 	    thiskey = lastkey;
 	    c = kbd_seq();
 
@@ -65,10 +67,19 @@ vile_op(int f, int n, OpsFunc fn, const char *str)
 	    /* allow second chance for entering counts */
 	    do_repeats(&c, &f, &n);
 
-	    if (thiskey == lastkey)
+	    /*
+	     * If we had no repeat-count at all, this is a simple stutter.
+	     * If we had a repeat-count coming into this function, foo is
+	     * nonzero, and we want to interpret the count as lines.
+	     *
+	     * Otherwise (if we picked up a repeat count on the second try),
+	     * then that can apply to a motion.
+	     */
+	    if (thiskey == lastkey && (foo || !f)) {
 		cfp = &f_godotplus;
-	    else
+	    } else {
 		cfp = DefaultKeyBinding(c);
+	    }
 
 	}
 	if (cfp != 0) {

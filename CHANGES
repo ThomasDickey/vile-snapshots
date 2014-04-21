@@ -1,10 +1,18 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20140414 (n)
+ 20140420 (n)
 	> Brendan O'Dea:
 	+ use INT2PTR and PTR2IV macros rather than an explicit cast in perl.xs
 	  and ptypemap.
 	> Tom Dickey:
+	+ modify test for stuttering in vile_op(), to check if a count precedes
+	  the final letter in a command.  With this change,
+	  	^All
+	  stutters as before, making the command in terms of lines.  However
+	  	^Al5l
+	  will act on the next 5 characters.  Note that
+	  	^Al1l
+	  will act on a single character (Savannah #42147).
 	+ fix a double-free in bclear(), when the buffer is marked noundoable
 	  (report by Paul Fox).
 
