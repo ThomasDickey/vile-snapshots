@@ -1,6 +1,6 @@
 dnl vile's local definitions for autoconf.
 dnl
-dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.265 2014/03/30 21:11:34 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.267 2014/07/02 08:25:44 tom Exp $
 dnl
 dnl See
 dnl		http://invisible-island.net/autoconf/autoconf.html
@@ -101,7 +101,7 @@ AC_DEFUN([AM_LANGINFO_CODESET],
   fi
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_ACVERSION_CHECK version: 4 updated: 2013/03/04 19:52:56
+dnl CF_ACVERSION_CHECK version: 5 updated: 2014/06/04 19:11:49
 dnl ------------------
 dnl Conditionally generate script according to whether we're using a given autoconf.
 dnl
@@ -110,7 +110,7 @@ dnl $2 = code to use if AC_ACVERSION is at least as high as $1.
 dnl $3 = code to use if AC_ACVERSION is older than $1.
 define([CF_ACVERSION_CHECK],
 [
-ifdef([AC_ACVERSION], ,[m4_copy([m4_PACKAGE_VERSION],[AC_ACVERSION])])dnl
+ifdef([AC_ACVERSION], ,[ifdef([AC_AUTOCONF_VERSION],[m4_copy([AC_AUTOCONF_VERSION],[AC_ACVERSION])],[m4_copy([m4_PACKAGE_VERSION],[AC_ACVERSION])])])dnl
 ifdef([m4_version_compare],
 [m4_if(m4_version_compare(m4_defn([AC_ACVERSION]), [$1]), -1, [$3], [$2])],
 [CF_ACVERSION_COMPARE(
@@ -1768,7 +1768,7 @@ rm -rf conftest*
 fi
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_GCC_OPT_RDYNAMIC version: 2 updated: 2010/09/06 19:26:50
+dnl CF_GCC_OPT_RDYNAMIC version: 3 updated: 2014/07/02 04:22:42
 dnl -------------------
 dnl "Newer" versions of gcc support the -rdynamic option:
 dnl		Pass the flag -export-dynamic to the ELF linker, on targets that
@@ -1778,6 +1778,13 @@ dnl		some uses of "dlopen" or to allow obtaining backtraces from within
 dnl		a program.
 dnl Check for the option, and add it to $CFLAGS if available.
 AC_DEFUN([CF_GCC_OPT_RDYNAMIC],[
+
+if test "x$CLANG_COMPILER" = "xyes"
+then
+	AC_MSG_WARN(clang only pretends to honor gcc -rdynamic option)
+	cf_cv_gcc_opt_rdynamic=no
+else
+
 AC_CACHE_CHECK([if $CC has -rdynamic option],cf_cv_gcc_opt_rdynamic,[
 
 cf_save_CFLAGS="$CFLAGS"
@@ -1801,6 +1808,8 @@ AC_TRY_LINK([#include <stdio.h>],
 
 CFLAGS="$cf_save_CFLAGS"
 ])
+fi
+
 if test "$cf_cv_gcc_opt_rdynamic" = yes ; then
 	CF_ADD_CFLAGS([-rdynamic])
 fi
@@ -2659,7 +2668,7 @@ AC_MSG_RESULT($cf_cv_locale)
 test $cf_cv_locale = yes && { ifelse($1,,AC_DEFINE(LOCALE,1,[Define to 1 if we have locale support]),[$1]) }
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_MAKEFLAGS version: 14 updated: 2011/03/31 19:29:46
+dnl CF_MAKEFLAGS version: 15 updated: 2014/05/10 16:43:23
 dnl ------------
 dnl Some 'make' programs support ${MAKEFLAGS}, some ${MFLAGS}, to pass 'make'
 dnl options to lower-levels.  It's very useful for "make -n" -- if we have it.
@@ -2678,7 +2687,7 @@ all :
 CF_EOF
 		cf_result=`${MAKE:-make} -k -f cf_makeflags.tmp 2>/dev/null | fgrep -v "ing directory" | sed -e 's,[[ 	]]*$,,'`
 		case "$cf_result" in
-		.*k)
+		.*k|.*kw)
 			cf_result=`${MAKE:-make} -k -f cf_makeflags.tmp CC=cc 2>/dev/null`
 			case "$cf_result" in
 			.*CC=*)	cf_cv_makeflags=
