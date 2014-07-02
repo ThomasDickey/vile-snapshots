@@ -5,7 +5,7 @@
  * keys. Like everyone else, they set hints
  * for the display system.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.358 2014/04/15 00:25:51 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.361 2014/07/01 22:49:04 tom Exp $
  *
  */
 
@@ -986,6 +986,7 @@ nextbuffer(int f GCC_UNUSED, int n GCC_UNUSED)
 {
     BUFFER *bp;
     BUFFER *stopatbp;
+    int result = FALSE;
 
     TRACE((T_CALLED "nextbuffer()\n"));
 
@@ -1003,22 +1004,27 @@ nextbuffer(int f GCC_UNUSED, int n GCC_UNUSED)
 	    if (!b_is_invisible(bp))
 		break;
 	}
+	/* we're back to the top -- they were all invisible */
+	result = swbuffer(stopatbp);
     } else {			/* go forward thru args-list */
-	if (curbp == 0)
-	    (void) find_nth_created(1);
-	if (last_bp == 0)
-	    last_bp = find_b_hist(0);
-	if (last_bp != 0) {
+	if (last_bp == 0) {
+	    last_bp = curbp;
+	}
+	if ((bp = last_bp) != 0) {
 	    for (bp = last_bp->b_bufp; bp; bp = bp->b_bufp) {
-		if (b_is_argument(bp))
-		    returnCode(swbuffer(last_bp = bp));
+		if (b_is_argument(bp)) {
+		    break;
+		}
 	    }
 	}
-	mlforce("[No more files to edit]");
-	returnCode(FALSE);
+	if (bp != 0) {
+	    result = swbuffer(last_bp = bp);
+	} else {
+	    mlforce("[No more files to edit]");
+	    result = FALSE;
+	}
     }
-    /* we're back to the top -- they were all invisible */
-    returnCode(swbuffer(stopatbp));
+    returnCode(result);
 }
 
 #if !SMALLER
@@ -1029,6 +1035,7 @@ prevbuffer(int f GCC_UNUSED, int n GCC_UNUSED)
 {
     BUFFER *bp;			/* eligible buffer to switch to */
     BUFFER *stopatbp;		/* eligible buffer to switch to */
+    int result = FALSE;
 
     TRACE((T_CALLED "prevbuffer()\n"));
 
@@ -1039,18 +1046,26 @@ prevbuffer(int f GCC_UNUSED, int n GCC_UNUSED)
 	while (valid_buffer(bp) && (bp = bp->b_bufp) != 0) {
 	    /* get the next buffer in the list */
 	    /* if that one's invisible, skip it and try again */
-	    if (!b_is_invisible(bp))
-		returnCode(swbuffer(bp));
+	    if (!b_is_invisible(bp)) {
+		stopatbp = bp;
+		break;
+	    }
 	}
+	/* we're back to the top -- they were all invisible */
+	result = swbuffer(stopatbp);
     } else {			/* go backward thru args-list */
-	if (curbp == 0)
-	    (void) find_nth_created(1);
-	else if (find_nth_created(curbp->b_created - 1) == 0)
+	if (curbp == 0) {
+	    bp = find_nth_created(1);
+	} else {
+	    bp = find_nth_created(curbp->b_created - 1);
+	}
+	if (bp != 0) {
+	    result = swbuffer(last_bp = bp);
+	} else {
 	    mlforce("[No more files to edit]");
-	returnCode(FALSE);
+	}
     }
-    /* we're back to the top -- they were all invisible */
-    returnCode(swbuffer(stopatbp));
+    returnCode(result);
 }
 #endif /* !SMALLER */
 
