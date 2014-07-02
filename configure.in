@@ -1,11 +1,11 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_REVISION($Revision: 1.310 $)
+AC_REVISION($Revision: 1.311 $)
 AC_PREREQ(2.52.20011201)
 
 ### Use "configure -with-screen" to override the default configuration, which is
 ### termcap-based on unix systems.
 
-dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.310 2014/02/01 00:47:03 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.311 2014/07/02 08:06:24 tom Exp $
 
 define(MAKELIST, sh $srcdir/filters/makelist.sh $srcdir/filters/genmake.mak)
 
@@ -1024,8 +1024,20 @@ fi
 if test "$VILE_LOADABLE_FILTERS" != none ; then
 	if test "$GCC" = yes ; then
 		CF_GCC_OPT_RDYNAMIC
-		SH_CFLAGS="-fPIC"
-		SH_LDFLAGS="-shared"
+		if test "x$cf_cv_gcc_opt_rdynamic" = "xno"
+		then
+			if test "$VILE_BUILT_IN_FILTERS" = none
+			then
+				VILE_BUILT_IN_FILTERS="$VILE_LOADABLE_FILTERS"
+				VILE_LOADABLE_FILTERS=none
+				AC_MSG_WARN(will use built-in filters instead)
+			else
+				AC_MSG_ERROR(cannot mix built-in and loadable-filters)
+			fi
+		else
+			SH_CFLAGS="-fPIC"
+			SH_LDFLAGS="-shared"
+		fi
 	else
 		# this works for Solaris and IRIX64
 		SH_CFLAGS="-KPIC"

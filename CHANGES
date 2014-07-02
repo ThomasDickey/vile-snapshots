@@ -1,10 +1,14 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20140701 (n)
+ 20140702 (n)
 	> Brendan O'Dea:
 	+ use INT2PTR and PTR2IV macros rather than an explicit cast in perl.xs
 	  and ptypemap.
 	> Tom Dickey:
+	+ if configure check for gcc -rdynamic option fails, fallback to the
+	  built-in filter configuration.
+	+ suppress -rdynamic option-check for clang, because its error
+	  reporting is unreliable.
 	+ correct logic in nextbuffer() when autobuffer mode is unset.  Similar
 	  fix for prevbuffer() (report by Hymie on mailing list).
 	+ modify test for stuttering in vile_op(), to check if a count precedes
