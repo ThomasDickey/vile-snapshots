@@ -1,5 +1,5 @@
 <!--
-  $Id: vile-hlp.html,v 1.80 2014/03/30 19:48:00 tom Exp $
+  $Id: vile-hlp.html,v 1.82 2014/07/03 22:29:30 tom Exp $
 -->
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN">
 
@@ -248,7 +248,7 @@
       below, for comments on vi's use of '_'.]</p>
     </dd>
 
-    <dt>:e</dt>
+    <dt><a name="colon-e" id="colon-e">:e</a></dt>
 
     <dd>Edit a file. If the file is already in a buffer, that
     buffer will be recalled into the current window. This occurs as
@@ -269,7 +269,7 @@
     To get the file in the current directory, specify
     "./Makefile".</dd>
 
-    <dt>:e!</dt>
+    <dt><a name="colon-e-bang" id="colon-e-bang">:e!</a></dt>
 
     <dd>Re-edit a file. A different filename can be given, and the
     buffer name will change to match it. This command is not as
@@ -298,14 +298,15 @@
       "C" and "B".</p>
     </dd>
 
-    <dt>:n</dt>
+    <dt><a name="colon-n" id="colon-n">:n</a></dt>
 
     <dd>Go to the next buffer. "Next" means "least recently used"
     in autobuffer mode. In noautobuffer mode, "next" means next in
     numeric sequence. (The ":n file ..." version of the command is
     not supported.)</dd>
 
-    <dt>:rename-buffer</dt>
+    <dt><a name="colon-rename-buffer" id=
+    "colon-rename-buffer">:rename-buffer</a></dt>
 
     <dd>Rename the current buffer. Prompts for a new name. Does not
     affect the filename associated with the buffer. Use ":f" to do
@@ -313,31 +314,33 @@
     buffer, if you wish to preserve its contents, but run a new
     command.</dd>
 
-    <dt>:set-window</dt>
+    <dt><a name="colon-set-window" id=
+    "colon-set-window">:set-window</a></dt>
 
     <dd>Set the current window to the specified buffer. This is
     useful especially when you have split the screen into a number
     of windows and want to override the automatic layout of "#" and
     "%" buffers.</dd>
 
-    <dt>:rewind</dt>
+    <dt><a name="colon-rewind" id="colon-rewind">:rewind</a></dt>
 
     <dd>Go to the first buffer. This is used only in 'noautobuffer'
     (vi-style buffering) mode. It does nothing in "autobuffer"
     mode. Remember that "autobuffer" mode is the default.</dd>
 
-    <dt>:unmark-buffer</dt>
+    <dt><a name="colon-unmark-buffer" id=
+    "colon-unmark-buffer">:unmark-buffer</a></dt>
 
     <dd>Clears the "modified" status of a buffer. Useful for the
     creation of temporary buffer(s) that are discarded when the
     editor exits.</dd>
 
-    <dt>:b</dt>
+    <dt><a name="colon-b" id="colon-b">:b</a></dt>
 
     <dd>Edit a buffer. Recalls the named buffer. Does not look for
     a file of that name. Will find "invisible" buffers.</dd>
 
-    <dt>:ki</dt>
+    <dt><a name="colon-ki" id="colon-ki">:ki</a></dt>
 
     <dd>Kill a buffer. Remove the buffer and its contents from the
     editor. Will ask if changes to the buffer should be discarded.
@@ -1392,7 +1395,7 @@
     highlighting, until the next search for a different
     pattern.</dd>
 
-    <dt>select-all</dt>
+    <dt>:select-all</dt>
 
     <dd>
       On hosts where vile provides mouse support, the select-all
@@ -1447,71 +1450,81 @@
   "show-xxx" commands:</p>
 
   <dl>
-    <dt>show-abbreviations</dt>
+    <dt><a name="colon-show-abbreviations" id=
+    "colon-show-abbreviations">:show-abbreviations</a></dt>
 
     <dd>displays list of shortcuts defined with the ":abbr"
     command. (synonymous with ":abbr&lt;cr&gt;")</dd>
 
-    <dt>show-buffers</dt>
+    <dt><a name="colon-show-buffers" id=
+    "colon-show-buffers">:show-buffers</a></dt>
 
     <dd>displays the current list of available buffers. Given any
     numeric argument, will list <i>all</i> buffers, even those
     normally invisible or considered temporary.</dd>
 
-    <dt>show-color-schemes</dt>
+    <dt><a name="colon-show-color-schemes" id=
+    "colon-show-color-schemes">:show-color-schemes</a></dt>
 
     <dd>displays a color chart of the user-definable color schemes
     (see palettes.rc for examples)</dd>
 
-    <dt>show-colors</dt>
+    <dt><a name="colon-show-colors" id=
+    "colon-show-colors">:show-colors</a></dt>
 
     <dd>displays a color chart of the builtin color names, the
     internal coding used in the syntax filters (e.g., C0), the
     $palette mapping and examples in bold, italic, etc.</dd>
 
-    <dt>show-commands or show-bindings</dt>
+    <dt><a name="colon-show-commands" id=
+    "colon-show-commands">:show-commands or show-bindings</a></dt>
 
     <dd>displays the list of commands and the keys bound to
     them.</dd>
 
     <dt><a name="command-show-global-modes" id=
-    "command-show-global-modes">show-global-modes</a>,
+    "command-show-global-modes">:show-global-modes</a>,
     show-modes</dt>
 
     <dd>both synonymous with ":<a href=
     "#current-modes">set</a>&lt;cr&gt;"</dd>
 
-    <dt>show-help</dt>
+    <dt><a name="colon-show-help" id=
+    "colon-show-help">:show-help</a></dt>
 
     <dd>synonymous with ":help", '^A-h', etc.</dd>
 
-    <dt>show-history</dt>
+    <dt><a name="colon-show-history" id=
+    "colon-show-history">:show-history</a></dt>
 
     <dd>displays the user's command line history.</dd>
 
     <dt><a name="command-show-local-modes" id=
-    "command-show-local-modes">show-local-modes</a></dt>
+    "command-show-local-modes">:show-local-modes</a></dt>
 
     <dd>Shows the local value of each mode, if it differs from the
     global value. If a majormode is set on the buffer, that is used
     for the "global" value in this display.</dd>
 
-    <dt>show-majormodes</dt>
+    <dt><a name="colon-show-majormodes" id=
+    "colon-show-majormodes">:show-majormodes</a></dt>
 
     <dd>displays the builtin and user-defined major modes.</dd>
 
-    <dt>show-mapped-chars</dt>
+    <dt><a name="colon-show-mapped-chars" id=
+    "colon-show-mapped-chars">:show-mapped-chars</a></dt>
 
     <dd>displays the strings mapped for command mode with ":map".
     (synonymous with ":map&lt;cr&gt;")</dd>
 
-    <dt>show-mapped!-chars</dt>
+    <dt><a name="colon-show-mapped-bang-chars" id=
+    "colon-show-mapped-bang-chars">:show-mapped!-chars</a></dt>
 
     <dd>displays the strings mapped for insert mode with ":map!".
     (synonymous with ":map!&lt;cr&gt;")</dd>
 
     <dt><a name="command-show-printable" id=
-    "command-show-printable">show-printable</a></dt>
+    "command-show-printable">:show-printable</a></dt>
 
     <dd>
       displays a table of the first 256 printable characters, with
@@ -1530,29 +1543,34 @@
       with the character type information for that character.</p>
     </dd>
 
-    <dt>show-registers</dt>
+    <dt><a name="colon-show-registers" id=
+    "colon-show-registers">:show-registers</a></dt>
 
     <dd>displays the current contents of the named and numbered
     registers.</dd>
 
-    <dt>show-system-mapped-chars</dt>
+    <dt><a name="colon-show-system-mapped-chars" id=
+    "colon-show-system-mapped-chars">:show-system-mapped-chars</a></dt>
 
     <dd>displays the strings mapped to represent the terminal's
     function keys.</dd>
 
-    <dt>show-tagstack</dt>
+    <dt><a name="colon-show-tagstack" id=
+    "colon-show-tagstack">:show-tagstack</a></dt>
 
     <dd>displays the contents of the "tags stack", the list of
     locations from which the ":ta" or '^]' commands have been used,
     and to which the ":pop" and '^T' (or '^X-^]') commands will
     return.</dd>
 
-    <dt>show-terminal-chars</dt>
+    <dt><a name="colon-show-terminal-chars" id=
+    "colon-show-terminal-chars">:show-terminal-chars</a></dt>
 
     <dd>displays the list of special chars normally associated with
     the TTY driver, i.e. backspace, interrupt, suspend, etc.</dd>
 
-    <dt>show-variables</dt>
+    <dt><a name="colon-show-variables" id=
+    "colon-show-variables">:show-variables</a></dt>
 
     <dd>displays the list of vile state $variables and temporary
     %variables, and their values. Use a repeat count to show all
@@ -1560,7 +1578,7 @@
     the state variables.</dd>
 
     <dt><a name="command-show-wide-printable" id=
-    "command-show-wide-printable">show-wide-printable</a></dt>
+    "command-show-wide-printable">:show-wide-printable</a></dt>
 
     <dd>
       displays a table of the "wide" (Unicode) printable
@@ -1912,7 +1930,8 @@
   major.</p>
 
   <dl>
-    <dt>alt-tabpos (atp)</dt>
+    <dt><a name="mode-alt-tabpos" id="mode-alt-tabpos">alt-tabpos
+    (atp)</a></dt>
 
     <dd>If set, vile will position the cursor over tab and control
     characters the way emacs would, that is, at the start of a tab
@@ -1971,7 +1990,8 @@
     like vi, in that buffers remain in a fixed order, that in which
     they were edited. (U)</dd>
 
-    <dt>autocolor (ac)</dt>
+    <dt><a name="mode-autocolor" id="mode-autocolor">autocolor
+    (ac)</a></dt>
 
     <dd>Automatic syntax coloring. If set to zero, automatic syntax
     coloring is disabled. Otherwise, it should be set to a small
@@ -1980,7 +2000,8 @@
     wait the specified amount of time for a "quiet interval" during
     which the user hasn't pressed any keys. (B)</dd>
 
-    <dt>autowrite (aw)</dt>
+    <dt><a name="mode-autowrite" id="mode-autowrite">autowrite
+    (aw)</a></dt>
 
     <dd>vile will write out any changed buffers for which this mode
     is set before performing a ^Z, "stop", "suspend",
@@ -1994,28 +2015,33 @@
     buffers to be written when switching between files. This is
     unnecessary in vile.] (B)</dd>
 
-    <dt>autoindent (ai)</dt>
+    <dt><a name="mode-autoindent" id="mode-autoindent">autoindent
+    (ai)</a></dt>
 
     <dd>During insert, newly created lines inherit their leading
     indent from the previous line in the buffer. (B)</dd>
 
-    <dt>autosave (as)</dt>
+    <dt><a name="mode-autosave" id="mode-autosave">autosave
+    (as)</a></dt>
 
     <dd>Automatic file saving. Writes the file after every
     'autosavecnt' characters of inserted text. Other file changes
     are not counted. (B)</dd>
 
-    <dt>autosavecnt (ascnt)</dt>
+    <dt><a name="mode-autosavecnt" id=
+    "mode-autosavecnt">autosavecnt (ascnt)</a></dt>
 
     <dd>How often (after how many inserted characters) will
     automatic saves take place. 256 by default. (B)</dd>
 
-    <dt>backspacelimit (bl)</dt>
+    <dt><a name="mode-backspacelimit" id=
+    "mode-backspacelimit">backspacelimit (bl)</a></dt>
 
     <dd>When in insert mode, this controls whether one can
     backspace past the point at which the insert began. (B)</dd>
 
-    <dt>backup-style</dt>
+    <dt><a name="mode-backup-style" id=
+    "mode-backup-style">backup-style</a></dt>
 
     <dd>Specifies the style used for creating file backups when a
     file is written. Can have values of "off", ".bak", and (under
@@ -2027,7 +2053,7 @@
     fail, unless it is forced using the ":w!" form of the write
     command. (B)</dd>
 
-    <dt>bcolor</dt>
+    <dt><a name="mode-bcolor" id="mode-bcolor">bcolor</a></dt>
 
     <dd>On systems supporting this, will set the background color.
     On most systems, the choice of colors is fixed, although the
@@ -2036,7 +2062,8 @@
     "#color-palette">color palette</a> down below, under DOS
     specifics. (U)</dd>
 
-    <dt>byteorder-mark (bom)</dt>
+    <dt><a name="mode-byteorder-mark" id=
+    "mode-byteorder-mark">byteorder-mark (bom)</a></dt>
 
     <dd>
       is a prefix used to distinguish different types of
@@ -2069,14 +2096,15 @@
       Windows. (B)</p>
     </dd>
 
-    <dt>bufname-expr</dt>
+    <dt><a name="mode-bufname-expr" id=
+    "mode-bufname-expr">bufname-expr</a></dt>
 
     <dd>Regular expression used for parsing of $bufname, subject to
     the cursor-tokens mode. If the expression is inactive, use
     character-class based internal function which combines buffer-
     and filename-classes. This is a buffer mode. (B)</dd>
 
-    <dt>ccolor</dt>
+    <dt><a name="mode-ccolor" id="mode-ccolor">ccolor</a></dt>
 
     <dd>On systems supporting this, will set the cursor color. On
     most systems, the choice of colors is fixed, although the X11
@@ -2085,7 +2113,8 @@
     "#color-palette">color palette</a> down below, under DOS
     specifics. (U)</dd>
 
-    <dt>check-access</dt>
+    <dt><a name="mode-check-access" id=
+    "mode-check-access">check-access</a></dt>
 
     <dd>
       Check file permissions before source'ing it in a script. This
@@ -2121,7 +2150,8 @@
       <p>The default value is "current". (U)</p>
     </dd>
 
-    <dt>check-modtime</dt>
+    <dt><a name="mode-check-modtime" id=
+    "mode-check-modtime">check-modtime</a></dt>
 
     <dd>
       Check modification-time. If a file has changed since it was
@@ -2149,7 +2179,8 @@
       the latter behavior.) (B)</p>
     </dd>
 
-    <dt>cindent (ci)</dt>
+    <dt><a name="mode-cindent" id="mode-cindent">cindent
+    (ci)</a></dt>
 
     <dd>C-style indentation. Helps maintain current indentation
     level automatically during insert, like autoindent, above. See
@@ -2185,14 +2216,14 @@
       indented less. (B)</p>
     </dd>
 
-    <dt>cmode</dt>
+    <dt><a name="mode-cmode" id="mode-cmode">cmode</a></dt>
 
     <dd>C-code mode. A built-in majormode that predefines cindent
     mode and separate suffix, tab and shiftwidth submodes. The
     topic "cmode: the original vile builtin majormode" discusses
     this majormode in more detail. (M)</dd>
 
-    <dt>crypt</dt>
+    <dt><a name="mode-crypt" id="mode-crypt">crypt</a></dt>
 
     <dd>Causes buffer(s) to be decrypted when read, and encrypted
     when written. This is compatible with the UNIX crypt(1)
@@ -2200,13 +2231,15 @@
     have this feature enabled. See the section on <a href=
     "#encryption">"Encryption"</a> for more information. (B)</dd>
 
-    <dt>color-scheme (cs)</dt>
+    <dt><a name="mode-color-scheme" id=
+    "mode-color-scheme">color-scheme (cs)</a></dt>
 
     <dd>An aggregate of fcolor, bcolor, video-attrs and $palette.
     Color schemes are defined with the define-color-scheme command.
     (U)</dd>
 
-    <dt>comment-prefix</dt>
+    <dt><a name="mode-comment-prefix" id=
+    "mode-comment-prefix">comment-prefix</a></dt>
 
     <dd>A regular expression denoting the portion of a line that is
     replicated and untouched, except for leading indentation when
@@ -2215,7 +2248,8 @@
     useful for matching shell comments (#), multi-line C comments
     (*), multi-line C++ comments (//), and email (&gt;). (B)</dd>
 
-    <dt>comments</dt>
+    <dt><a name="mode-comments" id=
+    "mode-comments">comments</a></dt>
 
     <dd>A regular expression defining commented paragraph
     delimiters. This is used in addition to the "paragraphs"
@@ -2226,7 +2260,8 @@
     that consists of an empty comment line usually works well.
     (B)</dd>
 
-    <dt>cursor-tokens</dt>
+    <dt><a name="mode-cursor-tokens" id=
+    "mode-cursor-tokens">cursor-tokens</a></dt>
 
     <dd>Controls whether vile uses regular expressions or character
     classes for parsing tokens from the screen for various
@@ -2238,14 +2273,14 @@
     based parsing for buffer name does not correspond exactly to a
     regular expression. (B)</dd>
 
-    <dt>dirc</dt>
+    <dt><a name="mode-dirc" id="mode-dirc">dirc</a></dt>
 
     <dd>Causes vile to check each name when scanning directories
     for filename completion. This is slower, but provides
     additional information allowing you to distinguish between
     directory and file names in the prompt. (U)</dd>
 
-    <dt>dos</dt>
+    <dt><a name="mode-dos" id="mode-dos">dos</a></dt>
 
     <dd>
       On input, if the global copy of this mode is set, then
@@ -2278,12 +2313,14 @@
       binary editing. (B)</p>
     </dd>
 
-    <dt>errorbells (eb)</dt>
+    <dt><a name="mode-errorbells" id="mode-errorbells">errorbells
+    (eb)</a></dt>
 
     <dd>Controls whether a bell sounds (or whether the screen
     flashes, if "flash" mode is on) when an error occurs. (U)</dd>
 
-    <dt>expand-chars</dt>
+    <dt><a name="mode-expand-chars" id=
+    "mode-expand-chars">expand-chars</a></dt>
 
     <dd>Controls the set of characters that are expanded in command
     lines. These include '%' (the current buffer), '#' (the
@@ -2291,13 +2328,14 @@
     token at the cursor position). For VMS, MS-DOS, OS/2, and Win32
     hosts, this is '&amp;'. (U)</dd>
 
-    <dt>expand-path</dt>
+    <dt><a name="mode-expand-path" id=
+    "mode-expand-path">expand-path</a></dt>
 
     <dd>Controls whether %/# are expanded to the full pathname of a
     buffer, or just to its basename (i.e. the name with the path
     stripped off). (U)</dd>
 
-    <dt>fcolor</dt>
+    <dt><a name="mode-fcolor" id="mode-fcolor">fcolor</a></dt>
 
     <dd>On systems supporting this, will set the foreground color.
     On most systems, the choice of colors is fixed, although the
@@ -2306,9 +2344,11 @@
     "#color-palette">color palette</a> down below, under DOS
     specifics. (U)</dd>
 
-    <dt>fence-begin</dt>
+    <dt><a name="mode-fence-begin" id=
+    "mode-fence-begin">fence-begin</a></dt>
 
-    <dt>fence-end</dt>
+    <dt><a name="mode-fence-end" id=
+    "mode-fence-end">fence-end</a></dt>
 
     <dd>Respectively, the regular expressions for balancing simple
     (character-oriented, non-nestable) fences. (B)</dd>
@@ -2316,17 +2356,21 @@
     <dt><a name="mode-fence-if" id=
     "mode-fence-if">fence-if</a></dt>
 
-    <dt>fence-elif</dt>
+    <dt><a name="mode-fence-elif" id=
+    "mode-fence-elif">fence-elif</a></dt>
 
-    <dt>fence-else</dt>
+    <dt><a name="mode-fence-else" id=
+    "mode-fence-else">fence-else</a></dt>
 
-    <dt>fence-fi</dt>
+    <dt><a name="mode-fence-fi" id=
+    "mode-fence-fi">fence-fi</a></dt>
 
     <dd>Respectively, the regular expressions for balancing
     line-oriented, nested fences, e.g., as C-preprocessor lines
     (the default). (B)</dd>
 
-    <dt>fence-limit</dt>
+    <dt><a name="mode-fence-limit" id=
+    "mode-fence-limit">fence-limit</a></dt>
 
     <dd>Iteration timeout for complex fences, to limit pathological
     cases, e.g., with Perl's ambiguous block syntax. (B)</dd>
@@ -2342,7 +2386,8 @@
     matched as well. See <a href="#mode-showmatch">"showmatch"</a>
     mode for another use of the "fence-pairs" mode. (B)</dd>
 
-    <dt>file-encoding (fk)</dt>
+    <dt><a name="mode-file-encoding" id=
+    "mode-file-encoding">file-encoding (fk)</a></dt>
 
     <dd>
       This is the character encoding of the buffer contents, which
@@ -2365,14 +2410,16 @@
       8-bit locale support used since 9.3i (20021223). (B)</p>
     </dd>
 
-    <dt>fillcol (fc)</dt>
+    <dt><a name="mode-fillcol" id="mode-fillcol">fillcol
+    (fc)</a></dt>
 
     <dd>Sets the value for the fill column, which is the column at
     which autowrapping and region formatting will break lines. If
     zero, use the wrapmargin. If negative, count from the right
     margin. (B)</dd>
 
-    <dt>filtermsgs (fm)</dt>
+    <dt><a name="mode-filtermsgs" id="mode-filtermsgs">filtermsgs
+    (fm)</a></dt>
 
     <dd>A few syntax errors are detected and highlighted by the
     syntax-highlighting filters. If set, this mode directs vile to
@@ -2380,7 +2427,8 @@
     messages, which can be used with the error-buffer command to
     step through the errors. (B)</dd>
 
-    <dt>filtername (fn)</dt>
+    <dt><a name="mode-filtername" id="mode-filtername">filtername
+    (fn)</a></dt>
 
     <dd>Specify a syntax-highlighting filter, for a given
     majormode. This is used in the filters.rc file, to handle
@@ -2388,14 +2436,15 @@
     to a common syntax, e.g., C, C++ and Java. End users will not
     typically modify this mode. (B)</dd>
 
-    <dt>find-cfg</dt>
+    <dt><a name="mode-find-cfg" id=
+    "mode-find-cfg">find-cfg</a></dt>
 
     <dd>Configures the builtin find feature, which is available on
     win32 and Unix hosts. For further details, refer to the section
     of this help file entitled "Working in a project hierarchy".
     (U)</dd>
 
-    <dt>flash</dt>
+    <dt><a name="mode-flash" id="mode-flash">flash</a></dt>
 
     <dd>If your terminal can, will flash the screen rather than
     beeping on errors. No audible or visible indication will occur
@@ -2403,7 +2452,8 @@
     <a href="#mode-vtflash">vtflash</a> mode (described below).
     (U)</dd>
 
-    <dt>for-buffers (fb)</dt>
+    <dt><a name="mode-for-buffers" id=
+    "mode-for-buffers">for-buffers (fb)</a></dt>
 
     <dd>
       specifies whether globbing or regular expressions are used to
@@ -2428,7 +2478,7 @@
       </dl>
     </dd>
 
-    <dt>glob</dt>
+    <dt><a name="mode-glob" id="mode-glob">glob</a></dt>
 
     <dd>
       Controls how wildcard characters (e.g., '*' and '?') are
@@ -2448,19 +2498,22 @@
       if you use csh.) (U).</p>
     </dd>
 
-    <dt>highlight (hl)</dt>
+    <dt><a name="mode-highlight" id="mode-highlight">highlight
+    (hl)</a></dt>
 
     <dd>When false, syntax highlighting is disabled in the
     corresponding buffers. This allows you to disable highlighting
     for all buffers or only certain ones. (B)</dd>
 
-    <dt>history (hi)</dt>
+    <dt><a name="mode-history" id="mode-history">history
+    (hi)</a></dt>
 
     <dd>When true (the default), commands from the :-line are
     logged in a buffer [History]. Turning this off causes the
     buffer to be removed. (U)</dd>
 
-    <dt>horizscroll (hs)</dt>
+    <dt><a name="mode-horizscroll" id=
+    "mode-horizscroll">horizscroll (hs)</a></dt>
 
     <dd>If the cursor is moved "off-screen", this mode controls
     what happens. If set (as it is by default), the whole screen
@@ -2468,7 +2521,8 @@
     set, then only the current line will shift, which may be
     desirable on slower displays. (W)</dd>
 
-    <dt>identifier-expr</dt>
+    <dt><a name="mode-identifier-expr" id=
+    "mode-identifier-expr">identifier-expr</a></dt>
 
     <dd>
       Regular expression used for parsing of $identifier, which
@@ -2483,23 +2537,27 @@
       <p>This is a buffer mode. (B)</p>
     </dd>
 
-    <dt>ignorecase (ic)</dt>
+    <dt><a name="mode-ignorecase" id="mode-ignorecase">ignorecase
+    (ic)</a></dt>
 
     <dd>Text searches normally match the pattern exactly. With this
     set, searches are case-insensitive. (B)</dd>
 
-    <dt>ignoresuffix (is)</dt>
+    <dt><a name="mode-ignoresuffix" id=
+    "mode-ignoresuffix">ignoresuffix (is)</a></dt>
 
     <dd>Strip the given pattern from a filename before matching it
     for majormode suffixes. Note well the difference between the
     mode's name and its behavior. (B)</dd>
 
-    <dt>implybuffer (ib)</dt>
+    <dt><a name="mode-implybuffer" id=
+    "mode-implybuffer">implybuffer (ib)</a></dt>
 
     <dd>Causes vile to create a buffer when you write to a new
     file, or read from one (e.g., with ":r"). (U)</dd>
 
-    <dt>insert-exec (ie)</dt>
+    <dt><a name="mode-insert-exec" id=
+    "mode-insert-exec">insert-exec (ie)</a></dt>
 
     <dd>
       Tells vile to interpret control characters for movement and
@@ -2515,44 +2573,48 @@
 </pre>
     </dd>
 
-    <dt>linebreak (lb)</dt>
+    <dt><a name="mode-linebreak" id="mode-linebreak">linebreak
+    (lb)</a></dt>
 
     <dd>When <code>linewrap</code> mode is set, add blanks in the
     display to avoid splitting "words" (any nonblank text).
     (W)</dd>
 
-    <dt>linewrap (lw)</dt>
+    <dt><a name="mode-linewrap" id="mode-linewrap">linewrap
+    (lw)</a></dt>
 
     <dd>Displays lines that are too long to fit on one line as a
     series of "wrapped" lines. Overrides left/right scrolling
     controlled by "sideways" and "horizscroll" modes. (W)</dd>
 
-    <dt>list (li)</dt>
+    <dt><a name="mode-list" id="mode-list">list (li)</a></dt>
 
     <dd>The buffer will be displayed with tabs and newlines made
     visible, instead of as whitespace. (W)</dd>
 
-    <dt>loading</dt>
+    <dt><a name="mode-loading" id="mode-loading">loading</a></dt>
 
     <dd>A flag whose state may display in the mode/status line,
     used by the capture.pl script to show when asynchronous data is
     loading. (B)</dd>
 
-    <dt>magic</dt>
+    <dt><a name="mode-magic" id="mode-magic">magic</a></dt>
 
     <dd>Honor unescaped regular expression metacharacters in search
     strings. See the section <a href=
     "#regular-expressions">"Regular Expressions"</a> for more
     detail. (B)</dd>
 
-    <dt>maplength</dt>
+    <dt><a name="mode-maplength" id=
+    "mode-maplength">maplength</a></dt>
 
     <dd>Controls the maximum length of a :map string, to prevent
     runaway recursion. This is the total number of characters that
     can be gotten during a :map expansion; vile pushes characters
     onto the stack, so this is only a rough measure. (U)</dd>
 
-    <dt>maplonger</dt>
+    <dt><a name="mode-maplonger" id=
+    "mode-maplonger">maplonger</a></dt>
 
     <dd>Controls whether the longer or shorter of two "nested" map
     strings will be favored by the editor. When set, vile will
@@ -2561,13 +2623,14 @@
     information, see the section describing the <a href=
     "#map-commands">":map"</a> command, below. (U)</dd>
 
-    <dt>mcolor</dt>
+    <dt><a name="mode-mcolor" id="mode-mcolor">mcolor</a></dt>
 
     <dd>Specify the color of the modelines, normally in reverse
     video. See also <a href="#extra-colors">"Setting Extra
     Colors"</a>. (U)</dd>
 
-    <dt>meta-insert-bindings (mib)</dt>
+    <dt><a name="mode-meta-insert-bindings" id=
+    "mode-meta-insert-bindings">meta-insert-bindings (mib)</a></dt>
 
     <dd>Controls behavior of 8-bit characters during insert.
     Normally, key-bindings are only operational when in command
@@ -2578,27 +2641,31 @@
     insert mode. Any unbound meta-characters will remain
     self-inserting. (B)</dd>
 
-    <dt>mini-hilite (mh)</dt>
+    <dt><a name="mode-mini-hilite" id=
+    "mode-mini-hilite">mini-hilite (mh)</a></dt>
 
     <dd>When user toggles editing mode in the minibuffer (^G,
     mini-edit), display the minibuffer with the given attribute.
     These are the same as for visual-matches. (U)</dd>
 
-    <dt>mode-filename (mf)</dt>
+    <dt><a name="mode-mode-filename" id=
+    "mode-mode-filename">mode-filename (mf)</a></dt>
 
     <dd>A regular expression describing filenames for which the
     corresponding majormode will be set. The expression is applied
     only to the portion of the complete pathname after removing the
     directory name. (M)</dd>
 
-    <dt>mode-pathname (mp)</dt>
+    <dt><a name="mode-mode-pathname" id=
+    "mode-mode-pathname">mode-pathname (mp)</a></dt>
 
     <dd>A regular expression describing pathnames for which the
     corresponding majormode will be set. The expression is applied
     to the complete pathname, in contrast to mode-filename.
     (M)</dd>
 
-    <dt>modeline</dt>
+    <dt><a name="mode-modeline" id=
+    "mode-modeline">modeline</a></dt>
 
     <dd>
       Controls whether a vi-like modeline feature is enabled. This
@@ -2641,7 +2708,8 @@
       (B)</p>
     </dd>
 
-    <dt>modelines</dt>
+    <dt><a name="mode-modelines" id=
+    "mode-modelines">modelines</a></dt>
 
     <dd>Controls the number of lines from each end of the buffer to
     scan for vi-like mode lines. Defaults to 5 (B)</dd>
@@ -2649,12 +2717,13 @@
     <dd>A regular expression describing pathnames for which the
     corresponding majormode will be set. (M)</dd>
 
-    <dt>mouse</dt>
+    <dt><a name="mode-mouse" id="mode-mouse">mouse</a></dt>
 
     <dd>for OS/2, enable/disable the mouse in the console-window
     version.</dd>
 
-    <dt>multibeep</dt>
+    <dt><a name="mode-multibeep" id=
+    "mode-multibeep">multibeep</a></dt>
 
     <dd>If a motion command fails, then vile, like vi, will
     normally sound the bell. Turning this mode off prevents
@@ -2663,17 +2732,19 @@
     by holding down the backspace key), you only get one beep.
     (U)</dd>
 
-    <dt>newline (nl)</dt>
+    <dt><a name="mode-newline" id="mode-newline">newline
+    (nl)</a></dt>
 
     <dd>The buffer ends with a newline. This is set when reading a
     buffer. (B)</dd>
 
-    <dt>number (nu)</dt>
+    <dt><a name="mode-number" id="mode-number">number (nu)</a></dt>
 
     <dd>All lines in the buffer will be prefixed by their line
     number. (W)</dd>
 
-    <dt>overlap-matches</dt>
+    <dt><a name="mode-overlap-matches" id=
+    "mode-overlap-matches">overlap-matches</a></dt>
 
     <dd>Modifies the highlighting shown by visual-matches to
     control whether overlapping matches are shown. For some
@@ -2689,7 +2760,8 @@
     <dd>A regular expression defining where the "next-paragraph"
     ('}') and "previous-paragraph" ('{') commands will go. (B)</dd>
 
-    <dt>pathname-expr</dt>
+    <dt><a name="mode-pathname-expr" id=
+    "mode-pathname-expr">pathname-expr</a></dt>
 
     <dd>
       Regular expression used for parsing of $pathname, which is
@@ -2703,7 +2775,8 @@
       <p>This is a buffer mode. (B)</p>
     </dd>
 
-    <dt>percent-autocolor</dt>
+    <dt><a name="mode-percent-autocolor" id=
+    "mode-percent-autocolor">percent-autocolor</a></dt>
 
     <dd>Maximum percentage of time during the autocolor interval
     that is desired to use for coloring the buffers. This helps
@@ -2714,13 +2787,15 @@
     used. If this mode is zero, it is ignored, and vile can use
     100% of the interval for autocoloring. (B)</dd>
 
-    <dt>percent-crlf</dt>
+    <dt><a name="mode-percent-crlf" id=
+    "mode-percent-crlf">percent-crlf</a></dt>
 
     <dd>Percentage of total lines which must end with CR/LF for
     vile to automatically convert buffer's recordseparator to crlf,
     if dos mode is set. (B)</dd>
 
-    <dt>percent-utf8</dt>
+    <dt><a name="mode-percent-utf8" id=
+    "mode-percent-utf8">percent-utf8</a></dt>
 
     <dd>Percentage of total characters which contain embedded
     nulls, making them look like UTF-16 or UTF-32 encodings. If
@@ -2730,13 +2805,15 @@
     should set this to a lower value to work with text which does
     not follow that pattern. (B)</dd>
 
-    <dt>pin-tagstack</dt>
+    <dt><a name="mode-pin-tagstack" id=
+    "mode-pin-tagstack">pin-tagstack</a></dt>
 
     <dd>If set, the editor does not change windows when executing
     tag locate/pop commands. Put another way, all tag push and pop
     operations are "pinned" to the current window. (U)</dd>
 
-    <dt>popup-choices (pc)</dt>
+    <dt><a name="mode-popup-choices" id=
+    "mode-popup-choices">popup-choices (pc)</a></dt>
 
     <dd>
       Must be set to one of the following three values:
@@ -2758,7 +2835,8 @@
       completion choices. (U)</p>
     </dd>
 
-    <dt>popup-msgs (pm)</dt>
+    <dt><a name="mode-popup-msgs" id="mode-popup-msgs">popup-msgs
+    (pm)</a></dt>
 
     <dd>When enabled, vile pops up the [Messages] buffer showing
     the text that was written to the message line. Closing the
@@ -2769,7 +2847,8 @@
     (e.g., .vilerc) sets it, all messages will be popped up, then
     the mode will be initialized to "false". (U)</dd>
 
-    <dt>preamble (pre)</dt>
+    <dt><a name="mode-preamble" id="mode-preamble">preamble
+    (pre)</a></dt>
 
     <dd>A regular expression describing the first line of filenames
     for which the corresponding majormode will be set. For example,
@@ -2796,7 +2875,8 @@
     printing-low and printing-high modes are not necessary if your
     system supports the locale functions. (U)</dd>
 
-    <dt>reader-policy (rp)</dt>
+    <dt><a name="mode-reader-policy" id=
+    "mode-reader-policy">reader-policy (rp)</a></dt>
 
     <dd>Control whether buffers are initially read using the fast
     and/or slow methods. The fast method uses less memory, but in
@@ -2808,7 +2888,8 @@
     slow (small chunk) method. Set to "fast" to use only the fast
     method, and to "slow" for only the slow method. (U)</dd>
 
-    <dt>readonly (ro)</dt>
+    <dt><a name="mode-readonly" id="mode-readonly">readonly
+    (ro)</a></dt>
 
     <dd>Prevent writing a buffer to its associated file. Unlike
     <a href="#mode-view">"view"</a> mode (see below) which prevents
@@ -2816,7 +2897,9 @@
     prevents updates. This is set automatically for the output of
     shell commands and pipes. (B)</dd>
 
-    <dt>readonly-on-readonly (roro)</dt>
+    <dt><a name="mode-readonly-on-readonly" id=
+    "mode-readonly-on-readonly">readonly-on-readonly
+    (roro)</a></dt>
 
     <dd>Causes "readonly" mode to be set for read-only files.
     Normally vile will attempt to write files whether the operating
@@ -2861,30 +2944,34 @@
       to control how it is written. (B)</p>
     </dd>
 
-    <dt>norectangle-insert-mode (rim)</dt>
+    <dt><a name="mode-norectangle-insert-mode" id=
+    "mode-norectangle-insert-mode">norectangle-insert-mode
+    (rim)</a></dt>
 
     <dd>Insert, rather than overstrike, change changing text in a
     rectange. (B)</dd>
 
-    <dt>remap</dt>
+    <dt><a name="mode-remap" id="mode-remap">remap</a></dt>
 
     <dd>Controls whether :map or :map! sequences entered with no
     explicit remapping control should be subject to remapping (i.e.
     recursive mapping). (U)</dd>
 
-    <dt>remapfirst</dt>
+    <dt><a name="mode-remapfirst" id=
+    "mode-remapfirst">remapfirst</a></dt>
 
     <dd>Controls whether the first character of a map expanded due
     to :map or :map! is eligible for remapping. This is off by
     default for vi compatibility. (U)</dd>
 
-    <dt>report</dt>
+    <dt><a name="mode-report" id="mode-report">report</a></dt>
 
     <dd>A threshold value that is used to control messages that
     report the number of lines deleted, changed, etc. Set it to 0
     (zero) to disable the messages. (U)</dd>
 
-    <dt>resolve-links</dt>
+    <dt><a name="mode-resolve-links" id=
+    "mode-resolve-links">resolve-links</a></dt>
 
     <dd>Controls whether vile fully resolves file names in cases
     where some path components are symbolic links. This makes vile
@@ -2917,22 +3004,26 @@
     given by ^G (the "position" function), which gives a percentage
     of characters rather than lines.) (B)</dd>
 
-    <dt>samebangs (sb)</dt>
+    <dt><a name="mode-samebangs" id="mode-samebangs">samebangs
+    (sb)</a></dt>
 
     <dd>Controls whether the ":!!" and "^X-!" commands remember the
     same command string. (U)</dd>
 
-    <dt>sections</dt>
+    <dt><a name="mode-sections" id=
+    "mode-sections">sections</a></dt>
 
     <dd>A regular expression defining where the "next-section"
     (']') and "previous-section" ('[') commands will go. (B)</dd>
 
-    <dt>sentences</dt>
+    <dt><a name="mode-sentences" id=
+    "mode-sentences">sentences</a></dt>
 
     <dd>A regular expression defining where the "next-sentence"
     (')') and "previous-sentence" ('(') commands will go. (B)</dd>
 
-    <dt>shiftwidth (sw)</dt>
+    <dt><a name="mode-shiftwidth" id="mode-shiftwidth">shiftwidth
+    (sw)</a></dt>
 
     <dd>This is much like a tabstop, except that it is independent
     of hardware tabs and tab characters. It is the number of
@@ -2950,7 +3041,8 @@
     by the <a href="#mode-ruler">ruler</a> mode, to save space on
     the modeline (W).</dd>
 
-    <dt>showformat (sf)</dt>
+    <dt><a name="mode-showformat" id="mode-showformat">showformat
+    (sf)</a></dt>
 
     <dd>Controls when/whether recordseparator information is shown
     in the status line. Values are "always", "differs" to show when
@@ -2968,31 +3060,36 @@
     typed, the cursor will highlight the matching member of the
     pair for about a quarter second. (B)</dd>
 
-    <dt>showmode (smd)</dt>
+    <dt><a name="mode-showmode" id="mode-showmode">showmode
+    (smd)</a></dt>
 
     <dd>Causes an indicator on the modeline to indicate what mode
     vile is currently in: insert (I), replace (R), or command
     (none). (B)</dd>
 
-    <dt>showram (sr)</dt>
+    <dt><a name="mode-showram" id="mode-showram">showram
+    (sr)</a></dt>
 
     <dd>Displays the amount of ram currently allocated at the end
     of the message line. (not in all versions) (U)</dd>
 
-    <dt>showvariables (sv)</dt>
+    <dt><a name="mode-showvariables" id=
+    "mode-showvariables">showvariables (sv)</a></dt>
 
     <dd>If set, causes the [Variables] buffer which is created by
     the "show-variables" command to be updated each time the screen
     is updated. (W)</dd>
 
-    <dt>sideways</dt>
+    <dt><a name="mode-sideways" id=
+    "mode-sideways">sideways</a></dt>
 
     <dd>Will prompt for a new value for the sideways scroll offset,
     which allow display of a section of code normally off the
     screen to the right. Also affected by the ^X-^R and ^X-^L
     commands. (W)</dd>
 
-    <dt>smoothscroll (ss)</dt>
+    <dt><a name="mode-smoothscroll" id=
+    "mode-smoothscroll">smoothscroll (ss)</a></dt>
 
     <dd>Force smooth scrolling. By default, this option is turned
     off so that vile will try to keep up with your keystrokes
@@ -3002,14 +3099,17 @@
     If your keyboard repeats really fast and you have smoothscroll
     enabled, it may take a while for vile to catch up. (U)</dd>
 
-    <dt>spaces-after-sentence (sas)</dt>
+    <dt><a name="mode-spaces-after-sentence" id=
+    "mode-spaces-after-sentence">spaces-after-sentence
+    (sas)</a></dt>
 
     <dd>Insert two spaces after each sentence when formatting a
     paragraph. By default this option is turned on. When disabled,
     the format routine will insert only one space after each
     sentence. (B)</dd>
 
-    <dt>suffixes (suf)</dt>
+    <dt><a name="mode-suffixes" id="mode-suffixes">suffixes
+    (suf)</a></dt>
 
     <dd>A regular expression describing filename suffixes for which
     the corresponding majormode will be set. The expression is
@@ -3017,7 +3117,8 @@
     first ".". If more than one of mode-pathname, mode-filename and
     suffixes are given, they are tested in this order. (M)</dd>
 
-    <dt>swap-title</dt>
+    <dt><a name="mode-swap-title" id=
+    "mode-swap-title">swap-title</a></dt>
 
     <dd>
       For xvile/winvile, if set, the editor displays its title as:
@@ -3029,7 +3130,8 @@
       screen real estate conditions. (U)</p>
     </dd>
 
-    <dt>tabinsert (ti)</dt>
+    <dt><a name="mode-tabinsert" id="mode-tabinsert">tabinsert
+    (ti)</a></dt>
 
     <dd>Allow the physical insertion of tab characters into the
     buffer. If turned off ("notabinsert"), and an attempt is made
@@ -3040,18 +3142,21 @@
     not be affected. Use the '^A-&lt;SP&gt;' operator command to
     eliminate pre-existing tabs from a region of text. (B)</dd>
 
-    <dt>tabstop (ts)</dt>
+    <dt><a name="mode-tabstop" id="mode-tabstop">tabstop
+    (ts)</a></dt>
 
     <dd>Set the value for spacing of normal tabstops. Note that
     when the majormode cmode is enabled, tabstop assumes the local
     buffer mode value of 8. (B)</dd>
 
-    <dt>tagignorecase (tc)</dt>
+    <dt><a name="mode-tagignorecase" id=
+    "mode-tagignorecase">tagignorecase (tc)</a></dt>
 
     <dd>Causes tag searches to be done ignoring upper and lower
     case. (B)</dd>
 
-    <dt>taglength (tl)</dt>
+    <dt><a name="mode-taglength" id="mode-taglength">taglength
+    (tl)</a></dt>
 
     <dd>Sets the significant length for tags. If non-zero, lookups
     for names longer than the taglength value will only attempt to
@@ -3061,7 +3166,8 @@
     picked up from the cursor &ndash; they are always matched
     exactly. (B)</dd>
 
-    <dt>tagrelative (tr)</dt>
+    <dt><a name="mode-tagrelative" id=
+    "mode-tagrelative">tagrelative (tr)</a></dt>
 
     <dd>Causes files looked up via the tags mechanism to be found
     relative to the location of the tags file, rather than relative
@@ -3080,27 +3186,30 @@
     the current directory of vile at the time of the tags lookup.
     (B)</dd>
 
-    <dt>tagword (tw)</dt>
+    <dt><a name="mode-tagword" id="mode-tagword">tagword
+    (tw)</a></dt>
 
     <dd>When scanning the word to lookup from the cursor position
     for the tags mechanism, grab the whole word rather than the
     substring starting at the cursor position. The latter, which is
     vi-like, is the default. (B)</dd>
 
-    <dt>terse</dt>
+    <dt><a name="mode-terse" id="mode-terse">terse</a></dt>
 
     <dd>vile produces more "status" messages than vi, which may
     become annoying at low baud rates. Setting terse mode will
     suppress many of these. (B)</dd>
 
-    <dt>terse-selections (tsel)</dt>
+    <dt><a name="mode-terse-selections" id=
+    "mode-terse-selections">terse-selections (tsel)</a></dt>
 
     <dd>Boolean indicating whether or not additional information is
     displayed about a selection. When false, the starting and
     ending positions of the selection are displayed as the
     selection is extended. The default is true. (W)</dd>
 
-    <dt>timeoutlen</dt>
+    <dt><a name="mode-timeoutlen" id=
+    "mode-timeoutlen">timeoutlen</a></dt>
 
     <dd>How long to wait for the characters of a :map'd sequence.
     Typically needed to resolve the ambiguity between a
@@ -3112,7 +3221,8 @@
     reduce this to something like 50 for crisper response to a
     user-pressed ESC. (U)</dd>
 
-    <dt>timeoutlen-user</dt>
+    <dt><a name="mode-timeoutlen-user" id=
+    "mode-timeoutlen-user">timeoutlen-user</a></dt>
 
     <dd>If set non-zero, this will enforce a maximum waiting time
     for characters in a user-defined :map sequence. If zero, the
@@ -3125,25 +3235,29 @@
     the word size on smaller machines, i.e, you will probably want
     to avoid setting timeoutlen-user larger than 65535. (U)</dd>
 
-    <dt>undo-dos-trim (udt)</dt>
+    <dt><a name="mode-undo-dos-trim" id=
+    "mode-undo-dos-trim">undo-dos-trim (udt)</a></dt>
 
     <dd>Controls whether trimming of carriage returns and control/Z
     done when converting between Unix and DOS line endings is
     undoable.</dd>
 
-    <dt>undoable (ua)</dt>
+    <dt><a name="mode-undoable" id="mode-undoable">undoable
+    (ua)</a></dt>
 
     <dd>Controls whether changes are saved on the undo stack. This
     is normally enabled, but you may wish to disable it to reduce
     memory overhead when filtering very large files. (B)</dd>
 
-    <dt>undolimit (ul)</dt>
+    <dt><a name="mode-undolimit" id="mode-undolimit">undolimit
+    (ul)</a></dt>
 
     <dd>Sets a limit on how many undoable buffer-changing commands
     will be saved. If set to 0, there is no limit, and all changes
     are undoable. The default value is 10. (B)</dd>
 
-    <dt>unicode-as-hex (uh)</dt>
+    <dt><a name="mode-unicode-as-hex" id=
+    "mode-unicode-as-hex">unicode-as-hex (uh)</a></dt>
 
     <dd>If displaying a buffer whose file-encoding says it is one
     of the Unicode flavors, e.g., "utf-8", "utf-16" or "utf-32",
@@ -3176,7 +3290,8 @@
     always displayed in control character (e.g. '^C') notation.
     (W)</dd>
 
-    <dt>video-attrs</dt>
+    <dt><a name="mode-video-attrs" id=
+    "mode-video-attrs">video-attrs</a></dt>
 
     <dd>Overlay all text with the given attribute: bold, italic,
     reverse, underline or none. (U)</dd>
@@ -3185,11 +3300,13 @@
 
     <dd>View the file only. No changes are permitted. (B)</dd>
 
-    <dt>view-on-readonly (viewro)</dt>
+    <dt><a name="mode-view-on-readonly" id=
+    "mode-view-on-readonly">view-on-readonly (viewro)</a></dt>
 
     <dd>Causes "view" mode to be set for read-only files. (U)</dd>
 
-    <dt>visual-matches</dt>
+    <dt><a name="mode-visual-matches" id=
+    "mode-visual-matches">visual-matches</a></dt>
 
     <dd>
       When a search command is executed, the cursor will move as
@@ -3256,7 +3373,8 @@
       on. (U)</p>
     </dd>
 
-    <dt>warn-blanks</dt>
+    <dt><a name="mode-warn-blanks" id=
+    "mode-warn-blanks">warn-blanks</a></dt>
 
     <dd>When prompted for a filename, vile normally allows you to
     use leading and trailing blanks and other nonprinting
@@ -3264,7 +3382,8 @@
     will then prompt you if you want the nonprinting characters to
     be stripped from the given filename. (U)</dd>
 
-    <dt>warn-rename</dt>
+    <dt><a name="mode-warn-rename" id=
+    "mode-warn-rename">warn-rename</a></dt>
 
     <dd>When using ":e" to find a file that has the same name as
     another buffer, vile will normally offer for you to edit the
@@ -3273,27 +3392,30 @@
     "warn-rename" will make vile choose buffer names without user
     intervention. (U)</dd>
 
-    <dt>warn-reread</dt>
+    <dt><a name="mode-warn-reread" id=
+    "mode-warn-reread">warn-reread</a></dt>
 
     <dd>When using ":e!" to reread a buffer from the file on disk,
     vile will normally warn you that you are about to clobber a
     modified buffer. Turning off "warn-reread" mode will make vile
     assume you know what you are doing. (U)</dd>
 
-    <dt>warn-unread</dt>
+    <dt><a name="mode-warn-unread" id=
+    "mode-warn-unread">warn-unread</a></dt>
 
     <dd>When leaving the editor, if not all buffers have been
     "visited", then normally vile will complain, and remind the
     user to use ":q!". Turning off "warn-unread" mode will suppress
     this behavior. (U)</dd>
 
-    <dt>working</dt>
+    <dt><a name="mode-working" id="mode-working">working</a></dt>
 
     <dd>If turned off (noworking), will suppress the activity
     indicator ("working..."/"...working") which appears during
     long-running operations. (U)</dd>
 
-    <dt>wrapmargin (wm)</dt>
+    <dt><a name="mode-wrapmargin" id="mode-wrapmargin">wrapmargin
+    (wm)</a></dt>
 
     <dd>
       Implements vi's auto-wrap mode. vile computes the effective
@@ -3316,12 +3438,14 @@
       once. (B)</p>
     </dd>
 
-    <dt>wrapscan (ws)</dt>
+    <dt><a name="mode-wrapscan" id="mode-wrapscan">wrapscan
+    (ws)</a></dt>
 
     <dd>Text searches will continue from past the bottom of the
     file to the top, and vice-versa. (B)</dd>
 
-    <dt>wrapwords (ww)</dt>
+    <dt><a name="mode-wrapwords" id="mode-wrapwords">wrapwords
+    (ww)</a></dt>
 
     <dd>Similar to, but different from, vi's auto-wrap mode (i.e.
     "wrapmargin"). While inserting, words are moved to the next
@@ -3329,13 +3453,15 @@
     attempted when a space is typed. The target maximum width of
     lines is changed with the "fillcol" setting. (B)</dd>
 
-    <dt>xterm-fkeys</dt>
+    <dt><a name="mode-xterm-fkeys" id=
+    "mode-xterm-fkeys">xterm-fkeys</a></dt>
 
     <dd>Support xterm's modified function keys by generating system
     bindings for the shift-, control-, alt-modifiers of each
     function key listed in the terminal description.</dd>
 
-    <dt>xterm-mouse</dt>
+    <dt><a name="mode-xterm-mouse" id=
+    "mode-xterm-mouse">xterm-mouse</a></dt>
 
     <dd>Enables mouse-clicking if you are running within an xterm.
     That is, it allows vile to receive mouse events. Since this
@@ -3344,14 +3470,16 @@
     between X windows. Your TERM variable's termcap entry should
     contain the string "xterm" for this to work. (U)</dd>
 
-    <dt>xterm-title</dt>
+    <dt><a name="mode-xterm-title" id=
+    "mode-xterm-title">xterm-title</a></dt>
 
     <dd>Enables titlebar updates if you are running within an
     xterm. Each time you switch to a different buffer, vile can
     update the title. This uses the same tests of the TERM variable
     as the xterm-mouse mode. (U)</dd>
 
-    <dt>yankmotion (ym)</dt>
+    <dt><a name="mode-yankmotion" id="mode-yankmotion">yankmotion
+    (ym)</a></dt>
 
     <dd>Yanking text will cause cursor movement (just like vi) if
     the motion is left or up. (B)</dd>
@@ -7707,11 +7835,11 @@
             fi
 </pre>
 
-  <p>If the variable VILEINIT is set in the environment, it is used
-  as a set of vile commands to initialize the editor. As a
-  not-very-useful example of a VILEINIT sequence, the following
-  setting recreates portions of the default initialization
-  behavior:</p>
+  <p>If the variable <a href="env-VILEINIT">VILEINIT</a> is set in
+  the environment, it is used as a set of vile commands to
+  initialize the editor. As a not-very-useful example of a VILEINIT
+  sequence, the following setting recreates portions of the default
+  initialization behavior:</p>
 
   <blockquote>
     <!--{{atr2html-->
@@ -7743,26 +7871,27 @@
   <p>Other environment variables:</p>
 
   <dl>
-    <dt>VILE_ERROR_ABORT</dt>
+    <dt><a href="env-VILE_ERROR_ABORT">VILE_ERROR_ABORT</a></dt>
 
     <dd>if VILE_ERROR_ABORT is defined during compilation, setting
     this environment variable at runtime will cause vile to abort
     (and dump core) rather than attempt to cleanup and exit with an
     error code on fatal errors. This is used for debugging.</dd>
 
-    <dt>VILE_HELP_FILE</dt>
+    <dt><a href="env-VILE_HELP_FILE">VILE_HELP_FILE</a></dt>
 
     <dd>override the name of the help file, normally "vile.hlp".
     This sets the $helpfile variable.</dd>
 
-    <dt>VILE_LIBDIR_PATH</dt>
+    <dt><a href="env-VILE_LIBDIR_PATH">VILE_LIBDIR_PATH</a></dt>
 
     <dd>override the search path for filter programs, normally the
     library-directory on UNIX systems. This sets the $libdir-path
     variable, which is appended to your $PATH variable when running
     filter commands on UNIX and Win32.</dd>
 
-    <dt>VILE_LOCALE_MAPPING</dt>
+    <dt><a href=
+    "env-VILE_LOCALE_MAPPING">VILE_LOCALE_MAPPING</a></dt>
 
     <dd>
       override the pattern used to associate wide/narrow locales.
@@ -7779,9 +7908,9 @@
       works.</p>
     </dd>
 
-    <dt>VILE_MENU</dt>
+    <dt><a href="env-VILE_MENU">VILE_MENU</a></dt>
 
-    <dt>XVILE_MENU</dt>
+    <dt><a href="env-XVILE_MENU">XVILE_MENU</a></dt>
 
     <dd>if set, overrides the compiled-in location of the menu file
     used by xvile. If $VILE_MENU is unset, xvile checks the
@@ -7797,28 +7926,28 @@
     installed, for instance, but relies on an antique version of
     nroff for manpages.</dd>
 
-    <dt>VILE_PWD</dt>
+    <dt><a href="env-VILE_PWD">VILE_PWD</a></dt>
 
     <dd>if set, assume invoking shell's "$PWD" variable is valid,
     and use that rather than an initial getcwd() call.</dd>
 
-    <dt>VILE_SPELL_FILT</dt>
+    <dt><a href="env-VILE_SPELL_FILT">VILE_SPELL_FILT</a></dt>
 
     <dd>if set, overrides the compiled-in program name and options
     for the spell-filter. Normally that is a string such as "spell
     -l"</dd>
 
-    <dt>VILE_STARTUP_FILE</dt>
+    <dt><a href="env-VILE_STARTUP_FILE">VILE_STARTUP_FILE</a></dt>
 
     <dd>override the name of the startup file, normally ".vilerc"
     (or "vile.rc" for non-UNIX systems).</dd>
 
-    <dt>VILE_STARTUP_PATH</dt>
+    <dt><a href="env-VILE_STARTUP_PATH">VILE_STARTUP_PATH</a></dt>
 
     <dd>override the search path for the startup and help files.
     This sets the $startup-path variable.</dd>
 
-    <dt>VILE_TABLE_FILT</dt>
+    <dt><a href="env-VILE_TABLE_FILT">VILE_TABLE_FILT</a></dt>
 
     <dd>if set, indicates that "tbl" is available. Set this to
     "cat" if you do not want to use "tbl", but do want to use
@@ -9225,7 +9354,7 @@
     colors/attributes appear to be missing, reread the "Color
     basics" topic in this help file.</li>
 
-    <li>Win32 users should ensure that these enviroment vars are
+    <li>Win32 users should ensure that these environment vars are
     properly initialized:
       <pre>
         VILE_STARTUP_PATH

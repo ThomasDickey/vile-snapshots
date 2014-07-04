@@ -1,6 +1,6 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
-  $Id: macros.html,v 1.23 2013/12/27 21:02:05 tom Exp $
+  $Id: macros.html,v 1.26 2014/07/03 22:03:37 tom Exp $
 -->
 
 <html>
@@ -401,11 +401,12 @@
   to a calling script. This is done using special variables:
 
   <dl>
-    <dt>$return</dt>
+    <dt><a name="modevar-return" id=
+    "modevar-return">$return</a></dt>
 
     <dd>is a symbol that a macro can set to any string.</dd>
 
-    <dt>$_</dt>
+    <dt><a name="modevar-_" id="modevar-_">$_</a></dt>
 
     <dd>
       is copied from $return when completing a macro. If no string
@@ -707,26 +708,31 @@ TRUE
   marked in the table below.</p>
 
   <dl>
-    <dt>$abufname</dt>
+    <dt><a name="modevar-abufname" id=
+    "modevar-abufname">$abufname</a></dt>
 
     <dd>[READ ONLY] Name of the "other" buffer, the one most
     recently visited. This is what you would get if you typed '#'
     at a prompt. (E.g. ":e #")</dd>
 
-    <dt>$autocolor-hook</dt>
+    <dt><a name="modevar-autocolor-hook" id=
+    "modevar-autocolor-hook">$autocolor-hook</a></dt>
 
     <dd>name of the hook to run when attempting to do automatic
     syntax coloring.</dd>
 
-    <dt>$bchars</dt>
+    <dt><a name="modevar-bchars" id=
+    "modevar-bchars">$bchars</a></dt>
 
     <dd>[READ ONLY] Number of characters in current buffer.</dd>
 
-    <dt>$bchanged</dt>
+    <dt><a name="modevar-bchanged" id=
+    "modevar-bchanged">$bchanged</a></dt>
 
     <dd>[READ ONLY] Number of characters in current buffer.</dd>
 
-    <dt>$bflags</dt>
+    <dt><a name="modevar-bflags" id=
+    "modevar-bflags">$bflags</a></dt>
 
     <dd>
       [READ ONLY] Status flags for current buffer, as shown in
@@ -781,53 +787,65 @@ TRUE
       </table>
     </dd>
 
-    <dt>$blines</dt>
+    <dt><a name="modevar-blines" id=
+    "modevar-blines">$blines</a></dt>
 
     <dd>[READ ONLY] Number of lines in current buffer.</dd>
 
-    <dt>$brightness</dt>
+    <dt><a name="modevar-brightness" id=
+    "modevar-brightness">$brightness</a></dt>
 
     <dd>RGB levels for gray, normal, bright in the 0-255 range
     (winvile version only).</dd>
 
-    <dt>$buf-encoding</dt>
+    <dt><a name="modevar-buf-encoding" id=
+    "modevar-buf-encoding">$buf-encoding</a></dt>
 
     <dd>[READ ONLY] Shows the character encoding for the current
-    buffer. The values are the same as for the file-encoding mode,
-    but are always resolved, i.e., no "auto" or "locale".</dd>
+    buffer. The values are the same as for the <a href=
+    "vile-hlp.html#mode-file-encoding">file-encoding</a> mode, but
+    are always resolved, i.e., no "auto" or "locale".</dd>
 
-    <dt>$buf-fname-expr</dt>
+    <dt><a name="modevar-buf-fname-expr" id=
+    "modevar-buf-fname-expr">$buf-fname-expr</a></dt>
 
     <dd>[READ ONLY] Combines bufname-expr and pathname-expr modes
     for the current buffer.</dd>
 
-    <dt>$buffer-hook</dt>
+    <dt><a name="modevar-buffer-hook" id=
+    "modevar-buffer-hook">$buffer-hook</a></dt>
 
     <dd>Name of procedure to run when switching to a buffer.</dd>
 
-    <dt>$bufname</dt>
+    <dt><a name="modevar-bufname" id=
+    "modevar-bufname">$bufname</a></dt>
 
     <dd>current buffer-name under the cursor. This is computed from
     the bufname-expr and pathname-expr patterns.</dd>
 
-    <dt>$bwindows</dt>
+    <dt><a name="modevar-bwindows" id=
+    "modevar-bwindows">$bwindows</a></dt>
 
     <dd>[READ ONLY] Number of windows open on current buffer.</dd>
 
-    <dt>$cbufname</dt>
+    <dt><a name="modevar-cbufname" id=
+    "modevar-cbufname">$cbufname</a></dt>
 
     <dd>The current buffer's "buffername". (As opposed to the name
     of the file it may contain.)</dd>
 
-    <dt>$cd-hook</dt>
+    <dt><a name="modevar-cd-hook" id=
+    "modevar-cd-hook">$cd-hook</a></dt>
 
     <dd>Name of procedure to run when changing directories.</dd>
 
-    <dt>$cdpath</dt>
+    <dt><a name="modevar-cdpath" id=
+    "modevar-cdpath">$cdpath</a></dt>
 
     <dd>editor's copy of the $CDPATH env var (read/write)</dd>
 
-    <dt>$cfgopts</dt>
+    <dt><a name="modevar-cfgopts" id=
+    "modevar-cfgopts">$cfgopts</a></dt>
 
     <dd>
       [READ ONLY] Comma-delimited list of "interesting" compiled
@@ -927,31 +945,35 @@ TRUE
       be empty ("").</p>
     </dd>
 
-    <dt>$cfilname</dt>
+    <dt><a name="modevar-cfilname" id=
+    "modevar-cfilname">$cfilname</a></dt>
 
     <dd>Full pathname of the current buffer, unless it is a special
     vile buffer, in which case it will return the empty
     string.</dd>
 
-    <dt>$char</dt>
+    <dt><a name="modevar-char" id="modevar-char">$char</a></dt>
 
     <dd>Decimal representation of the ASCII character at the cursor
     location.</dd>
 
-    <dt>$cmd-count</dt>
+    <dt><a name="modevar-cmd-count" id=
+    "modevar-cmd-count">$cmd-count</a></dt>
 
     <dd>[READ ONLY] Counts repetition of the current macro, from 1
     up to the given repeat count. If not in a macro, this is
     zero.</dd>
 
-    <dt>$cmd-encoding</dt>
+    <dt><a name="modevar-cmd-encoding" id=
+    "modevar-cmd-encoding">$cmd-encoding</a></dt>
 
     <dd>Character set to use for the minibuffer, i.e., the buffer
     used for commands and messages. The default (auto) tells vile
     to set it to match the character set of the current
     buffer.</dd>
 
-    <dt>$cmd-motion</dt>
+    <dt><a name="modevar-cmd-motion" id=
+    "modevar-cmd-motion">$cmd-motion</a></dt>
 
     <dd>
       [READ ONLY] Returns the motion (keyword) associated with the
@@ -977,44 +999,51 @@ TRUE
       <!--atr2html}}--></p>
     </dd>
 
-    <dt>$cryptkey</dt>
+    <dt><a name="modevar-cryptkey" id=
+    "modevar-cryptkey">$cryptkey</a></dt>
 
     <dd>[WRITE ONLY] encryption key.</dd>
 
-    <dt>$curchar</dt>
+    <dt><a name="modevar-curchar" id=
+    "modevar-curchar">$curchar</a></dt>
 
     <dd>The index of the cursor in the buffer, in characters
     (counting from 1).</dd>
 
-    <dt>$curcol</dt>
+    <dt><a name="modevar-curcol" id=
+    "modevar-curcol">$curcol</a></dt>
 
     <dd>The cursor's column number (counting from 1).</dd>
 
-    <dt>$curline</dt>
+    <dt><a name="modevar-curline" id=
+    "modevar-curline">$curline</a></dt>
 
     <dd>The cursor's line number (counting from 1).</dd>
 
-    <dt>$cwd</dt>
+    <dt><a name="modevar-cwd" id="modevar-cwd">$cwd</a></dt>
 
     <dd>Current working directory.</dd>
 
-    <dt>$cwline</dt>
+    <dt><a name="modevar-cwline" id=
+    "modevar-cwline">$cwline</a></dt>
 
     <dd>The relative line number of the cursor in the current
     window.</dd>
 
-    <dt>$debug</dt>
+    <dt><a name="modevar-debug" id="modevar-debug">$debug</a></dt>
 
     <dd>Boolean value which enables runtime tracing of macro
     execution. This can be set in the ~trace command (described in
     detail below) as well as via set-variable.</dd>
 
-    <dt>$directory</dt>
+    <dt><a name="modevar-directory" id=
+    "modevar-directory">$directory</a></dt>
 
     <dd>Location of temp files. This is unused, but its initial
     value is set from the user's TMP environment variable.</dd>
 
-    <dt>$discmd</dt>
+    <dt><a name="modevar-discmd" id=
+    "modevar-discmd">$discmd</a></dt>
 
     <dd>Boolean value which will prevent vile from printing some
     status messages. It is automatically set to FALSE while
@@ -1022,79 +1051,94 @@ TRUE
     for missing parameters). Set it to TRUE to allow nested macros
     to show a prompt-string for missing parameters.</dd>
 
-    <dt>$disinp</dt>
+    <dt><a name="modevar-disinp" id=
+    "modevar-disinp">$disinp</a></dt>
 
     <dd>Boolean value which will prevent vile from displaying
     command line input characters.</dd>
 
-    <dt>$empty-lines</dt>
+    <dt><a name="modevar-empty-lines" id=
+    "modevar-empty-lines">$empty-lines</a></dt>
 
     <dd>The <code>force-empty-lines</code> command uses this value
     to decide whether to add or delete blank lines to make all
     line-gaps the same size.</dd>
 
-    <dt>$encoding</dt>
+    <dt><a name="modevar-encoding" id=
+    "modevar-encoding">$encoding</a></dt>
 
     <dd>[READ ONLY] The character encoding, e.g., ISO-8859-1.</dd>
 
-    <dt>$end-of-cmd</dt>
+    <dt><a name="modevar-end-of-cmd" id=
+    "modevar-end-of-cmd">$end-of-cmd</a></dt>
 
     <dd>Boolean which is true if user entered the cmd with a
     carriage return (Some commands may expect to receive additional
     arguments if their name is terminated with a space character
     rather than a carriage return.)</dd>
 
-    <dt>$error-buffer</dt>
+    <dt><a name="modevar-error-buffer" id=
+    "modevar-error-buffer">$error-buffer</a></dt>
 
     <dd>Buffer name associated with vile's error-buffer feature.
     This variable commonly appears in a ~local statement in macros
     that temporarily reassign error-buffer (e.g., the ShowManpage
     macro in macros/manpage.rc).</dd>
 
-    <dt>$error-expr</dt>
+    <dt><a name="modevar-error-expr" id=
+    "modevar-error-expr">$error-expr</a></dt>
 
     <dd>Regular expression expanded from [Error Expressions] which
     matched the most recent find-next-error command.</dd>
 
-    <dt>$error-match</dt>
+    <dt><a name="modevar-error-match" id=
+    "modevar-error-match">$error-match</a></dt>
 
     <dd>Text from the current buffer which which was matched in the
     most recent find-next-error command.</dd>
 
-    <dt>$error-tabstop</dt>
+    <dt><a name="modevar-error-tabstop" id=
+    "modevar-error-tabstop">$error-tabstop</a></dt>
 
     <dd>Tabstop value to use when computing the column that a "%C"
     pattern will produce. If zero or negative, use the current
     buffer's tabstop, otherwise use the given value. The default is
     8.</dd>
 
-    <dt>$exec-path</dt>
+    <dt><a name="modevar-exec-path" id=
+    "modevar-exec-path">$exec-path</a></dt>
 
     <dd>[READ ONLY] Where to find vile.</dd>
 
-    <dt>$exec-suffix</dt>
+    <dt><a name="modevar-exec-suffix" id=
+    "modevar-exec-suffix">$exec-suffix</a></dt>
 
     <dd>[READ ONLY] suffix, if any, for execable programs. Use this
     in portable macros, with &amp;lookup, to get the actual program
     path.</dd>
 
-    <dt>$exit-hook</dt>
+    <dt><a name="modevar-exit-hook" id=
+    "modevar-exit-hook">$exit-hook</a></dt>
 
     <dd>Name of procedure to run when quitting.</dd>
 
-    <dt>$favorites</dt>
+    <dt><a name="modevar-favorites" id=
+    "modevar-favorites">$favorites</a></dt>
 
     <dd>[READ ONLY] Path to favorites folder (win32 only)</dd>
 
-    <dt>$fchanged</dt>
+    <dt><a name="modevar-fchanged" id=
+    "modevar-fchanged">$fchanged</a></dt>
 
     <dd>Boolean, true if file for current buffer is modified.</dd>
 
-    <dt>$fence-limit</dt>
+    <dt><a name="modevar-fence-limit" id=
+    "modevar-fence-limit">$fence-limit</a></dt>
 
     <dd>iteration limit for complex fences, in seconds.</dd>
 
-    <dt>$filename-expr</dt>
+    <dt><a name="modevar-filename-expr" id=
+    "modevar-filename-expr">$filename-expr</a></dt>
 
     <dd>actual pattern for %F in [Error Expressions]. Note that
     vile wraps this in "\(" and "\+\)", so the 1-or-more applies to
@@ -1102,37 +1146,43 @@ TRUE
     win32 port, for example '\([a-zA-Z]:\)\?[^ \t:]' to make the
     last range repeat 1-or-more times.</dd>
 
-    <dt>$filename-ic</dt>
+    <dt><a name="modevar-filename-ic" id=
+    "modevar-filename-ic">$filename-ic</a></dt>
 
     <dd>[READ ONLY] Boolean indicating if the host system's
     filenames are matched ignoring their case.</dd>
 
-    <dt>$filter-list</dt>
+    <dt><a name="modevar-filter-list" id=
+    "modevar-filter-list">$filter-list</a></dt>
 
     <dd>[READ ONLY] list of builtin-filters.</dd>
 
-    <dt>$findpath</dt>
+    <dt><a name="modevar-findpath" id=
+    "modevar-findpath">$findpath</a></dt>
 
     <dd>editor's copy of the $VILE_FINDPATH environment var
     (read/write). Available on win32 and unix hosts. For more
     details, refer to that section of the help file entitled
     "Working in a project hierarchy".</dd>
 
-    <dt>$find-cmd</dt>
+    <dt><a name="modevar-find-cmd" id=
+    "modevar-find-cmd">$find-cmd</a></dt>
 
     <dd>[READ ONLY] last shell command spawned via the capture
     command's builtin "find" interface. Available on win32 and unix
     hosts.</dd>
 
-    <dt>$font</dt>
+    <dt><a name="modevar-font" id="modevar-font">$font</a></dt>
 
     <dd>Name of the current font (in xvile/winvile only).</dd>
 
-    <dt>$forward-search</dt>
+    <dt><a name="modevar-forward-search" id=
+    "modevar-forward-search">$forward-search</a></dt>
 
     <dd>Boolean value indicating search direction.</dd>
 
-    <dt>$get-at-dot</dt>
+    <dt><a name="modevar-get-at-dot" id=
+    "modevar-get-at-dot">$get-at-dot</a></dt>
 
     <dd>
       Boolean value telling whether to ensure that state variables
@@ -1145,7 +1195,8 @@ TRUE
       gets a match which may not necessarily include "dot".</p>
     </dd>
 
-    <dt>$get-it-all</dt>
+    <dt><a name="modevar-get-it-all" id=
+    "modevar-get-it-all">$get-it-all</a></dt>
 
     <dd>
       Boolean value telling whether to set state variables which
@@ -1157,7 +1208,8 @@ TRUE
       current editing position onward.</p>
     </dd>
 
-    <dt>$get-offset</dt>
+    <dt><a name="modevar-get-offset" id=
+    "modevar-get-offset">$get-offset</a></dt>
 
     <dd>
       This number is set as a side-effect of computing a state
@@ -1169,7 +1221,8 @@ TRUE
       the match. It is set to -1 if there is no match.</p>
     </dd>
 
-    <dt>$get-length</dt>
+    <dt><a name="modevar-get-length" id=
+    "modevar-get-length">$get-length</a></dt>
 
     <dd>
       This number is set as a side-effect of computing a state
@@ -1181,43 +1234,50 @@ TRUE
       to -1 if there is no match.</p>
     </dd>
 
-    <dt>$helpfile</dt>
+    <dt><a name="modevar-helpfile" id=
+    "modevar-helpfile">$helpfile</a></dt>
 
     <dd>Filename referred to when help is requested (usually
     vile.hlp).</dd>
 
-    <dt>$iconname</dt>
+    <dt><a name="modevar-iconname" id=
+    "modevar-iconname">$iconname</a></dt>
 
     <dd>With xvile, contains current icon name.</dd>
 
-    <dt>$identifier</dt>
+    <dt><a name="modevar-identifier" id=
+    "modevar-identifier">$identifier</a></dt>
 
     <dd>The current "identifier-like" word under the cursor. This
     is computed from the identifier-expr pattern. Also see the
-    "tagword" mode.</dd>
+    "<a href="vile-hlp.html#mode-tagword">tagword</a>" mode.</dd>
 
-    <dt>$kbd-encoding</dt>
+    <dt><a name="modevar-kbd-encoding" id=
+    "modevar-kbd-encoding">$kbd-encoding</a></dt>
 
     <dd>This is the encoding used by the keyboard, which is
     normally the same as <code>$term-encoding</code>.</dd>
 
-    <dt>$kbd-macro</dt>
+    <dt><a name="modevar-kbd-macro" id=
+    "modevar-kbd-macro">$kbd-macro</a></dt>
 
     <dd>[READ ONLY] This is the contents of the keyboard macro
     buffer.</dd>
 
-    <dt>$kill</dt>
+    <dt><a name="modevar-kill" id="modevar-kill">$kill</a></dt>
 
     <dd>[READ ONLY] This is vile's "unnamed" yank register, which
     contains the result of the last line-oriented yank or
     delete.</dd>
 
-    <dt>$lastkey</dt>
+    <dt><a name="modevar-lastkey" id=
+    "modevar-lastkey">$lastkey</a></dt>
 
     <dd>[READ ONLY] Character most recently entered at the
     keyboard.</dd>
 
-    <dt>$latin1-expr</dt>
+    <dt><a name="modevar-latin1-expr" id=
+    "modevar-latin1-expr">$latin1-expr</a></dt>
 
     <dd>pattern to match locales using ISO-8859-1 in case they are
     not installed. Normally vile looks for a narrow locale to
@@ -1228,169 +1288,196 @@ TRUE
     decide if the (missing) narrow locale would use ISO-8859-1
     encoding.</dd>
 
-    <dt>$lcols</dt>
+    <dt><a name="modevar-lcols" id="modevar-lcols">$lcols</a></dt>
 
     <dd>[READ ONLY] The length (in columns) of the current
     line.</dd>
 
-    <dt>$libdir-path</dt>
+    <dt><a name="modevar-libdir-path" id=
+    "modevar-libdir-path">$libdir-path</a></dt>
 
     <dd>This value will be used to augment the user's PATH
     environment variable when running filters, so that
     vile-specific filters needn't clutter general purpose bin
     directories.</dd>
 
-    <dt>$line</dt>
+    <dt><a name="modevar-line" id="modevar-line">$line</a></dt>
 
     <dd>Contains the text of the current line of the current buffer
     starting with the cursor position.</dd>
 
-    <dt>$llength</dt>
+    <dt><a name="modevar-llength" id=
+    "modevar-llength">$llength</a></dt>
 
     <dd>[READ ONLY] The length (in characters, not columns) of the
     current line.</dd>
 
-    <dt>$locale</dt>
+    <dt><a name="modevar-locale" id=
+    "modevar-locale">$locale</a></dt>
 
     <dd>[READ ONLY] The character locale, e.g., en_US.</dd>
 
-    <dt>$majormode</dt>
+    <dt><a name="modevar-majormode" id=
+    "modevar-majormode">$majormode</a></dt>
 
     <dd>[READ ONLY] Current majormode, if any.</dd>
 
-    <dt>$majormode-hook</dt>
+    <dt><a name="modevar-majormode-hook" id=
+    "modevar-majormode-hook">$majormode-hook</a></dt>
 
     <dd>name of the hook to run when attempting to determine the
     majormode for the current buffer. If this is not defined, vile
     uses the prefixes and suffixes values to decide.</dd>
 
-    <dt>$match</dt>
+    <dt><a name="modevar-match" id="modevar-match">$match</a></dt>
 
     <dd>[READ ONLY] After a successful search, contains the text
     that matched the search pattern.</dd>
 
-    <dt>$menu-file</dt>
+    <dt><a name="modevar-menu-file" id=
+    "modevar-menu-file">$menu-file</a></dt>
 
     <dd>The name of the menu file (e.g. .vilemenu)</dd>
 
-    <dt>$mode</dt>
+    <dt><a name="modevar-mode" id="modevar-mode">$mode</a></dt>
 
     <dd>[READ ONLY] "insert", "command", or "overwrite" mode.</dd>
 
-    <dt>$modeline-format</dt>
+    <dt><a name="modevar-modeline-format" id=
+    "modevar-modeline-format">$modeline-format</a></dt>
 
-    <dd>Format of mode lines. See "Mode line customization" in the
+    <dd>Format of mode lines. See "<a href=
+    "vile-hlp.html#statusline">Mode line customization</a>" in the
     vile help file.</dd>
 
-    <dt>$modified</dt>
+    <dt><a name="modevar-modified" id=
+    "modevar-modified">$modified</a></dt>
 
     <dd>[READ ONLY] is current buffer modified or not?</dd>
 
-    <dt>$ncolors</dt>
+    <dt><a name="modevar-ncolors" id=
+    "modevar-ncolors">$ncolors</a></dt>
 
     <dd>Number of displayed colors, must be power of two.</dd>
 
-    <dt>$ntildes</dt>
+    <dt><a name="modevar-ntildes" id=
+    "modevar-ntildes">$ntildes</a></dt>
 
     <dd>Percent of window filled by ~ chars, at end of buffer.</dd>
 
-    <dt>$ocwd</dt>
+    <dt><a name="modevar-ocwd" id="modevar-ocwd">$ocwd</a></dt>
 
     <dd>[READ ONLY] Previous current directory.</dd>
 
-    <dt>$os</dt>
+    <dt><a name="modevar-os" id="modevar-os">$os</a></dt>
 
     <dd>[READ ONLY] "Operating system" for which was vile was
     built. Currently "unix" (if no more-specific name is derived
     from the configure script), "dos", "os/2", "vms" and
     "win32".</dd>
 
-    <dt>$pagelen</dt>
+    <dt><a name="modevar-pagelen" id=
+    "modevar-pagelen">$pagelen</a></dt>
 
     <dd>Length of the vile screen.</dd>
 
-    <dt>$pagewid</dt>
+    <dt><a name="modevar-pagewid" id=
+    "modevar-pagewid">$pagewid</a></dt>
 
     <dd>Width of the vile screen.</dd>
 
-    <dt>$palette</dt>
+    <dt><a name="modevar-palette" id=
+    "modevar-palette">$palette</a></dt>
 
     <dd>Some versions of vile implement screen coloring. The
     variable consists of digits which control the current color
     set, usually one digit per color.</dd>
 
-    <dt>$patchlevel</dt>
+    <dt><a name="modevar-patchlevel" id=
+    "modevar-patchlevel">$patchlevel</a></dt>
 
     <dd>[READ ONLY] current patch-level (empty for release).</dd>
 
-    <dt>$pathlist-separator</dt>
+    <dt><a name="modevar-pathlist-separator" id=
+    "modevar-pathlist-separator">$pathlist-separator</a></dt>
 
     <dd>separates directory names in lists such as $PATH.</dd>
 
-    <dt>$pathname</dt>
+    <dt><a name="modevar-pathname" id=
+    "modevar-pathname">$pathname</a></dt>
 
     <dd>current "path-like" word, under the cursor. This is
     computed from the pathname-expr pattern. If the current buffer
     is a directory, use the entire line, overriding the regular
     expression.</dd>
 
-    <dt>$pathname-separator</dt>
+    <dt><a name="modevar-pathname-separator" id=
+    "modevar-pathname-separator">$pathname-separator</a></dt>
 
     <dd>separates levels of directory names in a path. Usually this
     is '/', for Unix.</dd>
 
-    <dt>$pending</dt>
+    <dt><a name="modevar-pending" id=
+    "modevar-pending">$pending</a></dt>
 
     <dd>[READ ONLY] Boolean which is true when the user has "typed
     ahead", i.e. there are waiting keystrokes.</dd>
 
-    <dt>$pid</dt>
+    <dt><a name="modevar-pid" id="modevar-pid">$pid</a></dt>
 
     <dd>[READ ONLY] vile's process-id.</dd>
 
-    <dt>$position-format</dt>
+    <dt><a name="modevar-position-format" id=
+    "modevar-position-format">$position-format</a></dt>
 
-    <dd>Format of ^G command. See "Mode line customization" in the
+    <dd>Format of ^G command. See "<a href=
+    "vile-hlp.html#statusline">Mode line customization</a>" in the
     vile help file.</dd>
 
-    <dt>$progname</dt>
+    <dt><a name="modevar-progname" id=
+    "modevar-progname">$progname</a></dt>
 
     <dd>[READ ONLY] The string "vile", "xvile", or "winvile" as
     appropriate.</dd>
 
-    <dt>$prompt</dt>
+    <dt><a name="modevar-prompt" id=
+    "modevar-prompt">$prompt</a></dt>
 
     <dd>The string ": ", used in command-line prompts.</dd>
 
-    <dt>$qidentifier</dt>
+    <dt><a name="modevar-qidentifier" id=
+    "modevar-qidentifier">$qidentifier</a></dt>
 
     <dd>the name of the current "qualified-identifier-like" word
     under the cursor, useful for C++ programmers.</dd>
 
-    <dt>$read-hook</dt>
+    <dt><a name="modevar-read-hook" id=
+    "modevar-read-hook">$read-hook</a></dt>
 
     <dd>Name of procedure to run after a file is read.</dd>
 
-    <dt>$replace</dt>
+    <dt><a name="modevar-replace" id=
+    "modevar-replace">$replace</a></dt>
 
     <dd>The current replacement strings, used in
     substitutions.</dd>
 
-    <dt>$search</dt>
+    <dt><a name="modevar-search" id=
+    "modevar-search">$search</a></dt>
 
     <dd>The current search pattern.</dd>
 
-    <dt>$seed</dt>
+    <dt><a name="modevar-seed" id="modevar-seed">$seed</a></dt>
 
     <dd>The seed for the internal random number generator.</dd>
 
-    <dt>$shell</dt>
+    <dt><a name="modevar-shell" id="modevar-shell">$shell</a></dt>
 
     <dd>Name of the shell program for spawned commands. For Unix,
     this corresponds to $SHELL, while DOS, OS/2 and related systems
     use $COMSPEC.</dd>
 
-    <dt>$sres</dt>
+    <dt><a name="modevar-sres" id="modevar-sres">$sres</a></dt>
 
     <dd>
       Current screen size on a DOS PC (meaningless on a Win32
@@ -1443,35 +1530,41 @@ TRUE
       </table>Other drivers ignore the value.
     </dd>
 
-    <dt>$startup-file</dt>
+    <dt><a name="modevar-startup-file" id=
+    "modevar-startup-file">$startup-file</a></dt>
 
     <dd>The name of the startup file (e.g. .vilerc)</dd>
 
-    <dt>$startup-path</dt>
+    <dt><a name="modevar-startup-path" id=
+    "modevar-startup-path">$startup-path</a></dt>
 
     <dd>Where to find the startup file</dd>
 
-    <dt>$status</dt>
+    <dt><a name="modevar-status" id=
+    "modevar-status">$status</a></dt>
 
     <dd>[READ ONLY] Boolean representing success of most recent
     command. Since a failed command will usually cause an entire
     macro to fail, the ~force directive is often used to suppress a
     command's failure. $status preserves its exit status.</dd>
 
-    <dt>$term-encoding</dt>
+    <dt><a name="modevar-term-encoding" id=
+    "modevar-term-encoding">$term-encoding</a></dt>
 
     <dd>[READ ONLY] Shows the character encoding which the
     terminal/display driver can handle. The values are the same as
-    for the file-encoding mode. If it can display UTF-8
-    (terminfo/termcap) or UTF-16 (winvile), and the terminal is
-    initialized to match, vile shows the corresponding "utf-8" or
-    "utf-16" value.</dd>
+    for the <a href=
+    "vile-hlp.html#mode-file-encoding">file-encoding</a> mode. If
+    it can display UTF-8 (terminfo/termcap) or UTF-16 (winvile),
+    and the terminal is initialized to match, vile shows the
+    corresponding "utf-8" or "utf-16" value.</dd>
 
-    <dt>$title</dt>
+    <dt><a name="modevar-title" id="modevar-title">$title</a></dt>
 
     <dd>The current window title (X11, win32 versions only).</dd>
 
-    <dt>$title-encoding</dt>
+    <dt><a name="modevar-title-encoding" id=
+    "modevar-title-encoding">$title-encoding</a></dt>
 
     <dd>Tell whether to send title-change escape sequences to xterm
     in ISO-8859-1 (8bit) or UTF-8 (utf-8). A "locale" setting is
@@ -1481,50 +1574,59 @@ TRUE
     programs such as GNU screen interfere with setting titles with
     non-ASCII content.</dd>
 
-    <dt>$title-format</dt>
+    <dt><a name="modevar-title-format" id=
+    "modevar-title-format">$title-format</a></dt>
 
     <dd>The format for the window title (X11, win32 versions). If
     this variable is not set, the title is the program name and the
     current buffer, separated by a dash, e.g., %{$progname} -
-    %{$cbufname} Use the swap-title mode to control the order of
-    those strings. If $title-format is set, swap-title has no
-    effect. See "Mode line customization" in the vile help
-    file.</dd>
+    %{$cbufname} Use the <a href=
+    "vile-hlp.html#mode-swap-title">swap-title</a> mode to control
+    the order of those strings. If $title-format is set, swap-title
+    has no effect. See "<a href="vile-hlp.html#statusline">Mode
+    line customization</a>" in the vile help file.</dd>
 
-    <dt>$version</dt>
+    <dt><a name="modevar-version" id=
+    "modevar-version">$version</a></dt>
 
     <dd>[READ ONLY] Contains vile's version string.</dd>
 
-    <dt>$with-prefix</dt>
+    <dt><a name="modevar-with-prefix" id=
+    "modevar-with-prefix">$with-prefix</a></dt>
 
     <dd>[READ ONLY] String which is set by "~with" directive in
     macros. If no prefix was set, this returns ERROR.</dd>
 
-    <dt>$wlines</dt>
+    <dt><a name="modevar-wlines" id=
+    "modevar-wlines">$wlines</a></dt>
 
     <dd>Height of current window.</dd>
 
-    <dt>$word</dt>
+    <dt><a name="modevar-word" id="modevar-word">$word</a></dt>
 
     <dd>The "word" at the cursor location. The word is a contiguous
     sequence of nonblank characters, rather than the vi-style
     "word".</dd>
 
-    <dt>$write-hook</dt>
+    <dt><a name="modevar-write-hook" id=
+    "modevar-write-hook">$write-hook</a></dt>
 
     <dd>Name of procedure to run before a file is written</dd>
 
-    <dt>$xdisplay</dt>
+    <dt><a name="modevar-xdisplay" id=
+    "modevar-xdisplay">$xdisplay</a></dt>
 
     <dd>The value to set $DISPLAY when running $xshell.</dd>
 
-    <dt>$xshell</dt>
+    <dt><a name="modevar-xshell" id=
+    "modevar-xshell">$xshell</a></dt>
 
     <dd>Name of the terminal program for spawned xvile commands.
     The default is "xterm", but may also be set by the environment
     variable $XSHELL.</dd>
 
-    <dt>$xshell-flags</dt>
+    <dt><a name="modevar-xshell-flags" id=
+    "modevar-xshell-flags">$xshell-flags</a></dt>
 
     <dd>Command-line flags after $xshell, normally "-e" The
     $XSHELLFLAGS environment variable determines the default
@@ -1635,49 +1737,49 @@ TRUE
   <p>These all return numeric values:</p>
 
   <dl>
-    <dt>&amp;add "N1" "N2"</dt>
+    <dt><a href="amp-add">&amp;add "N1" "N2"</a></dt>
 
     <dd>Add "N1" and "N2".</dd>
 
-    <dt>&amp;sub "N1" "N2"</dt>
+    <dt><a href="amp-sub">&amp;sub "N1" "N2"</a></dt>
 
     <dd>Subtract "N2" from "N1".</dd>
 
-    <dt>&amp;times "N1" "N2"</dt>
+    <dt><a href="amp-times">&amp;times "N1" "N2"</a></dt>
 
     <dd>Multiply "N1" by "N2".</dd>
 
-    <dt>&amp;divide "N1" "N2"</dt>
+    <dt><a href="amp-divide">&amp;divide "N1" "N2"</a></dt>
 
     <dd>Divide the "N1" by "N2"</dd>
 
-    <dt>&amp;mod "N1" "N2"</dt>
+    <dt><a href="amp-mod">&amp;mod "N1" "N2"</a></dt>
 
     <dd>Divide the "N1" by "N2", return remainder.</dd>
 
-    <dt>&amp;negate "N"</dt>
+    <dt><a href="amp-negate">&amp;negate "N"</a></dt>
 
     <dd>Return -(N).</dd>
 
-    <dt>&amp;ascii "S"</dt>
+    <dt><a href="amp-ascii">&amp;ascii "S"</a></dt>
 
     <dd>Return the ASCII code of the first character in "S"</dd>
 
-    <dt>&amp;random "N"</dt>
+    <dt><a href="amp-random">&amp;random "N"</a></dt>
 
-    <dt>&amp;rnd "N"</dt>
+    <dt><a href="amp-rnd">&amp;rnd "N"</a></dt>
 
     <dd>Random number between 1 and N</dd>
 
-    <dt>&amp;abs "N"</dt>
+    <dt><a href="amp-abs">&amp;abs "N"</a></dt>
 
     <dd>Absolute value of "N"</dd>
 
-    <dt>&amp;ftime "N"</dt>
+    <dt><a href="amp-ftime">&amp;ftime "N"</a></dt>
 
     <dd>The modification time of the file "N"</dd>
 
-    <dt>&amp;stime</dt>
+    <dt><a href="amp-stime">&amp;stime</a></dt>
 
     <dd>The system time.</dd>
   </dl>
@@ -1687,11 +1789,11 @@ TRUE
   <p>These two return numeric values:</p>
 
   <dl>
-    <dt>&amp;length "S"</dt>
+    <dt><a href="amp-length">&amp;length "S"</a></dt>
 
     <dd>Returns length of string "S".</dd>
 
-    <dt>&amp;sindex "S1" "S2"</dt>
+    <dt><a href="amp-sindex">&amp;sindex "S1" "S2"</a></dt>
 
     <dd>Returns index of "S2" within "S1", or 0.</dd>
   </dl>
@@ -1699,33 +1801,34 @@ TRUE
   <p>The rest return strings:</p>
 
   <dl>
-    <dt>&amp;bind "S"</dt>
+    <dt><a href="amp-bind">&amp;bind "S"</a></dt>
 
     <dd>Return the function name bound to the key sequence
     "S".</dd>
 
-    <dt>&amp;cat "S1" "S2"</dt>
+    <dt><a href="amp-cat">&amp;cat "S1" "S2"</a></dt>
 
     <dd>Concatenate S1 and string "S".</dd>
 
-    <dt>&amp;chr "N"</dt>
+    <dt><a href="amp-chr">&amp;chr "N"</a></dt>
 
     <dd>Converts numeric "N" to an ASCII character.</dd>
 
-    <dt>&amp;cclass "S"</dt>
+    <dt><a href="amp-cclass">&amp;cclass "S"</a></dt>
 
-    <dd>Character class (see "show-printable")</dd>
+    <dd>Character class (see "<a href=
+    "vile-hlp.html#command-show-printable">show-printable</a>")</dd>
 
-    <dt>&amp;env "S"</dt>
+    <dt><a href="amp-env">&amp;env "S"</a></dt>
 
     <dd>Return the value of the user's environment variable named
     "S".</dd>
 
-    <dt>&amp;get-key</dt>
+    <dt><a href="amp-get-key">&amp;get-key</a></dt>
 
     <dd>(alias for &amp;gtkey).</dd>
 
-    <dt>&amp;get-completion</dt>
+    <dt><a href="amp-get-completion">&amp;get-completion</a></dt>
 
     <dd>
       Prompt for and return name-completion. There are two
@@ -1740,19 +1843,19 @@ TRUE
       </ol>
     </dd>
 
-    <dt>&amp;get-motion</dt>
+    <dt><a href="amp-get-motion">&amp;get-motion</a></dt>
 
     <dd>(alias for &amp;gtmotion).</dd>
 
-    <dt>&amp;get-sequence</dt>
+    <dt><a href="amp-get-sequence">&amp;get-sequence</a></dt>
 
     <dd>(alias for &amp;gtsequence).</dd>
 
-    <dt>&amp;gtkey</dt>
+    <dt><a href="amp-gtkey">&amp;gtkey</a></dt>
 
     <dd>Get a single raw keystroke from the user.</dd>
 
-    <dt>&amp;gtmotion "N"</dt>
+    <dt><a href="amp-gtmotion">&amp;gtmotion "N"</a></dt>
 
     <dd>
       Get a key sequence from user which must be bound to a motion.
@@ -1770,31 +1873,31 @@ TRUE
       function is returned.
     </dd>
 
-    <dt>&amp;gtsequence</dt>
+    <dt><a href="amp-gtsequence">&amp;gtsequence</a></dt>
 
     <dd>Get a complete vile key sequence from user.</dd>
 
-    <dt>&amp;left "S" "N"</dt>
+    <dt><a href="amp-left">&amp;left "S" "N"</a></dt>
 
     <dd>Extract first "N" characters from "S"</dd>
 
-    <dt>&amp;lower "S"</dt>
+    <dt><a href="amp-lower">&amp;lower "S"</a></dt>
 
     <dd>Return lowercase version of "S".</dd>
 
-    <dt>&amp;right "S" "N"</dt>
+    <dt><a href="amp-right">&amp;right "S" "N"</a></dt>
 
     <dd>Extract chars from position "N" onward.</dd>
 
-    <dt>&amp;middle "S" "N1" "N2"</dt>
+    <dt><a href="amp-middle">&amp;middle "S" "N1" "N2"</a></dt>
 
     <dd>Extract "N2" chars at position "N1".</dd>
 
-    <dt>&amp;upper "S"</dt>
+    <dt><a href="amp-upper">&amp;upper "S"</a></dt>
 
     <dd>Return uppercase version of "S".</dd>
 
-    <dt>&amp;trim "S"</dt>
+    <dt><a href="amp-trim">&amp;trim "S"</a></dt>
 
     <dd>Remove whitespace at either end of "S", reduce multiple
     spaces within "S" to just one space each.</dd>
@@ -1805,130 +1908,130 @@ TRUE
   <p>These all return TRUE or FALSE:</p>
 
   <dl>
-    <dt>&amp;not "B"</dt>
+    <dt><a href="amp-not">&amp;not "B"</a></dt>
 
     <dd>Return inverse of boolean "B".</dd>
 
-    <dt>&amp;and "B1" "B2"</dt>
+    <dt><a href="amp-and">&amp;and "B1" "B2"</a></dt>
 
     <dd>Return logical AND of "B1" and "B2".</dd>
 
-    <dt>&amp;or "B1" "B2"</dt>
+    <dt><a href="amp-or">&amp;or "B1" "B2"</a></dt>
 
     <dd>Return logical OR of "B1" and "B2".</dd>
 
-    <dt>&amp;equal "N1" "N2"</dt>
+    <dt><a href="amp-equal">&amp;equal "N1" "N2"</a></dt>
 
     <dd>Is "N1" numerically equal to "N2"?</dd>
 
-    <dt>&amp;geq "N1" "N2"</dt>
+    <dt><a href="amp-geq">&amp;geq "N1" "N2"</a></dt>
 
     <dd>Is "N1" numerically not less than "N2"?</dd>
 
-    <dt>&amp;greater "N1" "N2"</dt>
+    <dt><a href="amp-greater">&amp;greater "N1" "N2"</a></dt>
 
     <dd>Is "N1" numerically greater than "N2"?</dd>
 
-    <dt>&amp;gt "N1" "N2"</dt>
+    <dt><a href="amp-gt">&amp;gt "N1" "N2"</a></dt>
 
     <dd>(same as &amp;greater)</dd>
 
-    <dt>&amp;isa "C" "N"</dt>
+    <dt><a href="amp-isa">&amp;isa "C" "N"</a></dt>
 
     <dd>Is "N" a member of class "C". Classes include: buffer,
     color, mode, submode, Majormode.</dd>
 
-    <dt>&amp;leq "N1" "N2"</dt>
+    <dt><a href="amp-leq">&amp;leq "N1" "N2"</a></dt>
 
     <dd>Is "N1" numerically not greater than "N2"?</dd>
 
-    <dt>&amp;lessthan "N1" "N2"</dt>
+    <dt><a href="amp-lessthan">&amp;lessthan "N1" "N2"</a></dt>
 
     <dd>Is "N1" numerically less than "N2"?</dd>
 
-    <dt>&amp;lt "N1" "N2"</dt>
+    <dt><a href="amp-lt">&amp;lt "N1" "N2"</a></dt>
 
     <dd>(same as &amp;lessthan)</dd>
 
-    <dt>&amp;neq "N1" "N2"</dt>
+    <dt><a href="amp-neq">&amp;neq "N1" "N2"</a></dt>
 
     <dd>Is "N1" numerically not equal to "N2"?</dd>
 
-    <dt>&amp;sequal "S1" "S2"</dt>
+    <dt><a href="amp-sequal">&amp;sequal "S1" "S2"</a></dt>
 
     <dd>Is "S1" the same string as "S2"?</dd>
 
-    <dt>&amp;sgeq "S1" "S2"</dt>
+    <dt><a href="amp-sgeq">&amp;sgeq "S1" "S2"</a></dt>
 
     <dd>Is "S1" lexically not less than "S2"?</dd>
 
-    <dt>&amp;sgreater "S1" "S2"</dt>
+    <dt><a href="amp-sgreater">&amp;sgreater "S1" "S2"</a></dt>
 
     <dd>Is "S1" lexically greater than "S2"?</dd>
 
-    <dt>&amp;sgt "S1" "S2"</dt>
+    <dt><a href="amp-sgt">&amp;sgt "S1" "S2"</a></dt>
 
     <dd>(same as &amp;slessthan)</dd>
 
-    <dt>&amp;sleq "S1" "S2"</dt>
+    <dt><a href="amp-sleq">&amp;sleq "S1" "S2"</a></dt>
 
     <dd>Is "S1" lexically not greater than "S2"?</dd>
 
-    <dt>&amp;slessthan "S1" "S2"</dt>
+    <dt><a href="amp-slessthan">&amp;slessthan "S1" "S2"</a></dt>
 
     <dd>Is "S1" lexically less than "S2"?</dd>
 
-    <dt>&amp;slt "S1" "S2"</dt>
+    <dt><a href="amp-slt">&amp;slt "S1" "S2"</a></dt>
 
     <dd>(same as &amp;slessthan)</dd>
 
-    <dt>&amp;sneq "S1" "S2"</dt>
+    <dt><a href="amp-sneq">&amp;sneq "S1" "S2"</a></dt>
 
     <dd>Is "S1" lexically not equal to "S2"?</dd>
 
-    <dt>&amp;readable "S"</dt>
+    <dt><a href="amp-readable">&amp;readable "S"</a></dt>
 
-    <dt>&amp;rd "S"</dt>
+    <dt><a href="amp-rd">&amp;rd "S"</a></dt>
 
     <dd>Is the named file "S" readable?</dd>
 
-    <dt>&amp;writable "S"</dt>
+    <dt><a href="amp-writable">&amp;writable "S"</a></dt>
 
     <dd>Is the named file "S" writable?</dd>
 
-    <dt>&amp;execable "S"</dt>
+    <dt><a href="amp-execable">&amp;execable "S"</a></dt>
 
     <dd>Is the named file "S" exec'able?</dd>
 
-    <dt>&amp;bchanged "S"</dt>
+    <dt><a href="amp-bchanged">&amp;bchanged "S"</a></dt>
 
     <dd>Is given buffer "S" modified?</dd>
 
-    <dt>&amp;fchanged "S"</dt>
+    <dt><a href="amp-fchanged">&amp;fchanged "S"</a></dt>
 
     <dd>Is file for given buffer "S" modified?</dd>
 
-    <dt>&amp;cmatch "R" "V"</dt>
+    <dt><a href="amp-cmatch">&amp;cmatch "R" "V"</a></dt>
 
     <dd>Does the given regular expression "R" match the value "V"
     (ignoring case)?</dd>
 
-    <dt>&amp;error "S"</dt>
+    <dt><a href="amp-error">&amp;error "S"</a></dt>
 
     <dd>Was the string set with the ERROR token? For example, a
     &amp;query that is aborted will return an ERROR result.</dd>
 
-    <dt>&amp;match "R" "V"</dt>
+    <dt><a href="amp-match">&amp;match "R" "V"</a></dt>
 
     <dd>Does the given regular expression "R" match the value
     "V"?</dd>
 
-    <dt>&amp;filter "M"</dt>
+    <dt><a href="amp-filter">&amp;filter "M"</a></dt>
 
     <dd>Does the given majormode have a built-in highlighting
     filter?</dd>
 
-    <dt>&amp;stoken "T" "D" "S"</dt>
+    <dt><a href="amp-stoken">&amp;stoken "T" "D" "S"</a></dt>
 
     <dd>Is token "T" in string "S", given delimiters "D"?</dd>
   </dl>
@@ -1938,23 +2041,23 @@ TRUE
   <p>These all return string values:</p>
 
   <dl>
-    <dt>&amp;classof "N"</dt>
+    <dt><a href="amp-classof">&amp;classof "N"</a></dt>
 
     <dd>Retrieves the class(es) to which the given name may return.
     Usually this is a single name, e.g., one of those checked by
     &amp;isa. If multiple matches are found, the result contains
     each classname separated by a space.</dd>
 
-    <dt>&amp;default "MODENAME"</dt>
+    <dt><a href="amp-default">&amp;default "MODENAME"</a></dt>
 
     <dd>Retrieves initial/default value for the given mode or state
     variable.</dd>
 
-    <dt>&amp;global "MODENAME"</dt>
+    <dt><a href="amp-global">&amp;global "MODENAME"</a></dt>
 
     <dd>Retrieves universal/global mode setting.</dd>
 
-    <dt>&amp;indirect "S"</dt>
+    <dt><a href="amp-indirect">&amp;indirect "S"</a></dt>
 
     <dd>
       Evaluate value of "S" as a macro language variable itself.
@@ -1968,11 +2071,11 @@ TRUE
       <!--atr2html}}--></p>will return the home directory pathname.
     </dd>
 
-    <dt>&amp;local "MODENAME"</dt>
+    <dt><a href="amp-local">&amp;local "MODENAME"</a></dt>
 
     <dd>Retrieves local mode setting (for current buffer).</dd>
 
-    <dt>&amp;lookup "N" "P"</dt>
+    <dt><a href="amp-lookup">&amp;lookup "N" "P"</a></dt>
 
     <dd>
       The "N" keyword tells which field to use looking for the file
@@ -1995,37 +2098,37 @@ TRUE
       path, libdir. Note that the directory lists may overlap.</p>
     </dd>
 
-    <dt>&amp;mclass "M"</dt>
+    <dt><a href="amp-mclass">&amp;mclass "M"</a></dt>
 
     <dd>Retrieve the class to which the given mode belongs. This is
     different from &amp;mclass since it distinguishes the modes
     Return values include: universal buffer window submode
     Majormode.</dd>
 
-    <dt>&amp;qpasswd "S"</dt>
+    <dt><a href="amp-qpasswd">&amp;qpasswd "S"</a></dt>
 
     <dd>Present "S" to the user and return their response. Each
     typed character is echoed as '*'. The response is not
     recallable via the editor's history mechanism.</dd>
 
-    <dt>&amp;query "S"</dt>
+    <dt><a href="amp-query">&amp;query "S"</a></dt>
 
     <dd>Present "S" to the user, and return their typed
     response.</dd>
 
-    <dt>&amp;date "F" "T"</dt>
+    <dt><a href="amp-date">&amp;date "F" "T"</a></dt>
 
     <dd>If strftime() is found, format the time "T" using the "F"
     format. Otherwise, use ctime() to format the time. Times are
     numbers (see &amp;ftime and &amp;stime).</dd>
 
-    <dt>&amp;dquery "S" "D"</dt>
+    <dt><a href="amp-dquery">&amp;dquery "S" "D"</a></dt>
 
     <dd>Present "S" to the user, and return their typed response.
     If "D" is given, use that as the default response. Otherwise
     use the previous response as the default.</dd>
 
-    <dt>&amp;path "N" "P"</dt>
+    <dt><a href="amp-path">&amp;path "N" "P"</a></dt>
 
     <dd>
       The "N" keyword tells which field to extract from the
@@ -2039,36 +2142,36 @@ TRUE
       tail &ndash; filename</p>
     </dd>
 
-    <dt>&amp;pcat "D" "F"</dt>
+    <dt><a href="amp-pcat">&amp;pcat "D" "F"</a></dt>
 
     <dd>Concatenate directory and filename, handing syntax and
     ensuring that if the filename is absolute, that the directory
     is ignored.</dd>
 
-    <dt>&amp;pquote "P"</dt>
+    <dt><a href="amp-pquote">&amp;pquote "P"</a></dt>
 
     <dd>Quote the pathname if it contains characters such as space
     that cannot be passed to the shell without special
     handling.</dd>
 
-    <dt>&amp;register "S"</dt>
+    <dt><a href="amp-register">&amp;register "S"</a></dt>
 
     <dd>Return contents of register "S". Only the first character
     of "S" is used for the name. Note that the contents may be more
     than one line.</dd>
 
-    <dt>&amp;token "N" "D" "S"</dt>
+    <dt><a href="amp-token">&amp;token "N" "D" "S"</a></dt>
 
     <dd>Select N'th token of string "S", given delimiters "D".</dd>
 
-    <dt>&amp;translate "F" "T" "S"</dt>
+    <dt><a href="amp-translate">&amp;translate "F" "T" "S"</a></dt>
 
     <dd>Translate from "F" to "T" each character of string "S". The
     "F" and "T" are strings of equal length; characters from "S"
     found in "F" are translated to the character in "T" at the same
     index.</dd>
 
-    <dt>&amp;word "N" "S"</dt>
+    <dt><a href="amp-word">&amp;word "N" "S"</a></dt>
 
     <dd>Select N'th word of string "S", blank separated.</dd>
   </dl>
@@ -2388,9 +2491,9 @@ TRUE
   distracting, use ~hidden or ~quiet to suppress display updates
   until the macro completes.</p>
 
-  <p>[1] Subject to the limitations described above for "Mode
-  variables". Namely, "global values of the editor modes are not
-  visible to the expression evaluator."</p>
+  <p>[1] Subject to the limitations described above for "<a href=
+  "#modevars">Mode variables</a>". Namely, "global values of the
+  editor modes are not visible to the expression evaluator."</p>
 
   <h3 id="withblocks-toc">~<a name="withblocks" id=
   "withblocks">with, ~elsewith and ~endwith</a></h3>

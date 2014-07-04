@@ -1,7 +1,7 @@
 /*
  * debugging support -- tom dickey.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.113 2014/07/01 22:23:57 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.114 2014/07/04 12:17:57 tom Exp $
  *
  */
 
@@ -284,6 +284,7 @@ Trace(const char *fmt,...)
 	    (void) fflush(stdout);
 	    (void) fflush(stderr);
 	    trace_depth = 0;
+	    fp = 0;
 	}
 
 	va_end(ap);
