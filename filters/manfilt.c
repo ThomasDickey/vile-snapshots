@@ -46,7 +46,7 @@
  * vile will choose some appropriate fallback (such as underlining) if
  * italics are not available.
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/manfilt.c,v 1.65 2014/03/30 22:33:30 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/manfilt.c,v 1.66 2014/07/04 13:13:10 tom Exp $
  *
  */
 
@@ -681,6 +681,12 @@ ansi_escape(FILE *ifp, int last_code)
 			/* we handle only foreground (text) colors */
 			if (value >= 30 && value <= 37) {
 			    value -= 30;
+			    value <<= SHL_COLOR;
+			    code &= ~ATR_COLOR;
+			    code |= value;
+			} else if (value >= 90 && value <= 97) {
+			    value -= 90;
+			    value += 8;
 			    value <<= SHL_COLOR;
 			    code &= ~ATR_COLOR;
 			    code |= value;

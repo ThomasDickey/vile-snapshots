@@ -18,7 +18,7 @@
  * transferring the selection are not dealt with in this file.  Procedures
  * for dealing with the representation are maintained in this file.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.189 2013/12/07 01:13:27 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.190 2014/07/04 13:01:46 tom Exp $
  *
  */
 
@@ -1619,7 +1619,7 @@ decode_attribute(char *text, size_t length, size_t offset, int *countp)
 			   && text[offset] != EOS)
 			offset++;
 
-		    if (++offset >= length) {
+		    if (offset >= length) {
 			offset = save_offset;
 		    } else {
 			TRACE(("flt_meta:%s\n", text + save_offset));

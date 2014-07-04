@@ -2,7 +2,7 @@
  * This file contains the command processing functions for a number of random
  * commands. There is no functional grouping here, for sure.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.347 2013/03/10 21:43:21 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.350 2014/07/04 12:14:59 tom Exp $
  *
  */
 
@@ -1620,26 +1620,24 @@ run_a_hook(HOOK * hook)
 {
     int status = FALSE;
 
-    if (!hook->latch && hook->proc[0] && !doingopcmd) {
-	MARK save_pre_op_dot;	/* ugly hack */
-	int save_dotcmdactive;	/* another ugly hack */
+    if (hook->proc[0] && !doingopcmd) {
+	if (!DisableHook(hook)) {
+	    MARK save_pre_op_dot;	/* ugly hack */
+	    int save_dotcmdactive;	/* another ugly hack */
 
-	TRACE((T_CALLED "run_a_hook(%s)\n", name_of_hook(hook)));
+	    save_dotcmdactive = dotcmdactive;
+	    save_pre_op_dot = pre_op_dot;
 
-	save_dotcmdactive = dotcmdactive;
-	save_pre_op_dot = pre_op_dot;
+	    TPRINTF(("running %s HOOK with %s, current %s\n",
+		     name_of_hook(hook), hook->proc, curbp->b_bname));
+	    status = docmd(hook->proc, TRUE, FALSE, 1);
 
-	DisableHook(hook);
-	TPRINTF(("running %s HOOK with %s, current %s\n",
-		 name_of_hook(hook), hook->proc, curbp->b_bname));
-	status = docmd(hook->proc, TRUE, FALSE, 1);
+	    pre_op_dot = save_pre_op_dot;
+	    dotcmdactive = save_dotcmdactive;
+	}
 	EnableHook(hook);
-
-	pre_op_dot = save_pre_op_dot;
-	dotcmdactive = save_dotcmdactive;
-	returnCode(status);
     }
-    return FALSE;
+    return (status);
 }
 
 int

@@ -1,10 +1,17 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20140702 (n)
+ 20140704 (n)
 	> Brendan O'Dea:
 	+ use INT2PTR and PTR2IV macros rather than an explicit cast in perl.xs
 	  and ptypemap.
 	> Tom Dickey:
+	+ modify manfilt.c to recognize aixterm-style SGR 90-97 as colors 8-15.
+	+ correct off-by-one count in decoding "meta" markup from 9.8l changes
+	  which did not work with external filters.
+	+ add note in config.doc recommending ncursesw for screen option over
+	  curses/ncurses, for UTF-8 support.
+	+ modify DisableHook/EnableHook to let their return-value be usable as
+	  the latch condition.
 	+ if configure check for gcc -rdynamic option fails, fallback to the
 	  built-in filter configuration.
 	+ suppress -rdynamic option-check for clang, because its error
@@ -21,6 +28,7 @@ Changes for vile 9.9 (released ??? ??? ?? ????)
 	  will act on a single character (Savannah #42147).
 	+ fix a double-free in bclear(), when the buffer is marked noundoable
 	  (report by Paul Fox).
+	+ update config.guess, config.sub
 
  20140330 (m)
 	> Kevin Buettner:

@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.734 2014/04/15 00:27:12 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.735 2014/07/03 00:50:48 tom Exp $
  *
  */
 
@@ -1124,8 +1124,8 @@ extern char * previous_directory (void);
 #if OPT_HOOKS
 extern int run_a_hook (HOOK *hook);
 extern int run_readhook (void);
-#define DisableHook(hook) (hook)->latch += 1
-#define EnableHook(hook)  (hook)->latch -= 1
+#define DisableHook(hook) ((hook)->latch)++
+#define EnableHook(hook)  --((hook)->latch)
 #else
 #define run_a_hook(hook)  /*nothing*/
 #define run_readhook()    /*nothing*/
