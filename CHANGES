@@ -5,6 +5,13 @@ Changes for vile 9.9 (released ??? ??? ?? ????)
 	+ use INT2PTR and PTR2IV macros rather than an explicit cast in perl.xs
 	  and ptypemap.
 	> Tom Dickey:
+	+ improve description of search-list for syntax filter keywords in
+	  vile.hlp
+	+ modify error-pattern for GNU make to work with the 4.0 change to
+	  quotes
+	+ modify makemode mode-filename pattern to match BSDMakefile and
+	  GNUMakefile
+	+ add vile-to-html, vile-libdir-path
 	+ modify manfilt.c to recognize aixterm-style SGR 90-97 as colors 8-15.
 	+ correct off-by-one count in decoding "meta" markup from 9.8l changes
 	  which did not work with external filters.

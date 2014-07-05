@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.735 2014/07/03 00:50:48 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.736 2014/07/04 19:31:59 tom Exp $
  *
  */
 
@@ -1367,7 +1367,7 @@ extern	void	vl_setup_encrypt (char * /* pw */, int /* seed */);
 #if defined(MISSING_EXTERN_CRYPT) || !defined(HAVE_CRYPT)
 extern	char *	crypt	(const char *key, const char *salt);
 extern	void	encrypt	(char *nachr, int decr);
-extern	void	setkey	(char *schl);
+extern	void	setkey	(const char *schl);
 #endif
 
 #endif	/* OPT_ENCRYPT */

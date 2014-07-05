@@ -1,7 +1,7 @@
 /*
  * A terminal driver using the curses library
  *
- * $Header: /users/source/archives/vile.vcs/RCS/curses.c,v 1.48 2010/02/24 23:51:30 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/curses.c,v 1.49 2014/07/04 18:55:53 tom Exp $
  */
 
 #include "estruct.h"
@@ -468,13 +468,15 @@ curs_bcol(int color)
     set_bkgd_colors(fg, color);
 }
 
-static void
+static int
 curs_spal(const char *thePalette)
 {				/* reset the palette registers */
-    if (set_ctrans(thePalette)) {
+    int rc;
+    if ((rc = set_ctrans(thePalette))) {
 	TRACE(("palette changed\n"));
 	reinitialize_colors();
     }
+    return rc;
 }
 #endif /* OPT_COLOR */
 

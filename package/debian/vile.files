@@ -1,3 +1,5 @@
 /usr/bin/vile
+/usr/bin/vile-libdir-path
 /usr/bin/vile-pager
+/usr/bin/vile-to-html
 /usr/share/lintian/overrides/vile

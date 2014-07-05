@@ -1,0 +1,51 @@
+#!/bin/sh
+# $Id: vile-libdir-path,v 1.1 2014/07/04 14:42:57 tom Exp $
+# Find the given vile helper-program, either in $PATH, or in a related
+# lib-directory.  If the program is already in $PATH, no change will be made.
+
+failed() {
+	echo "?? $*" >&2
+	exit 1
+}
+
+HELPER=vile-manfilt
+test $# != 0 && HELPER="$1"
+
+OK_BIN=no
+OK_LIB=
+
+SAVE="$IFS"
+IFS=':'
+for dir in $PATH
+do
+	if test -f $dir/$HELPER
+	then
+		OK_BIN=yes
+		break
+	elif test -z "$OK_LIB"
+	then
+		test -f $dir/vile || continue
+		head=`echo "$dir" | sed -e 's,/[^/]*$,,'`
+		for libs in \
+			$head/lib[1-9]* \
+			$head/lib[1-9]*/*vile
+		do
+			test -d "$libs" || continue
+			if test -f $libs/$HELPER
+			then
+				OK_LIB=$libs
+			fi
+		done
+	fi
+done
+IFS="$SAVE"
+
+if test $OK_BIN = yes
+then
+	echo "$PATH"
+elif test -n "$OK_LIB"
+then
+	echo "$OK_LIB:$PATH"
+else
+	failed "cannot find $HELPER"
+fi
