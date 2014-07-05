@@ -1,5 +1,5 @@
 #!/usr/bin/perl -w
-# $Id: make-hlp.pl,v 1.11 2014/03/30 19:39:26 tom Exp $
+# $Id: make-hlp.pl,v 1.12 2014/07/04 23:33:55 tom Exp $
 # Generate vile.hlp, using the dump feature of a text browser.
 #
 # Any of (e)links(2) or lynx would work.
@@ -11,7 +11,8 @@
 #
 # links is used because the differences between its dump and elinks are
 # insignificant, and because (not being actively developed), fewer surprises a
-# likely when regenerating vile.hlp
+# likely when regenerating vile.hlp -- except that links/etc rendering of
+# blockquote+pre is ... not good.  So we fix that by preprocessing.
 
 use strict;
 use File::Temp qw/ tempfile /;
@@ -115,10 +116,18 @@ sub doit() {
             print STDERR "Can't write $temp_name: $!\n";
             return;
         };
+	my $blockq = 0;
+	my $prefrm = 0;
         for $n ( 0 .. $#input ) {
             chomp $input[$n];
+	    $blockq = 1 if ( $input[$n] eq "<blockquote>" );
+	    $blockq = 0 if ( $input[$n] =~ /\<\/blockquote\>/ );
+	    $prefrm = 1 if ( $input[$n] =~ /^<pre\b/ );
+	    $prefrm = 0 if ( $input[$n] =~ /\<\/pre\>/ );
             $input[$n] =~ s,\<[/]?i\>,_,g;
             $input[$n] =~ s,\<[/]?b\>,*,g;
+	    $input[$n] = "\t" . $input[$n] if ( $blockq and $prefrm );
+	    # printf STDERR "%d:%d.%d\t%s\n", $n, $blockq, $prefrm, $input[$n];
             printf FP "%s\n", $input[$n];
         }
         close(FP);

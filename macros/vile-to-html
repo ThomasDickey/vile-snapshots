@@ -1,0 +1,20 @@
+#!/bin/sh
+# $Id: vile-to-html,v 1.1 2014/07/04 14:49:33 tom Exp $
+#
+# Find atr2html, use that to convert files to html.
+
+HELP=atr2html
+TEST=`vile-libdir-path $HELP`
+if test -n "$TEST"
+then
+	PATH="$TEST"
+	export PATH
+
+	SUBDIR=code2html
+	for name in "$@"
+	do
+		test -f "$name" || continue
+		mkdir -p $SUBDIR
+		vile +'set cs=light' -F "$name" | $HELP >$SUBDIR/"$name".html
+	done
+fi

@@ -1,5 +1,5 @@
 Summary: VI Like Emacs editor
-# $Header: /users/source/archives/vile.vcs/package/RCS/vile.spec,v 1.48 2014/03/31 23:13:33 tom Exp $
+# $Header: /users/source/archives/vile.vcs/package/RCS/vile.spec,v 1.49 2014/07/04 14:51:07 tom Exp $
 Name: vile
 %define AppVersion 9.8
 Version: %{AppVersion}n
@@ -194,7 +194,7 @@ rm -rf %{buildroot}
 %files
 %defattr(-,root,root,-)
 %{_bindir}/vile
-%{_bindir}/vile-pager
+%{_bindir}/vile-*
 %{_mandir}/man1/vile.1*
 
 %files common
@@ -210,7 +210,7 @@ rm -rf %{buildroot}
 %{_bindir}/uxvile
 %{_bindir}/xshell.sh
 %{_bindir}/xvile
-%{_bindir}/xvile-pager
+%{_bindir}/xvile-*
 %if %{with_perl} == 1
 %{_bindir}/vileget
 %endif

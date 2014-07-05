@@ -1,5 +1,5 @@
 <!--
-  $Id: vile-hlp.html,v 1.82 2014/07/03 22:29:30 tom Exp $
+  $Id: vile-hlp.html,v 1.90 2014/07/04 23:34:18 tom Exp $
 -->
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN">
 
@@ -485,8 +485,8 @@
   <blockquote>
     <!--{{atr2html-->
 
-    <p style="font-family: monospace;"><span class=
-    "keyword">bind-key</span>&nbsp;<span class=
+    <p style="font-family: monospace;" class="code-block">
+    <span class="keyword">bind-key</span>&nbsp;<span class=
     "keyword">split-current-window</span>&nbsp;<span class=
     "literal">^T</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">;&nbsp;split&nbsp;into&nbsp;'T'wo&nbsp;windows</span><br>
 
@@ -523,8 +523,8 @@
   <blockquote>
     <!--{{atr2html-->
 
-    <p style="font-family: monospace;">:<span class=
-    "keyword">e</span><span class=
+    <p style="font-family: monospace;" class="code-block">
+    :<span class="keyword">e</span><span class=
     "literal">&nbsp;`which&nbsp;locks`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;&nbsp;csh&nbsp;looks&nbsp;for&nbsp;script&nbsp;called&nbsp;"locks"</span><br>
 
     :<span class="keyword">e</span><span class=
@@ -616,9 +616,10 @@
   simply edit a file in one directory, cd to another, and write it.
   You must explicitly write to ./filename in the new directory to
   accomplish this. ":cd -" will return to the previous directory,
-  as it does in some shells. The CDPATH environment variable
-  provides a search path for the :cd command. This variable's path
-  delimiters are host-specific, as follows:</p>
+  as it does in some shells. The <a name="env-CDPATH" id=
+  "env-CDPATH">CDPATH</a> environment variable provides a search
+  path for the :cd command. This variable's path delimiters are
+  host-specific, as follows:</p>
 
   <table border="1" summary="Path Delimiters">
     <colgroup>
@@ -1042,9 +1043,12 @@
       name, assuming it's unique. If not unique, press TAB twice to
       see a list of all possible completions. Example (using the
       vile sources):
-      <pre>
-        :ta is_sl&lt;tab&gt;
+
+      <blockquote>
+        <pre class="code-block">
+:ta is_sl&lt;tab&gt;
 </pre>
+      </blockquote>
 
       <p>is completed as "is_slashc" . Pressing RETURN following
       completion opens a buffer on estruct.h, with the cursor
@@ -1160,7 +1164,8 @@
 
     <dd>Force gaps with "empty" lines (no printable characters) to
     have the same size (<code>force-empty-lines</code>). This uses
-    the variable $empty-lines as the size that should be used. Like
+    the variable <a href="#modevar-empty-lines">$empty-lines</a> as
+    the size that should be used. Like
     <code>delete-empty-lines</code>, this is an operator and can be
     used with a range.</dd>
 
@@ -1178,9 +1183,10 @@
       error in turn, and will eventually start over again at the
       top. The buffer searched for "errors" will be the last shell
       command run, or the buffer named with the "error- buffer"
-      command. The "Entering directory XXX" and "Leaving directory
-      XXX" messages that GNU make puts out with the -w switch are
-      honored, so that files are found with the correct path.</p>
+      command. The "Entering directory <em>XXX</em>" and "Leaving
+      directory <em>XXX</em>" messages that GNU make puts out with
+      the -w switch are honored, so that files are found with the
+      correct path.</p>
 
       <p>Tip: I use the following macro to quickly grep a source
       directory for the string under the cursor:</p>
@@ -1213,19 +1219,28 @@
       <p>The V, B, F, T substitutions are for nonblank fields,
       which is not always enough, so vile additionally recognizes a
       range in brackets, e.g.,</p>
-      <pre>
-        ^%[^:   ]:\s*%L:%T
+
+      <blockquote>
+        <pre class="code-block">
+^%[^:   ]:\s*%L:%T
 </pre>
+      </blockquote>
 
       <p>is compiled as</p>
-      <pre>
-        ^\([^:  ]\+\):\s*\([0-9]\+\):\(.\+\)
+
+      <blockquote>
+        <pre class="code-block">
+^\([^:  ]\+\):\s*\([0-9]\+\):\(.\+\)
 </pre>
+      </blockquote>
+
+      <p>The expressions can be manipulated with scripts:</p>
 
       <blockquote>
         <!--{{atr2html-->
 
-        <p style="font-family: monospace;"><span class=
+        <p style="font-family: monospace;" class="code-block">
+        <span class=
         "comment">;&nbsp;example&nbsp;of&nbsp;a&nbsp;macro&nbsp;to&nbsp;add&nbsp;to&nbsp;[Error&nbsp;Expressions]</span><br>
 
         <span class="keyword">store-procedure</span><span class=
@@ -1323,9 +1338,12 @@
       commands are accepted until another 'q' is entered. The
       result of the motion is the cumulative effect of all the
       entered motions. Thus, one might type:
-      <pre>
-        dq&lt;arrow&gt;&lt;arrow&gt;&lt;arrow&gt;...&lt;arrow&gt;q
+
+      <blockquote>
+        <pre class="code-block">
+dq&lt;arrow&gt;&lt;arrow&gt;&lt;arrow&gt;...&lt;arrow&gt;q
 </pre>
+      </blockquote>
 
       <p>to delete all of the text between the starting point and
       the final cursor position.</p>
@@ -1447,7 +1465,7 @@
 
   <p>vile can display more of its internal "state" than traditional
   vi. Portions of the internal "state" may be viewed using various
-  "show-xxx" commands:</p>
+  "show-<em>xxx</em>" commands:</p>
 
   <dl>
     <dt><a name="colon-show-abbreviations" id=
@@ -1474,7 +1492,8 @@
 
     <dd>displays a color chart of the builtin color names, the
     internal coding used in the syntax filters (e.g., C0), the
-    $palette mapping and examples in bold, italic, etc.</dd>
+    <a href="#modevar-palette">$palette</a> mapping and examples in
+    bold, italic, etc.</dd>
 
     <dt><a name="colon-show-commands" id=
     "colon-show-commands">:show-commands or show-bindings</a></dt>
@@ -1572,10 +1591,10 @@
     <dt><a name="colon-show-variables" id=
     "colon-show-variables">:show-variables</a></dt>
 
-    <dd>displays the list of vile state $variables and temporary
-    %variables, and their values. Use a repeat count to show all
-    mode variables, including majormode submodes rather than just
-    the state variables.</dd>
+    <dd>displays the list of vile state $<em>variables</em> and
+    temporary %<em>variables</em>, and their values. Use a repeat
+    count to show all mode variables, including majormode submodes
+    rather than just the state variables.</dd>
 
     <dt><a name="command-show-wide-printable" id=
     "command-show-wide-printable">:show-wide-printable</a></dt>
@@ -1641,10 +1660,13 @@
   completions" terminal character) to display a list of the
   characters that you would have to type to complete the command.
   For example, to complete the "unmark" or "unmap" commands:</p>
-  <pre>
-        :unm?                   &ndash; you type
-        :unm{a}[pr]             &ndash; you see
+
+  <blockquote>
+    <pre class="code-block">
+:unm?                   &ndash; you type
+:unm{a}[pr]             &ndash; you see
 </pre>
+  </blockquote>
 
   <p>This style of completion-display shows curly braces around the
   string that will be supplied by pressing TAB, and square brackets
@@ -1828,24 +1850,33 @@
 
   <p>To set/modify a universal mode, use the "set" command. Startup
   file examples:</p>
-  <pre>
-        set vtflash=normal
-        unset flash           ; or    set noflash
-        set errorbells
+
+  <blockquote>
+    <pre class="code-block">
+set vtflash=normal
+unset flash           ; or    set noflash
+set errorbells
 </pre>
+  </blockquote>
 
   <p>Since the set command (within a startup file) accepts multiple
   modes, this oneliner is equivalent:</p>
-  <pre>
-        set vtflash=normal noflash errorbells
+
+  <blockquote>
+    <pre class="code-block">
+set vtflash=normal noflash errorbells
 </pre>
+  </blockquote>
 
   <p>To clear a universal mode use one of these idioms:</p>
-  <pre>
-        set    no&lt;modename&gt;
-        unset  &lt;modename&gt;
-        setno  &lt;modename&gt;
+
+  <blockquote>
+    <pre class="code-block">
+set    no&lt;modename&gt;
+unset  &lt;modename&gt;
+setno  &lt;modename&gt;
 </pre>
+  </blockquote>
 
   <p>For completeness sake, note that the "local" version of the
   set/unset commands ("setl"/"unsetl") do not make sense (and
@@ -1865,24 +1896,26 @@
   editable. But suppose I edited the file "precious.cpp", which I
   did not want to modify. There are two approaches that could be
   taken:</p>
-  <pre>
-        <code>
-        $ vile
-        :set view          ; enable view mode globally
-        :e precious.cpp    ; edited in "view" mode
-        :e other.cpp       ; ditto
-</code>
+
+  <blockquote>
+    <pre class="code-block">
+$ vile
+:set view          ; enable view mode globally
+:e precious.cpp    ; edited in "view" mode
+:e other.cpp       ; ditto
 </pre>
+  </blockquote>
 
   <p>or</p>
-  <pre>
-        <code>
-        $ vile
-        :e precious.cpp    ; initially edited in "noview" mode
-        :setl view         ; "view" mode now bound to precious.cpp
-        :e other.cpp       ; edited in "noview" mode
-        </code>
+
+  <blockquote>
+    <pre class="code-block">
+$ vile
+:e precious.cpp    ; initially edited in "noview" mode
+:setl view         ; "view" mode now bound to precious.cpp
+:e other.cpp       ; edited in "noview" mode
 </pre>
+  </blockquote>
 
   <p>In the first approach, view mode is enabled globally and
   consequently affects all existing buffers and all subsequently
@@ -1952,28 +1985,31 @@
       "#mode-reuseposition">reuse-position</a> mode.
 
       <p>The animated buffers include:</p>
-      <pre>
-        [Binding List]
-        [Buffer List]
-        [Color Palette]
-        [Color Schemes]
-        [Command-Bindings]
-        [Error Expressions]
-        [Error Patterns]
-        [Extra Colors]
-        [Insert-Bindings]
-        [Major Modes]
-        [Map Sequences]
-        [Map! Sequences]
-        [Named Marks]
-        [Printable Chars]
-        [Registers]
-        [Select-Bindings]
-        [Settings]
-        [Tag Stack]
-        [Terminal Characters]
-        [Variables]
+
+      <blockquote>
+        <pre class="code-block">
+[Binding List]
+[Buffer List]
+[Color Palette]
+[Color Schemes]
+[Command-Bindings]
+[Error Expressions]
+[Error Patterns]
+[Extra Colors]
+[Insert-Bindings]
+[Major Modes]
+[Map Sequences]
+[Map! Sequences]
+[Named Marks]
+[Printable Chars]
+[Registers]
+[Select-Bindings]
+[Settings]
+[Tag Stack]
+[Terminal Characters]
+[Variables]
 </pre>
+      </blockquote>
 
       <p>Turning off "animated" is rarely necessary: the capability
       is present mostly as a debugging aid. (B)</p>
@@ -2068,17 +2104,20 @@
     <dd>
       is a prefix used to distinguish different types of
       UTF-encoding. It must be one of the following values:
-      <pre>
-        "auto"
-        "none" (default)
-        "utf-8"
-        "le-assumed"
-        "be-assumed"
-        "utf-16le"
-        "utf-16be"
-        "utf-32le"
-        "utf-32be"
+
+      <blockquote>
+        <pre class="code-block">
+"auto"
+"none" (default)
+"utf-8"
+"le-assumed"
+"be-assumed"
+"utf-16le"
+"utf-16be"
+"utf-32le"
+"utf-32be"
 </pre>
+      </blockquote>
 
       <p>The "auto" setting tells vile to set the buffer's
       byteorder-mark value based on whatever the file-encoding
@@ -2089,20 +2128,21 @@
       not to write them for buffers which have no explicit
       byteorder mark set.</p>
 
-      <p>The "utf-XXX" values are explicit settings, which override
-      the auto/none logic. Use "le-assumed" or "be-assumed" for
-      cases where the platform's preferred byteorder is known, and
-      where byteorder marks may be absent from files, e.g., with
-      Windows. (B)</p>
+      <p>The "utf-<em>XXX</em>" values are explicit settings, which
+      override the auto/none logic. Use "le-assumed" or
+      "be-assumed" for cases where the platform's preferred
+      byteorder is known, and where byteorder marks may be absent
+      from files, e.g., with Windows. (B)</p>
     </dd>
 
     <dt><a name="mode-bufname-expr" id=
     "mode-bufname-expr">bufname-expr</a></dt>
 
-    <dd>Regular expression used for parsing of $bufname, subject to
-    the cursor-tokens mode. If the expression is inactive, use
-    character-class based internal function which combines buffer-
-    and filename-classes. This is a buffer mode. (B)</dd>
+    <dd>Regular expression used for parsing of <a href=
+    "#modevar-bufname">$bufname</a>, subject to the cursor-tokens
+    mode. If the expression is inactive, use character-class based
+    internal function which combines buffer- and filename-classes.
+    This is a buffer mode. (B)</dd>
 
     <dt><a name="mode-ccolor" id="mode-ccolor">ccolor</a></dt>
 
@@ -2234,9 +2274,9 @@
     <dt><a name="mode-color-scheme" id=
     "mode-color-scheme">color-scheme (cs)</a></dt>
 
-    <dd>An aggregate of fcolor, bcolor, video-attrs and $palette.
-    Color schemes are defined with the define-color-scheme command.
-    (U)</dd>
+    <dd>An aggregate of fcolor, bcolor, video-attrs and <a href=
+    "#modevar-palette">$palette</a>. Color schemes are defined with
+    the define-color-scheme command. (U)</dd>
 
     <dt><a name="mode-comment-prefix" id=
     "mode-comment-prefix">comment-prefix</a></dt>
@@ -2267,11 +2307,12 @@
     classes for parsing tokens from the screen for various
     commands. This uses an enumeration: both, cclass and regex. If
     "both", vile tries matching first with the regular expresion,
-    e.g., bufname-expr for $bufname, and if that does not match
-    anything, uses the character-classes. The main reason for
-    providing the "both" option is that the older character-class
-    based parsing for buffer name does not correspond exactly to a
-    regular expression. (B)</dd>
+    e.g., bufname-expr for <a href="#modevar-bufname">$bufname</a>,
+    and if that does not match anything, uses the
+    character-classes. The main reason for providing the "both"
+    option is that the older character-class based parsing for
+    buffer name does not correspond exactly to a regular
+    expression. (B)</dd>
 
     <dt><a name="mode-dirc" id="mode-dirc">dirc</a></dt>
 
@@ -2393,15 +2434,18 @@
       This is the character encoding of the buffer contents, which
       is not necessarily the same as the display's character
       encoding. It must be one of the following values:
-      <pre>
-        "8bit"
-        "ascii"
-        "auto"
-        "locale" (default)
-        "utf-16"
-        "utf-32"
-        "utf-8"
+
+      <blockquote>
+        <pre class="code-block">
+"8bit"
+"ascii"
+"auto"
+"locale" (default)
+"utf-16"
+"utf-32"
+"utf-8"
 </pre>
+      </blockquote>
 
       <p>The "auto" setting tells vile to determine the encoding by
       inspecting the buffer contents. The "locale" setting tells
@@ -2525,14 +2569,18 @@
     "mode-identifier-expr">identifier-expr</a></dt>
 
     <dd>
-      Regular expression used for parsing of $identifier, which
-      also corresponds to the pattern under the cursor used in tags
-      and "screen-search-pattern-grab", etc., subject to the
+      Regular expression used for parsing of <a href=
+      "#modevar-identifier">$identifier</a>, which also corresponds
+      to the pattern under the cursor used in tags and
+      "screen-search-pattern-grab", etc., subject to the
       cursor-tokens mode. If the expression is inactive, use
       character-class, e.g., the equivalent of
-      <pre>
-        \&lt;[[:ident:]]\+\&gt;
+
+      <blockquote>
+        <pre class="code-block">
+\&lt;[[:ident:]]\+\&gt;
 </pre>
+      </blockquote>
 
       <p>This is a buffer mode. (B)</p>
     </dd>
@@ -2567,10 +2615,13 @@
 
       <p>See the discussion of <a href="#insert-mode">insert
       mode</a>, in particular</p>
-      <pre>
-        describe-insmode-bindings
-        describe-insmode-key
+
+      <blockquote>
+        <pre class="code-block">
+describe-insmode-bindings
+describe-insmode-key
 </pre>
+      </blockquote>
     </dd>
 
     <dt><a name="mode-linebreak" id="mode-linebreak">linebreak
@@ -2674,29 +2725,41 @@
       the given number of lines from top and bottom of the buffer
       when it is first loaded into memory. It looks for lines
       containing one of these special markers after whitespace:
-      <pre>
-        "vi:"
-        "vile:"
+
+      <blockquote>
+        <pre class="code-block">
+"vi:"
+"vile:"
 </pre>
+      </blockquote>
 
       <p>or (depending on the configuration):</p>
-      <pre>
-        "xvile:"
-        "winvile:"
+
+      <blockquote>
+        <pre class="code-block">
+"xvile:"
+"winvile:"
 </pre>
+      </blockquote>
 
       <p>After that, either a "set" command terminated by a colon,
       e.g.,</p>
-      <pre>
-        vile:txtmode:
+
+      <blockquote>
+        <pre class="code-block">
+vile:txtmode:
 </pre>
+      </blockquote>
 
       <p>or one or more mode assignments, treating colons as a
       whitespace separator, e.g, these are equivalent,</p>
-      <pre>
-        vile:ts=4 nu
-        vile:ts=4:nu
+
+      <blockquote>
+        <pre class="code-block">
+vile:ts=4 nu
+vile:ts=4:nu
 </pre>
+      </blockquote>
 
       <p>The modelines at the top of the buffer are processed first
       (working forward from the top), then the ones at the bottom
@@ -2764,13 +2827,17 @@
     "mode-pathname-expr">pathname-expr</a></dt>
 
     <dd>
-      Regular expression used for parsing of $pathname, which is
-      expanded by ":" (or "&amp;") in the minibuffer, subject to
-      the cursor-tokens mode. If the expression is inactive, use
-      character-class, e.g., the equivalent of
-      <pre>
-        \&lt;[[:file:]]\+\&gt;
+      Regular expression used for parsing of <a href=
+      "#modevar-pathname">$pathname</a>, which is expanded by ":"
+      (or "&amp;") in the minibuffer, subject to the cursor-tokens
+      mode. If the expression is inactive, use character-class,
+      e.g., the equivalent of
+
+      <blockquote>
+        <pre class="code-block">
+\&lt;[[:file:]]\+\&gt;
 </pre>
+      </blockquote>
 
       <p>This is a buffer mode. (B)</p>
     </dd>
@@ -2933,11 +3000,14 @@
       recordseparator to decide how to split lines. Files created
       within vile do not automatically have a local recordseparator
       mode; they inherit the global mode setting. The commands</p>
-      <pre>
-        set-rs-cr
-        set-rs-lf or set-unix-mode
-        set-rs-crlf or set-dos-mode
+
+      <blockquote>
+        <pre class="code-block">
+set-rs-cr
+set-rs-lf or set-unix-mode
+set-rs-crlf or set-dos-mode
 </pre>
+      </blockquote>
 
       <p>are aliases which set the corresponding local mode values
       of recordseparator. Set the recordseparator on a given buffer
@@ -3122,9 +3192,12 @@
 
     <dd>
       For xvile/winvile, if set, the editor displays its title as:
-      <pre>
-        &lt;current buffer name&gt; - &lt;editor name&gt;
+
+      <blockquote>
+        <pre class="code-block">
+&lt;current buffer name&gt; - &lt;editor name&gt;
 </pre>
+      </blockquote>
 
       <p>The swapped order is especially useful under limited
       screen real estate conditions. (U)</p>
@@ -3261,9 +3334,9 @@
 
     <dd>If displaying a buffer whose file-encoding says it is one
     of the Unicode flavors, e.g., "utf-8", "utf-16" or "utf-32",
-    show the values that are non-ASCII in "\uXXXX" format even if
-    the display is capable of showing these as regular characters.
-    (W)</dd>
+    show the values that are non-ASCII in "\u<em>XXXX</em>" format
+    even if the display is capable of showing these as regular
+    characters. (W)</dd>
 
     <dt><a name="mode-unique-buffers" id=
     "mode-unique-buffers">unique-buffers</a></dt>
@@ -3631,29 +3704,41 @@
   <p>Vile prompts for commands in parts, and stores a copy of the
   complete command in the [History] buffer. For example, you may
   type</p>
-  <pre>
-        :g/help/p
+
+  <blockquote>
+    <pre class="code-block">
+:g/help/p
 </pre>
+  </blockquote>
 
   <p>and vile will prompt for the parts after each delimiter,
   e.g.,</p>
-  <pre>
-        global pattern: help
-        action to perform on each matching line: p
+
+  <blockquote>
+    <pre class="code-block">
+global pattern: help
+action to perform on each matching line: p
 </pre>
+  </blockquote>
 
   <p>The [History] buffer, shown with "show-history" will store</p>
-  <pre>
-        g/help/p
+
+  <blockquote>
+    <pre class="code-block">
+g/help/p
 </pre>
+  </blockquote>
 
   <p>At each prompt, using the up/down arrows will tell vile to
   display the corresponding result for the "same" command. If
   [History] contains</p>
-  <pre>
-        g/take/g
-        g/help/p
+
+  <blockquote>
+    <pre class="code-block">
+g/take/g
+g/help/p
 </pre>
+  </blockquote>
 
   <p>then the up/down arrows will show "take" or "help", skipping
   commands which do not begin with "g/".</p>
@@ -3840,7 +3925,8 @@
   <blockquote>
     <!--{{atr2html-->
 
-    <p style="font-family: monospace;">:<span class=
+    <p style="font-family: monospace;" class="code-block">
+    :<span class=
     "keyword">bind-key</span>&nbsp;&lt;englishname&gt;&nbsp;&lt;keyseq&gt;<br>
 
     <!--atr2html}}--></p>
@@ -3858,9 +3944,12 @@
   termcap/terminfo), you may also specify a key modifier, i.e.,
   "alt+", "ctrl+" or "shift+". The modifier follows the ^A or ^X
   prefix, e.g.,</p>
-  <pre>
-        shift+#6
+
+  <blockquote>
+    <pre class="code-block">
+shift+#6
 </pre>
+  </blockquote>
 
   <p>for shifted function-key 6.</p>
 
@@ -3884,8 +3973,8 @@
   <blockquote>
     <!--{{atr2html-->
 
-    <p style="font-family: monospace;"><span class=
-    "keyword">bind-key</span>&nbsp;<span class=
+    <p style="font-family: monospace;" class="code-block">
+    <span class="keyword">bind-key</span>&nbsp;<span class=
     "keyword">incremental-search</span>&nbsp;/<br>
     <span class="keyword">bind-key</span>&nbsp;<span class=
     "keyword">reverse-incremental-search</span>&nbsp;?<br>
@@ -3898,8 +3987,8 @@
   <blockquote>
     <!--{{atr2html-->
 
-    <p style="font-family: monospace;"><span class=
-    "keyword">bind-key</span>&nbsp;<span class=
+    <p style="font-family: monospace;" class="code-block">
+    <span class="keyword">bind-key</span>&nbsp;<span class=
     "keyword">next-window</span>&nbsp;<span class=
     "literal">^N</span><br>
     <span class="keyword">bind-key</span>&nbsp;<span class=
@@ -3914,8 +4003,8 @@
   <blockquote>
     <!--{{atr2html-->
 
-    <p style="font-family: monospace;"><span class=
-    "keyword">bind-key</span>&nbsp;<span class=
+    <p style="font-family: monospace;" class="code-block">
+    <span class="keyword">bind-key</span>&nbsp;<span class=
     "keyword">next-page</span>&nbsp;<span class=
     "literal">\s</span><br>
     <!--atr2html}}--></p>
@@ -3938,8 +4027,8 @@
   <blockquote>
     <!--{{atr2html-->
 
-    <p style="font-family: monospace;"><span class=
-    "keyword">bind-key</span>&nbsp;<span class=
+    <p style="font-family: monospace;" class="code-block">
+    <span class="keyword">bind-key</span>&nbsp;<span class=
     "keyword">next-window</span>&nbsp;<span class=
     "literal">^A-\</span>x14<br>
     <!--atr2html}}--></p>
@@ -3950,8 +4039,8 @@
   <blockquote>
     <!--{{atr2html-->
 
-    <p style="font-family: monospace;"><span class=
-    "keyword">bind-key</span>&nbsp;<span class=
+    <p style="font-family: monospace;" class="code-block">
+    <span class="keyword">bind-key</span>&nbsp;<span class=
     "keyword">next-window</span>&nbsp;<span class=
     "literal">#-\</span><span class="number">213</span><br>
     <!--atr2html}}--></p>
@@ -3978,13 +4067,16 @@
       naturally into one of the specialized modes. This is
       initialized by compiled-in definitions for normal (0-127) and
       special (function and meta-key) definitions.
-      <pre>
-        bind-key
-        describe-all-keys
-        describe-bindings
-        describe-key
-        unbind-key
+
+      <blockquote>
+        <pre class="code-block">
+bind-key
+describe-all-keys
+describe-bindings
+describe-key
+unbind-key
 </pre>
+      </blockquote>
     </dd>
 
     <dt>cmdmode -</dt>
@@ -3994,13 +4086,16 @@
       keys from the default table, as well as the control
       characters that are associated with movement, e.g., ^N and
       ^P.
-      <pre>
-        bind-cmdmode-key
-        describe-all-cmdmode-keys
-        describe-cmdmode-key
-        show-cmdmode-bindings
-        unbind-cmdmode-key
+
+      <blockquote>
+        <pre class="code-block">
+bind-cmdmode-key
+describe-all-cmdmode-keys
+describe-cmdmode-key
+show-cmdmode-bindings
+unbind-cmdmode-key
 </pre>
+      </blockquote>
     </dd>
 
     <dt>insmode -</dt>
@@ -4011,13 +4106,16 @@
       associated with movement, e.g., ^N and ^P. The insert-exec
       mode controls whether those control characters are
       interpreted or inserted.
-      <pre>
-        bind-insmode-key
-        describe-all-insmode-keys
-        describe-insmode-bindings
-        describe-insmode-key
-        unbind-insmode-key
+
+      <blockquote>
+        <pre class="code-block">
+bind-insmode-key
+describe-all-insmode-keys
+describe-insmode-bindings
+describe-insmode-key
+unbind-insmode-key
 </pre>
+      </blockquote>
     </dd>
 
     <dt>selmode -</dt>
@@ -4026,13 +4124,16 @@
       for selection highlighting, i.e., multimotion. This is
       initially the same as the default binding table, but may be
       customized.
-      <pre>
-        bind-selmode-key
-        describe-all-selmode-keys
-        describe-selmode-bindings
-        describe-selmode-key
-        unbind-selmode-key
+
+      <blockquote>
+        <pre class="code-block">
+bind-selmode-key
+describe-all-selmode-keys
+describe-selmode-bindings
+describe-selmode-key
+unbind-selmode-key
 </pre>
+      </blockquote>
     </dd>
   </dl>
 
@@ -4051,8 +4152,8 @@
   <blockquote>
     <!--{{atr2html-->
 
-    <p style="font-family: monospace;"><span class=
-    "keyword">store-procedure</span><span class=
+    <p style="font-family: monospace;" class="code-block">
+    <span class="keyword">store-procedure</span><span class=
     "literal">&nbsp;begin-errtext</span><br>
     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class=
     "keyword">insert-string</span>&nbsp;<span class=
@@ -4403,8 +4504,8 @@
   <blockquote>
     <!--{{atr2html-->
 
-    <p style="font-family: monospace;"><span class=
-    "keyword">map</span><span class=
+    <p style="font-family: monospace;" class="code-block">
+    <span class="keyword">map</span><span class=
     "literal">&nbsp;#1&nbsp;&lt;some-user-map-sequence&gt;</span><br>
 
     <!--atr2html}}--></p>
@@ -4431,8 +4532,8 @@
   <blockquote>
     <!--{{atr2html-->
 
-    <p style="font-family: monospace;">:<span class=
-    "keyword">map</span><span class=
+    <p style="font-family: monospace;" class="code-block">
+    :<span class="keyword">map</span><span class=
     "literal">&nbsp;h&nbsp;ihello&lt;ESC&gt;</span><br>
     <!--atr2html}}--></p>
   </blockquote>
@@ -4467,8 +4568,8 @@
   <blockquote>
     <!--{{atr2html-->
 
-    <p style="font-family: monospace;">:<span class=
-    "keyword">map</span><span class=
+    <p style="font-family: monospace;" class="code-block">
+    :<span class="keyword">map</span><span class=
     "literal">&nbsp;z&nbsp;j</span><br>
     :<span class="keyword">map</span><span class=
     "literal">&nbsp;zz&nbsp;k</span><br>
@@ -4709,8 +4810,8 @@
   <blockquote>
     <!--{{atr2html-->
 
-    <p style="font-family: monospace;"><span class=
-    "keyword">use-register</span>&nbsp;<span class=
+    <p style="font-family: monospace;" class="code-block">
+    <span class="keyword">use-register</span>&nbsp;<span class=
     "literal">a</span>&nbsp;<span class=
     "keyword">load-register</span>&nbsp;<span class=
     "comment">ihello</span><span class="literal">^[</span><br>
@@ -4724,8 +4825,8 @@
   <blockquote>
     <!--{{atr2html-->
 
-    <p style="font-family: monospace;"><span class=
-    "keyword">use-register</span>&nbsp;<span class=
+    <p style="font-family: monospace;" class="code-block">
+    <span class="keyword">use-register</span>&nbsp;<span class=
     "literal">w</span>&nbsp;<span class=
     "keyword">load-register</span>&nbsp;<span class=
     "literal">":!chmod&nbsp;+w&nbsp;%^M:w^M"</span><br>
@@ -4756,8 +4857,8 @@
   <blockquote>
     <!--{{atr2html-->
 
-    <p style="font-family: monospace;"><span class=
-    "number">1</span>&nbsp;<span class=
+    <p style="font-family: monospace;" class="code-block">
+    <span class="number">1</span>&nbsp;<span class=
     "keyword">store-macro</span><br>
     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class=
     "number">5</span>&nbsp;<span class=
@@ -4778,8 +4879,8 @@
   <blockquote>
     <!--{{atr2html-->
 
-    <p style="font-family: monospace;"><span class=
-    "number">1</span>&nbsp;<span class=
+    <p style="font-family: monospace;" class="code-block">
+    <span class="number">1</span>&nbsp;<span class=
     "keyword">store-macro</span><br>
     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class=
     "number">5</span>&nbsp;<span class=
@@ -4803,8 +4904,8 @@
   <blockquote>
     <!--{{atr2html-->
 
-    <p style="font-family: monospace;">&lt;<span class=
-    "keyword">number</span>&gt;&nbsp;<span class=
+    <p style="font-family: monospace;" class="code-block">
+    &lt;<span class="keyword">number</span>&gt;&nbsp;<span class=
     "keyword">store-macro</span><br>
     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;language&nbsp;element&gt;<br>
 
@@ -4820,8 +4921,8 @@
   <blockquote>
     <!--{{atr2html-->
 
-    <p style="font-family: monospace;"><span class=
-    "keyword">execute-macro</span>-&lt;<span class=
+    <p style="font-family: monospace;" class="code-block">
+    <span class="keyword">execute-macro</span>-&lt;<span class=
     "keyword">number</span>&gt;<br>
     <!--atr2html}}--></p>
   </blockquote>
@@ -4831,8 +4932,8 @@
   <blockquote>
     <!--{{atr2html-->
 
-    <p style="font-family: monospace;"><span class=
-    "keyword">bind-key</span>&nbsp;<span class=
+    <p style="font-family: monospace;" class="code-block">
+    <span class="keyword">bind-key</span>&nbsp;<span class=
     "keyword">execute-macro</span>-&lt;<span class=
     "keyword">number</span>&gt;&nbsp;&lt;keystroke&gt;<br>
     <!--atr2html}}--></p>
@@ -4857,8 +4958,8 @@
   <blockquote>
     <!--{{atr2html-->
 
-    <p style="font-family: monospace;"><span class=
-    "keyword">store-procedure</span><span class=
+    <p style="font-family: monospace;" class="code-block">
+    <span class="keyword">store-procedure</span><span class=
     "literal">&nbsp;&lt;unique-name&gt;</span><br>
     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;language&nbsp;element&gt;<br>
 
@@ -4885,7 +4986,8 @@
   <blockquote>
     <!--{{atr2html-->
 
-    <p style="font-family: monospace;"><span class=
+    <p style="font-family: monospace;" class="code-block">
+    <span class=
     "keyword">bind-key</span>&nbsp;&lt;unique-name&gt;&nbsp;&lt;keystroke&gt;<br>
 
     <!--atr2html}}--></p>
@@ -4896,8 +4998,8 @@
   <blockquote>
     <!--{{atr2html-->
 
-    <p style="font-family: monospace;"><span class=
-    "keyword">store-procedure</span><span class=
+    <p style="font-family: monospace;" class="code-block">
+    <span class="keyword">store-procedure</span><span class=
     "literal">&nbsp;write-msg-tst</span><br>
     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class=
     "keyword">write-message</span>&nbsp;<span class=
@@ -4922,7 +5024,8 @@
       <blockquote>
         <!--{{atr2html-->
 
-        <p style="font-family: monospace;">:write-msg-tst<br>
+        <p style="font-family: monospace;" class="code-block">
+        :write-msg-tst<br>
         <!--atr2html}}--></p>
       </blockquote>
     </li>
@@ -4944,8 +5047,8 @@
   <blockquote>
     <!--{{atr2html-->
 
-    <p style="font-family: monospace;"><span class=
-    "keyword">store-operator</span><span class=
+    <p style="font-family: monospace;" class="code-block">
+    <span class="keyword">store-operator</span><span class=
     "literal">&nbsp;fmt</span><br>
     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class=
     "ident2">$cmd-count</span>&nbsp;<span class=
@@ -4956,9 +5059,10 @@
     <!--atr2html}}--></p>
   </blockquote>
 
-  <p>In the example, the combination of $cmd-count and $cmd-motion
-  (passed into the macro) act as the "real" operator's associated
-  motion.</p>
+  <p>In the example, the combination of <a href=
+  "#modevar-cmd-count">$cmd-count</a> and <a href=
+  "#modevar-cmd-motion">$cmd-motion</a> (passed into the macro) act
+  as the "real" operator's associated motion.</p>
 
   <h3 id="macro-elements-toc"><a name="macro-elements" id=
   "macro-elements">Macro Language Elements</a></h3>
@@ -4989,38 +5093,44 @@
     </tr>
 
     <tr>
-      <td>$_</td>
+      <td><a name="modevar-_" id="modevar-_">$_</a></td>
 
-      <td>most-recent macro $return value</td>
+      <td>most-recent macro <a href="#modevar-return">$return</a>
+      value</td>
     </tr>
 
     <tr>
-      <td>$abufname</td>
+      <td><a name="modevar-abufname" id=
+      "modevar-abufname">$abufname</a></td>
 
       <td>alternate buffer name (i.e. last visited) (read
       only)</td>
     </tr>
 
     <tr>
-      <td>$autocolor-hook</td>
+      <td><a name="modevar-autocolor-hook" id=
+      "modevar-autocolor-hook">$autocolor-hook</a></td>
 
       <td>name of the hook that runs when autocolor is enabled</td>
     </tr>
 
     <tr>
-      <td>$bchars</td>
+      <td><a name="modevar-bchars" id=
+      "modevar-bchars">$bchars</a></td>
 
       <td>number of characters in current buffer (read only)</td>
     </tr>
 
     <tr>
-      <td>$bchanged</td>
+      <td><a name="modevar-bchanged" id=
+      "modevar-bchanged">$bchanged</a></td>
 
       <td>true if current buffer is modified (boolean)</td>
     </tr>
 
     <tr>
-      <td>$bflags</td>
+      <td><a name="modevar-bflags" id=
+      "modevar-bflags">$bflags</a></td>
 
       <td>
         status flags for current buffer (read only)
@@ -5072,62 +5182,73 @@
     </tr>
 
     <tr>
-      <td>$blines</td>
+      <td><a name="modevar-blines" id=
+      "modevar-blines">$blines</a></td>
 
       <td>number of lines in current buffer (read only)</td>
     </tr>
 
     <tr>
-      <td>$brightness</td>
+      <td><a name="modevar-brightness" id=
+      "modevar-brightness">$brightness</a></td>
 
       <td>RGB levels for gray, normal, bright in the 0-255 range
       (winvile version only)</td>
     </tr>
 
     <tr>
-      <td>$buf-fname-expr</td>
+      <td><a name="modevar-buf-fname-expr" id=
+      "modevar-buf-fname-expr">$buf-fname-expr</a></td>
 
       <td>combined buffer+fname expression (read only)</td>
     </tr>
 
     <tr>
-      <td>$buffer-hook</td>
+      <td><a name="modevar-buffer-hook" id=
+      "modevar-buffer-hook">$buffer-hook</a></td>
 
       <td>name of procedure to run when switching to a buffer</td>
     </tr>
 
     <tr>
-      <td>$bufname</td>
+      <td><a name="modevar-bufname" id=
+      "modevar-bufname">$bufname</a></td>
 
       <td>current buffer-name under the cursor.</td>
     </tr>
 
     <tr>
-      <td>$bwindows</td>
+      <td><a name="modevar-bwindows" id=
+      "modevar-bwindows">$bwindows</a></td>
 
       <td>number of windows open on current buffer(read only)</td>
     </tr>
 
     <tr>
-      <td>$cbufname</td>
+      <td><a name="modevar-cbufname" id=
+      "modevar-cbufname">$cbufname</a></td>
 
       <td>current buffer name</td>
     </tr>
 
     <tr>
-      <td>$cdpath</td>
+      <td><a name="modevar-cdpath" id=
+      "modevar-cdpath">$cdpath</a></td>
 
-      <td>editor's copy of the $CDPATH env var (read/write)</td>
+      <td>editor's copy of the <a href="#env-CDPATH">$CDPATH</a>
+      env var (read/write)</td>
     </tr>
 
     <tr>
-      <td>$cd-hook</td>
+      <td><a name="modevar-cd-hook" id=
+      "modevar-cd-hook">$cd-hook</a></td>
 
       <td>name of procedure to run when changing directories</td>
     </tr>
 
     <tr>
-      <td>$cfgopts</td>
+      <td><a name="modevar-cfgopts" id=
+      "modevar-cfgopts">$cfgopts</a></td>
 
       <td>
         comma-delimited list of "interesting" compiled options
@@ -5276,409 +5397,469 @@
     </tr>
 
     <tr>
-      <td>$cfilname</td>
+      <td><a name="modevar-cfilname" id=
+      "modevar-cfilname">$cfilname</a></td>
 
       <td>current file name</td>
     </tr>
 
     <tr>
-      <td>$char</td>
+      <td><a name="modevar-char" id="modevar-char">$char</a></td>
 
       <td>character under the cursor</td>
     </tr>
 
     <tr>
-      <td>$cmd-count</td>
+      <td><a name="modevar-cmd-count" id=
+      "modevar-cmd-count">$cmd-count</a></td>
 
       <td>repeat-counter for the current macro (read only)</td>
     </tr>
 
     <tr>
-      <td>$cmd-encoding</td>
+      <td><a name="modevar-cmd-encoding" id=
+      "modevar-cmd-encoding">$cmd-encoding</a></td>
 
       <td>character set to use for minibuffer</td>
     </tr>
 
     <tr>
-      <td>$cmd-motion</td>
+      <td><a name="modevar-cmd-motion" id=
+      "modevar-cmd-motion">$cmd-motion</a></td>
 
       <td>motion for the current operator (read only)</td>
     </tr>
 
     <tr>
-      <td>$cryptkey</td>
+      <td><a name="modevar-cryptkey" id=
+      "modevar-cryptkey">$cryptkey</a></td>
 
       <td>encryption key (write only)</td>
     </tr>
 
     <tr>
-      <td>$curchar</td>
+      <td><a name="modevar-curchar" id=
+      "modevar-curchar">$curchar</a></td>
 
       <td>character offset in file</td>
     </tr>
 
     <tr>
-      <td>$curcol</td>
+      <td><a name="modevar-curcol" id=
+      "modevar-curcol">$curcol</a></td>
 
       <td>current column position of cursor</td>
     </tr>
 
     <tr>
-      <td>$curline</td>
+      <td><a name="modevar-curline" id=
+      "modevar-curline">$curline</a></td>
 
       <td>current line in file</td>
     </tr>
 
     <tr>
-      <td>$cwd</td>
+      <td><a name="modevar-cwd" id="modevar-cwd">$cwd</a></td>
 
       <td>current directory</td>
     </tr>
 
     <tr>
-      <td>$cwline</td>
+      <td><a name="modevar-cwline" id=
+      "modevar-cwline">$cwline</a></td>
 
       <td>line offset in current window</td>
     </tr>
 
     <tr>
-      <td>$debug</td>
+      <td><a name="modevar-debug" id=
+      "modevar-debug">$debug</a></td>
 
       <td>macro debugging &ndash; set true for line by line
       tracing</td>
     </tr>
 
     <tr>
-      <td>$directory</td>
+      <td><a name="modevar-directory" id=
+      "modevar-directory">$directory</a></td>
 
       <td>controls location of temp-files (unused)</td>
     </tr>
 
     <tr>
-      <td>$discmd</td>
+      <td><a name="modevar-discmd" id=
+      "modevar-discmd">$discmd</a></td>
 
       <td>display commands on command line (boolean)</td>
     </tr>
 
     <tr>
-      <td>$disinp</td>
+      <td><a name="modevar-disinp" id=
+      "modevar-disinp">$disinp</a></td>
 
       <td>display command line input characters (boolean)</td>
     </tr>
 
     <tr>
-      <td>$empty-lines</td>
+      <td><a name="modevar-empty-lines" id=
+      "modevar-empty-lines">$empty-lines</a></td>
 
       <td>parameter for force-empty-lines command</td>
     </tr>
 
     <tr>
-      <td>$encoding</td>
+      <td><a name="modevar-encoding" id=
+      "modevar-encoding">$encoding</a></td>
 
       <td>character set associated with locale (read only)</td>
     </tr>
 
     <tr>
-      <td>$end-of-cmd</td>
+      <td><a name="modevar-end-of-cmd" id=
+      "modevar-end-of-cmd">$end-of-cmd</a></td>
 
       <td>true if user ended the cmd with &lt;cr&gt;</td>
     </tr>
 
     <tr>
-      <td>$error-buffer</td>
+      <td><a name="modevar-error-buffer" id=
+      "modevar-error-buffer">$error-buffer</a></td>
 
       <td>buffer name assigned to the error-buffer</td>
     </tr>
 
     <tr>
-      <td>$error-expr</td>
+      <td><a name="modevar-error-expr" id=
+      "modevar-error-expr">$error-expr</a></td>
 
       <td>regular expression that matched the error-buffer</td>
     </tr>
 
     <tr>
-      <td>$error-match</td>
+      <td><a name="modevar-error-match" id=
+      "modevar-error-match">$error-match</a></td>
 
       <td>text that matched the error-buffer</td>
     </tr>
 
     <tr>
-      <td>$error-tabstop</td>
+      <td><a name="modevar-error-tabstop" id=
+      "modevar-error-tabstop">$error-tabstop</a></td>
 
       <td>tabstop to use with error-buffer for %C</td>
     </tr>
 
     <tr>
-      <td>$exec-path</td>
+      <td><a name="modevar-exec-path" id=
+      "modevar-exec-path">$exec-path</a></td>
 
       <td>where to find vile (read only)</td>
     </tr>
 
     <tr>
-      <td>$exec-suffix</td>
+      <td><a name="modevar-exec-suffix" id=
+      "modevar-exec-suffix">$exec-suffix</a></td>
 
       <td>suffix, if any, for execable programs (read only)</td>
     </tr>
 
     <tr>
-      <td>$exit-hook</td>
+      <td><a name="modevar-exit-hook" id=
+      "modevar-exit-hook">$exit-hook</a></td>
 
       <td>name of procedure to run when quitting</td>
     </tr>
 
     <tr>
-      <td>$favorites</td>
+      <td><a name="modevar-favorites" id=
+      "modevar-favorites">$favorites</a></td>
 
       <td>path to favorites folder (win32 only) (read only)</td>
     </tr>
 
     <tr>
-      <td>$fchanged</td>
+      <td><a name="modevar-fchanged" id=
+      "modevar-fchanged">$fchanged</a></td>
 
       <td>true if file for current buffer is modified
       (boolean)</td>
     </tr>
 
     <tr>
-      <td>$fence-limit</td>
+      <td><a name="modevar-fence-limit" id=
+      "modevar-fence-limit">$fence-limit</a></td>
 
       <td>iteration limit for complex fences</td>
     </tr>
 
     <tr>
-      <td>$filename-expr</td>
+      <td><a name="modevar-filename-expr" id=
+      "modevar-filename-expr">$filename-expr</a></td>
 
       <td>actual pattern for %F in [Error Expressions]</td>
     </tr>
 
     <tr>
-      <td>$filename-ic</td>
+      <td><a name="modevar-filename-ic" id=
+      "modevar-filename-ic">$filename-ic</a></td>
 
       <td>ignore case in filename completion (read only)</td>
     </tr>
 
     <tr>
-      <td>$filter-list</td>
+      <td><a name="modevar-filter-list" id=
+      "modevar-filter-list">$filter-list</a></td>
 
       <td>list of builtin-filters (read only)</td>
     </tr>
 
     <tr>
-      <td>$findpath</td>
+      <td><a name="modevar-findpath" id=
+      "modevar-findpath">$findpath</a></td>
 
-      <td>editor's copy of the $VILE_FINDPATH env var
+      <td>editor's copy of the <a href=
+      "#env-VILE_FINDPATH">$VILE_FINDPATH</a> env var
       (read/write)</td>
     </tr>
 
     <tr>
-      <td>$find-cmd</td>
+      <td><a name="modevar-find-cmd" id=
+      "modevar-find-cmd">$find-cmd</a></td>
 
       <td>last spawned find command (read only)</td>
     </tr>
 
     <tr>
-      <td>$font</td>
+      <td><a name="modevar-font" id="modevar-font">$font</a></td>
 
       <td>current font name (X11/winvile versions only)</td>
     </tr>
 
     <tr>
-      <td>$forward-search</td>
+      <td><a name="modevar-forward-search" id=
+      "modevar-forward-search">$forward-search</a></td>
 
       <td>search direction, true=forward</td>
     </tr>
 
     <tr>
-      <td>$get-at-dot</td>
+      <td><a name="modevar-get-at-dot" id=
+      "modevar-get-at-dot">$get-at-dot</a></td>
 
       <td>ensure that "identifier-like" matching includes current
       editing position.</td>
     </tr>
 
     <tr>
-      <td>$get-it-all</td>
+      <td><a name="modevar-get-it-all" id=
+      "modevar-get-it-all">$get-it-all</a></td>
 
       <td>match entire "identifier-like" word under the
       cursor.</td>
     </tr>
 
     <tr>
-      <td>$get-length</td>
+      <td><a name="modevar-get-length" id=
+      "modevar-get-length">$get-length</a></td>
 
       <td>sets length of "identifier-like" word as
       side-effect.</td>
     </tr>
 
     <tr>
-      <td>$get-offset</td>
+      <td><a name="modevar-get-offset" id=
+      "modevar-get-offset">$get-offset</a></td>
 
       <td>sets offset of "identifier-like" word as
       side-effect.</td>
     </tr>
 
     <tr>
-      <td>$helpfile</td>
+      <td><a name="modevar-helpfile" id=
+      "modevar-helpfile">$helpfile</a></td>
 
-      <td>$VILE_HELP_FILE env var or "vile.hlp" (read/write)</td>
+      <td><a href="#env-VILE_HELP_FILE">$VILE_HELP_FILE</a> env var
+      or "vile.hlp" (read/write)</td>
     </tr>
 
     <tr>
-      <td>$iconname</td>
+      <td><a name="modevar-iconname" id=
+      "modevar-iconname">$iconname</a></td>
 
       <td>current icon name (X11 version only)</td>
     </tr>
 
     <tr>
-      <td>$identifier</td>
+      <td><a name="modevar-identifier" id=
+      "modevar-identifier">$identifier</a></td>
 
       <td>current "identifier-like" word under the cursor.</td>
     </tr>
 
     <tr>
-      <td>$kbd-encoding</td>
+      <td><a name="modevar-kbd-encoding" id=
+      "modevar-kbd-encoding">$kbd-encoding</a></td>
 
       <td>keyboard encoding</td>
     </tr>
 
     <tr>
-      <td>$kbd-macro</td>
+      <td><a name="modevar-kbd-macro" id=
+      "modevar-kbd-macro">$kbd-macro</a></td>
 
       <td>the keyboard macro, see <a href=
       "#begin-keyboard-macro">^X-( ^X-)</a> (read only)</td>
     </tr>
 
     <tr>
-      <td>$kill</td>
+      <td><a name="modevar-kill" id="modevar-kill">$kill</a></td>
 
       <td>some of the kill register (read only)</td>
     </tr>
 
     <tr>
-      <td>$kill-limit</td>
+      <td><a name="modevar-kill-limit" id=
+      "modevar-kill-limit">$kill-limit</a></td>
 
-      <td>maximum length for $kill</td>
+      <td>maximum length for <a href="#modevar-kill">$kill</a></td>
     </tr>
 
     <tr>
-      <td>$kill-size</td>
+      <td><a name="modevar-kill-size" id=
+      "modevar-kill-size">$kill-size</a></td>
 
       <td>length of the kill register (read only)</td>
     </tr>
 
     <tr>
-      <td>$lastkey</td>
+      <td><a name="modevar-lastkey" id=
+      "modevar-lastkey">$lastkey</a></td>
 
       <td>last keyboard char struck</td>
     </tr>
 
     <tr>
-      <td>$latin1-expr</td>
+      <td><a name="modevar-latin1-expr" id=
+      "modevar-latin1-expr">$latin1-expr</a></td>
 
       <td>pattern to match locales using ISO-8859-1 in case they
       are not installed</td>
     </tr>
 
     <tr>
-      <td>$lcols</td>
+      <td><a name="modevar-lcols" id=
+      "modevar-lcols">$lcols</a></td>
 
       <td>length of current line, in columns (read only)</td>
     </tr>
 
     <tr>
-      <td>$libdir-path</td>
+      <td><a name="modevar-libdir-path" id=
+      "modevar-libdir-path">$libdir-path</a></td>
 
       <td>appended to $PATH when running filters</td>
     </tr>
 
     <tr>
-      <td>$line</td>
+      <td><a name="modevar-line" id="modevar-line">$line</a></td>
 
       <td>text of current line starting with cursor</td>
     </tr>
 
     <tr>
-      <td>$llength</td>
+      <td><a name="modevar-llength" id=
+      "modevar-llength">$llength</a></td>
 
       <td>length of current line (read only)</td>
     </tr>
 
     <tr>
-      <td>$locale</td>
+      <td><a name="modevar-locale" id=
+      "modevar-locale">$locale</a></td>
 
       <td>locale, which determines character type (read only)</td>
     </tr>
 
     <tr>
-      <td>$majormode</td>
+      <td><a name="modevar-majormode" id=
+      "modevar-majormode">$majormode</a></td>
 
       <td>current majormode, if any (read only)</td>
     </tr>
 
     <tr>
-      <td>$majormode-hook</td>
+      <td><a name="modevar-majormode-hook" id=
+      "modevar-majormode-hook">$majormode-hook</a></td>
 
       <td>procedure to overrride suffix/preamble rules</td>
     </tr>
 
     <tr>
-      <td>$match</td>
+      <td><a name="modevar-match" id=
+      "modevar-match">$match</a></td>
 
       <td>last matched magic pattern (read only)</td>
     </tr>
 
     <tr>
-      <td>$menu-file</td>
+      <td><a name="modevar-menu-file" id=
+      "modevar-menu-file">$menu-file</a></td>
 
       <td>the name of the menu file (e.g. .vilemenu)</td>
     </tr>
 
     <tr>
-      <td>$mode</td>
+      <td><a name="modevar-mode" id="modevar-mode">$mode</a></td>
 
       <td>current mode ("command","insert","overwrite") (rd.
       o.)</td>
     </tr>
 
     <tr>
-      <td>$modeline-format</td>
+      <td><a name="modevar-modeline-format" id=
+      "modevar-modeline-format">$modeline-format</a></td>
 
       <td>format of mode lines. see <a href="#statusline">"Mode
       line customization"</a>.</td>
     </tr>
 
     <tr>
-      <td>$modeline-limit</td>
+      <td><a name="modevar-modeline-limit" id=
+      "modevar-modeline-limit">$modeline-limit</a></td>
 
       <td>maximum inline offset to scan for mode lines</td>
     </tr>
 
     <tr>
-      <td>$modified</td>
+      <td><a name="modevar-modified" id=
+      "modevar-modified">$modified</a></td>
 
       <td>is current buffer modified or not? (read only)</td>
     </tr>
 
     <tr>
-      <td>$ncolors</td>
+      <td><a name="modevar-ncolors" id=
+      "modevar-ncolors">$ncolors</a></td>
 
       <td>number of displayed colors, must be power of two</td>
     </tr>
 
     <tr>
-      <td>$ntildes</td>
+      <td><a name="modevar-ntildes" id=
+      "modevar-ntildes">$ntildes</a></td>
 
       <td>percent of window filled by ~ chars, at end of
       buffer</td>
     </tr>
 
     <tr>
-      <td>$ocwd</td>
+      <td><a name="modevar-ocwd" id="modevar-ocwd">$ocwd</a></td>
 
       <td>previous directory (read only)</td>
     </tr>
 
     <tr>
-      <td>$os</td>
+      <td><a name="modevar-os" id="modevar-os">$os</a></td>
 
       <td>"dos", "vms", "os/2", "win32", and "unix", although the
       latter may be replaced with a more specific name derived from
@@ -5686,235 +5867,271 @@
     </tr>
 
     <tr>
-      <td>$pagelen</td>
+      <td><a name="modevar-pagelen" id=
+      "modevar-pagelen">$pagelen</a></td>
 
       <td>number of screen lines in use by editor</td>
     </tr>
 
     <tr>
-      <td>$pagewid</td>
+      <td><a name="modevar-pagewid" id=
+      "modevar-pagewid">$pagewid</a></td>
 
       <td>current screen width</td>
     </tr>
 
     <tr>
-      <td>$palette</td>
+      <td><a name="modevar-palette" id=
+      "modevar-palette">$palette</a></td>
 
       <td>current palette string</td>
     </tr>
 
     <tr>
-      <td>$patchlevel</td>
+      <td><a name="modevar-patchlevel" id=
+      "modevar-patchlevel">$patchlevel</a></td>
 
       <td>current patch-level (empty for release) (read only)</td>
     </tr>
 
     <tr>
-      <td>$pathlist-separator</td>
+      <td><a name="modevar-pathlist-separator" id=
+      "modevar-pathlist-separator">$pathlist-separator</a></td>
 
       <td>separator for lists of pathnames, e.g., $PATH</td>
     </tr>
 
     <tr>
-      <td>$pathname</td>
+      <td><a name="modevar-pathname" id=
+      "modevar-pathname">$pathname</a></td>
 
       <td>current "path-like" word, under the cursor.</td>
     </tr>
 
     <tr>
-      <td>$pathname-separator</td>
+      <td><a name="modevar-pathname-separator" id=
+      "modevar-pathname-separator">$pathname-separator</a></td>
 
       <td>separator for levels of pathnames, e.g., '/'</td>
     </tr>
 
     <tr>
-      <td>$pending</td>
+      <td><a name="modevar-pending" id=
+      "modevar-pending">$pending</a></td>
 
       <td>typeahead pending flag (read only)</td>
     </tr>
 
     <tr>
-      <td>$pid</td>
+      <td><a name="modevar-pid" id="modevar-pid">$pid</a></td>
 
       <td>returns vile's process-id (read only)</td>
     </tr>
 
     <tr>
-      <td>$position-format</td>
+      <td><a name="modevar-position-format" id=
+      "modevar-position-format">$position-format</a></td>
 
       <td>format of ^G command. see <a href="#statusline">"Mode
       line customization"</a>.</td>
     </tr>
 
     <tr>
-      <td>$progname</td>
+      <td><a name="modevar-progname" id=
+      "modevar-progname">$progname</a></td>
 
       <td>returns "vile" or "xvile" or "winvile". (read only)</td>
     </tr>
 
     <tr>
-      <td>$prompt</td>
+      <td><a name="modevar-prompt" id=
+      "modevar-prompt">$prompt</a></td>
 
       <td>the command-line prompt string ": "</td>
     </tr>
 
     <tr>
-      <td>$qidentifier</td>
+      <td><a name="modevar-qidentifier" id=
+      "modevar-qidentifier">$qidentifier</a></td>
 
       <td>current qualified name (as with C++ ::)</td>
     </tr>
 
     <tr>
-      <td>$read-hook</td>
+      <td><a name="modevar-read-hook" id=
+      "modevar-read-hook">$read-hook</a></td>
 
       <td>name of procedure to run after a file is read</td>
     </tr>
 
     <tr>
-      <td>$replace</td>
+      <td><a name="modevar-replace" id=
+      "modevar-replace">$replace</a></td>
 
       <td>replacement pattern</td>
     </tr>
 
     <tr>
-      <td>$return</td>
+      <td><a name="modevar-return" id=
+      "modevar-return">$return</a></td>
 
       <td>set within a macro to provide $_ on completion</td>
     </tr>
 
     <tr>
-      <td>$search</td>
+      <td><a name="modevar-search" id=
+      "modevar-search">$search</a></td>
 
       <td>search pattern</td>
     </tr>
 
     <tr>
-      <td>$seed</td>
+      <td><a name="modevar-seed" id="modevar-seed">$seed</a></td>
 
       <td>current random number seed</td>
     </tr>
 
     <tr>
-      <td>$shell</td>
+      <td><a name="modevar-shell" id=
+      "modevar-shell">$shell</a></td>
 
       <td>name of the shell program for spawned commands.</td>
     </tr>
 
     <tr>
-      <td>$sres</td>
+      <td><a name="modevar-sres" id="modevar-sres">$sres</a></td>
 
       <td>current screen resolution</td>
     </tr>
 
     <tr>
-      <td>$startup-file</td>
+      <td><a name="modevar-startup-file" id=
+      "modevar-startup-file">$startup-file</a></td>
 
       <td>the name of the startup file (e.g. .vilerc)</td>
     </tr>
 
     <tr>
-      <td>$startup-path</td>
+      <td><a name="modevar-startup-path" id=
+      "modevar-startup-path">$startup-path</a></td>
 
       <td>where to find the startup file</td>
     </tr>
 
     <tr>
-      <td>$status</td>
+      <td><a name="modevar-status" id=
+      "modevar-status">$status</a></td>
 
       <td>returns the status of the last command</td>
     </tr>
 
     <tr>
-      <td>$term-cols</td>
+      <td><a name="modevar-term-cols" id=
+      "modevar-term-cols">$term-cols</a></td>
 
       <td>number of columns in terminal window (read only)</td>
     </tr>
 
     <tr>
-      <td>$term-encoding</td>
+      <td><a name="modevar-term-encoding" id=
+      "modevar-term-encoding">$term-encoding</a></td>
 
       <td>terminal's encoding support (read only)</td>
     </tr>
 
     <tr>
-      <td>$term-lines</td>
+      <td><a name="modevar-term-lines" id=
+      "modevar-term-lines">$term-lines</a></td>
 
       <td>number of lines in terminal window (read only)</td>
     </tr>
 
     <tr>
-      <td>$term-resizes</td>
+      <td><a name="modevar-term-resizes" id=
+      "modevar-term-resizes">$term-resizes</a></td>
 
       <td>true if vile handles terminal-resizing (read only)</td>
     </tr>
 
     <tr>
-      <td>$title</td>
+      <td><a name="modevar-title" id=
+      "modevar-title">$title</a></td>
 
       <td>current window title (X11, win32 versions only)</td>
     </tr>
 
     <tr>
-      <td>$title-encoding</td>
+      <td><a name="modevar-title-encoding" id=
+      "modevar-title-encoding">$title-encoding</a></td>
 
       <td>encoding of xterm window title, e.g., "8bit" for
       ISO-8859-1 or "utf-8".</td>
     </tr>
 
     <tr>
-      <td>$title-format</td>
+      <td><a name="modevar-title-format" id=
+      "modevar-title-format">$title-format</a></td>
 
       <td>format of window title. see <a href="#statusline">"Mode
       line customization"</a>.</td>
     </tr>
 
     <tr>
-      <td>$version</td>
+      <td><a name="modevar-version" id=
+      "modevar-version">$version</a></td>
 
       <td>current version number (read only)</td>
     </tr>
 
     <tr>
-      <td>$with-prefix</td>
+      <td><a name="modevar-with-prefix" id=
+      "modevar-with-prefix">$with-prefix</a></td>
 
       <td>string set by "~with" directives (read only)</td>
     </tr>
 
     <tr>
-      <td>$wlines</td>
+      <td><a name="modevar-wlines" id=
+      "modevar-wlines">$wlines</a></td>
 
       <td>number of lines in current window</td>
     </tr>
 
     <tr>
-      <td>$word</td>
+      <td><a name="modevar-word" id="modevar-word">$word</a></td>
 
       <td>current "word", a sequence of nonblanks</td>
     </tr>
 
     <tr>
-      <td>$write-hook</td>
+      <td><a name="modevar-write-hook" id=
+      "modevar-write-hook">$write-hook</a></td>
 
       <td>name of procedure to run before a file is written</td>
     </tr>
 
     <tr>
-      <td>$xdisplay</td>
+      <td><a name="modevar-xdisplay" id=
+      "modevar-xdisplay">$xdisplay</a></td>
 
-      <td>the value to set $DISPLAY when running $xshell.</td>
+      <td>the value to set $DISPLAY when running <a href=
+      "#modevar-xshell">$xshell.</a></td>
     </tr>
 
     <tr>
-      <td>$xshell</td>
+      <td><a name="modevar-xshell" id=
+      "modevar-xshell">$xshell</a></td>
 
       <td>name of the terminal program for spawned xvile
       commands.</td>
     </tr>
 
     <tr>
-      <td>$xshell-flags</td>
+      <td><a name="modevar-xshell-flags" id=
+      "modevar-xshell-flags">$xshell-flags</a></td>
 
-      <td>command-line flags after $xshell, normally "-e"</td>
+      <td>command-line flags after <a href=
+      "#modevar-xshell">$xshell</a>, normally "-e"</td>
     </tr>
   </table>
 
@@ -6663,7 +6880,8 @@
     <tr>
       <td>libdir</td>
 
-      <td>look along $libdir-path</td>
+      <td>look along <a href=
+      "#modevar-libdir-path">$libdir-path</a></td>
     </tr>
 
     <tr>
@@ -6675,7 +6893,8 @@
     <tr>
       <td>startup</td>
 
-      <td>look along $startup-path</td>
+      <td>look along <a href=
+      "#modevar-startup-path">$startup-path</a></td>
     </tr>
   </table>
 
@@ -6841,7 +7060,7 @@
     <tr>
       <td><code>~trace</code> <em>cond</em></td>
 
-      <td>set $debug trace</td>
+      <td>set <a href="#modevar-debug">$debug</a> trace</td>
     </tr>
 
     <tr>
@@ -6863,7 +7082,8 @@
   <blockquote>
     <!--{{atr2html-->
 
-    <p style="font-family: monospace;">*LBL01<br>
+    <p style="font-family: monospace;" class="code-block">
+    *LBL01<br>
     <!--atr2html}}--></p>
   </blockquote>
 
@@ -6872,8 +7092,8 @@
   <blockquote>
     <!--{{atr2html-->
 
-    <p style="font-family: monospace;"><span class=
-    "preproc">~goto</span>&nbsp;LBL01<br>
+    <p style="font-family: monospace;" class="code-block">
+    <span class="preproc">~goto</span>&nbsp;LBL01<br>
     <!--atr2html}}--></p>
   </blockquote>
 
@@ -6893,8 +7113,8 @@
   <blockquote>
     <!--{{atr2html-->
 
-    <p style="font-family: monospace;"><span class=
-    "keyword">store-procedure</span><span class=
+    <p style="font-family: monospace;" class="code-block">
+    <span class="keyword">store-procedure</span><span class=
     "literal">&nbsp;my-cd-action</span><br>
     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class=
     "keyword">write-message</span>&nbsp;<span class=
@@ -6933,44 +7153,46 @@
     </colgroup>
 
     <tr>
-      <td>$autocolor-hook</td>
+      <td><a href=
+      "#modevar-autocolor-hook">$autocolor-hook</a></td>
 
       <td>applies syntax coloring to modified buffers when the
       keyboard is idle for a user-configurable time period</td>
     </tr>
 
     <tr>
-      <td>$buffer-hook</td>
+      <td><a href="#modevar-buffer-hook">$buffer-hook</a></td>
 
       <td>run when switching to a buffer</td>
     </tr>
 
     <tr>
-      <td>$cd-hook</td>
+      <td><a href="#modevar-cd-hook">$cd-hook</a></td>
 
       <td>run when changing directories</td>
     </tr>
 
     <tr>
-      <td>$exit-hook</td>
+      <td><a href="#modevar-exit-hook">$exit-hook</a></td>
 
       <td>run when quitting</td>
     </tr>
 
     <tr>
-      <td>$majormode-hook</td>
+      <td><a href=
+      "#modevar-majormode-hook">$majormode-hook</a></td>
 
       <td>procedure to overrride suffix/preamble rules</td>
     </tr>
 
     <tr>
-      <td>$read-hook</td>
+      <td><a href="#modevar-read-hook">$read-hook</a></td>
 
       <td>run after a file is read</td>
     </tr>
 
     <tr>
-      <td>$write-hook</td>
+      <td><a href="#modevar-write-hook">$write-hook</a></td>
 
       <td>run before a file is written</td>
     </tr>
@@ -6997,8 +7219,8 @@
   <blockquote>
     <!--{{atr2html-->
 
-    <p style="font-family: monospace;"><span class=
-    "number">9</span>&nbsp;<span class=
+    <p style="font-family: monospace;" class="code-block">
+    <span class="number">9</span>&nbsp;<span class=
     "keyword">store-macro</span><br>
     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class=
     "preproc">~force</span>&nbsp;<span class=
@@ -7024,8 +7246,8 @@
   <blockquote>
     <!--{{atr2html-->
 
-    <p style="font-family: monospace;"><span class=
-    "number">10</span>&nbsp;<span class=
+    <p style="font-family: monospace;" class="code-block">
+    <span class="number">10</span>&nbsp;<span class=
     "keyword">store-macro</span><br>
     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class=
     "preproc">~force</span>&nbsp;<span class=
@@ -7044,8 +7266,8 @@
   <blockquote>
     <!--{{atr2html-->
 
-    <p style="font-family: monospace;"><span class=
-    "number">11</span>&nbsp;<span class=
+    <p style="font-family: monospace;" class="code-block">
+    <span class="number">11</span>&nbsp;<span class=
     "keyword">store-macro</span><br>
     &nbsp;&nbsp;&nbsp;&nbsp;<span class=
     "keyword">set-variable</span>&nbsp;<span class=
@@ -7069,8 +7291,8 @@
   <blockquote>
     <!--{{atr2html-->
 
-    <p style="font-family: monospace;"><span class=
-    "number">12</span>&nbsp;<span class=
+    <p style="font-family: monospace;" class="code-block">
+    <span class="number">12</span>&nbsp;<span class=
     "keyword">store-macro</span><br>
     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class=
     "preproc">~force</span>&nbsp;<span class=
@@ -7093,7 +7315,8 @@
   <blockquote>
     <!--{{atr2html-->
 
-    <p style="font-family: monospace;"><span class=
+    <p style="font-family: monospace;" class="code-block">
+    <span class=
     "comment">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;&nbsp;Implement&nbsp;&nbsp;^A-^]&nbsp;for&nbsp;qualified-name&nbsp;tag&nbsp;lookup</span><br>
 
     <span class="number">24</span>&nbsp;<span class=
@@ -7135,8 +7358,8 @@
   <blockquote>
     <!--{{atr2html-->
 
-    <p style="font-family: monospace;"><span class=
-    "number">3</span>&nbsp;<span class=
+    <p style="font-family: monospace;" class="code-block">
+    <span class="number">3</span>&nbsp;<span class=
     "keyword">store-macro</span><br>
     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class=
     "keyword">goto-line</span><br>
@@ -7154,8 +7377,8 @@
   <blockquote>
     <!--{{atr2html-->
 
-    <p style="font-family: monospace;"><span class=
-    "keyword">bind-key</span>&nbsp;<span class=
+    <p style="font-family: monospace;" class="code-block">
+    <span class="keyword">bind-key</span>&nbsp;<span class=
     "keyword">goto-line</span>&nbsp;<span class=
     "keyword">g</span><br>
     <!--atr2html}}--></p>
@@ -7169,7 +7392,8 @@
   <blockquote>
     <!--{{atr2html-->
 
-    <p style="font-family: monospace;"><span class=
+    <p style="font-family: monospace;" class="code-block">
+    <span class=
     "comment">;&nbsp;macro&nbsp;1&nbsp;-&nbsp;back&nbsp;to&nbsp;the&nbsp;line&nbsp;of&nbsp;same&nbsp;indent</span><br>
 
     <span class="comment">;</span><br>
@@ -7490,8 +7714,8 @@
   <blockquote>
     <!--{{atr2html-->
 
-    <p style="font-family: monospace;"><span class=
-    "ident2">&amp;cat</span>&nbsp;<span class=
+    <p style="font-family: monospace;" class="code-block">
+    <span class="ident2">&amp;cat</span>&nbsp;<span class=
     "literal">":!chmod&nbsp;+w&nbsp;"</span>&nbsp;<span class=
     "ident2">$cfilname</span><br>
     <span class="ident-toc">&amp;cat</span>&nbsp;<span class=
@@ -7506,8 +7730,8 @@
   <blockquote>
     <!--{{atr2html-->
 
-    <p style="font-family: monospace;"><span class=
-    "keyword">shell-command</span>&nbsp;<span class=
+    <p style="font-family: monospace;" class="code-block">
+    <span class="keyword">shell-command</span>&nbsp;<span class=
     "ident2">&amp;cat</span>&nbsp;<span class=
     "literal">"chmod&nbsp;+w&nbsp;"</span>&nbsp;<span class=
     "ident2">$cfilname</span><br>
@@ -7522,7 +7746,8 @@
   <blockquote>
     <!--{{atr2html-->
 
-    <p style="font-family: monospace;"><span class=
+    <p style="font-family: monospace;" class="code-block">
+    <span class=
     "comment">;&nbsp;use&nbsp;this&nbsp;as&nbsp;'@w'</span><br>
     <span class="keyword">use-register</span>&nbsp;<span class=
     "literal">w</span>&nbsp;<span class=
@@ -7537,8 +7762,8 @@
   <blockquote>
     <!--{{atr2html-->
 
-    <p style="font-family: monospace;"><span class=
-    "keyword">map</span><span class=
+    <p style="font-family: monospace;" class="code-block">
+    <span class="keyword">map</span><span class=
     "literal">&nbsp;^A-w&nbsp;":!chmod&nbsp;+w&nbsp;%^M:setl&nbsp;noview^M:w^M"</span><br>
 
     <!--atr2html}}--></p>
@@ -7775,8 +8000,8 @@
   <blockquote>
     <!--{{atr2html-->
 
-    <p style="font-family: monospace;"><span class=
-    "keyword">source</span><span class=
+    <p style="font-family: monospace;" class="code-block">
+    <span class="keyword">source</span><span class=
     "literal">&nbsp;"$HOME/.vilerc"</span><br>
     <span class="keyword">set</span>&nbsp;<span class=
     "keyword">tabstop</span>&nbsp;<span class="number">4</span><br>
@@ -7805,46 +8030,52 @@
 
   <p>vile searches for a startup or command file in these locations
   (and in the order listed):</p>
-  <pre>
-        1 - current working directory
-        2 - directory specified by $HOME
-        3 - if host is not Unix
-                vile executable directory
-            fi
-        4 - each directory specified in $VILE_STARTUP_PATH.  If
-            this environment variable is not set, the following
-            host-specific defaults are internally assumed:
 
-            VMS:  sys$login,sys$sysdevice:[vmstools],sys$library
+  <blockquote>
+    <pre>
+1 - current working directory
+2 - directory specified by $HOME
+3 - if host is not Unix
+        vile executable directory
+    fi
+4 - each directory specified in $VILE_STARTUP_PATH.  If
+    this environment variable is not set, the following
+    host-specific defaults are internally assumed:
 
-            DOS/OS/2/Win32:  /sys/public;/usr/bin;/bin;/
+    VMS:  sys$login,sys$sysdevice:[vmstools],sys$library
 
-            Unix:  depends on whether or not $VILE_STARTUP_PATH was
-                   set when vile was configured prior to
-                   compilation.  If set, then the value of that
-                   environment var is compiled into the editor,
-                   else the default configure "datadir" is
-                   selected, which is either:
+    DOS/OS/2/Win32:  /sys/public;/usr/bin;/bin;/
 
-                   /usr/local/share/vile   (typical root build)
-                   ${prefix}/share/vile    (nonroot build)
+    Unix:  depends on whether or not <a href=
+"#env-VILE_STARTUP_PATH">$VILE_STARTUP_PATH</a> was
+           set when vile was configured prior to
+           compilation.  If set, then the value of that
+           environment var is compiled into the editor,
+           else the default configure "datadir" is
+           selected, which is either:
 
-        5 - if host is not Unix, each directory specified in:
-                $PATH
-                $VILE_LIBDIR_PATH
-            fi
+           /usr/local/share/vile   (typical root build)
+           ${prefix}/share/vile    (nonroot build)
+
+5 - if host is not Unix, each directory specified in:
+        $PATH
+        <a href="#env-VILE_LIBDIR_PATH">$VILE_LIBDIR_PATH</a>
+    fi
 </pre>
+  </blockquote>
 
-  <p>If the variable <a href="env-VILEINIT">VILEINIT</a> is set in
-  the environment, it is used as a set of vile commands to
-  initialize the editor. As a not-very-useful example of a VILEINIT
-  sequence, the following setting recreates portions of the default
-  initialization behavior:</p>
+  <p>If the variable <a name="env-VILEINIT" id=
+  "env-VILEINIT">VILEINIT</a> is set in the environment, it is used
+  as a set of vile commands to initialize the editor. As a
+  not-very-useful example of a VILEINIT sequence, the following
+  setting recreates portions of the default initialization
+  behavior:</p>
 
   <blockquote>
     <!--{{atr2html-->
 
-    <p style="font-family: monospace;">export&nbsp;VILEINIT<br>
+    <p style="font-family: monospace;" class="code-block">
+    export&nbsp;VILEINIT<br>
     VILEINIT=<span class="comment">"</span><br>
     <span class="preproc">~if</span>&nbsp;<span class=
     "ident2">&amp;rd</span>&nbsp;<span class=
@@ -7871,26 +8102,31 @@
   <p>Other environment variables:</p>
 
   <dl>
-    <dt><a href="env-VILE_ERROR_ABORT">VILE_ERROR_ABORT</a></dt>
+    <dt><a name="env-VILE_ERROR_ABORT" id=
+    "env-VILE_ERROR_ABORT">VILE_ERROR_ABORT</a></dt>
 
     <dd>if VILE_ERROR_ABORT is defined during compilation, setting
     this environment variable at runtime will cause vile to abort
     (and dump core) rather than attempt to cleanup and exit with an
     error code on fatal errors. This is used for debugging.</dd>
 
-    <dt><a href="env-VILE_HELP_FILE">VILE_HELP_FILE</a></dt>
+    <dt><a name="env-VILE_HELP_FILE" id=
+    "env-VILE_HELP_FILE">VILE_HELP_FILE</a></dt>
 
     <dd>override the name of the help file, normally "vile.hlp".
-    This sets the $helpfile variable.</dd>
+    This sets the <a href="#modevar-helpfile">$helpfile</a>
+    variable.</dd>
 
-    <dt><a href="env-VILE_LIBDIR_PATH">VILE_LIBDIR_PATH</a></dt>
+    <dt><a name="env-VILE_LIBDIR_PATH" id=
+    "env-VILE_LIBDIR_PATH">VILE_LIBDIR_PATH</a></dt>
 
     <dd>override the search path for filter programs, normally the
-    library-directory on UNIX systems. This sets the $libdir-path
-    variable, which is appended to your $PATH variable when running
-    filter commands on UNIX and Win32.</dd>
+    library-directory on UNIX systems. This sets the <a href=
+    "#modevar-libdir-path">$libdir-path</a> variable, which is
+    appended to your $PATH variable when running filter commands on
+    UNIX and Win32.</dd>
 
-    <dt><a href=
+    <dt><a name="env-VILE_LOCALE_MAPPING" id=
     "env-VILE_LOCALE_MAPPING">VILE_LOCALE_MAPPING</a></dt>
 
     <dd>
@@ -7908,9 +8144,11 @@
       works.</p>
     </dd>
 
-    <dt><a href="env-VILE_MENU">VILE_MENU</a></dt>
+    <dt><a name="env-VILE_MENU" id=
+    "env-VILE_MENU">VILE_MENU</a></dt>
 
-    <dt><a href="env-XVILE_MENU">XVILE_MENU</a></dt>
+    <dt><a name="env-XVILE_MENU" id=
+    "env-XVILE_MENU">XVILE_MENU</a></dt>
 
     <dd>if set, overrides the compiled-in location of the menu file
     used by xvile. If $VILE_MENU is unset, xvile checks the
@@ -7926,28 +8164,33 @@
     installed, for instance, but relies on an antique version of
     nroff for manpages.</dd>
 
-    <dt><a href="env-VILE_PWD">VILE_PWD</a></dt>
+    <dt><a name="env-VILE_PWD" id="env-VILE_PWD">VILE_PWD</a></dt>
 
     <dd>if set, assume invoking shell's "$PWD" variable is valid,
     and use that rather than an initial getcwd() call.</dd>
 
-    <dt><a href="env-VILE_SPELL_FILT">VILE_SPELL_FILT</a></dt>
+    <dt><a name="env-VILE_SPELL_FILT" id=
+    "env-VILE_SPELL_FILT">VILE_SPELL_FILT</a></dt>
 
     <dd>if set, overrides the compiled-in program name and options
     for the spell-filter. Normally that is a string such as "spell
     -l"</dd>
 
-    <dt><a href="env-VILE_STARTUP_FILE">VILE_STARTUP_FILE</a></dt>
+    <dt><a name="env-VILE_STARTUP_FILE" id=
+    "env-VILE_STARTUP_FILE">VILE_STARTUP_FILE</a></dt>
 
     <dd>override the name of the startup file, normally ".vilerc"
     (or "vile.rc" for non-UNIX systems).</dd>
 
-    <dt><a href="env-VILE_STARTUP_PATH">VILE_STARTUP_PATH</a></dt>
+    <dt><a name="env-VILE_STARTUP_PATH" id=
+    "env-VILE_STARTUP_PATH">VILE_STARTUP_PATH</a></dt>
 
     <dd>override the search path for the startup and help files.
-    This sets the $startup-path variable.</dd>
+    This sets the <a href="#modevar-startup-path">$startup-path</a>
+    variable.</dd>
 
-    <dt><a href="env-VILE_TABLE_FILT">VILE_TABLE_FILT</a></dt>
+    <dt><a name="env-VILE_TABLE_FILT" id=
+    "env-VILE_TABLE_FILT">VILE_TABLE_FILT</a></dt>
 
     <dd>if set, indicates that "tbl" is available. Set this to
     "cat" if you do not want to use "tbl", but do want to use
@@ -7957,13 +8200,14 @@
   </dl>
 
   <p>Note: For simplification, the filters.rc script assumes that
-  the filter programs are in $PATH. The $libdir-path feature may
-  not work for you out-of-the-box, since your shell's
-  initialization file (e.g., ".cshrc") may set $PATH. One solution
-  (other than adding /usr/local/lib/vile to $PATH) is to set the
-  vile variable $shell to /bin/sh, assuming you have no Bourne
-  shell ".profile" to set $PATH. Then vile's modification of $PATH
-  affects the filter process and also runs faster.</p>
+  the filter programs are in $PATH. The <a href=
+  "#modevar-libdir-path">$libdir-path</a> feature may not work for
+  you out-of-the-box, since your shell's initialization file (e.g.,
+  ".cshrc") may set $PATH. One solution (other than adding
+  /usr/local/lib/vile to $PATH) is to set the vile variable
+  <a href="#modevar-shell">$shell</a> to /bin/sh, assuming you have
+  no Bourne shell ".profile" to set $PATH. Then vile's modification
+  of $PATH affects the filter process and also runs faster.</p>
 
   <h3 id="commmandline-options-toc"><a name="commmandline-options"
   id="commmandline-options">Command line options</a></h3>
@@ -8018,7 +8262,8 @@
 
     <dt>@<em>cmdfile</em> vile will run the specified file as its
     startup file, and will bypass any normal startup file (i.e.
-    .vilerc) or environment variable (i.e. $VILEINIT).</dt>
+    .vilerc) or environment variable (i.e. <a href=
+    "#env-VILEINIT">$VILEINIT</a>).</dt>
   </dl>
 
   <h2 id="encryption-toc"><a name="encryption" id=
@@ -8067,8 +8312,8 @@
   <blockquote>
     <!--{{atr2html-->
 
-    <p style="font-family: monospace;"><span class=
-    "ident2">$TMPDIR</span>/vileDXXXXXX<br>
+    <p style="font-family: monospace;" class="code-block">
+    <span class="ident2">$TMPDIR</span>/vileDXXXXXX<br>
     /var/tmp/vileDXXXXX<br>
     /usr/tmp/vileDXXXXX<br>
     /tmp/vileDXXXXXX<br>
@@ -8088,9 +8333,9 @@
   <blockquote>
     <!--{{atr2html-->
 
-    <p style="font-family: monospace;"><span class=
-    "ident2">$TMPDIR</span>/vileDXXXXXX<br>
-    ./vileDXXXXXX<br>
+    <p style="font-family: monospace;" class="code-block">
+    <span class="ident2">$TMPDIR</span>/vileD<em>XXXXXX</em><br>
+    ./vileD<em>XXXXXX</em><br>
     <!--atr2html}}--></p>
   </blockquote>
 
@@ -8301,7 +8546,8 @@
   <blockquote>
     <!--{{atr2html-->
 
-    <p style="font-family: monospace;"><span class=
+    <p style="font-family: monospace;" class="code-block">
+    <span class=
     "literal">"%-%i%-&nbsp;%b&nbsp;%m::&nbsp;:%f:is&nbsp;:&nbsp;:%=%F:&nbsp;:&nbsp;:%l:(:,:%c::)&nbsp;:%p::%&nbsp;:%C:char&nbsp;::%S%-%-%|"</span><br>
 
     <!--atr2html}}--></p>
@@ -8316,7 +8562,8 @@
   <blockquote>
     <!--{{atr2html-->
 
-    <p style="font-family: monospace;"><span class=
+    <p style="font-family: monospace;" class="code-block">
+    <span class=
     "literal">"%-%i%-&nbsp;%b&nbsp;%m::&nbsp;:%f:is&nbsp;:&nbsp;:%=%F:&nbsp;:&nbsp;%-%-%-%-:%l:(:,:%c::):%S::%-%-:%|"</span><br>
 
     <!--atr2html}}--></p>
@@ -8476,8 +8723,8 @@
   <blockquote>
     <!--{{atr2html-->
 
-    <p style="font-family: monospace;"><span class=
-    "keyword">XVile</span>.<span class=
+    <p style="font-family: monospace;" class="code-block">
+    <span class="keyword">XVile</span>.<span class=
     "ident2">color</span>.<span class=
     "ident2">fcolor8</span>:<span class=
     "literal">&nbsp;</span><span class=
@@ -8490,8 +8737,8 @@
   <blockquote>
     <!--{{atr2html-->
 
-    <p style="font-family: monospace;"><span class=
-    "keyword">XVile</span>.<span class=
+    <p style="font-family: monospace;" class="code-block">
+    <span class="keyword">XVile</span>.<span class=
     "ident2">color</span>.<span class=
     "ident2">fcolor8</span>:<span class=
     "literal">&nbsp;red</span><br>
@@ -8508,7 +8755,7 @@
   <blockquote>
     <!--{{atr2html-->
 
-    <p style="font-family: monospace;">
+    <p style="font-family: monospace;" class="code-block">
     set-rgb-palette&nbsp;gray&nbsp;<span class=
     "number">255</span>&nbsp;<span class=
     "number">0</span>&nbsp;<span class="number">0</span><br>
@@ -8552,17 +8799,18 @@
   startup file).</p>
 
   <p>Hint 2: To determine if the editor was compiled with terminfo,
-  type :show-variables and examine the value of $cfgopts. If this
-  variable includes the string "terminfo", you've got a shot. If
-  "termcap" is listed instead, vile's color palette is limited to
-  black and white (i.e., no color). Assuming your host supports
-  terminfo, the following build commands force the editor to use
-  that library:</p>
+  type :show-variables and examine the value of <a href=
+  "#modevar-cfgopts">$cfgopts</a>. If this variable includes the
+  string "terminfo", you've got a shot. If "termcap" is listed
+  instead, vile's color palette is limited to black and white
+  (i.e., no color). Assuming your host supports terminfo, the
+  following build commands force the editor to use that
+  library:</p>
 
   <blockquote>
     <!--{{atr2html-->
 
-    <p style="font-family: monospace;">
+    <p style="font-family: monospace;" class="code-block">
     $&nbsp;make&nbsp;clean;&nbsp;./configure&nbsp;--with-ncurses;&nbsp;make<br>
 
     <!--atr2html}}--></p>
@@ -8586,8 +8834,8 @@
   <blockquote>
     <!--{{atr2html-->
 
-    <p style="font-family: monospace;">:<span class=
-    "keyword">set</span>&nbsp;<span class=
+    <p style="font-family: monospace;" class="code-block">
+    :<span class="keyword">set</span>&nbsp;<span class=
     "keyword">visual-matches</span><span class=
     "keyword2">=</span>&lt;tab&gt;&lt;tab&gt;<br>
     <!--atr2html}}--></p>
@@ -8606,8 +8854,8 @@
   <blockquote>
     <!--{{atr2html-->
 
-    <p style="font-family: monospace;">:<span class=
-    "keyword">set</span>&nbsp;<span class=
+    <p style="font-family: monospace;" class="code-block">
+    :<span class="keyword">set</span>&nbsp;<span class=
     "keyword">fcolor</span><span class=
     "keyword2">=</span>&lt;tab&gt;&lt;tab&gt;<br>
     <!--atr2html}}--></p>
@@ -8629,24 +8877,36 @@
   strings that cause the editor to render text in arbitrary
   color/attribute sequences. For example, consider the following
   data:</p>
-  <pre>
-           ^A3C1:red text, ^A4B:bold text
+
+  <blockquote>
+    <pre class="code-block">
+^A3C1:red text, ^A4B:bold text
 </pre>
+  </blockquote>
 
   <p>Given a suitable command, vile will render this as:</p>
-  <pre>
-            &lt;begin red&gt;red&lt;end red&gt; text, &lt;begin bold&gt;bold&lt;end bold&gt; text
+
+  <blockquote>
+    <pre class="code-block">
+&lt;begin red&gt;red&lt;end red&gt; text, &lt;begin bold&gt;bold&lt;end bold&gt; text
 </pre>
+  </blockquote>
 
   <p>It's possible to mix colors and attribute as well:</p>
-  <pre>
-           ^A8BC1:bold red text
+
+  <blockquote>
+    <pre class="code-block">
+^A8BC1:bold red text
 </pre>
+  </blockquote>
 
   <p>which is rendered as:</p>
-  <pre>
-           ^A8BC1:&lt;begin bold&amp;red&gt;bold red&lt;end bold&amp;red&gt; text
+
+  <blockquote>
+    <pre class="code-block">
+^A8BC1:&lt;begin bold&amp;red&gt;bold red&lt;end bold&amp;red&gt; text
 </pre>
+  </blockquote>
 
   <p>These sequences are the building blocks of syntax coloring.
   For a more detailed discussion of attribute control sequences,
@@ -8827,11 +9087,12 @@
   <p>Filters come in two flavors: builtin and external. Builtin
   filters are bound directly into the editor and invoked via
   function calls. External filters are standalone executables
-  invoked via a pipe and typically named "vile-xxx-filt", where
-  "xxx" denotes the target text/language. Note that "xxx" is
-  usually the same name assigned to vile's corresponding builtin
-  filter and "majormode" (there are some exceptions). The following
-  table lists example paired filter and majormode names:</p>
+  invoked via a pipe and typically named "vile-<em>xxx</em>-filt",
+  where "xxx" denotes the target text/language. Note that
+  "<em>xxx</em>" is usually the same name assigned to vile's
+  corresponding builtin filter and "majormode" (there are some
+  exceptions). The following table lists example paired filter and
+  majormode names:</p>
 
   <table border="1" summary="Paired filter/majormodes">
     <tr>
@@ -8952,7 +9213,8 @@
   <blockquote>
     <!--{{atr2html-->
 
-    <p style="font-family: monospace;"><span class=
+    <p style="font-family: monospace;" class="code-block">
+    <span class=
     "keyword">unset</span>&nbsp;VILE_STARTUP_PATH&nbsp;VILE_LIBDIR_PATH<br>
 
     make&nbsp;clean;&nbsp;./configure&nbsp;--with-builtin-filters;&nbsp;make<br>
@@ -8968,8 +9230,8 @@
   <blockquote>
     <!--{{atr2html-->
 
-    <p style="font-family: monospace;"><span class=
-    "keyword">source</span><span class=
+    <p style="font-family: monospace;" class="code-block">
+    <span class="keyword">source</span><span class=
     "literal">&nbsp;"filters.rc"</span><br>
     <!--atr2html}}--></p>
   </blockquote>
@@ -8979,8 +9241,8 @@
   <blockquote>
     <!--{{atr2html-->
 
-    <p style="font-family: monospace;">mkdir&nbsp;<span class=
-    "ident2">$HOME</span>/.vile<br>
+    <p style="font-family: monospace;" class="code-block">
+    mkdir&nbsp;<span class="ident2">$HOME</span>/.vile<br>
     cp&nbsp;/usr/local/share/vile/vile.keywords&nbsp;<span class=
     "ident2">$HOME</span>/.vile<br>
     <!--atr2html}}--></p>
@@ -8989,9 +9251,49 @@
   <p>That's it. Now skim through the "Manual recipe" topic below
   and then pay attention again when you hit the topic entitled
   "Testing the configuration". With regard to the remainder of this
-  discussion, the term "COLORDIR" refers collectively to the
-  directories $HOME/.vile or /usr/local/share/vile as
-  appropriate.</p>
+  discussion, the term "COLORDIR" refers collectively to the list
+  of directories where vile searches for keyword files. This is the
+  list:</p>
+
+  <ul>
+    <li>the current directory</li>
+
+    <li>the home directory</li>
+
+    <li>the <code>vile</code> subdirectory of the home
+    directory</li>
+
+    <li>the directories listed in <a href=
+    "macros.html#modevar-startup-path">$startup-path</a>.</li>
+  </ul>
+
+  <p>When searching directories which it does not
+  &ldquo;own;&rdquo;, vile looks for the filename with a leading
+  &ldquo;.;&rdquo;. The <code>which-keywords</code> macro
+  illustrates this best, e.g.,</p>
+
+  <blockquote>
+    <p>which-keywords cmode</p>
+  </blockquote>
+
+  <p>produces this output in the <code>[Which&nbsp;Keywords]</code>
+  buffer:</p>
+
+  <blockquote>
+    <pre class="code-block">
+Show which keyword-files are tested for:
+        cmode
+(* marks found-files)
+
+$cwd
+  ./.c.keywords
+$HOME
+  ~/.c.keywords
+  ~/.vile/c.keywords
+$startup-path
+* /usr/share/vile/c.keywords
+</pre>
+  </blockquote>
 
   <h3 id="user-recipe-toc"><a name="user-recipe" id=
   "user-recipe">Unix install recipe &ndash; no privileges</a></h3>
@@ -9003,7 +9305,8 @@
   <blockquote>
     <!--{{atr2html-->
 
-    <p style="font-family: monospace;"><span class=
+    <p style="font-family: monospace;" class="code-block">
+    <span class=
     "keyword">unset</span>&nbsp;VILE_STARTUP_PATH&nbsp;VILE_LIBDIR_PATH<br>
 
     make&nbsp;clean<br>
@@ -9021,8 +9324,8 @@
   <blockquote>
     <!--{{atr2html-->
 
-    <p style="font-family: monospace;"><span class=
-    "keyword">source</span><span class=
+    <p style="font-family: monospace;" class="code-block">
+    <span class="keyword">source</span><span class=
     "literal">&nbsp;"filters.rc"</span><br>
     <!--atr2html}}--></p>
   </blockquote>
@@ -9032,8 +9335,8 @@
   <blockquote>
     <!--{{atr2html-->
 
-    <p style="font-family: monospace;">mkdir&nbsp;<span class=
-    "ident2">$HOME</span>/.vile<br>
+    <p style="font-family: monospace;" class="code-block">
+    mkdir&nbsp;<span class="ident2">$HOME</span>/.vile<br>
     cp&nbsp;<span class=
     "ident2">$HOME</span>/local/share/vile/vile.keywords&nbsp;<span class="ident-toc">$HOME</span>/.vile<br>
 
@@ -9064,12 +9367,14 @@
   Example COLORDIR name: c:\util\vcolor</p>
 
   <p>2) obtain these two distributions:</p>
-  <pre>
-        <a href=
-"ftp://invisible-island.net/vile/filters.zip">ftp://invisible-island.net/vile/filters.zip</a>
-        <a href=
-"ftp://invisible-island.net/vile/vile-w32.zip">ftp://invisible-island.net/vile/vile-w32.zip</a>
-</pre>
+
+  <blockquote>
+    <p><a href=
+    "ftp://invisible-island.net/vile/filters.zip">ftp://invisible-island.net/vile/filters.zip</a><br>
+
+    <a href=
+    "ftp://invisible-island.net/vile/vile-w32.zip">ftp://invisible-island.net/vile/vile-w32.zip</a></p>
+  </blockquote>
 
   <p>3) extract the contents of filters.zip into COLORDIR.</p>
 
@@ -9088,24 +9393,28 @@
   <blockquote>
     <!--{{atr2html-->
 
-    <p style="font-family: monospace;"><span class=
-    "keyword">source</span><span class=
+    <p style="font-family: monospace;" class="code-block">
+    <span class="keyword">source</span><span class=
     "literal">&nbsp;"filters.rc"</span><br>
     <!--atr2html}}--></p>
   </blockquote>
 
   <p>6) export these environment variable settings:</p>
-  <pre>
-        VILE_STARTUP_PATH=COLORDIR
-        VILE_LIBDIR_PATH=COLORDIR
+
+  <blockquote>
+    <pre class="code-block">
+VILE_STARTUP_PATH=COLORDIR
+VILE_LIBDIR_PATH=COLORDIR
 </pre>
+  </blockquote>
 
   <p>Example entries in Win9x/ME's autoexec.bat:</p>
 
   <blockquote>
     <!--{{atr2html-->
 
-    <p style="font-family: monospace;"><span class=
+    <p style="font-family: monospace;" class="code-block">
+    <span class=
     "keyword">SET</span>&nbsp;VILE_LIBDIR_PATH=c:\util\vcolor<br>
     <span class=
     "keyword">SET</span>&nbsp;VILE_STARTUP_PATH=c:\util\vcolor<br>
@@ -9184,8 +9493,8 @@
   <blockquote>
     <!--{{atr2html-->
 
-    <p style="font-family: monospace;"><span class=
-    "keyword">setv</span>&nbsp;<span class=
+    <p style="font-family: monospace;" class="code-block">
+    <span class="keyword">setv</span>&nbsp;<span class=
     "ident2">$read-hook</span>&nbsp;HighlightFilterMsg<br>
     <!--atr2html}}--></p>
   </blockquote>
@@ -9208,7 +9517,8 @@
   <blockquote>
     <!--{{atr2html-->
 
-    <p style="font-family: monospace;"><span class=
+    <p style="font-family: monospace;" class="code-block">
+    <span class=
     "comment">;&nbsp;change&nbsp;autocolor&nbsp;mode&nbsp;value&nbsp;to&nbsp;suit&nbsp;individual&nbsp;tastes</span><br>
 
     <span class="keyword">set</span>&nbsp;<span class=
@@ -9248,8 +9558,9 @@
   <blockquote>
     <!--{{atr2html-->
 
-    <p style="font-family: monospace;">:<span class=
-    "keyword">set</span>&nbsp;<span class="keyword">nohl</span><br>
+    <p style="font-family: monospace;" class="code-block">
+    :<span class="keyword">set</span>&nbsp;<span class=
+    "keyword">nohl</span><br>
     <!--atr2html}}--></p>
   </blockquote>
 
@@ -9274,23 +9585,26 @@
   </blockquote>
 
   <p>where:</p>
-  <pre>
-        <em>&lt;name&gt;</em>      ::= an arbitrary alphanumeric string.
-        <em>&lt;ACS&gt;</em>       ::= { C<em>&lt;hexdigit&gt;</em> | U | I | B | R }
-        C<em>&lt;hexdigit&gt;</em> ::= internal vile color name
-          U         ::= underline attribute
-          I         ::= italic attribute
-          B         ::= bold attribute
-          R         ::= reverse attribute
+
+  <blockquote>
+    <pre class="code-block">
+<em>&lt;name&gt;</em>      ::= an arbitrary alphanumeric string.
+<em>&lt;ACS&gt;</em>       ::= { C<em>&lt;hexdigit&gt;</em> | U | I | B | R }
+C<em>&lt;hexdigit&gt;</em> ::= internal vile color name
+  U         ::= underline attribute
+  I         ::= italic attribute
+  B         ::= bold attribute
+  R         ::= reverse attribute
 </pre>
+  </blockquote>
 
   <p>An example keyword file might contain:</p>
 
   <blockquote>
     <!--{{atr2html-->
 
-    <p style="font-family: monospace;">.class&nbsp;<span class=
-    "type">Action</span>:BC2<br>
+    <p style="font-family: monospace;" class="code-block">
+    .class&nbsp;<span class="type">Action</span>:BC2<br>
     .class&nbsp;<span class="keyword-toc">Comment</span>:BC1<br>
     .class&nbsp;<span class="unknown">Error</span>:CA<br>
     <span class="comment">:.class&nbsp;Ident:R</span><br>
@@ -9356,10 +9670,13 @@
 
     <li>Win32 users should ensure that these environment vars are
     properly initialized:
-      <pre>
-        VILE_STARTUP_PATH
-        VILE_LIBDIR_PATH
+
+      <blockquote>
+        <pre class="code-block">
+VILE_STARTUP_PATH
+VILE_LIBDIR_PATH
 </pre>
+      </blockquote>
     </li>
 
     <li>Your startup file should include these lines:
@@ -9367,8 +9684,8 @@
       <blockquote>
         <!--{{atr2html-->
 
-        <p style="font-family: monospace;"><span class=
-        "keyword">source</span><span class=
+        <p style="font-family: monospace;" class="code-block">
+        <span class="keyword">source</span><span class=
         "literal">&nbsp;"filters.rc"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;;&nbsp;quotes&nbsp;matter&nbsp;on&nbsp;win32&nbsp;hosts</span><br>
 
         <span class="keyword">setv</span>&nbsp;<span class=
@@ -9408,8 +9725,8 @@
   <blockquote>
     <!--{{atr2html-->
 
-    <p style="font-family: monospace;">:<span class=
-    "keyword">set-highlighting</span>&nbsp;cpp<br>
+    <p style="font-family: monospace;" class="code-block">
+    :<span class="keyword">set-highlighting</span>&nbsp;cpp<br>
     <!--atr2html}}--></p>
   </blockquote>
 
@@ -9432,8 +9749,8 @@
   <blockquote>
     <!--{{atr2html-->
 
-    <p style="font-family: monospace;"><span class=
-    "keyword">source</span><span class=
+    <p style="font-family: monospace;" class="code-block">
+    <span class="keyword">source</span><span class=
     "literal">&nbsp;"spell.rc"</span><br>
     <!--atr2html}}--></p>
   </blockquote>
@@ -9461,18 +9778,21 @@
 
   <p>The show-extra-colors command shows the types of things that
   can be colored, along with their current state, e.g.,</p>
-  <pre>
-        enum             default
-        hypertext        default
-        isearch          default
-        linebreak        default
-        linenumber       default
-        modeline         reverse
-        number           default
-        regex            default
-        string           default
-        warning          default
+
+  <blockquote>
+    <pre class="code-block">
+enum             default
+hypertext        default
+isearch          default
+linebreak        default
+linenumber       default
+modeline         reverse
+number           default
+regex            default
+string           default
+warning          default
 </pre>
+  </blockquote>
 
   <p>The set-extra-color command sets the colors. It prompts for
   the name of a type, followed by a combination of color and
@@ -9483,8 +9803,8 @@
   <blockquote>
     <!--{{atr2html-->
 
-    <p style="font-family: monospace;"><span class=
-    "keyword">set-extra-color</span>&nbsp;<span class=
+    <p style="font-family: monospace;" class="code-block">
+    <span class="keyword">set-extra-color</span>&nbsp;<span class=
     "keyword">isearch</span>&nbsp;<span class=
     "keyword">reverse</span><br>
     <span class="keyword">set-extra-color</span>&nbsp;<span class=
@@ -9510,8 +9830,8 @@
   <blockquote>
     <!--{{atr2html-->
 
-    <p style="font-family: monospace;"><span class=
-    "preproc">~if</span>&nbsp;<span class=
+    <p style="font-family: monospace;" class="code-block">
+    <span class="preproc">~if</span>&nbsp;<span class=
     "ident2">&amp;sge</span>&nbsp;<span class=
     "ident2">&amp;cat</span>&nbsp;<span class=
     "ident2">$version</span>&nbsp;<span class=
@@ -9595,7 +9915,8 @@
   <blockquote>
     <!--{{atr2html-->
 
-    <p style="font-family: monospace;"><span class=
+    <p style="font-family: monospace;" class="code-block">
+    <span class=
     "keyword">define-mode</span>&nbsp;&lt;<em>new_majormode_name</em>&gt;<br>
 
     <span class="preproc">~with</span>&nbsp;<span class=
@@ -9686,8 +10007,8 @@
   <blockquote>
     <!--{{atr2html-->
 
-    <p style="font-family: monospace;"><span class=
-    "keyword">define-mode</span>&nbsp;<em>hlp</em><br>
+    <p style="font-family: monospace;" class="code-block">
+    <span class="keyword">define-mode</span>&nbsp;<em>hlp</em><br>
     <span class="preproc">~with</span>&nbsp;<span class=
     "keyword">define-submode</span>&nbsp;<em>hlp</em><br>
     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class=
@@ -9718,8 +10039,8 @@
   <blockquote>
     <!--{{atr2html-->
 
-    <p style="font-family: monospace;"><span class=
-    "keyword">source</span><span class=
+    <p style="font-family: monospace;" class="code-block">
+    <span class="keyword">source</span><span class=
     "literal">&nbsp;"filters.rc"</span><br>
     <span class="comment">;&nbsp;...</span><br>
     <span class=
@@ -9745,8 +10066,8 @@
   <blockquote>
     <!--{{atr2html-->
 
-    <p style="font-family: monospace;"><span class=
-    "keyword">source</span><span class=
+    <p style="font-family: monospace;" class="code-block">
+    <span class="keyword">source</span><span class=
     "literal">&nbsp;"filters.rc"</span><br>
     <span class="comment">;&nbsp;...</span><br>
     <span class="keyword">define-mode</span>&nbsp;<em>txt</em><br>
@@ -9766,8 +10087,8 @@
   <blockquote>
     <!--{{atr2html-->
 
-    <p style="font-family: monospace;"><span class=
-    "keyword">setl</span>&nbsp;<span class=
+    <p style="font-family: monospace;" class="code-block">
+    <span class="keyword">setl</span>&nbsp;<span class=
     "keyword">notabinsert</span><br>
     <!--atr2html}}--></p>
   </blockquote>
@@ -9777,8 +10098,8 @@
   <blockquote>
     <!--{{atr2html-->
 
-    <p style="font-family: monospace;"><span class=
-    "keyword">set</span>&nbsp;<span class=
+    <p style="font-family: monospace;" class="code-block">
+    <span class="keyword">set</span>&nbsp;<span class=
     "keyword">notabinsert</span><br>
     <!--atr2html}}--></p>
   </blockquote>
@@ -9789,7 +10110,8 @@
   <blockquote>
     <!--{{atr2html-->
 
-    <p style="font-family: monospace;"><span class=
+    <p style="font-family: monospace;" class="code-block">
+    <span class=
     "keyword">set</span>/setl&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;txt-ignorecase<br>
 
     <span class=
@@ -9817,8 +10139,8 @@
   <blockquote>
     <!--{{atr2html-->
 
-    <p style="font-family: monospace;"><span class=
-    "keyword">setl</span>&nbsp;<span class=
+    <p style="font-family: monospace;" class="code-block">
+    <span class="keyword">setl</span>&nbsp;<span class=
     "keyword">cppmode</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="comment">;&nbsp;&lt;--&nbsp;force&nbsp;cppmode&nbsp;for&nbsp;current&nbsp;buffer</span><br>
 
     <!--atr2html}}--></p>
@@ -9839,8 +10161,8 @@
   <blockquote>
     <!--{{atr2html-->
 
-    <p style="font-family: monospace;"><span class=
-    "keyword">source</span><span class=
+    <p style="font-family: monospace;" class="code-block">
+    <span class="keyword">source</span><span class=
     "literal">&nbsp;"filters.rc"</span><br>
     <span class="comment">;&nbsp;...</span><br>
     <span class="keyword">define-mode</span>&nbsp;<em>cpp</em><br>
@@ -9861,8 +10183,8 @@
   <blockquote>
     <!--{{atr2html-->
 
-    <p style="font-family: monospace;"><span class=
-    "keyword">source</span><span class=
+    <p style="font-family: monospace;" class="code-block">
+    <span class="keyword">source</span><span class=
     "literal">&nbsp;"filters.rc"</span><br>
     <span class="comment">;&nbsp;...</span><br>
     <span class="keyword">define-mode</span>&nbsp;<em>cpp</em><br>
@@ -9896,8 +10218,8 @@
   <blockquote>
     <!--{{atr2html-->
 
-    <p style="font-family: monospace;"><span class=
-    "keyword">define-mode</span>&nbsp;<span class=
+    <p style="font-family: monospace;" class="code-block">
+    <span class="keyword">define-mode</span>&nbsp;<span class=
     "keyword">c</span><br>
     <span class="preproc">~with</span>&nbsp;<span class=
     "keyword">define-submode</span>&nbsp;<span class=
@@ -9930,8 +10252,8 @@
   <blockquote>
     <!--{{atr2html-->
 
-    <p style="font-family: monospace;"><span class=
-    "keyword">set</span>&nbsp;<span class=
+    <p style="font-family: monospace;" class="code-block">
+    <span class="keyword">set</span>&nbsp;<span class=
     "keyword">ts</span><span class=
     "keyword2">=</span>&lt;val&gt;&nbsp;&nbsp;&nbsp;<span class=
     "comment">;&nbsp;&lt;--&nbsp;has&nbsp;no&nbsp;effect,&nbsp;use&nbsp;"setl"&nbsp;instead</span><br>
@@ -9947,8 +10269,8 @@
   <blockquote>
     <!--{{atr2html-->
 
-    <p style="font-family: monospace;"><span class=
-    "keyword">define-mode</span>&nbsp;<span class=
+    <p style="font-family: monospace;" class="code-block">
+    <span class="keyword">define-mode</span>&nbsp;<span class=
     "keyword">c</span><br>
     <span class="preproc">~with</span>&nbsp;<span class=
     "keyword">define-submode</span>&nbsp;<span class=
@@ -9984,8 +10306,8 @@
   <blockquote>
     <!--{{atr2html-->
 
-    <p style="font-family: monospace;"><span class=
-    "keyword">source</span><span class=
+    <p style="font-family: monospace;" class="code-block">
+    <span class="keyword">source</span><span class=
     "literal">&nbsp;"manpage.rc"</span><br>
     <!--atr2html}}--></p>
   </blockquote>
@@ -10005,8 +10327,8 @@
   <blockquote>
     <!--{{atr2html-->
 
-    <p style="font-family: monospace;">:<span class=
-    "keyword">e</span><span class=
+    <p style="font-family: monospace;" class="code-block">
+    :<span class="keyword">e</span><span class=
     "literal">&nbsp;!nroff&nbsp;-man&nbsp;vile.1&nbsp;|&nbsp;vile-manfilt</span><br>
 
     <!--atr2html}}--></p>
@@ -10022,9 +10344,12 @@
   our example, the following command will translate this
   representation of attributed text into one which is more pleasing
   to look at.</p>
-  <pre>
-        ^A-AG
+
+  <blockquote>
+    <pre class="code-block">
+^A-AG
 </pre>
+  </blockquote>
 
   <p>Note that macros/manpage.rc also provides a macro that
   attaches attributes to any man page displayed in the editor's
@@ -10042,13 +10367,16 @@
 
   <p>vile provides several commands that manipulate an internal
   directory stack:</p>
-  <pre>
-        :dirs
-        :dirs-add   dir
-        :dirs-clear
-        :popd       [ {+|-}n ]
-        :pushd      [ dir | {+|-}n ]
+
+  <blockquote>
+    <pre class="code-block">
+:dirs
+:dirs-add   dir
+:dirs-clear
+:popd       [ {+|-}n ]
+:pushd      [ dir | {+|-}n ]
 </pre>
+  </blockquote>
 
   <dl>
     <dt>dirs</dt>
@@ -10084,9 +10412,9 @@
     <dd>
       adds a directory to the top of the directory stack or rotates
       the stack, making the new top of the stack the current
-      working directory. pushd honors CDPATH, when set. With no
-      arguments, pushd exchanges the top two directories.
-      Otherwise:
+      working directory. pushd honors <a href=
+      "#env-CDPATH">CDPATH</a>, when set. With no arguments, pushd
+      exchanges the top two directories. Otherwise:
 
       <dl>
         <dt>+n</dt>
@@ -10114,12 +10442,15 @@
   "tag-path">Hierarchical tags</a></h3>
 
   <p>Assume the following directory hierarchy:</p>
-  <pre>
-               root
-              /  |  \
-             /   |   \
-           lib  src  include
+
+  <blockquote>
+    <pre class="code-block">
+       root
+      /  |  \
+     /   |   \
+   lib  src  include
 </pre>
+  </blockquote>
 
   <p>Assume also that most of the development work takes place in
   the "src" directory and that this is a C/C++ project.</p>
@@ -10145,7 +10476,7 @@
   <blockquote>
     <!--{{atr2html-->
 
-    <p style="font-family: monospace;">
+    <p style="font-family: monospace;" class="code-block">
     ctags&nbsp;-R&nbsp;<span class=
     "keyword2">.</span>&nbsp;<span class=
     "literal">'*.[ch]'</span>&nbsp;<span class=
@@ -10164,8 +10495,8 @@
   <blockquote>
     <!--{{atr2html-->
 
-    <p style="font-family: monospace;"><span class=
-    "keyword">set</span>&nbsp;<span class=
+    <p style="font-family: monospace;" class="code-block">
+    <span class="keyword">set</span>&nbsp;<span class=
     "keyword">tagrelative</span><br>
     <span class="keyword">set</span>&nbsp;<span class=
     "keyword">tags</span><span class=
@@ -10194,7 +10525,7 @@
   <blockquote>
     <!--{{atr2html-->
 
-    <p style="font-family: monospace;">
+    <p style="font-family: monospace;" class="code-block">
     ctags&nbsp;src/*.[ch]&nbsp;src/*.cpp&nbsp;lib/*.[ch]&nbsp;lib/*.cpp&nbsp;include/*.h<br>
 
     <!--atr2html}}--></p>
@@ -10211,8 +10542,8 @@
   <blockquote>
     <!--{{atr2html-->
 
-    <p style="font-family: monospace;"><span class=
-    "keyword">set</span>&nbsp;<span class=
+    <p style="font-family: monospace;" class="code-block">
+    <span class="keyword">set</span>&nbsp;<span class=
     "keyword">tagrelative</span><br>
     <span class="keyword">set</span>&nbsp;<span class=
     "keyword">tags</span><span class=
@@ -10233,14 +10564,15 @@
   across an arbitrarily complex hierarchy. This feature requires a
   small amount of configuration before it can be used.</p>
 
-  <p>To begin with, specify a directory hierarchy via the $findpath
-  state variable using this syntax:</p>
+  <p>To begin with, specify a directory hierarchy via the <a href=
+  "#modevar-findpath">$findpath</a> state variable using this
+  syntax:</p>
 
   <blockquote>
     <!--{{atr2html-->
 
-    <p style="font-family: monospace;"><span class=
-    "keyword">setv</span>&nbsp;<span class=
+    <p style="font-family: monospace;" class="code-block">
+    <span class="keyword">setv</span>&nbsp;<span class=
     "ident2">$findpath</span><span class=
     "keyword2">=</span><span class=
     "literal">"&lt;dir&gt;[&lt;delim&gt;&lt;dir&gt;]..."</span><br>
@@ -10259,20 +10591,23 @@
   </blockquote>
 
   <p>where:</p>
-  <pre>
-        &lt;recursive_token&gt; := an ascii character that triggers a
-                            recursive find.  The selected token may
-                            not be taken from the character set
-                            defined by isalpha().  To use ',' as a
-                            token, escape it with '\'.
 
-        &lt;nonrecursive_token&gt; := an ascii character that triggers a
-                               nonrecursive find&ndash;shares the same
-                               semantic restrictions as the
-                               recursive token.
+  <blockquote>
+    <pre>
+&lt;recursive_token&gt; := an ascii character that triggers a
+                    recursive find.  The selected token may
+                    not be taken from the character set
+                    defined by isalpha().  To use ',' as a
+                    token, escape it with '\'.
 
-        &lt;option&gt;          := {d | f}
+&lt;nonrecursive_token&gt; := an ascii character that triggers a
+                       nonrecursive find&ndash;shares the same
+                       semantic restrictions as the
+                       recursive token.
+
+&lt;option&gt;          := {d | f}
 </pre>
+  </blockquote>
 
   <p>Note 1: The "d" option specifies that find should restrict its
   search solely to files of type "d" (i.e., directories). The "f"
@@ -10298,8 +10633,8 @@
   <blockquote>
     <!--{{atr2html-->
 
-    <p style="font-family: monospace;"><span class=
-    "keyword">setv</span>&nbsp;<span class=
+    <p style="font-family: monospace;" class="code-block">
+    <span class="keyword">setv</span>&nbsp;<span class=
     "ident2">$findpath</span><span class=
     "keyword2">=</span><span class=
     "literal">"/local/proj/root"</span><br>
@@ -10314,8 +10649,8 @@
   <blockquote>
     <!--{{atr2html-->
 
-    <p style="font-family: monospace;"><span class=
-    "literal">^X-!</span><span class=
+    <p style="font-family: monospace;" class="code-block">
+    <span class="literal">^X-!</span><span class=
     "comment">$egrep</span>&nbsp;-<span class=
     "keyword">n</span><span class=
     "literal">&nbsp;FIXME&nbsp;*.[ch]&nbsp;*.cpp</span><br>
@@ -10327,7 +10662,7 @@
   <blockquote>
     <!--{{atr2html-->
 
-    <p style="font-family: monospace;">
+    <p style="font-family: monospace;" class="code-block">
     find&nbsp;/local/proj/root&nbsp;<span class=
     "literal">'('</span>&nbsp;-name&nbsp;<span class=
     "literal">'*.[ch]'</span>&nbsp;-o&nbsp;-name&nbsp;<span class=
@@ -10345,7 +10680,7 @@
   <blockquote>
     <!--{{atr2html-->
 
-    <p style="font-family: monospace;">
+    <p style="font-family: monospace;" class="code-block">
     find&nbsp;/local/proj/root&nbsp;<span class=
     "literal">'('</span>&nbsp;-iname&nbsp;<span class=
     "literal">'*.[ch]'</span>&nbsp;-o&nbsp;-iname&nbsp;<span class=
@@ -10373,8 +10708,8 @@
   <blockquote>
     <!--{{atr2html-->
 
-    <p style="font-family: monospace;"><span class=
-    "keyword">setv</span>&nbsp;<span class=
+    <p style="font-family: monospace;" class="code-block">
+    <span class="keyword">setv</span>&nbsp;<span class=
     "ident2">$findpath</span><span class=
     "keyword2">=</span><span class=
     "literal">"/dir1:/dir2:/dir3"</span><br>
@@ -10392,7 +10727,7 @@
   <blockquote>
     <!--{{atr2html-->
 
-    <p style="font-family: monospace;">
+    <p style="font-family: monospace;" class="code-block">
     find&nbsp;/dir1&nbsp;/dir2&nbsp;/dir3&nbsp;-maxdepth&nbsp;<span class="number">1</span>&nbsp;-name&nbsp;<span class="literal">'*.txt'</span>&nbsp;-print&nbsp;|&nbsp;\<br>
 
     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;egrep&nbsp;-v&nbsp;<span class="literal">'((RCS|CVS)/|/[Tt][Aa][Gg][Ss]$)'</span>&nbsp;|&nbsp;\<br>
@@ -10407,8 +10742,8 @@
   <blockquote>
     <!--{{atr2html-->
 
-    <p style="font-family: monospace;"><span class=
-    "keyword">setv</span>&nbsp;<span class=
+    <p style="font-family: monospace;" class="code-block">
+    <span class="keyword">setv</span>&nbsp;<span class=
     "ident2">$findpath</span><span class=
     "keyword2">=</span><span class=
     "literal">"/dir1;/dir2;/dir3"</span><br>
@@ -10426,7 +10761,7 @@
   <blockquote>
     <!--{{atr2html-->
 
-    <p style="font-family: monospace;">
+    <p style="font-family: monospace;" class="code-block">
     find&nbsp;/dir1&nbsp;/dir2&nbsp;/dir3&nbsp;-maxdepth&nbsp;<span class="number">1</span>&nbsp;-iname&nbsp;<span class="literal">'*.txt'</span>&nbsp;-print&nbsp;|&nbsp;\<br>
 
     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;egrep&nbsp;-vi&nbsp;<span class="literal">'((RCS|CVS)/|/tags$)'</span>&nbsp;|&nbsp;xargs&nbsp;egrep&nbsp;-ni&nbsp;copyright<br>
@@ -10450,8 +10785,8 @@
   <blockquote>
     <!--{{atr2html-->
 
-    <p style="font-family: monospace;"><span class=
-    "keyword">setv</span>&nbsp;<span class=
+    <p style="font-family: monospace;" class="code-block">
+    <span class="keyword">setv</span>&nbsp;<span class=
     "ident2">$findpath</span><span class=
     "keyword2">=</span><span class=
     "literal">"/local/proj/root"</span><br>
@@ -10468,7 +10803,7 @@
   <blockquote>
     <!--{{atr2html-->
 
-    <p style="font-family: monospace;">
+    <p style="font-family: monospace;" class="code-block">
     find&nbsp;/local/proj/root&nbsp;-type&nbsp;d&nbsp;-print&nbsp;|&nbsp;egrep&nbsp;-v&nbsp;<span class="literal">'(RCS|CVS)/'</span>&nbsp;|&nbsp;\<br>
 
     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;xargs&nbsp;ls&nbsp;-ld<br>
@@ -10489,11 +10824,14 @@
     "http://www.sourceware.org/cygwin/">http://www.sourceware.org/cygwin/</a>.</li>
 
     <li>The most recent file/directory traversal shell command
-    created via capture-command is stored in the $find-cmd state
-    variable. This can be a useful debugging aid.</li>
+    created via capture-command is stored in the <a href=
+    "#modevar-find-cmd">$find-cmd</a> state variable. This can be a
+    useful debugging aid.</li>
 
-    <li>The $findpath state variable inherits its initial value, if
-    any, from the VILE_FINDPATH environment variable.</li>
+    <li>The <a href="#modevar-findpath">$findpath</a> state
+    variable inherits its initial value, if any, from the <a name=
+    "env-VILE_FINDPATH" id="env-VILE_FINDPATH">VILE_FINDPATH</a>
+    environment variable.</li>
   </ul>
 
   <h2 id="custom-filters-toc"><a name="custom-filters" id=
@@ -10508,22 +10846,31 @@
   <p>Regardless, the goal of the filter is to embed in the text a
   control sequences which describe how the subsequent text should
   be attributed by the vile command</p>
-  <pre>
-        attribute-cntl_a-sequences-til
+
+  <blockquote>
+    <pre class="code-block">
+attribute-cntl_a-sequences-til
 </pre>
+  </blockquote>
 
   <p>or, preferably</p>
-  <pre>
-        attribute-from-filter-til
+
+  <blockquote>
+    <pre class="code-block">
+attribute-from-filter-til
 </pre>
+  </blockquote>
 
   <p>(See <a href="#syntax-coloring">above</a> for examples of how
   to use this command.)</p>
 
   <p>The control sequences take the following form:</p>
-  <pre>
-        ^A&lt;Count&gt;&lt;Attr&gt;:
+
+  <blockquote>
+    <pre class="code-block">
+^A&lt;Count&gt;&lt;Attr&gt;:
 </pre>
+  </blockquote>
 
   <p>&lt;Count&gt; is a sequence of digits representing the number
   of characters following the ':' to be attributed.</p>
@@ -10531,15 +10878,18 @@
   <p>&lt;Attr&gt; is a sequence of characters which indicates how
   to attribute the required number of characters following the ':'.
   The following sequences are recognized by vile:</p>
-  <pre>
-        I               -- italic
-        B               -- bold
-        R               -- reverse (or inverse) video
-        U               -- underline
-        C<em>&lt;hex digit&gt;</em>     -- color number (one of 16)
-        H<em>&lt;command&gt;</em>\0     -- hypertext command
-        M<em>&lt;command&gt;</em>\0     -- meta information (ignored)
+
+  <blockquote>
+    <pre>
+I               -- italic
+B               -- bold
+R               -- reverse (or inverse) video
+U               -- underline
+C<em>&lt;hex digit&gt;</em>     -- color number (one of 16)
+H<em>&lt;command&gt;</em>\0     -- hypertext command
+M<em>&lt;command&gt;</em>\0     -- meta information (ignored)
 </pre>
+  </blockquote>
 
   <p>The <em>&lt;command&gt;</em> for hypertext commands may be any
   sequence of characters except for newlines and null characters. A
@@ -10550,9 +10900,12 @@
   <p>The attribute characters may be used together in any
   combination. So, for example, you could use the following to make
   some text appear both bold and italic:</p>
-  <pre>
-        ^A15IB:Bold and italic
+
+  <blockquote>
+    <pre class="code-block">
+^A15IB:Bold and italic
 </pre>
+  </blockquote>
 
   <h2 id="hypertext-toc"><a name="hypertext" id=
   "hypertext">Hypertext</a></h2>
@@ -10567,8 +10920,8 @@
   <blockquote>
     <!--{{atr2html-->
 
-    <p style="font-family: monospace;"><span class=
-    "number">22</span>&nbsp;<span class=
+    <p style="font-family: monospace;" class="code-block">
+    <span class="number">22</span>&nbsp;<span class=
     "keyword">store-macro</span><br>
     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class=
     "preproc">~force</span>&nbsp;<span class=
@@ -10601,8 +10954,8 @@
   <blockquote>
     <!--{{atr2html-->
 
-    <p style="font-family: monospace;"><span class=
-    "keyword">bind-key</span>&nbsp;<span class=
+    <p style="font-family: monospace;" class="code-block">
+    <span class="keyword">bind-key</span>&nbsp;<span class=
     "keyword">execute-hypertext-command</span>&nbsp;<span class=
     "literal">^X-z</span><br>
     <span class="keyword">bind-key</span>&nbsp;<span class=
@@ -10633,17 +10986,17 @@
 
     <dd>
       use vile's builtin macro tracing to see what the macros
-      really do. The ~trace command sets the $debug variable, which
-      controls whether vile appends to the [Trace] buffer a copy of
-      each line executed, the local variables saved/restored and
-      intermediate states of expression evaluation. To activate
-      tracing, use:
+      really do. The ~trace command sets the <a href=
+      "#modevar-debug">$debug</a> variable, which controls whether
+      vile appends to the [Trace] buffer a copy of each line
+      executed, the local variables saved/restored and intermediate
+      states of expression evaluation. To activate tracing, use:
 
       <blockquote>
         <!--{{atr2html-->
 
-        <p style="font-family: monospace;"><span class=
-        "preproc">~trace</span>&nbsp;on<br>
+        <p style="font-family: monospace;" class="code-block">
+        <span class="preproc">~trace</span>&nbsp;on<br>
         <!--atr2html}}--></p>
       </blockquote>
 
@@ -10652,8 +11005,8 @@
       <blockquote>
         <!--{{atr2html-->
 
-        <p style="font-family: monospace;"><span class=
-        "keyword">setv</span>&nbsp;<span class=
+        <p style="font-family: monospace;" class="code-block">
+        <span class="keyword">setv</span>&nbsp;<span class=
         "ident2">$debug</span>&nbsp;true<br>
         <!--atr2html}}--></p>
       </blockquote>
@@ -10663,8 +11016,8 @@
       <blockquote>
         <!--{{atr2html-->
 
-        <p style="font-family: monospace;"><span class=
-        "preproc">~trace</span>&nbsp;off<br>
+        <p style="font-family: monospace;" class="code-block">
+        <span class="preproc">~trace</span>&nbsp;off<br>
         <!--atr2html}}--></p>
       </blockquote>
 
@@ -10673,8 +11026,8 @@
       <blockquote>
         <!--{{atr2html-->
 
-        <p style="font-family: monospace;"><span class=
-        "keyword">setv</span>&nbsp;<span class=
+        <p style="font-family: monospace;" class="code-block">
+        <span class="keyword">setv</span>&nbsp;<span class=
         "ident2">$debug</span>&nbsp;false<br>
         <!--atr2html}}--></p>
       </blockquote>
@@ -10687,7 +11040,8 @@
       exec <em>&lt;file&gt;</em>.
 
       <p>Note 1: The list of possible paths is taken from all
-      directories specified in $PATH + $libdir-path.</p>
+      directories specified in $PATH + <a href=
+      "#modevar-libdir-path">$libdir-path</a>.</p>
 
       <p>Note 2: On non-Unix hosts, a file suffix is required
       (e.g., ":which-exec copy.exe", not "which-exec copy").</p>
@@ -10837,7 +11191,8 @@
   <blockquote>
     <!--{{atr2html-->
 
-    <p style="font-family: monospace;"><span class=
+    <p style="font-family: monospace;" class="code-block">
+    <span class=
     "keyword">bind-key</span>&nbsp;copy-to-clipboard&nbsp;<span class="literal">#-^</span><br>
 
     <span class=
@@ -11338,8 +11693,8 @@
   <blockquote>
     <!--{{atr2html-->
 
-    <p style="font-family: monospace;"><span class=
-    "keyword">XVile</span>*<span class=
+    <p style="font-family: monospace;" class="code-block">
+    <span class="keyword">XVile</span>*<span class=
     "ident2">font</span>:<span class=
     "literal">&nbsp;-*-courier-medium-r-normal-*-*-*-75-75-m-70-iso8859-*</span><br>
 
@@ -11395,7 +11750,8 @@
   "xvile-fonts">Fonts</a></h3>
 
   <p>To change the font on the fly, use the ':setv' command to set
-  the $font variable, with ":setv $font &lt;fontname&gt;".</p>
+  the <a href="#modevar-font">$font</a> variable, with ":setv $font
+  &lt;fontname&gt;".</p>
 
   <p>At present, only xvile is capable of displaying bold and
   italic (or underline) text associated with attributes. It is
@@ -11466,8 +11822,8 @@
   <blockquote>
     <!--{{atr2html-->
 
-    <p style="font-family: monospace;"><span class=
-    "keyword">XVile</span>*<span class=
+    <p style="font-family: monospace;" class="code-block">
+    <span class="keyword">XVile</span>*<span class=
     "ident2">font</span>:<span class=
     "literal">&nbsp;-*-courier-medium-r-*-*-*-*-*-*-*-70-*-*</span><br>
 
@@ -11551,8 +11907,9 @@
   since those allow us to implement directory and filenames in the
   same syntax.</p>
 
-  <p>CDPATH directory lists are delimited with a comma and only the
-  following components may be included:</p>
+  <p><a href="#env-CDPATH">CDPATH</a> directory lists are delimited
+  with a comma and only the following components may be
+  included:</p>
 
   <ul>
     <li>rooted logicals terminated with ':'</li>
@@ -11561,9 +11918,12 @@
   </ul>
 
   <p>Example:</p>
-  <pre>
-        $ CDPATH :== dev$diska:[home],rooted$build_dir:
+
+  <blockquote>
+    <pre class="code-block">
+$ CDPATH :== dev$diska:[home],rooted$build_dir:
 </pre>
+  </blockquote>
 
   <h3 id="vmsvile-options-toc"><a name="vmsvile-options" id=
   "vmsvile-options">Command-Line Switches</a></h3>
@@ -11668,7 +12028,7 @@
     </tr>
 
     <tr>
-      <td>$sres</td>
+      <td><a href="#modevar-sres">$sres</a></td>
 
       <td>Switch between 80- and 132-column screen resolutions by
       setting this variable to either NORMAL or WIDE (e.g., :setv
@@ -11684,11 +12044,14 @@
   vile counterpart (e.g., "Remove" mapped to vile's "Delete"). Some
   vt220 keyboard special keys have no obvious counterpart, in which
   case, these mappings apply:</p>
-  <pre>
-        PF1-PF4  =&gt;  F1-F4,
-        Help     =&gt;  F15,
-        DO       =&gt;  F16.
+
+  <blockquote>
+    <pre class="code-block">
+PF1-PF4  =&gt;  F1-F4,
+Help     =&gt;  F15,
+DO       =&gt;  F16.
 </pre>
+  </blockquote>
 
   <h2 id="win32-stuff-toc"><a name="win32-stuff" id=
   "win32-stuff">Win32 specifics</a></h2>
@@ -11739,8 +12102,10 @@
       <td>Initial window dimensions in Columns and Rows (for
       example "-geometry 80x30"). Be aware that the specified
       geometry may not exceed the bounds of the current desktop
-      screen. Note also that $pagelen and $pagewid may be used to
-      change winvile's dimensions.</td>
+      screen. Note also that <a href=
+      "#modevar-pagelen">$pagelen</a> and <a href=
+      "#modevar-pagewid">$pagewid</a> may be used to change
+      winvile's dimensions.</td>
     </tr>
 
     <tr>
@@ -11826,7 +12191,8 @@
   <p>vile recognizes either DOS- or UNIX-style pathnames and '~' is
   supported as a shortcut for $HOME (e.g., :e ~/vile.rc).</p>
 
-  <p>CDPATH directory lists are delimited with a semicolon.</p>
+  <p><a href="#env-CDPATH">CDPATH</a> directory lists are delimited
+  with a semicolon.</p>
 
   <h3 id="w32shell-toc"><a name="w32shell" id=
   "w32shell">Shell</a></h3>
@@ -11834,14 +12200,14 @@
   <p>When a filter, pipe, or explicit shell command requires
   execution of an external process, vile invokes an instance of the
   shell specified in the $COMSPEC environment variable. This
-  default may be overridden by setting $shell from within vile.rc .
-  Example:</p>
+  default may be overridden by setting <a href=
+  "#modevar-shell">$shell</a> from within vile.rc . Example:</p>
 
   <blockquote>
     <!--{{atr2html-->
 
-    <p style="font-family: monospace;"><span class=
-    "keyword">set-variable</span>&nbsp;<span class=
+    <p style="font-family: monospace;" class="code-block">
+    <span class="keyword">set-variable</span>&nbsp;<span class=
     "ident2">$shell</span>&nbsp;<span class=
     "literal">'c:\usr\binw\sh.exe'</span><br>
     <!--atr2html}}--></p>
@@ -11854,7 +12220,8 @@
   <blockquote>
     <!--{{atr2html-->
 
-    <p style="font-family: monospace;">:<span class=
+    <p style="font-family: monospace;" class="code-block">
+    :<span class=
     "keyword2">!start&nbsp;calc&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;#&nbsp;start&nbsp;the&nbsp;windows&nbsp;calculator</span><br>
 
     <!--atr2html}}--></p>
@@ -11869,8 +12236,8 @@
   <blockquote>
     <!--{{atr2html-->
 
-    <p style="font-family: monospace;"><span class=
-    "keyword">store-procedure</span><span class=
+    <p style="font-family: monospace;" class="code-block">
+    <span class="keyword">store-procedure</span><span class=
     "literal">&nbsp;sh</span><br>
     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class=
     "comment">;&nbsp;pass&nbsp;-L&nbsp;(login)&nbsp;flag&nbsp;to&nbsp;MKS&nbsp;shell,&nbsp;assumes&nbsp;sh&nbsp;is</span><br>
@@ -11935,8 +12302,8 @@
       <blockquote>
         <!--{{atr2html-->
 
-        <p style="font-family: monospace;">&nbsp;<span class=
-        "keyword">function</span>&nbsp;vile<br>
+        <p style="font-family: monospace;" class="code-block">
+        &nbsp;<span class="keyword">function</span>&nbsp;vile<br>
         &nbsp;<span class="keyword-toc">{</span><br>
         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;sh&nbsp;<span class="literal">&lt;&lt;-&nbsp;ENDIT-</span><span class="literal"><br>
 
@@ -11975,9 +12342,12 @@
   <p>Note that console vile has <em>zero</em> mouse functionality
   if the parent command prompt window (aka DOS box) is configured
   with QuickEdit Mode enabled. QuickEdit is accessed like so:</p>
-  <pre>
-        system menu-&gt;Properties-&gt;Options Tab
+
+  <blockquote>
+    <pre class="code-block">
+system menu-&gt;Properties-&gt;Options Tab
 </pre>
+  </blockquote>
 
   <h3 id="winvile-mouse-toc"><a name="winvile-mouse" id=
   "winvile-mouse">Winvile Mouse</a></h3>
@@ -12018,14 +12388,15 @@
     <tr>
       <td>Favorites</td>
 
-      <td>executes "winopen $favorites", which starts a common open
-      dialog box that browses the Windows Favorites folder. This
-      feature is especially useful when folder shortcuts are added
-      to the Favorites folder via the Windows Explorer's "Add To
-      Favorites" feature. Once folder shortcut(s) have been created
-      in this manner, winvile's "Favorites" menu provides two-click
-      access to the contents of any local or network-based
-      folder.</td>
+      <td>executes "winopen <a href=
+      "#modevar-favorites">$favorites</a>", which starts a common
+      open dialog box that browses the Windows Favorites folder.
+      This feature is especially useful when folder shortcuts are
+      added to the Favorites folder via the Windows Explorer's "Add
+      To Favorites" feature. Once folder shortcut(s) have been
+      created in this manner, winvile's "Favorites" menu provides
+      two-click access to the contents of any local or
+      network-based folder.</td>
     </tr>
 
     <tr>
@@ -12140,12 +12511,15 @@
 
   <p>Some examples, assuming &lt;CI&gt; =&gt; Ctrl+Insert and
   &lt;AI&gt; =&gt; Alt+Insert:</p>
-  <pre>
-        4yy&lt;AI&gt;  ;copy 4 lines from unnamed reg to clipboard
-        "a&lt;CI&gt;   ;copy register 'a' to clipboard
-        "b&lt;CI&gt;   ;copy register 'b' to clipboard
-        &lt;CI&gt;3w   ;copy 3 words to clipboard
+
+  <blockquote>
+    <pre class="code-block">
+4yy&lt;AI&gt;  ;copy 4 lines from unnamed reg to clipboard
+"a&lt;CI&gt;   ;copy register 'a' to clipboard
+"b&lt;CI&gt;   ;copy register 'b' to clipboard
+&lt;CI&gt;3w   ;copy 3 words to clipboard
 </pre>
+  </blockquote>
 
   <p>The swap-clipboard-keys command swaps the commands bound to
   Ctrl+Insert and Alt+Insert.</p>
@@ -12168,12 +12542,15 @@
   within the editor by modifying the built-in $font state variable.
   In either case, a &lt;fontspec&gt; string describes the desired
   font, where:</p>
-  <pre>
-        &lt;fontspec&gt;  :== [&lt;face&gt;,]&lt;size&gt;[,&lt;style&gt;]
-        &lt;face&gt;      :== font-name
-        &lt;size&gt;      :== point size (as an integer)
-        &lt;style&gt;     :== { bold | italic | bold-italic }
+
+  <blockquote>
+    <pre class="code-block">
+&lt;fontspec&gt;  :== [&lt;face&gt;,]&lt;size&gt;[,&lt;style&gt;]
+&lt;face&gt;      :== font-name
+&lt;size&gt;      :== point size (as an integer)
+&lt;style&gt;     :== { bold | italic | bold-italic }
 </pre>
+  </blockquote>
 
   <p>Note 1: if &lt;style&gt; is unspecified, "normal" is
   assumed.</p>
@@ -12192,21 +12569,24 @@
   all fixed pitch fonts on the current win32 host, invoke winvile
   and browse the "Font" dialog box accessible from the system menu
   (accelerator key is ALT+&lt;space bar&gt;+f).</p>
-  <pre>
-        Cmdline Examples                Internal Examples
-        ****************                *****************
-        -fn 'Letter Gothic,8'           :setv $font r_ansi,7
-        -font r_ansi,8,bold             :setv $font 8
 
-        Vile.rc Example
-        ***************
+  <blockquote>
+    <pre class="code-block">
+Cmdline Examples                Internal Examples
+****************                *****************
+-fn 'Letter Gothic,8'           :setv $font r_ansi,7
+-font r_ansi,8,bold             :setv $font 8
+
+Vile.rc Example
+***************
 </pre>
+  </blockquote>
 
   <blockquote>
     <!--{{atr2html-->
 
-    <p style="font-family: monospace;"><span class=
-    "preproc">~if</span>&nbsp;<span class=
+    <p style="font-family: monospace;" class="code-block">
+    <span class="preproc">~if</span>&nbsp;<span class=
     "ident2">&amp;sequal</span>&nbsp;<span class=
     "ident2">$progname</span>&nbsp;<span class=
     "literal">"winvile"</span><br>
@@ -12224,10 +12604,13 @@
   <p>At the user's discretion, vile may be built with an embedded
   perl interpreter. To date, only the perl distribution at the
   following URL is supported:</p>
-  <pre>
-        <a href=
+
+  <blockquote>
+    <pre class="code-block">
+<a href=
 "http://www.perl.com/CPAN-local/ports/win32/Standard/x86/">http://www.perl.com/CPAN-local/ports/win32/Standard/x86/</a>
 </pre>
+  </blockquote>
 
   <p>If you acquire (i.e., do not personally build) a copy of
   "perl-embedded" vile, these external configuration steps are
@@ -12245,9 +12628,12 @@
     Then create a subdirectory called %VILE_LIBDIR_PATH%\perl and
     copy the scripts to same. The list of scripts known to work in
     a Win32 environment includes:
-      <pre>
-        hgrep.pm Glob2re.pm Visit.pm search.pm
+
+      <blockquote>
+        <pre class="code-block">
+hgrep.pm Glob2re.pm Visit.pm search.pm
 </pre>
+      </blockquote>
     </li>
   </ol>
 
@@ -12286,9 +12672,12 @@
     <dd>
       Set red/green/blue values for the specified color. Values
       range from 0-255. Example:
-      <pre>
-        set-rgb-palette red 200 0 0
+
+      <blockquote>
+        <pre class="code-block">
+set-rgb-palette red 200 0 0
 </pre>
+      </blockquote>
     </dd>
 
     <dt>swap-clipboard-keys</dt>
@@ -12378,13 +12767,16 @@
       <p>With respect to winvile, this string specifies an integer
       in the range 0-2, which selects one of the following
       styles:</p>
-      <pre>
-        0 -&gt; fixed block cursor
-        1 -&gt; cmd mode = block cursor
-            ins mode = vertical bar
-        2 -&gt; cmd mode = vertical bar
-            ins mode = block cursor (U)
+
+      <blockquote>
+        <pre>
+0 -&gt; fixed block cursor
+1 -&gt; cmd mode = block cursor
+    ins mode = vertical bar
+2 -&gt; cmd mode = vertical bar
+    ins mode = block cursor (U)
 </pre>
+      </blockquote>
     </dd>
 
     <dt>popup-menu</dt>
@@ -12429,8 +12821,8 @@
   <blockquote>
     <!--{{atr2html-->
 
-    <p style="font-family: monospace;">&nbsp;&nbsp;<span class=
-    "preproc">~if</span>&nbsp;<span class=
+    <p style="font-family: monospace;" class="code-block">
+    &nbsp;&nbsp;<span class="preproc">~if</span>&nbsp;<span class=
     "ident2">&amp;sequal</span>&nbsp;<span class=
     "ident2">$progname</span>&nbsp;<span class=
     "literal">"winvile"</span><br>
@@ -12481,7 +12873,8 @@
   <blockquote>
     <!--{{atr2html-->
 
-    <p style="font-family: monospace;">&nbsp;&nbsp;<span class=
+    <p style="font-family: monospace;" class="code-block">
+    &nbsp;&nbsp;<span class=
     "comment">;&nbsp;set&nbsp;paragraph&nbsp;and&nbsp;section&nbsp;r.e.s&nbsp;for&nbsp;speed&nbsp;on&nbsp;C/C++/perl&nbsp;code.</span><br>
 
     &nbsp;&nbsp;<span class="keyword">set</span>&nbsp;<span class=
@@ -12519,7 +12912,8 @@
   <blockquote>
     <!--{{atr2html-->
 
-    <p style="font-family: monospace;">&nbsp;&nbsp;<span class=
+    <p style="font-family: monospace;" class="code-block">
+    &nbsp;&nbsp;<span class=
     "keyword">bind-key</span>&nbsp;<span class=
     "keyword">whole-lines</span>&nbsp;<span class=
     "keyword">_</span><br>
@@ -12535,8 +12929,8 @@
   <blockquote>
     <!--{{atr2html-->
 
-    <p style="font-family: monospace;">&nbsp;&nbsp;<span class=
-    "keyword">source</span><span class=
+    <p style="font-family: monospace;" class="code-block">
+    &nbsp;&nbsp;<span class="keyword">source</span><span class=
     "literal">&nbsp;vileinit.rc</span><br>
     &nbsp;&nbsp;<span class="keyword">set</span>&nbsp;<span class=
     "keyword">autoindent</span><br>
@@ -12693,8 +13087,8 @@
   <blockquote>
     <!--{{atr2html-->
 
-    <p style="font-family: monospace;">dy<span class=
-    "literal">|</span>vt102<span class=
+    <p style="font-family: monospace;" class="code-block">
+    dy<span class="literal">|</span>vt102<span class=
     "literal">|</span>vt-102<span class=
     "literal">|</span><span class=
     "comment">dec&nbsp;vt102</span>:\<br>
@@ -12785,8 +13179,8 @@
   <blockquote>
     <!--{{atr2html-->
 
-    <p style="font-family: monospace;">vt102<span class=
-    "literal">|</span>vt-102<span class=
+    <p style="font-family: monospace;" class="code-block">
+    vt102<span class="literal">|</span>vt-102<span class=
     "literal">|</span><span class=
     "comment">dec&nbsp;vt102</span>,<br>
     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class=

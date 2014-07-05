@@ -16,7 +16,7 @@
    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/encrypt.c,v 1.10 2011/11/27 11:24:42 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/encrypt.c,v 1.11 2014/07/04 19:31:52 tom Exp $
  * changes for vile are GPLv2, no "later version" express or implied -TD
  */
 #include <filters.h>
@@ -221,7 +221,7 @@ encrypt(char *nachr, int decr)
 }
 
 void
-setkey(char *schl)
+setkey(const char *schl)
 {
     char tmp1[IS];
     register unsigned int ls = 0x7efc;

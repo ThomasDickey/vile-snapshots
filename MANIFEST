@@ -1,4 +1,4 @@
-MANIFEST for vile, version v9_8m6
+MANIFEST for vile, version v9_8m7
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 AUTHORS                         list of authors, with nicknames in CHANGES
@@ -445,7 +445,9 @@ macros/shifts.rc                macros to shift words left/right
 macros/showeach.rc              show-each-buffer
 macros/uxvile                   wrapper script to run xvile in UTF-8 locale
 macros/uxvile.desktop           desktop file for uxvile
+macros/vile-libdir-path         utility to print PATH updated to include vile's helpers.
 macros/vile-pager               use vile as a pager
+macros/vile-to-html             convert files to html
 macros/vileinit.rc              sample initialization file
 macros/vilemenu.rc              sample menu for xvile
 macros/vileperl.rc              sample initialization for perl scripts

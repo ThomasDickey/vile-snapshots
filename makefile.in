@@ -20,7 +20,7 @@
 #
 # gnu autoconf support by kevin buettner, 5/94
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.270 2013/12/26 01:28:38 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.271 2014/07/04 15:10:53 tom Exp $
 
 SHELL		= /bin/sh
 
@@ -496,12 +496,18 @@ USE_SYMLINK = test @VILE_SYMLINK@ != NONE
 
 NAME_OF_ACTUAL = $(ACTUAL)$x
 NAME_OF_PAGER  = $(ACTUAL)-pager
+NAME_OF_2HTML  = $(ACTUAL)-to-html
+NAME_OF_LIBDIR = $(ACTUAL)-libdir-path
 
 LINK_TO_ACTUAL = @VILE_SYMLINK@
 LINK_TO_PAGER  = @VILE_SYMLINK@-pager
+LINK_TO_2HTML  = @VILE_SYMLINK@-to-html
+LINK_TO_LIBDIR = @VILE_SYMLINK@-libdir-path
 
 PATH_OF_ACTUAL = $(BINDIR)/$(ACTUAL)$x
 PATH_OF_PAGER  = $(BINDIR)/$(NAME_OF_PAGER)
+PATH_OF_2HTML  = $(BINDIR)/$(NAME_OF_2HTML)
+PATH_OF_LIBDIR = $(BINDIR)/$(NAME_OF_LIBDIR)
 
 install-bin \
 install-full \
@@ -509,7 +515,9 @@ install :: \
 		$(INSTALL_DIRS) \
 		$(INSTALL_FILES) \
 		$(PROGRAM) \
-		$(srcdir)/macros/vile-pager
+		$(srcdir)/macros/vile-libdir-path \
+		$(srcdir)/macros/vile-pager \
+		$(srcdir)/macros/vile-to-html
 	@echo "** installing $(NAME_OF_ACTUAL)"
 	$(INSTALL_PROGRAM) $(PROGRAM) $(PATH_OF_ACTUAL)
 	@ECHO_CC@-$(SHELL) -c "if $(USE_SYMLINK) ; then \
@@ -529,6 +537,28 @@ install :: \
 		$(LN_S) $(NAME_OF_PAGER) $(LINK_TO_PAGER) ; \
 		echo '... created symbolic link:' ; \
 		ls -l $(NAME_OF_PAGER) $(LINK_TO_PAGER) ; \
+	fi"
+
+	@echo "** installing $(NAME_OF_2HTML)"
+	@ECHO_CC@sed -e 's/=vile$$/='$(ACTUAL)'/' $(srcdir)/macros/vile-to-html >$(PATH_OF_2HTML)
+	@ECHO_CC@chmod 755 $(PATH_OF_2HTML)
+	@ECHO_CC@-$(SHELL) -c "if $(USE_SYMLINK) ; then \
+		cd $(BINDIR); \
+		rm -f $(LINK_TO_2HTML) ; \
+		$(LN_S) $(NAME_OF_2HTML) $(LINK_TO_2HTML) ; \
+		echo '... created symbolic link:' ; \
+		ls -l $(NAME_OF_2HTML) $(LINK_TO_2HTML) ; \
+	fi"
+
+	@echo "** installing $(NAME_OF_LIBDIR)"
+	@ECHO_CC@sed -e 's/=vile$$/='$(ACTUAL)'/' $(srcdir)/macros/vile-libdir-path >$(PATH_OF_LIBDIR)
+	@ECHO_CC@chmod 755 $(PATH_OF_LIBDIR)
+	@ECHO_CC@-$(SHELL) -c "if $(USE_SYMLINK) ; then \
+		cd $(BINDIR); \
+		rm -f $(LINK_TO_LIBDIR) ; \
+		$(LN_S) $(NAME_OF_LIBDIR) $(LINK_TO_LIBDIR) ; \
+		echo '... created symbolic link:' ; \
+		ls -l $(NAME_OF_LIBDIR) $(LINK_TO_LIBDIR) ; \
 	fi"
 
 	@echo 'Completed install of program.'

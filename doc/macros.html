@@ -1,6 +1,6 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
-  $Id: macros.html,v 1.26 2014/07/03 22:03:37 tom Exp $
+  $Id: macros.html,v 1.27 2014/07/04 20:02:18 tom Exp $
 -->
 
 <html>
@@ -1737,49 +1737,53 @@ TRUE
   <p>These all return numeric values:</p>
 
   <dl>
-    <dt><a href="amp-add">&amp;add "N1" "N2"</a></dt>
+    <dt><a name="amp-add" id="amp-add">&amp;add "N1" "N2"</a></dt>
 
     <dd>Add "N1" and "N2".</dd>
 
-    <dt><a href="amp-sub">&amp;sub "N1" "N2"</a></dt>
+    <dt><a name="amp-sub" id="amp-sub">&amp;sub "N1" "N2"</a></dt>
 
     <dd>Subtract "N2" from "N1".</dd>
 
-    <dt><a href="amp-times">&amp;times "N1" "N2"</a></dt>
+    <dt><a name="amp-times" id="amp-times">&amp;times "N1"
+    "N2"</a></dt>
 
     <dd>Multiply "N1" by "N2".</dd>
 
-    <dt><a href="amp-divide">&amp;divide "N1" "N2"</a></dt>
+    <dt><a name="amp-divide" id="amp-divide">&amp;divide "N1"
+    "N2"</a></dt>
 
     <dd>Divide the "N1" by "N2"</dd>
 
-    <dt><a href="amp-mod">&amp;mod "N1" "N2"</a></dt>
+    <dt><a name="amp-mod" id="amp-mod">&amp;mod "N1" "N2"</a></dt>
 
     <dd>Divide the "N1" by "N2", return remainder.</dd>
 
-    <dt><a href="amp-negate">&amp;negate "N"</a></dt>
+    <dt><a name="amp-negate" id="amp-negate">&amp;negate
+    "N"</a></dt>
 
     <dd>Return -(N).</dd>
 
-    <dt><a href="amp-ascii">&amp;ascii "S"</a></dt>
+    <dt><a name="amp-ascii" id="amp-ascii">&amp;ascii "S"</a></dt>
 
     <dd>Return the ASCII code of the first character in "S"</dd>
 
-    <dt><a href="amp-random">&amp;random "N"</a></dt>
+    <dt><a name="amp-random" id="amp-random">&amp;random
+    "N"</a></dt>
 
-    <dt><a href="amp-rnd">&amp;rnd "N"</a></dt>
+    <dt><a name="amp-rnd" id="amp-rnd">&amp;rnd "N"</a></dt>
 
     <dd>Random number between 1 and N</dd>
 
-    <dt><a href="amp-abs">&amp;abs "N"</a></dt>
+    <dt><a name="amp-abs" id="amp-abs">&amp;abs "N"</a></dt>
 
     <dd>Absolute value of "N"</dd>
 
-    <dt><a href="amp-ftime">&amp;ftime "N"</a></dt>
+    <dt><a name="amp-ftime" id="amp-ftime">&amp;ftime "N"</a></dt>
 
     <dd>The modification time of the file "N"</dd>
 
-    <dt><a href="amp-stime">&amp;stime</a></dt>
+    <dt><a name="amp-stime" id="amp-stime">&amp;stime</a></dt>
 
     <dd>The system time.</dd>
   </dl>
@@ -1789,11 +1793,13 @@ TRUE
   <p>These two return numeric values:</p>
 
   <dl>
-    <dt><a href="amp-length">&amp;length "S"</a></dt>
+    <dt><a name="amp-length" id="amp-length">&amp;length
+    "S"</a></dt>
 
     <dd>Returns length of string "S".</dd>
 
-    <dt><a href="amp-sindex">&amp;sindex "S1" "S2"</a></dt>
+    <dt><a name="amp-sindex" id="amp-sindex">&amp;sindex "S1"
+    "S2"</a></dt>
 
     <dd>Returns index of "S2" within "S1", or 0.</dd>
   </dl>
@@ -1801,34 +1807,37 @@ TRUE
   <p>The rest return strings:</p>
 
   <dl>
-    <dt><a href="amp-bind">&amp;bind "S"</a></dt>
+    <dt><a name="amp-bind" id="amp-bind">&amp;bind "S"</a></dt>
 
     <dd>Return the function name bound to the key sequence
     "S".</dd>
 
-    <dt><a href="amp-cat">&amp;cat "S1" "S2"</a></dt>
+    <dt><a name="amp-cat" id="amp-cat">&amp;cat "S1" "S2"</a></dt>
 
     <dd>Concatenate S1 and string "S".</dd>
 
-    <dt><a href="amp-chr">&amp;chr "N"</a></dt>
+    <dt><a name="amp-chr" id="amp-chr">&amp;chr "N"</a></dt>
 
     <dd>Converts numeric "N" to an ASCII character.</dd>
 
-    <dt><a href="amp-cclass">&amp;cclass "S"</a></dt>
+    <dt><a name="amp-cclass" id="amp-cclass">&amp;cclass
+    "S"</a></dt>
 
     <dd>Character class (see "<a href=
     "vile-hlp.html#command-show-printable">show-printable</a>")</dd>
 
-    <dt><a href="amp-env">&amp;env "S"</a></dt>
+    <dt><a name="amp-env" id="amp-env">&amp;env "S"</a></dt>
 
     <dd>Return the value of the user's environment variable named
     "S".</dd>
 
-    <dt><a href="amp-get-key">&amp;get-key</a></dt>
+    <dt><a name="amp-get-key" id=
+    "amp-get-key">&amp;get-key</a></dt>
 
     <dd>(alias for &amp;gtkey).</dd>
 
-    <dt><a href="amp-get-completion">&amp;get-completion</a></dt>
+    <dt><a name="amp-get-completion" id=
+    "amp-get-completion">&amp;get-completion</a></dt>
 
     <dd>
       Prompt for and return name-completion. There are two
@@ -1843,19 +1852,22 @@ TRUE
       </ol>
     </dd>
 
-    <dt><a href="amp-get-motion">&amp;get-motion</a></dt>
+    <dt><a name="amp-get-motion" id=
+    "amp-get-motion">&amp;get-motion</a></dt>
 
     <dd>(alias for &amp;gtmotion).</dd>
 
-    <dt><a href="amp-get-sequence">&amp;get-sequence</a></dt>
+    <dt><a name="amp-get-sequence" id=
+    "amp-get-sequence">&amp;get-sequence</a></dt>
 
     <dd>(alias for &amp;gtsequence).</dd>
 
-    <dt><a href="amp-gtkey">&amp;gtkey</a></dt>
+    <dt><a name="amp-gtkey" id="amp-gtkey">&amp;gtkey</a></dt>
 
     <dd>Get a single raw keystroke from the user.</dd>
 
-    <dt><a href="amp-gtmotion">&amp;gtmotion "N"</a></dt>
+    <dt><a name="amp-gtmotion" id="amp-gtmotion">&amp;gtmotion
+    "N"</a></dt>
 
     <dd>
       Get a key sequence from user which must be bound to a motion.
@@ -1873,31 +1885,34 @@ TRUE
       function is returned.
     </dd>
 
-    <dt><a href="amp-gtsequence">&amp;gtsequence</a></dt>
+    <dt><a name="amp-gtsequence" id=
+    "amp-gtsequence">&amp;gtsequence</a></dt>
 
     <dd>Get a complete vile key sequence from user.</dd>
 
-    <dt><a href="amp-left">&amp;left "S" "N"</a></dt>
+    <dt><a name="amp-left" id="amp-left">&amp;left "S" "N"</a></dt>
 
     <dd>Extract first "N" characters from "S"</dd>
 
-    <dt><a href="amp-lower">&amp;lower "S"</a></dt>
+    <dt><a name="amp-lower" id="amp-lower">&amp;lower "S"</a></dt>
 
     <dd>Return lowercase version of "S".</dd>
 
-    <dt><a href="amp-right">&amp;right "S" "N"</a></dt>
+    <dt><a name="amp-right" id="amp-right">&amp;right "S"
+    "N"</a></dt>
 
     <dd>Extract chars from position "N" onward.</dd>
 
-    <dt><a href="amp-middle">&amp;middle "S" "N1" "N2"</a></dt>
+    <dt><a name="amp-middle" id="amp-middle">&amp;middle "S" "N1"
+    "N2"</a></dt>
 
     <dd>Extract "N2" chars at position "N1".</dd>
 
-    <dt><a href="amp-upper">&amp;upper "S"</a></dt>
+    <dt><a name="amp-upper" id="amp-upper">&amp;upper "S"</a></dt>
 
     <dd>Return uppercase version of "S".</dd>
 
-    <dt><a href="amp-trim">&amp;trim "S"</a></dt>
+    <dt><a name="amp-trim" id="amp-trim">&amp;trim "S"</a></dt>
 
     <dd>Remove whitespace at either end of "S", reduce multiple
     spaces within "S" to just one space each.</dd>
@@ -1908,130 +1923,148 @@ TRUE
   <p>These all return TRUE or FALSE:</p>
 
   <dl>
-    <dt><a href="amp-not">&amp;not "B"</a></dt>
+    <dt><a name="amp-not" id="amp-not">&amp;not "B"</a></dt>
 
     <dd>Return inverse of boolean "B".</dd>
 
-    <dt><a href="amp-and">&amp;and "B1" "B2"</a></dt>
+    <dt><a name="amp-and" id="amp-and">&amp;and "B1" "B2"</a></dt>
 
     <dd>Return logical AND of "B1" and "B2".</dd>
 
-    <dt><a href="amp-or">&amp;or "B1" "B2"</a></dt>
+    <dt><a name="amp-or" id="amp-or">&amp;or "B1" "B2"</a></dt>
 
     <dd>Return logical OR of "B1" and "B2".</dd>
 
-    <dt><a href="amp-equal">&amp;equal "N1" "N2"</a></dt>
+    <dt><a name="amp-equal" id="amp-equal">&amp;equal "N1"
+    "N2"</a></dt>
 
     <dd>Is "N1" numerically equal to "N2"?</dd>
 
-    <dt><a href="amp-geq">&amp;geq "N1" "N2"</a></dt>
+    <dt><a name="amp-geq" id="amp-geq">&amp;geq "N1" "N2"</a></dt>
 
     <dd>Is "N1" numerically not less than "N2"?</dd>
 
-    <dt><a href="amp-greater">&amp;greater "N1" "N2"</a></dt>
+    <dt><a name="amp-greater" id="amp-greater">&amp;greater "N1"
+    "N2"</a></dt>
 
     <dd>Is "N1" numerically greater than "N2"?</dd>
 
-    <dt><a href="amp-gt">&amp;gt "N1" "N2"</a></dt>
+    <dt><a name="amp-gt" id="amp-gt">&amp;gt "N1" "N2"</a></dt>
 
     <dd>(same as &amp;greater)</dd>
 
-    <dt><a href="amp-isa">&amp;isa "C" "N"</a></dt>
+    <dt><a name="amp-isa" id="amp-isa">&amp;isa "C" "N"</a></dt>
 
     <dd>Is "N" a member of class "C". Classes include: buffer,
     color, mode, submode, Majormode.</dd>
 
-    <dt><a href="amp-leq">&amp;leq "N1" "N2"</a></dt>
+    <dt><a name="amp-leq" id="amp-leq">&amp;leq "N1" "N2"</a></dt>
 
     <dd>Is "N1" numerically not greater than "N2"?</dd>
 
-    <dt><a href="amp-lessthan">&amp;lessthan "N1" "N2"</a></dt>
+    <dt><a name="amp-lessthan" id="amp-lessthan">&amp;lessthan "N1"
+    "N2"</a></dt>
 
     <dd>Is "N1" numerically less than "N2"?</dd>
 
-    <dt><a href="amp-lt">&amp;lt "N1" "N2"</a></dt>
+    <dt><a name="amp-lt" id="amp-lt">&amp;lt "N1" "N2"</a></dt>
 
     <dd>(same as &amp;lessthan)</dd>
 
-    <dt><a href="amp-neq">&amp;neq "N1" "N2"</a></dt>
+    <dt><a name="amp-neq" id="amp-neq">&amp;neq "N1" "N2"</a></dt>
 
     <dd>Is "N1" numerically not equal to "N2"?</dd>
 
-    <dt><a href="amp-sequal">&amp;sequal "S1" "S2"</a></dt>
+    <dt><a name="amp-sequal" id="amp-sequal">&amp;sequal "S1"
+    "S2"</a></dt>
 
     <dd>Is "S1" the same string as "S2"?</dd>
 
-    <dt><a href="amp-sgeq">&amp;sgeq "S1" "S2"</a></dt>
+    <dt><a name="amp-sgeq" id="amp-sgeq">&amp;sgeq "S1"
+    "S2"</a></dt>
 
     <dd>Is "S1" lexically not less than "S2"?</dd>
 
-    <dt><a href="amp-sgreater">&amp;sgreater "S1" "S2"</a></dt>
+    <dt><a name="amp-sgreater" id="amp-sgreater">&amp;sgreater "S1"
+    "S2"</a></dt>
 
     <dd>Is "S1" lexically greater than "S2"?</dd>
 
-    <dt><a href="amp-sgt">&amp;sgt "S1" "S2"</a></dt>
+    <dt><a name="amp-sgt" id="amp-sgt">&amp;sgt "S1" "S2"</a></dt>
 
     <dd>(same as &amp;slessthan)</dd>
 
-    <dt><a href="amp-sleq">&amp;sleq "S1" "S2"</a></dt>
+    <dt><a name="amp-sleq" id="amp-sleq">&amp;sleq "S1"
+    "S2"</a></dt>
 
     <dd>Is "S1" lexically not greater than "S2"?</dd>
 
-    <dt><a href="amp-slessthan">&amp;slessthan "S1" "S2"</a></dt>
+    <dt><a name="amp-slessthan" id="amp-slessthan">&amp;slessthan
+    "S1" "S2"</a></dt>
 
     <dd>Is "S1" lexically less than "S2"?</dd>
 
-    <dt><a href="amp-slt">&amp;slt "S1" "S2"</a></dt>
+    <dt><a name="amp-slt" id="amp-slt">&amp;slt "S1" "S2"</a></dt>
 
     <dd>(same as &amp;slessthan)</dd>
 
-    <dt><a href="amp-sneq">&amp;sneq "S1" "S2"</a></dt>
+    <dt><a name="amp-sneq" id="amp-sneq">&amp;sneq "S1"
+    "S2"</a></dt>
 
     <dd>Is "S1" lexically not equal to "S2"?</dd>
 
-    <dt><a href="amp-readable">&amp;readable "S"</a></dt>
+    <dt><a name="amp-readable" id="amp-readable">&amp;readable
+    "S"</a></dt>
 
-    <dt><a href="amp-rd">&amp;rd "S"</a></dt>
+    <dt><a name="amp-rd" id="amp-rd">&amp;rd "S"</a></dt>
 
     <dd>Is the named file "S" readable?</dd>
 
-    <dt><a href="amp-writable">&amp;writable "S"</a></dt>
+    <dt><a name="amp-writable" id="amp-writable">&amp;writable
+    "S"</a></dt>
 
     <dd>Is the named file "S" writable?</dd>
 
-    <dt><a href="amp-execable">&amp;execable "S"</a></dt>
+    <dt><a name="amp-execable" id="amp-execable">&amp;execable
+    "S"</a></dt>
 
     <dd>Is the named file "S" exec'able?</dd>
 
-    <dt><a href="amp-bchanged">&amp;bchanged "S"</a></dt>
+    <dt><a name="amp-bchanged" id="amp-bchanged">&amp;bchanged
+    "S"</a></dt>
 
     <dd>Is given buffer "S" modified?</dd>
 
-    <dt><a href="amp-fchanged">&amp;fchanged "S"</a></dt>
+    <dt><a name="amp-fchanged" id="amp-fchanged">&amp;fchanged
+    "S"</a></dt>
 
     <dd>Is file for given buffer "S" modified?</dd>
 
-    <dt><a href="amp-cmatch">&amp;cmatch "R" "V"</a></dt>
+    <dt><a name="amp-cmatch" id="amp-cmatch">&amp;cmatch "R"
+    "V"</a></dt>
 
     <dd>Does the given regular expression "R" match the value "V"
     (ignoring case)?</dd>
 
-    <dt><a href="amp-error">&amp;error "S"</a></dt>
+    <dt><a name="amp-error" id="amp-error">&amp;error "S"</a></dt>
 
     <dd>Was the string set with the ERROR token? For example, a
     &amp;query that is aborted will return an ERROR result.</dd>
 
-    <dt><a href="amp-match">&amp;match "R" "V"</a></dt>
+    <dt><a name="amp-match" id="amp-match">&amp;match "R"
+    "V"</a></dt>
 
     <dd>Does the given regular expression "R" match the value
     "V"?</dd>
 
-    <dt><a href="amp-filter">&amp;filter "M"</a></dt>
+    <dt><a name="amp-filter" id="amp-filter">&amp;filter
+    "M"</a></dt>
 
     <dd>Does the given majormode have a built-in highlighting
     filter?</dd>
 
-    <dt><a href="amp-stoken">&amp;stoken "T" "D" "S"</a></dt>
+    <dt><a name="amp-stoken" id="amp-stoken">&amp;stoken "T" "D"
+    "S"</a></dt>
 
     <dd>Is token "T" in string "S", given delimiters "D"?</dd>
   </dl>
@@ -2041,23 +2074,27 @@ TRUE
   <p>These all return string values:</p>
 
   <dl>
-    <dt><a href="amp-classof">&amp;classof "N"</a></dt>
+    <dt><a name="amp-classof" id="amp-classof">&amp;classof
+    "N"</a></dt>
 
     <dd>Retrieves the class(es) to which the given name may return.
     Usually this is a single name, e.g., one of those checked by
     &amp;isa. If multiple matches are found, the result contains
     each classname separated by a space.</dd>
 
-    <dt><a href="amp-default">&amp;default "MODENAME"</a></dt>
+    <dt><a name="amp-default" id="amp-default">&amp;default
+    "MODENAME"</a></dt>
 
     <dd>Retrieves initial/default value for the given mode or state
     variable.</dd>
 
-    <dt><a href="amp-global">&amp;global "MODENAME"</a></dt>
+    <dt><a name="amp-global" id="amp-global">&amp;global
+    "MODENAME"</a></dt>
 
     <dd>Retrieves universal/global mode setting.</dd>
 
-    <dt><a href="amp-indirect">&amp;indirect "S"</a></dt>
+    <dt><a name="amp-indirect" id="amp-indirect">&amp;indirect
+    "S"</a></dt>
 
     <dd>
       Evaluate value of "S" as a macro language variable itself.
@@ -2071,11 +2108,13 @@ TRUE
       <!--atr2html}}--></p>will return the home directory pathname.
     </dd>
 
-    <dt><a href="amp-local">&amp;local "MODENAME"</a></dt>
+    <dt><a name="amp-local" id="amp-local">&amp;local
+    "MODENAME"</a></dt>
 
     <dd>Retrieves local mode setting (for current buffer).</dd>
 
-    <dt><a href="amp-lookup">&amp;lookup "N" "P"</a></dt>
+    <dt><a name="amp-lookup" id="amp-lookup">&amp;lookup "N"
+    "P"</a></dt>
 
     <dd>
       The "N" keyword tells which field to use looking for the file
@@ -2098,37 +2137,40 @@ TRUE
       path, libdir. Note that the directory lists may overlap.</p>
     </dd>
 
-    <dt><a href="amp-mclass">&amp;mclass "M"</a></dt>
+    <dt><a name="amp-mclass" id="amp-mclass">&amp;mclass
+    "M"</a></dt>
 
     <dd>Retrieve the class to which the given mode belongs. This is
     different from &amp;mclass since it distinguishes the modes
     Return values include: universal buffer window submode
     Majormode.</dd>
 
-    <dt><a href="amp-qpasswd">&amp;qpasswd "S"</a></dt>
+    <dt><a name="amp-qpasswd" id="amp-qpasswd">&amp;qpasswd
+    "S"</a></dt>
 
     <dd>Present "S" to the user and return their response. Each
     typed character is echoed as '*'. The response is not
     recallable via the editor's history mechanism.</dd>
 
-    <dt><a href="amp-query">&amp;query "S"</a></dt>
+    <dt><a name="amp-query" id="amp-query">&amp;query "S"</a></dt>
 
     <dd>Present "S" to the user, and return their typed
     response.</dd>
 
-    <dt><a href="amp-date">&amp;date "F" "T"</a></dt>
+    <dt><a name="amp-date" id="amp-date">&amp;date "F" "T"</a></dt>
 
     <dd>If strftime() is found, format the time "T" using the "F"
     format. Otherwise, use ctime() to format the time. Times are
     numbers (see &amp;ftime and &amp;stime).</dd>
 
-    <dt><a href="amp-dquery">&amp;dquery "S" "D"</a></dt>
+    <dt><a name="amp-dquery" id="amp-dquery">&amp;dquery "S"
+    "D"</a></dt>
 
     <dd>Present "S" to the user, and return their typed response.
     If "D" is given, use that as the default response. Otherwise
     use the previous response as the default.</dd>
 
-    <dt><a href="amp-path">&amp;path "N" "P"</a></dt>
+    <dt><a name="amp-path" id="amp-path">&amp;path "N" "P"</a></dt>
 
     <dd>
       The "N" keyword tells which field to extract from the
@@ -2142,36 +2184,40 @@ TRUE
       tail &ndash; filename</p>
     </dd>
 
-    <dt><a href="amp-pcat">&amp;pcat "D" "F"</a></dt>
+    <dt><a name="amp-pcat" id="amp-pcat">&amp;pcat "D" "F"</a></dt>
 
     <dd>Concatenate directory and filename, handing syntax and
     ensuring that if the filename is absolute, that the directory
     is ignored.</dd>
 
-    <dt><a href="amp-pquote">&amp;pquote "P"</a></dt>
+    <dt><a name="amp-pquote" id="amp-pquote">&amp;pquote
+    "P"</a></dt>
 
     <dd>Quote the pathname if it contains characters such as space
     that cannot be passed to the shell without special
     handling.</dd>
 
-    <dt><a href="amp-register">&amp;register "S"</a></dt>
+    <dt><a name="amp-register" id="amp-register">&amp;register
+    "S"</a></dt>
 
     <dd>Return contents of register "S". Only the first character
     of "S" is used for the name. Note that the contents may be more
     than one line.</dd>
 
-    <dt><a href="amp-token">&amp;token "N" "D" "S"</a></dt>
+    <dt><a name="amp-token" id="amp-token">&amp;token "N" "D"
+    "S"</a></dt>
 
     <dd>Select N'th token of string "S", given delimiters "D".</dd>
 
-    <dt><a href="amp-translate">&amp;translate "F" "T" "S"</a></dt>
+    <dt><a name="amp-translate" id="amp-translate">&amp;translate
+    "F" "T" "S"</a></dt>
 
     <dd>Translate from "F" to "T" each character of string "S". The
     "F" and "T" are strings of equal length; characters from "S"
     found in "F" are translated to the character in "T" at the same
     index.</dd>
 
-    <dt><a href="amp-word">&amp;word "N" "S"</a></dt>
+    <dt><a name="amp-word" id="amp-word">&amp;word "N" "S"</a></dt>
 
     <dd>Select N'th word of string "S", blank separated.</dd>
   </dl>

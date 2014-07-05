@@ -3,9 +3,9 @@
  * written for vile by paul fox.
  * rewritten to use regular expressions by T.Dickey
  *
- * Copyright (c) 1990-2013 by Paul Fox and Thomas Dickey
+ * Copyright (c) 1990-2014 by Paul Fox and Thomas Dickey
  *
- * $Header: /users/source/archives/vile.vcs/RCS/finderr.c,v 1.144 2013/03/11 00:04:30 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/finderr.c,v 1.146 2014/07/04 23:46:07 tom Exp $
  *
  */
 
@@ -152,7 +152,7 @@ char *const predefined[] =
 #endif
 
     "^%B:%L:%T",		/* "pp" in scratch buf */
-    "^[^:]\\+: %V directory `%[^']'",	/* GNU make */
+    "^[^:]\\+: %V directory [`']%[^']'",	/* GNU make */
     "%T at %F line %L.*",	/* perl 5 */
     "^%F\\[%L\\]:%T",		/* hgrep */
     "^\"%[^\"]\", line %L, col %C, %T",		/* ncurses, atac */
