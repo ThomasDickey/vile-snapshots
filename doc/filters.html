@@ -1,6 +1,6 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
-  $Id: filters.html,v 1.15 2013/12/28 00:32:17 tom Exp $
+  $Id: filters.html,v 1.16 2014/07/06 14:21:02 tom Exp $
 -->
 
 <html>
@@ -51,90 +51,109 @@
   keep them compatible with MS-DOS 8.3 filename lengths.</p>
 
   <p>You can specify the root name to search, otherwise they search
-  for "vile" and the compiled-in filter name. For example, on a
-  Unix host, the C filter (vile-c-filt) searches first here: 
-  <!--{{atr2html--></p>
+  for "vile" and the compiled-in filter name. The locations checked
+  are:</p>
 
-  <p style="font-family: monospace;">
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;./.vile.keywords<br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
-  "#008080">$HOME</font>/.vile.keywords<br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
-  "#008080">$HOME</font>/.vile/vile.keywords<br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
-  "#008080">$VILE_STARTUP_PATH</font>/vile.keywords<br>
-  <!--atr2html}}--></p>[ If $VILE_STARTUP_PATH is not defined, the
-  filter checks the "prefix" directory specified when all filters
-  were compiled (default path is
-  /usr/local/share/vile/vile.keywords). ]
+  <ul>
+    <li>the current directory</li>
 
-  <p>and then here: <!--{{atr2html--></p>
+    <li>the home-directory (as well as a vile-specific subdirectory
+    of that)</li>
 
-  <p style="font-family: monospace;">
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;./.c.keywords<br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
-  "#008080">$HOME</font>/.c.keywords<br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
-  "#008080">$HOME</font>/.vile/c.keywords<br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
-  "#008080">$VILE_STARTUP_PATH</font>/c.keywords<br>
-  <!--atr2html}}--></p>[ Again, if $VILE_STARTUP_PATH is not
-  defined, the filter checks the "prefix" directory specified when
-  all filters were compiled (default path is
-  /usr/local/share/vile/c.keyords). ]
+    <li>one or more locations known as the "startup path". There is
+    a compiled-in default startup path list which can be overridden
+    by the <a href=
+    "vile-hlp.html#env-VILE_STARTUP_PATH">VILE_STARTUP_PATH</a>
+    environment variable.</li>
+  </ul>For example (referring to the last as <font color=
+  "#008080">$VILE_STARTUP_PATH</font>), on a Unix host, the C
+  filter (vile-c-filt) searches first here:
+
+  <blockquote>
+    <!--{{atr2html-->
+
+    <p style="font-family: monospace;" class="code-block">
+    ./.vile.keywords<br>
+    <font color="#008080">$HOME</font>/.vile.keywords<br>
+    <font color="#008080">$HOME</font>/.vile/vile.keywords<br>
+    <font color=
+    "#008080">$VILE_STARTUP_PATH</font>/vile.keywords<br>
+    <!--atr2html}}--></p>
+  </blockquote>
+
+  <p>and then here:</p>
+
+  <blockquote>
+    <!--{{atr2html-->
+
+    <p style="font-family: monospace;" class="code-block">
+    ./.c.keywords<br>
+    <font color="#008080">$HOME</font>/.c.keywords<br>
+    <font color="#008080">$HOME</font>/.vile/c.keywords<br>
+    <font color="#008080">$VILE_STARTUP_PATH</font>/c.keywords<br>
+    <!--atr2html}}--></p>
+  </blockquote>
 
   <p>In each case, vile-c-filt stops as soon as it finds the
-  desired file. On a non-Unix host, the search looks like this: 
-  <!--{{atr2html--></p>
+  desired file. On a non-Unix host, the search looks like this:</p>
 
-  <p style="font-family: monospace;">
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;./vile.keywords<br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
-  "#008080">$HOME</font>/vile.keywords<br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
-  "#008080">$HOME</font>/vile/vile.keywords<br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
-  "#008080">$VILE_STARTUP_PATH</font>/vile.keywords<br>
-  <br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;./c.keywords<br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
-  "#008080">$HOME</font>/c.keywords<br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
-  "#008080">$HOME</font>/vile/c.keywords<br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
-  "#008080">$VILE_STARTUP_PATH</font>/c.keywords<br>
-  <!--atr2html}}--></p>The vile.keywords file contains color
-  information for the most common classes. The c.keywords file
-  contains the actual keywords to be highlighted, referenced to the
-  classes which are in turn colored. You can see the search for
-  keyword files by running the filter with a -v option, repeating
-  the option (-vv) to obtain more verbose traces. Note that filters
-  may be compiled-into vile. In that case (vile calls the filter
-  using the attribute-directly command), you can still get a trace
-  by adding the -v option to the filtername line of the majormode.
-  The trace will go to the message line, but also if you have 
-  <!--{{atr2html-->
+  <blockquote>
+    <!--{{atr2html-->
 
-  <p style="font-family: monospace;">
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
-  "#000080">set</font></strong>&nbsp;<strong><font color=
-  "#000080">popup-msgs</font></strong><br>
-  <!--atr2html}}--></p>specified, to the [Messages] buffer.
+    <p style="font-family: monospace;" class="code-block">
+    ./vile.keywords<br>
+    <font color="#008080">$HOME</font>/vile.keywords<br>
+    <font color="#008080">$HOME</font>/vile/vile.keywords<br>
+    <font color=
+    "#008080">$VILE_STARTUP_PATH</font>/vile.keywords<br>
+    <br>
+    ./c.keywords<br>
+    <font color="#008080">$HOME</font>/c.keywords<br>
+    <font color="#008080">$HOME</font>/vile/c.keywords<br>
+    <font color="#008080">$VILE_STARTUP_PATH</font>/c.keywords<br>
+    <!--atr2html}}--></p>
+  </blockquote>
+
+  <p>The vile.keywords file contains color information for the most
+  common classes. The c.keywords file contains the actual keywords
+  to be highlighted, referenced to the classes which are in turn
+  colored. You can see the search for keyword files by running the
+  filter with a -v option, repeating the option (-vv) to obtain
+  more verbose traces. Note that filters may be compiled-into vile.
+  In that case (vile calls the filter using the attribute-directly
+  command), you can still get a trace by adding the -v option to
+  the filtername line of the majormode. The trace will go to the
+  message line, but also if you have</p>
+
+  <blockquote>
+    <!--{{atr2html-->
+
+    <p style="font-family: monospace;" class="code-block">
+    <strong><font color=
+    "#000080">set</font></strong>&nbsp;<strong><font color=
+    "#000080">popup-msgs</font></strong><br>
+    <!--atr2html}}--></p>
+  </blockquote>
+
+  <p>specified, to the [Messages] buffer.</p>
 
   <p>Predefined keyword classes include (but may not necessarily be
   used in specific filters):</p>
-  <pre>
-        Action
-        Comment
-        Ident
-        Ident2
-        Keyword
-        Keyword2
-        Literal
-        Number
-        Preproc
-        Type
+
+  <blockquote>
+    <pre>
+Action
+Comment
+Ident
+Ident2
+Keyword
+Keyword2
+Literal
+Number
+Preproc
+Type
 </pre>
+  </blockquote>
 
   <p>A few filters, e.g., cweb, latex, diff, use additional
   classes. The predefined classes are a guideline, to implement a
@@ -191,17 +210,23 @@
   </ul>
 
   <p>Specify abbreviations using a '*' character, e.g.,</p>
-  <pre>
-        vi*le
+
+  <blockquote>
+    <pre>
+vi*le
 </pre>
+  </blockquote>
 
   <p>to match any of vi, vil, vile. You can change the '*'
   character using the ".abbrev" directive. A special case is
   provided for languages such as SQL*PLUS, using the '?' character,
   e.g.,</p>
-  <pre>
-        rem?ark
+
+  <blockquote>
+    <pre>
+rem?ark
 </pre>
+  </blockquote>
 
   <p>Use ".brief" to alter the special character '?'.</p>
 

@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/rubyfilt.c,v 1.82 2013/12/02 01:33:56 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/rubyfilt.c,v 1.83 2014/07/06 16:23:05 tom Exp $
  *
  * Filter to add vile "attribution" sequences to ruby scripts.  This began as a
  * translation into C of an earlier version written for LEX/FLEX.
@@ -408,7 +408,7 @@ is_CHAR(char *s, int *err)
 		    && s[2] == BACKSLASH
 		    && s[3] == 'C'
 		    && s[4] == '-'
-		    && isgraph(s[5])) {
+		    && isgraph(CharOf(s[5]))) {
 		    s += 5;
 		    found += 3;
 		} else if (*s == 'C') {
@@ -422,7 +422,7 @@ is_CHAR(char *s, int *err)
 	}
 	if (found) {
 	    /* s now points to the character, but it may be escaped */
-	    if (!isgraph(*s)) {
+	    if (!isgraph(CharOf(*s))) {
 		found = 0;
 	    } else if (*s == BACKSLASH) {
 		++found;
@@ -1320,7 +1320,7 @@ put_REGEXP(char *s, int length, int delim)
     int level = 0;
     int extended = 0;
 
-    for (last = s + length - 1; last != s && isalpha(*last); --last) {
+    for (last = s + length - 1; last != s && isalpha(CharOf(*last)); --last) {
 	if (*last == 'x') {
 	    extended = 1;
 	    break;

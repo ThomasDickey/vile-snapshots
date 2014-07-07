@@ -1,6 +1,6 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
-  $Id: macros.html,v 1.27 2014/07/04 20:02:18 tom Exp $
+  $Id: macros.html,v 1.28 2014/07/05 10:19:18 tom Exp $
 -->
 
 <html>
@@ -100,40 +100,51 @@
   <p>The most common example of this usage is vile's startup file,
   which is "sourced" during the editor's invocation. Typically, the
   startup file configures the user's preferences and looks
-  something like this: <!--{{atr2html--></p>
+  something like this:</p>
 
-  <p style="font-family: monospace;">
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
-  "#000080">set</font></strong>&nbsp;<strong><font color=
-  "#000080">ai</font></strong><br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
-  "#000080">set</font></strong>&nbsp;<strong><font color=
-  "#000080">ts</font></strong><strong><font color=
-  "#800000">=</font></strong><strong><font color=
-  "#008080">4</font></strong><br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
-  "#000080">set</font></strong>&nbsp;<strong><font color=
-  "#000080">flash</font></strong><br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;etc.&gt;<br>
-  <!--atr2html}}--></p>A startup/configuration file might also use
-  macro language directives to conditionally configure the editor.
-  For example, if xvile executes this startup file fragment: 
-  <!--{{atr2html-->
+  <blockquote>
+    <!--{{atr2html-->
 
-  <p style="font-family: monospace;">
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
-  "#008000">~if</font>&nbsp;<font color=
-  "#008080">&amp;sequal</font>&nbsp;<font color=
-  "#008080">$progname</font>&nbsp;<font color=
-  "#800080">"xvile"</font><br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">set-variable</font></strong>&nbsp;<font color="#008080">$title</font>&nbsp;<font color="#008080">$cbufname</font><br>
+    <p style="font-family: monospace;" class="code-block">
+    <strong><font color=
+    "#000080">set</font></strong>&nbsp;<strong><font color=
+    "#000080">ai</font></strong><br>
+    <strong><font color=
+    "#000080">set</font></strong>&nbsp;<strong><font color=
+    "#000080">ts</font></strong><strong><font color=
+    "#800000">=</font></strong><strong><font color=
+    "#008080">4</font></strong><br>
+    <strong><font color=
+    "#000080">set</font></strong>&nbsp;<strong><font color=
+    "#000080">flash</font></strong><br>
+    &lt;etc.&gt;<br>
+    <!--atr2html}}--></p>
+  </blockquote>
 
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
-  "#008000">~endif</font><br>
-  <!--atr2html}}--></p>then the editor's X window titlebar changes.
-  However, "standard" vile (i.e., non-gui vile) ignores this
-  fragment and thus, a single startup file can be used to configure
-  both the gui and non-gui versions of the editor.
+  <p>A startup/configuration file might also use macro language
+  directives to conditionally configure the editor. For example, if
+  xvile executes this startup file fragment:</p>
+
+  <blockquote>
+    <!--{{atr2html-->
+
+    <p style="font-family: monospace;" class="code-block">
+    <font color="#008000">~if</font>&nbsp;<font color=
+    "#008080">&amp;sequal</font>&nbsp;<font color=
+    "#008080">$progname</font>&nbsp;<font color=
+    "#800080">"xvile"</font><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
+    "#000080">set-variable</font></strong>&nbsp;<font color=
+    "#008080">$title</font>&nbsp;<font color=
+    "#008080">$cbufname</font><br>
+    <font color="#008000">~endif</font><br>
+    <!--atr2html}}--></p>
+  </blockquote>
+
+  <p>then the editor's X window titlebar changes. However,
+  "standard" vile (i.e., non-gui vile) ignores this fragment and
+  thus, a single startup file can be used to configure both the gui
+  and non-gui versions of the editor.</p>
 
   <p>vile also provides constructs that encapsulate macro language
   elements as numbered and named programs. These programs represent
@@ -144,51 +155,69 @@
 
   <h3 id="numbered-toc"><a name="numbered" id="numbered">Numbered
   macros (anachronism</a>)</h3>The numbered macro syntax looks like
-  so: <!--{{atr2html-->
+  so:
 
-  <p style="font-family: monospace;">
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;<strong><font color=
-  "#000080">number</font></strong>&gt;&nbsp;<strong><font color=
-  "#000080">store-macro</font></strong><br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;language&nbsp;element&gt;<br>
+  <blockquote>
+    <!--{{atr2html-->
 
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;...<br>
+    <p style="font-family: monospace;" class="code-block">
+    &lt;<strong><font color=
+    "#000080">number</font></strong>&gt;&nbsp;<strong><font color=
+    "#000080">store-macro</font></strong><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&lt;language&nbsp;element&gt;<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;...<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&lt;language&nbsp;element&gt;<br>
+    <font color="#008000">~endm</font><br>
+    <!--atr2html}}--></p>
+  </blockquote>
 
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;language&nbsp;element&gt;<br>
+  <p>A numbered macro is executed using this command:</p>
 
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
-  "#008000">~endm</font><br>
-  <!--atr2html}}--></p>A numbered macro is executed using this
-  command: <!--{{atr2html-->
+  <blockquote>
+    <!--{{atr2html-->
 
-  <p style="font-family: monospace;">
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
-  "#000080">execute-macro</font></strong>-&lt;<strong><font color=
-  "#000080">number</font></strong>&gt;<br>
-  <!--atr2html}}--></p>To bind a keystroke to this macro, use this
-  command: <!--{{atr2html-->
+    <p style="font-family: monospace;" class="code-block">
+    <strong><font color=
+    "#000080">execute-macro</font></strong>-&lt;<strong><font color="#000080">number</font></strong>&gt;<br>
 
-  <p style="font-family: monospace;">
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
-  "#000080">bind-key</font></strong>&nbsp;<strong><font color=
-  "#000080">execute-macro</font></strong>-&lt;<strong><font color=
-  "#000080">number</font></strong>&gt;&nbsp;&lt;keystroke&gt;<br>
-  <!--atr2html}}--></p>Here's an actual example: <!--{{atr2html-->
+    <!--atr2html}}--></p>
+  </blockquote>
 
-  <p style="font-family: monospace;">
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
-  "#008080">30</font></strong>&nbsp;<strong><font color=
-  "#000080">store-macro</font></strong><br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">write-message</font></strong>&nbsp;<font color="#800080">"this&nbsp;is&nbsp;a&nbsp;test&nbsp;macro"</font><br>
+  <p>To bind a keystroke to this macro, use this command:</p>
 
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
-  "#008000">~endm</font><br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
-  "#000080">bind-key</font></strong>&nbsp;<strong><font color=
-  "#000080">execute-macro-30</font></strong>&nbsp;<font color=
-  "#800080">#h</font><br>
-  <!--atr2html}}--></p>Now, whenever "#h" is pressed, a message is
-  written on the editor's message line.
+  <blockquote>
+    <!--{{atr2html-->
+
+    <p style="font-family: monospace;" class="code-block">
+    <strong><font color=
+    "#000080">bind-key</font></strong>&nbsp;<strong><font color=
+    "#000080">execute-macro</font></strong>-&lt;<strong><font color="#000080">number</font></strong>&gt;&nbsp;&lt;keystroke&gt;<br>
+
+    <!--atr2html}}--></p>
+  </blockquote>
+
+  <p>Here's an actual example:</p>
+
+  <blockquote>
+    <!--{{atr2html-->
+
+    <p style="font-family: monospace;" class="code-block">
+    <strong><font color=
+    "#008080">30</font></strong>&nbsp;<strong><font color=
+    "#000080">store-macro</font></strong><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
+    "#000080">write-message</font></strong>&nbsp;<font color=
+    "#800080">"this&nbsp;is&nbsp;a&nbsp;test&nbsp;macro"</font><br>
+    <font color="#008000">~endm</font><br>
+    <strong><font color=
+    "#000080">bind-key</font></strong>&nbsp;<strong><font color=
+    "#000080">execute-macro-30</font></strong>&nbsp;<font color=
+    "#800080">#h</font><br>
+    <!--atr2html}}--></p>
+  </blockquote>
+
+  <p>Now, whenever "#h" is pressed, a message is written on the
+  editor's message line.</p>
 
   <p>Although this syntax serves a purpose, it's obvious that
   numbered programs don't lend themselves to easy recall (quick,
@@ -210,22 +239,24 @@
 
   <h3 id="named-toc"><a name="named" id="named">Named
   macros</a></h3>A named macro, aka "stored procedure", uses this
-  syntax: <!--{{atr2html-->
+  syntax:
 
-  <p style="font-family: monospace;">
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
-  "#000080">store-procedure</font></strong><font color=
-  "#800080">&nbsp;&lt;unique-name&gt;&nbsp;["help-string"]</font><br>
+  <blockquote>
+    <!--{{atr2html-->
 
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;language&nbsp;element&gt;<br>
+    <p style="font-family: monospace;" class="code-block">
+    <strong><font color=
+    "#000080">store-procedure</font></strong><font color=
+    "#800080">&nbsp;&lt;unique-name&gt;&nbsp;["help-string"]</font><br>
 
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;...<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&lt;language&nbsp;element&gt;<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;...<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&lt;language&nbsp;element&gt;<br>
+    <font color="#008000">~endm</font><br>
+    <!--atr2html}}--></p>
+  </blockquote>
 
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;language&nbsp;element&gt;<br>
-
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
-  "#008000">~endm</font><br>
-  <!--atr2html}}--></p>where:
+  <p>where:</p>
 
   <dl>
     <dt>unique-name</dt>
@@ -247,22 +278,27 @@
 </pre>
 
   <p>Here's the stored procedure equivalent of macro number 30
-  above: <!--{{atr2html--></p>
+  above:</p>
 
-  <p style="font-family: monospace;">
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
-  "#000080">store-procedure</font></strong><font color=
-  "#800080">&nbsp;write-msg-tst&nbsp;"displays&nbsp;test&nbsp;message"</font><br>
+  <blockquote>
+    <!--{{atr2html-->
 
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">write-message</font></strong>&nbsp;<font color="#800080">"this&nbsp;is&nbsp;a&nbsp;test&nbsp;macro"</font><br>
+    <p style="font-family: monospace;" class="code-block">
+    <strong><font color=
+    "#000080">store-procedure</font></strong><font color=
+    "#800080">&nbsp;write-msg-tst&nbsp;"displays&nbsp;test&nbsp;message"</font><br>
 
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
-  "#008000">~endm</font><br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
-  "#000080">bind-key</font></strong>&nbsp;write-msg-tst&nbsp;<font color="#800080">#h</font><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
+    "#000080">write-message</font></strong>&nbsp;<font color=
+    "#800080">"this&nbsp;is&nbsp;a&nbsp;test&nbsp;macro"</font><br>
+    <font color="#008000">~endm</font><br>
+    <strong><font color=
+    "#000080">bind-key</font></strong>&nbsp;write-msg-tst&nbsp;<font color="#800080">#h</font><br>
 
-  <!--atr2html}}--></p>Two mechanisms now exist for executing this
-  macro:
+    <!--atr2html}}--></p>
+  </blockquote>
+
+  <p>Two mechanisms now exist for executing this macro:</p>
 
   <ul>
     <li>press "#h" within the editor, or</li>
@@ -272,7 +308,7 @@
     invoked from another macro, from a startup/configuration file,
     or from vile's command line, like so: <!--{{atr2html-->
 
-      <p style="font-family: monospace;">
+      <p style="font-family: monospace;" class="code-block">
       &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:write-msg-tst<br>
       <!--atr2html}}--></p>
     </li>
@@ -316,61 +352,83 @@
 </pre>
 
   <p>Unless overridden, the prompt for each parameter is named
-  after the keyword. Override the prompt by an assignment, e.g., 
-  <!--{{atr2html--></p>
+  after the keyword. Override the prompt by an assignment,
+  e.g.,</p>
 
-  <p style="font-family: monospace;">
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
-  "#000080">store-procedure</font></strong><font color=
-  "#800080">&nbsp;Filter&nbsp;f="Input"&nbsp;f="Output"</font><br>
-  <!--atr2html}}--></p>to begin a macro 'Filter' with two
-  parameters, Input and Output, internally referenced by $1 and $2.
+  <blockquote>
+    <!--{{atr2html-->
+
+    <p style="font-family: monospace;" class="code-block">
+    <strong><font color=
+    "#000080">store-procedure</font></strong><font color=
+    "#800080">&nbsp;Filter&nbsp;f="Input"&nbsp;f="Output"</font><br>
+
+    <!--atr2html}}--></p>
+  </blockquote>
+
+  <p>to begin a macro 'Filter' with two parameters, Input and
+  Output, internally referenced by $1 and $2.</p>
 
   <p>Here is a simple macro which accepts two parameters and uses
   them to position the cursor on a given line and zero-based
-  character offset. <!--{{atr2html--></p>
+  character offset.</p>
 
-  <p style="font-family: monospace;">
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
-  "#800000">;&nbsp;macro&nbsp;for&nbsp;wingrep&nbsp;and&nbsp;similar&nbsp;applications&nbsp;that&nbsp;can&nbsp;pass</font><br>
+  <blockquote>
+    <!--{{atr2html-->
 
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
-  "#800000">;&nbsp;both&nbsp;line-&nbsp;and&nbsp;column-number&nbsp;to&nbsp;external&nbsp;tools.</font><br>
+    <p style="font-family: monospace;" class="code-block">
+    <font color=
+    "#800000">;&nbsp;macro&nbsp;for&nbsp;wingrep&nbsp;and&nbsp;similar&nbsp;applications&nbsp;that&nbsp;can&nbsp;pass</font><br>
 
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
-  "#800000">;&nbsp;usage:&nbsp;"winvile&nbsp;+WinGrep&nbsp;$L&nbsp;$C&nbsp;$F"</font><br>
+    <font color=
+    "#800000">;&nbsp;both&nbsp;line-&nbsp;and&nbsp;column-number&nbsp;to&nbsp;external&nbsp;tools.</font><br>
 
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
-  "#000080">store-procedure</font></strong><font color=
-  "#800080">&nbsp;WinGrep&nbsp;i="Line"&nbsp;i="Offset"</font><br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~local</font>&nbsp;<font color="#008080">%col</font><br>
+    <font color=
+    "#800000">;&nbsp;usage:&nbsp;"winvile&nbsp;+WinGrep&nbsp;$L&nbsp;$C&nbsp;$F"</font><br>
 
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">setv</font></strong>&nbsp;<font color="#008080">%col</font>&nbsp;<font color="#008080">&amp;sub</font>&nbsp;<font color="#008080">$2</font>&nbsp;<strong><font color="#008080">1</font></strong><br>
+    <strong><font color=
+    "#000080">store-procedure</font></strong><font color=
+    "#800080">&nbsp;WinGrep&nbsp;i="Line"&nbsp;i="Offset"</font><br>
 
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008080">$1</font>&nbsp;<strong><font color="#000080">goto-line</font></strong><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
+    "#008000">~local</font>&nbsp;<font color=
+    "#008080">%col</font><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">setv</font></strong>&nbsp;<font color="#008080">%col</font>&nbsp;<font color="#008080">&amp;sub</font>&nbsp;<font color="#008080">$2</font>&nbsp;<strong><font color="#008080">1</font></strong><br>
 
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">beginning-of-line</font></strong><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
+    "#008080">$1</font>&nbsp;<strong><font color=
+    "#000080">goto-line</font></strong><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">beginning-of-line</font></strong><br>
 
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~if</font>&nbsp;<font color="#008080">&amp;ge</font>&nbsp;<font color="#008080">%col</font>&nbsp;<strong><font color="#008080">1</font></strong><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
+    "#008000">~if</font>&nbsp;<font color=
+    "#008080">&amp;ge</font>&nbsp;<font color=
+    "#008080">%col</font>&nbsp;<strong><font color=
+    "#008080">1</font></strong><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008080">%col</font>&nbsp;<strong><font color="#000080">forward-character-to-eol</font></strong><br>
 
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008080">%col</font>&nbsp;<strong><font color="#000080">forward-character-to-eol</font></strong><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
+    "#008000">~endif</font><br>
+    <font color="#008000">~endm</font><br>
+    <!--atr2html}}--></p>
+  </blockquote>
 
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~endif</font><br>
+  <p>The 'enum' parameter type is special; it requires a second
+  keyword which denotes the symbol table which is used for
+  name-completion. The table name (which cannot be abbreviated)
+  follows the 'enum' after a colon (:), e.g.,</p>
 
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
-  "#008000">~endm</font><br>
-  <!--atr2html}}--></p>The 'enum' parameter type is special; it
-  requires a second keyword which denotes the symbol table which is
-  used for name-completion. The table name (which cannot be
-  abbreviated) follows the 'enum' after a colon (:), e.g., 
-  <!--{{atr2html-->
+  <blockquote>
+    <!--{{atr2html-->
 
-  <p style="font-family: monospace;">
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
-  "#000080">store-procedure</font></strong><font color=
-  "#800080">&nbsp;Scheme&nbsp;e:fcolor="Foreground"</font><br>
-  <!--atr2html}}--></p>The 'enum' tables correspond to the
-  enumerated modes:
+    <p style="font-family: monospace;" class="code-block">
+    <strong><font color=
+    "#000080">store-procedure</font></strong><font color=
+    "#800080">&nbsp;Scheme&nbsp;e:fcolor="Foreground"</font><br>
+    <!--atr2html}}--></p>
+  </blockquote>
+
+  <p>The 'enum' tables correspond to the enumerated modes:</p>
   <pre>
         *bool
         backup-style
@@ -413,12 +471,15 @@
       was assigned to $return within the macro, $_ will contain a
       readable form of the exit status. These are the standard
       values used within vile:
-      <pre>
+
+      <blockquote>
+        <pre>
 TRUE
-        FALSE
-        ABORT
-        SORTOFTRUE
+FALSE
+ABORT
+SORTOFTRUE
 </pre>
+      </blockquote>
 
       <p>$_ may also contain the special symbol ERROR if the macro
       could not run, e.g., due to too much recursion, or if the
@@ -427,10 +488,12 @@ TRUE
   </dl>
 
   <h3 id="storing-toc"><a name="storing" id="storing">Storing
-  macros</a></h3>In general, macros are stored in the editor's
-  startup file. Prolific macro authors may instead opt to sprinkle
-  their macros across one or more external text files and source
-  those file(s) from the startup file.
+  macros</a></h3>
+
+  <p>In general, macros are stored in the editor's startup file.
+  Prolific macro authors may instead opt to sprinkle their macros
+  across one or more external text files and source those file(s)
+  from the startup file.</p>
   <hr>
   This concludes the discussion of the macro language execution
   framework.
@@ -455,16 +518,21 @@ TRUE
   <p>Note 2: Inline comments (comment text that follows a command)
   are permitted except when used in conjunction with commands that
   take optional arguments. Here follow two examples of unacceptable
-  usage: <!--{{atr2html--></p>
+  usage:</p>
 
-  <p style="font-family: monospace;">
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;winopen&nbsp;&nbsp;&nbsp;&nbsp;<font color="#800000">;&nbsp;invoke&nbsp;win32&nbsp;common&nbsp;open&nbsp;dialog</font><br>
+  <blockquote>
+    <!--{{atr2html-->
 
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
-  "#000080">write-file</font></strong>&nbsp;<font color=
-  "#800000">;&nbsp;flush&nbsp;curr&nbsp;buffer&nbsp;to&nbsp;disk</font><br>
+    <p style="font-family: monospace;" class="code-block">
+    winopen&nbsp;&nbsp;&nbsp;&nbsp;<font color=
+    "#800000">;&nbsp;invoke&nbsp;win32&nbsp;common&nbsp;open&nbsp;dialog</font><br>
 
-  <!--atr2html}}--></p>
+    <strong><font color=
+    "#000080">write-file</font></strong>&nbsp;<font color=
+    "#800000">;&nbsp;flush&nbsp;curr&nbsp;buffer&nbsp;to&nbsp;disk</font><br>
+
+    <!--atr2html}}--></p>
+  </blockquote>
 
   <p>In the first case, the winopen command attempts to browse ';'
   as a directory. In the second case, write-file flushes the
@@ -484,7 +552,7 @@ TRUE
   <h3 id="strings-toc"><a name="strings" id=
   "strings">Strings</a></h3>
 
-  <p>Like many simple language, the macro language operates
+  <p>Like many simple languages, the macro language operates
   exclusively on strings. That is to say, variables are always of
   type "string", and need not be declared in advance.</p>
 
@@ -669,24 +737,30 @@ TRUE
 
   <p>All temporary variables, and some state variables, may be
   assigned to, using the "set-variable" command, or "setv" for
-  short: <!--{{atr2html--></p>
+  short:</p>
 
-  <p style="font-family: monospace;">
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
-  "#000080">set-variable</font></strong>&nbsp;<font color=
-  "#008080">$search</font>&nbsp;<font color=
-  "#800080">"new&nbsp;pattern&nbsp;to&nbsp;look&nbsp;for"</font><br>
+  <blockquote>
+    <!--{{atr2html-->
 
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
-  "#000080">setv</font></strong>&nbsp;<font color=
-  "#008080">%index</font>&nbsp;<font color="#800080">"1"</font><br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
-  "#000080">setv</font></strong>&nbsp;<font color=
-  "#008080">%index2</font><strong><font color=
-  "#800000">=</font></strong><font color="#800080">"2"</font><br>
-  <!--atr2html}}--></p>An assignment may use either an equals (=)
-  sign, or whitespace to delimit the left/right sides of the
-  assignment, as shown.
+    <p style="font-family: monospace;" class="code-block">
+    <strong><font color=
+    "#000080">set-variable</font></strong>&nbsp;<font color=
+    "#008080">$search</font>&nbsp;<font color=
+    "#800080">"new&nbsp;pattern&nbsp;to&nbsp;look&nbsp;for"</font><br>
+
+    <strong><font color=
+    "#000080">setv</font></strong>&nbsp;<font color=
+    "#008080">%index</font>&nbsp;<font color=
+    "#800080">"1"</font><br>
+    <strong><font color=
+    "#000080">setv</font></strong>&nbsp;<font color=
+    "#008080">%index2</font><strong><font color=
+    "#800000">=</font></strong><font color="#800080">"2"</font><br>
+    <!--atr2html}}--></p>
+  </blockquote>
+
+  <p>An assignment may use either an equals (=) sign, or whitespace
+  to delimit the left/right sides of the assignment, as shown.</p>
 
   <h2 id="tempvars-toc"><a name="tempvars" id="tempvars">Temporary
   variables</a></h2>
@@ -978,25 +1052,28 @@ TRUE
     <dd>
       [READ ONLY] Returns the motion (keyword) associated with the
       current macro if it was defined using store-operator. Use
-      with $cmd-count to compose the complete motion, e.g., 
-      <!--{{atr2html-->
+      with $cmd-count to compose the complete motion, e.g.,
 
-      <p style="font-family: monospace;">
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
-      "#000080">set-variable</font></strong>&nbsp;<font color=
-      "#008080">$search</font>&nbsp;<font color=
-      "#800080">"new&nbsp;pattern&nbsp;to&nbsp;look&nbsp;for"</font><br>
+      <blockquote>
+        <!--{{atr2html-->
 
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
-      "#000080">setv</font></strong>&nbsp;<font color=
-      "#008080">%index</font>&nbsp;<font color=
-      "#800080">"1"</font><br>
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
-      "#000080">setv</font></strong>&nbsp;<font color=
-      "#008080">%index2</font><strong><font color=
-      "#800000">=</font></strong><font color=
-      "#800080">"2"</font><br>
-      <!--atr2html}}--></p>
+        <p style="font-family: monospace;" class="code-block">
+        <strong><font color=
+        "#000080">set-variable</font></strong>&nbsp;<font color=
+        "#008080">$search</font>&nbsp;<font color=
+        "#800080">"new&nbsp;pattern&nbsp;to&nbsp;look&nbsp;for"</font><br>
+
+        <strong><font color=
+        "#000080">setv</font></strong>&nbsp;<font color=
+        "#008080">%index</font>&nbsp;<font color=
+        "#800080">"1"</font><br>
+        <strong><font color=
+        "#000080">setv</font></strong>&nbsp;<font color=
+        "#008080">%index2</font><strong><font color=
+        "#800000">=</font></strong><font color=
+        "#800080">"2"</font><br>
+        <!--atr2html}}--></p>
+      </blockquote>
     </dd>
 
     <dt><a name="modevar-cryptkey" id=
@@ -1661,24 +1738,32 @@ TRUE
 
   <p>They are so similar to a query function that there is function
   which serves this exact purpose, and which should be used in
-  preference. Thus, one might have previously written: 
-  <!--{{atr2html--></p>
+  preference. Thus, one might have previously written:</p>
 
-  <p style="font-family: monospace;">
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
-  "#000080">set-variable</font></strong>&nbsp;<font color=
-  "#008080">%file</font>&nbsp;@<font color=
-  "#800080">"What&nbsp;file?"</font><br>
-  <!--atr2html}}--></p>Instead, one should now write: 
-  <!--{{atr2html-->
+  <blockquote>
+    <!--{{atr2html-->
 
-  <p style="font-family: monospace;">
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
-  "#000080">set-variable</font></strong>&nbsp;<font color=
-  "#008080">%file</font>&nbsp;<font color=
-  "#008080">&amp;query</font>&nbsp;<font color=
-  "#800080">"What&nbsp;file?"</font><br>
-  <!--atr2html}}--></p>
+    <p style="font-family: monospace;" class="code-block">
+    <strong><font color=
+    "#000080">set-variable</font></strong>&nbsp;<font color=
+    "#008080">%file</font>&nbsp;@<font color=
+    "#800080">"What&nbsp;file?"</font><br>
+    <!--atr2html}}--></p>
+  </blockquote>
+
+  <p>Instead, one should now write:</p>
+
+  <blockquote>
+    <!--{{atr2html-->
+
+    <p style="font-family: monospace;" class="code-block">
+    <strong><font color=
+    "#000080">set-variable</font></strong>&nbsp;<font color=
+    "#008080">%file</font>&nbsp;<font color=
+    "#008080">&amp;query</font>&nbsp;<font color=
+    "#800080">"What&nbsp;file?"</font><br>
+    <!--atr2html}}--></p>
+  </blockquote>
 
   <h2 id="functions-toc"><a name="functions" id=
   "functions">Functions</a></h2>
@@ -2098,14 +2183,19 @@ TRUE
 
     <dd>
       Evaluate value of "S" as a macro language variable itself.
-      Thus if %foo has value "HOME", then <!--{{atr2html-->
+      Thus if %foo has value "HOME", then
 
-      <p style="font-family: monospace;">
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
-      "#008080">&amp;env</font>&nbsp;<font color=
-      "#008080">&amp;indirect</font>&nbsp;<font color=
-      "#008080">%foo</font><br>
-      <!--atr2html}}--></p>will return the home directory pathname.
+      <blockquote>
+        <!--{{atr2html-->
+
+        <p style="font-family: monospace;" class="code-block">
+        <font color="#008080">&amp;env</font>&nbsp;<font color=
+        "#008080">&amp;indirect</font>&nbsp;<font color=
+        "#008080">%foo</font><br>
+        <!--atr2html}}--></p>
+      </blockquote>
+
+      <p>will return the home directory pathname.</p>
     </dd>
 
     <dt><a name="amp-local" id="amp-local">&amp;local
@@ -2251,34 +2341,48 @@ TRUE
 
   <p>You can suppress not only the check for success or failure of
   a macro as in ~force, but also the screen refresh, making macros
-  run more rapidly. For example <!--{{atr2html--></p>
+  run more rapidly. For example</p>
 
-  <p style="font-family: monospace;">
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
-  "#008080">30</font></strong>&nbsp;<strong><font color=
-  "#000080">store-macro</font></strong><br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">write-message</font></strong>&nbsp;<font color="#800080">"[Attaching&nbsp;C/C++&nbsp;attributes...]"</font><br>
+  <blockquote>
+    <!--{{atr2html-->
 
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~local</font>&nbsp;<font color="#008080">$curcol</font>&nbsp;<font color="#008080">$curline</font><br>
+    <p style="font-family: monospace;" class="code-block">
+    <strong><font color=
+    "#008080">30</font></strong>&nbsp;<strong><font color=
+    "#000080">store-macro</font></strong><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
+    "#000080">write-message</font></strong>&nbsp;<font color=
+    "#800080">"[Attaching&nbsp;C/C++&nbsp;attributes...]"</font><br>
 
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~hidden</font>&nbsp;<strong><font color="#000080">goto-beginning-of-file</font></strong><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;<font color=
+    "#008000">~local</font>&nbsp;<font color=
+    "#008080">$curcol</font>&nbsp;<font color=
+    "#008080">$curline</font><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;<font color=
+    "#008000">~hidden</font>&nbsp;<strong><font color=
+    "#000080">goto-beginning-of-file</font></strong><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;<font color=
+    "#008000">~hidden</font>&nbsp;<strong><font color=
+    "#000080">attribute-from-filter</font></strong>&nbsp;<strong><font color="#000080">end-of-file</font></strong>&nbsp;<font color="#800080">"vile-c-filt"</font><br>
 
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~hidden</font>&nbsp;<strong><font color="#000080">attribute-from-filter</font></strong>&nbsp;<strong><font color="#000080">end-of-file</font></strong>&nbsp;<font color="#800080">"vile-c-filt"</font><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
+    "#000080">write-message</font></strong>&nbsp;<font color=
+    "#800080">"[Attaching&nbsp;C/C++&nbsp;attributes...done&nbsp;]"</font><br>
 
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">write-message</font></strong>&nbsp;<font color="#800080">"[Attaching&nbsp;C/C++&nbsp;attributes...done&nbsp;]"</font><br>
+    <font color="#008000">~endm</font><br>
+    <strong><font color=
+    "#000080">bind-key</font></strong>&nbsp;<strong><font color=
+    "#000080">execute-macro-30</font></strong>&nbsp;<font color=
+    "#800080">^X-q</font><br>
+    <!--atr2html}}--></p>
+  </blockquote>
 
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
-  "#008000">~endm</font><br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
-  "#000080">bind-key</font></strong>&nbsp;<strong><font color=
-  "#000080">execute-macro-30</font></strong>&nbsp;<font color=
-  "#800080">^X-q</font><br>
-  <!--atr2html}}--></p>causes the screen updates from moving the
-  current position to the beginning of the file and then filtering
-  (which moves the position to the end-of-file) to be suppressed.
-  The screen will be updated after completion of the macro, after
-  the current position has been restored from the values saved with
-  the ~local directive.
+  <p>causes the screen updates from moving the current position to
+  the beginning of the file and then filtering (which moves the
+  position to the end-of-file) to be suppressed. The screen will be
+  updated after completion of the macro, after the current position
+  has been restored from the values saved with the ~local
+  directive.</p>
 
   <h3 id="quiet-toc">~<a name="quiet" id="quiet">quiet</a></h3>
 
@@ -2292,217 +2396,248 @@ TRUE
   manner. The ~if directive is followed by a string which is
   evaluated for truth or falsehood according to the rules outlines
   for boolean variables, above. The following fragment demonstrates
-  the use of this family of directives: <!--{{atr2html--></p>
+  the use of this family of directives:</p>
 
-  <p style="font-family: monospace;">
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
-  "#000080">beginning-of-line</font></strong><br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
-  "#800000">;&nbsp;test&nbsp;for&nbsp;'#'</font><br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
-  "#008000">~if</font>&nbsp;<font color=
-  "#008080">&amp;equ</font>&nbsp;<font color=
-  "#008080">$char</font>&nbsp;<strong><font color=
-  "#008080">35</font></strong><br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">set-variable</font></strong>&nbsp;<font color="#008080">%comment-type</font>&nbsp;<font color="#800080">"shell&nbsp;comment"</font><br>
+  <blockquote>
+    <!--{{atr2html-->
 
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
-  "#800000">;&nbsp;test&nbsp;for&nbsp;';'</font><br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
-  "#008000">~elseif</font>&nbsp;<font color=
-  "#008080">&amp;equ</font>&nbsp;<font color=
-  "#008080">$char</font>&nbsp;<strong><font color=
-  "#008080">59</font></strong><br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">set-variable</font></strong>&nbsp;<font color="#008080">%comment-type</font>&nbsp;<font color="#800080">"vile&nbsp;macro&nbsp;language&nbsp;comment"</font><br>
+    <p style="font-family: monospace;" class="code-block">
+    <strong><font color=
+    "#000080">beginning-of-line</font></strong><br>
+    <font color="#800000">;&nbsp;test&nbsp;for&nbsp;'#'</font><br>
+    <font color="#008000">~if</font>&nbsp;<font color=
+    "#008080">&amp;equ</font>&nbsp;<font color=
+    "#008080">$char</font>&nbsp;<strong><font color=
+    "#008080">35</font></strong><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
+    "#000080">set-variable</font></strong>&nbsp;<font color=
+    "#008080">%comment-type</font>&nbsp;<font color=
+    "#800080">"shell&nbsp;comment"</font><br>
+    <font color="#800000">;&nbsp;test&nbsp;for&nbsp;';'</font><br>
+    <font color="#008000">~elseif</font>&nbsp;<font color=
+    "#008080">&amp;equ</font>&nbsp;<font color=
+    "#008080">$char</font>&nbsp;<strong><font color=
+    "#008080">59</font></strong><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
+    "#000080">set-variable</font></strong>&nbsp;<font color=
+    "#008080">%comment-type</font>&nbsp;<font color=
+    "#800080">"vile&nbsp;macro&nbsp;language&nbsp;comment"</font><br>
 
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
-  "#008000">~else</font><br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">write-message</font></strong>&nbsp;<font color="#800080">"Not&nbsp;an&nbsp;expected&nbsp;comment&nbsp;type"</font><br>
+    <font color="#008000">~else</font><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
+    "#000080">write-message</font></strong>&nbsp;<font color=
+    "#800080">"Not&nbsp;an&nbsp;expected&nbsp;comment&nbsp;type"</font><br>
 
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~return</font><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;<font color=
+    "#008000">~return</font><br>
+    <font color="#008000">~endif</font><br>
+    <strong><font color=
+    "#000080">write-message</font></strong>&nbsp;<font color=
+    "#008080">&amp;cat</font>&nbsp;<font color=
+    "#800080">"The&nbsp;current&nbsp;line&nbsp;is&nbsp;a&nbsp;"</font>&nbsp;<font color="#008080">%comment-type</font><br>
 
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
-  "#008000">~endif</font><br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
-  "#000080">write-message</font></strong>&nbsp;<font color=
-  "#008080">&amp;cat</font>&nbsp;<font color=
-  "#800080">"The&nbsp;current&nbsp;line&nbsp;is&nbsp;a&nbsp;"</font>&nbsp;<font color="#008080">%comment-type</font><br>
-
-  <!--atr2html}}--></p>
+    <!--atr2html}}--></p>
+  </blockquote>
 
   <h3 id="goto-toc">~<a name="goto" id="goto">goto</a></h3>
 
   <p>What would a decent programming language be without a "goto"?
   The ~goto directive is followed by the name of a label. Labels
   may appear anywhere in the current macro definition, and are
-  themselves preceded with a * character. <!--{{atr2html--></p>
+  themselves preceded with a * character.</p>
 
-  <p style="font-family: monospace;">
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~force</font>&nbsp;<strong><font color="#000080">up-line</font></strong><br>
+  <blockquote>
+    <!--{{atr2html-->
 
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;<font color="#008080">&amp;not</font>&nbsp;<font color="#008080">$status</font><br>
-
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~goto</font>&nbsp;foundtop<br>
-
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;...<br>
-
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;...<br>
-
-  <br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*foundtop<br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">write-message</font></strong>&nbsp;<font color="#800080">"At&nbsp;top&nbsp;of&nbsp;buffer"</font><br>
-
-  <!--atr2html}}--></p>
+    <p style="font-family: monospace;" class="code-block">
+    &nbsp;&nbsp;&nbsp;&nbsp;<font color=
+    "#008000">~force</font>&nbsp;<strong><font color=
+    "#000080">up-line</font></strong><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;if&nbsp;<font color=
+    "#008080">&amp;not</font>&nbsp;<font color=
+    "#008080">$status</font><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
+    "#008000">~goto</font>&nbsp;foundtop<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;...<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;...<br>
+    <br>
+    *foundtop<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
+    "#000080">write-message</font></strong>&nbsp;<font color=
+    "#800080">"At&nbsp;top&nbsp;of&nbsp;buffer"</font><br>
+    <!--atr2html}}--></p>
+  </blockquote>
 
   <h3 id="while-toc">~<a name="while" id="while">while and
   ~endwhile</a></h3>
 
   <p>The block of statements bracketed by ~while and ~endwhile are
   executed repeatedly, until the condition being tested by ~while
-  becomes false. <!--{{atr2html--></p>
+  becomes false.</p>
 
-  <p style="font-family: monospace;">
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
-  "#800000">;&nbsp;how&nbsp;many&nbsp;occurrences&nbsp;of&nbsp;a&nbsp;given&nbsp;pattern&nbsp;in&nbsp;a&nbsp;buffer?</font><br>
+  <blockquote>
+    <!--{{atr2html-->
 
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
-  "#000080">set</font></strong>&nbsp;<strong><font color=
-  "#000080">nowrapscan</font></strong><br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
-  "#000080">set-variable</font></strong>&nbsp;<font color=
-  "#008080">%lookfor</font>&nbsp;somepattern<br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
-  "#800000">;&nbsp;we'll&nbsp;count&nbsp;one&nbsp;too&nbsp;many</font><br>
+    <p style="font-family: monospace;" class="code-block">
+    <font color=
+    "#800000">;&nbsp;how&nbsp;many&nbsp;occurrences&nbsp;of&nbsp;a&nbsp;given&nbsp;pattern&nbsp;in&nbsp;a&nbsp;buffer?</font><br>
 
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
-  "#000080">set-variable</font></strong>&nbsp;<font color=
-  "#008080">%howmany</font>&nbsp;<font color=
-  "#800080">"-1"</font><br>
-  <br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
-  "#000080">set-variable</font></strong>&nbsp;<font color=
-  "#008080">%continue</font>&nbsp;yes<br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
-  "#008000">~while</font>&nbsp;<font color=
-  "#008080">%continue</font><br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~force</font>&nbsp;<strong><font color="#000080">search-forward</font></strong>&nbsp;<font color="#008080">%lookfor</font><br>
+    <strong><font color=
+    "#000080">set</font></strong>&nbsp;<strong><font color=
+    "#000080">nowrapscan</font></strong><br>
+    <strong><font color=
+    "#000080">set-variable</font></strong>&nbsp;<font color=
+    "#008080">%lookfor</font>&nbsp;somepattern<br>
+    <font color=
+    "#800000">;&nbsp;we'll&nbsp;count&nbsp;one&nbsp;too&nbsp;many</font><br>
 
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">set-variable</font></strong>&nbsp;<font color="#008080">%continue</font>&nbsp;<font color="#008080">$status</font><br>
+    <strong><font color=
+    "#000080">set-variable</font></strong>&nbsp;<font color=
+    "#008080">%howmany</font>&nbsp;<font color=
+    "#800080">"-1"</font><br>
+    <br>
+    <strong><font color=
+    "#000080">set-variable</font></strong>&nbsp;<font color=
+    "#008080">%continue</font>&nbsp;yes<br>
+    <font color="#008000">~while</font>&nbsp;<font color=
+    "#008080">%continue</font><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;<font color=
+    "#008000">~force</font>&nbsp;<strong><font color=
+    "#000080">search-forward</font></strong>&nbsp;<font color=
+    "#008080">%lookfor</font><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
+    "#000080">set-variable</font></strong>&nbsp;<font color=
+    "#008080">%continue</font>&nbsp;<font color=
+    "#008080">$status</font><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
+    "#000080">set-variable</font></strong>&nbsp;<font color=
+    "#008080">%howmany</font>&nbsp;<font color=
+    "#008080">&amp;add</font>&nbsp;<font color=
+    "#008080">%howmany</font>&nbsp;<font color=
+    "#800080">"1"</font><br>
+    <font color="#008000">~endwhile</font><br>
+    <br>
+    <strong><font color=
+    "#000080">write-message</font></strong>&nbsp;<font color=
+    "#008080">&amp;cat</font>&nbsp;<font color=
+    "#008080">&amp;cat</font>&nbsp;<font color=
+    "#008080">%howmany</font>&nbsp;<font color=
+    "#800080">"&nbsp;appearances&nbsp;of&nbsp;"</font>&nbsp;<font color="#008080">%lookfor</font><br>
 
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">set-variable</font></strong>&nbsp;<font color="#008080">%howmany</font>&nbsp;<font color="#008080">&amp;add</font>&nbsp;<font color="#008080">%howmany</font>&nbsp;<font color="#800080">"1"</font><br>
-
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
-  "#008000">~endwhile</font><br>
-  <br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
-  "#000080">write-message</font></strong>&nbsp;<font color=
-  "#008080">&amp;cat</font>&nbsp;<font color=
-  "#008080">&amp;cat</font>&nbsp;<font color=
-  "#008080">%howmany</font>&nbsp;<font color=
-  "#800080">"&nbsp;appearances&nbsp;of&nbsp;"</font>&nbsp;<font color="#008080">%lookfor</font><br>
-
-  <!--atr2html}}--></p>
+    <!--atr2html}}--></p>
+  </blockquote>
 
   <h3 id="break-toc">~<a name="break" id="break">break</a></h3>
 
   <p>The ~break directive allows early termination of an enclosing
-  while-loop. Extending the above example: <!--{{atr2html--></p>
+  while-loop. Extending the above example:</p>
 
-  <p style="font-family: monospace;">
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
-  "#800000">;&nbsp;count&nbsp;the&nbsp;occurrences&nbsp;of&nbsp;a&nbsp;pattern&nbsp;in&nbsp;all&nbsp;buffers</font><br>
+  <blockquote>
+    <!--{{atr2html-->
 
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
-  "#000080">set</font></strong>&nbsp;<strong><font color=
-  "#000080">nowrapscan</font></strong><br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
-  "#000080">set</font></strong>&nbsp;<strong><font color=
-  "#000080">noautobuffer</font></strong><br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
-  "#000080">rewind</font></strong><br>
-  <br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
-  "#000080">set-variable</font></strong>&nbsp;<font color=
-  "#008080">%lookfor</font>&nbsp;pgf<br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
-  "#000080">set-variable</font></strong>&nbsp;<font color=
-  "#008080">%howmany</font>&nbsp;<font color=
-  "#800080">"0"</font><br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
-  "#000080">set-variable</font></strong>&nbsp;<font color=
-  "#008080">%buffers</font>&nbsp;<font color=
-  "#800080">"1"</font><br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
-  "#000080">set-variable</font></strong>&nbsp;<font color=
-  "#008080">%cont</font>&nbsp;yes<br>
-  <br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
-  "#008000">~while</font>&nbsp;true<br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">goto-beginning-of-file</font></strong><br>
+    <p style="font-family: monospace;" class="code-block">
+    <font color=
+    "#800000">;&nbsp;count&nbsp;the&nbsp;occurrences&nbsp;of&nbsp;a&nbsp;pattern&nbsp;in&nbsp;all&nbsp;buffers</font><br>
 
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~while</font>&nbsp;true<br>
+    <strong><font color=
+    "#000080">set</font></strong>&nbsp;<strong><font color=
+    "#000080">nowrapscan</font></strong><br>
+    <strong><font color=
+    "#000080">set</font></strong>&nbsp;<strong><font color=
+    "#000080">noautobuffer</font></strong><br>
+    <strong><font color="#000080">rewind</font></strong><br>
+    <br>
+    <strong><font color=
+    "#000080">set-variable</font></strong>&nbsp;<font color=
+    "#008080">%lookfor</font>&nbsp;pgf<br>
+    <strong><font color=
+    "#000080">set-variable</font></strong>&nbsp;<font color=
+    "#008080">%howmany</font>&nbsp;<font color=
+    "#800080">"0"</font><br>
+    <strong><font color=
+    "#000080">set-variable</font></strong>&nbsp;<font color=
+    "#008080">%buffers</font>&nbsp;<font color=
+    "#800080">"1"</font><br>
+    <strong><font color=
+    "#000080">set-variable</font></strong>&nbsp;<font color=
+    "#008080">%cont</font>&nbsp;yes<br>
+    <br>
+    <font color="#008000">~while</font>&nbsp;true<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
+    "#000080">goto-beginning-of-file</font></strong><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;<font color=
+    "#008000">~while</font>&nbsp;true<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
+    "#008000">~force</font>&nbsp;<strong><font color=
+    "#000080">search-forward</font></strong>&nbsp;<font color=
+    "#008080">%lookfor</font><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
+    "#008000">~if</font>&nbsp;<font color=
+    "#008080">&amp;not</font>&nbsp;<font color=
+    "#008080">$status</font><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~break</font><br>
 
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~force</font>&nbsp;<strong><font color="#000080">search-forward</font></strong>&nbsp;<font color="#008080">%lookfor</font><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
+    "#008000">~endif</font><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">set-variable</font></strong>&nbsp;<font color="#008080">%howmany</font>&nbsp;<font color="#008080">&amp;add</font>&nbsp;<font color="#008080">%howmany</font>&nbsp;<font color="#800080">"1"</font><br>
 
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~if</font>&nbsp;<font color="#008080">&amp;not</font>&nbsp;<font color="#008080">$status</font><br>
-
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~break</font><br>
-
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~endif</font><br>
-
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">set-variable</font></strong>&nbsp;<font color="#008080">%howmany</font>&nbsp;<font color="#008080">&amp;add</font>&nbsp;<font color="#008080">%howmany</font>&nbsp;<font color="#800080">"1"</font><br>
-
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~endwhile</font><br>
-
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~force</font>&nbsp;<strong><font color="#000080">next-buffer</font></strong><br>
-
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~if</font>&nbsp;<font color="#008080">&amp;not</font>&nbsp;<font color="#008080">$status</font><br>
-
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~break</font><br>
-
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~endif</font><br>
-
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">set-variable</font></strong>&nbsp;<font color="#008080">%buffers</font>&nbsp;<font color="#008080">&amp;add</font>&nbsp;<font color="#008080">%buffers</font>&nbsp;<font color="#800080">"1"</font><br>
-
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
-  "#008000">~endwhile</font><br>
-  <br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
-  "#000080">set-variable</font></strong>&nbsp;<font color=
-  "#008080">%msg</font>&nbsp;&nbsp;<font color=
-  "#008080">%lookfor</font><br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
-  "#000080">set-variable</font></strong>&nbsp;<font color=
-  "#008080">%msg</font>&nbsp;&nbsp;<font color=
-  "#008080">&amp;cat</font>&nbsp;<font color=
-  "#800080">"&nbsp;appeared&nbsp;"</font><br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
-  "#000080">set-variable</font></strong>&nbsp;<font color=
-  "#008080">%msg</font>&nbsp;&nbsp;<font color=
-  "#008080">&amp;cat</font>&nbsp;<font color=
-  "#008080">%howmany</font><br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
-  "#000080">set-variable</font></strong>&nbsp;<font color=
-  "#008080">%msg</font>&nbsp;&nbsp;<font color=
-  "#008080">&amp;cat</font>&nbsp;<font color=
-  "#008080">%msg</font>&nbsp;<font color=
-  "#800080">"&nbsp;times&nbsp;in&nbsp;"</font><br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
-  "#000080">set-variable</font></strong>&nbsp;<font color=
-  "#008080">%msg</font>&nbsp;&nbsp;<font color=
-  "#008080">&amp;cat</font>&nbsp;<font color=
-  "#008080">%msg</font>&nbsp;<font color=
-  "#008080">%buffers</font><br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
-  "#000080">set-variable</font></strong>&nbsp;<font color=
-  "#008080">%msg</font>&nbsp;&nbsp;<font color=
-  "#008080">&amp;cat</font>&nbsp;<font color=
-  "#008080">%msg</font>&nbsp;<font color=
-  "#800080">"&nbsp;buffers."</font><br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
-  "#000080">write-message</font></strong>&nbsp;<font color=
-  "#008080">%msg</font><br>
-  <!--atr2html}}--></p>
+    &nbsp;&nbsp;&nbsp;&nbsp;<font color=
+    "#008000">~endwhile</font><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;<font color=
+    "#008000">~force</font>&nbsp;<strong><font color=
+    "#000080">next-buffer</font></strong><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;<font color=
+    "#008000">~if</font>&nbsp;<font color=
+    "#008080">&amp;not</font>&nbsp;<font color=
+    "#008080">$status</font><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
+    "#008000">~break</font><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~endif</font><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
+    "#000080">set-variable</font></strong>&nbsp;<font color=
+    "#008080">%buffers</font>&nbsp;<font color=
+    "#008080">&amp;add</font>&nbsp;<font color=
+    "#008080">%buffers</font>&nbsp;<font color=
+    "#800080">"1"</font><br>
+    <font color="#008000">~endwhile</font><br>
+    <br>
+    <strong><font color=
+    "#000080">set-variable</font></strong>&nbsp;<font color=
+    "#008080">%msg</font>&nbsp;&nbsp;<font color=
+    "#008080">%lookfor</font><br>
+    <strong><font color=
+    "#000080">set-variable</font></strong>&nbsp;<font color=
+    "#008080">%msg</font>&nbsp;&nbsp;<font color=
+    "#008080">&amp;cat</font>&nbsp;<font color=
+    "#800080">"&nbsp;appeared&nbsp;"</font><br>
+    <strong><font color=
+    "#000080">set-variable</font></strong>&nbsp;<font color=
+    "#008080">%msg</font>&nbsp;&nbsp;<font color=
+    "#008080">&amp;cat</font>&nbsp;<font color=
+    "#008080">%howmany</font><br>
+    <strong><font color=
+    "#000080">set-variable</font></strong>&nbsp;<font color=
+    "#008080">%msg</font>&nbsp;&nbsp;<font color=
+    "#008080">&amp;cat</font>&nbsp;<font color=
+    "#008080">%msg</font>&nbsp;<font color=
+    "#800080">"&nbsp;times&nbsp;in&nbsp;"</font><br>
+    <strong><font color=
+    "#000080">set-variable</font></strong>&nbsp;<font color=
+    "#008080">%msg</font>&nbsp;&nbsp;<font color=
+    "#008080">&amp;cat</font>&nbsp;<font color=
+    "#008080">%msg</font>&nbsp;<font color=
+    "#008080">%buffers</font><br>
+    <strong><font color=
+    "#000080">set-variable</font></strong>&nbsp;<font color=
+    "#008080">%msg</font>&nbsp;&nbsp;<font color=
+    "#008080">&amp;cat</font>&nbsp;<font color=
+    "#008080">%msg</font>&nbsp;<font color=
+    "#800080">"&nbsp;buffers."</font><br>
+    <strong><font color=
+    "#000080">write-message</font></strong>&nbsp;<font color=
+    "#008080">%msg</font><br>
+    <!--atr2html}}--></p>
+  </blockquote>
 
   <h3 id="return-toc">~<a name="return" id="return">return</a></h3>
 
@@ -2517,18 +2652,23 @@ TRUE
   the directive specifies a temporary variable which was not
   defined before, it will be deleted rather than restored.</p>
 
-  <p>For example: <!--{{atr2html--></p>
+  <p>For example:</p>
 
-  <p style="font-family: monospace;">
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
-  "#008000">~local</font>&nbsp;<font color=
-  "#008080">$curcol</font>&nbsp;<font color=
-  "#008080">$curline</font><br>
-  <!--atr2html}}--></p>will restore the cursor position. The order
-  is important in this example, because vile restores the variables
-  in the reverse order of the ~local declaration. If $curline is
-  set, $curcol will be reset to the first column as a side effect.
-  So we specify that $curcol is restored last.
+  <blockquote>
+    <!--{{atr2html-->
+
+    <p style="font-family: monospace;" class="code-block">
+    <font color="#008000">~local</font>&nbsp;<font color=
+    "#008080">$curcol</font>&nbsp;<font color=
+    "#008080">$curline</font><br>
+    <!--atr2html}}--></p>
+  </blockquote>
+
+  <p>will restore the cursor position. The order is important in
+  this example, because vile restores the variables in the reverse
+  order of the ~local declaration. If $curline is set, $curcol will
+  be reset to the first column as a side effect. So we specify that
+  $curcol is restored last.</p>
 
   <p>~local can save/restore the state of mode variables [1], user
   variables and the state variables shown with show-variables. Note
@@ -2551,37 +2691,45 @@ TRUE
   convenience for fences; otherwise it functions just as ~with
   does.</p>
 
-  <p>For example, use <!--{{atr2html--></p>
+  <p>For example, use</p>
 
-  <p style="font-family: monospace;">
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
-  "#000080">define-mode</font></strong>&nbsp;<em>txt</em><br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
-  "#008000">~with</font>&nbsp;<strong><font color=
-  "#000080">define-submode</font></strong>&nbsp;<em>txt</em><br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">suf</font></strong>&nbsp;<font color="#800080">"\\.txt$"</font><br>
+  <blockquote>
+    <!--{{atr2html-->
 
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">comment-prefix</font></strong>&nbsp;<font color="#800080">"^\\s*/\\?--"</font><br>
+    <p style="font-family: monospace;" class="code-block">
+    <strong><font color=
+    "#000080">define-mode</font></strong>&nbsp;<em>txt</em><br>
+    <font color="#008000">~with</font>&nbsp;<strong><font color=
+    "#000080">define-submode</font></strong>&nbsp;<em>txt</em><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">suf</font></strong>&nbsp;<font color="#800080">"\\.txt$"</font><br>
 
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">comments</font></strong>&nbsp;<font color="#800080">"^\\s*/\\?--\\s+/\\?\\s*$"</font><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">comment-prefix</font></strong>&nbsp;<font color="#800080">"^\\s*/\\?--"</font><br>
 
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
-  "#008000">~endwith</font><br>
-  <!--atr2html}}--></p>rather than <!--{{atr2html-->
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">comments</font></strong>&nbsp;<font color="#800080">"^\\s*/\\?--\\s+/\\?\\s*$"</font><br>
 
-  <p style="font-family: monospace;">
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
-  "#000080">define-mode</font></strong>&nbsp;<em>txt</em><br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
-  "#000080">define-submode</font></strong>&nbsp;<em>txt</em>&nbsp;<strong><font color="#000080">suf</font></strong>&nbsp;<font color="#800080">"\\.txt$"</font><br>
+    <font color="#008000">~endwith</font><br>
+    <!--atr2html}}--></p>
+  </blockquote>
 
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
-  "#000080">define-submode</font></strong>&nbsp;<em>txt</em>&nbsp;<strong><font color="#000080">comment-prefix</font></strong>&nbsp;<font color="#800080">"^\\s*/\\?--"</font><br>
+  <p>rather than</p>
 
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
-  "#000080">define-submode</font></strong>&nbsp;<em>txt</em>&nbsp;<strong><font color="#000080">comments</font></strong>&nbsp;<font color="#800080">"^\\s*/\\?--\\s+/\\?\\s*$"</font><br>
+  <blockquote>
+    <!--{{atr2html-->
 
-  <!--atr2html}}--></p>
+    <p style="font-family: monospace;" class="code-block">
+    <strong><font color=
+    "#000080">define-mode</font></strong>&nbsp;<em>txt</em><br>
+    <strong><font color=
+    "#000080">define-submode</font></strong>&nbsp;<em>txt</em>&nbsp;<strong><font color="#000080">suf</font></strong>&nbsp;<font color="#800080">"\\.txt$"</font><br>
+
+    <strong><font color=
+    "#000080">define-submode</font></strong>&nbsp;<em>txt</em>&nbsp;<strong><font color="#000080">comment-prefix</font></strong>&nbsp;<font color="#800080">"^\\s*/\\?--"</font><br>
+
+    <strong><font color=
+    "#000080">define-submode</font></strong>&nbsp;<em>txt</em>&nbsp;<strong><font color="#000080">comments</font></strong>&nbsp;<font color="#800080">"^\\s*/\\?--\\s+/\\?\\s*$"</font><br>
+
+    <!--atr2html}}--></p>
+  </blockquote>
 
   <h3 id="tracing-toc">~<a name="tracing" id=
   "tracing">trace</a></h3>No program is complete without a few
@@ -2591,23 +2739,37 @@ TRUE
   each line executed, the local variables saved/restored and
   intermediate states of expression evaluation.
 
-  <p>For example, <!--{{atr2html--></p>
+  <p>For example,</p>
 
-  <p style="font-family: monospace;">
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
-  "#008000">~trace</font>&nbsp;on<br>
-  <!--atr2html}}--></p>activates tracing, <!--{{atr2html-->
+  <blockquote>
+    <!--{{atr2html-->
 
-  <p style="font-family: monospace;">
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
-  "#008000">~trace</font>&nbsp;off<br>
-  <!--atr2html}}--></p>deactivates it, and <!--{{atr2html-->
+    <p style="font-family: monospace;" class="code-block">
+    <font color="#008000">~trace</font>&nbsp;on<br>
+    <!--atr2html}}--></p>
+  </blockquote>
 
-  <p style="font-family: monospace;">
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
-  "#008000">~trace</font><br>
-  <!--atr2html}}--></p>prints a message telling if tracing is
-  active.
+  <p>activates tracing,</p>
+
+  <blockquote>
+    <!--{{atr2html-->
+
+    <p style="font-family: monospace;" class="code-block">
+    <font color="#008000">~trace</font>&nbsp;off<br>
+    <!--atr2html}}--></p>
+  </blockquote>
+
+  <p>deactivates it, and</p>
+
+  <blockquote>
+    <!--{{atr2html-->
+
+    <p style="font-family: monospace;" class="code-block">
+    <font color="#008000">~trace</font><br>
+    <!--atr2html}}--></p>
+  </blockquote>
+
+  <p>prints a message telling if tracing is active.</p>
 
   <h2 id="commands-toc"><a name="commands" id="commands">Editor
   commands</a></h2>
@@ -2621,11 +2783,14 @@ TRUE
   command bound to a specific key, use "describe-key". The format
   of the apropos, describe-key, and show-commands listing is as
   follows:</p>
-  <pre>
-        command-name             optional-key-binding(s)
-        optional-command-name-aliases
-        (help-string)
+
+  <blockquote>
+    <pre class="code-block">
+command-name             optional-key-binding(s)
+optional-command-name-aliases
+(help-string)
 </pre>
+  </blockquote>
 
   <p>Commands fall into three broad categories: simple, motion,
   operator.</p>
@@ -2636,46 +2801,59 @@ TRUE
   region (the "region" concept is explained in the "Motion
   commands" section below). An example of a simple command is
   "find-tag", and here's the listing returned by show-commands:
-  <pre>
-        "find-tag"               ^]
-          or            "ta"
-          or            "tag"
-          ( look up the given (or under-cursor) name as a "tag" )
-</pre>From the perspective of writing a macro, it can be seen that
-find-tag has two aliases, either of which may be substituted for
-the "find-tag" name within a macro definition. Notice that the help
-string mentions a "name" argument and sure enough, if you type
-":find-tag" within the editor, you'll be prompted for a "Tag name".
-This gives us enough information to write a contrived macro that
-finds a fixed tag name: <!--{{atr2html-->
 
-  <p style="font-family: monospace;">
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
-  "#000080">store-procedure</font></strong><font color=
-  "#800080">&nbsp;tryit</font><br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">tag</font></strong>&nbsp;<font color="#800080">"filterregion"</font><br>
+  <blockquote>
+    <pre class="code-block">
+"find-tag"               ^]
+  or            "ta"
+  or            "tag"
+  ( look up the given (or under-cursor) name as a "tag" )
+</pre>
+  </blockquote>
 
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
-  "#008000">~endm</font><br>
-  <!--atr2html}}--></p>Note also that some help strings include a
-  "CNT" keyword, which indicates that the command name may be
-  preceded by an integer count that repeats the command action that
-  many times (default CNT value is 1). For example, here's the
-  "join-lines" listing:
+  <p>From the perspective of writing a macro, it can be seen that
+  find-tag has two aliases, either of which may be substituted for
+  the "find-tag" name within a macro definition. Notice that the
+  help string mentions a "name" argument and sure enough, if you
+  type ":find-tag" within the editor, you'll be prompted for a "Tag
+  name". This gives us enough information to write a contrived
+  macro that finds a fixed tag name:</p>
+
+  <blockquote>
+    <!--{{atr2html-->
+
+    <p style="font-family: monospace;" class="code-block">
+    <strong><font color=
+    "#000080">store-procedure</font></strong><font color=
+    "#800080">&nbsp;tryit</font><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">tag</font></strong>&nbsp;<font color="#800080">"filterregion"</font><br>
+
+    <font color="#008000">~endm</font><br>
+    <!--atr2html}}--></p>
+  </blockquote>
+
+  <p>Note also that some help strings include a "CNT" keyword,
+  which indicates that the command name may be preceded by an
+  integer count that repeats the command action that many times
+  (default CNT value is 1). For example, here's the "join-lines"
+  listing:</p>
   <pre>
         "join-lines"     J
           ( join CNT lines together with the current one )
-</pre>And here's a macro that joins 4 lines: <!--{{atr2html-->
+</pre>And here's a macro that joins 4 lines:
 
-  <p style="font-family: monospace;">
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
-  "#000080">store-procedure</font></strong><font color=
-  "#800080">&nbsp;join4</font><br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#008080">4</font></strong>&nbsp;<strong><font color="#000080">join-lines</font></strong><br>
+  <blockquote>
+    <!--{{atr2html-->
 
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
-  "#008000">~endm</font><br>
-  <!--atr2html}}--></p>
+    <p style="font-family: monospace;" class="code-block">
+    <strong><font color=
+    "#000080">store-procedure</font></strong><font color=
+    "#800080">&nbsp;join4</font><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#008080">4</font></strong>&nbsp;<strong><font color="#000080">join-lines</font></strong><br>
+
+    <font color="#008000">~endm</font><br>
+    <!--atr2html}}--></p>
+  </blockquote>
 
   <h3 id="motioncommands-toc"><a name="motioncommands" id=
   "motioncommands">Motion commands</a></h3>Motions move the cursor
@@ -2685,35 +2863,44 @@ finds a fixed tag name: <!--{{atr2html-->
 
   <p>Within a macro, the following general syntax invokes a
   motion:</p>
-  <pre>
-        [count] region-spec
+
+  <blockquote>
+    <pre class="code-block">
+[count] region-spec
 </pre>
+  </blockquote>
 
   <p>The optional "count" specifies the number of affected
   region-specs (default value is 1). An example motion is
   "back-line", and here is its show-commands listing:</p>
-  <pre>
-        "back-line"              k         #-A
-          or    "previous-line"
-          or    "up-arrow"
-          or    "up-line"
-          (motion: move up CNT lines )
+
+  <blockquote>
+    <pre class="code-block">
+"back-line"              k         #-A
+  or    "previous-line"
+  or    "up-arrow"
+  or    "up-line"
+  (motion: move up CNT lines )
 </pre>
+  </blockquote>
 
   <p>Note that the help string is prefixed with the word "motion",
   which unambiguously identifies the nature of this command. Given
   the above information, we can write a contrived macro to move the
-  cursor up three lines: <!--{{atr2html--></p>
+  cursor up three lines:</p>
 
-  <p style="font-family: monospace;">
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
-  "#000080">store-procedure</font></strong><font color=
-  "#800080">&nbsp;upthree</font><br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#008080">3</font></strong>&nbsp;<strong><font color="#000080">back-line</font></strong><br>
+  <blockquote>
+    <!--{{atr2html-->
 
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
-  "#008000">~endm</font><br>
-  <!--atr2html}}--></p>
+    <p style="font-family: monospace;" class="code-block">
+    <strong><font color=
+    "#000080">store-procedure</font></strong><font color=
+    "#800080">&nbsp;upthree</font><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#008080">3</font></strong>&nbsp;<strong><font color="#000080">back-line</font></strong><br>
+
+    <font color="#008000">~endm</font><br>
+    <!--atr2html}}--></p>
+  </blockquote>
 
   <h3 id="operatorcommands-toc"><a name="operatorcommands" id=
   "operatorcommands">Operator commands</a></h3>
@@ -2724,9 +2911,12 @@ finds a fixed tag name: <!--{{atr2html-->
 
   <p>Within a macro, the following general syntax invokes an
   operator:</p>
-  <pre>
-        [count] operator-name region-spec [args...]
+
+  <blockquote>
+    <pre class="code-block">
+[count] operator-name region-spec [args...]
 </pre>
+  </blockquote>
 
   <p>where:</p>
 
@@ -2748,64 +2938,92 @@ finds a fixed tag name: <!--{{atr2html-->
     operators (e.g., "filter-til").</dd>
   </dl>An example operator is "flip-til", and here's its
   show-commands info:
-  <pre>
-        "flip-til"               ^A-~
-          or    "~"
-          (operator:  exchange upper and lowercase on characters in the
-          region) (may follow global command)
+
+  <blockquote>
+    <pre class="code-block">
+"flip-til"               ^A-~
+  or    "~"
+  (operator:  exchange upper and lowercase on characters in the
+  region) (may follow global command)
 </pre>
+  </blockquote>
 
   <p>A salient point to note within the help string is the
   "operator" keyword, which unambiguously identifies the purpose of
   this command. Given the above information, we can write a macro
-  to flip the case of the current paragraph. <!--{{atr2html--></p>
+  to flip the case of the current paragraph.</p>
 
-  <p style="font-family: monospace;">
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
-  "#000080">store-procedure</font></strong><font color=
-  "#800080">&nbsp;flippara</font><br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">up-paragraph</font></strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#800000">;&nbsp;move&nbsp;to&nbsp;beginning&nbsp;of&nbsp;para</font><br>
+  <blockquote>
+    <!--{{atr2html-->
 
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">flip-til</font></strong>&nbsp;<strong><font color="#000080">down-paragraph</font></strong>&nbsp;<font color="#800000">;&nbsp;flip&nbsp;case&nbsp;of&nbsp;entire&nbsp;para</font><br>
+    <p style="font-family: monospace;" class="code-block">
+    <strong><font color=
+    "#000080">store-procedure</font></strong><font color=
+    "#800080">&nbsp;flippara</font><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">up-paragraph</font></strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#800000">;&nbsp;move&nbsp;to&nbsp;beginning&nbsp;of&nbsp;para</font><br>
 
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
-  "#008000">~endm</font><br>
-  <!--atr2html}}--></p>One might be tempted to bind this macro to a
-  key using this syntax: <!--{{atr2html-->
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">flip-til</font></strong>&nbsp;<strong><font color="#000080">down-paragraph</font></strong>&nbsp;<font color="#800000">;&nbsp;flip&nbsp;case&nbsp;of&nbsp;entire&nbsp;para</font><br>
 
-  <p style="font-family: monospace;">
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
-  "#000080">bind-key</font></strong>&nbsp;flippara&nbsp;<strong><font color="#000080">g</font></strong><br>
+    <font color="#008000">~endm</font><br>
+    <!--atr2html}}--></p>
+  </blockquote>
 
-  <!--atr2html}}--></p>and then attempt to use a numerical argument
-  to control the number of affected paragraphs. I.E., type "3g" to
-  flip three paragraphs. But this actually invokes "flippara" three
-  times in a row, which (due to the sequential up- and
-  down-paragraph motions), flips the case of the _same_ paragraph
-  three times. However, we can workaround that obstacle with the
-  use of an interactive variable: <!--{{atr2html-->
+  <p>One might be tempted to bind this macro to a key using this
+  syntax:</p>
 
-  <p style="font-family: monospace;">
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
-  "#000080">store-procedure</font></strong><font color=
-  "#800080">&nbsp;flippara</font><br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">setv</font></strong>&nbsp;<font color="#008080">%dflt</font>&nbsp;<strong><font color="#008080">1</font></strong><br>
+  <blockquote>
+    <!--{{atr2html-->
 
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">setv</font></strong>&nbsp;<font color="#008080">%quest</font>&nbsp;@<font color="#008080">&amp;cat</font>&nbsp;<font color="#008080">&amp;cat</font>&nbsp;<font color="#800080">"Flip&nbsp;how&nbsp;many&nbsp;para&nbsp;["</font>&nbsp;<font color="#008080">%dflt</font>&nbsp;<font color="#800080">"]?&nbsp;"</font><br>
+    <p style="font-family: monospace;" class="code-block">
+    <strong><font color=
+    "#000080">bind-key</font></strong>&nbsp;flippara&nbsp;<strong><font color="#000080">g</font></strong><br>
 
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~if</font>&nbsp;<font color="#008080">&amp;sequal</font>&nbsp;<font color="#008080">%quest</font>&nbsp;<font color="#800080">""</font><br>
+    <!--atr2html}}--></p>
+  </blockquote>
 
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">setv</font></strong>&nbsp;<font color="#008080">%quest</font>&nbsp;<font color="#008080">%dflt</font><br>
+  <p>and then attempt to use a numerical argument to control the
+  number of affected paragraphs. I.E., type "3g" to flip three
+  paragraphs. But this actually invokes "flippara" three times in a
+  row, which (due to the sequential up- and down-paragraph
+  motions), flips the case of the _same_ paragraph three times.
+  However, we can workaround that obstacle with the use of an
+  interactive variable:</p>
 
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~endif</font><br>
+  <blockquote>
+    <!--{{atr2html-->
 
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">up-paragraph</font></strong><br>
+    <p style="font-family: monospace;" class="code-block">
+    <strong><font color=
+    "#000080">store-procedure</font></strong><font color=
+    "#800080">&nbsp;flippara</font><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
+    "#000080">setv</font></strong>&nbsp;<font color=
+    "#008080">%dflt</font>&nbsp;<strong><font color=
+    "#008080">1</font></strong><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
+    "#000080">setv</font></strong>&nbsp;<font color=
+    "#008080">%quest</font>&nbsp;@<font color=
+    "#008080">&amp;cat</font>&nbsp;<font color=
+    "#008080">&amp;cat</font>&nbsp;<font color=
+    "#800080">"Flip&nbsp;how&nbsp;many&nbsp;para&nbsp;["</font>&nbsp;<font color="#008080">%dflt</font>&nbsp;<font color="#800080">"]?&nbsp;"</font><br>
 
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008080">%quest</font>&nbsp;<strong><font color="#000080">flip-til</font></strong>&nbsp;<strong><font color="#000080">down-paragraph</font></strong><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;<font color=
+    "#008000">~if</font>&nbsp;<font color=
+    "#008080">&amp;sequal</font>&nbsp;<font color=
+    "#008080">%quest</font>&nbsp;<font color=
+    "#800080">""</font><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">setv</font></strong>&nbsp;<font color="#008080">%quest</font>&nbsp;<font color="#008080">%dflt</font><br>
 
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
-  "#008000">~endm</font><br>
-  <!--atr2html}}--></p>
+    &nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~endif</font><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
+    "#000080">up-paragraph</font></strong><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;<font color=
+    "#008080">%quest</font>&nbsp;<strong><font color=
+    "#000080">flip-til</font></strong>&nbsp;<strong><font color=
+    "#000080">down-paragraph</font></strong><br>
+    <font color="#008000">~endm</font><br>
+    <!--atr2html}}--></p>
+  </blockquote>
 
   <h2 id="debuggingmacros-toc"><a name="debuggingmacros" id=
   "debuggingmacros">Debugging macros</a></h2>
@@ -2816,57 +3034,68 @@ finds a fixed tag name: <!--{{atr2html-->
   mode is most useful when debugging macros, since many messages
   may appear, each overwriting a previous one.</p>
 
-  <p>Let's use this macro fragment for illustration: 
-  <!--{{atr2html--></p>
+  <p>Let's use this macro fragment for illustration:</p>
 
-  <p style="font-family: monospace;">
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
-  "#008000">~if</font>&nbsp;<font color=
-  "#008080">&amp;greater</font>&nbsp;<font color=
-  "#008080">$blines</font>&nbsp;<strong><font color=
-  "#008080">0</font></strong><br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#800000">;&nbsp;buffer&nbsp;has&nbsp;at&nbsp;least&nbsp;one&nbsp;line&nbsp;of&nbsp;data,&nbsp;proceed</font><br>
+  <blockquote>
+    <!--{{atr2html-->
 
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
-  "#008000">~else</font><br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#800000">;&nbsp;this&nbsp;is&nbsp;unexpected!</font><br>
+    <p style="font-family: monospace;" class="code-block">
+    <font color="#008000">~if</font>&nbsp;<font color=
+    "#008080">&amp;greater</font>&nbsp;<font color=
+    "#008080">$blines</font>&nbsp;<strong><font color=
+    "#008080">0</font></strong><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
+    "#800000">;&nbsp;buffer&nbsp;has&nbsp;at&nbsp;least&nbsp;one&nbsp;line&nbsp;of&nbsp;data,&nbsp;proceed</font><br>
 
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
-  "#008000">~endif</font><br>
-  <!--atr2html}}--></p>Suppose the macro is taking the unexpected
-  code path in one of several buffers, but you don't know which. To
-  trace the path, modify the macro like so: <!--{{atr2html-->
+    <font color="#008000">~else</font><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
+    "#800000">;&nbsp;this&nbsp;is&nbsp;unexpected!</font><br>
+    <font color="#008000">~endif</font><br>
+    <!--atr2html}}--></p>
+  </blockquote>
 
-  <p style="font-family: monospace;">
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
-  "#008000">~if</font>&nbsp;<font color=
-  "#008080">&amp;greater</font>&nbsp;<font color=
-  "#008080">$blines</font>&nbsp;<strong><font color=
-  "#008080">0</font></strong><br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#800000">;&nbsp;buffer&nbsp;has&nbsp;at&nbsp;least&nbsp;one&nbsp;line&nbsp;of&nbsp;data,&nbsp;proceed</font><br>
+  <p>Suppose the macro is taking the unexpected code path in one of
+  several buffers, but you don't know which. To trace the path,
+  modify the macro like so:</p>
 
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
-  "#008000">~else</font><br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#800000">;&nbsp;this&nbsp;is&nbsp;unexpected!</font><br>
+  <blockquote>
+    <!--{{atr2html-->
 
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">setv</font></strong>&nbsp;<font color="#008080">%msg</font>&nbsp;<font color="#008080">&amp;cat</font>&nbsp;<font color="#800080">"Error:&nbsp;Buffer&nbsp;"</font>&nbsp;<font color="#008080">&amp;cat</font>&nbsp;<font color="#008080">$cbufname</font>&nbsp;<font color="#800080">"&nbsp;empty"</font><br>
+    <p style="font-family: monospace;" class="code-block">
+    <font color="#008000">~if</font>&nbsp;<font color=
+    "#008080">&amp;greater</font>&nbsp;<font color=
+    "#008080">$blines</font>&nbsp;<strong><font color=
+    "#008080">0</font></strong><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
+    "#800000">;&nbsp;buffer&nbsp;has&nbsp;at&nbsp;least&nbsp;one&nbsp;line&nbsp;of&nbsp;data,&nbsp;proceed</font><br>
 
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">write-message</font></strong>&nbsp;<font color="#008080">%msg</font><br>
+    <font color="#008000">~else</font><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
+    "#800000">;&nbsp;this&nbsp;is&nbsp;unexpected!</font><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">setv</font></strong>&nbsp;<font color="#008080">%msg</font>&nbsp;<font color="#008080">&amp;cat</font>&nbsp;<font color="#800080">"Error:&nbsp;Buffer&nbsp;"</font>&nbsp;<font color="#008080">&amp;cat</font>&nbsp;<font color="#008080">$cbufname</font>&nbsp;<font color="#800080">"&nbsp;empty"</font><br>
 
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
-  "#008000">~endif</font><br>
-  <!--atr2html}}--></p>Next, enable popup-msgs (i.e., set
-  popup-msgs) and then start the macro. When the "write-message"
-  command is executed, the [Messages] buffer pops up and displays
-  the string written by the unexpected code path.
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">write-message</font></strong>&nbsp;<font color="#008080">%msg</font><br>
 
-  <p>Disable popup-msgs using this command: <!--{{atr2html--></p>
+    <font color="#008000">~endif</font><br>
+    <!--atr2html}}--></p>
+  </blockquote>
 
-  <p style="font-family: monospace;">
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:<strong><font color=
-  "#000080">set</font></strong>&nbsp;<strong><font color=
-  "#000080">nopopup-msgs</font></strong><br>
-  <!--atr2html}}--></p>
+  <p>Next, enable popup-msgs (i.e., set popup-msgs) and then start
+  the macro. When the "write-message" command is executed, the
+  [Messages] buffer pops up and displays the string written by the
+  unexpected code path.</p>
+
+  <p>Disable popup-msgs using this command:</p>
+
+  <blockquote>
+    <!--{{atr2html-->
+
+    <p style="font-family: monospace;" class="code-block">
+    :<strong><font color=
+    "#000080">set</font></strong>&nbsp;<strong><font color=
+    "#000080">nopopup-msgs</font></strong><br>
+    <!--atr2html}}--></p>
+  </blockquote>
 
   <h2 id="example-toc"><a name="example" id="example">Example
   startup file</a></h2>
@@ -2874,264 +3103,267 @@ finds a fixed tag name: <!--{{atr2html-->
   <p>The startup file included below illustrates several of the
   language constructs described in this document. This example is
   crafted for the win32 environment, but its syntax and usage are
-  applicable to any host OS supported by vile. 
-  <!--{{atr2html--></p>
+  applicable to any host OS supported by vile.</p>
 
-  <p style="font-family: monospace;">
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
-  "#000080">set</font></strong>&nbsp;<strong><font color=
-  "#000080">ai</font></strong>&nbsp;<strong><font color=
-  "#000080">aw</font></strong>&nbsp;<strong><font color=
-  "#000080">ts</font></strong><strong><font color=
-  "#800000">=</font></strong><strong><font color=
-  "#008080">4</font></strong>&nbsp;<strong><font color=
-  "#000080">sw</font></strong><strong><font color=
-  "#800000">=</font></strong><strong><font color=
-  "#008080">4</font></strong>&nbsp;<strong><font color=
-  "#000080">flash</font></strong><br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
-  "#000080">bind-key</font></strong>&nbsp;<strong><font color=
-  "#000080">next-window</font></strong>&nbsp;<font color=
-  "#800080">^N</font><br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
-  "#000080">bind-key</font></strong>&nbsp;<strong><font color=
-  "#000080">previous-window</font></strong>&nbsp;<font color=
-  "#800080">^P</font><br>
-  &nbsp;<br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
-  "#008000">~if</font>&nbsp;<font color=
-  "#008080">&amp;sequal</font>&nbsp;<font color=
-  "#008080">$progname</font>&nbsp;<font color=
-  "#800080">"winvile"</font><br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">set-variable</font></strong>&nbsp;<font color="#008080">$font</font>&nbsp;<font color="#800080">"r_ansi,8"</font><br>
+  <blockquote>
+    <!--{{atr2html-->
 
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
-  "#008000">~endif</font><br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
-  "#008000">~if</font>&nbsp;<font color=
-  "#008080">&amp;equal</font>&nbsp;<strong><font color=
-  "#008080">0</font></strong>&nbsp;<font color=
-  "#008080">&amp;sindex</font>&nbsp;<font color=
-  "#008080">&amp;lower</font>&nbsp;<font color=
-  "#008080">$shell</font>&nbsp;<font color=
-  "#800080">"command.com"</font><br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">set</font></strong>&nbsp;w32pipes<br>
+    <p style="font-family: monospace;" class="code-block">
+    <strong><font color=
+    "#000080">set</font></strong>&nbsp;<strong><font color=
+    "#000080">ai</font></strong>&nbsp;<strong><font color=
+    "#000080">aw</font></strong>&nbsp;<strong><font color=
+    "#000080">ts</font></strong><strong><font color=
+    "#800000">=</font></strong><strong><font color=
+    "#008080">4</font></strong>&nbsp;<strong><font color=
+    "#000080">sw</font></strong><strong><font color=
+    "#800000">=</font></strong><strong><font color=
+    "#008080">4</font></strong>&nbsp;<strong><font color=
+    "#000080">flash</font></strong><br>
+    <strong><font color=
+    "#000080">bind-key</font></strong>&nbsp;<strong><font color=
+    "#000080">next-window</font></strong>&nbsp;<font color=
+    "#800080">^N</font><br>
+    <strong><font color=
+    "#000080">bind-key</font></strong>&nbsp;<strong><font color=
+    "#000080">previous-window</font></strong>&nbsp;<font color=
+    "#800080">^P</font><br>
+    &nbsp;<br>
+    <font color="#008000">~if</font>&nbsp;<font color=
+    "#008080">&amp;sequal</font>&nbsp;<font color=
+    "#008080">$progname</font>&nbsp;<font color=
+    "#800080">"winvile"</font><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
+    "#000080">set-variable</font></strong>&nbsp;<font color=
+    "#008080">$font</font>&nbsp;<font color=
+    "#800080">"r_ansi,8"</font><br>
+    <font color="#008000">~endif</font><br>
+    <font color="#008000">~if</font>&nbsp;<font color=
+    "#008080">&amp;equal</font>&nbsp;<strong><font color=
+    "#008080">0</font></strong>&nbsp;<font color=
+    "#008080">&amp;sindex</font>&nbsp;<font color=
+    "#008080">&amp;lower</font>&nbsp;<font color=
+    "#008080">$shell</font>&nbsp;<font color=
+    "#800080">"command.com"</font><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
+    "#000080">set</font></strong>&nbsp;w32pipes<br>
+    <font color="#008000">~else</font><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
+    "#000080">set</font></strong>&nbsp;now32pipes<br>
+    <font color="#008000">~endif</font><br>
+    &nbsp;<br>
+    <font color="#008000">~if</font>&nbsp;<font color=
+    "#008080">&amp;not</font>&nbsp;<font color=
+    "#008080">&amp;equal</font>&nbsp;<strong><font color=
+    "#008080">0</font></strong>&nbsp;<font color=
+    "#008080">&amp;sindex</font>&nbsp;<font color=
+    "#008080">$cfgopts</font>&nbsp;<font color=
+    "#800080">"perl"</font><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
+    "#000080">perl</font></strong>&nbsp;<font color=
+    "#800080">"use&nbsp;hgrep"</font><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
+    "#000080">perl</font></strong>&nbsp;<font color=
+    "#800080">"use&nbsp;dirlist"</font><br>
+    <font color="#008000">~endif</font><br>
+    &nbsp;<br>
+    <font color="#008000">~if</font>&nbsp;<font color=
+    "#008080">&amp;not</font>&nbsp;<font color=
+    "#008080">&amp;equal</font>&nbsp;<strong><font color=
+    "#008080">0</font></strong>&nbsp;<font color=
+    "#008080">&amp;sindex</font>&nbsp;<font color=
+    "#008080">$cfgopts</font>&nbsp;<font color=
+    "#800080">"oleauto"</font><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
+    "#000080">set</font></strong>&nbsp;redirect-keys<strong><font color="#800000">=</font></strong><font color="#008080">&amp;cat</font>&nbsp;<font color="#008080">&amp;global</font>&nbsp;redirect-keys&nbsp;<font color="#800080">",MULTIPLY:A:S"</font><br>
 
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
-  "#008000">~else</font><br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">set</font></strong>&nbsp;now32pipes<br>
+    <font color="#008000">~endif</font><br>
+    &nbsp;<br>
+    <font color=
+    "#800000">;&nbsp;modify&nbsp;^A-i&nbsp;and&nbsp;^A-o&nbsp;so&nbsp;that&nbsp;they&nbsp;don't&nbsp;wrap&nbsp;inserted&nbsp;text.</font><br>
 
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
-  "#008000">~endif</font><br>
-  &nbsp;<br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
-  "#008000">~if</font>&nbsp;<font color=
-  "#008080">&amp;not</font>&nbsp;<font color=
-  "#008080">&amp;equal</font>&nbsp;<strong><font color=
-  "#008080">0</font></strong>&nbsp;<font color=
-  "#008080">&amp;sindex</font>&nbsp;<font color=
-  "#008080">$cfgopts</font>&nbsp;<font color=
-  "#800080">"perl"</font><br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">perl</font></strong>&nbsp;<font color="#800080">"use&nbsp;hgrep"</font><br>
+    <strong><font color=
+    "#000080">store-procedure</font></strong><font color=
+    "#800080">&nbsp;save-wrap-state</font><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
+    "#000080">setv</font></strong>&nbsp;<font color=
+    "#008080">%wm</font><strong><font color=
+    "#800000">=</font></strong><font color=
+    "#008080">$wrapmargin</font><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
+    "#000080">setv</font></strong>&nbsp;<font color=
+    "#008080">%ww</font><strong><font color=
+    "#800000">=</font></strong><font color=
+    "#008080">$wrapwords</font><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
+    "#000080">setl</font></strong>&nbsp;<strong><font color=
+    "#000080">nowrapwords</font></strong>&nbsp;<strong><font color=
+    "#000080">wm</font></strong><strong><font color=
+    "#800000">=</font></strong><strong><font color=
+    "#008080">0</font></strong><br>
+    <font color="#008000">~endm</font><br>
+    <strong><font color=
+    "#000080">store-procedure</font></strong><font color=
+    "#800080">&nbsp;restore-wrap-state</font><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
+    "#000080">setl</font></strong>&nbsp;<strong><font color=
+    "#000080">wrapmargin</font></strong><strong><font color=
+    "#800000">=</font></strong><font color="#008080">%wm</font><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;<font color=
+    "#008000">~if</font>&nbsp;<font color="#008080">%ww</font><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">setl</font></strong>&nbsp;<strong><font color="#000080">wrapwords</font></strong><br>
 
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">perl</font></strong>&nbsp;<font color="#800080">"use&nbsp;dirlist"</font><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~else</font><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">setl</font></strong>&nbsp;<strong><font color="#000080">nowrapwords</font></strong><br>
 
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
-  "#008000">~endif</font><br>
-  &nbsp;<br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
-  "#008000">~if</font>&nbsp;<font color=
-  "#008080">&amp;not</font>&nbsp;<font color=
-  "#008080">&amp;equal</font>&nbsp;<strong><font color=
-  "#008080">0</font></strong>&nbsp;<font color=
-  "#008080">&amp;sindex</font>&nbsp;<font color=
-  "#008080">$cfgopts</font>&nbsp;<font color=
-  "#800080">"oleauto"</font><br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">set</font></strong>&nbsp;redirect-keys<strong><font color="#800000">=</font></strong><font color="#008080">&amp;cat</font>&nbsp;<font color="#008080">&amp;global</font>&nbsp;redirect-keys&nbsp;<font color="#800080">",MULTIPLY:A:S"</font><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~endif</font><br>
+    <font color="#008000">~endm</font><br>
+    <strong><font color=
+    "#000080">store-procedure</font></strong><font color=
+    "#800080">&nbsp;insert-chars-noai-nowrap</font><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;save-wrap-state<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
+    "#000080">insert-chars-no-autoindent</font></strong><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;restore-wrap-state<br>
+    <font color="#008000">~endm</font><br>
+    <strong><font color=
+    "#000080">bind-key</font></strong>&nbsp;insert-chars-noai-nowrap&nbsp;<font color="#800080">^A-i</font><br>
 
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
-  "#008000">~endif</font><br>
-  &nbsp;<br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
-  "#800000">;&nbsp;modify&nbsp;^A-i&nbsp;and&nbsp;^A-o&nbsp;so&nbsp;that&nbsp;they&nbsp;don't&nbsp;wrap&nbsp;inserted&nbsp;text.</font><br>
+    <strong><font color=
+    "#000080">store-procedure</font></strong><font color=
+    "#800080">&nbsp;open-line-below-noai-nowrap</font><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;save-wrap-state<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
+    "#000080">open-line-below-no-autoindent</font></strong><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;restore-wrap-state<br>
+    <font color="#008000">~endm</font><br>
+    <strong><font color=
+    "#000080">bind-key</font></strong>&nbsp;open-line-below-noai-nowrap&nbsp;<font color="#800080">^A-o</font><br>
 
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
-  "#000080">store-procedure</font></strong><font color=
-  "#800080">&nbsp;save-wrap-state</font><br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">setv</font></strong>&nbsp;<font color="#008080">%wm</font><strong><font color="#800000">=</font></strong><font color="#008080">$wrapmargin</font><br>
+    &nbsp;<br>
+    <font color=
+    "#800000">;Rather&nbsp;than&nbsp;composing&nbsp;documents&nbsp;in&nbsp;a&nbsp;word&nbsp;processor,&nbsp;it's&nbsp;much</font><br>
 
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">setv</font></strong>&nbsp;<font color="#008080">%ww</font><strong><font color="#800000">=</font></strong><font color="#008080">$wrapwords</font><br>
+    <font color=
+    "#800000">;more&nbsp;efficient&nbsp;to&nbsp;use&nbsp;vile.&nbsp;&nbsp;But&nbsp;pasting&nbsp;vile-formatted&nbsp;text&nbsp;into,</font><br>
 
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">setl</font></strong>&nbsp;<strong><font color="#000080">nowrapwords</font></strong>&nbsp;<strong><font color="#000080">wm</font></strong><strong><font color="#800000">=</font></strong><strong><font color="#008080">0</font></strong><br>
+    <font color=
+    "#800000">;say,&nbsp;MS&nbsp;Word&nbsp;is&nbsp;a&nbsp;pain&nbsp;in&nbsp;the&nbsp;neck&nbsp;because&nbsp;each&nbsp;paragraph&nbsp;needs</font><br>
 
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
-  "#008000">~endm</font><br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
-  "#000080">store-procedure</font></strong><font color=
-  "#800080">&nbsp;restore-wrap-state</font><br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">setl</font></strong>&nbsp;<strong><font color="#000080">wrapmargin</font></strong><strong><font color="#800000">=</font></strong><font color="#008080">%wm</font><br>
+    <font color=
+    "#800000">;to&nbsp;be&nbsp;reformatted.&nbsp;&nbsp;Example:</font><br>
 
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~if</font>&nbsp;<font color="#008080">%ww</font><br>
+    <font color="#800000">;</font><br>
+    <font color=
+    "#800000">;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;vile&nbsp;txt</font><br>
 
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">setl</font></strong>&nbsp;<strong><font color="#000080">wrapwords</font></strong><br>
+    <font color=
+    "#800000">;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;========</font><br>
 
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~else</font><br>
+    <font color=
+    "#800000">;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;para&nbsp;1&nbsp;line1,</font><br>
 
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">setl</font></strong>&nbsp;<strong><font color="#000080">nowrapwords</font></strong><br>
+    <font color=
+    "#800000">;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;line&nbsp;2,</font><br>
 
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~endif</font><br>
+    <font color=
+    "#800000">;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;line&nbsp;3,</font><br>
 
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
-  "#008000">~endm</font><br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
-  "#000080">store-procedure</font></strong><font color=
-  "#800080">&nbsp;insert-chars-noai-nowrap</font><br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;save-wrap-state<br>
+    <font color=
+    "#800000">;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;line&nbsp;4</font><br>
 
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">insert-chars-no-autoindent</font></strong><br>
+    <font color="#800000">;</font><br>
+    <font color=
+    "#800000">;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;para&nbsp;2&nbsp;line&nbsp;1,</font><br>
 
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;restore-wrap-state<br>
+    <font color=
+    "#800000">;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;line&nbsp;2,</font><br>
 
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
-  "#008000">~endm</font><br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
-  "#000080">bind-key</font></strong>&nbsp;insert-chars-noai-nowrap&nbsp;<font color="#800080">^A-i</font><br>
+    <font color=
+    "#800000">;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;line&nbsp;3,</font><br>
 
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
-  "#000080">store-procedure</font></strong><font color=
-  "#800080">&nbsp;open-line-below-noai-nowrap</font><br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;save-wrap-state<br>
+    <font color=
+    "#800000">;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;line&nbsp;4</font><br>
 
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">open-line-below-no-autoindent</font></strong><br>
+    <font color="#800000">;</font><br>
+    <font color=
+    "#800000">;If&nbsp;"vile&nbsp;txt"&nbsp;is&nbsp;copied&nbsp;and&nbsp;pasted&nbsp;into&nbsp;Word,&nbsp;it&nbsp;looks&nbsp;awful&nbsp;because</font><br>
 
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;restore-wrap-state<br>
+    <font color=
+    "#800000">;the&nbsp;lines&nbsp;of&nbsp;the&nbsp;paragraphs&nbsp;do&nbsp;not&nbsp;flow&nbsp;together&nbsp;(i.e.,&nbsp;the&nbsp;new&nbsp;lines</font><br>
 
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
-  "#008000">~endm</font><br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
-  "#000080">bind-key</font></strong>&nbsp;open-line-below-noai-nowrap&nbsp;<font color="#800080">^A-o</font><br>
+    <font color=
+    "#800000">;terminating&nbsp;each&nbsp;vile&nbsp;paragraph&nbsp;serve&nbsp;as&nbsp;a&nbsp;"hard"&nbsp;paragraph&nbsp;break).</font><br>
 
-  &nbsp;<br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
-  "#800000">;Rather&nbsp;than&nbsp;composing&nbsp;documents&nbsp;in&nbsp;a&nbsp;word&nbsp;processor,&nbsp;it's&nbsp;much</font><br>
+    <font color="#800000">;</font><br>
+    <font color=
+    "#800000">;'Twould&nbsp;be&nbsp;nice&nbsp;if&nbsp;vile&nbsp;could&nbsp;join&nbsp;each&nbsp;paragraph&nbsp;so&nbsp;that&nbsp;"vile&nbsp;txt"</font><br>
 
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
-  "#800000">;more&nbsp;efficient&nbsp;to&nbsp;use&nbsp;vile.&nbsp;&nbsp;But&nbsp;pasting&nbsp;vile-formatted&nbsp;text&nbsp;into,</font><br>
+    <font color=
+    "#800000">;above&nbsp;looked&nbsp;like&nbsp;this:</font><br>
+    <font color="#800000">;</font><br>
+    <font color=
+    "#800000">;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;vile&nbsp;txt</font><br>
 
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
-  "#800000">;say,&nbsp;MS&nbsp;Word&nbsp;is&nbsp;a&nbsp;pain&nbsp;in&nbsp;the&nbsp;neck&nbsp;because&nbsp;each&nbsp;paragraph&nbsp;needs</font><br>
+    <font color=
+    "#800000">;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;========</font><br>
 
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
-  "#800000">;to&nbsp;be&nbsp;reformatted.&nbsp;&nbsp;Example:</font><br>
+    <font color=
+    "#800000">;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;para&nbsp;1&nbsp;line1,&nbsp;line&nbsp;2,&nbsp;line&nbsp;3,&nbsp;line&nbsp;4</font><br>
 
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
-  "#800000">;</font><br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
-  "#800000">;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;vile&nbsp;txt</font><br>
+    <font color="#800000">;</font><br>
+    <font color=
+    "#800000">;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;para&nbsp;2&nbsp;line&nbsp;1,&nbsp;line&nbsp;2,&nbsp;line&nbsp;3,&nbsp;line&nbsp;4</font><br>
 
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
-  "#800000">;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;========</font><br>
+    <font color="#800000">;</font><br>
+    <font color=
+    "#800000">;Then,&nbsp;when&nbsp;this&nbsp;version&nbsp;is&nbsp;pasted&nbsp;into&nbsp;Word,&nbsp;all&nbsp;paragraphs&nbsp;are</font><br>
 
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
-  "#800000">;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;para&nbsp;1&nbsp;line1,</font><br>
+    <font color=
+    "#800000">;automatically&nbsp;reformatted.&nbsp;&nbsp;Here's&nbsp;a&nbsp;macro&nbsp;that&nbsp;adds&nbsp;this&nbsp;feature:</font><br>
 
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
-  "#800000">;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;line&nbsp;2,</font><br>
+    <strong><font color=
+    "#000080">store-procedure</font></strong><font color=
+    "#800080">&nbsp;join-all-para</font><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
+    "#000080">goto-beginning-of-file</font></strong><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
+    "#000080">write-message</font></strong>&nbsp;<font color=
+    "#800080">"[joining&nbsp;all&nbsp;paragraphs...]"</font><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;<font color=
+    "#008000">~while</font>&nbsp;true<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
+    "#008000">~force</font>&nbsp;<strong><font color=
+    "#000080">join-lines-til</font></strong>&nbsp;<strong><font color="#000080">down-paragraph</font></strong><br>
 
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
-  "#800000">;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;line&nbsp;3,</font><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
+    "#008000">~if</font>&nbsp;<font color=
+    "#008080">&amp;not</font>&nbsp;<font color=
+    "#008080">$status</font><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~break</font><br>
 
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
-  "#800000">;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;line&nbsp;4</font><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
+    "#008000">~endif</font><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">goto-bol</font></strong><br>
 
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
-  "#800000">;</font><br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
-  "#800000">;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;para&nbsp;2&nbsp;line&nbsp;1,</font><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
+    "#008000">~force</font>&nbsp;<strong><font color=
+    "#008080">2</font></strong>&nbsp;<strong><font color=
+    "#000080">down-line</font></strong>&nbsp;<font color=
+    "#800000">;skip&nbsp;to&nbsp;next&nbsp;para</font><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
+    "#008000">~if</font>&nbsp;<font color=
+    "#008080">&amp;not</font>&nbsp;<font color=
+    "#008080">$status</font><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~break</font><br>
 
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
-  "#800000">;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;line&nbsp;2,</font><br>
-
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
-  "#800000">;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;line&nbsp;3,</font><br>
-
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
-  "#800000">;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;line&nbsp;4</font><br>
-
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
-  "#800000">;</font><br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
-  "#800000">;If&nbsp;"vile&nbsp;txt"&nbsp;is&nbsp;copied&nbsp;and&nbsp;pasted&nbsp;into&nbsp;Word,&nbsp;it&nbsp;looks&nbsp;awful&nbsp;because</font><br>
-
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
-  "#800000">;the&nbsp;lines&nbsp;of&nbsp;the&nbsp;paragraphs&nbsp;do&nbsp;not&nbsp;flow&nbsp;together&nbsp;(i.e.,&nbsp;the&nbsp;new&nbsp;lines</font><br>
-
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
-  "#800000">;terminating&nbsp;each&nbsp;vile&nbsp;paragraph&nbsp;serve&nbsp;as&nbsp;a&nbsp;"hard"&nbsp;paragraph&nbsp;break).</font><br>
-
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
-  "#800000">;</font><br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
-  "#800000">;'Twould&nbsp;be&nbsp;nice&nbsp;if&nbsp;vile&nbsp;could&nbsp;join&nbsp;each&nbsp;paragraph&nbsp;so&nbsp;that&nbsp;"vile&nbsp;txt"</font><br>
-
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
-  "#800000">;above&nbsp;looked&nbsp;like&nbsp;this:</font><br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
-  "#800000">;</font><br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
-  "#800000">;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;vile&nbsp;txt</font><br>
-
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
-  "#800000">;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;========</font><br>
-
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
-  "#800000">;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;para&nbsp;1&nbsp;line1,&nbsp;line&nbsp;2,&nbsp;line&nbsp;3,&nbsp;line&nbsp;4</font><br>
-
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
-  "#800000">;</font><br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
-  "#800000">;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;para&nbsp;2&nbsp;line&nbsp;1,&nbsp;line&nbsp;2,&nbsp;line&nbsp;3,&nbsp;line&nbsp;4</font><br>
-
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
-  "#800000">;</font><br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
-  "#800000">;Then,&nbsp;when&nbsp;this&nbsp;version&nbsp;is&nbsp;pasted&nbsp;into&nbsp;Word,&nbsp;all&nbsp;paragraphs&nbsp;are</font><br>
-
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
-  "#800000">;automatically&nbsp;reformatted.&nbsp;&nbsp;Here's&nbsp;a&nbsp;macro&nbsp;that&nbsp;adds&nbsp;this&nbsp;feature:</font><br>
-
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
-  "#000080">store-procedure</font></strong><font color=
-  "#800080">&nbsp;join-all-para</font><br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">goto-beginning-of-file</font></strong><br>
-
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">write-message</font></strong>&nbsp;<font color="#800080">"[joining&nbsp;all&nbsp;paragraphs...]"</font><br>
-
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~while</font>&nbsp;true<br>
-
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~force</font>&nbsp;<strong><font color="#000080">join-lines-til</font></strong>&nbsp;<strong><font color="#000080">down-paragraph</font></strong><br>
-
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~if</font>&nbsp;<font color="#008080">&amp;not</font>&nbsp;<font color="#008080">$status</font><br>
-
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~break</font><br>
-
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~endif</font><br>
-
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color="#000080">goto-bol</font></strong><br>
-
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~force</font>&nbsp;<strong><font color="#008080">2</font></strong>&nbsp;<strong><font color="#000080">down-line</font></strong>&nbsp;<font color="#800000">;skip&nbsp;to&nbsp;next&nbsp;para</font><br>
-
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~if</font>&nbsp;<font color="#008080">&amp;not</font>&nbsp;<font color="#008080">$status</font><br>
-
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~break</font><br>
-
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~endif</font><br>
-
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="#008000">~endwhile</font><br>
-
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
-  "#008000">~endm</font><br>
-  <!--atr2html}}--></p>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
+    "#008000">~endif</font><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;<font color=
+    "#008000">~endwhile</font><br>
+    <font color="#008000">~endm</font><br>
+    <!--atr2html}}--></p>
+  </blockquote>
 
   <h2 id="credits-toc"><a name="credits" id=
   "credits">Credits</a></h2>
