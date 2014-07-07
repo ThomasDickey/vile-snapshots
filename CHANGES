@@ -1,12 +1,13 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20140704 (n)
+ 20140706 (n)
 	> Brendan O'Dea:
 	+ use INT2PTR and PTR2IV macros rather than an explicit cast in perl.xs
 	  and ptypemap.
 	> Tom Dickey:
 	+ improve description of search-list for syntax filter keywords in
-	  vile.hlp
+	  vile.hlp; add links/anchors to improve navigation in vile-hlp.html,
+	  config.html and macros.html
 	+ modify error-pattern for GNU make to work with the 4.0 change to
 	  quotes
 	+ modify makemode mode-filename pattern to match BSDMakefile and

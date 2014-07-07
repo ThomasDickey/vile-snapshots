@@ -1,6 +1,6 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
-  $Id: menus.html,v 1.11 2013/12/27 21:02:05 tom Exp $
+  $Id: menus.html,v 1.14 2014/07/06 13:16:56 tom Exp $
 -->
 
 <html>
@@ -33,13 +33,16 @@
   <h2 id="searchrules-toc"><a name="searchrules" id=
   "searchrules">Search-Rules</a></h2>
 
-  <p>If the environment variable XVILE_MENU is set, it contains the
-  name of the rc file. Otherwise, the name ".vilemenu" is used. The
-  name of the menu file is given in the variable "$menu-file". If
-  it is not found, and is different from "vilemenu.rc", xvile looks
-  for that file in the list of directories given in
-  "$startup-path". The "vilemenu.rc" file is treated specially
-  because it is the file installed from vile's distribution.</p>
+  <p>If the environment variable <a href=
+  "vile-hlp.html#env-XVILE_MENU">XVILE_MENU</a> is set, it contains
+  the name of the rc file. Otherwise, the name ".vilemenu" is used.
+  The name of the menu file is given in the variable "<a href=
+  "macros.html#modevar-menu-file">$menu-file</a>". If it is not
+  found, and is different from "vilemenu.rc", xvile looks for that
+  file in the list of directories given in "<a href=
+  "macros.html#modevar-startup-path">$startup-path</a>". The
+  "vilemenu.rc" file is treated specially because it is the file
+  installed from vile's distribution.</p>
 
   <h2 id="format-toc"><a name="format" id="format">Format</a></h2>
 
@@ -54,14 +57,14 @@
     </colgroup>
 
     <tr>
-      <td valign="top">C&nbsp;&ndash;</td>
+      <td valign="top"><strong>C</strong>&nbsp;&ndash;</td>
 
       <td>cascade (actually pulldown). One field only is
       recognized, the menu heading.</td>
     </tr>
 
     <tr>
-      <td valign="top">B&nbsp;&ndash;</td>
+      <td valign="top"><strong>B</strong>&nbsp;&ndash;</td>
 
       <td>
         button (menu entry). The first field is the menu label. The
@@ -81,13 +84,13 @@
     </tr>
 
     <tr>
-      <td>S&nbsp;&ndash;</td>
+      <td><strong>S</strong>&nbsp;&ndash;</td>
 
       <td>separator</td>
     </tr>
 
     <tr>
-      <td valign="top">L&nbsp;&ndash;</td>
+      <td valign="top"><strong>L</strong>&nbsp;&ndash;</td>
 
       <td>
         list buffers. Each time you select this menu entry, vile
@@ -114,235 +117,224 @@
   <h2 id="example-toc"><a name="example" id=
   "example">Example</a></h2>
 
-  <p>A sample .vilemenu file: <!--{{atr2html--></p>
+  <p>A sample .vilemenu file:</p>
 
-  <p style="font-family: monospace;">
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;C:Xvile<br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
-  "#000080">B</font></strong>:New:new_xvile<br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
-  "#000080">B</font></strong>:Edit&nbsp;.vilerc:edit_rc<br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
-  "#000080">B</font></strong>:Parse&nbsp;.vilerc:parse_rc<br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
-  "#000080">B</font></strong>:Edit&nbsp;.vilemenu:edit_mrc<br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
-  "#000080">B</font></strong>:Quit:<strong><font color=
-  "#000080">quit</font></strong><br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
-  "#800000">;</font><br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;C:Editing<br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
-  "#000080">B</font></strong>:Apply&nbsp;Highlighting:cmd&nbsp;<strong><font color="#000080">HighlightFilter</font></strong><br>
+  <blockquote>
+    <!--{{atr2html-->
 
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
-  "#000080">B</font></strong>:Clear&nbsp;Highlighting&nbsp;(above):<strong><font color="#000080">clear-attributes-til</font></strong>&nbsp;<strong><font color="#000080">beginning-of-file</font></strong><br>
+    <p style="font-family: monospace;" class="code-block">
+    C:Xvile<br>
+    <strong><font color=
+    "#000080">B</font></strong>:New:new_xvile<br>
+    <strong><font color=
+    "#000080">B</font></strong>:Edit&nbsp;.vilerc:edit_rc<br>
+    <strong><font color=
+    "#000080">B</font></strong>:Parse&nbsp;.vilerc:parse_rc<br>
+    <strong><font color=
+    "#000080">B</font></strong>:Edit&nbsp;.vilemenu:edit_mrc<br>
+    <strong><font color=
+    "#000080">B</font></strong>:Quit:<strong><font color=
+    "#000080">quit</font></strong><br>
+    <font color="#800000">;</font><br>
+    C:Editing<br>
+    <strong><font color=
+    "#000080">B</font></strong>:Apply&nbsp;Highlighting:cmd&nbsp;<strong><font color="#000080">HighlightFilter</font></strong><br>
 
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
-  "#000080">B</font></strong>:Clear&nbsp;Highlighting&nbsp;(below):<strong><font color="#000080">clear-attributes-til</font></strong>&nbsp;<strong><font color="#000080">end-of-file</font></strong><br>
+    <strong><font color=
+    "#000080">B</font></strong>:Clear&nbsp;Highlighting&nbsp;(above):<strong><font color="#000080">clear-attributes-til</font></strong>&nbsp;<strong><font color="#000080">beginning-of-file</font></strong><br>
 
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
-  "#000080">S</font></strong><br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
-  "#000080">B</font></strong>:Search&nbsp;Forward...:cmd&nbsp;<strong><font color="#000080">search-forward</font></strong><br>
+    <strong><font color=
+    "#000080">B</font></strong>:Clear&nbsp;Highlighting&nbsp;(below):<strong><font color="#000080">clear-attributes-til</font></strong>&nbsp;<strong><font color="#000080">end-of-file</font></strong><br>
 
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
-  "#000080">B</font></strong>:Search&nbsp;Backward...:cmd&nbsp;<strong><font color="#000080">search-reverse</font></strong><br>
+    <strong><font color="#000080">S</font></strong><br>
+    <strong><font color=
+    "#000080">B</font></strong>:Search&nbsp;Forward...:cmd&nbsp;<strong><font color="#000080">search-forward</font></strong><br>
 
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
-  "#000080">S</font></strong><br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
-  "#000080">B</font></strong>:Reload&nbsp;File:cmd&nbsp;<strong><font color="#000080">e!</font></strong><br>
+    <strong><font color=
+    "#000080">B</font></strong>:Search&nbsp;Backward...:cmd&nbsp;<strong><font color="#000080">search-reverse</font></strong><br>
 
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
-  "#000080">B</font></strong>:Rename&nbsp;Buffer:cmd&nbsp;<strong><font color="#000080">rename-buffer</font></strong><br>
+    <strong><font color="#000080">S</font></strong><br>
+    <strong><font color=
+    "#000080">B</font></strong>:Reload&nbsp;File:cmd&nbsp;<strong><font color="#000080">e!</font></strong><br>
 
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
-  "#000080">B</font></strong>:Edit:cmd&nbsp;<strong><font color=
-  "#000080">edit-file</font></strong><br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
-  "#000080">B</font></strong>:Rename&nbsp;File:cmd&nbsp;<strong><font color="#000080">filename</font></strong><br>
+    <strong><font color=
+    "#000080">B</font></strong>:Rename&nbsp;Buffer:cmd&nbsp;<strong><font color="#000080">rename-buffer</font></strong><br>
 
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
-  "#000080">S</font></strong><br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
-  "#000080">B</font></strong>:Manual&nbsp;<strong><font color=
-  "#000080">for</font></strong>...:cmd&nbsp;<strong><font color=
-  "#000080">ShowManpage</font></strong><br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
-  "#000080">S</font></strong><br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
-  "#000080">B</font></strong>:Files:<strong><font color=
-  "#000080">capture-command</font></strong>&nbsp;<font color=
-  "#800080">"ls&nbsp;-l"</font><br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
-  "#000080">B</font></strong>:Processes:<strong><font color=
-  "#000080">capture-command</font></strong>&nbsp;<font color=
-  "#800080">"ps"</font><br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
-  "#000080">B</font></strong>:Users:<strong><font color=
-  "#000080">capture-command</font></strong>&nbsp;<font color=
-  "#800080">"w"</font><br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
-  "#800000">;</font><br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;C:Buffers<br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
-  "#000080">B</font></strong>:<strong><font color=
-  "#000080">Show</font></strong>&nbsp;Current&nbsp;Only:<strong><font color="#000080">delete-other-windows</font></strong><br>
+    <strong><font color=
+    "#000080">B</font></strong>:Edit:cmd&nbsp;<strong><font color=
+    "#000080">edit-file</font></strong><br>
+    <strong><font color=
+    "#000080">B</font></strong>:Rename&nbsp;File:cmd&nbsp;<strong><font color="#000080">filename</font></strong><br>
 
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
-  "#000080">B</font></strong>:<strong><font color=
-  "#000080">Toggle</font></strong>&nbsp;<strong><font color=
-  "#000080">Show</font></strong>:<strong><font color=
-  "#000080">toggle-buffer</font></strong><br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
-  "#000080">L</font></strong>:list_buff<br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
-  "#800000">;</font><br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;C:Fixed&nbsp;Fonts<br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
-  "#000080">B</font></strong>:<strong><font color=
-  "#008080">5</font></strong>x8:<strong><font color=
-  "#000080">setv</font></strong>&nbsp;<font color=
-  "#008080">$font</font>&nbsp;<strong><font color=
-  "#008080">5</font></strong>x8<br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
-  "#000080">B</font></strong>:<strong><font color=
-  "#008080">7</font></strong>x14:<strong><font color=
-  "#000080">setv</font></strong>&nbsp;<font color=
-  "#008080">$font</font>&nbsp;<strong><font color=
-  "#008080">7</font></strong>x14<br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
-  "#000080">B</font></strong>:<strong><font color=
-  "#008080">8</font></strong>x13:<strong><font color=
-  "#000080">setv</font></strong>&nbsp;<font color=
-  "#008080">$font</font>&nbsp;<strong><font color=
-  "#008080">8</font></strong>x13<br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
-  "#000080">B</font></strong>:<strong><font color=
-  "#008080">8</font></strong>x16:<strong><font color=
-  "#000080">setv</font></strong>&nbsp;<font color=
-  "#008080">$font</font>&nbsp;<strong><font color=
-  "#008080">8</font></strong>x16<br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
-  "#000080">B</font></strong>:<strong><font color=
-  "#008080">9</font></strong>x15:<strong><font color=
-  "#000080">setv</font></strong>&nbsp;<font color=
-  "#008080">$font</font>&nbsp;<strong><font color=
-  "#008080">9</font></strong>x15<br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
-  "#000080">B</font></strong>:<strong><font color=
-  "#008080">10</font></strong>x20:<strong><font color=
-  "#000080">setv</font></strong>&nbsp;<font color=
-  "#008080">$font</font>&nbsp;<strong><font color=
-  "#008080">10</font></strong>x20<br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
-  "#000080">B</font></strong>:<strong><font color=
-  "#008080">12</font></strong>x24:<strong><font color=
-  "#000080">setv</font></strong>&nbsp;<font color=
-  "#008080">$font</font>&nbsp;<strong><font color=
-  "#008080">12</font></strong>x24<br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
-  "#800000">;</font><br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;C:Nice&nbsp;Fonts<br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
-  "#000080">B</font></strong>:<strong><font color=
-  "#008080">10</font></strong>pt:<strong><font color=
-  "#000080">setv</font></strong>&nbsp;<font color=
-  "#008080">$font</font>&nbsp;<font color=
-  "#800080">"-*-lucidatypewriter-*-r-normal-sans-10-*-*-*-*-0-iso8859-1"</font><br>
+    <strong><font color="#000080">S</font></strong><br>
+    <strong><font color=
+    "#000080">B</font></strong>:Manual&nbsp;<strong><font color=
+    "#000080">for</font></strong>...:cmd&nbsp;<strong><font color=
+    "#000080">ShowManpage</font></strong><br>
+    <strong><font color="#000080">S</font></strong><br>
+    <strong><font color=
+    "#000080">B</font></strong>:Files:<strong><font color=
+    "#000080">capture-command</font></strong>&nbsp;<font color=
+    "#800080">"ls&nbsp;-l"</font><br>
+    <strong><font color=
+    "#000080">B</font></strong>:Processes:<strong><font color=
+    "#000080">capture-command</font></strong>&nbsp;<font color=
+    "#800080">"ps"</font><br>
+    <strong><font color=
+    "#000080">B</font></strong>:Users:<strong><font color=
+    "#000080">capture-command</font></strong>&nbsp;<font color=
+    "#800080">"w"</font><br>
+    <font color="#800000">;</font><br>
+    C:Buffers<br>
+    <strong><font color=
+    "#000080">B</font></strong>:<strong><font color=
+    "#000080">Show</font></strong>&nbsp;Current&nbsp;Only:<strong><font color="#000080">delete-other-windows</font></strong><br>
 
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
-  "#000080">B</font></strong>:<strong><font color=
-  "#008080">12</font></strong>pt:<strong><font color=
-  "#000080">setv</font></strong>&nbsp;<font color=
-  "#008080">$font</font>&nbsp;<font color=
-  "#800080">"-*-lucidatypewriter-*-r-normal-sans-12-*-*-*-*-0-iso8859-1"</font><br>
+    <strong><font color=
+    "#000080">B</font></strong>:<strong><font color=
+    "#000080">Toggle</font></strong>&nbsp;<strong><font color=
+    "#000080">Show</font></strong>:<strong><font color=
+    "#000080">toggle-buffer</font></strong><br>
+    <strong><font color="#000080">L</font></strong>:list_buff<br>
+    <font color="#800000">;</font><br>
+    C:Fixed&nbsp;Fonts<br>
+    <strong><font color=
+    "#000080">B</font></strong>:<strong><font color=
+    "#008080">5</font></strong>x8:<strong><font color=
+    "#000080">setv</font></strong>&nbsp;<font color=
+    "#008080">$font</font>&nbsp;<strong><font color=
+    "#008080">5</font></strong>x8<br>
+    <strong><font color=
+    "#000080">B</font></strong>:<strong><font color=
+    "#008080">7</font></strong>x14:<strong><font color=
+    "#000080">setv</font></strong>&nbsp;<font color=
+    "#008080">$font</font>&nbsp;<strong><font color=
+    "#008080">7</font></strong>x14<br>
+    <strong><font color=
+    "#000080">B</font></strong>:<strong><font color=
+    "#008080">8</font></strong>x13:<strong><font color=
+    "#000080">setv</font></strong>&nbsp;<font color=
+    "#008080">$font</font>&nbsp;<strong><font color=
+    "#008080">8</font></strong>x13<br>
+    <strong><font color=
+    "#000080">B</font></strong>:<strong><font color=
+    "#008080">8</font></strong>x16:<strong><font color=
+    "#000080">setv</font></strong>&nbsp;<font color=
+    "#008080">$font</font>&nbsp;<strong><font color=
+    "#008080">8</font></strong>x16<br>
+    <strong><font color=
+    "#000080">B</font></strong>:<strong><font color=
+    "#008080">9</font></strong>x15:<strong><font color=
+    "#000080">setv</font></strong>&nbsp;<font color=
+    "#008080">$font</font>&nbsp;<strong><font color=
+    "#008080">9</font></strong>x15<br>
+    <strong><font color=
+    "#000080">B</font></strong>:<strong><font color=
+    "#008080">10</font></strong>x20:<strong><font color=
+    "#000080">setv</font></strong>&nbsp;<font color=
+    "#008080">$font</font>&nbsp;<strong><font color=
+    "#008080">10</font></strong>x20<br>
+    <strong><font color=
+    "#000080">B</font></strong>:<strong><font color=
+    "#008080">12</font></strong>x24:<strong><font color=
+    "#000080">setv</font></strong>&nbsp;<font color=
+    "#008080">$font</font>&nbsp;<strong><font color=
+    "#008080">12</font></strong>x24<br>
+    <font color="#800000">;</font><br>
+    C:Nice&nbsp;Fonts<br>
+    <strong><font color=
+    "#000080">B</font></strong>:<strong><font color=
+    "#008080">10</font></strong>pt:<strong><font color=
+    "#000080">setv</font></strong>&nbsp;<font color=
+    "#008080">$font</font>&nbsp;<font color=
+    "#800080">"-*-lucidatypewriter-*-r-normal-sans-10-*-*-*-*-0-iso8859-1"</font><br>
 
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
-  "#000080">B</font></strong>:<strong><font color=
-  "#008080">14</font></strong>pt:<strong><font color=
-  "#000080">setv</font></strong>&nbsp;<font color=
-  "#008080">$font</font>&nbsp;<font color=
-  "#800080">"-*-lucidatypewriter-*-r-normal-sans-14-*-*-*-*-0-iso8859-1"</font><br>
+    <strong><font color=
+    "#000080">B</font></strong>:<strong><font color=
+    "#008080">12</font></strong>pt:<strong><font color=
+    "#000080">setv</font></strong>&nbsp;<font color=
+    "#008080">$font</font>&nbsp;<font color=
+    "#800080">"-*-lucidatypewriter-*-r-normal-sans-12-*-*-*-*-0-iso8859-1"</font><br>
 
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
-  "#000080">B</font></strong>:<strong><font color=
-  "#008080">16</font></strong>pt:<strong><font color=
-  "#000080">setv</font></strong>&nbsp;<font color=
-  "#008080">$font</font>&nbsp;<font color=
-  "#800080">"-*-lucidatypewriter-*-r-normal-sans-16-*-*-*-*-0-iso8859-1"</font><br>
+    <strong><font color=
+    "#000080">B</font></strong>:<strong><font color=
+    "#008080">14</font></strong>pt:<strong><font color=
+    "#000080">setv</font></strong>&nbsp;<font color=
+    "#008080">$font</font>&nbsp;<font color=
+    "#800080">"-*-lucidatypewriter-*-r-normal-sans-14-*-*-*-*-0-iso8859-1"</font><br>
 
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
-  "#000080">B</font></strong>:<strong><font color=
-  "#008080">18</font></strong>pt:<strong><font color=
-  "#000080">setv</font></strong>&nbsp;<font color=
-  "#008080">$font</font>&nbsp;<font color=
-  "#800080">"-*-lucidatypewriter-*-r-normal-sans-18-*-*-*-*-0-iso8859-1"</font><br>
+    <strong><font color=
+    "#000080">B</font></strong>:<strong><font color=
+    "#008080">16</font></strong>pt:<strong><font color=
+    "#000080">setv</font></strong>&nbsp;<font color=
+    "#008080">$font</font>&nbsp;<font color=
+    "#800080">"-*-lucidatypewriter-*-r-normal-sans-16-*-*-*-*-0-iso8859-1"</font><br>
 
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
-  "#000080">B</font></strong>:<strong><font color=
-  "#008080">20</font></strong>pt:<strong><font color=
-  "#000080">setv</font></strong>&nbsp;<font color=
-  "#008080">$font</font>&nbsp;<font color=
-  "#800080">"-*-lucidatypewriter-*-r-normal-sans-20-*-*-*-*-0-iso8859-1"</font><br>
+    <strong><font color=
+    "#000080">B</font></strong>:<strong><font color=
+    "#008080">18</font></strong>pt:<strong><font color=
+    "#000080">setv</font></strong>&nbsp;<font color=
+    "#008080">$font</font>&nbsp;<font color=
+    "#800080">"-*-lucidatypewriter-*-r-normal-sans-18-*-*-*-*-0-iso8859-1"</font><br>
 
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color=
-  "#800000">;</font><br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;C:Help:<strong><font color=
-  "#000080">help</font></strong><br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
-  "#000080">B</font></strong>:About:<strong><font color=
-  "#000080">version</font></strong><br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
-  "#000080">S</font></strong><br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
-  "#000080">B</font></strong>:General:<strong><font color=
-  "#000080">help</font></strong><br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
-  "#000080">B</font></strong>:Bindings:<strong><font color=
-  "#000080">describe-bindings</font></strong><br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
-  "#000080">B</font></strong>:Motions:<strong><font color=
-  "#000080">describe-motions</font></strong><br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
-  "#000080">B</font></strong>:Operators:<strong><font color=
-  "#000080">describe-operators</font></strong><br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
-  "#000080">S</font></strong><br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
-  "#000080">B</font></strong>:Apropos...:cmd&nbsp;<strong><font color="#000080">apropos</font></strong><br>
+    <strong><font color=
+    "#000080">B</font></strong>:<strong><font color=
+    "#008080">20</font></strong>pt:<strong><font color=
+    "#000080">setv</font></strong>&nbsp;<font color=
+    "#008080">$font</font>&nbsp;<font color=
+    "#800080">"-*-lucidatypewriter-*-r-normal-sans-20-*-*-*-*-0-iso8859-1"</font><br>
 
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
-  "#000080">B</font></strong>:On&nbsp;Function...:cmd&nbsp;<strong><font color="#000080">describe-function</font></strong><br>
+    <font color="#800000">;</font><br>
+    C:Help:<strong><font color="#000080">help</font></strong><br>
+    <strong><font color=
+    "#000080">B</font></strong>:About:<strong><font color=
+    "#000080">version</font></strong><br>
+    <strong><font color="#000080">S</font></strong><br>
+    <strong><font color=
+    "#000080">B</font></strong>:General:<strong><font color=
+    "#000080">help</font></strong><br>
+    <strong><font color=
+    "#000080">B</font></strong>:Bindings:<strong><font color=
+    "#000080">describe-bindings</font></strong><br>
+    <strong><font color=
+    "#000080">B</font></strong>:Motions:<strong><font color=
+    "#000080">describe-motions</font></strong><br>
+    <strong><font color=
+    "#000080">B</font></strong>:Operators:<strong><font color=
+    "#000080">describe-operators</font></strong><br>
+    <strong><font color="#000080">S</font></strong><br>
+    <strong><font color=
+    "#000080">B</font></strong>:Apropos...:cmd&nbsp;<strong><font color="#000080">apropos</font></strong><br>
 
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
-  "#000080">B</font></strong>:On&nbsp;Key...:<strong><font color=
-  "#000080">describe-key</font></strong>&nbsp;<font color=
-  "#008080">&amp;gts</font><br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
-  "#000080">S</font></strong><br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
-  "#000080">B</font></strong>:Settings:<strong><font color=
-  "#000080">setall</font></strong><br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
-  "#000080">B</font></strong>:Variables:<strong><font color=
-  "#000080">show-variables</font></strong><br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
-  "#000080">B</font></strong>:Registers:<strong><font color=
-  "#000080">show-registers</font></strong><br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
-  "#000080">S</font></strong><br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
-  "#000080">B</font></strong>:Majormodes:<strong><font color=
-  "#000080">show-majormodes</font></strong><br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
-  "#000080">B</font></strong>:Colors:<strong><font color=
-  "#000080">show-colors</font></strong><br>
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color=
-  "#000080">B</font></strong>:Color&nbsp;Schemes:<strong><font color="#000080">show-color-schemes</font></strong><br>
+    <strong><font color=
+    "#000080">B</font></strong>:On&nbsp;Function...:cmd&nbsp;<strong><font color="#000080">describe-function</font></strong><br>
 
-  <!--atr2html}}--></p>
+    <strong><font color=
+    "#000080">B</font></strong>:On&nbsp;Key...:<strong><font color=
+    "#000080">describe-key</font></strong>&nbsp;<font color=
+    "#008080">&amp;gts</font><br>
+    <strong><font color="#000080">S</font></strong><br>
+    <strong><font color=
+    "#000080">B</font></strong>:Settings:<strong><font color=
+    "#000080">setall</font></strong><br>
+    <strong><font color=
+    "#000080">B</font></strong>:Variables:<strong><font color=
+    "#000080">show-variables</font></strong><br>
+    <strong><font color=
+    "#000080">B</font></strong>:Registers:<strong><font color=
+    "#000080">show-registers</font></strong><br>
+    <strong><font color="#000080">S</font></strong><br>
+    <strong><font color=
+    "#000080">B</font></strong>:Majormodes:<strong><font color=
+    "#000080">show-majormodes</font></strong><br>
+    <strong><font color=
+    "#000080">B</font></strong>:Colors:<strong><font color=
+    "#000080">show-colors</font></strong><br>
+    <strong><font color=
+    "#000080">B</font></strong>:Color&nbsp;Schemes:<strong><font color="#000080">show-color-schemes</font></strong><br>
+
+    <!--atr2html}}--></p>
+  </blockquote>
 
   <h2 id="credits-toc"><a name="credits" id=
   "credits">Credits</a></h2>
