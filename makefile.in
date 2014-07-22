@@ -20,7 +20,7 @@
 #
 # gnu autoconf support by kevin buettner, 5/94
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.271 2014/07/04 15:10:53 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.274 2014/07/21 22:30:01 tom Exp $
 
 SHELL		= /bin/sh
 
@@ -35,9 +35,9 @@ VPATH		= @srcdir@
 CC		= @CC@
 CPP		= @CPP@
 LINK		= @LINK_PREFIX@ $(CC) $(CFLAGS)
-INSTALL		= @INSTALL@
-INSTALL_OPTS	= @INSTALL_OPTS@
-INSTALL_PROGRAM	= @INSTALL_PROGRAM@ $(INSTALL_OPTS)
+INSTALL		= @INSTALL@ @INSTALL_OPT_O@
+INSTALL_OPT_S	= @INSTALL_OPT_S@
+INSTALL_PROGRAM	= @INSTALL_PROGRAM@ $(INSTALL_OPT_S)
 INSTALL_SCRIPT	= @INSTALL_SCRIPT@
 INSTALL_DATA	= @INSTALL_DATA@
 
@@ -492,7 +492,7 @@ INSTALL_FILES = \
 	$(INSTALL_MACRO_FILES) \
 	$(DATADIR)/vile.hlp @EXTRA_INSTALL_FILES@
 
-USE_SYMLINK = test @VILE_SYMLINK@ != NONE
+USE_SYMLINK = test "x@VILE_SYMLINK@" != "xNONE"
 
 NAME_OF_ACTUAL = $(ACTUAL)$x
 NAME_OF_PAGER  = $(ACTUAL)-pager
@@ -581,7 +581,7 @@ uninstall-bin \
 uninstall ::
 	@ECHO_CC@-$(SHELL) -c "if $(USE_SYMLINK) ; then cd $(BINDIR) && rm -f $(LINK_TO_ACTUAL) ; fi"
 	@ECHO_CC@-$(SHELL) -c "if $(USE_SYMLINK) ; then cd $(BINDIR) && rm -f $(LINK_TO_PAGER) ; fi"
-	@ECHO_CC@- $(RM) $(INSTALL_FILES) $(PATH_OF_ACTUAL) $(PATH_OF_PAGER)
+	@ECHO_CC@- $(RM) $(INSTALL_FILES) $(PATH_OF_ACTUAL) $(PATH_OF_PAGER) $(PATH_OF_2HTML) $(PATH_OF_LIBDIR)
 	@echo 'Completed uninstall of program.'
 
 uninstall-man \

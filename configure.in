@@ -1,11 +1,11 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_REVISION($Revision: 1.311 $)
+AC_REVISION($Revision: 1.313 $)
 AC_PREREQ(2.52.20011201)
 
 ### Use "configure -with-screen" to override the default configuration, which is
 ### termcap-based on unix systems.
 
-dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.311 2014/07/02 08:06:24 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.313 2014/07/21 22:00:03 tom Exp $
 
 define(MAKELIST, sh $srcdir/filters/makelist.sh $srcdir/filters/genmake.mak)
 
@@ -244,13 +244,14 @@ fi
 
 if test "$cf_needflex" = yes ; then
 	cf_broken_flex=yes
-	if test -z "$LEX_VERSION"
+	cf_lex_version=`echo "$LEX_VERSION" | sed -e 's/_.*//' -e 's/\.\([[0-9]]\)/_00\1/' -e 's/\..*//' -e 's/_[[0]]*\([[0-9]]\{3,3\}\)/\1/'`
+	if test -z "$cf_lex_version"
 	then
 		AC_MSG_WARN(You need flex to compile builtin filters)
-	elif ( expr $LEX_VERSION \< 2.5 >/dev/null )
+	elif test $cf_lex_version -lt 2005
 	then
 		AC_MSG_WARN(Sorry - your version of flex is too old: $LEX_VERSION)
-	elif ( expr $LEX_VERSION \>= 2.6 >/dev/null )
+	elif test $cf_lex_version -gt 2006
 	then
 		AC_MSG_WARN(Sorry - your version of flex is too unstable: $LEX_VERSION)
 	else
@@ -262,7 +263,7 @@ if test "$cf_needflex" = yes ; then
 		then
 			CF_VERBOSE(good)
 			cf_broken_flex=no
-		elif ( expr $LEX_SUBVERSION \> 4 >/dev/null )
+		elif test $LEX_SUBVERSION -gt 4
 		then
 			AC_MSG_WARN(This version of flex cannot compile builtin filters)
 		else
@@ -845,20 +846,7 @@ test -n "${with_trace}${with_no_leaks}" && EXTRAOBJS="$EXTRAOBJS trace\$o"
 
 CF_WITH_WARNINGS(Wno-unknown-pragmas)
 
-AC_MSG_CHECKING(if you want to install stripped executables)
-CF_ARG_DISABLE(stripping,
-	[  --disable-stripping     do not strip installed executables],
-	[with_stripping=no],
-	[with_stripping=yes])
-AC_MSG_RESULT($with_stripping)
-
-if test "$with_stripping" = yes
-then
-	INSTALL_OPTS="-s"
-else
-	INSTALL_OPTS=
-fi
-AC_SUBST(INSTALL_OPTS)
+CF_INSTALL_OPTS
 
 ###	Do these last, since they rely on a properly constructed config.h
 

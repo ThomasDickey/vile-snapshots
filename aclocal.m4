@@ -1,6 +1,6 @@
 dnl vile's local definitions for autoconf.
 dnl
-dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.267 2014/07/02 08:25:44 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.272 2014/07/21 22:21:11 tom Exp $
 dnl
 dnl See
 dnl		http://invisible-island.net/autoconf/autoconf.html
@@ -316,13 +316,31 @@ if test -n "$1" ; then
 fi
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_ADD_LIBS version: 1 updated: 2010/06/02 05:03:05
+dnl CF_ADD_LIBS version: 2 updated: 2014/07/13 14:33:27
 dnl -----------
-dnl Add one or more libraries, used to enforce consistency.
+dnl Add one or more libraries, used to enforce consistency.  Libraries are
+dnl prepended to an existing list, since their dependencies are assumed to
+dnl already exist in the list.
 dnl
 dnl $1 = libraries to add, with the "-l", etc.
 dnl $2 = variable to update (default $LIBS)
-AC_DEFUN([CF_ADD_LIBS],[ifelse($2,,LIBS,[$2])="$1 [$]ifelse($2,,LIBS,[$2])"])dnl
+AC_DEFUN([CF_ADD_LIBS],[
+cf_add_libs="$1"
+# Filter out duplicates - this happens with badly-designed ".pc" files...
+for cf_add_1lib in [$]ifelse($2,,LIBS,[$2])
+do
+	for cf_add_2lib in $cf_add_libs
+	do
+		if test "x$cf_add_1lib" = "x$cf_add_2lib"
+		then
+			cf_add_1lib=
+			break
+		fi
+	done
+	test -n "$cf_add_1lib" && cf_add_libs="$cf_add_libs $cf_add_1lib"
+done
+ifelse($2,,LIBS,[$2])="$cf_add_libs"
+])dnl
 dnl ---------------------------------------------------------------------------
 dnl CF_ADD_LIB_AFTER version: 3 updated: 2013/07/09 21:27:22
 dnl ----------------
@@ -443,7 +461,7 @@ ifelse([$3],,[    :]dnl
 ])dnl
   ])])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_AUTO_SYMLINK version: 2 updated: 2010/01/27 20:39:52
+dnl CF_AUTO_SYMLINK version: 3 updated: 2014/07/21 17:30:38
 dnl ---------------
 dnl If CF_WITH_SYMLINK is set, but the program transformation is inactive,
 dnl override it to provide a version-suffix to the result.  This assumes that
@@ -453,7 +471,7 @@ dnl $1 = variable to substitute
 AC_DEFUN([CF_AUTO_SYMLINK],[
 AC_REQUIRE([CF_WITH_SYMLINK])dnl
 
-if test "$with_symlink" != no ; then
+if test "x$with_symlink" != xno ; then
 	if test "[$]$1" = NONE ; then
 		cf_version=`$SHELL $srcdir/version.sh 2>/dev/null`
 		if test -n "$cf_version" ; then
@@ -901,7 +919,7 @@ CF_CURSES_HEADER
 CF_TERM_HEADER
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_CURSES_FUNCS version: 17 updated: 2011/05/14 16:07:29
+dnl CF_CURSES_FUNCS version: 18 updated: 2014/07/19 18:44:41
 dnl ---------------
 dnl Curses-functions are a little complicated, since a lot of them are macros.
 AC_DEFUN([CF_CURSES_FUNCS],
@@ -922,6 +940,7 @@ do
 			[
 #ifndef ${cf_func}
 long foo = (long)(&${cf_func});
+fprintf(stderr, "testing linkage of $cf_func:%p\n", foo);
 if (foo + 1234 > 5678)
 	${cf_cv_main_return:-return}(foo);
 #endif
@@ -2245,6 +2264,64 @@ AC_SUBST(IMAKE_CFLAGS)
 AC_SUBST(IMAKE_LOADFLAGS)
 ])dnl
 dnl ---------------------------------------------------------------------------
+dnl CF_INSTALL_OPTS version: 1 updated: 2014/07/21 18:19:51
+dnl ---------------
+dnl prompt for/fill-in useful install-program options
+AC_DEFUN([CF_INSTALL_OPTS],
+[
+CF_INSTALL_OPT_S
+CF_INSTALL_OPT_O
+])dnl
+dnl ---------------------------------------------------------------------------
+dnl CF_INSTALL_OPT_O version: 1 updated: 2014/07/21 18:19:51
+dnl ----------------
+dnl Almost all "install" programs default to the current user's ownership.
+dnl Almost - MINIX is an exception.
+AC_DEFUN([CF_INSTALL_OPT_O],
+[
+AC_MSG_CHECKING(if install needs to be told about ownership)
+case `$ac_config_guess` in #(vi
+*minix)
+	with_install_o=yes
+	;;
+*)
+	with_install_o=no
+	;;
+esac
+
+AC_MSG_RESULT($with_install_o)
+if test "x$with_install_o" = xyes
+then
+	INSTALL_OPT_O=`id root|sed -e 's/uid=[[0-9]]*(/ -o /' -e 's/gid=[[0-9]]*(/ -g /' -e 's/ [[^=[:space:]]][[^=[:space:]]]*=.*/ /' -e 's/)//g'`
+else
+	INSTALL_OPT_O=
+fi
+
+AC_SUBST(INSTALL_OPT_O)
+])dnl
+dnl ---------------------------------------------------------------------------
+dnl CF_INSTALL_OPT_S version: 1 updated: 2014/07/21 18:19:51
+dnl ----------------
+dnl By default, we should strip executables which are installed, but leave the
+dnl ability to suppress that for unit-testing.
+AC_DEFUN([CF_INSTALL_OPT_S],
+[
+AC_MSG_CHECKING(if you want to install stripped executables)
+CF_ARG_DISABLE(stripping,
+	[  --disable-stripping     do not strip installed executables],
+	[with_stripping=no],
+	[with_stripping=yes])
+AC_MSG_RESULT($with_stripping)
+
+if test "$with_stripping" = yes
+then
+	INSTALL_OPT_S="-s"
+else
+	INSTALL_OPT_S=
+fi
+AC_SUBST(INSTALL_OPT_S)
+])dnl
+dnl ---------------------------------------------------------------------------
 dnl CF_INTEL_COMPILER version: 6 updated: 2014/03/17 13:13:07
 dnl -----------------
 dnl Check if the given compiler is really the Intel compiler for Linux.  It
@@ -2515,7 +2592,7 @@ if test "$cf_lex_pointer" != yes ; then
 fi
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_LEX_STATES version: 5 updated: 2009/08/24 06:40:08
+dnl CF_LEX_STATES version: 6 updated: 2014/07/21 16:02:22
 dnl -------------
 dnl Check if the lex/flex program accepts states, i.e., %s and %x.  Older
 dnl implementations do not support these.
@@ -2530,7 +2607,7 @@ cf_lex_states_s=
 cf_lex_states_x=
 
 cf_lex_states=no
-while test 0 != `expr $cf_lex_statenum \< $cf_lex_statemax`
+while test $cf_lex_statenum -lt $cf_lex_statemax
 do
 cf_lex_statenum=`expr $cf_lex_statenum + 1`
 cf_lex_states_s="$cf_lex_states_s S$cf_lex_statenum"
@@ -3388,7 +3465,7 @@ fi
 
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_PROG_CC version: 3 updated: 2012/10/06 15:31:55
+dnl CF_PROG_CC version: 4 updated: 2014/07/12 18:57:58
 dnl ----------
 dnl standard check for CC, plus followup sanity checks
 dnl $1 = optional parameter to pass to AC_PROG_CC to specify compiler name
@@ -3398,7 +3475,7 @@ CF_GCC_VERSION
 CF_ACVERSION_CHECK(2.52,
 	[AC_PROG_CC_STDC],
 	[CF_ANSI_CC_REQD])
-CF_CC_ENV_FLAGS 
+CF_CC_ENV_FLAGS
 ])dnl
 dnl ---------------------------------------------------------------------------
 dnl CF_PROG_EXT version: 11 updated: 2012/10/06 08:57:51
@@ -4555,11 +4632,11 @@ fi
 AC_SUBST(no_icondir)
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_WITH_ICON_THEME version: 9 updated: 2013/04/17 05:31:24
+dnl CF_WITH_ICON_THEME version: 10 updated: 2014/07/12 18:57:58
 dnl ------------------
 dnl If asked, check for prerequisites and setup symbols to permit installing
 dnl one or more application icons in the Red Hat icon-theme directory
-dnl hierarchy. 
+dnl hierarchy.
 dnl
 dnl If the prerequisites are missing, give a warning and revert to the long-
 dnl standing pixmaps directory.
@@ -4993,7 +5070,7 @@ CF_NO_LEAKS_OPTION(purify,
 AC_SUBST(LINK_PREFIX)
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_WITH_SYMLINK version: 4 updated: 2010/01/26 19:22:22
+dnl CF_WITH_SYMLINK version: 5 updated: 2014/07/21 17:30:38
 dnl ---------------
 dnl If any of --program-prefix, --program-suffix or --program-transform-name is
 dnl given, accept an option tell the makefile to create a symbolic link, e.g.,
@@ -5005,7 +5082,7 @@ dnl $3 = option default
 AC_DEFUN([CF_WITH_SYMLINK],[
 $1=NONE
 AC_SUBST($1)
-if test "$program_transform_name" != "'CF__INIT_TRANSFORM'" ; then
+if test "$program_transform_name" != "CF__INIT_TRANSFORM" ; then
 cf_name=`echo "$program_transform_name" | sed -e '[s,\\$\\$,$,g]'`
 cf_name=`echo $2 |sed -e "$cf_name"`
 AC_MSG_CHECKING(for symbolic link to create to $cf_name)
@@ -5019,6 +5096,8 @@ test -n "$with_symlink" && \
 	test "$with_symlink" != no && \
 	test "$with_symlink" != $cf_name && \
 	$1="$with_symlink"
+else
+	with_symlink=$3
 fi
 ])
 dnl ---------------------------------------------------------------------------
@@ -5272,7 +5351,7 @@ make an error
 fi
 ])
 dnl ---------------------------------------------------------------------------
-dnl CF_X_ATHENA version: 21 updated: 2013/07/06 21:27:06
+dnl CF_X_ATHENA version: 22 updated: 2014/07/12 18:57:58
 dnl -----------
 dnl Check for Xaw (Athena) libraries
 dnl
@@ -5287,6 +5366,17 @@ AC_ARG_WITH(Xaw3d,
 	[  --with-Xaw3d            link with Xaw 3d library])
 if test "$withval" = yes ; then
 	cf_x_athena=Xaw3d
+	AC_MSG_RESULT(yes)
+else
+	AC_MSG_RESULT(no)
+fi
+
+AC_MSG_CHECKING(if you want to link with Xaw 3d xft library)
+withval=
+AC_ARG_WITH(Xaw3dxft,
+	[  --with-Xaw3dxft         link with Xaw 3d xft library])
+if test "$withval" = yes ; then
+	cf_x_athena=Xaw3dxft
 	AC_MSG_RESULT(yes)
 else
 	AC_MSG_RESULT(no)
@@ -5702,14 +5792,27 @@ AC_CHECK_LIB(Xm, XmProcessTraversal, [LIBS="-lXm $LIBS"],
 	[$X_PRE_LIBS $LIBS $X_EXTRA_LIBS]) dnl
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_X_TOOLKIT version: 21 updated: 2012/10/04 06:57:36
+dnl CF_X_TOOLKIT version: 22 updated: 2014/07/13 14:33:27
 dnl ------------
 dnl Check for X Toolkit libraries
-dnl
 AC_DEFUN([CF_X_TOOLKIT],
 [
 AC_REQUIRE([AC_PATH_XTRA])
 AC_REQUIRE([CF_CHECK_CACHE])
+
+# OSX is schizoid about who owns /usr/X11 (old) versus /opt/X11 (new), and (and
+# in some cases has installed dummy files in the former, other cases replaced
+# it with a link to the new location).  This complicates the configure script. 
+# Check for that pitfall, and recover using pkg-config
+#
+# If none of these are set, the configuration is almost certainly broken.
+if test -z "${X_CFLAGS}${X_PRE_LIBS}${X_LIBS}${X_EXTRA_LIBS}"
+then
+	CF_TRY_PKG_CONFIG(x11,,[AC_MSG_WARN(unable to find X11 library)])
+	CF_TRY_PKG_CONFIG(ice,,[AC_MSG_WARN(unable to find ICE library)])
+	CF_TRY_PKG_CONFIG(sm,,[AC_MSG_WARN(unable to find SM library)])
+	CF_TRY_PKG_CONFIG(xt,,[AC_MSG_WARN(unable to find Xt library)])
+fi
 
 cf_have_X_LIBS=no
 
