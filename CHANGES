@@ -1,5 +1,23 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
+ 20140721 (o)
+	> Tom Dickey:
+	+ add vile-to-html, vile-libdir-path to uninstall rule
+	+ modify configure script to supply default "-o" option for the install
+	  program, since MINIX's does not provide a useful default.
+	+ other tweaks to work around deficiencies in Ash's parser, e.g., not
+	  counting tokens until after dequoting.
+	+ modify configure script to avoid using "expr", fixing problem using
+	  this with MINIX3.2, which uses Ash - a shell which omits the "<",
+	  "<=", etc., comparison operators which POSIX specifies for "expr".
+	+ CF_ADD_LIBS workaround in CF_X_TOOLKIT uses pkgconfig, whose files
+	  generally are using incomplete dependencies - in turn introducing
+	  lots of duplication.  filter out the duplicates.
+	+ CF_CURSES_FUNCS improve workaround for weak-linkage, seems to fix
+	  tests with NetBSD 6.1
+	+ CF_X_ATHENA add --with-Xaw3dxft option
+	+ CF_X_TOOLKIT add workaround for breakage in XQuartz upgrades
+
  20140706 (n)
 	> Brendan O'Dea:
 	+ use INT2PTR and PTR2IV macros rather than an explicit cast in perl.xs
