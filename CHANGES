@@ -1,7 +1,14 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20140721 (o)
+ 20140929 (o)
 	> Tom Dickey:
+	+ revise ldel_chars() function to restore feature of backspacelimit
+	  to delete newlines while backspacing.  This was lost in 9.5s changes
+	  (Savannah #43291).
+	+ add case to CF_XOPEN_SOURCE for Unixware, from lynx.
+	+ modify configure script to define _NETBSD_SOURCE for Minix, because
+	  its header files put the POSIX.1-2001 prototypes, such as isblank,
+	  there.
 	+ add vile-to-html, vile-libdir-path to uninstall rule
 	+ modify configure script to supply default "-o" option for the install
 	  program, since MINIX's does not provide a useful default.
@@ -17,6 +24,7 @@ Changes for vile 9.9 (released ??? ??? ?? ????)
 	  tests with NetBSD 6.1
 	+ CF_X_ATHENA add --with-Xaw3dxft option
 	+ CF_X_TOOLKIT add workaround for breakage in XQuartz upgrades
+	+ update config.sub
 
  20140706 (n)
 	> Brendan O'Dea:
