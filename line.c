@@ -10,7 +10,7 @@
  * editing must be being displayed, which means that "b_nwnd" is non zero,
  * which means that the dot and mark values in the buffer headers are nonsense.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.222 2014/04/15 00:30:08 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.223 2014/09/29 23:40:07 tom Exp $
  *
  */
 
@@ -751,12 +751,14 @@ ldel_bytes(B_COUNT nbytes, int kflag)
 	    status = FALSE;
 	    break;
 	}
-	if (doto > llength(dotp))
+	if (doto > llength(dotp)) {
 	    uchunk = 0;
-	else
+	} else {
 	    uchunk = (B_COUNT) (llength(dotp) - doto);	/* Size of chunk.  */
-	if (uchunk > nbytes)
+	}
+	if (uchunk > nbytes) {
 	    uchunk = nbytes;
+	}
 
 	schunk = (long) uchunk;
 	if (schunk < 0) {
@@ -875,7 +877,25 @@ ldel_bytes(B_COUNT nbytes, int kflag)
 int
 ldel_chars(B_COUNT nchars, int kflag)
 {
-    return ldel_bytes((B_COUNT) count_bytes(DOT.l, DOT.o, (int) nchars), kflag);
+    LINE *lp = DOT.l;
+    int off = DOT.o;
+    B_COUNT total = 0;
+
+    while (nchars != 0) {
+	int test_bytes = count_bytes(lp, off, (int) nchars);
+	int test_chars = count_chars(lp, off, test_bytes);
+
+	total += (B_COUNT) test_bytes;
+	if ((B_COUNT) test_chars >= nchars)
+	    break;
+
+	lp = lforw(DOT.l);
+	off = 0;
+
+	total += len_record_sep(curbp);;
+	nchars -= (1 + test_chars);
+    }
+    return ldel_bytes(total, kflag);
 }
 #endif
 
