@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/ini-filt.l,v 1.16 2013/12/02 01:32:53 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/ini-filt.l,v 1.18 2014/09/30 09:31:37 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of M$ ini-definition
  * input text.
@@ -35,7 +35,7 @@ HEX		[[:xdigit:]]+
 GUID		G"{"{HEX}("-"{HEX})+"}"
 
 INTEGER		([[:digit:]]+)|(0x[[:xdigit:]]+)
-IDENT		[[:alpha:]][[:alnum:]_.]*[%&!#$]?
+IDENT		[[:alpha:]][[:alnum:]_.-]*[%&!#$]?
 
 STRING		\"([^"]|(""))*\"
 
@@ -43,16 +43,16 @@ NUMBER		{INTEGER}|{GUID}
 
 %%
 
-<NORMAL>"[".*"]"	{ WriteToken(Action_attr); }
+<NORMAL>"["[^]]*"]"	{ WriteToken(Action_attr); }
 <NORMAL>{IDENT}		{ WriteToken(my_keyword_attr(yytext)); }
 
-<NORMAL>"="		{ ECHO; BEGIN(VALUE); }
+<NORMAL>[=:]		{ ECHO; BEGIN(VALUE); }
 <NORMAL,VALUE>{STRING}	{ WriteToken(String_attr); }
 <NORMAL,VALUE>{NUMBER}	{ WriteToken(Number_attr); }
-<VALUE>[\n]		{ ECHO; BEGIN(NORMAL); }
+<VALUE>[\r\n]		{ ECHO; BEGIN(NORMAL); }
 
 <NORMAL>"//"[^\r\n]*	{ WriteToken(Comment_attr); }
-<NORMAL>";"[^\r\n]*	{ WriteToken(Comment_attr); }
+<NORMAL>[#;][^\r\n]*	{ WriteToken(Comment_attr); }
 
 <NORMAL>"/*"		{ BeginQuote(COMMENT, Comment_attr); }
 <COMMENT>[^*]*		{ flt_bfr_append(yytext, yyleng); }

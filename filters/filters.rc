@@ -1,4 +1,4 @@
-; $Id: filters.rc,v 1.242 2013/06/25 00:55:00 tom Exp $
+; $Id: filters.rc,v 1.244 2014/09/30 10:06:37 tom Exp $
 ; majormodes in this file are ordered alphabetically for convenience - the
 ; precedence used by vile is strictly alphabetic, counting case.
 
@@ -102,6 +102,11 @@ define-mode dcl
 	filtername	'vile-dcl-filt -i'
 ~endwith
 
+define-mode desktop
+~with define-submode desktop
+	filtername	'vile-ini-filt'
+~endwith
+
 define-mode docbook
 ~with define-submode docbook
 	filtername	'vile-xml-filt -k docbook'
@@ -133,7 +138,7 @@ define-mode ini
 ~endwith
 
 define-mode iss
-~with define-submode ini
+~with define-submode iss
 	filtername	'vile-iss-filt -i'
 ~endwith
 

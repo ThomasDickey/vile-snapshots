@@ -1,7 +1,10 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20140929 (o)
+ 20140930 (o)
 	> Tom Dickey:
+	+ correct filtername setting for issmode, which used ini-filter.
+	+ add ":" and "#" to ini-filter as aliases for "=" and ";"
+	+ add desktop-mode, using ini-filter.
 	+ revise ldel_chars() function to restore feature of backspacelimit
 	  to delete newlines while backspacing.  This was lost in 9.5s changes
 	  (Savannah #43291).

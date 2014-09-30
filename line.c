@@ -10,7 +10,7 @@
  * editing must be being displayed, which means that "b_nwnd" is non zero,
  * which means that the dot and mark values in the buffer headers are nonsense.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.223 2014/09/29 23:40:07 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.224 2014/09/30 08:22:22 tom Exp $
  *
  */
 
@@ -892,8 +892,8 @@ ldel_chars(B_COUNT nchars, int kflag)
 	lp = lforw(DOT.l);
 	off = 0;
 
-	total += len_record_sep(curbp);;
-	nchars -= (1 + test_chars);
+	total += (B_COUNT) len_record_sep(curbp);;
+	nchars -= (B_COUNT) (1 + test_chars);
     }
     return ldel_bytes(total, kflag);
 }
