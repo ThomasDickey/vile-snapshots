@@ -13,7 +13,7 @@
  * vile.  The file api.c (sometimes) provides a middle layer between
  * this interface and the rest of vile.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.131 2014/03/31 23:19:46 bod Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.132 2014/09/30 08:30:46 tom Exp $
  */
 
 #ifdef __GNUC__
@@ -3069,7 +3069,7 @@ attribute(vbp, ...)
 
 	    if (normal) {
 		vattr = 0;
-		hypercmd = 0;
+		FreeAndNull(hypercmd);
 	    }
 
 	    status = attributeregion_in_region(

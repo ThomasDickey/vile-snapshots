@@ -46,7 +46,7 @@
  * vile will choose some appropriate fallback (such as underlining) if
  * italics are not available.
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/manfilt.c,v 1.66 2014/07/04 13:13:10 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/manfilt.c,v 1.67 2014/09/30 08:21:03 tom Exp $
  *
  */
 
@@ -63,8 +63,8 @@
 
 #ifdef HAVE_WCTYPE
 #include	<wctype.h>
-#define sys_isdigit(n)  (iswdigit(n) || (((n) < 256 && isdigit(n))))
-#define sys_isprint(n)  (iswprint(n) || (((n) < 256 && isprint(n))))
+#define sys_isdigit(n)  (iswdigit((wint_t)(n)) || (((wint_t)(n) < 256 && isdigit((wint_t)(n)))))
+#define sys_isprint(n)  (iswprint((wint_t)(n)) || (((wint_t)(n) < 256 && isprint((wint_t)(n)))))
 #else
 #define sys_isdigit(n)  isdigit(n)
 #define sys_isprint(n)  isprint(n)

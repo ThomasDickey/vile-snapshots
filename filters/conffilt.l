@@ -7,7 +7,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/conffilt.l,v 1.15 2013/12/24 00:49:33 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/conffilt.l,v 1.16 2014/09/30 00:40:27 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of config-file.
  */
@@ -56,7 +56,7 @@ BLANK		[ \t]
 			  const char *attr;
 			  int skip = 0;
 
-			  while (isblank(yytext[skip])) {
+			  while (isblank(CharOf(yytext[skip]))) {
 			      ++skip;
 			  }
 			  attr = get_keyword_attr(yytext + skip);
