@@ -22,7 +22,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.723 2014/04/15 00:44:52 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.724 2014/09/30 22:44:43 tom Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -937,10 +937,10 @@ MainProgram(int argc, char *argv[])
 		if (!startstat)
 		    goto begin;
 	    } else {
-		zotbuf(init_bp);
+		init_bp = zotbuf2(init_bp);
 	    }
 	} else {		/* find and run .vilerc */
-	    zotbuf(init_bp);
+	    init_bp = zotbuf2(init_bp);
 	    if (do_source(startup_file, 1, TRUE) != TRUE) {
 		startstat = FALSE;
 		goto begin;

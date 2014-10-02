@@ -1,7 +1,7 @@
 /*
  * debugging support -- tom dickey.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.114 2014/07/04 12:17:57 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.116 2014/10/01 08:40:10 tom Exp $
  *
  */
 
@@ -625,9 +625,9 @@ InitArea(void)
 	area = typecallocn(AREA, DOALLOC);
 	if (area == 0)
 	    abort();
-	Trace("Initialized doalloc (%d * %d) = %ld\n",
-	      DOALLOC,
-	      sizeof(AREA),
+	Trace("Initialized doalloc (%ld * %ld) = %ld\n",
+	      (long) DOALLOC,
+	      (long) sizeof(AREA),
 	      (long) sizeof(AREA) * (long) DOALLOC);
     }
 }
@@ -778,15 +778,17 @@ void
 dofree(void *oldp)
 {
     check_opt_working();
-    count_freed++;
-    LOG_PTR("dealloc ", oldp);
+    if (oldp != 0) {
+	count_freed++;
+	LOG_PTR("dealloc ", oldp);
 
-    if (OK_FREE(oldp)) {
-	free(oldp);
-	return;
+	if (OK_FREE(oldp)) {
+	    free(oldp);
+	    return;
+	}
+
+	fail_alloc("free (not found)", oldp);
     }
-
-    fail_alloc("free (not found)", oldp);
 }
 
 /*
