@@ -2,7 +2,7 @@
  * The routines in this file read and write ASCII files from the disk. All of
  * the knowledge about files are here.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/fileio.c,v 1.205 2014/03/24 21:29:41 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/fileio.c,v 1.206 2014/09/30 21:12:07 tom Exp $
  *
  */
 
@@ -997,7 +997,7 @@ ffhasdata(void)
 #endif
 #if defined(FIONREAD) && !SYS_WINNT
     {
-	long x;
+	long x = 0;
 	if ((ioctl(fileno(ffp), (long) FIONREAD, (void *) &x) >= 0) && x != 0)
 	    return TRUE;
     }

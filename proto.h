@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.736 2014/07/04 19:31:59 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.737 2014/09/30 22:43:46 tom Exp $
  *
  */
 
@@ -243,6 +243,7 @@ extern BUFFER *find_bp (BUFFER *bp1);
 extern BUFFER *getfile2bp (const char *fname, int ok_to_ask, int cmdline);
 extern BUFFER *make_bp (const char *fname, UINT flags);
 extern BUFFER *make_ro_bp(const char *bname, UINT flags);
+extern BUFFER *zotbuf2 (BUFFER *bp);
 extern WINDOW *bp2any_wp (BUFFER *bp);
 extern char *add_brackets(char *dst, const char *src);
 extern char *hist_lookup (int c);

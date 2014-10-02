@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.438 2013/09/20 21:32:36 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.440 2014/10/02 00:09:02 tom Exp $
  *
  */
 
@@ -1260,6 +1260,7 @@ set_mode_value(BUFFER *bp,
     int nval, status;
     int unsetting = !setting && !global;
     int changed = FALSE;
+    int free_old = 0;
 
     /*
      * Check if we're allowed to change this mode in the current context.
@@ -1367,10 +1368,12 @@ set_mode_value(BUFFER *bp,
 	    break;
 
 	case VALTYPE_STRING:
+	    free_old = isLocalVal(&oldvalue);
 	    values->vp->p = strmalloc(rp);
 	    break;
 
 	case VALTYPE_REGEX:
+	    free_old = isLocalVal(&oldvalue);
 	    if ((r = new_regexval(rp, TRUE)) == 0) {
 		values->vp->r = new_regexval("", TRUE);
 		return FALSE;
@@ -1405,7 +1408,7 @@ set_mode_value(BUFFER *bp,
 	status = FALSE;
     } else if (values == globls) {
 	free_val(names, &oldvalue);
-    } else if (isLocalVal(&oldvalue)) {
+    } else if (free_old && isLocalVal(&oldvalue)) {
 	free_val(names, &oldvalue);
     }
 

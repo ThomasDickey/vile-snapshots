@@ -5,7 +5,7 @@
  * keys. Like everyone else, they set hints
  * for the display system.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.361 2014/07/01 22:49:04 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.362 2014/09/30 22:48:10 tom Exp $
  *
  */
 
@@ -1930,6 +1930,14 @@ zotbuf(BUFFER *bp)
 	updatelistbuffers();
     }
     returnCode(status);
+}
+
+BUFFER *
+zotbuf2(BUFFER *bp)
+{
+    if (zotbuf(bp))
+	bp = 0;
+    return bp;
 }
 
 /* Rename a buffer given a buffer pointer and new buffer name. */

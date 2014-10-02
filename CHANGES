@@ -1,7 +1,8 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20140930 (o)
+ 20141002 (o)
 	> Tom Dickey:
+	+ fix some leaks, etc., reported by valgrind and Coverity.
 	+ correct filtername setting for issmode, which used ini-filter.
 	+ add ":" and "#" to ini-filter as aliases for "=" and ";"
 	+ add desktop-mode, using ini-filter.
