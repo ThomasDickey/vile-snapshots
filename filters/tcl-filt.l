@@ -6,7 +6,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/tcl-filt.l,v 1.46 2013/12/02 01:32:53 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/tcl-filt.l,v 1.49 2014/10/16 09:00:21 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of TCL/TK script.
  *
@@ -19,6 +19,8 @@
  */
 
 #include <filters.h>
+
+#define FLTSTACK_EXTRA int square;
 #include <fltstack.h>
 
 DefineFilter(tcl);
@@ -67,8 +69,30 @@ NONUMBER	{SIGN}?({NODECIMAL}|{NOOCTAL}|{NOHEXADECIMAL}|{NOREAL})
 %%
 
 <VERB,ARGS,DATA>"{"{SPACE}*"}"	{ WriteToken(Braces_attr); }
-<VERB,ARGS,DATA>("{*}")?[{]	{ WriteToken(Braces_attr); push_state(VERB); }
-<VERB,ARGS,DATA>[}]		{ WriteToken(Braces_attr); pop_state(); }
+<VERB,ARGS,DATA>"{"[^*{}[:space:][:digit:]\\]"}"	{
+				  WriteToken3(Braces_attr,1);
+				  flt_puts(yytext + 1, 1, String_attr);
+				  WriteToken2(Braces_attr,2);
+				}
+<VERB,ARGS,DATA>("{*}")?[{]	{ WriteToken(Braces_attr);
+				  push_state(VERB);
+				  FLTSTACK_THIS.square = 0;
+				}
+<VERB,ARGS,DATA>[}]		{
+				  if (stk_level >= 0) {
+				    int matched = (FLTSTACK_THIS.square == 0);
+				    WriteToken(Braces_attr);
+				    pop_state();
+				    if (!matched) {
+				      while (stk_level >= 0 && FLTSTACK_THIS.square) {
+				        pop_state();
+				      }
+				    }
+				  } else {
+				    flt_error("unexpected right-brace");
+				    WriteToken(Error_attr);
+				  }
+				}
 
 <VERB>{IDENT}			{
 				  const char *attr = get_keyword_attr(yytext);
@@ -92,7 +116,6 @@ NONUMBER	{SIGN}?({NODECIMAL}|{NOOCTAL}|{NOHEXADECIMAL}|{NOREAL})
 <VERB,ARGS,DATA>{IDENTX}	|
 <VERB,ARGS,DATA>{WIDGET}	{ WriteToken(Ident2_attr); }
 
-<VERB,ARGS,DATA>\{\"\}	|
 <VERB,ARGS,DATA>\\\"	{ WriteToken(""); }
 
 <VERB>{FORMAT}		{ WriteToken(String_attr); new_state(ARGS); }
@@ -105,15 +128,21 @@ NONUMBER	{SIGN}?({NODECIMAL}|{NOOCTAL}|{NOHEXADECIMAL}|{NOREAL})
 			  flt_bfr_finish();
 			  WriteToken(Braces_attr);
 			  push_state(VERB);
+			  FLTSTACK_THIS.square = 1;
 			}
 <VERB,ARGS,DATA>[\[]	{
 			  WriteToken(Braces_attr);
 			  push_state(VERB);
+			  FLTSTACK_THIS.square = 1;
 			}
 <VERB,ARGS,DATA>[\]]	{
 			  if (stk_level > 0) {
-			    WriteToken(Braces_attr);
-			    pop_state();
+			    if (FLTSTACK_THIS.square) {
+				WriteToken(Braces_attr);
+				pop_state();
+			    } else {
+				WriteToken("");
+			    }
 			  } else {
 			    flt_error("unexpected right-bracket");
 			    WriteToken(Error_attr);
