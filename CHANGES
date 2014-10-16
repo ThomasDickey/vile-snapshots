@@ -1,5 +1,12 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
+ 20141016 (p)
+	> Tom Dickey:
+	+ improve tcl-filt.l handling of single character between curly braces,
+	  showing that as string-attribute.
+	+ modify tcl-filt.l to handle square brackets quoted by curly braces
+	  (report by Wayne Cuddy).
+
  20141002 (o)
 	> Tom Dickey:
 	+ fix some leaks, etc., reported by valgrind and Coverity.
