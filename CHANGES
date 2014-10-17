@@ -1,7 +1,11 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20141016 (p)
+ 20141017 (p)
 	> Tom Dickey:
+	+ build-fix for xvile without multibyte support.
+	+ add error patterns for bison and byacc.
+	+ correct workaround in manfilt.c for bullet characters from 9.8g;
+	  they were lost when using UTF-8 encoding.
 	+ improve tcl-filt.l handling of single character between curly braces,
 	  showing that as string-attribute.
 	+ modify tcl-filt.l to handle square brackets quoted by curly braces

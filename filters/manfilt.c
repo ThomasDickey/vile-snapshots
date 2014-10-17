@@ -46,7 +46,7 @@
  * vile will choose some appropriate fallback (such as underlining) if
  * italics are not available.
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/manfilt.c,v 1.67 2014/09/30 08:21:03 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/manfilt.c,v 1.68 2014/10/17 00:35:42 tom Exp $
  *
  */
 
@@ -947,9 +947,8 @@ ManFilter(FILE *ifp)
 	case 0xb7:		/* bullet character */
 	    if (!sys_isprint(c)) {
 		c = 'o';
-		goto printable;
 	    }
-	    break;
+	    goto printable;
 
 	case 0xad:		/* mis-used softhyphen */
 	    c = '-';

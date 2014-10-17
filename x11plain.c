@@ -3,7 +3,7 @@
  *	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11plain.c,v 1.5 2013/12/07 16:26:12 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11plain.c,v 1.6 2014/10/17 09:16:35 tom Exp $
  *
  */
 
@@ -533,11 +533,13 @@ xvileQueryFont(Display *dpy, TextWindow tw, const char *fname)
 	    x_set_fontname(tw, fname);
 	    TRACE(("...resulting piecemeal font %s\n", tw->fontname));
 	}
+#if OPT_MULTIBYTE
 	/*
 	 * max_byte1 is the maximum for the high-byte of 16-bit chars.
 	 * If it is nonzero, this is not an 8-bit font.
 	 */
 	x_set_font_encoding(pf->max_byte1 ? enc_UTF8 : enc_8BIT);
+#endif
     }
     return pf;
 }
