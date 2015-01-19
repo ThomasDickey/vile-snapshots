@@ -5,7 +5,7 @@
  * reading and writing of the disk are
  * in "fileio.c".
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.452 2013/12/28 17:44:20 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.453 2015/01/19 09:55:44 tom Exp $
  */
 
 #include "estruct.h"
@@ -601,12 +601,16 @@ fileread(int f GCC_UNUSED, int n GCC_UNUSED)
 	 * associated with a file.
 	 */
 	if (is_internalname(bp->b_fname)) {
+	    WINDOW *wp;
 	    if (eql_bname(bp, STDIN_BufName)
 		|| eql_bname(bp, UNNAMED_BufName)) {
 		status = bclear(bp);
 		if (status == TRUE)
 		    mlerase();
-		curwp->w_flag |= (WFMODE | WFHARD);
+		for_each_visible_window(wp) {
+		    if (wp->w_bufp == bp)
+			wp->w_flag |= (WFMODE | WFHARD);
+		}
 		returnCode(status);
 	    }
 	    returnCode(cannot_reread());

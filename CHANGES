@@ -1,7 +1,9 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20150118 (p)
+ 20150119 (p)
 	> Tom Dickey:
+	+ repaint all windows on an "unnamed" buffer if told to reread and
+	  discard changes (report by Hymie on mailing list).
 	+ modify logic used in global substitutions to ensure that "^" for
 	  beginning of the line is matched only once (report by Wayne Cuddy).
 	+ fix a few build problems with --disable-extensions
