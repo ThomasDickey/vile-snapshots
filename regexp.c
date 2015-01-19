@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/regexp.c,v 1.211 2015/01/19 01:32:47 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/regexp.c,v 1.212 2015/01/19 10:21:14 tom Exp $
  *
  * Copyright 2005-2013,2015 Thomas E. Dickey and Paul G. Fox
  *
@@ -173,7 +173,6 @@ typedef ULONG B_COUNT;		/* byte-count */
 
 #if OPT_TRACE
 /* #define REGDEBUG  1 */
-#define REGDEBUG  1
 #endif
 
 #ifdef REGDEBUG
