@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/yaccfilt.l,v 1.43 2013/12/02 01:32:53 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/yaccfilt.l,v 1.44 2014/10/17 23:21:23 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of YACC program.
  */
@@ -57,8 +57,8 @@ QIDENT		\$([[:digit:]$]|\<{IDENT}\>)
 
 INTEGER		[-+]?([[:digit:]]+|("0"[xX][[:xdigit:]]+))
 
-SSTRING		\'(\\.|[^'\\])*\'
-DSTRING		\"(\\.|[^"\\])*\"
+SSTRING		\'(\\.|[^'\\]|\\[\r\n])*\'
+DSTRING		\"(\\.|[^"\\]|\\[\r\n])*\"
 STRINGS		({SSTRING}|{DSTRING})
 
 PATTERN		(\\.|\[(\\.|.)*\]|[^[:space:]])+

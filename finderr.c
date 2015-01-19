@@ -3,9 +3,9 @@
  * written for vile by paul fox.
  * rewritten to use regular expressions by T.Dickey
  *
- * Copyright (c) 1990-2014 by Paul Fox and Thomas Dickey
+ * Copyright (c) 1990-2015 by Paul Fox and Thomas Dickey
  *
- * $Header: /users/source/archives/vile.vcs/RCS/finderr.c,v 1.147 2014/10/17 09:08:43 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/finderr.c,v 1.149 2015/01/19 01:37:48 tom Exp $
  *
  */
 
@@ -158,7 +158,7 @@ char *const predefined[] =
     "^\"%[^\"]\", line %L, col %C, %T",		/* ncurses, atac */
     "^\"%[^\"]\", line %L, %T",	/* ncurses */
     "^%F:%L\\.%C\\(-\\d\\+\\)\\?:%T",	/* bison */
-    "^%F: \\a - line %L of \"%F\", %T",	/* byacc */
+    "^%F: \\a - line %L of \"%F\", %T",		/* byacc */
 };
 
 static ERR_PATTERN *exp_table = 0;
@@ -748,7 +748,9 @@ finderr(int f GCC_UNUSED, int n GCC_UNUSED)
 	if (lisreal(dotp)) {
 	    count = 0;
 	    while ((exp = next_pattern(count++)) != 0
-		   && !lregexec(exp->exp_comp, dotp, 0, llength(dotp))) ;
+		   && !lregexec(exp->exp_comp, dotp, 0, llength(dotp))) {
+		;
+	    }
 
 	    if (exp != 0) {
 		TRACE(("matched TEXT:%.*s\n", llength(dotp), lvalue(dotp)));

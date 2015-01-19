@@ -3,7 +3,7 @@
  * and backward directions.
  *  heavily modified by Paul Fox, 1990
  *
- * $Header: /users/source/archives/vile.vcs/RCS/search.c,v 1.151 2011/11/22 21:52:14 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/search.c,v 1.153 2015/01/19 01:17:20 tom Exp $
  *
  * original written Aug. 1986 by John M. Gamble, but I (pgf) have since
  * replaced his regex stuff with Henry Spencer's regexp package.
@@ -102,7 +102,7 @@ fsearch(int f, int n, int marking, int fromscreen)
     didwrap = FALSE;
     while (marking || n--) {
 	movenext(&(DOT), FORWARD);
-	status = scanner(gregexp, FORWARD, wrapok, &didwrap);
+	status = scanner(gregexp, FORWARD, wrapok, (DOT.o == 0), &didwrap);
 	if (status == ABORT) {
 	    mlwarn("[Aborted]");
 	    DOT = curpos;
@@ -191,7 +191,7 @@ forwhunt(int f, int n)
     didwrap = FALSE;
     while (n--) {
 	movenext(&(DOT), FORWARD);
-	status = scanner(gregexp, FORWARD, wrapok, &didwrap);
+	status = scanner(gregexp, FORWARD, wrapok, (DOT.o == 0), &didwrap);
 	if (didwrap) {
 	    mlwrite("[Search wrapped past end of buffer]");
 	    didwrap = FALSE;
@@ -273,7 +273,7 @@ rsearch(int f, int n, int dummy GCC_UNUSED, int fromscreen)
     didwrap = FALSE;
     while (n--) {
 	movenext(&(DOT), REVERSE);
-	status = scanner(gregexp, REVERSE, wrapok, &didwrap);
+	status = scanner(gregexp, REVERSE, wrapok, (DOT.o == 0), &didwrap);
 	if (didwrap) {
 	    mlwrite(
 		       "[Search wrapped past start of buffer]");
@@ -339,7 +339,7 @@ backhunt(int f, int n)
     didwrap = FALSE;
     while (n--) {
 	movenext(&(DOT), REVERSE);
-	status = scanner(gregexp, REVERSE, wrapok, &didwrap);
+	status = scanner(gregexp, REVERSE, wrapok, (DOT.o == 0), &didwrap);
 	if (didwrap) {
 	    mlwrite("[Search wrapped past start of buffer]");
 	    didwrap = FALSE;
@@ -415,14 +415,16 @@ scanner(
 	   regexp * exp,	/* the compiled expression */
 	   int direct,		/* up or down */
 	   int wrapok,		/* ok to wrap around end of buffer? */
-	   int *wrappedp)
+	   int at_bol,		/* ok to match "^" ? */
+	   int *wrappedp)	/* in/out: tells if we wrapped around */
 {
     MARK curpos;
     int found;
     int wrapped = FALSE;
     int leftmargin = b_left_margin(curbp);
 
-    TRACE((T_CALLED "scanner %s %s\n",
+    TRACE((T_CALLED "scanner %s%s %s\n",
+	   (at_bol ? "bol " : ""),
 	   ((direct == FORWARD) ? "forward" : "backward"),
 	   (wrapok ? "wrapok" : "nowrapok")));
 
@@ -472,7 +474,7 @@ scanner(
 			srchlim = scanboundpos.o + 1;
 		    }
 		}
-		found = lregexec(exp, curpos.l, startoff, srchlim);
+		found = cregexec(exp, curpos.l, startoff, srchlim, at_bol);
 	    }
 	} else {
 	    if (direct == FORWARD) {
@@ -484,7 +486,7 @@ scanner(
 		if (srchlim > llength(curpos.l))
 		    srchlim = llength(curpos.l);
 	    }
-	    found = lregexec(exp, curpos.l, startoff, srchlim);
+	    found = cregexec(exp, curpos.l, startoff, srchlim, at_bol);
 	}
 	if (found) {
 	    char *txt = lvalue(curpos.l);
@@ -508,7 +510,7 @@ scanner(
 		}
 		if (end)
 		    last++;
-		if (!lregexec(exp, curpos.l, (int) (got - txt), srchlim)) {
+		if (!cregexec(exp, curpos.l, (int) (got - txt), srchlim, at_bol)) {
 		    mlforce("BUG: prev. match no good");
 		    returnCode(FALSE);
 		}
@@ -554,6 +556,7 @@ scanner(
 	    if ((curpos.o = llength(curpos.l) - 1) < leftmargin)
 		curpos.o = leftmargin;
 	}
+	at_bol = (curpos.o == leftmargin);
 
     }
 
@@ -685,7 +688,7 @@ attrib_matches(void)
 	    movenext(&nextdot, FORWARD);
 	    DOT = nextdot;
 	}
-	status = scanner(gregexp, FORWARD, FALSE, (int *) 0);
+	status = scanner(gregexp, FORWARD, FALSE, (DOT.o == 0), (int *) 0);
 	if (status != TRUE)
 	    break;
 	if (vattr != VACOLOR)
@@ -890,7 +893,7 @@ findpat(int f, int n, regexp * exp, int direc)
 	     ? forwchar(TRUE, 1)
 	     : backchar(TRUE, 1));
 	if (s == TRUE)
-	    s = scanner(exp, direc, FALSE, (int *) 0);
+	    s = scanner(exp, direc, FALSE, (DOT.o == 0), (int *) 0);
     }
     if (s != TRUE)
 	DOT = savepos;
