@@ -1,7 +1,7 @@
 /*
  * Main program and I/O for external vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/RCS/builtflt.c,v 1.95 2013/12/25 12:58:36 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/builtflt.c,v 1.96 2015/01/02 15:16:15 tom Exp $
  *
  */
 
@@ -796,8 +796,11 @@ vl_is_setting(const void *cmd)
 	    || ptr == &f_delglobmode
 	    || ptr == &f_setlocmode
 	    || ptr == &f_dellocmode
+#if OPT_EVAL
 	    || ptr == &f_setvar
-	    || ptr == &f_unsetvar) {
+	    || ptr == &f_unsetvar
+#endif
+	    ) {
 	    result = 1;
 	}
     }

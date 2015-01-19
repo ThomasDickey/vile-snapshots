@@ -1,6 +1,36 @@
-dnl vile's local definitions for autoconf.
+dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.281 2015/01/02 14:11:59 tom Exp $
+dnl ---------------------------------------------------------------------------
 dnl
-dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.279 2014/09/23 10:26:04 tom Exp $
+dnl Copyright 1996-2014,2015 by Thomas E. Dickey
+dnl
+dnl                         All Rights Reserved
+dnl
+dnl Permission is hereby granted, free of charge, to any person obtaining a
+dnl copy of this software and associated documentation files (the
+dnl "Software"), to deal in the Software without restriction, including
+dnl without limitation the rights to use, copy, modify, merge, publish,
+dnl distribute, sublicense, and/or sell copies of the Software, and to
+dnl permit persons to whom the Software is furnished to do so, subject to
+dnl the following conditions:
+dnl
+dnl The above copyright notice and this permission notice shall be included
+dnl in all copies or substantial portions of the Software.
+dnl
+dnl THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+dnl OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+dnl MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+dnl IN NO EVENT SHALL THE ABOVE LISTED COPYRIGHT HOLDER(S) BE LIABLE FOR ANY
+dnl CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+dnl TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+dnl SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+dnl
+dnl Except as contained in this notice, the name(s) of the above copyright
+dnl holders shall not be used in advertising or otherwise to promote the
+dnl sale, use or other dealings in this Software without prior written
+dnl authorization.
+dnl
+dnl ---------------------------------------------------------------------------
+dnl vile's local definitions for autoconf.
 dnl
 dnl See
 dnl		http://invisible-island.net/autoconf/autoconf.html
@@ -3358,7 +3388,7 @@ case ".[$]$1" in #(vi
 esac
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_PKG_CONFIG version: 7 updated: 2011/04/29 04:53:22
+dnl CF_PKG_CONFIG version: 8 updated: 2014/12/13 18:48:46
 dnl -------------
 dnl Check for the package-config program, unless disabled by command-line.
 AC_DEFUN([CF_PKG_CONFIG],
@@ -3387,6 +3417,8 @@ esac
 test -z "$PKG_CONFIG" && PKG_CONFIG=none
 if test "$PKG_CONFIG" != none ; then
 	CF_PATH_SYNTAX(PKG_CONFIG)
+else
+	AC_MSG_WARN(pkg-config is not installed)
 fi
 
 AC_SUBST(PKG_CONFIG)
@@ -3935,7 +3967,7 @@ if test "$ac_cv_header_termios_h" = yes ; then
 fi
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_SUBDIR_PATH version: 6 updated: 2010/04/21 06:20:50
+dnl CF_SUBDIR_PATH version: 7 updated: 2014/12/04 04:33:06
 dnl --------------
 dnl Construct a search-list for a nonstandard header/lib-file
 dnl	$1 = the variable to return as result
@@ -3945,11 +3977,18 @@ AC_DEFUN([CF_SUBDIR_PATH],
 [
 $1=
 
-CF_ADD_SUBDIR_PATH($1,$2,$3,/usr,$prefix)
 CF_ADD_SUBDIR_PATH($1,$2,$3,$prefix,NONE)
-CF_ADD_SUBDIR_PATH($1,$2,$3,/usr/local,$prefix)
-CF_ADD_SUBDIR_PATH($1,$2,$3,/opt,$prefix)
-CF_ADD_SUBDIR_PATH($1,$2,$3,[$]HOME,$prefix)
+
+for cf_subdir_prefix in \
+	/usr \
+	/usr/local \
+	/usr/pkg \
+	/opt \
+	/opt/local \
+	[$]HOME
+do
+	CF_ADD_SUBDIR_PATH($1,$2,$3,$cf_subdir_prefix,$prefix)
+done
 ])dnl
 dnl ---------------------------------------------------------------------------
 dnl CF_SUBST version: 4 updated: 2006/06/17 12:33:03
@@ -4454,7 +4493,7 @@ AC_MSG_RESULT($APP_CLASS)
 AC_SUBST(APP_CLASS)
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_WITH_APP_DEFAULTS version: 5 updated: 2012/10/04 04:29:52
+dnl CF_WITH_APP_DEFAULTS version: 6 updated: 2015/01/02 09:05:50
 dnl --------------------
 dnl Handle configure option "--with-app-defaults", setting these shell
 dnl variables:
@@ -4481,6 +4520,9 @@ dnl 	32-bit:
 dnl 	/usr/X11/etc/X11/app-defaults
 dnl 	/usr/X11/share/X11/app-defaults
 dnl 	/usr/X11/lib/X11/app-defaults
+dnl OSX uses
+dnl		/opt/local/share/X11/app-defaults (MacPorts)
+dnl		/opt/X11/share/X11/app-defaults (non-ports)
 dnl	64-bit:
 dnl 	/usr/X11/etc/X11/app-defaults
 dnl 	/usr/X11/share/X11/app-defaults (I mkdir'd this)
@@ -4499,6 +4541,8 @@ if test "x[$]APPSDIR" = xauto
 then
 	APPSDIR='${exec_prefix}/lib/X11/app-defaults'
 	for cf_path in \
+		/opt/local/share/X11/app-defaults \
+		/opt/X11/share/X11/app-defaults \
 		/usr/share/X11/app-defaults \
 		/usr/X11/share/X11/app-defaults \
 		/usr/X11/lib/X11/app-defaults \

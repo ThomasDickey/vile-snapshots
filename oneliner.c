@@ -4,7 +4,7 @@
  *	Copyright (c) 1990, 1995-1999 by Paul Fox, except for delins(), which is
  *	Copyright (c) 1986 by University of Toronto, as noted below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/oneliner.c,v 1.121 2010/11/10 09:31:31 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/oneliner.c,v 1.122 2015/01/19 00:48:02 tom Exp $
  */
 
 #include	"estruct.h"
@@ -315,6 +315,7 @@ substline(regexp * exp, int nth_occur, int printit, int globally, int *confirmp)
     int again = 0;
     int s;
     int which_occur = 0;
+    int at_bol = (DOT.o == 0);
     int matched_at_eol = FALSE;
     int yes, c, skipped;
 
@@ -341,13 +342,14 @@ substline(regexp * exp, int nth_occur, int printit, int globally, int *confirmp)
     DOT.o = 0;
     do {
 	scanboundpos.o = llength(DOT.l);
-	s = scanner(exp, FORWARD, FALSE, (int *) 0);
+	s = scanner(exp, FORWARD, FALSE, at_bol, (int *) 0);
 	if (s != TRUE)
 	    break;
 
 	/* found the pattern */
 	foundit = TRUE;
 	which_occur++;
+	at_bol = FALSE;		/* at most, match "^" once */
 	if (nth_occur == -1 || which_occur == nth_occur) {
 	    (void) setmark();
 	    /* only allow one match at the end of line, to

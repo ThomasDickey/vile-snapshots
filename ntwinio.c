@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 screen API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.202 2014/01/14 22:14:43 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.203 2015/01/02 15:21:27 tom Exp $
  * Written by T.E.Dickey for vile (october 1997).
  * -- improvements by Clark Morgan (see w32cbrd.c, w32pipe.c).
  */
@@ -2373,7 +2373,7 @@ AboutBoxProc(HWND hDlg, UINT iMsg, WPARAM wParam, LPARAM lParam)
 	/* talk about copyright */
 	hwnd = GetDlgItem(hDlg, IDM_ABOUT_COPYRIGHT);
 	sprintf(buf,
-		"\nCopyright \xA9 Thomas Dickey 1997-2013,2014\n\n"
+		"\nCopyright \xA9 Thomas Dickey 1997-2014,2015\n\n"
 		"%s is free software, distributed under the terms of the GNU "
 		"Public License, Version 2 (see COPYING).",
 		prognam);

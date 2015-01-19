@@ -1,7 +1,16 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20141017 (p)
+ 20150118 (p)
 	> Tom Dickey:
+	+ modify logic used in global substitutions to ensure that "^" for
+	  beginning of the line is matched only once (report by Wayne Cuddy).
+	+ fix a few build problems with --disable-extensions
+	+ modify configure macro CF_WITH_APP_DEFAULTS to check OSX-related
+	  pathnames for MacPorts and Apple's variant.
+	+ improve configure macro CF_SUBDIR_PATH, changing it to a loop, adding
+	  /usr/pkg (NetBSD) and /opt/local (Mac OSX)
+	+ update yacc.key for current byacc keywords.
+	+ modify yaccfilt.l to handle escaped newlines in quoted strings.
 	+ build-fix for xvile without multibyte support.
 	+ add error patterns for bison and byacc.
 	+ correct workaround in manfilt.c for bullet characters from 9.8g;
@@ -49,7 +58,7 @@ Changes for vile 9.9 (released ??? ??? ?? ????)
 	+ improve description of search-list for syntax filter keywords in
 	  vile.hlp; add links/anchors to improve navigation in vile-hlp.html,
 	  config.html and macros.html
-	+ modify error-pattern for GNU make to work with the 4.0 change to
+	+ modify error-pattern to work with the GNU make 4.0 change to
 	  quotes
 	+ modify makemode mode-filename pattern to match BSDMakefile and
 	  GNUMakefile
@@ -4037,9 +4046,10 @@ Changes for vile 9.3 (released Tue Jun 25 2002)
 	  are different, but the syntax looks the same.
 	+ move the list of majormodes from [Settings] to [Major Modes], to
 	  reduce clutter in the former.
-	+ indent'd (with updated patch against 2.0) api.c, fences.c, glob.c,
-	  input.c, isearch.c itbuff.c, lckfiles.c, msgs.c, npopen.c, spawn.c,
-	  statevar.c, tcap.c, window.c, as well as the .c files in filters.
+	+ indent'd (with updated patch against indent 2.0) api.c, fences.c,
+	  glob.c, input.c, isearch.c itbuff.c, lckfiles.c, msgs.c, npopen.c,
+	  spawn.c, statevar.c, tcap.c, window.c, as well as the .c files in
+	  filters.
 
  20020228 (z)
 	> Clark Morgan:

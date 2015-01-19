@@ -1,4 +1,4 @@
-// $Id: w32info.rc,v 1.5 2014/10/16 00:51:30 tom Exp $
+// $Id: w32info.rc,v 1.6 2015/01/02 15:21:39 tom Exp $
 // vile:rcmode
 
 #include <windows.h>
@@ -20,7 +20,7 @@ BEGIN
       VALUE "FileDescription",  "vile - Vi LIke Emacs"
       VALUE "FileVersion",      "9.8.16.0"
       VALUE "InternalName",     "WinVile"
-      VALUE "LegalCopyright",   "©1997-2013,2014 Thomas E. Dickey"
+      VALUE "LegalCopyright",   "©1997-2014,2015 Thomas E. Dickey"
       VALUE "OriginalFilename", "winvile.exe"
       VALUE "ProductName",      "vile - VI Like Emacs"
       VALUE "ProductVersion",   "9.8.16.0"

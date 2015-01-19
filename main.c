@@ -17,12 +17,12 @@
  * distributable status.  This version of vile is distributed under the
  * terms of the GNU Public License (see COPYING).
  *
- * Copyright (c) 1992-2013,2014 by Paul Fox and Thomas Dickey
+ * Copyright (c) 1992-2014,2015 by Paul Fox and Thomas Dickey
  *
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.724 2014/09/30 22:44:43 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.725 2015/01/02 15:20:58 tom Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -295,7 +295,7 @@ filter_to_stdio(FILE *fp)
     TRACE(("SyntaxFilter-only:\n"));
     TRACE(("\tcurfname:%s\n", curbp->b_fname));
 
-#if OPT_FILTER
+#if OPT_FILTER && OPT_MAJORMODE
     if (curbp->majr != 0 && flt_lookup(curbp->majr->shortname)) {
 	const CMDFUNC *cmd = &f_operattrdirect;
 	clexec = TRUE;

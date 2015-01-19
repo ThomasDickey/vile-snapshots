@@ -1,7 +1,7 @@
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/regexp.c,v 1.208 2013/12/07 11:58:18 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/regexp.c,v 1.211 2015/01/19 01:32:47 tom Exp $
  *
- * Copyright 2005-2010,2013 Thomas E. Dickey and Paul G. Fox
+ * Copyright 2005-2013,2015 Thomas E. Dickey and Paul G. Fox
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
@@ -32,9 +32,10 @@
  *	This code has been MODIFIED for use in vile (see the original
  *	copyright information down below) -- in particular:
  *	 - regexec no longer needs to scan a null terminated string
- *	 - regexec takes two extra arguments describing the first and
+ *	 - regexec takes extra arguments describing the first and
  *	 	just-past-last legal scan start offsets, to limit matches
- *		to beginning in that range
+ *		to beginning in that range, as well as to denote the state
+ *		of being at the beginning of the line.
  *	 - inexact character matches are now handled, if the global ignorecase
  *	 	is set
  *	 - regexps are now relocatable, rather than locked down
@@ -172,6 +173,7 @@ typedef ULONG B_COUNT;		/* byte-count */
 
 #if OPT_TRACE
 /* #define REGDEBUG  1 */
+#define REGDEBUG  1
 #endif
 
 #ifdef REGDEBUG
@@ -550,6 +552,7 @@ static char *regnomore;		/* String-input end pointer. */
 static char *regbol;		/* Beginning of input, for ^ check. */
 static char **regstartp;	/* Pointer to startp array. */
 static char **regendp;		/* Ditto for endp. */
+static int regok_bol;		/* "^" check is legal */
 static int reg_cnts[NSUBEXP];	/* count closure of \(...\) groups */
 
 #if OPT_MULTIBYTE
@@ -1854,7 +1857,8 @@ regexec(regexp * prog,
 	char *string,
 	char *stringend,	/* pointer to the null, if there were one */
 	int startoff,
-	int endoff)
+	int endoff,
+	int at_bol)
 {
     char *s, *endsrch;
     int skip;
@@ -1907,6 +1911,7 @@ regexec(regexp * prog,
 
     /* Mark beginning of line for ^ . */
     regbol = string;
+    regok_bol = at_bol;
 
     /* Simplest case:  anchored match need be tried only once. */
     if (startoff == 0 && prog->reganch) {
@@ -2092,6 +2097,8 @@ regmatch(char *prog, int plevel)
 
 	switch (OP(scan)) {
 	case BOL:
+	    if (!regok_bol)
+		returnReg(0);
 	    if (reginput != regbol)
 		returnReg(0);
 	    break;
@@ -2670,23 +2677,28 @@ regprop(char *op)
 
 #if defined(llength) && defined(lforw) && defined(lback)
 /* vile support:
- * like regexec, but takes LINE * as input instead of char *
+ * like regexec, but takes LINE * as input instead of char *, and may be used
+ * multiple times per line.
  */
 int
-lregexec(regexp * prog,
+cregexec(regexp * prog,
 	 LINE *lp,
 	 int startoff,
-	 int endoff)
+	 int endoff,
+	 int at_bol)
 {
     int s = 0;
 
-    REGTRACE((T_CALLED "lregexec %d..%d\n", startoff, endoff));
+    REGTRACE((T_CALLED "lregexec %s%d..%d\n",
+	      at_bol ? "bol " : "",
+	      startoff,
+	      endoff));
 
     set_utf8flag(curbp);
     if (endoff >= startoff) {
 	if (lvalue(lp)) {
 	    s = regexec(prog, lvalue(lp), &(lvalue(lp)[llength(lp)]),
-			startoff, endoff);
+			startoff, endoff, at_bol);
 	} else {
 	    /* the prog might be ^$, or something legal on a null string */
 
@@ -2695,7 +2707,7 @@ lregexec(regexp * prog,
 	    if (startoff > 0) {
 		s = 0;
 	    } else {
-		s = regexec(prog, nullstr, nullstr, 0, 0);
+		s = regexec(prog, nullstr, nullstr, 0, 0, at_bol);
 	    }
 	    if (s) {
 		if (prog->mlen > 0) {
@@ -2710,6 +2722,18 @@ lregexec(regexp * prog,
     returnReg(s);
 }
 
+/* vile support:
+ * like regexec, but takes LINE * as input instead of char *
+ */
+int
+lregexec(regexp * prog,
+	 LINE *lp,
+	 int startoff,
+	 int endoff)
+{
+    return cregexec(prog, lp, startoff, endoff, (startoff == 0));
+}
+
 /* non-LINE regexec calls for vile */
 int
 nregexec(regexp * prog,
@@ -2722,7 +2746,7 @@ nregexec(regexp * prog,
 
     REGTRACE((T_CALLED "nregexec %d..%d\n", startoff, endoff));
     set_utf8flag(0);
-    s = regexec(prog, string, stringend, startoff, endoff);
+    s = regexec(prog, string, stringend, startoff, endoff, (startoff == 0));
     returnReg(s);
 }
 #endif /* VILE LINE */
@@ -3105,7 +3129,8 @@ test_regexp(FILE *fp)
 	    ++s, --length;
 	    if (pattern != 0) {
 		for (offset = 0; offset <= length; ++offset) {
-		    if (regexec(pattern, s, s + length, offset, length)) {
+		    if (regexec(pattern, s, s + length, offset, length,
+				(offset == 0))) {
 			for (subexp = 0; subexp < NSUBEXP; ++subexp) {
 			    if (pattern->startp[subexp] != 0
 				&& pattern->endp[subexp] != 0

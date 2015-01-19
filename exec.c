@@ -4,7 +4,7 @@
  *	original by Daniel Lawrence, but
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.348 2013/12/07 13:40:19 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.349 2015/01/19 00:58:27 tom Exp $
  *
  */
 
@@ -245,7 +245,8 @@ parse_linespec(const char *s, LINE **markptr)
 		scanboundry(TRUE, DOT, last_srch_direc);
 		if (scanner(gregexp,
 			    last_srch_direc,
-			    TRUE,
+			    (DOT.o == 0),
+			    FALSE,
 			    (int *) 0)) {
 		    lp = DOT.l;
 		    found = TRUE;

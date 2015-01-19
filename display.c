@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.572 2014/01/25 14:55:56 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.573 2015/01/02 15:12:31 tom Exp $
  *
  */
 
@@ -407,6 +407,7 @@ preset_lmap0(void)
 /* use this to markup line-numbers and line-break padding, which conveniently
  * are both on the extreme left/right of the line on the display.
  */
+#if OPT_EXTRA_COLOR
 static void
 preset_vattrs(int row, int col, int attr, size_t len)
 {
@@ -417,10 +418,14 @@ preset_vattrs(int row, int col, int attr, size_t len)
 	lmap0[row].right = col;
     }
 }
+#endif
+
 #else
+
 #define preset_lmap0()		/* nothing */
 #define set_vattrs(row, col, attr, len)		/*nothing */
 #define preset_vattrs(row, col, attr, len)	/*nothing */
+
 #endif
 
 static void
@@ -626,6 +631,7 @@ current_limit(void)
  * Given an offset limit and a string, find the offset of the first blank
  * within that limit.  Compute the corresponding number of columns.
  */
+#ifdef WMDLINEWRAP
 static unsigned
 cols_until(WINDOW *wp, const char *src, unsigned limit)
 {
@@ -668,6 +674,7 @@ cols_until(WINDOW *wp, const char *src, unsigned limit)
     }
     return cols;
 }
+#endif
 
 /*
  * Write a character to the virtual screen.  The virtual row and column are

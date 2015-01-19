@@ -7,7 +7,7 @@
  *
  * original author: D. R. Banks 9-May-86
  *
- * $Header: /users/source/archives/vile.vcs/RCS/isearch.c,v 1.67 2013/03/09 00:52:28 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/isearch.c,v 1.68 2015/01/19 00:57:09 tom Exp $
  *
  */
 
@@ -45,7 +45,13 @@ scanmore(			/* search forward or back for a pattern */
     if (gregexp != 0) {
 	ignorecase = window_b_val(curwp, MDIGNCASE);
 
-	sts = scanner(gregexp, (dir < 0) ? REVERSE : FORWARD, FALSE, (int *) 0);
+	sts = scanner(gregexp,
+		      ((dir < 0)
+		       ? REVERSE
+		       : FORWARD),
+		      FALSE,
+		      (DOT.o == 0),
+		      (int *) 0);
 	if (!sts) {
 	    kbd_alarm();	/* beep the terminal if we fail */
 	}
