@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/vl_regex.h,v 1.7 2015/01/19 01:32:31 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/vl_regex.h,v 1.8 2015/01/19 20:39:40 tom Exp $
  *
  * Copyright 2005-2010,2015 Thomas E. Dickey and Paul G. Fox
  *
@@ -84,7 +84,8 @@ extern void mlforce(const char *fmt,...) GCC_PRINTFLIKE(1,2);
 /* *INDENT-OFF* */
 extern void regerror (const char *s);
 extern regexp * regcomp (const char *origexp, size_t exp_len, int magic);
-extern int regexec (regexp *prog, char *string, char *stringend, int startoff, int endoff, int at_bol);
+extern int regexec (regexp *prog, char *string, char *stringend, int startoff, int endoff);
+extern int regexec2 (regexp *prog, char *string, char *stringend, int startoff, int endoff, int at_bol);
 extern void regfree (regexp *prog);
 extern char *regparser (const char **s);
 /* *INDENT-ON* */

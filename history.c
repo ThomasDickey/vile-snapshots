@@ -55,7 +55,7 @@
  *	not (yet) correspond to :-commands.  Before implementing, probably will
  *	have to make TESTC a settable mode.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/history.c,v 1.89 2013/03/08 01:39:02 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/history.c,v 1.90 2015/01/22 23:53:22 tom Exp $
  *
  */
 
@@ -403,6 +403,12 @@ hst_flush(void)
     WINDOW *wp;
     LINE *lp;
 
+    TRACE(("hst_flush %d:%s\n",
+	   MyLevel,
+	   visible_buff(tb_values(MyText),
+			tb_length(MyText),
+			FALSE)));
+
     if (MyLevel <= 0)
 	return;
     if (MyLevel-- != 1)
@@ -548,17 +554,25 @@ hst_display(HST * parm, char *src, int srclen)
 	int n = endOfParm(parm, src, offset, srclen) - offset;
 
 	src += offset;
+	srclen -= offset;
 	stripped = src;
 #if HST_QUOTES
 	TRACE(("...offset=%d, n=%d, MyText=%s\n", offset, n, tb_visible(MyText)));
-	if (tb_length(MyText) != 0 && isShellOrPipe(tb_values(MyText)))
+	if (tb_length(MyText) != 0 &&
+	    isShellOrPipe(tb_values(MyText))) {
 	    TRACE(("...MyText is a shell command\n"));
-	else if (tb_length(MyText) == 0 && offset == 0 && isShellOrPipe(src))
+	} else if (srclen == 0) {
+	    TRACE(("...OOPS - no source?\n"));
+	} else if (tb_length(MyText) == 0 && offset == 0 && isShellOrPipe(src)) {
 	    TRACE(("...src is a shell command\n"));
-	else if (*src == DQUOTE || isSpace(parm->eolchar))
+	} else if (tb_length(MyText) == 0 && offset == 0 && *src == SQUOTE) {
+	    TRACE(("...src is a position command\n"));
+	    n = srclen;
+	} else if (*src == DQUOTE || isSpace(parm->eolchar)) {
 	    stripped = stripQuotes(src, n,
 				   isSpace(parm->eolchar) ? ' ' : parm->eolchar,
 				   &n);
+	}
 #endif
 	TRACE(("...hst_display offset=%d, string='%.*s'\n", offset, n, stripped));
 	*parm->position = (size_t) kbd_show_response(parm->buffer,
