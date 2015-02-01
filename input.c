@@ -44,7 +44,7 @@
  *	tgetc_avail()     true if a key is avail from tgetc() or below.
  *	keystroke_avail() true if a key is avail from keystroke() or below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.357 2013/12/07 11:58:39 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.358 2015/01/22 23:44:56 tom Exp $
  *
  */
 
@@ -1221,6 +1221,11 @@ show1Char(int c)
     kbd_flush();
 }
 
+#define isRangeCmd(s) \
+	((s)[0] == SQUOTE || isDigit(s[0]))
+#define editingRangeCmd(buf) \
+	((buf) != 0 && isRangeCmd(buf))
+
 /*
  * Macro result is true if the buffer is a normal :-command with a leading "!",
  * or is invoked from one of the places that supplies an implicit "!" for shell
@@ -1973,6 +1978,7 @@ kbd_reply(const char *prompt,	/* put this out first */
     size_t cpos;		/* current position */
     int status;
     int shell;
+    int range;
     int margin;
     size_t save_len;
     MARK saveMK;		/* FIXME: may be lost by name-completion swbuffer */
@@ -2220,6 +2226,7 @@ kbd_reply(const char *prompt,	/* put this out first */
 	if (complete != no_completion) {
 	    kbd_unquery();
 	    shell = editingShellCmd(tb_values(buf), options);
+	    range = editingRangeCmd(tb_values(buf));
 	    if (done && (options & KBD_NULLOK) && cpos == 0)
 		/*EMPTY */ ;
 	    else if ((done && (may_complete(buf, options) == ABORT))
@@ -2238,7 +2245,7 @@ kbd_reply(const char *prompt,	/* put this out first */
 			show1Char(tb_values(buf)[cpos++]);
 		    }
 		}
-		if (shell && isreturn(c)) {
+		if ((shell || range) && isreturn(c)) {
 		    /*EMPTY */ ;
 		} else if ((*complete) (options, c, tbreserve(&buf), &cpos)) {
 		    done = TRUE;

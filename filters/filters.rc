@@ -1,4 +1,4 @@
-; $Id: filters.rc,v 1.244 2014/09/30 10:06:37 tom Exp $
+; $Id: filters.rc,v 1.245 2015/01/30 01:59:07 tom Exp $
 ; majormodes in this file are ordered alphabetically for convenience - the
 ; precedence used by vile is strictly alphabetic, counting case.
 
@@ -18,7 +18,7 @@ define-mode ada
 
 define-mode ant
 ~with define-submode ant
-	filtername	'vile-xml-filt -k ant'
+	filtername	'vile-xml-filt -A -k ant'
 ~endwith
 
 define-mode as
@@ -179,7 +179,7 @@ define-mode lua
 
 define-mode mvn
 ~with define-submode mvn
-	filtername	'vile-xml-filt -k mvn'
+	filtername	'vile-xml-filt -M -k mvn'
 ~endwith
 
 define-mode nmake

@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/regexp.c,v 1.212 2015/01/19 10:21:14 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/regexp.c,v 1.213 2015/01/19 20:44:44 tom Exp $
  *
  * Copyright 2005-2013,2015 Thomas E. Dickey and Paul G. Fox
  *
@@ -1852,12 +1852,12 @@ RegStrChr2(const char *s, unsigned length, const char *cs)
 	startoff, but must end before endoff
  */
 int
-regexec(regexp * prog,
-	char *string,
-	char *stringend,	/* pointer to the null, if there were one */
-	int startoff,
-	int endoff,
-	int at_bol)
+regexec2(regexp * prog,
+	 char *string,
+	 char *stringend,	/* pointer to the null, if there were one */
+	 int startoff,
+	 int endoff,
+	 int at_bol)
 {
     char *s, *endsrch;
     int skip;
@@ -1943,6 +1943,16 @@ regexec(regexp * prog,
 
     /* Failure. */
     return (0);
+}
+
+int
+regexec(regexp * prog,
+	char *string,
+	char *stringend,	/* pointer to the null, if there were one */
+	int startoff,
+	int endoff)
+{
+    return regexec2(prog, string, stringend, startoff, endoff, TRUE);
 }
 
 /*
@@ -2696,8 +2706,8 @@ cregexec(regexp * prog,
     set_utf8flag(curbp);
     if (endoff >= startoff) {
 	if (lvalue(lp)) {
-	    s = regexec(prog, lvalue(lp), &(lvalue(lp)[llength(lp)]),
-			startoff, endoff, at_bol);
+	    s = regexec2(prog, lvalue(lp), &(lvalue(lp)[llength(lp)]),
+			 startoff, endoff, at_bol);
 	} else {
 	    /* the prog might be ^$, or something legal on a null string */
 
@@ -2706,7 +2716,7 @@ cregexec(regexp * prog,
 	    if (startoff > 0) {
 		s = 0;
 	    } else {
-		s = regexec(prog, nullstr, nullstr, 0, 0, at_bol);
+		s = regexec2(prog, nullstr, nullstr, 0, 0, at_bol);
 	    }
 	    if (s) {
 		if (prog->mlen > 0) {
@@ -2745,7 +2755,7 @@ nregexec(regexp * prog,
 
     REGTRACE((T_CALLED "nregexec %d..%d\n", startoff, endoff));
     set_utf8flag(0);
-    s = regexec(prog, string, stringend, startoff, endoff, (startoff == 0));
+    s = regexec(prog, string, stringend, startoff, endoff);
     returnReg(s);
 }
 #endif /* VILE LINE */

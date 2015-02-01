@@ -4,7 +4,7 @@
  *	original by Daniel Lawrence, but
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.349 2015/01/19 00:58:27 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.353 2015/02/01 15:08:18 tom Exp $
  *
  */
 
@@ -294,8 +294,11 @@ parse_linespec(const char *s, LINE **markptr)
  * Steve Kirkendall
  */
 static int
-rangespec(const char *specp, LINE **fromlinep, LINE **tolinep,
-	  CMDFLAGS * flagp)
+rangespec(const char *specp,
+	  LINE **fromlinep,
+	  LINE **tolinep,
+	  CMDFLAGS * flagp,
+	  int testonly)
 {
     const char *scan;		/* used to scan thru specp */
     LINE *fromline;		/* first linespec */
@@ -304,12 +307,12 @@ rangespec(const char *specp, LINE **fromlinep, LINE **tolinep,
     *flagp = 0;
 
     if (specp == 0)
-	return FALSE;
+	return -1;
 
     /* ignore command lines that start with a double-quote */
     if (*specp == '"') {
 	*fromlinep = *tolinep = DOT.l;
-	return TRUE;
+	return 1;
     }
 
     /* permit extra colons at the start of the line */
@@ -341,8 +344,8 @@ rangespec(const char *specp, LINE **fromlinep, LINE **tolinep,
 	    scan = parse_linespec(scan, &toline);
 	    *flagp |= TO;
 	    if (toline == 0) {
-		/* faulty line spec */
-		return FALSE;
+		TRACE(("...faulty line spec\n"));
+		return -1;
 	    }
 	}
     }
@@ -356,15 +359,15 @@ rangespec(const char *specp, LINE **fromlinep, LINE **tolinep,
     /* skip whitespace */
     scan = skip_cblanks(scan);
 
-    if (*scan) {
-	/* dbgwrite("crud at end %s (%s)",specp, scan); */
-	return FALSE;
+    if (*scan && !testonly) {
+	TRACE(("...crud at end %s (%s)\n", specp, scan));
+	return -1;
     }
 
     *fromlinep = fromline;
     *tolinep = toline;
 
-    return TRUE;
+    return (int) (scan - specp);
 }
 
 /* special test for 'a style mark references */
@@ -491,6 +494,62 @@ more_named_cmd(void)
     return result;
 }
 
+static const char *
+skip_command(const char *cspec)
+{
+    int skipped = 0;
+    if (isShellOrPipe(cspec)) {
+	skipped = (int) strlen(cspec);
+    } else if (isAlpha(cspec[0])) {
+	while (isAlpha(cspec[skipped]) ||
+	       isDigit(cspec[skipped]) ||
+	       cspec[skipped] == '-') {
+	    ++skipped;
+	}
+    }
+    return cspec + skipped;
+}
+
+/*
+ * Scrolling through the history buffer may bring up a selection containing
+ * a line/range specifier and arguments past the command-verb.  Check for,
+ * and adjust for these cases:
+ * a) no change is needed
+ * b) strip arguments
+ * c) back up to put the command-verb into the fifo, returning TRUE.
+ * If no back-up is needed, this function returns FALSE.
+ */
+static int
+resplice_command(TBUFF **lspec, const char *cspec)
+{
+    int result = FALSE;
+    int end_lspec = 0;
+    int end_cspec = 0;
+    int end_input = (int) strlen(cspec);
+    LINE *fromline = 0;
+    LINE *toline = 0;
+    CMDFLAGS lflag = 0;
+
+    if (tb_length(*lspec) == 1 && *tb_values(*lspec) == EOS) {
+	end_lspec = rangespec(cspec, &fromline, &toline, &lflag, TRUE);
+	if (end_lspec > 0) {
+	    end_cspec = (int) (skip_command(cspec + end_lspec) - cspec);
+	    if (end_lspec > 0) {
+		while (end_input-- > 0) {
+		    unkeystroke(cspec[end_input]);
+		}
+		result = TRUE;
+	    } else if (end_cspec < end_input) {
+		while (end_input-- > end_cspec) {
+		    unkeystroke(cspec[end_input]);
+		}
+		result = TRUE;
+	    }
+	}
+    }
+    return result;
+}
+
 /*
  * namedcmd:	execute a named command even if it is not bound
  */
@@ -591,6 +650,12 @@ execute_named_command(int f, int n)
 			    unkeystroke(c);
 			}
 		    }
+		    if (resplice_command(&lspec, cspec)) {
+			cmode = 0;
+			hst_reset();
+			hst_init(EOS);
+			continue;
+		    }
 		    break;
 		}
 	    } else if (status == SORTOFTRUE) {
@@ -637,7 +702,7 @@ execute_named_command(int f, int n)
     }
 
     /* parse the accumulated lspec */
-    if (rangespec(tb_values(lspec), &fromline, &toline, &lflag) != TRUE) {
+    if (rangespec(tb_values(lspec), &fromline, &toline, &lflag, FALSE) < 0) {
 	mlforce("[Improper line range '%s']", tb_values(lspec));
 	return FALSE;
     }

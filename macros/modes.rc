@@ -1,4 +1,4 @@
-; $Id: modes.rc,v 1.134 2014/09/30 08:59:56 tom Exp $
+; $Id: modes.rc,v 1.135 2015/01/30 09:36:57 tom Exp $
 ; majormodes in this file are ordered alphabetically for convenience - the
 ; precedence used by vile is strictly alphabetic, counting case.  Use the
 ; before and after qualifiers to override the precedence.
@@ -421,9 +421,8 @@ define-mode mcrl
 define-mode mvn
 ~with define-submode mvn
 	before xml
-	qualifiers=all
-	mode-filename	'pom.xml'
-	suffixes	'\.\(pom\|\)$'
+	mode-filename	'pom\([\d.-]\+\)?\.xml'
+	suffixes	'\.\(pom\)$'
 	pre		'^\s*<?xml\s.*'
 	fence-pairs	'<>()[]{}'
 	comment-prefix	'^\s*--'

@@ -1,6 +1,6 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
-  $Id: filters.html,v 1.17 2014/09/30 09:01:34 tom Exp $
+  $Id: filters.html,v 1.18 2015/01/31 02:01:50 tom Exp $
 -->
 
 <html>
@@ -295,8 +295,10 @@ rem?ark
 
     <dd>verbose, turns on extra output which can be used for
     troubleshooting configuration problems.</dd>
-  </dl>The C syntax filter recognizes additional options to
-  customize it for Java, JavaScript and Objective-C:
+  </dl>
+
+  <p>The C syntax filter recognizes additional options to customize
+  it for Java, JavaScript and Objective-C:</p>
 
   <dl>
     <dt>-j</dt>
@@ -319,19 +321,31 @@ rem?ark
     <dt>-#</dt>
 
     <dd>support C# verbatim string literals</dd>
-  </dl>The keyword filter recognizes a "-c" option to tell it to
+  </dl>
+
+  <p>The HTML filter recognizes a "-a" option to customize it for
+  "asp" files, as well as a "-j" option to customize for JavaScript
+  script-tags.</p>
+
+  <p>The keyword filter recognizes a "-c" option to tell it to
   highlight color codes with the corresponding color rather than
-  the "Action" color.
+  the "Action" color.</p>
 
   <p>The MAN filter recognizes a "-8" option which tells it to use
   8-bit approximations for some common UTF-8 equivalents such as
   hyphen.</p>
+
+  <p>The Ruby filter recognizes a "-e" option to customize it for
+  "ERB" files.</p>
 
   <p>The SH filter recognizes a "-K" option to turn on Korn shell's
   syntax for dotted variable names. The ksh93 "vnames" allow a
   dotted name such as "$foo.bar" to be defined it is root ("$foo")
   is already defined. That affects portability of scripts because
   other sh-like programs do not behave this way.</p>
+
+  <p>The XML filter recognizes "-A" and "-M" options to recognize
+  Ant and Maven macrodef and property tags, respectively.</p>
 
   <h2 id="programs-toc"><a name="programs" id=
   "programs">PROGRAMS</a></h2>

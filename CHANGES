@@ -1,7 +1,22 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20150119 (p)
+ 20150201 (p)
 	> Tom Dickey:
+	+ partial fix for recalling from history this command:
+		'a,.s/$/;/
+	  With the fix, one can edit the previous command, and issue minor
+	  variations.
+	+ improve suffix rules for mvn mode by allowing a version number in
+	  the filename.
+	+ improve ant, mvn modes to highlight user-defined tags, e.g., within
+	  "${" and "}".
+	+ update mvnmode keywords to maven 3.2.5
+	+ modify vile-xml-filt to color property names according to the new
+	  "xmlprops" table.
+	+ update antmode keywords to ant 1.9.4, including a representative set
+	  of property names.  The updated table also attempts to distinguish
+	  between tasks and subtasks.
+	+ add the more useful types/macros from c99 headers to c.key
 	+ repaint all windows on an "unnamed" buffer if told to reread and
 	  discard changes (report by Hymie on mailing list).
 	+ modify logic used in global substitutions to ensure that "^" for
