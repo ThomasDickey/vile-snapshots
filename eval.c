@@ -2,7 +2,7 @@
  *	eval.c -- function and variable evaluation
  *	original by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.457 2013/12/07 13:40:03 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.458 2015/02/01 21:02:23 tom Exp $
  *
  */
 
@@ -1477,7 +1477,7 @@ run_func(int fnum)
     case UFRANDOM:		/* FALLTHRU */
     case UFRND:
 	if (!is_error)
-	    value = rand() % absol(nums[0]);
+	    value = rand() % (1 + absol(nums[0]));
 	value++;		/* return 1 to N */
 	break;
     case UFABS:

@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 console API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntconio.c,v 1.98 2014/01/05 01:01:15 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntconio.c,v 1.101 2015/02/01 18:19:14 tom Exp $
  *
  */
 
@@ -24,6 +24,13 @@
 
 #define ABS(x) (((x) < 0) ? -(x) : (x))
 
+/* CHAR_INFO and KEY_EVENT_RECORD use the same struct member */
+#ifdef UNICODE
+#define WHICH_CHAR UnicodeChar
+#else
+#define WHICH_CHAR AsciiChar
+#endif
+
 #define DFT_BCOLOR  C_BLACK
 #define DFT_FCOLOR  ((ncolors >= 8) ? 7 : (ncolors - 1))
 
@@ -45,6 +52,8 @@ static int icursor_insmode;	/* insertion mode  cursor height      */
 static int chgd_cursor;		/* must restore cursor height on exit */
 static ENC_CHOICES my_encoding = enc_DEFAULT;
 
+static int conemu = 0;		/* whether running under conemu */
+static int cattr = 0;		/* current attributes */
 static int cfcolor = -1;	/* current forground color */
 static int cbcolor = -1;	/* current background color */
 static int nfcolor = -1;	/* normal foreground color */
@@ -82,6 +91,18 @@ static WORD
 AttrVideo(int b, int f)
 {
     WORD result;
+    if (conemu) {
+	if (cattr & VABOLD) {
+	    result = ((WORD) ((12 << 4) | ForeColor(f)));
+	    TRACE2(("bold AttrVideo(%d,%d) = %04x\n", f, b, result));
+	    return result;
+	}
+	if (cattr & VAITAL) {
+	    result = ((WORD) ((13 << 4) | ForeColor(f)));
+	    TRACE2(("ital AttrVideo(%d,%d) = %04x\n", f, b, result));
+	    return result;
+	}
+    }
     if (rvcolor) {
 	result = ((WORD) ((ForeColor(f) << 4) | BackColor(b)));
 	TRACE2(("rev AttrVideo(%d,%d) = %04x\n", f, b, result));
@@ -262,11 +283,7 @@ ntconio_scroll(int from, int to, int n)
 	    from = to + 1;
     }
 #endif
-#ifdef UNICODE
-    fill.Char.UnicodeChar = ' ';
-#else
-    fill.Char.AsciiChar = ' ';
-#endif
+    fill.Char.WHICH_CHAR = ' ';
     fill.Attributes = currentAttribute;
 
     sRect.Left = 0;
@@ -428,6 +445,7 @@ static void
 ntconio_rev(UINT attr)
 {				/* change video state */
     scflush();
+    cattr = attr;
     cbcolor = nbcolor;
     cfcolor = nfcolor;
     rvcolor = (global_g_val(GVAL_VIDEO) & VAREV) ? 1 : 0;
@@ -503,6 +521,7 @@ ntconio_open(void)
 
     TRACE((T_CALLED "ntconio_open\n"));
 
+    conemu = getenv("ConEmuPID") != NULL;
     set_colors(NCOLORS);
     set_palette(initpalettestr);
 
@@ -575,7 +594,7 @@ ntconio_open(void)
     TRACE(("hConsoleInput %d\n", hConsoleInput));
 
     SetConsoleCtrlHandler(nthandler, TRUE);
-    ntconio_set_encoding(enc_UTF16);
+    ntconio_set_encoding(enc_DEFAULT);
     returnVoid();
 }
 
@@ -730,13 +749,13 @@ decode_key_event(INPUT_RECORD * irp)
 	return (NOKYMAP);
 
     TRACE(("decode_key_event(%c=%02x, Virtual=%#x,%#x, State=%#x)\n",
-	   irp->Event.KeyEvent.uChar.AsciiChar,
-	   irp->Event.KeyEvent.uChar.AsciiChar,
+	   irp->Event.KeyEvent.uChar.WHICH_CHAR,
+	   irp->Event.KeyEvent.uChar.WHICH_CHAR,
 	   irp->Event.KeyEvent.wVirtualKeyCode,
 	   irp->Event.KeyEvent.wVirtualScanCode,
 	   irp->Event.KeyEvent.dwControlKeyState));
 
-    if ((key = (UCHAR) irp->Event.KeyEvent.uChar.AsciiChar) != 0) {
+    if ((key = irp->Event.KeyEvent.uChar.WHICH_CHAR) != 0) {
 	if (isCntrl(key)) {
 	    DWORD cstate = state & ~(LEFT_CTRL_PRESSED | RIGHT_CTRL_PRESSED);
 	    if (isModified(cstate))

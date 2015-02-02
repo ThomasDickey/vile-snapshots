@@ -60,7 +60,7 @@
  *    situation, kill the app by typing ^C (and then please apply for a
  *    QA position with a certain Redmond company).
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32pipe.c,v 1.38 2013/12/07 16:26:12 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32pipe.c,v 1.39 2015/02/01 17:52:21 tom Exp $
  */
 
 #define HAVE_FCNTL_H 1
@@ -183,7 +183,7 @@ close_proc_handle(void)
 }
 
 static HANDLE
-exec_shell(char *cmd, HANDLE * handles, int hide_child)
+exec_shell(char *cmd, HANDLE * handles, int hide_child GCC_UNUSED)
 {
     W32_CHAR *w32_cmdstr = 0;
     char *cmdstr;
@@ -238,6 +238,14 @@ exec_shell(char *cmd, HANDLE * handles, int hide_child)
     FreeIfNeeded(cmdstr);
     FreeIfNeeded(w32_cmdstr);
     returnPtr(proc_handle);
+}
+
+static HANDLE
+get_handle(int fd)
+{
+    HANDLE result;
+    result = (HANDLE) _get_osfhandle(fd);
+    return result;
 }
 
 static int
@@ -296,7 +304,7 @@ native_inout_popen(FILE **fr, FILE **fw, char *cmd)
 		break;
 	    if ((rp[2] = _dup(rp[1])) == -1)
 		break;
-	    handles[2] = handles[1] = (HANDLE) _get_osfhandle(rp[2]);
+	    handles[2] = handles[1] = get_handle(rp[2]);
 	    (void) close(rp[1]);
 	    rp[1] = BAD_FD;
 	    if (!fw) {
@@ -317,7 +325,7 @@ native_inout_popen(FILE **fr, FILE **fw, char *cmd)
 				     _S_IWRITE | _S_IREAD)) == BAD_FD) {
 		    break;
 		}
-		handles[0] = (HANDLE) _get_osfhandle(tmpin_fd);
+		handles[0] = get_handle(tmpin_fd);
 	    }
 	    if ((*fr = fdopen(rp[0], "r")) == 0)
 		break;
@@ -334,7 +342,7 @@ native_inout_popen(FILE **fr, FILE **fw, char *cmd)
 		break;
 	    if ((wp[2] = _dup(wp[0])) == -1)
 		break;
-	    handles[0] = (HANDLE) _get_osfhandle(wp[2]);
+	    handles[0] = get_handle(wp[2]);
 	    (void) close(wp[0]);
 	    wp[0] = BAD_FD;
 	    if (!fr)
@@ -468,7 +476,7 @@ tmp_inout_popen(FILE **fr, FILE **fw, char *cmd)
 				 _S_IWRITE | _S_IREAD)) == BAD_FD) {
 		break;
 	    }
-	    handles[2] = handles[1] = (HANDLE) _get_osfhandle(stdin_fd);
+	    handles[2] = handles[1] = get_handle(stdin_fd);
 	    if (!fw) {
 		/*
 		 * This is a read pipe (only).  Connect child's stdin to
@@ -487,7 +495,7 @@ tmp_inout_popen(FILE **fr, FILE **fw, char *cmd)
 				     _S_IWRITE | _S_IREAD)) == BAD_FD) {
 		    break;
 		}
-		handles[0] = (HANDLE) _get_osfhandle(tmpin_fd);
+		handles[0] = get_handle(tmpin_fd);
 	    } else {
 		/*
 		 * Set up descriptor for filter operation.   Note the
@@ -600,7 +608,7 @@ npflush(void)
     } else {
 	/* handles[1-2] were initialized by tmp_npopen_open() */
 
-	handles[0] = (HANDLE) _get_osfhandle(stdout_fd);
+	handles[0] = get_handle(stdout_fd);
 	rc = (exec_shell(shcmd,
 			 handles,
 			 TRUE	/* do hide child window */
@@ -660,7 +668,7 @@ tmp_npclose(FILE *fp)
 		    strerror(errno));
 	    lastditch_msg(buf);
 	} else {
-	    handles[0] = (HANDLE) _get_osfhandle(stdout_fd);
+	    handles[0] = get_handle(stdout_fd);
 	    handles[1] = handles[2] = GetStdHandle(STD_OUTPUT_HANDLE);
 	    rc = (exec_shell(shcmd,
 			     handles,

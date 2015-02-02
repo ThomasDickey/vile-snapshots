@@ -4,7 +4,7 @@
  *	original by Daniel Lawrence, but
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.353 2015/02/01 15:08:18 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.356 2015/02/01 21:19:03 tom Exp $
  *
  */
 
@@ -494,22 +494,6 @@ more_named_cmd(void)
     return result;
 }
 
-static const char *
-skip_command(const char *cspec)
-{
-    int skipped = 0;
-    if (isShellOrPipe(cspec)) {
-	skipped = (int) strlen(cspec);
-    } else if (isAlpha(cspec[0])) {
-	while (isAlpha(cspec[skipped]) ||
-	       isDigit(cspec[skipped]) ||
-	       cspec[skipped] == '-') {
-	    ++skipped;
-	}
-    }
-    return cspec + skipped;
-}
-
 /*
  * Scrolling through the history buffer may bring up a selection containing
  * a line/range specifier and arguments past the command-verb.  Check for,
@@ -524,7 +508,6 @@ resplice_command(TBUFF **lspec, const char *cspec)
 {
     int result = FALSE;
     int end_lspec = 0;
-    int end_cspec = 0;
     int end_input = (int) strlen(cspec);
     LINE *fromline = 0;
     LINE *toline = 0;
@@ -533,18 +516,10 @@ resplice_command(TBUFF **lspec, const char *cspec)
     if (tb_length(*lspec) == 1 && *tb_values(*lspec) == EOS) {
 	end_lspec = rangespec(cspec, &fromline, &toline, &lflag, TRUE);
 	if (end_lspec > 0) {
-	    end_cspec = (int) (skip_command(cspec + end_lspec) - cspec);
-	    if (end_lspec > 0) {
-		while (end_input-- > 0) {
-		    unkeystroke(cspec[end_input]);
-		}
-		result = TRUE;
-	    } else if (end_cspec < end_input) {
-		while (end_input-- > end_cspec) {
-		    unkeystroke(cspec[end_input]);
-		}
-		result = TRUE;
+	    while (end_input-- > 0) {
+		unkeystroke(cspec[end_input]);
 	    }
+	    result = TRUE;
 	}
     }
     return result;

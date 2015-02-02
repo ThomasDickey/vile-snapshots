@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.737 2013/12/07 11:57:39 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.740 2015/02/01 20:31:31 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -217,6 +217,8 @@
 #if SYS_WINNT
 # define HAVE_ENVIRON		1
 # define HAVE_PUTENV		1
+# define HAVE_STRICMP		1
+# define HAVE_STRINCMP		1
 #endif
 
 /*
@@ -2309,6 +2311,16 @@ typedef struct	BUFFER {
 #define b_lastdot b_wtraits.w_ld
 #define b_tentative_lastdot b_wtraits.w_tld
 #define b_wline   b_wtraits.w_ln
+
+#ifndef HAVE_STRICMP
+#undef stricmp
+#define stricmp vl_stricmp
+#endif
+
+#ifndef HAVE_STRNICMP
+#undef strnicmp
+#define strnicmp vl_strnicmp
+#endif
 
 #if OPT_CASELESS
 #define eql_bname(bp,name) !stricmp(bp->b_bname, name)

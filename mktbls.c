@@ -5,7 +5,7 @@
  *	included in main.c
  *
  *	Copyright (c) 1990 by Paul Fox
- *	Copyright (c) 1995-2013 by Paul Fox and Thomas Dickey
+ *	Copyright (c) 1995-2015 by Paul Fox and Thomas Dickey
  *
  *	See the file "cmdtbl" for input data formats, and "estruct.h" for
  *	the output structures.
@@ -15,7 +15,7 @@
  * by Tom Dickey, 1993.    -pgf
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/mktbls.c,v 1.189 2013/12/07 16:26:11 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/mktbls.c,v 1.191 2015/02/01 21:33:42 tom Exp $
  *
  */
 
@@ -836,13 +836,14 @@ Name2Address(char *name, char *type)
 {
     /*  "+ 10" for comfort */
     size_t len = strlen(name) + 10;
-    char *base = Alloc(len);
+    char *base;
     char *temp;
 
     temp = Name2Symbol(name);
     if (strlen(temp) + 1 + (size_t) (isboolean(*type) ? 4 : 0) > len)
 	badfmt("bug: buffer overflow in Name2Address");
 
+    base = Alloc(len);
     (void) strcpy(base, temp);
     if (isboolean(*type))
 	(void) strcat(strcat(strcpy(base + 2, "no"), temp + 2), "+2");
