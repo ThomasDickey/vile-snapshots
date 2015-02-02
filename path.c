@@ -2,7 +2,7 @@
  *		The routines in this file handle the conversion of pathname
  *		strings.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.176 2013/03/08 10:27:22 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.177 2015/02/01 15:51:03 jrs Exp $
  *
  *
  */
@@ -1590,7 +1590,7 @@ lengthen_path(char *path)
 #if OPT_UNC_PATH
 	if (drive == EOS) {
 	    W32_CHAR uncdir[NFILEN];
-	    GetCurrentDirectory(sizeof(uncdir), uncdir);
+	    GetCurrentDirectory(sizeof(uncdir) / sizeof(uncdir[0]), uncdir);
 	    cwd = bsl_to_sl_inplace(asc_charstring(uncdir));
 	    free_cwd = TRUE;
 	} else

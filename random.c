@@ -2,7 +2,7 @@
  * This file contains the command processing functions for a number of random
  * commands. There is no functional grouping here, for sure.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.350 2014/07/04 12:14:59 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.351 2015/02/01 19:41:09 tom Exp $
  *
  */
 
@@ -2374,10 +2374,37 @@ vl_stricmp(const char *a, const char *b)
 	    ch2 = toUpper(ch2);
 	cmp = ch1 - ch2;
 	if (cmp != 0 || ch1 == EOS || ch2 == EOS)
-	    return cmp;
+	    break;
     }
+    return cmp;
 }
 #endif
+
+#if OPT_CASELESS
+#ifndef vl_strnicmp
+/*
+ * Compare two strings ignoring case
+ */
+int
+vl_strnicmp(const char *a, const char *b, size_t n)
+{
+    int ch1, ch2, cmp = 0;
+
+    while (n-- != 0) {
+	ch1 = CharOf(*a++);
+	ch2 = CharOf(*b++);
+	if (isLower(ch1))
+	    ch1 = toUpper(ch1);
+	if (isLower(ch2))
+	    ch2 = toUpper(ch2);
+	cmp = ch1 - ch2;
+	if (cmp != 0 || ch1 == EOS || ch2 == EOS)
+	    break;
+    }
+    return cmp;
+}
+#endif
+#endif /* OPT_CASELESS */
 
 /*
  * Format a visible representation of the given character, returns the buffer

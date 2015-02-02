@@ -1,7 +1,13 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
  20150201 (p)
+	> from https://github.com/ricksladkey/vile (Rick Sladkey):
+	  + check in ntconio.c if running in ConEmu, e.g., ConEmuPID variable
+	    is set, and if so, allow its bold/italic extensions.
+	  + modify ntconio.c to honor Unicode keyboard input.
+	  + amend GetCurrentDirectory() buffer size for Unicode.
 	> Tom Dickey:
+	+ add configure check for stricmp, omitted from recent Cygwin.
 	+ partial fix for recalling from history this command:
 		'a,.s/$/;/
 	  With the fix, one can edit the previous command, and issue minor

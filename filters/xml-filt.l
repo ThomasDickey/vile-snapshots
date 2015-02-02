@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/xml-filt.l,v 1.50 2015/02/01 13:52:10 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/xml-filt.l,v 1.51 2015/02/01 20:44:22 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of XML input
  * text.
@@ -240,7 +240,7 @@ static void
 show_xml_string(char *text, int len)
 {
     while (len > 0) {
-	char *first = strstr(text, "${");
+	char *first;
 	char *last;
 	int skip;
 
