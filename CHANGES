@@ -1,5 +1,13 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
+ 20150305 (q)
+	> Tom Dickey:
+	+ changes in 9.8p for global substitutions with "^" exposed at least
+	  one place, e.g., in oneliner.c where DOT was moved to the next line
+	  without ensuring that its offset was reset.  Review and amend several
+	  other occurrences where DOT moves to next or previous line (report by
+	  Jan Wells).
+
  20150201 (p)
 	> from https://github.com/ricksladkey/vile (Rick Sladkey):
 	  + check in ntconio.c if running in ConEmu, e.g., ConEmuPID variable

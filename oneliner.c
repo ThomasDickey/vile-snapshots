@@ -4,7 +4,7 @@
  *	Copyright (c) 1990, 1995-1999 by Paul Fox, except for delins(), which is
  *	Copyright (c) 1986 by University of Toronto, as noted below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/oneliner.c,v 1.122 2015/01/19 00:48:02 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/oneliner.c,v 1.123 2015/03/05 01:21:57 tom Exp $
  */
 
 #include	"estruct.h"
@@ -279,6 +279,7 @@ substreg1(int needpats, int use_opts, int is_globalsub)
 	    return status;
 	}
 	DOT.l = lforw(oline);
+	DOT.o = 0;
     } while (!sameline(DOT, region.r_end));
     calledbefore = TRUE;
 

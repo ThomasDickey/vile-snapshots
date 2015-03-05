@@ -5,7 +5,7 @@
  * reading and writing of the disk are
  * in "fileio.c".
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.453 2015/01/19 09:55:44 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.454 2015/03/05 01:08:47 tom Exp $
  */
 
 #include "estruct.h"
@@ -2754,6 +2754,7 @@ ifile(char *fname, int belowthisline, FILE *haveffp)
 #endif
 	/* advance to the next line */
 	DOT.l = lforw(DOT.l);
+    DOT.o = 0;
 
     returnCode(FIO2Status(status));
 }

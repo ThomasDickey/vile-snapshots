@@ -3,7 +3,7 @@
  * paragraph at a time.  There are all sorts of word mode commands.  If I
  * do any sentence mode commands, they are likely to be put in this file.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/word.c,v 1.104 2013/03/07 01:41:28 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/word.c,v 1.105 2015/03/05 01:10:28 tom Exp $
  *
  */
 
@@ -532,6 +532,7 @@ do_formatting(TBUFF **wp, TBUFF **cp)
 	    return setmark();
 	while (dot_at_section_break()) {
 	    DOT.l = lforw(DOT.l);
+	    DOT.o = 0;
 	    if (DOT.l == pastline)
 		return setmark();
 	}
@@ -541,6 +542,7 @@ do_formatting(TBUFF **wp, TBUFF **cp)
 	/* go forward to get the indent for the second
 	   and following lines */
 	DOT.l = lforw(DOT.l);
+	DOT.o = 0;
 
 	if (DOT.l != pastline) {
 	    secondindent = indentlen(DOT.l);
@@ -583,6 +585,7 @@ do_formatting(TBUFF **wp, TBUFF **cp)
 	    if (is_at_end_of_line(DOT)) {
 		c = ' ';
 		DOT.l = lforw(DOT.l);
+		DOT.o = 0;
 		if (DOT.l == pastline) {
 		    finished = TRUE;
 		} else if (dot_at_section_break()) {
@@ -711,6 +714,7 @@ do_formatting(TBUFF **wp, TBUFF **cp)
 	if (b_val(bp, MDTABINSERT))
 	    entabline((void *) TRUE, 0, 0);
 	DOT.l = lforw(DOT.l);
+	DOT.o = 0;
     }
     return setmark();
 }
