@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.370 2013/04/08 00:32:45 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.371 2015/03/04 12:14:24 tom Exp $
  *
  */
 
@@ -3366,7 +3366,7 @@ insert_namebst(const char *name, const CMDFUNC * cmd, int ro, UINT which)
 {
     int result;
 
-    TRACE((T_CALLED "insert_namebst(%s,%s)\n", name, ro ? "ro" : "rw"));
+    TRACE2((T_CALLED "insert_namebst(%s,%s)\n", name, ro ? "ro" : "rw"));
     if (name != 0) {
 	BI_TREE *my_bst = bst_pointer(which);
 	BI_DATA temp, *p;
@@ -3396,7 +3396,7 @@ insert_namebst(const char *name, const CMDFUNC * cmd, int ro, UINT which)
     } else {
 	result = FALSE;
     }
-    returnCode(result);
+    return2Code(result);
 }
 
 static void

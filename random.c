@@ -2,7 +2,7 @@
  * This file contains the command processing functions for a number of random
  * commands. There is no functional grouping here, for sure.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.351 2015/02/01 19:41:09 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.352 2015/03/05 01:09:19 tom Exp $
  *
  */
 
@@ -739,8 +739,10 @@ forceblank(int f, int n)
 
     /* scan forward */
     while ((firstchar(DOT.l) < 0) &&
-	   (DOT.l != buf_head(curbp)))
+	   (DOT.l != buf_head(curbp))) {
 	DOT.l = lforw(DOT.l);
+	DOT.o = 0;
+    }
 
     return s;
 }

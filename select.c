@@ -18,7 +18,7 @@
  * transferring the selection are not dealt with in this file.  Procedures
  * for dealing with the representation are maintained in this file.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.190 2014/07/04 13:01:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.191 2015/03/05 01:09:38 tom Exp $
  *
  */
 
@@ -1810,6 +1810,7 @@ attribute_from_filter(void)
 		}
 	    }
 	    DOT.l = lforw(DOT.l);
+	    DOT.o = 0;
 	}
 
 	/* some pipes will hang if they're not drained */

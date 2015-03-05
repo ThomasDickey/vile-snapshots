@@ -5,7 +5,7 @@
  * functions that adjust the top line in the window and invalidate the
  * framing, are hard.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/basic.c,v 1.170 2014/04/20 23:51:32 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/basic.c,v 1.171 2015/03/05 01:07:02 tom Exp $
  *
  */
 
@@ -215,15 +215,19 @@ half_pages(int f, int n)
 static void
 skipblanksf(void)
 {
-    while (lforw(DOT.l) != buf_head(curbp) && is_empty_line(DOT))
+    while (lforw(DOT.l) != buf_head(curbp) && is_empty_line(DOT)) {
 	DOT.l = lforw(DOT.l);
+	DOT.o = 0;
+    }
 }
 
 static void
 skipblanksb(void)
 {
-    while (lback(DOT.l) != buf_head(curbp) && is_empty_line(DOT))
+    while (lback(DOT.l) != buf_head(curbp) && is_empty_line(DOT)) {
 	DOT.l = lback(DOT.l);
+	DOT.o = 0;
+    }
 }
 
 /*
@@ -495,6 +499,7 @@ gotobos(int f, int n)
 	    break;
 	nn -= line_height(curwp, DOT.l);
 	DOT.l = lforw(DOT.l);
+	DOT.o = 0;
     }
 
     if (DOT.l != last)
@@ -556,6 +561,7 @@ gotoeos(int f, int n)
 	if (is_last_line(DOT, curbp))
 	    break;
 	DOT.l = lforw(DOT.l);
+	DOT.o = 0;
     }
 #ifdef WMDLINEWRAP
     /* adjust if we pointed to a line-fragment */
