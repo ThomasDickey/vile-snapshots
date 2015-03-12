@@ -3,7 +3,7 @@
  * paragraph at a time.  There are all sorts of word mode commands.  If I
  * do any sentence mode commands, they are likely to be put in this file.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/word.c,v 1.105 2015/03/05 01:10:28 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/word.c,v 1.106 2015/03/11 23:16:06 tom Exp $
  *
  */
 
@@ -583,6 +583,8 @@ do_formatting(TBUFF **wp, TBUFF **cp)
 
 	    /* get the next character */
 	    if (is_at_end_of_line(DOT)) {
+		MARK saved = DOT;
+
 		c = ' ';
 		DOT.l = lforw(DOT.l);
 		DOT.o = 0;
@@ -593,8 +595,6 @@ do_formatting(TBUFF **wp, TBUFF **cp)
 		}
 
 		if ((s = comment_prefix()) >= 0) {
-		    int save = DOT.o;
-
 		    (void) firstnonwhite(FALSE, 1);
 		    s -= DOT.o;
 
@@ -623,9 +623,8 @@ do_formatting(TBUFF **wp, TBUFF **cp)
 				return s;
 			}
 		    }
-		    DOT.o = save;
 		}
-		DOT.l = lback(DOT.l);
+		DOT = saved;
 		at_nl = TRUE;
 	    } else {
 		c = char_at(DOT);
