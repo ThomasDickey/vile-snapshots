@@ -44,7 +44,7 @@
  *	tgetc_avail()     true if a key is avail from tgetc() or below.
  *	keystroke_avail() true if a key is avail from keystroke() or below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.358 2015/01/22 23:44:56 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.359 2015/03/11 01:04:41 tom Exp $
  *
  */
 
@@ -1655,9 +1655,9 @@ reallyEditMiniBuffer(TBUFF **buf,
     ++no_minimsgs;
 
     TRACE((T_CALLED
-	   "editMiniBuffer(%d:%s) called with c=%#x, miniedit=%d, dot=%d\n",
+	   "editMiniBuffer(%d:%s) called with c=%#x, miniedit=%d, dot=%d, quoted:%d\n",
 	   (int) *cpos, tb_visible(*buf),
-	   c, miniedit, DOT.o));
+	   c, miniedit, DOT.o, quoted));
 
 #if OPT_MULTIBYTE
     /*
