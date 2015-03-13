@@ -13,7 +13,7 @@
  * vile.  The file api.c (sometimes) provides a middle layer between
  * this interface and the rest of vile.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.133 2015/03/05 01:10:45 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.134 2015/03/13 08:40:33 tom Exp $
  */
 
 #ifdef __GNUC__
@@ -297,10 +297,10 @@ perl_default_region(void)
     vile_MARK save_DOT = DOT;
 
     DOT.l = lforw(buf_head(curbp));
-    DOT.o = 0;
+    DOT.o = b_left_margin(curbp);
 
     MK.l  = lback(buf_head(curbp));
-    MK.o  = 0;
+    MK.o  = b_left_margin(curbp);
 
     regionshape = rgn_FULLLINE;
     haveregion = NULL;
@@ -1468,7 +1468,7 @@ svgetline(SV **svp, VileBuf *vbp, char *rsstr GCC_UNUSED, STRLEN rslen GCC_UNUSE
 	    || b_val(curbp, MDNEWLINE)))
     {
 	nllen = len_rs;
-	DOT.o = 0;
+	DOT.o = b_left_margin(curbp);
 	DOT.l = lforw(DOT.l);
     }
     else {

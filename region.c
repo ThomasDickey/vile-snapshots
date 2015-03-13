@@ -3,7 +3,7 @@
  * and mark.  Some functions are commands.  Some functions are just for
  * internal use.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/region.c,v 1.165 2013/03/08 09:58:00 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/region.c,v 1.166 2015/03/13 09:31:09 tom Exp $
  *
  */
 
@@ -438,7 +438,7 @@ detabline(void *flagp, int l GCC_UNUSED, int r GCC_UNUSED)
 
     ocol = getccol(FALSE);
 
-    DOT.o = 0;
+    DOT.o = b_left_margin(curbp);
 
     /* remove tabs from the entire line */
     while (DOT.o < llength(lp)) {
@@ -606,7 +606,7 @@ trimline(void *flag GCC_UNUSED, int l GCC_UNUSED, int r GCC_UNUSED)
     }
 
     if (odoto < 0)
-	DOT.o = 0;
+	DOT.o = b_left_margin(curbp);
     else
 	DOT.o = odoto;
     return s;
@@ -1166,7 +1166,7 @@ force_empty_line(void *flagp, int l, int r)
 	    while (count < var_empty_lines) {
 		++count;
 		--lines_deleted;
-		DOT.o = 0;
+		DOT.o = b_left_margin(curbp);
 		rc = lnewline();
 		if (rc != TRUE)
 		    break;

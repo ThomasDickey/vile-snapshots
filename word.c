@@ -3,7 +3,7 @@
  * paragraph at a time.  There are all sorts of word mode commands.  If I
  * do any sentence mode commands, they are likely to be put in this file.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/word.c,v 1.106 2015/03/11 23:16:06 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/word.c,v 1.107 2015/03/13 08:42:56 tom Exp $
  *
  */
 
@@ -531,8 +531,7 @@ do_formatting(TBUFF **wp, TBUFF **cp)
 	if (DOT.l == pastline)	/* FIXME */
 	    return setmark();
 	while (dot_at_section_break()) {
-	    DOT.l = lforw(DOT.l);
-	    DOT.o = 0;
+	    dot_next_bol();
 	    if (DOT.l == pastline)
 		return setmark();
 	}
@@ -541,8 +540,7 @@ do_formatting(TBUFF **wp, TBUFF **cp)
 
 	/* go forward to get the indent for the second
 	   and following lines */
-	DOT.l = lforw(DOT.l);
-	DOT.o = 0;
+	dot_next_bol();
 
 	if (DOT.l != pastline) {
 	    secondindent = indentlen(DOT.l);
@@ -586,8 +584,7 @@ do_formatting(TBUFF **wp, TBUFF **cp)
 		MARK saved = DOT;
 
 		c = ' ';
-		DOT.l = lforw(DOT.l);
-		DOT.o = 0;
+		dot_next_bol();
 		if (DOT.l == pastline) {
 		    finished = TRUE;
 		} else if (dot_at_section_break()) {
@@ -617,7 +614,7 @@ do_formatting(TBUFF **wp, TBUFF **cp)
 			if (DOT.l != pastline
 			    && !dot_at_section_break()) {
 			    B_COUNT spcs = (B_COUNT) DOT.o;
-			    DOT.o = 0;
+			    DOT.o = b_left_margin(curbp);
 			    s = ldel_bytes(spcs, FALSE);
 			    if (s != TRUE)
 				return s;
@@ -712,8 +709,7 @@ do_formatting(TBUFF **wp, TBUFF **cp)
 	   section or the region */
 	if (b_val(bp, MDTABINSERT))
 	    entabline((void *) TRUE, 0, 0);
-	DOT.l = lforw(DOT.l);
-	DOT.o = 0;
+	dot_next_bol();
     }
     return setmark();
 }

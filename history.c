@@ -55,7 +55,7 @@
  *	not (yet) correspond to :-commands.  Before implementing, probably will
  *	have to make TESTC a settable mode.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/history.c,v 1.90 2015/01/22 23:53:22 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/history.c,v 1.91 2015/03/13 08:52:40 tom Exp $
  *
  */
 
@@ -406,7 +406,7 @@ hst_flush(void)
     TRACE(("hst_flush %d:%s\n",
 	   MyLevel,
 	   visible_buff(tb_values(MyText),
-			tb_length(MyText),
+			(int) tb_length(MyText),
 			FALSE)));
 
     if (MyLevel <= 0)

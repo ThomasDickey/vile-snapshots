@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.740 2015/02/01 20:31:31 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.741 2015/03/13 08:34:28 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -1754,6 +1754,14 @@ typedef struct	LINE {
 #define LTRIMMED lBIT(2)	/* line doesn't have newline to display */
 
 /* macros to ease the use of lines */
+#define dot_next_bol()  do { \
+				DOT.l = lforw(DOT.l); \
+				DOT.o = b_left_margin(curbp); \
+			} while (0)
+#define dot_prev_bol()  do { \
+				DOT.l = lback(DOT.l); \
+				DOT.o = b_left_margin(curbp); \
+			} while (0)
 #define	for_each_line(lp,bp) for (lp = lforw(buf_head(bp)); \
 					(lp != 0) && (lp != buf_head(bp)); \
 					lp = lforw(lp))

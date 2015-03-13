@@ -4,7 +4,7 @@
  * Most code probably by Dan Lawrence or Dave Conroy for MicroEMACS
  * Extensions for vile by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/insert.c,v 1.183 2013/12/07 11:58:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/insert.c,v 1.184 2015/03/13 10:29:15 tom Exp $
  */
 
 #include	"estruct.h"
@@ -788,7 +788,8 @@ blanks_on_line(void)
     int save = DOT.o;
     int list = w_val(curwp, WMDLIST);
 
-    for (DOT.o = 0; DOT.o < llength(DOT.l); DOT.o += BytesAt(DOT.l, DOT.o)) {
+    for (DOT.o = b_left_margin(curbp); DOT.o < llength(DOT.l); DOT.o +=
+	 BytesAt(DOT.l, DOT.o)) {
 	if (isSpace(CharAtDot())
 	    && getccol(list) >= indentwas) {
 	    code = TRUE;
@@ -1212,7 +1213,7 @@ previndent(int *bracefp)
 	    (void) gomark(FALSE, 1);
 	    return 0;
 	}
-	DOT.o = 0;
+	DOT.o = b_left_margin(curbp);
 	/* if the line starts with a #, then don't copy its indent */
     } while ((skipindent-- > 0) || (cmode && lgetc(DOT.l, 0) == '#'));
 
