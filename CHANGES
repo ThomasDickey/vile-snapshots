@@ -1,7 +1,10 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20150305 (q)
+ 20150313 (q)
 	> Tom Dickey:
+	+ cleanup logic which sets DOT.o to the beginning of a line, to
+	  ensure that the left-margin is used rather than just the first
+	  position on a line.
 	+ changes in 9.8p for global substitutions with "^" exposed at least
 	  one place, e.g., in oneliner.c where DOT was moved to the next line
 	  without ensuring that its offset was reset.  Review and amend several

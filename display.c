@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.574 2015/03/05 01:07:46 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.575 2015/03/13 08:37:15 tom Exp $
  *
  */
 
@@ -2742,7 +2742,7 @@ update_cursor_position(int *screenrowp, int *screencolp)
 	    || currow > mode_row(curwp)) {
 	    mlforce("BUG:  lost dot updpos().  setting at top");
 	    DOT.l = lforw(buf_head(curbp));
-	    DOT.o = 0;
+	    DOT.o = b_left_margin(curbp);
 	    lp = curwp->w_line.l = DOT.l;
 	    currow = TopRow(curwp);
 	}

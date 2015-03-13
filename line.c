@@ -10,7 +10,7 @@
  * editing must be being displayed, which means that "b_nwnd" is non zero,
  * which means that the dot and mark values in the buffer headers are nonsense.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.224 2014/09/30 08:22:22 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.225 2015/03/13 09:31:09 tom Exp $
  *
  */
 
@@ -1528,7 +1528,7 @@ doput(int f, int n, int after, REGIONSHAPE shape)
     if (shape == rgn_FULLLINE) {
 	if (after && !is_header_line(DOT, curbp))
 	    DOT.l = lforw(DOT.l);
-	DOT.o = 0;
+	DOT.o = b_left_margin(curbp);
     } else {
 	if (after && !is_at_end_of_line(DOT))
 	    forwchar(TRUE, 1);

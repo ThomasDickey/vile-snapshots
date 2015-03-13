@@ -18,7 +18,7 @@
  * transferring the selection are not dealt with in this file.  Procedures
  * for dealing with the representation are maintained in this file.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.191 2015/03/05 01:09:38 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.192 2015/03/13 09:31:49 tom Exp $
  *
  */
 
@@ -1520,7 +1520,7 @@ setup_region(void)
     pastline = MK.l;
     if (pastline != win_head(curwp))
 	pastline = lforw(pastline);
-    DOT.o = 0;
+    DOT.o = b_left_margin(curbp);
     regionshape = rgn_EXACT;
 
     return pastline;
@@ -1669,7 +1669,7 @@ set_mark_after(int count, int rslen)
 	    }
 	    count -= (llength(MK.l) + rslen - offset);
 	    MK.l = lforw(MK.l);
-	    MK.o = 0;
+	    MK.o = b_left_margin(curbp);
 	} else {
 	    break;
 	}
@@ -1738,8 +1738,7 @@ attribute_cntl_a_sequences(void)
 		DOT.o += BytesAt(DOT.l, DOT.o);
 	    }
 	}
-	DOT.l = lforw(DOT.l);
-	DOT.o = 0;
+	dot_next_bol();
     }
     return TRUE;
 }
@@ -1795,7 +1794,7 @@ attribute_from_filter(void)
 		break;
 	    }
 
-	    DOT.o = 0;
+	    DOT.o = b_left_margin(curbp);
 	    for (n = 0; n < nbytes; n++) {
 		if (fflinebuf[n] == CONTROL_A) {
 		    done = decode_attribute(fflinebuf, nbytes, n, &skip);
@@ -1809,8 +1808,7 @@ attribute_from_filter(void)
 		    DOT.o += BytesAt(DOT.l, DOT.o);
 		}
 	    }
-	    DOT.l = lforw(DOT.l);
-	    DOT.o = 0;
+	    dot_next_bol();
 	}
 
 	/* some pipes will hang if they're not drained */

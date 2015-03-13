@@ -9,7 +9,7 @@
  * Extensions for vile by Paul Fox
  * Rewrote to use regular expressions - T.Dickey
  *
- * $Header: /users/source/archives/vile.vcs/RCS/fences.c,v 1.94 2015/03/05 01:08:36 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/fences.c,v 1.95 2015/03/13 08:37:40 tom Exp $
  *
  */
 
@@ -106,7 +106,7 @@ static long iterations;
 static int
 next_line(int sdir)
 {
-    DOT.o = 0;
+    DOT.o = b_left_margin(curbp);
     if (sdir == REVERSE) {
 	DOT.l = lback(DOT.l);
     } else {

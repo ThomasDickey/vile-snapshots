@@ -4,7 +4,7 @@
  *	Copyright (c) 1990, 1995-1999 by Paul Fox, except for delins(), which is
  *	Copyright (c) 1986 by University of Toronto, as noted below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/oneliner.c,v 1.123 2015/03/05 01:21:57 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/oneliner.c,v 1.124 2015/03/13 08:46:03 tom Exp $
  */
 
 #include	"estruct.h"
@@ -71,9 +71,9 @@ pregion(UINT flag)
 	    curwp = bp2any_wp(bp);
 	    if (flag & PGREP) {
 		DOT.l = lback(buf_head(bp));
-		DOT.o = 0;
+		DOT.o = b_left_margin(bp);
 		bprintf("%s:%d:", oldbp->b_bname, line_no(oldbp, linep));
-		DOT.o = 0;
+		DOT.o = b_left_margin(bp);
 	    } else {
 		make_local_w_val(curwp, WMDNUMBER);
 		set_w_val(curwp, WMDNUMBER, TRUE);
@@ -156,7 +156,7 @@ subst_again(int f GCC_UNUSED, int n GCC_UNUSED)
 
     /* the region spans just the line */
     MK.l = DOT.l;
-    DOT.o = 0;
+    DOT.o = b_left_margin(curbp);
     MK.o = llength(MK.l);
     s = substreg1(FALSE, FALSE, FALSE);
     if (s != TRUE) {
@@ -279,7 +279,7 @@ substreg1(int needpats, int use_opts, int is_globalsub)
 	    return status;
 	}
 	DOT.l = lforw(oline);
-	DOT.o = 0;
+	DOT.o = b_left_margin(curbp);
     } while (!sameline(DOT, region.r_end));
     calledbefore = TRUE;
 
@@ -316,7 +316,7 @@ substline(regexp * exp, int nth_occur, int printit, int globally, int *confirmp)
     int again = 0;
     int s;
     int which_occur = 0;
-    int at_bol = (DOT.o == 0);
+    int at_bol = (DOT.o <= b_left_margin(curbp));
     int matched_at_eol = FALSE;
     int yes, c, skipped;
 
@@ -340,7 +340,7 @@ substline(regexp * exp, int nth_occur, int printit, int globally, int *confirmp)
     foundit = FALSE;
     scanboundpos.l = DOT.l;
     scanbound_is_header = FALSE;
-    DOT.o = 0;
+    DOT.o = b_left_margin(curbp);
     do {
 	scanboundpos.o = llength(DOT.l);
 	s = scanner(exp, FORWARD, FALSE, at_bol, (int *) 0);

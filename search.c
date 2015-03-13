@@ -3,7 +3,7 @@
  * and backward directions.
  *  heavily modified by Paul Fox, 1990
  *
- * $Header: /users/source/archives/vile.vcs/RCS/search.c,v 1.154 2015/01/19 10:17:47 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/search.c,v 1.155 2015/03/13 09:31:09 tom Exp $
  *
  * original written Aug. 1986 by John M. Gamble, but I (pgf) have since
  * replaced his regex stuff with Henry Spencer's regexp package.
@@ -625,7 +625,7 @@ clear_match_attrs(int f GCC_UNUSED, int n GCC_UNUSED)
     origmark = MK;
 
     DOT.l = lforw(buf_head(curbp));
-    DOT.o = 0;
+    DOT.o = b_left_margin(curbp);
     MK.l = lback(buf_head(curbp));
     MK.o = llength(MK.l) - 1;
     videoattribute = VOWN_MATCHES;
@@ -677,7 +677,7 @@ attrib_matches(void)
 
     origdot = DOT;
     DOT.l = buf_head(curbp);
-    DOT.o = 0;
+    DOT.o = b_left_margin(curbp);
     nextdot = DOT;
 
     scanboundry(FALSE, DOT, FORWARD);

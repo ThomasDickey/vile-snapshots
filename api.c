@@ -15,7 +15,7 @@
  * in handy.
  *				- kev 4/7/1998
  *
- * $Header: /users/source/archives/vile.vcs/RCS/api.c,v 1.50 2013/12/28 17:43:24 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/api.c,v 1.51 2015/03/13 10:23:06 tom Exp $
  */
 
 #include "estruct.h"
@@ -114,8 +114,7 @@ linsert_chars(char *s, int len)
 
     if (nlatend) {
 	/* Advance DOT to where it's supposed to be */
-	DOT.l = lforw(DOT.l);
-	DOT.o = 0;
+	dot_next_bol();
     }
 
     return nlcount;
@@ -132,7 +131,7 @@ lreplace(char *s, int len)
 
     CopyForUndo(lp);
 
-    DOT.o = 0;
+    DOT.o = b_left_margin(curbp);
 
     if (len > (int) lp->l_size) {
 	size_t nlen;
@@ -302,7 +301,7 @@ api_gotoline(VileBuf * vbp, int lno)
 	    break;
     }
 
-    DOT.o = 0;
+    DOT.o = b_left_margin(curbp);
 
     if (lp != buf_head(bp) && lno == lp->l_number) {
 	DOT.l = lp;
@@ -471,8 +470,7 @@ api_dotgline(VileBuf * vbp, char **linep, B_COUNT * lenp, int *neednewline)
 	    DOT.o += *lenp;
 	    *neednewline = 0;
 	} else {
-	    DOT.l = lforw(DOT.l);
-	    DOT.o = 0;
+	    dot_next_bol();
 	    *neednewline = 1;
 	}
     }
