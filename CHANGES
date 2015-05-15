@@ -1,7 +1,9 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20150313 (q)
+ 20150515 (q)
 	> Tom Dickey:
+	+ fix special case of ^G toggling in minibuffer versus '\' escaping
+	  (report by Wayne Cuddy).
 	+ cleanup logic which sets DOT.o to the beginning of a line, to
 	  ensure that the left-margin is used rather than just the first
 	  position on a line.
