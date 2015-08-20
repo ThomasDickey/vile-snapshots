@@ -17,7 +17,7 @@
  *   "FAILED" may not be used to test an OLE return code.  Use SUCCEEDED
  *   instead.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32ole.cpp,v 1.33 2011/11/25 19:42:11 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32ole.cpp,v 1.34 2015/05/22 01:06:03 tom Exp $
  */
 
 #include "w32vile.h"
@@ -146,9 +146,9 @@ oleauto_init(OLEAUTO_OPTIONS *opts)
      * Register Vile application object in the Running Object Table (ROT).
      * This allows controllers to connect to a running application object
      * instead of creating a new instance.  Use weak registration so that
-     * the ROT releases it's reference when all external references are
+     * the ROT releases its reference when all external references are
      * released.  If strong registration is used, the ROT will not release
-     * it's reference until RevokeActiveObject is called and so will keep
+     * its reference until RevokeActiveObject is called and so will keep
      * the object alive even after all external references have been
      * released.
      */

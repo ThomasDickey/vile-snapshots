@@ -1,4 +1,4 @@
-; $Id: vileperl.rc,v 1.7 2000/11/15 11:19:11 tom Exp $
+; $Id: vileperl.rc,v 1.8 2015/05/20 18:10:10 bod Exp $
 ;
 ; This is a sample script which shows how to initialize the perl scripts
 ; distributed with vile.
@@ -10,13 +10,7 @@
 ~if &seq $progname "xvile"
 
 ; Add vile edit server
-~if &not &rd "$HOME/.vilesock"
-	perl "use Vileserv"	; starts automatically, stops on exit
-~endif
-
-; Add ':startserv' and ':stopserv' commands to manually control server
-perl "Vile::register 'startserv', \\&Vileserv::start, 'start edit server'"
-perl "Vile::register 'stopserv',  \\&Vileserv::stop,  'stop edit server'"
+perl "use Vileserv"	; starts automatically, stops on exit
 
 ~endif
 
