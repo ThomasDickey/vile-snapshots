@@ -20,9 +20,9 @@
 #
 # gnu autoconf support by kevin buettner, 5/94
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.274 2014/07/21 22:30:01 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.276 2015/08/20 09:25:43 tom Exp $
 
-SHELL		= /bin/sh
+SHELL		= @SHELL@
 
 #### Start of system configuration section. ####
 
@@ -703,12 +703,12 @@ clean :: mostlyclean
 	- $(RM) $(ALL)
 
 distclean :: clean
-	- $(RM) makefile config.status config.cache config.log config.h
+	- $(RM) makefile config.status config.cache config.log config.h man2html.tmp
 	- test -d filters && rmdir filters
 
 realclean: distclean
 	- $(RM) test_*$x
-	- $(RM) tags TAGS vile-perl-api.* pod2html-*
+	- $(RM) tags TAGS vile-perl-api.* pod2html*
 
 lint: $(BUILTHDRS)
 	$(LINT) $(CPPFLAGS) $(SRC) $(LIBS)

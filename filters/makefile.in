@@ -1,8 +1,9 @@
-# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.in,v 1.87 2014/07/21 22:00:56 tom Exp $
+# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.in,v 1.88 2015/08/20 09:26:17 tom Exp $
 #
 
 #### Start of system configuration section. ####
 
+SHELL		= @SHELL@
 VPATH		= @srcdir@
 
 top_srcdir	= @top_srcdir@
@@ -54,7 +55,6 @@ datadir		= @datadir@/vile
 
 #### End of system configuration section. ####
 
-SHELL		= /bin/sh
 RM              = rm -f
 
 QUOTDEFS	= -DVILE_STARTUP_PATH=\"@VILE_STARTUP_PATH@\"

@@ -1,7 +1,18 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20150515 (q)
+ 20150820 (q)
+	> Brendan O'Dea:
+	+ corrected initialization for Vileserv in vileperl.rc (report by
+	  Chris Green).
 	> Tom Dickey:
+	+ modify configure macros to use the configured shell rather than just
+	  /bin/sh, to accommodate deprecation of non-POSIX shells such as that
+	  used in Solaris.
+	+ add configure option --with-man2html, use in generating vile-man.html
+	+ modify wvwrap to ensure that it does not pass options to winvile
+	  as filenames (Savannah #44774).
+	+ update autoconf macros from ongoing work in lynx, ncurses and xterm
+	  for testing ncurses6.
 	+ fix special case of ^G toggling in minibuffer versus '\' escaping
 	  (report by Wayne Cuddy).
 	+ cleanup logic which sets DOT.o to the beginning of a line, to

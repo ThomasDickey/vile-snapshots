@@ -1,11 +1,11 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_REVISION($Revision: 1.314 $)
+AC_REVISION($Revision: 1.321 $)
 AC_PREREQ(2.52.20011201)
 
 ### Use "configure -with-screen" to override the default configuration, which is
 ### termcap-based on unix systems.
 
-dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.314 2015/02/01 19:24:16 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.321 2015/08/20 09:09:23 tom Exp $
 
 define(MAKELIST, sh $srcdir/filters/makelist.sh $srcdir/filters/genmake.mak)
 
@@ -30,7 +30,8 @@ CF_XOPEN_SOURCE
 CF_SIGWINCH
 
 # force HPUX lex to use %pointer for $LEX
-case $host_os in hpux*)
+case $host_os in
+(hpux*)
 	CPPFLAGS="-DYYCHAR_ARRAY $CPPFLAGS"
 	;;
 esac
@@ -38,7 +39,7 @@ AC_DECL_YYTEXT
 
 TRY_CFLAGS=
 case $host_os in
-irix6.*) #(vi
+(irix6.*)
 	TRY_CFLAGS="$TRY_CFLAGS -woff 3970"
 	;;
 esac
@@ -437,6 +438,7 @@ CF_KILLPG
 CF_ERRNO
 CF_CHECK_ENVIRON(environ)
 CF_SYS_ERRLIST
+CF_PKG_CONFIG
 
 ###############################################################################
 CF_HELP_MESSAGE(Select screen-type)
@@ -468,7 +470,7 @@ AC_MSG_RESULT($screen)
 CF_HELP_MESSAGE(Options specific to screen-types)
 : See if this is any type of xvile configuration:
 case "$screen" in
-	[[Mm]]otif* | [[xX]] | [[Aa]]thena | [[xX]][[atTmMoO]]* | [[xX]]11 | neXtaw | XawPlus )
+	([[Mm]]otif*|[[xX]]|[[Aa]]thena|[[xX]][[atTmMoO]]*|[[xX]]11|neXtaw|XawPlus)
 		EXTRA_INSTALL_FILES="$EXTRA_INSTALL_FILES \$(INSTALL_X_FILES)"
 		CF_X_TOOLKIT
 		CF_WITH_IMAKE_CFLAGS
@@ -514,16 +516,16 @@ esac
 
 : Find the libraries that apply to the selected screen-type:
 case "$screen" in
-	[[mM]]otif* | [[Xx]]m )
+	([[mM]]otif*|[[Xx]]m)
 		AC_DEFINE(MOTIF_WIDGETS,1,[Define to 1 if using Motify widgets])
 		CF_X_MOTIF
 		test "$cf_extensions" = yes && EXTRAOBJS="$EXTRAOBJS x11menu\$o menu\$o"
 		test "$cf_extensions" = no && EXTRAOBJS="$EXTRAOBJS select\$o"
 	;;
-	[[Aa]]thena* | [[Xx]]aw* | neXtaw | XawPlus )
+	([[Aa]]thena*|[[Xx]]aw*|neXtaw|XawPlus)
 		AC_DEFINE(ATHENA_WIDGETS,1,[Define to 1 if using Xaw widgets])
-		case $screen in #(vi
-		*aw*)
+		case $screen in
+		(*aw*)
 			cf_x_athena=`echo $screen | sed -e s/x/X/`
 			;;
 		esac
@@ -531,16 +533,16 @@ case "$screen" in
 		test "$cf_extensions" = yes && EXTRAOBJS="$EXTRAOBJS x11menu\$o menu\$o"
 		test "$cf_extensions" = no && EXTRAOBJS="$EXTRAOBJS select\$o"
 	;;
-	x | X | [[Xx]][[Tt]]* | [[Xx]]11 )
+	(x|X|[[Xx]][[Tt]]*|[[Xx]]11)
 		AC_DEFINE(NO_WIDGETS,1,[Define to 1 if using xvile with selection extension])
 		test "$cf_extensions" = no && EXTRAOBJS="$EXTRAOBJS select\$o"
 	;;
-	ansi)
+	(ansi)
 		SCREEN=ansi
 		TARGET=vile
 		AC_DEFINE(DISP_ANSI,1,[Define to 1 if using dumb ANSI driver])
 	;;
-	curses)
+	(curses)
 		SCREEN=curses
 		TARGET=vile
 		AC_DEFINE(DISP_CURSES,1,[Define to 1 if using curses terminal driver])
@@ -548,30 +550,30 @@ case "$screen" in
 		CF_NCURSES_VERSION
 		CF_CURSES_LIBS
 	;;
-	ncurses)
-		SCREEN=curses
-		TARGET=vile
-		AC_DEFINE(DISP_CURSES,1,[Define to 1 using ncurses terminal driver])
-		CF_NCURSES_CONFIG
-	;;
-	ncursesw)
+	(ncursesw*)
 		SCREEN=curses
 		TARGET=vile
 		AC_DEFINE(DISP_CURSES)
 		CF_UTF8_LIB
-		CF_NCURSES_CONFIG(ncursesw)
+		CF_NCURSES_CONFIG($screen)
 	;;
-	[[Dd]][[Oo]][[Ss]])
+	(ncurses*)
+		SCREEN=curses
+		TARGET=vile
+		AC_DEFINE(DISP_CURSES,1,[Define to 1 using ncurses terminal driver])
+		CF_NCURSES_CONFIG($screen)
+	;;
+	([[Dd]][[Oo]][[Ss]])
 		SCREEN=ntconio
 		TARGET=convile
 		AC_DEFINE(DISP_NTCONS,1,[Define to 1 if using Windows (NT and later) console driver])
 	;;
-	[[Ww]]indows)
+	([[Ww]]indows)
 		SCREEN=ntwinio
 		TARGET=minvile
 		AC_DEFINE(DISP_NTWIN,1,[Define to 1 if using Windows (NT and later) GUI driver])
 	;;
-	* )
+	(*)
 		SCREEN=tcap
 		TARGET=vile
 		AC_DEFINE(DISP_TERMCAP,1,[Define to 1 if using termcap/terminfo driver])
@@ -587,7 +589,7 @@ esac
 
 # work around for broken FreeBSD header files (see tcap.h)
 case "$cf_cv_ncurses_version" in
-5.2.20020615)
+(5.2.20020615)
 	AC_DEFINE(FREEBSD_BROKE_NCURSES,1,[Define to 1 as workaround using ncurses 5.2 on FreeBSD])
 	;;
 esac
@@ -620,12 +622,12 @@ LIBS="$LIBS $X_EXTRA_LIBS"
 CF_CHAR_DEVICE(/dev/tty)
 
 case $TARGET in
-	convile|minvile)
+	(convile|minvile)
 		CF_ACVERSION_CHECK(2.52,
 			[AC_PATH_TOOL(WINDRES, windres, none)],
 			[AC_PATH_PROG(WINDRES, windres, none)])
 		;;
-	*)
+	(*)
 		CF_CRYPT_FUNC
 	;;
 esac
@@ -686,7 +688,7 @@ CF_MKSTEMP
 ###	Miscellaneous options
 
 case "$TARGET" in
-	convile)
+	(convile)
 		AC_DEFINE(SYS_WINNT,1,[Define to 1 if the operating system is Windows (NT or later)])
 		AC_DEFINE(CC_MINGW,1,[Define to 1 if building with MinGW])
 
@@ -699,7 +701,7 @@ case "$TARGET" in
 
 	;;
 
-	minvile)
+	(minvile)
 		AC_DEFINE(SYS_WINNT,1,[Define to 1 if the operating system is Windows (NT or later)])
 		AC_DEFINE(CC_MINGW,1,[Define to 1 if building with MinGW])
 
@@ -711,7 +713,7 @@ case "$TARGET" in
 		EXEEXT=.exe
 	;;
 
-	xvile)
+	(xvile)
 		AC_DEFINE(SYS_UNIX,1,[Define to 1 if building on Unix and clones])
 
 		CF_WITH_XPM
@@ -750,7 +752,7 @@ if test -n "$cf_x_athena" ; then
 fi
 	;;
 
-	*)
+	(*)
 		AC_DEFINE(SYS_UNIX)
 		ICON_SUFFIX=
 	;;
@@ -765,7 +767,7 @@ then
 		[ICON_NAME="$withval"],
 		[ICON_NAME=vile])
 	case "x$ICON_NAME" in
-	xyes|xno|x)
+	(xyes|xno|x)
 		ICON_NAME=vile
 		;;
 	esac
@@ -828,6 +830,8 @@ fi # test $am_cv_func_iconv = yes
 fi # test $cf_func_iconv" = yes
 fi # test $cf_locale != no
 fi # test $cf_cv_locale = yes
+
+CF_WITH_MAN2HTML
 
 ###############################################################################
 CF_HELP_MESSAGE(Debugging/development options)
@@ -1040,13 +1044,13 @@ AC_SUBST(SH_LDFLAGS)
 
 AC_CHECK_PROGS(SPELL_PROG, ispell aspell spell, [])
 case .$SPELL_PROG in
-.aspell)
+(.aspell)
 	SPELL_OPTS="-x list"
 	;;
-.ispell)
+(.ispell)
 	SPELL_OPTS="-l -x"
 	;;
-*)
+(*)
 	SPELL_PROG="spell"
 	SPELL_OPTS="-l"
 	;;
@@ -1132,7 +1136,7 @@ else
 	cf_srcdir=.
 fi
 cf_genmake=$cf_srcdir/filters/genmake.mak
-sh $cf_srcdir/filters/genmake.sh $cf_genmake $cf_srcdir/filters
+$SHELL $cf_srcdir/filters/genmake.sh $cf_genmake $cf_srcdir/filters
 
 echo "Checking for built-in filters: $VILE_BUILT_IN_FILTERS"
 $AWK -f $cf_srcdir/filters/mk-1st.awk <$cf_genmake mode=built-in list="$VILE_BUILT_IN_FILTERS" flex=$LEX_IS_FLEX >>filters/makefile
@@ -1146,8 +1150,8 @@ $AWK -f $cf_srcdir/filters/mk-1st.awk <$cf_genmake mode=loadable list="$VILE_LOA
 cat   filters/makefile.tmp >>filters/makefile
 rm -f filters/makefile.tmp
 
-case $cf_srcdir in #(vi
-/*|?:*[)] #(vi
+case $cf_srcdir in
+/*|?:*[)]
 	cf_SRCDIR=$cf_srcdir
 	;;
 *[)]
@@ -1160,8 +1164,6 @@ $AWK -f $cf_srcdir/filters/mk-2nd.awk <$cf_genmake from=$cf_SRCDIR/filters linki
 $AWK -f $cf_srcdir/filters/mk-2nd.awk <$cf_genmake from=$cf_SRCDIR/filters linking="$ECHO_LD" compiling="$RULE_CC" show="$ECHO_CC" mode=loadable list="$VILE_LOADABLE_FILTERS" flex=$LEX_IS_FLEX >>filters/makefile
 
 (for i in $cf_srcdir/filters/*.key;do echo $i;done) | $AWK -f $cf_srcdir/filters/mk-key.awk from=$cf_srcdir >>filters/makefile
-
-rm -f *.tmp
 },
 {
 RULE_CC='$RULE_CC'

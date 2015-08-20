@@ -8,7 +8,7 @@
 PACKAGES.indep = vile-common
 PACKAGES.arch  = vile vile-filters xvile
 
-# Debian 7 builds depcrecate passing CFLAGS in the environment, preferring to
+# Debian 7 builds deprecate passing CFLAGS in the environment, preferring to
 # use a new "--export=make" flag.  This script works around that, to allow
 # builds with Debian 5 and 6:
 MYFLAGS= echo >myvars; \

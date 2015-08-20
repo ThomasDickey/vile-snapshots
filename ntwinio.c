@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 screen API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.203 2015/01/02 15:21:27 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.204 2015/05/22 00:57:44 tom Exp $
  * Written by T.E.Dickey for vile (october 1997).
  * -- improvements by Clark Morgan (see w32cbrd.c, w32pipe.c).
  */
@@ -4230,8 +4230,8 @@ WinMain(
     }
     if (oa_reg) {
 	/*
-	 * The main program's cmd line parser will eventually cause
-	 * OLE autoamation registration to occur, at which point
+	 * The main program's command-line parser will eventually cause
+	 * OLE automation registration to occur, at which point
 	 * winvile exits.  So don't show a window.
 	 */
 
