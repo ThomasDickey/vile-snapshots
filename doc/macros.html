@@ -1,6 +1,6 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
-  $Id: macros.html,v 1.28 2014/07/05 10:19:18 tom Exp $
+  $Id: macros.html,v 1.30 2015/09/07 14:25:41 tom Exp $
 -->
 
 <html>
@@ -347,6 +347,7 @@
         integer
         majormode
         mode
+        register
         string
         variable
 </pre>
@@ -1624,6 +1625,24 @@ SORTOFTRUE
     command. Since a failed command will usually cause an entire
     macro to fail, the ~force directive is often used to suppress a
     command's failure. $status preserves its exit status.</dd>
+
+    <dt><a name="modevar-system-crlf" id=
+    "modevar-system-crlf">$system-crlf</a></dt>
+
+    <dd>The default value for dos mode, this is initially
+    determined by the platform: DOS, Windows use dos mode, while
+    other platforms use nodos mode. Because it is common to edit
+    files on Windows from other systems, this variable can be
+    overridden by setting it in a script. To affect the
+    <em>initial</em> files opened when vile first starts, you must
+    use the <code>-u</code> or <code>-U</code> option, since those
+    buffers may be initialized before the initialization script is
+    processed.</dd>
+
+    <dt><a name="modevar-system-name" id=
+    "modevar-system-name">$system-name</a></dt>
+
+    <dd>[READ ONLY] Shows the generic operating system name.</dd>
 
     <dt><a name="modevar-term-encoding" id=
     "modevar-term-encoding">$term-encoding</a></dt>

@@ -2,7 +2,7 @@
  * Unix crypt(1)-style interface.
  * Written by T.E.Dickey for vile (March 1999).
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ucrypt.c,v 1.22 2013/12/28 17:44:20 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ucrypt.c,v 1.23 2015/09/07 01:03:37 tom Exp $
  */
 
 #include "estruct.h"
@@ -90,8 +90,7 @@ vl_setkey(int f GCC_UNUSED,
     if (rc == TRUE) {
 	TRACE(("set key for %s\n", curbp->b_bname));
 	(void) vl_strncpy(curbp->b_cryptkey, result, sizeof(curbp->b_cryptkey));
-	make_local_b_val(curbp, MDCRYPT);
-	set_b_val(curbp, MDCRYPT, TRUE);
+	set_local_b_val(curbp, MDCRYPT, TRUE);
 	curwp->w_flag |= WFMODE;
     } else if (rc == FALSE) {
 	if (curbp->b_cryptkey[0] != EOS) {
@@ -100,8 +99,7 @@ vl_setkey(int f GCC_UNUSED,
 		TRACE(("reset key for %s\n", curbp->b_bname));
 		curbp->b_cryptkey[0] = EOS;
 		if (global_b_val(MDCRYPT)) {
-		    make_local_b_val(curbp, MDCRYPT);
-		    set_b_val(curbp, MDCRYPT, FALSE);
+		    set_local_b_val(curbp, MDCRYPT, FALSE);
 		    curwp->w_flag |= WFMODE;
 		} else if (b_val(curbp, MDCRYPT)) {
 		    make_global_val(curbp->b_values.bv, global_b_values.bv, MDCRYPT);

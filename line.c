@@ -10,7 +10,7 @@
  * editing must be being displayed, which means that "b_nwnd" is non zero,
  * which means that the dot and mark values in the buffer headers are nonsense.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.225 2015/03/13 09:31:09 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.231 2015/09/06 21:09:26 tom Exp $
  *
  */
 
@@ -1276,7 +1276,7 @@ reg2index(int c)
     else if (isLower(c))
 	n = c - 'a' + 10;	/* named buffs are in 10 through 36 */
     else if (isUpper(c))
-	n = c - 'A' + 10;
+	n = c - 'A' + 10;	/* ignore case of register-name */
 #if OPT_SELECTIONS
     else if (c == SEL_KCHR)
 	n = SEL_KREG;
@@ -1933,6 +1933,74 @@ show_Registers(BUFFER *bp)
 #endif /* OPT_UPBUFF */
 
 #endif /* OPT_SHOW_REGS */
+
+#if OPT_REGS_CMPL
+KBD_OPTIONS
+regs_kbd_options(void)
+{
+    return KBD_MAYBEC;
+}
+
+static int
+reg_has_data(int src)
+{
+    int rc = FALSE;
+    int j = reg2index(src);
+    if (j >= 0 ||
+	(regs_kbd_default && (src == UNAME_KCHR))) {
+	int jj = index2ukb(j);
+	if (jj >= 0 && jj < NKREGS) {
+	    if (kbs[jj].kbufh) {
+		rc = TRUE;
+	    }
+	}
+    }
+    return rc;
+}
+
+/*
+ * Register names are a single ASCII character.
+ */
+static const char **
+init_regs_cmpl(char *buf, size_t cpos)
+{
+    int dst, src;
+    char **result = typeallocn(char *, 96);
+    for (dst = 0, src = 32; src < 127; ++src) {
+	if (isUpper(src))	/* register names are caseless */
+	    continue;
+	if (reg_has_data(src)) {
+	    if (cpos == 0 || *buf == src) {
+		char value[2];
+		value[0] = (char) src;
+		value[1] = 0;
+		result[dst++] = strmalloc(value);
+	    }
+	}
+    }
+    result[dst] = 0;
+    return (const char **) result;
+}
+
+int
+regs_completion(DONE_ARGS)
+{
+    size_t cpos = *pos;
+    int status = FALSE;
+    const char **nptr;
+
+    kbd_init();			/* nothing to erase */
+    buf[cpos] = EOS;		/* terminate it for us */
+
+    beginDisplay();
+    if ((nptr = init_regs_cmpl(buf, cpos)) != 0) {
+	status = kbd_complete(PASS_DONE_ARGS, (const char *) nptr, sizeof(*nptr));
+	free(TYPECAST(char *, nptr));
+    }
+    endofDisplay();
+    return status;
+}
+#endif
 
 /* For memory-leak testing (only!), releases all kill-buffer storage. */
 #if NO_LEAKS

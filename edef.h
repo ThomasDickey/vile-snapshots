@@ -6,7 +6,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.371 2013/12/28 17:57:58 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.373 2015/09/07 12:59:36 tom Exp $
  */
 
 #ifndef VILE_EDEF_H
@@ -52,6 +52,8 @@ decl_init( char *exec_pathname, "." );	/* replaced at runtime with path-head of 
 
 decl_init_const ( char prognam[], PROGRAM_NAME );
 decl_init_const ( char version[], "version " VILE_RELEASE "." VILE_VERSION );
+decl_init (TBUFF *system_name, 0 );
+decl_init (int system_crlf, CRLF_LINES );
 
 #ifdef SYSTEM_NAME
 decl_init_const ( char opersys[], SYSTEM_NAME );
@@ -274,6 +276,7 @@ decl_uninit( int kchars );		/* how much did we kill? */
 decl_uninit( int klines );
 decl_uninit( int lines_deleted );	/* from 'ldel_bytes()', for reporting */
 decl_uninit( int warnings );		/* from 'mlwarn()', for reporting */
+decl_uninit( int regs_kbd_default );	/* used in name-completion	*/
 
 #if !SMALLER
 decl_uninit( TBUFF *prompt_string );	/* command-line prompt-string	*/

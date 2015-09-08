@@ -1,5 +1,5 @@
 /*
- * $Id: charsets.c,v 1.78 2013/12/28 17:23:00 tom Exp $
+ * $Id: charsets.c,v 1.79 2015/09/07 00:58:42 tom Exp $
  *
  * see
  http://msdn.microsoft.com/library/default.asp?url=/library/en-us/intl/unicode_42jv.asp
@@ -458,8 +458,7 @@ set_byteorder_mark(BUFFER *bp, int value)
 {
     if (value != ENUM_UNKNOWN
 	&& value != global_b_val(VAL_BYTEORDER_MARK)) {
-	make_local_b_val(bp, VAL_BYTEORDER_MARK);
-	set_b_val(bp, VAL_BYTEORDER_MARK, value);
+	set_local_b_val(bp, VAL_BYTEORDER_MARK, value);
 
 	TRACE(("set_byteorder_mark for '%s' to %s\n",
 	       bp->b_bname,
@@ -472,8 +471,7 @@ set_encoding(BUFFER *bp, int value)
 {
     if (value != ENUM_UNKNOWN
 	&& value != global_b_val(VAL_FILE_ENCODING)) {
-	make_local_b_val(bp, VAL_FILE_ENCODING);
-	set_b_val(bp, VAL_FILE_ENCODING, value);
+	set_local_b_val(bp, VAL_FILE_ENCODING, value);
 
 	TRACE(("set_encoding for '%s' to %s\n",
 	       bp->b_bname,
@@ -753,8 +751,7 @@ set_bom_from_encoding(BUFFER *bp, int enc_value)
 	default:
 	    if (result != ENUM_UNKNOWN
 		&& result != global_b_val(VAL_BYTEORDER_MARK)) {
-		make_local_b_val(bp, VAL_BYTEORDER_MARK);
-		set_b_val(bp, VAL_BYTEORDER_MARK, bom_NONE);
+		set_local_b_val(bp, VAL_BYTEORDER_MARK, bom_NONE);
 	    }
 	    break;
 	}

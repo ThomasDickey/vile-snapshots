@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.371 2015/03/04 12:14:24 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.372 2015/09/07 00:53:33 tom Exp $
  *
  */
 
@@ -303,8 +303,7 @@ vl_help(int f GCC_UNUSED, int n GCC_UNUSED)
 	set_bname(bp, HELP_BufName);
 	set_rdonly(bp, hname, MDVIEW);
 
-	make_local_b_val(bp, MDIGNCASE);	/* easy to search, */
-	set_b_val(bp, MDIGNCASE, TRUE);
+	set_local_b_val(bp, MDIGNCASE, TRUE);	/* easy to search, */
 	b_set_scratch(bp);
 	b_set_recentlychanged(bp);
 	if (!alreadypopped)

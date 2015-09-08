@@ -44,7 +44,7 @@
  *	tgetc_avail()     true if a key is avail from tgetc() or below.
  *	keystroke_avail() true if a key is avail from keystroke() or below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.360 2015/05/15 10:52:33 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.365 2015/09/04 01:05:11 tom Exp $
  *
  */
 
@@ -239,9 +239,17 @@ mlreply_reg(const char *prompt,
     int status;
     int c;
 
+    regs_kbd_default = (at_dft != -1);
     if (clexec || isnamedcmd) {
-	if ((status = mlreply(prompt, cbuf, 2)) != TRUE)
+	TBUFF *result = 0;
+	tb_scopy(&result, cbuf);
+	if ((status = kbd_reply(prompt, &result, eol_history, '\n',
+				regs_kbd_options(), regs_completion)) != TRUE) {
+	    tb_free(&result);
 	    return status;
+	}
+	strcpy(cbuf, tb_values(result));
+	tb_free(&result);
 	c = cbuf[0];
     } else {
 	c = keystroke();
@@ -249,7 +257,7 @@ mlreply_reg(const char *prompt,
 	    return ABORT;
     }
 
-    if (c == '@' && at_dft != -1) {
+    if (c == UNAME_KCHR && regs_kbd_default) {
 	c = at_dft;
     } else if (reg2index(c) < 0) {
 	mlwarn("[Invalid register name]");
@@ -265,15 +273,16 @@ mlreply_reg(const char *prompt,
  * ":put" commands).  The register-name, if given, is first.
  */
 int
-mlreply_reg_count(int state,	/* negative=register, positive=count, zero=either */
+mlreply_reg_count(const char *cmd,	/* command-name, for clarity */
+		  int state,	/* negative=register, positive=count, zero=either */
 		  int *retp,	/* returns the register-index or line-count */
 		  int *next)	/* returns 0/1=register, 2=count */
 {
     int status;
     char prompt[80];
     char expect[80];
-    char buffer[10];
-    UINT length;
+    char *buffer;
+    TBUFF *result = 0;
 
     *expect = EOS;
     if (state <= 0)
@@ -282,15 +291,15 @@ mlreply_reg_count(int state,	/* negative=register, positive=count, zero=either *
 	(void) strcat(expect, " or");
     if (state >= 0) {
 	(void) strcat(expect, " line-count");
-	length = sizeof(buffer);
-    } else
-	length = 2;
+    }
 
-    (void) lsprintf(prompt, "Specify%s: ", expect);
-    *buffer = EOS;
-    status = kbd_string(prompt, buffer, (size_t) length, ' ', 0, no_completion);
+    (void) lsprintf(prompt, "Specify%s (%s): ", expect, cmd);
+    tb_scopy(&result, "");
+    status = kbd_reply(prompt, &result, eol_history, '\n',
+		       regs_kbd_options(), regs_completion);
 
     if (status == TRUE) {
+	buffer = tb_values(result);
 	if (state <= 0
 	    && isAlpha(buffer[0])
 	    && buffer[1] == EOS
@@ -306,6 +315,7 @@ mlreply_reg_count(int state,	/* negative=register, positive=count, zero=either *
 	    status = ABORT;
 	}
     }
+    tb_free(&result);
     return status;
 }
 

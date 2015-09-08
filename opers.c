@@ -3,7 +3,7 @@
  * that take motion operators.
  * written for vile.  Copyright (c) 1990, 1995-2003 by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/opers.c,v 1.103 2014/04/21 00:36:31 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/opers.c,v 1.104 2015/08/22 00:08:52 tom Exp $
  *
  */
 
@@ -111,6 +111,9 @@ vile_op(int f, int n, OpsFunc fn, const char *str)
 
 	/* and execute the motion */
 	if ((status = execute(cfp, f, n)) == TRUE) {
+	    if (regionshape == rgn_FULLLINE) {
+		DOT.o = b_left_margin(curbp);
+	    }
 	    post_op_dot = DOT;
 	} else {
 	    mlforce("[Motion failed]");
