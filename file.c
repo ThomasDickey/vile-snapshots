@@ -5,7 +5,7 @@
  * reading and writing of the disk are
  * in "fileio.c".
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.455 2015/03/13 09:31:09 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.458 2015/09/07 13:21:57 tom Exp $
  */
 
 #include "estruct.h"
@@ -763,8 +763,7 @@ viewfile(int f GCC_UNUSED, int n GCC_UNUSED)
 	    if ((s = getfile(actual, FALSE)) != TRUE)
 		break;
 	    /* if we succeed, put it in view mode */
-	    make_local_b_val(curwp->w_bufp, MDVIEW);
-	    set_b_val(curwp->w_bufp, MDVIEW, TRUE);
+	    set_local_b_val(curwp->w_bufp, MDVIEW, TRUE);
 	    markWFMODE(curwp->w_bufp);
 	}
     }
@@ -853,13 +852,11 @@ set_rdonly_modes(BUFFER *bp, int always)
 {
     /* set view mode for read-only files */
     if ((global_g_val(GMDRONLYVIEW))) {
-	make_local_b_val(bp, MDVIEW);
-	set_b_val(bp, MDVIEW, TRUE);
+	set_local_b_val(bp, MDVIEW, TRUE);
     }
     /* set read-only mode for read-only files */
     if (always || global_g_val(GMDRONLYRONLY)) {
-	make_local_b_val(bp, MDREADONLY);
-	set_b_val(bp, MDREADONLY, TRUE);
+	set_local_b_val(bp, MDREADONLY, TRUE);
     }
 }
 
@@ -1289,11 +1286,9 @@ grab_lck_file(BUFFER *bp, char *fname)
 	if (!set_lock(fname, locker, sizeof(locker))) {
 	    /* we didn't get it */
 	    if ((locked_by = strmalloc(locker)) != 0) {
-		make_local_b_val(bp, MDVIEW);
-		set_b_val(bp, MDVIEW, TRUE);
-		make_local_b_val(bp, MDLOCKED);
-		set_b_val(bp, MDLOCKED, TRUE);
-		make_local_b_val(bp, VAL_LOCKER);
+		set_local_b_val(bp, MDVIEW, TRUE);
+		set_local_b_val(bp, MDLOCKED, TRUE);
+		make_local_b_val(bp, VAL_LOCKER, locked_by);
 		set_b_val_ptr(bp, VAL_LOCKER, locked_by);
 		markWFMODE(bp);
 	    }
@@ -1607,8 +1602,7 @@ readin(char *fname, int lockfl, BUFFER *bp, int mflg)
 #if OPT_ENCRYPT
     /* bclear() gets rid of local flags */
     if (local_crypt) {
-	make_local_b_val(bp, MDCRYPT);
-	set_b_val(bp, MDCRYPT, TRUE);
+	set_local_b_val(bp, MDCRYPT, TRUE);
     }
 #endif
 
@@ -1616,16 +1610,14 @@ readin(char *fname, int lockfl, BUFFER *bp, int mflg)
     ch_fname(bp, fname);
     fname = bp->b_fname;	/* this may have been b_fname! */
 #if OPT_DOSFILES
-    make_local_b_val(bp, MDDOS);
     /* assume that if our OS wants it, that the buffer will have CRLF
      * lines.  this may change when the file is read, based on actual
      * line counts, below.  otherwise, if there's an error, or the
      * file doesn't exist, we will keep this default.
      */
-    set_b_val(bp, MDDOS, CRLF_LINES);
+    set_local_b_val(bp, MDDOS, system_crlf);
 #endif
-    make_local_b_val(bp, MDNEWLINE);
-    set_b_val(bp, MDNEWLINE, TRUE);	/* assume we've got it */
+    set_local_b_val(bp, MDNEWLINE, TRUE);
 
     if ((s = ffropen(fname)) == FIOERR) {	/* Hard file error */
 	/* do nothing -- error has been reported,
@@ -2292,6 +2284,22 @@ actually_write(REGION * rp, char *fn, int msgf, BUFFER *bp, int forced, int enco
 	    MK = rp->r_end;
 	    (void) getregion(bp, rp);
 	}
+    }
+    /*
+     * The write-hook may have set the buffer to view-only, or returned
+     * an error.  Do not write the buffer in that case.
+     */
+    switch (s2status(tb_values(last_macro_result))) {
+    case TRUE:
+    case SORTOFTRUE:
+	break;
+    default:
+	mlwarn("[write-hook returned %s]", tb_values(last_macro_result));
+	returnCode(FALSE);
+    }
+    if (same_fname(fn, bp, FALSE) && b_val(bp, MDVIEW)) {
+	mlwarn("[Buffer view-mode has changed]");
+	returnCode(FALSE);
     }
 #endif
 

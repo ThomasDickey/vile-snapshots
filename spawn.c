@@ -1,7 +1,7 @@
 /*	Spawn:	various DOS access commands
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.214 2014/03/24 21:29:07 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.215 2015/09/07 01:06:19 tom Exp $
  *
  */
 
@@ -562,8 +562,7 @@ capturecmd(int f, int n)
     set_bname(curbp, OUTPUT_BufName);
 
     /* make this window in VIEW mode, update buffer's mode lines */
-    make_local_b_val(curwp->w_bufp, MDVIEW);
-    set_b_val(curwp->w_bufp, MDVIEW, TRUE);
+    set_local_b_val(curwp->w_bufp, MDVIEW, TRUE);
     curwp->w_flag |= WFMODE;
 
 #if OPT_FINDERR
@@ -828,7 +827,9 @@ open_region_filter(void)
 		 * support.
 		 */
 		if (global_g_val(GMDW32PIPES)) {
-		    ULONG code = (ULONG) _beginthread(write_region_to_pipe, 0, fw);
+		    ULONG code = (ULONG) _beginthread(write_region_to_pipe,
+						      0,
+						      fw);
 
 		    /*
 		     * w32pipes mode enabled -- create child thread to blast

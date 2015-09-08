@@ -2,7 +2,7 @@
  * This file contains the command processing functions for a number of random
  * commands. There is no functional grouping here, for sure.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.353 2015/03/13 08:44:59 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.355 2015/09/07 13:21:57 tom Exp $
  *
  */
 
@@ -87,14 +87,9 @@ set_rdonly(BUFFER *bp, const char *name, int mode)
     b_clr_changed(bp);		/* assumes text is loaded... */
     bp->b_active = TRUE;
 
-    make_local_b_val(bp, mode);
-    set_b_val(bp, mode, TRUE);
-
-    make_local_b_val(bp, VAL_TAB);
-    set_b_val(bp, VAL_TAB, 8);
-
-    make_local_b_val(bp, MDDOS);
-    set_b_val(bp, MDDOS, CRLF_LINES);
+    set_local_b_val(bp, mode, TRUE);
+    set_local_b_val(bp, VAL_TAB, 8);
+    set_local_b_val(bp, MDDOS, system_crlf);
 
     fix_cmode(bp, FALSE);
 }
@@ -1802,8 +1797,7 @@ autocolor(void)
 			     * Make a local autocolor mode to show the user
 			     * what the actual interval is.
 			     */
-			    make_local_b_val(bp, VAL_AUTOCOLOR);
-			    set_b_val(bp, VAL_AUTOCOLOR, next_time);
+			    set_local_b_val(bp, VAL_AUTOCOLOR, next_time);
 			    /*
 			     * Set counter to skip autocolor intervals.
 			     */

@@ -5,7 +5,7 @@
  * keys. Like everyone else, they set hints
  * for the display system.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.362 2014/09/30 22:48:10 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.363 2015/09/07 00:59:17 tom Exp $
  *
  */
 
@@ -2446,8 +2446,7 @@ add_line_at(BUFFER *bp, LINE *prevp, const char *text, int len)
 	    /* try to maintain byte/line counts? */
 	    if (b_is_counted(bp)) {
 		if (nextp == buf_head(bp)) {
-		    make_local_b_val(bp, MDNEWLINE);
-		    set_b_val(bp, MDNEWLINE, TRUE);
+		    set_local_b_val(bp, MDNEWLINE, TRUE);
 		    bp->b_bytecount += (B_COUNT) (ntext + 1);
 		    bp->b_linecount += 1;
 #if !SMALLER			/* tradeoff between codesize & data */
@@ -2674,8 +2673,7 @@ bfind(const char *bname, UINT bflag)
 	    if (!b_is_temporary(bp)
 		&& cryptkey != 0 && *cryptkey != EOS) {
 		(void) vl_strncpy(bp->b_cryptkey, cryptkey, sizeof(bp->b_cryptkey));
-		make_local_b_val(bp, MDCRYPT);
-		set_b_val(bp, MDCRYPT, TRUE);
+		set_local_b_val(bp, MDCRYPT, TRUE);
 	    } else
 		bp->b_cryptkey[0] = EOS;
 #endif

@@ -1,5 +1,5 @@
 .\" obligatory man page for vile
-.\" $Header: /users/source/archives/vile.vcs/RCS/vile.1,v 1.42 2010/06/12 18:19:22 tom Exp $
+.\" $Header: /users/source/archives/vile.vcs/RCS/vile.1,v 1.43 2015/09/07 14:15:42 tom Exp $
 .TH VILE 1
 .SH NAME
 vile, xvile, uxvile, lxvile \- \fBVI L\fRike \fBE\fRmacs
@@ -160,6 +160,10 @@ This requires a tagsfile created with the
 .IR ctags (1)
 command.  The option -T is equivalent, and can be used when X11 option
 parsing eats the -t.
+.IP -U
+overrides the $system-crlf variable, making new buffers start in dos mode.
+.IP -u
+overrides the $system-crlf variable, making new buffers start in nodos mode.
 .IP -v
 Invokes
 .I vile

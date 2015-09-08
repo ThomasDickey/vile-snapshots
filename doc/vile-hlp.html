@@ -1,5 +1,5 @@
 <!--
-  $Id: vile-hlp.html,v 1.92 2015/01/02 15:22:22 tom Exp $
+  $Id: vile-hlp.html,v 1.95 2015/09/07 14:09:44 tom Exp $
 -->
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN">
 
@@ -766,8 +766,8 @@
   conflict (much) with traditional use of '.', since by definition,
   the sequence "u." is (almost) always identical to "uu", and the
   latter is more easily typed. (Credit goes to the designers of
-  "nvi" for this trick.) (BTW, the one case i know of where "u." is
-  not identical to "uu" is when putting back the contents of the
+  "nvi" for this trick.) (the one case I know of where "u." is not
+  identical to "uu" is when putting back the contents of the
   numbered registers: the sequence "1pu.u.u.u. would successively
   insert the contents of "1, "2, "3, "4, and "5, allowing you to
   choose the "correct" register. This sequence no longer works. You
@@ -2344,7 +2344,11 @@ $ vile
       <p>When buffers representing non-existent files are created
       they will inherit the line-style of the operating system
       (LF-only on UNIX and VMS, CRLF-style on DOS derivatives)
-      regardless of the global setting of dos mode.</p>
+      regardless of the global setting of dos mode. However, even
+      this can be overridden using the <code>-u</code> and
+      <code>-U</code> options, which preset the
+      <code>$system-crlf</code> variable used to initialize dos
+      mode.</p>
 
       <p>Setting dos mode makes editing binary files
       unreliable.</p>
@@ -6026,6 +6030,22 @@ unbind-selmode-key
     </tr>
 
     <tr>
+      <td><a name="modevar-system-crlf" id=
+      "modevar-system-crlf">$system-crlf</a></td>
+
+      <td>the default value for dos mode, which can be preset using
+      <code>-u</code> or <code>-U</code> options</td>
+    </tr>
+
+    <tr>
+      <td><a name="modevar-system-name" id=
+      "modevar-system-name">$system-name</a></td>
+
+      <td>returns the operating system name shown in the
+      <code>version</code> command</td>
+    </tr>
+
+    <tr>
       <td><a name="modevar-term-cols" id=
       "modevar-term-cols">$term-cols</a></td>
 
@@ -6844,8 +6864,8 @@ unbind-selmode-key
   <p><a name="completion-params" id="completion-params">The
   &amp;get-completion function takes two arguments.</a> The first
   is a category (one of "buffer", "command", "directory",
-  "filename" or "tags"). The second is an initial value to
-  complete.</p>
+  "filename", "register" or "tags"). The second is an initial value
+  to complete.</p>
 
   <p><a name="lookup-params" id="lookup-params">The &amp;lookup
   function takes two arguments.</a> The first is a keyword and the

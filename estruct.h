@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.741 2015/03/13 08:34:28 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.745 2015/09/07 00:54:57 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -655,6 +655,7 @@ typedef unsigned short	mode_t;
 #define OPT_POPUP_MSGS  !SMALLER		/* popup-msgs mode */
 #define OPT_POSFORMAT   !SMALLER		/* position-format */
 #define OPT_REBIND      !SMALLER		/* permit rebinding of keys at run-time	*/
+#define OPT_REGS_CMPL   !SMALLER		/* name-completion for registers */
 #define OPT_SHOW_WHICH	!SMALLER		/* which-source, etc. */
 #define OPT_TAGS_CMPL   (!SMALLER && OPT_TAGS)	/* name-completion for tags */
 #define OPT_TERMCHRS    !SMALLER		/* set/show-terminal */
@@ -1091,6 +1092,7 @@ extern void endofDisplay(void);
 #define CLIP_KCHR  ';'
 #define SEL_KCHR   '.'
 #define KEYST_KCHR '<'
+#define UNAME_KCHR '@'
 
 #define	NBLOCK	16			/* line block chunk size	*/
 #define MINWLNS	3			/* min # lines, window/screen	*/
@@ -1163,14 +1165,16 @@ extern void endofDisplay(void);
 #define isLegalExp(s,x) ((s = (x)) != 0 && !isErrorVal(s))
 
 /* protect against losing namespaces */
+#undef	VL_ERROR
 #undef	FALSE
 #undef	TRUE
 #undef	ABORT
 #undef	SORTOFTRUE
 
-#define FALSE	0			/* False, no, bad, etc.		*/
-#define TRUE	1			/* True, yes, good, etc.	*/
-#define ABORT	2			/* Death, ESC, abort, etc.	*/
+#define VL_ERROR	-1		/* Error			*/
+#define FALSE		0		/* False, no, bad, etc.		*/
+#define TRUE		1		/* True, yes, good, etc.	*/
+#define ABORT		2		/* Death, ESC, abort, etc.	*/
 #define	SORTOFTRUE	3		/* really!	*/
 
 /* keystroke replay states */
@@ -1361,6 +1365,7 @@ typedef enum {
 	, PT_FILE
 	, PT_INT
 	, PT_MODE
+	, PT_REG
 	, PT_STR
 	, PT_VAR
 #if OPT_MAJORMODE
@@ -2123,8 +2128,7 @@ typedef struct {
 	for (vals = get_submode_vals(bp, n = m); vals != 0; vals = get_submode_valx(bp, m, &n))
 #else
 #define is_c_mode(bp) (b_val(bp,MDCMOD))
-#define fix_cmode(bp,value)	make_local_b_val(bp, MDCMOD), \
-				set_b_val(bp, MDCMOD, value)
+#define fix_cmode(bp,value)	set_local_b_val(bp, MDCMOD, value)
 #define for_each_modegroup(bp,n,m,vals) vals = bp->b_values.bv;
 #endif
 
@@ -2310,6 +2314,10 @@ typedef struct	BUFFER {
 #define is_local_b_val(bp,which)  \
 	is_local_val(bp->b_values.bv,which)
 
+#define set_local_b_val(bp,mode,value) \
+		make_local_b_val(bp, mode), \
+		set_b_val(bp, mode, value)
+
 #define is_empty_buf(bp) (lforw(buf_head(bp)) == buf_head(bp))
 
 #define b_dot     b_wtraits.w_dt
@@ -2338,8 +2346,7 @@ typedef struct	BUFFER {
 
 #define COPY_B_VAL(dst,src,val) \
 	if (is_local_b_val(src, val)) { \
-	    make_local_b_val(dst, val); \
-	    set_b_val(dst, val, b_val(src, val)); \
+	    set_local_b_val(dst, val, b_val(src, val)); \
 	}
 
 /* values for b_flag */

@@ -1,7 +1,7 @@
 /*
  * Main program and I/O for external vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/RCS/builtflt.c,v 1.96 2015/01/02 15:16:15 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/builtflt.c,v 1.97 2015/09/07 00:58:07 tom Exp $
  *
  */
 
@@ -402,8 +402,7 @@ find_filtermsgs(void)
 {
     BUFFER *bp = make_ro_bp(FLTMSGS_BufName, BFINVS);
     if (bp != 0) {
-	make_local_b_val(bp, MDFILTERMSGS);
-	b_val(bp, MDFILTERMSGS) = FALSE;
+	set_local_b_val(bp, MDFILTERMSGS, FALSE);
     }
     return bp;
 }

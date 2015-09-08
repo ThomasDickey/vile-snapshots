@@ -15,7 +15,7 @@
  * in handy.
  *				- kev 4/7/1998
  *
- * $Header: /users/source/archives/vile.vcs/RCS/api.c,v 1.51 2015/03/13 10:23:06 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/api.c,v 1.52 2015/09/07 00:53:13 tom Exp $
  */
 
 #include "estruct.h"
@@ -53,16 +53,8 @@ linsert_chars(char *s, int len)
 	if (s[len - 1] == '\n') {
 	    if (len > 1)
 		nlsuppress = TRUE;
-	    if (!mdnewline) {
-		make_local_b_val(curbp, MDNEWLINE);
-		set_b_val(curbp, MDNEWLINE, TRUE);
-	    }
-	} else {
-	    if (mdnewline) {
-		make_local_b_val(curbp, MDNEWLINE);
-		set_b_val(curbp, MDNEWLINE, FALSE);
-	    }
 	}
+	set_local_b_val(curbp, MDNEWLINE, !mdnewline);
     }
 
     if (s[len - 1] == '\n') {
@@ -70,8 +62,7 @@ linsert_chars(char *s, int len)
 	    && lforw(DOT.l) == buf_head(curbp)
 	    && DOT.o == llength(DOT.l)) {
 	    nlsuppress = TRUE;
-	    make_local_b_val(curbp, MDNEWLINE);
-	    set_b_val(curbp, MDNEWLINE, TRUE);
+	    set_local_b_val(curbp, MDNEWLINE, TRUE);
 	}
 	if (!nlsuppress) {
 
@@ -207,8 +198,7 @@ api_setup_fake_win(VileBuf * vbp, int do_delete)
 	    vbp->ndel = 0;
 	    if (status == FALSE
 		|| (lforw(DOT.l) == buf_head(curbp) && DOT.o >= llength(DOT.l))) {
-		make_local_b_val(curbp, MDNEWLINE);
-		set_b_val(curbp, MDNEWLINE, FALSE);
+		set_local_b_val(curbp, MDNEWLINE, FALSE);
 	    }
 	}
     }
@@ -354,8 +344,7 @@ api_dotinsert(VileBuf * vbp, char *text, int len)
 	vbp->ndel = 0;
 	if (status == FALSE
 	    || (lforw(DOT.l) == buf_head(curbp) && DOT.o >= llength(DOT.l))) {
-	    make_local_b_val(curbp, MDNEWLINE);
-	    set_b_val(curbp, MDNEWLINE, FALSE);
+	    set_local_b_val(curbp, MDNEWLINE, FALSE);
 	}
     }
     vbp->changed = 1;

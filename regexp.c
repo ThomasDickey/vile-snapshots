@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/regexp.c,v 1.213 2015/01/19 20:44:44 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/regexp.c,v 1.214 2015/09/06 21:32:25 tom Exp $
  *
  * Copyright 2005-2013,2015 Thomas E. Dickey and Paul G. Fox
  *
@@ -929,8 +929,10 @@ regcomp(const char *exp_text, size_t exp_len, int magic)
     regnpar = 1;
     regcode = r->program;
     regc(REGEXP_MAGIC);
-    if (reg(0, &flags) == NULL)
+    if (reg(0, &flags) == NULL) {
+	free(r);
 	return (NULL);
+    }
 
     /* Dig out information for optimizations. */
     r->regstart = -1;		/* Worst-case defaults. */

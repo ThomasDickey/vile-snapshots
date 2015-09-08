@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.739 2015/02/01 19:40:42 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.742 2015/09/06 20:25:25 tom Exp $
  *
  */
 
@@ -482,6 +482,7 @@ extern char * render_int (TBUFF **rp, int i);
 extern char * render_long (TBUFF **rp, long i);
 extern char * render_ulong (TBUFF **rp, ULONG i);
 extern char * skip_space_tab(char *src);
+extern const char * status2s (int val);
 extern const char * skip_cblanks (const char *str);
 extern const char * skip_cnumber (const char *str);
 extern const char * skip_cstring (const char *str);
@@ -494,6 +495,7 @@ extern int mac_literalarg (TBUFF **tok);
 extern int mac_token (TBUFF **tok);
 extern int macroize (TBUFF **p, TBUFF *src, int skip);
 extern int must_quote_token (const char * values, size_t last);
+extern int s2status (const char *val);
 extern int scan_bool (const char *s );
 extern int toktyp (const char *tokn);
 extern int vl_lookup_statevar(const char *vname);
@@ -749,7 +751,7 @@ extern int mlreply2 (const char *prompt, TBUFF **buf);
 extern int mlreply_no_bs (const char *prompt, char *buf, UINT bufn);
 extern int mlreply_no_opts (const char *prompt, char *buf, UINT bufn);
 extern int mlreply_reg (const char *prompt, char *cbuf, int *retp, int at_dft);
-extern int mlreply_reg_count (int state, int *retp, int *next);
+extern int mlreply_reg_count (const char *cmd, int state, int *retp, int *next);
 extern int mlyesno (const char *prompt);
 extern int no_completion (DONE_ARGS);
 extern int read_msgline (int flag);
@@ -866,6 +868,11 @@ extern int lins_chars (int n, int c);
 #else
 #define ldel_chars(n, kflag) ldel_bytes(n, kflag)
 #define lins_chars(n, c)     lins_bytes(n, c)
+#endif
+
+#if OPT_REGS_CMPL
+extern KBD_OPTIONS regs_kbd_options(void);
+extern int regs_completion(DONE_ARGS);
 #endif
 
 #if SMALLER	/* cancel neproto.h */

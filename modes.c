@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.440 2014/10/02 00:09:02 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.441 2015/09/07 01:00:57 tom Exp $
  *
  */
 
@@ -596,8 +596,7 @@ settab(int f, int n)
     }
 #endif
     if (f && n >= 1) {
-	make_local_b_val(curbp, val);
-	set_b_val(curbp, val, n);
+	set_local_b_val(curbp, val, n);
 	for_each_visible_window(wp) {
 	    if (wp->w_bufp == curbp)
 		wp->w_flag |= WFHARD;
@@ -620,8 +619,7 @@ int
 setfillcol(int f, int n)
 {
     if (f) {
-	make_local_b_val(curbp, VAL_FILL);
-	set_b_val(curbp, VAL_FILL, n);
+	set_local_b_val(curbp, VAL_FILL, n);
     }
     if (!global_b_val(MDTERSE) || !f)
 	mlwrite("[Fill column is %d, and is %s]",
@@ -2479,10 +2477,8 @@ set_record_sep(BUFFER *bp, RECORD_SEP code)
     (bp)->b_recordsep_str = recordsep;
     (bp)->b_recordsep_len = (int) strlen(get_record_sep(bp));
 
-    make_local_b_val(bp, MDDOS);
-    make_local_b_val(bp, VAL_RECORD_SEP);
-    set_b_val(bp, MDDOS, (code == RS_CRLF));
-    set_b_val(bp, VAL_RECORD_SEP, code);
+    set_local_b_val(bp, MDDOS, (code == RS_CRLF));
+    set_local_b_val(bp, VAL_RECORD_SEP, code);
     b_clr_counted(bp);
     (void) bsizes(bp);
     relist_settings();

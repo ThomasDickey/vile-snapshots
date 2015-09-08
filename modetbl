@@ -11,7 +11,7 @@
 #
 # The modes are table entries in the BUFFER and WINDOW structures.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.317 2013/07/07 21:39:51 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.319 2015/09/07 11:56:28 tom Exp $
 #
 #
 # Mode-table entries.  Capitalized letters are used for abbreviations.
@@ -242,6 +242,7 @@ bool
 	"get-it-all"	GET_IT_ALL	1		"true if full-token when getting $identifier, etc., from screen"
 	"modified"	MODIFIED	1		"is current buffer modified?"
 	"pending"	PENDING		1		"type ahead pending flag"
+	"system-crlf"	SYSTEM_CRLF	1		"system uses CRLF by default"
 	"term-resizes"	TERM_RESIZES	1		"true if terminal can be resized"
 enum
 	"cmd-encoding"	CMD_ENCODING	OPT_MULTIBYTE	"terminal's encoding support"
@@ -346,6 +347,7 @@ string
 	"sres"		SRES		1		"current screen resolution"
 	"startup-file"	STARTUP_FILE	1		"the name of the startup-file (e.g., .vilerc)"
 	"startup-path"	STARTUP_PATH	1		"where to find the startup-file (e.g., .)"
+	"system-name"	SYSTEM_NAME	1		"operating system name"
 	"title"		TITLE		OPT_TITLE	"window title"
 	"title-format"	TITLEFORMAT	OPT_TITLE	"window title format"
 	"version"	VERSION		1		"current version number"
@@ -620,6 +622,7 @@ string
 "integer"	PT_INT
 "majormode"	PT_MAJORMODE	OPT_MAJORMODE
 "mode"		PT_MODE
+"register"	PT_REG
 "string"	PT_STR
 "variable"	PT_VAR
 

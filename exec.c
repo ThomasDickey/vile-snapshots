@@ -4,7 +4,7 @@
  *	original by Daniel Lawrence, but
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.356 2015/02/01 21:19:03 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.358 2015/09/06 20:36:26 tom Exp $
  *
  */
 
@@ -826,7 +826,7 @@ execute_named_command(int f, int n)
 	int last = maybe_num ? 2 : 1;
 
 	while (!end_of_cmd() && (that < last)) {
-	    status = mlreply_reg_count(that, &num, &that);
+	    status = mlreply_reg_count(fnc2engl(cfp), that, &num, &that);
 	    if (status == ABORT)
 		return status;
 	    else if (status != TRUE)
@@ -2854,16 +2854,13 @@ dobuf(BUFFER *bp, int limit, int real_cmd_count)
 	} else {
 	    switch (status) {
 	    case FALSE:
-		tb_scopy(&last_macro_result, "FALSE");
-		break;
+		/* FALLTHRU */
 	    case TRUE:
-		tb_scopy(&last_macro_result, "TRUE");
-		break;
+		/* FALLTHRU */
 	    case ABORT:
-		tb_scopy(&last_macro_result, "ABORT");
-		break;
+		/* FALLTHRU */
 	    case SORTOFTRUE:
-		tb_scopy(&last_macro_result, "SORTOFTRUE");
+		tb_scopy(&last_macro_result, status2s(status));
 		break;
 	    default:
 		tb_error(&last_macro_result);

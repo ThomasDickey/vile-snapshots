@@ -1,10 +1,23 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20150820 (q)
+ 20150907 (q)
 	> Brendan O'Dea:
 	+ corrected initialization for Vileserv in vileperl.rc (report by
 	  Chris Green).
 	> Tom Dickey:
+	+ add command-line options -u and -U to set $system-crlf variable
+	  before the "unnamed" buffer is initialized.
+	+ add $system-crlf to allow override of compiled-in default for "dos"
+	  mode so that winvile can be told to create the "unnamed" buffer with
+	  linefeed endings (Savannah #44773).
+	+ add variable $system-name to show the name used in version message
+	+ add checks after write-hook is run in case the script set $return to
+	  anything except true or sortoftrue, or if the script set the buffer
+	  to "view".  In either case, do not proceed to write the buffer
+	  (report by Matthew White).
+	+ modify prompts for register name to support name-completion, and
+	  recognize "register" as a typed macro-parameter (prompted by
+	  discussion with Wayne Cuddy).
 	+ modify configure macros to use the configured shell rather than just
 	  /bin/sh, to accommodate deprecation of non-POSIX shells such as that
 	  used in Solaris.
@@ -532,9 +545,9 @@ Changes for vile 9.9 (released ??? ??? ?? ????)
 	    add a -L option to help work around this.
 	  + CF_STRUCT_TERMIOS - relax ncurses-oriented change to make this work
 	    as fixup after CF_XOPEN_SOURCE
-	  + CF_TERMCAP_LIBS - modify the workaround for old AIX system (from
-	    1997 or before) to not set $cf_cv_termlib if it succeeds in finding
-	    initscr in libcurses.  Doing that confused a check in tin's
+	  + CF_TERMCAP_LIBS - modify the workaround for old AIX system (e.g.,
+	    from 1997 or before) to not set $cf_cv_termlib if it succeeds in
+	    finding initscr in libcurses.  Doing that confused a check in tin's
 	    configure.in which looks at that variable to decide if
 	    termcap/terminfo library was found.  The check for tgoto in
 	    libtermcap on the next line is the actual check which is needed,

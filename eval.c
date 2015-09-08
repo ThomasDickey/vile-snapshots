@@ -2,7 +2,7 @@
  *	eval.c -- function and variable evaluation
  *	original by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.459 2015/03/13 09:31:49 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.463 2015/09/06 21:54:17 tom Exp $
  *
  */
 
@@ -946,11 +946,14 @@ default_mode_value(TBUFF **result, char *name)
     VWRAP vd;
     int mode_class, mode_name;
     struct VAL mode;
+    char *s;
 
     FindVar(name, &vd);
     switch (vd.v_type) {
     case VW_STATEVAR:
-	tb_scopy(result, init_state_value(vd.v_num));
+	s = init_state_value(vd.v_num);
+	tb_scopy(result, s);
+	free(s);
 	break;
     case VW_MODE:
 	memset(&args, 0, sizeof(args));
@@ -1098,6 +1101,9 @@ get_completion(TBUFF **result, const char *space, const char *value)
 	    code = mlreply_file("Filename: ", result,
 				FILEC_READ | FILEC_PROMPT, fname);
 	    tb_scopy(result, fname);
+	} else if (!strncmp(space, "register", len)) {
+	    code = kbd_reply("Register name: ", result, eol_history, '\n',
+			     regs_kbd_options(), regs_completion);
 	} else if (!strncmp(space, "tags", len)) {
 	    code = kbd_reply("Tag name: ", result, eol_history, '\n',
 			     tags_kbd_options(), tags_completion);
@@ -2702,6 +2708,11 @@ read_argument(TBUFF **paramp, const PARAM_INFO * info)
 		prompt = "Integer";
 		complete = complete_integer;
 		break;
+	    case PT_REG:
+		prompt = "Register";
+		flags = KBD_MAYBEC;
+		complete = regs_completion;
+		break;
 	    case PT_MODE:
 		prompt = "Mode";
 		flags = KBD_NOEVAL | KBD_LOWERC;
@@ -3146,6 +3157,59 @@ tokval(const char *tokn)
     result = (toktyp(tokn) == TOK_QUOTSTR) ? tokn + 1 : tokn;
 #endif
     return (result);
+}
+
+const char *
+status2s(int val)
+{
+    const char *result = error_val;
+    switch (val) {
+    case ABORT:
+	result = "ABORT";
+	break;
+    case FALSE:
+	result = "FALSE";
+	break;
+    case SORTOFTRUE:
+	result = "SORTOFTRUE";
+	break;
+    case TRUE:
+	result = "TRUE";
+	break;
+    }
+    return result;
+}
+
+int
+s2status(const char *val)
+{
+    int result = VL_ERROR;
+
+    if (val != error_val) {
+	if (is_truem(val)) {
+	    result = TRUE;
+	} else if (is_falsem(val)) {
+	    result = FALSE;
+	} else {
+	    char temp[12];
+	    char *next = 0;
+	    long test = strtol(val, &next, 0);
+	    size_t sz = strlen(val);
+	    if ((const char *) next != val && isEmpty(next)) {
+		result = (int) test;
+	    } else if (sz < sizeof(temp)) {
+		(void) mklower(strncpy0(temp, val, sizeof(temp)));
+		if (!strncmp(temp, "abort", sz)) {
+		    result = ABORT;
+		} else if (!strncmp(temp, "error", sz)) {
+		    result = VL_ERROR;
+		} else if (!strncmp(temp, "sortoftrue", sz)) {
+		    result = SORTOFTRUE;
+		}
+	    }
+	}
+    }
+    return result;
 }
 
 /*

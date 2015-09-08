@@ -22,7 +22,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.725 2015/01/02 15:20:58 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.727 2015/09/07 13:32:08 tom Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -658,6 +658,12 @@ MainProgram(int argc, char *argv[])
 		    add_cmdarg(opts_bp, "tag %s\n", GetArgVal(param));
 		    break;
 #endif
+		case 'U':
+		    set_global_b_val(MDDOS, system_crlf = TRUE);
+		    break;
+		case 'u':
+		    set_global_b_val(MDDOS, system_crlf = FALSE);
+		    break;
 		case 'v':	/* -v is view mode */
 		    b2printf(opts_bp, "set view\n");
 		    break;
@@ -832,8 +838,7 @@ MainProgram(int argc, char *argv[])
 #if OPT_ENCRYPT
 	if (*startkey != EOS) {
 	    vl_strncpy(bp->b_cryptkey, startkey, sizeof(bp->b_cryptkey));
-	    make_local_b_val(bp, MDCRYPT);
-	    set_b_val(bp, MDCRYPT, TRUE);
+	    set_local_b_val(bp, MDCRYPT, TRUE);
 	}
 #endif
 	if (ffp != 0) {
@@ -901,8 +906,7 @@ MainProgram(int argc, char *argv[])
 #if OPT_DOSFILES
     /* an empty non-existent buffer defaults to line-style
        favored by the OS */
-    make_local_b_val(bp, MDDOS);
-    set_b_val(bp, MDDOS, CRLF_LINES);
+    set_local_b_val(bp, MDDOS, system_crlf);
 #endif
     fix_cmode(bp, FALSE);
     swbuffer(bp);
@@ -1639,7 +1643,7 @@ init_mode_value(struct VAL *d, MODECLASS v_class, int v_which)
 	    setINT(MDAUTOWRITE, FALSE);		/* auto-write */
 	    setINT(MDBACKLIMIT, TRUE);	/* limit backspacing to insert point */
 	    setINT(MDCINDENT, FALSE);	/* C-style indent */
-	    setINT(MDDOS, CRLF_LINES);	/* on by default on DOS, off others */
+	    setINT(MDDOS, system_crlf);
 	    setINT(MDIGNCASE, FALSE);	/* exact matches */
 	    setINT(MDINS_RECTS, FALSE);		/* insert-mode for rectangles */
 	    setINT(MDLOADING, FALSE);	/* asynchronously loading a file */

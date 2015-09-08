@@ -1,7 +1,7 @@
 /*	Crypt:	Encryption routines for MicroEMACS
  *		written by Dana Hoggatt and Paul Fox.
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/ecrypt.c,v 1.26 2012/07/17 00:17:14 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/ecrypt.c,v 1.27 2015/09/06 21:34:39 tom Exp $
  *
  */
 
@@ -361,16 +361,17 @@ main(int argc, char **argv)
 		case 'k':
 		    if (*param == 0)
 			param = argv[++n];
-		    if (param == 0)
+		    if (param == 0) {
 			usage(prog);
-		    if (strlen(param) > KEY_LIMIT - 1) {
+		    } else if (strlen(param) > KEY_LIMIT - 1) {
 			fprintf(stderr, "%s: excessive key length\n", prog);
 			exit(BADEXIT);
+		    } else {
+			(void) strncpy(key, param, (size_t) KEY_LIMIT);
+			(void) memset(param, '.', strlen(param));
+			key[KEY_LIMIT - 1] = '\0';
+			param = empty;
 		    }
-		    (void) strncpy(key, param, (size_t) KEY_LIMIT);
-		    (void) memset(param, '.', strlen(param));
-		    key[KEY_LIMIT - 1] = '\0';
-		    param = empty;
 		    break;
 		case 'm':
 		    /* -m for mailmode:  leaves headers intact (up to first

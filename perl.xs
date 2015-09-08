@@ -13,7 +13,7 @@
  * vile.  The file api.c (sometimes) provides a middle layer between
  * this interface and the rest of vile.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.134 2015/03/13 08:40:33 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.136 2015/09/06 21:43:45 tom Exp $
  */
 
 #ifdef __GNUC__
@@ -1668,7 +1668,6 @@ svgettors(SV **svp, VileBuf *vbp, char *rsstr, STRLEN rslen)
 		fidx = 0;
 	    }
 	    if (lp == buf_head(curbp) || len + (B_COUNT) (rsidx - 1) >= reglen) {
-		off = fidx;
 		len += (B_COUNT) (rsidx - 1);
 		goto have_length;
 	    }
@@ -1682,7 +1681,6 @@ svgettors(SV **svp, VileBuf *vbp, char *rsstr, STRLEN rslen)
 
 	if (rsidx >= rslen) {
 	    len += (B_COUNT) (rslen - 1);
-	    off = fidx;
 	    goto have_length;
 	}
 	lp = cont_lp;
@@ -1694,13 +1692,11 @@ have_length:
        as many additional newlines as we can */
     if (orig_rslen == 0) {
 	lp = lforw(lp);
-	off = 0;
 	while (   ! (lp == buf_head(curbp) || len >= reglen)
 	       && llength(lp) == 0)
 	{
 	    len += len_rs;
 	    lp = lforw(lp);
-	    off = 0;
 	}
     }
 
@@ -1761,6 +1757,7 @@ FindMode(char *mode, int isglobal, VALARGS *args)
     const char *value;
     char *result = 0;
     TBUFF *temp = 0;
+    char new_mode[NLINE];
 
     if (literal)
 	status = find_mode(curbp, mode, isglobal, args);
@@ -1769,7 +1766,6 @@ FindMode(char *mode, int isglobal, VALARGS *args)
 	value = string_mode_val(args);
     } else {
 	if (literal) {
-	    char new_mode[NLINE];
 	    new_mode[0] = '$';
 	    vl_strncpy(new_mode+1, mode, sizeof(new_mode)-1);
 	    value = tokval(new_mode);

@@ -3,7 +3,7 @@
  * and mark.  Some functions are commands.  Some functions are just for
  * internal use.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/region.c,v 1.166 2015/03/13 09:31:09 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/region.c,v 1.167 2015/09/07 01:02:26 tom Exp $
  *
  */
 
@@ -1421,8 +1421,7 @@ encode_region(void)
 		videoattribute = 0;
 		attributeregion();
 #if OPT_MAJORMODE
-		make_local_b_val(bp, MDHILITE);
-		set_b_val(bp, MDHILITE, FALSE);
+		set_local_b_val(bp, MDHILITE, FALSE);
 #endif
 
 		DOT = work.enc_region.r_orig;

@@ -46,7 +46,7 @@
  * vile will choose some appropriate fallback (such as underlining) if
  * italics are not available.
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/manfilt.c,v 1.68 2014/10/17 00:35:42 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/manfilt.c,v 1.69 2015/09/06 21:29:33 tom Exp $
  *
  */
 
@@ -572,9 +572,7 @@ ansi_escape(FILE *ifp, int last_code)
 	    digits++;
 	} else if (c == ';' || (c >= 0x40 && c <= 0x7e)) {
 	    if (nparams < MAXPARAMS) {
-		if (!digits) {
-		    value = -1;
-		} else {
+		if (digits) {
 		    params[nparams++] = value;
 		}
 	    }

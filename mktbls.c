@@ -15,7 +15,7 @@
  * by Tom Dickey, 1993.    -pgf
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/mktbls.c,v 1.191 2015/02/01 21:33:42 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/mktbls.c,v 1.192 2015/09/06 21:27:20 tom Exp $
  *
  */
 
@@ -1582,7 +1582,6 @@ dump_statevars(void)
 	"extern const char *const statevars[];",
 	"#endif",
 	"",
-	""
 	"typedef enum {",
     };
     static const char *const middle1[] =
