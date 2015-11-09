@@ -22,7 +22,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.727 2015/09/07 13:32:08 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.728 2015/11/09 00:07:57 tom Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -1230,7 +1230,8 @@ get_executable_dir(void)
     if (last_slash(prog_arg) == NULL) {
 	/* If there are no slashes, we can guess where we came from,
 	 */
-	if ((s = cfg_locate(prog_arg, FL_PATH | FL_EXECABLE)) != 0)
+	if ((s = cfg_locate(prog_arg, FL_PATH | FL_EXECABLE | FL_INSECURE))
+	    != 0)
 	    s = strmalloc(s);
     } else {
 	/* if there _are_ slashes, then argv[0] was either

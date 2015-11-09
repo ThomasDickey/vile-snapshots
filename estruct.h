@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.745 2015/09/07 00:54:57 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.746 2015/11/08 23:28:13 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -1420,6 +1420,7 @@ typedef enum {
 #define FL_PATH      iBIT(7)	/* look in environment $PATH */
 #define FL_LIBDIR    iBIT(8)	/* look in environment $VILE_LIBDIR_PATH */
 #define FL_ALWAYS    iBIT(9)	/* file is not a script, but data */
+#define FL_INSECURE  iBIT(10)	/* do not care if insecure */
 
 #define FL_ANYWHERE  (FL_CDIR|FL_HOME|FL_EXECDIR|FL_STARTPATH|FL_PATH|FL_LIBDIR)
 

@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.372 2015/09/07 00:53:33 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.373 2015/11/08 23:51:45 tom Exp $
  *
  */
 
@@ -1697,7 +1697,8 @@ check_file_access(char *fname, UINT mode)
 	    }
 	}
 #endif
-	if (doit) {
+
+	if (doit && !(mode & FL_INSECURE)) {
 	    char *dname = (char *) malloc(NFILEN + strlen(fname) + 10);
 	    char *leaf;
 
@@ -1797,10 +1798,14 @@ char *
 cfg_locate(char *fname, UINT which)
 {
     char *sp;
-    UINT mode = (which & (FL_ALWAYS | FL_EXECABLE | FL_WRITEABLE | FL_READABLE));
+    UINT mode = (which & (FL_ALWAYS |
+			  FL_EXECABLE |
+			  FL_WRITEABLE |
+			  FL_READABLE |
+			  FL_INSECURE));
 
 #define FL_BIT(name) ((which & FL_##name) ? " " #name : "")
-    TRACE((T_CALLED "cfg_locate('%s',%s%s%s%s%s%s%s%s%s%s)\n", NonNull(fname),
+    TRACE((T_CALLED "cfg_locate('%s',%s%s%s%s%s%s%s%s%s%s%s)\n", NonNull(fname),
 	   FL_BIT(EXECABLE),
 	   FL_BIT(WRITEABLE),
 	   FL_BIT(READABLE),
@@ -1810,7 +1815,8 @@ cfg_locate(char *fname, UINT which)
 	   FL_BIT(STARTPATH),
 	   FL_BIT(PATH),
 	   FL_BIT(LIBDIR),
-	   FL_BIT(ALWAYS)));
+	   FL_BIT(ALWAYS),
+	   FL_BIT(INSECURE)));
 
     /* take care of special cases */
     if (!fname || !fname[0] || isSpace(fname[0]))

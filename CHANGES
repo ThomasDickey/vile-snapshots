@@ -1,5 +1,11 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
+ 20151108 (r)
+	> Tom Dickey:
+	+ make special case when locating the copy of vile which was run, to
+	  not warn and skip because it was found in a group-writable
+	  directory (discussion with Steve Lembark).
+
  20150907 (q)
 	> Brendan O'Dea:
 	+ corrected initialization for Vileserv in vileperl.rc (report by
