@@ -1,9 +1,10 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.139 2014/03/30 18:22:19 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.140 2015/12/20 17:16:19 tom Exp $
  */
 
 #ifndef FILTERS_H
 #define FILTERS_H 1
+/* *INDENT-OFF* */
 
 #ifdef __cplusplus
 extern "C" {
@@ -155,7 +156,8 @@ extern FILTER_DEF filter_def;
  */
 #if defined(FLEX_SCANNER) && defined(FLEX_BETA)
 #define YY_SKIP_YYWRAP
-#define USE_LEXWRAP(name) static int name(void) { return 1; }
+#define yywrap() private_yywrap()
+#define USE_LEXWRAP(name) static int private_yywrap(void) { return 1; }
 #else
 #define USE_LEXWRAP(name) /* nothing */
 #endif
@@ -241,8 +243,12 @@ extern void yyset_debug (int bdebug);
 extern void yyset_in (FILE * in_str);
 extern void yyset_lineno (int line_number);
 extern void yyset_out (FILE * out_str);
-#if !defined(YY_FLEX_SUBMINOR_VERSION) || (YY_FLEX_SUBMINOR_VERSION < 37)
+#if !defined(YY_FLEX_SUBMINOR_VERSION)
 extern int yyget_leng (void);
+#elif (YY_FLEX_MINOR_VERSION < 6) && (YY_FLEX_SUBMINOR_VERSION < 37)
+extern yy_size_t yyget_leng (void);
+#elif (YY_FLEX_MINOR_VERSION < 6)
+extern yy_size_t yyget_leng (void);
 #endif
 /* there's also warnings for unused 'yyunput()', but I don't see a fix */
 /* flex's skeleton includes <unistd.h> - no particular reason apparent */
@@ -391,5 +397,7 @@ extern void flt_puts(const char *string, int length, const char *attribute);
 #ifdef __cplusplus
 }
 #endif
+
+/* *INDENT-ON* */
 
 #endif /* FILTERS_H */
