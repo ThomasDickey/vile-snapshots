@@ -1,7 +1,7 @@
 /*	Spawn:	various DOS access commands
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.215 2015/09/07 01:06:19 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.216 2016/07/13 09:03:29 tom Exp $
  *
  */
 
@@ -1444,6 +1444,7 @@ find_dirs_only(char *cmd, FINDINFO * pinfo, int prepend_bang)
     const char *path, *fnname;
     char *rslt, buf[NFILEN * 2];
     const char *qdelim;
+    int first = TRUE;
 
     fnname = "find_dirs_only";
     outlen = sizeof(buf);
@@ -1464,7 +1465,7 @@ find_dirs_only(char *cmd, FINDINFO * pinfo, int prepend_bang)
     path = pinfo->dir_list;
 
     /* add directory list to find command */
-    while ((path = parse_pathlist(path, buf)) != NULL) {
+    while ((path = parse_pathlist(path, buf, &first)) != NULL) {
 	if (!add_token_to_cmd(&rslt, &outidx, &outlen, buf, fnname))
 	    return (NULL);
     }
@@ -1576,6 +1577,7 @@ find_all_files(char *cmd, FINDINFO * pinfo, int prepend_bang)
     const char *path, *fnname;
     char *xargstr, **vec, *rslt, buf[NFILEN * 2];
     const char *qdelim;
+    int first = TRUE;
 
     fnname = "find_all_files";
     if ((xargstr = extract_wildcards(cmd, &vec, &vecidx, fnname)) == NULL)
@@ -1618,7 +1620,7 @@ find_all_files(char *cmd, FINDINFO * pinfo, int prepend_bang)
     path = pinfo->dir_list;
 
     /* add directory list to find command */
-    while ((path = parse_pathlist(path, buf)) != NULL) {
+    while ((path = parse_pathlist(path, buf, &first)) != NULL) {
 	if (!add_token_to_cmd(&rslt, &outidx, &outlen, buf, fnname)) {
 	    free_vector(&vec, vecidx);
 	    return (NULL);

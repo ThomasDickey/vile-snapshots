@@ -17,12 +17,12 @@
  * distributable status.  This version of vile is distributed under the
  * terms of the GNU Public License (see COPYING).
  *
- * Copyright (c) 1992-2014,2015 by Paul Fox and Thomas Dickey
+ * Copyright (c) 1992-2015,2016 by Paul Fox and Thomas Dickey
  *
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.728 2015/11/09 00:07:57 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.731 2016/07/14 00:45:24 tom Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -1128,6 +1128,12 @@ main_loop(void)
 	kbd_mac_check();
 	c = kbd_seq();
 
+	/*
+	 * Now that we have started a command, reset "$_".  If we did this at a
+	 * lower level, we could not test for it in macros, etc.
+	 */
+	tb_scopy(&last_macro_result, status2s(TRUE));
+
 	/* reset the contents of the command/status line */
 	if (kbd_length() > 0) {
 	    mlerase();
@@ -1603,6 +1609,9 @@ init_mode_value(struct VAL *d, MODECLASS v_class, int v_which)
 #endif
 #ifdef GVAL_ICURSOR
 	    setTXT(GVAL_ICURSOR, "0");	/* no insertion cursor */
+#endif
+#ifdef GVAL_KEEP_POS
+	    setINT(GVAL_KEEP_POS, KPOS_VILE);
 #endif
 #ifdef GVAL_MCOLOR
 	    setINT(GVAL_MCOLOR, VAREV);		/* show in reverse */

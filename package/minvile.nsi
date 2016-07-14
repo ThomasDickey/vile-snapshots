@@ -1,4 +1,4 @@
-; $Id: minvile.nsi,v 1.26 2015/11/02 09:52:25 tom Exp $
+; $Id: minvile.nsi,v 1.27 2016/07/14 00:45:04 tom Exp $
 ; Script originally generated with the Venis Install Wizard, but customized.
 ; The Inno Setup script is preferred; but this can be built via cross-compiling.
 
@@ -28,7 +28,7 @@ SetCompressor /SOLID lzma
 
 VIAddVersionKey ProductName "${SUBKEY}"
 VIAddVersionKey CompanyName "Thomas E. Dickey"
-VIAddVersionKey LegalCopyright "© 1997-2014,2015, Thomas E. Dickey"
+VIAddVersionKey LegalCopyright "© 1997-2015,2016, Thomas E. Dickey"
 VIAddVersionKey FileDescription "WinVile Installer (MinGW)"
 VIAddVersionKey FileVersion "${VERSION}"
 VIAddVersionKey ProductVersion "${VERSION}"

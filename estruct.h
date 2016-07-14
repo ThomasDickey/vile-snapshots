@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.746 2015/11/08 23:28:13 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.748 2016/03/17 09:19:29 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -643,6 +643,7 @@ typedef unsigned short	mode_t;
 #define OPT_HOOKS	!SMALLER		/* read/write hooks, etc. */
 #define OPT_ISO_8859    !SMALLER		/* ISO 8859 characters */
 #define OPT_ISRCH       !SMALLER		/* Incremental searches */
+#define OPT_KEEP_POS    !SMALLER		/* keep-position mode */
 #define OPT_LINEWRAP    !SMALLER		/* line-wrap mode */
 #define OPT_MAJORMODE   !SMALLER		/* majormode support */
 #define OPT_MACRO_ARGS	(!SMALLER && OPT_EVAL)	/* macro argument parsing */
@@ -743,6 +744,7 @@ typedef unsigned short	mode_t;
 #define OPT_FORBUFFERS_CHOICES     !SMALLER
 #define OPT_HILITE_CHOICES         (OPT_ENUM_MODES && OPT_HILITEMATCH)
 #define OPT_KBD_ENCODING_CHOICES   OPT_MULTIBYTE
+#define OPT_KEEP_POS_CHOICES       !SMALLER
 #define OPT_LOOKUP_CHOICES         !SMALLER
 #define OPT_MMQUALIFIERS_CHOICES   OPT_MAJORMODE
 #define OPT_PARAMTYPES_CHOICES     OPT_MACRO_ARGS
@@ -1329,6 +1331,12 @@ typedef enum {
 			      : ((b_val(bp, VAL_FILE_ENCODING) == enc_AUTO) \
 			          ? enc_8BIT \
 			          : b_val(bp, VAL_FILE_ENCODING)))
+
+typedef enum {
+    	KPOS_VILE = 0
+	, KPOS_NVI
+	, KPOS_VI
+} KEEP_POS_CHOICES;
 
 typedef enum {
 	MMQ_ANY = 0
@@ -2862,6 +2870,7 @@ typedef struct {
 #define ZERO    argBIT(12)	/* allow 0 to be given as a line number */
 #define OPTREG  argBIT(13)	/* allow optional register-name */
 #define USEREG  argBIT(14)	/* expect register-name */
+#define FROM_TO argBIT(15)	/* % is all lines */
 #define FILES   (XFILE | EXTRA)	/* multiple extra files allowed */
 #define WORD1   (EXTRA | NOSPC)	/* one extra word allowed */
 #define FILE1   (FILES | NOSPC)	/* 1 file allowed, defaults to current file */
@@ -2870,8 +2879,8 @@ typedef struct {
 #define RANGE   (FROM  | TO)	/* range of linespecs allowed */
 
 /* these flags determine the type of cu.* */
-#define typBIT(n) cmdBIT(n+28)	/* ...to simplify adding bits */
-/* bits 27-29 */
+#define typBIT(n) cmdBIT(n+29)	/* ...to simplify adding bits */
+/* bits 29-31 */
 #define CMD_FUNC 0L		/* this is the default (CmdFunc) */
 #define CMD_PROC typBIT(0)	/* named procedure (BUFFER *) */
 #define CMD_OPER typBIT(1)	/* user-defined operator */

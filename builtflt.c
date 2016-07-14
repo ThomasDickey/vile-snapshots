@@ -1,7 +1,7 @@
 /*
  * Main program and I/O for external vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/RCS/builtflt.c,v 1.97 2015/09/07 00:58:07 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/builtflt.c,v 1.98 2016/07/13 09:03:29 tom Exp $
  *
  */
 
@@ -214,9 +214,10 @@ load_filter(const char *name)
     const char *cp = libdir_path;
 
     if (strlen(name) < NSTRING - 30) {
+	int first = TRUE;
 	sprintf(defining, "define_%s", name);
 	sprintf(leafname, "vile-%s-filt.so", name);
-	while ((cp = parse_pathlist(cp, filename)) != 0) {
+	while ((cp = parse_pathlist(cp, filename, &first)) != 0) {
 	    if (strlen(filename) + strlen(leafname) + 3 >= sizeof(filename))
 		continue;
 	    pathcat(filename, filename, leafname);

@@ -1,7 +1,15 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20151220 (r)
+ 20160713 (r)
 	> Tom Dickey:
+	+ modify parsing of VILE_STARTUP_PATH to accept colon-separated list
+	  (report by Chris Green).
+	+ improve formatting of vile.hlp (report by Paul Fox).
+	+ add mode "keep-position" to allow changing the behavior after
+	  applying a command to a range, to better match the nvi (BSD) and
+	  vi (Solaris) flavors (prompted by report by Marc Simpson). 
+	+ reset "$_" before executing each top-level command (report by Marc
+	  Simpson).
 	+ improve workarounds for building with "new" flex, in particular the
 	  change of return-type for yyget_leng() (report by Martin Ward).
 	+ make special case when locating the copy of vile which was run, to

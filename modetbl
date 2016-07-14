@@ -11,7 +11,7 @@
 #
 # The modes are table entries in the BUFFER and WINDOW structures.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.320 2015/11/09 00:27:17 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.321 2016/03/15 22:20:12 tom Exp $
 #
 #
 # Mode-table entries.  Capitalized letters are used for abbreviations.
@@ -67,6 +67,7 @@ enum
 	"ccolor"	CCOLOR		chgd_color	OPT_COLOR	# cursor color
 	"fcolor"	FCOLOR		chgd_color	OPT_COLOR	# foreground color
 	"For-Buffers"	FOR_BUFFERS	0		OPT_FORBUFFERS_CHOICES	# for-buffers pattern style
+	"Keep-Position"	KEEP_POS	0		OPT_KEEP_POS	# do not move after command affecting multiple lines
 	"bcolor"	BCOLOR		chgd_color	OPT_COLOR	# background color
 	"mcolor"	MCOLOR		chgd_hilite	OPT_HILITEMATCH # modeline color
 	"Mini-Hilite"   MINI_HILITE	0		# highlight minibuffer when using vi-commands
@@ -108,7 +109,6 @@ bool							# MD prefix
 	"FilterMsgs"	FILTERMSGS	0		OPT_MAJORMODE&&OPT_FILTER # Name of syntax-filter
 	"HighLight"	HILITE		chgd_filter	OPT_MAJORMODE # true if we enable syntax highlighting
 	"IgnoreCase"	IGNCASE		chgd_hilite	# Exact matching for searches
-	"Rectangle-Insert-Mode" INS_RECTS 0		# insert or overwrite when changing rectangles
 	"loading"	LOADING		0		# Are we asynchronously loading a file?
 	"locked"	LOCKED		chgd_disabled	OPT_LCKFILES # mode locked
 	"magic"		MAGIC		chgd_hilite	# regular expressions in search
@@ -116,6 +116,7 @@ bool							# MD prefix
 	"ModeLine"	MODELINE	0		OPT_MODELINE # modeline (selected :setl only) (vi-style)
 	"NewLine"	NEWLINE		chgd_buffer	# trailing newline (vi-style)
 	"ReadOnly"	READONLY	chgd_major	# allow writing the buffer
+	"Rectangle-Insert-Mode" INS_RECTS 0		# insert or overwrite when changing rectangles
 	"reuse-position" REUSE_POS	0		OPT_UPBUFF # reuse position when (re)creating scratch-buffers
 	"ShowMatch"	SHOWMAT		0		# show matching braces during insert
 	"ShowMoDe"	SHOWMODE	chgd_status	# show insert/replace/command mode
@@ -597,6 +598,11 @@ string
 "path"		FL_PATH
 "libdir"	FL_LIBDIR
 "always"	FL_ALWAYS
+
+.table keep_pos
+"emacs"		KPOS_VILE
+"nvi"		KPOS_NVI
+"vi"		KPOS_VI
 
 .table lookup
 "readable"	FL_READABLE

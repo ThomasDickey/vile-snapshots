@@ -1,5 +1,5 @@
 <!--
-  $Id: vile-hlp.html,v 1.96 2015/11/09 00:34:11 tom Exp $
+  $Id: vile-hlp.html,v 1.99 2016/07/14 00:45:40 tom Exp $
 -->
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN">
 
@@ -975,19 +975,13 @@
     Hint: start with a buffer full of lines that consist entirely
     of blanks (as opposed to blank lines).</dd>
 
-    <dt>^A-i</dt>
+    <dt>^A-i<br>
+    ^A-o<br>
+    ^A-O</dt>
 
     <dd>Like their 'i', 'o', and 'O' counterparts, but any
-    autoindent</dd>
-
-    <dt>^A-o</dt>
-
-    <dd>or cmode setting is ignored for the duration of this
-    insert.</dd>
-
-    <dt>^A-O</dt>
-
-    <dd>These are most useful when pre-formatted text is being
+    autoindent or cmode setting is ignored for the duration of this
+    insert. These are most useful when pre-formatted text is being
     pasted, as when using a mouse.</dd>
   </dl>
 
@@ -6012,14 +6006,18 @@ unbind-selmode-key
       <td><a name="modevar-startup-file" id=
       "modevar-startup-file">$startup-file</a></td>
 
-      <td>the name of the startup file (e.g. .vilerc)</td>
+      <td>the name of the startup file (e.g. .vilerc). Normally
+      this is only a <em>filename</em>, but can be an absolute path
+      to override <code>$startup-path</code>.</td>
     </tr>
 
     <tr>
       <td><a name="modevar-startup-path" id=
       "modevar-startup-path">$startup-path</a></td>
 
-      <td>where to find the startup file</td>
+      <td>where to find the startup file, i.e., a colon-separated
+      list of directories on Unix-like systems. On Windows, use
+      semicolon for separating the items in the list.</td>
     </tr>
 
     <tr>
@@ -13450,7 +13448,7 @@ set-rgb-palette red 200 0 0
   <h2 id="copying-toc"><a name="copying" id=
   "copying">Copyright</a></h2>
 
-  <p>Copyright &copy; 1995-2014,2015 by Paul Fox, Thomas Dickey,
+  <p>Copyright &copy; 1995-2015,2016 by Paul Fox, Thomas Dickey,
   and Kevin Buettner</p>
 </body>
 </html>
