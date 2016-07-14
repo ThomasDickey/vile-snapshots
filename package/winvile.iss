@@ -1,4 +1,4 @@
-; $Header: /users/source/archives/vile.vcs/package/RCS/winvile.iss,v 1.19 2015/01/02 15:22:07 tom Exp $
+; $Header: /users/source/archives/vile.vcs/package/RCS/winvile.iss,v 1.20 2016/07/14 00:45:13 tom Exp $
 ; vile:ts=2 sw=2
 ;
 ; This installs winvile as "winvile-ole.exe", since that is the name I use when building the OLE flavor
@@ -56,7 +56,7 @@ VersionInfoDescription=Setup for "WinVile - VI Like Emacs"
 #emit 'AppVersion=' + myVer
 #emit 'AppVerName=' + myAppVer
 AppPublisher=Thomas E. Dickey
-AppCopyright=© 1997-2014,2015, Thomas E. Dickey
+AppCopyright=© 1997-2015,2016, Thomas E. Dickey
 AppPublisherURL=http://invisible-island.net/vile/
 AppSupportURL=http://invisible-island.net/vile/
 AppUpdatesURL=http://invisible-island.net/vile/

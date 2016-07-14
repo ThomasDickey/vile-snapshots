@@ -2,7 +2,7 @@
  *		The routines in this file handle the conversion of pathname
  *		strings.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.177 2015/02/01 15:51:03 jrs Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.178 2016/07/13 09:23:26 tom Exp $
  *
  *
  */
@@ -1880,24 +1880,32 @@ is_nonfile(char *path)
  * more entries can be parsed.
  */
 const char *
-parse_pathlist(const char *list, char *result)
+parse_pathlist(const char *list, char *result, int *first)
 {
+    TRACE(("parse_pathlist(%s)\n", TRACE_NULL(list)));
     if (list != NULL && *list != EOS) {
 	int len = 0;
 
-	while (*list && (*list != vl_pathchr)) {
-	    if (len < NFILEN - 1)
-		result[len++] = *list;
-	    list++;
-	}
-	if (len == 0)		/* avoid returning an empty-string */
+	if (first && *first && *list == vl_pathchr) {
 	    result[len++] = '.';
+	} else {
+	    if (*list == vl_pathchr)
+		++list;
+	    while (*list && (*list != vl_pathchr)) {
+		if (len < NFILEN - 1)
+		    result[len++] = *list;
+		list++;
+	    }
+	    if (len == 0)	/* avoid returning an empty-string */
+		result[len++] = '.';
+	}
 	result[len] = EOS;
-
-	if (*list == vl_pathchr)
-	    ++list;
-    } else
+    } else {
 	list = NULL;
+    }
+    TRACE(("...parse_pathlist(%s) ->'%s'\n", TRACE_NULL(list), result));
+    if (first)
+	*first = 0;
     return list;
 }
 
@@ -2118,10 +2126,11 @@ find_in_path_list(const char *path_list, char *path)
     char temp[NFILEN];
     int found = FALSE;
     char find[NFILEN];
+    int first = TRUE;
 
     vl_strncpy(find, SL_TO_BSL(path), sizeof(find));
     TRACE(("find_in_path_list\n\t%s\n\t%s\n", TRACE_NULL(path_list), find));
-    while ((path_list = parse_pathlist(path_list, temp)) != 0) {
+    while ((path_list = parse_pathlist(path_list, temp, &first)) != 0) {
 #if OPT_CASELESS
 	if (!stricmp(temp, find))
 #else
@@ -2174,41 +2183,46 @@ prepend_to_path_list(char **path_list, char *path)
 #endif
 
 /*
- * Append the given path to a path-list
+ * Append the given path(s) to a path-list
  */
 void
 append_to_path_list(char **path_list, const char *path)
 {
     char *s, *t;
     size_t need;
+    char working[NFILEN];
     char find[NFILEN];
+    const char *in_work = working;
 #if SYS_UNIX
     struct stat sb;
 #endif
+    int first = TRUE;
 
-    vl_strncpy(find, SL_TO_BSL(path), sizeof(find));
-    if (!find_in_path_list(*path_list, find)
+    vl_strncpy(working, SL_TO_BSL(path), sizeof(working));
+    while ((in_work = parse_pathlist(in_work, find, &first)) != 0) {
+	if (!find_in_path_list(*path_list, find)
 #if SYS_UNIX
-	&& file_stat(find, &sb) == 0
+	    && file_stat(find, &sb) == 0
 #endif
-	) {
-	need = strlen(find) + 2;
-	if ((t = *path_list) != 0) {
-	    need += strlen(t);
-	} else {
-	    t = empty_string;
-	}
-	if ((s = typeallocn(char, need)) != 0) {
-	    if (*t != EOS)
-		lsprintf(s, "%s%c%s", t, vl_pathchr, find);
-	    else
-		strcpy(s, find);
-	    if (*path_list != 0)
-		free(*path_list);
-	    *path_list = s;
+	    ) {
+	    need = strlen(find) + 2;
+	    if ((t = *path_list) != 0) {
+		need += strlen(t);
+	    } else {
+		t = empty_string;
+	    }
+	    if ((s = typeallocn(char, need)) != 0) {
+		if (*t != EOS)
+		    lsprintf(s, "%s%c%s", t, vl_pathchr, find);
+		else
+		    strcpy(s, find);
+		if (*path_list != 0)
+		    free(*path_list);
+		*path_list = s;
+	    }
 	}
     }
-    TRACE(("append_to_path_list\n\t%s\n\t%s\n", *path_list, find));
+    TRACE(("...append_to_path_list\n\t%s\n", TRACE_NULL(*path_list)));
 }
 
 /*
@@ -2278,8 +2292,10 @@ append_libdir_to_path(void)
     if (libdir_path != 0
 	&& (tmp = getenv("PATH")) != 0
 	&& (env = strmalloc(tmp)) != 0) {
+	int first = TRUE;
+
 	cp = libdir_path;
-	while ((cp = parse_pathlist(cp, buf)) != 0) {
+	while ((cp = parse_pathlist(cp, buf, &first)) != 0) {
 	    append_to_path_list(&env, buf);
 	}
 	if (strcmp(tmp, env)) {

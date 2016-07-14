@@ -1,6 +1,6 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
-  $Id: macros.html,v 1.30 2015/09/07 14:25:41 tom Exp $
+  $Id: macros.html,v 1.31 2016/07/14 00:25:18 tom Exp $
 -->
 
 <html>
@@ -1611,12 +1611,16 @@ SORTOFTRUE
     <dt><a name="modevar-startup-file" id=
     "modevar-startup-file">$startup-file</a></dt>
 
-    <dd>The name of the startup file (e.g. .vilerc)</dd>
+    <dd>The name of the startup file (e.g. .vilerc). Normally this
+    is only a <em>filename</em>, but can be an absolute path to
+    override <code>$startup-path</code>.</dd>
 
     <dt><a name="modevar-startup-path" id=
     "modevar-startup-path">$startup-path</a></dt>
 
-    <dd>Where to find the startup file</dd>
+    <dd>Where to find the startup file, i.e., a colon-separated
+    list of directories on Unix-like systems. On Windows, use
+    semicolon for separating the items in the list.</dd>
 
     <dt><a name="modevar-status" id=
     "modevar-status">$status</a></dt>

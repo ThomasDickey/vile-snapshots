@@ -2,7 +2,7 @@
  * This file contains the command processing functions for a number of random
  * commands. There is no functional grouping here, for sure.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.355 2015/09/07 13:21:57 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.356 2016/07/13 09:03:29 tom Exp $
  *
  */
 
@@ -1420,9 +1420,10 @@ set_directory(const char *dir)
 	 * want here.
 	 */
 	if (is_directory(exdp)) {
+	    int first = TRUE;
 	    /* For each comma-delimited component in CDPATH */
 	    cdpath = get_cdpath();
-	    while ((cdpath = parse_pathlist(cdpath, cdpathdir)) != 0) {
+	    while ((cdpath = parse_pathlist(cdpath, cdpathdir, &first)) != 0) {
 		int len;
 		char *tmp, newdir[NFILEN];
 
@@ -1472,9 +1473,10 @@ set_directory(const char *dir)
 	 * directory in CDPATH.
 	 */
 	if (!is_pathname(exdp)) {
+	    int first = TRUE;
 	    /* For each appropriately delimited component in CDPATH */
 	    cdpath = get_cdpath();
-	    while ((cdpath = parse_pathlist(cdpath, cdpathdir)) != 0) {
+	    while ((cdpath = parse_pathlist(cdpath, cdpathdir, &first)) != 0) {
 		char **globvec = glob_string(cdpathdir);
 
 		if (glob_length(globvec) == 1) {

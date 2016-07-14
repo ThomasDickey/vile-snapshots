@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.373 2015/11/08 23:51:45 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.374 2016/07/13 09:03:29 tom Exp $
  *
  */
 
@@ -1737,9 +1737,10 @@ locate_file_in_list(char *list, char *fname, UINT mode)
     const char *cp;
     char *sp;
     char dir_name[NFILEN];
+    int first = TRUE;
 
     if ((cp = list) != 0) {
-	while ((cp = parse_pathlist(cp, dir_name)) != 0) {
+	while ((cp = parse_pathlist(cp, dir_name, &first)) != 0) {
 	    if ((sp = locate_fname(dir_name, fname, mode)) != 0)
 		return sp;
 	}
@@ -1930,9 +1931,10 @@ list_which_file_in_list(char *list, char *fname, UINT mode)
 {
     const char *cp;
     char dir_name[NFILEN];
+    int first = TRUE;
 
     if ((cp = list) != 0) {
-	while ((cp = parse_pathlist(cp, dir_name)) != 0) {
+	while ((cp = parse_pathlist(cp, dir_name, &first)) != 0) {
 	    list_which_fname(dir_name, fname, mode);
 	}
     }

@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.441 2015/09/07 01:00:57 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.442 2016/03/15 22:26:22 tom Exp $
  *
  */
 
@@ -972,6 +972,9 @@ static const FSM_TABLE fsm_tbl[] =
     {"mcolor", &fsm_hilite_blist},
     {"visual-matches", &fsm_hilite_blist},
     {"mini-hilite", &fsm_hilite_blist},
+#endif
+#if OPT_KEEP_POS
+    {"keep-position", &fsm_keep_pos_blist},
 #endif
 #if OPT_LOOKUP_CHOICES
     {"check-access", &fsm_access_blist},

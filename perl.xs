@@ -13,7 +13,7 @@
  * vile.  The file api.c (sometimes) provides a middle layer between
  * this interface and the rest of vile.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.136 2015/09/06 21:43:45 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.137 2016/07/13 09:03:29 tom Exp $
  */
 
 #ifdef __GNUC__
@@ -1124,12 +1124,13 @@ real_perl_init(void)
     {
 	const char *cp = vile_path;
 	char result[NFILEN];
+	int first = TRUE;
 	/*
 	 * "patch" @INC to look (first) for scripts in the directory
 	 * %VILE_LIBDIR_PATH%\\perl .
 	 */
 	TRACE(("perl_init VILE_LIBDIR_PATH=%s\n", vile_path));
-	while ((cp = parse_pathlist(cp, result)) != 0) {
+	while ((cp = parse_pathlist(cp, result, &first)) != 0) {
 	    TRACE(("parsed %s\n", cp));
 	    prepend_include(pathcat(temp, result, "perl"));
 	}
