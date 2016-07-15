@@ -1,5 +1,5 @@
 <!--
-  $Id: vile-hlp.html,v 1.99 2016/07/14 00:45:40 tom Exp $
+  $Id: vile-hlp.html,v 1.100 2016/07/14 23:13:34 tom Exp $
 -->
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN">
 
@@ -11073,7 +11073,28 @@ M<em>&lt;command&gt;</em>\0     -- meta information (ignored)
 
       <p>Note 3: Specify a numeric argument to force vile to popup
       a buffer that displays all possible paths (e.g.,
-      "2:which-exec fmt").</p>
+      "2:which-exec fmt"). For example:</p>
+
+      <blockquote>
+        <pre class="code-block">
+Show which executable-paths are tested for:
+        fmt
+("*" marks found-files)
+
+$PATH
+        /usr/local/bin/fmt
+        /users/tom/bin/fmt
+        /users/tom/com/fmt
+        /usr/sbin/fmt
+        /sbin/fmt
+*       <strong>/usr/bin/fmt</strong>
+        /bin/fmt
+        /usr/games/fmt
+        ./fmt
+$libdir-path
+        /usr/lib/vile/fmt
+</pre>
+      </blockquote>
     </dd>
 
     <dt>which-source <em>&lt;file&gt;</em></dt>
@@ -11088,7 +11109,22 @@ M<em>&lt;command&gt;</em>\0     -- meta information (ignored)
 
       <p>Note 2: Specify a numeric argument to force vile to popup
       a buffer that displays all possible paths (e.g.,
-      "2:which-source mymacros.rc").</p>
+      "2:which-source vileinit.rc"). For example:</p>
+
+      <blockquote>
+        <pre class="code-block">
+Show which source-paths are tested for:
+        vileinit.rc
+("*" marks found-files)
+
+$cwd
+        vileinit.rc
+$HOME
+        /users/tom/vileinit.rc
+$startup-path
+*       <strong>/usr/share/vile/vileinit.rc</strong>
+</pre>
+      </blockquote>
     </dd>
   </dl>
 

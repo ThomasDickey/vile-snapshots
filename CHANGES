@@ -1,7 +1,10 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20160713 (r)
+ 20160714 (r)
 	> Tom Dickey:
+	+ add examples for which-exec and which-source to vile.hlp to show
+	  what the popup-buffer might look like when a numeric parameter
+	  precedes these commands.
 	+ modify parsing of VILE_STARTUP_PATH to accept colon-separated list
 	  (report by Chris Green).
 	+ improve formatting of vile.hlp (report by Paul Fox).
