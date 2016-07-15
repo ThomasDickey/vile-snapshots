@@ -2,6 +2,9 @@ Changes for vile 9.9 (released ??? ??? ?? ????)
 
  20160714 (r)
 	> Tom Dickey:
+	+ modify noautobuffer mode to update the "last" buffer when the user
+	  jumps around, e.g., using ":e" or the "historical-buffer" toggle
+	  (discussion on vile mailing list started by Hymie).
 	+ add examples for which-exec and which-source to vile.hlp to show
 	  what the popup-buffer might look like when a numeric parameter
 	  precedes these commands.

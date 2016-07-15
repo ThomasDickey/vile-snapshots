@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.743 2016/07/13 08:37:32 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.744 2016/07/15 00:55:07 tom Exp $
  *
  */
 
@@ -276,6 +276,7 @@ extern void imply_alt (char *fname, int copy, int lockfl);
 extern void make_current (BUFFER *nbp);
 extern void set_bname (BUFFER *bp, const char *name);
 extern void set_editor_title(void);
+extern void set_last_bp (BUFFER *nbp);
 extern void sortlistbuffers (void);
 extern void unchg_buff (BUFFER *bp, unsigned flag);
 extern void undispbuff (BUFFER *bp, WINDOW *wp);

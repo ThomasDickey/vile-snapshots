@@ -5,7 +5,7 @@
  * reading and writing of the disk are
  * in "fileio.c".
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.458 2015/09/07 13:21:57 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.459 2016/07/15 00:52:52 tom Exp $
  */
 
 #include "estruct.h"
@@ -737,6 +737,8 @@ set_files_to_edit(const char *prompt, int appflag)
 	    if (status == ABORT)
 		reset_to_unnamed(firstbp);
 	}
+	if (status == TRUE)
+	    set_last_bp(firstbp);
     }
     returnCode(status);
 }
