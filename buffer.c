@@ -5,7 +5,7 @@
  * keys. Like everyone else, they set hints
  * for the display system.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.363 2015/09/07 00:59:17 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.364 2016/07/15 01:10:38 tom Exp $
  *
  */
 
@@ -968,6 +968,12 @@ popdown_buffer(int f GCC_UNUSED, int n GCC_UNUSED)
 }
 #endif /* !SMALLER */
 
+void
+set_last_bp(BUFFER *bp)
+{
+    last_bp = bp;
+}
+
 /* switch back to the first buffer (i.e., ":rewind") */
 /* ARGSUSED */
 int
@@ -975,7 +981,7 @@ firstbuffer(int f GCC_UNUSED, int n GCC_UNUSED)
 {
     int s = histbuff(TRUE, 0);
     if (!global_g_val(GMDABUFF))
-	last_bp = s ? curbp : 0;
+	set_last_bp(s ? curbp : 0);
     return s;
 }
 
@@ -1008,7 +1014,7 @@ nextbuffer(int f GCC_UNUSED, int n GCC_UNUSED)
 	result = swbuffer(stopatbp);
     } else {			/* go forward thru args-list */
 	if (last_bp == 0) {
-	    last_bp = curbp;
+	    set_last_bp(curbp);
 	}
 	if ((bp = last_bp) != 0) {
 	    for (bp = last_bp->b_bufp; bp; bp = bp->b_bufp) {
@@ -1018,7 +1024,7 @@ nextbuffer(int f GCC_UNUSED, int n GCC_UNUSED)
 	    }
 	}
 	if (bp != 0) {
-	    result = swbuffer(last_bp = bp);
+	    result = swbuffer(bp);
 	} else {
 	    mlforce("[No more files to edit]");
 	    result = FALSE;
@@ -1060,7 +1066,7 @@ prevbuffer(int f GCC_UNUSED, int n GCC_UNUSED)
 	    bp = find_nth_created(curbp->b_created - 1);
 	}
 	if (bp != 0) {
-	    result = swbuffer(last_bp = bp);
+	    result = swbuffer(bp);
 	} else {
 	    mlforce("[No more files to edit]");
 	}
@@ -1460,6 +1466,8 @@ swbuffer_lfl(BUFFER *bp, int lockfl, int this_window)
 	set_editor_title();
 #endif
     }
+    if (status == TRUE)
+	set_last_bp(bp);
     returnCode(status);
 }
 
