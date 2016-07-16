@@ -5,7 +5,7 @@
  * functions that adjust the top line in the window and invalidate the
  * framing, are hard.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/basic.c,v 1.172 2015/03/13 08:36:17 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/basic.c,v 1.173 2016/07/16 00:23:50 Marc.Simpson Exp $
  *
  */
 
@@ -224,7 +224,7 @@ static void
 skipblanksb(void)
 {
     while (lback(DOT.l) != buf_head(curbp) && is_empty_line(DOT)) {
-	dot_next_bol();
+	dot_prev_bol();
     }
 }
 

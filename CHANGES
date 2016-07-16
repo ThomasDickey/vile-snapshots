@@ -1,6 +1,9 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20160714 (r)
+ 20160715 (r)
+	> Marc Simpson:
+	+ correct a typo in skipblanksb() which caused up-paragraph "{{" to
+	  get stuck (Savannah #47211).
 	> Tom Dickey:
 	+ modify noautobuffer mode to update the "last" buffer when the user
 	  jumps around, e.g., using ":e" or the "historical-buffer" toggle
