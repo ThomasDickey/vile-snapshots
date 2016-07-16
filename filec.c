@@ -5,7 +5,7 @@
  * Written by T.E.Dickey for vile (march 1993).
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/filec.c,v 1.134 2014/04/15 00:26:56 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/filec.c,v 1.135 2016/07/16 15:03:35 tom Exp $
  *
  */
 
@@ -136,12 +136,12 @@ pathcmp(const LINE *lp, const char *text)
     for_ever {
 	lc = *l++;
 	tc = *t++;
-#if OPT_CASELESS
-	if (isUpper(lc))
-	    lc = toLower(lc);
-	if (isUpper(tc))
-	    tc = toLower(tc);
-#endif
+	if (global_g_val(GMDFILENAME_IC)) {
+	    if (isUpper(lc))
+		lc = toLower(lc);
+	    if (isUpper(tc))
+		tc = toLower(tc);
+	}
 	if (lc == tc) {
 	    if (tc == EOS)
 		return 0;
@@ -319,12 +319,7 @@ already_scanned(BUFFER *bp, char *path)
     len = force_slash(vl_strncpy(fname, path, sizeof(fname)));
 
     for_each_line(lp, bp) {
-#if OPT_CASELESS
-	if (stricmp(fname, lvalue(lp)) == 0)
-#else
-	if (strcmp(fname, lvalue(lp)) == 0)
-#endif
-	{
+	if (cs_strcmp(global_g_val(GMDFILENAME_IC), fname, lvalue(lp)) == 0) {
 	    if (lvalue(lp)[llength(lp) + 1])
 		return TRUE;
 	    else
@@ -1115,21 +1110,11 @@ path_completion(DONE_ARGS)
 	/* FIXME: should also force-dot to the matched line, as in history.c */
 	/* FIXME: how can I force buffer-update to show? */
 
-#if OPT_CASELESS
-	code = kbd_complete(KBD_CASELESS, c, path, &newlen,
-			    (const char *) &MyBuff->b_index_list[0],
-			    sizeof(MyBuff->b_index_list[0]));
-#if 0				/* case insensitive reply correction doesn't work reliably yet */
-	(void) strcpy(buf, path);
-#else
-	(void) strcat(buf, path + oldlen);
-#endif
-#else
-	code = kbd_complete(0, c, path, &newlen,
+	code = kbd_complete(global_g_val(GMDFILENAME_IC) ? KBD_CASELESS : 0,
+			    c, path, &newlen,
 			    (const char *) &MyBuff->b_index_list[0],
 			    sizeof(MyBuff->b_index_list[0]));
 	(void) strcat(buf, path + oldlen);
-#endif
 #if OPT_VMS_PATH
 	if (*buf != EOS
 	    && !is_vms_pathname(buf, -TRUE))

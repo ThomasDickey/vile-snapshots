@@ -2,7 +2,7 @@
  * This file contains the command processing functions for a number of random
  * commands. There is no functional grouping here, for sure.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.356 2016/07/13 09:03:29 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.357 2016/07/16 14:28:05 tom Exp $
  *
  */
 
@@ -1102,9 +1102,8 @@ current_directory(int force)
     bsl_to_sl_inplace(cwd);
     lengthen_path(cwd);
     cwd[NFILEN - 1] = EOS;
-#if !OPT_CASELESS
-    mklower(cwd);
-#endif
+    if (!global_g_val(GMDFILENAME_IC))
+	mklower(cwd);
 #endif
 
 #if SYS_MSDOS || SYS_OS2
@@ -2377,7 +2376,6 @@ vl_stricmp(const char *a, const char *b)
 }
 #endif
 
-#if OPT_CASELESS
 #ifndef vl_strnicmp
 /*
  * Compare two strings ignoring case
@@ -2401,7 +2399,6 @@ vl_strnicmp(const char *a, const char *b, size_t n)
     return cmp;
 }
 #endif
-#endif /* OPT_CASELESS */
 
 /*
  * Format a visible representation of the given character, returns the buffer

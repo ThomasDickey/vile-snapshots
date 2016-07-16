@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.374 2016/07/13 09:03:29 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.375 2016/07/16 13:54:52 tom Exp $
  *
  */
 
@@ -22,13 +22,8 @@
 
 extern const int nametbl_size;
 
-#if OPT_CASELESS
 #define Strcmp(s,d)      cs_strcmp(case_insensitive, s, d)
 #define StrNcmp(s,d,len) cs_strncmp(case_insensitive, s, d, len)
-#else
-#define Strcmp(s,d)      strcmp(s, d)
-#define StrNcmp(s,d,len) strncmp(s, d, len)
-#endif
 
 #if OPT_REBIND
 #define	isSpecialCmd(k) \
@@ -2700,8 +2695,7 @@ kbd_erase_to_end(int column)
     return TRUE;
 }
 
-#if OPT_CASELESS
-static int
+int
 cs_strcmp(
 	     int case_insensitive,
 	     const char *s1,
@@ -2712,7 +2706,7 @@ cs_strcmp(
     return strcmp(s1, s2);
 }
 
-static int
+int
 cs_strncmp(
 	      int case_insensitive,
 	      const char *s1,
@@ -2723,7 +2717,6 @@ cs_strncmp(
 	return strnicmp(s1, s2, n);
     return strncmp(s1, s2, n);
 }
-#endif /* OPT_CASELESS */
 
 /* definitions for name-completion */
 #define	NEXT_DATA(p)	((p)+size_entry)
@@ -2739,7 +2732,7 @@ cs_strncmp(
 /*ARGSUSED*/
 static const char *
 skip_partial(
-		int case_insensitive GCC_UNUSED,
+		int case_insensitive,
 		char *buf,
 		size_t len,
 		const char *table,
@@ -2972,7 +2965,7 @@ popdown_completions(const char *old_bname, WINDOW *old_wp)
  */
 static size_t
 fill_partial(
-		int case_insensitive GCC_UNUSED,
+		int case_insensitive,
 		char *buf,
 		size_t pos,
 		const char *first,

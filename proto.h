@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.744 2016/07/15 00:55:07 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.746 2016/07/16 15:09:47 tom Exp $
  *
  */
 
@@ -187,6 +187,8 @@ extern const CMDFUNC *engl2fnc (const char *fname);
 extern const CMDFUNC *kcod2fnc (const BINDINGS *bs, int c);
 extern const char * fnc2engl(const CMDFUNC * cfp);
 extern int cmd_complete (DONE_ARGS);
+extern int cs_strcmp (int case_insensitive, const char *s1, const char *s2);
+extern int cs_strncmp (int case_insensitive, const char *s1, const char *s2, size_t len);
 extern int eol_command (EOL_ARGS);
 extern int fnc2kcod (const CMDFUNC *);
 extern int fnc2kins (const CMDFUNC *);
@@ -261,6 +263,7 @@ extern int buffer_in_use (BUFFER *bp);
 extern int buffer_is_solo (BUFFER *bp);
 extern int buffer_is_visible (BUFFER *bp);
 extern int delink_bp (BUFFER *bp);
+extern int eql_bname (BUFFER *bp, const char *name);
 extern int kill_that_buffer (BUFFER *bp);
 extern int popupbuff (BUFFER *bp);
 extern int renamebuffer(BUFFER *rbp, char *bufname);
@@ -1065,7 +1068,7 @@ extern char * sl_to_bsl (const char *p);
 extern char * bsl_to_sl_inplace (char *p);
 #endif
 
-#if OPT_CASELESS && SYS_OS2
+#if SYS_OS2
 extern int is_case_preserving (const char *name);
 #endif
 
@@ -1119,10 +1122,8 @@ extern ULONG vl_atoul (const char *str, int base, int *failed);
 extern int vl_stricmp (const char *a, const char *b);
 #endif
 
-#if OPT_CASELESS
 #ifndef vl_strnicmp
 extern int vl_strnicmp (const char *a, const char *b, size_t n);
-#endif
 #endif
 
 #if (OPT_AUTOCOLOR || OPT_ELAPSED) && defined(VL_ELAPSED)

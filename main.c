@@ -22,7 +22,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.731 2016/07/14 00:45:24 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.732 2016/07/16 14:08:37 tom Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -1489,6 +1489,7 @@ init_mode_value(struct VAL *d, MODECLASS v_class, int v_which)
 	    setINT(GMDALTTABPOS, FALSE);	/* emacs-style tab positioning */
 	    setINT(GMDERRORBELLS, TRUE);	/* alarms are noticeable */
 	    setINT(GMDEXPAND_PATH, FALSE);
+	    setINT(GMDFILENAME_IC, DFT_FILE_IC);
 	    setINT(GMDIMPLYBUFF, FALSE);	/* imply-buffer */
 	    setINT(GMDINSEXEC, FALSE);	/* allow ^F/^B, etc., to be interpreted during insert mode */
 	    setINT(GMDMAPLONGER, FALSE);	/* favor longer maps */

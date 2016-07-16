@@ -2,7 +2,7 @@
  *		The routines in this file handle the conversion of pathname
  *		strings.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.178 2016/07/13 09:23:26 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.179 2016/07/16 14:33:07 tom Exp $
  *
  *
  */
@@ -883,12 +883,10 @@ resolve_directory(char *path_name, char **file_namep)
 #endif /* defined(GMDRESOLVE_LINKS) */
 #endif /* defined(HAVE_REALPATH) */
 
-#if OPT_CASELESS
-
 /*
  * The function case_correct_path is intended to determine the true
  * case of all pathname components of a syntactically canonicalized
- * pathname for operating systems on which OPT_CASELESS applies.
+ * pathname for operating systems which use caseless filenames.
  */
 
 #if SYS_WINNT
@@ -983,9 +981,7 @@ case_correct_path(char *old_file, char *new_file)
     return;
 }
 
-#else /* !SYS_WINNT */
-
-#if SYS_OS2
+#elif SYS_OS2
 
 int
 is_case_preserving(const char *name)
@@ -1083,7 +1079,7 @@ case_correct_path(char *old_file, char *new_file)
     return;
 }
 
-#else /* !SYS_OS2 */
+#else
 
 static void
 case_correct_path(char *old_file, char *new_file)
@@ -1093,11 +1089,7 @@ case_correct_path(char *old_file, char *new_file)
     return;
 }
 
-#endif /* !SYS_OS2 */
-
 #endif /* !SYS_WINNT */
-
-#endif /* OPT_CASELESS */
 
 /* canonicalize a pathname, to eliminate extraneous /./, /../, and ////
 	sequences.  only guaranteed to work for absolute pathnames */
@@ -1118,9 +1110,8 @@ canonpath(char *ss)
 	    returnString(s);
 
 #if OPT_MSDOS_PATH
-#if !OPT_CASELESS
-	(void) mklower(ss);	/* MS-DOS is case-independent */
-#endif
+	if (!global_g_val(GMDFILENAME_IC))
+	    (void) mklower(ss);	/* MS-DOS is case-independent */
 	if (is_slashc(*ss))
 	    *ss = SLASHC;
 	/* pretend the drive designator isn't there */
@@ -1295,9 +1286,8 @@ canonpath(char *ss)
 	}
 #endif
 
-#if OPT_CASELESS
-	case_correct_path(ss, ss);
-#endif
+	if (global_g_val(GMDFILENAME_IC))
+	    case_correct_path(ss, ss);
     }
     returnString(ss);
 }
@@ -2131,12 +2121,7 @@ find_in_path_list(const char *path_list, char *path)
     vl_strncpy(find, SL_TO_BSL(path), sizeof(find));
     TRACE(("find_in_path_list\n\t%s\n\t%s\n", TRACE_NULL(path_list), find));
     while ((path_list = parse_pathlist(path_list, temp, &first)) != 0) {
-#if OPT_CASELESS
-	if (!stricmp(temp, find))
-#else
-	if (!strcmp(temp, find))
-#endif
-	{
+	if (!cs_strcmp(global_g_val(GMDFILENAME_IC), temp, find)) {
 	    found = TRUE;
 	    break;
 	}

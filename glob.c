@@ -13,7 +13,7 @@
  *
  *	modify (ifdef-style) 'expand_leaf()' to allow ellipsis.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/glob.c,v 1.102 2013/03/06 01:25:44 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/glob.c,v 1.103 2016/07/16 14:08:37 tom Exp $
  *
  */
 
@@ -217,15 +217,15 @@ record_a_match(char *item)
 
 #if !SMALLER || UNIX_GLOBBING
 
-#if OPT_CASELESS
 static int
 cs_char(int ch)
 {
-    return isUpper(ch) ? toLower(ch) : ch;
+    return (global_g_val(GMDFILENAME_IC)
+	    ? (isUpper(ch)
+	       ? toLower(ch)
+	       : ch)
+	    : CharOf(ch));
 }
-#else
-#define cs_char(ch) CharOf(ch)
-#endif
 
 static int
 only_multi(char *pattern)
@@ -430,9 +430,8 @@ expand_leaf(char *path,		/* built-up pathname, top-level */
 	while ((de = readdir(dp)) != 0) {
 #if OPT_MSDOS_PATH
 	    (void) strcpy(leaf, de->d_name);
-#if !OPT_CASELESS
-	    (void) mklower(leaf);
-#endif
+	    if (!global_g_val(GMDFILENAME_IC))
+		(void) mklower(leaf);
 	    if (strchr(pattern, '.') && !strchr(leaf, '.'))
 		(void) strcat(leaf, ".");
 #else
@@ -601,11 +600,9 @@ expand_leaf(char *path,		/* built-up pathname, top-level */
 static int
 compar(const void *a, const void *b)
 {
-#if OPT_CASELESS
-    return stricmp(*(const char *const *) a, *(const char *const *) b);
-#else
-    return strcmp(*(const char *const *) a, *(const char *const *) b);
-#endif
+    return cs_strcmp(global_g_val(GMDFILENAME_IC),
+		     *(const char *const *) a,
+		     *(const char *const *) b);
 }
 #endif /* UNIX_GLOBBING */
 
@@ -864,9 +861,8 @@ expand_pattern(char *item)
 	(void) vl_strncpy(pattern, item, sizeof(pattern));
 	*builtup = EOS;
 #if OPT_MSDOS_PATH
-#if !OPT_CASELESS
-	(void) mklower(pattern);
-#endif
+	if (!global_g_val(GMDFILENAME_IC))
+	    (void) mklower(pattern);
 #endif
 	expand_environ(pattern);
 	if (string_has_globs(pattern)) {

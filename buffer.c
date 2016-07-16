@@ -5,7 +5,7 @@
  * keys. Like everyone else, they set hints
  * for the display system.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.364 2016/07/15 01:10:38 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.366 2016/07/16 15:11:33 tom Exp $
  *
  */
 
@@ -1488,6 +1488,12 @@ buf_win_sanity(void)
 }
 #endif
 
+int
+eql_bname(BUFFER *bp, const char *name)
+{
+    return (cs_strcmp(global_g_val(GMDFILENAME_IC), bp->b_bname, name) == 0);
+}
+
 void
 undispbuff(BUFFER *bp, WINDOW *wp)
 {
@@ -1555,11 +1561,7 @@ has_C_suffix(BUFFER *bp)
 {
     int s;
     int save = ignorecase;
-#if OPT_CASELESS
-    ignorecase = TRUE;
-#else
-    ignorecase = FALSE;
-#endif
+    ignorecase = global_g_val(GMDFILENAME_IC);
     s = nregexec(global_g_val_rexp(GVAL_CSUFFIXES)->reg,
 		 bp->b_fname, (char *) 0, 0, -1);
     ignorecase = save;

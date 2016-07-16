@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.748 2016/03/17 09:19:29 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.750 2016/07/16 15:09:53 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -623,7 +623,6 @@ typedef unsigned short	mode_t;
 
 /* systems with MSDOS-like filename syntax */
 #define OPT_MSDOS_PATH  (SYS_MSDOS || SYS_OS2 || SYS_WINNT || SYS_OS2_EMX)
-#define OPT_CASELESS	(SYS_MSDOS || SYS_OS2 || SYS_WINNT || SYS_OS2_EMX || SYS_CYGWIN || SYS_VMS)
 #define OPT_UNC_PATH	(SYS_WINNT || SYS_CYGWIN)
 
 /* individual features that are (normally) controlled by SMALLER */
@@ -2347,10 +2346,10 @@ typedef struct	BUFFER {
 #define strnicmp vl_strnicmp
 #endif
 
-#if OPT_CASELESS
-#define eql_bname(bp,name) !stricmp(bp->b_bname, name)
+#if (SYS_MSDOS || SYS_OS2 || SYS_WINNT || SYS_OS2_EMX || SYS_CYGWIN || SYS_VMS)
+#define DFT_FILE_IC TRUE
 #else
-#define eql_bname(bp,name) !strcmp(bp->b_bname, name)
+#define DFT_FILE_IC FALSE
 #endif
 
 #define COPY_B_VAL(dst,src,val) \

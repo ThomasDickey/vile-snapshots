@@ -11,7 +11,7 @@
 #
 # The modes are table entries in the BUFFER and WINDOW structures.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.321 2016/03/15 22:20:12 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.322 2016/07/16 14:42:53 tom Exp $
 #
 #
 # Mode-table entries.  Capitalized letters are used for abbreviations.
@@ -28,6 +28,7 @@ bool							# GMD prefix
 	"echo-to-clipboard"	CBRD_ECHO	0	SYS_WINNT
 	"expand-path"	EXPAND_PATH	0		# true iff %/# don't substitute shortened-path
 	"ErrorBells"	ERRORBELLS	0		# audible/visible-bells
+	"File-IgnoreCase" FILENAME_IC	0		# Name of syntax-filter
 	"flash"		FLASH		0		OPT_FLASH # visible-bell (flash)
 	"force-console"	FORCE_CONSOLE	0		SYS_WINNT&&DISP_NTWIN
 	"glob"		GLOB		0		!OPT_GLOB_PIPE # enable/disable filename globbing
@@ -237,7 +238,6 @@ bool
 	"disinp"	DISINP		1		"display command line input characters"
 	"end-of-cmd"	EOC		1		"true if they ended the cmd with <CR>"
 	"fchanged"	FCHANGED	!SMALLER	"true if current buffer's file is changed"
-	"filename-ic"	FILENAME_IC	1		"true if we set OPT_CASELESS"
 	"forward-search" FWD_SEARCH	1		"search-direction (true if forward)"
 	"get-at-dot"	GET_AT_DOT	1		"true if token must have DOT when getting $identifier, etc., from screen"
 	"get-it-all"	GET_IT_ALL	1		"true if full-token when getting $identifier, etc., from screen"
