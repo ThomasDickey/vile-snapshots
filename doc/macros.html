@@ -1,6 +1,6 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
-  $Id: macros.html,v 1.31 2016/07/14 00:25:18 tom Exp $
+  $Id: macros.html,v 1.32 2016/07/16 15:17:08 tom Exp $
 -->
 
 <html>
@@ -780,7 +780,18 @@ SORTOFTRUE
   aspects of vile's behavior. State variables are prefixed with a $
   character, and are always referred to in lowercase. Not all state
   variables are settable &mdash; some are read-only, and are so
-  marked in the table below.</p>
+  marked in the table below. You can also refer to the value of a
+  mode by prefixing its name with a $ character. However:</p>
+
+  <ul>
+    <li>modes are never read-only, and</li>
+
+    <li>modes either apply globally, or to buffers or windows,
+    while state variables may refer to the <em>current</em> buffer
+    only.</li>
+  </ul>
+
+  <p>Here are the state variables:</p>
 
   <dl>
     <dt><a name="modevar-abufname" id=
@@ -1223,12 +1234,6 @@ SORTOFTRUE
     the last subexpression in %F. We use this side-effect in the
     win32 port, for example '\([a-zA-Z]:\)\?[^ \t:]' to make the
     last range repeat 1-or-more times.</dd>
-
-    <dt><a name="modevar-filename-ic" id=
-    "modevar-filename-ic">$filename-ic</a></dt>
-
-    <dd>[READ ONLY] Boolean indicating if the host system's
-    filenames are matched ignoring their case.</dd>
 
     <dt><a name="modevar-filter-list" id=
     "modevar-filter-list">$filter-list</a></dt>

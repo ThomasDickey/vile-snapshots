@@ -1,5 +1,5 @@
 <!--
-  $Id: vile-hlp.html,v 1.100 2016/07/14 23:13:34 tom Exp $
+  $Id: vile-hlp.html,v 1.101 2016/07/16 15:23:20 tom Exp $
 -->
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN">
 
@@ -2451,6 +2451,12 @@ $ vile
       locale's encoding. The "8bit" setting corresponds to the
       8-bit locale support used since 9.3i (20021223). (B)</p>
     </dd>
+
+    <dt><a name="mode-filename-ic" id=
+    "mode-filename-ic">filename-ic</a></dt>
+
+    <dd>Ignore filename upper/lower case in filename
+    completion.</dd>
 
     <dt><a name="mode-fillcol" id="mode-fillcol">fillcol
     (fc)</a></dt>
@@ -5595,13 +5601,6 @@ unbind-selmode-key
       "modevar-filename-expr">$filename-expr</a></td>
 
       <td>actual pattern for %F in [Error Expressions]</td>
-    </tr>
-
-    <tr>
-      <td><a name="modevar-filename-ic" id=
-      "modevar-filename-ic">$filename-ic</a></td>
-
-      <td>ignore case in filename completion (read only)</td>
     </tr>
 
     <tr>

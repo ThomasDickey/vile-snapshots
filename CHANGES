@@ -5,6 +5,9 @@ Changes for vile 9.9 (released ??? ??? ?? ????)
 	+ correct a typo in skipblanksb() which caused up-paragraph "{{" to
 	  get stuck (Savannah #47211).
 	> Tom Dickey:
+	+ promote $filename-ic to a global mode, using this to allow users to
+	  do filename-completion on any system ignoring the case of filenames
+	  (discussion on vile mailing list started by Marc Simpson).
 	+ modify noautobuffer mode to update the "last" buffer when the user
 	  jumps around, e.g., using ":e" or the "historical-buffer" toggle
 	  (discussion on vile mailing list started by Hymie).
