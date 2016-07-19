@@ -1,10 +1,11 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20160715 (r)
+ 20160719 (r)
 	> Marc Simpson:
 	+ correct a typo in skipblanksb() which caused up-paragraph "{{" to
 	  get stuck (Savannah #47211).
 	> Tom Dickey:
+	+ add null-pointer checks in vile-manfilt for some unusual erasures.
 	+ promote $filename-ic to a global mode, using this to allow users to
 	  do filename-completion on any system ignoring the case of filenames
 	  (discussion on vile mailing list started by Marc Simpson).
