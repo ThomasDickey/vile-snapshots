@@ -46,7 +46,7 @@
  * vile will choose some appropriate fallback (such as underlining) if
  * italics are not available.
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/manfilt.c,v 1.69 2015/09/06 21:29:33 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/manfilt.c,v 1.70 2016/07/19 14:05:21 tom Exp $
  *
  */
 
@@ -443,12 +443,14 @@ put_cell(int c, int level, int ident, int attrs)
 static void
 erase_cell(int col)
 {
-    /* *INDENT-EQLS* */
     CHARCELL *p = &(cur_line->l_cell[col]);
-    p->link     = 0;
-    p->c_value  = SPACE;
-    p->c_level  = 0;
-    p->c_ident  = CS_NORMAL;
+    if (p != 0) {
+	/* *INDENT-EQLS* */
+	p->link     = 0;
+	p->c_value  = SPACE;
+	p->c_level  = 0;
+	p->c_ident  = CS_NORMAL;
+    }
 }
 
 #define DefaultOne(nparams, params) \
@@ -792,17 +794,21 @@ half_down(int level)
 static int
 cell_code(LINEDATA * line, size_t col)
 {
+    int code = ATR_NORMAL;
     CHARCELL *p = &(line->l_cell[col]);
-    CHARCELL *q;
-    int code = p->c_attrs;
 
-    while ((q = p->link) != 0) {
-	if (q->c_value == UNDERLINE
-	    && q->c_value != p->c_value) {
-	    code |= ATR_UNDER;
-	} else
-	    code |= ATR_BOLD;
-	p = q;
+    if (p != 0) {
+	CHARCELL *q;
+	code = p->c_attrs;
+
+	while ((q = p->link) != 0) {
+	    if (q->c_value == UNDERLINE
+		&& q->c_value != p->c_value) {
+		code |= ATR_UNDER;
+	    } else
+		code |= ATR_BOLD;
+	    p = q;
+	}
     }
     return code;
 }
