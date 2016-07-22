@@ -1,5 +1,5 @@
 <!--
-  $Id: vile-hlp.html,v 1.101 2016/07/16 15:23:20 tom Exp $
+  $Id: vile-hlp.html,v 1.103 2016/07/22 00:55:28 tom Exp $
 -->
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN">
 
@@ -2626,6 +2626,112 @@ describe-insmode-bindings
 describe-insmode-key
 </pre>
       </blockquote>
+    </dd>
+
+    <dt><a name="mode-keep-position" id=
+    "mode-keep-position">keep-position (kp)</a></dt>
+
+    <dd>
+      Choose where the cursor will be after making an
+      <strong>ex</strong>-style command with a <em>range</em>. The
+      mode value must be one of
+
+      <blockquote>
+        <pre class="code-block">
+      emacs
+      nvi
+      vi
+      
+</pre>
+      </blockquote>
+
+      <p>where "emacs" is used to denote vi-like-emacs. The setting
+      for "vi" matches the behavior of <strong>vi</strong> on AIX,
+      HPUX and Solaris. Here are some examples to compare, where
+      "top" and "bot" refer to the top/bottom of the range, and
+      "n/c" indicates that the cursor does not move:</p>
+
+      <table border="1" summary="Comparing keep-position">
+        <tr>
+          <th>command</th>
+
+          <th>vile</th>
+
+          <th>nvi</th>
+
+          <th>solaris</th>
+        </tr>
+
+        <tr>
+          <td>:%&gt;</td>
+
+          <td>top</td>
+
+          <td>n/c</td>
+
+          <td>bot</td>
+        </tr>
+
+        <tr>
+          <td>:%s/^/ /</td>
+
+          <td>bot</td>
+
+          <td>bot</td>
+
+          <td>bot</td>
+        </tr>
+
+        <tr>
+          <td>:5,10&gt;</td>
+
+          <td>5</td>
+
+          <td>10</td>
+
+          <td>10</td>
+        </tr>
+
+        <tr>
+          <td>:.,.+5&gt;</td>
+
+          <td>n/c</td>
+
+          <td>n/c</td>
+
+          <td>+5</td>
+        </tr>
+
+        <tr>
+          <td>:.-5,.+5&gt;</td>
+
+          <td>-5</td>
+
+          <td>n/c</td>
+
+          <td>+5</td>
+        </tr>
+
+        <tr>
+          <td>:-5,+5&gt;</td>
+
+          <td>-5</td>
+
+          <td>n/c</td>
+
+          <td>+5</td>
+        </tr>
+
+        <tr>
+          <td>:-5,+5s/^/ /</td>
+
+          <td>+5</td>
+
+          <td>+5</td>
+
+          <td>+5</td>
+        </tr>
+      </table>POSIX does not provide details on this behavior. (U)
     </dd>
 
     <dt><a name="mode-linebreak" id="mode-linebreak">linebreak

@@ -4,7 +4,7 @@
  *	original by Daniel Lawrence, but
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.359 2016/03/21 09:19:11 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.361 2016/07/22 00:20:03 tom Exp $
  *
  */
 
@@ -535,7 +535,15 @@ resplice_command(TBUFF **lspec, const char *cspec)
 static				/* next procedure is local */
 #endif
 
-#define FIXME_KPOS 1
+#ifndef DEBUG_KPOS
+#define DEBUG_KPOS 0
+#endif
+
+#if DEBUG_KPOS
+#define TRACE_KPOS(s) TRACE(s)
+#else
+#define TRACE_KPOS(s)		/* nothing */
+#endif
 
 int
 execute_named_command(int f, int n)
@@ -560,9 +568,8 @@ execute_named_command(int f, int n)
 
     tb_scopy(&lspec, "");
     last_DOT = DOT;
-#if FIXME_KPOS
-    TRACE(("FIXME before %d.%d\n", line_no(curbp, DOT.l), DOT.o));
-#endif
+
+    TRACE_KPOS(("kpos before %d.%d\n", line_no(curbp, DOT.l), DOT.o));
 
     /* prompt the user to type a named command */
 #ifdef SMALLER
@@ -768,8 +775,8 @@ execute_named_command(int f, int n)
 	mlforce("[Can't use a range with \"%s\" command.]", fnp);
 	return FALSE;
     }
-    TRACE(("FIXME from %d\n", line_no(curbp, fromline)));
-    TRACE(("FIXME to   %d\n", line_no(curbp, toline)));
+    TRACE_KPOS(("kpos from %d\n", line_no(curbp, fromline)));
+    TRACE_KPOS(("kpos to   %d\n", line_no(curbp, toline)));
 
     /* some commands have special default ranges */
     if (lflag & DFLALL) {
@@ -858,18 +865,8 @@ execute_named_command(int f, int n)
     }
 
     save_DOT = DOT;
-    TRACE(("FIXME save %d.%d\n", line_no(curbp, DOT.l), DOT.o));
-#ifdef GVAL_KEEP_POS
-    TRACE(("FIXME - saving\n"));
-    switch (global_g_val(GVAL_KEEP_POS)) {
-    case KPOS_VILE:
-	break;
-    case KPOS_NVI:
-	break;
-    case KPOS_VI:
-	break;
-    }
-#endif
+    TRACE_KPOS(("kpos save %d.%d\n", line_no(curbp, DOT.l), DOT.o));
+
     if (!(flags & NOMOVE)
 	&& ((toline != 0) || (fromline != 0))) {
 	/* assume it's an absolute motion */
@@ -931,7 +928,7 @@ execute_named_command(int f, int n)
 	restore_dot(last_DOT);
 #ifdef GVAL_KEEP_POS
     else {
-	TRACE(("FIXME restoring\n"));
+	TRACE_KPOS(("kpos restoring\n"));
 	switch (global_g_val(GVAL_KEEP_POS)) {
 	case KPOS_VILE:
 	    break;
@@ -939,7 +936,7 @@ execute_named_command(int f, int n)
 	    if ((lflag & FROM_TO) &&
 		(cfp == &f_operrshift || cfp == &f_operlshift)) {
 		flags |= NOMOVE;
-		TRACE(("FIXME restore bot\n"));
+		TRACE_KPOS(("kpos restore bot\n"));
 	    } else if (toline != 0 &&
 		       fromline != 0) {
 		int dotline = line_no(curbp, save_DOT.l);
@@ -947,21 +944,24 @@ execute_named_command(int f, int n)
 		    save_DOT.l = toline;
 		    save_DOT.o = 0;
 		    flags |= NOMOVE;
-		    TRACE(("FIXME restore to %d\n", line_no(curbp, toline)));
+		    TRACE_KPOS(("kpos restore to %d\n", line_no(curbp, toline)));
 		} else if (line_no(curbp, fromline) > dotline) {
 		    save_DOT.l = toline;
 		    save_DOT.o = 0;
 		    flags |= NOMOVE;
-		    TRACE(("FIXME restore from %d\n", line_no(curbp, fromline)));
+		    TRACE_KPOS(("kpos restore from %d\n", line_no(curbp, fromline)));
 		} else {
 		    flags |= NOMOVE;
-		    TRACE(("FIXME restore ignored to/from\n"));
+		    TRACE_KPOS(("kpos restore ignored to/from\n"));
 		}
 	    } else {
-		TRACE(("FIXME restore failed\n"));
+		TRACE_KPOS(("kpos restore failed\n"));
 	    }
 	    break;
 	case KPOS_VI:
+	    save_DOT.l = toline;
+	    save_DOT.o = 0;
+	    flags |= NOMOVE;
 	    break;
 	}
 	if (flags & NOMOVE) {
@@ -970,9 +970,8 @@ execute_named_command(int f, int n)
     }
 #endif
 
-#if FIXME_KPOS
-    TRACE(("FIXME after %d.%d\n", line_no(curbp, DOT.l), DOT.o));
-#endif
+    TRACE_KPOS(("kpos after %d.%d\n", line_no(curbp, DOT.l), DOT.o));
+
     return status;
 }
 
