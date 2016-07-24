@@ -1,10 +1,33 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20160719 (r)
+ 20160724 (r)
 	> Marc Simpson:
 	+ correct a typo in skipblanksb() which caused up-paragraph "{{" to
 	  get stuck (Savannah #47211).
 	> Tom Dickey:
+	+ use CF_PROG_LINT, which checks for cppcheck.  Alternatively, this
+	  works, though the "$(LIBS)" used in the lint-rule has to be removed:
+		export LINT=cppcheck
+		export LINT_OPTS="--enable=all"
+	+ add error-patterns for cppcheck.
+	+ updates for configure macros
+	+ CF_CC_ENV_FLAGS - don't limit the check to -I, -U and -D options,
+	  since the added options can include various compiler options before
+	  and after preprocessor options.
+	+ CF_FUNC_DLSYM add braces around calls to CF_ADD_LIB which follow a
+	  test "&&" operator since the macro uses multiple statements
+	+ CF_LD_RPATH_OPT change FreeBSD to use -Wl,-rpath rather than -rpath
+	  option.  According to FreeBSD #178732, either works since FreeBSD
+	  4.x; however scons does not accept anything except the -Wl,-rpath
+	  form.
+	+ CF_LIB_PREFIX build-fixes for OS/2
+	+ CF_WITH_MAN2HTML use configured shell
+	+ CF_XOPEN_CURSES improve check, making it define NCURSES_WIDECHAR if
+	  we happen to be building on a platform (such as OSX) where we do not
+	  define _XOPEN_SOURCE or _XOPEN_SOURCE_EXTENDED
+	+ CF_XOPEN_SOURCE build-fixes for OS/2
+	+ modify configuration so that "--no-leaks" does not imply
+	  "--with-trace", since that is not necessary when using valgrind.
 	+ add null-pointer checks in vile-manfilt for some unusual erasures.
 	+ promote $filename-ic to a global mode, using this to allow users to
 	  do filename-completion on any system ignoring the case of filenames
@@ -28,6 +51,7 @@ Changes for vile 9.9 (released ??? ??? ?? ????)
 	+ make special case when locating the copy of vile which was run, to
 	  not warn and skip because it was found in a group-writable
 	  directory (discussion with Steve Lembark).
+	+ update config.guess, config.sub
 
  20150907 (q)
 	> Brendan O'Dea:
