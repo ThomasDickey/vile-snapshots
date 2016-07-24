@@ -1,11 +1,11 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_REVISION($Revision: 1.321 $)
+AC_REVISION($Revision: 1.323 $)
 AC_PREREQ(2.52.20011201)
 
 ### Use "configure -with-screen" to override the default configuration, which is
 ### termcap-based on unix systems.
 
-dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.321 2015/08/20 09:09:23 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.323 2016/07/24 17:09:57 tom Exp $
 
 define(MAKELIST, sh $srcdir/filters/makelist.sh $srcdir/filters/genmake.mak)
 
@@ -334,11 +334,10 @@ fi
 # X11 checks will sometimes add to CFLAGS.  We want the state of CFLAGS
 # prior to these checks
 
-dnl: why this? AC_DYNIX_SEQ
 AC_CHECK_FUNC(getpwnam,,AC_CHECK_LIB(sun,getpwnam))
 
 # check for a lint program.
-AC_CHECK_PROGS(LINT, lint alint splint lclint, [])
+CF_PROG_LINT
 if test -n "$LINT"
 then
 	AC_DEFINE(SYSTEM_HAS_LINT_PROG,1,[Define to 1 if the system has a lint program])
@@ -848,7 +847,11 @@ AC_ARG_WITH(trace,
 	 with_trace=yes],
 	[with_trace=])
 
-test -n "${with_trace}${with_no_leaks}" && EXTRAOBJS="$EXTRAOBJS trace\$o"
+if test -n "${with_trace}" ; then
+	EXTRAOBJS="$EXTRAOBJS trace\$o"
+elif test -n "${with_no_leaks}" ; then
+	test -z "${with_valgrind}" && EXTRAOBJS="$EXTRAOBJS trace\$o"
+fi
 
 CF_WITH_WARNINGS(Wno-unknown-pragmas)
 

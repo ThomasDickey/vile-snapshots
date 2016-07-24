@@ -3,9 +3,9 @@
  * written for vile by paul fox.
  * rewritten to use regular expressions by T.Dickey
  *
- * Copyright (c) 1990-2015 by Paul Fox and Thomas Dickey
+ * Copyright (c) 1990-2016 by Paul Fox and Thomas Dickey
  *
- * $Header: /users/source/archives/vile.vcs/RCS/finderr.c,v 1.149 2015/01/19 01:37:48 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/finderr.c,v 1.151 2016/07/24 17:14:14 tom Exp $
  *
  */
 
@@ -159,6 +159,8 @@ char *const predefined[] =
     "^\"%[^\"]\", line %L, %T",	/* ncurses */
     "^%F:%L\\.%C\\(-\\d\\+\\)\\?:%T",	/* bison */
     "^%F: \\a - line %L of \"%F\", %T",		/* byacc */
+    "^\\[%[^:]:%L\\]: %T",	/* cppcheck */
+    "^\\[%[^:]:%L\\]\\( -> \\[[^]]\\+\\]\\)\\?: %T",	/* cppcheck */
 };
 
 static ERR_PATTERN *exp_table = 0;

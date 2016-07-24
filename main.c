@@ -22,7 +22,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.732 2016/07/16 14:08:37 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.733 2016/07/24 10:54:31 tom Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -3215,9 +3215,11 @@ free_all_leaks(void)
     vt_leaks();
 
     /* whatever is left over must be a leak */
+#if OPT_TRACE
     show_alloc();
     show_elapsed();
     trace_leaks();
+#endif
 #ifdef HAVE__NC_FREEALL
     _nc_freeall();
 #endif

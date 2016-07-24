@@ -20,7 +20,7 @@
 #
 # gnu autoconf support by kevin buettner, 5/94
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.276 2015/08/20 09:25:43 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.277 2016/07/24 17:15:10 tom Exp $
 
 SHELL		= @SHELL@
 
@@ -46,6 +46,7 @@ CFLAGS		= @CFLAGS@ $(EXTRA_CFLAGS)
 LIBS		= @FILTER_LIBS@ @LIBICONV@ @LIBS@
 
 LINT		= @LINT@
+LINT_OPTS	= @LINT_OPTS@
 CTAGS		= @CTAGS@
 ETAGS		= @ETAGS@
 
@@ -711,8 +712,8 @@ realclean: distclean
 	- $(RM) tags TAGS vile-perl-api.* pod2html*
 
 lint: $(BUILTHDRS)
-	$(LINT) $(CPPFLAGS) $(SRC) $(LIBS)
-	$(LINT) $(CPPFLAGS) mktbls.c
+	$(LINT) $(LINT_OPTS) $(CPPFLAGS) $(SRC) $(LIBS)
+	$(LINT) $(LINT_OPTS) $(CPPFLAGS) mktbls.c
 
 TAG_SRC = $(SRC) $(HDRS) $(BUILTSRC) $(BUILTHDRS)
 
