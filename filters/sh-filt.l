@@ -7,7 +7,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/sh-filt.l,v 1.123 2014/03/30 18:24:31 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/sh-filt.l,v 1.124 2016/07/25 23:11:33 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Shell script.
  */
@@ -93,7 +93,7 @@ BRACES		"${"
 END_BRACES	"}"
 
 IDENT		{NAME0}{NAME}*
-QIDENT		({SSTRING}|{DSTRING}|[^ \"'$\t\r\n(){}])+
+QIDENT		{SSTRING}|{DSTRING}|[^ \"'$\t\r\n(){}]+
 IDENT0		[-]+[[:digit:]]*{NAME0}+{NAME2}*
 
 VNAME		[.]?{IDENT}([.]{IDENT})*
