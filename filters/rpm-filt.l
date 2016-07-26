@@ -7,7 +7,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/rpm-filt.l,v 1.39 2014/03/30 18:24:47 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/rpm-filt.l,v 1.40 2016/07/26 00:06:39 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of rpm spec-file.
  */
@@ -55,7 +55,7 @@ FILENAME	(([./]{WILDNAME}+)|({WILDNAME}+[./]{WILDNAME}*)|({NAME}*{WILDCARD})|\.+
 
 ACTION		[\.`{}]
 IDENT		[[:alpha:]_]{NAME}*
-QIDENT		({SSTRING}|{DSTRING}|[^ \"'$\t\r\n])+
+QIDENT		{SSTRING}|{DSTRING}|[^ \"'$\t\r\n]+
 IDENT0		[-]+[[:digit:]]*[[:alpha:]_-]+[[:alnum:]_-]*
 
 SH_IDENT1	[$]{NAME}+

@@ -1,10 +1,13 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20160724 (r)
+ 20160725 (r)
 	> Marc Simpson:
 	+ correct a typo in skipblanksb() which caused up-paragraph "{{" to
 	  get stuck (Savannah #47211).
 	> Tom Dickey:
+	+ correct expression for QIDENT in rpm-filt.l, sh-filt.l, which could
+	  match multiple tokens rather than a single one and interfere with
+	  states for here-document.
 	+ use CF_PROG_LINT, which checks for cppcheck.  Alternatively, this
 	  works, though the "$(LIBS)" used in the lint-rule has to be removed:
 		export LINT=cppcheck
