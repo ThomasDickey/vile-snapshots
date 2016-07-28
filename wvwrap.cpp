@@ -12,7 +12,7 @@
  * Note:  A great deal of the code included in this file is copied
  * (almost verbatim) from other vile modules.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/wvwrap.cpp,v 1.21 2015/05/22 10:53:03 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/wvwrap.cpp,v 1.22 2016/07/27 09:28:11 tom Exp $
  */
 
 #include "w32vile.h"
@@ -302,7 +302,7 @@ WinMain(HINSTANCE hInstance,	// handle to current instance
 
     if (make_argv(0, lpCmdLine, &argv, &argc, NULL) < 0)
 	return (nomem());
-    argc1 = after_options(argc, argv);
+    argc1 = after_options(0, argc, argv);
 
 #if OPT_TRACE
     Trace("; cmdline:%s\n", lpCmdLine);

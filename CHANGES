@@ -1,10 +1,12 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20160725 (r)
+ 20160727 (r)
 	> Marc Simpson:
 	+ correct a typo in skipblanksb() which caused up-paragraph "{{" to
 	  get stuck (Savannah #47211).
 	> Tom Dickey:
+	+ fix an off-by-one in argument list for wvwrap vs winvile that broke
+	  edit-with operation from file explorer.
 	+ correct expression for QIDENT in rpm-filt.l, sh-filt.l, which could
 	  match multiple tokens rather than a single one and interfere with
 	  states for here-document.
