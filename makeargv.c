@@ -1,7 +1,7 @@
 /*
  * makeargv.c:  parse string to argv[]
  *
- * $Header: /users/source/archives/vile.vcs/RCS/makeargv.c,v 1.6 2013/12/28 17:27:50 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/makeargv.c,v 1.7 2016/07/27 09:10:44 tom Exp $
  */
 
 #include <estruct.h>
@@ -43,9 +43,9 @@ option_has_param(const char *option)
 }
 
 int
-after_options(int argc, char **argv)
+after_options(int first, int argc, char **argv)
 {
-    int result = 1;
+    int result = first;
 
     while (result < argc && argv[result] != 0 && is_option(argv[result]))
 	result += 1 + option_has_param(argv[result]);

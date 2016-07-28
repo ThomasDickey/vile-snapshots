@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 screen API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.205 2016/07/14 00:44:25 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.206 2016/07/27 09:10:58 tom Exp $
  * Written by T.E.Dickey for vile (october 1997).
  * -- improvements by Clark Morgan (see w32cbrd.c, w32pipe.c).
  */
@@ -4126,7 +4126,7 @@ WinMain(
 	&& had_option(argv, &argc, "-i")
 	&& ffaccess(argend, FL_READABLE)) {
 
-	argc = after_options(argc, argv);
+	argc = after_options(1, argc, argv);
 	argv[argc++] = argend;
 	argv[argc] = 0;
 
