@@ -1,5 +1,9 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
+ 20160729 (s)
+	> Tom Dickey:
+	+ correct long-name for filename-ic mode (report Marc Simpson).
+
  20160727 (r)
 	> Marc Simpson:
 	+ correct a typo in skipblanksb() which caused up-paragraph "{{" to
