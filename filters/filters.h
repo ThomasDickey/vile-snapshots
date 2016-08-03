@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.140 2015/12/20 17:16:19 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.142 2016/08/02 09:14:50 tom Exp $
  */
 
 #ifndef FILTERS_H
@@ -154,12 +154,12 @@ extern FILTER_DEF filter_def;
  * One of the problems with "new" flex is that it reverses the order of
  * definitions for yywrap.
  */
-#if defined(FLEX_SCANNER) && defined(FLEX_BETA)
+#if defined(FLEX_SCANNER) && defined(YY_FLEX_SUBMINOR_VERSION)
 #define YY_SKIP_YYWRAP
 #define yywrap() private_yywrap()
-#define USE_LEXWRAP(name) static int private_yywrap(void) { return 1; }
+#define USE_LEXWRAP static int private_yywrap(void) { return 1; }
 #else
-#define USE_LEXWRAP(name) /* nothing */
+#define USE_LEXWRAP /* nothing */
 #endif
 
 /*
@@ -167,7 +167,7 @@ extern FILTER_DEF filter_def;
  * such as c-filt.c, use DefineOptFilter().
  */
 #define DefineOptFilter(name,options) \
-USE_LEXWRAP(name##_wrap) \
+USE_LEXWRAP \
 static void init_filter(int before); \
 static void do_filter(FILE *Input); \
 DCL_LEXFREE \
