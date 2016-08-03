@@ -1,7 +1,7 @@
-# $Header: /users/source/archives/vile.vcs/filters/RCS/mk-2nd.awk,v 1.20 2010/03/03 11:54:25 tom Exp $
+# $Header: /users/source/archives/vile.vcs/filters/RCS/mk-2nd.awk,v 1.22 2016/08/03 00:47:55 tom Exp $
 #
 # Generate makefile rules for vile's external and built-in filters.  We will
-# build each filter only one way, to avoid conflict with the generated files. 
+# build each filter only one way, to avoid conflict with the generated files.
 # This script uses these parameters:
 #	flex =  yes/no, depending on whether lex is really flex.
 #	mode =	one of 'built-in','loadable' or 'external'
@@ -85,7 +85,7 @@ END	{
 		    if (type[i] == "l") {
 			printf "\t%s echo '#include <flt_defs.h>' > %s.c\n", show, root[i]
 			printf "\t%s$(LEX) -P%s_ -t %s/%s >> %s.c\n", show, name[i], from, file[i], root[i]
-			printf "\t%s%s%s %s/%s.c\n", show, comp, name[i], ".", root[i]
+			printf "\t%s%s%s -Dprivate_yywrap=%s_wrap %s/%s.c\n", show, comp, name[i], name[i], ".", root[i]
 			printf "\t%s $(RM) %s.c\n", show, root[i]
 
 			dst = sprintf("%s.c", root[i]);

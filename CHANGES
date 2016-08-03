@@ -1,7 +1,10 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20160729 (s)
+ 20160802 (s)
 	> Tom Dickey:
+	+ improve version-comparison for "new" flex to allow for 2.6.0, and
+	  accept that for built-in filters.  Also modify filters/mk-2nd.awk
+	  to work with "new" flex ifdef's to ignore yywrap (Debian #832973).
 	+ correct long-name for filename-ic mode (report Marc Simpson).
 
  20160727 (r)
