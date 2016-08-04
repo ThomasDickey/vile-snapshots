@@ -1,6 +1,6 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20160802 (s)
+ 20160803 (s)
 	> Tom Dickey:
 	+ improve version-comparison for "new" flex to allow for 2.6.0, and
 	  accept that for built-in filters.  Also modify filters/mk-2nd.awk
