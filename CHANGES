@@ -1,7 +1,9 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20160803 (s)
+ 20160805 (s)
 	> Tom Dickey:
+	+ quiet some unnecessary compiler warnings with glibc > 2.20 by adding
+	  _DEFAULT_SOURCE as needed.
 	+ improve version-comparison for "new" flex to allow for 2.6.0, and
 	  accept that for built-in filters.  Also modify filters/mk-2nd.awk
 	  to work with "new" flex ifdef's to ignore yywrap (Debian #832973).
