@@ -1,6 +1,9 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20160805 (s)
+ 20161106 (s)
+	> Brendan O'Dea:
+	+ add command-line parsing for "--" token, assumed by visudo in the
+	  1.8.12 - 1.8.16 changes (report by Wayne Cuddy).
 	> Tom Dickey:
 	+ quiet some unnecessary compiler warnings with glibc > 2.20 by adding
 	  _DEFAULT_SOURCE as needed.

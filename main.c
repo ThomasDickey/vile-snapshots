@@ -22,7 +22,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.733 2016/07/24 10:54:31 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.734 2016/11/07 00:30:15 bod Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -348,6 +348,7 @@ MainProgram(int argc, char *argv[])
     int tt_opened;
     BUFFER *bp;
     int carg;			/* current arg to scan */
+    int literal = FALSE;	/* force args to be interpreted as filenames */
     char *vileinit = NULL;	/* the startup file or VILEINIT var */
     int startstat = TRUE;	/* result of running startup */
     BUFFER *havebp = NULL;	/* initial buffer to read */
@@ -556,8 +557,13 @@ MainProgram(int argc, char *argv[])
 	char *param = argv[carg];
 
 	/* evaluate switches */
-	if (*param == '-') {
+	if (*param == '-' && !literal) {
 	    ++param;
+	    /* all arguments following -- are interpreted as filenames */
+	    if (!strcmp(param, "-")) {
+		literal = TRUE;
+		continue;
+	    }
 #if DISP_BORLAND || SYS_VMS
 	    /* if it's a digit, it's probably a screen
 	       resolution */
@@ -686,10 +692,9 @@ MainProgram(int argc, char *argv[])
 		default:	/* unknown switch */
 		    print_usage(GOODEXIT);
 		}
-
-	} else if (*param == '+') {	/* alternate form of -g */
+	} else if (*param == '+' && !literal) {		/* alternate form of -g */
 	    setup_command(opts_bp, GetArgVal(param));
-	} else if (*param == '@') {
+	} else if (*param == '@' && !literal) {
 	    vileinit = ++param;
 	    add_cmdarg(init_bp, "source %s\n", param);
 	} else if (*param != EOS) {
