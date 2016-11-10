@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/pl-filt.c,v 1.106 2013/12/07 13:39:54 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/pl-filt.c,v 1.107 2016/11/10 00:29:25 tom Exp $
  *
  * Filter to add vile "attribution" sequences to perl scripts.  This is a
  * translation into C of an earlier version written for LEX/FLEX.
@@ -754,6 +754,7 @@ add_to_PATTERN(char *s)
 	int ignored = 0;
 	int escaped = 0;
 	int comment = 0;
+	int in_blocks = 0;
 	int in_curlys = 0;
 	int in_parens = 0;
 
@@ -791,8 +792,19 @@ add_to_PATTERN(char *s)
 		    escaped = 1;
 		} else {
 		    if (!escaped) {
+			ignored = 0;
 
 			switch (*s) {
+			case L_BLOCK:
+			    if (in_blocks == 0)
+				in_blocks = 1;
+			    break;
+			case R_BLOCK:
+			    if (in_blocks != 0) {
+				in_blocks = 0;
+				ignored = 1;
+			    }
+			    break;
 			case L_CURLY:
 			    ++in_curlys;
 			    break;
@@ -812,7 +824,8 @@ add_to_PATTERN(char *s)
 			if (*s == '#' && delim == R_CURLY && !in_curlys)
 			    comment = 1;
 
-			ignored = 0;
+			if (delim == L_BLOCK && in_blocks)
+			    ignored = 1;
 			if (delim == L_CURLY && in_curlys)
 			    ignored = 1;
 			if (delim == L_PAREN && in_parens)
