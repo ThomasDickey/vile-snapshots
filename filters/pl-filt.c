@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/pl-filt.c,v 1.107 2016/11/10 00:29:25 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/pl-filt.c,v 1.111 2016/11/12 01:30:50 tom Exp $
  *
  * Filter to add vile "attribution" sequences to perl scripts.  This is a
  * translation into C of an earlier version written for LEX/FLEX.
@@ -18,7 +18,7 @@ DefineFilter(perl);
  * should consider '$' and '&', but reading the parser hints that might work
  * too).
  */
-#define QUOTE_DELIMS "#:/?|!:%',{}[]()@;=~\""
+#define QUOTE_DELIMS "+&#:/?|!:%',{}[]()@;=~\""
 /* from Perl's S_scan_str() */
 #define LOOKUP_TERM "([{< )]}> )]}>"
 
@@ -684,6 +684,46 @@ begin_PATTERN(char *s)
 }
 
 /*
+ * Check for simple pattern, trying to distinguish '/' from its use for divide,
+ * and '$' from its use in variable names.
+ */
+static int
+is_PATTERN(char *s)
+{
+    char *base = s;
+    int delim = *s++;
+    int result = 0;
+    int escaped = 0;
+    char *content = s;
+
+    while (MORE(s)) {
+	int ch = *s++;
+	if (escaped) {
+	    escaped = 0;
+	} else if (ch == BACKSLASH) {
+	    escaped = 1;
+	} else if (ch == delim) {
+	    if (((s - 1) - content) != 0) {
+		/* content is nonempty */
+		char *next = 0;
+		(void) strtol(content, &next, 0);
+		if (next == 0 || next == content) {
+		    /* content was not a number */
+		    result = (s - base);
+		}
+	    }
+	    break;
+	} else if (isspace(ch)) {
+	    break;
+	} else if (ch == '$') {
+	    if (*s != delim)
+		break;
+	}
+    }
+    return result;
+}
+
+/*
  * If we're pointing to a quote-like operator, return its length.
  * As a side-effect, set the number of delimiters (assuming '/') it needs.
  */
@@ -692,6 +732,7 @@ is_QUOTE(char *s, int *delims)
 {
     char *base = s;
     size_t len;
+    int result = 0;
 
     *delims = 0;
     while (MORE(s) && isIdent(*s)) {
@@ -721,18 +762,20 @@ is_QUOTE(char *s, int *delims)
     if (*delims == 0)
 	s = base;
 
-    if (s != base) {
+    if ((result = (int) (s - base)) != 0) {
 	int test = char_after_blanks(s);
-	DPRINTF(("is_Quote(%.*s:%c)", (int) (s - base), base, test));
+	DPRINTF(("is_Quote(%.*s:%c)", result, base, test));
 	if (test == '#' && isspace(CharOf(*s)))
 	    test = 0;
-	if ((test == 0) || (strchr(QUOTE_DELIMS, test) == 0))
+	if ((test == 0) || (strchr(QUOTE_DELIMS "<>", test) == 0)) {
 	    s = base;
+	    result = 0;
+	}
 	DPRINTF(("is_QUOTE(%.*s)\n",
-		 (s != base) ? (int) (s - base) : 1,
-		 (s != base) ? base : ""));
+		 result ? result : 1,
+		 result ? base : ""));
     }
-    return (int) (s - base);
+    return result;
 }
 
 static int
@@ -1500,6 +1543,8 @@ do_filter(FILE *input GCC_UNUSED)
 			}
 			s += ok;
 		    }
+		} else if (isPattern(*s) && (ok = is_PATTERN(s))) {
+		    s = write_PATTERN(s, ok);
 		} else {
 		    if (parens) {
 			if (strchr("|&=~!->", *s) != 0) {
