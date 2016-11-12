@@ -1,12 +1,16 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20161109 (s)
+ 20161111 (s)
 	> Brendan O'Dea:
 	+ add command-line parsing for "--" token, assumed by visudo in the
 	  1.8.12 - 1.8.16 changes (report by Wayne Cuddy).
 	> Tom Dickey:
-	+ fix highlighting when square-brackets are used as delimiters in a
-	  perl substitution, e.g., s[foo[bar]xxx][yyy]
+	+ improve perl syntax highlighter:
+	  + check for simple patterns that may follow operators such as "map".
+	  + allow '+' and '&' as a quote or substitution delimiter
+	  + allow angle brackets for quotes after 'q', etc.
+	  + fix highlighting when square-brackets are used as delimiters in a
+	    perl substitution, e.g., s[foo[bar]xxx][yyy]
 	+ quiet some unnecessary compiler warnings with glibc > 2.20 by adding
 	  _DEFAULT_SOURCE as needed.
 	+ improve version-comparison for "new" flex to allow for 2.6.0, and
