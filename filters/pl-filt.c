@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/pl-filt.c,v 1.111 2016/11/12 01:30:50 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/pl-filt.c,v 1.113 2016/11/13 01:55:43 tom Exp $
  *
  * Filter to add vile "attribution" sequences to perl scripts.  This is a
  * translation into C of an earlier version written for LEX/FLEX.
@@ -552,7 +552,7 @@ end_marker(char *s, const char *marker, int only)
  * "=" (the "=" is painted in a different color).  Otherwise return 0.
  */
 static int
-begin_POD(char *s)
+begin_POD(char *s, int emit)
 {
     int result = 0;
     char *base = s;
@@ -570,16 +570,25 @@ begin_POD(char *s)
 	&& s[0] == '='
 	&& isalpha(CharOf(s[1]))) {
 	result = (int) (s + 1 - base);
-	while (base != s) {
-	    flt_putc(*base++);	/* skip the newlines */
+	if (emit) {
+	    while (base != s) {
+		flt_putc(*base++);	/* skip the newlines */
+	    }
 	}
     }
     return result;
 }
 
 static int
-end_POD(char *s)
+end_POD(char *s, int skip)
 {
+    if (skip) {
+	while (MORE(s)) {
+	    if (*s != '\n')
+		break;
+	    ++s;
+	}
+    }
     return end_marker(s, "=cut", 0);
 }
 
@@ -1436,10 +1445,13 @@ do_filter(FILE *input GCC_UNUSED)
 		    s += ok;
 		    DPRINTF(("\nePATTERN:%d\n", __LINE__));
 		    state = ePATTERN;
-		} else if (in_line < 0
-			   && (ok = begin_POD(s))) {
+		} else if (in_line <= 0
+			   && (ok = begin_POD(s, 1))) {
+		    char *base = s;
 		    state = ePOD;
 		    s = put_document(s + ok - 1);
+		    if (end_POD(base, 1))
+			state = eCODE;
 		} else if (in_line == 0
 			   && (ok = is_PREPROC(s)) != 0) {
 		    flt_puts(s, ok, Preproc_attr);
@@ -1597,9 +1609,11 @@ do_filter(FILE *input GCC_UNUSED)
 		break;
 
 	    case ePOD:
-		if (end_POD(s))
+		if (end_POD(s, 0))
 		    state = eCODE;
 		s = put_document(s);
+		if (begin_POD(s - 1, 0))
+		    state = ePOD;
 		break;
 	    }
 	}
