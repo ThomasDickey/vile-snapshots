@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/pl-filt.c,v 1.113 2016/11/13 01:55:43 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/pl-filt.c,v 1.117 2016/11/18 00:53:27 tom Exp $
  *
  * Filter to add vile "attribution" sequences to perl scripts.  This is a
  * translation into C of an earlier version written for LEX/FLEX.
@@ -400,9 +400,10 @@ is_NUMBER(char *s, int *err)
 	    } else {
 		break;
 	    }
-	} else if (value && (ch == 'e' || ch == 'E')) {
-	    if (state >= 2 || !value)
+	} else if (value && (radix != 16) && (ch == 'e' || ch == 'E')) {
+	    if (state >= 2 || !value) {
 		*err = 1;
+	    }
 	    state = 2;
 	} else {
 	    if (((state || (radix == 10)) && isdigit(ch))
@@ -557,6 +558,7 @@ begin_POD(char *s, int emit)
     int result = 0;
     char *base = s;
     int skip = 0;
+    int maybe = 0;
 
     while (MORE(s)) {
 	if (*s == '\n')
@@ -565,11 +567,17 @@ begin_POD(char *s, int emit)
 	    break;
 	++s;
     }
+    if ((base != the_file) && (skip == 1)) {
+	maybe = 1;
+	++skip;
+    }
     if (((base == the_file) || (skip >= 2))
 	&& ATLEAST(s, 2)
 	&& s[0] == '='
 	&& isalpha(CharOf(s[1]))) {
 	result = (int) (s + 1 - base);
+	if (result && maybe)
+	    flt_error("expected a blank line");
 	if (emit) {
 	    while (base != s) {
 		flt_putc(*base++);	/* skip the newlines */
@@ -1307,7 +1315,7 @@ is_FORMAT(char *s, int len)
 	s += is_BLANK(s);
 	s += is_NAME(s);
 	s += is_BLANK(s);
-	if (*s == '=')
+	if (*s == '=' && !ispunct(s[1]))
 	    return 1;
     }
     return 0;
