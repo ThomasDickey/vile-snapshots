@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/pl-filt.c,v 1.117 2016/11/18 00:53:27 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/pl-filt.c,v 1.121 2016/11/26 01:53:49 tom Exp $
  *
  * Filter to add vile "attribution" sequences to perl scripts.  This is a
  * translation into C of an earlier version written for LEX/FLEX.
@@ -18,7 +18,7 @@ DefineFilter(perl);
  * should consider '$' and '&', but reading the parser hints that might work
  * too).
  */
-#define QUOTE_DELIMS "+&#:/?|!:%',{}[]()@;=~\""
+#define QUOTE_DELIMS "$+&#:/?|!:%',{}[]()@;=~\""
 /* from Perl's S_scan_str() */
 #define LOOKUP_TERM "([{< )]}> )]}>"
 
@@ -556,9 +556,20 @@ static int
 begin_POD(char *s, int emit)
 {
     int result = 0;
-    char *base = s;
-    int skip = 0;
+    char *base;
+    int skip = 2;
     int maybe = 0;
+
+    while (s > the_file) {
+	if (s[0] != '\n' ||
+	    s[-1] != '\n' ||
+	    --skip <= 0) {
+	    break;
+	}
+	--s;
+    }
+    skip = 0;
+    base = s;
 
     while (MORE(s)) {
 	if (*s == '\n')
@@ -1405,7 +1416,6 @@ do_filter(FILE *input GCC_UNUSED)
 		in_line++;
 	    }
 	    if_old = if_wrd;
-	    if_wrd = nullKey;
 	    DPRINTF(("(%s(%c) line:%d.%d(%d) if:%d.%d op:%c%c)%s\n",
 		     stateName(state), *s, in_line, in_stmt, parens,
 		     if_wrd.may_have_pattern,
@@ -1426,6 +1436,7 @@ do_filter(FILE *input GCC_UNUSED)
 		    state = eCODE;
 		    ++s;
 		}
+		if_wrd = nullKey;
 		break;
 
 	    case eCODE:
@@ -1433,26 +1444,32 @@ do_filter(FILE *input GCC_UNUSED)
 		    state = eIGNORED;
 		    flt_puts(s, 1, Preproc_attr);
 		    break;
-		} else if (!isspace(CharOf(*s)))
+		} else if (!isspace(CharOf(*s))) {
 		    ++in_stmt;
+		}
 
 		if (*s == BACKSLASH && ATLEAST(s, 2) && s[1] == BQUOTE) {
 		    flt_puts(s, 2, String_attr);
 		    s += 2;
+		    if_wrd = nullKey;
 		} else if (*s == BQUOTE) {
 		    flt_puts(s, 1, Action_attr);
 		    ++s;
 		    state = eBACKTIC;
+		    if_wrd = nullKey;
 		} else if ((ok = is_GLOB(s)) != 0) {
 		    s = put_embedded(s, ok, String_attr);
+		    if_wrd = nullKey;
 		} else if ((marker = begin_HERE(s, &quoted)) != 0) {
 		    state = eHERE;
 		    s = put_remainder(s, String_attr, quoted);
+		    if_wrd = nullKey;
 		} else if ((ok = begin_PATTERN(s)) != 0) {
 		    flt_puts(s, ok, "");
 		    s += ok;
 		    DPRINTF(("\nePATTERN:%d\n", __LINE__));
 		    state = ePATTERN;
+		    if_wrd = nullKey;
 		} else if (in_line <= 0
 			   && (ok = begin_POD(s, 1))) {
 		    char *base = s;
@@ -1484,6 +1501,7 @@ do_filter(FILE *input GCC_UNUSED)
 		} else if (*s == L_CURLY) {
 		    saveOp(s);
 		    flt_putc(*s++);
+		    if_wrd = nullKey;
 		} else if (*s == L_PAREN) {
 		    parens++;
 		    saveOp(s);
@@ -1492,17 +1510,21 @@ do_filter(FILE *input GCC_UNUSED)
 			DPRINTF(("\nePATTERN:%d\n", __LINE__));
 			state = ePATTERN;
 		    }
+		    if_wrd = nullKey;
 		} else if (*s == R_PAREN) {
 		    if (--parens < 0)
 			parens = 0;
 		    flt_putc(*s++);
 		    clearOp();
+		    if_wrd = nullKey;
 		} else if ((ok = is_ELLIPSIS(s)) != 0) {
 		    flt_puts(s, ok, "");
 		    s += ok;
+		    if_wrd = nullKey;
 		} else if ((ok = is_NUMBER(s, &err)) != 0) {
 		    clearOp();
 		    s = put_NUMBER(s, ok, &err);
+		    if_wrd = nullKey;
 		} else if ((ok = is_KEYWORD(s)) != 0) {
 		    if ((s != the_file)
 			&& (s[-1] == '*')) {	/* typeglob */
@@ -1563,9 +1585,14 @@ do_filter(FILE *input GCC_UNUSED)
 			}
 			s += ok;
 		    }
+		    if_wrd = nullKey;
 		} else if (isPattern(*s) && (ok = is_PATTERN(s))) {
 		    s = write_PATTERN(s, ok);
+		    if_wrd = nullKey;
 		} else {
+		    if (!isspace(CharOf(*s))) {
+			if_wrd = nullKey;
+		    }
 		    if (parens) {
 			if (strchr("|&=~!->", *s) != 0) {
 			    saveOp(s);
@@ -1591,6 +1618,7 @@ do_filter(FILE *input GCC_UNUSED)
 		    marker = 0;
 		}
 		s = put_remainder(s, String_attr, quoted);
+		if_wrd = nullKey;
 		break;
 
 	    case eIGNORED:
@@ -1614,6 +1642,7 @@ do_filter(FILE *input GCC_UNUSED)
 		    clearOp();
 		    state = eCODE;
 		}
+		if_wrd = nullKey;
 		break;
 
 	    case ePOD:
