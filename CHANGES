@@ -1,11 +1,14 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20161117 (s)
+ 20161125 (s)
 	> Brendan O'Dea:
 	+ add command-line parsing for "--" token, assumed by visudo in the
 	  1.8.12 - 1.8.16 changes (report by Wayne Cuddy).
 	> Tom Dickey:
 	+ improve perl syntax highlighter:
+	  + fix state used to guess where a pattern might occur, e.g., after
+	    an "if" keyword with no preceding operator to account for line
+	    breaks.
 	  + correct a check for illegal numbers, which flagged hexadecimal
 	    numbers containing "e".
 	  + distinguish special case of "format =" vs "format =>".
@@ -13,7 +16,7 @@ Changes for vile 9.9 (released ??? ??? ?? ????)
 	  + allow for case where pod mode is turned on/off with only one blank
 	    line between the directives.
 	  + check for simple patterns that may follow operators such as "map".
-	  + allow '+' and '&' as a quote or substitution delimiter
+	  + allow '$', '+' or '&' as a quote or substitution delimiter
 	  + allow angle brackets for quotes after 'q', etc.
 	  + fix highlighting when square-brackets are used as delimiters in a
 	    perl substitution, e.g., s[foo[bar]xxx][yyy]
