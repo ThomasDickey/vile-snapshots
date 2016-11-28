@@ -1,6 +1,6 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <!--
-  $Id: filters.html,v 1.18 2015/01/31 02:01:50 tom Exp $
+  $Id: filters.html,v 1.19 2016/11/28 01:23:17 tom Exp $
 -->
 
 <html>
@@ -342,7 +342,10 @@ rem?ark
   syntax for dotted variable names. The ksh93 "vnames" allow a
   dotted name such as "$foo.bar" to be defined it is root ("$foo")
   is already defined. That affects portability of scripts because
-  other sh-like programs do not behave this way.</p>
+  other sh-like programs do not behave this way. The "-K" option
+  also handles ksh's so-called "ANSI C quoting" which uses
+  single-quotes after a dollar sign as if those were actually
+  double-quotes.</p>
 
   <p>The XML filter recognizes "-A" and "-M" options to recognize
   Ant and Maven macrodef and property tags, respectively.</p>

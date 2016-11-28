@@ -1,4 +1,4 @@
-; $Id: filters.rc,v 1.245 2015/01/30 01:59:07 tom Exp $
+; $Id: filters.rc,v 1.246 2016/11/28 00:58:04 tom Exp $
 ; majormodes in this file are ordered alphabetically for convenience - the
 ; precedence used by vile is strictly alphabetic, counting case.
 
@@ -48,7 +48,7 @@ define-mode basic
 
 define-mode bash
 ~with define-submode bash
-	filtername	'vile-sh-filt -k bash'
+	filtername	'vile-sh-filt -K -k bash'
 ~endwith
 
 define-mode bat

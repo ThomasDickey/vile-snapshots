@@ -1,5 +1,5 @@
 %pointer
-%x NORMAL HEREDOC HEREDOC2 DQUOTED SQUOTED EXPRS BRACES BRACES2 BRACES3
+%x NORMAL HEREDOC HEREDOC2 DQUOTED SQUOTED EXPRS BRACES BRACES2 BRACES3 DOLLAR DOLLAR2
 
 %o 10000
 %a 5000
@@ -7,7 +7,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/sh-filt.l,v 1.125 2016/11/27 21:48:34 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/sh-filt.l,v 1.126 2016/11/28 00:57:16 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Shell script.
  */
@@ -164,7 +164,31 @@ DASHIDENT	{IDENT}("-"{NAME}{NAME2}*)*
 			    }
 			    flt_bfr_begin(String_attr);
 			}
+<NORMAL>[$]		{ if (FltOptions('K')) {
+			    push_state(DOLLAR);
+			  } else {
+			    ECHO;
+			  }
+			}
 <NORMAL>[\n]		{ ECHO; }
+
+<DOLLAR>[']		{
+			  new_state(DOLLAR2);
+			  flt_bfr_begin(String_attr);
+			  flt_bfr_append("$'", 2);
+			}
+<DOLLAR>[\r\n]		|
+<DOLLAR>.		{ flt_putc('$');
+			  ECHO;
+			  pop_state();
+			}
+<DOLLAR2>[']		{
+			  flt_bfr_finish();
+			  pop_state();
+			}
+<DOLLAR2>\\.		{ flt_bfr_embed(yytext, yyleng, Action_attr); }
+<DOLLAR2>[\r\n]		|
+<DOLLAR2>.		{ flt_bfr_embed(yytext, yyleng, String_attr); }
 
 <HEREDOC>{BACKTIC2_DOWN} { handle_backtic(yytext, yyleng, yyleng, 1); }
 <HEREDOC>{BACKTIC1_DOWN} { handle_backtic(yytext, yyleng, yyleng, 1); }
