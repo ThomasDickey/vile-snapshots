@@ -7,7 +7,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/sh-filt.l,v 1.124 2016/07/25 23:11:33 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/sh-filt.l,v 1.125 2016/11/27 21:48:34 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Shell script.
  */
@@ -254,8 +254,10 @@ DASHIDENT	{IDENT}("-"{NAME}{NAME2}*)*
 <BRACES>[^?#!%}[:alnum:]_-]+ { flt_bfr_append(yytext, yyleng); }
 
 <BRACES2>{END_BRACES}	{ end_braces(yytext, yyleng); }
+<BRACES2>\'		{ PushQuote(SQUOTED, String_attr); }
+<BRACES2>\"		{ PushQuote(DQUOTED, String_attr); }
 <BRACES2>[-:=?+*@#%/^,]+ { braces_operator(yytext, yyleng); }
-<BRACES2>[^-:=?+*@#%/^,}[:blank:]]+ { flt_bfr_embed(yytext, yyleng, ""); } /* FIXME - error */
+<BRACES2>[^-:=?+*@#%/^,"'}[:blank:]]+ { flt_bfr_embed(yytext, yyleng, ""); } /* FIXME - error */
 <BRACES2>{SPACE}	{ flt_bfr_append(yytext, yyleng); }
 
 <BRACES3>{BACKTIC2_DOWN} { handle_backtic(yytext, yyleng, yyleng, 1); }
