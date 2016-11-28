@@ -1,10 +1,12 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20161125 (s)
+ 20161127 (s)
 	> Brendan O'Dea:
 	+ add command-line parsing for "--" token, assumed by visudo in the
 	  1.8.12 - 1.8.16 changes (report by Wayne Cuddy).
 	> Tom Dickey:
+	+ improve sh syntax filter by allowing quoted strings within '${'
+	  parameter (report by j. van den hoff).
 	+ improve perl syntax highlighter:
 	  + fix state used to guess where a pattern might occur, e.g., after
 	    an "if" keyword with no preceding operator to account for line

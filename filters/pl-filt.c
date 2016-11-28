@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/pl-filt.c,v 1.121 2016/11/26 01:53:49 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/pl-filt.c,v 1.122 2016/11/27 19:10:59 tom Exp $
  *
  * Filter to add vile "attribution" sequences to perl scripts.  This is a
  * translation into C of an earlier version written for LEX/FLEX.
@@ -1344,7 +1344,7 @@ init_filter(int before GCC_UNUSED)
 #define opRightArrow() (had_op != 0 && old_op == had_op - 1 && *old_op == '-' && *had_op == '>')
 #define opBeforePattern() (had_op != 0 && strchr("{(|&=~!", *had_op) != 0)
 
-#define saveOp(p) { DPRINTF(("\nsaveOp @%d\n", __LINE__)); old_op = had_op; had_op = p; }
+#define saveOp(p) { DPRINTF(("\nsaveOp('%c') @%d\n", *p, __LINE__)); old_op = had_op; had_op = p; }
 #define clearOp() { DPRINTF(("\nclearOp @%d\n", __LINE__)); old_op = had_op = 0; }
 
 static void
@@ -1593,6 +1593,9 @@ do_filter(FILE *input GCC_UNUSED)
 		    if (!isspace(CharOf(*s))) {
 			if_wrd = nullKey;
 		    }
+		    if (*s == ';') {
+			in_stmt = 0;
+		    }
 		    if (parens) {
 			if (strchr("|&=~!->", *s) != 0) {
 			    saveOp(s);
@@ -1600,9 +1603,6 @@ do_filter(FILE *input GCC_UNUSED)
 			    clearOp();
 			}
 		    } else {
-			if (*s == ';') {
-			    in_stmt = 0;
-			}
 			if (strchr("|&=~!->", *s) != 0) {
 			    saveOp(s);
 			}
