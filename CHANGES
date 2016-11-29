@@ -10,6 +10,8 @@ Changes for vile 9.9 (released ??? ??? ?? ????)
 	    hoff).
 	  + handle ksh's "ANSI C quotes", i.e., "$'xxx'" using single quotes
 	    after a dollar sign.
+	  + use the ksh ("-K") option for bashmode and zshmode syntax.
+	  + interpret "$name" within '${' parameter
 	+ improve perl syntax highlighter:
 	  + fix state used to guess where a pattern might occur, e.g., after
 	    an "if" keyword with no preceding operator to account for line

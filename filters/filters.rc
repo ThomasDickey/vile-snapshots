@@ -1,4 +1,4 @@
-; $Id: filters.rc,v 1.246 2016/11/28 00:58:04 tom Exp $
+; $Id: filters.rc,v 1.247 2016/11/28 22:42:57 tom Exp $
 ; majormodes in this file are ordered alphabetically for convenience - the
 ; precedence used by vile is strictly alphabetic, counting case.
 
@@ -294,7 +294,7 @@ define-mode xsl
 
 define-mode zsh
 ~with define-submode zsh
-	filtername	'vile-sh-filt -k zsh'
+	filtername	'vile-sh-filt -K -k zsh'
 ~endwith
 
 store-procedure HighlightFilter 'Invoke syntax-highlighting filter on the current buffer'
