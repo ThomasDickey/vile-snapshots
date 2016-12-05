@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.142 2016/08/02 09:14:50 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.143 2016/12/05 00:30:49 tom Exp $
  */
 
 #ifndef FILTERS_H
@@ -135,6 +135,12 @@ typedef struct {
 #define USE_LEXFREE { yy_delete_buffer(YY_CURRENT_BUFFER); YY_CURRENT_BUFFER_LVALUE = 0; yy_init = 1; }
 #else
 #define USE_LEXFREE if (yytext) { free(yytext); yytext = 0; yytextsz = 0; }
+#endif
+
+#ifdef FLEX_DEBUG
+#define FLEX_PRINTF(param) if (yy_flex_debug) fprintf param
+#else
+#define FLEX_PRINTF(param) /* nothing */
 #endif
 
 /*

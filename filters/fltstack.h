@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/fltstack.h,v 1.17 2010/07/13 13:21:11 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/fltstack.h,v 1.18 2016/12/05 00:34:21 tom Exp $
  * A simple stack for lex states
  */
 
@@ -51,6 +51,7 @@ static void end_state(void);
 static void
 new_state(int code)
 {
+    FLEX_PRINTF((stderr, "new_state(%d)\n", code));
     if (FLTSTACK_OK && stk_state != 0)
 	FLT_STATE = code;
     BEGIN(code);
@@ -65,6 +66,7 @@ pop_state(void)
 #else
     int state = 0;	/* cater to broken "new" flex */
 #endif
+    FLEX_PRINTF((stderr, "pop_state() level %d\n", stk_level));
     --stk_level;
     if (FLTSTACK_OK)
 	state = FLT_STATE;
@@ -75,6 +77,7 @@ static void
 push_state(int state)
 {
     ++stk_level;
+    FLEX_PRINTF((stderr, "push_state(%d) level %d\n", state, stk_level));
     if ((stk_level >= stk_limit) || (stk_state == 0)) {
 	size_t have = sizeof(STACK) * (unsigned) stk_limit;
 	size_t want = sizeof(STACK) * (unsigned) (stk_limit += (20 + stk_level));
@@ -95,6 +98,7 @@ push_state(int state)
 static void
 begin_state(int code)
 {
+    FLEX_PRINTF((stderr, "begin_state(%d)\n", code));
     stk_level = -1;
     push_state(code);
 }
