@@ -1,13 +1,13 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20161201 (s)
+ 20161204 (s)
 	> Brendan O'Dea:
 	+ add command-line parsing for "--" token, assumed by visudo in the
 	  1.8.12 - 1.8.16 changes (report by Wayne Cuddy).
 	> Tom Dickey:
 	+ improve sh syntax filter
-	  + allow quoted strings within '${' parameter (report by j.  van den
-	    hoff).
+	  + allow quoted strings within '${' parameter, a detail that can
+	    happen with ksh brace groups (report by j.  van den hoff).
 	  + handle ksh's "ANSI C quotes", i.e., "$'xxx'" using single quotes
 	    after a dollar sign.
 	  + use the ksh ("-K") option for bashmode and zshmode syntax.

@@ -7,7 +7,7 @@
 %{
 
 /*
- * $Id: sh-filt.l,v 1.143 2016/12/02 01:56:20 tom Exp $
+ * $Id: sh-filt.l,v 1.144 2016/12/05 01:08:22 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Shell script.
  */
@@ -35,6 +35,7 @@ DefineOptFilter(sh, OPTS);
 
 #define LEN_BACKTIC1_DOWN 2	/* "$(" */
 #define LEN_BACKTIC2_DOWN 3	/* "$((" */
+#define LEN_BRACEGRP_DOWN 3	/* "$("{space} */
 
 #define isQuote(ch) (ch != 0 && strchr("\\'\"", ch) != 0)
 
@@ -95,6 +96,9 @@ BACKTIC2_UP	"))"
 BACKTIC1_DOWN	"$("
 BACKTIC1_UP	")"
 
+BRACEGRP_DOWN	"${"[ \t\r\n]
+BRACEGRP_UP	"}"
+
 BACKTIC		`
 ACTION		[\.{}]
 
@@ -126,6 +130,21 @@ DASHIDENT	{IDENT}("-"{NAME}{NAME2}*)*
 
 <NORMAL>{ANY_INTEGER}	{ WriteToken(Number_attr); }
 
+<NORMAL>{BRACEGRP_DOWN}	{ if (FltOptions('K')) {
+			    handle_backtic(yytext, yyleng, yyleng, 1);
+			  } else {
+			    ECHO;
+			  }
+			}
+<NORMAL>{BRACEGRP_UP}	{ if (FltOptions('K')) {
+			    if (!pop_backtic1(yytext, yyleng, LEN_BRACEGRP_DOWN)) {
+			      WriteToken(Action_attr);
+			    }
+			  } else {
+			    WriteToken(Action_attr);
+			  }
+			}
+
 <NORMAL>{BRACES}	{ begin_braces(yytext, yyleng); }
 
 <NORMAL>{IDENT2}	{ write_vname(yytext, yyleng); }
@@ -138,7 +157,19 @@ DASHIDENT	{IDENT}("-"{NAME}{NAME2}*)*
 <NORMAL>\'		{ PushQuote(SQUOTED, String_attr); }
 <NORMAL>\"		{ PushQuote(DQUOTED, String_attr); }
 
+<NORMAL>{BACKTIC2_UP}	{ if (!pop_backtic1(yytext, yyleng, LEN_BACKTIC2_DOWN)) {
+			    FLEX_PRINTF((stderr, "cannot pop '$((' level %d\n", stk_level));
+			    if (!pop_backtic1(yytext, 1, LEN_BACKTIC1_DOWN)) {
+			      FLEX_PRINTF((stderr, "cannot pop '$(' level %d\n", stk_level));
+			      if (FLTSTACK_OK && stk_state[stk_level-1].state == NORMAL)
+			        pop_state();
+			      flt_putc(R_PAREN);
+			    }
+			    unput(R_PAREN);
+			  }
+			}
 <NORMAL>{BACKTIC1_UP}	{ if (!pop_backtic1(yytext, yyleng, LEN_BACKTIC1_DOWN)) {
+			    FLEX_PRINTF((stderr, "cannot pop '$(' level %d\n", stk_level));
 			    if (FLTSTACK_OK && stk_state[stk_level-1].state == NORMAL)
 			      pop_state();
 			    ECHO;
@@ -406,8 +437,9 @@ pop_backtic1(const char *text, int len, int test)
 {
     int result = 0;
 
-    if (FLTSTACK_OK)
+    if (FLTSTACK_OK) {
 	result = (FLTSTACK_THIS.backtic == test);
+    }
     if (result) {
 	handle_backtic(text, len, test, 0);
     }
@@ -428,14 +460,12 @@ handle_backtic(const char *text, int len, int test, int which)
 	resume_state();
     } else {
 	flt_bfr_finish();
-	switch (test) {
-	case LEN_BACKTIC2_DOWN:
+	/* distinguish "$((" from "$("{space} */
+	if ((test == LEN_BACKTIC2_DOWN) && (text[test] == L_PAREN)) {
 	    push_state(EXPRS);
 	    flt_bfr_begin(String_attr);
-	    break;
-	default:
+	} else {
 	    push_state(NORMAL);
-	    break;
 	}
 	if (FLTSTACK_OK)
 	    FLTSTACK_THIS.backtic = len;
