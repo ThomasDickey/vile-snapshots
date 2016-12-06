@@ -7,7 +7,7 @@
 %{
 
 /*
- * $Id: sh-filt.l,v 1.144 2016/12/05 01:08:22 tom Exp $
+ * $Id: sh-filt.l,v 1.153 2016/12/06 02:11:14 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Shell script.
  */
@@ -52,6 +52,7 @@ static size_t here_len;
 static int here_exp;
 
 static int pop_backtic1(const char *text, int len, int test);
+static int is_numeric(const char *text, int len);
 static void begin_braces(const char *text, int length);
 static void braces_operator(const char *text, int length);
 static void check_heredoc(char *value, int length);
@@ -84,12 +85,12 @@ SIGN		[-+]
 C_INT8		0[0-7]+
 C_INT10		[[:digit:]]+
 C_INT16		0x[[[:xdigit:]]+
-C_EXP		[e][-+]{C_INT10}
-C_FLOAT		((({C_INT10}".")({C_INT10})?)|(({C_INT10})?("."{C_INT10}))){C_EXP}
 C_INTEGER	({C_INT10}|{C_INT8}|{C_INT16})
+C_EXP		[efgEFG]{SIGN}?{C_INTEGER}
+C_FLOAT		((({C_INT10}"."?)({C_INT10})?)|(({C_INT10})?("."{C_INT10}))){C_EXP}?
 KSH_NUMBER	{SIGN}?({C_INTEGER}|{C_FLOAT})
-
-ANY_INTEGER	{SIGN}?{C_INT10}
+MAYBE_NOT	[.[:alnum:]*?_-]*
+MAYBE_NUMBER	{MAYBE_NOT}{KSH_NUMBER}{MAYBE_NOT}
 
 BACKTIC2_DOWN	"$(("
 BACKTIC2_UP	"))"
@@ -119,6 +120,13 @@ DASHIDENT	{IDENT}("-"{NAME}{NAME2}*)*
 
 %%
 
+<NORMAL>{MAYBE_NUMBER}	{ if (is_numeric(yytext, yyleng)) {
+			    WriteToken(Number_attr);
+			  } else {
+			    WriteToken("");
+			  }
+			}
+
 <NORMAL>{IDENT0}	|
 <NORMAL>{FILENAME}	{ WriteToken(""); /* exclude from other classes */ }
 
@@ -127,8 +135,6 @@ DASHIDENT	{IDENT}("-"{NAME}{NAME2}*)*
 <NORMAL>"#"[^\r\n]*	{ WriteToken(Comment_attr); }
 
 <NORMAL>^{SPACE}*:	{ color_delimiter(yytext, yyleng, Action_attr); }
-
-<NORMAL>{ANY_INTEGER}	{ WriteToken(Number_attr); }
 
 <NORMAL>{BRACEGRP_DOWN}	{ if (FltOptions('K')) {
 			    handle_backtic(yytext, yyleng, yyleng, 1);
@@ -237,7 +243,8 @@ DASHIDENT	{IDENT}("-"{NAME}{NAME2}*)*
 			  WriteToken(Action_attr); 
 			  pop_state();
 			}
-<KSH_MATH>{KSH_NUMBER}	{ WriteToken(Number_attr); }
+<KSH_MATH>{VNAME}	{ WriteToken(Ident_attr); }
+<KSH_MATH>{MAYBE_NUMBER} { WriteToken(Number_attr); }
 <KSH_MATH>.		{ ECHO; }
 
 <KSH_CQUOTE>[']		{
@@ -564,6 +571,77 @@ write_vname(const char *text, int length)
     if (actual < length) {
 	flt_puts(text + actual, length - actual, "");
     }
+}
+
+/* MAYBE_NUMBER is over-generous to allow this function to distinguish numbers
+ * from almost-numbers (or just names).
+ *
+ * TODO: handle ksh base64 stuff
+ */
+#define isoctal(c) ((c) >= '0' && (c) <= '7')
+static int
+is_numeric(const char *text, int length)
+{
+    int have_dot = 0;
+    int have_exp = 0;
+    int result = 1;
+    int radix = 0;
+    int j = 0;
+    int k;
+
+    if (text[j] == '-') {
+	++j;
+    } else if (text[j] == '+') {
+	++j;
+    }
+    if (length > 1 && text[j] == '0') {
+	if ((length > 2) && (text[j + 1] == 'x')) {
+	    radix = 16;
+	    j += 2;
+	} else {
+	    radix = 8;
+	    for (k = j + 1; k < length; ++k) {
+		if (!isoctal(CharOf(text[k]))) {
+		    radix = 0;
+		    break;
+		}
+	    }
+	    if (radix)
+		j += 1;
+	}
+    }
+    for (k = j; k < length; ++k) {
+	int ch = CharOf(text[k]);
+	if (radix == 16 && isxdigit(ch)) {
+	    ;
+	} else if (radix == 8) {
+	    if (!isoctal(ch)) {
+		result = 0;
+		break;
+	    }
+	} else if ((have_exp == 0) && (ch == '.')) {
+	    have_dot = 1;
+	} else if ((have_exp == 0) && strchr("efgEFG", ch) != 0) {
+	    have_exp = 1;
+	} else if ((have_exp == 1) && strchr("+-", ch) != 0) {
+	    have_exp = 2;
+	} else if (isdigit(ch)) {
+	    if (have_exp)
+		have_exp = 4;
+	} else {
+	    result = 0;
+	    break;
+	}
+    }
+
+    if (FltOptions('K')) {
+	if (have_exp && (have_exp != 4))
+	    result = 0;
+    } else if (have_dot || have_exp) {
+	result = 0;
+    }
+
+    return result;
 }
 
 static int
