@@ -1,6 +1,6 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20161205 (s)
+ 20161207 (s)
 	> Brendan O'Dea:
 	+ add command-line parsing for "--" token, assumed by visudo in the
 	  1.8.12 - 1.8.16 changes (report by Wayne Cuddy).
@@ -15,7 +15,9 @@ Changes for vile 9.9 (released ??? ??? ?? ????)
 	  + don't warn for inline-here documents
 	  + handle special case where matching tag for a here-document is on
 	    the same line as a closing ")" in $(xxx) command.
+	  + highlight ksh's "[[", "((", "$((" bracketing like "{".
 	  + handle ksh's "((" and "$((" arithmetic expressions.
+	  + handle ksh's base#value numbers
 	+ improve perl syntax highlighter:
 	  + fix state used to guess where a pattern might occur, e.g., after
 	    an "if" keyword with no preceding operator to account for line

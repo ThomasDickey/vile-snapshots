@@ -7,7 +7,7 @@
 %{
 
 /*
- * $Id: sh-filt.l,v 1.153 2016/12/06 02:11:14 tom Exp $
+ * $Id: sh-filt.l,v 1.165 2016/12/07 09:42:49 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Shell script.
  */
@@ -33,6 +33,7 @@ DefineOptFilter(sh, OPTS);
 #define DPRINTF(params)		/*nothing */
 #endif
 
+#define LEN_KSH_TEST_DOWN 2	/* "[[" */
 #define LEN_BACKTIC1_DOWN 2	/* "$(" */
 #define LEN_BACKTIC2_DOWN 3	/* "$((" */
 #define LEN_BRACEGRP_DOWN 3	/* "$("{space} */
@@ -61,6 +62,7 @@ static void embed_or_append(const char *text, int length);
 static void embed_vname(const char *text, int length, const char *dft);
 static void end_braces(const char *text, int length);
 static void handle_backtic(const char *text, int length, int test, int which);
+static void handle_parens(const char *text, int length, int test, int which);
 static void save_here(const char *text, int length);
 static void write_vname(const char *text, int length);
 
@@ -89,8 +91,17 @@ C_INTEGER	({C_INT10}|{C_INT8}|{C_INT16})
 C_EXP		[efgEFG]{SIGN}?{C_INTEGER}
 C_FLOAT		((({C_INT10}"."?)({C_INT10})?)|(({C_INT10})?("."{C_INT10}))){C_EXP}?
 KSH_NUMBER	{SIGN}?({C_INTEGER}|{C_FLOAT})
-MAYBE_NOT	[.[:alnum:]*?_-]*
-MAYBE_NUMBER	{MAYBE_NOT}{KSH_NUMBER}{MAYBE_NOT}
+BASExx_NUMBER	[0-9]+#[[:alnum:]@_]+
+MAYBE_NOT	[.[:alnum:]/*?_-]*
+MAYBE_NUMBER	({MAYBE_NOT}({KSH_NUMBER}|{BASExx_NUMBER}){MAYBE_NOT})
+
+SQUARE_DOWN	"["
+SQUARE_UP	"]"
+
+KSH_INDEX	"["[#*@]"]"
+
+KSH_TEST_DOWN	"[["
+KSH_TEST_UP	"]]"
 
 BACKTIC2_DOWN	"$(("
 BACKTIC2_UP	"))"
@@ -125,6 +136,11 @@ DASHIDENT	{IDENT}("-"{NAME}{NAME2}*)*
 			  } else {
 			    WriteToken("");
 			  }
+			}
+
+<NORMAL>{KSH_INDEX}	{ flt_putc(L_BLOCK);
+			  flt_puts(yytext + 1, 1, Action_attr);
+			  flt_putc(R_BLOCK);
 			}
 
 <NORMAL>{IDENT0}	|
@@ -174,6 +190,12 @@ DASHIDENT	{IDENT}("-"{NAME}{NAME2}*)*
 			    unput(R_PAREN);
 			  }
 			}
+<NORMAL>{KSH_TEST_UP}	{ if (!pop_backtic1(yytext, yyleng, LEN_KSH_TEST_DOWN)) {
+			    FLEX_PRINTF((stderr, "cannot pop '[[' level %d\n", stk_level));
+			    handle_parens(yytext, 1, 1, -1);
+			    unput(R_BLOCK);
+			  }
+			}
 <NORMAL>{BACKTIC1_UP}	{ if (!pop_backtic1(yytext, yyleng, LEN_BACKTIC1_DOWN)) {
 			    FLEX_PRINTF((stderr, "cannot pop '$(' level %d\n", stk_level));
 			    if (FLTSTACK_OK && stk_state[stk_level-1].state == NORMAL)
@@ -184,7 +206,11 @@ DASHIDENT	{IDENT}("-"{NAME}{NAME2}*)*
 <NORMAL>{BACKTIC2_DOWN} { handle_backtic(yytext, yyleng, yyleng, 1); }
 <NORMAL>{BACKTIC1_DOWN}	{ handle_backtic(yytext, yyleng, yyleng, 1); }
 <NORMAL>{BACKTIC}	{ handle_backtic(yytext, yyleng, yyleng, -1); }
+<NORMAL>{KSH_TEST_DOWN}	{ handle_backtic(yytext, yyleng, yyleng, 1); }
 <NORMAL>{ACTION}	{ WriteToken(Action_attr); }
+
+<NORMAL>{SQUARE_DOWN}	{ handle_parens(yytext, yyleng, yyleng, 1); }
+<NORMAL>{SQUARE_UP}	{ handle_parens(yytext, yyleng, yyleng, -1); }
 
 <NORMAL,EXPRS>\<\<\<[-]?{SPACE}*({QIDENT}|{IDENT1}) {
 			  if (FltOptions('K')) {
@@ -243,6 +269,7 @@ DASHIDENT	{IDENT}("-"{NAME}{NAME2}*)*
 			  WriteToken(Action_attr); 
 			  pop_state();
 			}
+<KSH_MATH>{IDENT1}	|
 <KSH_MATH>{VNAME}	{ WriteToken(Ident_attr); }
 <KSH_MATH>{MAYBE_NUMBER} { WriteToken(Number_attr); }
 <KSH_MATH>.		{ ECHO; }
@@ -323,7 +350,13 @@ DASHIDENT	{IDENT}("-"{NAME}{NAME2}*)*
 <BRACES2>\'		{ PushQuote(SQUOTED, String_attr); }
 <BRACES2>\"		{ PushQuote(DQUOTED, String_attr); }
 <BRACES2>[-:=?+*@#%/^,]+ { braces_operator(yytext, yyleng); }
-<BRACES2>[^-:=?+*@#%/^,"'}[:blank:]]+ { flt_bfr_embed(yytext, yyleng, ""); } /* FIXME - error */
+<BRACES2>{KSH_INDEX}	{ flt_bfr_embed(yytext, 1, "");
+			  flt_bfr_embed(yytext + 1, 1, Action_attr);
+			  flt_bfr_embed(yytext + 2, 1, "");
+			}
+<BRACES2>{SQUARE_DOWN}	{ handle_parens(yytext, yyleng, yyleng, 1); }
+<BRACES2>{SQUARE_UP}	{ handle_parens(yytext, yyleng, yyleng, -1); }
+<BRACES2>[^-:=?+*@#%/^,"'}[:blank:][]]+ { flt_bfr_embed(yytext, yyleng, ""); } /* FIXME - error */
 <BRACES2>{SPACE}	{ flt_bfr_append(yytext, yyleng); }
 
 <BRACES3>{BACKTIC2_DOWN} { handle_backtic(yytext, yyleng, yyleng, 1); }
@@ -340,6 +373,7 @@ DASHIDENT	{IDENT}("-"{NAME}{NAME2}*)*
 <BRACES3>"$'"		{ PushQuote(KSH_CQUOTE, String_attr); }
 <BRACES3>{END_BRACES}	{ end_braces(yytext, yyleng); }
 <BRACES3>"$"		{ flt_bfr_append("$", 1); }
+<BRACES3>"{"		{ begin_braces(yytext, yyleng); }
 <BRACES3>[^$}[:alnum:]_\\\"']+ { flt_bfr_embed(yytext, yyleng, ""); }
 
 %%
@@ -480,6 +514,21 @@ handle_backtic(const char *text, int len, int test, int which)
 }
 
 static void
+handle_parens(const char *text, int len, int test, int which)
+{
+    flt_bfr_finish();
+    flt_puts(text, len, "");
+    if (FLTSTACK_OK && (which <= 0) && (FLTSTACK_THIS.backtic == test)) {
+	pop_state();
+	resume_state();
+    } else {
+	push_state(NORMAL);
+	if (FLTSTACK_OK)
+	    FLTSTACK_THIS.backtic = len;
+    }
+}
+
+static void
 save_here(const char *text, int length)
 {
     char *s;
@@ -575,13 +624,12 @@ write_vname(const char *text, int length)
 
 /* MAYBE_NUMBER is over-generous to allow this function to distinguish numbers
  * from almost-numbers (or just names).
- *
- * TODO: handle ksh base64 stuff
  */
 #define isoctal(c) ((c) >= '0' && (c) <= '7')
 static int
 is_numeric(const char *text, int length)
 {
+    int have_base = 0;
     int have_dot = 0;
     int have_exp = 0;
     int result = 1;
@@ -611,34 +659,80 @@ is_numeric(const char *text, int length)
 	}
     }
     for (k = j; k < length; ++k) {
-	int ch = CharOf(text[k]);
-	if (radix == 16 && isxdigit(ch)) {
-	    ;
-	} else if (radix == 8) {
-	    if (!isoctal(ch)) {
-		result = 0;
-		break;
-	    }
-	} else if ((have_exp == 0) && (ch == '.')) {
-	    have_dot = 1;
-	} else if ((have_exp == 0) && strchr("efgEFG", ch) != 0) {
-	    have_exp = 1;
-	} else if ((have_exp == 1) && strchr("+-", ch) != 0) {
-	    have_exp = 2;
-	} else if (isdigit(ch)) {
-	    if (have_exp)
-		have_exp = 4;
-	} else {
-	    result = 0;
+	if (text[k] == '#') {
+	    have_base = 1;
 	    break;
 	}
     }
+    if (FltOptions('K') && have_base) {
+	/* BASExx_NUMBER guarantees a number, but after that we validate */
+	for (k = j; k < length; ++k) {
+	    int ch = CharOf(text[k]);
+	    if (ch == '#') {
+		have_base = 2;
+	    } else if (have_base == 1) {
+		radix = (radix * 10) + (ch - '0');
+	    } else {
+		int check;
+		if (radix <= 0 || radix > 64) {
+		    result = 0;
+		    break;
+		} else if (radix <= 36) {
+		    check = (isdigit(ch)
+			     ? (ch - '0')
+			     : (isalpha(ch)
+				? (toupper(ch) - 'A' + 10)
+				: 64));
+		} else {
+		    check = (isdigit(ch)
+			     ? (ch - '0')
+			     : (isalpha(ch)
+				? (islower(ch)
+				   ? (ch - 'a' + 10)
+				   : (ch - 'A' + 36))
+				: ((ch == '@')
+				   ? 62
+				   : 63)));
+		}
+		if (check >= radix) {
+		    result = 0;
+		    break;
+		}
+	    }
+	}
+    } else {
+	const char *ExpFlags = (radix == 16) ? "pP" : "efgEFG";
+	for (k = j; k < length; ++k) {
+	    int ch = CharOf(text[k]);
+	    if (radix == 16 && !have_exp && isxdigit(ch)) {
+		;
+	    } else if (radix == 8) {
+		if (!isoctal(ch)) {
+		    result = 0;
+		    break;
+		}
+	    } else if ((have_exp == 0) && (ch == '.')) {
+		have_dot = 1;
+	    } else if ((have_exp == 0) && strchr(ExpFlags, ch) != 0) {
+		have_exp = 1;
+	    } else if ((have_exp == 1) && strchr("+-", ch) != 0) {
+		have_exp = 2;
+	    } else if (isdigit(ch)) {
+		if (have_exp)
+		    have_exp = 4;
+	    } else {
+		result = 0;
+		break;
+	    }
+	}
 
-    if (FltOptions('K')) {
-	if (have_exp && (have_exp != 4))
+	if (FltOptions('K')) {
+	    if (have_exp && (have_exp != 4)) {
+		result = 0;
+	    }
+	} else if (have_dot || have_exp) {
 	    result = 0;
-    } else if (have_dot || have_exp) {
-	result = 0;
+	}
     }
 
     return result;
