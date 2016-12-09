@@ -1,6 +1,6 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20161207 (s)
+ 20161208 (s)
 	> Brendan O'Dea:
 	+ add command-line parsing for "--" token, assumed by visudo in the
 	  1.8.12 - 1.8.16 changes (report by Wayne Cuddy).

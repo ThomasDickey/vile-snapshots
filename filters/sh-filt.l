@@ -7,7 +7,7 @@
 %{
 
 /*
- * $Id: sh-filt.l,v 1.165 2016/12/07 09:42:49 tom Exp $
+ * $Id: sh-filt.l,v 1.172 2016/12/08 22:39:06 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Shell script.
  */
@@ -61,8 +61,9 @@ static void color_delimiter(char *text, int size, char *attr);
 static void embed_or_append(const char *text, int length);
 static void embed_vname(const char *text, int length, const char *dft);
 static void end_braces(const char *text, int length);
-static void handle_backtic(const char *text, int length, int test, int which);
-static void handle_parens(const char *text, int length, int test, int which);
+static void handle_backtic2(const char *text, int length, int test, int which);
+static void handle_backtic1(const char *text, int length, int test, int which);
+static void handle_parens(const char *text, int length, int test, int which, int state);
 static void save_here(const char *text, int length);
 static void write_vname(const char *text, int length);
 
@@ -92,8 +93,9 @@ C_EXP		[efgEFG]{SIGN}?{C_INTEGER}
 C_FLOAT		((({C_INT10}"."?)({C_INT10})?)|(({C_INT10})?("."{C_INT10}))){C_EXP}?
 KSH_NUMBER	{SIGN}?({C_INTEGER}|{C_FLOAT})
 BASExx_NUMBER	[0-9]+#[[:alnum:]@_]+
+SHELL_NUMBER	({KSH_NUMBER}|{BASExx_NUMBER})
 MAYBE_NOT	[.[:alnum:]/*?_-]*
-MAYBE_NUMBER	({MAYBE_NOT}({KSH_NUMBER}|{BASExx_NUMBER}){MAYBE_NOT})
+MAYBE_NUMBER	({MAYBE_NOT}{SHELL_NUMBER}{MAYBE_NOT})
 
 SQUARE_DOWN	"["
 SQUARE_UP	"]"
@@ -153,7 +155,7 @@ DASHIDENT	{IDENT}("-"{NAME}{NAME2}*)*
 <NORMAL>^{SPACE}*:	{ color_delimiter(yytext, yyleng, Action_attr); }
 
 <NORMAL>{BRACEGRP_DOWN}	{ if (FltOptions('K')) {
-			    handle_backtic(yytext, yyleng, yyleng, 1);
+			    handle_backtic1(yytext, yyleng, yyleng, 1);
 			  } else {
 			    ECHO;
 			  }
@@ -192,7 +194,7 @@ DASHIDENT	{IDENT}("-"{NAME}{NAME2}*)*
 			}
 <NORMAL>{KSH_TEST_UP}	{ if (!pop_backtic1(yytext, yyleng, LEN_KSH_TEST_DOWN)) {
 			    FLEX_PRINTF((stderr, "cannot pop '[[' level %d\n", stk_level));
-			    handle_parens(yytext, 1, 1, -1);
+			    handle_parens(yytext, 1, 1, -1, NORMAL);
 			    unput(R_BLOCK);
 			  }
 			}
@@ -203,14 +205,23 @@ DASHIDENT	{IDENT}("-"{NAME}{NAME2}*)*
 			    ECHO;
 			  }
 			}
-<NORMAL>{BACKTIC2_DOWN} { handle_backtic(yytext, yyleng, yyleng, 1); }
-<NORMAL>{BACKTIC1_DOWN}	{ handle_backtic(yytext, yyleng, yyleng, 1); }
-<NORMAL>{BACKTIC}	{ handle_backtic(yytext, yyleng, yyleng, -1); }
-<NORMAL>{KSH_TEST_DOWN}	{ handle_backtic(yytext, yyleng, yyleng, 1); }
+<NORMAL>{BACKTIC2_DOWN} { handle_backtic2(yytext, yyleng, yyleng, 1); }
+<NORMAL>{BACKTIC1_DOWN}	{ handle_backtic1(yytext, yyleng, yyleng, 1); }
+<NORMAL>{BACKTIC}	{ handle_backtic1(yytext, yyleng, yyleng, -1); }
+<NORMAL>{KSH_TEST_DOWN}	{ handle_backtic1(yytext, yyleng, yyleng, 1); }
 <NORMAL>{ACTION}	{ WriteToken(Action_attr); }
+<NORMAL>"<#"		{
+			  if (FltOptions('K')) {
+			    WriteToken3("", 1);
+			    WriteToken2(Action_attr, 1);
+			  } else {
+			    WriteToken2(Action_attr, 1);
+			    unput('#');
+			  }
+			}
 
-<NORMAL>{SQUARE_DOWN}	{ handle_parens(yytext, yyleng, yyleng, 1); }
-<NORMAL>{SQUARE_UP}	{ handle_parens(yytext, yyleng, yyleng, -1); }
+<NORMAL>{SQUARE_DOWN}	{ handle_parens(yytext, yyleng, yyleng, 1, NORMAL); }
+<NORMAL>{SQUARE_UP}	{ handle_parens(yytext, yyleng, yyleng, -1, NORMAL); }
 
 <NORMAL,EXPRS>\<\<\<[-]?{SPACE}*({QIDENT}|{IDENT1}) {
 			  if (FltOptions('K')) {
@@ -271,7 +282,16 @@ DASHIDENT	{IDENT}("-"{NAME}{NAME2}*)*
 			}
 <KSH_MATH>{IDENT1}	|
 <KSH_MATH>{VNAME}	{ WriteToken(Ident_attr); }
-<KSH_MATH>{MAYBE_NUMBER} { WriteToken(Number_attr); }
+<KSH_MATH>{BACKTIC2_DOWN} { handle_backtic2(yytext, yyleng, yyleng, 1); }
+<KSH_MATH>{BACKTIC1_DOWN} { handle_backtic1(yytext, yyleng, yyleng, 1); }
+<KSH_MATH>{BACKTIC}	{ handle_backtic1(yytext, yyleng, yyleng, -1); }
+<KSH_MATH>{KSH_TEST_DOWN} { handle_backtic1(yytext, yyleng, yyleng, 1); }
+<KSH_MATH>{ACTION}	{ WriteToken(Action_attr); }
+<KSH_MATH>{SQUARE_DOWN}	{ handle_parens(yytext, yyleng, yyleng, 1, KSH_MATH); }
+<KSH_MATH>{SQUARE_UP}	{ handle_parens(yytext, yyleng, yyleng, -1, KSH_MATH); }
+<KSH_MATH>{BRACES}	{ begin_braces(yytext, yyleng); }
+<KSH_MATH>{IDENTX}	{ WriteToken(Ident_attr); }
+<KSH_MATH>{SHELL_NUMBER} { WriteToken(Number_attr); }
 <KSH_MATH>.		{ ECHO; }
 
 <KSH_CQUOTE>[']		{
@@ -287,9 +307,9 @@ DASHIDENT	{IDENT}("-"{NAME}{NAME2}*)*
 <KSH_CQUOTE>[\r\n]		|
 <KSH_CQUOTE>.		{ flt_bfr_embed(yytext, yyleng, String_attr); }
 
-<HEREDOC>{BACKTIC2_DOWN} { handle_backtic(yytext, yyleng, yyleng, 1); }
-<HEREDOC>{BACKTIC1_DOWN} { handle_backtic(yytext, yyleng, yyleng, 1); }
-<HEREDOC>{BACKTIC}	{ handle_backtic(yytext, yyleng, yyleng, -1); }
+<HEREDOC>{BACKTIC2_DOWN} { handle_backtic2(yytext, yyleng, yyleng, 1); }
+<HEREDOC>{BACKTIC1_DOWN} { handle_backtic1(yytext, yyleng, yyleng, 1); }
+<HEREDOC>{BACKTIC}	{ handle_backtic1(yytext, yyleng, yyleng, -1); }
 <HEREDOC>{IDENT2}	{ if (here_exp) {
 			      embed_vname(yytext, yyleng, String_attr);
 			  } else {
@@ -312,9 +332,9 @@ DASHIDENT	{IDENT}("-"{NAME}{NAME2}*)*
 <DQUOTED>{BACKTIC1_UP}	{ if (!pop_backtic1(yytext, yyleng, LEN_BACKTIC1_DOWN)) 
 			      flt_bfr_append(yytext, yyleng);
 			}
-<DQUOTED>{BACKTIC2_DOWN} { handle_backtic(yytext, yyleng, yyleng, 1); }
-<DQUOTED>{BACKTIC1_DOWN} { handle_backtic(yytext, yyleng, yyleng, 1); }
-<DQUOTED>{BACKTIC}	{ handle_backtic(yytext, yyleng, yyleng, -1); }
+<DQUOTED>{BACKTIC2_DOWN} { handle_backtic2(yytext, yyleng, yyleng, 1); }
+<DQUOTED>{BACKTIC1_DOWN} { handle_backtic1(yytext, yyleng, yyleng, 1); }
+<DQUOTED>{BACKTIC}	{ handle_backtic1(yytext, yyleng, yyleng, -1); }
 <DQUOTED>\\[\n]		|
 <DQUOTED>\\.		{ flt_bfr_embed(yytext, 1, Action_attr); flt_bfr_append(yytext + 1, yyleng - 1); }
 <DQUOTED>{IDENT2}	{ embed_vname(yytext, yyleng, String_attr); }
@@ -329,10 +349,10 @@ DASHIDENT	{IDENT}("-"{NAME}{NAME2}*)*
 <EXPRS>{BACKTIC1_UP}	{ if (!pop_backtic1(yytext, yyleng, LEN_BACKTIC1_DOWN)) 
 			      flt_bfr_append(yytext, yyleng);
 			}
-<EXPRS>{BACKTIC2_DOWN}	{ handle_backtic(yytext, yyleng, yyleng, 1); }
-<EXPRS>{BACKTIC2_UP}	{ handle_backtic(yytext, yyleng, LEN_BACKTIC2_DOWN, 0); }
-<EXPRS>{BACKTIC1_DOWN}	{ handle_backtic(yytext, yyleng, yyleng, 1); }
-<EXPRS>{BACKTIC}	{ handle_backtic(yytext, yyleng, yyleng, -1); }
+<EXPRS>{BACKTIC2_DOWN}	{ handle_backtic2(yytext, yyleng, yyleng, 1); }
+<EXPRS>{BACKTIC2_UP}	{ handle_backtic2(yytext, yyleng, LEN_BACKTIC2_DOWN, 0); }
+<EXPRS>{BACKTIC1_DOWN}	{ handle_backtic1(yytext, yyleng, yyleng, 1); }
+<EXPRS>{BACKTIC}	{ handle_backtic1(yytext, yyleng, yyleng, -1); }
 <EXPRS>\\[\n]		|
 <EXPRS>\\.		{ flt_bfr_embed(yytext, 1, Action_attr); flt_bfr_append(yytext + 1, yyleng - 1); }
 <EXPRS>{IDENT2}		{ embed_vname(yytext, yyleng, ""); }
@@ -354,14 +374,14 @@ DASHIDENT	{IDENT}("-"{NAME}{NAME2}*)*
 			  flt_bfr_embed(yytext + 1, 1, Action_attr);
 			  flt_bfr_embed(yytext + 2, 1, "");
 			}
-<BRACES2>{SQUARE_DOWN}	{ handle_parens(yytext, yyleng, yyleng, 1); }
-<BRACES2>{SQUARE_UP}	{ handle_parens(yytext, yyleng, yyleng, -1); }
+<BRACES2>{SQUARE_DOWN}	{ handle_parens(yytext, yyleng, yyleng, 1, NORMAL); }
+<BRACES2>{SQUARE_UP}	{ handle_parens(yytext, yyleng, yyleng, -1, NORMAL); }
 <BRACES2>[^-:=?+*@#%/^,"'}[:blank:][]]+ { flt_bfr_embed(yytext, yyleng, ""); } /* FIXME - error */
 <BRACES2>{SPACE}	{ flt_bfr_append(yytext, yyleng); }
 
-<BRACES3>{BACKTIC2_DOWN} { handle_backtic(yytext, yyleng, yyleng, 1); }
-<BRACES3>{BACKTIC1_DOWN} { handle_backtic(yytext, yyleng, yyleng, 1); }
-<BRACES3>{BACKTIC}	{ handle_backtic(yytext, yyleng, yyleng, -1); }
+<BRACES3>{BACKTIC2_DOWN} { handle_backtic2(yytext, yyleng, yyleng, 1); }
+<BRACES3>{BACKTIC1_DOWN} { handle_backtic1(yytext, yyleng, yyleng, 1); }
+<BRACES3>{BACKTIC}	{ handle_backtic1(yytext, yyleng, yyleng, -1); }
 <BRACES3>\\\"		{ flt_bfr_embed(yytext, yyleng, String_attr); }
 <BRACES3>\\[^"]		{ flt_bfr_embed(yytext, 1, Action_attr); flt_bfr_append(yytext + 1, yyleng - 1); }
 <BRACES3>\"		{ PushQuote(DQUOTED, String_attr); }
@@ -482,7 +502,7 @@ pop_backtic1(const char *text, int len, int test)
 	result = (FLTSTACK_THIS.backtic == test);
     }
     if (result) {
-	handle_backtic(text, len, test, 0);
+	handle_backtic1(text, len, test, 0);
     }
     return result;
 }
@@ -492,7 +512,7 @@ pop_backtic1(const char *text, int len, int test)
  * which = 1 for push, 0 for pop, -1 for either.
  */
 static void
-handle_backtic(const char *text, int len, int test, int which)
+handle_backtic(const char *text, int len, int test, int which, int state)
 {
     flt_bfr_finish();
     flt_puts(text, len, Action_attr);
@@ -506,7 +526,7 @@ handle_backtic(const char *text, int len, int test, int which)
 	    push_state(EXPRS);
 	    flt_bfr_begin(String_attr);
 	} else {
-	    push_state(NORMAL);
+	    push_state(state);
 	}
 	if (FLTSTACK_OK)
 	    FLTSTACK_THIS.backtic = len;
@@ -514,7 +534,19 @@ handle_backtic(const char *text, int len, int test, int which)
 }
 
 static void
-handle_parens(const char *text, int len, int test, int which)
+handle_backtic2(const char *text, int len, int test, int which)
+{
+    handle_backtic(text, len, test, which, KSH_MATH);
+}
+
+static void
+handle_backtic1(const char *text, int len, int test, int which)
+{
+    handle_backtic(text, len, test, which, NORMAL);
+}
+
+static void
+handle_parens(const char *text, int len, int test, int which, int state)
 {
     flt_bfr_finish();
     flt_puts(text, len, "");
@@ -522,7 +554,7 @@ handle_parens(const char *text, int len, int test, int which)
 	pop_state();
 	resume_state();
     } else {
-	push_state(NORMAL);
+	push_state(state);
 	if (FLTSTACK_OK)
 	    FLTSTACK_THIS.backtic = len;
     }
