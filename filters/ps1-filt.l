@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/ps1-filt.l,v 1.12 2013/12/02 01:32:53 tom Exp $
+ * $Id: ps1-filt.l,v 1.13 2016/12/11 16:04:15 tom Exp $
  *
  * Filter to add vile "attribution" sequences to PowerShell scripts.
  * - T.Dickey
@@ -116,8 +116,8 @@ do_filter(FILE *inputs)
 
     begin_state(CODE);
     RunLEX();
-    end_state();
     flt_bfr_error();
+    end_state();
 }
 
 #if NO_LEAKS

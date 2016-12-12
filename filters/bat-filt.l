@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/bat-filt.l,v 1.36 2013/12/02 01:32:54 tom Exp $
+ * $Id: bat-filt.l,v 1.37 2016/12/11 16:04:15 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of DOS (and
  * similar, such as W95, NT) batch file.
@@ -156,7 +156,7 @@ do_filter(FILE *inputs)
 
     BEGIN(INITIAL);
     RunLEX();
-    flt_bfr_finish();
+    flt_bfr_error();
 }
 
 #if NO_LEAKS

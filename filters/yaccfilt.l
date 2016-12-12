@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/yaccfilt.l,v 1.44 2014/10/17 23:21:23 tom Exp $
+ * $Id: yaccfilt.l,v 1.45 2016/12/11 16:04:15 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of YACC program.
  */
@@ -246,6 +246,7 @@ do_filter(FILE *inputs)
 
     begin_state(RULES);
     RunLEX();
+    flt_bfr_error();
     end_state();
 }
 

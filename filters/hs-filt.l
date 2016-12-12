@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/hs-filt.l,v 1.27 2013/12/02 01:32:53 tom Exp $
+ * $Id: hs-filt.l,v 1.28 2016/12/11 16:04:15 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Haskell
  * input text.
@@ -114,6 +114,7 @@ do_filter(FILE *inputs)
 
     begin_state(NORMAL);
     RunLEX();
+    flt_bfr_error();
     end_state();
 }
 
