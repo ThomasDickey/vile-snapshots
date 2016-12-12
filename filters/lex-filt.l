@@ -9,7 +9,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/lex-filt.l,v 1.85 2013/12/02 01:32:53 tom Exp $
+ * $Id: lex-filt.l,v 1.86 2016/12/11 16:04:15 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of LEX program.
  */
@@ -469,6 +469,7 @@ do_filter(FILE *inputs)
 
     begin_state(RULES);
     RunLEX();
+    flt_bfr_error();
     end_state();
 }
 

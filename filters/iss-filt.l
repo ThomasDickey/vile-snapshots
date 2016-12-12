@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/iss-filt.l,v 1.17 2013/12/02 01:32:53 tom Exp $
+ * $Id: iss-filt.l,v 1.18 2016/12/11 16:04:15 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Inno Setup
  * input text.
@@ -130,6 +130,7 @@ do_filter(FILE *inputs)
 
     begin_state(FLAGS);
     RunLEX();
+    flt_bfr_error();
     end_state();
 }
 

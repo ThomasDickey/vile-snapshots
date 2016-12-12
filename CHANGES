@@ -1,6 +1,6 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20161208 (s)
+ 20161211 (s)
 	> Brendan O'Dea:
 	+ add command-line parsing for "--" token, assumed by visudo in the
 	  1.8.12 - 1.8.16 changes (report by Wayne Cuddy).
@@ -8,6 +8,15 @@ Changes for vile 9.9 (released ??? ??? ?? ????)
 	+ remove escaping from digraphs.rc, since change in 9.7zg made that
 	  both unnecessary and incorrect (reports by Marc Simpson, Brendan
 	  O'Dea).
+	+ improve tcl syntax filter
+	  + color backslash-escapes in double-quotes.
+	  + add rules to handle regexp and regsub regular expressions.  This
+	    does not yet handle -regexp switch cases.
+	  + add call to flt_bfr_error to flag unbalanced quotes here and in
+	    a few other filters.
+	  + modify newline patterns to allow for cr/lf endings in continuations
+	  + add special case for literals like "{\1}" and "{\\1}".
+	  + add special case for html entities such as "{&#123;}" and "{&foo;}"
 	+ improve sh syntax filter
 	  + allow quoted strings within '${' parameter, a detail that can
 	    happen with ksh brace groups (report by j.  van den hoff).
