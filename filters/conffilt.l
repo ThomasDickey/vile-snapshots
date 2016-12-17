@@ -7,7 +7,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/conffilt.l,v 1.16 2014/09/30 00:40:27 tom Exp $
+ * $Id: conffilt.l,v 1.19 2016/12/16 12:00:39 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of config-file.
  */
@@ -26,7 +26,7 @@ static char *String_attr;
 
 %}
 
-SSTRING		\'([^'\n]|(\\[\n]))*\'
+SSTRING		\'([^'\r\n]|(\\[\r]?[\n]))*\'
 
 NAME		[[:alnum:]_]
 
@@ -88,15 +88,16 @@ BLANK		[ \t]
 <NORMAL>{SSTRING}	{ WriteToken(String_attr); }
 <NORMAL>\"		{ PushQuote(QUOTED, String_attr); }
 
-<NORMAL>[\r\n]		{ ECHO; }
+<NORMAL>.		{ ECHO; }
 
-<QUOTED>\\[\n]		|
+<QUOTED>\\[\r\n]	|
 <QUOTED>\\.		{ flt_bfr_embed(yytext, 1, Action_attr); flt_bfr_append(yytext + 1, yyleng - 1); }
 <QUOTED>{IDENT1}	|
 <QUOTED>{IDENT2}	{ flt_bfr_embed(yytext, yyleng, Ident_attr); }
 <QUOTED>[^`\r\n\\\"]+	{ flt_bfr_append(yytext, yyleng); }
-<QUOTED>[\n]		|
+<QUOTED>[\r\n]		|
 <QUOTED>\"		{ PopQuote(); }
+<QUOTED>.		{ flt_bfr_append(yytext, yyleng); }
 
 %%
 

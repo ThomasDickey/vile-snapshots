@@ -1,8 +1,7 @@
 /*
+ * $Id: filterio.c,v 1.68 2016/12/16 12:01:17 tom Exp $
+ *
  * Main program and I/O for external vile syntax/highlighter programs
- *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filterio.c,v 1.66 2013/12/24 00:12:59 tom Exp $
- *
  */
 
 #include <filters.h>
@@ -145,10 +144,11 @@ flt_putc(int ch)
     } else {
 	++my_col;
     }
-
+#if 0
     /* markers come out in flt_puts */
     if (ch == CTL_A)
 	vl_putc('?', my_out);
+#endif
 }
 
 void

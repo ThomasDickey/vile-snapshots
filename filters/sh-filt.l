@@ -1,13 +1,15 @@
 %pointer
 %x NORMAL HEREDOC HEREDOC2 DQUOTED SQUOTED EXPRS BRACES BRACES2 BRACES3 KSH_CQUOTE KSH_MATH
 
+%e 1500
+%p 3400
 %o 10000
 %a 5000
 
 %{
 
 /*
- * $Id: sh-filt.l,v 1.172 2016/12/08 22:39:06 tom Exp $
+ * $Id: sh-filt.l,v 1.178 2016/12/16 22:30:30 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Shell script.
  */
@@ -15,8 +17,10 @@
 #include <filters.h>
 #undef YY_NO_UNPUT
 
-#define FLTSTACK_EXTRA      int backtic;
-#define FLTSTACK_EXTRA_PUSH FLTSTACK_THIS.backtic = 0;
+#define FLTSTACK_EXTRA		int backtic; \
+				int action;
+#define FLTSTACK_EXTRA_PUSH	FLTSTACK_THIS.backtic = 0;\
+				FLTSTACK_THIS.action = 0;
 #include <fltstack.h>
 
 #ifdef DEBUG
@@ -94,7 +98,7 @@ C_FLOAT		((({C_INT10}"."?)({C_INT10})?)|(({C_INT10})?("."{C_INT10}))){C_EXP}?
 KSH_NUMBER	{SIGN}?({C_INTEGER}|{C_FLOAT})
 BASExx_NUMBER	[0-9]+#[[:alnum:]@_]+
 SHELL_NUMBER	({KSH_NUMBER}|{BASExx_NUMBER})
-MAYBE_NOT	[.[:alnum:]/*?_-]*
+MAYBE_NOT	[.[:alnum:]\/*?_-]*
 MAYBE_NUMBER	({MAYBE_NOT}{SHELL_NUMBER}{MAYBE_NOT})
 
 SQUARE_DOWN	"["
@@ -361,15 +365,28 @@ DASHIDENT	{IDENT}("-"{NAME}{NAME2}*)*
 <EXPRS>[^`\r\n\\\$)]+	{ flt_bfr_append(yytext, yyleng); }
 
 <BRACES>{END_BRACES}	{ end_braces(yytext, yyleng); }
-<BRACES>{VNAME}		{ embed_vname(yytext, yyleng, ""); new_state(BRACES2); }
+<BRACES>{VNAME}		{ embed_vname(yytext, yyleng, "");
+			  new_state(BRACES2);
+			}
 <BRACES>{C_INT10}	{ flt_bfr_embed(yytext, yyleng, Ident_attr); new_state(BRACES2); }
 <BRACES>[?#!%]		{ flt_bfr_embed(yytext, yyleng, Action_attr); }
-<BRACES>[^?#!%}[:alnum:]_-]+ { flt_bfr_append(yytext, yyleng); }
+<BRACES>.		{ flt_bfr_append(yytext, yyleng); }
 
 <BRACES2>{END_BRACES}	{ end_braces(yytext, yyleng); }
 <BRACES2>\'		{ PushQuote(SQUOTED, String_attr); }
 <BRACES2>\"		{ PushQuote(DQUOTED, String_attr); }
-<BRACES2>[-:=?+*@#%/^,]+ { braces_operator(yytext, yyleng); }
+<BRACES2>"\\"\r?\n	|
+<BRACES2>"\\".		{ flt_bfr_embed(yytext, yyleng, Action_attr); }
+<BRACES2>"<"		{ flt_bfr_embed(yytext, yyleng, Action_attr);
+			  FLTSTACK_THIS.action++;
+			}
+<BRACES2>[-:=?+*@#%/^,]+ {
+			  if (FLTSTACK_THIS.action++) {
+			    flt_bfr_append(yytext, yyleng);
+			  } else {
+			    braces_operator(yytext, yyleng);
+			  }
+			}
 <BRACES2>{KSH_INDEX}	{ flt_bfr_embed(yytext, 1, "");
 			  flt_bfr_embed(yytext + 1, 1, Action_attr);
 			  flt_bfr_embed(yytext + 2, 1, "");
@@ -378,6 +395,8 @@ DASHIDENT	{IDENT}("-"{NAME}{NAME2}*)*
 <BRACES2>{SQUARE_UP}	{ handle_parens(yytext, yyleng, yyleng, -1, NORMAL); }
 <BRACES2>[^-:=?+*@#%/^,"'}[:blank:][]]+ { flt_bfr_embed(yytext, yyleng, ""); } /* FIXME - error */
 <BRACES2>{SPACE}	{ flt_bfr_append(yytext, yyleng); }
+<BRACES2>.		|
+<BRACES2>[\r\n]		{ flt_bfr_append(yytext, yyleng); }
 
 <BRACES3>{BACKTIC2_DOWN} { handle_backtic2(yytext, yyleng, yyleng, 1); }
 <BRACES3>{BACKTIC1_DOWN} { handle_backtic1(yytext, yyleng, yyleng, 1); }
@@ -833,7 +852,7 @@ check_heredoc(char *value, int length)
 	    flt_bfr_append(value, used);
     }
     if (got_here(value + used, length - used)) {
-	flt_bfr_append(here_tag, strlen(here_tag));
+	flt_bfr_append(here_tag, (int) strlen(here_tag));
 	flt_bfr_finish();
 	pop_state();
 	strip_tabs = 0;

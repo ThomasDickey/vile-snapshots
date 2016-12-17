@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/xq-filt.l,v 1.19 2013/12/02 01:32:53 tom Exp $
+ * $Id: xq-filt.l,v 1.20 2016/12/15 22:10:47 tom Exp $
  *
  * XQuery is case-sensitive
  * XQuery elements, attributes, and variables must be valid XML names
@@ -60,7 +60,7 @@ static unsigned curly_braces;
 
 #include <fltstack.h>
 
-static const char *prefixed_attr(char *, char **);
+static const char *prefixed_attr(const char *, char **, int);
 static const char *unprefixed_attr(char *);
 static const char *xml_keyword_attr(const char *name);
 static void xml_close(char *text);
@@ -124,7 +124,7 @@ VALUE		#{IDENT}
 			  if (Num_tags <= 0 || curly_braces > Num_tags) {
 			      attr = get_keyword_attr(yytext);
 			      if (isEmpty(attr)) {
-				  attr = prefixed_attr(yytext, &text);
+				  attr = prefixed_attr(yytext, &text, 0);
 				  if (isEmpty(attr)) {
 				      attr = unprefixed_attr(yytext);
 				      if (isEmpty(attr)) {
@@ -235,7 +235,7 @@ xml_property(char *text, int len)
 }
 
 static const char *
-prefixed_attr(char *name, char **text)
+prefixed_attr(const char *name, char **text, int ending)
 {
     const char *attr = "";
     char *marker = strchr(name, ':');
@@ -249,6 +249,8 @@ prefixed_attr(char *name, char **text)
 	attr = get_keyword_attr(name);
 	if (isEmpty(attr))
 	    attr = Ident_attr;
+	if (ending)
+	    flt_puts("/", 1, attr);
 	flt_puts(name, (int) strlen(name), attr);
 	set_symbol_table(old_table);
 
@@ -345,7 +347,7 @@ xml_command(char *text)
 	    free(Tags[--Num_tags].name);
     }
     if (isEmpty(attr)) {
-	attr = prefixed_attr(name, &text);
+	attr = prefixed_attr(name, &text, ending);
     }
     flt_puts(text, (int) strlen(text), attr);
 }

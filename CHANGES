@@ -1,10 +1,21 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20161211 (s)
+ 20161216 (s)
 	> Brendan O'Dea:
 	+ add command-line parsing for "--" token, assumed by visudo in the
 	  1.8.12 - 1.8.16 changes (report by Wayne Cuddy).
 	> Tom Dickey:
+	+ modify cfgmode to reduce false-matches with random ".cfg" files.
+	+ improve ps syntax filter
+	  + interpret %%BeginData / %%EndData keywords
+	  + interpret %%BeginPreview / %%EndPreview keywords
+	+ add ".mcrl2" as suffix for mcrlmode.
+	+ fixes from test-script: conf, hs, nr, rc, rcs, txt, xq, xml
+	+ improved regression test-script to check for places where the syntax
+	  filter might have mixed buffered- and unbuffered-calls in the same
+	  state, causing tokens in the markup to "move".
+	+ remove a statement from flt_putc in the standalone filters that
+	  converted a bare ^A to  ^A?.
 	+ remove escaping from digraphs.rc, since change in 9.7zg made that
 	  both unnecessary and incorrect (reports by Marc Simpson, Brendan
 	  O'Dea).

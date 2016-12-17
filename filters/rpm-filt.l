@@ -1,13 +1,15 @@
 %pointer
 %x META sTEXT NORMAL ONELINE HEREDOC SSTRING DSTRING QUOTED2 SUBST NOTE
 
+%e 2000
+%p 3000
 %o 10000
 %a 10000
 
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/rpm-filt.l,v 1.40 2016/07/26 00:06:39 tom Exp $
+ * $Id: rpm-filt.l,v 1.41 2016/12/12 09:53:49 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of rpm spec-file.
  */
@@ -236,7 +238,7 @@ SECTION		%{IDENT}
 <SSTRING>[\r\n%]	{ flt_bfr_append(yytext, yyleng); }
 <SSTRING>\'		{ FinishQuote(NORMAL); pop_state(); }
 
-<QUOTED2>(.|\n)		{ flt_bfr_embed(yytext, yyleng, Action_attr); pop_state(); }
+<QUOTED2>(.|[\n])	{ flt_bfr_embed(yytext, yyleng, Action_attr); pop_state(); }
 
 <SUBST>{IDENT2R}	{ flt_bfr_embed(yytext, yyleng, meta_variable(yytext, yyleng)); pop_state(); }
 <SUBST>\"		{ push_state(DSTRING); BeginQuote(DSTRING, String_attr); }

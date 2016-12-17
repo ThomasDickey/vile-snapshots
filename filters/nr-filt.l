@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/nr-filt.l,v 1.32 2013/12/02 01:32:53 tom Exp $
+ * $Id: nr-filt.l,v 1.34 2016/12/16 12:00:25 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of NROFF
  */
@@ -70,7 +70,7 @@ FONT		\\f([BI1-4]|{USE_MACRO})
 				}
 
 \\f[PR1]			{ WriteToken(Action_attr); }
-{FONT}[\\\r\n]			{ WriteToken3(Action_attr, 3);
+{FONT}[\\\r\n]			{ WriteToken3(Action_attr, yyleng - 1);
 				  unput(yytext[yyleng - 1]);
 				}
 

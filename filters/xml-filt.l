@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/xml-filt.l,v 1.51 2015/02/01 20:44:22 tom Exp $
+ * $Id: xml-filt.l,v 1.53 2016/12/16 12:00:55 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of XML input
  * text.
@@ -149,11 +149,11 @@ VALUE		#{IDENT}
 		          flt_puts(">", 1, Action_attr);
 			  pop_state();
 			}
-<XMLCDATA>[\n]		|
+<XMLCDATA>[\r\n]	|
 <XMLCDATA>.		{ flt_bfr_append(yytext, yyleng); }
 
 <INITIAL,INLINE>"<!--"	{ PushQuote(COMMENT, Comment_attr); }
-<COMMENT>[\n]		|
+<COMMENT>[\r\n]		|
 <COMMENT>[^\r\n-]+	|
 <COMMENT>[-]+[^-\>\r\n]*	{ flt_bfr_append(yytext, yyleng); }
 <COMMENT>[-]+"->"	{ PopQuote(); }
