@@ -1,4 +1,4 @@
-; $Id: modes.rc,v 1.135 2015/01/30 09:36:57 tom Exp $
+; $Id: modes.rc,v 1.137 2016/12/16 18:55:20 tom Exp $
 ; majormodes in this file are ordered alphabetically for convenience - the
 ; precedence used by vile is strictly alphabetic, counting case.  Use the
 ; before and after qualifiers to override the precedence.
@@ -142,6 +142,8 @@ define-mode bnf
 ; for Lynx lynx.cfg
 define-mode cfg
 ~with define-submode cfg
+	qualifiers=all
+	preamble	'^#.*\(lynx\|Lynx\)'
 	suffixes	'\.cfg$'
 	comment-prefix	'^\s*#'
 	comments	'^\s*#\s*$'
@@ -411,7 +413,7 @@ define-mode midl
 
 define-mode mcrl
 ~with define-submode mcrl
-	suffixes	'\.\(mcrl\)$'
+	suffixes	'\.\(mcrl\(2\)?\)$'
 	fence-pairs     '{}()[]'
 	comment-prefix  '^\s*%'
 	comments        '^\s*%.*$'

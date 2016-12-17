@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Id: hs-filt.l,v 1.28 2016/12/11 16:04:15 tom Exp $
+ * $Id: hs-filt.l,v 1.29 2016/12/15 02:04:57 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Haskell
  * input text.
@@ -56,6 +56,7 @@ NUMBER		{OCTAL}|{HEXADECIMAL}|{INTEGER}|{REAL}
 <COMMENT>[^-\r\n]+	{ flt_bfr_append(yytext, yyleng); }
 <COMMENT>[-]+$		{ flt_bfr_append(yytext, yyleng); }
 <COMMENT>[-]+[^}-]	{ flt_bfr_append(yytext, yyleng); }
+<COMMENT>.		{ flt_bfr_append(yytext, yyleng); }
 
 <NORMAL>"`"{IDENT}"`"	{ WriteToken(Action_attr); }
 <NORMAL>{IDENT}		{ WriteToken(get_keyword_attr(yytext)); }
@@ -65,6 +66,8 @@ NUMBER		{OCTAL}|{HEXADECIMAL}|{INTEGER}|{REAL}
 <NORMAL>"--"[^\r\n]*	{ WriteToken(Comment_attr); }
 
 <NORMAL>^{BLANK}*[#]+	{ PushQuote(PREPRO, Preproc_attr); }
+<NORMAL>.		{ ECHO; }
+
 <PREPRO>{BLANK}+	{ flt_bfr_append(yytext, yyleng); }
 <PREPRO>{IDENT}		{ const char *attr;
 			  set_symbol_table("cpre");
@@ -75,6 +78,7 @@ NUMBER		{OCTAL}|{HEXADECIMAL}|{INTEGER}|{REAL}
 			  set_symbol_table(default_table);
 			  new_state(PREPMORE);
 			 }
+<PREPRO>.		{ flt_bfr_append(yytext, yyleng); }
 <PREPMORE>[\r\n]	{
 			  flt_bfr_append(yytext, yyleng);
 			  flt_bfr_finish();
@@ -84,6 +88,7 @@ NUMBER		{OCTAL}|{HEXADECIMAL}|{INTEGER}|{REAL}
 <PREPMORE>{IDENT}	{ flt_bfr_embed(yytext, yyleng, get_keyword_attr(yytext)); }
 <PREPMORE>[^\\\r\n]	{ flt_bfr_embed(yytext, yyleng, ""); }
 <PREPMORE>{STRING}	{ flt_bfr_embed(yytext, yyleng, String_attr); }
+
 <PREPMORE>"/*"		{ PushQuote(PREPNOTE, Comment_attr); }
 <PREPNOTE>[^*]*		{ flt_bfr_append(yytext, yyleng); }
 <PREPNOTE>"*"+[^*/]*	{ flt_bfr_append(yytext, yyleng); }

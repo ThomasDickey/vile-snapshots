@@ -7,7 +7,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/txt-filt.l,v 1.40 2013/12/02 01:32:53 tom Exp $
+ * $Id: txt-filt.l,v 1.42 2016/12/16 12:00:09 tom Exp $
  *
  * Filter to add vile "attribution" sequences to an ordinary text file
  */
@@ -92,7 +92,7 @@ URL		[[:alpha:]]+"://"[[:alnum:]#%&+\,.\/?;@_=~-]+
 <NOTE>{IDENT}		{ flt_bfr_embed(yytext, yyleng, Ident2_attr); }
 <NOTE>\(\"\)		|
 <NOTE>\'.\'		|
-<NOTE>.			{ flt_puts(yytext, yyleng, Comment_attr); }
+<NOTE>.			{ flt_bfr_embed(yytext, yyleng, Comment_attr); }
 
 %%
 

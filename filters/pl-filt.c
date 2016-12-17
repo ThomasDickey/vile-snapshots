@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/pl-filt.c,v 1.122 2016/11/27 19:10:59 tom Exp $
+ * $Id: pl-filt.c,v 1.124 2016/12/14 22:24:06 tom Exp $
  *
  * Filter to add vile "attribution" sequences to perl scripts.  This is a
  * translation into C of an earlier version written for LEX/FLEX.
@@ -737,7 +737,7 @@ is_PATTERN(char *s)
 		(void) strtol(content, &next, 0);
 		if (next == 0 || next == content) {
 		    /* content was not a number */
-		    result = (s - base);
+		    result = (int) (s - base);
 		}
 	    }
 	    break;
@@ -1471,10 +1471,12 @@ do_filter(FILE *input GCC_UNUSED)
 		    state = ePATTERN;
 		    if_wrd = nullKey;
 		} else if (in_line <= 0
-			   && (ok = begin_POD(s, 1))) {
+			   && (ok = begin_POD(s, 0))) {
 		    char *base = s;
 		    state = ePOD;
-		    s = put_document(s + ok - 1);
+		    while (*s != '=')
+			flt_putc(*s++);
+		    s = put_document(s);
 		    if (end_POD(base, 1))
 			state = eCODE;
 		} else if (in_line == 0
@@ -1649,8 +1651,9 @@ do_filter(FILE *input GCC_UNUSED)
 		if (end_POD(s, 0))
 		    state = eCODE;
 		s = put_document(s);
-		if (begin_POD(s - 1, 0))
+		if (begin_POD(s - 1, 0)) {
 		    state = ePOD;
+		}
 		break;
 	    }
 	}
