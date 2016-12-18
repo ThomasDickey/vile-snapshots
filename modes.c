@@ -7,8 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Header: /users/source/archives/vile.vcs/RCS/modes.c,v 1.443 2016/07/16 14:37:45 tom Exp $
- *
+ * $Id: modes.c,v 1.448 2016/12/17 14:50:54 tom Exp $
  */
 
 #include <estruct.h>
@@ -2359,7 +2358,7 @@ chgd_disabled(BUFFER *bp GCC_UNUSED,
     return FALSE;
 }
 
-	/* Change "fences" mode */
+/* Change "fences" mode */
 /*ARGSUSED*/
 int
 chgd_fences(BUFFER *bp GCC_UNUSED, VALARGS * args, int glob_vals GCC_UNUSED, int testing)
@@ -2379,7 +2378,7 @@ chgd_fences(BUFFER *bp GCC_UNUSED, VALARGS * args, int glob_vals GCC_UNUSED, int
     return TRUE;
 }
 
-	/* Change a "major" mode (one that we cannot use in majormodes) */
+/* Change a "major" mode (one that we cannot use in majormodes) */
 int
 chgd_major(BUFFER *bp, VALARGS * args, int glob_vals, int testing)
 {
@@ -2395,7 +2394,7 @@ chgd_major(BUFFER *bp, VALARGS * args, int glob_vals, int testing)
     return TRUE;
 }
 
-	/* Change the "undoable" mode (this is also a major change) */
+/* Change the "undoable" mode (this is also a major change) */
 int
 chgd_undoable(BUFFER *bp, VALARGS * args, int glob_vals, int testing)
 {
@@ -2408,7 +2407,7 @@ chgd_undoable(BUFFER *bp, VALARGS * args, int glob_vals, int testing)
     return FALSE;
 }
 
-	/* Change a mode that affects the window(s) on the buffer */
+/* Change a mode that affects the window(s) on the buffer */
 int
 chgd_win_mode(BUFFER *bp, VALARGS * args, int glob_vals, int testing)
 {
@@ -2422,7 +2421,7 @@ chgd_win_mode(BUFFER *bp, VALARGS * args, int glob_vals, int testing)
     return TRUE;
 }
 
-	/* Change the DOS-mode on the buffer */
+/* Change the DOS-mode on the buffer */
 int
 chgd_dos_mode(BUFFER *bp, VALARGS * args, int glob_vals, int testing)
 {
@@ -2489,7 +2488,7 @@ set_record_sep(BUFFER *bp, RECORD_SEP code)
     set_winflags(TRUE, WFMODE);
 }
 
-	/* Change the record separator */
+/* Change the record separator */
 int
 chgd_rs(BUFFER *bp, VALARGS * args, int glob_vals, int testing)
 {
@@ -2506,7 +2505,7 @@ chgd_rs(BUFFER *bp, VALARGS * args, int glob_vals, int testing)
     return chgd_win_mode(bp, args, glob_vals, testing);
 }
 
-	/* Change something on the mode/status line */
+/* Change something on the mode/status line */
 /*ARGSUSED*/
 int
 chgd_status(BUFFER *bp GCC_UNUSED, VALARGS * args GCC_UNUSED, int glob_vals, int testing)
@@ -2618,7 +2617,7 @@ chgd_curtokens(BUFFER *bp,
 #endif
 
 #if OPT_TITLE
-	/* Changed swap-title */
+/* Changed swap-title */
 int
 chgd_swaptitle(BUFFER *bp GCC_UNUSED,
 	       VALARGS * args GCC_UNUSED,
@@ -2654,7 +2653,7 @@ chgd_find_cfg(BUFFER *bp GCC_UNUSED,
 }
 #endif
 
-	/* Change a mode that affects the windows on the buffer */
+/* Change a mode that affects the windows on the buffer */
 /*ARGSUSED*/
 int
 chgd_window(BUFFER *bp GCC_UNUSED, VALARGS * args GCC_UNUSED, int glob_vals, int testing)
@@ -2665,8 +2664,8 @@ chgd_window(BUFFER *bp GCC_UNUSED, VALARGS * args GCC_UNUSED, int glob_vals, int
     return TRUE;
 }
 
-	/* if unique-buffers is turned on, make sure all buffers that
-	   can have a valid fuid */
+/* if unique-buffers is turned on, make sure all buffers that
+   can have a valid fuid */
 /*ARGSUSED*/
 int
 chgd_uniqbuf(BUFFER *bp GCC_UNUSED,
@@ -2691,7 +2690,7 @@ chgd_uniqbuf(BUFFER *bp GCC_UNUSED,
     return TRUE;
 }
 
-	/* Change the working mode */
+/* Change the working mode */
 #if OPT_WORKING
 /*ARGSUSED*/
 int
@@ -2706,7 +2705,7 @@ chgd_working(BUFFER *bp GCC_UNUSED,
 }
 #endif
 
-	/* Change the xterm-mouse mode */
+/* Change the xterm-mouse mode */
 /*ARGSUSED*/
 int
 chgd_xterm(BUFFER *bp GCC_UNUSED,
@@ -2727,7 +2726,7 @@ chgd_xterm(BUFFER *bp GCC_UNUSED,
     return TRUE;
 }
 
-	/* Change the xterm-fkeys mode */
+/* Change the xterm-fkeys mode */
 /*ARGSUSED*/
 int
 chgd_xtermkeys(BUFFER *bp GCC_UNUSED,
@@ -2743,7 +2742,7 @@ chgd_xtermkeys(BUFFER *bp GCC_UNUSED,
     return TRUE;
 }
 
-	/* Change the mouse mode */
+/* Change the mouse mode */
 #ifdef GMDMOUSE
 /*ARGSUSED*/
 int
@@ -2762,7 +2761,7 @@ chgd_mouse(BUFFER *bp, VALARGS * args GCC_UNUSED, int glob_vals, int testing GCC
 }
 #endif
 
-	/* Change a mode that affects the search-string highlighting */
+/* Change a mode that affects the search-string highlighting */
 /*ARGSUSED*/
 int
 chgd_hilite(BUFFER *bp, VALARGS * args GCC_UNUSED, int glob_vals GCC_UNUSED, int testing)
@@ -3059,9 +3058,9 @@ get_mm_rexp(int n, int m)
 	    && mv[m].vp->r->pat != 0
 	    && mv[m].vp->r->pat[0] != 0
 	    && mv[m].vp->r->reg != 0) {
-	    TRACE(("get_mm_rexp(%s) %s\n",
-		   my_majormodes[n].shortname,
-		   mv[m].vp->r->pat));
+	    TRACE2(("get_mm_rexp(%s) %s\n",
+		    my_majormodes[n].shortname,
+		    mv[m].vp->r->pat));
 	    result = mv[m].vp->r->reg;
 	}
     }
@@ -3077,9 +3076,9 @@ get_mm_string(int n, int m)
 	struct VAL *mv = my_majormodes[n].data->mm.mv;
 
 	if (!isEmpty(mv[m].vp->p)) {
-	    TRACE(("get_mm_string(%s) %s\n",
-		   my_majormodes[n].shortname,
-		   mv[m].vp->p));
+	    TRACE2(("get_mm_string(%s) %s\n",
+		    my_majormodes[n].shortname,
+		    mv[m].vp->p));
 	    result = mv[m].vp->p;
 	}
     }
@@ -3127,20 +3126,15 @@ show_majormode_order(const char *tag)
 #endif
 
 static int
-put_majormode_before(unsigned j, const char *s)
+find_mm_by_shortname(const char *s)
 {
     const char *t;
-    const char *told = "~";	/* FIXME: majormode names are 7-bit ASCII */
+    const char *told = "";
     int k;
     int kk;
     int found = -1;
 
     if (majormodes_order != 0) {
-	TRACE(("put_majormode_before(%d:%s, %s)\n",
-	       j,
-	       mmShortName(j),
-	       s));
-
 	for (k = 0; (kk = majormodes_order[k]) >= 0; k++) {
 	    if ((t = my_majormodes[kk].shortname) != 0
 		&& strcmp(t, s) <= 0
@@ -3149,6 +3143,55 @@ put_majormode_before(unsigned j, const char *s)
 		told = t;
 	    }
 	}
+    }
+    return found;
+}
+
+#if OPT_TRACE
+static void
+check_majormode_order(void)
+{
+    int j;
+
+    for (j = 0; majormodes_order[j] >= 0; j++) {
+	const char *t = my_majormodes[majormodes_order[j]].shortname;
+	const char *s;
+	int found;
+
+	if ((s = GetMmString(j, MVAL_BEFORE)) != 0) {
+	    found = find_mm_by_shortname(s);
+	    if (found < (int) j)
+		TRACE(("failed check %s before %s: %d vs %d\n",
+		       t, s, j, found));
+	}
+	if ((s = GetMmString(j, MVAL_AFTER)) != 0) {
+	    found = find_mm_by_shortname(s);
+	    if (found > (int) j)
+		TRACE(("failed check %s after %s: %d vs %d\n",
+		       t, s, j, found));
+	}
+    }
+    TRACE(("checked %d majormodes\n", j));
+}
+
+#else
+#define check_majormode_order()	/* nothing */
+#endif
+
+static int
+put_majormode_before(unsigned j, const char *s)
+{
+    if (majormodes_order != 0) {
+	int kk;
+	int found;
+
+	TRACE(("put_majormode_before(%d:%s, %s)\n",
+	       j,
+	       mmShortName(j),
+	       s));
+
+	found = find_mm_by_shortname(s);
+
 	if (found >= 0 && found < (int) j) {
 	    show_majormode_order("before");
 	    kk = majormodes_order[j];
@@ -3173,28 +3216,17 @@ put_majormode_before(unsigned j, const char *s)
 static int
 put_majormode_after(unsigned j, char *s)
 {
-    const char *t;
-    const char *told = "";
-    int k;
-    int kk;
-    int found = -1;
-
     if (majormodes_order != 0) {
+	int kk;
+	int found;
+
 	TRACE(("put_majormode_after(%d:%s, %s)\n",
 	       j,
 	       mmShortName(j),
 	       s));
 
-	for (k = (int) count_majormodes() - 1;
-	     k >= 0 && (kk = majormodes_order[k]) >= 0;
-	     k--) {
-	    t = my_majormodes[kk].shortname;
-	    if (strcmp(t, s) >= 0
-		&& (found < 0 || strcmp(told, t) > 0)) {
-		found = k;
-		told = t;
-	    }
-	}
+	found = find_mm_by_shortname(s);
+
 	if (found >= 0 && found > (int) j) {
 	    show_majormode_order("before");
 	    kk = majormodes_order[j];
@@ -3304,6 +3336,7 @@ compute_majormodes_order(void)
 		}
 	    }
 	    show_majormode_order("final:");
+	    check_majormode_order();
 	}
     }
     returnVoid();
@@ -4521,24 +4554,35 @@ do_a_submode(int defining)
 	reset_qualifier(args.names, args.global);
     }
 
-    if (status == TRUE
-	&& !qualifier) {
-	if (defining && found_per_submode(name, j)) {
-	    TRACE(("submode names for %d present\n", j)) /*EMPTY */ ;
-	} else if (defining) {
-	    TRACE(("construct submode names for %d\n", j));
-	    k = extend_mode_list(2);
-	    k = insert_per_major(k,
-				 per_submode(temp, name, j, TRUE));
-	    (void) insert_per_major(k,
-				    per_submode(temp, name, j, FALSE));
+    if (status == TRUE) {
+	if (qualifier) {
+	    switch (j) {
+	    case MVAL_AFTER:
+	    case MVAL_BEFORE:
+	    case MVAL_QUALIFIERS:
+		compute_majormodes_order();
+		break;
+	    default:
+		break;
+	    }
 	} else {
-	    TRACE(("destroy submode names for %d\n", j));
-	    k = (size_t) count_modes();
-	    k = remove_per_major(k,
-				 per_submode(temp, name, j, TRUE));
-	    (void) remove_per_major(k,
-				    per_submode(temp, name, j, FALSE));
+	    if (defining && found_per_submode(name, j)) {
+		TRACE(("submode names for %d present\n", j)) /*EMPTY */ ;
+	    } else if (defining) {
+		TRACE(("construct submode names for %d\n", j));
+		k = extend_mode_list(2);
+		k = insert_per_major(k,
+				     per_submode(temp, name, j, TRUE));
+		(void) insert_per_major(k,
+					per_submode(temp, name, j, FALSE));
+	    } else {
+		TRACE(("destroy submode names for %d\n", j));
+		k = (size_t) count_modes();
+		k = remove_per_major(k,
+				     per_submode(temp, name, j, TRUE));
+		(void) remove_per_major(k,
+					per_submode(temp, name, j, FALSE));
+	    }
 	}
     }
 
@@ -4612,9 +4656,9 @@ get_sm_rexp(int n, int m)
 	&& mv[m].vp->r->pat != 0
 	&& mv[m].vp->r->pat[0] != 0
 	&& mv[m].vp->r->reg != 0) {
-	TRACE(("get_sm_rexp(%s) %s\n",
-	       my_majormodes[n].shortname,
-	       mv[m].vp->r->pat));
+	TRACE2(("get_sm_rexp(%s) %s\n",
+		my_majormodes[n].shortname,
+		mv[m].vp->r->pat));
 	return mv[m].vp->r->reg;
     }
     return 0;

@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.750 2016/07/16 15:09:53 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.751 2016/12/17 23:26:12 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -835,8 +835,8 @@ extern	char *	sys_errlist[];
 #define	set_errno(code)	errno = code
 
 	/* bit-mask definitions */
-#define	lBIT(n)	((ULONG)(1L<<(n)))
-#define	iBIT(n) ((UINT)(1 <<(n)))
+#define	lBIT(n)	((ULONG)(1UL<<(n)))
+#define	iBIT(n) ((UINT)(1U <<(n)))
 
 #define clr_typed_flags(dst,type,flags)  (dst) = (type) ((dst) & ~(flags))
 #define clr_flags(dst,flags)             (dst) = ((dst) & ~(flags))

@@ -1,10 +1,14 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20161216 (s)
+ 20161217 (s)
 	> Brendan O'Dea:
 	+ add command-line parsing for "--" token, assumed by visudo in the
 	  1.8.12 - 1.8.16 changes (report by Wayne Cuddy).
 	> Tom Dickey:
+	+ recompute majormode order when "after", "before" or "qualifiers" is
+	  modified for a majormode.
+	+ add yamlmode (discussion with Steve Lembark)
+	+ modify DSTRING definition in lex-filter to handle continuation lines.
 	+ modify cfgmode to reduce false-matches with random ".cfg" files.
 	+ improve ps syntax filter
 	  + interpret %%BeginData / %%EndData keywords
@@ -15,7 +19,7 @@ Changes for vile 9.9 (released ??? ??? ?? ????)
 	  filter might have mixed buffered- and unbuffered-calls in the same
 	  state, causing tokens in the markup to "move".
 	+ remove a statement from flt_putc in the standalone filters that
-	  converted a bare ^A to  ^A?.
+	  converted a bare ^A to ^A?.
 	+ remove escaping from digraphs.rc, since change in 9.7zg made that
 	  both unnecessary and incorrect (reports by Marc Simpson, Brendan
 	  O'Dea).

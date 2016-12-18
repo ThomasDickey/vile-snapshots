@@ -1,5 +1,5 @@
 /*
- * $Id: pl-filt.c,v 1.124 2016/12/14 22:24:06 tom Exp $
+ * $Id: pl-filt.c,v 1.125 2016/12/17 17:30:10 tom Exp $
  *
  * Filter to add vile "attribution" sequences to perl scripts.  This is a
  * translation into C of an earlier version written for LEX/FLEX.
@@ -1326,7 +1326,7 @@ is_FORMAT(char *s, int len)
 	s += is_BLANK(s);
 	s += is_NAME(s);
 	s += is_BLANK(s);
-	if (*s == '=' && !ispunct(s[1]))
+	if (*s == '=' && !ispunct(CharOf(s[1])))
 	    return 1;
     }
     return 0;

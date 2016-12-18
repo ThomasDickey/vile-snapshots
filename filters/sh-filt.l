@@ -5,11 +5,12 @@
 %p 3400
 %o 10000
 %a 5000
+%k 2000
 
 %{
 
 /*
- * $Id: sh-filt.l,v 1.178 2016/12/16 22:30:30 tom Exp $
+ * $Id: sh-filt.l,v 1.179 2016/12/17 23:24:00 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Shell script.
  */

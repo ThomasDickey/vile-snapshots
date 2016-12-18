@@ -1,4 +1,4 @@
-; $Id: modes.rc,v 1.137 2016/12/16 18:55:20 tom Exp $
+; $Id: modes.rc,v 1.138 2016/12/17 12:42:40 tom Exp $
 ; majormodes in this file are ordered alphabetically for convenience - the
 ; precedence used by vile is strictly alphabetic, counting case.  Use the
 ; before and after qualifiers to override the precedence.
@@ -1199,4 +1199,16 @@ define-mode yacc
 	suffixes	'\.\(y\|yy\|yacc\)$'
 	cindent
 	cindent-chars &cat ':#' $fences
+~endwith
+
+define-majormode yaml
+remove-submode yaml cindent
+~with define-submode yaml
+	before conf
+	filtername	'vile-conf-filt'
+	preamble	'^---'
+	suffixes	'\.\(yaml\|yml\)$'
+	notabinsert
+	tabstop=2
+	shiftwidth=2
 ~endwith

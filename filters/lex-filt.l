@@ -9,7 +9,7 @@
 %{
 
 /*
- * $Id: lex-filt.l,v 1.86 2016/12/11 16:04:15 tom Exp $
+ * $Id: lex-filt.l,v 1.87 2016/12/17 01:54:26 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of LEX program.
  */
@@ -57,7 +57,7 @@ DIRECTIVE	^%([{}+*-]|{IDENT})
 INTEGER		[-+]?([[:digit:]]+)
 
 SSTRING		\'(\\.|[^'\\])*\'
-DSTRING		\"(\\.|[^"\\])*\"
+DSTRING		\"(\\.|[^"\\]|\\\r?\n)*\"
 STRINGS		({SSTRING}|{DSTRING})
 
 ESCAPED		(\\[^\r\n])
