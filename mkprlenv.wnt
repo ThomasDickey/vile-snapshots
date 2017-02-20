@@ -27,7 +27,7 @@
 # Consult the macro $(PERL_SCRIPTS) in the file makefile.wnt to ascertain the
 # current list of vile-based perl scripts known to work in a Win32 environment.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/mkprlenv.wnt,v 1.9 2005/12/07 11:55:18 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/mkprlenv.wnt,v 1.10 2017/02/20 00:40:30 tom Exp $
 #
     perl -w <<
 	require Config;
@@ -144,9 +144,12 @@
                     print "error: creating $(PERLCFG): $$!\n";
                     exit(1);
                 }
-                print SOME_FD "VILE_PERL_LIB=$$lib\n";
-                print SOME_FD "VILE_PERL_INC=$$inc\n";
-                print SOME_FD "VILE_PERL_UTILS=$$utils\n";
+                my $$w_lib = $$lib =~ s/\//\\/rg;
+                my $$w_inc = $$inc =~ s/\//\\/rg;
+                my $$w_utils = $$utils =~ s/\//\\/rg;
+                print SOME_FD "VILE_PERL_LIB=$$w_lib\n";
+                print SOME_FD "VILE_PERL_INC=$$w_inc\n";
+                print SOME_FD "VILE_PERL_UTILS=$$w_utils\n";
                 close SOME_FD;
 #
 #               copy win32-compatible perl scripts to user-specified directory

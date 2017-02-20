@@ -13,7 +13,7 @@
  * vile.  The file api.c (sometimes) provides a middle layer between
  * this interface and the rest of vile.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.137 2016/07/13 09:03:29 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.138 2017/02/19 23:09:26 tom Exp $
  */
 
 #ifdef __GNUC__
@@ -1203,7 +1203,14 @@ extern "C" {
 #endif
 
 extern void boot_DynaLoader(pTHX_ CV* cv);
-extern void boot_Vile(pTHX_ CV* cv);
+
+#if (defined(__CYGWIN__) || defined(WIN32)) && defined(USE_DYNAMIC_LOADING)
+__declspec(dllexport)
+#else
+extern
+#endif
+
+void boot_Vile(pTHX_ CV* cv);
 
 #ifdef __cplusplus
 }
