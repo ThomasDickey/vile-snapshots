@@ -1,5 +1,9 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
+ 20170220 (t)
+	> Tom Dickey:
+	+ build-fixes for Visual Studio 2015 and ActiveState Perl 5.24.1
+
  20161217 (s)
 	> Brendan O'Dea:
 	+ add command-line parsing for "--" token, assumed by visudo in the

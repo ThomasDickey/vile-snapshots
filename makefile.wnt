@@ -1,10 +1,11 @@
-#
 # makefile for vile on WIN32 using Microsoft Visual C++
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.wnt,v 1.109 2014/03/30 19:56:44 tom Exp $
+# $Id: makefile.wnt,v 1.110 2017/02/20 00:15:28 tom Exp $
 #
-#
-!include <ntwin32.mak>
+# Do this to prevent Visual C++ from creating a program database (".pdb" file)
+NODEBUG=1
+
+!include <win32.mak>
 
 ###############################################################################
 # These are the symbols that you may wish to set on the command line (do not set
@@ -78,7 +79,7 @@ CC_DEBUG     = -W4 #$(cdebug)
 LD_DEBUG     = #$(ldebug)
 
 # Other vars
-CON_LDFLAGS  = -nologo -pdb:none
+CON_LDFLAGS  = -nologo
 DEVNULL      = nul
 PERLCFG      = $(DEVNULL)
 THE_PERLCFG  = perl_env.inc
@@ -96,7 +97,7 @@ DBGOBJS  = trace.obj
 MY_CCOPT = $(MY_CCOPT) -DOPT_TRACE
 !ENDIF
 !else
-MY_LDOPT = -pdb:none
+MY_LDOPT =
 !endif
 
 # options common to all configurations
@@ -168,7 +169,10 @@ EXTRA    =
 # affected.  Comment out the makefile macro "PERLFIX" if your version of
 # perl properly exports $/ .
 #
-PERLFIX  = -DHAVE_BROKEN_PERL_RS
+# ActiveState's installer presumes you are using gcc, and (mis)uses the
+# gcc-ism "__inline__" rather than standard "inline".
+#
+PERLFIX  = -DHAVE_BROKEN_PERL_RS -D__inline__=inline
 PERLOPTS = -DOPT_PERL=1 -I$(VILE_PERL_INC) $(PERLFIX)
 PERLOBJS = api.obj perl.obj watch.obj
 PERLSRCS = api.c perl.c watch.c
@@ -250,13 +254,19 @@ OBJ = 	main.obj $(SCREEN).obj \
 	wcwidth.obj w32info.res $(PERLOBJS) \
 	$(OLEOBJS) $(DBGOBJS) $(EXTRAOBJ) $(EXTRA)
 
+all :: $(PERLCFG) $(EXEFILE) $(WRAPUTIL)
+
+perl.i: perl.c
+	$(cc) $(CFLAGS) -DNO_INLINE $(PERLOPTS) -C -P -Fi$@ perl.c 
+
+.c.i:
+	$(cc) $(CFLAGS) -DNO_INLINE -C -P -Fi$@ $<
+
 .c.obj:
 	$(cc) $(CFLAGS) -DNO_INLINE -c $< -Fo$@
 
 .cpp.obj:
 	$(cc) $(CFLAGS) -c $< -Fo$@
-
-all :: $(PERLCFG) $(EXEFILE) $(WRAPUTIL)
 
 sources ::	$(MYHDRS)
 
@@ -347,7 +357,10 @@ test_io.exe :		$(TEST_IO_OBJS)
 clean ::
 	-del *.bak
 	-del *.exe
+	-del *.exp
+	-del *.i
 	-del *.ilk
+	-del *.lib
 	-del *.map
 	-del *.pdb
 	-del *.obj

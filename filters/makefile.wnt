@@ -1,10 +1,11 @@
-#
 # makefile for vile filters on WIN32 using Microsoft Visual C++
 #
-# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.wnt,v 1.39 2014/02/01 00:38:09 tom Exp $
+# $Id: makefile.wnt,v 1.40 2017/02/19 22:57:20 tom Exp $
 #
-#
-!include <ntwin32.mak>
+# Do this to prevent Visual C++ from creating a program database (".pdb" file)
+NODEBUG=1
+
+!include <win32.mak>
 
 # set DBG=yes to get debugging info (and a larger executable)
 !if "$(DBG)" != ""
@@ -18,7 +19,7 @@ x	= .exe
 o	= .obj
 
 # Other vars
-CON_LDFLAGS  = $(LD_DEBUG) $(conlflags) $(conlibsmt) user32.lib comdlg32.lib ole32.lib shell32.lib -nologo -pdb:none
+CON_LDFLAGS  = $(LD_DEBUG) $(conlflags) $(conlibsmt) user32.lib comdlg32.lib ole32.lib shell32.lib -nologo
 
 UTILS	= \
 	atr2ansi$x \
