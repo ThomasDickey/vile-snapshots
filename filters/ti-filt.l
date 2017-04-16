@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/ti-filt.l,v 1.29 2013/12/02 01:32:53 tom Exp $
+ * $Id: ti-filt.l,v 1.30 2017/04/16 10:32:09 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of terminfo
  */
@@ -42,7 +42,10 @@ ALIAS		[[:alnum:]][[:alnum:]_.+-]*
 COMMA		[,]
 ESCNL		{COMMA}{SPACE}*\\\n\t
 
-NUMBER		"#"[[:digit:]]+
+HEXNUM		"0x"[[:xdigit:]]+
+DECNUM		[[:digit:]]+
+
+NUMBER		"#"({HEXNUM}|{DECNUM})
 STRING		"="(\\.|\^.|[^,\^\\])*
 
 %%

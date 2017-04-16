@@ -1,8 +1,14 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20170220 (t)
+ 20170416 (t)
 	> Tom Dickey:
-	+ build-fixes for Visual Studio 2015 and ActiveState Perl 5.24.1
+	+ modify ti-filt.l to allow hexadecimal, as per X/Open Curses
+	  documentation.  This is different from termcap, which (like terminfo)
+	  supports octal and decimal numbers.
+	+ build-fixes for Visual Studio 2015
+	+ build-fixes to allow test-compile with ActiveState Perl 5.24.1, which
+	  does not work with winvile because its DLL does not provide
+	  COM entrypoints, e.g., CoTaskMemFree and CoRegisterClassObject
 
  20161217 (s)
 	> Brendan O'Dea:
