@@ -27,10 +27,15 @@
 # Consult the macro $(PERL_SCRIPTS) in the file makefile.wnt to ascertain the
 # current list of vile-based perl scripts known to work in a Win32 environment.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/mkprlenv.wnt,v 1.10 2017/02/20 00:40:30 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/mkprlenv.wnt,v 1.11 2017/02/20 20:00:22 tom Exp $
 #
     perl -w <<
-	require Config;
+        use strict;
+        require Config;
+        my $$dir;
+        my $$lib;
+        my $$inc;
+        my $$utils;
         foreach $$dir (@INC)
         {
             $$lib="$$dir\\CORE\\" . $$Config::Config{'libperl'};
@@ -69,7 +74,7 @@
         }
         print
  "Checking existence of directory specified by VILE_LIBDIR_PATH env var...\n";
-        $$root_dir=$$ENV{"VILE_LIBDIR_PATH"};
+        my $$root_dir=$$ENV{"VILE_LIBDIR_PATH"};
         if (! $$root_dir)
         {
             print "error: Environment var VILE_LIBDIR_PATH does not exist\n";
@@ -103,7 +108,7 @@
 #
 #               The user's writable directory must have a subdirectory
 #               called "perl".  Create if it doesn't exist.
-                $$script_dir = $$root_dir . "\\perl";
+                my $$script_dir = $$root_dir . "\\perl";
                 if (-f $$script_dir)
                 {
                     print
@@ -115,7 +120,7 @@
                     print "error: can't create \"$$script_dir\": $$!\n";
                     exit(1);
                 }
-                $$script_sub = $$script_dir . "\\Vile";
+                my $$script_sub = $$script_dir . "\\Vile";
                 if (! -d $$script_sub && ! mkdir($$script_sub, 0755))
                 {
                     print "error: can't create \"$$script_sub\": $$!\n";
@@ -127,7 +132,7 @@
 #               attempt to create a junk file in this directory as a test
 #               of its accessibility.
 #
-                $$test_file = "$$script_dir\\vile_perl_tst.txt";
+                my $$test_file = "$$script_dir\\vile_perl_tst.txt";
                 if (open(TEST_FD, "> $$test_file") == 0)
                 {
                     print
@@ -139,28 +144,37 @@
 #
 #               Write out results.
 #
-                if (open(SOME_FD, "> $(PERLCFG)") == 0)
+                if ( -f "$(PERLCFG)" )
+                {
+                    print "removing old $(PERLCFG)\n";
+                    unlink "$(PERLCFG)";
+                }
+                if (open(SOME_FD, "> $(PERLCFG)"))
+                {
+                    my $$w_lib = $$lib =~ s/\//\\/rg;
+                    my $$w_inc = $$inc =~ s/\//\\/rg;
+                    my $$w_utils = $$utils =~ s/\//\\/rg;
+                    print SOME_FD "VILE_PERL_LIB=$$w_lib\n";
+                    print SOME_FD "VILE_PERL_INC=$$w_inc\n";
+                    print SOME_FD "VILE_PERL_UTILS=$$w_utils\n";
+                    close SOME_FD;
+                }
+                else
                 {
                     print "error: creating $(PERLCFG): $$!\n";
                     exit(1);
                 }
-                my $$w_lib = $$lib =~ s/\//\\/rg;
-                my $$w_inc = $$inc =~ s/\//\\/rg;
-                my $$w_utils = $$utils =~ s/\//\\/rg;
-                print SOME_FD "VILE_PERL_LIB=$$w_lib\n";
-                print SOME_FD "VILE_PERL_INC=$$w_inc\n";
-                print SOME_FD "VILE_PERL_UTILS=$$w_utils\n";
-                close SOME_FD;
 #
 #               copy win32-compatible perl scripts to user-specified directory
 #
+                my $$mylist;
                 $$mylist = "$(PERL_SCRIPTS)";
                 $$mylist =~ s@/@\\@g;
-                @scripts = split ' ', "$$mylist";
-                foreach $$file (@scripts)
+                my @scripts = split ' ', "$$mylist";
+                foreach my $$file (@scripts)
                 {
-                    $$src  = $$file;
-                    $$dest = "$$root_dir\\$$file";
+                    my $$src  = $$file;
+                    my $$dest = "$$root_dir\\$$file";
                     printf "copying $$src -> $$dest...\n";
                     `copy $$src $$dest`;
                     if ( ! -f $$dest ) {
@@ -181,4 +195,5 @@
     -del $(EXEFILE)
     -del perl.c
 # Look ma, a recursive make
+    @echo doing recursive make...
     $(MAKE) -f makefile.wnt CFG=$(CFG) OPT=$(OPT) ICON=$(ICON)

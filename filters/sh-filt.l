@@ -10,7 +10,7 @@
 %{
 
 /*
- * $Id: sh-filt.l,v 1.179 2016/12/17 23:24:00 tom Exp $
+ * $Id: sh-filt.l,v 1.180 2017/03/16 21:34:56 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Shell script.
  */
@@ -92,7 +92,7 @@ SIGN		[-+]
 
 C_INT8		0[0-7]+
 C_INT10		[[:digit:]]+
-C_INT16		0x[[[:xdigit:]]+
+C_INT16		0x[[:xdigit:]]+
 C_INTEGER	({C_INT10}|{C_INT8}|{C_INT16})
 C_EXP		[efgEFG]{SIGN}?{C_INTEGER}
 C_FLOAT		((({C_INT10}"."?)({C_INT10})?)|(({C_INT10})?("."{C_INT10}))){C_EXP}?

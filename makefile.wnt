@@ -1,6 +1,6 @@
 # makefile for vile on WIN32 using Microsoft Visual C++
 #
-# $Id: makefile.wnt,v 1.110 2017/02/20 00:15:28 tom Exp $
+# $Id: makefile.wnt,v 1.111 2017/02/20 20:51:47 tom Exp $
 #
 # Do this to prevent Visual C++ from creating a program database (".pdb" file)
 NODEBUG=1
@@ -172,7 +172,8 @@ EXTRA    =
 # ActiveState's installer presumes you are using gcc, and (mis)uses the
 # gcc-ism "__inline__" rather than standard "inline".
 #
-PERLFIX  = -DHAVE_BROKEN_PERL_RS -D__inline__=inline
+#PERLFIX  = -DHAVE_BROKEN_PERL_RS -D__inline__=inline
+PERLFIX  = -DHAVE_BROKEN_PERL_RS -D__inline__=__inline
 PERLOPTS = -DOPT_PERL=1 -I$(VILE_PERL_INC) $(PERLFIX)
 PERLOBJS = api.obj perl.obj watch.obj
 PERLSRCS = api.c perl.c watch.c
@@ -257,10 +258,10 @@ OBJ = 	main.obj $(SCREEN).obj \
 all :: $(PERLCFG) $(EXEFILE) $(WRAPUTIL)
 
 perl.i: perl.c
-	$(cc) $(CFLAGS) -DNO_INLINE $(PERLOPTS) -C -P -Fi$@ perl.c 
+	$(cc) $(CFLAGS) -DNO_INLINE $(PERLOPTS) -C -E perl.c >$@
 
 .c.i:
-	$(cc) $(CFLAGS) -DNO_INLINE -C -P -Fi$@ $<
+	$(cc) $(CFLAGS) -DNO_INLINE -C -E $< >$@
 
 .c.obj:
 	$(cc) $(CFLAGS) -DNO_INLINE -c $< -Fo$@
