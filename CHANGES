@@ -1,7 +1,9 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20170416 (t)
+ 20170604 (t)
 	> Tom Dickey:
+	+ improved configure macros CF_ADD_CFLAGS, CF_CC_ENV_FLAGS,
+	  CF_LARGEFILE, CF_MKSTEMP, CF_NCURSES_VERSION, CF_XOPEN_SOURCE
 	+ modify ti-filt.l to allow hexadecimal, as per X/Open Curses
 	  documentation.  This is different from termcap, which (like terminfo)
 	  supports octal and decimal numbers.
@@ -9,6 +11,7 @@ Changes for vile 9.9 (released ??? ??? ?? ????)
 	+ build-fixes to allow test-compile with ActiveState Perl 5.24.1, which
 	  does not work with winvile because its DLL does not provide
 	  COM entrypoints, e.g., CoTaskMemFree and CoRegisterClassObject
+	+ update config.guess, config.sub
 
  20161217 (s)
 	> Brendan O'Dea:
