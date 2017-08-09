@@ -16,8 +16,8 @@ more recent additions to this README appear near the bottom.  that is, most
 of the newest stuff is at the end, not up here where you are.
 
 visit
-	ftp://invisible-island.net/vile
-	ftp://ftp.phred.org/pub/vile
+	ftp://ftp.invisible-island.net/vile
+	http://invisible-mirror.net/archives/vile/
 to be sure it's still the latest.
 
 impatient?  just type "./configure; make", and get a cup of coffee, decaf
@@ -38,8 +38,9 @@ want PC support?  look for precompiled binaries at the various ftp sites.
 want to build vile on a PC host?  refer to the file README.PC .
 
 want VMS support?  some precompiled binaries are available at
-ftp://ftp.phred.org/pub/vile.  otherwise, you'll need to build vile
-yourself.  In either case, refer to the file README.VMS .
+	ftp://ftp.invisible-island.net/pub/vile
+otherwise, you'll need to build vile yourself.  In either case, refer to the
+file README.VMS .
 
 if you like vile, and wish to be informed of new releases, let me know -- i
 maintain a mailing list for that purpose (scroll down a bit for details).
@@ -52,14 +53,14 @@ tom dickey, dickey@invisible-island.net (current maintainer)
 ------------------------------------------------------
 Up-to-date copies of vile, including executables for DOS, Win32 and
 OS/2 are found at
-	ftp://invisible-island.net/vile/
+	ftp://ftp.invisible-island.net/vile/
 
 which is mirrored at
-	ftp://ftp.phred.org/pub/vile/
+	http://invisible-mirror.net/archives/vile/
 
 Development patches are found at
-	ftp://invisible-island.net/vile/patches/
-	ftp://ftp.phred.org/pub/vile/patches/
+	ftp://ftp.invisible-island.net/vile/patches/
+	http://invisible-mirror.net/archives/vile/patches/
 
 In addition, we have distributed copies at other sites, including
 metalabs.unc.edu, hobbes.nmsu.edu (OS/2) and the VMS Freeware
@@ -2147,5 +2148,5 @@ filters.
 	  conversions.
 
 -------------------------------
-$Header: /users/source/archives/vile.vcs/RCS/README,v 1.103 2010/08/08 21:56:28 tom Exp $
+$Header: /users/source/archives/vile.vcs/RCS/README,v 1.105 2017/08/09 08:57:24 tom Exp $
 -------------------------------
