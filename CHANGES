@@ -1,7 +1,8 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20170604 (t)
+ 20170809 (t)
 	> Tom Dickey:
+	+ update ftp site url
 	+ improved configure macros CF_ADD_CFLAGS, CF_CC_ENV_FLAGS,
 	  CF_LARGEFILE, CF_MKSTEMP, CF_NCURSES_VERSION, CF_XOPEN_SOURCE
 	+ modify ti-filt.l to allow hexadecimal, as per X/Open Curses
