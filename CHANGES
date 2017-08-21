@@ -1,7 +1,11 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20170809 (t)
+ 20170820 (t)
 	> Tom Dickey:
+	+ modify character class assumed for tags, to check for graphic
+	  characters.  Previously that used qident (cf: 9.7g), which did not
+	  allow for dots in filenames which could be present in a ctags file if
+	  it were generated using "ctags --extra=+f *" (Savannah #51774).
 	+ update ftp site url
 	+ improved configure macros CF_ADD_CFLAGS, CF_CC_ENV_FLAGS,
 	  CF_LARGEFILE, CF_MKSTEMP, CF_NCURSES_VERSION, CF_XOPEN_SOURCE
