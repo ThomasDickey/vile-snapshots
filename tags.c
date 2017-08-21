@@ -7,7 +7,7 @@
  *
  * Copyright (c) 1990, 1995-2013 by Paul Fox and Thomas E. Dickey
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tags.c,v 1.149 2013/09/20 23:00:36 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tags.c,v 1.150 2017/08/20 23:08:32 tom Exp $
  *
  */
 #include "estruct.h"
@@ -212,7 +212,7 @@ store_tag(LINE *lp)
 		return;		/* ignore super-long identifiers */
 	    }
 	    c = lgetc(lp, got);
-	    if (!isqident(c))
+	    if (!isGraph(c))
 		break;
 	    my_name[got] = (char) c;
 	}
