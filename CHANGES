@@ -1,7 +1,9 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20170820 (t)
+ 20171111 (t)
 	> Tom Dickey:
+	+ add dummy "]]" in sh-filt.l to work around breakage with flex 2.6.1,
+	  which insists on preprocessing C source using m4.
 	+ modify character class assumed for tags, to check for graphic
 	  characters.  Previously that used qident (cf: 9.7g), which did not
 	  allow for dots in filenames which could be present in a ctags file if

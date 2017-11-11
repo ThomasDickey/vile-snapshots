@@ -10,7 +10,7 @@
 %{
 
 /*
- * $Id: sh-filt.l,v 1.180 2017/03/16 21:34:56 tom Exp $
+ * $Id: sh-filt.l,v 1.181 2017/11/11 21:17:53 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Shell script.
  */
@@ -38,7 +38,7 @@ DefineOptFilter(sh, OPTS);
 #define DPRINTF(params)		/*nothing */
 #endif
 
-#define LEN_KSH_TEST_DOWN 2	/* "[[" */
+#define LEN_KSH_TEST_DOWN 2	/* "[[" will expect "]]" */
 #define LEN_BACKTIC1_DOWN 2	/* "$(" */
 #define LEN_BACKTIC2_DOWN 3	/* "$((" */
 #define LEN_BRACEGRP_DOWN 3	/* "$("{space} */
@@ -198,7 +198,7 @@ DASHIDENT	{IDENT}("-"{NAME}{NAME2}*)*
 			  }
 			}
 <NORMAL>{KSH_TEST_UP}	{ if (!pop_backtic1(yytext, yyleng, LEN_KSH_TEST_DOWN)) {
-			    FLEX_PRINTF((stderr, "cannot pop '[[' level %d\n", stk_level));
+			    FLEX_PRINTF((stderr, "cannot pop '[[' level %d ...']]'\n", stk_level));
 			    handle_parens(yytext, 1, 1, -1, NORMAL);
 			    unput(R_BLOCK);
 			  }

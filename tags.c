@@ -5,9 +5,9 @@
  *	the cursor.
  *	written for vile.
  *
- * Copyright (c) 1990, 1995-2013 by Paul Fox and Thomas E. Dickey
+ * Copyright (c) 1990, 1995-2017 by Paul Fox and Thomas E. Dickey
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tags.c,v 1.150 2017/08/20 23:08:32 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tags.c,v 1.151 2017/11/11 21:22:32 tom Exp $
  *
  */
 #include "estruct.h"

@@ -1,4 +1,4 @@
-MANIFEST for vile, version v9_8s6
+MANIFEST for vile, version v9_8s7
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 AUTHORS                         list of authors, with nicknames in CHANGES
@@ -192,7 +192,6 @@ doc/perl.html                   notes about perl interface to vile
 doc/vile-hlp.html               html version of help-file
 doc/vile-man.html               html formatted manpage
 doc/vile-man.sed                script to fixup id's for vile-toc.html
-doc/vile-toc.html               generated table-of-contents
 doc/visvile.doc                 document visvile.dll
 doc/visvile.html                description of VisVile
 filters                         subdirectory
