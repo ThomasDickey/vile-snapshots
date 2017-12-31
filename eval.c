@@ -2,7 +2,7 @@
  *	eval.c -- function and variable evaluation
  *	original by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.463 2015/09/06 21:54:17 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.464 2017/12/31 11:37:01 tom Exp $
  *
  */
 
@@ -1665,9 +1665,9 @@ run_func(int fnum)
 		    kp = kp->d_next;
 		}
 		tb_append(&result, EOS);
-		break;
 	    }
 	}
+	break;
     case UFREGEX_ESCAPE:
 	if (!is_error) {
 	    for (sp = arg[0]; *sp != 0; ++sp) {
