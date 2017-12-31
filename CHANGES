@@ -1,7 +1,10 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20171111 (t)
+ 20171231 (t)
 	> Tom Dickey:
+	+ compiler-warning fixes for gcc 7.2.1 with SuSE.
+	+ regenerate doc/*.doc from Debian 7 to Debian 8; the table-width
+	  changed from links 2.7 to 2.8
 	+ add dummy "]]" in sh-filt.l to work around breakage with flex 2.6.1,
 	  which insists on preprocessing C source using m4.
 	+ modify character class assumed for tags, to check for graphic

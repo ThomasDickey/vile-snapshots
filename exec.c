@@ -4,7 +4,7 @@
  *	original by Daniel Lawrence, but
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.361 2016/07/22 00:20:03 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.362 2017/12/31 11:37:12 tom Exp $
  *
  */
 
@@ -1724,8 +1724,8 @@ setup_macro_buffer(TBUFF *name, int bufnum, UINT flags)
 			cf->c_args[count].pi_text = 0;
 			break;
 		    }
-		    /* FALLTHRU */
 #endif
+		    /* FALLTHRU */
 		default:
 		    free(cf);
 		    mlforce("[Unexpected token '%s']", tb_values(temp));

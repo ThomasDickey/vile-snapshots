@@ -1,5 +1,5 @@
 Summary: VI Like Emacs editor
-# $Header: /users/source/archives/vile.vcs/package/RCS/vile.spec,v 1.55 2017/02/17 20:22:53 tom Exp $
+# $Header: /users/source/archives/vile.vcs/package/RCS/vile.spec,v 1.56 2017/08/09 08:48:43 tom Exp $
 Name: vile
 %define AppVersion 9.8
 Version: %{AppVersion}t
@@ -7,7 +7,7 @@ Version: %{AppVersion}t
 Release: dev
 License: GPLv2
 Group: Applications/Editors
-URL: ftp://invisible-island.net/vile
+URL: ftp://ftp.invisible-island.net/vile
 Source0: vile-9.8.tgz
 Patch1: vile-9.8a.patch.gz
 Patch2: vile-9.8b.patch.gz
