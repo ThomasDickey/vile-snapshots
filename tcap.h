@@ -1,7 +1,7 @@
 /*
  * Configurable headers used by termcap/terminfo driver for vile.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tcap.h,v 1.18 2014/03/30 21:36:34 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/tcap.h,v 1.19 2018/01/13 02:50:29 Adam.Denton Exp $
  */
 
 #ifndef VILE_TCAP_H
@@ -184,7 +184,7 @@ extern	int	tgetent (char *buffer, char *termtype);
 extern	int	tgetflag (char *name);
 #endif
 #ifdef MISSING_EXTERN_TGETSTR
-extern	char *	tigetstr (const char *name, char **area);
+extern	char *	tgetstr (const char *name, char **area);
 #endif
 
 static int
