@@ -1,9 +1,11 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20180112 (t)
+ 20180322 (t)
 	> Adam Denton:
 	+ fix a typo in tcap.h (Savannah #52872).
 	> Tom Dickey:
+	+ improve iss-filt.l, handling named constants such as {app}.
+	+ update iss.key, e.g., setup-directives and runtime functions.
 	+ compiler-warning fixes for gcc 7.2.1 with SuSE.
 	+ regenerate doc/*.doc from Debian 7 to Debian 8; the table-width
 	  changed from links 2.7 to 2.8
