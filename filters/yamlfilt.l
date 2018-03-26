@@ -1,12 +1,15 @@
 %pointer
-%x NORMAL COMMENT
+%s NORMAL WHITE
 
 %{
 
 /*
- * $Id: yamlfilt.l,v 1.1 2017/11/12 00:31:11 tom Exp $
+ * $Id: yamlfilt.l,v 1.2 2018/03/26 15:49:04 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of YAML program.
+ *
+ * YAML comments begin either at the start of a line, or after whitespace.
+ * This filter uses lex start-conditions NORMAL/WHITE to handle the latter.
  */
 
 #include <filters.h>
@@ -27,9 +30,19 @@ static char *String_attr;
 
 %}
 
+SSTRING		'[^']+'
+DSTRING		\"([^"\r\n]|(""))*\"
+
 %%
 
-.		{ ECHO; }
+[[:space:]]+	{ ECHO; BEGIN(WHITE); }
+
+<WHITE>"#"[^\r\n]*	{ WriteToken(Comment_attr); } 
+
+<WHITE>{SSTRING}	|
+<WHITE>{DSTRING}	{ WriteToken(String_attr); BEGIN(NORMAL); }
+
+.		{ ECHO; BEGIN(NORMAL); }
 
 %%
 
@@ -55,7 +68,7 @@ do_filter(FILE *inputs)
     Preproc_attr = class_attr(NAME_PREPROC);
     String_attr = class_attr(NAME_LITERAL);
 
-    begin_state(NORMAL);
+    begin_state(WHITE);
     RunLEX();
     flt_bfr_error();
     end_state();

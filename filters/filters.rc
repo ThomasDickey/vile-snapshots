@@ -1,4 +1,4 @@
-; $Id: filters.rc,v 1.247 2016/11/28 22:42:57 tom Exp $
+; $Id: filters.rc,v 1.249 2018/03/26 23:39:35 tom Exp $
 ; majormodes in this file are ordered alphabetically for convenience - the
 ; precedence used by vile is strictly alphabetic, counting case.
 

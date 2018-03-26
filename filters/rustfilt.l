@@ -1,12 +1,17 @@
 %pointer
-%x NORMAL COMMENT
+%s NORMAL
 
 %{
 
 /*
- * $Id: rustfilt.l,v 1.1 2017/11/12 00:32:01 tom Exp $
+ * $Id: rustfilt.l,v 1.4 2018/03/26 23:37:16 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of RUST program.
+ *
+ * Notes:
+ * The byte-string literals such as
+ *	"br###"{DSTRING}"###"
+ * have to be done explicitly in the lexer for each length.
  */
 
 #include <filters.h>
@@ -27,8 +32,34 @@ static char *String_attr;
 
 %}
 
+IDENT		[[:alpha:]_][[:alnum:]_]*
+ESC_STRING	([\\][0nrt'"\\]|([\\]x[[:xdigit:]]([[:xdigit:]])?))
+SSTRING		[']({ESC_STRING}|[^'\\])*[']
+DSTRING		["]({ESC_STRING}|[^"\r\n]|[\\][\r\n])*["]
+RAW_STRING	["]({ESC_STRING}|[^\r\n]|[\\][\r\n])*["]
+
+DIGITS		[[:digit:]_]
+INTEGER		{DIGITS}+([ui](8|16|32|64|128))?
+FLOATING	(({DIGITS}+"."{DIGITS}*)|({DIGITS}?"."|{DIGITS}+))([e]{DIGITS}+)?[[:digit:]_]+([f](32|64))?
+
 %%
 
+^"#"[^\r\n]*	{ WriteToken(Preproc_attr); }
+"//"[^\r\n]*	{ WriteToken(Comment_attr); }
+
+"b"{SSTRING}	|
+"b"{DSTRING}	|
+"br"{DSTRING}	|
+"br#"{RAW_STRING}"#"	|
+"br##"{RAW_STRING}"##"	|
+"br###"{RAW_STRING}"###"	|
+"br####"{RAW_STRING}"####"	|
+{DSTRING}	{ WriteToken(String_attr); }
+
+{INTEGER}	|
+{FLOATING}	{ WriteToken(Number_attr); }
+
+{IDENT}		{ WriteToken(keyword_attr(yytext)); }
 .		{ ECHO; }
 
 %%

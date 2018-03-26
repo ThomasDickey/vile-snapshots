@@ -1,4 +1,4 @@
-MANIFEST for vile, version v9_8s10
+MANIFEST for vile, version v9_8s11
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 AUTHORS                         list of authors, with nicknames in CHANGES
@@ -346,6 +346,7 @@ filters/rtf-filt.l              syntax filter for RTF files
 filters/rtf.key                 control keywords for RTF
 filters/ruby.key                alias for rb.key
 filters/rubyfilt.c              syntax filter for Ruby
+filters/rust.key                keywords for rust
 filters/rustfilt.l              syntax filter for rust
 filters/sccs.key                keywords for SCCS syntax filter
 filters/sccsfilt.l              syntax filter for SCCS files.
@@ -398,6 +399,7 @@ filters/xs.key                  keywords for Perl-extension syntax filter
 filters/xsl.key                 keywords for xsl files
 filters/yacc.key                yacc keywords
 filters/yaccfilt.l              yacc syntax highlighting filter for vile
+filters/yaml.key                yaml keywords
 filters/yamlfilt.l              syntax filter for yaml
 filters/zsh.key                 zsh keywords
 icons                           subdirectory
