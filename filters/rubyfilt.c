@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/rubyfilt.c,v 1.83 2014/07/06 16:23:05 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/rubyfilt.c,v 1.84 2018/06/12 00:42:39 tom Exp $
  *
  * Filter to add vile "attribution" sequences to ruby scripts.  This began as a
  * translation into C of an earlier version written for LEX/FLEX.
@@ -1470,13 +1470,13 @@ do_filter(FILE *input GCC_UNUSED)
     while (flt_gets(&line, &used) != NULL) {
 	size_t len = strlen(line);	/* FIXME: nulls? */
 	if (len != 0 && line[len - 1] == '\r')	/* FIXME: move this to readline */
-	    len--;
-	if ((request = the_size + len) > actual)
+	    line[--len] = '\0';
+	if ((request = the_size + len + 1) > actual)
 	    request = 1024 + (request * 2);
 	the_file = do_alloc(the_file, request, &actual);
 	if (the_file == 0)
 	    break;
-	memcpy(the_file + the_size, line, len);
+	memcpy(the_file + the_size, line, len + 1);
 	the_size += len;
     }
 

@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Id: rustfilt.l,v 1.4 2018/03/26 23:37:16 tom Exp $
+ * $Id: rustfilt.l,v 1.5 2018/03/27 00:59:34 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of RUST program.
  *
@@ -40,7 +40,7 @@ RAW_STRING	["]({ESC_STRING}|[^\r\n]|[\\][\r\n])*["]
 
 DIGITS		[[:digit:]_]
 INTEGER		{DIGITS}+([ui](8|16|32|64|128))?
-FLOATING	(({DIGITS}+"."{DIGITS}*)|({DIGITS}?"."|{DIGITS}+))([e]{DIGITS}+)?[[:digit:]_]+([f](32|64))?
+FLOATING	(({DIGITS}+"."{DIGITS}*)|({DIGITS}?"."|{DIGITS}+))([e]([+-])?{DIGITS}+)?([f](32|64))?
 
 %%
 
