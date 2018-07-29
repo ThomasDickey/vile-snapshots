@@ -5,7 +5,7 @@
  *	included in main.c
  *
  *	Copyright (c) 1990 by Paul Fox
- *	Copyright (c) 1995-2015 by Paul Fox and Thomas Dickey
+ *	Copyright (c) 1995-2018 by Paul Fox and Thomas Dickey
  *
  *	See the file "cmdtbl" for input data formats, and "estruct.h" for
  *	the output structures.
@@ -15,7 +15,7 @@
  * by Tom Dickey, 1993.    -pgf
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/mktbls.c,v 1.192 2015/09/06 21:27:20 tom Exp $
+ * $Id: mktbls.c,v 1.195 2018/07/29 23:13:47 tom Exp $
  *
  */
 
@@ -110,6 +110,7 @@ extern void free(char *ptr);
 #define MAX_BIND        4	/* maximum # of key-binding types */
 #define	MAX_PARSE	5	/* maximum # of tokens on line */
 #define	LEN_BUFFER	220	/* nominal buffer-length */
+#define LEN_FIELD	((LEN_BUFFER-1)/2)
 #define	MAX_BUFFER	(LEN_BUFFER*10)
 #define	LEN_CHRSET	256	/* total # of chars in set (ascii) */
 
@@ -1181,7 +1182,7 @@ dump_majors(void)
 	if (sscanf(p->Name, "%s\n%s\n%s", norm, type, abbr) != 3)
 	    continue;
 	for (q = all_majors; q; q = q->nst) {
-	    Sprintf(normal, "%s-%s", q->Name, norm);
+	    Sprintf(normal, "%.*s-%.*s", LEN_FIELD, q->Name, LEN_FIELD, norm);
 	    Sprintf(abbrev, "%s%s", q->Name, abbr);
 	    save_all_modes(c2TYPE(*type), normal, abbrev, my_cond);
 	}
@@ -1378,7 +1379,7 @@ predefine_submodes(char **vec, int len)
 		}
 	    }
 	    if (found) {
-		Sprintf(temp, "%s-%s", vec[2], norm);
+		Sprintf(temp, "%.*s-%.*s", LEN_FIELD, vec[2], LEN_FIELD, norm);
 		my_strncpy(norm, temp, sizeof(norm));
 		Sprintf(temp, "%s%s", vec[2], abbr);
 		my_strncpy(abbr, temp, sizeof(abbr));

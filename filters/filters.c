@@ -1,7 +1,7 @@
 /*
  * Common utility functions for vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.161 2013/12/07 13:39:54 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.162 2018/07/29 22:12:27 tom Exp $
  *
  */
 
@@ -202,17 +202,12 @@ flt_tdestroy(void *root, void (*pFreeNode) (void *nodep))
     if (root != 0) {
 	for (p = classes; p != 0; p = p->next) {
 	    if (p->data == root) {
-#ifdef HAVE_TDESTROY
-		tdestroy(root, pFreeNode);
-		p->keywords = 0;
-#else
 		while (p->keywords != 0) {
 		    KEYWORD *q = p->keywords;
 		    p->keywords = q->kw_next;
 		    if (tdelete(q, &(p->data), compare_data) != 0)
 			pFreeNode(q);
 		}
-#endif
 		break;
 	    }
 	}

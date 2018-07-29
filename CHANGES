@@ -1,9 +1,20 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20180611 (t)
+ 20180729 (t)
 	> Adam Denton:
 	+ fix a typo in tcap.h (Savannah #52872).
+	> Jeff Morriss:
+	+ use strncpy() rather than memcpy() for copying hashed key from
+	  crypt(), to work with Fedora 28 which does not necessarily use a
+	  fixed-size buffer.
 	> Tom Dickey:
+	+ fix or work around gcc8 warnings.
+	+ improve initialization of hashed-key for crypt() using memset() on
+	  the buffers rather than assuming the hash is the documented length.
+	  Even with this, valgrind warns about buffer mismanagement within
+	  libcrypt.so.
+	+ check for _nc_free_tinfo() for leak-checking with ncurses' tinfo
+	  library.
 	+ modify perl/ruby filters to ensure the in-memory file ends with nul.
 	+ add filters for yaml, rust-modes to develop for a tutorial.
 	+ improve iss-filt.l, handling named constants such as {app}.
@@ -18,8 +29,14 @@ Changes for vile 9.9 (released ??? ??? ?? ????)
 	  allow for dots in filenames which could be present in a ctags file if
 	  it were generated using "ctags --extra=+f *" (Savannah #51774).
 	+ update ftp site url
-	+ improved configure macros CF_ADD_CFLAGS, CF_CC_ENV_FLAGS,
-	  CF_LARGEFILE, CF_MKSTEMP, CF_NCURSES_VERSION, CF_XOPEN_SOURCE
+	+ improved configure macros:
+	  CF_ADD_CFLAGS, CF_ADD_INCDIR, CF_BUILD_CC, CF_CC_ENV_FLAGS,
+	  CF_CURSES_CPPFLAGS, CF_CURSES_FUNCS, CF_CURSES_LIBS, CF_FIND_LINKAGE,
+	  CF_GCC_WARNINGS, CF_GNU_SOURCE, CF_LARGEFILE, CF_MAKEFLAGS,
+	  CF_MKSTEMP, CF_NCURSES_CONFIG, CF_NCURSES_VERSION, CF_POSIX_C_SOURCE,
+	  CF_PROG_EXT, CF_PROG_GROFF, CF_SIZECHANGE, CF_STRUCT_TERMIOS,
+	  CF_TRY_XOPEN_SOURCE, CF_WITH_ICON_THEME, CF_WITH_MAN2HTML,
+	  CF_XOPEN_CURSES, CF_XOPEN_SOURCE, CF_X_ATHENA_CPPFLAGS
 	+ modify ti-filt.l to allow hexadecimal, as per X/Open Curses
 	  documentation.  This is different from termcap, which (like terminfo)
 	  supports octal and decimal numbers.

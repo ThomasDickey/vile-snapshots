@@ -2,7 +2,7 @@
  *		The routines in this file handle the conversion of pathname
  *		strings.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.179 2016/07/16 14:33:07 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.180 2018/07/29 22:15:20 tom Exp $
  *
  *
  */
@@ -888,6 +888,7 @@ resolve_directory(char *path_name, char **file_namep)
  * case of all pathname components of a syntactically canonicalized
  * pathname for operating systems which use caseless filenames.
  */
+#undef case_correct_path
 
 #if SYS_WINNT
 
@@ -1081,13 +1082,7 @@ case_correct_path(char *old_file, char *new_file)
 
 #else
 
-static void
-case_correct_path(char *old_file, char *new_file)
-{
-    if (old_file != new_file)
-	(void) strcpy(new_file, old_file);
-    return;
-}
+#define case_correct_path(old_file, new_file)	/* nothing */
 
 #endif /* !SYS_WINNT */
 
@@ -1286,8 +1281,10 @@ canonpath(char *ss)
 	}
 #endif
 
+#ifndef case_correct_path
 	if (global_g_val(GMDFILENAME_IC))
 	    case_correct_path(ss, ss);
+#endif
     }
     returnString(ss);
 }

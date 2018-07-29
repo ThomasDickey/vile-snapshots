@@ -17,12 +17,12 @@
  * distributable status.  This version of vile is distributed under the
  * terms of the GNU Public License (see COPYING).
  *
- * Copyright (c) 1992-2015,2016 by Paul Fox and Thomas Dickey
+ * Copyright (c) 1992-2016,2018 by Paul Fox and Thomas Dickey
  *
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/main.c,v 1.734 2016/11/07 00:30:15 bod Exp $
+ * $Id: main.c,v 1.738 2018/07/29 23:12:19 tom Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -345,9 +345,9 @@ int
 MainProgram(int argc, char *argv[])
 {
     static char dft_vileinit[] = "vileinit.rc";
-    int tt_opened;
-    BUFFER *bp;
-    int carg;			/* current arg to scan */
+    int tt_opened = 0;
+    BUFFER *bp = NULL;
+    int carg = 0;		/* current arg to scan */
     int literal = FALSE;	/* force args to be interpreted as filenames */
     char *vileinit = NULL;	/* the startup file or VILEINIT var */
     int startstat = TRUE;	/* result of running startup */
@@ -355,7 +355,7 @@ MainProgram(int argc, char *argv[])
     BUFFER *init_bp = NULL;	/* may contain startup commands */
     BUFFER *opts_bp = NULL;	/* may contain startup commands */
     char *havename = NULL;	/* name of first buffer in cmd line */
-    const char *msg;
+    const char *msg = NULL;
 #if SYS_VMS
     char *init_descrip = NULL;
 #endif
@@ -367,7 +367,7 @@ MainProgram(int argc, char *argv[])
 #endif
 #if OPT_ENCRYPT
     char startkey[NKEYLEN];	/* initial encryption key */
-    *startkey = EOS;
+    memset(startkey, 0, sizeof(startkey));
 #endif
 
     /*
@@ -3225,8 +3225,10 @@ free_all_leaks(void)
     show_elapsed();
     trace_leaks();
 #endif
-#ifdef HAVE__NC_FREEALL
+#if defined(HAVE__NC_FREEALL)
     _nc_freeall();
+#elif defined(HAVE__NC_FREE_TINFO)
+    _nc_free_tinfo();
 #endif
 }
 #endif /* NO_LEAKS */

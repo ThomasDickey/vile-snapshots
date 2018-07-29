@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Id: modes.c,v 1.448 2016/12/17 14:50:54 tom Exp $
+ * $Id: modes.c,v 1.449 2018/07/29 22:37:15 tom Exp $
  */
 
 #include <estruct.h>
@@ -2231,7 +2231,9 @@ set_extra_colors(int f GCC_UNUSED, int n GCC_UNUSED)
 	code = XColorOf(vl_lookup_xcolor(reply));
 	valuep = lookup_extra_color(code);
 	value = 0;
-	sprintf(prompt, "Color+attributes(%s) ", reply);
+	sprintf(prompt, "Color+attributes(%.*s) ",
+		(int) sizeof(prompt) - 24,
+		reply);
 	/* prompt for the color+attributes */
 	for (;;) {
 	    *reply = EOS;
