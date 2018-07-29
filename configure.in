@@ -1,11 +1,11 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_REVISION($Revision: 1.325 $)
+AC_REVISION($Revision: 1.326 $)
 AC_PREREQ(2.52.20011201)
 
 ### Use "configure -with-screen" to override the default configuration, which is
 ### termcap-based on unix systems.
 
-dnl $Header: /users/source/archives/vile.vcs/RCS/configure.in,v 1.325 2016/08/04 00:48:32 tom Exp $
+dnl $Id: configure.in,v 1.326 2018/07/29 21:09:10 tom Exp $
 
 define(MAKELIST, sh $srcdir/filters/makelist.sh $srcdir/filters/genmake.mak)
 
@@ -645,6 +645,7 @@ CF_STDIO_UNLOCKED
 
 AC_HAVE_FUNCS( \
 _nc_freeall \
+_nc_free_tinfo \
 access \
 alarm \
 crypt \
