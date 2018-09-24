@@ -2,7 +2,7 @@
  *		The routines in this file handle the conversion of pathname
  *		strings.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.180 2018/07/29 22:15:20 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.181 2018/09/24 08:41:28 tom Exp $
  *
  *
  */
@@ -1889,6 +1889,7 @@ parse_pathlist(const char *list, char *result, int *first)
 	result[len] = EOS;
     } else {
 	list = NULL;
+	result[0] = EOS;
     }
     TRACE(("...parse_pathlist(%s) ->'%s'\n", TRACE_NULL(list), result));
     if (first)

@@ -1,6 +1,6 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20180729 (t)
+ 20180924 (t)
 	> Adam Denton:
 	+ fix a typo in tcap.h (Savannah #52872).
 	> Jeff Morriss:
@@ -8,6 +8,10 @@ Changes for vile 9.9 (released ??? ??? ?? ????)
 	  crypt(), to work with Fedora 28 which does not necessarily use a
 	  fixed-size buffer.
 	> Tom Dickey:
+	+ reorder a comparison in regmatch() to avoid indexing past limits in
+	  some cases of multibyte characters.
+	+ add a check in set_vattrs() to ensure loop limit is greater than zero
+	  to handle a boundary case with double-width characters.
 	+ fix or work around gcc8 warnings.
 	+ improve initialization of hashed-key for crypt() using memset() on
 	  the buffers rather than assuming the hash is the documented length.
