@@ -1,7 +1,7 @@
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/regexp.c,v 1.214 2015/09/06 21:32:25 tom Exp $
+ * $Id: regexp.c,v 1.215 2018/09/24 22:22:32 tom Exp $
  *
- * Copyright 2005-2013,2015 Thomas E. Dickey and Paul G. Fox
+ * Copyright 2005-2015,2018 Thomas E. Dickey and Paul G. Fox
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
@@ -2391,8 +2391,9 @@ regmatch(char *prog, int plevel)
 		    }
 		    rpts[0] = save_input;
 		    for (j = 1; j <= no; ++j) {
-			int skip = BYTES_AT(rpts[j - 1], regnomore);
-			if (skip <= 0 || rpts[j - 1] >= regnomore) {
+			int skip;
+			if (rpts[j - 1] >= regnomore
+			    || (skip = BYTES_AT(rpts[j - 1], regnomore)) <= 0) {
 			    no = (j - 1);
 			    break;
 			}

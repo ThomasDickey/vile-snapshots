@@ -5,7 +5,7 @@
  * functions use hints that are left in the windows by the commands.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.575 2015/03/13 08:37:15 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.576 2018/09/24 09:28:23 tom Exp $
  *
  */
 
@@ -390,8 +390,10 @@ col_limit(WINDOW *wp)
 static void
 set_vattrs(int row, int col, unsigned attr, size_t len)
 {
-    while (len--)
-	vscreen[row]->v_attrs[col++] = (VIDEO_ATTR) attr;
+    if ((long) len > 0) {
+	while (len--)
+	    vscreen[row]->v_attrs[col++] = (VIDEO_ATTR) attr;
+    }
 }
 
 static void
