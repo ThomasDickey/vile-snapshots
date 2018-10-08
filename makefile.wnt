@@ -1,11 +1,13 @@
 # makefile for vile on WIN32 using Microsoft Visual C++
 #
-# $Id: makefile.wnt,v 1.111 2017/02/20 20:51:47 tom Exp $
+# $Id: makefile.wnt,v 1.112 2018/10/08 18:31:33 tom Exp $
 #
 # Do this to prevent Visual C++ from creating a program database (".pdb" file)
 NODEBUG=1
 
 !include <win32.mak>
+
+THIS	= makefile.wnt
 
 ###############################################################################
 # These are the symbols that you may wish to set on the command line (do not set
@@ -269,9 +271,42 @@ perl.i: perl.c
 .cpp.obj:
 	$(cc) $(CFLAGS) -c $< -Fo$@
 
+report ::
+	@echo ** Given:
+	@echo ** "CFG        : {$(CFG)}"
+	@echo ** "DBG        : {$(DBG)}"
+	@echo ** "FLT        : {$(FLT)}"
+	@echo ** "LEX        : {$(LEX)}"
+	@echo ** "OPT        : {$(OPT)}"
+	@echo ** "ICON       : {$(ICON)}"
+	@echo ** "WIDE       : {$(WIDE)}"
+	@echo ** "TRACE      : {$(TRACE)}"
+	@echo ** "PROGNAME   : {$(PROGNAME)}"
+	@echo ** "VILEDEFS   : {$(VILEDEFS)}"
+	@echo ** Derived:
+	@echo ** "TARGET     : {$(TARGET)}"
+	@echo ** "DISP_DEF   : {$(DISP_DEF)}"
+	@echo ** "MY_CCOPT   : {$(MY_CCOPT)}"
+	@echo ** "MY_LDOPT   : {$(MY_LDOPT)}"
+	@echo ** "EXTRAOBJ   : {$(EXTRAOBJ)}"
+	@echo ** "DBGOBJS    : {$(DBGOBJS)}"
+	@echo ** "CFLAGS     : {$(CFLAGS)}"
+	@echo ** "LDFLAGS    : {$(LDFLAGS)}"
+	@echo ** "LD_DEBUG   : {$(LD_DEBUG)}"
+	@echo ** "APPVER     : {$(APPVER)}"
+	@echo ** "cvarsmt    : {$(cvarsmt)}"
+	@echo ** "conlibsmt  : {$(conlibsmt)}"
+	@echo ** "conlflags  : {$(conlflags)}"
+	@echo ** "guilibsmt  : {$(guilibsmt)}"
+	@echo ** "guilflags  : {$(guilflags)}"
+	@echo ** "LIBS       : {$(LIBS)}"
+	@echo ** "MYLIBS     : {$(MYLIBS)}"
+	@echo ** "OLELIBS    : {$(OLELIBS)}"
+
 sources ::	$(MYHDRS)
 
 $(EXEFILE) : 	$(MYHDRS) $(OBJ) $(MYLIBS)
+	@$(MAKE) -f $(THIS) report
 	$(link) $(LDFLAGS) $(OBJ) $(MYLIBS) $(LIBS) -out:$(EXEFILE) -map:$(MAPFILE)
 
 w32info.res :	w32info.rc
@@ -297,13 +332,13 @@ MAKE_FLT = FLT=$(FLT) LEX="$(LEX)" DBG="$(DBG)" SCREEN="$(SCREEN)" -$(MAKEFLAGS)
 
 builtflt.h :
 	cd filters
-	$(MAKE) -f makefile.wnt genmake.exe $(MAKE_FLT)
+	$(MAKE) -f $(THIS) genmake.exe $(MAKE_FLT)
 	mk-0th.bat genmake.mak ..\$@
 	cd ..
 
 $(FLTLIB) : $(MYHDRS)
 	cd filters
-	$(MAKE) -f makefile.wnt all $(MAKE_FLT)
+	$(MAKE) -f $(THIS) all $(MAKE_FLT)
 	cd ..
 
 nebind.h \
@@ -384,13 +419,13 @@ dist : $(EXEFILE)
 	zip ..\$(ZIPFILE) *.rc
 	cd ..\filters
 	zip ..\$(ZIPFILE) *.rc
-	$(MAKE) -f makefile.wnt $@ $(MAKE_FLT)
+	$(MAKE) -f $(THIS) $@ $(MAKE_FLT)
 	cd ..
 
 all \
 clean ::
 	cd filters
-	$(MAKE) -f makefile.wnt $@ $(MAKE_FLT)
+	$(MAKE) -f $(THIS) $@ $(MAKE_FLT)
 	cd ..
 
 SCRIPTS	= \

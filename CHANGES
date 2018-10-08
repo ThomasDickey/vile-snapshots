@@ -1,6 +1,6 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20180924 (t)
+ 20181008 (t)
 	> Adam Denton:
 	+ fix a typo in tcap.h (Savannah #52872).
 	> Jeff Morriss:
@@ -8,6 +8,10 @@ Changes for vile 9.9 (released ??? ??? ?? ????)
 	  crypt(), to work with Fedora 28 which does not necessarily use a
 	  fixed-size buffer.
 	> Tom Dickey:
+	+ add a "report" target in makefile.wnt to show the symbols used in
+	  a build to help troubleshoot upgrades to newer Visual Studio.  For
+	  instance, it is possible to build using Visual Studio Express 2012
+	  with Windows SDK 7.1 by setting APPVER to "5.01".
 	+ reorder a comparison in regmatch() to avoid indexing past limits in
 	  some cases of multibyte characters.
 	+ add a check in set_vattrs() to ensure loop limit is greater than zero
