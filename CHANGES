@@ -1,6 +1,6 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20181008 (t)
+ 20181012 (t)
 	> Adam Denton:
 	+ fix a typo in tcap.h (Savannah #52872).
 	> Jeff Morriss:
@@ -8,6 +8,9 @@ Changes for vile 9.9 (released ??? ??? ?? ????)
 	  crypt(), to work with Fedora 28 which does not necessarily use a
 	  fixed-size buffer.
 	> Tom Dickey:
+	+ fix a couple of unescaped "?" in suffixes for majormodes, e.g., in
+	  mvmnmode.
+	+ add vcproj and vcxproj majormodes.
 	+ add a "report" target in makefile.wnt to show the symbols used in
 	  a build to help troubleshoot upgrades to newer Visual Studio.  For
 	  instance, it is possible to build using Visual Studio Express 2012
