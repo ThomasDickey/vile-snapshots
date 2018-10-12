@@ -1,4 +1,4 @@
-MANIFEST for vile, version v9_8s15
+MANIFEST for vile, version v9_8s16
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 AUTHORS                         list of authors, with nicknames in CHANGES
@@ -381,6 +381,8 @@ filters/unfilter.h              common definitions for un-filters
 filters/vb.key                  keywords for Visual Basic .Net
 filters/vb6.key                 keywords for Visual Basic 6
 filters/vbs.key                 keywords for vbsmode
+filters/vcproj.key              keywords for older Visual Studio project-files
+filters/vcxproj.key             keywords for Visual C++ project-files
 filters/vile.key                fallback template for highlighting colors
 filters/vilefilt.l              syntax filter for vile macros
 filters/vim.key                 keywords for vim syntax files
