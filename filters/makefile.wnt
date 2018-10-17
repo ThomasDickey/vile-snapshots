@@ -1,11 +1,11 @@
 # makefile for vile filters on WIN32 using Microsoft Visual C++
 #
-# $Id: makefile.wnt,v 1.40 2017/02/19 22:57:20 tom Exp $
+# $Id: makefile.wnt,v 1.41 2018/10/16 23:46:55 tom Exp $
 #
 # Do this to prevent Visual C++ from creating a program database (".pdb" file)
 NODEBUG=1
 
-!include <win32.mak>
+!include "../makeflag.wnt"
 
 # set DBG=yes to get debugging info (and a larger executable)
 !if "$(DBG)" != ""

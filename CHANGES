@@ -1,6 +1,6 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20181012 (t)
+ 20181017 (t)
 	> Adam Denton:
 	+ fix a typo in tcap.h (Savannah #52872).
 	> Jeff Morriss:
@@ -8,6 +8,8 @@ Changes for vile 9.9 (released ??? ??? ?? ????)
 	  crypt(), to work with Fedora 28 which does not necessarily use a
 	  fixed-size buffer.
 	> Tom Dickey:
+	+ modify makefile.wnt to allow build with Visual Studio 2012 and later,
+	  which omit the Win32.mak file.
 	+ fix a couple of unescaped "?" in suffixes for majormodes, e.g., in
 	  mvmnmode.
 	+ add vcproj and vcxproj majormodes.
