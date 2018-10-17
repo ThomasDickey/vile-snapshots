@@ -1,0 +1,48 @@
+# $Id: makeflag.wnt,v 1.2 2018/10/17 09:20:32 tom Exp $
+# vile:makemode
+################################################################################
+# This is a wrapper with fallback definitions for the common NMAKE definitions
+# in older versions (through 7.1) of the Platform SDK and older versions
+# (through XXX) of Visual Studio.  Later versions use MSBuild, which offers
+# the same level of functionality dressed up in XML.
+################################################################################
+
+!if "$(APPVER)"==""
+APPVER      = 5.0
+!endif
+
+# Do this to prevent Visual C++ from creating a program database (".pdb" file).
+# The debugger is less than useful except in the Visual Studio IDE.
+NODEBUG=1
+
+# If MAKEFLAG_FILE is defined, include that.  You would need this for the
+# architecture-specific definitions in Visual Studio, or for using the
+# Platform SDK.
+#
+# Starting with Visual Studio 2012, the "vcvarsall.bat" script sets the
+# version flag, making it possible to detect configurations without a
+# Win32.mak file.
+!ifdef MAKEFLAG_FILE
+!include $(MAKEFLAG_FILE)
+!elseif "$(VisualStudioVersion)"==""
+!include <Win32.mak>
+!else
+# The definitions used here are from Platform SDK 7.1's Win32.mak
+cc          = cl
+link        = link
+winsocklibs = ws2_32.lib mswsock.lib
+baselibs    = kernel32.lib $(optlibs) $(winsocklibs) advapi32.lib
+winlibs     = $(baselibs) user32.lib gdi32.lib comdlg32.lib winspool.lib
+cdebug      = -Ox -DNDEBUG 
+conlibs     = $(baselibs)
+conlibsmt   = $(conlibs)
+conlflags   = /INCREMENTAL:NO /NOLOGO -subsystem:console,$(APPVER)
+# Visual Studio 2012 adds more advice than older releases for using
+# non-portable/non-standard stuff.  Just say no.
+cvarsmt     = -D_MT -MTd -D_CRT_SECURE_NO_WARNINGS
+cvars       = $(cvarsmt)
+guilibs     = $(winlibs)
+guilibsmt   = $(guilibs)
+guilflags   = /INCREMENTAL:NO /NOLOGO -subsystem:windows,$(APPVER)
+ldebug      = /RELEASE
+!endif

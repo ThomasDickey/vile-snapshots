@@ -1,4 +1,4 @@
-MANIFEST for vile, version v9_8s16
+MANIFEST for vile, version v9_8s17
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 AUTHORS                         list of authors, with nicknames in CHANGES
@@ -76,6 +76,7 @@ makefile.djg                    makefile for DJGCC
 makefile.icc                    makefile for C Set++ 2.x (OS/2)
 makefile.in                     used by 'configure' to generate a makefile
 makefile.wnt                    makefile for Win32 with Microsoft Visual C++
+makeflag.wnt                    replacement for win32.mak, for newer Visual Studio C++
 map.c                           map and map! commands
 menu.c                          menu-support for xvile
 mkprlenv.wnt                    vile-7.4h

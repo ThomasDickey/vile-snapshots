@@ -1,18 +1,14 @@
 # makefile for vile on WIN32 using Microsoft Visual C++
 #
-# $Id: makefile.wnt,v 1.112 2018/10/08 18:31:33 tom Exp $
+# $Id: makefile.wnt,v 1.113 2018/10/17 01:06:01 tom Exp $
 #
-# Do this to prevent Visual C++ from creating a program database (".pdb" file)
-NODEBUG=1
-
-!include <win32.mak>
-
 THIS	= makefile.wnt
 
 ###############################################################################
 # These are the symbols that you may wish to set on the command line (do not set
 # nmake symbols directly, since that disallows updating those within the makefile,
 # e.g., see how $(MY_CCOPT) is built up):
+#	APPVER - application version, e.g., 5.01
 #	CFG - primary configuration (console vs windows)
 #	DBG - nonempty for debugging
 #	FLT - nonempty for built-in filters
@@ -24,6 +20,8 @@ THIS	= makefile.wnt
 #	PROGNAME - vile/winvile $progname value
 #	VILEDEFS - other options, as needed
 ###############################################################################
+
+!include "makeflag.wnt"
 
 # you can override the icon to suit your taste (e.g,. vile, kitchen-sink,
 # or V-eye pumpkin).
@@ -129,6 +127,7 @@ EXTRAOBJ = dumbterm.obj
 DISP_DEF = -DDISP_NTWIN
 TARGET   = winvile
 CFLAGS   = $(cvarsmt) $(CC_DEBUG) -nologo -DWIN32_LEAN_AND_MEAN \
+           -D_CRT_SECURE_NO_WARNINGS \
 	   -Dscrn_chosen $(DISP_DEF) $(PERLOPTS) $(MY_CCOPT) $(CFLWIN32)
 LDFLAGS  = -nologo /subsystem:windows /incremental:no $(MY_LDOPT)
 SCREEN   = ntwinio
@@ -294,11 +293,13 @@ report ::
 	@echo ** "LDFLAGS    : {$(LDFLAGS)}"
 	@echo ** "LD_DEBUG   : {$(LD_DEBUG)}"
 	@echo ** "APPVER     : {$(APPVER)}"
+	@echo ** "cdebug     : {$(cdebug)}"
 	@echo ** "cvarsmt    : {$(cvarsmt)}"
 	@echo ** "conlibsmt  : {$(conlibsmt)}"
 	@echo ** "conlflags  : {$(conlflags)}"
 	@echo ** "guilibsmt  : {$(guilibsmt)}"
 	@echo ** "guilflags  : {$(guilflags)}"
+	@echo ** "ldebug     : {$(ldebug)}"
 	@echo ** "LIBS       : {$(LIBS)}"
 	@echo ** "MYLIBS     : {$(MYLIBS)}"
 	@echo ** "OLELIBS    : {$(OLELIBS)}"
@@ -308,6 +309,9 @@ sources ::	$(MYHDRS)
 $(EXEFILE) : 	$(MYHDRS) $(OBJ) $(MYLIBS)
 	@$(MAKE) -f $(THIS) report
 	$(link) $(LDFLAGS) $(OBJ) $(MYLIBS) $(LIBS) -out:$(EXEFILE) -map:$(MAPFILE)
+!if "$(APPVER)" != ""
+	editbin.exe $(TargetPath) /SUBSYSTEM:WINDOWS,$(APPVER) /OSVERSION:$(APPVER)
+!endif
 
 w32info.res :	w32info.rc
 	$(RC) w32info.rc
