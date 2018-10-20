@@ -1,6 +1,6 @@
 # makefile for vile on WIN32 using Microsoft Visual C++
 #
-# $Id: makefile.wnt,v 1.113 2018/10/17 01:06:01 tom Exp $
+# $Id: makefile.wnt,v 1.114 2018/10/18 16:22:40 tom Exp $
 #
 THIS	= makefile.wnt
 
@@ -127,7 +127,6 @@ EXTRAOBJ = dumbterm.obj
 DISP_DEF = -DDISP_NTWIN
 TARGET   = winvile
 CFLAGS   = $(cvarsmt) $(CC_DEBUG) -nologo -DWIN32_LEAN_AND_MEAN \
-           -D_CRT_SECURE_NO_WARNINGS \
 	   -Dscrn_chosen $(DISP_DEF) $(PERLOPTS) $(MY_CCOPT) $(CFLWIN32)
 LDFLAGS  = -nologo /subsystem:windows /incremental:no $(MY_LDOPT)
 SCREEN   = ntwinio
@@ -271,6 +270,8 @@ perl.i: perl.c
 	$(cc) $(CFLAGS) -c $< -Fo$@
 
 report ::
+	@echo ** Assumed:
+	@echo ** "APPVER     : {$(APPVER)}"
 	@echo ** Given:
 	@echo ** "CFG        : {$(CFG)}"
 	@echo ** "DBG        : {$(DBG)}"
@@ -283,6 +284,7 @@ report ::
 	@echo ** "PROGNAME   : {$(PROGNAME)}"
 	@echo ** "VILEDEFS   : {$(VILEDEFS)}"
 	@echo ** Derived:
+	@echo ** "VS_VER     : {$(VS_VER)}"
 	@echo ** "TARGET     : {$(TARGET)}"
 	@echo ** "DISP_DEF   : {$(DISP_DEF)}"
 	@echo ** "MY_CCOPT   : {$(MY_CCOPT)}"
@@ -292,7 +294,6 @@ report ::
 	@echo ** "CFLAGS     : {$(CFLAGS)}"
 	@echo ** "LDFLAGS    : {$(LDFLAGS)}"
 	@echo ** "LD_DEBUG   : {$(LD_DEBUG)}"
-	@echo ** "APPVER     : {$(APPVER)}"
 	@echo ** "cdebug     : {$(cdebug)}"
 	@echo ** "cvarsmt    : {$(cvarsmt)}"
 	@echo ** "conlibsmt  : {$(conlibsmt)}"

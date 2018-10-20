@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 screen API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntwinio.c,v 1.208 2018/03/23 01:15:42 tom Exp $
+ * $Id: ntwinio.c,v 1.211 2018/10/20 00:58:41 tom Exp $
  * Written by T.E.Dickey for vile (october 1997).
  * -- improvements by Clark Morgan (see w32cbrd.c, w32pipe.c).
  */
@@ -30,7 +30,7 @@
 #define MIN_ROWS MINWLNS
 #define MIN_COLS 15
 
-#define FIXME_POSCHANGING 1	/* this doesn't seem to help */
+#define OOPS (4)
 
 #define MAX_CURSOR_STYLE 2
 
@@ -78,7 +78,7 @@
 #define RectToRows(rect) (PixelToRow(rect.bottom - rect.top))
 
 #if OPT_SCROLLBARS
-#define SbWidth   nLineHeight
+#define SbWidth   nLineHeight	// FIXME? GetSystemMetrics(SM_CXVSCROLL);
 #else
 #define SbWidth   0
 #endif
@@ -429,13 +429,8 @@ gui_resize(int cols, int rows)
     text_high = RowToPixel(rows);
     wrect.right += text_wide - crect.right;
     wrect.bottom += text_high - crect.bottom;
-#if FIXME_POSCHANGING
     main_wide = text_wide + (2 * cur_win->x_border) + SbWidth;
     main_high = text_high + (2 * cur_win->y_border) + cur_win->y_titles;
-#else
-    main_wide = wrect.right - wrect.left + SbWidth;
-    main_high = wrect.bottom - wrect.top;
-#endif
 
     TRACE(("... gui_resize -> (%d,%d) (%d,%d) main %dx%d, text %dx%d\n",
 	   wrect.top,
@@ -495,7 +490,6 @@ AdjustedWidth(int wide)
     return ColToPixel(cols) + extra;
 }
 
-#if FIXME_POSCHANGING
 static WINDOW_PROC_RETVAL
 AdjustPosChanging(HWND hwnd, WINDOWPOS * pos)
 {
@@ -514,7 +508,6 @@ AdjustPosChanging(HWND hwnd, WINDOWPOS * pos)
     }
     return 0;
 }
-#endif
 
 static HWND
 sizing_window(void)
@@ -1032,9 +1025,58 @@ get_borders(void)
     cur_win->x_border = GetSystemMetrics(SM_CXSIZEFRAME);
     cur_win->y_border = GetSystemMetrics(SM_CYSIZEFRAME);
     cur_win->y_titles = GetSystemMetrics(SM_CYCAPTION);
+
+    TRACE(("--X border %d\n", GetSystemMetrics(SM_CXBORDER)));
+    TRACE(("--X edge   %d\n", GetSystemMetrics(SM_CXEDGE)));
+    TRACE(("--V scroll %d\n", GetSystemMetrics(SM_CXVSCROLL)));
+    TRACE(("--H thumb  %d\n", GetSystemMetrics(SM_CXHTHUMB)));
+
+    TRACE(("--Y border %d\n", GetSystemMetrics(SM_CYBORDER)));
+    TRACE(("--Y edge   %d\n", GetSystemMetrics(SM_CYEDGE)));
+    TRACE(("--H scroll %d\n", GetSystemMetrics(SM_CYHSCROLL)));
+    TRACE(("--V thumb  %d\n", GetSystemMetrics(SM_CYVTHUMB)));
+
     TRACE(("X border: %d, Y border: %d\n", cur_win->x_border, cur_win->y_border));
     TRACE(("CYFRAME:   %d\n", GetSystemMetrics(SM_CYFRAME)));
     TRACE(("CYCAPTION: %d\n", cur_win->y_titles));
+
+    /*
+     * See
+     * https://docs.microsoft.com/en-us/cpp/preprocessor/predefined-macros?view=vs-2017
+     *
+     * The "1700" is Visual Studio 2012.
+     *
+     * This check might be applicable to a 32-bit Windows host, but I've only
+     * 64-bit Windows 7 and 64-bit Windows 8.1 for testing.  The 32-bit target
+     * with Visual Studio 2012 honors the APPVER setting, but the 64-bit
+     * target does not, requiring this adjustment -TD
+     */
+#if (_MSC_VER >= 1700) && defined(_WIN64)
+    // https://winaero.com/blog/how-to-reduce-window-border-size-in-windows-8-windows-7-and-windows-vista/
+    {
+	HKEY hkey;
+	if (RegOpenKeyEx(HKEY_CURRENT_USER,
+			 W32_STRING("Control Panel")
+			 W32_STRING("\\Desktop")
+			 W32_STRING("\\WindowMetrics"),
+			 0,
+			 KEY_READ,
+			 &hkey) == ERROR_SUCCESS) {
+	    char buffer[20];
+	    if (w32_get_reg_sz(hkey,
+			       "PaddedBorderWidth",
+			       buffer, sizeof(buffer)) == ERROR_SUCCESS) {
+		int padding;
+		if (sscanf(buffer, "%d", &padding) == 1 && padding < 0) {
+		    padding = (-padding) / 15;
+		    cur_win->x_border += padding;
+		    cur_win->y_border += padding;
+		}
+	    }
+	    (void) RegCloseKey(hkey);
+	}
+    }
+#endif
 }
 
 /*
@@ -3774,10 +3816,8 @@ MainWndProc(
 	return (DefWindowProc(hWnd, message, wParam, lParam));
 
     case WM_WINDOWPOSCHANGING:
-#if FIXME_POSCHANGING
 	if (wheadp != 0)
 	    return AdjustPosChanging(hWnd, (LPWINDOWPOS) lParam);
-#endif
 	return (DefWindowProc(hWnd, message, wParam, lParam));
 
     case WM_SIZING:
@@ -4134,6 +4174,9 @@ WinMain(
     }
     show_argv(argc, argv, "after parsing -i");
 
+#if 0
+    SetProcessDPIAware();
+#endif
     /*
      * Set default values for options that accept parameters.
      */
