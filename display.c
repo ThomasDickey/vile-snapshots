@@ -4,9 +4,7 @@
  * physical display screen the same as the virtual display screen. These
  * functions use hints that are left in the windows by the commands.
  *
- *
- * $Header: /users/source/archives/vile.vcs/RCS/display.c,v 1.576 2018/09/24 09:28:23 tom Exp $
- *
+ * $Id: display.c,v 1.577 2018/10/21 19:36:32 tom Exp $
  */
 
 #include	"estruct.h"
@@ -474,8 +472,8 @@ vtalloc(void)
     if (term.maxrows > vrows) {
 	GROW(vscreen, VIDEO *, vrows, term.maxrows);
 	GROW(pscreen, VIDEO *, vrows, term.maxrows);
-	GROW(lmap0, LMAP, vrows, (term.maxrows + 1));
-	GROW(lmap, LMAP, vrows, (term.maxrows + 1));
+	GROW(lmap0, LMAP, vrows, ((size_t) term.maxrows + 1));
+	GROW(lmap, LMAP, vrows, ((size_t) term.maxrows + 1));
     } else {
 	for (i = term.maxrows; i < vrows; i++) {
 	    freeVIDEO(vscreen[i]);
@@ -724,7 +722,7 @@ vtputc(WINDOW *wp, const char *src, unsigned limit)
 		    int *attrp = lookup_extra_color(XCOLOR_LINEBREAK);
 		    if (!isEmpty(attrp)) {
 			preset_vattrs(vtrow, vtcol, *attrp,
-				      (size_t) (term.cols - vtcol));
+				      (size_t) term.cols - (size_t) vtcol);
 		    }
 #endif /* OPT_EXTRA_COLOR */
 		    while (vtcol < term.cols)
@@ -2102,7 +2100,7 @@ recompute_buffer(BUFFER *bp)
 	recomp_win = curwp;
 
 	if (recomp_len < bp->b_nwnd) {
-	    recomp_len = bp->b_nwnd + 1;
+	    recomp_len = (size_t) bp->b_nwnd + 1;
 	    recomp_tbl = (recomp_tbl != 0)
 		? typereallocn(SAVEWIN, recomp_tbl, recomp_len)
 		: typeallocn(SAVEWIN, recomp_len);
@@ -2428,7 +2426,7 @@ update_window_attrs(WINDOW *wp)
     for (i = wp->w_toprow + wp->w_ntrows - 1; i >= wp->w_toprow; i--) {
 	set_vattrs(i,
 		   lmap0[i].left, 0,
-		   (size_t) (lmap0[i].right - lmap0[i].left));
+		   (size_t) lmap0[i].right - (size_t) lmap0[i].left);
     }
 
 #if OPT_LINE_ATTRS

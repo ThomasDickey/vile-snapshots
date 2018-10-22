@@ -2,8 +2,7 @@
  *	eval.c -- function and variable evaluation
  *	original by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/eval.c,v 1.464 2017/12/31 11:37:01 tom Exp $
- *
+ * $Id: eval.c,v 1.466 2018/10/21 21:54:11 tom Exp $
  */
 
 #include	<estruct.h>
@@ -2635,8 +2634,10 @@ init_vars_cmpl(void)
 	    }
 	    if (pass == 0) {
 		beginDisplay();
-		vars_cmpl_list = typeallocn(char *, count + 1);
+		vars_cmpl_list = typeallocn(char *, (size_t) count + 1);
 		endofDisplay();
+		if (vars_cmpl_list == 0)
+		    break;
 	    }
 	}
 
@@ -2828,7 +2829,7 @@ save_arguments(BUFFER *bp)
     beginDisplay();
     if ((p = typealloc(PROC_ARGS)) == 0) {
 	status = no_memory("save_arguments");
-    } else if ((all_args = tb_allocn((size_t) (max_args + 1))) == 0) {
+    } else if ((all_args = tb_allocn((size_t) max_args + 1)) == 0) {
 	status = no_memory("save_arguments");
 	free(p);
     } else {

@@ -5,8 +5,7 @@
  * keys. Like everyone else, they set hints
  * for the display system.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/buffer.c,v 1.366 2016/07/16 15:11:33 tom Exp $
- *
+ * $Id: buffer.c,v 1.367 2018/10/21 19:29:49 tom Exp $
  */
 
 #include	"estruct.h"
@@ -1218,7 +1217,7 @@ do_one_modeline(LINE *lp, int vi, int first, int last)
 	while (last > first && isSpace(lgetc(lp, last - 1)))
 	    --last;
 
-	tb_bappend(&data, lvalue(lp) + first, (size_t) (last - first));
+	tb_bappend(&data, lvalue(lp) + first, (size_t) last - (size_t) first);
 	tb_append(&data, EOS);
 
 	in_modeline = vi;

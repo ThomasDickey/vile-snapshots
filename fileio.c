@@ -2,8 +2,7 @@
  * The routines in this file read and write ASCII files from the disk. All of
  * the knowledge about files are here.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/fileio.c,v 1.206 2014/09/30 21:12:07 tom Exp $
- *
+ * $Id: fileio.c,v 1.209 2018/10/21 19:19:18 tom Exp $
  */
 
 #include <estruct.h>
@@ -822,7 +821,7 @@ alloc_linebuf(size_t needed)
 	fflinebuf = castalloc(char, fflinelen);
     } else if (needed >= fflinelen) {
 	fflinelen = needed + (needed >> 3);
-	fflinebuf = castrealloc(char, fflinebuf, fflinelen);
+	safe_castrealloc(char, fflinebuf, fflinelen);
     }
 
     if (fflinebuf == 0)
@@ -983,7 +982,7 @@ ffgetline(size_t *lenp)
 #  if SYS_VMS
 #    define	isready_c(p)	( (*p)->_cnt > 0)
 #  endif
-#  if SYS_WINNT && !defined( __BORLANDC__ )
+#  if SYS_WINNT && defined( _MSC_VER ) && ( _MSC_VER < 1700 )
 #    define	isready_c(p)	( (p)->_cnt > 0)
 #  endif
 #endif

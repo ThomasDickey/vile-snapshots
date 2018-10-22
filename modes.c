@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Id: modes.c,v 1.449 2018/07/29 22:37:15 tom Exp $
+ * $Id: modes.c,v 1.452 2018/10/22 08:20:38 tom Exp $
  */
 
 #include <estruct.h>
@@ -2855,6 +2855,12 @@ in_all_modes(const char *name)
     return FALSE;
 }
 
+static const char **
+const_varmodes(char **value)
+{
+    return (const char **) value;
+}
+
 static void
 fill_my_varmodes(void)
 {
@@ -2863,7 +2869,7 @@ fill_my_varmodes(void)
 
     if (my_varmodes != 0 && my_mode_list != 0) {
 	for (s = my_mode_list,
-	     d = (const char **) my_varmodes; (*d = *s) != 0; s++) {
+	     d = const_varmodes(my_varmodes); (*d = *s) != 0; s++) {
 	    if (is_varmode(*d)) {
 		d++;
 	    }
@@ -3304,7 +3310,7 @@ compute_majormodes_order(void)
 	    /* EMPTY */ ;
 	} else if (have) {
 	    have = want;
-	    majormodes_order = typereallocn(int, majormodes_order, have);
+	    safe_typereallocn(int, majormodes_order, have);
 	} else {
 	    have = want;
 	    majormodes_order = typecallocn(int, have);
@@ -4063,10 +4069,14 @@ extend_mode_list(int increment)
 
     if (my_mode_list == all_modes) {
 	my_mode_list = typeallocn(const char *, k);
-	memcpy(TYPECAST(char *, my_mode_list), all_modes, (j + 1) * sizeof(*my_mode_list));
+	if (my_mode_list != 0) {
+	    memcpy(TYPECAST(char *, my_mode_list), all_modes, (j + 1) *
+		   sizeof(*my_mode_list));
+	}
     } else {
-	my_mode_list = typereallocn(const char *, TYPECAST(char *,
-							   my_mode_list), k);
+	char **tmp_list = TYPECAST(char *, my_mode_list);
+	safe_typereallocn(char *, tmp_list, k);
+	my_mode_list = const_varmodes(tmp_list);
     }
     blist_my_mode_list.theList = my_mode_list;
     check_my_varmodes(k);
@@ -4089,7 +4099,7 @@ extend_VAL_array(struct VAL *ptr, size_t item, size_t len)
 	endofDisplay();
     } else {
 	beginDisplay();
-	ptr = typereallocn(struct VAL, ptr, len + 1);
+	safe_typereallocn(struct VAL, ptr, len + 1);
 	endofDisplay();
 
 	if (ptr != 0) {
@@ -4277,7 +4287,7 @@ alloc_mode(const char *shortname, int predef)
     } else {
 	k = count_majormodes();
 	beginDisplay();
-	major_valnames = typereallocn(struct VALNAMES, major_valnames, k + 2);
+	safe_typereallocn(struct VALNAMES, major_valnames, k + 2);
 	endofDisplay();
 	if (major_valnames != 0) {
 	    for (j = k++; j != 0; j--) {
@@ -4327,12 +4337,14 @@ alloc_mode(const char *shortname, int predef)
     } else {
 	k = count_majormodes();
 	beginDisplay();
-	my_majormodes = typereallocn(MAJORMODE_LIST, my_majormodes, k + 2);
+	safe_typereallocn(MAJORMODE_LIST, my_majormodes, k + 2);
 	endofDisplay();
-	for (j = k++; j != 0; j--) {
-	    my_majormodes[j] = my_majormodes[j - 1];
-	    if (strcmp(my_majormodes[j - 1].shortname, shortname) < 0) {
-		break;
+	if (my_majormodes) {
+	    for (j = k++; j != 0; j--) {
+		my_majormodes[j] = my_majormodes[j - 1];
+		if (strcmp(my_majormodes[j - 1].shortname, shortname) < 0) {
+		    break;
+		}
 	    }
 	}
     }
@@ -5076,7 +5088,7 @@ update_scheme_choices(void)
     if (my_schemes != 0) {
 	beginDisplay();
 	if (my_scheme_choices != 0) {
-	    my_scheme_choices = typereallocn(FSM_CHOICES, my_scheme_choices, num_schemes);
+	    safe_typereallocn(FSM_CHOICES, my_scheme_choices, num_schemes);
 	} else {
 	    my_scheme_choices = typeallocn(FSM_CHOICES, num_schemes);
 	}
@@ -5192,7 +5204,7 @@ alloc_scheme(const char *name)
 	    len = (int) (++num_schemes);
 	    my_schemes = typecallocn(PALETTES, (size_t) len);
 	} else {
-	    my_schemes = typereallocn(PALETTES, my_schemes, (size_t) len);
+	    safe_typereallocn(PALETTES, my_schemes, (size_t) len);
 	}
 	endofDisplay();
 

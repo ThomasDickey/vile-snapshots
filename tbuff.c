@@ -7,8 +7,7 @@
  *	To do:	add 'tb_ins()' and 'tb_del()' to support cursor-level command
  *		editing.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tbuff.c,v 1.79 2015/02/01 21:26:08 tom Exp $
- *
+ * $Id: tbuff.c,v 1.80 2018/10/21 21:00:20 tom Exp $
  */
 
 #include "estruct.h"
@@ -141,7 +140,7 @@ tb_alloc(TBUFF **p, size_t n)
 	    }
 	}
     } else if (!isTB_ERRS(q) && (n >= q->tb_size || q->tb_data == 0)) {
-	q->tb_data = typereallocn(char, q->tb_data, q->tb_size = (n * 2));
+	safe_typereallocn(char, q->tb_data, q->tb_size = (n * 2));
 	if (q->tb_data == 0)
 	    tb_free(&q);
     }

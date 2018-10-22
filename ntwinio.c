@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 screen API.
  *
- * $Id: ntwinio.c,v 1.211 2018/10/20 00:58:41 tom Exp $
+ * $Id: ntwinio.c,v 1.212 2018/10/21 21:55:06 tom Exp $
  * Written by T.E.Dickey for vile (october 1997).
  * -- improvements by Clark Morgan (see w32cbrd.c, w32pipe.c).
  */
@@ -814,9 +814,11 @@ intercharacter(int cols)
 	static unsigned length;
 
 	if (++cols >= (int) length)
-	    result = typereallocn(INT, result, length = cols);
-	while (--cols >= 0)
-	    result[cols] = nCharWidth;
+	    safe_typereallocn(INT, result, length = cols);
+	if (result != 0) {
+	    while (--cols >= 0)
+		result[cols] = nCharWidth;
+	}
 	return result;
     }
 }
@@ -1437,8 +1439,9 @@ ntwinio_font_frm_str(const char *fontstr,
 	}
     }
 
-    ReleaseDC(hwnd, hdc);	/* finally done with this */
-
+    if (hdc != 0) {
+	ReleaseDC(hwnd, hdc);	/* finally done with this */
+    }
     if (rc) {
 	SetMyFont(hfont, &logfont);
 	use_font(GetMyFont(0));

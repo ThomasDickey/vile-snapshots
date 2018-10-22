@@ -3,8 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Header: /users/source/archives/vile.vcs/RCS/bind.c,v 1.375 2016/07/16 13:54:52 tom Exp $
- *
+ * $Id: bind.c,v 1.376 2018/10/21 19:29:04 tom Exp $
  */
 
 #include	"estruct.h"
@@ -2031,7 +2030,7 @@ which_exec(int f, int n)
 char *
 kcod2pstr(int c, char *seq, int limit)
 {
-    seq[0] = (char) kcod2escape_seq(c, &seq[1], (size_t) (limit - 1));
+    seq[0] = (char) kcod2escape_seq(c, &seq[1], (size_t) limit - 1);
     return seq;
 }
 
@@ -2482,7 +2481,7 @@ prc2kcod(const char *kk)
 		break;
 	    if (s == kk || s[1] == '\n' || s[1] == '\0')
 		break;
-	    mklower(vl_strncpy(temp, kk, (size_t) (len + 1)));
+	    mklower(vl_strncpy(temp, kk, (size_t) len + 1));
 	    if (isLower(temp[0]))
 		temp[0] = (char) toUpper(temp[0]);
 	    for (n = 0; n < TABLESIZE(key_modifiers); ++n) {

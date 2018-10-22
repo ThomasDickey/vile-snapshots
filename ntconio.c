@@ -1,8 +1,7 @@
 /*
  * Uses the Win32 console API.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ntconio.c,v 1.101 2015/02/01 18:19:14 tom Exp $
- *
+ * $Id: ntconio.c,v 1.103 2018/10/22 08:23:12 tom Exp $
  */
 
 #include "estruct.h"

@@ -3,8 +3,7 @@
  * paragraph at a time.  There are all sorts of word mode commands.  If I
  * do any sentence mode commands, they are likely to be put in this file.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/word.c,v 1.107 2015/03/13 08:42:56 tom Exp $
- *
+ * $Id: word.c,v 1.108 2018/10/21 21:07:59 tom Exp $
  */
 
 #include	"estruct.h"
@@ -561,7 +560,7 @@ do_formatting(TBUFF **wp, TBUFF **cp)
 	    is_comment = TRUE;
 	    tb_bappend(cp,
 		       lvalue(DOT.l) + DOT.o,
-		       (size_t) (plength - DOT.o));
+		       (size_t) plength - (size_t) DOT.o);
 	} else if (cplus_comment_start(c)) {
 	    is_comment = TRUE;
 	    tb_bappend(cp, "//", (size_t) 2);

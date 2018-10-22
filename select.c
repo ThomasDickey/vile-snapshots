@@ -18,7 +18,7 @@
  * transferring the selection are not dealt with in this file.  Procedures
  * for dealing with the representation are maintained in this file.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.192 2015/03/13 09:31:49 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.193 2018/10/21 19:21:40 tom Exp $
  *
  */
 
@@ -1991,7 +1991,7 @@ lattr_shift(BUFFER *bp GCC_UNUSED, LINE *lp, int doto, int shift)
 
 			beginDisplay();
 			newlen = len + shift - (t - f);
-			lap = castrealloc(UCHAR, lap, (size_t) newlen + 1);
+			safe_castrealloc(UCHAR, lap, (size_t) newlen + 1);
 			if (lap != 0) {
 			    lp->l_attrs = lap;
 			    lap[newlen] = 0;
@@ -2091,7 +2091,7 @@ add_line_attrib(BUFFER *bp, REGION * rp, REGIONSHAPE rs, unsigned vattr,
 	/* Make sure the line attribute is long enough */
 	if (len < rp->r_end.o) {
 	    last = rp->r_end.o;
-	    lp->l_attrs = castrealloc(UCHAR, lp->l_attrs, (size_t) (last + 1));
+	    safe_castrealloc(UCHAR, lp->l_attrs, (size_t) (last + 1));
 	    if (lp->l_attrs != NULL) {
 		for (i = len; i < rp->r_end.o; i++)
 		    lp->l_attrs[i] = 1;

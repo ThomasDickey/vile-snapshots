@@ -2,7 +2,7 @@
  * w32cmd:  collection of functions that add Win32-specific editor
  *          features (modulo the clipboard interface) to [win]vile.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32cmd.c,v 1.50 2013/12/07 16:26:12 tom Exp $
+ * $Id: w32cmd.c,v 1.53 2018/10/22 08:15:18 tom Exp $
  */
 
 #include "estruct.h"
@@ -228,7 +228,7 @@ commdlg_open_files(int chdir_allowed, const char *dir)
 	    domore = rc = NO_MEMORY();
     }
 
-    if (domore) {
+    if (domore && (our_filebuf != NULL)) {
 	cp = our_filebuf;
 	nfile = 0;
 	for_ever {
@@ -1826,16 +1826,18 @@ winprint(int f GCC_UNUSED, int n GCC_UNUSED)
 	    GlobalFree(pd->hDevNames);
 	    pd->hDevNames = NULL;
 	}
-	pdm_setup = GlobalLock(pgsetup->hDevMode);
-	nbytes = pdm_setup->dmSize + pdm_setup->dmDriverExtra;
-	if ((pd->hDevMode = GlobalAlloc(GMEM_MOVEABLE, nbytes)) == NULL) {
+	if ((pdm_setup = GlobalLock(pgsetup->hDevMode)) != 0) {
+	    nbytes = pdm_setup->dmSize + pdm_setup->dmDriverExtra;
+	    if ((pd->hDevMode = GlobalAlloc(GMEM_MOVEABLE, nbytes)) == NULL) {
+		GlobalUnlock(pgsetup->hDevMode);
+		returnCode(no_memory("winprint"));
+	    }
+	    if ((pdm_print = GlobalLock(pd->hDevMode)) != 0) {
+		memcpy(pdm_print, pdm_setup, nbytes);
+		GlobalUnlock(pd->hDevMode);
+	    }
 	    GlobalUnlock(pgsetup->hDevMode);
-	    returnCode(no_memory("winprint"));
 	}
-	pdm_print = GlobalLock(pd->hDevMode);
-	memcpy(pdm_print, pdm_setup, nbytes);
-	GlobalUnlock(pgsetup->hDevMode);
-	GlobalUnlock(pd->hDevMode);
 	pgsetup_chgd = FALSE;
     }
 
@@ -2060,16 +2062,18 @@ winpg_setup(int f GCC_UNUSED, int n GCC_UNUSED)
 		GlobalFree(pgsetup->hDevNames);
 		pgsetup->hDevNames = NULL;
 	    }
-	    pdm_print = GlobalLock(pd->hDevMode);
-	    nbytes = pdm_print->dmSize + pdm_print->dmDriverExtra;
-	    if ((pgsetup->hDevMode = GlobalAlloc(GMEM_MOVEABLE, nbytes)) == NULL) {
+	    if ((pdm_print = GlobalLock(pd->hDevMode)) != 0) {
+		nbytes = pdm_print->dmSize + pdm_print->dmDriverExtra;
+		if ((pgsetup->hDevMode = GlobalAlloc(GMEM_MOVEABLE, nbytes)) == NULL) {
+		    GlobalUnlock(pd->hDevMode);
+		    returnCode(no_memory("winpg_setup"));
+		}
+		if ((pdm_setup = GlobalLock(pgsetup->hDevMode)) != 0) {
+		    memcpy(pdm_setup, pdm_print, nbytes);
+		    GlobalUnlock(pgsetup->hDevMode);
+		}
 		GlobalUnlock(pd->hDevMode);
-		returnCode(no_memory("winpg_setup"));
 	    }
-	    pdm_setup = GlobalLock(pgsetup->hDevMode);
-	    memcpy(pdm_setup, pdm_print, nbytes);
-	    GlobalUnlock(pgsetup->hDevMode);
-	    GlobalUnlock(pd->hDevMode);
 	    printdlg_chgd = FALSE;
 	}
 	status = PageSetupDlg(pgsetup);
