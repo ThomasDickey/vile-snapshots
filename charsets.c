@@ -1,5 +1,5 @@
 /*
- * $Id: charsets.c,v 1.79 2015/09/07 00:58:42 tom Exp $
+ * $Id: charsets.c,v 1.80 2018/10/21 19:18:36 tom Exp $
  *
  * see
  http://msdn.microsoft.com/library/default.asp?url=/library/en-us/intl/unicode_42jv.asp
@@ -51,9 +51,7 @@ allow_decoder(BUFFER *bp, size_t need)
 {
     if (need > bp->decode_utf_len) {
 	bp->decode_utf_len = (need + 1) * 2;
-	bp->decode_utf_buf = typereallocn(UINT,
-					  bp->decode_utf_buf,
-					  bp->decode_utf_len);
+	safe_typereallocn(UINT, bp->decode_utf_buf, bp->decode_utf_len);
     }
     return (bp->decode_utf_buf != 0);
 }
@@ -63,9 +61,7 @@ allow_encoder(BUFFER *bp, size_t need)
 {
     if (need > bp->encode_utf_len) {
 	bp->encode_utf_len = (need + 1) * 2;
-	bp->encode_utf_buf = typereallocn(char,
-					  bp->encode_utf_buf,
-					  bp->encode_utf_len);
+	safe_typereallocn(char, bp->encode_utf_buf, bp->encode_utf_len);
     }
     return (bp->encode_utf_buf != 0);
 }

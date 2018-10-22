@@ -60,7 +60,7 @@
  *    situation, kill the app by typing ^C (and then please apply for a
  *    QA position with a certain Redmond company).
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32pipe.c,v 1.39 2015/02/01 17:52:21 tom Exp $
+ * $Id: w32pipe.c,v 1.40 2018/10/21 23:08:08 tom Exp $
  */
 
 #define HAVE_FCNTL_H 1
@@ -141,7 +141,7 @@ npclose(FILE *fp)
 /* ------------------- native pipe routines first ------------------- */
 
 /*
- * when desparate to communicate an error, enable popup messages and
+ * when desperate to communicate an error, enable popup messages and
  * use mlforce().
  */
 static void
@@ -499,7 +499,7 @@ tmp_inout_popen(FILE **fr, FILE **fw, char *cmd)
 	    } else {
 		/*
 		 * Set up descriptor for filter operation.   Note the
-		 * sublteties here:  exec'd shell is passed a descriptor
+		 * subtleties here:  exec'd shell is passed a descriptor
 		 * to the temp file that's opened "w".  The editor
 		 * receives a descriptor to the file that's opened "r".
 		 */
@@ -542,7 +542,6 @@ tmp_inout_popen(FILE **fr, FILE **fw, char *cmd)
 	     * is currently proxied by a temp file that the editor will
 	     * suck in shortly.
 	     */
-
 	    len = (DWORD) (lsprintf(buf, SHELL_ERR_MSG, get_shell()) - buf);
 	    (void) WriteFile(handles[1], buf, len, &dummy, NULL);
 	    FlushFileBuffers(handles[1]);
@@ -554,28 +553,29 @@ tmp_inout_popen(FILE **fr, FILE **fw, char *cmd)
 	    close_proc_handle();
 	}
 
-	/*
-	 * When closing descriptors shared between parent and child, order
-	 * is quite important when $shell == command.com .  In this
-	 * situation, the descriptors can't be closed until the exec'd
-	 * process exits (I kid you not).
-	 */
-	close_fd(stdin_fd);
-	(void) close(tmpin_fd);
-
-	/* let the editor consume the output of the read pipe */
-	if ((*fr = fopen(stdin_name, "r")) == NULL) {
+	if (fr) {
 	    /*
-	     * impossible to put error in user's buffer since that file
-	     * descriptor is closed.
+	     * When closing descriptors shared between parent and child, order
+	     * is quite important when $shell == command.com .  In this
+	     * situation, the descriptors can't be closed until the exec'd
+	     * process exits (I kid you not).
 	     */
+	    close_fd(stdin_fd);
+	    (void) close(tmpin_fd);
 
-	    sprintf(buf,
-		    "[error opening temp file \"%s\": %s]",
-		    stdin_name,
-		    strerror(errno));
-	    lastditch_msg(buf);
-	    break;
+	    /* let the editor consume the output of the read pipe */
+	    if ((*fr = fopen(stdin_name, "r")) == NULL) {
+		/*
+		 * impossible to put error in user's buffer since that file
+		 * descriptor is closed.
+		 */
+		sprintf(buf,
+			"[error opening temp file \"%s\": %s]",
+			stdin_name,
+			strerror(errno));
+		lastditch_msg(buf);
+		break;
+	    }
 	}
 	return (rc);
     }

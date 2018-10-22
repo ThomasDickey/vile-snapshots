@@ -3,8 +3,7 @@
  *	Original interface by Otto Lind, 6/3/93
  *	Additional map and map! support by Kevin Buettner, 9/17/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/map.c,v 1.125 2013/03/06 10:31:52 tom Exp $
- *
+ * $Id: map.c,v 1.126 2018/10/21 21:00:20 tom Exp $
  */
 
 #include "estruct.h"
@@ -133,7 +132,7 @@ makemaplist(int dummy GCC_UNUSED, void *mapp)
 	    tb_put(&lhsstr, depth, mp->ch);
 	    if (depth + 1 >= maxdepth) {
 		maxdepth *= 2;
-		lhsstack = typereallocn(struct maprec *, lhsstack, maxdepth);
+		safe_typereallocn(struct maprec *, lhsstack, maxdepth);
 		if (lhsstack == 0) {
 		    no_memory("makemaplist");
 		    return;

@@ -2,8 +2,7 @@
  * This file contains the command processing functions for a number of random
  * commands. There is no functional grouping here, for sure.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/random.c,v 1.357 2016/07/16 14:28:05 tom Exp $
- *
+ * $Id: random.c,v 1.358 2018/10/21 19:20:42 tom Exp $
  */
 
 #ifdef __BEOS__
@@ -1857,9 +1856,9 @@ dirstack_extend(const char *dir, const char *fnname)
 				   ((unsigned) dirs_len * sizeof(dirstack[0])));
 	} else {
 	    dirs_len *= 2;
-	    dirstack = castrealloc(char *,
-				   dirstack,
-				     ((unsigned) dirs_len * sizeof(dirstack[0])));
+	    safe_castrealloc(char *,
+			     dirstack,
+			       ((unsigned) dirs_len * sizeof(dirstack[0])));
 	}
 	if (!dirstack)
 	    return (no_memory(fnname));

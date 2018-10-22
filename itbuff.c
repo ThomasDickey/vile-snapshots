@@ -7,8 +7,7 @@
  *	To do:	add 'itb_ins()' and 'itb_del()' to support cursor-level command
  *		editing.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/itbuff.c,v 1.27 2015/02/01 21:06:48 tom Exp $
- *
+ * $Id: itbuff.c,v 1.28 2018/10/21 21:02:39 tom Exp $
  */
 
 #include "estruct.h"
@@ -99,8 +98,7 @@ itb_alloc(ITBUFF ** p, size_t n)
 	    }
 	}
     } else if (n >= q->itb_size) {
-	q->itb_data = typereallocn(int, q->itb_data,
-				   q->itb_size = (n * 2));
+	safe_typereallocn(int, q->itb_data, q->itb_size = (n * 2));
 	if (q->itb_data == 0)
 	    itb_free(&q);
     }

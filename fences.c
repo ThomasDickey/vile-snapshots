@@ -9,8 +9,7 @@
  * Extensions for vile by Paul Fox
  * Rewrote to use regular expressions - T.Dickey
  *
- * $Header: /users/source/archives/vile.vcs/RCS/fences.c,v 1.95 2015/03/13 08:37:40 tom Exp $
- *
+ * $Id: fences.c,v 1.96 2018/10/21 21:00:20 tom Exp $
  */
 
 #include	"estruct.h"
@@ -537,7 +536,7 @@ comment_fence(int sdir)
 {
     /* avoid overlapping match between begin/end patterns */
     if (sdir == FORWARD) {
-	size_t off = (size_t) (DOT.o - S_COL(BlkBegin));
+	size_t off = (size_t) DOT.o - (size_t) S_COL(BlkBegin);
 	if (BlkEnd->mlen > off)
 	    forwchar(TRUE, (int) (BlkEnd->mlen - off));
     }

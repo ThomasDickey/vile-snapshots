@@ -1,6 +1,6 @@
 /*
- * $Id: blist.c,v 1.16 2013/03/11 00:04:11 tom Exp $
- * Copyright 2007-2008,2013 by Thomas E. Dickey
+ * $Id: blist.c,v 1.17 2018/10/21 19:37:24 tom Exp $
+ * Copyright 2007-2013,2018 by Thomas E. Dickey
  *
  * Provide binary-search lookup of arrays of sorted structs.  The beginning of
  * each struct is a pointer to a string, which is the key by which the structs
@@ -13,7 +13,9 @@
 #include	<blist.h>
 
 #define	ILLEGAL_NUM	-1
-#define ItemOf(data,inx) *(const char * const*)((const void *)((const char *)(data->theList) + ((UINT) (inx) * data->itemSize)))
+#define ItemOf(data,inx) *(const char * const*)\
+	((const void *)((const char *)(data->theList) \
+		       + ((size_t) (inx) * (size_t) data->itemSize)))
 
 #define ItemToInx(data, item) \
 	((UINT) ((const char *) item - (const char *) (data->theList)) \
@@ -132,7 +134,7 @@ blist_pmatch(BLIST * data, const char *name, int len)
 		    dummy.name = name;
 		    test = (const char *) bsearch(&dummy,
 						  &ItemOf(data, lo),
-						  (size_t) (x1 + 1 - lo),
+						  (size_t) x1 + 1 - (size_t) lo,
 						  (size_t) data->itemSize,
 						  exact_match);
 		    if (test) {
@@ -151,7 +153,8 @@ blist_pmatch(BLIST * data, const char *name, int len)
 		} else if (x1 < last - 1) {
 		    COUNTER(total_compares, 2);
 		    if (strcmp(item, name)
-			&& !strncmp(ItemOf(data, x1 + 1), name, (size_t) len)) {
+			&& !strncmp(ItemOf(data, (size_t) x1 + 1), name,
+				    (size_t) len)) {
 			rc = -1;
 		    }
 		}

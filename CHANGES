@@ -1,6 +1,6 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20181019 (t)
+ 20181021 (t)
 	> Adam Denton:
 	+ fix a typo in tcap.h (Savannah #52872).
 	> Jeff Morriss:
@@ -8,6 +8,7 @@ Changes for vile 9.9 (released ??? ??? ?? ????)
 	  crypt(), to work with Fedora 28 which does not necessarily use a
 	  fixed-size buffer.
 	> Tom Dickey:
+	+ several fixes using Visual Studio 2017 code analysis.
 	+ use registry value for PaddedBorderWidth in winvile to account for
 	  misleading results from GetSystemMetrics introduced by Vista.
 	+ modify makefile.wnt to allow build with Visual Studio 2012 and later,

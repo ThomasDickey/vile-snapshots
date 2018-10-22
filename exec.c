@@ -4,7 +4,7 @@
  *	original by Daniel Lawrence, but
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.362 2017/12/31 11:37:12 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.363 2018/10/21 19:16:54 tom Exp $
  *
  */
 
@@ -2594,7 +2594,7 @@ perform_dobuf(BUFFER *bp, WHLOOP * whlist)
 	    linlen = (size_t) llength(lp);
 
 	if (glue) {
-	    linebuf = castrealloc(char, linebuf, (size_t) glue + linlen + 1);
+	    safe_castrealloc(char, linebuf, (size_t) glue + linlen + 1);
 	    if (linebuf == 0) {
 		status = no_memory("during macro execution");
 		break;

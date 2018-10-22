@@ -1,8 +1,7 @@
 /*
  * debugging support -- tom dickey.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/trace.c,v 1.116 2014/10/01 08:40:10 tom Exp $
- *
+ * $Id: trace.c,v 1.118 2018/10/21 22:21:34 tom Exp $
  */
 
 #include <estruct.h>
@@ -249,7 +248,8 @@ Trace(const char *fmt,...)
     static FILE *fp;
 #if SYS_WINNT
     HANDLE myMutex = CreateMutex(NULL, FALSE, NULL);
-    WaitForSingleObject(myMutex, INFINITE);
+    if (myMutex != 0)
+	WaitForSingleObject(myMutex, INFINITE);
 #endif
 
     if (!nested++) {
@@ -294,8 +294,10 @@ Trace(const char *fmt,...)
     --nested;
 
 #if SYS_WINNT
-    ReleaseMutex(myMutex);
-    CloseHandle(myMutex);
+    if (myMutex != 0) {
+	ReleaseMutex(myMutex);
+	CloseHandle(myMutex);
+    }
 #endif
 }
 
@@ -344,7 +346,7 @@ alloc_visible(size_t need)
 	if (visible_result == 0)
 	    visible_result = typeallocn(char, need);
 	else
-	    visible_result = typereallocn(char, visible_result, need);
+	    safe_typereallocn(char, visible_result, need);
 
 	if (visible_result != 0)
 	    memset(visible_result, 0, need);
@@ -409,7 +411,7 @@ trace_indent(int level, int marker)
 	if (visible_indent == 0)
 	    visible_indent = typeallocn(char, need);
 	else
-	    visible_indent = typereallocn(char, visible_indent, need);
+	    safe_typereallocn(char, visible_indent, need);
 
 	assert(visible_indent != 0);
 

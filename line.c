@@ -10,7 +10,7 @@
  * editing must be being displayed, which means that "b_nwnd" is non zero,
  * which means that the dot and mark values in the buffer headers are nonsense.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.231 2015/09/06 21:09:26 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.232 2018/10/21 22:40:07 tom Exp $
  *
  */
 
@@ -1800,15 +1800,21 @@ execkreg(int f, int n)
 	    tkp = tkp->d_next;
 	}
 	/* process them in reverse order */
-	while (kbcount) {
+	while (kbcount > 0) {
 	    whichkb = kbcount;
 	    tkp = kp;
-	    while (--whichkb != 0)
-		tkp = tkp->d_next;
-	    i = (int) KbSize(jj, tkp);
-	    sp = (char *) tkp->d_chunk + i - 1;
-	    while (i--) {
-		mapungetc((int) ((UINT) (*sp--) | YESREMAP));
+	    while (--whichkb > 0) {
+		if ((tkp = tkp->d_next) == 0) {
+		    kbcount = 0;
+		    break;	/* quit on error */
+		}
+	    }
+	    if (tkp != 0) {
+		i = (int) KbSize(jj, tkp);
+		sp = (char *) tkp->d_chunk + i - 1;
+		while (i--) {
+		    mapungetc((int) ((UINT) (*sp--) | YESREMAP));
+		}
 	    }
 	    kbcount--;
 	}
@@ -1966,19 +1972,21 @@ init_regs_cmpl(char *buf, size_t cpos)
 {
     int dst, src;
     char **result = typeallocn(char *, 96);
-    for (dst = 0, src = 32; src < 127; ++src) {
-	if (isUpper(src))	/* register names are caseless */
-	    continue;
-	if (reg_has_data(src)) {
-	    if (cpos == 0 || *buf == src) {
-		char value[2];
-		value[0] = (char) src;
-		value[1] = 0;
-		result[dst++] = strmalloc(value);
+    if (result != 0) {
+	for (dst = 0, src = 32; src < 127; ++src) {
+	    if (isUpper(src))	/* register names are caseless */
+		continue;
+	    if (reg_has_data(src)) {
+		if (cpos == 0 || *buf == src) {
+		    char value[2];
+		    value[0] = (char) src;
+		    value[1] = 0;
+		    result[dst++] = strmalloc(value);
+		}
 	    }
 	}
+	result[dst] = 0;
     }
-    result[dst] = 0;
     return (const char **) result;
 }
 

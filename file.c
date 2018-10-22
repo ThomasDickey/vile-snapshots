@@ -5,7 +5,7 @@
  * reading and writing of the disk are
  * in "fileio.c".
  *
- * $Header: /users/source/archives/vile.vcs/RCS/file.c,v 1.459 2016/07/15 00:52:52 tom Exp $
+ * $Id: file.c,v 1.460 2018/10/21 22:21:02 tom Exp $
  */
 
 #include "estruct.h"
@@ -1118,8 +1118,9 @@ getfile(char *fname,		/* file name to find */
 static int
 check_percent_crlf(BUFFER *bp, int doslines, int unixlines)
 {
-    double total = (doslines + unixlines) * b_val(bp, VAL_PERCENT_CRLF);
-    double value = (doslines * 100);
+    double total = (((double) doslines + (double) unixlines)
+		    * (double) b_val(bp, VAL_PERCENT_CRLF));
+    double value = ((double) doslines * 100.0);
     return (total > 0) && (value >= total);
 }
 

@@ -5,8 +5,7 @@
  * Written by T.E.Dickey for vile (march 1993).
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/filec.c,v 1.135 2016/07/16 15:03:35 tom Exp $
- *
+ * $Id: filec.c,v 1.136 2018/10/21 18:19:38 tom Exp $
  */
 
 #include "estruct.h"
@@ -841,10 +840,11 @@ makeMyList(BUFFER *bp, char *name)
     need = (size_t) bp->b_linecount + 2;
     if (bp->b_index_size < need) {
 	bp->b_index_size = need * 2;
-	if (bp->b_index_list == 0)
+	if (bp->b_index_list == 0) {
 	    bp->b_index_list = typeallocn(char *, bp->b_index_size);
-	else
-	    bp->b_index_list = typereallocn(char *, bp->b_index_list, bp->b_index_size);
+	} else {
+	    safe_typereallocn(char *, bp->b_index_list, bp->b_index_size);
+	}
     }
 
     if (bp->b_index_list != 0) {

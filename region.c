@@ -3,8 +3,7 @@
  * and mark.  Some functions are commands.  Some functions are just for
  * internal use.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/region.c,v 1.167 2015/09/07 01:02:26 tom Exp $
- *
+ * $Id: region.c,v 1.168 2018/10/21 21:00:20 tom Exp $
  */
 
 #include	"estruct.h"
@@ -1314,7 +1313,7 @@ encode_attributes(LINE *lp, BUFFER *bp, REGION * top_region)
 		if (my_list == 0)
 		    my_list = typeallocn(AREGION, my_size = 10);
 		else if (my_used + 1 > my_size)
-		    my_list = typereallocn(AREGION, my_list, my_size *= 2);
+		    safe_typereallocn(AREGION, my_list, my_size *= 2);
 		if (my_list == 0) {
 		    no_memory("encode_attributes");
 		    return 0;

@@ -2,7 +2,7 @@
  * w32misc:  collection of unrelated, common win32 functions used by both
  *           the console and GUI flavors of the editor.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32misc.c,v 1.58 2010/02/10 11:59:06 tom Exp $
+ * $Id: w32misc.c,v 1.59 2018/10/21 19:23:28 tom Exp $
  */
 
 #include "estruct.h"
@@ -1031,7 +1031,7 @@ w32_wdw_title(void)
 	    /* Enlarge buffer and try again. */
 
 	    bufsize *= 2;
-	    buf = castrealloc(W32_CHAR, buf, bufsize);
+	    safe_castrealloc(W32_CHAR, buf, bufsize);
 	} else {
 	    break;
 	}
