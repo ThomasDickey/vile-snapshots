@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Id: modes.c,v 1.452 2018/10/22 08:20:38 tom Exp $
+ * $Id: modes.c,v 1.454 2018/10/23 01:12:35 tom Exp $
  */
 
 #include <estruct.h>
@@ -3295,11 +3295,11 @@ static void
 compute_majormodes_order(void)
 {
     char *s;
-    size_t need = count_majormodes();
-    size_t want;
+    UINT need = count_majormodes();
+    UINT want;
     UINT j;
     int jj;
-    static size_t have;
+    static UINT have;
 
     TRACE((T_CALLED "compute_majormodes_order(%d)\n", (int) need));
     if (need) {
@@ -3310,10 +3310,10 @@ compute_majormodes_order(void)
 	    /* EMPTY */ ;
 	} else if (have) {
 	    have = want;
-	    safe_typereallocn(int, majormodes_order, have);
+	    safe_typereallocn(int, majormodes_order, (size_t) have);
 	} else {
 	    have = want;
-	    majormodes_order = typecallocn(int, have);
+	    majormodes_order = typecallocn(int, (size_t) have);
 	}
 	endofDisplay();
 
@@ -4204,9 +4204,14 @@ makemajorlist(int local, void *ptr GCC_UNUSED)
 	if (show_active_majormodes(0))
 	    bputc('\n');
 	for (j = 0; my_majormodes[j].shortname != 0; j++) {
+	    if ((data = my_majormodes[j].data) == 0) {
+		continue;
+	    } else if (j != 0) {
+		bputc('\n');
+	    }
+
 	    if (local)
 		TheMajor = my_majormodes[j].shortname;
-	    data = my_majormodes[j].data;
 
 	    bprintf("--- \"%s\" majormode settings ",
 		    my_majormodes[j].shortname);
@@ -4243,8 +4248,6 @@ makemajorlist(int local, void *ptr GCC_UNUSED)
 		    endofDisplay();
 		}
 	    }
-	    if (my_majormodes[j + 1].data)
-		bputc('\n');
 	}
     }
     TheMajor = 0;
@@ -5083,7 +5086,7 @@ find_scheme_by_code(UINT code)
 static void
 update_scheme_choices(void)
 {
-    int n;
+    UINT n;
 
     if (my_schemes != 0) {
 	beginDisplay();
@@ -5095,7 +5098,7 @@ update_scheme_choices(void)
 	endofDisplay();
 
 	if (my_scheme_choices != 0) {
-	    for (n = 0; n < (int) num_schemes; n++) {
+	    for (n = 0; n < num_schemes; n++) {
 		my_scheme_choices[n].choice_name = my_schemes[n].name;
 		my_scheme_choices[n].choice_code = (int) my_schemes[n].code;
 	    }

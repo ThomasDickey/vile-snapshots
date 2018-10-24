@@ -10,7 +10,7 @@
  * editing must be being displayed, which means that "b_nwnd" is non zero,
  * which means that the dot and mark values in the buffer headers are nonsense.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.232 2018/10/21 22:40:07 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.233 2018/10/23 22:46:23 tom Exp $
  *
  */
 
@@ -437,7 +437,7 @@ lins_bytes(int n, int c)
 	}
     } else {
 	doto = DOT.o;		/* Save for later.      */
-	nsize = (size_t) (llength(lp1) + 1 + doto + n);
+	nsize = ((size_t) llength(lp1) + 1 + (size_t) doto + (size_t) n);
 	if (nsize > lp1->l_size) {	/* Hard: reallocate     */
 	    /* first, create the new image */
 	    nsize = roundlenup(nsize);
@@ -458,7 +458,7 @@ lins_bytes(int n, int c)
 		    if (llength(lp1) > doto) {
 			(void) memcpy(&ntext[doto + n],
 				      &lvalue(lp1)[doto],
-				      (size_t) (llength(lp1) - doto));
+				      ((size_t) llength(lp1) - (size_t) doto));
 		    }
 		    ltextfree(lp1, curbp);
 #if OPT_LINE_ATTRS
@@ -631,7 +631,7 @@ lnewline(void)
 			lp1->l_attrs = 0;
 		    } else {
 			UCHAR *newattr
-			= typeallocn(UCHAR, (unsigned) (llength(lp1) + 1));
+			= typeallocn(UCHAR, (size_t) llength(lp1) + 1);
 			int n;
 
 			if (newattr != 0) {
@@ -1047,7 +1047,7 @@ ldelnewline(void)
 	char *ntext;
 	size_t nsize;
 	/* first, create the new image */
-	nsize = roundlenup(len + add);
+	nsize = roundlenup((size_t) len + (size_t) add);
 	if ((ntext = castalloc(char, nsize)) == NULL)
 	      return (FALSE);
 	if (lvalue(lp1)) {	/* possibly NULL if l_size == 0 */

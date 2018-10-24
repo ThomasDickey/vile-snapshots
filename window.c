@@ -2,7 +2,7 @@
  * Window management. Some of the functions are internal, and some are
  * attached to keys that the user actually types.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/window.c,v 1.127 2013/04/13 12:37:00 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/window.c,v 1.128 2018/10/22 22:47:02 tom Exp $
  *
  */
 
@@ -66,6 +66,8 @@ free_WINDOW(WINDOW *wp)
 int
 set_curwp(WINDOW *wp)
 {
+    if (wp == 0)
+	return (FALSE);
     if (wp == curwp)
 	return (TRUE);
     curwp = wp;
@@ -187,8 +189,13 @@ nextwind(int f, int n)
 	/* if an argument, give them that window from the top */
 	if (n > 0 && n <= nwindows) {
 	    wp = wheadp;
-	    while (--n != 0)
+	    while (--n != 0) {
+		if (wp == 0) {
+		    mlforce("[Window number out of range]");
+		    return (FALSE);
+		}
 		wp = wp->w_wndp;
+	    }
 	} else {
 	    mlforce("[Window number out of range]");
 	    return (FALSE);
@@ -735,7 +742,7 @@ enlargewind(int f, int n)
 	while (adjwp->w_wndp != curwp)
 	    adjwp = adjwp->w_wndp;
     }
-    if (adjwp->w_ntrows <= n) {
+    if (adjwp == NULL || adjwp->w_ntrows <= n) {
 	mlforce("[Impossible change]");
 	return (FALSE);
     }
@@ -775,7 +782,7 @@ shrinkwind(int f, int n)
 	while (adjwp->w_wndp != curwp)
 	    adjwp = adjwp->w_wndp;
     }
-    if (curwp->w_ntrows <= n) {
+    if (adjwp == NULL || curwp->w_ntrows <= n) {
 	mlforce("[Impossible change]");
 	return (FALSE);
     }

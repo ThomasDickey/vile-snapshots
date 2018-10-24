@@ -8,7 +8,7 @@
  *   "FAILED" may not be used to test an OLE return code.  Use SUCCEEDED
  *   instead.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32oo.cpp,v 1.17 2011/11/25 01:41:52 tom Exp $
+ * $Id: w32oo.cpp,v 1.18 2018/10/22 23:04:39 tom Exp $
  */
 
 #include "w32vile.h"
@@ -26,7 +26,7 @@ extern "C" {
 #include "dirstuff.h"
 
 #if CC_TURBO
-#include <dir.h>		/* for 'chdir()' */
+#include <dir.h>                /* for 'chdir()' */
 #endif
 
 #ifdef UNICODE
@@ -39,10 +39,10 @@ vl_GetPathFromIDList(LPITEMIDLIST lp, char *bufferp)
 
     rc = SHGetPathFromIDList(lp, reinterpret_cast<LPTSTR>(buffer));
     if (rc) {
-	if ((result = asc_charstring(buffer)) != 0) {
-	    strcpy(bufferp, result);
-	    free (result);
-	}
+        if ((result = asc_charstring(buffer)) != 0) {
+            strcpy(bufferp, result);
+            free (result);
+        }
     }
     return rc;
 }
@@ -252,7 +252,10 @@ wincd(int f, int n)
     {
         /* empty response */
 
-        getcwd(buf, sizeof(buf));
+        if (getcwd(buf, sizeof(buf)) == NULL) {
+            mlforce("[getcwd: %s]", strerror(errno));
+            return FALSE;
+        }
         rc = graphical_cd(buf);
     }
     /* else rc == ABORT or SORTOFTRUE */
@@ -268,8 +271,10 @@ wincd_dir(const char *dir)
     TRACE((T_CALLED "wincd_dir(%s)\n"));
     if (dir == NULL)
     {
-        getcwd(buf, sizeof(buf));
-        dir = buf;
+        if ((dir = getcwd(buf, sizeof(buf))) == NULL) {
+            mlforce("[getcwd: %s]", strerror(errno));
+            return FALSE;
+        }
     }
     returnCode(graphical_cd(dir));
 }
@@ -291,11 +296,11 @@ filterExceptions(unsigned int code, struct _EXCEPTION_POINTERS *ep)
 {
     if (code == EXCEPTION_INVALID_HANDLE)
     {
-	return EXCEPTION_EXECUTE_HANDLER;
+        return EXCEPTION_EXECUTE_HANDLER;
     }
     else
     {
-	return EXCEPTION_CONTINUE_SEARCH;
+        return EXCEPTION_CONTINUE_SEARCH;
     }
 }
 #endif
@@ -307,11 +312,11 @@ w32_close_handle(HANDLE handle)
 #if USE_EXCEPTION_FILTERING
     __try
     {
-	(void) CloseHandle(handle);
+        (void) CloseHandle(handle);
     }
     __except(filterExceptions(GetExceptionCode(), GetExceptionInformation()))
     {
-	TRACE(("error closing handle %#x\n", handle));
+        TRACE(("error closing handle %#x\n", handle));
     }
 #else
     (void) CloseHandle(handle);

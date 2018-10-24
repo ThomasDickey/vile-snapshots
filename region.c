@@ -3,7 +3,7 @@
  * and mark.  Some functions are commands.  Some functions are just for
  * internal use.
  *
- * $Id: region.c,v 1.168 2018/10/21 21:00:20 tom Exp $
+ * $Id: region.c,v 1.169 2018/10/23 22:24:40 tom Exp $
  */
 
 #include	"estruct.h"
@@ -1265,8 +1265,8 @@ encode_attributes(LINE *lp, BUFFER *bp, REGION * top_region)
 	AREGION *ap;
 	AREGION *my_list = 0;
 	AREGION ar_temp;
-	unsigned my_used = 0;
-	unsigned my_size = 0;
+	size_t my_used = 0;
+	size_t my_size = 0;
 	L_NUM top_rsl = line_no(bp, top_region->r_orig.l);
 	L_NUM top_rel = line_no(bp, top_region->r_end.l);
 	L_NUM tst_rsl, tst_rel;

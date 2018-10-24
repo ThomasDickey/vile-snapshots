@@ -5,7 +5,7 @@
  * reading and writing of the disk are
  * in "fileio.c".
  *
- * $Id: file.c,v 1.460 2018/10/21 22:21:02 tom Exp $
+ * $Id: file.c,v 1.462 2018/10/24 00:59:26 tom Exp $
  */
 
 #include "estruct.h"
@@ -1513,6 +1513,7 @@ quickreadf(BUFFER *bp, int *nlinep)
 
 	    /* loop through the buffer again, creating
 	       line data structure for each line */
+#pragma warning(suppress: 6386)
 	    memset(bp->b_LINEs, 0, sizeof(LINE));
 	    for (lp = bp->b_LINEs, offset = 0; lp != bp->b_LINEs_end; ++lp) {
 		B_COUNT next = next_recordseparator(buffer, length, rscode, offset);
@@ -1525,7 +1526,7 @@ quickreadf(BUFFER *bp, int *nlinep)
 		llength(lp) = (C_NUM) (next - offset - 1);
 		if (!b_val(bp, MDNEWLINE) && next == length)
 		    llength(lp) += 1;
-		lp->l_size = (size_t) (llength(lp) + 1);
+		lp->l_size = (size_t) llength(lp) + 1;
 		lvalue(lp) = (char *) (buffer + offset);
 		set_lforw(lp, lp + 1);
 		if (lp != bp->b_LINEs)
@@ -2066,7 +2067,7 @@ unqname(char *name)
 	if ((suffixlen + 2) >= NBUFN)
 	    break;
 
-	k = (size_t) (NBUFN - 1 - suffixlen);
+	k = ((size_t) NBUFN - 1 - (size_t) suffixlen);
 	if (j < k)
 	    k = j;
 	if (adjust) {
@@ -2812,7 +2813,9 @@ create_save_dir(char *dirnam)
 #if defined(HAVE_MKSTEMP) && defined(HAVE_MKDTEMP)
 	    result = (vl_mkdtemp(dirnam) != 0);
 #else
-	    result = (vl_mkdir(mktemp(dirnam), 0700) == 0);
+	    if (mktemp(dirnam) != 0 && *dirnam != '\0') {
+		result = (vl_mkdir(dirnam, 0700) == 0);
+	    }
 #endif
 	    (void) vl_umask(omask);
 	    if (result)

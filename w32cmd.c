@@ -2,7 +2,7 @@
  * w32cmd:  collection of functions that add Win32-specific editor
  *          features (modulo the clipboard interface) to [win]vile.
  *
- * $Id: w32cmd.c,v 1.53 2018/10/22 08:15:18 tom Exp $
+ * $Id: w32cmd.c,v 1.55 2018/10/23 22:56:10 tom Exp $
  */
 
 #include "estruct.h"
@@ -157,7 +157,7 @@ commdlg_open_files(int chdir_allowed, const char *dir)
 	domore = rc = NO_MEMORY();
     }
 
-    if (domore) {
+    if (domore && (sys_filebuf != 0)) {
 	sys_filebuf[0] = '\0';
 	if (!ofn_initialized)
 	    ofn_init();
@@ -237,7 +237,7 @@ commdlg_open_files(int chdir_allowed, const char *dir)
 		break;
 	    nfile++;
 	    TRACE(("...file %d:%s\n", nfile, cp));
-	    cp += len + 1;	/* skip filename and its terminator */
+	    cp += (size_t) len + 1;	/* skip filename and its terminator */
 	}
 
 	TRACE(("dialog returns %d filenames\n", nfile));
@@ -756,12 +756,11 @@ compute_printrect(int xdpi,	/* dots (pixels) per inch in x axis */
 
     if (pgsetup->Flags & PSD_INHUNDREDTHSOFMILLIMETERS) {
 	/* convert user's margins to thousandths of inches */
-
-	/* *INDENT-EQLS* */
-	u.top = (int) (1000.0 * u.top / 2500.0);
-	u.bottom = (int) (1000.0 * u.bottom / 2500.0);
-	u.right = (int) (1000.0 * u.right / 2500.0);
-	u.left = (int) (1000.0 * u.left / 2500.0);
+#define ConvertToMills(name) name = (LONG) (1000.0 * name / 2500.0)
+	ConvertToMills(u.top);
+	ConvertToMills(u.bottom);
+	ConvertToMills(u.right);
+	ConvertToMills(u.left);
     }
 
     /*
@@ -769,12 +768,12 @@ compute_printrect(int xdpi,	/* dots (pixels) per inch in x axis */
      * rectangular notation
      */
     /* *INDENT-EQLS* */
-    u.top    = (int) (u.top * ydpi / 1000.0);
-    u.bottom = (minmar->top + minmar->bottom + vertres -
-		((int) (u.bottom * ydpi / 1000.0)));
-    u.left   = (int) (u.left * xdpi / 1000.0);
-    u.right  = (minmar->left + minmar->right + horzres -
-		((int) (u.right * xdpi / 1000.0)));
+    u.top    = (LONG) (u.top * (LONG) (ydpi / 1000.0));
+    u.bottom = (LONG) (minmar->top + minmar->bottom + (LONG) vertres -
+		       ((LONG) (u.bottom * (LONG) (ydpi / 1000.0))));
+    u.left   = (LONG) (u.left * (LONG) (xdpi / 1000.0));
+    u.right  = (LONG) (minmar->left + minmar->right + (LONG) horzres -
+		       ((LONG) (u.right * (LONG) (xdpi / 1000.0))));
 
     /*
      * Compute maximum printing rectangle coordinates (pixels).  Note that
@@ -2194,8 +2193,10 @@ w32_get_reg_sz(HKEY hkey, const char *name, char *value, unsigned length)
 			      (LPBYTE) value,
 			      &dwSzBuffer);
     if (result == ERROR_SUCCESS) {
-	value[dwSzBuffer] = 0;
-	TRACE2(("->%s\n", value));
+	if (value != 0) {
+	    value[dwSzBuffer] = 0;
+	    TRACE2(("->%s\n", value));
+	}
     }
     return2Code(result);
 }

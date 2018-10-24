@@ -1,7 +1,7 @@
 /*
  * debugging support -- tom dickey.
  *
- * $Id: trace.c,v 1.118 2018/10/21 22:21:34 tom Exp $
+ * $Id: trace.c,v 1.121 2018/10/24 00:15:22 tom Exp $
  */
 
 #include <estruct.h>
@@ -258,12 +258,13 @@ Trace(const char *fmt,...)
 	va_start(ap, fmt);
 
 	if (fmt != bad_form) {
+
 	    if (fp == NULL)
 		fp = fopen("Trace.out", "w");
 	    if (fp == NULL)
 		abort();
 
-	    fprintf(fp, "%s", trace_indent(trace_depth, '|'));
+	    fprintf(fp, "%s", alloc_indent(trace_depth, '|'));
 	    if (!strncmp(fmt, T_CALLED, T_LENGTH)) {
 		begin_elapsed(fmt);
 		++trace_depth;
@@ -278,7 +279,7 @@ Trace(const char *fmt,...)
 	    vfprintf(fp, fmt, ap);
 	    (void) fflush(fp);
 	} else if (fp != 0) {
-	    fprintf(fp, "%s", trace_indent(trace_depth, '|'));
+	    fprintf(fp, "%s", alloc_indent(trace_depth, '|'));
 	    fprintf(fp, T_RETURN "(close)\n");
 	    (void) fclose(fp);
 	    (void) fflush(stdout);
@@ -400,28 +401,39 @@ my_visattr(char *buffer, int ch)
 }
 
 char *
-trace_indent(int level, int marker)
+alloc_indent(int level, int marker)
 {
-    unsigned need = (unsigned) (1 + (level * 3));
-    int n;
+#define indent_fmt "%c "
+#define indent_gap 2
 
-    if (need > used_indent) {
-	used_indent = need;
+    static char dummy[indent_gap + 1] = "? ";
+    char *result = 0;
 
-	if (visible_indent == 0)
-	    visible_indent = typeallocn(char, need);
-	else
-	    safe_typereallocn(char, visible_indent, need);
+    if (level > 1) {
+	unsigned need = (unsigned) (1 + (level * indent_gap));
 
-	assert(visible_indent != 0);
+	if (need > used_indent) {
+	    used_indent = need;
 
-	memset(visible_indent, 0, need);
+	    if (visible_indent == 0) {
+		visible_indent = typeallocn(char, need);
+	    } else {
+		safe_typereallocn(char, visible_indent, need);
+	    }
+	}
+	result = visible_indent;
     }
 
-    *visible_indent = EOS;
-    for (n = 0; n < level; ++n)
-	sprintf(visible_indent + (2 * n), "%c ", marker);
-    return visible_indent;
+    if (result != 0) {
+	int n;
+	*result = EOS;
+	for (n = 0; n < level; ++n)
+	    sprintf(result + (indent_gap * (size_t) n), indent_fmt, marker);
+    } else {
+	result = dummy;
+	sprintf(result, indent_fmt, marker);
+    }
+    return result;
 }
 
 char *

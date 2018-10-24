@@ -11,7 +11,7 @@
  *    Subsequent copies do not show this cursor.  On an NT host, this
  *    phenomenon does not occur.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32cbrd.c,v 1.40 2014/03/24 23:34:48 tom Exp $
+ * $Id: w32cbrd.c,v 1.42 2018/10/23 22:46:46 tom Exp $
  */
 
 #include "estruct.h"
@@ -188,7 +188,7 @@ cbrd_copy_and_xlate(int len, W32_CHAR ** cbrd_ptr, UCHAR * src)
 
 	    if (rc > 1) {
 		*dst++ = (W32_CHAR) target;
-		src += (rc - 1);
+		src += ((size_t) rc - 1);
 	    } else {
 		*dst++ = (W32_CHAR) * src;
 	    }
@@ -386,14 +386,16 @@ cbrdcpy_region(void)
 	mlforce(CLIPBOARD_COPY_MEM);
 	returnCode(FALSE);
     }
-    cpyarg.dst = GlobalLock(hClipMem);
-
-    /*
-     * Pass #2 -> The actual copy.  Don't need to restore DOT, that
-     * is handled by opercbrdcpy().
-     */
-    rc = dorgn(copy_rgn_data, &cpyarg, TRUE);
-    GlobalUnlock(hClipMem);
+    if ((cpyarg.dst = GlobalLock(hClipMem)) != NULL) {
+	/*
+	 * Pass #2 -> The actual copy.  Don't need to restore DOT, that
+	 * is handled by opercbrdcpy().
+	 */
+	rc = dorgn(copy_rgn_data, &cpyarg, TRUE);
+	GlobalUnlock(hClipMem);
+    } else {
+	rc = FALSE;
+    }
     if (!rc) {
 	GlobalFree(hClipMem);
 	returnCode(FALSE);
@@ -507,7 +509,6 @@ paste_to_minibuffer(W32_CHAR * cbrddata)
 {
     int rc = TRUE;
     W32_CHAR *cp = cbrddata;
-    W32_CHAR *eol = NULL;
 #if !USE_UNICODE
     W32_CHAR one_char[2];
     W32_CHAR map_str[MAX_MAPPED_STR + 1];
@@ -515,7 +516,7 @@ paste_to_minibuffer(W32_CHAR * cbrddata)
 
     while (*cp) {
 	if (*cp == '\r' && *(cp + 1) == '\n') {
-	    eol = cp;
+	    *cp = '\0';
 
 	    /*
 	     * Don't allow more than one line of data to be pasted into the
@@ -530,8 +531,6 @@ paste_to_minibuffer(W32_CHAR * cbrddata)
 	}
 	cp++;
     }
-    if (eol)
-	*eol = '\0';		/* chop delimiter */
 #if USE_UNICODE
     rc = w32_keybrd_write(cbrddata);
 #else
@@ -674,7 +673,7 @@ cbrdpaste(int f GCC_UNUSED, int n GCC_UNUSED)
 		memcpy(dst, target, len);
 		dst += len;
 	    }
-	    data += (chunk - 1);
+	    data += ((size_t) chunk - 1);
 #else
 	    /* sizeof(W32_CHAR) == 1 */
 

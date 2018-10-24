@@ -3,7 +3,7 @@
  *
  *	written 11-feb-86 by Daniel Lawrence
  *
- * $Id: bind.c,v 1.376 2018/10/21 19:29:04 tom Exp $
+ * $Id: bind.c,v 1.378 2018/10/24 00:14:57 tom Exp $
  */
 
 #include	"estruct.h"
@@ -197,15 +197,13 @@ static void
 dpy_namebst(BI_NODE * a GCC_UNUSED, int level GCC_UNUSED)
 {
 #if OPT_TRACE
-    char *indent = strmalloc(trace_indent(level, '.'));
     TRACE(("[%d]%s%p -> %s%s (%d)\n",
-	   level, indent,
+	   level, alloc_indent(level, '.'),
 	   (void *) a,
 	   (a->value.n_flags & NBST_READONLY)
 	   ? "*"
 	   : "",
 	   BI_KEY(a), a->balance));
-    free(indent);
 #endif
 }
 

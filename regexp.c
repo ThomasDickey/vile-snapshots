@@ -1,5 +1,5 @@
 /*
- * $Id: regexp.c,v 1.215 2018/09/24 22:22:32 tom Exp $
+ * $Id: regexp.c,v 1.216 2018/10/23 22:47:22 tom Exp $
  *
  * Copyright 2005-2015,2018 Thomas E. Dickey and Paul G. Fox
  *
@@ -2383,7 +2383,7 @@ regmatch(char *prog, int plevel)
 		    int j;
 
 		    if (no >= LOCAL_RPTS) {
-			rpts = typeallocn(char *, (unsigned) (no + 1));
+			rpts = typeallocn(char *, (size_t) no + 1);
 			if (rpts == 0)
 			    returnReg(0);
 		    } else {

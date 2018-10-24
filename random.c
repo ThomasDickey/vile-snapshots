@@ -2,7 +2,7 @@
  * This file contains the command processing functions for a number of random
  * commands. There is no functional grouping here, for sure.
  *
- * $Id: random.c,v 1.358 2018/10/21 19:20:42 tom Exp $
+ * $Id: random.c,v 1.359 2018/10/23 22:34:15 tom Exp $
  */
 
 #ifdef __BEOS__
@@ -1315,14 +1315,16 @@ cd_and_pwd(char *path)
 	     *
 	     * which is not usable later when "." changes.
 	     */
-	    getcwd(cwd, sizeof(cwd));
-
-	    /*
-	     * Store path in Unix format, since that's the external
-	     * presentation format used by the editor.
-	     */
-	    bsl_to_sl_inplace(cwd);
-	    store_recent_file_or_folder(cwd, FALSE);
+	    if (getcwd(cwd, sizeof(cwd))) {
+		/*
+		 * Store path in Unix format, since that's the external
+		 * presentation format used by the editor.
+		 */
+		bsl_to_sl_inplace(cwd);
+		store_recent_file_or_folder(cwd, FALSE);
+	    } else {
+		return FALSE;
+	    }
 	}
 #endif
 	return TRUE;

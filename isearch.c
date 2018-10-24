@@ -7,8 +7,7 @@
  *
  * original author: D. R. Banks 9-May-86
  *
- * $Header: /users/source/archives/vile.vcs/RCS/isearch.c,v 1.68 2015/01/19 00:57:09 tom Exp $
- *
+ * $Id: isearch.c,v 1.69 2018/10/23 00:39:12 tom Exp $
  */
 
 #include	"estruct.h"
@@ -45,13 +44,15 @@ scanmore(			/* search forward or back for a pattern */
     if (gregexp != 0) {
 	ignorecase = window_b_val(curwp, MDIGNCASE);
 
-	sts = scanner(gregexp,
-		      ((dir < 0)
-		       ? REVERSE
-		       : FORWARD),
-		      FALSE,
-		      (DOT.o == 0),
-		      (int *) 0);
+	if (curwp != 0) {
+	    sts = scanner(gregexp,
+			  ((dir < 0)
+			   ? REVERSE
+			   : FORWARD),
+			  FALSE,
+			  (DOT.o == 0),
+			  (int *) 0);
+	}
 	if (!sts) {
 	    kbd_alarm();	/* beep the terminal if we fail */
 	}
@@ -178,7 +179,8 @@ isearch(int f GCC_UNUSED, int n)
     int init_direction;		/* The initial search direction */
 
     /* Initialize starting conditions */
-
+    if (curwp == 0)
+	return FALSE;
     cmd_reexecute = -1;		/* We're not re-executing (yet?) */
     itb_init(&cmd_buff, EOS);	/* Init the command buffer */
     /* Save the old pattern string */
