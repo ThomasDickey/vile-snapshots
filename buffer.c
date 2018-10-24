@@ -5,7 +5,7 @@
  * keys. Like everyone else, they set hints
  * for the display system.
  *
- * $Id: buffer.c,v 1.367 2018/10/21 19:29:49 tom Exp $
+ * $Id: buffer.c,v 1.368 2018/10/24 00:46:52 tom Exp $
  */
 
 #include	"estruct.h"
@@ -330,6 +330,7 @@ MarkUnused(BUFFER *bp)
 static void
 FreeBuffer(BUFFER *bp)
 {
+    int done = FALSE;
     WINDOW *wp;
 
     beginDisplay();
@@ -357,7 +358,7 @@ FreeBuffer(BUFFER *bp)
 #if OPT_PERL || OPT_TCL || OPT_PLUGIN
 	api_free_private(bp->b_api_private);
 #endif
-	free((char *) bp);	/* Release buffer block */
+	done = TRUE;
     }
 
     for_each_window(wp) {
@@ -365,6 +366,8 @@ FreeBuffer(BUFFER *bp)
 	    wp->w_bufp = 0;
 	}
     }
+    if (done)
+	free((char *) bp);	/* Release buffer block */
 
     endofDisplay();
 }

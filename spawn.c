@@ -1,7 +1,7 @@
 /*	Spawn:	various DOS access commands
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.216 2016/07/13 09:03:29 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.217 2018/10/23 00:52:31 tom Exp $
  *
  */
 
@@ -1022,7 +1022,7 @@ set_envvar(int f GCC_UNUSED, int n GCC_UNUSED)
 		&& len_val != 0
 		&& (both = typeallocn(char, len_var + len_val + 1)) != 0) {
 		lsprintf(both, "%s=%s", tb_values(var), tb_values(val));
-		putenv(both);	/* this will leak.  i think it has to. */
+		rc = (putenv(both) == 0);	/* this will leak.  i think it has to. */
 	    } else {
 		rc = no_memory("set_envvar");
 	    }

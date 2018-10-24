@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 console API.
  *
- * $Id: ntconio.c,v 1.103 2018/10/22 08:23:12 tom Exp $
+ * $Id: ntconio.c,v 1.104 2018/10/22 22:13:16 tom Exp $
  */
 
 #include "estruct.h"
@@ -374,9 +374,14 @@ ntconio_beep(void)
 static void
 ntconio_putc(int ch)
 {
+#define maybe_flush() \
+    if (bufpos >= ((int) sizeof(linebuf) - 2)) \
+	scflush()
+
     if (ch >= ' ') {
 
 	/* This is an optimization for the most common case. */
+	maybe_flush();
 	linebuf[bufpos++] = (W32_CHAR) ch;
 
     } else {
@@ -394,11 +399,9 @@ ntconio_putc(int ch)
 	    break;
 
 	case '\t':
-	    scflush();
 	    do {
+		maybe_flush();
 		linebuf[bufpos++] = ' ';
-		if (bufpos >= (int) sizeof(linebuf))
-		    scflush();
 	    } while ((ccol + bufpos) % 8 != 0);
 	    break;
 
@@ -409,10 +412,11 @@ ntconio_putc(int ch)
 
 	case '\n':
 	    scflush();
-	    if (crow < csbi.dwMaximumWindowSize.Y - 1)
+	    if (crow < csbi.dwMaximumWindowSize.Y - 1) {
 		crow++;
-	    else
+	    } else {
 		ntconio_scroll(1, 0, csbi.dwMaximumWindowSize.Y - 1);
+	    }
 	    break;
 
 	default:
@@ -420,8 +424,7 @@ ntconio_putc(int ch)
 	    break;
 	}
     }
-    if (bufpos >= (int) sizeof(linebuf))
-	scflush();
+    maybe_flush();
 }
 
 static void

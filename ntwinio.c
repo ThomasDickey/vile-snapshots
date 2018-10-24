@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 screen API.
  *
- * $Id: ntwinio.c,v 1.212 2018/10/21 21:55:06 tom Exp $
+ * $Id: ntwinio.c,v 1.213 2018/10/24 01:09:13 tom Exp $
  * Written by T.E.Dickey for vile (october 1997).
  * -- improvements by Clark Morgan (see w32cbrd.c, w32pipe.c).
  */
@@ -3045,6 +3045,8 @@ gui_update_scrollbar(WINDOW *uwp)
 	    break;
 	i++;
     }
+    if (wp == 0)
+	return;
 
     TRACE(("i=%d, nscrollbars=%d\n", i, cur_win->nscrollbars));
     if (i >= cur_win->nscrollbars || (wp->w_flag & WFSBAR)) {

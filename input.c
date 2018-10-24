@@ -44,7 +44,7 @@
  *	tgetc_avail()     true if a key is avail from tgetc() or below.
  *	keystroke_avail() true if a key is avail from keystroke() or below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.365 2015/09/04 01:05:11 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.366 2018/10/23 22:50:16 tom Exp $
  *
  */
 
@@ -1747,7 +1747,7 @@ reallyEditMiniBuffer(TBUFF **buf,
 	    if (DOT.o > llength(DOT.l)) {
 		DOT.o = llength(DOT.l);
 	    }
-	    *cpos = (size_t) (DOT.o - margin);
+	    *cpos = ((size_t) DOT.o - (size_t) margin);
 
 	    /*
 	     * Copy the data back from the minibuffer into our working TBUFF.
@@ -1756,7 +1756,7 @@ reallyEditMiniBuffer(TBUFF **buf,
 	    if (llength(DOT.l) > margin) {
 		tb_bappend(buf,
 			   lvalue(DOT.l) + margin,
-			   (size_t) (llength(DOT.l) - margin));
+			   (size_t) llength(DOT.l) - (size_t) margin);
 	    }
 
 	    /*
@@ -1800,7 +1800,9 @@ reallyEditMiniBuffer(TBUFF **buf,
 	    } else if (llength(lp) >= margin) {
 		show1Char(c);
 		tb_init(buf, EOS);
-		tb_bappend(buf, lvalue(lp) + margin, (size_t) (llength(lp) - margin));
+		tb_bappend(buf,
+			   lvalue(lp) + margin,
+			   (size_t) llength(lp) - (size_t) margin);
 	    }
 	    *cpos += 1;
 	    edited = TRUE;

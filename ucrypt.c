@@ -2,7 +2,7 @@
  * Unix crypt(1)-style interface.
  * Written by T.E.Dickey for vile (March 1999).
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ucrypt.c,v 1.23 2015/09/07 01:03:37 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ucrypt.c,v 1.24 2018/10/24 09:16:43 tom Exp $
  */
 
 #include "estruct.h"
@@ -85,8 +85,10 @@ vl_setkey(int f GCC_UNUSED,
 	  int n GCC_UNUSED)
 {
     char result[NKEYLEN];
-    int rc = get_encryption_key(result, sizeof(result));
+    int rc;
 
+    memset(result, 0, sizeof(result));
+    rc = get_encryption_key(result, sizeof(result));
     if (rc == TRUE) {
 	TRACE(("set key for %s\n", curbp->b_bname));
 	(void) vl_strncpy(curbp->b_cryptkey, result, sizeof(curbp->b_cryptkey));

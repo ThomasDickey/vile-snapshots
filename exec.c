@@ -4,7 +4,7 @@
  *	original by Daniel Lawrence, but
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.363 2018/10/21 19:16:54 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.364 2018/10/23 22:46:06 tom Exp $
  *
  */
 
@@ -1713,7 +1713,7 @@ setup_macro_buffer(TBUFF *name, int bufnum, UINT flags)
 #if OPT_MACRO_ARGS
 		case TOK_LITSTR:
 		    if (cf->c_args == 0) {
-			cf->c_args = typeallocn(PARAM_INFO, limit + 1);
+			cf->c_args = typeallocn(PARAM_INFO, (size_t) limit + 1);
 			if (cf->c_args == 0) {
 			    free(cf);
 			    return no_memory("Allocating parameter info");

@@ -4,7 +4,7 @@
  * physical display screen the same as the virtual display screen. These
  * functions use hints that are left in the windows by the commands.
  *
- * $Id: display.c,v 1.577 2018/10/21 19:36:32 tom Exp $
+ * $Id: display.c,v 1.578 2018/10/23 00:24:07 tom Exp $
  */
 
 #include	"estruct.h"
@@ -4326,7 +4326,7 @@ update(int force /* force update past type ahead? */ )
     if (updated)
 	term.cursorvis(TRUE);
 #if OPT_ICURSOR
-    {
+    if (curwp != 0) {
 	static int old_insertmode = -1;
 
 	if (insertmode != old_insertmode) {

@@ -18,7 +18,7 @@
  * transferring the selection are not dealt with in this file.  Procedures
  * for dealing with the representation are maintained in this file.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.193 2018/10/21 19:21:40 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.194 2018/10/23 22:46:30 tom Exp $
  *
  */
 
@@ -1799,7 +1799,7 @@ attribute_from_filter(void)
 		if (fflinebuf[n] == CONTROL_A) {
 		    done = decode_attribute(fflinebuf, nbytes, n, &skip);
 		    if (done) {
-			n = (size_t) (done - 1);
+			n = ((size_t) done - 1);
 			set_mark_after(skip, 1);
 			if (apply_attribute())
 			    (void) attributeregion();
@@ -2091,7 +2091,7 @@ add_line_attrib(BUFFER *bp, REGION * rp, REGIONSHAPE rs, unsigned vattr,
 	/* Make sure the line attribute is long enough */
 	if (len < rp->r_end.o) {
 	    last = rp->r_end.o;
-	    safe_castrealloc(UCHAR, lp->l_attrs, (size_t) (last + 1));
+	    safe_castrealloc(UCHAR, lp->l_attrs, (size_t) last + 1);
 	    if (lp->l_attrs != NULL) {
 		for (i = len; i < rp->r_end.o; i++)
 		    lp->l_attrs[i] = 1;
@@ -2111,7 +2111,7 @@ add_line_attrib(BUFFER *bp, REGION * rp, REGIONSHAPE rs, unsigned vattr,
     } else {
 	/* Must allocate and initialize memory for the line attributes */
 	beginDisplay();
-	lp->l_attrs = castalloc(UCHAR, (size_t) (llength(lp) + 1));
+	lp->l_attrs = castalloc(UCHAR, (size_t) llength(lp) + 1);
 	if (lp->l_attrs != 0) {
 	    lp->l_attrs[llength(lp)] = 0;
 	    for (i = llength(lp) - 1; i >= 0; i--)

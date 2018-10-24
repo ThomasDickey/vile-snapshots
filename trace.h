@@ -1,8 +1,7 @@
 /*
  * debugging support -- tom dickey.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/trace.h,v 1.37 2011/11/03 23:52:23 tom Exp $
- *
+ * $Id: trace.h,v 1.39 2018/10/24 00:15:17 tom Exp $
  */
 #ifndef	_trace_h
 #define	_trace_h
@@ -59,7 +58,7 @@ extern	void	dopoison (void *oldp, unsigned long len);
 extern	void	fail_alloc (char *msg, char *ptr);
 extern	void	Trace ( const char *fmt, ... ) GCC_PRINTFLIKE(1,2);
 
-extern	char *	trace_indent(int level, int marker);
+extern	char *	alloc_indent(int level, int marker);
 
 extern char *   retrace_string (char *);
 extern const char * retrace_cstring (const char *);
