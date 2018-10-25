@@ -2,8 +2,7 @@
  *	matching lines, then for each such line, an action is performed.
  *	written for vile.  Copyright (c) 1990-1999 by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/globals.c,v 1.50 2011/04/06 22:28:01 tom Exp $
- *
+ * $Id: globals.c,v 1.51 2018/10/25 00:19:53 tom Exp $
  */
 
 #include	"estruct.h"
@@ -82,7 +81,7 @@ globber(int f GCC_UNUSED, int n GCC_UNUSED, int g_or_v)
     foundone = FALSE;
     before = vl_line_count(curbp);
     save_report = global_g_val(GVAL_REPORT);
-    for_ever {
+    while (lp != NULL) {
 	if (lp == win_head(wp)) {
 	    /* at the end -- only quit if we found no
 	       marks on the last pass through. otherwise,

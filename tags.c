@@ -5,10 +5,9 @@
  *	the cursor.
  *	written for vile.
  *
- * Copyright (c) 1990, 1995-2017 by Paul Fox and Thomas E. Dickey
+ * Copyright (c) 1990, 1995-2018 by Paul Fox and Thomas E. Dickey
  *
- * $Header: /users/source/archives/vile.vcs/RCS/tags.c,v 1.151 2017/11/11 21:22:32 tom Exp $
- *
+ * $Id: tags.c,v 1.153 2018/10/25 01:33:46 tom Exp $
  */
 #include "estruct.h"
 #include "edef.h"
@@ -46,8 +45,8 @@ TAGHITS {
     LINE *hit;			/* points to corresponding line in source-file */
 };
 
-static TAGHITS *tag_hits;
-static UNTAG *untaghead;
+static TAGHITS *tag_hits = 0;
+static UNTAG *untaghead = 0;
 static char tagname[NFILEN + 2];	/* +2 since we may add a tab later */
 
 #if OPT_SHOW_TAGS
@@ -379,7 +378,7 @@ tossuntag(void)
 {
     UNTAG *utp;
 
-    if (untaghead) {
+    if (untaghead != 0) {
 	utp = untaghead;
 	untaghead = utp->u_stklink;
 	free_untag(utp);

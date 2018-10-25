@@ -2,7 +2,7 @@
  * w32misc:  collection of unrelated, common win32 functions used by both
  *           the console and GUI flavors of the editor.
  *
- * $Id: w32misc.c,v 1.59 2018/10/21 19:23:28 tom Exp $
+ * $Id: w32misc.c,v 1.62 2018/10/25 00:25:01 tom Exp $
  */
 
 #include "estruct.h"
@@ -87,6 +87,7 @@ set_host(void)
     OSVERSIONINFO info;
 
     info.dwOSVersionInfoSize = sizeof(info);
+#pragma warning(suppress: 28159)
     GetVersionEx(&info);
     host_type = (info.dwPlatformId == VER_PLATFORM_WIN32_NT) ?
 	HOST_NT : HOST_95;
@@ -828,18 +829,20 @@ fmt_win32_error(ULONG errcode, char **buf, ULONG buflen)
     } else {
 	flags |= FORMAT_MESSAGE_ALLOCATE_BUFFER;
     }
-    FormatMessage(flags,
-		  NULL,
-		  errcode == W32_SYS_ERROR ? GetLastError() : errcode,
-		  MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),	/* dflt language */
-		  buffer,
-		  buflen,
-		  NULL);
-    if (*buf) {
-	char *formatted = asc_charstring(buffer);
-	vl_strncpy(*buf, formatted, buflen);
-	free(formatted);
-	free(buffer);
+    if (buffer != NULL) {
+	FormatMessage(flags,
+		      NULL,
+		      errcode == W32_SYS_ERROR ? GetLastError() : errcode,
+		      MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),	/* dflt language */
+		      buffer,
+		      buflen,
+		      NULL);
+	if (*buf) {
+	    char *formatted = asc_charstring(buffer);
+	    vl_strncpy(*buf, formatted, buflen);
+	    free(formatted);
+	    free(buffer);
+	}
     }
     return (*buf);
 }
@@ -1019,7 +1022,7 @@ w32_wdw_title(void)
 
     if (!buf) {
 	bufsize = 128;
-	buf = castalloc(W32_CHAR, bufsize);
+	buf = typeallocn(W32_CHAR, bufsize);
     }
     while (buf != 0) {
 #if DISP_NTWIN
@@ -1031,7 +1034,7 @@ w32_wdw_title(void)
 	    /* Enlarge buffer and try again. */
 
 	    bufsize *= 2;
-	    safe_castrealloc(W32_CHAR, buf, bufsize);
+	    safe_typereallocn(W32_CHAR, buf, bufsize);
 	} else {
 	    break;
 	}

@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 screen API.
  *
- * $Id: ntwinio.c,v 1.213 2018/10/24 01:09:13 tom Exp $
+ * $Id: ntwinio.c,v 1.214 2018/10/24 21:37:13 tom Exp $
  * Written by T.E.Dickey for vile (october 1997).
  * -- improvements by Clark Morgan (see w32cbrd.c, w32pipe.c).
  */
@@ -4136,12 +4136,20 @@ had_option(char **argv, int *argc, char *option)
     return result;
 }
 
+/* SAL macros were introduced long after Win32 API was defined */
+#ifndef _In_
+#define _In_
+#endif
+#ifndef _In_opt_
+#define _In_opt_
+#endif
+
 int WINAPI
 WinMain(
-	   HINSTANCE hInstance,
-	   HINSTANCE hPrevInstance,
-	   LPSTR lpCmdLine,
-	   int nCmdShow)
+	   _In_ HINSTANCE hInstance,
+	   _In_opt_ HINSTANCE hPrevInstance,
+	   _In_ LPSTR lpCmdLine,
+	   _In_ int nCmdShow)
 {
     int argc;
     int n;

@@ -2,7 +2,7 @@
  * w32cmd:  collection of functions that add Win32-specific editor
  *          features (modulo the clipboard interface) to [win]vile.
  *
- * $Id: w32cmd.c,v 1.55 2018/10/23 22:56:10 tom Exp $
+ * $Id: w32cmd.c,v 1.57 2018/10/25 00:14:01 tom Exp $
  */
 
 #include "estruct.h"
@@ -917,7 +917,7 @@ printer_abort_proc(HDC hPrintDC GCC_UNUSED, int errcode GCC_UNUSED)
     MSG msg;
 
     while (!printing_aborted && PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
-	if (hDlgCancelPrint || !IsDialogMessage(hDlgCancelPrint, &msg)) {
+	if (hDlgCancelPrint && !IsDialogMessage(hDlgCancelPrint, &msg)) {
 	    TranslateMessage(&msg);
 	    DispatchMessage(&msg);
 	}
@@ -1982,7 +1982,7 @@ winprint(int f GCC_UNUSED, int n GCC_UNUSED)
 	 * code below, "+32" conservatively accounts for line numbering
 	 * prefix space.
 	 */
-	if ((pparam.buf = typeallocn(char, mcpl + 32)) != NULL) {
+	if ((pparam.buf = typeallocn(char, (size_t) mcpl + 32)) != NULL) {
 
 	    /* *INDENT-EQLS* */
 	    pparam.xchar = xchar;
