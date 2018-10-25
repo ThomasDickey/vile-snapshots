@@ -1,6 +1,6 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20181021 (t)
+ 20181024 (t)
 	> Adam Denton:
 	+ fix a typo in tcap.h (Savannah #52872).
 	> Jeff Morriss:
@@ -8,7 +8,17 @@ Changes for vile 9.9 (released ??? ??? ?? ????)
 	  crypt(), to work with Fedora 28 which does not necessarily use a
 	  fixed-size buffer.
 	> Tom Dickey:
-	+ several fixes using Visual Studio 2017 code analysis.
+	+ several fixes using Visual Studio 2017 code analysis, including
+	  + w32cmd.c, correct if-statement for IsDialogMessage call
+	  + w32misc.c, correct size of allocation for buffer
+	  + ensure no leak on failed realloc 
+	  + modify casts to avoid truncation
+	  Some parts of the analysis are false positives; it appears to have
+	  problems in the flow analysis for reporting uninitialized values and
+	  dereferencing null pointers.  In particular, it does not understand
+	  the idiom for reallocating an array of types.
+	+ build-fix for Visual Studio 2012 and later: the "FILE" struct is
+	  opaque.
 	+ use registry value for PaddedBorderWidth in winvile to account for
 	  misleading results from GetSystemMetrics introduced by Vista.
 	+ modify makefile.wnt to allow build with Visual Studio 2012 and later,

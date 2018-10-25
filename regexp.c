@@ -1,5 +1,5 @@
 /*
- * $Id: regexp.c,v 1.216 2018/10/23 22:47:22 tom Exp $
+ * $Id: regexp.c,v 1.218 2018/10/25 00:38:07 tom Exp $
  *
  * Copyright 2005-2015,2018 Thomas E. Dickey and Paul G. Fox
  *
@@ -478,6 +478,7 @@ typedef enum {
 #define	OP(p)		((p)[0])
 #define	NEXT(p)		((unsigned)((CharOf((p)[1]) << 8) + CharOf((p)[2])))
 #define	OPSIZE(p)	((unsigned)((CharOf((p)[3]) << 8) + CharOf((p)[4])))
+#define	OPSIZE2(p)	(((size_t)(CharOf((p)[3])) << 8) + ((size_t)CharOf((p)[4])))
 #define	OPERAND(p)	((p) + OP_HDR)
 
 #define HI_BYTE(n)	(char)((n) >> 8)
@@ -965,9 +966,9 @@ regcomp(const char *exp_text, size_t exp_len, int magic)
 	    longest = NULL;
 	    len = 0;
 	    for (; scan != NULL; scan = regnext(scan))
-		if (OP(scan) == EXACTLY && OPSIZE(scan) >= len) {
+		if (OP(scan) == EXACTLY && OPSIZE2(scan) >= len) {
 		    longest = OPERAND(scan);
-		    len = OPSIZE(scan);
+		    len = OPSIZE2(scan);
 		}
 	    if (longest) {
 		r->regmust = (int) (longest - r->program);

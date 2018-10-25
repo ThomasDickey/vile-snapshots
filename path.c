@@ -2,9 +2,7 @@
  *		The routines in this file handle the conversion of pathname
  *		strings.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/path.c,v 1.181 2018/09/24 08:41:28 tom Exp $
- *
- *
+ * $Id: path.c,v 1.182 2018/10/25 00:28:47 tom Exp $
  */
 
 #include "estruct.h"
@@ -1837,6 +1835,7 @@ is_directory(const char *path)
 static int
 is_filemode(struct stat *sb)
 {
+#pragma warning(suppress: 6287)
     return (S_ISREG(sb->st_mode) || S_ISFIFO(sb->st_mode));
 }
 

@@ -1,5 +1,5 @@
 /*
- * $Id: vl_alloc.h,v 1.8 2018/10/21 19:16:43 tom Exp $
+ * $Id: vl_alloc.h,v 1.9 2018/10/25 00:49:15 tom Exp $
  *
  * Copyright 2005-2010,2018 Thomas E. Dickey and Paul G. Fox
  *
@@ -60,7 +60,7 @@
 	    ptr = safe_ptr; \
 	}
 
-#define	FreeAndNull(p)	if ((p) != 0)	{ free(p); p = 0; }
-#define	FreeIfNeeded(p)	if ((p) != 0)	free(p)
+#define	FreeAndNull(p)	do { if ((p) != 0) { free(p); p = 0; } } while (0)
+#define	FreeIfNeeded(p)	do { if ((p) != 0) free(p); } while (0)
 
 #endif /* VL_ALLOC_H_incl */
