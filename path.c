@@ -2,7 +2,7 @@
  *		The routines in this file handle the conversion of pathname
  *		strings.
  *
- * $Id: path.c,v 1.182 2018/10/25 00:28:47 tom Exp $
+ * $Id: path.c,v 1.183 2018/10/25 22:21:02 tom Exp $
  */
 
 #include "estruct.h"
@@ -1916,17 +1916,18 @@ DIR *
 opendir(char *fname)
 {
     DIR *od = 0;
-    char *buf = typeallocn(char, strlen(fname) + 10);
+    size_t len = strlen(fname);
+    char *buf = typeallocn(char, len + 10);
 
     if (buf != 0) {
 	(void) strcpy(buf, fname);
 
-	if (!strcmp(buf, ".")) {
+	if (!strcmp(fname, ".")) {
 	    /* if it's just a '.', replace with '*.*' */
-	    (void) strcpy(buf, "*.*");
+	    (void) strcpy(fname, "*.*");
 	} else {
 	    /* If the name ends with a slash, append '*.*' otherwise '\*.*' */
-	    if (is_slashc(buf[strlen(buf) - 1]))
+	    if (is_slashc(fname[len - 1]))
 		(void) strcat(buf, "*.*");
 	    else
 		(void) strcat(buf, "\\*.*");

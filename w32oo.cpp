@@ -8,7 +8,7 @@
  *   "FAILED" may not be used to test an OLE return code.  Use SUCCEEDED
  *   instead.
  *
- * $Id: w32oo.cpp,v 1.18 2018/10/22 23:04:39 tom Exp $
+ * $Id: w32oo.cpp,v 1.19 2018/10/25 23:04:11 tom Exp $
  */
 
 #include "w32vile.h"
@@ -134,6 +134,11 @@ BrowseCallbackProc(HWND hwnd, UINT uMsg, LPARAM lp, LPARAM pData)
                                       -1,
                                       0,
                                       0);
+            if (len == 0)
+            {
+                disp_win32_error(GetLastError(), hwnd);
+                break;
+            }
             wide_path = new WCHAR[len];
             MultiByteToWideChar(CP_ACP,
                                 MB_USEGLYPHCHARS|MB_PRECOMPOSED,
@@ -152,7 +157,7 @@ BrowseCallbackProc(HWND hwnd, UINT uMsg, LPARAM lp, LPARAM pData)
             hr = pShellFolder->ParseDisplayName(0,
                                                 0,
                                                 wide_path,
-                                                &len,
+                                                NULL,
                                                 &pidl,
                                                 0);
             if (! SUCCEEDED(hr)) {

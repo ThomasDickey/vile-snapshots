@@ -3,7 +3,7 @@
  * and mark.  Some functions are commands.  Some functions are just for
  * internal use.
  *
- * $Id: region.c,v 1.169 2018/10/23 22:24:40 tom Exp $
+ * $Id: region.c,v 1.170 2018/10/25 23:30:18 tom Exp $
  */
 
 #include	"estruct.h"
@@ -934,7 +934,11 @@ getregion(BUFFER *bp, REGION * rp)
     /*
      * If the buffer is completely empty, the region has to match.
      */
-    if (valid_buffer(bp) && is_empty_buf(bp)) {
+    if (!valid_buffer(bp)) {
+	mlforce("BUG: getregion: no buffer found");
+	memset(rp, 0, sizeof(*rp));
+	return2Code(FALSE);
+    } else if (is_empty_buf(bp)) {
 	memset(rp, 0, sizeof(*rp));
 	rp->r_orig.l = rp->r_end.l = buf_head(bp);
 	return2Code(TRUE);

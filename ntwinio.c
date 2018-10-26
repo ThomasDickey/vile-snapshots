@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 screen API.
  *
- * $Id: ntwinio.c,v 1.214 2018/10/24 21:37:13 tom Exp $
+ * $Id: ntwinio.c,v 1.215 2018/10/25 22:43:47 tom Exp $
  * Written by T.E.Dickey for vile (october 1997).
  * -- improvements by Clark Morgan (see w32cbrd.c, w32pipe.c).
  */
@@ -813,8 +813,10 @@ intercharacter(int cols)
 	static INT *result;
 	static unsigned length;
 
-	if (++cols >= (int) length)
-	    safe_typereallocn(INT, result, length = cols);
+	if (++cols >= (int) length) {
+	    length = 1 + ((cols * 3) / 2);
+	    safe_typereallocn(INT, result, length);
+	}
 	if (result != 0) {
 	    while (--cols >= 0)
 		result[cols] = nCharWidth;
@@ -1257,7 +1259,7 @@ set_font(void)
     choose.lpLogFont = &vile_logfont;
 
     hDC = get_DC_with_Font(GetMyFont(0));
-    GetTextFace(hDC, sizeof(vile_logfont.lfFaceName), vile_logfont.lfFaceName);
+    GetTextFace(hDC, TABLESIZE(vile_logfont.lfFaceName), vile_logfont.lfFaceName);
     ReleaseDC(cur_win->text_hwnd, hDC);
 
     vile_logfont.lfPitchAndFamily = FIXED_PITCH | FF_MODERN;
@@ -1375,7 +1377,7 @@ ntwinio_font_frm_str(const char *fontstr,
 
 	/* user didn't specify a face name, get current name. */
 
-	if ((GetTextFace(hdc, sizeof(current_face), current_face)) == 0) {
+	if ((GetTextFace(hdc, TABLESIZE(current_face), current_face)) == 0) {
 	    (void) last_w32_error(use_mb);
 	    rc = FALSE;
 	} else if ((result_face = asc_charstring(current_face)) == 0) {
@@ -1410,8 +1412,9 @@ ntwinio_font_frm_str(const char *fontstr,
 	     */
 	    char *mapper_face = 0;
 
-	    if ((GetTextFace(hdc, sizeof(font_mapper_face), font_mapper_face))
-		== 0) {
+	    if ((GetTextFace(hdc,
+			     TABLESIZE(font_mapper_face),
+			     font_mapper_face)) == 0) {
 		(void) last_w32_error(use_mb);
 		rc = FALSE;
 	    } else if ((mapper_face = asc_charstring(font_mapper_face)) == 0) {

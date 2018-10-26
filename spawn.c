@@ -1,8 +1,7 @@
 /*	Spawn:	various DOS access commands
  *		for MicroEMACS
  *
- * $Header: /users/source/archives/vile.vcs/RCS/spawn.c,v 1.217 2018/10/23 00:52:31 tom Exp $
- *
+ * $Id: spawn.c,v 1.218 2018/10/25 22:50:17 tom Exp $
  */
 
 #ifdef _WIN32

@@ -11,7 +11,7 @@
  *    Subsequent copies do not show this cursor.  On an NT host, this
  *    phenomenon does not occur.
  *
- * $Id: w32cbrd.c,v 1.42 2018/10/23 22:46:46 tom Exp $
+ * $Id: w32cbrd.c,v 1.43 2018/10/25 22:45:05 tom Exp $
  */
 
 #include "estruct.h"
@@ -302,17 +302,22 @@ cbrd_reg_copy(void)
 	copy = malloc(nbyte);
 	if (copy != 0) {
 	    UCHAR *tmp = copy;
-	    W32_CHAR *dst = GlobalLock(hClipMem);
-	    W32_CHAR *old = dst;
-	    for (kp = kbs[ukb].kbufh; kp; kp = kp->d_next) {
-		int size = KbSize(ukb, kp);
-		memcpy(tmp, kp->d_chunk, size);
-		tmp += size;
+	    W32_CHAR *dst;
+	    if ((dst = GlobalLock(hClipMem)) != NULL) {
+		W32_CHAR *old = dst;
+		for (kp = kbs[ukb].kbufh; kp; kp = kp->d_next) {
+		    int size = KbSize(ukb, kp);
+		    memcpy(tmp, kp->d_chunk, size);
+		    tmp += size;
+		}
+		cbrd_copy_and_xlate((int) (tmp - copy), &dst, copy);
+		*dst = '\0';
+		GlobalUnlock(hClipMem);
+		rc = setclipboard(hClipMem, (UINT) (dst - old), nline);
+	    } else {
+		mlforce("[Cannot copy]");
+		rc = FALSE;
 	    }
-	    cbrd_copy_and_xlate((int) (tmp - copy), &dst, copy);
-	    *dst = '\0';
-	    GlobalUnlock(hClipMem);
-	    rc = setclipboard(hClipMem, (UINT) (dst - old), nline);
 	    free(copy);
 	} else {
 	    mlforce("[Cannot copy]");
@@ -381,8 +386,8 @@ cbrdcpy_region(void)
     cpyarg.nbyte++;		/* Terminating nul */
 
     /* 2nd pass -- alloc storage for data and copy to clipboard. */
-    if ((hClipMem = GlobalAlloc(GMEM_MOVEABLE | GMEM_DDESHARE,
-				cpyarg.nbyte)) == NULL) {
+    hClipMem = GlobalAlloc(GMEM_MOVEABLE | GMEM_DDESHARE, cpyarg.nbyte);
+    if (hClipMem == NULL) {
 	mlforce(CLIPBOARD_COPY_MEM);
 	returnCode(FALSE);
     }

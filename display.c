@@ -4,7 +4,7 @@
  * physical display screen the same as the virtual display screen. These
  * functions use hints that are left in the windows by the commands.
  *
- * $Id: display.c,v 1.578 2018/10/23 00:24:07 tom Exp $
+ * $Id: display.c,v 1.579 2018/10/26 01:24:20 tom Exp $
  */
 
 #include	"estruct.h"
@@ -2728,8 +2728,16 @@ update_cursor_position(int *screenrowp, int *screencolp)
     int col, excess;
     int collimit;
     int moved = FALSE;
-    int nuadj = is_empty_buf(curwp->w_bufp) ? 0 : nu_width(curwp);
-    int liadj = (w_val(curwp, WMDLIST)) ? 1 : 0;
+    int nuadj;
+    int liadj;
+
+    if (curwp == 0) {
+	*screenrowp = 0;
+	*screencolp = 0;
+	return FALSE;
+    }
+    nuadj = is_empty_buf(curwp->w_bufp) ? 0 : nu_width(curwp);
+    liadj = (w_val(curwp, WMDLIST)) ? 1 : 0;
 
     TRACE2((T_CALLED "update_cursor_position\n"));
     /* find the current row */
