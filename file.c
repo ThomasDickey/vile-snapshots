@@ -5,7 +5,7 @@
  * reading and writing of the disk are
  * in "fileio.c".
  *
- * $Id: file.c,v 1.462 2018/10/24 00:59:26 tom Exp $
+ * $Id: file.c,v 1.463 2018/10/26 01:19:45 tom Exp $
  */
 
 #include "estruct.h"
@@ -106,6 +106,8 @@ PromptFileChanged(BUFFER *bp, char *fname, const char *question, int iswrite)
 
     remind = again = "";
 
+    if (bp == NULL || bp->b_fname == NULL)
+	return FALSE;
     if (isInternalName(bp->b_fname) || !bp->b_active)
 	return SORTOFTRUE;
 

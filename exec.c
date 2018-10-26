@@ -4,8 +4,7 @@
  *	original by Daniel Lawrence, but
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Header: /users/source/archives/vile.vcs/RCS/exec.c,v 1.364 2018/10/23 22:46:06 tom Exp $
- *
+ * $Id: exec.c,v 1.365 2018/10/25 22:50:17 tom Exp $
  */
 
 #include "estruct.h"

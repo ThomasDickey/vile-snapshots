@@ -2,7 +2,7 @@
  * Unix crypt(1)-style interface.
  * Written by T.E.Dickey for vile (March 1999).
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ucrypt.c,v 1.24 2018/10/24 09:16:43 tom Exp $
+ * $Id: ucrypt.c,v 1.25 2018/10/25 22:50:17 tom Exp $
  */
 
 #include "estruct.h"

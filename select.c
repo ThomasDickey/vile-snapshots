@@ -18,8 +18,7 @@
  * transferring the selection are not dealt with in this file.  Procedures
  * for dealing with the representation are maintained in this file.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/select.c,v 1.194 2018/10/23 22:46:30 tom Exp $
- *
+ * $Id: select.c,v 1.195 2018/10/25 22:50:17 tom Exp $
  */
 
 #include	"estruct.h"

@@ -10,8 +10,7 @@
  * editing must be being displayed, which means that "b_nwnd" is non zero,
  * which means that the dot and mark values in the buffer headers are nonsense.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/line.c,v 1.233 2018/10/23 22:46:23 tom Exp $
- *
+ * $Id: line.c,v 1.234 2018/10/25 22:50:17 tom Exp $
  */
 
 /* #define POISON */

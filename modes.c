@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Id: modes.c,v 1.454 2018/10/23 01:12:35 tom Exp $
+ * $Id: modes.c,v 1.456 2018/10/26 00:51:25 tom Exp $
  */
 
 #include <estruct.h>
@@ -5088,16 +5088,16 @@ update_scheme_choices(void)
 {
     UINT n;
 
-    if (my_schemes != 0) {
+    if (my_schemes != NULL) {
 	beginDisplay();
-	if (my_scheme_choices != 0) {
+	if (my_scheme_choices != NULL) {
 	    safe_typereallocn(FSM_CHOICES, my_scheme_choices, num_schemes);
 	} else {
 	    my_scheme_choices = typeallocn(FSM_CHOICES, num_schemes);
 	}
 	endofDisplay();
 
-	if (my_scheme_choices != 0) {
+	if (my_scheme_choices != NULL) {
 	    for (n = 0; n < num_schemes; n++) {
 		my_scheme_choices[n].choice_name = my_schemes[n].name;
 		my_scheme_choices[n].choice_code = (int) my_schemes[n].code;
@@ -5165,19 +5165,22 @@ free_scheme(char *name)
     if (strcmp(name, s_default)
 	&& (p = find_scheme(name)) != 0) {
 	UINT code = p->code;
+	PALETTES tofree = *p;
 
 	TRACE(("free_scheme(%s)\n", name));
-
-	beginDisplay();
-	free(p->name);
-	if (p->list != 0)
-	    free(p->list);
-	endofDisplay();
 
 	while (p->name != 0) {
 	    p[0] = p[1];
 	    p++;
 	}
+	p->name = 0;
+
+	beginDisplay();
+	free(tofree.name);
+	if (tofree.list != 0)
+	    free(tofree.list);
+	endofDisplay();
+
 	num_schemes--;
 	update_scheme_choices();
 

@@ -2,7 +2,7 @@
  * w32cmd:  collection of functions that add Win32-specific editor
  *          features (modulo the clipboard interface) to [win]vile.
  *
- * $Id: w32cmd.c,v 1.57 2018/10/25 00:14:01 tom Exp $
+ * $Id: w32cmd.c,v 1.58 2018/10/25 22:45:25 tom Exp $
  */
 
 #include "estruct.h"
@@ -1699,7 +1699,7 @@ get_printing_font(HDC hdc, HWND hwnd)
 
 		sprintf(msg,
 			"Fontmapper selected proportional printing font (%s), aborting...",
-			font_mapper_face);
+			asc_charstring(font_mapper_face));
 		w32_message_box(hwnd, msg, MB_ICONSTOP | MB_OK);
 	    } else if ((mapper_face = asc_charstring(font_mapper_face)) != 0) {
 
@@ -1827,7 +1827,8 @@ winprint(int f GCC_UNUSED, int n GCC_UNUSED)
 	}
 	if ((pdm_setup = GlobalLock(pgsetup->hDevMode)) != 0) {
 	    nbytes = pdm_setup->dmSize + pdm_setup->dmDriverExtra;
-	    if ((pd->hDevMode = GlobalAlloc(GMEM_MOVEABLE, nbytes)) == NULL) {
+	    pd->hDevMode = GlobalAlloc(GMEM_MOVEABLE, nbytes);
+	    if (pd->hDevMode == NULL) {
 		GlobalUnlock(pgsetup->hDevMode);
 		returnCode(no_memory("winprint"));
 	    }
@@ -2063,7 +2064,8 @@ winpg_setup(int f GCC_UNUSED, int n GCC_UNUSED)
 	    }
 	    if ((pdm_print = GlobalLock(pd->hDevMode)) != 0) {
 		nbytes = pdm_print->dmSize + pdm_print->dmDriverExtra;
-		if ((pgsetup->hDevMode = GlobalAlloc(GMEM_MOVEABLE, nbytes)) == NULL) {
+		pgsetup->hDevMode = GlobalAlloc(GMEM_MOVEABLE, nbytes);
+		if (pgsetup->hDevMode == NULL) {
 		    GlobalUnlock(pd->hDevMode);
 		    returnCode(no_memory("winpg_setup"));
 		}

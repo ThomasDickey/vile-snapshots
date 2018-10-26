@@ -12,7 +12,7 @@
 */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/estruct.h,v 1.752 2018/10/21 19:33:39 tom Exp $
+ * $Id: estruct.h,v 1.753 2018/10/25 22:50:17 tom Exp $
  */
 
 #ifndef _estruct_h

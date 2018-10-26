@@ -2,8 +2,7 @@
  * Window management. Some of the functions are internal, and some are
  * attached to keys that the user actually types.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/window.c,v 1.128 2018/10/22 22:47:02 tom Exp $
- *
+ * $Id: window.c,v 1.129 2018/10/25 22:50:17 tom Exp $
  */
 
 #include	"estruct.h"

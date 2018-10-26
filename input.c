@@ -44,8 +44,7 @@
  *	tgetc_avail()     true if a key is avail from tgetc() or below.
  *	keystroke_avail() true if a key is avail from keystroke() or below.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/input.c,v 1.366 2018/10/23 22:50:16 tom Exp $
- *
+ * $Id: input.c,v 1.367 2018/10/25 22:50:17 tom Exp $
  */
 
 #include	"estruct.h"
