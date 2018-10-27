@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/fltstack.h,v 1.18 2016/12/05 00:34:21 tom Exp $
+ * $Id: fltstack.h,v 1.19 2018/10/27 11:16:47 tom Exp $
  * A simple stack for lex states
  */
 
@@ -38,10 +38,13 @@ static int stk_level = -1;
 #define FLT_STATE     FLTSTACK_THIS.state
 
 static void new_state(int);
-static void pop_state(void);
 static void push_state(int);
 static void begin_state(int);
 static void end_state(void);
+
+#ifndef UNUSED_POP_STATE
+static void pop_state(void);
+#endif
 
 #else
 
@@ -58,6 +61,7 @@ new_state(int code)
     cur_state = code;		/* antique lex's have no valid YYSTATE */
 }
 
+#ifndef UNUSED_POP_STATE
 static void
 pop_state(void)
 {
@@ -72,6 +76,7 @@ pop_state(void)
 	state = FLT_STATE;
     new_state(state);
 }
+#endif
 
 static void
 push_state(int state)

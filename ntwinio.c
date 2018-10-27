@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 screen API.
  *
- * $Id: ntwinio.c,v 1.215 2018/10/25 22:43:47 tom Exp $
+ * $Id: ntwinio.c,v 1.216 2018/10/27 00:58:47 tom Exp $
  * Written by T.E.Dickey for vile (october 1997).
  * -- improvements by Clark Morgan (see w32cbrd.c, w32pipe.c).
  */
@@ -3185,7 +3185,7 @@ ntwinio_getch(void)
     // Save the timer ID so we can kill it.
 
     DWORD thisclick;
-    DWORD keyboard_state;
+    DWORD keyboard_state = 0;
     int buttondown = FALSE;
     int sel_pending = FALSE;	/* Selection pending */
     MARK lmbdn_mark;		/* left mouse button down here */
