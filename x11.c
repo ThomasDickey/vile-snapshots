@@ -2,7 +2,7 @@
  *	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.388 2014/03/30 18:53:19 kev Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.389 2018/10/27 01:17:59 tom Exp $
  *
  */
 
@@ -75,16 +75,16 @@ static void x_touch(TextWindow tw, int sc, int sr, UINT ec, UINT er);
 static void x_own_selection(Atom selection);
 static Boolean x_get_selected_text(UCHAR ** datp, size_t *lenp);
 static void extend_selection(TextWindow tw, int nr, int nc, Bool wipe);
-static void x_process_event(Widget w, XtPointer unused, XEvent * ev,
+static void x_process_event(Widget w, XtPointer unused, XEvent *ev,
 			    Boolean *continue_to_dispatch);
-static void x_configure_window(Widget w, XtPointer unused, XEvent * ev,
+static void x_configure_window(Widget w, XtPointer unused, XEvent *ev,
 			       Boolean *continue_to_dispatch);
-static void x_change_focus(Widget w, XtPointer unused, XEvent * ev,
+static void x_change_focus(Widget w, XtPointer unused, XEvent *ev,
 			   Boolean *continue_to_dispatch);
 static void x_typahead_timeout(XtPointer flagp, XtIntervalId * id);
-static void x_key_press(Widget w, XtPointer unused, XEvent * ev,
+static void x_key_press(Widget w, XtPointer unused, XEvent *ev,
 			Boolean *continue_to_dispatch);
-static void x_wm_delwin(Widget w, XtPointer unused, XEvent * ev,
+static void x_wm_delwin(Widget w, XtPointer unused, XEvent *ev,
 			Boolean *continue_to_dispatch);
 static void x_start_autocolor_timer(void);
 static void x_autocolor_timeout(XtPointer flagp, XtIntervalId * id);
@@ -93,9 +93,9 @@ static void x_stop_autocolor_timer(void);
 static Boolean too_light_or_too_dark(Pixel pixel);
 #endif
 #if OPT_KEV_SCROLLBARS
-static Boolean alloc_shadows(Pixel pixel, Pixel * light, Pixel * dark);
+static Boolean alloc_shadows(Pixel pixel, Pixel *light, Pixel *dark);
 #endif
-static void configure_bar(Widget w, XEvent * event, String *params,
+static void configure_bar(Widget w, XEvent *event, String *params,
 			  Cardinal *num_params);
 static int check_scrollbar_allocs(void);
 static void kqinit(TextWindow tw);
@@ -105,11 +105,11 @@ static void kqadd(TextWindow tw, int c);
 static int kqpop(TextWindow tw);
 static void display_cursor(XtPointer client_data, XtIntervalId * idp);
 #if MOTIF_WIDGETS
-static void pane_button(Widget w, XtPointer unused, XEvent * ev,
+static void pane_button(Widget w, XtPointer unused, XEvent *ev,
 			Boolean *continue_to_dispatch);
 #endif /* MOTIF_WIDGETS */
 #if OPT_KEV_SCROLLBARS
-static void x_expose_scrollbar(Widget w, XtPointer unused, XEvent * ev,
+static void x_expose_scrollbar(Widget w, XtPointer unused, XEvent *ev,
 			       Boolean *continue_to_dispatch);
 #endif /* OPT_KEV_SCROLLBARS */
 #if OPT_KEV_DRAGGING
@@ -124,7 +124,7 @@ static int x_has_events(void);
 #else
 #define x_has_events() (XtAppPending(cur_win->app_context) & XtIMXEvent)
 #endif /* OPT_WORKING */
-static void evqadd(const XEvent * evp);
+static void evqadd(const XEvent *evp);
 
 #define	FONTNAME	"7x13"
 
@@ -314,7 +314,7 @@ JumpProc(Widget scrollbar GCC_UNUSED,
 static void
 grip_moved(Widget w GCC_UNUSED,
 	   XtPointer unused GCC_UNUSED,
-	   XEvent * ev GCC_UNUSED,
+	   XEvent *ev GCC_UNUSED,
 	   Boolean *continue_to_dispatch GCC_UNUSED)
 {
     int i;
@@ -816,7 +816,7 @@ update_thumb(int barnum, int newtop, int newlen)
 static void
 x_expose_scrollbar(Widget w,
 		   XtPointer unused GCC_UNUSED,
-		   XEvent * ev,
+		   XEvent *ev,
 		   Boolean *continue_to_dispatch GCC_UNUSED)
 {
     int i;
@@ -843,7 +843,7 @@ x_expose_scrollbar(Widget w,
 #if OPT_KEV_DRAGGING
 static void
 do_scroll(Widget w,
-	  XEvent * event,
+	  XEvent *event,
 	  String *params,
 	  Cardinal *num_params)
 {
@@ -972,7 +972,7 @@ repeat_scroll(XtPointer count,
 #if OPT_KEV_SCROLLBARS || OPT_XAW_SCROLLBARS
 static void
 resize_bar(Widget w,
-	   XEvent * event,
+	   XEvent *event,
 	   String *params,
 	   Cardinal *num_params)
 {
@@ -2866,7 +2866,7 @@ too_light_or_too_dark(Pixel pixel)
 
 #if OPT_KEV_SCROLLBARS
 static Boolean
-alloc_shadows(Pixel pixel, Pixel * light, Pixel * dark)
+alloc_shadows(Pixel pixel, Pixel *light, Pixel *dark)
 {
     XColor color;
     Colormap colormap;
@@ -3655,7 +3655,7 @@ GetSelectionTargets(void)
 }
 
 static void
-insert_selection(Atom * selection, char *value, size_t length)
+insert_selection(Atom *selection, char *value, size_t length)
 {
     int do_ins;
     char *s = NULL;		/* stifle warning */
@@ -3678,8 +3678,8 @@ insert_selection(Atom * selection, char *value, size_t length)
 static void
 x_get_selection(Widget w GCC_UNUSED,
 		XtPointer cldat,
-		Atom * selection,
-		Atom * target,
+		Atom *selection,
+		Atom *target,
 		XtPointer value,
 		ULONG * length,
 		int *format)
@@ -3861,9 +3861,9 @@ x_get_clipboard_text(UCHAR ** datp, size_t *lenp)
 /* ARGSUSED */
 static Boolean
 x_convert_selection(Widget w GCC_UNUSED,
-		    Atom * selection,
-		    Atom * target,
-		    Atom * type,
+		    Atom *selection,
+		    Atom *target,
+		    Atom *type,
 		    XtPointer *value,
 		    ULONG * length,
 		    int *format)
@@ -3943,7 +3943,7 @@ x_convert_selection(Widget w GCC_UNUSED,
 /* ARGSUSED */
 static void
 x_lose_selection(Widget w GCC_UNUSED,
-		 Atom * selection)
+		 Atom *selection)
 {
     if (IsPrimary(*selection)) {
 	cur_win->have_selection = False;
@@ -4004,10 +4004,11 @@ scroll_selection(XtPointer rowcol,
 
     row = (((long) rowcol) >> 16) & 0xffff;
     col = ((long) rowcol) & 0xffff;
-    if (row & 0x8000)
-	row |= -1 << 16;
-    if (col & 0x8000)
-	col |= -1 << 16;
+#define sign_extend16(n) \
+    	if ((n) & 0x8000) \
+		n = n | (int)((unsigned)(~0) << 16)
+    sign_extend16(row);
+    sign_extend16(col);
     extend_selection(cur_win, row, col, TRUE);
 }
 
@@ -4306,7 +4307,7 @@ compress_motion(XMotionEvent * ev)
 static void
 x_process_event(Widget w GCC_UNUSED,
 		XtPointer unused GCC_UNUSED,
-		XEvent * ev,
+		XEvent *ev,
 		Boolean *continue_to_dispatch GCC_UNUSED)
 {
     int sc, sr;
@@ -4470,7 +4471,7 @@ x_process_event(Widget w GCC_UNUSED,
 static void
 x_configure_window(Widget w GCC_UNUSED,
 		   XtPointer unused GCC_UNUSED,
-		   XEvent * ev,
+		   XEvent *ev,
 		   Boolean *continue_to_dispatch GCC_UNUSED)
 {
     int nr, nc;
@@ -4635,7 +4636,7 @@ check_scrollbar_allocs(void)
 
 static void
 configure_bar(Widget w,
-	      XEvent * event,
+	      XEvent *event,
 	      String *params,
 	      Cardinal *num_params)
 {
@@ -4682,7 +4683,7 @@ configure_bar(Widget w,
 static void
 pane_button(Widget w GCC_UNUSED,
 	    XtPointer unused GCC_UNUSED,
-	    XEvent * ev GCC_UNUSED,
+	    XEvent *ev GCC_UNUSED,
 	    Boolean *continue_to_dispatch GCC_UNUSED)
 {
     lookfor_sb_resize = TRUE;
@@ -4693,7 +4694,7 @@ pane_button(Widget w GCC_UNUSED,
 static void
 x_change_focus(Widget w GCC_UNUSED,
 	       XtPointer unused GCC_UNUSED,
-	       XEvent * ev,
+	       XEvent *ev,
 	       Boolean *continue_to_dispatch GCC_UNUSED)
 {
     static int got_focus_event = FALSE;
@@ -4738,7 +4739,7 @@ x_change_focus(Widget w GCC_UNUSED,
 static void
 x_wm_delwin(Widget w GCC_UNUSED,
 	    XtPointer unused GCC_UNUSED,
-	    XEvent * ev,
+	    XEvent *ev,
 	    Boolean *continue_to_dispatch GCC_UNUSED)
 {
     if (ev->type == ClientMessage
@@ -4899,7 +4900,7 @@ evqempty(void)
 }
 
 static void
-evqadd(const XEvent * evp)
+evqadd(const XEvent *evp)
 {
     struct eventqueue *newentry;
     newentry = typealloc(struct eventqueue);
@@ -4916,7 +4917,7 @@ evqadd(const XEvent * evp)
 }
 
 static void
-evqdel(XEvent * evp)
+evqdel(XEvent *evp)
 {
     struct eventqueue *delentry = evqhead;
     if (delentry == NULL)
@@ -5219,7 +5220,7 @@ x_typahead_timeout(XtPointer flagp, XtIntervalId * id GCC_UNUSED)
 static void
 x_key_press(Widget w GCC_UNUSED,
 	    XtPointer unused GCC_UNUSED,
-	    XEvent * ev,
+	    XEvent *ev,
 	    Boolean *continue_to_dispatch GCC_UNUSED)
 {
     char buffer[128];
@@ -5716,7 +5717,7 @@ x_autocolor_timeout(XtPointer data GCC_UNUSED, XtIntervalId * id GCC_UNUSED)
 	ev.window = cur_win->win;
 	ev.message_type = None;
 	ev.format = 8;
-	XSendEvent(dpy, cur_win->win, False, (long) 0, (XEvent *) & ev);
+	XSendEvent(dpy, cur_win->win, False, (long) 0, (XEvent *) &ev);
     }
 }
 

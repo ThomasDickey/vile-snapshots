@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Id: yamlfilt.l,v 1.2 2018/03/26 15:49:04 tom Exp $
+ * $Id: yamlfilt.l,v 1.3 2018/10/27 12:42:03 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of YAML program.
  *
@@ -12,6 +12,7 @@
  * This filter uses lex start-conditions NORMAL/WHITE to handle the latter.
  */
 
+#define UNUSED_POP_STATE
 #include <filters.h>
 
 DefineFilter(yaml);

@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Id: ps1-filt.l,v 1.13 2016/12/11 16:04:15 tom Exp $
+ * $Id: ps1-filt.l,v 1.14 2018/10/27 11:15:57 tom Exp $
  *
  * Filter to add vile "attribution" sequences to PowerShell scripts.
  * - T.Dickey
@@ -17,6 +17,7 @@
  * TODO: flag errors on other unterminated strings
  */
 
+#define UNUSED_POP_STATE
 #include <filters.h>
 #include <fltstack.h>
 

@@ -5,7 +5,7 @@
  * keys. Like everyone else, they set hints
  * for the display system.
  *
- * $Id: buffer.c,v 1.368 2018/10/24 00:46:52 tom Exp $
+ * $Id: buffer.c,v 1.369 2018/10/27 00:56:30 tom Exp $
  */
 
 #include	"estruct.h"
@@ -2315,7 +2315,7 @@ static int
 show_BufferList(BUFFER *bp GCC_UNUSED)
 {
     int status;
-    if ((status = (!updating_list++ != 0)) != FALSE) {
+    if ((status = ((!updating_list++) != 0)) != FALSE) {
 	this_bp = curbp;
 	that_bp = find_alt();
 	status = liststuff(BUFFERLIST_BufName, FALSE,

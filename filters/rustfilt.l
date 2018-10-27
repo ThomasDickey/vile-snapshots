@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Id: rustfilt.l,v 1.5 2018/03/27 00:59:34 tom Exp $
+ * $Id: rustfilt.l,v 1.6 2018/10/27 11:16:06 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of RUST program.
  *
@@ -14,6 +14,7 @@
  * have to be done explicitly in the lexer for each length.
  */
 
+#define UNUSED_POP_STATE
 #include <filters.h>
 
 DefineFilter(rust);
