@@ -1,10 +1,10 @@
 %pointer
-%s NORMAL
+%s NORMAL CNOTE PREPRO ATTRS
 
 %{
 
 /*
- * $Id: rustfilt.l,v 1.6 2018/10/27 11:16:06 tom Exp $
+ * $Id: rustfilt.l,v 1.11 2018/10/30 00:19:13 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of RUST program.
  *
@@ -14,7 +14,6 @@
  * have to be done explicitly in the lexer for each length.
  */
 
-#define UNUSED_POP_STATE
 #include <filters.h>
 
 DefineFilter(rust);
@@ -34,6 +33,7 @@ static char *String_attr;
 %}
 
 IDENT		[[:alpha:]_][[:alnum:]_]*
+MACRO		{IDENT}!
 ESC_STRING	([\\][0nrt'"\\]|([\\]x[[:xdigit:]]([[:xdigit:]])?))
 SSTRING		[']({ESC_STRING}|[^'\\])*[']
 DSTRING		["]({ESC_STRING}|[^"\r\n]|[\\][\r\n])*["]
@@ -45,23 +45,44 @@ FLOATING	(({DIGITS}+"."{DIGITS}*)|({DIGITS}?"."|{DIGITS}+))([e]([+-])?{DIGITS}+)
 
 %%
 
-^"#"[^\r\n]*	{ WriteToken(Preproc_attr); }
-"//"[^\r\n]*	{ WriteToken(Comment_attr); }
+<NORMAL>"#"("!")?"["	{ PushQuote(PREPRO, Preproc_attr); }
+<NORMAL>^"["{IDENT}"]"	{ WriteToken(Preproc_attr); /* section */ }
+<NORMAL>"//"[^\r\n]*	{ WriteToken(Comment_attr); }
 
-"b"{SSTRING}	|
-"b"{DSTRING}	|
-"br"{DSTRING}	|
-"br#"{RAW_STRING}"#"	|
-"br##"{RAW_STRING}"##"	|
-"br###"{RAW_STRING}"###"	|
-"br####"{RAW_STRING}"####"	|
-{DSTRING}	{ WriteToken(String_attr); }
+<PREPRO>{DSTRING}	{ flt_bfr_embed(yytext, yyleng, String_attr); }
+<PREPRO>"]"		{ PopQuote(); }
+<PREPRO>"("		{ flt_bfr_finish();
+			  PushQuote(ATTRS, "");
+			}
+<PREPRO>[ \t\r\n]	{ flt_bfr_embed(yytext, yyleng, ""); }
+<PREPRO>.		{ flt_bfr_append(yytext, yyleng); }
 
-{INTEGER}	|
-{FLOATING}	{ WriteToken(Number_attr); }
+<ATTRS>{DSTRING}	{ flt_bfr_embed(yytext, yyleng, String_attr); }
+<ATTRS>")"		{ PopQuote();
+			  flt_bfr_begin(Preproc_attr);
+			}
+<ATTRS>.		{ flt_bfr_append(yytext, yyleng); }
 
-{IDENT}		{ WriteToken(keyword_attr(yytext)); }
-.		{ ECHO; }
+<NORMAL>"/*"		{ PushQuote(CNOTE, Comment_attr); }
+<CNOTE>"*/"		{ PopQuote(); }
+<CNOTE>[\r\n]		{ flt_bfr_append(yytext, yyleng); }
+<CNOTE>.		{ flt_bfr_append(yytext, yyleng); }
+
+<NORMAL>"b"{SSTRING}	|
+<NORMAL>"b"{DSTRING}	|
+<NORMAL>"br"{DSTRING}	|
+<NORMAL>"br#"{RAW_STRING}"#"	|
+<NORMAL>"br##"{RAW_STRING}"##"	|
+<NORMAL>"br###"{RAW_STRING}"###"	|
+<NORMAL>"br####"{RAW_STRING}"####"	|
+<NORMAL>{DSTRING}	{ WriteToken(String_attr); }
+
+<NORMAL>{INTEGER}	|
+<NORMAL>{FLOATING}	{ WriteToken(Number_attr); }
+
+<NORMAL>{MACRO}		{ WriteToken(Ident2_attr); }
+<NORMAL>{IDENT}		{ WriteToken(keyword_attr(yytext)); }
+<NORMAL>.		{ ECHO; }
 
 %%
 
