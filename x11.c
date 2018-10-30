@@ -2,7 +2,7 @@
  *	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.389 2018/10/27 01:17:59 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.390 2018/10/30 01:09:19 Wayne.Cuddy Exp $
  *
  */
 
@@ -1819,7 +1819,7 @@ x_load_icon(void)
 	    hints = XAllocWMHints();
 
 	if (hints) {
-	    hints->flags = IconPixmapHint;
+	    hints->flags |= IconPixmapHint;
 	    hints->icon_pixmap = myIcon;
 	    if (myMask) {
 		hints->flags |= IconMaskHint;
