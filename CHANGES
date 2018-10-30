@@ -7,6 +7,9 @@ Changes for vile 9.9 (released ??? ??? ?? ????)
 	+ use strncpy() rather than memcpy() for copying hashed key from
 	  crypt(), to work with Fedora 28 which does not necessarily use a
 	  fixed-size buffer.
+	> Wayne Cuddy:
+	+ modify x11.c to avoid clearing the window manager flags that control
+	  focus behavior, to work with ctwm.
 	> Tom Dickey:
 	+ several fixes using Visual Studio 2017 code analysis, including
 	  + w32cmd.c, correct if-statement for IsDialogMessage call
