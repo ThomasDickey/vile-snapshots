@@ -1,1 +1,4 @@
 /usr/share/doc/vile-common /usr/share/doc/vile
+/usr/share/man/man1/vile.1.gz /usr/share/man/man1/vile-to-html.1.gz
+/usr/share/man/man1/vile.1.gz /usr/share/man/man1/vile-libdir-path.1.gz
+/usr/share/man/man1/vile.1.gz /usr/share/man/man1/vile-pager.1.gz

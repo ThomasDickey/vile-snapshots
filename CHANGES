@@ -1,6 +1,6 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20181029 (t)
+ 20181031 (t)
 	> Adam Denton:
 	+ fix a typo in tcap.h (Savannah #52872).
 	> Jeff Morriss:
@@ -11,6 +11,12 @@ Changes for vile 9.9 (released ??? ??? ?? ????)
 	+ modify x11.c to avoid clearing the window manager flags that control
 	  focus behavior, to work with ctwm.
 	> Tom Dickey:
+	+ create symbolic links for the utility program's manual pages, point
+	  to the base manpage.
+	+ document the utility programs and scripts which normally are packaged
+	  in the manual page.
+	+ if $VILE_LIBDIR_PATH is set, prefer that in vile-libdir-path
+	+ corrected glob expression for vile-libdir-path
 	+ several fixes using Visual Studio 2017 code analysis, including
 	  + w32cmd.c, correct if-statement for IsDialogMessage call
 	  + w32misc.c, correct size of allocation for buffer

@@ -2,7 +2,7 @@
 <HTML>
 <HEAD>
 <meta http-equiv="Content-Type" content="text/html; charset=us-ascii">
-<meta name="generator" content="Manpage converted by man2html - see http://invisible-island.net/scripts/readme.html#others_scripts">
+<meta name="generator" content="Manpage converted by man2html - see https://invisible-island.net/scripts/readme.html#others_scripts">
 <TITLE>vile(1)</TITLE>
 </HEAD>
 <BODY>
@@ -27,7 +27,7 @@
        <I>lxvile</I>  is a wrapper around <I>xvile</I> which invokes the latter program with
        a font chosen to match the current locale environment.
 
-</PRE><H2 id="h2-SPIRIT-toc"><a name="h2-SPIRIT">SPIRIT</a></H2><PRE>       <I>vile</I> retains the "finger-feel", if you will, of <I>vi</I>,  while  adding  the
+</PRE><H2 id="h2-SPIRIT-toc"><a name="h2-SPIRIT">SPIRIT</a></H2><PRE>       <I>vile</I> retains the "finger-feel" if you will, of  <I>vi</I>,  while  adding  the
        multiple  buffer  and  multiple window features of emacs and other edi-
        tors.  It is definitely not a vi clone, in that some substantial  stuff
        is  missing,  and  the  screen doesn't look quite the same.  The things
@@ -65,8 +65,8 @@
 
                  vile -c'123' -c'10*goto-col' filename
 
-              to put the cursor on column 10 of line 123.  The  "*"  (or  ":")
-              separates  the repeat count (used by <I>goto-col</I>) from the line- or
+              to put the cursor on column 10 of line 123.  The "*"(or ":" sep-
+              arates  the  repeat  count  (used by <I>goto-col</I>) from the line- or
               range-specification used by line-oriented commands.
 
        @<I>cmdfile</I>
@@ -79,7 +79,7 @@
 
        -e | -E
               Invokes  <I>vile</I>  in  "noview"  mode - changes are permitted to any
-              buffer while in this mode (see "-v").
+              buffer while in this mode (see "-v".
 
        -F     will run the syntax filter that applies to each filename on  the
               command-line, and write the attributed text to the standard out-
@@ -105,7 +105,7 @@
 
        -s <I>pattern</I> | -S <I>pattern</I>
               In the first file, <I>vile</I> will execute an initial search  for  the
-              given pattern.  This is not the same as "-c/<I>pattern</I>", since that
+              given  pattern.  This is not the same as "-c/<I>pattern</I>" since that
               positions the cursor to the line  matching  the  pattern.   This
               option positions the cursor within the line.
 
@@ -122,7 +122,7 @@
               nodos mode.
 
        -v     Invokes <I>vile</I> in "view" mode - no changes are  permitted  to  any
-              buffer while in this mode (see "-e").
+              buffer while in this mode (see "-e".
 
        -V     <I>vile</I> will report its version number.
 
@@ -135,24 +135,24 @@
               tion from the command line.  See <I>vile.hlp</I> for details.
 
 </PRE><H3 id="h3-X11-OPTIONS-toc"><a name="h3-X11-OPTIONS">X11 OPTIONS</a></H3><PRE>       <I>xvile</I>-specific  command-line options are detailed in the help file (see
-       "Standard X command line arguments").  The standard  ones  (e.g.  -dis-
+       "Standard X command line arguments".  The standard  ones  (e.g.,  -dis-
        play, -fn, -geometry, -name, etc.) are all supported.
 
 </PRE><H3 id="h3-OBSOLETE-OPTIONS-toc"><a name="h3-OBSOLETE-OPTIONS">OBSOLETE OPTIONS</a></H3><PRE>       vile  recognizes  some options which duplicate the functionality of the
        POSIX "-c" option:
 
        +<I>command</I>
-              This has the same effect as "-c<I>command</I>".
+              This has the same effect as "-c<I>command</I>"
 
        -g <I>NNN</I> | -G <I>NNN</I>
-              This has the same effect as "-c<I>NNN</I>".  <I>vile</I> will begin  the  ses-
-              sion on the first file jumping to the given line number <I>NNN</I>.
+              This has the same effect as "-c<I>NNN</I>" <I>vile</I> will begin the  session
+              on the first file jumping to the given line number <I>NNN</I>.
 
 </PRE><H2 id="h2-INVOCATION-toc"><a name="h2-INVOCATION">INVOCATION</a></H2><PRE>       vile  will  edit  the files specified on the command line.  If no files
        are specified, and standard input is not connected to a terminal,  then
        vile  will  bring  up  a buffer containing the output of the pipe it is
        connected to, and will re-open /dev/tty for  commands.   Files  (except
-       for the first) are not actually read into buffers until "visited".  All
+       for  the  first) are not actually read into buffers until "visited" All
        buffers are kept in memory: machines with not much memory or swap space
        may have trouble with this.
 
@@ -165,64 +165,107 @@
 
 </PRE><H2 id="h2-COMMANDS-toc"><a name="h2-COMMANDS">COMMANDS</a></H2><PRE>       Please refer to the help available within <I>vile</I> for  <I>vile</I>-specific  com-
        mands.   (That  document, however, assumes familiarity with vi.)  Short
-       descriptions of each <I>vile</I> command may be obtained with the  ":describe-
-       function"  and  ":describe-key"  commands.   All commands may be listed
-       with ":show-commands".
+       descriptions  of  each  <I>vile</I>  command  may   be   obtained   with   the
+       ":describe-function" and ":describe-key" commands.  All commands may be
+       listed with ":show-commands"
 
        Additional documentation on writing macros using the internal scripting
        language can be found in the file <I>macros.doc</I>, distributed with the vile
        source.
 
-</PRE><H2 id="h2-RELATED-PROGRAMS-toc"><a name="h2-RELATED-PROGRAMS">RELATED PROGRAMS</a></H2><PRE>       <I>vile</I> may also be built and installed as <I>xvile</I>, in which case it behaves
+</PRE><H2 id="h2-RELATED-PROGRAMS-toc"><a name="h2-RELATED-PROGRAMS">RELATED PROGRAMS</a></H2><PRE></PRE><H3 id="h3-xvile-toc"><a name="h3-xvile">xvile</a></H3><PRE>       <I>vile</I> may also be built and installed as <I>xvile</I>, in which case it behaves
        as  a  native X Windows application, with scrollbars, better mouse sup-
-       port, etc.  The help file has more information on this.
+       port, etc.
 
-       There is a program distributed with the vile source  which  is  usually
-       installed  as  <I>vile-manfilt</I>.  (Two versions of the source for <I>vile-man-</I>
-       <I>filt</I> are available, in C (manfilt.c) and in Perl (manfilt.pl).)  It may
-       be  used  in conjunction with <I>vile</I> or <I>xvile</I> (with the help of the macro
-       in the file manpage.rc) to filter and view system manual pages.   <I>xvile</I>
-       will even (with your font set properly) display certain portions of the
-       manual page text in bold or italics as appropriate.  See the help  file
-       for details.
+       The help file has more information on this in the section <I>X</I> <I>Window</I> <I>Sys-</I>
+       <I>tem</I> <I>specifics</I>.
 
-       Likewise,  there are several language filters, e.g., <I>vile-c-filt</I> for C,
-       which can embolden, underline, or perform coloring  on  program  source
-       code.  Again, see the help file for more information.
+</PRE><H3 id="h3-vile-manfilt-toc"><a name="h3-vile-manfilt">vile-manfilt</a></H3><PRE>       There  is  a  program distributed with the vile source which is usually
+       installed as <I>vile-manfilt</I>.  It may be used in conjunction with <I>vile</I>  or
+       <I>xvile</I>  (with  the  help of the macros in the file manpage.rc) to filter
+       and view system manual pages.  <I>xvile</I> will  even  (with  your  font  set
+       properly)  display  certain portions of the manual page text in bold or
+       italics as appropriate.
 
-</PRE><H2 id="h2-ENCRYPTION-toc"><a name="h2-ENCRYPTION">ENCRYPTION</a></H2><PRE>       The  program  <I>vile-crypt</I> can be used to encrypt/decrypt files using the
-       same algorithm as <I>microEmac</I>'s internal crypt algorithm.  This  program,
-       which  uses public domain code written by by Dana Hoggatt, is no longer
+       See the help file section on <I>Filtering</I> <I>"man"</I> <I>pages</I> for details.
+
+</PRE><H3 id="h3-Syntax-filters-toc"><a name="h3-Syntax-filters">Syntax filters</a></H3><PRE>       Likewise, there are several language filters, e.g., <I>vile-c-filt</I> for  C,
+       which  can  embolden,  underline, or perform coloring on program source
+       code.
+
+       Again, see the help file section on <I>Syntax</I> <I>Coloring</I> for  more  informa-
+       tion.
+
+</PRE><H2 id="h2-UTILITY-SCRIPTS-toc"><a name="h2-UTILITY-SCRIPTS">UTILITY SCRIPTS</a></H2><PRE>       Vile  is not simply an interactive program.  Its macro language and use
+       of environment variables lets it be useful in scripting.
+
+</PRE><H3 id="h3-vile-libdir-path-toc"><a name="h3-vile-libdir-path">vile-libdir-path</a></H3><PRE>       The syntax filters and <I>vile-manfilt</I> may  not  be  installed  where  you
+       would  execute them in your <B>PATH</B>.  The <I>vile-libdir-path</I> script looks in
+       the usual places and  prints  an  updated  <B>PATH</B>  variable  which  other
+       scripts can use when executing these programs.
+
+</PRE><H3 id="h3-vile-pager-toc"><a name="h3-vile-pager">vile-pager</a></H3><PRE>       Vile  can  be used as a <I>pager</I> (typical examples include <I>more</I> and <I>less</I>).
+       This script uses <I>vile-manfilt</I> to preprocess a file which  is  piped  to
+       vile, adding markup which vile displays properly.
+
+       Unlike  a  typical  pager,  <I>vile-pager</I>  handles multi-line color escape
+       sequences, and multiple levels of overstrikes.  But  unlike  a  typical
+       pager,  <I>vile-pager</I>  expects the pipe to be closed before it starts dis-
+       playing.
+
+</PRE><H3 id="h3-vile-to-html-toc"><a name="h3-vile-to-html">vile-to-html</a></H3><PRE>       Vile's "-F" option makes it act like a smart interface to  the  collec-
+       tion  of  syntax  filters.   But its output uses vile's internal markup
+       rather than standard escape sequences.  Vile's utilities  include  pro-
+       grams which translate that markup into different formats:
+
+       <I>atr2ansi</I>
+              converts the markup to ANSI escape sequences.
+
+       <I>atr2html</I>
+              converts the markup to HTML (with color).
+
+       <I>atr2text</I>
+              converts the markup to plain text.
+
+       The  <I>vile-to-html</I> script uses <I>atr2html</I> to convert a text file into HTML
+       using color.
+
+</PRE><H2 id="h2-ENCRYPTION-toc"><a name="h2-ENCRYPTION">ENCRYPTION</a></H2><PRE>       The program <I>vile-crypt</I> can be used to encrypt/decrypt files  using  the
+       same  algorithm as <I>microEmac</I>'s internal crypt algorithm.  This program,
+       which uses public domain code written by Dana  Hoggatt,  is  no  longer
        used in vile, though it is provided for compatibility.
 
-       <I>vile</I> currently uses the <I>crypt(3)</I>  function  for  encryption/decryption,
-       which  is  available  on  most Unix systems.  This ensures that <I>vile</I> is
-       able to read and write files compatibly with vi  (but  not  vim,  which
-       uses  an  different  algorithm  derived  from  info-zip).  The editor's
+       <I>vile</I>  currently  uses  the <I>crypt(3)</I> function for encryption/decryption,
+       which is available on most Unix systems.  This  ensures  that  <I>vile</I>  is
+       able  to  read  and  write files compatibly with vi (but not vim, which
+       uses an different  algorithm  derived  from  info-zip).   The  editor's
        encryption/decryption key can be specified on the command line with "-k
-       key".   Text  to be encrypted can be specified as filenames on the com-
-       mand line, or provided as the standard input.  On systems with  a  get-
-       pass()  library  routine,  the user will be prompted for the encryption
-       key if it is not given on the command  line.   To  accommodate  systems
-       (such  as  linux) where the getpass() library routine is not interrupt-
-       ible from the keyboard, entering a crypt-key password which ends in  ^C
-       will cause the program to quit.  See the help file for more information
-       on <I>vile</I>'s encryption support, including a discussion of a collection of
-       macros that interface with GNU's gpg package.
+       key" Text to be encrypted can be specified as filenames on the  command
+       line, or provided as the standard input.
+
+       On  systems with a getpass() library routine, the user will be prompted
+       for the encryption key if it is not given  on  the  command  line.   To
+       accommodate systems (such as linux) where the getpass() library routine
+       is not interruptible from the keyboard, entering a  crypt-key  password
+       which ends in ^C will cause the program to quit.
+
+       See  the  help  file for more information on <I>vile</I>'s encryption support,
+       including a discussion of a collection of macros  that  interface  with
+       GNU's gpg package.
 
 </PRE><H2 id="h2-ENVIRONMENT-VARIABLES-toc"><a name="h2-ENVIRONMENT-VARIABLES">ENVIRONMENT VARIABLES</a></H2><PRE>       <B>VILEINIT</B>
               Editor initialization commands in lieu of a startup file.  These
               are copied into <I>[vileinit]</I>, and executed.
 
        <B>VILE_HELP_FILE</B>
-              Override the name of the help file, normally ``vile.hlp''.
+              Override the name of the help file, normally "vile.hlp".
 
        <B>VILE_LIBDIR_PATH</B>
               Augment $PATH when searching for a filter program.
 
        <B>VILE_STARTUP_FILE</B>
-              Override the name of the startup file, normally ``.vilerc''  (or
-              ``vile.rc'' for non-UNIX systems).
+              Override the name of the startup file,  normally  ".vilerc"  (or
+              "vile.rc" for non-UNIX systems).
 
        <B>VILE_STARTUP_PATH</B>
               Override the search path for the startup and help files.
@@ -238,9 +281,9 @@
 </PRE><H2 id="h2-AUTHORS-toc"><a name="h2-AUTHORS">AUTHORS</a></H2><PRE>       <I>vile</I> was created by Paul Fox, Tom Dickey, and Kevin Buettner.
 
 </PRE><H2 id="h2-BUGS-toc"><a name="h2-BUGS">BUGS</a></H2><PRE>       The  "<B>VI</B> <B>L</B>ike <B>E</B>macs" joke isn't really funny.  It only sounds that way.
-       :-)   Other suspicious behavior should  be  reported  via  the  project
-       mailing list, or via the web-based bug reporting system.  Both of these
-       are available here:
+       :-) Other suspicious behavior should be reported via the project  mail-
+       ing list, or via the web-based bug reporting system.  Both of these are
+       available here:
 
        https://savannah.nongnu.org/projects/vile
 
@@ -262,7 +305,20 @@
 <li><a href="#h2-INVOCATION-toc">INVOCATION</a></li>
 <li><a href="#h2-STARTUP-toc">STARTUP</a></li>
 <li><a href="#h2-COMMANDS-toc">COMMANDS</a></li>
-<li><a href="#h2-RELATED-PROGRAMS-toc">RELATED PROGRAMS</a></li>
+<li><a href="#h2-RELATED-PROGRAMS-toc">RELATED PROGRAMS</a>
+<ul>
+<li><a href="#h3-xvile-toc">xvile</a></li>
+<li><a href="#h3-vile-manfilt-toc">vile-manfilt</a></li>
+<li><a href="#h3-Syntax-filters-toc">Syntax filters</a></li>
+</ul>
+</li>
+<li><a href="#h2-UTILITY-SCRIPTS-toc">UTILITY SCRIPTS</a>
+<ul>
+<li><a href="#h3-vile-libdir-path-toc">vile-libdir-path</a></li>
+<li><a href="#h3-vile-pager-toc">vile-pager</a></li>
+<li><a href="#h3-vile-to-html-toc">vile-to-html</a></li>
+</ul>
+</li>
 <li><a href="#h2-ENCRYPTION-toc">ENCRYPTION</a></li>
 <li><a href="#h2-ENVIRONMENT-VARIABLES-toc">ENVIRONMENT VARIABLES</a></li>
 <li><a href="#h2-SEE-ALSO-toc">SEE ALSO</a></li>

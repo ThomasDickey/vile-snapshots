@@ -164,6 +164,9 @@ install-vile-stamp: build-vile-stamp
 
 	dh_movefiles $(verbose) -pvile-filters -pvile-common -pvile
 
+	# the manpage will be compressed, but the makefile made these:
+	rm -vf $(TMP)/usr/share/man/man1/vile-*.1
+
 	# ensure that all files have been moved from debian/tmp
 	test `find $(TMP) ! -type d | wc -l` -eq 0
 

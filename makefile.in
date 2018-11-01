@@ -20,7 +20,7 @@
 #
 # gnu autoconf support by kevin buettner, 5/94
 #
-# $Header: /users/source/archives/vile.vcs/RCS/makefile.in,v 1.277 2016/07/24 17:15:10 tom Exp $
+# $Id: makefile.in,v 1.284 2018/10/31 23:41:54 tom Exp $
 
 SHELL		= @SHELL@
 
@@ -258,6 +258,11 @@ PLAINDOCS = \
 	doc/visvile.doc \
 	vile.1 \
 	vile.hlp
+
+MAN_ALIAS = \
+	vile-libdir-path \
+	vile-pager \
+	vile-to-html
 
 # corresponding documentation
 HTMLDOCS =	\
@@ -523,7 +528,7 @@ install :: \
 	$(INSTALL_PROGRAM) $(PROGRAM) $(PATH_OF_ACTUAL)
 	@ECHO_CC@-$(SHELL) -c "if $(USE_SYMLINK) ; then \
 		cd $(BINDIR) ; \
-		rm -f $(LINK_TO_ACTUAL) ; \
+		$(RM) $(LINK_TO_ACTUAL) ; \
 		$(LN_S) $(NAME_OF_ACTUAL) $(LINK_TO_ACTUAL) ; \
 		echo '... created symbolic link:' ; \
 		ls -l $(NAME_OF_ACTUAL) $(LINK_TO_ACTUAL) ; \
@@ -534,7 +539,7 @@ install :: \
 	@ECHO_CC@chmod 755 $(PATH_OF_PAGER)
 	@ECHO_CC@-$(SHELL) -c "if $(USE_SYMLINK) ; then \
 		cd $(BINDIR); \
-		rm -f $(LINK_TO_PAGER) ; \
+		$(RM) $(LINK_TO_PAGER) ; \
 		$(LN_S) $(NAME_OF_PAGER) $(LINK_TO_PAGER) ; \
 		echo '... created symbolic link:' ; \
 		ls -l $(NAME_OF_PAGER) $(LINK_TO_PAGER) ; \
@@ -545,7 +550,7 @@ install :: \
 	@ECHO_CC@chmod 755 $(PATH_OF_2HTML)
 	@ECHO_CC@-$(SHELL) -c "if $(USE_SYMLINK) ; then \
 		cd $(BINDIR); \
-		rm -f $(LINK_TO_2HTML) ; \
+		$(RM) $(LINK_TO_2HTML) ; \
 		$(LN_S) $(NAME_OF_2HTML) $(LINK_TO_2HTML) ; \
 		echo '... created symbolic link:' ; \
 		ls -l $(NAME_OF_2HTML) $(LINK_TO_2HTML) ; \
@@ -556,7 +561,7 @@ install :: \
 	@ECHO_CC@chmod 755 $(PATH_OF_LIBDIR)
 	@ECHO_CC@-$(SHELL) -c "if $(USE_SYMLINK) ; then \
 		cd $(BINDIR); \
-		rm -f $(LINK_TO_LIBDIR) ; \
+		$(RM) $(LINK_TO_LIBDIR) ; \
 		$(LN_S) $(NAME_OF_LIBDIR) $(LINK_TO_LIBDIR) ; \
 		echo '... created symbolic link:' ; \
 		ls -l $(NAME_OF_LIBDIR) $(LINK_TO_LIBDIR) ; \
@@ -566,7 +571,32 @@ install :: \
 
 install-man \
 install :: $(MANDIR)
-	$(INSTALL_DATA)		$(srcdir)/vile.1 $(MANDIR)/$(TARGET).$(manext)
+	@echo "** installing $(NAME_OF_ACTUAL).$(manext)"
+	$(INSTALL_DATA)		$(srcdir)/vile.1 $(MANDIR)/$(NAME_OF_ACTUAL).$(manext)
+
+	@echo "** installing $(NAME_OF_PAGER).$(manext)"
+	@ECHO_CC@-$(SHELL) -c "\
+		cd $(MANDIR); \
+		$(RM) $(NAME_OF_PAGER).$(manext); \
+		$(LN_S) $(NAME_OF_ACTUAL).$(manext) $(NAME_OF_PAGER).$(manext); \
+		ls -l $(NAME_OF_PAGER).$(manext); \
+		"
+
+	@echo "** installing $(NAME_OF_2HTML).$(manext)"
+	@ECHO_CC@-$(SHELL) -c "\
+		cd $(MANDIR); \
+		$(RM) $(NAME_OF_2HTML).$(manext); \
+		$(LN_S) $(NAME_OF_ACTUAL).$(manext) $(NAME_OF_2HTML).$(manext); \
+		ls -l $(NAME_OF_2HTML).$(manext); \
+		"
+
+	@echo "** installing $(NAME_OF_LIBDIR).$(manext)"
+	@ECHO_CC@-$(SHELL) -c "\
+		cd $(MANDIR); \
+		$(RM) $(NAME_OF_LIBDIR).$(manext); \
+		$(LN_S) $(NAME_OF_ACTUAL).$(manext) $(NAME_OF_LIBDIR).$(manext); \
+		ls -l $(NAME_OF_LIBDIR).$(manext); \
+		"
 
 install-doc :		$(DOCDIR)		$(INSTALL_DOC_FILES)
 
@@ -580,14 +610,17 @@ installdirs:		$(INSTALL_DIRS)
 
 uninstall-bin \
 uninstall ::
-	@ECHO_CC@-$(SHELL) -c "if $(USE_SYMLINK) ; then cd $(BINDIR) && rm -f $(LINK_TO_ACTUAL) ; fi"
-	@ECHO_CC@-$(SHELL) -c "if $(USE_SYMLINK) ; then cd $(BINDIR) && rm -f $(LINK_TO_PAGER) ; fi"
+	@ECHO_CC@-$(SHELL) -c "if $(USE_SYMLINK) ; then cd $(BINDIR) && $(RM) $(LINK_TO_ACTUAL) ; fi"
+	@ECHO_CC@-$(SHELL) -c "if $(USE_SYMLINK) ; then cd $(BINDIR) && $(RM) $(LINK_TO_PAGER) ; fi"
 	@ECHO_CC@- $(RM) $(INSTALL_FILES) $(PATH_OF_ACTUAL) $(PATH_OF_PAGER) $(PATH_OF_2HTML) $(PATH_OF_LIBDIR)
 	@echo 'Completed uninstall of program.'
 
 uninstall-man \
 uninstall ::
-	- $(RM) $(MANDIR)/$(TARGET).$(manext)
+	- $(RM) $(MANDIR)/$(NAME_OF_PAGER).$(manext)
+	- $(RM) $(MANDIR)/$(NAME_OF_2HTML).$(manext)
+	- $(RM) $(MANDIR)/$(NAME_OF_LIBDIR).$(manext)
+	- $(RM) $(MANDIR)/$(NAME_OF_ACTUAL).$(manext)
 
 uninstall-doc :
 	- $(RM) $(INSTALL_DOC_FILES)
@@ -611,7 +644,7 @@ uninstall-perl :
 @no_appsdir@	@echo installing $(APPSDIR)/UXVile
 @no_appsdir@	@sed -e s/XVile/$(CLASS)/ $(srcdir)/macros/UXVile.ad >XVile.tmp
 @no_appsdir@	@$(INSTALL_DATA) XVile.tmp $(APPSDIR)/UXVile
-@no_appsdir@	@rm -f XVile.tmp
+@no_appsdir@	@$(RM) XVile.tmp
 @no_icondir@	@echo "... installed app-defaults"
 
 @no_appsdir@uninstall \
