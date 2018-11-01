@@ -1,5 +1,5 @@
 Summary: VI Like Emacs editor
-# $Header: /users/source/archives/vile.vcs/package/RCS/vile.spec,v 1.56 2017/08/09 08:48:43 tom Exp $
+# $Id: vile.spec,v 1.57 2018/10/31 22:41:49 tom Exp $
 Name: vile
 %define AppVersion 9.8
 Version: %{AppVersion}t
@@ -208,6 +208,9 @@ rm -rf %{buildroot}
 %{_bindir}/vile
 %{_bindir}/vile-*
 %{_mandir}/man1/vile.1*
+%{_mandir}/man1/vile-libdir-path.1*
+%{_mandir}/man1/vile-pager.1*
+%{_mandir}/man1/vile-to-html.1*
 
 %files common
 %defattr(-,root,root,-)
@@ -227,6 +230,9 @@ rm -rf %{buildroot}
 %{_bindir}/vileget
 %endif
 %{_mandir}/man1/xvile.1*
+%{_mandir}/man1/xvile-libdir-path.1*
+%{_mandir}/man1/xvile-pager.1*
+%{_mandir}/man1/xvile-to-html.1*
 %{_mandir}/man1/lxvile.1*
 %{_mandir}/man1/uxvile.1*
 
@@ -250,6 +256,9 @@ rm -rf %{buildroot}
 
 %changelog
 # each patch should add its ChangeLog entries here
+
+* Wed Oct 31 2018 Thomas E. Dickey
+- added utilities manpage-links
 
 * Fri Feb 17 2017 Thomas E. Dickey
 - added patch for 9.8t
