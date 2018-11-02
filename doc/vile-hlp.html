@@ -1,5 +1,5 @@
 <!--
-  $Id: vile-hlp.html,v 1.108 2017/09/17 14:32:10 tom Exp $
+  $Id: vile-hlp.html,v 1.109 2018/11/02 01:28:37 tom Exp $
 -->
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN">
 
@@ -12764,49 +12764,66 @@ Vile.rc Example
     <!--atr2html}}--></p>
   </blockquote>
 
-  <h3 id="winvile-perl-toc"><a name="winvile-perl" id=
-  "winvile-perl">Perl with Winvile</a></h3>
+  <h3 id="winvile-registry-toc"><a name="winvile-registry" id=
+  "winvile-registry">Winvile registry settings</a></h3>
 
-  <p>At the user's discretion, vile may be built with an embedded
-  perl interpreter. To date, only the perl distribution at the
-  following URL is supported:</p>
+  <p>Winvile uses the system registry to store persistent user
+  settings. If you have specified that it is installed for all
+  users, then the installer creates the key <em><code>VI Like
+  Emacs</code></em> under</p>
 
   <blockquote>
-    <pre class="code-block">
-<a href=
-"http://www.perl.com/CPAN-local/ports/win32/Standard/x86/">http://www.perl.com/CPAN-local/ports/win32/Standard/x86/</a>
-</pre>
+    <p><code>HKEY_LOCAL_MACHINE\Software</code></p>
+  </blockquote>otherwise, under
+
+  <blockquote>
+    <p><code>HKEY_CURRENT_USER\Software</code></p>
   </blockquote>
 
-  <p>If you acquire (i.e., do not personally build) a copy of
-  "perl-embedded" vile, these external configuration steps are
-  necessary:</p>
+  <p>In either case, winvile looks for information from these keys
+  under its <em><code>VI Like Emacs</code></em> key:</p>
 
-  <ol>
-    <li>Obtain a complete perl distribution[*] from the
-    aforementioned URL and install it. Included in this
-    distribution, among many other items, is a required DLL and the
-    usual perl packages.</li>
+  <ul>
+    <li><code>Environment</code></li>
 
-    <li>[Optional] To invoke vile-based perl scripts distributed
-    with the editor, create an exported environment variable called
-    VILE_LIBDIR_PATH that specifies a directory of your choice.
-    Then create a subdirectory called %VILE_LIBDIR_PATH%\perl and
-    copy the scripts to same. The list of scripts known to work in
-    a Win32 environment includes:
+    <li><code>MRUFiles</code></li>
 
-      <blockquote>
-        <pre class="code-block">
-hgrep.pm Glob2re.pm Visit.pm search.pm
-</pre>
-      </blockquote>
-    </li>
-  </ol>
+    <li><code>MRUFolders</code></li>
+  </ul>
 
-  <p>[*] Choose either a precompiled version of perl or build it
-  yourself from source. In this context, a "complete" distribution
-  includes the perl interpreter and all "standard" modules and
-  libraries.</p>
+  <p>Data under <code>MRUFiles</code> and <code>MRUFolders</code>
+  is maintained by winvile when the corresponding mode <a href=
+  "#mode-recent-files">recent-files</a> or <a href=
+  "#mode-recent-folders">recent-folders</a> is enabled by setting
+  it to a nonzero value.</p>
+
+  <p>winvile looks for environment variables by first using the
+  standard <code>getenv</code>, and if that returns nothing, checks
+  its analogous <code>Environment</code> key in the registry.
+  winvile uses the registry in this way because it is unreliable
+  for installers to set environment variables directly on
+  Windows.</p>
+
+  <p>These environment variables may be initialized by the winvile
+  installers:</p>
+
+  <ul>
+    <li><a href="#env-VILE_HELP_FILE">VILE_HELP_FILE</a></li>
+
+    <li><a href="#env-VILE_LIBDIR_PATH">VILE_LIBDIR_PATH</a></li>
+
+    <li><a href="#env-VILE_STARTUP_FILE">VILE_STARTUP_FILE</a></li>
+
+    <li><a href="#env-VILE_STARTUP_PATH">VILE_STARTUP_PATH</a></li>
+  </ul>
+
+  <p>These environment variables are also useful in winvile:</p>
+
+  <ul>
+    <li><a href="#env-VILEINIT">VILEINIT</a></li>
+
+    <li><a href="#env-VILE_ERROR_ABORT">VILE_ERROR_ABORT</a></li>
+  </ul>
 
   <h3 id="winvile-commands-toc"><a name="winvile-commands" id=
   "winvile-commands">Winvile Commands</a></h3>
@@ -12949,13 +12966,15 @@ set-rgb-palette red 200 0 0
 
     <dd>Enables/disables the winvile popup menu. (U)</dd>
 
-    <dt>recent-files</dt>
+    <dt><a name="mode-recent-files" id=
+    "mode-recent-files">recent-files</a></dt>
 
     <dd>Specify maximum number of files that may appear in
     winvile's "Recent Files" menu. Range is 0-20; a value of 0
     disables this menu. (U)</dd>
 
-    <dt>recent-folders</dt>
+    <dt><a name="mode-recent-folders" id=
+    "mode-recent-folders">recent-folders</a></dt>
 
     <dd>Specify maximum number of folders that may appear in
     winvile's "Recent Folders" menu. Range is 0-20; a value of 0
@@ -13526,7 +13545,7 @@ set-rgb-palette red 200 0 0
 
   <p>vile's homepage is<br>
   <a href=
-  "http://invisible-island.net/vile/">http://invisible-island.net/vile/</a></p>
+  "https://invisible-island.net/vile/">https://invisible-island.net/vile/</a></p>
 
   <p>Up-to-date copies of vile, including executables for DOS,
   Win32 and OS/2 are found at<br></p>
@@ -13589,7 +13608,7 @@ set-rgb-palette red 200 0 0
   <h2 id="copying-toc"><a name="copying" id=
   "copying">Copyright</a></h2>
 
-  <p>Copyright &copy; 1995-2016,2017 by Paul Fox, Thomas Dickey,
+  <p>Copyright &copy; 1995-2017,2018 by Paul Fox, Thomas Dickey,
   and Kevin Buettner</p>
 </body>
 </html>
