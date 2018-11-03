@@ -1,6 +1,6 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20181101 (t)
+ 20181102 (t)
 	> Adam Denton:
 	+ fix a typo in tcap.h (Savannah #52872).
 	> Jeff Morriss:
@@ -11,6 +11,8 @@ Changes for vile 9.9 (released ??? ??? ?? ????)
 	+ modify x11.c to avoid clearing the window manager flags that control
 	  focus behavior, to work with ctwm.
 	> Tom Dickey:
+	+ improve coloring of "\f" font markers in the nroff filter.
+	+ fix a mis-setting in api.c from 9.8q cleanup.
 	+ document winvile registry settings in the help-file.
 	+ create symbolic links for the utility program's manual pages, point
 	  to the base manpage.

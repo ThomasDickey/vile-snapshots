@@ -13,7 +13,7 @@
  * vile.  The file api.c (sometimes) provides a middle layer between
  * this interface and the rest of vile.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/perl.xs,v 1.138 2017/02/19 23:09:26 tom Exp $
+ * $Id: perl.xs,v 1.140 2018/11/02 21:26:35 tom Exp $
  */
 
 #ifdef __GNUC__
@@ -133,6 +133,10 @@
 
 #ifndef G_VOID
 #define G_VOID G_SCALAR
+#endif
+
+#ifndef INT2PTR
+#define INT2PTR(n) (n)
 #endif
 
 /* Prior to perl5.005, the PL_ prefix wasn't used for things such
@@ -1816,8 +1820,8 @@ FindMode(char *mode, int isglobal, VALARGS *args)
     } else {
 	value = "";
     }
-    tb_free(&temp);
     TRACE(("value of %s(%s) = %s\n", status ? "mode" : "", mode, value));
+    tb_free(&temp);
     return result;
 }
 
