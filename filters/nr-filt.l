@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Id: nr-filt.l,v 1.34 2016/12/16 12:00:25 tom Exp $
+ * $Id: nr-filt.l,v 1.35 2018/11/03 00:00:04 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of NROFF
  */
@@ -40,12 +40,51 @@ write_cmd(char *text, int size)
     flt_puts(text + cmd, size - cmd, String_attr);
 }
 
+static int
+font_len(char *text, int size)
+{
+    int result = 0;
+    if (size >= 3) {
+	if (text[0] == '\\' && text[1] == 'f') {
+	    if (text[2] == L_PAREN) {
+		if (size >= 5)
+		    result = 5;
+	    } else {
+		if (strchr("BIRP1234", text[2]) != 0) {
+		    result = 3;
+		}
+	    }
+	}
+    }
+    return result;
+}
+
+static int
+nonfont_len(char *text, int size)
+{
+    int result = 0;
+    while ((size > 0) && (font_len(text, size) <= 0)) {
+	text++;
+	size--;
+	result++;
+    }
+    return result;
+}
+
 static void
 write_font(char *text, int size)
 {
-    flt_puts(text, 3, Ident2_attr);
-    flt_puts(text + 3, size - 6, String_attr);
-    flt_puts(text + size - 3, 3, Ident2_attr);
+    while (size > 0) {
+	int llen = font_len(text, size);
+	flt_puts(text, llen, Ident2_attr);
+	text += llen;
+	size -= llen;
+	if ((llen = nonfont_len(text, size)) > 0) {
+	    flt_puts(text, llen, String_attr);
+	    text += llen;
+	    size -= llen;
+	}
+    }
 }
 
 %}
@@ -54,11 +93,12 @@ COMMAND		^[\.'][[:blank:]]*([[:alnum:]]+|(\\[^\\\r\n\"#])+)([ \t][^\r\n]+)?
 COMMENT		^[\.'][[:blank:]]*(\\\"|#)
 END_COMMAND	^\.\.$
 
-ENIT		\\[e *\n\\+-]
+ENIT		\\[e *\n\\+-/]
 
 USE_MACRO	\(..
 USE_SUBST	\\\*
 FONT		\\f([BI1-4]|{USE_MACRO})
+INFONT		([^\\\r\n]|{ENIT})+
 
 %%
 
@@ -74,8 +114,8 @@ FONT		\\f([BI1-4]|{USE_MACRO})
 				  unput(yytext[yyleng - 1]);
 				}
 
-{FONT}([^\\\r\n]|{ENIT})+(\\f[^PR1]|\n)	{ WriteToken(Action_attr); /* err? */ }
-{FONT}([^\\\r\n]|{ENIT})+\\f[PR1]	{ write_font(yytext, yyleng); }
+{FONT}{INFONT}(\\f[^PR1]|\n)	{ WriteToken(Action_attr); /* err? */ }
+({FONT}{INFONT})+\\f[PR1]	{ write_font(yytext, yyleng); }
 {ENIT}				{ WriteToken(Ident2_attr); }
 \\[s][+-]?[[:digit:]]+		{ WriteToken(Ident2_attr); }
 

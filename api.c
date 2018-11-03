@@ -15,7 +15,7 @@
  * in handy.
  *				- kev 4/7/1998
  *
- * $Header: /users/source/archives/vile.vcs/RCS/api.c,v 1.52 2015/09/07 00:53:13 tom Exp $
+ * $Id: api.c,v 1.53 2018/11/02 20:58:03 tom Exp $
  */
 
 #include "estruct.h"
@@ -53,8 +53,14 @@ linsert_chars(char *s, int len)
 	if (s[len - 1] == '\n') {
 	    if (len > 1)
 		nlsuppress = TRUE;
+	    if (!mdnewline) {
+		set_local_b_val(curbp, MDNEWLINE, TRUE);
+	    }
+	} else {
+	    if (mdnewline) {
+		set_local_b_val(curbp, MDNEWLINE, FALSE);
+	    }
 	}
-	set_local_b_val(curbp, MDNEWLINE, !mdnewline);
     }
 
     if (s[len - 1] == '\n') {
