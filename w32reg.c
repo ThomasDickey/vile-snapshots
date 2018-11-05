@@ -2,7 +2,7 @@
  * w32reg.c:  Winvile OLE registration code (currently only used for OLE
  *            automation).
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32reg.c,v 1.14 2010/11/10 10:41:47 tom Exp $
+ * $Id: w32reg.c,v 1.16 2018/11/05 01:38:58 tom Exp $
  */
 
 #include "estruct.h"
@@ -79,6 +79,7 @@ delete_key(HKEY key, const char *value)
 	rc = RegDeleteKey(key, actual);
 	free(actual);
     }
+    TRACE(("delete_key %s ->%ld\n", value, rc));
     return rc;
 }
 
@@ -99,6 +100,7 @@ create_key(HKEY key, const char *value, HKEY * result)
 			    NULL);
 	free(actual);
     }
+    TRACE(("create_key %s ->%ld\n", value, rc));
     return rc;
 }
 #else
@@ -114,6 +116,8 @@ oleauto_register(OLEAUTO_OPTIONS * opts)
     char key[512], name[64], editor_path[NFILEN];
     long rc;
     char value[NFILEN * 2];
+
+    TRACE(("** oleauto_register\n"));
 
     make_editor_name(name);
     make_editor_path(editor_path);
@@ -345,6 +349,8 @@ oleauto_unregister(void)
     char keytop[512], keysub[512], name[64];
     long rc;
 
+    TRACE(("** oleauto_unregister\n"));
+
     make_editor_name(name);
 
     /*
@@ -457,6 +463,7 @@ make_editor_path(char *path /* must be at least NFILEN chars long */ )
 static int
 report_w32_error(long w32_err_code)
 {
+    TRACE(("report_w32_error code %#lx\n", w32_err_code));
     if (w32_err_code == ERROR_ACCESS_DENIED) {
 	/* give an error message other than "Access denied" */
 
@@ -481,6 +488,7 @@ registration_success(char *editor_name, char *which, char *path)
     char status[NFILEN + 256];
     int len;
 
+    TRACE(("** registration_success %s %s\n", editor_name, which));
     len = sprintf(status,
 		  "%s OLE Automation successfully %s.",
 		  editor_name,

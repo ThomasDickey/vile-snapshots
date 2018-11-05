@@ -5,7 +5,7 @@
  * keys. Like everyone else, they set hints
  * for the display system.
  *
- * $Id: buffer.c,v 1.369 2018/10/27 00:56:30 tom Exp $
+ * $Id: buffer.c,v 1.370 2018/11/04 21:21:40 tom Exp $
  */
 
 #include	"estruct.h"
@@ -1224,7 +1224,9 @@ do_one_modeline(LINE *lp, int vi, int first, int last)
 	tb_append(&data, EOS);
 
 	in_modeline = vi;
-	tprintf("modeline %s:%s\n", vi > 1 ? "vi" : PROGRAM_NAME, tb_values(data));
+	TPRINTF(("modeline %s:%s\n",
+		 ((vi > 1) ? "vi" : PROGRAM_NAME),
+		 tb_values(data)));
 	docmd(tb_values(data), TRUE, FALSE, 1);
 	in_modeline = FALSE;
 

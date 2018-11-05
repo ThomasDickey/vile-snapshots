@@ -18,11 +18,10 @@
  * terms of the GNU Public License (see COPYING).
  *
  * Copyright (c) 1992-2016,2018 by Paul Fox and Thomas Dickey
- *
  */
 
 /*
- * $Id: main.c,v 1.738 2018/07/29 23:12:19 tom Exp $
+ * $Id: main.c,v 1.739 2018/11/04 21:28:39 tom Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -396,9 +395,9 @@ MainProgram(int argc, char *argv[])
 	 */
 	if (old_locale != 0
 	    && vl_is_utf8_encoding(vl_get_encoding(&old_encoding, old_locale))
-	    && (((env = getenv("LC_ALL")) != 0 && *env != 0) ||
-		((env = getenv("LC_CTYPE")) != 0 && *env != 0) ||
-		((env = getenv("LANG")) != 0 && *env != 0))) {
+	    && (((env = sys_getenv("LC_ALL")) != 0 && *env != 0) ||
+		((env = sys_getenv("LC_CTYPE")) != 0 && *env != 0) ||
+		((env = sys_getenv("LANG")) != 0 && *env != 0))) {
 	    char *tmp;
 
 	    TRACE(("Checking for UTF-8 suffix of '%s'\n", env));
@@ -1894,7 +1893,7 @@ default_menu_file(void)
     if (isEmpty(menurc)) {
 	sprintf(temp, "%.*s_MENU", (int) (sizeof(temp) - 6), prognam);
 	mkupper(temp);
-	menurc = getenv(temp);
+	menurc = vile_getenv(temp);
 	if (isEmpty(menurc)) {
 	    menurc = default_menu;
 	}
@@ -2917,6 +2916,18 @@ vile_getenv(const char *name)
 	}
     }
 #endif
+    TPRINTF(("vile getenv %s=%s\n", name, NonNull(result)));
+    return result;
+}
+
+/*
+ * Wrapper for all generic/system environment variables, so that we can trace.
+ */
+char *
+sys_getenv(const char *name)
+{
+    char *result = getenv(name);
+    TPRINTF(("system getenv %s=%s\n", name, NonNull(result)));
     return result;
 }
 

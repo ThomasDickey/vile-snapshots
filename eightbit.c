@@ -1,5 +1,5 @@
 /*
- * $Id: eightbit.c,v 1.107 2018/10/27 01:17:59 tom Exp $
+ * $Id: eightbit.c,v 1.108 2018/11/04 21:28:39 tom Exp $
  *
  * Maintain "8bit" file-encoding mode by converting incoming UTF-8 to single
  * bytes, and providing a function that tells vile whether a given Unicode
@@ -269,7 +269,7 @@ vl_narrowed(const char *wide)
 
     TRACE((T_CALLED "vl_narrowed(%s)\n", NonNull(wide)));
     if (wide != 0) {
-	const char *mapping = getenv("VILE_LOCALE_MAPPING");
+	const char *mapping = sys_getenv("VILE_LOCALE_MAPPING");
 	const char *parsed;
 	char *on_left;
 	char *on_right;

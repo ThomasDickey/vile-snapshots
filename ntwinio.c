@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 screen API.
  *
- * $Id: ntwinio.c,v 1.216 2018/10/27 00:58:47 tom Exp $
+ * $Id: ntwinio.c,v 1.218 2018/11/05 01:21:17 tom Exp $
  * Written by T.E.Dickey for vile (october 1997).
  * -- improvements by Clark Morgan (see w32cbrd.c, w32pipe.c).
  */
@@ -335,7 +335,7 @@ TraceWindowRect(HWND hwnd)
     GetWindowRect(hwnd, &wrect);
     cols = RectToCols(wrect);
     rows = RectToRows(wrect);
-    TRACE(("... (%3d,%3d) (%3d,%3d), window is %dx%d cells (%dx%d pixels)%s\n",
+    TRACE(("... (%3ld,%3ld) (%3ld,%3ld), window is %dx%d cells (%dx%d pixels)%s\n",
 	   wrect.top, wrect.left,
 	   wrect.bottom, wrect.right,
 	   rows,
@@ -355,7 +355,7 @@ TraceClientRect(HWND hwnd)
     GetClientRect(hwnd, &crect);
     cols = RectToCols(crect);
     rows = RectToRows(crect);
-    TRACE(("... (%3d,%3d) (%3d,%3d), client is %dx%d cells (%dx%d pixels)\n",
+    TRACE(("... (%3ld,%3ld) (%3ld,%3ld), client is %dx%d cells (%dx%d pixels)\n",
 	   crect.top, crect.left,
 	   crect.bottom, crect.right,
 	   rows,
@@ -373,7 +373,7 @@ TraceClientRect(HWND hwnd)
 static HBRUSH
 Background(HDC hdc)
 {
-    TRACE(("Background %#06x\n", GetBkColor(hdc)));
+    TRACE(("Background %#06lx\n", GetBkColor(hdc)));
     return CreateSolidBrush(GetBkColor(hdc));
 }
 
@@ -432,7 +432,7 @@ gui_resize(int cols, int rows)
     main_wide = text_wide + (2 * cur_win->x_border) + SbWidth;
     main_high = text_high + (2 * cur_win->y_border) + cur_win->y_titles;
 
-    TRACE(("... gui_resize -> (%d,%d) (%d,%d) main %dx%d, text %dx%d\n",
+    TRACE(("... gui_resize -> (%ld,%ld) (%ld,%ld) main %dx%d, text %dx%d\n",
 	   wrect.top,
 	   wrect.left,
 	   wrect.bottom,
@@ -548,10 +548,11 @@ AdjustResizing(HWND hwnd, WPARAM fwSide, RECT * rect)
 
     (void) hwnd;
 
-    TRACE(("AdjustResizing now (%d,%d) (%d,%d) (%dx%d pixels)\n",
-	   rect->top, rect->left, rect->bottom, rect->right,
-	   rect->bottom - rect->top,
-	   rect->right - rect->left));
+    TRACE(("AdjustResizing now (%ld,%ld) (%ld,%ld) (%ldx%ld pixels)\n",
+	   rect->top, rect->left,
+	   rect->bottom, rect->right,
+	   (rect->bottom - rect->top),
+	   (rect->right - rect->left)));
 
     TraceWindowRect(hwnd);
     TraceClientRect(hwnd);
@@ -574,8 +575,9 @@ AdjustResizing(HWND hwnd, WPARAM fwSide, RECT * rect)
 	     || fwSide == WMSZ_BOTTOMRIGHT)
 	rect->bottom -= adjY;
 
-    TRACE(("... AdjustResizing (%d,%d) (%d,%d) adjY:%d, adjX:%d\n",
-	   rect->top, rect->left, rect->bottom, rect->right,
+    TRACE(("... AdjustResizing (%ld,%ld) (%ld,%ld) adjY:%d, adjX:%d\n",
+	   rect->top, rect->left,
+	   rect->bottom, rect->right,
 	   adjY, adjX));
 
     return TRUE;
@@ -925,7 +927,7 @@ nt_set_colors(HDC hdc, VIDEO_ATTR attr)
 static int
 fhide_cursor(void)
 {
-    TRACE(("fhide_cursor pos %#lx,%#lx (visible:%d, exists:%d)\n", ttrow,
+    TRACE(("fhide_cursor pos %#x,%#x (visible:%d, exists:%d)\n", ttrow,
 	   ttcol, caret_visible, caret_exists));
     if (!ac_active) {
 	if (caret_visible) {
@@ -952,7 +954,7 @@ fshow_cursor(void)
 	|| ttcol > term.cols)
 	return;
 
-    TRACE(("fshow_cursor pos %#lx,%#lx (visible:%d, exists:%d)\n", ttrow,
+    TRACE(("fshow_cursor pos %#x,%#x (visible:%d, exists:%d)\n", ttrow,
 	   ttcol, caret_visible, caret_exists));
     x = ColToPixel(ttcol) + 1 - nCursorAdj;
     y = RowToPixel(ttrow) + 1;
@@ -1021,7 +1023,7 @@ static void
 get_borders(void)
 {
     SystemParametersInfo(SPI_GETWORKAREA, 0, &cur_win->xy_limit, 0);
-    TRACE(("WORKAREA: %d,%d %d,%d\n",
+    TRACE(("WORKAREA: %ld,%ld %ld,%ld\n",
 	   cur_win->xy_limit.top,
 	   cur_win->xy_limit.left,
 	   cur_win->xy_limit.right,
@@ -1155,8 +1157,8 @@ is_fixed_pitch(HFONT font)
     }
 
     TRACE(("is_fixed_pitch: %d\n", ok));
-    TRACE(("Ave Text width: %d\n", metrics.tmAveCharWidth));
-    TRACE(("Max Text width: %d\n", metrics.tmMaxCharWidth));
+    TRACE(("Ave Text width: %ld\n", metrics.tmAveCharWidth));
+    TRACE(("Max Text width: %ld\n", metrics.tmMaxCharWidth));
     TRACE(("Pitch/Family:   %#x\n", metrics.tmPitchAndFamily));
     TRACE(("First char      %#x\n", metrics.tmFirstChar));
     TRACE(("Last char       %#x\n", metrics.tmLastChar));
@@ -1208,12 +1210,12 @@ use_font(HFONT my_font)
     GetTextMetrics(hDC, &textmetric);
     ReleaseDC(cur_win->text_hwnd, hDC);
 
-    TRACE(("Text height:      %d\n", textmetric.tmHeight));
-    TRACE(("Ave Text width:   %d\n", textmetric.tmAveCharWidth));
-    TRACE(("Max Text width:   %d\n", textmetric.tmMaxCharWidth));
-    TRACE(("Overhang:         %d\n", textmetric.tmOverhang));
-    TRACE(("Leading internal: %d\n", textmetric.tmInternalLeading));
-    TRACE(("Leading external: %d\n", textmetric.tmExternalLeading));
+    TRACE(("Text height:      %ld\n", textmetric.tmHeight));
+    TRACE(("Ave Text width:   %ld\n", textmetric.tmAveCharWidth));
+    TRACE(("Max Text width:   %ld\n", textmetric.tmMaxCharWidth));
+    TRACE(("Overhang:         %ld\n", textmetric.tmOverhang));
+    TRACE(("Leading internal: %ld\n", textmetric.tmInternalLeading));
+    TRACE(("Leading external: %ld\n", textmetric.tmExternalLeading));
     TRACE(("Pitch/Family:     %#x\n", textmetric.tmPitchAndFamily));
     TRACE(("First char:       %#x\n", textmetric.tmFirstChar));
     TRACE(("Last char:        %#x\n", textmetric.tmLastChar));
@@ -1595,11 +1597,11 @@ save_key_data(MSG * msg)
 	    key_fifo_head = entry;
 
 	key_fifo_tail = entry;
-	TRACE(("FIFO%ld %d: save_key_data(%s) %#x %s\n",
+	TRACE(("FIFO%ld %d: save_key_data(%s) %p %s\n",
 	       entry->seqs,
 	       fifo_size(),
 	       message2s(msg->message),
-	       msg->wParam,
+	       (void *) msg->wParam,
 	       keyboard_state2s(entry->state)));
     }
 }
@@ -1616,11 +1618,11 @@ restore_key_data(MSG * msg, DWORD * state)
 	    *msg = entry->data;
 	    *state = entry->state;
 
-	    TRACE(("FIFO%ld %d: restore_key_data(%s) %#x %s\n",
+	    TRACE(("FIFO%ld %d: restore_key_data(%s) %p %s\n",
 		   entry->seqs,
 		   fifo_size(),
 		   message2s(msg->message),
-		   msg->wParam,
+		   (void *) msg->wParam,
 		   keyboard_state2s(*state)));
 
 	    key_fifo_head = entry->link;
@@ -1930,7 +1932,7 @@ ntwinio_scroll(int from, int to, int n)
 	region.bottom = (SHORT) RowToPixel(to + n);
     }
 
-    TRACE(("ScrollWindowEx from=%d, to=%d, n=%d  (%d,%d)/(%d,%d)\n",
+    TRACE(("ScrollWindowEx from=%d, to=%d, n=%d  (%ld,%ld)/(%ld,%ld)\n",
 	   from, to, n,
 	   region.left, region.top,
 	   region.right, region.bottom));
@@ -1947,7 +1949,7 @@ ntwinio_scroll(int from, int to, int n)
 	);
 
     /* Erase invalidated rectangle */
-    TRACE(("ntwinio_scroll tofill: (%d,%d)/(%d,%d)\n",
+    TRACE(("ntwinio_scroll tofill: (%ld,%ld)/(%ld,%ld)\n",
 	   tofill.left, tofill.top,
 	   tofill.right, tofill.bottom));
     hDC = GetDC(cur_win->text_hwnd);
@@ -2265,7 +2267,7 @@ decode_key_event(KEY_EVENT_RECORD * irp)
 	    } else {
 		key = keyp->vile;
 	    }
-	    TRACE(("decode_key_event %#x (%#x) -> %#x\n",
+	    TRACE(("decode_key_event %#x (%#lx) -> %#x\n",
 		   irp->wVirtualKeyCode, state, key));
 	    break;
 	}
@@ -2445,7 +2447,7 @@ handle_builtin_menu(WPARAM code)
 {
     int result = TRUE, cmd = LOWORD(code);
 
-    TRACE(("handle_builtin_menu code=%#x\n", code));
+    TRACE(("handle_builtin_menu code=%p\n", (void *) code));
     switch (cmd) {
     case IDM_ABOUT:
 	DialogBox(vile_hinstance, W32_STRING("AboutBox"),
@@ -2636,7 +2638,7 @@ MouseClickSetPos(POINT * result, int *onmode)
 
     GetMousePos(result);
 
-    TRACE((T_CALLED "MouseClickSetPos(%d, %d)\n", result->y, result->x));
+    TRACE((T_CALLED "MouseClickSetPos(%ld, %ld)\n", result->y, result->x));
 
     /*
      * If we're getting a button-down in a window, allow it to maybe begin
@@ -2729,7 +2731,7 @@ mousemove(int *sel_pending,
 
     fhide_cursor();
     GetMousePos(&current);
-    TRACE(("GETC:MOUSEMOVE (%d,%d)\n", current.x, current.y));
+    TRACE(("GETC:MOUSEMOVE (%ld,%ld)\n", current.x, current.y));
 
     /* If on mode line, move window. */
     if (onmode) {
@@ -2879,7 +2881,7 @@ GripWndProc(
     switch (message) {
     case WM_PAINT:
 	BeginPaint(hWnd, &ps);
-	TRACE(("...painting (%d,%d) (%d,%d)\n",
+	TRACE(("...painting (%ld,%ld) (%ld,%ld)\n",
 	       ps.rcPaint.top,
 	       ps.rcPaint.left,
 	       ps.rcPaint.bottom,
@@ -2917,7 +2919,7 @@ update_scrollbar_sizes(void)
     for (i = cur_win->nscrollbars + 1; i <= newsbcnt; i++) {
 	if (cur_win->scrollbars[i].w == NULL) {
 	    cur_win->scrollbars[i] = new_scrollbar();
-	    TRACE(("... created sb%d=%#x\n", i, cur_win->scrollbars[i].w));
+	    TRACE(("... created sb%d=%p\n", i, cur_win->scrollbars[i].w));
 	}
     }
     cur_win->nscrollbars = newsbcnt;
@@ -2994,7 +2996,7 @@ update_scrollbar_sizes(void)
 					       vile_hinstance,
 					       (LPVOID) 0
 	    );
-	TRACE(("... made SIZEGRIP %x at %d,%d\n", cur_win->size_box.w, left, top));
+	TRACE(("... made SIZEGRIP %p at %d,%d\n", cur_win->size_box.w, left, top));
     } else {
 	int ok;
 
@@ -3008,7 +3010,7 @@ update_scrollbar_sizes(void)
 			    cur_win->size_box.r.right = SbWidth,
 			    cur_win->size_box.r.bottom = nLineHeight,
 			    TRUE);
-	    TRACE(("... move SIZE_BOX %d:%x to %d,%d\n",
+	    TRACE(("... move SIZE_BOX %d:%p to %d,%d\n",
 		   ok, cur_win->size_box.w, left, top));
 	}
 
@@ -3024,7 +3026,7 @@ update_scrollbar_sizes(void)
 			    cur_win->size_grip.r.right = SbWidth,
 			    cur_win->size_grip.r.bottom = nLineHeight,
 			    TRUE);
-	    TRACE(("... move SIZEGRIP %d:%x to %d,%d\n",
+	    TRACE(("... move SIZEGRIP %d:%p to %d,%d\n",
 		   ok, cur_win->size_grip.w, left, top));
 	}
 	(void) ok;
@@ -3254,7 +3256,7 @@ ntwinio_getch(void)
 	    continue;
 
 	case WM_CHAR:
-	    TRACE(("GETC:CHAR:%#x\n", msg.wParam));
+	    TRACE(("GETC:CHAR:%p\n", (void *) msg.wParam));
 	    result = (int) msg.wParam;
 	    /*
 	     * Check for modifiers on control keys such as tab.
@@ -3276,9 +3278,9 @@ ntwinio_getch(void)
 	    ker.wVirtualKeyCode = (SHORT) msg.wParam;
 	    ker.dwControlKeyState = keyboard_state;
 	    result = decode_key_event(&ker);
-	    TRACE(("GETC:%sKEYDOWN:%#x %s ->%#x\n",
+	    TRACE(("GETC:%sKEYDOWN:%p %s ->%#x\n",
 		   (msg.message == WM_SYSKEYDOWN) ? "SYS" : "",
-		   msg.wParam,
+		   (void *) msg.wParam,
 		   keyboard_state2s(keyboard_state),
 		   result));
 	    if (result == NOKYMAP) {
@@ -3381,7 +3383,7 @@ ntwinio_getch(void)
 		fhide_cursor();
 		vile_selecting = sel_pending = FALSE;
 		thisclick = GetTickCount();
-		TRACE(("CLICK %d/%d\n", lastclick, thisclick));
+		TRACE(("CLICK %ld/%ld\n", lastclick, thisclick));
 		if (thisclick - lastclick < clicktime) {
 		    clicks++;
 		    TRACE(("MOUSE CLICKS %d\n", clicks));
@@ -3512,7 +3514,8 @@ ntwinio_getch(void)
 	    break;
 
 	case WM_COMMAND:
-	    TRACE(("GETC:WM_COMMAND, popup:%d, wParam:%#x\n", enable_popup, msg.wParam));
+	    TRACE(("GETC:WM_COMMAND, popup:%d, wParam:%p\n",
+		   enable_popup, (void *) msg.wParam));
 	    if (enable_popup) {
 		handle_builtin_menu(msg.wParam);
 	    } else {
@@ -3536,7 +3539,7 @@ ntwinio_getch(void)
 		    if (pt.y == mode_row(wp) &&
 			(pt.y < term.rows - 1 - 1) &&
 			(pt.x < term.cols)) {
-			/* 
+			/*
 			 * On movable mode line and cursor not in scrollbar
 			 * rectangle, so show appropriate cursor.
 			 */
@@ -3623,7 +3626,7 @@ repaint_window(HWND hWnd)
 
     nt_set_colors(ps.hdc, cur_atr);
 
-    TRACE(("...painting (%d,%d) (%d,%d)\n",
+    TRACE(("...painting (%ld,%ld) (%ld,%ld)\n",
 	   ps.rcPaint.top,
 	   ps.rcPaint.left,
 	   ps.rcPaint.bottom,
@@ -3649,10 +3652,10 @@ repaint_window(HWND hWnd)
 
     TRACE(("...erase %d\n", ps.fErase));
     TRACE(("...cells (%d,%d) - (%d,%d)\n", y1, x1, y2, x2));
-    TRACE(("...top:    %d\n", RowToPixel(y1) - ps.rcPaint.top));
-    TRACE(("...left:   %d\n", ColToPixel(x1) - ps.rcPaint.left));
-    TRACE(("...bottom: %d\n", RowToPixel(y2) - ps.rcPaint.bottom));
-    TRACE(("...right:  %d\n", ColToPixel(x2) - ps.rcPaint.right));
+    TRACE(("...top:    %ld\n", RowToPixel(y1) - ps.rcPaint.top));
+    TRACE(("...left:   %ld\n", ColToPixel(x1) - ps.rcPaint.left));
+    TRACE(("...bottom: %ld\n", RowToPixel(y2) - ps.rcPaint.bottom));
+    TRACE(("...right:  %ld\n", ColToPixel(x2) - ps.rcPaint.right));
 
     for (row = y1; row < y2; row++) {
 	if (pscreen != 0
@@ -3992,7 +3995,7 @@ InitInstance(HINSTANCE hInstance)
 					 hInstance,
 					 (LPVOID) 0
 	);
-    TRACE(("CreateWindow(main) -> %#lx\n", cur_win->main_hwnd));
+    TRACE(("CreateWindow(main) -> %p\n", cur_win->main_hwnd));
     if (!cur_win->main_hwnd)
 	return (FALSE);
 
@@ -4026,7 +4029,7 @@ InitInstance(HINSTANCE hInstance)
 					 hInstance,
 					 (LPVOID) 0
 	);
-    TRACE(("CreateWindow(text) -> %#lx\n", cur_win->text_hwnd));
+    TRACE(("CreateWindow(text) -> %p\n", cur_win->text_hwnd));
     if (!cur_win->text_hwnd)
 	return (FALSE);
 
@@ -4047,7 +4050,7 @@ InitInstance(HINSTANCE hInstance)
     wc.lpszClassName = GRIP_CLASS;
 
     if (!RegisterClass(&wc)) {
-	TRACE(("could not register class %s:%#x\n",
+	TRACE(("could not register class %s:%#lx\n",
 	       asc_charstring(wc.lpszClassName), GetLastError()));
 	return (FALSE);
     }
@@ -4166,6 +4169,7 @@ WinMain(
     oa_invoke = oa_reg = FALSE;
 #endif
 
+    (void) hPrevInstance;
     TRACE(("Starting ntvile, CmdLine:%s\n", lpCmdLine));
 
     if (make_argv("VILE", lpCmdLine, &argv, &argc, &argend) < 0)

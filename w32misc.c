@@ -2,7 +2,7 @@
  * w32misc:  collection of unrelated, common win32 functions used by both
  *           the console and GUI flavors of the editor.
  *
- * $Id: w32misc.c,v 1.62 2018/10/25 00:25:01 tom Exp $
+ * $Id: w32misc.c,v 1.64 2018/11/05 01:17:40 tom Exp $
  */
 
 #include "estruct.h"
@@ -760,6 +760,8 @@ w32_keybrd_reopen(int pressret)
     }
     term.kopen();
     kbd_erase_to_end(0);
+#else
+    (void) pressret;
 #endif
 }
 
@@ -783,6 +785,7 @@ w32_set_console_title(const char *title)
 void
 set_console_title(const char *title)
 {
+    (void) title;
 #if !DISP_NTWIN
     GetConsoleTitle(saved_title, sizeof(saved_title));
     w32_set_console_title(title);
@@ -1001,7 +1004,7 @@ parse_font_str(const char *fontstr, FONTSTR_OPTIONS * results)
 	    return (FALSE);
     }
     results->size = size;
-    TRACE(("parse_font_str(face=\"%s\", size=%d, style=\"%s%s\")\n",
+    TRACE(("parse_font_str(face=\"%s\", size=%ld, style=\"%s%s\")\n",
 	   results->face,
 	   results->size,
 	   results->bold ? "Bold" : "",
@@ -1245,7 +1248,10 @@ add_remove_write_acl(const char *filename, int add_acl, DWORD * prev_access_mask
     ACCESS_ALLOWED_ACE *pAllowed;
     BYTE *pSecDescriptorBuf = 0;
 
-    SID_IDENTIFIER_AUTHORITY SIDAuthWorld = SECURITY_WORLD_SID_AUTHORITY;
+    SID_IDENTIFIER_AUTHORITY SIDAuthWorld =
+    {
+	SECURITY_WORLD_SID_AUTHORITY
+    };
 
     /* does the file exist? */
     bslfn = sl_to_bsl(filename);

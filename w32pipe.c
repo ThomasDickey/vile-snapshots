@@ -60,7 +60,7 @@
  *    situation, kill the app by typing ^C (and then please apply for a
  *    QA position with a certain Redmond company).
  *
- * $Id: w32pipe.c,v 1.40 2018/10/21 23:08:08 tom Exp $
+ * $Id: w32pipe.c,v 1.41 2018/11/05 00:50:01 tom Exp $
  */
 
 #define HAVE_FCNTL_H 1
@@ -177,7 +177,7 @@ common_cleanup(void)
 static void
 close_proc_handle(void)
 {
-    TRACE(("close_proc_handle %#x\n", proc_handle));
+    TRACE(("close_proc_handle %p\n", proc_handle));
     (void) w32_close_handle(proc_handle);
     proc_handle = BAD_PROC_HANDLE;
 }
@@ -232,7 +232,7 @@ exec_shell(char *cmd, HANDLE * handles, int hide_child GCC_UNUSED)
 
 	    w32_close_handle(pi.hThread);
 	    proc_handle = pi.hProcess;
-	    TRACE(("...created proc_handle %#x\n", proc_handle));
+	    TRACE(("...created proc_handle %p\n", proc_handle));
 	}
     }
     FreeIfNeeded(cmdstr);
