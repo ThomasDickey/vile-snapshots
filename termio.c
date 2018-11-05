@@ -3,8 +3,7 @@
  * characters, and write characters in a barely buffered fashion on the display.
  * All operating systems.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/termio.c,v 1.223 2010/11/10 09:46:51 tom Exp $
- *
+ * $Id: termio.c,v 1.224 2018/11/05 01:21:30 tom Exp $
  */
 
 #include	"estruct.h"
@@ -1059,6 +1058,7 @@ ttunclean(void)
 OUTC_DCL
 ttputc(OUTC_ARGS)
 {
+    (void) c;
 #if SYS_OS2 && !DISP_VIO
     OUTC_RET putch(c);
 #endif

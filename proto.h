@@ -4,8 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Header: /users/source/archives/vile.vcs/RCS/proto.h,v 1.746 2016/07/16 15:09:47 tom Exp $
- *
+ * $Id: proto.h,v 1.747 2018/11/04 21:25:05 tom Exp $
  */
 
 #ifndef VILE_PROTO_H
@@ -19,6 +18,7 @@ extern "C" {
 extern SIGT catchintr (int ACTUAL_SIG_ARGS);
 extern char *init_state_value (int n);
 extern char *strncpy0 (char *t, const char *f, size_t l);
+extern char *sys_getenv (const char *name);
 extern char *vile_getenv (const char *name);
 extern char *vl_strncat (char *dest, const char *src, size_t destlen);
 extern char *vl_strncpy (char *dest, const char *src, size_t destlen);

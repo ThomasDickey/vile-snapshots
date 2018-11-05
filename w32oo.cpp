@@ -8,7 +8,7 @@
  *   "FAILED" may not be used to test an OLE return code.  Use SUCCEEDED
  *   instead.
  *
- * $Id: w32oo.cpp,v 1.19 2018/10/25 23:04:11 tom Exp $
+ * $Id: w32oo.cpp,v 1.21 2018/11/05 01:29:09 tom Exp $
  */
 
 #include "w32vile.h"
@@ -245,6 +245,9 @@ wincd(int f, int n)
     static TBUFF *last;
     int          rc;
 
+    (void) f;
+    (void) n;
+
     TRACE((T_CALLED "wincd(%d,%d)\n", f, n));
     buf[0] = '\0';
     rc     = mlreply_dir("Initial Directory: ", &last, buf);
@@ -273,7 +276,7 @@ wincd_dir(const char *dir)
 {
     char buf[NFILEN];
 
-    TRACE((T_CALLED "wincd_dir(%s)\n"));
+    TRACE((T_CALLED "wincd_dir(%s)\n", dir));
     if (dir == NULL)
     {
         if ((dir = getcwd(buf, sizeof(buf))) == NULL) {

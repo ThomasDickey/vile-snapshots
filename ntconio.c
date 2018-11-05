@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 console API.
  *
- * $Id: ntconio.c,v 1.104 2018/10/22 22:13:16 tom Exp $
+ * $Id: ntconio.c,v 1.105 2018/11/05 01:30:41 tom Exp $
  */
 
 #include "estruct.h"
@@ -530,7 +530,7 @@ ntconio_open(void)
     hOldConsoleOutput = 0;
 
     hConsoleOutput = GetStdHandle(STD_OUTPUT_HANDLE);
-    TRACE(("hConsoleOutput %d\n", hConsoleOutput));
+    TRACE(("hConsoleOutput %p\n", hConsoleOutput));
 
     origcci_ok = GetConsoleCursorInfo(hConsoleOutput, &origcci);
 
@@ -593,7 +593,7 @@ ntconio_open(void)
     newscreensize(csbi.dwMaximumWindowSize.Y, csbi.dwMaximumWindowSize.X);
 
     hConsoleInput = GetStdHandle(STD_INPUT_HANDLE);
-    TRACE(("hConsoleInput %d\n", hConsoleInput));
+    TRACE(("hConsoleInput %p\n", hConsoleInput));
 
     SetConsoleCtrlHandler(nthandler, TRUE);
     ntconio_set_encoding(enc_DEFAULT);
@@ -750,7 +750,7 @@ decode_key_event(INPUT_RECORD * irp)
     if (!irp->Event.KeyEvent.bKeyDown)
 	return (NOKYMAP);
 
-    TRACE(("decode_key_event(%c=%02x, Virtual=%#x,%#x, State=%#x)\n",
+    TRACE(("decode_key_event(%c=%02x, Virtual=%#x,%#x, State=%#lx)\n",
 	   irp->Event.KeyEvent.uChar.WHICH_CHAR,
 	   irp->Event.KeyEvent.uChar.WHICH_CHAR,
 	   irp->Event.KeyEvent.wVirtualKeyCode,
@@ -1134,7 +1134,7 @@ handle_mouse_event(MOUSE_EVENT_RECORD mer)
 	    state = mer.dwButtonState;
 	    if (state == 0) {	/* button released */
 		thisclick = GetTickCount();
-		TRACE(("CLICK %d/%d\n", lastclick, thisclick));
+		TRACE(("CLICK %ld/%ld\n", lastclick, thisclick));
 		if (thisclick - lastclick < clicktime) {
 		    clicks++;
 		    TRACE(("MOUSE CLICKS %d\n", clicks));
@@ -1326,7 +1326,7 @@ ntconio_getch(void)
 		TRACE(("PeekConsoleInput failed\n"));
 		break;		/* ?? system call failed ?? */
 	    }
-	    TRACE(("PeekConsoleInput nr %d\n", nr));
+	    TRACE(("PeekConsoleInput nr %ld\n", nr));
 	    if (nr > 0)
 		break;		/* something in the queue */
 	    Sleep(20);		/* sleep a bit, but be responsive to keybd input */

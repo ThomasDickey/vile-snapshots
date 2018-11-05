@@ -2,7 +2,7 @@
  * w32cmd:  collection of functions that add Win32-specific editor
  *          features (modulo the clipboard interface) to [win]vile.
  *
- * $Id: w32cmd.c,v 1.58 2018/10/25 22:45:25 tom Exp $
+ * $Id: w32cmd.c,v 1.60 2018/11/05 00:44:58 tom Exp $
  */
 
 #include "estruct.h"
@@ -18,9 +18,6 @@
 
 #define FOOTER_OFFS      0.333	/* inches from bottom of page */
 #define _FF_             '\f'
-
-#undef VILE_SUBKEY
-#define VILE_SUBKEY W32_STRING("Software\\VI Like Emacs")
 
 #define REGKEY_RECENT_FILES VILE_SUBKEY W32_STRING("\\MRUFiles")
 #define REGKEY_RECENT_FLDRS VILE_SUBKEY W32_STRING("\\MRUFolders")
@@ -1002,14 +999,13 @@ static int
 winprint_endpage(PRINT_PARAM * pparam)
 {
     char footbuf[256];
-    UINT footbuflen;
     int rc = TRUE;
     UINT txtmode;
 
     /* FIXME -- footer is hardwired as page number */
     /* *INDENT-EQLS* */
     txtmode    = (GetTextAlign(pd->hDC) & ~TA_LEFT);
-    footbuflen = sprintf(footbuf, "%lu", (ULONG) pparam->pagenum);
+    (void) sprintf(footbuf, "%lu", (ULONG) pparam->pagenum);
     txtmode    = SetTextAlign(pd->hDC, txtmode | TA_CENTER);
     winprint_write(pd->hDC,
 		   (printrect.left + printrect.right) / 2,
