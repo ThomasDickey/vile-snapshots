@@ -1,4 +1,4 @@
-# $Id: makeflag.wnt,v 1.3 2018/10/18 16:21:09 tom Exp $
+# $Id: makeflag.wnt,v 1.4 2018/11/06 21:48:20 tom Exp $
 # vile:makemode
 ################################################################################
 # This is a wrapper with fallback definitions for the common NMAKE definitions
@@ -60,6 +60,7 @@ VS_VER = 0
 !include $(MAKEFLAG_FILE)
 !elseif $(VS_VER) < 1100
 !include <Win32.mak>
+guilibsmt   = $(guilibsmt) psapi.lib
 !else
 # The definitions used here are from Platform SDK 7.1's Win32.mak
 cc          = cl
