@@ -2,7 +2,7 @@
  * w32reg.c:  Winvile OLE registration code (currently only used for OLE
  *            automation).
  *
- * $Id: w32reg.c,v 1.16 2018/11/05 01:38:58 tom Exp $
+ * $Id: w32reg.c,v 1.17 2018/11/05 23:21:42 tom Exp $
  */
 
 #include "estruct.h"
@@ -11,6 +11,7 @@
 #include <objbase.h>
 #include <direct.h>
 #include <ctype.h>
+#include <psapi.h>
 
 #include <initguid.h>
 #include "w32reg.h"
@@ -112,15 +113,38 @@ create_key(HKEY key, const char *value, HKEY * result)
 int
 oleauto_register(OLEAUTO_OPTIONS * opts)
 {
+    HANDLE processHandle = NULL;
     HKEY hk, hksub;
     char key[512], name[64], editor_path[NFILEN];
     long rc;
     char value[NFILEN * 2];
+    TCHAR fullpath[NFILEN];
 
     TRACE(("** oleauto_register\n"));
 
     make_editor_name(name);
-    make_editor_path(editor_path);
+
+    *editor_path = EOS;
+    processHandle = OpenProcess((PROCESS_QUERY_INFORMATION
+				 | PROCESS_VM_READ),
+				FALSE,
+				GetCurrentProcessId());
+    if (processHandle != NULL) {
+	if (GetModuleFileNameEx(processHandle, NULL, fullpath, NFILEN) == 0) {
+	    TRACE(("?? Failed to get module filename.\n"));
+	} else {
+	    strcpy(editor_path, asc_charstring(fullpath));
+	    TRACE(("Module filename is %s\n", editor_path));
+	}
+	CloseHandle(processHandle);
+    } else {
+	TRACE(("?? Failed to open process.\n"));
+    }
+
+    if (!*editor_path) {
+	make_editor_path(editor_path);
+	TRACE(("Fallback filename is %s\n", editor_path));
+    }
 
     /* -------------------------- Step 1 --------------------------- */
 

@@ -1,6 +1,6 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20181102 (t)
+ 20181105 (t)
 	> Adam Denton:
 	+ fix a typo in tcap.h (Savannah #52872).
 	> Jeff Morriss:
@@ -11,6 +11,10 @@ Changes for vile 9.9 (released ??? ??? ?? ????)
 	+ modify x11.c to avoid clearing the window manager flags that control
 	  focus behavior, to work with ctwm.
 	> Tom Dickey:
+	+ add ifdef in winvile.iss to accommodate changes with Inno Setup 5.6.1
+	+ use GetModuleFileNameEx() in preference to looking for winvile's
+	  registry keys or the PATH when finding the executable path for
+	  the "-Or" option.
 	+ improve coloring of "\f" font markers in the nroff filter.
 	+ fix a mis-setting in api.c from 9.8q cleanup.
 	+ document winvile registry settings in the help-file.
