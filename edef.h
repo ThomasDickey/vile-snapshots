@@ -6,7 +6,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.373 2015/09/07 12:59:36 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.374 2018/11/07 00:48:30 tom Exp $
  */
 
 #ifndef VILE_EDEF_H
@@ -57,20 +57,18 @@ decl_init (int system_crlf, CRLF_LINES );
 
 #ifdef SYSTEM_NAME
 decl_init_const ( char opersys[], SYSTEM_NAME );
-#else
-#if SYS_UNIX
+#elif SYS_UNIX
 decl_init_const ( char opersys[], "unix" );
-#endif
-#if SYS_VMS
+#elif SYS_VMS
 decl_init_const ( char opersys[], "vms" );
-#endif
-#if SYS_MSDOS
+#elif SYS_MSDOS
 decl_init_const ( char opersys[], "dos" );
-#endif
-#if SYS_OS2
+#elif SYS_OS2
 decl_init_const ( char opersys[], "os/2" );
-#endif
-#if SYS_WINNT
+#elif SYS_WINNT
+#ifdef _WIN64
+decl_init_const ( char opersys[], "win64" );
+#else
 decl_init_const ( char opersys[], "win32" );
 #endif
 #endif

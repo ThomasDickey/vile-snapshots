@@ -1,4 +1,4 @@
-MANIFEST for vile, version v9_8s30
+MANIFEST for vile, version v9_8s31
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 AUTHORS                         list of authors, with nicknames in CHANGES
@@ -496,6 +496,8 @@ package/vile.spec               sample RPM spec file for vile
 package/winvile-wide.iss        Inno Setup script for winvile-wide
 package/winvile.iss             Inno Setup script for winvile
 package/winvile.nsi             NSIS package for winvile
+package/winvile64-wide.iss      build-script
+package/winvile64.iss           build-script
 perl                            subdirectory
 perl/Breadcrumbs.pm             manages bookmarks for a set of files
 perl/CaptHook.pm                manage various types of hooks from perl
