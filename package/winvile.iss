@@ -1,4 +1,4 @@
-; $Id: winvile.iss,v 1.26 2018/11/06 23:06:21 tom Exp $
+; $Id: winvile.iss,v 1.27 2018/11/07 01:21:26 tom Exp $
 ; vile:ts=2 sw=2 fk=8bit
 ;
 ; This installs winvile as "winvile-ole.exe", since that is the name I use when building the OLE flavor
@@ -61,9 +61,9 @@ VersionInfoDescription=Setup for "WinVile - VI Like Emacs"
 #emit 'AppVerName=' + myAppVer
 AppPublisher=Thomas E. Dickey
 AppCopyright=© 1997-2017,2018, Thomas E. Dickey
-AppPublisherURL=http://invisible-island.net/vile/
-AppSupportURL=http://invisible-island.net/vile/
-AppUpdatesURL=http://invisible-island.net/vile/
+AppPublisherURL=https://invisible-island.net/vile/
+AppSupportURL=https://invisible-island.net/vile/
+AppUpdatesURL=https://invisible-island.net/vile/
 DefaultDirName={pf}\VI Like Emacs
 OutputDir=iss-output
 #emit 'OutputBaseFilename=' + myFullName + '-setup-' + VILE_RELEASE + '_' + VILE_VERSION + VILE_PATCHLEVEL
@@ -74,6 +74,10 @@ Compression=lzma
 SolidCompression=yes
 ChangesEnvironment=yes
 ; SetupLogging=yes
+
+#ifdef WIN64App
+ArchitecturesInstallIn64BitMode=x64
+#endif
 
 [Components]
 Name: main; Description: The WinVile executable; types: full custom compact

@@ -1,6 +1,6 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20181105 (t)
+ 20181106 (t)
 	> Adam Denton:
 	+ fix a typo in tcap.h (Savannah #52872).
 	> Jeff Morriss:
@@ -11,6 +11,8 @@ Changes for vile 9.9 (released ??? ??? ?? ????)
 	+ modify x11.c to avoid clearing the window manager flags that control
 	  focus behavior, to work with ctwm.
 	> Tom Dickey:
+	+ add WinVile64 package script for Inno Setup.
+	+ show "win64" for $os symbol if built for 64-bit Windows.
 	+ add ifdef in winvile.iss to accommodate changes with Inno Setup 5.6.1
 	+ use GetModuleFileNameEx() in preference to looking for winvile's
 	  registry keys or the PATH when finding the executable path for
