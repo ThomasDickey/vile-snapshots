@@ -1,10 +1,16 @@
 %pointer
 %s NORMAL WantKEY HaveKEY WantVAL HaveVAL SLEAD STEXT
+%p 6000
+%a 6000
+%e 2000
+%n 1000
+%o 6000
+%k 2000
 
 %{
 
 /*
- * $Id: yamlfilt.l,v 1.32 2018/11/12 11:25:29 tom Exp $
+ * $Id: yamlfilt.l,v 1.48 2018/11/13 02:05:11 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of YAML program.
  *
@@ -21,10 +27,8 @@
  * TODO marker for scalar blocks should be the only text in value
  * TODO paint leading indent of scalar block using Leading_attr; 6.3 says additional whitespace in flow may include tabs
  * TODO check validity of escaped "\" characters per yaml 5.7
- * TODO handle tags and tag-handles
- * TODO check {XTYPE} names vs int, binary, float, timestamp
  * TODO use flt-buffer for STEXT
- * TODO handle embedded "=number"?
+ * TODO comma is special only in {} or []
  */
 
 #define FLTSTACK_EXTRA	int marker; int indent;
@@ -52,7 +56,10 @@ static char *Anchor_attr;
 
 #include <fltstack.h>
 
+static void found_key(int);
 static void new_level(int);
+static void reset_level(void);
+static int skip_leading(void);
 
 %}
 
@@ -89,16 +96,20 @@ URI		{URI_WEB}|{URI_MAIL}
 
 XTYPE		"!!"[[:alnum:]_]+
 
-SSTRING		'[^']+'
+SSTRING		'[^'\r\n\t]+'
 DSTRING		\"(\\.|[^"\\\r\n]|\\\n)*\"
 
 SPACE		[ \t]
 ITEM		([:?-]{SPACE})
 
+KEY_END		[ \t\r\n]
+DATA_END	[ \t\r\n,{}\[\]]
+
 BLOCK		[>|]([+-])?
 
 TAGNAME		[[:alnum:]_]+
-KEYNAME		({TAGNAME}+([ \t-]+{TAGNAME}+)*|"<<")
+KEYNAME		({TAGNAME}+(([ \t-]|"::")+{TAGNAME}+)*|"<<"){SPACE}*
+ANY_KEY		({INTEGER}|{FLOAT}|{DSTRING}|{KEYNAME})
 
 %%
 
@@ -106,9 +117,9 @@ KEYNAME		({TAGNAME}+([ \t-]+{TAGNAME}+)*|"<<")
 			  new_level(yyleng);
 			}
 
-<NORMAL,WantKEY,HaveKEY>{DSTRING}":"[ \t\r\n] |
-<NORMAL,WantKEY,HaveKEY>{KEYNAME}":"[ \t\r\n] {
+<NORMAL,WantKEY,HaveKEY>{ANY_KEY}":"{KEY_END} {
 			  int len = yyleng - 1;
+			  found_key(flt_get_col());
 			  WriteToken3(Ident2_attr, len);
 			  unput(yytext[len]);
 			  new_state(HaveKEY);
@@ -129,13 +140,21 @@ KEYNAME		({TAGNAME}+([ \t-]+{TAGNAME}+)*|"<<")
 			}
 
 <NORMAL,WantKEY,HaveKEY,WantVAL>"{" {
-			  WriteToken(Action_attr);
-			  push_state(NORMAL);
-			  FLTSTACK_THIS.marker = R_CURLY;
+			  if (1) {
+			    WriteToken(Action_attr);
+			    push_state(NORMAL);
+			    FLTSTACK_THIS.marker = R_CURLY;
+			  } else {
+			    ECHO;
+			  }
 			}
 <NORMAL,WantKEY,HaveKEY,WantVAL,HaveVAL>"}" {
-			  WriteToken(Action_attr);
-			  pop_state();
+			  if (FLTSTACK_THIS.marker == R_CURLY) {
+			    WriteToken(Action_attr);
+			    pop_state();
+			  } else {
+			    ECHO;
+			  }
 			}
 <NORMAL,WantKEY,HaveKEY,WantVAL>"[" {
 			  WriteToken(Action_attr);
@@ -143,16 +162,25 @@ KEYNAME		({TAGNAME}+([ \t-]+{TAGNAME}+)*|"<<")
 			  FLTSTACK_THIS.marker = R_BLOCK;
 			}
 <NORMAL,WantKEY,HaveKEY,WantVAL>"]" {
-			  WriteToken(Action_attr);
-			  pop_state();
+			  if (FLTSTACK_THIS.marker == R_BLOCK) {
+			    WriteToken(Action_attr);
+			    pop_state();
+			  } else {
+			    ECHO;
+			  }
 			}
 
-<HaveKEY,WantVAL>{XTYPE}	{ WriteToken(Preproc_attr); }
+<HaveKEY,WantVAL>{XTYPE}	{ WriteToken(keyword_attr(yytext)); }
 <HaveKEY,WantVAL>{SPACE}	{ ECHO; }
-<HaveKEY,WantVAL>{URI}		|
-<HaveKEY,WantVAL>{TIMESTAMP}	|
-<HaveKEY,WantVAL>{INTEGER}	|
-<HaveKEY,WantVAL>{FLOAT}	{ WriteToken(Number_attr); }
+
+<WantKEY,HaveKEY,WantVAL>{URI}{DATA_END}	|
+<WantKEY,HaveKEY,WantVAL>{TIMESTAMP}{DATA_END}	|
+<WantKEY,HaveKEY,WantVAL>{INTEGER}{DATA_END}	|
+<WantKEY,HaveKEY,WantVAL>{FLOAT}{DATA_END} {
+			    int len = yyleng - 1;
+			    WriteToken3(Number_attr, len);
+			    unput(yytext[len]);
+			  }
 
 <WantKEY,HaveKEY,WantVAL>"&"{TAGNAME} {
 			  const char *attr = Ident_attr;
@@ -199,28 +227,19 @@ KEYNAME		({TAGNAME}+([ \t-]+{TAGNAME}+)*|"<<")
 <WantKEY,HaveKEY,WantVAL,HaveVAL>{SSTRING} |
 <WantKEY,HaveKEY,WantVAL,HaveVAL>{DSTRING} { WriteToken(String_attr); }
 
-<HaveKEY,WantVAL>[ \t\r\n]{BLOCK}[\r\n] {
+<WantKEY,HaveKEY,WantVAL>{BLOCK}[\r\n] {
 			  int len = yyleng - 1;
 			  WriteToken3(Block_attr, len);
 			  unput(yytext[len]);
 			  new_state(STEXT);
 			}
 <SLEAD>^{SPACE}*[\r\n]+ { ECHO; }
-<SLEAD>^{SPACE}*{DSTRING}":"[ \t\r\n] |
-<SLEAD>^{SPACE}*{TAGNAME}":"[ \t\r\n] {
-			  int n;
-			  int first = -1;
-			  for (n = 0; n < yyleng; ++n) {
-			    if (!isspace(yytext[n])) {
-			      first = n;
-			      break;
-			    }
-			  }
-			  if (first < 0 || first < FLTSTACK_THIS.indent) {
-			    int len = yyleng - 1;
-			    WriteToken3(Ident2_attr, len);
-			    unput(yytext[len]);
-			    new_state(HaveKEY);
+<SLEAD>^{SPACE}*"#"[^\r\n]* {
+			  int first = skip_leading();
+			  if (first <= 0 || first < FLTSTACK_THIS.indent) {
+			    WriteToken(Comment_attr);
+			    new_state(NORMAL);
+			    reset_level();
 			  } else {
 			    WriteToken(String_attr);
 			  }
@@ -233,19 +252,36 @@ KEYNAME		({TAGNAME}+([ \t-]+{TAGNAME}+)*|"<<")
 			    new_level(yyleng);
 			  }
 			}
+<SLEAD>^{SPACE}*[^-]{ANY_KEY}":"{KEY_END} {
+			  int first = skip_leading();
+			  if (first <= 0 || first < FLTSTACK_THIS.indent) {
+			    int len = yyleng - 1;
+			    found_key(flt_get_col() + first);
+			    WriteToken3(Ident2_attr, len);
+			    unput(yytext[len]);
+			    new_state(HaveKEY);
+			  } else {
+			    WriteToken(String_attr);
+			    new_state(STEXT);
+			  }
+			}
 <STEXT>[\r\n]+		{ ECHO; new_state(SLEAD); /* ignore blank lines */ }
 <STEXT>[^\r\n]*		{ WriteToken(String_attr); }
 
 <NORMAL>[\r\n]+ 	{ ECHO; new_state(NORMAL); }
-<WantKEY>[\r\n]+ 	{ ECHO; new_state(NORMAL); }
+<WantKEY>[\r\n]+ 	{ ECHO; new_state(NORMAL); reset_level(); }
 <HaveKEY>[\r\n]+ 	{ ECHO; }
 <WantVAL>[\r\n]+ 	{ ECHO; new_state(NORMAL); }
 <HaveVAL>[\r\n]+ 	{ ECHO; new_state(NORMAL); }
 
+<NORMAL>{SPACE}		{ ECHO; }
+<WantKEY>{SPACE}	{ ECHO; }
+<HaveVAL>{SPACE}	{ ECHO; }
+
 <NORMAL>.		{ ECHO; }
-<WantKEY>.		{ ECHO; }
-<HaveKEY>.		{ ECHO; }
-<WantVAL>.		{ ECHO; }
+<WantKEY>.		{ ECHO; new_state(HaveVAL); }
+<HaveKEY>.		{ ECHO; new_state(HaveVAL); }
+<WantVAL>.		{ ECHO; new_state(HaveVAL); }
 <HaveVAL>.		{ ECHO; }
 
 %%
@@ -292,12 +328,42 @@ new_level(int indent)
 	pop_state();
 	if (item)
 	    new_state(WantKEY);
-	/* TODO: allow for multi-level pop */
 	if (FLTSTACK_THIS.indent != indent)
 	    flt_error("expected indent %d, have %d",
 		      FLTSTACK_THIS.indent, indent);
     } else {
 	new_state(WantKEY);
+    }
+}
+
+static void
+reset_level(void)
+{
+    stk_level = 0;
+    FLTSTACK_THIS.indent = 0;
+}
+
+static int
+skip_leading(void)
+{
+    int n;
+    int first = -1;
+    for (n = 0; n < yyleng; ++n) {
+	if (!isspace(CharOf(yytext[n]))) {
+	    first = n;
+	    break;
+	}
+    }
+    return first;
+}
+
+static void
+found_key(int indent)
+{
+    if (indent <= 0) {
+	reset_level();
+    } else {
+	FLTSTACK_THIS.indent = indent;
     }
 }
 
@@ -333,6 +399,8 @@ do_filter(FILE *inputs)
     FLEX_PRINTF((stderr, "state HaveKEY %d\n", HaveKEY));
     FLEX_PRINTF((stderr, "state WantVAL %d\n", WantVAL));
     FLEX_PRINTF((stderr, "state HaveVAL %d\n", HaveVAL));
+    FLEX_PRINTF((stderr, "state SLEAD   %d\n", SLEAD));
+    FLEX_PRINTF((stderr, "state STEXT   %d\n", STEXT));
 
     begin_state(NORMAL);
     FLTSTACK_THIS.marker = EOS;

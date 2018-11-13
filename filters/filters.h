@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.h,v 1.143 2016/12/05 00:30:49 tom Exp $
+ * $Id: filters.h,v 1.144 2018/11/12 15:44:46 tom Exp $
  */
 
 #ifndef FILTERS_H
@@ -193,9 +193,11 @@ FILTER_DEF filter_def = { #name, 1, init_filter, do_filter, options REF_LEXFREE 
 
 #if defined(FLEX_SCANNER)
 #if defined(filter_def)
-#define ECHO flt_echo(yytext, yyleng);
+#define ECHO flt_echo(yytext, yyleng);		/* in builtflt.c */
 #define YY_INPUT(buf,result,max_size) result = flt_input(buf,max_size)
 #define YY_FATAL_ERROR(msg) flt_failed(msg);
+#else
+#define ECHO flt_puts(yytext, yyleng, "");	/* in filterio.c */
 #endif
 /* quiet "gcc -Wunused" warnings */
 #define YY_NEVER_INTERACTIVE 1
