@@ -7,7 +7,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/vilefilt.l,v 1.73 2013/12/02 01:32:53 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/vilefilt.l,v 1.74 2018/11/12 21:44:32 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of vile macros
  * - T.Dickey
@@ -346,13 +346,13 @@ check_ctl_v(char *text, int len)
 		    unsigned ch = CharOf(*text++);
 		    switch (base) {
 		    case 8:
-			ok = isdigit(ch) && (ch < '8');
+			ok = isdigit(CharOf(ch)) && (ch < '8');
 			break;
 		    case 10:
-			ok = isdigit(ch);
+			ok = isdigit(CharOf(ch));
 			break;
 		    case 16:
-			ok = isxdigit(ch);
+			ok = isxdigit(CharOf(ch));
 			break;
 		    }
 		    if (ok) {

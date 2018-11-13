@@ -1,7 +1,7 @@
 /*
  * Common utility functions for vile syntax/highlighter programs
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.162 2018/07/29 22:12:27 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/filters.c,v 1.164 2018/11/13 01:37:52 tom Exp $
  *
  */
 
@@ -270,7 +270,7 @@ ExecDefault(const char *param)
 
     if (isClass) {
 	flt_init_attr(temp);
-	VERBOSE(1, ("set default_attr '%s' %p", default_attr, default_attr));
+	VERBOSE(1, ("set default_attr '%s' %p", default_attr, (void *) default_attr));
     } else {
 	VERBOSE(1, ("not a class:%s", temp));
     }
@@ -566,7 +566,7 @@ class_attr(const char *name)
 	VERBOSE(data->kw_used, ("class_attr(%s) = %s",
 				name, AttrsOnce(data)));
 	name = result = data->kw_attr;
-	VERBOSE(1, ("-> %p", result));
+	VERBOSE(1, ("-> %p", (void *) result));
     }
     return result;
 }
@@ -1163,7 +1163,7 @@ keyword_attr(const char *name)
     if (data != 0) {
 	result = data->kw_attr;
     }
-    VERBOSE(1, ("keyword_attr(%s) = %p %s", name, result, NONNULL(result)));
+    VERBOSE(1, ("keyword_attr(%s) = %p %s", name, (const void *) result, NONNULL(result)));
     return result;
 }
 
@@ -1193,7 +1193,7 @@ keyword_flag(const char *name)
     if (data != 0) {
 	result = data->kw_flag;
     }
-    VERBOSE(1, ("keyword_flag(%s) = %p %s", name, result, NONNULL(result)));
+    VERBOSE(1, ("keyword_flag(%s) = %p %s", name, (const void *) result, NONNULL(result)));
     return result;
 }
 

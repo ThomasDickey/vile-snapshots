@@ -1,8 +1,7 @@
 /*
- * Main program and I/O for external vile syntax/highlighter programs
+ * $Id: builtflt.c,v 1.101 2018/11/12 18:30:34 tom Exp $
  *
- * $Id: builtflt.c,v 1.99 2018/07/29 23:09:33 tom Exp $
- *
+ * Main program and I/O for builtin vile syntax/highlighter programs
  */
 
 #include "estruct.h"
@@ -390,7 +389,7 @@ flt_get_line(void)
 int
 flt_get_col(void)
 {
-    return offs2col(curwp, mark_out.l, mark_out.o + 1);
+    return offs2col(curwp, mark_out.l, mark_out.o);
 }
 
 #ifdef MDFILTERMSGS
@@ -446,7 +445,7 @@ flt_error(const char *fmt,...)
 	    (void) b2printf(bp, "%s: %d:%d: ",
 			    filename,
 			    flt_get_line(),
-			    flt_get_col());
+			    flt_get_col() + 1);
 
 	    va_start(ap, fmt);
 	    (void) b2vprintf(bp, fmt, ap);
