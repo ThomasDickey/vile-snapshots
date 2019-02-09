@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright 2010-2014,2015 by Thomas E. Dickey.  All Rights Reserved.        *
+ * Copyright 2010-2018,2019 by Thomas E. Dickey.  All Rights Reserved.        *
  *                                                                            *
  * Permission to use, copy, modify, and distribute this software and its      *
  * documentation for any purpose and without fee is hereby granted, provided  *
@@ -22,10 +22,10 @@
  *                                                                            *
  ******************************************************************************/
 /* vile:cmode cts=8
- * $XTermId: gnreight.h,v 1.23 2015/11/09 01:16:43 tom Exp $
+ * $XTermId: gnreight.h,v 1.25 2019/02/09 20:32:11 tom Exp $
  *
  * This is a generated set of single-byte encodings,
- * using all available locales in libc6 2.19-22 - T.E.Dickey
+ * using all available locales in libc6 2.28-6 - T.E.Dickey
  */
 #ifndef GNREIGHT_H
 #define GNREIGHT_H 1
@@ -419,14 +419,14 @@ static const GNREIGHT_ENC encode_1046 = {
 	/* 0xe8 */	(vl_alpha | vl_print),
 	/* 0xe9 */	(vl_alpha | vl_print),
 	/* 0xea */	(vl_alpha | vl_print),
-	/* 0xeb */	(vl_print | vl_punct),
-	/* 0xec */	(vl_print | vl_punct),
-	/* 0xed */	(vl_print | vl_punct),
-	/* 0xee */	(vl_print | vl_punct),
-	/* 0xef */	(vl_print | vl_punct),
-	/* 0xf0 */	(vl_print | vl_punct),
-	/* 0xf1 */	(vl_print | vl_punct),
-	/* 0xf2 */	(vl_print | vl_punct),
+	/* 0xeb */	(vl_alpha | vl_print),
+	/* 0xec */	(vl_alpha | vl_print),
+	/* 0xed */	(vl_alpha | vl_print),
+	/* 0xee */	(vl_alpha | vl_print),
+	/* 0xef */	(vl_alpha | vl_print),
+	/* 0xf0 */	(vl_alpha | vl_print),
+	/* 0xf1 */	(vl_alpha | vl_print),
+	/* 0xf2 */	(vl_alpha | vl_print),
 	/* 0xf3 */	(vl_alpha | vl_print),
 	/* 0xf4 */	(vl_alpha | vl_print),
 	/* 0xf5 */	(vl_alpha | vl_print),
@@ -542,8 +542,8 @@ static const GNREIGHT_ENC encode_437 = {
 	/* 0xa3 */	(vl_alpha | vl_lower | vl_print),
 	/* 0xa4 */	(vl_alpha | vl_lower | vl_print),
 	/* 0xa5 */	(vl_alpha | vl_print | vl_upper),
-	/* 0xa6 */	(vl_alpha | vl_print),
-	/* 0xa7 */	(vl_alpha | vl_print),
+	/* 0xa6 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xa7 */	(vl_alpha | vl_lower | vl_print),
 	/* 0xa8 */	(vl_print | vl_punct),
 	/* 0xa9 */	(vl_print | vl_punct),
 	/* 0xaa */	(vl_print | vl_punct),
@@ -628,7 +628,7 @@ static const GNREIGHT_ENC encode_437 = {
 	/* 0xf9 */	(vl_print | vl_punct),
 	/* 0xfa */	(vl_print | vl_punct),
 	/* 0xfb */	(vl_print | vl_punct),
-	/* 0xfc */	(vl_alpha | vl_print),
+	/* 0xfc */	(vl_alpha | vl_lower | vl_print),
 	/* 0xfd */	(vl_print | vl_punct),
 	/* 0xfe */	(vl_print | vl_punct),
 	/* 0xff */	(vl_print | vl_punct),
@@ -734,8 +734,8 @@ static const GNREIGHT_ENC encode_850 = {
 	/* 0xa3 */	(vl_alpha | vl_lower | vl_print),
 	/* 0xa4 */	(vl_alpha | vl_lower | vl_print),
 	/* 0xa5 */	(vl_alpha | vl_print | vl_upper),
-	/* 0xa6 */	(vl_alpha | vl_print),
-	/* 0xa7 */	(vl_alpha | vl_print),
+	/* 0xa6 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xa7 */	(vl_alpha | vl_lower | vl_print),
 	/* 0xa8 */	(vl_print | vl_punct),
 	/* 0xa9 */	(vl_print | vl_punct),
 	/* 0xaa */	(vl_print | vl_punct),
@@ -921,7 +921,7 @@ static const GNREIGHT_ENC encode_851 = {
 	/* 0x9e */	(vl_alpha | vl_lower | vl_print),
 	/* 0x9f */	(vl_alpha | vl_lower | vl_print),
 	/* 0xa0 */	(vl_alpha | vl_lower | vl_print),
-	/* 0xa1 */	(vl_alpha | vl_print),
+	/* 0xa1 */	(vl_alpha | vl_lower | vl_print),
 	/* 0xa2 */	(vl_alpha | vl_lower | vl_print),
 	/* 0xa3 */	(vl_alpha | vl_lower | vl_print),
 	/* 0xa4 */	(vl_alpha | vl_print | vl_upper),
@@ -1012,7 +1012,7 @@ static const GNREIGHT_ENC encode_851 = {
 	/* 0xf9 */	(vl_print | vl_punct),
 	/* 0xfa */	(vl_alpha | vl_lower | vl_print),
 	/* 0xfb */	(vl_alpha | vl_lower | vl_print),
-	/* 0xfc */	(vl_alpha | vl_print),
+	/* 0xfc */	(vl_alpha | vl_lower | vl_print),
 	/* 0xfd */	(vl_alpha | vl_lower | vl_print),
 	/* 0xfe */	(vl_print | vl_punct),
 	/* 0xff */	(vl_print | vl_punct),
@@ -1544,8 +1544,8 @@ static const GNREIGHT_ENC encode_857 = {
 	/* 0xcd */	(vl_print | vl_punct),
 	/* 0xce */	(vl_print | vl_punct),
 	/* 0xcf */	(vl_print | vl_punct),
-	/* 0xd0 */	(vl_alpha | vl_print),
-	/* 0xd1 */	(vl_alpha | vl_print),
+	/* 0xd0 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xd1 */	(vl_alpha | vl_lower | vl_print),
 	/* 0xd2 */	(vl_alpha | vl_print | vl_upper),
 	/* 0xd3 */	(vl_alpha | vl_print | vl_upper),
 	/* 0xd4 */	(vl_alpha | vl_print | vl_upper),
@@ -1595,7 +1595,199 @@ static const GNREIGHT_ENC encode_857 = {
     },
 };
 
-/*   7:860 */
+/*   7:858 */
+static const GNREIGHT_ENC encode_858 = {
+    /* encode_858.chmap */
+    {
+	  0xc7,  0xfc,  0xe9,  0xe2,  0xe4,  0xe0,  0xe5,  0xe7,
+	  0xea,  0xeb,  0xe8,  0xef,  0xee,  0xec,  0xc4,  0xc5,
+	  0xc9,  0xe6,  0xc6,  0xf4,  0xf6,  0xf2,  0xfb,  0xf9,
+	  0xff,  0xd6,  0xdc,  0xf8,  0xa3,  0xd8,  0xd7, 0x192,
+	  0xe1,  0xed,  0xf3,  0xfa,  0xf1,  0xd1,  0xaa,  0xba,
+	  0xbf,  0xae,  0xac,  0xbd,  0xbc,  0xa1,  0xab,  0xbb,
+	0x2591,0x2592,0x2593,0x2502,0x2524,  0xc1,  0xc2,  0xc0,
+	  0xa9,0x2563,0x2551,0x2557,0x255d,  0xa2,  0xa5,0x2510,
+	0x2514,0x2534,0x252c,0x251c,0x2500,0x253c,  0xe3,  0xc3,
+	0x255a,0x2554,0x2569,0x2566,0x2560,0x2550,0x256c,  0xa4,
+	  0xf0,  0xd0,  0xca,  0xcb,  0xc8,0x20ac,  0xcd,  0xce,
+	  0xcf,0x2518,0x250c,0x2588,0x2584,  0xa6,  0xcc,0x2580,
+	  0xd3,  0xdf,  0xd4,  0xd2,  0xf5,  0xd5,  0xb5,  0xfe,
+	  0xde,  0xda,  0xdb,  0xd9,  0xfd,  0xdd,  0xaf,  0xb4,
+	  0xad,  0xb1,0x2017,  0xbe,  0xb6,  0xa7,  0xf7,  0xb8,
+	  0xb0,  0xa8,  0xb7,  0xb9,  0xb3,  0xb2,0x25a0,  0xa0
+    },
+    /* encode_858.lower */
+    {
+	  0x87,  0x81,  0x82,  0x83,  0x84,  0x85,  0x86,  0x87,
+	  0x88,  0x89,  0x8a,  0x8b,  0x8c,  0x8d,  0x84,  0x86,
+	  0x82,  0x91,  0x91,  0x93,  0x94,  0x95,  0x96,  0x97,
+	  0x98,  0x94,  0x81,  0x9b,  0x9c,  0x9b,  0x9e,  0x9f,
+	  0xa0,  0xa1,  0xa2,  0xa3,  0xa4,  0xa4,  0xa6,  0xa7,
+	  0xa8,  0xa9,  0xaa,  0xab,  0xac,  0xad,  0xae,  0xaf,
+	  0xb0,  0xb1,  0xb2,  0xb3,  0xb4,  0xa0,  0x83,  0x85,
+	  0xb8,  0xb9,  0xba,  0xbb,  0xbc,  0xbd,  0xbe,  0xbf,
+	  0xc0,  0xc1,  0xc2,  0xc3,  0xc4,  0xc5,  0xc6,  0xc6,
+	  0xc8,  0xc9,  0xca,  0xcb,  0xcc,  0xcd,  0xce,  0xcf,
+	  0xd0,  0xd0,  0x88,  0x89,  0x8a,  0xd5,  0xa1,  0x8c,
+	  0x8b,  0xd9,  0xda,  0xdb,  0xdc,  0xdd,  0x8d,  0xdf,
+	  0xa2,  0xe1,  0x93,  0x95,  0xe4,  0xe4,  0xe6,  0xe7,
+	  0xe7,  0xa3,  0x96,  0x97,  0xec,  0xec,  0xee,  0xef,
+	  0xf0,  0xf1,  0xf2,  0xf3,  0xf4,  0xf5,  0xf6,  0xf7,
+	  0xf8,  0xf9,  0xfa,  0xfb,  0xfc,  0xfd,  0xfe,  0xff
+    },
+    /* encode_858.upper */
+    {
+	  0x80,  0x9a,  0x90,  0xb6,  0x8e,  0xb7,  0x8f,  0x80,
+	  0xd2,  0xd3,  0xd4,  0xd8,  0xd7,  0xde,  0x8e,  0x8f,
+	  0x90,  0x92,  0x92,  0xe2,  0x99,  0xe3,  0xea,  0xeb,
+	  0x98,  0x99,  0x9a,  0x9d,  0x9c,  0x9d,  0x9e,  0x9f,
+	  0xb5,  0xd6,  0xe0,  0xe9,  0xa5,  0xa5,  0xa6,  0xa7,
+	  0xa8,  0xa9,  0xaa,  0xab,  0xac,  0xad,  0xae,  0xaf,
+	  0xb0,  0xb1,  0xb2,  0xb3,  0xb4,  0xb5,  0xb6,  0xb7,
+	  0xb8,  0xb9,  0xba,  0xbb,  0xbc,  0xbd,  0xbe,  0xbf,
+	  0xc0,  0xc1,  0xc2,  0xc3,  0xc4,  0xc5,  0xc7,  0xc7,
+	  0xc8,  0xc9,  0xca,  0xcb,  0xcc,  0xcd,  0xce,  0xcf,
+	  0xd1,  0xd1,  0xd2,  0xd3,  0xd4,  0xd5,  0xd6,  0xd7,
+	  0xd8,  0xd9,  0xda,  0xdb,  0xdc,  0xdd,  0xde,  0xdf,
+	  0xe0,  0xe1,  0xe2,  0xe3,  0xe5,  0xe5,  0xe6,  0xe8,
+	  0xe8,  0xe9,  0xea,  0xeb,  0xed,  0xed,  0xee,  0xef,
+	  0xf0,  0xf1,  0xf2,  0xf3,  0xf4,  0xf5,  0xf6,  0xf7,
+	  0xf8,  0xf9,  0xfa,  0xfb,  0xfc,  0xfd,  0xfe,  0xff
+    },
+    /* encode_858.ctype */
+    {
+	/* 0x80 */	(vl_alpha | vl_print | vl_upper),
+	/* 0x81 */	(vl_alpha | vl_lower | vl_print),
+	/* 0x82 */	(vl_alpha | vl_lower | vl_print),
+	/* 0x83 */	(vl_alpha | vl_lower | vl_print),
+	/* 0x84 */	(vl_alpha | vl_lower | vl_print),
+	/* 0x85 */	(vl_alpha | vl_lower | vl_print),
+	/* 0x86 */	(vl_alpha | vl_lower | vl_print),
+	/* 0x87 */	(vl_alpha | vl_lower | vl_print),
+	/* 0x88 */	(vl_alpha | vl_lower | vl_print),
+	/* 0x89 */	(vl_alpha | vl_lower | vl_print),
+	/* 0x8a */	(vl_alpha | vl_lower | vl_print),
+	/* 0x8b */	(vl_alpha | vl_lower | vl_print),
+	/* 0x8c */	(vl_alpha | vl_lower | vl_print),
+	/* 0x8d */	(vl_alpha | vl_lower | vl_print),
+	/* 0x8e */	(vl_alpha | vl_print | vl_upper),
+	/* 0x8f */	(vl_alpha | vl_print | vl_upper),
+	/* 0x90 */	(vl_alpha | vl_print | vl_upper),
+	/* 0x91 */	(vl_alpha | vl_lower | vl_print),
+	/* 0x92 */	(vl_alpha | vl_print | vl_upper),
+	/* 0x93 */	(vl_alpha | vl_lower | vl_print),
+	/* 0x94 */	(vl_alpha | vl_lower | vl_print),
+	/* 0x95 */	(vl_alpha | vl_lower | vl_print),
+	/* 0x96 */	(vl_alpha | vl_lower | vl_print),
+	/* 0x97 */	(vl_alpha | vl_lower | vl_print),
+	/* 0x98 */	(vl_alpha | vl_lower | vl_print),
+	/* 0x99 */	(vl_alpha | vl_print | vl_upper),
+	/* 0x9a */	(vl_alpha | vl_print | vl_upper),
+	/* 0x9b */	(vl_alpha | vl_lower | vl_print),
+	/* 0x9c */	(vl_print | vl_punct),
+	/* 0x9d */	(vl_alpha | vl_print | vl_upper),
+	/* 0x9e */	(vl_print | vl_punct),
+	/* 0x9f */	(vl_alpha | vl_lower | vl_print),
+	/* 0xa0 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xa1 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xa2 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xa3 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xa4 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xa5 */	(vl_alpha | vl_print | vl_upper),
+	/* 0xa6 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xa7 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xa8 */	(vl_print | vl_punct),
+	/* 0xa9 */	(vl_print | vl_punct),
+	/* 0xaa */	(vl_print | vl_punct),
+	/* 0xab */	(vl_print | vl_punct),
+	/* 0xac */	(vl_print | vl_punct),
+	/* 0xad */	(vl_print | vl_punct),
+	/* 0xae */	(vl_print | vl_punct),
+	/* 0xaf */	(vl_print | vl_punct),
+	/* 0xb0 */	(vl_print | vl_punct),
+	/* 0xb1 */	(vl_print | vl_punct),
+	/* 0xb2 */	(vl_print | vl_punct),
+	/* 0xb3 */	(vl_print | vl_punct),
+	/* 0xb4 */	(vl_print | vl_punct),
+	/* 0xb5 */	(vl_alpha | vl_print | vl_upper),
+	/* 0xb6 */	(vl_alpha | vl_print | vl_upper),
+	/* 0xb7 */	(vl_alpha | vl_print | vl_upper),
+	/* 0xb8 */	(vl_print | vl_punct),
+	/* 0xb9 */	(vl_print | vl_punct),
+	/* 0xba */	(vl_print | vl_punct),
+	/* 0xbb */	(vl_print | vl_punct),
+	/* 0xbc */	(vl_print | vl_punct),
+	/* 0xbd */	(vl_print | vl_punct),
+	/* 0xbe */	(vl_print | vl_punct),
+	/* 0xbf */	(vl_print | vl_punct),
+	/* 0xc0 */	(vl_print | vl_punct),
+	/* 0xc1 */	(vl_print | vl_punct),
+	/* 0xc2 */	(vl_print | vl_punct),
+	/* 0xc3 */	(vl_print | vl_punct),
+	/* 0xc4 */	(vl_print | vl_punct),
+	/* 0xc5 */	(vl_print | vl_punct),
+	/* 0xc6 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xc7 */	(vl_alpha | vl_print | vl_upper),
+	/* 0xc8 */	(vl_print | vl_punct),
+	/* 0xc9 */	(vl_print | vl_punct),
+	/* 0xca */	(vl_print | vl_punct),
+	/* 0xcb */	(vl_print | vl_punct),
+	/* 0xcc */	(vl_print | vl_punct),
+	/* 0xcd */	(vl_print | vl_punct),
+	/* 0xce */	(vl_print | vl_punct),
+	/* 0xcf */	(vl_print | vl_punct),
+	/* 0xd0 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xd1 */	(vl_alpha | vl_print | vl_upper),
+	/* 0xd2 */	(vl_alpha | vl_print | vl_upper),
+	/* 0xd3 */	(vl_alpha | vl_print | vl_upper),
+	/* 0xd4 */	(vl_alpha | vl_print | vl_upper),
+	/* 0xd5 */	(vl_print | vl_punct),
+	/* 0xd6 */	(vl_alpha | vl_print | vl_upper),
+	/* 0xd7 */	(vl_alpha | vl_print | vl_upper),
+	/* 0xd8 */	(vl_alpha | vl_print | vl_upper),
+	/* 0xd9 */	(vl_print | vl_punct),
+	/* 0xda */	(vl_print | vl_punct),
+	/* 0xdb */	(vl_print | vl_punct),
+	/* 0xdc */	(vl_print | vl_punct),
+	/* 0xdd */	(vl_print | vl_punct),
+	/* 0xde */	(vl_alpha | vl_print | vl_upper),
+	/* 0xdf */	(vl_print | vl_punct),
+	/* 0xe0 */	(vl_alpha | vl_print | vl_upper),
+	/* 0xe1 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xe2 */	(vl_alpha | vl_print | vl_upper),
+	/* 0xe3 */	(vl_alpha | vl_print | vl_upper),
+	/* 0xe4 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xe5 */	(vl_alpha | vl_print | vl_upper),
+	/* 0xe6 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xe7 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xe8 */	(vl_alpha | vl_print | vl_upper),
+	/* 0xe9 */	(vl_alpha | vl_print | vl_upper),
+	/* 0xea */	(vl_alpha | vl_print | vl_upper),
+	/* 0xeb */	(vl_alpha | vl_print | vl_upper),
+	/* 0xec */	(vl_alpha | vl_lower | vl_print),
+	/* 0xed */	(vl_alpha | vl_print | vl_upper),
+	/* 0xee */	(vl_print | vl_punct),
+	/* 0xef */	(vl_print | vl_punct),
+	/* 0xf0 */	(vl_print | vl_punct),
+	/* 0xf1 */	(vl_print | vl_punct),
+	/* 0xf2 */	(vl_print | vl_punct),
+	/* 0xf3 */	(vl_print | vl_punct),
+	/* 0xf4 */	(vl_print | vl_punct),
+	/* 0xf5 */	(vl_print | vl_punct),
+	/* 0xf6 */	(vl_print | vl_punct),
+	/* 0xf7 */	(vl_print | vl_punct),
+	/* 0xf8 */	(vl_print | vl_punct),
+	/* 0xf9 */	(vl_print | vl_punct),
+	/* 0xfa */	(vl_print | vl_punct),
+	/* 0xfb */	(vl_print | vl_punct),
+	/* 0xfc */	(vl_print | vl_punct),
+	/* 0xfd */	(vl_print | vl_punct),
+	/* 0xfe */	(vl_print | vl_punct),
+	/* 0xff */	(vl_print | vl_punct),
+    },
+};
+
+/*   8:860 */
 static const GNREIGHT_ENC encode_860 = {
     /* encode_860.chmap */
     {
@@ -1694,8 +1886,8 @@ static const GNREIGHT_ENC encode_860 = {
 	/* 0xa3 */	(vl_alpha | vl_lower | vl_print),
 	/* 0xa4 */	(vl_alpha | vl_lower | vl_print),
 	/* 0xa5 */	(vl_alpha | vl_print | vl_upper),
-	/* 0xa6 */	(vl_alpha | vl_print),
-	/* 0xa7 */	(vl_alpha | vl_print),
+	/* 0xa6 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xa7 */	(vl_alpha | vl_lower | vl_print),
 	/* 0xa8 */	(vl_print | vl_punct),
 	/* 0xa9 */	(vl_alpha | vl_print | vl_upper),
 	/* 0xaa */	(vl_print | vl_punct),
@@ -1780,14 +1972,14 @@ static const GNREIGHT_ENC encode_860 = {
 	/* 0xf9 */	(vl_print | vl_punct),
 	/* 0xfa */	(vl_print | vl_punct),
 	/* 0xfb */	(vl_print | vl_punct),
-	/* 0xfc */	(vl_alpha | vl_print),
+	/* 0xfc */	(vl_alpha | vl_lower | vl_print),
 	/* 0xfd */	(vl_print | vl_punct),
 	/* 0xfe */	(vl_print | vl_punct),
 	/* 0xff */	(vl_print | vl_punct),
     },
 };
 
-/*   8:861 */
+/*   9:861 */
 static const GNREIGHT_ENC encode_861 = {
     /* encode_861.chmap */
     {
@@ -1972,14 +2164,14 @@ static const GNREIGHT_ENC encode_861 = {
 	/* 0xf9 */	(vl_print | vl_punct),
 	/* 0xfa */	(vl_print | vl_punct),
 	/* 0xfb */	(vl_print | vl_punct),
-	/* 0xfc */	(vl_alpha | vl_print),
+	/* 0xfc */	(vl_alpha | vl_lower | vl_print),
 	/* 0xfd */	(vl_print | vl_punct),
 	/* 0xfe */	(vl_print | vl_punct),
 	/* 0xff */	(vl_print | vl_punct),
     },
 };
 
-/*   9:862 */
+/*  10:862 */
 static const GNREIGHT_ENC encode_862 = {
     /* encode_862.chmap */
     {
@@ -2078,8 +2270,8 @@ static const GNREIGHT_ENC encode_862 = {
 	/* 0xa3 */	(vl_alpha | vl_lower | vl_print),
 	/* 0xa4 */	(vl_alpha | vl_lower | vl_print),
 	/* 0xa5 */	(vl_alpha | vl_print | vl_upper),
-	/* 0xa6 */	(vl_alpha | vl_print),
-	/* 0xa7 */	(vl_alpha | vl_print),
+	/* 0xa6 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xa7 */	(vl_alpha | vl_lower | vl_print),
 	/* 0xa8 */	(vl_print | vl_punct),
 	/* 0xa9 */	(vl_print | vl_punct),
 	/* 0xaa */	(vl_print | vl_punct),
@@ -2164,14 +2356,14 @@ static const GNREIGHT_ENC encode_862 = {
 	/* 0xf9 */	(vl_print | vl_punct),
 	/* 0xfa */	(vl_print | vl_punct),
 	/* 0xfb */	(vl_print | vl_punct),
-	/* 0xfc */	(vl_alpha | vl_print),
+	/* 0xfc */	(vl_alpha | vl_lower | vl_print),
 	/* 0xfd */	(vl_print | vl_punct),
 	/* 0xfe */	(vl_print | vl_punct),
 	/* 0xff */	(vl_print | vl_punct),
     },
 };
 
-/*  10:863 */
+/*  11:863 */
 static const GNREIGHT_ENC encode_863 = {
     /* encode_863.chmap */
     {
@@ -2356,14 +2548,14 @@ static const GNREIGHT_ENC encode_863 = {
 	/* 0xf9 */	(vl_print | vl_punct),
 	/* 0xfa */	(vl_print | vl_punct),
 	/* 0xfb */	(vl_print | vl_punct),
-	/* 0xfc */	(vl_alpha | vl_print),
+	/* 0xfc */	(vl_alpha | vl_lower | vl_print),
 	/* 0xfd */	(vl_print | vl_punct),
 	/* 0xfe */	(vl_print | vl_punct),
 	/* 0xff */	(vl_print | vl_punct),
     },
 };
 
-/*  11:865 */
+/*  12:865 */
 static const GNREIGHT_ENC encode_865 = {
     /* encode_865.chmap */
     {
@@ -2462,8 +2654,8 @@ static const GNREIGHT_ENC encode_865 = {
 	/* 0xa3 */	(vl_alpha | vl_lower | vl_print),
 	/* 0xa4 */	(vl_alpha | vl_lower | vl_print),
 	/* 0xa5 */	(vl_alpha | vl_print | vl_upper),
-	/* 0xa6 */	(vl_alpha | vl_print),
-	/* 0xa7 */	(vl_alpha | vl_print),
+	/* 0xa6 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xa7 */	(vl_alpha | vl_lower | vl_print),
 	/* 0xa8 */	(vl_print | vl_punct),
 	/* 0xa9 */	(vl_print | vl_punct),
 	/* 0xaa */	(vl_print | vl_punct),
@@ -2548,14 +2740,14 @@ static const GNREIGHT_ENC encode_865 = {
 	/* 0xf9 */	(vl_print | vl_punct),
 	/* 0xfa */	(vl_print | vl_punct),
 	/* 0xfb */	(vl_print | vl_punct),
-	/* 0xfc */	(vl_alpha | vl_print),
+	/* 0xfc */	(vl_alpha | vl_lower | vl_print),
 	/* 0xfd */	(vl_print | vl_punct),
 	/* 0xfe */	(vl_print | vl_punct),
 	/* 0xff */	(vl_print | vl_punct),
     },
 };
 
-/*  12:866 */
+/*  13:866 */
 static const GNREIGHT_ENC encode_866 = {
     /* encode_866.chmap */
     {
@@ -2747,7 +2939,7 @@ static const GNREIGHT_ENC encode_866 = {
     },
 };
 
-/*  13:866NAV */
+/*  14:866NAV */
 static const GNREIGHT_ENC encode_866NAV = {
     /* encode_866NAV.chmap */
     {
@@ -2939,7 +3131,7 @@ static const GNREIGHT_ENC encode_866NAV = {
     },
 };
 
-/*  14:869 */
+/*  15:869 */
 static const GNREIGHT_ENC encode_869 = {
     /* encode_869.chmap */
     {
@@ -3033,7 +3225,7 @@ static const GNREIGHT_ENC encode_869 = {
 	/* 0x9e */	(vl_alpha | vl_lower | vl_print),
 	/* 0x9f */	(vl_alpha | vl_lower | vl_print),
 	/* 0xa0 */	(vl_alpha | vl_lower | vl_print),
-	/* 0xa1 */	(vl_alpha | vl_print),
+	/* 0xa1 */	(vl_alpha | vl_lower | vl_print),
 	/* 0xa2 */	(vl_alpha | vl_lower | vl_print),
 	/* 0xa3 */	(vl_alpha | vl_lower | vl_print),
 	/* 0xa4 */	(vl_alpha | vl_print | vl_upper),
@@ -3124,14 +3316,14 @@ static const GNREIGHT_ENC encode_869 = {
 	/* 0xf9 */	(vl_print | vl_punct),
 	/* 0xfa */	(vl_alpha | vl_lower | vl_print),
 	/* 0xfb */	(vl_alpha | vl_lower | vl_print),
-	/* 0xfc */	(vl_alpha | vl_print),
+	/* 0xfc */	(vl_alpha | vl_lower | vl_print),
 	/* 0xfd */	(vl_alpha | vl_lower | vl_print),
 	/* 0xfe */	(vl_print | vl_punct),
 	/* 0xff */	(vl_print | vl_punct),
     },
 };
 
-/*  15:874 */
+/*  16:874 */
 static const GNREIGHT_ENC encode_874 = {
     /* encode_874.chmap */
     {
@@ -3271,7 +3463,7 @@ static const GNREIGHT_ENC encode_874 = {
 	/* 0xcc */	(vl_alpha | vl_print),
 	/* 0xcd */	(vl_alpha | vl_print),
 	/* 0xce */	(vl_alpha | vl_print),
-	/* 0xcf */	(vl_print | vl_punct),
+	/* 0xcf */	(vl_alpha | vl_print),
 	/* 0xd0 */	(vl_alpha | vl_print),
 	/* 0xd1 */	(vl_alpha | vl_print),
 	/* 0xd2 */	(vl_alpha | vl_print),
@@ -3294,15 +3486,15 @@ static const GNREIGHT_ENC encode_874 = {
 	/* 0xe3 */	(vl_alpha | vl_print),
 	/* 0xe4 */	(vl_alpha | vl_print),
 	/* 0xe5 */	(vl_alpha | vl_print),
-	/* 0xe6 */	(vl_print | vl_punct),
-	/* 0xe7 */	(vl_alpha | vl_print),
-	/* 0xe8 */	(vl_alpha | vl_print),
-	/* 0xe9 */	(vl_alpha | vl_print),
-	/* 0xea */	(vl_alpha | vl_print),
-	/* 0xeb */	(vl_alpha | vl_print),
-	/* 0xec */	(vl_alpha | vl_print),
+	/* 0xe6 */	(vl_alpha | vl_print),
+	/* 0xe7 */	(vl_print | vl_punct),
+	/* 0xe8 */	(vl_print | vl_punct),
+	/* 0xe9 */	(vl_print | vl_punct),
+	/* 0xea */	(vl_print | vl_punct),
+	/* 0xeb */	(vl_print | vl_punct),
+	/* 0xec */	(vl_print | vl_punct),
 	/* 0xed */	(vl_alpha | vl_print),
-	/* 0xee */	(vl_alpha | vl_print),
+	/* 0xee */	(vl_print | vl_punct),
 	/* 0xef */	(vl_print | vl_punct),
 	/* 0xf0 */	(vl_alpha | vl_print),
 	/* 0xf1 */	(vl_alpha | vl_print),
@@ -3323,7 +3515,7 @@ static const GNREIGHT_ENC encode_874 = {
     },
 };
 
-/*  16:8859_4 */
+/*  17:8859_4 */
 static const GNREIGHT_ENC encode_8859_4 = {
     /* encode_8859_4.chmap */
     {
@@ -3418,7 +3610,7 @@ static const GNREIGHT_ENC encode_8859_4 = {
 	/* 0x9f */	(vl_cntrl),
 	/* 0xa0 */	(vl_print | vl_punct),
 	/* 0xa1 */	(vl_alpha | vl_print | vl_upper),
-	/* 0xa2 */	(vl_alpha | vl_print),
+	/* 0xa2 */	(vl_alpha | vl_lower | vl_print),
 	/* 0xa3 */	(vl_alpha | vl_print | vl_upper),
 	/* 0xa4 */	(vl_print | vl_punct),
 	/* 0xa5 */	(vl_alpha | vl_print | vl_upper),
@@ -3515,7 +3707,199 @@ static const GNREIGHT_ENC encode_8859_4 = {
     },
 };
 
-/*  17:ANSI_X3.110-1983 */
+/*  18:8859_9 */
+static const GNREIGHT_ENC encode_8859_9 = {
+    /* encode_8859_9.chmap */
+    {
+	  0x80,  0x81,  0x82,  0x83,  0x84,  0x85,  0x86,  0x87,
+	  0x88,  0x89,  0x8a,  0x8b,  0x8c,  0x8d,  0x8e,  0x8f,
+	  0x90,  0x91,  0x92,  0x93,  0x94,  0x95,  0x96,  0x97,
+	  0x98,  0x99,  0x9a,  0x9b,  0x9c,  0x9d,  0x9e,  0x9f,
+	  0xa0,  0xa1,  0xa2,  0xa3,  0xa4,  0xa5,  0xa6,  0xa7,
+	  0xa8,  0xa9,  0xaa,  0xab,  0xac,  0xad,  0xae,  0xaf,
+	  0xb0,  0xb1,  0xb2,  0xb3,  0xb4,  0xb5,  0xb6,  0xb7,
+	  0xb8,  0xb9,  0xba,  0xbb,  0xbc,  0xbd,  0xbe,  0xbf,
+	  0xc0,  0xc1,  0xc2,  0xc3,  0xc4,  0xc5,  0xc6,  0xc7,
+	  0xc8,  0xc9,  0xca,  0xcb,  0xcc,  0xcd,  0xce,  0xcf,
+	 0x11e,  0xd1,  0xd2,  0xd3,  0xd4,  0xd5,  0xd6,  0xd7,
+	  0xd8,  0xd9,  0xda,  0xdb,  0xdc, 0x130, 0x15e,  0xdf,
+	  0xe0,  0xe1,  0xe2,  0xe3,  0xe4,  0xe5,  0xe6,  0xe7,
+	  0xe8,  0xe9,  0xea,  0xeb,  0xec,  0xed,  0xee,  0xef,
+	 0x11f,  0xf1,  0xf2,  0xf3,  0xf4,  0xf5,  0xf6,  0xf7,
+	  0xf8,  0xf9,  0xfa,  0xfb,  0xfc, 0x131, 0x15f,  0xff
+    },
+    /* encode_8859_9.lower */
+    {
+	  0x80,  0x81,  0x82,  0x83,  0x84,  0x85,  0x86,  0x87,
+	  0x88,  0x89,  0x8a,  0x8b,  0x8c,  0x8d,  0x8e,  0x8f,
+	  0x90,  0x91,  0x92,  0x93,  0x94,  0x95,  0x96,  0x97,
+	  0x98,  0x99,  0x9a,  0x9b,  0x9c,  0x9d,  0x9e,  0x9f,
+	  0xa0,  0xa1,  0xa2,  0xa3,  0xa4,  0xa5,  0xa6,  0xa7,
+	  0xa8,  0xa9,  0xaa,  0xab,  0xac,  0xad,  0xae,  0xaf,
+	  0xb0,  0xb1,  0xb2,  0xb3,  0xb4,  0xb5,  0xb6,  0xb7,
+	  0xb8,  0xb9,  0xba,  0xbb,  0xbc,  0xbd,  0xbe,  0xbf,
+	  0xe0,  0xe1,  0xe2,  0xe3,  0xe4,  0xe5,  0xe6,  0xe7,
+	  0xe8,  0xe9,  0xea,  0xeb,  0xec,  0xed,  0xee,  0xef,
+	  0xf0,  0xf1,  0xf2,  0xf3,  0xf4,  0xf5,  0xf6,  0xd7,
+	  0xf8,  0xf9,  0xfa,  0xfb,  0xfc,  0x69,  0xfe,  0xdf,
+	  0xe0,  0xe1,  0xe2,  0xe3,  0xe4,  0xe5,  0xe6,  0xe7,
+	  0xe8,  0xe9,  0xea,  0xeb,  0xec,  0xed,  0xee,  0xef,
+	  0xf0,  0xf1,  0xf2,  0xf3,  0xf4,  0xf5,  0xf6,  0xf7,
+	  0xf8,  0xf9,  0xfa,  0xfb,  0xfc,  0xfd,  0xfe,  0xff
+    },
+    /* encode_8859_9.upper */
+    {
+	  0x80,  0x81,  0x82,  0x83,  0x84,  0x85,  0x86,  0x87,
+	  0x88,  0x89,  0x8a,  0x8b,  0x8c,  0x8d,  0x8e,  0x8f,
+	  0x90,  0x91,  0x92,  0x93,  0x94,  0x95,  0x96,  0x97,
+	  0x98,  0x99,  0x9a,  0x9b,  0x9c,  0x9d,  0x9e,  0x9f,
+	  0xa0,  0xa1,  0xa2,  0xa3,  0xa4,  0xa5,  0xa6,  0xa7,
+	  0xa8,  0xa9,  0xaa,  0xab,  0xac,  0xad,  0xae,  0xaf,
+	  0xb0,  0xb1,  0xb2,  0xb3,  0xb4,  0xb5,  0xb6,  0xb7,
+	  0xb8,  0xb9,  0xba,  0xbb,  0xbc,  0xbd,  0xbe,  0xbf,
+	  0xc0,  0xc1,  0xc2,  0xc3,  0xc4,  0xc5,  0xc6,  0xc7,
+	  0xc8,  0xc9,  0xca,  0xcb,  0xcc,  0xcd,  0xce,  0xcf,
+	  0xd0,  0xd1,  0xd2,  0xd3,  0xd4,  0xd5,  0xd6,  0xd7,
+	  0xd8,  0xd9,  0xda,  0xdb,  0xdc,  0xdd,  0xde,  0xdf,
+	  0xc0,  0xc1,  0xc2,  0xc3,  0xc4,  0xc5,  0xc6,  0xc7,
+	  0xc8,  0xc9,  0xca,  0xcb,  0xcc,  0xcd,  0xce,  0xcf,
+	  0xd0,  0xd1,  0xd2,  0xd3,  0xd4,  0xd5,  0xd6,  0xf7,
+	  0xd8,  0xd9,  0xda,  0xdb,  0xdc,  0x49,  0xde,  0xff
+    },
+    /* encode_8859_9.ctype */
+    {
+	/* 0x80 */	(vl_cntrl),
+	/* 0x81 */	(vl_cntrl),
+	/* 0x82 */	(vl_cntrl),
+	/* 0x83 */	(vl_cntrl),
+	/* 0x84 */	(vl_cntrl),
+	/* 0x85 */	(vl_cntrl),
+	/* 0x86 */	(vl_cntrl),
+	/* 0x87 */	(vl_cntrl),
+	/* 0x88 */	(vl_cntrl),
+	/* 0x89 */	(vl_cntrl),
+	/* 0x8a */	(vl_cntrl),
+	/* 0x8b */	(vl_cntrl),
+	/* 0x8c */	(vl_cntrl),
+	/* 0x8d */	(vl_cntrl),
+	/* 0x8e */	(vl_cntrl),
+	/* 0x8f */	(vl_cntrl),
+	/* 0x90 */	(vl_cntrl),
+	/* 0x91 */	(vl_cntrl),
+	/* 0x92 */	(vl_cntrl),
+	/* 0x93 */	(vl_cntrl),
+	/* 0x94 */	(vl_cntrl),
+	/* 0x95 */	(vl_cntrl),
+	/* 0x96 */	(vl_cntrl),
+	/* 0x97 */	(vl_cntrl),
+	/* 0x98 */	(vl_cntrl),
+	/* 0x99 */	(vl_cntrl),
+	/* 0x9a */	(vl_cntrl),
+	/* 0x9b */	(vl_cntrl),
+	/* 0x9c */	(vl_cntrl),
+	/* 0x9d */	(vl_cntrl),
+	/* 0x9e */	(vl_cntrl),
+	/* 0x9f */	(vl_cntrl),
+	/* 0xa0 */	(vl_print | vl_punct),
+	/* 0xa1 */	(vl_print | vl_punct),
+	/* 0xa2 */	(vl_print | vl_punct),
+	/* 0xa3 */	(vl_print | vl_punct),
+	/* 0xa4 */	(vl_print | vl_punct),
+	/* 0xa5 */	(vl_print | vl_punct),
+	/* 0xa6 */	(vl_print | vl_punct),
+	/* 0xa7 */	(vl_print | vl_punct),
+	/* 0xa8 */	(vl_print | vl_punct),
+	/* 0xa9 */	(vl_print | vl_punct),
+	/* 0xaa */	(vl_alpha | vl_lower | vl_print),
+	/* 0xab */	(vl_print | vl_punct),
+	/* 0xac */	(vl_print | vl_punct),
+	/* 0xad */	(vl_print | vl_punct),
+	/* 0xae */	(vl_print | vl_punct),
+	/* 0xaf */	(vl_print | vl_punct),
+	/* 0xb0 */	(vl_print | vl_punct),
+	/* 0xb1 */	(vl_print | vl_punct),
+	/* 0xb2 */	(vl_print | vl_punct),
+	/* 0xb3 */	(vl_print | vl_punct),
+	/* 0xb4 */	(vl_print | vl_punct),
+	/* 0xb5 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xb6 */	(vl_print | vl_punct),
+	/* 0xb7 */	(vl_print | vl_punct),
+	/* 0xb8 */	(vl_print | vl_punct),
+	/* 0xb9 */	(vl_print | vl_punct),
+	/* 0xba */	(vl_alpha | vl_lower | vl_print),
+	/* 0xbb */	(vl_print | vl_punct),
+	/* 0xbc */	(vl_print | vl_punct),
+	/* 0xbd */	(vl_print | vl_punct),
+	/* 0xbe */	(vl_print | vl_punct),
+	/* 0xbf */	(vl_print | vl_punct),
+	/* 0xc0 */	(vl_alpha | vl_print | vl_upper),
+	/* 0xc1 */	(vl_alpha | vl_print | vl_upper),
+	/* 0xc2 */	(vl_alpha | vl_print | vl_upper),
+	/* 0xc3 */	(vl_alpha | vl_print | vl_upper),
+	/* 0xc4 */	(vl_alpha | vl_print | vl_upper),
+	/* 0xc5 */	(vl_alpha | vl_print | vl_upper),
+	/* 0xc6 */	(vl_alpha | vl_print | vl_upper),
+	/* 0xc7 */	(vl_alpha | vl_print | vl_upper),
+	/* 0xc8 */	(vl_alpha | vl_print | vl_upper),
+	/* 0xc9 */	(vl_alpha | vl_print | vl_upper),
+	/* 0xca */	(vl_alpha | vl_print | vl_upper),
+	/* 0xcb */	(vl_alpha | vl_print | vl_upper),
+	/* 0xcc */	(vl_alpha | vl_print | vl_upper),
+	/* 0xcd */	(vl_alpha | vl_print | vl_upper),
+	/* 0xce */	(vl_alpha | vl_print | vl_upper),
+	/* 0xcf */	(vl_alpha | vl_print | vl_upper),
+	/* 0xd0 */	(vl_alpha | vl_print | vl_upper),
+	/* 0xd1 */	(vl_alpha | vl_print | vl_upper),
+	/* 0xd2 */	(vl_alpha | vl_print | vl_upper),
+	/* 0xd3 */	(vl_alpha | vl_print | vl_upper),
+	/* 0xd4 */	(vl_alpha | vl_print | vl_upper),
+	/* 0xd5 */	(vl_alpha | vl_print | vl_upper),
+	/* 0xd6 */	(vl_alpha | vl_print | vl_upper),
+	/* 0xd7 */	(vl_print | vl_punct),
+	/* 0xd8 */	(vl_alpha | vl_print | vl_upper),
+	/* 0xd9 */	(vl_alpha | vl_print | vl_upper),
+	/* 0xda */	(vl_alpha | vl_print | vl_upper),
+	/* 0xdb */	(vl_alpha | vl_print | vl_upper),
+	/* 0xdc */	(vl_alpha | vl_print | vl_upper),
+	/* 0xdd */	(vl_alpha | vl_print | vl_upper),
+	/* 0xde */	(vl_alpha | vl_print | vl_upper),
+	/* 0xdf */	(vl_alpha | vl_lower | vl_print),
+	/* 0xe0 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xe1 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xe2 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xe3 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xe4 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xe5 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xe6 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xe7 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xe8 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xe9 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xea */	(vl_alpha | vl_lower | vl_print),
+	/* 0xeb */	(vl_alpha | vl_lower | vl_print),
+	/* 0xec */	(vl_alpha | vl_lower | vl_print),
+	/* 0xed */	(vl_alpha | vl_lower | vl_print),
+	/* 0xee */	(vl_alpha | vl_lower | vl_print),
+	/* 0xef */	(vl_alpha | vl_lower | vl_print),
+	/* 0xf0 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xf1 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xf2 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xf3 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xf4 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xf5 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xf6 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xf7 */	(vl_print | vl_punct),
+	/* 0xf8 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xf9 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xfa */	(vl_alpha | vl_lower | vl_print),
+	/* 0xfb */	(vl_alpha | vl_lower | vl_print),
+	/* 0xfc */	(vl_alpha | vl_lower | vl_print),
+	/* 0xfd */	(vl_alpha | vl_lower | vl_print),
+	/* 0xfe */	(vl_alpha | vl_lower | vl_print),
+	/* 0xff */	(vl_alpha | vl_lower | vl_print),
+    },
+};
+
+/*  19:ANSI_X3.110-1983 */
 static const GNREIGHT_ENC encode_ANSI_X3_110_1983 = {
     /* encode_ANSI_X3_110_1983.chmap */
     {
@@ -3675,7 +4059,7 @@ static const GNREIGHT_ENC encode_ANSI_X3_110_1983 = {
 	/* 0xe0 */	(vl_alpha | vl_print | vl_upper),
 	/* 0xe1 */	(vl_alpha | vl_print | vl_upper),
 	/* 0xe2 */	(vl_alpha | vl_print | vl_upper),
-	/* 0xe3 */	(vl_alpha | vl_print),
+	/* 0xe3 */	(vl_alpha | vl_lower | vl_print),
 	/* 0xe4 */	(vl_alpha | vl_print | vl_upper),
 	/* 0xe5 */	(vl_print | vl_punct),
 	/* 0xe6 */	(vl_alpha | vl_print | vl_upper),
@@ -3683,12 +4067,12 @@ static const GNREIGHT_ENC encode_ANSI_X3_110_1983 = {
 	/* 0xe8 */	(vl_alpha | vl_print | vl_upper),
 	/* 0xe9 */	(vl_alpha | vl_print | vl_upper),
 	/* 0xea */	(vl_alpha | vl_print | vl_upper),
-	/* 0xeb */	(vl_alpha | vl_print),
+	/* 0xeb */	(vl_alpha | vl_lower | vl_print),
 	/* 0xec */	(vl_alpha | vl_print | vl_upper),
 	/* 0xed */	(vl_alpha | vl_print | vl_upper),
 	/* 0xee */	(vl_alpha | vl_print | vl_upper),
-	/* 0xef */	(vl_alpha | vl_print),
-	/* 0xf0 */	(vl_alpha | vl_print),
+	/* 0xef */	(vl_alpha | vl_lower | vl_print),
+	/* 0xf0 */	(vl_alpha | vl_lower | vl_print),
 	/* 0xf1 */	(vl_alpha | vl_lower | vl_print),
 	/* 0xf2 */	(vl_alpha | vl_lower | vl_print),
 	/* 0xf3 */	(vl_alpha | vl_lower | vl_print),
@@ -3707,7 +4091,7 @@ static const GNREIGHT_ENC encode_ANSI_X3_110_1983 = {
     },
 };
 
-/*  18:ANSI_X3.4-1968 */
+/*  20:ANSI_X3.4-1968 */
 static const GNREIGHT_ENC encode_ANSI_X3_4_1968 = {
     /* encode_ANSI_X3_4_1968.chmap */
     {
@@ -3899,7 +4283,7 @@ static const GNREIGHT_ENC encode_ANSI_X3_4_1968 = {
     },
 };
 
-/*  19:ARMSCII-8 */
+/*  21:ARMSCII-8 */
 static const GNREIGHT_ENC encode_ARMSCII_8 = {
     /* encode_ARMSCII_8.chmap */
     {
@@ -3994,7 +4378,7 @@ static const GNREIGHT_ENC encode_ARMSCII_8 = {
 	/* 0x9f */	(vl_cntrl),
 	/* 0xa0 */	(vl_print | vl_punct),
 	/* 0xa1 */	0,
-	/* 0xa2 */	(vl_alpha | vl_print),
+	/* 0xa2 */	(vl_alpha | vl_lower | vl_print),
 	/* 0xa3 */	(vl_print | vl_punct),
 	/* 0xa4 */	(vl_print | vl_punct),
 	/* 0xa5 */	(vl_print | vl_punct),
@@ -4091,7 +4475,7 @@ static const GNREIGHT_ENC encode_ARMSCII_8 = {
     },
 };
 
-/*  20:CP10007 */
+/*  22:CP10007 */
 static const GNREIGHT_ENC encode_CP10007 = {
     /* encode_CP10007.chmap */
     {
@@ -4283,7 +4667,7 @@ static const GNREIGHT_ENC encode_CP10007 = {
     },
 };
 
-/*  21:CP1004 */
+/*  23:CP1004 */
 static const GNREIGHT_ENC encode_CP1004 = {
     /* encode_CP1004.chmap */
     {
@@ -4386,7 +4770,7 @@ static const GNREIGHT_ENC encode_CP1004 = {
 	/* 0xa7 */	(vl_print | vl_punct),
 	/* 0xa8 */	(vl_print | vl_punct),
 	/* 0xa9 */	(vl_print | vl_punct),
-	/* 0xaa */	(vl_alpha | vl_print),
+	/* 0xaa */	(vl_alpha | vl_lower | vl_print),
 	/* 0xab */	(vl_print | vl_punct),
 	/* 0xac */	(vl_print | vl_punct),
 	/* 0xad */	(vl_print | vl_punct),
@@ -4402,7 +4786,7 @@ static const GNREIGHT_ENC encode_CP1004 = {
 	/* 0xb7 */	(vl_print | vl_punct),
 	/* 0xb8 */	(vl_print | vl_punct),
 	/* 0xb9 */	(vl_print | vl_punct),
-	/* 0xba */	(vl_alpha | vl_print),
+	/* 0xba */	(vl_alpha | vl_lower | vl_print),
 	/* 0xbb */	(vl_print | vl_punct),
 	/* 0xbc */	(vl_print | vl_punct),
 	/* 0xbd */	(vl_print | vl_punct),
@@ -4475,7 +4859,7 @@ static const GNREIGHT_ENC encode_CP1004 = {
     },
 };
 
-/*  22:CP1008 */
+/*  24:CP1008 */
 static const GNREIGHT_ENC encode_CP1008 = {
     /* encode_CP1008.chmap */
     {
@@ -4667,7 +5051,7 @@ static const GNREIGHT_ENC encode_CP1008 = {
     },
 };
 
-/*  23:CP1124 */
+/*  25:CP1124 */
 static const GNREIGHT_ENC encode_CP1124 = {
     /* encode_CP1124.chmap */
     {
@@ -4859,7 +5243,7 @@ static const GNREIGHT_ENC encode_CP1124 = {
     },
 };
 
-/*  24:CP1125 */
+/*  26:CP1125 */
 static const GNREIGHT_ENC encode_CP1125 = {
     /* encode_CP1125.chmap */
     {
@@ -5051,7 +5435,7 @@ static const GNREIGHT_ENC encode_CP1125 = {
     },
 };
 
-/*  25:CP1129 */
+/*  27:CP1129 */
 static const GNREIGHT_ENC encode_CP1129 = {
     /* encode_CP1129.chmap */
     {
@@ -5154,7 +5538,7 @@ static const GNREIGHT_ENC encode_CP1129 = {
 	/* 0xa7 */	(vl_print | vl_punct),
 	/* 0xa8 */	(vl_alpha | vl_lower | vl_print),
 	/* 0xa9 */	(vl_print | vl_punct),
-	/* 0xaa */	(vl_alpha | vl_print),
+	/* 0xaa */	(vl_alpha | vl_lower | vl_print),
 	/* 0xab */	(vl_print | vl_punct),
 	/* 0xac */	(vl_print | vl_punct),
 	/* 0xad */	(vl_print | vl_punct),
@@ -5170,7 +5554,7 @@ static const GNREIGHT_ENC encode_CP1129 = {
 	/* 0xb7 */	(vl_print | vl_punct),
 	/* 0xb8 */	(vl_alpha | vl_print | vl_upper),
 	/* 0xb9 */	(vl_print | vl_punct),
-	/* 0xba */	(vl_alpha | vl_print),
+	/* 0xba */	(vl_alpha | vl_lower | vl_print),
 	/* 0xbb */	(vl_print | vl_punct),
 	/* 0xbc */	(vl_print | vl_punct),
 	/* 0xbd */	(vl_print | vl_punct),
@@ -5243,7 +5627,7 @@ static const GNREIGHT_ENC encode_CP1129 = {
     },
 };
 
-/*  26:CP1133 */
+/*  28:CP1133 */
 static const GNREIGHT_ENC encode_CP1133 = {
     /* encode_CP1133.chmap */
     {
@@ -5371,15 +5755,15 @@ static const GNREIGHT_ENC encode_CP1133 = {
 	/* 0xc0 */	(vl_alpha | vl_print),
 	/* 0xc1 */	(vl_alpha | vl_print),
 	/* 0xc2 */	(vl_alpha | vl_print),
-	/* 0xc3 */	(vl_print | vl_punct),
-	/* 0xc4 */	(vl_print | vl_punct),
-	/* 0xc5 */	(vl_print | vl_punct),
-	/* 0xc6 */	(vl_print | vl_punct),
-	/* 0xc7 */	(vl_print | vl_punct),
-	/* 0xc8 */	(vl_print | vl_punct),
-	/* 0xc9 */	(vl_print | vl_punct),
-	/* 0xca */	(vl_print | vl_punct),
-	/* 0xcb */	(vl_print | vl_punct),
+	/* 0xc3 */	(vl_alpha | vl_print),
+	/* 0xc4 */	(vl_alpha | vl_print),
+	/* 0xc5 */	(vl_alpha | vl_print),
+	/* 0xc6 */	(vl_alpha | vl_print),
+	/* 0xc7 */	(vl_alpha | vl_print),
+	/* 0xc8 */	(vl_alpha | vl_print),
+	/* 0xc9 */	(vl_alpha | vl_print),
+	/* 0xca */	(vl_alpha | vl_print),
+	/* 0xcb */	(vl_alpha | vl_print),
 	/* 0xcc */	(vl_alpha | vl_print),
 	/* 0xcd */	0,
 	/* 0xce */	0,
@@ -5394,7 +5778,7 @@ static const GNREIGHT_ENC encode_CP1133 = {
 	/* 0xd7 */	(vl_print | vl_punct),
 	/* 0xd8 */	(vl_print | vl_punct),
 	/* 0xd9 */	(vl_print | vl_punct),
-	/* 0xda */	(vl_print | vl_punct),
+	/* 0xda */	(vl_alpha | vl_print),
 	/* 0xdb */	(vl_alpha | vl_print),
 	/* 0xdc */	0,
 	/* 0xdd */	(vl_alpha | vl_print),
@@ -5435,7 +5819,7 @@ static const GNREIGHT_ENC encode_CP1133 = {
     },
 };
 
-/*  27:CP1162 */
+/*  29:CP1162 */
 static const GNREIGHT_ENC encode_CP1162 = {
     /* encode_CP1162.chmap */
     {
@@ -5575,7 +5959,7 @@ static const GNREIGHT_ENC encode_CP1162 = {
 	/* 0xcc */	(vl_alpha | vl_print),
 	/* 0xcd */	(vl_alpha | vl_print),
 	/* 0xce */	(vl_alpha | vl_print),
-	/* 0xcf */	(vl_print | vl_punct),
+	/* 0xcf */	(vl_alpha | vl_print),
 	/* 0xd0 */	(vl_alpha | vl_print),
 	/* 0xd1 */	(vl_alpha | vl_print),
 	/* 0xd2 */	(vl_alpha | vl_print),
@@ -5598,15 +5982,15 @@ static const GNREIGHT_ENC encode_CP1162 = {
 	/* 0xe3 */	(vl_alpha | vl_print),
 	/* 0xe4 */	(vl_alpha | vl_print),
 	/* 0xe5 */	(vl_alpha | vl_print),
-	/* 0xe6 */	(vl_print | vl_punct),
-	/* 0xe7 */	(vl_alpha | vl_print),
-	/* 0xe8 */	(vl_alpha | vl_print),
-	/* 0xe9 */	(vl_alpha | vl_print),
-	/* 0xea */	(vl_alpha | vl_print),
-	/* 0xeb */	(vl_alpha | vl_print),
-	/* 0xec */	(vl_alpha | vl_print),
+	/* 0xe6 */	(vl_alpha | vl_print),
+	/* 0xe7 */	(vl_print | vl_punct),
+	/* 0xe8 */	(vl_print | vl_punct),
+	/* 0xe9 */	(vl_print | vl_punct),
+	/* 0xea */	(vl_print | vl_punct),
+	/* 0xeb */	(vl_print | vl_punct),
+	/* 0xec */	(vl_print | vl_punct),
 	/* 0xed */	(vl_alpha | vl_print),
-	/* 0xee */	(vl_alpha | vl_print),
+	/* 0xee */	(vl_print | vl_punct),
 	/* 0xef */	(vl_print | vl_punct),
 	/* 0xf0 */	(vl_alpha | vl_print),
 	/* 0xf1 */	(vl_alpha | vl_print),
@@ -5627,7 +6011,7 @@ static const GNREIGHT_ENC encode_CP1162 = {
     },
 };
 
-/*  28:CP1163 */
+/*  30:CP1163 */
 static const GNREIGHT_ENC encode_CP1163 = {
     /* encode_CP1163.chmap */
     {
@@ -5730,7 +6114,7 @@ static const GNREIGHT_ENC encode_CP1163 = {
 	/* 0xa7 */	(vl_print | vl_punct),
 	/* 0xa8 */	(vl_alpha | vl_lower | vl_print),
 	/* 0xa9 */	(vl_print | vl_punct),
-	/* 0xaa */	(vl_alpha | vl_print),
+	/* 0xaa */	(vl_alpha | vl_lower | vl_print),
 	/* 0xab */	(vl_print | vl_punct),
 	/* 0xac */	(vl_print | vl_punct),
 	/* 0xad */	(vl_print | vl_punct),
@@ -5746,7 +6130,7 @@ static const GNREIGHT_ENC encode_CP1163 = {
 	/* 0xb7 */	(vl_print | vl_punct),
 	/* 0xb8 */	(vl_alpha | vl_print | vl_upper),
 	/* 0xb9 */	(vl_print | vl_punct),
-	/* 0xba */	(vl_alpha | vl_print),
+	/* 0xba */	(vl_alpha | vl_lower | vl_print),
 	/* 0xbb */	(vl_print | vl_punct),
 	/* 0xbc */	(vl_print | vl_punct),
 	/* 0xbd */	(vl_print | vl_punct),
@@ -5819,7 +6203,7 @@ static const GNREIGHT_ENC encode_CP1163 = {
     },
 };
 
-/*  29:CP1167 */
+/*  31:CP1167 */
 static const GNREIGHT_ENC encode_CP1167 = {
     /* encode_CP1167.chmap */
     {
@@ -6011,7 +6395,7 @@ static const GNREIGHT_ENC encode_CP1167 = {
     },
 };
 
-/*  30:CP1250 */
+/*  32:CP1250 */
 static const GNREIGHT_ENC encode_CP1250 = {
     /* encode_CP1250.chmap */
     {
@@ -6203,7 +6587,7 @@ static const GNREIGHT_ENC encode_CP1250 = {
     },
 };
 
-/*  31:CP1251 */
+/*  33:CP1251 */
 static const GNREIGHT_ENC encode_CP1251 = {
     /* encode_CP1251.chmap */
     {
@@ -6395,7 +6779,7 @@ static const GNREIGHT_ENC encode_CP1251 = {
     },
 };
 
-/*  32:CP1252 */
+/*  34:CP1252 */
 static const GNREIGHT_ENC encode_CP1252 = {
     /* encode_CP1252.chmap */
     {
@@ -6498,7 +6882,7 @@ static const GNREIGHT_ENC encode_CP1252 = {
 	/* 0xa7 */	(vl_print | vl_punct),
 	/* 0xa8 */	(vl_print | vl_punct),
 	/* 0xa9 */	(vl_print | vl_punct),
-	/* 0xaa */	(vl_alpha | vl_print),
+	/* 0xaa */	(vl_alpha | vl_lower | vl_print),
 	/* 0xab */	(vl_print | vl_punct),
 	/* 0xac */	(vl_print | vl_punct),
 	/* 0xad */	(vl_print | vl_punct),
@@ -6514,7 +6898,7 @@ static const GNREIGHT_ENC encode_CP1252 = {
 	/* 0xb7 */	(vl_print | vl_punct),
 	/* 0xb8 */	(vl_print | vl_punct),
 	/* 0xb9 */	(vl_print | vl_punct),
-	/* 0xba */	(vl_alpha | vl_print),
+	/* 0xba */	(vl_alpha | vl_lower | vl_print),
 	/* 0xbb */	(vl_print | vl_punct),
 	/* 0xbc */	(vl_print | vl_punct),
 	/* 0xbd */	(vl_print | vl_punct),
@@ -6587,7 +6971,7 @@ static const GNREIGHT_ENC encode_CP1252 = {
     },
 };
 
-/*  33:CP1253 */
+/*  35:CP1253 */
 static const GNREIGHT_ENC encode_CP1253 = {
     /* encode_CP1253.chmap */
     {
@@ -6712,7 +7096,7 @@ static const GNREIGHT_ENC encode_CP1253 = {
 	/* 0xbd */	(vl_print | vl_punct),
 	/* 0xbe */	(vl_alpha | vl_print | vl_upper),
 	/* 0xbf */	(vl_alpha | vl_print | vl_upper),
-	/* 0xc0 */	(vl_alpha | vl_print),
+	/* 0xc0 */	(vl_alpha | vl_lower | vl_print),
 	/* 0xc1 */	(vl_alpha | vl_print | vl_upper),
 	/* 0xc2 */	(vl_alpha | vl_print | vl_upper),
 	/* 0xc3 */	(vl_alpha | vl_print | vl_upper),
@@ -6744,7 +7128,7 @@ static const GNREIGHT_ENC encode_CP1253 = {
 	/* 0xdd */	(vl_alpha | vl_lower | vl_print),
 	/* 0xde */	(vl_alpha | vl_lower | vl_print),
 	/* 0xdf */	(vl_alpha | vl_lower | vl_print),
-	/* 0xe0 */	(vl_alpha | vl_print),
+	/* 0xe0 */	(vl_alpha | vl_lower | vl_print),
 	/* 0xe1 */	(vl_alpha | vl_lower | vl_print),
 	/* 0xe2 */	(vl_alpha | vl_lower | vl_print),
 	/* 0xe3 */	(vl_alpha | vl_lower | vl_print),
@@ -6779,7 +7163,7 @@ static const GNREIGHT_ENC encode_CP1253 = {
     },
 };
 
-/*  34:CP1254 */
+/*  36:CP1254 */
 static const GNREIGHT_ENC encode_CP1254 = {
     /* encode_CP1254.chmap */
     {
@@ -6882,7 +7266,7 @@ static const GNREIGHT_ENC encode_CP1254 = {
 	/* 0xa7 */	(vl_print | vl_punct),
 	/* 0xa8 */	(vl_print | vl_punct),
 	/* 0xa9 */	(vl_print | vl_punct),
-	/* 0xaa */	(vl_alpha | vl_print),
+	/* 0xaa */	(vl_alpha | vl_lower | vl_print),
 	/* 0xab */	(vl_print | vl_punct),
 	/* 0xac */	(vl_print | vl_punct),
 	/* 0xad */	(vl_print | vl_punct),
@@ -6898,7 +7282,7 @@ static const GNREIGHT_ENC encode_CP1254 = {
 	/* 0xb7 */	(vl_print | vl_punct),
 	/* 0xb8 */	(vl_print | vl_punct),
 	/* 0xb9 */	(vl_print | vl_punct),
-	/* 0xba */	(vl_alpha | vl_print),
+	/* 0xba */	(vl_alpha | vl_lower | vl_print),
 	/* 0xbb */	(vl_print | vl_punct),
 	/* 0xbc */	(vl_print | vl_punct),
 	/* 0xbd */	(vl_print | vl_punct),
@@ -6971,7 +7355,7 @@ static const GNREIGHT_ENC encode_CP1254 = {
     },
 };
 
-/*  35:CP1255 */
+/*  37:CP1255 */
 static const GNREIGHT_ENC encode_CP1255 = {
     /* encode_CP1255.chmap */
     {
@@ -7096,25 +7480,25 @@ static const GNREIGHT_ENC encode_CP1255 = {
 	/* 0xbd */	(vl_print | vl_punct),
 	/* 0xbe */	(vl_print | vl_punct),
 	/* 0xbf */	(vl_print | vl_punct),
-	/* 0xc0 */	(vl_print | vl_punct),
-	/* 0xc1 */	(vl_print | vl_punct),
-	/* 0xc2 */	(vl_print | vl_punct),
-	/* 0xc3 */	(vl_print | vl_punct),
-	/* 0xc4 */	(vl_print | vl_punct),
-	/* 0xc5 */	(vl_print | vl_punct),
-	/* 0xc6 */	(vl_print | vl_punct),
-	/* 0xc7 */	(vl_print | vl_punct),
-	/* 0xc8 */	(vl_print | vl_punct),
-	/* 0xc9 */	(vl_print | vl_punct),
+	/* 0xc0 */	(vl_alpha | vl_print),
+	/* 0xc1 */	(vl_alpha | vl_print),
+	/* 0xc2 */	(vl_alpha | vl_print),
+	/* 0xc3 */	(vl_alpha | vl_print),
+	/* 0xc4 */	(vl_alpha | vl_print),
+	/* 0xc5 */	(vl_alpha | vl_print),
+	/* 0xc6 */	(vl_alpha | vl_print),
+	/* 0xc7 */	(vl_alpha | vl_print),
+	/* 0xc8 */	(vl_alpha | vl_print),
+	/* 0xc9 */	(vl_alpha | vl_print),
 	/* 0xca */	0,
-	/* 0xcb */	(vl_print | vl_punct),
-	/* 0xcc */	(vl_print | vl_punct),
-	/* 0xcd */	(vl_print | vl_punct),
+	/* 0xcb */	(vl_alpha | vl_print),
+	/* 0xcc */	(vl_alpha | vl_print),
+	/* 0xcd */	(vl_alpha | vl_print),
 	/* 0xce */	(vl_print | vl_punct),
-	/* 0xcf */	(vl_print | vl_punct),
+	/* 0xcf */	(vl_alpha | vl_print),
 	/* 0xd0 */	(vl_print | vl_punct),
-	/* 0xd1 */	(vl_print | vl_punct),
-	/* 0xd2 */	(vl_print | vl_punct),
+	/* 0xd1 */	(vl_alpha | vl_print),
+	/* 0xd2 */	(vl_alpha | vl_print),
 	/* 0xd3 */	(vl_print | vl_punct),
 	/* 0xd4 */	(vl_print | vl_punct),
 	/* 0xd5 */	(vl_alpha | vl_print),
@@ -7163,7 +7547,7 @@ static const GNREIGHT_ENC encode_CP1255 = {
     },
 };
 
-/*  36:CP1256 */
+/*  38:CP1256 */
 static const GNREIGHT_ENC encode_CP1256 = {
     /* encode_CP1256.chmap */
     {
@@ -7336,17 +7720,17 @@ static const GNREIGHT_ENC encode_CP1256 = {
 	/* 0xed */	(vl_alpha | vl_print),
 	/* 0xee */	(vl_alpha | vl_lower | vl_print),
 	/* 0xef */	(vl_alpha | vl_lower | vl_print),
-	/* 0xf0 */	(vl_print | vl_punct),
-	/* 0xf1 */	(vl_print | vl_punct),
-	/* 0xf2 */	(vl_print | vl_punct),
-	/* 0xf3 */	(vl_print | vl_punct),
+	/* 0xf0 */	(vl_alpha | vl_print),
+	/* 0xf1 */	(vl_alpha | vl_print),
+	/* 0xf2 */	(vl_alpha | vl_print),
+	/* 0xf3 */	(vl_alpha | vl_print),
 	/* 0xf4 */	(vl_alpha | vl_lower | vl_print),
-	/* 0xf5 */	(vl_print | vl_punct),
-	/* 0xf6 */	(vl_print | vl_punct),
+	/* 0xf5 */	(vl_alpha | vl_print),
+	/* 0xf6 */	(vl_alpha | vl_print),
 	/* 0xf7 */	(vl_print | vl_punct),
-	/* 0xf8 */	(vl_print | vl_punct),
+	/* 0xf8 */	(vl_alpha | vl_print),
 	/* 0xf9 */	(vl_alpha | vl_lower | vl_print),
-	/* 0xfa */	(vl_print | vl_punct),
+	/* 0xfa */	(vl_alpha | vl_print),
 	/* 0xfb */	(vl_alpha | vl_lower | vl_print),
 	/* 0xfc */	(vl_alpha | vl_lower | vl_print),
 	/* 0xfd */	(vl_print | vl_punct),
@@ -7355,7 +7739,7 @@ static const GNREIGHT_ENC encode_CP1256 = {
     },
 };
 
-/*  37:CP1257 */
+/*  39:CP1257 */
 static const GNREIGHT_ENC encode_CP1257 = {
     /* encode_CP1257.chmap */
     {
@@ -7547,7 +7931,7 @@ static const GNREIGHT_ENC encode_CP1257 = {
     },
 };
 
-/*  38:CP1282 */
+/*  40:CP1282 */
 static const GNREIGHT_ENC encode_CP1282 = {
     /* encode_CP1282.chmap */
     {
@@ -7739,7 +8123,7 @@ static const GNREIGHT_ENC encode_CP1282 = {
     },
 };
 
-/*  39:CP4909 */
+/*  41:CP4909 */
 static const GNREIGHT_ENC encode_CP4909 = {
     /* encode_CP4909.chmap */
     {
@@ -7864,7 +8248,7 @@ static const GNREIGHT_ENC encode_CP4909 = {
 	/* 0xbd */	(vl_print | vl_punct),
 	/* 0xbe */	(vl_alpha | vl_print | vl_upper),
 	/* 0xbf */	(vl_alpha | vl_print | vl_upper),
-	/* 0xc0 */	(vl_alpha | vl_print),
+	/* 0xc0 */	(vl_alpha | vl_lower | vl_print),
 	/* 0xc1 */	(vl_alpha | vl_print | vl_upper),
 	/* 0xc2 */	(vl_alpha | vl_print | vl_upper),
 	/* 0xc3 */	(vl_alpha | vl_print | vl_upper),
@@ -7896,7 +8280,7 @@ static const GNREIGHT_ENC encode_CP4909 = {
 	/* 0xdd */	(vl_alpha | vl_lower | vl_print),
 	/* 0xde */	(vl_alpha | vl_lower | vl_print),
 	/* 0xdf */	(vl_alpha | vl_lower | vl_print),
-	/* 0xe0 */	(vl_alpha | vl_print),
+	/* 0xe0 */	(vl_alpha | vl_lower | vl_print),
 	/* 0xe1 */	(vl_alpha | vl_lower | vl_print),
 	/* 0xe2 */	(vl_alpha | vl_lower | vl_print),
 	/* 0xe3 */	(vl_alpha | vl_lower | vl_print),
@@ -7931,7 +8315,7 @@ static const GNREIGHT_ENC encode_CP4909 = {
     },
 };
 
-/*  40:CP5347 */
+/*  42:CP5347 */
 static const GNREIGHT_ENC encode_CP5347 = {
     /* encode_CP5347.chmap */
     {
@@ -8123,7 +8507,7 @@ static const GNREIGHT_ENC encode_CP5347 = {
     },
 };
 
-/*  41:CP737 */
+/*  43:CP737 */
 static const GNREIGHT_ENC encode_CP737 = {
     /* encode_CP737.chmap */
     {
@@ -8308,14 +8692,14 @@ static const GNREIGHT_ENC encode_CP737 = {
 	/* 0xf9 */	(vl_print | vl_punct),
 	/* 0xfa */	(vl_print | vl_punct),
 	/* 0xfb */	(vl_print | vl_punct),
-	/* 0xfc */	(vl_alpha | vl_print),
+	/* 0xfc */	(vl_alpha | vl_lower | vl_print),
 	/* 0xfd */	(vl_print | vl_punct),
 	/* 0xfe */	(vl_print | vl_punct),
 	/* 0xff */	(vl_print | vl_punct),
     },
 };
 
-/*  42:CP770 */
+/*  44:CP770 */
 static const GNREIGHT_ENC encode_CP770 = {
     /* encode_CP770.chmap */
     {
@@ -8500,14 +8884,14 @@ static const GNREIGHT_ENC encode_CP770 = {
 	/* 0xf9 */	(vl_print | vl_punct),
 	/* 0xfa */	(vl_print | vl_punct),
 	/* 0xfb */	(vl_print | vl_punct),
-	/* 0xfc */	(vl_alpha | vl_print),
+	/* 0xfc */	(vl_alpha | vl_lower | vl_print),
 	/* 0xfd */	(vl_print | vl_punct),
 	/* 0xfe */	(vl_print | vl_punct),
 	/* 0xff */	(vl_print | vl_punct),
     },
 };
 
-/*  43:CP771 */
+/*  45:CP771 */
 static const GNREIGHT_ENC encode_CP771 = {
     /* encode_CP771.chmap */
     {
@@ -8699,7 +9083,7 @@ static const GNREIGHT_ENC encode_CP771 = {
     },
 };
 
-/*  44:CP772 */
+/*  46:CP772 */
 static const GNREIGHT_ENC encode_CP772 = {
     /* encode_CP772.chmap */
     {
@@ -8884,14 +9268,14 @@ static const GNREIGHT_ENC encode_CP772 = {
 	/* 0xf9 */	(vl_print | vl_punct),
 	/* 0xfa */	(vl_print | vl_punct),
 	/* 0xfb */	(vl_print | vl_punct),
-	/* 0xfc */	(vl_alpha | vl_print),
+	/* 0xfc */	(vl_alpha | vl_lower | vl_print),
 	/* 0xfd */	(vl_print | vl_punct),
 	/* 0xfe */	(vl_print | vl_punct),
 	/* 0xff */	(vl_print | vl_punct),
     },
 };
 
-/*  45:CP773 */
+/*  47:CP773 */
 static const GNREIGHT_ENC encode_CP773 = {
     /* encode_CP773.chmap */
     {
@@ -9083,7 +9467,7 @@ static const GNREIGHT_ENC encode_CP773 = {
     },
 };
 
-/*  46:CP774 */
+/*  48:CP774 */
 static const GNREIGHT_ENC encode_CP774 = {
     /* encode_CP774.chmap */
     {
@@ -9182,8 +9566,8 @@ static const GNREIGHT_ENC encode_CP774 = {
 	/* 0xa3 */	(vl_alpha | vl_lower | vl_print),
 	/* 0xa4 */	(vl_alpha | vl_lower | vl_print),
 	/* 0xa5 */	(vl_alpha | vl_print | vl_upper),
-	/* 0xa6 */	(vl_alpha | vl_print),
-	/* 0xa7 */	(vl_alpha | vl_print),
+	/* 0xa6 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xa7 */	(vl_alpha | vl_lower | vl_print),
 	/* 0xa8 */	(vl_print | vl_punct),
 	/* 0xa9 */	(vl_print | vl_punct),
 	/* 0xaa */	(vl_print | vl_punct),
@@ -9268,14 +9652,14 @@ static const GNREIGHT_ENC encode_CP774 = {
 	/* 0xf9 */	(vl_print | vl_punct),
 	/* 0xfa */	(vl_print | vl_punct),
 	/* 0xfb */	(vl_print | vl_punct),
-	/* 0xfc */	(vl_alpha | vl_print),
+	/* 0xfc */	(vl_alpha | vl_lower | vl_print),
 	/* 0xfd */	(vl_print | vl_punct),
 	/* 0xfe */	(vl_print | vl_punct),
 	/* 0xff */	(vl_print | vl_punct),
     },
 };
 
-/*  47:CP775 */
+/*  49:CP775 */
 static const GNREIGHT_ENC encode_CP775 = {
     /* encode_CP775.chmap */
     {
@@ -9467,7 +9851,7 @@ static const GNREIGHT_ENC encode_CP775 = {
     },
 };
 
-/*  48:CP901 */
+/*  50:CP901 */
 static const GNREIGHT_ENC encode_CP901 = {
     /* encode_CP901.chmap */
     {
@@ -9659,7 +10043,7 @@ static const GNREIGHT_ENC encode_CP901 = {
     },
 };
 
-/*  49:CP902 */
+/*  51:CP902 */
 static const GNREIGHT_ENC encode_CP902 = {
     /* encode_CP902.chmap */
     {
@@ -9762,7 +10146,7 @@ static const GNREIGHT_ENC encode_CP902 = {
 	/* 0xa7 */	(vl_print | vl_punct),
 	/* 0xa8 */	(vl_print | vl_punct),
 	/* 0xa9 */	(vl_print | vl_punct),
-	/* 0xaa */	(vl_alpha | vl_print),
+	/* 0xaa */	(vl_alpha | vl_lower | vl_print),
 	/* 0xab */	(vl_print | vl_punct),
 	/* 0xac */	(vl_print | vl_punct),
 	/* 0xad */	(vl_print | vl_punct),
@@ -9778,7 +10162,7 @@ static const GNREIGHT_ENC encode_CP902 = {
 	/* 0xb7 */	(vl_print | vl_punct),
 	/* 0xb8 */	(vl_print | vl_punct),
 	/* 0xb9 */	(vl_print | vl_punct),
-	/* 0xba */	(vl_alpha | vl_print),
+	/* 0xba */	(vl_alpha | vl_lower | vl_print),
 	/* 0xbb */	(vl_print | vl_punct),
 	/* 0xbc */	(vl_print | vl_punct),
 	/* 0xbd */	(vl_print | vl_punct),
@@ -9851,7 +10235,7 @@ static const GNREIGHT_ENC encode_CP902 = {
     },
 };
 
-/*  50:CP922 */
+/*  52:CP922 */
 static const GNREIGHT_ENC encode_CP922 = {
     /* encode_CP922.chmap */
     {
@@ -9954,7 +10338,7 @@ static const GNREIGHT_ENC encode_CP922 = {
 	/* 0xa7 */	(vl_print | vl_punct),
 	/* 0xa8 */	(vl_print | vl_punct),
 	/* 0xa9 */	(vl_print | vl_punct),
-	/* 0xaa */	(vl_alpha | vl_print),
+	/* 0xaa */	(vl_alpha | vl_lower | vl_print),
 	/* 0xab */	(vl_print | vl_punct),
 	/* 0xac */	(vl_print | vl_punct),
 	/* 0xad */	(vl_print | vl_punct),
@@ -9970,7 +10354,7 @@ static const GNREIGHT_ENC encode_CP922 = {
 	/* 0xb7 */	(vl_print | vl_punct),
 	/* 0xb8 */	(vl_print | vl_punct),
 	/* 0xb9 */	(vl_print | vl_punct),
-	/* 0xba */	(vl_alpha | vl_print),
+	/* 0xba */	(vl_alpha | vl_lower | vl_print),
 	/* 0xbb */	(vl_print | vl_punct),
 	/* 0xbc */	(vl_print | vl_punct),
 	/* 0xbd */	(vl_print | vl_punct),
@@ -10043,7 +10427,7 @@ static const GNREIGHT_ENC encode_CP922 = {
     },
 };
 
-/*  51:CP-AR */
+/*  53:CP-AR */
 static const GNREIGHT_ENC encode_CP_AR = {
     /* encode_CP_AR.chmap */
     {
@@ -10227,7 +10611,7 @@ static const GNREIGHT_ENC encode_CP_AR = {
 	/* 0xf8 */	0,
 	/* 0xf9 */	0,
 	/* 0xfa */	0,
-	/* 0xfb */	(vl_print | vl_punct),
+	/* 0xfb */	(vl_alpha | vl_print),
 	/* 0xfc */	(vl_alpha | vl_print),
 	/* 0xfd */	0,
 	/* 0xfe */	(vl_print | vl_punct),
@@ -10235,7 +10619,7 @@ static const GNREIGHT_ENC encode_CP_AR = {
     },
 };
 
-/*  52:CP-HU */
+/*  54:CP-HU */
 static const GNREIGHT_ENC encode_CP_HU = {
     /* encode_CP_HU.chmap */
     {
@@ -10334,7 +10718,7 @@ static const GNREIGHT_ENC encode_CP_HU = {
 	/* 0xa3 */	(vl_alpha | vl_lower | vl_print),
 	/* 0xa4 */	(vl_alpha | vl_lower | vl_print),
 	/* 0xa5 */	(vl_alpha | vl_print | vl_upper),
-	/* 0xa6 */	(vl_alpha | vl_print),
+	/* 0xa6 */	(vl_alpha | vl_lower | vl_print),
 	/* 0xa7 */	(vl_alpha | vl_print | vl_upper),
 	/* 0xa8 */	(vl_print | vl_punct),
 	/* 0xa9 */	(vl_print | vl_punct),
@@ -10420,14 +10804,14 @@ static const GNREIGHT_ENC encode_CP_HU = {
 	/* 0xf9 */	(vl_print | vl_punct),
 	/* 0xfa */	(vl_print | vl_punct),
 	/* 0xfb */	(vl_print | vl_punct),
-	/* 0xfc */	(vl_alpha | vl_print),
+	/* 0xfc */	(vl_alpha | vl_lower | vl_print),
 	/* 0xfd */	(vl_print | vl_punct),
 	/* 0xfe */	(vl_print | vl_punct),
 	/* 0xff */	(vl_print | vl_punct),
     },
 };
 
-/*  53:CSDECMCS */
+/*  55:CSDECMCS */
 static const GNREIGHT_ENC encode_CSDECMCS = {
     /* encode_CSDECMCS.chmap */
     {
@@ -10530,7 +10914,7 @@ static const GNREIGHT_ENC encode_CSDECMCS = {
 	/* 0xa7 */	(vl_print | vl_punct),
 	/* 0xa8 */	(vl_print | vl_punct),
 	/* 0xa9 */	(vl_print | vl_punct),
-	/* 0xaa */	(vl_alpha | vl_print),
+	/* 0xaa */	(vl_alpha | vl_lower | vl_print),
 	/* 0xab */	(vl_print | vl_punct),
 	/* 0xac */	0,
 	/* 0xad */	0,
@@ -10546,7 +10930,7 @@ static const GNREIGHT_ENC encode_CSDECMCS = {
 	/* 0xb7 */	(vl_print | vl_punct),
 	/* 0xb8 */	0,
 	/* 0xb9 */	(vl_print | vl_punct),
-	/* 0xba */	(vl_alpha | vl_print),
+	/* 0xba */	(vl_alpha | vl_lower | vl_print),
 	/* 0xbb */	(vl_print | vl_punct),
 	/* 0xbc */	(vl_print | vl_punct),
 	/* 0xbd */	(vl_print | vl_punct),
@@ -10619,7 +11003,7 @@ static const GNREIGHT_ENC encode_CSDECMCS = {
     },
 };
 
-/*  54:CSHPROMAN8 */
+/*  56:CSHPROMAN8 */
 static const GNREIGHT_ENC encode_CSHPROMAN8 = {
     /* encode_CSHPROMAN8.chmap */
     {
@@ -10801,8 +11185,8 @@ static const GNREIGHT_ENC encode_CSHPROMAN8 = {
 	/* 0xf6 */	(vl_print | vl_punct),
 	/* 0xf7 */	(vl_print | vl_punct),
 	/* 0xf8 */	(vl_print | vl_punct),
-	/* 0xf9 */	(vl_alpha | vl_print),
-	/* 0xfa */	(vl_alpha | vl_print),
+	/* 0xf9 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xfa */	(vl_alpha | vl_lower | vl_print),
 	/* 0xfb */	(vl_print | vl_punct),
 	/* 0xfc */	(vl_print | vl_punct),
 	/* 0xfd */	(vl_print | vl_punct),
@@ -10811,7 +11195,7 @@ static const GNREIGHT_ENC encode_CSHPROMAN8 = {
     },
 };
 
-/*  55:CSISO103T618BIT */
+/*  57:CSISO103T618BIT */
 static const GNREIGHT_ENC encode_CSISO103T618BIT = {
     /* encode_CSISO103T618BIT.chmap */
     {
@@ -10971,7 +11355,7 @@ static const GNREIGHT_ENC encode_CSISO103T618BIT = {
 	/* 0xe0 */	(vl_alpha | vl_print | vl_upper),
 	/* 0xe1 */	(vl_alpha | vl_print | vl_upper),
 	/* 0xe2 */	(vl_alpha | vl_print | vl_upper),
-	/* 0xe3 */	(vl_alpha | vl_print),
+	/* 0xe3 */	(vl_alpha | vl_lower | vl_print),
 	/* 0xe4 */	(vl_alpha | vl_print | vl_upper),
 	/* 0xe5 */	0,
 	/* 0xe6 */	(vl_alpha | vl_print | vl_upper),
@@ -10979,12 +11363,12 @@ static const GNREIGHT_ENC encode_CSISO103T618BIT = {
 	/* 0xe8 */	(vl_alpha | vl_print | vl_upper),
 	/* 0xe9 */	(vl_alpha | vl_print | vl_upper),
 	/* 0xea */	(vl_alpha | vl_print | vl_upper),
-	/* 0xeb */	(vl_alpha | vl_print),
+	/* 0xeb */	(vl_alpha | vl_lower | vl_print),
 	/* 0xec */	(vl_alpha | vl_print | vl_upper),
 	/* 0xed */	(vl_alpha | vl_print | vl_upper),
 	/* 0xee */	(vl_alpha | vl_print | vl_upper),
-	/* 0xef */	(vl_alpha | vl_print),
-	/* 0xf0 */	(vl_alpha | vl_print),
+	/* 0xef */	(vl_alpha | vl_lower | vl_print),
+	/* 0xf0 */	(vl_alpha | vl_lower | vl_print),
 	/* 0xf1 */	(vl_alpha | vl_lower | vl_print),
 	/* 0xf2 */	(vl_alpha | vl_lower | vl_print),
 	/* 0xf3 */	(vl_alpha | vl_lower | vl_print),
@@ -11003,7 +11387,7 @@ static const GNREIGHT_ENC encode_CSISO103T618BIT = {
     },
 };
 
-/*  56:CSISO111ECMACYRILLIC */
+/*  58:CSISO111ECMACYRILLIC */
 static const GNREIGHT_ENC encode_CSISO111ECMACYRILLIC = {
     /* encode_CSISO111ECMACYRILLIC.chmap */
     {
@@ -11195,7 +11579,7 @@ static const GNREIGHT_ENC encode_CSISO111ECMACYRILLIC = {
     },
 };
 
-/*  57:CSISO143IECP271 */
+/*  59:CSISO143IECP271 */
 static const GNREIGHT_ENC encode_CSISO143IECP271 = {
     /* encode_CSISO143IECP271.chmap */
     {
@@ -11387,7 +11771,7 @@ static const GNREIGHT_ENC encode_CSISO143IECP271 = {
     },
 };
 
-/*  58:CSISO153GOST1976874 */
+/*  60:CSISO153GOST1976874 */
 static const GNREIGHT_ENC encode_CSISO153GOST1976874 = {
     /* encode_CSISO153GOST1976874.chmap */
     {
@@ -11579,7 +11963,7 @@ static const GNREIGHT_ENC encode_CSISO153GOST1976874 = {
     },
 };
 
-/*  59:CSMACINTOSH */
+/*  61:CSMACINTOSH */
 static const GNREIGHT_ENC encode_CSMACINTOSH = {
     /* encode_CSMACINTOSH.chmap */
     {
@@ -11699,8 +12083,8 @@ static const GNREIGHT_ENC encode_CSMACINTOSH = {
 	/* 0xb8 */	(vl_print | vl_punct),
 	/* 0xb9 */	(vl_alpha | vl_lower | vl_print),
 	/* 0xba */	(vl_print | vl_punct),
-	/* 0xbb */	(vl_alpha | vl_print),
-	/* 0xbc */	(vl_alpha | vl_print),
+	/* 0xbb */	(vl_alpha | vl_lower | vl_print),
+	/* 0xbc */	(vl_alpha | vl_lower | vl_print),
 	/* 0xbd */	(vl_alpha | vl_print | vl_upper),
 	/* 0xbe */	(vl_alpha | vl_lower | vl_print),
 	/* 0xbf */	(vl_alpha | vl_lower | vl_print),
@@ -11734,8 +12118,8 @@ static const GNREIGHT_ENC encode_CSMACINTOSH = {
 	/* 0xdb */	(vl_print | vl_punct),
 	/* 0xdc */	(vl_print | vl_punct),
 	/* 0xdd */	(vl_print | vl_punct),
-	/* 0xde */	(vl_alpha | vl_print),
-	/* 0xdf */	(vl_alpha | vl_print),
+	/* 0xde */	(vl_alpha | vl_lower | vl_print),
+	/* 0xdf */	(vl_alpha | vl_lower | vl_print),
 	/* 0xe0 */	(vl_print | vl_punct),
 	/* 0xe1 */	(vl_print | vl_punct),
 	/* 0xe2 */	(vl_print | vl_punct),
@@ -11771,7 +12155,7 @@ static const GNREIGHT_ENC encode_CSMACINTOSH = {
     },
 };
 
-/*  60:GEORGIAN-ACADEMY */
+/*  62:GEORGIAN-ACADEMY */
 static const GNREIGHT_ENC encode_GEORGIAN_ACADEMY = {
     /* encode_GEORGIAN_ACADEMY.chmap */
     {
@@ -11874,7 +12258,7 @@ static const GNREIGHT_ENC encode_GEORGIAN_ACADEMY = {
 	/* 0xa7 */	(vl_print | vl_punct),
 	/* 0xa8 */	(vl_print | vl_punct),
 	/* 0xa9 */	(vl_print | vl_punct),
-	/* 0xaa */	(vl_alpha | vl_print),
+	/* 0xaa */	(vl_alpha | vl_lower | vl_print),
 	/* 0xab */	(vl_print | vl_punct),
 	/* 0xac */	(vl_print | vl_punct),
 	/* 0xad */	(vl_print | vl_punct),
@@ -11890,51 +12274,51 @@ static const GNREIGHT_ENC encode_GEORGIAN_ACADEMY = {
 	/* 0xb7 */	(vl_print | vl_punct),
 	/* 0xb8 */	(vl_print | vl_punct),
 	/* 0xb9 */	(vl_print | vl_punct),
-	/* 0xba */	(vl_alpha | vl_print),
+	/* 0xba */	(vl_alpha | vl_lower | vl_print),
 	/* 0xbb */	(vl_print | vl_punct),
 	/* 0xbc */	(vl_print | vl_punct),
 	/* 0xbd */	(vl_print | vl_punct),
 	/* 0xbe */	(vl_print | vl_punct),
 	/* 0xbf */	(vl_print | vl_punct),
-	/* 0xc0 */	(vl_alpha | vl_print),
-	/* 0xc1 */	(vl_alpha | vl_print),
-	/* 0xc2 */	(vl_alpha | vl_print),
-	/* 0xc3 */	(vl_alpha | vl_print),
-	/* 0xc4 */	(vl_alpha | vl_print),
-	/* 0xc5 */	(vl_alpha | vl_print),
-	/* 0xc6 */	(vl_alpha | vl_print),
-	/* 0xc7 */	(vl_alpha | vl_print),
-	/* 0xc8 */	(vl_alpha | vl_print),
-	/* 0xc9 */	(vl_alpha | vl_print),
-	/* 0xca */	(vl_alpha | vl_print),
-	/* 0xcb */	(vl_alpha | vl_print),
-	/* 0xcc */	(vl_alpha | vl_print),
-	/* 0xcd */	(vl_alpha | vl_print),
-	/* 0xce */	(vl_alpha | vl_print),
-	/* 0xcf */	(vl_alpha | vl_print),
-	/* 0xd0 */	(vl_alpha | vl_print),
-	/* 0xd1 */	(vl_alpha | vl_print),
-	/* 0xd2 */	(vl_alpha | vl_print),
-	/* 0xd3 */	(vl_alpha | vl_print),
-	/* 0xd4 */	(vl_alpha | vl_print),
-	/* 0xd5 */	(vl_alpha | vl_print),
-	/* 0xd6 */	(vl_alpha | vl_print),
-	/* 0xd7 */	(vl_alpha | vl_print),
-	/* 0xd8 */	(vl_alpha | vl_print),
-	/* 0xd9 */	(vl_alpha | vl_print),
-	/* 0xda */	(vl_alpha | vl_print),
-	/* 0xdb */	(vl_alpha | vl_print),
-	/* 0xdc */	(vl_alpha | vl_print),
-	/* 0xdd */	(vl_alpha | vl_print),
-	/* 0xde */	(vl_alpha | vl_print),
-	/* 0xdf */	(vl_alpha | vl_print),
-	/* 0xe0 */	(vl_alpha | vl_print),
-	/* 0xe1 */	(vl_alpha | vl_print),
-	/* 0xe2 */	(vl_alpha | vl_print),
-	/* 0xe3 */	(vl_alpha | vl_print),
-	/* 0xe4 */	(vl_alpha | vl_print),
-	/* 0xe5 */	(vl_alpha | vl_print),
-	/* 0xe6 */	(vl_alpha | vl_print),
+	/* 0xc0 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xc1 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xc2 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xc3 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xc4 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xc5 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xc6 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xc7 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xc8 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xc9 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xca */	(vl_alpha | vl_lower | vl_print),
+	/* 0xcb */	(vl_alpha | vl_lower | vl_print),
+	/* 0xcc */	(vl_alpha | vl_lower | vl_print),
+	/* 0xcd */	(vl_alpha | vl_lower | vl_print),
+	/* 0xce */	(vl_alpha | vl_lower | vl_print),
+	/* 0xcf */	(vl_alpha | vl_lower | vl_print),
+	/* 0xd0 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xd1 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xd2 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xd3 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xd4 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xd5 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xd6 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xd7 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xd8 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xd9 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xda */	(vl_alpha | vl_lower | vl_print),
+	/* 0xdb */	(vl_alpha | vl_lower | vl_print),
+	/* 0xdc */	(vl_alpha | vl_lower | vl_print),
+	/* 0xdd */	(vl_alpha | vl_lower | vl_print),
+	/* 0xde */	(vl_alpha | vl_lower | vl_print),
+	/* 0xdf */	(vl_alpha | vl_lower | vl_print),
+	/* 0xe0 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xe1 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xe2 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xe3 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xe4 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xe5 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xe6 */	(vl_alpha | vl_lower | vl_print),
 	/* 0xe7 */	(vl_alpha | vl_lower | vl_print),
 	/* 0xe8 */	(vl_alpha | vl_lower | vl_print),
 	/* 0xe9 */	(vl_alpha | vl_lower | vl_print),
@@ -11963,7 +12347,7 @@ static const GNREIGHT_ENC encode_GEORGIAN_ACADEMY = {
     },
 };
 
-/*  61:GEORGIAN-PS */
+/*  63:GEORGIAN-PS */
 static const GNREIGHT_ENC encode_GEORGIAN_PS = {
     /* encode_GEORGIAN_PS.chmap */
     {
@@ -12066,7 +12450,7 @@ static const GNREIGHT_ENC encode_GEORGIAN_PS = {
 	/* 0xa7 */	(vl_print | vl_punct),
 	/* 0xa8 */	(vl_print | vl_punct),
 	/* 0xa9 */	(vl_print | vl_punct),
-	/* 0xaa */	(vl_alpha | vl_print),
+	/* 0xaa */	(vl_alpha | vl_lower | vl_print),
 	/* 0xab */	(vl_print | vl_punct),
 	/* 0xac */	(vl_print | vl_punct),
 	/* 0xad */	(vl_print | vl_punct),
@@ -12082,50 +12466,50 @@ static const GNREIGHT_ENC encode_GEORGIAN_PS = {
 	/* 0xb7 */	(vl_print | vl_punct),
 	/* 0xb8 */	(vl_print | vl_punct),
 	/* 0xb9 */	(vl_print | vl_punct),
-	/* 0xba */	(vl_alpha | vl_print),
+	/* 0xba */	(vl_alpha | vl_lower | vl_print),
 	/* 0xbb */	(vl_print | vl_punct),
 	/* 0xbc */	(vl_print | vl_punct),
 	/* 0xbd */	(vl_print | vl_punct),
 	/* 0xbe */	(vl_print | vl_punct),
 	/* 0xbf */	(vl_print | vl_punct),
-	/* 0xc0 */	(vl_alpha | vl_print),
-	/* 0xc1 */	(vl_alpha | vl_print),
-	/* 0xc2 */	(vl_alpha | vl_print),
-	/* 0xc3 */	(vl_alpha | vl_print),
-	/* 0xc4 */	(vl_alpha | vl_print),
-	/* 0xc5 */	(vl_alpha | vl_print),
-	/* 0xc6 */	(vl_alpha | vl_print),
-	/* 0xc7 */	(vl_alpha | vl_print),
-	/* 0xc8 */	(vl_alpha | vl_print),
-	/* 0xc9 */	(vl_alpha | vl_print),
-	/* 0xca */	(vl_alpha | vl_print),
-	/* 0xcb */	(vl_alpha | vl_print),
-	/* 0xcc */	(vl_alpha | vl_print),
-	/* 0xcd */	(vl_alpha | vl_print),
-	/* 0xce */	(vl_alpha | vl_print),
-	/* 0xcf */	(vl_alpha | vl_print),
-	/* 0xd0 */	(vl_alpha | vl_print),
-	/* 0xd1 */	(vl_alpha | vl_print),
-	/* 0xd2 */	(vl_alpha | vl_print),
-	/* 0xd3 */	(vl_alpha | vl_print),
-	/* 0xd4 */	(vl_alpha | vl_print),
-	/* 0xd5 */	(vl_alpha | vl_print),
-	/* 0xd6 */	(vl_alpha | vl_print),
-	/* 0xd7 */	(vl_alpha | vl_print),
-	/* 0xd8 */	(vl_alpha | vl_print),
-	/* 0xd9 */	(vl_alpha | vl_print),
-	/* 0xda */	(vl_alpha | vl_print),
-	/* 0xdb */	(vl_alpha | vl_print),
-	/* 0xdc */	(vl_alpha | vl_print),
-	/* 0xdd */	(vl_alpha | vl_print),
-	/* 0xde */	(vl_alpha | vl_print),
-	/* 0xdf */	(vl_alpha | vl_print),
-	/* 0xe0 */	(vl_alpha | vl_print),
-	/* 0xe1 */	(vl_alpha | vl_print),
-	/* 0xe2 */	(vl_alpha | vl_print),
-	/* 0xe3 */	(vl_alpha | vl_print),
-	/* 0xe4 */	(vl_alpha | vl_print),
-	/* 0xe5 */	(vl_alpha | vl_print),
+	/* 0xc0 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xc1 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xc2 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xc3 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xc4 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xc5 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xc6 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xc7 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xc8 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xc9 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xca */	(vl_alpha | vl_lower | vl_print),
+	/* 0xcb */	(vl_alpha | vl_lower | vl_print),
+	/* 0xcc */	(vl_alpha | vl_lower | vl_print),
+	/* 0xcd */	(vl_alpha | vl_lower | vl_print),
+	/* 0xce */	(vl_alpha | vl_lower | vl_print),
+	/* 0xcf */	(vl_alpha | vl_lower | vl_print),
+	/* 0xd0 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xd1 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xd2 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xd3 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xd4 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xd5 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xd6 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xd7 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xd8 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xd9 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xda */	(vl_alpha | vl_lower | vl_print),
+	/* 0xdb */	(vl_alpha | vl_lower | vl_print),
+	/* 0xdc */	(vl_alpha | vl_lower | vl_print),
+	/* 0xdd */	(vl_alpha | vl_lower | vl_print),
+	/* 0xde */	(vl_alpha | vl_lower | vl_print),
+	/* 0xdf */	(vl_alpha | vl_lower | vl_print),
+	/* 0xe0 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xe1 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xe2 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xe3 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xe4 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xe5 */	(vl_alpha | vl_lower | vl_print),
 	/* 0xe6 */	(vl_alpha | vl_lower | vl_print),
 	/* 0xe7 */	(vl_alpha | vl_lower | vl_print),
 	/* 0xe8 */	(vl_alpha | vl_lower | vl_print),
@@ -12155,7 +12539,7 @@ static const GNREIGHT_ENC encode_GEORGIAN_PS = {
     },
 };
 
-/*  62:HP-GREEK8 */
+/*  64:HP-GREEK8 */
 static const GNREIGHT_ENC encode_HP_GREEK8 = {
     /* encode_HP_GREEK8.chmap */
     {
@@ -12342,12 +12726,12 @@ static const GNREIGHT_ENC encode_HP_GREEK8 = {
 	/* 0xfb */	(vl_alpha | vl_lower | vl_print),
 	/* 0xfc */	(vl_alpha | vl_lower | vl_print),
 	/* 0xfd */	(vl_alpha | vl_lower | vl_print),
-	/* 0xfe */	(vl_alpha | vl_print),
+	/* 0xfe */	(vl_alpha | vl_lower | vl_print),
 	/* 0xff */	0,
     },
 };
 
-/*  63:HP-ROMAN9 */
+/*  65:HP-ROMAN9 */
 static const GNREIGHT_ENC encode_HP_ROMAN9 = {
     /* encode_HP_ROMAN9.chmap */
     {
@@ -12529,8 +12913,8 @@ static const GNREIGHT_ENC encode_HP_ROMAN9 = {
 	/* 0xf6 */	(vl_print | vl_punct),
 	/* 0xf7 */	(vl_print | vl_punct),
 	/* 0xf8 */	(vl_print | vl_punct),
-	/* 0xf9 */	(vl_alpha | vl_print),
-	/* 0xfa */	(vl_alpha | vl_print),
+	/* 0xf9 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xfa */	(vl_alpha | vl_lower | vl_print),
 	/* 0xfb */	(vl_print | vl_punct),
 	/* 0xfc */	(vl_print | vl_punct),
 	/* 0xfd */	(vl_print | vl_punct),
@@ -12539,7 +12923,7 @@ static const GNREIGHT_ENC encode_HP_ROMAN9 = {
     },
 };
 
-/*  64:HP-THAI8 */
+/*  66:HP-THAI8 */
 static const GNREIGHT_ENC encode_HP_THAI8 = {
     /* encode_HP_THAI8.chmap */
     {
@@ -12679,7 +13063,7 @@ static const GNREIGHT_ENC encode_HP_THAI8 = {
 	/* 0xcc */	(vl_alpha | vl_print),
 	/* 0xcd */	(vl_alpha | vl_print),
 	/* 0xce */	(vl_alpha | vl_print),
-	/* 0xcf */	(vl_print | vl_punct),
+	/* 0xcf */	(vl_alpha | vl_print),
 	/* 0xd0 */	(vl_alpha | vl_print),
 	/* 0xd1 */	(vl_alpha | vl_print),
 	/* 0xd2 */	(vl_alpha | vl_print),
@@ -12702,15 +13086,15 @@ static const GNREIGHT_ENC encode_HP_THAI8 = {
 	/* 0xe3 */	(vl_alpha | vl_print),
 	/* 0xe4 */	(vl_alpha | vl_print),
 	/* 0xe5 */	(vl_alpha | vl_print),
-	/* 0xe6 */	(vl_print | vl_punct),
-	/* 0xe7 */	(vl_alpha | vl_print),
-	/* 0xe8 */	(vl_alpha | vl_print),
-	/* 0xe9 */	(vl_alpha | vl_print),
-	/* 0xea */	(vl_alpha | vl_print),
-	/* 0xeb */	(vl_alpha | vl_print),
-	/* 0xec */	(vl_alpha | vl_print),
+	/* 0xe6 */	(vl_alpha | vl_print),
+	/* 0xe7 */	(vl_print | vl_punct),
+	/* 0xe8 */	(vl_print | vl_punct),
+	/* 0xe9 */	(vl_print | vl_punct),
+	/* 0xea */	(vl_print | vl_punct),
+	/* 0xeb */	(vl_print | vl_punct),
+	/* 0xec */	(vl_print | vl_punct),
 	/* 0xed */	(vl_alpha | vl_print),
-	/* 0xee */	(vl_alpha | vl_print),
+	/* 0xee */	(vl_print | vl_punct),
 	/* 0xef */	(vl_print | vl_punct),
 	/* 0xf0 */	(vl_alpha | vl_print),
 	/* 0xf1 */	(vl_alpha | vl_print),
@@ -12731,7 +13115,7 @@ static const GNREIGHT_ENC encode_HP_THAI8 = {
     },
 };
 
-/*  65:HP-TURKISH8 */
+/*  67:HP-TURKISH8 */
 static const GNREIGHT_ENC encode_HP_TURKISH8 = {
     /* encode_HP_TURKISH8.chmap */
     {
@@ -12913,8 +13297,8 @@ static const GNREIGHT_ENC encode_HP_TURKISH8 = {
 	/* 0xf6 */	(vl_print | vl_punct),
 	/* 0xf7 */	(vl_print | vl_punct),
 	/* 0xf8 */	(vl_print | vl_punct),
-	/* 0xf9 */	(vl_alpha | vl_print),
-	/* 0xfa */	(vl_alpha | vl_print),
+	/* 0xf9 */	(vl_alpha | vl_lower | vl_print),
+	/* 0xfa */	(vl_alpha | vl_lower | vl_print),
 	/* 0xfb */	(vl_alpha | vl_lower | vl_print),
 	/* 0xfc */	(vl_alpha | vl_lower | vl_print),
 	/* 0xfd */	(vl_alpha | vl_lower | vl_print),
@@ -12923,7 +13307,7 @@ static const GNREIGHT_ENC encode_HP_TURKISH8 = {
     },
 };
 
-/*  66:ISIRI-3342 */
+/*  68:ISIRI-3342 */
 static const GNREIGHT_ENC encode_ISIRI_3342 = {
     /* encode_ISIRI_3342.chmap */
     {
@@ -13096,14 +13480,14 @@ static const GNREIGHT_ENC encode_ISIRI_3342 = {
 	/* 0xed */	0,
 	/* 0xee */	0,
 	/* 0xef */	0,
-	/* 0xf0 */	(vl_print | vl_punct),
-	/* 0xf1 */	(vl_print | vl_punct),
-	/* 0xf2 */	(vl_print | vl_punct),
-	/* 0xf3 */	(vl_print | vl_punct),
-	/* 0xf4 */	(vl_print | vl_punct),
-	/* 0xf5 */	(vl_print | vl_punct),
-	/* 0xf6 */	(vl_print | vl_punct),
-	/* 0xf7 */	(vl_print | vl_punct),
+	/* 0xf0 */	(vl_alpha | vl_print),
+	/* 0xf1 */	(vl_alpha | vl_print),
+	/* 0xf2 */	(vl_alpha | vl_print),
+	/* 0xf3 */	(vl_alpha | vl_print),
+	/* 0xf4 */	(vl_alpha | vl_print),
+	/* 0xf5 */	(vl_alpha | vl_print),
+	/* 0xf6 */	(vl_alpha | vl_print),
+	/* 0xf7 */	(vl_alpha | vl_print),
 	/* 0xf8 */	(vl_alpha | vl_print),
 	/* 0xf9 */	(vl_alpha | vl_print),
 	/* 0xfa */	(vl_alpha | vl_print),
@@ -13115,7 +13499,7 @@ static const GNREIGHT_ENC encode_ISIRI_3342 = {
     },
 };
 
-/*  67:ISO-8859-1 */
+/*  69:ISO-8859-1 */
 static const GNREIGHT_ENC encode_ISO_8859_1 = {
     /* encode_ISO_8859_1.chmap */
     {
@@ -13218,7 +13602,7 @@ static const GNREIGHT_ENC encode_ISO_8859_1 = {
 	/* 0xa7 */	(vl_print | vl_punct),
 	/* 0xa8 */	(vl_print | vl_punct),
 	/* 0xa9 */	(vl_print | vl_punct),
-	/* 0xaa */	(vl_alpha | vl_print),
+	/* 0xaa */	(vl_alpha | vl_lower | vl_print),
 	/* 0xab */	(vl_print | vl_punct),
 	/* 0xac */	(vl_print | vl_punct),
 	/* 0xad */	(vl_print | vl_punct),
@@ -13234,7 +13618,7 @@ static const GNREIGHT_ENC encode_ISO_8859_1 = {
 	/* 0xb7 */	(vl_print | vl_punct),
 	/* 0xb8 */	(vl_print | vl_punct),
 	/* 0xb9 */	(vl_print | vl_punct),
-	/* 0xba */	(vl_alpha | vl_print),
+	/* 0xba */	(vl_alpha | vl_lower | vl_print),
 	/* 0xbb */	(vl_print | vl_punct),
 	/* 0xbc */	(vl_print | vl_punct),
 	/* 0xbd */	(vl_print | vl_punct),
@@ -13307,7 +13691,7 @@ static const GNREIGHT_ENC encode_ISO_8859_1 = {
     },
 };
 
-/*  68:ISO-8859-10 */
+/*  70:ISO-8859-10 */
 static const GNREIGHT_ENC encode_ISO_8859_10 = {
     /* encode_ISO_8859_10.chmap */
     {
@@ -13495,11 +13879,11 @@ static const GNREIGHT_ENC encode_ISO_8859_10 = {
 	/* 0xfc */	(vl_alpha | vl_lower | vl_print),
 	/* 0xfd */	(vl_alpha | vl_lower | vl_print),
 	/* 0xfe */	(vl_alpha | vl_lower | vl_print),
-	/* 0xff */	(vl_alpha | vl_print),
+	/* 0xff */	(vl_alpha | vl_lower | vl_print),
     },
 };
 
-/*  69:ISO-8859-13 */
+/*  71:ISO-8859-13 */
 static const GNREIGHT_ENC encode_ISO_8859_13 = {
     /* encode_ISO_8859_13.chmap */
     {
@@ -13691,7 +14075,7 @@ static const GNREIGHT_ENC encode_ISO_8859_13 = {
     },
 };
 
-/*  70:ISO-8859-14 */
+/*  72:ISO-8859-14 */
 static const GNREIGHT_ENC encode_ISO_8859_14 = {
     /* encode_ISO_8859_14.chmap */
     {
@@ -13883,7 +14267,7 @@ static const GNREIGHT_ENC encode_ISO_8859_14 = {
     },
 };
 
-/*  71:ISO-8859-15 */
+/*  73:ISO-8859-15 */
 static const GNREIGHT_ENC encode_ISO_8859_15 = {
     /* encode_ISO_8859_15.chmap */
     {
@@ -13986,7 +14370,7 @@ static const GNREIGHT_ENC encode_ISO_8859_15 = {
 	/* 0xa7 */	(vl_print | vl_punct),
 	/* 0xa8 */	(vl_alpha | vl_lower | vl_print),
 	/* 0xa9 */	(vl_print | vl_punct),
-	/* 0xaa */	(vl_alpha | vl_print),
+	/* 0xaa */	(vl_alpha | vl_lower | vl_print),
 	/* 0xab */	(vl_print | vl_punct),
 	/* 0xac */	(vl_print | vl_punct),
 	/* 0xad */	(vl_print | vl_punct),
@@ -14002,7 +14386,7 @@ static const GNREIGHT_ENC encode_ISO_8859_15 = {
 	/* 0xb7 */	(vl_print | vl_punct),
 	/* 0xb8 */	(vl_alpha | vl_lower | vl_print),
 	/* 0xb9 */	(vl_print | vl_punct),
-	/* 0xba */	(vl_alpha | vl_print),
+	/* 0xba */	(vl_alpha | vl_lower | vl_print),
 	/* 0xbb */	(vl_print | vl_punct),
 	/* 0xbc */	(vl_alpha | vl_print | vl_upper),
 	/* 0xbd */	(vl_alpha | vl_lower | vl_print),
@@ -14075,7 +14459,7 @@ static const GNREIGHT_ENC encode_ISO_8859_15 = {
     },
 };
 
-/*  72:ISO-8859-16 */
+/*  74:ISO-8859-16 */
 static const GNREIGHT_ENC encode_ISO_8859_16 = {
     /* encode_ISO_8859_16.chmap */
     {
@@ -14267,7 +14651,7 @@ static const GNREIGHT_ENC encode_ISO_8859_16 = {
     },
 };
 
-/*  73:ISO-8859-2 */
+/*  75:ISO-8859-2 */
 static const GNREIGHT_ENC encode_ISO_8859_2 = {
     /* encode_ISO_8859_2.chmap */
     {
@@ -14459,7 +14843,7 @@ static const GNREIGHT_ENC encode_ISO_8859_2 = {
     },
 };
 
-/*  74:ISO-8859-3 */
+/*  76:ISO-8859-3 */
 static const GNREIGHT_ENC encode_ISO_8859_3 = {
     /* encode_ISO_8859_3.chmap */
     {
@@ -14651,7 +15035,7 @@ static const GNREIGHT_ENC encode_ISO_8859_3 = {
     },
 };
 
-/*  75:ISO-8859-5 */
+/*  77:ISO-8859-5 */
 static const GNREIGHT_ENC encode_ISO_8859_5 = {
     /* encode_ISO_8859_5.chmap */
     {
@@ -14843,7 +15227,7 @@ static const GNREIGHT_ENC encode_ISO_8859_5 = {
     },
 };
 
-/*  76:ISO-8859-6 */
+/*  78:ISO-8859-6 */
 static const GNREIGHT_ENC encode_ISO_8859_6 = {
     /* encode_ISO_8859_6.chmap */
     {
@@ -15011,14 +15395,14 @@ static const GNREIGHT_ENC encode_ISO_8859_6 = {
 	/* 0xe8 */	(vl_alpha | vl_print),
 	/* 0xe9 */	(vl_alpha | vl_print),
 	/* 0xea */	(vl_alpha | vl_print),
-	/* 0xeb */	(vl_print | vl_punct),
-	/* 0xec */	(vl_print | vl_punct),
-	/* 0xed */	(vl_print | vl_punct),
-	/* 0xee */	(vl_print | vl_punct),
-	/* 0xef */	(vl_print | vl_punct),
-	/* 0xf0 */	(vl_print | vl_punct),
-	/* 0xf1 */	(vl_print | vl_punct),
-	/* 0xf2 */	(vl_print | vl_punct),
+	/* 0xeb */	(vl_alpha | vl_print),
+	/* 0xec */	(vl_alpha | vl_print),
+	/* 0xed */	(vl_alpha | vl_print),
+	/* 0xee */	(vl_alpha | vl_print),
+	/* 0xef */	(vl_alpha | vl_print),
+	/* 0xf0 */	(vl_alpha | vl_print),
+	/* 0xf1 */	(vl_alpha | vl_print),
+	/* 0xf2 */	(vl_alpha | vl_print),
 	/* 0xf3 */	0,
 	/* 0xf4 */	0,
 	/* 0xf5 */	0,
@@ -15035,7 +15419,7 @@ static const GNREIGHT_ENC encode_ISO_8859_6 = {
     },
 };
 
-/*  77:ISO-8859-7 */
+/*  79:ISO-8859-7 */
 static const GNREIGHT_ENC encode_ISO_8859_7 = {
     /* encode_ISO_8859_7.chmap */
     {
@@ -15138,7 +15522,7 @@ static const GNREIGHT_ENC encode_ISO_8859_7 = {
 	/* 0xa7 */	(vl_print | vl_punct),
 	/* 0xa8 */	(vl_print | vl_punct),
 	/* 0xa9 */	(vl_print | vl_punct),
-	/* 0xaa */	(vl_alpha | vl_print),
+	/* 0xaa */	(vl_alpha | vl_lower | vl_print),
 	/* 0xab */	(vl_print | vl_punct),
 	/* 0xac */	(vl_print | vl_punct),
 	/* 0xad */	(vl_print | vl_punct),
@@ -15160,7 +15544,7 @@ static const GNREIGHT_ENC encode_ISO_8859_7 = {
 	/* 0xbd */	(vl_print | vl_punct),
 	/* 0xbe */	(vl_alpha | vl_print | vl_upper),
 	/* 0xbf */	(vl_alpha | vl_print | vl_upper),
-	/* 0xc0 */	(vl_alpha | vl_print),
+	/* 0xc0 */	(vl_alpha | vl_lower | vl_print),
 	/* 0xc1 */	(vl_alpha | vl_print | vl_upper),
 	/* 0xc2 */	(vl_alpha | vl_print | vl_upper),
 	/* 0xc3 */	(vl_alpha | vl_print | vl_upper),
@@ -15192,7 +15576,7 @@ static const GNREIGHT_ENC encode_ISO_8859_7 = {
 	/* 0xdd */	(vl_alpha | vl_lower | vl_print),
 	/* 0xde */	(vl_alpha | vl_lower | vl_print),
 	/* 0xdf */	(vl_alpha | vl_lower | vl_print),
-	/* 0xe0 */	(vl_alpha | vl_print),
+	/* 0xe0 */	(vl_alpha | vl_lower | vl_print),
 	/* 0xe1 */	(vl_alpha | vl_lower | vl_print),
 	/* 0xe2 */	(vl_alpha | vl_lower | vl_print),
 	/* 0xe3 */	(vl_alpha | vl_lower | vl_print),
@@ -15227,7 +15611,7 @@ static const GNREIGHT_ENC encode_ISO_8859_7 = {
     },
 };
 
-/*  78:ISO-8859-8 */
+/*  80:ISO-8859-8 */
 static const GNREIGHT_ENC encode_ISO_8859_8 = {
     /* encode_ISO_8859_8.chmap */
     {
@@ -15419,199 +15803,7 @@ static const GNREIGHT_ENC encode_ISO_8859_8 = {
     },
 };
 
-/*  79:ISO-8859-9 */
-static const GNREIGHT_ENC encode_ISO_8859_9 = {
-    /* encode_ISO_8859_9.chmap */
-    {
-	  0x80,  0x81,  0x82,  0x83,  0x84,  0x85,  0x86,  0x87,
-	  0x88,  0x89,  0x8a,  0x8b,  0x8c,  0x8d,  0x8e,  0x8f,
-	  0x90,  0x91,  0x92,  0x93,  0x94,  0x95,  0x96,  0x97,
-	  0x98,  0x99,  0x9a,  0x9b,  0x9c,  0x9d,  0x9e,  0x9f,
-	  0xa0,  0xa1,  0xa2,  0xa3,  0xa4,  0xa5,  0xa6,  0xa7,
-	  0xa8,  0xa9,  0xaa,  0xab,  0xac,  0xad,  0xae,  0xaf,
-	  0xb0,  0xb1,  0xb2,  0xb3,  0xb4,  0xb5,  0xb6,  0xb7,
-	  0xb8,  0xb9,  0xba,  0xbb,  0xbc,  0xbd,  0xbe,  0xbf,
-	  0xc0,  0xc1,  0xc2,  0xc3,  0xc4,  0xc5,  0xc6,  0xc7,
-	  0xc8,  0xc9,  0xca,  0xcb,  0xcc,  0xcd,  0xce,  0xcf,
-	 0x11e,  0xd1,  0xd2,  0xd3,  0xd4,  0xd5,  0xd6,  0xd7,
-	  0xd8,  0xd9,  0xda,  0xdb,  0xdc, 0x130, 0x15e,  0xdf,
-	  0xe0,  0xe1,  0xe2,  0xe3,  0xe4,  0xe5,  0xe6,  0xe7,
-	  0xe8,  0xe9,  0xea,  0xeb,  0xec,  0xed,  0xee,  0xef,
-	 0x11f,  0xf1,  0xf2,  0xf3,  0xf4,  0xf5,  0xf6,  0xf7,
-	  0xf8,  0xf9,  0xfa,  0xfb,  0xfc, 0x131, 0x15f,  0xff
-    },
-    /* encode_ISO_8859_9.lower */
-    {
-	  0x80,  0x81,  0x82,  0x83,  0x84,  0x85,  0x86,  0x87,
-	  0x88,  0x89,  0x8a,  0x8b,  0x8c,  0x8d,  0x8e,  0x8f,
-	  0x90,  0x91,  0x92,  0x93,  0x94,  0x95,  0x96,  0x97,
-	  0x98,  0x99,  0x9a,  0x9b,  0x9c,  0x9d,  0x9e,  0x9f,
-	  0xa0,  0xa1,  0xa2,  0xa3,  0xa4,  0xa5,  0xa6,  0xa7,
-	  0xa8,  0xa9,  0xaa,  0xab,  0xac,  0xad,  0xae,  0xaf,
-	  0xb0,  0xb1,  0xb2,  0xb3,  0xb4,  0xb5,  0xb6,  0xb7,
-	  0xb8,  0xb9,  0xba,  0xbb,  0xbc,  0xbd,  0xbe,  0xbf,
-	  0xe0,  0xe1,  0xe2,  0xe3,  0xe4,  0xe5,  0xe6,  0xe7,
-	  0xe8,  0xe9,  0xea,  0xeb,  0xec,  0xed,  0xee,  0xef,
-	  0xf0,  0xf1,  0xf2,  0xf3,  0xf4,  0xf5,  0xf6,  0xd7,
-	  0xf8,  0xf9,  0xfa,  0xfb,  0xfc,  0x69,  0xfe,  0xdf,
-	  0xe0,  0xe1,  0xe2,  0xe3,  0xe4,  0xe5,  0xe6,  0xe7,
-	  0xe8,  0xe9,  0xea,  0xeb,  0xec,  0xed,  0xee,  0xef,
-	  0xf0,  0xf1,  0xf2,  0xf3,  0xf4,  0xf5,  0xf6,  0xf7,
-	  0xf8,  0xf9,  0xfa,  0xfb,  0xfc,  0xfd,  0xfe,  0xff
-    },
-    /* encode_ISO_8859_9.upper */
-    {
-	  0x80,  0x81,  0x82,  0x83,  0x84,  0x85,  0x86,  0x87,
-	  0x88,  0x89,  0x8a,  0x8b,  0x8c,  0x8d,  0x8e,  0x8f,
-	  0x90,  0x91,  0x92,  0x93,  0x94,  0x95,  0x96,  0x97,
-	  0x98,  0x99,  0x9a,  0x9b,  0x9c,  0x9d,  0x9e,  0x9f,
-	  0xa0,  0xa1,  0xa2,  0xa3,  0xa4,  0xa5,  0xa6,  0xa7,
-	  0xa8,  0xa9,  0xaa,  0xab,  0xac,  0xad,  0xae,  0xaf,
-	  0xb0,  0xb1,  0xb2,  0xb3,  0xb4,  0xb5,  0xb6,  0xb7,
-	  0xb8,  0xb9,  0xba,  0xbb,  0xbc,  0xbd,  0xbe,  0xbf,
-	  0xc0,  0xc1,  0xc2,  0xc3,  0xc4,  0xc5,  0xc6,  0xc7,
-	  0xc8,  0xc9,  0xca,  0xcb,  0xcc,  0xcd,  0xce,  0xcf,
-	  0xd0,  0xd1,  0xd2,  0xd3,  0xd4,  0xd5,  0xd6,  0xd7,
-	  0xd8,  0xd9,  0xda,  0xdb,  0xdc,  0xdd,  0xde,  0xdf,
-	  0xc0,  0xc1,  0xc2,  0xc3,  0xc4,  0xc5,  0xc6,  0xc7,
-	  0xc8,  0xc9,  0xca,  0xcb,  0xcc,  0xcd,  0xce,  0xcf,
-	  0xd0,  0xd1,  0xd2,  0xd3,  0xd4,  0xd5,  0xd6,  0xf7,
-	  0xd8,  0xd9,  0xda,  0xdb,  0xdc,  0x49,  0xde,  0xff
-    },
-    /* encode_ISO_8859_9.ctype */
-    {
-	/* 0x80 */	(vl_cntrl),
-	/* 0x81 */	(vl_cntrl),
-	/* 0x82 */	(vl_cntrl),
-	/* 0x83 */	(vl_cntrl),
-	/* 0x84 */	(vl_cntrl),
-	/* 0x85 */	(vl_cntrl),
-	/* 0x86 */	(vl_cntrl),
-	/* 0x87 */	(vl_cntrl),
-	/* 0x88 */	(vl_cntrl),
-	/* 0x89 */	(vl_cntrl),
-	/* 0x8a */	(vl_cntrl),
-	/* 0x8b */	(vl_cntrl),
-	/* 0x8c */	(vl_cntrl),
-	/* 0x8d */	(vl_cntrl),
-	/* 0x8e */	(vl_cntrl),
-	/* 0x8f */	(vl_cntrl),
-	/* 0x90 */	(vl_cntrl),
-	/* 0x91 */	(vl_cntrl),
-	/* 0x92 */	(vl_cntrl),
-	/* 0x93 */	(vl_cntrl),
-	/* 0x94 */	(vl_cntrl),
-	/* 0x95 */	(vl_cntrl),
-	/* 0x96 */	(vl_cntrl),
-	/* 0x97 */	(vl_cntrl),
-	/* 0x98 */	(vl_cntrl),
-	/* 0x99 */	(vl_cntrl),
-	/* 0x9a */	(vl_cntrl),
-	/* 0x9b */	(vl_cntrl),
-	/* 0x9c */	(vl_cntrl),
-	/* 0x9d */	(vl_cntrl),
-	/* 0x9e */	(vl_cntrl),
-	/* 0x9f */	(vl_cntrl),
-	/* 0xa0 */	(vl_print | vl_punct),
-	/* 0xa1 */	(vl_print | vl_punct),
-	/* 0xa2 */	(vl_print | vl_punct),
-	/* 0xa3 */	(vl_print | vl_punct),
-	/* 0xa4 */	(vl_print | vl_punct),
-	/* 0xa5 */	(vl_print | vl_punct),
-	/* 0xa6 */	(vl_print | vl_punct),
-	/* 0xa7 */	(vl_print | vl_punct),
-	/* 0xa8 */	(vl_print | vl_punct),
-	/* 0xa9 */	(vl_print | vl_punct),
-	/* 0xaa */	(vl_alpha | vl_print),
-	/* 0xab */	(vl_print | vl_punct),
-	/* 0xac */	(vl_print | vl_punct),
-	/* 0xad */	(vl_print | vl_punct),
-	/* 0xae */	(vl_print | vl_punct),
-	/* 0xaf */	(vl_print | vl_punct),
-	/* 0xb0 */	(vl_print | vl_punct),
-	/* 0xb1 */	(vl_print | vl_punct),
-	/* 0xb2 */	(vl_print | vl_punct),
-	/* 0xb3 */	(vl_print | vl_punct),
-	/* 0xb4 */	(vl_print | vl_punct),
-	/* 0xb5 */	(vl_alpha | vl_lower | vl_print),
-	/* 0xb6 */	(vl_print | vl_punct),
-	/* 0xb7 */	(vl_print | vl_punct),
-	/* 0xb8 */	(vl_print | vl_punct),
-	/* 0xb9 */	(vl_print | vl_punct),
-	/* 0xba */	(vl_alpha | vl_print),
-	/* 0xbb */	(vl_print | vl_punct),
-	/* 0xbc */	(vl_print | vl_punct),
-	/* 0xbd */	(vl_print | vl_punct),
-	/* 0xbe */	(vl_print | vl_punct),
-	/* 0xbf */	(vl_print | vl_punct),
-	/* 0xc0 */	(vl_alpha | vl_print | vl_upper),
-	/* 0xc1 */	(vl_alpha | vl_print | vl_upper),
-	/* 0xc2 */	(vl_alpha | vl_print | vl_upper),
-	/* 0xc3 */	(vl_alpha | vl_print | vl_upper),
-	/* 0xc4 */	(vl_alpha | vl_print | vl_upper),
-	/* 0xc5 */	(vl_alpha | vl_print | vl_upper),
-	/* 0xc6 */	(vl_alpha | vl_print | vl_upper),
-	/* 0xc7 */	(vl_alpha | vl_print | vl_upper),
-	/* 0xc8 */	(vl_alpha | vl_print | vl_upper),
-	/* 0xc9 */	(vl_alpha | vl_print | vl_upper),
-	/* 0xca */	(vl_alpha | vl_print | vl_upper),
-	/* 0xcb */	(vl_alpha | vl_print | vl_upper),
-	/* 0xcc */	(vl_alpha | vl_print | vl_upper),
-	/* 0xcd */	(vl_alpha | vl_print | vl_upper),
-	/* 0xce */	(vl_alpha | vl_print | vl_upper),
-	/* 0xcf */	(vl_alpha | vl_print | vl_upper),
-	/* 0xd0 */	(vl_alpha | vl_print | vl_upper),
-	/* 0xd1 */	(vl_alpha | vl_print | vl_upper),
-	/* 0xd2 */	(vl_alpha | vl_print | vl_upper),
-	/* 0xd3 */	(vl_alpha | vl_print | vl_upper),
-	/* 0xd4 */	(vl_alpha | vl_print | vl_upper),
-	/* 0xd5 */	(vl_alpha | vl_print | vl_upper),
-	/* 0xd6 */	(vl_alpha | vl_print | vl_upper),
-	/* 0xd7 */	(vl_print | vl_punct),
-	/* 0xd8 */	(vl_alpha | vl_print | vl_upper),
-	/* 0xd9 */	(vl_alpha | vl_print | vl_upper),
-	/* 0xda */	(vl_alpha | vl_print | vl_upper),
-	/* 0xdb */	(vl_alpha | vl_print | vl_upper),
-	/* 0xdc */	(vl_alpha | vl_print | vl_upper),
-	/* 0xdd */	(vl_alpha | vl_print | vl_upper),
-	/* 0xde */	(vl_alpha | vl_print | vl_upper),
-	/* 0xdf */	(vl_alpha | vl_lower | vl_print),
-	/* 0xe0 */	(vl_alpha | vl_lower | vl_print),
-	/* 0xe1 */	(vl_alpha | vl_lower | vl_print),
-	/* 0xe2 */	(vl_alpha | vl_lower | vl_print),
-	/* 0xe3 */	(vl_alpha | vl_lower | vl_print),
-	/* 0xe4 */	(vl_alpha | vl_lower | vl_print),
-	/* 0xe5 */	(vl_alpha | vl_lower | vl_print),
-	/* 0xe6 */	(vl_alpha | vl_lower | vl_print),
-	/* 0xe7 */	(vl_alpha | vl_lower | vl_print),
-	/* 0xe8 */	(vl_alpha | vl_lower | vl_print),
-	/* 0xe9 */	(vl_alpha | vl_lower | vl_print),
-	/* 0xea */	(vl_alpha | vl_lower | vl_print),
-	/* 0xeb */	(vl_alpha | vl_lower | vl_print),
-	/* 0xec */	(vl_alpha | vl_lower | vl_print),
-	/* 0xed */	(vl_alpha | vl_lower | vl_print),
-	/* 0xee */	(vl_alpha | vl_lower | vl_print),
-	/* 0xef */	(vl_alpha | vl_lower | vl_print),
-	/* 0xf0 */	(vl_alpha | vl_lower | vl_print),
-	/* 0xf1 */	(vl_alpha | vl_lower | vl_print),
-	/* 0xf2 */	(vl_alpha | vl_lower | vl_print),
-	/* 0xf3 */	(vl_alpha | vl_lower | vl_print),
-	/* 0xf4 */	(vl_alpha | vl_lower | vl_print),
-	/* 0xf5 */	(vl_alpha | vl_lower | vl_print),
-	/* 0xf6 */	(vl_alpha | vl_lower | vl_print),
-	/* 0xf7 */	(vl_print | vl_punct),
-	/* 0xf8 */	(vl_alpha | vl_lower | vl_print),
-	/* 0xf9 */	(vl_alpha | vl_lower | vl_print),
-	/* 0xfa */	(vl_alpha | vl_lower | vl_print),
-	/* 0xfb */	(vl_alpha | vl_lower | vl_print),
-	/* 0xfc */	(vl_alpha | vl_lower | vl_print),
-	/* 0xfd */	(vl_alpha | vl_lower | vl_print),
-	/* 0xfe */	(vl_alpha | vl_lower | vl_print),
-	/* 0xff */	(vl_alpha | vl_lower | vl_print),
-    },
-};
-
-/*  80:ISO-8859-9E */
+/*  81:ISO-8859-9E */
 static const GNREIGHT_ENC encode_ISO_8859_9E = {
     /* encode_ISO_8859_9E.chmap */
     {
@@ -15803,7 +15995,7 @@ static const GNREIGHT_ENC encode_ISO_8859_9E = {
     },
 };
 
-/*  81:ISO-IR-156 */
+/*  82:ISO-IR-156 */
 static const GNREIGHT_ENC encode_ISO_IR_156 = {
     /* encode_ISO_IR_156.chmap */
     {
@@ -15963,7 +16155,7 @@ static const GNREIGHT_ENC encode_ISO_IR_156 = {
 	/* 0xe0 */	(vl_alpha | vl_print | vl_upper),
 	/* 0xe1 */	(vl_alpha | vl_print | vl_upper),
 	/* 0xe2 */	(vl_alpha | vl_print | vl_upper),
-	/* 0xe3 */	(vl_alpha | vl_print),
+	/* 0xe3 */	(vl_alpha | vl_lower | vl_print),
 	/* 0xe4 */	(vl_alpha | vl_print | vl_upper),
 	/* 0xe5 */	0,
 	/* 0xe6 */	(vl_alpha | vl_print | vl_upper),
@@ -15971,12 +16163,12 @@ static const GNREIGHT_ENC encode_ISO_IR_156 = {
 	/* 0xe8 */	(vl_alpha | vl_print | vl_upper),
 	/* 0xe9 */	(vl_alpha | vl_print | vl_upper),
 	/* 0xea */	(vl_alpha | vl_print | vl_upper),
-	/* 0xeb */	(vl_alpha | vl_print),
+	/* 0xeb */	(vl_alpha | vl_lower | vl_print),
 	/* 0xec */	(vl_alpha | vl_print | vl_upper),
 	/* 0xed */	(vl_alpha | vl_print | vl_upper),
 	/* 0xee */	(vl_alpha | vl_print | vl_upper),
-	/* 0xef */	(vl_alpha | vl_print),
-	/* 0xf0 */	(vl_alpha | vl_print),
+	/* 0xef */	(vl_alpha | vl_lower | vl_print),
+	/* 0xf0 */	(vl_alpha | vl_lower | vl_print),
 	/* 0xf1 */	(vl_alpha | vl_lower | vl_print),
 	/* 0xf2 */	(vl_alpha | vl_lower | vl_print),
 	/* 0xf3 */	(vl_alpha | vl_lower | vl_print),
@@ -15995,7 +16187,7 @@ static const GNREIGHT_ENC encode_ISO_IR_156 = {
     },
 };
 
-/*  82:ISO-IR-197 */
+/*  83:ISO-IR-197 */
 static const GNREIGHT_ENC encode_ISO_IR_197 = {
     /* encode_ISO_IR_197.chmap */
     {
@@ -16187,7 +16379,7 @@ static const GNREIGHT_ENC encode_ISO_IR_197 = {
     },
 };
 
-/*  83:ISO-IR-209 */
+/*  84:ISO-IR-209 */
 static const GNREIGHT_ENC encode_ISO_IR_209 = {
     /* encode_ISO_IR_209.chmap */
     {
@@ -16379,7 +16571,7 @@ static const GNREIGHT_ENC encode_ISO_IR_209 = {
     },
 };
 
-/*  84:KOI8-R */
+/*  85:KOI8-R */
 static const GNREIGHT_ENC encode_KOI8_R = {
     /* encode_KOI8_R.chmap */
     {
@@ -16571,7 +16763,7 @@ static const GNREIGHT_ENC encode_KOI8_R = {
     },
 };
 
-/*  85:KOI8-T */
+/*  86:KOI8-T */
 static const GNREIGHT_ENC encode_KOI8_T = {
     /* encode_KOI8_T.chmap */
     {
@@ -16763,7 +16955,7 @@ static const GNREIGHT_ENC encode_KOI8_T = {
     },
 };
 
-/*  86:KOI8-U */
+/*  87:KOI8-U */
 static const GNREIGHT_ENC encode_KOI8_U = {
     /* encode_KOI8_U.chmap */
     {
@@ -16955,7 +17147,7 @@ static const GNREIGHT_ENC encode_KOI8_U = {
     },
 };
 
-/*  87:MAC-CYRILLIC */
+/*  88:MAC-CYRILLIC */
 static const GNREIGHT_ENC encode_MAC_CYRILLIC = {
     /* encode_MAC_CYRILLIC.chmap */
     {
@@ -17147,7 +17339,7 @@ static const GNREIGHT_ENC encode_MAC_CYRILLIC = {
     },
 };
 
-/*  88:MAC-IS */
+/*  89:MAC-IS */
 static const GNREIGHT_ENC encode_MAC_IS = {
     /* encode_MAC_IS.chmap */
     {
@@ -17267,8 +17459,8 @@ static const GNREIGHT_ENC encode_MAC_IS = {
 	/* 0xb8 */	(vl_print | vl_punct),
 	/* 0xb9 */	(vl_alpha | vl_lower | vl_print),
 	/* 0xba */	(vl_print | vl_punct),
-	/* 0xbb */	(vl_alpha | vl_print),
-	/* 0xbc */	(vl_alpha | vl_print),
+	/* 0xbb */	(vl_alpha | vl_lower | vl_print),
+	/* 0xbc */	(vl_alpha | vl_lower | vl_print),
 	/* 0xbd */	(vl_alpha | vl_print | vl_upper),
 	/* 0xbe */	(vl_alpha | vl_lower | vl_print),
 	/* 0xbf */	(vl_alpha | vl_lower | vl_print),
@@ -17339,7 +17531,7 @@ static const GNREIGHT_ENC encode_MAC_IS = {
     },
 };
 
-/*  89:MAC-SAMI */
+/*  90:MAC-SAMI */
 static const GNREIGHT_ENC encode_MAC_SAMI = {
     /* encode_MAC_SAMI.chmap */
     {
@@ -17531,7 +17723,7 @@ static const GNREIGHT_ENC encode_MAC_SAMI = {
     },
 };
 
-/*  90:MIK */
+/*  91:MIK */
 static const GNREIGHT_ENC encode_MIK = {
     /* encode_MIK.chmap */
     {
@@ -17716,14 +17908,14 @@ static const GNREIGHT_ENC encode_MIK = {
 	/* 0xf9 */	(vl_print | vl_punct),
 	/* 0xfa */	(vl_print | vl_punct),
 	/* 0xfb */	(vl_print | vl_punct),
-	/* 0xfc */	(vl_alpha | vl_print),
+	/* 0xfc */	(vl_alpha | vl_lower | vl_print),
 	/* 0xfd */	(vl_print | vl_punct),
 	/* 0xfe */	(vl_print | vl_punct),
 	/* 0xff */	(vl_print | vl_punct),
     },
 };
 
-/*  91:PT154 */
+/*  92:PT154 */
 static const GNREIGHT_ENC encode_PT154 = {
     /* encode_PT154.chmap */
     {
@@ -17915,7 +18107,7 @@ static const GNREIGHT_ENC encode_PT154 = {
     },
 };
 
-/*  92:RK1048 */
+/*  93:RK1048 */
 static const GNREIGHT_ENC encode_RK1048 = {
     /* encode_RK1048.chmap */
     {
@@ -18107,7 +18299,7 @@ static const GNREIGHT_ENC encode_RK1048 = {
     },
 };
 
-/*  93:TIS-620 */
+/*  94:TIS-620 */
 static const GNREIGHT_ENC encode_TIS_620 = {
     /* encode_TIS_620.chmap */
     {
@@ -18247,7 +18439,7 @@ static const GNREIGHT_ENC encode_TIS_620 = {
 	/* 0xcc */	(vl_alpha | vl_print),
 	/* 0xcd */	(vl_alpha | vl_print),
 	/* 0xce */	(vl_alpha | vl_print),
-	/* 0xcf */	(vl_print | vl_punct),
+	/* 0xcf */	(vl_alpha | vl_print),
 	/* 0xd0 */	(vl_alpha | vl_print),
 	/* 0xd1 */	(vl_alpha | vl_print),
 	/* 0xd2 */	(vl_alpha | vl_print),
@@ -18270,15 +18462,15 @@ static const GNREIGHT_ENC encode_TIS_620 = {
 	/* 0xe3 */	(vl_alpha | vl_print),
 	/* 0xe4 */	(vl_alpha | vl_print),
 	/* 0xe5 */	(vl_alpha | vl_print),
-	/* 0xe6 */	(vl_print | vl_punct),
-	/* 0xe7 */	(vl_alpha | vl_print),
-	/* 0xe8 */	(vl_alpha | vl_print),
-	/* 0xe9 */	(vl_alpha | vl_print),
-	/* 0xea */	(vl_alpha | vl_print),
-	/* 0xeb */	(vl_alpha | vl_print),
-	/* 0xec */	(vl_alpha | vl_print),
+	/* 0xe6 */	(vl_alpha | vl_print),
+	/* 0xe7 */	(vl_print | vl_punct),
+	/* 0xe8 */	(vl_print | vl_punct),
+	/* 0xe9 */	(vl_print | vl_punct),
+	/* 0xea */	(vl_print | vl_punct),
+	/* 0xeb */	(vl_print | vl_punct),
+	/* 0xec */	(vl_print | vl_punct),
 	/* 0xed */	(vl_alpha | vl_print),
-	/* 0xee */	(vl_alpha | vl_print),
+	/* 0xee */	(vl_print | vl_punct),
 	/* 0xef */	(vl_print | vl_punct),
 	/* 0xf0 */	(vl_alpha | vl_print),
 	/* 0xf1 */	(vl_alpha | vl_print),
@@ -18299,7 +18491,7 @@ static const GNREIGHT_ENC encode_TIS_620 = {
     },
 };
 
-/*  94:TSCII */
+/*  95:TSCII */
 static const GNREIGHT_ENC encode_TSCII = {
     /* encode_TSCII.chmap */
     {
@@ -18371,8 +18563,8 @@ static const GNREIGHT_ENC encode_TSCII = {
 	/* 0x88 */	(vl_alpha | vl_print),
 	/* 0x89 */	(vl_alpha | vl_print),
 	/* 0x8a */	(vl_alpha | vl_print),
-	/* 0x8b */	(vl_alpha | vl_print),
-	/* 0x8c */	(vl_alpha | vl_print),
+	/* 0x8b */	(vl_print | vl_punct),
+	/* 0x8c */	(vl_print | vl_punct),
 	/* 0x8d */	(vl_alpha | vl_print),
 	/* 0x8e */	(vl_alpha | vl_print),
 	/* 0x8f */	(vl_alpha | vl_print),
@@ -18389,9 +18581,9 @@ static const GNREIGHT_ENC encode_TSCII = {
 	/* 0x9a */	(vl_alpha | vl_print),
 	/* 0x9b */	(vl_alpha | vl_print),
 	/* 0x9c */	(vl_alpha | vl_print),
-	/* 0x9d */	(vl_alpha | vl_print),
-	/* 0x9e */	(vl_alpha | vl_print),
-	/* 0x9f */	(vl_alpha | vl_print),
+	/* 0x9d */	(vl_print | vl_punct),
+	/* 0x9e */	(vl_print | vl_punct),
+	/* 0x9f */	(vl_print | vl_punct),
 	/* 0xa0 */	0,
 	/* 0xa1 */	(vl_alpha | vl_print),
 	/* 0xa2 */	(vl_alpha | vl_print),
@@ -18491,7 +18683,7 @@ static const GNREIGHT_ENC encode_TSCII = {
     },
 };
 
-/*  95:WIN-SAMI-2 */
+/*  96:WIN-SAMI-2 */
 static const GNREIGHT_ENC encode_WIN_SAMI_2 = {
     /* encode_WIN_SAMI_2.chmap */
     {
@@ -18692,6 +18884,7 @@ static const GNREIGHT_INX all_encodings[] = {
     { "852",                         &encode_852 },
     { "855",                         &encode_855 },
     { "857",                         &encode_857 },
+    { "858",                         &encode_858 },
     { "860",                         &encode_860 },
     { "861",                         &encode_861 },
     { "862",                         &encode_862 },
@@ -18709,7 +18902,7 @@ static const GNREIGHT_INX all_encodings[] = {
     { "8859_6",                      &encode_ISO_8859_6 },
     { "8859_7",                      &encode_ISO_8859_7 },
     { "8859_8",                      &encode_ISO_8859_8 },
-    { "8859_9",                      &encode_ISO_8859_9 },
+    { "8859_9",                      &encode_8859_9 },
     { "ANSI_X3.110",                 &encode_ANSI_X3_110_1983 },
     { "ANSI_X3.110-1983",            &encode_ANSI_X3_110_1983 },
     { "ANSI_X3.4",                   &encode_ANSI_X3_4_1968 },
@@ -18717,6 +18910,7 @@ static const GNREIGHT_INX all_encodings[] = {
     { "ANSI_X3.4-1986",              &encode_ANSI_X3_4_1968 },
     { "ARABIC",                      &encode_ISO_8859_6 },
     { "ARMSCII-8",                   &encode_ARMSCII_8 },
+    { "ARMSCII8",                    &encode_ARMSCII_8 },
     { "ASMO-708",                    &encode_ISO_8859_6 },
     { "BALTIC",                      &encode_ISO_8859_13 },
     { "CP-AR",                       &encode_CP_AR },
@@ -18760,6 +18954,7 @@ static const GNREIGHT_INX all_encodings[] = {
     { "CP852",                       &encode_852 },
     { "CP855",                       &encode_855 },
     { "CP857",                       &encode_857 },
+    { "CP858",                       &encode_858 },
     { "CP860",                       &encode_860 },
     { "CP861",                       &encode_861 },
     { "CP862",                       &encode_862 },
@@ -18775,7 +18970,7 @@ static const GNREIGHT_INX all_encodings[] = {
     { "CP912",                       &encode_ISO_8859_2 },
     { "CP915",                       &encode_ISO_8859_5 },
     { "CP916",                       &encode_ISO_8859_8 },
-    { "CP920",                       &encode_ISO_8859_9 },
+    { "CP920",                       &encode_8859_9 },
     { "CP921",                       &encode_ISO_8859_13 },
     { "CP922",                       &encode_CP922 },
     { "CP9448",                      &encode_CP1256 },
@@ -18816,7 +19011,7 @@ static const GNREIGHT_INX all_encodings[] = {
     { "CSISOLATIN2",                 &encode_ISO_8859_2 },
     { "CSISOLATIN3",                 &encode_ISO_8859_3 },
     { "CSISOLATIN4",                 &encode_8859_4 },
-    { "CSISOLATIN5",                 &encode_ISO_8859_9 },
+    { "CSISOLATIN5",                 &encode_8859_9 },
     { "CSISOLATIN6",                 &encode_ISO_8859_10 },
     { "CSISOLATINARABIC",            &encode_ISO_8859_6 },
     { "CSISOLATINCYRILLIC",          &encode_ISO_8859_5 },
@@ -18826,6 +19021,7 @@ static const GNREIGHT_INX all_encodings[] = {
     { "CSMACINTOSH",                 &encode_CSMACINTOSH },
     { "CSPC775BALTIC",               &encode_CP775 },
     { "CSPC850MULTILINGUAL",         &encode_850 },
+    { "CSPC858MULTILINGUAL",         &encode_858 },
     { "CSPC862LATINHEBREW",          &encode_862 },
     { "CSPC8CODEPAGE437",            &encode_437 },
     { "CSPCP852",                    &encode_852 },
@@ -18837,7 +19033,7 @@ static const GNREIGHT_INX all_encodings[] = {
     { "DECMCS",                      &encode_CSDECMCS },
     { "ECMA-114",                    &encode_ISO_8859_6 },
     { "ECMA-118",                    &encode_ISO_8859_7 },
-    { "ECMA-128",                    &encode_ISO_8859_9 },
+    { "ECMA-128",                    &encode_8859_9 },
     { "ECMA-CYRILLIC",               &encode_CSISO111ECMACYRILLIC },
     { "ECMACYRILLIC",                &encode_CSISO111ECMACYRILLIC },
     { "ELOT_928",                    &encode_ISO_8859_7 },
@@ -18896,6 +19092,7 @@ static const GNREIGHT_INX all_encodings[] = {
     { "IBM852",                      &encode_852 },
     { "IBM855",                      &encode_855 },
     { "IBM857",                      &encode_857 },
+    { "IBM858",                      &encode_858 },
     { "IBM860",                      &encode_860 },
     { "IBM861",                      &encode_861 },
     { "IBM862",                      &encode_862 },
@@ -18911,7 +19108,7 @@ static const GNREIGHT_INX all_encodings[] = {
     { "IBM912",                      &encode_ISO_8859_2 },
     { "IBM915",                      &encode_ISO_8859_5 },
     { "IBM916",                      &encode_ISO_8859_8 },
-    { "IBM920",                      &encode_ISO_8859_9 },
+    { "IBM920",                      &encode_8859_9 },
     { "IBM921",                      &encode_ISO_8859_13 },
     { "IBM922",                      &encode_CP922 },
     { "IBM9448",                     &encode_CP1256 },
@@ -18933,7 +19130,7 @@ static const GNREIGHT_INX all_encodings[] = {
     { "ISO-8859-6",                  &encode_ISO_8859_6 },
     { "ISO-8859-7",                  &encode_ISO_8859_7 },
     { "ISO-8859-8",                  &encode_ISO_8859_8 },
-    { "ISO-8859-9",                  &encode_ISO_8859_9 },
+    { "ISO-8859-9",                  &encode_8859_9 },
     { "ISO-8859-9E",                 &encode_ISO_8859_9E },
     { "ISO-CELTIC",                  &encode_ISO_8859_14 },
     { "ISO-IR-100",                  &encode_ISO_8859_1 },
@@ -18947,7 +19144,7 @@ static const GNREIGHT_INX all_encodings[] = {
     { "ISO-IR-138",                  &encode_ISO_8859_8 },
     { "ISO-IR-143",                  &encode_CSISO143IECP271 },
     { "ISO-IR-144",                  &encode_ISO_8859_5 },
-    { "ISO-IR-148",                  &encode_ISO_8859_9 },
+    { "ISO-IR-148",                  &encode_8859_9 },
     { "ISO-IR-153",                  &encode_CSISO153GOST1976874 },
     { "ISO-IR-156",                  &encode_ISO_IR_156 },
     { "ISO-IR-157",                  &encode_ISO_8859_10 },
@@ -18974,7 +19171,7 @@ static const GNREIGHT_INX all_encodings[] = {
     { "ISO8859-6",                   &encode_ISO_8859_6 },
     { "ISO8859-7",                   &encode_ISO_8859_7 },
     { "ISO8859-8",                   &encode_ISO_8859_8 },
-    { "ISO8859-9",                   &encode_ISO_8859_9 },
+    { "ISO8859-9",                   &encode_8859_9 },
     { "ISO8859-9E",                  &encode_ISO_8859_9E },
     { "ISO88591",                    &encode_ISO_8859_1 },
     { "ISO885910",                   &encode_ISO_8859_10 },
@@ -18990,7 +19187,7 @@ static const GNREIGHT_INX all_encodings[] = {
     { "ISO88596",                    &encode_ISO_8859_6 },
     { "ISO88597",                    &encode_ISO_8859_7 },
     { "ISO88598",                    &encode_ISO_8859_8 },
-    { "ISO88599",                    &encode_ISO_8859_9 },
+    { "ISO88599",                    &encode_8859_9 },
     { "ISO88599E",                   &encode_ISO_8859_9E },
     { "ISO_6937",                    &encode_ISO_IR_156 },
     { "ISO_6937:1992",               &encode_ISO_IR_156 },
@@ -19019,8 +19216,8 @@ static const GNREIGHT_INX all_encodings[] = {
     { "ISO_8859-7:2003",             &encode_ISO_8859_7 },
     { "ISO_8859-8",                  &encode_ISO_8859_8 },
     { "ISO_8859-8:1988",             &encode_ISO_8859_8 },
-    { "ISO_8859-9",                  &encode_ISO_8859_9 },
-    { "ISO_8859-9:1989",             &encode_ISO_8859_9 },
+    { "ISO_8859-9",                  &encode_8859_9 },
+    { "ISO_8859-9:1989",             &encode_8859_9 },
     { "ISO_8859-9E",                 &encode_ISO_8859_9E },
     { "KOI8-R",                      &encode_KOI8_R },
     { "KOI8-RU",                     &encode_CP1167 },
@@ -19033,7 +19230,7 @@ static const GNREIGHT_INX all_encodings[] = {
     { "L2",                          &encode_ISO_8859_2 },
     { "L3",                          &encode_ISO_8859_3 },
     { "L4",                          &encode_8859_4 },
-    { "L5",                          &encode_ISO_8859_9 },
+    { "L5",                          &encode_8859_9 },
     { "L6",                          &encode_ISO_8859_10 },
     { "L7",                          &encode_ISO_8859_13 },
     { "L8",                          &encode_ISO_8859_14 },
@@ -19043,7 +19240,7 @@ static const GNREIGHT_INX all_encodings[] = {
     { "LATIN2",                      &encode_ISO_8859_2 },
     { "LATIN3",                      &encode_ISO_8859_3 },
     { "LATIN4",                      &encode_8859_4 },
-    { "LATIN5",                      &encode_ISO_8859_9 },
+    { "LATIN5",                      &encode_8859_9 },
     { "LATIN6",                      &encode_ISO_8859_10 },
     { "LATIN7",                      &encode_ISO_8859_13 },
     { "LATIN8",                      &encode_ISO_8859_14 },
@@ -19079,7 +19276,7 @@ static const GNREIGHT_INX all_encodings[] = {
     { "OSF00010006",                 &encode_ISO_8859_6 },
     { "OSF00010007",                 &encode_ISO_8859_7 },
     { "OSF00010008",                 &encode_ISO_8859_8 },
-    { "OSF00010009",                 &encode_ISO_8859_9 },
+    { "OSF00010009",                 &encode_8859_9 },
     { "OSF0001000A",                 &encode_ISO_8859_10 },
     { "OSF10010001",                 &encode_CSHPROMAN8 },
     { "OSF10010004",                 &encode_HP_GREEK8 },
@@ -19112,7 +19309,7 @@ static const GNREIGHT_INX all_encodings[] = {
     { "TIS620-0",                    &encode_TIS_620 },
     { "TIS620.2529-1",               &encode_TIS_620 },
     { "TIS620.2533-0",               &encode_TIS_620 },
-    { "TS-5881",                     &encode_ISO_8859_9 },
+    { "TS-5881",                     &encode_8859_9 },
     { "TSCII",                       &encode_TSCII },
     { "TURKISH8",                    &encode_HP_TURKISH8 },
     { "WIN-SAMI-2",                  &encode_WIN_SAMI_2 },
@@ -19182,7 +19379,6 @@ static const GNREIGHT_INX all_locales[] = {
     { "bg_BG",                       &encode_CP1251 },
     { "bg_BG.cp1251",                &encode_CP1251 },
     { "bokmal",                      &encode_ISO_8859_1 },
-    { "bokm\303\245l",               &encode_ISO_8859_1 },
     { "br_FR",                       &encode_ISO_8859_1 },
     { "br_FR.iso88591",              &encode_ISO_8859_1 },
     { "br_FR.iso885915@euro",        &encode_ISO_8859_15 },
@@ -19194,9 +19390,7 @@ static const GNREIGHT_INX all_locales[] = {
     { "ca_ES",                       &encode_ISO_8859_1 },
     { "ca_ES.iso88591",              &encode_ISO_8859_1 },
     { "ca_ES.iso885915@euro",        &encode_ISO_8859_15 },
-    { "ca_ES.iso885915@valencia",    &encode_ISO_8859_15 },
     { "ca_ES@euro",                  &encode_ISO_8859_15 },
-    { "ca_ES@valencia",              &encode_ISO_8859_15 },
     { "ca_FR",                       &encode_ISO_8859_15 },
     { "ca_FR.iso885915",             &encode_ISO_8859_15 },
     { "ca_IT",                       &encode_ISO_8859_15 },
@@ -19226,6 +19420,8 @@ static const GNREIGHT_INX all_locales[] = {
     { "de_DE.iso88591",              &encode_ISO_8859_1 },
     { "de_DE.iso885915@euro",        &encode_ISO_8859_15 },
     { "de_DE@euro",                  &encode_ISO_8859_15 },
+    { "de_IT",                       &encode_ISO_8859_1 },
+    { "de_IT.iso88591",              &encode_ISO_8859_1 },
     { "de_LU",                       &encode_ISO_8859_1 },
     { "de_LU.iso88591",              &encode_ISO_8859_1 },
     { "de_LU.iso885915@euro",        &encode_ISO_8859_15 },
@@ -19237,6 +19433,8 @@ static const GNREIGHT_INX all_locales[] = {
     { "el_CY.iso88597",              &encode_ISO_8859_7 },
     { "el_GR",                       &encode_ISO_8859_7 },
     { "el_GR.iso88597",              &encode_ISO_8859_7 },
+    { "el_GR.iso88597@euro",         &encode_ISO_8859_7 },
+    { "el_GR@euro",                  &encode_ISO_8859_7 },
     { "en_AU",                       &encode_ISO_8859_1 },
     { "en_AU.iso88591",              &encode_ISO_8859_1 },
     { "en_BW",                       &encode_ISO_8859_1 },
@@ -19268,8 +19466,6 @@ static const GNREIGHT_INX all_locales[] = {
     { "en_ZA.iso88591",              &encode_ISO_8859_1 },
     { "en_ZW",                       &encode_ISO_8859_1 },
     { "en_ZW.iso88591",              &encode_ISO_8859_1 },
-    { "eo",                          &encode_ISO_8859_3 },
-    { "eo.iso88593",                 &encode_ISO_8859_3 },
     { "es_AR",                       &encode_ISO_8859_1 },
     { "es_AR.iso88591",              &encode_ISO_8859_1 },
     { "es_BO",                       &encode_ISO_8859_1 },
@@ -19347,7 +19543,6 @@ static const GNREIGHT_INX all_locales[] = {
     { "fr_LU.iso88591",              &encode_ISO_8859_1 },
     { "fr_LU.iso885915@euro",        &encode_ISO_8859_15 },
     { "fr_LU@euro",                  &encode_ISO_8859_15 },
-    { "fran\303\247ais",             &encode_ISO_8859_1 },
     { "french",                      &encode_ISO_8859_1 },
     { "ga_IE",                       &encode_ISO_8859_1 },
     { "ga_IE.iso88591",              &encode_ISO_8859_1 },
@@ -19389,17 +19584,13 @@ static const GNREIGHT_INX all_locales[] = {
     { "it_IT.iso885915@euro",        &encode_ISO_8859_15 },
     { "it_IT@euro",                  &encode_ISO_8859_15 },
     { "italian",                     &encode_ISO_8859_1 },
-    { "iw_IL",                       &encode_ISO_8859_8 },
-    { "iw_IL.iso88598",              &encode_ISO_8859_8 },
     { "ka_GE",                       &encode_GEORGIAN_PS },
     { "ka_GE.georgianps",            &encode_GEORGIAN_PS },
-    { "kk_KZ",                       &encode_RK1048 },
-    { "kk_KZ.pt154",                 &encode_RK1048 },
+    { "kk_KZ",                       &encode_PT154 },
+    { "kk_KZ.pt154",                 &encode_PT154 },
     { "kk_KZ.rk1048",                &encode_RK1048 },
     { "kl_GL",                       &encode_ISO_8859_1 },
     { "kl_GL.iso88591",              &encode_ISO_8859_1 },
-    { "ku_TR",                       &encode_ISO_8859_9 },
-    { "ku_TR.iso88599",              &encode_ISO_8859_9 },
     { "kw_GB",                       &encode_ISO_8859_1 },
     { "kw_GB.iso88591",              &encode_ISO_8859_1 },
     { "lg_UG",                       &encode_ISO_8859_10 },
@@ -19432,6 +19623,7 @@ static const GNREIGHT_INX all_locales[] = {
     { "nn_NO",                       &encode_ISO_8859_1 },
     { "nn_NO.iso88591",              &encode_ISO_8859_1 },
     { "no_NO",                       &encode_ISO_8859_1 },
+    { "no_NO.ISO-8859-1",            &encode_ISO_8859_1 },
     { "norwegian",                   &encode_ISO_8859_1 },
     { "nynorsk",                     &encode_ISO_8859_1 },
     { "oc_FR",                       &encode_ISO_8859_1 },
@@ -19491,11 +19683,6 @@ static const GNREIGHT_INX all_locales[] = {
     { "thai",                        &encode_TIS_620 },
     { "tl_PH",                       &encode_ISO_8859_1 },
     { "tl_PH.iso88591",              &encode_ISO_8859_1 },
-    { "tr_CY",                       &encode_ISO_8859_9 },
-    { "tr_CY.iso88599",              &encode_ISO_8859_9 },
-    { "tr_TR",                       &encode_ISO_8859_9 },
-    { "tr_TR.iso88599",              &encode_ISO_8859_9 },
-    { "turkish",                     &encode_ISO_8859_9 },
     { "uk_UA",                       &encode_KOI8_U },
     { "uk_UA.koi8u",                 &encode_KOI8_U },
     { "uz_UZ",                       &encode_ISO_8859_1 },

@@ -1,4 +1,4 @@
-; $Id: convile.nsi,v 1.24 2018/03/23 01:15:42 tom Exp $
+; $Id: convile.nsi,v 1.26 2019/01/06 17:33:24 tom Exp $
 ; vile:fk=8bit
 ; Script originally generated with the Venis Install Wizard, but customized.
 ; The Inno Setup script is preferred; but this can be built via cross-compiling.
@@ -9,8 +9,8 @@
 
 !define VERSION_MAJOR "9"
 !define VERSION_MINOR "8"
-!define VERSION_LEVEL "20"
-!define VERSION_PATCH "t"
+!define VERSION_LEVEL "21"
+!define VERSION_PATCH "u"
 !define VERSION_BUILT "0"
 
 !define SUBKEY "VI like Emacs"
@@ -29,7 +29,7 @@ SetCompressor /SOLID lzma
 
 VIAddVersionKey ProductName "${SUBKEY}"
 VIAddVersionKey CompanyName "Thomas E. Dickey"
-VIAddVersionKey LegalCopyright "© 1997-2017,2018, Thomas E. Dickey"
+VIAddVersionKey LegalCopyright "© 1997-2018,2019, Thomas E. Dickey"
 VIAddVersionKey FileDescription "ConVile Installer (MinGW)"
 VIAddVersionKey FileVersion "${VERSION}"
 VIAddVersionKey ProductVersion "${VERSION}"
