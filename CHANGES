@@ -1,5 +1,12 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
+ 20190209 (u)
+	> Tom Dickey:
+	+ update gnreight.h from Debian/testing libc6 2.28-6 
+	+ add FreeBSD package-files to help with maintaining (FreeBSD #234527,
+	  FreeBSD #234528).  Note that because of the distinfo files, those
+	  will always be one patch behind.
+
  20181112 (t)
 	> Adam Denton:
 	+ fix a typo in tcap.h (Savannah #52872).

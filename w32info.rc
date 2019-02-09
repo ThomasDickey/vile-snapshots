@@ -1,11 +1,11 @@
-// $Id: w32info.rc,v 1.13 2018/03/23 01:15:42 tom Exp $
+// $Id: w32info.rc,v 1.15 2019/01/06 17:33:15 tom Exp $
 // vile:rcmode fk=8bit
 
 #include <windows.h>
 
 VS_VERSION_INFO VERSIONINFO
-FILEVERSION    9,8,20,0
-PRODUCTVERSION 9,8,20,0
+FILEVERSION    9,8,21,0
+PRODUCTVERSION 9,8,21,0
 FILEFLAGSMASK  VS_FFI_FILEFLAGSMASK
 FILEFLAGS      0
 FILEOS         VOS_NT_WINDOWS32
@@ -18,12 +18,12 @@ BEGIN
     BEGIN
       VALUE "CompanyName",      "http://invisible-island.net/vile/"
       VALUE "FileDescription",  "vile - Vi LIke Emacs"
-      VALUE "FileVersion",      "9.8.20.0"
+      VALUE "FileVersion",      "9.8.21.0"
       VALUE "InternalName",     "WinVile"
-      VALUE "LegalCopyright",   "©1997-2017,2018 Thomas E. Dickey"
+      VALUE "LegalCopyright",   "©1997-2018,2019 Thomas E. Dickey"
       VALUE "OriginalFilename", "winvile.exe"
       VALUE "ProductName",      "vile - VI Like Emacs"
-      VALUE "ProductVersion",   "9.8.20.0"
+      VALUE "ProductVersion",   "9.8.21.0"
     END
   END
   BLOCK "VarFileInfo"
