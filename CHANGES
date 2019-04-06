@@ -1,7 +1,8 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20190209 (u)
+ 20190404 (u)
 	> Tom Dickey:
+	+ add html meta tags to atr2html for generator and charset.
 	+ update gnreight.h from Debian/testing libc6 2.28-6 
 	+ add FreeBSD package-files to help with maintaining (FreeBSD #234527,
 	  FreeBSD #234528).  Note that because of the distinfo files, those
