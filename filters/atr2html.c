@@ -1,22 +1,33 @@
 /*
  * Convert attributed text to html.
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/atr2html.c,v 1.10 2010/11/10 10:55:43 tom Exp $
+ * $Id: atr2html.c,v 1.12 2019/04/06 00:58:00 tom Exp $
  */
 #include <unfilter.h>
 
 static int last_attrib;
 static int last_column;
 
+#define THIS_PROGRAM "atr2html"
+
 /*
  * yes - the title is empty...
+ * (use it as a placeholder for post-processing)
  */
 void
 begin_unfilter(FILE *dst)
 {
     fprintf(dst, "<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\">\n");
+    fprintf(dst, "<html>\n");
+    fprintf(dst, "<head>\n");
+    fprintf(dst, "<meta name=\"generator\" content=\"%s\">\n", THIS_PROGRAM);
+    fprintf(dst, "<meta http-equiv=\"Content-Type\" "
+	    "content=\"text/html; charset=us-ascii\">\n");
+    fprintf(dst, "<title></title>\n");
+    fprintf(dst, "</head>\n");
+    fprintf(dst, "<body>\n");
     fprintf(dst,
-	    "<html><head><title></title></head><body>\n<!--{{atr2html--><p style=\"font-family: monospace; font-size: 10pt;\">\n");
+	    "<!--{{%s--><p style=\"font-family: monospace; font-size: 10pt;\">\n", THIS_PROGRAM);
     last_attrib = 0;
     last_column = 0;
 }
@@ -62,6 +73,7 @@ write_unfilter(FILE *dst, int ch, int attrib GCC_UNUSED)
     int next_adjust;
     int tabs_adjust = 0;
     const char *alias = 0;
+    char buffer[8];
 
     (void) attrib;
 
@@ -75,9 +87,6 @@ write_unfilter(FILE *dst, int ch, int attrib GCC_UNUSED)
     switch (ch) {
     case '\t':
 	alias = tabstrip + ((8 - tabs_adjust) * ((int) sizeof(NBSP) - 1));
-	break;
-    case '\r':
-	last_column = 0;
 	break;
     case '\n':
 	if (last_column > 1)
@@ -98,6 +107,12 @@ write_unfilter(FILE *dst, int ch, int attrib GCC_UNUSED)
     case '&':
 	alias = "&amp;";
 	break;
+    default:
+	if (ch < 32) {
+	    sprintf(buffer, "^%c", ch + '@');
+	    alias = buffer;
+	}
+	break;
     }
     if (alias != 0) {
 	vl_fputs(alias, dst);
@@ -110,5 +125,5 @@ void
 end_unfilter(FILE *dst)
 {
     markup_unfilter(dst, 0);
-    fprintf(dst, "<!--atr2html}}--></p>\n</body></html>");
+    fprintf(dst, "<!--%s}}--></p>\n</body></html>", THIS_PROGRAM);
 }
