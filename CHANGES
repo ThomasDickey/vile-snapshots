@@ -1,12 +1,20 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20190404 (u)
+ 20190408 (u)
 	> Tom Dickey:
+	+ add configure check for handling of "const" with X Toolkit library
+	+ improved configure macros:
+	  CF_GNU_SOURCE, CF_INSTALL_OPTS, CF_INSTALL_OPT_S, CF_LD_RPATH_OPT,
+	  CF_POSIX_C_SOURCE, CF_VA_COPY, CF_XOPEN_SOURCE, mainly to solve
+	  two problems:
+	  + non-POSIX use of predefined symbols on BSD platforms
+	  + an install option was needed to preserve timestamps
 	+ add html meta tags to atr2html for generator and charset.
 	+ update gnreight.h from Debian/testing libc6 2.28-6 
 	+ add FreeBSD package-files to help with maintaining (FreeBSD #234527,
 	  FreeBSD #234528).  Note that because of the distinfo files, those
 	  will always be one patch behind.
+	+ update config.guess, config.sub
 
  20181112 (t)
 	> Adam Denton:

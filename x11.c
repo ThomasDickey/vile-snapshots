@@ -2,8 +2,7 @@
  *	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11.c,v 1.390 2018/10/30 01:09:19 Wayne.Cuddy Exp $
- *
+ * $Id: x11.c,v 1.391 2019/04/08 21:54:56 tom Exp $
  */
 
 /*
@@ -1957,7 +1956,7 @@ x_preparse_args(int *pargc, char ***pargv)
     cur_win->top_widget = XtVaAppInitialize(&cur_win->app_context,
 					    xvile_class,
 					    options, XtNumber(options),
-					    pargc, (String *) (*pargv),
+					    pargc, *pargv,
 					    fallback_resources,
 					    Nval(XtNgeometry, NULL),
 					    Nval(XtNinput, TRUE),
