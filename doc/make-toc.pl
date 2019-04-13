@@ -1,5 +1,5 @@
 #!/usr/bin/perl -w
-# $Id: make-toc.pl,v 1.7 2013/12/27 19:56:36 tom Exp $
+# $Id: make-toc.pl,v 1.8 2019/04/13 17:02:25 tom Exp $
 
 use strict;
 
@@ -26,7 +26,7 @@ print <<EOF
 VI Like Emacs &mdash; Table of Contents
 </TITLE>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
-<link rev="made" href="mailto:dickey\@invisible-island.net">
+<link rel="author" href="mailto:dickey\@invisible-island.net">
 <link rel="SHORTCUT ICON" href="/img/icons/vile.ico" type="image/x-icon">
 <link rel="stylesheet" href="/css/simplestyle.css" type="text/css">
 </HEAD>

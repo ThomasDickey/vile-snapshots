@@ -1,7 +1,8 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20190408 (u)
+ 20190413 (u)
 	> Tom Dickey:
+	+ updated "rev=made" to "rel=author" in html-files.
 	+ add configure check for handling of "const" with X Toolkit library
 	+ improved configure macros:
 	  CF_GNU_SOURCE, CF_INSTALL_OPTS, CF_INSTALL_OPT_S, CF_LD_RPATH_OPT,
