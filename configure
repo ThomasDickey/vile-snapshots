@@ -11065,7 +11065,7 @@ fi
 
 fi
 
-# OSX is schizoid about who owns /usr/X11 (old) versus /opt/X11 (new), and (and
+# OSX is schizoid about who owns /usr/X11 (old) versus /opt/X11 (new) (and
 # in some cases has installed dummy files in the former, other cases replaced
 # it with a link to the new location).  This complicates the configure script.
 # Check for that pitfall, and recover using pkg-config
@@ -15547,7 +15547,7 @@ fi
 
 fi
 
-# OSX is schizoid about who owns /usr/X11 (old) versus /opt/X11 (new), and (and
+# OSX is schizoid about who owns /usr/X11 (old) versus /opt/X11 (new) (and
 # in some cases has installed dummy files in the former, other cases replaced
 # it with a link to the new location).  This complicates the configure script.
 # Check for that pitfall, and recover using pkg-config
@@ -29989,8 +29989,9 @@ rm -f conftest.$ac_objext conftest.$ac_ext
 echo "${ECHO_T}$CLANG_COMPILER" >&6
 fi
 
+if test "x$have_x" = xyes; then
 cat >conftest.$ac_ext <<_ACEOF
-#line 29993 "configure"
+#line 29994 "configure"
 #include "confdefs.h"
 
 #include <stdlib.h>
@@ -30005,26 +30006,26 @@ String foo = malloc(1)
 }
 _ACEOF
 rm -f conftest.$ac_objext
-if { (eval echo "$as_me:30008: \"$ac_compile\"") >&5
+if { (eval echo "$as_me:30009: \"$ac_compile\"") >&5
   (eval $ac_compile) 2>&5
   ac_status=$?
-  echo "$as_me:30011: \$? = $ac_status" >&5
+  echo "$as_me:30012: \$? = $ac_status" >&5
   (exit $ac_status); } &&
          { ac_try='test -s conftest.$ac_objext'
-  { (eval echo "$as_me:30014: \"$ac_try\"") >&5
+  { (eval echo "$as_me:30015: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
-  echo "$as_me:30017: \$? = $ac_status" >&5
+  echo "$as_me:30018: \$? = $ac_status" >&5
   (exit $ac_status); }; }; then
 
-echo "$as_me:30020: checking for X11/Xt const-feature" >&5
+echo "$as_me:30021: checking for X11/Xt const-feature" >&5
 echo $ECHO_N "checking for X11/Xt const-feature... $ECHO_C" >&6
 if test "${cf_cv_const_x_string+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
 else
 
 	cat >conftest.$ac_ext <<_ACEOF
-#line 30027 "configure"
+#line 30028 "configure"
 #include "confdefs.h"
 
 #define _CONST_X_STRING	/* X11R7.8 (perhaps) */
@@ -30041,16 +30042,16 @@ String foo = malloc(1); *foo = 0
 }
 _ACEOF
 rm -f conftest.$ac_objext
-if { (eval echo "$as_me:30044: \"$ac_compile\"") >&5
+if { (eval echo "$as_me:30045: \"$ac_compile\"") >&5
   (eval $ac_compile) 2>&5
   ac_status=$?
-  echo "$as_me:30047: \$? = $ac_status" >&5
+  echo "$as_me:30048: \$? = $ac_status" >&5
   (exit $ac_status); } &&
          { ac_try='test -s conftest.$ac_objext'
-  { (eval echo "$as_me:30050: \"$ac_try\"") >&5
+  { (eval echo "$as_me:30051: \"$ac_try\"") >&5
   (eval $ac_try) 2>&5
   ac_status=$?
-  echo "$as_me:30053: \$? = $ac_status" >&5
+  echo "$as_me:30054: \$? = $ac_status" >&5
   (exit $ac_status); }; }; then
 
 			cf_cv_const_x_string=no
@@ -30065,7 +30066,7 @@ fi
 rm -f conftest.$ac_objext conftest.$ac_ext
 
 fi
-echo "$as_me:30068: result: $cf_cv_const_x_string" >&5
+echo "$as_me:30069: result: $cf_cv_const_x_string" >&5
 echo "${ECHO_T}$cf_cv_const_x_string" >&6
 
 case $cf_cv_const_x_string in
@@ -30088,12 +30089,11 @@ else
 cat conftest.$ac_ext >&5
 fi
 rm -f conftest.$ac_objext conftest.$ac_ext
-
+ fi
 cat > conftest.$ac_ext <<EOF
-#line 30093 "${as_me:-configure}"
+#line 30094 "${as_me:-configure}"
 int main(int argc, char *argv[]) { return (argv[argc-1] == 0) ; }
 EOF
-
 if test "$INTEL_COMPILER" = yes
 then
 # The "-wdXXX" options suppress warnings:
