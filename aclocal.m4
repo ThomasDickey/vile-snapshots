@@ -1,4 +1,4 @@
-dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.299 2019/04/08 21:51:44 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.300 2019/06/16 13:45:01 tom Exp $
 dnl ---------------------------------------------------------------------------
 dnl
 dnl Copyright 1996-2018,2019 by Thomas E. Dickey
@@ -1986,7 +1986,7 @@ if test "$GCC" = yes ; then
 fi
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_GCC_WARNINGS version: 34 updated: 2019/04/08 17:50:29
+dnl CF_GCC_WARNINGS version: 35 updated: 2019/06/16 09:45:01
 dnl ---------------
 dnl Check if the compiler supports useful warning options.  There's a few that
 dnl we don't use, simply because they're too noisy:
@@ -2010,14 +2010,11 @@ AC_DEFUN([CF_GCC_WARNINGS],
 AC_REQUIRE([CF_GCC_VERSION])
 CF_INTEL_COMPILER(GCC,INTEL_COMPILER,CFLAGS)
 CF_CLANG_COMPILER(GCC,CLANG_COMPILER,CFLAGS)
-
-CF_CONST_X_STRING
-
+if test "x$have_x" = xyes; then CF_CONST_X_STRING fi
 cat > conftest.$ac_ext <<EOF
 #line __oline__ "${as_me:-configure}"
 int main(int argc, char *argv[[]]) { return (argv[[argc-1]] == 0) ; }
 EOF
-
 if test "$INTEL_COMPILER" = yes
 then
 # The "-wdXXX" options suppress warnings:
@@ -4127,12 +4124,12 @@ CF_VERBOSE(...checked $1 [$]$1)
 AC_SUBST(EXTRA_LDFLAGS)
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_SIGWINCH version: 1 updated: 2006/04/02 16:41:09
+dnl CF_SIGWINCH version: 2 updated: 2019/03/23 19:54:44
 dnl -----------
 dnl Use this macro after CF_XOPEN_SOURCE, but do not require it (not all
 dnl programs need this test).
 dnl
-dnl This is really a MacOS X 10.4.3 workaround.  Defining _POSIX_C_SOURCE
+dnl This is really a Mac OS X 10.4.3 workaround.  Defining _POSIX_C_SOURCE
 dnl forces SIGWINCH to be undefined (breaks xterm, ncurses).  Oddly, the struct
 dnl winsize declaration is left alone - we may revisit this if Apple choose to
 dnl break that part of the interface as well.
@@ -6446,7 +6443,7 @@ AC_CHECK_LIB(Xm, XmProcessTraversal, [LIBS="-lXm $LIBS"],
 	[$X_PRE_LIBS $LIBS $X_EXTRA_LIBS]) dnl
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_X_TOOLKIT version: 23 updated: 2015/04/12 15:39:00
+dnl CF_X_TOOLKIT version: 24 updated: 2019/03/23 19:54:44
 dnl ------------
 dnl Check for X Toolkit libraries
 AC_DEFUN([CF_X_TOOLKIT],
@@ -6454,7 +6451,7 @@ AC_DEFUN([CF_X_TOOLKIT],
 AC_REQUIRE([AC_PATH_XTRA])
 AC_REQUIRE([CF_CHECK_CACHE])
 
-# OSX is schizoid about who owns /usr/X11 (old) versus /opt/X11 (new), and (and
+# OSX is schizoid about who owns /usr/X11 (old) versus /opt/X11 (new) (and
 # in some cases has installed dummy files in the former, other cases replaced
 # it with a link to the new location).  This complicates the configure script.
 # Check for that pitfall, and recover using pkg-config
