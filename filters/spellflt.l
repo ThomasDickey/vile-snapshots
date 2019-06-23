@@ -3,7 +3,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/spellflt.l,v 1.59 2013/12/02 01:32:53 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/spellflt.l,v 1.60 2019/06/23 20:28:42 tom Exp $
  *
  * Filter to add vile "attribution" sequences to misspelled words.
  */
@@ -157,7 +157,10 @@ zap_tempfile(char **fname)
 
 %}
 
-WORD		[[:alpha:]]([[:alnum:]])*
+ALPHA		[[:alpha:]]
+UMLAUT		\xc3[\x80-\xbf]
+LETTER		({ALPHA}|{UMLAUT})+
+WORD		{LETTER}({LETTER}|[[:digit:]])*
 
 %%
 
