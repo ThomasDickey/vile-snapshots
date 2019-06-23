@@ -1,6 +1,8 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20190616 (u)
+ 20190623 (u)
+	> Michael von der Heide
+	+ modify vile-spell-filt to allow for umlauts in UTF-8
 	> Tom Dickey:
 	+ updated "rev=made" to "rel=author" in html-files.
 	+ add configure check for handling of "const" with X Toolkit library
