@@ -12,7 +12,7 @@
 */
 
 /*
- * $Id: estruct.h,v 1.753 2018/10/25 22:50:17 tom Exp $
+ * $Id: estruct.h,v 1.754 2019/06/24 08:33:46 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -3014,7 +3014,7 @@ typedef long intptr_t;
 #endif
 
 #if defined(VILE_ERROR_ABORT)
-extern void ExitProgram(int code);
+extern void ExitProgram(int code) GCC_NORETURN;
 #endif
 
 #if SYS_WINNT && defined(VILE_OLE) && DISP_NTWIN
