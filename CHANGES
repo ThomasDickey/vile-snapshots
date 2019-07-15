@@ -1,9 +1,12 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20190624 (u)
+ 20190714 (u)
 	> Michael von der Heide
 	+ modify vile-spell-filt to allow for umlauts in UTF-8
 	> Tom Dickey:
+	+ add a limit-check in reallyEditMiniBuffer to handle a case where
+	  mini-edits clear the working buffer, including the padding (Savannah
+	  #56627).
 	+ fix no-return warnings from libXt 1.2.0 headers
 	+ updated "rev=made" to "rel=author" in html-files.
 	+ add configure check for handling of "const" with X Toolkit library

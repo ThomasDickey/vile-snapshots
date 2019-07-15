@@ -44,7 +44,7 @@
  *	tgetc_avail()     true if a key is avail from tgetc() or below.
  *	keystroke_avail() true if a key is avail from keystroke() or below.
  *
- * $Id: input.c,v 1.367 2018/10/25 22:50:17 tom Exp $
+ * $Id: input.c,v 1.368 2019/07/14 23:56:20 tom Exp $
  */
 
 #include	"estruct.h"
@@ -1731,7 +1731,8 @@ reallyEditMiniBuffer(TBUFF **buf,
 	    insertmode = save_insertmode;
 	    edited = TRUE;
 
-	    llength(DOT.l) -= 1;	/* strip the padding */
+	    if (llength(DOT.l) > margin)
+		llength(DOT.l) -= 1;	/* strip the padding */
 	    b_set_left_margin(bminip, old_margin);
 
 	    clexec = old_clexec;
