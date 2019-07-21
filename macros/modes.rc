@@ -1,4 +1,4 @@
-; $Id: modes.rc,v 1.142 2018/10/12 20:54:43 tom Exp $
+; $Id: modes.rc,v 1.143 2019/07/21 16:59:39 tom Exp $
 ; majormodes in this file are ordered alphabetically for convenience - the
 ; precedence used by vile is strictly alphabetic, counting case.  Use the
 ; before and after qualifiers to override the precedence.
@@ -677,7 +677,7 @@ define-mode pc
 ; very expensive to resolve, we combine it with the similar 'while' group.
 define-mode perl
 ~with define-submode perl
-	preamble	'^#!\s*\(\/[^\\]*\)\?\<perl[0-9]*\>'
+	preamble	'^#!\s*\(\/[^\\]*\)\?\<perl[0-5]*\>'
 	suffixes	'\.\(pl\|pm\|PL\|pod\)$'
 	mode-pathname	'^.*perl.*\.t$'
 	before		"mail"
@@ -697,6 +697,23 @@ define-mode perl
 ;~elsewith define-submode perl group 'while'
 ;	fence-if       '^\s*\(sub\|foreach\|while\|unless\|do\)\>.*{'
 ;	fence-fi       '^\s*}'
+~endwith
+
+define-mode perl6
+~with define-submode perl6
+	preamble	'^#!\s*\(\/[^\\]*\)\?\<perl6\>'
+	suffixes	'\.\(pl6\)$'
+	mode-pathname	'^.*perl6.*\.t$'
+	after		"perl"
+	cindent
+	cindent-chars  &cat ':' $fences
+	comment-prefix '^\s*#'
+	comments       '^\s*#\s*$'
+	fence-pairs    '{}()[]<>'
+	fence-if       '^\s*if\>.*{'
+	fence-elif     '^\s*}\s*elsif\s*(.*{'
+	fence-else     '^\s*}\s*else\s*{'
+	fence-fi       '^\s*}\s*$'
 ~endwith
 
 define-mode php
