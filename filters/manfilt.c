@@ -46,7 +46,7 @@
  * vile will choose some appropriate fallback (such as underlining) if
  * italics are not available.
  *
- * $Header: /users/source/archives/vile.vcs/filters/RCS/manfilt.c,v 1.70 2016/07/19 14:05:21 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/manfilt.c,v 1.71 2019/07/24 20:04:11 tom Exp $
  *
  */
 
@@ -361,10 +361,11 @@ allocate_line(void)
  * (Re)allocate the l_cell[] array for the current line
  */
 static void
-extend_line(void)
+extend_line(size_t want)
 {
     size_t have = cur_line->l_last;
-    size_t want = cur_line->l_this;
+    if (want < cur_line->l_this)
+	want = cur_line->l_this;
     if (want >= have) {
 	CHARCELL *c = cur_line->l_cell;
 	want += 80;
@@ -408,7 +409,7 @@ put_cell(int c, int level, int ident, int attrs)
 
     len = cur_line->l_used;
     col = cur_line->l_this++;
-    extend_line();
+    extend_line(col);
 
     p = &(cur_line->l_cell[col]);
     p->c_attrs = attrs;
@@ -473,7 +474,7 @@ ansi_CUF(int code)
     if (code > 0) {
 	size_t col = cur_line->l_this + (size_t) code;
 	while (col > cur_line->l_last) {
-	    extend_line();
+	    extend_line(col);
 	}
 	if (cur_line->l_used < col)
 	    cur_line->l_used = col;
@@ -545,7 +546,7 @@ ansi_HPA(int code)
     if (code > 0) {
 	size_t col = (size_t) code - 1;
 	while (col > cur_line->l_last) {
-	    extend_line();
+	    extend_line(col);
 	}
 	if (cur_line->l_used < col)
 	    cur_line->l_used = col;

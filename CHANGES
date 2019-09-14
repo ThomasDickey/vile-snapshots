@@ -1,9 +1,11 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20190721 (u)
+ 20190914 (u)
 	> Michael von der Heide
 	+ modify vile-spell-filt to allow for umlauts in UTF-8
 	> Tom Dickey:
+	+ add "go" and "typescript" majormodes.
+	+ fix a loop-limit in manfilt.c for ANSI CUP.
 	+ clone pl-filt.c as pl6filt.c to support perl6, added corresponding
 	  "perl6" mode (discussion with Steve Lembark).
 	+ add a limit-check in reallyEditMiniBuffer to handle a case where
