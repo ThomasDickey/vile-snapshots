@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Header: /users/source/archives/vile.vcs/filters/RCS/genmake.sh,v 1.11 2013/12/02 23:16:39 tom Exp $
+# $Id: genmake.sh,v 1.12 2019/09/14 16:04:50 tom Exp $
 # Scan the source-files in the "filters" directory to obtain the names which
 # are used for the default symbol table for each filter.  Update genmake.mak
 # if the lists differ.
@@ -52,7 +52,7 @@ sort -u >$SORT
 mv $SORT $TEMP
 
 sed -e 's/@/$/g' >$DATA <<EOF
-# @Header@
+# @Id@
 # This is a list of filter root names and whether .c or .l files define the
 # filter.  Except for vile-crypt and vile-manfilt (which do not correspond to
 # majormodes), the filter names are constructed as vile-{root}-filt.
