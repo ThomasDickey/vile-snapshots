@@ -34,15 +34,15 @@ Creating, executing, storing macros
    In the simplest case, valid macro language constructs are placed in a file
    or buffer and subsequently executed with one of these editor commands:
 
-   +------------------------------------------------------------------------+
-   | command        | applies to | example                                  |
-   |----------------+------------+------------------------------------------|
-   | execute-buffer | buffer     | execute-buffer cfgcmds                   |
-   |----------------+------------+------------------------------------------|
-   | execute-file   | disk file  | execute-file ~/.projcfg                  |
-   |----------------+------------+------------------------------------------|
-   | source         | disk file  | source c:/utils/proj.cfg                 |
-   +------------------------------------------------------------------------+
+   +--------------------------------------------------------+
+   | command        | applies to | example                  |
+   |----------------+------------+--------------------------|
+   | execute-buffer | buffer     | execute-buffer cfgcmds   |
+   |----------------+------------+--------------------------|
+   | execute-file   | disk file  | execute-file ~/.projcfg  |
+   |----------------+------------+--------------------------|
+   | source         | disk file  | source c:/utils/proj.cfg |
+   +--------------------------------------------------------+
 
    The most common example of this usage is vile's startup file, which is
    "sourced" during the editor's invocation. Typically, the startup file
@@ -366,17 +366,17 @@ Variables
    distinguished syntactically by the character preceding their name.
 
    +------------------------------------------------------------------------+
-   | Class                | Example                                         |
-   |----------------------+-------------------------------------------------|
-   | Temporary variable   | %foo                                            |
-   |----------------------+-------------------------------------------------|
-   | State variable       | $curcol                                         |
-   |----------------------+-------------------------------------------------|
-   | Buffer variable      | <main.c                                         |
-   |----------------------+-------------------------------------------------|
-   | Interactive variable | @"Enter a filename: "                           |
-   |----------------------+-------------------------------------------------|
-   | Mode variable        | $autoindent                                     |
+   | Class                             | Example                            |
+   |-----------------------------------+------------------------------------|
+   | Temporary variable                | %foo                               |
+   |-----------------------------------+------------------------------------|
+   | State variable                    | $curcol                            |
+   |-----------------------------------+------------------------------------|
+   | Buffer variable                   | <main.c                            |
+   |-----------------------------------+------------------------------------|
+   | Interactive variable              | @"Enter a filename: "              |
+   |-----------------------------------+------------------------------------|
+   | Mode variable                     | $autoindent                        |
    +------------------------------------------------------------------------+
 
    All temporary variables, and some state variables, may be assigned to,
@@ -433,21 +433,21 @@ State Variables
            [READ ONLY] Status flags for current buffer, as shown in [Buffer
            List].
 
-           +----------------------------------------------------------------+
-           | Flag | Description                                             |
-           |------+---------------------------------------------------------|
-           | a    | autobuffer caused this to be created                    |
-           |------+---------------------------------------------------------|
-           | d    | directory listing                                       |
-           |------+---------------------------------------------------------|
-           | i    | invisible, e.g., tags                                   |
-           |------+---------------------------------------------------------|
-           | m    | modified                                                |
-           |------+---------------------------------------------------------|
-           | s    | scratch, will be removed when popped down               |
-           |------+---------------------------------------------------------|
-           | u    | unread                                                  |
-           +----------------------------------------------------------------+
+           +--------------------------------------------------+
+           | Flag | Description                               |
+           |------+-------------------------------------------|
+           | a    | autobuffer caused this to be created      |
+           |------+-------------------------------------------|
+           | d    | directory listing                         |
+           |------+-------------------------------------------|
+           | i    | invisible, e.g., tags                     |
+           |------+-------------------------------------------|
+           | m    | modified                                  |
+           |------+-------------------------------------------|
+           | s    | scratch, will be removed when popped down |
+           |------+-------------------------------------------|
+           | u    | unread                                    |
+           +--------------------------------------------------+
 
    $blines
            [READ ONLY] Number of lines in current buffer.
@@ -489,35 +489,35 @@ State Variables
            [READ ONLY] Comma-delimited list of "interesting" compiled
            options. Currently tracked options include:
 
-           +----------------------------------------------------------------+
-           | Option   | Description                                         |
-           |----------+-----------------------------------------------------|
-           | athena   | xvile built with Athena widgets                     |
-           |----------+-----------------------------------------------------|
-           | curses   | editor uses curses terminal driver                  |
-           |----------+-----------------------------------------------------|
-           | locale   | editor uses system's LC_CTYPE locale                |
-           |----------+-----------------------------------------------------|
-           | motif    | xvile built with Motif libraries                    |
-           |----------+-----------------------------------------------------|
-           | nextaw   | xvile built with Athena widgets (NeXtaw)            |
-           |----------+-----------------------------------------------------|
-           | noshell  | shell commands are disabled                         |
-           |----------+-----------------------------------------------------|
-           | oleauto  | editor supports OLE automation.                     |
-           |----------+-----------------------------------------------------|
-           | openlook | xvile built with OpenLook libraries                 |
-           |----------+-----------------------------------------------------|
-           | perl     | editor includes perl interpreter                    |
-           |----------+-----------------------------------------------------|
-           | termcap  | editor reads TERMCAP db for screen info.            |
-           |----------+-----------------------------------------------------|
-           | terminfo | editor reads TERMINFO db for screen info.           |
-           |----------+-----------------------------------------------------|
-           | xaw      | xvile built with Athena widgets (Xaw)               |
-           |----------+-----------------------------------------------------|
-           | xaw3d    | xvile built with Athena widgets (Xaw3D)             |
-           +----------------------------------------------------------------+
+           +------------------------------------------------------+
+           | Option   | Description                               |
+           |----------+-------------------------------------------|
+           | athena   | xvile built with Athena widgets           |
+           |----------+-------------------------------------------|
+           | curses   | editor uses curses terminal driver        |
+           |----------+-------------------------------------------|
+           | locale   | editor uses system's LC_CTYPE locale      |
+           |----------+-------------------------------------------|
+           | motif    | xvile built with Motif libraries          |
+           |----------+-------------------------------------------|
+           | nextaw   | xvile built with Athena widgets (NeXtaw)  |
+           |----------+-------------------------------------------|
+           | noshell  | shell commands are disabled               |
+           |----------+-------------------------------------------|
+           | oleauto  | editor supports OLE automation.           |
+           |----------+-------------------------------------------|
+           | openlook | xvile built with OpenLook libraries       |
+           |----------+-------------------------------------------|
+           | perl     | editor includes perl interpreter          |
+           |----------+-------------------------------------------|
+           | termcap  | editor reads TERMCAP db for screen info.  |
+           |----------+-------------------------------------------|
+           | terminfo | editor reads TERMINFO db for screen info. |
+           |----------+-------------------------------------------|
+           | xaw      | xvile built with Athena widgets (Xaw)     |
+           |----------+-------------------------------------------|
+           | xaw3d    | xvile built with Athena widgets (Xaw3D)   |
+           +------------------------------------------------------+
 
            If none of the above options are in effect, $cfgopts will be empty
            ("").
@@ -861,21 +861,21 @@ State Variables
            Current screen size on a DOS PC (meaningless on a Win32 host).
            Values:
 
-           +----------------------------------------------------------------+
-           | $sres                           | screen size                  |
-           |---------------------------------+------------------------------|
-           | "2"                             | "25"                         |
-           |---------------------------------+------------------------------|
-           | "4"                             | "43"                         |
-           |---------------------------------+------------------------------|
-           | "5"                             | "50"                         |
-           |---------------------------------+------------------------------|
-           | "6"                             | "60"                         |
-           |---------------------------------+------------------------------|
-           | Values for VMS:                 |                              |
-           |---------------------------------+------------------------------|
-           | "WIDE"                          | "NORMAL"                     |
-           +----------------------------------------------------------------+
+           +-------------------------------+
+           | $sres           | screen size |
+           |-----------------+-------------|
+           | "2"             | "25"        |
+           |-----------------+-------------|
+           | "4"             | "43"        |
+           |-----------------+-------------|
+           | "5"             | "50"        |
+           |-----------------+-------------|
+           | "6"             | "60"        |
+           |-----------------+-------------|
+           | Values for VMS: |             |
+           |-----------------+-------------|
+           | "WIDE"          | "NORMAL"    |
+           +-------------------------------+
 
            Other drivers ignore the value.
 
@@ -1868,4 +1868,4 @@ Credits
 
 -- (generated by make-hlp.pl from macros.html(1.33))
 -- vile:txtmode fillcol=78
--- $Id: macros.doc,v 1.142 2019/04/13 17:18:55 tom Exp $
+-- $Id: macros.doc,v 1.143 2019/12/05 00:27:10 tom Exp $
