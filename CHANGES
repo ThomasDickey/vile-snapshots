@@ -1,9 +1,13 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20190914 (u)
+ 20191204 (u)
 	> Michael von der Heide
 	+ modify vile-spell-filt to allow for umlauts in UTF-8
 	> Tom Dickey:
+	+ regenerate the doc-files from html, using links2 2.14 in Debian 9.
+	  also reformat the html files.
+	+ trim some unwanted blanks in vile.hlp, overlooked in converting
+	  to html (report by Marc Simpson).
 	+ add "go" and "typescript" majormodes.
 	+ fix a loop-limit in manfilt.c for ANSI CUP.
 	+ clone pl-filt.c as pl6filt.c to support perl6, added corresponding

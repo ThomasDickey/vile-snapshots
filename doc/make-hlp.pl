@@ -1,5 +1,5 @@
-#!/usr/bin/perl -w
-# $Id: make-hlp.pl,v 1.15 2019/04/13 17:18:07 tom Exp $
+#!/usr/bin/env perl
+# $Id: make-hlp.pl,v 1.17 2019/12/05 00:13:49 tom Exp $
 # Generate vile.hlp, using the dump feature of a text browser.
 #
 # Any of (e)links(2) or lynx would work.
@@ -9,12 +9,15 @@
 #
 # w3m is unsuitable because it does not provide a left margin.
 #
-# links is used because the differences between its dump and elinks are
+# links was used because the differences between its dump and elinks are
 # insignificant, and because (not being actively developed), fewer surprises a
 # likely when regenerating vile.hlp -- except that links/etc rendering of
 # blockquote+pre is ... not good.  So we fix that by preprocessing.
+#
+# Later, Debian created a surprise by equating links and links2.
 
 use strict;
+use warnings;
 use File::Temp qw/ tempfile /;
 
 our $PROG = "links";
@@ -169,10 +172,16 @@ sub doit() {
         }
 
         # read the formatted file
-        open( FP, "$PROG -dump $temp_name|" ) || do {
+        open( FP,
+                "COLUMNS=80 "
+              . "LC_ALL=C "
+              . "LC_CTYPE=C "
+              . "LANG=C "
+              . "$PROG -dump $temp_name|" )
+          || do {
             print STDERR "Can't dump $temp_name: $!\n";
             return;
-        };
+          };
         @input = <FP>;
         close(FP);
 
@@ -200,6 +209,7 @@ sub doit() {
             {
                 $body = $n + 1;
             }
+            $input[$n] =~ s/\xa9/(c)/g;
         }
         for $n ( $body .. $#input ) {
             if (
