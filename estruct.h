@@ -12,7 +12,7 @@
 */
 
 /*
- * $Id: estruct.h,v 1.754 2019/06/24 08:33:46 tom Exp $
+ * $Id: estruct.h,v 1.755 2019/12/08 20:41:53 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -3013,18 +3013,6 @@ typedef long intptr_t;
 #define TYPECAST(type,ptr) (type*)(ptr)
 #endif
 
-#if defined(VILE_ERROR_ABORT)
-extern void ExitProgram(int code) GCC_NORETURN;
-#endif
-
-#if SYS_WINNT && defined(VILE_OLE) && DISP_NTWIN
-#define ExitProgram(code)   oleauto_exit(code)
-#else
-#if !defined(VILE_ERROR_ABORT)
-#define	ExitProgram(code)	exit_program(code)
-#endif
-#endif
-
 /*
  * We cannot define these in config.h, since they require parameters to be
  * passed (that's non-portable).
@@ -3049,6 +3037,18 @@ extern void ExitProgram(int code) GCC_NORETURN;
 
 #ifndef	GCC_UNUSED
 #define	GCC_UNUSED /* nothing */
+#endif
+
+#if defined(VILE_ERROR_ABORT)
+extern void ExitProgram(int code) GCC_NORETURN;
+#endif
+
+#if SYS_WINNT && defined(VILE_OLE) && DISP_NTWIN
+#define ExitProgram(code)   oleauto_exit(code)
+#else
+#if !defined(VILE_ERROR_ABORT)
+#define	ExitProgram(code)	exit_program(code)
+#endif
 #endif
 
 #if 1				/* requires a patch to gcc */
