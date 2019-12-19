@@ -5,7 +5,7 @@
  * functions that adjust the top line in the window and invalidate the
  * framing, are hard.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/basic.c,v 1.173 2016/07/16 00:23:50 Marc.Simpson Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/basic.c,v 1.174 2019/12/19 09:32:10 bod Exp $
  *
  */
 
@@ -980,7 +980,7 @@ gotoeosent(int f, int n)
     exp = b_val_rexp(curbp, VAL_SENTENCES)->reg;
     /* if we're on the end of a sentence now, don't bother scanning
        further, or we'll miss the immediately following sentence */
-    if (!(lregexec(exp, DOT.l, DOT.o, llength(DOT.l)) &&
+    if (!(lregexec(exp, DOT.l, DOT.o, llength(DOT.l), FALSE) &&
 	  exp->startp[0] - lvalue(DOT.l) == DOT.o)) {
 	if (findpat(f, n, exp, FORWARD) != TRUE) {
 	    DOT = curbp->b_line;

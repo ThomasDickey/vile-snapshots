@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Id: proto.h,v 1.748 2019/06/24 08:34:34 tom Exp $
+ * $Id: proto.h,v 1.749 2019/12/19 09:36:32 bod Exp $
  */
 
 #ifndef VILE_PROTO_H
@@ -1169,9 +1169,9 @@ extern void update_dos_drv_dir (char * cwd);
 
 /* regexp.c */
 #define lregexec vl_lregexec
-extern int cregexec (regexp *prog, LINE *lp, int startoff, int endoff, int at_bol);
-extern int lregexec (regexp *prog, LINE *lp, int startoff, int endoff);
-extern int nregexec (regexp *prog, char *string, char *stringend, int startoff, int endoff);
+extern int cregexec (regexp *prog, LINE *lp, int startoff, int endoff, int at_bol, int ic);
+extern int lregexec (regexp *prog, LINE *lp, int startoff, int endoff, int ic);
+extern int nregexec (regexp *prog, char *string, char *stringend, int startoff, int endoff, int ic);
 
 /* region.c */
 typedef int (*DORGNLINES)(int (*)(REGN_ARGS), void *, int);
@@ -1210,7 +1210,7 @@ extern TBUFF * encode_attributes (LINE *lp, BUFFER *bp, REGION * top_region);
 extern int findpat (int f, int n, regexp *exp, int direc);
 extern int fsearch (int f, int n, int marking, int fromscreen);
 extern int readpattern (const char *prompt, TBUFF **apat, regexp **srchexpp, int c, int fromscreen);
-extern int scanner (regexp *exp, int direct, int wrapok, int at_bol, int *wrappedp);
+extern int scanner (regexp *exp, int direct, int wrapok, int at_bol, int ic, int *wrappedp);
 extern void attrib_matches (void);
 extern void scanboundry (int wrapok, MARK dot, int dir);
 

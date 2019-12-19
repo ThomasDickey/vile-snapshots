@@ -5,7 +5,7 @@
  * keys. Like everyone else, they set hints
  * for the display system.
  *
- * $Id: buffer.c,v 1.370 2018/11/04 21:21:40 tom Exp $
+ * $Id: buffer.c,v 1.371 2019/12/19 09:36:02 bod Exp $
  */
 
 #include	"estruct.h"
@@ -1187,7 +1187,7 @@ found_modeline(LINE *lp, int *first, int *last)
 
     for (n = 0; n < TABLESIZE(mls_patterns); ++n) {
 	regexp *prog = mls_regcomp((int) n);
-	if (lregexec(prog, lp, 0, limit)) {
+	if (lregexec(prog, lp, 0, limit, FALSE)) {
 	    int j = mls_patterns[n].mark;
 	    *first = (int) (prog->startp[j] - prog->startp[0]);
 	    *last = (int) (prog->endp[j] - prog->startp[0]);
@@ -1564,11 +1564,9 @@ int
 has_C_suffix(BUFFER *bp)
 {
     int s;
-    int save = ignorecase;
-    ignorecase = global_g_val(GMDFILENAME_IC);
     s = nregexec(global_g_val_rexp(GVAL_CSUFFIXES)->reg,
-		 bp->b_fname, (char *) 0, 0, -1);
-    ignorecase = save;
+		 bp->b_fname, (char *) 0, 0, -1,
+		 global_g_val(GMDFILENAME_IC));
     return s;
 }
 #endif
@@ -1642,7 +1640,7 @@ make_buffer_list(char *bufn)
 
 	    if ((exp = regcomp(bufn, strlen(bufn), TRUE)) != 0) {
 		for_each_buffer(bp) {
-		    if (nregexec(exp, bp->b_bname, (char *) 0, 0, -1)) {
+		    if (nregexec(exp, bp->b_bname, (char *) 0, 0, -1, FALSE)) {
 			result[count++] = strmalloc(bp->b_bname);
 		    }
 		}

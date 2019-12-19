@@ -10,7 +10,7 @@
  * editing must be being displayed, which means that "b_nwnd" is non zero,
  * which means that the dot and mark values in the buffer headers are nonsense.
  *
- * $Id: line.c,v 1.234 2018/10/25 22:50:17 tom Exp $
+ * $Id: line.c,v 1.235 2019/12/19 09:32:10 bod Exp $
  */
 
 /* #define POISON */
@@ -976,7 +976,7 @@ lrepl_regex(REGEXVAL * rexp, const char *np, int length)
 
 	mayneedundo();
 
-	if (lregexec(exp, DOT.l, DOT.o, llength(DOT.l))) {
+	if (lregexec(exp, DOT.l, DOT.o, llength(DOT.l), FALSE)) {
 	    int old = (int) (exp->endp[0] - exp->startp[0]);
 	    if (old > 0) {
 		regionshape = rgn_EXACT;

@@ -2,7 +2,7 @@
  *	eval.c -- function and variable evaluation
  *	original by Daniel Lawrence
  *
- * $Id: eval.c,v 1.466 2018/10/21 21:54:11 tom Exp $
+ * $Id: eval.c,v 1.467 2019/12/19 09:32:10 bod Exp $
  */
 
 #include	<estruct.h>
@@ -294,7 +294,7 @@ match_charclass_regexp(int ch, REGEXVAL * exp)
     char temp[2];
     temp[0] = (char) ch;
 
-    return nregexec(exp->reg, temp, temp + 1, 0, 0);
+    return nregexec(exp->reg, temp, temp + 1, 0, 0, FALSE);
 }
 
 static int
@@ -1469,15 +1469,12 @@ run_func(int fnum)
 	break;
     case UFCMATCH:
 	if ((exp = new_regexval(arg[0], TRUE)) != 0) {
-	    int save_flag = ignorecase;
-	    ignorecase = TRUE;
-	    value = nregexec(exp->reg, arg[1], (char *) 0, 0, -1);
-	    ignorecase = save_flag;
+	    value = nregexec(exp->reg, arg[1], (char *) 0, 0, -1, TRUE);
 	}
 	break;
     case UFMATCH:
 	if ((exp = new_regexval(arg[0], TRUE)) != 0)
-	    value = nregexec(exp->reg, arg[1], (char *) 0, 0, -1);
+	    value = nregexec(exp->reg, arg[1], (char *) 0, 0, -1, FALSE);
 	break;
     case UFRANDOM:		/* FALLTHRU */
     case UFRND:

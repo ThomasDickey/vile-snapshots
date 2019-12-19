@@ -4,7 +4,7 @@
  *	original by Daniel Lawrence, but
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Id: exec.c,v 1.365 2018/10/25 22:50:17 tom Exp $
+ * $Id: exec.c,v 1.366 2019/12/19 09:32:10 bod Exp $
  */
 
 #include "estruct.h"
@@ -245,6 +245,7 @@ parse_linespec(const char *s, LINE **markptr)
 		if (scanner(gregexp,
 			    last_srch_direc,
 			    (DOT.o == 0),
+			    FALSE,
 			    FALSE,
 			    (int *) 0)) {
 		    lp = DOT.l;

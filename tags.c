@@ -5,9 +5,9 @@
  *	the cursor.
  *	written for vile.
  *
- * Copyright (c) 1990, 1995-2018 by Paul Fox and Thomas E. Dickey
+ * Copyright (c) 1990, 1995-2018,2019 by Paul Fox and Thomas E. Dickey
  *
- * $Id: tags.c,v 1.154 2018/10/26 01:00:35 tom Exp $
+ * $Id: tags.c,v 1.155 2019/12/19 09:37:58 bod Exp $
  */
 #include "estruct.h"
 #include "edef.h"
@@ -604,12 +604,11 @@ cheap_buffer_scan(BUFFER *bp, char *patrn, int dir)
     LINE *lp;
     LINE *result = NULL;
     regexp *exp;
+    int ic = FALSE;
 
     if ((exp = regcomp(patrn, strlen(patrn), FALSE)) != NULL) {
 #ifdef MDTAGIGNORECASE
-	int savecase = ignorecase;
-	if (b_val(bp, MDTAGIGNORECASE))
-	    ignorecase = TRUE;
+	ic = b_val(bp, MDTAGIGNORECASE);
 #endif
 
 	TRACE(("cheap_buffer_scan '%s' %s\n",
@@ -619,7 +618,7 @@ cheap_buffer_scan(BUFFER *bp, char *patrn, int dir)
 	for (lp = dir == FORWARD ? lforw(buf_head(bp)) : lback(buf_head(bp));
 	     lp != buf_head(bp);
 	     lp = dir == FORWARD ? lforw(lp) : lback(lp)) {
-	    if (lregexec(exp, lp, 0, llength(lp))) {
+	    if (lregexec(exp, lp, 0, llength(lp), ic)) {
 		result = lp;
 		break;
 	    }
@@ -628,10 +627,6 @@ cheap_buffer_scan(BUFFER *bp, char *patrn, int dir)
 	beginDisplay();
 	free(TYPECAST(char, exp));
 	endofDisplay();
-
-#ifdef MDTAGIGNORECASE
-	ignorecase = savecase;
-#endif
     }
     return (result);
 }

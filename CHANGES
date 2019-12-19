@@ -1,6 +1,8 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20191208 (u)
+ 20191219 (u)
+	> Brendan O'Dea:
+	+ add smartcase mode (prompted by suggestion by Marc Simpson).
 	> Michael von der Heide
 	+ modify vile-spell-filt to allow for umlauts in UTF-8
 	> Tom Dickey:

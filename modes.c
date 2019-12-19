@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Id: modes.c,v 1.456 2018/10/26 00:51:25 tom Exp $
+ * $Id: modes.c,v 1.457 2019/12/19 09:35:28 bod Exp $
  */
 
 #include <estruct.h>
@@ -4692,7 +4692,6 @@ test_by_suffix(int n, BUFFER *bp)
 
     if (my_majormodes[n].flag) {
 	regexp *exp;
-	int savecase = ignorecase;
 	char *pathname = bp->b_fname;
 	char *filename;
 	char *suffix;
@@ -4701,7 +4700,7 @@ test_by_suffix(int n, BUFFER *bp)
 	TBUFF *stripname = 0;
 #endif
 
-	ignorecase = global_g_val(GMDFILENAME_IC) || get_sm_b_val(n, MDIGNCASE);
+	int ic = global_g_val(GMDFILENAME_IC) || get_sm_b_val(n, MDIGNCASE);
 #if OPT_VMS_PATH
 	tb_scopy(&stripname, pathname);
 	pathname = tb_values(stripname);
@@ -4710,7 +4709,7 @@ test_by_suffix(int n, BUFFER *bp)
 
 	if (((exp = get_sm_rexp(n, VAL_STRIPSUFFIX)) != 0
 	     || (exp = b_val_rexp(bp, VAL_STRIPSUFFIX)->reg) != 0)
-	    && nregexec(exp, pathname, (char *) 0, 0, -1)) {
+	    && nregexec(exp, pathname, (char *) 0, 0, -1, ic)) {
 	    if (tb_scopy(&savename, pathname) != 0) {
 		strcpy(tb_values(savename) + (exp->startp[0] - pathname),
 		       exp->endp[0]);
@@ -4727,13 +4726,13 @@ test_by_suffix(int n, BUFFER *bp)
 #endif
 
 	if ((exp = get_mm_rexp(n, MVAL_MODE_PATHNAME)) != 0
-	    && nregexec(exp, pathname, (char *) 0, 0, -1)) {
+	    && nregexec(exp, pathname, (char *) 0, 0, -1, ic)) {
 	    TRACE(("test_by_pathname(%s) %s\n",
 		   pathname,
 		   my_majormodes[n].shortname));
 	    result = n;
 	} else if ((exp = get_mm_rexp(n, MVAL_MODE_FILENAME)) != 0
-		   && nregexec(exp, filename, (char *) 0, 0, -1)) {
+		   && nregexec(exp, filename, (char *) 0, 0, -1, ic)) {
 	    TRACE(("test_by_filename(%s) %s %s\n",
 		   pathname,
 		   filename,
@@ -4742,14 +4741,13 @@ test_by_suffix(int n, BUFFER *bp)
 	} else if (!isShellOrPipe(pathname)
 		   && suffix != 0
 		   && (exp = get_mm_rexp(n, MVAL_MODE_SUFFIXES)) != 0
-		   && nregexec(exp, suffix, (char *) 0, 0, -1)) {
+		   && nregexec(exp, suffix, (char *) 0, 0, -1, ic)) {
 	    TRACE(("test_by_suffixes(%s) %s %s\n",
 		   pathname,
 		   suffix,
 		   my_majormodes[n].shortname));
 	    result = n;
 	}
-	ignorecase = savecase;
 	tb_free(&savename);
 #if OPT_VMS_PATH
 	tb_free(&stripname);
@@ -4780,16 +4778,14 @@ test_by_preamble(int n, BUFFER *bp GCC_UNUSED, LINE *lp)
     if (lp != 0
 	&& my_majormodes[n].flag) {
 	regexp *exp = get_mm_rexp(n, MVAL_PREAMBLE);
-	int savecase = ignorecase;
-	ignorecase = global_g_val(GMDFILENAME_IC) || get_sm_b_val(n, MDIGNCASE);
+	int ic = global_g_val(GMDFILENAME_IC) || get_sm_b_val(n, MDIGNCASE);
 	if (exp != 0
-	    && lregexec(exp, lp, 0, llength(lp))) {
+	    && lregexec(exp, lp, 0, llength(lp), ic)) {
 	    TRACE(("test_by_preamble(%s) %s\n",
 		   bp->b_fname,
 		   my_majormodes[n].shortname));
 	    result = n;
 	}
-	ignorecase = savecase;
     }
     return result;
 }

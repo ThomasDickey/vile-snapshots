@@ -1,7 +1,7 @@
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/vl_regex.h,v 1.8 2015/01/19 20:39:40 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/vl_regex.h,v 1.9 2019/12/19 09:38:15 bod Exp $
  *
- * Copyright 2005-2010,2015 Thomas E. Dickey and Paul G. Fox
+ * Copyright 2005-2015,2019 Thomas E. Dickey and Paul G. Fox
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
@@ -53,6 +53,7 @@ typedef struct regexp {
     int regmust;		/* Internal use only. */
     size_t regmlen;		/* Internal use only. */
     size_t size;		/* vile addition -- how big is this */
+    size_t uppercase;		/* vile addition -- uppercase chars in pattern */
     char program[1];		/* Unwarranted chumminess with compiler. */
 } regexp;
 
@@ -79,19 +80,15 @@ typedef struct regexp {
 #endif /* GCC_PRINTFLIKE */
 
 #ifndef _estruct_h
-extern void mlforce(const char *fmt,...) GCC_PRINTFLIKE(1,2);
+extern void mlforce(const char *fmt, ...) GCC_PRINTFLIKE(1,2);
 #endif /* _estruct_h */
 /* *INDENT-OFF* */
 extern void regerror (const char *s);
 extern regexp * regcomp (const char *origexp, size_t exp_len, int magic);
-extern int regexec (regexp *prog, char *string, char *stringend, int startoff, int endoff);
-extern int regexec2 (regexp *prog, char *string, char *stringend, int startoff, int endoff, int at_bol);
+extern int regexec (regexp *prog, char *string, char *stringend, int startoff, int endoff, int ic);
+extern int regexec2 (regexp *prog, char *string, char *stringend, int startoff, int endoff, int at_bol, int ic);
 extern void regfree (regexp *prog);
 extern char *regparser (const char **s);
 /* *INDENT-ON* */
-
-#if !OPT_VILE_CTYPE
-extern int ignorecase;
-#endif
 
 #endif /* VL_REGEX_H_incl */
