@@ -3,7 +3,7 @@
  * and backward directions.
  *  heavily modified by Paul Fox, 1990
  *
- * $Header: /users/source/archives/vile.vcs/RCS/search.c,v 1.155 2015/03/13 09:31:09 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/search.c,v 1.156 2019/12/19 09:32:42 bod Exp $
  *
  * original written Aug. 1986 by John M. Gamble, but I (pgf) have since
  * replaced his regex stuff with Henry Spencer's regexp package.
@@ -67,6 +67,7 @@ fsearch(int f, int n, int marking, int fromscreen)
     MARK curpos;
     int didmark = FALSE;
     int didwrap;
+    int ic;
 
     assert(curwp != 0);
 
@@ -92,17 +93,18 @@ fsearch(int f, int n, int marking, int fromscreen)
 	    return status;
     }
 
-    ignorecase = window_b_val(curwp, MDIGNCASE);
-
     if (curwp == 0)
 	return FALSE;
 
     curpos = DOT;
     scanboundry(wrapok, curpos, FORWARD);
     didwrap = FALSE;
+    ic = window_b_val(curwp, MDIGNCASE) &&
+	!(window_b_val(curwp, MDSMARTCASE) && gregexp->uppercase);
+
     while (marking || n--) {
 	movenext(&(DOT), FORWARD);
-	status = scanner(gregexp, FORWARD, wrapok, TRUE, &didwrap);
+	status = scanner(gregexp, FORWARD, wrapok, TRUE, ic, &didwrap);
 	if (status == ABORT) {
 	    mlwarn("[Aborted]");
 	    DOT = curpos;
@@ -162,6 +164,7 @@ forwhunt(int f, int n)
     int wrapok;
     MARK curpos;
     int didwrap;
+    int ic;
 
     assert(curwp != 0);
 
@@ -179,8 +182,6 @@ forwhunt(int f, int n)
 	return FALSE;
     }
 
-    ignorecase = window_b_val(curwp, MDIGNCASE);
-
     if (curwp == 0)
 	return FALSE;
 
@@ -189,9 +190,12 @@ forwhunt(int f, int n)
     curpos = DOT;
     scanboundry(wrapok, DOT, FORWARD);
     didwrap = FALSE;
+    ic = window_b_val(curwp, MDIGNCASE) &&
+	!(window_b_val(curwp, MDSMARTCASE) && gregexp->uppercase);
+
     while (n--) {
 	movenext(&(DOT), FORWARD);
-	status = scanner(gregexp, FORWARD, wrapok, TRUE, &didwrap);
+	status = scanner(gregexp, FORWARD, wrapok, TRUE, ic, &didwrap);
 	if (didwrap) {
 	    mlwrite("[Search wrapped past end of buffer]");
 	    didwrap = FALSE;
@@ -242,6 +246,7 @@ rsearch(int f, int n, int dummy GCC_UNUSED, int fromscreen)
     int wrapok;
     MARK curpos;
     int didwrap;
+    int ic;
 
     assert(curwp != 0);
 
@@ -263,17 +268,18 @@ rsearch(int f, int n, int dummy GCC_UNUSED, int fromscreen)
     if (status != TRUE)
 	return status;
 
-    ignorecase = window_b_val(curwp, MDIGNCASE);
-
     if (curwp == 0)
 	return FALSE;
 
     curpos = DOT;
     scanboundry(wrapok, DOT, REVERSE);
     didwrap = FALSE;
+    ic = window_b_val(curwp, MDIGNCASE) &&
+	!(window_b_val(curwp, MDSMARTCASE) && gregexp->uppercase);
+
     while (n--) {
 	movenext(&(DOT), REVERSE);
-	status = scanner(gregexp, REVERSE, wrapok, TRUE, &didwrap);
+	status = scanner(gregexp, REVERSE, wrapok, TRUE, ic, &didwrap);
 	if (didwrap) {
 	    mlwrite(
 		       "[Search wrapped past start of buffer]");
@@ -310,6 +316,7 @@ backhunt(int f, int n)
     int wrapok;
     MARK curpos;
     int didwrap;
+    int ic;
 
     assert(curwp != 0);
 
@@ -327,8 +334,6 @@ backhunt(int f, int n)
 	return FALSE;
     }
 
-    ignorecase = window_b_val(curwp, MDIGNCASE);
-
     if (curwp == 0)
 	return FALSE;
 
@@ -337,9 +342,12 @@ backhunt(int f, int n)
     curpos = DOT;
     scanboundry(wrapok, DOT, REVERSE);
     didwrap = FALSE;
+    ic = window_b_val(curwp, MDIGNCASE) &&
+	!(window_b_val(curwp, MDSMARTCASE) && gregexp->uppercase);
+
     while (n--) {
 	movenext(&(DOT), REVERSE);
-	status = scanner(gregexp, REVERSE, wrapok, TRUE, &didwrap);
+	status = scanner(gregexp, REVERSE, wrapok, TRUE, ic, &didwrap);
 	if (didwrap) {
 	    mlwrite("[Search wrapped past start of buffer]");
 	    didwrap = FALSE;
@@ -387,14 +395,14 @@ revsearch(int f, int n)
 }
 
 static int
-testit(LINE *lp, regexp * exp, int *end, int srchlim)
+testit(LINE *lp, regexp * exp, int *end, int srchlim, int ic)
 {
     char *txt = lvalue(lp);
     C_NUM col = (C_NUM) (exp->startp[0] - txt) + 1;
 
     if (col > llength(lp))
 	col = llength(lp);
-    if (lregexec(exp, lp, col, srchlim)) {
+    if (lregexec(exp, lp, col, srchlim, ic)) {
 	col = (C_NUM) (exp->startp[0] - txt) + 1;
 	if (col > llength(lp) && !*end) {
 	    col = llength(lp);
@@ -416,6 +424,7 @@ scanner(
 	   int direct,		/* up or down */
 	   int wrapok,		/* ok to wrap around end of buffer? */
 	   int at_bol,		/* ok to match "^" ? */
+	   int ic,		/* ignore case */
 	   int *wrappedp)	/* in/out: tells if we wrapped around */
 {
     MARK curpos;
@@ -474,7 +483,7 @@ scanner(
 			srchlim = scanboundpos.o + 1;
 		    }
 		}
-		found = cregexec(exp, curpos.l, startoff, srchlim, at_bol);
+		found = cregexec(exp, curpos.l, startoff, srchlim, at_bol, ic);
 	    }
 	} else {
 	    if (direct == FORWARD) {
@@ -486,7 +495,7 @@ scanner(
 		if (srchlim > llength(curpos.l))
 		    srchlim = llength(curpos.l);
 	    }
-	    found = cregexec(exp, curpos.l, startoff, srchlim, at_bol);
+	    found = cregexec(exp, curpos.l, startoff, srchlim, at_bol, ic);
 	}
 	if (found) {
 	    char *txt = lvalue(curpos.l);
@@ -499,7 +508,7 @@ scanner(
 		char *tst = 0;
 
 		last++;
-		while (testit(curpos.l, exp, &end, srchlim)) {
+		while (testit(curpos.l, exp, &end, srchlim, ic)) {
 		    got = exp->startp[0];
 		    /* guard against infinite loop:  "?$"
 		     * or "?.*"
@@ -510,7 +519,8 @@ scanner(
 		}
 		if (end)
 		    last++;
-		if (!cregexec(exp, curpos.l, (int) (got - txt), srchlim, at_bol)) {
+		if (!cregexec(exp, curpos.l, (int) (got - txt), srchlim,
+			      at_bol, ic)) {
 		    mlforce("BUG: prev. match no good");
 		    returnCode(FALSE);
 		}
@@ -583,7 +593,7 @@ clobber_save_curbp(BUFFER *bp)
 /* keep track of enough state to give us a hint as to whether
 	we need to redo the visual matches */
 static int
-need_to_rehilite(void)
+need_to_rehilite(int ic)
 {
     /* save static copies of state that affects the search */
 
@@ -595,12 +605,12 @@ need_to_rehilite(void)
 	 memcmp(tb_values(searchpat),
 		tb_values(savepat),
 		tb_length(savepat))) ||
-	save_igncase != ignorecase ||
+	save_igncase != ic ||
 	save_vattr != b_val(curbp, VAL_HILITEMATCH) ||
 	save_magic != b_val(curbp, MDMAGIC) ||
 	(!hilite_suppressed && save_curbp != curbp)) {
 	tb_copy(&savepat, searchpat);
-	save_igncase = ignorecase;
+	save_igncase = ic;
 	save_vattr = (VIDEO_ATTR) b_val(curbp, VAL_HILITEMATCH);
 	save_magic = b_val(curbp, MDMAGIC);
 	save_curbp = curbp;
@@ -650,15 +660,17 @@ attrib_matches(void)
     int status;
     REGIONSHAPE oregionshape = regionshape;
     VIDEO_ATTR vattr;
+    int ic;
 
     assert(curwp != 0);
 
-    ignorecase = window_b_val(curwp, MDIGNCASE);
-
-    if (!need_to_rehilite())
+    if (tb_length(searchpat) == 0 || gregexp == NULL)
 	return;
 
-    if (tb_length(searchpat) == 0 || gregexp == NULL)
+    ic = window_b_val(curwp, MDIGNCASE) &&
+	!(window_b_val(curwp, MDSMARTCASE) && gregexp->uppercase);
+
+    if (!need_to_rehilite(ic))
 	return;
 
 /* #define track_hilite 1 */
@@ -688,7 +700,7 @@ attrib_matches(void)
 	    movenext(&nextdot, FORWARD);
 	    DOT = nextdot;
 	}
-	status = scanner(gregexp, FORWARD, FALSE, TRUE, (int *) 0);
+	status = scanner(gregexp, FORWARD, FALSE, TRUE, ic, (int *) 0);
 	if (status != TRUE)
 	    break;
 	if (vattr != VACOLOR)
@@ -893,7 +905,7 @@ findpat(int f, int n, regexp * exp, int direc)
 	     ? forwchar(TRUE, 1)
 	     : backchar(TRUE, 1));
 	if (s == TRUE)
-	    s = scanner(exp, direc, FALSE, TRUE, (int *) 0);
+	    s = scanner(exp, direc, FALSE, TRUE, FALSE, (int *) 0);
     }
     if (s != TRUE)
 	DOT = savepos;

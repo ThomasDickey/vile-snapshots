@@ -11,7 +11,7 @@
 #
 # The modes are table entries in the BUFFER and WINDOW structures.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.323 2016/07/29 22:18:16 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.324 2019/12/19 09:32:10 bod Exp $
 #
 #
 # Mode-table entries.  Capitalized letters are used for abbreviations.
@@ -121,6 +121,7 @@ bool							# MD prefix
 	"reuse-position" REUSE_POS	0		OPT_UPBUFF # reuse position when (re)creating scratch-buffers
 	"ShowMatch"	SHOWMAT		0		# show matching braces during insert
 	"ShowMoDe"	SHOWMODE	chgd_status	# show insert/replace/command mode
+	"SmartCaSe"	SMARTCASE	chgd_hilite	# override "ignorecase" if search contains uppercase letters
 	"Spaces-After-Sentence" SPACESENT	0	# add two spaces after a
 	"TabInsert"	TABINSERT	0		# okay to insert tab chars
 	"TagignoreCase"	TAGIGNORECASE	0		!SMALLER # ignore upper/lower case in tags

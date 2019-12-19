@@ -44,7 +44,7 @@
  *	tgetc_avail()     true if a key is avail from tgetc() or below.
  *	keystroke_avail() true if a key is avail from keystroke() or below.
  *
- * $Id: input.c,v 1.368 2019/07/14 23:56:20 tom Exp $
+ * $Id: input.c,v 1.369 2019/12/19 09:32:10 bod Exp $
  */
 
 #include	"estruct.h"
@@ -952,7 +952,7 @@ vl_regex2tbuff_best(TBUFF **result, regexp * exp)
     vl_get_offset = -1;
     vl_get_length = -1;
     while (given >= 0) {
-	if (lregexec(exp, DOT.l, given, llength(DOT.l))) {
+	if (lregexec(exp, DOT.l, given, llength(DOT.l), FALSE)) {
 	    offset = (C_NUM) (exp->startp[0] - line_text);
 	    length = (C_NUM) (exp->endp[0] - exp->startp[0]);
 	    if ((length > vl_get_length)
@@ -982,7 +982,7 @@ vl_regex2tbuff_dot(TBUFF **result, regexp * exp)
     vl_get_offset = -1;
     vl_get_length = -1;
     while (given >= 0) {
-	if (lregexec(exp, DOT.l, given, llength(DOT.l))) {
+	if (lregexec(exp, DOT.l, given, llength(DOT.l), FALSE)) {
 	    offset = (C_NUM) (exp->startp[0] - line_text);
 	    length = (C_NUM) (exp->endp[0] - exp->startp[0]);
 	    if (offset <= DOT.o) {

@@ -1,7 +1,7 @@
 /*
- * $Id: regexp.c,v 1.218 2018/10/25 00:38:07 tom Exp $
+ * $Id: regexp.c,v 1.219 2019/12/19 09:37:20 bod Exp $
  *
- * Copyright 2005-2015,2018 Thomas E. Dickey and Paul G. Fox
+ * Copyright 2005-2018,2019 Thomas E. Dickey and Paul G. Fox
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
@@ -187,19 +187,15 @@ typedef ULONG B_COUNT;		/* byte-count */
 #undef min
 #undef max
 
-#if !OPT_VILE_CTYPE
-int ignorecase = FALSE;
-#endif
-
 static char *reg(int paren, int *flagp);
 static char *regatom(int *flagp, int at_bop);
 static char *regbranch(int *flagp);
 static char *regnode(int op);
 static char *regpiece(int *flagp, int at_bop);
 static inline char *regnext(char *p);
-static int regmatch(char *prog, int plevel);
-static int regrepeat(const char *p);
-static int regtry(regexp * prog, char *string, char *stringend, int plevel);
+static int regmatch(char *prog, int plevel, int ic);
+static int regrepeat(const char *p, int ic);
+static int regtry(regexp * prog, char *string, char *stringend, int plevel, int ic);
 static void regc(int b);
 static void regninsert(int n, char *opnd);
 static void regopinsert(int op, char *opnd);
@@ -501,7 +497,7 @@ typedef enum {
 #define RR_MIN(p) ((p)[3])
 #define RR_MAX(p) ((p)[3 + RR_BYTES])
 
-#define SAME(a,b) (ignorecase ? nocase_eq(a,b) : (CharOf(a) == CharOf(b)))
+#define SAME(a,b,ic) (ic ? nocase_eq(a,b) : (CharOf(a) == CharOf(b)))
 #define STRSKIP(s) ((s) + strlen(s))
 
 /*
@@ -689,27 +685,27 @@ use_system_ctype(UINT * target, const char *source)
 	: (int) toUpper(ch))
 
 /*
- * Check if 'p' (from pattern) and 'q' (from actual data) are the "same".
- * This is where ignorecase is evaluated.
+ * Check if 'p' (from pattern) and 'q' (from actual data) are the
+ * "same", ignoring case if 'ic' is true.
  */
 static inline int
-same_char(int p, int q)
+same_char(int p, int q, int ic)
 {
     int rc;
 
     if (reg_utf8flag) {
 	/* both parameters are Unicode */
-	if (ignorecase) {
+	if (ic) {
 	    rc = (vl_toupper(p) == vl_toupper(q));
 	} else {
 	    rc = (p == q);
 	}
     } else {
-	rc = SAME(p, q);
+	rc = SAME(p, q, ic);
     }
     return rc;
 }
-#define EQ_CHARS(p,q) (reg_utf8flag ? same_char(p, q) : SAME(p,q))
+#define EQ_CHARS(p,q,ic) (reg_utf8flag ? same_char(p, q, ic) : SAME(p,q,ic))
 
 /*
  * Evaluate a character-class expression, using vile's ctype (if possible),
@@ -757,7 +753,7 @@ reg_CTYPE(XDIGIT, sys_isxdigit((sys_WINT_T) target))
 #define WCHAR_AT(source, last) UCHAR_AT(source)
 #define WCHAR_BEFORE(source, first) UCHAR_AT(source[-1])
 #define PUT_REGC(c) regc(c)
-#define EQ_CHARS(p,q) SAME(p,q)
+#define EQ_CHARS(p,q,ic) SAME(p,q,ic)
 #define set_utf8flag(bp)	/* nothing */
 #endif
 /*
@@ -799,6 +795,7 @@ regmassage(const char *in_text,
 	   size_t in_size,
 	   char *out_text,
 	   size_t *out_size,
+	   size_t *out_uppercase,
 	   int magic)
 {
     const char *metas = ((magic > 0)
@@ -808,8 +805,12 @@ regmassage(const char *in_text,
 			 : NOMAGICMETA);
     char *nxt = out_text;
     size_t n;
+    size_t uc = 0;
 
     for (n = 0; n < in_size; ++n) {
+	/* count uppercase chars as a side-effect for smartcase */
+	if (is_CLASS(UPPER, in_text + n))
+	    uc++;
 	if (in_text[n] == BACKSLASH) {	/* remove \ from these metas */
 	    if ((n + 1) >= in_size) {
 #ifdef FAIL_TRAILING_BS
@@ -832,6 +833,7 @@ regmassage(const char *in_text,
     }
     *nxt = EOS;
     *out_size = (size_t) (nxt - out_text);
+    *out_uppercase = uc;
     return TRUE;
 }
 
@@ -859,6 +861,7 @@ regcomp(const char *exp_text, size_t exp_len, int magic)
     char *longest;
     size_t len;
     size_t parsed_len;
+    size_t uppercase = 0;
     int flags;
     static char *exp;
     static size_t explen;
@@ -890,7 +893,7 @@ regcomp(const char *exp_text, size_t exp_len, int magic)
 	explen = 2 * len + 20;
     }
 
-    if (!regmassage(exp_text, exp_len, exp, &parsed_len, magic))
+    if (!regmassage(exp_text, exp_len, exp, &parsed_len, &uppercase, magic))
 	return NULL;
     TRACE(("after regmassage: '%s'\n", visible_buff(exp, (int) strlen(exp), 0)));
 
@@ -922,6 +925,7 @@ regcomp(const char *exp_text, size_t exp_len, int magic)
 
     /* how big is it?  (vile addition) */
     r->size = sizeof(regexp) + (size_t) regsize;
+    r->uppercase = uppercase;
 
     /* Second pass: emit code. */
     REGTRACE(("Second pass: emit code\n"));
@@ -1753,12 +1757,14 @@ regoptail(char *p, char *val)
  *
  * txt_b holds data from the regular expression.
  * txt_a holds the data within which we're searching.
+ * ic is true for when a use caseless match is required
  */
 static int
 regstrncmp(const char *txt_a,
 	   const char *txt_b,
 	   size_t len_b,
-	   const char *end_a)
+	   const char *end_a,
+	   int ic)
 {
     int chr_a = 0, chr_b = 0;
     int rc;
@@ -1774,7 +1780,7 @@ regstrncmp(const char *txt_a,
     while (txt_a < end_a) {
 	chr_a = WCHAR_AT(txt_a, end_a);
 	chr_b = WCHAR_AT(txt_b, txt_b + len_b);
-	if (!EQ_CHARS(chr_a, chr_b)) {
+	if (!EQ_CHARS(chr_a, chr_b, ic)) {
 	    diff = TRUE;
 	    break;
 	}
@@ -1791,12 +1797,12 @@ regstrncmp(const char *txt_a,
 }
 
 static char *
-regstrchr(char *s, int c, const char *e)
+regstrchr(char *s, int c, const char *e, int ic)
 {
     char *result = 0;
 
     while (s < e) {
-	if (EQ_CHARS(WCHAR_AT(s, e), c)) {
+	if (EQ_CHARS(WCHAR_AT(s, e), c, ic)) {
 	    result = s;
 	    break;
 	}
@@ -1810,7 +1816,7 @@ regstrchr(char *s, int c, const char *e)
  * escaped.  The 's' argument is always null-terminated.
  */
 static int
-RegStrChr2(const char *s, unsigned length, const char *cs)
+RegStrChr2(const char *s, unsigned length, const char *cs, int ic)
 {
     int matched = 0;
     int compare = WCHAR_AT(cs, regnomore);
@@ -1841,7 +1847,7 @@ RegStrChr2(const char *s, unsigned length, const char *cs)
 	    }
 	} else {
 	    pattern = WCHAR_AT(s, reglimit);
-	    matched = EQ_CHARS(pattern, compare);
+	    matched = EQ_CHARS(pattern, compare, ic);
 	}
 	s += BYTES_AT(s, regnomore);
     }
@@ -1860,7 +1866,8 @@ regexec2(regexp * prog,
 	 char *stringend,	/* pointer to the null, if there were one */
 	 int startoff,
 	 int endoff,
-	 int at_bol)
+	 int at_bol,
+	 int ic)
 {
     char *s, *endsrch;
     int skip;
@@ -1900,9 +1907,9 @@ regexec2(regexp * prog,
 	char *prog_must = &(prog->program[prog->regmust]);
 	int char_must = WCHAR_AT(prog_must, regnomore);
 	s = &string[startoff];
-	while ((s = regstrchr(s, char_must, stringend))
+	while ((s = regstrchr(s, char_must, stringend, ic))
 	       != NULL && s < endsrch) {
-	    if (regstrncmp(s, prog_must, prog->regmlen, stringend) == 0)
+	    if (regstrncmp(s, prog_must, prog->regmlen, stringend, ic) == 0)
 		break;		/* Found it. */
 	    s += BYTES_AT(s, stringend);
 	}
@@ -1917,7 +1924,7 @@ regexec2(regexp * prog,
 
     /* Simplest case:  anchored match need be tried only once. */
     if (startoff == 0 && prog->reganch) {
-	return (regtry(prog, string, stringend, 0));
+	return (regtry(prog, string, stringend, 0, ic));
     }
 
     /* Messy cases:  unanchored match. */
@@ -1926,9 +1933,9 @@ regexec2(regexp * prog,
 	/* We know what char it must start with. */
 	skip = 1;
 	while (skip > 0 &&
-	       (s = regstrchr(s, prog->regstart, stringend)) != NULL &&
+	       (s = regstrchr(s, prog->regstart, stringend, ic)) != NULL &&
 	       s < endsrch) {
-	    if (regtry(prog, s, stringend, 0))
+	    if (regtry(prog, s, stringend, 0, ic))
 		return (1);
 	    skip = BYTES_AT(s, stringend);
 	    s += skip;
@@ -1936,7 +1943,7 @@ regexec2(regexp * prog,
     } else {
 	/* We don't -- general case. */
 	do {
-	    if (regtry(prog, s, stringend, 0))
+	    if (regtry(prog, s, stringend, 0, ic))
 		return (1);
 	    skip = ((s < stringend)
 		    ? BYTES_AT(s, stringend)
@@ -1953,9 +1960,10 @@ regexec(regexp * prog,
 	char *string,
 	char *stringend,	/* pointer to the null, if there were one */
 	int startoff,
-	int endoff)
+	int endoff,
+	int ic)
 {
-    return regexec2(prog, string, stringend, startoff, endoff, TRUE);
+    return regexec2(prog, string, stringend, startoff, endoff, TRUE, ic);
 }
 
 /*
@@ -1965,7 +1973,8 @@ static int			/* 0 failure, 1 success */
 regtry(regexp * prog,
        char *string,
        char *stringend,
-       int plevel)
+       int plevel,
+       int ic)
 {
     int i;
     char **sp;
@@ -1986,7 +1995,7 @@ regtry(regexp * prog,
 	*sp++ = NULL;
 	*ep++ = NULL;
     }
-    if (regmatch(prog->program + 1, plevel)) {
+    if (regmatch(prog->program + 1, plevel, ic)) {
 	prog->startp[0] = string;
 	prog->endp[0] = reginput;
 	prog->mlen = (size_t) (reginput - string);
@@ -2076,7 +2085,7 @@ regtry(regexp * prog,
  * by recursion.
  */
 static int			/* 0 failure, 1 success */
-regmatch(char *prog, int plevel)
+regmatch(char *prog, int plevel, int ic)
 {
     char *scan;			/* Current node. */
     char *next;			/* Next node. */
@@ -2166,7 +2175,7 @@ regmatch(char *prog, int plevel)
 		opnd = OPERAND(scan);
 		/* Inline the first character, for speed. */
 		if (!EQ_CHARS(WCHAR_AT(opnd, regnext(scan)),
-			      WCHAR_AT(reginput, regnomore))) {
+			      WCHAR_AT(reginput, regnomore), ic)) {
 		    returnReg(0);
 		}
 		len = OPSIZE(scan);
@@ -2174,20 +2183,20 @@ regmatch(char *prog, int plevel)
 		    && regstrncmp(reginput,
 				  opnd,
 				  (size_t) len,
-				  regnomore) != 0)
+				  regnomore, ic) != 0)
 		    returnReg(0);
 		reginput += len;
 	    }
 	    break;
 	case ANYOF:
 	    if (reginput >= regnomore
-		|| RegStrChr2(OPERAND(scan), OPSIZE(scan), reginput) == 0)
+		|| RegStrChr2(OPERAND(scan), OPSIZE(scan), reginput, ic) == 0)
 		returnReg(0);
 	    reginput += BYTES_AT(reginput, regnomore);
 	    break;
 	case ANYBUT:
 	    if (reginput >= regnomore
-		|| RegStrChr2(OPERAND(scan), OPSIZE(scan), reginput) != 0)
+		|| RegStrChr2(OPERAND(scan), OPSIZE(scan), reginput, ic) != 0)
 		returnReg(0);
 	    reginput += BYTES_AT(reginput, regnomore);
 	    break;
@@ -2213,7 +2222,7 @@ regmatch(char *prog, int plevel)
 		    regstartp[no] = save_input;
 		    REGTRACE(("match atom%d:\n", no));
 		}
-		if (regmatch(next, plevel + 1)) {
+		if (regmatch(next, plevel + 1, ic)) {
 		    returnReg(1);
 		} else {
 		    restore_state1();
@@ -2232,7 +2241,7 @@ regmatch(char *prog, int plevel)
 		reg_cnts[plevel] += 1;
 		if ((plevel + 1) < NSUBEXP)
 		    reg_cnts[plevel + 1] = 0;
-		if (regmatch(next, plevel - 1)) {
+		if (regmatch(next, plevel - 1, ic)) {
 		    /*
 		     * Don't set endp if some earlier
 		     * invocation of the same parentheses
@@ -2260,7 +2269,7 @@ regmatch(char *prog, int plevel)
 
 		save_state2();
 		do {
-		    if (regmatch(OPERAND(scan), plevel)) {
+		    if (regmatch(OPERAND(scan), plevel, ic)) {
 			update_greedy();
 		    }
 		    restore_state2();
@@ -2289,7 +2298,7 @@ regmatch(char *prog, int plevel)
 
 			if ((max == 0
 			     || reg_cnts[plevel + 1] < max)) {
-			    (void) regmatch(next, plevel);
+			    (void) regmatch(next, plevel, ic);
 			}
 
 			REGTRACE(("compare %d vs \\{%d,%d\\}\n",
@@ -2303,9 +2312,9 @@ regmatch(char *prog, int plevel)
 		    } else if (is_CLOSEn(OP(next))) {
 			if ((plevel + 1) < NSUBEXP)
 			    reg_cnts[plevel + 1] = 0;
-			success = regmatch(next, plevel);
+			success = regmatch(next, plevel, ic);
 		    } else {
-			success = regmatch(next, plevel);
+			success = regmatch(next, plevel, ic);
 		    }
 		    if (first) {
 			firstok = success;
@@ -2373,7 +2382,7 @@ regmatch(char *prog, int plevel)
 		}
 
 		save_state();
-		no = regrepeat(rpt);
+		no = regrepeat(rpt, ic);
 
 		if (max > 0 && no > max) {
 		    no = max;
@@ -2408,8 +2417,8 @@ regmatch(char *prog, int plevel)
 		    /* If it could work, try it. */
 		    if ((nxtch == -1
 			 || reginput >= regnomore
-			 || EQ_CHARS(WCHAR_AT(reginput, regnomore), nxtch))) {
-			if (regmatch(next, plevel)) {
+			 || EQ_CHARS(WCHAR_AT(reginput, regnomore), nxtch, ic))) {
+			if (regmatch(next, plevel, ic)) {
 #if OPT_MULTIBYTE
 			    if (rpts && (rpts != repeats))
 				free(rpts);
@@ -2461,7 +2470,7 @@ regmatch(char *prog, int plevel)
  - regrepeat - repeatedly match something simple, report how many
  */
 static int
-regrepeat(const char *p)
+regrepeat(const char *p, int ic)
 {
     int count = 0;
     char *scan = reginput;
@@ -2476,20 +2485,20 @@ regrepeat(const char *p)
 	break;
     case EXACTLY:
 	while (scan < regnomore) {
-	    if (!EQ_CHARS(data, WCHAR_AT(scan, regnomore)))
+	    if (!EQ_CHARS(data, WCHAR_AT(scan, regnomore), ic))
 		break;
 	    count++;
 	    scan += BYTES_AT(scan, regnomore);
 	}
 	break;
     case ANYOF:
-	while (scan < regnomore && RegStrChr2(opnd, size, scan) != 0) {
+	while (scan < regnomore && RegStrChr2(opnd, size, scan, ic) != 0) {
 	    count++;
 	    scan += BYTES_AT(scan, regnomore);
 	}
 	break;
     case ANYBUT:
-	while (scan < regnomore && RegStrChr2(opnd, size, scan) == 0) {
+	while (scan < regnomore && RegStrChr2(opnd, size, scan, ic) == 0) {
 	    count++;
 	    scan += BYTES_AT(scan, regnomore);
 	}
@@ -2698,7 +2707,8 @@ cregexec(regexp * prog,
 	 LINE *lp,
 	 int startoff,
 	 int endoff,
-	 int at_bol)
+	 int at_bol,
+	 int ic)
 {
     int s = 0;
 
@@ -2711,7 +2721,7 @@ cregexec(regexp * prog,
     if (endoff >= startoff) {
 	if (lvalue(lp)) {
 	    s = regexec2(prog, lvalue(lp), &(lvalue(lp)[llength(lp)]),
-			 startoff, endoff, at_bol);
+			 startoff, endoff, at_bol, ic);
 	} else {
 	    /* the prog might be ^$, or something legal on a null string */
 
@@ -2720,7 +2730,7 @@ cregexec(regexp * prog,
 	    if (startoff > 0) {
 		s = 0;
 	    } else {
-		s = regexec2(prog, nullstr, nullstr, 0, 0, at_bol);
+		s = regexec2(prog, nullstr, nullstr, 0, 0, at_bol, ic);
 	    }
 	    if (s) {
 		if (prog->mlen > 0) {
@@ -2742,9 +2752,10 @@ int
 lregexec(regexp * prog,
 	 LINE *lp,
 	 int startoff,
-	 int endoff)
+	 int endoff,
+	 int ic)
 {
-    return cregexec(prog, lp, startoff, endoff, (startoff == 0));
+    return cregexec(prog, lp, startoff, endoff, (startoff == 0), ic);
 }
 
 /* non-LINE regexec calls for vile */
@@ -2753,13 +2764,14 @@ nregexec(regexp * prog,
 	 char *string,
 	 char *stringend,	/* pointer to the null, if there were one */
 	 int startoff,
-	 int endoff)
+	 int endoff,
+	 int ic)
 {
     int s;
 
     REGTRACE((T_CALLED "nregexec %d..%d\n", startoff, endoff));
     set_utf8flag(0);
-    s = regexec(prog, string, stringend, startoff, endoff);
+    s = regexec(prog, string, stringend, startoff, endoff, ic);
     returnReg(s);
 }
 #endif /* VILE LINE */
@@ -2913,7 +2925,7 @@ imdying(int ACTUAL_SIG_ARGS GCC_UNUSED)
 #endif /* TEST_MULTIBYTE_REGEX */
 
 void
-mlforce(const char *dummy,...)
+mlforce(const char *dummy, ...)
 {
     printf("? %s\n", dummy);
 }

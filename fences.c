@@ -9,7 +9,7 @@
  * Extensions for vile by Paul Fox
  * Rewrote to use regular expressions - T.Dickey
  *
- * $Id: fences.c,v 1.96 2018/10/21 21:00:20 tom Exp $
+ * $Id: fences.c,v 1.97 2019/12/19 09:32:47 bod Exp $
  */
 
 #include	"estruct.h"
@@ -149,7 +149,7 @@ typeof_complex(int code)
 
 static int
 match_complex(TRACEARG(int group)
-	      LINE *lp, struct VAL *vals)
+	      LINE *lp, struct VAL *vals, int ic)
 {
     static int modes[] =
     {CPP_IF, CPP_ELIF, CPP_ELSE, CPP_ENDIF};
@@ -176,7 +176,7 @@ match_complex(TRACEARG(int group)
 	default:
 	    continue;
 	}
-	if (lregexec(any_rexp(vals, k)->reg, lp, 0, llength(lp))) {
+	if (lregexec(any_rexp(vals, k)->reg, lp, 0, llength(lp), ic)) {
 	    code = modes[j];
 	    TRACE(("match_complex(%d) %s\n", group, typeof_complex(code)));
 	    break;
@@ -198,7 +198,7 @@ match_simple(void)
 
     TRACE(("match_simple %d:%s\n", line_no(curbp, DOT.l), lp_visible(DOT.l)));
     for (first = 0; first < last; first = S_COL(BlkBegin) + 1) {
-	if (!lregexec(BlkBegin, DOT.l, first, last))
+	if (!lregexec(BlkBegin, DOT.l, first, last, FALSE))
 	    break;
 	if ((S_COL(BlkBegin) <= DOT.o)
 	    && (E_COL(BlkBegin) > DOT.o)) {
@@ -208,7 +208,7 @@ match_simple(void)
     }
 
     for (first = 0; first < last && DOT.o <= last; last = E_COL(BlkEnd) - 1) {
-	if (!lregexec(BlkEnd, DOT.l, first, last))
+	if (!lregexec(BlkEnd, DOT.l, first, last, FALSE))
 	    break;
 	if ((S_COL(BlkEnd) <= DOT.o)
 	    && (E_COL(BlkEnd) > DOT.o)) {
@@ -276,7 +276,8 @@ complex_fence(int sdir, int key, int group, int level, int *newkey)
 	for_each_modegroup(curbp, result, group, vals) {
 	    DOT = savedot;
 	    count = savecount;
-	    if (((that = match_complex(TRACEARG(result) DOT.l, vals)) != CPP_UNKNOWN)) {
+	    if (((that = match_complex(TRACEARG(result) DOT.l, vals, FALSE))
+		 != CPP_UNKNOWN)) {
 		int done = FALSE;
 
 		TRACE(("for_each_modegroup:%d:%d (line %d, count %d)\n",
@@ -400,7 +401,6 @@ find_complex(int sdir, int *newkey)
     int rc = FALSE;
     int key;
     int group = -1;
-    int save_ic = ignorecase;
     MARK oldpos, oldpre;
     struct VAL *vals;
 
@@ -410,8 +410,8 @@ find_complex(int sdir, int *newkey)
     TRACE(("find_complex %4d:%s\n", line_no(curbp, DOT.l), lp_visible(DOT.l)));
     limit_iterations();
     for_each_modegroup(curbp, group, 0, vals) {
-	ignorecase = any_mode(vals, MDIGNCASE);
-	if ((key = match_complex(TRACEARG(group) DOT.l, vals)) != CPP_UNKNOWN) {
+	int ic = any_mode(vals, MDIGNCASE);
+	if ((key = match_complex(TRACEARG(group) DOT.l, vals, ic)) != CPP_UNKNOWN) {
 	    start_fence_op2(sdir, oldpos, oldpre);
 	    sdir = ((key == CPP_ENDIF)
 		    ? REVERSE
@@ -427,7 +427,6 @@ find_complex(int sdir, int *newkey)
 #endif
 	}
     }
-    ignorecase = save_ic;
 #if OPT_MAJORMODE
     TRACE(("...find_complex %d (iterations %ld)\n", rc, iterations));
 #endif
@@ -451,7 +450,7 @@ find_one_complex(int sdir, int level, int group, int *newkey)
      * Iterate over the complex fence groups
      */
     TRACE(("find_one_complex %4d:%s\n", line_no(curbp, DOT.l), lp_visible(DOT.l)));
-    if ((key = match_complex(TRACEARG(group) DOT.l, vals)) != CPP_UNKNOWN) {
+    if ((key = match_complex(TRACEARG(group) DOT.l, vals, FALSE)) != CPP_UNKNOWN) {
 	start_fence_op2(sdir, oldpos, oldpre);
 	if (level == 0)
 	    sdir = ((key == CPP_ENDIF)
@@ -543,7 +542,7 @@ comment_fence(int sdir)
 
     scanboundry(FALSE, DOT, sdir);
     if (scanner((sdir == FORWARD) ? BlkEnd : BlkBegin,
-		sdir, (DOT.o == 0), FALSE, (int *) 0)) {
+		sdir, (DOT.o == 0), FALSE, FALSE, (int *) 0)) {
 	if (!doingopcmd || doingsweep) {
 	    sweephack = TRUE;
 	    if (sdir == FORWARD && (BlkEnd->mlen > 1))

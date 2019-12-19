@@ -3,7 +3,7 @@
  * paragraph at a time.  There are all sorts of word mode commands.  If I
  * do any sentence mode commands, they are likely to be put in this file.
  *
- * $Id: word.c,v 1.108 2018/10/21 21:07:59 tom Exp $
+ * $Id: word.c,v 1.109 2019/12/19 09:32:10 bod Exp $
  */
 
 #include	"estruct.h"
@@ -392,8 +392,8 @@ dot_at_section_break(void)
     regexp *expP = b_val_rexp(curbp, VAL_PARAGRAPHS)->reg;
     regexp *expC = b_val_rexp(curbp, VAL_COMMENTS)->reg;
 
-    return (lregexec(expP, DOT.l, 0, llength(DOT.l)) ||
-	    lregexec(expC, DOT.l, 0, llength(DOT.l)));
+    return (lregexec(expP, DOT.l, 0, llength(DOT.l), FALSE) ||
+	    lregexec(expC, DOT.l, 0, llength(DOT.l), FALSE));
 }
 
 /* returns the length of the comment-prefix, if it matches, otherwise -1 */
@@ -402,7 +402,7 @@ comment_prefix(void)
 {
     regexp *expP = b_val_rexp(curbp, VAL_CMT_PREFIX)->reg;
     int result = -1;
-    if (lregexec(expP, DOT.l, 0, llength(DOT.l))) {
+    if (lregexec(expP, DOT.l, 0, llength(DOT.l), FALSE)) {
 	result = (int) (expP->endp[0] - lvalue(DOT.l));
     }
     return result;

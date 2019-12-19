@@ -1,5 +1,5 @@
 /*
- * $Id: eightbit.c,v 1.108 2018/11/04 21:28:39 tom Exp $
+ * $Id: eightbit.c,v 1.109 2019/12/19 09:32:10 bod Exp $
  *
  * Maintain "8bit" file-encoding mode by converting incoming UTF-8 to single
  * bytes, and providing a function that tells vile whether a given Unicode
@@ -297,7 +297,7 @@ vl_narrowed(const char *wide)
 	    if ((result = malloc(strlen(wide) + 2 + strlen(on_right))) != 0) {
 		strcpy(result, wide);
 		for (n = 0; n < len; ++n) {
-		    found = regexec(exp, result, result + len, n, len);
+		    found = regexec(exp, result, result + len, n, len, FALSE);
 		    if (found)
 			break;
 		}
@@ -587,7 +587,7 @@ vl_get_encoding(char **target, const char *locale)
 	    exp = regcomp(tb_values(latin1_expr),
 			  (size_t) tb_length0(latin1_expr), TRUE);
 	    if (exp != 0) {
-		if (nregexec(exp, mylocale, (char *) 0, 0, -1)) {
+		if (nregexec(exp, mylocale, (char *) 0, 0, -1, FALSE)) {
 		    TRACE(("... found match in $latin1-expr\n"));
 		    result = iso_latin1;
 		}

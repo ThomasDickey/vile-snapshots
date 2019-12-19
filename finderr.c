@@ -3,9 +3,9 @@
  * written for vile by paul fox.
  * rewritten to use regular expressions by T.Dickey
  *
- * Copyright (c) 1990-2016 by Paul Fox and Thomas Dickey
+ * Copyright (c) 1990-2016,2019 by Paul Fox and Thomas Dickey
  *
- * $Header: /users/source/archives/vile.vcs/RCS/finderr.c,v 1.151 2016/07/24 17:14:14 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/finderr.c,v 1.152 2019/12/19 09:37:07 bod Exp $
  *
  */
 
@@ -717,7 +717,8 @@ finderr(int f GCC_UNUSED, int n GCC_UNUSED)
 		count = 0;
 		while ((exp = next_pattern(count++)) != 0) {
 		    if (exp->words[W_VERB] > 0)
-			if (lregexec(exp->exp_comp, tdotp, 0, llength(tdotp)))
+			if (lregexec(exp->exp_comp, tdotp, 0,
+				     llength(tdotp), FALSE))
 			    break;
 		}
 
@@ -750,7 +751,7 @@ finderr(int f GCC_UNUSED, int n GCC_UNUSED)
 	if (lisreal(dotp)) {
 	    count = 0;
 	    while ((exp = next_pattern(count++)) != 0
-		   && !lregexec(exp->exp_comp, dotp, 0, llength(dotp))) {
+		   && !lregexec(exp->exp_comp, dotp, 0, llength(dotp), FALSE)) {
 		;
 	    }
 
