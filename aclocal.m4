@@ -1,4 +1,4 @@
-dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.301 2019/12/08 20:46:55 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.302 2019/12/31 18:06:24 tom Exp $
 dnl ---------------------------------------------------------------------------
 dnl
 dnl Copyright 1996-2018,2019 by Thomas E. Dickey
@@ -2317,11 +2317,12 @@ AC_TRY_COMPILE([
 test $cf_cv_select_with_time = yes && AC_DEFINE(SELECT_WITH_TIME,1,[Define to 1 if we can include select.h with time.h])
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_HELP_MESSAGE version: 3 updated: 1998/01/14 10:56:23
+dnl CF_HELP_MESSAGE version: 4 updated: 2019/12/31 08:53:54
 dnl ---------------
 dnl Insert text into the help-message, for readability, from AC_ARG_WITH.
 AC_DEFUN([CF_HELP_MESSAGE],
-[AC_DIVERT_HELP([$1])dnl
+[CF_ACVERSION_CHECK(2.53,[],[
+AC_DIVERT_HELP($1)])dnl
 ])dnl
 dnl ---------------------------------------------------------------------------
 dnl CF_IMAKE_CFLAGS version: 32 updated: 2015/04/12 15:39:00
@@ -3827,11 +3828,15 @@ AC_TRY_COMPILE([#include <stdio.h>],[
 ])
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_PROG_CC version: 4 updated: 2014/07/12 18:57:58
+dnl CF_PROG_CC version: 5 updated: 2019/12/31 08:53:54
 dnl ----------
 dnl standard check for CC, plus followup sanity checks
 dnl $1 = optional parameter to pass to AC_PROG_CC to specify compiler name
 AC_DEFUN([CF_PROG_CC],[
+CF_ACVERSION_CHECK(2.53,
+	[AC_MSG_WARN(this will incorrectly handle gnatgcc choice)
+	 AC_REQUIRE([AC_PROG_CC])],
+	[])
 ifelse($1,,[AC_PROG_CC],[AC_PROG_CC($1)])
 CF_GCC_VERSION
 CF_ACVERSION_CHECK(2.52,

@@ -5,7 +5,7 @@
  * functions that adjust the top line in the window and invalidate the
  * framing, are hard.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/basic.c,v 1.174 2019/12/19 09:32:10 bod Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/basic.c,v 1.176 2019/12/23 01:20:36 tom Exp $
  *
  */
 
@@ -1449,7 +1449,17 @@ makemarkslist(int value GCC_UNUSED, void *dummy GCC_UNUSED)
 int
 showmarks(int f, int n GCC_UNUSED)
 {
-    return liststuff(MARKS_BufName, FALSE, makemarkslist, f, (void *) curbp);
+    WINDOW *wp = curwp;
+    int s;
+
+    TRACE((T_CALLED "showmarks(f=%d)\n", f));
+
+    s = liststuff(MARKS_BufName, FALSE, makemarkslist, f, (void *) curbp);
+    /* back to the buffer whose modes we just listed */
+    if (swbuffer(wp->w_bufp))
+	curwp = wp;
+
+    returnCode(s);
 }
 
 #if OPT_UPBUFF
@@ -1515,10 +1525,17 @@ get_nmmark(int c, MARK *markp)
 int
 show_mark_is_set(int c)
 {
-    if (isLower(c))
-	mlwrite("[Mark '%c' set]", c);
-    update_scratch(MARKS_BufName, update_marklist);
-    return TRUE;
+    int rc = TRUE;
+    int ignore = (curbp != 0 && eql_bname(curbp, MARKS_BufName));
+    if (isLower(c)) {
+	mlwrite("[Mark '%c' %s]", c, ignore ? "ignored" : "set");
+    }
+    if (ignore) {
+	rc = FALSE;
+    } else {
+	update_scratch(MARKS_BufName, update_marklist);
+    }
+    return rc;
 }
 
 /*
