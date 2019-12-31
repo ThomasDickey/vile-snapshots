@@ -1,11 +1,16 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20191219 (u)
+ 20191231 (u)
 	> Brendan O'Dea:
 	+ add smartcase mode (prompted by suggestion by Marc Simpson).
 	> Michael von der Heide
 	+ modify vile-spell-filt to allow for umlauts in UTF-8
 	> Tom Dickey:
+	+ modified a configure-macro to appease autoheader-252.
+	+ switch back to the original buffer after displaying result of the
+	  show-marks command in "[Named Marks]" (report/patch by Marc Simpson).
+	+ modify message when setting a mark in "[Named Marks]" to show that it
+	  is ignored (report by Marc Simpson).
 	+ regenerate the doc-files from html, using links2 2.14 in Debian 9.
 	  also reformat the html files.
 	+ trim some unwanted blanks in vile.hlp, overlooked in converting
