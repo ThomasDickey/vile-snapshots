@@ -20,7 +20,7 @@
 #
 # gnu autoconf support by kevin buettner, 5/94
 #
-# $Id: makefile.in,v 1.284 2018/10/31 23:41:54 tom Exp $
+# $Id: makefile.in,v 1.285 2020/01/05 23:47:27 tom Exp $
 
 SHELL		= @SHELL@
 
@@ -730,6 +730,7 @@ distclean ::
 	- test -f filters/makefile && cd filters && $(MAKE) $(MAKE_RECUR) $@
 
 mostlyclean ::
+	-@ $(RM) -rf *.dSYM
 	- $(RM) *.[oi] o$(PROGRAM) $(BUILTHDRS) $(BUILTSRCS) $(MKTBLS)
 	- $(RM) builtflt.h core core.* *.stackdump *~ *.tmp *.BAK *.bb* *.da *.gcov
 

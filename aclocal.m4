@@ -1,7 +1,7 @@
-dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.302 2019/12/31 18:06:24 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.304 2020/01/06 01:06:02 tom Exp $
 dnl ---------------------------------------------------------------------------
 dnl
-dnl Copyright 1996-2018,2019 by Thomas E. Dickey
+dnl Copyright 1996-2019,2020 by Thomas E. Dickey
 dnl
 dnl                         All Rights Reserved
 dnl
@@ -1989,12 +1989,13 @@ CF_INTEL_COMPILER(GCC,INTEL_COMPILER,CFLAGS)
 CF_CLANG_COMPILER(GCC,CLANG_COMPILER,CFLAGS)
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_GCC_WARNINGS version: 36 updated: 2019/09/07 13:38:36
+dnl CF_GCC_WARNINGS version: 37 updated: 2020/01/05 20:04:12
 dnl ---------------
 dnl Check if the compiler supports useful warning options.  There's a few that
 dnl we don't use, simply because they're too noisy:
 dnl
 dnl	-Wconversion (useful in older versions of gcc, but not in gcc 2.7.x)
+dnl	-Winline (usually not worthwhile)
 dnl	-Wredundant-decls (system headers make this too noisy)
 dnl	-Wtraditional (combines too many unrelated messages, only a few useful)
 dnl	-Wwrite-strings (too noisy, but should review occasionally).  This
@@ -2050,7 +2051,7 @@ then
 		fi
 	done
 	CFLAGS="$cf_save_CFLAGS"
-elif test "$GCC" = yes
+elif test "$GCC" = yes && test "$GCC_VERSION" != "unknown"
 then
 	AC_CHECKING([for $CC warning options])
 	cf_save_CFLAGS="$CFLAGS"
@@ -2072,7 +2073,7 @@ then
 		Wpointer-arith \
 		Wshadow \
 		Wstrict-prototypes \
-		Wundef $cf_gcc_warnings $cf_warn_CONST $1
+		Wundef Wno-inline $cf_gcc_warnings $cf_warn_CONST $1
 	do
 		CFLAGS="$cf_save_CFLAGS $EXTRA_CFLAGS -$cf_opt"
 		if AC_TRY_EVAL(ac_compile); then
@@ -2780,7 +2781,7 @@ then
 fi
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_LEX_CHAR_CLASSES version: 6 updated: 2009/04/04 13:08:05
+dnl CF_LEX_CHAR_CLASSES version: 7 updated: 2020/01/05 20:03:16
 dnl -------------------
 dnl Check if the lex/flex program accepts character-classes, i.e., [:alpha:],
 dnl which are a POSIX feature.
@@ -2800,14 +2801,14 @@ else
 	LEX_CHAR_CLASSES=no
 fi
 AC_MSG_RESULT($LEX_CHAR_CLASSES)
-rm -f conftest.* $LEX_OUTPUT_ROOT.c
+rm -rf conftest.* $LEX_OUTPUT_ROOT.c
 if test "$LEX_CHAR_CLASSES" != yes ; then
 	AC_MSG_WARN(Your $LEX program does not support POSIX character classes.  Get flex.)
 fi
 AC_SUBST(LEX_CHAR_CLASSES)
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_LEX_OPTIONS version: 1 updated: 2009/04/04 13:08:05
+dnl CF_LEX_OPTIONS version: 2 updated: 2020/01/05 20:03:16
 dnl --------------
 dnl Check if the lex/flex program accepts options, i.e., %o.  This is for
 dnl standard (POSIX) lex; there are some implementations that are nonstandard,
@@ -2827,13 +2828,13 @@ else
 cf_lex_options=no
 fi
 AC_MSG_RESULT($cf_lex_options)
-rm -f conftest.* $LEX_OUTPUT_ROOT.c
+rm -rf conftest.* $LEX_OUTPUT_ROOT.c
 if test "$cf_lex_options" != yes ; then
 	AC_MSG_WARN(Your $LEX program does not support POSIX options.  Get flex.)
 fi
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_LEX_POINTER version: 1 updated: 2009/04/04 13:08:05
+dnl CF_LEX_POINTER version: 2 updated: 2020/01/05 20:03:16
 dnl --------------
 dnl Check if the lex/flex program accepts %pointer, for standard (POSIX) lex.
 AC_DEFUN([CF_LEX_POINTER],[
@@ -2851,13 +2852,13 @@ else
 cf_lex_pointer=no
 fi
 AC_MSG_RESULT($cf_lex_pointer)
-rm -f conftest.* $LEX_OUTPUT_ROOT.c
+rm -rf conftest.* $LEX_OUTPUT_ROOT.c
 if test "$cf_lex_pointer" != yes ; then
 	AC_MSG_WARN(Your $LEX program does not support POSIX %pointer.  Get flex.)
 fi
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_LEX_STATES version: 6 updated: 2014/07/21 16:02:22
+dnl CF_LEX_STATES version: 7 updated: 2020/01/05 20:03:16
 dnl -------------
 dnl Check if the lex/flex program accepts states, i.e., %s and %x.  Older
 dnl implementations do not support these.
@@ -2897,7 +2898,7 @@ CF_EOF
 	fi
 done
 AC_MSG_RESULT($cf_lex_states)
-rm -f conftest.* $LEX_OUTPUT_ROOT.c
+rm -rf conftest.* $LEX_OUTPUT_ROOT.c
 if test "$cf_lex_states" = no ; then
 	AC_MSG_WARN(Your $LEX program does not support POSIX states.  Get flex.)
 fi
