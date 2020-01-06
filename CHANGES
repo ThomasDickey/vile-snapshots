@@ -1,11 +1,17 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20191231 (u)
+ 20200205 (u)
 	> Brendan O'Dea:
 	+ add smartcase mode (prompted by suggestion by Marc Simpson).
 	> Michael von der Heide
 	+ modify vile-spell-filt to allow for umlauts in UTF-8
 	> Tom Dickey:
+	+ improve configure script for MacOS port:
+	  + suppress -Winline
+	  + cleanup *.dSYM directories
+	  + don't add gcc/clang options for c89/c99 wrappers which cannot tell
+	    what version of gcc/clang they hide.
+	+ add tpumode, separating it from dclmode because the keywords differ.
 	+ modified a configure-macro to appease autoheader-252.
 	+ switch back to the original buffer after displaying result of the
 	  show-marks command in "[Named Marks]" (report/patch by Marc Simpson).

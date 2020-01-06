@@ -1,4 +1,4 @@
-; $Id: modes.rc,v 1.145 2019/09/14 15:53:31 tom Exp $
+; $Id: modes.rc,v 1.146 2020/01/05 16:02:09 tom Exp $
 ; majormodes in this file are ordered alphabetically for convenience - the
 ; precedence used by vile is strictly alphabetic, counting case.  Use the
 ; before and after qualifiers to override the precedence.
@@ -233,7 +233,7 @@ define-mode cweb
 ; excludes the if-block.
 define-mode dcl
 ~with define-submode dcl
-	suffixes	'\.\(com\|dcl\|tpu\)$'
+	suffixes	'\.\(com\|dcl\)$'
 	comment-prefix	'^\s*\$!'
 	comments	'^\s*\$!\s*$'
 	ignorecase
@@ -989,6 +989,20 @@ define-mode ti
 	suffixes	'\.\(ti\|tic\|tinfo\|terminfo\)$'
 	comment-prefix	'^\s*[:#]'
 	comments	'^\s*[:#]\s*$'
+~endwith
+
+define-mode tpu
+~with define-submode tpu
+	suffixes	'\.\(tpu\)$'
+	comment-prefix	'^\s*\$!'
+	comments	'^\s*\$!\s*$'
+	ignorecase
+~elsewith define-submode tpu group 'if-once'
+	fence-if	'^\s*\(\$\s*\)\?\<if\>.*\<then\>'
+~elsewith define-submode tpu group 'if-block'
+	fence-if	'^\s*\(\$\s*\)\?\<if\>'
+	fence-else	'^\s*\(\$\s*\)\?\<else\>'
+	fence-fi	'^\s*\(\$\s*\)\?\<endif\>'
 ~endwith
 
 ; typescript is a dialect of javascript.  It is spelled out here because "ts"

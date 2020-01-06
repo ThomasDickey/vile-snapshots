@@ -6415,7 +6415,7 @@ cf_lex_pointer=no
 fi
 echo "$as_me:6416: result: $cf_lex_pointer" >&5
 echo "${ECHO_T}$cf_lex_pointer" >&6
-rm -f conftest.* $LEX_OUTPUT_ROOT.c
+rm -rf conftest.* $LEX_OUTPUT_ROOT.c
 if test "$cf_lex_pointer" != yes ; then
 	{ echo "$as_me:6420: WARNING: Your $LEX program does not support POSIX %pointer.  Get flex." >&5
 echo "$as_me: WARNING: Your $LEX program does not support POSIX %pointer.  Get flex." >&2;}
@@ -6442,7 +6442,7 @@ else
 fi
 echo "$as_me:6443: result: $LEX_CHAR_CLASSES" >&5
 echo "${ECHO_T}$LEX_CHAR_CLASSES" >&6
-rm -f conftest.* $LEX_OUTPUT_ROOT.c
+rm -rf conftest.* $LEX_OUTPUT_ROOT.c
 if test "$LEX_CHAR_CLASSES" != yes ; then
 	{ echo "$as_me:6447: WARNING: Your $LEX program does not support POSIX character classes.  Get flex." >&5
 echo "$as_me: WARNING: Your $LEX program does not support POSIX character classes.  Get flex." >&2;}
@@ -6468,7 +6468,7 @@ cf_lex_options=no
 fi
 echo "$as_me:6469: result: $cf_lex_options" >&5
 echo "${ECHO_T}$cf_lex_options" >&6
-rm -f conftest.* $LEX_OUTPUT_ROOT.c
+rm -rf conftest.* $LEX_OUTPUT_ROOT.c
 if test "$cf_lex_options" != yes ; then
 	{ echo "$as_me:6473: WARNING: Your $LEX program does not support POSIX options.  Get flex." >&5
 echo "$as_me: WARNING: Your $LEX program does not support POSIX options.  Get flex." >&2;}
@@ -6513,7 +6513,7 @@ CF_EOF
 done
 echo "$as_me:6514: result: $cf_lex_states" >&5
 echo "${ECHO_T}$cf_lex_states" >&6
-rm -f conftest.* $LEX_OUTPUT_ROOT.c
+rm -rf conftest.* $LEX_OUTPUT_ROOT.c
 if test "$cf_lex_states" = no ; then
 	{ echo "$as_me:6518: WARNING: Your $LEX program does not support POSIX states.  Get flex." >&5
 echo "$as_me: WARNING: Your $LEX program does not support POSIX states.  Get flex." >&2;}
@@ -30144,7 +30144,7 @@ echo "${ECHO_T}... -$cf_opt" >&6
 		fi
 	done
 	CFLAGS="$cf_save_CFLAGS"
-elif test "$GCC" = yes
+elif test "$GCC" = yes && test "$GCC_VERSION" != "unknown"
 then
 	{ echo "$as_me:30149: checking for $CC warning options..." >&5
 echo "$as_me: checking for $CC warning options..." >&6;}
@@ -30167,7 +30167,7 @@ echo "$as_me: checking for $CC warning options..." >&6;}
 		Wpointer-arith \
 		Wshadow \
 		Wstrict-prototypes \
-		Wundef $cf_gcc_warnings $cf_warn_CONST Wno-unknown-pragmas
+		Wundef Wno-inline $cf_gcc_warnings $cf_warn_CONST Wno-unknown-pragmas
 	do
 		CFLAGS="$cf_save_CFLAGS $EXTRA_CFLAGS -$cf_opt"
 		if { (eval echo "$as_me:30173: \"$ac_compile\"") >&5
