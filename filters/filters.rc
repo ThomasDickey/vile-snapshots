@@ -1,4 +1,4 @@
-; $Id: filters.rc,v 1.253 2020/01/05 16:02:52 tom Exp $
+; $Id: filters.rc,v 1.254 2020/01/12 18:22:21 tom Exp $
 ; majormodes in this file are ordered alphabetically for convenience - the
 ; precedence used by vile is strictly alphabetic, counting case.
 
@@ -264,7 +264,7 @@ define-mode tex
 
 define-mode tpu
 ~with define-submode tpu
-	filtername	'vile-dcl-filt -i -k tpu'
+	filtername	'vile-tpu-filt -i'
 ~endwith
 
 define-mode typescript

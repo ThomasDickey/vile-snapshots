@@ -1,4 +1,4 @@
-MANIFEST for vile, version v9_8t17
+MANIFEST for vile, version v9_8t18
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 AUTHORS                         list of authors, with nicknames in CHANGES
@@ -379,6 +379,7 @@ filters/texi.key                keywords for texinfo syntax filter
 filters/texifilt.l              syntax filter for texinfo
 filters/ti-filt.l               terminfo syntax highlighting filter for vile
 filters/ti.key                  terminfo keywords
+filters/tpu-filt.l              syntax filter for TPU (DEC text-processing utility)
 filters/tpu.key                 TPU keywords
 filters/ts.key                  keywords for typescript mode
 filters/txt-filt.l              syntax filter for ordinary text

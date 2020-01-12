@@ -3,7 +3,7 @@
  * and backward directions.
  *  heavily modified by Paul Fox, 1990
  *
- * $Header: /users/source/archives/vile.vcs/RCS/search.c,v 1.156 2019/12/19 09:32:42 bod Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/search.c,v 1.157 2020/01/12 18:06:55 tom Exp $
  *
  * original written Aug. 1986 by John M. Gamble, but I (pgf) have since
  * replaced his regex stuff with Henry Spencer's regexp package.
@@ -177,7 +177,7 @@ forwhunt(int f, int n)
 	n = 1;
 
     /* Make sure a pattern exists */
-    if (tb_length(searchpat) == 0) {
+    if (tb_length(searchpat) == 0 || gregexp == NULL) {
 	mlforce("[No pattern set]");
 	return FALSE;
     }
@@ -329,7 +329,7 @@ backhunt(int f, int n)
 	n = 1;
 
     /* Make sure a pattern exists */
-    if (tb_length(searchpat) == 0) {
+    if (tb_length(searchpat) == 0 || gregexp == NULL) {
 	mlforce("[No pattern set]");
 	return FALSE;
     }
