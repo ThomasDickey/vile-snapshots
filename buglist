@@ -3,7 +3,7 @@
 ------------------------
 vile bug/enhancement/wish list (mostly wishes ;-)
 ------------------------
-$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.417 2010/04/11 21:59:42 tom Exp $
+$Header: /users/source/archives/vile.vcs/RCS/buglist,v 1.418 2020/01/17 23:24:30 tom Exp $
 ----------------------
 	(E means enhancement, L,M,H are low, medium, high priority)
 
@@ -69,7 +69,7 @@ Though I use it, I'm still not quite satisfied with the qident stuff.  It
 needs to be more flexible.  That is, I'd like to make it user defined.
 For example
 	find-tag $qidentifier
-should be expressable as a character class like
+should be expressible as a character class like
 	find-tag &anyof "a-zA-Z_0-9:"
 in a macro.  Or even more generally, as a regular expression:
 	find-tag &scan "[a-zA-Z_][a-zA-Z_0-9:]\\*"
@@ -91,7 +91,7 @@ better mimicking vi's behavior).
 Also, I encountered the following problem: I am editing foo.tex and
 call latex using ^X!latex foo.tex. There is an error, so latex waits for
 input -> vile sits waiting and nothing helps. I think this should
-be interruptable. I will agree with you that the ^X! command was not
+be interruptible. I will agree with you that the ^X! command was not
 intended for this, but still...
 
 But ok, the real problem is that after I kill latex and
@@ -121,7 +121,7 @@ be nice in vile.
 
 ------------------------
 I wish ^X-!  could execute shell commands async'ly, i.e.  I should not have
-to wait/do nothing while waiting for the ouput of compiling.  I should be
+to wait/do nothing while waiting for the output of compiling.  I should be
 able to edit stuff in other buffers or even ^X-^X to edit src codes
 while compilation is still going on.
 
@@ -364,7 +364,7 @@ longest.
 
 
 It would be useful to have a search that is constrained to a certain
-movment.  For example, I might want to look for the string "foo" over the
+movement.  For example, I might want to look for the string "foo" over the
 next paragraph, not the whole document.  This would really be useful to
 programmers who want to look for the instance of a variable or a function
 call only within the current scope (or #if).
@@ -532,7 +532,7 @@ hi
 bar
 
 this only seems to happen in autoindent mode at the very beginning of
-the line. it does *not* happen if the preceeding line is indented, or
+the line. it does *not* happen if the preceding line is indented, or
 if I type a space before pasting.
 ----------------
 
@@ -763,7 +763,7 @@ on time taken to do the search...
 
 -----------------
  > It seems that some files were in the zipfile vil60dos.zip with the read
- > only paramater set.  I unzipped them with infozip's unzipper instead
+ > only parameter set.  I unzipped them with infozip's unzipper instead
  > of pkunzip, and this became a read-only attribute on the vile.hlp
  > file.  If this is set, vile.exe can't find it.
 
@@ -1022,7 +1022,7 @@ This problem has come and gone and doesn't exist on non-SVR4 systems like
 Linux, DEC Unix that I've issued.  Does exist on UnixWare, NCR Unix and
 Solaris.
 
-I had verson of 6.x xvile that did not have this problem but had other X
+I had version of 6.x xvile that did not have this problem but had other X
 problems.  I compiled 7.0 and now this problem is back.
 
 [the fix for this is to use the +fork option, or use the forkOnStartup resource
@@ -1049,7 +1049,7 @@ name completion a lot.
 
 Recently I started using Solaris. Now when I press Tab the vile (xvile)
 window enters some sort of selected state. The border changes to include
-a thin highlighted region around the inside perimeter, and futher keystrokes
+a thin highlighted region around the inside perimeter, and further keystrokes
 have no effect. A second press of the tab key clears this condition.
 
 When completing a filename, I must press tab once, which completes the name
@@ -1089,8 +1089,8 @@ real-estate.
 -- 97-09-17 (Robert Chady <chady@concentric.net>)
 
 There is one feature that I have not been able to find in vile.  Was wondering
-if you could tell me if I'm missing it, or if it really isnt there.  If it isnt
-there, maybe you could put it in :)
+if you could tell me if I'm missing it, or if it really isn't there.  If it
+isn't there, maybe you could put it in :)
 
 The feature is the ability to have reverse wraparound.  This is for when you
 backspace to the beginning of the line, rather than have to exit edit mode, go
@@ -1106,7 +1106,7 @@ he's asking for - tom]
 -- 97-11-12 (Scott Waldon <waldon@engineous.com>)
 
 I was introduced to vile about 2 years ago and am really enjoying using it.
-However, there is one little but very anoying bug that I am experiencing.  I
+However, there is one little but very annoying bug that I am experiencing.  I
 switched to using vile about the same time that I switched to CDE and dtterms
 (instead of xterms).  In a dtterm the status line on the bottom is constantly
 overwritten by some arbitrary line from the file forcing me to ^L constantly to
@@ -1200,7 +1200,7 @@ In article <199712091406.JAA18712@postman.opengroup.org> you write:
 > Highlights since 7.2:
 >       + beginnings of perl interface
 
-Perl needs (to make the debugger visual) a file viewer which can be accessable
+Perl needs (to make the debugger visual) a file viewer which can be accessible
 both by user, and by the *driver* program (say, via a pipe).  Is it possible to
 use vile for this (start it with an option to read commands from a pipe)?
 

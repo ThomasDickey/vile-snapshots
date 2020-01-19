@@ -1,4 +1,4 @@
-dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.305 2020/01/12 17:44:05 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.307 2020/01/17 23:41:50 tom Exp $
 dnl ---------------------------------------------------------------------------
 dnl
 dnl Copyright 1996-2019,2020 by Thomas E. Dickey
@@ -3963,13 +3963,13 @@ $1=`echo "$2" | \
 		-e 's/-[[UD]]'"$3"'\(=[[^ 	]]*\)\?[$]//g'`
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_RESTARTABLE_PIPEREAD version: 6 updated: 2012/10/06 11:17:15
+dnl CF_RESTARTABLE_PIPEREAD version: 7 updated: 2020/01/17 18:41:32
 dnl -----------------------
 dnl CF_RESTARTABLE_PIPEREAD is a modified version of AC_RESTARTABLE_SYSCALLS
 dnl from acspecific.m4, which uses a read on a pipe (surprise!) rather than a
 dnl wait() as the test code.  apparently there is a POSIX change, which OSF/1
 dnl at least has adapted to, which says reads (or writes) on pipes for which no
-dnl data has been transferred are interruptable _regardless_ of the SA_RESTART
+dnl data has been transferred are interruptible _regardless_ of the SA_RESTART
 dnl bit.  yuck.
 AC_DEFUN([CF_RESTARTABLE_PIPEREAD],
 [
@@ -6168,7 +6168,7 @@ if test -z "$cf_x_athena_lib" ; then
 fi
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_X_ATHENA_CPPFLAGS version: 7 updated: 2020/01/11 17:15:41
+dnl CF_X_ATHENA_CPPFLAGS version: 8 updated: 2020/01/16 05:21:56
 dnl --------------------
 dnl Normally invoked by CF_X_ATHENA, with $1 set to the appropriate flavor of
 dnl the Athena widgets, e.g., Xaw, Xaw3d, neXtaw.
@@ -6201,15 +6201,15 @@ do
 		AC_MSG_RESULT($cf_result)
 		CF_RESTORE_XTRA_FLAGS([CF_X_ATHENA_CPPFLAGS])
 		if test "$cf_result" = yes ; then
-			cf_x_athena_inc=$cf_path
+			test "$cf_path"  = default && cf_x_athena_inc=default
+			test "$cf_path" != default && cf_x_athena_inc=$cf_path/include
 			break
 		fi
 	fi
 done
 
 if test -z "$cf_x_athena_inc" ; then
-	AC_MSG_WARN(
-[Unable to successfully find Athena header files with test program])
+	AC_MSG_WARN([Unable to find Athena header files])
 elif test "$cf_x_athena_inc" != default ; then
 	CF_APPEND_TEXT(CPPFLAGS,-I$cf_x_athena_inc)
 fi

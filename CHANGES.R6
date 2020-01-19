@@ -176,7 +176,7 @@ Changes for vile 6.3 (released Mon Nov 18, 1996)
 
 (tom)	961113 (f)
 	+ clarified special-character expansion in vile.hlp (Paul Fox).
-	+ add alias to xvile for "-t" option to prevent it from superceding the
+	+ add alias to xvile for "-t" option to prevent it from superseding the
 	  normal vile "-t" option (x11.c).
 	+ added resources for xvile pointer shapes (x11.c) requested by Tim Su
 	  <tsu@garage.lucent.com>.
@@ -202,7 +202,7 @@ Changes for vile 6.3 (released Mon Nov 18, 1996)
 
 (tom)	961105 (d)
 	+ apply Brendan O'Dea's <bod@tyndall.com.au> followup patch to ensure
-	  that "#", "%" and ":" substitions aren't made in search/replacement
+	  that "#", "%" and ":" substitutions aren't made in search/replacement
 	  inputs.
 
 (pgf)	961030 (c)
@@ -272,7 +272,7 @@ Changes for vile 6.2 (released Tue Oct 15, 1996)
 	  termcap compatibility via terminfo, the color support will work.
 	+ modify configure script to check for terminfo libraries.
 	+ modify termcap driver so that if "op" (original pair) is defined,
-	  fcolor and bcolor default to "default", for better compatibilty
+	  fcolor and bcolor default to "default", for better compatibility
 	  with color_xterm and dtterm (tcap.c).
 	+ modify termcap driver to use "ut" capability to denote whether
 	  background-color-erase (bce) is supported (tcap.c).

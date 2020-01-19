@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 console API.
  *
- * $Id: ntconio.c,v 1.105 2018/11/05 01:30:41 tom Exp $
+ * $Id: ntconio.c,v 1.106 2020/01/17 23:11:00 tom Exp $
  */
 
 #include "estruct.h"
@@ -53,7 +53,7 @@ static ENC_CHOICES my_encoding = enc_DEFAULT;
 
 static int conemu = 0;		/* whether running under conemu */
 static int cattr = 0;		/* current attributes */
-static int cfcolor = -1;	/* current forground color */
+static int cfcolor = -1;	/* current foreground color */
 static int cbcolor = -1;	/* current background color */
 static int nfcolor = -1;	/* normal foreground color */
 static int nbcolor = -1;	/* normal background color */
@@ -1034,7 +1034,7 @@ autoscroll_thread(void *unused)
  *                 "latest" tracks the cursor position wrt window resizing
  *                 operations (via a modeline drag).
  *
- *   current     - current cursor row/col coordiantes.
+ *   current     - current cursor row/col coordinates.
  *
  *   lmbdn_mark  - editor MARK when "LMB down" was initially recorded.
  *
@@ -1103,7 +1103,7 @@ mousemove(int *sel_pending,
 	(void) ReleaseMutex(hAsMutex);
     }
     /*
-     * Else either the worker thread abandonded the mutex (not possible as
+     * Else either the worker thread abandoned the mutex (not possible as
      * currently coded) or timed out.  If the latter, something is
      * hung--don't do anything.
      */

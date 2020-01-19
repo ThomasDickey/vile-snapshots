@@ -2,7 +2,7 @@
  * Window management. Some of the functions are internal, and some are
  * attached to keys that the user actually types.
  *
- * $Id: window.c,v 1.129 2018/10/25 22:50:17 tom Exp $
+ * $Id: window.c,v 1.130 2020/01/17 22:38:27 tom Exp $
  */
 
 #include	"estruct.h"
@@ -410,7 +410,7 @@ mvleftwind(int f, int n)
  * This command makes the current window the only window on the screen.
  * Try to set the framing so that "." does not have to move on the
  * display. Some care has to be taken to keep the values of dot and mark in
- * the buffer structures right if the distruction of a window makes a buffer
+ * the buffer structures right if the destruction of a window makes a buffer
  * become undisplayed.
  */
 /* ARGSUSED */

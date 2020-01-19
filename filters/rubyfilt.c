@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/rubyfilt.c,v 1.84 2018/06/12 00:42:39 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/filters/RCS/rubyfilt.c,v 1.85 2020/01/17 23:37:07 tom Exp $
  *
  * Filter to add vile "attribution" sequences to ruby scripts.  This began as a
  * translation into C of an earlier version written for LEX/FLEX.
@@ -1463,7 +1463,7 @@ do_filter(FILE *input GCC_UNUSED)
     /*
      * Read the whole file into a single string, in-memory.  Rather than
      * spend time working around the various continuation-line types _and_
-     * the regular expresion "syntax", let's just concentrate on the latter.
+     * the regular expression "syntax", let's just concentrate on the latter.
      */
     the_size = 0;
     the_file = 0;

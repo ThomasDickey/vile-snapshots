@@ -1,12 +1,12 @@
 <!--
-  $Id: visvile.html,v 1.11 2019/04/13 17:06:26 tom Exp $
+  $Id: visvile.html,v 1.12 2020/01/18 01:57:58 tom Exp $
 -->
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN">
 
 <html>
 <head>
   <meta name="generator" content=
-  "HTML Tidy for Linux (vers 25 March 2009), see www.w3.org">
+  "HTML Tidy for HTML5 for Linux version 5.2.0">
 
   <title>VisVile -- Developer Studio Support</title>
   <meta http-equiv="Content-Type" content=
@@ -22,12 +22,13 @@
   <hr>
   <a href="/">http://invisible-island.net/</a><a href=
   "/vile/">vile/</a><a href="/vile/vile-toc.html">vile-toc</a><br>
+
   <hr>
 
   <h1 id="toplevel-toc"><a name="toplevel" id="toplevel">VisVile --
-  Developer Studio Support</a></h1>Within a limited context,
-  winvile may be substituted as the default Developer Studio
-  editor.
+  Developer Studio Support</a></h1>
+  Within a limited context, winvile may be substituted as the
+  default Developer Studio editor.
 
   <h2 id="prereqs-toc"><a name="prereqs" id=
   "prereqs">Preconditions</a></h2>
@@ -104,6 +105,7 @@
         above,</li>
 
         <li>execute this command:
+
           <pre>
    regsvr32 visvile.dll
 </pre>
@@ -116,6 +118,7 @@
 
       <ol>
         <li>Invoke the add-in dialog box via these menus:
+
           <pre>
           Tools
              Customize...
@@ -267,6 +270,7 @@
   "keyboardaliases">Keyboard Shortcuts</a></h2>
 
   <p>Use this menu hierarchy:</p>
+
   <pre>
       Tools
          Customize...
@@ -295,18 +299,20 @@
   of the IDE. In other words, DevStudio controlled winvile. But
   given the rich interprocess communication mechanisms available in
   the Win32 environment, it became obvious that once DevStudio
-  established an OLE connection wtih winvile, the editor could turn
+  established an OLE connection with winvile, the editor could turn
   the tables and manipulate its OLE client :-) .</p>
 
   <p>To that end, when winvile is compiled as an OLE Automation
   server, a new mode called "redirect-keys" is available. This mode
   specifies a list of keystrokes that are to be redirected to
   DevStudio. The list must be in the following format:</p>
+
   <pre>
         &lt;keyspec&gt;,...
 </pre>
 
   <p>where</p>
+
   <pre>
         &lt;virt_key&gt;:[&lt;modifier&gt;...]:[&lt;action&gt;...]
 </pre>
@@ -371,7 +377,9 @@
       the DevStudio editor. Very useful when setting
       breakpoints.</td>
     </tr>
-  </table>The default list looks like so:
+  </table>
+  The default list looks like so:
+
   <pre>
     F5::S,F10::S,F11::S,F7::F,F5:C:,F9::Y
 </pre>
@@ -470,6 +478,7 @@
   that it executes Visvile.dsm's macros when the F5, F7, F9, F10,
   and F11 keys are pressed. We want control flow established like
   so (using the F10 key as an example):</p>
+
   <pre>
         Winvile User Presses F10
                ||
@@ -496,6 +505,7 @@
     .</li>
 
     <li>Now navigate using this menu hierarchy:
+
       <pre>
       Tools
          Customize...
@@ -563,6 +573,7 @@
   <h2 id="keydefinitions-toc"><a name="keydefinitions" id=
   "keydefinitions">Redirectable Virtual Keycode Names (sans VK_
   prefix</a>)</h2>
+
   <pre>
         BACK    /* backspace */
         TAB
@@ -593,8 +604,7 @@
 </pre>
 
   <h2 id="visvimdiffs-toc"><a name="visvimdiffs" id=
-  "visvimdiffs">Known Differences Between VisVile and
-  VisVim</a></h2>
+  "visvimdiffs">Known Differences Between VisVile and VisVim</a></h2>
 
   <p>Unique to VisVile:</p>
 

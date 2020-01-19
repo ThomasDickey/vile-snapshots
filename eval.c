@@ -2,7 +2,7 @@
  *	eval.c -- function and variable evaluation
  *	original by Daniel Lawrence
  *
- * $Id: eval.c,v 1.467 2019/12/19 09:32:10 bod Exp $
+ * $Id: eval.c,v 1.468 2020/01/17 22:30:00 tom Exp $
  */
 
 #include	<estruct.h>
@@ -3062,7 +3062,7 @@ statevar_arg_eval(const char *argp)
     return result;
 }
 
-/* run a function to evalute it */
+/* run a function to evaluate it */
 static const char *
 function_arg_eval(const char *argp)
 {

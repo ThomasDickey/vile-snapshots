@@ -172,7 +172,7 @@ Changes for vile 6.0 (released Tue Jun 18, 1996)
 	  ibmpc.c, ntconio.c, st520.c, tcap.c, termio.c, tipc.c, vmsvt.c,
 	  vt52.c, x11.c, z309.c, z_ibmpc.c: Remove all TERM-related optional
 	  ifdefs and replace all stub functions with null function pointers.
-	+ borland.c: Convert function defintions to ANSI C and make most
+	+ borland.c: Convert function definitions to ANSI C and make most
 	  functions static.
 	+ estruct.h: Add new optional window title method to TERM and
 	  enable it for WIN32.
@@ -184,7 +184,7 @@ Changes for vile 6.0 (released Tue Jun 18, 1996)
 	+ npopen.c: Do all I/O redirections while keyboard is closed.
 	+ ntconio.c: Make most functions static, make the insertion
 	  cursor code match the expected optional interface, implement
-	  the TERM title method, unsucessfully try to catch abrupt
+	  the TERM title method, unsuccessfully try to catch abrupt
 	  exits and do something about them, die gracefully if console
 	  I/O fails.
 	+ path.c: Remove unused code to downcase the path in is_msdos_drive.
@@ -224,7 +224,7 @@ Changes for vile 6.0 (released Tue Jun 18, 1996)
 	  "count from bottom" functionality in finderr. (file.c, finderr.c,
 	  estruct.h)
 
-	+ patch from jim hourihan to support "Cpp" keywork in vile-c-filt,
+	+ patch from jim hourihan to support "Cpp" keyword in vile-c-filt,
 	  to allow colorizing all cpp lines at once, rather than listing
 	  keywords individually. (c-filt.c, vile.hlp)
 
@@ -372,7 +372,7 @@ Changes for vile 6.0 (released Tue Jun 18, 1996)
 	  proto.h)
 
 (tom)	960105 (h)
-	+ corrected inadvertant K&R substitution in APP_S macro, moved
+	+ corrected inadvertent K&R substitution in APP_S macro, moved
 	  bsd-lint expressions to avoid shadowing (finderr.c).
 
 (pgf)	960103 (g)
@@ -414,7 +414,7 @@ Changes for vile 6.0 (released Tue Jun 18, 1996)
 	  bugs it was supposed to fix are fixed.
 
 	+ makefile.djg (vile rule): Don't let stubedit globbing=no
-	  failure prevent a sucessful build for DJGPP v2 which doesn't
+	  failure prevent a successful build for DJGPP v2 which doesn't
 	  seem to support it.
 
 	+ os2vio.c (PRETTIER_SCROLL): Don't define it.
@@ -435,7 +435,7 @@ Changes for vile 6.0 (released Tue Jun 18, 1996)
 	+ file.c (getfile2bp): Never consult the user about duplicate
 	  buffer names if `warn-rename' isn't on. 
 
-	+ filec.c (headers): Don't supress inclusion of dirstuff.h
+	+ filec.c (headers): Don't suppress inclusion of dirstuff.h
 	  on OS/2 since it doesn't hurt anything.
 	  (fillMyBuff) [SYS_OS2]: Only down-case filenames read from
 	  a directory if the drive they are on is not case-preserving.
@@ -484,7 +484,7 @@ Changes for vile 6.0 (released Tue Jun 18, 1996)
 
 (jrs)	951216 (a)
 	+ bind.c (fill_partial): Use StrNcmp of length 1 instead of
-	  char equality to inherit case-insensitive comparision
+	  char equality to inherit case-insensitive comparison
 	  when extending completions as far as possible.  This is
 	  so that if we have `bind.c' and `BIND.OBJ' we will complete
 	  up to `bind.' if OPT_CASELESS is enabled.
@@ -495,7 +495,7 @@ Changes for vile 6.0 (released Tue Jun 18, 1996)
 	  and optionally prompt for replacement based on the new option
 	  `warn-reread'.
 
-	+ filec.c (mlreply_file): Supress prompting to reread the
+	+ filec.c (mlreply_file): Suppress prompting to reread the
 	  current buffer based on the new variable `warn-reread'.
 	  This is for people who like `e! RET' to assume they know
 	  what they're doing.
@@ -512,7 +512,7 @@ Changes for vile 6.0 (released Tue Jun 18, 1996)
 	+ ntconio.c (ntscroll): Remove cRest variable and its
 	  initialization since the default is what we want anyway.
 	  Ensure that rectangles are described by their last row
-	  or column, not its sucessor.  Narrow the amount of
+	  or column, not its successor.  Narrow the amount of
 	  backfilled scrolled areas by noting that the bug is the
 	  failure to backfill the non-overlapped portion of a scroll.
 
@@ -880,7 +880,7 @@ Changes for vile 5.4 (released Thu Oct 19, 1995)
 	  popping down the completions window in order to ensure that the
 	  buffer hook does not get run.  (It should not have been run when
 	  popping the buffer up either, so when it's popped down, the
-	  situtation should be the same prior being popped up.)
+	  situation should be the same prior being popped up.)
 
 	+ buffer.c (make_current, run_buffer_hook): Removed the message
 	  line check from make_current() and moved it to run_buffer_hook. 

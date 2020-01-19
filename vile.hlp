@@ -1636,7 +1636,7 @@ Editor modes
            Controls whether vile uses regular expressions or character
            classes for parsing tokens from the screen for various commands.
            This uses an enumeration: both, cclass and regex. If "both", vile
-           tries matching first with the regular expresion, e.g.,
+           tries matching first with the regular expression, e.g.,
            bufname-expr for $bufname, and if that does not match anything,
            uses the character-classes. The main reason for providing the
            "both" option is that the older character-class based parsing for
@@ -2167,7 +2167,7 @@ Editor modes
 
    norectangle-insert-mode (rim)
            Insert, rather than overstrike, change changing text in a
-           rectange. (B)
+           rectangle. (B)
 
    remap
            Controls whether :map or :map! sequences entered with no explicit
@@ -3320,8 +3320,8 @@ Programmed procedures (aka macros)
    where:
 
    unique-name
-           is an alpha-numeric identifier that does not conflict with the
-           name of any existing editor command (the show-commands command
+           is an alphanumeric identifier that does not conflict with the name
+           of any existing editor command (the show-commands command
            generates a list of all existing commands).
 
    A stored procedure is executed by simply referencing its name. To bind a
@@ -3620,7 +3620,7 @@ Programmed procedures (aka macros)
    |---------------------+--------------------------------------------------|
    | $majormode          | current majormode, if any (read only)            |
    |---------------------+--------------------------------------------------|
-   | $majormode-hook     | procedure to overrride suffix/preamble rules     |
+   | $majormode-hook     | procedure to override suffix/preamble rules      |
    |---------------------+--------------------------------------------------|
    | $match              | last matched magic pattern (read only)           |
    |---------------------+--------------------------------------------------|
@@ -4080,7 +4080,7 @@ Programmed procedures (aka macros)
    |-----------------+------------------------------------------------------|
    | $exit-hook      | run when quitting                                    |
    |-----------------+------------------------------------------------------|
-   | $majormode-hook | procedure to overrride suffix/preamble rules         |
+   | $majormode-hook | procedure to override suffix/preamble rules          |
    |-----------------+------------------------------------------------------|
    | $read-hook      | run after a file is read                             |
    |-----------------+------------------------------------------------------|
@@ -4220,7 +4220,7 @@ Programmed procedures (aka macros)
 
      ; Use "@d" to change cwd to the dir containing the current file
      ; (contributed by Richard Hussong).  Keep in mind that "^M" is an
-     ; explict CR and that ":cd -" reverts cwd to its previous value.
+     ; explicit CR and that ":cd -" reverts cwd to its previous value.
      store-procedure cdcur
              cd &path head $cfilname
      ~endm
@@ -5268,7 +5268,7 @@ Syntax coloring
    combination is not that intrusive. The filters.rc script checks if vile
    has built-in (or loadable) syntax filters and will turn on autocolor and
    the $read-hook automatically in this case (with a 5 second idle time).
-   Depending on the speed of your hardward, you may wish to make this
+   Depending on the speed of your hardware, you may wish to make this
    shorter.
 
    If autocolor is too slow, you can temporarily disable it by turning the
@@ -6840,7 +6840,7 @@ Win32 specifics
    Finally, it may be necessary to pass one or more flags to the shell
    invoked via the :sh command (e.g., force execution of a special login
    script). Passing such flag(s) via $shell is not a workable solution.
-   Instead, use a macro similar to the following that supercedes the builtin
+   Instead, use a macro similar to the following that supersedes the builtin
    :sh command:
 
      store-procedure sh
@@ -7441,9 +7441,9 @@ Credits
    bind operators and motions to same. Kuntal Daftary added several Perl
    modules. Clark Morgan and Greg McFarlane seem to run full regression tests
    on each new release, and always seem to find something to report. In
-   addition, Clark regularly updates and corrects the documention left as an
-   afterthought by the rest of us. Sean Ahern is also always dependable for
-   finding a bug or two per release. The reference.doc file supplied with
+   addition, Clark regularly updates and corrects the documentation left as
+   an afterthought by the rest of us. Sean Ahern is also always dependable
+   for finding a bug or two per release. The reference.doc file supplied with
    Bram Moolenaar's excellent Vim editor was useful in unraveling some of the
    less obvious parts of :map functionality. In addition, his implementation
    of digraph insertion was used directly in the creation of digraphs.rc.
@@ -7506,6 +7506,6 @@ Copyright
 ---------
    Copyright (c) 1995-2019,2020 by Paul Fox, Thomas Dickey, and Kevin Buettner
 
--- (generated by make-hlp.pl from vile-hlp.html(1.116))
+-- (generated by make-hlp.pl from vile-hlp.html(1.117))
 -- vile:txtmode fillcol=78
--- $Id: vile.hlp,v 1.759 2020/01/05 16:06:28 tom Exp $
+-- $Id: vile.hlp,v 1.760 2020/01/18 02:00:03 tom Exp $

@@ -17,7 +17,7 @@
  *   "FAILED" may not be used to test an OLE return code.  Use SUCCEEDED
  *   instead.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32ole.cpp,v 1.34 2015/05/22 01:06:03 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32ole.cpp,v 1.35 2020/01/17 23:12:35 tom Exp $
  */
 
 #include "w32vile.h"
@@ -111,7 +111,7 @@ oleauto_init(OLEAUTO_OPTIONS *opts)
     if (! (olebuf && ansibuf))
         return (FALSE);
 
-    hr = OleInitialize(NULL);   // Intialize OLE
+    hr = OleInitialize(NULL);   // Initialize OLE
     if (! SUCCEEDED(hr))
     {
         disp_win32_error(hr, NULL);

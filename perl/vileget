@@ -46,7 +46,7 @@ Vileget looks for the Vileserv socket in the user's home directory
 (I<$HOME/.vilesock>) by default.  This can be changed by setting
 the B<VILESOCK> environment variable, or by using the B<-s> option.
 
-If vileget is handed a directory name, it trys to get the target Vile
+If vileget is handed a directory name, it tries to get the target Vile
 to load the B<directory.pm> module and popup the appropriate directory
 listing.  This only works for the first directory mentioned on the
 command line, and it only works if the target Vile is configured

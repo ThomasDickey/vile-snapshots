@@ -2,7 +2,7 @@
  * w32misc:  collection of unrelated, common win32 functions used by both
  *           the console and GUI flavors of the editor.
  *
- * $Id: w32misc.c,v 1.64 2018/11/05 01:17:40 tom Exp $
+ * $Id: w32misc.c,v 1.65 2020/01/17 23:33:14 tom Exp $
  */
 
 #include "estruct.h"
@@ -134,7 +134,7 @@ is_win95(void)
  *     argv[4] = NULL
  *
  *   Put another way, a true execlp() does not exist in the win32 world and,
- *   therefore, cannnot be called to effect sh -c "cmdstr".  Consequently,
+ *   therefore, cannot be called to effect sh -c "cmdstr".  Consequently,
  *   when a unix shell (executing under win32) receives a "raw" command line,
  *   the shell splits the raw command into words, performs its normal
  *   expansions (file globbing, variable substitution, etc.) and then

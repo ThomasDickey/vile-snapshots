@@ -1,5 +1,5 @@
 /*
- * $Id: filters.h,v 1.144 2018/11/12 15:44:46 tom Exp $
+ * $Id: filters.h,v 1.145 2020/01/18 01:54:32 tom Exp $
  */
 
 #ifndef FILTERS_H
@@ -156,7 +156,7 @@ extern FILTER_DEF filter_def;
 #endif
 
 /*
- * Workaround for incompatiblities between "new" flex versus flex/reflex.
+ * Workaround for incompatibilities between "new" flex versus flex/reflex.
  * One of the problems with "new" flex is that it reverses the order of
  * definitions for yywrap.
  */

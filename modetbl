@@ -11,7 +11,7 @@
 #
 # The modes are table entries in the BUFFER and WINDOW structures.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.324 2019/12/19 09:32:10 bod Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.325 2020/01/17 22:31:30 tom Exp $
 #
 #
 # Mode-table entries.  Capitalized letters are used for abbreviations.
@@ -105,7 +105,7 @@ bool							# MD prefix
 	"check-modtime" CHK_MODTIME	0		!SMALLER # check buffer-modtime
 	"CIndent"	CINDENT		0		# c-style indent
 	"cmode"		CMOD		chgd_win_mode	!OPT_MAJORMODE # C indentation and fence match
-	"crypt"		CRYPT		chgd_major	OPT_ENCRYPT	# encrytion mode active
+	"crypt"		CRYPT		chgd_major	OPT_ENCRYPT	# encryption mode active
 	"dos"		DOS		chgd_dos_mode	# "dos" mode -- lines end in crlf
 	"FilterMsgs"	FILTERMSGS	0		OPT_MAJORMODE&&OPT_FILTER # Name of syntax-filter
 	"HighLight"	HILITE		chgd_filter	OPT_MAJORMODE # true if we enable syntax highlighting

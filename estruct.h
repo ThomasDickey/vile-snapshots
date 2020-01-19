@@ -12,7 +12,7 @@
 */
 
 /*
- * $Id: estruct.h,v 1.755 2019/12/08 20:41:53 tom Exp $
+ * $Id: estruct.h,v 1.756 2020/01/17 23:29:28 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -2666,9 +2666,9 @@ typedef char  VIDEO_CHAR;
 typedef struct  VIDEO {
 	UINT	v_flag;			/* Flags */
 #if	OPT_COLOR
-	int	v_fcolor;		/* current forground color */
+	int	v_fcolor;		/* current foreground color */
 	int	v_bcolor;		/* current background color */
-	int	v_rfcolor;		/* requested forground color */
+	int	v_rfcolor;		/* requested foreground color */
 	int	v_rbcolor;		/* requested background color */
 #endif
 #if	OPT_VIDEO_ATTRS

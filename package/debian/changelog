@@ -289,7 +289,7 @@ vile (9.7j-1) unstable; urgency=low
   * Now that an upstream tarball is available next to version revision
     patches, removed the version 9.6 revision patches and the patch
     rules from debian/control.
-  * Bumped the standars version to 3.8.0; no changes required.
+  * Bumped the standards version to 3.8.0; no changes required.
 
  -- Paul van Tilburg <paulvt@debian.org>  Fri, 09 Jan 2009 13:51:50 +0100
 
@@ -320,7 +320,7 @@ vile (9.6-j1) unstable; urgency=low
       * removed DH_COMPAT declaration, use debian/compat.
       * install the vile lintian override; man-page for vile
         is in vile-common, not vile, so lintian should ignore it.
-    - debian/compat: addded, set to 5. 
+    - debian/compat: added, set to 5. 
     - debian/control: 
       * replaced ${Source-Version} by ${source:Version} to allow for
         binNMUs (closes: #435962).
@@ -523,7 +523,7 @@ vile (9.4-a1) unstable; urgency=low
 
   * New upstream patch version.
   * Update build-dep version for libperl-dev to ensure that packages
-    are built against 5.8.1 due to a binary incompatability with
+    are built against 5.8.1 due to a binary incompatibility with
     DynaLoader (closes: #213850).
 
  -- Brendan O'Dea <bod@debian.org>  Tue, 21 Oct 2003 08:39:11 +1000
@@ -759,7 +759,7 @@ vile (9.1d-1) unstable; urgency=low
 vile (9.1-1) unstable; urgency=low
 
   * New upstream version.
-  * Add libio-pty-perl dependancy.
+  * Add libio-pty-perl dependency.
 
  -- Brendan O'Dea <bod@compusol.com.au>  Thu, 20 Jan 2000 19:29:49 +1100
 
@@ -771,7 +771,7 @@ vile (9.0s-1) unstable; urgency=low
 
 vile (9.0r-2) unstable; urgency=low
 
-  * Remove libio-pty-perl dependancy (not in by freeze).
+  * Remove libio-pty-perl dependency (not in by freeze).
 
  -- Brendan O'Dea <bod@compusol.com.au>  Fri, 14 Jan 2000 20:40:11 +1100
 

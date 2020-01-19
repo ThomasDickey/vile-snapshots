@@ -11,7 +11,7 @@
  *    Subsequent copies do not show this cursor.  On an NT host, this
  *    phenomenon does not occur.
  *
- * $Id: w32cbrd.c,v 1.43 2018/10/25 22:45:05 tom Exp $
+ * $Id: w32cbrd.c,v 1.44 2020/01/17 22:29:27 tom Exp $
  */
 
 #include "estruct.h"
@@ -412,7 +412,7 @@ cbrdcpy_region(void)
 /*
  * Copy contents of specified region or register to Windows clipboard.
  * This command is an operator and mimics the functionality of ^W, but
- * mimics operyank()'s implemenation.
+ * mimics operyank()'s implementation.
  *
  * Bound to Ctrl+Insert.
  */
