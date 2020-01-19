@@ -285,7 +285,7 @@ Changes for vile 7.4 (released Fri May 1, 1998)
 	  (hgrep): Don't search in files named 'tags'.  (Suggested by
 	  Clark Morgan.)
 	+ eval.c, proto.h (stenv): New function for setting vile's
-	  variables (from perl or whereever).
+	  variables (from perl or wherever).
 	+ perl.xs (working): Added OPT_WORKING ifdefs.  (Description
 	  of problem from Clark Morgan.)
 	  (set): Handle perl variables as well as modes.
@@ -689,7 +689,7 @@ Changes for vile 7.4 (released Fri May 1, 1998)
 	+ hgrep.pl, glob2re.pl, visit.pl: New files which implement
 	  a recursive grep with hypertext links in perl.
  	+ api.c (api_command_cleanup): Fixed bug in which DOT
-	  was being propogated to the fake windows instead of
+	  was being propagated to the fake windows instead of
 	  the real ones.  (Which is a pretty useless thing to do.)
 	  (api_swscreen): Added big comment noting problems with
 	  calling api_command_cleanup.
@@ -853,7 +853,7 @@ Changes for vile 7.4 (released Fri May 1, 1998)
 	  at least it doesn't mess up the perl command.
 	    Also rewrote the code for setting up a region, making sure
 	  that the new fields in the SCR structure are initialized
-	  appropriatedly.
+	  appropriately.
 	  (replace_line, perldo): New functions.
 	  (perl_init): Tie STDIN to read from the minibuffer.  Modified
 	  other tie statements (calls to sv_magic()) slightly to do
@@ -1121,7 +1121,7 @@ Changes for vile 7.3 (released Mon Dec 8, 1997)
 	+ add configure options --with-Xaw-scrollbars and
 	  --with-drag-extension.  These make it easy to build xvile with
 	  Kevin's scrollbars by specifying --without-Xaw-scrollbars, or to use
-	  the Xaw's default translations for scrollbars by specifing
+	  the Xaw's default translations for scrollbars by specifying
 	  --without-drag-extension.
 	+ ifdef'd out the code that invokes $xshell in ":!command".
 	+ correct logic in xvile that spawns a new instance from menu entry,
@@ -1294,7 +1294,7 @@ Changes for vile 7.2 (released Thu Sep 4, 1997)
 	  case (requested by Joseph F. Garvey <garvey@garveys.raleigh.ibm.com>).
 	+ initialize last_eolchar in docmd() so that 'set' command works
 	  properly in a macro.
-	+ add %B substition for error-buffer regular expressions to allow
+	+ add %B substitution for error-buffer regular expressions to allow
 	  using [Standard Input] and other scratch buffers as error buffers.
 	+ modify format-til command to treat '#' specially when in cmode, so
 	  no whitespace is inserted after it.

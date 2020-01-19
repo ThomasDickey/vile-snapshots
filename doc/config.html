@@ -1,12 +1,12 @@
 <!--
-  $Id: config.html,v 1.21 2019/04/13 17:06:26 tom Exp $
+  $Id: config.html,v 1.22 2020/01/18 01:57:42 tom Exp $
 -->
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN">
 
 <html>
 <head>
   <meta name="generator" content=
-  "HTML Tidy for Linux (vers 25 March 2009), see www.w3.org">
+  "HTML Tidy for HTML5 for Linux version 5.2.0">
 
   <title>Configuring vile and xvile</title>
   <meta http-equiv="Content-Type" content=
@@ -22,8 +22,9 @@
   <hr>
 
   <p><a href="/">http://invisible-island.net/</a><a href=
-  "/vile/">vile/</a><a href=
-  "/vile/vile-toc.html">vile-toc</a><br></p>
+  "/vile/">vile/</a><a href="/vile/vile-toc.html">vile-toc</a><br>
+  </p>
+
   <hr>
 
   <h1 id="toplevel-toc"><a name="toplevel" id=
@@ -42,12 +43,14 @@
 
   <p>To build vile, enter the following command from your
   shell:</p>
+
   <pre>
         ./configure; make
 </pre>
 
   <p>If you'd like to examine makefile and config.h prior to
   making, split these steps up as follows:</p>
+
   <pre>
         ./configure
         make
@@ -68,22 +71,26 @@
   options can be set externally to the configure script or the
   makefile. For instance, if you'd like to change some of the flags
   passed to the C compiler, try doing it like this:</p>
+
   <pre>
         make CFLAGS=-O2
 </pre>
 
   <p>Or, this can be done when running the configure script instead
   -- try:</p>
+
   <pre>
         CFLAGS=-O2 ./configure                  (sh, ksh, bash)
 </pre>
 
   <p>or:</p>
+
   <pre>
         (setenv CFLAGS -O2 ; ./configure)       (csh)
 </pre>
 
   <p>Then again, a configure script argument is shell-agnostic:</p>
+
   <pre>
         ./configure --with-cflags=-O2
 </pre>
@@ -97,11 +104,13 @@
   available. This is usually fine, but if gcc was not installed
   correctly (or your environment isn't quite right), it can be
   disastrous. You can override the choice of compiler with:</p>
+
   <pre>
         CC=cc ./configure               (sh, ksh, bash)
 </pre>
 
   <p>or:</p>
+
   <pre>
         (setenv CC cc ; ./configure)    (csh)
 </pre>
@@ -135,6 +144,7 @@
   <p>The configure script provides an option for selecting a text,
   X Window or even Win32 display. Use the "--with-screen" option to
   specify the driver type, e.g.,</p>
+
   <pre>
         ./configure --with-screen=tcap
 </pre>
@@ -283,6 +293,7 @@
 
   <p>Maximally efficient syntax coloring can be selected by
   specifying this configure command line:</p>
+
   <pre>
         --with-builtin-filters
 </pre>
@@ -912,11 +923,13 @@
   into the editor. "Hey, wait a minute", you say, "I'll never use
   some of those filters--not in a hundred years." In that case, use
   this configure syntax:</p>
+
   <pre>
         --with-builtin-filters="&lt;filter_list&gt;"
 </pre>
 
   <p>For example:</p>
+
   <pre>
         ./configure --with-cflags=-O2 \
                     --with-builtin-filters="awk c key lex m4 perl sed tags
@@ -945,7 +958,7 @@
   preferentially selects and executes internal filters when
   coloring a supported language or file format. If a required
   internal filter is not available, filters.rc starts a pipe and
-  applies color attributes via the corresponsing external filter
+  applies color attributes via the corresponding external filter
   listed in the table above.</p>
 
   <p>[1] Or xvile if you prefer. See next topic.<br>
@@ -973,23 +986,27 @@
     version out first as it is superior in some respects to the
     other versions which use fancy widget sets. To configure this
     version, enter the following command:
+
       <pre>
         ./configure --with-screen=x11
 </pre>
 
       <p>A minor variation using the Athena widgets supports
       menus:</p>
+
       <pre>
         ./configure --with-screen=Xaw
 </pre>
 
       <p>Two other variations on the Athena widgets are
       provided:</p>
+
       <pre>
         ./configure --with-Xaw3d
 </pre>
 
       <p>to link with Xaw 3d library</p>
+
       <pre>
         ./configure --with-neXtaw
 </pre>
@@ -1000,6 +1017,7 @@
       configure with the corresponding scrollbars from the Athena
       library (though we are not as satisfied with their
       performance, particularly with resizing):</p>
+
       <pre>
         ./configure --with-Xaw-scrollbars
 </pre>
@@ -1007,6 +1025,7 @@
       <p>to use Xaw scrollbars rather than our own (applies to all
       variations of Athena library). You can also use Kevin's
       dragging/scrolling logic with the Athena library:</p>
+
       <pre>
         ./configure --with-drag-extension
 </pre>
@@ -1017,6 +1036,7 @@
     configure the Motif version, enter one of the following
     commands (several variations are recognized for each screen
     value to simplify integration with other scripts):
+
       <pre>
         ./configure --with-screen=motif
         ./configure --with-screen=Xm
@@ -1095,6 +1115,7 @@
   <p>Installation of (x)vile is simple. Obtain the appropriate
   privileges (become superuser if necessary), and enter the
   following command:</p>
+
   <pre>
         make install
 </pre>
@@ -1163,12 +1184,14 @@
   --prefix option to "configure". Suppose you wish to have xvile
   installed in $HOME/bin (your home bin directory). You would issue
   the following commands:</p>
+
   <pre>
     ./configure --with-screen=x11 --prefix=$HOME
     make install
 </pre>
 
   <p>Here are other useful options for configuring xvile:</p>
+
   <pre>
   --with-app-defaults=DIR directory in which to install resource files (default: EPREFIX/lib/X11/app-defaults)
   --with-icondir=DIR      directory in which to install icons (default: EPREFIX/share/pixmaps)
@@ -1196,6 +1219,7 @@
   vile-x11-sunos to indicate that you are building xvile on a
   platform running sunos. You would then cd into this directory and
   issue the following configuration command:</p>
+
   <pre>
         ../vile-src/configure --with-screen=x11
 </pre>
@@ -1204,12 +1228,14 @@
   vile-sunos to indicate that you are building vile on a platform
   running sunos. After you cd into this directory, you'd then issue
   the following command to configure ordinary vile.</p>
+
   <pre>
         ../vile-src/configure
 </pre>
 
   <p>The "make" step in each case is the same as described above;
   you simply issue the command:</p>
+
   <pre>
         make
 </pre>
@@ -1228,6 +1254,7 @@
   <p>Normally vile is installed without renaming it. But the
   configure script supports these options, which allow you to
   rename the program:</p>
+
   <pre>
   --program-prefix=PREFIX            prepend PREFIX to installed program names
   --program-suffix=SUFFIX            append SUFFIX to installed program names
@@ -1247,6 +1274,7 @@
   Support</a></h2>
 
   <p>There are two parts to locale support:</p>
+
   <pre>
   --with-locale           use i18n support for character-types
   --with-iconv            use iconv() support for character-types
@@ -1276,6 +1304,7 @@
   controlled by the "OPT_" #ifdef's in the estruct.h file. Some of
   the more useful ones (or those that require manipulating the
   makefile) are also provided as configure options:</p>
+
   <pre>
   --with-exec-macros=N    specify count of numbered macros  (anachronism)
   --with-perl             enable use of Perl as an extension language
@@ -1288,6 +1317,7 @@
   "--help" message. They are used to support testing and
   development, by building various debug versions of vile. These
   include:</p>
+
   <pre>
   --disable-echo          test: display "compiling" commands (default: on)
   --disable-extensions    test: build only core functions (default: on)

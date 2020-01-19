@@ -6,7 +6,7 @@
  */
 
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.374 2018/11/07 00:48:30 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/edef.h,v 1.375 2020/01/17 22:36:11 tom Exp $
  */
 
 #ifndef VILE_EDEF_H
@@ -357,7 +357,7 @@ decl_uninit( int vl_get_offset );	/* "$get-offset" variable	*/
 #endif
 
 #if OPT_EVAL || OPT_COLOR
-decl_uninit( TBUFF *tb_curpalette );	/* current colormap palete	*/
+decl_uninit( TBUFF *tb_curpalette );	/* current colormap palette	*/
 #endif
 #if OPT_COLOR
 decl_uninit( int ctrans[NCOLORS] );	/* color translation table	*/

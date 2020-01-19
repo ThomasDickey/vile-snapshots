@@ -13,7 +13,7 @@
  * vile.  The file api.c (sometimes) provides a middle layer between
  * this interface and the rest of vile.
  *
- * $Id: perl.xs,v 1.140 2018/11/02 21:26:35 tom Exp $
+ * $Id: perl.xs,v 1.141 2020/01/17 22:32:39 tom Exp $
  */
 
 #ifdef __GNUC__
@@ -594,7 +594,7 @@ perl_free_sub(void *data)
   # =item :perl STMTS
   #
   # The I<perl> command will cause perl to execute one or more
-  # perl statements.  The user is usually prompted for the statments
+  # perl statements.  The user is usually prompted for the statements
   # to execute immediately after ":perl " is entered.  The user is
   # expected to enter legal perl statements or expressions.  These
   # statements must all fit on one line.  (Vile's :-line will scroll
@@ -1891,7 +1891,7 @@ PROTOTYPES: DISABLE
   #
   # Note the trailing "1;" at the end.  The reason for this is so
   # that I<true> is returned as the result of the script.  If things
-  # are not done this way, the loading mechansim might flag an
+  # are not done this way, the loading mechanism might flag an
   # error.  (All it needs to do is return a true value somehow.)
   #
   # Assuming the above code has been placed in the file
@@ -2846,7 +2846,7 @@ MODULE = Vile	PACKAGE = Vile::Buffer
   # After a line is read, DOT is left at the next location in the
   # buffer at which to start reading.  Note, however, that the value
   # of DOT (which a convenient name for the current position in the
-  # buffer) is not propogated back to any of the users windows unless
+  # buffer) is not propagated back to any of the user's windows unless
   # it has been explicitly set by calling dot (the method).
   #
   # When the I<inplace_edit> flag has been set via the C<inplace_edit>
@@ -3467,7 +3467,7 @@ dot(vbp, ...)
 	    vbp->dot_inited = TRUE;
 	    if (ix != 2) {
 		/* Indicate that DOT has been explicitly changed which means
-		   that changes to DOT will be propogated upon return to vile */
+		   that changes to DOT will be propagated upon return to vile */
 		vbp->dot_changed = TRUE;
 	    }
 	}
@@ -3542,7 +3542,7 @@ fetch(vbp)
   #
   # The <$curbuf> operation will cause one line to be read and
   # deleted.  DOT will be left at the beginning of the next line.  The
-  # print statment will cause $_ to get inserted prior the the next
+  # print statement will cause $_ to get inserted prior the the next
   # line.
   #
   # Setting this flag to true is very similar to setting the
@@ -3604,8 +3604,8 @@ inplace_edit(vbp, ...)
   #                     # "foo".
   #
   #     $cb->dot($cb->dot);
-  #                     # Make sure DOT gets propogated back.
-  #                     # (It won't get propogated unless
+  #                     # Make sure DOT gets propagated back.
+  #                     # (It won't get propagated unless
   #                     # explicitly set.)
   #
   # =for html <br><br>

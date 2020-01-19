@@ -5,7 +5,7 @@
 	changes have been sent back to the DJGPP maintainers -- hopefully
 	vile will not need to include this file in the future.  -pgf 9/95
 
-   $Header: /users/source/archives/vile.vcs/RCS/gppconio.c,v 1.3 2010/11/10 09:52:19 tom Exp $
+   $Header: /users/source/archives/vile.vcs/RCS/gppconio.c,v 1.4 2020/01/19 16:04:58 tom Exp $
 */
 
 #if __DJGPP__ < 2
@@ -358,7 +358,7 @@ getche(void)
 {
     if (char_avail)
 	/*
-	 * We don't know, wether the ungot char was already echoed
+	 * We don't know, whether the ungot char was already echoed
 	 * we assume yes (for example in cscanf, probably the only
 	 * place where ungetch is ever called.
 	 * There is no way to check for this really, because
@@ -595,7 +595,7 @@ cgets(char *string)
     int c;
     /*
      * Be smart and check for NULL pointer.
-     * Don't know wether TURBOC does this.
+     * Don't know whether TURBOC does this.
      */
     if (!string)
 	return (NULL);
@@ -608,8 +608,8 @@ cgets(char *string)
     while (len < maxlen_wanted - 1) {
 	c = getch();
 	/*
-	 * shold we check for backspace here?
-	 * TURBOC does (just checked) but doesn't in cscanf (thats harder
+	 * should we check for backspace here?
+	 * TURBOC does (just checked) but doesn't in cscanf (that's harder
 	 * or even impossible). We do the same.
 	 */
 	if (c == '\b') {

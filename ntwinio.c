@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 screen API.
  *
- * $Id: ntwinio.c,v 1.220 2020/01/05 16:05:47 tom Exp $
+ * $Id: ntwinio.c,v 1.221 2020/01/17 22:35:15 tom Exp $
  * Written by T.E.Dickey for vile (october 1997).
  * -- improvements by Clark Morgan (see w32cbrd.c, w32pipe.c).
  */
@@ -4335,7 +4335,7 @@ WinMain(
     }
 #ifdef VILE_OLE
     if (oa_invoke) {
-	/* Intialize OLE Automation */
+	/* Initialize OLE Automation */
 
 	if (!oleauto_init(&oa_opts))
 	    ExitProgram(BADEXIT);
@@ -4405,7 +4405,7 @@ winvile_start(void)
     if (!moved_window) {
 	/*
 	 * no conflict with the task bar...but is the editor's bottom edge
-	 * below the deskop rect?
+	 * below the desktop rect?
 	 */
 
 	if (vile.bottom > desktop.bottom) {

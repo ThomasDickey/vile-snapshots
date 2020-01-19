@@ -1,11 +1,12 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20200112 (u)
+ 20200117 (u)
 	> Brendan O'Dea:
 	+ add smartcase mode (prompted by suggestion by Marc Simpson).
 	> Michael von der Heide
 	+ modify vile-spell-filt to allow for umlauts in UTF-8
 	> Tom Dickey:
+	+ fix typos reported by codespell.
 	+ add null-pointer checks for continue-search and reverse-search to
 	  handle the case where a pattern string was given, but it failed to
 	  compile (report by Marc Simpson).
@@ -733,7 +734,7 @@ Changes for vile 9.9 (released ??? ??? ?? ????)
 	  links, since those may be removed in rpmbuild.
 	+ change makefile.wnt to add WIDE knob to define UNICODE, and also for
 	  the OLE configuration to use comsuppw.lib rather than comsupp.lib
-	+ drop -G4 option from makefile.wnt, which was an optmization to favor
+	+ drop -G4 option from makefile.wnt, which was an optimization to favor
 	  486 processors phased out in Visual C++ 5.0, and with 9.0 produces
 	  a warning.
 	+ change return type of TERM.setpal from void to int, since the return
@@ -893,7 +894,7 @@ Changes for vile 9.9 (released ??? ??? ?? ????)
 	  incomplete (prompted by report by Ramil Farkhshatov).
 	+ modify CF_WITH_CURSES_DIR and related macros so the --with-curses-dir
 	  option applies to both ncurses and curses.
-	+ modify CF_X_ATHENA and CF_X_TOOLKIT autoconf macros to accomodate
+	+ modify CF_X_ATHENA and CF_X_TOOLKIT autoconf macros to accommodate
 	  changes in xorg package scripts.
 	+ modify several autoconf macros to lessen use of legacy
 	  "${name-value}" feature in favor of standard "${name:-value}", since
@@ -4691,7 +4692,7 @@ Changes for vile 9.3 (released Tue Jun 25 2002)
  20011205 (q)
 	> Clark Morgan:
 	+ fix:  the new builtin find feature makes it relatively easy to
-	  construct arbitarily long pipe commands.  Such long commands could
+	  construct arbitrarily long pipe commands.  Such long commands could
 	  overflow a number of vile's internal temp vars.
 	+ Some win2k cleanups:
 	  - on a win2k host, if $shell is bogus, read pipes don't display an
@@ -5775,7 +5776,7 @@ Changes for vile 9.2 (released Tue Oct 17 2000)
 	> Tom Dickey
 	+ add error checks in sed-filt.c for unbalanced curly or square
 	  brackets.
-	+ make regular expresion delimiters easier to read in sedmode by
+	+ make regular expression delimiters easier to read in sedmode by
 	  coloring them with Action class.
 	+ modify preamble expressions that match a pathname (e.g., "#!/bin/sh")
 	  to allow trailing blanks on that line.
@@ -5907,7 +5908,7 @@ Changes for vile 9.2 (released Tue Oct 17 2000)
 	+ rewrote filters/makefile.wnt to generate lists and rules using
 	  scripts reading genmake.mak, to facilitate building internal or
 	  external filters.
-	+ change 1-or-more blanks in one of the error-finder expresssions to
+	+ change 1-or-more blanks in one of the error-finder expressions to
 	  0-or-more to make this work with weblint.
 
  20000725 (o)
@@ -5926,7 +5927,7 @@ Changes for vile 9.2 (released Tue Oct 17 2000)
 	+ modify decode_exp() to skip over null pointers in the list
 	  of subexpressions in regexp struct which are set when a
 	  nested group was parsed, e.g., in the $filename-expr for
-	  hgrep on win32.  The regular expresion code finds the proper
+	  hgrep on win32.  The regular expression code finds the proper
 	  number of \( \) atoms, but the array indices do not match,
 	  causing ^X^X to fail (reported by Clark Morgan).
 	+ correct missing check for backslash within a character range in
@@ -6615,7 +6616,7 @@ Changes for vile 9.1 (released Sat Jan 15 2000)
 	  listing.
 	+ perl/hgrep.pm:  Moved introductory comments to end of file and
 	  rewrote in POD format.  Added binding hgrep-help which will display
-	  the POD documenation.  Fixed problem with backslashes in the buffer
+	  the POD documentation.  Fixed problem with backslashes in the buffer
 	  name given to the error-buffer command.
 	+ perl.xs:
 	  + (newVBrv):  Revert change in "l" which was supposed to prevent

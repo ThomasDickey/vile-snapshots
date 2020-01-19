@@ -10,7 +10,7 @@
  *
  *                samples\com\oleaut\hello\hello .
  *
- * $Header: /users/source/archives/vile.vcs/RCS/w32ole.h,v 1.9 2009/10/15 10:38:47 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/w32ole.h,v 1.10 2020/01/17 22:36:27 tom Exp $
  */
 
 #ifndef W32OLE_H
@@ -83,7 +83,7 @@ public:
 
     // vile_oa methods
     static HRESULT Create(vile_oa **ppvile, BOOL visible);
-                                    // Creates and intializes Vile object
+                                    // Creates and initializes Vile object
     vile_oa();
     ~vile_oa();
 

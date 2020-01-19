@@ -4,7 +4,7 @@
  * "termio.c". It compiles into nothing if not an ANSI device.
  *
  *
- * $Header: /users/source/archives/vile.vcs/RCS/ansi.c,v 1.52 2009/12/09 01:14:49 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/ansi.c,v 1.53 2020/01/17 23:17:05 tom Exp $
  */
 
 #include	"estruct.h"
@@ -44,7 +44,7 @@
 
 #if OPT_COLOR
 
-static int cfcolor = -1;	/* current forground color */
+static int cfcolor = -1;	/* current foreground color */
 static int cbcolor = -1;	/* current background color */
 
 	/* ANSI: black, red, green, yellow, blue, magenta, cyan, white   */

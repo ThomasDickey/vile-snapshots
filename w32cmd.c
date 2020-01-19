@@ -2,7 +2,7 @@
  * w32cmd:  collection of functions that add Win32-specific editor
  *          features (modulo the clipboard interface) to [win]vile.
  *
- * $Id: w32cmd.c,v 1.60 2018/11/05 00:44:58 tom Exp $
+ * $Id: w32cmd.c,v 1.61 2020/01/17 23:25:02 tom Exp $
  */
 
 #include "estruct.h"
@@ -1265,7 +1265,7 @@ print_rgn_data(void *argp, int l, int r)
 
 /*
  * Print a text selection--does not support uncollated printing.  Why?
- * Ans:  "dorgn" iterates over a line at a time, making it necessary
+ * Answer:  "dorgn" iterates over a line at a time, making it necessary
  * to save an entire page of output for iterative replay.  And of course,
  * if the last line of the page wraps, you get to worry about that as well.
  * Too much work for too little payback.  If the user wants multiple copies

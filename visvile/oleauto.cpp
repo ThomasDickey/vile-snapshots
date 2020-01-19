@@ -572,7 +572,7 @@ CVile::VileCmd(
              * executed.  Why?  The string may be attempting to open a file
              * that's created as a side effect of a DevStudio operation
              * that _follows_ execution of "cmd".  In that situation,
-             * visvile can't be waiting for the editor to finish execting
+             * visvile can't be waiting for the editor to finish executing
              * "cmd" before directing the editor to pop to the front.  Why?
              * 'Cause until visvile returns control to DevStudio, DevStudio
              * won't create the target file.  Nasty, eh?  Sure wasted an

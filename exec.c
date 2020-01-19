@@ -4,7 +4,7 @@
  *	original by Daniel Lawrence, but
  *	much modified since then.  assign no blame to him.  -pgf
  *
- * $Id: exec.c,v 1.366 2019/12/19 09:32:10 bod Exp $
+ * $Id: exec.c,v 1.367 2020/01/17 23:29:54 tom Exp $
  */
 
 #include "estruct.h"
@@ -2960,7 +2960,7 @@ do_source(char *fname, int n, int optional)
     /* look for the file in the configuration paths */
     fspec = cfg_locate(fname, LOCATE_SOURCE);
 
-    /* nonexistant */
+    /* nonexistent */
     if (fspec == NULL) {
 	if (!optional)
 	    status = no_such_file(fname);

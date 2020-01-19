@@ -2,7 +2,7 @@
  *		The routines in this file handle the conversion of pathname
  *		strings.
  *
- * $Id: path.c,v 1.183 2018/10/25 22:21:02 tom Exp $
+ * $Id: path.c,v 1.184 2020/01/17 23:31:02 tom Exp $
  */
 
 #include "estruct.h"
@@ -865,7 +865,7 @@ resolve_directory(char *path_name, char **file_namep)
 	    (void) closedir(dp);
 	    if (!found)
 		return NULL;
-	} else			/* could't open directory */
+	} else			/* couldn't open directory */
 	    return NULL;
 
 	thisdev = dotdev;

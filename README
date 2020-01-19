@@ -970,7 +970,7 @@ July 2005,
       ".source" command.
 
     + add a ".brief" to filters parsing, which uses "?" to match zero or
-      all of the following characters, in constrast to ".abbrev" which
+      all of the following characters, in contrast to ".abbrev" which
       uses "*" to match zero or more of the following characters.
 
     + several new majormodes, with corresponding syntax filters:
@@ -2148,5 +2148,5 @@ filters.
 	  conversions.
 
 -------------------------------
-$Header: /users/source/archives/vile.vcs/RCS/README,v 1.105 2017/08/09 08:57:24 tom Exp $
+$Header: /users/source/archives/vile.vcs/RCS/README,v 1.106 2020/01/17 23:29:40 tom Exp $
 -------------------------------

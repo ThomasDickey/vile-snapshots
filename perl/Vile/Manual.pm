@@ -36,7 +36,7 @@ sub manual {
             }
             else {
                 untie *STDERR;
-                open STDERR, '>/dev/null';    # supress pod2man whining
+                open STDERR, '>/dev/null';    # suppress pod2man whining
                 system "pod2man --lax $path|nroff -man|$filt";
             }
 

@@ -928,7 +928,7 @@ sub shell {
             my $lastlnum;
 
             # Reset the buffer's dot.  Unfortunately, the perl
-            # interface trys to be a little too smart sometimes,
+            # interface tries to be a little too smart sometimes,
             # so we must remember where dot was from the last time
             # we were here.
             $b->dotq(@mydot);

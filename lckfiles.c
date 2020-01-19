@@ -15,12 +15,12 @@
  *		username of the user doing the editing.  when a file is
  *		edited for which there already exists a .lck file, the buffer
  *		mode "locked" is set to true and "locker" is set to the name
- *		of the user that created the .lck.  this infomation will
+ *		of the user that created the .lck.  this information will
  *		appear on the status line, as "locked by pgf", and the
  *		buffer will be marked readonly.  the .lck file will be
  *		deleted at most of the appropriate times.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/lckfiles.c,v 1.11 2002/10/09 19:06:58 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/lckfiles.c,v 1.12 2020/01/17 22:36:39 tom Exp $
  *
  */
 

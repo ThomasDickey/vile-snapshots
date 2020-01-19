@@ -1,4 +1,4 @@
-# $Header: /users/source/archives/vile.vcs/perl/RCS/mime.pl,v 1.9 2014/01/28 23:34:42 tom Exp $
+# $Header: /users/source/archives/vile.vcs/perl/RCS/mime.pl,v 1.10 2020/01/17 23:34:15 tom Exp $
 # (see dir.doc)
 require 'plugins.pl';
 
@@ -224,7 +224,7 @@ extent.   Which   means  if  it  cannot  find  a  plugin  or
 application  to  use  for  "image/gif",  it  will  look  for
 plugin  or  application  for  "image/*",  then for "*/*" and
 finally  for  "*" mime type. But it will not honor wildcards
-of  the  format  "ima*/gif"  or  "image/g*" (and I dont even
+of  the  format  "ima*/gif" or  "image/g*" (and I don't even
 know  if  the RFC allows such wildcards in mime types).
 
 The  library  currently  does  not  support  the mailcap and

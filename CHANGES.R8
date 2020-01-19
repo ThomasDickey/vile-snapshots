@@ -980,7 +980,7 @@ Changes for vile 8.3 (released Fri Apr 23, 1999)
 	  ltos(), i_ltoa(), stol()) renamed to render_xxx() to create
 	  a string, and scan_xxx() to decode a string.
 	+ collapsed the stenv() and set_variable() routines into a single
-	  entrypoint useable from both exec.c and modes.c.
+	  entrypoint usable from both exec.c and modes.c.
 	+ split temp and state variable lookup from their evaluation,
 	  so the lookup can be done in just one routine.  (eval.c)
 	+ token evaluation (tokval()) now table driven.  i don't know

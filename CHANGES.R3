@@ -351,7 +351,7 @@ Changes for vile 3.63: (released  Wed Nov 10, 1993)
 	  shorter than the taglength setting, the shorter value is used
 	  (tags.c).
 
-	+ modified 'writereg()' to prevent inadvertant file-write using a
+	+ modified 'writereg()' to prevent inadvertent file-write using a
 	  read-pipe expression (file.c).
 (pgf)
 	+ fixed indenting bug in formatregion().  (word.c)
@@ -2342,7 +2342,7 @@ Changes for vile 3.36 (from Tom Dickey):
 	+ split out the pathname functions into file path.c
 
 	+ added function 'is_appendname()' to path.c to better encapsulate the
-	  isAppendToName macro's knowlege of the ">>" length (files path.c,
+	  isAppendToName macro's knowledge of the ">>" length (files path.c,
 	  filec.c, fileio.c, random.c).  Used this to make functions
 	  'canonpath()', 'lengthen_path()', 'shorten_path()' and
 	  'is_pathname()' work properly with ">>" prefix.

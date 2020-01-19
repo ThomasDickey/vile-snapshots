@@ -88,7 +88,7 @@ Changes for vile 4.12 (released Fri Dec 16, 1994)
 	  sweeping.  serious lockup results.  (basic.c)
 
 	+ fix various places that needed to be made more or less aware of
-	  the occurence of sweeping.  quoted motions now never include
+	  the occurrence of sweeping.  quoted motions now never include
 	  their endpoint, except in a few mostly "on one line" kind of
 	  motions: e, E, f, t, and %.  (csrch.c, edef.h, exec.c, fences.c,
 	  main.c, select.c, wordmov.c, vile.hlp)
@@ -293,7 +293,7 @@ Changes for vile 4.11 (released Thu Dec 15, 1994)
 	  modeline.
 
 	+ estruct.h (OPT_FORMAT): Added back in after being lost in
-  	  the shuffle.  Also checked the other "OPT_" features occuring
+  	  the shuffle.  Also checked the other "OPT_" features occurring
   	  in cmdtbl to make sure that no others were also lost in the
   	  shuffle.
 
@@ -667,7 +667,7 @@ Changes for vile 4.8 (released Mon Oct 31, 1994)
 	  entry, passing a special argument so the function can know it was
 	  invoked with a "xxx!" form.  (estruct.h, exec.c, cmdtbl)
 
-	+ implemented support for ":w!" to overrided failed writes of the
+	+ implemented support for ":w!" to override failed writes of the
 	  backup file.  detect the special argument (see above) in
 	  filesave() and filewrite(), and pass "forced" flag down through
 	  writeout(), writereg(), and ffwopen(). (fileio.c, file.c, proto.h,
@@ -913,7 +913,7 @@ Changes for vile 4.7 (unreleased Tue Sep 27, 1994)
 	+ added "[Search wrapped]" message to /, ?, n, N commands.
 	  (search.c, oneliner.c, isearch.c, proto.h)
 
-	+ fixes to swbuffer() to prevent coredump when errors encounted
+	+ fixes to swbuffer() to prevent coredump when errors encountered
 	  when running the bufhook routine. (buffer.c)
 
 	+ fix to dobuf() to prevent handling of a ~endm when execlevel is
@@ -1165,7 +1165,7 @@ Changes for vile 4.7 (unreleased Tue Sep 27, 1994)
 	  causing xvile to exit with the X error "BadValue" for opcode
 	  X_ConfigureWindow.  What was happening was the bottom window was
 	  being left with size zero...this bug may be observed in ordinary
-	  vile (in an xterm) by starting vile, splitting the [unamed]
+	  vile (in an xterm) by starting vile, splitting the [unnamed]
 	  window and resizing the bottom window to one line.  Then use the
 	  (X) window manager to resize the xterm window down in size by one
 	  line.  You will then observe that there are two mode lines at the
@@ -1285,7 +1285,7 @@ Changes for vile 4.7 (unreleased Tue Sep 27, 1994)
 	  code which I wrote for saving events in a queue for later
 	  processing calls malloc().  If it should happen that the
 	  interrupt which got us into x_working() interrupted a malloc() in
-	  progress, the results could be disasterous if malloc() is
+	  progress, the results could be disastrous if malloc() is
 	  non-reentrant.  So far as I know, most implementations of
 	  malloc() are not reentrant.  malloc() is not the only call which
 	  might get us into trouble.  Other library calls (particularly the
@@ -1551,7 +1551,7 @@ Changes for vile 4.6 (unreleased Tue July 12, 1994)
 	  fcntl.h (from which flock is ultimately defined) from being
 	  included twice.  In my opinion, the authors of the system include
 	  files for this SVR3 system didn't do their job very well.  Rather
-	  than propogate checks to see if a particular system include file
+	  than propagate checks to see if a particular system include file
 	  has already been included into estruct.h, I figured that a slight
 	  reordering (in x11.c) would be better.  Let's just hope it doesn't
 	  break something else.
@@ -1600,7 +1600,7 @@ Changes for vile 4.6 (unreleased Tue July 12, 1994)
 	  characters "foo".  Enter the command ":list-registers" in order to
 	  view the registers.  Go back to the beginning of the newly created
 	  buffer (containing "foo").  Type "yw".  "foo" will appear as the
-	  unnamed register.  Type "yw" again.  The unamed register will now
+	  unnamed register.  Type "yw" again.  The unnamed register will now
 	  (prior to this fix) have the "foo", but also a newline in front of
 	  it.
 
@@ -1727,7 +1727,7 @@ Changes for vile 4.6 (unreleased Tue July 12, 1994)
 	  are available.  We do undef HAVE_POLL if HAVE_SELECT is defined
 	  however.
 	  (USE_INDEX, HAVE_GETHOSTNAME, signal_pg): Changed preprocessor logic.
-	  (BERK): Eliminated all occurences.
+	  (BERK): Eliminated all occurrences.
 	+ display.c (termios.h, termio.h, sys/ioctl.h, ioctl.h, sys/types.h
 	  sys/stream.h, sys/ptem.h):  Removed includes and ifdef logic
 	  connected with these header files.  They don't appear to be used
@@ -1835,7 +1835,7 @@ Changes for vile 4.4 (not released April 26, 1994)
 
 	+ implemented sel_motion() routine, that allows referencing the
 	  selected region from an operator.  fixed various off-by-one
-	  nits in various places to mkae this work right.  (basic.c,
+	  nits in various places to make this work right.  (basic.c,
 	  opers.c, region.c, select.c, proto.h, cmdtbl, x11.c)
 
 	+ cleaned up beeping.  too many double beeps.  (file.c, fileio.c,
@@ -2297,7 +2297,7 @@ Changes for vile 4.4 (not released April 26, 1994)
 	  window which are duplicated in the lower one.  (Try it in both
 	  directions.) You will notice that portions of the lower window
 	  will be updated along with the upper.  The problem was that
-	  longer matchs were being obtained by scrolling lines from the
+	  longer matches were being obtained by scrolling lines from the
 	  lower window up to the upper with the cost of having to later
 	  update a large segment of the lower window.  This new code will
 	  count the number lines which are already properly placed (e.g.,
@@ -2807,7 +2807,7 @@ Changes for vile 4.0 (not released Tue Feb 22, 1994)
 	  (tags.c, eric krohn)
 
 	+ make animation of buffer list take into account whether it contains
-	  an apropos list or a full "decribe bindings" (bind.c)
+	  an apropos list or a full "describe bindings" (bind.c)
 
 	+ some makefile cleanup, for mips and NeXT, and compulsion's sake.
 

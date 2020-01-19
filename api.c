@@ -3,7 +3,7 @@
  *
  * Status of this file:  Some of the functions in this file are unused.
  * Early on, I was trying for compatibility with nvi's perl interface.
- * Now that I'm not, I've gotten lazy and have occassionally been skipping
+ * Now that I'm not, I've gotten lazy and have occasionally been skipping
  * this layer.
  *
  * Some of the code in this file is still used and is, in fact, very
@@ -15,7 +15,7 @@
  * in handy.
  *				- kev 4/7/1998
  *
- * $Id: api.c,v 1.53 2018/11/02 20:58:03 tom Exp $
+ * $Id: api.c,v 1.54 2020/01/17 23:11:28 tom Exp $
  */
 
 #include "estruct.h"
@@ -642,7 +642,7 @@ api_swscreen(VileBuf * oldsp, VileBuf * newsp)
 {
     /*
      * Calling api_command_cleanup nukes various state, like DOT
-     * Now if DOT got propogated, all is (likely) well.  But if it didn't,
+     * Now if DOT got propagated, all is (likely) well.  But if it didn't,
      * then DOT will likely be in the wrong place if the executing perl
      * script expects to access a buffer on either side of a switchscreen
      * call.

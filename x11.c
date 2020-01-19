@@ -2,7 +2,7 @@
  *	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Id: x11.c,v 1.392 2019/06/24 08:31:25 tom Exp $
+ * $Id: x11.c,v 1.393 2020/01/17 22:31:18 tom Exp $
  */
 
 /*
@@ -141,7 +141,7 @@ static void evqadd(const XEvent *evp);
 
 #if KEV_WIDGETS
 /* We define our own little bulletin board widget here...if this gets
- * too unwieldly, we should move it to another file.
+ * too unwieldy, we should move it to another file.
  */
 
 #include	<X11/IntrinsicP.h>
@@ -3221,7 +3221,7 @@ x_flush(void)
 
     /*
      * Write out cursor _before_ rest of the screen in order to avoid
-     * flickering / winking effect noticable on some display servers.  This
+     * flickering / winking effect noticeable on some display servers.  This
      * means that the old cursor position (if different from the current
      * one) will be cleared after the new cursor is displayed.
      */
@@ -3907,7 +3907,7 @@ x_convert_selection(Widget w GCC_UNUSED,
 
 	    *type = XA_ATOM;
 	    *length = (ULONG) (tp - *(Atom **) value);
-	    *format = 32;	/* width of the data being transfered */
+	    *format = 32;	/* width of the data being transferred */
 	    result = True;
 	}
     } else if (*target == XA_STRING || *target == GetAtom(TEXT)) {

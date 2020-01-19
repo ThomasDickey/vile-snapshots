@@ -1,5 +1,5 @@
 /*
- * $Header: /users/source/archives/vile.vcs/RCS/api.h,v 1.14 2008/10/15 21:01:34 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/api.h,v 1.15 2020/01/17 23:11:59 tom Exp $
  */
 
 /*
@@ -29,7 +29,7 @@ typedef struct {
 	int         changed;		/* Were any changes done? */
 	int         dot_changed;	/* DOT explicitly changed --
 					   implies that DOT should
-					   be propogated */
+					   be propagated */
 	B_COUNT	    ndel;		/* number of characters to delete upon
 					   setup; related to the inplace_edit
 					   stuff */

@@ -1,4 +1,4 @@
-# $Header: /users/source/archives/vile.vcs/perl/RCS/directory.pm,v 1.10 2014/01/23 20:02:44 tom Exp $
+# $Header: /users/source/archives/vile.vcs/perl/RCS/directory.pm,v 1.11 2020/01/17 23:34:52 tom Exp $
 # (see dir.doc)
 
 package directory;
@@ -227,14 +227,14 @@ Lastly,  the  mime library utilized by the directory browser
 (and    provided   along with)   for   handling   the   mime
 capabilities   is   plugin   aware  (and  you  thought  only
 netscape  can  have  plugins).  Which means that for certain
-file  types,  like  .gz and .tar, you dont need to take help
+file  types, like  .gz and .tar, you don't need to take help
 of  an  external viewer by can use vile itself to view those
 files.  And  the perl interface in vile makes it very simple
 to  write  new plugins :-)
 
 A   sample   plugin   script   for  .gz  files  is  provided
 along with.   For   more   information   on   mime   library
-capabilites,  please  refer  to  the  pod  documentation  in
+capabilities, please  refer  to  the  pod  documentation  in
 mime.pl.
 
 =head1 CAVEATS
