@@ -1,11 +1,13 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20200117 (u)
+ 20200205 (u)
 	> Brendan O'Dea:
 	+ add smartcase mode (prompted by suggestion by Marc Simpson).
 	> Michael von der Heide
 	+ modify vile-spell-filt to allow for umlauts in UTF-8
 	> Tom Dickey:
+	+ fix - python filter should recognize triple single-quoted string
+	  (report/patch by Marc Simpson).
 	+ fix typos reported by codespell.
 	+ add null-pointer checks for continue-search and reverse-search to
 	  handle the case where a pattern string was given, but it failed to
