@@ -1,10 +1,10 @@
 %pointer
-%s NORMAL QUOTE1 QUOTE2 QUOTE3
+%s NORMAL QUOTE1 QUOTE2 QUOTE3 QUOTE4
 
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/py-filt.l,v 1.19 2013/12/02 01:32:53 tom Exp $
+ * $Id: py-filt.l,v 1.20 2020/02/05 21:34:07 tom Exp $
  *
  * Filter to add vile "attribution" sequences to a Python script
  */
@@ -52,8 +52,12 @@ NUMBER		{SIGN}?({DECIMAL}|{OCTAL}|{HEXADECIMAL})[L]?|{REAL}
 
 <NORMAL>\"\"\"		{ BeginQuote(QUOTE3, String_attr); }
 <QUOTE3>\"\"\"		{ FinishQuote(NORMAL); }
-<QUOTE3>(\\.|.)		{ flt_bfr_append(yytext, yyleng); }
-<QUOTE3>[\n]		{ flt_bfr_append(yytext, yyleng); }
+
+<NORMAL>\'\'\'		{ BeginQuote(QUOTE4, String_attr); }
+<QUOTE4>\'\'\'		{ FinishQuote(NORMAL); }
+
+<QUOTE3,QUOTE4>(\\.|.)	{ flt_bfr_append(yytext, yyleng); }
+<QUOTE3,QUOTE4>[\n]	{ flt_bfr_append(yytext, yyleng); }
 
 <NORMAL>.		{ ECHO; }
 
