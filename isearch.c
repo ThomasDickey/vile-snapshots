@@ -7,7 +7,7 @@
  *
  * original author: D. R. Banks 9-May-86
  *
- * $Id: isearch.c,v 1.70 2019/12/19 09:32:52 bod Exp $
+ * $Id: isearch.c,v 1.71 2020/03/29 22:48:01 tom Exp $
  */
 
 #include	"estruct.h"
@@ -42,7 +42,7 @@ scanmore(			/* search forward or back for a pattern */
     FreeIfNeeded(gregexp);
     gregexp = regcomp(tb_values(patrn), tb_length(patrn), b_val(curbp, MDMAGIC));
     if (gregexp != 0) {
-	int ic = ic = window_b_val(curwp, MDIGNCASE) &&
+	int ic = window_b_val(curwp, MDIGNCASE) &&
 	!(window_b_val(curwp, MDSMARTCASE) && gregexp->uppercase);
 
 	if (curwp != 0) {

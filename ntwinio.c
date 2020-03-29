@@ -1,7 +1,7 @@
 /*
  * Uses the Win32 screen API.
  *
- * $Id: ntwinio.c,v 1.221 2020/01/17 22:35:15 tom Exp $
+ * $Id: ntwinio.c,v 1.222 2020/03/29 19:35:20 tom Exp $
  * Written by T.E.Dickey for vile (october 1997).
  * -- improvements by Clark Morgan (see w32cbrd.c, w32pipe.c).
  */
@@ -3962,7 +3962,7 @@ InitInstance(HINSTANCE hInstance)
     default_bcolor = GetSysColor(COLOR_WINDOWTEXT + 1);
     default_fcolor = GetSysColor(COLOR_WINDOW + 1);
 
-    ZeroMemory(&wc, sizeof(&wc));
+    ZeroMemory(&wc, sizeof(wc));
     wc.style = CS_VREDRAW | CS_HREDRAW;
     wc.lpfnWndProc = MainWndProc;
     wc.cbClsExtra = 0;
@@ -3999,7 +3999,7 @@ InitInstance(HINSTANCE hInstance)
     if (!cur_win->main_hwnd)
 	return (FALSE);
 
-    ZeroMemory(&wc, sizeof(&wc));
+    ZeroMemory(&wc, sizeof(wc));
     wc.style = CS_VREDRAW | CS_HREDRAW;
     wc.lpfnWndProc = (WNDPROC) TextWndProc;
     wc.cbClsExtra = 0;
@@ -4038,7 +4038,7 @@ InitInstance(HINSTANCE hInstance)
      * we create the first scrollbars, until we resize the window.
      */
 #if OPT_SCROLLBARS
-    ZeroMemory(&wc, sizeof(&wc));
+    ZeroMemory(&wc, sizeof(wc));
     wc.style = CS_VREDRAW | CS_HREDRAW;
     wc.lpfnWndProc = (WNDPROC) GripWndProc;
     wc.cbClsExtra = 0;

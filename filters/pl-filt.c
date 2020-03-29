@@ -1,5 +1,5 @@
 /*
- * $Id: pl-filt.c,v 1.126 2018/06/12 00:14:27 tom Exp $
+ * $Id: pl-filt.c,v 1.127 2020/03/29 23:09:35 tom Exp $
  *
  * Filter to add vile "attribution" sequences to perl scripts.  This is a
  * translation into C of an earlier version written for LEX/FLEX.
@@ -1548,8 +1548,10 @@ do_filter(FILE *input GCC_UNUSED)
 			    state = eHERE;
 			    mark_len = 0;
 			    try_mark = do_alloc(0, (size_t) 2, &mark_len);
-			    if (try_mark != 0)
+			    if (try_mark != 0) {
+				free(marker);
 				marker = strcpy(try_mark, ".");
+			    }
 			}
 			save = s[ok];
 			s[ok] = 0;
@@ -1659,6 +1661,7 @@ do_filter(FILE *input GCC_UNUSED)
 	}
 	free(the_file);
     }
+    free(marker);
 }
 
 #if NO_LEAKS

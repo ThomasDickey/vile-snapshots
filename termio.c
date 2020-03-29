@@ -3,7 +3,7 @@
  * characters, and write characters in a barely buffered fashion on the display.
  * All operating systems.
  *
- * $Id: termio.c,v 1.224 2018/11/05 01:21:30 tom Exp $
+ * $Id: termio.c,v 1.225 2020/03/29 21:44:26 tom Exp $
  */
 
 #include	"estruct.h"
@@ -288,12 +288,12 @@ ttopen(void)
     /* new input settings: turn off crnl mapping, cr-ignoring,
      * case-conversion, and allow BREAK
      */
-    ntermios.c_iflag = BRKINT | (otermios.c_iflag &
-				 (ULONG) ~ (INLCR | IGNCR | ICRNL
+    ntermios.c_iflag = (tcflag_t) (BRKINT | (otermios.c_iflag &
+					     (ULONG) ~ (INLCR | IGNCR | ICRNL
 #ifdef IUCLC
-					    | IUCLC
+							| IUCLC
 #endif
-				 ));
+					     )));
 
     ntermios.c_oflag = 0;
     ntermios.c_lflag = ISIG;
@@ -327,8 +327,8 @@ flow_control_enable(int f GCC_UNUSED, int n GCC_UNUSED)
 {
 #if !DISP_X11
     if (!f) {
-	ntermios.c_cc[VSTART] = (char) startc;
-	ntermios.c_cc[VSTOP] = (char) stopc;
+	ntermios.c_cc[VSTART] = (cc_t) startc;
+	ntermios.c_cc[VSTOP] = (cc_t) stopc;
     } else {
 	ntermios.c_cc[VSTART] = VDISABLE;
 	ntermios.c_cc[VSTOP] = VDISABLE;

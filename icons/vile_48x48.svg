@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
+
 <svg
    xmlns:dc="http://purl.org/dc/elements/1.1/"
    xmlns:cc="http://creativecommons.org/ns#"
@@ -10,12 +11,14 @@
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    id="svg2"
    sodipodi:version="0.32"
-   inkscape:version="0.46"
+   inkscape:version="0.92.4 (5da689c313, 2019-01-14)"
    width="48"
    height="48"
    version="1.0"
    sodipodi:docname="vile_48x48.svg"
    inkscape:output_extension="org.inkscape.output.svg.inkscape">
+  <title
+     id="title3727">XVile icon on 48x48 grid, in SVG format</title>
   <metadata
      id="metadata7">
     <rdf:RDF>
@@ -24,6 +27,20 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title>XVile icon on 48x48 grid, in SVG format</dc:title>
+        <dc:date>July 22, 2012</dc:date>
+        <dc:creator>
+          <cc:Agent>
+            <dc:title>Thomas E. Dickey</dc:title>
+          </cc:Agent>
+        </dc:creator>
+        <dc:rights>
+          <cc:Agent>
+            <dc:title>MIT-style</dc:title>
+          </cc:Agent>
+        </dc:rights>
+        <dc:identifier>https://invisible-island.net/vile/images/icon-vile_144.png</dc:identifier>
+        <dc:source>https://invisible-island.net/vile/vile-icons.html</dc:source>
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -51,11 +68,12 @@
      id="base"
      showgrid="false"
      inkscape:zoom="9.7083333"
-     inkscape:cx="31.313304"
+     inkscape:cx="18.849785"
      inkscape:cy="23.442459"
-     inkscape:window-x="62"
-     inkscape:window-y="26"
-     inkscape:current-layer="svg2" />
+     inkscape:window-x="301"
+     inkscape:window-y="29"
+     inkscape:current-layer="svg2"
+     inkscape:window-maximized="0" />
   <g
      inkscape:groupmode="layer"
      id="layer1"
@@ -93,51 +111,51 @@
        id="path2392" />
     <text
        xml:space="preserve"
-       style="font-size:21.70000076px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:100%;writing-mode:lr-tb;text-anchor:start;fill:#ececec;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans Mono;-inkscape-font-specification:Bitstream Vera Sans Mono"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:0%;font-family:'Bitstream Vera Sans Mono';-inkscape-font-specification:'Bitstream Vera Sans Mono';text-align:start;writing-mode:lr-tb;text-anchor:start;fill:#ececec;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
        x="3.4725404"
        y="48.66497"
        id="text2386"
-       sodipodi:linespacing="100%"
        transform="scale(1.063558,0.9402403)"><tspan
          sodipodi:role="line"
          id="tspan2388"
          x="3.4725404"
-         y="48.66497">:e</tspan></text>
+         y="48.66497"
+         style="font-size:21.70000076px;line-height:1">:e</tspan></text>
   </g>
   <text
      xml:space="preserve"
-     style="font-size:35.1px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#ececec;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans Mono;-inkscape-font-specification:Bitstream Vera Sans Mono"
+     style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:0%;font-family:'Bitstream Vera Sans Mono';-inkscape-font-specification:'Bitstream Vera Sans Mono';text-align:start;writing-mode:lr-tb;text-anchor:start;fill:#ececec;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
      x="2.9082134"
      y="16.982941"
      id="text2390"
-     sodipodi:linespacing="125%"
      transform="scale(0.8321819,1.2016603)"><tspan
        sodipodi:role="line"
        id="tspan2392"
        x="2.9082134"
-       y="16.982941">~</tspan></text>
+       y="16.982941"
+       style="font-size:35.09999847px;line-height:1.25">~</tspan></text>
   <text
      xml:space="preserve"
-     style="font-size:35.1px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#ececec;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans Mono;-inkscape-font-specification:Bitstream Vera Sans Mono"
+     style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:0%;font-family:'Bitstream Vera Sans Mono';-inkscape-font-specification:'Bitstream Vera Sans Mono';text-align:start;writing-mode:lr-tb;text-anchor:start;fill:#ececec;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
      x="2.7970381"
      y="24.877228"
      id="text2394"
-     sodipodi:linespacing="125%"
      transform="scale(0.8321819,1.2016603)"><tspan
        sodipodi:role="line"
        id="tspan2396"
        x="2.7970381"
-       y="24.877228">~</tspan></text>
+       y="24.877228"
+       style="font-size:35.09999847px;line-height:1.25">~</tspan></text>
   <text
      xml:space="preserve"
-     style="font-size:23.49342346px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:100%;writing-mode:lr-tb;text-anchor:start;fill:#ececec;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans Mono;-inkscape-font-specification:Bitstream Vera Sans Mono"
+     style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:0%;font-family:'Bitstream Vera Sans Mono';-inkscape-font-specification:'Bitstream Vera Sans Mono';text-align:start;writing-mode:lr-tb;text-anchor:start;fill:#ececec;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
      x="38.61517"
      y="34.72897"
      id="text2398"
-     sodipodi:linespacing="100%"
      transform="scale(0.8775932,1.1394801)"><tspan
        sodipodi:role="line"
        id="tspan2400"
        x="38.61517"
-       y="34.72897">_</tspan></text>
+       y="34.72897"
+       style="font-size:23.49342346px;line-height:1">_</tspan></text>
 </svg>

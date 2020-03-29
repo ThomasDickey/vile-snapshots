@@ -5,7 +5,7 @@
  *	included in main.c
  *
  *	Copyright (c) 1990 by Paul Fox
- *	Copyright (c) 1995-2018 by Paul Fox and Thomas Dickey
+ *	Copyright (c) 1995-2020 by Paul Fox and Thomas Dickey
  *
  *	See the file "cmdtbl" for input data formats, and "estruct.h" for
  *	the output structures.
@@ -15,7 +15,7 @@
  * by Tom Dickey, 1993.    -pgf
  *
  *
- * $Id: mktbls.c,v 1.195 2018/07/29 23:13:47 tom Exp $
+ * $Id: mktbls.c,v 1.198 2020/03/29 23:29:53 tom Exp $
  *
  */
 
@@ -136,7 +136,7 @@ extern void free(char *ptr);
 #define	Sprintf	(void)sprintf
 
 #ifdef MISSING_EXTERN_FPRINTF
-extern int fprintf(FILE *fp, const char *fmt,...);
+extern int fprintf(FILE *fp, const char *fmt, ...);
 #endif
 
 #define	SaveEndif(head)	InsertOnEnd(&head, "#endif")
@@ -258,9 +258,9 @@ static char *
 my_strncpy(char *dest, const char *src, size_t destlen)
 {
     size_t srclen = (src != 0) ? (strlen(src) + 1) : 0;
-    if (srclen > destlen)
-	srclen = destlen;
-    return my_strncpy0(dest, src, srclen);
+    return ((srclen > destlen)
+	    ? my_strncpy0(dest, src, destlen)
+	    : my_strncpy0(dest, src, srclen));
 }
 
 static char *
@@ -2499,11 +2499,11 @@ main(int argc, char *argv[])
 	    case SECT_BUFF:
 	    case SECT_WIND:
 		if (r != 1
-		    || (!strcmp(vec[1], "bool")
-			&& !strcmp(vec[1], "enum")
-			&& !strcmp(vec[1], "int")
-			&& !strcmp(vec[1], "string")
-			&& !strcmp(vec[1], "regex")))
+		    || (strcmp(vec[1], "bool")
+			&& strcmp(vec[1], "enum")
+			&& strcmp(vec[1], "int")
+			&& strcmp(vec[1], "string")
+			&& strcmp(vec[1], "regex")))
 		    badfmt("looking for mode datatype");
 		(void) my_strncpy(modetype, vec[1], sizeof(modetype));
 		break;

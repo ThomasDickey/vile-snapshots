@@ -1,7 +1,7 @@
 /*
- * $Id: regexp.c,v 1.219 2019/12/19 09:37:20 bod Exp $
+ * $Id: regexp.c,v 1.221 2020/03/29 23:30:13 tom Exp $
  *
- * Copyright 2005-2018,2019 Thomas E. Dickey and Paul G. Fox
+ * Copyright 2005-2019,2020 Thomas E. Dickey and Paul G. Fox
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
@@ -2724,8 +2724,8 @@ cregexec(regexp * prog,
 			 startoff, endoff, at_bol, ic);
 	} else {
 	    /* the prog might be ^$, or something legal on a null string */
-
-	    char *nullstr = "";
+	    static char empty[1];
+	    char *nullstr = empty;
 
 	    if (startoff > 0) {
 		s = 0;
