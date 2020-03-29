@@ -1,22 +1,24 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
+
 <svg
    xmlns:dc="http://purl.org/dc/elements/1.1/"
    xmlns:cc="http://creativecommons.org/ns#"
    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
    xmlns:svg="http://www.w3.org/2000/svg"
    xmlns="http://www.w3.org/2000/svg"
-   xmlns:xlink="http://www.w3.org/1999/xlink"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    id="svg2"
    sodipodi:version="0.32"
-   inkscape:version="0.46"
+   inkscape:version="0.92.4 (5da689c313, 2019-01-14)"
    width="48"
    height="48"
    version="1.0"
    sodipodi:docname="pumpkin_48x48.svg"
    inkscape:output_extension="org.inkscape.output.svg.inkscape">
+  <title
+     id="title3722">XVile jack-o-lantern icon, in SVG format</title>
   <metadata
      id="metadata7">
     <rdf:RDF>
@@ -25,7 +27,36 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title>XVile jack-o-lantern icon, in SVG format</dc:title>
+        <cc:license
+           rdf:resource="http://creativecommons.org/licenses/by/4.0/" />
+        <dc:date>July 22, 2012</dc:date>
+        <dc:creator>
+          <cc:Agent>
+            <dc:title>Thomas E. Dickey</dc:title>
+          </cc:Agent>
+        </dc:creator>
+        <dc:rights>
+          <cc:Agent>
+            <dc:title>MIT-style</dc:title>
+          </cc:Agent>
+        </dc:rights>
+        <dc:identifier>https://invisible-island.net/vile/images/icon-pumpkin_144.png</dc:identifier>
+        <dc:source>https://invisible-island.net/vile/vile-icons.html</dc:source>
       </cc:Work>
+      <cc:License
+         rdf:about="http://creativecommons.org/licenses/by/4.0/">
+        <cc:permits
+           rdf:resource="http://creativecommons.org/ns#Reproduction" />
+        <cc:permits
+           rdf:resource="http://creativecommons.org/ns#Distribution" />
+        <cc:requires
+           rdf:resource="http://creativecommons.org/ns#Notice" />
+        <cc:requires
+           rdf:resource="http://creativecommons.org/ns#Attribution" />
+        <cc:permits
+           rdf:resource="http://creativecommons.org/ns#DerivativeWorks" />
+      </cc:License>
     </rdf:RDF>
   </metadata>
   <defs
@@ -52,11 +83,12 @@
      id="base"
      showgrid="false"
      inkscape:zoom="9.7083333"
-     inkscape:cx="24.213326"
+     inkscape:cx="11.749807"
      inkscape:cy="24"
      inkscape:window-x="46"
      inkscape:window-y="53"
-     inkscape:current-layer="layer3" />
+     inkscape:current-layer="layer3"
+     inkscape:window-maximized="0" />
   <g
      inkscape:groupmode="layer"
      id="layer3"

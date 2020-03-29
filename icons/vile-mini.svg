@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
+
 <svg
    xmlns:dc="http://purl.org/dc/elements/1.1/"
    xmlns:cc="http://creativecommons.org/ns#"
@@ -10,12 +11,14 @@
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    id="svg2"
    sodipodi:version="0.32"
-   inkscape:version="0.46"
+   inkscape:version="0.92.4 (5da689c313, 2019-01-14)"
    width="48"
    height="48"
    version="1.0"
    sodipodi:docname="vile-mini.svg"
    inkscape:output_extension="org.inkscape.output.svg.inkscape">
+  <title
+     id="title14">XVile mini-icon, in SVG format</title>
   <metadata
      id="metadata7">
     <rdf:RDF>
@@ -24,7 +27,36 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title>XVile mini-icon, in SVG format</dc:title>
+        <cc:license
+           rdf:resource="http://creativecommons.org/licenses/by/4.0/" />
+        <dc:date>July 28, 2012</dc:date>
+        <dc:creator>
+          <cc:Agent>
+            <dc:title>Thomas E. Dickey</dc:title>
+          </cc:Agent>
+        </dc:creator>
+        <dc:rights>
+          <cc:Agent>
+            <dc:title>MIT-style</dc:title>
+          </cc:Agent>
+        </dc:rights>
+        <dc:identifier>https://invisible-island.net/vile/images/icon-vile-mini_144.png</dc:identifier>
+        <dc:source>https://invisible-island.net/vile/vile-icons.html</dc:source>
       </cc:Work>
+      <cc:License
+         rdf:about="http://creativecommons.org/licenses/by/4.0/">
+        <cc:permits
+           rdf:resource="http://creativecommons.org/ns#Reproduction" />
+        <cc:permits
+           rdf:resource="http://creativecommons.org/ns#Distribution" />
+        <cc:requires
+           rdf:resource="http://creativecommons.org/ns#Notice" />
+        <cc:requires
+           rdf:resource="http://creativecommons.org/ns#Attribution" />
+        <cc:permits
+           rdf:resource="http://creativecommons.org/ns#DerivativeWorks" />
+      </cc:License>
     </rdf:RDF>
   </metadata>
   <defs
@@ -51,11 +83,12 @@
      id="base"
      showgrid="false"
      inkscape:zoom="9.7083333"
-     inkscape:cx="32.152054"
+     inkscape:cx="19.688535"
      inkscape:cy="23.442459"
-     inkscape:window-x="62"
-     inkscape:window-y="26"
-     inkscape:current-layer="svg2" />
+     inkscape:window-x="261"
+     inkscape:window-y="90"
+     inkscape:current-layer="svg2"
+     inkscape:window-maximized="0" />
   <g
      inkscape:groupmode="layer"
      id="layer1"
@@ -77,26 +110,26 @@
      style="opacity:1" />
   <text
      xml:space="preserve"
-     style="font-size:75.02513123px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#ececec;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans Mono;-inkscape-font-specification:Bitstream Vera Sans Mono"
+     style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:0%;font-family:'Bitstream Vera Sans Mono';-inkscape-font-specification:'Bitstream Vera Sans Mono';text-align:start;writing-mode:lr-tb;text-anchor:start;fill:#ececec;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
      x="7.2236428"
      y="34.380783"
      id="text2390"
-     sodipodi:linespacing="125%"
      transform="scale(0.8149998,1.2269941)"><tspan
        sodipodi:role="line"
        id="tspan2392"
        x="7.2236428"
-       y="34.380783">~</tspan></text>
+       y="34.380783"
+       style="font-size:75.02513123px;line-height:1.25">~</tspan></text>
   <text
      xml:space="preserve"
-     style="font-size:75.02513123px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#ececec;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans Mono;-inkscape-font-specification:Bitstream Vera Sans Mono"
+     style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:0%;font-family:'Bitstream Vera Sans Mono';-inkscape-font-specification:'Bitstream Vera Sans Mono';text-align:start;writing-mode:lr-tb;text-anchor:start;fill:#ececec;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
      x="6.9860091"
      y="51.254566"
      id="text2394"
-     sodipodi:linespacing="125%"
      transform="scale(0.8149998,1.2269941)"><tspan
        sodipodi:role="line"
        id="tspan2396"
        x="6.9860091"
-       y="51.254566">~</tspan></text>
+       y="51.254566"
+       style="font-size:75.02513123px;line-height:1.25">~</tspan></text>
 </svg>

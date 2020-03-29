@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
+
 <svg
    xmlns:dc="http://purl.org/dc/elements/1.1/"
    xmlns:cc="http://creativecommons.org/ns#"
@@ -11,12 +12,14 @@
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    id="svg2"
    sodipodi:version="0.32"
-   inkscape:version="0.46"
+   inkscape:version="0.92.4 (5da689c313, 2019-01-14)"
    width="48"
    height="48"
    version="1.0"
    sodipodi:docname="sink_48x48.svg"
    inkscape:output_extension="org.inkscape.output.svg.inkscape">
+  <title
+     id="title52">XVile kitchen-sink icon, in SVG format</title>
   <metadata
      id="metadata7">
     <rdf:RDF>
@@ -25,7 +28,36 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title>XVile kitchen-sink icon, in SVG format</dc:title>
+        <cc:license
+           rdf:resource="http://creativecommons.org/licenses/by/4.0/" />
+        <dc:date>July 22, 2012</dc:date>
+        <dc:creator>
+          <cc:Agent>
+            <dc:title>Thomas E. Dickey</dc:title>
+          </cc:Agent>
+        </dc:creator>
+        <dc:rights>
+          <cc:Agent>
+            <dc:title>MIT-style</dc:title>
+          </cc:Agent>
+        </dc:rights>
+        <dc:identifier>https://invisible-island.net/vile/images/icon-sink_144.png</dc:identifier>
+        <dc:source>https://invisible-island.net/vile/vile-icons.html</dc:source>
       </cc:Work>
+      <cc:License
+         rdf:about="http://creativecommons.org/licenses/by/4.0/">
+        <cc:permits
+           rdf:resource="http://creativecommons.org/ns#Reproduction" />
+        <cc:permits
+           rdf:resource="http://creativecommons.org/ns#Distribution" />
+        <cc:requires
+           rdf:resource="http://creativecommons.org/ns#Notice" />
+        <cc:requires
+           rdf:resource="http://creativecommons.org/ns#Attribution" />
+        <cc:permits
+           rdf:resource="http://creativecommons.org/ns#DerivativeWorks" />
+      </cc:License>
     </rdf:RDF>
   </metadata>
   <defs
@@ -146,11 +178,12 @@
      id="base"
      showgrid="false"
      inkscape:zoom="11.313708"
-     inkscape:cx="28.010644"
+     inkscape:cx="17.315653"
      inkscape:cy="41.518916"
      inkscape:window-x="38"
      inkscape:window-y="39"
-     inkscape:current-layer="layer2" />
+     inkscape:current-layer="layer2"
+     inkscape:window-maximized="0" />
   <g
      inkscape:groupmode="layer"
      id="layer1"
@@ -158,13 +191,13 @@
      style="opacity:0;display:inline"
      sodipodi:insensitive="true">
     <image
+       sodipodi:absref="/usr/build/vile/vile/icons/sink_48x48.png"
        xlink:href="sink_48x48.png"
-       sodipodi:absref="sink_48x48.png"
-       width="48"
-       height="48"
-       id="image11"
+       y="0"
        x="0"
-       y="0" />
+       id="image11"
+       height="48"
+       width="48" />
   </g>
   <g
      inkscape:groupmode="layer"

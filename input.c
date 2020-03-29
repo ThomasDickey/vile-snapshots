@@ -44,7 +44,7 @@
  *	tgetc_avail()     true if a key is avail from tgetc() or below.
  *	keystroke_avail() true if a key is avail from keystroke() or below.
  *
- * $Id: input.c,v 1.369 2019/12/19 09:32:10 bod Exp $
+ * $Id: input.c,v 1.370 2020/03/29 22:44:42 tom Exp $
  */
 
 #include	"estruct.h"
@@ -1405,7 +1405,7 @@ kbd_kill_response(TBUFF *buffer, size_t *position, int c)
  */
 int
 kbd_show_response(TBUFF **dst,	/* string with escapes */
-		  char *src,	/* string w/o escapes */
+		  const char *src,	/* string w/o escapes */
 		  size_t bufn,	/* # of chars we read from 'src[]' */
 		  int eolchar,
 		  KBD_OPTIONS options)
@@ -1415,22 +1415,24 @@ kbd_show_response(TBUFF **dst,	/* string with escapes */
     /* add backslash escapes in front of volatile characters */
     tb_init(dst, 0);
 
-    for (k = 0; k < bufn; k++) {
-	int c = src[k];
+    if (src != NULL) {
+	for (k = 0; k < bufn; k++) {
+	    int c = src[k];
 
-	if ((c == BACKSLASH) || (c == eolchar && eolchar != '\n')) {
-	    if (options & KBD_QUOTES)
-		tb_append(dst, BACKSLASH);	/* add extra */
-	} else if (vl_index(global_g_val_ptr(GVAL_EXPAND_CHARS), c) != 0) {
-	    if (c == EXPC_RPAT && !(options & KBD_EXPPAT))
-		/*EMPTY */ ;
-	    else if (c == EXPC_SHELL && !(options & KBD_SHPIPE))
-		/*EMPTY */ ;
-	    else if ((options & KBD_QUOTES)
-		     && (options & KBD_EXPAND))
-		tb_append(dst, BACKSLASH);	/* add extra */
+	    if ((c == BACKSLASH) || (c == eolchar && eolchar != '\n')) {
+		if (options & KBD_QUOTES)
+		    tb_append(dst, BACKSLASH);	/* add extra */
+	    } else if (vl_index(global_g_val_ptr(GVAL_EXPAND_CHARS), c) != 0) {
+		if (c == EXPC_RPAT && !(options & KBD_EXPPAT))
+		    /*EMPTY */ ;
+		else if (c == EXPC_SHELL && !(options & KBD_SHPIPE))
+		    /*EMPTY */ ;
+		else if ((options & KBD_QUOTES)
+			 && (options & KBD_EXPAND))
+		    tb_append(dst, BACKSLASH);	/* add extra */
+	    }
+	    tb_append(dst, c);
 	}
-	tb_append(dst, c);
     }
 
     /* put out the default response, which is in the buffer */

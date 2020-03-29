@@ -2,7 +2,7 @@
  * Window management. Some of the functions are internal, and some are
  * attached to keys that the user actually types.
  *
- * $Id: window.c,v 1.130 2020/01/17 22:38:27 tom Exp $
+ * $Id: window.c,v 1.132 2020/03/29 22:32:38 tom Exp $
  */
 
 #include	"estruct.h"
@@ -738,8 +738,9 @@ enlargewind(int f, int n)
     }
     if ((adjwp = curwp->w_wndp) == NULL) {
 	adjwp = wheadp;
-	while (adjwp->w_wndp != curwp)
+	while ((adjwp != NULL) && (adjwp->w_wndp != curwp)) {
 	    adjwp = adjwp->w_wndp;
+	}
     }
     if (adjwp == NULL || adjwp->w_ntrows <= n) {
 	mlforce("[Impossible change]");
@@ -778,8 +779,9 @@ shrinkwind(int f, int n)
     }
     if ((adjwp = curwp->w_wndp) == NULL) {
 	adjwp = wheadp;
-	while (adjwp->w_wndp != curwp)
+	while ((adjwp != NULL) && (adjwp->w_wndp != curwp)) {
 	    adjwp = adjwp->w_wndp;
+	}
     }
     if (adjwp == NULL || curwp->w_ntrows <= n) {
 	mlforce("[Impossible change]");

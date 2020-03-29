@@ -7,7 +7,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/vilefilt.l,v 1.74 2018/11/12 21:44:32 tom Exp $
+ * $Id: vilefilt.l,v 1.75 2020/03/29 22:28:37 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of vile macros
  * - T.Dickey
@@ -264,7 +264,6 @@ handle_prepro(char *text, int len)
 	    break;
 	case D_ELSEWITH:
 	    if (FLTSTACK_OK) {
-		FltStack_WITH_ACTIVE = 1;
 		FltStack_WITH_STATE = -1;
 	    } else {
 		attr = Error_attr;

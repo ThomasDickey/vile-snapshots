@@ -1,11 +1,19 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20200205 (u)
+ 20200329 (u)
 	> Brendan O'Dea:
 	+ add smartcase mode (prompted by suggestion by Marc Simpson).
 	> Michael von der Heide
 	+ modify vile-spell-filt to allow for umlauts in UTF-8
 	> Tom Dickey:
+	+ fix some issues found with Coverity.
+	+ quiet a few gcc9 warnings
+	+ correct size-parameter of ZeroMemory calls in ntwinio.c
+	+ resave SVG-files with Inkscape 0.92.4 (5da689c313, 2019-01-14), to
+	  accommodate version-creep.
+	+ improved configure macros to lessen unused-variable warnings in
+	  config.log
+	+ workaround in configure checks for ncurses vs xcode's c99 "-W" option
 	+ fix - python filter should recognize triple single-quoted string
 	  (report/patch by Marc Simpson).
 	+ fix typos reported by codespell.
