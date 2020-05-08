@@ -21,7 +21,7 @@
  */
 
 /*
- * $Id: main.c,v 1.740 2020/03/29 19:55:03 tom Exp $
+ * $Id: main.c,v 1.741 2020/05/08 20:54:20 tom Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -2889,7 +2889,7 @@ char *
 vile_getenv(const char *name)
 {
     char *result = getenv(name);
-#if defined(_WIN32)
+#if defined(_WIN32) || defined(_WIN64)
     if (result == 0) {
 	static HKEY rootkeys[] =
 	{HKEY_CURRENT_USER, HKEY_LOCAL_MACHINE};

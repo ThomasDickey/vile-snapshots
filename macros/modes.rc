@@ -1,4 +1,4 @@
-; $Id: modes.rc,v 1.146 2020/01/05 16:02:09 tom Exp $
+; $Id: modes.rc,v 1.147 2020/05/08 19:54:20 tom Exp $
 ; majormodes in this file are ordered alphabetically for convenience - the
 ; precedence used by vile is strictly alphabetic, counting case.  Use the
 ; before and after qualifiers to override the precedence.
@@ -594,10 +594,10 @@ define-mode make
 	fence-else '^[ ]*else\>'
 	fence-fi   '^[ ]*endif\>'
 ~elsewith define-submode make group 'nmake'
-	fence-if   '^\s*!if'
-	fence-elif '^\s*!else\s*if'
-	fence-else '^\s*!else\>'
-	fence-fi   '^\s*!endif\>'
+	fence-if   '^\s*!\s*if'
+	fence-elif '^\s*!\s*else\s*if'
+	fence-else '^\s*!\s*else\>'
+	fence-fi   '^\s*!\s*endif\>'
 ~if &sin $os 'win32'
 	ignorecase
 ~endif
@@ -629,12 +629,12 @@ define-mode nmake
 	dos
 	comment-prefix	'^\s*[!#]'
 	comments	'^\s*[!#]\s*$'
-~with define-submode nmake group 'nmake'
-	fence-if   '^\s*!if'
-	fence-elif '^\s*!else\s*if'
-	fence-else '^\s*!else\>'
-	fence-fi   '^\s*!endif\>'
 	ignorecase
+~with define-submode nmake group 'nmake'
+	fence-if   '^\s*!\s*if'
+	fence-elif '^\s*!\s*else\s*if'
+	fence-else '^\s*!\s*else\>'
+	fence-fi   '^\s*!\s*endif\>'
 ~endwith
 ~endwith
 
