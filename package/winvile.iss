@@ -1,4 +1,4 @@
-; $Id: winvile.iss,v 1.29 2020/01/05 16:05:47 tom Exp $
+; $Id: winvile.iss,v 1.30 2020/05/08 22:08:04 tom Exp $
 ; vile:ts=2 sw=2 fk=8bit
 ;
 ; This installs winvile as "winvile-ole.exe", since that is the name I use when building the OLE flavor
@@ -54,9 +54,9 @@
 #define MyQuickLaunch '{userappdata}\Microsoft\Internet Explorer\Quick Launch\' + myAppName + '.lnk'
 
 [Setup]
-AppName=WinVile
+#emit 'AppName=' + myAppName
 #emit 'VersionInfoVersion=' + VILE_RELEASE + '.' + VILE_VERSION + '.' + Str(VILE_PATCHVALUE)
-VersionInfoDescription=Setup for "WinVile - VI Like Emacs"
+#emit 'VersionInfoDescription=Setup for "' + myAppName + ' - VI Like Emacs"
 #emit 'AppVersion=' + myVer
 #emit 'AppVerName=' + myAppVer
 AppPublisher=Thomas E. Dickey
@@ -67,7 +67,7 @@ AppUpdatesURL=https://invisible-island.net/vile/
 DefaultDirName={pf}\VI Like Emacs
 OutputDir=iss-output
 #emit 'OutputBaseFilename=' + myFullName + '-setup-' + VILE_RELEASE + '_' + VILE_VERSION + VILE_PATCHLEVEL
-DefaultGroupName=WinVile
+#emit 'DefaultGroupName=' + myAppName
 AllowNoIcons=yes
 LicenseFile=..\COPYING
 Compression=lzma
@@ -80,12 +80,12 @@ ArchitecturesInstallIn64BitMode=x64
 #endif
 
 [Components]
-Name: main; Description: The WinVile executable; types: full custom compact
+#emit 'Name: main; Description: The ' + myAppName + ' executable; types: full custom compact'
 Name: help; Description: Vile's help-file; types: full custom compact
 Name: docs; Description: Extra documentation; types: full custom
 Name: macros; Description: Useful macros; types: full custom compact
 Name: explorer; Description: Windows Explorer integration; types: full custom
-Name: filters; Description: External filter executables (WinVile has most of these built-in); types: full custom
+#emit 'Name: filters; Description: External filter executables (' + myAppName + ' has most of these built-in); types: full custom'
 
 [Tasks]
 Name: for_all_users; Description: Install for all users on this machine; GroupDescription: Configuration Settings; Components: explorer filters macros; Check: isGuru; Flags: unchecked
@@ -115,13 +115,13 @@ Source: c:\vile\*.exe; DestDir: {app}\filters; Components: filters; AfterInstall
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]
-#emit 'Name: {group}\WinVile; Filename: {app}\bin\' + myRootName + '.exe; Components: main; Flags: createonlyiffileexists'
-Name: {group}\{cm:UninstallProgram,WinVile}; Filename: {uninstallexe}
-#emit 'Name: {userdesktop}\WinVile; Filename: {app}\bin\' + myRootName + '.exe; Components: main; Tasks: desktopicon; Flags: createonlyiffileexists'
-#emit 'Name: {userappdata}\Microsoft\Internet Explorer\Quick Launch\WinVile; Filename: {app}\bin\' + myRootName + '.exe; Components: main; Tasks: quicklaunchicon; Flags: createonlyiffileexists'
+#emit 'Name: {group}\' + myAppName + '; Filename: {app}\bin\' + myRootName + '.exe; Components: main; Flags: createonlyiffileexists'
+#emit 'Name: {group}\{cm:UninstallProgram,' + myAppName + '}; Filename: {uninstallexe}'
+#emit 'Name: {userdesktop}\' + myAppName + '; Filename: {app}\bin\' + myRootName + '.exe; Components: main; Tasks: desktopicon; Flags: createonlyiffileexists'
+#emit 'Name: {userappdata}\Microsoft\Internet Explorer\Quick Launch\' + myAppName + '; Filename: {app}\bin\' + myRootName + '.exe; Components: main; Tasks: quicklaunchicon; Flags: createonlyiffileexists'
 
 [Run]
-#emit 'Filename: {app}\bin\' + myRootName + '.exe; Description: {cm:LaunchProgram,WinVile}; Flags: nowait postinstall skipifsilent skipifdoesntexist'
+#emit 'Filename: {app}\bin\' + myRootName + '.exe; Description: {cm:LaunchProgram,' + myAppName + '}; Flags: nowait postinstall skipifsilent skipifdoesntexist'
 
 [UninstallDelete]
 Type: files; Name: {app}\macros\vile.rc

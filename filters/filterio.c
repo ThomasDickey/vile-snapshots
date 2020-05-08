@@ -1,5 +1,5 @@
 /*
- * $Id: filterio.c,v 1.68 2016/12/16 12:01:17 tom Exp $
+ * $Id: filterio.c,v 1.69 2020/05/08 20:53:53 tom Exp $
  *
  * Main program and I/O for external vile syntax/highlighter programs
  */
@@ -281,7 +281,7 @@ char *
 vile_getenv(const char *name)
 {
     char *result = getenv(name);
-#if defined(_WIN32)
+#if defined(_WIN32) || defined(_WIN64)
     if (result == 0) {
 	static HKEY rootkeys[] =
 	{HKEY_CURRENT_USER, HKEY_LOCAL_MACHINE};

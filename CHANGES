@@ -1,11 +1,17 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20200329 (u)
+ 20200508 (u)
 	> Brendan O'Dea:
 	+ add smartcase mode (prompted by suggestion by Marc Simpson).
 	> Michael von der Heide
 	+ modify vile-spell-filt to allow for umlauts in UTF-8
 	> Tom Dickey:
+	+ modify winvile.iss to make the 64-bit installers more distinct from
+	  the 32-bit installers.
+	+ enable registry-lookup as getenv fallback for WinVile64
+	+ modify nmakemode:
+	  + allow for whitespace after "!" in conditional lines
+	  + ignore case when matching keywords
 	+ fix some issues found with Coverity.
 	+ quiet a few gcc9 warnings
 	+ correct size-parameter of ZeroMemory calls in ntwinio.c
