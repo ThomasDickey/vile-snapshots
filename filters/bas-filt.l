@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/bas-filt.l,v 1.27 2013/12/02 01:32:54 tom Exp $
+ * $Id: bas-filt.l,v 1.28 2020/05/10 20:28:46 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Basic
  * input text.
@@ -29,7 +29,7 @@ DefineFilter(basic);
 static char *Action_attr;
 static char *Comment_attr;
 static char *Number_attr;
-static char *Prepro_attr;
+static char *Preproc_attr;
 static char *String_attr;
 static char *LineNo_attr;
 
@@ -55,7 +55,7 @@ NUMBER		{INTEGER}|{REAL}|{UUID}|({INTEGER}{HEX}|("&"[Hh]|\$){HEX}){TYPES}
 
 %%
 
-<NORMAL>^"#"			{ WriteToken(Prepro_attr);
+<NORMAL>^"#"			{ WriteToken(Preproc_attr);
 				  BEGIN(PREPRO);
 				  set_symbol_table("basic_prepro");
 				}
@@ -143,7 +143,7 @@ do_filter(FILE *inputs)
     Action_attr = class_attr(NAME_ACTION);
     Comment_attr = class_attr(NAME_COMMENT);
     Number_attr = class_attr(NAME_NUMBER);
-    Prepro_attr = class_attr(NAME_PREPROC);
+    Preproc_attr = class_attr(NAME_PREPROC);
     String_attr = class_attr(NAME_LITERAL);
     LineNo_attr = class_attr("LineNumber");
 

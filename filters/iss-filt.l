@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Id: iss-filt.l,v 1.20 2018/03/23 00:59:04 tom Exp $
+ * $Id: iss-filt.l,v 1.21 2020/05/10 20:28:08 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Inno Setup
  * input text.
@@ -21,7 +21,7 @@ static const char *Action_attr;
 static const char *Comment_attr;
 static const char *Ident2_attr;
 static const char *Number_attr;
-static const char *Prepro_attr;
+static const char *Preproc_attr;
 static const char *String_attr;
 
 static const char *save_table;
@@ -47,7 +47,7 @@ NUMBER		{HEXADECIMAL}|{INTEGER}|{REAL}
 
 %%
 
-<SETUP,FLAGS,CODE>^"#"{IDENT} { WriteToken3(Prepro_attr, 1);
+<SETUP,FLAGS,CODE>^"#"{IDENT} { WriteToken3(Preproc_attr, 1);
 			  save_table = get_symbol_table();
 			  push_state(PREPRO);
 			  set_symbol_table("iss_cpp");
@@ -163,7 +163,7 @@ do_filter(FILE *inputs)
     Comment_attr = class_attr(NAME_COMMENT);
     Ident2_attr = class_attr(NAME_IDENT2);
     Number_attr = class_attr(NAME_NUMBER);
-    Prepro_attr = class_attr(NAME_PREPROC);
+    Preproc_attr = class_attr(NAME_PREPROC);
     String_attr = class_attr(NAME_LITERAL);
 
     begin_state(FLAGS);

@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/au3-filt.l,v 1.14 2013/12/02 01:32:54 tom Exp $
+ * $Id: au3-filt.l,v 1.15 2020/05/10 20:28:46 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of AutoIt
  * input text.
@@ -21,7 +21,7 @@ static char *Comment_attr;
 static char *Error_attr;
 static char *Ident2_attr;
 static char *Number_attr;
-static char *Prepro_attr;
+static char *Preproc_attr;
 static char *String_attr;
 static int if0_level;
 
@@ -42,7 +42,7 @@ NUMBER		{HEX}|{INTEGER}|{REAL}
 %%
 
 <NORMAL,IFCMT>^#[^\r\n]*$	{ const char *text = lowercase_of(yytext);
-				  WriteToken(Prepro_attr);
+				  WriteToken(Preproc_attr);
 				  if (!strncmp(text, "#comments-start", (size_t) 15)
 				   || !strncmp(text, "#cs", (size_t) 3)) {
 				    ++if0_level;
@@ -98,7 +98,7 @@ do_filter(FILE *inputs)
     Error_attr = class_attr(NAME_ERROR);
     Ident2_attr = class_attr(NAME_IDENT2);
     Number_attr = class_attr(NAME_NUMBER);
-    Prepro_attr = class_attr(NAME_PREPROC);
+    Preproc_attr = class_attr(NAME_PREPROC);
     String_attr = class_attr(NAME_LITERAL);
 
     BEGIN(NORMAL);

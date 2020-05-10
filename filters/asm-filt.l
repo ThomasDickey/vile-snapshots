@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/asm-filt.l,v 1.13 2013/12/02 01:32:54 tom Exp $
+ * $Id: asm-filt.l,v 1.14 2020/05/10 20:28:46 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of M$ assembler files.
  */
@@ -20,7 +20,7 @@ static char *Comment_attr;
 static char *Error_attr;
 static char *Ident_attr;
 static char *Number_attr;
-static char *Prepro_attr;
+static char *Preproc_attr;
 static char *Quoted_attr;
 static char *String_attr;
 
@@ -83,7 +83,7 @@ do_filter(FILE *inputs)
     Error_attr = class_attr(NAME_ERROR);
     Ident_attr = class_attr(NAME_IDENT2);
     Number_attr = class_attr(NAME_NUMBER);
-    Prepro_attr = class_attr(NAME_PREPROC);
+    Preproc_attr = class_attr(NAME_PREPROC);
     Quoted_attr = class_attr(NAME_QUOTED);
     String_attr = class_attr(NAME_LITERAL);
 

@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/as-filt.l,v 1.14 2013/12/02 01:32:54 tom Exp $
+ * $Id: as-filt.l,v 1.15 2020/05/10 20:28:46 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of assembler files.
  */
@@ -18,7 +18,7 @@ static char *Comment_attr;
 static char *Error_attr;
 static char *Ident_attr;
 static char *Number_attr;
-static char *Prepro_attr;
+static char *Preproc_attr;
 static char *String_attr;
 
 static const char *expect_attr(char *name);
@@ -40,13 +40,13 @@ FORMAT		"%"[.*[:digit:]l#+-]*[cdeEfFgGisuxX]
 
 %%
 
-<NORMAL>"$"		{ WriteToken(Prepro_attr); }
+<NORMAL>"$"		{ WriteToken(Preproc_attr); }
 <NORMAL>{IDENT}		{ WriteToken(get_keyword_attr(yytext)); }
 <NORMAL>"%"{IDENT}	{ WriteToken(expect_attr(yytext)); }
 <NORMAL>";"[^\r\n]*	{ WriteToken(Comment_attr); }
 <NORMAL>{INTEGER}	{ WriteToken(Number_attr); }
 
-<NORMAL>"^#.*"		{ WriteToken(Prepro_attr); }
+<NORMAL>"^#.*"		{ WriteToken(Preproc_attr); }
 
 <NORMAL>\\[^\r\n]	|
 <NORMAL>{SSTRING}	{ WriteToken(String_attr); }
@@ -94,7 +94,7 @@ do_filter(FILE *inputs)
     Error_attr = class_attr(NAME_ERROR);
     Ident_attr = class_attr(NAME_IDENT2);
     Number_attr = class_attr(NAME_NUMBER);
-    Prepro_attr = class_attr(NAME_PREPROC);
+    Preproc_attr = class_attr(NAME_PREPROC);
     String_attr = class_attr(NAME_LITERAL);
 
     BEGIN(NORMAL);

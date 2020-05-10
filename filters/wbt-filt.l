@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/wbt-filt.l,v 1.12 2013/12/02 01:32:53 tom Exp $
+ * $Id: wbt-filt.l,v 1.13 2020/05/10 20:28:46 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of WinBatch script.
  */
@@ -18,7 +18,7 @@ static const char *want_attr(char *want, char *name);
 static char *Comment_attr;
 static char *Error_attr;
 static char *Number_attr;
-static char *Prepro_attr;
+static char *Preproc_attr;
 static char *String_attr;
 
 %}
@@ -39,7 +39,7 @@ NUMBER		({REAL}|{DECIMAL})
 %%
 
 <NORMAL>{IDENT}		{ WriteToken(get_keyword_attr(yytext)); }
-<NORMAL>#{IDENT}	{ WriteToken(want_attr(Prepro_attr, yytext)); }
+<NORMAL>#{IDENT}	{ WriteToken(want_attr(Preproc_attr, yytext)); }
 <NORMAL>"@"{IDENT}	{ WriteToken(want_attr(Number_attr, yytext)); }
 
 <NORMAL>";"[^\r\n]*	{ WriteToken(Comment_attr); }
@@ -76,7 +76,7 @@ do_filter(FILE *inputs)
     Comment_attr = class_attr(NAME_COMMENT);
     Error_attr = class_attr(NAME_ERROR);
     Number_attr = class_attr(NAME_NUMBER);
-    Prepro_attr = class_attr(NAME_PREPROC);
+    Preproc_attr = class_attr(NAME_PREPROC);
     String_attr = class_attr(NAME_LITERAL);
 
     BEGIN(NORMAL);

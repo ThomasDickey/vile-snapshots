@@ -1,4 +1,4 @@
-; $Id: modes.rc,v 1.147 2020/05/08 19:54:20 tom Exp $
+; $Id: modes.rc,v 1.149 2020/05/10 20:30:36 tom Exp $
 ; majormodes in this file are ordered alphabetically for convenience - the
 ; precedence used by vile is strictly alphabetic, counting case.  Use the
 ; before and after qualifiers to override the precedence.
@@ -627,9 +627,11 @@ define-mode nmake
 ~with define-submode nmake
 	suffixes	'\.dsp$'
 	dos
-	comment-prefix	'^\s*[!#]'
-	comments	'^\s*[!#]\s*$'
+	comment-prefix	'^\s*[#]'
+	comments	'^\s*[#]\s*$'
+~if &sin $os 'win32'
 	ignorecase
+~endif
 ~with define-submode nmake group 'nmake'
 	fence-if   '^\s*!\s*if'
 	fence-elif '^\s*!\s*else\s*if'

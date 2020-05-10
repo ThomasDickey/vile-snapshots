@@ -1,4 +1,4 @@
-; $Id: filters.rc,v 1.255 2020/05/08 08:18:52 tom Exp $
+; $Id: filters.rc,v 1.256 2020/05/09 09:27:17 tom Exp $
 ; majormodes in this file are ordered alphabetically for convenience - the
 ; precedence used by vile is strictly alphabetic, counting case.
 
@@ -189,7 +189,7 @@ define-mode mvn
 
 define-mode nmake
 ~with define-submode nmake
-	filtername	'vile-make-filt -i'
+	filtername	'vile-nmake-filt'
 ~endwith
 
 define-mode nsis
