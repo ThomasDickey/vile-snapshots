@@ -1,4 +1,4 @@
-MANIFEST for vile, version v9_8t22
+MANIFEST for vile, version v9_8t23
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 AUTHORS                         list of authors, with nicknames in CHANGES
@@ -314,6 +314,8 @@ filters/mk-2nd.bat              generate rules for makefile.wnt
 filters/mk-key.awk              generate install/uninstall rules for keyword files
 filters/mms-filt.l              mms syntax filter for vile
 filters/mvn.key                 keywords for mvn (maven) mode
+filters/nmake.key               keywords for nmake
+filters/nmakeflt.l              syntax filter for nmake
 filters/noclass.sh              script to support lex's w/o character-classes
 filters/nr-filt.l               nroff syntax highlighting filter for vile
 filters/nr.key                  keywords for nroff filter

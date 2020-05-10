@@ -4,7 +4,7 @@
 %{
 
 /*
- * $Header: /users/source/archives/vile.vcs/filters/RCS/pot-filt.l,v 1.13 2013/12/02 01:32:53 tom Exp $
+ * $Id: pot-filt.l,v 1.14 2020/05/10 20:28:46 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of gettext files.
  */
@@ -18,7 +18,7 @@ static char *Comment_attr;
 static char *Error_attr;
 static char *Ident_attr;
 static char *Number_attr;
-static char *Prepro_attr;
+static char *Preproc_attr;
 static char *String_attr;
 
 %}
@@ -36,7 +36,7 @@ FORMAT		"%"[.*[:digit:]l$#+-]*[cdeEfFgGisuxX]
 %%
 
 <NORMAL>{IDENT}		{ WriteToken(get_keyword_attr(yytext)); }
-<NORMAL>"#:"[^\r\n]*	{ WriteToken(Prepro_attr); }
+<NORMAL>"#:"[^\r\n]*	{ WriteToken(Preproc_attr); }
 <NORMAL>"#"[^\r\n]*	{ WriteToken(Comment_attr); }
 <NORMAL>{INTEGER}	{ WriteToken(Number_attr); }
 
@@ -71,7 +71,7 @@ do_filter(FILE *inputs)
     Error_attr = class_attr(NAME_ERROR);
     Ident_attr = class_attr(NAME_IDENT2);
     Number_attr = class_attr(NAME_NUMBER);
-    Prepro_attr = class_attr(NAME_PREPROC);
+    Preproc_attr = class_attr(NAME_PREPROC);
     String_attr = class_attr(NAME_LITERAL);
 
     BEGIN(NORMAL);
