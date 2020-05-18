@@ -1,11 +1,13 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20200510 (u)
+ 20200517 (u)
 	> Brendan O'Dea:
 	+ add smartcase mode (prompted by suggestion by Marc Simpson).
 	> Michael von der Heide
 	+ modify vile-spell-filt to allow for umlauts in UTF-8
 	> Tom Dickey:
+	+ add "install-keywords" and "uninstall-keywords" targets to the
+	  top-level and filters makefiles.
 	+ prove separate a "nmake" highlighter from "make", to color
 	  conditional directives and handle special cases of trailing "\".
 	+ modify winvile.iss to make the 64-bit installers more distinct from

@@ -1,4 +1,4 @@
-# $Header: /users/source/archives/vile.vcs/filters/RCS/mk-key.awk,v 1.2 2000/03/16 23:37:16 tom Exp $
+# $Id: mk-key.awk,v 1.3 2020/05/16 08:39:19 tom Exp $
 #
 # Generate makefile rules for vile's keywords files, i.e., to install/uninstall.
 # Basically we want to install all of the .key files as .keywords, but cannot
@@ -31,9 +31,9 @@ END	{
 		}
 		print ""
 		print ""
-		print "install :: $(INSTALL_TEXT)"
+		print "install install-keywords :: $(INSTALL_TEXT)"
 		print ""
-		print "uninstall ::"
+		print "uninstall uninstall-keywords ::"
 		printf "\t-$(RM) $(INSTALL_TEXT)\n"
 		print ""
 

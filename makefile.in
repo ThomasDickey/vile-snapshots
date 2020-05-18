@@ -20,7 +20,7 @@
 #
 # gnu autoconf support by kevin buettner, 5/94
 #
-# $Id: makefile.in,v 1.285 2020/01/05 23:47:27 tom Exp $
+# $Id: makefile.in,v 1.287 2020/05/16 09:50:43 tom Exp $
 
 SHELL		= @SHELL@
 
@@ -353,6 +353,8 @@ ALL =	$(PROGRAM)
 @MAKE_FILTERS@all \
 @MAKE_FILTERS@install-filters \
 @MAKE_FILTERS@uninstall-filters \
+@MAKE_FILTERS@install-keywords \
+@MAKE_FILTERS@uninstall-keywords \
 @MAKE_FILTERS@install-full \
 @MAKE_FILTERS@uninstall-full \
 @MAKE_FILTERS@install :: $(BUILTHDRS)
@@ -494,9 +496,12 @@ INSTALL_X_FILES = \
 	$(BINDIR)/xshell.sh \
 	$(DATADIR)/vilemenu.rc
 
+INSTALL_HELP_FILES = \
+	$(DATADIR)/vile.hlp
+
 INSTALL_FILES = \
 	$(INSTALL_MACRO_FILES) \
-	$(DATADIR)/vile.hlp @EXTRA_INSTALL_FILES@
+	$(INSTALL_HELP_FILES) @EXTRA_INSTALL_FILES@
 
 USE_SYMLINK = test "x@VILE_SYMLINK@" != "xNONE"
 
@@ -600,6 +605,8 @@ install :: $(MANDIR)
 
 install-doc :		$(DOCDIR)		$(INSTALL_DOC_FILES)
 
+install-help :		$(DATADIR)		$(INSTALL_HELP_FILES)
+
 install-html :		$(HTMLDIR)		$(INSTALL_HTML_FILES)
 
 install-macros :	$(DATADIR)		$(INSTALL_MACRO_FILES)
@@ -624,6 +631,9 @@ uninstall ::
 
 uninstall-doc :
 	- $(RM) $(INSTALL_DOC_FILES)
+
+uninstall-help :
+	- $(RM) $(INSTALL_HELP_FILES)
 
 uninstall-html :
 	- $(RM) $(INSTALL_HTML_FILES)
