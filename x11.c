@@ -2,7 +2,7 @@
  *	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Id: x11.c,v 1.394 2020/02/05 23:27:15 tom Exp $
+ * $Id: x11.c,v 1.395 2020/05/17 23:17:18 tom Exp $
  */
 
 /*
@@ -23,6 +23,14 @@
  */
 
 #include <x11vile.h>
+
+#ifndef GCC_NORETURN
+#ifdef _X_NORETURN
+#define GCC_NORETURN		_X_NORETURN
+#else
+#define GCC_NORETURN		/* nothing */
+#endif
+#endif
 
 #if DISP_X11 && XTOOLKIT
 
@@ -1490,7 +1498,7 @@ static XtResource pointer_resources[] =
 	    else if ((v) < (min))	\
 		(v) = (min);		\
 	} one_time
-static void initial_error_handler(String message) _X_NORETURN;
+static void initial_error_handler(String message) GCC_NORETURN;
 static void
 initial_error_handler(String message)
 {
@@ -1498,7 +1506,7 @@ initial_error_handler(String message)
     fprintf(stderr, "%s: %s\n", prog_arg, NonNull(message));
     print_usage(BADEXIT);
 }
-static void runtime_error_handler(String message) _X_NORETURN;
+static void runtime_error_handler(String message) GCC_NORETURN;
 static void
 runtime_error_handler(String message)
 {
