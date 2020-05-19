@@ -1,8 +1,8 @@
 # Created by: pgf
-# $FreeBSD: tags/RELEASE_12_0_0/editors/xvile/Makefile 428846 2016-12-18 11:47:09Z olivierd $
+# $FreeBSD: head/editors/xvile/Makefile 516802 2019-11-05 15:48:40Z zeising $
 
 PORTNAME=	vile
-PORTVERSION=	9.8t
+PORTVERSION=	9.8u
 CATEGORIES=	editors
 MASTER_SITES=	ftp://dickey.his.com/vile/current/ \
 		ftp://ftp.invisible-island.net/vile/current/ \
@@ -19,7 +19,7 @@ LICENSE=	GPLv2
 
 BUILD_DEPENDS=	reflex:textproc/reflex
 
-USES=		pkgconfig shebangfix tar:tgz
+USES=		pkgconfig shebangfix tar:tgz xorg
 SHEBANG_FILES=	macros/lxvile macros/lxvile-fonts perl/vileget
 USE_XORG=	x11 xext xpm xt
 GNU_CONFIGURE=	yes
@@ -80,9 +80,6 @@ post-patch:
 		 s|$$(datadir)/html|$$(docdir)/html| ; \
 		 s|\($$(DOCDIR)\) \($$(MANDIR)\)|\1 $$(HTMLDIR) \2|' \
 		${WRKSRC}/makefile.in
-	@${REINPLACE_CMD} -e \
-		'/^Categories/s|Application;||' \
-		${WRKSRC}/macros/*.desktop
 
 post-install:
 	(cd ${WRKSRC}/macros && ${INSTALL_DATA} *.desktop \
