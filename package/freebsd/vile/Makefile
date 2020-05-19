@@ -1,8 +1,8 @@
 # Created by: pgf
-# $FreeBSD: tags/RELEASE_12_0_0/editors/vile/Makefile 446109 2017-07-17 19:41:10Z cpm $
+# $FreeBSD$
 
 PORTNAME=	vile
-PORTVERSION=	9.8t
+PORTVERSION=	9.8u
 CATEGORIES=	editors
 MASTER_SITES=	ftp://dickey.his.com/vile/current/ \
 		ftp://ftp.invisible-island.net/vile/current/ \

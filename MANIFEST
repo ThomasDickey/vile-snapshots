@@ -1,4 +1,4 @@
-MANIFEST for vile, version v9_8u
+MANIFEST for vile, version v9_8u2
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 AUTHORS                         list of authors, with nicknames in CHANGES
@@ -501,12 +501,16 @@ package/debian/xvile.menu       debian build script
 package/freebsd/vile            subdirectory
 package/freebsd/vile/Makefile   build-script
 package/freebsd/vile/distinfo   build-script
+package/freebsd/vile/files                  subdirectory
+package/freebsd/vile/files/patch-configure  fixup for vile-9.8u port
+package/freebsd/vile            subdirectory
 package/freebsd/vile/pkg-descr  build-script
 package/freebsd/vile/pkg-plist  build-script
 package/freebsd/xvile           subdirectory
 package/freebsd/xvile/Makefile  build-script
 package/freebsd/xvile/distinfo  build-script
 package/freebsd/xvile/files                  subdirectory
+package/freebsd/xvile/files/patch-configure  fix for vile 9.8u clang
 package/freebsd/xvile/files/patch-x11menu.c  build-script
 package/freebsd/xvile/files/patch-x11vile.h  build-script
 package/freebsd/xvile           subdirectory

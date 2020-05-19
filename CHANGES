@@ -1,5 +1,9 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
+ 20200519 (v)
+	> Tom Dickey:
+	+ update FreeBSD package-files for 9.8u
+
  20200517 (u)
 	> Brendan O'Dea:
 	+ add smartcase mode (prompted by suggestion by Marc Simpson).
