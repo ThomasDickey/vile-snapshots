@@ -1,4 +1,4 @@
-MANIFEST for vile, version v9_8u3
+MANIFEST for vile, version v9_8u4
 --------------------------------------------------------------------------------
 MANIFEST                        this file
 AUTHORS                         list of authors, with nicknames in CHANGES
@@ -518,6 +518,21 @@ package/freebsd/xvile/pkg-descr build-script
 package/freebsd/xvile/pkg-plist build-script
 package                         subdirectory
 package/minvile.nsi             NSIS package for minvile
+package/pkgsrc/vile               subdirectory
+package/pkgsrc/vile/ALTERNATIVES  build-script
+package/pkgsrc/vile/DESCR       build-script
+package/pkgsrc/vile/Makefile    build-script
+package/pkgsrc/vile/PLIST       build-script
+package/pkgsrc/vile/distinfo    build-script
+package/pkgsrc/vile/options.mk  build-script
+package/pkgsrc/vile/patches                            subdirectory
+package/pkgsrc/vile/patches/patch-filters_makefile.in  build-scripts
+package/pkgsrc/vile/patches/patch-makefile.in  build-script
+package/pkgsrc/xvile            subdirectory
+package/pkgsrc/xvile/DESCR      build-script
+package/pkgsrc/xvile/Makefile   build-script
+package/pkgsrc/xvile/PLIST      build-script
+package                         subdirectory
 package/vile.spec               sample RPM spec file for vile
 package/winvile-wide.iss        Inno Setup script for winvile-wide
 package/winvile.iss             Inno Setup script for winvile

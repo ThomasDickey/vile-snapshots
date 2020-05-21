@@ -1,7 +1,8 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20200519 (v)
+ 20200520 (v)
 	> Tom Dickey:
+	+ add/fix NetBSD pkgsrc-files for 9.8u
 	+ update FreeBSD package-files for 9.8u
 
  20200517 (u)
