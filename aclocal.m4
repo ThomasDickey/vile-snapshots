@@ -1,4 +1,4 @@
-dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.310 2020/03/29 21:42:33 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.311 2020/05/22 08:20:56 tom Exp $
 dnl ---------------------------------------------------------------------------
 dnl
 dnl Copyright 1996-2019,2020 by Thomas E. Dickey
@@ -158,10 +158,11 @@ define([CF_ACVERSION_COMPARE],
 [ifelse([$8], , ,[$8])],
 [ifelse([$9], , ,[$9])])])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_ADD_CFLAGS version: 13 updated: 2017/02/25 18:57:40
+dnl CF_ADD_CFLAGS version: 14 updated: 2020/04/04 16:16:13
 dnl -------------
 dnl Copy non-preprocessor flags to $CFLAGS, preprocessor flags to $CPPFLAGS
-dnl The second parameter if given makes this macro verbose.
+dnl $1 = flags to add
+dnl $2 = if given makes this macro verbose.
 dnl
 dnl Put any preprocessor definitions that use quoted strings in $EXTRA_CPPFLAGS,
 dnl to simplify use of $CPPFLAGS in compiler checks, etc., that are easily
@@ -1932,7 +1933,7 @@ rm -rf conftest*
 fi
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_GCC_OPT_RDYNAMIC version: 4 updated: 2015/05/15 19:42:24
+dnl CF_GCC_OPT_RDYNAMIC version: 5 updated: 2020/05/22 04:17:28
 dnl -------------------
 dnl "Newer" versions of gcc support the -rdynamic option:
 dnl		Pass the flag -export-dynamic to the ELF linker, on targets that
@@ -1945,8 +1946,7 @@ AC_DEFUN([CF_GCC_OPT_RDYNAMIC],[
 
 if test "x$CLANG_COMPILER" = "xyes"
 then
-	AC_MSG_WARN(clang only pretends to honor gcc -rdynamic option)
-	cf_cv_gcc_opt_rdynamic=no
+	AC_MSG_WARN(clang may only pretend to honor gcc -rdynamic option)
 else
 
 AC_CACHE_CHECK([if $CC has -rdynamic option],cf_cv_gcc_opt_rdynamic,[
@@ -2963,7 +2963,7 @@ CF_SUBDIR_PATH($1,$2,lib)
 $1="$cf_library_path_list [$]$1"
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_LIB_PREFIX version: 12 updated: 2015/10/17 19:03:33
+dnl CF_LIB_PREFIX version: 13 updated: 2020/04/04 10:11:47
 dnl -------------
 dnl Compute the library-prefix for the given host system
 dnl $1 = variable to set
@@ -2976,6 +2976,9 @@ define([CF_LIB_PREFIX],
 		else
 			LIB_PREFIX=''
 		fi
+		;;
+	(*-msvc*)
+		LIB_PREFIX=''
 		;;
 	(*)	LIB_PREFIX='lib'
 		;;

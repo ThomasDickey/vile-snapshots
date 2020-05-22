@@ -1,7 +1,9 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20200520 (v)
+ 20200522 (v)
 	> Tom Dickey:
+	+ modify configure script to allow clang to support loadable filters,
+	  since recent configurations work.
 	+ add/fix NetBSD pkgsrc-files for 9.8u
 	+ update FreeBSD package-files for 9.8u
 
