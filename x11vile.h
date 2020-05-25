@@ -1,7 +1,7 @@
 /*
  * Common definitions for xvile modules.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/x11vile.h,v 1.3 2013/04/14 19:09:08 tom Exp $
+ * $Id: x11vile.h,v 1.5 2020/05/24 16:51:15 tom Exp $
  */
 
 /*
@@ -488,7 +488,11 @@ typedef struct {
     Time time;
 } SelectionList;
 
+#ifdef XRENDERFONT
+#define	FONTNAME	"monospace"
+#else
 #define	FONTNAME	"7x13"
+#endif
 
 #define	x_width(tw)		((tw)->cols * (UINT) (tw)->char_width)
 #define	x_height(tw)		((tw)->rows * (UINT) (tw)->char_height)
@@ -501,6 +505,9 @@ typedef struct {
 
 #undef max
 #define max(a,b)		((a) > (b) ? (a) : (b))
+
+#define XtNfontFamily		"fontFamily"
+#define XtCFontFamily		"FontFamily"
 
 #define XtNnormalShape		"normalShape"
 #define XtCNormalShape		"NormalShape"
@@ -631,29 +638,29 @@ typedef struct {
 #define XtCBcolorF		"Bcolor15"
 
 typedef enum {
-	aeAVERAGE_WIDTH
-	,aeCHARSET_ENCODING
-	,aeCHARSET_REGISTRY
-	,aeCLIPBOARD
-	,aeCOMPOUND_TEXT
-	,aeFONT
-	,aeFOUNDRY
-	,aeMULTIPLE
-	,aeNONE
-	,aePIXEL_SIZE
-	,aeRESOLUTION_X
-	,aeRESOLUTION_Y
-	,aeSETWIDTH_NAME
-	,aeSLANT
-	,aeSPACING
-	,aeTARGETS
-	,aeTEXT
-	,aeTIMESTAMP
-	,aeUTF8_STRING
-	,aeWEIGHT_NAME
-	,aeWM_DELETE_WINDOW
-	,aeWM_PROTOCOLS
-	,aeMAX
+    aeAVERAGE_WIDTH
+    ,aeCHARSET_ENCODING
+    ,aeCHARSET_REGISTRY
+    ,aeCLIPBOARD
+    ,aeCOMPOUND_TEXT
+    ,aeFONT
+    ,aeFOUNDRY
+    ,aeMULTIPLE
+    ,aeNONE
+    ,aePIXEL_SIZE
+    ,aeRESOLUTION_X
+    ,aeRESOLUTION_Y
+    ,aeSETWIDTH_NAME
+    ,aeSLANT
+    ,aeSPACING
+    ,aeTARGETS
+    ,aeTEXT
+    ,aeTIMESTAMP
+    ,aeUTF8_STRING
+    ,aeWEIGHT_NAME
+    ,aeWM_DELETE_WINDOW
+    ,aeWM_PROTOCOLS
+    ,aeMAX
 } XVileAtom;
 
 #define GetAtom(name) xvileAtom(ae ## name)
