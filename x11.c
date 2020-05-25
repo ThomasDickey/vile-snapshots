@@ -2,7 +2,7 @@
  *	X11 support, Dave Lemke, 11/91
  *	X Toolkit support, Kevin Buettner, 2/94
  *
- * $Id: x11.c,v 1.395 2020/05/17 23:17:18 tom Exp $
+ * $Id: x11.c,v 1.401 2020/05/24 19:04:01 tom Exp $
  */
 
 /*
@@ -132,8 +132,6 @@ static int x_has_events(void);
 #define x_has_events() (XtAppPending(cur_win->app_context) & XtIMXEvent)
 #endif /* OPT_WORKING */
 static void evqadd(const XEvent *evp);
-
-#define	FONTNAME	"7x13"
 
 #define	x_width(tw)		((tw)->cols * (UINT) (tw)->char_width)
 #define	x_height(tw)		((tw)->rows * (UINT) (tw)->char_height)
@@ -1342,7 +1340,11 @@ static XtResource app_resources[] =
     XRES_BOOL(XtNreverseVideo, XtCReverseVideo, reverse_video, False),
     XRES_STRING(XtNiconName, XtCIconName, iconname, ""),
     XRES_STRING(XtNgeometry, XtCGeometry, geometry, "80x36"),
+#ifdef XRENDERFONT
+    XRES_STRING(XtNfontFamily, XtCString, starting_fontname, "monospace"),
+#else
     XRES_STRING(XtNfont, XtCFont, starting_fontname, "fixed"),
+#endif
     XRES_FG(XtNforeground, XtCForeground, fg),
     XRES_BG(XtNbackground, XtCBackground, bg),
     XRES_BOOL(XtNforkOnStartup, XtCForkOnStartup, fork_on_startup, False),
@@ -1572,10 +1574,15 @@ color_cursor(void)
     ULONG gcmask;
     XGCValues gcvals;
 
-    gcmask = GCForeground | GCBackground | GCFont | GCGraphicsExposures;
+    gcmask = GCForeground | GCBackground | GCGraphicsExposures;
     gcvals.foreground = cur_win->fg;
     gcvals.background = cur_win->bg;
+#if XRENDERFONT
+    fprintf(stderr, "%s:%d: not implemented\n", __FILE__, __LINE__);
+#else
+    gcmask |= GCFont;
     gcvals.font = cur_win->pfont->fid;
+#endif
     gcvals.graphics_exposures = False;
 
     cur_win->cursgc = XCreateGC(dpy,
@@ -1990,7 +1997,11 @@ x_preparse_args(int *pargc, char ***pargv)
 #endif
     TRACE_RES_I(XtNscrollRepeatInterval, scroll_repeat_interval);
     TRACE_RES_B(XtNreverseVideo, reverse_video);
+#ifdef XRENDERFONT
+    TRACE_RES_S(XtNfontFamily, starting_fontname);
+#else
     TRACE_RES_S(XtNfont, starting_fontname);
+#endif
     TRACE_RES_S(XtNgeometry, geometry);
     TRACE_RES_P(XtNforeground, fg);
     TRACE_RES_P(XtNbackground, bg);
@@ -2160,9 +2171,15 @@ x_preparse_args(int *pargc, char ***pargv)
     if (!pfont) {
 	pfont = xvileQueryFont(dpy, cur_win, FONTNAME);
 	if (!pfont) {
-	    (void) fprintf(stderr,
-			   "couldn't get font \"%s\" or \"%s\", exiting\n",
-			   cur_win->starting_fontname, FONTNAME);
+	    if (strcmp(cur_win->starting_fontname, FONTNAME)) {
+		(void) fprintf(stderr,
+			       "couldn't get font \"%s\" or \"%s\", exiting\n",
+			       cur_win->starting_fontname, FONTNAME);
+	    } else {
+		(void) fprintf(stderr,
+			       "couldn't get font \"%s\", exiting\n",
+			       FONTNAME);
+	    }
 	    ExitProgram(BADEXIT);
 	}
     }
@@ -2347,10 +2364,15 @@ x_preparse_args(int *pargc, char ***pargv)
 #endif /* LESSTIF_VERSION */
 
     /* Initialize graphics context for display of normal and reverse text */
-    gcmask = GCForeground | GCBackground | GCFont | GCGraphicsExposures;
+    gcmask = GCForeground | GCBackground | GCGraphicsExposures;
     gcvals.foreground = cur_win->fg;
     gcvals.background = cur_win->bg;
+#if XRENDERFONT
+    fprintf(stderr, "%s:%d: not implemented\n", __FILE__, __LINE__);
+#else
+    gcmask |= GCFont;
     gcvals.font = cur_win->pfont->fid;
+#endif
     gcvals.graphics_exposures = False;
     cur_win->textgc = XCreateGC(dpy,
 				DefaultRootWindow(dpy),
@@ -2360,7 +2382,11 @@ x_preparse_args(int *pargc, char ***pargv)
 
     gcvals.foreground = cur_win->bg;
     gcvals.background = cur_win->fg;
+#if XRENDERFONT
+    fprintf(stderr, "%s:%d: not implemented\n", __FILE__, __LINE__);
+#else
     gcvals.font = cur_win->pfont->fid;
+#endif
     cur_win->reversegc = XCreateGC(dpy,
 				   DefaultRootWindow(dpy),
 				   gcmask, &gcvals);
@@ -3003,6 +3029,9 @@ x_setfont(const char *fname)
 	oldw = (Dimension) x_width(cur_win);
 	oldh = (Dimension) x_height(cur_win);
 	if ((pfont = xvileQueryFont(dpy, cur_win, fname)) != 0) {
+#if XRENDERFONT
+	    fprintf(stderr, "%s:%d: not implemented\n", __FILE__, __LINE__);
+#else
 	    XSetFont(dpy, cur_win->textgc, pfont->fid);
 	    XSetFont(dpy, cur_win->reversegc, pfont->fid);
 	    XSetFont(dpy, cur_win->selgc, pfont->fid);
@@ -3015,6 +3044,7 @@ x_setfont(const char *fname)
 		XSetFont(dpy, cur_win->selgc, pfont->fid);
 		XSetFont(dpy, cur_win->revselgc, pfont->fid);
 	    }
+#endif
 	    reset_color_gcs();
 
 	    /* if size changed, resize it, otherwise refresh */
@@ -5735,17 +5765,17 @@ x_autocolor_timeout(XtPointer data GCC_UNUSED, XtIntervalId * id GCC_UNUSED)
 int
 gui_isprint(int ch)
 {
+    XVileFont *pf = cur_win->pfont;
     int result = TRUE;
 
-    if (ch >= 0) {
-#ifdef XRENDERFONT
+    if (ch >= 0 && pf != NULL) {
+#if XRENDERFONT
+	fprintf(stderr, "%s:%d: not implemented\n", __FILE__, __LINE__);
 #else
 	static XCharStruct dft, *tmp = &dft;
-	XVileFont *pf = cur_win->pfont;
 	XCharStruct *pc = 0;
 
-	if (pf != 0
-	    && pf->per_char != 0
+	if (pf->per_char != 0
 	    && !pf->all_chars_exist) {
 
 	    if (pf->max_byte1 == 0) {
