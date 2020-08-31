@@ -5,7 +5,7 @@
  * functions that adjust the top line in the window and invalidate the
  * framing, are hard.
  *
- * $Header: /users/source/archives/vile.vcs/RCS/basic.c,v 1.176 2019/12/23 01:20:36 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/basic.c,v 1.177 2020/08/30 23:47:37 tom Exp $
  *
  */
 
@@ -1526,6 +1526,7 @@ int
 show_mark_is_set(int c)
 {
     int rc = TRUE;
+#if OPT_SHOW_MARKS
     int ignore = (curbp != 0 && eql_bname(curbp, MARKS_BufName));
     if (isLower(c)) {
 	mlwrite("[Mark '%c' %s]", c, ignore ? "ignored" : "set");
@@ -1535,6 +1536,9 @@ show_mark_is_set(int c)
     } else {
 	update_scratch(MARKS_BufName, update_marklist);
     }
+#else
+    (void) c;
+#endif
     return rc;
 }
 

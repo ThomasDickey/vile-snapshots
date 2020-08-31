@@ -12,7 +12,7 @@
 */
 
 /*
- * $Id: estruct.h,v 1.756 2020/01/17 23:29:28 tom Exp $
+ * $Id: estruct.h,v 1.757 2020/08/23 19:03:03 Stephan.Schulz Exp $
  */
 
 #ifndef _estruct_h
@@ -652,6 +652,7 @@ typedef unsigned short	mode_t;
 #define OPT_NAMEBST     !SMALLER		/* name's stored in a bst */
 #define OPT_ONLINEHELP  !SMALLER		/* short per-command help */
 #define OPT_POPUPCHOICE !SMALLER		/* popup-choices mode */
+#define OPT_POPUPPOSITIONS !SMALLER		/* popup-positions mode */
 #define OPT_POPUP_MSGS  !SMALLER		/* popup-msgs mode */
 #define OPT_POSFORMAT   !SMALLER		/* position-format */
 #define OPT_REBIND      !SMALLER		/* permit rebinding of keys at run-time	*/
@@ -749,6 +750,7 @@ typedef unsigned short	mode_t;
 #define OPT_PARAMTYPES_CHOICES     OPT_MACRO_ARGS
 #define OPT_PATH_CHOICES           !SMALLER
 #define OPT_POPUP_CHOICES          (OPT_ENUM_MODES && OPT_POPUPCHOICE)
+#define OPT_POPUPPOSITIONS_CHOICES (OPT_ENUM_MODES && OPT_POPUPPOSITIONS)
 #define OPT_READERPOLICY_CHOICES   !SMALLER
 #define OPT_RECORDATTRS_CHOICES    (OPT_ENUM_MODES && SYS_VMS)
 #define OPT_RECORDFORMAT_CHOICES   (OPT_ENUM_MODES && SYS_VMS)
@@ -1528,6 +1530,11 @@ typedef enum {
 #define POPUP_CHOICES_OFF      0
 #define POPUP_CHOICES_IMMED    1
 #define POPUP_CHOICES_DELAYED  2
+
+/* popup-positions values */
+#define POPUP_POSITIONS_NOTDOT  0
+#define POPUP_POSITIONS_BOTTOM  1
+#define POPUP_POSITIONS_TOP     2
 
 /* define these so C-fence matching doesn't get confused when we're editing
 	the cfence code itself */

@@ -11,7 +11,7 @@
 #
 # The modes are table entries in the BUFFER and WINDOW structures.
 #
-# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.325 2020/01/17 22:31:30 tom Exp $
+# $Header: /users/source/archives/vile.vcs/RCS/modetbl,v 1.326 2020/08/23 19:03:03 Stephan.Schulz Exp $
 #
 #
 # Mode-table entries.  Capitalized letters are used for abbreviations.
@@ -40,6 +40,7 @@ bool							# GMD prefix
 	"maplonger"	MAPLONGER	0		# favor longer maps
 	"pin-tagstack"	PIN_TAGSTACK	0		# tagstack push/pop ops are pinned to curwin
 	"Popup-Choices"	POPUP_CHOICES	0		OPT_POPUPCHOICE&&!OPT_ENUM_MODES # popup buffer showing file-completion choices
+	"Popup-Positions" POPUP_POSITIONS 0		OPT_POPUPPOSITIONS&&!OPT_ENUM_MODES # popup buffer placement
 	"Popup-Msgs"	POPUP_MSGS	0		OPT_POPUP_MSGS	# popup buffer when multiple messages emitted
 	"popup-menu"	POPUPMENU	chgd_popupmenu	SYS_WINNT&&DISP_NTWIN # enable popup menu (win32)
 	"ReadOnly-on-ReadOnly" RONLYRONLY	0	# set readonly mode for readonly files
@@ -73,6 +74,7 @@ enum
 	"mcolor"	MCOLOR		chgd_hilite	OPT_HILITEMATCH # modeline color
 	"Mini-Hilite"   MINI_HILITE	0		# highlight minibuffer when using vi-commands
 	"Popup-Choices"	POPUP_CHOICES	0		OPT_POPUPCHOICE&&OPT_ENUM_MODES # popup buffer showing file-completion choices
+	"Popup-Positions" POPUP_POSITIONS 0		OPT_POPUPPOSITIONS&&OPT_ENUM_MODES # popup buffer placement
 	"Reader-Policy"	READER_POLICY	0		# tell whether slowreadf() should be used if we run out of memory
 	"video-attrs"	VIDEO		chgd_color	OPT_COLOR	# video attributes, especially reverse
 	"vtflash"	VTFLASH		0		VTFLASH_HOST&&(OPT_FLASH) # flash using DEC VT esc sequences
@@ -646,6 +648,11 @@ string
 "delayed"	POPUP_CHOICES_DELAYED
 "immediate"	POPUP_CHOICES_IMMED
 "off"		POPUP_CHOICES_OFF
+
+.table popuppositions
+"notdot"	POPUP_POSITIONS_NOTDOT
+"bottom"	POPUP_POSITIONS_BOTTOM
+"top"		POPUP_POSITIONS_TOP
 
 .table readerpolicy
 "both"		RP_BOTH

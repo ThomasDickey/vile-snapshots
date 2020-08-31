@@ -7,7 +7,7 @@
  * Major extensions for vile by Paul Fox, 1991
  * Majormode extensions for vile by T.E.Dickey, 1997
  *
- * $Id: modes.c,v 1.457 2019/12/19 09:35:28 bod Exp $
+ * $Id: modes.c,v 1.458 2020/08/23 19:03:03 Stephan.Schulz Exp $
  */
 
 #include <estruct.h>
@@ -954,6 +954,9 @@ static const FSM_TABLE fsm_tbl[] =
 #endif
 #if OPT_POPUP_CHOICES
     {"popup-choices", &fsm_popup_blist},
+#endif
+#if OPT_POPUPPOSITIONS_CHOICES
+    {"popup-positions", &fsm_popuppositions_blist},
 #endif
 #if VILE_NEVER
     {"error", &fsm_error},
