@@ -1,5 +1,5 @@
 <!--
-  $Id: vile-hlp.html,v 1.117 2020/01/18 01:56:37 tom Exp $
+  $Id: vile-hlp.html,v 1.118 2020/08/30 21:44:22 tom Exp $
 -->
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN">
 
@@ -3122,6 +3122,27 @@ vile:ts=4:nu
     is treated specially during startup; unless the startup file
     (e.g., .vilerc) sets it, all messages will be popped up, then
     the mode will be initialized to "false". (U)</dd>
+
+    <dt><a name="mode-popup-positions" id=
+    "mode-popup-positions">popup-positions (pp)</a>
+    </dt>
+
+    <dd>
+      Must be set to one of the following three values:
+
+      <ol>
+        <li>"notdot",</li>
+
+        <li>"bottom", or</li>
+
+        <li>"top"</li>
+      </ol>
+
+      <p>When enabled with either "bottom" or "top", vile pops up
+      buffers showing buffers, completions and messages below or
+      above the current window. "notdot" is the default behaviour,
+      the popup window will appear away from the cursor line.</p>
+    </dd>
 
     <dt><a name="mode-preamble" id="mode-preamble">preamble
     (pre)</a>

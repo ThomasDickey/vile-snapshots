@@ -1,7 +1,11 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20200522 (v)
+ 20200830 (v)
+ 	> Stephan Schulz:
+	+ add popup-choices mode (Savannah #58999)
 	> Tom Dickey:
+	+ fix a few build problems with --disable-extensions
+	+ split-out x11plain.c, to start work on TrueType font support in xvile
 	+ modify configure script to allow clang to support loadable filters,
 	  since recent configurations work.
 	+ add/fix NetBSD pkgsrc-files for 9.8u

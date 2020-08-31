@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Id: proto.h,v 1.750 2020/03/29 22:42:59 tom Exp $
+ * $Id: proto.h,v 1.751 2020/08/30 23:57:00 tom Exp $
  */
 
 #ifndef VILE_PROTO_H
@@ -185,7 +185,6 @@ extern char *kcod2prc (int c, char *seq);
 extern char *kcod2pstr (int c, char *seq, int limit);
 extern const CMDFUNC *engl2fnc (const char *fname);
 extern const CMDFUNC *kcod2fnc (const BINDINGS *bs, int c);
-extern const char * fnc2engl(const CMDFUNC * cfp);
 extern int cmd_complete (DONE_ARGS);
 extern int cs_strcmp (int case_insensitive, const char *s1, const char *s2);
 extern int cs_strncmp (int case_insensitive, const char *s1, const char *s2, size_t len);
@@ -213,6 +212,12 @@ extern char *fnc2pstr (const CMDFUNC *f);
 
 #if OPT_EVAL
 extern const char *prc2engl (const char *skey);
+#endif
+
+#if OPT_EVAL || OPT_REBIND
+extern const char * fnc2engl(const CMDFUNC * cfp);
+#else
+#define fnc2engl(cfp) ""
 #endif
 
 #if OPT_MENUS
@@ -877,6 +882,9 @@ extern int lins_chars (int n, int c);
 #if OPT_REGS_CMPL
 extern KBD_OPTIONS regs_kbd_options(void);
 extern int regs_completion(DONE_ARGS);
+#else
+#define regs_kbd_options() 0
+#define regs_completion no_completion
 #endif
 
 #if SMALLER	/* cancel neproto.h */

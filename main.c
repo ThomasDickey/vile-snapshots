@@ -21,7 +21,7 @@
  */
 
 /*
- * $Id: main.c,v 1.741 2020/05/08 20:54:20 tom Exp $
+ * $Id: main.c,v 1.742 2020/08/30 23:41:27 tom Exp $
  */
 
 #define realdef			/* Make global definitions not external */
@@ -1136,7 +1136,9 @@ main_loop(void)
 	 * Now that we have started a command, reset "$_".  If we did this at a
 	 * lower level, we could not test for it in macros, etc.
 	 */
+#if OPT_EVAL
 	tb_scopy(&last_macro_result, status2s(TRUE));
+#endif
 
 	/* reset the contents of the command/status line */
 	if (kbd_length() > 0) {
@@ -1552,6 +1554,9 @@ init_mode_value(struct VAL *d, MODECLASS v_class, int v_which)
 #ifdef GMDPOPUP_CHOICES
 	    setINT(GMDPOPUP_CHOICES, TRUE);
 #endif
+#ifdef GMDPOPUP_POSITIONS
+	    setINT(GMDPOPUP_POSITIONS, TRUE);
+#endif
 #ifdef GMDPOPUPMENU
 	    setINT(GMDPOPUPMENU, TRUE);		/* enable popup menu */
 #endif
@@ -1623,6 +1628,9 @@ init_mode_value(struct VAL *d, MODECLASS v_class, int v_which)
 #endif
 #ifdef GVAL_POPUP_CHOICES
 	    setINT(GVAL_POPUP_CHOICES, POPUP_CHOICES_DELAYED);
+#endif
+#ifdef GVAL_POPUP_POSITIONS
+	    setINT(GVAL_POPUP_POSITIONS, POPUP_POSITIONS_NOTDOT);	/* default */
 #endif
 #ifdef GVAL_READER_POLICY
 	    setINT(GVAL_READER_POLICY, RP_BOTH);

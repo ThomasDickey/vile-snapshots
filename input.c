@@ -44,7 +44,7 @@
  *	tgetc_avail()     true if a key is avail from tgetc() or below.
  *	keystroke_avail() true if a key is avail from keystroke() or below.
  *
- * $Id: input.c,v 1.370 2020/03/29 22:44:42 tom Exp $
+ * $Id: input.c,v 1.371 2020/08/30 23:46:08 tom Exp $
  */
 
 #include	"estruct.h"
@@ -935,6 +935,8 @@ vl_ctype2tbuff(TBUFF **result, CHARTYPE inclchartype, int whole_line)
 	vl_get_offset = -1;
 	vl_get_length = -1;
     }
+#else
+    (void) save_off;
 #endif
 
     returnCode(okay);

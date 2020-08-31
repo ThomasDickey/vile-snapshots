@@ -2,7 +2,7 @@
  * Window management. Some of the functions are internal, and some are
  * attached to keys that the user actually types.
  *
- * $Id: window.c,v 1.132 2020/03/29 22:32:38 tom Exp $
+ * $Id: window.c,v 1.133 2020/08/30 23:44:12 tom Exp $
  */
 
 #include	"estruct.h"
@@ -619,6 +619,7 @@ splitw(int f, int n)
     int ntru;
     int ntrl;
     int ntrd;
+    int pos = n;
     WINDOW *wp1;
     WINDOW *wp2;
 
@@ -638,11 +639,80 @@ splitw(int f, int n)
 
 	lp = curwp->w_line.l;
 	ntrd = 0;
-	while (lp != DOT.l) {
-	    ntrd += line_height(wp, lp);
-	    lp = lforw(lp);
+	if (f == FALSE) {
+	    /* pop-up should go whereever dot is not */
+	    while (lp != DOT.l) {
+		ntrd += line_height(wp, lp);
+		lp = lforw(lp);
+	    }
+	    /* ntrd is now the row containing dot */
+	    if (ntrd <= ntru) {
+		/* Old is upper window. */
+		pos = 1;
+		/* Adjust the top line if necessary */
+		if (ntrd == ntru) {	/* Hit mode line.       */
+		    if (ntrl > 1) {
+			ntru++;
+			ntrl--;
+		    } else {
+			curwp->w_line.l = lforw(curwp->w_line.l);
+			curwp->w_line.o = 0;
+		    }
+		}
+	    } else {
+		/* Old is lower window  */
+		pos = 2;
+	    }
 	}
 
+	if (pos == 1) {
+	    /* pop-up below */
+	    curwp->w_ntrows = ntru;	/* new size */
+	    /* insert new window after curwp in window list */
+	    wp->w_wndp = curwp->w_wndp;
+	    curwp->w_wndp = wp;
+	    /* set new window's position and size */
+	    wp->w_toprow = curwp->w_toprow + ntru + 1;
+	    wp->w_ntrows = ntrl;
+	    /* try to keep lower from reframing */
+	    wp->w_line.l = adjust_forw(wp, wp->w_line.l, ntru + 1);
+	    wp->w_line.o = 0;
+	    wp->w_dot.l = wp->w_line.l;
+	    wp->w_dot.o = 0;
+	    /* update the split history */
+	    curwp->w_split_hist <<= 1;
+	    wp->w_split_hist = curwp->w_split_hist | 1;
+	} else {
+	    /* pop-up above  */
+	    wp1 = NULL;
+	    wp2 = wheadp;
+	    while (wp2 != curwp) {
+		wp1 = wp2;
+		wp2 = wp2->w_wndp;
+	    }
+	    if (wp1 == NULL)
+		wheadp = wp;
+	    else
+		wp1->w_wndp = wp;
+	    wp->w_wndp = curwp;
+	    wp->w_toprow = curwp->w_toprow;
+	    wp->w_ntrows = ntru;
+	    ++ntru;		/* Mode line.           */
+	    curwp->w_toprow += ntru;
+	    curwp->w_ntrows = ntrl;
+	    wp->w_dot.l = wp->w_line.l;
+	    /* move upper window dot to bottom line of upper */
+	    wp->w_dot.l = adjust_forw(wp, wp->w_dot.l, ntru - 2);
+	    wp->w_dot.o = 0;
+	    /* adjust lower window topline */
+	    curwp->w_line.l = adjust_forw(curwp, curwp->w_line.l, ntru);
+	    curwp->w_line.o = 0;
+	    /* update the split history */
+	    wp->w_split_hist <<= 1;
+	    curwp->w_split_hist = wp->w_split_hist | 1;
+	}
+
+#if 0
 	/* ntrd is now the row containing dot */
 	if (((f == FALSE) && (ntrd <= ntru)) || ((f == TRUE) && (n == 1))) {
 	    /* Old is upper window. */
@@ -700,6 +770,8 @@ splitw(int f, int n)
 	    wp->w_split_hist <<= 1;
 	    curwp->w_split_hist = wp->w_split_hist | 1;
 	}
+#endif
+
 	curwp->w_flag |= WFMODE | WFHARD | WFSBAR;
 	wp->w_flag |= WFMODE | WFHARD;
 
@@ -834,6 +906,15 @@ wpopup(void)
     WINDOW *wp;
     WINDOW *owp;
     WINDOW *biggest_wp;
+    int force = FALSE;
+    int pos = 0;
+#if OPT_POPUPPOSITIONS
+#if OPT_ENUM_MODES
+    int gvalpopup_pos = global_g_val(GVAL_POPUP_POSITIONS);
+#else
+    int gvalpopup_pos = global_g_val(GMDPOPUP_POSITIONS);
+#endif
+#endif /* OPT_POPUPPOSITIONS */
 
     owp = curwp;
     wp = biggest_wp = wheadp;	/* Find window to split   */
@@ -844,7 +925,16 @@ wpopup(void)
     }
     if (biggest_wp->w_ntrows >= MINWLNS) {
 	curwp = biggest_wp;
-	wp = splitw(FALSE, 0);	/* yes -- choose the unoccupied half */
+#if OPT_POPUPPOSITIONS
+	if (gvalpopup_pos == POPUP_POSITIONS_BOTTOM) {
+	    force = TRUE;
+	    pos = 1;
+	} else if (gvalpopup_pos == POPUP_POSITIONS_TOP) {
+	    force = TRUE;
+	    pos = 2;
+	}
+#endif
+	wp = splitw(force, pos);	/* according to popup-positions */
 	curwp = owp;
     } else {
 	/*  biggest_wp was too small  */
