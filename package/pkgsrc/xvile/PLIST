@@ -1,4 +1,4 @@
-@comment $NetBSD: PLIST,v 1.12 2019/06/19 13:19:03 mef Exp $
+@comment $NetBSD: PLIST,v 1.13 2020/05/21 07:40:28 wiz Exp $
 bin/lxvile
 bin/lxvile-fonts
 bin/uxvile

@@ -1,5 +1,5 @@
 <!--
-  $Id: config.html,v 1.22 2020/01/18 01:57:42 tom Exp $
+  $Id: config.html,v 1.23 2020/08/31 08:18:08 tom Exp $
 -->
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN">
 
@@ -1319,6 +1319,7 @@
   include:</p>
 
   <pre>
+  --enable-warnings       test: turn on GCC compiler warnings
   --disable-echo          test: display "compiling" commands (default: on)
   --disable-extensions    test: build only core functions (default: on)
   --disable-rpath-hack    don't add rpath options for additional libraries
@@ -1327,7 +1328,6 @@
   --with-dmalloc          test: use Gray Watson's dmalloc library
   --with-no-leaks         test: free permanent memory, analyze leaks
   --with-trace            test: turn on debug-tracing
-  --with-warnings         test: turn on GCC compiler warnings
 </pre>
 
   <p>The dbmalloc and dmalloc libraries are similar, checking for

@@ -1,4 +1,4 @@
-dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.311 2020/05/22 08:20:56 tom Exp $
+dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.314 2020/09/01 08:01:56 tom Exp $
 dnl ---------------------------------------------------------------------------
 dnl
 dnl Copyright 1996-2019,2020 by Thomas E. Dickey
@@ -895,7 +895,7 @@ AC_TRY_COMPILE([
 test $cf_cv_macros_fd_set = yes && AC_DEFINE(HAVE_TYPE_FD_SET,1,[Define to 1 if type fd_set is declared])
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_CLANG_COMPILER version: 2 updated: 2013/11/19 19:23:35
+dnl CF_CLANG_COMPILER version: 3 updated: 2020/08/28 04:10:22
 dnl -----------------
 dnl Check if the given compiler is really clang.  clang's C driver defines
 dnl __GNUC__ (fooling the configure script into setting $GCC to yes) but does
@@ -925,6 +925,10 @@ cf_save_CFLAGS="$cf_save_CFLAGS -Qunused-arguments"
 ],[])
 	ifelse([$3],,CFLAGS,[$3])="$cf_save_CFLAGS"
 	AC_MSG_RESULT($ifelse([$2],,CLANG_COMPILER,[$2]))
+fi
+
+if test "x$CLANG_COMPILER" = "xyes" ; then
+	CF_APPEND_TEXT(CFLAGS,-Wno-error=implicit-function-declaration)
 fi
 ])
 dnl ---------------------------------------------------------------------------
@@ -1558,6 +1562,29 @@ CF_ARG_OPTION(narrowproto,
 AC_MSG_RESULT($enable_narrowproto)
 ])
 dnl ---------------------------------------------------------------------------
+dnl CF_ENABLE_WARNINGS version: 6 updated: 2020/08/28 04:10:22
+dnl ------------------
+dnl Configure-option to enable gcc warnings
+AC_DEFUN([CF_ENABLE_WARNINGS],[
+if ( test "$GCC" = yes || test "$GXX" = yes )
+then
+CF_FIX_WARNINGS(CFLAGS)
+CF_FIX_WARNINGS(CPPFLAGS)
+CF_FIX_WARNINGS(LDFLAGS)
+AC_MSG_CHECKING(if you want to turn on gcc warnings)
+CF_ARG_ENABLE(warnings,
+	[  --enable-warnings       test: turn on gcc compiler warnings],
+	[with_warnings=yes],
+	[with_warnings=no])
+AC_MSG_RESULT($with_warnings)
+if test "$with_warnings" = "yes"
+then
+	CF_GCC_ATTRIBUTES
+	CF_GCC_WARNINGS($1)
+fi
+fi
+])dnl
+dnl ---------------------------------------------------------------------------
 dnl CF_ERRNO version: 5 updated: 1997/11/30 12:44:39
 dnl --------
 dnl Check if 'errno' is declared in <errno.h>
@@ -1745,6 +1772,40 @@ ifelse([$4],,[
 else
 ifelse([$5],,AC_MSG_WARN(Cannot find $3 library),[$5])
 fi
+])dnl
+dnl ---------------------------------------------------------------------------
+dnl CF_FIX_WARNINGS version: 2 updated: 2020/08/28 15:08:28
+dnl ---------------
+dnl Warning flags do not belong in CFLAGS, CPPFLAGS, etc.  Any of gcc's
+dnl "-Werror" flags can interfere with configure-checks.  Those go into
+dnl EXTRA_CFLAGS.
+dnl
+dnl $1 = variable name to repair
+define([CF_FIX_WARNINGS],[
+if ( test "$GCC" = yes || test "$GXX" = yes )
+then
+	case [$]$1 in
+	(*-Werror=*)
+		CF_VERBOSE(repairing $1: [$]$1)
+		cf_temp_flags=
+		for cf_temp_scan in [$]$1
+		do
+			case "x$cf_temp_scan" in
+			(x-Werror=*)
+				CF_APPEND_TEXT(EXTRA_CFLAGS,"$cf_temp_scan")
+				;;
+			(*)
+				CF_APPEND_TEXT(cf_temp_flags,"$cf_temp_scan")
+				;;
+			esac
+		done
+		$1="$cf_temp_flags"
+		CF_VERBOSE(... fixed [$]$1)
+		CF_VERBOSE(... extra $EXTRA_CFLAGS)
+		;;
+	esac
+fi
+AC_SUBST(EXTRA_CFLAGS)
 ])dnl
 dnl ---------------------------------------------------------------------------
 dnl CF_FP_ISREADY version: 3 updated: 2012/10/06 11:17:15
@@ -1996,7 +2057,7 @@ CF_INTEL_COMPILER(GCC,INTEL_COMPILER,CFLAGS)
 CF_CLANG_COMPILER(GCC,CLANG_COMPILER,CFLAGS)
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_GCC_WARNINGS version: 37 updated: 2020/01/05 20:04:12
+dnl CF_GCC_WARNINGS version: 38 updated: 2020/08/28 15:08:28
 dnl ---------------
 dnl Check if the compiler supports useful warning options.  There's a few that
 dnl we don't use, simply because they're too noisy:
@@ -2039,7 +2100,7 @@ then
 
 	AC_CHECKING([for $CC warning options])
 	cf_save_CFLAGS="$CFLAGS"
-	EXTRA_CFLAGS="-Wall"
+	EXTRA_CFLAGS="$EXTRA_CFLAGS -Wall"
 	for cf_opt in \
 		wd1419 \
 		wd1683 \
@@ -2062,7 +2123,6 @@ elif test "$GCC" = yes && test "$GCC_VERSION" != "unknown"
 then
 	AC_CHECKING([for $CC warning options])
 	cf_save_CFLAGS="$CFLAGS"
-	EXTRA_CFLAGS=
 	cf_warn_CONST=""
 	test "$with_ext_const" = yes && cf_warn_CONST="Wwrite-strings"
 	cf_gcc_warnings="Wignored-qualifiers Wlogical-op Wvarargs"
@@ -3104,6 +3164,19 @@ AC_SUBST(ETAGS)
 AC_SUBST(MAKE_UPPER_TAGS)
 AC_SUBST(MAKE_LOWER_TAGS)
 ])dnl
+dnl ---------------------------------------------------------------------------
+dnl CF_MERGE_EXTRA_CFLAGS version: 1 updated: 2020/09/01 04:00:32
+dnl ---------------------
+dnl CF_FIX_WARNINGS moves problematic flags into EXTRA_CFLAGS, but some scripts
+dnl may depend on being able to override that variable at build-time.  Move it
+dnl all back.
+define([CF_MERGE_EXTRA_CFLAGS],[
+if ( test "$GCC" = yes || test "$GXX" = yes )
+then
+	CFLAGS="$CFLAGS $EXTRA_CFLAGS"
+	EXTRA_CFLAGS=
+fi
+])
 dnl ---------------------------------------------------------------------------
 dnl CF_MISSING_CHECK version: 6 updated: 2002/10/09 20:00:37
 dnl ----------------
@@ -5861,29 +5934,6 @@ AC_DEFUN([CF_WITH_VALGRIND],[
 CF_NO_LEAKS_OPTION(valgrind,
 	[  --with-valgrind         test: use valgrind],
 	[USE_VALGRIND])
-])dnl
-dnl ---------------------------------------------------------------------------
-dnl CF_WITH_WARNINGS version: 5 updated: 2004/07/23 14:40:34
-dnl ----------------
-dnl Combine the checks for gcc features into a configure-script option
-dnl
-dnl Parameters:
-dnl	$1 - see CF_GCC_WARNINGS
-AC_DEFUN([CF_WITH_WARNINGS],
-[
-if ( test "$GCC" = yes || test "$GXX" = yes )
-then
-AC_MSG_CHECKING(if you want to check for gcc warnings)
-AC_ARG_WITH(warnings,
-	[  --with-warnings         test: turn on gcc warnings],
-	[cf_opt_with_warnings=$withval],
-	[cf_opt_with_warnings=no])
-AC_MSG_RESULT($cf_opt_with_warnings)
-if test "$cf_opt_with_warnings" != no ; then
-	CF_GCC_ATTRIBUTES
-	CF_GCC_WARNINGS([$1])
-fi
-fi
 ])dnl
 dnl ---------------------------------------------------------------------------
 dnl CF_WITH_XPM version: 3 updated: 2012/10/04 06:57:36
