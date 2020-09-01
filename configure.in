@@ -1,11 +1,11 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_REVISION($Revision: 1.327 $)
+AC_REVISION($Revision: 1.330 $)
 AC_PREREQ(2.52.20200111)
 
 ### Use "configure -with-screen" to override the default configuration, which is
 ### termcap-based on unix systems.
 
-dnl $Id: configure.in,v 1.327 2020/03/29 21:45:18 tom Exp $
+dnl $Id: configure.in,v 1.330 2020/09/01 08:00:22 tom Exp $
 
 define(MAKELIST, sh $srcdir/filters/makelist.sh $srcdir/filters/genmake.mak)
 
@@ -864,7 +864,7 @@ elif test -n "${with_no_leaks}" ; then
 	test -z "${with_valgrind}" && EXTRAOBJS="$EXTRAOBJS trace\$o"
 fi
 
-CF_WITH_WARNINGS(Wno-unknown-pragmas)
+CF_ENABLE_WARNINGS(Wno-unknown-pragmas)
 
 CF_INSTALL_OPTS
 
@@ -906,7 +906,7 @@ $cf_tc_externs \
 fi
 
 ###	Optional checks for missing functions (enabled with --with-warnings)
-if test -n "$with_warnings"
+if test "x$with_warnings" = "xyes"
 then
 CHECK_DECL_HDRS="$VILE_CHECK_HDRS"
 CF_MISSING_EXTERN( \
@@ -1127,6 +1127,8 @@ if test -n "$loadable" ; then
 		export LDFLAGS
 	fi
 fi
+
+CF_MERGE_EXTRA_CFLAGS
 
 ###	output makefile and config.h
 AC_OUTPUT(makefile filters/makefile filters/makefile.tmp:filters/makefile.2nd $EXTRA_OUTPUT_FILES,
