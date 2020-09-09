@@ -1,4 +1,4 @@
-dnl $Header: /users/source/archives/vile.vcs/RCS/aclocal.m4,v 1.314 2020/09/01 08:01:56 tom Exp $
+dnl $Id: aclocal.m4,v 1.325 2020/09/09 01:09:26 tom Exp $
 dnl ---------------------------------------------------------------------------
 dnl
 dnl Copyright 1996-2019,2020 by Thomas E. Dickey
@@ -505,6 +505,79 @@ ifelse([$3],,[    :]dnl
 ])dnl
 ])])dnl
 dnl ---------------------------------------------------------------------------
+dnl CF_AR_FLAGS version: 7 updated: 2020/04/04 11:37:29
+dnl -----------
+dnl Check for suitable "ar" (archiver) options for updating an archive.
+dnl
+dnl In particular, handle some obsolete cases where the "-" might be omitted,
+dnl as well as a workaround for breakage of make's archive rules by the GNU
+dnl binutils "ar" program.
+AC_DEFUN([CF_AR_FLAGS],[
+AC_REQUIRE([CF_PROG_AR])
+
+AC_CACHE_CHECK(for options to update archives, cf_cv_ar_flags,[
+	case $cf_cv_system_name in
+	(*-msvc*)
+		cf_cv_ar_flags=''
+		cat >mk_static_lib.sh <<-EOF
+		#!$SHELL
+		MSVC_BIN="[$]AR"
+		out="\[$]1"
+		shift
+		exec \[$]MSVC_BIN -out:"\[$]out" \[$]@
+		EOF
+		chmod +x mk_static_lib.sh
+		AR=`pwd`/mk_static_lib.sh
+		;;
+	(*)
+		cf_cv_ar_flags=unknown
+		for cf_ar_flags in -curvU -curv curv -crv crv -cqv cqv -rv rv
+		do
+
+			# check if $ARFLAGS already contains this choice
+			if test "x$ARFLAGS" != "x" ; then
+				cf_check_ar_flags=`echo "x$ARFLAGS" | sed -e "s/$cf_ar_flags\$//" -e "s/$cf_ar_flags / /"`
+				if test "x$ARFLAGS" != "$cf_check_ar_flags" ; then
+					cf_cv_ar_flags=
+					break
+				fi
+			fi
+
+			rm -f conftest.$ac_cv_objext
+			rm -f conftest.a
+
+			cat >conftest.$ac_ext <<EOF
+#line __oline__ "configure"
+int	testdata[[3]] = { 123, 456, 789 };
+EOF
+			if AC_TRY_EVAL(ac_compile) ; then
+				echo "$AR $ARFLAGS $cf_ar_flags conftest.a conftest.$ac_cv_objext" >&AC_FD_CC
+				$AR $ARFLAGS $cf_ar_flags conftest.a conftest.$ac_cv_objext 2>&AC_FD_CC 1>/dev/null
+				if test -f conftest.a ; then
+					cf_cv_ar_flags=$cf_ar_flags
+					break
+				fi
+			else
+				CF_VERBOSE(cannot compile test-program)
+				break
+			fi
+		done
+		rm -f conftest.a conftest.$ac_ext conftest.$ac_cv_objext
+		;;
+	esac
+])
+
+if test -n "$ARFLAGS" ; then
+	if test -n "$cf_cv_ar_flags" ; then
+		ARFLAGS="$ARFLAGS $cf_cv_ar_flags"
+	fi
+else
+	ARFLAGS=$cf_cv_ar_flags
+fi
+
+AC_SUBST(ARFLAGS)
+])
+dnl ---------------------------------------------------------------------------
 dnl CF_AUTO_SYMLINK version: 3 updated: 2014/07/21 17:30:38
 dnl ---------------
 dnl If CF_WITH_SYMLINK is set, but the program transformation is inactive,
@@ -992,7 +1065,7 @@ esac
 ])
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_CRYPT_FUNC version: 5 updated: 2010/10/23 15:52:32
+dnl CF_CRYPT_FUNC version: 6 updated: 2020/09/08 19:32:19
 dnl -------------
 dnl Check if we have a working crypt() function
 AC_DEFUN([CF_CRYPT_FUNC],
@@ -1016,7 +1089,7 @@ AC_CACHE_CHECK(if crypt works,cf_cv_crypt_works,[
 AC_TRY_RUN([
 #include <string.h>
 extern char *crypt();
-int main() {
+int main(void) {
 	char *s = crypt("vi-crypt", "vi");
 	${cf_cv_main_return:-return}(strcmp("vi6r2tczBYLvM", s) != 0);
 }
@@ -1562,9 +1635,15 @@ CF_ARG_OPTION(narrowproto,
 AC_MSG_RESULT($enable_narrowproto)
 ])
 dnl ---------------------------------------------------------------------------
-dnl CF_ENABLE_WARNINGS version: 6 updated: 2020/08/28 04:10:22
+dnl CF_ENABLE_WARNINGS version: 7 updated: 2020/08/29 09:05:21
 dnl ------------------
 dnl Configure-option to enable gcc warnings
+dnl
+dnl $1 = extra options to add, if supported
+dnl $2 = option for checking attributes.  By default, this is done when
+dnl      warnings are enabled.  For other values:
+dnl      yes: always do this, e.g., to use in generated library-headers
+dnl      no: never do this
 AC_DEFUN([CF_ENABLE_WARNINGS],[
 if ( test "$GCC" = yes || test "$GXX" = yes )
 then
@@ -1579,9 +1658,10 @@ CF_ARG_ENABLE(warnings,
 AC_MSG_RESULT($with_warnings)
 if test "$with_warnings" = "yes"
 then
-	CF_GCC_ATTRIBUTES
+	ifelse($2,,[CF_GCC_ATTRIBUTES])
 	CF_GCC_WARNINGS($1)
 fi
+ifelse($2,yes,[CF_GCC_ATTRIBUTES])
 fi
 ])dnl
 dnl ---------------------------------------------------------------------------
@@ -1884,14 +1964,14 @@ else
 fi
 ])
 dnl ---------------------------------------------------------------------------
-dnl CF_GCC_ATTRIBUTES version: 18 updated: 2020/03/10 18:53:47
+dnl CF_GCC_ATTRIBUTES version: 19 updated: 2020/08/29 09:05:21
 dnl -----------------
 dnl Test for availability of useful gcc __attribute__ directives to quiet
 dnl compiler warnings.  Though useful, not all are supported -- and contrary
 dnl to documentation, unrecognized directives cause older compilers to barf.
 AC_DEFUN([CF_GCC_ATTRIBUTES],
 [
-if test "$GCC" = yes
+if ( test "$GCC" = yes || test "$GXX" = yes )
 then
 cat > conftest.i <<EOF
 #ifndef GCC_PRINTF
@@ -2680,7 +2760,7 @@ cf_save_CFLAGS="$cf_save_CFLAGS -we147"
 fi
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_KILLPG version: 6 updated: 2012/02/13 20:34:56
+dnl CF_KILLPG version: 7 updated: 2020/09/08 19:32:19
 dnl ---------
 dnl Note: relies upon AC_FUNC_SETPGRP, but cannot use AC_REQUIRE, since that
 dnl messes up the messages...
@@ -2689,6 +2769,9 @@ define([CF_KILLPG],
 if test "$cross_compiling" = yes ; then
 	AC_CHECK_FUNC(setpgrp,[
 	AC_TRY_COMPILE([
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif
 #include <sys/types.h>
 #include <signal.h>
 ],[
@@ -2714,6 +2797,12 @@ fi
 
 AC_CACHE_CHECK(if killpg is needed, cf_cv_need_killpg,[
 AC_TRY_RUN([
+#ifdef HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif
 #include <sys/types.h>
 #include <signal.h>
 RETSIGTYPE
@@ -2723,7 +2812,7 @@ handler(s)
     exit(0);
 }
 
-main()
+int main(void)
 {
 #ifdef SETPGRP_VOID
     (void) setpgrp();
@@ -3128,6 +3217,89 @@ CF_EOF
 AC_SUBST(cf_cv_makeflags)
 ])dnl
 dnl ---------------------------------------------------------------------------
+dnl CF_MAKE_PHONY version: 1 updated: 2020/09/08 21:08:52
+dnl -------------
+dnl Check if the make-program handles a ".PHONY" target, e.g,. a target which
+dnl acts as a placeholder.
+dnl
+dnl The ".PHONY" feature was proposed in 2011 here
+dnl     https://www.austingroupbugs.net/view.php?id=523
+dnl and is scheduled for release in P1003.1 Issue 8 (late 2022).
+dnl
+dnl This is not supported by SVr4 make (or SunOS 4, 4.3SD, etc), but works with
+dnl a few others (i.e., GNU make and the non-POSIX "BSD" make):
+dnl
+dnl + This is a GNU make feature (since April 1988, but in turn from binutils,
+dnl   date unspecified).
+dnl
+dnl + It was adopted in NetBSD make in June 1995.
+dnl
+dnl + The other BSD make programs are derived from the NetBSD make (and for
+dnl   that reason are not actually different "implementations").
+dnl
+dnl + Some features of NetBSD make were actually adapted from pmake, which
+dnl   began as a modified GNU make starting in 1993.
+dnl
+dnl + Version 3.8 of the dmake program in January 1992 also implemented this
+dnl   GNU make extension, but is less well known than the BSD make.
+AC_DEFUN([CF_MAKE_PHONY],[
+AC_CACHE_CHECK(for \".PHONY\" make-support, cf_cv_make_PHONY,[
+	rm -rf conftest*
+	(
+		mkdir conftest || exit 1
+		cd conftest
+		cat >makefile <<'CF_EOF'
+.PHONY: always
+DATA=0
+always:	always.out
+	@echo "** making [$]@ [$](DATA)"
+once: once.out
+	@echo "** making [$]@ [$](DATA)"
+always.out:
+	@echo "** making [$]@ [$](DATA)"
+	echo [$](DATA) > [$]@
+once.out:
+	@echo "** making [$]@ [$](DATA)"
+	echo [$](DATA) > [$]@
+CF_EOF
+		for cf_data in 1 2 3
+		do
+			${MAKE:-make} always DATA=$cf_data
+			${MAKE:-make} once   DATA=$cf_data
+			${MAKE:-make} -t always once
+			if test -f always ; then
+				echo "no (case 1)" > ../conftest.tmp
+			elif test ! -f always.out ; then
+				echo "no (case 2)" > ../conftest.tmp
+			elif test ! -f once.out ; then
+				echo "no (case 3)" > ../conftest.tmp
+			elif ! cmp -s always.out once.out ; then
+				echo "no (case 4)" > ../conftest.tmp
+				diff always.out once.out
+			else
+				cf_check=`cat always.out`
+				if test "x$cf_check" != "x$cf_data" ; then
+					echo "no (case 5)" > ../conftest.tmp
+				else
+					echo yes > ../conftest.tmp
+					rm -f *.out
+					continue
+				fi
+			fi
+			break
+		done
+	) >&AC_FD_CC 2>&1
+	cf_cv_make_PHONY=`cat conftest.tmp`
+	rm -rf conftest*
+])
+MAKE_NO_PHONY="#"
+MAKE_PHONY="#"
+test "x$cf_cv_make_PHONY" = xyes && MAKE_PHONY=
+test "x$cf_cv_make_PHONY" != xyes && MAKE_NO_PHONY=
+AC_SUBST(MAKE_NO_PHONY)
+AC_SUBST(MAKE_PHONY)
+])dnl
+dnl ---------------------------------------------------------------------------
 dnl CF_MAKE_TAGS version: 6 updated: 2010/10/23 15:52:32
 dnl ------------
 dnl Generate tags/TAGS targets for makefiles.  Do not generate TAGS if we have
@@ -3165,7 +3337,7 @@ AC_SUBST(MAKE_UPPER_TAGS)
 AC_SUBST(MAKE_LOWER_TAGS)
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_MERGE_EXTRA_CFLAGS version: 1 updated: 2020/09/01 04:00:32
+dnl CF_MERGE_EXTRA_CFLAGS version: 1 updated: 2020/09/01 04:19:14
 dnl ---------------------
 dnl CF_FIX_WARNINGS moves problematic flags into EXTRA_CFLAGS, but some scripts
 dnl may depend on being able to override that variable at build-time.  Move it
@@ -3173,7 +3345,7 @@ dnl all back.
 define([CF_MERGE_EXTRA_CFLAGS],[
 if ( test "$GCC" = yes || test "$GXX" = yes )
 then
-	CFLAGS="$CFLAGS $EXTRA_CFLAGS"
+	CF_APPEND_TEXT(CFLAGS,$EXTRA_CFLAGS)
 	EXTRA_CFLAGS=
 fi
 ])
@@ -3949,6 +4121,13 @@ AC_TRY_COMPILE([#include <stdio.h>],[
 ])
 ])dnl
 dnl ---------------------------------------------------------------------------
+dnl CF_PROG_AR version: 1 updated: 2009/01/01 20:15:22
+dnl ----------
+dnl Check for archiver "ar".
+AC_DEFUN([CF_PROG_AR],[
+AC_CHECK_TOOL(AR, ar, ar)
+])
+dnl ---------------------------------------------------------------------------
 dnl CF_PROG_CC version: 5 updated: 2019/12/31 08:53:54
 dnl ----------
 dnl standard check for CC, plus followup sanity checks
@@ -4076,7 +4255,7 @@ $1=`echo "$2" | \
 		-e 's/-[[UD]]'"$3"'\(=[[^ 	]]*\)\?[$]//g'`
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_RESTARTABLE_PIPEREAD version: 8 updated: 2020/01/18 12:30:01
+dnl CF_RESTARTABLE_PIPEREAD version: 9 updated: 2020/09/08 19:32:19
 dnl -----------------------
 dnl CF_RESTARTABLE_PIPEREAD is a modified version of AC_RESTARTABLE_SYSCALLS
 dnl from acspecific.m4, which uses a read on a pipe (surprise!) rather than a
@@ -4086,17 +4265,22 @@ dnl data has been transferred are interruptible _regardless_ of the SA_RESTART
 dnl bit.  yuck.
 AC_DEFUN([CF_RESTARTABLE_PIPEREAD],
 [
+AC_REQUIRE([AC_TYPE_SIGNAL])
 AC_CACHE_CHECK(for restartable reads on pipes, cf_cv_can_restart_read,[
 AC_TRY_RUN(
 [/* Exit 0 (true) if wait returns something other than -1,
    i.e. the pid of the child, which means that wait was restarted
    after getting the signal.  */
+#ifdef HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif
 #include <sys/types.h>
 #include <signal.h>
 #ifdef SA_RESTART
-sigwrapper(sig, disp)
-int sig;
-void (*disp)();
+static void sigwrapper(int sig, RETSIGTYPE (*disp)(int))
 {
     struct sigaction act, oact;
 
@@ -4110,8 +4294,8 @@ void (*disp)();
 #else
 # define sigwrapper signal
 #endif
-ucatch (isig) { }
-main () {
+RETSIGTYPE ucatch (int isig) { }
+int main (void) {
   int i, status;
   int fd[2];
   char buff[2];
@@ -4523,42 +4707,6 @@ for cf_subdir_prefix in \
 do
 	CF_ADD_SUBDIR_PATH($1,$2,$3,$cf_subdir_prefix,$prefix)
 done
-])dnl
-dnl ---------------------------------------------------------------------------
-dnl CF_SUBST version: 4 updated: 2006/06/17 12:33:03
-dnl --------
-dnl	Shorthand macro for substituting things that the user may override
-dnl	with an environment variable.
-dnl
-dnl	$1 = long/descriptive name
-dnl	$2 = environment variable
-dnl	$3 = default value
-AC_DEFUN([CF_SUBST],
-[AC_CACHE_VAL(cf_cv_subst_$2,[
-AC_MSG_CHECKING(for $1 (symbol $2))
-CF_SUBST_IF([-z "[$]$2"], [$2], [$3])
-cf_cv_subst_$2=[$]$2
-AC_MSG_RESULT([$]$2)
-])
-])dnl
-dnl ---------------------------------------------------------------------------
-dnl CF_SUBST_IF version: 2 updated: 2006/06/17 12:33:03
-dnl -----------
-dnl	Shorthand macro for substituting things that the user may override
-dnl	with an environment variable.
-dnl
-dnl	$1 = condition to pass to "test"
-dnl	$2 = environment variable
-dnl	$3 = value if the test succeeds
-dnl	$4 = value if the test fails
-AC_DEFUN([CF_SUBST_IF],
-[
-if test $1 ; then
-	$2=$3
-ifelse($4,,,[else
-	$2=$4])
-fi
-AC_SUBST($2)
 ])dnl
 dnl ---------------------------------------------------------------------------
 dnl CF_SYS_ERRLIST version: 6 updated: 2001/12/30 13:03:23

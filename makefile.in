@@ -20,7 +20,7 @@
 #
 # gnu autoconf support by kevin buettner, 5/94
 #
-# $Id: makefile.in,v 1.287 2020/05/16 09:50:43 tom Exp $
+# $Id: makefile.in,v 1.290 2020/09/09 00:22:49 tom Exp $
 
 SHELL		= @SHELL@
 
@@ -350,6 +350,8 @@ SRC =	$(OBJ:.o=.c)
 
 ALL =	$(PROGRAM)
 
+@MAKE_PHONY@.PHONY: all sources install uninstall clean distclean lint tags
+
 @MAKE_FILTERS@all \
 @MAKE_FILTERS@install-filters \
 @MAKE_FILTERS@uninstall-filters \
@@ -368,7 +370,7 @@ filters/@LIB_PREFIX@vlflt.a : $(BUILTHDRS)
 	cd filters && $(MAKE) $(MAKE_RECUR) @LIB_PREFIX@vlflt.a
 
 $(PROGRAM): $(BUILTHDRS) $(OBJ) $(OBJ2) $(BUILTLIBS)
-	- mv $(PROGRAM) o$(PROGRAM)
+	- $(SHELL) -c "if test -f $(PROGRAM); then mv $(PROGRAM) o$(PROGRAM); fi"
 	@ECHO_LD@$(LINK) $(CFLAGS) $(LDFLAGS) -o $@ $(OBJ) $(OBJ2) $(X_LIBS) $(LIBS)
 
 x11$o : $(srcdir)/x11.c
@@ -749,7 +751,7 @@ clean :: mostlyclean
 
 distclean :: clean
 	- $(RM) makefile config.status config.cache config.log config.h man2html.tmp
-	- test -d filters && rmdir filters
+	- $(SHELL) -c "if test -d filters && test ! -f filters/filters.h; then rmdir filters; fi"
 
 realclean: distclean
 	- $(RM) test_*$x

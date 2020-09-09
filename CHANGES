@@ -1,9 +1,11 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20200831 (v)
+ 20200908 (v)
  	> Stephan Schulz:
 	+ add popup-choices mode (Savannah #58999)
 	> Tom Dickey:
+	+ modify configure/makefiles to support ".PHONY" feature.
+	+ change configure/makefiles to use ARFLAGS rather than AR_OPTS
 	+ change configure --with-warnings to --enable-warnings for consistency
 	  with other configure scripts, using recent changes in that to filter
 	  gcc -Werror options to avoid breaking configure checks.

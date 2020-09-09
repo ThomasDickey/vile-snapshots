@@ -1,4 +1,4 @@
-# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.in,v 1.88 2015/08/20 09:26:17 tom Exp $
+# $Id: makefile.in,v 1.90 2020/09/09 00:23:00 tom Exp $
 #
 
 #### Start of system configuration section. ####
@@ -27,7 +27,7 @@ CTAGS		= @CTAGS@
 ETAGS		= @ETAGS@
 
 AR		= @AR@
-AR_OPTS		= @AR_OPTS@
+ARFLAGS		= @ARFLAGS@
 RANLIB		= @RANLIB@
 LEX		= @LEX@
 LEXLIB		= @LEXLIB@
@@ -73,4 +73,6 @@ LF_ARGS = $(LF_DEPS) $(LEXLIB)
 
 CF_DEPS = filterio$o filters$o
 CF_ARGS = $(CF_DEPS)
+
+@MAKE_PHONY@.PHONY: all sources install uninstall clean distclean lint tags
 
