@@ -2,7 +2,7 @@
 # From the top-makefile.djg, do
 #	make -f makefile.djg flt=y
 #
-# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.djg,v 1.5 2008/11/08 01:09:14 tom Exp $
+# $Id: makefile.djg,v 1.6 2020/09/08 19:53:06 tom Exp $
 
 CC = gcc
 LINK = gcc
@@ -11,7 +11,7 @@ x = .exe
 o = .o
 
 AR = ar
-AR_OPTS = crv
+ARFLAGS = crv
 RANLIB = ranlib
 
 DEBUG = -g

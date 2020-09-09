@@ -1,4 +1,4 @@
-# $Header: /users/source/archives/vile.vcs/filters/RCS/makefile.2nd,v 1.29 2013/12/26 00:25:45 tom Exp $
+# $Id: makefile.2nd,v 1.31 2020/09/09 01:12:39 tom Exp $
 #
 
 .SUFFIXES: .l .c .i $o
@@ -109,7 +109,7 @@ dotags:
 	dotags *.[chyl]
 
 @LIB_PREFIX@vlflt.a : $(LOBJS)
-	$(AR) $(AR_OPTS) $@ $(LOBJS)
+	$(AR) $(ARFLAGS) $@ $(LOBJS)
 	$(RANLIB) $@
 
 ATR2ANSI_O = atr2ansi$o	unfilter$o
