@@ -4,7 +4,7 @@
  * Most code probably by Dan Lawrence or Dave Conroy for MicroEMACS
  * Extensions for vile by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/insert.c,v 1.184 2015/03/13 10:29:15 tom Exp $
+ * $Header: /users/source/archives/vile.vcs/RCS/insert.c,v 1.185 2020/11/29 22:44:16 tom Exp $
  */
 
 #include	"estruct.h"
@@ -1039,7 +1039,7 @@ istring(int f, int n, int mode)
 	while (n--) {
 	    tp = tstring;
 	    while (*tp) {
-		if ((status = inschar(*tp++, &backsp_limit)) != TRUE) {
+		if ((status = inschar(CharOf(*tp++), &backsp_limit)) != TRUE) {
 		    n = 0;
 		    break;
 		}
