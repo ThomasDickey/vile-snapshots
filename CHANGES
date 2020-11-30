@@ -1,9 +1,11 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20200908 (v)
+ 20201129 (v)
  	> Stephan Schulz:
 	+ add popup-choices mode (Savannah #58999)
 	> Tom Dickey:
+	+ modify lins_chars() to handle a case where a script inserts a UTF-8
+	  character (report by Thomas Dupond).
 	+ modify configure/makefiles to support ".PHONY" feature.
 	+ change configure/makefiles to use ARFLAGS rather than AR_OPTS
 	+ change configure --with-warnings to --enable-warnings for consistency

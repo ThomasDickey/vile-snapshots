@@ -12,7 +12,7 @@
 */
 
 /*
- * $Id: estruct.h,v 1.757 2020/08/23 19:03:03 Stephan.Schulz Exp $
+ * $Id: estruct.h,v 1.758 2020/11/29 22:41:44 tom Exp $
  */
 
 #ifndef _estruct_h
@@ -1316,10 +1316,14 @@ typedef enum {
  * True if the buffer contents are in UTF-8 (or -16, -32).
  */
 #if OPT_MULTIBYTE
+#define global_is_utfXX()    ((global_b_val(VAL_FILE_ENCODING) >= enc_UTF8) \
+			   || (global_b_val(VAL_FILE_ENCODING) == enc_LOCALE \
+			    && vl_encoding >= enc_UTF8))
 #define b_is_utfXX(bp)       ((b_val(bp, VAL_FILE_ENCODING) >= enc_UTF8) \
 			   || (b_val(bp, VAL_FILE_ENCODING) == enc_LOCALE \
 			    && vl_encoding >= enc_UTF8))
 #else
+#define global_is_utfXX()    0
 #define b_is_utfXX(bp)       0
 #endif
 
