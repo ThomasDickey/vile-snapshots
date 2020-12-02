@@ -10,7 +10,7 @@
  * editing must be being displayed, which means that "b_nwnd" is non zero,
  * which means that the dot and mark values in the buffer headers are nonsense.
  *
- * $Id: line.c,v 1.236 2020/11/30 00:46:44 tom Exp $
+ * $Id: line.c,v 1.238 2020/12/01 23:27:32 tom Exp $
  */
 
 /* #define POISON */
@@ -534,7 +534,7 @@ lins_bytes(int n, int c)
  * or in insert-mode.
  */
 int
-lins_chars(int n, int c)
+lins_chars(int n, int c, int wide)
 {
     int rc = FALSE;
     UCHAR target[10];
@@ -542,7 +542,7 @@ lins_chars(int n, int c)
     int nn;
     int mapped;
 
-    if (!global_is_utfXX() && (c > 127) && b_is_utfXX(curbp)) {
+    if (wide && (c > 127) && b_is_utfXX(curbp)) {
 	nbytes = vl_conv_to_utf8(target, (UINT) c, sizeof(target));
     } else if (okCTYPE2(vl_wide_enc) && !vl_mb_is_8bit(c)) {
 	nbytes = 1;

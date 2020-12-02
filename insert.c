@@ -4,7 +4,7 @@
  * Most code probably by Dan Lawrence or Dave Conroy for MicroEMACS
  * Extensions for vile by Paul Fox
  *
- * $Header: /users/source/archives/vile.vcs/RCS/insert.c,v 1.185 2020/11/29 22:44:16 tom Exp $
+ * $Id: insert.c,v 1.187 2020/12/02 00:52:02 tom Exp $
  */
 
 #include	"estruct.h"
@@ -446,7 +446,7 @@ replacechar(int f, int n)
 		if (isbackspace(c)) {	/* vi beeps here */
 		    s = TRUE;	/* replaced with nothing */
 		} else {
-		    t = s = lins_chars(n, c);
+		    t = s = lins_chars(n, c, FALSE);
 		}
 	    }
 	}
@@ -981,11 +981,11 @@ inschar(int c, int *backsp_limit_p)
 		rc = inspound();
 	    } else {
 		autoindented = -1;
-		rc = lins_chars(1, c);
+		rc = lins_chars(1, c, FALSE);
 	    }
 	} else {
 	    autoindented = -1;
-	    rc = lins_chars(1, c);
+	    rc = lins_chars(1, c, FALSE);
 	}
     }
     return rc;
@@ -1487,10 +1487,13 @@ shiftwidth(int f GCC_UNUSED, int n GCC_UNUSED)
 }
 
 /*
- * Quote the next character, and insert it into the buffer. All the characters
- * are taken literally, with the exception of a) the newline, which always has
- * its line splitting meaning, and b) decimal digits, which are accumulated
- * (up to three of them) and the resulting value put in the buffer.
+ * Quote the next character, and insert it into the buffer.  That character may
+ * be literal, or composed of decimal or hexadecimal digits:
+ *
+ * a) the newline, which always has its line splitting meaning, and
+ * b) the digits are accumulated (up to a radix-based limit).
+ *
+ * The resulting value is inserted into the buffer.
  *
  * A character is always read, even if it is inserted 0 times, for regularity.
  */
@@ -1512,7 +1515,7 @@ quote_next(int f, int n)
 		s = lnewline();
 	    } while ((s == TRUE) && (--n != 0));
 	} else {
-	    s = lins_chars(n, c);
+	    s = lins_chars(n, c, TRUE);
 	}
     }
     return s;

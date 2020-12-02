@@ -44,7 +44,7 @@
  *	tgetc_avail()     true if a key is avail from tgetc() or below.
  *	keystroke_avail() true if a key is avail from keystroke() or below.
  *
- * $Id: input.c,v 1.371 2020/08/30 23:46:08 tom Exp $
+ * $Id: input.c,v 1.372 2020/12/01 22:47:44 tom Exp $
  */
 
 #include	"estruct.h"
@@ -1852,10 +1852,11 @@ read_quoted(int count, int inscreen)
     if (count <= 0)
 	returnCode(c);
 
-    /* accumulate up to 3 digits for a single byte */
+    /* accumulate digits for a character */
     if (isDigit(c)
 #if OPT_MULTIBYTE
 	|| (c == 'u')
+	|| (c == 'U')
 #endif
 	|| (c == 'x')) {
 	if (!inscreen) {

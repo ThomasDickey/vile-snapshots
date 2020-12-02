@@ -4,7 +4,7 @@
  *
  *   Created: Thu May 14 15:44:40 1992
  *
- * $Id: proto.h,v 1.751 2020/08/30 23:57:00 tom Exp $
+ * $Id: proto.h,v 1.752 2020/12/01 23:24:17 tom Exp $
  */
 
 #ifndef VILE_PROTO_H
@@ -873,10 +873,10 @@ extern int lrepl_regex (REGEXVAL *expr, const char *iline, int ilen);
 
 #if OPT_MULTIBYTE
 extern int ldel_chars (B_COUNT n, int kflag);
-extern int lins_chars (int n, int c);
+extern int lins_chars (int n, int c, int wide);
 #else
 #define ldel_chars(n, kflag) ldel_bytes(n, kflag)
-#define lins_chars(n, c)     lins_bytes(n, c)
+#define lins_chars(n, c, wide)  lins_bytes(n, c)
 #endif
 
 #if OPT_REGS_CMPL
