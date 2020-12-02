@@ -1,9 +1,10 @@
 Changes for vile 9.9 (released ??? ??? ?? ????)
 
- 20201129 (v)
+ 20201201 (v)
  	> Stephan Schulz:
 	+ add popup-choices mode (Savannah #58999)
 	> Tom Dickey:
+	+ add check for 'U' in read_quoted() needed to make ^VUxxxx work.
 	+ modify lins_chars() to handle a case where a script inserts a UTF-8
 	  character (report by Thomas Dupond).
 	+ modify configure/makefiles to support ".PHONY" feature.
