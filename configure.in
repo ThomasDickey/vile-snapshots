@@ -1,13 +1,13 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_REVISION($Revision: 1.332 $)
-AC_PREREQ(2.52.20200111)
+AC_REVISION($Revision: 1.336 $)
+AC_PREREQ(2.52.20210101)
 
 ### Use "configure -with-screen" to override the default configuration, which is
 ### termcap-based on unix systems.
 
-dnl $Id: configure.in,v 1.332 2020/09/08 19:51:43 tom Exp $
+dnl $Id: configure.in,v 1.336 2021/01/04 09:22:47 tom Exp $
 
-define(MAKELIST, sh $srcdir/filters/makelist.sh $srcdir/filters/genmake.mak)
+define(MAKELIST, sh "$srcdir/filters/makelist.sh" "$srcdir/filters/genmake.mak")
 
 dnl
 AC_INIT(mktbls.c)
@@ -132,9 +132,9 @@ AC_SUBST(MAKE_FILTERS)
 if test "$with_filters" = yes ; then
 
 # allow user to preset these environment variables:
-: ${VILE_BUILT_IN_FILTERS=none}
-: ${VILE_LOADABLE_FILTERS=none}
-: ${VILE_EXTERNAL_FILTERS=all}
+: "${VILE_BUILT_IN_FILTERS=none}"
+: "${VILE_LOADABLE_FILTERS=none}"
+: "${VILE_EXTERNAL_FILTERS=all}"
 
 AC_MSG_CHECKING(if you want built-in syntax filters)
 AC_ARG_WITH(builtin-filters,
@@ -202,7 +202,7 @@ else
 		found=no
 		for cf_b in $builtins $loadable
 		do
-			if test $cf_b = $cf_a ; then
+			if test "$cf_b" = "$cf_a" ; then
 				found=yes
 				break
 			fi
@@ -253,10 +253,10 @@ if test "$cf_needflex" = yes ; then
 	if test -z "$cf_lex_version"
 	then
 		AC_MSG_WARN(You need flex to compile builtin filters)
-	elif test $cf_lex_version -lt 2005000
+	elif test "$cf_lex_version" -lt 2005000
 	then
 		AC_MSG_WARN(Sorry - your version of flex is too old: $LEX_VERSION)
-	elif test $cf_lex_version -ge 2006000
+	elif test "$cf_lex_version" -ge 2006000
 	then
 		cf_broken_flex=maybe
 	else
@@ -267,11 +267,11 @@ if test "$cf_needflex" = yes ; then
 		if test -z "$LEX_SUBVERSION"
 		then
 			AC_MSG_WARN(This version of flex cannot compile builtin filters)
-		elif test $LEX_SUBVERSION = 4a
+		elif test "$LEX_SUBVERSION" = 4a
 		then
 			CF_VERBOSE(good)
 			cf_broken_flex=no
-		elif test $LEX_SUBVERSION != 4
+		elif test "$LEX_SUBVERSION" != 4
 		then
 			AC_MSG_WARN(This version of flex cannot compile builtin filters)
 		else
@@ -294,7 +294,7 @@ dnl These substitutions are used in makefile.in to build builtflt.h
 AC_SUBST(VILE_BUILT_IN_FILTERS)
 AC_SUBST(VILE_LOADABLE_FILTERS)
 
-cf_default=\[$]{libdir}/vile
+cf_default="\[$]{libdir}/vile"
 AC_MSG_CHECKING(for library path)
 CF_WITH_PATHLIST(libdir-path,
 [  --with-libdir-path=LIST specify locations to search for filters, etc.],
@@ -302,7 +302,7 @@ VILE_LIBDIR_PATH,
 $cf_default,[],[define])
 AC_MSG_RESULT($VILE_LIBDIR_PATH)
 
-cf_default=[$]{datadir}/vile
+cf_default="\[$]{datadir}/vile"
 AC_MSG_CHECKING(for startup path)
 CF_WITH_PATHLIST(startup-path,
 [  --with-startup-path=LIST specify locations to search for vile.hlp, etc.],

@@ -1,5 +1,5 @@
 #!/usr/bin/env perl
-# $Id: make-hlp.pl,v 1.17 2019/12/05 00:13:49 tom Exp $
+# $Id: make-hlp.pl,v 1.18 2021/01/01 12:40:57 tom Exp $
 # Generate vile.hlp, using the dump feature of a text browser.
 #
 # Any of (e)links(2) or lynx would work.
@@ -109,7 +109,7 @@ sub doit() {
         # use tidy to construct a file in consistent format, with the markdown
         # bold/italics pre-substituted.
         ( $temp_fh, $temp_name ) = tempfile();
-        open( FP, "tidy -q -wrap 4096 $name|" ) || do {
+        open( FP, "tidy -q -wrap 4096 < $name|" ) || do {
             print STDERR "Can't read $name: $!\n";
             return;
         };
