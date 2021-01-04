@@ -1,13 +1,11 @@
 <!--
-  $Id: vile-hlp.html,v 1.118 2020/08/30 21:44:22 tom Exp $
+  $Id: vile-hlp.html,v 1.119 2021/01/01 12:39:53 tom Exp $
 -->
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN">
-
 <html>
 <head>
   <meta name="generator" content=
-  "HTML Tidy for HTML5 for Linux version 5.2.0">
-
+  "HTML Tidy for HTML5 for Linux version 5.6.0">
   <title>Getting along with vile (version 9.8)</title>
   <meta http-equiv="Content-Type" content=
   "text/html; charset=us-ascii">
@@ -19,7 +17,6 @@
   <link rel="stylesheet" href="/css/inline-code.css" type=
   "text/css">
 </head>
-
 <body>
   <hr>
 
@@ -158,25 +155,21 @@
 
     <tr>
       <th>Key:</th>
-
       <th>Bound to dummy function:</th>
     </tr>
 
     <tr>
       <td>^X Control-X</td>
-
       <td>cntl_x-prefix</td>
     </tr>
 
     <tr>
       <td>^A Control-A</td>
-
       <td>cntl_a-prefix</td>
     </tr>
 
     <tr>
       <td># poundsign</td>
-
       <td>function-prefix</td>
     </tr>
   </table>
@@ -217,7 +210,6 @@
       character in the list. Modified buffers are preceded by a '*'
       in the history list. There are many different ways to get the
       previous file:
-
       <dl>
         <dt>__</dt>
 
@@ -286,7 +278,6 @@
       Identical to '_', except that the selected buffer is placed
       in the current window (windows are described in the next help
       topic). This is most useful when:
-
       <ul>
         <li>two windows show a different view of the same buffer
         (for illustration's sake, call the views "A" and "B").</li>
@@ -450,7 +441,6 @@
 
     <dd>
       Scroll the next window down one line.
-
       <p>(The previous four commands are useful when comparing two
       buffers. Mnemonic &ndash; think of them as affecting the
       "A"lternate window.)</p>
@@ -576,7 +566,6 @@
       writes the specified region to that file. Like all operators,
       if the command is repeated, as in ^W^W, then lines are
       affected. Use 10^W^W to write 10 lines.
-
       <p>If a register is specified (e.g. "a^W ) then the command
       is <i>not</i> an operator, but writes the specified register
       to the named file.</p>
@@ -640,19 +629,16 @@
 
     <tr>
       <td>Unix</td>
-
       <td>colon</td>
     </tr>
 
     <tr>
       <td>DOS, OS/2, Win32</td>
-
       <td>semicolon</td>
     </tr>
 
     <tr>
       <td>VMS</td>
-
       <td>comma</td>
     </tr>
   </table>
@@ -1048,7 +1034,6 @@
       name, assuming it's unique. If not unique, press TAB twice to
       see a list of all possible completions. Example (using the
       vile sources):
-
       <blockquote>
         <pre class="code-block">
 :ta is_sl&lt;tab&gt;
@@ -1151,7 +1136,6 @@
     <dd>
       Remove empty lines (<code>delete-empty-lines</code>). This
       command differs from <code>delete-blank-lines</code>:
-
       <ul>
         <li>empty lines contain no printable characters; blank
         lines contain no characters.</li>
@@ -1180,7 +1164,6 @@
       The "error finder". Goes to the next file/line error pair
       specified in the last buffer captured from a command's
       output. This buffer is usually created with the ^X-! command.
-
       <p>For example, "^X-!cc -c junk.c" puts all of the compiler
       output into the buffer named "[Output]".</p>
 
@@ -1344,7 +1327,6 @@
       commands are accepted until another 'q' is entered. The
       result of the motion is the cumulative effect of all the
       entered motions. Thus, one might type:
-
       <blockquote>
         <pre class="code-block">
 dq&lt;arrow&gt;&lt;arrow&gt;&lt;arrow&gt;...&lt;arrow&gt;q
@@ -1405,7 +1387,6 @@ dq&lt;arrow&gt;&lt;arrow&gt;&lt;arrow&gt;...&lt;arrow&gt;q
       region. ^S applied to the selection operator (^A-s) will
       extend the current selection to include the current location
       of the cursor.
-
       <p>^S makes it possible to select any region (including
       rectangular regions) of text with a mouse, and then apply any
       vi operator to that region.</p>
@@ -1426,7 +1407,6 @@ dq&lt;arrow&gt;&lt;arrow&gt;&lt;arrow&gt;...&lt;arrow&gt;q
       command selects, highlights, and yanks all text in the
       current buffer to the unnamed register. Clear the selection's
       highlight attributes as follows:
-
       <table border="1" summary="Selection Techniques">
         <colgroup>
           <col width="50%">
@@ -1435,31 +1415,26 @@ dq&lt;arrow&gt;&lt;arrow&gt;&lt;arrow&gt;...&lt;arrow&gt;q
 
         <tr>
           <th>Technique</th>
-
           <th>Applies To</th>
         </tr>
 
         <tr>
           <td>selection-clear command</td>
-
           <td>any host</td>
         </tr>
 
         <tr>
           <td>left mouse button (LMB) click</td>
-
           <td>winvile</td>
         </tr>
 
         <tr>
           <td>click mode line with LMB</td>
-
           <td>win32 host</td>
         </tr>
 
         <tr>
           <td>press ESC</td>
-
           <td>winvile</td>
         </tr>
       </table>
@@ -1568,7 +1543,6 @@ dq&lt;arrow&gt;&lt;arrow&gt;&lt;arrow&gt;...&lt;arrow&gt;q
       associated types. To allow it to fit within 80 columns,
       abbreviations are used, which are the same names as used in
       character classes.
-
       <p>Use a repeat count to show data for the wide locale. The
       default (no repeat count) shows the narrow locale. Use
       <a href=
@@ -1628,7 +1602,6 @@ dq&lt;arrow&gt;&lt;arrow&gt;&lt;arrow&gt;...&lt;arrow&gt;q
       characters, with associated types. To allow it to fit within
       80 columns, abbreviations are used, which are the same names
       as used in character classes.
-
       <p>Use a repeat count to show the data for successive "pages"
       of 256 characters, e.g., 1 for 256-511, 2 for 512-767,
       etc.</p>
@@ -1819,47 +1792,36 @@ dq&lt;arrow&gt;&lt;arrow&gt;&lt;arrow&gt;...&lt;arrow&gt;q
 
     <tr>
       <th colspan="2">Technique</th>
-
       <th>Applies To</th>
     </tr>
 
     <tr>
       <th>mode type</th>
-
       <th>mode name</th>
-
       <th>example usage</th>
     </tr>
 
     <tr>
       <td>boolean</td>
-
       <td>autoindent</td>
-
       <td>set autoindent</td>
     </tr>
 
     <tr>
       <td>enum</td>
-
       <td>visual-matches</td>
-
       <td>set visual-matches=reverse</td>
     </tr>
 
     <tr>
       <td>int</td>
-
       <td>fillcol</td>
-
       <td>set fillcol=75</td>
     </tr>
 
     <tr>
       <td>string</td>
-
       <td>tags</td>
-
       <td>set tags="../tags tags"</td>
     </tr>
   </table>
@@ -2008,7 +1970,6 @@ $ vile
       effect of commands. To retain the position within buffers
       when recreating them, use the <a href=
       "#mode-reuseposition">reuse-position</a> mode.
-
       <p>The animated buffers include:</p>
 
       <blockquote>
@@ -2139,7 +2100,6 @@ $ vile
     <dd>
       is a prefix used to distinguish different types of
       UTF-encoding. It must be one of the following values:
-
       <blockquote>
         <pre class="code-block">
 "auto"
@@ -2199,7 +2159,6 @@ $ vile
       tells vile to ensure that it uses only files that you own (or
       root owns), which are not writable by other users. Values
       include:
-
       <dl>
         <dt>none</dt>
 
@@ -2237,7 +2196,6 @@ $ vile
       last read or written, vile will issue a "file newer than
       buffer" warning and prompt appropriately for confirmation
       when
-
       <ol>
         <li>popping up a window on an existing buffer,</li>
 
@@ -2274,7 +2232,6 @@ $ vile
     <dd>
       The list of characters interpreted by the cindent mode. These
       include
-
       <dl>
         <dt>'#'</dt>
 
@@ -2379,7 +2336,6 @@ $ vile
       If global dos mode is <i>not</i> set, then incoming CR
       characters will be left visible on the screen (as '^M'), and
       the local mode will not be set.
-
       <p>The percent-crlf mode tells vile how many lines in the
       buffer must have CR/LF endings for it to automatically treat
       a buffer in this manner.</p>
@@ -2495,7 +2451,6 @@ $ vile
       This is the character encoding of the buffer contents, which
       is not necessarily the same as the display's character
       encoding. It must be one of the following values:
-
       <blockquote>
         <pre class="code-block">
 "8bit"
@@ -2575,7 +2530,6 @@ $ vile
       specifies whether globbing or regular expressions are used to
       select buffer names in the for-buffers and kill-buffer
       commands. (U)
-
       <p>The choices are</p>
 
       <dl>
@@ -2604,7 +2558,6 @@ $ vile
       The internal globber will handle *, ?, [a-z] style ranges,
       environment variables, and the ~user notation for finding
       home directories.
-
       <p>On UNIX, glob can be set to be a pipe command that will
       expand more wildcards. The default value of glob on UNIX is
       "!echo %s", which should provide globbing that matches that
@@ -2651,7 +2604,6 @@ $ vile
       "screen-search-pattern-grab", etc., subject to the
       cursor-tokens mode. If the expression is inactive, use
       character-class, e.g., the equivalent of
-
       <blockquote>
         <pre class="code-block">
 \&lt;[[:ident:]]\+\&gt;
@@ -2692,7 +2644,6 @@ $ vile
       undo/redo if they are bound to appropriate functions during
       insert mode. For example, ^F and ^B would scroll forward and
       backward. ^A and ^X bindings are honored as well. (U)
-
       <p>See the discussion of <a href="#insert-mode">insert
       mode</a>, in particular</p>
 
@@ -2712,7 +2663,6 @@ describe-insmode-key
       Choose where the cursor will be after making an
       <strong>ex</strong>-style command with a <em>range</em>. The
       mode value must be one of
-
       <blockquote>
         <pre class="code-block">
       emacs
@@ -2731,81 +2681,57 @@ describe-insmode-key
       <table border="1" summary="Comparing keep-position">
         <tr>
           <th>command</th>
-
           <th>vile</th>
-
           <th>nvi</th>
-
           <th>solaris</th>
         </tr>
 
         <tr>
           <td>:%&gt;</td>
-
           <td>top</td>
-
           <td>n/c</td>
-
           <td>bot</td>
         </tr>
 
         <tr>
           <td>:%s/^/ /</td>
-
           <td>bot</td>
-
           <td>bot</td>
-
           <td>bot</td>
         </tr>
 
         <tr>
           <td>:5,10&gt;</td>
-
           <td>5</td>
-
           <td>10</td>
-
           <td>10</td>
         </tr>
 
         <tr>
           <td>:.,.+5&gt;</td>
-
           <td>n/c</td>
-
           <td>n/c</td>
-
           <td>+5</td>
         </tr>
 
         <tr>
           <td>:.-5,.+5&gt;</td>
-
           <td>-5</td>
-
           <td>n/c</td>
-
           <td>+5</td>
         </tr>
 
         <tr>
           <td>:-5,+5&gt;</td>
-
           <td>-5</td>
-
           <td>n/c</td>
-
           <td>+5</td>
         </tr>
 
         <tr>
           <td>:-5,+5s/^/ /</td>
-
           <td>+5</td>
-
           <td>+5</td>
-
           <td>+5</td>
         </tr>
       </table>
@@ -2923,7 +2849,6 @@ describe-insmode-key
       the given number of lines from top and bottom of the buffer
       when it is first loaded into memory. It looks for lines
       containing one of these special markers after whitespace:
-
       <blockquote>
         <pre class="code-block">
 "vi:"
@@ -3035,7 +2960,6 @@ vile:ts=4:nu
       (or "&amp;") in the minibuffer, subject to the cursor-tokens
       mode. If the expression is inactive, use character-class,
       e.g., the equivalent of
-
       <blockquote>
         <pre class="code-block">
 \&lt;[[:file:]]\+\&gt;
@@ -3092,7 +3016,6 @@ vile:ts=4:nu
 
     <dd>
       Must be set to one of the following three values:
-
       <ol>
         <li>"off",</li>
 
@@ -3129,7 +3052,6 @@ vile:ts=4:nu
 
     <dd>
       Must be set to one of the following three values:
-
       <ol>
         <li>"notdot",</li>
 
@@ -3215,7 +3137,6 @@ vile:ts=4:nu
     <dd>
       Specify format of files that vile reads and writes. Formats
       are
-
       <ul>
         <li>"auto" (to choose between lf and crlf, override dos
         mode)</li>
@@ -3453,7 +3374,6 @@ set-rs-crlf or set-dos-mode
 
     <dd>
       For xvile/winvile, if set, the editor displays its title as:
-
       <blockquote>
         <pre class="code-block">
 &lt;current buffer name&gt; - &lt;editor name&gt;
@@ -3669,7 +3589,6 @@ set-rs-crlf or set-dos-mode
       "underline", "bold", "italic", or "reverse". Additionally, on
       systems which support color, this mode may be used to set the
       text foreground color using any of the color values.
-
       <p>The '=' command can be used to clear this sort of
       highlighting, until the next search is done for a different
       pattern. Note that setting this mode can significantly slow
@@ -3688,7 +3607,6 @@ set-rs-crlf or set-dos-mode
       normal/inverse screen video (a feature available with vt100
       and later terminals), then a visual bell effect may be
       achieved using this mode.
-
       <table border="1" summary="Values for 'vtflash'">
         <colgroup>
           <col width="30%">
@@ -3697,26 +3615,22 @@ set-rs-crlf or set-dos-mode
 
         <tr>
           <th>Mode Value</th>
-
           <th>Mode Semantics</th>
         </tr>
 
         <tr>
           <td>off</td>
-
           <td>feature disabled (default)</td>
         </tr>
 
         <tr>
           <td>reverse</td>
-
           <td>on err -&gt; switch screen to normal then reverse
           video.</td>
         </tr>
 
         <tr>
           <td>normal</td>
-
           <td>on err -&gt; switch screen to reverse then normal
           video.</td>
         </tr>
@@ -3780,7 +3694,6 @@ set-rs-crlf or set-dos-mode
     <dd>
       Implements vi's auto-wrap mode. vile computes the effective
       margin from the mode's value:
-
       <ul>
         <li>if positive, the wrapmargin specifies the number of
         columns on the screen's right margin to reserve before
@@ -3916,7 +3829,6 @@ set-rs-crlf or set-dos-mode
       cs8 -parenb -istrip". Real serial lines may take more
       convincing, at both ends, but use that stty command as a
       starting point.
-
       <p>If you start vile in a locale that uses UTF-8 encoding,
       vile will check if there is a corresponding 8-bit encoding by
       stripping the UTF-8 suffix from the locale name, e.g.,
@@ -3934,7 +3846,6 @@ set-rs-crlf or set-dos-mode
       digits, will insert a character whose value is that number
       (no greater than 255) into the buffer. The number may be
       entered in
-
       <ul>
         <li>decimal (^VNNN),</li>
 
@@ -4095,110 +4006,92 @@ g/help/p
 
     <tr>
       <th>Short</th>
-
       <th>Long Description</th>
     </tr>
 
     <tr>
       <td>arg</td>
-
       <td>ex-style line range: 1,$ or 13,15 or % etc.</td>
     </tr>
 
     <tr>
       <td>ctl</td>
-
       <td>[:cntrl:] control character</td>
     </tr>
 
     <tr>
       <td>del</td>
-
       <td>delete/backspace</td>
     </tr>
 
     <tr>
       <td>fn</td>
-
       <td>fence character, e.g., "{" or "}"</td>
     </tr>
 
     <tr>
       <td>id</td>
-
       <td>[:ident:] normal identifier, used for word
       boundaries</td>
     </tr>
 
     <tr>
       <td>lwr</td>
-
       <td>[:lower:] lowercase, e.g., "a"</td>
     </tr>
 
     <tr>
       <td>nsp</td>
-
       <td>[:graph:] nonspace</td>
     </tr>
 
     <tr>
       <td>num</td>
-
       <td>[:digit:] digit, e.g., "0"</td>
     </tr>
 
     <tr>
       <td>path</td>
-
       <td>[:file:] file/path name</td>
     </tr>
 
     <tr>
       <td>prn</td>
-
       <td>[:print:] printable</td>
     </tr>
 
     <tr>
       <td>pun</td>
-
       <td>[:punct:] punctuation</td>
     </tr>
 
     <tr>
       <td>qid</td>
-
       <td>qualified identifiers, used in tags parsing</td>
     </tr>
 
     <tr>
       <td>sh</td>
-
       <td>may appear in shell/pipe</td>
     </tr>
 
     <tr>
       <td>sp</td>
-
       <td>[:blank:] space</td>
     </tr>
 
     <tr>
       <td>tmp</td>
-
       <td>legal in scratch-buffer names</td>
     </tr>
 
     <tr>
       <td>upr</td>
-
       <td>[:upper:] uppercase, e.g., "A"</td>
     </tr>
 
     <tr>
       <td>wld</td>
-
       <td>shell wildcard, e.g., "*"</td>
     </tr>
   </table>
@@ -4360,7 +4253,6 @@ shift+#6
       naturally into one of the specialized modes. This is
       initialized by compiled-in definitions for normal (0-127) and
       special (function and meta-key) definitions.
-
       <blockquote>
         <pre class="code-block">
 bind-key
@@ -4379,7 +4271,6 @@ unbind-key
       keys from the default table, as well as the control
       characters that are associated with movement, e.g., ^N and
       ^P.
-
       <blockquote>
         <pre class="code-block">
 bind-cmdmode-key
@@ -4399,7 +4290,6 @@ unbind-cmdmode-key
       associated with movement, e.g., ^N and ^P. The insert-exec
       mode controls whether those control characters are
       interpreted or inserted.
-
       <blockquote>
         <pre class="code-block">
 bind-insmode-key
@@ -4417,7 +4307,6 @@ unbind-insmode-key
       for selection highlighting, i.e., multimotion. This is
       initially the same as the default binding table, but may be
       customized.
-
       <blockquote>
         <pre class="code-block">
 bind-selmode-key
@@ -4505,7 +4394,6 @@ unbind-selmode-key
 
   <ol>
     <li>an optional prefix, like this:
-
       <p>^A- (three chars)<br>
       ^X- (three chars)<br>
       ^A (one char)<br>
@@ -4513,20 +4401,17 @@ unbind-selmode-key
     </li>
 
     <li>followed by an optional "function" prefix:
-
       <p>#- (two chars) or<br>
       FN- (three chars)</p>
     </li>
 
     <li>followed by an optional "meta" prefix:
-
       <p>M- (two chars)<br>
       (this is the same as with specifying a character in that has
       the high bit set)</p>
     </li>
 
     <li>followed by a character, like this:
-
       <p>C (one char)<br>
       ^C (one char)<br>
       ^C (two chars)<br>
@@ -4564,201 +4449,141 @@ unbind-selmode-key
 
     <tr>
       <th>Usual Label</th>
-
       <th>Vile name</th>
-
       <th>Usual Label</th>
-
       <th>Vile name</th>
     </tr>
 
     <tr>
       <td>Up-arrow</td>
-
       <td>#A</td>
-
       <td>Home</td>
-
       <td>#H</td>
     </tr>
 
     <tr>
       <td>Down-arrow</td>
-
       <td>#B</td>
-
       <td>End</td>
-
       <td>#E</td>
     </tr>
 
     <tr>
       <td>Left-arrow</td>
-
       <td>#D</td>
-
       <td>Insert</td>
-
       <td>#i</td>
     </tr>
 
     <tr>
       <td>Right-arrow</td>
-
       <td>#C</td>
-
       <td>Delete</td>
-
       <td>#d</td>
     </tr>
 
     <tr>
       <td>Prior (PageUp)</td>
-
       <td>#p</td>
-
       <td>Find</td>
-
       <td>#f</td>
     </tr>
 
     <tr>
       <td>Next (PageDown)</td>
-
       <td>#n</td>
-
       <td>Select</td>
-
       <td>#s</td>
     </tr>
 
     <tr>
       <td>Help</td>
-
       <td>#?</td>
-
       <td>Menu</td>
-
       <td>#m</td>
     </tr>
 
     <tr>
       <td>F1</td>
-
       <td>#1</td>
-
       <td>F12</td>
-
       <td>#@</td>
     </tr>
 
     <tr>
       <td>F2</td>
-
       <td>#2</td>
-
       <td>F13</td>
-
       <td>##</td>
     </tr>
 
     <tr>
       <td>F3</td>
-
       <td>#3</td>
-
       <td>F14</td>
-
       <td>#$</td>
     </tr>
 
     <tr>
       <td>F4</td>
-
       <td>#4</td>
-
       <td>F15</td>
-
       <td>#%</td>
     </tr>
 
     <tr>
       <td>F5</td>
-
       <td>#5</td>
-
       <td>F16</td>
-
       <td>#^</td>
     </tr>
 
     <tr>
       <td>F6</td>
-
       <td>#6</td>
-
       <td>F17</td>
-
       <td>#&amp;</td>
     </tr>
 
     <tr>
       <td>F7</td>
-
       <td>#7</td>
-
       <td>F18</td>
-
       <td>#*</td>
     </tr>
 
     <tr>
       <td>F8</td>
-
       <td>#8</td>
-
       <td>F19</td>
-
       <td>#(</td>
     </tr>
 
     <tr>
       <td>F9</td>
-
       <td>#9</td>
-
       <td>F20</td>
-
       <td>#)</td>
     </tr>
 
     <tr>
       <td>F10</td>
-
       <td>#0</td>
-
       <td>F11</td>
-
       <td>#!</td>
     </tr>
 
     <tr>
       <td>KeyPad_F1</td>
-
       <td>#P</td>
-
       <td>KeyPad_F3</td>
-
       <td>#R</td>
     </tr>
 
     <tr>
       <td>KeyPad_F2</td>
-
       <td>#Q</td>
-
       <td>KeyPad_F4</td>
-
       <td>#S</td>
     </tr>
   </table>
@@ -4945,91 +4770,70 @@ unbind-selmode-key
   <table border="1" summary="Terminal key bindings">
     <tr>
       <th>Name</th>
-
       <th>Default value</th>
-
       <th>Typical value</th>
     </tr>
 
     <tr>
       <td>backspace</td>
-
       <td>from tty settings</td>
-
       <td>(DEL or ^H)</td>
     </tr>
 
     <tr>
       <td>interrupt</td>
-
       <td>from tty settings</td>
-
       <td>(^C or DEL)</td>
     </tr>
 
     <tr>
       <td>line-kill</td>
-
       <td>from tty settings</td>
-
       <td>(^U or @)</td>
     </tr>
 
     <tr>
       <td>mini-edit</td>
-
       <td>(^G)</td>
     </tr>
 
     <tr>
       <td>name-complete</td>
-
       <td>&lt;tab&gt;</td>
     </tr>
 
     <tr>
       <td>quote-next</td>
-
       <td>from tty settings</td>
-
       <td>(^V)</td>
     </tr>
 
     <tr>
       <td>start-output</td>
-
       <td>from tty settings</td>
-
       <td>(^Q)</td>
     </tr>
 
     <tr>
       <td>stop-output</td>
-
       <td>from tty settings</td>
-
       <td>(^S)</td>
     </tr>
 
     <tr>
       <td>suspend</td>
-
       <td>from tty settings</td>
-
       <td>(^Z)</td>
     </tr>
 
     <tr>
       <td>test-completions</td>
-
       <td>?</td>
     </tr>
 
     <tr>
       <td>word-kill</td>
-
       <td>from tty settings</td>
-
       <td>(^W)</td>
     </tr>
   </table>
@@ -5315,7 +5119,6 @@ unbind-selmode-key
     built-in editor command. This means that "write-msg-tst" can be
     invoked from another macro, from a startup/configuration file,
     or from vile's command line, like so:
-
       <blockquote>
         <!--{{atr2html-->
 
@@ -5383,14 +5186,12 @@ unbind-selmode-key
   <table border="1" summary="State variables">
     <tr>
       <th>Name</th>
-
       <th>Description</th>
     </tr>
 
     <tr>
       <td><a name="modevar-_" id="modevar-_">$_</a>
       </td>
-
       <td>most-recent macro <a href="#modevar-return">$return</a>
       value</td>
     </tr>
@@ -5399,7 +5200,6 @@ unbind-selmode-key
       <td><a name="modevar-abufname" id=
       "modevar-abufname">$abufname</a>
       </td>
-
       <td>alternate buffer name (i.e. last visited) (read
       only)</td>
     </tr>
@@ -5408,14 +5208,12 @@ unbind-selmode-key
       <td><a name="modevar-autocolor-hook" id=
       "modevar-autocolor-hook">$autocolor-hook</a>
       </td>
-
       <td>name of the hook that runs when autocolor is enabled</td>
     </tr>
 
     <tr>
       <td><a name="modevar-bchars" id="modevar-bchars">$bchars</a>
       </td>
-
       <td>number of characters in current buffer (read only)</td>
     </tr>
 
@@ -5423,57 +5221,47 @@ unbind-selmode-key
       <td><a name="modevar-bchanged" id=
       "modevar-bchanged">$bchanged</a>
       </td>
-
       <td>true if current buffer is modified (boolean)</td>
     </tr>
 
     <tr>
       <td><a name="modevar-bflags" id="modevar-bflags">$bflags</a>
       </td>
-
       <td>
         status flags for current buffer (read only)
-
         <table border="1" summary="Buffer status flags">
           <tr>
             <th>Flag</th>
-
             <th>Description</th>
           </tr>
 
           <tr>
             <td>a</td>
-
             <td>autobuffer caused this to be created</td>
           </tr>
 
           <tr>
             <td>d</td>
-
             <td>directory listing</td>
           </tr>
 
           <tr>
             <td>i</td>
-
             <td>invisible, e.g., tags</td>
           </tr>
 
           <tr>
             <td>m</td>
-
             <td>modified</td>
           </tr>
 
           <tr>
             <td>s</td>
-
             <td>scratch, will be removed when popped down</td>
           </tr>
 
           <tr>
             <td>u</td>
-
             <td>unread</td>
           </tr>
         </table>
@@ -5483,7 +5271,6 @@ unbind-selmode-key
     <tr>
       <td><a name="modevar-blines" id="modevar-blines">$blines</a>
       </td>
-
       <td>number of lines in current buffer (read only)</td>
     </tr>
 
@@ -5491,7 +5278,6 @@ unbind-selmode-key
       <td><a name="modevar-brightness" id=
       "modevar-brightness">$brightness</a>
       </td>
-
       <td>RGB levels for gray, normal, bright in the 0-255 range
       (winvile version only)</td>
     </tr>
@@ -5500,7 +5286,6 @@ unbind-selmode-key
       <td><a name="modevar-buf-fname-expr" id=
       "modevar-buf-fname-expr">$buf-fname-expr</a>
       </td>
-
       <td>combined buffer+fname expression (read only)</td>
     </tr>
 
@@ -5508,7 +5293,6 @@ unbind-selmode-key
       <td><a name="modevar-buffer-hook" id=
       "modevar-buffer-hook">$buffer-hook</a>
       </td>
-
       <td>name of procedure to run when switching to a buffer</td>
     </tr>
 
@@ -5516,7 +5300,6 @@ unbind-selmode-key
       <td><a name="modevar-bufname" id=
       "modevar-bufname">$bufname</a>
       </td>
-
       <td>current buffer-name under the cursor.</td>
     </tr>
 
@@ -5524,7 +5307,6 @@ unbind-selmode-key
       <td><a name="modevar-bwindows" id=
       "modevar-bwindows">$bwindows</a>
       </td>
-
       <td>number of windows open on current buffer(read only)</td>
     </tr>
 
@@ -5532,14 +5314,12 @@ unbind-selmode-key
       <td><a name="modevar-cbufname" id=
       "modevar-cbufname">$cbufname</a>
       </td>
-
       <td>current buffer name</td>
     </tr>
 
     <tr>
       <td><a name="modevar-cdpath" id="modevar-cdpath">$cdpath</a>
       </td>
-
       <td>editor's copy of the <a href="#env-CDPATH">$CDPATH</a>
       env var (read/write)</td>
     </tr>
@@ -5548,7 +5328,6 @@ unbind-selmode-key
       <td><a name="modevar-cd-hook" id=
       "modevar-cd-hook">$cd-hook</a>
       </td>
-
       <td>name of procedure to run when changing directories</td>
     </tr>
 
@@ -5556,147 +5335,122 @@ unbind-selmode-key
       <td><a name="modevar-cfgopts" id=
       "modevar-cfgopts">$cfgopts</a>
       </td>
-
       <td>
         comma-delimited list of "interesting" compiled options
         (read only).
-
         <table border="1" summary="Config-options">
           <tr>
             <th>Name</th>
-
             <th>Description</th>
           </tr>
 
           <tr>
             <td>ansi</td>
-
             <td>vile built with ANSI terminal driver</td>
           </tr>
 
           <tr>
             <td>athena</td>
-
             <td>xvile built with Athena widgets</td>
           </tr>
 
           <tr>
             <td>borland</td>
-
             <td>vile built with Borland/DJGPP driver</td>
           </tr>
 
           <tr>
             <td>curses</td>
-
             <td>editor uses curses terminal driver</td>
           </tr>
 
           <tr>
             <td>hypertext</td>
-
             <td>editor supports highlighting and links</td>
           </tr>
 
           <tr>
             <td>iconv</td>
-
             <td>editor has iconv locale support</td>
           </tr>
 
           <tr>
             <td>locale</td>
-
             <td>editor uses system's LC_CTYPE locale</td>
           </tr>
 
           <tr>
             <td>motif</td>
-
             <td>xvile built with Motif libraries</td>
           </tr>
 
           <tr>
             <td>multibyte</td>
-
             <td>vile built with multibyte locales</td>
           </tr>
 
           <tr>
             <td>nextaw</td>
-
             <td>xvile built with Athena widgets (NeXtaw)</td>
           </tr>
 
           <tr>
             <td>ntcons</td>
-
             <td>vile built for Win32 console</td>
           </tr>
 
           <tr>
             <td>ntwin</td>
-
             <td>vile built for Win32 GUI</td>
           </tr>
 
           <tr>
             <td>noshell</td>
-
             <td>shell commands are disabled</td>
           </tr>
 
           <tr>
             <td>oleauto</td>
-
             <td>editor supports OLE automation.</td>
           </tr>
 
           <tr>
             <td>openlook</td>
-
             <td>xvile built with OpenLook libraries</td>
           </tr>
 
           <tr>
             <td>os2vio</td>
-
             <td>vile built for OS/2 VIO console</td>
           </tr>
 
           <tr>
             <td>perl</td>
-
             <td>editor includes perl interpreter</td>
           </tr>
 
           <tr>
             <td>termcap</td>
-
             <td>editor reads TERMCAP db for screen info.</td>
           </tr>
 
           <tr>
             <td>terminfo</td>
-
             <td>editor reads TERMINFO db for screen info.</td>
           </tr>
 
           <tr>
             <td>vmsvt</td>
-
             <td>vile built for VMS terminal</td>
           </tr>
 
           <tr>
             <td>xaw</td>
-
             <td>xvile built with Athena widgets (Xaw)</td>
           </tr>
 
           <tr>
             <td>xaw3d</td>
-
             <td>xvile built with Athena widgets (Xaw3D)</td>
           </tr>
         </table>
@@ -5707,14 +5461,12 @@ unbind-selmode-key
       <td><a name="modevar-cfilname" id=
       "modevar-cfilname">$cfilname</a>
       </td>
-
       <td>current file name</td>
     </tr>
 
     <tr>
       <td><a name="modevar-char" id="modevar-char">$char</a>
       </td>
-
       <td>character under the cursor</td>
     </tr>
 
@@ -5722,7 +5474,6 @@ unbind-selmode-key
       <td><a name="modevar-cmd-count" id=
       "modevar-cmd-count">$cmd-count</a>
       </td>
-
       <td>repeat-counter for the current macro (read only)</td>
     </tr>
 
@@ -5730,7 +5481,6 @@ unbind-selmode-key
       <td><a name="modevar-cmd-encoding" id=
       "modevar-cmd-encoding">$cmd-encoding</a>
       </td>
-
       <td>character set to use for minibuffer</td>
     </tr>
 
@@ -5738,7 +5488,6 @@ unbind-selmode-key
       <td><a name="modevar-cmd-motion" id=
       "modevar-cmd-motion">$cmd-motion</a>
       </td>
-
       <td>motion for the current operator (read only)</td>
     </tr>
 
@@ -5746,7 +5495,6 @@ unbind-selmode-key
       <td><a name="modevar-cryptkey" id=
       "modevar-cryptkey">$cryptkey</a>
       </td>
-
       <td>encryption key (write only)</td>
     </tr>
 
@@ -5754,14 +5502,12 @@ unbind-selmode-key
       <td><a name="modevar-curchar" id=
       "modevar-curchar">$curchar</a>
       </td>
-
       <td>character offset in file</td>
     </tr>
 
     <tr>
       <td><a name="modevar-curcol" id="modevar-curcol">$curcol</a>
       </td>
-
       <td>current column position of cursor</td>
     </tr>
 
@@ -5769,28 +5515,24 @@ unbind-selmode-key
       <td><a name="modevar-curline" id=
       "modevar-curline">$curline</a>
       </td>
-
       <td>current line in file</td>
     </tr>
 
     <tr>
       <td><a name="modevar-cwd" id="modevar-cwd">$cwd</a>
       </td>
-
       <td>current directory</td>
     </tr>
 
     <tr>
       <td><a name="modevar-cwline" id="modevar-cwline">$cwline</a>
       </td>
-
       <td>line offset in current window</td>
     </tr>
 
     <tr>
       <td><a name="modevar-debug" id="modevar-debug">$debug</a>
       </td>
-
       <td>macro debugging &ndash; set true for line by line
       tracing</td>
     </tr>
@@ -5799,21 +5541,18 @@ unbind-selmode-key
       <td><a name="modevar-directory" id=
       "modevar-directory">$directory</a>
       </td>
-
       <td>controls location of temp-files (unused)</td>
     </tr>
 
     <tr>
       <td><a name="modevar-discmd" id="modevar-discmd">$discmd</a>
       </td>
-
       <td>display commands on command line (boolean)</td>
     </tr>
 
     <tr>
       <td><a name="modevar-disinp" id="modevar-disinp">$disinp</a>
       </td>
-
       <td>display command line input characters (boolean)</td>
     </tr>
 
@@ -5821,7 +5560,6 @@ unbind-selmode-key
       <td><a name="modevar-empty-lines" id=
       "modevar-empty-lines">$empty-lines</a>
       </td>
-
       <td>parameter for force-empty-lines command</td>
     </tr>
 
@@ -5829,7 +5567,6 @@ unbind-selmode-key
       <td><a name="modevar-encoding" id=
       "modevar-encoding">$encoding</a>
       </td>
-
       <td>character set associated with locale (read only)</td>
     </tr>
 
@@ -5837,7 +5574,6 @@ unbind-selmode-key
       <td><a name="modevar-end-of-cmd" id=
       "modevar-end-of-cmd">$end-of-cmd</a>
       </td>
-
       <td>true if user ended the cmd with &lt;cr&gt;</td>
     </tr>
 
@@ -5845,7 +5581,6 @@ unbind-selmode-key
       <td><a name="modevar-error-buffer" id=
       "modevar-error-buffer">$error-buffer</a>
       </td>
-
       <td>buffer name assigned to the error-buffer</td>
     </tr>
 
@@ -5853,7 +5588,6 @@ unbind-selmode-key
       <td><a name="modevar-error-expr" id=
       "modevar-error-expr">$error-expr</a>
       </td>
-
       <td>regular expression that matched the error-buffer</td>
     </tr>
 
@@ -5861,7 +5595,6 @@ unbind-selmode-key
       <td><a name="modevar-error-match" id=
       "modevar-error-match">$error-match</a>
       </td>
-
       <td>text that matched the error-buffer</td>
     </tr>
 
@@ -5869,7 +5602,6 @@ unbind-selmode-key
       <td><a name="modevar-error-tabstop" id=
       "modevar-error-tabstop">$error-tabstop</a>
       </td>
-
       <td>tabstop to use with error-buffer for %C</td>
     </tr>
 
@@ -5877,7 +5609,6 @@ unbind-selmode-key
       <td><a name="modevar-exec-path" id=
       "modevar-exec-path">$exec-path</a>
       </td>
-
       <td>where to find vile (read only)</td>
     </tr>
 
@@ -5885,7 +5616,6 @@ unbind-selmode-key
       <td><a name="modevar-exec-suffix" id=
       "modevar-exec-suffix">$exec-suffix</a>
       </td>
-
       <td>suffix, if any, for execable programs (read only)</td>
     </tr>
 
@@ -5893,7 +5623,6 @@ unbind-selmode-key
       <td><a name="modevar-exit-hook" id=
       "modevar-exit-hook">$exit-hook</a>
       </td>
-
       <td>name of procedure to run when quitting</td>
     </tr>
 
@@ -5901,7 +5630,6 @@ unbind-selmode-key
       <td><a name="modevar-favorites" id=
       "modevar-favorites">$favorites</a>
       </td>
-
       <td>path to favorites folder (win32 only) (read only)</td>
     </tr>
 
@@ -5909,7 +5637,6 @@ unbind-selmode-key
       <td><a name="modevar-fchanged" id=
       "modevar-fchanged">$fchanged</a>
       </td>
-
       <td>true if file for current buffer is modified
       (boolean)</td>
     </tr>
@@ -5918,7 +5645,6 @@ unbind-selmode-key
       <td><a name="modevar-fence-limit" id=
       "modevar-fence-limit">$fence-limit</a>
       </td>
-
       <td>iteration limit for complex fences</td>
     </tr>
 
@@ -5926,7 +5652,6 @@ unbind-selmode-key
       <td><a name="modevar-filename-expr" id=
       "modevar-filename-expr">$filename-expr</a>
       </td>
-
       <td>actual pattern for %F in [Error Expressions]</td>
     </tr>
 
@@ -5934,7 +5659,6 @@ unbind-selmode-key
       <td><a name="modevar-filter-list" id=
       "modevar-filter-list">$filter-list</a>
       </td>
-
       <td>list of builtin-filters (read only)</td>
     </tr>
 
@@ -5942,7 +5666,6 @@ unbind-selmode-key
       <td><a name="modevar-findpath" id=
       "modevar-findpath">$findpath</a>
       </td>
-
       <td>editor's copy of the <a href=
       "#env-VILE_FINDPATH">$VILE_FINDPATH</a> env var
       (read/write)</td>
@@ -5952,14 +5675,12 @@ unbind-selmode-key
       <td><a name="modevar-find-cmd" id=
       "modevar-find-cmd">$find-cmd</a>
       </td>
-
       <td>last spawned find command (read only)</td>
     </tr>
 
     <tr>
       <td><a name="modevar-font" id="modevar-font">$font</a>
       </td>
-
       <td>current font name (X11/winvile versions only)</td>
     </tr>
 
@@ -5967,7 +5688,6 @@ unbind-selmode-key
       <td><a name="modevar-forward-search" id=
       "modevar-forward-search">$forward-search</a>
       </td>
-
       <td>search direction, true=forward</td>
     </tr>
 
@@ -5975,7 +5695,6 @@ unbind-selmode-key
       <td><a name="modevar-get-at-dot" id=
       "modevar-get-at-dot">$get-at-dot</a>
       </td>
-
       <td>ensure that "identifier-like" matching includes current
       editing position.</td>
     </tr>
@@ -5984,7 +5703,6 @@ unbind-selmode-key
       <td><a name="modevar-get-it-all" id=
       "modevar-get-it-all">$get-it-all</a>
       </td>
-
       <td>match entire "identifier-like" word under the
       cursor.</td>
     </tr>
@@ -5993,7 +5711,6 @@ unbind-selmode-key
       <td><a name="modevar-get-length" id=
       "modevar-get-length">$get-length</a>
       </td>
-
       <td>sets length of "identifier-like" word as
       side-effect.</td>
     </tr>
@@ -6002,7 +5719,6 @@ unbind-selmode-key
       <td><a name="modevar-get-offset" id=
       "modevar-get-offset">$get-offset</a>
       </td>
-
       <td>sets offset of "identifier-like" word as
       side-effect.</td>
     </tr>
@@ -6011,7 +5727,6 @@ unbind-selmode-key
       <td><a name="modevar-helpfile" id=
       "modevar-helpfile">$helpfile</a>
       </td>
-
       <td><a href="#env-VILE_HELP_FILE">$VILE_HELP_FILE</a> env var
       or "vile.hlp" (read/write)</td>
     </tr>
@@ -6020,7 +5735,6 @@ unbind-selmode-key
       <td><a name="modevar-iconname" id=
       "modevar-iconname">$iconname</a>
       </td>
-
       <td>current icon name (X11 version only)</td>
     </tr>
 
@@ -6028,7 +5742,6 @@ unbind-selmode-key
       <td><a name="modevar-identifier" id=
       "modevar-identifier">$identifier</a>
       </td>
-
       <td>current "identifier-like" word under the cursor.</td>
     </tr>
 
@@ -6036,7 +5749,6 @@ unbind-selmode-key
       <td><a name="modevar-kbd-encoding" id=
       "modevar-kbd-encoding">$kbd-encoding</a>
       </td>
-
       <td>keyboard encoding</td>
     </tr>
 
@@ -6044,7 +5756,6 @@ unbind-selmode-key
       <td><a name="modevar-kbd-macro" id=
       "modevar-kbd-macro">$kbd-macro</a>
       </td>
-
       <td>the keyboard macro, see <a href=
       "#begin-keyboard-macro">^X-( ^X-)</a> (read only)</td>
     </tr>
@@ -6052,7 +5763,6 @@ unbind-selmode-key
     <tr>
       <td><a name="modevar-kill" id="modevar-kill">$kill</a>
       </td>
-
       <td>some of the kill register (read only)</td>
     </tr>
 
@@ -6060,7 +5770,6 @@ unbind-selmode-key
       <td><a name="modevar-kill-limit" id=
       "modevar-kill-limit">$kill-limit</a>
       </td>
-
       <td>maximum length for <a href="#modevar-kill">$kill</a></td>
     </tr>
 
@@ -6068,7 +5777,6 @@ unbind-selmode-key
       <td><a name="modevar-kill-size" id=
       "modevar-kill-size">$kill-size</a>
       </td>
-
       <td>length of the kill register (read only)</td>
     </tr>
 
@@ -6076,7 +5784,6 @@ unbind-selmode-key
       <td><a name="modevar-lastkey" id=
       "modevar-lastkey">$lastkey</a>
       </td>
-
       <td>last keyboard char struck</td>
     </tr>
 
@@ -6084,7 +5791,6 @@ unbind-selmode-key
       <td><a name="modevar-latin1-expr" id=
       "modevar-latin1-expr">$latin1-expr</a>
       </td>
-
       <td>pattern to match locales using ISO-8859-1 in case they
       are not installed</td>
     </tr>
@@ -6092,7 +5798,6 @@ unbind-selmode-key
     <tr>
       <td><a name="modevar-lcols" id="modevar-lcols">$lcols</a>
       </td>
-
       <td>length of current line, in columns (read only)</td>
     </tr>
 
@@ -6100,14 +5805,12 @@ unbind-selmode-key
       <td><a name="modevar-libdir-path" id=
       "modevar-libdir-path">$libdir-path</a>
       </td>
-
       <td>appended to $PATH when running filters</td>
     </tr>
 
     <tr>
       <td><a name="modevar-line" id="modevar-line">$line</a>
       </td>
-
       <td>text of current line starting with cursor</td>
     </tr>
 
@@ -6115,14 +5818,12 @@ unbind-selmode-key
       <td><a name="modevar-llength" id=
       "modevar-llength">$llength</a>
       </td>
-
       <td>length of current line (read only)</td>
     </tr>
 
     <tr>
       <td><a name="modevar-locale" id="modevar-locale">$locale</a>
       </td>
-
       <td>locale, which determines character type (read only)</td>
     </tr>
 
@@ -6130,7 +5831,6 @@ unbind-selmode-key
       <td><a name="modevar-majormode" id=
       "modevar-majormode">$majormode</a>
       </td>
-
       <td>current majormode, if any (read only)</td>
     </tr>
 
@@ -6138,14 +5838,12 @@ unbind-selmode-key
       <td><a name="modevar-majormode-hook" id=
       "modevar-majormode-hook">$majormode-hook</a>
       </td>
-
       <td>procedure to override suffix/preamble rules</td>
     </tr>
 
     <tr>
       <td><a name="modevar-match" id="modevar-match">$match</a>
       </td>
-
       <td>last matched magic pattern (read only)</td>
     </tr>
 
@@ -6153,14 +5851,12 @@ unbind-selmode-key
       <td><a name="modevar-menu-file" id=
       "modevar-menu-file">$menu-file</a>
       </td>
-
       <td>the name of the menu file (e.g. .vilemenu)</td>
     </tr>
 
     <tr>
       <td><a name="modevar-mode" id="modevar-mode">$mode</a>
       </td>
-
       <td>current mode ("command","insert","overwrite") (rd.
       o.)</td>
     </tr>
@@ -6169,7 +5865,6 @@ unbind-selmode-key
       <td><a name="modevar-modeline-format" id=
       "modevar-modeline-format">$modeline-format</a>
       </td>
-
       <td>format of mode lines. see <a href="#statusline">"Mode
       line customization"</a>.</td>
     </tr>
@@ -6178,7 +5873,6 @@ unbind-selmode-key
       <td><a name="modevar-modeline-limit" id=
       "modevar-modeline-limit">$modeline-limit</a>
       </td>
-
       <td>maximum inline offset to scan for mode lines</td>
     </tr>
 
@@ -6186,7 +5880,6 @@ unbind-selmode-key
       <td><a name="modevar-modified" id=
       "modevar-modified">$modified</a>
       </td>
-
       <td>is current buffer modified or not? (read only)</td>
     </tr>
 
@@ -6194,7 +5887,6 @@ unbind-selmode-key
       <td><a name="modevar-ncolors" id=
       "modevar-ncolors">$ncolors</a>
       </td>
-
       <td>number of displayed colors, must be power of two</td>
     </tr>
 
@@ -6202,7 +5894,6 @@ unbind-selmode-key
       <td><a name="modevar-ntildes" id=
       "modevar-ntildes">$ntildes</a>
       </td>
-
       <td>percent of window filled by ~ chars, at end of
       buffer</td>
     </tr>
@@ -6210,14 +5901,12 @@ unbind-selmode-key
     <tr>
       <td><a name="modevar-ocwd" id="modevar-ocwd">$ocwd</a>
       </td>
-
       <td>previous directory (read only)</td>
     </tr>
 
     <tr>
       <td><a name="modevar-os" id="modevar-os">$os</a>
       </td>
-
       <td>"dos", "vms", "os/2", "win32", and "unix", although the
       latter may be replaced with a more specific name derived from
       vile's configure script. (read only)</td>
@@ -6227,7 +5916,6 @@ unbind-selmode-key
       <td><a name="modevar-pagelen" id=
       "modevar-pagelen">$pagelen</a>
       </td>
-
       <td>number of screen lines in use by editor</td>
     </tr>
 
@@ -6235,7 +5923,6 @@ unbind-selmode-key
       <td><a name="modevar-pagewid" id=
       "modevar-pagewid">$pagewid</a>
       </td>
-
       <td>current screen width</td>
     </tr>
 
@@ -6243,7 +5930,6 @@ unbind-selmode-key
       <td><a name="modevar-palette" id=
       "modevar-palette">$palette</a>
       </td>
-
       <td>current palette string</td>
     </tr>
 
@@ -6251,7 +5937,6 @@ unbind-selmode-key
       <td><a name="modevar-patchlevel" id=
       "modevar-patchlevel">$patchlevel</a>
       </td>
-
       <td>current patch-level (empty for release) (read only)</td>
     </tr>
 
@@ -6259,7 +5944,6 @@ unbind-selmode-key
       <td><a name="modevar-pathlist-separator" id=
       "modevar-pathlist-separator">$pathlist-separator</a>
       </td>
-
       <td>separator for lists of pathnames, e.g., $PATH</td>
     </tr>
 
@@ -6267,7 +5951,6 @@ unbind-selmode-key
       <td><a name="modevar-pathname" id=
       "modevar-pathname">$pathname</a>
       </td>
-
       <td>current "path-like" word, under the cursor.</td>
     </tr>
 
@@ -6275,7 +5958,6 @@ unbind-selmode-key
       <td><a name="modevar-pathname-separator" id=
       "modevar-pathname-separator">$pathname-separator</a>
       </td>
-
       <td>separator for levels of pathnames, e.g., '/'</td>
     </tr>
 
@@ -6283,14 +5965,12 @@ unbind-selmode-key
       <td><a name="modevar-pending" id=
       "modevar-pending">$pending</a>
       </td>
-
       <td>typeahead pending flag (read only)</td>
     </tr>
 
     <tr>
       <td><a name="modevar-pid" id="modevar-pid">$pid</a>
       </td>
-
       <td>returns vile's process-id (read only)</td>
     </tr>
 
@@ -6298,7 +5978,6 @@ unbind-selmode-key
       <td><a name="modevar-position-format" id=
       "modevar-position-format">$position-format</a>
       </td>
-
       <td>format of ^G command. see <a href="#statusline">"Mode
       line customization"</a>.</td>
     </tr>
@@ -6307,14 +5986,12 @@ unbind-selmode-key
       <td><a name="modevar-progname" id=
       "modevar-progname">$progname</a>
       </td>
-
       <td>returns "vile" or "xvile" or "winvile". (read only)</td>
     </tr>
 
     <tr>
       <td><a name="modevar-prompt" id="modevar-prompt">$prompt</a>
       </td>
-
       <td>the command-line prompt string ": "</td>
     </tr>
 
@@ -6322,7 +5999,6 @@ unbind-selmode-key
       <td><a name="modevar-qidentifier" id=
       "modevar-qidentifier">$qidentifier</a>
       </td>
-
       <td>current qualified name (as with C++ ::)</td>
     </tr>
 
@@ -6330,7 +6006,6 @@ unbind-selmode-key
       <td><a name="modevar-read-hook" id=
       "modevar-read-hook">$read-hook</a>
       </td>
-
       <td>name of procedure to run after a file is read</td>
     </tr>
 
@@ -6338,42 +6013,36 @@ unbind-selmode-key
       <td><a name="modevar-replace" id=
       "modevar-replace">$replace</a>
       </td>
-
       <td>replacement pattern</td>
     </tr>
 
     <tr>
       <td><a name="modevar-return" id="modevar-return">$return</a>
       </td>
-
       <td>set within a macro to provide $_ on completion</td>
     </tr>
 
     <tr>
       <td><a name="modevar-search" id="modevar-search">$search</a>
       </td>
-
       <td>search pattern</td>
     </tr>
 
     <tr>
       <td><a name="modevar-seed" id="modevar-seed">$seed</a>
       </td>
-
       <td>current random number seed</td>
     </tr>
 
     <tr>
       <td><a name="modevar-shell" id="modevar-shell">$shell</a>
       </td>
-
       <td>name of the shell program for spawned commands.</td>
     </tr>
 
     <tr>
       <td><a name="modevar-sres" id="modevar-sres">$sres</a>
       </td>
-
       <td>current screen resolution</td>
     </tr>
 
@@ -6381,7 +6050,6 @@ unbind-selmode-key
       <td><a name="modevar-startup-file" id=
       "modevar-startup-file">$startup-file</a>
       </td>
-
       <td>the name of the startup file (e.g. .vilerc). Normally
       this is only a <em>filename</em>, but can be an absolute path
       to override <code>$startup-path</code>.</td>
@@ -6391,7 +6059,6 @@ unbind-selmode-key
       <td><a name="modevar-startup-path" id=
       "modevar-startup-path">$startup-path</a>
       </td>
-
       <td>where to find the startup file, i.e., a colon-separated
       list of directories on Unix-like systems. On Windows, use
       semicolon for separating the items in the list.</td>
@@ -6400,7 +6067,6 @@ unbind-selmode-key
     <tr>
       <td><a name="modevar-status" id="modevar-status">$status</a>
       </td>
-
       <td>returns the status of the last command</td>
     </tr>
 
@@ -6408,7 +6074,6 @@ unbind-selmode-key
       <td><a name="modevar-system-crlf" id=
       "modevar-system-crlf">$system-crlf</a>
       </td>
-
       <td>the default value for dos mode, which can be preset using
       <code>-u</code> or <code>-U</code> options</td>
     </tr>
@@ -6417,7 +6082,6 @@ unbind-selmode-key
       <td><a name="modevar-system-name" id=
       "modevar-system-name">$system-name</a>
       </td>
-
       <td>returns the operating system name shown in the
       <code>version</code> command</td>
     </tr>
@@ -6426,7 +6090,6 @@ unbind-selmode-key
       <td><a name="modevar-term-cols" id=
       "modevar-term-cols">$term-cols</a>
       </td>
-
       <td>number of columns in terminal window (read only)</td>
     </tr>
 
@@ -6434,7 +6097,6 @@ unbind-selmode-key
       <td><a name="modevar-term-encoding" id=
       "modevar-term-encoding">$term-encoding</a>
       </td>
-
       <td>terminal's encoding support (read only)</td>
     </tr>
 
@@ -6442,7 +6104,6 @@ unbind-selmode-key
       <td><a name="modevar-term-lines" id=
       "modevar-term-lines">$term-lines</a>
       </td>
-
       <td>number of lines in terminal window (read only)</td>
     </tr>
 
@@ -6450,14 +6111,12 @@ unbind-selmode-key
       <td><a name="modevar-term-resizes" id=
       "modevar-term-resizes">$term-resizes</a>
       </td>
-
       <td>true if vile handles terminal-resizing (read only)</td>
     </tr>
 
     <tr>
       <td><a name="modevar-title" id="modevar-title">$title</a>
       </td>
-
       <td>current window title (X11, win32 versions only)</td>
     </tr>
 
@@ -6465,7 +6124,6 @@ unbind-selmode-key
       <td><a name="modevar-title-encoding" id=
       "modevar-title-encoding">$title-encoding</a>
       </td>
-
       <td>encoding of xterm window title, e.g., "8bit" for
       ISO-8859-1 or "utf-8".</td>
     </tr>
@@ -6474,7 +6132,6 @@ unbind-selmode-key
       <td><a name="modevar-title-format" id=
       "modevar-title-format">$title-format</a>
       </td>
-
       <td>format of window title. see <a href="#statusline">"Mode
       line customization"</a>.</td>
     </tr>
@@ -6483,7 +6140,6 @@ unbind-selmode-key
       <td><a name="modevar-version" id=
       "modevar-version">$version</a>
       </td>
-
       <td>current version number (read only)</td>
     </tr>
 
@@ -6491,21 +6147,18 @@ unbind-selmode-key
       <td><a name="modevar-with-prefix" id=
       "modevar-with-prefix">$with-prefix</a>
       </td>
-
       <td>string set by "~with" directives (read only)</td>
     </tr>
 
     <tr>
       <td><a name="modevar-wlines" id="modevar-wlines">$wlines</a>
       </td>
-
       <td>number of lines in current window</td>
     </tr>
 
     <tr>
       <td><a name="modevar-word" id="modevar-word">$word</a>
       </td>
-
       <td>current "word", a sequence of nonblanks</td>
     </tr>
 
@@ -6513,7 +6166,6 @@ unbind-selmode-key
       <td><a name="modevar-write-hook" id=
       "modevar-write-hook">$write-hook</a>
       </td>
-
       <td>name of procedure to run before a file is written</td>
     </tr>
 
@@ -6521,7 +6173,6 @@ unbind-selmode-key
       <td><a name="modevar-xdisplay" id=
       "modevar-xdisplay">$xdisplay</a>
       </td>
-
       <td>the value to set $DISPLAY when running <a href=
       "#modevar-xshell">$xshell.</a></td>
     </tr>
@@ -6529,7 +6180,6 @@ unbind-selmode-key
     <tr>
       <td><a name="modevar-xshell" id="modevar-xshell">$xshell</a>
       </td>
-
       <td>name of the terminal program for spawned xvile
       commands.</td>
     </tr>
@@ -6538,7 +6188,6 @@ unbind-selmode-key
       <td><a name="modevar-xshell-flags" id=
       "modevar-xshell-flags">$xshell-flags</a>
       </td>
-
       <td>command-line flags after <a href=
       "#modevar-xshell">$xshell</a>, normally "-e"</td>
     </tr>
@@ -6575,677 +6224,509 @@ unbind-selmode-key
   <table border="1" summary="Functions">
     <tr>
       <th>Name</th>
-
       <th>Args</th>
-
       <th>Description</th>
     </tr>
 
     <tr>
       <td>&amp;abs</td>
-
       <td>1</td>
-
       <td>absolute value of a number</td>
     </tr>
 
     <tr>
       <td>&amp;add</td>
-
       <td>2</td>
-
       <td>add two numbers together</td>
     </tr>
 
     <tr>
       <td>&amp;and</td>
-
       <td>2</td>
-
       <td>logical and</td>
     </tr>
 
     <tr>
       <td>&amp;ascii</td>
-
       <td>1</td>
-
       <td>char to integer conversion</td>
     </tr>
 
     <tr>
       <td>&amp;bchanged</td>
-
       <td>1</td>
-
       <td>true if given buffer is modified</td>
     </tr>
 
     <tr>
       <td>&amp;bind</td>
-
       <td>1</td>
-
       <td>lookup what function name is bound to key</td>
     </tr>
 
     <tr>
       <td>&amp;cat</td>
-
       <td>2</td>
-
       <td>concatenate string</td>
     </tr>
 
     <tr>
       <td>&amp;cclass</td>
-
       <td>1</td>
-
       <td>character class (see <a href=
       "#command-show-printable">"show-printable"</a>)</td>
     </tr>
 
     <tr>
       <td>&amp;chr</td>
-
       <td>1</td>
-
       <td>integer to char conversion</td>
     </tr>
 
     <tr>
       <td>&amp;classof</td>
-
       <td>1</td>
-
       <td>inverse of &amp;isa, returns classes for param</td>
     </tr>
 
     <tr>
       <td>&amp;cmatch</td>
-
       <td>2</td>
-
       <td>caseless match regular-expression value</td>
     </tr>
 
     <tr>
       <td>&amp;date</td>
-
       <td>2</td>
-
       <td>format 2nd param with 1st, like strftime.</td>
     </tr>
 
     <tr>
       <td>&amp;default</td>
-
       <td>1</td>
-
       <td>initial/default value for mode or state variable</td>
     </tr>
 
     <tr>
       <td>&amp;divide</td>
-
       <td>2</td>
-
       <td>division</td>
     </tr>
 
     <tr>
       <td>&amp;dquery</td>
-
       <td>2</td>
-
       <td>prompt user for input, given default value</td>
     </tr>
 
     <tr>
       <td>&amp;env</td>
-
       <td>1</td>
-
       <td>retrieve a system environment variable</td>
     </tr>
 
     <tr>
       <td>&amp;equal</td>
-
       <td>2</td>
-
       <td>numeric equality</td>
     </tr>
 
     <tr>
       <td>&amp;error</td>
-
       <td>1</td>
-
       <td>true if the parameter was ERROR</td>
     </tr>
 
     <tr>
       <td>&amp;execable</td>
-
       <td>1</td>
-
       <td>true if file is exec'able</td>
     </tr>
 
     <tr>
       <td>&amp;fchanged</td>
-
       <td>1</td>
-
       <td>true if file for given buffer is modified</td>
     </tr>
 
     <tr>
       <td>&amp;filter</td>
-
       <td>1</td>
-
       <td>true if the given majormode's filter is builtin</td>
     </tr>
 
     <tr>
       <td>&amp;ftime</td>
-
       <td>1</td>
-
       <td>modification-time of the given file, as a number</td>
     </tr>
 
     <tr>
       <td>&amp;geq</td>
-
       <td>2</td>
-
       <td>numeric greater than or equal</td>
     </tr>
 
     <tr>
       <td>&amp;get-key</td>
-
       <td>0</td>
-
       <td>(alias for &amp;gtkey)</td>
     </tr>
 
     <tr>
       <td>&amp;get-key</td>
-
       <td>0</td>
-
       <td>(alias for &amp;gtkey)</td>
     </tr>
 
     <tr>
       <td>&amp;get-completion</td>
-
       <td>2</td>
-
       <td>get name-completion for given category and value (see
       <a href="#completion-params">below</a> for arguments)</td>
     </tr>
 
     <tr>
       <td>&amp;get-motion</td>
-
       <td>1</td>
-
       <td>(alias for &amp;gtmotion)</td>
     </tr>
 
     <tr>
       <td>&amp;get-sequence</td>
-
       <td>0</td>
-
       <td>(alias for &amp;gtsequence)</td>
     </tr>
 
     <tr>
       <td>&amp;global</td>
-
       <td>1</td>
-
       <td>retrieves global mode setting</td>
     </tr>
 
     <tr>
       <td>&amp;greater</td>
-
       <td>2</td>
-
       <td>numeric greater than</td>
     </tr>
 
     <tr>
       <td>&amp;gt</td>
-
       <td>2</td>
-
       <td>numeric greater than</td>
     </tr>
 
     <tr>
       <td>&amp;gtkey</td>
-
       <td>0</td>
-
       <td>get 1 character</td>
     </tr>
 
     <tr>
       <td>&amp;gtmotion</td>
-
       <td>1</td>
-
       <td>get keycode motion sequence for the binding</td>
     </tr>
 
     <tr>
       <td>&amp;gtsequence</td>
-
       <td>0</td>
-
       <td>get keycode sequence, e.g., #1</td>
     </tr>
 
     <tr>
       <td>&amp;indirect</td>
-
       <td>1</td>
-
       <td>evaluate indirect value</td>
     </tr>
 
     <tr>
       <td>&amp;isa</td>
-
       <td>2</td>
-
       <td>check if the second param is a member of first</td>
     </tr>
 
     <tr>
       <td>&amp;left</td>
-
       <td>2</td>
-
       <td>left string(string, len)</td>
     </tr>
 
     <tr>
       <td>&amp;length</td>
-
       <td>1</td>
-
       <td>string length</td>
     </tr>
 
     <tr>
       <td>&amp;leq</td>
-
       <td>2</td>
-
       <td>numeric less than or equal</td>
     </tr>
 
     <tr>
       <td>&amp;lessthan</td>
-
       <td>2</td>
-
       <td>numeric less than</td>
     </tr>
 
     <tr>
       <td>&amp;local</td>
-
       <td>1</td>
-
       <td>retrieves local mode setting</td>
     </tr>
 
     <tr>
       <td>&amp;lookup</td>
-
       <td>2</td>
-
       <td>look for filename (see <a href="#lookup-params">below</a>
       for arguments)</td>
     </tr>
 
     <tr>
       <td>&amp;lower</td>
-
       <td>1</td>
-
       <td>lower case string</td>
     </tr>
 
     <tr>
       <td>&amp;lt</td>
-
       <td>2</td>
-
       <td>numeric less than</td>
     </tr>
 
     <tr>
       <td>&amp;match</td>
-
       <td>2</td>
-
       <td>match regular-expression value</td>
     </tr>
 
     <tr>
       <td>&amp;mclass</td>
-
       <td>1</td>
-
       <td>returns the mode's class, e.g., buffer or Major</td>
     </tr>
 
     <tr>
       <td>&amp;middle</td>
-
       <td>3</td>
-
       <td>mid string(string, pos, len)</td>
     </tr>
 
     <tr>
       <td>&amp;modulo</td>
-
       <td>2</td>
-
       <td>modulus</td>
     </tr>
 
     <tr>
       <td>&amp;negate</td>
-
       <td>1</td>
-
       <td>negate</td>
     </tr>
 
     <tr>
       <td>&amp;neq</td>
-
       <td>2</td>
-
       <td>numeric inequality</td>
     </tr>
 
     <tr>
       <td>&amp;not</td>
-
       <td>1</td>
-
       <td>logical not</td>
     </tr>
 
     <tr>
       <td>&amp;or</td>
-
       <td>2</td>
-
       <td>logical or</td>
     </tr>
 
     <tr>
       <td>&amp;path</td>
-
       <td>2</td>
-
       <td>extract/translate pathname (see <a href=
       "#path-params">below</a> for args)</td>
     </tr>
 
     <tr>
       <td>&amp;pcat</td>
-
       <td>2</td>
-
       <td>concatenate directory and filename</td>
     </tr>
 
     <tr>
       <td>&amp;pquote</td>
-
       <td>1</td>
-
       <td>quote pathname if needed, e.g., embedded spaces</td>
     </tr>
 
     <tr>
       <td>&amp;qpasswd</td>
-
       <td>1</td>
-
       <td>prompt user for password string</td>
     </tr>
 
     <tr>
       <td>&amp;query</td>
-
       <td>1</td>
-
       <td>prompt user for input</td>
     </tr>
 
     <tr>
       <td>&amp;random</td>
-
       <td>1</td>
-
       <td>get a random number from 1 to n</td>
     </tr>
 
     <tr>
       <td>&amp;rd</td>
-
       <td>1</td>
-
       <td>is a file readable</td>
     </tr>
 
     <tr>
       <td>&amp;readable</td>
-
       <td>1</td>
-
       <td>is a file readable</td>
     </tr>
 
     <tr>
       <td>&amp;regex-escape</td>
-
       <td>1</td>
-
       <td>returns value with regex metacharacters escaped</td>
     </tr>
 
     <tr>
       <td>&amp;register</td>
-
       <td>1</td>
-
       <td>value of register (1-character name)</td>
     </tr>
 
     <tr>
       <td>&amp;right</td>
-
       <td>2</td>
-
       <td>right string(string, pos)</td>
     </tr>
 
     <tr>
       <td>&amp;rnd</td>
-
       <td>1</td>
-
       <td>get a random number from 1 to n</td>
     </tr>
 
     <tr>
       <td>&amp;sequal</td>
-
       <td>2</td>
-
       <td>string logical equality check</td>
     </tr>
 
     <tr>
       <td>&amp;sgeq</td>
-
       <td>2</td>
-
       <td>string greater than or equal</td>
     </tr>
 
     <tr>
       <td>&amp;sgreater</td>
-
       <td>2</td>
-
       <td>string logical greater than</td>
     </tr>
 
     <tr>
       <td>&amp;sgt</td>
-
       <td>2</td>
-
       <td>string greater than</td>
     </tr>
 
     <tr>
       <td>&amp;sindex</td>
-
       <td>2</td>
-
       <td>find the index of second string in first</td>
     </tr>
 
     <tr>
       <td>&amp;sleq</td>
-
       <td>2</td>
-
       <td>string less than or equal</td>
     </tr>
 
     <tr>
       <td>&amp;sless</td>
-
       <td>2</td>
-
       <td>string logical less than</td>
     </tr>
 
     <tr>
       <td>&amp;slt</td>
-
       <td>2</td>
-
       <td>string less than</td>
     </tr>
 
     <tr>
       <td>&amp;sneq</td>
-
       <td>2</td>
-
       <td>string inequality</td>
     </tr>
 
     <tr>
       <td>&amp;stime</td>
-
       <td>1</td>
-
       <td>system-time, as a number</td>
     </tr>
 
     <tr>
       <td>&amp;stoken</td>
-
       <td>3</td>
-
       <td>true if token found in string, given delims</td>
     </tr>
 
     <tr>
       <td>&amp;subtract</td>
-
       <td>2</td>
-
       <td>subtraction</td>
     </tr>
 
     <tr>
       <td>&amp;times</td>
-
       <td>2</td>
-
       <td>multiplication</td>
     </tr>
 
     <tr>
       <td>&amp;token</td>
-
       <td>3</td>
-
       <td>select n'th token of string, given delims</td>
     </tr>
 
     <tr>
       <td>&amp;translate</td>
-
       <td>3</td>
-
       <td>translate "from" to "to" for given string.</td>
     </tr>
 
     <tr>
       <td>&amp;trim</td>
-
       <td>1</td>
-
       <td>trim whitespace from string</td>
     </tr>
 
     <tr>
       <td>&amp;upper</td>
-
       <td>1</td>
-
       <td>uppercase string</td>
     </tr>
 
     <tr>
       <td>&amp;word</td>
-
       <td>2</td>
-
       <td>select n'th word of string, blank-separated</td>
     </tr>
 
     <tr>
       <td>&amp;writable</td>
-
       <td>1</td>
-
       <td>is a file writable</td>
     </tr>
   </table>
@@ -7270,45 +6751,38 @@ unbind-selmode-key
 
     <tr>
       <td>bin</td>
-
       <td>look in vile's directory</td>
     </tr>
 
     <tr>
       <td>current</td>
-
       <td>look in the current directory</td>
     </tr>
 
     <tr>
       <td>home</td>
-
       <td>look in user's $HOME directory</td>
     </tr>
 
     <tr>
       <td>insecure</td>
-
       <td>permit matches on files with insecure permissions (see
       <a href="#mode-check-access">check-access</a>).</td>
     </tr>
 
     <tr>
       <td>libdir</td>
-
       <td>look along <a href=
       "#modevar-libdir-path">$libdir-path</a></td>
     </tr>
 
     <tr>
       <td>path</td>
-
       <td>look along user's $PATH</td>
     </tr>
 
     <tr>
       <td>startup</td>
-
       <td>look along <a href=
       "#modevar-startup-path">$startup-path</a></td>
     </tr>
@@ -7324,19 +6798,16 @@ unbind-selmode-key
 
     <tr>
       <td>execable</td>
-
       <td>test if file is exec'able</td>
     </tr>
 
     <tr>
       <td>readable</td>
-
       <td>test if file is readable</td>
     </tr>
 
     <tr>
       <td>writable</td>
-
       <td>test if file is writable</td>
     </tr>
   </table>
@@ -7366,16 +6837,13 @@ unbind-selmode-key
 
     <tr>
       <th>Name</th>
-
       <th>Description</th>
     </tr>
 
     <tr>
       <td><code>~break</code>
       </td>
-
       <td>exit a <code>~while</code> loop</td>
-
       <td>
       </td>
     </tr>
@@ -7383,35 +6851,29 @@ unbind-selmode-key
     <tr>
       <td><code>~else</code>
       </td>
-
       <td>default conditional execution</td>
     </tr>
 
     <tr>
       <td><code>~elseif</code> <em>cond</em></td>
-
       <td>alternate conditional execution</td>
     </tr>
 
     <tr>
       <td><code>~elsewith</code> <em>tokens</em></td>
-
       <td>alterate tokens to following commands</td>
     </tr>
 
     <tr>
       <td><code>~endif</code>
       </td>
-
       <td>finish conditional execution</td>
     </tr>
 
     <tr>
       <td><code>~endm</code>
       </td>
-
       <td>finish a macro</td>
-
       <td>
       </td>
     </tr>
@@ -7419,9 +6881,7 @@ unbind-selmode-key
     <tr>
       <td><code>~endwhile</code>
       </td>
-
       <td>finish a <code>~while</code> loop</td>
-
       <td>
       </td>
     </tr>
@@ -7429,9 +6889,7 @@ unbind-selmode-key
     <tr>
       <td><code>~endwith</code>
       </td>
-
       <td>finish a <code>~with</code> block</td>
-
       <td>
       </td>
     </tr>
@@ -7439,35 +6897,29 @@ unbind-selmode-key
     <tr>
       <td><code>~force</code>
       </td>
-
       <td>force macro to continue even if command fails</td>
     </tr>
 
     <tr>
       <td><code>~goto</code> <em>label</em></td>
-
       <td>jump to a label in the current macro</td>
     </tr>
 
     <tr>
       <td><code>~hidden</code>
       </td>
-
       <td>do not update screen while the macro executes</td>
-
       <td>
       </td>
     </tr>
 
     <tr>
       <td><code>~if</code> <em>cond</em></td>
-
       <td>start conditional execution</td>
     </tr>
 
     <tr>
       <td><code>~local</code> <em>vars</em></td>
-
       <td>save specified variables, restore when macro
       terminates</td>
     </tr>
@@ -7475,9 +6927,7 @@ unbind-selmode-key
     <tr>
       <td><code>~quiet</code>
       </td>
-
       <td>suppress messages while the macro executes</td>
-
       <td>
       </td>
     </tr>
@@ -7485,25 +6935,21 @@ unbind-selmode-key
     <tr>
       <td><code>~return</code>
       </td>
-
       <td>terminate current macro</td>
     </tr>
 
     <tr>
       <td><code>~trace</code> <em>cond</em></td>
-
       <td>set <a href="#modevar-debug">$debug</a> trace</td>
     </tr>
 
     <tr>
       <td><code>~while</code> <em>cond</em></td>
-
       <td>execute a loop if the condition is true</td>
     </tr>
 
     <tr>
       <td><code>~with</code> <em>tokens</em></td>
-
       <td>prepend tokens to following commands</td>
     </tr>
   </table>
@@ -7587,7 +7033,6 @@ unbind-selmode-key
     <tr>
       <td><a href="#modevar-autocolor-hook">$autocolor-hook</a>
       </td>
-
       <td>applies syntax coloring to modified buffers when the
       keyboard is idle for a user-configurable time period</td>
     </tr>
@@ -7595,42 +7040,36 @@ unbind-selmode-key
     <tr>
       <td><a href="#modevar-buffer-hook">$buffer-hook</a>
       </td>
-
       <td>run when switching to a buffer</td>
     </tr>
 
     <tr>
       <td><a href="#modevar-cd-hook">$cd-hook</a>
       </td>
-
       <td>run when changing directories</td>
     </tr>
 
     <tr>
       <td><a href="#modevar-exit-hook">$exit-hook</a>
       </td>
-
       <td>run when quitting</td>
     </tr>
 
     <tr>
       <td><a href="#modevar-majormode-hook">$majormode-hook</a>
       </td>
-
       <td>procedure to override suffix/preamble rules</td>
     </tr>
 
     <tr>
       <td><a href="#modevar-read-hook">$read-hook</a>
       </td>
-
       <td>run after a file is read</td>
     </tr>
 
     <tr>
       <td><a href="#modevar-write-hook">$write-hook</a>
       </td>
-
       <td>run before a file is written</td>
     </tr>
   </table>
@@ -8243,7 +7682,6 @@ unbind-selmode-key
     <tr>
       <td align="center"><code>\|</code>
       </td>
-
       <td>A regular expression is zero or more branches, separated
       by `\|'. It matches anything that matches one of the
       branches.</td>
@@ -8252,7 +7690,6 @@ unbind-selmode-key
     <tr>
       <td>
       </td>
-
       <td>A branch is zero or more pieces, concatenated. It matches
       a match for the first, followed by a match for the second,
       etc.</td>
@@ -8263,7 +7700,6 @@ unbind-selmode-key
       +<br>
       \?</code>
       </td>
-
       <td>A piece is an atom possibly followed by `*', `\+', or
       `\?'. An atom followed by `*' matches a sequence of 0 or more
       matches of the atom. An atom followed by `\+' matches a
@@ -8279,7 +7715,6 @@ unbind-selmode-key
       \<em>c</em><br>
       <em>c</em></code>
       </td>
-
       <td>An atom is a regular expression in backslashed
       parentheses (matching a match for the regular expression), a
       range (see <a href="#regex-range">below</a>), (matching any
@@ -8293,7 +7728,6 @@ unbind-selmode-key
     <tr>
       <td align="center"><code>\&lt; \&gt;</code>
       </td>
-
       <td>In addition, vile atoms may be: \&lt; and \&gt;, which
       match the beginning and end of a "word".</td>
     </tr>
@@ -8301,7 +7735,6 @@ unbind-selmode-key
     <tr>
       <td>
       </td>
-
       <td>Vile recognizes the X/Open regular expression character
       classes (and additional character classes), as well as
       shorthand expressions for them. You can use the shorthand
@@ -8326,7 +7759,6 @@ unbind-selmode-key
       \u \U<br>
       \x \X</code>
       </td>
-
       <td>[:alnum:]<br>
       [:alpha:]<br>
       [:blank:]<br>
@@ -8347,7 +7779,6 @@ unbind-selmode-key
     <tr>
       <td><code>[ ]</code>
       </td>
-
       <td><a name="regex-range" id="regex-range">A range is a
       sequence of characters enclosed in `[]'.</a> It normally
       matches any single character from the sequence. If the
@@ -8364,7 +7795,6 @@ unbind-selmode-key
     <tr>
       <td>
       </td>
-
       <td>Additionally for vile, if "ignorecase" is set, then all
       literal matches, including those in character classes, are
       done without regard to upper and lower case.</td>
@@ -8373,7 +7803,6 @@ unbind-selmode-key
     <tr>
       <td>
       </td>
-
       <td>In magic mode, the following set of metacharacters must
       be preceded by '\' to hide their special meaning: * [ . ^ $
       These characters are special if they <i>are</i> preceded with
@@ -8383,7 +7812,6 @@ unbind-selmode-key
     <tr>
       <td>
       </td>
-
       <td>If magic mode is <i>not</i> on, only ^ and $ are special
       if not escaped. All of the following must be preceded with a
       '\' to be special, otherwise they are taken literally: ? + (
@@ -8393,7 +7821,6 @@ unbind-selmode-key
     <tr>
       <td align="center"><code>\1 \9</code>
       </td>
-
       <td>Replacement subexpressions are supported when
       substituting. That is, if part of an expression is contained
       in \( and \), then the part of the matched text in between
@@ -8406,7 +7833,6 @@ unbind-selmode-key
     <tr>
       <td align="center"><code>~</code>
       </td>
-
       <td>The tilde (~) character will expand immediately when it
       is typed to be the contents of the previously entered
       replacement pattern. [ Earlier versions of vile made this
@@ -8421,7 +7847,6 @@ unbind-selmode-key
       \u \l<br>
       \bfrtn</code>
       </td>
-
       <td>The replacement part of the substitution may also contain
       the special sequences \U and \L, which cause the replacement
       to be forced to uppercase or lowercase until a terminating \E
@@ -8590,7 +8015,6 @@ unbind-selmode-key
       vile uses this to compute a possible 8-bit "narrow" locale
       which corresponds to the current locale, thereby supporting
       editing of wide- and narrow-encoded text.
-
       <p>The default value,
       <code>/\\.\\(UTF\\|utf\\)[-]\\?8$//</code>, simply strips the
       most common suffixes used for wide-character locales. For
@@ -8832,45 +8256,38 @@ unbind-selmode-key
 
     <tr>
       <th align="left">Format</th>
-
       <th align="left">Description</th>
     </tr>
 
     <tr>
       <td>%b</td>
-
       <td>buffer name</td>
     </tr>
 
     <tr>
       <td>%c</td>
-
       <td>column number if "ruler" is set</td>
     </tr>
 
     <tr>
       <td>%C</td>
-
       <td>character value at current edit-position.</td>
     </tr>
 
     <tr>
       <td>%f</td>
-
       <td>file name when not internal buffer and when not the same
       as the buffer name.</td>
     </tr>
 
     <tr>
       <td>%F</td>
-
       <td>file name when it is internal buffer name and not the
       same as the buffer name.</td>
     </tr>
 
     <tr>
       <td>%i</td>
-
       <td>insert/overwrite/replace mode indicator, displayed only
       when in insert, overwrite, or replace mode. When not in one
       of these modes, the separator character (often "-", "=", or "
@@ -8879,66 +8296,56 @@ unbind-selmode-key
 
     <tr>
       <td>%l</td>
-
       <td>line number to be displayed if "ruler" is set</td>
     </tr>
 
     <tr>
       <td>%L</td>
-
       <td>number of lines in buffer, if ruler is set</td>
     </tr>
 
     <tr>
       <td>%m</td>
-
       <td>major mode(s), e.g., cmode, view-only, etc. Displayed in
       square brackets.</td>
     </tr>
 
     <tr>
       <td>%M</td>
-
       <td>brief version of "%m", omitting "mode", etc.</td>
     </tr>
 
     <tr>
       <td>%n</td>
-
       <td>file leaf name when not internal buffer name, otherwise
       the buffer name.</td>
     </tr>
 
     <tr>
       <td>%N</td>
-
       <td>absolute file path when not internal buffer name,
       otherwise the buffer name.</td>
     </tr>
 
     <tr>
       <td>%p</td>
-
       <td>line number as percentage of number of lines if "ruler"
       is set</td>
     </tr>
 
     <tr>
       <td>%P</td>
-
       <td>line number as percentage of number of lines</td>
     </tr>
 
     <tr>
       <td>%r</td>
-
       <td>relative file name when not internal buffer name,
       otherwise the buffer name.</td>
     </tr>
 
     <tr>
       <td>%S</td>
-
       <td>rough position of window with respect to buffer (top,
       bot, all, emp, mid) when ruler not set (or ruler is set, but
       buffer is empty).</td>
@@ -8946,7 +8353,6 @@ unbind-selmode-key
 
     <tr>
       <td>%=</td>
-
       <td>middle separator; should appear at most once in a format
       string. This indicates where to separate the left and right
       hand portions of the mode line with a long string of dashes
@@ -8955,31 +8361,26 @@ unbind-selmode-key
 
     <tr>
       <td>%-</td>
-
       <td>single occurrence of separator character</td>
     </tr>
 
     <tr>
       <td>%|</td>
-
       <td>eighty column indicator</td>
     </tr>
 
     <tr>
       <td>%%</td>
-
       <td>percent sign</td>
     </tr>
 
     <tr>
       <td>%:</td>
-
       <td>colon</td>
     </tr>
 
     <tr>
       <td>%{name}</td>
-
       <td>any internal mode/variable value, given its name</td>
     </tr>
   </table>
@@ -9070,103 +8471,86 @@ unbind-selmode-key
   <table border="1" summary="Color palette">
     <tr>
       <th>External user name</th>
-
       <th>Internal vile name</th>
     </tr>
 
     <tr>
       <td>black</td>
-
       <td>C0</td>
     </tr>
 
     <tr>
       <td>red</td>
-
       <td>C1</td>
     </tr>
 
     <tr>
       <td>green</td>
-
       <td>C2</td>
     </tr>
 
     <tr>
       <td>brown</td>
-
       <td>C3</td>
     </tr>
 
     <tr>
       <td>blue</td>
-
       <td>C4</td>
     </tr>
 
     <tr>
       <td>magenta</td>
-
       <td>C5</td>
     </tr>
 
     <tr>
       <td>cyan</td>
-
       <td>C6</td>
     </tr>
 
     <tr>
       <td>lightgray</td>
-
       <td>C7</td>
     </tr>
 
     <tr>
       <td>gray</td>
-
       <td>C8</td>
     </tr>
 
     <tr>
       <td>brightred</td>
-
       <td>C9</td>
     </tr>
 
     <tr>
       <td>brightgreen</td>
-
       <td>CA</td>
     </tr>
 
     <tr>
       <td>yellow</td>
-
       <td>CB</td>
     </tr>
 
     <tr>
       <td>brightblue</td>
-
       <td>CC</td>
     </tr>
 
     <tr>
       <td>brightmagenta</td>
-
       <td>CD</td>
     </tr>
 
     <tr>
       <td>brightcyan</td>
-
       <td>CE</td>
     </tr>
 
     <tr>
       <td>white</td>
-
       <td>CF</td>
     </tr>
   </table>
@@ -9407,121 +8791,73 @@ unbind-selmode-key
   <table border="1" summary="Host capabilities">
     <tr>
       <th>Color Feature</th>
-
       <th>VMS (std)</th>
-
       <th>VMS (GUI)</th>
-
       <th>DOS</th>
-
       <th>OS/2</th>
-
       <th>Win32 (std)</th>
-
       <th>Win32 (GUI)</th>
-
       <th>Unix (std)</th>
-
       <th>Unix (GUI)</th>
     </tr>
 
     <tr>
       <td>Visual Matching</td>
-
       <td>Y</td>
-
       <td>Y</td>
-
       <td>Y</td>
-
       <td>Y</td>
-
       <td>Y</td>
-
       <td>Y</td>
-
       <td>Y</td>
-
       <td>Y</td>
     </tr>
 
     <tr>
       <td>Foreground Color</td>
-
       <td>N</td>
-
       <td>Y</td>
-
       <td>Y</td>
-
       <td>Y</td>
-
       <td>Y</td>
-
       <td>Y</td>
-
       <td>[2]</td>
-
       <td>Y</td>
     </tr>
 
     <tr>
       <td>Background Color</td>
-
       <td>N</td>
-
       <td>Y</td>
-
       <td>Y</td>
-
       <td>Y</td>
-
       <td>Y</td>
-
       <td>Y</td>
-
       <td>[2]</td>
-
       <td>Y</td>
     </tr>
 
     <tr>
       <td>Attr. Sequences</td>
-
       <td>Y</td>
-
       <td>Y</td>
-
       <td>Y</td>
-
       <td>Y</td>
-
       <td>Y</td>
-
       <td>Y</td>
-
       <td>[3]</td>
-
       <td>Y</td>
     </tr>
 
     <tr>
       <td>Syntax Coloring</td>
-
       <td>N</td>
-
       <td>N</td>
-
       <td>N</td>
-
       <td>[1]</td>
-
       <td>Y</td>
-
       <td>Y</td>
-
       <td>[3]</td>
-
       <td>Y</td>
     </tr>
   </table>
@@ -9560,51 +8896,36 @@ unbind-selmode-key
   <table border="1" summary="Paired filter/majormodes">
     <tr>
       <th>Language Name</th>
-
       <th>Builtin Filter Name</th>
-
       <th>External Filter Name [1]</th>
-
       <th>Majormode Name[2]</th>
     </tr>
 
     <tr>
       <td>C</td>
-
       <td>c</td>
-
       <td>vile-c-filt</td>
-
       <td>cmode</td>
     </tr>
 
     <tr>
       <td>HTML</td>
-
       <td>html</td>
-
       <td>vile-html-filt</td>
-
       <td>htmlmode</td>
     </tr>
 
     <tr>
       <td>Perl</td>
-
       <td>pl</td>
-
       <td>vile-pl-filt</td>
-
       <td>perlmode</td>
     </tr>
 
     <tr>
       <td>sh</td>
-
       <td>sh</td>
-
       <td>vile-sh-filt</td>
-
       <td>shmode</td>
     </tr>
   </table>
@@ -9899,34 +9220,26 @@ VILE_LIBDIR_PATH=COLORDIR
   <table border="1" summary="Highlighting macros">
     <tr>
       <th>Macro Name</th>
-
       <th>Binding</th>
-
       <th>Function</th>
     </tr>
 
     <tr>
       <td>HighlightFilterMsg</td>
-
       <td>^X-q</td>
-
       <td>Colors the current buffer if a majormode and filter exist
       for same.</td>
     </tr>
 
     <tr>
       <td>HighlightClear</td>
-
       <td>^X-Q</td>
-
       <td>Clears the current buffer's color attributes.</td>
     </tr>
 
     <tr>
       <td>set-highlighting</td>
-
       <td>&lt;none&gt;</td>
-
       <td>Attach a major mode to a buffer and re-color same. More
       about this below.</td>
     </tr>
@@ -10135,7 +9448,6 @@ C<em>&lt;hexdigit&gt;</em> ::= internal vile color name
 
     <li>Win32 users should ensure that these environment vars are
     properly initialized:
-
       <blockquote>
         <pre class="code-block">
 VILE_STARTUP_PATH
@@ -10145,7 +9457,6 @@ VILE_LIBDIR_PATH
     </li>
 
     <li>Your startup file should include these lines:
-
       <blockquote>
         <!--{{atr2html-->
 
@@ -10427,31 +9738,26 @@ warning          default
   <table border="1" summary="Selecting majormode">
     <tr>
       <th>regexp mode name</th>
-
       <th>selection based on</th>
     </tr>
 
     <tr>
       <td>mode-pathname</td>
-
       <td>any file component in path</td>
     </tr>
 
     <tr>
       <td>mode-filename</td>
-
       <td>leaf filename</td>
     </tr>
 
     <tr>
       <td>suffixes</td>
-
       <td>.&lt;file_suffix&gt;</td>
     </tr>
 
     <tr>
       <td>preamble</td>
-
       <td>first line of file</td>
     </tr>
   </table>
@@ -10862,7 +10168,6 @@ warning          default
       removes entries from the directory stack. With no arguments,
       removes the top directory from the stack and performs a cd to
       the new top directory.
-
       <dl>
         <dt>+n</dt>
 
@@ -10882,7 +10187,6 @@ warning          default
       working directory. pushd honors <a href=
       "#env-CDPATH">CDPATH</a>, when set. With no arguments, pushd
       exchanges the top two directories. Otherwise:
-
       <dl>
         <dt>+n</dt>
 
@@ -11457,7 +10761,6 @@ M<em>&lt;command&gt;</em>\0     -- meta information (ignored)
       vile appends to the [Trace] buffer a copy of each line
       executed, the local variables saved/restored and intermediate
       states of expression evaluation. To activate tracing, use:
-
       <blockquote>
         <!--{{atr2html-->
 
@@ -11504,7 +10807,6 @@ M<em>&lt;command&gt;</em>\0     -- meta information (ignored)
     <dd>
       displays the full path that the editor's shell will use to
       exec <em>&lt;file&gt;</em>.
-
       <p>Note 1: The list of possible paths is taken from all
       directories specified in $PATH + <a href=
       "#modevar-libdir-path">$libdir-path</a>.</p>
@@ -11543,7 +10845,6 @@ $libdir-path
     <dd>
       displays the full path that will be used to source
       <em>&lt;file&gt;&gt;</em>.
-
       <p>Note 1: The list of possible paths is taken from the same
       directory hierarchy described in the "Invocation" help
       topic.</p>
@@ -11610,7 +10911,6 @@ $startup-path
       focus to the corresponding vile window. Double clicking on a
       mode line will do the above in addition to clearing the
       highlighting associated with the current selection.
-
       <p>Selections may be made by holding button one down and
       "wiping" with the mouse. Release of the mouse button will
       cause the selection to be yanked and made available (if
@@ -11771,84 +11071,72 @@ $startup-path
     <tr>
       <td><code>-fn <em>fontname</em></code>
       </td>
-
       <td>Font to use (or -font).</td>
     </tr>
 
     <tr>
       <td><code>-rv</code>
       </td>
-
       <td>Use reverse video (also -reverse).</td>
     </tr>
 
     <tr>
       <td><code>+rv</code>
       </td>
-
       <td>Don't use reverse video.</td>
     </tr>
 
     <tr>
       <td><code>-display <em>disp</em></code>
       </td>
-
       <td>Display to run xvile on.</td>
     </tr>
 
     <tr>
       <td><code>-fg color <em>Foreground</em></code>
       </td>
-
       <td>color (or -foreground).</td>
     </tr>
 
     <tr>
       <td><code>-bg color <em>Background</em></code>
       </td>
-
       <td>color (or -background).</td>
     </tr>
 
     <tr>
       <td><code>-bd color <em>Border</em></code>
       </td>
-
       <td>color (or -bordercolor).</td>
     </tr>
 
     <tr>
       <td><code>-name <em>name</em></code>
       </td>
-
       <td>Application name used for resource lookups.</td>
     </tr>
 
     <tr>
       <td><code>-title <em>name</em></code>
       </td>
-
       <td>Name to be displayed in titlebar.</td>
     </tr>
 
     <tr>
       <td><code>-geometry <em>geom</em></code>
       </td>
-
       <td>Initial window dimensions in columns and rows.</td>
     </tr>
 
     <tr>
       <td><code>-iconic</code>
       </td>
-
       <td>Start xvile iconified.</td>
     </tr>
 
     <tr>
       <td><code>-xrm <em>Resource</em></code>
       </td>
-
       <td>Specify or change an X resource internal to xvile.</td>
     </tr>
   </table>
@@ -11860,35 +11148,30 @@ $startup-path
     <tr>
       <td><code>-class <em>name</em></code>
       </td>
-
       <td>Class name used for resource lookups.</td>
     </tr>
 
     <tr>
       <td><code>-fork</code>
       </td>
-
       <td>to spawn xvile immediately on startup</td>
     </tr>
 
     <tr>
       <td><code>+fork</code>
       </td>
-
       <td>to force xvile to not spawn on startup</td>
     </tr>
 
     <tr>
       <td><code>-leftbar</code>
       </td>
-
       <td>Put scrollbar(s) on left.</td>
     </tr>
 
     <tr>
       <td><code>-rightbar</code>
       </td>
-
       <td>Put scrollbar(s) on right (default)</td>
     </tr>
   </table>
@@ -11923,25 +11206,21 @@ $startup-path
   <table border="1" summary="xvile resources">
     <tr>
       <th>Name</th>
-
       <th>Description</th>
     </tr>
 
     <tr>
       <td>font</td>
-
       <td>Font to use.</td>
     </tr>
 
     <tr>
       <td>geometry</td>
-
       <td>Window dimensions in characters.</td>
     </tr>
 
     <tr>
       <td>iconName</td>
-
       <td>Name of icon for decorating window frame. If set, this
       overrides the compiled-in pixmap which is used for the window
       manager's hint of the icon pixmap.</td>
@@ -11949,14 +11228,12 @@ $startup-path
 
     <tr>
       <td>charClass</td>
-
       <td>Character classes for multiple click selections. The
       format is identical to that of xterm(1).</td>
     </tr>
 
     <tr>
       <td>multiClickTime</td>
-
       <td>How long between clicks (in milliseconds) to be accepted
       as a multi-click.</td>
     </tr>
@@ -11964,7 +11241,6 @@ $startup-path
     <tr>
       <td>foreground<br>
       background</td>
-
       <td>Foreground/Background color of the main xvile text
       area.</td>
     </tr>
@@ -11972,7 +11248,6 @@ $startup-path
     <tr>
       <td>cursor.foreground<br>
       cursor.background</td>
-
       <td>Foreground/Background color of the cursor. By default the
       cursor location is indicated by inverting the foreground and
       background colors of the cell the cursor is over. Thus the
@@ -11986,7 +11261,6 @@ $startup-path
     <tr>
       <td>menuBackground<br>
       menuForeground</td>
-
       <td>(Compile-time optional feature) resources for setting the
       background and foreground colors of menubar and pulldown
       menus.</td>
@@ -11995,7 +11269,6 @@ $startup-path
     <tr>
       <td>modeline.focusForeground<br>
       modeline.focusBackground</td>
-
       <td>Foreground/Background color of the mode line
       corresponding to the window with focus, i.e. the "current"
       window.</td>
@@ -12004,7 +11277,6 @@ $startup-path
     <tr>
       <td>modeline.foreground<br>
       modeline.background</td>
-
       <td>Foreground/Background color of mode lines corresponding
       to windows without the keyboard focus. modeline.background is
       also used for the scrollbar borders and resize grips.</td>
@@ -12012,13 +11284,11 @@ $startup-path
 
     <tr>
       <td>forkOnStartup</td>
-
       <td>If true, xvile forks after initialization.</td>
     </tr>
 
     <tr>
       <td>focusFollowsMouse</td>
-
       <td>If true, the "current" window is the window inhabited by
       the mouse; no clicking is necessary to change windows.</td>
     </tr>
@@ -12026,21 +11296,18 @@ $startup-path
     <tr>
       <td>pointer.foreground<br>
       pointer.background</td>
-
       <td>Foreground/Background color of the pointer.</td>
     </tr>
 
     <tr>
       <td>pointer.normalShape<br>
       pointer.watchShape</td>
-
       <td>Set the shapes for the normal and watch pointers
       respectively.</td>
     </tr>
 
     <tr>
       <td>scrollbarOnLeft</td>
-
       <td>Either true or false; control the placement of the
       scrollbars. By default, scrollbars are placed on the
       right.</td>
@@ -12048,14 +11315,12 @@ $startup-path
 
     <tr>
       <td>scrollbarWidth</td>
-
       <td>An integer indicating the width of the scrollbar.</td>
     </tr>
 
     <tr>
       <td>scrollbar.foreground<br>
       scrollbar.background</td>
-
       <td>Foreground/Background color of the slider or one of the
       colors of the slider if a stippled pixmap is used. To force
       the slider to be only the foreground color, you should set
@@ -12064,7 +11329,6 @@ $startup-path
 
     <tr>
       <td>scrollbar.sliderIsSolid</td>
-
       <td>If false, indicates that the stippled pixmap should be
       used to simulate grey. This will be best on monochrome
       displays. True works better for color displays. True
@@ -12075,7 +11339,6 @@ $startup-path
 
     <tr>
       <td>scrollRepeatTimeout</td>
-
       <td>Amount of time in milliseconds to wait initially before
       repeating scroll when button one or three are held down. (X
       toolkit version only).</td>
@@ -12083,7 +11346,6 @@ $startup-path
 
     <tr>
       <td>scrollRepeatInterval</td>
-
       <td>Amount of time to wait between repeating subsequent
       scrolls. This parameter is also used for controlling the
       speed at which selections are scrolled.</td>
@@ -12092,14 +11354,12 @@ $startup-path
     <tr>
       <td>selection.foreground<br>
       selection.background</td>
-
       <td>Foreground/Background color of the selection regions.
       "foreground" is the color that the text is displayed in.</td>
     </tr>
 
     <tr>
       <td>persistentSelections</td>
-
       <td>If true (the default), highlighting of the selection will
       persist even when button one is pressed to set the cursor
       position. A false value will behave more like other X
@@ -12109,7 +11369,6 @@ $startup-path
 
     <tr>
       <td>selectionSetsDOT</td>
-
       <td>If false (the default), the cursor will be restored to
       its previous position prior to making the selection. If true,
       the cursor will be positioned at the location of the mouse at
@@ -12121,7 +11380,6 @@ $startup-path
       <td><a name="xvile-blinkInterval" id=
       "xvile-blinkInterval">blinkInterval</a>
       </td>
-
       <td>An integer indicating the time in milliseconds to wait
       before blinking the cursor. A positive value will cause the
       cursor to always blink. Setting blinkInterval to zero will
@@ -12140,7 +11398,6 @@ $startup-path
       color.bcolor0, ...,<br>
       color.fcolor15,<br>
       color.bcolor15<br></td>
-
       <td>When doing text attribution with the
       "attribute-cntl_a-sequences-til" command (bound to ^A-A), the
       attribute may be of the form "Cn", where 'n' is a hexadecimal
@@ -12162,39 +11419,33 @@ $startup-path
     <tr>
       <td>menuHeader<br>
       menuEntry</td>
-
       <td>The names given to the menu header and entries,
       respectively.</td>
     </tr>
 
     <tr>
       <td>menuHeight</td>
-
       <td>resource controlling the Athena menu-height</td>
     </tr>
 
     <tr>
       <td>openIm</td>
-
       <td>true if input method should be opened (default:
       true)</td>
     </tr>
 
     <tr>
       <td>inputMethod</td>
-
       <td>input method to use (default: "")</td>
     </tr>
 
     <tr>
       <td>preeditType</td>
-
       <td>pre-edit type (default: "OverTheSpot,Root")</td>
     </tr>
 
     <tr>
       <td>wheelScrollAmount</td>
-
       <td>Amount to scroll for a wheel mouse, per
       button-press.</td>
     </tr>
@@ -12459,19 +11710,16 @@ $ CDPATH :== dev$diska:[home],rooted$build_dir:
 
     <tr>
       <th>Option</th>
-
       <th>Description</th>
     </tr>
 
     <tr>
       <td>-80</td>
-
       <td>force 80-column mode (N/A for VT52 terminals)</td>
     </tr>
 
     <tr>
       <td>-132</td>
-
       <td>force 132-column mode (N/A for VT52 terminals)</td>
     </tr>
   </table>
@@ -12487,13 +11735,11 @@ $ CDPATH :== dev$diska:[home],rooted$build_dir:
 
     <tr>
       <th>Name</th>
-
       <th>Description</th>
     </tr>
 
     <tr>
       <td>allversions</td>
-
       <td>Show all versions of files in response to filename
       completion or wildcards on the command line. Normally this is
       off. (U)</td>
@@ -12501,7 +11747,6 @@ $ CDPATH :== dev$diska:[home],rooted$build_dir:
 
     <tr>
       <td>flash</td>
-
       <td>This feature is implemented by setting the screen video
       to reverse color and then normal. If this sequence of changes
       is incompatible with your terminal preferences, avoid this
@@ -12510,7 +11755,6 @@ $ CDPATH :== dev$diska:[home],rooted$build_dir:
 
     <tr>
       <td>record-format</td>
-
       <td>Specify format of files that vile writes. If undefined,
       vile will attempt to use the format of an older version of
       the file, or "stmlf" if none exists. (B)</td>
@@ -12518,7 +11762,6 @@ $ CDPATH :== dev$diska:[home],rooted$build_dir:
 
     <tr>
       <td>record-attrs</td>
-
       <td>Specify record attributes of files that vile writes. If
       undefined, vile will attempt to use the format of an older
       version of the file, or "cr" if none exists. (B)</td>
@@ -12526,7 +11769,6 @@ $ CDPATH :== dev$diska:[home],rooted$build_dir:
 
     <tr>
       <td>record-length</td>
-
       <td>Maximum record size, used if record-format is "fixed" or
       "vfc". (B)</td>
     </tr>
@@ -12543,14 +11785,12 @@ $ CDPATH :== dev$diska:[home],rooted$build_dir:
 
     <tr>
       <th>Name</th>
-
       <th>Description</th>
     </tr>
 
     <tr>
       <td><a href="#modevar-sres">$sres</a>
       </td>
-
       <td>Switch between 80- and 132-column screen resolutions by
       setting this variable to either NORMAL or WIDE (e.g., :setv
       $sres=wide).</td>
@@ -12606,20 +11846,17 @@ DO       =&gt;  F16.
 
     <tr>
       <th>Name</th>
-
       <th>Description</th>
     </tr>
 
     <tr>
       <td>-fn &lt;fontspec&gt;</td>
-
       <td>Initial font (or -font). The "Winvile Font" section below
       describes &lt;fontspec&gt; syntax.</td>
     </tr>
 
     <tr>
       <td>-geometry &lt;C&gt;x&lt;R&gt;</td>
-
       <td>Initial window dimensions in Columns and Rows (for
       example "-geometry 80x30"). Be aware that the specified
       geometry may not exceed the bounds of the current desktop
@@ -12631,7 +11868,6 @@ DO       =&gt;  F16.
 
     <tr>
       <td>-i</td>
-
       <td>Check if the remainder of the command-line (after this
       option) is a readable filename which may contain embedded
       blanks. If so, change current directory to match this
@@ -12653,13 +11889,11 @@ DO       =&gt;  F16.
 
     <tr>
       <th>Name</th>
-
       <th>Description</th>
     </tr>
 
     <tr>
       <td>-console</td>
-
       <td>Start editor in a new console environment if stdin is
       redirected (i.e., input is taken from a redirected file or
       from a pipe). If this option is not set when stdin is
@@ -12818,7 +12052,6 @@ DO       =&gt;  F16.
 
     <li>edit .bashrc (or equivalent config file) and add this
     function:
-
       <blockquote>
         <!--{{atr2html-->
 
@@ -12883,31 +12116,26 @@ system menu-&gt;Properties-&gt;Options Tab
 
     <tr>
       <th>Menu entry</th>
-
       <th>Description</th>
     </tr>
 
     <tr>
       <td>Open</td>
-
       <td>executes the "winopen" command (described below).</td>
     </tr>
 
     <tr>
       <td>Save As</td>
-
       <td>executes the "winsave" command (described below).</td>
     </tr>
 
     <tr>
       <td>CD</td>
-
       <td>executes the "wincd" command (described below).</td>
     </tr>
 
     <tr>
       <td>Favorites</td>
-
       <td>executes "winopen <a href=
       "#modevar-favorites">$favorites</a>", which starts a common
       open dialog box that browses the Windows Favorites folder.
@@ -12921,13 +12149,11 @@ system menu-&gt;Properties-&gt;Options Tab
 
     <tr>
       <td>Font</td>
-
       <td>described below.</td>
     </tr>
 
     <tr>
       <td>Menu</td>
-
       <td>disables the popup menu and instead transforms the right
       mouse button into a hot key that copies the contents of the
       unnamed register to the clipboard. When the popup menu is
@@ -12938,47 +12164,40 @@ system menu-&gt;Properties-&gt;Options Tab
 
     <tr>
       <td>Undo</td>
-
       <td>Bound to undo-changes-backward.</td>
     </tr>
 
     <tr>
       <td>Redo</td>
-
       <td>Bound to redo-changes-forward.</td>
     </tr>
 
     <tr>
       <td>Cut</td>
-
       <td>deletes current text selection into unnamed register and
       copies same to clipboard.</td>
     </tr>
 
     <tr>
       <td>Copy</td>
-
       <td>copies the current text selection to both the unnamed
       register and the clipboard.</td>
     </tr>
 
     <tr>
       <td>Paste</td>
-
       <td>pastes clipboard contents (if text) into current
       buffer.</td>
     </tr>
 
     <tr>
       <td>Delete</td>
-
       <td>deletes current text selection into unnamed
       register.</td>
     </tr>
 
     <tr>
       <td>Select All</td>
-
       <td>selects all text in the current buffer.</td>
     </tr>
   </table>
@@ -13131,7 +12350,6 @@ Vile.rc Example
     </p>
   </blockquote>
   otherwise, under
-
   <blockquote>
     <p><code>HKEY_CURRENT_USER\Software</code>
     </p>
@@ -13215,7 +12433,6 @@ Vile.rc Example
     <dd>
       Set red/green/blue values for the specified color. Values
       range from 0-255. Example:
-
       <blockquote>
         <pre class="code-block">
 set-rgb-palette red 200 0 0
@@ -13292,7 +12509,6 @@ set-rgb-palette red 200 0 0
     <dd>
       denotes a string that configures the characteristics of an
       insertion cursor.
-
       <p>With respect to console vile, this string either specifies
       a fixed, block cursor height or else sets the block cursor
       heights in the editor's insertion and command modes. Argument
@@ -13968,7 +13184,7 @@ set-rgb-palette red 200 0 0
 
   <h2 id="copying-toc"><a name="copying" id="copying">Copyright</a></h2>
 
-  <p>Copyright &copy; 1995-2019,2020 by Paul Fox, Thomas Dickey,
+  <p>Copyright &copy; 1995-2020,2021 by Paul Fox, Thomas Dickey,
   and Kevin Buettner</p>
 </body>
 </html>
