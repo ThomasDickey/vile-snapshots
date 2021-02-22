@@ -10,7 +10,7 @@
 %{
 
 /*
- * $Id: sh-filt.l,v 1.181 2017/11/11 21:17:53 tom Exp $
+ * $Id: sh-filt.l,v 1.182 2021/02/21 22:08:52 tom Exp $
  *
  * Filter to add vile "attribution" sequences to selected bits of Shell script.
  */
@@ -56,6 +56,7 @@ static int strip_tabs;
 static char *here_tag;
 static size_t here_len;
 static int here_exp;
+static int here_next;
 
 static int pop_backtic1(const char *text, int len, int test);
 static int is_numeric(const char *text, int len);
@@ -75,6 +76,9 @@ static void write_vname(const char *text, int length);
 %}
 
 SPACE		[[:blank:]]
+CRLF		[\r\n]
+
+COMMENT		"#"[^\r\n]*
 
 SSTRING		\'([^']|\n)*\'
 DSTRING		\"([^"]|\n)*\"
@@ -155,7 +159,11 @@ DASHIDENT	{IDENT}("-"{NAME}{NAME2}*)*
 
 <NORMAL>{DASHIDENT}	{ WriteToken(get_keyword_attr(yytext)); }
 
-<NORMAL>"#"[^\r\n]*	{ WriteToken(Comment_attr); }
+<NORMAL>{SPACE}{COMMENT} {
+			  WriteToken3("",1);
+			  WriteToken2(Comment_attr,1);
+			}
+<NORMAL>^{COMMENT}	{ WriteToken(Comment_attr); }
 
 <NORMAL>^{SPACE}*:	{ color_delimiter(yytext, yyleng, Action_attr); }
 
@@ -243,27 +251,21 @@ DASHIDENT	{IDENT}("-"{NAME}{NAME2}*)*
 			  }
 			}
 
-<NORMAL>\<\<[-]?{SPACE}*{QIDENT} {
-			    int state;
-			    int n;
-			    strip_tabs = 0;
-			    for (n = 0; n < (int) yyleng; n++) {
-				if (yytext[n] != '<'
-				 && !isspace(CharOf(yytext[n]))) {
-				    strip_tabs = (yytext[n] == '-');
-				    break;
-				}
-			    }
-			    save_here(yytext, yyleng);
-			    state = here_exp ? HEREDOC : HEREDOC2;
-			    push_state(state);
-			    if (strchr(yytext, '\n') != 0) {
-				flt_error("unexpected end of line");
-				BeginQuote(state, Error_attr);
-			    } else {
-				BeginQuote(state, String_attr);
-			    }
+<NORMAL>\<\<[-]?{SPACE}*{QIDENT}{CRLF}+ {
+			    int size = yyleng;
+			    while (size > 0
+				   && isspace(CharOf(yytext[size - 1])))
+				--size;
+			    save_here(yytext, size);
+			    push_state(here_exp);
+			    flt_puts(yytext, size, String_attr); /* FIXME */
 			    flt_bfr_begin(String_attr);
+			    flt_bfr_append(yytext + size, yyleng - size);
+			}
+<NORMAL>\<\<[-]?{SPACE}*{QIDENT} {
+			    save_here(yytext, yyleng);
+			    here_next = here_exp;
+			    WriteToken(String_attr);
 			}
 <NORMAL>"(("		{ if (FltOptions('K')) {
 			    WriteToken(Action_attr); 
@@ -279,7 +281,14 @@ DASHIDENT	{IDENT}("-"{NAME}{NAME2}*)*
 			  }
 			}
 <NORMAL>"("		{ ECHO; push_state(NORMAL); }
-<NORMAL>[\n]		{ ECHO; }
+<NORMAL>\\[\n]		{ ECHO; }
+<NORMAL>[\n]		{ ECHO;
+			  if (here_next) {
+			    push_state(here_next);
+			    here_next = 0;
+			    flt_bfr_begin(String_attr);
+			  }
+			}
 
 <KSH_MATH>"))"		{
 			  WriteToken(Action_attr); 
@@ -309,13 +318,13 @@ DASHIDENT	{IDENT}("-"{NAME}{NAME2}*)*
 			  flt_bfr_embed(yytext + 1, yyleng - 1, Number_attr);
 			}
 <KSH_CQUOTE>\\[[:graph:]] { flt_bfr_embed(yytext, yyleng, Action_attr); }
-<KSH_CQUOTE>[\r\n]		|
+<KSH_CQUOTE>{CRLF}	|
 <KSH_CQUOTE>.		{ flt_bfr_embed(yytext, yyleng, String_attr); }
 
 <HEREDOC>{BACKTIC2_DOWN} { handle_backtic2(yytext, yyleng, yyleng, 1); }
 <HEREDOC>{BACKTIC1_DOWN} { handle_backtic1(yytext, yyleng, yyleng, 1); }
 <HEREDOC>{BACKTIC}	{ handle_backtic1(yytext, yyleng, yyleng, -1); }
-<HEREDOC>{IDENT2}	{ if (here_exp) {
+<HEREDOC>{IDENT2}	{ if (here_exp == HEREDOC) {
 			      embed_vname(yytext, yyleng, String_attr);
 			  } else {
 			      flt_bfr_append(yytext, yyleng);
@@ -332,7 +341,7 @@ DASHIDENT	{IDENT}("-"{NAME}{NAME2}*)*
 <HEREDOC>.		{ flt_bfr_append(yytext, yyleng); }
 
 <HEREDOC2>^[^\r\n]+	{ check_heredoc(yytext, yyleng); }
-<HEREDOC2>[\r\n]+	{ flt_bfr_append(yytext, yyleng); }
+<HEREDOC2>{CRLF}+	{ flt_bfr_append(yytext, yyleng); }
 
 <DQUOTED>{BACKTIC1_UP}	{ if (!pop_backtic1(yytext, yyleng, LEN_BACKTIC1_DOWN)) 
 			      flt_bfr_append(yytext, yyleng);
@@ -397,7 +406,7 @@ DASHIDENT	{IDENT}("-"{NAME}{NAME2}*)*
 <BRACES2>[^-:=?+*@#%/^,"'}[:blank:][]]+ { flt_bfr_embed(yytext, yyleng, ""); } /* FIXME - error */
 <BRACES2>{SPACE}	{ flt_bfr_append(yytext, yyleng); }
 <BRACES2>.		|
-<BRACES2>[\r\n]		{ flt_bfr_append(yytext, yyleng); }
+<BRACES2>{CRLF}		{ flt_bfr_append(yytext, yyleng); }
 
 <BRACES3>{BACKTIC2_DOWN} { handle_backtic2(yytext, yyleng, yyleng, 1); }
 <BRACES3>{BACKTIC1_DOWN} { handle_backtic1(yytext, yyleng, yyleng, 1); }
@@ -584,10 +593,19 @@ static void
 save_here(const char *text, int length)
 {
     char *s;
+    int n;
     int delim = 0;
 
-    here_exp = 1;
     DPRINTF(("save_here '%.*s' ", length, text));
+    here_exp = HEREDOC;
+    strip_tabs = 0;
+    for (n = 0; n < (int) yyleng; n++) {
+	if (yytext[n] != '<'
+	    && !isspace(CharOf(yytext[n]))) {
+	    strip_tabs = (yytext[n] == '-');
+	    break;
+	}
+    }
     if ((here_tag = do_alloc(here_tag, (size_t) length, &here_len)) != 0) {
 	s = here_tag;
 	/* skip leading "<<" or "<<-", and blanks */
@@ -597,11 +615,11 @@ save_here(const char *text, int length)
 	    --length;
 	    ++text;
 	}
-	while (length--) {
+	while (length-- > 0) {
 	    if ((delim != 0) && (*text == delim)) {
 		break;
 	    } else if (isQuote(*text)) {
-		here_exp = 0;
+		here_exp = HEREDOC2;
 		if (delim == 0) {
 		    delim = *text;
 		}
@@ -623,7 +641,7 @@ save_here(const char *text, int length)
 static void
 embed_or_append(const char *text, int length)
 {
-    if (here_exp) {
+    if (here_exp == HEREDOC) {
 	begin_braces(text, length);
     } else {
 	flt_bfr_append(text, length);
@@ -853,11 +871,12 @@ check_heredoc(char *value, int length)
 	    flt_bfr_append(value, used);
     }
     if (got_here(value + used, length - used)) {
-	flt_bfr_append(here_tag, (int) strlen(here_tag));
+	flt_bfr_append(value + used, length - used);
 	flt_bfr_finish();
 	pop_state();
-	strip_tabs = 0;
 	FreeAndNull(here_tag);
+	here_exp = 0;
+	here_next = 0;
     } else {
 	flt_bfr_append(value + used, length - used);
     }
@@ -899,6 +918,7 @@ do_filter(FILE *inputs)
     String_attr = class_attr(NAME_LITERAL);
 
     here_exp = 0;
+    here_next = 0;
     begin_state(NORMAL);
 
     RunLEX();

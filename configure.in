@@ -1,11 +1,11 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_REVISION($Revision: 1.336 $)
-AC_PREREQ(2.52.20210101)
+AC_REVISION($Revision: 1.339 $)
+AC_PREREQ(2.52.20210105)
 
 ### Use "configure -with-screen" to override the default configuration, which is
 ### termcap-based on unix systems.
 
-dnl $Id: configure.in,v 1.336 2021/01/04 09:22:47 tom Exp $
+dnl $Id: configure.in,v 1.339 2021/01/06 23:14:05 tom Exp $
 
 define(MAKELIST, sh "$srcdir/filters/makelist.sh" "$srcdir/filters/genmake.mak")
 
@@ -122,14 +122,14 @@ CF_HELP_MESSAGE(Options for syntax filters)
 AC_MSG_CHECKING(if you want to build syntax filters)
 CF_ARG_DISABLE(filters,
 	[  --disable-filters       do not build syntax filters],
-	[with_filters=no],
-	[with_filters=yes])
-AC_MSG_RESULT($with_filters)
+	[enable_filters=no],
+	[enable_filters=yes])
+AC_MSG_RESULT($enable_filters)
 
 MAKE_FILTERS=
 AC_SUBST(MAKE_FILTERS)
 
-if test "$with_filters" = yes ; then
+if test "$enable_filters" = yes ; then
 
 # allow user to preset these environment variables:
 : "${VILE_BUILT_IN_FILTERS=none}"
@@ -729,10 +729,10 @@ case "$TARGET" in
 		AC_MSG_CHECKING(if you want to enable colored-menus)
 		CF_ARG_ENABLE(colored-menus,
 			[  --enable-colored-menus  enable colored-menus],
-			[with_colored_menus=yes],
-			[with_colored_menus=no])
-		AC_MSG_RESULT($with_colored_menus)
-		test "$with_colored_menus" = yes && AC_DEFINE(OPT_MENUS_COLORED,1,[Define to 1 if xvile menus can be colored])
+			[enable_colored_menus=yes],
+			[enable_colored_menus=no])
+		AC_MSG_RESULT($enable_colored_menus)
+		test "$enable_colored_menus" = yes && AC_DEFINE(OPT_MENUS_COLORED,1,[Define to 1 if xvile menus can be colored])
 
 if test -n "$cf_x_athena" ; then
     AC_MSG_CHECKING(if you want to use Xaw scrollbars rather than our own)
@@ -790,9 +790,9 @@ CF_HELP_MESSAGE(Miscellaneous features)
 AC_MSG_CHECKING(if you want to compile-in plugin support)
 CF_ARG_ENABLE(plugins,
 	[  --enable-plugins        compile-in plugin support],
-	[with_plugins=yes],
-	[with_plugins=no])
-AC_MSG_RESULT($with_plugins)
+	[enable_plugins=yes],
+	[enable_plugins=no])
+AC_MSG_RESULT($enable_plugins)
 
 CF_LARGEFILE
 CF_LINK_PREFIX
@@ -856,9 +856,9 @@ AC_ARG_WITH(trace,
 	 with_trace=yes],
 	[with_trace=])
 
-if test -n "${with_trace}" ; then
+if test "x${with_trace}" = "xyes" ; then
 	EXTRAOBJS="$EXTRAOBJS trace\$o"
-elif test -n "${with_no_leaks}" ; then
+elif test "${enable_leaks}" = no ; then
 	test -z "${with_valgrind}" && EXTRAOBJS="$EXTRAOBJS trace\$o"
 fi
 
@@ -904,7 +904,7 @@ $cf_tc_externs \
 fi
 
 ###	Optional checks for missing functions (enabled with --with-warnings)
-if test "x$with_warnings" = "xyes"
+if test "x$enable_warnings" = "xyes"
 then
 CHECK_DECL_HDRS="$VILE_CHECK_HDRS"
 CF_MISSING_EXTERN( \
@@ -1012,9 +1012,9 @@ AC_SUBST(LIBBUILTFLT)
 cf_need_libdl=no
 
 test "$VILE_LOADABLE_FILTERS" != none && cf_need_libdl=yes
-test "$with_plugins"          != no   && cf_need_libdl=yes
+test "$enable_plugins"        != no   && cf_need_libdl=yes
 
-if test "$with_plugins" != no ; then
+if test "$enable_plugins" != no ; then
 	if test "$GCC" = yes ; then
 		LDFLAGS="$LDFLAGS -export-dynamic"
 	# TODO: how to do with other compilers ? can libtool help ?
